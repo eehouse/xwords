@@ -761,7 +761,8 @@ model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile )
 
     player = &model->players[turn];
 
-    for ( i = 0; i < player->trayTiles.nTiles; ++i ) {
+    /* search from top down so don't pull out of below divider */
+    for ( i = player->trayTiles.nTiles - 1; i >= 0 ; --i ) {
         Tile playerTile = player->trayTiles.tiles[i];
         if ( playerTile == tile ) {
             result = i;
