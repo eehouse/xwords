@@ -1,0 +1,110 @@
+/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* 
+ * Copyright 2004 by Eric House (fixin@peak.org).  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+/*
+ */
+
+static void
+initColorData( ColorsDlgState* cState )
+{
+    CEAppGlobals* globals = cState->globals;
+
+    for ( i = 0; i < NUM_COLORS; ++i ) {
+        COLORREF ref = globals->appPrefs.colors[i];
+        cState->colors[i] = ref;
+        cState->brushes[i] = CreateSolidBrush( ref );
+    }
+} /* initColorData */
+
+static HBRUSH
+brushForButton( ColorsDlgState* cState, HWND hwndButton )
+{
+    XP_U16 i;
+    for ( i = 0; i < NUM_COLORS; ++i ) {
+        if ( cState->buttons[i] == hwndButton ) {
+            return cState->brushes[i];
+        }
+    }
+    return NULL;
+} /* brushForButton */
+
+static void
+deleteButtonBrushes( ColorsDlgState* cState )
+{
+    XP_U16 i;
+    for ( i = 0; i < NUM_COLORS; ++i ) {
+        DeleteObject( cState->brushes[i] );
+    }
+} /* deleteButtonBrushes */
+
+LRESULT CALLBACK
+ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    ColorsDlgState* cState;
+
+    if ( message == WM_INITDIALOG ) {
+        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+
+        cState = (ColorsDlgState*)lParam;
+        cState->cancelled = XP_TRUE;
+        cState->inited = XP_FALSE;
+
+        return TRUE;
+    } else {
+        cState = (ColorsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+
+        if ( !cState->inited ) {
+            initColorData( cState );
+            cState->inited = XP_TRUE;
+        }
+
+        switch (message) {
+
+        case WM_CTLCOLORBTN: {
+            HDC hdcButton = (HDC)wParam; 
+            HWND hwndButton = (HWND)lParam;
+            HBRUSH brush = brushForButton( cState, hwndButton );
+            return (BOOL)brush;
+        }
+
+        case WM_COMMAND:
+            switch( LOWORD(wParam) ) {
+
+            case IDOK:
+                ceControlsToPrefs( hDlg, &cState->prefsPrefs );
+                cState->cancelled = XP_FALSE;
+                /* fallthrough */
+
+            case IDCANCEL:
+                deleteButtonBrushes( cState );
+                EndDialog(hDlg, id);
+                return TRUE;
+            default:
+                /* it's one of the color buttons.  Set up with the
+                   appropriate color and launch ChooseColor */
+                BOOL hitOk = ChooseColor( &ccs );
+            }
+
+
+        }
+    }
+
+    return FALSE;
+    
+} /* ColorsDlg */
