@@ -25,6 +25,7 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <winuser.h>
+#include <aygshell.h>
 #include "strutils.h"
 
 #include "memstream.h"
@@ -730,6 +731,17 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 
+    if ( globals->hwndCB ) {
+        RECT rc, rcmb;
+
+        GetWindowRect( hWnd, &rc );
+        GetWindowRect( globals->hwndCB, &rcmb );
+        rc.bottom -= (rcmb.bottom - rcmb.top);
+
+        MoveWindow(hWnd, rc.left, rc.top, rc.right-rc.left, 
+                   rc.bottom-rc.top, FALSE);
+    }
+
     ceInitUtilFuncs( globals );
 
     /* choose one.  If none found it's an error. */
@@ -1209,6 +1221,28 @@ ceConfirmAndSave( CEAppGlobals* globals )
     return confirmed;
 } /* ceConfirmAndSave */
 
+static HWND
+makeCommandBar( HWND hwnd, HINSTANCE hInst )
+{
+    SHMENUBARINFO mbi;
+
+    XP_MEMSET( &mbi, 0, sizeof(SHMENUBARINFO) );
+    mbi.cbSize = sizeof(SHMENUBARINFO);
+    mbi.hwndParent = hwnd;
+    mbi.nToolBarId = IDM_MENU;
+    mbi.hInstRes   = hInst;
+    mbi.nBmpId     = 0;
+    mbi.cBmpImages = 0;
+    mbi.dwFlags = SHCMBF_HIDESIPBUTTON; /* eeh added */
+
+    if (!SHCreateMenuBar(&mbi)) {
+        XP_LOGF( "SHCreateMenuBar failed" );
+        return NULL;
+    }
+
+    return mbi.hwndMB;
+} /* makeCommandBar */
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1220,19 +1254,27 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     XP_Bool handled;
 
     if ( message == WM_CREATE ) {
+        INITCOMMONCONTROLSEX initCtrls;
+        BOOL installed;
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
         SetWindowLong( hWnd, GWL_USERDATA, (long)globals );
 
-        globals->hwndCB = CommandBar_Create(globals->hInst, hWnd, 1);
-        CommandBar_InsertMenubar(globals->hwndCB, globals->hInst, IDM_MENU, 0);
+        globals->hwndCB = makeCommandBar( hWnd, globals->hInst );
         addButtonsToCmdBar( globals );
-        /* CommandBar_AddAdornments must get called last */
-/*         CommandBar_AddAdornments(globals->hwndCB, 0, 0); */
-
     } else {
         globals = (CEAppGlobals*)GetWindowLong( hWnd, GWL_USERDATA );
 
         switch (message) {
+
+        case WM_ACTIVATE:
+            // Notify shell of our activate message
+            SHHandleWMActivate( hWnd, wParam, lParam, &globals->sai, FALSE );
+            break;
+
+        case WM_SETTINGCHANGE:
+            SHHandleWMSettingChange( hWnd, wParam, lParam, &globals->sai );
+            break;
+
         case WM_COMMAND:
             wmId    = LOWORD(wParam); 
             wmEvent = HIWORD(wParam); 
