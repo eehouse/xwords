@@ -547,8 +547,9 @@ new_game( GtkWidget* widget, GtkAppGlobals* globals )
         XP_U32 gameID = util_getCurSeconds( globals->cGlobals.params->util );
 
         XP_STATUSF( "grabbed gameID: %ld\n", gameID );
-        game_reset( MEMPOOL &globals->cGlobals.game, gi, gameID, &globals->cp,
-                    linux_tcp_send, globals );
+        game_reset( MEMPOOL &globals->cGlobals.game, gi,
+                    globals->cGlobals.params->util,
+                    gameID, &globals->cp, linux_tcp_send, globals );
 
         if ( isClient ) {
             XWStreamCtxt* stream =
