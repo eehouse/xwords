@@ -48,6 +48,7 @@
 #include "gtknewgame.h"
 #include "gtkletterask.h"
 #include "gtkpasswdask.h"
+#include "gtkntilesask.h"
 /* #include "undo.h" */
 #include "gtkdraw.h"
 #include "memstream.h"
@@ -731,7 +732,19 @@ static void
 handle_hint_button( GtkWidget* widget, GtkAppGlobals* globals )
 {
     XP_Bool redo;
-    if ( board_requestHint( globals->cGlobals.game.board, &redo ) ) {
+    if ( board_requestHint( globals->cGlobals.game.board, 0, &redo ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
+} /* handle_hint_button */
+
+static void
+handle_nhint_button( GtkWidget* widget, GtkAppGlobals* globals )
+{
+    XP_Bool redo;
+    XP_U16 nTiles = askNTiles( globals, MAX_TRAY_TILES, globals->cGlobals.lastNTilesToUse );
+
+    globals->cGlobals.lastNTilesToUse = nTiles;
+    if ( board_requestHint( globals->cGlobals.game.board, nTiles, &redo ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_hint_button */
@@ -959,6 +972,9 @@ gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
     return XP_TRUE;		/* keep going */
 #else
     pending = gdk_events_pending();
+    if ( pending ) {
+        XP_DEBUGF( "gtk_util_hiliteCell=>%d", pending );
+    }
     return !pending;
 #endif
 } /* gtk_util_hiliteCell */
@@ -1238,6 +1254,10 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* window )
 				       handle_hint_button );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
+    button = makeShowButtonFromBitmap( globals, window, "../hintNum.xpm", "n",
+                                       handle_nhint_button );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+
     button = makeShowButtonFromBitmap( globals, window, "../colors.xpm", "c",
 				       handle_colors_button );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
@@ -1464,6 +1484,7 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     memset( &globals, 0, sizeof(globals) );
 
     globals.cGlobals.params = params;
+    globals.cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;
