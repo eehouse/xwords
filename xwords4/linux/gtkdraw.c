@@ -207,9 +207,43 @@ gtk_draw_boardFinished( DrawCtx* p_dctx )
     //    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 } /* draw_finished */
 
+static void
+drawHintBorders( GtkDrawCtx* dctx, XP_Rect* rect, HintAtts hintAtts)
+{
+    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
+
+    if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
+        gdk_draw_rectangle( DRAW_WHAT(dctx),
+                            dctx->drawGC,
+                            FALSE, rect->left, rect->top, 
+                            0, rect->height);
+    }
+    if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
+        gdk_draw_rectangle( DRAW_WHAT(dctx),
+                            dctx->drawGC,
+                            FALSE, rect->left, rect->top, 
+                            rect->width, 0/*rectInset.height*/);
+    }
+    if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
+        gdk_draw_rectangle( DRAW_WHAT(dctx),
+                            dctx->drawGC,
+                            FALSE, rect->left+rect->width, 
+                            rect->top, 
+                            0, rect->height);
+    }
+    if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
+        gdk_draw_rectangle( DRAW_WHAT(dctx),
+                            dctx->drawGC,
+                            FALSE, rect->left, 
+                            rect->top+rect->height, 
+                            rect->width, 0 );
+    }
+}
+
 static XP_Bool
 gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter, 
                    XP_Bitmap bitmap, XP_S16 owner, XWBonusType bonus, 
+                   HintAtts hintAtts,
                    XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -279,6 +313,10 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
                        letter, 1 );
     }
 
+    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
+        drawHintBorders( dctx, &rectInset, hintAtts );
+   }
+
     return XP_TRUE;
 } /* gtk_draw_drawCell */
 
@@ -302,7 +340,7 @@ gtk_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
 /*     gdk_gc_set_function( dctx->drawGC, values.function ); */
 } /* gtk_draw_invertCell */
 
-static void
+static XP_Bool
 gtk_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner, 
                     XP_Bool hasfocus )
 {
@@ -310,7 +348,7 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
     XP_Rect clip = *rect;
     insetRect( &clip, -1 );
     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)&clip );
-/*     eraseRect( dctx, rect ); */
+    return XP_TRUE;
 } /* gtk_draw_trayBegin */
 
 static void
