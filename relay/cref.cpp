@@ -91,15 +91,19 @@ void
 RemoveSocketRefs( int socket )
 {
     CookieRef* cref = getCookieRefForSocket( socket );
-    cref->Remove( socket );
+    if ( cref != NULL ) {
+        cref->Remove( socket );
 
-    SocketMap::iterator iter = gSocketStuff.find( socket );
-    assert( iter != gSocketStuff.end() );
-    gSocketStuff.erase( iter );
+        SocketMap::iterator iter = gSocketStuff.find( socket );
+        assert( iter != gSocketStuff.end() );
+        gSocketStuff.erase( iter );
 
-    if ( cref->CountSockets() == 0 ) {
-        ForgetCref( cref );
-        delete cref;
+        if ( cref->CountSockets() == 0 ) {
+            ForgetCref( cref );
+            delete cref;
+        }
+    } else {
+        logf( "socket already dead" );
     }
 }
 
