@@ -41,14 +41,17 @@
 /* This guy doesn't exist in 4-byte case */
 #define EXTRABITMASK_NEW 0x20
 
+#define OLD_THREE_FIELDS \
+    XP_U8 highByte; \
+    XP_U8 lowByte; \
+    XP_U8 bits
+
 typedef struct array_edge_old {
-    XP_U8 highByte;
-    XP_U8 lowByte;
-    XP_U8 bits;
+    OLD_THREE_FIELDS;
 } array_edge_old;
 
 typedef struct array_edge_new {
-    array_edge_old o;
+    OLD_THREE_FIELDS;
     XP_U8 moreBits;
 } array_edge_new;
 
