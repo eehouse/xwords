@@ -46,6 +46,7 @@
 #include "symblnk.h"
 #include "symgmdlg.h"
 #include "symutil.h"
+#include "symssock.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -90,6 +91,9 @@ CXWordsAppView::~CXWordsAppView()
     delete iDictList;
     delete iRequestTimer;
     delete iGamesMgr;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    delete iSendSock;
+#endif
 }
 
 void CXWordsAppView::ConstructL(const TRect& aRect)
@@ -105,6 +109,11 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 
     iRequestTimer = CIdle::NewL( CActive::EPriorityIdle );
     iTimerRunCount = 0;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    iSendSock = CSendSocket::NewL();
+    XP_LOGF( "iSendSock created" );
+#endif
 
     // Set the control's border
 //     SetBorder(TGulBorder::EFlatContainer);
@@ -964,7 +973,7 @@ CXWordsAppView::WritePrefs()
 
     RFileWriteStream writer;
     CleanupClosePushL(writer);
-    User::LeaveIfError( writer.Replace( fs, filename, EFileWrite ) );
+    User::LeaveIfError( writer.Replace( fs, nameD, EFileWrite ) );
 
     writer.WriteInt8L( iCp.showBoardArrow );
     writer.WriteInt8L( iCp.showRobotScores );
@@ -1187,6 +1196,7 @@ CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr,
 {
     XP_S16 result = -1;
     CXWordsAppView* self = (CXWordsAppView*)aClosure;
+    self->iSendSock->SendL( aBuf, aLen, aAddr );
 
     XP_LOGF( "sym_send called with %d bytes, => %d", aLen, result );
 
