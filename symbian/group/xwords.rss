@@ -34,6 +34,10 @@ NAME XWRD
 
 #include "xwords.hrh"
 
+#define CANT_DO_TYPEDEF
+#include "xwrelay.h"
+#undef CANT_DO_TYPEDEF
+
 // ---------------------------------------------------------
 //   
 //    Define the resource file signature 
@@ -362,7 +366,13 @@ RESOURCE ARRAY r_xwords_newgame_page_conn
             // itemflags = 
         },
         DLG_LINE {
-            prompt = "Relay address";
+            prompt = "Game name";
+            type = EEikCtEdwin;
+            id = ECookie;
+            control = EDWIN { width = 10; maxlength = MAX_COOKIE_LEN; };
+        },
+        DLG_LINE {
+            prompt = "Relay name";
             type = EEikCtEdwin;
             id = ERelayName;
             control = EDWIN { width = 10; maxlength = 32; };
