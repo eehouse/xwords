@@ -32,9 +32,14 @@ extern "C" {
 class CXWAskDlg : public CEikDialog
 {
  public:
+    static TBool DoAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream );
+    static TBool DoAskDlg( MPFORMAL TBuf16<128>* aMessage );
+
+    ~CXWAskDlg();
+
+ private:
     CXWAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream );
     CXWAskDlg( MPFORMAL TBuf16<128>* aMessage);
-    ~CXWAskDlg();
 
  private:
     TBool OkToExitL( TInt aKeyCode );
