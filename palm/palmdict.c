@@ -26,6 +26,7 @@
 #include "palmdict.h"
 #include "dictlist.h"
 #include "dictui.h"
+#include "palmmain.h"
 
 typedef struct DictStart {
     unsigned long indexStart;
@@ -143,9 +144,9 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         } else if ( headerRecP->flags == 0x0003 ) {
             nodeSize = 4;
         } else {
-            nodeSize = 0;       /* shut up, compiler */
             XP_WARNF( "got flags of %d", headerRecP->flags );
             XP_ASSERT(0);
+            return NULL;
         }
 #endif
 
