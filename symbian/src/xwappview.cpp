@@ -177,12 +177,8 @@ void CXWordsAppView::Draw( const TRect& aRect ) const
     gc.Clear( aRect );
 
     if ( iGame.board ) {
-        // This must go!  Board needs a method to inval within a rect.
-        // But without this when a menu or other obscuring window goes
-        // away we get called to redraw but board thinks nothing needs
-        // drawing.
-        board_invalAll( iGame.board );
-
+        board_invalRect( iGame.board, aRect.iTl.iX, aRect.iTl.iY,
+                         aRect.iBr.iX, aRect.iBr.iY );
         board_draw( iGame.board );
     }
 
