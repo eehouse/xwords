@@ -19,9 +19,11 @@
 
 #include <eikedwin.h>
 #include <eikmfne.h> 
+#include <charconv.h>
 
 #include "symaskdlg.h"
 #include "xwords.hrh"
+#include "xwords.rsg"
 
 CXWAskDlg::CXWAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream ) :
     iStream(aStream), iKillStream(aKillStream), iMessage(NULL)
@@ -42,6 +44,72 @@ CXWAskDlg::~CXWAskDlg()
     }
 }
 
+static void
+SwapInSymbLinefeed( TDes16& buf16 )
+{
+    TBuf16<1> lfDescNew;
+    lfDescNew.Append( CEditableText::ELineBreak );
+    TBuf8<4> tmp( (unsigned char*)XP_CR );
+    TBuf16<4> lfDescOld;
+    lfDescOld.Copy( tmp );
+
+    XP_LOGF( "starting search-and-replace" );
+#if 0
+    TInt len = buf16.Length();
+    TPtrC16 rightPart = buf16.Right(len);
+    TInt leftLen = 0;
+    for ( ; ; ) {
+        TInt pos = rightPart.Find( lfDescOld );
+        if ( pos == KErrNotFound ) {
+            break;
+        }
+        buf16.Replace( leftLen + pos, 1, lfDescNew );
+        leftLen += pos;
+        len -= pos;
+        /* This won't compile.  Need to figure out how to replace without
+           starting the search at the beginning each time */
+        rightPart = buf16.Right(len);
+    }
+#else
+    for ( ; ; ) {
+        TInt pos = buf16.Find( lfDescOld );
+        if ( pos == KErrNotFound ) {
+            break;
+        }
+        buf16.Replace( pos, 1, lfDescNew );
+    }
+#endif
+    XP_LOGF( "search-and-replace done" );
+}
+
+#if 0
+static TBool
+ConvertToDblByteL( TDes16& buf16, const TDesC8& buf8 )
+{
+    CCnvCharacterSetConverter* conv = CCnvCharacterSetConverter::NewLC();
+
+    RFs fileSession;
+    User::LeaveIfError(fileSession.Connect());
+    CleanupClosePushL(fileSession);
+    conv->PrepareToConvertToOrFromL( KCharacterSetIdentifierAscii,
+                                     fileSession );
+
+    TInt state = CCnvCharacterSetConverter::KStateDefault;
+    TInt count = conv->ConvertToUnicode( buf16, buf8, state );
+
+    CleanupStack::PopAndDestroy(); /* fileSession */
+    CleanupStack::PopAndDestroy(); /* converter */
+
+    /* Apparently unicode conversion simply 0-byte-pads the <cr> char. So for
+       proper wrapping in EDWINs I have to manually find all the "\0\n"
+       strings and replace 'em with Symbian's own wrap value.  Dumb.
+    */
+
+    SwapInSymbLinefeed( buf16 );
+    return count == 0;
+}
+#endif
+
 void
 CXWAskDlg::PreLayoutDynInitL()
 {   
@@ -53,21 +121,24 @@ CXWAskDlg::PreLayoutDynInitL()
         XP_U16* buf16 = new(ELeave) XP_U16[size];
         CleanupStack::PushL( buf16 );
 
-        char* buf8 = (char*)XP_MALLOC( mpool, size + 1 );
+        unsigned char* buf8 = (unsigned char*)XP_MALLOC( mpool, size );
         /* PENDING This belongs on the leave stack */
         User::LeaveIfNull( buf8 );
-        stream_getBytes( iStream, buf8, size );
-        buf8[size] = '\0';
+        stream_getBytes( iStream, buf8, SC(XP_U16,size) );
 
-        TPtrC8 desc8( (const unsigned char*)buf8, size );
+        TPtrC8 desc8( buf8, size );
         TPtr16 desc16( buf16, size );
-
+#if 0
+        if ( ConvertToDblByteL( desc16, desc8 ) ) {
+            contents->SetTextL( &desc16 );
+        }
+#else
         desc16.Copy( desc8 );
+        SwapInSymbLinefeed( desc16 );
         contents->SetTextL( &desc16 );
-
-        CleanupStack::PopAndDestroy( buf16 );
-
+#endif
         XP_FREE( mpool, buf8 );
+        CleanupStack::PopAndDestroy( buf16 );
     } else {
         contents->SetTextL( iMessage );
     }
@@ -82,4 +153,18 @@ TBool CXWAskDlg::OkToExitL( TInt aButtonID /* pressed button */ )
     XP_LOGF( "CXWAskDlg::OkToExitL passed %d", aButtonID );
 
     return ETrue;
+}
+
+/* static */ TBool
+CXWAskDlg::DoAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream )
+{
+    CXWAskDlg* me = new(ELeave)CXWAskDlg( MPPARM(mpool) aStream, aKillStream );
+    return me->ExecuteLD( R_XWORDS_INFO_ONLY );
+}
+
+/* static */ TBool
+CXWAskDlg::DoAskDlg( MPFORMAL TBuf16<128>* aMessage )
+{
+    CXWAskDlg* me = new(ELeave)CXWAskDlg( MPPARM(mpool) aMessage );
+    return me->ExecuteLD( R_XWORDS_INFO_ONLY );
 }
