@@ -3,10 +3,16 @@
 #ifndef __CALLBACK__
 #define __CALLBACK__
 
-#ifdef MW_COMPILER
+#if defined MW_COMPILER
 /* these are no-ops for MW as I understand it */
 # define CALLBACK_PROLOGUE()
 # define CALLBACK_EPILOGUE()
+
+#elif defined XW_TARGET_PNO || defined XW_TARGET_X86
+
+#define CALLBACK_PROLOGUE()
+#define CALLBACK_EPILOGUE()
+
 #else
 
 register void *reg_a4 asm("%a4");
