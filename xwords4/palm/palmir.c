@@ -835,7 +835,8 @@ palm_ir_receiveMove( PalmAppGlobals* globals, ExgSocketPtr socket )
     if ( err == 0 ) {
         XWStreamCtxt* instream;
 
-        instream = mem_stream_make(MEMPOOL globals->vtMgr, globals, 0, NULL);
+        instream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 
+                                    CHANNEL_NONE, NULL );
         stream_open( instream );
 
         for ( ; ; ) {
