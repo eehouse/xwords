@@ -128,9 +128,23 @@ static XP_S16 cmpMoves( PossibleMove* m1, PossibleMove* m2 );
     error: need to pick one!!!
 #endif
 
-#define ISACCEPTING(d,e) ((ACCEPTINGMASK & ((array_edge_old*)(e))->bits) != 0)
-#define IS_LAST_EDGE(d,e) ((LASTEDGEMASK & ((array_edge_old*)(e))->bits) != 0)
-#define EDGETILE(d,edge) ((Tile)(((array_edge_old*)(edge))->bits & LETTERMASK))
+#ifdef NODE_CAN_4
+# define ISACCEPTING(d,e) \
+    ((ACCEPTINGMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
+# define IS_LAST_EDGE(d,e) \
+    ((LASTEDGEMASK_NEW & ((array_edge_old*)(e))->bits) != 0)
+# define EDGETILE(e,edge) \
+    ((Tile)(((array_edge_old*)(edge))->bits & \
+            ((e)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
+#else
+# define ISACCEPTING(d,e) \
+    ((ACCEPTINGMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
+# define IS_LAST_EDGE(d,e) \
+    ((LASTEDGEMASK_OLD & ((array_edge_old*)(e))->bits) != 0)
+# define EDGETILE(d,edge) \
+    ((Tile)(((array_edge_old*)(edge))->bits & LETTERMASK_OLD))
+#endif
+
 #define CROSSCHECK_CONTAINS(chk,tile) (((chk) & (1L<<(tile))) != 0)
 
 #define HILITE_CELL( engine, col, row ) \
@@ -1081,23 +1095,27 @@ static unsigned long
 index_from( DictionaryCtxt* dict, array_edge* p_edge ) 
 {
     unsigned long result;
-    if ( 0 ) {
+
 #ifdef NODE_CAN_4
-    } else if ( dict->nodeSize == 4 ) {
-        array_edge_new* edge = (array_edge_new*)p_edge;
-        result = ((edge->o.highByte << 8) | edge->o.lowByte) & 0x0000FFFF;
-        result |= ((XP_U32)edge->moreBits) << 17;
-        if ( (edge->o.bits & LASTBITMASK) != 0 ) { 
-            result |= 0x00010000; /* using | instead of + saves 4 bytes */
-        }
-#endif
+    array_edge_new* edge = (array_edge_new*)p_edge;
+    result = ((edge->o.highByte << 8) | edge->o.lowByte) & 0x0000FFFF;
+
+    if ( dict->is_4_byte ) {
+        result |= ((XP_U32)edge->moreBits) << 16;
     } else {
-        array_edge_old* edge = (array_edge_old*)p_edge;
-        result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
-        if ( (edge->bits & LASTBITMASK) != 0 ) { 
+        XP_ASSERT( dict->nodeSize == 3 );
+        if ( (edge->o.bits & EXTRABITMASK_NEW) != 0 ) { 
             result |= 0x00010000; /* using | instead of + saves 4 bytes */
         }
     }
+#else
+    array_edge_old* edge = (array_edge_old*)p_edge;
+    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
+    if ( (edge->bits & EXTRABITMASK_OLD) != 0 ) { 
+        result |= 0x00010000; /* using | instead of + saves 4 bytes */
+    }
+#endif
+
     return result;
 } /* index_from */
 
