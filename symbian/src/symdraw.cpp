@@ -84,6 +84,8 @@ typedef struct SymDrawCtxt {
     CFbsBitmap* iStar;
     CFbsBitmap* iTurnIcon;
     CFbsBitmap* iTurnIconMask;
+    CFbsBitmap* iRobotIcon;
+    CFbsBitmap* iRobotIconMask;
 
     CONST_60 CFont* iTileFaceFont;
     CONST_60 CFont* iTileValueFont;
@@ -176,6 +178,8 @@ sym_draw_destroyCtxt( DrawCtx* p_dctx )
     delete sctx->iStar;
     delete sctx->iTurnIcon;
     delete sctx->iTurnIconMask;
+    delete sctx->iRobotIcon;
+    delete sctx->iRobotIconMask;
 
     XP_ASSERT( sctx );
     XP_ASSERT( sctx->vtable );
@@ -334,6 +338,8 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
     symClearRect( sctx, &lRect, COLOR_WHITE );
     if ( dsi->isTurn ) {
         drawBitmap( sctx, sctx->iTurnIcon, sctx->iTurnIconMask, &lRect );
+    } else if ( dsi->isRobot ) {
+        drawBitmap( sctx, sctx->iRobotIcon, sctx->iRobotIconMask, &lRect );
     }
 
     if ( playerNum >= 0 && !dsi->selected ) {
@@ -848,6 +854,13 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
             sctx->iTurnIconMask = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iTurnIconMask->
                                 Load(bitmapFile, EMbmXwordsTurniconmask_80 ) );
+
+            sctx->iRobotIcon = new (ELeave) CFbsBitmap();
+            User::LeaveIfError( sctx->iRobotIcon->
+                                Load(bitmapFile, EMbmXwordsRobot_80 ) );
+            sctx->iRobotIconMask = new (ELeave) CFbsBitmap();
+            User::LeaveIfError( sctx->iRobotIconMask->
+                                Load(bitmapFile, EMbmXwordsRobotmask_80 ) );
 
             XP_LOGF( "done loading bitmaps" );
 #else
