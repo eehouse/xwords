@@ -34,6 +34,7 @@
 { "STR_RESEND_IR", "Error enviant el missatge; ¿reenviar?" },
 #endif
 { "STR_TOO_FEW_TILES", "No hi ha prou fitxes." },
+{ "STR_CANT_UNDO_TILEASSIGN", "Tile assignment can't be undone." },
 { "STR_VALUES_TITLE",  "Quantitat i Valor" },
 { "STR_VALUES_HEADER", "Quantitat[Queden] i Valor\n" },
 
