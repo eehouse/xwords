@@ -121,7 +121,7 @@ CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4.0.6 for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the Gnu Public License.  For a manual and source code see xwords.sourceforge.net.",
+    LTEXT           "Crosswords 4.0.6b14 for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the Gnu Public License.  For a manual and source code see xwords.sourceforge.net.",
                     IDC_STATIC,32,10,86,89,SS_NOPREFIX
 END
 
@@ -233,7 +233,8 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,70,70,20,14
     LTEXT           "Enter a letter for this blank tile.",IDC_BPICK,8,8,63,18
 #ifdef FEATURE_TRAY_EDIT
-    DEFPUSHBUTTON   "Pick all!",IDC_PICKALL,10,70,39,14
+    DEFPUSHBUTTON   "Pick all!",IDC_PICKALL,8,70,39,14
+    DEFPUSHBUTTON   "Del",IDC_BACKUP,48,70,18,14
     LTEXT           "Pick a tile for your tray.",IDC_CPICK,8,8,63,18
 
     EDITTEXT        IDC_PICKMSG,8,28,80,30,ES_MULTILINE | ES_READONLY
