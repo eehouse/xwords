@@ -222,7 +222,7 @@ struct XW_UtilCtxt {
 # define util_engineStopping( uc ) \
          (uc)->vtable->m_util_engineStopping((uc))
 # else
-# define util_engineStarting( uc )
+# define util_engineStarting( uc, nb )
 # define util_engineStopping( uc )
 # endif
 
