@@ -51,6 +51,7 @@
 #include "xwrelay.h"
 #include "cref.h"
 #include "ctrl.h"
+#include "mlock.h"
 
 void
 logf( const char* format, ... )
@@ -146,6 +147,7 @@ killSocket( int socket, char* why )
 static void
 send_with_length( int socket, unsigned char* buf, int bufLen )
 {
+    SocketWriteLock slock( socket );
     int ok = 0;
     unsigned short len = htons( bufLen );
     ssize_t nSent = send( socket, &len, 2, 0 );
