@@ -1648,7 +1648,6 @@ model_getRecentPassCount( ModelCtxt* model )
             break;
         }
     }
-    XP_LOGF( "model_getRecentPassCount=>%d", nPasses );
     return nPasses;
 } /* model_getRecentPassCount */
 
