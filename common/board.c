@@ -78,7 +78,7 @@ static void invalSelTradeWindow( BoardCtxt* board );
 static void setTimerIf( BoardCtxt* board );
 static XP_Bool replaceLastTile( BoardCtxt* board );
 static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
-static void advanceArrow( BoardCtxt* board );
+static XP_Bool advanceArrow( BoardCtxt* board );
 
 #ifdef KEY_SUPPORT
 static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
@@ -1663,7 +1663,12 @@ moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
         result = moveTileToBoard( board, arrow->col, arrow->row,
                                   (XP_U16)index, EMPTY_TILE );
         if ( result ) {
-            advanceArrow( board ); 
+            XP_Bool moved = advanceArrow( board );
+            if ( !moved ) {
+                /* If the arrow didn't move, we can't leave it in place or
+                   it'll get drawn over the new tile. */
+                setArrowVisible( board, XP_FALSE );
+            }
         }
     } else {
         result = XP_FALSE;
@@ -2183,7 +2188,7 @@ board_handleKey( BoardCtxt* board, XP_Key key )
 
         result = trayVisible && moveKeyTileToBoard( board, key );
         if ( result ) { 
-            advanceArrow( board );
+            (void)advanceArrow( board );
         }
     } /* switch */
 
@@ -2229,7 +2234,7 @@ moveScoreCursor( BoardCtxt* board, XP_Key key )
 } /* moveScoreCursor */
 #endif
 
-static void
+static XP_Bool
 advanceArrow( BoardCtxt* board )
 {
     XP_Bool vertical = board->boardArrow[board->selPlayer].vert;
@@ -2239,7 +2244,7 @@ advanceArrow( BoardCtxt* board )
 	    
     XP_ASSERT( board->trayVisState == TRAY_REVEALED );
 
-    board_moveArrow( board, key, XP_FALSE );
+    return board_moveArrow( board, key, XP_FALSE );
 } /* advanceArrow */
 
 static XP_Bool
@@ -2546,9 +2551,9 @@ boardCellChanged( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row,
     XP_U16 ccol, crow;
 
     /* for each player, check if the tile overwrites the cursor */
-
     found = model_getTile( board->model, col, row, XP_TRUE, turn,
-                           &ignoreTile, &ignoreBlank, &pending, (XP_Bool*)NULL );
+                           &ignoreTile, &ignoreBlank, &pending, 
+                           (XP_Bool*)NULL );
 
     XP_ASSERT( !added || found ); /* if added is true so must found be */
 
