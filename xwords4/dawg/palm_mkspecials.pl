@@ -75,7 +75,7 @@ unlink $tmpfile;
 exit 0;
 
 
-sub doOneFile($$) {
+sub doOneFile($$$) {
     my ( $fil, $fh, $offsetR ) = @_;
 
     my $size = convertBmp($fil, $fh );
