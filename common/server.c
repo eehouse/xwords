@@ -140,6 +140,43 @@ static void tellMoveWasLegal( ServerCtxt* server );
 
 #define PICK_NEXT -1
 
+#ifdef DEBUG
+static char*
+getStateStr( XW_State st )
+{
+#   define CASESTR(c) case c: return #c
+    switch( st ) {
+        CASESTR(XWSTATE_NONE);
+        CASESTR(XWSTATE_BEGIN);
+        CASESTR(XWSTATE_POOL_INITED);
+        CASESTR(XWSTATE_NEED_SHOWSCORE);
+        CASESTR(XWSTATE_WAITING_ALL_REG);
+        CASESTR(XWSTATE_RECEIVED_ALL_REG);
+        CASESTR(XWSTATE_NEEDSEND_BADWORD_INFO);
+        CASESTR(XWSTATE_MOVE_CONFIRM_WAIT);
+        CASESTR(XWSTATE_MOVE_CONFIRM_MUSTSEND);
+        CASESTR(XWSTATE_NEEDSEND_ENDGAME);
+        CASESTR(XWSTATE_INTURN);
+        CASESTR(XWSTATE_GAMEOVER);
+    default:
+        return "unknown";
+    }
+#   undef CASESTR
+}
+static void
+logNewState( XW_State old, XW_State newst )
+{
+    char* oldStr = getStateStr(old);
+    char* newStr = getStateStr(newst);
+    XP_LOGF( "state transition %s => %s", oldStr, newStr );
+}
+# define    SETSTATE( s, st ) { XW_State old = (s)->nv.gameState; \
+                                (s)->nv.gameState = (st); \
+                                logNewState(old, st); }
+#else
+# define    SETSTATE( s, st ) (s)->nv.gameState = (st)
+#endif
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -154,9 +191,9 @@ initServer( ServerCtxt* server )
     server->nv.currentTurn = -1; /* game isn't under way yet */
 
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-        server->nv.gameState = XWSTATE_NONE;
+        SETSTATE( server, XWSTATE_NONE );
     } else {
-        server->nv.gameState = XWSTATE_BEGIN;
+        SETSTATE( server, XWSTATE_BEGIN );
     }
 
     lp = gi->players;
@@ -462,7 +499,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 
     if ( server->nv.pendingRegistrations == 0 ) {
         assignTilesToAll( server );
-        server->nv.gameState = XWSTATE_RECEIVED_ALL_REG;
+        SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
     }
     return XP_TRUE;
 } /* handleRegistrationMsg */
@@ -710,7 +747,7 @@ showPrevScore( ServerCtxt* server )
     (void)util_userQuery( util, QUERY_ROBOT_MOVE, stream );
     stream_destroy( stream );
 
-    server->nv.gameState = server->vol.stateAfterShow;
+    SETSTATE( server, server->vol.stateAfterShow );
 } /* showPrevScore */
 
 XP_Bool
@@ -728,7 +765,7 @@ server_do( ServerCtxt* server )
     case XWSTATE_BEGIN:	
         if ( server->nv.pendingRegistrations == 0 ) { /* all players on device */
             assignTilesToAll( server );
-            server->nv.gameState = XWSTATE_INTURN;
+            SETSTATE( server, XWSTATE_INTURN );
             server->nv.currentTurn = 0;
             moreToDo = XP_TRUE;
         }
@@ -748,7 +785,7 @@ server_do( ServerCtxt* server )
     case XWSTATE_RECEIVED_ALL_REG:
         server_sendInitialMessage( server ); 
         /* PENDING isn't INTURN_OFFDEVICE possible too?  Or just INTURN?  */
-        server->nv.gameState = XWSTATE_INTURN;
+        SETSTATE( server, XWSTATE_INTURN );
         server->nv.currentTurn = 0;
         moreToDo = XP_TRUE;
         break;
@@ -831,7 +868,7 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
     return lp;
 } /* findFirstPending */
 
-void
+static void
 registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_S8 deviceIndex;
@@ -992,7 +1029,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     if ( gi->players->isLocal ) {
-        server->nv.gameState = XWSTATE_INTURN;
+        SETSTATE( server, XWSTATE_INTURN );
     }
     server->nv.currentTurn = 0;
 
@@ -1494,8 +1531,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
            obscure bug.*/
         server->nv.nPassesInRow = 0;
     }
-
-    server->nv.gameState = XWSTATE_INTURN; /* unless game over */
+    SETSTATE( server, XWSTATE_INTURN ); /* unless game over */
 
     if ( playerTilesLeft > 0 
          && (server->nv.nPassesInRow / nPlayers < MAX_PASSES) ) {
@@ -1508,7 +1544,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
            should I wait for the server to deduce this and send out a message.
            I think so. */
         if ( server->vol.gi->serverRole != SERVER_ISCLIENT ) {
-            server->nv.gameState = XWSTATE_NEEDSEND_ENDGAME;
+            SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME );
             moreToDo = XP_TRUE;
         }
     }
@@ -1517,7 +1553,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
         server->vol.showPrevMove = XP_FALSE;
         if ( server->nv.showRobotScores ) {
             server->vol.stateAfterShow = server->nv.gameState;
-            server->nv.gameState = XWSTATE_NEED_SHOWSCORE;
+            SETSTATE( server, XWSTATE_NEED_SHOWSCORE );
             moreToDo = XP_TRUE;
         }
     }
@@ -1752,12 +1788,12 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 
         if ( (gi->phoniesAction == PHONIES_DISALLOW) && (nTilesMoved > 0) ) {
             server->lastMoveSource = sourceClientIndex;
-            server->nv.gameState = XWSTATE_MOVE_CONFIRM_MUSTSEND;
+            SETSTATE( server, XWSTATE_MOVE_CONFIRM_MUSTSEND );
             doRequest = XP_TRUE;
         } else if ( nTilesLeft > 0 ) {
             nextTurn( server, PICK_NEXT );
         } else {
-            server->nv.gameState = XWSTATE_NEEDSEND_ENDGAME;
+            SETSTATE(server, XWSTATE_NEEDSEND_ENDGAME );
             doRequest = XP_TRUE;
         }
 
@@ -1771,7 +1807,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
            can't send a message now since we're burried in a message handler.
            (Palm, at least, won't manage.)  So set up state to tell that
            client again in a minute. */
-        server->nv.gameState = XWSTATE_NEEDSEND_BADWORD_INFO;
+        SETSTATE( server, XWSTATE_NEEDSEND_BADWORD_INFO );
         server->lastMoveSource = sourceClientIndex;
         doRequest = XP_TRUE;
     }
@@ -1894,7 +1930,7 @@ server_commitMove( ServerCtxt* server )
 #ifndef XWFEATURE_STANDALONE_ONLY
     if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
         && nTilesMoved > 0 ) {
-        server->nv.gameState = XWSTATE_MOVE_CONFIRM_WAIT;
+        SETSTATE( server, XWSTATE_MOVE_CONFIRM_WAIT );
     } else {
         nextTurn( server, PICK_NEXT );
     }
@@ -1967,7 +2003,7 @@ server_getGameIsOver( ServerCtxt* server )
 static void
 doEndGame( ServerCtxt* server )
 {
-    server->nv.gameState = XWSTATE_GAMEOVER;
+    SETSTATE( server, XWSTATE_GAMEOVER );
     server->nv.currentTurn = -1;
 
     (*server->vol.gameOverListener)( server->vol.gameOverData );
@@ -2178,12 +2214,12 @@ server_handleUndo( ServerCtxt* server )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 XP_Bool
-server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incomming )
+server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 {
     XW_Proto code;
     XP_Bool accepted = XP_FALSE;
 
-    code = (XW_Proto)stream_getBits( incomming, XWPROTO_NBITS );
+    code = (XW_Proto)stream_getBits( incoming, XWPROTO_NBITS );
 
     printCode("Receiving", code);
 
@@ -2192,42 +2228,42 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incomming )
            once the game's in progress and communication's been
            established. */
         XP_STATUSF( "somebody's registering!!!" );
-        accepted = handleRegistrationMsg( server, incomming );
+        accepted = handleRegistrationMsg( server, incoming );
 
     } else if ( code == XWPROTO_CLIENT_SETUP ) {
 
         XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
         XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
-        accepted = client_readInitialMessage( server, incomming );
+        accepted = client_readInitialMessage( server, incoming );
 	
-    } else if ( readStreamHeader( server, incomming ) ) {
+    } else if ( readStreamHeader( server, incoming ) ) {
 
         switch( code ) {
             /* 	case XWPROTO_MOVEMADE_INFO: */
-            /* 	    accepted = client_reflectMoveMade( server, incomming ); */
+            /* 	    accepted = client_reflectMoveMade( server, incoming ); */
             /* 	    if ( accepted ) { */
             /* 		nextTurn( server ); */
             /* 	    } */
             /* 	    break; */
             /* 	case XWPROTO_TRADEMADE_INFO: */
-            /* 	    accepted = client_reflectTradeMade( server, incomming ); */
+            /* 	    accepted = client_reflectTradeMade( server, incoming ); */
             /* 	    if ( accepted ) { */
             /* 		nextTurn( server ); */
             /* 	    } */
             /* 	    break; */
             /* 	case XWPROTO_CLIENT_MOVE_INFO: */
-            /* 	    accepted = handleClientMoved( server, incomming ); */
+            /* 	    accepted = handleClientMoved( server, incoming ); */
             /* 	    break; */
             /* 	case XWPROTO_CLIENT_TRADE_INFO: */
-            /* 	    accepted = handleClientTraded( server, incomming ); */
+            /* 	    accepted = handleClientTraded( server, incoming ); */
             /* 	    break; */
 
         case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
-            accepted = reflectMoveAndInform( server, incomming );
+            accepted = reflectMoveAndInform( server, incoming );
             break;
 
         case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
-            accepted = reflectMove( server, incomming );
+            accepted = reflectMove( server, incoming );
             if ( accepted ) {
                 nextTurn( server, PICK_NEXT );
             }
@@ -2235,19 +2271,19 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incomming )
 
         case XWPROTO_UNDO_INFO_CLIENT:
         case XWPROTO_UNDO_INFO_SERVER:
-            accepted = reflectUndos( server, incomming, code );
+            accepted = reflectUndos( server, incoming, code );
             /* nextTurn is called by reflectUndos */
             break;
 
         case XWPROTO_BADWORD_INFO:
-            accepted = handleIllegalWord( server, incomming );
+            accepted = handleIllegalWord( server, incoming );
             if ( accepted && server->nv.gameState != XWSTATE_GAMEOVER ) {
                 nextTurn( server, PICK_NEXT );
             }
             break;
 
         case XWPROTO_MOVE_CONFIRM:
-            accepted = handleMoveOk( server, incomming );
+            accepted = handleMoveOk( server, incoming );
             break;
 
         case XWPROTO_CLIENT_REQ_END_GAME:
@@ -2259,12 +2295,12 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incomming )
             accepted = XP_TRUE;
             break;
         default:
-            XP_WARNF( "Unknown code on incomming message: %d\n", code );
+            XP_WARNF( "Unknown code on incoming message: %d\n", code );
             break;
         } /* switch */
     }
 
-    stream_close( incomming );
+    stream_close( incoming );
     return accepted;
 } /* server_receiveMessage */
 #endif
