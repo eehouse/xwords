@@ -317,11 +317,17 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     XP_ASSERT( stream_getU32( stream ) == cEND );
 #endif
 
-    comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
-    comms_relayConnect( comms );
-
     return comms;
 } /* comms_makeFromStream */
+
+void
+comms_init( CommsCtxt* comms )
+{
+    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+        comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
+        comms_relayConnect( comms );
+    }
+}
 
 static void
 addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
@@ -434,10 +440,10 @@ comms_getInitialAddr( CommsAddrRec* addr )
 void
 comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr )
 {
-    XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 #ifdef BEYOND_IR
-/*     util_listenPortChange( comms->util, listenPort ); */
+    util_addrChange( comms->util, &comms->addr, addr );
 #endif
+    XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
     /* We should now have a cookie so we can connect??? */
     comms_relayConnect( comms );

@@ -92,6 +92,7 @@ CommsConnType comms_getConType( CommsCtxt* comms );
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  XW_UtilCtxt* util, TransportSend sendproc, 
                                  void* closure );
+void comms_init( CommsCtxt* comms );
 void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream );
 
 XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
