@@ -522,6 +522,13 @@ ceLoadPrefs( CEAppGlobals* globals )
 } /* ceLoadPrefs */
 
 static XWStreamCtxt*
+make_generic_stream( CEAppGlobals* globals )
+{
+    return mem_stream_make( MPPARM(globals->mpool) globals->vtMgr,
+                            globals, 0, NULL );
+} /* make_generic_stream */
+
+static XWStreamCtxt*
 fileToStream( CEAppGlobals* globals, XP_UCHAR* path )
 {
     XWStreamCtxt* stream = NULL;
@@ -548,8 +555,7 @@ fileToStream( CEAppGlobals* globals, XP_UCHAR* path )
         ReadFile( fileH, buf, len, &nRead, NULL );
         CloseHandle( fileH );
 
-        stream = mem_stream_make( MPPARM(globals->mpool) globals->vtMgr,
-                                  globals, 0, NULL );
+        stream = make_generic_stream( globals );
         stream_open( stream );
         stream_putBytes( stream, buf, (XP_U16)nRead );
 
@@ -821,17 +827,10 @@ static void
 ceCountsAndValues( CEAppGlobals* globals )
 {
     if ( !!globals->game.server ) {
-        XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
-                                                globals->vtMgr, 
-                                                globals, 
-                                                CHANNEL_NONE, 
-                                                NULL );
-        XP_UCHAR* title = "Tile counts and values" XP_CR;
+        XWStreamCtxt* stream = make_generic_stream( globals );
 
-        stream_putBytes( stream, title, (XP_U16)XP_STRLEN(title) );
-
-        server_formatPoolCounts( globals->game.server, stream, 
-                                 2 ); /* 2: ncols */
+        server_formatDictCounts( globals->game.server, stream, 
+                                 3 ); /* 2: ncols */
 
         (void)ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
                                XP_FALSE, XP_TRUE );
@@ -839,15 +838,24 @@ ceCountsAndValues( CEAppGlobals* globals )
 } /* ceCountsAndValues */
 
 static void
+ceTilesLeft( CEAppGlobals* globals )
+{
+    if ( !!globals->game.board ) {
+        XWStreamCtxt* stream = make_generic_stream( globals );
+        board_formatRemainingTiles( globals->game.board, stream );
+
+        (void)ceMsgFromStream( globals, stream, L"Remaining tiles", 
+                               XP_FALSE, XP_TRUE );
+    }
+} /* ceTilesLeft */
+
+static void
 ceDoHistory( CEAppGlobals* globals )
 {
     XP_Bool gameOver = server_getGameIsOver(globals->game.server);
     XWStreamCtxt* stream;
 
-    stream = mem_stream_make( MPPARM(globals->mpool) globals->vtMgr, 
-                              globals, 
-                              CHANNEL_NONE, 
-                              (MemStreamCloseCallback)NULL );
+    stream = make_generic_stream( globals );
 
     model_writeGameHistory( globals->game.model, stream, 
                             globals->game.server, gameOver );
@@ -878,8 +886,7 @@ ceDisplayFinalScores( CEAppGlobals* globals )
 {
     XWStreamCtxt* stream;
 
-    stream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 
-                              CHANNEL_NONE, NULL );
+    stream = make_generic_stream( globals );
     server_writeFinalScores( globals->game.server, stream );
     stream_putU8( stream, '\0' );
 
@@ -1281,6 +1288,10 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             case ID_GAME_TILECOUNTSANDVALUES:
                 ceCountsAndValues( globals );
+                break;
+
+            case ID_GAME_TILESLEFT:
+                ceTilesLeft( globals );
                 break;
 
             case ID_GAME_HISTORY:
@@ -1958,6 +1969,9 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
         return (XP_UCHAR*)"Traded %d";
     case STR_LOSTTURN:
         return (XP_UCHAR*)"Lost turn";
+
+    case STRS_VALUES_HEADER:
+        return (XP_UCHAR*)"%s counts/values:" XP_CR;
 
     default:
         XP_LOGF( "stringCode=%d", stringCode );
