@@ -2148,7 +2148,6 @@ mainViewHandleEvent( EventPtr event )
         break;
 
     case frmOpenEvent:
-        globals->gState.windowAvail = true;
         globals->mainForm = FrmGetActiveForm();
         updateForLefty( globals, globals->mainForm );
         FrmDrawForm( globals->mainForm );
