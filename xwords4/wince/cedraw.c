@@ -84,7 +84,7 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, XP_U32 x, XP_U32 y,
     SelectObject( hdc, oldObj );
     DeleteObject( forePen );
 #else
-    /* I can't get this to work.... */
+    /* I can't get this to work.  Hence the above hack.... */
     HBITMAP bm;
     bm = CreateBitmap( info->nCols, info->nRows, 1, 1,
                        info->bits );
@@ -94,41 +94,17 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, XP_U32 x, XP_U32 y,
 #endif
 } /* makeAndDrawBitmap */
 
-#if 0
-static void
-drawBitmapAt( HDC hdc, CEBitmapInfo* bmp, RECT* rt )
-{
-    HDC tmpHDC;
-    HBITMAP bitmap = bmp->bitmap;
-    RECT r = *rt;
-    HBRUSH brush;
-    HBRUSH oldBrush;
-
-    tmpHDC = CreateCompatibleDC( hdc );
-    SelectObject( tmpHDC, bitmap );
-
-    r.bottom = r.top + bmp->nRows;
-    r.right = r.left + bmp->nCols;
-
-    BitBlt
-
-/*     brush = CreatePatternBrush( bitmap ); */
-/*     oldBrush = SelectObject( hdc, brush ); */
-    Rectangle( hdc, r.left, r.top, r.right, r.bottom );
-/*     FillRect( hdc, &r, brush ); */
-/*     SelectObject( hdc, oldBrush ); */
-/*     DeleteObject( brush ); */
-} /* drawBitmapAt */
-#endif
-
-static void
+static XP_Bool
 ce_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-
-    dctx->prevBkColor = GetBkColor( hdc );
+    XP_Bool canDraw = !!hdc;
+    if ( canDraw ) {
+        dctx->prevBkColor = GetBkColor( hdc );
+    }
+    return canDraw;
 } /* draw_boardBegin */
 
 static void
@@ -164,6 +140,8 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     XP_U16 bkIndex;
     XP_UCHAR* cp = NULL;
     COLORREF foreIndex;
+
+    XP_ASSERT( !!hdc );
 
     XPRtoRECT( &rt, xprect );
     ++rt.bottom;
@@ -243,34 +221,6 @@ ce_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
                    XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-#if 0
-    int icrResult;
-    CEAppGlobals* globals = dctx->globals;
-    HDC hdc = globals->hdc;
-    RECT cr;
-    HRGN hrgn;
-
-    XPRtoRECT( &cr, rect );
-
-    hrgn = CreateRectRgn( cr.left, cr.top, cr.right, cr.bottom );
-    if ( !hrgn ) {
-        logLastError("CreateRectRgn");
-    }
-
-/*     int GetClipRgn( hdc, hrgn );  */
-
-
-/*     if ( !SetRectRgn( hrgn, cr.left, cr.top, cr.right, cr.bottom ) ) { */
-/*         logLastError(); */
-/*     } */
-
-    icrResult = SelectClipRgn( hdc, NULL );
-    XP_LOGF( "SelectClipRgn(NULL)=>%s", logClipResult(icrResult) );
-
-    icrResult = SelectClipRgn( hdc, hrgn );
-    logLastError("SelectClipRgn");
-    XP_LOGF( "SelectClipRgn(hrgn)=>%s", logClipResult(icrResult) );
-#endif
     dctx->trayOwner = owner;
 } /* ce_draw_trayBegin */
 
@@ -433,7 +383,7 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
     SetBkColor( hdc, dctx->colors[bkIndex] );
     SetTextColor( hdc, dctx->colors[BLACK_COLOR] );
 
-    ceDrawBitmapInRect( hdc, rt.left+1, rt.top+1, cursor );
+    ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, cursor );
 
 } /* ce_draw_drawBoardArrow */
 
@@ -598,6 +548,7 @@ ce_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
     RECT rt;
 
     SetTextColor( hdc, dctx->colors[BLACK_COLOR] );
+    SetBkColor( hdc, dctx->colors[BKG_COLOR] );
 
     XPRtoRECT( &rt, rect );
     FillRect( hdc, &rt, dctx->brushes[BKG_COLOR] );
@@ -717,7 +668,7 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
 
     XPRtoRECT( &rt, rect );
 
-    if ( globals->hdc ) {
+    if ( !!globals->hdc ) {
         hdc = globals->hdc;
     } else {
         InvalidateRect( dctx->mainWin, &rt, FALSE );
