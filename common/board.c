@@ -196,6 +196,12 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         board->traySelBits[i] = (TileBit)stream_getBits( stream, 
                                                          MAX_TRAY_TILES );
         board->tradeInProgress[i] = (XP_Bool)stream_getBits( stream, 1 );
+#ifdef KEYBOARD_NAV 
+        board->bdCursor[i].col = stream_getBits( stream, 4 );
+        board->bdCursor[i].row = stream_getBits( stream, 4 );
+        board->trayCursorLoc[i] = stream_getBits( stream, 3 );
+#endif
+
 #ifdef XWFEATURE_SEARCHLIMIT
         if ( stream_getVersion( stream ) >= CUR_STREAM_VERS ) {
             board->hasHintRect[i] = stream_getBits( stream, 1 );
@@ -246,6 +252,12 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
         stream_putBits( stream, NTILES_NBITS, board->dividerLoc[i] );
         stream_putBits( stream, MAX_TRAY_TILES, board->traySelBits[i] );
         stream_putBits( stream, 1, board->tradeInProgress[i] );
+#ifdef KEYBOARD_NAV 
+        stream_putBits( stream, 4, board->bdCursor[i].col );
+        stream_putBits( stream, 4, board->bdCursor[i].row );
+        stream_putBits( stream, 3, board->trayCursorLoc[i] );
+#endif
+
 #ifdef XWFEATURE_SEARCHLIMIT
         stream_putBits( stream, 1, board->hasHintRect[i] );
         if ( board->hasHintRect[i] ) {
@@ -888,7 +900,7 @@ checkScrollCell( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row )
             } else {
                 XP_ASSERT( 0 );
             }
-            board_setYOffset( board, oldOffset, XP_TRUE );
+            board_setYOffset( board, oldOffset );
         }
     }    
 } /* checkScrollCell */
@@ -1405,9 +1417,9 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
         if ( board->boardObscuresTray ) {
             if ( nowHidden ) {
                 board->preHideYOffset = board_getYOffset( board );
-                board_setYOffset( board, 0, XP_FALSE );
+                board_setYOffset( board, 0 );
             } else {
-                board_setYOffset( board, board->preHideYOffset, XP_FALSE );
+                board_setYOffset( board, board->preHideYOffset );
             }
         }
 
