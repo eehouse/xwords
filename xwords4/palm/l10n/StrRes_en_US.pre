@@ -133,3 +133,4 @@
                                "The change is not reversible." }, 
 { "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" },
 #endif
+{ "STRS_CANNOT_FIND_DICT",       "%s dictionary not found." },
