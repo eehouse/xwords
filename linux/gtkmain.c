@@ -493,7 +493,7 @@ tile_values( GtkWidget* widget, GtkAppGlobals* globals )
                              globals, 
                              CHANNEL_NONE, 
                              catOnClose );
-        server_formatPoolCounts( globals->cGlobals.game.server, stream, 5 );
+        server_formatDictCounts( globals->cGlobals.game.server, stream, 5 );
         stream_putU8( stream, '\n' );
         stream_destroy( stream );
     }

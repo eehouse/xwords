@@ -458,6 +458,9 @@ linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
     case STR_LOSTTURN:
         return "Lost turn";
 
+    case STRS_VALUES_HEADER:
+        return "%s counts/values:\n";
+
     default:
         return "unknown code to linux_util_getUserString";
     }
