@@ -153,9 +153,9 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     if ( (!!letters && letters[0] != '\0' ) || !!bitmap ) {
         if ( isPending ) {
             bkIndex = BLACK_COLOR;
-            foreColorRef = dctx->colors[WHITE_COLOR];
+            foreColorRef = dctx->globals->appPrefs.colors[WHITE_COLOR];
         } else {
-            foreColorRef = dctx->colors[getPlayerColor(owner)];
+            foreColorRef = dctx->globals->appPrefs.colors[getPlayerColor(owner)];
             bkIndex = TILEBACK_COLOR;
         }
     } else if ( bonus == BONUS_NONE ) {
@@ -183,7 +183,7 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
         FillRect( hdc, &tmpRT, dctx->brushes[bkIndex] );
     }
 
-    SetBkColor( hdc, dctx->colors[bkIndex] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
 
     if ( !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
@@ -260,8 +260,8 @@ drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
 
     ceClearToBkground( dctx, xprect );
 
-    SetBkColor( hdc, dctx->colors[TILEBACK_COLOR] );
-    SetTextColor( hdc, dctx->colors[getPlayerColor(dctx->trayOwner)] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[TILEBACK_COLOR] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(dctx->trayOwner)] );
 
     XPRtoRECT( &rt, xprect );
 
@@ -289,7 +289,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
         SelectObject( hdc, oldFont );
     } else if ( !!bitmap  ) {
         makeAndDrawBitmap( dctx, hdc, rt.left + 1, rt.top + 4, 
-                           dctx->colors[USER_COLOR1+dctx->trayOwner],
+                           dctx->globals->appPrefs.colors[USER_COLOR1+dctx->trayOwner],
                            (CEBitmapInfo*)bitmap );
     }
 
@@ -398,8 +398,8 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
         bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + BONUS1_COLOR;
     }
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
-    SetBkColor( hdc, dctx->colors[bkIndex] );
-    SetTextColor( hdc, dctx->colors[BLACK_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[BLACK_COLOR] );
 
     ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, cursor );
 
@@ -412,7 +412,7 @@ ce_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    SetBkColor( hdc, dctx->colors[BKG_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[BKG_COLOR] );
 
     ceClearToBkground( (CEDrawCtx*)p_dctx, rect );
 } /* ce_draw_scoreBegin */
@@ -544,7 +544,7 @@ ce_draw_score_drawPlayer( DrawCtx* p_dctx,
     }
     oldFont = SelectObject( hdc, newFont );
 
-    SetTextColor( hdc, dctx->colors[getPlayerColor(playerNum)] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(playerNum)] );
 
     ceWidthAndText( hdc, scoreBuf, dsi, &width, &height );
     DrawText( hdc, scoreBuf, -1, &rt, 
@@ -565,8 +565,8 @@ ce_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
     XP_UCHAR buf[5];
     RECT rt;
 
-    SetTextColor( hdc, dctx->colors[BLACK_COLOR] );
-    SetBkColor( hdc, dctx->colors[BKG_COLOR] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[BLACK_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[BKG_COLOR] );
 
     XPRtoRECT( &rt, rect );
     FillRect( hdc, &rt, dctx->brushes[BKG_COLOR] );
@@ -622,7 +622,7 @@ ce_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
         hdc = BeginPaint( dctx->mainWin, &ps );
     }
 
-    SetTextColor( hdc, dctx->colors[getPlayerColor(player)] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(player)] );
     ceClearToBkground( dctx, rInner );
     DrawText( hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_VCENTER | DT_RIGHT);	
 
@@ -717,8 +717,8 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
 
     ceClearToBkground( (CEDrawCtx*)p_dctx, rect );
 
-    SetBkColor( hdc, dctx->colors[BKG_COLOR] );
-    SetTextColor( hdc, dctx->colors[BLACK_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[BKG_COLOR] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[BLACK_COLOR] );
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
@@ -812,23 +812,23 @@ ceFontsSetup( CEAppGlobals* globals, CEDrawCtx* dctx )
 
 } /* ceFontsSetup */
 
-static void
-loadColors( XP_U16* ptr, COLORREF* colors )
+void
+ce_drawctxt_update( DrawCtx* p_dctx, CEAppGlobals* globals )
 {
+    CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     XP_U16 i;
+
     for ( i = 0; i < NUM_COLORS; ++i ) {
-        XP_U8 r = (XP_U8)*ptr++;
-        XP_U8 g = (XP_U8)*ptr++;
-        XP_U8 b = (XP_U8)*ptr++;
-        *colors++ = RGB( r, g, b );
+        if ( !!dctx->brushes[i] ) {
+            DeleteObject( dctx->brushes[i] );
+        }
+        dctx->brushes[i] = CreateSolidBrush( dctx->globals->appPrefs.colors[i] );
     }
-} /* loadColors */
+} /* ce_drawctxt_update */
 
 DrawCtx* 
 ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
 {
-    HRSRC rsrcH;
-    HGLOBAL globH;
     CEDrawCtx* dctx = (CEDrawCtx*)XP_MALLOC( mpool,
                                              sizeof(*dctx) );
     XP_U16 i;
@@ -874,16 +874,7 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     dctx->mainWin = mainWin;
     dctx->globals = globals;
 
-    /* load the colors from resource */
-    rsrcH = FindResource( globals->hInst, MAKEINTRESOURCE(ID_COLORS_RES),
-                          TEXT("CLRS") );
-    globH = LoadResource( globals->hInst, rsrcH );
-    loadColors( globH, dctx->colors );
-    DeleteObject( globH );
-
-    for ( i = 0; i < NUM_COLORS; ++i ) {
-        dctx->brushes[i] = CreateSolidBrush( dctx->colors[i] );
-    }
+    ce_drawctxt_update( dctx, globals );
 
     ceFontsSetup( globals, dctx );
 

@@ -40,11 +40,11 @@
 #include "ceaskpwd.h"
 #include "ceutil.h"
 #include "ceir.h"
+#include "ceclrsel.h"
 #include "LocalizedStrIncludes.h"
 
 
 #define MAX_LOADSTRING 100
-#define CUR_CE_PREFS_FLAGS 0x0001
 /* #define PREFSFILENAME L"\\My Documents\\Personal\\.xwprefs" */
 /* #define UNSAVEDGAMEFILENAME "\\My Documents\\Personal\\_newgame" */
 #define DEFAULT_DIR_NAME L"\\My Documents\\Crosswords"
@@ -613,12 +613,39 @@ ce_ir_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
 #endif
 
 static void
+colorsFromRsrc( CEAppGlobals* globals )
+{
+    XP_U16 i;
+    HGLOBAL globH;
+    HRSRC rsrcH;
+    XP_U16* ptr;
+
+    rsrcH = FindResource( globals->hInst, MAKEINTRESOURCE(ID_COLORS_RES),
+                          TEXT("CLRS") );
+    globH = LoadResource( globals->hInst, rsrcH );
+    ptr = (XP_U16*)globH;
+
+    XP_LOGF( "setting colors in globals" );
+
+    for ( i = 0; i < NUM_COLORS; ++i ) {
+        XP_U8 r = (XP_U8)*ptr++;
+        XP_U8 g = (XP_U8)*ptr++;
+        XP_U8 b = (XP_U8)*ptr++;
+        globals->appPrefs.colors[i] = RGB( r, g, b );
+    }
+
+    DeleteObject( globH );
+} /* colorsFromRsrc */
+
+static void
 ceInitPrefs( CEAppGlobals* globals )
 {
     globals->appPrefs.versionFlags = CUR_CE_PREFS_FLAGS;
 
     globals->appPrefs.cp.showBoardArrow = XP_TRUE;
     globals->appPrefs.cp.showRobotScores = XP_FALSE;
+
+    colorsFromRsrc( globals );
 } /* ceInitPrefs */
 
 //
@@ -689,9 +716,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     ceInitUtilFuncs( globals );
 
-    globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
-                                      hWnd, globals );
-
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT
     globals->gameInfo.dictName = ceLocateNthDict( MPPARM(mpool) 0 );
@@ -713,7 +737,12 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         /* nothing to do? */
     } else {
         ceInitPrefs( globals );
+        oldGameLoaded = XP_FALSE;
+    }
+    globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
+                                      hWnd, globals );
 
+    if ( !oldGameLoaded ) {
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
                           &globals->util, globals->draw, &globals->appPrefs.cp, 
                           (TransportSend)NULL, globals );
@@ -722,7 +751,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         if ( !newDone ) {
             result = FALSE;
         }
-        oldGameLoaded = XP_FALSE;
     }
 
     ShowWindow(hWnd, nCmdShow);
@@ -1210,6 +1238,19 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_FILE_PREFERENCES:
                 ceDoPrefsDlg( globals );
                 break;
+
+#ifdef XWFEATURE_CE_EDITCOLORS
+            case ID_FILE_EDITCOLORS:
+                if ( ceDoColorsEdit( hWnd, globals ) ) {
+                    ce_drawctxt_update( globals->draw, globals );
+                    if ( !!globals->game.board ) {
+                        board_invalAll( globals->game.board );
+                        draw = XP_TRUE;
+                    }
+                }
+                break;
+#endif
+
 
             case ID_GAME_FINALSCORES:
                 if ( server_getGameIsOver( globals->game.server ) ) {
