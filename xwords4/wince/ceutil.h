@@ -40,4 +40,6 @@ void ceEnOrDisable( HWND hDlg, XP_U16 resID, XP_Bool visible );
 
 XP_Bool ceGetChecked( HWND hDlg, XP_U16 resID );
 void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
+
+void ceCenterCtl( HWND hDlg, XP_U16 resID );
 #endif

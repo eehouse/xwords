@@ -142,3 +142,48 @@ ceGetChecked( HWND hDlg, XP_U16 resID )
     checked = (XP_U16)SendDlgItemMessage( hDlg, resID, BM_GETCHECK, 0, 0L );
     return checked == BST_CHECKED;
 } /* ceGetChecked */
+
+/* Return dlg-relative rect. 
+ */
+static void
+GetItemRect( HWND hDlg, XP_U16 resID, RECT* rect )
+{
+    RECT dlgRect;
+    HWND itemH = GetDlgItem( hDlg, resID );
+    XP_U16 clientHt, winHt;
+
+    GetClientRect( hDlg, &dlgRect );
+    clientHt = dlgRect.bottom;
+    GetWindowRect( hDlg, &dlgRect );
+    winHt = dlgRect.bottom - dlgRect.top;
+    GetWindowRect( itemH, rect );
+
+    /* GetWindowRect includes the title bar, but functions like MoveWindow
+       set relative to the client area below it.  So subtract out the
+       difference between window ht and client rect ht -- the title bar --
+       when returning the item's rect. */
+    (void)OffsetRect( rect, -dlgRect.left, 
+                      -(dlgRect.top + winHt - clientHt) );
+} /* GetItemRect */
+
+void
+ceCenterCtl( HWND hDlg, XP_U16 resID )
+{
+    RECT buttonR, dlgR;
+    HWND itemH = GetDlgItem( hDlg, resID );
+    XP_U16 newX, buttonWidth;
+    
+    GetClientRect( hDlg, &dlgR );
+    XP_ASSERT( dlgR.left == 0 && dlgR.top == 0 );
+
+    GetItemRect( hDlg, resID, &buttonR );
+
+    buttonWidth = buttonR.right - buttonR.left;
+    newX = ( dlgR.right - buttonWidth ) / 2;
+
+    if ( !MoveWindow( itemH, newX, buttonR.top,
+                      buttonWidth, 
+                      buttonR.bottom - buttonR.top, TRUE ) ) {
+        XP_LOGF( "MoveWindow=>%d", GetLastError() );
+    }
+} /* ceCenterCtl */
