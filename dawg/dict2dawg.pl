@@ -415,7 +415,7 @@ sub parseAndSort() {
                     die "word too long" if @word > 15;
                 }
             } elsif ($gKillIfMissing) {
-                die "char $byt (", $byt+0, ") not in map file $gTableFile\n";
+                die "$0: chr $byt (", $byt+0, ") not in map file $gTableFile\n";
             } else {
                 $dropWord = 1;
                 splice @word;     # lose anything we already have
