@@ -114,7 +114,7 @@ static Boolean applicationHandleEvent( PalmAppGlobals* globals,
 static Boolean mainViewHandleEvent( EventPtr event );
 
 static UInt16 romVersion( void );
-static Boolean handleHintRequest( PalmAppGlobals* globals );
+static Boolean handleHintRequest( PalmAppGlobals* globals, XP_Bool askNTiles );
 
 /* callbacks */
 static VTableMgr* palm_util_getVTManager( XW_UtilCtxt* uc );
@@ -1304,7 +1304,7 @@ handleNilEvent( PalmAppGlobals* globals, EventPtr event )
 # endif
 #endif
     } else if ( globals->hintPending ) {
-        handled = handleHintRequest( globals );
+        handled = handleHintRequest( globals, XP_FALSE );
 
     } else if ( globals->penTimerFireAt != TIMER_OFF &&
                 globals->penTimerFireAt <= TimGetTicks() ) {
@@ -1359,12 +1359,21 @@ handleHideTray( PalmAppGlobals* globals )
 } /* handleHideTray */
 
 static Boolean
-handleHintRequest( PalmAppGlobals* globals )
+handleHintRequest( PalmAppGlobals* globals, XP_Bool askNTiles )
 {
     Boolean notDone;
     Boolean draw;
+    XP_U16 nTiles;
+
     XP_ASSERT( !!globals->game.board );
-    draw = board_requestHint( globals->game.board, &notDone );
+
+    if ( askNTiles ) {
+        nTiles = 3;
+    } else {
+        nTiles = MAX_TRAY_TILES;
+    }
+
+    draw = board_requestHint( globals->game.board, nTiles, &notDone );
     globals->hintPending = notDone;
     return draw;
 } /* handleHintRequest */
@@ -1426,6 +1435,7 @@ drawFormButtons( PalmAppGlobals* globals )
         XW_MAIN_FLIP_BUTTON_ID, FLIP_BUTTON_BMP_RES_ID, XP_TRUE,
         XW_MAIN_VALUE_BUTTON_ID, VALUE_BUTTON_BMP_RES_ID, XP_TRUE,
         XW_MAIN_HINT_BUTTON_ID, HINT_BUTTON_BMP_RES_ID, XP_TRUE,
+        XW_MAIN_NHINT_BUTTON_ID, NHINT_BUTTON_BMP_RES_ID, XP_TRUE,
 #ifndef EIGHT_TILES
         XW_MAIN_HIDE_BUTTON_ID, TRAY_BUTTONS_BMP_RES_ID, XP_TRUE,
 #endif
@@ -1474,6 +1484,9 @@ palmSetCtrlsForTray( PalmAppGlobals* globals )
     if ( FrmGetActiveFormID() == XW_MAIN_FORM ) {
 
         disOrEnable( form, XW_MAIN_HINT_BUTTON_ID, 
+                     (state==TRAY_REVEALED) && 
+                     !globals->gameInfo.hintsNotAllowed );
+        disOrEnable( form, XW_MAIN_NHINT_BUTTON_ID, 
                      (state==TRAY_REVEALED) && 
                      !globals->gameInfo.hintsNotAllowed );
 
@@ -1608,6 +1621,7 @@ updateForLefty( PalmAppGlobals* globals, FormPtr form )
         XW_MAIN_FLIP_BUTTON_ID,   0,
         XW_MAIN_VALUE_BUTTON_ID,  0,
         XW_MAIN_HINT_BUTTON_ID,   0, 
+        XW_MAIN_NHINT_BUTTON_ID,  0, 
         XW_MAIN_SCROLLBAR_ID,     0,
         XW_MAIN_SHOWTRAY_BUTTON_ID, 0,
 	
@@ -1985,7 +1999,7 @@ mainViewHandleEvent( EventPtr event )
         case XW_HINT_PULLDOWN_ID:
             board_resetEngine( globals->game.board );
         case XW_NEXTHINT_PULLDOWN_ID:
-            draw = handleHintRequest( globals );
+            draw = handleHintRequest( globals, XP_FALSE );
             break;
 
         case XW_UNDOCUR_PULLDOWN_ID:
@@ -2136,7 +2150,10 @@ mainViewHandleEvent( EventPtr event )
             draw = handleValueToggle( globals );
             break;
         case XW_MAIN_HINT_BUTTON_ID:
-            draw = handleHintRequest( globals );
+            draw = handleHintRequest( globals, XP_FALSE );
+            break;
+        case XW_MAIN_NHINT_BUTTON_ID:
+            draw = handleHintRequest( globals, XP_TRUE );
             break;
 #ifndef EIGHT_TILES
         case XW_MAIN_DONE_BUTTON_ID:
@@ -2648,7 +2665,6 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
 
     LstSetSelection( lettersList, 0 );
 
-    fld = getActiveObjectPtr( XW_BLANK_LABEL_FIELD_ID );
     name = globals->gameInfo.players[playerNum].name;
     labelFmt = getResString( globals, 
 #ifdef FEATURE_TRAY_EDIT
@@ -2659,12 +2675,21 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
 
 #ifdef FEATURE_TRAY_EDIT
     if ( !forBlank ) {
-        XP_U16 lenSoFar = XP_STRLEN(labelBuf);
-        XP_SNPRINTF( labelBuf + lenSoFar, sizeof(labelBuf) - lenSoFar,
-                     " (%d/%d)", pi->thisPick, pi->nTotal );
+        XP_U16 lenSoFar;
+        XP_U16 i;
+
+        lenSoFar = XP_STRLEN(labelBuf);
+        lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, sizeof(labelBuf) - lenSoFar,
+                                 " (%d/%d)\nCur", pi->thisPick, pi->nTotal );
+
+        for ( i = 0; i < pi->nCurTiles; ++i ) {
+            lenSoFar += XP_SNPRINTF( labelBuf+lenSoFar, sizeof(labelBuf)-lenSoFar, "%s%s",
+                                     i==0?": ":", ", pi->curTiles[i] );
+        }
     }
 #endif
 
+    fld = getActiveObjectPtr( XW_BLANK_LABEL_FIELD_ID );
     FldSetTextPtr( fld, labelBuf );
     FldRecalculateField( fld, false );
 
