@@ -23,16 +23,53 @@ my %fileNames;
 my %contents;
 
 sub usage() {
-    print STDERR "$0 funcList path .c_file .h_file\n"
+    print STDERR "$0 \\\n" .
+        "\t[-oh out.h] \\\n" .
+        "\t[-oc out.c] \\\n" .
+        "\t[-file palmheader.h|palm_header_dir] (can repeat) \\\n" .
+        "\t[-func func_name_or_list_file] (can repeat)\n";
+
+    exit 1;
 }
 
-my $funcList = shift(@ARGV);
-my $pathList = shift(@ARGV);
-my $dot_c = shift(@ARGV);
-my $dot_h = shift(@ARGV);
+# Given the name of a palm function, or of a file containing a list of
+# such, return a list of function names.  In the first case it'll be a
+# singleton.
+sub makeFuncList($) { 
+    my ( $nameOrPath ) = @_; 
+    my @result;
 
-usage() if ! defined($funcList) || !defined( $pathList )
-    || ! defined($dot_c) || !defined( $dot_h );
+    if ( open LIST, "< $nameOrPath" ) {
+        while ( <LIST> ) {
+            chomp;
+
+            # comments?
+            s/\#.*$//;
+            # white space
+            s/\s*(\w+)\s*/$1/;
+            next if ! length;
+
+            push( @result, $_ );
+        }
+        close LIST;
+    } else {
+        # must be a simple function name
+        push( @result, $nameOrPath );
+    }
+    return @result;
+} # makeFuncList
+
+sub makeFileList($) {
+    my ( $fileOrDir ) = @_;
+    my @result;
+    push @result, $fileOrDir;
+    return @result;
+} # makeFileList
+
+my @funcList;
+my @pathList;
+my $dot_c;
+my $dot_h;
 
 # A list of types seen in the header files.  The idea is to use these
 # to determine the size of a type and whether it's returned in d0 or
@@ -52,7 +89,7 @@ my %typeInfo = (
                 "Char**" => { "size" => 4, "a0" => 1 },
                 "ControlType*" => { "size" => 4, "a0" => 1 },
                 "Coord" => { "size" => 2, "a0" => 0 }, # ???
-                "Coord*" => { "size" => 4, "a0" => 0 },
+                "Coord*" => { "size" => 4, "a0" => 0, "autoSwap" => 2 },
                 "DateFormatType" => { "size" => 1, "a0" => 0 }, # enum
                 "DateTimeType*" => { "size" => 4, "a0" => 0 },
                 "DmOpenRef" => { "size" => 4, "a0" => 1 },
@@ -64,12 +101,12 @@ my %typeInfo = (
                 "EventPtr" => { "size" => 4, "a0" => 1 },
                 "EventType*" => { "size" => 4, "a0" => 1 },
                 "ExgDBWriteProcPtr" => { "size" => 4, "a0" => 1 },
-                "ExgSocketType*" => { "size" => 4, "a0" => 1 },
+                "ExgSocketType*" => { "size" => 4, "a0" => 1, "autoSwap" => -1 },
                 "FieldAttrPtr" => { "size" => 4, "a0" => 1 },
                 "FieldType*" => { "size" => 4, "a0" => 1 },
-                "FileInfoType*" => { "size" => 4, "a0" => 1 },
+                "FileInfoType*" => { "size" => 4, "a0" => 1, "autoSwap" => -1 },
                 "FileRef" => { "size" => 4, "a0" => 0 }, # UInt32
-                "FileRef*" => { "size" => 4, "a0" => 1 },
+                "FileRef*" => { "size" => 4, "a0" => 1, "autoSwap" => 4 },
                 "FontID" => { "size" => 1, "a0" => 0 }, # enum
                 "FormEventHandlerType*" => { "size" => 4, "a0" => 1 },
                 "FormType*" => { "size" => 4, "a0" => 1 },
@@ -86,7 +123,8 @@ my %typeInfo = (
                 "MemHandle*" => { "size" => 4, "a0" => 1 },
                 "MemPtr" => { "size" => 4, "a0" => 1 },
                 "MenuBarType*" => { "size" => 4, "a0" => 1 },
-                "RectangleType*" => { "size" => 4, "a0" => 1 },
+                "RectangleType*" => { "size" => 4, "a0" => 1,
+                                      "autoSwap" => -1 },
                 "ScrollBarType*" => { "size" => 4, "a0" => 1 },
                 "SndSysBeepType" => { "size" => 1, "a0" => 0 },
                 "SysNotifyProcPtr" => { "size" => 4, "a0" => 1 },
@@ -102,14 +140,15 @@ my %typeInfo = (
                 "char*" => { "size" => 4, "a0" => 1 },
                 "const Char*" => { "size" => 4, "a0" => 1 },
                 "const ControlType*" => { "size" => 4, "a0" => 1 },
-                "const CustomPatternType*" => { "size" => 4, "a0" => 1 },
+                "const CustomPatternType*" => { "size" => 4, "a0" => 1 }, # UInt8[8]; no need to translate
                 "const EventType*" => { "size" => 4, "a0" => 1 },
-                "const FieldAttrType*" => { "size" => 4, "a0" => 1 },
+                "const FieldAttrType*" => { "size" => 4, "a0" => 1, "autoSwap" => -1 },
                 "const FieldType*" => { "size" => 4, "a0" => 1 },
                 "const FormType*" => { "size" => 4, "a0" => 1 },
                 "const ListType*" => { "size" => 4, "a0" => 1 },
                 "const RGBColorType*" => { "size" => 4, "a0" => 1 },
-                "const RectangleType*" => { "size" => 4, "a0" => 1 },
+                "const RectangleType*" => { "size" => 4, "a0" => 1,
+                                        "autoSwap" => -1 },
                 "const char*" => { "size" => 4, "a0" => 1 },
                 "const void*" => { "size" => 4, "a0" => 1 },
                 "FormObjectKind" => { "size" => 1, "a0" => 0 }, # enum
@@ -139,8 +178,6 @@ sub params_parse($) {
     my ( $params ) = @_;
     my @plist;
 
-    #print STDERR "1. $params\n";
-
     # strip leading and training ws and params
     $params =~ s/^\s*\(//;
     $params =~ s/\)\s*$//;
@@ -156,12 +193,6 @@ sub params_parse($) {
         { "type" => type_compact($1), "name" => name_compact($2) };
     } @params;
 
-#     foreach my $param (@params) {
-#         print STDERR $$param{"type"}, "\n";
-#         print STDERR $$param{"name"}, "\n";
-#     }
-
-#     print STDERR "got ", 0 + @params, "\n";
     return \@params;
 }
 
@@ -254,8 +285,6 @@ sub searchOneFile($$) {
 sub searchOneDir($$) {
     my ( $dir, $function ) = @_;
 
-#    print STDERR "checking dir $dir\n";
-
     opendir(DIR, $dir) || die "can't opendir $dir: $!";
     my @files = readdir(DIR);
     closedir DIR;
@@ -288,50 +317,72 @@ sub print_params_list($) {
     return $result;
 }
 
-sub push_param($$$) {
-    my ( $typ, $name, $offset ) = @_;
-    my $result;
-    my $info = $typeInfo{$typ};
-
-    if ( ! $info ) {
-        die "type \"$typ\" (name: $name) not listed\n";
-    } else {
-
-        my $size = $$info{'size'};
-
-        $result .= "    ADD_TO_STACK$size(stack, $name, $$offset);\n";
-        if ( $size == 1 ) {
-            $$offset += 2;
-        } else {
-            $$offset += $size;
-        }
-    }
-
-    return "$result";
-}
-
-sub swap_param($$$) {
-    my ( $type, $name, $out ) = @_;
-    my $result = "";
-
-    my $info = $typeInfo{$type};
-    die "unknown type $type\n" if !defined $info;
-
-    my $size = $info->{'autoSwap'};
-    if ( $size ) {
-        die "not sure what to do swapping struct\n" if $size > 4;
-        $result .= "    SWAP${size}_NON_NULL_";
-        $result .= $out? "OUT" : "IN";
-        $result .= "($name);\n";
-    }
-
-    return $result;
-}
-
 sub nameToBytes($) {
     my ( $nam ) = @_;
     return "\"'" . join( "','", split( //, $nam ) ) . "'\"";
 }
+
+sub makeSwapStuff($$$$$) {
+    my ( $params, $varDecls, $swapIns, $pushes, $swapOuts ) = @_;
+    my $sizeSum = 0;
+    my $vcount = 0;
+
+    $$varDecls .= "    /* var decls */\n";
+    $$pushes   .= "    /* pushes */\n";
+    $$swapOuts .= "    /* swapOuts */\n";
+    $$swapIns  .= "    /* swapIns */\n";
+
+    foreach my $param ( @$params ) {
+        # each param has "type" and "name" fields
+        my $type = $param->{"type"};
+        my $info = $typeInfo{$type};
+        my $size = $info->{'size'};
+        my $name = $param->{'name'};
+        my $pushName = $name;
+
+        # If type requires swapping, just swap in and out.  If it's
+        # RECT (or later, other things) declare a tmp var and swap in
+        # and out.  If it's const, only swap in.
+
+        my $swapInfo = $info->{"autoSwap"};
+        if ( defined $swapInfo ) {
+
+            if ( $swapInfo == -1 ) {
+                my $typeNoStar = $type;
+                $typeNoStar =~ s/\*$//;
+                die "no start found" if $typeNoStar eq $type;
+                my $isConst = $typeNoStar =~ m|^const|;
+                $typeNoStar =~ s/^const\s+//;
+                my $vName = "${typeNoStar}_68K${vcount}";
+                $pushName = "&$vName";
+                $$varDecls .= "    $typeNoStar $vName;\n";
+                $typeNoStar = uc($typeNoStar);
+                $$swapIns .= "    SWAP_${typeNoStar}_ARM_TO_68K( &$vName, $name );\n";
+                if ( ! $isConst ) {
+                    $$swapOuts .= "    SWAP_${typeNoStar}_68K_TO_ARM( $name, &$vName );\n";
+                }
+
+            } else {
+                if ( $swapInfo >= 1 && $swapInfo <= 4 ) {
+                    $$swapIns .= "    SWAP${swapInfo}_NON_NULL_IN($name);\n";
+                    $$swapOuts .= "    SWAP${swapInfo}_NON_NULL_OUT($name);\n";
+                } else {
+                    die "unknown swapInfo $swapInfo\n";
+                }
+            }
+        }
+
+        $$pushes .= "    ADD_TO_STACK$size(stack, $pushName, $sizeSum);\n";
+
+        $sizeSum += $size;
+        if ( $size == 1 ) {
+            ++$sizeSum;
+        }
+        ++$vcount;
+    }
+    return $sizeSum;
+} # makeSwapStuff
+
 
 sub print_body($$$$$) {
     my ( $name, $returnType, $params, $trapSel, $trapType ) = @_;
@@ -345,21 +396,17 @@ sub print_body($$$$$) {
     }
     $result .= "    FUNC_HEADER($name);\n";
 
-    foreach my $param ( @$params ) {
-        $result .= swap_param( $$param{"type"}, $$param{"name"}, 0 );
-    }
-    $result .= "   {\n";
+    my ( $varDecls, $swapIns, $pushes, $swapOuts );
+    $offset = makeSwapStuff( $params, \$varDecls, 
+                             \$swapIns, \$pushes, \$swapOuts );
+
+    $result .= $varDecls . $swapIns;
+
+    $result .= "    {\n";
     $result .= "    PNOState* sp = GET_CALLBACK_STATE();\n";
 
-    my $parmsResult;
-    foreach my $param ( @$params ) {
-        $parmsResult .= push_param( $$param{"type"}, 
-                                    $$param{"name"},
-                                    \$offset );
-    }
     $result .= "    STACK_START(unsigned char, stack, $offset);\n"
-        . $parmsResult
-    #$result .= "    unsigned char stack[] = {\n";
+        . $pushes 
         . "    STACK_END(stack);\n";
 
     my $info = $typeInfo{$returnType};
@@ -370,7 +417,10 @@ sub print_body($$$$$) {
     if ( $trapType eq "VFSMGR_TRAP" ) {
         $result .= "    SET_SEL_REG($trapSel, sp);\n";
         $trapSel = "sysTrapFileSystemDispatch";
+    } elsif( $trapType eq "GRF_TRAP" || $trapType eq "SYS_TRAP"  ) {
+        # they're the same according to Graffiti.h
     } else {
+        die "unknown dispatch type";
     }
 
     $result .= "    ";
@@ -382,15 +432,13 @@ sub print_body($$$$$) {
         . "                               PceNativeTrapNo($trapSel),\n"
         . "                               stack, $offset );\n";
 
-    foreach my $param ( @$params ) {
-        $result .= swap_param( $$param{"type"}, $$param{"name"}, 1 );
-    }
+    $result .= $swapOuts;
 
     $result .= "    }\n    FUNC_TAIL($name);\n";
+    $result .= "    EMIT_NAME(\"$name\"," . nameToBytes($name) . ");\n";
     if ( $notVoid ) {
         $result .= "    return result;\n";
     }
-    $result .= "    EMIT_NAME(" . nameToBytes($name) . ");\n";
     $result .= "} /* $name */\n";
 
     return $result;
@@ -414,24 +462,28 @@ sub print_func_impl($$$$$$) {
 ###########################################################################
 # Main
 ###########################################################################
-open LIST, "<$funcList";
-while ( <LIST> ) {
-    chomp;
 
-    # comments?
-    s/\#.*$//;
-    # white space
-    s/\s*(\w+)\s*/$1/;
-    next if ! length;
 
-    my $func = $_;
+while ( my $arg = shift(@ARGV) ) {
+    if ( $arg eq "-oh" ) {
+        $dot_h = shift(@ARGV);        
+    } elsif ( $arg eq "-oc" ) {
+        $dot_c = shift(@ARGV);
+    } elsif ( $arg eq "-file" ) {
+        push( @pathList, makeFileList(shift(@ARGV)) );
+    } elsif ( $arg eq "-func" ) {
+        push( @funcList, makeFuncList(shift(@ARGV)) );
+    } else {
+        usage();
+    }
+}
+
+foreach my $func (@funcList) {
+
     print STDERR "looking for $func\n";
 
     my $found = 0;
-    open PATHS, "< $pathList";
-    while ( <PATHS> ) {
-        chomp;
-        my $path = $_;
+    foreach my $path (@pathList) {
         if ( -d $path ) {
             searchOneDir( $path, $func );
         } elsif ( -e $path ) {
@@ -442,23 +494,23 @@ while ( <LIST> ) {
         }
     }
     close PATHS;
-
-#    if ( !$found ) {
-#        print STDERR "ERROR $func not found\n";
-#    }
 }
-close LIST;
 
+my $outRef;
 
+if ( $dot_c ) {
+    if ( $dot_c eq "-" ) {
+        $outRef = *STDOUT{IO};
+    } else {
+        open DOT, "> $dot_c";
+        $outRef = *DOT{IO};
+    }
+    print $outRef "/********** this file is autogenerated by $0 "
+        . "***************/\n\n";
 
-open DOT, "> $dot_c";
-print DOT "/********** this file is autogenerated by $0 ***************/\n\n";
+    print $outRef "\n";
 
-#map { print DOT "#include <$_>\n"; } keys(%fileNames);
-
-print DOT "\n";
-
-print DOT <<EOF;
+    print $outRef <<EOF;
 
 \#include "pnostate.h"
 \#include "pace_gen.h"
@@ -466,45 +518,52 @@ print DOT <<EOF;
 
 EOF
 
-foreach my $key (keys %funcInfo) {
-    my $ref = $funcInfo{$key};
-    my $type = $${ref}{"type"};
+    foreach my $key (keys %funcInfo) {
+        my $ref = $funcInfo{$key};
+        my $type = $${ref}{"type"};
     
-    $type =~ s/extern\s*//;        # "extern" doesn't belong in implementation
+        $type =~ s/extern\s*//;  # "extern" doesn't belong in implementation
 
-    $type =~ s/(\S+)\s*$/$1/;   # trailing whitespace
-    $type =~ s/^\s*(.*)/$1/;    # leading ws
+        $type =~ s/(\S+)\s*$/$1/;   # trailing whitespace
+        $type =~ s/^\s*(.*)/$1/;    # leading ws
 
-    my $funcstr = print_func_impl( $type,
-                                   $key,
-                                   $$ref{'params'},
-                                   $$ref{'file'},
-                                   $$ref{'sel'},
-                                   $$ref{'trapType'});
-    print DOT $funcstr;
+        my $funcstr = print_func_impl( $type,
+                                       $key,
+                                       $$ref{'params'},
+                                       $$ref{'file'},
+                                       $$ref{'sel'},
+                                       $$ref{'trapType'});
+        print $outRef $funcstr;
+    }
+
+    if ( $dot_c ne "-" ) {
+        close DOT;
+    }
 }
 
-close DOT;
+if ( $dot_h ) {
+    open DOT, "> $dot_h";
+    print DOT "/********** this file is autogenerated by $0 "
+        . "***************/\n\n";
+    
+    my $def = "_" . uc($dot_h) . "_";
+    $def =~ s/\./_/;
 
+    print DOT "#ifndef $def\n";
+    print DOT "#define $def\n";
 
+    map { print DOT "#include <$_>\n"; } keys(%fileNames);
 
-open DOT, "> $dot_h";
-print DOT "/********** this file is autogenerated by $0 ***************/\n\n";
+    foreach my $key (keys %funcInfo) {
+        my $ref = $funcInfo{$key};
+        print DOT $${ref}{"type"}, " "
+            . $key . print_params_list($$ref{'params'}) . ";\n"; 
+    }
 
-my $def = "_" . uc($dot_h) . "_";
-$def =~ s/\./_/;
-
-print DOT "#ifndef $def\n";
-print DOT "#define $def\n";
-
-map { print DOT "#include <$_>\n"; } keys(%fileNames);
-
-foreach my $key (keys %funcInfo) {
-    my $ref = $funcInfo{$key};
-    print DOT $${ref}{"type"}, " "
-        . $key . print_params_list($$ref{'params'}) . ";\n"; 
+    print DOT "\n#include \"pace_man.h\"\n"; 
+    print DOT "#endif /* $def */\n";
+    close DOT;
 }
 
-print DOT "\n#include \"pace_man.h\"\n"; 
-print DOT "#endif /* $def */\n";
-close DOT;
+
+exit 0;
