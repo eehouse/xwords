@@ -81,7 +81,6 @@ LCLSRC = \
 	$(SRCDIR)/symgamdl.cpp \
 	$(SRCDIR)/symgamed.cpp \
 	$(SRCDIR)/symssock.cpp \
-	$(SRCDIR)/symrsock.cpp \
 
 IMG_SRC = ../bmps/downarrow_80.bmp \
 	../bmps/rightarrow_80.bmp \
