@@ -128,7 +128,7 @@ drawFocusRect( SymDrawCtxt* sctx, XP_Rect* rect, XP_Bool hasfocus )
     lRect.Grow( 2, 2 );   // This is space board.c doesn't know about
 
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
-    sctx->iGC->SetPenStyle( CGraphicsContext::EDottedPen );
+    sctx->iGC->SetPenStyle( CGraphicsContext::ESolidPen );
     XP_U16 index = SC(XP_U16,(hasfocus? COLOR_CURSOR : COLOR_WHITE));
     sctx->iGC->SetPenColor( sctx->colors[index] );
     TInt i;
