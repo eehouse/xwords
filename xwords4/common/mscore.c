@@ -45,7 +45,8 @@ static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn,
 /* 			       WordNotifierInfo* notifyInfo ); */
 static XP_U16 scoreWord( ModelCtxt* model, MoveInfo* movei,
                          EngineCtxt* engine, XWStreamCtxt* stream, 
-                         XP_Bool silent, WordNotifierInfo* notifyInfo );
+                         XP_Bool silent, WordNotifierInfo* notifyInfo,
+                         XP_UCHAR* mainWord );
 
 /* for formatting when caller wants an explanation of the score.  These live
    in separate function called only when stream != NULL so that they'll have
@@ -53,20 +54,20 @@ static XP_U16 scoreWord( ModelCtxt* model, MoveInfo* movei,
    scoring */
 typedef struct WordScoreFormatter {
     DictionaryCtxt* dict;
-    XWStreamCtxt* stream;
 
     XP_UCHAR fullBuf[80];
+    XP_UCHAR wordBuf[MAX_ROWS+1];
     XP_U16 bufLen, nTiles;
 
     XP_Bool firstPass;
 } WordScoreFormatter;
 static void wordScoreFormatterInit( WordScoreFormatter* fmtr, 
-                                    XWStreamCtxt* stream,
                                     DictionaryCtxt* dict );
 static void wordScoreFormatterAddTile( WordScoreFormatter* fmtr, Tile tile, 
                                        XP_U16 tileMultiplier, 
                                        XP_Bool isBlank );
-static void wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word );
+static void wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word, 
+                                      XWStreamCtxt* stream, XP_UCHAR* mainWord );
 static void formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore, 
                              XP_U16 moveMultiplier );
 static void formatSummary( XWStreamCtxt* stream, ModelCtxt* model, 
@@ -105,7 +106,7 @@ adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn )
     } else {
         moveScore = figureMoveScore( model, mi, (EngineCtxt*)NULL, 
                                      (XWStreamCtxt*)NULL, XP_TRUE,
-                                     (WordNotifierInfo*)NULL );
+                                     (WordNotifierInfo*)NULL, NULL );
     }
     player->score -= moveScore;
     player->curMoveScore = 0;
@@ -240,7 +241,7 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
 
         if ( isLegalMove( model, &moveInfo, silent ) ) {
             score = figureMoveScore( model, &moveInfo, engine, stream, 
-                                     silent, notifyInfo );
+                                     silent, notifyInfo, NULL );
         }
     } else if ( !silent ) {		/* tiles out of line */
         util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
@@ -444,7 +445,8 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 XP_U16
 figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
                  XWStreamCtxt* stream, XP_Bool silent, 
-                 WordNotifierInfo* notifyInfo )
+                 WordNotifierInfo* notifyInfo,
+                 XP_UCHAR* mainWord )
 {
     XP_U16 col, row;
     XP_U16* incr;
@@ -473,7 +475,7 @@ figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
     }
 
     oneScore = scoreWord( model, moveInfo, (EngineCtxt*)NULL, stream,
-                          silent, notifyInfo );
+                          silent, notifyInfo, mainWord );
     if ( !!stream ) {
         formatWordScore( stream, oneScore, moveMultiplier );
     }
@@ -491,7 +493,7 @@ figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
         tmpMI.tiles[0].tile = tiles->tile;
 
         oneScore = scoreWord( model, &tmpMI, engine, stream, silent, 
-                              notifyInfo );
+                              notifyInfo, NULL );
         if ( !!stream ) {
             formatWordScore( stream, oneScore, multipliers[i] );
         }
@@ -551,7 +553,8 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
            XP_Bool silent,	/* report error via dialog */
-           WordNotifierInfo* notifyInfo )
+           WordNotifierInfo* notifyInfo,
+           XP_UCHAR* mainWord )
 {
     XP_U16 tileMultiplier;
     XP_U16 restScore, scoreFromCache;
@@ -566,8 +569,8 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
     DictionaryCtxt* dict = model->vol.dict;
     WordScoreFormatter fmtr;
 
-    if ( !!stream ) {
-        wordScoreFormatterInit( &fmtr, stream, dict );
+    if ( !!stream || !!mainWord ) {
+        wordScoreFormatterInit( &fmtr, dict );
     }
 
     if ( movei->isHorizontal ) {
@@ -645,7 +648,7 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
 
             *curTile++ = tile;	/* save in case we're checking phonies */
 
-            if ( !!stream ) {
+            if ( !!stream || !!mainWord ) {
                 wordScoreFormatterAddTile( &fmtr, tile, tileMultiplier, 
                                            isBlank );
             }
@@ -673,8 +676,8 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
             }
         }
 
-        if ( !!stream ) {
-            wordScoreFormatterFinish( &fmtr, checkWordBuf );
+        if ( !!stream || !!mainWord ) {
+            wordScoreFormatterFinish( &fmtr, checkWordBuf, stream, mainWord );
         }
 #ifdef DEBUG
 
@@ -734,15 +737,11 @@ find_end( ModelCtxt* model, XP_U16 col, XP_U16 row, XP_Bool isHorizontal )
 } /* find_end */
 
 static void
-wordScoreFormatterInit( WordScoreFormatter* fmtr, XWStreamCtxt* stream,
-                        DictionaryCtxt* dict )
+wordScoreFormatterInit( WordScoreFormatter* fmtr, DictionaryCtxt* dict )
 {
-    XP_ASSERT( !!stream );
-    fmtr->stream = stream;
-    fmtr->dict = dict;
+    XP_MEMSET( fmtr, 0, sizeof(*fmtr) );
 
-    fmtr->bufLen = 0;
-    fmtr->nTiles = 0;
+    fmtr->dict = dict;
 
     fmtr->firstPass = XP_TRUE;
 } /* initWordScoreFormatter */
@@ -759,9 +758,12 @@ wordScoreFormatterAddTile( WordScoreFormatter* fmtr, Tile tile,
     ++fmtr->nTiles;
 
     dict_tilesToString( fmtr->dict, &tile, 1, buf );
+    XP_ASSERT( XP_STRLEN(fmtr->wordBuf) + XP_STRLEN(buf) < sizeof(fmtr->wordBuf) );
+    XP_STRCAT( fmtr->wordBuf, buf );
     if ( isBlank ) {
         tile = dict_getBlankTile( fmtr->dict );
     }
+
     tileScore = dict_getTileValue( fmtr->dict, tile );
 
     if ( fmtr->firstPass ) {
@@ -783,15 +785,23 @@ wordScoreFormatterAddTile( WordScoreFormatter* fmtr, Tile tile,
 } /* wordScoreFormatterAddTile */
 
 static void
-wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word )
+wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word, XWStreamCtxt* stream,
+                          XP_UCHAR* mainWord )
 {
     XP_UCHAR buf[(MAX_ROWS*2)+1];
     XP_U16 len = dict_tilesToString( fmtr->dict, word, fmtr->nTiles, buf );
 
-    stream_putBytes( fmtr->stream, buf, len );
+    if ( !!stream ) {
+        stream_putBytes( stream, buf, len );
 
-    stream_putBytes( fmtr->stream, fmtr->fullBuf, fmtr->bufLen );
-    stream_putU8( fmtr->stream, ']' );
+        stream_putBytes( stream, fmtr->fullBuf, fmtr->bufLen );
+        stream_putU8( stream, ']' );
+    }
+
+    if ( !!mainWord ) {
+        XP_MEMCPY( mainWord, fmtr->wordBuf, XP_STRLEN(fmtr->wordBuf) + 1 );
+    }
+
 } /* wordScoreFormatterFinish */
 
 static void
