@@ -46,9 +46,10 @@ typedef enum {
 				   users */
 #endif
     ERR_CANT_TRADE_MID_MOVE,
-    ERR_CANT_ENGINE_MID_MOVE
+    ERR_CANT_ENGINE_MID_MOVE,
 /*     ERR_NOT_YOUR_TURN_TO_TRADE, */
 /*     ERR_NOT_YOUR_TURN_TO_MOVE, */
+    ERR_CANT_UNDO_TILEASSIGN
 } UtilErrID;
 
 typedef enum {
@@ -62,6 +63,9 @@ typedef enum {
     PICK_FOR_BLANK
     , PICK_FOR_CHEAT
 } PICK_WHY;
+
+#define PICKER_PICKALL -1
+#define PICKER_BACKUP -2
 
 typedef struct PickInfo {
     XP_UCHAR4* curTiles;
