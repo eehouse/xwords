@@ -30,6 +30,7 @@
 #include "memstream.h"
 #include "symdraw.h"
 #include "symgmmgr.h"
+#include "symssock.h"
 
 typedef enum  {
     EGamesLoc
@@ -180,6 +181,10 @@ class CXWordsAppView : public CCoeControl
     CXWGamesMgr* iGamesMgr;
 
     CDesC16ArrayFlat* iDictList;   /* to pass into the dialog */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    CSendSocket* iSendSock;
+#endif
 
     MPSLOT
 };
