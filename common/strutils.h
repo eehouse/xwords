@@ -38,6 +38,7 @@ XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits );
 void signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num );
 
 XP_UCHAR* stringFromStream( MPFORMAL XWStreamCtxt* stream );
+XP_U16 stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len );
 void stringToStream( XWStreamCtxt* stream, XP_UCHAR* str );
 
 XP_UCHAR* copyString( MPFORMAL XP_UCHAR* instr );
