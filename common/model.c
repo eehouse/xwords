@@ -1566,14 +1566,13 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
 
     tmpModel = makeTmpModel( model, stream, printMovePre, printMovePost, 
                              &closure );
+    model_destroy( tmpModel );
 
     if ( gameOver ) {
         /* if the game's over, it shouldn't matter which model I pass to this
            method */
         server_writeFinalScores( server, stream ); 
     }
-
-    model_destroy( tmpModel );
 } /* model_writeGameHistory */
 
 static void
