@@ -369,13 +369,15 @@ cleanupServer( ServerCtxt* server )
 } /* cleanupServer */
 
 void
-server_reset( ServerCtxt* server )
+server_reset( ServerCtxt* server, CommsCtxt* comms )
 {
     ServerVolatiles vol = server->vol;
 
     cleanupServer( server );
-    
+
+    vol.comms = comms;
     server->vol = vol;
+
     initServer( server );
 } /* server_reset */
 

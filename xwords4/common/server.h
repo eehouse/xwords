@@ -64,7 +64,7 @@ ServerCtxt* server_makeFromStream( MPFORMAL XWStreamCtxt* stream,
 
 void server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream );
 
-void server_reset( ServerCtxt* server );
+void server_reset( ServerCtxt* server, CommsCtxt* comms );
 void server_destroy( ServerCtxt* server );
 
 void server_prefsChanged( ServerCtxt* server, CommonPrefs* cp );
