@@ -29,10 +29,7 @@ DICT = $(shell echo $$BASENG_PATH)
 
 DEBUG_SET = APPID=Xwdb ICONTEXT=CrossDbg NAME="CrossDbg" DONT_OMIT=true
 
-# BUILD_AS_PNOLET = 1
-
-#OWNERNAME = "Eric House"
-NO_REG_REQUIRED = -DNO_REG_REQUIRED
+#BUILD_AS_PNOLET = 1
 
 PALM_TOOLS_PREFIX = $(shell echo $$PALM_TOOLS_PREFIX)
 
@@ -56,8 +53,7 @@ endif
 
 MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
 	-DOVERRIDE_EDGE_FOR_INDEX -DCOLOR_SUPPORT \
-	-DSHOW_PROGRESS  \
-	$(HASHDEF) $(NO_REG_REQUIRED)
+	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED
 
 # turn on the HighRes stuff.  Experimental for now, but eventually
 # should always be on.
@@ -66,11 +62,17 @@ FEATURE_HIGHRES = -DFEATURE_HIGHRES
 # turn on letting users pick tiles "face-up"
 MYDEFINES += -DFEATURE_TRAY_EDIT
 
+ifneq (x$(BUILD_AS_PNOLET)x, xx)
+MYDEFINES += -DXW_TARGET_PNO
+endif
+
 # turn on limits to searches on board and in tray (number of tiles to
 # use)
 MYDEFINES += -DXWFEATURE_SEARCHLIMIT
 
 MYDEFINES += $(FEATURE_HIGHRES)
+
+#MYDEFINES += -DXWFEATURE_HINT_CONFIG
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
@@ -235,8 +237,8 @@ $(FNAVS): ./fnavgen
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet
 
-pnolet:
-	$(MAKE) -f Makefile.PNO
+pnolet: LocalizedStrIncludes.h
+	$(MAKE) -f Makefile.PNO MYDEFINES="$(MYDEFINES) -DAPPID=\'$(APPID)\' -DXW_TARGET_PNO -D__LITTLE_ENDIAN"
 endif
 
 # GDB seems confused by relative paths these days.  So generate the
@@ -252,6 +254,9 @@ clean:
 	rm -rf $(PLATFORM)/*.[oa] xwords4 *.bin *.stamp *.[pg]rc \
 		xwords4.rcp *.btxt $(PLATFORM)/* $(CODESEG) \
 		LocalizedStrIncludes.h gdbload
+ifneq (x$(BUILD_AS_PNOLET)x, xx)
+	$(MAKE) -f Makefile.PNO clean
+endif
 
 #cmod03E8.bin: palmdraw.c Makefile
 #	$(CC) -O2 -nostartfiles $(INCLUDES) $(MYDEFINES) -o tmp $<
