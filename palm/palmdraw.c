@@ -45,8 +45,8 @@ static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
 static void palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
                                             XP_Rect* rInner, XP_Rect* rOuter, 
                                             DrawScoreInfo* dsi );
-static void palm_bnw_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, 
-                                     XP_U16 owner, XP_Bool hasfocus );
+static XP_Bool palm_bnw_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, 
+                                        XP_U16 owner, XP_Bool hasfocus );
 static void palm_bnw_draw_trayFinished( DrawCtx* p_dctx );
 static void palm_clr_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP );
 static void palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, 
@@ -119,6 +119,11 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
     WinSetTextColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
     WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_WHITE] );
+#ifdef FEATURE_HIGHRES
+    if ( dctx->doHiRes ) {
+        (void)WinSetCoordinateSystem( kCoordinatesNative );
+    }
+#endif
     return XP_TRUE;
 } /* palm_clr_draw_boardBegin */
 
@@ -321,7 +326,7 @@ palm_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
     WinInvertRectangle( (RectangleType*)&localR, 0 );
 } /* palm_draw_invertCell */
 
-static void
+static XP_Bool
 palm_clr_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, 
                          XP_U16 owner, XP_Bool hasfocus )
 {
@@ -333,11 +338,17 @@ palm_clr_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect,
     WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_TILE] );
     WinSetTextColor( dctx->drawingPrefs->drawColors[COLOR_PLAYER1+owner] );
     WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_PLAYER1+owner] );
+#ifdef FEATURE_HIGHRES
+    if ( dctx->doHiRes ) {
+        (void)WinSetCoordinateSystem( kCoordinatesNative );
+    }
+#endif
 
     palm_bnw_draw_trayBegin( p_dctx, rect, owner, hasfocus );
+    return XP_TRUE;
 } /* palm_clr_draw_trayBegin */
 
-static void
+static XP_Bool
 palm_bnw_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
                          XP_Bool hasfocus )
 {
@@ -345,6 +356,7 @@ palm_bnw_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
 
     WinGetClip( &dctx->oldTrayClip );
     WinSetClip( (RectangleType*)rect );
+    return XP_TRUE;
 } /* palm_draw_trayBegin */
 
 static void
@@ -473,10 +485,11 @@ static void
 palm_clr_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-    WinPushDrawState();
-    WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_WHITE] );
+    IndexedColorType oldColor;
+
+    oldColor = WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_WHITE] );
     eraseRect( rectP );
-    WinPopDrawState();
+    WinSetBackColor( oldColor );
 } /* palm_clr_draw_clearRect */
 
 static void
@@ -1008,6 +1021,9 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     MPASSIGN(dctx->mpool, mpool);
 
     dctx->able = able;
+#ifdef FEATURE_HIGHRES
+    dctx->doHiRes = globals->hasHiRes;
+#endif
     dctx->globals = globals;
     dctx->getResStrFunc = getRSF;
     dctx->drawingPrefs = drawprefs;
