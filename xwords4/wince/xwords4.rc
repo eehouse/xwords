@@ -84,10 +84,12 @@ BEGIN
     END
     POPUP "&Game"
     BEGIN
+        MENUITEM "Tile counts and values",      ID_GAME_TILECOUNTSANDVALUES
+        MENUITEM "Tiles left",                  ID_GAME_TILESLEFT
+        MENUITEM SEPARATOR
         MENUITEM "Game info",                   ID_GAME_GAMEINFO
         MENUITEM "History",                     ID_GAME_HISTORY
         MENUITEM "Final scores",                ID_GAME_FINALSCORES
-        MENUITEM "Tile counts and values",      ID_GAME_TILECOUNTSANDVALUES
 #ifndef XWFEATURE_STANDALONE_ONLY
         MENUITEM SEPARATOR
         MENUITEM "Resend messages",             ID_GAME_RESENDMSGS
