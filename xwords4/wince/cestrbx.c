@@ -22,15 +22,16 @@
 #include "ceutil.h"
 
 static void
-stuffTextInField( HWND hDlg, CEAppGlobals* globals, XWStreamCtxt* stream )
+stuffTextInField( HWND hDlg, StrBoxInit* init )
 {
-    XP_U16 nBytes = stream_getSize(stream);
+    XP_U16 nBytes = stream_getSize(init->stream);
     XP_U16 len;
     XP_UCHAR* sbuf;
     wchar_t* wbuf;
+    CEAppGlobals* globals = init->globals;
 
     sbuf = XP_MALLOC( globals->mpool, nBytes );
-    stream_getBytes( stream, sbuf, nBytes );
+    stream_getBytes( init->stream, sbuf, nBytes );
 
     len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sbuf, nBytes,
                                NULL, 0 );
@@ -70,9 +71,8 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             /* also want to expand the text box to the bottom */
 /*             ceCenterCtl( hDlg, IDOK ); */
         }
+        init->textIsSet = XP_FALSE; /* postpone to avoid highlight. */
 
-        stuffTextInField( hDlg, globals, init->stream );
-	
         return TRUE;
     } else {
         init = (StrBoxInit*)GetWindowLong( hDlg, GWL_USERDATA );
@@ -80,6 +80,11 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         switch (message) {
 
         case WM_COMMAND:
+            if ( !init->textIsSet ) {
+                stuffTextInField( hDlg, init );
+                init->textIsSet = XP_TRUE;
+            }
+
             id = LOWORD(wParam);
             switch( id ) {
 
