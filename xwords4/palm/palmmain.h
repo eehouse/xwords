@@ -114,7 +114,8 @@ typedef struct XWords4PreferenceType {
     /* New for 0x0405 */
     CommonPrefs cp;
     /* New for 0x0406 */
-    XP_U8 lastNTiles;
+    XP_U8 lastNTilesMin;
+    XP_U8 lastNTilesMax;
     
 } XWords4PreferenceType;
 
