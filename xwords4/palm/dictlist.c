@@ -260,6 +260,7 @@ tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought,
     vEnum = vfsIteratorStart;
     while ( vEnum != vfsIteratorStop ) {
         unsigned char pathStr[265];
+        MemHandle h;
         UInt16 bufLen;
 
         err = VFSVolumeEnumerate( &volNum, &vEnum );
@@ -270,8 +271,17 @@ tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought,
         bufLen = sizeof(pathStr);
         err = VFSGetDefaultDirectory( volNum, ".pdb", (char*)pathStr,
                                       &bufLen );
-        
         if ( err == errNone ) {
+            searchDir( MPPARM(mpool) dlp, volNum, pathStr[0],
+                       pathStr, sizeof(pathStr), creatorSought, versSought );
+        }
+
+        h = DmGetResource( 'tSTR', 1000 );
+        if ( !!h ) {
+            pathStr[0] = '\0';
+            XP_STRCAT( pathStr, MemHandleLock(h) );
+            MemHandleUnlock( h );
+            DmReleaseResource( h );
             searchDir( MPPARM(mpool) dlp, volNum, pathStr[0],
                        pathStr, sizeof(pathStr), creatorSought, versSought );
         }
