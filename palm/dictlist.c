@@ -33,7 +33,11 @@
 #include "xwords4defines.h"
 
 #define TYPE_DAWG 'DAWG'
-#define TYPE_XWR3 'Xwr3'
+#ifdef NODE_CAN_4
+# define TYPE_XWRDICT 'Xwr4'
+#else
+# define TYPE_XWRDICT 'Xwr3'
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // typedef and #defines
@@ -211,7 +215,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                     VFSFileClose( fileRef );
                     
                     if ( (err == errNone) && (type == TYPE_DAWG) && 
-                         (creator == TYPE_XWR3) ) {
+                         (creator == TYPE_XWRDICT) ) {
                         DictListEntry dl;
 
                         dl.path = copyString( MPPARM(mpool) path );
@@ -283,7 +287,7 @@ DictListMake( MPFORMAL_NOCOMMA )
     /* first the DM case */
     while ( !found ) {
         err = DmGetNextDatabaseByTypeCreator( newSearch, &stateType, TYPE_DAWG, 
-                                              TYPE_XWR3/* APPID */, 
+                                              TYPE_XWRDICT/* APPID */, 
                                               false,// onlyLatestVers,
                                               &cardNo, &dbID );
         if ( err != 0 ) {
