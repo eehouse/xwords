@@ -490,7 +490,9 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         (void)StrPrintF( valBuf, "%d", val );
         len = XP_STRLEN((const char*)valBuf);
 
-        if ( dctx->doHiRes ) {
+        if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+        } else if ( dctx->doHiRes ) {
             UInt32 oldMode = WinSetScalingMode( kTextScalingOff );
             FontID curFont = FntGetFont();
             FntSetFont( boldFont );
@@ -500,7 +502,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
                           localR.top + localR.height - dctx->fntHeight - 1 );
             FntSetFont( curFont );
             WinSetScalingMode( oldMode );
-
+#endif
         } else {
 
             RectangleType numRect = {{0,0}, 
