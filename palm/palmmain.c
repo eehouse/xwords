@@ -397,7 +397,7 @@ positionBoard( PalmAppGlobals* globals )
         scoreHeight = PALM_TRAY_TOP - PALM_GRIDLESS_SCORE_TOP - 2;
 
         if ( !isLefty ) {
-            ++leftEdge;		/* for the frame */
+            leftEdge += doubler;		/* for the frame */
         }
     }
 
