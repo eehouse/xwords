@@ -33,7 +33,7 @@ button_event( GtkWidget* widget, void* closure )
 
 gint
 gtkask( GtkAppGlobals* globals, gchar *message, gint numButtons,
-	char* button1, ... )
+        char* button1, ... )
 {
     GtkWidget* dialog;
     GtkWidget* label;
@@ -49,16 +49,16 @@ gtkask( GtkAppGlobals* globals, gchar *message, gint numButtons,
     label = gtk_label_new( message );
 
     for ( i = 0; i < numButtons; ++i ) {
-	button = gtk_button_new_with_label( *butList );
+        button = gtk_button_new_with_label( *butList );
 
-	results[i] = 0;
-	gtk_signal_connect( GTK_OBJECT( button ), "clicked",
-			    GTK_SIGNAL_FUNC(button_event), &results[i] );
-	
-	gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area),
-			   button );
+        results[i] = 0;
+        gtk_signal_connect( GTK_OBJECT( button ), "clicked",
+                            GTK_SIGNAL_FUNC(button_event), &results[i] );
 
-	++butList;
+        gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area),
+                           button );
+
+        ++butList;
     }
     
     /* Add the label, and show everything we've added to the dialog. */
@@ -72,12 +72,12 @@ gtkask( GtkAppGlobals* globals, gchar *message, gint numButtons,
     gtk_widget_destroy( dialog );
 
     for ( i = 0; i < numButtons; ++i ) {
-	if ( results[i] ) {
-	    break;
-	}
+        if ( results[i] ) {
+            break;
+        }
     }
     g_free( results );
     return i;
- } /* gtkask */
+} /* gtkask */
 
 #endif
