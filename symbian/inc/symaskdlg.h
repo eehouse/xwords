@@ -33,13 +33,17 @@ class CXWAskDlg : public CEikDialog
 {
  public:
     CXWAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream );
+    CXWAskDlg( MPFORMAL TBuf16<128>* aMessage);
     ~CXWAskDlg();
 
  private:
     TBool OkToExitL( TInt aKeyCode );
     void PreLayoutDynInitL();
 
+    /* One or the other of these will be set/used */
     XWStreamCtxt* iStream;
+    TBuf16<128>* iMessage;
+
     TBool iKillStream;
     MPSLOT
 };
