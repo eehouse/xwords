@@ -26,6 +26,7 @@
 #include <eikbctrl.h>
 
 #include "game.h"
+#include "comms.h"
 #include "memstream.h"
 #include "symdraw.h"
 #include "symgmmgr.h"
@@ -136,17 +137,35 @@ class CXWordsAppView : public CCoeControl
     void DrawGameName() const;
 
 
-    static void        sym_util_requestTime( XW_UtilCtxt* uc );
-    static VTableMgr*  sym_util_getVTManager( XW_UtilCtxt* uc );
-    static XP_U32      sym_util_getCurSeconds( XW_UtilCtxt* uc );
-    static void        sym_util_notifyGameOverL( XW_UtilCtxt* uc );
-    static void        sym_util_userError( XW_UtilCtxt* uc, UtilErrID id );
+    static void            sym_util_requestTime( XW_UtilCtxt* uc );
+    static VTableMgr*      sym_util_getVTManager( XW_UtilCtxt* uc );
+    static XP_U32          sym_util_getCurSeconds( XW_UtilCtxt* uc );
+    static void            sym_util_notifyGameOverL( XW_UtilCtxt* uc );
+    static void            sym_util_userError( XW_UtilCtxt* uc, UtilErrID id );
     static DictionaryCtxt* sym_util_makeEmptyDict( XW_UtilCtxt* uc );
+    static XWStreamCtxt*   sym_util_makeStreamFromAddr( XW_UtilCtxt* uc,
+                                                        XP_U16 channelNo );
+
+
+#ifdef XWFEATURE_STANDALONE_ONLY
+# define SYM_SEND      (TransportSend)NULL
+#else
+# define SYM_SEND      sym_send
+
+    static XP_S16      sym_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, 
+                                 void* closure );
+    static void        sym_send_on_close( XWStreamCtxt* stream, 
+                                          void* closure );
+#endif
 
     static TInt TimerCallback( TAny* aThis );
 
     CurGameInfo iGi;
     CommonPrefs iCp;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    CommsAddrRec iCommsAddr;    /* for default settings */
+    XP_U16       iListenPort;   /* not sure what for */
+#endif
     XW_UtilCtxt iUtil;
     XWGame      iGame;
     DrawCtx*    iDraw;
