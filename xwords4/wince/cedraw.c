@@ -228,12 +228,18 @@ logClipResult( int icrResult )
 } /* logClipResult */
 #endif
 
-static void
+static XP_Bool
 ce_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
                    XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-    dctx->trayOwner = owner;
+    CEAppGlobals* globals = dctx->globals;
+    HDC hdc = globals->hdc;
+    XP_Bool canDraw = !!hdc;
+    if ( canDraw ) {
+        dctx->trayOwner = owner;
+    }
+    return canDraw;
 } /* ce_draw_trayBegin */
 
 static void
@@ -389,7 +395,7 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
     if ( cursorBonus == BONUS_NONE ) {
         bkIndex = BKG_COLOR;
     } else {
-        bkIndex = cursorBonus+BONUS1_COLOR;
+        bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + BONUS1_COLOR;
     }
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
     SetBkColor( hdc, dctx->colors[bkIndex] );
