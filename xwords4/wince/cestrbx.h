@@ -30,4 +30,6 @@ typedef struct StrBoxInit {
     CEAppGlobals* globals;
     wchar_t* title;
     XWStreamCtxt* stream;
+    XP_U16 result;
+    XP_Bool isQuery;
 } StrBoxInit;
