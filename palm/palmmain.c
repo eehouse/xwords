@@ -352,10 +352,10 @@ positionBoard( PalmAppGlobals* globals )
 
     /* since we only want the lines between cells one pixel wide, we can
        increase scale more than 2x when doubling. */
-    scale = scale * doubler;
     if ( !showGrid ) {
         --scale;
     }
+    scale = scale * doubler;
 
     freeSpace = ((PALM_MAX_ROWS-nCols)/2) * scale;
     if ( isLefty ) {
