@@ -61,7 +61,7 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
         lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, 
                                  sizeof(labelBuf) - lenSoFar,
                                  "%d of %d for %s" XP_CR "Cur", 
-                                 pi->thisPick, pi->nTotal, name );
+                                 pi->thisPick + 1, pi->nTotal, name );
 
         for ( i = 0; i < pi->nCurTiles; ++i ) {
             lenSoFar += XP_SNPRINTF( labelBuf+lenSoFar, 
@@ -100,6 +100,9 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             ceShowOrHide( hDlg, IDC_PICKALL, XP_FALSE );
             ceShowOrHide( hDlg, IDC_PICKMSG, XP_FALSE );
         }
+        ceShowOrHide( hDlg, IDC_BACKUP, 
+                      bState->pi->why == PICK_FOR_CHEAT
+                      && bState->pi->nCurTiles > 0 );
 #endif
 
         loadLettersList( hDlg, bState );
@@ -110,31 +113,14 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_KEYDOWN:           /* key down.  Select a list item? */
             XP_LOGF( "got WM_KEYDOWN" );
             break;
-#if 0                           /* this isn't working */
-        case WM_CHAR:           /* key down.  Select a list item? */
-            ch = (XP_UCHAR)wParam;
-            if ( ch >= 'a' && ch <= 'z' ) {
-                ch += 'A' - 'a';
-            }
-
-            XP_LOGF( "BlankDlg: got char: %c", ch );
-            
-            texts = bState->texts;
-            for ( i = bState->nTiles - 1; i >= 0 ; --i ) {
-                if ( ch == texts[i][0] ) {
-                    ce_selectAndShow( hDlg, BLANKFACE_LIST, i );
-                    break;
-                }
-            }
-
-            break;
-#endif
         case WM_COMMAND:
             id = LOWORD(wParam);
             if ( 0 ) {
 #ifdef FEATURE_TRAY_EDIT
             } else if ( id == IDC_PICKALL ) {
-                bState->result = -1;
+                bState->result = PICKER_PICKALL;
+            } else if ( id == IDC_BACKUP ) {
+                bState->result = PICKER_BACKUP;
 #endif
             } else if ( id == IDOK ) {
                 bState->result = 
