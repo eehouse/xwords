@@ -61,6 +61,9 @@ typedef struct CurGameInfo {
 #ifdef FEATURE_TRAY_EDIT
     XP_Bool allowPickTiles;
 #endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool allowHintRect;
+#endif
     XP_U8 robotSmartness;
     XWPhoniesChoice phoniesAction;
 

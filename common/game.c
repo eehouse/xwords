@@ -227,11 +227,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate )
     gi->nPlayers = 2;
     gi->boardSize = 15;
     gi->robotSmartness = SMART_ROBOT;
-    gi->timerEnabled = XP_FALSE;
     gi->gameSeconds = 25 * 60;	/* 25 minute game is common? */
-#ifdef FEATURE_TRAY_EDIT
-    gi->allowPickTiles = XP_FALSE;
-#endif
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         XP_UCHAR buf[20];
@@ -343,6 +339,9 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, XP_U16 strVersion,
         gi->allowPickTiles = XP_FALSE;
     }
 #endif
+#ifdef XWFEATURE_SEARCHLIMIT
+        gi->allowHintRect = stream_getBits( stream, 1 );
+#endif
 
 
     gi->gameID = stream_getU16( stream );
@@ -386,6 +385,9 @@ gi_writeToStream( XWStreamCtxt* stream, CurGameInfo* gi )
     stream_putBits( stream, 1, gi->timerEnabled );
 #ifdef FEATURE_TRAY_EDIT
     stream_putBits( stream, 1, gi->allowPickTiles );
+#endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    stream_putBits( stream, 1, gi->allowHintRect );
 #endif
 
     stream_putU16( stream, gi->gameID );
