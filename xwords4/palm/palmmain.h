@@ -55,7 +55,7 @@ typedef unsigned char GraphicsAbility; /* don't let above be 4 bytes */
 typedef struct PalmAppGlobals PalmAppGlobals;
 
 typedef XP_UCHAR* (*GetResStringFunc)( PalmAppGlobals* globals, 
-				    XP_U16 strID );
+                                       XP_U16 strID );
 typedef struct PalmDrawCtx {
     DrawCtxVTable* vtable;
     PalmAppGlobals* globals;
@@ -349,9 +349,9 @@ UInt32 PM2(PilotMain)(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
 #endif
 
 DrawCtx* palm_drawctxt_make( MPFORMAL GraphicsAbility able,
-			     PalmAppGlobals* globals,
-			     GetResStringFunc getRSF,
-			     DrawingPrefs* drawprefs );
+                             PalmAppGlobals* globals,
+                             GetResStringFunc getRSF,
+                             DrawingPrefs* drawprefs );
 void palm_drawctxt_destroy( DrawCtx* dctx );
 
 void palm_warnf( char* format, ... );
@@ -359,12 +359,12 @@ void palm_warnf( char* format, ... );
 Boolean askPassword( PalmAppGlobals* globals, const XP_UCHAR* name, 
                      Boolean isNew, XP_UCHAR* retbuf, XP_U16* len );
 Boolean palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, 
-			  XP_S16 titleID, XP_S16 altID );
+                          XP_S16 titleID );
 void freeSavedGamesData( MPFORMAL SavedGamesState* state );
 
 void palm_util_requestTime( XW_UtilCtxt* uc ); /* so palmir can call */
 void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index, 
-			    char* newName, XP_U16 len );
+                            char* newName, XP_U16 len );
 
 XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
 Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
