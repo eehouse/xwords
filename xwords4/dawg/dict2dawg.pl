@@ -63,6 +63,7 @@ my $gCountFile;
 my $gBytesPerNodeFile;          # where to write whether node size 3 or 4
 my $gWordCount = 0;
 my %gTableHash;
+my $gBlankIndex;
 my @gRevMap;
 my $debug = 0;
 my %gSubsHash;
@@ -451,13 +452,19 @@ sub dumpNodes {
 ##############################################################################
 # Little node-field setters and getters to hide what bits represent
 # what.
+#
+# high bit (31) is ACCEPTING bit
+# next bit (30) is LAST_SIBLING bit
+# next 6 bits (29-24) are tile bit (allowing alphabets of 64 letters)
+# final 24 bits (23-0) are the index of the first child (fco)
+#
 ##############################################################################
 
 sub TrieNodeSetIsTerminal {
     my ( $nodeR, $isTerminal ) = @_;
 
     if ( $isTerminal ) {
-        ${$nodeR} |= 1 << 31;
+        ${$nodeR} |= (1 << 31);
     } else {
         ${$nodeR} &= ~(1 << 31);
     }
@@ -465,13 +472,13 @@ sub TrieNodeSetIsTerminal {
 
 sub TrieNodeGetIsTerminal {
     my ( $node ) = @_;
-    return ($node & 1 << 31) != 0;
+    return ($node & (1 << 31)) != 0;
 }
 
 sub TrieNodeSetIsLastSibling {
     my ( $nodeR, $isLastSibling ) = @_;
     if ( $isLastSibling ) {
-        ${$nodeR} |= 1 << 30;
+        ${$nodeR} |= (1 << 30);
     } else {
         ${$nodeR} &= ~(1 << 30);
     }
@@ -479,39 +486,39 @@ sub TrieNodeSetIsLastSibling {
 
 sub TrieNodeGetIsLastSibling {
     my ( $node ) = @_;
-    return ($node & 1 << 30) != 0;
+    return ($node & (1 << 30)) != 0;
 }
 
 sub TrieNodeSetLetter {
     my ( $nodeR, $letter ) = @_;
 
-    die "letter ", $letter, " too big" if $letter >= 32;
+    die "$0: letter ", $letter, " too big" if $letter >= 64;
 
-    my $mask = ~(0x1F << 25);
+    my $mask = ~(0x3F << 24);
     ${$nodeR} &= $mask;                         # clear all the bits
-    ${$nodeR} |= ($letter << 25);          # set new ones
+    ${$nodeR} |= ($letter << 24);          # set new ones
 }
 
 sub TrieNodeGetLetter {
     my ( $node ) = @_;
-    $node >>= 25;
-    $node &= 0x1F;
+    $node >>= 24;
+    $node &= 0x3F;              # is 3f ok for 3-byte case???
     return $node;
 }
 
 sub TrieNodeSetFirstChildOffset {
     my ( $nodeR, $fco ) = @_;
 
-    die "$fco larger than 25 bits" if ($fco & 0xFE000000) != 0;
+    die "$0: $fco larger than 24 bits" if ($fco & 0xFF000000) != 0;
 
-    my $mask = ~0x01FFFFFF;
+    my $mask = ~0x00FFFFFF;
     ${$nodeR} &= $mask;                   # clear all the bits
     ${$nodeR} |= $fco;                    # set new ones
 }
 
 sub TrieNodeGetFirstChildOffset {
     my ( $node ) = @_;
-    $node &= 0x01FFFFFF;                  # 24 bits
+    $node &= 0x00FFFFFF;                  # 24 bits
     return $node;
 }
 
@@ -562,12 +569,13 @@ sub makeTableHash {
         push @gRevMap, $ch;
 
         if ( ord($ch) == 0 ) {	# blank
+            $gBlankIndex = $i;
             next;       # we want to increment i when blank seen since 
                         # it is a tile value
         }
 
-        die "$gTableFile too large\n" if $i > 32;
-        die "only blank (0) can be 32nd char\n" if ($i == 32 && $ch != 0);
+        die "$0: $gTableFile too large\n" if $i > 64;
+        die "$0: only blank (0) can be 64th char\n" if ($i == 64 && $ch != 0);
 
         $gTableHash{$ch} = $i;
     }
@@ -587,12 +595,20 @@ sub emitNodes($$) {
     # now do the emit.
 
     # is 17 bits enough?
-    printf STDOUT ("There are %d (0x%x) nodes in this DAWG.\n",
+    printf STDERR ("There are %d (0x%x) nodes in this DAWG.\n",
                    0 + @gNodes, 0 + @gNodes );
-    if ( @gNodes > 0x1FFFF || $gForceFour ) {
+    my $nTiles = 0 + keys(%gTableHash); # blank is not included in this count!
+    if ( @gNodes > 0x1FFFF || $gForceFour || $nTiles > 32 ) {
         $gNBytesPerNode = 4;
-    } else {
+    } elsif ( $nTiles < 32 ) {
         $gNBytesPerNode = 3;
+    } else {
+        if ( $gBlankIndex == 32 ) { # blank
+            print STDERR "blank's at 32; 3-byte-nodes still ok\n";
+            $gNBytesPerNode = 3;
+        } else {
+            die "$0: move blank to last position in info.txt for smaller DAWG";
+        }
     }
 
     my $nextIndex = 0;
@@ -685,36 +701,40 @@ sub printOneLevel {
     }
 }
 
-sub outputNode {
+sub outputNode ($$$) {
     my ( $node, $nBytes, $outfile ) = @_;
 
     my $fco = TrieNodeGetFirstChildOffset($node);
     my $fourthByte;
 
     if ( $nBytes == 4 ) {
-        $fourthByte = $fco >> 17;
-        die "fco too big" if $fourthByte > 0xFF;
-        $fco &= 0x1FFFF;
+        $fourthByte = $fco >> 16;
+        die "$0: fco too big" if $fourthByte > 0xFF;
+        $fco &= 0xFFFF;
     }
 
-    # format according to dawg.h:
-    # typedef struct array_edge {
-    #     unsigned char highByte;
-    #     unsigned char lowByte;
-    #     unsigned char bits;
-#ifdef FOUR_BYTE
-    #     unsigned char moreBits;
-#endif
-    # } array_edge;
+    # Formats are different depending on whether it's to have 3- or
+    # 4-byte nodes.
 
-    # define LETTERMASK 0x1f
-    # define ACCEPTINGMASK 0x20
-    # define LASTEDGEMASK 0x40
-    # define LASTBITMASK 0x80
+    # Here's what the three-byte node looks like.  16 bits plus one
+    # burried in the last byte for the next node address, five for a
+    # character/tile and one each for accepting and last-edge.
+
+    # 23 22 21 20 19 18 17 16 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+    # |-------- 16 bits of next node address -------|  |  |  |  |-tile indx-|
+    #                                                  |  |  |    
+    #                                accepting bit  ---+  |  |
+    #                                 last edge bit ------+  |
+    #         ---- last bit (17th on next node addr)---------+
+
+    # The four-byte format adds a byte at the right end for
+    # addressing, but removes the extra bit (5) in order to let the
+    # chars field be six bits.  Bits 7 and 6 remain the same.
 
     # write the fco (less that one bit).  We want two bytes worth
-    # in three-byte mode, and three in four-byte mode (which is
-    # untested)
+    # in three-byte mode, and three in four-byte mode
+
+    # first two bytes are low-word of fco, regardless of format
     for ( my $i = 1; $i >= 0; --$i ) {
         my $tmp = ($fco >> ($i * 8)) & 0xFF;
         print $outfile pack( "C", $tmp );
@@ -724,15 +744,19 @@ sub outputNode {
 
     my $chIn5 = TrieNodeGetLetter($node);
     my $bits = $chIn5;
+    die "$0: char $bits too big" if $bits > 0x1F && $nBytes == 3;
 
     if ( TrieNodeGetIsLastSibling($node) ) {
         $bits |= 0x40;
     }
     if ( TrieNodeGetIsTerminal($node) ) {
-        $bits |= 0x20;
-    }
-    if ( $fco != 0 ) {
         $bits |= 0x80;
+    }
+
+    # We set the 17th next-node bit only in 3-byte case (where char is
+    # 5 bits)
+    if ( $nBytes == 3 && $fco != 0 ) {
+        $bits |= 0x20;
     }
     print $outfile pack( "C", $bits );
 
