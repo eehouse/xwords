@@ -143,9 +143,10 @@ removeFromDictCache( PalmDictList* dl, XP_UCHAR* dictName,
     dle->dict = NULL;
 } /* removeFromDictCache */
 
-static void
+static XP_Bool
 addEntry( MPFORMAL PalmDictList** dlp, DictListEntry* dle )
 {
+    XP_Bool isNew;
     PalmDictList* dl = *dlp;
     DictListEntry* ignore;
 
@@ -154,7 +155,8 @@ addEntry( MPFORMAL PalmDictList** dlp, DictListEntry* dle )
         XP_MEMSET( dl, 0, sizeof(*dl) );
     }
 
-    if ( !getDictWithName( dl, dle->baseName, &ignore ) ) {
+    isNew = !getDictWithName( dl, dle->baseName, &ignore );
+    if ( isNew ) {
         XP_U16 size = sizeof(*dl);
         size += dl->nDicts * sizeof( dl->dictArray[0] );
 
@@ -166,6 +168,7 @@ addEntry( MPFORMAL PalmDictList** dlp, DictListEntry* dle )
     }
 
     *dlp = dl;
+    return isNew;
 } /* addEntry */
 
 static void
@@ -232,7 +235,9 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                         dl.u.vfsData.volNum = volNum;
                         dl.baseName = dl.path + pathLen;
 
-                        addEntry( MPPARM(mpool) dlp, &dl );
+                        if ( !addEntry( MPPARM(mpool) dlp, &dl ) ) {
+                            XP_FREE( mpool, dl.path );
+                        }
                     }
                 }
             }
