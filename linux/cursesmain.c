@@ -40,6 +40,7 @@
 #include "linuxmain.h"
 #include "cursesmain.h"
 #include "cursesask.h"
+#include "cursesletterask.h"
 #include "model.h"
 #include "draw.h"
 #include "board.h"
@@ -91,6 +92,22 @@ curses_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort )
     /* if this isn't true, need to tear down and rebind socket */
     XP_ASSERT( newPort == globals->cGlobals.params->defaultListenPort );
 } /* curses_util_listenPortChange */
+
+static XP_S16 
+curses_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, XP_U16 playerNum,
+                          XP_UCHAR4* texts, XP_U16 nTiles )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    char query[128];
+    XP_S16 index;
+    char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
+
+    sprintf( query, "Pick tile for %s! (Tab or type letter to select\n"
+             "then hit <cr>.)", playerName );
+
+    index = curses_askLetter( globals, query, texts, nTiles );
+    return index;
+} /* util_userPickTile */
 
 static void
 curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
@@ -144,14 +161,6 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 
     return result;
 } /* curses_util_userQuery */
-
-static void
-curses_util_askBlankFace(XW_UtilCtxt* uc, DictionaryCtxt* dict, 
-			 XP_UCHAR* buf )
-{
-    buf[0] = 'A';
-    buf[1] = '\0';
-} /* curses_util_askBlankFace */
 
 static void
 curses_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState state )
@@ -794,7 +803,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;
 
     util->vtable->m_util_userQuery = curses_util_userQuery;
-    util->vtable->m_util_askBlankFace = curses_util_askBlankFace;
+    util->vtable->m_util_userPickTile = curses_util_userPickTile;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
@@ -804,8 +813,6 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_requestTime = curses_util_requestTime;
 
     util->vtable->m_util_listenPortChange = curses_util_listenPortChange;
-
-    util->vtable->m_util_requestTime = curses_util_requestTime;
 
     util->closure = globals;
 } /* setupCursesUtilCallbacks */
@@ -823,12 +830,12 @@ static XP_Bool
 handleKeyEvent( CursesAppGlobals* globals, MenuList* list, char ch )
 {
     while ( list->handler != NULL ) {
-	if ( list->key == ch ) {
-	    if ( (*list->handler)(globals) ) {
-		return XP_TRUE;
-	    }
-	}
-	++list;
+        if ( list->key == ch ) {
+            if ( (*list->handler)(globals) ) {
+                return XP_TRUE;
+            }
+        }
+        ++list;
     }
     return XP_FALSE;
 } /* handleKeyEvent */
@@ -838,8 +845,8 @@ passKeyToBoard( CursesAppGlobals* globals, char ch )
 {
     XP_Bool handled = ch >= 'a' && ch <= 'z';
     if ( handled ) {
-	ch += 'A' - 'a';
-	globals->doDraw = board_handleKey( globals->cGlobals.game.board, ch );
+        ch += 'A' - 'a';
+        globals->doDraw = board_handleKey( globals->cGlobals.game.board, ch );
     }
     XP_LOGF( "passKeyToBoard: handled=%d on %x (%c)", handled, ch, ch );
     return handled;
