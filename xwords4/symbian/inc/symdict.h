@@ -31,7 +31,7 @@ extern "C" {
 }
 
 
-DictionaryCtxt* sym_dictionary_makeL( MPFORMAL TFileName* nameD );
+DictionaryCtxt* sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName );
 
 
 #endif
