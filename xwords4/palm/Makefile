@@ -65,6 +65,10 @@ FEATURE_HIGHRES = -DFEATURE_HIGHRES
 # turn on letting users pick tiles "face-up"
 MYDEFINES += -DFEATURE_TRAY_EDIT
 
+# turn on limits to searches on board and in tray (number of tiles to
+# use)
+#MYDEFINES += -DXWFEATURE_SEARCHLIMIT
+
 MYDEFINES += $(FEATURE_HIGHRES)
 
 # Turn on network play over IP via cellular modem.  Very much
