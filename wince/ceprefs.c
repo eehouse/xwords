@@ -65,16 +65,20 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
     XP_U16 goesWithGlobal[] = {IDC_CHECKCOLORPLAYED, IDC_LEFTYCHECK,
                                IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES,
                                IDC_PREFCOLORS };
-    XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT,IDC_CHECKNOHINTS,
+    XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT, IDC_CHECKNOHINTS,
                               TIMER_CHECK, TIMER_EDIT, PHONIES_LABEL,
-                              PHONIES_COMBO, IDC_PICKTILES };
+                              PHONIES_COMBO, IDC_PICKTILES
+#ifdef XWFEATURE_SEARCHLIMIT
+                              ,IDC_CHECKHINTSLIMITS
+#endif
+    };
     XP_U16 resID;
+    XP_Bool doGlobalPrefs = state->globals->doGlobalPrefs;
 
-    resID = state->globals->doGlobalPrefs? 
-        IDC_RADIOGLOBAL:IDC_RADIOLOCAL;
+    resID = doGlobalPrefs? IDC_RADIOGLOBAL:IDC_RADIOLOCAL;
     SendDlgItemMessage( hDlg, resID, BM_SETCHECK, BST_CHECKED, 0L );
 
-    if ( state->globals->doGlobalPrefs ) {
+    if ( doGlobalPrefs ) {
         turnOnOff( hDlg, goesWithLocal, 
                    sizeof(goesWithLocal)/sizeof(goesWithLocal[0]),
                    XP_FALSE );
@@ -89,6 +93,13 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
                    sizeof(goesWithLocal)/sizeof(goesWithLocal[0]),
                    XP_TRUE);
     }
+
+#ifdef XWFEATURE_SEARCHLIMIT
+    if ( !doGlobalPrefs ) {
+        ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, 
+                      !ceGetChecked( hDlg, IDC_CHECKNOHINTS) );
+    }
+#endif
 } /* adjustForChoice */
 
 /* Copy global state into a local copy that can be changed without
@@ -105,6 +116,9 @@ loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi,
     prefsPrefs->gp.phoniesAction = gi->phoniesAction;
 #ifdef FEATURE_TRAY_EDIT
     prefsPrefs->gp.allowPickTiles = gi->allowPickTiles;
+#endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    prefsPrefs->gp.allowHintRect = gi->allowHintRect;
 #endif
     prefsPrefs->showColors = appPrefs->showColors;
 
@@ -124,6 +138,9 @@ loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi,
     gi->phoniesAction = prefsPrefs->gp.phoniesAction;
 #ifdef FEATURE_TRAY_EDIT
     gi->allowPickTiles = prefsPrefs->gp.allowPickTiles;
+#endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    gi->allowHintRect = prefsPrefs->gp.allowHintRect;
 #endif
     appPrefs->showColors = prefsPrefs->showColors;
 
@@ -150,6 +167,9 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
 
 #ifdef FEATURE_TRAY_EDIT
     ceSetChecked( hDlg, IDC_PICKTILES, prefsPrefs->gp.allowPickTiles );
+#endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS, prefsPrefs->gp.allowHintRect );
 #endif
     /* timer */
     sprintf( numBuf, "%d", prefsPrefs->gp.gameSeconds / 60 );
@@ -208,6 +228,9 @@ ceControlsToPrefs( HWND hDlg, CePrefsPrefs* prefsPrefs )
 #ifdef FEATURE_TRAY_EDIT
     prefsPrefs->gp.allowPickTiles = ceGetChecked( hDlg, IDC_PICKTILES );
 #endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    prefsPrefs->gp.allowHintRect = ceGetChecked( hDlg, IDC_CHECKHINTSLIMITS );
+#endif
 } /* ceControlsToPrefs */
 
 LRESULT CALLBACK
@@ -256,6 +279,14 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         ceDoColorsEdit( hDlg, pState->globals, 
                                         pState->prefsPrefs.colors );
                     break;
+#ifdef XWFEATURE_SEARCHLIMIT
+                case IDC_CHECKNOHINTS:
+                    timerOn = SendDlgItemMessage( hDlg, IDC_CHECKNOHINTS, 
+                                                  BM_GETCHECK, 0, 0 );
+                    ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, !timerOn );
+                    break;
+#endif
+
                 case IDOK:
                     ceControlsToPrefs( hDlg, &pState->prefsPrefs );
                 case IDCANCEL:

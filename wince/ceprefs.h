@@ -31,6 +31,10 @@ typedef struct CeGamePrefs {
 #ifdef FEATURE_TRAY_EDIT
     XP_Bool allowPickTiles;
 #endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool allowHintRect;
+#endif
+    
     XWPhoniesChoice phoniesAction;
     /* phonies something */
 } CeGamePrefs;

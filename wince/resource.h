@@ -86,6 +86,9 @@
 # define IDC_PICKALL                    1054
 # define IDC_BACKUP                     1055
 #endif
+#ifdef XWFEATURE_SEARCHLIMIT
+# define IDC_CHECKHINTSLIMITS           1056
+#endif
 
 #define DLBLTR_BUTTON                  1056
 #define DBLWRD_BUTTON                  1057
