@@ -78,6 +78,11 @@ typedef struct CEAppGlobals {
 
     XP_U32 timerIDs[N_TIMER_TYPES];
 
+#ifdef CEFEATURE_CANSCROLL
+    XP_U16 nHiddenRows;
+    HWND scrollHandle;
+#endif
+
     CEAppPrefs appPrefs;
 
     XP_Bool isNewGame;
