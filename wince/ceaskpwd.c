@@ -54,22 +54,24 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         return TRUE;
     } else {
         pState = (PasswdDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
-        globals = pState->globals;
+        if ( !!pState ) {
+            globals = pState->globals;
 
-        switch ( message ) {
-        case WM_COMMAND:
-            id = LOWORD(wParam);
-            switch( id ) {
-            case IDOK: 
-                ceGetDlgItemText( hDlg, PASS_EDIT, pState->buf, pState->lenp );
-            case IDCANCEL:
-                pState->userCancelled = id == IDCANCEL;
-                EndDialog( hDlg, id );
+            switch ( message ) {
+            case WM_COMMAND:
+                id = LOWORD(wParam);
+                switch( id ) {
+                case IDOK: 
+                    ceGetDlgItemText( hDlg, PASS_EDIT, pState->buf, 
+                                      pState->lenp );
+                case IDCANCEL:
+                    pState->userCancelled = id == IDCANCEL;
+                    EndDialog( hDlg, id );
 
-                return TRUE;
+                    return TRUE;
+                }
             }
         }
-
     }
     return FALSE;
 } /* PasswdDlg */

@@ -359,6 +359,7 @@ handleOptionsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     if ( WrapPrefsDialog( hDlg, globals, &state, &giState->prefsPrefs,
                           giState->isNewGame ) ) {
         giState->prefsChanged = XP_TRUE;
+        giState->colorsChanged = state.colorsChanged;
         /* nothing to do until user finally does confirm the parent dialog */
     }
 } /* handleOptionsButton */
@@ -424,92 +425,93 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
     } else {
         giState = (GameInfoState*)GetWindowLong( hDlg, GWL_USERDATA );
-        globals = giState->globals;
+        if ( !!giState ) {
+            globals = giState->globals;
 
-        switch (message) {
-        case WM_COMMAND:
-            id = LOWORD(wParam);
-            switch( id ) {
+            switch (message) {
+            case WM_COMMAND:
+                id = LOWORD(wParam);
+                switch( id ) {
 
-            case ROBOT_CHECK1:
-            case ROBOT_CHECK2:
-            case ROBOT_CHECK3:
-            case ROBOT_CHECK4:
-                ceAdjustVisibility( hDlg, giState, XP_TRUE );
-                break;
+                case ROBOT_CHECK1:
+                case ROBOT_CHECK2:
+                case ROBOT_CHECK3:
+                case ROBOT_CHECK4:
+                    ceAdjustVisibility( hDlg, giState, XP_TRUE );
+                    break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-            case REMOTE_CHECK1:
-            case REMOTE_CHECK2:
-            case REMOTE_CHECK3:
-            case REMOTE_CHECK4:
-                XP_ASSERT( giState->curServerHilite == SERVER_ISSERVER );
-                on = ceGetChecked( hDlg, id );
-                ceAdjustVisibility( hDlg, giState, XP_FALSE );
-                break;
+                case REMOTE_CHECK1:
+                case REMOTE_CHECK2:
+                case REMOTE_CHECK3:
+                case REMOTE_CHECK4:
+                    XP_ASSERT( giState->curServerHilite == SERVER_ISSERVER );
+                    on = ceGetChecked( hDlg, id );
+                    ceAdjustVisibility( hDlg, giState, XP_FALSE );
+                    break;
 #endif
 
-            case IDC_NPLAYERSCOMBO:
-                if ( HIWORD(wParam) == CBN_SELCHANGE ) {
-                    if ( giState->isNewGame ) {    /* ignore if in info mode */
-                        XP_U16 role;
-                        XP_U16 sel;
-                        sel = (XP_U16)SendDlgItemMessage( hDlg, 
-                                                          IDC_NPLAYERSCOMBO,
-                                                          CB_GETCURSEL, 0, 0L);
-                        ++sel;
-                        role = (XP_U16)SendDlgItemMessage( hDlg, IDC_ROLECOMBO,
-                                                           CB_GETCURSEL, 0, 0L);
-                        ceAdjustVisibility( hDlg, giState, XP_TRUE );
+                case IDC_NPLAYERSCOMBO:
+                    if ( HIWORD(wParam) == CBN_SELCHANGE ) {
+                        if ( giState->isNewGame ) {    /* ignore if in info mode */
+                            XP_U16 role;
+                            XP_U16 sel;
+                            sel = (XP_U16)SendDlgItemMessage( hDlg, 
+                                                              IDC_NPLAYERSCOMBO,
+                                                              CB_GETCURSEL, 0, 0L);
+                            ++sel;
+                            role = (XP_U16)SendDlgItemMessage( hDlg, IDC_ROLECOMBO,
+                                                               CB_GETCURSEL, 0, 0L);
+                            ceAdjustVisibility( hDlg, giState, XP_TRUE );
+                        }
                     }
-                }
-                break;
+                    break;
 
-            case IDC_ROLECOMBO:
-                if ( HIWORD(wParam) == CBN_SELCHANGE ) {
-                    if ( giState->isNewGame ) {    /* ignore if in info mode */
-                        XP_U16 sel;
-                        sel = (XP_U16)SendDlgItemMessage( hDlg, IDC_ROLECOMBO,
-                                                          CB_GETCURSEL, 0, 0L);
-                        giState->curServerHilite = (Connectedness)sel;
-                        ceAdjustVisibility( hDlg, giState, XP_FALSE );
+                case IDC_ROLECOMBO:
+                    if ( HIWORD(wParam) == CBN_SELCHANGE ) {
+                        if ( giState->isNewGame ) {    /* ignore if in info mode */
+                            XP_U16 sel;
+                            sel = (XP_U16)SendDlgItemMessage( hDlg, IDC_ROLECOMBO,
+                                                              CB_GETCURSEL, 0, 0L);
+                            giState->curServerHilite = (Connectedness)sel;
+                            ceAdjustVisibility( hDlg, giState, XP_FALSE );
+                        }
                     }
-                }
-                break;
+                    break;
 
 #ifndef STUBBED_DICT
-            case IDC_DICTBUTTON:
-                if ( giState->isNewGame ) { /* ignore if in info mode */
-                    giState->newDictName[0] = 0;
-                    if ( ce_pickDictFile( globals, giState->newDictName,
-                                          sizeof(giState->newDictName) ) ) {
-                        XP_UCHAR* basename = bname(giState->newDictName);
-                        ceSetDlgItemFileName( hDlg, id, basename );
+                case IDC_DICTBUTTON:
+                    if ( giState->isNewGame ) { /* ignore if in info mode */
+                        giState->newDictName[0] = 0;
+                        if ( ce_pickDictFile( globals, giState->newDictName,
+                                              sizeof(giState->newDictName) ) ) {
+                            XP_UCHAR* basename = bname(giState->newDictName);
+                            ceSetDlgItemFileName( hDlg, id, basename );
+                        }
                     }
-                }
-                break;
+                    break;
 #endif
 
-            case OPTIONS_BUTTON:
-                handleOptionsButton( hDlg, globals, giState );
-                break;
+                case OPTIONS_BUTTON:
+                    handleOptionsButton( hDlg, globals, giState );
+                    break;
 
-            case IDOK:
-                stateToGameInfo( hDlg, globals, giState );
-            case IDCANCEL:
-                EndDialog(hDlg, id);
-                giState->userCancelled = id == IDCANCEL;
-                return TRUE;
+                case IDOK:
+                    stateToGameInfo( hDlg, globals, giState );
+                case IDCANCEL:
+                    EndDialog(hDlg, id);
+                    giState->userCancelled = id == IDCANCEL;
+                    return TRUE;
+                }
+                break;
+                /*     case WM_CLOSE: */
+                /* 	EndDialog(hDlg, id); */
+                /* 	return TRUE; */
+                /*     default: */
+                /* 	return DefWindowProc(hDlg, message, wParam, lParam); */
             }
-            break;
-            /*     case WM_CLOSE: */
-            /* 	EndDialog(hDlg, id); */
-            /* 	return TRUE; */
-            /*     default: */
-            /* 	return DefWindowProc(hDlg, message, wParam, lParam); */
         }
     }
-
     return FALSE;
 } /* GameInfo */
 
