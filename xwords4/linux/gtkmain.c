@@ -571,6 +571,25 @@ handle_redo( GtkWidget* widget, GtkAppGlobals* globals )
 {
 } /* handle_redo */
 
+#ifdef FEATURE_TRAY_EDIT
+static void
+handle_trayEditToggle( GtkWidget* widget, GtkAppGlobals* globals, XP_Bool on )
+{
+} /* handle_trayEditToggle */
+
+static void
+handle_trayEditToggle_on( GtkWidget* widget, GtkAppGlobals* globals )
+{
+    handle_trayEditToggle( widget, globals, XP_TRUE );
+}
+
+static void
+handle_trayEditToggle_off( GtkWidget* widget, GtkAppGlobals* globals )
+{
+    handle_trayEditToggle( widget, globals, XP_FALSE );
+}
+#endif
+
 static void
 handle_resend( GtkWidget* widget, GtkAppGlobals* globals )
 {
@@ -661,6 +680,13 @@ makeMenus( GtkAppGlobals* globals, int argc, char** argv )
 			 GTK_SIGNAL_FUNC(handle_undo), globals );
     (void)createAddItem( fileMenu, "Redo", 
 			 GTK_SIGNAL_FUNC(handle_redo), globals );
+
+#ifdef FEATURE_TRAY_EDIT
+    (void)createAddItem( fileMenu, "Allow tray edit", 
+                         GTK_SIGNAL_FUNC(handle_trayEditToggle_on), globals );
+    (void)createAddItem( fileMenu, "Dis-allow tray edit", 
+                         GTK_SIGNAL_FUNC(handle_trayEditToggle_off), globals );
+#endif
 
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
@@ -832,11 +858,18 @@ gtk_util_getVTManager(XW_UtilCtxt* uc)
     return globals->cGlobals.params->vtMgr;
 } /* linux_util_getVTManager */
 
-static void
-gtk_util_askBlankFace(XW_UtilCtxt* uc, DictionaryCtxt* dict, XP_UCHAR* buf )
+static XP_S16
+gtk_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi,
+                       XP_U16 playerNum,
+                       XP_UCHAR4* texts, XP_U16 nTiles )
 {
-    gtkletterask( dict, buf );
-} /* gtk_util_askBlankFace */
+    XP_S16 chosen;
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+	XP_UCHAR* name = globals->cGlobals.params->gi.players[playerNum].name;
+
+    chosen = gtkletterask( pi->why == PICK_FOR_BLANK, name, nTiles, texts );
+    return chosen;
+} /* gtk_util_userPickTile */
 
 static XP_Bool
 gtk_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
@@ -1289,7 +1322,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_userError = gtk_util_userError;
     util->vtable->m_util_userQuery = gtk_util_userQuery;
     util->vtable->m_util_getVTManager = gtk_util_getVTManager;
-    util->vtable->m_util_askBlankFace = gtk_util_askBlankFace;
+    util->vtable->m_util_userPickTile = gtk_util_userPickTile;
     util->vtable->m_util_askPassword = gtk_util_askPassword;
     util->vtable->m_util_trayHiddenChange = gtk_util_trayHiddenChange;
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;
