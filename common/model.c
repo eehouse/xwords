@@ -540,7 +540,6 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
     if ( nStackEntries < nMovesSought ) {
         return XP_FALSE;
     } else if ( nStackEntries <= model->nPlayers ) {
-        util_userError( model->vol.util, ERR_CANT_UNDO_TILEASSIGN );
         return XP_FALSE;
     }
 
@@ -590,13 +589,13 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
         }
     }
 
-    /* If there's still a move on top of the stack, highlight its tiles since
-       they're now the most recent move. */
+    /* Find the first MOVE still on the stack and highlight its tiles since
+       they're now the most recent move. Trades and lost turns ignored.  */
+    nStackEntries = stack_getNEntries( stack );
     for ( ; ; ) {
         StackEntry entry;
-        XP_U16 movesLeft = stack_getNEntries( stack );
-        if ( movesLeft == 0 ||
-             !stack_getNthEntry( stack, movesLeft - 1, &entry ) ) {
+        if ( nStackEntries == 0 ||
+             !stack_getNthEntry( stack, nStackEntries - 1, &entry ) ) {
             break;
         }
         if ( entry.moveType == MOVE_TYPE ) {
@@ -617,13 +616,16 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
 
                 *varies = entry.u.move.moveInfo.tiles[nTiles].varCoord;
                 tile = getModelTileRaw( model, col, row );
-                setModelTileRaw( model, col, row, (CellTile)(tile | PREV_MOVE_BIT) );
-
-                notifyBoardListeners( model, entry.playerNum, col, row, XP_FALSE );
+                setModelTileRaw( model, col, row, 
+                                 (CellTile)(tile | PREV_MOVE_BIT) );
+                notifyBoardListeners( model, entry.playerNum, col, row, 
+                                      XP_FALSE );
             }
             break;
         } else if ( entry.moveType == ASSIGN_TYPE ) {
             break;
+        } else {
+            --nStackEntries;        /* look at the next one */
         }
     }
 
