@@ -154,5 +154,10 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 $(NAME).mbg $(NAME).mbm: $(IMG_SRC)
 	$(BMCONV) /h$(NAME).mbg $(NAME).mbm $(subst ..,/2..,$(IMG_SRC))
 
+# temporary hack until I get 'round to breaking the .rss file into
+# common, 60 and 80 (with the latter two including the first).
+$(NAME).rss: xwords.rss
+	ln -s $< $@
+
 clean:
 	rm -f $(GENERATED) $(NAME).aifspec $(OBJECTS) $(MBG) *.mbm
