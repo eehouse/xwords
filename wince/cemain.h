@@ -25,9 +25,31 @@
 #include "util.h"
 #include "mempool.h"
 
+
+enum { BONUS1_COLOR,
+       BONUS2_COLOR,
+       BONUS3_COLOR,
+       BONUS4_COLOR,
+       
+       BKG_COLOR, 
+       TILEBACK_COLOR,
+
+       USER_COLOR1,
+       USER_COLOR2,
+       USER_COLOR3,
+       USER_COLOR4,
+
+       BLACK_COLOR,     /* not editable by users */
+       WHITE_COLOR,
+
+       NUM_COLORS		/* last */
+};
+
+#define CUR_CE_PREFS_FLAGS 0x0002
 typedef struct CEAppPrefs {
     XP_U16 versionFlags;
     CommonPrefs cp;
+    COLORREF colors[NUM_COLORS];
     XP_Bool showColors;
 } CEAppPrefs;
 
@@ -69,24 +91,7 @@ enum {
     XW_TIME_RQST
 };
 
-enum { BKG_COLOR, 
-
-       BONUS1_COLOR,
-       BONUS2_COLOR,
-       BONUS3_COLOR,
-       BONUS4_COLOR,
-       
-       TILEBACK_COLOR,
-       BLACK_COLOR,
-       WHITE_COLOR,
-
-       USER_COLOR1,
-       USER_COLOR2,
-       USER_COLOR3,
-       USER_COLOR4,
-
-       NUM_COLORS		/* last */
-};
+#define NUM_EDITABLE_COLORS BLACK_COLOR
 
 typedef struct CEDrawCtx {
     DrawCtxVTable* vtable;
@@ -96,7 +101,6 @@ typedef struct CEDrawCtx {
 
     COLORREF prevBkColor;
 
-    COLORREF colors[NUM_COLORS];
     HBRUSH brushes[NUM_COLORS];
 
     HFONT trayFont;
@@ -114,6 +118,8 @@ typedef struct CEDrawCtx {
 } CEDrawCtx;
 
 DrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );
+void ce_drawctxt_update( DrawCtx* dctx, CEAppGlobals* globals );
+
 
 #ifdef DEBUG
 void logLastError(XP_UCHAR* comment );
