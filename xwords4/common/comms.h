@@ -86,8 +86,8 @@ XP_S16 comms_send( CommsCtxt* comms, CommsConnType conType,
 XP_S16 comms_resendAll( CommsCtxt* comms );
 
 
-XP_Bool comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
-                                    CommsAddrRec* addr );
+XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
+                                   CommsAddrRec* addr );
 
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
