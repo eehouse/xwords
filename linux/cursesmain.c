@@ -327,7 +327,7 @@ static XP_Bool
 handleHint( CursesAppGlobals* globals )
 {
     XP_Bool redo;
-    globals->doDraw = board_requestHint( globals->cGlobals.game.board, &redo );
+    globals->doDraw = board_requestHint( globals->cGlobals.game.board, 0, &redo );
     return XP_TRUE;
 } /* handleHint */
 
