@@ -65,7 +65,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( !init->isQuery ) {
             ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
             /* also want to expand the text box to the bottom */
-/*             ceCenterCtl( hDlg, IDOK ); */
+            ceCenterCtl( hDlg, IDOK );
         }
         init->textIsSet = XP_FALSE; /* postpone to avoid highlight. */
 
