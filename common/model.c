@@ -534,8 +534,13 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
     XP_Bool success = XP_TRUE;
     XP_S16 moveSought = *moveNumP;
     XP_U16 nMovesUndone;
+    XP_U16 nStackEntries;
     
-    if ( stack_getNEntries( stack ) < nMovesSought ) {
+    nStackEntries = stack_getNEntries( stack );
+    if ( nStackEntries < nMovesSought ) {
+        return XP_FALSE;
+    } else if ( nStackEntries <= model->nPlayers ) {
+        util_userError( model->vol.util, ERR_CANT_UNDO_TILEASSIGN );
         return XP_FALSE;
     }
 
@@ -578,6 +583,7 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                 /* nothing to do, since nothing happened */
 
             } else {
+                XP_ASSERT( entry.moveType == ASSIGN_TYPE );
                 success = XP_FALSE;
                 break;
             }
@@ -615,6 +621,8 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
 
                 notifyBoardListeners( model, entry.playerNum, col, row, XP_FALSE );
             }
+            break;
+        } else if ( entry.moveType == ASSIGN_TYPE ) {
             break;
         }
     }
