@@ -3031,7 +3031,7 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
     ListData ld;
     XP_U16 i;
     XP_S16 chosen;
-    XP_UCHAR labelBuf[64];
+    XP_UCHAR labelBuf[96];
     XP_UCHAR* name;
     XP_UCHAR* labelFmt;
     FieldPtr fld;
