@@ -358,10 +358,10 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp )
     }
 
     if ( !dict ) {
-        XP_ASSERT( !!newDictName );
 #ifdef STUBBED_DICT
         dict = make_stubbed_dict( MPPARM_NOCOMMA(globals->mpool) );
 #else
+        XP_ASSERT( !!newDictName );
         XP_DEBUGF( "calling ce_dictionary_make" );
         dict = ce_dictionary_make( globals, copyString( MEMPOOL newDictName ));
 #endif
@@ -372,7 +372,8 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp )
     if ( newGame ) {
         XP_U16 newGameID = 0;
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
-                    newGameID, &globals->appPrefs.cp, (TransportSend)NULL, globals );
+                    newGameID, &globals->appPrefs.cp, (TransportSend)NULL, 
+                    globals );
 
         if ( !!gp ) {
             globals->gameInfo.hintsNotAllowed = gp->hintsNotAllowed;
@@ -528,9 +529,13 @@ ceLoadSavedGame( CEAppGlobals* globals )
 
         hasDict = stream_getU8( stream );
         if ( hasDict ) {
+#ifdef STUBBED_DICT
+            XP_ASSERT(0);       /* just don't do this!!!! */
+#else
             XP_UCHAR* name = stringFromStream( MPPARM(globals->mpool)
                                                stream );
             dict = ce_dictionary_make( globals, name );
+#endif
         } else {
             dict = NULL;
         }
@@ -629,6 +634,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                                       hWnd, globals );
 
     /* choose one.  If none found it's an error. */
+#ifndef STUBBED_DICT
     globals->gameInfo.dictName = ceLocateNthDict( MPPARM(mpool) 0 );
     result = globals->gameInfo.dictName != NULL;
     if ( !result ) {
@@ -636,7 +642,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                         "dictionary.", L"Fatal error" );
         return FALSE;
     }
-
+#endif
 
     gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, "Player %d" );
 
@@ -800,7 +806,11 @@ doNewGame( CEAppGlobals* globals, XP_Bool silent )
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
                     (DLGPROC)GameInfo, (long)&giState );
 
-    if ( !giState.userCancelled && ((XP_U16)XP_STRLEN(giState.newDictName) > 0) ) {
+    if ( !giState.userCancelled
+#ifndef STUBBED_DICT
+         && ((XP_U16)XP_STRLEN(giState.newDictName) > 0)
+#endif
+         ) {
 
         if ( giState.prefsChanged ) {
             loadCurPrefsFromState( &globals->appPrefs, &globals->gameInfo, 
@@ -1678,7 +1688,11 @@ static DictionaryCtxt*
 ce_util_makeEmptyDict( XW_UtilCtxt* uc )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+#ifdef STUBBED_DICT
+    return make_stubbed_dict( MPPARM_NOCOMMA(globals->mpool) );
+#else
     return ce_dictionary_make( globals, NULL );
+#endif
 } /* ce_util_makeEmptyDict */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
