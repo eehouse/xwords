@@ -590,7 +590,7 @@ makeRobotMove( ServerCtxt* server )
     XP_ASSERT( !!server_getEngineFor( server, turn ) );
     finished = engine_findMove( server_getEngineFor( server, turn ),
                                 model, model_getDictionary( model ), 
-                                tileSet->tiles, tileSet->nTiles, 
+                                tileSet->tiles, tileSet->nTiles, 0,
                                 targetScore, &canMove, &newMove );
     if ( finished ) {
         XP_UCHAR* str;
@@ -902,13 +902,20 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
     XP_U32 gameID;
     PoolContext* pool;
 
+    /* version */
+    XP_U8 streamVersion = stream_getU8( stream );
+    XP_ASSERT( streamVersion == CUR_STREAM_VERS );
+    if ( streamVersion != CUR_STREAM_VERS ) {
+        return XP_FALSE;
+    }
+
     gameID = stream_getBits( stream, 32 );
     XP_STATUSF( "read gameID of %ld; calling comms_setConnID", gameID );
     server->vol.gi->gameID = gameID;
     comms_setConnID( server->vol.comms, gameID );
 
     XP_MEMSET( &localGI, 0, sizeof(localGI) );
-    gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
+    gi_readFromStream( MPPARM(server->mpool) stream, streamVersion, &localGI );
     localGI.serverRole = SERVER_ISCLIENT;
 
     /* so it's not lost (HACK!).  Without this, a client won't have a default
@@ -1036,8 +1043,11 @@ server_sendInitialMessage( ServerCtxt* server )
         stream_open( stream );
         stream_putBits( stream, XWPROTO_NBITS, XWPROTO_CLIENT_SETUP );
 
+        /* write version for server's benefit */
+        stream_putU8( stream, CUR_STREAM_VERS );
+
         XP_STATUSF( "putting gameID %ld into msg", gameID );
-        stream_putBits( stream, 32, gameID );
+        stream_putU32( stream, gameID );
 
         makeSendableGICopy( server, &localGI, deviceIndex );
         gi_writeToStream( stream, &localGI );
@@ -1267,33 +1277,84 @@ makeNotAVowel( ServerCtxt* server, Tile* newTile )
 } /* makeNotAVowel */
 #endif
 
+static void
+curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
+                XP_U16* nUsedP, XP_UCHAR4* curTrayText )
+{
+    const TrayTileSet* tileSet = model_getPlayerTiles( server->vol.model, turn );
+    DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+    XP_U16 i, j;
+    XP_U16 size = tileSet->nTiles;
+    Tile* tp = tileSet->tiles;
+    XP_U16 tradedTiles[MAX_TRAY_TILES];
+    XP_U16 nNotInTray = 0;
+    XP_U16 nUsed = 0;
+
+    XP_MEMSET( tradedTiles, 0xFF, sizeof(tradedTiles) );
+    if ( !!notInTray ) {
+        Tile* tp = notInTray->tiles;
+        nNotInTray = notInTray->nTiles;
+        for ( i = 0; i < nNotInTray; ++i ) {
+            tradedTiles[i] = *tp++;
+        }
+    }
+
+    for ( i = 0; i < size; ++i ) {
+        Tile tile = *tp++;
+        XP_Bool toBeTraded = XP_FALSE;
+
+        for ( j = 0; j < nNotInTray; ++j ) {
+            if ( tradedTiles[j] == tile ) {
+                tradedTiles[j] = 0xFFFF;
+                toBeTraded = XP_TRUE;
+                break;
+            }
+        }
+
+        if ( !toBeTraded ) {
+            dict_tilesToString( dict, &tile, 1, (XP_UCHAR*)&curTrayText[nUsed++] );
+        }
+    }
+    *nUsedP = nUsed;
+} /* curTrayAsTexts */
+
 /* Get tiles for one user.  If picking is available, let user pick until
  * cancels.  Otherwise, and after cancel, pick for 'im.
  */
 static void
 fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch, 
-            TrayTileSet* resultTiles )
+            const TrayTileSet* tradedTiles, TrayTileSet* resultTiles )
 {
     XP_Bool ask;
     XP_U16 nSoFar = 0;
+    XP_U16 nLeft;
     PoolContext* pool = server->pool;
     TrayTileSet oneTile;
     PickInfo pi;
+    XP_UCHAR4 curTray[MAX_TRAY_TILES];
+    DictionaryCtxt* dict = model_getDictionary( server->vol.model );
 
     XP_ASSERT( !!pool );
 #ifdef FEATURE_TRAY_EDIT
     ask = server->vol.gi->allowPickTiles
-        && (!server->vol.gi->players[playerNum].isRobot
-            || server->vol.gi->allowPickTilesRobot);
+        && !server->vol.gi->players[playerNum].isRobot;
 #else
     ask = XP_FALSE;
 #endif
+    
+    nLeft = pool_getNTilesLeft( pool );
+    if ( nLeft < nToFetch ) {
+        nToFetch = nLeft;
+    }
 
     oneTile.nTiles = 1;
 
     pi.why = PICK_FOR_CHEAT;
     pi.nTotal = nToFetch;
     pi.thisPick = 0;
+    pi.curTiles = curTray;
+
+    curTrayAsTexts( server, playerNum, tradedTiles, &pi.nCurTiles, curTray );
 
 #ifdef FEATURE_TRAY_EDIT        /* good compiler would note ask==0, but... */
     /* First ask until cancelled */
@@ -1305,6 +1366,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 
         model_packTilesUtil( server->vol.model, pool,
                              XP_TRUE, &nUsed, texts, tiles );
+
         ++pi.thisPick;
         chosen = util_userPickTile( server->vol.util, &pi,
                                     playerNum, texts, nUsed );
@@ -1315,6 +1377,8 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
             Tile tile = tiles[chosen];
             oneTile.tiles[0] = tile;
             pool_removeTiles( pool, &oneTile );
+
+            (void)dict_tilesToString( dict, &tile, 1, (XP_UCHAR*)&curTray[pi.nCurTiles++] );
 
             resultTiles->tiles[nSoFar++] = tile;
         }
@@ -1362,7 +1426,7 @@ assignTilesToAll( ServerCtxt* server )
     }
     for ( i = 0; i < nPlayers; ++i ) {
         TrayTileSet newTiles;
-        fetchTiles( server, i, numAssigned, &newTiles );
+        fetchTiles( server, i, numAssigned, NULL, &newTiles );
         model_assignPlayerTiles( model, i, &newTiles );
     }
 
@@ -1778,7 +1842,7 @@ server_commitMove( ServerCtxt* server )
         ++server->nv.nPassesInRow;
     }
 
-    fetchTiles( server, turn, nTilesMoved, &newTiles );
+    fetchTiles( server, turn, nTilesMoved, NULL, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( isClient ) {
@@ -1846,7 +1910,7 @@ server_commitTrade( ServerCtxt* server, TileBit selBits )
 
     removeTradedTiles( server, selBits, &oldTiles );
 
-    fetchTiles( server, turn, oldTiles.nTiles, &newTiles );
+    fetchTiles( server, turn, oldTiles.nTiles, &oldTiles, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
