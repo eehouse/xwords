@@ -429,7 +429,8 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
                                                            nTiles );
     if ( *canMoveP  ) {
 
-        util_engineStarting( engine->util );
+        util_engineStarting( engine->util, 
+                             engine->rack[engine->blankTile] );
 
         engine->targetScore = targetScore;
 
