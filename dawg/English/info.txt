@@ -21,7 +21,7 @@ LANGFILTER_PRECLIP: tr -d '\r' |
 
 LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
 LANGFILTER_POSTCLIP: | grep '^[A-Z]*$'
-LANGFILTER_POSTCLIP: | tr -s '\n\r' '\000\000'
+LANGFILTER_POSTCLIP: | tr '\n' '\000'
 LANGFILTER_POSTCLIP: | sort -z
 
 # We can trust sort (above) to do the right thing since there's no
