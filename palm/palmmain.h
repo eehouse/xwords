@@ -336,6 +336,7 @@ enum {
     , GLOBALS_FEATURE           /* for passing globals to form handlers */
     , FEATURE_WANTS_68K         /* support for (pre-ship) ability to choose
                                    armlet or 68K */
+    , DAWG_STORE_FEATURE
 };
 enum { WANTS_68K, WANTS_ARM };
 

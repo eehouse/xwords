@@ -459,9 +459,8 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
 
 #endif /* STUBBED_DICT */
 
-#ifndef OVERRIDE_EDGE_FOR_INDEX
-array_edge* 
-dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
+static array_edge* 
+dict_super_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
 {
     array_edge* result;
 
@@ -470,15 +469,34 @@ dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
     } else {
         XP_ASSERT( index < dict->numEdges );
 #ifdef NODE_CAN_4
-        index *= dict->nodeSize;
+        /* avoid long-multiplication lib call on Palm... */
+        if ( dict->nodeSize == 3 ) {
+            index += (index << 1);
+        } else {
+            XP_ASSERT( dict->nodeSize == 4 );
+            index <<= 2;
+        }
 #else
-        index *= 3;
+        index += (index << 1);
 #endif
         result = &dict->base[index];
     }
     return result;
 } /* dict_edge_for_index */
-#endif
+
+static array_edge*
+dict_super_getTopEdge( DictionaryCtxt* dict )
+{
+    return dict->topEdge;
+} /* dict_super_getTopEdge */
+
+void
+dict_super_init( DictionaryCtxt* ctxt )
+{
+    /* subclass may change these later.... */
+    ctxt->func_edge_for_index = dict_super_edge_for_index;
+    ctxt->func_dict_getTopEdge = dict_super_getTopEdge;
+} /* dict_super_init */
 
 #ifdef CPLUS
 }
