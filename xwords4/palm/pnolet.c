@@ -20,7 +20,13 @@
 #include <PceNativeCall.h>
 #include "pnostate.h"
 #include "pace_gen.h"
+#include "pace_man.h"           /* for the ExgSocketType flippers */
 #include "palmmain.h"
+
+typedef union ParamStub {
+    ExgAskParamType exgAskParamType;
+    ExgSocketType   exgSocketType;
+} ParamStub;
 
 unsigned long
 realArmletEntryPoint( const void *emulStateP, 
@@ -40,6 +46,40 @@ ArmletEntryPoint( const void *emulStateP,
                                  call68KFuncP );
 }
 
+#ifdef IR_EXCHMGR
+static XP_Bool
+convertParamToArm( UInt16 cmd, ParamStub* armParam, MemPtr parm68K )
+{
+    XP_Bool revert;
+
+    if ( cmd == sysAppLaunchCmdExgAskUser ) {
+        /* We don't read the data, but we do write to one field.  */
+        revert = XP_TRUE;
+    } else if ( cmd == sysAppLaunchCmdExgReceiveData ) {
+        flipEngSocketToArm( &armParam->exgSocketType, 
+                            (const unsigned char*)parm68K );
+        revert = XP_TRUE;       /* just to be safe */
+    } else {
+        revert = XP_FALSE;
+    }
+
+    return revert;
+} /* convertParamToArm */
+
+static void
+convertParamFromArm( UInt16 cmd, MemPtr parm68K, ParamStub* armParam )
+{
+    if ( cmd == sysAppLaunchCmdExgAskUser ) {
+        write_unaligned8( &((unsigned char*)parm68K)[4], 
+                           armParam->exgAskParamType.result );
+    } else if ( cmd == sysAppLaunchCmdExgReceiveData ) {
+        flipEngSocketFromArm( parm68K, &armParam->exgSocketType );
+    } else {
+        XP_ASSERT(0);
+    }
+}
+#endif
+
 unsigned long
 realArmletEntryPoint( const void *emulStateP, 
                       void *userData68KP, 
@@ -48,11 +88,13 @@ realArmletEntryPoint( const void *emulStateP,
     PNOState* loc;
     PNOState state;
     PnoletUserData* dataP;
-    char* str;
-    char buf[32];
     unsigned long result;
     unsigned long oldR10;
-    unsigned long sp;
+    UInt16 cmd;
+    MemPtr cmdPBP;
+    MemPtr oldVal;
+    ParamStub ptrStorage;
+    XP_Bool mustRevert;
 
     loc = getStorageLoc();
 
@@ -60,15 +102,17 @@ realArmletEntryPoint( const void *emulStateP,
     dataP->stateSrc = (PNOState*)Byte_Swap32((unsigned long)&state);
     dataP->stateDest = (PNOState*)Byte_Swap32((unsigned long)loc);
 
-    state.emulStateP = emulStateP;
-    state.call68KFuncP = call68KFuncP;
     state.gotTable = (unsigned long*)
         Byte_Swap32((unsigned long)dataP->gotTable);
 
-    {
+    if ( !dataP->recursive ) {
         STACK_START(unsigned char, stack, 4 );
         ADD_TO_STACK4(stack, userData68KP, 0);
         STACK_END(stack);
+
+        state.emulStateP = emulStateP;
+        state.call68KFuncP = call68KFuncP;
+
         (*call68KFuncP)( emulStateP, 
                          Byte_Swap32((unsigned long)dataP->storageCallback),
                          stack, 4 );
@@ -77,16 +121,26 @@ realArmletEntryPoint( const void *emulStateP,
     asm( "mov %0, r10" : "=r" (oldR10) );
     asm( "mov r10, %0" : : "r" (state.gotTable) );
 
-    asm( "mov %0, r13" : "=r" (sp) );
-    StrPrintF( buf, "Launching PilotMain;sp=%lx", sp );
-    WinDrawChars( buf, StrLen(buf), 5, 100 );
+    cmd = Byte_Swap16( dataP->cmd );
+    cmdPBP = (MemPtr)Byte_Swap32((unsigned long)dataP->cmdPBP);
 
-    result = PM2(PilotMain)( Byte_Swap16(dataP->cmd), 
-                             Byte_Swap32((unsigned long)dataP->cmdPBP), 
-                             Byte_Swap16(dataP->launchFlags) );
+#ifdef IR_EXCHMGR
+    /* if the cmd is sysAppLaunchCmdExgAskUser or
+       sysAppLaunchCmdExgReceiveData then we're going to be making use of the
+       cmdPBP value in PilotMain.  Need to convert it here. */
+    mustRevert = convertParamToArm( cmd, &ptrStorage, cmdPBP );
+#endif
 
-    str = "back from PilotMain";
-    WinDrawChars( str, StrLen(str), 5, 150 );
+    oldVal = cmdPBP;
+    cmdPBP = &ptrStorage;
+
+    result = PM2(PilotMain)( cmd, cmdPBP, Byte_Swap16(dataP->launchFlags) );
+
+#ifdef IR_EXCHMGR
+    if ( mustRevert ) {
+        convertParamFromArm( cmd, oldVal, &ptrStorage );
+    }
+#endif
 
     asm( "mov r10, %0" : : "r" (oldR10) );
     return result;
@@ -98,9 +152,10 @@ getStorageLoc()
     asm( "adr r0,data" );
     asm( "mov pc,lr" );
     asm( "data:" );
+    /* we need sizeof(PNOState) worth of bytes after the data label. */
     asm( "nop" );
     asm( "nop" );
-    asm( "nop" );
+    return (PNOState*)0L;       /* shut up compiler; overwrite me!!!! */
     /* The compiler's adding a "mov pc,lr" here too that we can overwrite. */
 }
 
