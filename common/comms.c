@@ -27,6 +27,7 @@
 #include "game.h"
 #include "xwstream.h"
 #include "memstream.h"
+#include "strutils.h"
 
 #define cEND 0x65454e44
 
@@ -42,6 +43,8 @@ typedef struct MsgQueueElem {
     MsgID msgID;
 } MsgQueueElem;
 
+typedef XP_U16 HostID;
+
 typedef struct AddressRecord {
     struct AddressRecord* next;
     CommsAddrRec addr;
@@ -52,6 +55,7 @@ typedef struct AddressRecord {
     MsgID nextMsgID;		/* on a per-channel basis */
     MsgID lastMsgReceived;	/* on a per-channel basis */
     XP_PlayerAddr channelNo;
+    HostID remotesID;
 } AddressRecord;
 
 #define ADDRESSRECORD_SIZE_68K 20
@@ -62,6 +66,7 @@ struct CommsCtxt {
     XP_U32 connID;		        /* 0 means ignore; otherwise must match */
     XP_U16 nextChannelNo;
     AddressRecord* recs;        /* return addresses */
+    HostID localID;             /* allows relay to match host with socket */
 
     TransportSend sendproc;
     void* sendClosure;
@@ -87,6 +92,7 @@ struct CommsCtxt {
  ****************************************************************************/
 static AddressRecord* rememberChannelAddress( CommsCtxt* comms, 
                                               XP_PlayerAddr channelNo, 
+                                              HostID hostID,
                                               CommsAddrRec* addr );
 static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
                                  CommsAddrRec** addr );
@@ -103,6 +109,7 @@ CommsCtxt*
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
             TransportSend sendproc, void* closure )
 {
+    HostID localID;
     CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
 
@@ -124,6 +131,10 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
         XP_MEMCPY( result->addr.u.ip.hostName, name, XP_STRLEN(name) );
     }
 #endif
+    do {
+        localID = XP_RANDOM();
+    } while ( localID == 0 );
+    result->localID = localID;
 
     return result;
 } /* comms_make */
@@ -375,6 +386,7 @@ comms_send( CommsCtxt* comms, CommsConnType conType, XWStreamCtxt* stream )
     AddressRecord* rec = getRecordFor( comms, channelNo );
     MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
     MsgID lastMsgRcd = (!!rec)? rec->lastMsgReceived : 0;
+    HostID remotesID = (!!rec)? rec->remotesID : 0;
     MsgQueueElem* newMsgElem;
     XWStreamCtxt* msgStream;
 
@@ -398,16 +410,24 @@ comms_send( CommsCtxt* comms, CommsConnType conType, XWStreamCtxt* stream )
                                  NULL, 0, 
                                  (MemStreamCloseCallback)NULL );
     stream_open( msgStream );
-    stream_putU32( msgStream, comms->connID );
 
-#ifdef BEYOND_IR
-    if ( conType == COMMS_CONN_IP ) {
-        stream_putU16( msgStream, comms->listenPort );
-        XP_LOGF( "wrote return port to stream: %d", comms->listenPort );
-    }
+#ifdef BEYOND_IR 
+    /* This will change, of course!!! */
+    stringToStream( msgStream, "COOKIE" );
+    stream_putU16( msgStream, comms->localID );
+    XP_LOGF( "localID = 0x%x", comms->localID );
 #endif
 
+    stream_putU32( msgStream, comms->connID );
+    XP_LOGF( "connID: %ld", comms->connID );
+
     stream_putU16( msgStream, channelNo );
+    XP_LOGF( "channelNo: %d", channelNo );
+#ifdef BEYOND_IR 
+    stream_putU16( msgStream, remotesID ); /* for the relay's use */
+    XP_LOGF( "remotesID = %ld", remotesID );
+#endif
+    /* Beyond this point the relay doesn't peek */
     stream_putU32( msgStream, msgID );
     stream_putU32( msgStream, lastMsgRcd );
 
@@ -585,20 +605,30 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     MsgID lastMsgRcd;
     XP_Bool validMessage = XP_TRUE;
     AddressRecord* recs = (AddressRecord*)NULL;
+    XP_UCHAR* cookie;
+    HostID senderID, hostID;
+
+#ifdef BEYOND_IR 
+    cookie = stringFromStream( MPPARM(comms->mpool) stream );
+    XP_LOGF( "got cookie %s from message", cookie );
+    XP_ASSERT( 0 == XP_MEMCMP( cookie, "COOKIE", 6 ) );
+    senderID = stream_getU16( stream );
+    XP_LOGF( "senderID = 0x%x", senderID );
+#endif
 
     connID = stream_getU32( stream );
     XP_STATUSF( "read connID of %lx", connID );
 
-#ifdef BEYOND_IR
-    if ( addr->conType == COMMS_CONN_IP ) {
-        addr->u.ip.port = stream_getU16( stream );
-        XP_LOGF( "read return port from stream: %d", addr->u.ip.port );
-    }
-#endif
-
-    if ( comms->connID == connID || comms->connID == CONN_ID_NONE ) {
+    if ( senderID != 0 && senderID == comms->localID ) {
+        validMessage = XP_FALSE; /* hack around relay bug */
+    } else if ( comms->connID == connID || comms->connID == CONN_ID_NONE ) {
 
         channelNo = stream_getU16( stream );
+#ifdef BEYOND_IR
+        hostID = stream_getU16( stream );
+        XP_LOGF( "got hostID: %d", hostID );
+        XP_ASSERT( hostID == 0 || hostID == comms->localID );
+#endif
         msgID = stream_getU32( stream );
         lastMsgRcd = stream_getU32( stream );
 
@@ -607,10 +637,13 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
         removeFromQueue( comms, channelNo, lastMsgRcd );
 
         if ( channelNo == 0 ) {
-            XP_ASSERT( comms->isServer );
-            XP_ASSERT( msgID == 0 );
-            channelNo = ++comms->nextChannelNo;
-            XP_STATUSF( "assigning channelNo=%d", channelNo );
+            if ( !comms->isServer ) {
+                validMessage = XP_FALSE;
+            } else {
+                XP_ASSERT( msgID == 0 );
+                channelNo = ++comms->nextChannelNo;
+                XP_STATUSF( "assigning channelNo=%d", channelNo );
+            }
         } else {
             recs = getRecordFor( comms, channelNo );	
             /* messageID for an incomming message should be one greater than
@@ -629,7 +662,7 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
         }
     
         if ( validMessage ) {
-            recs = rememberChannelAddress( comms, channelNo, addr );
+            recs = rememberChannelAddress( comms, channelNo, senderID, addr);
 
             stream_setAddress( stream, channelNo );
 
@@ -689,27 +722,32 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 
 static AddressRecord*
 rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
-                        CommsAddrRec* addr )
+                        HostID hostID, CommsAddrRec* addr )
 {
     AddressRecord* recs = NULL;
-    if ( addr != NULL ) {
-        recs = getRecordFor( comms, channelNo );
-        if ( !!recs ) {
-            /* Looks as if this will overwrite the address each time a new
-               message comes in.  I *guess* that's right... */
-            XP_MEMCPY( &recs->addr, addr, sizeof(recs->addr) );
-        } else {
-            /* not found; add a new entry */
-            recs = (AddressRecord*)XP_MALLOC( comms->mpool, sizeof(*recs) );
+    recs = getRecordFor( comms, channelNo );
+    if ( !recs ) {
+        /* not found; add a new entry */
+        recs = (AddressRecord*)XP_MALLOC( comms->mpool, sizeof(*recs) );
 
-            recs->nextMsgID = 0;
-            recs->channelNo = channelNo;
-            XP_MEMCPY( &recs->addr, addr, sizeof(recs->addr) );
+        recs->nextMsgID = 0;
+        recs->channelNo = channelNo;
+        recs->remotesID = hostID;
 #ifdef DEBUG
-            recs->nUniqueBytes = 0;
+        recs->nUniqueBytes = 0;
 #endif
-            recs->next = comms->recs;
-            comms->recs = recs;
+        recs->next = comms->recs;
+        comms->recs = recs;
+    }
+
+    /* overwrite existing address with new one.  I assume that's the right
+       move. */
+    if ( !!recs ) {
+        if ( !!addr ) {
+            XP_MEMCPY( &recs->addr, addr, sizeof(recs->addr) );
+            XP_ASSERT( recs->remotesID == hostID );
+        } else {
+            XP_MEMSET( &recs->addr, 0, sizeof(recs->addr) );
         }
     }
     return recs;
@@ -735,13 +773,13 @@ getRecordFor( CommsCtxt* comms, XP_PlayerAddr channelNo )
     AddressRecord* recs;
 
     if ( channelNo == CHANNEL_NONE ) {
-	return (AddressRecord*)NULL;
+        return (AddressRecord*)NULL;
     }
 
     for ( recs = comms->recs; !!recs; recs = recs->next ) {
-	if ( recs->channelNo == channelNo ) {
-	    return recs;
-	}
+        if ( recs->channelNo == channelNo ) {
+            return recs;
+        }
     }
     return (AddressRecord*)NULL;
 } /* getRecordFor */
