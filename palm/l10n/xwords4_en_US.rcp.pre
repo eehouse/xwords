@@ -45,7 +45,7 @@ BEGIN
     PULLDOWN "Game"
     BEGIN
         MENUITEM "Tile values" XW_TILEVALUES_PULLDOWN_ID "V"
-        MENUITEM "Tiles left"  XW_TILESLEFT_PULLDOWN_ID "L"
+        MENUITEM "Remaining tiles"  XW_TILESLEFT_PULLDOWN_ID "R"
         MENUITEM "Current game info..." XW_PASSWORDS_PULLDOWN_ID "G"
         MENUITEM "History" XW_HISTORY_PULLDOWN_ID "Y"
         MENUITEM "Final scores" XW_FINISH_PULLDOWN_ID "F"
