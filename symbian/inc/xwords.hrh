@@ -1,0 +1,56 @@
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* 
+ * Copyright 2005 by Eric House (fixin@peak.org).  (based on sample
+ * app helloworldbasic "Copyright (c) 2002, Nokia. All rights
+ * reserved.")
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#ifndef __XWORDS_HRH__
+#define __XWORDS_HRH__
+
+// HelloWorldBasic enumerate command codes
+enum TXWordsIds {
+    XW_TIMEREQ_COMMAND = 0x6000  // convention is for >= 0x6000 -- they say
+    ,XW_NEWGAME_COMMAND
+    ,XW_SAVEDGAMES_COMMAND
+    ,XW_PREFS_COMMAND
+    ,XW_ABOUT_COMMAND
+
+    ,XW_VALUES_COMMAND
+    ,XW_REMAIN_COMMAND
+    ,XW_CURINFO_COMMAND
+    ,XW_HISTORY_COMMAND
+    ,XW_FINALSCORES_COMMAND
+
+    ,XW_HINT_COMMAND
+    /* #ifdef XWFEATURE_SEARCHLIMIT */
+    /*     ,XW_LIMHINT_COMMAND */
+    /* #endif */
+    ,XW_NEXTHINT_COMMAND
+    ,XW_UNDOCUR_COMMAND
+    ,XW_UNDOLAST_COMMAND
+    ,XW_DONE_COMMAND
+    ,XW_JUGGLE_COMMAND
+    ,XW_TRADE_COMMAND
+    ,XW_HIDETRAY_COMMAND
+    ,XW_FLIP_COMMAND
+    ,XW_TOGGLEVALS_COMMAND
+
+    ,EAskContents               /* edit control in generic ask dlg */
+};
+
+#endif // __XWORDS_HRH__
