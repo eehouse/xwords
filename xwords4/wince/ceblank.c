@@ -108,31 +108,32 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         loadLettersList( hDlg, bState );
     } else {
         bState = (BlankDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
+        if ( !!bState ) {
 
-        switch (message) {
-        case WM_KEYDOWN:           /* key down.  Select a list item? */
-            XP_LOGF( "got WM_KEYDOWN" );
-            break;
-        case WM_COMMAND:
-            id = LOWORD(wParam);
-            if ( 0 ) {
-#ifdef FEATURE_TRAY_EDIT
-            } else if ( id == IDC_PICKALL ) {
-                bState->result = PICKER_PICKALL;
-            } else if ( id == IDC_BACKUP ) {
-                bState->result = PICKER_BACKUP;
-#endif
-            } else if ( id == IDOK ) {
-                bState->result = 
-                    (XP_S16)SendDlgItemMessage( hDlg, BLANKFACE_LIST, 
-                                                LB_GETCURSEL, 0, 0 );
-            } else {
+            switch ( message ) {
+            case WM_KEYDOWN:           /* key down.  Select a list item? */
+                XP_LOGF( "got WM_KEYDOWN" );
                 break;
+            case WM_COMMAND:
+                id = LOWORD(wParam);
+                if ( 0 ) {
+#ifdef FEATURE_TRAY_EDIT
+                } else if ( id == IDC_PICKALL ) {
+                    bState->result = PICKER_PICKALL;
+                } else if ( id == IDC_BACKUP ) {
+                    bState->result = PICKER_BACKUP;
+#endif
+                } else if ( id == IDOK ) {
+                    bState->result = 
+                        (XP_S16)SendDlgItemMessage( hDlg, BLANKFACE_LIST, 
+                                                    LB_GETCURSEL, 0, 0 );
+                } else {
+                    break;
+                }
+                EndDialog( hDlg, id );
+                return TRUE;
             }
-            EndDialog( hDlg, id );
-            return TRUE;
         }
-
     }
 
     return FALSE;
