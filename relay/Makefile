@@ -15,13 +15,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-
-SRC = xwrelay.cpp cref.cpp ctrl.cpp
+CC = g++
+SRC = xwrelay.cpp cref.cpp ctrl.cpp tpool.cpp
+OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -lpthread -g
+CPPFLAGS += -g
 
 all: xwrelay
 
-xwrelay: $(SRC)
+xwrelay: $(OBJ)
 
 clean:
-	rm -f xwrelay *.o
+	rm -f xwrelay $(OBJ)
+
+tags:
+	etags *.cpp *.h
