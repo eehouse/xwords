@@ -278,7 +278,7 @@ positionBoard( PalmAppGlobals* globals )
 
     /* since we only want the lines between cells one pixel wide, we can
        increase scale more than 2x when doubling. */
-    scale = scale * doubler + doubler - 1;
+    scale = scale * doubler;
     if ( !showGrid ) {
         --scale;
     }
@@ -288,7 +288,7 @@ positionBoard( PalmAppGlobals* globals )
     if ( isLefty ) {
         leftEdge = bWidth - (nCols * scale) - freeSpace - 1;
     } else {
-        leftEdge = (PALM_BOARD_LEFT_RH * doubler) + freeSpace;
+        leftEdge = PALM_BOARD_LEFT_RH + freeSpace;
     }
 
     /* position the timer.  There are really four cases: width depends on
@@ -314,13 +314,13 @@ positionBoard( PalmAppGlobals* globals )
         boardTop = PALM_BOARD_TOP;
         scoreLeft = PALM_SCORE_LEFT;
         scoreTop = PALM_SCORE_TOP;
-        scoreWidth = bWidth - PALM_SCORE_LEFT - timerWidth;
+        scoreWidth = (bWidth/doubler) - PALM_SCORE_LEFT - timerWidth;
         scoreHeight = PALM_SCORE_HEIGHT;
     } else {
         boardTop = PALM_GRIDLESS_BOARD_TOP;
         scoreLeft = isLefty? 0: PALM_GRIDLESS_SCORE_LEFT;
         scoreTop = PALM_GRIDLESS_SCORE_TOP;
-        scoreWidth =  PALM_GRIDLESS_SCORE_WIDTH;
+        scoreWidth =  PALM_GRIDLESS_SCORE_WIDTH * doubler;
         scoreHeight = PALM_TRAY_TOP - PALM_GRIDLESS_SCORE_TOP - 2;
 
         if ( !isLefty ) {
@@ -354,7 +354,7 @@ positionBoard( PalmAppGlobals* globals )
         trayTop = PALM_TRAY_TOP;/* we want it this low even if not
                                    necessary */
     } else {
-        while ( trayTop > PALM_TRAY_TOP_MAX ) {
+        while ( trayTop > (PALM_TRAY_TOP_MAX*doubler) ) {
             trayTop -= scale;
             globals->needsScrollbar = true;
         }
@@ -833,6 +833,12 @@ volChangeEventProc( SysNotifyParamType* notifyParamsP )
     }
 #endif
 
+#ifdef FEATURE_HIGHRES
+    if ( notifyParamsP->notifyType == sysNotifyDisplayChangeEvent ) {
+        XP_LOGF( "got sysNotifyDisplayChangeEvent" );
+        return errNone;
+    }
+#endif
     /* for now, just blow outta here!  Force the app to rebuild
        datastructures when it's relaunched.  This is a hack but I like
        it. :-) */
@@ -852,8 +858,13 @@ doCallbackReg( PalmAppGlobals* globals, XP_Bool reg )
        here, as it's useless without these. */
     if ( globals->romVersion >= 40 ) {
         XP_U16 i;
-        UInt32 notifyTypes[] = { sysNotifyVolumeUnmountedEvent,
-                                 sysNotifyVolumeMountedEvent };
+        UInt32 notifyTypes[] = { sysNotifyVolumeUnmountedEvent
+                                 , sysNotifyVolumeMountedEvent
+#ifdef FEATURE_HIGHRES                                 
+                                 , sysNotifyDisplayChangeEvent
+#endif
+        };
+
 
         for ( i = 0; i < sizeof(notifyTypes) / sizeof(notifyTypes[0]); ++i ) {
             UInt32 notifyType = notifyTypes[i];        
@@ -875,6 +886,9 @@ initGlobals( PalmAppGlobals* globals )
 #ifdef FEATURE_HIGHRES
     Err err;
     XP_U32 vers;
+    XP_U16 width, height;
+
+    width = height = 160;
 
     err = FtrGet( sysFtrCreator, sysFtrNumWinVersion, &vers );
     globals->hasHiRes = ( err == errNone && vers >= 4 );
@@ -885,21 +899,20 @@ initGlobals( PalmAppGlobals* globals )
         XP_U32 tmp;
 
         if ( WinScreenGetAttribute( winScreenWidth, &tmp ) == errNone ) {
-            globals->width = tmp;
-        } else {
-            globals->width = 160;
+            width = tmp;
         }
 
         if ( WinScreenGetAttribute( winScreenHeight, &tmp ) == errNone ) {
-            globals->height = tmp;
-        } else {
-            globals->height = 160;
+            height = tmp;
         }
 
-        XP_LOGF( "using width=%d, height=%d",
-                 globals->width, globals->height );
     }
-    
+
+    globals->width = width;
+    globals->height = height;
+
+    XP_LOGF( "using width=%d, height=%d",
+             globals->width, globals->height );
 #endif
 } /* initGlobals */
 
@@ -1848,6 +1861,30 @@ tryLoadSavedGame( PalmAppGlobals* globals, XP_U16 newIndex )
     return loaded;
 } /* tryLoadSavedGame */
 
+#ifdef FEATURE_HIGHRES
+static XP_U16
+hresX( PalmAppGlobals* globals, XP_U16 screenX )
+{
+    if ( globals->width == 320 ) {
+        screenX *= 2;
+    }
+    return screenX;
+}
+
+static XP_U16
+hresY( PalmAppGlobals* globals, XP_U16 screenY )
+{
+    if ( globals->width == 320 ) {
+        screenY *= 2;
+    }
+    return screenY;
+}
+
+#else
+# define hresX( g, n ) n
+# define hresY( g, n ) n
+#endif
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -1981,24 +2018,28 @@ mainViewHandleEvent( EventPtr event )
 
     case penDownEvent:
         globals->penDown = true;
-        draw = board_handlePenDown( globals->game.board, event->screenX, 
-                                    event->screenY, 0 );
+        draw = board_handlePenDown( globals->game.board, 
+                                    hresX(globals, event->screenX), 
+                                    hresY(globals, event->screenY), 0 );
         result = draw;
         break;
 
     case penMoveEvent:
         if ( globals->penDown ) {
-            result = draw = board_handlePenMove( globals->game.board, 
-                                                 event->screenX, 
-                                                 event->screenY );
+            result = board_handlePenMove( globals->game.board, 
+                                          hresX( globals, event->screenX ), 
+                                          hresY( globals, event->screenY ));
+            draw = result;
         }
         break;
 
     case penUpEvent:
         if ( globals->penDown ) {
-            result = draw = board_handlePenUp( globals->game.board, 
-                                               event->screenX, event->screenY, 
-                                               0 );
+            result = board_handlePenUp( globals->game.board, 
+                                        hresX( globals, event->screenX),
+                                        hresY( globals, event->screenY ), 
+                                        0 );
+            draw = result;
             globals->penDown = false;
 
             if ( !result ) {
