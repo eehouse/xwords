@@ -141,7 +141,7 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     if ( isPending ) { 
         /* don't color background if will invert */
         index = COLOR_WHITE;
-    } else if ( !!bitmap || (!!letters && XP_STRLEN((const char*)letters) > 0) ) { 
+    } else if ( !!bitmap || (!!letters && XP_STRLEN((const char*)letters) > 0)){
         index = COLOR_TILE;
     } else if ( bonus == BONUS_NONE ) { 
         index = COLOR_EMPTY;
@@ -151,9 +151,14 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     color = dctx->drawingPrefs->drawColors[index];
     WinSetBackColor( color );
 
-    index = (owner >= 0)? COLOR_PLAYER1 + owner: COLOR_BLACK;
-    color = dctx->drawingPrefs->drawColors[index];
     if ( !!letters ) {
+        if ( (owner >= 0) && !isPending ) {
+            index = COLOR_PLAYER1 + owner;
+        } else {
+            index = COLOR_BLACK;
+        }
+
+        color = dctx->drawingPrefs->drawColors[index];
         WinSetTextColor( color );
     }
 
