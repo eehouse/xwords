@@ -398,6 +398,80 @@ doNothing( EventPtr event )
 #endif
 
 #ifdef DEBUG
+
+void
+logEvent( eventsEnum eType )
+{
+    char* name = NULL;
+#define CASE_STR(e) case e: name = #e; break
+    switch( eType ) {
+        CASE_STR(nilEvent);
+        CASE_STR(penDownEvent);
+        CASE_STR(penUpEvent);
+        CASE_STR(penMoveEvent);
+        CASE_STR(keyDownEvent);
+        CASE_STR(winEnterEvent);
+        CASE_STR(winExitEvent);
+        CASE_STR(ctlEnterEvent);
+        CASE_STR(ctlExitEvent);
+        CASE_STR(ctlSelectEvent);
+        CASE_STR(ctlRepeatEvent);
+        CASE_STR(lstEnterEvent);
+        CASE_STR(lstSelectEvent);
+        CASE_STR(lstExitEvent);
+        CASE_STR(popSelectEvent);
+        CASE_STR(fldEnterEvent);
+        CASE_STR(fldHeightChangedEvent);
+        CASE_STR(fldChangedEvent);
+        CASE_STR(tblEnterEvent);
+        CASE_STR(tblSelectEvent);
+        CASE_STR(daySelectEvent);
+        CASE_STR(menuEvent);
+        CASE_STR(appStopEvent);
+        CASE_STR(frmLoadEvent);
+        CASE_STR(frmOpenEvent);
+        CASE_STR(frmGotoEvent);
+        CASE_STR(frmUpdateEvent);
+        CASE_STR(frmSaveEvent);
+        CASE_STR(frmCloseEvent);
+        CASE_STR(frmTitleEnterEvent);
+        CASE_STR(frmTitleSelectEvent);
+        CASE_STR(tblExitEvent);
+        CASE_STR(sclEnterEvent);
+        CASE_STR(sclExitEvent);
+        CASE_STR(sclRepeatEvent);
+        CASE_STR(tsmConfirmEvent);
+        CASE_STR(tsmFepButtonEvent);
+        CASE_STR(tsmFepModeEvent);
+        CASE_STR(attnIndicatorEnterEvent);
+        CASE_STR(attnIndicatorSelectEvent);
+        CASE_STR(menuCmdBarOpenEvent);
+        CASE_STR(menuOpenEvent);
+        CASE_STR(menuCloseEvent);
+        CASE_STR(frmGadgetEnterEvent);
+        CASE_STR(frmGadgetMiscEvent);
+
+        CASE_STR(firstINetLibEvent);
+        CASE_STR(firstWebLibEvent);
+        CASE_STR(telAsyncReplyEvent); 
+
+        CASE_STR(keyUpEvent);
+        CASE_STR(keyHoldEvent);
+        CASE_STR(frmObjectFocusTakeEvent);
+        CASE_STR(frmObjectFocusLostEvent);
+
+        CASE_STR(firstLicenseeEvent);
+        CASE_STR(lastLicenseeEvent);
+
+        CASE_STR(firstUserEvent);
+        CASE_STR(lastUserEvent);
+    }
+#undef CASE_STR
+    if ( !!name ) {
+        XP_LOGF( "eType = %s", name );
+    }
+} /* logEvent */
+
 void
 palm_warnf( char* format, ... )
 {

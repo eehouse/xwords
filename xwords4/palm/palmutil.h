@@ -73,4 +73,10 @@ XP_Bool penInGadget( EventPtr event, UInt16* whichGadget );
 void setFormRefcon( void* refcon );
 void* getFormRefcon();
 
+#ifdef DEBUG
+void logEvent( eventsEnum eType );
+#else
+# define logEvent(e)
+#endif
+
 #endif
