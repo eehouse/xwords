@@ -226,12 +226,13 @@ CXWordsAppView::sym_util_getVTManager( XW_UtilCtxt* uc )
 #ifndef XWFEATURE_STANDALONE_ONLY
 /*static*/ XWStreamCtxt*
 CXWordsAppView::sym_util_makeStreamFromAddr( XW_UtilCtxt* uc,
-                                             XP_U16 /*channelNo*/ )
+                                             XP_U16 channelNo )
 {
     XP_LOGF( "sym_util_makeStreamFromAddr called" );
     CXWordsAppView* self = (CXWordsAppView*)uc->closure;
     XP_ASSERT( self->iGame.comms );
-    return self->MakeSimpleStream( self->sym_send_on_close );
+    return self->MakeSimpleStream( self->sym_send_on_close,
+                                   channelNo );
 }
 #endif
 
@@ -564,6 +565,11 @@ CXWordsAppView::MakeOrLoadGameL()
     if ( iCurGameName.Length() > 0 && iGamesMgr->Exists( &iCurGameName ) ) {
         LoadOneGameL( &iCurGameName );
     } else {
+
+        /***************************************************************
+         * PENDING The code here duplicates DoNewGame.  Unify the two!!!!
+         ***************************************************************/
+
         gi_initPlayerInfo( MPPARM(mpool) &iGi, (XP_UCHAR*)"Player %d" );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -599,9 +605,14 @@ CXWordsAppView::MakeOrLoadGameL()
                           &iUtil, iDraw, newGameID, &iCp,
                           SYM_SEND, this );
         model_setDictionary( iGame.model, dict );
+
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( iGame.comms ) {
             comms_setAddr( iGame.comms, &iCommsAddr );
+            if ( iGi.serverRole == SERVER_ISCLIENT ) {
+                XWStreamCtxt* stream = MakeSimpleStream( sym_send_on_close );
+                server_initClientConnection( iGame.server, stream );
+            }
         }
 #endif
 
@@ -762,6 +773,13 @@ CXWordsAppView::HandleCommand( TInt aCommand )
         draw = board_toggle_showValues( iGame.board );
         break;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case XW_RESEND_COMMAND:
+        if ( iGame.comms != NULL ) {
+            (void)comms_resendAll( iGame.comms );
+        }
+#endif
+
     default:
         return 0;
     }
@@ -838,9 +856,12 @@ CXWordsAppView::HandleKeyEvent( const TKeyEvent& aKeyEvent )
 CXWordsAppView::TimerCallback( TAny* aPtr )
 {
     CXWordsAppView* me = (CXWordsAppView*)aPtr;
+    
+    if ( 0 ) {
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     /* Only do one per call.  Packets are higher priority */
-    if ( me->iTimerReasons[EProcessPacket] > 0 ) {
+    } else if ( me->iTimerReasons[EProcessPacket] > 0 ) {
         --me->iTimerReasons[EProcessPacket];
         XP_ASSERT( me->iTimerReasons[EProcessPacket] == 0 );
         
@@ -863,7 +884,7 @@ CXWordsAppView::TimerCallback( TAny* aPtr )
         if ( draw ) {
             me->DoImmediateDraw();        
         }
-
+#endif
     } else if ( me->iTimerReasons[EUtilRequest] > 0 ) {
         --me->iTimerReasons[EUtilRequest];
         if ( server_do( me->iGame.server ) ) {
@@ -875,11 +896,12 @@ CXWordsAppView::TimerCallback( TAny* aPtr )
 }
 
 XWStreamCtxt* 
-CXWordsAppView::MakeSimpleStream( MemStreamCloseCallback cb )
+CXWordsAppView::MakeSimpleStream( MemStreamCloseCallback cb,
+                                  XP_U16 channelNo )
 {
     return mem_stream_make( MPPARM(mpool)
                             iVtMgr, (void*)this, 
-                            CHANNEL_NONE, cb );
+                            channelNo, cb );
 } /* MakeSimpleStream */
 
 void
@@ -1275,7 +1297,9 @@ CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr,
         aAddr = &addr;
     }
 
-    self->iSendSock->SendL( aBuf, aLen, aAddr );
+    if ( self->iSendSock->SendL( aBuf, aLen, aAddr ) ) {
+        result = aLen;
+    }
 
     /* Can't call listen until we've sent something.... */
     self->iSendSock->Listen();
@@ -1288,7 +1312,6 @@ CXWordsAppView::sym_send_on_close( XWStreamCtxt* aStream, void* aClosure )
 {
     XP_LOGF( "sym_send_on_close called" );
     CXWordsAppView* self = (CXWordsAppView*)aClosure;
-    CommsConnType conType = comms_getConType( self->iGame.comms );
 
     comms_send( self->iGame.comms, aStream );
 }
