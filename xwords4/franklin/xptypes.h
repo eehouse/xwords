@@ -76,6 +76,8 @@ unsigned short frank_flipShort(unsigned short s);
 #define XP_STRLEN(s) strlen((char*)(s))
 #define XP_STRCMP(s1,s2)        strcmp((char*)(s1),(char*)(s2))
 #define XP_STRNCMP(s1,s2,l)     strncmp((char*)(s1),(char*)(s2),(l))
+#define XP_STRCAT(d,s) strcat((d),(s))
+
 #define XP_SNPRINTF frank_snprintf
 
 #define XP_MIN(a,b) ((a)<(b)?(a):(b))
