@@ -150,6 +150,8 @@ class CXWordsAppView : public CCoeControl
 #ifdef BEYOND_IR
     static void            sym_util_listenPortChange( XW_UtilCtxt* uc, 
                                                       XP_U16 listenPort );
+    static void            sym_util_addrChange( XW_UtilCtxt* uc, 
+                                                const CommsAddrRec* aAddr );
 #endif
 
 #ifdef XWFEATURE_STANDALONE_ONLY
@@ -190,7 +192,6 @@ class CXWordsAppView : public CCoeControl
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     CSendSocket* iSendSock;
-    CReadSocket* iReadSock;
 #endif
 
     MPSLOT
