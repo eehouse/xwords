@@ -1,1 +1,4 @@
 *.bin
+*.pdb
+*.xwd
+*.seb
