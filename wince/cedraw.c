@@ -339,6 +339,42 @@ ce_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
     ceClearToBkground( (CEDrawCtx*)p_dctx, rectP );
 } /* ce_draw_clearRect */
 
+#ifdef DEBUG
+static void
+logLastError()
+{
+    LPVOID lpMsgBuf;
+    DWORD lastErr = GetLastError();
+    XP_UCHAR msg[256];
+    XP_U16 len;
+
+    FormatMessage( 
+                  FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+                  FORMAT_MESSAGE_FROM_SYSTEM | 
+                  FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL,
+                  lastErr,
+                  0, // Default language
+                  (LPTSTR) &lpMsgBuf,
+                  0,
+                  NULL 
+                  );
+
+    len = wcslen( lpMsgBuf );
+    if ( len >= sizeof(msg) ) {
+        len = sizeof(msg) - 1;
+    }
+    WideCharToMultiByte( CP_ACP, 0, lpMsgBuf, len + 1,
+                         msg, len + 1, NULL, NULL );
+    LocalFree( lpMsgBuf );
+    
+
+    XP_LOGF( "system error: %s", msg );
+} /* logLastError */
+#else
+# define logLastError
+#endif
+
 static void
 ceDrawBitmapInRect( HDC hdc, XP_U32 x, XP_U32 y, HBITMAP bitmap )
 {
@@ -351,6 +387,9 @@ ceDrawBitmapInRect( HDC hdc, XP_U32 x, XP_U32 y, HBITMAP bitmap )
 
     nBytes = GetObject( bitmap, sizeof(bmp), &bmp );
     XP_ASSERT( nBytes > 0 );
+    if ( nBytes == 0 ) {
+        logLastError();
+    }
 
     BitBlt( hdc, x, y, bmp.bmWidth, bmp.bmHeight, 
             tmpDC, 0, 0, SRCCOPY );	/* BLACKNESS */
@@ -360,7 +399,7 @@ ceDrawBitmapInRect( HDC hdc, XP_U32 x, XP_U32 y, HBITMAP bitmap )
 
 static void
 ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect, 
-                         XWBonusType cursorBonus, XP_Bool vertical )
+                        XWBonusType cursorBonus, XP_Bool vertical )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -390,6 +429,7 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
     }
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
     SetBkColor( hdc, dctx->colors[bkIndex] );
+    SetTextColor( hdc, dctx->colors[BLACK_COLOR] );
 
     ceDrawBitmapInRect( hdc, rt.left+1, rt.top+1, cursor );
 
