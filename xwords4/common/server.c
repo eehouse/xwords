@@ -112,7 +112,7 @@ struct ServerCtxt {
 #endif
 
     ServerPlayer players[MAX_NUM_PLAYERS];
-
+    XP_Bool serverDoing;
     MPSLOT
 };
 
@@ -716,6 +716,11 @@ server_do( ServerCtxt* server )
     XP_Bool result = XP_TRUE;
     XP_Bool moreToDo = XP_FALSE;
 
+    if ( server->serverDoing ) {
+        return XP_FALSE;
+    }
+    server->serverDoing = XP_TRUE;
+
     switch( server->nv.gameState ) {
     case XWSTATE_BEGIN:	
         if ( server->nv.pendingRegistrations == 0 ) { /* all players on device */
@@ -776,6 +781,8 @@ server_do( ServerCtxt* server )
     if ( moreToDo ) {
         util_requestTime( server->vol.util );
     }
+
+    server->serverDoing = XP_FALSE;
     return result;
 } /* server_do */
 
