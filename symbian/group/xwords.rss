@@ -1,0 +1,235 @@
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* 
+ * Copyright 2005 by Eric House (fixin@peak.org).  (based on sample
+ * app helloworldbasic "Copyright (c) 2002, Nokia. All rights
+ * reserved.")
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+NAME XWRD
+
+#include <eikon.rh>
+#include <eikon.rsg>
+
+#include "xwords.hrh"
+
+
+// ---------------------------------------------------------
+//   
+//    Define the resource file signature 
+//    This resource should be empty.
+//
+// ---------------------------------------------------------
+//
+RESOURCE RSS_SIGNATURE { }
+
+// ---------------------------------------------------------
+//   
+//    Default Document Name
+//
+// ---------------------------------------------------------
+//
+RESOURCE TBUF r_default_document_name { buf=""; }
+
+// ---------------------------------------------------------
+//   
+//    Define default menu, hotkeys and CBA keys.
+//
+// ---------------------------------------------------------
+//
+RESOURCE EIK_APP_INFO
+{
+    menubar = r_xwords_menubar;
+    cba = r_xwords_cba;
+    hotkeys = r_xwords_hotkeys;
+}
+
+// ---------------------------------------------------------
+//   
+//   r_xwords_hotkeys
+//
+// ---------------------------------------------------------
+//
+RESOURCE HOTKEYS r_xwords_hotkeys
+{
+    control =
+    {
+        HOTKEY
+        {
+            command = EEikCmdExit;
+            key = 'e';
+        }
+    };
+}
+
+// ---------------------------------------------------------
+//   
+//   r_xwords_cba
+//
+// ---------------------------------------------------------
+//
+RESOURCE CBA r_xwords_cba
+{
+    buttons=
+    {
+        CBA_BUTTON
+            {
+            id=XW_JUGGLE_COMMAND;
+            txt="Juggle";
+            },
+        CBA_BUTTON
+            {
+            id=XW_NEXTHINT_COMMAND;
+            txt="Next Hint";
+            },
+        CBA_BUTTON
+            {
+            id=XW_FLIP_COMMAND;
+            txt="Flip";
+            },
+        CBA_BUTTON
+        {
+            id=XW_HIDETRAY_COMMAND;
+            txt="Hide tray";
+        }
+    };
+}
+
+// ---------------------------------------------------------
+//   
+//   r_xwords_menubar
+//
+// ---------------------------------------------------------
+//
+RESOURCE MENU_BAR r_xwords_menubar
+    {
+    titles =
+        {
+        MENU_TITLE {menu_pane = r_xwords_file_menu; txt = "File";}
+        ,MENU_TITLE {menu_pane = r_xwords_game_menu; txt = "Game";}
+        ,MENU_TITLE {menu_pane = r_xwords_move_menu; txt = "Move";}
+        };
+    }
+
+
+// ---------------------------------------------------------
+//   
+//   r_xwords_file_menu
+//   Menu for "Options"
+//
+// ---------------------------------------------------------
+//
+RESOURCE MENU_PANE r_xwords_file_menu
+{
+    items = 
+        {
+            MENU_ITEM {command = XW_NEWGAME_COMMAND;  txt = "New game";}
+            ,MENU_ITEM {command = XW_SAVEDGAMES_COMMAND;  txt = "Saved games";}
+            ,MENU_ITEM {command = XW_PREFS_COMMAND;  txt = "Preferences";}
+            ,MENU_ITEM {command = XW_ABOUT_COMMAND;  txt = "About";}
+
+            ,MENU_ITEM {command = EEikCmdExit;   txt = "Exit";}
+        };
+}
+
+RESOURCE MENU_PANE r_xwords_game_menu
+{
+    items = 
+        {
+            MENU_ITEM {command = XW_VALUES_COMMAND;  txt = "Tile values";}
+            ,MENU_ITEM {command = XW_REMAIN_COMMAND;  txt = "Remaining tiles";}
+            ,MENU_ITEM {command = XW_CURINFO_COMMAND;  txt = "Game info";}
+            ,MENU_ITEM {command = XW_HISTORY_COMMAND;  txt = "History";}
+            ,MENU_ITEM {command = XW_FINALSCORES_COMMAND;  txt = "Final scores";}
+            ,MENU_ITEM {command = XW_FLIP_COMMAND; txt = "Flip board"; }
+            ,MENU_ITEM {command = XW_TOGGLEVALS_COMMAND; txt = "Toggle values"; }
+        };
+}
+
+RESOURCE MENU_PANE r_xwords_move_menu
+{
+    items = 
+        {
+            MENU_ITEM {command = XW_HINT_COMMAND;  txt = "Hint";}
+/* #ifdef XWFEATURE_SEARCHLIMIT */
+/*          ,MENU_ITEM {command = XW_LIMHINT_COMMAND;  txt = "Limited hint";} */
+/* #endif */
+            ,MENU_ITEM {command = XW_NEXTHINT_COMMAND;  txt = "Next hint";}
+            ,MENU_ITEM {command = XW_UNDOCUR_COMMAND;  txt = "Undo current";}
+            ,MENU_ITEM {command = XW_UNDOLAST_COMMAND;  txt = "Undo last";}
+            ,MENU_ITEM {command = XW_DONE_COMMAND;  txt = "Done";}
+/*             ,MENU_ITEM {command = XW_JUGGLE_COMMAND;  txt = "Juggle";} */
+            ,MENU_ITEM {command = XW_TRADE_COMMAND;  txt = "Trade";}
+/*             ,MENU_ITEM {command = XW_HIDETRAY_COMMAND;  txt = "[Un]hide tray";} */
+        };
+}
+
+/* Apparently you have to use a resource type large enough to hold the
+   string.  There are TBUF16, TBUF32, TBUF40, TBUF48,TBUF64, 128 and
+   256.  Why a system that can generate constants from the resource
+   IDs can't match resource types to strings is beyond me.
+*/
+
+RESOURCE TBUF32 r_no_peek_alert { 
+    buf="No peeking at the robot's tiles."; }
+
+RESOURCE TBUF40 r_tiles_in_line_alert { 
+    buf ="All tiles played must be in a line.";
+}
+
+RESOURCE TBUF64 r_no_empties_sep_alert { 
+    buf ="Empty squares cannot separate pieces played.";
+}
+
+RESOURCE TBUF64 r_two_tiles_first_move_alert { 
+    buf = "Must play two or more pieces on the first move.";
+}
+
+RESOURCE TBUF128 r_placed_must_contact_alert { 
+    buf = "New tiles must contact others already in place (or the middle square on the first move).";
+}
+
+RESOURCE TBUF32 r_too_few_to_trade_alert { 
+    buf = "Too few tiles left to trade.";
+}
+
+RESOURCE TBUF64 r_not_your_turn_alert { 
+    buf = "You can't do that; it's not your turn!";
+}
+
+RESOURCE TBUF40 r_remove_first_alert { 
+    buf = "Remove played tiles before trading.";
+}
+
+RESOURCE TBUF64 r_nothing_to_undo_alert { 
+    buf = "Nothing to undo.  (Initial tile picking cannot be undone.)";
+}
+
+RESOURCE DIALOG r_xwords_confirmation_query
+{
+    title = "foobar";
+    buttons = R_EIK_BUTTONS_CANCEL_OK;
+    flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
+    items =
+        {
+            DLG_LINE
+            {
+                control = EDWIN;
+                type = EEikCtEdwin;
+                id = EAskContents;
+            }
+        };
+}
