@@ -32,6 +32,8 @@
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 
+EXTERN_C_START
+
 typedef struct MsgQueueElem {
     struct MsgQueueElem* next;
     XP_U8* msg;
@@ -113,10 +115,14 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 
 #ifdef BEYOND_IR
     /* default values; default is still IR where there's a choice */
-    result->addr.conType = COMMS_CONN_IR;
+    result->addr.conType = COMMS_CONN_IP;
     result->addr.u.ip.ipAddr = 0L; /* force 'em to set it */
     result->addr.u.ip.port = 6000;
     result->listenPort = 6001;
+    {
+        char* name = "aphraea.org";
+        XP_MEMCPY( result->addr.u.ip.hostName, name, XP_STRLEN(name) );
+    }
 #endif
 
     return result;
@@ -129,9 +135,9 @@ cleanupInternal( CommsCtxt* comms )
     MsgQueueElem* next;
 
     for ( msg = comms->msgQueueHead; !!msg; msg = next ) {
-	next = msg->next;
-	XP_FREE( comms->mpool, msg->msg );
-	XP_FREE( comms->mpool, msg );
+        next = msg->next;
+        XP_FREE( comms->mpool, msg->msg );
+        XP_FREE( comms->mpool, msg );
     }
     comms->queueLen = 0;
     comms->msgQueueHead = comms->msgQueueTail = (MsgQueueElem*)NULL;
@@ -188,7 +194,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     XP_U16 nAddrRecs;
     AddressRecord** prevsAddrNext;
     MsgQueueElem** prevsQueueNext;
-    short i;
+    short i, len;
 
     isServer = stream_getU8( stream );
     comms = comms_make( MPPARM(mpool) util, isServer, sendproc, closure );
@@ -261,6 +267,10 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     comms->addr.u.ip.ipAddr = stream_getU32( stream );
     comms->addr.u.ip.port = stream_getU16( stream );
     comms->listenPort = stream_getU16( stream );
+    len = stream_getU8( stream );
+    stream_getBytes( stream, comms->addr.u.ip.hostName, len );
+    comms->addr.u.ip.hostName[len] = '\0';
+
     /* tell client about the port */
     util_listenPortChange( util, comms->listenPort );
 #endif
@@ -274,7 +284,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 void
 comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    XP_U16 nAddrRecs;
+    XP_U16 nAddrRecs, len;
     AddressRecord* rec;
     MsgQueueElem* msg;
 
@@ -321,6 +331,9 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
     stream_putU32( stream, comms->addr.u.ip.ipAddr );
     stream_putU16( stream, comms->addr.u.ip.port );
     stream_putU16( stream, comms->listenPort );
+    len = XP_STRLEN( comms->addr.u.ip.hostName );
+    stream_putU8( stream, len );
+    stream_putBytes( stream, comms->addr.u.ip.hostName, len );
 #endif
 
 #ifdef DEBUG
@@ -743,5 +756,7 @@ countAddrRecs( CommsCtxt* comms )
     } 
     return count;
 } /* countAddrRecs */
+
+EXTERN_C_END
 
 #endif /* #ifndef XWFEATURE_STANDALONE_ONLY */

@@ -23,6 +23,8 @@
 #include "comtypes.h"
 #include "mempool.h"
 
+EXTERN_C_START
+
 #define CHANNEL_NONE ((XP_PlayerAddr)0)
 #define CONN_ID_NONE 0L
 
@@ -30,21 +32,22 @@ typedef XP_U32 MsgID;
 
 typedef enum {
     COMMS_CONN_UNUSED,          /* I want errors on uninited case */
-    COMMS_CONN_IR,
     COMMS_CONN_IP,
+    COMMS_CONN_BT,
+    COMMS_CONN_IR,
 
     LAST_____FOO
 } CommsConnType;
 
-
+#define MAX_HOSTNAME_LEN 63
 typedef struct CommsAddrRec {
     CommsConnType conType;
 
     union {
         struct {
-
-            XP_U32 ipAddr;
-            XP_U16 port;                /* return port, not sent-from */
+            XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
+            XP_U32 ipAddr;      /* looked up from above */
+            XP_U16 port;
         } ip;
         struct {
             /* nothing? */
@@ -89,5 +92,7 @@ XP_Bool comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
 # endif
+
+EXTERN_C_END
 
 #endif /* _COMMS_H_ */
