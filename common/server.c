@@ -94,6 +94,9 @@ typedef struct ServerNonvolatiles {
     XP_S8 currentTurn;		/* invalid when game is over */
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
+#ifdef FEATURE_TRAY_EDIT
+    XP_Bool allowPickTiles;
+#endif
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
 
@@ -171,6 +174,10 @@ initServer( ServerCtxt* server )
     }
 
     server->nv.nDevices = 1;	/* local device (0) is always there */
+
+#ifdef FEATURE_TRAY_EDIT
+    server->nv.allowPickTiles = XP_TRUE;
+#endif
 } /* initServer */
 
 ServerCtxt* 
@@ -1266,13 +1273,80 @@ makeNotAVowel( ServerCtxt* server, Tile* newTile )
 } /* makeNotAVowel */
 #endif
 
+/* Get tiles for one user.  If picking is available, let user pick until
+ * cancels.  Otherwise, and after cancel, pick for 'im.
+ */
+static void
+fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch, 
+            TrayTileSet* resultTiles )
+{
+    XP_Bool ask;
+    XP_U16 nSoFar = 0;
+    PoolContext* pool = server->pool;
+    TrayTileSet oneTile;
+    PickInfo pi;
+
+    XP_ASSERT( !!pool );
+#ifdef FEATURE_TRAY_EDIT
+    ask = server->nv.allowPickTiles;
+#else
+    ask = XP_FALSE;
+#endif
+
+    oneTile.nTiles = 1;
+
+    pi.why = PICK_FOR_CHEAT;
+    pi.nTotal = nToFetch;
+    pi.thisPick = 0;
+
+#ifdef FEATURE_TRAY_EDIT        /* good compiler would note ask==0, but... */
+    /* First ask until cancelled */
+    for ( nSoFar = 0; ask && nSoFar < nToFetch;  ) {
+        XP_UCHAR4 texts[MAX_UNIQUE_TILES];
+        Tile tiles[MAX_UNIQUE_TILES];
+        XP_S16 chosen;
+        XP_U16 nUsed = MAX_UNIQUE_TILES;
+
+        model_packTilesUtil( server->vol.model, pool,
+                             XP_TRUE, &nUsed, texts, tiles );
+        ++pi.thisPick;
+        chosen = util_userPickTile( server->vol.util, &pi,
+                                    playerNum, texts, nUsed );
+
+        if ( chosen < 0 ) {
+            ask = XP_FALSE;
+        } else {
+            Tile tile = tiles[chosen];
+            oneTile.tiles[0] = tile;
+            pool_removeTiles( pool, &oneTile );
+
+            resultTiles->tiles[nSoFar++] = tile;
+        }
+    }
+#endif
+
+    /* Then fetch the rest without asking */
+    if ( nSoFar < nToFetch ) {
+        XP_U8 nLeft = nToFetch - nSoFar;
+        Tile tiles[MAX_TRAY_TILES];
+
+        pool_requestTiles( pool, tiles, &nLeft );
+        XP_ASSERT( nLeft == nToFetch - nSoFar );
+
+        XP_MEMCPY( &resultTiles->tiles[nSoFar], tiles, 
+                   nLeft * sizeof(resultTiles->tiles[0]) );
+        nSoFar += nLeft;
+    }
+
+    XP_ASSERT( nSoFar == nToFetch );
+    resultTiles->nTiles = nToFetch;
+} /* fetchTiles */
+
 static void
 assignTilesToAll( ServerCtxt* server )
 {
-    XP_U8 numGot = 1;
     XP_U16 numAssigned;
     short i;
-    TrayTileSet newTiles[MAX_NUM_PLAYERS];
     ModelCtxt* model = server->vol.model;
     XP_U16 nPlayers = server->vol.gi->nPlayers;
 
@@ -1286,37 +1360,18 @@ assignTilesToAll( ServerCtxt* server )
 
     XP_STATUSF( "assignTilesToAll" );
 
-    XP_MEMSET( &newTiles, 0, sizeof(newTiles) );
-
     model_setNPlayers( model, nPlayers );
 
-    for ( numAssigned = 0; numAssigned < MAX_TRAY_TILES; ++numAssigned ) {
-        for ( i = 0; i < nPlayers; ++i ) {
-
-            Tile newTile;
-            XP_U16 index;
-
-            pool_requestTiles( server->pool, &newTile, &numGot );
-
-#ifdef TEST_ROBOT_TRADE
-            /* don't let any of the initial tray tiles be a vowel */
-            makeNotAVowel( server, &newTile );
-#endif
-
-            if ( numGot != 1 ) {
-                goto OUT_OF_TILES;
-            }
-            index = newTiles[i].nTiles++;
-            newTiles[i].tiles[index] = newTile;
-        }
+    numAssigned = pool_getNTilesLeft( server->pool ) / nPlayers;
+    if ( numAssigned > MAX_TRAY_TILES ) {
+        numAssigned = MAX_TRAY_TILES;
     }
-
- OUT_OF_TILES:
     for ( i = 0; i < nPlayers; ++i ) {
-        model_assignPlayerTiles( model, i, &newTiles[i] );
+        TrayTileSet newTiles;
+        fetchTiles( server, i, numAssigned, &newTiles );
+        model_assignPlayerTiles( model, i, &newTiles );
     }
 
-    return;
 } /* assignTilesToAll */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -1729,8 +1784,7 @@ server_commitMove( ServerCtxt* server )
         ++server->nv.nPassesInRow;
     }
 
-    newTiles.nTiles = (XP_U8)nTilesMoved;
-    pool_requestTiles( server->pool, newTiles.tiles, &newTiles.nTiles );
+    fetchTiles( server, turn, nTilesMoved, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( isClient ) {
@@ -1800,8 +1854,7 @@ server_commitTrade( ServerCtxt* server, TileBit selBits )
 
     removeTradedTiles( server, selBits, &oldTiles );
 
-    newTiles.nTiles = oldTiles.nTiles;
-    pool_requestTiles( server->pool, newTiles.tiles, &newTiles.nTiles );
+    fetchTiles( server, turn, oldTiles.nTiles, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
