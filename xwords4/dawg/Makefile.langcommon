@@ -48,7 +48,8 @@ ifeq ($(TARGET_TYPE),WINCE)
 	WINCE_ONLY = true
 endif
 
-.PHONY: checkARCH
+.PHONY: clean_common help allbins checkARCH
+
 
 ##############################################################################
 # PalmOS rules
@@ -153,7 +154,6 @@ checkARCH:
 		 $(error "ARCH must be defined in ENV if TARGET_TYPE==FRANK"); \
 	fi
 
-ifndef WINCE_ONLY
 $(LANG)%.seb: $(LANG)%.$(FRANK_EXT) $(LANG)%.atts 
 	${ESDK_CREATESEB_EXE} $<
 	cp $< $<.saved
@@ -165,8 +165,6 @@ $(LANG)%.atts:			#recreate it each time based on params
 	echo '_LCAT|nosign+global|"CONTENT"'  >> $@
 	echo '_PERM|global+read-only|"r"' >> $@
 
-endif
-
 # the files to export for byod
 byodbins: table.bin values.bin frankspecials.bin info.txt
 
@@ -175,7 +173,8 @@ else
 ifeq ($(TARGET_TYPE),WINCE)
 
 ### WINCE section here ###
-all: $(LANG)2to8.xwd 
+all: $(LANG)2to8.xwd
+	../mkxwdcab.pl -f $<
 
 else
 	(Need to define TARGET_TYPE if get error pointing to this line)
@@ -184,7 +183,7 @@ endif
 endif
 
 ifeq (s$(TARGET_TYPE),s)
-It's an error not to specify a TARGET_TYPE
+echo "It\'s an error not to specify a TARGET_TYPE"
 endif
 
 ##############################################################################
@@ -260,13 +259,13 @@ allbins:
 
 table.bin:  ../xloc.pl 
 ifdef NEWDAWG
-	perl -I../ ../xloc.pl -tn > $@
+	perl -I../ ../xloc.pl -tn $@
 else
-	perl -I../ ../xloc.pl -t > $@
+	perl -I../ ../xloc.pl -t $@
 endif
 
 values.bin:  ../xloc.pl 
-	perl -I../ ../xloc.pl -v > $@
+	perl -I../ ../xloc.pl -v $@
 
 %.dict: %.dict.gz
 	zcat $< > $@
@@ -278,5 +277,3 @@ clean_common:
 help:
 	@echo "make TARGET_TYPE=[FRANK|PALM]"
 
-test:
-	@echo $(LANGUAGE)
