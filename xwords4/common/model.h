@@ -215,6 +215,9 @@ XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
                                    XP_UCHAR* expl, XP_U16* explLen );
 
+/* Have there been too many passes (so game should end)? */
+XP_Bool model_recentPassCountOk( ModelCtxt* model );
+
 XP_Bool model_checkMoveLegal( ModelCtxt* model, XP_S16 player, 
                               XWStreamCtxt* stream,
                               WordNotifierInfo* notifyInfo );

@@ -34,6 +34,8 @@ extern "C" {
 
 #define mEND 0x6d454e44
 
+#define MAX_PASSES 2		/* how many times can all players pass? */
+
 /****************************** prototypes ******************************/
 typedef void (*MovePrintFuncPre)(ModelCtxt*, XP_U16, StackEntry*, void*);
 typedef void (*MovePrintFuncPost)(ModelCtxt*, XP_U16, StackEntry*, XP_S16, 
@@ -64,6 +66,7 @@ static void buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
 static void setPendingCounts( ModelCtxt* model, XP_S16 turn );
 static void loadPlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc );
 static void writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc );
+static XP_U16 model_getRecentPassCount( ModelCtxt* model );
 
 
 /*****************************************************************************
@@ -1619,6 +1622,42 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
         *bufLen = XP_SNPRINTF( buf, *bufLen, format, wordBuf, score );
     }
 } /* scoreLastMove */
+
+static XP_U16
+model_getRecentPassCount( ModelCtxt* model )
+{
+    StackCtxt* stack = model->vol.stack;
+    XP_U16 nPasses = 0;
+    XP_S16 nEntries, which;
+    StackEntry entry;
+
+    XP_ASSERT( !!stack );
+
+    nEntries = stack_getNEntries( stack );
+    for ( which = nEntries - 1; which >= 0; --which ) {
+        if ( stack_getNthEntry( stack, which, &entry ) ) {
+            if ( entry.moveType == MOVE_TYPE
+                    && entry.u.move.moveInfo.nTiles == 0 ) {
+                ++nPasses;
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    XP_LOGF( "model_getRecentPassCount=>%d", nPasses );
+    return nPasses;
+} /* model_getRecentPassCount */
+
+XP_Bool
+model_recentPassCountOk( ModelCtxt* model )
+{
+    XP_U16 count = model_getRecentPassCount( model );
+    XP_U16 okCount = model->nPlayers * MAX_PASSES;
+    XP_ASSERT( count <= okCount ); /* should never be more than 1 over */
+    return count < okCount;
+}
 
 XP_Bool
 model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
