@@ -306,6 +306,22 @@ sub registerSubArray {
 
 } # registerSubArray
 
+sub toWord($) {
+    my ( $tileARef ) = @_;
+    my $word = "";
+
+    foreach my $tile (@$tileARef) {
+        foreach my $letter (keys (%gTableHash) ) {
+            if ( $tile == $gTableHash{$letter} ) {
+                $word .= $letter;
+                last;
+            }
+        }
+    }
+
+    return $word;
+}
+
 sub readNextWord() {
     my @word;
 
@@ -331,9 +347,13 @@ sub readNextWord() {
     }
 
     $gFirstDiff = $numCommonLetters;
-    die "words ", join(",",@gCurrentWord), " and ", join(",", @word), " out of order" if #$debug && 
-        @gCurrentWord > 0 && @word > 0
-        && !firstBeforeSecond( \@gCurrentWord, \@word );
+    if ( #$debug && 
+         @gCurrentWord > 0 && @word > 0
+         && !firstBeforeSecond( \@gCurrentWord, \@word ) ) {
+        die "words ", join(",",@gCurrentWord), " (" . toWord(\@gCurrentWord) .
+            ") and " . join(",", @word) . " (" . toWord(\@word) .
+            ") out of order";
+    }
     @gCurrentWord = @word;
 } # readNextWord
 
@@ -431,7 +451,9 @@ sub parseAndSort() {
     }
 
     if ( $gNeedsSort && ($gWordCount > 0)  ) {
+        print STDERR "starting sort...\n" if $debug;
         @wordlist = sort cmpWords @wordlist;
+        print STDERR "sort finished\n" if $debug;
     }
 
     print STDERR "length of list is ", @wordlist + 0, ".\n" if $debug;
