@@ -2291,16 +2291,19 @@ mainViewHandleEvent( EventPtr event )
             /* This probably goes away at ship.... */
         case XW_RUN68K_PULLDOWN_ID:
         case XW_RUNARM_PULLDOWN_ID: {
-            UInt32 newVal;
             Err err;
-            if ( event->data.menu.itemID == XW_RUN68K_PULLDOWN_ID ) {
-                newVal = WANTS_68K;
-            } else {
-                newVal = WANTS_ARM;
-            }
+            LocalID dbID;
+            
             (void)FtrUnregister( APPID, FEATURE_WANTS_68K );
-            err = FtrSet( APPID, FEATURE_WANTS_68K, newVal );
-            XP_ASSERT( err == errNone );
+            err = FtrSet( APPID, FEATURE_WANTS_68K, 
+                          event->data.menu.itemID == XW_RUN68K_PULLDOWN_ID?
+                          WANTS_68K : WANTS_ARM );
+
+            dbID = DmFindDatabase( CARD_0, APPNAME );
+            if ( dbID != 0 ) {
+                (void)SysUIAppSwitch( 0, dbID, 
+                                      sysAppLaunchCmdNormalLaunch, NULL );
+            }
         }
             break;
 #endif
