@@ -18,6 +18,9 @@
 LANG=Swedish
 LANGCODE=sv_SE
 
+# Swedish has too many chars for the old format.
+NEWDAWG=whatever
+
 TARGET_TYPE ?= FRANK
 
 include ../Makefile.2to8
@@ -28,8 +31,8 @@ include ../Makefile.langcommon
 # Swedish play of allowing blanks to stand for those letters as well.
 # So we don't exclude words with those letters from the dictionary.
 $(LANG)Main.dict.gz: swedish15.dict.gz
-	zcat $< | tr [a-zäåö] [A-ZÄÅÖ] | \
-		grep '^[A-ZÄÅÖ]\{2,15\}$$' | \
+	zcat $< | tr [a-zäåæöü] [A-ZÄÅÆÖÜ] | \
+		grep '^[A-ZÄÅÆÖÜ]\{2,15\}$$' | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
