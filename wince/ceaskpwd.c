@@ -49,8 +49,6 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         pState = (PasswdDialogState*)lParam;
         globals = pState->globals;
 
-        positionDlg( hDlg );
-
         nameToLabel( hDlg, pState->name, IDC_PWDLABEL );
 
         return TRUE;
