@@ -315,14 +315,12 @@ handlePenDownInTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
     XP_S16 index = pointToTileIndex( board, x, y, &onDivider );
    
     return handleActionInTray( board, index, onDivider, XP_TRUE );
-} /* handleActionInTray */
+} /* handlePenDownInTray */
 
-XP_Bool
-handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
+static XP_Bool
+handlePenUpTrayInt( BoardCtxt* board, XP_S16 index )
 {
     XP_Bool result = XP_FALSE;
-    XP_Bool ignore;
-    XP_S16 index = pointToTileIndex( board, x, y, &ignore );
 
     if ( index >= 0 ) {
         XP_U16 selPlayer = board->selPlayer;
@@ -336,10 +334,19 @@ handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
     } else if ( index < 0 ) {		/* other empty area */
         /* it better be true */
         (void)board_replaceTiles( board );
+        (void)setArrowVisible( board, XP_FALSE );
         result = XP_TRUE;
     }
 
     return result;
+} /* handlePenUpTray */
+
+XP_Bool
+handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
+{
+    XP_Bool ignore;
+    XP_S16 index = pointToTileIndex( board, x, y, &ignore );
+    return handlePenUpTrayInt( board, index );
 } /* handlePenUpTray */
 
 static XP_Bool
@@ -666,13 +673,14 @@ tray_keyAction( BoardCtxt* board )
     XP_Bool result;
     if ( !!cursor ) {
         XP_S16 index = trayLocToIndex( board, indexForBits( cursor ) );
-        result = handleActionInTray( board, index, XP_FALSE, XP_FALSE );
+        result = handleActionInTray( board, index, XP_FALSE, XP_FALSE )
+            || handlePenUpTrayInt( board, index );
     } else {
         result = XP_FALSE;
     }
 
     return result;
-} /* tray_selectCurTile */
+} /* tray_keyAction */
 #endif
 
 #if defined FOR_GREMLINS || defined KEYBOARD_NAV
@@ -689,7 +697,7 @@ board_moveDivider( BoardCtxt* board, XP_Bool right )
         dividerMoved( board, loc );
     }
     return result;
-} /* dividerMovedOne */
+} /* board_moveDivider */
 #endif
 
 #ifdef CPLUS
