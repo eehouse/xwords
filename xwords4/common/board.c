@@ -178,8 +178,23 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
         board->dividerLoc[i] = (XP_U8)stream_getBits( stream, NTILES_NBITS );
-        board->traySelBits[i] = (TileBit)stream_getBits( stream, MAX_TRAY_TILES );
+        board->traySelBits[i] = (TileBit)stream_getBits( stream, 
+                                                         MAX_TRAY_TILES );
         board->tradeInProgress[i] = (XP_Bool)stream_getBits( stream, 1 );
+#ifdef XWFEATURE_SEARCHLIMIT
+        if ( stream_getVersion( stream ) >= CUR_STREAM_VERS ) {
+            board->hasHintRect[i] = stream_getBits( stream, 1 );
+        } else {
+            board->hasHintRect[i] = XP_FALSE;
+        }
+        if ( board->hasHintRect[i] ) {
+            board->limits[i].left = stream_getBits( stream, 4 );
+            board->limits[i].top = stream_getBits( stream, 4 );
+            board->limits[i].right = stream_getBits( stream, 4 );
+            board->limits[i].bottom =  stream_getBits( stream, 4 );
+        }
+#endif
+
     }
 
     board->selPlayer = (XP_U8)stream_getBits( stream, PLAYERNUM_NBITS );
@@ -213,6 +228,15 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
         stream_putBits( stream, NTILES_NBITS, board->dividerLoc[i] );
         stream_putBits( stream, MAX_TRAY_TILES, board->traySelBits[i] );
         stream_putBits( stream, 1, board->tradeInProgress[i] );
+#ifdef XWFEATURE_SEARCHLIMIT
+        stream_putBits( stream, 1, board->hasHintRect[i] );
+        if ( board->hasHintRect[i] ) {
+            stream_putBits( stream, 4, board->limits[i].left );
+            stream_putBits( stream, 4, board->limits[i].top );
+            stream_putBits( stream, 4, board->limits[i].right );
+            stream_putBits( stream, 4, board->limits[i].bottom );
+        }
+#endif
     }
 
     stream_putBits( stream, PLAYERNUM_NBITS, board->selPlayer );
