@@ -206,6 +206,7 @@ typedef struct PalmDictList PalmDictList;
 typedef struct NetLibStuff {
     UInt16 netLibRef;
     NetSocketRef socket;
+    XP_Bool ipAddrInval;
 } NetLibStuff;
 #define socketIsOpen(g) ((g)->nlStuff.socket != -1)
 #endif
@@ -257,6 +258,7 @@ struct PalmAppGlobals {
     Boolean isFirstLaunch;
     Boolean menuIsDown;
     XP_Bool newGameIsNew;
+    XP_Bool runningOnPOSE;    /* Needed for NetLibSelect */
 
     GraphicsAbility able;
     XP_U32 penTimerFireAt;
@@ -365,8 +367,7 @@ void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index,
 XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
 Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
                  XP_S16 titleID );
-void checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream, 
-                      CommsAddrRec* addr );
+void checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream );
 
 #ifdef XW_TARGET_PNO
 # define READ_UNALIGNED16(n) read_unaligned16((unsigned char*)(n))
