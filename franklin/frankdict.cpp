@@ -88,6 +88,9 @@ frank_dictionary_make( MPFORMAL XP_UCHAR* dictName )
 
     ctxt = (FrankDictionaryCtxt*)XP_MALLOC(mpool, sizeof(*ctxt));
     XP_MEMSET( ctxt, 0, sizeof(*ctxt) );
+
+    dict_super_init( (DictionaryCtxt*)ctxt );
+
     MPASSIGN( ctxt->super.mpool, mpool );
 
     if ( !!dictName ) {
