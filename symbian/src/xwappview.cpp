@@ -179,10 +179,10 @@ void CXWordsAppView::Draw( const TRect& aRect ) const
     if ( iGame.board ) {
         XP_Rect rect;
 
-        rect.left = aRect.iTl.iX; 
-        rect.top = aRect.iTl.iY;
-        rect.width = aRect.Width(); 
-        rect.height = aRect.Height();
+        rect.left = SC( XP_U16, aRect.iTl.iX );
+        rect.top = SC( XP_U16, aRect.iTl.iY );
+        rect.width = SC( XP_U16, aRect.Width() );
+        rect.height = SC( XP_U16, aRect.Height() );
 
         board_invalRect( iGame.board, &rect );
         board_draw( iGame.board );
@@ -718,9 +718,9 @@ CXWordsAppView::HandleKeyEvent( const TKeyEvent& aKeyEvent )
     case EKeyEnter:
         key = XP_RETURN_KEY;
         break;
-
-//     XP_CURSOR_KEY_DEL,
-
+    case EKeyBackspace:
+        key = XP_CURSOR_KEY_DEL;
+        break;
     case EKeyLeftArrow:         // 14
         key = XP_CURSOR_KEY_LEFT;
         break;
