@@ -226,6 +226,13 @@ RESOURCE TBUF64 r_alert_no_dicts {
     buf = "Crosswords requires at least one dictionary.";
 }
 
+RESOURCE TBUF32 r_alert_feature_pending { 
+    buf = "Feature not yet implemented.";
+}
+
+#define XW_EFLAGS EEikEdwinNoAutoSelection | EEikEdwinReadOnly | EEikEdwinResizable
+// EEikEdwinDisplayOnly | 
+
 RESOURCE DIALOG r_xwords_confirmation_query
 {
     title = "Query";
@@ -237,7 +244,10 @@ RESOURCE DIALOG r_xwords_confirmation_query
     {
         DLG_LINE
         {
-            control = EDWIN;
+            control = EDWIN { flags = XW_EFLAGS;
+                              width = 50;
+                              lines = 4;
+            };
             type = EEikCtEdwin;
             id = EAskContents;
         }
@@ -247,7 +257,7 @@ RESOURCE DIALOG r_xwords_confirmation_query
 RESOURCE DIALOG r_xwords_info_only
 {
     title = "Info";
-#if defined SERIES_80
+#if ! defined SERIES_60
     buttons = R_EIK_BUTTONS_CONTINUE;
 #endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
@@ -255,13 +265,17 @@ RESOURCE DIALOG r_xwords_info_only
     {
         DLG_LINE
         {
-            control = EDWIN { width = 100; maxlength = 1000; };
+            control = EDWIN { flags = XW_EFLAGS;
+                              width = 50; 
+                              lines = 4;
+            };
             type = EEikCtEdwin;
             id = EAskContents;
         }
     };
 }
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 RESOURCE ARRAY r_conn_roles
 {
     items = {
@@ -302,6 +316,7 @@ RESOURCE ARRAY r_xwords_newgame_page_conn
         }
     };
 }
+#endif
 
 RESOURCE ARRAY r_four_nums
 {
@@ -310,13 +325,6 @@ RESOURCE ARRAY r_four_nums
         ,LBUF { txt = "2"; }
         ,LBUF { txt = "3"; }
         ,LBUF { txt = "4"; }
-    };
-}
-
-RESOURCE ARRAY r_dummy_nums
-{
-    items = {
-        LBUF { txt = "1"; }
     };
 }
 
@@ -335,7 +343,7 @@ RESOURCE ARRAY r_xwords_newgame_page_players
 
             prompt = "Show player";
             type = EEikCtChoiceList;
-            control = CHOICELIST { array_id = r_dummy_nums; };
+            control = CHOICELIST { maxdisplaychar = 2; };
             id = ENPlayersWhichList;
 
         }, DLG_LINE {
@@ -366,13 +374,6 @@ RESOURCE ARRAY r_xwords_newgame_page_players
             id      = EDecryptPassword;
             control = SECRETED { num_letters = 5; };
         }
-    };
-}
-
-RESOURCE ARRAY r_empty_choice
-{
-    items = {
-        LBUF { txt = ""; }
     };
 }
 
@@ -416,7 +417,7 @@ RESOURCE ARRAY r_xwords_newgame_page_dict
         DLG_LINE {
             prompt = "Game dictionary";
             type = EEikCtChoiceList; 
-            control = CHOICELIST { array_id = r_empty_choice; }; 
+            control = CHOICELIST { flags = EEikChlistArrayOwnedExternally; };
             id = ESelDictChoice; 
         }
 #ifdef SERIES_60
@@ -431,8 +432,11 @@ RESOURCE ARRAY r_xwords_newgame_pages
 {
     items =
     {
+#ifndef XWFEATURE_STANDALONE_ONLY
         PAGE{ text="Connection"; id=EPage1; lines=r_xwords_newgame_page_conn;}
-        ,PAGE{ text="Players"; id=EPage2; lines=r_xwords_newgame_page_players;}
+        ,
+#endif
+        PAGE{ text="Players"; id=EPage2; lines=r_xwords_newgame_page_players;}
         ,PAGE{ text="Dictionary"; id=EPage3; lines=r_xwords_newgame_page_dict;}
     };
 }
@@ -456,7 +460,7 @@ RESOURCE DIALOG r_xwords_blank_picker
         DLG_LINE {
             prompt = "Choose one";
             type = EEikCtChoiceList; 
-            control = CHOICELIST { array_id = r_empty_choice; }; 
+            control = CHOICELIST { flags = EEikChlistArrayOwnedExternally; };
             id = ESelBlankChoice; 
         }
     };
