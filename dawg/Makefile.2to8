@@ -1,0 +1,7 @@
+# -*-mode: Makefile -*-
+
+# These are the targets that almost all language makefiles will want.
+
+SHORT_WORD = 2
+LONG_WORD = 8
+
