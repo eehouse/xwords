@@ -91,7 +91,7 @@ my %typeInfo = (
                 "Coord" => { "size" => 2, "a0" => 0 }, # ???
                 "Coord*" => { "size" => 4, "a0" => 0, "autoSwap" => 2 },
                 "DateFormatType" => { "size" => 1, "a0" => 0 }, # enum
-                "DateTimeType*" => { "size" => 4, "a0" => 0 },
+                "DateTimeType*" => { "size" => 4, "a0" => 0, "autoSwap" => -1 },
                 "DmOpenRef" => { "size" => 4, "a0" => 1 },
                 "DmResID" => { "size" => 2, "a0" => 0 },
                 "DmResType" => { "size" => 4, "a0" => 0 },
@@ -99,7 +99,7 @@ my %typeInfo = (
                 "Err" => { "size" => 2, "a0" => 0 },
                 "Err*" => { "size" => 4, "a0" => 1 },
                 "EventPtr" => { "size" => 4, "a0" => 1 },
-                "EventType*" => { "size" => 4, "a0" => 1 },
+                "EventType*" => { "size" => 4, "a0" => 1, "autoSwap" => -1 },
                 "ExgDBWriteProcPtr" => { "size" => 4, "a0" => 1 },
                 "ExgSocketType*" => { "size" => 4, "a0" => 1, "autoSwap" => -1 },
                 "FieldAttrPtr" => { "size" => 4, "a0" => 1 },
@@ -464,6 +464,18 @@ sub print_func_impl($$$$$$) {
     return $result;
 } # print_func_impl
 
+# create a signature for each function.  We'll see how many match up.
+sub funcId($$) {
+    my ( $retType, $parms ) = @_;
+    my $id = "${retType}_";
+
+    foreach my $param ( @$parms ) {
+        $id .= $$param{"type"};
+    }
+
+    return $id;
+} # funcId
+
 
 ###########################################################################
 # Main
@@ -540,6 +552,8 @@ EOF
                                        $$ref{'sel'},
                                        $$ref{'trapType'});
         print $outRef $funcstr;
+
+#        print STDERR "funcID: ", funcId( $type, $$ref{'params'} ), "\n";
     }
 
     if ( $dot_c ne "-" ) {
