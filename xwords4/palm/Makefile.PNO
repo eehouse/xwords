@@ -50,6 +50,7 @@ OBJS = $(PLATFORM)/pnolet.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
 	$(PLATFORM)/pace_gen.o \
+	$(PLATFORM)/pace_man.o \
 	$(COMMONOBJ)
 
 # The target of this makefile is the .bin files that comprise the
