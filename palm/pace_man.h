@@ -47,6 +47,7 @@ extern void LstSetListChoices( ListType* listP, Char** itemsText,
 extern Err SysNotifyRegister( UInt16 cardNo, LocalID dbID, 
                               UInt32 notifyType, SysNotifyProcPtr callbackP, 
                               Int8 priority, void* userDataP );
+extern void LstSetDrawFunction( ListType* listP, ListDrawDataFuncPtr func );
 
 #if 0
 # define FUNC_HEADER(n) XP_LOGF( #n " called" )
@@ -75,7 +76,7 @@ extern Err SysNotifyRegister( UInt16 cardNo, LocalID dbID,
 
 #define SET_SEL_REG(trap, sp) ((unsigned long*)((sp)->emulStateP))[3] = (trap)
 
-void flipRect( RectangleType* rout, RectangleType* rin );
+void flipRect( RectangleType* rout, const RectangleType* rin );
 #define SWAP_RECTANGLETYPE_ARM_TO_68K( dp, sp ) flipRect( (dp), (sp) )
 #define SWAP_RECTANGLETYPE_68K_TO_ARM SWAP_RECTANGLETYPE_ARM_TO_68K
 
@@ -88,7 +89,8 @@ void flipEngSocketToArm( ExgSocketType* out, const unsigned char* sin );
 #define SWAP_EXGSOCKETTYPE_68K_TO_ARM( dp, sp ) flipEngSocketToArm( (dp), (sp) )
 
 void flipFileInfoFromArm( unsigned char* fiout, const FileInfoType* fiin );
-#define SWAP_FILEINFOTYPE_ARM_TO_68K( dp, sp ) flipFileInfoFromArm( (dp), (sp) )
+#define SWAP_FILEINFOTYPE_ARM_TO_68K( dp, sp ) \
+    flipFileInfoFromArm( (unsigned char*)(dp), (sp) )
 void flipFileInfotoArm( FileInfoType* fout, const unsigned char* fin );
 #define SWAP_FILEINFOTYPE_68K_TO_ARM( dp, sp ) flipFileInfoToArm( (dp), (sp) )
 
