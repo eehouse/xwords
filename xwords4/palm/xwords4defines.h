@@ -104,7 +104,7 @@
 /* Move menu */
 #define XW_HINT_PULLDOWN_ID 1061
 #define XW_NEXTHINT_PULLDOWN_ID 1062
-#ifdef XWFEATURE_HINT_CONFIG
+#ifdef XWFEATURE_SEARCHLIMIT
 # define XW_HINTCONFIG_PULLDOWN_ID 1063
 #endif
 #define XW_UNDOCUR_PULLDOWN_ID 1064
@@ -392,7 +392,7 @@
 #endif
 
 /* versioning stuff */
-#define XW_PALM_VERSION_STRING "4.0.6b4"
+#define XW_PALM_VERSION_STRING "4.0.6b5"
 #define CUR_PREFS_VERS 0x0405
 
 
