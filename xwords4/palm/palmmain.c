@@ -576,8 +576,8 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
         if ( hasDict ) {
             XP_UCHAR* name = stringFromStream( MPPARM(globals->mpool)
                                                recStream );
-            dict = palm_dictionary_make( MPPARM(globals->mpool) name, 
-                                         globals->dictList );
+            dict = palm_dictionary_make( MPPARM(globals->mpool) globals,
+                                         name, globals->dictList );
             success = dict != NULL;
 
             if ( !success ) {
@@ -1854,7 +1854,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
 
     if ( !dict ) {
         XP_ASSERT( !!newDictName );
-        dict = palm_dictionary_make( MPPARM(globals->mpool) 
+        dict = palm_dictionary_make( MPPARM(globals->mpool) globals,
                                      copyString( MEMPOOL newDictName ),
                                      globals->dictList );
         XP_ASSERT( !!dict );	
@@ -2729,9 +2729,11 @@ handleScrollInAsk( EventPtr event )
     case keyDownEvent:
         switch ( event->data.keyDown.chr ) {
         case pageUpChr:
+        case vchrRockerUp:
             direction = winUp; 
             break;
         case pageDownChr:
+        case vchrRockerDown:
             direction = winDown; 
             break;
         default:
@@ -3363,7 +3365,9 @@ palm_util_getCurSeconds( XW_UtilCtxt* uc )
 static DictionaryCtxt*
 palm_util_makeEmptyDict( XW_UtilCtxt* uc )
 {
-    DictionaryCtxt* result = palm_dictionary_make( MPPARM(uc->mpool) NULL, NULL );
+    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
+    DictionaryCtxt* result = palm_dictionary_make( MPPARM(uc->mpool) 
+                                                   globals, NULL, NULL );
     XP_ASSERT( !!result );
     return result;
 } /* palm_util_makeEmptyDict */
