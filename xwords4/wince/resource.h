@@ -74,54 +74,55 @@
 #define IDC_CHECKNOHINTS                1041
 #define IDC_CHECKSHOWCURSOR             1042
 #define IDC_CHECKROBOTSCORES            1043
-#define PHONIES_LABEL                   1044
-#define IDC_ROLECOMBO                   1045
-#define IDC_LOCALP_LABEL                1046
-#define IDC_TOTAL_LABEL                 1047
-#define IDC_REMOTE_LABEL                1048
-#define IDC_PICKTILES                   1049
-#define IDC_BPICK                       1050
-#define IDC_PICKMSG                     1051
+#define IDC_PREFCOLORS                  1044
+#define PHONIES_LABEL                   1045
+#define IDC_ROLECOMBO                   1046
+#define IDC_LOCALP_LABEL                1047
+#define IDC_TOTAL_LABEL                 1048
+#define IDC_REMOTE_LABEL                1049
+#define IDC_PICKTILES                   1050
+#define IDC_BPICK                       1051
+#define IDC_PICKMSG                     1052
 #ifdef FEATURE_TRAY_EDIT
-# define IDC_CPICK                      1052
-# define IDC_PICKALL                    1053
+# define IDC_CPICK                      1053
+# define IDC_PICKALL                    1054
 #endif
 
 #ifdef XWFEATURE_CE_EDITCOLORS
-# define DLBLTR_BUTTON                  1054
-# define DBLWRD_BUTTON                  1055
-# define TPLLTR_BUTTON                  1056
-# define TPLWRD_BUTTON                  1057
-# define EMPCELL_BUTTON                 1058
-# define TBACK_BUTTON                   1059
-# define PLAYER1_BUTTON                 1060
-# define PLAYER2_BUTTON                 1061
-# define PLAYER3_BUTTON                 1062
-# define PLAYER4_BUTTON                 1063
-# define PLAYER1_LABEL                  1064
-# define PLAYER2_LABEL                  1065
-# define PLAYER3_LABEL                  1066
-# define PLAYER4_LABEL                  1067
-# define DLBLTR_LABEL                   1068
-# define DBLWRD_LABEL                   1069
-# define TPLLTR_LABEL                   1070
-# define TPLWRD_LABEL                   1071
-# define EMPTYCELL_LABEL                1072
-# define TILEBACK_LABEL                 1073
+# define DLBLTR_BUTTON                  1055
+# define DBLWRD_BUTTON                  1056
+# define TPLLTR_BUTTON                  1057
+# define TPLWRD_BUTTON                  1058
+# define EMPCELL_BUTTON                 1059
+# define TBACK_BUTTON                   1060
+# define PLAYER1_BUTTON                 1061
+# define PLAYER2_BUTTON                 1062
+# define PLAYER3_BUTTON                 1063
+# define PLAYER4_BUTTON                 1064
+# define PLAYER1_LABEL                  1065
+# define PLAYER2_LABEL                  1066
+# define PLAYER3_LABEL                  1067
+# define PLAYER4_LABEL                  1068
+# define DLBLTR_LABEL                   1069
+# define DBLWRD_LABEL                   1070
+# define TPLLTR_LABEL                   1071
+# define TPLWRD_LABEL                   1072
+# define EMPTYCELL_LABEL                1073
+# define TILEBACK_LABEL                 1074
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */
 # ifdef MY_COLOR_SEL
-#  define CLREDT_SLIDER1                 1074
-#  define RED_EDIT                       1075
-#  define CLREDT_SLIDER2                 1076
-#  define GREEN_EDIT                     1077
-#  define CLREDT_SLIDER3                 1078
-#  define BLUE_EDIT                      1079
+#  define CLREDT_SLIDER1                 1075
+#  define RED_EDIT                       1076
+#  define CLREDT_SLIDER2                 1077
+#  define GREEN_EDIT                     1078
+#  define CLREDT_SLIDER3                 1079
+#  define BLUE_EDIT                      1080
 
-#  define RED_LABEL                      1080
-#  define GREEN_LABEL                    1081
-#  define BLUE_LABEL                     1082
+#  define RED_LABEL                      1081
+#  define GREEN_LABEL                    1082
+#  define BLUE_LABEL                     1083
 # endif // MY_COLOR_SEL
 #endif // XWFEATURE_CE_EDITCOLORS
 
@@ -144,9 +145,6 @@
 #define ID_FILE_SAVEDGAMES              40018
 #define ID_EDITTEXT                     40019
 #define ID_FILE_PREFERENCES             40020
-#ifdef XWFEATURE_CE_EDITCOLORS
-# define ID_FILE_EDITCOLORS             40021
-#endif
 #define ID_FILE_BEAMDICT                40022
 #define ID_FILE_BEAMBOARDS              40023
 #define ID_GAME_RESENDMSGS              40024
