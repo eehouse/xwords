@@ -87,7 +87,7 @@ scoreCurrentMove( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream )
 
     /* recalc goes here */
     score = checkScoreMove( model, turn, (EngineCtxt*)NULL, stream,
-			    XP_TRUE, (WordNotifierInfo*)NULL );
+                            XP_TRUE, (WordNotifierInfo*)NULL );
     XP_ASSERT( score >= 0 || score == ILLEGAL_MOVE_SCORE );
 
     player->curMoveScore = score;
@@ -114,7 +114,7 @@ adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn )
 
 XP_Bool
 model_checkMoveLegal( ModelCtxt* model, XP_S16 turn, XWStreamCtxt* stream,
-		      WordNotifierInfo* notifyInfo )
+                      WordNotifierInfo* notifyInfo )
 {
     XP_S16 score;
     score = checkScoreMove( model, turn, (EngineCtxt*)NULL, stream, XP_FALSE, 
@@ -130,7 +130,7 @@ invalidateScore( ModelCtxt* model, XP_S16 turn )
 
 XP_Bool
 getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
-			    XWStreamCtxt* stream, XP_S16* score )
+                            XWStreamCtxt* stream, XP_S16* score )
 {
     PlayerCtxt* player = &model->players[turn];
     if ( !player->curMoveValid ) {
@@ -153,7 +153,7 @@ model_getPlayerScore( ModelCtxt* model, XP_S16 player )
  */
 void
 model_figureFinalScores( ModelCtxt* model, XP_S16* finalScoresP,
-			 XP_S16* tilePenalties )
+                         XP_S16* tilePenalties )
 {
     XP_S16 i, j;
     XP_S16 penalties[MAX_NUM_PLAYERS];
@@ -217,8 +217,8 @@ model_figureFinalScores( ModelCtxt* model, XP_S16* finalScoresP,
  */
 static XP_S16
 checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine, 
-		XWStreamCtxt* stream, XP_Bool silent, 
-		WordNotifierInfo* notifyInfo ) 
+                XWStreamCtxt* stream, XP_Bool silent, 
+                WordNotifierInfo* notifyInfo ) 
 {
     XP_Bool isHorizontal;
     XP_S16 score = ILLEGAL_MOVE_SCORE;
@@ -227,10 +227,13 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
     XP_ASSERT( player->nPending <= MAX_TRAY_TILES );
 
     if ( player->nPending == 0 ) {
-        return 0;
-    }
+        score = 0;
 
-    if ( tilesInLine( model, turn, &isHorizontal ) ) {
+        if ( !!stream ) {
+            formatSummary( stream, model, 0 );
+        }
+
+    } else if ( tilesInLine( model, turn, &isHorizontal ) ) {
         MoveInfo moveInfo;
 
         normalizeMoves( model, turn, isHorizontal, &moveInfo );
@@ -273,7 +276,7 @@ tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal )
 
 void
 normalizeMoves( ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
-		MoveInfo* moveInfo )
+                MoveInfo* moveInfo )
 {
     XP_S16 lowCol, i, j, thisCol; /* unsigned is a problem on palm */
     PlayerCtxt* player = &model->players[turn];
@@ -440,8 +443,8 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 
 XP_U16
 figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
-		 XWStreamCtxt* stream, XP_Bool silent, 
-		 WordNotifierInfo* notifyInfo )
+                 XWStreamCtxt* stream, XP_Bool silent, 
+                 WordNotifierInfo* notifyInfo )
 {
     XP_U16 col, row;
     XP_U16* incr;
@@ -732,7 +735,7 @@ find_end( ModelCtxt* model, XP_U16 col, XP_U16 row, XP_Bool isHorizontal )
 
 static void
 wordScoreFormatterInit( WordScoreFormatter* fmtr, XWStreamCtxt* stream,
-			DictionaryCtxt* dict )
+                        DictionaryCtxt* dict )
 {
     XP_ASSERT( !!stream );
     fmtr->stream = stream;
@@ -746,7 +749,7 @@ wordScoreFormatterInit( WordScoreFormatter* fmtr, XWStreamCtxt* stream,
 
 static void
 wordScoreFormatterAddTile( WordScoreFormatter* fmtr, Tile tile, 
-			   XP_U16 tileMultiplier, XP_Bool isBlank )
+                           XP_U16 tileMultiplier, XP_Bool isBlank )
 {
     XP_UCHAR buf[4];
     XP_UCHAR* fullBufPtr;
@@ -793,7 +796,7 @@ wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word )
 
 static void
 formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore, 
-		 XP_U16 moveMultiplier )
+                 XP_U16 moveMultiplier )
 {
     if ( wordScore > 0 ) {
         XP_U16 multipliedScore = wordScore * moveMultiplier;
