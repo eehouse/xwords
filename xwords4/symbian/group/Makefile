@@ -2,26 +2,20 @@
 
 # The braindead build system doesn't remove object files from these
 # dirs.  So add to the clean target manually
-COMMON_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/common/armi/urel
-XWORDS_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/XWORDS/armi/urel
-
-
-# SRC = \
-# 	../src/helloworldbasic.cpp \
-# 	../src/helloworldbasicapplication.cpp \
-# 	../src/helloworldbasicappui.cpp \
-# 	../src/helloworldbasicappview.cpp \
-# 	../src/helloworldbasicdocument.cpp \
-
-# INC = \
-# 	../inc/helloworldbasic.hrh \
-# 	../inc/helloworldbasic.pan \
-# 	../inc/helloworldbasicapplication.h \
-# 	../inc/helloworldbasicappui.h \
-# 	../inc/helloworldbasicappview.h \
-# 	../inc/helloworldbasicdocument.h \
+# COMMON_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/common/armi/urel
+# XWORDS_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/XWORDS/armi/urel
 
 # BLDMAKE_FLAGS = -v
+
+# There are no rules for building these puppies -- the symbian build
+# system does that.  But they'd better exist by the time we get to the
+# .pkg target.
+SISFILES = \
+	$(EPOC)/release/armi/urel/xwords.APP \
+	$(EPOC)\\data/z/system/apps/xwords/xwords.rsc \
+	$(EPOC)\\data/z/system/apps/xwords/xwords.aif \
+	$(EPOC)\\data/z/system/apps/xwords/xwords.mbm \
+	../../dawg/English/BasEnglish2to8.xwd \
 
 all: wins
 
@@ -31,33 +25,25 @@ ABLD.BAT:
 wins: ABLD.BAT
 	$< build $(BLDMAKE_FLAGS) wins udeb
 
-armi_bld: ABLD.BAT
+armi: ABLD.BAT
 	$< build $(BLDMAKE_FLAGS) armi urel
 
-# armi:
-# 	bldmake $(BLDMAKE_FLAGS) bldfiles
-# 	abLD.BAT build $(BLDMAKE_FLAGS) armi udeb
-
 # depends on wins because that's where the .aif file gets built
-sis: wins armi_bld xwords.pkg
-	makesis xwords.pkg
+sis: wins armi xwords.pkg
+	makesis -v xwords.pkg
 
-xwords.pkg:
-	@echo '; xwords.pkg' | tr -d '\r' > $@
-	@echo ';' | tr -d '\r' >> $@
-	@echo ';Language - standard language definitions' | tr -d '\r' >> $@
-	@echo '&EN' | tr -d '\r' >> $@
-	@echo '' | tr -d '\r' >> $@
-	@echo '; standard SIS file header' | tr -d '\r' >> $@
+# If this xwords.pkg target generates errors -- especially the &EN
+# part -- you're probably running symbian's make instead of cygwin's.
+# Try invoking this Makefile with /usr/bin/make explicitly:
+# /usr/bin/make sis
+xwords.pkg: Makefile $(SISFILES)
+	rm -f $@
+	@echo "&EN" | tr -d '\r' >> $@
 	@echo '#{"Crosswords"},(0x10206D64),1,0,0' | tr -d '\r' >> $@
-	@echo '' | tr -d '\r' >> $@
-	@echo ';' | tr -d '\r' >> $@
-	@echo \"$(EPOC)\\release\\armi\\urel\\xwords.APP\"-\"C:\\system\\apps\\xwords\\xwords.app\" | tr '/' '\\' >> $@
-	@echo \"$(EPOC)data/z/system/apps/xwords/xwords.rsc\"-\"C:\\system\\apps\\xwords\\xwords.rsc\" | tr '/' '\\' >> $@
-	@echo \"../../../dawg/English/BasEnglish2to8.xwd\"-\"C:\\system\\apps\\xwords\\BasEnglish2to8.xwd\" | tr '/' '\\' >> $@
-
-#"..\..\..\epoc32\data\z\system\apps\HelloWorldBasic\HelloWorldBasic.rsc"-"C:\system\apps\HelloWorldBasic\HelloWorldBasic.rsc"
-
+	@for f in $(SISFILES); do \
+		bname=$$(basename "$$f"); \
+		echo \"$$f\"-\"C:\\system\\apps\\xwords\\$$bname\" >> $@; \
+	done
 
 # build project files for M$ VC++ version 6, e.g. for source-level
 # debugging
@@ -65,18 +51,11 @@ vc6:
 	makmake.exe xwords vc6
 
 clean:
-	rm -f xwords.SIS
+	rm -f xwords.SIS xwords.pkg
 	rm -f $(COMMON_OBJ_DIR)/*.o
 	rm -f $(XWORDS_OBJ_DIR)/*.o
-	abLD.BAT clean wins udeb
-	abLD.BAT clean armi udeb
+	if [ -f abLD.BAT ]; then \
+		./abLD.BAT clean wins udeb; \
+		./abLD.BAT clean armi udeb; \
+	fi
 	bldmake $(BLDMAKE_FLAGS) clean
-
-# all: ./ABLD.BAT $(SRC)
-# 	(PATH=$$(echo $$(echo $$PATH | sed -e 's/\/usr\/local\/bin:\/usr\/bin:\/usr\/bin://'):/usr/local/bin:/usr/bin:/usr/bin); \
-# 		./ABLD.BAT build wins udeb)
-
-
-# ./ABLD.BAT: helloworldbasic.mmp Makefile
-# 	(PATH=$$(echo $$(echo $$PATH | sed -e 's/\/usr\/local\/bin:\/usr\/bin:\/usr\/bin://'):/usr/local/bin:/usr/bin:/usr/bin); \
-# 		bldmake bldfiles)
