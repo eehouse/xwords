@@ -120,7 +120,6 @@ symMakeBitmap( SymDictCtxt* /*ctxt*/, RFile* file )
         XP_U8 nRows = readXP_U8( file );
         XP_U8 srcByte = 0;
         XP_U8 nBits;
-        XP_U16 i;
         bitmap = new (ELeave) CFbsBitmap();
         bitmap->Create( TSize(nCols, nRows), dispMode );
         
@@ -253,7 +252,12 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
         CleanupClosePushL(fileSession);
 
         RFile file;
-        User::LeaveIfError( file.Open( fileSession, nameD, EFileRead ) );
+        TInt err = file.Open( fileSession, nameD, EFileRead );
+        if ( err != KErrNone ) {
+            XP_LOGDESC16( &nameD );
+            XP_LOGF( "file.Open => %d", err );
+        }
+        User::LeaveIfError( err );
         CleanupClosePushL(file);
 
         ctxt = (SymDictCtxt*)XP_MALLOC( mpool, sizeof(*ctxt) );
