@@ -617,7 +617,6 @@ EvtAddEventToQueue( const EventType* event )
                              stack, 4 );
     }
     FUNC_TAIL(EvtAddEventToQueue);
-    EMIT_NAME("'E','v','t','A','d','d','E','v','e','n','t','T','o','Q','u','e','u','e'");
 } /* EvtAddEventToQueue */
 
 void

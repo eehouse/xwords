@@ -23,6 +23,7 @@
 #include <SoundMgr.h>
 #include <TimeMgr.h>
 #include <Form.h>
+#include <FeatureMgr.h>                                                         
 #include <unix_stdarg.h>
 
 #include "strutils.h"
@@ -341,7 +342,7 @@ penInGadget( EventPtr event, UInt16* whichGadget )
 void
 setFormRefcon( void* refcon )
 {
-    Err err = FtrSet( APPID, GLOBALS_FEATURE, refcon );
+    Err err = FtrSet( APPID, GLOBALS_FEATURE, (UInt32)refcon );
     XP_ASSERT( err == errNone );
 } /* setFormRefcon */
 
