@@ -128,6 +128,8 @@ char* sym_strcat( XP_UCHAR* dest, const XP_UCHAR* src );
 #define XP_HTONL(l) sym_flip_long(l)
 #define XP_HTONS(s) sym_flip_short(s)
 
+#define XP_LD "%d"
+
 #ifdef CPLUS
 }
 #endif
