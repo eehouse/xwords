@@ -192,6 +192,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
             ctxt->nRecords = nRecords;
 #ifdef NODE_CAN_4
             ctxt->super.nodeSize = (XP_U8)nodeSize;
+            ctxt->super.is_4_byte = nodeSize == 4;
 #endif
 
             for ( index = 0; index < nRecords; ++index ) {
