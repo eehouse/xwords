@@ -80,3 +80,5 @@ LIBRARY           EFSRV.lib
 LIBRARY           ESTOR.lib
 // Window.Invalidate                  
 LIBRARY           WS32.lib
+
+AIF xwords.aif ..\aif xwaif.rss c8 lrgicon.bmp lrgiconmask.bmp
