@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
-
+#include <ctype.h>
 
 #include "cursesmain.h"
 #include "draw.h"
@@ -130,33 +130,42 @@ curses_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
     mvwprintw( dctx->boardWin, rInner->top, rInner->left, buf );
 } /* curses_draw_drawRemText */
 
+#define SCORE_COL 25
+#define RECENT_COL 31
+
 static void
 formatScoreText( char* buf, DrawScoreInfo* dsi )
 {
     XP_S16 nTilesLeft = dsi->nTilesLeft;
-    char label;
     XP_Bool isRobot = dsi->isRobot;
+    char label = isRobot? 'r':'n';
+    int len;
+    char recbuf[32];
+    XP_U16 recBufLen = sizeof(recbuf);
 
     if ( nTilesLeft < 0 ) {
         nTilesLeft = MAX_TRAY_TILES;
     }
-
     if ( dsi->isRemote ) {
-        if ( isRobot ) {
-            label = 'R';
-        } else {
-            label = 'N';
-        }
-    } else {
-        if ( isRobot ) {
-            label = 'r';
-        } else {
-            label = 'n';
-        }
+        label = toupper(label);
     }
 
-    sprintf( buf, "%s[%c] %s (%d)", (dsi->isTurn?"->":"  "), 
-             label, dsi->name, nTilesLeft );
+    len = sprintf( buf, "%s[%c] %s (%d)", (dsi->isTurn?"->":"  "), 
+                   label, dsi->name, nTilesLeft );
+    while ( len < SCORE_COL ) {
+        ++len;
+        strcat( buf, " " );
+    }
+    len += sprintf( buf + len, "%.3d", dsi->score );
+
+    if ( (*dsi->lsc)( dsi->lscClosure, dsi->playerNum, recbuf, &recBufLen ) ) {
+        while ( len < RECENT_COL ) {
+            ++len;
+            strcat( buf, " " );
+        }
+        strcat( buf, recbuf );
+    }
+
 } /* formatScoreText */
 
 static void
@@ -213,12 +222,10 @@ curses_draw_scoreFinished( DrawCtx* p_dctx )
 #define MY_PAIR 1
 
 static void
-curses_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
-                              XP_Rect* rInner, XP_Rect* rOuter, 
+curses_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
                               DrawScoreInfo* dsi )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    char curSBuf[6];
     char buf[100];
     int y = rInner->top;
     
@@ -231,16 +238,6 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
     /* print the name and turn/remoteness indicator */
     formatScoreText( buf, dsi );
     mvwprintw( dctx->boardWin, y, rOuter->left, buf );
-
-    if ( 0 && dsi->isTurn/*  && !remote */ ) {
-        /* print score:curscore at the right edge.  If curscore is illegal,
-           replace with "??" */
-        mvwprintw( dctx->boardWin, y, rOuter->left + rOuter->width - 7,
-                   "%s:%.3d", curSBuf, dsi->score );
-    } else {
-        mvwprintw( dctx->boardWin, y, rOuter->left + rOuter->width - 3,
-                   "%.3d", dsi->score );
-    }
 
     if ( dsi->selected ) {
         wstandend( dctx->boardWin );
