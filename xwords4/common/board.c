@@ -141,6 +141,19 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
         server_setGameOverListener( server, boardGameOver, result );
 
         setTimerIf( result );
+
+#ifdef KEYBOARD_NAV     
+        {
+            /* set up some useful initial values */
+            XP_U16 i;
+            for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
+                result->trayCursorLoc[i] = 1;
+                result->bdCursor[i].col = 5;
+                result->bdCursor[i].row = 7;
+            }
+        }
+#endif
+
     }
     return result;
 } /* board_make */
@@ -2082,7 +2095,7 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
     return result;
 } /* handlePenDownOnBoard */
-#endif
+#endif /* POINTER_SUPPORT */
 
 /* If there's a password, ask it; if they match, change the state of the tray
  * to TRAY_REVEALED (unless we're not supposed to show the tiles).  Return
@@ -2534,7 +2547,7 @@ board_handleKey( BoardCtxt* board, XP_Key key )
 #ifdef KEYBOARD_NAV
     case XP_FOCUSCHANGE_KEY:
         if ( focusNext( board ) ) {
-            board_invalAll( board );
+            board_invalAll( board ); /* really just want to inval borders! */
             result = XP_TRUE;
         }
         break;
