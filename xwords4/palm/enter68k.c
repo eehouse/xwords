@@ -25,8 +25,7 @@
 #include <Form.h>
 #include <DataMgr.h>
 #include "pnostate.h"
-
-#define FTR_NUM 1
+#include "palmmain.h"           /* for Ftr enum */
 
 static void
 write_byte32( void* dest, UInt32 val )
@@ -109,7 +108,7 @@ setupPnolet( UInt32** entryP, UInt32** gotTableP )
 {
     char buf[64];
     PNOFtrHeader* ftrBase;
-    Err err = FtrGet( APPID, FTR_NUM, (UInt32*)&ftrBase );
+    Err err = FtrGet( APPID, PNOLET_STORE_FEATURE, (UInt32*)&ftrBase );
 
     if ( err != errNone ) {
         UInt32* gotTable;
@@ -137,7 +136,7 @@ setupPnolet( UInt32** entryP, UInt32** gotTableP )
         pad = (4 - (pnoSize & 3)) & 3;
         ftrSize += pad;
 
-        FtrPtrNew( APPID, FTR_NUM, ftrSize, (void**)&ftrBase );
+        FtrPtrNew( APPID, PNOLET_STORE_FEATURE, ftrSize, (void**)&ftrBase );
         pnoCode = (UInt32*)&ftrBase[1];
 
         StrPrintF( buf, "code ends at 0x%lx", 
@@ -172,18 +171,41 @@ setupPnolet( UInt32** entryP, UInt32** gotTableP )
 } /* setupPnolet */
 
 static Boolean
-canRunPnolet()
+shouldRunPnolet()
 {
-    /* Need to check for the arm processor feature */
-    return true;
-} /* canRunPnolet */
+    UInt32 value;
+    Boolean result = false;
+    Err err = FtrGet( sysFtrCreator, sysFtrNumProcessorID, &value );
+
+    if ( ( err == errNone ) && sysFtrNumProcessorIsARM( value ) ) {
+        result = true;
+    }
+    if ( result ) {
+        err = FtrGet( APPID, WANTS_ARM_FEATURE, &value );
+        if ( (err != errNone) || (value != WANTS_ARM) ) {
+            result = false;
+        }            
+    }
+    return result;
+} /* shouldRunPnolet */
 
 UInt32
 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
+    UInt32 result = 0;
+    if ( ( cmd == sysAppLaunchCmdNormalLaunch )
+#ifdef IR_EXCHMGR
+         || ( cmd == sysAppLaunchCmdExgAskUser )
+         || ( cmd == sysAppLaunchCmdSyncNotify )
+         || ( cmd == sysAppLaunchCmdExgReceiveData ) 
+#endif
+         ) {
 
-    if ( cmd == sysAppLaunchCmdNormalLaunch ) {
-        if ( canRunPnolet() ) {
+        /* This is the entry point for both an ARM-only app and one capable
+           of doing both.  If the latter, and ARM's an option, we want to use
+           it unless the user's said not to. */
+
+        if ( shouldRunPnolet() ) {
             char buf[64];
             UInt32* gotTable;
             PnoletUserData* dataP;
@@ -208,11 +230,17 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
             MemPtrFree( dataP );
 
             /* Might want to hang onto this, though it's a bit selfish.... */
-            FtrPtrFree( APPID, FTR_NUM );
+            FtrPtrFree( APPID, PNOLET_STORE_FEATURE );
         } else {
-            /* warn user: can't run this app!!!! */
+#ifdef FEATURE_PNOAND68K
+            result = PM2(PilotMain)( cmd, cmdPBP, launchFlags);
+#else
+            (void)FrmCustomAlert( XW_ERROR_ALERT_ID,
+                                  "Arm-only Crosswords won't run on this device",
+                                  " ", " " );
+#endif
         }
     }
 
-    return 0;
+    return result;
 } /* PilotMain */
