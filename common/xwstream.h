@@ -65,6 +65,8 @@ typedef struct StreamCtxVTable {
     XP_PlayerAddr (*m_stream_getAddress)( XWStreamCtxt* dctx );
     void (*m_stream_setAddress)( XWStreamCtxt* dctx, XP_PlayerAddr channelNo );
 
+    void (*m_stream_setVersion)( XWStreamCtxt* dctx, XP_U16 vers );
+    XP_U16  (*m_stream_getVersion)( XWStreamCtxt* dctx );
 } StreamCtxVTable;
 
 
@@ -132,5 +134,11 @@ struct XWStreamCtxt {
 
 #define stream_setAddress(sc,ch) \
          (sc)->vtable->m_stream_setAddress((sc),(ch))
+
+#define stream_setVersion(sc,ch) \
+         (sc)->vtable->m_stream_setVersion((sc),(ch))
+
+#define stream_getVersion(sc) \
+         (sc)->vtable->m_stream_getVersion((sc))
 
 #endif /* _XWSTREAM_H_ */

@@ -148,7 +148,9 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     strVersion = stream_getU8( stream );
     XP_DEBUGF( "strVersion = %d", (XP_U16)strVersion );
 
-    gi_readFromStream( MPPARM(mpool) stream, strVersion, gi );
+    stream_setVersion( stream, strVersion );
+
+    gi_readFromStream( MPPARM(mpool) stream, gi );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     hasComms = stream_getU8( stream );
@@ -312,12 +314,12 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
 } /* gi_copy */
 
 void
-gi_readFromStream( MPFORMAL XWStreamCtxt* stream, XP_U16 strVersion,
-                   CurGameInfo* gi )
+gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 {
     LocalPlayer* pl;
     XP_U16 i;
     XP_UCHAR* str;
+    XP_U16 strVersion = stream_getVersion( stream );
 
     str = stringFromStream( MPPARM(mpool) stream );
     replaceStringIfDifferent( MPPARM(mpool) &gi->dictName, str );
