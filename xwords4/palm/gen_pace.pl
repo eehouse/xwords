@@ -299,7 +299,7 @@ sub push_param($$$) {
 
         my $size = $$info{'size'};
 
-        $result .= "    ADD_TO_STACK$size($name, $$offset),\n";
+        $result .= "    ADD_TO_STACK$size(stack, $name, $$offset);\n";
         if ( $size == 1 ) {
             $$offset += 2;
         } else {
@@ -328,6 +328,11 @@ sub swap_param($$$) {
     return $result;
 }
 
+sub nameToBytes($) {
+    my ( $nam ) = @_;
+    return "\"'" . join( "','", split( //, $nam ) ) . "'\"";
+}
+
 sub print_body($$$$$) {
     my ( $name, $returnType, $params, $trapSel, $trapType ) = @_;
     my $result;
@@ -345,14 +350,17 @@ sub print_body($$$$$) {
     }
     $result .= "   {\n";
     $result .= "    PNOState* sp = GET_CALLBACK_STATE();\n";
-    $result .= "    unsigned char stack[] = {\n";
 
+    my $parmsResult;
     foreach my $param ( @$params ) {
-        $result .= push_param( $$param{"type"}, 
-                                $$param{"name"},
-                                \$offset );
+        $parmsResult .= push_param( $$param{"type"}, 
+                                    $$param{"name"},
+                                    \$offset );
     }
-    $result .= "    0 };\n";
+    $result .= "    STACK_START(unsigned char, stack, $offset);\n"
+        . $parmsResult
+    #$result .= "    unsigned char stack[] = {\n";
+        . "    STACK_END(stack);\n";
 
     my $info = $typeInfo{$returnType};
     if ( $info->{'a0'} ) {
@@ -382,6 +390,7 @@ sub print_body($$$$$) {
     if ( $notVoid ) {
         $result .= "    return result;\n";
     }
+    $result .= "    EMIT_NAME(" . nameToBytes($name) . ");\n";
     $result .= "} /* $name */\n";
 
     return $result;
@@ -474,9 +483,6 @@ foreach my $key (keys %funcInfo) {
                                    $$ref{'trapType'});
     print DOT $funcstr;
 }
-
-print DOT "#include \"pace_man.c\"\n"; 
-
 
 close DOT;
 
