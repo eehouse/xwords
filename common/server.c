@@ -750,6 +750,19 @@ showPrevScore( ServerCtxt* server )
     SETSTATE( server, server->vol.stateAfterShow );
 } /* showPrevScore */
 
+#if! defined XWFEATURE_STANDALONE_ONLY && defined BEYOND_IR
+static void
+connectRelay( ServerCtxt* server )
+{
+    XWStreamCtxt* stream = util_makeStreamFromAddr( server->vol.util, 
+                                                    CHANNEL_NONE );
+    stream_putBytes( stream, &stream, 1 );
+    stream_close( stream );
+}
+#else
+# define connectRelay(s)
+#endif
+
 XP_Bool
 server_do( ServerCtxt* server )
 {
@@ -763,6 +776,7 @@ server_do( ServerCtxt* server )
 
     switch( server->nv.gameState ) {
     case XWSTATE_BEGIN:	
+        connectRelay( server );
         if ( server->nv.pendingRegistrations == 0 ) { /* all players on device */
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_INTURN );
