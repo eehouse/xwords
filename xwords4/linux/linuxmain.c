@@ -411,6 +411,8 @@ linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
         return "Score for turn: %d\n";
     case STR_BONUS_ALL:
         return "Bonus for using all tiles: 50\n";
+    case STR_LOCAL_NAME:
+        return "%s";
     case STR_NONLOCAL_NAME:
         return "%s (remote)";
     case STRD_TIME_PENALTY_SUB:
