@@ -70,6 +70,7 @@ typedef struct PalmDrawCtx {
     WinHandle numberWin;
 
     XP_S16 trayOwner;
+    XP_U16 fntHeight;
 
     GraphicsAbility able;
 
