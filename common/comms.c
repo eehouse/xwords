@@ -93,6 +93,7 @@ struct CommsCtxt {
        reconnect for every game and after restarting. */
     XP_U16 heartbeat;
     XP_Bool isServer;
+    XP_Bool connecting;
 #ifdef DEBUG
     XP_U16 nUniqueBytes;
 #endif
@@ -134,17 +135,6 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
     result->sendproc = sendproc;
     result->sendClosure = closure;
     result->util = util;
-
-#ifdef BEYOND_IR
-    /* default values; default is still IR where there's a choice */
-    result->addr.conType = COMMS_CONN_RELAY;
-    result->addr.u.ip_relay.ipAddr = 0L; /* force 'em to set it */
-    result->addr.u.ip_relay.port = 10999;
-    {
-        char* name = "aphraea.org"; /* Don't ship with this!!! PENDING */
-        XP_MEMCPY( result->addr.u.ip_relay.hostName, name, XP_STRLEN(name) );
-    }
-#endif
 
     if ( isServer ) {
         hostID = HOST_ID_SERVER;
@@ -423,8 +413,23 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
 void
 comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr )
 {
+    XP_ASSERT( !!comms );
     XP_MEMCPY( addr, &comms->addr, sizeof(*addr) );
 } /* comms_getAddr */
+
+void
+comms_getInitialAddr( CommsAddrRec* addr )
+{
+    /* default values; default is still IR where there's a choice */
+    addr->conType = COMMS_CONN_RELAY;
+    addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
+    addr->u.ip_relay.port = 10999;
+    {
+        char* name = "eehouse.org";
+        XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
+    }
+    addr->u.ip_relay.cookie[0] = '\0';
+}
 
 void
 comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr )
@@ -919,7 +924,7 @@ comms_send_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
                   void* data, int dlen )
 {
     XP_U16 result = 0;
-    XP_U16 len;
+    XP_U16 len = 0;
     CommsAddrRec addr;
     XWStreamCtxt* tmpStream;
     XP_U8* buf;
@@ -975,8 +980,11 @@ static void
 comms_relayConnect( CommsCtxt* comms )
 {
     XP_LOGF( "comms_relayConnect called" );
-
-    comms_send_relay( comms, XWRELAY_CONNECT, HOST_ID_NONE, NULL, 0 );
+    if ( !comms->connecting ) {
+        comms->connecting = XP_TRUE;
+        comms_send_relay( comms, XWRELAY_CONNECT, HOST_ID_NONE, NULL, 0 );
+        comms->connecting = XP_FALSE;
+    }
 } /* comms_relayConnect */
 
 EXTERN_C_END
