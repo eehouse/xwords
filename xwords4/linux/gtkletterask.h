@@ -25,7 +25,9 @@
 
 #include "gtkmain.h"
 
-void gtkletterask( DictionaryCtxt* dict, char* buf );
+XP_S16 gtkletterask( XP_Bool forBlank, XP_UCHAR* name, XP_U16 nTiles,
+                     XP_UCHAR4* texts );
+
 
 #endif /* _GTKLETTERASK_H_ */
 #endif /* PLATFORM_GTK */

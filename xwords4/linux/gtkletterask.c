@@ -29,60 +29,79 @@ button_event( GtkWidget* widget, void* closure )
     *whichSet = 1;
 
     gtk_main_quit();
-}
+} /* button_event */
+
+#ifdef FEATURE_TRAY_EDIT
+static void
+abort_button_event( GtkWidget* widget, void* closure )
+{
+    gtk_main_quit();
+} /* abort_button_event */
+#endif
 
 #define BUTTONS_PER_ROW 13
 
-void
-gtkletterask( DictionaryCtxt* dict, char* resultBuf )
+XP_S16
+gtkletterask( XP_Bool forBlank, XP_UCHAR* name, 
+              XP_U16 nTiles, XP_UCHAR4* texts )
 {
     GtkWidget* dialog;
     GtkWidget* label;
-    Tile tile, nonBlanks;
-    XP_Bool results[32];	/* MAX NUM FACES */
-    unsigned char buf[4];
+    XP_Bool results[MAX_UNIQUE_TILES];
     GtkWidget* vbox;
     GtkWidget* hbox = NULL;
-
-    XP_U16 numFaces = dict_numTileFaces( dict );
-    Tile blankFace = dict_getBlankTile( dict );
+    char* txt;
+    XP_S16 i;
+    GtkWidget* button;	
+    XP_UCHAR buf[64];
 
     XP_MEMSET( results, 0, sizeof(results) );
 
-    XP_ASSERT( numFaces > 0 );
-
     vbox = gtk_vbox_new( FALSE, 0 );
 
-    for ( nonBlanks = tile = 0; tile < numFaces; ++tile ) {
-	GtkWidget* button;	
-	if ( tile == blankFace ) {
-	    continue;
-	}
+    for ( i = 0; i < nTiles; ++i ) {
 
-	if ( nonBlanks % BUTTONS_PER_ROW == 0 ) {
-	    hbox = gtk_hbox_new( FALSE, 0 );
-	}
-	dict_tilesToString( dict, &nonBlanks, 1, buf );
-	button = gtk_button_new_with_label( buf );
+        if ( i % BUTTONS_PER_ROW == 0 ) {
+            hbox = gtk_hbox_new( FALSE, 0 );
+        }
+        button = gtk_button_new_with_label( texts[i] );
 
-	gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-	gtk_signal_connect( GTK_OBJECT(button), "clicked", button_event, 
-			    &results[nonBlanks] );
-	gtk_widget_show( button );
+        gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
+        gtk_signal_connect( GTK_OBJECT(button), "clicked", button_event, 
+                            &results[i] );
+        gtk_widget_show( button );
 
-	if ( tile+1 == numFaces || (nonBlanks % BUTTONS_PER_ROW == 0) ) {
-	    gtk_widget_show( hbox );
-	    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
-	}
-	++nonBlanks;
+        if ( i+1 == nTiles || (i % BUTTONS_PER_ROW == 0) ) {
+            gtk_widget_show( hbox );
+            gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+        }
     }
+
+#ifdef FEATURE_TRAY_EDIT
+    button = gtk_button_new_with_label( "Just pick em!" );
+    hbox = gtk_hbox_new( FALSE, 0 );
+    gtk_signal_connect( GTK_OBJECT(button), "clicked", abort_button_event, 
+                        NULL );
+    gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
+    gtk_widget_show( button );
+    gtk_widget_show( hbox );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+#endif
+
     gtk_widget_show( vbox );
 
     /* Create the widgets */
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
 
-    label = gtk_label_new( "Choose a letter for your blank." );
+    if ( forBlank ) {
+        txt = "Choose a letter for your blank.";
+    } else {
+        char* fmt = "Choose a tile for %s.";
+        XP_SNPRINTF( buf, sizeof(buf), fmt, name );
+        txt = buf;
+    }
+    label = gtk_label_new( txt );
 
     gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
                        label);
@@ -93,16 +112,16 @@ gtkletterask( DictionaryCtxt* dict, char* resultBuf )
 
     gtk_widget_destroy( dialog );
 
-    for ( nonBlanks = tile = 0; tile < numFaces; ++tile ) {
-	if ( tile == blankFace ) {
-	    continue;
-	} else if ( results[nonBlanks] ) {
-	    break;
-	}
-	++nonBlanks;
+    for ( i = 0; i < nTiles; ++i ) {
+        if ( results[i] ) {
+            break;
+        }
+    }
+    if ( i == nTiles ) {
+        i = -1;
     }
 
-    dict_tilesToString( dict, &tile, 1, resultBuf );
+    return i;
 } /* gtkletterask */
 
 #endif /* PLATFORM_GTK */
