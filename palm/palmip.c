@@ -24,7 +24,8 @@
 #include "palmip.h"
 #include "memstream.h"
 
-#define NETLIB_TIMEOUT 5
+#define NETLIB_TIMEOUT (5 * sysTicksPerSecond)
+#define NAMELOOKUP_TIMEOUT (60*sysTicksPerSecond)
 
 void
 palm_ip_setup( PalmAppGlobals* globals )
@@ -94,9 +95,21 @@ openSocketIfNot( PalmAppGlobals* globals )
                                    0, /* protocol (ignored) */
                                    NETLIB_TIMEOUT, &err );
         if ( err == errNone ) {
+            NetSocketLingerType lt;
+
             open = XP_TRUE;
             globals->nlStuff.socket = socket;
             XP_LOGF( "Opened socket %d", socket );
+
+            /* Just for grins, turn linger off; suggested by
+             * http://tomfrauen.blogspot.com/2005/01/some-palm-os-network-programming.html
+             */
+            lt.onOff = true;
+            lt.time = 0;
+            NetLibSocketOptionSet( globals->nlStuff.netLibRef, socket, 
+                                   netSocketOptLevelSocket,
+                                   netSocketOptSockLinger, &lt, sizeof(lt),
+                                   NETLIB_TIMEOUT, &err );
         } else {
             XP_LOGF( "Failed to open socket: %d", err );
         }
@@ -144,10 +157,8 @@ resolveAddressIfNot( PalmAppGlobals* globals, CommsAddrRec* addr,
 
         result = NetLibGetHostByName( globals->nlStuff.netLibRef,
                                       addr->u.ip_relay.hostName, 
-                                      &niBuf, NETLIB_TIMEOUT, 
-                                      &err );
-
-        if ( result == 0 ) {
+                                      &niBuf, NAMELOOKUP_TIMEOUT, &err );
+        if ( result == NULL ) {
             XP_LOGF( "NetLibGetHostByName => %d", err );
         } else {
             if ( openSocketIfNot( globals ) ) {
