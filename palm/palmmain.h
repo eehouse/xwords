@@ -275,8 +275,10 @@ struct PalmAppGlobals {
 #endif
 
 #ifdef FEATURE_HIGHRES
-    XP_Bool hasHiRes;
     XP_U16 width, height;
+    XP_U16 sonyLibRef;
+    XP_Bool doVSK;
+    XP_Bool hasHiRes;
 #endif
 
     CurGameInfo gameInfo;	/* for the currently open, or new, game */
@@ -311,6 +313,9 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
        ,openSavedGameEvent
 #ifdef BEYOND_IR
        ,connsSettingChgEvent
+#endif
+#ifdef FEATURE_HIGHRES
+       ,doResizeWinEvent
 #endif
 };
 
