@@ -128,23 +128,38 @@ getPlayerColor( XP_S16 player )
 } /* getPlayerColor */
 
 static void
-ceDrawHintBorders( HDC hdc, RECT* rt, HintAtts hintAtts )
+ceDrawLine( HDC hdc, XP_S32 x1, XP_S32 y1, XP_S32 x2, XP_S32 y2 )
 {
-    if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
-        ++rt->left;
-    }
-    if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
-        --rt->right;
-    }
-    if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
-        ++rt->top;
-    }
-    if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
-        --rt->bottom;
-    }
+    POINT points[2];
 
-/*     InsetRect( rt, 1, 1 ); */
-    Rectangle( hdc, rt->left, rt->top, rt->right, rt->bottom );
+    points[0].x = x1;
+    points[0].y = y1;
+    points[1].x = x2;
+    points[1].y = y2;
+    Polyline( hdc, points, 2 );
+} /* ceDrawLine */
+
+static void
+ceDrawHintBorders( HDC hdc, XP_Rect* xprect, HintAtts hintAtts )
+{
+    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
+        RECT rt;
+        XPRtoRECT( &rt, xprect );
+        InsetRect( &rt, 1, 1 );
+
+        if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
+            ceDrawLine( hdc, rt.left, rt.top, rt.left, rt.bottom+1 );
+        }
+        if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
+            ceDrawLine( hdc, rt.right, rt.top, rt.right, rt.bottom+1 );
+        }
+        if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
+            ceDrawLine( hdc, rt.left, rt.top, rt.right+1, rt.top );
+        }
+        if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
+            ceDrawLine( hdc, rt.left, rt.bottom, rt.right+1, rt.bottom );
+        }
+    }
 } /* ceDrawHintBorders */
 
 static XP_Bool
@@ -172,9 +187,6 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     textRect = rt;
     InsetRect( &textRect, 1, 1 );
 
-    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
-        ceDrawHintBorders( hdc, &rt, hintAtts );
-    }
     InsetRect( &rt, 1, 1 );
 
     if ( (!!letters && letters[0] != '\0' ) || !!bitmap ) {
@@ -230,6 +242,8 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     } else if ( isStar ) {
         ceDrawBitmapInRect( hdc, textRect.left+2, textRect.top+1, dctx->origin );
     }
+
+    ceDrawHintBorders( hdc, xprect, hintAtts );
 
     return XP_TRUE;
 } /* ce_draw_drawCell */
@@ -397,7 +411,8 @@ ceDrawBitmapInRect( HDC hdc, XP_U32 x, XP_U32 y, HBITMAP bitmap )
 
 static void
 ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect, 
-                        XWBonusType cursorBonus, XP_Bool vertical )
+                        XWBonusType cursorBonus, XP_Bool vertical,
+                        HintAtts hintAtts )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -430,6 +445,7 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
 
     ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, cursor );
 
+    ceDrawHintBorders( hdc, xprect, hintAtts );
 } /* ce_draw_drawBoardArrow */
 
 static void
