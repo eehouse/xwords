@@ -91,7 +91,7 @@ void flipEngSocketToArm( ExgSocketType* out, const unsigned char* sin );
 void flipFileInfoFromArm( unsigned char* fiout, const FileInfoType* fiin );
 #define SWAP_FILEINFOTYPE_ARM_TO_68K( dp, sp ) \
     flipFileInfoFromArm( (unsigned char*)(dp), (sp) )
-void flipFileInfotoArm( FileInfoType* fout, const unsigned char* fin );
+void flipFileInfoToArm( FileInfoType* fout, const unsigned char* fin );
 #define SWAP_FILEINFOTYPE_68K_TO_ARM( dp, sp ) flipFileInfoToArm( (dp), (sp) )
 
 PNOState* getStorageLoc();
@@ -105,6 +105,7 @@ void write_unaligned16( unsigned char* dest, unsigned short val );
 void write_unaligned32( unsigned char* dest, unsigned long val );
 #define write_unaligned8( p, v ) *(p) = v
 
+unsigned short read_unaligned16( const unsigned char* src );
 
 #ifdef DEBUG
 # define EMIT_NAME(name,bytes) \
