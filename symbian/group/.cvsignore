@@ -17,3 +17,8 @@ xwords_*.rsg
 xwords_*.app
 xwords_*.rsc
 icon.series*.mbm
+*.def
+*.ilk
+*.pdb
+*.ncb
+*.OPT
