@@ -28,7 +28,8 @@ while (<>) {
 
     foreach my $letter (split( / */ ) ) {
         my $i = ord($letter);
-        die "$0: this is a letter?: $i" if $i <= 32; 
+        # special-case the bogus chars we add for "specials"
+        die "$0: this is a letter?: $i" if $i <= 32 && $i >= 4 && $i != 0; 
         ++$letterCounts[$i];
         ++$letterCount;
     }
@@ -52,7 +53,7 @@ for ( my $i = 1 ; $i <= 15; ++$i ) {
 
 print "\n\n**** Letter counts ****\n";
 print "ASCII ORD  HEX     PCT (of $letterCount)\n";
-for ( my $i = 32; $i < 255; ++$i ) {
+for ( my $i = 0; $i < 255; ++$i ) {
     my $count = $letterCounts[$i];
     if ( $count > 0 ) {
         my $pct = (100.00 * $count) / $letterCount;
