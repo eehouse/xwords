@@ -27,7 +27,9 @@ APPID ?= Xwr4
 MLPREFIX = /usr
 DICT = $(shell echo $$BASENG_PATH)
 
-DEBUG_SET = APPID=Xwdb ICONTEXT=CrossDbg NAME="CrossDbg" DONT_OMIT=true
+DEBUG_SET = APPID=Xwdb ICONTEXT="CrossDbg" NAME="CrossDbg" DONT_OMIT=true
+
+APPNAME = "$(NAME)"
 
 #BUILD_AS_PNOLET = 1
 
@@ -86,7 +88,7 @@ FEATURE_HIGHRES = -DFEATURE_HIGHRES
 MYDEFS_COMMON += $(FEATURE_HIGHRES)
 
 MYDEFS_ARM = -D__LITTLE_ENDIAN -DXW_TARGET_PNO $(MYDEFS_COMMON)
-MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) 
+MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) -DAPPNAME=\"$(APPNAME)\"
 
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
 # comment out for ARM-only build
@@ -247,7 +249,8 @@ ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet
 
 pnolet: LocalizedStrIncludes.h
-	$(MAKE) -f Makefile.PNO MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\'"
+	$(MAKE) -f Makefile.PNO MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\' \
+	-DAPPNAME=\\\"$(APPNAME)\\\""
 endif
 
 # GDB seems confused by relative paths these days.  So generate the
