@@ -103,6 +103,7 @@ CXWordsAppView::~CXWordsAppView()
     delete iGamesMgr;
 #ifndef XWFEATURE_STANDALONE_ONLY
     delete iSendSock;
+    delete iNewPacketQueue;
 #endif
 
 #ifdef DEBUG
@@ -131,6 +132,7 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 #ifndef XWFEATURE_STANDALONE_ONLY
     iSendSock = CSendSocket::NewL( PacketReceived, (void*)this );
     XP_LOGF( "iSendSock created" );
+    iNewPacketQueue = new (ELeave)CDesC8ArrayFlat(2);
 #endif
 
     // Set the control's border
@@ -869,9 +871,11 @@ CXWordsAppView::TimerCallback( TAny* aPtr )
 
         XWStreamCtxt* stream = me->MakeSimpleStream( NULL );
         
-        stream_putBytes( stream, (void*)me->iNewPacket.Ptr(), 
-                         me->iNewPacket.Length() );
-        me->iNewPacket.SetLength(0);
+        TPtrC8 packet = (*me->iNewPacketQueue)[0];
+        stream_putBytes( stream, (void*)packet.Ptr(), packet.Length() );
+        me->iNewPacketQueue->Delete(0);
+        XP_LOGF( "pulling packet off head of queue; there are %d left",
+                 me->iNewPacketQueue->Count() );
 
         CommsAddrRec addr;
         addr.conType = COMMS_CONN_RELAY;
@@ -1279,8 +1283,11 @@ CXWordsAppView::DrawGameName() const
 CXWordsAppView::PacketReceived( const TDesC8* aBuf, void* aClosure )
 {
     CXWordsAppView* me = (CXWordsAppView*)aClosure;
-    XP_ASSERT( me->iNewPacket.Length() == 0 );
-    me->iNewPacket.Copy( *aBuf );
+
+    TInt count = me->iNewPacketQueue->Count();
+    me->iNewPacketQueue->InsertL( count, *aBuf );
+    XP_LOGF( "inserted packet: now number %d", count );
+
     me->StartIdleTimer( EProcessPacket );
 } /* CXWordsAppView::PacketReceived */
 
