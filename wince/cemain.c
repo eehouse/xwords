@@ -978,7 +978,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
                 XP_DEBUGF( "len(nameBuf) = %d", len );
                 newName = XP_MALLOC( globals->mpool, len + 1 );
                 WideCharToMultiByte( CP_ACP, 0, nameBuf, len + 1,
-                                     name, len + 1, NULL, NULL );
+                                     newName, len + 1, NULL, NULL );
             }
         }
 
@@ -1556,40 +1556,45 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     return answer == IDOK || answer == IDYES;
 } /* ce_util_userQuery */
 
-#define EM BONUS_NONE
-#define DL BONUS_DOUBLE_LETTER
-#define DW BONUS_DOUBLE_WORD
-#define TL BONUS_TRIPLE_LETTER
-#define TW BONUS_TRIPLE_WORD
-
 static XWBonusType
 ce_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* model,
                         XP_U16 col, XP_U16 row )
 {
     XP_U16 index;
-    /* This must be static or won't compile under multilink (for Palm).
-       Fix! */
-    const char buttsBoard[8*8] = {
-        TW,EM,EM,DL,EM,EM,EM,TW,
-        EM,DW,EM,EM,EM,TL,EM,EM,
 
-        EM,EM,DW,EM,EM,EM,DL,EM,
-        DL,EM,EM,DW,EM,EM,EM,DL,
-                            
-        EM,EM,EM,EM,DW,EM,EM,EM,
-        EM,TL,EM,EM,EM,TL,EM,EM,
-                            
-        EM,EM,DL,EM,EM,EM,DL,EM,
-        TW,EM,EM,DL,EM,EM,EM,DW,
-    }; /* buttsBoard */
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+
+    if ( !globals->bonusInfo ) {
+        HRSRC rsrcH;
+        HGLOBAL globH;
+
+        rsrcH = FindResource( globals->hInst, MAKEINTRESOURCE(ID_BONUS_RES),
+                              TEXT("BONS") );
+        if ( !!rsrcH ) {
+            globH = LoadResource( globals->hInst, rsrcH );
+
+            if ( !!globH ) {
+                globals->bonusInfo = (XP_U16*)globH;
+                /* We don't want to call DeleteObject here, but should when
+                   the app closes.  Or does Wince free up all memory
+                   associated with a process when it closes?  PENDING(eeh) */
+                // DeleteObject( globH );
+            }
+        }
+    }
 
     if ( col > 7 ) col = 14 - col;
     if ( row > 7 ) row = 14 - row;
     index = (row*8) + col;
-    if ( index >= 8*8 ) {
-        return (XWBonusType)EM;
+    if ( !globals->bonusInfo || (index >= 8*8) ) {
+        XP_ASSERT( 0 );
+        return (XWBonusType)BONUS_NONE;
     } else {
-        return (XWBonusType)buttsBoard[index];
+        /* This is probably a bit slow.  Consider caching the resource in
+           memory with one bonus value per byte. */
+        XP_U16 value = globals->bonusInfo[index/4];
+        value >>= ((3 - (index % 4)) * 4);
+        return value & 0x0F;
     }
 } /* ce_util_getSquareBonus */
 
@@ -1756,18 +1761,21 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 } /* ce_util_getUserString */
 
 static void
-ce_formatBadWords( BadWordInfo* bwi, XP_UCHAR buf[] )
+ce_formatBadWords( BadWordInfo* bwi, XP_UCHAR buf[], XP_U16 bufsiz )
 {
     XP_U16 i;
 
     for ( i = 0, buf[0] = '\0'; ; ) {
         XP_UCHAR wordBuf[18];
         sprintf( wordBuf, "\"%s\"", bwi->words[i] );
-        strcat( buf, wordBuf );
+        XP_ASSERT( strlen(wordBuf) < sizeof(wordBuf)-1 );
+        strncat( buf, wordBuf, bufsiz - 1 );
         if ( ++i == bwi->nWords ) {
             break;
         }
-        strcat( buf, ", " );
+        bufsiz -= strlen( wordBuf );
+        strncat( buf, ", ", bufsiz - 1 );
+        bufsiz -= 2;
     }
 } /* ce_formatBadWords */
 
@@ -1780,7 +1788,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     XP_UCHAR msgBuf[256];
     XP_Bool isOk;
 
-    ce_formatBadWords( bwi, wordsBuf );
+    ce_formatBadWords( bwi, wordsBuf, sizeof(wordsBuf) );
     sprintf( msgBuf, "Word[s] %s not found in dictionary.", wordsBuf );
 
     if ( turnLost ) {
