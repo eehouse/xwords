@@ -77,24 +77,26 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     } else {
         init = (StrBoxInit*)GetWindowLong( hDlg, GWL_USERDATA );
 
-        switch (message) {
+        if ( !!init ) {
+            switch (message) {
 
-        case WM_COMMAND:
-            if ( !init->textIsSet ) {
-                stuffTextInField( hDlg, init );
-                init->textIsSet = XP_TRUE;
+            case WM_COMMAND:
+                if ( !init->textIsSet ) {
+                    stuffTextInField( hDlg, init );
+                    init->textIsSet = XP_TRUE;
+                }
+
+                id = LOWORD(wParam);
+                switch( id ) {
+
+                case IDOK:
+                case IDCANCEL:
+                    init->result = id;
+                    EndDialog(hDlg, id);
+                    return TRUE;
+                }
+                break;
             }
-
-            id = LOWORD(wParam);
-            switch( id ) {
-
-            case IDOK:
-            case IDCANCEL:
-                init->result = id;
-                EndDialog(hDlg, id);
-                return TRUE;
-            }
-            break;
         }
     }
     return FALSE;
