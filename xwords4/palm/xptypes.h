@@ -76,6 +76,7 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #define XP_STRNCMP(s1,s2,l)     StrNCompare((const char*)(s1), \
                                             (const char*)(s2),(l))
 #define XP_STRCMP(s1,s2)         StrCompare((s1),(s2))
+#define XP_STRCAT(d,s)           StrCat((d),(s))
 #define XP_SNPRINTF palm_snprintf
 
 #define XP_MIN(a,b) ((a)<(b)?(a):(b))
