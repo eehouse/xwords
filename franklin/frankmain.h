@@ -51,20 +51,20 @@
 #define MIN_TRAY_SCALE 23
 #define FRANK_DIVIDER_WIDTH 5
 
-#define VERSION_STRING " 4.0"
+#define VERSION_STRING "4.0.7a1"
 
 extern "C" {
 
     typedef struct FrankDrawCtx {
-	DrawCtxVTable* vtable;
-	CWindow* window;
-	const FONT* scoreFnt;
-	const FONT* scoreFntBold;
-	const FONT* trayFont;
-	const FONT* valFont;
-	const IMAGE rightcursor;
-	const IMAGE downcursor;
-	const IMAGE startMark;
+        DrawCtxVTable* vtable;
+        CWindow* window;
+        const FONT* scoreFnt;
+        const FONT* scoreFntBold;
+        const FONT* trayFont;
+        const FONT* valFont;
+        const IMAGE rightcursor;
+        const IMAGE downcursor;
+        const IMAGE startMark;
     } FrankDrawCtx;
 
     void debugf( char* format, ... );
