@@ -21,7 +21,6 @@
 #define _MODEL_H_
 
 #include "comtypes.h"
-/* #include "xptypes.h" */
 #include "dictnry.h"
 #include "mempool.h"
 
@@ -211,6 +210,10 @@ typedef struct WordNotifierInfo {
 XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn, 
                                     XWStreamCtxt* stream, XP_S16* score );
 XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
+
+XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
+                                   XP_UCHAR* expl, XP_U16* explLen );
+
 XP_Bool model_checkMoveLegal( ModelCtxt* model, XP_S16 player, 
                               XWStreamCtxt* stream,
                               WordNotifierInfo* notifyInfo );
@@ -221,7 +224,8 @@ void model_figureFinalScores( ModelCtxt* model, XP_S16* scores,
 /* figureMoveScore is meant only for the engine's use */
 XP_U16 figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, 
                         EngineCtxt* engine, XWStreamCtxt* stream, 
-                        XP_Bool silent, WordNotifierInfo* notifyInfo );
+                        XP_Bool silent, WordNotifierInfo* notifyInfo,
+                        XP_UCHAR* mainWord );
 
 /********************* persistence ********************/
 #ifdef INCLUDE_IO_SUPPORT
