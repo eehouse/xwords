@@ -46,6 +46,7 @@ extern "C" {
 enum {
     COLOR_BLACK,
     COLOR_WHITE,
+    COLOR_CURSOR,
 
     COLOR_PLAYER1,
     COLOR_PLAYER2,
@@ -129,9 +130,13 @@ drawFocusRect( SymDrawCtxt* sctx, XP_Rect* rect, XP_Bool hasfocus )
 
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
     sctx->iGC->SetPenStyle( CGraphicsContext::EDottedPen );
-    XP_U16 index = SC(XP_U16,(hasfocus? COLOR_BLACK : COLOR_WHITE));
+    XP_U16 index = SC(XP_U16,(hasfocus? COLOR_CURSOR : COLOR_WHITE));
     sctx->iGC->SetPenColor( sctx->colors[index] );
-    sctx->iGC->DrawRect( lRect );
+    TInt i;
+    for ( i = 0; i < 2; ++i ) {
+        sctx->iGC->DrawRect( lRect );
+        lRect.Shrink( 1, 1 );
+    }
 } // drawFocusRect
 
 static void
@@ -604,7 +609,7 @@ sym_draw_drawTrayCursor( DrawCtx* p_dctx, XP_Rect* rect )
     symClearRect( sctx, &lRect, COLOR_WHITE );
     sctx->iGC->SetClippingRect( lRect );
 
-    sctx->iGC->SetBrushColor( sctx->colors[COLOR_PLAYER1 + sctx->iTrayOwner] ); 
+    sctx->iGC->SetBrushColor( sctx->colors[COLOR_CURSOR] );
     sctx->iGC->SetBrushStyle( CGraphicsContext::ESolidBrush );
     sctx->iGC->SetPenStyle( CGraphicsContext::ENullPen );
     sctx->iGC->DrawRect( lRect );
@@ -617,13 +622,16 @@ sym_draw_drawBoardCursor( DrawCtx* p_dctx, XP_Rect* rect )
     TRect lRect;
     symLocalRect( &lRect, rect );
 
-    lRect.Shrink( 1, 1 );
     sctx->iGC->SetClippingRect( lRect );
 
-    sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
+    sctx->iGC->SetPenColor( sctx->colors[COLOR_CURSOR] );
     sctx->iGC->SetPenStyle( CGraphicsContext::ESolidPen );
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
-    sctx->iGC->DrawRect( lRect );
+    TInt i;
+    for ( i = 0; i <= 1; ++i ) {
+        sctx->iGC->DrawRect( lRect );
+        lRect.Shrink( 1, 1 );
+    }
 }
 #endif
 
@@ -787,6 +795,7 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
 
             sctx->colors[COLOR_BLACK] = KRgbBlack;
             sctx->colors[COLOR_WHITE] = KRgbWhite;
+            sctx->colors[COLOR_CURSOR] = TRgb(0x0000FF);
             sctx->colors[COLOR_TILE] = TRgb(0x80ffff); // light yellow
             //sctx->colors[COLOR_TILE] = KRgbYellow;
 
