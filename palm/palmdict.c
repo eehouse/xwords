@@ -289,6 +289,7 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
 
         chars[i] = specialStart->textVersion;
 
+        /* This may not work!  Get rid of NTOHS???? */
         hasLarge = XP_NTOHS( READ_UNALIGNED16(&specialStart->hasLarge) );
         if ( hasLarge ) {
             bitmaps[i].largeBM = base + hasLarge;
