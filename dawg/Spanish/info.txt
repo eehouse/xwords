@@ -19,6 +19,8 @@
 
 NEEDSSORT:true
 
+# MSDos LF chars go bye-bye
+LANGFILTER_PRECLIP: tr -d '\r' |
 
 # convert accented vowels
 LANGFILTER_POSTCLIP: | tr '\207\216\222\227\234\237\226' 'aeiouu\321'
@@ -33,7 +35,7 @@ LANGFILTER_POSTCLIP: | sed 's/RR/3/g'
 # substitute in the octal control character values
 LANGFILTER_POSTCLIP: | tr '123' '\001\002\003'
 # now add nulls as terminators
-LANGFILTER_POSTCLIP: | tr -s '\n\r' '\000\000'
+LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
 LANGFILTER_POSTCLIP: | sort -z
 
 
