@@ -29,9 +29,6 @@
 #include "memstream.h"
 #include "palmutil.h"
 #include "LocalizedStrIncludes.h"
-#ifdef BEYOND_IR
-# include <NetMgr.h>
-#endif
 
 # ifndef IR_EXCHMGR
 
@@ -231,21 +228,6 @@ ir_callback_out( IrConnect* con, IrCallBackParms* parms )
     CALLBACK_EPILOGUE();
 } /* ir_callback_out */
 #endif
-
-#ifdef BEYOND_IR
-static void checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream, 
-                             CommsAddrRec* addr );
-#endif
-
-void
-palm_send_on_close( XWStreamCtxt* stream, void* closure )
-{
-    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
-    CommsConnType conType = comms_getConType( globals->game.comms );
-
-    XP_ASSERT( !!globals->game.comms );
-    comms_send( globals->game.comms, conType, stream );
-} /* palm_send_on_close */
 
 # ifndef IR_EXCHMGR
 Boolean
@@ -467,262 +449,6 @@ ir_cleanup( PalmAppGlobals* globals )
 } /* ir_cleanup */
 #endif
 
-#ifdef BEYOND_IR
-# define NETLIB_TIMEOUT 2
-
-XP_Bool
-openNetLibIfNot( PalmAppGlobals* globals )
-{
-    Err err;
-    XP_Bool done = globals->nlStuff.netLibRef != 0;
-
-    if ( !done ) {
-        UInt16 libRef;
-        err = SysLibFind( "Net.lib", &libRef);
-        if ( err == errNone ) {
-            UInt16 ifErrs;
-            err = NetLibOpen( libRef, &ifErrs );
-            if ( err == errNone ) {
-                globals->nlStuff.netLibRef = libRef;
-                done = XP_TRUE;
-                XP_LOGF( "successful netlib open" );
-            } else {
-                XP_LOGF( "NetLibOpen failed: err=%d; ifErrs=%d",
-                         err, ifErrs );
-            }
-        }
-    }
-
-    return done;
-} /* openNetLibIfNot */
-
-static void
-bindSocket( PalmAppGlobals* globals, XP_U16 listenPort )
-{
-    NetSocketAddrINType socketAddr;
-    UInt16 res;
-    Err err;
-
-    XP_MEMSET( &socketAddr, 0, sizeof(socketAddr) );
-    socketAddr.family = netSocketAddrINET;
-    socketAddr.port = listenPort;
-
-    res = NetLibSocketBind( globals->nlStuff.netLibRef, 
-                            globals->nlStuff.socketRef,
-                            (NetSocketAddrType*)&socketAddr,
-                            sizeof(socketAddr), -1, &err );
-
-    if ( res == 0 && err == errNone ) {
-        globals->nlStuff.listenPort = listenPort;
-        XP_LOGF( "successful socket bind on port %d", 
-                 socketAddr.port );
-    } else {
-        XP_LOGF( "bind failed: %d", err );
-    }
-} /* bindSocket */
-
-static XP_Bool
-openSocketIfNot( PalmAppGlobals* globals )
-{
-    XP_Bool open = globals->nlStuff.socketRef != 0;
-    XP_Bool newlyOpen = XP_FALSE;
-    
-    if ( !open ) {
-        Err err;
-        NetSocketRef socketRef;
-
-        XP_ASSERT( globals->nlStuff.netLibRef != 0 );
-
-        socketRef = NetLibSocketOpen( globals->nlStuff.netLibRef,
-                                      netSocketAddrINET, 
-                                      netSocketTypeDatagram,
-                                      0, /* protocol (ignored) */
-                                      NETLIB_TIMEOUT,
-                                      &err );
-        if ( err == errNone ) {
-            globals->nlStuff.socketRef = socketRef;
-            newlyOpen = open = XP_TRUE;
-            
-            XP_LOGF( "Opened socket" );
-        } else {
-            XP_LOGF( "Failed to open socket" );
-        }
-
-        if ( globals->nlStuff.listenPort != 0 ) {
-            bindSocket( globals, globals->nlStuff.listenPort );
-        }
-    }
-    return open;
-} /* openSocketIfNot */
-
-void
-palm_bind_socket( PalmAppGlobals* globals, XP_U16 newPort )
-{
-    if ( openNetLibIfNot( globals ) && openSocketIfNot(globals) ) {
-        bindSocket( globals, newPort );
-    }
-} /* palm_bind_socket */
-
-void
-palm_ip_close( PalmAppGlobals* globals )
-{
-    if ( globals->nlStuff.netLibRef != 0 ) {
-        
-        if ( globals->nlStuff.socketRef != 0 ) {
-            Err ignore;
-            NetLibSocketClose( globals->nlStuff.netLibRef,
-                               globals->nlStuff.socketRef, 0, &ignore);
-            globals->nlStuff.socketRef = 0;
-        }
-
-        NetLibClose(globals->nlStuff.netLibRef, 0);
-
-        globals->nlStuff.netLibRef = 0;
-    }
-} /* palm_ip_close */
-
-#define MAX_PACKET_SIZE 256
-
-static XP_S16
-palm_ip_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr,
-              PalmAppGlobals* globals )
-{
-    XP_S16 nSent = 0;
-
-    XP_LOGF( "palm_ip_send: len=%d", len );
-    XP_ASSERT( len < MAX_PACKET_SIZE );
-
-    if ( openNetLibIfNot( globals ) && openSocketIfNot( globals ) ) {
-        Err err;
-        NetSocketAddrINType outSocket;
-
-        XP_MEMSET( &outSocket, 0, sizeof(outSocket) );
-        outSocket.family = netSocketAddrINET;
-        if ( 0 && !!addr ) {
-            outSocket.port = addr->u.ip.port;
-            outSocket.addr = addr->u.ip.ipAddr;
-        } else {
-            /* first time, get address from user settings */
-            CommsAddrRec addr;
-            XP_U16 ignore;
-            comms_getAddr( globals->game.comms, &addr, &ignore );
-
-            outSocket.port = addr.u.ip.port;
-            outSocket.addr = addr.u.ip.ipAddr;
-        }
-        XP_LOGF( "sending to host 0x%lx, port %d", 
-                 outSocket.addr, outSocket.port );
-
-        nSent = NetLibSend( globals->nlStuff.netLibRef, 
-                            globals->nlStuff.socketRef,
-                            (void*) buf, len, 0, /* flags */
-                            &outSocket, sizeof(outSocket), 
-                            NETLIB_TIMEOUT,
-                            &err );
-
-        if ( err != errNone || nSent != len ) {
-            XP_LOGF( "failed to send %d bytes; sent %d; err=%d",
-                     len, nSent, err );
-            nSent = 0;
-        } else {
-            XP_LOGF( "sent %d bytes", nSent );
-        }
-    }
-    return nSent;
-} /* palm_ip_send */
-#endif
-
-#ifdef BEYOND_IR
-static XWStreamCtxt*
-packetToStream( PalmAppGlobals* globals, CommsAddrRec* retAddr )
-{
-    XP_U8 buf[MAX_PACKET_SIZE];
-    Err err;
-    XP_S16 nRead;
-    NetSocketAddrINType fromAddr;
-    void* fromAddrP;
-    UInt16 fromLen;
-    XWStreamCtxt* result;
-    
-    if ( globals->romVersion >= 50 ) {
-        fromAddrP = NULL;
-        fromLen = 0;
-    } else {
-        fromAddrP = (void*)&fromAddr;
-        fromLen = sizeof( fromAddr );
-    }
-
-    XP_LOGF( "calling NetLibReceive" );
-    nRead = NetLibReceive( globals->nlStuff.netLibRef,
-                           globals->nlStuff.socketRef,
-                           buf, MAX_PACKET_SIZE, 
-                           0, /* flags */
-                           fromAddrP, &fromLen, 
-                           0, &err );
-    XP_LOGF( "back from NetLibReceive" );
-
-    if ( (nRead > 0) && (err == errNone) ) {
-        XP_LOGF( "read data: %d bytes", nRead );
-
-        result = mem_stream_make( MEMPOOL globals->vtMgr, 
-                                  globals, 0, NULL);
-        stream_open( result );
-        stream_putBytes( result, buf, nRead );
-
-        /* harvest the return address */
-        retAddr->conType = COMMS_CONN_IP;
-        retAddr->u.ip.ipAddr = fromAddr.addr;
-        retAddr->u.ip.port = fromAddr.port;
-        XP_LOGF( "received packet from port %d on host 0x%lx",
-                 fromAddr.port, fromAddr.addr );
-    } else {
-        result = NULL;
-        XP_LOGF( "didn't read data: %d bytes or err=%d", 
-                 nRead, err );
-    }
-
-    return result;
-} /* packetToStream */
-
-void
-checkHandleNetEvents( PalmAppGlobals* globals )
-{
-    if ( openNetLibIfNot( globals ) && openSocketIfNot( globals ) ) {
-        NetFDSetType readFDs;
-        NetFDSetType writeFDs;
-        NetFDSetType ignoreFDs;
-        XP_S16 nSockets;
-        Err err;
-
-        netFDZero( &readFDs );
-        netFDZero( &writeFDs );
-        netFDZero( &ignoreFDs );
-
-        netFDSet( globals->nlStuff.socketRef, &readFDs );
-        nSockets = NetLibSelect( globals->nlStuff.netLibRef,
-                                 netFDSetSize, /* built-in constant PENDING */
-                                 &readFDs, &writeFDs, &ignoreFDs,
-                                 1,            /* timeout */
-                                 &err );
-
-        if ( nSockets > 0 && err == errNone ) {
-            if ( netFDIsSet( globals->nlStuff.socketRef, &readFDs ) ) {
-
-                XWStreamCtxt* instream;
-                CommsAddrRec raddr; 
-
-                XP_MEMSET( &raddr, 0, sizeof(raddr) );
-
-                instream = packetToStream( globals, &raddr );
-                if ( !!instream ) {
-                    checkAndDeliver( globals, instream, &raddr );
-                }
-            }
-        }
-    }
-} /* checkHandleNetEvents */
-#endif
-
 /* We're passed an address as we've previously defined it and a buffer
  * containing a message to send.  Prepend any palm/ir specific headers to the
  * message, save the buffer somewhere, and fire up the state machine that
@@ -735,7 +461,7 @@ checkHandleNetEvents( PalmAppGlobals* globals )
  * if there's any ir-specific packet header I need to prepend to what's
  * outgoing.
  */
-static XP_S16
+XP_S16
 palm_ir_send( XP_U8* buf, XP_U16 len, PalmAppGlobals* globals )
 {
 #ifdef IR_EXCHMGR
@@ -748,15 +474,7 @@ palm_ir_send( XP_U8* buf, XP_U16 len, PalmAppGlobals* globals )
     exgSocket.target = APPID;
 
     if ( globals->romVersion >= 40 ) {
-#ifdef BEYOND_IR
-        if ( globals->exgLibraryRef == 0 ) {
-            exgSocket.name = exgSendBeamPrefix;
-        } else {
-            exgSocket.libraryRef = globals->exgLibraryRef;
-        }
-#else
         exgSocket.name = exgBeamPrefix;
-#endif
     }
 
     err = ExgPut( &exgSocket );
@@ -766,13 +484,6 @@ palm_ir_send( XP_U8* buf, XP_U16 len, PalmAppGlobals* globals )
     }
     err = ExgDisconnect( &exgSocket, err );
 
-#ifdef BEYOND_IR
-    /* no need to check for ROM version here */
-    if ( globals->exgLibraryRef == 0 ) {
-        globals->exgLibraryRef = exgSocket.libraryRef;
-    }
-#endif
-	
     return err==0? sent : 0;
 #else
     MyIrPacket* packet = getFreeSendPacket( globals );
@@ -786,43 +497,6 @@ palm_ir_send( XP_U8* buf, XP_U16 len, PalmAppGlobals* globals )
     return len;
 #endif
 } /* palm_ir_send */
-
-XP_S16
-palm_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
-{
-    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
-#ifdef BEYOND_IR
-
-    XP_S16 result = 0;
-    switch( comms_getConType(globals->game.comms) ) {
-    case COMMS_CONN_IR:
-        result = palm_ir_send( buf, len, globals );
-        break;
-    case COMMS_CONN_IP:
-        result = palm_ip_send( buf, len, addr, globals );
-        break;
-    default:
-        XP_ASSERT(0);
-    }
-    return result;
-#else
-    return palm_ir_send( buf, len, globals );
-#endif
-} /* palm_send */
-
-static void
-checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream, 
-                 CommsAddrRec* addr )
-{
-    if ( comms_checkIncomingStream( globals->game.comms, 
-                                     instream, addr ) ) {
-        globals->msgReceivedDraw = 
-            server_receiveMessage( globals->game.server, instream );
-        globals->msgReceivedDraw = true;
-    }
-    stream_destroy( instream );
-    palm_util_requestTime( &globals->util );
-} /* checkAndDeliver */
 
 #ifdef IR_EXCHMGR
 void
@@ -1035,12 +709,12 @@ static void
 printStateTransition( PalmAppGlobals* globals )
 {
     if ( globals->ir_state != globals->ir_state_prev ) {
-	char* oldState = getStateName( globals->ir_state_prev );
-	char* newState = getStateName( globals->ir_state );
+        char* oldState = getStateName( globals->ir_state_prev );
+        char* newState = getStateName( globals->ir_state );
 
-	XP_STATUSF( "ir_st:%s->%s", oldState, newState );
+        XP_STATUSF( "ir_st:%s->%s", oldState, newState );
 
-	globals->ir_state_prev = globals->ir_state;
+        globals->ir_state_prev = globals->ir_state;
     }
 } /* printStateTransition */
 # endif /* IR_EXCHMGR */

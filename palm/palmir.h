@@ -82,24 +82,12 @@ Boolean ir_do_work( PalmAppGlobals* globals );
 void ir_show_status( PalmAppGlobals* globals );
 void ir_cleanup( PalmAppGlobals* globals );
 
-/* CommsCtxt send callback; a driver of sorts.  Switches off global state to
-   decide how to actually send the message. */
-XP_S16 palm_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure );
-
-void palm_send_on_close( XWStreamCtxt* stream, void* closure );
-
 void receiveMove( ExgSocketPtr cmdPBP );
 XP_Bool loadReceivedMove( PalmAppGlobals* globals, MemHandle moveData );
 
 void palm_ir_receiveMove( PalmAppGlobals* globals, ExgSocketPtr socket );
 
-void palm_ip_close( PalmAppGlobals* globals );
-
-#ifdef BEYOND_IR
-void checkHandleNetEvents( PalmAppGlobals* globals );
-XP_Bool openNetLibIfNot( PalmAppGlobals* globals );
-void palm_bind_socket( PalmAppGlobals* globals, XP_U16 newPort );
-#endif
+XP_S16 palm_ir_send( XP_U8* buf, XP_U16 len, PalmAppGlobals* globals );
 
 #ifdef XWFEATURE_STANDALONE_ONLY
 # define palm_ir_send (TransportSend)NULL
