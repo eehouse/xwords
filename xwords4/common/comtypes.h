@@ -86,6 +86,9 @@ typedef struct CommonPrefs {
 # define DEBUG_ASSIGN(a,b)
 #endif
 
+#define OFFSET_OF(typ,var)  ((XP_U16)&(((typ*) 0)->var))
+
+
 #ifdef MEM_DEBUG
 # define XP_MALLOC(pool,nbytes) \
       mpool_alloc((pool),(nbytes),__FILE__,__LINE__)
