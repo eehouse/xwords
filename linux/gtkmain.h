@@ -70,7 +70,6 @@ typedef struct GtkAppGlobals {
     GtkAdjustment* adjustment;
 
     ClientStreamRec clientRecs[MAX_NUM_PLAYERS];
-    guint listenSockKey;	/* save return from gtk_input_add_full */
 
     CommonPrefs cp;
 

@@ -871,6 +871,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     globals.amServer = isServer;
     globals.cGlobals.params = params;
+    globals.cGlobals.socket = -1;
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;
@@ -879,7 +880,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     setupCursesUtilCallbacks( &globals, params->util );
 
-    globals.cGlobals.defaultServerName = params->info.clientInfo.serverName;
+    globals.cGlobals.defaultServerName = params->relayName;
 
     cursesListenOnSocket( &globals, 0, NULL ); /* stdin */
 
@@ -888,8 +889,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     cursesListenOnSocket( &globals, globals.timepipe[0], NULL ); /* reader pipe */
 
-    sock = initListenerSocket( params->defaultListenPort );
-    cursesListenOnSocket( &globals, sock, NULL );	
+    sock = linux_init_socket( &globals.cGlobals ); 
+    cursesListenOnSocket( &globals, sock, NULL );
 
     signal( SIGWINCH, SIGWINCH_handler );
     initCurses( &globals );
@@ -899,7 +900,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     gameID = (XP_U16)util_getCurSeconds( globals.cGlobals.params->util );
     game_makeNewGame( MEMPOOL &globals.cGlobals.game, &params->gi,
                       params->util, (DrawCtx*)globals.draw,
-                      gameID, &globals.cp, linux_udp_send, &globals );
+                      gameID, &globals.cp, linux_tcp_send, &globals );
 
     addr.conType = COMMS_CONN_IP;
     addr.u.ip.ipAddr = 0;       /* ??? */

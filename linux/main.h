@@ -31,7 +31,6 @@ typedef struct ServerInfo {
 } ServerInfo;
 
 typedef struct ClientInfo {
-    char* serverName;           /* still need this? */
 } ClientInfo;
 
 typedef struct LinuxUtilCtxt {
@@ -59,6 +58,7 @@ typedef struct LaunchParams {
 
     Connectedness serverRole;
 
+    char* relayName;
     union {
         ServerInfo serverInfo;
         ClientInfo clientInfo;
@@ -76,6 +76,7 @@ typedef struct CommonGlobals {
     XP_U16 lastNTilesToUse;
     /* UDP comms stuff */
     char* defaultServerName;
+    int socket;
 } CommonGlobals;
 
 #endif
