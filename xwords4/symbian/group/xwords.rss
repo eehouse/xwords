@@ -465,3 +465,49 @@ RESOURCE DIALOG r_xwords_blank_picker
         }
     };
 }
+
+RESOURCE DLG_BUTTONS r_savedgames_buttons
+{
+    buttons = {
+        DLG_BUTTON {
+            id = XW_SGAMES_OPEN_COMMAND;
+            buttontype = EEikCtCommandButton;
+            flags = EEikLabeledButtonIsDefault;
+            button = CMBUT { txt = "Open"; };
+        }, DLG_BUTTON {
+            id = XW_SGAMES_RENAME_COMMAND;
+            buttontype = EEikCtCommandButton;
+            button = CMBUT { txt = "Rename"; };
+        }, DLG_BUTTON {
+            id = XW_SGAMES_DELETE_COMMAND;
+            buttontype = EEikCtCommandButton;
+            button = CMBUT { txt = "Delete"; };
+        }, DLG_BUTTON {
+            id = EEikBidCancel;
+            buttontype = EEikCtCommandButton;
+            button = CMBUT { txt = "Cancel"; };
+        }
+    };
+}
+
+RESOURCE DIALOG r_xwords_savedgames_dlg
+{
+    title = "Saved games";
+    buttons = r_savedgames_buttons;
+    flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
+    items = {
+        DLG_LINE {
+            prompt = "Open:";
+            id = ESelGameChoice;
+#if 0
+            type = EEikCtChoiceList;
+            control = CHOICELIST { flags = EEikChlistArrayOwnedExternally; };
+#else
+            type = EEikCtListBox;
+            control = LISTBOX { flags = EEikListBoxMultipleSelection;
+                                width = 20;
+            };
+#endif
+        }
+    };
+}
