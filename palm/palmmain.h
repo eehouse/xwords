@@ -143,7 +143,7 @@ typedef struct MyIrPacket MyIrPacket;
 
 typedef struct ProgressCtxt {
     RectangleType boundsRect;
-    XP_U16 curLine;
+    XP_S16 curLine;
 } ProgressCtxt;
 
 /* I *hate* having to define these globally... */
