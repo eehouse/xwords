@@ -467,8 +467,11 @@ board_commitTurn( BoardCtxt* board )
             if ( !legal || board->badWordRejected ) {
                 result = XP_FALSE;
             } else {
-                /* hide the tray so no peeking */
+                /* Hide the tray so no peeking.  Leave it hidden even if user
+                   cancels as otherwise another player could get around
+                   passwords and peek at tiles. */
                 result = board_hideTray( board );
+
                 if ( util_userQuery( board->util, QUERY_COMMIT_TURN,
                                      stream ) ) {
                     result = server_commitMove( board->server ) || result;
@@ -880,14 +883,15 @@ board_draw( BoardCtxt* board )
 {
     drawScoreBoard( board );
 
-    if ( board->needsDrawing ) {
+    if ( board->needsDrawing 
+         && draw_boardBegin( board->draw, &board->boardBounds, 
+                             board->focussed == OBJ_BOARD ) ) {
+
         XP_Bool allDrawn = XP_TRUE;
         XP_S16 lastCol, lastRow, i;
         ModelCtxt* model = board->model;
         BlankQueue bq;
 
-        draw_boardBegin( board->draw, &board->boardBounds, 
-                         board->focussed == OBJ_BOARD );
 
         scrollIfCan( board );	/* this must happen before we count blanks
                                    since it invalidates squares */
@@ -1400,6 +1404,8 @@ board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP )
            regardless where its contents are? */
         if ( model_getCurrentMoveCount( model, selPlayer ) > 0 ) {
             model_resetCurrentTurn( model, selPlayer );
+            /* Draw's a no-op on Wince with a null hdc, but it'll draw
+               again.*/
             board_draw( board );
         }
 
