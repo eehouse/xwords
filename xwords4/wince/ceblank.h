@@ -24,6 +24,7 @@
 #include "cemain.h"
 
 typedef struct BlankDialogState {
+    CEAppGlobals* globals;
     PickInfo* pi;
     XP_U16 playerNum;
     XP_UCHAR4* texts;
