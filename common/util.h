@@ -133,7 +133,6 @@ typedef struct UtilVtable {
     XP_Bool (*m_util_warnIllegalWord)( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                        XP_U16 turn, XP_Bool turnLost );
 #ifdef BEYOND_IR
-    void (*m_util_listenPortChange)( XW_UtilCtxt* uc, XP_U16 listenPort );
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* aAddr );
 #endif
 
@@ -212,8 +211,6 @@ struct XW_UtilCtxt {
          (uc)->vtable->m_util_warnIllegalWord((uc),(w),(p),(b))
 
 #ifdef BEYOND_IR
-#define util_listenPortChange( uc, port ) \
-         (uc)->vtable->m_util_listenPortChange((uc), (port))
 #define util_addrChange( uc, addr ) \
          (uc)->vtable->m_util_addrChange((uc), (addr))
 #endif
