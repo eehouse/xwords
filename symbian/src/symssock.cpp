@@ -125,6 +125,8 @@ CSendSocket::ConnectL( TUint32 aIpAddr )
 
     // Initiate socket connection
     iSendSocket.Connect( iAddress, iStatus );
+
+    SetActive();
     iSSockState = EConnecting;
         
     // Start a timeout
