@@ -52,6 +52,9 @@ BITMAP ID STAR_BMP_RES_ID "bmps/startmark.pbitm" AUTOCOMPRESS
 
 APPLICATIONICONNAME ID 1000 ICONTEXT
 
+/* force hotsync into games category */
+LAUNCHERCATEGORY ID 1000 "Games"
+
 HEX "Xbrd" ID 1000
 #if 0				/* the "scrabble" pattern */
     0x40 0x01 0x00 0x04
