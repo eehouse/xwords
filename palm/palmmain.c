@@ -291,36 +291,31 @@ getSizes( PalmAppGlobals* globals )
 static void
 locateTrayButtons( PalmAppGlobals* globals )
 {
-    if ( !globals->hasHiRes ) {
+    if ( !globals->useHiRes ) {
         /* we need to put the buttons into the old position and set their
            sizes for the larger tray. */
         XP_U16 buttonInfoTriplets[] = { XW_MAIN_HIDE_BUTTON_ID, 
                                         TRAY_BUTTONS_Y_LR, 
-                                        TRAY_BUTTON_HEIGHT_LR,
 
                                         XW_MAIN_JUGGLE_BUTTON_ID, 
                                         TRAY_BUTTONS_Y_LR, 
-                                        TRAY_BUTTON_HEIGHT_LR,
 
                                         XW_MAIN_TRADE_BUTTON_ID, 
                                         TRAY_BUTTONS_Y_LR
                                         + TRAY_BUTTON_HEIGHT_LR,
-                                        TRAY_BUTTON_HEIGHT_LR,
-
 
                                         XW_MAIN_DONE_BUTTON_ID,
                                         TRAY_BUTTONS_Y_LR
-                                        + TRAY_BUTTON_HEIGHT_LR,
-                                        TRAY_BUTTON_HEIGHT_LR
+                                        + TRAY_BUTTON_HEIGHT_LR
         };
         XP_U16* ptr;
         XP_U16 i;
 
-        for ( i = 0, ptr = buttonInfoTriplets; i < 4; ++i, ptr += 3 ) {
+        for ( i = 0, ptr = buttonInfoTriplets; i < 4; ++i, ptr += 2 ) {
             RectangleType rect;
             getObjectBounds( ptr[0], &rect );
             rect.topLeft.y = ptr[1];
-            rect.extent.y = ptr[2];;
+            rect.extent.y = TRAY_BUTTON_HEIGHT_LR;
             setObjectBounds( ptr[0], &rect );
         }
     }
@@ -446,16 +441,15 @@ positionBoard( PalmAppGlobals* globals )
     boardHeight = scaleV * nCols; 
 
     if ( globals->useHiRes ) {
-        trayTop = 160 - TRAY_HEIGHT_HR;
+        trayTop = ((160 - TRAY_HEIGHT_HR) * doubler) - 1;
         globals->needsScrollbar = false;
     } else {
         trayTop = 160 - TRAY_HEIGHT_LR;
         globals->needsScrollbar = showGrid && (nCols == PALM_MAX_COLS);
     }
-    trayTop *= doubler;
 
     trayScaleV = globals->useHiRes?
-        (TRAY_HEIGHT_HR*doubler):TRAY_HEIGHT_LR;
+        (TRAY_HEIGHT_HR*doubler) + 1:TRAY_HEIGHT_LR;
     board_setTrayLoc( globals->game.board, 
                       (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
                       trayTop,
