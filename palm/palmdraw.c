@@ -40,7 +40,7 @@
 static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                                           XP_UCHAR* letters, XP_Bitmap bitmap,
                                           XP_S16 owner, XWBonusType bonus, 
-                                          XP_Bool isBlank, 
+                                          HintAtts hintAtts, XP_Bool isBlank, 
                                           XP_Bool isPending, XP_Bool isStar );
 static void palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
                                             XP_Rect* rInner, XP_Rect* rOuter, 
@@ -169,7 +169,8 @@ palm_clr_draw_boardFinished( DrawCtx* p_dctx )
 static XP_Bool
 palm_clr_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                         XP_UCHAR* letters, XP_Bitmap bitmap,
-                        XP_S16 owner, XWBonusType bonus, XP_Bool isBlank, 
+                        XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
+                        XP_Bool isBlank, 
                         XP_Bool isPending, XP_Bool isStar )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;    
@@ -201,7 +202,7 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     }
 
     return palm_common_draw_drawCell( p_dctx, rect, letters, bitmap, owner,
-                                      bonus, isBlank, isPending, isStar );
+                                      bonus, hintAtts, isBlank, isPending, isStar );
 } /* palm_clr_draw_drawCell */
 
 static void
@@ -225,11 +226,34 @@ palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
 
 #endif
 
+static void
+palmDrawHintBorders( XP_Rect* rect, HintAtts hintAtts )
+{
+    XP_Rect frame = *rect;
+
+    if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
+        ++frame.left;
+        --frame.width;
+    }
+    if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
+        ++frame.top;
+        --frame.height;
+    }
+    if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
+        --frame.width;
+    }
+    if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
+        --frame.height;
+    }
+
+    WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&frame );
+} /* palmDrawHintBorders */
+
 static XP_Bool
 palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                            XP_UCHAR* letters, XP_Bitmap bitmap,
-                           XP_S16 owner, XWBonusType bonus, XP_Bool isBlank, 
-                           XP_Bool isPending, XP_Bool isStar )
+                           XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
+                           XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     GraphicsAbility able = dctx->able;
@@ -348,6 +372,10 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
 
     if ( isBlank ) {
         WinEraseRectangleFrame( roundFrame, (RectangleType*)&localR );
+    }
+
+    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
+        palmDrawHintBorders( &localR, hintAtts );
     }
 
     WinSetClip( &saveClip );
