@@ -68,7 +68,7 @@ $(COMMONOBJDIR)/%.o : $(COMMONDIR)/%.c $(MAKEFILE)
 	$(CC_ARM) -o $@ -c $(MYDEFINES) -DHERE $(ARMCCFS) $<
 
 PNOC_bin.pre PNOG0000.bin: pace_gen.h $(OBJS)
-	$(CC_ARM) $(OBJS) $(ARMCCFS) $(ARMLDFS) -o tmp.out
+	$(CC_ARM) $(OBJS) $(ARMCCFS) $(ARMLDFS) -Wl,-Map,PNOC_bin.map -o tmp.out
 #	@$(OD_ARM) --disassemble-all tmp.out
 	$(OC_ARM) -j .text -O binary tmp.out PNOC_bin.pre
 	$(OC_ARM) -j .got -O binary tmp.out PNOG0000.bin
