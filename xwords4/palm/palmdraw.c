@@ -1077,9 +1077,7 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
 #endif
     XP_Bool hasClosure = !!closureP;
     PalmMiniWinData* data = (PalmMiniWinData*)(hasClosure? *closureP: NULL);
-#if defined DEBUG || defined FEATURE_HIGHRES
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-#endif
 
     HIGHRES_PUSH_LOC(dctx);
 
