@@ -68,11 +68,13 @@ checkServerRole( CurGameInfo* gi )
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
-                  CommonPrefs* cp,
+                  XP_U16 gameID, CommonPrefs* cp,
                   TransportSend sendproc, void* closure )
 {
     assertUtilOK( util );
     checkServerRole( gi );
+
+    gi->gameID = gameID;
 
     game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, util, 
                               gi->boardSize, gi->boardSize );
