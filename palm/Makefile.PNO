@@ -1,0 +1,93 @@
+# -*- mode: Makefile; -*-
+
+PLATFORM = PALM_PNO
+PALMDIR = /usr/local/share/palmdev/sdk-5r3/include
+
+WHICH = elf
+#WHICH = palmos
+
+CC_ARM = arm-$(WHICH)-gcc
+OC_ARM= arm-$(WHICH)-objcopy
+OD_ARM = arm-$(WHICH)-objdump
+
+INCLUDE += \
+	-I$(PALMDIR) \
+	-I$(PALMDIR)/Libraries \
+	-I$(PALMDIR)/Dynamic \
+	-I$(PALMDIR)/Core \
+	-I$(PALMDIR)/Extensions/ExpansionMgr \
+	-I$(PALMDIR)/Core/UI \
+	-I$(PALMDIR)/Core/System \
+	-I$(PALMDIR)/Core/System/Unix \
+	-I$(PALMDIR)/Core/Hardware \
+	-I. -I../common 
+
+CCFLAGS = -O2 -g -Wall -D__PALMOS__
+ARMCCFS = $(CCFLAGS) -DNATIVE \
+	-nostartfiles -mshort-load-bytes -nodefaultlibs -ffixed-r9 -ffixed-r8 \
+	-mpic-register=r10 -msingle-pic-base -fPIC \
+	$(INCLUDE)
+
+ARMLDFS = -Xlinker --script=./ldscript.arm -lgcc
+
+# ARM-specific
+# This isn't working.  Defining in Makefile...
+# MYDEFINES += -DXW_TARGET_PNO -D__LITTLE_ENDIAN
+
+include ../common/config.mk
+
+OBJS = $(PLATFORM)/pnolet.o \
+	$(PLATFORM)/palmmain.o \
+	$(PLATFORM)/palmsavg.o \
+	$(PLATFORM)/gameutil.o \
+	$(PLATFORM)/newgame.o \
+	$(PLATFORM)/palmdict.o \
+	$(PLATFORM)/palmdraw.o \
+	$(PLATFORM)/palmutil.o \
+	$(PLATFORM)/dictui.o \
+	$(PLATFORM)/dictlist.o \
+	$(PLATFORM)/palmir.o \
+	$(PLATFORM)/prefsdlg.o \
+	$(PLATFORM)/connsdlg.o \
+	$(PLATFORM)/pace_gen.o \
+	$(COMMONOBJ)
+
+# The target of this makefile is the .bin files that comprise the
+# pnolet.  There will be more than just PNOC0000.bin, but the others
+# get made as a matter of course and as long as they all get included
+# in the .prc we're fine.
+
+all: PNOC0000.bin PNOG0000.bin
+
+$(PLATFORM)/%.o : %.c $(MAKEFILE)
+	mkdir -p $(PLATFORM)
+	$(CC_ARM) -o $@ -c $(MYDEFINES) -DHERE $(ARMCCFS) $<
+
+$(COMMONOBJDIR)/%.o : $(COMMONDIR)/%.c $(MAKEFILE)
+	mkdir -p $(COMMONOBJDIR)
+	$(CC_ARM) -o $@ -c $(MYDEFINES) -DHERE $(ARMCCFS) $<
+
+PNOC_bin.pre PNOG0000.bin: pace_gen.h $(OBJS)
+	$(CC_ARM) $(OBJS) $(ARMCCFS) $(ARMLDFS) -o tmp.out
+#	@$(OD_ARM) --disassemble-all tmp.out
+	$(OC_ARM) -j .text -O binary tmp.out PNOC_bin.pre
+	$(OC_ARM) -j .got -O binary tmp.out PNOG0000.bin
+#	@rm -f tmp.out 
+
+# create not only PNOC0000.bin but any others required to fit the
+# pnolet into 50K chunks (for hotsyncing...)
+PNOC0000.bin: PNOC_bin.pre
+	rm -f PNOC????.bin
+	split -a 4 -b 50k -d $< PNOC
+	for f in $$(ls PNOC????); do mv $$f $$f.bin; done
+
+pace_gen.c pace_gen.h: ./gen_pace.pl funcfile.txt
+	rm -f $@ _dirList
+	echo "$(PALMDIR)/Core/UI" >> _dirList
+	echo "$(PALMDIR)/Core/System" >> _dirList
+	echo "$(PALMDIR)/Extensions/ExpansionMgr" >> _dirList
+	./gen_pace.pl funcfile.txt _dirList pace_gen.c pace_gen.h
+	rm -f _dirList
+
+clean:
+	rm -rf $(OBJS) pace_gen.c pace_gen.h *.bin PNOC_bin.pre
