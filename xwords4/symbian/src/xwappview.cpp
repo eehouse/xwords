@@ -919,7 +919,7 @@ CXWordsAppView::GetXwordsRWDir( TFileName* aPathRef, TDriveReason aWhy )
         break;                  /* don't want a drive */
     }
 
-    _LIT( dir,"\\system\\apps\\XWORDS\\" );
+    _LIT( dir,"\\system\\apps\\" XWORDS_DIR "\\" );
     aPathRef->Append( dir );
 } /* GetXwordsRWDir */
 

@@ -202,9 +202,9 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
     } else {
 
 #if defined __WINS__
-        _LIT( dir,"z:\\system\\apps\\XWORDS\\" );
+        _LIT( dir,"z:\\system\\apps\\" XWORDS_DIR "\\" );
 #elif defined __MARM__
-        _LIT( dir,"c:\\system\\apps\\XWORDS\\" );
+        _LIT( dir,"c:\\system\\apps\\" XWORDS_DIR "\\" );
 #endif
         TFileName nameD;            /* need the full path to name in this */
         nameD.Copy( dir );
