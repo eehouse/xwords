@@ -1036,6 +1036,22 @@ uninitHighResGlobals( PalmAppGlobals* globals )
 # define uninitHighResGlobals(g)
 #endif
 
+static XP_Bool
+canConvertPrefs( XWords4PreferenceType* prefs, UInt16 prefSize, XP_S16 vers )
+{
+    XP_Bool success = XP_FALSE;
+
+    if ( vers == VERSION_NUM_405 ) {
+        if ( prefSize < sizeof(XWords4PreferenceType) ) {
+            XP_U8* newRgn = ((XP_U8*)prefs) + prefSize;
+            XP_MEMSET( newRgn, 0, sizeof(XWords4PreferenceType) - prefSize );
+        }
+        success = XP_TRUE;
+    }
+
+    return success;
+} /* canConvertPrefs */
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -1047,6 +1063,7 @@ startApplication( PalmAppGlobals** globalsP )
     XWords4PreferenceType prefs;
     PalmAppGlobals* globals;
     Boolean leftyFlag;
+    Int16 vers;
     MPSLOT;
 
 #if defined FOR_GREMLINS
@@ -1108,27 +1125,20 @@ startApplication( PalmAppGlobals** globalsP )
     }
 
     prefSize = sizeof( prefs );
-    prefsFound = PrefGetAppPreferences( AppType, PrefID, &prefs, &prefSize, 
-                                        true) == VERSION_NUM;
+    vers = PrefGetAppPreferences( AppType, PrefID, &prefs, &prefSize, true);
+    if ( vers == VERSION_NUM ) {
+        prefsFound = XP_TRUE;
+    } else if ( vers != noPreferenceFound ) {
+        prefsFound = canConvertPrefs( &prefs, prefSize, vers );
+    } else {
+        prefsFound = XP_FALSE;
+    }
+
     if ( prefsFound ) {
-        
         prefs.versionNum = XP_NTOHS( prefs.versionNum );
         prefs.curGameIndex = XP_NTOHS( prefs.curGameIndex );
 
-        if ( (prefSize == sizeof(prefs)) 
-             && (prefs.versionNum == CUR_PREFS_VERS) ) {
-            /* all's well */
-        } else if ( prefs.versionNum < CUR_PREFS_VERS ) {
-            /* Init the new guys.  Later this may get more complex!! */
-            prefs.cp.showBoardArrow = XP_TRUE;
-            prefs.cp.showRobotScores = XP_FALSE;
-        } else {
-            prefsFound = XP_FALSE;
-        }
-
-        if ( prefsFound ) {
-            MemMove( &globals->gState, &prefs, sizeof(prefs) );
-        }
+        MemMove( &globals->gState, &prefs, sizeof(prefs) );
     }
 
     globals->draw = palm_drawctxt_make( MPPARM(globals->mpool) 
