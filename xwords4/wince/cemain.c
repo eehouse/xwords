@@ -46,6 +46,7 @@
 #define MAX_LOADSTRING 100
 #define CUR_CE_PREFS_FLAGS 0x0001
 #define PREFSFILENAME L"\\My Documents\\Personal\\.xwprefs"
+#define UNSAVEDGAMEFILENAME "\\My Documents\\Personal\\_newgame"
 
 #ifdef MEM_DEBUG
 # define MEMPOOL globals->mpool,
@@ -103,7 +104,7 @@ static void ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
                              wchar_t*  title, XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
 static XP_Bool doNewGame( CEAppGlobals* globals, XP_Bool silent );
-static XP_Bool ceSaveCurGame( CEAppGlobals* globals );
+static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 
 
 // Forward declarations of functions included in this code module:
@@ -168,7 +169,7 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
     return RegisterClass(&wc);
 }
 
-#define N_TOOLBAR_BUTTONS 3
+#define N_TOOLBAR_BUTTONS 4
 static void
 addButtonsToCmdBar( CEAppGlobals* globals )
 {
@@ -176,9 +177,9 @@ addButtonsToCmdBar( CEAppGlobals* globals )
     XP_U16 i;
     int index;
     int cmds[N_TOOLBAR_BUTTONS] = { FLIP_BUTTON_ID, VALUE_BUTTON_ID, 
-                                    HINT_BUTTON_ID };
+                                    HINT_BUTTON_ID, JUGGLE_BUTTON_ID };
     int resIDs[N_TOOLBAR_BUTTONS] = { IDB_FLIPBUTTON, IDB_VALUESBUTTON,
-                                      IDB_HINTBUTTON };
+                                      IDB_HINTBUTTON, IDB_JUGGLEBUTTON };
 
     TBBUTTON buttData = {
             0, /*iBitmap; */
@@ -197,13 +198,6 @@ addButtonsToCmdBar( CEAppGlobals* globals )
         success = CommandBar_InsertButton( globals->hwndCB, -1, &buttData );
     }
 
-    /* now add the undo button using the built-in icon */
-    index = CommandBar_AddBitmap( globals->hwndCB, HINST_COMMCTRL, 
-                                  IDB_STD_SMALL_COLOR, 0, 16, 16 );
-    buttData.idCommand = UNDO_BUTTON_ID;
-    buttData.iBitmap = index + STD_UNDO;
-    success = CommandBar_InsertButton( globals->hwndCB, -1, &buttData );    
-    
 } /* addButtonsToCmdBar */
 
 static void
@@ -507,6 +501,11 @@ fileToStream( CEAppGlobals* globals, XP_UCHAR* path )
 } /* fileToStream */
 
 static void
+ceSaveGamePrefs( CEAppGlobals* globals, XWStreamCtxt* stream )
+{
+} /* ceSaveGamePrefs */
+
+static void
 ceLoadGamePrefs( CEAppGlobals* globals, XWStreamCtxt* stream )
 {
     XP_DEBUGF( "ceLoadGamePrefs" );
@@ -589,6 +588,16 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_Bool newDone = XP_FALSE;
     MPSLOT;
 
+    LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    LoadString(hInstance, IDC_XWORDS4, szWindowClass, MAX_LOADSTRING);
+
+	//If it is already running, then focus on the window
+	hWnd = FindWindow( szWindowClass, szTitle);	
+	if ( hWnd ) {
+		SetForegroundWindow( (HWND)((ULONG) hWnd | 0x00000001) );
+		return FALSE;
+	} 
+
 #ifdef MEM_DEBUG
     mpool = mpool_make();
 #endif
@@ -603,10 +612,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     globals->hInst = hInstance;
     // Initialize global strings
-    LoadString(hInstance, IDC_XWORDS4, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance, szWindowClass);
 
-    LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     hWnd = CreateWindow(szWindowClass, szTitle, WS_VISIBLE,
                         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 
                         CW_USEDEFAULT, NULL, NULL, hInstance, globals);
@@ -621,16 +628,23 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
                                       hWnd, globals );
 
-    gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, "Player %d" );
-
     /* choose one.  If none found it's an error. */
     globals->gameInfo.dictName = ceLocateNthDict( MPPARM(mpool) 0 );
     result = globals->gameInfo.dictName != NULL;
+    if ( !result ) {
+        messageBoxChar( globals, "Please install at least one Crosswords "
+                        "dictionary.", L"Fatal error" );
+        return FALSE;
+    }
+
+
+    gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, "Player %d" );
+
 
     /* here's where we want to behave differently if there's saved state.
        But that's a long ways off. */
     prevStateExists = ceLoadPrefs( globals );
-    if ( result && prevStateExists && ceLoadSavedGame( globals ) ) {
+    if ( prevStateExists && ceLoadSavedGame( globals ) ) {
         oldGameLoaded = XP_TRUE;
         /* nothing to do? */
     } else {
@@ -640,11 +654,9 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                           &globals->util, globals->draw, &globals->appPrefs.cp, 
                           (TransportSend)NULL, globals );
 
-        if ( result ) {
-            newDone = doNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
-            if ( !newDone ) {
-                result = FALSE;
-            }
+        newDone = doNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
+        if ( !newDone ) {
+            result = FALSE;
         }
         oldGameLoaded = XP_FALSE;
     }
@@ -774,7 +786,8 @@ doNewGame( CEAppGlobals* globals, XP_Bool silent )
     GameInfoState giState;
     XP_Bool changed = XP_FALSE;
 
-    /* What happens if user cancels below?  I'm hosed without a name, no?  PENDING */
+    /* What happens if user cancels below?  I'm hosed without a name, no?
+       PENDING */
     if ( globals->curGameName != NULL ) {
         XP_FREE( globals->mpool, globals->curGameName );
         globals->curGameName = NULL;
@@ -833,13 +846,10 @@ ceChooseAndOpen( CEAppGlobals* globals )
         if ( globals->curGameName != NULL
              && 0 == XP_STRCMP( name, globals->curGameName ) ){ /*already open*/
             XP_FREE( globals->mpool, name );
-        } else {
-
-            ceSaveCurGame( globals );
+        } else if ( ceSaveCurGame( globals, XP_FALSE ) ) {
 
             if ( globals->curGameName != NULL ) {
                 XP_FREE( globals->mpool, globals->curGameName );
-                globals->curGameName = NULL;
             }
 
             globals->curGameName = name;
@@ -911,13 +921,14 @@ ceWriteToFile( XWStreamCtxt* stream, void* closure )
     }
 } /* ceWriteToFile */
 
-static void
-ceSaveGamePrefs( CEAppGlobals* globals, XWStreamCtxt* stream )
+static XP_Bool 
+isDefaultName( XP_UCHAR* name ) 
 {
-} /* ceSaveGamePrefs */
+    return 0 == XP_STRCMP( UNSAVEDGAMEFILENAME, name,  );
+} /* isDefaultName */
 
 static XP_Bool
-ceSaveCurGame( CEAppGlobals* globals )
+ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 {
     XP_Bool confirmed = XP_FALSE;
     /* If it doesn't yet have a name, get a path at which to save it.  User
@@ -926,28 +937,47 @@ ceSaveCurGame( CEAppGlobals* globals )
        harm in making 'em restart.  Not sure how this changes when IR's
        involved. */
     XP_UCHAR* name = globals->curGameName;
-    if ( name == NULL ) {
-        OPENFILENAME saveFileStruct;
+    if ( name == NULL || isDefaultName(name) ) {
         wchar_t nameBuf[256];
+        XP_UCHAR* newName = NULL;
 
-        XP_MEMSET( &saveFileStruct, 0, sizeof(saveFileStruct) );
-        XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
+        if ( autoSave ) {
+            XP_U16 len = XP_STRLEN(UNSAVEDGAMEFILENAME) + 1;
+            newName = XP_MALLOC( globals->mpool, len );
+            XP_MEMCPY( newName, UNSAVEDGAMEFILENAME, len );
+            
+            confirmed = XP_TRUE;
+        } else {
 
-        saveFileStruct.lStructSize = sizeof(saveFileStruct);
-        saveFileStruct.hwndOwner = globals->hWnd;
-        saveFileStruct.lpstrFile = nameBuf;
-        saveFileStruct.nMaxFile = sizeof(nameBuf)/sizeof(nameBuf[0]);
+            OPENFILENAME saveFileStruct;
 
-        saveFileStruct.lpstrDefExt = L"xwg";
+            XP_MEMSET( &saveFileStruct, 0, sizeof(saveFileStruct) );
+            XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
 
-        confirmed = GetSaveFileName( &saveFileStruct );
-        
+            saveFileStruct.lStructSize = sizeof(saveFileStruct);
+            saveFileStruct.hwndOwner = globals->hWnd;
+            saveFileStruct.lpstrFile = nameBuf;
+            saveFileStruct.nMaxFile = sizeof(nameBuf)/sizeof(nameBuf[0]);
+
+            saveFileStruct.lpstrDefExt = L"xwg";
+
+            confirmed = GetSaveFileName( &saveFileStruct );
+
+            if ( confirmed ) {
+                XP_U16 len = wcslen(nameBuf);
+                XP_DEBUGF( "len(nameBuf) = %d", len );
+                newName = XP_MALLOC( globals->mpool, len + 1 );
+                WideCharToMultiByte( CP_ACP, 0, nameBuf, len + 1,
+                                     name, len + 1, NULL, NULL );
+            }
+        }
+
         if ( confirmed ) {
-            XP_U16 len = wcslen(nameBuf);
-            globals->curGameName = name 
-                = XP_MALLOC( globals->mpool, len + 1 );
-            WideCharToMultiByte( CP_ACP, 0, nameBuf, len + 1,
-                                 name, len + 1, NULL, NULL );
+            XP_ASSERT( !!newName );
+            if ( !!globals->curGameName ) {
+                XP_FREE( globals->mpool, globals->curGameName );
+            }
+            globals->curGameName = newName;
         }
 
     } else {
@@ -992,7 +1022,7 @@ ceSaveCurGame( CEAppGlobals* globals )
 static XP_Bool
 ceConfirmAndSave( CEAppGlobals* globals )
 {
-    XP_Bool confirmed = ceSaveCurGame( globals );
+    XP_Bool confirmed = ceSaveCurGame( globals, XP_TRUE );
 
     if ( confirmed ) {
         ceSavePrefs( globals );
@@ -1050,8 +1080,12 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
 
             case ID_FILE_NEWGAME:
-                (void)ceSaveCurGame( globals );
-                draw = doNewGame( globals, XP_FALSE );
+                XP_LOGF( "ID_FILE_NEWGAME" );
+                if ( ceSaveCurGame( globals, XP_FALSE )
+                     || queryBoxChar( globals, "Do you really want to "
+                                      "overwrite the current game?" ) ) {
+                    draw = doNewGame( globals, XP_FALSE );
+                }
                 break;
 
             case ID_FILE_SAVEDGAMES:
@@ -1085,6 +1119,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = handleTradeCmd( globals );
                 break;
             case ID_MOVE_JUGGLE:
+            case JUGGLE_BUTTON_ID:
                 draw = handleJuggleCmd( globals );
                 break;
 
@@ -1108,9 +1143,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case HINT_BUTTON_ID:
                 draw = ceHandleHintRequest( globals );
                 XP_DEBUGF("Hint called");
-                break;
-            case UNDO_BUTTON_ID:
-                draw = server_handleUndo( globals->game.server );
                 break;
 
             case IDM_FILE_EXIT:
@@ -1376,7 +1408,8 @@ wince_debugf(XP_UCHAR* format, ...)
 
         makeTimeStamp(timeStamp, sizeof(timeStamp));
 
-        fileH = CreateFile( L"\\My Documents\\Personal\\xwDbgLog.txt", GENERIC_WRITE, 0, NULL, 
+        fileH = CreateFile( L"\\My Documents\\Personal\\xwDbgLog.txt", 
+                            GENERIC_WRITE, 0, NULL, 
                             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 
 #ifdef _WIN32_WCE_EMULATION
