@@ -495,14 +495,14 @@ RESOURCE DLG_BUTTONS r_savedgames_buttons
 {
     buttons = {
         DLG_BUTTON {
-            id = XW_SGAMES_OPEN_COMMAND;
-            buttontype = EEikCtCommandButton;
-            flags = EEikLabeledButtonIsDefault;
-            button = CMBUT { txt = "Open"; };
-        }, DLG_BUTTON {
             id = XW_SGAMES_RENAME_COMMAND;
             buttontype = EEikCtCommandButton;
             button = CMBUT { txt = "Rename"; };
+        }, DLG_BUTTON {
+            id = XW_SGAMES_OPEN_COMMAND;
+            buttontype = EEikCtCommandButton;
+/*             flags = EEikLabeledButtonIsDefault; */
+            button = CMBUT { txt = "Open"; };
         }, DLG_BUTTON {
             id = XW_SGAMES_DELETE_COMMAND;
             buttontype = EEikCtCommandButton;
