@@ -25,6 +25,7 @@
  */
 
 void symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const TDesC16& desc );
+void symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const XP_UCHAR* str );
 
 
 #endif
