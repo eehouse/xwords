@@ -201,7 +201,7 @@ class CXWordsAppView : public CCoeControl
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     CSendSocket* iSendSock;
-    TBuf8<MAX_MSG_LEN> iNewPacket;
+    CDesC8ArrayFlat* iNewPacketQueue;
 #endif
 
     MPSLOT
