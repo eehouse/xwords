@@ -165,8 +165,7 @@ savedGamesHandleEvent( EventPtr event )
                                              Refuse if it's open. */
             if ( state->displayGameIndex == *curGameIndexP ) {
                 beep();
-            } else if ( palmaskFromStrId( globals, STR_CONFIRM_DEL_GAME,
-                                          -1, -1 ) ) {
+            } else if ( palmaskFromStrId( globals, STR_CONFIRM_DEL_GAME, -1) ) {
                 XP_S16 index = state->displayGameIndex;
                 deleteGameRecord( globals, index );
                 if ( *curGameIndexP > index ) {
