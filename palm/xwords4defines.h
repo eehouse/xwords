@@ -118,7 +118,7 @@
 #define XW_TRADEIN_PULLDOWN_ID      1069
 #define XW_HIDESHOWTRAY_PULLDOWN_ID 1070
 
-#ifdef FEATURE_PNOAND68K
+#ifdef FEATURE_DUALCHOOSE
 # define XW_RUN68K_PULLDOWN_ID      1071
 # define XW_RUNARM_PULLDOWN_ID      1072
 #endif
@@ -401,7 +401,7 @@
 #endif
 
 /* versioning stuff */
-#define XW_PALM_VERSION_STRING "4.1 b5"
+#define XW_PALM_VERSION_STRING "4.1 rc1"
 #define CUR_PREFS_VERS 0x0405
 
 
