@@ -77,6 +77,8 @@ enum TXWordsIds {
 
     ,ESelBlankChoice
     ,ESelGameChoice
+
+    ,EEditNameEdwin
 };
 
 #define XW_UID3 0x10206D64
