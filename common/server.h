@@ -113,8 +113,11 @@ XP_Bool server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incomming );
 void server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream );
 #endif
 
-void server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
-			      XP_U16 nCols );
+void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
+                              XP_U16 nCols );
+void server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
+                                  XP_S16 player );
+
 void server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream );
 
 #ifdef CPLUS
