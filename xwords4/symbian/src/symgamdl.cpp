@@ -100,19 +100,19 @@ TGameInfoBuf::CopyToL( MPFORMAL CurGameInfo* aGi
 CXWGameInfoDlg::CXWGameInfoDlg( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame )
     : iIsNewGame(aNewGame), iGib(aGib)
 {
-    XP_LOGF( "CXWGameInfoDlg::CXWGameInfoDlg" );
+/*     XP_LOGF( "CXWGameInfoDlg::CXWGameInfoDlg" ); */
     MPASSIGN( this->mpool, mpool );
 }
 
 CXWGameInfoDlg::~CXWGameInfoDlg()
 {
-    XP_LOGF( "CXWGameInfoDlg::~CXWGameInfoDlg" );
+/*     XP_LOGF( "CXWGameInfoDlg::~CXWGameInfoDlg" ); */
 }
 
 void 
 CXWGameInfoDlg::PreLayoutDynInitL()
 {
-    XP_LOGF( "CXWGameInfoDlg::PreLayoutDynInitL" );
+/*     XP_LOGF( "CXWGameInfoDlg::PreLayoutDynInitL" ); */
 #if defined SERIES_80
 
     /* This likely belongs in its own method */
@@ -178,7 +178,7 @@ CXWGameInfoDlg::PreLayoutDynInitL()
 void
 CXWGameInfoDlg::HideAndShow()
 {
-    XP_LOGF( "HideAndShow" );
+/*     XP_LOGF( "HideAndShow" ); */
 #if defined SERIES_80
     CEikChoiceList* list;
     /* if it's standalone, hide all else.  Then if it's not IP, hide all
@@ -207,7 +207,7 @@ CXWGameInfoDlg::HideAndShow()
 void
 CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
 {
-    XP_LOGF( "HandleControlStateChangeL got %d", aControlId );
+/*     XP_LOGF( "HandleControlStateChangeL got %d", aControlId ); */
 #if defined SERIES_80
     CEikChoiceList* list;
     CEikChoiceList* whichList;
