@@ -20,13 +20,9 @@
 #ifndef _CECLRSEL_H_
 #define _CECLRSEL_H_
 
-#ifdef XWFEATURE_CE_EDITCOLORS
-
 #include "xptypes.h"
 #include "cemain.h"
 
 XP_Bool ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors );
-
-#endif
 
 #endif

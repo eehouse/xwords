@@ -16,10 +16,8 @@
 #define IDD_ASKBLANK                    113
 #define IDD_ASKPASS                     116
 #define IDD_OPTIONSDLG                  117
-#ifdef XWFEATURE_CE_EDITCOLORS
-# define IDD_COLORSDLG                  118
-# define IDD_COLOREDITDLG               119
-#endif
+#define IDD_COLORSDLG                  118
+#define IDD_COLOREDITDLG               119
 #define IDB_FLIPBUTTON                  120
 #define IDB_VALUESBUTTON                121
 #define IDB_HINTBUTTON                  122
@@ -89,43 +87,41 @@
 # define IDC_BACKUP                     1055
 #endif
 
-#ifdef XWFEATURE_CE_EDITCOLORS
-# define DLBLTR_BUTTON                  1056
-# define DBLWRD_BUTTON                  1057
-# define TPLLTR_BUTTON                  1058
-# define TPLWRD_BUTTON                  1059
-# define EMPCELL_BUTTON                 1060
-# define TBACK_BUTTON                   1061
-# define PLAYER1_BUTTON                 1062
-# define PLAYER2_BUTTON                 1063
-# define PLAYER3_BUTTON                 1064
-# define PLAYER4_BUTTON                 1065
-# define PLAYER1_LABEL                  1066
-# define PLAYER2_LABEL                  1067
-# define PLAYER3_LABEL                  1068
-# define PLAYER4_LABEL                  1069
-# define DLBLTR_LABEL                   1070
-# define DBLWRD_LABEL                   1071
-# define TPLLTR_LABEL                   1072
-# define TPLWRD_LABEL                   1073
-# define EMPTYCELL_LABEL                1074
-# define TILEBACK_LABEL                 1075
+#define DLBLTR_BUTTON                  1056
+#define DBLWRD_BUTTON                  1057
+#define TPLLTR_BUTTON                  1058
+#define TPLWRD_BUTTON                  1059
+#define EMPCELL_BUTTON                 1060
+#define TBACK_BUTTON                   1061
+#define PLAYER1_BUTTON                 1062
+#define PLAYER2_BUTTON                 1063
+#define PLAYER3_BUTTON                 1064
+#define PLAYER4_BUTTON                 1065
+#define PLAYER1_LABEL                  1066
+#define PLAYER2_LABEL                  1067
+#define PLAYER3_LABEL                  1068
+#define PLAYER4_LABEL                  1069
+#define DLBLTR_LABEL                   1070
+#define DBLWRD_LABEL                   1071
+#define TPLLTR_LABEL                   1072
+#define TPLWRD_LABEL                   1073
+#define EMPTYCELL_LABEL                1074
+#define TILEBACK_LABEL                 1075
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */
-# ifdef MY_COLOR_SEL
-#  define CLREDT_SLIDER1                 1076
-#  define RED_EDIT                       1077
-#  define CLREDT_SLIDER2                 1078
-#  define GREEN_EDIT                     1079
-#  define CLREDT_SLIDER3                 1080
-#  define BLUE_EDIT                      1081
+#ifdef MY_COLOR_SEL
+# define CLREDT_SLIDER1                 1076
+# define RED_EDIT                       1077
+# define CLREDT_SLIDER2                 1078
+# define GREEN_EDIT                     1079
+# define CLREDT_SLIDER3                 1080
+# define BLUE_EDIT                      1081
 
-#  define RED_LABEL                      1082
-#  define GREEN_LABEL                    1083
-#  define BLUE_LABEL                     1084
-# endif // MY_COLOR_SEL
-#endif // XWFEATURE_CE_EDITCOLORS
+# define RED_LABEL                      1082
+# define GREEN_LABEL                    1083
+# define BLUE_LABEL                     1084
+#endif // MY_COLOR_SEL
 
 #define IDM_FILE_EXIT                   40002
 #define IDM_HELP_ABOUT                  40003
