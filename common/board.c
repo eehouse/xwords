@@ -2115,9 +2115,7 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
         /* 	XP_ASSERT( board->trayIsVisible ); */
         XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
 
-        if ( board->trayVisState == TRAY_REVERSED ) {
-            result = askRevealTray( board );
-        } else {
+        if ( board->trayVisState != TRAY_REVERSED ) {
             result = handlePenDownInTray( board, x, y );
         }
         break;
@@ -2197,15 +2195,12 @@ handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     XP_Bool result = XP_FALSE;
 
-    if ( board->penDownObject == OBJ_SCORE ) {
+    XP_S16 playerNum = figureScorePlayerTapped( board, x, y );
 
-        XP_S16 playerNum = figureScorePlayerTapped( board, x, y );
+    if ( playerNum >= 0 ) {
+        board_selectPlayer( board, playerNum );
 
-        if ( playerNum >= 0 ) {
-            board_selectPlayer( board, playerNum );
-
-            result = XP_TRUE;
-        }
+        result = XP_TRUE;
     }
     return result;
 } /* handlePenUpScore */
@@ -2347,6 +2342,12 @@ XP_Bool
 board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
 {
     XP_Bool result = XP_FALSE;
+    BoardObjectType prevObj = board->penDownObject;
+
+    /* prevent timer from firing after pen lifted.  Set now rather than later
+       in case we put up a modal alert/dialog that must be dismissed before
+       exiting this function (which might give timer time to fire. */
+    board->penDownObject = OBJ_NONE;
 
     if ( board->tileDragState.dragInProgress ) {
         result = endTileDrag( board, x, y );
@@ -2370,10 +2371,12 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
 
             switch( onWhich ) {
             case OBJ_SCORE:
-                result = handlePenUpScore( board, x, y );
+                if ( prevObj == OBJ_SCORE ) {
+                    result = handlePenUpScore( board, x, y );
+                }
                 break;
             case OBJ_BOARD:
-                if ( board->penDownObject == OBJ_BOARD
+                if ( prevObj == OBJ_BOARD
                      && board->trayVisState == TRAY_REVEALED ) {
 
                     if ( TRADE_IN_PROGRESS(board) ) {
@@ -2395,6 +2398,11 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
                 }
                 break;
             case OBJ_TRAY:
+                if ( board->trayVisState == TRAY_REVERSED ) {
+                    result = askRevealTray( board );
+                } else {
+                    result = handlePenUpTray( board, x, y );
+                }
                 break;
             default:
                 XP_ASSERT( XP_FALSE );
@@ -2405,7 +2413,6 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
 #ifdef XWFEATURE_SEARCHLIMIT
     board->hintDragInProgress = XP_FALSE;
 #endif
-    board->penDownObject = OBJ_NONE;
     return result;
 } /* board_handlePenUp */
 #endif /* #ifdef POINTER_SUPPORT */

@@ -285,9 +285,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider,
         TileBit newIndex = 1 << index;
         BoardArrow* arrow = &board->boardArrow[selPlayer];
 	    
-        if ( arrow->visible ) {
-            result = moveTileToArrowLoc( board, (XP_U8)index );
-        } else {
+        if ( !arrow->visible ) {
             XP_U8 selFlags = board->traySelBits[selPlayer];
             /* Tap on selected tile unselects.  If we don't do this,
                then there's no way to unselect and so no way to turn
@@ -306,14 +304,6 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider,
                 }
             }
         }
-    } else {			/* tap on emptied part of tray */
-        if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
-            result = board_commitTurn( board );
-        } else {		/* other empty area */
-            /* it better be true */
-            (void)board_replaceTiles( board );
-            result = XP_TRUE;
-        }
     }
     return result;
 } /* handleActionInTray */
@@ -326,6 +316,32 @@ handlePenDownInTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
    
     return handleActionInTray( board, index, onDivider, XP_TRUE );
 } /* handleActionInTray */
+
+XP_Bool
+handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
+{
+    XP_Bool result;
+    XP_Bool ignore;
+    XP_S16 index = pointToTileIndex( board, x, y, &ignore );
+
+    if ( index >= 0 ) {
+        XP_U16 selPlayer = board->selPlayer;
+        TileBit newIndex = 1 << index;
+        BoardArrow* arrow = &board->boardArrow[selPlayer];
+	    
+        if ( arrow->visible ) {
+            result = moveTileToArrowLoc( board, (XP_U8)index );
+        }
+    } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
+        result = board_commitTurn( board );
+    } else if ( index < 0 ) {		/* other empty area */
+        /* it better be true */
+        (void)board_replaceTiles( board );
+        result = XP_TRUE;
+    }
+
+    return result;
+} /* handlePenUpTray */
 
 static XP_Bool
 startTileDrag( BoardCtxt* board, TileBit startBit/* , XP_U16 x, XP_U16 y */ )
