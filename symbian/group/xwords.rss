@@ -23,7 +23,6 @@ NAME XWRD
 
 /* I can't get macros in MMC to be honored here; though the compiler complains
    about double-definition it doesn't honor the one in the mmp file. */
-#define XWFEATURE_STANDALONE_ONLY
 
 #include <eikon.rh>
 #include <eikon.rsg>
