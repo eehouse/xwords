@@ -1,0 +1,66 @@
+# Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:fr_FR
+
+LANGFILTER_POSTCLIP: | tr [a-z] [A-Z] 
+LANGFILTER_POSTCLIP: | grep '^[A-Z]*$'
+LANGFILTER_POSTCLIP: | tr -s '\n\r' '\000\000'
+LANGFILTER_POSTCLIP: | sort -z
+
+
+NEEDSSORT:false
+
+
+LANGINFO: <p>At this point French is getting treated the same as
+LANGINFO: English.  But I think I should be transforming accented
+LANGINFO: vowels into their unaccented equivalents rather than
+LANGINFO: dropping those words from the list prior to compression.</p>
+
+
+# High bit means "official".  Next 7 bits are an enum where
+# French==2.  Low byte is padding
+XLOC_HEADER:0x8200
+
+<BEGIN_TILES>
+2			0		{"_"}
+9			1		'A'
+2			3		'B'
+2			3		'C'
+3			2		'D'
+15			1		'E'
+2			4		'F'
+2			2		'G'
+2			4		'H'
+8			1		'I'
+1			8		'J'
+1			10		'K'
+5			1		'L'
+3			2		'M'
+6			1		'N'
+6			1		'O'
+2			3		'P'
+1			8		'Q'
+6			1		'R'
+6			1		'S'
+6			1		'T'
+6			1		'U'
+2			4		'V'
+1			10		'W'
+1			10		'X'
+1			10		'Y'
+1			10		'Z'
+<END_TILES>
