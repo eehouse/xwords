@@ -122,6 +122,7 @@ static void doEndGame( ServerCtxt* server );
 static void endGameInternal( ServerCtxt* server, GameEndReason why );
 static void badWordMoveUndoAndTellUser( ServerCtxt* server, 
                                         BadWordInfo* bwi );
+static XP_Bool tileCountsOk( ServerCtxt* server );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, 
@@ -132,7 +133,6 @@ static void sendBadWordMsgs( ServerCtxt* server );
 static XP_Bool handleIllegalWord( ServerCtxt* server, 
                                   XWStreamCtxt* incomming );
 static void tellMoveWasLegal( ServerCtxt* server );
-static XP_Bool tileCountsOk( ServerCtxt* server );
 #endif
 
 #define PICK_NEXT -1
@@ -2047,7 +2047,6 @@ server_endGame( ServerCtxt* server )
     }
 } /* server_endGame */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 /* If game is about to end because one player's out of tiles, we don't want to
  * keep trying to move */
 static XP_Bool
@@ -2071,6 +2070,7 @@ tileCountsOk( ServerCtxt* server )
     return !maybeOver;
 } /* tileCountsOk */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 tellMoveWasLegal( ServerCtxt* server )
 {
