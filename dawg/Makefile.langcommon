@@ -44,6 +44,11 @@ else
 	TABLE_ARG = -m
 endif
 
+ifeq ($(TARGET_TYPE),WINCE)
+	TARGET_TYPE = FRANK
+	WINCE_ONLY = true
+endif
+
 ##############################################################################
 # PalmOS rules
 ##############################################################################
@@ -166,6 +171,7 @@ $(LANG)%.$(FRANK_EXT): dawg$(LANG)%.stamp $(LANG)%_flags.bin charcount.bin table
 		$$(ls dawg$(LANG)$*_*.bin) > $@
 	cp $@ saveme.bin
 
+ifndef WINCE_ONLY
 $(LANG)%.seb: $(LANG)%.$(FRANK_EXT) $(LANG)%.atts 
 	${ESDK_CREATESEB_EXE} $<
 	cp $< $<.saved
@@ -177,9 +183,7 @@ $(LANG)%.atts:			#recreate it each time based on params
 	echo '_LCAT|nosign+global|"CONTENT"'  >> $@
 	echo '_PERM|global+read-only|"r"' >> $@
 
-# values.bin: ../xloc 
-# 	cd ../ && $(MAKE) xloc
-# 	../xloc -l $(LANGCODE) -T $@
+endif
 
 # the files to export for byod
 byodbins: table.bin values.bin frankspecials.bin
