@@ -719,7 +719,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     AddressRecord* recs = (AddressRecord*)NULL;
     XWHostID senderID;
 
-    XP_ASSERT( comms->addr.conType == addr->conType );
+    XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
 
     if ( relayPreProcess( comms, stream, &senderID ) ) {
         return XP_FALSE;
