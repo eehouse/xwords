@@ -30,6 +30,9 @@ DEFINES += -DPLATFORM_NCURSES
 #DEFINES += -DDRAW_WITH_PRIMITIVES
 DEFINES += -DBEYOND_IR
 
+# Let users pick the tiles going into their trays
+#DEFINES += -DFEATURE_TRAY_EDIT
+
 #-DDEBUG -DEIGHT_TILES
 
 #GPROFFLAG = -pg
@@ -48,6 +51,8 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 	$(PLATFORM)/cursesmain.o \
 	$(PLATFORM)/cursesdraw.o \
 	$(PLATFORM)/cursesask.o \
+	$(PLATFORM)/cursesdlgutil.o \
+	$(PLATFORM)/cursesletterask.o \
 	$(PLATFORM)/filestream.o \
 
 #	$(PLATFORM)/linuxcommpipe.o \
