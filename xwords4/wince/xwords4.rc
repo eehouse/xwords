@@ -570,7 +570,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_APP_TITLE           "xwords4"
+    IDS_APP_TITLE           "Crosswords"
     IDC_XWORDS4             "XWORDS4"
 END
 
