@@ -20,7 +20,7 @@
 #ifndef _XPTYPES_H_
 #define _XPTYPES_H_
 
-#include <E32DEF.H>
+#include <e32def.h>
 
 /* #include <coeccntx.h> */
 

@@ -20,7 +20,10 @@
 #ifndef _SYMDICT_H_
 #define _SYMDICT_H_
 
-#include <cknenv.h>
+#if defined SERIES_60
+#elif defined SERIES_80
+# include <cknenv.h>
+#endif
 
 extern "C" {
 #include "comtypes.h"

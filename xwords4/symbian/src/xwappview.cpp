@@ -19,14 +19,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <cknenv.h>
-#include <ckninfo.h>
-#include <StringLoader.h>
-#include <eikcfdlg.h>
-#include <eikfile.rsg>
+#if defined SERIES_60
+# include <w32std.h>
+# include <eikinfo.h>
+#elif defined SERIES_80
+# include <cknenv.h>
+# include <ckninfo.h>
+# include <eikcfdlg.h>
+# include <eikfile.rsg>
+#endif
+
+#include <stringloader.h>
 #include <stdlib.h>             // for srand
 
-#include <xwords.rsg>
+#include "xwords.rsg"
 
 #include "xwappview.h"
 #include "xwappui.h"
@@ -99,8 +105,10 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
     // Set the correct application view (Note:
     // ESkinAppViewWithCbaNoToolband is the default)
     
+#if defined SERIES_80
     //CknEnv::Skin().SetAppViewType(ESkinAppViewWithCbaNoToolband);
     CknEnv::Skin().SetAppViewType(ESkinAppViewNoCbaNoToolband);
+#endif
 
     // This doesn't do what I want
 //     SetExtentToWholeScreen();
@@ -128,7 +136,7 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
     User::LeaveIfNull( iUtil.vtable );
     SetUpUtil();
 
-    iDraw = sym_drawctxt_make( MPPARM(mpool) &SystemGc(), iCoeEnv );
+    iDraw = sym_drawctxt_make( MPPARM(mpool) &SystemGc(), iCoeEnv, iEikonEnv );
     User::LeaveIfNull( iDraw );
 
     InitGameL();
@@ -262,7 +270,11 @@ sym_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         _LIT(title,"Oops");
         TBuf16<128> message;
         StringLoader::Load( message, resourceId );
+#if defined SERIES_60
+        CEikInfoDialog::RunDlgLD( title, message );
+#elif defined SERIES_80
         CCknInfoDialog::RunDlgLD( title, message );
+#endif
     }
 } // sym_util_userError
 
@@ -506,6 +518,8 @@ CXWordsAppView::InitGameL()
                       (TransportSend)NULL, this );
 
 
+#if defined SERIES_80
+    /* Seems to be no equivalent in 60 land??? */
     TFileName nameD;
     CEikFileOpenDialog* dictDlg = new(ELeave)CEikFileOpenDialog( &nameD );
     XP_LOGF( "setting required type" );
@@ -522,6 +536,7 @@ CXWordsAppView::InitGameL()
         
         dict = sym_dictionary_makeL( MPPARM(mpool) &nameD );
     }
+#endif
 
 #ifdef STUBBED_DICT
     if ( !dict ) {
