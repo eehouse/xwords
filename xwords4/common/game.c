@@ -241,12 +241,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate )
             fp->name = copyString( MPPARM(mpool) buf );
         }
 
-#if defined XW_TARGET_PNO || defined FEATURE_PNOAND68K
-        /* temporary */
-        fp->isRobot = XP_FALSE;
-#else
         fp->isRobot = (i == 0);	/* one robot */
-#endif
         fp->isLocal = XP_TRUE;
         fp->secondsUsed = 0;
     }
