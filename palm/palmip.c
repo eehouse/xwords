@@ -34,18 +34,24 @@ palm_ip_setup( PalmAppGlobals* globals )
     globals->nlStuff.netLibRef = 0; /* probably unnecessary */
 }
 
+static void
+close_socket( PalmAppGlobals* globals )
+{
+    if ( globals->nlStuff.socket != -1 ) {
+        Err ignore;
+        NetLibSocketClose( globals->nlStuff.netLibRef,
+                           globals->nlStuff.socket, 0, &ignore);
+        globals->nlStuff.socket = -1;
+    }
+} /* close_socket */
+
 void
 palm_ip_close( PalmAppGlobals* globals )
 {
     if ( globals->nlStuff.netLibRef != 0 ) {
-        
-        if ( globals->nlStuff.socket != -1 ) {
-            Err ignore;
-            NetLibSocketClose( globals->nlStuff.netLibRef,
-                               globals->nlStuff.socket, 0, &ignore);
-            globals->nlStuff.socket = -1;
-        }
 
+        close_socket( globals );
+        
         NetLibClose(globals->nlStuff.netLibRef, 0);
 
         globals->nlStuff.netLibRef = 0;
@@ -79,46 +85,7 @@ openNetLibIfNot( PalmAppGlobals* globals )
 } /* openNetLibIfNot */
 
 static XP_Bool
-openSocketIfNot( PalmAppGlobals* globals )
-{
-    XP_Bool open = globals->nlStuff.socket != -1;
-    
-    if ( !open ) {
-        Err err;
-        NetSocketRef socket;
-
-        XP_ASSERT( globals->nlStuff.netLibRef != 0 );
-
-        socket = NetLibSocketOpen( globals->nlStuff.netLibRef,
-                                   netSocketAddrINET, 
-                                   netSocketTypeStream,
-                                   0, /* protocol (ignored) */
-                                   NETLIB_TIMEOUT, &err );
-        if ( err == errNone ) {
-            NetSocketLingerType lt;
-
-            open = XP_TRUE;
-            globals->nlStuff.socket = socket;
-            XP_LOGF( "Opened socket %d", socket );
-
-            /* Just for grins, turn linger off; suggested by
-             * http://tomfrauen.blogspot.com/2005/01/some-palm-os-network-programming.html
-             */
-            lt.onOff = true;
-            lt.time = 0;
-            NetLibSocketOptionSet( globals->nlStuff.netLibRef, socket, 
-                                   netSocketOptLevelSocket,
-                                   netSocketOptSockLinger, &lt, sizeof(lt),
-                                   NETLIB_TIMEOUT, &err );
-        } else {
-            XP_LOGF( "Failed to open socket: %d", err );
-        }
-    }
-    return open;
-} /* openSocketIfNot */
-
-static XP_Bool
-connectSocket( PalmAppGlobals* globals, CommsAddrRec* addr )
+connectSocket( PalmAppGlobals* globals, const CommsAddrRec* addr )
 {
     XP_Bool success;
     Err err;
@@ -139,15 +106,56 @@ connectSocket( PalmAppGlobals* globals, CommsAddrRec* addr )
     return success;
 } /* connectSocket */
 
-/* Only returns true if the name resolves and the machine on the other end is
- * accepting connections on our port.  Might be better to break the process
- * up.
- */
+static XP_Bool
+openSocketIfNot( PalmAppGlobals* globals, const CommsAddrRec* addr )
+{
+    XP_Bool open = globals->nlStuff.socket != -1;
+    
+    if ( !open ) {
+        Err err;
+        NetSocketRef socket;
+
+        XP_ASSERT( globals->nlStuff.netLibRef != 0 );
+
+        socket = NetLibSocketOpen( globals->nlStuff.netLibRef,
+                                   netSocketAddrINET, 
+                                   netSocketTypeStream,
+                                   0, /* protocol (ignored) */
+                                   NETLIB_TIMEOUT, &err );
+        if ( err == errNone ) {
+            NetSocketLingerType lt;
+
+            XP_LOGF( "Opened socket %d", socket );
+
+            /* Just for grins, turn linger off; suggested by
+             * http://tomfrauen.blogspot.com/2005/01/some-palm-os-network-programming.html
+             */
+            lt.onOff = true;
+            lt.time = 0;
+            NetLibSocketOptionSet( globals->nlStuff.netLibRef, socket, 
+                                   netSocketOptLevelSocket,
+                                   netSocketOptSockLinger, &lt, sizeof(lt),
+                                   NETLIB_TIMEOUT, &err );
+
+            globals->nlStuff.socket = socket;
+            open = connectSocket( globals, addr );
+            if ( !open ) {
+                close_socket( globals );
+            }
+
+        } else {
+            XP_LOGF( "Failed to open socket: %d", err );
+        }
+    }
+    return open;
+} /* openSocketIfNot */
+
 static XP_Bool
 resolveAddressIfNot( PalmAppGlobals* globals, CommsAddrRec* addr, 
                      XP_Bool* resolvedP )
 {
-    XP_Bool resolved = addr->u.ip_relay.ipAddr != 0;
+    XP_Bool resolved = addr->u.ip_relay.ipAddr != 0
+        && !globals->nlStuff.ipAddrInval;
     *resolvedP = XP_FALSE;
 
     if ( !resolved ) {
@@ -161,23 +169,36 @@ resolveAddressIfNot( PalmAppGlobals* globals, CommsAddrRec* addr,
         if ( result == NULL ) {
             XP_LOGF( "NetLibGetHostByName => %d", err );
         } else {
-            if ( openSocketIfNot( globals ) ) {
 
-                XP_ASSERT( result->addrLen == sizeof(addr->u.ip_relay.ipAddr) );
-                /* Addresses are in host byte order.  So just copy. */
-                XP_MEMCPY( &addr->u.ip_relay.ipAddr, result->addrListP[0],
-                           sizeof( addr->u.ip_relay.ipAddr ) );
-                XP_LOGF( "got address 0x%lx for %s", addr->u.ip_relay.ipAddr,
-                         addr->u.ip_relay.hostName );
+            XP_ASSERT( result->addrLen == sizeof(addr->u.ip_relay.ipAddr) );
+            /* Addresses are in host byte order.  So just copy. */
+            XP_MEMCPY( &addr->u.ip_relay.ipAddr, result->addrListP[0],
+                       sizeof( addr->u.ip_relay.ipAddr ) );
+            XP_LOGF( "got address 0x%lx for %s", addr->u.ip_relay.ipAddr,
+                     addr->u.ip_relay.hostName );
 
-                if ( connectSocket( globals, addr ) ) {
-                    *resolvedP = resolved = XP_TRUE;
-                }
-            }
+            *resolvedP = resolved = XP_TRUE;
+            globals->nlStuff.ipAddrInval = XP_FALSE;
         }
     }
     return resolved;
 } /* resolveAddressIfNot */
+
+void
+ip_addr_change( PalmAppGlobals* globals, const CommsAddrRec* oldAddr,
+                const CommsAddrRec* newAddr )
+{
+    /* If host name changing, close any open socket and set up to inval
+       the cached ip address. */
+    if ( 0 != XP_STRNCMP( oldAddr->u.ip_relay.hostName, 
+                          newAddr->u.ip_relay.hostName, 
+                          sizeof( oldAddr->u.ip_relay.hostName ) ) ) {
+
+        close_socket( globals );
+        globals->nlStuff.ipAddrInval = XP_TRUE;
+    }
+
+} /* ip_addr_change */
 
 /* Deal with NetLibSend's willingness to send less than the full buffer */
 static XP_Bool
@@ -233,17 +254,19 @@ palm_ip_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr,
 
     if ( openNetLibIfNot( globals ) ) {
         if ( resolveAddressIfNot( globals, addr, &resolved ) ) {
-            XP_U16 netlen;
-
             if ( resolved ) {
                 comms_setAddr( globals->game.comms, addr );
             }
 
-            /* Send the length */
-            netlen = XP_HTONS( len );
-            if ( sendLoop( globals, (XP_U8*)&netlen, sizeof(netlen) ) 
-                 && sendLoop( globals, buf, len ) ) {
-                nSent = len;
+            if ( openSocketIfNot( globals, addr ) ) {
+                XP_U16 netlen;
+
+                /* Send the length */
+                netlen = XP_HTONS( len );
+                if ( sendLoop( globals, (XP_U8*)&netlen, sizeof(netlen) ) 
+                     && sendLoop( globals, buf, len ) ) {
+                    nSent = len;
+                }
             }
         }
     }
@@ -295,7 +318,7 @@ recvLoop( PalmAppGlobals* globals, XP_U8* buf, XP_U16 lenSought )
 } /* recvLoop */
 
 static XWStreamCtxt*
-packetToStream( PalmAppGlobals* globals, CommsAddrRec* retAddr )
+packetToStream( PalmAppGlobals* globals )
 {
     XP_U8 buf[MAX_MSG_LEN];
     XWStreamCtxt* result = NULL;
@@ -335,24 +358,18 @@ checkHandleNetEvents( PalmAppGlobals* globals )
         netFDSet( sysFileDescStdIn, &readFDs );
         width = XP_MAX( globals->nlStuff.socket, sysFileDescStdIn );
 
+        XP_ASSERT( globals->nlStuff.netLibRef != 0 );
         nSockets = NetLibSelect( globals->nlStuff.netLibRef,
                                  width + 1,
                                  &readFDs, &writeFDs, &ignoreFDs,
-                                 NETLIB_TIMEOUT,     /* timeout */
+                                 globals->runningOnPOSE? 0 : NETLIB_TIMEOUT,
                                  &err );
 
-        if ( nSockets > 0 && err == errNone ) {
-            if ( netFDIsSet( globals->nlStuff.socket, &readFDs ) ) {
+        if ( nSockets > 0 && netFDIsSet(globals->nlStuff.socket, &readFDs) ) {
 
-                XWStreamCtxt* instream;
-                CommsAddrRec raddr; 
-
-                XP_MEMSET( &raddr, 0, sizeof(raddr) );
-
-                instream = packetToStream( globals, &raddr );
-                if ( !!instream ) {
-                    checkAndDeliver( globals, instream, &raddr );
-                }
+            XWStreamCtxt* instream = packetToStream( globals );
+            if ( !!instream ) {
+                checkAndDeliver( globals, instream );
             }
         }
     }
