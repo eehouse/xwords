@@ -67,7 +67,7 @@ MYDEFINES += -DFEATURE_TRAY_EDIT
 
 # turn on limits to searches on board and in tray (number of tiles to
 # use)
-#MYDEFINES += -DXWFEATURE_SEARCHLIMIT
+MYDEFINES += -DXWFEATURE_SEARCHLIMIT
 
 MYDEFINES += $(FEATURE_HIGHRES)
 
@@ -158,7 +158,7 @@ OBJS = 	$(PLATFORM)/palmmain.o \
 include ../common/rules.mk
 
 $(TARGET): $(PLATFORM)/objs.prc $(PLATFORM)/res.prc 
-	$(PAR) -c -a 'resource|backup' $@ $(NAME) $(TYPE) $(APPID) $^
+	$(PAR) -c -a 'resource|backup' -v 4 $@ $(NAME) $(TYPE) $(APPID) $^
 	if [ x$(shell echo $$XW_UPLOAD_DIR) != x ]; then \
 		zip -j xw4.zip $@; \
 		mv xw4.zip $(shell echo $$XW_UPLOAD_DIR); \
