@@ -114,7 +114,7 @@ static Boolean applicationHandleEvent( PalmAppGlobals* globals,
 static Boolean mainViewHandleEvent( EventPtr event );
 
 static UInt16 romVersion( void );
-static Boolean handleHintRequest( PalmAppGlobals* globals, XP_Bool askNTiles );
+static Boolean handleHintRequest( PalmAppGlobals* globals );
 
 /* callbacks */
 static VTableMgr* palm_util_getVTManager( XW_UtilCtxt* uc );
@@ -610,7 +610,9 @@ palmInitPrefs( PalmAppGlobals* globals )
 #ifdef SHOW_PROGRESS
     globals->gState.showProgress = true;
 #endif
-    globals->gState.lastNTiles = MAX_TRAY_TILES;
+    globals->gState.lastNTilesMin = 1;
+    globals->gState.lastNTilesMax = MAX_TRAY_TILES;
+
 } /* palmInitPrefs */
 
 static void
@@ -1305,7 +1307,7 @@ handleNilEvent( PalmAppGlobals* globals, EventPtr event )
 # endif
 #endif
     } else if ( globals->hintPending ) {
-        handled = handleHintRequest( globals, XP_FALSE );
+        handled = handleHintRequest( globals );
 
     } else if ( globals->penTimerFireAt != TIMER_OFF &&
                 globals->penTimerFireAt <= TimGetTicks() ) {
@@ -1359,48 +1361,76 @@ handleHideTray( PalmAppGlobals* globals )
     return draw;
 } /* handleHideTray */
 
-static XP_U16
-palmAskNTiles( PalmAppGlobals* globals, XP_U16 defaultChoice )
+static Boolean 
+popupLists( EventPtr event )
+{
+    Boolean handled = false;
+    XP_U16 ctlID;
+    ListPtr list = NULL;
+    XP_S16 chosen;
+
+    if ( event->eType == ctlSelectEvent ) {
+        ctlID = event->data.ctlSelect.controlID;
+        if ( ctlID == XW_HINTCONFIG_MINSELECTOR_ID ) {
+            list = getActiveObjectPtr( XW_HINTCONFIG_MINLIST_ID );
+        } else if ( ctlID == XW_HINTCONFIG_MAXSELECTOR_ID ) {
+            list = getActiveObjectPtr( XW_HINTCONFIG_MAXLIST_ID );
+        }
+
+        if ( !!list ) {
+            chosen = LstPopupList( list );
+            if ( chosen >= 0 ) {
+                setSelectorFromList( ctlID, list, chosen );
+            }
+            handled = true;
+        }
+    }
+
+    return false;
+} /* popupLists */
+
+static void
+doHintConfig( PalmAppGlobals* globals )
 {
     FormPtr form, prevForm;
     UInt16 buttonHit;
-    ListPtr list;
+    ListPtr listMin, listMax;
 
     prevForm = FrmGetActiveForm();
-    form = FrmInitForm( XW_ASKNTILES_FORM_ID );
+    form = FrmInitForm( XW_HINTCONFIG_FORM_ID );
+    FrmSetEventHandler( form, popupLists );
     FrmSetActiveForm( form );
     
-    list = getActiveObjectPtr( XW_ASKNTILES_LIST_ID );
-    XP_ASSERT( defaultChoice > 0 && defaultChoice <= MAX_TRAY_TILES );
-    LstSetSelection( list, defaultChoice-1 );
+    listMin = getActiveObjectPtr( XW_HINTCONFIG_MINLIST_ID );
+    LstSetSelection( listMin, globals->gState.lastNTilesMin - 1 );
+    setSelectorFromList( XW_HINTCONFIG_MINSELECTOR_ID,
+                         listMin, globals->gState.lastNTilesMin - 1 );
+
+    listMax = getActiveObjectPtr( XW_HINTCONFIG_MAXLIST_ID );
+    LstSetSelection( listMax, globals->gState.lastNTilesMax - 1 );
+    setSelectorFromList( XW_HINTCONFIG_MAXSELECTOR_ID,
+                         listMax, globals->gState.lastNTilesMax - 1 );
 
     buttonHit = FrmDoDialog( form );
-
-    defaultChoice = LstGetSelection( list ) + 1;
+    if ( buttonHit == XW_HINTCONFIG_OK_ID ) {
+        globals->gState.lastNTilesMin = LstGetSelection( listMin ) + 1;
+        globals->gState.lastNTilesMax = LstGetSelection( listMax ) + 1;
+    }
 
     FrmDeleteForm( form );
     FrmSetActiveForm( prevForm );
-
-    return defaultChoice;
 } /* palmAskNTiles */
 
 static Boolean
-handleHintRequest( PalmAppGlobals* globals, XP_Bool askNTiles )
+handleHintRequest( PalmAppGlobals* globals )
 {
     Boolean notDone;
     Boolean draw;
-    XP_U16 nTiles;
 
     XP_ASSERT( !!globals->game.board );
 
-    if ( askNTiles ) {
-        nTiles = palmAskNTiles( globals, globals->gState.lastNTiles );
-        globals->gState.lastNTiles = nTiles;
-    } else {
-        nTiles = MAX_TRAY_TILES;
-    }
-
-    draw = board_requestHint( globals->game.board, nTiles, &notDone );
+    draw = board_requestHint( globals->game.board, 
+                              globals->gState.lastNTilesMax, &notDone );
     globals->hintPending = notDone;
     return draw;
 } /* handleHintRequest */
@@ -1462,7 +1492,6 @@ drawFormButtons( PalmAppGlobals* globals )
         XW_MAIN_FLIP_BUTTON_ID, FLIP_BUTTON_BMP_RES_ID, XP_TRUE,
         XW_MAIN_VALUE_BUTTON_ID, VALUE_BUTTON_BMP_RES_ID, XP_TRUE,
         XW_MAIN_HINT_BUTTON_ID, HINT_BUTTON_BMP_RES_ID, XP_TRUE,
-        XW_MAIN_NHINT_BUTTON_ID, NHINT_BUTTON_BMP_RES_ID, XP_TRUE,
 #ifndef EIGHT_TILES
         XW_MAIN_HIDE_BUTTON_ID, TRAY_BUTTONS_BMP_RES_ID, XP_TRUE,
 #endif
@@ -1511,9 +1540,6 @@ palmSetCtrlsForTray( PalmAppGlobals* globals )
     if ( FrmGetActiveFormID() == XW_MAIN_FORM ) {
 
         disOrEnable( form, XW_MAIN_HINT_BUTTON_ID, 
-                     (state==TRAY_REVEALED) && 
-                     !globals->gameInfo.hintsNotAllowed );
-        disOrEnable( form, XW_MAIN_NHINT_BUTTON_ID, 
                      (state==TRAY_REVEALED) && 
                      !globals->gameInfo.hintsNotAllowed );
 
@@ -1648,7 +1674,6 @@ updateForLefty( PalmAppGlobals* globals, FormPtr form )
         XW_MAIN_FLIP_BUTTON_ID,   0,
         XW_MAIN_VALUE_BUTTON_ID,  0,
         XW_MAIN_HINT_BUTTON_ID,   0, 
-        XW_MAIN_NHINT_BUTTON_ID,  0, 
         XW_MAIN_SCROLLBAR_ID,     0,
         XW_MAIN_SHOWTRAY_BUTTON_ID, 0,
 	
@@ -2026,7 +2051,11 @@ mainViewHandleEvent( EventPtr event )
         case XW_HINT_PULLDOWN_ID:
             board_resetEngine( globals->game.board );
         case XW_NEXTHINT_PULLDOWN_ID:
-            draw = handleHintRequest( globals, XP_FALSE );
+            draw = handleHintRequest( globals );
+            break;
+
+        case XW_HINTCONFIG_PULLDOWN_ID:
+            doHintConfig( globals );
             break;
 
         case XW_UNDOCUR_PULLDOWN_ID:
@@ -2177,10 +2206,7 @@ mainViewHandleEvent( EventPtr event )
             draw = handleValueToggle( globals );
             break;
         case XW_MAIN_HINT_BUTTON_ID:
-            draw = handleHintRequest( globals, XP_FALSE );
-            break;
-        case XW_MAIN_NHINT_BUTTON_ID:
-            draw = handleHintRequest( globals, XP_TRUE );
+            draw = handleHintRequest( globals );
             break;
 #ifndef EIGHT_TILES
         case XW_MAIN_DONE_BUTTON_ID:
@@ -2647,6 +2673,14 @@ handleKeysInBlank( EventPtr event )
                     break;
                 }
             }
+        } else if ( ch == '\n' ) {
+            EventType eventToPost;
+
+            eventToPost.eType = ctlSelectEvent;
+            eventToPost.data.ctlSelect.controlID = XW_BLANK_OK_BUTTON_ID;
+            eventToPost.data.ctlSelect.pControl = 
+                getActiveObjectPtr( XW_BLANK_OK_BUTTON_ID );
+            EvtAddEventToQueue( &eventToPost );
         }
     }
 
@@ -2706,11 +2740,13 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
         XP_U16 i;
 
         lenSoFar = XP_STRLEN(labelBuf);
-        lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, sizeof(labelBuf) - lenSoFar,
+        lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, 
+                                 sizeof(labelBuf) - lenSoFar,
                                  " (%d/%d)\nCur", pi->thisPick, pi->nTotal );
 
         for ( i = 0; i < pi->nCurTiles; ++i ) {
-            lenSoFar += XP_SNPRINTF( labelBuf+lenSoFar, sizeof(labelBuf)-lenSoFar, "%s%s",
+            lenSoFar += XP_SNPRINTF( labelBuf+lenSoFar, 
+                                     sizeof(labelBuf)-lenSoFar, "%s%s",
                                      i==0?": ":", ", pi->curTiles[i] );
         }
     }
