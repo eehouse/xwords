@@ -56,7 +56,7 @@ MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
 	$(HASHDEF) $(NO_REG_REQUIRED)
 
 # turn on letting users pick tiles "face-up"
-# MYDEFINES += -DFEATURE_TRAY_EDIT
+MYDEFINES += -DFEATURE_TRAY_EDIT
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
