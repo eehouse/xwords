@@ -43,6 +43,7 @@ PrefsFormHandleEvent( EventPtr event )
     FormPtr form;
     EventType eventToPost;
     Int16 chosen;
+    Boolean checked;
 
     CALLBACK_PROLOGUE();
     globals = getFormRefcon();
@@ -95,6 +96,12 @@ PrefsFormHandleEvent( EventPtr event )
     case ctlSelectEvent:
         result = true;
         switch ( event->data.ctlSelect.controlID ) {
+
+        case XW_PREFS_NOHINTS_CHECKBOX_ID:
+            checked = getBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID );
+            disOrEnable( FrmGetActiveForm(), XW_PREFS_HINTRECT_CHECKBOX_ID, 
+                         !checked );
+            break;
 
         case XW_PREFS_PHONIES_TRIGGER_ID:
             chosen = LstPopupList( state->phoniesList );
@@ -191,6 +198,9 @@ GlobalPrefsToLocal( PalmAppGlobals* globals )
 
     state->phoniesAction = globals->util.gameInfo->phoniesAction;
     state->hintsNotAllowed = globals->gameInfo.hintsNotAllowed;
+#ifdef XWFEATURE_SEARCHLIMIT
+    state->allowHintRect = globals->gameInfo.allowHintRect;
+#endif
     state->timerEnabled = globals->util.gameInfo->timerEnabled;
     state->gameSeconds = globals->util.gameInfo->gameSeconds;
 #ifdef FEATURE_TRAY_EDIT
@@ -223,7 +233,9 @@ LocalPrefsToGlobal( PalmAppGlobals* globals )
     globals->util.gameInfo->phoniesAction = state->phoniesAction;
 
     globals->gameInfo.hintsNotAllowed = state->hintsNotAllowed;
-
+#ifdef XWFEATURE_SEARCHLIMIT
+    globals->gameInfo.allowHintRect = state->allowHintRect;
+#endif
     globals->util.gameInfo->timerEnabled = state->timerEnabled;
     globals->util.gameInfo->gameSeconds = state->gameSeconds;
 
@@ -258,6 +270,9 @@ localPrefsToControls( PalmAppGlobals* globals, PrefsDlgState* state )
     setBooleanCtrl( XW_PREFS_PLAYERCOLORS_CHECKBOX_ID, state->showColors );
     setBooleanCtrl( XW_PREFS_PROGRESSBAR_CHECKBOX_ID, state->showProgress );
     setBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID, state->hintsNotAllowed );
+#ifdef XWFEATURE_SEARCHLIMIT
+    setBooleanCtrl( XW_PREFS_HINTRECT_CHECKBOX_ID, state->allowHintRect );
+#endif
     setBooleanCtrl( XW_PREFS_ROBOTSMART_CHECKBOX_ID, state->smartRobot );
     setBooleanCtrl( XW_PREFS_SHOWGRID_CHECKBOX_ID, state->showGrid );
     setBooleanCtrl( XW_PREFS_SHOWARROW_CHECKBOX_ID, state->cp.showBoardArrow );
@@ -301,6 +316,9 @@ controlsToLocalPrefs( PalmAppGlobals* globals, PrefsDlgState* state )
                (state->hintsNotAllowed == 
                 getBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID) ) );
     state->hintsNotAllowed = getBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID );
+#ifdef XWFEATURE_SEARCHLIMIT
+    state->allowHintRect = getBooleanCtrl( XW_PREFS_HINTRECT_CHECKBOX_ID );
+#endif
 
     state->timerEnabled = getBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID );
     state->gameSeconds = fieldToNum( XW_PREFS_TIMER_FIELD_ID ) * 60;
