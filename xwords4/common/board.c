@@ -94,6 +94,13 @@ static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey );
 static XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key );
 static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey );
 #endif
+#ifdef XWFEATURE_SEARCHLIMIT
+static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
+static void invalCurHintRect( BoardCtxt* board, XP_Bool doMirrow );
+
+#else
+# define figureHintAtts(b,c,r) HINT_BORDER_NONE
+#endif
 
 /*****************************************************************************
  *
@@ -1332,6 +1339,10 @@ board_flip( BoardCtxt* board )
     }
     invalCellsWithTiles( board, XP_TRUE );
 
+#ifdef XWFEATURE_SEARCHLIMIT
+    invalCurHintRect( board, XP_TRUE );
+#endif
+
     board->isFlipped = !board->isFlipped;
 
     return board->needsDrawing;
@@ -1439,6 +1450,10 @@ board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP )
             searchComplete = engine_findMove(engine, model, 
                                              model_getDictionary(model),
                                              tiles, nTiles, nTilesToUse, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                                             board->hasHintRect?
+                                             &board->limits : NULL,
+#endif
                                              NO_SCORE_LIMIT, 
                                              &canMove, &newMove );
             board_popTimerSave( board );
@@ -1488,6 +1503,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_Bool invert = XP_FALSE;
             XP_Bitmap bitmap = NULL;
             XP_UCHAR* textP = (XP_UCHAR*)ch;
+            HintAtts hintAtts;
 
             showPending = board->trayVisState == TRAY_REVEALED;
 
@@ -1519,8 +1535,9 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                 }
             }
             bonus = util_getSquareBonus( board->util, model, col, row );
+            hintAtts = figureHintAtts( board, col, row );
             return draw_drawCell( board->draw, &cellRect, textP, bitmap, 
-                                  owner, bonus, isBlank, invert,
+                                  owner, bonus, hintAtts, isBlank, invert,
                                   (isEmpty && (col==board->star_row)
                                    && (row==board->star_row)));
         }
@@ -1751,17 +1768,209 @@ ptOnTradeWindow( BoardCtxt* board, XP_U16 x, XP_U16 y )
     return rectContainsPt( windowR, x, y );
 } /* ptOnTradeWindow */
 
+#ifdef XWFEATURE_SEARCHLIMIT
+static HintAtts
+figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
+{
+    HintAtts result = HINT_BORDER_NONE;
+    XP_Bool isFlipped = board->isFlipped;
+
+    /* while lets us break to exit... */
+    while ( board->hasHintRect || board->hintDragInProgress ) {
+        if ( col < board->limits.left ) break;
+        if ( row < board->limits.top ) break;
+        if ( col > board->limits.right ) break;
+        if ( row > board->limits.bottom ) break;
+
+        if ( col == board->limits.left ) {
+            result |= isFlipped? HINT_BORDER_TOP : HINT_BORDER_LEFT;
+        }
+        if ( col == board->limits.right ) {
+            result |= isFlipped? HINT_BORDER_BOTTOM:HINT_BORDER_RIGHT;
+        }
+        if ( row == board->limits.top) {
+            result |= isFlipped?HINT_BORDER_LEFT:HINT_BORDER_TOP;
+        }
+        if ( row == board->limits.bottom ) {
+            result |= isFlipped? HINT_BORDER_RIGHT:HINT_BORDER_BOTTOM;
+        }
+        if ( result == HINT_BORDER_NONE ) {
+            result = HINT_BORDER_CENTER;
+        } else {
+/*             XP_LOGF( "border hints set for {%d,%d}", col, row ); */
+        }
+        break;
+    }
+
+    return result;
+} /* figureHintAtts */
+
+static XP_Bool
+startHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
+{
+    XP_Bool needsRedraw = XP_FALSE;
+    XP_U16 col, row;
+
+    coordToCell( board, x, y, &col, &row );
+    board->hintDragStartCol = board->hintDragCurCol = col;
+    board->hintDragStartRow = board->hintDragCurRow = row;
+
+    XP_LOGF( "starting drag with %d,%d", col, row );
+
+    return needsRedraw;
+} /* startHintRegionDrag */
+
+static void
+invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
+                 XP_U16 rowB, XP_Bool doMirror )
+{
+        XP_U16 col, row, lastCol, firstRow, lastRow;
+        
+        if ( colA <= colB ) {
+            col = colA;
+            lastCol = colB;
+        } else {
+            col = colB;
+            lastCol = colA;
+        }
+        if ( rowA <= rowB ) {
+            row = rowA;
+            lastRow = rowB;
+        } else {
+            row = rowB;
+            lastRow = rowA;
+        }
+
+        firstRow = row;
+        for ( ; col <= lastCol; ++col ) {
+            for( row = firstRow; row <= lastRow; ++row ) {
+                invalCell( board, col, row, doMirror );
+            }
+        }
+} /* invalCellRegion */
+
+/* start and end points imply a rect of cells.  Changing the end point means
+ * the borders change and we have to inval all cells whose in-border state is
+ * changing.  Since we also include whether a cell is inside the rect we also
+ * want to inval for that -- though it won't matter unless somebody manages to
+ * drag two cols or rows in a single event.
+ */
+static void
+invalHintForNew( BoardCtxt* board, XP_U16 newCol, XP_U16 newRow )
+{
+    invalCellRegion( board, board->hintDragStartCol, board->hintDragStartRow,
+                     newCol, newRow, XP_FALSE );
+    invalCellRegion( board, board->hintDragCurCol, board->hintDragCurRow,
+                     newCol, newRow, XP_FALSE );
+} /* invalHintForNew */
+
+static void
+invalCurHintRect( BoardCtxt* board, XP_Bool doMirror )
+{
+    invalCellRegion( board, board->limits.left, board->limits.top, 
+                     board->limits.right, board->limits.bottom, doMirror );
+} /* invalCurHintRect */
+
+static void
+clearCurHintRect( BoardCtxt* board )
+{
+    invalCurHintRect( board, XP_FALSE );
+    board->hasHintRect = XP_FALSE;
+} /* clearCurHintRect */
+
+static void
+setHintRect( BoardCtxt* board )
+{
+    if ( board->hintDragStartRow < board->hintDragCurRow ) {
+        board->limits.top = board->hintDragStartRow;
+        board->limits.bottom = board->hintDragCurRow;
+    } else {
+        board->limits.top =  board->hintDragCurRow;
+        board->limits.bottom = board->hintDragStartRow;
+    }
+    if ( board->hintDragStartCol < board->hintDragCurCol ) {
+        board->limits.left = board->hintDragStartCol;
+        board->limits.right = board->hintDragCurCol;
+    } else {
+        board->limits.left =  board->hintDragCurCol;
+        board->limits.right = board->hintDragStartCol;
+    }
+    XP_LOGF( "hintRect now {{%d,%d},{%d,%d}",
+             board->limits.left, board->limits.top,
+             board->limits.right, board->limits.bottom );
+}
+
+static XP_Bool
+continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
+{
+    XP_Bool needsRedraw = XP_FALSE;
+
+    XP_U16 col, row;
+
+    coordToCell( board, x, y, &col, &row );
+    if ( col != board->hintDragCurCol || row != board->hintDragCurRow ) {
+        needsRedraw = XP_TRUE;
+
+        board->hintDragInProgress = XP_TRUE;
+
+        if ( board->hasHintRect ) {
+            clearCurHintRect( board );
+        }
+        /* Now that we've moved, this isn't a timer thing.  Clean up any
+           artifacts. */
+        board->penTimerFired = XP_FALSE;
+        if ( valHintMiniWindowActive( board ) ) {
+            hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
+        }
+
+        invalHintForNew( board, col, row );
+        board->hintDragCurCol = col;
+        board->hintDragCurRow = row;
+        setHintRect( board );
+        XP_LOGF( "now includes with %d,%d", col, row );
+    }
+
+    return needsRedraw;
+} /* continueHintRegionDrag */
+
+static XP_Bool
+finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
+{
+    XP_Bool needsRedraw = XP_FALSE;
+
+    XP_ASSERT( board->hintDragInProgress );
+    needsRedraw = continueHintRegionDrag( board, x, y );
+
+    XP_ASSERT( !board->hasHintRect );
+    board->hasHintRect = XP_TRUE;
+    
+    XP_LOGF( "done with hint drag.  Rect is {{%d,%d},{%d,%d}}",
+             board->limits.left, board->limits.top,
+             board->limits.right, board->limits.bottom );
+    
+    board_resetEngine( board );
+
+    return needsRedraw;
+} /* finishHintRegionDrag */
+#endif
+
 static XP_Bool
 handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
+    XP_Bool result;
     /* Start a timer no matter what.  After it fires we'll decide whether it's
        appropriate to handle it.   No.  That's too expensive */
     if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, x, y ) ) {
         return XP_FALSE;
     }
     util_setTimer( board->util, TIMER_PENDOWN );
+#ifdef XWFEATURE_SEARCHLIMIT
+    result = startHintRegionDrag( board, x, y );
+#else
+    result = XP_FALSE;
+#endif
 
-    return XP_FALSE;
+    return result;
 } /* handlePenDownOnBoard */
 #endif
 
@@ -1888,6 +2097,10 @@ board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y )
         result = continueTileDrag( board, x, y ) != 0;
     } else if ( board->divDragState.dragInProgress ) {
         result = continueDividerDrag( board, x, y ) != 0;
+#ifdef XWFEATURE_SEARCHLIMIT
+    } else {
+        result = continueHintRegionDrag( board, x, y );
+#endif
     }
 
     return result;
@@ -2090,7 +2303,12 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
             hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
             result = XP_TRUE;
         }
+        /* Need to clean up if there's been any dragging happening */
         board->penTimerFired = XP_FALSE;
+#ifdef XWFEATURE_SEARCHLIMIT
+    } else if ( board->hintDragInProgress ) {
+        result = finishHintRegionDrag( board, x, y );
+#endif
     } else {
         BoardObjectType onWhich;
         if ( pointOnSomething( board, x, y, &onWhich ) ) {
@@ -2129,6 +2347,9 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
         }
     }
 
+#ifdef XWFEATURE_SEARCHLIMIT
+    board->hintDragInProgress = XP_FALSE;
+#endif
     board->penDownObject = OBJ_NONE;
     return result;
 } /* board_handlePenUp */
