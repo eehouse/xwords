@@ -1558,10 +1558,13 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 {
 
     if ( moveInfo->nTiles == 0 ) {
-        *bufLen = XP_SNPRINTF( buf, *bufLen, "Passed" );
+        XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
+        *bufLen = XP_STRLEN( str );
+        XP_STRCAT( buf, str );
     } else {
         XP_U16 score;
         XP_UCHAR wordBuf[MAX_ROWS+1];
+        XP_UCHAR* format;
 
         ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
         XP_U16 turn;
@@ -1575,7 +1578,8 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 
         model_destroy( tmpModel );
 
-        *bufLen = XP_SNPRINTF( buf, *bufLen, "%s for %d", wordBuf, score );
+        format = util_getUserString( model->vol.util, STRSD_SUMMARYSCORED );
+        *bufLen = XP_SNPRINTF( buf, *bufLen, format, wordBuf, score );
     }
 } /* scoreLastMove */
 
@@ -1603,15 +1607,21 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
     }
 
     if ( found ) {	/* success? */
+        XP_UCHAR* format;
+        XP_U16 nTiles;
         switch ( entry.moveType ) {
         case MOVE_TYPE:
             scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which, expl, explLen );
             break;
         case TRADE_TYPE:
-            *explLen = XP_SNPRINTF( expl, *explLen, "Traded" );
+            nTiles = entry.u.trade.oldTiles.nTiles;
+            format = util_getUserString( model->vol.util, STRD_TRADED );
+            *explLen = XP_SNPRINTF( expl, *explLen, format, nTiles );
             break;
         case PHONY_TYPE:
-            *explLen = XP_SNPRINTF( expl, *explLen, "Lost turn" );
+            format = util_getUserString( model->vol.util, STR_LOSTTURN );
+            *explLen = XP_STRLEN( format );
+            XP_STRCAT( expl, format );
             break;
         case ASSIGN_TYPE:
             found = XP_FALSE;
