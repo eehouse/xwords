@@ -16,6 +16,7 @@
 
 LANGCODE:pl_PL
 
+CHARSET:iso-8859-2
 
 LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
 LANGFILTER_POSTCLIP: | grep '^[A-PR-UWYZ¡Æ£ÑÓ¦¬¯]*$'
