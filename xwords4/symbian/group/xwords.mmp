@@ -32,6 +32,7 @@ SOURCE            symdict.cpp
 SOURCE            symblnk.cpp
 SOURCE            symgmmgr.cpp
 SOURCE            symgmdlg.cpp
+SOURCE            symgamed.cpp
 
 SOURCEPATH        ..\group
 RESOURCE          xwords.rss
@@ -77,3 +78,5 @@ LIBRARY           EFSRV.lib
 // LIBRARY           CHARCONV.lib
 // RFileReadStream
 LIBRARY           ESTOR.lib
+// Window.Invalidate                  
+LIBRARY           WS32.lib
