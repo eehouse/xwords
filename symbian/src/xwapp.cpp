@@ -22,9 +22,10 @@
 #include "xwdoc.h"
 #include "xwapp.h"
 
-// UID for the application, this should correspond to the uid defined
-// in the mmp file.  PENDING get an official one from Symbian.
-static const TUid KUidXWordsApp = {0x1020680c};
+// UID for the application, this should correspond to the uid defined in the
+// mmp file.  (This is an official number from Symbian.  I've been allocated a
+// block of 10 of which this is the first.)
+static const TUid KUidXWordsApp = {0x10206D64};
  
 CApaDocument*
 CXWordsApplication::CreateDocumentL()
