@@ -788,7 +788,10 @@ ceHandleHintRequest( CEAppGlobals* globals )
     XP_Bool draw;
     XP_ASSERT( !!globals->game.board );
 
-    draw = board_requestHint( globals->game.board, globals->askTrayLimits,
+    draw = board_requestHint( globals->game.board, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                              globals->askTrayLimits,
+#endif
                               &notDone );
     globals->hintPending = notDone;
     return draw;
