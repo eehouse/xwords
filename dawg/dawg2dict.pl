@@ -1,49 +1,45 @@
 #!/usr/bin/perl
 #
+# Copyright 2004 by Eric House (fixin@peak.org)
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-# Given a .pdb or .xwd file, print all the words in the DAWG.
-# Optionally write the values and faces to files whose names are
-# provided.
+
+# Given a .pdb or .xwd file, print all the words in the DAWG to
+# stdout.
 
 use strict;
 use Fcntl;
 
-my $gValueFileName;
-my $gASCIIFacesFileName;
-my $gUTFFacesFileName;
 my $gInFile;
 my $gFileType;
 my $gNodeSize;
 
 sub usage() {
     print STDERR "USAGE: $0 "
-        . "[-vf valuesFileName] "
-        . "[-fa asciiFacesFileName] "
-        . "[-fu unicodeFacesFileName] "
-        . "xwdORpdb"
-        . "\n";
-
+        . "<xwdORpdb>"
+        . "\n"
+        . "\t(Takes a .pdb or .xwd and prints its words to stdout)\n";
+    exit 1;
 }
 
-sub parseARGV {
+sub parseARGV() {
 
-    my $arg;
-    while ( my $arg = shift(@ARGV) ) {
-
-      SWITCH: {
-          if ($arg =~ /-vf/) {$gValueFileName = shift(@ARGV), last SWITCH;}
-          if ($arg =~ /-fa/) {$gASCIIFacesFileName = shift(@ARGV);
-                              last SWITCH;}
-          if ($arg =~ /-fu/) {$gUTFFacesFileName = shift(@ARGV);
-                              last SWITCH;}
-
-          # Get here it must be the final arg, the input file name.
-          $gInFile = $arg;
-          if ( 0 != @ARGV ) {
-              usage();
-              exit 1;
-          }
-      }
+    $gInFile = shift(@ARGV);
+    if ( 0 != @ARGV ) {
+        usage();
     }
 
     if ( $gInFile =~ m|.xwd$| ) {
@@ -52,24 +48,18 @@ sub parseARGV {
         $gFileType = "pdb";
     } else {
         usage();
-        exit 1;
     }
-
-    return 1;
 } # parseARGV
 
 sub countSpecials($) {
-    my ( $lref ) = @_;
+    my ( $facesRef ) = @_;
     my $count = 0;
-    foreach my $val (@$lref) {
-        if ( ord($val) < 32 ) {
-            ++$count;
-        }
-    }
+
+    map { ++$count if ( ord($_) < 32 ); } @$facesRef;
     return $count;
 } # countSpecials
 
-sub readFaces($$$) {
+sub readXWDFaces($$$) {
     my ( $fh, $facRef, $nSpecials ) = @_;
 
     my $buf;
@@ -85,7 +75,7 @@ sub readFaces($$$) {
     ${$nSpecials} = countSpecials( \@faces );
     @{$facRef} = @faces;
     return $nChars;
-} # readFaces
+} # readXWDFaces
 
 sub skipBitmap($) {
     my ( $fh ) = @_;
@@ -143,7 +133,7 @@ sub nodeSizeFromFlags($) {
     } elsif ( $flags == 3 ) {
         return 4;
     } else {
-        die "invalid dict flags";
+        die "invalid dict flags $flags";
     }
 } # nodeSizeFromFlags
 
@@ -153,94 +143,112 @@ sub mergeSpecials($$) {
         my $ref = ord($$facesRef[$i]);
         if ( $ref < 32 ) {
             $$facesRef[$i] = $$specialsRef[$ref];
-            print STDERR "set $ref to $$specialsRef[$ref]\n";
+            #print STDERR "set $ref to $$specialsRef[$ref]\n";
         }
     }
 }
 
 sub prepXWD($$$$) {
-    my ( $path, $facRef, $nodesRef, $startRef ) = @_;
-
-    sysopen(INFILE, $path, O_RDONLY) or die "couldn't open $path: $!\n";;
-    binmode INFILE;
+    my ( $fh, $facRef, $nodesRef, $startRef ) = @_;
 
     my $buf;
-    my $nRead = sysread( INFILE, $buf, 2 );
+    my $nRead = sysread( $fh, $buf, 2 );
     my $flags = unpack( "n", $buf );
 
     $gNodeSize = nodeSizeFromFlags( $flags );
 
     my $nSpecials;
-    my $faceCount = readFaces( *INFILE, $facRef, \$nSpecials );
+    my $faceCount = readXWDFaces( $fh, $facRef, \$nSpecials );
 
     # skip xloc header
-    $nRead = sysread( INFILE, $buf, 2 );
+    $nRead = sysread( $fh, $buf, 2 );
 
     # skip values info.
-    sysread( INFILE, $buf, $faceCount * 2 );
+    sysread( $fh, $buf, $faceCount * 2 );
 
     my @specials;
-    getSpecials( *INFILE, $nSpecials, \@specials );
+    getSpecials( $fh, $nSpecials, \@specials );
     mergeSpecials( $facRef, \@specials );
 
-    sysread( INFILE, $buf, 4 );
+    sysread( $fh, $buf, 4 );
     $$startRef = unpack( 'N', $buf );
 
-    my @nodes = readNodesToEnd( *INFILE );
-
-    close INFILE;
+    my @nodes = readNodesToEnd( $fh );
 
     @$nodesRef = @nodes;
 } # prepXWD
 
+sub readPDBSpecials($$$$$) {
+    my ( $fh, $nChars, $nToRead, $nSpecials, $specRef ) = @_;
+
+    my ( $nRead, $buf );
+
+    # first skip counts and values, and xloc header
+    $nRead += sysread( $fh, $buf, ($nChars * 2) + 2 );
+
+    while ( $nSpecials-- ) {
+        $nRead += sysread( $fh, $buf, 8 ); # sizeof(Xloc_specialEntry)
+        my @chars = unpack( 'C8', $buf );
+        my $str;
+        foreach my $char (@chars) {
+            if ( $char == 0 ) { # null-terminated on palm
+                last;
+            }
+            $str .= chr($char);
+        }
+        push( @$specRef, $str );
+    }
+
+    $nRead += sysread( $fh, $buf, $nToRead - $nRead ); # skip bitmaps
+
+    return $nRead;
+} # readPDBSpecials
+
 sub prepPDB($$$$) {
-    my ( $path, $facRef, $nodesRef, $startRef ) = @_;
+    my ( $fh, $facRef, $nodesRef, $startRef ) = @_;
 
     $$startRef = 0; # always for palm?
 
-    sysopen(INFILE, $path, O_RDONLY) or die "couldn't open $path: $!\n";;
-    binmode INFILE;
-
     my $buf;
     # skip header info
-    my $nRead = sysread( INFILE, $buf, 76 );
-    $nRead += sysread( INFILE, $buf, 2 );
+    my $nRead = sysread( $fh, $buf, 76 );
+    $nRead += sysread( $fh, $buf, 2 );
     my $nRecs = unpack( 'n', $buf );
 
     my @offsets;
     for ( my $i = 0; $i < $nRecs; ++$i ) {
-        $nRead += sysread( INFILE, $buf, 4 );
+        $nRead += sysread( $fh, $buf, 4 );
         push( @offsets, unpack( 'N', $buf ) );
-        $nRead += sysread( INFILE, $buf, 4 ); # skip
+        $nRead += sysread( $fh, $buf, 4 ); # skip
     }
 
     die "too far" if $nRead > $offsets[0];
     while ( $nRead < $offsets[0] ) {
-        $nRead += sysread( INFILE, $buf, 1 );
+        $nRead += sysread( $fh, $buf, 1 );
     }
 
     my $facesOffset = $offsets[1];
     my $nChars = ($offsets[2] - $facesOffset) / 2;
-    $nRead += sysread( INFILE, $buf, $facesOffset - $nRead );
-    my @tmp = unpack( 'Nccccccn', $buf );
+    $nRead += sysread( $fh, $buf, $facesOffset - $nRead );
+    my @tmp = unpack( 'Nc6n', $buf );
     $gNodeSize = nodeSizeFromFlags( $tmp[7] );
 
     my @faces;
     for ( my $i = 0; $i < $nChars; ++$i ) {
-        $nRead += sysread( INFILE, $buf, 2 );
+        $nRead += sysread( $fh, $buf, 2 );
         push( @faces, chr(unpack( "n", $buf ) ) );
     }
     @{$facRef} = @faces;
 
     die "out of sync: $nRead != $offsets[2]" if $nRead != $offsets[2];
 
-    # now skip count and values.  We'll want to get the "specials"
-    # shortly.
-    $nRead += sysread( INFILE, $buf, $offsets[3] - $nRead );
+    my @specials;
+    $nRead += readPDBSpecials( $fh, $nChars, $offsets[3] - $nRead,
+                               countSpecials($facRef), \@specials );
+    mergeSpecials( $facRef, \@specials );
 
     die "out of sync" if $nRead != $offsets[3];
-    my @nodes = readNodesToEnd( *INFILE );
-    close INFILE;
+    my @nodes = readNodesToEnd( $fh );
 
     @$nodesRef = @nodes;
 } # prepPDB
@@ -270,12 +278,12 @@ sub printStr($$) {
     print join( "", map {$$facesRef[$_]} @$strRef), "\n";
 } # printStr
 
-
 # Given an array of 4-byte nodes, a start index. and another array of
 # two-byte faces, print out all of the words in the nodes array.
+sub printDAWG($$$$) {
+    my ( $strRef, $arrRef, $start, $facesRef ) = @_;
 
-sub printDAWGInternal($$$$) {
-    my ( $str, $arrRef, $start, $facesRef ) = @_;
+    die "infinite recursion???" if @$strRef > 15;
 
     for ( ; ; ) {
         my $node = $$arrRef[$start++];
@@ -286,60 +294,45 @@ sub printDAWGInternal($$$$) {
 
         parseNode( $node, \$chrIndex, \$nextEdge, \$accepting, \$lastEdge );
 
-        push( @$str, $chrIndex );
+        push( @$strRef, $chrIndex );
         if ( $accepting ) {
-            printStr( $str, $facesRef );
+            printStr( $strRef, $facesRef );
         }
 
         if ( $nextEdge != 0 ) {
-            printDAWGInternal( $str, $arrRef, $nextEdge, $facesRef );
+            printDAWG( $strRef, $arrRef, $nextEdge, $facesRef );
         }
 
-        pop( @$str );
+        pop( @$strRef );
 
         if ( $lastEdge ) {
             last;
         }
     }
-} # printDAWGInternal
-
-sub printDAWG($$$) {
-    my ( $arrRef, $start, $facesRef ) = @_;
-
-    die "no nodes!!!" if 0 == @$arrRef;
-
-    my @str;
-    printDAWGInternal( \@str, $arrRef, $start, $facesRef );
-}
-
+} # printDAWG
 
 #################################################################
 # main
 #################################################################
 
 
-if ( !parseARGV() ) {
-    usage();
-    exit 1;
-}
+parseARGV();
+
+sysopen(INFILE, $gInFile, O_RDONLY) or die "couldn't open $gInFile: $!\n";;
+binmode INFILE;
 
 my @faces;
 my @nodes;
 my $startIndex;
 
 if ( $gFileType eq "xwd" ){ 
-    prepXWD( $gInFile, \@faces, \@nodes, \$startIndex );
+    prepXWD( *INFILE, \@faces, \@nodes, \$startIndex );
 } elsif ( $gFileType eq "pdb" ) {
-    prepPDB( $gInFile, \@faces, \@nodes, \$startIndex );
-    print STDERR join( ",", @faces), "\n";
+    prepPDB( *INFILE, \@faces, \@nodes, \$startIndex );
 }
+close INFILE;
 
-printDAWG( \@nodes, $startIndex, \@faces );
+die "no nodes!!!" if 0 == @nodes;
+printDAWG( [], \@nodes, $startIndex, \@faces );
 
-if ( $gASCIIFacesFileName ) {
-    open FACES, "> $gASCIIFacesFileName";
-    foreach my $face (@faces) {
-        print FACES pack('cc', 0, $face );
-    }
-    close FACES;
-}
+exit 0;
