@@ -15,7 +15,7 @@
 # 	../inc/helloworldbasicappview.h \
 # 	../inc/helloworldbasicdocument.h \
 
-BLDMAKE_FLAGS = -v
+# BLDMAKE_FLAGS = -v
 
 all: wins
 
