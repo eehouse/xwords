@@ -82,34 +82,6 @@ SwapInSymbLinefeed( TDes16& buf16 )
     XP_LOGF( "search-and-replace done" );
 }
 
-#if 0
-static TBool
-ConvertToDblByteL( TDes16& buf16, const TDesC8& buf8 )
-{
-    CCnvCharacterSetConverter* conv = CCnvCharacterSetConverter::NewLC();
-
-    RFs fileSession;
-    User::LeaveIfError(fileSession.Connect());
-    CleanupClosePushL(fileSession);
-    conv->PrepareToConvertToOrFromL( KCharacterSetIdentifierAscii,
-                                     fileSession );
-
-    TInt state = CCnvCharacterSetConverter::KStateDefault;
-    TInt count = conv->ConvertToUnicode( buf16, buf8, state );
-
-    CleanupStack::PopAndDestroy(); /* fileSession */
-    CleanupStack::PopAndDestroy(); /* converter */
-
-    /* Apparently unicode conversion simply 0-byte-pads the <cr> char. So for
-       proper wrapping in EDWINs I have to manually find all the "\0\n"
-       strings and replace 'em with Symbian's own wrap value.  Dumb.
-    */
-
-    SwapInSymbLinefeed( buf16 );
-    return count == 0;
-}
-#endif
-
 void
 CXWAskDlg::PreLayoutDynInitL()
 {   
