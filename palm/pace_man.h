@@ -33,15 +33,9 @@
 
 extern Int16 StrPrintF( Char* s, const Char* formatStr, ... );
 extern Int16 StrVPrintF( Char* s, const Char* formatStr, _Palm_va_list arg );
-extern void TimSecondsToDateTime( UInt32 seconds, DateTimeType* dateTimeP );
 extern Boolean SysHandleEvent( EventPtr eventP );
-extern void EvtGetEvent( EventType* event, Int32 timeout );
-extern Boolean FrmDispatchEvent( EventType* eventP );
-extern Boolean MenuHandleEvent( MenuBarType* menuP, EventType* event, 
-                                UInt16* error );
 extern void FrmSetEventHandler( FormType* formP, 
                                 FormEventHandlerType* handler );
-extern void EvtAddEventToQueue( const EventType* event );
 extern void LstSetListChoices( ListType* listP, Char** itemsText, 
                                Int16 numItems );
 extern Err SysNotifyRegister( UInt16 cardNo, LocalID dbID, 
@@ -76,6 +70,11 @@ extern void LstSetDrawFunction( ListType* listP, ListDrawDataFuncPtr func );
 
 #define SET_SEL_REG(trap, sp) ((unsigned long*)((sp)->emulStateP))[3] = (trap)
 
+void evt68k2evtARM( EventType* event, const unsigned char* evt68k );
+#define SWAP_EVENTTYPE_68K_TO_ARM( dp, sp ) evt68k2evtARM( (dp), (sp) )
+void evtArm2evt68K( unsigned char* evt68k, const EventType* event );
+#define SWAP_EVENTTYPE_ARM_TO_68K( dp, sp ) evtArm2evt68K( (dp), (sp) )
+
 void flipRect( RectangleType* rout, const RectangleType* rin );
 #define SWAP_RECTANGLETYPE_ARM_TO_68K( dp, sp ) flipRect( (dp), (sp) )
 #define SWAP_RECTANGLETYPE_68K_TO_ARM SWAP_RECTANGLETYPE_ARM_TO_68K
@@ -93,6 +92,11 @@ void flipFileInfoFromArm( unsigned char* fiout, const FileInfoType* fiin );
     flipFileInfoFromArm( (unsigned char*)(dp), (sp) )
 void flipFileInfoToArm( FileInfoType* fout, const unsigned char* fin );
 #define SWAP_FILEINFOTYPE_68K_TO_ARM( dp, sp ) flipFileInfoToArm( (dp), (sp) )
+
+
+#define SWAP_DATETIMETYPE_ARM_TO_68K( dp, sp ) /* nothing for now */
+void flipDateTimeToArm( DateTimeType* out, const unsigned char* in );
+#define SWAP_DATETIMETYPE_68K_TO_ARM( dp, sp ) flipDateTimeToArm( (dp), (sp) )
 
 PNOState* getStorageLoc();
 #define GET_CALLBACK_STATE() getStorageLoc()

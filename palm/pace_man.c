@@ -214,41 +214,13 @@ StrVPrintF( Char* s, const Char* formatStr, _Palm_va_list arg )
     return result;
 } /* StrVPrintF */
 
-/* from file DateTime.h */
-void
-TimSecondsToDateTime( UInt32 seconds, DateTimeType* dateTimeP )
-{
-    FUNC_HEADER(TimSecondsToDateTime);
-   {
-       DateTimeType dateTime;
-       PNOState* sp = GET_CALLBACK_STATE();
-       STACK_START(unsigned char, stack, 8);
-       ADD_TO_STACK4(stack, seconds, 0);
-       ADD_TO_STACK4(stack, &dateTime, 4);
-       STACK_END(stack);
-
-       (*sp->call68KFuncP)( sp->emulStateP, 
-                            PceNativeTrapNo(sysTrapTimSecondsToDateTime),
-                            stack, 8 );
-
-       dateTimeP->second = Byte_Swap16( dateTime.second );
-       dateTimeP->minute = Byte_Swap16( dateTime.minute );
-       dateTimeP->hour = Byte_Swap16( dateTime.hour );
-       dateTimeP->day = Byte_Swap16( dateTime.day );
-       dateTimeP->month = Byte_Swap16( dateTime.month );
-       dateTimeP->year = Byte_Swap16( dateTime.year );
-       dateTimeP->weekDay = Byte_Swap16( dateTime.weekDay );
-   }
-   FUNC_TAIL(TimSecondsToDateTime);
-} /* TimSecondsToDateTime */
-
 /* Events.  Need to translate back and forth since the ARM struct looks
  * different from the 68K version yet we have to be able to come up with a 68K
  * version for the OS at various times.  May also need to translate inside
  * event handlers since the OS will pass the 68K struct to us there.
  */
 #define EVT_DATASIZE_68K 16 /* sez sizeof(event.data) in 68K code */
-static void
+void
 evt68k2evtARM( EventType* event, const unsigned char* evt68k )
 {
     event->eType = read_unaligned16( evt68k );
@@ -329,7 +301,7 @@ evt68k2evtARM( EventType* event, const unsigned char* evt68k )
     }
 } /* evt68k2evtARM */
 
-static void
+void
 evtArm2evt68K( unsigned char* evt68k, const EventType* event )
 {
     write_unaligned16( evt68k, event->eType );
@@ -416,27 +388,6 @@ evtArm2evt68K( unsigned char* evt68k, const EventType* event )
 
 } /* evtArm2evt68K */
 
-/* from file Event.h */
-void
-EvtGetEvent( EventType* event, Int32 timeout )
-{
-    FUNC_HEADER(EvtGetEvent);
-    {
-        EventType evt68k;
-        PNOState* sp = GET_CALLBACK_STATE();
-        STACK_START(unsigned char, stack, 8);
-        ADD_TO_STACK4(stack, &evt68k, 0);
-        ADD_TO_STACK4(stack, timeout, 4);
-        STACK_END(stack);
-        (*sp->call68KFuncP)( sp->emulStateP, 
-                             PceNativeTrapNo(sysTrapEvtGetEvent),
-                             stack, 8 );
-
-        evt68k2evtARM( event, (unsigned char*)&evt68k );
-    }
-    FUNC_TAIL(EvtGetEvent);
-} /* EvtGetEvent */
-
 /* from file SystemMgr.h */
 Boolean
 SysHandleEvent( EventPtr eventP )
@@ -459,54 +410,6 @@ SysHandleEvent( EventPtr eventP )
     FUNC_TAIL(SysHandleEvent);
     return result;
 } /* SysHandleEvent */
-
-/* from file Form.h */
-Boolean
-FrmDispatchEvent( EventType* eventP )
-{
-    Boolean result;
-    EventType event68k;
-    FUNC_HEADER(FrmDispatchEvent);
-    evtArm2evt68K( (unsigned char*)&event68k, eventP );
-    {
-        PNOState* sp = GET_CALLBACK_STATE();
-        STACK_START(unsigned char, stack, 4);
-        ADD_TO_STACK4(stack, &event68k, 0);
-        STACK_END(stack);
-        result = (Boolean)(*sp->call68KFuncP)( sp->emulStateP, 
-                                               PceNativeTrapNo(sysTrapFrmDispatchEvent),
-                                               stack, 4 );
-    }
-    FUNC_TAIL(FrmDispatchEvent);
-    return result;
-} /* FrmDispatchEvent */
-
-/* from file Menu.h */
-Boolean
-MenuHandleEvent( MenuBarType* menuP, EventType* event, UInt16* error )
-{
-    Boolean result;
-    EventType event68k;
-    FUNC_HEADER(MenuHandleEvent);
-
-    evtArm2evt68K( (unsigned char*)&event68k, event );
-    SWAP2_NON_NULL_IN(error);
-    {
-        PNOState* sp = GET_CALLBACK_STATE();
-        STACK_START(unsigned char, stack, 12);
-        ADD_TO_STACK4(stack, menuP, 0);
-        ADD_TO_STACK4(stack, &event68k, 4);
-        ADD_TO_STACK4(stack, error, 8);
-        STACK_END(stack);
-        result = (Boolean)(*sp->call68KFuncP)( 
-                 sp->emulStateP, 
-                 PceNativeTrapNo(sysTrapMenuHandleEvent),
-                 stack, 12 );
-        SWAP2_NON_NULL_OUT(error);
-    }
-    FUNC_TAIL(MenuHandleEvent);
-    return result;
-} /* MenuHandleEvent */
 
 unsigned long
 handlerEntryPoint( const void* emulStateP, 
@@ -594,27 +497,6 @@ FrmSetEventHandler( FormType* formP, FormEventHandlerType* handler )
     }
     FUNC_TAIL(FrmSetEventHandler);
 } /* FrmSetEventHandler */
-
-/* from file Event.h */
-void
-EvtAddEventToQueue( const EventType* event )
-{
-    FUNC_HEADER(EvtAddEventToQueue);
-
-    EventType evt68k;
-    evtArm2evt68K( (unsigned char*)&evt68k, event );
-
-    {
-        PNOState* sp = GET_CALLBACK_STATE();
-        STACK_START(unsigned char, stack, 4);
-        ADD_TO_STACK4(stack, &evt68k, 0);
-        STACK_END(stack);
-        (*sp->call68KFuncP)( sp->emulStateP, 
-                             PceNativeTrapNo(sysTrapEvtAddEventToQueue),
-                             stack, 4 );
-    }
-    FUNC_TAIL(EvtAddEventToQueue);
-} /* EvtAddEventToQueue */
 
 void
 flipRect( RectangleType* rout, const RectangleType* rin )
@@ -964,3 +846,15 @@ LstSetDrawFunction( ListType* listP, ListDrawDataFuncPtr func )
     FUNC_TAIL(LstSetDrawFunction);
     EMIT_NAME("LstSetDrawFunction","'L','s','t','S','e','t','D','r','a','w','F','u','n','c','t','i','o','n'");
 } /* LstSetDrawFunction */
+
+void
+flipDateTimeToArm( DateTimeType* out, const unsigned char* in )
+{
+    out->second = read_unaligned16( &in[0] );
+    out->minute = Byte_Swap16( &in[2] );
+    out->hour = Byte_Swap16( &in[4] );
+    out->day = Byte_Swap16( &in[6] );
+    out->month = Byte_Swap16( &in[8] );
+    out->year = Byte_Swap16( &in[10] );
+    out->weekDay = Byte_Swap16( &in[12] );
+}
