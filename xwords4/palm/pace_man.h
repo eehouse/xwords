@@ -42,6 +42,8 @@ extern Err SysNotifyRegister( UInt16 cardNo, LocalID dbID,
                               UInt32 notifyType, SysNotifyProcPtr callbackP, 
                               Int8 priority, void* userDataP );
 extern void LstSetDrawFunction( ListType* listP, ListDrawDataFuncPtr func );
+extern Err ExgDBWrite( ExgDBWriteProcPtr writeProcP, void* userDataP, 
+                       const char* nameP, LocalID dbID, UInt16 cardNo );
 
 #if 0
 # define FUNC_HEADER(n) XP_LOGF( #n " called" )

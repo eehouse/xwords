@@ -10,6 +10,7 @@
 # LstSetListChoices
 # SysNotifyRegister
 # LstSetDrawFunction
+# ExgDBWrite
 # 
 #################################################################
 CtlEnabled
@@ -42,7 +43,6 @@ DmWrite
 DmWriteCheck
 EvtSysEventAvail
 ExgAccept
-ExgDBWrite
 ExgDisconnect
 ExgPut
 ExgReceive
