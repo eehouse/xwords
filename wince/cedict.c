@@ -32,7 +32,8 @@ typedef struct CEDictionaryCtxt {
     /*     size_t dictSize; */
 } CEDictionaryCtxt;
 
-static void ce_dictionary_destroy( DictionaryCtxt* dict );
+static void ce_dict_destroy( DictionaryCtxt* dict );
+static XP_UCHAR* ce_dict_getShortName( DictionaryCtxt* dict );
 static void ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 static XP_U16 ceCountSpecials( CEDictionaryCtxt* ctxt );
 static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
@@ -61,7 +62,8 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         HANDLE hFile;
         XP_U8* ptr;
 
-        ctxt->super.destructor = ce_dictionary_destroy;
+        ctxt->super.destructor = ce_dict_destroy;
+        ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
         XP_DEBUGF( "looking for dict %s", dictName );
 
@@ -348,7 +350,7 @@ ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
 } /* ceMakeBitmap */
 
 static void
-ce_dictionary_destroy( DictionaryCtxt* dict )
+ce_dict_destroy( DictionaryCtxt* dict )
 {
     CEDictionaryCtxt* ctxt = (CEDictionaryCtxt*)dict;
     XP_U16 nSpecials = ceCountSpecials( ctxt );
@@ -382,7 +384,14 @@ ce_dictionary_destroy( DictionaryCtxt* dict )
     UnmapViewOfFile( ctxt->mappedBase );
     CloseHandle( ctxt->mappedFile );
     XP_FREE( ctxt->super.mpool, ctxt );
-} // ce_dictionary_destroy
+} // ce_dict_destroy
+
+static XP_UCHAR* 
+ce_dict_getShortName( DictionaryCtxt* dict )
+{
+    XP_UCHAR* name = dict_getName( dict );
+    return bname( name );
+} /* ce_dict_getShortName */
 
 XP_Bool
 ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
@@ -597,5 +606,17 @@ n_ptr_tohs( XP_U8** inp )
 
     return XP_NTOHS(t);
 } /* n_ptr_tohs */
+
+XP_UCHAR*
+bname( XP_UCHAR* in )
+{
+    XP_U16 len = (XP_U16)XP_STRLEN(in);
+    XP_UCHAR* out = in + len - 1;
+
+    while ( *out != '\\' && out >= in ) {
+        --out;
+    }
+    return out + 1;
+} /* bname */
 
 #endif /* ifndef STUBBED_DICT */
