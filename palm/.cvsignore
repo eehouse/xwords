@@ -4,3 +4,8 @@ app.gdb
 gdbload
 palm
 fnavgen
+pace_gen.h
+pace_gen.c
+PNOC_bin.pre
+PALM_PNO
+_dirList
