@@ -121,7 +121,7 @@ CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4 (beta 10) for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the Gnu Public License.  For details see xwords.sourceforge.net.",
+    LTEXT           "Crosswords 4 (beta 11) for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the Gnu Public License.  For details see xwords.sourceforge.net.",
                     IDC_STATIC,32,10,86,89,SS_NOPREFIX
 END
 
@@ -219,8 +219,8 @@ IDD_STRBOX DIALOG DISCARDABLE  0, 25, 127, 132
 CAPTION "Dialog"
 FONT 8, "System"
 BEGIN
-    EDITTEXT        ID_EDITTEXT,6,5,115,100,ES_MULTILINE | ES_READONLY | 
-                    ES_WANTRETURN | WS_VSCROLL
+    EDITTEXT        ID_EDITTEXT,6,5,115,100,ES_MULTILINE | ES_READONLY
+                          | WS_VSCROLL
     DEFPUSHBUTTON   "OK",IDOK,29,110,31,14
     DEFPUSHBUTTON   "No",IDCANCEL,70,110,31,14
 END
