@@ -44,13 +44,6 @@ eraseRect(FrankDrawCtx* dctx, RECT* rect )
     dctx->window->DrawRectFilled( rect, COLOR_WHITE );
 } /* eraseRect */
 
-#if 0
-static void
-frank_draw_destroyCtxt( DrawCtx* p_dctx )
-{
-} /* draw_setup */
-#endif
-
 static XP_Bool
 frank_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
