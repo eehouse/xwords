@@ -1,45 +1,61 @@
-EPOC=/usr/local/symbian
-PATH=$(EPOC)/bin:/local/bin:/usr/bin:/bin
+# -*- mode: Makefile; -*-
 
-# Get bmconv from http://symbianos.org/download/bmconv_1.1.0-2.tar.gz
-# or try gnupoc.sf.net.  wine can't run bmconv.exe best as I can tell.
-BMCONV = $(EPOC)/bin/bmconv
+SERIES ?= 80
+
+# User should define EPOC_80 and/or EPOC_60 in the environment
+EPOC = $(EPOC_$(SERIES))
+
+
+PATH = $(EPOC)/bin:/local/bin:/usr/bin:/bin
+
+BMCONV = bmconv
 
 include $(EPOC)/lib/makerules/eikon
 
 COMMONDIR = ../../common
-PLATFORM = SYMB
-
+PLATFORM = SYMB_$(SERIES)
 
 include ../../common/config.mk
 
-LIBS = \
+LIBS_ALLSERIES = \
 	$(EPOCTRGREL)/euser.lib \
 	$(EPOCTRGREL)/apparc.lib \
 	$(EPOCTRGREL)/cone.lib \
-	$(EPOCTRGREL)/eikcore.lib \
-	$(EPOCTRGREL)/eikdlg.lib \
 	$(EPOCTRGREL)/gdi.lib \
 	$(EPOCTRGREL)/eikcoctl.lib \
+	$(EPOCTRGREL)/eikcore.lib \
 	$(EPOCTRGREL)/bafl.lib \
 	$(EPOCTRGREL)/egul.lib \
 	$(EPOCTRGREL)/estlib.lib \
 	$(EPOCTRGREL)/flogger.lib  \
 	$(EPOCTRGREL)/commonengine.lib \
-	$(EPOCTRGREL)/efsrv.lib \
-	$(EPOCTRGREL)/avkon.lib \
-	$(EPOCTRGREL)/eikcore.lib \
-	$(EPOCTRGREL)/eikcdlg.lib \
-	$(EPOCTRGREL)/estor.lib \
+	$(EPOCTRGREL)/eikdlg.lib \
 	$(EPOCTRGREL)/fbscli.lib \
+	$(EPOCTRGREL)/efsrv.lib \
+	$(EPOCTRGREL)/estor.lib \
 	$(EPOCTRGREL)/ws32.lib \
+
+LIBS_60 = \
+	$(EPOCTRGREL)/eikcore.lib \
+	$(EPOCTRGREL)/avkon.lib \
+	$(EPOCTRGREL)/eikcdlg.lib \
+
+LIBS_80 = \
+	$(EPOCTRGREL)/ckndlg.lib \
+	$(EPOCTRGREL)/ckncore.lib \
+	$(EPOCTRGREL)/eikfile.lib \
+	$(EPOCTRGREL)/eikctl.lib \
+	$(EPOCTRGREL)/bitgdi.lib \
+
+LIBS = $(LIBS_ALLSERIES) $(LIBS_$(SERIES))
 
 # fntstr.lib \
 # 	$(EPOCTRGREL)/bitgdi.lib \
 
-NAME = xwords
-ARCH = series60
-SYMARCH = SERIES_60
+NAME = xwords_$(SERIES)
+
+ARCH = series$(SERIES)
+SYMARCH = SERIES_$(SERIES)
 
 SRCDIR = ../src
 INCDIR = -I $(EPOC)/include -I $(EPOC)/include/libc -I../inc -I../../common
@@ -72,7 +88,9 @@ ICON_SRC = \
 	$(AIF)/lrgicon.bmp \
 	$(AIF)/lrgiconmask.bmp \
 
-OBJECTS = $(LCLSRC:.cpp=.o) $(COMMONOBJ)
+OBJDIR = $(SRCDIR)/$(PLATFORM)
+
+OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(LCLSRC:.cpp=.o)) $(COMMONOBJ)
 
 THEAPP=$(NAME).app
 MAJOR=2
@@ -103,10 +121,16 @@ CFLAGS = -O -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
 CPFLAGS = $(CFLAGS) -DCPLUS
 
 # Following is used for the resource file
-CPPFLAGS += -D_EPOC32_6 -DCPLUS -I../inc -DSERIES_60
+CPPFLAGS += -D_EPOC32_6 -DCPLUS -I../inc -D$(SYMARCH)
 
-all:$(PKGFILES) $(NAME).sis
+all: _sanity $(PKGFILES) $(NAME).sis
 	mv $(NAME).sis $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
+
+_sanity:
+	if [ "$(EPOC_$(SERIES))" = "" ]; then \
+		echo " ---> ERROR: EPOC_$(SERIES) undefined in env"; \
+		exit 1; \
+	fi
 
 $(THEAPP): $(NAME).rsc $(MBG) $(OBJECTS)
 
@@ -123,7 +147,8 @@ $(COMMONOBJDIR)/%.o: $(COMMONDIR)/%.c
 	mkdir -p $(COMMONOBJDIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o: %.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	mkdir -p $(OBJDIR)
 	$(CCC) $(CPFLAGS) -c -o $@ $<
 
 $(NAME).mbg $(NAME).mbm: $(IMG_SRC)
