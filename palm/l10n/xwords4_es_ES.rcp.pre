@@ -64,7 +64,7 @@ BEGIN
         MENUITEM "Aceptar" XW_DONE_PULLDOWN_ID "D"
         MENUITEM "Remover el atril" XW_JUGGLE_PULLDOWN_ID "J"
         MENUITEM "Cambiar fichas" XW_TRADEIN_PULLDOWN_ID "T"
-        MENUITEM "Ocultar el atril" XW_HIDETRAY_PULLDOWN_ID "H"
+        MENUITEM "Ocultar el atril" XW_HIDESHOWTRAY_PULLDOWN_ID "H"
     END
 #ifdef FOR_GREMLINS
     PULLDOWN "Grem" 
