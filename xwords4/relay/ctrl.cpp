@@ -40,6 +40,9 @@
 #include "cref.h"
 #include "xwrelay_priv.h"
 
+/* this is *only* for testing.  Don't abuse!!!! */
+extern pthread_mutex_t gCookieMapMutex;
+
 static void
 print_sock( int sock, const char* what, ... )
 {
@@ -63,6 +66,8 @@ print_help( int socket )
         "? : prints this message\n"
         "q : quits\n"
         "cook : lists active cookies\n"
+        "lock : locks the main cref mutex\n"
+        "unlock : UNlocks the main cref mutex\n"
         ;
     print_sock( socket, help );
 } /* print_help */
@@ -88,6 +93,10 @@ handle_command( const char* buf, int sock )
         print_help( sock );
     } else if ( 0 == strcmp( buf, "cook" ) ) {
         print_cookies( sock );
+    } else if ( 0 == strcmp( buf, "lock" ) ) {
+        pthread_mutex_lock( &gCookieMapMutex );
+    } else if ( 0 == strcmp( buf, "unlock" ) ) {
+        pthread_mutex_unlock( &gCookieMapMutex );
     } else if ( 0 == strcmp( buf, "q" ) ) {
         return 0;
     } else {
