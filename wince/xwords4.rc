@@ -283,7 +283,6 @@ BEGIN
     CONTROL         "Pick tiles face-up", IDC_PICKTILES, "Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,82,90,10
 #else
-    foo
 #endif
     DEFPUSHBUTTON   "OK",IDOK,9,100,38,14
     PUSHBUTTON      "Cancel",IDCANCEL,70,100,39,14
