@@ -1587,6 +1587,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                     XP_SNPRINTF( ch, sizeof(ch), (XP_UCHAR*)"%d", val );
                 } else if ( dict_faceIsBitmap( dict, tile ) ) {
                     bitmap = dict_getFaceBitmap( dict, tile, XP_FALSE );
+                    XP_ASSERT( !!bitmap );
                     textP = (XP_UCHAR*)NULL;
                 } else {
                     dict_tilesToString( dict, &tile, 1, ch );
@@ -2553,8 +2554,9 @@ board_handleKey( BoardCtxt* board, XP_Key key )
         XP_ASSERT( key >= XP_KEY_LAST );
 
         result = trayVisible && moveKeyTileToBoard( board, key );
-        if ( result ) { 
-            (void)advanceArrow( board );
+
+        if ( result && !advanceArrow( board ) ) {
+            setArrowVisible( board, XP_FALSE );
         }
     } /* switch */
 
