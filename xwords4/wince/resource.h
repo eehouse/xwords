@@ -86,43 +86,44 @@
 #ifdef FEATURE_TRAY_EDIT
 # define IDC_CPICK                      1053
 # define IDC_PICKALL                    1054
+# define IDC_BACKUP                     1055
 #endif
 
 #ifdef XWFEATURE_CE_EDITCOLORS
-# define DLBLTR_BUTTON                  1055
-# define DBLWRD_BUTTON                  1056
-# define TPLLTR_BUTTON                  1057
-# define TPLWRD_BUTTON                  1058
-# define EMPCELL_BUTTON                 1059
-# define TBACK_BUTTON                   1060
-# define PLAYER1_BUTTON                 1061
-# define PLAYER2_BUTTON                 1062
-# define PLAYER3_BUTTON                 1063
-# define PLAYER4_BUTTON                 1064
-# define PLAYER1_LABEL                  1065
-# define PLAYER2_LABEL                  1066
-# define PLAYER3_LABEL                  1067
-# define PLAYER4_LABEL                  1068
-# define DLBLTR_LABEL                   1069
-# define DBLWRD_LABEL                   1070
-# define TPLLTR_LABEL                   1071
-# define TPLWRD_LABEL                   1072
-# define EMPTYCELL_LABEL                1073
-# define TILEBACK_LABEL                 1074
+# define DLBLTR_BUTTON                  1056
+# define DBLWRD_BUTTON                  1057
+# define TPLLTR_BUTTON                  1058
+# define TPLWRD_BUTTON                  1059
+# define EMPCELL_BUTTON                 1060
+# define TBACK_BUTTON                   1061
+# define PLAYER1_BUTTON                 1062
+# define PLAYER2_BUTTON                 1063
+# define PLAYER3_BUTTON                 1064
+# define PLAYER4_BUTTON                 1065
+# define PLAYER1_LABEL                  1066
+# define PLAYER2_LABEL                  1067
+# define PLAYER3_LABEL                  1068
+# define PLAYER4_LABEL                  1069
+# define DLBLTR_LABEL                   1070
+# define DBLWRD_LABEL                   1071
+# define TPLLTR_LABEL                   1072
+# define TPLWRD_LABEL                   1073
+# define EMPTYCELL_LABEL                1074
+# define TILEBACK_LABEL                 1075
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */
 # ifdef MY_COLOR_SEL
-#  define CLREDT_SLIDER1                 1075
-#  define RED_EDIT                       1076
-#  define CLREDT_SLIDER2                 1077
-#  define GREEN_EDIT                     1078
-#  define CLREDT_SLIDER3                 1079
-#  define BLUE_EDIT                      1080
+#  define CLREDT_SLIDER1                 1076
+#  define RED_EDIT                       1077
+#  define CLREDT_SLIDER2                 1078
+#  define GREEN_EDIT                     1079
+#  define CLREDT_SLIDER3                 1080
+#  define BLUE_EDIT                      1081
 
-#  define RED_LABEL                      1081
-#  define GREEN_LABEL                    1082
-#  define BLUE_LABEL                     1083
+#  define RED_LABEL                      1082
+#  define GREEN_LABEL                    1083
+#  define BLUE_LABEL                     1084
 # endif // MY_COLOR_SEL
 #endif // XWFEATURE_CE_EDITCOLORS
 
@@ -158,7 +159,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40025
-#define _APS_NEXT_CONTROL_VALUE         1077
+#define _APS_NEXT_CONTROL_VALUE         1085
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
