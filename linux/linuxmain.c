@@ -214,7 +214,7 @@ usage( char* appName, char* msg )
 	     ""                   " (default localhost)\n"
          "\nexample: \n"
              "\tserver: ./xwords -d dict.xwd -s -r Eric -N\n"
-             "\tclient: ./xwords -d dict.xwd -r Kati -p 4999 -l 6000\n"
+             "\tclient: ./xwords -d dict.xwd -r Kati -p 4998 -l 6000\n"
 	     , appName );
     exit(1);
 }
