@@ -25,13 +25,14 @@ XWORDS_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/XWORDS/ar
 
 all: wins
 
-wins:
+ABLD.BAT:
 	bldmake $(BLDMAKE_FLAGS) bldfiles
-	abLD.BAT build $(BLDMAKE_FLAGS) wins udeb
 
-armi_bld:
-	bldmake $(BLDMAKE_FLAGS) bldfiles
-	abLD.BAT build $(BLDMAKE_FLAGS) armi urel
+wins: ABLD.BAT
+	$< build $(BLDMAKE_FLAGS) wins udeb
+
+armi_bld: ABLD.BAT
+	$< build $(BLDMAKE_FLAGS) armi urel
 
 # armi:
 # 	bldmake $(BLDMAKE_FLAGS) bldfiles
