@@ -45,9 +45,10 @@ else
 endif
 
 ifeq ($(TARGET_TYPE),WINCE)
-	TARGET_TYPE = FRANK
 	WINCE_ONLY = true
 endif
+
+.PHONY: checkARCH
 
 ##############################################################################
 # PalmOS rules
@@ -140,36 +141,17 @@ ifeq ($(TARGET_TYPE),FRANK)
 # build the .xwd file.
 ifeq (x$(shell echo -n $$EBOOKMAN_SDK)x,xx)
 all: $(LANG)2to8.xwd
+empty: $(LANG)0to0.xwd
 else
-all: $(LANG)2to8.seb
-endif
-
+all: checkARCH $(LANG)2to8.seb
 empty: $(LANG)0to0.seb
-
-ifneq (x$(shell echo -n $$EBOOKMAN_SDK)x,xx)
 include ${EBOOKMAN_SDK}/ebsdk.uses
 endif
 
-# a binary file (one byte) giving the number of tiles in the dict
-charcount.bin: table.bin
-ifdef NEWDAWG
-	siz=$$(wc -c $< | sed -e 's/$<//'); \
-	perl -e "print pack(\"c\",$$siz/2)" > $@
-else
-	siz=$$(wc -c $< | sed -e 's/$<//'); \
-	perl -e "print pack(\"c\",$$siz)" > $@
-endif
-
-# For each entry in the table whose face < 32, there needs to be a pair of
-# pbitm files and a string giving the printing form
-frankspecials.bin: ../frank_mkspecials.pl  $(BMPFILES)
-	$< $(BLANK_INFO) $(LANG_SPECIAL_INFO) > $@
-
-$(LANG)%.$(FRANK_EXT): dawg$(LANG)%.stamp $(LANG)%_flags.bin charcount.bin table.bin values.bin frankspecials.bin 
-	cat $(LANG)$*_flags.bin charcount.bin table.bin values.bin \
-		frankspecials.bin $(LANG)StartLoc.bin  \
-		$$(ls dawg$(LANG)$*_*.bin) > $@
-	cp $@ saveme.bin
+checkARCH:
+	if [[ $$ARCH == "" ]]; then \
+		 $(error "ARCH must be defined in ENV if TARGET_TYPE==FRANK"); \
+	fi
 
 ifndef WINCE_ONLY
 $(LANG)%.seb: $(LANG)%.$(FRANK_EXT) $(LANG)%.atts 
@@ -190,8 +172,15 @@ byodbins: table.bin values.bin frankspecials.bin info.txt
 
 
 else
+ifeq ($(TARGET_TYPE),WINCE)
+
+### WINCE section here ###
+all: $(LANG)2to8.xwd 
+
+else
 	(Need to define TARGET_TYPE if get error pointing to this line)
 endif				#ifeq ($(TARGET_TYPE),FRANK)
+endif
 endif
 
 ifeq (s$(TARGET_TYPE),s)
@@ -201,6 +190,28 @@ endif
 ##############################################################################
 # shared rules
 ##############################################################################
+
+# For each entry in the table whose face < 32, there needs to be a pair of
+# pbitm files and a string giving the printing form
+frankspecials.bin: ../frank_mkspecials.pl  $(BMPFILES)
+	$< $(BLANK_INFO) $(LANG_SPECIAL_INFO) > $@
+
+# a binary file (one byte) giving the number of tiles in the dict
+charcount.bin: table.bin
+ifdef NEWDAWG
+	siz=$$(wc -c $< | sed -e 's/$<//'); \
+	perl -e "print pack(\"c\",$$siz/2)" > $@
+else
+	siz=$$(wc -c $< | sed -e 's/$<//'); \
+	perl -e "print pack(\"c\",$$siz)" > $@
+endif
+
+$(LANG)%.$(FRANK_EXT): dawg$(LANG)%.stamp $(LANG)%_flags.bin charcount.bin table.bin values.bin frankspecials.bin 
+	cat $(LANG)$*_flags.bin charcount.bin table.bin values.bin \
+		frankspecials.bin $(LANG)StartLoc.bin  \
+		$$(ls dawg$(LANG)$*_*.bin) > $@
+	cp $@ saveme.bin
+
 
 # For some reason I can't fathom dawg$(LANG)% gets nuked every time
 # the top-level rule fires (all: for whatever TARGET_TYPE.)  It
