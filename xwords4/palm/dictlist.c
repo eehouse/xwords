@@ -192,11 +192,13 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
             }
             
             if ( (fit.attributes & vfsFileAttrDirectory) != 0 ) {
+#ifdef RECURSIVE_VFS_SEARCH
                 XP_U16 len = XP_STRLEN((const char*)path);
                 path[len] = separator;
                 path[len+1] = '\0';
                 searchDir( MPPARM(mpool) dlp, volNum, separator, 
                            path, pathSize, creatorSought );
+#endif
             } else if ( (ext = (XP_UCHAR*)StrStr( (const char*)path, ".pdb" ))
                         != NULL ) {
 
