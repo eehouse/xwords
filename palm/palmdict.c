@@ -87,7 +87,6 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
     XP_U16 nodeSize = 3;        /* init to satisfy compiler */
 #endif
     XP_U32 totalSize;
-    void* dawgBase;
 
     /* check and see if there's already a dict for this name.  If yes,
        increment its refcount and return. */
@@ -222,7 +221,9 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
             /* NOTE: need to use more than one feature to support having
                multiple dicts open at once. */
             err = ~errNone;     /* so test below will pass if nRecords == 1 */
-            if ( 0 && nRecords > 1 ) {
+#ifdef XWFEATURE_COMBINEDAWG
+            if ( nRecords > 1 ) {
+                void* dawgBase;
                 err = FtrPtrNew( APPID, DAWG_STORE_FEATURE, totalSize,
                                  &dawgBase );
                 if ( err == errNone ) {
@@ -252,6 +253,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
                     XP_LOGF( "unable to use Ftr for dict; err=%d", err );
                 }
             }
+#endif
 
             if ( err != errNone ) {
                 offset = 0;
@@ -282,7 +284,8 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
 #ifdef DEBUG
                 ctxt->super.numEdges = offset;
 #endif
-                ctxt->super.func_edge_for_index = palm_dict_edge_for_index_multi;
+                ctxt->super.func_edge_for_index
+                    = palm_dict_edge_for_index_multi;
             }
         }
 
