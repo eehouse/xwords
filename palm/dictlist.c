@@ -305,7 +305,7 @@ dictListMakePriv( MPFORMAL XP_U32 creatorSought, XP_U16 versSought )
                                               creatorSought,
                                               false,// onlyLatestVers,
                                               &cardNo, &dbID );
-        if ( err != 0 ) {
+        if ( err != errNone ) {
             break;
         } else {
             XP_UCHAR nameBuf[33];
