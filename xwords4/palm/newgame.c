@@ -710,7 +710,7 @@ void
 drawOneGadget( UInt16 id, char* text, Boolean hilite )
 {
     RectangleType divRect;
-    XP_U16 len = StrLen(text);
+    XP_U16 len = XP_STRLEN(text);
     XP_U16 width = FntCharsWidth( text, len );
     XP_U16 left;
 
