@@ -1668,6 +1668,10 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
         message = "Too few tiles left to trade.";
         break;
+    case ERR_CANT_UNDO_TILEASSIGN:
+        message = "Tile assignment can't be undone.";
+        break;
+
     default:
         message = "unknown errorcode ID!!!";
         break;
