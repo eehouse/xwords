@@ -222,11 +222,55 @@ ce_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
 {
 } /* ce_draw_invertCell */
 
+#ifdef DEBUG
+static char*
+logClipResult( int icrResult )
+{
+#define caseStr(d)  case d: return #d    
+    switch ( icrResult ) {
+        caseStr(SIMPLEREGION);
+        caseStr(COMPLEXREGION);
+        caseStr(NULLREGION);
+        caseStr(ERROR);
+    }
+#undef caseStr
+    return "unknown";
+} /* logClipResult */
+#endif
+
 static void
 ce_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
                    XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
+#if 0
+    int icrResult;
+    CEAppGlobals* globals = dctx->globals;
+    HDC hdc = globals->hdc;
+    RECT cr;
+    HRGN hrgn;
+
+    XPRtoRECT( &cr, rect );
+
+    hrgn = CreateRectRgn( cr.left, cr.top, cr.right, cr.bottom );
+    if ( !hrgn ) {
+        logLastError("CreateRectRgn");
+    }
+
+/*     int GetClipRgn( hdc, hrgn );  */
+
+
+/*     if ( !SetRectRgn( hrgn, cr.left, cr.top, cr.right, cr.bottom ) ) { */
+/*         logLastError(); */
+/*     } */
+
+    icrResult = SelectClipRgn( hdc, NULL );
+    XP_LOGF( "SelectClipRgn(NULL)=>%s", logClipResult(icrResult) );
+
+    icrResult = SelectClipRgn( hdc, hrgn );
+    logLastError("SelectClipRgn");
+    XP_LOGF( "SelectClipRgn(hrgn)=>%s", logClipResult(icrResult) );
+#endif
     dctx->trayOwner = owner;
 } /* ce_draw_trayBegin */
 
@@ -279,11 +323,6 @@ drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
         makeAndDrawBitmap( dctx, hdc, rt.left + 1, rt.top + 4, 
                            dctx->colors[USER_COLOR1+dctx->trayOwner],
                            (CEBitmapInfo*)bitmap );
-/*         CEBitmapInfo* info = (CEBitmapInfo*)bitmap; */
-/*         HBITMAP bm = CreateBitmap( info->nCols, info->nRows, 1, 1, info->bits ); */
-/*         ceDrawBitmapInRect( hdc, rt.left+2, rt.top+2, bm ); */
-/*         DeleteObject( bm ); */
-/*         ceDrawBitmapInRect( hdc, rt.left+2, rt.top+2, (HBITMAP)bitmap ); */
     }
 
     if ( val >= 0 ) {
@@ -368,7 +407,6 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    wchar_t* txt = vertical? L"|":L"-";
     RECT rt;
     XP_U16 bkIndex;
     HBITMAP cursor;
@@ -672,14 +710,16 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
-    HDC hdc = globals->hdc;
+    HDC hdc;
     RECT rt;
     PAINTSTRUCT ps;
     wchar_t widebuf[40];
 
     XPRtoRECT( &rt, rect );
 
-    if ( !globals->hdc ) {
+    if ( globals->hdc ) {
+        hdc = globals->hdc;
+    } else {
         InvalidateRect( dctx->mainWin, &rt, FALSE );
         hdc = BeginPaint( dctx->mainWin, &ps );
     }
