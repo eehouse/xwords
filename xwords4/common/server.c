@@ -920,8 +920,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
     }
     stream_setVersion( stream, streamVersion );
 
-    gameID = stream_getBits( stream, 32 );
-    XP_STATUSF( "read gameID of %ld; calling comms_setConnID", gameID );
+    gameID = stream_getU32( stream );
+    XP_STATUSF( "read gameID of %lx; calling comms_setConnID", gameID );
     server->vol.gi->gameID = gameID;
     comms_setConnID( server->vol.comms, gameID );
 
@@ -1057,7 +1057,7 @@ server_sendInitialMessage( ServerCtxt* server )
         /* write version for server's benefit */
         stream_putU8( stream, CUR_STREAM_VERS );
 
-        XP_STATUSF( "putting gameID %ld into msg", gameID );
+        XP_STATUSF( "putting gameID %lx into msg", gameID );
         stream_putU32( stream, gameID );
 
         makeSendableGICopy( server, &localGI, deviceIndex );
