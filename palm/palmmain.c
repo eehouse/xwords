@@ -124,8 +124,8 @@ static XP_Bool palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
 static XWBonusType palm_util_getSquareBonus( XW_UtilCtxt* uc, 
                                              ModelCtxt* model,
                                              XP_U16 col, XP_U16 row );
-static XP_S16 palm_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi,
-                                      XP_U16 playerNum, XP_UCHAR4* texts, 
+static XP_S16 palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
+                                      XP_U16 playerNum, const XP_UCHAR4* texts, 
                                       XP_U16 nTiles );
 static XP_Bool palm_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                       XP_UCHAR* buf, XP_U16* len );
@@ -1198,6 +1198,7 @@ startApplication( PalmAppGlobals** globalsP )
         globals->isFirstLaunch = false;
     } else {
         DictListEntry* dlep;
+        XP_U32 gameID;
 	
         /* if we're here because dict missing, don't re-init all prefs! */
         if ( !prefsFound ) {
@@ -1214,8 +1215,10 @@ startApplication( PalmAppGlobals** globalsP )
         globals->gameInfo.dictName = copyString( MPPARM(globals->mpool)
                                                  dlep->baseName );
 
+        gameID = TimGetSeconds();
         game_makeNewGame( MEMPOOL &globals->game, &globals->gameInfo,
-                          &globals->util, globals->draw, &globals->gState.cp,
+                          &globals->util, globals->draw, gameID, 
+                          &globals->gState.cp,
                           palm_send, globals );
         FrmPopupForm( XW_NEWGAMES_FORM );
     }
@@ -3035,8 +3038,8 @@ handleKeysInBlank( EventPtr event )
 } /* handleKeysInBlank */
 
 static XP_S16
-askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
-               XP_U16 nTiles, XP_UCHAR4* texts )
+askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, const PickInfo* pi,
+               XP_U16 nTiles, const XP_UCHAR4* texts )
 {
     FormPtr form, prevForm;
     ListPtr lettersList;
@@ -3263,8 +3266,9 @@ palm_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* model,
 } /* palm_util_getSquareBonus */
 
 static XP_S16
-palm_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi,
-                        XP_U16 playerNum, XP_UCHAR4* texts, XP_U16 nTiles )
+palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
+                        XP_U16 playerNum, const XP_UCHAR4* texts, 
+                        XP_U16 nTiles )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     return askBlankValue( globals, playerNum, pi, nTiles, texts );
