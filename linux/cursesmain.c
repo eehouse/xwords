@@ -329,7 +329,11 @@ static XP_Bool
 handleHint( CursesAppGlobals* globals )
 {
     XP_Bool redo;
-    globals->doDraw = board_requestHint( globals->cGlobals.game.board, 0, &redo );
+    globals->doDraw = board_requestHint( globals->cGlobals.game.board, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                                         XP_FALSE,
+#endif
+                                         &redo );
     return XP_TRUE;
 } /* handleHint */
 
