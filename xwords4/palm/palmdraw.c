@@ -445,6 +445,26 @@ palm_bnw_draw_trayFinished( DrawCtx* p_dctx )
     WinSetClip( &dctx->oldTrayClip );
 } /* palm_draw_trayFinished */
 
+#ifdef FEATURE_HIGHRES
+static void
+smallBoldStringAt( const char* str, XP_U16 len, XP_S16 x, XP_U16 y )
+{
+    UInt32 oldMode = WinSetScalingMode( kTextScalingOff );
+    FontID curFont = FntGetFont();
+    FntSetFont( boldFont );
+
+    /* negative x means position backwards from it */
+    if ( x < 0 ) {
+        x = (-x) - FntCharsWidth( str, len );
+    }
+
+    WinDrawChars( str, len, x, y );
+
+    FntSetFont( curFont );
+    WinSetScalingMode( oldMode );
+} /* smallBoldStringAt */
+#endif
+
 static void
 palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, 
                     XP_UCHAR* letters, XP_Bitmap bitmap,
@@ -497,15 +517,9 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         if ( 0 ) {
 #ifdef FEATURE_HIGHRES
         } else if ( dctx->doHiRes && dctx->oneDotFiveAvail ) {
-            UInt32 oldMode = WinSetScalingMode( kTextScalingOff );
-            FontID curFont = FntGetFont();
-            FntSetFont( boldFont );
-            width = FntCharsWidth( (const char*)valBuf, len );
-            WinDrawChars( valBuf, len, 
-                          localR.left + localR.width - width, 
-                          localR.top + localR.height - dctx->fntHeight - 1 );
-            FntSetFont( curFont );
-            WinSetScalingMode( oldMode );
+            smallBoldStringAt( valBuf, len, 
+                               -(localR.left + localR.width), 
+                               localR.top + localR.height - dctx->fntHeight - 1 );
 #endif
         } else {
 
@@ -924,7 +938,6 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
                               XP_U16 playerNum )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-    XP_UCHAR* str;
     char buf[PENDING_DIGITS+1] = "000";
     RectangleType oldClip, newClip;
     XP_U16 x = rect->left + 1;
@@ -951,11 +964,20 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
             StrCopy( buf, "???" );
         }
 
-        if ( rect->height >= PALM_TRAY_SCALEH ) {
-            str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
-            WinDrawChars( (const char*)str, 
-                          XP_STRLEN((const char*)str), x, rect->top );
+        /* There's no room for the pts string if we're in highres mode and
+           WinSetScalingMode isn't available. */
+        if ( !dctx->doHiRes || dctx->oneDotFiveAvail ) {
+            XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
+
+            if ( dctx->oneDotFiveAvail ) {
+                smallBoldStringAt( (const char*)str, XP_STRLEN((const char*)str), 
+                                   x, rect->top );
+            } else {
+                WinDrawChars( (const char*)str, 
+                              XP_STRLEN((const char*)str), x, rect->top );
+            }
         }
+
         WinDrawChars( buf, PENDING_DIGITS, x, 
                       rect->top + (rect->height/2) - 1 );
         WinSetClip( &oldClip );
