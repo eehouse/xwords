@@ -2250,7 +2250,7 @@ server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
 {
     DictionaryCtxt* dict;
     Tile tile;
-    XP_U16 nChars;
+    XP_U16 nChars, nPrinted;
     XP_Bool hasBlank;
     Tile blank = 0;		/* shut compiler up */
     XP_U16 counts[MAX_UNIQUE_TILES+1]; /* 1 for the blank */
@@ -2272,28 +2272,33 @@ server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
         blank = dict_getBlankTile( dict );
     }
 
-    for ( tile = 0; ; ) {
+    for ( tile = 0, nPrinted = 0; ; ) {
         XP_UCHAR buf[24];
         XP_UCHAR face[4];
         XP_U16 count, value;
         XP_S16 nRemaining;	/* signed so assertion will work */
 
-        dict_tilesToString( dict, &tile, 1, face );
         count = dict_numTiles( dict, tile );
-        nRemaining = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
-        XP_ASSERT( nRemaining >= 0 );
-        value = dict_getTileValue( dict, tile );
 
-        XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d[%d] %d", 
-                     face, count, nRemaining, value );
-        stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+        if ( count > 0 ) {
+            dict_tilesToString( dict, &tile, 1, face );
+            nRemaining = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
+            XP_ASSERT( nRemaining >= 0 );
+            value = dict_getTileValue( dict, tile );
+
+            XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d[%d] %d", 
+                         face, count, nRemaining, value );
+            stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+        }
 
         if ( ++tile >= nChars ) {
             break;
-        } else if ( tile % nCols == 0 ) {
-            stream_putBytes( stream, XP_CR, (XP_U16)XP_STRLEN(XP_CR) );
-        } else {
-            stream_putBytes( stream, (void*)"      ", 3 );
+        } else if ( count > 0 ) {
+            if ( ++nPrinted % nCols == 0 ) {
+                stream_putBytes( stream, XP_CR, (XP_U16)XP_STRLEN(XP_CR) );
+            } else {
+                stream_putBytes( stream, (void*)"      ", 3 );
+            }
         }
     }
 } /* server_formatPoolCounts */
