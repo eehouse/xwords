@@ -106,8 +106,10 @@ frank_dictionary_make( MPFORMAL XP_UCHAR* dictName )
         int result = ebo_mapin( &eboe.name, 0, (void*)ptr, &size, 0 );
         XP_DEBUGF( "ebo_mapin returned %d; size=%d\n", result, size );
 
+        int flags;
         if ( result >= 0 ) {
-            if ( GetDictFlags( &eboe, IN_RAM ) != FRANK_DICT_VERSION_1 ) {
+            flags = GetDictFlags( &eboe, IN_RAM );
+            if ( flags != 0x0001 && flags != 0x0002 && flags != 0x0003 ) {
                 result = -1;
             }
         }
@@ -122,17 +124,28 @@ frank_dictionary_make( MPFORMAL XP_UCHAR* dictName )
         if ( result >= 0 ) {
             XP_U16 numFaces;
             XP_U16 facesSize;
+            XP_U16 charSize;
 
             /* save for later */
             ctxt->base = (void*)ptr;
             ctxt->dictSize = size;
 
             ctxt->super.destructor = frank_dictionary_destroy;
-#ifdef DEBUG
-            U16 flags = 
-#endif
-                ntohs_noalign( &ptr );
-            XP_ASSERT( flags == FRANK_DICT_VERSION_1 );
+
+            U16 flags = ntohs_noalign( &ptr );
+            if ( flags == 0x0001 ) {
+                charSize = 1;
+                ctxt->super.nodeSize = 3;
+            } else if ( flags == 0x0002 ) {
+                charSize = 2;
+                ctxt->super.nodeSize = 3;
+            } else if ( flags == 0x0003 ) {
+                charSize = 2;
+                ctxt->super.nodeSize = 4;
+            } else {
+                XP_ASSERT( XP_FALSE );
+                charSize = 0; /* shut up compiler */
+            }
 
             ctxt->super.nFaces = numFaces = *ptr++;
             XP_DEBUGF( "read %d faces from dict\n", numFaces );
@@ -142,6 +155,10 @@ frank_dictionary_make( MPFORMAL XP_UCHAR* dictName )
             XP_MEMSET( ctxt->super.faces16, 0, facesSize );
             
             for ( XP_U16 i = 0; i < numFaces; ++i ) {
+                if ( charSize == 2 ) {
+                    ++ptr;      /* skip the extra byte; screw unicode for
+                                   now. :-) */
+                }
                 ctxt->super.faces16[i] = *ptr++;
             }
 
@@ -189,11 +206,14 @@ tryLoadMMCFile( MPFORMAL XP_UCHAR* dictName, U8** ptrP, size_t* size )
     for ( result = ebo_first_xobject( &eboe ); 
           result == EBO_OK;
           result = ebo_next_xobject( &eboe ) ) {
+        U16 flags;
 
         if ( strcmp( eboe.name.publisher, PUB_ERICHOUSE ) == 0 
              && strcmp( eboe.name.extension, EXT_XWORDSDICT ) == 0
              && strcmp( eboe.name.name, (char*)dictName ) == 0 
-             && GetDictFlags(&eboe, ON_MMC) == FRANK_DICT_VERSION_1 ) {
+             && ( ((flags = GetDictFlags(&eboe, ON_MMC)) == 0x0001)
+                  || (flags == 0x0002)
+                  || (flags == 0x0003) ) ) {
 
             XP_DEBUGF( "looking to allocate %ld bytes", eboe.size );
 
