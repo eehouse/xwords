@@ -42,8 +42,8 @@ extern "C" {
 /****************************** prototypes ******************************/
 static XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                             XP_Rect* rect);
-static void coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, 
-                         XP_U16* colP, XP_U16* rowP );
+static XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, 
+                            XP_U16* colP, XP_U16* rowP );
 static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                          XP_Bool skipBlanks );
 static void figureBoardRect( BoardCtxt* board );
@@ -1596,11 +1596,11 @@ figureBoardRect( BoardCtxt* board )
     board->boardBounds = boardBounds;
 } /* figureBoardRect */
 
-static void
-coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, 
-	     XP_U16* rowP )
+static XP_Bool
+coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, XP_U16* rowP )
 {
     XP_U16 col, row, max;
+    XP_Bool onBoard = XP_TRUE;
 
     x -= board->boardBounds.left;
 
@@ -1609,7 +1609,6 @@ coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP,
 
     col = x / board->boardHScale;
     row = y / board->boardVScale;
-
 
     if ( board->isFlipped ) {
         XP_U16 tmp = col;
@@ -1622,13 +1621,16 @@ coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP,
     XP_ASSERT( max + 1 == model_numRows( board->model ) );
     if ( col > max ) {
         col = max;
+        onBoard = XP_FALSE;
     }
     if ( row > max ) {
         row = max;
+        onBoard = XP_FALSE;
     }
 
     *colP = col;
     *rowP = row;
+    return onBoard;
 } /* coordToCell */
 
 static XP_Bool
@@ -1941,28 +1943,31 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
     XP_Bool needsRedraw = XP_FALSE;
 
     XP_U16 col, row;
+    if ( coordToCell( board, x, y, &col, &row ) ) {
 
-    coordToCell( board, x, y, &col, &row );
-    if ( col != board->hintDragCurCol || row != board->hintDragCurRow ) {
-        needsRedraw = XP_TRUE;
+        checkScrollCell( board, board->selPlayer, col, row );
 
-        board->hintDragInProgress = XP_TRUE;
+        if ( col != board->hintDragCurCol || row != board->hintDragCurRow ) {
+            needsRedraw = XP_TRUE;
 
-        if ( board->hasHintRect[board->selPlayer] ) {
-            clearCurHintRect( board );
+            board->hintDragInProgress = XP_TRUE;
+
+            if ( board->hasHintRect[board->selPlayer] ) {
+                clearCurHintRect( board );
+            }
+            /* Now that we've moved, this isn't a timer thing.  Clean up any
+               artifacts. */
+            board->penTimerFired = XP_FALSE;
+            if ( valHintMiniWindowActive( board ) ) {
+                hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
+            }
+
+            board->hintDragCurCol = col;
+            board->hintDragCurRow = row;
+            setHintRect( board );
+            invalCurHintRect( board, board->selPlayer, XP_FALSE );
+            XP_LOGF( "now includes with %d,%d", col, row );
         }
-        /* Now that we've moved, this isn't a timer thing.  Clean up any
-           artifacts. */
-        board->penTimerFired = XP_FALSE;
-        if ( valHintMiniWindowActive( board ) ) {
-            hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
-        }
-
-        board->hintDragCurCol = col;
-        board->hintDragCurRow = row;
-        setHintRect( board );
-        invalCurHintRect( board, board->selPlayer, XP_FALSE );
-        XP_LOGF( "now includes with %d,%d", col, row );
     }
 
     return needsRedraw;
