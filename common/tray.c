@@ -51,10 +51,17 @@ pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* onDividerP )
 {
     XP_S16 result = -1;		/* not on a tile */
     XP_Rect divider;
+    XP_Rect biggerRect;
     XP_Bool onDivider;
 
     figureDividerRect( board, &divider );
-    onDivider = rectContainsPt( &divider, x, y );
+
+    /* The divider rect is narrower and kinda hard to tap on.  Let's expand
+       it just for this test */
+    biggerRect = divider;
+    biggerRect.left -= 2;
+    biggerRect.width += 4;
+    onDivider = rectContainsPt( &biggerRect, x, y );
 
     if ( !onDivider ) {
         if ( x > divider.left ) {
