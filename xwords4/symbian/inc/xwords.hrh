@@ -62,6 +62,7 @@ enum TXWordsIds {
     ,EDecryptPassword
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    ,XW_RESEND_COMMAND          /* out of place for a menu command... */
     ,EConnectionRole
     ,EConnectionType
     ,ECookie
