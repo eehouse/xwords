@@ -24,6 +24,7 @@
 #include <pthread.h>
 
 #include "xwrelay_priv.h"
+#include "cref.h"
 
 class MutexLock {
  public:
