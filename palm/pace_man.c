@@ -870,20 +870,21 @@ listDrawEntryPoint( const void* emulStateP,
     PNOState* state = getStorageLoc();
     unsigned long oldR10;
     Int16 index;
-    RectanglePtr bounds;
     char** itemsText;
+    RectangleType rectArm;
 
     /* set up stack here too? */
     asm( "mov %0, r10" : "=r" (oldR10) );
     asm( "mov r10, %0" : : "r" (state->gotTable) );
 
+    flipRect( &rectArm, (RectanglePtr)read_unaligned32( &data[2] ) );
+
     XP_ASSERT( emulStateP == state->emulStateP );
     XP_ASSERT( call68KFuncP == state->call68KFuncP );
 
     index = (Int16)read_unaligned32( &data[1] );
-    bounds = (RectanglePtr)read_unaligned32( &data[2] );
     itemsText = (char**)read_unaligned32( &data[3] );
-    (*listDrawProc)( index, bounds, itemsText );
+    (*listDrawProc)( index, &rectArm, itemsText );
 
     asm( "mov r10, %0" : : "r" (oldR10) );
 
