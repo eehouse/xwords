@@ -763,37 +763,41 @@ model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
 } /* model_makeTurnFromMoveInfo */
 
 void
-model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts )
+model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts, 
+                         XP_S16 excludePlayer )
 {
     PlayerCtxt* player;
-    XP_U16 nPlayers = model->nPlayers;
+    XP_S16 nPlayers = model->nPlayers;
+    XP_S16 i;
     Tile blank;
 
     XP_ASSERT( !!model->vol.dict );
     blank = dict_getBlankTile( model->vol.dict );
 
-    for ( player = model->players; nPlayers--; ++player ) {
-        XP_U16 nTiles = player->nPending;
-        PendingTile* pt;
-        Tile* tiles;
+    for ( i = 0, player = model->players; i < nPlayers; ++i, ++player ) {
+        if ( i != excludePlayer ) {
+            XP_U16 nTiles = player->nPending;
+            PendingTile* pt;
+            Tile* tiles;
 
-        /* first the pending tiles */
-        for ( pt = player->pendingTiles; nTiles--; ++pt ) {
-            Tile tile = pt->tile;
-            if ( IS_BLANK(tile) ) {
-                tile = blank;
-            } else {
-                tile &= TILE_VALUE_MASK;
+            /* first the pending tiles */
+            for ( pt = player->pendingTiles; nTiles--; ++pt ) {
+                Tile tile = pt->tile;
+                if ( IS_BLANK(tile) ) {
+                    tile = blank;
+                } else {
+                    tile &= TILE_VALUE_MASK;
+                }
+                XP_ASSERT( tile <= MAX_UNIQUE_TILES );
+                ++counts[tile];
             }
-            XP_ASSERT( tile <= MAX_UNIQUE_TILES );
-            ++counts[tile];
-        }
 
-        /* then the tiles still in the tray */
-        nTiles = player->trayTiles.nTiles;
-        tiles = player->trayTiles.tiles;
-        while ( nTiles-- ) {
-            ++counts[*tiles++];
+            /* then the tiles still in the tray */
+            nTiles = player->trayTiles.nTiles;
+            tiles = player->trayTiles.tiles;
+            while ( nTiles-- ) {
+                ++counts[*tiles++];
+            }
         }
     }
 } /* model_countAllTrayTiles */

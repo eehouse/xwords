@@ -197,7 +197,8 @@ void model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
 
 /* for the tile values dialog: total all the tiles in players trays and
    tentatively placed on the board. */
-void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts );
+void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts, 
+                              XP_S16 excludePlayer );
 
 /********************* scoring ********************/
 
