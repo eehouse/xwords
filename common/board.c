@@ -103,6 +103,10 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
             XW_UtilCtxt* util )
 {
     BoardCtxt* result = (BoardCtxt*)XP_MALLOC( mpool, sizeof( *result ) );
+    XP_ASSERT( !!draw );
+    XP_ASSERT( !!server );
+    XP_ASSERT( !!util );
+    XP_ASSERT( !!model );
 
     if ( result != NULL ) {
 	
