@@ -26,21 +26,6 @@
 #include "xwords4defines.h"
 #include "LocalizedStrIncludes.h"
 
-#ifdef DIRECT_PALMOS_CALLS
-
-# define WINDRAWRECTANGLEFRAME(dc,f,rp) \
-        (*(dc->winDrawRectangleFrameTrap))( (f), (rp) )
-# define WINFILLRECTANGLE(dc,r,f ) \
-        (*(dc->winFillRectangleTrap))( (r), (f) )
-# define WINDRAWCHARS(dc, s, l, x, y ) \
-        (*(dc->winDrawCharsTrap))((s), (l), (x), (y) )
-#else
-
-# define WINDRAWRECTANGLEFRAME(dc,f,rp) WinDrawRectangleFrame( f, rp )
-# define WINFILLRECTANGLE(dc,r,f ) WinFillRectangle((r),(f))
-# define WINDRAWCHARS(dc, s, l, x, y) WinDrawChars( (s), (l), (x), (y) )
-#endif
-
 #define NUMRECT_WIDTH 10
 #define NUMRECT_HEIGHT 10
 
@@ -116,7 +101,7 @@ palm_common_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
     if ( !globals->gState.showGrid ) {
-        WINDRAWRECTANGLEFRAME(dctx, rectangleFrame, (RectangleType*)rect);
+        WinDrawRectangleFrame(rectangleFrame, (RectangleType*)rect);
     }
 } /* palm_common_draw_boardBegin */
 
@@ -254,7 +239,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
             if ( len == 1 ) {
                 ++x;
             }
-            WINDRAWCHARS( dctx, (const char*)letters, len, x, localR.top-1 );
+            WinDrawChars( (const char*)letters, len, x, localR.top-1 );
 
             showBonus = XP_FALSE;
             empty = XP_FALSE;
@@ -283,7 +268,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
            code */
         WinSetPattern( (const CustomPatternType*)
                        &dctx->u.bnw.valuePatterns[bonus-1] );
-        WINFILLRECTANGLE( dctx, (RectangleType*)&localR, 0 );
+        WinFillRectangle( (RectangleType*)&localR, 0 );
     } else if ( !showBonus && empty && !showGrid ) {
         /* should this be in the v-table so I don't have to test each
            time? */
@@ -306,7 +291,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     }
 
     if ( showGrid ) {
-        WINDRAWRECTANGLEFRAME(dctx, rectangleFrame, (RectangleType*)&localR);
+        WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&localR);
     }
 
     if ( isBlank ) {
@@ -395,10 +380,10 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
             FontID curFont = FntGetFont();
             FntSetFont( largeFont );
 #ifdef TILE_SUBSCRIPT
-            WINDRAWCHARS( dctx, (const char*)letters, 1, localR.left+2, 
+            WinDrawChars( (const char*)letters, 1, localR.left+2, 
                           rect->top+2 );
 #else
-            WINDRAWCHARS( dctx, letters, 1, localR.left+2, rect->top+7 );
+            WinDrawChars( letters, 1, localR.left+2, rect->top+7 );
 #endif
             FntSetFont( curFont );
         }
@@ -436,10 +421,10 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 #endif
     }
 
-    WINDRAWRECTANGLEFRAME( dctx, rectangleFrame, (RectangleType*)&localR );
+    WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&localR );
     if ( highlighted ) {
         insetRect( &localR, 1 );
-        WINDRAWRECTANGLEFRAME(dctx, rectangleFrame, (RectangleType*)&localR );
+        WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&localR );
     }
 } /* palm_draw_drawTile */
 
@@ -465,7 +450,7 @@ palm_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool selected )
         short pattern[] = { 0xFF00, 0xFF00, 0xFF00, 0xFF00 };
 
         WinSetPattern( (const CustomPatternType*)&pattern );
-        WINFILLRECTANGLE( dctx, (RectangleType*)&lRect, 0 );
+        WinFillRectangle( (RectangleType*)&lRect, 0 );
 
     } else {
         WinDrawRectangle( (RectangleType*)&lRect, 0 );
@@ -645,12 +630,12 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
             y -= 2;
         }
 
-        WINDRAWCHARS( dctx, (const char*)txt, len, x, y );
+        WinDrawChars( (const char*)txt, len, x, y );
         if ( nLines == 2 ) {
             XP_ASSERT( vertical );
             y += FONT_HEIGHT + LINE_SPACING;
             x = bounds->left + ((bounds->width - widths[1]) / 2);
-            WINDRAWCHARS( dctx, (const char*)second, secondLen, x, y );
+            WinDrawChars( (const char*)second, secondLen, x, y );
         }
 
     } else {
@@ -829,10 +814,10 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
         }
 
         if ( rect->height >= PALM_TRAY_SCALEH ) {
-            WINDRAWCHARS( dctx, (const char*)str, 
+            WinDrawChars( (const char*)str, 
                           XP_STRLEN((const char*)str), x, rect->top );
         }
-        WINDRAWCHARS( dctx, buf, PENDING_DIGITS, x, 
+        WinDrawChars( buf, PENDING_DIGITS, x, 
                       rect->top + (rect->height/2) - 1 );
         WinSetClip( &oldClip );
     }
@@ -892,7 +877,7 @@ palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 
     WinGetClip( &saveClip );
     WinSetClip( (RectangleType*)&localR );
-    WINDRAWCHARS( dctx, (const char*)buf, len, localR.left, localR.top );
+    WinDrawChars( (const char*)buf, len, localR.left, localR.top );
     WinSetClip( &saveClip );
 } /* palm_draw_drawTimer */
 
@@ -974,8 +959,8 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
     localR.topLeft.y++;
     localR.extent.x -= 3;
     localR.extent.y -= 3;
-    WINDRAWRECTANGLEFRAME( dctx, popupFrame, &localR );
-    WINDRAWCHARS( dctx, (const char*)text, XP_STRLEN((const char*)text), 
+    WinDrawRectangleFrame( popupFrame, &localR );
+    WinDrawChars( (const char*)text, XP_STRLEN((const char*)text), 
                   localR.topLeft.x+2, localR.topLeft.y+1 );
 } /* palm_draw_drawMiniWindow */
 
@@ -1030,19 +1015,6 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
        functions but the initter called from here must go through a
        vtable call.  so....*/
     dctx->drawBitmapFunc = drawBitmapAt;
-
-#ifdef DIRECT_PALMOS_CALLS
-    /* It'd probably be best to do this with metadata, with an array
-       associating the offset of the procptr within the draw ctxt with the
-       trap number so I could just loop through setting addresses. */
-
-    dctx->winDrawRectangleFrameTrap = 
-        SysGetTrapAddress(sysTrapWinDrawRectangleFrame);
-    dctx->winFillRectangleTrap =
-        SysGetTrapAddress(sysTrapWinFillRectangle);
-    dctx->winDrawCharsTrap =
-        SysGetTrapAddress(sysTrapWinDrawChars);
-#endif
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, palm );
 
