@@ -23,6 +23,7 @@
 extern "C" {
 #include "comtypes.h"
 #include "mempool.h"
+#include "util.h"
 }
 
 #include <e32base.h>
@@ -30,23 +31,30 @@ extern "C" {
 
 #include "symgmmgr.h"
 
+class CXWordsAppView;
+
+enum {
+    SYM_QUERY_CONFIRM_DELGAME = QUERY_LAST_COMMON
+};
+
 class CXSavedGamesDlg : public CEikDialog
 {
  public:
-    static TBool DoGamesPicker( MPFORMAL CXWGamesMgr* aGameMgr, 
+    static TBool DoGamesPicker( MPFORMAL CXWordsAppView* aOwner,
+                                CXWGamesMgr* aGameMgr, 
                                 const TGameName* aCurName, TGameName* result );
 
  private:
-    CXSavedGamesDlg( MPFORMAL CXWGamesMgr* aGameMgr, 
+    CXSavedGamesDlg( MPFORMAL CXWordsAppView* aOwner, CXWGamesMgr* aGameMgr, 
                      const TGameName* aCurName, TGameName* result );
 
     TBool OkToExitL( TInt aKeyCode );
     void PreLayoutDynInitL();
 
     void ResetNames( TInt aPrefIndex );
-    TBool ConfirmDelete();
     void EditSelName();
 
+    CXWordsAppView* iOwner;/* uses: don't own this!!! */
     CXWGamesMgr* iGameMgr; /* I don't own this */
     const TGameName* iCurName;
     TGameName* iResultP;        /* ditto */
