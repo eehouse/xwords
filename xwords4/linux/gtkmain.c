@@ -101,9 +101,12 @@ static gint
 button_press_event( GtkWidget *widget, GdkEventButton *event,
                     GtkAppGlobals* globals )
 {
-    
-    XP_Bool redraw = board_handlePenDown( globals->cGlobals.game.board, 
-                                          event->x, event->y, event->time );
+    XP_Bool redraw;
+
+    globals->mouseDown = XP_TRUE;
+
+    redraw = board_handlePenDown( globals->cGlobals.game.board, 
+                                  event->x, event->y, event->time );
     if ( redraw ) {
         board_draw( globals->cGlobals.game.board );
     }
@@ -112,14 +115,18 @@ button_press_event( GtkWidget *widget, GdkEventButton *event,
 
 static gint
 motion_notify_event( GtkWidget *widget, GdkEventMotion *event,
-		     GtkAppGlobals* globals )
+                     GtkAppGlobals* globals )
 {
     XP_Bool handled;
 
-    handled = board_handlePenMove( globals->cGlobals.game.board, event->x, 
-                                   event->y );
-    if ( handled ) {
-        board_draw( globals->cGlobals.game.board );
+    if ( globals->mouseDown ) {
+        handled = board_handlePenMove( globals->cGlobals.game.board, event->x, 
+                                       event->y );
+        if ( handled ) {
+            board_draw( globals->cGlobals.game.board );
+        }
+    } else {
+        handled = XP_FALSE;
     }
 
     return handled;
@@ -127,13 +134,18 @@ motion_notify_event( GtkWidget *widget, GdkEventMotion *event,
 
 static gint
 button_release_event( GtkWidget *widget, GdkEventMotion *event,
-		      GtkAppGlobals* globals )
+                      GtkAppGlobals* globals )
 {
-    XP_Bool redraw = board_handlePenUp( globals->cGlobals.game.board, 
-                                        event->x, 
-                                        event->y, event->time );
-    if ( redraw ) {
-        board_draw( globals->cGlobals.game.board );
+    XP_Bool redraw;
+
+    if ( globals->mouseDown ) {
+        redraw = board_handlePenUp( globals->cGlobals.game.board, 
+                                    event->x, 
+                                    event->y, event->time );
+        if ( redraw ) {
+            board_draw( globals->cGlobals.game.board );
+        }
+        globals->mouseDown = XP_FALSE;
     }
     return 1;
 } /* button_release_event */
