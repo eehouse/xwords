@@ -36,12 +36,12 @@ CSendSocket::RunL()
         XP_ASSERT( iStatus.Int() == KErrNone );
         if ( statusGood ) {
             iNameRecord = iNameEntry();
-            XP_LOGF( "name resolved: now:" );
+            XP_LOGF( "name resolved" );
             ConnectL( TInetAddr::Cast(iNameRecord.iAddr).Address() );
         }
         break;
     case EConnecting:
-        XP_ASSERT( iStatus.Int() == KErrNone );
+        XP_ASSERT( statusGood );
         if ( statusGood ) {
             iSSockState = EConnected;
             XP_LOGF( "connect successful" );
@@ -53,7 +53,7 @@ CSendSocket::RunL()
         }
         break;
     case ESending:
-        XP_ASSERT( iStatus.Int() == KErrNone );
+        XP_ASSERT( statusGood );
         if ( statusGood ) {
             iSSockState = EConnected;
             iSendBuf.SetLength(0);
@@ -198,7 +198,7 @@ CSendSocket::ConnectL( TUint32 aIpAddr )
     User::LeaveIfError( err );
 
     // Set up address information
-    iAddress.SetPort( iCurAddr.u.ip.port );
+    iAddress.SetPort( iCurAddr.u.ip_relay.port );
     iAddress.SetAddress( aIpAddr );
 
     // Initiate socket connection
@@ -220,12 +220,12 @@ CSendSocket::ConnectL()
     if ( iSSockState == ENotConnected ) {
         TInetAddr ipAddr;
 
-        if ( iCurAddr.u.ip.hostName && iCurAddr.u.ip.hostName[0] ) {
+        if ( iCurAddr.u.ip_relay.hostName && iCurAddr.u.ip_relay.hostName[0] ) {
 
-            XP_LOGF( "connecting to %s", iCurAddr.u.ip.hostName );
+            XP_LOGF( "connecting to %s", iCurAddr.u.ip_relay.hostName );
 
             TBuf16<MAX_HOSTNAME_LEN> tbuf;
-            tbuf.Copy( TBuf8<MAX_HOSTNAME_LEN>(iCurAddr.u.ip.hostName) );
+            tbuf.Copy( TBuf8<MAX_HOSTNAME_LEN>(iCurAddr.u.ip_relay.hostName) );
             TInt err = ipAddr.Input( tbuf );
             XP_LOGF( "ipAddr.Input => %d", err );
 
@@ -303,7 +303,7 @@ CSendSocket::SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr )
         iSendBuf.Append( aBuf, aLen );
 
         if ( iSSockState == ENotConnected ) {
-            ConnectL();
+            ConnectL( aAddr );
         } else if ( iSSockState == EConnected || iSSockState == EListening ) {
             DoActualSend();
         } else {
