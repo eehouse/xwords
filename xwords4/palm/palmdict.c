@@ -163,8 +163,6 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         for ( i = 0; i < nChars; ++i ) {
 #ifdef NODE_CAN_4
             ctxt->super.faces16[i] = READ_UNALIGNED16( &facePtr[i] );
-            XP_LOGF( "faces16[%d] = 0x%x (%d)", i, ctxt->super.faces16[i],
-                     ctxt->super.faces16[i] );
 #else
             ctxt->super.faces16[i] = facePtr[i];
 #endif
@@ -229,6 +227,9 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
             ctxt->dictStarts[index].indexStart = 0xFFFFFFFFL;
 
             ctxt->super.topEdge = ctxt->dictStarts[0].array;
+#ifdef DEBUG
+            ctxt->super.numEdges = offset;
+#endif
         }
 
         setBlankTile( (DictionaryCtxt*)ctxt );
@@ -323,7 +324,7 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
 
         XP_ASSERT( !!dbRef );
     
-        MemPtrUnlock( ctxt->super.countsAndValues - sizeof(Xloc_header) );
+        MemPtrUnlock( ctxt->super.countsAndValues - 2 );//sizeof(Xloc_header) );
 
         XP_FREE( dict->mpool, ctxt->super.faces16 );
 
@@ -361,6 +362,8 @@ dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
 {
     PalmDictionaryCtxt* ctxt = (PalmDictionaryCtxt*)dict;
     array_edge* result;
+    
+    XP_ASSERT( index < dict->numEdges );
 
     if ( index == 0 ) {
         result = NULL;
