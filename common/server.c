@@ -94,9 +94,6 @@ typedef struct ServerNonvolatiles {
     XP_S8 currentTurn;		/* invalid when game is over */
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
-#ifdef FEATURE_TRAY_EDIT
-    XP_Bool allowPickTiles;
-#endif
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
 
@@ -175,9 +172,6 @@ initServer( ServerCtxt* server )
 
     server->nv.nDevices = 1;	/* local device (0) is always there */
 
-#ifdef FEATURE_TRAY_EDIT
-    server->nv.allowPickTiles = XP_TRUE;
-#endif
 } /* initServer */
 
 ServerCtxt* 
@@ -1289,7 +1283,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     XP_ASSERT( !!pool );
 #ifdef FEATURE_TRAY_EDIT
     ask = !server->vol.gi->players[playerNum].isRobot
-        && server->nv.allowPickTiles;
+        && server->vol.gi->allowPickTiles;
 #else
     ask = XP_FALSE;
 #endif

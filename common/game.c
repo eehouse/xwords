@@ -232,6 +232,11 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate )
     gi->robotSmartness = SMART_ROBOT;
     gi->timerEnabled = XP_FALSE;
     gi->gameSeconds = 25 * 60;	/* 25 minute game is common? */
+#ifdef FEATURE_TRAY_EDIT
+    gi->allowPickTiles = XP_FALSE;
+    gi->allowPickTilesRobot = XP_FALSE;
+    gi->allowPickWasUsed = XP_FALSE;
+#endif
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         XP_UCHAR buf[20];
@@ -299,6 +304,11 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
     destGI->timerEnabled = srcGI->timerEnabled;
     destGI->robotSmartness = (XP_U8)srcGI->robotSmartness;
     destGI->phoniesAction = srcGI->phoniesAction;
+#ifdef FEATURE_TRAY_EDIT
+    destGI->allowPickTiles = srcGI->allowPickTiles;
+    destGI->allowPickTilesRobot = srcGI->allowPickTilesRobot;
+    destGI->allowPickWasUsed = srcGI->allowPickWasUsed;
+#endif
 
     for ( srcPl = srcGI->players, destPl = destGI->players, i = 0; 
           i < nPlayers; ++srcPl, ++destPl, ++i ) {
@@ -332,6 +342,12 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->robotSmartness = (XP_U8)stream_getBits( stream, 2 );
     gi->phoniesAction = (XWPhoniesChoice)stream_getBits( stream, 2 );
     gi->timerEnabled = stream_getBits( stream, 1 );
+#ifdef FEATURE_TRAY_EDIT
+    gi->allowPickTiles = stream_getBits( stream, 1 );
+    gi->allowPickTilesRobot = stream_getBits( stream, 1 );
+    gi->allowPickWasUsed = stream_getBits( stream, 1 );
+#endif
+
 
     gi->gameID = stream_getU16( stream );
     if ( gi->timerEnabled ) {
@@ -372,6 +388,11 @@ gi_writeToStream( XWStreamCtxt* stream, CurGameInfo* gi )
     stream_putBits( stream, 2, gi->robotSmartness );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
+#ifdef FEATURE_TRAY_EDIT
+    stream_putBits( stream, 1, gi->allowPickTiles );
+    stream_putBits( stream, 1, gi->allowPickTilesRobot );
+    stream_putBits( stream, 1, gi->allowPickWasUsed );
+#endif
 
     stream_putU16( stream, gi->gameID );
     if ( gi->timerEnabled) {
