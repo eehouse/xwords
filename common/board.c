@@ -374,7 +374,7 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
 } /* board_prefsChanged */
 
 XP_Bool
-board_setYOffset( BoardCtxt* board, XP_U16 offset, XP_Bool invalRevealed )
+board_setYOffset( BoardCtxt* board, XP_U16 offset )
 {
     XP_U16 oldOffset = board->yOffset;
     XP_Bool result = oldOffset != offset;
@@ -1389,6 +1389,8 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
            change */
         model_foreachPendingCell( board->model, selPlayer,
                                   boardCellChanged, board );
+        /* ditto -- if there's a pending move */
+        model_foreachPrevCell( board->model, boardCellChanged, board );
 
         board_invalTrayTiles( board, ALLTILES );
         board->dividerInvalid = XP_TRUE;
@@ -1600,13 +1602,19 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
     XP_Rect cellRect;
     Tile tile;
     XP_UCHAR ch[4];
-    XP_Bool isBlank, isEmpty, showPending, recent, pending = XP_FALSE;
+    XP_Bool isBlank, isEmpty, recent, pending = XP_FALSE;
     XWBonusType bonus;
     ModelCtxt* model = board->model;
     DictionaryCtxt* dict = model_getDictionary( model );
     XP_U16 selPlayer = board->selPlayer;
-    XP_Bool showPrevMove = 
-        (0 == model_getCurrentMoveCount( model, selPlayer ));
+    /* We want to invert EITHER the current pending tiles OR the most recent
+     * move.  So if the tray is visible AND there are tiles missing from it,
+     * show them.  Otherwise show the most recent move.
+     */
+    XP_U16 curCount = model_getCurrentMoveCount( model, selPlayer );
+    XP_Bool showPending = board->trayVisState == TRAY_REVEALED
+        && curCount > 0;
+
 
     if ( dict != NULL && getCellRect( board, col, row, &cellRect ) ) {
 
@@ -1618,8 +1626,6 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_Bitmap bitmap = NULL;
             XP_UCHAR* textP = (XP_UCHAR*)ch;
             HintAtts hintAtts;
-
-            showPending = board->trayVisState == TRAY_REVEALED;
 
             isEmpty = !model_getTile( model, col, row, showPending,
                                       selPlayer, &tile, &isBlank,
@@ -1635,7 +1641,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                     owner = (XP_S16)model_getCellOwner( model, col, row );
                 }
 
-                invert = pending || (showPrevMove && recent);
+                invert = showPending? pending : recent;
 
                 if ( board->showCellValues ) {
                     Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
