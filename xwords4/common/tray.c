@@ -174,7 +174,7 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
 
 #ifdef KEYBOARD_NAV
                 if ( showFaces ) {
-                    TileBit cursorLoc = board->trayCursorLoc[turn];
+                    TileBit cursorLoc = 1 << board->trayCursorLoc[turn];
                     if ( !!cursorLoc ) {
                         XP_U16 index = indexForBits( cursorLoc );
                         figureTrayTileRect( board, index, &tileRect );
@@ -639,7 +639,7 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
                                                    selPlayer );
     XP_U16 pos;
     TileBit newSel;
-    TileBit oldSel = board->trayCursorLoc[selPlayer];
+    TileBit oldSel = 1 << board->trayCursorLoc[selPlayer];
 
     numTrayTiles = MAX_TRAY_TILES;
 
@@ -656,10 +656,11 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
         } else if ( cursorKey == XP_CURSOR_KEY_RIGHT ) {
             ++pos;
         }
+        
+        pos %= numTrayTiles;
+        board->trayCursorLoc[selPlayer] = pos;
+        newSel = 1 << pos;
 
-        newSel = 1 << (pos % numTrayTiles);
-
-        board->trayCursorLoc[selPlayer] = newSel;
         board_invalTrayTiles( board, newSel | oldSel );
         result = XP_TRUE;
     }
@@ -670,7 +671,7 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
 XP_Bool
 tray_keyAction( BoardCtxt* board )
 {
-    TileBit cursor = board->trayCursorLoc[board->selPlayer];
+    TileBit cursor = 1 << board->trayCursorLoc[board->selPlayer];
     XP_Bool result;
     if ( !!cursor ) {
         XP_S16 index = trayLocToIndex( board, indexForBits( cursor ) );
