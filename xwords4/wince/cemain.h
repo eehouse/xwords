@@ -47,6 +47,7 @@ typedef struct CEAppGlobals {
     XP_UCHAR* curGameName;      /* path to storage for current game */
     XW_UtilCtxt util;
     VTableMgr* vtMgr;
+    XP_U16* bonusInfo;
 
     CEAppPrefs appPrefs;
 
