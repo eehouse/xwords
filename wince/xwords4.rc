@@ -117,11 +117,11 @@ END
 IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 125, 76
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE 0x80000000L
-CAPTION "About xwords4"
+CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,11,17,20,20
-    LTEXT           "Crosswords 4 for PocketPC.  Copyright 1998-2003 by Eric House.  All rights reserved.",
+    LTEXT           "Crosswords 4 for PocketPC.  Copyright 1998-2004 by Eric House.  All rights reserved.",
                     IDC_STATIC,42,10,66,59,SS_NOPREFIX
 END
 
@@ -369,6 +369,7 @@ IDB_DOWNARROW           BITMAP  DISCARDABLE     "bmps/downarro.bmp"
 IDB_FLIPBUTTON          BITMAP  DISCARDABLE     "bmps/flip.bmp"
 IDB_VALUESBUTTON        BITMAP  DISCARDABLE     "bmps/values.bmp"
 IDB_HINTBUTTON          BITMAP  DISCARDABLE     "bmps/hint.bmp"
+IDB_JUGGLEBUTTON        BITMAP  DISCARDABLE     "bmps/juggle.bmp"
 IDB_ORIGIN              BITMAP  DISCARDABLE     "bmps/origin.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
