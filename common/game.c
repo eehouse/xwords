@@ -80,7 +80,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                               gi->boardSize, gi->boardSize );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( !!sendproc ) {
+    if ( !!sendproc && gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   sendproc, closure );
@@ -114,8 +114,19 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XP_U16 gameID,
     checkServerRole( gi );
     gi->gameID = gameID;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    if ( !!game->comms ) {
+        if ( gi->serverRole == SERVER_STANDALONE ) {
+            comms_destroy( game->comms );
+            game->comms = NULL;
+        } else {
+            comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT );
+        }
+    }
+#endif
+
     model_init( game->model, gi->boardSize, gi->boardSize );
-    server_reset( game->server );
+    server_reset( game->server, game->comms );
     board_reset( game->board );
 
     for ( i = 0; i < gi->nPlayers; ++i ) {
@@ -126,12 +137,6 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XP_U16 gameID,
         }
         player->secondsUsed = 0;
     }
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-    if ( !!game->comms ) {
-        comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT );
-    }
-#endif
 
     server_prefsChanged( game->server, cp );
     board_prefsChanged( game->board, cp );
