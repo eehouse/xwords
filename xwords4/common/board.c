@@ -1455,7 +1455,11 @@ preflight( BoardCtxt* board )
  * any redrawing to be done.
  */
 XP_Bool
-board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP )
+board_requestHint( BoardCtxt* board, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                   XP_Bool useTileLimits,
+#endif
+                   XP_Bool* workRemainsP )
 {
     MoveInfo newMove;
     XP_Bool result = XP_FALSE;
@@ -1506,11 +1510,12 @@ board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP )
 #endif
             searchComplete = engine_findMove(engine, model, 
                                              model_getDictionary(model),
-                                             tiles, nTiles, nTilesToUse, 
+                                             tiles, nTiles,
 #ifdef XWFEATURE_SEARCHLIMIT
                                              (board->gi->allowHintRect &&
                                               board->hasHintRect[selPlayer])?
                                              &board->limits[selPlayer] : NULL,
+                                             useTileLimits,
 #endif
                                              NO_SCORE_LIMIT, 
                                              &canMove, &newMove );
@@ -1835,7 +1840,7 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
     HintAtts result = HINT_BORDER_NONE;
 
     if ( board->trayVisState == TRAY_REVEALED && board->gi->allowHintRect ) {
-        HintLimits limits;
+        BdHintLimits limits;
         XP_Bool isFlipped = board->isFlipped;
         
         limits = board->limits[board->selPlayer];
@@ -1923,7 +1928,7 @@ invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB,
 static void
 invalCurHintRect( BoardCtxt* board, XP_U16 player, XP_Bool doMirror )
 {
-    HintLimits* limits = &board->limits[player];    
+    BdHintLimits* limits = &board->limits[player];    
     invalCellRegion( board, limits->left, limits->top, 
                      limits->right, limits->bottom, doMirror );
 } /* invalCurHintRect */
@@ -1938,7 +1943,7 @@ clearCurHintRect( BoardCtxt* board )
 static void
 setHintRect( BoardCtxt* board )
 {
-    HintLimits limits;
+    BdHintLimits limits;
     if ( board->hintDragStartRow < board->hintDragCurRow ) {
         limits.top = board->hintDragStartRow;
         limits.bottom = board->hintDragCurRow;
@@ -2119,45 +2124,51 @@ checkRevealTray( BoardCtxt* board )
 
 #ifdef POINTER_SUPPORT
 XP_Bool
-board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
+board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when,
+                     XP_Bool* handled )
 {
     XP_Bool result = XP_FALSE;
+    XP_Bool penDidSomething;
     BoardObjectType onWhich;
 
-    if ( !pointOnSomething( board, x, y, &onWhich ) ) {
+    penDidSomething = pointOnSomething( board, x, y, &onWhich );
+
+    if ( !penDidSomething ) {
         board->penDownObject = OBJ_NONE;
-        return XP_FALSE;
+    } else {
+
+        switch ( onWhich ) {
+
+        case OBJ_BOARD:
+            result = handlePenDownOnBoard( board, x, y );
+            break;
+
+        case OBJ_TRAY:
+            /* 	XP_ASSERT( board->trayIsVisible ); */
+            XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
+
+            if ( board->trayVisState != TRAY_REVERSED ) {
+                result = handlePenDownInTray( board, x, y );
+            }
+            break;
+
+        case OBJ_SCORE:
+            if ( figureScorePlayerTapped( board, x, y ) >= 0 ) {
+                util_setTimer( board->util, TIMER_PENDOWN );
+            }
+            break;
+        default:
+            break;
+        }
+
+        board->penDownX = x;
+        board->penDownY = y;
+        board->penDownTime = when;
+        board->penDownObject = onWhich;
+        /*     board->inDrag = XP_TRUE; */
     }
 
-    switch ( onWhich ) {
-
-    case OBJ_BOARD:
-        result = handlePenDownOnBoard( board, x, y );
-        break;
-
-    case OBJ_TRAY:
-        /* 	XP_ASSERT( board->trayIsVisible ); */
-        XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
-
-        if ( board->trayVisState != TRAY_REVERSED ) {
-            result = handlePenDownInTray( board, x, y );
-        }
-        break;
-
-    case OBJ_SCORE:
-        if ( figureScorePlayerTapped( board, x, y ) >= 0 ) {
-            util_setTimer( board->util, TIMER_PENDOWN );
-        }
-        break;
-    default:
-        break;
-    }
-
-    board->penDownX = x;
-    board->penDownY = y;
-    board->penDownTime = when;
-    board->penDownObject = onWhich;
-    /*     board->inDrag = XP_TRUE; */
+    *handled = penDidSomething;
 
     return result;		/* no redraw needed */
 } /* board_handlePenDown */
