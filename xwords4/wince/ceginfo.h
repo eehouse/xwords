@@ -32,8 +32,11 @@ typedef struct GameInfoState {
     XP_Bool userCancelled;          /* OUT param */
 
     XP_Bool prefsChanged;
+#ifdef XWFEATURE_CE_EDITCOLORS
+    XP_Bool colorsChanged;
+#endif
     Connectedness curServerHilite;
-    PrefsPrefs prefsPrefs;
+    CePrefsPrefs prefsPrefs;
 } GameInfoState;
 
 
