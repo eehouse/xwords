@@ -691,17 +691,17 @@ gtk_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str,
     XP_U16 height, maxWidth;
 
     for ( height = MINI_V_PADDING, maxWidth = 0; ; ) {
-	unsigned char* nextStr = strstr( str, "\n" );
-	XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
+        unsigned char* nextStr = strstr( str, "\n" );
+        XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
 
-	XP_U16 width = gdk_text_measure( dctx->gdkFont, str, len );
-	maxWidth = XP_MAX( maxWidth, width );
-	height += MINI_LINE_HT;
+        XP_U16 width = gdk_text_measure( dctx->gdkFont, str, len );
+        maxWidth = XP_MAX( maxWidth, width );
+        height += MINI_LINE_HT;
 
-	if ( nextStr == NULL ) {
-	    break;
-	}
-	str = nextStr+1;	/* skip '\n' */
+        if ( nextStr == NULL ) {
+            break;
+        }
+        str = nextStr+1;	/* skip '\n' */
     }
 
     *widthP = maxWidth + MINI_H_PADDING;
@@ -733,24 +733,24 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, XP_Rect* rect,
     frameRect( dctx, &localR );
 
     for ( ; ; ) { /* draw up to the '\n' each time */
-	unsigned char* nextStr = strstr( text, "\n" );
-	XP_U16 len, width, left;
-	if ( nextStr == NULL ) {
-	    len = strlen(text);
-	} else {
-	    len = nextStr - text;
-	}
+        unsigned char* nextStr = strstr( text, "\n" );
+        XP_U16 len, width, left;
+        if ( nextStr == NULL ) {
+            len = strlen(text);
+        } else {
+            len = nextStr - text;
+        }
 
-	localR.top += MINI_LINE_HT;
-	width = gdk_text_measure( dctx->gdkFont, text, len );
-	left = localR.left + ((localR.width - width) / 2);
-	gdk_draw_text( DRAW_WHAT(dctx), dctx->gdkFont, dctx->drawGC,
-		       left, localR.top, text, len );
+        localR.top += MINI_LINE_HT;
+        width = gdk_text_measure( dctx->gdkFont, text, len );
+        left = localR.left + ((localR.width - width) / 2);
+        gdk_draw_text( DRAW_WHAT(dctx), dctx->gdkFont, dctx->drawGC,
+                       left, localR.top, text, len );
 
-	if ( nextStr == NULL ) {
-	    break;
-	}
-	text = nextStr+1;	/* skip the CR */
+        if ( nextStr == NULL ) {
+            break;
+        }
+        text = nextStr+1;	/* skip the CR */
     }
 } /* gtk_draw_drawMiniWindow */
 
