@@ -147,8 +147,6 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
-    palm_common_draw_boardBegin( p_dctx, rect, hasfocus );
-
     WinPushDrawState();
 
     WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
@@ -156,6 +154,8 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_WHITE] );
 
     HIGHRES_PUSH_NOPOP(dctx);
+
+    palm_common_draw_boardBegin( p_dctx, rect, hasfocus );
 
     return XP_TRUE;
 } /* palm_clr_draw_boardBegin */
@@ -317,13 +317,20 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     } else if ( !showBonus && empty && !showGrid ) {
         /* should this be in the v-table so I don't have to test each
            time? */
+        RectangleType r;
+        r.topLeft.x = localR.left + ((PALM_BOARD_SCALE-1)/2);
+        r.topLeft.y = localR.top + ((PALM_BOARD_SCALE-1)/2);
+
+#ifdef FEATURE_HIGHRES
+        if ( dctx->doHiRes ) {
+            r.topLeft.x += PALM_BOARD_SCALE/2;
+            r.topLeft.y += PALM_BOARD_SCALE/2;
+        }
+#endif
+
         if ( globals->romVersion >= 35 ) {
-            WinDrawPixel( localR.left + ((PALM_BOARD_SCALE-1)/2), 
-                          localR.top + ((PALM_BOARD_SCALE-1)/2) );
+            WinDrawPixel( r.topLeft.x, r.topLeft.y );
         } else {
-            RectangleType r;
-            r.topLeft.x = localR.left + ((PALM_BOARD_SCALE-1)/2);
-            r.topLeft.y = localR.top + ((PALM_BOARD_SCALE-1)/2);
             r.extent.x = r.extent.y = 1;
             WinDrawRectangle( &r, 0 );
         }
@@ -649,6 +656,13 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
     XP_U16 nLines = 1;
     XP_U16 secondLen = 0;
     XP_UCHAR* second = NULL;
+    XP_U16 doubler = 1;
+
+#ifdef FEATURE_HIGHRES
+    if ( dctx->doHiRes ) {
+        doubler = 2;
+    }
+#endif
 
     widths[0] = FntCharsWidth( (const char*)txt, len ) + 1;
 
@@ -681,12 +695,8 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
     if ( vertical && isTurn ) {
         height += 5;		/* for the horizontal bars */
     }
-#ifdef FEATURE_HIGHRES
-    if ( dctx->doHiRes ) {
-        height *= 2;
-    }
-#endif
-
+    height *= doubler;
+        
     XP_ASSERT( height <= bounds->height );
     XP_ASSERT( maxWidth <= bounds->width );
 
@@ -706,7 +716,7 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
         WinDrawChars( (const char*)txt, len, x, y );
         if ( nLines == 2 ) {
             XP_ASSERT( vertical );
-            y += FONT_HEIGHT + LINE_SPACING;
+            y += (FONT_HEIGHT + LINE_SPACING) * doubler;
             x = bounds->left + ((bounds->width - widths[1]) / 2);
             WinDrawChars( (const char*)second, secondLen, x, y );
         }
@@ -1072,9 +1082,7 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
     XP_UCHAR buf2[48];
     XP_UCHAR* bufs[2] = { buf1, buf2 };
     XP_U16 nBufs, i, offset;
-#ifndef FEATURE_HIGHRES
     XP_U16 ignoreErr;
-#endif
     XP_Bool hasClosure = !!closureP;
     PalmMiniWinData* data = (PalmMiniWinData*)(hasClosure? *closureP: NULL);
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
@@ -1083,12 +1091,11 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
 
     if ( hasClosure ) {
         if ( !data ) {
+            /* capture a bit extra to avoid ghosting on hires devices */
+            localR = *(RectangleType*)rect;
+            insetRect( (XP_Rect*)&localR, -2 );
             data = XP_MALLOC( dctx->mpool, sizeof(PalmMiniWinData) );
-#ifdef FEATURE_HIGHRES
-            data->bitsBehind = NULL;
-#else
             data->bitsBehind = WinSaveBits( &localR, &ignoreErr );
-#endif
             data->miniX = localR.topLeft.x;
             data->miniY = localR.topLeft.y;
             *closureP = data;
@@ -1098,6 +1105,7 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
         }
     }
 
+    localR = *(RectangleType*)rect;
     WinEraseRectangle( &localR, 0 );
     localR.topLeft.x++;
     localR.topLeft.y++;
@@ -1132,12 +1140,12 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
 # endif
 
     if ( !!closure && !!*closure ) {
-#ifdef FEATURE_HIGHRES
-        *invalUnder = XP_TRUE;      /* cop out (for now) */
-#else
+        HIGHRES_PUSH_LOC(dctx);
+
         /* this DELETES data->bitsBehind */
         WinRestoreBits( data->bitsBehind, data->miniX, data->miniY );
-#endif
+
+        HIGHRES_POP_LOC(dctx);
         XP_FREE( dctx->mpool, data );
         *closure = NULL;
     }
