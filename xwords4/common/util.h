@@ -56,7 +56,9 @@ typedef enum {
     QUERY_COMMIT_TURN,		/* 0 means cancel; 1 means commit */
     QUERY_COMMIT_TRADE,
     QUERY_ROBOT_MOVE,
-    QUERY_ROBOT_TRADE
+    QUERY_ROBOT_TRADE,
+
+    QUERY_LAST_COMMON
 } UtilQueryID;
 
 typedef enum {
