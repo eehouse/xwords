@@ -24,13 +24,15 @@
 #include "symgamdl.h"
 #include "symutil.h"
 #include "xwords.hrh"
+#include "xwords.rsg"
 
 /***************************************************************************
  * TGameInfoBuf
  ***************************************************************************/
 TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi, 
                             CDesC16ArrayFlat* aDictList )
-    : iDictList(aDictList)
+    : iDictList(aDictList), 
+     iDictIndex(0)
 {
     TInt i;
 
@@ -46,9 +48,7 @@ TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi,
         TBuf8<32> tmp( aGi->dictName );
         TBuf16<32> dictName;
         dictName.Copy( tmp );
-        TInt found = iDictList->Find( dictName, 
-                                      iDictIndex ); /* iDictIndex ref passed */
-        XP_ASSERT( found == 0 );
+        (void)iDictList->Find( dictName, iDictIndex ); /*iDictIndex ref passed*/
     }
 } /* TGameInfoBuf::TGameInfoBuf */
 
@@ -73,7 +73,7 @@ TGameInfoBuf::CopyToL( MPFORMAL CurGameInfo* aGi )
  * CXWGameInfoDlg
  ***************************************************************************/
 CXWGameInfoDlg::CXWGameInfoDlg( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame )
-    : iGib(aGib), iIsNewGame(aNewGame)
+    : iIsNewGame(aNewGame), iGib(aGib)
 {
     MPASSIGN( this->mpool, mpool );
 }
@@ -85,7 +85,7 @@ CXWGameInfoDlg::~CXWGameInfoDlg()
 void 
 CXWGameInfoDlg::PreLayoutDynInitL()
 {
-    TInt i;
+    XP_U16 i;
     CEikChoiceList* list;
 
     /* This likely belongs in its own method */
@@ -104,12 +104,10 @@ CXWGameInfoDlg::PreLayoutDynInitL()
 
     list = static_cast<CEikChoiceList*>(Control(ESelDictChoice));
     list->SetArrayL( iGib->iDictList );
-    list->SetArrayExternalOwnership( ETrue );
     list->SetCurrentItem( iGib->iDictIndex );
 
     iCurPlayerShown = 0;
     LoadPlayerInfo( iCurPlayerShown );
-
 } /* PreLayoutDynInitL */
 
 void
@@ -190,8 +188,6 @@ CXWGameInfoDlg::OkToExitL( TInt aKeyCode )
     list = static_cast<CEikChoiceList*>(Control(ENPlayersList));
     iGib->iNPlayers = list->CurrentItem() + 1;
 
-
-
     return ETrue;
 }
 
@@ -265,3 +261,11 @@ CXWGameInfoDlg::MakeNumListL( TInt aFirst, TInt aLast )
 
     return list;
 } /* MakeNumListL */
+
+/* static*/ TBool
+CXWGameInfoDlg::DoGameInfoDlgL( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame )
+{
+    CXWGameInfoDlg* me = 
+        new(ELeave)CXWGameInfoDlg( MPPARM(mpool) aGib, aNewGame );
+    return me->ExecuteLD( R_XWORDS_NEWGAME_DLG );
+}
