@@ -672,7 +672,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                     XP_LOGF( "captured incomming ip address: 0x%lx",
                              addrRec.u.ip.ipAddr );
 
-                    if ( comms_checkIncommingStream(globals->cGlobals.game.comms,
+                    if ( comms_checkIncomingStream(globals->cGlobals.game.comms,
                                                     inboundS, 
                                                     &addrRec ) ) {
                         XP_LOGF( "comms read port: %d", 

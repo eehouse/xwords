@@ -1436,7 +1436,7 @@ newConnectionInput( GIOChannel *source,
 
             inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nRead );
             if ( !!inboundS ) {
-                if ( comms_checkIncommingStream( globals->cGlobals.game.comms, 
+                if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
                                                  inboundS, NULL ) ) {
                     redraw = server_receiveMessage(globals->cGlobals.game.server
                                                    , inboundS );
