@@ -32,6 +32,7 @@
 #include "symgmmgr.h"
 #include "symssock.h"
 #include "symrsock.h"
+#include "xwrelay.h"
 
 typedef enum  {
     EGamesLoc
@@ -113,6 +114,12 @@ class CXWordsAppView : public CCoeControl
     XP_Bool UserQuery( UtilQueryID aId, XWStreamCtxt* aStream );
 
  private:
+    typedef enum {
+        EUtilRequest
+        , EProcessPacket
+        , ENumReasons
+    } XWTimerReason ;
+
     /* open game from prefs or start a new one. */
     void MakeOrLoadGameL();
     void DeleteGame();
@@ -137,7 +144,7 @@ class CXWordsAppView : public CCoeControl
     TBool DoNewGame();
     void DoImmediateDraw();
     void DrawGameName() const;
-
+    void StartIdleTimer( XWTimerReason aWhy );
 
     static void            sym_util_requestTime( XW_UtilCtxt* uc );
     static VTableMgr*      sym_util_getVTManager( XW_UtilCtxt* uc );
@@ -147,6 +154,7 @@ class CXWordsAppView : public CCoeControl
     static DictionaryCtxt* sym_util_makeEmptyDict( XW_UtilCtxt* uc );
     static XWStreamCtxt*   sym_util_makeStreamFromAddr( XW_UtilCtxt* uc,
                                                         XP_U16 channelNo );
+
 #ifdef BEYOND_IR
     static void            sym_util_listenPortChange( XW_UtilCtxt* uc, 
                                                       XP_U16 listenPort );
@@ -173,7 +181,6 @@ class CXWordsAppView : public CCoeControl
     CommonPrefs iCp;
 #ifndef XWFEATURE_STANDALONE_ONLY
     CommsAddrRec iCommsAddr;    /* for default settings */
-    XP_U16       iListenPort;
 #endif
     XW_UtilCtxt iUtil;
     XWGame      iGame;
@@ -185,6 +192,7 @@ class CXWordsAppView : public CCoeControl
     TTime       iStartTime;
     TInt        iTimerRunCount;
     CIdle*      iRequestTimer;
+    TInt        iTimerReasons[ENumReasons];
 
     CXWGamesMgr* iGamesMgr;
 
@@ -192,6 +200,7 @@ class CXWordsAppView : public CCoeControl
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     CSendSocket* iSendSock;
+    TBuf8<MAX_MSG_LEN> iNewPacket;
 #endif
 
     MPSLOT
