@@ -337,27 +337,22 @@ penInGadget( EventPtr event, UInt16* whichGadget )
     return result;
 } /* penInGadget */
 
+#define GLOBALS_FEATURE 10
 void
 setFormRefcon( void* refcon )
 {
-    UInt16 index;
-    FormPtr form = FrmGetFormPtr( XW_MAIN_FORM );
-    XP_ASSERT( !!form );
-    index = FrmGetObjectIndex( form, REFCON_GADGET_ID );
-    FrmSetGadgetData( form, index, refcon );
+    Err err = FtrSet( APPID, GLOBALS_FEATURE, refcon );
+    XP_ASSERT( err == errNone );
 } /* setFormRefcon */
 
 void* 
 getFormRefcon()
 {
-    void* result = NULL;
-    FormPtr form = FrmGetFormPtr( XW_MAIN_FORM );
-
-    if ( !!form ) {
-        UInt16 index = FrmGetObjectIndex( form, REFCON_GADGET_ID );
-        result = FrmGetGadgetData( form, index );
-    }
-    return result;
+    UInt32 ptr;
+    Err err = FtrGet( APPID, GLOBALS_FEATURE, &ptr );
+    XP_ASSERT( err == errNone );
+    XP_ASSERT( ptr != 0L );
+    return (void*)ptr;
 } /* getFormRefcon */
 #endif
 
