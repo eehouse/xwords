@@ -69,7 +69,7 @@ symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const XP_UCHAR* str )
 
 #ifdef DEBUG
 _LIT( KXWLogdir, "xwords" );
-_LIT( KXWLogfile, "xwdebug.log" );
+_LIT( KXWLogfile, "xwdebug.txt" );
 /* The emulator, anyway, doesn't do descs well even with the %S directive.
    So convert 'em to desc8s... */
 void
