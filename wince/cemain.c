@@ -110,6 +110,7 @@ static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
 static XP_Bool doNewGame( CEAppGlobals* globals, XP_Bool silent );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
+static void updateForColors( CEAppGlobals* globals );
 
 
 // Forward declarations of functions included in this code module:
@@ -905,6 +906,9 @@ doNewGame( CEAppGlobals* globals, XP_Bool silent )
         if ( giState.prefsChanged ) {
             loadCurPrefsFromState( &globals->appPrefs, &globals->gameInfo, 
                                    &giState.prefsPrefs );
+            if ( giState.colorsChanged ) {
+                updateForColors( globals );
+            }
         }
         ceInitAndStartBoard( globals, XP_TRUE, NULL );
         changed = XP_TRUE;
@@ -992,11 +996,9 @@ ceDoPrefsDlg( CEAppGlobals* globals )
 
         (void)cePositionBoard( globals );
 
-#ifdef XWFEATURE_CE_EDITCOLORS
         if ( state.colorsChanged ) {
             updateForColors( globals );
         }
-#endif
         /* need to reflect vars set in state into globals, and update/inval
            as appropriate. */
     }
@@ -1325,13 +1327,14 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if ( !!globals && GetUpdateRect( hWnd, &rt, FALSE ) ) {
                 XP_Rect rect;
 
-                /* When an obscuring window goes away, the update region needs
-                   to be redrawn.  This allows invalidating it. */
-                RECTtoXPR( &rect, &rt );
-                board_invalRect( globals->game.board, &rect );
+                if ( !!globals->game.board ) {
+                    /* When an obscuring window goes away, the update region
+                       needs to be redrawn.  This allows invalidating it. */
+                    RECTtoXPR( &rect, &rt );
+                    board_invalRect( globals->game.board, &rect );
 
-                drawInsidePaint( hWnd, globals );
-
+                    drawInsidePaint( hWnd, globals );
+                }
                 if ( !ValidateRect( hWnd, &rt ) ) {
                     logLastError( "WM_PAINT:ValidateRect" );
                 }
