@@ -178,7 +178,7 @@ struct BoardCtxt {
 
 /* tray-related functions */
 XP_Bool handlePenDownInTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
-XP_Bool handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when );
+XP_Bool handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
 void drawTray( BoardCtxt* board, XP_Bool focussed );
 TileBit continueTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool endTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
