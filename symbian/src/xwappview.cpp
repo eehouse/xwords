@@ -177,8 +177,14 @@ void CXWordsAppView::Draw( const TRect& aRect ) const
     gc.Clear( aRect );
 
     if ( iGame.board ) {
-        board_invalRect( iGame.board, aRect.iTl.iX, aRect.iTl.iY,
-                         aRect.iBr.iX, aRect.iBr.iY );
+        XP_Rect rect;
+
+        rect.left = aRect.iTl.iX; 
+        rect.top = aRect.iTl.iY;
+        rect.width = aRect.Width(); 
+        rect.height = aRect.Height();
+
+        board_invalRect( iGame.board, &rect );
         board_draw( iGame.board );
     }
 
