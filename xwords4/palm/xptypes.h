@@ -20,7 +20,6 @@
 #ifndef _XPTYPES_H_
 #define _XPTYPES_H_
 
-
 #include <PalmTypes.h>
 #include <MemoryMgr.h>
 #include <StringMgr.h>
@@ -59,21 +58,21 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #ifdef MEM_DEBUG
 # define XP_PLATMALLOC(nbytes)       MemPtrNew(nbytes)
 # define XP_PLATREALLOC(p,s)         palm_realloc((p),(s))
-# define XP_PLATFREE(p)              MemPtrFree(p)
+# define XP_PLATFREE(p)              MemChunkFree(p)
 #else
 # define XP_MALLOC(p,nbytes)           MemPtrNew(nbytes)
 # define XP_REALLOC(p,ptr,nbytes)        palm_realloc((ptr),(nbytes))
-# define XP_FREE(pool,p)             MemPtrFree(p)
+# define XP_FREE(pool,p)             MemChunkFree(p)
 #endif
 
 
 #define XP_MEMSET(src, val, nbytes)     MemSet( (src), (nbytes), (val) )
-#define XP_MEMCPY(d,s,l) MemMove((d),(s),(l))
-#define XP_MEMCMP( a1, a2, l )  palm_memcmp((XP_U8*)(a1),(XP_U8*)(a2),(l))
+#define XP_MEMCPY(d,s,l)                MemMove((d),(s),(l))
+#define XP_MEMCMP( a1, a2, l )          palm_memcmp((XP_U8*)(a1),(XP_U8*)(a2),(l))
 /* MemCmp is reputed not to work on some versions of PalmOS */
 /* #define XP_MEMCMP( a1, a2, l )  MemCmp((a1),(a2),(l)) */
-#define XP_STRLEN(s) StrLen((const char*)s)
-#define XP_STRNCMP(s1,s2,l)     StrNCompare((const char*)(s1), \
+#define XP_STRLEN(s)             StrLen((const char*)s)
+#define XP_STRNCMP(s1,s2,l)      StrNCompare((const char*)(s1), \
                                             (const char*)(s2),(l))
 #define XP_STRCMP(s1,s2)         StrCompare((s1),(s2))
 #define XP_STRCAT(d,s)           StrCat((d),(s))
