@@ -20,10 +20,10 @@ LANG=en_US
 TARGET=$(PLATFORM)/xwords4.prc
 ROOTNAME = Crosswords
 BITMAPS = ./bmps
-NAME = "Crosswords"
+NAME ?= "Crosswords"
 TYPE = appl
-ICONTEXT = "Crosswords"
-APPID = Xwr4
+ICONTEXT ?= "Crosswords"
+APPID ?= Xwr4
 MLPREFIX = /usr
 DICT = $(shell echo $$BASENG_PATH)
 
@@ -157,7 +157,8 @@ debug:
 	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG" DONT_OMIT=true
 
 memdebug:
-	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG" DONT_OMIT=true
+	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG" DONT_OMIT=true \
+	APPID=Xwdb ICONTEXT=CrossDbg NAME="CrossDbg"
 
 gremlins:
 	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG -DFOR_GREMLINS" DONT_OMIT=true
