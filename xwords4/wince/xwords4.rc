@@ -114,14 +114,14 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 129, 80
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 129, 83
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 EXSTYLE 0x80000000L
 CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4.0.6b14 for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the Gnu Public License.  For a manual and source code see xwords.sourceforge.net.",
+    LTEXT           "Crosswords 4.0.6b15 for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the GNU Public License. For a manual and source code see xwords.sourceforge.net.",
                     IDC_STATIC,32,10,86,89,SS_NOPREFIX
 END
 
@@ -270,9 +270,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,37,90,10
     CONTROL         "Explain robot scores",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,52,90,10
-#ifdef XWFEATURE_CE_EDITCOLORS
     PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,67,60,12
-#endif
     CONTROL         "Smart robot",IDC_CHECKSMARTROBOT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,22,90,10
     CONTROL         "Disallow hints",IDC_CHECKNOHINTS,"Button",
@@ -293,7 +291,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,70,98,39,14
 END
 
-#ifdef XWFEATURE_CE_EDITCOLORS
 #define CLR_LAB_WIDTH 40
 #define CLR_LAB_HT 14
 #define CLR_BUT_WIDTH 12
@@ -407,8 +404,6 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,15,57,28,14
     PUSHBUTTON      "Cancel",IDCANCEL,58,57,39,14
 END
-
-#endif
 
 #endif
 
