@@ -24,6 +24,7 @@ extern "C" {
 
 #include <f32file.h>
 #include "symdict.h"
+#include "symutil.h"
 
 
 typedef struct SymDictCtxt {
@@ -193,9 +194,9 @@ readFileToBuf( XP_UCHAR* dictBuf, const RFile* file )
 DictionaryCtxt*
 sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
 {
-#if defined SYM_WINS
+#if defined __WINS__
     _LIT( dir,"z:\\system\\apps\\XWORDS\\" );
-#elif defined SYM_ARMI
+#elif defined __MARM__
     _LIT( dir,"c:\\system\\apps\\XWORDS\\" );
 #endif
     TFileName nameD;            /* need the full path to name in this */
@@ -217,10 +218,15 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
     CleanupClosePushL(file);
 
     ctxt = (SymDictCtxt*)XP_MALLOC( mpool, sizeof(*ctxt) );
+    User::LeaveIfNull( ctxt );
     XP_MEMSET( ctxt, 0, sizeof( *ctxt ) );
-    dict_super_init( (DictionaryCtxt*)ctxt );
-    ctxt->super.destructor = sym_dictionary_destroy;
     MPASSIGN( ctxt->super.mpool, mpool );
+
+    dict_super_init( (DictionaryCtxt*)ctxt );
+
+    ctxt->super.destructor = sym_dictionary_destroy;
+    XP_ASSERT( ctxt->super.name == NULL );
+    symReplaceStrIfDiff( MPPARM(mpool) &ctxt->super.name, aDictName );
 
     XP_U16 flags = readXP_U16( &file );
     XP_LOGF( "read flags are: 0x%x", (TInt)flags );
@@ -342,6 +348,10 @@ sym_dictionary_destroy( DictionaryCtxt* dict )
 
     if ( dict->base != NULL ) {
         XP_FREE( dict->mpool, dict->base );
+    }
+
+    if ( dict->name ) {
+        XP_FREE( dict->mpool, dict->name );
     }
 
     XP_FREE( dict->mpool, dict );
