@@ -127,16 +127,37 @@ getPlayerColor( XP_S16 player )
     }
 } /* getPlayerColor */
 
+static void
+ceDrawHintBorders( HDC hdc, RECT* rt, HintAtts hintAtts )
+{
+    if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
+        ++rt->left;
+    }
+    if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
+        --rt->right;
+    }
+    if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
+        ++rt->top;
+    }
+    if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
+        --rt->bottom;
+    }
+
+/*     InsetRect( rt, 1, 1 ); */
+    Rectangle( hdc, rt->left, rt->top, rt->right, rt->bottom );
+} /* ceDrawHintBorders */
+
 static XP_Bool
 ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect, 
                   XP_UCHAR* letters, XP_Bitmap* bitmap, 
-                  XP_S16 owner, XWBonusType bonus,
+                  XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                   XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
     RECT rt;
+    RECT textRect;
     XP_U16 bkIndex;
     XP_UCHAR* cp = NULL;
     COLORREF foreColorRef;
@@ -148,6 +169,12 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     ++rt.right;
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
+    textRect = rt;
+    InsetRect( &textRect, 1, 1 );
+
+    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
+        ceDrawHintBorders( hdc, &rt, hintAtts );
+    }
     InsetRect( &rt, 1, 1 );
 
     if ( (!!letters && letters[0] != '\0' ) || !!bitmap ) {
@@ -195,13 +222,13 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
 	
         SetTextColor( hdc, foreColorRef );
-        DrawText( hdc, widebuf, -1, &rt, 
+        DrawText( hdc, widebuf, -1, &textRect, 
                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
     } else if ( !!bitmap ) {
-        makeAndDrawBitmap( dctx, hdc, rt.left + 2, rt.top + 2, foreColorRef,
-                           (CEBitmapInfo*)bitmap );
+        makeAndDrawBitmap( dctx, hdc, textRect.left + 2, textRect.top + 2, 
+                           foreColorRef, (CEBitmapInfo*)bitmap );
     } else if ( isStar ) {
-        ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, dctx->origin );
+        ceDrawBitmapInRect( hdc, textRect.left+2, textRect.top+1, dctx->origin );
     }
 
     return XP_TRUE;
