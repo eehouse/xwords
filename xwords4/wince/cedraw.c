@@ -165,6 +165,24 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     }
 
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
+
+    if ( isBlank ) {
+        /* For some reason windoze won't let me paint just the corner pixels
+           when certain colors are involved, but it will let me paint the
+           whole rect and then erase all but the corners.  File this under
+           "don't ask, but it works". */
+        RECT tmpRT;
+        FillRect( hdc, &rt, dctx->brushes[isPending?WHITE_COLOR:BLACK_COLOR] );
+
+        tmpRT = rt;
+        InsetRect( &tmpRT, 0, 2 );
+        FillRect( hdc, &tmpRT, dctx->brushes[bkIndex] );
+
+        tmpRT = rt;
+        InsetRect( &tmpRT, 1, 0 );
+        FillRect( hdc, &tmpRT, dctx->brushes[bkIndex] );
+    }
+
     SetBkColor( hdc, dctx->colors[bkIndex] );
 
     if ( !!letters && (letters[0] != '\0') ) {
@@ -184,32 +202,6 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
                            (CEBitmapInfo*)bitmap );
     } else if ( isStar ) {
         ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, dctx->origin );
-    }
-
-    if ( isBlank ) {
-        HGDIOBJ forePen = CreatePen( PS_SOLID, 1, foreColorRef );
-        HGDIOBJ oldObj = SelectObject( hdc, forePen );
-
-        /* For some reason, I can't do 1x1 dots in the corners because they
-           don't draw when they're black on the normal tile background.  (They
-           do draw when they're white on a black background -- isPending is
-           true.). But if they're 2 pixels in size they do draw.  Bug?  I'll
-           work around it with larger braces in the corners. */
-
-        Rectangle( hdc, rt.left, rt.top, rt.left + 2, rt.top + 1 );
-        Rectangle( hdc, rt.left, rt.top, rt.left + 1, rt.top + 2 );
-
-        Rectangle( hdc, rt.right - 2, rt.bottom - 1, rt.right, rt.bottom );
-        Rectangle( hdc, rt.right - 1, rt.bottom - 2, rt.right, rt.bottom );
-
-        Rectangle( hdc, rt.right - 2, rt.top, rt.right, rt.top + 1 );
-        Rectangle( hdc, rt.right - 1, rt.top, rt.right, rt.top + 2 );
-
-        Rectangle( hdc, rt.left, rt.bottom - 2, rt.left + 1, rt.bottom );
-        Rectangle( hdc, rt.left, rt.bottom - 1, rt.left + 2, rt.bottom );
-
-        SelectObject( hdc, oldObj );
-        DeleteObject( forePen );
     }
 
     return XP_TRUE;
