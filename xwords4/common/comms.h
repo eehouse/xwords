@@ -22,6 +22,7 @@
 
 #include "comtypes.h"
 #include "mempool.h"
+#include "xwrelay.h"
 
 EXTERN_C_START
 
@@ -29,10 +30,12 @@ EXTERN_C_START
 #define CONN_ID_NONE 0L
 
 typedef XP_U32 MsgID;
+typedef XP_U16 XWHostID;
 
 typedef enum {
     COMMS_CONN_UNUSED,          /* I want errors on uninited case */
-    COMMS_CONN_IP,
+    COMMS_CONN_IP_NOUSE,
+    COMMS_CONN_RELAY,
     COMMS_CONN_BT,
     COMMS_CONN_IR,
 
@@ -45,14 +48,24 @@ typedef struct CommsAddrRec {
 
     union {
         struct {
+            XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1];
+            XP_U32 ipAddr_ip;      /* looked up from above */
+            XP_U16 port_ip;
+        } ip;
+        struct {
+            XP_UCHAR cookie[MAX_COOKIE_LEN + 1];
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr;      /* looked up from above */
             XP_U16 port;
-        } ip;
+        } ip_relay;
         struct {
             /* nothing? */
             XP_UCHAR foo;       /* wince doesn't like nothing here */
         } ir;
+        struct {
+            /* nothing? */
+            XP_UCHAR foo;       /* wince doesn't like nothing here */
+        } bt;
     } u;
 } CommsAddrRec;
 
@@ -69,8 +82,9 @@ void comms_destroy( CommsCtxt* comms );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 
-void comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr, XP_U16* listenPort );
-void comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr, XP_U16 listenPort );
+void comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr );
+void comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr );
+
 CommsConnType comms_getConType( CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
@@ -78,11 +92,7 @@ CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream,
                                  void* closure );
 void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream );
 
-/* void comms_setDefaultTarget( CommsCtxt* comms, char* hostName,  */
-/* 			     short hostPort ); */
-
-XP_S16 comms_send( CommsCtxt* comms, CommsConnType conType,
-                   XWStreamCtxt* stream );
+XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms );
 
 
