@@ -34,6 +34,7 @@
 { "STR_RESEND_IR", "Unable to send message via IR; resend?" },
 #endif
 { "STR_TOO_FEW_TILES", "Too few tiles left to trade." },
+{ "STR_CANT_UNDO_TILEASSIGN", "Tile assignment can't be undone." },
 { "STR_VALUES_TITLE", "Counts and Values" },
 { "STR_VALUES_HEADER",		"Counts[Remain] and Values\n" },
 
