@@ -1429,6 +1429,7 @@ eventLoop( PalmAppGlobals* globals )
                         && !!globals->game.board ) {
                 if ( !globals->menuIsDown /* hi Marcus :-) */
                      && closeNonMainForms(globals)
+                     && gi_countHumans( &globals->gameInfo ) > 1
                      && board_hideTray( globals->game.board ) ) {
                     board_draw( globals->game.board );
                 }
@@ -2278,8 +2279,8 @@ mainViewHandleEvent( EventPtr event )
         case XW_FINISH_PULLDOWN_ID:
             if ( server_getGameIsOver( globals->game.server ) ) {
                 displayFinalScores( globals );
-            } else if ( palmaskFromStrId(globals, STR_CONFIRM_END_GAME,
-                                         -1, -1) ) {
+            } else if ( palmaskFromStrId( globals, STR_CONFIRM_END_GAME,
+                                          -1, STR_NO ) ) {
                 server_endGame( globals->game.server );
                 draw = true;	    
             }
@@ -2347,7 +2348,7 @@ mainViewHandleEvent( EventPtr event )
             break;
 
         case XW_ABOUT_PULLDOWN_ID:
-            palmaskFromStrId(globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE,-1);
+            palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE,-1 );
             break;
 	    
         case XW_HINT_PULLDOWN_ID:
