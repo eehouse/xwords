@@ -24,6 +24,7 @@
 
 #include "symgmdlg.h"
 #include "symutil.h"
+#include "symgamed.h"
 #include "xwords.hrh"
 #include "xwords.rsg"
 #include "xwappview.h"
@@ -41,17 +42,18 @@ CXSavedGamesDlg::CXSavedGamesDlg( MPFORMAL CXWordsAppView* aOwner,
 void
 CXSavedGamesDlg::PreLayoutDynInitL()
 {
-    ResetNames(-1);
+    ResetNames( -1, iCurName );
 }
 
 TBool
 CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
 {
     TBool canReturn = EFalse;
-    TInt index;
     CEikTextListBox* box;
     const CListBoxView::CSelectionIndexArray* indices;
     box = static_cast<CEikTextListBox*>(Control(ESelGameChoice));
+    TInt index = box->CurrentItemIndex();
+    TDesC16* selName = &(*iGameMgr->GetNames())[index];
 
     XP_LOGF( "CXSavedGamesDlg::OkToExitL(%d) called", aKeyCode );
 
@@ -63,7 +65,6 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
         } else {
             /* Don't use indices: invalid when multi-select isn't on? */
             // TInt index = indices->At(0);
-            index = box->CurrentItemIndex();
             XP_LOGF( "the %dth is selected:", index );
             *iResultP = (*iGameMgr->GetNames())[index];
             XP_LOGDESC16( iResultP );
@@ -72,20 +73,25 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
         break;
 
     case XW_SGAMES_RENAME_COMMAND:
-        EditSelName();
+        if ( 0 == selName->Compare(*iCurName) ) {
+            iOwner->UserErrorFromID( R_ALERT_NO_RENAME_OPEN_GAME );
+        } else {
+            TGameName newName;
+            if ( EditSelName( static_cast<TGameName*>(selName), &newName ) ) {
+                ResetNames( -1, &newName );
+                box->DrawDeferred();
+            }
+        }
         break;
 
     case XW_SGAMES_DELETE_COMMAND: {
         XP_LOGF( "delete" );
-        index = box->CurrentItemIndex();
-        TDesC16* selName = &(*iGameMgr->GetNames())[index];
         if ( 0 == selName->Compare(*iCurName) ) {
-            /* Warn user why can't delete */
             iOwner->UserErrorFromID( R_ALERT_NO_DELETE_OPEN_GAME );
         } else if ( iOwner->UserQuery( (UtilQueryID)SYM_QUERY_CONFIRM_DELGAME, 
                                        NULL ) ) {
             if ( iGameMgr->DeleteSelected( index ) ) {
-                ResetNames( index );
+                ResetNames( index, NULL );
                 box->DrawDeferred();
             }
         }
@@ -99,16 +105,24 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
 } /* OkToExitL */
 
 void
-CXSavedGamesDlg::ResetNames( TInt aPrefIndex )
+CXSavedGamesDlg::ResetNames( TInt aPrefIndex, 
+                             const TGameName* aSelName )
 {
-    /* PENDING aPrefIndex is a hint what to select next  */
-
     CDesC16Array* names = iGameMgr->GetNames();
-    TInt index;
+    TInt index = 0;             /* make compiler happy */
+    const TGameName* seekName = NULL;
 
-    if ( 0 != names->Find( *iCurName, index ) ) {
+    if ( aPrefIndex >= 0 ) {
+        index = aPrefIndex;
+    } else if ( aSelName != NULL ) {
+        seekName = aSelName;
+    } else {
+        seekName = iCurName;
+    }
+   
+    if ( seekName != NULL && ( 0 != names->Find( *seekName, index ) ) ) {
         XP_LOGF( "Unable to find" );
-        XP_LOGDESC16( iCurName );
+        XP_LOGDESC16( seekName );
         XP_ASSERT( 0 );
         index = 0;              /* safe default if not found */
     }
@@ -119,12 +133,27 @@ CXSavedGamesDlg::ResetNames( TInt aPrefIndex )
     box->Model()->SetItemTextArray( names );
     box->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
     box->HandleItemAdditionL();
+
     box->SetCurrentItemIndex( index );
 } /* ResetNames */
 
-void
-CXSavedGamesDlg::EditSelName()
+TBool
+CXSavedGamesDlg::EditSelName( const TGameName* aSelName, TGameName* aNewName )
 {
+    aNewName->Copy( *aSelName );
+    TBool renamed = EFalse;
+
+    if ( CNameEditDlg::EditName( aNewName ) ) {
+        if ( iGameMgr->Exists( aNewName ) ) {
+            iOwner->UserErrorFromID( R_ALERT_RENAME_TARGET_EXISTS );
+        } else if ( !iGameMgr->IsLegalName( aNewName ) ) {
+            iOwner->UserErrorFromID( R_ALERT_RENAME_TARGET_BADNAME );
+        } else {
+            iGameMgr->Rename( aSelName, aNewName );
+            renamed = ETrue;
+        }
+    }
+    return renamed;
 }
 
 /* static */ TBool
