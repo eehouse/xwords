@@ -106,6 +106,8 @@ class CXWordsAppView : public CCoeControl
     int HandleCommand( TInt aCommand );
     void Exiting();
     TBool HandleKeyEvent( const TKeyEvent& aKeyEvent );
+    void UserErrorFromID( TInt aResource );
+    XP_Bool UserQuery( UtilQueryID aId, XWStreamCtxt* aStream );
 
  private:
     /* open game from prefs or start a new one. */
@@ -117,7 +119,6 @@ class CXWordsAppView : public CCoeControl
     XWStreamCtxt* MakeSimpleStream( MemStreamCloseCallback cb );
     TBool AskFromResId( TInt aResource );
     TBool FindAllDicts();
-    void UserErrorFromID( TInt aResource );
     TBool LoadPrefs();
     TBool AskSaveGame() { return ETrue; }
     void SaveCurrentGame() {}
