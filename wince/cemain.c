@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 2002-2004 by Eric House (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1370,7 +1370,6 @@ About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
     case WM_INITDIALOG:
-        positionDlg( hDlg );
         return TRUE;
 
     case WM_COMMAND:
@@ -1786,7 +1785,7 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     if ( why == TIMER_PENDOWN ) {
-        SetTimer( globals->hWnd, why, 350, NULL);
+        SetTimer( globals->hWnd, why, 500, NULL);
     } else if ( why == TIMER_TIMERTICK ) {
         SetTimer( globals->hWnd, why, 1000, NULL); /* 1 second */
     }
