@@ -173,7 +173,7 @@ void
 comms_setConnID( CommsCtxt* comms, XP_U32 connID )
 {
     comms->connID = connID;
-    XP_STATUSF( "set connID to %ld", connID );
+    XP_STATUSF( "set connID to %lx", connID );
 } /* comms_setConnID */
 
 CommsCtxt* 
@@ -547,7 +547,7 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     AddressRecord* recs = (AddressRecord*)NULL;
 
     connID = stream_getU32( stream );
-    XP_STATUSF( "read connID of %ld", connID );
+    XP_STATUSF( "read connID of %lx", connID );
 
 #ifdef BEYOND_IR
     if ( addr->conType == COMMS_CONN_IP ) {
@@ -600,7 +600,8 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                         channelNo, msgID );
         }
     } else {
-        XP_STATUSF( "refusing non-matching connID; got %ld, wanted %ld",
+        validMessage = XP_FALSE;
+        XP_STATUSF( "refusing non-matching connID; got %lx, wanted %lx",
                     connID, comms->connID );
     }
     return validMessage;
