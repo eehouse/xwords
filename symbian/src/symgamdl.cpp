@@ -45,6 +45,7 @@ TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi,
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         iIsRobot[i] = aGi->players[i].isRobot;
+        iIsLocal[i] = aGi->players[i].isLocal;
         if ( aGi->players[i].name != NULL ) {
             XP_LOGF( "name[%d] = %s", i, aGi->players[i].name );
             TBuf8<32> tmp( aGi->players[i].name );
@@ -78,6 +79,7 @@ TGameInfoBuf::CopyToL( MPFORMAL CurGameInfo* aGi
     TInt i;
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         aGi->players[i].isRobot = iIsRobot[i];
+        aGi->players[i].isLocal = iIsLocal[i];
 
         symReplaceStrIfDiff( MPPARM(mpool) &aGi->players[i].name, 
                              iPlayerNames[i] );
@@ -258,6 +260,7 @@ CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
         list = static_cast<CEikChoiceList*>
             (Control( ENPlayersWhichList ));
         SetPlayerShown( list->CurrentItem() );
+        HandleControlStateChangeL( EPlayerLocationChoice );
         break;
 
     case EPlayerLocationChoice:
@@ -362,6 +365,15 @@ CXWGameInfoDlg::LoadPlayerInfo( TInt aWhich )
         list->SetCurrentItem( newVal );
         list->DrawDeferred();
     }
+
+    /* remoteness */
+    list = static_cast<CEikChoiceList*>(Control(EPlayerLocationChoice ));
+    oldVal = list->CurrentItem();
+    newVal = iGib->iIsLocal[aWhich]? 0:1;
+    if ( oldVal != newVal ) {
+        list->SetCurrentItem( newVal );
+        list->DrawDeferred();
+    }
 #endif
 
     /* password */
@@ -380,6 +392,9 @@ CXWGameInfoDlg::SavePlayerInfo( TInt aWhich )
     CEikChoiceList* list = static_cast<CEikChoiceList*>
         (Control(EPlayerSpeciesChoice ));
     iGib->iIsRobot[aWhich] = (list->CurrentItem() == 1);
+
+    list = static_cast<CEikChoiceList*>(Control(EPlayerLocationChoice ));
+    iGib->iIsLocal[aWhich] = (list->CurrentItem() == 0);
 #endif
 }
 
