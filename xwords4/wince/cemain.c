@@ -818,16 +818,17 @@ static void
 drawInsidePaint( HWND hWnd, CEAppGlobals* globals )
 {
     HDC hdc;
-    PAINTSTRUCT ps;
 
-    hdc = BeginPaint(hWnd, &ps);
-    globals->hdc = hdc;
+    hdc = GetDC( hWnd );
+    if ( !hdc ) {
+        logLastError( "drawInsidePaint" );
+    } else {
+        globals->hdc = hdc;
 
-    board_draw( globals->game.board );
+        board_draw( globals->game.board );
 
-    globals->hdc = NULL;
-
-    EndPaint(hWnd, &ps);
+        globals->hdc = NULL;
+    }
 } /* drawInsidePaint */
 
 static void
@@ -1024,6 +1025,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
 
             sfs.lStructSize = sizeof(sfs);
+            sfs.Flags = OFN_PATHMUSTEXIST;
             sfs.hwndOwner = globals->hWnd;
             sfs.lpstrFile = nameBuf;
             sfs.nMaxFile = sizeof(nameBuf)/sizeof(nameBuf[0]);
@@ -1035,7 +1037,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             sfs.lpstrTitle = L"Save current game as";
 
 /*             XP_ASSERT( !!globals->lastDefaultDir ); */
-            sfs.lpstrInitialDir = "hello world";
+            sfs.lpstrInitialDir = L"hello world";
 
             confirmed = GetSaveFileName( &sfs );
 
@@ -1264,6 +1266,10 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 board_invalRect( globals->game.board, &rect );
 
                 drawInsidePaint( hWnd, globals );
+
+                if ( !ValidateRect( hWnd, &rt ) ) {
+                    logLastError( "WM_PAINT:ValidateRect" );
+                }
             }
             break;
 
@@ -1330,7 +1336,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
            gone away and revealed a large rect board didn't know about.  That
            was the source of some trouble on Palm, and CE's so fast this
            works.  But it's stupid. */
-        InvalidateRect( globals->hWnd, NULL, FALSE /* erase */ );
+        RECT r = { 100, 100, 102, 102 };
+        InvalidateRect( globals->hWnd, &r, FALSE /* erase */ );
     }
 
     return 0;
