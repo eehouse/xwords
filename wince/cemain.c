@@ -1881,6 +1881,8 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
         return (XP_UCHAR*)"Score for turn: %d" XP_CR;
     case STR_COMMIT_CONFIRM:
         return (XP_UCHAR*)"Commit the current move?" XP_CR;
+    case STR_LOCAL_NAME:
+        return (XP_UCHAR*)"%s";
     case STR_NONLOCAL_NAME:
         return (XP_UCHAR*)"%s (remote)";
     case STRD_TIME_PENALTY_SUB:
@@ -1912,6 +1914,7 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
         return (XP_UCHAR*)"Remote player made this move:" XP_CR;
 
     default:
+        XP_LOGF( "stringCode=%d", stringCode );
         return (XP_UCHAR*)"unknown code";
     }
 } /* ce_util_getUserString */
