@@ -49,10 +49,10 @@ CFG=xwords - Win32 (WCE ARM) Debug
 # PROP Target_Dir ""
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-# ADD RSC /l 0x409 /d "NDEBUG" /d "ARM" /d "_ARM_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "XWFEATURE_CE_EDITCOLORS" /r
+# ADD RSC /l 0x409 /d "NDEBUG" /d "ARM" /d "_ARM_" /d "XWFEATURE_CE_EDITCOLORS" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "MY_COLOR_SEL" /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /W3 /I "." /I "../common" /D "ARM" /D "_ARM_" /D "NDEBUG" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "XWFEATURE_CE_EDITCOLORS" /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /I "." /I "../common" /D "ARM" /D "_ARM_" /D "NDEBUG" /D "XWFEATURE_CE_EDITCOLORS" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "MY_COLOR_SEL" /YX /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -83,10 +83,10 @@ LINK32=link.exe
 # PROP Target_Dir ""
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "FEATURE_TRAY_EDIT" /d "XWFEATURE_CE_EDITCOLORS" /d "MY_COLOR_SEL" /r
+# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d "XWFEATURE_CE_EDITCOLORS" /d "MY_COLOR_SEL" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "XWFEATURE_CE_EDITCOLORS" /D "MY_COLOR_SEL" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D "XWFEATURE_CE_EDITCOLORS" /D "MY_COLOR_SEL" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /YX /M$(CECrtMTDebug) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
@@ -116,10 +116,10 @@ LINK32=link.exe
 # PROP Target_Dir ""
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "_X86_" /d "x86" /d "_i386_" /r
-# ADD RSC /l 0x409 /d "NDEBUG" /d "_X86_" /d "x86" /d "_i386_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /r
+# ADD RSC /l 0x409 /d "NDEBUG" /d "_X86_" /d "x86" /d "_i386_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "XWFEATURE_CE_EDITCOLORS" /d "MY_COLOR_SEL" /r
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "_i386_" /D UNDER_CE=$(CEVersion) /D "i_386_" /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /YX /Gs8192 /GF /Oxs /c
-# ADD CPP /nologo /W3 /I "." /I "../common" /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /D "NDEBUG" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /YX /Gs8192 /GF /Oxs /c
+# ADD CPP /nologo /W3 /I "." /I "../common" /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /D "NDEBUG" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "XWFEATURE_CE_EDITCOLORS" /D "MY_COLOR_SEL" /YX /Gs8192 /GF /Oxs /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -150,10 +150,10 @@ LINK32=link.exe
 # PROP Target_Dir ""
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "_X86_" /d "x86" /d "_i386_" /r
-# ADD RSC /l 0x409 /d "DEBUG" /d "_X86_" /d "x86" /d "_i386_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /r
+# ADD RSC /l 0x409 /d "DEBUG" /d "_X86_" /d "x86" /d "_i386_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "XWFEATURE_CE_EDITCOLORS" /d "MY_COLOR_SEL" /r
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "_i386_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "i_386_" /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /YX /Gs8192 /GF /c
-# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /YX /Gs8192 /GF /c
+# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "_i386_" /D "i_386_" /D "_X86_" /D "x86" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "XWFEATURE_CE_EDITCOLORS" /D "MY_COLOR_SEL" /YX /Gs8192 /GF /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
@@ -278,10 +278,10 @@ DEP_CPP_BOARD=\
 	"..\common\strutils.h"\
 	"..\common\vtabmgr.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_BOARD=\
-	"..\common\LocalizedStrIncludes.h"\
-	"..\common\xptypes.h"\
+	".\LocalizedStrIncludes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -363,15 +363,24 @@ DEP_CPP_CEASK=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEASK=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
 	".\ceaskpwd.h"\
 	".\cemain.h"\
 	".\ceutil.h"\
 	".\stdafx.h"\
-	
-NODEP_CPP_CEASK=\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -453,15 +462,24 @@ DEP_CPP_CEBLA=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEBLA=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
 	".\ceblank.h"\
 	".\cemain.h"\
 	".\ceutil.h"\
 	".\stdafx.h"\
-	
-NODEP_CPP_CEBLA=\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -556,6 +574,7 @@ DEP_CPP_CECLR=\
 	"..\common\xwstream.h"\
 	".\ceclrsel.h"\
 	".\cemain.h"\
+	".\ceutil.h"\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
@@ -643,16 +662,25 @@ DEP_CPP_CEDIC=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEDIC=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\dictnryp.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\strutils.h"\
+	"..\common\xwstream.h"\
 	".\cedict.h"\
 	".\cemain.h"\
 	".\stdafx.h"\
-	
-NODEP_CPP_CEDIC=\
-	".\dictnryp.h"\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
-	".\strutils.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -734,18 +762,24 @@ DEP_CPP_CEDRA=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEDRA=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
 	".\cedefines.h"\
 	".\cedict.h"\
 	".\cemain.h"\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
-	
-NODEP_CPP_CEDRA=\
-	".\board.h"\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
 	
 
 !ENDIF 
@@ -836,18 +870,27 @@ DEP_CPP_CEGIN=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEGIN=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\strutils.h"\
+	"..\common\xwstream.h"\
 	".\cedict.h"\
 	".\ceginfo.h"\
 	".\cemain.h"\
 	".\ceprefs.h"\
 	".\ceutil.h"\
 	".\stdafx.h"\
-	
-NODEP_CPP_CEGIN=\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
-	".\strutils.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -964,8 +1007,24 @@ DEP_CPP_CEMAI=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEMAI=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\memstream.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\strutils.h"\
+	"..\common\vtabmgr.h"\
+	"..\common\xwstream.h"\
 	".\ceaskpwd.h"\
 	".\ceblank.h"\
+	".\ceclrsel.h"\
 	".\cedefines.h"\
 	".\cedict.h"\
 	".\ceginfo.h"\
@@ -976,15 +1035,8 @@ DEP_CPP_CEMAI=\
 	".\ceutil.h"\
 	".\LocalizedStrIncludes.h"\
 	".\stdafx.h"\
+	".\xptypes.h"\
 	".\xwords4.h"\
-	
-NODEP_CPP_CEMAI=\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
-	".\memstream.h"\
-	".\strutils.h"\
-	".\xwstream.h"\
 	
 
 !ENDIF 
@@ -1066,15 +1118,25 @@ DEP_CPP_CEPRE=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEPRE=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
+	".\ceclrsel.h"\
 	".\cemain.h"\
 	".\ceprefs.h"\
 	".\ceutil.h"\
 	".\stdafx.h"\
-	
-NODEP_CPP_CEPRE=\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1156,16 +1218,24 @@ DEP_CPP_CESTR=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CESTR=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
 	".\cemain.h"\
 	".\cestrbx.h"\
 	".\ceutil.h"\
 	".\stdafx.h"\
-	
-NODEP_CPP_CESTR=\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
-	".\xwstream.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1244,14 +1314,23 @@ DEP_CPP_CEUTI=\
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
 
 DEP_CPP_CEUTI=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
 	".\cemain.h"\
 	".\ceutil.h"\
 	".\stdafx.h"\
-	
-NODEP_CPP_CEUTI=\
-	".\draw.h"\
-	".\game.h"\
-	".\mempool.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1312,9 +1391,9 @@ DEP_CPP_COMMS=\
 	"..\common\memstream.h"\
 	"..\common\vtabmgr.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_COMMS=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1383,9 +1462,9 @@ DEP_CPP_DICTN=\
 	"..\common\model.h"\
 	"..\common\strutils.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_DICTN=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1446,9 +1525,9 @@ DEP_CPP_DRAW_=\
 	"..\common\draw.h"\
 	"..\common\mempool.h"\
 	"..\common\model.h"\
-	
-NODEP_CPP_DRAW_=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1509,9 +1588,9 @@ DEP_CPP_ENGIN=\
 	"..\common\engine.h"\
 	"..\common\mempool.h"\
 	"..\common\model.h"\
-	
-NODEP_CPP_ENGIN=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1600,9 +1679,9 @@ DEP_CPP_GAME_=\
 	"..\common\server.h"\
 	"..\common\strutils.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_GAME_=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1651,9 +1730,9 @@ DEP_CPP_MEMPO=\
 	"..\common\comtypes.h"\
 	"..\common\mempool.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_MEMPO=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1710,9 +1789,9 @@ DEP_CPP_MEMST=\
 	"..\common\memstream.h"\
 	"..\common\vtabmgr.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_MEMST=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1796,10 +1875,10 @@ DEP_CPP_MODEL=\
 	"..\common\strutils.h"\
 	"..\common\vtabmgr.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_MODEL=\
-	"..\common\LocalizedStrIncludes.h"\
-	"..\common\xptypes.h"\
+	".\LocalizedStrIncludes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1876,9 +1955,9 @@ DEP_CPP_MOVES=\
 	"..\common\strutils.h"\
 	"..\common\vtabmgr.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_MOVES=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -1982,10 +2061,10 @@ DEP_CPP_MSCOR=\
 	"..\common\server.h"\
 	"..\common\vtabmgr.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_MSCOR=\
-	"..\common\LocalizedStrIncludes.h"\
-	"..\common\xptypes.h"\
+	".\LocalizedStrIncludes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -2050,9 +2129,9 @@ DEP_CPP_POOL_=\
 	"..\common\model.h"\
 	"..\common\pool.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_POOL_=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -2168,10 +2247,10 @@ DEP_CPP_SERVE=\
 	"..\common\vtabmgr.h"\
 	"..\common\xwproto.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_SERVE=\
-	"..\common\LocalizedStrIncludes.h"\
-	"..\common\xptypes.h"\
+	".\LocalizedStrIncludes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -2267,9 +2346,9 @@ DEP_CPP_STRUT=\
 	"..\common\model.h"\
 	"..\common\strutils.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_STRUT=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -2354,9 +2433,9 @@ DEP_CPP_TRAY_=\
 	"..\common\model.h"\
 	"..\common\server.h"\
 	"..\common\xwstream.h"\
-	
-NODEP_CPP_TRAY_=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
@@ -2405,9 +2484,9 @@ DEP_CPP_VTABM=\
 	"..\common\comtypes.h"\
 	"..\common\mempool.h"\
 	"..\common\vtabmgr.h"\
-	
-NODEP_CPP_VTABM=\
-	"..\common\xptypes.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
 	
 
 !ENDIF 
