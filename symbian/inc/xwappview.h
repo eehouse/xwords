@@ -59,7 +59,7 @@ class CXWordsAppView : public CCoeControl
       @param aRect the rectangle this view will be drawn to
       @result a pointer to the created instance of CXWordsAppView
     */
-    static CXWordsAppView* NewL(const TRect& aRect);
+    static CXWordsAppView* NewL(const TRect& aRect, CEikApplication* aApp );
 
     /*!
       @function NewLC
@@ -68,7 +68,7 @@ class CXWordsAppView : public CCoeControl
       @param aRect the rectangle this view will be drawn to
       @result a pointer to the created instance of CXWordsAppView
     */
-    static CXWordsAppView* NewLC(const TRect& aRect);
+    static CXWordsAppView* NewLC(const TRect& aRect, CEikApplication* aApp );
 
 
     /*!
@@ -103,7 +103,7 @@ class CXWordsAppView : public CCoeControl
   
       @discussion Perform the first phase of two phase construction 
     */
-    CXWordsAppView();
+    CXWordsAppView( CEikApplication* aApp );
 
     /* Added by eeh */
  public:
@@ -178,6 +178,8 @@ class CXWordsAppView : public CCoeControl
 
     static TInt TimerCallback( TAny* aThis );
 
+    CEikApplication* iApp;      /* remove if there's some way to get from
+                                   env  */
     CurGameInfo iGi;
     CommonPrefs iCp;
 #ifndef XWFEATURE_STANDALONE_ONLY

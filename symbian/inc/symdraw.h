@@ -42,6 +42,6 @@ extern "C" {
 #define CUR_PREFS_VERS 0x0405
 
 DrawCtx* sym_drawctxt_make( MPFORMAL CWindowGc* gc, CCoeEnv* aCoeEnv, 
-                            CEikonEnv* aEikonEnv );
+                            CEikonEnv* aEikonEnv, CEikApplication* aApp );
 
 #endif

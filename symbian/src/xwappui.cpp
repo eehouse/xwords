@@ -25,19 +25,22 @@
 # include <eikinfo.h>
 #elif defined SERIES_80
 # include <ckninfo.h>
+# include <eikappui.h>
+# include <eikapp.h>
 #endif
 
 #include "xwords.pan"
 #include "xwappui.h"
 #include "xwappview.h"
 #include "xwords.hrh"
+#include "symutil.h"
 
 // ConstructL is called by the application framework
 void CXWordsAppUi::ConstructL()
 {
     BaseConstructL();
 
-    iAppView = CXWordsAppView::NewL(ClientRect());    
+    iAppView = CXWordsAppView::NewL( ClientRect(), Application() );
 
     AddToStackL(iAppView);
 }

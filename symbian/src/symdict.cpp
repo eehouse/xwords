@@ -119,7 +119,7 @@ symMakeBitmap( SymDictCtxt* /*ctxt*/, RFile* file )
         
         XP_U8 nRows = readXP_U8( file );
         XP_U8 srcByte = 0;
-        XP_U8 nBits;
+        XP_U16 nBits;
         bitmap = new (ELeave) CFbsBitmap();
         bitmap->Create( TSize(nCols, nRows), dispMode );
         
@@ -213,7 +213,7 @@ readFileToBuf( XP_UCHAR* dictBuf, const RFile* file )
 } // readFileToBuf
 
 DictionaryCtxt*
-sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
+sym_dictionary_makeL( MPFORMAL TFileName* base, const XP_UCHAR* aDictName )
 {
     if ( !aDictName ) {
         SymDictCtxt* ctxt = (SymDictCtxt*)XP_MALLOC( mpool, sizeof( *ctxt ) );
@@ -222,29 +222,10 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
         return &ctxt->super;
     } else {
 
-#ifdef XWORDS_DIR
-# if defined __WINS__
-        _LIT( dir,"z:\\system\\apps\\" XWORDS_DIR "\\" );
-# elif defined __MARM__
-        _LIT( dir,"c:\\system\\apps\\" XWORDS_DIR "\\" );
-# endif
-#else
-        /* Symbian's broken compiler won't let me concatenate XWORDS_DIR with
-           strings nor pass it in defined, so hack here.  If you're using the
-           broken ABLD.BAT system, you get to deal with it. :-) */
-# if defined __WINS__
-        _LIT( dir,"z:\\system\\apps\\xwords_80\\" );
-# elif defined __MARM__
-        _LIT( dir,"c:\\system\\apps\\XWORDS_80\\" );
-# endif
-
-#endif
-        TFileName nameD;            /* need the full path to name in this */
-        nameD.Copy( dir );
         TBuf16<32> dname16;
         dname16.Copy( TPtrC8(aDictName) );
-        nameD.Append( dname16 );
-        nameD.Append( _L(".xwd") );
+        base->Append( dname16 );
+        base->Append( _L(".xwd") );
         SymDictCtxt* ctxt = NULL;
 
         RFs fileSession;
@@ -252,9 +233,9 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
         CleanupClosePushL(fileSession);
 
         RFile file;
-        TInt err = file.Open( fileSession, nameD, EFileRead );
+        TInt err = file.Open( fileSession, *base, EFileRead );
         if ( err != KErrNone ) {
-            XP_LOGDESC16( &nameD );
+            XP_LOGDESC16( base );
             XP_LOGF( "file.Open => %d", err );
         }
         User::LeaveIfError( err );
