@@ -182,6 +182,18 @@ ceControlsToPrefs( HWND hDlg, PrefsPrefs* prefsPrefs )
 
     prefsPrefs->cp.showBoardArrow = ceGetChecked( hDlg, IDC_CHECKSHOWCURSOR );
     prefsPrefs->cp.showRobotScores = ceGetChecked( hDlg, IDC_CHECKROBOTSCORES );
+    prefsPrefs->gp.timerEnabled = ceGetChecked( hDlg, TIMER_CHECK );
+
+    if ( prefsPrefs->gp.timerEnabled ) {
+        XP_UCHAR buf[10];
+        XP_U16 minutes;
+        XP_U16 bLen = sizeof(buf) / sizeof(buf[0]);
+
+        ceGetDlgItemText( hDlg, TIMER_EDIT, buf, &bLen );
+        minutes = atoi( buf );
+
+        prefsPrefs->gp.gameSeconds = minutes * 60;
+    }
 #ifdef FEATURE_TRAY_EDIT
     prefsPrefs->gp.allowPickTiles = ceGetChecked( hDlg, IDC_PICKTILES );
 #endif
