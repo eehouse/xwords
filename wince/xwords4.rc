@@ -74,6 +74,10 @@ BEGIN
         MENUITEM "Open &saved game",            ID_FILE_SAVEDGAMES
         MENUITEM "&Preferences",                ID_FILE_PREFERENCES
         MENUITEM SEPARATOR
+#ifdef XWFEATURE_CE_EDITCOLORS
+        MENUITEM "&Colors",                     ID_FILE_EDITCOLORS
+        MENUITEM SEPARATOR
+#endif
 #ifndef XWFEATURE_STANDALONE_ONLY
         MENUITEM "Beam dictionary",             ID_FILE_BEAMDICT
         MENUITEM "Beam boards and colors",      ID_FILE_BEAMBOARDS
@@ -121,7 +125,7 @@ CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4 (beta 12) for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the Gnu Public License.  For details see xwords.sourceforge.net.",
+    LTEXT           "Crosswords 4 (beta 13) for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the Gnu Public License.  For details see xwords.sourceforge.net.",
                     IDC_STATIC,32,10,86,89,SS_NOPREFIX
 END
 
@@ -290,6 +294,74 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,70,100,39,14
 END
 
+#ifdef XWFEATURE_CE_EDITCOLORS
+#define CLR_LAB_WIDTH 45
+#define CLR_LAB_HT 18
+#define CLR_BUT_WIDTH 12
+#define CLR_BUT_HT 12
+#define CLR_ROW_1  8
+#define CLR_ROW_2  24
+#define CLR_ROW_3  44
+#define CLR_ROW_4  62
+#define CLR_ROW_5  80
+#define CLR_COL_1  5
+#define CLR_COL_2  50
+#define CLR_COL_3  66
+#define CLR_COL_4  112
+#define BUTTON_ROW 100
+
+IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, 130, 125
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Color preferences"
+FONT 8, "System"
+BEGIN
+    LTEXT           "Double letter:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",DLBLTR_BUTTON,CLR_COL_2,CLR_ROW_1,CLR_BUT_WIDTH,CLR_BUT_HT
+
+    LTEXT           "Double word:",DBLWRD_LABEL,CLR_COL_3,CLR_ROW_1,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",DBLWRD_BUTTON,CLR_COL_4,CLR_ROW_1,CLR_BUT_WIDTH,CLR_BUT_HT
+
+    LTEXT           "Triple letter:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_2,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",TPLLTR_BUTTON,CLR_COL_2,CLR_ROW_2,CLR_BUT_WIDTH,CLR_BUT_HT
+
+    LTEXT           "Triple word:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_2,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",TPLWRD_BUTTON,CLR_COL_4,CLR_ROW_2,CLR_BUT_WIDTH,CLR_BUT_HT
+
+
+    LTEXT           "Empty cell:",EMPTYCELL_LABEL,CLR_COL_1,CLR_ROW_3,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",EMPCELL_BUTTON,CLR_COL_2,CLR_ROW_3,CLR_BUT_WIDTH,CLR_BUT_HT
+
+    LTEXT           "Tile bkgnd:",TILEBACK_LABEL,CLR_COL_3,CLR_ROW_3,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",TBACK_BUTTON,CLR_COL_4,CLR_ROW_3,CLR_BUT_WIDTH,CLR_BUT_HT
+
+
+    LTEXT           "Player 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_4,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",PLAYER1_BUTTON,CLR_COL_2,CLR_ROW_4,CLR_BUT_WIDTH,CLR_BUT_HT
+
+    LTEXT           "Player 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_4,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",PLAYER2_BUTTON,CLR_COL_4,CLR_ROW_4,CLR_BUT_WIDTH,CLR_BUT_HT
+
+    LTEXT           "Player 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_5,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",PLAYER3_BUTTON,CLR_COL_2,CLR_ROW_5,CLR_BUT_WIDTH,CLR_BUT_HT
+
+    LTEXT           "Player 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_5,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",PLAYER4_BUTTON,CLR_COL_4,CLR_ROW_5,CLR_BUT_WIDTH,CLR_BUT_HT
+
+
+    DEFPUSHBUTTON   "OK",IDOK,20,BUTTON_ROW,38,14
+    PUSHBUTTON      "Cancel",IDCANCEL,70,BUTTON_ROW,39,14
+END
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -381,18 +453,18 @@ IDB_ORIGIN              BITMAP  DISCARDABLE     "bmps/origin.bmp"
 
 ID_COLORS_RES CLRS MOVEABLE PURE 
 BEGIN
-    0xFF, 0xFF, 0xFF,		/* empty cells */
     0xAF, 0xAF, 0x00,		/* bonus 1 */
     0x00, 0xAF, 0xAF,
     0xAF, 0x00, 0xAF,
     0xAF, 0xAF, 0xAF,
+    0xFF, 0xFF, 0xFF,		/* empty cells */
     0xFF, 0xFF, 0x99,		/* tile background */
-    0x00, 0x00, 0x00,		/* black */
-    0xFF, 0xFF, 0xFF,		/* white */
     0x00, 0x00, 0x00,		/* player 1 */
     0xFF, 0x00, 0x00,
     0x00, 0x00, 0xFF,
     0x00, 0xFF, 0x00,
+    0x00, 0x00, 0x00,		/* black */
+    0xFF, 0xFF, 0xFF,		/* white */
 END
 
 /////////////////////////////////////////////////////////////////////////////
