@@ -356,6 +356,10 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* /*rInner*/,
     lRect.iTl.iX = lRect.iBr.iX + 1; /* add one to get name away from edge */
     lRect.iBr.iX += KNameColumnWidth;
     tbuf.Copy( TBuf8<32>(dsi->name) );
+    if ( dsi->isRemote ) {
+        tbuf.Insert( 0, _L("[") );
+        tbuf.Append( _L("]") );
+    }
     sctx->iGC->DrawText( tbuf, lRect, baseline );
 
     /* Draw score, right-justified */
