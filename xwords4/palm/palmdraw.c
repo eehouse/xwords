@@ -513,7 +513,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         } else {
             width = FntCharsWidth( valBuf, len );
             WinDrawChars( valBuf, len, localR.left + localR.width - width,
-                          localR.top + localR.height - dctx->fntHeight - 1 );
+                          localR.top + localR.height - (10*doubler) );
         }
     }
 
