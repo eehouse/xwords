@@ -111,7 +111,7 @@ static XWBonusType frank_util_getSquareBonus( XW_UtilCtxt* uc,
 static XP_UCHAR* frank_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool frank_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                            XP_U16 turn, XP_Bool turnLost );
-static void frank_util_engineStarting( XW_UtilCtxt* uc );
+static void frank_util_engineStarting( XW_UtilCtxt* uc, XP_U16 nBlanks );
 static void frank_util_engineStopping( XW_UtilCtxt* uc );
 
 
@@ -1637,7 +1637,7 @@ frank_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #ifdef SHOW_PROGRESS
 static void
-frank_util_engineStarting( XW_UtilCtxt* uc )
+frank_util_engineStarting( XW_UtilCtxt* uc, XP_U16 nBlanks )
 {
     CXWordsWindow* self = (CXWordsWindow*)uc->closure;
     self->startProgressBar();
