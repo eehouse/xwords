@@ -446,3 +446,18 @@ RESOURCE DIALOG r_xwords_newgame_dlg
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     pages = r_xwords_newgame_pages;
 }
+
+RESOURCE DIALOG r_xwords_blank_picker
+{
+    title = "Tile picker";
+    buttons = R_EIK_BUTTONS_CONTINUE;
+    flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
+    items = {
+        DLG_LINE {
+            prompt = "Choose one";
+            type = EEikCtChoiceList; 
+            control = CHOICELIST { array_id = r_empty_choice; }; 
+            id = ESelBlankChoice; 
+        }
+    };
+}
