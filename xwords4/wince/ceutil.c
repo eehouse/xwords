@@ -69,9 +69,12 @@ ceGetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf, XP_U16* bLen )
 
     gotLen = (XP_U16)SendDlgItemMessage( hDlg, id, WM_GETTEXT, len, (long)wbuf );
     if ( gotLen > 0 ) {
+        XP_ASSERT( gotLen < len );
+        if ( gotLen >= len ) {
+            gotLen = len - 1;
+        }
         gotLen = WideCharToMultiByte( CP_ACP, 0, wbuf, gotLen,
                                       buf, len, NULL, NULL );
-        XP_ASSERT( gotLen < len );
         *bLen = gotLen;
         buf[gotLen] = '\0';
     } else {
