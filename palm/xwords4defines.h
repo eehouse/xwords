@@ -401,7 +401,7 @@
 #endif
 
 /* versioning stuff */
-#define XW_PALM_VERSION_STRING "4.1 rc1"
+#define XW_PALM_VERSION_STRING "4.1 rc2"
 #define CUR_PREFS_VERS 0x0405
 
 
