@@ -231,15 +231,13 @@ sym_draw_trayFinished( DrawCtx* /*dctx*/ )
 }
 
 static void
-makeRemText( XP_UCHAR* buf, XP_U16 bufLen, XP_S16 nLeft )
+makeRemText( TBuf16<64>* buf, XP_S16 nLeft )
 {
     if ( nLeft < 0 ) {
         nLeft = 0;
     }
-    const char* fmt = "Tiles left in pool: %d";
-
-    sprintf( (char*)buf, fmt, nLeft );
-    XP_ASSERT( XP_STRLEN(buf) < bufLen );
+    buf->Num( nLeft );
+    buf->Insert( 0, _L("Tiles left in pool: ") );
 } // makeRemText
 
 static void 
@@ -248,10 +246,8 @@ sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* /*r*/,
                          XP_U16* widthP, XP_U16* heightP )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
-    XP_UCHAR buf[64];
-    makeRemText( buf, sizeof(buf), nTilesLeft );
     TBuf16<64> tbuf;
-    tbuf.Copy( TPtrC8(buf) );
+    makeRemText( &tbuf, nTilesLeft );
 
     CFont* font = sctx->iScoreFont;
 	*widthP = (XP_S16)font->TextWidthInPixels( tbuf );
@@ -263,10 +259,8 @@ sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner,
                      XP_Rect* /*rOuter*/, XP_S16 nTilesLeft)
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
-    XP_UCHAR buf[64];
-    makeRemText( buf, sizeof(buf), nTilesLeft );
     TBuf16<64> tbuf;
-    tbuf.Copy( TPtrC8(buf) );
+    makeRemText( &tbuf, nTilesLeft );
 
     TRect lRect;
     symLocalRect( &lRect, rInner );
@@ -363,18 +357,9 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
     sctx->iGC->DrawText( tbuf, lRect, baseline,
                          CGraphicsContext::ERight );
 
-    /* Draw tiles left.  Not needed when tray can't be hidden perhaps. */
-/*     lRect.iTl.iX = lRect.iBr.iX; */
-/*     lRect.iBr.iX += KTilesLeftColumnWidth; */
-/*     if ( dsi->nTilesLeft >= 0 ) { */
-/*         tbuf.Num( dsi->nTilesLeft ); */
-/*         sctx->iGC->DrawText( tbuf, lRect, baseline, */
-/*                              CGraphicsContext::ERight ); */
-/*     } */
-
     /* Draw last move */
-    lRect.iTl.iX = lRect.iBr.iX + 3; /* 3 to give it some spacing from r-justified
-                                        score */
+    lRect.iTl.iX = lRect.iBr.iX + 6; /* 6 gives it some spacing from
+                                        r-justified score */
     lRect.iBr.iX += KLastMoveColumnWidth;
     XP_UCHAR buf[32];
     XP_U16 len = sizeof(buf);
@@ -399,24 +384,26 @@ sym_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect,
     lRect.Shrink( 1, 1 );
     lRect.SetHeight( lRect.Height() - TRAY_CURSOR_HT );
     sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
+    sctx->iGC->SetBrushStyle( CGraphicsContext::ESolidBrush );
+    sctx->iGC->SetBrushColor( sctx->colors[COLOR_WHITE]  );
 
     sctx->iGC->UseFont( sctx->iTileValueFont );
 
-    XP_UCHAR buf[4];
-    if ( score >= 0 ) {
-        XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%0d", score );
-    } else {
-        XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s", "???" );
-    }
-    TBuf16<64> bottomBuf;
-    bottomBuf.Copy( TPtrC8(buf) );
-    
-    TPoint point( lRect.iTl.iX, lRect.iBr.iY );
-    sctx->iGC->DrawText( bottomBuf, point );
+    TInt halfHeight = lRect.Height() / 2;
+    lRect.iBr.iY -= halfHeight;
+    sctx->iGC->DrawText( _L("Pts:"), lRect, halfHeight-2,
+                         CGraphicsContext::ERight );
 
-    TBuf16<64> topBuf( _L("Pts:") );
-    point.iY = lRect.Center().iY;
-    sctx->iGC->DrawText( topBuf, point );
+    TBuf16<8> buf;
+    if ( score >= 0 ) {
+        buf.Num( score );
+    } else {
+        buf.Copy( _L("???") );
+    }
+
+    lRect.iTl.iY += halfHeight;
+    lRect.iBr.iY += halfHeight;
+    sctx->iGC->DrawText( buf, lRect, halfHeight-2, CGraphicsContext::ERight );
 
     sctx->iGC->DiscardFont();
 }
@@ -447,18 +434,14 @@ textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect, TBool highlight )
 
     TBuf16<64> tbuf;
     tbuf.Copy( TPtrC8(text) );
-    TInt txtWidth = font->TextWidthInPixels( tbuf );
 
-    lRect->Shrink( 2, 2 );
-    TInt width = lRect->Width();
-
-    /* Center the text horizontally */
-    TPoint point( lRect->iTl.iX + ((width-txtWidth)/2), lRect->iBr.iY );
+    lRect->Shrink( 0, 2 );
 
     sctx->iGC->UseFont( font );
-    sctx->iGC->DrawText( tbuf, point ); 
+    sctx->iGC->DrawText( tbuf, *lRect, lRect->Height(), 
+                         CGraphicsContext::ECenter ); 
     sctx->iGC->DiscardFont();
-}
+} /* textInCell */
 
 static XP_Bool
 sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
@@ -466,7 +449,7 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
                    XP_UCHAR* text, XP_Bitmap bitmap,
                    XP_S16 /*owner*/, /* -1 means don't use */
                    XWBonusType bonus, HintAtts /*hintAtts*/,
-                   XP_Bool /*isBlank*/, XP_Bool highlight, 
+                   XP_Bool isBlank, XP_Bool highlight, 
                    XP_Bool isStar )
 {
     TRect lRect;
@@ -498,8 +481,17 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         drawBitmap( sctx, sctx->iStar, sctx->iStar, &lRect );
     }
 
+    if ( isBlank ) {
+        lRect.Shrink( 1, 0 );
+        sctx->iGC->DrawLine( lRect.iTl, TPoint(lRect.iTl.iX, lRect.iBr.iY ) );
+        lRect.Shrink( 1, 0 );
+        /* draws to right of points; second Shrink is easier than subbing 1
+           from x coords */
+        sctx->iGC->DrawLine( TPoint(lRect.iBr.iX, lRect.iTl.iY), lRect.iBr );
+    }
+
     return XP_TRUE;
-}
+} /* sym_draw_drawCell */
 
 static void
 sym_draw_invertCell( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/ )
@@ -537,28 +529,27 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 
     // now put the text in the thing
     if ( !!text ) {
-        sctx->iGC->UseFont( sctx->iTileFaceFont );
+        CONST_60 CFont* font = sctx->iTileFaceFont;
 
-        TBuf16<10> txtbuf;
-        txtbuf.Copy( TBuf8<10>(text) );
-        TInt ht = sctx->iTileFaceFont->HeightInPixels();
+        TBuf16<4> txtbuf;
+        txtbuf.Copy( TBuf8<4>(text) );
+        TInt ht = font->HeightInPixels();
         TPoint point( lRect.iTl.iX, lRect.iTl.iY + ht );
+
+        sctx->iGC->UseFont( font );
         sctx->iGC->DrawText( txtbuf, point );
         sctx->iGC->DiscardFont();
     }
 
     if ( val > 0 ) {
-        XP_UCHAR buf[4];
-        sprintf( (char*)buf, (const char*)"%d", (int)val );
-
         CONST_60 CFont* font = sctx->iTileValueFont;
-        sctx->iGC->UseFont( font );
 
         TBuf16<5> txtbuf;
-        txtbuf.Copy( TBuf8<5>(buf) );
-
+        txtbuf.Num( val );
         TInt width = font->TextWidthInPixels( txtbuf );
         TPoint point( lRect.iBr.iX - width, lRect.iBr.iY );
+
+        sctx->iGC->UseFont( font );
         sctx->iGC->DrawText( txtbuf, point );
         sctx->iGC->DiscardFont();
     }
