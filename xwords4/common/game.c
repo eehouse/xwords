@@ -166,9 +166,12 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     hasComms = stream_getU8( stream );
-    game->comms = hasComms? 
-        comms_makeFromStream( MPPARM(mpool) stream, util, sendProc, closure ):
-        (CommsCtxt*)NULL;
+    if ( hasComms ) {
+        game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, sendProc, closure );
+        comms_init( game->comms );
+    } else {
+        game->comms = NULL;
+    }
 #endif
     game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
 
