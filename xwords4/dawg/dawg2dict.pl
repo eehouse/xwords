@@ -87,13 +87,19 @@ sub readFaces($$$) {
     return $nChars;
 } # readFaces
 
-sub skipBitmaps($) {
+sub skipBitmap($) {
     my ( $fh ) = @_;
     my $buf;
     sysread( $fh, $buf, 1 );
     my $nCols = unpack( 'C', $buf );
-    die "not doing real bitmaps yet" if $nCols;
-}
+    if ( $nCols > 0 ) {
+        sysread( $fh, $buf, 1 );
+        my $nRows = unpack( 'C', $buf );
+        my $nBytes = (($nRows * $nCols) + 7) / 8;
+
+        sysread( $fh, $buf, $nBytes );
+    }
+} # skipBitmap
 
 sub getSpecials($$$) {
     my ( $fh, $nSpecials, $specRef ) = @_;
@@ -105,8 +111,8 @@ sub getSpecials($$$) {
         my $len = unpack( 'C', $buf );
         sysread( $fh, $buf, $len );
         push( @specials, $buf );
-        skipBitmaps( $fh );
-        skipBitmaps( $fh );
+        skipBitmap( $fh );
+        skipBitmap( $fh );
     }
 
     @{$specRef} = @specials;
@@ -141,6 +147,17 @@ sub nodeSizeFromFlags($) {
     }
 } # nodeSizeFromFlags
 
+sub mergeSpecials($$) {
+    my ( $facesRef, $specialsRef ) = @_;
+    for ( my $i = 0; $i < @$facesRef; ++$i ) {
+        my $ref = ord($$facesRef[$i]);
+        if ( $ref < 32 ) {
+            $$facesRef[$i] = $$specialsRef[$ref];
+            print STDERR "set $ref to $$specialsRef[$ref]\n";
+        }
+    }
+}
+
 sub prepXWD($$$$) {
     my ( $path, $facRef, $nodesRef, $startRef ) = @_;
 
@@ -164,6 +181,7 @@ sub prepXWD($$$$) {
 
     my @specials;
     getSpecials( *INFILE, $nSpecials, \@specials );
+    mergeSpecials( $facRef, \@specials );
 
     sysread( INFILE, $buf, 4 );
     $$startRef = unpack( 'N', $buf );
@@ -198,7 +216,7 @@ sub prepPDB($$$$) {
 
     die "too far" if $nRead > $offsets[0];
     while ( $nRead < $offsets[0] ) {
-	$nRead += sysread( INFILE, $buf, 1 );
+        $nRead += sysread( INFILE, $buf, 1 );
     }
 
     my $facesOffset = $offsets[1];
@@ -246,10 +264,10 @@ sub parseNode($$$$$) {
    #    . "next=$$nextEdge; ci=$$chrIndex\n", $node;
 } # parseNode
 
-sub printStr($) {
-    my ( $strRef ) = @_;
+sub printStr($$) {
+    my ( $strRef, $facesRef ) = @_;
 
-    print join( "", @$strRef ), "\n";
+    print join( "", map {$$facesRef[$_]} @$strRef), "\n";
 } # printStr
 
 
@@ -268,10 +286,9 @@ sub printDAWGInternal($$$$) {
 
         parseNode( $node, \$chrIndex, \$nextEdge, \$accepting, \$lastEdge );
 
-        die "index $chrIndex out of range" if $chrIndex > 26 || $chrIndex < 0;
-        push( @$str, $$facesRef[$chrIndex] );
+        push( @$str, $chrIndex );
         if ( $accepting ) {
-            printStr( $str );
+            printStr( $str, $facesRef );
         }
 
         if ( $nextEdge != 0 ) {
@@ -314,6 +331,15 @@ if ( $gFileType eq "xwd" ){
     prepXWD( $gInFile, \@faces, \@nodes, \$startIndex );
 } elsif ( $gFileType eq "pdb" ) {
     prepPDB( $gInFile, \@faces, \@nodes, \$startIndex );
+    print STDERR join( ",", @faces), "\n";
 }
 
 printDAWG( \@nodes, $startIndex, \@faces );
+
+if ( $gASCIIFacesFileName ) {
+    open FACES, "> $gASCIIFacesFileName";
+    foreach my $face (@faces) {
+        print FACES pack('cc', 0, $face );
+    }
+    close FACES;
+}
