@@ -183,13 +183,6 @@ typedef struct DictState {
     XP_U16 nDicts;
 } DictState;
 
-typedef struct ConnDlgAddrs {
-    XP_U32 remoteIP;
-    XP_U16 remotePort;
-    XP_U16 localPort;
-    CommsConnType conType;
-} ConnDlgAddrs;
-
 typedef struct PalmNewGameState {
     ListPtr playerNumList;
     XP_UCHAR* passwds[MAX_NUM_PLAYERS];
@@ -202,7 +195,7 @@ typedef struct PalmNewGameState {
     XP_Bool forwardChange;
     Connectedness curServerHilite;
 #ifdef BEYOND_IR
-    ConnDlgAddrs connAddrs;
+    CommsAddrRec addr;
     XP_Bool connsSettingChanged;
 #endif
 } PalmNewGameState;
@@ -212,10 +205,9 @@ typedef struct PalmDictList PalmDictList;
 #ifdef BEYOND_IR
 typedef struct NetLibStuff {
     UInt16 netLibRef;
-    XP_U16 listenPort;
-    NetSocketRef socketRef;
+    NetSocketRef socket;
 } NetLibStuff;
-#define socketIsOpen(g) ((g)->nlStuff.listenPort != 0)
+#define socketIsOpen(g) ((g)->nlStuff.socket != -1)
 #endif
 
 #define MAX_DLG_PARAMS 2
@@ -373,6 +365,8 @@ void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index,
 XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
 Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
                  XP_S16 titleID );
+void checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream, 
+                      CommsAddrRec* addr );
 
 #ifdef XW_TARGET_PNO
 # define READ_UNALIGNED16(n) read_unaligned16((unsigned char*)(n))
