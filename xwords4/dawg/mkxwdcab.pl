@@ -15,10 +15,17 @@ sub usage() {
 
 my $cabwiz = $ENV{"CABWIZPATH"};
 if ( ! -x $cabwiz ) {
-    print STDERR "Cabwiz app not found or not executable; " .
-        "please define environment variable CABWIZPATH.\n" .
-        "(Hint: search for a file called \"Cabwiz.exe\".)\n";
-    exit 1;
+    print STDERR <<EOF;
+******************************************************************************
+* Unable to locate Cabwiz.exe.  If you are on a windoze system and
+* that file exists, please define the environment variable CABWIZPATH
+* to its complete pathname.  If you do not have that binary and don\'t
+* want to see this warning set CABWIZPATH to something like /bin/true.
+*
+* This error is non-fatal, but no .CAB file will be built.
+******************************************************************************
+EOF
+    exit 0;
 }
 
 while ( my $parm = shift( @ARGV ) ) {
@@ -30,7 +37,6 @@ usage() if !$path;
 
 my $baseName = basename($path);
 my $dirName = dirname($path);
-print STDERR "got baseName: $baseName\n";
 
 $baseName =~ m|^(.*)\.xwd$|;
 my $name = $1;
@@ -38,7 +44,8 @@ usage() if !$name;
 
 my $infname = $name . ".inf";
 if ( -f $infname && !$force ) {
-    print STDERR "file $infname already exists and -f flag not passed\n";
+    print STDERR "file $infname already exists and -f (clobber) flag "
+        . "not passed\n";
     exit 1;
 }
 
