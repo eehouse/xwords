@@ -124,7 +124,7 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 # error "pick one!!!"
 #endif
 
-
+#define XP_LD "%ld"
 
 #endif
 
