@@ -159,12 +159,20 @@ TBool CXWAskDlg::OkToExitL( TInt aButtonID /* pressed button */ )
 CXWAskDlg::DoAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream )
 {
     CXWAskDlg* me = new(ELeave)CXWAskDlg( MPPARM(mpool) aStream, aKillStream );
-    return me->ExecuteLD( R_XWORDS_INFO_ONLY );
+    return me->ExecuteLD( R_XWORDS_CONFIRMATION_QUERY );
 }
 
 /* static */ TBool
 CXWAskDlg::DoAskDlg( MPFORMAL TBuf16<128>* aMessage )
 {
     CXWAskDlg* me = new(ELeave)CXWAskDlg( MPPARM(mpool) aMessage );
-    return me->ExecuteLD( R_XWORDS_INFO_ONLY );
+    return me->ExecuteLD( R_XWORDS_CONFIRMATION_QUERY );
 }
+
+/* static */ void
+CXWAskDlg::DoInfoDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream )
+{
+    CXWAskDlg* me = new(ELeave)CXWAskDlg( MPPARM(mpool) aStream, aKillStream );
+    (void)me->ExecuteLD( R_XWORDS_INFO_ONLY );
+}
+
