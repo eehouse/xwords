@@ -31,10 +31,11 @@
 #include "palmdict.h"
 #include "strutils.h"
 #include "xwords4defines.h"
+#include "LocalizedStrIncludes.h"
 
 #define TYPE_DAWG 'DAWG'
 #ifdef NODE_CAN_4
-# define TYPE_XWRDICT 'Xwr4'
+# define TYPE_XWRDICT 'XwrD'
 #else
 # define TYPE_XWRDICT 'Xwr3'
 #endif
@@ -51,7 +52,7 @@ struct PalmDictList {
 //////////////////////////////////////////////////////////////////////////////
 // Prototypes
 //////////////////////////////////////////////////////////////////////////////
-static PalmDictList* dictListMakePriv( MPFORMAL XP_U32 creator );
+static PalmDictList* dictListMakePriv( MPFORMAL XP_U32 creatorSought );
 
 
 XP_Bool
@@ -168,7 +169,7 @@ addEntry( MPFORMAL PalmDictList** dlp, DictListEntry* dle )
 
 static void
 searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
-           unsigned char* path, XP_U16 pathSize )
+           unsigned char* path, XP_U16 pathSize, XP_U32 creatorSought )
 { 
     Err err;
     FileRef dirRef;
@@ -195,7 +196,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                 path[len] = separator;
                 path[len+1] = '\0';
                 searchDir( MPPARM(mpool) dlp, volNum, separator, 
-                           path, pathSize );
+                           path, pathSize, creatorSought );
             } else if ( (ext = (XP_UCHAR*)StrStr( (const char*)path, ".pdb" ))
                         != NULL ) {
 
@@ -218,7 +219,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                     VFSFileClose( fileRef );
                     
                     if ( (err == errNone) && (type == TYPE_DAWG) && 
-                         (creator == TYPE_XWRDICT) ) {
+                         (creator == creatorSought ) ) {
                         DictListEntry dl;
 
                         dl.path = copyString( MPPARM(mpool) path );
@@ -239,7 +240,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
 } /* searchDir */
 
 static void
-tryVFSSearch( MPFORMAL PalmDictList** dlp )
+tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought )
 {
     Err err;
     UInt16 volNum;
@@ -262,7 +263,7 @@ tryVFSSearch( MPFORMAL PalmDictList** dlp )
         if ( err == errNone ) {
             pathStr[1] = '\0';
             searchDir( MPPARM(mpool) dlp, volNum, pathStr[0],
-                       pathStr, sizeof(pathStr) );
+                       pathStr, sizeof(pathStr), creatorSought );
         }
     }
 
@@ -282,7 +283,7 @@ DictListMake( MPFORMAL_NOCOMMA )
 }
 
 static PalmDictList* 
-dictListMakePriv( MPFORMAL XP_U32 creator )
+dictListMakePriv( MPFORMAL XP_U32 creatorSought )
 {
     Err err;
     DmSearchStateType stateType;
@@ -296,7 +297,7 @@ dictListMakePriv( MPFORMAL XP_U32 creator )
     /* first the DM case */
     while ( !found ) {
         err = DmGetNextDatabaseByTypeCreator( newSearch, &stateType, TYPE_DAWG, 
-                                              creator/* APPID */, 
+                                              creatorSought,
                                               false,// onlyLatestVers,
                                               &cardNo, &dbID );
         if ( err != 0 ) {
@@ -325,13 +326,13 @@ dictListMakePriv( MPFORMAL XP_U32 creator )
     /* then the VFS case */
     err = FtrGet( sysFileCVFSMgr, vfsFtrIDVersion, &vers );
     if ( err == errNone ) {
-        tryVFSSearch( MPPARM(mpool) &dl );
+        tryVFSSearch( MPPARM(mpool) &dl, creatorSought );
     }
 
     cleanList( &dl );
 
     return dl;
-} /* DictListMake */
+} /* dictListMakePriv */
 
 void
 DictListFree( MPFORMAL PalmDictList* dl )
@@ -360,7 +361,7 @@ DictListCount( PalmDictList* dl )
 
 #ifdef NODE_CAN_4
 
-static void
+static XP_Bool
 convertOneDict( UInt16 cardNo, LocalID dbID )
 {
     Err err;
@@ -370,24 +371,8 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
     dawg_header* header;
     dawg_header tmp;
     XP_U16 siz;
-
-#ifdef DEBUG
-    err = DmDatabaseInfo( cardNo, dbID, NULL,
-                          NULL, NULL, NULL, 
-                          NULL, NULL, 
-                          NULL, NULL, 
-                          NULL, NULL, 
-                          &creator );
-    XP_ASSERT( creator == 'Xwr3' );
-#endif
-    creator = 'Xwr4';
-    err = DmSetDatabaseInfo( cardNo, dbID, NULL,
-                             NULL, NULL, NULL, 
-                             NULL, NULL, 
-                             NULL, NULL, 
-                             NULL, NULL, 
-                             &creator );
-    XP_ASSERT( err == errNone );
+    unsigned char charTableRecNum;
+    XP_U16 nChars;
 
     /* now modify the flags */
     ref = DmOpenDatabase( cardNo, dbID, dmModeReadWrite );
@@ -399,12 +384,47 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
     }
 
     tmp.flags = 0x0002;
-    DmWrite( MemHandleLock(h), OFFSET_OF(dawg_header,flags), &tmp.flags, 
+    header = (dawg_header*)MemHandleLock(h);
+    charTableRecNum = header->charTableRecNum;
+    DmWrite( header, OFFSET_OF(dawg_header,flags), &tmp.flags, 
              sizeof(tmp.flags) );
     MemHandleUnlock(h);
     DmReleaseRecord( ref, 0, true );
-    DmCloseDatabase( ref );
 
+    /* Now convert to 16-bit psuedo-unicode */
+    h = DmGetRecord( ref, charTableRecNum );
+    XP_ASSERT( !!h );
+    nChars = MemHandleSize( h );
+    err = MemHandleResize( h, nChars * 2 );
+    XP_ASSERT( err == errNone );
+
+    if ( err == errNone ) {
+        XP_U16 buf[MAX_UNIQUE_TILES+1];
+        XP_S16 i;
+        XP_U8* ptr = (XP_U8*)MemHandleLock( h );
+        for ( i = 0; i < nChars; ++i ) {
+            buf[i] = ptr[i];
+        }
+        DmWrite( ptr, 0, buf, nChars * sizeof(buf[0]) );
+        MemHandleUnlock(h);
+    }
+    err = DmReleaseRecord( ref, charTableRecNum, true );
+    XP_ASSERT( err == errNone );
+
+    err = DmCloseDatabase( ref );
+    XP_ASSERT( err == errNone );
+
+    if ( err == errNone ) {
+        creator = TYPE_XWRDICT;
+        err = DmSetDatabaseInfo( cardNo, dbID, NULL,
+                                 NULL, NULL, NULL, 
+                                 NULL, NULL, 
+                                 NULL, NULL, 
+                                 NULL, NULL, 
+                                 &creator );
+        XP_ASSERT( err == errNone );
+    }
+    return err == errNone;
 } /* convertOneDict */
 
 void
@@ -412,24 +432,50 @@ offerConvertOldDicts( PalmAppGlobals* globals )
 {
     PalmDictList* dl = dictListMakePriv( MPPARM(globals->mpool) 'Xwr3' );
     XP_U16 count = DictListCount(dl);
+    Err err;
 
-    if ( count > 0 ) {
+    if ( count > 0 && palmaskFromStrId( globals, STR_CONFIRM_CONVERTDICT,
+                                        -1, STR_NO ) ) {
 
-        if ( palmask( globals, 
-                      "Do you want to convert existing Crosswords "
-                      "dictionaries to the new format? "
-                      "The change is not reversible.", 
-                      NULL, -1 ) ) {
+        XP_U16 i;
+        for ( i = 0; i < count; ++i ) {
+            DictListEntry* dle;
+            if ( getNthDict( dl, i, &dle ) ) {
 
-            XP_U16 i;
-            for ( i = 0; i < count; ++i ) {
-                DictListEntry* dle;
-                if ( getNthDict( dl, i, &dle ) ) {
+                if ( dle->location == DL_STORAGE ) {
+                    convertOneDict( dle->u.dmData.cardNo, 
+                                    dle->u.dmData.dbID );
+                } else { 
+                    UInt16 cardNo;
+                    LocalID dbID;
+                    UInt16 volRefNum = dle->u.vfsData.volNum;
 
-                    if ( dle->location == DL_STORAGE ) {
-                        convertOneDict( dle->u.dmData.cardNo, dle->u.dmData.dbID );
+                    XP_ASSERT( dle->location == DL_VFS );
+
+                    XP_LOGF( "trying %s", dle->path );
+
+                    /* copy from SD card to storage, convert, copy back */
+                    err = VFSImportDatabaseFromFile( volRefNum,
+                                                     (const char*)dle->path,
+                                                     &cardNo, &dbID );
+                    XP_LOGF( "VFSImportDatabaseFromFile => %d", err );
+                    if ( err == errNone && convertOneDict( cardNo, dbID ) ) {
+
+                        err = VFSFileDelete( volRefNum, dle->path );
+                        XP_LOGF( "VFSFileDelete=>%d", err );
+                        if ( err == errNone ) {
+
+                            err = VFSExportDatabaseToFile( volRefNum,
+                                                           (const char*)dle->path,
+                                                           cardNo, dbID );
+                            
+                            XP_LOGF( "VFSExportDatabaseToFile => %d", err );
+
+                            XP_ASSERT( err == errNone );
+                            err = DmDeleteDatabase( cardNo, dbID );
+                            XP_ASSERT( err == errNone );
+                        }
                     }
-
                 }
             }
         }
