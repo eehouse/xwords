@@ -30,6 +30,8 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
+#include <sstream>
 #include <pthread.h>
 #include <assert.h>
 #include <sys/select.h>
@@ -42,6 +44,18 @@
 
 /* this is *only* for testing.  Don't abuse!!!! */
 extern pthread_mutex_t gCookieMapMutex;
+
+typedef int (*CmdPtr)( int socket, const char** args );
+
+typedef struct FuncRec {
+    char* name;
+    CmdPtr func;
+} FuncRec;
+
+static int cmd_quit( int socket, const char** args );
+static int cmd_printCookies( int socket, const char** args );
+static int cmd_lock( int socket, const char** args );
+static int cmd_help( int socket, const char** args );
 
 static void
 print_sock( int sock, const char* what, ... )
@@ -57,53 +71,94 @@ print_sock( int sock, const char* what, ... )
     send( sock, buf, strlen(buf), 0 );
 }
 
-static void
-print_help( int socket )
-{
-    char* help = 
-        "Welcome to the console\n"
-        "Commands are:\n"
-        "? : prints this message\n"
-        "q : quits\n"
-        "cook : lists active cookies\n"
-        "lock : locks the main cref mutex\n"
-        "unlock : UNlocks the main cref mutex\n"
-        ;
-    print_sock( socket, help );
-} /* print_help */
+static const FuncRec gFuncs[] = {
+    { "q", cmd_quit },
+    { "cook", cmd_printCookies },
+    { "lock", cmd_lock },
+    { "help", cmd_help },
+    { "?", cmd_help },
+};
 
-static void
-print_cookies( int socket )
+static int
+cmd_quit( int socket, const char** args )
 {
-    print_sock( socket, "******************************" );
-    
-    CookieMapIterator iter = CookieRef::GetCookieNameIterator();
-    const char* str;
-    for ( str = iter.Next(); str != NULL; str = iter.Next() ) {
-        print_sock( socket, str );
+    if ( 0 == strcmp( "help", args[1] ) ) {
+        print_sock( socket, "%s (close console connection)", args[0] );
+        return 0;
     }
-
-    print_sock( socket, "******************************" );
+    return 1;
 }
 
 static int
-handle_command( const char* buf, int sock )
+cmd_printCookies( int socket, const char** args )
 {
-    if ( 0 == strcmp( buf, "?" ) ) {
-        print_help( sock );
-    } else if ( 0 == strcmp( buf, "cook" ) ) {
-        print_cookies( sock );
-    } else if ( 0 == strcmp( buf, "lock" ) ) {
-        pthread_mutex_lock( &gCookieMapMutex );
-    } else if ( 0 == strcmp( buf, "unlock" ) ) {
-        pthread_mutex_unlock( &gCookieMapMutex );
-    } else if ( 0 == strcmp( buf, "q" ) ) {
-        return 0;
+    if ( 0 == strcmp( "help", args[1] ) ) {
+        print_sock( socket, "%s (list all cookies)", args[0] );
     } else {
-        print_sock( sock, "unknown command: \"%s\"", buf );
-        print_help( sock );
+        print_sock( socket, "******************************" );
+    
+        CookieMapIterator iter = CookieRef::GetCookieNameIterator();
+        const char* str;
+        for ( str = iter.Next(); str != NULL; str = iter.Next() ) {
+            print_sock( socket, str );
+        }
+
+        print_sock( socket, "******************************" );
     }
-    return 1;
+    return 0;
+}
+
+static int
+cmd_lock( int socket, const char** args )
+{
+    if ( 0 == strcmp( "on", args[1] ) ) {
+        pthread_mutex_lock( &gCookieMapMutex );
+    } else if ( 0 == strcmp( "off", args[1] ) ) {
+        pthread_mutex_unlock( &gCookieMapMutex );
+    } else {
+        print_sock( socket, "%s [on|off] (lock/unlock mutex)", args[0] );
+    }
+    
+    return 0;
+} /* cmd_lock */
+
+static int
+cmd_help( int socket, const char** args )
+{
+    if ( 0 == strcmp( "help", args[1] ) ) {
+    } else {
+
+        const char* help[] = { NULL, "help", NULL, NULL };
+        const FuncRec* fp = gFuncs;
+        const FuncRec* last = fp + (sizeof(gFuncs) / sizeof(gFuncs[0]));
+        while (  fp < last ) {
+            help[0] = fp->name;
+            (*fp->func)( socket, help );
+            ++fp;
+        }
+    }
+    return 0;
+}
+
+static int
+dispatch_command( int sock, const char** args )
+{
+    const char* cmd = args[0];
+    const FuncRec* fp = gFuncs;
+    const FuncRec* last = fp + (sizeof(gFuncs) / sizeof(gFuncs[0]));
+    while (  fp < last ) {
+        if ( 0 == strcmp( cmd, fp->name ) ) {
+            return (*fp->func)( sock, args );
+        }
+        ++fp;
+    }
+    
+    if ( fp == last ) {
+        print_sock( sock, "unknown command: \"%s\"", cmd );
+        cmd_help( sock, args );
+    }
+
+    return 0;
 }
 
 static void*
@@ -118,8 +173,20 @@ ctrl_thread_main( void* arg )
             break;
         }
 
-        buf[nGot-2] = '\0';     /* kill \r\n stuff */
-        if ( !handle_command( buf, socket ) ) {
+        buf[nGot] = '\0';
+
+        string arg0, arg1, arg2, arg3;
+        istringstream cmd( buf );
+        cmd >> arg0 >> arg1 >> arg2 >> arg3;
+
+        const char* args[] = {
+            arg0.c_str(), 
+            arg1.c_str(), 
+            arg2.c_str(), 
+            arg3.c_str()
+        };
+
+        if ( dispatch_command( socket, args ) ) {
             break;
         }
     }
