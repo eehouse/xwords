@@ -48,6 +48,7 @@ typedef struct CEAppGlobals {
     XW_UtilCtxt util;
     VTableMgr* vtMgr;
     XP_U16* bonusInfo;
+    wchar_t* lastDefaultDir;
 
     CEAppPrefs appPrefs;
 
@@ -112,5 +113,12 @@ typedef struct CEDrawCtx {
 } CEDrawCtx;
 
 DrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );
+
+#ifdef DEBUG
+void logLastError(XP_UCHAR* comment );
+#else
+# define logLastError(c)
+#endif
+
 
 #endif /* _CEMAIN_H_ */
