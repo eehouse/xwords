@@ -80,7 +80,6 @@ CXWordsAppUi::HandleKeyEventL( const TKeyEvent& aKeyEvent,
                                         TEventCode aType )
 {
     if ( aType == EEventKey ) {
-        TChar chr(aKeyEvent.iCode);
         XP_LOGF( "got iScanCode: %d (%c)", aKeyEvent.iScanCode,
                  aKeyEvent.iScanCode );
         if ( iAppView->HandleKeyEvent( aKeyEvent ) ) {
