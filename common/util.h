@@ -70,7 +70,7 @@ typedef enum {
 typedef struct PickInfo {
     XP_UCHAR4* curTiles;
     XP_U16 nCurTiles;
-    XP_U16 nTotal;
+    XP_U16 nTotal;              /* count to fetch for turn, <= MAX_TRAY_TILES */
     XP_U16 thisPick;            /* <= nTotal */
     PICK_WHY why;
 } PickInfo;
