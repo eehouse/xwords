@@ -52,22 +52,22 @@ CFG=xwords - Win32 (WCE ARM) Debug
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-RSC=rc.exe
-# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-# ADD RSC /l 0x409 /d "NDEBUG" /d "ARM" /d "_ARM_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "MY_COLOR_SEL" /d "XWFEATURE_SEARCHLIMIT" /r
-CPP=clarm.exe
-# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /W3 /I "." /I "../common" /D "ARM" /D "_ARM_" /D "NDEBUG" /D "XWFEATURE_CE_EDITCOLORS" /D "XWFEATURE_SEARCHLIMIT" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "MY_COLOR_SEL" /YX /Oxs /M$(CECrtMT) /c
-MTL=midl.exe
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # ADD LINK32 commctrl.lib coredll.lib aygshell.lib winsock.lib commdlg.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /out:"ARMRel/Crosswords.exe" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+MTL=midl.exe
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+CPP=clarm.exe
+# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /I "." /I "../common" /D "ARM" /D "_ARM_" /D "NDEBUG" /D "XWFEATURE_CE_EDITCOLORS" /D "XWFEATURE_SEARCHLIMIT" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "MY_COLOR_SEL" /YX /Oxs /M$(CECrtMT) /c
+RSC=rc.exe
+# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
+# ADD RSC /l 0x409 /d "NDEBUG" /d "ARM" /d "_ARM_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "MY_COLOR_SEL" /d "XWFEATURE_SEARCHLIMIT" /r
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARM) Debug"
 
@@ -86,22 +86,22 @@ LINK32=link.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-RSC=rc.exe
-# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "MY_COLOR_SEL" /d "XWFEATURE_SEARCHLIMIT" /r
-CPP=clarm.exe
-# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D "XWFEATURE_CE_EDITCOLORS" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "MY_COLOR_SEL" /D "XWFEATURE_SEARCHLIMIT" /YX /M$(CECrtMTDebug) /c
-MTL=midl.exe
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # ADD LINK32 winsock.lib commctrl.lib coredll.lib commdlg.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"ARMDbg/Crosswords.exe" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+MTL=midl.exe
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+CPP=clarm.exe
+# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D "XWFEATURE_CE_EDITCOLORS" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "MY_COLOR_SEL" /D "XWFEATURE_SEARCHLIMIT" /YX /M$(CECrtMTDebug) /c
+RSC=rc.exe
+# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
+# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d "FEATURE_TRAY_EDIT" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "MY_COLOR_SEL" /d "XWFEATURE_SEARCHLIMIT" /r
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Release"
 
@@ -134,7 +134,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib $(CEx86Corelibc) aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /subsystem:$(CESubsystem) /MACHINE:IX86
-# ADD LINK32 winsock.lib $(CEx86Corelibc) aygshell.lib commctrl.lib coredll.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /out:"X86Rel/Crosswords.exe" /subsystem:$(CESubsystem) /MACHINE:IX86
+# ADD LINK32 $(CEx86Corelibc) aygshell.lib commctrl.lib coredll.lib winsock.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /out:"X86Rel/Crosswords.exe" /subsystem:$(CESubsystem) /MACHINE:IX86
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
@@ -168,7 +168,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib $(CEx86Corelibc) aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /subsystem:$(CESubsystem) /MACHINE:IX86
-# ADD LINK32 winsock.lib $(CEx86Corelibc) aygshell.lib commctrl.lib coredll.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /out:"X86Dbg/Crosswords.exe" /subsystem:$(CESubsystem) /MACHINE:IX86
+# ADD LINK32 $(CEx86Corelibc) aygshell.lib commctrl.lib coredll.lib winsock.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /out:"X86Dbg/Crosswords.exe" /subsystem:$(CESubsystem) /MACHINE:IX86
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Debug"
@@ -202,7 +202,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib winsock.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib winsock.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE emulator) Debug"
 
@@ -235,7 +235,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib $(CEx86Corelibc) /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /subsystem:$(CESubsystem) /MACHINE:IX86
-# ADD LINK32 $(CEx86Corelibc) commctrl.lib coredll.lib winsock.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /subsystem:$(CESubsystem) /MACHINE:IX86
+# ADD LINK32 $(CEx86Corelibc) commctrl.lib coredll.lib winsock.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /subsystem:$(CESubsystem) /MACHINE:IX86
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
 
@@ -269,7 +269,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib winsock.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib winsock.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib winsock.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ENDIF 
 
@@ -614,6 +614,12 @@ DEP_CPP_CEASK=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEASK=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -773,6 +779,12 @@ DEP_CPP_CEBLA=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEBLA=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -931,6 +943,12 @@ DEP_CPP_CECLR=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CECLR=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -1098,6 +1116,12 @@ DEP_CPP_CEDIC=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEDIC=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -1258,6 +1282,12 @@ DEP_CPP_CEDRA=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEDRA=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -1438,6 +1468,12 @@ DEP_CPP_CEGIN=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEGIN=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -1594,6 +1630,12 @@ DEP_CPP_CEHNT=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEHNT=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -1790,6 +1832,12 @@ DEP_CPP_CEMAI=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEMAI=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\ARMV4\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE emulator) Debug"
@@ -1826,6 +1874,12 @@ DEP_CPP_CEMAI=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEMAI=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -2004,6 +2058,12 @@ DEP_CPP_CEPRE=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEPRE=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -2166,6 +2226,12 @@ DEP_CPP_CESTR=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CESTR=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
@@ -2320,6 +2386,12 @@ DEP_CPP_CEUTI=\
 	".\stdafx.h"\
 	".\xptypes.h"\
 	".\xwords4.h"\
+	{$(INCLUDE)}"aygshell.h"\
+	{$(INCLUDE)}"sipapi.h"\
+	{$(INCLUDE)}"winuserm.h"\
+	
+NODEP_CPP_CEUTI=\
+	"..\..\..\..\..\..\..\..\evc4\wce420\POCKET PC 2003\Include\emulator\vibrate.h"\
 	
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARMV4) Release"
