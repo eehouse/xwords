@@ -1332,7 +1332,9 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     TrayTileSet oneTile;
     PickInfo pi;
     XP_UCHAR4 curTray[MAX_TRAY_TILES];
+#ifdef FEATURE_TRAY_EDIT
     DictionaryCtxt* dict = model_getDictionary( server->vol.model );
+#endif
 
     XP_ASSERT( !!pool );
 #ifdef FEATURE_TRAY_EDIT
