@@ -76,10 +76,12 @@
 #define IDC_TOTAL_LABEL                 1047
 #define IDC_REMOTE_LABEL                1048
 #define IDC_PICKTILES                   1049
-#define IDC_PICKALL                     1050
-#define IDC_BPICK                       1051
-#define IDC_CPICK                       1052
-#define IDC_PICKMSG                     1053
+#define IDC_BPICK                       1050
+#define IDC_PICKMSG                     1051
+#ifdef FEATURE_TRAY_EDIT
+# define IDC_CPICK                       1052
+# define IDC_PICKALL                     1053
+#endif
 
 #define IDM_FILE_EXIT                   40002
 #define IDM_HELP_ABOUT                  40003
