@@ -41,6 +41,7 @@
 #include "symdraw.h"
 #include "symaskdlg.h"
 #include "symdict.h"
+#include "symgamdl.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -98,6 +99,7 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
     SetBlank();
 
     iRequestTimer = CIdle::NewL( CActive::EPriorityIdle );
+    iTimerRunCount = 0;
 
     // Set the control's border
 //     SetBorder(TGulBorder::EFlatContainer);
@@ -122,8 +124,10 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
     iStartTime.HomeTime();
     TDateTime tdtime = iStartTime.DateTime();
     // seed random with current microseconds, or so....  whatever.
-    srand( (((tdtime.Minute() * 60) + tdtime.Second()) * 1000 )
-           + tdtime.MicroSecond() );
+    TInt seed = (((tdtime.Minute() * 60) + tdtime.Second()) * 1000 )
+        + tdtime.MicroSecond();
+    XP_LOGF( "seeding srand with %d", seed );
+    srand( seed );
 
 #ifdef MEM_DEBUG
     mpool = mpool_make();
@@ -316,9 +320,12 @@ sym_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
 {
 }
 
-static void
-sym_util_notifyGameOver( XW_UtilCtxt* uc )
+/* static */ void
+CXWordsAppView::sym_util_notifyGameOverL( XW_UtilCtxt* uc )
 {
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+    self->DrawNow();
+    self->DisplayFinalScoresL();
 }
 
 static XP_Bool
@@ -488,7 +495,7 @@ CXWordsAppView::SetUpUtil()
     vtable->m_util_askPassword = sym_util_askPassword;
     vtable->m_util_trayHiddenChange = sym_util_trayHiddenChange;
     vtable->m_util_yOffsetChange = sym_util_yOffsetChange;
-    vtable->m_util_notifyGameOver = sym_util_notifyGameOver;
+    vtable->m_util_notifyGameOver = sym_util_notifyGameOverL;
     vtable->m_util_hiliteCell = sym_util_hiliteCell;
     vtable->m_util_engineProgressCallback = sym_util_engineProgressCallback;
     vtable->m_util_setTimer = sym_util_setTimer;
@@ -596,7 +603,13 @@ CXWordsAppView::HandleCommand( TInt aCommand )
 //         draw = server_do( iGame.server ); // get tiles assigned etc.
 //         break;
 
-    case XW_NEWGAME_COMMAND:
+    case XW_NEWGAME_COMMAND: {
+        CXWGameInfoDlg* gameInfo = 
+            new(ELeave)CXWGameInfoDlg( MPPARM_NOCOMMA(mpool) );
+        (void)gameInfo->ExecuteLD( R_XWORDS_NEWGAME_DLG );
+    }
+        break;
+
     case XW_SAVEDGAMES_COMMAND:
     case XW_PREFS_COMMAND:
     case XW_ABOUT_COMMAND:
@@ -605,7 +618,16 @@ CXWordsAppView::HandleCommand( TInt aCommand )
     case XW_REMAIN_COMMAND:
     case XW_CURINFO_COMMAND:
     case XW_HISTORY_COMMAND:
+        break;
+
     case XW_FINALSCORES_COMMAND:
+        if ( server_getGameIsOver( iGame.server ) ) {
+            DisplayFinalScoresL();
+        } else if ( AskFromResId( R_CONFIRM_END_GAME ) ) {
+            server_endGame( iGame.server );
+            draw = ETrue;
+        }
+        break;
 
     case XW_HINT_COMMAND:
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -725,3 +747,33 @@ CXWordsAppView::TimerCallback( TAny* aPtr )
     return --self->iTimerRunCount > 0;
 }
 
+XWStreamCtxt* 
+CXWordsAppView::MakeSimpleStream( MemStreamCloseCallback cb )
+{
+    return mem_stream_make( MPPARM(mpool)
+                            iVtMgr, (void*)this, 
+                            CHANNEL_NONE, cb );
+} /* MakeSimpleStream */
+
+void
+CXWordsAppView::DisplayFinalScoresL()
+{
+    XWStreamCtxt* stream = MakeSimpleStream( NULL );
+    User::LeaveIfNull( stream );
+
+    server_writeFinalScores( iGame.server, stream );
+
+    CXWAskDlg* info = new(ELeave)CXWAskDlg( MPPARM(mpool) 
+                                            stream, ETrue );
+    (void)info->ExecuteLD( R_XWORDS_INFO_ONLY );
+} /* displayFinalScores */
+
+TBool
+CXWordsAppView::AskFromResId( TInt aResource )
+{
+    TBuf16<128> message;
+    StringLoader::Load( message, aResource );
+
+    CXWAskDlg* query = new(ELeave)CXWAskDlg( MPPARM(mpool) &message );
+    return 0 != query->ExecuteLD( R_XWORDS_CONFIRMATION_QUERY );
+}
