@@ -51,6 +51,8 @@ enum {
     STRD_TRADED,
     STR_LOSTTURN,
 
+    STRS_VALUES_HEADER,
+
     STR_NOT_USED
 };
 
