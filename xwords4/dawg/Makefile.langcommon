@@ -46,7 +46,7 @@ endif
 ifeq ($(TARGET_TYPE),PALM)
 
 ifdef NEWDAWG
-	PDBTYPE = Xwr4
+	PDBTYPE = XwrD
 else
 	PDBTYPE = Xwr3
 endif
