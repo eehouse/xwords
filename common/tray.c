@@ -118,7 +118,6 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
             if ( (board->trayVisState != TRAY_HIDDEN) && dictionary != NULL ) {
                 XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
 
-                XP_LOGF( "turn=%d", turn );
                 if ( turn >= 0 ) {
                     XP_U16 numInTray = showFaces?
                         model_getNumTilesInTray( board->model, turn ):
