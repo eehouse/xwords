@@ -2270,8 +2270,75 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incomming )
 #endif
 
 void 
-server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
+server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
                          XP_U16 nCols )
+{
+    DictionaryCtxt* dict;
+    Tile tile;
+    XP_U16 nChars, nPrinted;
+    XP_UCHAR buf[48];
+    XP_UCHAR* fmt = util_getUserString( server->vol.util, STRS_VALUES_HEADER );
+    XP_UCHAR* dname;
+
+    XP_ASSERT( !!server->vol.model );
+
+    dict = model_getDictionary( server->vol.model );
+    dname = dict_getName( dict );
+    StrPrintF( buf, fmt, dname );
+    stream_putBytes( stream, buf, XP_STRLEN(buf) );
+
+    nChars = dict_numTileFaces( dict );
+
+    for ( tile = 0, nPrinted = 0; ; ) {
+        XP_UCHAR buf[24];
+        XP_UCHAR face[4];
+        XP_U16 count, value;
+
+        count = dict_numTiles( dict, tile );
+
+        if ( count > 0 ) {
+            dict_tilesToString( dict, &tile, 1, face );
+            value = dict_getTileValue( dict, tile );
+
+            XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d/%d", 
+                         face, count, value );
+            stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+        }
+
+        if ( ++tile >= nChars ) {
+            break;
+        } else if ( count > 0 ) {
+            if ( ++nPrinted % nCols == 0 ) {
+                stream_putBytes( stream, XP_CR, (XP_U16)XP_STRLEN(XP_CR) );
+            } else {
+                stream_putBytes( stream, (void*)"      ", 3 );
+            }
+        }
+    }
+} /* server_formatDictCounts */
+
+static void
+putNTiles( XP_UCHAR* buf, const XP_UCHAR* face, XP_U16 count )
+{
+    XP_U16 done = 0;
+    XP_U16 len = XP_STRLEN( face );
+    while ( count-- != 0 ) {
+        XP_STRCAT( buf + done, face );
+        done += len;
+        if ( count > 0 ) {
+            XP_STRCAT( buf + done, "." );
+            ++done;
+        }
+    }
+} /* putNTiles */
+
+/* Print the faces of all tiles left in the pool, including those currently in
+ * trays !unless! player is >= 0, in which case his tiles get removed from the
+ * pool.  The idea is to show him what tiles are left in play.
+ */
+void
+server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
+                             XP_S16 player )
 {
     DictionaryCtxt* dict;
     Tile tile;
@@ -2286,7 +2353,7 @@ server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
     XP_ASSERT( !!server->vol.model );
 
     XP_MEMSET( counts, 0, sizeof(counts) );
-    model_countAllTrayTiles( server->vol.model, counts );
+    model_countAllTrayTiles( server->vol.model, counts, player );
 
     dict = model_getDictionary( server->vol.model );
     nChars = dict_numTileFaces( dict );
@@ -2294,33 +2361,26 @@ server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
     for ( tile = 0, nPrinted = 0; ; ) {
         XP_UCHAR buf[24];
         XP_UCHAR face[4];
-        XP_U16 count, value;
-        XP_S16 nRemaining;	/* signed so assertion will work */
+        XP_U16 count;
 
-        count = dict_numTiles( dict, tile );
+        count = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
 
         if ( count > 0 ) {
             dict_tilesToString( dict, &tile, 1, face );
-            nRemaining = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
-            XP_ASSERT( nRemaining >= 0 );
-            value = dict_getTileValue( dict, tile );
 
-            XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d[%d] %d", 
-                         face, count, nRemaining, value );
+            buf[0] = '\0';
+            putNTiles( buf, face, count );
+
             stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
         }
 
         if ( ++tile >= nChars ) {
             break;
         } else if ( count > 0 ) {
-            if ( ++nPrinted % nCols == 0 ) {
-                stream_putBytes( stream, XP_CR, (XP_U16)XP_STRLEN(XP_CR) );
-            } else {
-                stream_putBytes( stream, (void*)"      ", 3 );
-            }
+            stream_putBytes( stream, (void*)"      ", 3 );
         }
     }
-} /* server_formatPoolCounts */
+} /* server_formatRemainingTiles */
 
 #define IMPOSSIBLY_LOW_SCORE -1000
 void
