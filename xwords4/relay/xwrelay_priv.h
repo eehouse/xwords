@@ -6,12 +6,8 @@
 typedef unsigned short HostID;
 typedef unsigned short CookieID; /* stands in for string after connection established */
 
-typedef struct ThreadData {
-    int socket;
-} ThreadData;
-
 void logf( const char* format, ... );
 
-
+void killSocket( int socket, char* why );
 
 #endif
