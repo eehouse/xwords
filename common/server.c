@@ -2284,7 +2284,7 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
 
     dict = model_getDictionary( server->vol.model );
     dname = dict_getName( dict );
-    StrPrintF( buf, fmt, dname );
+    XP_SNPRINTF( buf, sizeof(buf), fmt, dname );
     stream_putBytes( stream, buf, XP_STRLEN(buf) );
 
     nChars = dict_numTileFaces( dict );
