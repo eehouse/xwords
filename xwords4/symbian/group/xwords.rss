@@ -274,29 +274,145 @@ RESOURCE DIALOG r_xwords_info_only
 
  */
 
-RESOURCE ARRAY r_xwords_newgame_page1
+RESOURCE ARRAY r_conn_roles
+{
+    items = {
+        LBUF { txt = "Standalone"; }
+        ,LBUF { txt = "Host"; }
+        ,LBUF { txt = "Guest"; }
+    };
+}
+
+RESOURCE ARRAY r_conn_types
+{
+    items = {
+        LBUF { txt = "Bluetooth"; }
+        ,LBUF { txt = "IR"; }
+        ,LBUF { txt = "Cellular internet"; }
+    };
+}
+
+RESOURCE ARRAY r_xwords_newgame_page_conn
 {
     items =
     {
         DLG_LINE
         {
-            control = EDWIN { width = 100; maxlength = 1000; };
-            type = EEikCtEdwin;
-            id = EAskContents;
+            prompt = "Role";
+            type = EEikCtChoiceList;
+            control = CHOICELIST { array_id = r_conn_roles; };
+            id = EConnectionRole;
+            // itemflags = 
+        },
+        DLG_LINE
+        {
+            prompt = "Connect via";
+            type = EEikCtChoiceList;
+            control = CHOICELIST { array_id = r_conn_types; };
+            id = EConnectionType;
+            // itemflags = 
         }
     };
 }
 
-RESOURCE ARRAY r_xwords_newgame_page2
+RESOURCE ARRAY r_player_species
 {
-    items =
-    {
-        DLG_LINE
+    items = {
+        LBUF { txt = "Human"; }
+        ,LBUF { txt = "Robot"; }
+    };
+}
+
+RESOURCE ARRAY r_location_choices
+{
+    items = {
+        LBUF { txt = "Local"; }
+        ,LBUF { txt = "Remote"; }
+        ,LBUF { txt = "Dead"; }
+    };
+}
+
+#define PLAYER(p_id,p_loc,p_nam,p_spec,p_pswd) \
+RESOURCE ARRAY p_id \
+{ \
+    items = \
+    { \
+        DLG_LINE \
+        { \
+            prompt = "Location"; \
+            type = EEikCtChoiceList; \
+            control = CHOICELIST { array_id = r_location_choices; }; \
+            id = p_loc; \
+        } \
+        ,DLG_LINE \
+        { \
+            prompt = "Name"; \
+            control = EDWIN { width = 20; maxlength = 32; }; \
+            type = EEikCtEdwin; \
+            id = p_nam; \
+        } ,DLG_LINE { \
+            prompt = "Species"; \
+            type = EEikCtChoiceList; \
+            control = CHOICELIST { array_id = r_player_species; }; \
+            id = p_spec; \
+        } ,DLG_LINE { \
+            type    = EEikCtSecretEd; \
+            prompt  = "Password"; \
+            id      = p_pswd; \
+            control = SECRETED { num_letters = 5; }; \
+        } \
+    }; \
+}
+
+PLAYER( r_xwords_newgame_page_player1,
+        EPlayerLocationChoice1,
+        EPlayerName1,
+        EPlayerSpeciesChoice1,
+        EDecryptPassword1 )
+PLAYER( r_xwords_newgame_page_player2,
+        EPlayerLocationChoice2,
+        EPlayerName2,
+        EPlayerSpeciesChoice2,
+        EDecryptPassword2 )
+PLAYER( r_xwords_newgame_page_player3,
+        EPlayerLocationChoice3,
+        EPlayerName3,
+        EPlayerSpeciesChoice3,
+        EDecryptPassword3 )
+PLAYER( r_xwords_newgame_page_player4,
+        EPlayerLocationChoice4,
+        EPlayerName4,
+        EPlayerSpeciesChoice4,
+        EDecryptPassword4 )
+
+#ifdef SERIES_60
+RESOURCE DLG_BUTTONS r_dict_browse_button
+{
+    buttons = {
+        DLG_BUTTON 
         {
-            control = EDWIN { width = 100; maxlength = 1000; };
-            type = EEikCtEdwin;
-            id = EAskContents;
+            id = EDictBrowseButton;
+            button = CMBUT { txt = "Browse"; };
+            hotkey = "B";
         }
+    };
+}
+#endif
+
+RESOURCE ARRAY r_xwords_newgame_page_dict
+{
+    items = {
+        DLG_LINE {
+            prompt = "Selected dictionary";
+            control = EDWIN { width = 32; maxlength = 32; };
+            type = EEikCtEdwin;
+            id = ESelDictName;
+        }
+#ifdef SERIES_60
+        ,DLG_LINE {
+            buttons = r_dict_browse_button;
+        }
+#endif
     };
 }
 
@@ -304,14 +420,18 @@ RESOURCE ARRAY r_xwords_newgame_pages
 {
     items =
     {
-        PAGE{ text="page1"; id=EPage1; lines=r_xwords_newgame_page1;},
-        PAGE{ text="page2"; id=EPage2; lines=r_xwords_newgame_page2;}
+        PAGE{ text="Connection"; id=EPage1; lines=r_xwords_newgame_page_conn;}
+        ,PAGE{ text="Player 1"; id=EPage2; lines=r_xwords_newgame_page_player1;}
+        ,PAGE{ text="Player 2"; id=EPage2; lines=r_xwords_newgame_page_player2;}
+        ,PAGE{ text="Player 3"; id=EPage2; lines=r_xwords_newgame_page_player3;}
+        ,PAGE{ text="Player 4"; id=EPage2; lines=r_xwords_newgame_page_player4;}
+        ,PAGE{ text="Dictionary"; id=EPage2; lines=r_xwords_newgame_page_dict;}
     };
 }
 
 RESOURCE DIALOG r_xwords_newgame_dlg
 {
-    title = "Game info";
+    title = "Game setup";
 #if defined SERIES_80
     buttons = R_EIK_BUTTONS_CANCEL_OK;
 #endif
