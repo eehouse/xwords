@@ -1376,6 +1376,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             why = (XWTimerReason)wParam;
             if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK ) {
                 board_timerFired( globals->game.board, why );
+                /* they otherwise repeat.... */
+                XP_ASSERT( why <= N_TIMER_TYPES );
+                (void)KillTimer( hWnd, globals->timerIDs[why-1] );
             }
             break;
 
@@ -1836,11 +1839,18 @@ static void
 ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    XP_U32 timerID;
+    XP_LOGF( "ce_util_setTimer" );
     if ( why == TIMER_PENDOWN ) {
-        SetTimer( globals->hWnd, why, 500, NULL);
+        timerID = SetTimer( globals->hWnd, why, 500, NULL);
     } else if ( why == TIMER_TIMERTICK ) {
-        SetTimer( globals->hWnd, why, 1000, NULL); /* 1 second */
+        timerID = SetTimer( globals->hWnd, why, 1000, NULL); /* 1 second */
+    } else {
+        XP_ASSERT(0);
     }
+    XP_ASSERT( why <= N_TIMER_TYPES );
+    globals->timerIDs[why-1] = timerID;
+        
 } /* ce_util_setTimer */
 
 static void 
