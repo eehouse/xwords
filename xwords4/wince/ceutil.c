@@ -117,8 +117,6 @@ ceShowOrHide( HWND hDlg, XP_U16 resID, XP_Bool visible )
     if ( !!itemH ) {
         ShowWindow( itemH, visible? SW_SHOW: SW_HIDE );
     }
-    /*     SendDlgItemMessage( hDlg, resID, WM_ENABLE, visible, visible ); */
-    /*     SendDlgItemMessage( hDlg, resID, WM_ACTIVATE, visible, visible ); */
 } /* ceShowOrHide */
 
 void
@@ -127,7 +125,6 @@ ceEnOrDisable( HWND hDlg, XP_U16 resID, XP_Bool enable )
     HWND itemH = GetDlgItem( hDlg, resID );
     if ( !!itemH ) {
         EnableWindow( itemH, enable );
-/*         SendDlgItemMessage( hDlg, resID, WM_ACTIVATE, enable, 0L ); */
     }
 } /* ceShowOrHide */
 
