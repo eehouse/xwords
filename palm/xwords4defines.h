@@ -253,8 +253,7 @@
 #define XW_PREFS_TIMERON_CHECKBOX_ID 2721
 #define XW_PREFS_TIMER_FIELD_ID 2722
 #ifdef FEATURE_TRAY_EDIT
-# define XW_PREFS_ENABLEPICKTILES_CHECKBOX_ID 2723
-# define XW_PREFS_PICKTILES_CHECKBOX_ID 2724 
+# define XW_PREFS_PICKTILES_CHECKBOX_ID 2723
 #endif
 
 /* These aren't part of the hide/show thing as they're displayed only

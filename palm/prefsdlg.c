@@ -117,9 +117,6 @@ PrefsFormHandleEvent( EventPtr event )
 
         case XW_PREFS_TIMERON_CHECKBOX_ID:
             XP_ASSERT( globals->isNewGame );
-#ifdef FEATURE_TRAY_EDIT
-        case XW_PREFS_ENABLEPICKTILES_CHECKBOX_ID:
-#endif
             form = FrmGetActiveForm();
             showHidePrefsWidgets( globals, form );
             break;
@@ -156,7 +153,7 @@ dropCtlUnlessNewGame( PalmAppGlobals* globals, XP_U16 id )
     case XW_PREFS_TIMERON_CHECKBOX_ID:
     case XW_PREFS_TIMER_FIELD_ID:
 #ifdef FEATURE_TRAY_EDIT
-    case XW_PREFS_ENABLEPICKTILES_CHECKBOX_ID:
+    case XW_PREFS_PICKTILES_CHECKBOX_ID:
 #endif
         if ( globals->isNewGame ) {
             break;
@@ -198,7 +195,6 @@ GlobalPrefsToLocal( PalmAppGlobals* globals )
     state->gameSeconds = globals->util.gameInfo->gameSeconds;
 #ifdef FEATURE_TRAY_EDIT
     state->allowPickTiles = globals->util.gameInfo->allowPickTiles;
-    state->enablePickTiles = globals->util.gameInfo->enablePickTiles;
 #endif
 
     state->stateTypeIsGlobal = globals->stateTypeIsGlobal;
@@ -233,7 +229,6 @@ LocalPrefsToGlobal( PalmAppGlobals* globals )
 
 #ifdef FEATURE_TRAY_EDIT
     globals->util.gameInfo->allowPickTiles = state->allowPickTiles;
-    globals->util.gameInfo->enablePickTiles = state->enablePickTiles;
 #endif
 
     return erase;
@@ -271,8 +266,6 @@ localPrefsToControls( PalmAppGlobals* globals, PrefsDlgState* state )
     setBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID, state->timerEnabled );
 
 #ifdef FEATURE_TRAY_EDIT
-    setBooleanCtrl( XW_PREFS_ENABLEPICKTILES_CHECKBOX_ID, 
-                    state->enablePickTiles );
     setBooleanCtrl( XW_PREFS_PICKTILES_CHECKBOX_ID, state->allowPickTiles );
 #endif
 
@@ -313,8 +306,6 @@ controlsToLocalPrefs( PalmAppGlobals* globals, PrefsDlgState* state )
     state->gameSeconds = fieldToNum( XW_PREFS_TIMER_FIELD_ID ) * 60;
 
 #ifdef FEATURE_TRAY_EDIT
-    state->enablePickTiles = 
-        getBooleanCtrl( XW_PREFS_ENABLEPICKTILES_CHECKBOX_ID );
     state->allowPickTiles = 
         getBooleanCtrl( XW_PREFS_PICKTILES_CHECKBOX_ID );
 #endif
@@ -373,10 +364,6 @@ showHidePrefsWidgets( PalmAppGlobals* globals, FormPtr form )
     if ( !global ) {
         Boolean on = getBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID );
         disOrEnable( form, XW_PREFS_TIMER_FIELD_ID, on );
-#ifdef FEATURE_TRAY_EDIT
-        on = getBooleanCtrl( XW_PREFS_ENABLEPICKTILES_CHECKBOX_ID );
-        disOrEnable( form, XW_PREFS_PICKTILES_CHECKBOX_ID, on );
-#endif
     }
 } /* showHidePrefsWidgets */
 

@@ -165,7 +165,6 @@ typedef struct PrefsDlgState {
     XP_Bool timerEnabled;
 #ifdef FEATURE_TRAY_EDIT
     XP_Bool allowPickTiles;
-    XP_Bool enablePickTiles;
 #endif
 } PrefsDlgState;
 
