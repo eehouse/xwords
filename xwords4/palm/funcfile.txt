@@ -12,6 +12,7 @@
 # MenuHandleEvent
 # FrmSetEventHandler
 # EvtAddEventToQueue
+# LstSetListChoices
 #
 #################################################################
 CtlEnabled
@@ -115,7 +116,6 @@ LstMakeItemVisible
 LstPopupList
 LstSetDrawFunction
 LstSetHeight
-LstSetListChoices
 LstSetSelection
 MemChunkFree
 MemHandleLock
