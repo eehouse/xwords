@@ -774,7 +774,7 @@ ceHandleHintRequest( CEAppGlobals* globals )
     XP_Bool draw;
     XP_ASSERT( !!globals->game.board );
 
-    draw = board_requestHint( globals->game.board, 0, &notDone );
+    draw = board_requestHint( globals->game.board, XP_FALSE, &notDone );
     globals->hintPending = notDone;
     return draw;
 } /* ceHandleHintRequest */
@@ -1198,6 +1198,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     XP_Bool draw = XP_FALSE;
     XWTimerReason why;
     CEAppGlobals* globals;
+    XP_Bool handled;
 
     if ( message == WM_CREATE ) {
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
@@ -1345,7 +1346,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONDOWN:
             globals->penDown = XP_TRUE;
             draw = board_handlePenDown( globals->game.board, LOWORD(lParam), 
-                                        HIWORD(lParam), 0 );
+                                        HIWORD(lParam), 0, &handled );
             break;
 
         case WM_MOUSEMOVE:
@@ -1383,7 +1384,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_DESTROY:
-            CommandBar_Destroy(globals->hwndCB);
+            CommandBar_Destroy(globals->hwndCB); /* supposedly not needed */
             PostQuitMessage(0);
             break;
 
@@ -1813,6 +1814,7 @@ static void
 ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
                        XP_U16 newOffset )
 {
+    XP_ASSERT( XP_FALSE );               /* no scrolling on CE */
 } /* ce_util_yOffsetChange */
 
 static void
@@ -1840,14 +1842,18 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_U32 timerID;
-    XP_LOGF( "ce_util_setTimer" );
+    XP_U32 howLong;
+
     if ( why == TIMER_PENDOWN ) {
-        timerID = SetTimer( globals->hWnd, why, 500, NULL);
+        howLong = 400;
     } else if ( why == TIMER_TIMERTICK ) {
-        timerID = SetTimer( globals->hWnd, why, 1000, NULL); /* 1 second */
+        howLong = 1000;          /* 1 second */
     } else {
         XP_ASSERT(0);
+        return;
     }
+    timerID = SetTimer( globals->hWnd, why, howLong, NULL);
+
     XP_ASSERT( why <= N_TIMER_TYPES );
     globals->timerIDs[why-1] = timerID;
         
