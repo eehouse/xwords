@@ -276,9 +276,16 @@ newGameHandleEvent( EventPtr event )
 
             /* if we put up the prefs form from within this one and the user
                clicked ok, we need to make sure the main form gets the
-               notification so it can make use of any changes. */
-            if ( globals->isNewGame ) {
+               notification so it can make use of any changes.  This event
+               needs to arrive before the newGame event so any changes will
+               be incorporated. */
+            if ( state->forwardChange ) {
+                eventToPost.eType = prefsChangedEvent;
+                EvtAddEventToQueue( &eventToPost );
+                state->forwardChange = false;
+            }
 
+            if ( globals->isNewGame ) {
                 updatePlayerInfo( globals );
 
                 eventToPost.eType = newGameOkEvent;
@@ -288,12 +295,6 @@ newGameHandleEvent( EventPtr event )
             } else if ( state->curServerHilite
                         == SERVER_STANDALONE ) {
                 updatePlayerInfo( globals );
-            }
-
-            if ( state->forwardChange ) {
-                eventToPost.eType = prefsChangedEvent;
-                EvtAddEventToQueue( &eventToPost );
-                state->forwardChange = false;
             }
 
             unloadNewGameState( globals );
