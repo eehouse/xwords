@@ -31,6 +31,7 @@
 #include "symdraw.h"
 #include "symgmmgr.h"
 #include "symssock.h"
+#include "symrsock.h"
 
 typedef enum  {
     EGamesLoc
@@ -160,6 +161,8 @@ class CXWordsAppView : public CCoeControl
                                  void* closure );
     static void        sym_send_on_close( XWStreamCtxt* stream, 
                                           void* closure );
+    static void PacketReceived( const TDesC8* aBuf, void* aClosure );
+
 #endif
 
     static TInt TimerCallback( TAny* aThis );
@@ -187,6 +190,7 @@ class CXWordsAppView : public CCoeControl
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     CSendSocket* iSendSock;
+    CReadSocket* iReadSock;
 #endif
 
     MPSLOT
