@@ -166,24 +166,26 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 } // ConstructL
 
 // Draw this application's view to the screen
-void CXWordsAppView::Draw(const TRect& /*aRect*/) const
+void CXWordsAppView::Draw( const TRect& aRect ) const
 {
     // Draw the parent control
     //CEikBorderedControl::Draw(aRect);
 
     // Get the standard graphics context 
     CWindowGc& gc = SystemGc();
+    gc.SetClippingRect( aRect );
+/*     gc.Clear( aRect ); */
     
     // Gets the control's extent - Don't encroach on the border
 //     TRect rect = Border().InnerRect(Rect());
-    TRect rect = Rect();
+/*     TRect rect = Rect(); */
 
     // Ensure that the border is not overwritten by future drawing operations
-    gc.SetClippingRect( rect );
+/*     gc.SetClippingRect( rect ); */
 
     XP_LOGF( "Draw beginning" );
 
-    XP_LOGF( "clipped rect : %d x %d", rect.Width(), rect.Height() );
+    XP_LOGF( "clipped rect : %d x %d", aRect.Width(), aRect.Height() );
 
     if ( iGame.board ) {
         // This must go!  Board needs a method to inval within a rect.
@@ -291,11 +293,12 @@ CXWordsAppView::sym_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 } // sym_util_userError
 
 static XP_Bool
-sym_util_userQuery( XW_UtilCtxt* uc, UtilQueryID /*id*/,
-                    XWStreamCtxt* stream )
+sym_util_userQuery( XW_UtilCtxt* uc, UtilQueryID aId,
+                    XWStreamCtxt* aStream )
 {
-    return CXWAskDlg::DoAskDlg( MPPARM(uc->mpool) stream, EFalse );
-}
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+    return self->UserQuery( aId, aStream );
+} /* sym_util_userQuery */
 
 static XP_S16
 sym_util_userPickTile( XW_UtilCtxt* /*uc*/, const PickInfo* /*pi*/, 
@@ -511,7 +514,9 @@ CXWordsAppView::SetUpUtil()
 void
 CXWordsAppView::MakeOrLoadGameL()
 {
-    if ( iCurGameName.Length() == 0 ) {
+    if ( iCurGameName.Length() > 0 && iGamesMgr->Exists( &iCurGameName ) ) {
+        LoadOneGameL( &iCurGameName );
+    } else {
         gi_initPlayerInfo( MPPARM(mpool) &iGi, (XP_UCHAR*)"Player %d" );
 
         TGameInfoBuf gib( &iGi, iDictList );
@@ -533,11 +538,7 @@ CXWordsAppView::MakeOrLoadGameL()
 
         iGamesMgr->MakeDefaultName( &iCurGameName );
         StoreOneGameL( &iCurGameName );
-
-    } else {
-        LoadOneGameL( &iCurGameName );
     }
-
 } /* MakeOrLoadGameL */
 
 void
@@ -748,7 +749,7 @@ CXWordsAppView::HandleKeyEvent( const TKeyEvent& aKeyEvent )
     }
 
     if ( draw ) {
-        DrawNow();
+        DrawDeferred();
     }
 
     // handled if it's one we recognize.  This is probably too broad!!!
@@ -983,15 +984,17 @@ CXWordsAppView::DoNewGame()
 TBool
 CXWordsAppView::DoSavedGames()
 {
+    StoreOneGameL( &iCurGameName );
+
     TGameName openName;
     TBool confirmed = CXSavedGamesDlg::DoGamesPicker( MPPARM(mpool) 
+                                                      this,
                                                       iGamesMgr,
                                                       &iCurGameName,
                                                       &openName );
     if ( confirmed ) {
         if ( 0 != iCurGameName.Compare( openName ) ) {
 
-            StoreOneGameL( &iCurGameName );
             iCurGameName = openName;
 
             game_dispose( &iGame );
@@ -1042,3 +1045,30 @@ CXWordsAppView::StoreOneGameL( TGameName* aGameName )
     iGamesMgr->StoreGameL( aGameName, stream );
     stream_destroy( stream );
 }
+
+XP_Bool
+CXWordsAppView::UserQuery( UtilQueryID aId, XWStreamCtxt* aStream )
+{
+    TInt resID = 0;
+
+    switch ( aId ) {
+    case QUERY_ROBOT_MOVE:
+    case QUERY_ROBOT_TRADE:
+    case QUERY_COMMIT_TURN:
+        XP_ASSERT( aStream );
+        return CXWAskDlg::DoAskDlg( MPPARM(mpool) aStream, EFalse );
+    case QUERY_COMMIT_TRADE:
+        XP_ASSERT( !aStream );
+        resID = R_CONFIRM_TRADE;
+        break;
+    case SYM_QUERY_CONFIRM_DELGAME:
+        XP_ASSERT( !aStream );
+        resID = R_CONFIRM_DELGAME;
+        break;
+    }
+    if ( resID != 0 ) {
+        return AskFromResId( resID );
+    }
+    XP_ASSERT( 0 );
+    return XP_FALSE;
+} /* sym_util_userQuery */
