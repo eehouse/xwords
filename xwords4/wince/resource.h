@@ -105,6 +105,7 @@
 #define ID_GAME_RESENDMSGS              40023
 
 #define ID_COLORS_RES                   9999
+#define ID_BONUS_RES                    9998
 
 // Next default values for new objects
 // 
