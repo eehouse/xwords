@@ -23,6 +23,22 @@
 
 #include "xptypes.h"
 
+#ifndef EXTERN_C_START
+# ifdef CPLUS
+#  define EXTERN_C_START extern "C" {
+# else 
+#  define EXTERN_C_START
+# endif
+#endif
+
+#ifndef EXTERN_C_END
+# ifdef CPLUS
+#  define EXTERN_C_END }
+# else 
+#  define EXTERN_C_END
+# endif
+#endif
+
 typedef struct XP_Rect {
     XP_S16 left;
     XP_S16 top;
