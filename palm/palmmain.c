@@ -527,6 +527,15 @@ saveGamePrefs( /*PalmAppGlobals* globals, */XWStreamCtxt* stream )
     stream_putBits( stream, 1, 0 );
 } /* saveGamePrefs */
 
+static void
+reportMissingDict( PalmAppGlobals* globals, XP_UCHAR* name )
+{
+    XP_UCHAR buf[48];
+    XP_UCHAR* str = getResString( globals, STRS_CANNOT_FIND_DICT );
+    StrPrintF( buf, str, name );
+    (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)buf, " ", " " );
+} /* reportMissingDict */
+
 static Boolean
 loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
                  XWGame* game, CurGameInfo* ginfo )
@@ -557,8 +566,8 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
             success = dict != NULL;
 
             if ( !success ) {
-                /* I don't know why having this here crashes later... */
-/*                 userErrorFromStrId( globals, STR_DICT_NOT_FOUND ); */
+                /* putting up a dlog here used to crash */
+                reportMissingDict( globals, name );
                 XP_FREE( globals->mpool, name );
                 beep();
             }
@@ -1209,10 +1218,10 @@ saveOpenGame( PalmAppGlobals* globals )
         XP_UCHAR* dictName;
         char namebuf[MAX_GAMENAME_LENGTH];
 
-/*         if ( server_countNonRobotPlayers() > 1 ) { */
+        if ( gi_countHumans( &globals->gameInfo ) > 1 ) {
             board_hideTray( globals->game.board ); /* so won't be visible when
                                                       next opened */
-/*         } */
+        }
         memStream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 0, 
                                      writeToDb );
         stream_open( memStream );
