@@ -155,15 +155,9 @@ endif
 frankspecials.bin: ../frank_mkspecials.pl  $(BMPFILES)
 	$< $(BLANK_INFO) $(LANG_SPECIAL_INFO) > $@
 
-# xlock.bin is an artifact of the Palm format which the shipping
-# eBookman code expects, but simply skips.  It could be eliminated in
-# the NEWDAWG format, i.e. for flags != 0x0001
-xlock.bin:
-	perl -e "print pack(\"n\",0)" > $@
-
-$(LANG)%.$(FRANK_EXT): dawg$(LANG)%.stamp $(LANG)%_flags.bin charcount.bin table.bin values.bin frankspecials.bin xlock.bin
+$(LANG)%.$(FRANK_EXT): dawg$(LANG)%.stamp $(LANG)%_flags.bin charcount.bin table.bin values.bin frankspecials.bin 
 	cat $(LANG)$*_flags.bin charcount.bin table.bin values.bin \
-		frankspecials.bin $(LANG)StartLoc.bin xlock.bin \
+		frankspecials.bin $(LANG)StartLoc.bin  \
 		$$(ls dawg$(LANG)$*_*.bin) > $@
 	cp $@ saveme.bin
 
