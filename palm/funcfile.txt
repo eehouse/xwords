@@ -205,3 +205,4 @@ EvtGetEvent
 FrmDispatchEvent
 MenuHandleEvent
 EvtAddEventToQueue
+FtrPtrFree
