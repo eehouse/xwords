@@ -52,7 +52,6 @@ static void palm_dictionary_destroy( DictionaryCtxt* dict );
 static XP_U16 countSpecials( unsigned char* ptr, UInt16 nChars );
 static void setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt, 
                            Xloc_specialEntry* specialStart, XP_U16 nSpecials );
-static void unlockAndRelease( MemPtr p, DmOpenRef dbRef, short recIndex );
 
 DictionaryCtxt*
 palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
@@ -124,7 +123,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         ctxt->location = dle->location;
 
         ctxt->dbRef = dbRef = DmOpenDatabase( cardNo, dbID, dmModeReadOnly );
-        tmpH = DmGetRecord( dbRef, 0 ); // <- <eeh> should be a constant
+        tmpH = DmQueryRecord( dbRef, 0 ); // <- <eeh> should be a constant
         ctxt->headerRecP = headerRecP = (dawg_header*)MemHandleLock( tmpH );
         XP_ASSERT( MemHandleLockCount(tmpH) == 1 );
 
@@ -140,9 +139,9 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
             ctxt->super.faces16[i] = charPtr[i];
         }
         nSpecials = countSpecials( charPtr, nChars );
-        unlockAndRelease( charPtr, dbRef, headerRecP->charTableRecNum );
+        MemPtrUnlock( charPtr );
 
-        tmpH = DmGetRecord( dbRef, headerRecP->valTableRecNum );
+        tmpH = DmQueryRecord( dbRef, headerRecP->valTableRecNum );
         charPtr = (unsigned char*)MemHandleLock(tmpH);
         XP_ASSERT( MemHandleLockCount( tmpH ) == 1 );
         ctxt->super.countsAndValues = charPtr + sizeof(Xloc_header);
@@ -171,7 +170,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
 
             for ( index = 0; index < nRecords; ++index ) {
                 MemHandle record = 
-                    DmGetRecord( dbRef, index + headerRecP->firstEdgeRecNum );
+                    DmQueryRecord( dbRef, index + headerRecP->firstEdgeRecNum );
                 ctxt->dictStarts[index].indexStart = offset;
 
                 /* cast to short to avoid libc call */
@@ -249,13 +248,6 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
 } /* setupSpecials */
 
 static void
-unlockAndRelease( MemPtr p, DmOpenRef dbRef, short recIndex )
-{
-    MemPtrUnlock( p );
-    DmReleaseRecord( dbRef, recIndex, false );
-} /* unlockAndRelease */
-
-static void
 palm_dictionary_destroy( DictionaryCtxt* dict )
 {
     PalmDictionaryCtxt* ctxt = (PalmDictionaryCtxt*)dict;
@@ -275,17 +267,15 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
 
         XP_ASSERT( !!dbRef );
     
-        unlockAndRelease( ctxt->super.countsAndValues - sizeof(Xloc_header), 
-                          dbRef, headerRecP->valTableRecNum );
+        MemPtrUnlock( ctxt->super.countsAndValues - sizeof(Xloc_header) );
 
         XP_FREE( dict->mpool, ctxt->super.faces16 );
 
         for ( i = 0; i < ctxt->nRecords; ++i ) {
-            unlockAndRelease( ctxt->dictStarts[i].array, 
-                              dbRef, i + headerRecP->firstEdgeRecNum );
+            MemPtrUnlock( ctxt->dictStarts[i].array );
         }
 
-        unlockAndRelease( headerRecP, dbRef, 0 );
+        MemPtrUnlock( headerRecP );
 
         DmCloseDatabase( dbRef );
 
