@@ -34,11 +34,9 @@ typedef struct CEDictionaryCtxt {
 
 static void ce_dictionary_destroy( DictionaryCtxt* dict );
 static void ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
-static XP_U16 countSpecials( CEDictionaryCtxt* ctxt );
+static XP_U16 ceCountSpecials( CEDictionaryCtxt* ctxt );
 static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 
-/* Need to replace these with winwock.h after figure out how to link on x86
-   platform */
 static XP_U32 n_ptr_tohl( XP_U8** in );
 static XP_U16 n_ptr_tohs( XP_U8** in );
 
@@ -87,7 +85,6 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         if ( mappedFile != INVALID_HANDLE_VALUE ) {
             XP_U32 offset;
             XP_U16 numFaces;
-            LPVOID voidptr;
             XP_U8* ptr;
             XP_U16 i;
             XP_U16 flags;
@@ -100,42 +97,53 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             //   ctxt->dictSize = size;
 
             XP_DEBUGF( "calling MapViewOfFile" );
-            voidptr = MapViewOfFile( mappedFile, 
-                                     FILE_MAP_READ, 
-                                     0 , 0, 0 );
-            ctxt->mappedBase = voidptr;
-            ptr = (XP_U8*)voidptr;
+            ctxt->mappedBase = MapViewOfFile( mappedFile, 
+                                              FILE_MAP_READ, 
+                                              0 , 0, 0 );
+            ptr = (XP_U8*)ctxt->mappedBase;
+            XP_DEBUGF( "ptr starting at 0x%lx", ptr );
 		
             flags = n_ptr_tohs( &ptr );
-            XP_ASSERT( flags == 0x0100 );
 
             numFaces = (XP_U16)(*ptr++);
             ctxt->super.nFaces = (XP_U8)numFaces;
-            XP_DEBUGF( "read %x faces from dict", (short)numFaces );
+            XP_DEBUGF( "read %d faces from dict", (short)numFaces );
+            ctxt->super.faces16 = 
+                XP_MALLOC( globals->mpool, 
+                           numFaces * sizeof(ctxt->super.faces16[0]) );
 
-            if ( flags == 0x0100 ) {
-                XP_U16 i;
-                XP_CHAR16* chptr = XP_MALLOC( globals->mpool, 
-                                              numFaces * sizeof(XP_CHAR16) );
-                for ( i = 0; i < numFaces; ++i ) {
-                    chptr[i] = (XP_CHAR16)ptr[i];
-                }
-                ctxt->super.faces16 = chptr;
+#ifdef NODE_CAN_4
+            if ( flags == 0x0002 ) {
+                ctxt->super.nodeSize = 3;
+            } else if ( flags == 0x0003 ) {
+                ctxt->super.nodeSize = 4;
             } else {
-                ctxt->super.faces16 = (XP_CHAR16*)ptr;
+                XP_DEBUGF( "flags=0x%x", flags );
+                XP_ASSERT( 0 );
             }
-            ptr += numFaces;
 
-            XP_DEBUGF( "jumped ptr over faces" );
+            ctxt->super.is_4_byte = ctxt->super.nodeSize == 4;
+
+            for ( i = 0; i < numFaces; ++i ) {
+                ctxt->super.faces16[i] = n_ptr_tohs(&ptr);
+            }
+#else
+            XP_ASSERT( flags == 0x0001 );
+            for ( i = 0; i < numFaces; ++i ) {
+                ctxt->super.faces16[i] = (XP_CHAR16)*ptr++;
+            }
+#endif
 
             ctxt->super.countsAndValues = 
                 (XP_U8*)XP_MALLOC(globals->mpool, numFaces*2);
 
             ptr += 2;		/* skip xloc header */
+            XP_DEBUGF( "pre values: ptr now 0x%lx", ptr );
             for ( i = 0; i < numFaces*2; i += 2 ) {
                 ctxt->super.countsAndValues[i] = *ptr++;
                 ctxt->super.countsAndValues[i+1] = *ptr++;
             }
+            XP_DEBUGF( "post values: ptr now 0x%lx", ptr );
 
             ceLoadSpecialData( ctxt, &ptr );
 
@@ -145,12 +153,15 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
                 offset = n_ptr_tohl( &ptr );
                 dictLength -= sizeof(offset);
 #ifdef NODE_CAN_4
-                error!!!
+                XP_ASSERT( dictLength % ctxt->super.nodeSize == 0 );
+# ifdef DEBUG
+                ctxt->super.numEdges = dictLength / ctxt->super.nodeSize;
+# endif
 #else
                 XP_ASSERT( dictLength % 3 == 0 );
-#ifdef DEBUG
+# ifdef DEBUG
                 ctxt->super.numEdges = dictLength / 3;
-#endif
+# endif
 #endif
             }
 
@@ -158,7 +169,8 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
                 XP_DEBUGF( "setting topEdge; offset = %ld", offset );
                 ctxt->super.base = (array_edge*)ptr;
 #ifdef NODE_CAN_4
-                error!!!
+                ctxt->super.topEdge = ctxt->super.base 
+                    + (offset * ctxt->super.nodeSize);
 #else
                 ctxt->super.topEdge = ctxt->super.base + (offset * 3);
 #endif
@@ -177,7 +189,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 static void
 ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
 {
-    XP_U16 nSpecials = countSpecials( ctxt );
+    XP_U16 nSpecials = ceCountSpecials( ctxt );
     XP_U8* ptr = *ptrp;
     Tile i;
     XP_UCHAR** texts;
@@ -217,7 +229,7 @@ ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
 } /* ceLoadSpecialData */
 
 static XP_U16
-countSpecials( CEDictionaryCtxt* ctxt )
+ceCountSpecials( CEDictionaryCtxt* ctxt )
 {
     XP_U16 result = 0;
     XP_U16 i;
@@ -229,7 +241,7 @@ countSpecials( CEDictionaryCtxt* ctxt )
     }
 
     return result;
-} /* countSpecials */
+} /* ceCountSpecials */
 
 static void
 printBitmapData1( XP_U16 nCols, XP_U16 nRows, XP_U8* data )
@@ -362,7 +374,7 @@ static void
 ce_dictionary_destroy( DictionaryCtxt* dict )
 {
     CEDictionaryCtxt* ctxt = (CEDictionaryCtxt*)dict;
-    XP_U16 nSpecials = countSpecials( ctxt );
+    XP_U16 nSpecials = ceCountSpecials( ctxt );
     XP_U16 i;
 
     if ( !!ctxt->super.chars ) {
@@ -388,6 +400,8 @@ ce_dictionary_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
 
+    XP_FREE( ctxt->super.mpool, ctxt->super.faces16 );
+        
     UnmapViewOfFile( ctxt->mappedBase );
     CloseHandle( ctxt->mappedFile );
     XP_FREE( ctxt->super.mpool, ctxt );
@@ -514,35 +528,26 @@ ceLocateNthDict( MPFORMAL XP_U16 which )
     return result;
 } /* ceLocateNthDict */
 
-/* Can't figure out how to link winsock.dll for emulation.  Nor can I find
- * docs on how the compiler communiates endienness.  Assume always little for
- * now. */
 static XP_U32
 n_ptr_tohl( XP_U8** inp )
 {
-    XP_U8* in = *inp;
-    XP_U32 result = 0L;
+    XP_U32 t;
+    XP_MEMCPY( &t, *inp, sizeof(t) );
 
-    result = *in++;
-    result |= (*in++ <<  8 ) & 0x0000FF00;
-    result |= (*in++ << 16 ) & 0x00FF0000;
-    result |= (*in++ << 24 ) & 0xFF000000;
-    
-    *inp = in;
-    return result;
+    *inp += sizeof(t);
+
+    return XP_NTOHL(t);
 } /* n_ptr_tohl */
 
 static XP_U16
 n_ptr_tohs( XP_U8** inp )
 {
-    XP_U8* in = *inp;
-    XP_U16 result;
+    XP_U16 t;
+    XP_MEMCPY( &t, *inp, sizeof(t) );
 
-    result = *in++;
-    result |= *in++ << 8;
+    *inp += sizeof(t);
 
-    *inp = in;
-    return result;
+    return XP_NTOHS(t);
 } /* n_ptr_tohs */
 
 #endif /* ifndef STUBBED_DICT */
