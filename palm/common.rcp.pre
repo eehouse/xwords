@@ -43,12 +43,49 @@ SMALLICON "bmps/xwords4small.pbitm"
 
 BITMAP ID DOWN_ARROW_RESID "bmps/downarrow.pbitm" AUTOCOMPRESS
 BITMAP ID RIGHT_ARROW_RESID "bmps/rightarrow.pbitm" AUTOCOMPRESS
-BITMAP ID FLIP_BUTTON_BMP_RES_ID "bmps/flipbutton.pbitm" AUTOCOMPRESS
-BITMAP ID VALUE_BUTTON_BMP_RES_ID "bmps/valuebutton.pbitm" AUTOCOMPRESS
-BITMAP ID HINT_BUTTON_BMP_RES_ID "bmps/lightbulb.pbitm" AUTOCOMPRESS
-BITMAP ID TRAY_BUTTONS_BMP_RES_ID "bmps/traybuttons.pbitm" AUTOCOMPRESS
 BITMAP ID SHOWTRAY_BUTTON_BMP_RES_ID "bmps/showtray.pbitm" AUTOCOMPRESS
-BITMAP ID STAR_BMP_RES_ID "bmps/startmark.pbitm" AUTOCOMPRESS
+
+
+/* bitmap family for inclding highres version */
+BITMAP ID TRAY_BUTTONS_BMP_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/traybuttons.pbitm" BPP 1 DENSITY 72
+#ifdef FEATURE_HIGHRES
+    BITMAP "bmps/traybuttonshd.pbitm" BPP 1 DENSITY 144
+#endif
+END
+
+BITMAP ID STAR_BMP_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/startmark.pbitm"   BPP 1  DENSITY 72
+#ifdef FEATURE_HIGHRES
+    BITMAP "bmps/startmarkhd.pbitm" BPP 1  DENSITY 144
+#endif
+END
+
+BITMAP ID FLIP_BUTTON_BMP_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/flipbutton.pbitm"   BPP 1  DENSITY 72
+#ifdef FEATURE_HIGHRES
+    BITMAP "bmps/flipbuttonhd.pbitm" BPP 1 DENSITY 144
+#endif
+END
+
+BITMAP ID HINT_BUTTON_BMP_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/lightbulb.pbitm"   BPP 1 DENSITY 72
+#ifdef FEATURE_HIGHRES
+    BITMAP "bmps/lightbulbhd.pbitm" BPP 1 DENSITY 144
+#endif
+END
+
+BITMAP ID VALUE_BUTTON_BMP_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/valuebutton.pbitm"   BPP 1 DENSITY 72
+#ifdef FEATURE_HIGHRES
+    BITMAP "bmps/valuebuttonhd.pbitm" BPP 1 DENSITY 144
+#endif
+END
 
 APPLICATIONICONNAME ID 1000 ICONTEXT
 
