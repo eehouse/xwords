@@ -1376,20 +1376,29 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
         model_packTilesUtil( server->vol.model, pool,
                              XP_TRUE, &nUsed, texts, tiles );
 
-        ++pi.thisPick;
         chosen = util_userPickTile( server->vol.util, &pi,
                                     playerNum, texts, nUsed );
 
-        if ( chosen < 0 ) {
+        if ( chosen == PICKER_PICKALL ) {
             ask = XP_FALSE;
+        } else if ( chosen == PICKER_BACKUP ) {
+            if ( nSoFar > 0 ) {
+                TrayTileSet tiles;
+                tiles.nTiles = 1;
+                tiles.tiles[0] = resultTiles->tiles[--nSoFar];
+                pool_replaceTiles( server->pool, &tiles );
+                --pi.nCurTiles;
+                --pi.thisPick;
+            }
         } else {
             Tile tile = tiles[chosen];
             oneTile.tiles[0] = tile;
             pool_removeTiles( pool, &oneTile );
 
-            (void)dict_tilesToString( dict, &tile, 1, (XP_UCHAR*)&curTray[pi.nCurTiles++] );
-
+            (void)dict_tilesToString( dict, &tile, 1, 
+                                      (XP_UCHAR*)&curTray[pi.nCurTiles++] );
             resultTiles->tiles[nSoFar++] = tile;
+            ++pi.thisPick;
         }
     }
 #endif
