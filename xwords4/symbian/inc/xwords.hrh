@@ -52,35 +52,24 @@ enum TXWordsIds {
 
     ,EAskContents               /* edit control in generic ask dlg */
 
-    ,EPlayerLocationChoice1
-    ,EPlayerLocationChoice2
-    ,EPlayerLocationChoice3
-    ,EPlayerLocationChoice4
-
-    ,EPlayerName1
-    ,EPlayerName2
-    ,EPlayerName3
-    ,EPlayerName4
-
-    ,EPlayerSpeciesChoice1
-    ,EPlayerSpeciesChoice2
-    ,EPlayerSpeciesChoice3
-    ,EPlayerSpeciesChoice4
-
-    ,EDecryptPassword1
-    ,EDecryptPassword2
-    ,EDecryptPassword3
-    ,EDecryptPassword4
+    ,EPlayerLocationChoice
+    ,EPlayerName
+    ,EPlayerSpeciesChoice
+    ,EDecryptPassword
 
     ,EPage1
     ,EPage2
+    ,EPage3
 
     ,EConnectionRole
     ,EConnectionType
 
-
     ,ESelDictName
+    ,ESelDictChoice
     ,EPlayerSpecies
+
+    ,ENPlayersList
+    ,ENPlayersWhichList
 };
 
 #endif // __XWORDS_HRH__
