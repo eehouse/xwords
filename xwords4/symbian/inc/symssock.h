@@ -24,25 +24,51 @@
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 
-#include <e32base.h>
+#include <es_sock.h>
+#include <in_sock.h>
 #include "comms.h"
+
+const TInt KMaxMsgLen = 512;
 
 class CSendSocket : public CActive {
 
  public:
-	static CSendSocket* NewL();
+    static CSendSocket* NewL();
     ~CSendSocket();
 
-    TBool SendL( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr );
+    TBool SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr );
+
+    void ConnectL();
+    void ConnectL( TUint32 aIpAddr );
+
+    void Disconnect();
     
  protected:
-    void RunL();
-    void DoCancel();
+    void RunL();                /* from CActive */
+    void DoCancel();            /* from CActive */
 
  private:
     CSendSocket();
     void ConstructL();
+    void DoActualSend();
 
+    enum TSSockState { ENotConnected
+                       ,ELookingUp
+                       ,EConnecting
+                       ,EConnected
+                       ,ESending
+    };
+
+    TSSockState       iSSockState;
+    RSocket           iSendSocket;
+    RSocketServ       iSocketServer;
+    RHostResolver     iResolver;
+    TInetAddr         iAddress;
+    TBuf8<KMaxMsgLen> iSendBuf;
+    CommsAddrRec      iCurAddr;
+    TNameEntry        iNameEntry;
+    TNameRecord       iNameRecord;
+    TBool             iAddrSet;
 };
 
 #endif
