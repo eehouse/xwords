@@ -48,8 +48,14 @@ struct PalmDictionaryCtxt {
     DictStart dictStarts[1];
 };
 
+#ifdef NODE_CAN_4
+typedef unsigned short FaceType;
+#else
+typedef unsigned char FaceType;
+#endif
+
 static void palm_dictionary_destroy( DictionaryCtxt* dict );
-static XP_U16 countSpecials( unsigned char* ptr, UInt16 nChars );
+static XP_U16 countSpecials( FaceType* ptr, UInt16 nChars );
 static void setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt, 
                            Xloc_specialEntry* specialStart, XP_U16 nSpecials );
 
@@ -70,6 +76,10 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
     DictListEntry* dle;
     Err err;
     XP_U16 i;
+    FaceType* facePtr;
+#ifdef NODE_CAN_4
+    XP_U16 nodeSize = 3;        /* init to satisfy compiler */
+#endif
 
     /* check and see if there's already a dict for this name.  If yes,
        increment its refcount and return. */
@@ -127,19 +137,31 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         ctxt->headerRecP = headerRecP = (dawg_header*)MemHandleLock( tmpH );
         XP_ASSERT( MemHandleLockCount(tmpH) == 1 );
 
+#ifdef NODE_CAN_4
+        if ( headerRecP->flags == 0x0002 ) {
+            XP_ASSERT( nodeSize = 3 );
+        } else if ( headerRecP->flags == 0x0003 ) {
+            nodeSize = 4;
+        } else {
+            nodeSize = 0;       /* shut up, compiler */
+            XP_WARNF( "got flags of %d", headerRecP->flags );
+            XP_ASSERT(0);
+        }
+#endif
+
         tmpH = DmQueryRecord( dbRef, headerRecP->charTableRecNum );
         XP_ASSERT( !!tmpH );
-        charPtr = (unsigned char*)MemHandleLock( tmpH );
+        facePtr = (FaceType*)MemHandleLock( tmpH );
         XP_ASSERT( MemHandleLockCount( tmpH ) == 1 );
-        ctxt->super.nFaces = nChars = MemPtrSize(charPtr);
+        ctxt->super.nFaces = nChars = MemPtrSize(facePtr) / sizeof(*facePtr);
         ctxt->super.faces16 = 
             XP_MALLOC( mpool, nChars * sizeof(ctxt->super.faces16[0]));
         XP_ASSERT( !!ctxt->super.faces16 );
         for ( i = 0; i < nChars; ++i ) {
-            ctxt->super.faces16[i] = charPtr[i];
+            ctxt->super.faces16[i] = facePtr[i];
         }
-        nSpecials = countSpecials( charPtr, nChars );
-        MemPtrUnlock( charPtr );
+        nSpecials = countSpecials( facePtr, nChars );
+        MemPtrUnlock( facePtr );
 
         tmpH = DmQueryRecord( dbRef, headerRecP->valTableRecNum );
         charPtr = (unsigned char*)MemHandleLock(tmpH);
@@ -167,16 +189,26 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
                               sizeof(*ctxt) + (nRecords * sizeof(DictStart)));
             XP_MEMCPY( ctxt, &tDictBuf, sizeof(tDictBuf) );
             ctxt->nRecords = nRecords;
+#ifdef NODE_CAN_4
+            ctxt->super.nodeSize = (XP_U8)nodeSize;
+#endif
 
             for ( index = 0; index < nRecords; ++index ) {
                 MemHandle record = 
-                    DmQueryRecord( dbRef, index + headerRecP->firstEdgeRecNum );
+                    DmQueryRecord( dbRef, index + headerRecP->firstEdgeRecNum);
                 ctxt->dictStarts[index].indexStart = offset;
 
                 /* cast to short to avoid libc call */
                 XP_ASSERT( MemHandleSize(record) < 0xFFFF );
-                XP_ASSERT( ((unsigned short)(MemHandleSize(record)) % 3 ) == 0);
+#ifdef NODE_CAN_4
+                XP_ASSERT( 0 == ((unsigned short)(MemHandleSize(record))
+                                 % nodeSize ));
+                offset += ((unsigned short)MemHandleSize(record)) 
+                    / nodeSize;
+#else
+                XP_ASSERT( ((unsigned short)(MemHandleSize(record)) % 3 )==0);
                 offset += ((unsigned short)MemHandleSize(record)) / 3;
+#endif
                 ctxt->dictStarts[index].array = 
                     (array_edge*)MemHandleLock( record );
                 XP_ASSERT( MemHandleLockCount(record) == 1 );
@@ -205,12 +237,12 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
 } /* palm_dictionary_make */
 
 static XP_U16
-countSpecials( unsigned char* ptr, UInt16 nChars )
+countSpecials( FaceType* ptr, UInt16 nChars )
 {
     XP_U16 result = 0;
 
     while ( nChars-- ) {
-        unsigned char face = *ptr++;
+        FaceType face = *ptr++;
         if ( IS_SPECIAL(face) ) {
             ++result;
         }
@@ -317,11 +349,20 @@ dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
         }
         --headerP;
         index -= headerP->indexStart;
+
+        /* To avoid linking in __mulsi3, do the math without a variable  */
+        if ( 0 ) {
 #ifdef NODE_CAN_4
-        index *= dict->nodeSize;
-#else
-        index *= 3;
+        } else if ( dict->nodeSize == 4 ) {
+            index *= 4;
+# ifdef DEBUG
+        } else if ( dict->nodeSize != 3 ) {
+            XP_ASSERT( 0 );
+# endif
 #endif
+        } else {
+            index *= 3;
+        }
         result = headerP->array + index;
     }
 
