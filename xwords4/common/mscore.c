@@ -489,11 +489,19 @@ figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
 
     for ( i = 0, tiles = moveInfo->tiles; i < nTiles; ++i, ++tiles ) {
 
+        /* Moves using only one tile will sometimes score only in the
+           crosscheck direction.  Score may still be 0 after the call to
+           scoreWord above.  Keep trying to get some text in mainWord until
+           something's been scored. */
+        if ( score > 0 ) {
+            mainWord = NULL;
+        }
+
         tmpMI.commonCoord = tiles->varCoord;
         tmpMI.tiles[0].tile = tiles->tile;
 
         oneScore = scoreWord( model, &tmpMI, engine, stream, silent, 
-                              notifyInfo, NULL );
+                              notifyInfo, mainWord );
         if ( !!stream ) {
             formatWordScore( stream, oneScore, multipliers[i] );
         }
@@ -557,7 +565,8 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
            XP_UCHAR* mainWord )
 {
     XP_U16 tileMultiplier;
-    XP_U16 restScore, scoreFromCache;
+    XP_U16 restScore = 0;
+    XP_U16 scoreFromCache;
     XP_U16 thisTileValue;
     XP_U16 nTiles = movei->nTiles;
     Tile tile;
@@ -567,11 +576,6 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
     MoveInfoTile* tiles = movei->tiles;
     XP_U16 firstCoord = tiles->varCoord;
     DictionaryCtxt* dict = model->vol.dict;
-    WordScoreFormatter fmtr;
-
-    if ( !!stream || !!mainWord ) {
-        wordScoreFormatterInit( &fmtr, dict );
-    }
 
     if ( movei->isHorizontal ) {
         row = movei->commonCoord;
@@ -588,110 +592,115 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
     *incr = tiles[0].varCoord;
     start = find_start( model, col, row, movei->isHorizontal );
 
-    if ( (end - start) < 1 ) { /* one-letter word: score 0 */
-        return 0;
-    }
+    if ( (end - start) >= 1 ) { /* one-letter word: score 0 */
+        WordScoreFormatter fmtr;
+        if ( !!stream || !!mainWord ) {
+            wordScoreFormatterInit( &fmtr, dict );
+        }
 
-    if ( IS_BLANK(tiles->tile) ) {
-        tile = dict_getBlankTile( dict );
-    } else {
-        tile = tiles->tile & TILE_VALUE_MASK;
-    }
-    thisTileValue = dict_getTileValue( dict, tile );
+        if ( IS_BLANK(tiles->tile) ) {
+            tile = dict_getBlankTile( dict );
+        } else {
+            tile = tiles->tile & TILE_VALUE_MASK;
+        }
+        thisTileValue = dict_getTileValue( dict, tile );
 
-    XP_ASSERT( *incr == tiles[0].varCoord );
-    thisTileValue *= tile_multiplier( model, col, row );
+        XP_ASSERT( *incr == tiles[0].varCoord );
+        thisTileValue *= tile_multiplier( model, col, row );
 
-    XP_ASSERT( engine == NULL || nTiles == 1 );
+        XP_ASSERT( engine == NULL || nTiles == 1 );
 
-    if ( engine != NULL ) {
-        XP_ASSERT( nTiles==1 );
-        scoreFromCache = engine_getScoreCache( engine, movei->commonCoord );
-    }
+        if ( engine != NULL ) {
+            XP_ASSERT( nTiles==1 );
+            scoreFromCache = engine_getScoreCache( engine, movei->commonCoord );
+        }
 
-    /* for a while, at least, calculate and use the cached crosscheck score
-     * each time through in the debug case */
-    if ( 0 ) {			/* makes keeping parens balanced easier */
+        /* for a while, at least, calculate and use the cached crosscheck score
+         * each time through in the debug case */
+        if ( 0 ) {			/* makes keeping parens balanced easier */
 #ifdef DEBUG
-    } else if ( 1 ) {
+        } else if ( 1 ) {
 #else
-    } else if ( engine == NULL ) {
+        } else if ( engine == NULL ) {
 #endif
-        Tile checkWordBuf[MAX_ROWS];
-        Tile* curTile = checkWordBuf;
+            Tile checkWordBuf[MAX_ROWS];
+            Tile* curTile = checkWordBuf;
 
-        restScore = 0;
-        for ( *incr = start; *incr <= end; ++*incr ) {
-            XP_U16 tileScore = 0;
-            XP_Bool isBlank;
+            for ( *incr = start; *incr <= end; ++*incr ) {
+                XP_U16 tileScore = 0;
+                XP_Bool isBlank;
 
-            /* a new move? */
-            if ( (nTiles > 0) && (*incr == tiles->varCoord) ) {
-                tile = tiles->tile & TILE_VALUE_MASK;
-                isBlank = IS_BLANK(tiles->tile);
-                /* don't call localGetBlankTile when in silent (robot called)
-                 * mode, as the blank won't be known there.  (Assert will
-                 * fail.) */
+                /* a new move? */
+                if ( (nTiles > 0) && (*incr == tiles->varCoord) ) {
+                    tile = tiles->tile & TILE_VALUE_MASK;
+                    isBlank = IS_BLANK(tiles->tile);
+                    /* don't call localGetBlankTile when in silent (robot called)
+                     * mode, as the blank won't be known there.  (Assert will
+                     * fail.) */
 
-                tileMultiplier = tile_multiplier( model, col, row );
-                ++tiles;
-                --nTiles;
-            } else { /* placed on the board before this move */
-                XP_Bool ignore;
-                tileMultiplier = 1;
+                    tileMultiplier = tile_multiplier( model, col, row );
+                    ++tiles;
+                    --nTiles;
+                } else { /* placed on the board before this move */
+                    XP_Bool ignore;
+                    tileMultiplier = 1;
 
-                (void)model_getTile( model, col, row, XP_FALSE, -1, &tile,
-                                     &isBlank, &ignore, (XP_Bool*)NULL );
+                    (void)model_getTile( model, col, row, XP_FALSE, -1, &tile,
+                                         &isBlank, &ignore, (XP_Bool*)NULL );
 
-                XP_ASSERT( (tile & TILE_VALUE_MASK) == tile );
+                    XP_ASSERT( (tile & TILE_VALUE_MASK) == tile );
+                }
+
+                *curTile++ = tile;	/* save in case we're checking phonies */
+
+                if ( !!stream || !!mainWord ) {
+                    wordScoreFormatterAddTile( &fmtr, tile, tileMultiplier, 
+                                               isBlank );
+                }
+	    
+                if ( isBlank ) {
+                    tile = dict_getBlankTile( dict );
+                }
+                tileScore = dict_getTileValue( dict, tile );
+
+                /* The first tile in the move is already accounted for in
+                   thisTileValue, so skip it here. */
+                if ( *incr != firstCoord ) {
+                    restScore += tileScore * tileMultiplier;
+                }
+            } /* for each tile */
+
+            if ( !!notifyInfo ) {
+                XP_U16 len = curTile - checkWordBuf;
+                XP_Bool legal = engine_check( dict, checkWordBuf, len );
+
+                if ( !legal ) {
+                    XP_UCHAR buf[(MAX_ROWS*2)+1];
+                    dict_tilesToString( dict, checkWordBuf, len, buf );
+                    (*notifyInfo->proc)( buf, notifyInfo->closure );
+                }
             }
-
-            *curTile++ = tile;	/* save in case we're checking phonies */
 
             if ( !!stream || !!mainWord ) {
-                wordScoreFormatterAddTile( &fmtr, tile, tileMultiplier, 
-                                           isBlank );
+                wordScoreFormatterFinish( &fmtr, checkWordBuf, stream, 
+                                          mainWord );
             }
-	    
-            if ( isBlank ) {
-                tile = dict_getBlankTile( dict );
-            }
-            tileScore = dict_getTileValue( dict, tile );
-
-            /* The first tile in the move is already accounted for in
-               thisTileValue, so skip it here. */
-            if ( *incr != firstCoord ) {
-                restScore += tileScore * tileMultiplier;
-            }
-        } /* for each tile */
-
-        if ( !!notifyInfo ) {
-            XP_U16 len = curTile - checkWordBuf;
-            XP_Bool legal = engine_check( dict, checkWordBuf, len );
-
-            if ( !legal ) {
-                XP_UCHAR buf[(MAX_ROWS*2)+1];
-                dict_tilesToString( dict, checkWordBuf, len, buf );
-                (*notifyInfo->proc)( buf, notifyInfo->closure );
-            }
-        }
-
-        if ( !!stream || !!mainWord ) {
-            wordScoreFormatterFinish( &fmtr, checkWordBuf, stream, mainWord );
-        }
 #ifdef DEBUG
 
-    } else if ( engine != NULL ) {
+        } else if ( engine != NULL ) {
 #else
-    } else {			/* non-debug case we know it's non-null */
+        } else {			/* non-debug case we know it's non-null */
 #endif
-        XP_ASSERT( nTiles==1 );
-        XP_ASSERT( engine_getScoreCache( engine, movei->commonCoord ) 
-                   == restScore );
-        restScore = engine_getScoreCache( engine, movei->commonCoord );
+            XP_ASSERT( nTiles==1 );
+            XP_ASSERT( engine_getScoreCache( engine, movei->commonCoord ) 
+                       == restScore );
+            restScore = engine_getScoreCache( engine, movei->commonCoord );
+        }
+
+        restScore += thisTileValue;
     }
 
-    return (restScore + thisTileValue);
+    return restScore;
 } /* scoreWord */
 
 static XP_U16
