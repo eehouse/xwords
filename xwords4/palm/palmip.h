@@ -26,6 +26,8 @@ void palm_ip_setup( PalmAppGlobals* globals );
 void palm_ip_close( PalmAppGlobals* globals );
 XP_S16 palm_ip_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr,
                      PalmAppGlobals* globals );
+void ip_addr_change( PalmAppGlobals* globals, const CommsAddrRec* oldAddr,
+                     const CommsAddrRec* newAddr );
 void checkHandleNetEvents( PalmAppGlobals* globals );
 
 #endif
