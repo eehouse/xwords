@@ -98,7 +98,11 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         XP_MEMCPY( giState->newDictName, gi->dictName, 
                    (XP_U16)XP_STRLEN(gi->dictName) );
     } else {
+#ifdef STUBBED_DICT
+        str = "(Stub dict)";
+#else
         str = "--pick--";
+#endif
     }
     XP_MEMSET( widebuf, 0, sizeof(widebuf) );
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, strlen(str),
@@ -467,6 +471,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 }
                 break;
 
+#ifndef STUBBED_DICT
             case IDC_DICTBUTTON:
                 if ( giState->isNewGame ) { /* ignore if in info mode */
                     giState->newDictName[0] = 0;
@@ -477,6 +482,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                 }
                 break;
+#endif
 
             case OPTIONS_BUTTON:
                 handleOptionsButton( hDlg, globals, giState );
