@@ -230,23 +230,28 @@ static void
 palmDrawHintBorders( XP_Rect* rect, HintAtts hintAtts )
 {
     XP_Rect frame = *rect;
+    --frame.width;
+    --frame.height;
 
     if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
-        ++frame.left;
-        --frame.width;
+        WinDrawLine( frame.left, frame.top,
+                     frame.left, frame.top + frame.height );
     }
     if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
-        ++frame.top;
-        --frame.height;
+        WinDrawLine( frame.left, frame.top,
+                     frame.left + frame.width, frame.top );
     }
     if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
-        --frame.width;
+        WinDrawLine( frame.left + frame.width, frame.top,
+                     frame.left + frame.width, 
+                     frame.top  + frame.height );
+        
     }
     if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
-        --frame.height;
+        WinDrawLine( frame.left, frame.top + frame.height,
+                     frame.left + frame.width, 
+                     frame.top  + frame.height );
     }
-
-    WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&frame );
 } /* palmDrawHintBorders */
 
 static XP_Bool
