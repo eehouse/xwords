@@ -147,8 +147,10 @@ static void palm_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort );
 static XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                           XP_U16 turn, XP_Bool turnLost );
-
-
+#ifdef XWFEATURE_SEARCHLIMIT
+static XP_Bool palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, 
+                                              XP_U16* max );
+#endif
 static void userErrorFromStrId( PalmAppGlobals* globals, XP_U16 strID );
 static Boolean askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, 
                               XP_S16 titleID, Boolean closeAndDestroy );
@@ -607,6 +609,9 @@ initUtilFuncs( PalmAppGlobals* globals )
 #endif
     vtable->m_util_getUserString = palm_util_getUserString;
     vtable->m_util_warnIllegalWord = palm_util_warnIllegalWord;
+#ifdef XWFEATURE_SEARCHLIMIT
+    vtable->m_util_getTraySearchLimits = palm_util_getTraySearchLimits;
+#endif
 #ifdef SHOW_PROGRESS
     vtable->m_util_engineStarting = palm_util_engineStarting;
     vtable->m_util_engineStopping = palm_util_engineStopping;
@@ -717,8 +722,6 @@ palmInitPrefs( PalmAppGlobals* globals )
 #ifdef SHOW_PROGRESS
     globals->gState.showProgress = true;
 #endif
-    globals->gState.lastNTilesMin = 1;
-    globals->gState.lastNTilesMax = MAX_TRAY_TILES;
 
 } /* palmInitPrefs */
 
@@ -1549,7 +1552,7 @@ handleHideTray( PalmAppGlobals* globals )
     return draw;
 } /* handleHideTray */
 
-#ifdef XWFEATURE_HINT_CONFIG
+#ifdef XWFEATURE_SEARCHLIMIT
 static Boolean 
 popupLists( EventPtr event )
 {
@@ -1575,15 +1578,15 @@ popupLists( EventPtr event )
         }
     }
 
-    return false;
+    return handled;
 } /* popupLists */
 
-static void
-doHintConfig( PalmAppGlobals* globals )
+static XP_Bool
+doHintConfig( XP_U16* minP, XP_U16* maxP )
 {
     FormPtr form, prevForm;
-    UInt16 buttonHit;
     ListPtr listMin, listMax;
+    XP_Bool confirmed;
 
     prevForm = FrmGetActiveForm();
     form = FrmInitForm( XW_HINTCONFIG_FORM_ID );
@@ -1591,23 +1594,25 @@ doHintConfig( PalmAppGlobals* globals )
     FrmSetActiveForm( form );
     
     listMin = getActiveObjectPtr( XW_HINTCONFIG_MINLIST_ID );
-    LstSetSelection( listMin, globals->gState.lastNTilesMin - 1 );
+    LstSetSelection( listMin, *minP - 1 );
     setSelectorFromList( XW_HINTCONFIG_MINSELECTOR_ID,
-                         listMin, globals->gState.lastNTilesMin - 1 );
+                         listMin, *minP - 1 );
 
     listMax = getActiveObjectPtr( XW_HINTCONFIG_MAXLIST_ID );
-    LstSetSelection( listMax, globals->gState.lastNTilesMax - 1 );
+    LstSetSelection( listMax, *maxP - 1 );
     setSelectorFromList( XW_HINTCONFIG_MAXSELECTOR_ID,
-                         listMax, globals->gState.lastNTilesMax - 1 );
+                         listMax, *maxP - 1 );
 
-    buttonHit = FrmDoDialog( form );
-    if ( buttonHit == XW_HINTCONFIG_OK_ID ) {
-        globals->gState.lastNTilesMin = LstGetSelection( listMin ) + 1;
-        globals->gState.lastNTilesMax = LstGetSelection( listMax ) + 1;
+    confirmed = FrmDoDialog( form ) == XW_HINTCONFIG_OK_ID;
+    if ( confirmed ) {
+        *minP = LstGetSelection( listMin ) + 1;
+        *maxP = LstGetSelection( listMax ) + 1;
     }
 
     FrmDeleteForm( form );
     FrmSetActiveForm( prevForm );
+
+    return confirmed;
 } /* doHintConfig */
 #endif
 
@@ -1620,7 +1625,11 @@ handleHintRequest( PalmAppGlobals* globals )
     XP_ASSERT( !!globals->game.board );
 
     draw = board_requestHint( globals->game.board, 
-                              globals->gState.lastNTilesMax, &notDone );
+#ifdef XWFEATURE_SEARCHLIMIT
+                              globals->askTrayLimits,
+#endif
+
+                              &notDone );
     globals->hintPending = notDone;
     return draw;
 } /* handleHintRequest */
@@ -2011,7 +2020,7 @@ hresRect( PalmAppGlobals* globals, RectangleType* r )
 static Boolean
 mainViewHandleEvent( EventPtr event )
 {
-    Boolean result = true;
+    Boolean handled = true;
     Boolean draw = false;
     Boolean erase;
 #if defined CURSOR_MOVEMENT && defined DEBUG
@@ -2030,7 +2039,7 @@ mainViewHandleEvent( EventPtr event )
     switch ( event->eType ) {
 
     case nilEvent:
-        draw = result = handleNilEvent( globals, event );
+        draw = handled = handleNilEvent( globals, event );
         break;
 
     case newGameCancelEvent:
@@ -2147,33 +2156,33 @@ mainViewHandleEvent( EventPtr event )
         break;
 
     case penDownEvent:
-        globals->penDown = true;
+        globals->penDown = handled;
         draw = board_handlePenDown( globals->game.board, 
                                     hresX(globals, event->screenX), 
-                                    hresY(globals, event->screenY), 0 );
-        result = draw;
+                                    hresY(globals, event->screenY), 
+                                    0, &handled );
         break;
 
     case penMoveEvent:
         if ( globals->penDown ) {
-            result = board_handlePenMove( globals->game.board, 
+            handled = board_handlePenMove( globals->game.board, 
                                           hresX( globals, event->screenX ), 
                                           hresY( globals, event->screenY ));
-            draw = result;
+            draw = handled;
         }
         break;
 
     case penUpEvent:
         if ( globals->penDown ) {
-            result = board_handlePenUp( globals->game.board, 
-                                        hresX( globals, event->screenX),
-                                        hresY( globals, event->screenY ), 
-                                        0 );
-            draw = result;
+            draw = board_handlePenUp( globals->game.board, 
+                                      hresX( globals, event->screenX),
+                                      hresY( globals, event->screenY ), 
+                                      0 );
+            handled = draw;     /* this is wrong!!!! */
             globals->penDown = false;
 
-            if ( !result ) {
-                result = considerMenuShow( globals, event );
+            if ( !handled ) {
+                handled = considerMenuShow( globals, event );
             }
         }
         break;
@@ -2291,13 +2300,17 @@ mainViewHandleEvent( EventPtr event )
 	    
         case XW_HINT_PULLDOWN_ID:
             board_resetEngine( globals->game.board );
+            globals->askTrayLimits = XP_FALSE;
+
         case XW_NEXTHINT_PULLDOWN_ID:
             draw = handleHintRequest( globals );
             break;
 
-#ifdef XWFEATURE_HINT_CONFIG
+#ifdef XWFEATURE_SEARCHLIMIT
         case XW_HINTCONFIG_PULLDOWN_ID:
-            doHintConfig( globals );
+            board_resetEngine( globals->game.board );
+            globals->askTrayLimits = XP_TRUE;
+            draw = handleHintRequest( globals );
             break;
 #endif
 
@@ -2437,10 +2450,11 @@ mainViewHandleEvent( EventPtr event )
     case sclRepeatEvent:
         draw = scrollBoard( globals, event->data.sclRepeat.newValue-SBAR_MIN, 
                             true );
-        result = false;
+        handled = false;
         break;
 
     case ctlSelectEvent:
+        handled = true;
         switch ( event->data.ctlEnter.controlID ) {
         case XW_MAIN_FLIP_BUTTON_ID:
             draw = handleFlip( globals );
@@ -2469,12 +2483,13 @@ mainViewHandleEvent( EventPtr event )
             draw = board_showTray( globals->game.board );
             break;
 
-        default:	    
+        default:
+            handled = false;
             break;
         } /* switch event->data.ctlEnter.controlID */
 
     default:
-        result = false;
+        handled = false;
         break;
     }
 
@@ -2487,7 +2502,7 @@ mainViewHandleEvent( EventPtr event )
     }
 
     CALLBACK_EPILOGUE();
-    return result;
+    return handled;
 } /* mainViewHandleEvent */
 
 static void
@@ -3357,6 +3372,14 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 turn,
     }
     return result;
 } /* palm_util_warnIllegalWord */
+
+#ifdef XWFEATURE_SEARCHLIMIT
+static XP_Bool
+palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
+{
+    return doHintConfig( min, max );
+} /* palm_util_getTraySearchLimits */
+#endif
 
 #ifdef SHOW_PROGRESS
 static void
