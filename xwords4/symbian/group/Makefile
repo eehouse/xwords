@@ -5,7 +5,9 @@
 # COMMON_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/common/armi/urel
 # XWORDS_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/XWORDS/armi/urel
 
-# BLDMAKE_FLAGS = -v
+ifdef VERB
+BLDMAKE_FLAGS = -v
+endif
 
 # There are no rules for building these puppies -- the symbian build
 # system does that.  But they'd better exist by the time we get to the
