@@ -312,7 +312,6 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
        ,newGameOkEvent
        ,newGameCancelEvent
        ,loadGameEvent
-       ,boardRedrawEvt
        ,prefsChangedEvent
        ,openSavedGameEvent
 #ifdef BEYOND_IR
