@@ -207,3 +207,5 @@ MenuHandleEvent
 EvtAddEventToQueue
 FtrPtrFree
 SysUIAppSwitch
+FntBaseLine
+WinSetScalingMode
