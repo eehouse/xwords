@@ -23,20 +23,19 @@
  * itself.  The build system creats a str# resource with the latter
  * and generates a .h file of #defines using the former.  */
 
-{ "STR_COMMIT_CONFIRM", "¿Aceptas la jugada?\n\n" },
-{ "STR_NOT_YOUR_TURN", "¡No puedes hacer eso; no es tu turno!" },
-{ "STR_NO_PEEK_ROBOT_TILES", "¡No mires las fichas de la máquina!" },
+{ "STR_COMMIT_CONFIRM", 	"¿Aceptas la jugada?\n\n" },
+{ "STR_NOT_YOUR_TURN", 		"¡No puedes hacer eso; no es tu turno!" },
+{ "STR_NO_PEEK_ROBOT_TILES", 	"¡No mires las fichas de la máquina!" },
 #ifndef XWFEATURE_STANDALONE_ONLY
-{ "STR_NO_PEEK_REMOTE_TILES", "¡No mires las fichas de los demás!" },
-{ "STR_SERVER_DICT_WINS", 
-      "Conflicto entre diccionarios: manda el del servidor." },
-{ "STR_REG_UNEXPECTED_USER",  "Jugador inesperado: no se acepta" },
-{ "STR_RESEND_IR", "Error enviando el mensaje; ¿reenviar" },
+{ "STR_NO_PEEK_REMOTE_TILES", 	"¡No mires las fichas de los demás!" },
+{ "STR_SERVER_DICT_WINS",       "Conflicto entre diccionarios: manda el del servidor." },
+{ "STR_REG_UNEXPECTED_USER", 	"Jugador inesperado: no se acepta" },
+{ "STR_RESEND_IR", 		"Error enviando el mensaje; ¿reenviar" },
 #endif
-{ "STR_TOO_FEW_TILES", "Ho quedan tantas fichas." },
+{ "STR_TOO_FEW_TILES",		"Ho quedan tantas fichas." },
 { "STR_CANT_UNDO_TILEASSIGN", "Tile assignment can't be undone." }, /* translate me */
-{ "STR_VALUES_TITLE", "Cantidad y Valor" },
-{ "STR_VALUES_HEADER",		"Cantidad[Quedan] y Valor\n" },
+{ "STR_VALUES_TITLE",		"Cantidad y Valor" },
+{ "STR_VALUES_HEADER",		"Cantidad[quedan] y Valor\n" },
 
 { "STR_DOUBLE_LETTER",		"Doble de letra" },
 { "STR_DOUBLE_WORD",		"Doble de palabra" },
@@ -72,7 +71,7 @@
 { "STR_TRADING_REMINDER",	"Pulsa D para terminar." },
 
 #ifndef NO_REG_REQUIRED
-{ "STR_NOT_UNREG_VERS",	  "Sólo funciona en la versión registrada." },
+{ "STR_NOT_UNREG_VERS",		"Sólo funciona en la versión registrada." },
 #endif
 
 { "STR_LOCAL_NAME",             "%s" },
@@ -88,8 +87,8 @@
 { "STR_BONUS_ALL",		"Por usar las siete fichas: 50\n" },
 { "STRD_TURN_SCORE",		"Parcial de la jugada: %d\n" },
 { "STR_ALL_IN_LINE_ERR",	"Las fichas no están en línea." },
-{ "STR_NO_EMPTIES_ERR",	"Las fichas deben tocarse." },
-{ "STR_FIRST_MOVE_ERR",	"Debes usar dos o más fichas en " \
+{ "STR_NO_EMPTIES_ERR",		"Las fichas deben tocarse." },
+{ "STR_FIRST_MOVE_ERR",		"Debes usar dos o más fichas en " \
 				"la primera jugada." },
   /* phony comment to get diff back in sync */
 { "STR_MUST_CONTACT_ERR",    	"Las fichas deben tocar otras (o el " \
@@ -99,7 +98,7 @@
 
 { "STRD_TIME_PENALTY_SUB",     " - %d [por tiempo]" },
 
-{ "STR_NO_DICT_INSTALLED", "Crosswords 4 necesita algún diccionario." },
+{ "STR_NO_DICT_INSTALLED", 	"Crosswords necesita algún diccionario." },
 { "STR_ILLEGAL_WORD",	      "¡Ei!, %s no está en el diccionario." },
 
 { "STR_FINAL_SCORES_TITLE",   "Puntuación final"},
@@ -115,21 +114,21 @@
 { "STR_PASS",                 "pasa\n" },
 { "STR_PHONY_REJECTED",       "Palabra incorrecta; ¡turno perdido!\n" },
 
-{ "STR_ROBOT_MOVED",           "The robot made this move:\n" }, /* translate me */
-{ "STR_REMOTE_MOVED",          "Remote player made this move:\n" }, /* translate me */
-{ "STRD_ROBOT_TRADED",         "%d tiles traded this turn." }, /* translate me */
+{ "STR_ROBOT_MOVED",           "El robot ha jugado:\n" },
+{ "STR_REMOTE_MOVED",          "Un jugador remoto ha jugado:\n" },
+{ "STRD_ROBOT_TRADED",         "%d fichas canviadas." },
 { "STR_ROBOT_TITLE",          "Puntos del robot" },
 
   /* The end of 4.0.5's strings */
 
-{ "STR_PICK_BLANK",            "Select the letter for your blank." }, /* translate me */
+{ "STR_PICK_BLANK",            "Escoge una ficha para el comodín." },
 #ifdef FEATURE_TRAY_EDIT
-{ "STRS_PICK_TILE",            "Choose a new tile for %s." }, /* translate me */
+{ "STRS_PICK_TILE",            "Escoge una nueva ficha para %s." },
 #endif
 
 #ifdef NODE_CAN_4
-{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert any existing Crosswords " \
-                               "dictionaries to the new format? " \
-                               "The change is not reversible." },  /* translate me */
-{ "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" }, /* translate me */
+{ "STR_CONFIRM_CONVERTDICT",   "¿Quieres convertir los diccionarios de Crosswords " \
+                               "al nuevo formato? " \
+                               "El cambio no es reversible." },
+{ "STRS_CONFIRM_ONEDICT",       "¿Convertir el diccionario %s?" },
 #endif

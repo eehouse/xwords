@@ -36,7 +36,7 @@
 { "STR_TOO_FEW_TILES", "No hi ha prou fitxes." },
 { "STR_CANT_UNDO_TILEASSIGN", "Tile assignment can't be undone." },
 { "STR_VALUES_TITLE",  "Quantitat i Valor" },
-{ "STR_VALUES_HEADER", "Quantitat[Queden] i Valor\n" },
+{ "STR_VALUES_HEADER", "Quantitat[queden] i Valor\n" },
 
 { "STR_DOUBLE_LETTER",		"Doble de lletra" },
 { "STR_DOUBLE_WORD",		"Doble de paraula" },
@@ -89,8 +89,8 @@
 { "STR_BONUS_ALL",		"Per usar les set fitxes: 50\n" },
 { "STRD_TURN_SCORE",		"Parcial de la jugada: %d\n" },
 { "STR_ALL_IN_LINE_ERR",	"Les fitxes no estan en línia." },
-{ "STR_NO_EMPTIES_ERR",	"Les fitxes s'han de tocar." },
-{ "STR_FIRST_MOVE_ERR",	"Has de posar dues o mes fitxes a " \
+{ "STR_NO_EMPTIES_ERR",		"Les fitxes s'han de tocar." },
+{ "STR_FIRST_MOVE_ERR",		"Has de posar dues o mes fitxes a " \
 				"la primera jugada." },
   /* phony comment to get diff back in sync */
 { "STR_MUST_CONTACT_ERR",    	"Les fitxes n'han de tocar d'altres (o " \
@@ -100,8 +100,8 @@
 
 { "STRD_TIME_PENALTY_SUB",     " - %d [per temps]" },
 
-{ "STR_NO_DICT_INSTALLED", "Crosswords 4 necessita algun diccionari." },
-{ "STR_ILLEGAL_WORD",	      "Ep!, %s no està al diccionari." },
+{ "STR_NO_DICT_INSTALLED", 	"Crosswords necessita algun diccionari." },
+{ "STR_ILLEGAL_WORD",		"Ep!, %s no està al diccionari." },
 
 { "STR_FINAL_SCORES_TITLE",   "Puntuació final"},
 
@@ -116,21 +116,21 @@
 { "STR_PASS",                 "passa\n" },
 { "STR_PHONY_REJECTED",       "Mot incorrecte; torn perdut!\n" },
 
-{ "STR_ROBOT_MOVED",           "The robot made this move:\n" }, /* translate me */
-{ "STR_REMOTE_MOVED",          "Remote player made this move:\n" }, /* translate me */
-{ "STRD_ROBOT_TRADED",         "%d tiles traded this turn." }, /* translate me */
+{ "STR_ROBOT_MOVED",           "El robot ha jugat:\n" },
+{ "STR_REMOTE_MOVED",          "Un jugador remot ha jugat:\n" },
+{ "STRD_ROBOT_TRADED",         "s'han canviat %d fitxes." },
 { "STR_ROBOT_TITLE",           "Punts del robot" },
 
   /* The end of 4.0.5's strings */
 
-{ "STR_PICK_BLANK",            "Select the letter for your blank." }, /* translate me */
+{ "STR_PICK_BLANK",            "Tria la fitxa per l'escarràs." },
 #ifdef FEATURE_TRAY_EDIT
-{ "STRS_PICK_TILE",            "Choose a new tile for %s." }, /* translate me */
+{ "STRS_PICK_TILE",            "Tria una nova fitxa per %s." },
 #endif
 
 #ifdef NODE_CAN_4
-{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert any existing Crosswords " \
-                               "dictionaries to the new format? " \
-                               "The change is not reversible." },  /* translate me */
-{ "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" }, /* translate me */
+{ "STR_CONFIRM_CONVERTDICT",   "Vols convertir els diccionaris de Crosswords " \
+                               "al nou format? " \
+                               "El canvi no és reversible." },
+{ "STRS_CONFIRM_ONEDICT",       "Convertir el diccionari %s?" },
 #endif
