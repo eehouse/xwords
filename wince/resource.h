@@ -19,11 +19,13 @@
 #define IDB_FLIPBUTTON                  118
 #define IDB_VALUESBUTTON                119
 #define IDB_HINTBUTTON                  120
-#define IDB_ORIGIN                      121
+#define IDB_JUGGLEBUTTON                121
+#define IDB_ORIGIN                      122
+
 #define FLIP_BUTTON_ID                  1001
 #define VALUE_BUTTON_ID                 1002
 #define HINT_BUTTON_ID                  1003
-#define UNDO_BUTTON_ID                  1004
+#define JUGGLE_BUTTON_ID                1004
 
 #define REMOTE_CHECK1                   1005
 #define NAME_EDIT1                      1006
@@ -108,7 +110,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        122
+#define _APS_NEXT_RESOURCE_VALUE        123
 #define _APS_NEXT_COMMAND_VALUE         40023
 #define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           101
