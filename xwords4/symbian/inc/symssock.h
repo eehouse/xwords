@@ -59,6 +59,7 @@ class CSendSocket : public CActive {
     void ConnectL( TUint32 aIpAddr );
 
     TBool CancelListen();
+    void ResetState();
 
     enum TSSockState { ENotConnected
                        ,ELookingUp
