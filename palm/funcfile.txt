@@ -103,6 +103,7 @@ FrmSetTitle
 FrmShowObject
 FrmUpdateForm
 FtrGet
+FtrSet
 GrfSetState
 LstDrawList
 LstEraseList
@@ -199,3 +200,4 @@ VFSExportDatabaseToFile
 VFSFileDelete
 DmSetDatabaseInfo
 DmGetLastErr
+WinRestoreBits
