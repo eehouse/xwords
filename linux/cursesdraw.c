@@ -348,7 +348,8 @@ curses_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect,
 
 static void
 curses_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect, 
-                             XWBonusType cursorBonus, XP_Bool vertical )
+                            XWBonusType cursorBonus, XP_Bool vertical,
+                            HintAtts hintAtts )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 #if 1
