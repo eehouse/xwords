@@ -2313,7 +2313,7 @@ mainViewHandleEvent( EventPtr event )
             beamBoard( globals );
             break;
 
-#ifdef FEATURE_PNOAND68K
+#ifdef FEATURE_DUALCHOOSE
             /* This probably goes away at ship.... */
         case XW_RUN68K_PULLDOWN_ID:
         case XW_RUNARM_PULLDOWN_ID: {

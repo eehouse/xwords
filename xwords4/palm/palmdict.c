@@ -395,15 +395,19 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
 
         XP_FREE( dict->mpool, ctxt->super.faces16 );
 
+#ifdef XWFEATURE_COMBINEDAWG
         /* Try first to delete the feature. */
         if ( FtrPtrFree( APPID, DAWG_STORE_FEATURE ) == ftrErrNoSuchFeature ) {
+#endif
             for ( i = 0; i < ctxt->nRecords; ++i ) {
                 XP_ASSERT( !!ctxt->dictStarts[i].array );
                 MemPtrUnlock( ctxt->dictStarts[i].array );
             }
+#ifdef XWFEATURE_COMBINEDAWG
         } else {
             XP_ASSERT( ctxt->dictStarts[0].array == NULL );
         }
+#endif
 
         MemPtrUnlock( headerRecP );
 

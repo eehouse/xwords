@@ -180,12 +180,14 @@ shouldRunPnolet()
     if ( ( err == errNone ) && sysFtrNumProcessorIsARM( value ) ) {
         runArm = true;
     }
+#ifdef FEATURE_DUALCHOOSE
     if ( runArm ) {
         err = FtrGet( APPID, FEATURE_WANTS_68K, &value );
         if ( (err == errNone) && (value == WANTS_68K) ) {
             runArm = false;
         }            
     }
+#endif
     return runArm;
 } /* shouldRunPnolet */
 

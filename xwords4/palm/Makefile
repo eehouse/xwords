@@ -93,6 +93,9 @@ MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) -DAPPNAME=\"$(APPNA
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
 # comment out for ARM-only build
 	FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
+# Turn this on for a menu that lets you relaunch as 68K or ARM.  Good
+# for testing but not the way to ship to users
+#	FEATURE_PNOAND68K += -DFEATURE_DUALCHOOSE
 endif
 
 

@@ -331,9 +331,13 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
 enum {
     PNOLET_STORE_FEATURE = 1    /* where FtrPtr to pnolet code lives */
     , GLOBALS_FEATURE           /* for passing globals to form handlers */
+#ifdef FEATURE_DUALCHOOSE
     , FEATURE_WANTS_68K         /* support for (pre-ship) ability to choose
                                    armlet or 68K */
+#endif
+#ifdef XWFEATURE_COMBINEDAWG
     , DAWG_STORE_FEATURE
+#endif
 };
 enum { WANTS_68K, WANTS_ARM };
 
