@@ -20,6 +20,7 @@
 #ifndef _CEMAIN_H_
 #define _CEMAIN_H_
 
+#include <aygshell.h>
 #include "draw.h"
 #include "game.h"
 #include "util.h"
@@ -63,6 +64,8 @@ typedef struct CEAppGlobals {
     HWND hwndCB;
 
     HWND buttons[NUM_BUTTONS];
+
+    SHACTIVATEINFO sai;
 
     DrawCtx* draw;
     XWGame game;
