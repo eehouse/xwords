@@ -27,6 +27,9 @@ APPID ?= Xwr4
 MLPREFIX = /usr
 DICT = $(shell echo $$BASENG_PATH)
 
+DEBUG_SET = APPID=Xwdb ICONTEXT=CrossDbg NAME="CrossDbg" DONT_OMIT=true
+
+
 #OWNERNAME = "Eric House"
 NO_REG_REQUIRED = -DNO_REG_REQUIRED
 
@@ -55,12 +58,14 @@ MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
 	-DSHOW_PROGRESS \
 	$(HASHDEF) $(NO_REG_REQUIRED)
 
+# turn on the HighRes stuff.  Experimental for now, but eventually
+# should always be on.
+#FEATURE_HIGHRES = -DFEATURE_HIGHRES
+
 # turn on letting users pick tiles "face-up"
 MYDEFINES += -DFEATURE_TRAY_EDIT
 
-# turn on the HighRes stuff.  Experimental for now, but eventually
-# should always be on.
-#MYDEFINES += -DFEATURE_HIGHRES
+MYDEFINES += $(FEATURE_HIGHRES)
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
@@ -110,6 +115,12 @@ ifneq (x$(HS_DUO_SUPPORT)x, xx)
 	FNAVS = ./fnav03e9.bin
 endif
 
+ifneq (x$(FEATURE_HIGHRES)x, xx)
+	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs
+	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/System
+	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/Libraries
+	MYDEFINES += -DCPU_TYPE=CPU_68K	
+endif
 
 CSFLAGS = -O2 -g -S -Wall -DAPPID=\'$(APPID)\' $(DEFINES) $(INCLUDES)
 #CFLAGS = -O2 -g -Wall -DAPPID=\'$(APPID)\' $(DEFINES) $(INCLUDES) -palmos3.5
@@ -154,11 +165,10 @@ solo:
 	$(MAKE) XWFEATURE_STANDALONE_ONLY=1
 
 debug:
-	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG" DONT_OMIT=true
+	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG" $(DEBUG_SET)
 
 memdebug:
-	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG" DONT_OMIT=true \
-	APPID=Xwdb ICONTEXT=CrossDbg NAME="CrossDbg"
+	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG" $(DEBUG_SET)
 
 gremlins:
 	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG -DFOR_GREMLINS" DONT_OMIT=true
