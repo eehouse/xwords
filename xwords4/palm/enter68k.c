@@ -57,21 +57,20 @@ void
 storageCallback( void/*PnoletUserData*/* _dataP )
 {
     PnoletUserData* dataP = (PnoletUserData*)_dataP;
-    char buf[48];
     UInt32 offset;
     PNOFtrHeader* ftrBase;
 
-    StrPrintF( buf, "storageCallback(%lx)", dataP );
-    WinDrawChars( buf, StrLen(buf), 5, 40 );
-
-    StrPrintF( buf, "src=%lx; dest=%lx", dataP->stateSrc, dataP->stateDest );
-    WinDrawChars( buf, StrLen(buf), 5, 50 );
+    if ( dataP->recursive ) {
+        WinDrawChars( "ERROR: overwriting", 13, 5, 60 );
+#ifdef DEBUG
+        for ( ; ; );            /* make sure we see it. :-) */
+#endif
+    }
 
     ftrBase = (PNOFtrHeader*)dataP->pnoletEntry;
     --ftrBase;                  /* back up over header */
     offset = (char*)dataP->stateDest - (char*)ftrBase;
     DmWrite( ftrBase, offset, dataP->stateSrc, sizeof(PNOState) );
-    WinDrawChars( "callback done", 13, 5, 60 );
 }
 
 static void
@@ -103,14 +102,18 @@ countOrLoadPNOCs( UInt32* pnoSizeP, UInt8* base, UInt32 offset )
     }
 } /* countOrLoadPNOCs */
 
-static void
+/* Return true if we had to load the pnolet.  If we didn't, then we're being
+ * called recursively (probably because of ExgMgr activity); in that case the
+ * caller better not unload!
+ */
+static Boolean
 setupPnolet( UInt32** entryP, UInt32** gotTableP )
 {
-    char buf[64];
     PNOFtrHeader* ftrBase;
     Err err = FtrGet( APPID, PNOLET_STORE_FEATURE, (UInt32*)&ftrBase );
+    XP_Bool mustLoad = err != errNone;
 
-    if ( err != errNone ) {
+    if ( mustLoad ) {
         UInt32* gotTable;
         UInt32 pnoSize, gotSize, pad;
         UInt32 ftrSize = sizeof( PNOFtrHeader );
@@ -139,10 +142,6 @@ setupPnolet( UInt32** entryP, UInt32** gotTableP )
         FtrPtrNew( APPID, PNOLET_STORE_FEATURE, ftrSize, (void**)&ftrBase );
         pnoCode = (UInt32*)&ftrBase[1];
 
-        StrPrintF( buf, "code ends at 0x%lx", 
-                   ((char*)ftrBase) + ftrSize );
-        WinDrawChars( buf, StrLen(buf), 5, 10 );
-
         countOrLoadPNOCs( NULL, (UInt8*)ftrBase, sizeof(PNOFtrHeader) );
 
         if ( gotSize > 0 ) {
@@ -166,8 +165,7 @@ setupPnolet( UInt32** entryP, UInt32** gotTableP )
     *gotTableP = ftrBase->gotTable;
     *entryP = (UInt32*)&ftrBase[1];
 
-    StrPrintF( buf, "got at 0x%lx", *gotTableP );
-    WinDrawChars( buf, StrLen(buf), 5, 20 );
+    return mustLoad;
 } /* setupPnolet */
 
 static Boolean
@@ -206,15 +204,15 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
            it unless the user's said not to. */
 
         if ( shouldRunPnolet() ) {
-            char buf[64];
             UInt32* gotTable;
             PnoletUserData* dataP;
             UInt32* pnoCode;
             UInt32 result;
 
-            setupPnolet( &pnoCode, &gotTable );
-
+            Boolean loaded = setupPnolet( &pnoCode, &gotTable );
             dataP = (PnoletUserData*)MemPtrNew( sizeof(PnoletUserData) );
+            dataP->recursive = !loaded;
+
             dataP->pnoletEntry = pnoCode;
             dataP->gotTable = gotTable;
             dataP->storageCallback = storageCallback;
@@ -223,21 +221,19 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
             dataP->cmd = cmd;
             dataP->launchFlags = launchFlags;
 
-            StrPrintF( buf, "armlet starts at 0x%lx", pnoCode );
-            WinDrawChars( buf, StrLen(buf), 5, 30 );
-
             result = PceNativeCall((NativeFuncType*)pnoCode, (void*)dataP );
             MemPtrFree( dataP );
 
-            /* Might want to hang onto this, though it's a bit selfish.... */
-            FtrPtrFree( APPID, PNOLET_STORE_FEATURE );
+            if ( loaded ) {
+                FtrPtrFree( APPID, PNOLET_STORE_FEATURE );
+            }
         } else {
 #ifdef FEATURE_PNOAND68K
             result = PM2(PilotMain)( cmd, cmdPBP, launchFlags);
 #else
             (void)FrmCustomAlert( XW_ERROR_ALERT_ID,
-                                  "Arm-only Crosswords won't run on this device",
-                                  " ", " " );
+                                  "Arm-only Crosswords won't run on this "
+                                  "device", " ", " " );
 #endif
         }
     }
