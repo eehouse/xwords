@@ -24,6 +24,36 @@
 #include <string.h>
 #include <stdio.h>
 #include "comtypes.h"
+#include "mempool.h"
+
+
+void
+symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const TDesC16& desc )
+{
+    TBuf8<256> tmp;
+    tmp.Copy( desc );
+
+    if ( *loc ) {
+        TPtrC8 forCmp;
+        forCmp.Set( *loc, XP_STRLEN( *loc ) );
+
+        if ( tmp == forCmp ) {
+            XP_LOGF( "not copying %s", *loc );
+            return;
+        }
+
+        XP_LOGF( "freeing %s", *loc );
+        XP_FREE( mpool, *loc );
+    }
+
+    TInt len = desc.Length();
+    XP_UCHAR* newStr = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 );
+    XP_MEMCPY( newStr, (void*)tmp.Ptr(), len );
+    newStr[len] = '\0';
+    *loc = newStr;
+
+    XP_LOGF( "created new string: %s", newStr );
+} /* symReplaceStr */
 
 extern "C" {
 
