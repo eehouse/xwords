@@ -1,0 +1,79 @@
+# Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:pl_PL
+
+
+LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
+LANGFILTER_POSTCLIP: | grep '^[A-PR-UWYZ¡Æ£ÑÓ¦¬¯]*$'
+LANGFILTER_POSTCLIP: | tr '\n' '\000'
+
+NEEDSSORT:true
+
+
+LANGINFO: <p>Polish is interesting because it has 32 letters plus a
+LANGINFO: blank, a larger number than any other supported language.
+LANGINFO: Yet while I call it "supported", in fact this combination
+LANGINFO: has never been tested because I don't have a Polish
+LANGINFO: wordlist.  So if you are the first and have problems you've
+LANGINFO: probably found a bug.  Please let <a
+LANGINFO: href="mailto:fixin@peak.org">me</a> know so that I can get
+LANGINFO: this working.</p>
+
+LANGINFO: <p>Note that the blank is the last tile here, while with all
+LANGINFO: other languages it's the first.</p>
+
+# High bit means "official".  Next 7 bits are an enum where
+# Polish==8.  Low byte is padding
+XLOC_HEADER:0x8800
+
+
+<BEGIN_TILES>
+8			1		'A'
+1			5		'¡'
+2			3		'B'
+3			2		'C'
+1			6		'Æ'
+3			2		'D'
+7			1		'E'
+1			5		'Ê'
+2			4		'F'
+2			3		'G'
+2			3		'H'
+8			1		'I'
+2			3		'J'
+3			2		'K'
+3			2		'L'
+2			3		'£'
+3			2		'M'
+5			1		'N'
+1			7		'Ñ'
+6			1		'O'
+1			5		'Ó'
+3			2		'P'
+4			1		'R'
+4			1		'S'
+1			5		'¦'
+3			2		'T'
+2			3		'U'
+4			1		'W'
+4			2		'Y'
+5			1		'Z'
+1			7		'¬'
+1			5		'¯'
+# the blank *must* be last here!!!
+2           0       {"_"}
+<END_TILES>
