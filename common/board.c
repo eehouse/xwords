@@ -41,25 +41,25 @@ extern "C" {
 
 /****************************** prototypes ******************************/
 static XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-			    XP_Rect* rect);
+                            XP_Rect* rect);
 static void coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, 
-			 XP_U16* colP, XP_U16* rowP );
+                         XP_U16* colP, XP_U16* rowP );
 static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-			 XP_Bool skipBlanks );
+                         XP_Bool skipBlanks );
 static void figureBoardRect( BoardCtxt* board );
 
 static void drawTimer( BoardCtxt* board );
 static void drawScoreBoard( BoardCtxt* board );
 static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-		       XP_Bool doMirror );
+                       XP_Bool doMirror );
 static void
 invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect, XP_Bool doMirror );
 
 static XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-				XP_U16 tileIndex, Tile blankFace );
+                                XP_U16 tileIndex, Tile blankFace );
 static XP_Bool rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 );
 static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col, 
-			      XP_U16 row, XP_Bool added );
+                              XP_U16 row, XP_Bool added );
 static void boardTileChanged( void* board, XP_U16 turn, TileBit bits );
 static void boardTurnChanged( void* board );
 static void boardGameOver( void* board );
@@ -68,10 +68,10 @@ static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col,
                          XP_U16 row );
 static XP_S16 figureScorePlayerTapped( BoardCtxt* board, XP_U16 x, XP_U16 y );
 static XP_Bool cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-			     XP_Bool inclPending );
+                             XP_Bool inclPending );
 static void makeMiniWindowForTrade( BoardCtxt* board );
 static void makeMiniWindowForText( BoardCtxt* board, XP_UCHAR* text, 
-				   MiniWindowType winType );
+                                   MiniWindowType winType );
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 static void invalSelTradeWindow( BoardCtxt* board );
 static void setTimerIf( BoardCtxt* board );
@@ -82,7 +82,7 @@ static XP_Bool advanceArrow( BoardCtxt* board );
 #ifdef KEY_SUPPORT
 static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey, 
-			  XP_Bool canCycle );
+                                XP_Bool canCycle );
 
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
@@ -2547,7 +2547,7 @@ setArrowVisibleFor( BoardCtxt* board, XP_U16 player, XP_Bool visible )
  ****************************************************************************/
 static void
 boardCellChanged( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row,
-		  XP_Bool added )
+                  XP_Bool added )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     XP_Bool pending, found, ignoreBlank;
