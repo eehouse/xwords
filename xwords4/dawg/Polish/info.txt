@@ -18,8 +18,11 @@ LANGCODE:pl_PL
 
 CHARSET:iso-8859-2
 
-LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
-LANGFILTER_POSTCLIP: | grep '^[A-PR-UWYZ¡Æ£ÑÓ¦¬¯]*$'
+# deal with DOS files
+LANGFILTER_PRECLIP: tr -d '\r' |
+
+LANGFILTER_POSTCLIP: | tr [a-z±æê³ñó¶¼¿] [A-Z¡ÆÊ£ÑÓ¦¬¯]
+LANGFILTER_POSTCLIP: | grep '^[A-PR-UWYZ¡ÆÊ£ÑÓ¦¬¯]*$'
 LANGFILTER_POSTCLIP: | tr '\n' '\000'
 
 NEEDSSORT:true
