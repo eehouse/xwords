@@ -50,6 +50,10 @@ enum TXWordsIds {
     ,XW_FLIP_COMMAND
     ,XW_TOGGLEVALS_COMMAND
 
+    ,XW_SGAMES_DELETE_COMMAND
+    ,XW_SGAMES_RENAME_COMMAND
+    ,XW_SGAMES_OPEN_COMMAND
+
     ,EAskContents               /* edit control in generic ask dlg */
 
     ,EPlayerLocationChoice
@@ -72,6 +76,10 @@ enum TXWordsIds {
     ,ENPlayersWhichList
 
     ,ESelBlankChoice
+    ,ESelGameChoice
 };
 
+#define XW_UID3 0x10206D64
+
 #endif // __XWORDS_HRH__
+
