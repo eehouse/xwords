@@ -1,0 +1,15 @@
+// -*- mode: c; -*-
+//
+//
+#include <aiftool.rh>
+
+RESOURCE AIF_DATA
+{
+    caption_list = {
+        CAPTION { code = ELangEnglish; caption = "Crosswords"; }
+    };
+
+    app_uid = 0x10206D64;
+
+    num_icons = 1;
+}
