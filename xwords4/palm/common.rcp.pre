@@ -56,7 +56,7 @@ APPLICATIONICONNAME ID 1000 ICONTEXT
 LAUNCHERCATEGORY ID 1000 "Games"
 
 HEX "Xbrd" ID 1000
-#if 0				/* the "scrabble" pattern */
+#if 1				/* the "scrabble" pattern */
     0x40 0x01 0x00 0x04
     0x02 0x00 0x03 0x00
     0x00 0x20 0x00 0x10
