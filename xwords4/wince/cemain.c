@@ -254,7 +254,7 @@ cePositionBoard( CEAppGlobals* globals )
 {
     XP_Bool erase = XP_FALSE;
     XP_U16 nCols, leftEdge;
-    XP_U16 boardHeight, trayTop;
+    XP_U16 boardHeight, trayTop, scoreWidth;
 
     XP_ASSERT( !!globals->game.model );
     nCols = model_numCols( globals->game.model );
@@ -266,13 +266,20 @@ cePositionBoard( CEAppGlobals* globals )
     board_setTimerLoc( globals->game.board, CE_TIMER_LEFT,
                        CE_TIMER_TOP, CE_TIMER_WIDTH, CE_TIMER_HEIGHT );
 
+    /* If there's no timer, set the scoreboard to include the timer's rect so
+       that the entire screen will be owned and erased as appropriate.
+       Otherwise that region never gets redrawn. */
+    scoreWidth = CE_TIMER_LEFT - CE_SCORE_LEFT;
+    if ( !globals->gameInfo.timerEnabled ) {
+        scoreWidth += CE_TIMER_WIDTH;
+    }
+
     board_setPos( globals->game.board, leftEdge,
                   CE_BOARD_TOP, XP_FALSE );
     board_setScale( globals->game.board, CE_BOARD_SCALEH, CE_BOARD_SCALEV );
 
     board_setScoreboardLoc( globals->game.board, CE_SCORE_LEFT, 
-                            CE_SCORE_TOP,
-                            CE_TIMER_LEFT - CE_SCORE_LEFT,
+                            CE_SCORE_TOP, scoreWidth,
                             CE_SCORE_HEIGHT, XP_TRUE );
     board_setShowColors( globals->game.board, globals->appPrefs.showColors );
     board_setYOffset( globals->game.board, 0, XP_FALSE /* why bother */ );
