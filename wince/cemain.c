@@ -1913,6 +1913,15 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     case STR_REMOTE_MOVED:
         return (XP_UCHAR*)"Remote player made this move:" XP_CR;
 
+    case STR_PASSED: 
+        return (XP_UCHAR*)"Passed";
+    case STRSD_SUMMARYSCORED: 
+        return (XP_UCHAR*)"%s:%d";
+    case STRD_TRADED: 
+        return (XP_UCHAR*)"Traded %d";
+    case STR_LOSTTURN:
+        return (XP_UCHAR*)"Lost turn";
+
     default:
         XP_LOGF( "stringCode=%d", stringCode );
         return (XP_UCHAR*)"unknown code";
