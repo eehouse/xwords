@@ -28,6 +28,9 @@ typedef struct PnoletUserData {
     MemPtr cmdPBP;
     UInt16 cmd; 
     UInt16 launchFlags;
+
+    /* Other.... */
+    Boolean recursive;          /* PilotMain called from inside PilotMain */
 } PnoletUserData;
 
 #endif
