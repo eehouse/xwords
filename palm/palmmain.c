@@ -342,7 +342,11 @@ positionBoard( PalmAppGlobals* globals )
     XP_U16 timerWidth, timerLeft;
     XP_U16 freeSpaceH;
     XP_Bool showGrid = globals->gState.showGrid;
-    XP_U16 doubler = globals->useHiRes? 2:1;
+    XP_U16 doubler = 
+#ifdef FEATURE_HIGHRES
+        globals->useHiRes? 2:
+#endif
+        1;
 #ifdef SHOW_PROGRESS
     RectangleType bounds;
 #endif
@@ -370,9 +374,11 @@ positionBoard( PalmAppGlobals* globals )
     }
     scale = scale * doubler;
     scaleV = scaleH = scale;
+#ifdef FEATURE_HIGHRES
     if ( globals->useHiRes ) {
         scaleV -= 2;
     }
+#endif
 
     freeSpaceH = ((PALM_MAX_COLS-nCols)/2) * scaleH;
     if ( isLefty ) {
@@ -440,16 +446,22 @@ positionBoard( PalmAppGlobals* globals )
     globals->needsScrollbar = false; /* default */
     boardHeight = scaleV * nCols; 
 
-    if ( globals->useHiRes ) {
+    if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+    } else if ( globals->useHiRes ) {
         trayTop = ((160 - TRAY_HEIGHT_HR) * doubler) - 1;
         globals->needsScrollbar = false;
+#endif
     } else {
         trayTop = 160 - TRAY_HEIGHT_LR;
         globals->needsScrollbar = showGrid && (nCols == PALM_MAX_COLS);
     }
 
-    trayScaleV = globals->useHiRes?
-        (TRAY_HEIGHT_HR*doubler) + 1:TRAY_HEIGHT_LR;
+    trayScaleV = 
+#ifdef FEATURE_HIGHRES
+        globals->useHiRes? (TRAY_HEIGHT_HR*doubler) + 1:
+#endif
+        TRAY_HEIGHT_LR;
     board_setTrayLoc( globals->game.board, 
                       (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
                       trayTop,
