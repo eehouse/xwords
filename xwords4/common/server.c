@@ -1282,8 +1282,9 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 
     XP_ASSERT( !!pool );
 #ifdef FEATURE_TRAY_EDIT
-    ask = !server->vol.gi->players[playerNum].isRobot
-        && server->vol.gi->allowPickTiles;
+    ask = server->vol.gi->allowPickTiles
+        && (!server->vol.gi->players[playerNum].isRobot
+            || server->vol.gi->allowPickTilesRobot);
 #else
     ask = XP_FALSE;
 #endif
