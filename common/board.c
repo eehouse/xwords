@@ -98,6 +98,7 @@ static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey );
 static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
 static void invalCurHintRect( BoardCtxt* board, XP_U16 player,
                               XP_Bool doMirrow );
+static void clearCurHintRect( BoardCtxt* board );
 
 #else
 # define figureHintAtts(b,c,r) HINT_BORDER_NONE
@@ -312,6 +313,20 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     if ( changed ) {
         changed = setArrowVisible( board, XP_FALSE );
     }
+
+#ifdef XWFEATURE_SEARCHLIMIT
+    if ( !board->gi->allowHintRect
+         && board->hasHintRect[board->selPlayer] ) {
+
+        EngineCtxt* engine = server_getEngineFor( board->server, 
+                                                  board->selPlayer );
+        if ( !!engine ) {
+            engine_reset( engine );
+        }
+
+        clearCurHintRect( board );
+    }
+#endif
 
     return changed;
 } /* board_prefsChanged */
@@ -612,11 +627,13 @@ timerFiredForPen( BoardCtxt* board )
     XP_UCHAR* text = (XP_UCHAR*)NULL;
     XP_UCHAR buf[80];
 
-    if ( board->penDownObject == OBJ_BOARD ) {
+    if ( board->penDownObject == OBJ_BOARD 
+#ifdef XWFEATURE_SEARCHLIMIT
+         && !board->hintDragInProgress 
+#endif
+         ) {
         XP_U16 col, row;
         XWBonusType bonus;
-
-        XP_ASSERT( !board->penTimerFired );
 
         coordToCell( board, board->penDownX, board->penDownY, &col, 
                      &row );
@@ -1460,11 +1477,15 @@ board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP )
 
             board_pushTimerSave( board );
 
+#ifdef XWFEATURE_SEARCHLIMIT
+            XP_ASSERT( board->gi->allowHintRect || !board->hasHintRect[selPlayer] );
+#endif
             searchComplete = engine_findMove(engine, model, 
                                              model_getDictionary(model),
                                              tiles, nTiles, nTilesToUse, 
 #ifdef XWFEATURE_SEARCHLIMIT
-                                             board->hasHintRect[selPlayer]?
+                                             (board->gi->allowHintRect &&
+                                              board->hasHintRect[selPlayer])?
                                              &board->limits[selPlayer] : NULL,
 #endif
                                              NO_SCORE_LIMIT, 
@@ -1787,7 +1808,7 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     HintAtts result = HINT_BORDER_NONE;
 
-    if ( board->trayVisState == TRAY_REVEALED ) {
+    if ( board->trayVisState == TRAY_REVEALED && board->gi->allowHintRect ) {
         HintLimits limits;
         XP_Bool isFlipped = board->isFlipped;
         
@@ -1842,27 +1863,33 @@ static void
 invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
                  XP_U16 rowB, XP_Bool doMirror )
 {
-        XP_U16 col, row, lastCol, firstRow, lastRow;
-        
+        XP_U16 col, row;
+        XP_U16 firstCol, lastCol, firstRow, lastRow;
+
         if ( colA <= colB ) {
-            col = colA;
+            firstCol = colA;
             lastCol = colB;
         } else {
-            col = colB;
+            firstCol = colB;
             lastCol = colA;
         }
         if ( rowA <= rowB ) {
-            row = rowA;
+            firstRow = rowA;
             lastRow = rowB;
         } else {
-            row = rowB;
+            firstRow = rowB;
             lastRow = rowA;
         }
 
-        firstRow = row;
-        for ( ; col <= lastCol; ++col ) {
-            for( row = firstRow; row <= lastRow; ++row ) {
+        for ( row = firstRow; row <= lastRow; ++row ) {
+            for ( col = firstCol; col <= lastCol; ) {
                 invalCell( board, col, row, doMirror );
+                ++col;
+#ifndef XWFEATURE_SEARCHLIMIT_DOCENTERS
+                if ( row > firstRow && row < lastRow && (col < lastCol) ) {
+                    col = lastCol;
+                }
+#endif
             }
         }
 } /* invalCellRegion */
@@ -1920,6 +1947,7 @@ setHintRect( BoardCtxt* board )
              limits.right, limits.bottom );
 
     board->limits[board->selPlayer] = limits;
+    board->hasHintRect[board->selPlayer] = XP_TRUE;
 } /* setHintRect */
 
 static XP_Bool
@@ -1945,10 +1973,10 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
             hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
         }
 
-        invalHintForNew( board, col, row );
         board->hintDragCurCol = col;
         board->hintDragCurRow = row;
         setHintRect( board );
+        invalCurHintRect( board, board->selPlayer, XP_FALSE );
         XP_LOGF( "now includes with %d,%d", col, row );
     }
 
@@ -1984,8 +2012,8 @@ finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
                  board->limits[board->selPlayer].top,
                  board->limits[board->selPlayer].right, 
                  board->limits[board->selPlayer].bottom );
-        board_resetEngine( board );
     }    
+    board_resetEngine( board );
 
     return needsRedraw;
 } /* finishHintRegionDrag */
@@ -1994,7 +2022,7 @@ finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 static XP_Bool
 handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
-    XP_Bool result;
+    XP_Bool result = XP_FALSE;
     /* Start a timer no matter what.  After it fires we'll decide whether it's
        appropriate to handle it.   No.  That's too expensive */
     if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, x, y ) ) {
@@ -2002,9 +2030,9 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
     }
     util_setTimer( board->util, TIMER_PENDOWN );
 #ifdef XWFEATURE_SEARCHLIMIT
-    result = startHintRegionDrag( board, x, y );
-#else
-    result = XP_FALSE;
+    if ( board->gi->allowHintRect && board->trayVisState == TRAY_REVEALED ) {
+        result = startHintRegionDrag( board, x, y );
+    }
 #endif
 
     return result;
@@ -2135,7 +2163,8 @@ board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y )
     } else if ( board->divDragState.dragInProgress ) {
         result = continueDividerDrag( board, x, y ) != 0;
 #ifdef XWFEATURE_SEARCHLIMIT
-    } else {
+    } else if ( board->gi->allowHintRect 
+                && board->trayVisState == TRAY_REVEALED ) {
         result = continueHintRegionDrag( board, x, y );
 #endif
     }
@@ -2335,6 +2364,11 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
         result = endTileDrag( board, x, y );
     } else if ( board->divDragState.dragInProgress ) {
         result = endDividerDrag( board, x, y );
+#ifdef XWFEATURE_SEARCHLIMIT
+    } else if ( board->hintDragInProgress ) {
+        XP_ASSERT( board->gi->allowHintRect );
+        result = finishHintRegionDrag( board, x, y );
+#endif
     } else if ( board->penTimerFired ) {
         if ( valHintMiniWindowActive( board ) ) {
             hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
@@ -2342,10 +2376,6 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
         }
         /* Need to clean up if there's been any dragging happening */
         board->penTimerFired = XP_FALSE;
-#ifdef XWFEATURE_SEARCHLIMIT
-    } else if ( board->hintDragInProgress ) {
-        result = finishHintRegionDrag( board, x, y );
-#endif
     } else {
         BoardObjectType onWhich;
         if ( pointOnSomething( board, x, y, &onWhich ) ) {
