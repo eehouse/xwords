@@ -731,10 +731,10 @@ localGetBoardTile( EngineCtxt* engine, XP_U16 col, XP_U16 row,
         if ( isBlank && substBlank ) {
             result = engine->blankTile;
         }
-        return result;
     } else {
-        return EMPTY_TILE;
+        result = EMPTY_TILE;
     }
+    return result;
 } /* localGetBoardTile */
 
 /*****************************************************************************
@@ -910,7 +910,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
 
     if ( edge == NULL ) { // we're off the dictionary
         if ( tile != EMPTY_TILE ) {
-            return; // don't check at the end
+            goto no_check; // don't check at the end
         }
     } else if ( tile == EMPTY_TILE ) {
         Crosscheck check = engine->rowChecks[col]; /* make a local copy */
@@ -927,7 +927,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                                      ISACCEPTING( dict, edge ), firstCol, col+1, row );
                         rack_replace( engine, tile, isBlank );
                         if ( engine->returnNOW ) {
-                            return;
+                            goto no_check;
                         }
                     }
                 }
@@ -947,9 +947,9 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
         accepting = ISACCEPTING( dict, edge );
         extendRight( engine, tiles, tileLength, follow(dict, edge), 
                      accepting, firstCol, col+1, row );
-        return; /* don't do the check at the end */
+        goto no_check; /* don't do the check at the end */
     } else {
-        return;
+        goto no_check;
     }
  check_exit:
     if ( accepting
@@ -959,6 +959,8 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
          ) {
         considerMove( engine, tiles, tileLength, firstCol, col, row );
     }
+ no_check:
+    return;
 } /* extendRight */
 
 static XP_Bool
@@ -1008,33 +1010,33 @@ considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
 
     if ( !util_engineProgressCallback( engine->util ) ) {
         engine->returnNOW = XP_TRUE;
-        return;
-    }
+    } else {
 
-    /* if this never gets hit then the top-level caller of leftPart should
-       never pass a value greater than 7 for limit.  I think we're always
-       guaranteed to run out of tiles before finding a legal move with larger
-       values but that it's expensive to look only to fail. */
-    XP_ASSERT( engine->curLimit < MAX_TRAY_TILES );
+        /* if this never gets hit then the top-level caller of leftPart should
+           never pass a value greater than 7 for limit.  I think we're always
+           guaranteed to run out of tiles before finding a legal move with
+           larger values but that it's expensive to look only to fail. */
+        XP_ASSERT( engine->curLimit < MAX_TRAY_TILES );
 
-    XP_MEMSET( &posmove, 0, sizeof(posmove) );
+        XP_MEMSET( &posmove, 0, sizeof(posmove) );
 
-    for ( col = firstCol; posmove.moveInfo.nTiles < tileLength; ++col ) {
-        /* is it one of the new ones? */
-        if ( localGetBoardTile( engine, col, lastRow, XP_FALSE )
-             == EMPTY_TILE ) { 
-            posmove.moveInfo.tiles[posmove.moveInfo.nTiles].tile = 
-                tiles[posmove.moveInfo.nTiles];
-            posmove.moveInfo.tiles[posmove.moveInfo.nTiles].varCoord = (XP_U8)col;
-            ++posmove.moveInfo.nTiles;
+        for ( col = firstCol; posmove.moveInfo.nTiles < tileLength; ++col ) {
+            /* is it one of the new ones? */
+            if ( localGetBoardTile( engine, col, lastRow, XP_FALSE )
+                 == EMPTY_TILE ) { 
+                posmove.moveInfo.tiles[posmove.moveInfo.nTiles].tile = 
+                    tiles[posmove.moveInfo.nTiles];
+                posmove.moveInfo.tiles[posmove.moveInfo.nTiles].varCoord = (XP_U8)col;
+                ++posmove.moveInfo.nTiles;
+            }
         }
+        posmove.moveInfo.isHorizontal = engine->searchHorizontal;
+        posmove.moveInfo.commonCoord = (XP_U8)lastRow;
+
+
+        considerScoreWordHasBlanks( engine, engine->blankCount, &posmove, 
+                                    lastRow, blankTuples, 0 );
     }
-    posmove.moveInfo.isHorizontal = engine->searchHorizontal;
-    posmove.moveInfo.commonCoord = (XP_U8)lastRow;
-
-
-    considerScoreWordHasBlanks( engine, engine->blankCount, &posmove, 
-                                lastRow, blankTuples, 0 );
 } /* considerMove */
 
 static void
@@ -1204,13 +1206,13 @@ index_from( DictionaryCtxt* dict, array_edge* p_edge )
 
 #ifdef NODE_CAN_4
     array_edge_new* edge = (array_edge_new*)p_edge;
-    result = ((edge->o.highByte << 8) | edge->o.lowByte) & 0x0000FFFF;
+    result = ((edge->highByte << 8) | edge->lowByte) & 0x0000FFFF;
 
     if ( dict->is_4_byte ) {
         result |= ((XP_U32)edge->moreBits) << 16;
     } else {
         XP_ASSERT( dict->nodeSize == 3 );
-        if ( (edge->o.bits & EXTRABITMASK_NEW) != 0 ) { 
+        if ( (edge->bits & EXTRABITMASK_NEW) != 0 ) { 
             result |= 0x00010000; /* using | instead of + saves 4 bytes */
         }
     }
