@@ -897,7 +897,6 @@ getResString( PalmAppGlobals* globals, XP_U16 strID )
 static Err
 volChangeEventProc( SysNotifyParamType* notifyParamsP )
 {
-    PalmAppGlobals* globals = (PalmAppGlobals*)notifyParamsP->userDataP;
 #ifndef REALLY_HANDLE_MEDIA
     EventType eventToPost;
 #endif
@@ -1022,6 +1021,7 @@ uninitHighResGlobals( PalmAppGlobals* globals )
 } /* uninitHighResGlobals */
 #else
 # define initHighResGlobals(g)
+# define uninitHighResGlobals(g)
 #endif
 
 /*****************************************************************************
@@ -1544,7 +1544,7 @@ handleHideTray( PalmAppGlobals* globals )
     Boolean draw;
     XW_TrayVisState curState = board_getTrayVisState( globals->game.board );
 
-    if ( curState == TRAY_REVEALED ) {
+    if ( curState != TRAY_HIDDEN ) {
         draw = board_hideTray( globals->game.board );
     } else {
         draw = board_showTray( globals->game.board );
@@ -2073,12 +2073,14 @@ mainViewHandleEvent( EventPtr event )
         draw = true;
         break;
 
+#ifdef FEATURE_HIGHRES
     case doResizeWinEvent:
         getSizes( globals );
         positionBoard( globals );
         board_invalAll( globals->game.board );
         FrmUpdateForm( 0, frmRedrawUpdateCode );
         break;
+#endif
 
     case prefsChangedEvent:
         erase = LocalPrefsToGlobal( globals );
@@ -2310,7 +2312,7 @@ mainViewHandleEvent( EventPtr event )
             draw = handleTrade( globals );
             break;
 	    
-        case XW_HIDETRAY_PULLDOWN_ID:
+        case XW_HIDESHOWTRAY_PULLDOWN_ID:
             draw = handleHideTray( globals );
             break;
 
