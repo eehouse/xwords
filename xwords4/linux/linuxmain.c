@@ -28,7 +28,6 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <time.h>
 
 #include "linuxmain.h"
@@ -200,7 +199,6 @@ usage( char* appName, char* msg )
 	     "\t [-c]             # explain robot scores after each move\n"
 	     "\t\t # (max of four players total, local and remote)\n"
 	     "\t [-b boardSize]   # number of columns and rows\n"
-	     "\t [-l listen_port] # port for inet connection (4999 default)\n"
 	     "\t [-e random_seed] \n"
 	     "\t [-t initial_minutes_on_timer] \n"
 	     "# --------------- choose client or server ----------\n"
@@ -208,106 +206,83 @@ usage( char* appName, char* msg )
 	     "\t -d xwd_file      # provides tile counts & values\n"
 	     "\t\t # list each player as local or remote\n"
 	     "\t [-N]*            # remote client (listen for connection)\n"
-	     "# --------------- OR client-only ----------\n"
-	     "\t [-a server_addr] # be a client (on port spec'd above)\n"
-	     "\t [-p client_port] # must != server's port if on same device"
+	     "\t [-a relay_addr] # use relay (via port spec'd above)\n"
 	     ""                   " (default localhost)\n"
+	     "\t [-p relay_port] # relay is at this port\n"
+/* 	     "# --------------- OR client-only ----------\n" */
+/* 	     "\t [-p client_port] # must != server's port if on same device" */
          "\nexample: \n"
-             "\tserver: ./xwords -d dict.xwd -s -r Eric -N\n"
-             "\tclient: ./xwords -d dict.xwd -r Kati -p 4998 -l 6000\n"
+             "\tserver: ./xwords -d dict.xwd -s -a localhost -p 10999 -r Eric -N\n"
+             "\tclient: ./xwords -d dict.xwd -a localhost -p 10999 -r Kati\n"
 	     , appName );
     exit(1);
 }
 
 XP_S16
-linux_udp_send( XP_U8* buf, XP_U16 buflen, CommsAddrRec* addrRec, 
+linux_tcp_send( XP_U8* buf, XP_U16 buflen, CommsAddrRec* addrRec, 
                 void* closure )
 {
     CommonGlobals* globals = (CommonGlobals*)closure;
+    XP_S16 result = 0;
+    int socket = globals->socket;
+    
+    if ( socket == -1 ) {
+        XP_STATUSF( "linux_tcp_send: socket uninitialized" );
+    } else {
+        XP_U16 netLen = htons( buflen );
+        errno = 0;
+
+        (void)send( socket, &netLen, sizeof(netLen), 0 );
+        result = send( socket, buf, buflen, 0 ); 
+
+        XP_STATUSF( "linux_tcp_send: send returned %d of %d (err=%d)", 
+                    result, buflen, errno );
+    }
+ 
+    return result;
+} /* linux_tcp_send */
+
+int
+linux_init_socket( CommonGlobals* cGlobals )
+{
     struct sockaddr_in to_sock;
     struct hostent* host;
-    XP_S16 result;
-    int sock;
-/*     XP_U8* msg; */
-
-    XP_LOGF( "linux_udp_send" );
-
-    /* make a local copy of the address to send to */
-    sock = socket( AF_INET, SOCK_DGRAM, 0 );
+    int sock = cGlobals->socket;
     if ( sock == -1 ) {
-        XP_DEBUGF( "socket returned -1\n" );
-        return -1;
-    }
 
-    if ( !!addrRec ) {
+        /* make a local copy of the address to send to */
+        sock = socket( AF_INET, SOCK_STREAM, 0 );
+        if ( sock == -1 ) {
+            XP_DEBUGF( "socket returned -1\n" );
+            return -1;
+        }
 
-        XP_ASSERT( addrRec->conType == COMMS_CONN_IP );
-        XP_MEMSET( &to_sock, 0, sizeof(to_sock) );
-        XP_STATUSF( "target IP = 0x%lx", addrRec->u.ip.ipAddr );
-        to_sock.sin_addr.s_addr = htonl(addrRec->u.ip.ipAddr);
-        to_sock.sin_port = htons(addrRec->u.ip.port);
-
-        XP_STATUSF( "0: sending to port %d(0x%x)", 
-                    addrRec->u.ip.port, addrRec->u.ip.port );
-    } else {
-
-        to_sock.sin_port = htons(globals->params->defaultSendPort);
+        to_sock.sin_port = htons(cGlobals->params->defaultSendPort);
         XP_STATUSF( "1: sending to port %d", 
-                    globals->params->defaultSendPort );
-        if (( host = gethostbyname(globals->defaultServerName) ) == NULL ) {
+                    cGlobals->params->defaultSendPort );
+        if (( host = gethostbyname(cGlobals->params->relayName) ) == NULL ) {
             XP_WARNF( "gethostbyname returned -1\n" );
             return -1;
         } else {
             XP_WARNF( "gethostbyname for %s worked", 
-                      globals->defaultServerName );
+                      cGlobals->defaultServerName );
         }
         memcpy( &(to_sock.sin_addr.s_addr), host->h_addr_list[0],  
                 sizeof(struct in_addr));
+        to_sock.sin_family = AF_INET;
+
+        errno = 0;
+        if ( 0 == connect( sock, (const struct sockaddr*)&to_sock, 
+                           sizeof(to_sock) ) ) {
+            cGlobals->socket = sock;
+        } else {
+            close( sock );
+            XP_STATUSF( "connect failed: %d", errno );
+        }
     }
-    to_sock.sin_family = AF_INET;
    
-/*     msg = malloc( buflen ); */
-/*     XP_MEMCPY( msg, buf, buflen ); */
-
-    errno = 0;
-    XP_STATUSF( "checking: errno=%d", (short)errno );
-    result = sendto( sock, buf, buflen, 0, 
-                     (struct sockaddr *)&to_sock, sizeof(to_sock) );
-    XP_STATUSF( "foo: sendto returned %d of %d (err=%d)", 
-                result, buflen, errno );
-    close(sock);
-
-/*     free( msg ); */
-    
-    return result;
-} /* linux_udp_send */
-
-int
-initListenerSocket( int port )
-{
-    int newSocket;
-    int result;
-    struct sockaddr_in sockAddr;
-
-    XP_DEBUGF( "opening socket to listen on port %d", port );
-
-    newSocket = socket( AF_INET, DGRAM_TYPE, 0 );
-    XP_DEBUGF( "socket returned %d", newSocket );
-
-    sockAddr.sin_family = AF_INET;
-    sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    sockAddr.sin_port = htons(port);
-
-    result = bind( newSocket, (struct sockaddr*)&sockAddr, sizeof(sockAddr) );
-    XP_LOGF( "bind on port %d returned %d; errno=%d", 
-             port, result, errno );
-
-
-/*     result = listen( newSocket, 5 ); */
-/*     XP_DEBUGF( "listen returned %d; errno=%d\n", result, errno ); */
-
-    return newSocket;
-} /* initListenerSocket */
+    return sock;
+} /* linux_init_socket */
 
 /* Create a stream for the incomming message buffer, and read in any
    information specific to our platform's comms layer (return address, say)
@@ -485,9 +460,8 @@ main( int argc, char** argv )
     int opt;
     int totalPlayerCount = 0;
     XP_Bool isServer = XP_FALSE;
-    char* listenPortNumString = NULL;
     char* sendPortNumString = NULL;
-    char* serverName = "localhost";
+    char* relayName = "localhost";
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 robotCount = 0;
@@ -592,9 +566,6 @@ main( int argc, char** argv )
             mainParams.gi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
-        case 'l':
-            listenPortNumString = optarg;
-            break;
         case 'p':
             sendPortNumString = optarg;
             break;
@@ -622,7 +593,7 @@ main( int argc, char** argv )
             break;
         case 'a':
             /* mainParams.info.clientInfo.serverName =  */
-            serverName = optarg;
+            relayName = optarg;
             break;
         case 'q':
             mainParams.quitAfter = XP_TRUE;
@@ -667,9 +638,6 @@ main( int argc, char** argv )
     }
 
     /* convert strings to whatever */
-    if ( listenPortNumString ) {
-        mainParams.defaultListenPort = atoi( listenPortNumString );
-    }
     if ( sendPortNumString != NULL ) {
         mainParams.defaultSendPort = atoi( sendPortNumString );
     }
@@ -706,31 +674,7 @@ main( int argc, char** argv )
         }	    
     }
 
-    /* setup sockets and any other stuff not specific to GTK or ncurses */
-    if ( isServer ) {
-    } else {
-        /* 	struct hostent* hostinfo; */
-        /* 	hostinfo = gethostbyname( serverName ); */
-        /* 	if ( !hostinfo ) { */
-        /* 	    fprintf( stderr, "unable to get host info for %s\n", serverName ); */
-        /* 	    exit( 0 ); */
-        /* 	} else { */
-        /* 	    char* hostName = inet_ntoa( *(struct in_addr*)hostinfo->h_addr ); */
-        /* 	    unsigned long int serverAddr; */
-        /* 	    fprintf( stderr,  "gethostbyname returned %s\n", hostName ); */
-        /* 	    serverAddr = inet_addr(hostName); */
-        /* 	    fprintf( stderr,  "inet_addr returned %lu\n", serverAddr ); */
-
-        /* 	    mainParams.info.clientInfo.stream = */
-        /* 		linux_make_outbound_socketStream( serverAddr, serverPort ); */
-
-        /* 	    if ( !stream_open( mainParams.info.clientInfo.stream ) { */
-        /* 		fprintf( stderr, "ERROR: unable to connect to server\n" ); */
-        /* 		exit(0); */
-        /* 	    } */
-        /* 	} */
-        mainParams.info.clientInfo.serverName = serverName;
-    }
+    mainParams.relayName = relayName;
 
     /*     mainParams.pipe = linuxCommPipeCtxtMake( isServer ); */
 

@@ -37,9 +37,10 @@ typedef struct LinuxBMStruct {
 DictionaryCtxt* linux_dictionary_make( MPFORMAL char* dictFileName );
 
 int initListenerSocket( int port );
-XP_S16 linux_udp_send( XP_U8* buf, XP_U16 buflen, CommsAddrRec* addrRec, 
+XP_S16 linux_tcp_send( XP_U8* buf, XP_U16 buflen, CommsAddrRec* addrRec, 
                        void* closure );
-XWStreamCtxt* stream_from_msgbuf( CommonGlobals* globals, char* bufPtr, 
+int linux_init_socket( CommonGlobals* cGlobals );
+XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals, char* bufPtr, 
                                   XP_U16 nBytes );
 XP_UCHAR* linux_getErrString( UtilErrID id );
 XP_UCHAR* strFromStream( XWStreamCtxt* stream );

@@ -244,7 +244,7 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
                          params->dict, params->util, 
                          (DrawCtx*)globals->draw, 
                          &globals->cp,
-                         linux_udp_send, globals );
+                         linux_tcp_send, globals );
 
 	stream_destroy( stream );
 
@@ -252,17 +252,15 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
         XP_U16 gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
         CommsAddrRec addr;
 
-        if ( serverRole == SERVER_ISCLIENT ) {
-            globals->cGlobals.defaultServerName = 
-                params->info.clientInfo.serverName;
-        }
+        XP_ASSERT( !!params->relayName );
+        globals->cGlobals.defaultServerName = params->relayName;
 
         params->gi.gameID = util_getCurSeconds(globals->cGlobals.params->util);
         XP_STATUSF( "grabbed gameID: %ld\n", params->gi.gameID );
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          gameID, &globals->cp, linux_udp_send, globals );
+                          gameID, &globals->cp, linux_tcp_send, globals );
 
         addr.conType = COMMS_CONN_IP;
         addr.u.ip.ipAddr = 0;       /* ??? */
@@ -307,13 +305,10 @@ configure_event( GtkWidget *widget, GdkEventConfigure *event,
     firstTime = (globals->draw == NULL);
 
     if ( firstTime ) {
-        int listenSocket = 
-            initListenerSocket(globals->cGlobals.params->defaultListenPort);
+        int listenSocket = linux_init_socket( &globals->cGlobals );
         gtkListenOnSocket( globals, listenSocket );
 
         createOrLoadObjects( globals, widget );
-    } else {
-/* 	gdk_pixmap_unref( ((GtkDrawCtx*)globals->draw)->pixmap ); */
     }
 
     width = widget->allocation.width - (RIGHT_MARGIN + BOARD_LEFT_MARGIN);
@@ -544,7 +539,7 @@ new_game( GtkWidget* widget, GtkAppGlobals* globals )
 
         XP_STATUSF( "grabbed gameID: %ld\n", gameID );
         game_reset( MEMPOOL &globals->cGlobals.game, gi, gameID, &globals->cp,
-                    linux_udp_send, globals );
+                    linux_tcp_send, globals );
 
         if ( isClient ) {
             XWStreamCtxt* stream =
@@ -1406,78 +1401,67 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->closure = globals;
 } /* setupGtkUtilCallbacks */
 
-static void
-newConnectionInput( gpointer data, gint source,
-                    GdkInputCondition condition )
+
+static gboolean
+newConnectionInput( GIOChannel *source,
+                    GIOCondition condition,
+                    gpointer data )
 {
+    int sock = g_io_channel_unix_get_fd( source );
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
-    struct sockaddr_in addr_sock;
-    
-    int flen, nBytes;
-    char buf[256];
-    char* bufPtr = buf;
 
-    XP_LOGF( "Incomming message!!!" );
+    XP_ASSERT( sock == globals->cGlobals.socket );
 
-    memset( buf, 0, sizeof(buf) );
-    flen = sizeof(struct sockaddr_in);
-    nBytes = recvfrom( source, buf, sizeof(buf), 0,
-                       (struct sockaddr *)&addr_sock, &flen );
-    XP_ASSERT( nBytes != -1 );
+    if ( (condition & G_IO_HUP) != 0 ) {
 
-    if ( !globals->dropIncommingMsgs && nBytes != -1 ) {
-        XWStreamCtxt* inboundS;
-        XP_Bool redraw = XP_FALSE;
+        globals->cGlobals.socket = -1;
+        return FALSE;           /* remove the event source */
 
-        /* somehow, we need to associate a return address with a client. This
-           is the address we'll be using from now on.  So when a connection is
-           made, pass the return address to the comms module.  It can decide
-           from the message if it's seen the message source before.*/
+    } else if ( (condition & G_IO_IN) != 0 ) {
+        ssize_t nRead;
+        unsigned short packetSize;
+        unsigned short tmp;
+        unsigned char buf[512];
 
-        /* 	inboundS = linux_make_inbound_socketStream(  */
-        /* 	    inboundSocket, &returnSockAddr, addrLen ); */
+        XP_LOGF( "activity on socket %d", sock );
+        nRead = recv( sock, &tmp, sizeof(tmp), 0 );
+        assert( nRead == 2 );
 
-        inboundS = stream_from_msgbuf( &globals->cGlobals, bufPtr, nBytes );
-        if ( !!inboundS ) {
-            CommsAddrRec addrRec;
+        packetSize = ntohs( tmp );
+        nRead = recv( sock, buf, packetSize, 0 );
 
-            XP_MEMSET( &addrRec, 0, sizeof(addrRec) );
-            addrRec.conType = COMMS_CONN_IP;
-            
-            addrRec.u.ip.ipAddr = ntohl(addr_sock.sin_addr.s_addr);
-            XP_LOGF( "captured incomming ip address: 0x%lx",
-                     addrRec.u.ip.ipAddr );
-            
-            if ( comms_checkIncommingStream( globals->cGlobals.game.comms, 
-                                             inboundS, &addrRec ) ) {
-                redraw = server_receiveMessage( globals->cGlobals.game.server, 
-                                                inboundS );
+        if ( !globals->dropIncommingMsgs && nRead > 0 ) {
+            XWStreamCtxt* inboundS;
+            XP_Bool redraw = XP_FALSE;
+
+            inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nRead );
+            if ( !!inboundS ) {
+                if ( comms_checkIncommingStream( globals->cGlobals.game.comms, 
+                                                 inboundS, NULL ) ) {
+                    redraw = server_receiveMessage(globals->cGlobals.game.server
+                                                   , inboundS );
+                }
+                stream_destroy( inboundS );
             }
-            stream_destroy( inboundS );
-        }
 
-        /* if there's something to draw resulting from the message, we need to
-           give the main loop time to reflect that on the screen before giving
-           the server another shot.  So just call the idle proc. */
-        if ( redraw ) {
-            gtk_util_requestTime( globals->cGlobals.params->util );
+            /* if there's something to draw resulting from the message, we
+               need to give the main loop time to reflect that on the screen
+               before giving the server another shot.  So just call the idle
+               proc. */
+            if ( redraw ) {
+                gtk_util_requestTime( globals->cGlobals.params->util );
+            } else {
+                redraw = server_do( globals->cGlobals.game.server );	    
+            }
+            if ( redraw ) {
+                board_draw( globals->cGlobals.game.board );
+            }
         } else {
-            redraw = server_do( globals->cGlobals.game.server );	    
+            XP_LOGF( "errno from read: %d", errno );
         }
-        if ( redraw ) {
-            board_draw( globals->cGlobals.game.board );
-        }
-    } else {
-        XP_LOGF( "errno from accept: %d", errno );
     }
-
+    return TRUE;                /* FALSE means to remove event source */
 } /* newConnectionInput */
-
-static void
-newConnectionDestroy( gpointer data )
-{
-    XP_LOGF( "newConnectionDestroy called" );
-} /* newConnectionDestroy */
 
 /* Make gtk listen for events on the socket that clients will use to
  * connect to us.
@@ -1485,13 +1469,12 @@ newConnectionDestroy( gpointer data )
 static void
 gtkListenOnSocket( GtkAppGlobals* globals, int newSock )
 {
-    guint result = gtk_input_add_full( newSock,
-                                       GDK_INPUT_READ,
-                                       newConnectionInput,
-                                       (GtkCallbackMarshal)0L,
-                                       globals,
-                                       newConnectionDestroy );
-    globals->listenSockKey = result;
+    GIOChannel* channel = g_io_channel_unix_new( newSock );
+    guint result = g_io_add_watch( channel,
+                                   G_IO_IN | G_IO_HUP,
+                                   newConnectionInput,
+                                   globals );
+    XP_LOGF( "g_io_add_watch => %d", result );
 } /* gtkListenOnSocket */
 
 static void
@@ -1529,6 +1512,7 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
 
     globals.cGlobals.params = params;
     globals.cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
+    globals.cGlobals.socket = -1;
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;
