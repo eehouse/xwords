@@ -97,8 +97,16 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         str = bname( gi->dictName );
         XP_MEMCPY( giState->newDictName, gi->dictName, 
                    (XP_U16)XP_STRLEN(gi->dictName) );
+
+    } else if ( !!(str = ceLocateNthDict( MPPARM(globals->mpool) 0 ) ) ) {
+        XP_MEMCPY( giState->newDictName, str, (XP_U16)XP_STRLEN(str) );
+        XP_FREE( MPPARM(globals->mpool), str );
+        str = bname( giState->newDictName );
+
     } else {
 #ifdef STUBBED_DICT
+        /* assumption is there's no dict on the device */
+        XP_ASSERT( !ceLocateNthDict( MPPARM(globals->mpool) 0 ) );
         str = "(Stub dict)";
 #else
         str = "--pick--";
