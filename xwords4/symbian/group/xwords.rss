@@ -470,7 +470,6 @@ RESOURCE ARRAY r_location_choices
     items = {
         LBUF { txt = "Local"; }
         ,LBUF { txt = "Remote"; }
-        ,LBUF { txt = "Dead"; }
     };
 }
 
