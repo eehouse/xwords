@@ -41,6 +41,7 @@
 #include "ceutil.h"
 #include "ceir.h"
 #include "ceclrsel.h"
+#include "cehntlim.h"
 #include "LocalizedStrIncludes.h"
 
 
@@ -94,6 +95,10 @@ static XWStreamCtxt* ce_util_makeStreamFromAddr( XW_UtilCtxt* uc,
 static XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                         XP_U16 turn, XP_Bool turnLost );
+#ifdef XWFEATURE_SEARCHLIMIT
+static XP_Bool ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, 
+                                            XP_U16* max );
+#endif
 #ifdef SHOW_PROGRESS
 static void ce_util_engineStarting( XW_UtilCtxt* uc );
 static void ce_util_engineStopping( XW_UtilCtxt* uc );
@@ -233,6 +238,9 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_makeEmptyDict = ce_util_makeEmptyDict;
     vtable->m_util_getUserString = ce_util_getUserString;
     vtable->m_util_warnIllegalWord = ce_util_warnIllegalWord;
+#ifdef XWFEATURE_SEARCHLIMIT
+    vtable->m_util_getTraySearchLimits = ce_util_getTraySearchLimits;
+#endif
 #ifdef SHOW_PROGRESS
     vtable->m_util_engineStarting = ce_util_engineStarting;
     vtable->m_util_engineStopping = ce_util_engineStopping;
@@ -774,7 +782,8 @@ ceHandleHintRequest( CEAppGlobals* globals )
     XP_Bool draw;
     XP_ASSERT( !!globals->game.board );
 
-    draw = board_requestHint( globals->game.board, XP_FALSE, &notDone );
+    draw = board_requestHint( globals->game.board, globals->askTrayLimits,
+                              &notDone );
     globals->hintPending = notDone;
     return draw;
 } /* ceHandleHintRequest */
@@ -1301,7 +1310,12 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
 
             case ID_MOVE_HINT:
+#ifdef XWFEATURE_SEARCHLIMIT
+            case ID_MOVE_LIMITEDHINT:
+                globals->askTrayLimits = wmId == ID_MOVE_LIMITEDHINT;
+#endif
                 board_resetEngine( globals->game.board );
+                /* fallthru */
             case ID_MOVE_NEXTHINT:
             case HINT_BUTTON_ID:
                 draw = ceHandleHintRequest( globals );
@@ -1792,7 +1806,6 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_MEMSET( &state, 0, sizeof(state) );
 
-    state.globals = globals;
     state.name = name;
     state.buf = buf;
     state.lenp = len;
@@ -1993,6 +2006,31 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
     return isOk;
 } /* ce_util_warnIllegalWord */
+
+#ifdef XWFEATURE_SEARCHLIMIT
+static XP_Bool
+ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    HintLimitsState hls;
+
+    XP_MEMSET( &hls, 0, sizeof(hls) );
+
+    hls.globals = globals;
+    hls.min = *min;
+    hls.max = *max;
+
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
+                    (DLGPROC)HintLimitsDlg, (long)&hls );
+
+    if ( !hls.cancelled ) {
+        *min = hls.min;
+        *max = hls.max;
+    }
+
+    return !hls.cancelled;
+} /* ce_util_getTraySearchLimits */
+#endif
 
 #ifdef SHOW_PROGRESS
 static void

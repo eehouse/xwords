@@ -16,13 +16,16 @@
 #define IDD_ASKBLANK                    113
 #define IDD_ASKPASS                     116
 #define IDD_OPTIONSDLG                  117
-#define IDD_COLORSDLG                  118
-#define IDD_COLOREDITDLG               119
+#define IDD_COLORSDLG                   118
+#define IDD_COLOREDITDLG                119
 #define IDB_FLIPBUTTON                  120
 #define IDB_VALUESBUTTON                121
 #define IDB_HINTBUTTON                  122
 #define IDB_JUGGLEBUTTON                123
 #define IDB_ORIGIN                      124
+#ifdef XWFEATURE_SEARCHLIMIT
+# define IDD_ASKHINTLIMTS               125
+#endif
 
 #define FLIP_BUTTON_ID                  1001
 #define VALUE_BUTTON_ID                 1002
@@ -126,6 +129,9 @@
 # define BLUE_LABEL                     1084
 #endif // MY_COLOR_SEL
 
+#define HC_MIN_COMBO                    1085
+#define HC_MAX_COMBO                    1086
+
 #define IDM_FILE_EXIT                   40002
 #define IDM_HELP_ABOUT                  40003
 #define ID_FILE_ABOUT                   40004
@@ -134,17 +140,20 @@
 #define ID_GAME_FINALSCORES             40007
 #define ID_GAME_TILECOUNTSANDVALUES     40008
 #define ID_MOVE_HINT                    40009
-#define ID_MOVE_NEXTHINT                40010
-#define ID_MOVE_UNDOCURRENT             40011
-#define ID_MOVE_UNDOLAST                40012
-#define ID_MOVE_TRADE                   40013
-#define ID_MOVE_JUGGLE                  40014
-#define ID_MOVE_HIDETRAY                40015
-#define ID_MOVE_TURNDONE                40016
-#define ID_FILE_NEWGAME                 40017
-#define ID_FILE_SAVEDGAMES              40018
-#define ID_EDITTEXT                     40019
-#define ID_FILE_PREFERENCES             40020
+#ifdef XWFEATURE_SEARCHLIMIT
+# define ID_MOVE_LIMITEDHINT            40010
+#endif
+#define ID_MOVE_NEXTHINT                40011
+#define ID_MOVE_UNDOCURRENT             40012
+#define ID_MOVE_UNDOLAST                40013
+#define ID_MOVE_TRADE                   40014
+#define ID_MOVE_JUGGLE                  40015
+#define ID_MOVE_HIDETRAY                40016
+#define ID_MOVE_TURNDONE                40017
+#define ID_FILE_NEWGAME                 40018
+#define ID_FILE_SAVEDGAMES              40019
+#define ID_EDITTEXT                     40020
+#define ID_FILE_PREFERENCES             40021
 #define ID_FILE_BEAMDICT                40022
 #define ID_FILE_BEAMBOARDS              40023
 #define ID_GAME_RESENDMSGS              40024
@@ -158,7 +167,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40025
-#define _APS_NEXT_CONTROL_VALUE         1085
+#define _APS_NEXT_CONTROL_VALUE         1087
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
