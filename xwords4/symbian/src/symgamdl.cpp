@@ -100,38 +100,44 @@ TGameInfoBuf::CopyToL( MPFORMAL CurGameInfo* aGi
 CXWGameInfoDlg::CXWGameInfoDlg( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame )
     : iIsNewGame(aNewGame), iGib(aGib)
 {
+    XP_LOGF( "CXWGameInfoDlg::CXWGameInfoDlg" );
     MPASSIGN( this->mpool, mpool );
 }
 
 CXWGameInfoDlg::~CXWGameInfoDlg()
 {
+    XP_LOGF( "CXWGameInfoDlg::~CXWGameInfoDlg" );
 }
 
 void 
 CXWGameInfoDlg::PreLayoutDynInitL()
 {
+    XP_LOGF( "CXWGameInfoDlg::PreLayoutDynInitL" );
 #if defined SERIES_80
-    XP_U16 i;
-    CEikChoiceList* list;
 
     /* This likely belongs in its own method */
 #ifndef XWFEATURE_STANDALONE_ONLY
     const TInt deps[] = { 
         EConnectionRole
     };
+    TInt i;
     for ( i = 0; i < sizeof(deps)/sizeof(deps[0]); ++i ) {
         HandleControlStateChangeL( deps[i] );
     }
 #endif
 
+    CEikChoiceList* list;
     list = static_cast<CEikChoiceList*>(Control(ENPlayersList));
+    XP_ASSERT( list != NULL );
     list->SetCurrentItem( iGib->iNPlayers - 1 );
 
     list = static_cast<CEikChoiceList*>(Control(ENPlayersWhichList));
+    XP_ASSERT( list != NULL );
     list->SetArrayExternalOwnership( EFalse );
     list->SetArrayL( MakeNumListL( 1, iGib->iNPlayers ) );
 
     list = static_cast<CEikChoiceList*>(Control(ESelDictChoice));
+    XP_ASSERT( list != NULL );
     list->SetArrayL( iGib->iDictList );
     list->SetCurrentItem( iGib->iDictIndex );
 
@@ -140,11 +146,13 @@ CXWGameInfoDlg::PreLayoutDynInitL()
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
+    XP_ASSERT( list != NULL );
     TInt sel = (TInt)iGib->iServerRole;
     list->SetCurrentItem( sel );
     list->DrawDeferred();
 
     list = static_cast<CEikChoiceList*>(Control(EConnectionType));
+    XP_ASSERT( list != NULL );
     sel = (TInt)(iGib->iCommsAddr.conType) - 1;
     XP_ASSERT( sel >= 0 );
     list->SetCurrentItem( sel );
@@ -170,6 +178,7 @@ CXWGameInfoDlg::PreLayoutDynInitL()
 void
 CXWGameInfoDlg::HideAndShow()
 {
+    XP_LOGF( "HideAndShow" );
 #if defined SERIES_80
     CEikChoiceList* list;
     /* if it's standalone, hide all else.  Then if it's not IP, hide all
@@ -178,11 +187,13 @@ CXWGameInfoDlg::HideAndShow()
 #ifndef XWFEATURE_STANDALONE_ONLY
     TBool showConnect;
     list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
+    XP_ASSERT( list != NULL );
     showConnect = list->CurrentItem() != 0;
 
     TBool showIP = showConnect;
     if ( showIP ) {
         list = static_cast<CEikChoiceList*>(Control(EConnectionType));
+        XP_ASSERT( list != NULL );
         showIP = list->CurrentItem() == 0;
     }
 
@@ -196,8 +207,8 @@ CXWGameInfoDlg::HideAndShow()
 void
 CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
 {
-#if defined SERIES_80
     XP_LOGF( "HandleControlStateChangeL got %d", aControlId );
+#if defined SERIES_80
     CEikChoiceList* list;
     CEikChoiceList* whichList;
     TInt item;
@@ -380,7 +391,9 @@ CXWGameInfoDlg::MakeNumListL( TInt aFirst, TInt aLast )
 /* static*/ TBool
 CXWGameInfoDlg::DoGameInfoDlgL( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame )
 {
+    XP_LOGF( "CXWGameInfoDlg::DoGameInfoDlgL called" );
     CXWGameInfoDlg* me = 
         new(ELeave)CXWGameInfoDlg( MPPARM(mpool) aGib, aNewGame );
+    XP_LOGF( "calling ExecuteLD" );
     return me->ExecuteLD( R_XWORDS_NEWGAME_DLG );
 }
