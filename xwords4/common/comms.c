@@ -202,8 +202,15 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     prevsAddrNext = &comms->recs;
     for ( i = 0; i < nAddrRecs; ++i ) {
         AddressRecord* rec = (AddressRecord*)XP_MALLOC( mpool, sizeof(*rec));
+        CommsAddrRec* addr;
         XP_MEMSET( rec, 0, sizeof(*rec) );
-        stream_getBytes( stream, &rec->addr, sizeof(rec->addr) );
+
+        addr = &rec->addr;
+        addr->conType = stream_getU8( stream );
+        if ( addr->conType == COMMS_CONN_IP ) {
+            addr->u.ip.ipAddr = stream_getU32( stream );
+            addr->u.ip.port = stream_getU16( stream );
+        }
 	
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgReceived = stream_getU16( stream );
@@ -245,8 +252,9 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     util_listenPortChange( util, comms->listenPort );
 #endif
 
+#ifdef DEBUG
     XP_ASSERT( stream_getU32( stream ) == cEND );
-    
+#endif
     return comms;
 } /* comms_makeFromStream */
 
@@ -271,7 +279,13 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
     stream_putU8( stream, (XP_U8)nAddrRecs );
 
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
-        stream_putBytes( stream, &rec->addr, sizeof(rec->addr) );
+        CommsAddrRec* addr = &rec->addr;
+        stream_putU8( stream, addr->conType );
+        if ( rec->addr.conType == COMMS_CONN_IP ) {
+            stream_putU32( stream, addr->u.ip.ipAddr );
+            stream_putU16( stream, addr->u.ip.port );
+        }
+
         stream_putU16( stream, (XP_U16)rec->nextMsgID );
         stream_putU16( stream, (XP_U16)rec->lastMsgReceived );
         stream_putU16( stream, rec->channelNo );
