@@ -361,6 +361,11 @@ DictListCount( PalmDictList* dl )
 
 #ifdef NODE_CAN_4
 
+/*****************************************************************************
+ * Conversion from old Crosswords DAWG format to new.  It should be possible
+ * for this to go away once the new format's been out for a while.
+ *****************************************************************************/
+
 static XP_Bool
 convertOneRecord( DmOpenRef ref, XP_U16 index )
 {
@@ -411,7 +416,7 @@ convertOneRecord( DmOpenRef ref, XP_U16 index )
 } /* convertOneRecord */
 
 static XP_Bool
-convertOneDict( UInt16 cardNo, LocalID dbID, XP_UCHAR* name )
+convertOneDict( UInt16 cardNo, LocalID dbID )
 {
     Err err;
     UInt32 creator;
@@ -467,7 +472,6 @@ convertOneDict( UInt16 cardNo, LocalID dbID, XP_UCHAR* name )
         XP_U16 i;
 
         for ( i = firstEdgeRecNum; i < nRecords; ++i ) {
-            XP_LOGF( "converting rec %d of %s", i, name );
             convertOneRecord( ref, i );
         }
     }
@@ -488,6 +492,16 @@ convertOneDict( UInt16 cardNo, LocalID dbID, XP_UCHAR* name )
     return err == errNone;
 } /* convertOneDict */
 
+static XP_Bool
+confirmDictConvert( PalmAppGlobals* globals, const XP_UCHAR* name )
+{
+    XP_UCHAR buf[128];
+    XP_UCHAR *fmt = getResString( globals, STRS_CONFIRM_ONEDICT );
+    XP_ASSERT( !!fmt );
+    XP_SNPRINTF( buf, sizeof(buf), fmt, name );
+    return palmask( globals, buf, NULL, -1 );
+} /* confirmDictConvert */
+
 void
 offerConvertOldDicts( PalmAppGlobals* globals )
 {
@@ -504,39 +518,45 @@ offerConvertOldDicts( PalmAppGlobals* globals )
             if ( getNthDict( dl, i, &dle ) ) {
 
                 if ( dle->location == DL_STORAGE ) {
-                    convertOneDict( dle->u.dmData.cardNo, 
-                                    dle->u.dmData.dbID, 
-                                    dle->path );
+
+                    if ( confirmDictConvert( globals, dle->baseName ) ) {
+                        convertOneDict( dle->u.dmData.cardNo, 
+                                        dle->u.dmData.dbID );
+                    }
+
                 } else { 
-                    UInt16 cardNo;
-                    LocalID dbID;
-                    UInt16 volRefNum = dle->u.vfsData.volNum;
 
-                    XP_ASSERT( dle->location == DL_VFS );
+                    if ( confirmDictConvert( globals, dle->baseName ) ) {
 
-                    XP_LOGF( "trying %s", dle->path );
+                        UInt16 cardNo;
+                        LocalID dbID;
+                        UInt16 volRefNum = dle->u.vfsData.volNum;
 
-                    /* copy from SD card to storage, convert, copy back */
-                    err = VFSImportDatabaseFromFile( volRefNum,
-                                                     (const char*)dle->path,
-                                                     &cardNo, &dbID );
-                    XP_LOGF( "VFSImportDatabaseFromFile => %d", err );
-                    if ( err == errNone && convertOneDict( cardNo, dbID,
-                                                           dle->path ) ) {
+                        XP_ASSERT( dle->location == DL_VFS );
 
-                        err = VFSFileDelete( volRefNum, dle->path );
-                        XP_LOGF( "VFSFileDelete=>%d", err );
-                        if ( err == errNone ) {
+                        XP_LOGF( "trying %s", dle->path );
 
-                            err = VFSExportDatabaseToFile( volRefNum,
-                                                           (const char*)dle->path,
-                                                           cardNo, dbID );
+                        /* copy from SD card to storage, convert, copy back */
+                        err = VFSImportDatabaseFromFile( volRefNum,
+                                                         (const char*)dle->path,
+                                                         &cardNo, &dbID );
+                        XP_LOGF( "VFSImportDatabaseFromFile => %d", err );
+                        if ( err == errNone && convertOneDict( cardNo, dbID ) ) {
+
+                            err = VFSFileDelete( volRefNum, dle->path );
+                            XP_LOGF( "VFSFileDelete=>%d", err );
+                            if ( err == errNone ) {
+
+                                err = VFSExportDatabaseToFile( volRefNum,
+                                                               (const char*)dle->path,
+                                                               cardNo, dbID );
                             
-                            XP_LOGF( "VFSExportDatabaseToFile => %d", err );
+                                XP_LOGF( "VFSExportDatabaseToFile => %d", err );
 
-                            XP_ASSERT( err == errNone );
-                            err = DmDeleteDatabase( cardNo, dbID );
-                            XP_ASSERT( err == errNone );
+                                XP_ASSERT( err == errNone );
+                                err = DmDeleteDatabase( cardNo, dbID );
+                                XP_ASSERT( err == errNone );
+                            }
                         }
                     }
                 }
