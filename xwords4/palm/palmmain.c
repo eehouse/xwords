@@ -58,6 +58,7 @@
 #include "LocalizedStrIncludes.h"
 
 #include "callback.h"
+#include "pace_man.h"           /* for crash() macro */
 
 #ifdef SUPPORT_SONY_JOGDIAL
 #include "SonyChars.h"
@@ -177,9 +178,6 @@ static void initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame );
 UInt32
 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
-#ifdef XW_TARGET_PNO
-    XP_LOGF( "ARM PilotMain called" );
-#else
     PalmAppGlobals* globals;
     if ( cmd == sysAppLaunchCmdNormalLaunch ) {
         if ( ((launchFlags & sysAppLaunchFlagNewGlobals) != 0)
@@ -206,7 +204,6 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
         }
 #endif
     }
-#endif
     return 0;
 } /* PilotMain */
 
@@ -736,6 +733,7 @@ openXWPrefsDB( PalmAppGlobals* globals )
 
     err = DmCreateDatabase( CARD_0, XW_PREFS_DBNAME,
                             APPID, XWORDS_PREFS_TYPE, true );
+    XP_ASSERT( err == errNone || err == dmErrAlreadyExists );
     globals->boardDBID = DmFindDatabase( CARD_0, XW_PREFS_DBNAME );
     globals->boardDBP = DmOpenDatabase( CARD_0, globals->boardDBID,
                                         dmModeWrite );
@@ -801,9 +799,11 @@ findXWPrefsRsrc( PalmAppGlobals* globals, UInt32 resType, UInt16 resID )
             }
 
             builtinH = DmGetResource( resType, resID );
+            XP_ASSERT( !!builtinH );
             size = MemHandleSize( builtinH );
             newH = DmNewResource( globals->boardDBP, resType, 
                                   resID, size );
+            XP_ASSERT( !!newH );
             DmWrite( MemHandleLock( newH ), 0, MemHandleLock(builtinH), 
                      size );
             MemHandleUnlock( newH );
@@ -1089,9 +1089,7 @@ startApplication( PalmAppGlobals** globalsP )
 
     initUtilFuncs( globals );
 
-#ifdef NODE_CAN_4
     offerConvertOldDicts( globals );
-#endif
 
     globals->dictList = DictListMake( MPPARM_NOCOMMA(globals->mpool) );
     if ( DictListCount( globals->dictList ) == 0 ) {
@@ -1373,7 +1371,6 @@ static void
 eventLoop( PalmAppGlobals* globals )
 {
     EventType event;
-    UInt16 error;
 	
     do {
 #ifdef BEYOND_IR
@@ -1406,7 +1403,8 @@ eventLoop( PalmAppGlobals* globals )
 
         /* Give the system a chance to handle the event. */
         if ( !SysHandleEvent(&event)) {
-            if ( !MenuHandleEvent(0, &event, &error)) {
+            UInt16 error;
+            if ( !MenuHandleEvent( NULL, &event, &error)) {
                 if ( !applicationHandleEvent( globals, &event )) {
                     FrmDispatchEvent(&event);
                 }
@@ -1426,8 +1424,7 @@ applicationHandleEvent( PalmAppGlobals* globals, EventPtr event )
     Boolean result = false;
     FormEventHandlerType* handler = NULL;
 
-    switch ( event->eType ) {
-    case frmLoadEvent:
+    if ( event->eType == frmLoadEvent ) {
         /*Load the form resource specified in the event then activate the
           form.*/
         formId = event->data.frmLoad.formID;
@@ -1438,41 +1435,32 @@ applicationHandleEvent( PalmAppGlobals* globals, EventPtr event )
         case XW_MAIN_FORM:
             setFormRefcon( globals );
             handler = mainViewHandleEvent;
-            result = true;
             break;
         case XW_NEWGAMES_FORM:
             handler = newGameHandleEvent;
-            result = true;
             break;
         case XW_DICTINFO_FORM:
             handler = dictFormHandleEvent;
-            result = true;
             break;
         case XW_PREFS_FORM:
             handler = PrefsFormHandleEvent;
-            result = true;
             break;
 #ifdef BEYOND_IR
         case XW_CONNS_FORM:
             handler = ConnsFormHandleEvent;
-            result = true;
             break;
 #endif
 #if defined OWNER_HASH || defined NO_REG_REQUIRED
         case XW_SAVEDGAMES_DIALOG_ID:
             handler = savedGamesHandleEvent;
-            result = true;
             break;
 #endif
         }
-        break;
-    default:
-        break;
-    }
-
-    if ( result ) {
-        XP_ASSERT( !!frm );
-        FrmSetEventHandler( frm, handler );
+        if ( !!handler ) {
+            XP_ASSERT( !!frm );
+            result = true;
+            FrmSetEventHandler( frm, handler );
+        }
     }
 
     return result;
@@ -2098,10 +2086,6 @@ mainViewHandleEvent( EventPtr event )
         initAndStartBoard( globals, event->eType == newGameOkEvent );
         draw = true;
         XP_ASSERT( !!globals->game.board );
-
-    case boardRedrawEvt:
-        draw = true;
-        break;
 
 #ifdef FEATURE_HIGHRES
     case doResizeWinEvent:
@@ -2774,8 +2758,11 @@ Boolean
 palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID, 
                   XP_S16 altButtonID )
 {
-    XP_UCHAR* message = getResString( globals, strId );
-    XP_UCHAR* alt = altButtonID < 0? NULL: getResString( globals, altButtonID );
+    XP_UCHAR* message;
+    XP_UCHAR* alt;
+    message = getResString( globals, strId );
+    XP_ASSERT( !!message );
+    alt = altButtonID < 0? NULL: getResString( globals, altButtonID );
     return palmask( globals, message, alt, titleID );
 } /* palmaskFromStrId */
 
