@@ -112,39 +112,13 @@ sub getSpecials($$$) {
     @{$specRef} = @specials;
 } # getSpecials
 
-sub prepXWD($$$$) {
-    my ( $fh, $facRef, $nodesRef, $startRef ) = @_;
-
-    my $buf;
-    my $nRead = sysread( $fh, $buf, 2 );
-    my $flags = unpack( "n", $buf );
-
-    if ( $flags == 2 ) {
-        $gNodeSize = 3;
-    } elsif ( $flags == 3 ) {
-        $gNodeSize = 4;
-    } else {
-        die "invalid dict flags";
-    }
-
-    my $nSpecials;
-    my $faceCount = readFaces( $fh, $facRef, \$nSpecials );
-
-    # skip xloc header
-    $nRead = sysread( $fh, $buf, 2 );
-
-    # skip values info.
-    sysread( $fh, $buf, $faceCount * 2 );
-
-    my @specials;
-    getSpecials( $fh, $nSpecials, \@specials );
-
-    sysread( $fh, $buf, 4 );
-    $$startRef = unpack( 'N', $buf );
-
+sub readNodesToEnd($) {
+    my ( $fh ) = @_;
     my @nodes;
     my $count = 0;
     my $offset = 4 - $gNodeSize;
+    my ( $buf, $nRead );
+
     do {
         $nRead = sysread( $fh, $buf, $gNodeSize, $offset );
         $count += $nRead;
@@ -153,8 +127,105 @@ sub prepXWD($$$$) {
     } while ( $nRead == $gNodeSize );
     die "out of sync? nRead=$nRead, count=$count" if $nRead != 0;
 
+    return @nodes;
+} # readNodesToEnd
+
+sub nodeSizeFromFlags($) {
+    my ( $flags ) = @_;
+    if ( $flags == 2 ) {
+        return 3;
+    } elsif ( $flags == 3 ) {
+        return 4;
+    } else {
+        die "invalid dict flags";
+    }
+} # nodeSizeFromFlags
+
+sub prepXWD($$$$) {
+    my ( $path, $facRef, $nodesRef, $startRef ) = @_;
+
+    sysopen(INFILE, $path, O_RDONLY) or die "couldn't open $path: $!\n";;
+    binmode INFILE;
+
+    my $buf;
+    my $nRead = sysread( INFILE, $buf, 2 );
+    my $flags = unpack( "n", $buf );
+
+    $gNodeSize = nodeSizeFromFlags( $flags );
+
+    my $nSpecials;
+    my $faceCount = readFaces( *INFILE, $facRef, \$nSpecials );
+
+    # skip xloc header
+    $nRead = sysread( INFILE, $buf, 2 );
+
+    # skip values info.
+    sysread( INFILE, $buf, $faceCount * 2 );
+
+    my @specials;
+    getSpecials( *INFILE, $nSpecials, \@specials );
+
+    sysread( INFILE, $buf, 4 );
+    $$startRef = unpack( 'N', $buf );
+
+    my @nodes = readNodesToEnd( *INFILE );
+
+    close INFILE;
+
     @$nodesRef = @nodes;
 } # prepXWD
+
+sub prepPDB($$$$) {
+    my ( $path, $facRef, $nodesRef, $startRef ) = @_;
+
+    $$startRef = 0; # always for palm?
+
+    sysopen(INFILE, $path, O_RDONLY) or die "couldn't open $path: $!\n";;
+    binmode INFILE;
+
+    my $buf;
+    # skip header info
+    my $nRead = sysread( INFILE, $buf, 76 );
+    $nRead += sysread( INFILE, $buf, 2 );
+    my $nRecs = unpack( 'n', $buf );
+
+    my @offsets;
+    for ( my $i = 0; $i < $nRecs; ++$i ) {
+        $nRead += sysread( INFILE, $buf, 4 );
+        push( @offsets, unpack( 'N', $buf ) );
+        $nRead += sysread( INFILE, $buf, 4 ); # skip
+    }
+
+    die "too far" if $nRead > $offsets[0];
+    while ( $nRead < $offsets[0] ) {
+	$nRead += sysread( INFILE, $buf, 1 );
+    }
+
+    my $facesOffset = $offsets[1];
+    my $nChars = ($offsets[2] - $facesOffset) / 2;
+    $nRead += sysread( INFILE, $buf, $facesOffset - $nRead );
+    my @tmp = unpack( 'Nccccccn', $buf );
+    $gNodeSize = nodeSizeFromFlags( $tmp[7] );
+
+    my @faces;
+    for ( my $i = 0; $i < $nChars; ++$i ) {
+        $nRead += sysread( INFILE, $buf, 2 );
+        push( @faces, chr(unpack( "n", $buf ) ) );
+    }
+    @{$facRef} = @faces;
+
+    die "out of sync: $nRead != $offsets[2]" if $nRead != $offsets[2];
+
+    # now skip count and values.  We'll want to get the "specials"
+    # shortly.
+    $nRead += sysread( INFILE, $buf, $offsets[3] - $nRead );
+
+    die "out of sync" if $nRead != $offsets[3];
+    my @nodes = readNodesToEnd( *INFILE );
+    close INFILE;
+
+    @$nodesRef = @nodes;
+} # prepPDB
 
 sub parseNode($$$$$) {
     my ( $node, $chrIndex, $nextEdge, $accepting, $last ) = @_;
@@ -175,14 +246,10 @@ sub parseNode($$$$$) {
    #    . "next=$$nextEdge; ci=$$chrIndex\n", $node;
 } # parseNode
 
-sub printStr($$) {
-    my ( $strRef, $accepted ) = @_;
+sub printStr($) {
+    my ( $strRef ) = @_;
 
-    if ( $accepted ) {
-        print join( "", @$strRef ), "\n";
-#     } else {
-#         print  "partial: ", join( "", @$strRef ), "\n";
-    }
+    print join( "", @$strRef ), "\n";
 } # printStr
 
 
@@ -203,7 +270,9 @@ sub printDAWGInternal($$$$) {
 
         die "index $chrIndex out of range" if $chrIndex > 26 || $chrIndex < 0;
         push( @$str, $$facesRef[$chrIndex] );
-        printStr( $str, $accepting );
+        if ( $accepting ) {
+            printStr( $str );
+        }
 
         if ( $nextEdge != 0 ) {
             printDAWGInternal( $str, $arrRef, $nextEdge, $facesRef );
@@ -211,7 +280,6 @@ sub printDAWGInternal($$$$) {
 
         pop( @$str );
 
-        # print  "2. lastEdge=$lastEdge\n";
         if ( $lastEdge ) {
             last;
         }
@@ -220,6 +288,8 @@ sub printDAWGInternal($$$$) {
 
 sub printDAWG($$$) {
     my ( $arrRef, $start, $facesRef ) = @_;
+
+    die "no nodes!!!" if 0 == @$arrRef;
 
     my @str;
     printDAWGInternal( \@str, $arrRef, $start, $facesRef );
@@ -236,19 +306,14 @@ if ( !parseARGV() ) {
     exit 1;
 }
 
-sysopen(INFILE, "$gInFile", O_RDONLY) or die "couldn't open: $!\n";;
-binmode INFILE;
-
 my @faces;
 my @nodes;
 my $startIndex;
 
 if ( $gFileType eq "xwd" ){ 
-    prepXWD( *INFILE, \@faces, \@nodes, \$startIndex );
+    prepXWD( $gInFile, \@faces, \@nodes, \$startIndex );
 } elsif ( $gFileType eq "pdb" ) {
-    die "not doing .pdbs yet";
+    prepPDB( $gInFile, \@faces, \@nodes, \$startIndex );
 }
-
-close INFILE;
 
 printDAWG( \@nodes, $startIndex, \@faces );
