@@ -42,25 +42,22 @@
 { "STR_TRIPLE_LETTER",		"Triple letter" },
 { "STR_TRIPLE_WORD",		"Triple word" },
 { "STR_REMTILES",		"rem:%d" },
-/* { "STR_NO_TILES_IN_POOL",	"Not enough tiles remaining in pool." }, */
 { "STR_CANT_TRADE_MIDTURN",	"Remove played tiles before trading."},
 { "STR_ASK_REPLACE_GAME",	"Do you want to overwrite the current game?" },
 { "STR_NO",			"No" },
-/* { "STR_CONFIRM_ERASE_GAME",	"Are you sure you want to erase\n" \ */
-/* 				"the current game?" }, */
 { "STR_ABOUT_TITLE",		"About Crosswords" },
 { "STR_DEFAULT_NAME",		"Player %d" },
 { "STR_ABOUT_CONTENT", 
       "Crosswords " XW_PALM_VERSION_STRING ".\n" \
-      "Copyright 1998-2003 by Eric House.  "\
+      "Copyright 1998-2004 by Eric House.  "\
       "All rights reserved.\n\n"\
 
       "See the manual at: www.peak.org/~fixin/xwords\n\n" \
 
-      "This program is postcardware. If you use it " \
+      "This program is postcardware. If you like it " \
       "please mail a postcard to:\n" \
       "The Houses\n" \
-      "124 NW 7th St. No. 310\n" \
+      "1610 NW 14th Place\n" \
       "Corvallis, OR 97330 USA\n\n"
 
       "Developed on Debian GNU/Linux using the prc-tools "\
@@ -68,9 +65,6 @@
       },
 
 { "STR_CONFIRM_END_GAME",	"Are you sure you want to end the game now?"},
-/* { "STR_TOO_MANY_TILES_SEL",	"Too many tiles selected." }, */
-/*  { "STR_CONFIRM_DISCARD",	"Are you sure you want to discard\n" \ */
-/*  				"the selected tile[s]?" }, */
 { "STR_CONFIRM_TRADE",		"Are you sure you want to use your " \
 				"turn trading tiles?" },
 { "STR_TRADING_REMINDER",	"Click D when done." },
@@ -79,56 +73,32 @@
 { "STR_NOT_UNREG_VERS",	  "Feature not available in unregistered version." },
 #endif
 
-/* { "STRS_LANGUAGE_NAME",		"Dictionary: %s\n" }, */
 { "STR_NONLOCAL_NAME",          "%s (remote)" },
 
-
-
-
-/* { "STR_FINALSCORE_TITLE",	"\n\nFinal Scores\n" }, */
-
-/* { "STR_NO_HISTORY",		"No history as yet." }, */
-
 { "STR_HISTORY_TITLE",		"Game history" },
-/* { "STRS_NO_SCORE_MID_PICK",	"I can't score the game until %s finishes " \ */
-/* 				"picking tiles." }, */
-
 { "STRD_REMAINING_TILES_ADD",	"+ %d [all remaining tiles]" },
 { "STRD_UNUSED_TILES_SUB",	"- %d [unused tiles]" },
-/* { "STR_MOVESCORE_TITLE",	"Move score" }, */
-/* { "STR_ZERO_SCORE",		"Score: 0 (No tiles played.)" }, */
 { "STR_BONUS_ALL",		"Bonus for using all tiles: 50\n" },
 { "STRD_TURN_SCORE",		"Score for turn: %d\n" },
-/* { "STRSD_RUNNING_TOTAL",	"\nRunning total for %s: %d" }, */
 { "STR_ALL_IN_LINE_ERR",	"All tiles played must be in a line." },
 { "STR_NO_EMPTIES_ERR",	"Empty squares cannot separate pieces played." },
 { "STR_FIRST_MOVE_ERR",	"Must play two or more pieces on " \
 				"the first move." },
+  /* phony comment to get diff back in sync */
 { "STR_MUST_CONTACT_ERR",    	"New tiles must contact others already " \
 				"in place (or the middle square on the " \
 				"first move)." },
-/* { "STR_EDIT",			"Edit" }, */
-/* { "STR_USE",			"Use" }, */
-//{ "STRC_BAD_BLANK_VAL",		"\"%c\" is not a legal tile." },
 { "STR_PTS",			"Pts:" },
-/* { "STR_NA",			"N/A" }, */
 { "STR_CONFIRM_DEL_GAME",	"Really delete the selected game?" },
-
-/* { "STR_REPLACE_STR",	   	"Replace" }, */
-/* { "STR_NEW_OR_QUIT",	   "Dictionary for current game not\n" \ */
-/* 			   "found. Quit unless you want to\n" \ */
-/* 			   "replace the game." }, */
 
 { "STRD_TIME_PENALTY_SUB",     " - %d [time]" },
 
-
 { "STR_NO_DICT_INSTALLED", "Crosswords 4 requires at least one dictionary." },
-
-/* { "STR_PASS",   "Unable to find a move."}, */
-/* { "STR_TRADED",   "Robot traded tiles this turn."}, */
 { "STR_ILLEGAL_WORD",	      "Word[s] %s not found in dictionary." },
 
 { "STR_FINAL_SCORES_TITLE",   "Final scores"},
+
+  /* another phony comment to get diff back in sync */
 
 { "STRD_CUMULATIVE_SCORE",    "Cumulative score: %d\n" },
 { "STRS_TRAY_AT_START",       "Tray at start: %s\n" },
@@ -143,6 +113,8 @@
 { "STR_REMOTE_MOVED",          "Remote player made this move:\n" },
 { "STRD_ROBOT_TRADED",         "%d tiles traded this turn." },
 { "STR_ROBOT_TITLE",           "Robot score" },
+
+  /* The end of 4.0.5's strings */
 
 { "STR_PICK_BLANK",            "Select the letter for your blank." },
 #ifdef FEATURE_TRAY_EDIT
