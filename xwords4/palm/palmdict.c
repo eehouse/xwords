@@ -162,7 +162,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         XP_ASSERT( !!ctxt->super.faces16 );
         for ( i = 0; i < nChars; ++i ) {
 #ifdef NODE_CAN_4
-            ctxt->super.faces16[i] = read_unaligned16( &facePtr[i] );
+            ctxt->super.faces16[i] = READ_UNALIGNED16( &facePtr[i] );
             XP_LOGF( "faces16[%d] = 0x%x (%d)", i, ctxt->super.faces16[i],
                      ctxt->super.faces16[i] );
 #else
@@ -175,7 +175,8 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         tmpH = DmQueryRecord( dbRef, headerRecP->valTableRecNum );
         charPtr = (unsigned char*)MemHandleLock(tmpH);
         XP_ASSERT( MemHandleLockCount( tmpH ) == 1 );
-        ctxt->super.countsAndValues = charPtr + sizeof(Xloc_header);
+        // use 2; ARM thinks sizeof(Xloc_header) is 4.
+        ctxt->super.countsAndValues = charPtr + 2;
 
         /* for those dicts with special chars */
         if ( nSpecials > 0 ) {
@@ -286,11 +287,11 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
 
         chars[i] = specialStart->textVersion;
 
-        hasLarge = XP_NTOHS( read_unaligned16(&specialStart->hasLarge) );
+        hasLarge = XP_NTOHS( READ_UNALIGNED16(&specialStart->hasLarge) );
         if ( hasLarge ) {
             bitmaps[i].largeBM = base + hasLarge;
         }
-        hasSmall = XP_NTOHS( read_unaligned16(&specialStart->hasSmall) );
+        hasSmall = XP_NTOHS( READ_UNALIGNED16(&specialStart->hasSmall) );
         if ( hasSmall ) {
             bitmaps[i].smallBM = base + hasSmall;
         }
@@ -377,7 +378,7 @@ dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
         if ( 0 ) {
 #ifdef NODE_CAN_4
         } else if ( dict->nodeSize == 4 ) {
-            index *= 4;
+            index *= 4;         /* better to shift (<<= 2) here? */
 # ifdef DEBUG
         } else if ( dict->nodeSize != 3 ) {
             XP_ASSERT( 0 );

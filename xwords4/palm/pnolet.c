@@ -20,6 +20,7 @@
 #include <PceNativeCall.h>
 #include "pnostate.h"
 #include "pace_gen.h"
+#include "palmmain.h"
 
 unsigned long
 ArmletEntryPoint( const void *emulStateP, 
@@ -62,9 +63,9 @@ ArmletEntryPoint( const void *emulStateP,
     StrPrintF( buf, "Launching PilotMain;sp=%lx", sp );
     WinDrawChars( buf, StrLen(buf), 5, 100 );
 
-    result = PilotMain( Byte_Swap16(dataP->cmd), 
-                        Byte_Swap32((unsigned long)dataP->cmdPBP), 
-                        Byte_Swap16(dataP->launchFlags) );
+    result = PM2(PilotMain)( Byte_Swap16(dataP->cmd), 
+                             Byte_Swap32((unsigned long)dataP->cmdPBP), 
+                             Byte_Swap16(dataP->launchFlags) );
 
     str = "back from PilotMain";
     WinDrawChars( str, StrLen(str), 5, 150 );
