@@ -362,7 +362,56 @@ DictListCount( PalmDictList* dl )
 #ifdef NODE_CAN_4
 
 static XP_Bool
-convertOneDict( UInt16 cardNo, LocalID dbID )
+convertOneRecord( DmOpenRef ref, XP_U16 index )
+{
+    XP_Bool success = XP_FALSE;
+    MemHandle h = DmGetRecord( ref, index );
+    XP_U16 siz = MemHandleSize( h );
+    XP_U8* recPtr;
+    XP_U16 i;
+    Err err;
+
+    XP_U16 nRecs = siz / 3;
+    XP_U8* tmp = MemPtrNew( siz );
+
+    XP_ASSERT( !!tmp );
+    XP_ASSERT( (siz % 3) == 0 );
+
+    recPtr = MemHandleLock(h);
+    XP_MEMCPY( tmp, recPtr, siz );
+
+    for ( i = 0; i < nRecs; ++i ) {
+        array_edge_old* edge = (array_edge_old*)&tmp[i * 3];
+        XP_U8 oldBits = edge->bits;
+        XP_U8 newBits = 0;
+
+        XP_ASSERT( LETTERMASK_OLD == LETTERMASK_NEW_3 );
+        XP_ASSERT( LASTEDGEMASK_OLD == LASTEDGEMASK_NEW );
+        newBits |= (oldBits & (LETTERMASK_OLD | LASTEDGEMASK_OLD) );
+
+        if ( (oldBits & ACCEPTINGMASK_OLD) != 0 ) {
+            newBits |= ACCEPTINGMASK_NEW;
+        }
+
+        if ( (oldBits & EXTRABITMASK_OLD) != 0 ) {
+            newBits |= EXTRABITMASK_NEW;
+        }
+
+        edge->bits = newBits;
+    }
+
+    err = DmWrite( recPtr, 0, tmp, siz );
+    XP_ASSERT( err == errNone );
+    success = err == errNone;
+
+    MemPtrFree( tmp );
+    MemHandleUnlock( h );
+    DmReleaseRecord( ref, index, true );
+    return success;
+} /* convertOneRecord */
+
+static XP_Bool
+convertOneDict( UInt16 cardNo, LocalID dbID, XP_UCHAR* name )
 {
     Err err;
     UInt32 creator;
@@ -371,7 +420,7 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
     dawg_header* header;
     dawg_header tmp;
     XP_U16 siz;
-    unsigned char charTableRecNum;
+    unsigned char charTableRecNum, firstEdgeRecNum;
     XP_U16 nChars;
 
     /* now modify the flags */
@@ -386,6 +435,7 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
     tmp.flags = 0x0002;
     header = (dawg_header*)MemHandleLock(h);
     charTableRecNum = header->charTableRecNum;
+    firstEdgeRecNum = header->firstEdgeRecNum;
     DmWrite( header, OFFSET_OF(dawg_header,flags), &tmp.flags, 
              sizeof(tmp.flags) );
     MemHandleUnlock(h);
@@ -410,6 +460,17 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
     }
     err = DmReleaseRecord( ref, charTableRecNum, true );
     XP_ASSERT( err == errNone );
+
+    /* Now transpose the accepting and extra bits for every node. */
+    if ( err == errNone ) {
+        XP_U32 nRecords = DmNumRecords(ref);
+        XP_U16 i;
+
+        for ( i = firstEdgeRecNum; i < nRecords; ++i ) {
+            XP_LOGF( "converting rec %d of %s", i, name );
+            convertOneRecord( ref, i );
+        }
+    }
 
     err = DmCloseDatabase( ref );
     XP_ASSERT( err == errNone );
@@ -444,7 +505,8 @@ offerConvertOldDicts( PalmAppGlobals* globals )
 
                 if ( dle->location == DL_STORAGE ) {
                     convertOneDict( dle->u.dmData.cardNo, 
-                                    dle->u.dmData.dbID );
+                                    dle->u.dmData.dbID, 
+                                    dle->path );
                 } else { 
                     UInt16 cardNo;
                     LocalID dbID;
@@ -459,7 +521,8 @@ offerConvertOldDicts( PalmAppGlobals* globals )
                                                      (const char*)dle->path,
                                                      &cardNo, &dbID );
                     XP_LOGF( "VFSImportDatabaseFromFile => %d", err );
-                    if ( err == errNone && convertOneDict( cardNo, dbID ) ) {
+                    if ( err == errNone && convertOneDict( cardNo, dbID,
+                                                           dle->path ) ) {
 
                         err = VFSFileDelete( volRefNum, dle->path );
                         XP_LOGF( "VFSFileDelete=>%d", err );
