@@ -602,23 +602,18 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 } /* gtk_draw_measureScoreText */
 
 static void
-gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
-			   XP_Rect* rInner, XP_Rect* rOuter, 
-			   DrawScoreInfo* dsi )
+gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter, 
+                           DrawScoreInfo* dsi )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char scoreBuf[20];
     XP_U16 x;
     GdkFont* font = /* dsi->selected? dctx->gdkBoldFont :  */dctx->gdkFont;
 
-
     widthAndText( scoreBuf, font, dsi, NULL, NULL );
     x = rInner->left;// + ((rect->width - width) /2);
 
-    gdk_gc_set_foreground( dctx->drawGC, 
-			   playerNum >= 0? &dctx->playerColors[playerNum]:
-			   &dctx->black
-			   /*selected? &dctx->red:&dctx->black*/ );
+    gdk_gc_set_foreground( dctx->drawGC, &dctx->playerColors[dsi->playerNum] );
 
     if ( dsi->selected ) {
 	gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC,
@@ -633,7 +628,7 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
 
 static void
 gtk_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
-			     XP_U16 playerNum )
+                             XP_U16 playerNum )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char buf[5];

@@ -1176,6 +1176,7 @@ drawScoreBoard( BoardCtxt* board )
                 dp->dsi.lsc = board_ScoreCallback;
                 dp->dsi.lscClosure = model;
 
+                dp->dsi.playerNum = i;
                 dp->dsi.score = scores[i];
                 dp->dsi.isTurn = (i == curTurn);
                 dp->dsi.name = emptyStringIfNull(lp->name);
@@ -1232,7 +1233,7 @@ drawScoreBoard( BoardCtxt* board )
                 innerRect.top = scoreRect.top + 
                     ((scoreRect.height - innerRect.height) / 2);
 
-                draw_score_drawPlayer( board->draw, i, &innerRect, &scoreRect,
+                draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
                                        &dp->dsi );
                 *adjustPt += *adjustDim;
             }
