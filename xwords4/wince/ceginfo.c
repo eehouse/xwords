@@ -398,7 +398,9 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     CEAppGlobals* globals;
     XP_U16 id;
     GameInfoState* giState;
+#ifndef XWFEATURE_STANDALONE_ONLY
     XP_Bool on;
+#endif
 
     if ( message == WM_INITDIALOG ) {
 

@@ -1398,8 +1398,9 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
                    nLeft * sizeof(resultTiles->tiles[0]) );
         nSoFar += nLeft;
     }
-
-    resultTiles->nTiles = nSoFar;
+   
+    XP_ASSERT( nSoFar < 0x00FF );
+    resultTiles->nTiles = (XP_U8)nSoFar;
 } /* fetchTiles */
 
 static void
