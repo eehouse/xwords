@@ -26,8 +26,13 @@
 
 /* typedef struct DrawCtx DrawCtx; */
 
+
+typedef XP_Bool (*LastScoreCallback)( void* closure, XP_S16 player,
+                                      XP_UCHAR* expl, XP_U16* explLen );
+
 typedef struct DrawScoreInfo {
-    void* closure;
+    LastScoreCallback lsc;
+    void* lscClosure;
     XP_UCHAR* name;
     XP_S16 score;
     XP_S16 nTilesLeft;		   /* < 0 means don't use */
