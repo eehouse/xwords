@@ -23,6 +23,8 @@ include ../common/config.mk
 
 DEFINES = -DPLATFORM_LINUX -DKEY_SUPPORT -DKEYBOARD_NAV -DNODE_CAN_4
 DEFINES += -DSTUBBED_DICT
+DEFINES += -DXWFEATURE_SEARCHLIMIT
+DEFINES += -DFEATURE_TRAY_EDIT
 # build with GTK
 DEFINES += -DPLATFORM_GTK
 # build with ncurses (-u flag chooses over gtk if both present)
