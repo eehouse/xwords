@@ -2241,10 +2241,8 @@ moveScoreCursor( BoardCtxt* board, XP_Key key )
 static XP_Bool
 advanceArrow( BoardCtxt* board )
 {
-    XP_Bool vertical = board->boardArrow[board->selPlayer].vert;
-
-    XP_Key key = (vertical ^ board->isFlipped)? 
-        XP_CURSOR_KEY_DOWN: XP_CURSOR_KEY_RIGHT;
+    XP_Key key = board->boardArrow[board->selPlayer].vert ?
+        XP_CURSOR_KEY_DOWN :  XP_CURSOR_KEY_RIGHT;
 	    
     XP_ASSERT( board->trayVisState == TRAY_REVEALED );
 
