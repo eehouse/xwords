@@ -53,12 +53,12 @@ extern "C" {
 #define BUTTON_PADDING 3	/* below buttons */
 
 CShowTextWindow::CShowTextWindow( MPFORMAL XWStreamCtxt* stream, 
-				  const char* title,
-				  XP_Bool killStream, XP_Bool showCancel,
-				  XP_U16* resultLoc )
+                                  const char* title,
+                                  XP_Bool killStream, XP_Bool showCancel,
+                                  XP_U16* resultLoc )
     : CWindow( SHOWTEXT_WINDOW_ID, 5, 170, 190, 
-	       TEXT_HEIGHT + TEXT_PADDING + TITLE_BAR_HT,
-	       title, TRUE, FALSE, !showCancel )
+               TEXT_HEIGHT + TEXT_PADDING + TITLE_BAR_HT,
+               title, TRUE, FALSE, !showCancel )
 {
     MPASSIGN( this->mpool, mpool );
 
@@ -68,8 +68,8 @@ CShowTextWindow::CShowTextWindow( MPFORMAL XWStreamCtxt* stream,
     fResultLoc = resultLoc;
 
     CTextEdit* entry = new CTextEdit( SHOW_TEXT_ID, TEXT_WIDTH, TEXT_HEIGHT, 
-				      TEXTOPTION_NOEDIT | 
-				      TEXTOPTION_NOUNDERLINE);
+                                      TEXTOPTION_NOEDIT | 
+                                      TEXTOPTION_NOUNDERLINE);
 
     /* copy the stream's text into the texteditor */
     stream_putU8( stream, '\0' );
@@ -81,7 +81,7 @@ CShowTextWindow::CShowTextWindow( MPFORMAL XWStreamCtxt* stream,
     XP_FREE( mpool, textPtr );
 
     if ( killStream ) {
-	stream_destroy( stream );
+        stream_destroy( stream );
     }
 
     RECT rect;
@@ -91,12 +91,12 @@ CShowTextWindow::CShowTextWindow( MPFORMAL XWStreamCtxt* stream,
     U16 maxTextHeight = MAX_DLG_HT - TEXT_PADDING - titleBarHt;
     U16 buttonHeight;
     if ( showCancel ) {
-	okButton = new CButton( OK_BUTTON_ID, 0, 0, "Ok" );
-	cancelButton = new CButton( CANCEL_BUTTON_ID, 0, 0, "Cancel" );
-	buttonHeight = okButton->GetHeight() + BUTTON_PADDING;
-	maxTextHeight -= buttonHeight;
+        okButton = new CButton( OK_BUTTON_ID, 0, 0, "Ok" );
+        cancelButton = new CButton( CANCEL_BUTTON_ID, 0, 0, "Cancel" );
+        buttonHeight = okButton->GetHeight() + BUTTON_PADDING;
+        maxTextHeight -= buttonHeight;
     } else {
-	buttonHeight = 0;
+        buttonHeight = 0;
     }
 
     /* FIND out how big the text wants to be.  Make the window as big as
@@ -104,12 +104,12 @@ CShowTextWindow::CShowTextWindow( MPFORMAL XWStreamCtxt* stream,
 
     U16 curTextHeight = entry->GetMaxHeight();
     if ( curTextHeight > maxTextHeight ) {
-	curTextHeight = maxTextHeight;
+        curTextHeight = maxTextHeight;
     }
     entry->SetHeight( curTextHeight );
     
     U16 newDlgHeight = curTextHeight + buttonHeight + TEXT_PADDING
-	+ titleBarHt;
+        + titleBarHt;
     S16 diff = newDlgHeight - GetHeight();
     SetY( GetY() - diff );
     SetHeight( newDlgHeight );
@@ -117,9 +117,9 @@ CShowTextWindow::CShowTextWindow( MPFORMAL XWStreamCtxt* stream,
     this->AddChild( entry, TEXT_X, TEXT_Y );
 
     if ( showCancel ) {
-	U16 buttonY = TEXT_Y + curTextHeight + TEXT_PADDING_BELOW;
-	AddChild( okButton, OK_BUTTON_X, buttonY );
-	AddChild( cancelButton, CANCEL_BUTTON_X, buttonY );
+        U16 buttonY = TEXT_Y + curTextHeight + TEXT_PADDING_BELOW;
+        AddChild( okButton, OK_BUTTON_X, buttonY );
+        AddChild( cancelButton, CANCEL_BUTTON_X, buttonY );
     }
     
 } /* CShowTextWindow */
@@ -131,23 +131,23 @@ CShowTextWindow::MsgHandler( MSG_TYPE type, CViewable *object, S32 data )
 
     switch ( type ) {
     case MSG_BUTTON_SELECT:	/* there's only one button */
-	result = 1;
-	switch ( object->GetID() ) {
-	case OK_BUTTON_ID:
-	    *fResultLoc = 1;
-	    break;
-	case CANCEL_BUTTON_ID:
-	    *fResultLoc = 0;
-	    break;
-	}
-	break;
+        result = 1;
+        switch ( object->GetID() ) {
+        case OK_BUTTON_ID:
+            *fResultLoc = 1;
+            break;
+        case CANCEL_BUTTON_ID:
+            *fResultLoc = 0;
+            break;
+        }
+        break;
 
     default:
-	break;
+        break;
     }
 
     if ( result == 1 ) {
-	this->Close();
+        this->Close();
     }
 
     return result;
