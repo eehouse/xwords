@@ -18,8 +18,8 @@
 
 INCLUDES += -I../common -I./
 
-COMMONDIR=../common
-COMMONOBJDIR=../common/$(PLATFORM)
+COMMONDIR ?= ../common
+COMMONOBJDIR = ../common/$(PLATFORM)
 
 COMMONSRC = \
 	$(COMMONDIR)/board.c \
