@@ -31,8 +31,7 @@ ARMCCFS = $(CCFLAGS) -DNATIVE \
 ARMLDFS = -Xlinker --script=./ldscript.arm -lgcc
 
 # ARM-specific
-# This isn't working.  Defining in Makefile...
-# MYDEFINES += -DXW_TARGET_PNO -D__LITTLE_ENDIAN
+ARM_DEFINES = $(MYDEFINES) -DXW_TARGET_PNO -D__LITTLE_ENDIAN -USHOW_PROGRESS
 
 include ../common/config.mk
 
@@ -62,11 +61,11 @@ all: PNOC0000.bin PNOG0000.bin
 
 $(PLATFORM)/%.o : %.c $(MAKEFILE)
 	mkdir -p $(PLATFORM)
-	$(CC_ARM) -o $@ -c $(MYDEFINES) -DHERE $(ARMCCFS) $<
+	$(CC_ARM) -o $@ -c $(ARM_DEFINES) -DHERE $(ARMCCFS) $<
 
 $(COMMONOBJDIR)/%.o : $(COMMONDIR)/%.c $(MAKEFILE)
 	mkdir -p $(COMMONOBJDIR)
-	$(CC_ARM) -o $@ -c $(MYDEFINES) -DHERE $(ARMCCFS) $<
+	$(CC_ARM) -o $@ -c $(ARM_DEFINES) -DHERE $(ARMCCFS) $<
 
 PNOC_bin.pre PNOG0000.bin: pace_gen.h $(OBJS)
 	$(CC_ARM) $(OBJS) $(ARMCCFS) $(ARMLDFS) -Wl,-Map,PNOC_bin.map -o tmp.out
@@ -84,10 +83,11 @@ PNOC0000.bin: PNOC_bin.pre
 
 pace_gen.c pace_gen.h: ./gen_pace.pl funcfile.txt
 	rm -f $@ _dirList
-	echo "$(PALMDIR)/Core/UI" >> _dirList
-	echo "$(PALMDIR)/Core/System" >> _dirList
-	echo "$(PALMDIR)/Extensions/ExpansionMgr" >> _dirList
-	./gen_pace.pl funcfile.txt _dirList pace_gen.c pace_gen.h
+	./gen_pace.pl -func funcfile.txt \
+		-file $(PALMDIR)/Core/UI \
+		-file $(PALMDIR)/Core/System \
+		-file $(PALMDIR)/Extensions/ExpansionMgr \
+		-oc pace_gen.c -oh pace_gen.h
 	rm -f _dirList
 
 clean:
