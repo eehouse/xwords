@@ -132,7 +132,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 
         result->trayVisState = TRAY_HIDDEN;
 
-        result->star_row = model_numRows(model) / 2;
+        result->star_row = (XP_U16)(model_numRows(model) / 2);
 
         /* could just pass in invalCell.... PENDING(eeh) */
         model_setBoardListener( model, boardCellChanged, result );
@@ -179,6 +179,9 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
     board->showCellValues = (XP_Bool)stream_getBits( stream, 1 );
+#ifdef KEYBOARD_NAV
+    board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
+#endif
 
     XP_ASSERT( !!server );
 
@@ -226,6 +229,9 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
     stream_putBits( stream, 1, board->gameOver );
     stream_putBits( stream, 1, board->showColors );
     stream_putBits( stream, 1, board->showCellValues );
+#ifdef KEYBOARD_NAV
+    stream_putBits( stream, 2, board->focussed );
+#endif
 
     XP_ASSERT( !!board->server );
     nPlayers = board->gi->nPlayers;
@@ -275,7 +281,7 @@ board_reset( BoardCtxt* board )
     XP_MEMSET( &board->boardArrow, 0, sizeof(board->boardArrow) );
     board->gameOver = XP_FALSE;
     board->selPlayer = 0;
-    board->star_row = model_numRows(board->model) / 2;
+    board->star_row = (XP_U16)(model_numRows(board->model) / 2);
 
     newState = board->boardObscuresTray? TRAY_HIDDEN:TRAY_REVERSED;
     setTrayVisState( board, newState );
@@ -298,8 +304,8 @@ board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top,
 
 void 
 board_setScoreboardLoc( BoardCtxt* board, XP_U16 scoreLeft, XP_U16 scoreTop,
-			XP_U16 scoreWidth, XP_U16 scoreHeight,
-			XP_Bool divideHorizontally )
+                        XP_U16 scoreWidth, XP_U16 scoreHeight,
+                        XP_Bool divideHorizontally )
 {
     board->scoreBdBounds.left = scoreLeft;
     board->scoreBdBounds.top = scoreTop;
@@ -1083,6 +1089,15 @@ drawTimer( BoardCtxt* board )
     }
 } /* drawTimer */
 
+static XP_Bool
+board_ScoreCallback( void* closure, XP_S16 player, XP_UCHAR* expl, 
+                     XP_U16* explLen)
+{
+    ModelCtxt* model = (ModelCtxt*)closure;
+    return model_getPlayersLastScore( model, player,
+                                      expl, explLen );
+} /* board_ScoreCallback */
+
 typedef struct DrawScoreData {
     DrawScoreInfo dsi;
     XP_U16 height;
@@ -1144,6 +1159,10 @@ drawScoreBoard( BoardCtxt* board )
             /* figure spacing for each scoreboard entry */
             for ( dp = datum, i = 0; i < nPlayers; ++i, ++dp ) {
                 LocalPlayer* lp = &board->gi->players[i];
+
+                /* This is a hack! */
+                dp->dsi.lsc = board_ScoreCallback;
+                dp->dsi.lscClosure = model;
 
                 dp->dsi.score = scores[i];
                 dp->dsi.isTurn = (i == curTurn);
@@ -2562,7 +2581,11 @@ board_handleKey( BoardCtxt* board, XP_Key key )
 
     case XP_RETURN_KEY:
         if ( board->focussed == OBJ_TRAY ) {
-            result = tray_keyAction( board );
+            if ( trayVisible ) {
+                result = tray_keyAction( board );
+            } else {
+                result = askRevealTray( board );
+            }
         } else if ( board->focussed == OBJ_BOARD ) {
             /* mimic pen-down/pen-up on cursor */
             BdCursorLoc loc = board->bdCursor[board->selPlayer];
