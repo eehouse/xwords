@@ -84,6 +84,7 @@ CXWordsAppView::~CXWordsAppView()
 
     mpool_destroy( mpool );
 
+    delete iDictList;
     delete iRequestTimer;
 }
 
@@ -142,6 +143,11 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 
     iDraw = sym_drawctxt_make( MPPARM(mpool) &SystemGc(), iCoeEnv, iEikonEnv );
     User::LeaveIfNull( iDraw );
+
+    if ( !FindAllDicts() ) {
+        UserErrorFromID( R_ALERT_NO_DICTS );
+        User::Leave( -1 );
+    }
 
     InitGameL();
 
@@ -228,8 +234,8 @@ sym_util_getSquareBonus( XW_UtilCtxt* /*uc*/, ModelCtxt* /*model*/,
     return result;
 } // sym_util_getSquareBonus
 
-static void
-sym_util_userError( XW_UtilCtxt* uc, UtilErrID id )
+/* static */ void
+CXWordsAppView::sym_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     TInt resourceId = 0;
 
@@ -270,16 +276,8 @@ sym_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
-    if ( resourceId != 0 ) {
-        _LIT(title,"Oops");
-        TBuf16<128> message;
-        StringLoader::Load( message, resourceId );
-#if defined SERIES_60
-        CEikInfoDialog::RunDlgLD( title, message );
-#elif defined SERIES_80
-        CCknInfoDialog::RunDlgLD( title, message );
-#endif
-    }
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+    self->UserErrorFromID( resourceId );
 } // sym_util_userError
 
 static XP_Bool
@@ -359,18 +357,6 @@ CXWordsAppView::sym_util_requestTime( XW_UtilCtxt* uc )
         self->iRequestTimer->Start( TCallBack( CXWordsAppView::TimerCallback, 
                                                (TAny*)self ) );
     }
-
-
-//     TApaTaskList atl( self->iCoeEnv->WsSession() );
-//     TApaTask curTask = atl.FindByPos( 0 );
-// 	TInt i = curTask.SendMessage( XW_TIMEREQ_COMMAND, NULL );
-
-//     XP_LOGF( "SendMessage=>%d", i );
-
-    // Setting a timer is wrong here!  All that's needed is to post a
-    // freaking event we'll handle once we unwind from the
-    // stack handling the current event.
-//     XP_LOGF( "sym_util_requestTime returning" );
 }
 
 /* static */ XP_U32
@@ -514,50 +500,37 @@ CXWordsAppView::SetUpUtil()
 void
 CXWordsAppView::InitGameL()
 {
-    DictionaryCtxt* dict = NULL;
-    iCp.showBoardArrow = XP_TRUE; // default because no pen
-    iCp.showRobotScores = XP_FALSE;
+    if ( ReadCurrentGame() ) {
+        /* load an existing game */
+    } else {
 
-    gi_initPlayerInfo( MPPARM(mpool) &iGi, (XP_UCHAR*)"Player %d" );
+        gi_initPlayerInfo( MPPARM(mpool) &iGi, (XP_UCHAR*)"Player %d" );
 
-    game_makeNewGame( MPPARM(mpool) &iGame, &iGi, 
-                      &iUtil, iDraw, &iCp,
-                      (TransportSend)NULL, this );
+        TGameInfoBuf gib( &iGi, iDictList );
+        CXWGameInfoDlg* gameInfo = 
+            new(ELeave)CXWGameInfoDlg( MPPARM(mpool) &gib, ETrue );
+        if ( !gameInfo->ExecuteLD( R_XWORDS_NEWGAME_DLG ) ) {
+            User::Leave(-1);
+        }
+
+        gib.CopyToL( MPPARM(mpool) &iGi );
+
+        DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) 
+                                                     iGi.dictName );
+        User::LeaveIfNull( dict );
 
 
-#if defined SERIES_80
-    /* Seems to be no equivalent in 60 land??? */
-    TFileName nameD;
-    CEikFileOpenDialog* dictDlg = new(ELeave)CEikFileOpenDialog( &nameD );
-    XP_LOGF( "setting required type" );
-    dictDlg->SetRequiredExtension( &_L(".xwd") ); // it's ignoring this
-    dictDlg->SetShowSystem( EFalse );
-    if ( dictDlg->ExecuteLD( R_EIK_DIALOG_FILE_OPEN ) ) {
-        TBuf8<256> buf8;
-        buf8.Copy( nameD );
-        char buf[257];
-        TInt len = buf8.Length();
-        XP_MEMCPY( buf, (void*)buf8.Ptr(), len );
-        buf[len] = '\0';
-        XP_LOGF( "got file %s", buf );
-        
-        dict = sym_dictionary_makeL( MPPARM(mpool) &nameD );
+        iCp.showBoardArrow = XP_TRUE; // default because no pen
+        iCp.showRobotScores = XP_FALSE;
+
+        game_makeNewGame( MPPARM(mpool) &iGame, &iGi, 
+                          &iUtil, iDraw, &iCp,
+                          (TransportSend)NULL, this );
+
+
+        model_setDictionary( iGame.model, dict ); // game_dispose kills this
     }
-#endif
-
-#ifdef STUBBED_DICT
-    if ( !dict ) {
-        dict = make_stubbed_dict( MPPARM_NOCOMMA(mpool) );
-    }
-#endif
-    User::LeaveIfNull( dict );
-
-    model_setDictionary( iGame.model, dict ); // game_dispose kills this
-
-//     CurGameInfo gameInfo;    
-//     CNewGameDialog* dialog = new(ELeave) CNewGameDialog( &gameInfo );
-//     User::Leave( -1 );
-}
+} /* InitGameL */
 
 void
 CXWordsAppView::DeleteGame()
@@ -598,16 +571,12 @@ CXWordsAppView::HandleCommand( TInt aCommand )
 
     switch ( aCommand ) {
 
-//     case XW_TIMEREQ_COMMAND:
-//         XP_LOGF( "got XW_TIMEREQ_COMMAND" );
-//         draw = server_do( iGame.server ); // get tiles assigned etc.
-//         break;
-
-    case XW_NEWGAME_COMMAND: {
-        CXWGameInfoDlg* gameInfo = 
-            new(ELeave)CXWGameInfoDlg( MPPARM_NOCOMMA(mpool) );
-        (void)gameInfo->ExecuteLD( R_XWORDS_NEWGAME_DLG );
-    }
+    case XW_NEWGAME_COMMAND:
+/*     { */
+/*         CXWGameInfoDlg* gameInfo =  */
+/*             new(ELeave)CXWGameInfoDlg( MPPARM_NOCOMMA(mpool) ); */
+/*         (void)gameInfo->ExecuteLD( R_XWORDS_NEWGAME_DLG ); */
+/*     } */
         break;
 
     case XW_SAVEDGAMES_COMMAND:
@@ -776,4 +745,65 @@ CXWordsAppView::AskFromResId( TInt aResource )
 
     CXWAskDlg* query = new(ELeave)CXWAskDlg( MPPARM(mpool) &message );
     return 0 != query->ExecuteLD( R_XWORDS_CONFIRMATION_QUERY );
+}
+
+static void
+logOneFile( TPtrC name )
+{
+    TBuf8<128> tmpb;
+    tmpb.Copy( name );
+    XP_UCHAR buf[128];
+    XP_MEMCPY( buf, (void*)(tmpb.Ptr()), tmpb.Length() );
+    buf[tmpb.Length()] = '\0';
+    XP_LOGF( "found file %s", buf );
+} /* logOneFile */
+
+TBool
+CXWordsAppView::FindAllDicts()
+{
+    /* NOTE: CEikFileNameSelector might be the way to do this and the display
+     * of the list in the game setup dialog.
+     */
+
+    TBool found = EFalse;
+    RFs fileSession;
+    User::LeaveIfError(fileSession.Connect());
+    CleanupClosePushL(fileSession);
+
+    TFindFile file_finder( fileSession ); // 1
+    CDir* file_list;
+    _LIT( aWildName, "*.xwd" );
+    _LIT( dir,"\\system\\apps\\XWORDS\\" );
+    TInt err = file_finder.FindWildByDir( aWildName, dir, file_list );
+    if ( err == KErrNone ) {
+        found = ETrue;
+
+        iDictList = new (ELeave)CDesC16ArrayFlat( file_list->Count() );
+
+        TInt i;
+        for ( i = 0; i < file_list->Count(); i++ ) {
+            TParse fullentry;
+            fullentry.Set((*file_list)[i].iName,& file_finder.File(),NULL);
+            logOneFile( fullentry.Name() );
+            iDictList->AppendL( fullentry.Name() );
+        }
+        delete file_list;
+    }
+    CleanupStack::PopAndDestroy(); // fileSession
+    return found;
+} /* FindAllDicts */
+
+void
+CXWordsAppView::UserErrorFromID( TInt aResource )
+{
+    if ( aResource != 0 ) {
+        _LIT(title,"Oops");
+        TBuf16<128> message;
+        StringLoader::Load( message, aResource );
+#if defined SERIES_60
+        CEikInfoDialog::RunDlgLD( title, message );
+#elif defined SERIES_80
+        CCknInfoDialog::RunDlgLD( title, message );
+#endif
+    }
 }
