@@ -438,7 +438,7 @@ positionBoard( PalmAppGlobals* globals )
                             scoreWidth, scoreHeight, showGrid );
 
     board_setShowColors( globals->game.board, globals->gState.showColors );
-    board_setYOffset( globals->game.board, 0, XP_FALSE /* why bother */ );
+    board_setYOffset( globals->game.board, 0 );
 
     /* figure location for the tray.  If possible, make it smaller than the
        ideal to avoid using a scrollbar.  Also, note at this point whether a
@@ -1814,7 +1814,7 @@ palmSetCtrlsForTray( PalmAppGlobals* globals )
 
         /* PENDING(ehouse) Can't the board just do this itself? */
         if ( state==TRAY_HIDDEN ) {
-            board_setYOffset( globals->game.board, 0, XP_TRUE );
+            board_setYOffset( globals->game.board, 0 );
         }
     }
 } /* palmSetCtrlsForTray */
@@ -1830,7 +1830,7 @@ scrollBoard( PalmAppGlobals* globals, Int16 newValue, Boolean fromBar )
 
     result = curYOffset != newValue;
     if ( result ) {
-        result = board_setYOffset( globals->game.board, newValue, XP_FALSE );
+        result = board_setYOffset( globals->game.board, newValue );
     }
 
     if ( !fromBar ) {
@@ -3046,7 +3046,7 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, const PickInfo* pi,
     ListData ld;
     XP_U16 i;
     XP_S16 chosen;
-    XP_UCHAR labelBuf[64];
+    XP_UCHAR labelBuf[96];
     XP_UCHAR* name;
     XP_UCHAR* labelFmt;
     FieldPtr fld;
