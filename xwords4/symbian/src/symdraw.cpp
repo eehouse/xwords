@@ -90,9 +90,9 @@ symLocalRect( TRect* dest, const XP_Rect* src )
 } // symLocalRect
 
 static void
-symClearRect( SymDrawCtxt* sctx, const TRect* rect )
+symClearRect( SymDrawCtxt* sctx, const TRect* rect, TInt clearTo )
 {
-    sctx->iGC->SetBrushColor( sctx->colors[COLOR_WHITE] );
+    sctx->iGC->SetBrushColor( sctx->colors[clearTo] );
     sctx->iGC->SetBrushStyle( CGraphicsContext::ESolidBrush );
     sctx->iGC->SetPenStyle( CGraphicsContext::ENullPen );
     sctx->iGC->DrawRect( *rect );
@@ -218,7 +218,7 @@ sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner,
 
     TRect lRect;
     symLocalRect( &lRect, rInner );
-    symClearRect( sctx, &lRect );
+    symClearRect( sctx, &lRect, COLOR_WHITE );
 
     TPoint point( lRect.iTl.iX, lRect.iBr.iY );
     sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
@@ -239,10 +239,9 @@ sym_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect,
 static void
 figureScoreText( XP_UCHAR* buf, XP_U16 bufLen, DrawScoreInfo* dsi )
 {
-    const char* fmt = "%c  %s  %d (%d) %c %c";
+    const char* fmt = "%s  %d (%d) %c %c";
 
     sprintf( (char*)buf, fmt, 
-             (dsi->selected?'S':'s'),
              dsi->name, dsi->score, dsi->nTilesLeft,
              (dsi->isRemote?'R':'L'),
              (dsi->isRobot?'R':'H') );
@@ -289,18 +288,20 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
 
     TRect lRect1;
     symLocalRect( &lRect1, rOuter );
-    symClearRect( sctx, &lRect1 );
+    symClearRect( sctx, &lRect1, COLOR_WHITE );
     if ( dsi->isTurn ) {
         TPoint point( lRect1.iTl.iX, lRect.iBr.iY - descent );
         sctx->iGC->DrawText( _L("T"), point );
     }
 
     sctx->iGC->SetClippingRect( lRect );
-    symClearRect( sctx, &lRect );
+    symClearRect( sctx, &lRect, dsi->selected? COLOR_BLACK:COLOR_WHITE );
 
     TPoint point( lRect.iTl.iX, lRect.iBr.iY - descent );
-    if ( playerNum >= 0 ) {
+    if ( playerNum >= 0 && !dsi->selected ) {
         sctx->iGC->SetPenColor( sctx->colors[playerNum + COLOR_PLAYER1] );
+    } else {
+        sctx->iGC->SetPenColor( sctx->colors[COLOR_WHITE] );
     }
     sctx->iGC->DrawText( tbuf, point );
     sctx->iGC->CancelClippingRect();
@@ -353,12 +354,15 @@ sym_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 }
 
 static void
-textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect )
+textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect, TBool highlight )
 {
-    sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
+    if ( highlight ) {
+        sctx->iGC->SetPenColor( sctx->colors[COLOR_WHITE] );
+    } else {
+        sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
+    }
     sctx->iGC->SetPenStyle( CGraphicsContext::ESolidPen );
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
-
     CFont* font = sctx->iBoardFont;
 
     TBuf16<64> tbuf;
@@ -394,7 +398,7 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     XP_U16 index = COLOR_TILE;
     TRgb rgb;
     if ( highlight ) { 
-        rgb = sctx->colors[COLOR_WHITE];
+        rgb = sctx->colors[COLOR_BLACK];
     } else if ( !!bitmap || (!!text && XP_STRLEN((const char*)text) > 0)) {
         rgb = sctx->colors[COLOR_TILE];
     } else {
@@ -411,7 +415,7 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         XP_ASSERT( 0 );
     } else if ( !!text ) {
         TRect r2(lRect);
-        textInCell( sctx, text, &r2 );
+        textInCell( sctx, text, &r2, highlight );
     }
 
     return XP_TRUE;
@@ -434,7 +438,7 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
     TRect lRect;
     symLocalRect( &lRect, rect );
     sctx->iGC->SetClippingRect( lRect );
-    symClearRect( sctx, &lRect );
+    symClearRect( sctx, &lRect, COLOR_WHITE );
 
     lRect.Shrink( 1, 1 );
     lRect.SetHeight( lRect.Height() - TRAY_CURSOR_HT );
@@ -499,7 +503,7 @@ sym_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect,
     TRect lRect;
     symLocalRect( &lRect, rect );
     sctx->iGC->SetClippingRect( lRect );
-    symClearRect( sctx, &lRect );
+    symClearRect( sctx, &lRect, COLOR_WHITE );
 
     lRect.Shrink( 1, 1 );
     lRect.SetHeight( lRect.Height() - TRAY_CURSOR_HT );
@@ -517,7 +521,7 @@ sym_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rect )
     TRect lRect;
     symLocalRect( &lRect, rect );
     sctx->iGC->SetClippingRect( lRect );
-    symClearRect( sctx, &lRect );
+    symClearRect( sctx, &lRect, COLOR_WHITE );
 }
 
 static void
@@ -537,7 +541,7 @@ sym_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect,
     symLocalRect( &lRect, rect );
     sctx->iGC->SetClippingRect( lRect );
 
-    textInCell( sctx, arrow, &lRect );
+    textInCell( sctx, arrow, &lRect, EFalse );
 #endif
 }
 
@@ -549,7 +553,7 @@ sym_draw_drawTrayCursor( DrawCtx* p_dctx, XP_Rect* rect )
     TRect lRect;
     symLocalRect( &lRect, rect );
     lRect.iTl.iY += lRect.Height() - TRAY_CURSOR_HT;
-    symClearRect( sctx, &lRect );
+    symClearRect( sctx, &lRect, COLOR_WHITE );
     sctx->iGC->SetClippingRect( lRect );
 
     sctx->iGC->SetBrushColor( sctx->colors[COLOR_PLAYER1 + sctx->iTrayOwner] ); 
