@@ -6,3 +6,14 @@ XWORDS.SUP.MAKE
 XWORDS.DSW
 XWORDS.DSP
 XWORDS.UID.CPP
+xwords_*.mbg
+xwords_*.pkg
+xwords_*.aif
+xwords_*.aifspec
+xwords_*.ex1
+xwords_*.mbm
+xwords_*.sis
+xwords_*.rsg
+xwords_*.app
+xwords_*.rsc
+icon.series*.mbm
