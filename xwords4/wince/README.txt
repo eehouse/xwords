@@ -1,8 +1,11 @@
 This document describes how to build Crosswords for PocketPC.
 
 First, you need to install Microsoft's SDK for Wince/PocketPC.  It's
-available for about $7 shipping and handling from Microsoft, and is
-included with many books on PocketPC/Wince programming.
+available for about $8 shipping and handling from Microsoft, and is
+included with many books on PocketPC/Wince programming.  Here's a link
+where I was able to get it:
+
+https://microsoft.order-5.com/trialstore/product.asp?catalog%5Fname=MSTrialandEval&category%5Fname=Developer+Tools&product%5Fid=X09%2D17298
 
 1.  Launch eMbedded Visual C++ (EVC++).
 
