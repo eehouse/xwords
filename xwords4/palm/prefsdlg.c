@@ -117,6 +117,9 @@ PrefsFormHandleEvent( EventPtr event )
 
         case XW_PREFS_TIMERON_CHECKBOX_ID:
             XP_ASSERT( globals->isNewGame );
+#ifdef FEATURE_TRAY_EDIT
+        case XW_PREFS_SEETILES_CHECKBOX_ID:
+#endif
             form = FrmGetActiveForm();
             showHidePrefsWidgets( globals, form );
             break;
@@ -190,6 +193,10 @@ GlobalPrefsToLocal( PalmAppGlobals* globals )
     state->hintsNotAllowed = globals->gameInfo.hintsNotAllowed;
     state->timerEnabled = globals->util.gameInfo->timerEnabled;
     state->gameSeconds = globals->util.gameInfo->gameSeconds;
+#ifdef FEATURE_TRAY_EDIT
+    state->allowPickTiles = globals->util.gameInfo->allowPickTiles;
+    state->allowPickTilesRobot = globals->util.gameInfo->allowPickTilesRobot;
+#endif
 
     state->stateTypeIsGlobal = globals->stateTypeIsGlobal;
 } /* GlobalPrefsToLocal */
@@ -220,6 +227,12 @@ LocalPrefsToGlobal( PalmAppGlobals* globals )
 
     globals->util.gameInfo->timerEnabled = state->timerEnabled;
     globals->util.gameInfo->gameSeconds = state->gameSeconds;
+
+#ifdef FEATURE_TRAY_EDIT
+    globals->util.gameInfo->allowPickTiles = state->allowPickTiles;
+    globals->util.gameInfo->allowPickTilesRobot = state->allowPickTilesRobot;
+#endif
+
     return erase;
 } /* LocalPrefsToGlobal */
 
@@ -253,6 +266,12 @@ localPrefsToControls( PalmAppGlobals* globals, PrefsDlgState* state )
     setBooleanCtrl( XW_PREFS_ROBOTSCORE_CHECKBOX_ID,
                     state->cp.showRobotScores );
     setBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID, state->timerEnabled );
+
+#ifdef FEATURE_TRAY_EDIT
+    setBooleanCtrl( XW_PREFS_SEETILES_CHECKBOX_ID, state->allowPickTiles );
+    setBooleanCtrl( XW_PREFS_SEETILESROBOT_CHECKBOX_ID, 
+                    state->allowPickTilesRobot );
+#endif
 
     numToField( XW_PREFS_TIMER_FIELD_ID, state->gameSeconds/60 );
 } /* localPrefsToControls */
@@ -289,6 +308,12 @@ controlsToLocalPrefs( PalmAppGlobals* globals, PrefsDlgState* state )
 
     state->timerEnabled = getBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID );
     state->gameSeconds = fieldToNum( XW_PREFS_TIMER_FIELD_ID ) * 60;
+
+#ifdef FEATURE_TRAY_EDIT
+    state->allowPickTiles =  getBooleanCtrl( XW_PREFS_SEETILES_CHECKBOX_ID );
+    state->allowPickTilesRobot = 
+        getBooleanCtrl( XW_PREFS_SEETILESROBOT_CHECKBOX_ID );
+#endif
 } /* controlsToLocalPrefs */
 
 static void
@@ -344,6 +369,9 @@ showHidePrefsWidgets( PalmAppGlobals* globals, FormPtr form )
     if ( !global ) {
         Boolean on = getBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID );
         disOrEnable( form, XW_PREFS_TIMER_FIELD_ID, on );
+
+        on = getBooleanCtrl( XW_PREFS_SEETILES_CHECKBOX_ID );
+        disOrEnable( form, XW_PREFS_SEETILESROBOT_CHECKBOX_ID, on );
     }
 } /* showHidePrefsWidgets */
 

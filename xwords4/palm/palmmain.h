@@ -160,6 +160,10 @@ typedef struct PrefsDlgState {
     XP_Bool showGrid;
     XP_Bool hintsNotAllowed;
     XP_Bool timerEnabled;
+#ifdef FEATURE_TRAY_EDIT
+    XP_Bool allowPickTiles;
+    XP_Bool allowPickTilesRobot;
+#endif
 } PrefsDlgState;
 
 typedef struct DictState {
