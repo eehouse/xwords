@@ -1,4 +1,4 @@
-# -*- mode: Makefile; compile-command: "make -f bldwin.mk" -*-
+# -*- mode: Makefile; compile-command: "/usr/bin/make -f bldwin.mk" -*-
 
 SERIES ?= 80
 TARGET ?= WINS
@@ -11,7 +11,7 @@ U3 = 10206D64
 # User should define EPOC_80 and/or EPOC_60 in the environment
 EPOC = $(EPOC_$(SERIES))
 NAME = xwords_$(SERIES)
-DESTDIR = $(EPOC)/release/wins/udeb/z/system/apps/$(NAME)
+DESTDIR = $(EPOC)/wins/c/system/Apps/$(NAME)
 DICT = ../../dawg/English/BasEnglish2to8.xwd
 EDLL_LIB = $(EPOC)/release/wins/udeb/edll.lib
 
