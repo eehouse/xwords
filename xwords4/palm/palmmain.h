@@ -21,7 +21,8 @@
 
 #define AppType APPID
 #define PrefID 0
-#define VERSION_NUM 1
+#define VERSION_NUM_405 1
+#define VERSION_NUM     2           /* 1 to 2 moving to ARM */
 
 #include <PalmTypes.h>
 #include <DataMgr.h>
@@ -174,12 +175,8 @@ typedef struct PrefsDlgState {
     XP_Bool showGrid;
     XP_Bool hintsNotAllowed;
     XP_Bool timerEnabled;
-#ifdef FEATURE_TRAY_EDIT
     XP_Bool allowPickTiles;
-#endif
-#ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
-#endif
 } PrefsDlgState;
 
 typedef struct DictState {
