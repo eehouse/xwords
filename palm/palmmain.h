@@ -327,7 +327,7 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
 #ifdef BEYOND_IR
        ,connsSettingChgEvent
 #endif
-#ifdef FEATURE_HIGHRES
+#ifdef FEATURE_SILK
        ,doResizeWinEvent
 #endif
 };
