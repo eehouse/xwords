@@ -22,8 +22,12 @@
 #include <charconv.h>
 
 #include "symaskdlg.h"
-#include "xwords.hrh"
-#include "xwords.rsg"
+# include "xwords.hrh"
+#ifdef SERIES_60
+# include "xwords_60.rsg"
+#elif defined SERIES_80
+# include "xwords_80.rsg"
+#endif
 
 CXWAskDlg::CXWAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream ) :
     iStream(aStream), iMessage(NULL), iKillStream(aKillStream)
