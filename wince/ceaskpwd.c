@@ -41,13 +41,11 @@ LRESULT CALLBACK
 PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     PasswdDialogState* pState;
-    CEAppGlobals* globals;
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         pState = (PasswdDialogState*)lParam;
-        globals = pState->globals;
 
         nameToLabel( hDlg, pState->name, IDC_PWDLABEL );
 
@@ -55,7 +53,6 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     } else {
         pState = (PasswdDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!pState ) {
-            globals = pState->globals;
 
             switch ( message ) {
             case WM_COMMAND:
