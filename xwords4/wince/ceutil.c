@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 2002-2004 by Eric House (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,16 +25,38 @@ void
 ceSetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf )
 {
     wchar_t widebuf[BUF_SIZE];
-    XP_U16 len;
+    XP_U16 len = (XP_U16)XP_STRLEN( buf );
 
-    len = (XP_U16)XP_STRLEN( buf );
-    ++len;
-    if ( len <= BUF_SIZE ) {
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, len,
-                             widebuf, len );
-        SendDlgItemMessage( hDlg, id, WM_SETTEXT, 0, (long)widebuf );
+    if ( len >= BUF_SIZE ) {
+        len = BUF_SIZE - 1;
     }
+
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, len, widebuf, len );
+    widebuf[len] = 0;
+    SendDlgItemMessage( hDlg, id, WM_SETTEXT, 0, (long)widebuf );
 } /* ceSetDlgItemText */
+
+void
+ceSetDlgItemFileName( HWND hDlg, XP_U16 id, XP_UCHAR* str )
+{
+    XP_UCHAR* stripstart;
+    XP_UCHAR buf[BUF_SIZE];
+    XP_U16 len = XP_STRLEN(str);
+
+    if ( len >= BUF_SIZE ) {
+        len = BUF_SIZE - 1;
+    }
+
+    XP_MEMCPY( buf, str, len );
+    buf[len] = '\0';
+
+    stripstart = strrchr( (const char*)buf, '.' );
+    if ( !!stripstart ) {
+        *stripstart = '\0';
+    }
+
+    ceSetDlgItemText( hDlg, id, buf );
+} /* ceSetDlgItemFileName */
 
 void
 ceGetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf, XP_U16* bLen )
@@ -57,35 +79,6 @@ ceGetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf, XP_U16* bLen )
         *bLen = 0;
     }
 } /* ceGetDlgItemText */
-
-/* This is stolen from some sample code somewhere
- */
-void
-positionDlg( HWND hDlg )
-{
-    RECT rt, rt1;
-    int DlgWidth, DlgHeight;	// dialog width and height in pixel units
-    int NewPosX, NewPosY;
-    
-    if ( GetWindowRect( hDlg, &rt1 ) ) {
-        GetClientRect(GetParent(hDlg), &rt);
-        DlgWidth	= rt1.right - rt1.left;
-        DlgHeight	= rt1.bottom - rt1.top ;
-        NewPosX		= (rt.right - rt.left - DlgWidth)/2;
-        NewPosY		= rt.bottom - DlgHeight;
-				
-        // if dlg is larger than the physical screen 
-        if (NewPosX < 0) {
-            NewPosX = 0;
-        }
-        if (NewPosY < 0) {
-            NewPosY = 0;
-        }
-        SetWindowPos(hDlg, 0, NewPosX, NewPosY,
-                     0, 0, SWP_NOZORDER | SWP_NOSIZE);
-    }
-
-} /* positionDlg */
 
 void
 ce_selectAndShow( HWND hDlg, XP_U16 resID, XP_U16 index )
