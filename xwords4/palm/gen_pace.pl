@@ -46,7 +46,7 @@ my %typeInfo = (
                 "void" => { "size" => 0, "a0" => 0 },
                 "BitmapPtr" => { "size" => 4, "a0" => 1 },
                 "Boolean" => { "size" => 1, "a0" => 0 },
-                "Boolean*" => { "size" => 4, "a0" => 0 },
+                "Boolean*" => { "size" => 4, "a0" => 0, "autoSwap" => 1 },
                 "Char const*" => { "size" => 4, "a0" => 1 },
                 "Char*" => { "size" => 4, "a0" => 1 },
                 "Char**" => { "size" => 4, "a0" => 1 },
@@ -81,7 +81,7 @@ my %typeInfo = (
                 "ListDrawDataFuncPtr" => { "size" => 4, "a0" => 1 },
                 "ListType*" => { "size" => 4, "a0" => 1 },
                 "LocalID" => { "size" => 4, "a0" => 0 },
-                "LocalID*" => { "size" => 4, "a0" => 1 },
+                "LocalID*" => { "size" => 4, "a0" => 1, "autoSwap" => 4 },
                 "MemHandle" => { "size" => 4, "a0" => 1 },
                 "MemHandle*" => { "size" => 4, "a0" => 1 },
                 "MemPtr" => { "size" => 4, "a0" => 1 },
@@ -91,8 +91,8 @@ my %typeInfo = (
                 "SndSysBeepType" => { "size" => 1, "a0" => 0 },
                 "SysNotifyProcPtr" => { "size" => 4, "a0" => 1 },
                 "TimeFormatType" => { "size" => 1, "a0" => 0 }, # enum
-                "UInt16*" => { "size" => 4, "a0" => 1 },
-                "UInt32*" => { "size" => 4, "a0" => 1 },
+                "UInt16*" => { "size" => 4, "a0" => 1, "autoSwap" => 2 },
+                "UInt32*" => { "size" => 4, "a0" => 1, "autoSwap" => 4 },
                 "UInt8" => { "size" => 1, "a0" => 0 },
                 "WinDirectionType" => { "size" => 1, "a0" => 0 }, # enum
                 "WinDrawOperation" => { "size" => 1, "a0" => 0 }, # enum
@@ -310,8 +310,26 @@ sub push_param($$$) {
     return "$result";
 }
 
-sub print_body($$$$) {
-    my ( $name, $returnType, $params, $trapSel ) = @_;
+sub swap_param($$$) {
+    my ( $type, $name, $out ) = @_;
+    my $result = "";
+
+    my $info = $typeInfo{$type};
+    die "unknown type $type\n" if !defined $info;
+
+    my $size = $info->{'autoSwap'};
+    if ( $size ) {
+        die "not sure what to do swapping struct\n" if $size > 4;
+        $result .= "    SWAP${size}_NON_NULL_";
+        $result .= $out? "OUT" : "IN";
+        $result .= "($name);\n";
+    }
+
+    return $result;
+}
+
+sub print_body($$$$$) {
+    my ( $name, $returnType, $params, $trapSel, $trapType ) = @_;
     my $result;
     my $offset = 0;
     my $notVoid = $returnType !~ m|void$|;
@@ -322,6 +340,9 @@ sub print_body($$$$) {
     }
     $result .= "    FUNC_HEADER($name);\n";
 
+    foreach my $param ( @$params ) {
+        $result .= swap_param( $$param{"type"}, $$param{"name"}, 0 );
+    }
     $result .= "   {\n";
     $result .= "    PNOState* sp = GET_CALLBACK_STATE();\n";
     $result .= "    unsigned char stack[] = {\n";
@@ -338,6 +359,12 @@ sub print_body($$$$) {
         $offset = "kPceNativeWantA0 | $offset";
     }
 
+    if ( $trapType eq "VFSMGR_TRAP" ) {
+        $result .= "    SET_SEL_REG($trapSel, sp);\n";
+        $trapSel = "sysTrapFileSystemDispatch";
+    } else {
+    }
+
     $result .= "    ";
     if ( $notVoid ) {
         $result .= "result = ($returnType)";
@@ -346,7 +373,11 @@ sub print_body($$$$) {
     $result .= "(*sp->call68KFuncP)( sp->emulStateP, \n"
         . "                               PceNativeTrapNo($trapSel),\n"
         . "                               stack, $offset );\n";
- 
+
+    foreach my $param ( @$params ) {
+        $result .= swap_param( $$param{"type"}, $$param{"name"}, 1 );
+    }
+
     $result .= "    }\n    FUNC_TAIL($name);\n";
     if ( $notVoid ) {
         $result .= "    return result;\n";
@@ -356,16 +387,16 @@ sub print_body($$$$) {
     return $result;
 }
 
-sub print_func_impl($$$$$) {
+sub print_func_impl($$$$$$) {
     my ( $returnType, $name, 
          $params,       # ref-to-list created by params_parse above
-         $file, $trapSel ) = @_;
+         $file, $trapSel, $trapType ) = @_;
     my $result;
     
     $result .= "\n/* from file $file */\n";
     $result .= "$returnType\n";
     $result .= "$name" . print_params_list($params) . "\n";
-    $result .= print_body( $name, $returnType, $params, $trapSel );
+    $result .= print_body( $name, $returnType, $params, $trapSel, $trapType );
          
     return $result;
 } # print_func_impl
@@ -439,7 +470,8 @@ foreach my $key (keys %funcInfo) {
                                    $key,
                                    $$ref{'params'},
                                    $$ref{'file'},
-                                   $$ref{'sel'});
+                                   $$ref{'sel'},
+                                   $$ref{'trapType'});
     print DOT $funcstr;
 }
 

@@ -34,6 +34,16 @@ extern void TimSecondsToDateTime( UInt32 seconds, DateTimeType* dateTimeP );
     (unsigned char)(val), \
     (unsigned char)(0)
 
+#define SWAP1_NON_NULL_IN(ptr) if ( !!(ptr) ) { Byte_Swap16(*(ptr)); }
+#define SWAP2_NON_NULL_IN(ptr) if ( !!(ptr) ) { Byte_Swap16(*(ptr)); }
+#define SWAP4_NON_NULL_IN(ptr) if ( !!(ptr) ) { Byte_Swap32(*(ptr)); }
+#define SWAP1_NON_NULL_OUT(ptr) SWAP1_NON_NULL_IN(ptr) 
+#define SWAP2_NON_NULL_OUT(ptr) SWAP2_NON_NULL_IN(ptr) 
+#define SWAP4_NON_NULL_OUT(ptr) SWAP4_NON_NULL_IN(ptr) 
+
+#define SET_SEL_REG(trap, sp) ((unsigned long*)((sp)->emulStateP))[3] = (trap)
+
+
 PNOState* getStorageLoc();
 #define GET_CALLBACK_STATE() getStorageLoc()
 
