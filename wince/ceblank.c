@@ -98,8 +98,9 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             ceShowOrHide( hDlg, IDC_BPICK, XP_FALSE );
         } else {
             XP_ASSERT( bState->pi->why == PICK_FOR_BLANK );
-            ceShowOrHide( hDlg, IDC_PICKALL, XP_FALSE );
             ceShowOrHide( hDlg, IDC_CPICK, XP_FALSE );
+            ceShowOrHide( hDlg, IDC_PICKALL, XP_FALSE );
+            ceShowOrHide( hDlg, IDC_PICKMSG, XP_FALSE );
         }
 #endif
 
@@ -132,8 +133,11 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
         case WM_COMMAND:
             id = LOWORD(wParam);
-            if ( id == IDC_PICKALL ) {
+            if ( 0 ) {
+#ifdef FEATURE_TRAY_EDIT
+            } else if ( id == IDC_PICKALL ) {
                 bState->result = -1;
+#endif
             } else if ( id == IDOK ) {
                 bState->result = 
                     (XP_S16)SendDlgItemMessage( hDlg, BLANKFACE_LIST, 
