@@ -119,8 +119,8 @@ static Boolean handleHintRequest( PalmAppGlobals* globals );
 /* callbacks */
 static VTableMgr* palm_util_getVTManager( XW_UtilCtxt* uc );
 static void palm_util_userError( XW_UtilCtxt* uc, UtilErrID id );
-static XP_U16 palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
-                                   XWStreamCtxt* stream );
+static XP_Bool palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
+                                    XWStreamCtxt* stream );
 static XWBonusType palm_util_getSquareBonus( XW_UtilCtxt* uc, 
                                              ModelCtxt* model,
                                              XP_U16 col, XP_U16 row );
@@ -2864,7 +2864,7 @@ userErrorFromStrId( PalmAppGlobals* globals, XP_U16 strID )
     (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)message, " ", " " );
 } /* userErrorFromStrId */
 
-static XP_U16
+static XP_Bool
 palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
@@ -2886,7 +2886,7 @@ palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         break;
     }
 
-    return palmaskFromStrId( globals, strID, -1, -1 );
+    return (XP_Bool)palmaskFromStrId( globals, strID, -1, -1 );
 } /* palm_util_userQuery */
 
 static XWBonusType

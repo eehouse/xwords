@@ -89,8 +89,8 @@ typedef struct UtilVtable {
                                           XP_U16 col, XP_U16 row );
     void (*m_util_userError)( XW_UtilCtxt* uc, UtilErrID id );
 
-    XP_U16 (*m_util_userQuery)( XW_UtilCtxt* uc, UtilQueryID id,
-                                XWStreamCtxt* stream );
+    XP_Bool (*m_util_userQuery)( XW_UtilCtxt* uc, UtilQueryID id,
+                                 XWStreamCtxt* stream );
 
     /* return of < 0 means computer should pick */
     XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, PickInfo* pi, 

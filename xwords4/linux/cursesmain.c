@@ -118,7 +118,7 @@ curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     cursesUserError( globals, message );
 } /* curses_util_userError */
 
-static XP_U16
+static XP_Bool
 curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
     CursesAppGlobals* globals;
@@ -126,7 +126,8 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     char* answers[3];
     short numAnswers = 0;
     XP_Bool freeMe = XP_FALSE;
-    XP_U16 result;
+    XP_Bool result;
+    XP_U16 okIndex = 1;
 
     switch( id ) {
     case QUERY_COMMIT_TURN:
@@ -145,6 +146,7 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         question = strFromStream( stream );
         freeMe = XP_TRUE;
         answers[numAnswers++] = "Ok";
+        okIndex = 0;
         break;
         
     default:
@@ -153,7 +155,7 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     }
     globals = (CursesAppGlobals*)uc->closure;
     result = cursesask( globals, question, numAnswers, 
-                        answers[0], answers[1], answers[2] );
+                        answers[0], answers[1], answers[2] ) == okIndex;
 
     if ( freeMe ) {
         free( question );
