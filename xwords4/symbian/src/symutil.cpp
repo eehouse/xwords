@@ -67,6 +67,25 @@ symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const XP_UCHAR* str )
     XP_MEMCPY( (void*)*loc, (void*)str, len );
 } /* symReplaceStrIfDiff */
 
+#ifdef DEBUG
+_LIT( KXWLogdir, "xwords" );
+_LIT( KXWLogfile, "xwdebug.log" );
+/* The emulator, anyway, doesn't do descs well even with the %S directive.
+   So convert 'em to desc8s... */
+void
+XP_LOGDESC16( const TDesC16* desc )
+{
+    TBuf8<256> buf8;
+    buf8.Copy( *desc );
+    buf8.Append( (const unsigned char*)"\0", 1 );
+    TBuf8<256> fmtDesc((unsigned char*)"des16: %s");
+
+    RFileLogger::WriteFormat( KXWLogdir, KXWLogfile, 
+                              EFileLoggingModeAppend, 
+                              fmtDesc, buf8.Ptr() );
+}
+#endif
+
 extern "C" {
 
 int
@@ -82,8 +101,6 @@ sym_snprintf( XP_UCHAR* aBuf, XP_U16 aLen, const XP_UCHAR* aFmt, ... )
 }
 
 #ifdef DEBUG
-_LIT( KXWLogdir, "xwords" );
-_LIT( KXWLogfile, "xwdebug.log" );
 void sym_debugf( char* aFmt, ... )
 {
     VA_LIST ap;
