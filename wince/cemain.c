@@ -642,6 +642,7 @@ static void
 ceInitPrefs( CEAppGlobals* globals )
 {
     globals->appPrefs.versionFlags = CUR_CE_PREFS_FLAGS;
+    globals->appPrefs.showColors = XP_TRUE;
 
     globals->appPrefs.cp.showBoardArrow = XP_TRUE;
     globals->appPrefs.cp.showRobotScores = XP_FALSE;
