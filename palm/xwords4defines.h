@@ -197,8 +197,8 @@
 #define REFCON_GADGET_ID 3000
 
 #define XW_ASK_TXT_FIELD_ID 2200
-#define XW_ASK_OK_BUTTON_ID 2201
-#define XW_ASK_CANCEL_BUTTON_ID 2202
+#define XW_ASK_YES_BUTTON_ID 2201
+#define XW_ASK_NO_BUTTON_ID 2202
 #define XW_ASK_SCROLLBAR_ID 2203
 
 #define MAX_PASSWORD_LENGTH 4	/* server.c has no limit */
@@ -400,7 +400,7 @@
 #endif
 
 /* versioning stuff */
-#define XW_PALM_VERSION_STRING "4.1 b4"
+#define XW_PALM_VERSION_STRING "4.1 b5"
 #define CUR_PREFS_VERS 0x0405
 
 
