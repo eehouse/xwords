@@ -352,7 +352,7 @@ getFormRefcon()
 {
     void* result = NULL;
     FormPtr form = FrmGetFormPtr( XW_MAIN_FORM );
-    XP_ASSERT( !!form );
+
     if ( !!form ) {
         UInt16 index = FrmGetObjectIndex( form, REFCON_GADGET_ID );
         result = FrmGetGadgetData( form, index );
