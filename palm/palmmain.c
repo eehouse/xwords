@@ -1364,6 +1364,7 @@ handleHideTray( PalmAppGlobals* globals )
     return draw;
 } /* handleHideTray */
 
+#ifdef XWFEATURE_HINT_CONFIG
 static Boolean 
 popupLists( EventPtr event )
 {
@@ -1422,7 +1423,8 @@ doHintConfig( PalmAppGlobals* globals )
 
     FrmDeleteForm( form );
     FrmSetActiveForm( prevForm );
-} /* palmAskNTiles */
+} /* doHintConfig */
+#endif
 
 static Boolean
 handleHintRequest( PalmAppGlobals* globals )
@@ -2057,9 +2059,11 @@ mainViewHandleEvent( EventPtr event )
             draw = handleHintRequest( globals );
             break;
 
+#ifdef XWFEATURE_HINT_CONFIG
         case XW_HINTCONFIG_PULLDOWN_ID:
             doHintConfig( globals );
             break;
+#endif
 
         case XW_UNDOCUR_PULLDOWN_ID:
             draw = board_replaceTiles( globals->game.board );
