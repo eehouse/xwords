@@ -26,11 +26,14 @@
 #include "symutil.h"
 #include "xwords.hrh"
 #include "xwords.rsg"
+#include "xwappview.h"
 
 
-CXSavedGamesDlg::CXSavedGamesDlg( MPFORMAL CXWGamesMgr* aGameMgr, 
-                                  const TGameName* aCurName, TGameName* result )
-    : iGameMgr(aGameMgr), iCurName(aCurName), iResultP(result)
+CXSavedGamesDlg::CXSavedGamesDlg( MPFORMAL CXWordsAppView* aOwner, 
+                                  CXWGamesMgr* aGameMgr, 
+                                  const TGameName* aCurName, 
+                                  TGameName* result )
+    : iOwner(aOwner), iGameMgr(aGameMgr), iCurName(aCurName), iResultP(result)
 {
     MPASSIGN( this->mpool, mpool );
 }
@@ -78,7 +81,9 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
         TDesC16* selName = &(*iGameMgr->GetNames())[index];
         if ( 0 == selName->Compare(*iCurName) ) {
             /* Warn user why can't delete */
-        } else if ( ConfirmDelete() ) {
+            iOwner->UserErrorFromID( R_ALERT_NO_DELETE_OPEN_GAME );
+        } else if ( iOwner->UserQuery( (UtilQueryID)SYM_QUERY_CONFIRM_DELGAME, 
+                                       NULL ) ) {
             if ( iGameMgr->DeleteSelected( index ) ) {
                 ResetNames( index );
                 box->DrawDeferred();
@@ -117,22 +122,17 @@ CXSavedGamesDlg::ResetNames( TInt aPrefIndex )
     box->SetCurrentItemIndex( index );
 } /* ResetNames */
 
-TBool
-CXSavedGamesDlg::ConfirmDelete()
-{
-    return ETrue;
-} /* ConfirmDelete */
-
 void
 CXSavedGamesDlg::EditSelName()
 {
 }
 
 /* static */ TBool
-CXSavedGamesDlg::DoGamesPicker( MPFORMAL CXWGamesMgr* aGameMgr, 
+CXSavedGamesDlg::DoGamesPicker( MPFORMAL CXWordsAppView* aOwner, 
+                                CXWGamesMgr* aGameMgr, 
                                 const TGameName* aCurName, TGameName* result )
 {
-    CXSavedGamesDlg* me = new CXSavedGamesDlg( MPPARM(mpool)
+    CXSavedGamesDlg* me = new CXSavedGamesDlg( MPPARM(mpool) aOwner,
                                                aGameMgr, aCurName, result );
     User::LeaveIfNull( me );
 
