@@ -1260,8 +1260,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     XP_Bool handled;
 
     if ( message == WM_CREATE ) {
-        INITCOMMONCONTROLSEX initCtrls;
-        BOOL installed;
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
         SetWindowLong( hWnd, GWL_USERDATA, (long)globals );
 
