@@ -1420,14 +1420,6 @@ board_setShowColors( BoardCtxt* board, XP_Bool showColors )
     return invalCellsWithTiles( board, XP_FALSE );
 } /* board_setShowColors */
 
-#if 0
-XP_Bool
-board_getShowColors( BoardCtxt* board )
-{
-    return board->showColors;
-} /* board_getShowColors */
-#endif
-
 XP_Bool
 board_replaceTiles( BoardCtxt* board )
 {
@@ -1435,6 +1427,10 @@ board_replaceTiles( BoardCtxt* board )
     while ( replaceLastTile( board ) ) {
         result = XP_TRUE;
     } 
+
+    if ( result ) {
+        (void)setArrowVisible( board, XP_FALSE );
+    }
 
     return result;
 } /* board_replaceTiles */
