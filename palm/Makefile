@@ -60,6 +60,13 @@ MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
 
 MYDEFINES += -DBEYOND_IR
 
+# Turn on ability to handle 4-byte-node DAWG files.  These are of type
+# Xwr4, not Xwr3 like the old ones.  Currently this option means the
+# binary won't be able to read or even find the old dictionaries.
+# Don't release with this on until there's a UI decision and code on
+# how to help users transition.
+# MYDEFINES += -DNODE_CAN_4
+
 ifdef XWFEATURE_STANDALONE_ONLY
 MYDEFINES += -DXWFEATURE_STANDALONE_ONLY
 else
