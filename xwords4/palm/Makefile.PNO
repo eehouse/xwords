@@ -22,7 +22,10 @@ INCLUDE += \
 	-I$(PALMDIR)/Core/Hardware \
 	-I. -I../common 
 
-CCFLAGS = -O2 -g -Wall -D__PALMOS__
+# NOTE!!!! Added the -w flag to supress all warnings since arm-elf-gcc
+# does so much bitching about the Palm headers.  Need to fix that, or
+# use the arm-palmos-gcc, or something.  But for now, -w....
+CCFLAGS = -O2 -g -Wall -D__PALMOS__ -w
 ARMCCFS = $(CCFLAGS) -DNATIVE \
 	-nostartfiles -mshort-load-bytes -nodefaultlibs -ffixed-r9 -ffixed-r8 \
 	-mpic-register=r10 -msingle-pic-base -fPIC \
@@ -31,7 +34,9 @@ ARMCCFS = $(CCFLAGS) -DNATIVE \
 ARMLDFS = -Xlinker --script=./ldscript.arm -lgcc
 
 # ARM-specific
-ARM_DEFINES = $(MYDEFINES) -DXW_TARGET_PNO -D__LITTLE_ENDIAN -USHOW_PROGRESS
+ARM_DEFINES = $(MYDEFS) -DXW_TARGET_PNO -D__LITTLE_ENDIAN
+# turn show progress off for now
+ARM_DEFINES += -USHOW_PROGRESS
 
 include ../common/config.mk
 
