@@ -51,6 +51,22 @@ symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const TDesC16& desc )
     *loc = newStr;
 } /* symReplaceStr */
 
+void
+symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const XP_UCHAR* str )
+{
+    if ( *loc != NULL ) {
+        if ( 0 == XP_STRCMP( *loc, str ) ) {
+            return;             /* nothing to do */
+        }
+        /* need to free */
+        XP_FREE( mpool, *loc );
+    }
+
+    TInt len = XP_STRLEN( str ) + 1;
+    *loc = (XP_UCHAR*)XP_MALLOC( mpool, len );
+    XP_MEMCPY( (void*)*loc, (void*)str, len );
+} /* symReplaceStrIfDiff */
+
 extern "C" {
 
 int
@@ -83,7 +99,7 @@ void sym_debugf( char* aFmt, ... )
 
 #else 
 
-void p_ignore(...) {}
+void p_ignore( char* , ...) {}
 
 #endif
 
