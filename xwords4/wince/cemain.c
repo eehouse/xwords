@@ -667,7 +667,7 @@ ceHandleHintRequest( CEAppGlobals* globals )
     XP_Bool draw;
     XP_ASSERT( !!globals->game.board );
 
-    draw = board_requestHint( globals->game.board, &notDone );
+    draw = board_requestHint( globals->game.board, 0, &notDone );
     globals->hintPending = notDone;
     return draw;
 } /* ceHandleHintRequest */
