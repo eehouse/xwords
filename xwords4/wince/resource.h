@@ -162,6 +162,10 @@
 #define ID_COLORS_RES                   9999
 #define ID_BONUS_RES                    9998
 
+#define IDM_MAIN_COMMAND1				40001
+#define IDS_FILE                        40002
+#define IDS_GAME                        40003
+#define IDS_MOVE                        40004
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
