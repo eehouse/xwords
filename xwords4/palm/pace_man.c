@@ -612,7 +612,7 @@ EvtAddEventToQueue( const EventType* event )
 } /* EvtAddEventToQueue */
 
 void
-flipRect( RectangleType* rout, RectangleType* rin )
+flipRect( RectangleType* rout, const RectangleType* rin )
 {
     rout->topLeft.x = Byte_Swap16(rin->topLeft.x);
     rout->topLeft.y = Byte_Swap16(rin->topLeft.y);
@@ -739,7 +739,7 @@ params68KtoParamsArm( SysNotifyParamType* paramsArm,
     case sysNotifyVolumeUnmountedEvent:
     case sysNotifyVolumeMountedEvent:
         break;
-#ifdef FEATURE_HIGHRES                                 
+#ifdef FEATURE_SILK
     case sysNotifyDisplayChangeEvent:
         break;
 #endif
@@ -858,3 +858,101 @@ SysNotifyRegister( UInt16 cardNo, LocalID dbID, UInt32 notifyType,
     EMIT_NAME("SysNotifyRegister","'S','y','s','N','o','t','i','f','y','R','e','g','i','s','t','e','r'");
     return result;
 } /* SysNotifyRegister */
+
+unsigned long
+listDrawEntryPoint( const void* emulStateP, 
+                    void* userData68KP, 
+                    Call68KFuncType* call68KFuncP )
+{
+    unsigned long* data = (unsigned long*)userData68KP;
+    ListDrawDataFuncPtr listDrawProc
+        = (ListDrawDataFuncPtr)read_unaligned32( (unsigned long*)&data[0] );
+    PNOState* state = getStorageLoc();
+    unsigned long oldR10;
+    Int16 index;
+    RectanglePtr bounds;
+    char** itemsText;
+
+    /* set up stack here too? */
+    asm( "mov %0, r10" : "=r" (oldR10) );
+    asm( "mov r10, %0" : : "r" (state->gotTable) );
+
+    XP_ASSERT( emulStateP == state->emulStateP );
+    XP_ASSERT( call68KFuncP == state->call68KFuncP );
+
+    index = (Int16)read_unaligned32( &data[1] );
+    bounds = (RectanglePtr)read_unaligned32( &data[2] );
+    itemsText = (char**)read_unaligned32( &data[3] );
+    (*listDrawProc)( index, bounds, itemsText );
+
+    asm( "mov r10, %0" : : "r" (oldR10) );
+
+    return 0L;                  /* no result to return */
+} /* listDrawEntryPoint */
+
+static unsigned char*
+makeListDrawStub( ListDrawDataFuncPtr func )
+{
+/* called function looks like this:
+   void listDrawFunc(Int16 index, RectanglePtr bounds, char** itemsText)
+   {
+       unsigned long data[] = { func, index, 
+                                bounds, itemsText };
+       return (Err)PceNativeCall( listDrawEntryPoint, (void*)data );
+   }
+ */
+    unsigned char* stub;
+    unsigned char code_68k[] = {
+        /* 0:*/	0x4e, 0x56, 0xff, 0xf0,      	// linkw %fp,#-16
+        /* 4:*/	0x30, 0x2e, 0x00, 0x08,      	// movew %fp@(8),%d0
+        /* 8:*/	0x22, 0x2e, 0x00, 0x0a,      	// movel %fp@(10),%d1
+        /* c:*/	0x24, 0x2e, 0x00, 0x0e,      	// movel %fp@(14),%d2
+        /*10:*/	0x2d, 0x7c, 0x11, 0x22,0x33,0x44,// movel #287454020,%fp@(-16)
+        /*16:*/	0xff, 0xf0,
+        /*18:*/	0x30, 0x40,           	// moveaw %d0,%a0
+        /*1a:*/	0x2d, 0x48, 0xff, 0xf4,      	// movel %a0,%fp@(-12)
+        /*1e:*/	0x2d, 0x41, 0xff, 0xf8,      	// movel %d1,%fp@(-8)
+        /*22:*/	0x2d, 0x42, 0xff, 0xfc,      // movel %d2,%fp@(-4)
+        /*26:*/	0x48, 0x6e, 0xff, 0xf0,      	// pea %fp@(-16)
+        /*2a:*/	0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,	// movel #1432778632,%sp@-
+        /*30:*/	0x4e, 0x4f,           	// trap #15
+        /*32:*/	0xa4, 0x5a,           	// 0122132
+        /*34:*/	0x4e, 0x5e,           	// unlk %fp
+        /*36:*/	0x4e, 0x75           	// rts
+    };
+    stub = MemPtrNew( sizeof(code_68k) );
+    memcpy( stub, code_68k, sizeof(code_68k) );
+
+    write_unaligned32( &stub[0x12], 
+                        /* replace 0x11223344 */
+                       (unsigned long)func );
+    write_unaligned32( &stub[0x2c], 
+                       /* replace 0x55667788 */
+                       (unsigned long)listDrawEntryPoint );
+
+    return (unsigned char*)stub;
+} /* makeListDrawStub */
+
+/* from file List.h */
+void
+LstSetDrawFunction( ListType* listP, ListDrawDataFuncPtr func )
+{
+    FUNC_HEADER(LstSetDrawFunction);
+    /* var decls */
+    /* swapIns */
+    {
+        PNOState* sp = GET_CALLBACK_STATE();
+        unsigned char* stub = makeListDrawStub( func );
+        STACK_START(unsigned char, stack, 8);
+        /* pushes */
+        ADD_TO_STACK4(stack, listP, 0);
+        ADD_TO_STACK4(stack, stub, 4);
+        STACK_END(stack);
+        (*sp->call68KFuncP)( sp->emulStateP, 
+                             PceNativeTrapNo(sysTrapLstSetDrawFunction),
+                             stack, 8 );
+        /* swapOuts */
+    }
+    FUNC_TAIL(LstSetDrawFunction);
+    EMIT_NAME("LstSetDrawFunction","'L','s','t','S','e','t','D','r','a','w','F','u','n','c','t','i','o','n'");
+} /* LstSetDrawFunction */
