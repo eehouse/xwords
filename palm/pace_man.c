@@ -156,7 +156,8 @@ StrVPrintF( Char* s, const Char* formatStr, _Palm_va_list arg )
         case '%':
             isLong = useArg = 0;
             for( innerDone = 0; !innerDone; ) {
-                switch( *str++ ) {                
+                unsigned char nxt = *str++;
+                switch( nxt ) {                
                 case '%':
                     innerDone = 1;
                     break;
@@ -171,7 +172,11 @@ StrVPrintF( Char* s, const Char* formatStr, _Palm_va_list arg )
                     useArg = 1;
                     break;
                 default:
-                    crash();
+                    if ( nxt >= '0' && nxt <= '9' ) {
+                        /* accept %4x */
+                    } else {
+                        crash();
+                    }
                 }
             }
 
@@ -629,51 +634,53 @@ flipFieldAttr( FieldAttrType* fout, const FieldAttrType* fin )
 void
 flipEngSocketFromArm( unsigned char* sout, const ExgSocketType* sin )
 {
-	write_unaligned16( &sout[0],  Byte_Swap16(sin->libraryRef) ); // UInt16 libraryRef;
-	write_unaligned32( &sout[2],  Byte_Swap32(sin->socketRef) );  // UInt32 	socketRef;
-	write_unaligned32( &sout[6],  Byte_Swap32(sin->target) );     // UInt32 	target;
-	write_unaligned32( &sout[10], Byte_Swap32(sin->count) ); // UInt32	count;
-    write_unaligned32( &sout[14], Byte_Swap32(sin->length) );// UInt32	length;
-	write_unaligned32( &sout[18], Byte_Swap32(sin->time) );// UInt32	time;
-    write_unaligned32( &sout[22], Byte_Swap32(sin->appData) );	// UInt32	appData;
-    write_unaligned32( &sout[26], Byte_Swap32(sin->goToCreator) );	// UInt32 	goToCreator;
-	write_unaligned16( &sout[30], Byte_Swap16(sin->goToParams.dbCardNo) );	// UInt16	goToParams.dbCardNo;
-	write_unaligned32( &sout[32], Byte_Swap32(sin->goToParams.dbID) );	// LocalID	goToParams.dbID;
-	write_unaligned16( &sout[36], Byte_Swap16(sin->goToParams.recordNum) );	// UInt16 	goToParams.recordNum;
-	write_unaligned32( &sout[38], Byte_Swap32(sin->goToParams.uniqueID) );	// UInt32	goToParams.uniqueID;
-	write_unaligned32( &sout[42], Byte_Swap32(sin->goToParams.matchCustom) );	// UInt32	goToParams.matchCustom;
+	write_unaligned16( &sout[0],  sin->libraryRef ); // UInt16 libraryRef;
+	write_unaligned32( &sout[2],  sin->socketRef );  // UInt32 	socketRef;
+	write_unaligned32( &sout[6],  sin->target );     // UInt32 	target;
+	write_unaligned32( &sout[10], sin->count ); // UInt32	count;
+
+    write_unaligned32( &sout[14], sin->length );// UInt32	length;
+
+	write_unaligned32( &sout[18], sin->time );// UInt32	time;
+    write_unaligned32( &sout[22], sin->appData );	// UInt32	appData;
+    write_unaligned32( &sout[26], sin->goToCreator );	// UInt32 	goToCreator;
+	write_unaligned16( &sout[30], sin->goToParams.dbCardNo );	// UInt16	goToParams.dbCardNo;
+	write_unaligned32( &sout[32], sin->goToParams.dbID );	// LocalID	goToParams.dbID;
+	write_unaligned16( &sout[36], sin->goToParams.recordNum );	// UInt16 	goToParams.recordNum;
+	write_unaligned32( &sout[38], sin->goToParams.uniqueID );	// UInt32	goToParams.uniqueID;
+	write_unaligned32( &sout[42], sin->goToParams.matchCustom );	// UInt32	goToParams.matchCustom;
     /* bitfield.  All we can do is copy the whole thing, assuming it's 16
        bits, and pray that no arm code wants to to use it. */
-	write_unaligned16( &sout[46], Byte_Swap16(*(UInt16*)((unsigned char*)&sin->goToParams.matchCustom) 
-                       + sizeof(sin->goToParams.matchCustom)) );
-	write_unaligned32( &sout[48], Byte_Swap32((unsigned long)sin->description) );	// Char *description;
-	write_unaligned32( &sout[52], Byte_Swap32((unsigned long)sin->type) );	// Char *type;
-	write_unaligned32( &sout[56], Byte_Swap16((unsigned long)sin->name) );	// Char *name;
+	write_unaligned16( &sout[46], *(UInt16*)((unsigned char*)&sin->goToParams.matchCustom) 
+                       + sizeof(sin->goToParams.matchCustom) );
+	write_unaligned32( &sout[48], (unsigned long)sin->description );	// Char *description;
+	write_unaligned32( &sout[52], (unsigned long)sin->type );	// Char *type;
+	write_unaligned32( &sout[56], (unsigned long)sin->name );	// Char *name;
 } /* flipEngSocketFromArm */
 
 void
 flipEngSocketToArm( ExgSocketType* sout, const unsigned char* sin )
 {
-    sout->libraryRef = Byte_Swap16(read_unaligned16( &sin[0] ));
-	sout->socketRef = Byte_Swap32(read_unaligned32( &sout[2] ) );
-	sout->target = Byte_Swap32(read_unaligned32( &sout[6] ) );
-	sout->count = Byte_Swap32(read_unaligned32( &sout[10] ) );
-    sout->length = Byte_Swap32(read_unaligned32( &sout[14] ) );
-	sout->time = Byte_Swap32(read_unaligned32( &sout[18] ) );
-    sout->appData = Byte_Swap32(read_unaligned32( &sout[22] )  );
-    sout->goToCreator = Byte_Swap32(read_unaligned32( &sout[26] ) );
-	sout->goToParams.dbCardNo = Byte_Swap16( read_unaligned16( &sout[30] ) );
-	sout->goToParams.dbID = Byte_Swap32( read_unaligned32( &sout[32] ) );
-	sout->goToParams.recordNum = Byte_Swap16(read_unaligned16( &sout[36] ) );
-	sout->goToParams.uniqueID = Byte_Swap32(read_unaligned32( &sout[38]) );
-	sout->goToParams.matchCustom = Byte_Swap32( read_unaligned32( &sout[42] ) );
+    sout->libraryRef = read_unaligned16( &sin[0] );
+	sout->socketRef = read_unaligned32( &sin[2] );
+	sout->target = read_unaligned32( &sin[6] );
+	sout->count = read_unaligned32( &sin[10] );
+    sout->length = read_unaligned32( &sin[14] );
+	sout->time = read_unaligned32( &sin[18] );
+    sout->appData = read_unaligned32( &sin[22] );
+    sout->goToCreator = read_unaligned32( &sin[26] );
+	sout->goToParams.dbCardNo =  read_unaligned16( &sin[30] );
+	sout->goToParams.dbID =  read_unaligned32( &sin[32] );
+	sout->goToParams.recordNum = read_unaligned16( &sin[36] );
+	sout->goToParams.uniqueID = read_unaligned32( &sin[38] );
+	sout->goToParams.matchCustom =  read_unaligned32( &sin[42] );
     /* bitfield.  All we can do is copy the whole thing, assuming it's 16
        bits, and pray that no arm code wants to to use it. */
     *(UInt16*)(((unsigned char*)&sout->goToParams.matchCustom) 
-               + sizeof(sout->goToParams.matchCustom)) = Byte_Swap16(read_unaligned16( &sout[46] ));
-	sout->description = Byte_Swap32( read_unaligned32( &sout[48] ) );
-	sout->type = Byte_Swap32(read_unaligned32( &sout[52]) );
-	sout->name = Byte_Swap32(read_unaligned32( &sout[56]) );
+               + sizeof(sout->goToParams.matchCustom)) = read_unaligned16( &sin[46] );
+	sout->description =  (Char*)read_unaligned32( &sin[48] );
+	sout->type = (Char*)read_unaligned32( &sin[52] );
+	sout->name = (Char*)read_unaligned32( &sin[56] );
 } /* flipEngSocketToArm */
 
 void
@@ -688,7 +695,7 @@ void
 flipFileInfoToArm( FileInfoType* fout, const unsigned char* fin )
 {
     fout->attributes = read_unaligned32( &fin[0] );
-    fout->nameP = read_unaligned32( &fin[4] );
+    fout->nameP = (Char*)read_unaligned32( &fin[4] );
     fout->nameBufLen = read_unaligned16( &fin[8] );
 } /* flipFileInfo */
 
@@ -710,7 +717,7 @@ LstSetListChoices( ListType* listP, Char** itemsText, Int16 numItems )
         STACK_END(stack);
 
         for ( i = 0; i < numItems; ++i ) {
-            itemsText[i] = Byte_Swap32( itemsText[i] );
+            itemsText[i] = (Char*)Byte_Swap32( (unsigned long)itemsText[i] );
         }
 
         (*sp->call68KFuncP)( sp->emulStateP, 
@@ -761,7 +768,7 @@ notifyEntryPoint( const void* emulStateP,
 {
     unsigned long* data = (unsigned long*)userData68KP;
     SysNotifyProcPtr callback
-        = (SysNotifyProcPtr)read_unaligned32( (unsigned long*)&data[0] );
+        = (SysNotifyProcPtr)read_unaligned32( (unsigned char*)&data[0] );
     SysNotifyParamType armParams;
     PNOState* state = getStorageLoc();
     unsigned long oldR10;
@@ -775,7 +782,7 @@ notifyEntryPoint( const void* emulStateP,
     XP_ASSERT( emulStateP == state->emulStateP );
     XP_ASSERT( call68KFuncP == state->call68KFuncP );
 
-    params68K = (unsigned char*)read_unaligned32(&data[1]);
+    params68K = (unsigned char*)read_unaligned32((unsigned char*)&data[1]);
     params68KtoParamsArm( &armParams, params68K );
 
     result = (*callback)(&armParams);
@@ -866,7 +873,7 @@ listDrawEntryPoint( const void* emulStateP,
 {
     unsigned long* data = (unsigned long*)userData68KP;
     ListDrawDataFuncPtr listDrawProc
-        = (ListDrawDataFuncPtr)read_unaligned32( (unsigned long*)&data[0] );
+        = (ListDrawDataFuncPtr)read_unaligned32( (unsigned char*)&data[0] );
     PNOState* state = getStorageLoc();
     unsigned long oldR10;
     Int16 index;
@@ -877,13 +884,13 @@ listDrawEntryPoint( const void* emulStateP,
     asm( "mov %0, r10" : "=r" (oldR10) );
     asm( "mov r10, %0" : : "r" (state->gotTable) );
 
-    flipRect( &rectArm, (RectanglePtr)read_unaligned32( &data[2] ) );
+    flipRect( &rectArm, (RectanglePtr)read_unaligned32( (unsigned char*)&data[2] ) );
 
     XP_ASSERT( emulStateP == state->emulStateP );
     XP_ASSERT( call68KFuncP == state->call68KFuncP );
 
-    index = (Int16)read_unaligned32( &data[1] );
-    itemsText = (char**)read_unaligned32( &data[3] );
+    index = (Int16)read_unaligned32( (unsigned char*)&data[1] );
+    itemsText = (char**)read_unaligned32( (unsigned char*)&data[3] );
     (*listDrawProc)( index, &rectArm, itemsText );
 
     asm( "mov r10, %0" : : "r" (oldR10) );
