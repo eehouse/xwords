@@ -515,7 +515,7 @@ XP_UCHAR*
 ceLocateNthDict( MPFORMAL XP_U16 which )
 {
     wchar_t pathBuf[257];
-    XP_UCHAR* result;
+    XP_UCHAR* result = NULL;
 
     pathBuf[0] = 0;
 
