@@ -89,15 +89,16 @@ palmvalues.bin: values.bin palmspecials.bin
 palmheader%.bin: $(LANG)%_wordcount.bin $(LANG)%_flags.bin
 	rm -f $@
 	touch $@
-ifdef NEWDAWG
-	cat $(LANG)$*_flags.bin >> $@
-endif
 	cat $< >> $@
 	perl -e "print pack(\"C\",3)" >> $@	# first edge
 	perl -e "print pack(\"C\",1)" >> $@	# char table rec number
 	perl -e "print pack(\"C\",2)" >> $@	# valTable rec number
 	perl -e "print pack(\"CCC\",0)" >> $@	# reserved 3 bytes
+ifdef NEWDAWG
+	cat $(LANG)$*_flags.bin >> $@
+else
 	perl -e "print pack(\"CC\",0)" >> $@	# c code added two more...
+endif
 
 
 # This works, but leaves out the header info that the current version
