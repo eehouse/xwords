@@ -655,4 +655,30 @@ palm_logf( char* format, ... )
     logToMemo( buf );
 } /* palm_logf */
 
+#define ROWSIZE 8
+
+void
+palm_logmem( unsigned char* ptr, int nBytes )
+{
+    XP_U16 nRows = (nBytes + ROWSIZE-1) / ROWSIZE;
+    char buf[(ROWSIZE*3)+5];
+    char* bp;
+    unsigned char* end = ptr + nBytes;
+    XP_U16 i, j;
+
+    for ( i = 0; i < nRows; ++i ) {
+        bp = buf;
+        bp += StrPrintF( (Char*)buf, "%3x:", i * ROWSIZE );
+
+        for ( j = 0; j < ROWSIZE && ptr < end; ++j ) {
+            char sbuf[6];
+            StrPrintF( sbuf, "%x ", (XP_U16)*ptr++ );
+            StrCat( buf, &sbuf[2] );
+            bp += 3;
+        }
+
+        logToMemo( buf );
+    }
+}
+
 #endif /* DEBUG */

@@ -48,6 +48,7 @@ void palm_assert(Boolean b, int line, char* fileName );
 void palm_warnf( char* format, ... );
 void palm_logf( char* format, ... );
 XP_U16 palm_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
+void palm_logmem( unsigned char* ptr, int nBytes );
 XP_S16 palm_memcmp( XP_U8* p1, XP_U8* p2, XP_U16 nBytes );
 XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 
@@ -100,9 +101,11 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #ifdef DEBUG
 #define XP_LOGF palm_logf
 #define XP_WARNF palm_warnf
+#define XP_LOGMEM palm_logmem
 #else
 #define XP_WARNF if(0)p_ignore
 #define XP_LOGF if(0)p_ignore
+#define XP_LOGMEM if(0)p_ignore
 #endif
 
 /* Assumes big-endian, of course */
