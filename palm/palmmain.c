@@ -610,6 +610,7 @@ palmInitPrefs( PalmAppGlobals* globals )
 #ifdef SHOW_PROGRESS
     globals->gState.showProgress = true;
 #endif
+    globals->gState.lastNTiles = MAX_TRAY_TILES;
 } /* palmInitPrefs */
 
 static void
@@ -1358,6 +1359,31 @@ handleHideTray( PalmAppGlobals* globals )
     return draw;
 } /* handleHideTray */
 
+static XP_U16
+palmAskNTiles( PalmAppGlobals* globals, XP_U16 defaultChoice )
+{
+    FormPtr form, prevForm;
+    UInt16 buttonHit;
+    ListPtr list;
+
+    prevForm = FrmGetActiveForm();
+    form = FrmInitForm( XW_ASKNTILES_FORM_ID );
+    FrmSetActiveForm( form );
+    
+    list = getActiveObjectPtr( XW_ASKNTILES_LIST_ID );
+    XP_ASSERT( defaultChoice > 0 && defaultChoice <= MAX_TRAY_TILES );
+    LstSetSelection( list, defaultChoice-1 );
+
+    buttonHit = FrmDoDialog( form );
+
+    defaultChoice = LstGetSelection( list ) + 1;
+
+    FrmDeleteForm( form );
+    FrmSetActiveForm( prevForm );
+
+    return defaultChoice;
+} /* palmAskNTiles */
+
 static Boolean
 handleHintRequest( PalmAppGlobals* globals, XP_Bool askNTiles )
 {
@@ -1368,7 +1394,8 @@ handleHintRequest( PalmAppGlobals* globals, XP_Bool askNTiles )
     XP_ASSERT( !!globals->game.board );
 
     if ( askNTiles ) {
-        nTiles = 3;
+        nTiles = palmAskNTiles( globals, globals->gState.lastNTiles );
+        globals->gState.lastNTiles = nTiles;
     } else {
         nTiles = MAX_TRAY_TILES;
     }
