@@ -94,8 +94,8 @@ curses_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort )
 } /* curses_util_listenPortChange */
 
 static XP_S16 
-curses_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, XP_U16 playerNum,
-                          XP_UCHAR4* texts, XP_U16 nTiles )
+curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, XP_U16 playerNum,
+                          const XP_UCHAR4* texts, XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
@@ -865,6 +865,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     int sock;
     DictionaryCtxt* dict;
     CommsAddrRec addr;
+    XP_U16 gameID;
 
     memset( &globals, 0, sizeof(globals) );
 
@@ -895,9 +896,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     globals.draw = (CursesDrawCtx*)cursesDrawCtxtMake( globals.boardWin );
     
+    gameID = (XP_U16)util_getCurSeconds( globals.cGlobals.params->util );
     game_makeNewGame( MEMPOOL &globals.cGlobals.game, &params->gi,
                       params->util, (DrawCtx*)globals.draw,
-                      &globals.cp, linux_udp_send, &globals );
+                      gameID, &globals.cp, linux_udp_send, &globals );
 
     addr.conType = COMMS_CONN_IP;
     addr.u.ip.ipAddr = 0;       /* ??? */

@@ -249,6 +249,7 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
 	stream_destroy( stream );
 
     } else {			/* not reading from a saved file */
+        XP_U16 gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
         CommsAddrRec addr;
 
         if ( serverRole == SERVER_ISCLIENT ) {
@@ -258,9 +259,10 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
 
         params->gi.gameID = util_getCurSeconds(globals->cGlobals.params->util);
         XP_STATUSF( "grabbed gameID: %ld\n", params->gi.gameID );
+
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          &globals->cp, linux_udp_send, globals );
+                          gameID, &globals->cp, linux_udp_send, globals );
 
         addr.conType = COMMS_CONN_IP;
         addr.u.ip.ipAddr = 0;       /* ??? */
@@ -894,9 +896,9 @@ gtk_util_getVTManager(XW_UtilCtxt* uc)
 } /* linux_util_getVTManager */
 
 static XP_S16
-gtk_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi,
+gtk_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
                        XP_U16 playerNum,
-                       XP_UCHAR4* texts, XP_U16 nTiles )
+                       const XP_UCHAR4* texts, XP_U16 nTiles )
 {
     XP_S16 chosen;
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
