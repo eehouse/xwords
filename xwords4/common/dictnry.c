@@ -66,7 +66,10 @@ dict_getBlankTile( DictionaryCtxt* dict )
 XP_U16
 dict_getTileValue( DictionaryCtxt* dict, Tile tile )
 {
-    tile &= TILE_VALUE_MASK;
+    if ( (tile & TILE_VALUE_MASK) != tile ) {
+        XP_ASSERT( tile == 32 && 
+                   tile == dict_getBlankTile( dict ) );
+    }
     XP_ASSERT( tile < dict->nFaces );
     tile *= 2;
     return dict->countsAndValues[tile+1];    
