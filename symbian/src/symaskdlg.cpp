@@ -26,13 +26,13 @@
 #include "xwords.rsg"
 
 CXWAskDlg::CXWAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream ) :
-    iStream(aStream), iKillStream(aKillStream), iMessage(NULL)
+    iStream(aStream), iMessage(NULL), iKillStream(aKillStream)
 {
     MPASSIGN( this->mpool, mpool );
 }
 
 CXWAskDlg::CXWAskDlg( MPFORMAL TBuf16<128>* aMessage)
-    : iMessage(aMessage), iStream(NULL)
+    : iStream(NULL), iMessage(aMessage)
 {
     MPASSIGN( this->mpool, mpool );
 }

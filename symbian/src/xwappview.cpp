@@ -543,18 +543,19 @@ CXWordsAppView::DeleteGame()
 void
 CXWordsAppView::PositionBoard() 
 {
-    TRect rect = Rect();
-    TInt boardWidth = 15 * scaleBoardH;
-    const TInt scoreTop = 25;
-    const TInt scoreHt = 120;
+    const TRect rect = Rect();
+    const XP_U16 boardWidth = 15 * scaleBoardH;
+    const XP_U16 scoreTop = 25;
+    const XP_U16 scoreHt = 120;
 
     board_setPos( iGame.board, 2, 2, XP_FALSE );
     board_setScale( iGame.board, scaleBoardH, scaleBoardV );
 
-    TInt scoreLeft = 2 + boardWidth + 2 + 3; /* 2 for border, 3 for gap */
-    TInt scoreRight = rect.iBr.iX - 2 - 1; /* 2 for border */
+    XP_U16 scoreLeft = 2 + boardWidth + 2 + 3; /* 2 for border, 3 for gap */
+    XP_U16 scoreRight = SC(XP_U16, rect.iBr.iX - 2 - 1); /* 2 for border */
     board_setScoreboardLoc( iGame.board, scoreLeft, scoreTop,
-                            scoreRight - scoreLeft - 1, scoreHt, XP_FALSE );
+                            SC( XP_U16, scoreRight - scoreLeft - 1),
+                            scoreHt, XP_FALSE );
     board_setYOffset( iGame.board, 0 );
 
     board_setTrayLoc( iGame.board, 

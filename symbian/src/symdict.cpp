@@ -79,7 +79,7 @@ symCountSpecials( SymDictCtxt* ctxt )
 } /* symCountSpecials */
 
 static XP_Bitmap*
-symMakeBitmap( SymDictCtxt* ctxt, RFile* file )
+symMakeBitmap( SymDictCtxt* /*ctxt*/, RFile* file )
 {
     XP_U8 nCols = readXP_U8( file );
 //     CEBitmapInfo* bitmap = (CEBitmapInfo*)NULL;
@@ -253,8 +253,8 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
         }
 
         ctxt->super.is_4_byte = ctxt->super.nodeSize == 4;
-
-        for ( TInt i = 0; i < numFaces; ++i ) {
+        TInt i;
+        for ( i = 0; i < numFaces; ++i ) {
             ctxt->super.faces16[i] = readXP_U16( &file );
         }
 #else
@@ -281,7 +281,7 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
         file.Seek( ESeekCurrent, pos );
         dawgSize -= pos;
 
-        if ( dawgSize > sizeof(XP_U32) ) {
+        if ( dawgSize > SC(TInt, sizeof(XP_U32)) ) {
             XP_U32 offset = readXP_U32( &file );
             dawgSize -= sizeof(XP_U32);
 
