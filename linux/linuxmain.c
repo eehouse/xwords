@@ -478,6 +478,15 @@ linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
     }
 } /* linux_util_getUserString */
 
+#ifdef BEYOND_IR
+static void
+linux_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+                       const CommsAddrRec* newAddr )
+{
+    XP_LOGF( "linux_util_addrChange called; what to do?" );
+}
+#endif
+
 static unsigned int
 defaultRandomSeed()
 {
@@ -734,6 +743,9 @@ main( int argc, char** argv )
         linux_util_getCurSeconds;
     mainParams.util->vtable->m_util_getUserString = 
         linux_util_getUserString;
+#ifdef BEYOND_IR
+    mainParams.util->vtable->m_util_addrChange = linux_util_addrChange;
+#endif
 
     srandom( seed );	/* init linux random number generator */
     XP_LOGF( "seeded srandom with %d", seed );
