@@ -14,6 +14,7 @@
 # EvtAddEventToQueue
 # LstSetListChoices
 # SysNotifyRegister
+# LstSetDrawFunction
 # 
 #################################################################
 CtlEnabled
@@ -115,7 +116,6 @@ LstGetSelection
 LstGetSelectionText
 LstMakeItemVisible
 LstPopupList
-LstSetDrawFunction
 LstSetHeight
 LstSetSelection
 MemChunkFree
@@ -202,3 +202,6 @@ VFSFileDelete
 DmSetDatabaseInfo
 DmGetLastErr
 WinRestoreBits
+WinSetCoordinateSystem
+WinGetDisplayExtent
+WinScreenGetAttribute
