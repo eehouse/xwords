@@ -70,7 +70,7 @@ struct DictionaryCtxt {
     XP_U8 nFaces;
 #ifdef NODE_CAN_4
     XP_U8 nodeSize;
-    XP_U8 charSize;
+    XP_Bool is_4_byte;
 #endif
 
     XP_S8 blankTile;		/* negative means there's no known blank */
