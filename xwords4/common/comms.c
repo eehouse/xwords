@@ -43,7 +43,7 @@ typedef struct MsgQueueElem {
     MsgID msgID;
 } MsgQueueElem;
 
-typedef XP_U16 HostID;
+typedef XP_U16 XWHostID;
 
 typedef struct AddressRecord {
     struct AddressRecord* next;
@@ -55,7 +55,7 @@ typedef struct AddressRecord {
     MsgID nextMsgID;		/* on a per-channel basis */
     MsgID lastMsgReceived;	/* on a per-channel basis */
     XP_PlayerAddr channelNo;
-    HostID remotesID;
+    XWHostID remotesID;
 } AddressRecord;
 
 #define ADDRESSRECORD_SIZE_68K 20
@@ -66,7 +66,7 @@ struct CommsCtxt {
     XP_U32 connID;		        /* 0 means ignore; otherwise must match */
     XP_U16 nextChannelNo;
     AddressRecord* recs;        /* return addresses */
-    HostID localID;             /* allows relay to match host with socket */
+    XWHostID localID;             /* allows relay to match host with socket */
 
     TransportSend sendproc;
     void* sendClosure;
@@ -92,7 +92,7 @@ struct CommsCtxt {
  ****************************************************************************/
 static AddressRecord* rememberChannelAddress( CommsCtxt* comms, 
                                               XP_PlayerAddr channelNo, 
-                                              HostID hostID,
+                                              XWHostID hostID,
                                               CommsAddrRec* addr );
 static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
                                  CommsAddrRec** addr );
@@ -109,7 +109,7 @@ CommsCtxt*
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
             TransportSend sendproc, void* closure )
 {
-    HostID localID;
+    XWHostID localID;
     CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
 
@@ -205,7 +205,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     XP_U16 nAddrRecs;
     AddressRecord** prevsAddrNext;
     MsgQueueElem** prevsQueueNext;
-    short i, len;
+    short i;
 
     isServer = stream_getU8( stream );
     comms = comms_make( MPPARM(mpool) util, isServer, sendproc, closure );
@@ -274,16 +274,19 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     }
 
 #ifdef BEYOND_IR
-    comms->addr.conType = stream_getBits( stream, 3 );
-    comms->addr.u.ip.ipAddr = stream_getU32( stream );
-    comms->addr.u.ip.port = stream_getU16( stream );
-    comms->listenPort = stream_getU16( stream );
-    len = stream_getU8( stream );
-    stream_getBytes( stream, comms->addr.u.ip.hostName, len );
-    comms->addr.u.ip.hostName[len] = '\0';
+    {
+        XP_U16 len;
+        comms->addr.conType = stream_getBits( stream, 3 );
+        comms->addr.u.ip.ipAddr = stream_getU32( stream );
+        comms->addr.u.ip.port = stream_getU16( stream );
+        comms->listenPort = stream_getU16( stream );
+        len = stream_getU8( stream );
+        stream_getBytes( stream, comms->addr.u.ip.hostName, len );
+        comms->addr.u.ip.hostName[len] = '\0';
 
-    /* tell client about the port */
-    util_listenPortChange( util, comms->listenPort );
+        /* tell client about the port */
+        util_listenPortChange( util, comms->listenPort );
+    }
 #endif
 
 #ifdef DEBUG
@@ -295,7 +298,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 void
 comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    XP_U16 nAddrRecs, len;
+    XP_U16 nAddrRecs;
     AddressRecord* rec;
     MsgQueueElem* msg;
 
@@ -338,13 +341,16 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
     }
 
 #ifdef BEYOND_IR
-    stream_putBits( stream, 3, comms->addr.conType );
-    stream_putU32( stream, comms->addr.u.ip.ipAddr );
-    stream_putU16( stream, comms->addr.u.ip.port );
-    stream_putU16( stream, comms->listenPort );
-    len = XP_STRLEN( comms->addr.u.ip.hostName );
-    stream_putU8( stream, len );
-    stream_putBytes( stream, comms->addr.u.ip.hostName, len );
+    {
+        XP_U16 len;
+        stream_putBits( stream, 3, comms->addr.conType );
+        stream_putU32( stream, comms->addr.u.ip.ipAddr );
+        stream_putU16( stream, comms->addr.u.ip.port );
+        stream_putU16( stream, comms->listenPort );
+        len = XP_STRLEN( comms->addr.u.ip.hostName );
+        stream_putU8( stream, len );
+        stream_putBytes( stream, comms->addr.u.ip.hostName, len );
+    }
 #endif
 
 #ifdef DEBUG
@@ -386,7 +392,9 @@ comms_send( CommsCtxt* comms, CommsConnType conType, XWStreamCtxt* stream )
     AddressRecord* rec = getRecordFor( comms, channelNo );
     MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
     MsgID lastMsgRcd = (!!rec)? rec->lastMsgReceived : 0;
-    HostID remotesID = (!!rec)? rec->remotesID : 0;
+#ifdef BEYOND_IR 
+    XWHostID remotesID = (!!rec)? rec->remotesID : 0;
+#endif
     MsgQueueElem* newMsgElem;
     XWStreamCtxt* msgStream;
 
@@ -605,8 +613,11 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     MsgID lastMsgRcd;
     XP_Bool validMessage = XP_TRUE;
     AddressRecord* recs = (AddressRecord*)NULL;
+    XWHostID senderID = 0;
+#ifdef BEYOND_IR 
     XP_UCHAR* cookie;
-    HostID senderID, hostID;
+    XWHostID hostID;
+#endif
 
 #ifdef BEYOND_IR 
     cookie = stringFromStream( MPPARM(comms->mpool) stream );
@@ -722,7 +733,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 
 static AddressRecord*
 rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
-                        HostID hostID, CommsAddrRec* addr )
+                        XWHostID hostID, CommsAddrRec* addr )
 {
     AddressRecord* recs = NULL;
     recs = getRecordFor( comms, channelNo );
