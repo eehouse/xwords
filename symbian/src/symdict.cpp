@@ -48,7 +48,6 @@ readXP_U8( RFile* file )
 static XP_U16
 readXP_U16( RFile* file )
 {
-    XP_U16 result;
     TBuf8<2> buf;
     TInt err = file->Read( buf, 2 );
     XP_ASSERT( err == KErrNone );
@@ -182,6 +181,7 @@ readFileToBuf( XP_UCHAR* dictBuf, const RFile* file )
     for ( ; ; ) {
         TBuf8<1024> buf;
         TInt err = file->Read( buf, buf.MaxLength() );
+        XP_ASSERT( err == KErrNone );
         TInt nRead = buf.Size();
         if ( nRead <= 0 ) {
             break;
@@ -208,13 +208,11 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
 #endif
         TFileName nameD;            /* need the full path to name in this */
         nameD.Copy( dir );
-        TBuf8<32> dname8(aDictName);
         TBuf16<32> dname16;
-        dname16.Copy( dname8 );
+        dname16.Copy( TPtrC8(aDictName) );
         nameD.Append( dname16 );
         nameD.Append( _L(".xwd") );
         SymDictCtxt* ctxt = NULL;
-        TInt err;
 
         RFs fileSession;
         User::LeaveIfError(fileSession.Connect());
@@ -282,38 +280,34 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
         TInt pos = 0;
         file.Seek( ESeekCurrent, pos );
         dawgSize -= pos;
-        XP_U32 offset;
+
         if ( dawgSize > sizeof(XP_U32) ) {
-            offset = readXP_U32( &file );
+            XP_U32 offset = readXP_U32( &file );
             dawgSize -= sizeof(XP_U32);
 
             XP_ASSERT( dawgSize % ctxt->super.nodeSize == 0 );
 # ifdef DEBUG
             ctxt->super.numEdges = dawgSize / ctxt->super.nodeSize;
 # endif
-        }
 
-        if ( dawgSize > 0 ) {
-            XP_DEBUGF( "setting topEdge; offset = %ld", offset );
+            if ( dawgSize > 0 ) {
+                XP_DEBUGF( "setting topEdge; offset = %ld", offset );
 
-            XP_U8* dictBuf = (XP_U8*)XP_MALLOC( mpool, dawgSize );
-            User::LeaveIfNull( dictBuf ); // will leak ctxt (PENDING...)
+                XP_U8* dictBuf = (XP_U8*)XP_MALLOC( mpool, dawgSize );
+                User::LeaveIfNull( dictBuf ); // will leak ctxt (PENDING...)
 
-            readFileToBuf( dictBuf, &file );
+                readFileToBuf( dictBuf, &file );
 
-            ctxt->super.base = (array_edge*)dictBuf;
+                ctxt->super.base = (array_edge*)dictBuf;
 
-            ctxt->super.topEdge = ctxt->super.base 
-                + (offset * ctxt->super.nodeSize);
-#ifdef NODE_CAN_4
-            ctxt->super.topEdge = ctxt->super.base 
-                + (offset * ctxt->super.nodeSize);
-#else
-            ctxt->super.topEdge = ctxt->super.base + (offset * 3);
-#endif
-        } else {
-            ctxt->super.topEdge = (array_edge*)NULL;
-            ctxt->super.base = (array_edge*)NULL;
+                ctxt->super.topEdge = ctxt->super.base 
+                    + (offset * ctxt->super.nodeSize);
+                ctxt->super.topEdge = ctxt->super.base 
+                    + (offset * ctxt->super.nodeSize);
+            } else {
+                ctxt->super.topEdge = (array_edge*)NULL;
+                ctxt->super.base = (array_edge*)NULL;
+            }
         }
 
         CleanupStack::PopAndDestroy( &file ); // file
