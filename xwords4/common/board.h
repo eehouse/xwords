@@ -104,7 +104,7 @@ XP_Bool board_getShowColors( BoardCtxt* board );
 XP_Bool board_setShowColors( BoardCtxt* board, XP_Bool showColors );
 XP_Bool board_replaceTiles( BoardCtxt* board );
 
-XP_Bool board_requestHint( BoardCtxt* board, XP_Bool* workRemainsP );
+XP_Bool board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP );
 
 void board_setScale( BoardCtxt* board, XP_U16 hScale, XP_U16 vScale );
 void board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale );

@@ -1376,7 +1376,7 @@ preflight( BoardCtxt* board )
  * any redrawing to be done.
  */
 XP_Bool
-board_requestHint( BoardCtxt* board, XP_Bool* workRemainsP )
+board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP )
 {
     MoveInfo newMove;
     XP_Bool result = XP_FALSE;
@@ -1422,7 +1422,8 @@ board_requestHint( BoardCtxt* board, XP_Bool* workRemainsP )
 
             searchComplete = engine_findMove(engine, model, 
                                              model_getDictionary(model),
-                                             tiles, nTiles, NO_SCORE_LIMIT, 
+                                             tiles, nTiles, nTilesToUse, 
+                                             NO_SCORE_LIMIT, 
                                              &canMove, &newMove );
             board_popTimerSave( board );
 
