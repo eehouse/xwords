@@ -2109,8 +2109,8 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
         XP_ASSERT( moveNum == lastUndone );
 
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */
-            XP_U16 sourceClientIndex = getIndexForDevice( 
-                                                         server, stream_getAddress( stream ) );
+            XP_U16 sourceClientIndex = 
+                getIndexForDevice( server, stream_getAddress( stream ) );
 	
             sendUndoToClientsExcept( server, sourceClientIndex, nUndone, 
                                      lastUndone );
