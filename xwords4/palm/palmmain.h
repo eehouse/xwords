@@ -119,7 +119,6 @@ typedef struct XWords4PreferenceType {
     Boolean showColors;
 #ifdef DEBUG
     Boolean showDebugstrs;
-    Boolean windowAvail;
     Boolean logToMemo;
     Boolean reserved1;
     Boolean reserved2;
