@@ -458,7 +458,7 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
     MsgQueueElem* newMsgElem;
     XWStreamCtxt* msgStream;
 
-    XP_DEBUGF( "assigning msgID of %ld on chnl %d", msgID, channelNo );
+    XP_DEBUGF( "assigning msgID of " XP_LD " on chnl %d", msgID, channelNo );
 
 #ifdef DEBUG
     if ( !!rec ) {
@@ -530,7 +530,7 @@ printQueue( CommsCtxt* comms )
 
     for ( elem = comms->msgQueueHead, i = 0; i < comms->queueLen; 
           elem = elem->next, ++i ) {
-        XP_STATUSF( "\t%d: channel: %d; msgID: %ld",
+        XP_STATUSF( "\t%d: channel: %d; msgID: " XP_LD,
                     i+1, elem->channelNo, elem->msgID );
     }
 }
@@ -547,8 +547,8 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
     MsgQueueElem* elem;
     MsgQueueElem* prev;
 
-    XP_STATUSF( "looking to remove msgs prior or equal to %ld for channel %d "
-		"(queue len now %d)",
+    XP_STATUSF( "looking to remove msgs prior or equal to " XP_LD 
+                " for channel %d (queue len now %d)",
 		msgID, channelNo, comms->queueLen );
 
     for ( prev = (MsgQueueElem*)NULL, elem = comms->msgQueueHead; 
@@ -636,7 +636,7 @@ comms_resendAll( CommsCtxt* comms )
         if ( result == 0 && oneResult != 0 ) {
             result = oneResult;
         }
-        XP_STATUSF( "resend: msgid=%ld; rslt=%d", msg->msgID, oneResult );
+        XP_STATUSF( "resend: msgid=" XP_LD "; rslt=%d", msg->msgID, oneResult );
     }
 
     return result;
@@ -734,7 +734,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
         msgID = stream_getU32( stream );
         lastMsgRcd = stream_getU32( stream );
 
-        XP_DEBUGF( "rcd: msg %ld on chnl %d", msgID, channelNo );
+        XP_DEBUGF( "rcd: msg " XP_LD " on chnl %d", msgID, channelNo );
 
         removeFromQueue( comms, channelNo, lastMsgRcd );
 
@@ -748,7 +748,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             /* messageID for an incomming message should be one greater than
              * the id most recently used for that channel. */
             if ( !!recs && (msgID != recs->lastMsgReceived + 1)  ) {
-                XP_DEBUGF( "unex msgID %ld (expt %ld)",
+                XP_DEBUGF( "unex msgID " XP_LD " (expt " XP_LD ")",
                            msgID, recs->lastMsgReceived+1 );
                 validMessage = XP_FALSE;
             }
@@ -763,14 +763,14 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
         if ( validMessage ) {
             XP_LOGF( "remembering senderID %x for channel %d",
                      senderID, channelNo );
-            recs = rememberChannelAddress( comms, channelNo, senderID, addr );
 
+            recs = rememberChannelAddress( comms, channelNo, senderID, addr );
             stream_setAddress( stream, channelNo );
 
             if ( !!recs ) {
                 recs->lastMsgReceived = msgID;
             }
-            XP_STATUSF( "set channel %d's lastMsgReceived to %ld",
+            XP_STATUSF( "set channel %d's lastMsgReceived to " XP_LD,
                         channelNo, msgID );
         }
     } else {
@@ -804,7 +804,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putBytes( stream, buf, (XP_U16)XP_STRLEN( buf ) );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last msg sent: %ld\n", 
+                     (XP_UCHAR*)"Last msg sent: " XP_LD "\n", 
                      rec->nextMsgID );
         stream_putBytes( stream, buf, (XP_U16)XP_STRLEN( buf ) );
 
