@@ -25,9 +25,6 @@
 
 #define NUM_COLS 4
 
-/* forward decls */
-static XP_UCHAR* bname( XP_UCHAR* in );
-
 static XP_U16
 ceCountLocalIn( HWND hDlg, XP_U16 nPlayers )
 {
@@ -514,15 +511,3 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return FALSE;
 } /* GameInfo */
-
-static XP_UCHAR*
-bname( XP_UCHAR* in )
-{
-    XP_U16 len = (XP_U16)XP_STRLEN(in);
-    XP_UCHAR* out = in + len - 1;
-
-    while ( *out != '\\' && out >= in ) {
-        --out;
-    }
-    return out + 1;
-} /* bname */
