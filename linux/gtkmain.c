@@ -1141,14 +1141,15 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     gtkUserError( globals, message );
 } /* gtk_util_userError */
 
-static XP_U16
+static XP_Bool
 gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
-    XP_U16 result;
+    XP_Bool result;
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     char* question;
     char* answers[3];
     gint numAnswers = 0;
+    XP_U16 okIndex = 1;
     XP_Bool freeMe = XP_FALSE;
 
     switch( id ) {
@@ -1173,15 +1174,16 @@ gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         question = strFromStream( stream );
         freeMe = XP_TRUE;
         answers[numAnswers++] = "Ok";
+        okIndex = 0;
         break;
 
     default:
         XP_ASSERT( 0 );
-        return 0;
+        return XP_FALSE;
     }
 
     result = gtkask( globals, question, numAnswers, 
-                     answers[0], answers[1], answers[2] );
+                     answers[0], answers[1], answers[2] ) == okIndex;
 
     if ( freeMe > 0 ) {
         free( question );
