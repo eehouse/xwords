@@ -732,15 +732,14 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     /* here's where we want to behave differently if there's saved state.
        But that's a long ways off. */
     prevStateExists = ceLoadPrefs( globals );
-    if ( prevStateExists && ceLoadSavedGame( globals ) ) {
-        oldGameLoaded = XP_TRUE;
-        /* nothing to do? */
-    } else {
+    if ( !prevStateExists ) {
         ceInitPrefs( globals );
-        oldGameLoaded = XP_FALSE;
     }
+    /* must load prefs before creating draw ctxt */
     globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
                                       hWnd, globals );
+
+    oldGameLoaded = prevStateExists && ceLoadSavedGame( globals );
 
     if ( !oldGameLoaded ) {
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
