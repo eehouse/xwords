@@ -20,7 +20,12 @@
  */
 
 #include <eikenv.h>
-#include <ckninfo.h>
+#if defined SERIES_60
+# include <w32std.h>
+# include <eikinfo.h>
+#elif defined SERIES_80
+# include <ckninfo.h>
+#endif
 
 #include "xwords.pan"
 #include "xwappui.h"

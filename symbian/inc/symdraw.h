@@ -27,6 +27,11 @@ extern "C" {
 
 } /* extern "C" */
 
+#if defined SERIES_60
+# include <coemain.h>
+# include <aknenv.h>
+#endif
+
 #define scaleBoardV 13
 #define scaleBoardH 15
 #define scaleTrayV 37
@@ -34,6 +39,7 @@ extern "C" {
 
 #define CUR_PREFS_VERS 0x0405
 
-DrawCtx* sym_drawctxt_make( MPFORMAL CWindowGc* gc, CCoeEnv* aCoeEnv );
+DrawCtx* sym_drawctxt_make( MPFORMAL CWindowGc* gc, CCoeEnv* aCoeEnv, 
+                            CEikonEnv* aEikonEnv );
 
 #endif

@@ -51,6 +51,9 @@ enum TXWordsIds {
     ,XW_TOGGLEVALS_COMMAND
 
     ,EAskContents               /* edit control in generic ask dlg */
+
+    ,EPage1
+    ,EPage2
 };
 
 #endif // __XWORDS_HRH__

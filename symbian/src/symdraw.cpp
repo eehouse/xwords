@@ -26,8 +26,16 @@ extern "C" {
 
 } // extern "C"
 
-#include <cknenv.h>
-#include <coemain.h>
+#if defined SERIES_60
+# include <w32std.h>
+# include <eikenv.h>
+#elif defined SERIES_80
+# include <cknenv.h>
+# include <coemain.h>
+#else
+# error define a series platform!!!!
+#endif
+
 #include <stdio.h>
 
 #include "symdraw.h"
@@ -54,18 +62,28 @@ enum {
     COLOR_NCOLORS		/* 12 */
 };
 
+#ifdef SERIES_60
+# define CONST_60 const
+#else
+# define CONST_60
+#endif
+
 typedef struct SymDrawCtxt {
+    /* Must be first */
     DrawCtxVTable* vtable;
+
     CWindowGc* iGC;
+
+    CEikonEnv* iiEikonEnv;      /* iEikonEnv is a macro in Symbian headers!!! */
     CCoeEnv* iCoeEnv;
 
     CFbsBitmap* rightArrow;
     CFbsBitmap* downArrow;
 
-    CFont* iTileFaceFont;
-    CFont* iTileValueFont;
-    CFont* iBoardFont;
-    CFont* iScoreFont;
+    CONST_60 CFont* iTileFaceFont;
+    CONST_60 CFont* iTileValueFont;
+    CONST_60 CFont* iBoardFont;
+    CONST_60 CFont* iScoreFont;
 
     XP_U16 iTrayOwner;
     XP_Bool iTrayHasFocus;
@@ -279,7 +297,7 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
     textToDesc( &tbuf, buf );
 
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
-    CFont* font = sctx->iScoreFont;
+    CONST_60 CFont* font = sctx->iScoreFont;
     sctx->iGC->UseFont( font );
     TInt descent = font->DescentInPixels();
 
@@ -363,7 +381,7 @@ textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect, TBool highlight )
     }
     sctx->iGC->SetPenStyle( CGraphicsContext::ESolidPen );
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
-    CFont* font = sctx->iBoardFont;
+    CONST_60 CFont* font = sctx->iBoardFont;
 
     TBuf16<64> tbuf;
     textToDesc( &tbuf, text );
@@ -474,7 +492,7 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         XP_UCHAR buf[4];
         sprintf( (char*)buf, (const char*)"%d", (int)val );
 
-        CFont* font = sctx->iTileValueFont;
+        CONST_60 CFont* font = sctx->iTileValueFont;
         sctx->iGC->UseFont( font );
 
         TBuf8<5> tmpDesc((unsigned char*)buf);
@@ -608,6 +626,7 @@ sym_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect,
 static void
 figureFonts( SymDrawCtxt* sctx )
 {
+#if defined SERIES_80
     XP_LOGF( "figureFonts" );
     TBuf<128> fontName;
     CWsScreenDevice* sdev = sctx->iCoeEnv->ScreenDevice();
@@ -672,11 +691,21 @@ figureFonts( SymDrawCtxt* sctx )
         sctx->iScoreFont = sctx->iTileFaceFont;
     }
 
+#elif defined SERIES_60
+    CCoeEnv* ce = sctx->iCoeEnv;
+    sctx->iTileFaceFont = ce->NormalFont();
+    sctx->iTileValueFont = sctx->iiEikonEnv->DenseFont();
+    sctx->iBoardFont = sctx->iiEikonEnv->LegendFont();
+    sctx->iScoreFont = sctx->iiEikonEnv->TitleFont();
+#endif
+
     XP_LOGF( "figureFonts done" );
 } // figureFonts
 
+
 DrawCtx* 
-sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv )
+sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv, 
+                   CEikonEnv* aEikonEnv )
 {
     XP_LOGF( "in sym_drawctxt_make" );
     SymDrawCtxt* sctx = (SymDrawCtxt*)XP_MALLOC( mpool, sizeof( *sctx ) );
@@ -688,6 +717,7 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv )
         MPASSIGN( sctx->mpool, mpool );
         sctx->iGC = aGC;
         sctx->iCoeEnv = aCoeEnv;
+        sctx->iiEikonEnv = aEikonEnv;
 
         sctx->vtable = (DrawCtxVTable*)XP_MALLOC( mpool, sizeof(*sctx->vtable) );
         if ( sctx->vtable != NULL ) {

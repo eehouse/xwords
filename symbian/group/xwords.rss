@@ -225,7 +225,9 @@ RESOURCE TBUF64 r_confirm_end_game {
 RESOURCE DIALOG r_xwords_confirmation_query
 {
     title = "Query";
+#if defined SERIES_80
     buttons = R_EIK_BUTTONS_NO_YES;
+#endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     items =
     {
@@ -241,7 +243,9 @@ RESOURCE DIALOG r_xwords_confirmation_query
 RESOURCE DIALOG r_xwords_info_only
 {
     title = "Info";
+#if defined SERIES_80
     buttons = R_EIK_BUTTONS_CONTINUE;
+#endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     items =
     {
@@ -308,7 +312,9 @@ RESOURCE ARRAY r_xwords_newgame_pages
 RESOURCE DIALOG r_xwords_newgame_dlg
 {
     title = "Game info";
+#if defined SERIES_80
     buttons = R_EIK_BUTTONS_CANCEL_OK;
+#endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     pages = r_xwords_newgame_pages;
 }
