@@ -64,7 +64,8 @@ ARCH = series$(SERIES)
 SYMARCH = SERIES_$(SERIES)
 
 SRCDIR = ../src
-INCDIR = -I $(EPOC)/include -I $(EPOC)/include/libc -I../inc -I../../common
+INCDIR = -I. -I $(EPOC)/include -I $(EPOC)/include/libc -I../inc \
+	$(subst ../,../../,$(COMMON_INCS))
 LCLSRC = \
 	$(SRCDIR)/xwmain.cpp \
 	$(SRCDIR)/xwapp.cpp \
@@ -135,13 +136,11 @@ CFLAGS += $(OPT) -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
 CPFLAGS = $(CFLAGS) -DCPLUS
 
 # Following is used for the resource file
-CPPFLAGS += -D_EPOC32_6 -DCPLUS -I../inc -D$(SYMARCH)
+CPPFLAGS += -D_EPOC32_6 -DCPLUS -I../inc -D$(SYMARCH) \
+	$(subst ../,../../,$(COMMON_INCS))
 
 all: _sanity $(PKGFILES) $(NAME).sis
 	mv $(NAME).sis $(SISNAME)
-ifdef XW_UPLOAD_DIR
-	cp $(SISNAME) $$XW_UPLOAD_DIR
-endif
 ifdef XW_UPLOAD_CMD
 	$(XW_UPLOAD_CMD) $(SISNAME)
 endif
