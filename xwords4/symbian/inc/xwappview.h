@@ -112,6 +112,10 @@ class CXWordsAppView : public CCoeControl
     TBool FindAllDicts();
     void UserErrorFromID( TInt aResource );
     TBool ReadCurrentGame() { return EFalse; } /* later.... */
+    TBool AskSaveGame() { return EFalse; }
+    void SaveCurrentGame() {}
+    void NotImpl();
+
 
     static void        sym_util_requestTime( XW_UtilCtxt* uc );
     static VTableMgr*  sym_util_getVTManager( XW_UtilCtxt* uc );
@@ -135,10 +139,7 @@ class CXWordsAppView : public CCoeControl
     TInt        iTimerRunCount;
     CIdle*      iRequestTimer;
 
-/*     MDesCArray* iDictList; */
     CDesC16ArrayFlat* iDictList;   /* to pass into the dialog */
-/*     TInt        iNDicts; */
-/*     TBuf16<32>* iDictList; */
 
     MPSLOT
 };
