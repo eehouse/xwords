@@ -171,6 +171,9 @@ typedef struct PrefsDlgState {
 #ifdef FEATURE_TRAY_EDIT
     XP_Bool allowPickTiles;
 #endif
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool allowHintRect;
+#endif
 } PrefsDlgState;
 
 typedef struct DictState {
