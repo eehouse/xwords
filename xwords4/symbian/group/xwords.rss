@@ -170,7 +170,7 @@ RESOURCE MENU_PANE r_xwords_move_menu
             ,MENU_ITEM {command = XW_NEXTHINT_COMMAND;  txt = "Next hint";}
             ,MENU_ITEM {command = XW_UNDOCUR_COMMAND;  txt = "Undo current";}
             ,MENU_ITEM {command = XW_UNDOLAST_COMMAND;  txt = "Undo last";}
-            ,MENU_ITEM {command = XW_DONE_COMMAND;  txt = "Done";}
+            ,MENU_ITEM {command = XW_DONE_COMMAND;  txt = "Turn done";}
 /*             ,MENU_ITEM {command = XW_JUGGLE_COMMAND;  txt = "Juggle";} */
             ,MENU_ITEM {command = XW_TRADE_COMMAND;  txt = "Trade";}
 /*             ,MENU_ITEM {command = XW_HIDETRAY_COMMAND;  txt = "[Un]hide tray";} */
