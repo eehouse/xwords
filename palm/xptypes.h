@@ -106,10 +106,22 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #endif
 
 /* Assumes big-endian, of course */
-#define XP_NTOHL(l) (l)
-#define XP_NTOHS(s) (s)
-#define XP_HTONL(l) (l)
-#define XP_HTONS(s) (s)
+#if defined __LITTLE_ENDIAN
+# include "pace_man.h"
+# define XP_NTOHL(l) Byte_Swap32(l)
+# define XP_NTOHS(s) Byte_Swap16(s)
+# define XP_HTONL(l) Byte_Swap32(l)
+# define XP_HTONS(s) Byte_Swap16(s)
+#elif defined __BIG_ENDIAN
+# define XP_NTOHL(l) (l)
+# define XP_NTOHS(s) (s)
+# define XP_HTONL(l) (l)
+# define XP_HTONS(s) (s)
+#else
+# error "pick one!!!"
+#endif
+
+
 
 #endif
 
