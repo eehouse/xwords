@@ -1135,9 +1135,9 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
                            void** closure, XP_Bool* invalUnder )
 {
     PalmMiniWinData* data = (PalmMiniWinData*)*closure;
-# ifdef MEM_DEBUG
+#if defined MEM_DEBUG || defined FEATURE_HIGHRES
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-# endif
+#endif
 
     if ( !!closure && !!*closure ) {
         HIGHRES_PUSH_LOC(dctx);
