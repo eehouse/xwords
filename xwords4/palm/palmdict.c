@@ -29,6 +29,7 @@
 #include "dictui.h"
 #include "palmmain.h"
 #include "pace_man.h"           /* READ_UNALIGNED16 */
+#include "LocalizedStrIncludes.h"
 
 typedef struct DictStart {
     unsigned long indexStart;
@@ -65,7 +66,8 @@ static array_edge* palm_dict_edge_for_index_multi( DictionaryCtxt* dict,
                                                    XP_U32 index );
 
 DictionaryCtxt*
-palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
+palm_dictionary_make( MPFORMAL PalmAppGlobals* globals, 
+                      XP_UCHAR* dictName, PalmDictList* dl )
 {
     Boolean found;
     UInt16 cardNo;
@@ -124,6 +126,9 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         }
 
         if ( dle->location == DL_VFS ) {
+            XP_UCHAR* str = getResString( globals, STR_DICT_COPY_EXPL );
+            WinDrawChars( str, XP_STRLEN(str), 5, 40 );
+
             err = VFSImportDatabaseFromFile( dle->u.vfsData.volNum, 
                                              (const char*)dle->path,
                                              &cardNo, &dbID );
