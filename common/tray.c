@@ -103,6 +103,8 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
     XP_Rect tileRect;
     short i;
 
+    XP_LOGF( "drawTray" );
+
     if ( (board->trayInvalBits != 0) || board->dividerInvalid ) {
         XP_S16 turn = board->selPlayer;
 
@@ -118,6 +120,7 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
             if ( (board->trayVisState != TRAY_HIDDEN) && dictionary != NULL ) {
                 XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
 
+                XP_LOGF( "turn=%d", turn );
                 if ( turn >= 0 ) {
                     XP_U16 numInTray = showFaces?
                         model_getNumTilesInTray( board->model, turn ):
@@ -632,6 +635,7 @@ board_juggleTray( BoardCtxt* board )
 XP_Bool
 tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
 {
+    XP_Bool result;
     XP_U16 selPlayer = board->selPlayer;
     XP_U16 numTrayTiles = model_getNumTilesInTray( board->model, 
                                                    selPlayer );
@@ -641,13 +645,10 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
 
     numTrayTiles = MAX_TRAY_TILES;
 
-    if ( oldSel == 0 ) {
-        if ( cursorKey == XP_CURSOR_KEY_LEFT ) {
-            newSel = 1 << (numTrayTiles - 1);
-        } else {
-            XP_ASSERT( cursorKey == XP_CURSOR_KEY_RIGHT );
-            newSel = 1;
-        }
+    if ( cursorKey == XP_CURSOR_KEY_UP ) {
+        result = board_moveDivider( board, XP_FALSE );
+    } else if ( cursorKey == XP_CURSOR_KEY_DOWN ) {
+        result = board_moveDivider( board, XP_TRUE );
     } else {
         pos = indexForBits( oldSel );
 
@@ -659,10 +660,13 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
         }
 
         newSel = 1 << (pos % numTrayTiles);
+
+        board->trayCursorLoc[selPlayer] = newSel;
+        board_invalTrayTiles( board, newSel | oldSel );
+        result = XP_TRUE;
     }
-    board->trayCursorLoc[selPlayer] = newSel;
-    board_invalTrayTiles( board, newSel | oldSel );
-    return XP_TRUE;
+
+    return result;
 } /* tray_moveCursor */
 
 XP_Bool
