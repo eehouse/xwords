@@ -5,7 +5,11 @@
 
 #include <map>
 #include <vector>
+#include <string>
+#include <pthread.h>
 #include "xwrelay_priv.h"
+
+typedef unsigned short CookieID;
 
 using namespace std;
 
@@ -14,7 +18,8 @@ class CookieMapIterator;        /* forward */
 class CookieRef {
 
  public:
-    CookieRef();
+
+    CookieRef( string s );
     ~CookieRef();
 
     /* Within this cookie, remember that this hostID and socket go together.
@@ -25,21 +30,20 @@ class CookieRef {
     int SocketForHost( HostID dest );
     void Remove( int socket );
     int CountSockets() { return m_hostSockets.size(); }
+    string Name() { return m_name; }
 
     static CookieMapIterator GetCookieNameIterator();
 
  private:
     map<HostID,int> m_hostSockets;
-/*     HostID m_clientHostIDs[3]; */
-/*     int    m_sockets[3]; */
-/*     int    m_serverSocket; */
-/*     int    m_nClients; */
-    unsigned short m_connectionID;
+    pthread_mutex_t m_mutex;
+    CookieID m_connectionID;
+    string m_name;
 
-    static int ms_nextConnectionID;
+    static CookieID ms_nextConnectionID;
 };
 
-typedef map<string,CookieRef*> CookieMap;
+typedef map<CookieID,CookieRef*> CookieMap;
 
 class CookieMapIterator {
  public:
@@ -54,5 +58,6 @@ CookieRef* get_make_cookieRef( char* cookie );
 CookieRef* get_cookieRef( unsigned short cookieID );
 void Associate( int socket, CookieRef* cref );
 void RemoveSocketRefs( int socket );
+pthread_mutex_t* GetWriteMutexForSocket( int socket );
 
 #endif
