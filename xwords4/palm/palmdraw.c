@@ -315,9 +315,11 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
             if ( len == 1 ) {
                 ++x;
             }
+#ifdef FEATURE_HIGHRES
             if ( dctx->doHiRes ) {
                 --y;
             }
+#endif
             WinDrawChars( (const char*)letters, len, x, y );
 
             showBonus = XP_FALSE;
@@ -965,17 +967,23 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
 
         /* There's no room for the pts string if we're in highres mode and
            WinSetScalingMode isn't available. */
-        if ( !dctx->doHiRes || dctx->oneDotFiveAvail ) {
-            XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
+#ifdef FEATURE_HIGHRES
+        if ( !dctx->doHiRes || dctx->oneDotFiveAvail ) 
+#endif
+            {
+                XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
 
-            if ( dctx->oneDotFiveAvail ) {
-                smallBoldStringAt( (const char*)str, XP_STRLEN((const char*)str), 
-                                   x, rect->top );
-            } else {
-                WinDrawChars( (const char*)str, 
-                              XP_STRLEN((const char*)str), x, rect->top );
+                if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+                    } else if ( dctx->oneDotFiveAvail ) {
+                        smallBoldStringAt( (const char*)str, XP_STRLEN((const char*)str), 
+                                           x, rect->top );
+#endif
+                    } else {
+                        WinDrawChars( (const char*)str, 
+                                      XP_STRLEN((const char*)str), x, rect->top );
+                    }
             }
-        }
 
         WinDrawChars( buf, PENDING_DIGITS, x, 
                       rect->top + (rect->height/2) - 1 );
@@ -1334,7 +1342,9 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     }
 
     dctx->fntHeight = FntBaseLine();
+#ifdef FEATURE_HIGHRES
     dctx->oneDotFiveAvail = globals->oneDotFiveAvail;
+#endif
 
     return (DrawCtx*)dctx;
 } /* palm_drawctxt_make */
