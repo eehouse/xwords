@@ -46,7 +46,7 @@ typedef enum {
 				   users */
 #endif
     ERR_CANT_TRADE_MID_MOVE,
-    ERR_CANT_ENGINE_MID_MOVE,
+/*     ERR_CANT_ENGINE_MID_MOVE, */
 /*     ERR_NOT_YOUR_TURN_TO_TRADE, */
 /*     ERR_NOT_YOUR_TURN_TO_MOVE, */
     ERR_CANT_UNDO_TILEASSIGN
@@ -86,8 +86,10 @@ typedef struct UtilVtable {
     
     VTableMgr* (*m_util_getVTManager)(XW_UtilCtxt* uc);
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     XWStreamCtxt* (*m_util_makeStreamFromAddr )(XW_UtilCtxt* uc,
                                                 XP_U16 channelNo );
+#endif
     
     XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, ModelCtxt* model,
                                           XP_U16 col, XP_U16 row );
