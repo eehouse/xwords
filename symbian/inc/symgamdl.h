@@ -36,7 +36,7 @@ class TGameInfoBuf
  public:
     TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi,
 #ifndef XWFEATURE_STANDALONE_ONLY
-                                const CommsAddrRec* iCommsAddr,
+                                const CommsAddrRec* aCommsAddr,
 #endif
                                 CDesC16ArrayFlat* aDictList );
     CDesC16ArrayFlat* GetDictList() { return iDictList; }
