@@ -240,7 +240,7 @@ ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet
 
 pnolet: LocalizedStrIncludes.h
-	$(MAKE) -f Makefile.PNO MYDEFINES="$(MYDEFINES) -DAPPID=\'$(APPID)\' -DXW_TARGET_PNO -D__LITTLE_ENDIAN"
+	$(MAKE) -f Makefile.PNO MYDEFINES="$(MYDEFINES) -DAPPID=\'$(APPID)\'"
 endif
 
 # GDB seems confused by relative paths these days.  So generate the
