@@ -193,7 +193,11 @@ readFileToBuf( XP_UCHAR* dictBuf, const RFile* file )
 DictionaryCtxt*
 sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
 {
+#if defined SYM_WINS
     _LIT( dir,"z:\\system\\apps\\XWORDS\\" );
+#elif defined SYM_ARMI
+    _LIT( dir,"c:\\system\\apps\\XWORDS\\" );
+#endif
     TFileName nameD;            /* need the full path to name in this */
     nameD.Copy( dir );
     TBuf8<32> dname8(aDictName);
