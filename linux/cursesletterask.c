@@ -26,7 +26,7 @@
 #define MAX_TILE_BUTTON_WIDTH (sizeof(XP_UCHAR4) + 2)
 
 static void
-sizeTextsAsButtons( XP_UCHAR4* texts, XP_U16 maxLen, XP_U16 nTiles,
+sizeTextsAsButtons( const XP_UCHAR4* texts, XP_U16 maxLen, XP_U16 nTiles,
                     XP_U16* textsCols, XP_U16* textsRows, 
                     XP_U16* textsOffsets )
 {
