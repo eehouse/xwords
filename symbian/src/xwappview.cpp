@@ -553,7 +553,7 @@ CXWordsAppView::PositionBoard()
     TInt scoreRight = rect.iBr.iX - 2 - 1; /* 2 for border */
     board_setScoreboardLoc( iGame.board, scoreLeft, scoreTop,
                             scoreRight - scoreLeft - 1, scoreHt, XP_FALSE );
-    board_setYOffset( iGame.board, 0, XP_FALSE );
+    board_setYOffset( iGame.board, 0 );
 
     board_setTrayLoc( iGame.board, 
                       2 + (15 * scaleBoardH) + 5, // to right of board
