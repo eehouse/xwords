@@ -50,8 +50,6 @@
 
 #include "LocalizedStrIncludes.h"
 
-#define LISTEN_PORT 10998
-
 // Standard construction sequence
 CXWordsAppView* CXWordsAppView::NewL(const TRect& aRect)
 {
@@ -82,7 +80,9 @@ CXWordsAppView::CXWordsAppView()
     XP_MEMSET( &iGame, 0, sizeof(iGame) );
 
     iCurGameName.Copy( _L("") );
-    iListenPort = LISTEN_PORT;
+
+    /* CBase derivitaves are zero'd out, they say */
+    XP_ASSERT( iTimerReasons[0] == 0 && iTimerReasons[1] == 0 );
 }
 
 CXWordsAppView::~CXWordsAppView()
@@ -387,12 +387,7 @@ sym_util_setTimer( XW_UtilCtxt* /*uc*/, XWTimerReason /*why*/ )
 CXWordsAppView::sym_util_requestTime( XW_UtilCtxt* uc )
 {
     CXWordsAppView* self = (CXWordsAppView*)uc->closure;
-
-    // Only start it if it's not already running!!
-    if ( ++self->iTimerRunCount == 1 ) {
-        self->iRequestTimer->Start( TCallBack( CXWordsAppView::TimerCallback, 
-                                               (TAny*)self ) );
-    }
+    self->StartIdleTimer( EUtilRequest );
 }
 
 /* static */ XP_U32
@@ -554,7 +549,6 @@ CXWordsAppView::SetUpUtil()
     vtable->m_util_getUserString = sym_util_getUserString;
     vtable->m_util_warnIllegalWord = sym_util_warnIllegalWord;
 #ifdef BEYOND_IR
-    vtable->m_util_listenPortChange = sym_util_listenPortChange;
     vtable->m_util_addrChange = sym_util_addrChange;
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -574,9 +568,8 @@ CXWordsAppView::MakeOrLoadGameL()
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         CommsAddrRec commsAddr;
-        XP_U16 listenPort = 0;
         if ( iGame.comms != NULL ) {
-            comms_getAddr( iGame.comms, &commsAddr, &listenPort );
+            comms_getAddr( iGame.comms, &commsAddr );
         } else {
             commsAddr = iCommsAddr;
         }
@@ -608,7 +601,7 @@ CXWordsAppView::MakeOrLoadGameL()
         model_setDictionary( iGame.model, dict );
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( iGame.comms ) {
-            comms_setAddr( iGame.comms, &iCommsAddr, iListenPort );
+            comms_setAddr( iGame.comms, &iCommsAddr );
         }
 #endif
 
@@ -844,13 +837,41 @@ CXWordsAppView::HandleKeyEvent( const TKeyEvent& aKeyEvent )
 /* static */ TInt
 CXWordsAppView::TimerCallback( TAny* aPtr )
 {
-    CXWordsAppView* self = (CXWordsAppView*)aPtr;
+    CXWordsAppView* me = (CXWordsAppView*)aPtr;
 
-    if ( server_do( self->iGame.server ) ) {
-        self->DoImmediateDraw();
+    /* Only do one per call.  Packets are higher priority */
+    if ( me->iTimerReasons[EProcessPacket] > 0 ) {
+        --me->iTimerReasons[EProcessPacket];
+        XP_ASSERT( me->iTimerReasons[EProcessPacket] == 0 );
+        
+        XP_Bool draw = XP_FALSE;
+
+        XWStreamCtxt* stream = me->MakeSimpleStream( NULL );
+        
+        stream_putBytes( stream, (void*)me->iNewPacket.Ptr(), 
+                         me->iNewPacket.Length() );
+        me->iNewPacket.SetLength(0);
+
+        CommsAddrRec addr;
+        addr.conType = COMMS_CONN_RELAY;
+        if ( comms_checkIncomingStream( me->iGame.comms, stream, &addr ) ) {
+            draw = server_receiveMessage( me->iGame.server, stream );
+        }
+        stream_destroy( stream );
+        sym_util_requestTime( &me->iUtil );
+
+        if ( draw ) {
+            me->DoImmediateDraw();        
+        }
+
+    } else if ( me->iTimerReasons[EUtilRequest] > 0 ) {
+        --me->iTimerReasons[EUtilRequest];
+        if ( server_do( me->iGame.server ) ) {
+            me->DoImmediateDraw();
+        }
     }
 
-    return --self->iTimerRunCount > 0;
+    return --me->iTimerRunCount > 0;
 }
 
 XWStreamCtxt* 
@@ -1033,10 +1054,10 @@ CXWordsAppView::InitPrefs()
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     iGi.serverRole = SERVER_STANDALONE;
-    iCommsAddr.conType = COMMS_CONN_IP;
+    iCommsAddr.conType = COMMS_CONN_RELAY;
     char* name = "aphraea.org";
-    XP_MEMCPY( iCommsAddr.u.ip.hostName, name, XP_STRLEN(name) + 1 );
-    iCommsAddr.u.ip.port = 10999;
+    XP_MEMCPY( iCommsAddr.u.ip_relay.hostName, name, XP_STRLEN(name) + 1 );
+    iCommsAddr.u.ip_relay.port = 10999;
 #endif
 }
 
@@ -1049,9 +1070,8 @@ CXWordsAppView::DoNewGame()
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     CommsAddrRec commsAddr;
-    XP_U16 listenPort = iListenPort;
     if ( iGame.comms != NULL ) {
-        comms_getAddr( iGame.comms, &commsAddr, &listenPort );
+        comms_getAddr( iGame.comms, &commsAddr );
     } else {
         commsAddr = iCommsAddr;
     }
@@ -1087,7 +1107,7 @@ CXWordsAppView::DoNewGame()
         }
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( iGame.comms ) {
-            comms_setAddr( iGame.comms, &iCommsAddr, listenPort );
+            comms_setAddr( iGame.comms, &iCommsAddr );
 
             if ( iGi.serverRole == SERVER_ISCLIENT ) {
                 XWStreamCtxt* stream = MakeSimpleStream( sym_send_on_close );
@@ -1237,23 +1257,9 @@ CXWordsAppView::DrawGameName() const
 CXWordsAppView::PacketReceived( const TDesC8* aBuf, void* aClosure )
 {
     CXWordsAppView* me = (CXWordsAppView*)aClosure;
-    XP_Bool draw = XP_FALSE;
-
-    XWStreamCtxt* stream = me->MakeSimpleStream( NULL );
-    stream_putBytes( stream, (void*)aBuf->Ptr(), aBuf->Length() );
-
-    CommsAddrRec addr;
-    addr.conType = COMMS_CONN_IP;
-    if ( comms_checkIncomingStream( me->iGame.comms, stream, &addr ) ) {
-        draw = server_receiveMessage( me->iGame.server, stream );
-    }
-    stream_destroy( stream );
-    sym_util_requestTime( &me->iUtil );
-
-    if ( draw ) {
-        me->DoImmediateDraw();        
-    }
-
+    XP_ASSERT( me->iNewPacket.Length() == 0 );
+    me->iNewPacket.Copy( *aBuf );
+    me->StartIdleTimer( EProcessPacket );
 } /* CXWordsAppView::PacketReceived */
 
 /*static*/ XP_S16
@@ -1265,12 +1271,14 @@ CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr,
     CXWordsAppView* self = (CXWordsAppView*)aClosure;
 
     if ( aAddr == NULL ) {
-        XP_U16 ignore;
-        comms_getAddr( self->iGame.comms, &addr, &ignore );
+        comms_getAddr( self->iGame.comms, &addr );
         aAddr = &addr;
     }
 
     self->iSendSock->SendL( aBuf, aLen, aAddr );
+
+    /* Can't call listen until we've sent something.... */
+    self->iSendSock->Listen();
 
     return result;
 } /* sym_send */
@@ -1282,7 +1290,17 @@ CXWordsAppView::sym_send_on_close( XWStreamCtxt* aStream, void* aClosure )
     CXWordsAppView* self = (CXWordsAppView*)aClosure;
     CommsConnType conType = comms_getConType( self->iGame.comms );
 
-    comms_send( self->iGame.comms, conType, aStream );
+    comms_send( self->iGame.comms, aStream );
 }
 #endif
 
+void
+CXWordsAppView::StartIdleTimer( XWTimerReason aWhy )
+{
+    ++iTimerReasons[aWhy];
+
+    if ( ++iTimerRunCount == 1 ) {
+        iRequestTimer->Start( TCallBack( CXWordsAppView::TimerCallback, 
+                                         (TAny*)this ) );
+    }
+}
