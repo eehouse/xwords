@@ -39,6 +39,8 @@ static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 
 static XP_U32 n_ptr_tohl( XP_U8** in );
 static XP_U16 n_ptr_tohs( XP_U8** in );
+static XP_U8* openMappedFile( wchar_t* name, HANDLE* mappedFileP,
+                              HANDLE* hFileP);
 
 #define ALIGN_COUNT 2
 
@@ -55,6 +57,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     if ( !!dictName ) {
         wchar_t nameBuf[MAX_PATH+1];
         HANDLE hFile;
+        XP_U8* ptr;
 
         ctxt->super.destructor = ce_dictionary_destroy;
 
@@ -63,44 +66,16 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, dictName, -1,
                              nameBuf, sizeof(nameBuf)/sizeof(nameBuf[0]) );
 
-        hFile = CreateFileForMapping( nameBuf,
-                                      GENERIC_READ,
-                                      FILE_SHARE_READ, /* (was 0: no sharing) */
-                                      NULL, /* security */
-                                      OPEN_EXISTING,
-                                      FILE_FLAG_RANDOM_ACCESS,
-                                      NULL );
+        ptr = openMappedFile( nameBuf, &ctxt->mappedFile, &hFile );
 
-        if ( hFile == INVALID_HANDLE_VALUE ) {
-            XP_DEBUGF( "open file failed: %ld", GetLastError() );
-        } else {
-            XP_DEBUGF( "open file succeeded!!!!" );
-            mappedFile = CreateFileMapping( hFile,	
-                                            NULL, 
-                                            PAGE_READONLY, 
-                                            0, 
-                                            0, 
-                                            NULL );
-        }
-        if ( mappedFile != INVALID_HANDLE_VALUE ) {
+        if ( !!ptr ) {
             XP_U32 offset;
             XP_U16 numFaces;
-            XP_U8* ptr;
             XP_U16 i;
             XP_U16 flags;
             XP_U32 dictLength;
 
-            ctxt->mappedFile = mappedFile;
-
-            /* save for later */
-            //   ctxt->hFile = hFile;
-            //   ctxt->dictSize = size;
-
-            XP_DEBUGF( "calling MapViewOfFile" );
-            ctxt->mappedBase = MapViewOfFile( mappedFile, 
-                                              FILE_MAP_READ, 
-                                              0 , 0, 0 );
-            ptr = (XP_U8*)ctxt->mappedBase;
+            ctxt->mappedBase = (void*)ptr;
             XP_DEBUGF( "ptr starting at 0x%lx", ptr );
 		
             flags = n_ptr_tohs( &ptr );
@@ -447,18 +422,88 @@ ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
     return result;
 } /* ce_pickDictFile */
 
+static XP_U8*
+openMappedFile( wchar_t* name, HANDLE* mappedFileP, HANDLE* hFileP )
+{
+    XP_U8* ptr = NULL;
+    HANDLE mappedFile = NULL;
+    HANDLE hFile;
+
+    hFile = CreateFileForMapping( name,
+                                  GENERIC_READ,
+                                  FILE_SHARE_READ, /* (was 0: no sharing) */
+                                  NULL, /* security */
+                                  OPEN_EXISTING,
+                                  FILE_FLAG_RANDOM_ACCESS,
+                                  NULL );
+
+    if ( hFile == INVALID_HANDLE_VALUE ) {
+        XP_DEBUGF( "open file failed: %ld", GetLastError() );
+    } else {
+        HANDLE mappedFile;
+        XP_DEBUGF( "open file succeeded!!!!" );
+
+        mappedFile = CreateFileMapping( hFile,
+                                        NULL,
+                                        PAGE_READONLY,
+                                        0,
+                                        0,
+                                        NULL );
+
+
+        if ( mappedFile != INVALID_HANDLE_VALUE ) {
+            void* mappedBase = MapViewOfFile( mappedFile, 
+                                              FILE_MAP_READ, 
+                                              0, 0, 0 );
+            ptr = (XP_U8*)mappedBase;
+            *mappedFileP = mappedFile;
+            *hFileP = hFile;
+        }
+    }
+
+    return ptr;
+} /* openMappedFile */
+
 static XP_Bool
-checkIfDictAndLegal( wchar_t* path, WIN32_FIND_DATA* data )
+checkIfDictAndLegal( wchar_t* path, XP_U16 pathLen, WIN32_FIND_DATA* data )
 {
     XP_Bool result = XP_FALSE;
     wchar_t* name = data->cFileName;
     XP_U16 len;
 
-    /* are the last four bytes ".xwd"? */
     len = wcslen(name);
+
+    /* are the last four bytes ".xwd"? */
     if ( 0 == lstrcmp( name + len - 4, L".xwd" ) ) {
-        result = XP_TRUE;
+        XP_U16 flags;
+        HANDLE mappedFile, hFile;
+        XP_U8* base;
+        wchar_t pathBuf[257];
+
+        XP_LOGF( "ends in .xwd" );
+
+        wcscpy( pathBuf, path );
+        pathBuf[pathLen] = 0;
+        wcscat( pathBuf, name );
+
+        base = openMappedFile( pathBuf, &mappedFile, &hFile );
+        if ( !!base ) {
+            XP_U8* ptr = base;
+        
+            flags = n_ptr_tohs( &ptr );
+            XP_LOGF( "flags=0x%x", flags );
+            UnmapViewOfFile( base );
+            CloseHandle( mappedFile );
+
+#ifdef NODE_CAN_4
+            /* are the flags what we expect */
+            result = flags == 0x0002 || flags == 0x0003;
+#else
+            result = flags == 0x0001;
+#endif
+        }
     }
+
     return result;
 } /* checkIfDictAndLegal */
 
@@ -492,7 +537,8 @@ locateOneDir( wchar_t* path, XP_U16* which )
                     break;
                 }
                 path[startLen] = 0;
-            } else if ( checkIfDictAndLegal( path, &data ) && (*which-- == 0)) {
+            } else if ( checkIfDictAndLegal( path, startLen, &data )
+                        && (*which-- == 0)) {
                 /* we're done! */
                 lstrcpy( path+startLen, data.cFileName );
                 result = XP_TRUE;
