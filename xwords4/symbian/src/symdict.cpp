@@ -194,125 +194,133 @@ readFileToBuf( XP_UCHAR* dictBuf, const RFile* file )
 DictionaryCtxt*
 sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
 {
+    if ( !aDictName ) {
+        SymDictCtxt* ctxt = (SymDictCtxt*)XP_MALLOC( mpool, sizeof( *ctxt ) );
+        XP_MEMSET( ctxt, 0, sizeof(*ctxt) );
+        MPASSIGN( ctxt->super.mpool, mpool );
+        return &ctxt->super;
+    } else {
+
 #if defined __WINS__
-    _LIT( dir,"z:\\system\\apps\\XWORDS\\" );
+        _LIT( dir,"z:\\system\\apps\\XWORDS\\" );
 #elif defined __MARM__
-    _LIT( dir,"c:\\system\\apps\\XWORDS\\" );
+        _LIT( dir,"c:\\system\\apps\\XWORDS\\" );
 #endif
-    TFileName nameD;            /* need the full path to name in this */
-    nameD.Copy( dir );
-    TBuf8<32> dname8(aDictName);
-    TBuf16<32> dname16;
-    dname16.Copy( dname8 );
-    nameD.Append( dname16 );
-    nameD.Append( _L(".xwd") );
-    SymDictCtxt* ctxt = NULL;
-    TInt err;
+        TFileName nameD;            /* need the full path to name in this */
+        nameD.Copy( dir );
+        TBuf8<32> dname8(aDictName);
+        TBuf16<32> dname16;
+        dname16.Copy( dname8 );
+        nameD.Append( dname16 );
+        nameD.Append( _L(".xwd") );
+        SymDictCtxt* ctxt = NULL;
+        TInt err;
 
-    RFs fileSession;
-    User::LeaveIfError(fileSession.Connect());
-    CleanupClosePushL(fileSession);
+        RFs fileSession;
+        User::LeaveIfError(fileSession.Connect());
+        CleanupClosePushL(fileSession);
 
-    RFile file;
-    User::LeaveIfError( file.Open( fileSession, nameD, EFileRead ) );
-    CleanupClosePushL(file);
+        RFile file;
+        User::LeaveIfError( file.Open( fileSession, nameD, EFileRead ) );
+        CleanupClosePushL(file);
 
-    ctxt = (SymDictCtxt*)XP_MALLOC( mpool, sizeof(*ctxt) );
-    User::LeaveIfNull( ctxt );
-    XP_MEMSET( ctxt, 0, sizeof( *ctxt ) );
-    MPASSIGN( ctxt->super.mpool, mpool );
+        ctxt = (SymDictCtxt*)XP_MALLOC( mpool, sizeof(*ctxt) );
+        User::LeaveIfNull( ctxt );
+        XP_MEMSET( ctxt, 0, sizeof( *ctxt ) );
+        MPASSIGN( ctxt->super.mpool, mpool );
 
-    dict_super_init( (DictionaryCtxt*)ctxt );
+        dict_super_init( (DictionaryCtxt*)ctxt );
 
-    ctxt->super.destructor = sym_dictionary_destroy;
-    XP_ASSERT( ctxt->super.name == NULL );
-    symReplaceStrIfDiff( MPPARM(mpool) &ctxt->super.name, aDictName );
+        ctxt->super.destructor = sym_dictionary_destroy;
+        XP_ASSERT( ctxt->super.name == NULL );
+        symReplaceStrIfDiff( MPPARM(mpool) &ctxt->super.name, aDictName );
 
-    XP_U16 flags = readXP_U16( &file );
-    XP_LOGF( "read flags are: 0x%x", (TInt)flags );
+        XP_U16 flags = readXP_U16( &file );
+        XP_LOGF( "read flags are: 0x%x", (TInt)flags );
 
-    TInt numFaces = readXP_U8( &file );
-    ctxt->super.nFaces = (XP_U8)numFaces;
-    XP_DEBUGF( "read %d faces from dict", (TInt)numFaces );
+        TInt numFaces = readXP_U8( &file );
+        ctxt->super.nFaces = (XP_U8)numFaces;
+        XP_DEBUGF( "read %d faces from dict", (TInt)numFaces );
 
-    ctxt->super.faces16 = (XP_U16*)
-        XP_MALLOC( mpool, numFaces * sizeof(ctxt->super.faces16[0]) );
+        ctxt->super.faces16 = (XP_U16*)
+            XP_MALLOC( mpool, numFaces * sizeof(ctxt->super.faces16[0]) );
 #ifdef NODE_CAN_4
-    if ( flags == 0x0002 ) {
-        ctxt->super.nodeSize = 3;
-    } else if ( flags == 0x0003 ) {
-        ctxt->super.nodeSize = 4;
-    } else {
-        XP_DEBUGF( "flags=0x%x", flags );
-        XP_ASSERT( 0 );
-    }
+        if ( flags == 0x0002 ) {
+            ctxt->super.nodeSize = 3;
+        } else if ( flags == 0x0003 ) {
+            ctxt->super.nodeSize = 4;
+        } else {
+            XP_DEBUGF( "flags=0x%x", flags );
+            XP_ASSERT( 0 );
+        }
 
-    ctxt->super.is_4_byte = ctxt->super.nodeSize == 4;
+        ctxt->super.is_4_byte = ctxt->super.nodeSize == 4;
 
-    for ( TInt i = 0; i < numFaces; ++i ) {
-        ctxt->super.faces16[i] = readXP_U16( &file );
-    }
+        for ( TInt i = 0; i < numFaces; ++i ) {
+            ctxt->super.faces16[i] = readXP_U16( &file );
+        }
 #else
-    error will robinson....;
+        error will robinson....;
 #endif
 
-    ctxt->super.countsAndValues = 
-        (XP_U8*)XP_MALLOC( mpool, numFaces*2 );
-    (void)readXP_U16( &file );  // skip xloc header
+        ctxt->super.countsAndValues = 
+            (XP_U8*)XP_MALLOC( mpool, numFaces*2 );
+        (void)readXP_U16( &file );  // skip xloc header
 
-    for ( i = 0; i < numFaces*2; i += 2 ) {
-        ctxt->super.countsAndValues[i] = readXP_U8( &file );
-        ctxt->super.countsAndValues[i+1] = readXP_U8( &file );
-    }
+        for ( i = 0; i < numFaces*2; i += 2 ) {
+            ctxt->super.countsAndValues[i] = readXP_U8( &file );
+            ctxt->super.countsAndValues[i+1] = readXP_U8( &file );
+        }
 
-    symLoadSpecialData( ctxt, &file );
+        symLoadSpecialData( ctxt, &file );
 
-    // Now, until we figure out how/whether Symbian does memory
-    // mapping of files, we need to allocate a buffer to hold the
-    // entire freaking DAWG... :-(
-    TInt dawgSize;
-    (void)file.Size( dawgSize );
-    TInt pos = 0;
-    file.Seek( ESeekCurrent, pos );
-    dawgSize -= pos;
-    XP_U32 offset;
-    if ( dawgSize > sizeof(XP_U32) ) {
-        offset = readXP_U32( &file );
-        dawgSize -= sizeof(XP_U32);
+        // Now, until we figure out how/whether Symbian does memory
+        // mapping of files, we need to allocate a buffer to hold the
+        // entire freaking DAWG... :-(
+        TInt dawgSize;
+        (void)file.Size( dawgSize );
+        TInt pos = 0;
+        file.Seek( ESeekCurrent, pos );
+        dawgSize -= pos;
+        XP_U32 offset;
+        if ( dawgSize > sizeof(XP_U32) ) {
+            offset = readXP_U32( &file );
+            dawgSize -= sizeof(XP_U32);
 
-        XP_ASSERT( dawgSize % ctxt->super.nodeSize == 0 );
+            XP_ASSERT( dawgSize % ctxt->super.nodeSize == 0 );
 # ifdef DEBUG
-        ctxt->super.numEdges = dawgSize / ctxt->super.nodeSize;
+            ctxt->super.numEdges = dawgSize / ctxt->super.nodeSize;
 # endif
-    }
+        }
 
-    if ( dawgSize > 0 ) {
-        XP_DEBUGF( "setting topEdge; offset = %ld", offset );
+        if ( dawgSize > 0 ) {
+            XP_DEBUGF( "setting topEdge; offset = %ld", offset );
 
-        XP_U8* dictBuf = (XP_U8*)XP_MALLOC( mpool, dawgSize );
-        User::LeaveIfNull( dictBuf ); // will leak ctxt (PENDING...)
+            XP_U8* dictBuf = (XP_U8*)XP_MALLOC( mpool, dawgSize );
+            User::LeaveIfNull( dictBuf ); // will leak ctxt (PENDING...)
 
-        readFileToBuf( dictBuf, &file );
+            readFileToBuf( dictBuf, &file );
 
-        ctxt->super.base = (array_edge*)dictBuf;
+            ctxt->super.base = (array_edge*)dictBuf;
 
-        ctxt->super.topEdge = ctxt->super.base 
-            + (offset * ctxt->super.nodeSize);
+            ctxt->super.topEdge = ctxt->super.base 
+                + (offset * ctxt->super.nodeSize);
 #ifdef NODE_CAN_4
-        ctxt->super.topEdge = ctxt->super.base 
-            + (offset * ctxt->super.nodeSize);
+            ctxt->super.topEdge = ctxt->super.base 
+                + (offset * ctxt->super.nodeSize);
 #else
-        ctxt->super.topEdge = ctxt->super.base + (offset * 3);
+            ctxt->super.topEdge = ctxt->super.base + (offset * 3);
 #endif
-    } else {
-        ctxt->super.topEdge = (array_edge*)NULL;
-        ctxt->super.base = (array_edge*)NULL;
+        } else {
+            ctxt->super.topEdge = (array_edge*)NULL;
+            ctxt->super.base = (array_edge*)NULL;
+        }
+
+        CleanupStack::PopAndDestroy( &file ); // file
+        CleanupStack::PopAndDestroy( &fileSession ); // fileSession
+
+        return &ctxt->super;
     }
-
-    CleanupStack::PopAndDestroy(); // file
-    CleanupStack::PopAndDestroy(); // fileSession
-
-    return &ctxt->super;
 } // sym_dictionary_make
 
 static void
