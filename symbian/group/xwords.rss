@@ -242,6 +242,17 @@ RESOURCE TBUF64 r_confirm_delgame {
     buf = "Are you sure you want delete the selected game?";
 }
 
+RESOURCE TBUF64 r_alert_no_rename_open_game { 
+    buf = "You can't rename the current game.";
+}
+
+RESOURCE TBUF32 r_alert_rename_target_exists {
+    buf = "Name already in use.";
+}
+
+RESOURCE TBUF32 r_alert_rename_target_badname {
+    buf = "Illegal game name";
+}
 
 
 #define XW_EFLAGS EEikEdwinNoAutoSelection | EEikEdwinReadOnly | EEikEdwinResizable
@@ -522,6 +533,21 @@ RESOURCE DIALOG r_xwords_savedgames_dlg
                                 width = 20;
             };
 #endif
+        }
+    };
+}
+
+RESOURCE DIALOG r_xwords_editname_dlg
+{
+    title = "Change name";
+    buttons = R_EIK_BUTTONS_CANCEL_OK;
+    flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
+    items = {
+        DLG_LINE {
+            prompt = "New name";
+            id = EEditNameEdwin;
+            type = EEikCtFileNameEd;
+            control = FILENAMEEDITOR { width = 32; };
         }
     };
 }
