@@ -1157,6 +1157,7 @@ drawScoreBoard( BoardCtxt* board )
                 ++nShares;
             }
             XP_ASSERT( *adjustDim >= totalDim );
+/*             XP_LOGF( "*adjustDim=%d, totalDim=%d", *adjustDim, totalDim ); */
             extra = (*adjustDim - totalDim) / nShares;
 
             /* at this point, the scoreRect should be anchored at the
