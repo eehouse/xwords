@@ -1865,9 +1865,11 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
             if ( row == limits.bottom ) {
                 result |= isFlipped? HINT_BORDER_RIGHT:HINT_BORDER_BOTTOM;
             }
+#ifndef XWFEATURE_SEARCHLIMIT_DOCENTERS
             if ( result == HINT_BORDER_NONE ) {
                 result = HINT_BORDER_CENTER;
             }
+#endif
             break;
         }
     }
@@ -1966,6 +1968,30 @@ setHintRect( BoardCtxt* board )
     board->hasHintRect[board->selPlayer] = XP_TRUE;
 } /* setHintRect */
 
+static void
+invalHintRectDiffs( BoardCtxt* board, HintLimits* newLim, 
+                    HintLimits* oldLim )
+{
+    /* These two regions will generally have close to 50% of their borders in
+       common.  Try not to inval what needn't be inval'd.  But at the moment
+       performance seems good enough without adding the complexity and new
+       bugs... */
+    invalCellRegion( board, newLim->left, newLim->top, 
+                     newLim->right, newLim->bottom, XP_FALSE );
+    invalCellRegion( board, oldLim->left, oldLim->top, 
+                     oldLim->right, oldLim->bottom, XP_FALSE );
+
+    /* The challenge in doing a smarter diff is that some squares need to be
+       invalidated even if they're part of the borders of both limits rects,
+       in particular if one is a corner of one and just a side of another.
+       One simple but expensive way of accounting for this would be to call
+       figureHintAtts() on each square in the borders of both rects and
+       invalidate when the hintAttributes aren't the same for both.  That
+       misses an opportunity to avoid doing any calculations on those border
+       squares that clearly haven't changed at all.
+    */
+} /* invalHintRectDiffs */
+
 static XP_Bool
 continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
@@ -1973,17 +1999,17 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
     XP_U16 col, row;
     if ( coordToCell( board, x, y, &col, &row ) ) {
+        XP_U16 selPlayer = board->selPlayer;
 
-        checkScrollCell( board, board->selPlayer, col, row );
+        checkScrollCell( board, selPlayer, col, row );
 
         if ( col != board->hintDragCurCol || row != board->hintDragCurRow ) {
+            HintLimits oldHL;
+
             needsRedraw = XP_TRUE;
 
             board->hintDragInProgress = XP_TRUE;
 
-            if ( board->hasHintRect[board->selPlayer] ) {
-                clearCurHintRect( board );
-            }
             /* Now that we've moved, this isn't a timer thing.  Clean up any
                artifacts. */
             board->penTimerFired = XP_FALSE;
@@ -1993,8 +2019,10 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
             board->hintDragCurCol = col;
             board->hintDragCurRow = row;
+
+            oldHL = board->limits[selPlayer];
             setHintRect( board );
-            invalCurHintRect( board, board->selPlayer, XP_FALSE );
+            invalHintRectDiffs( board, &board->limits[selPlayer], &oldHL );
             XP_LOGF( "now includes with %d,%d", col, row );
         }
     }
