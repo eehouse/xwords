@@ -197,6 +197,9 @@ forwardMessage( unsigned char* buf, int bufLen )
             *buf = XWRELAY_MSG_FROMRELAY;
             send_with_length( socket, buf, bufLen );
             success = 1;
+        } else if ( dest == HOST_ID_SERVER ) {
+            logf( "server not connected yet; fail silently" );
+            success = 1;
         }
     }
     return success;
