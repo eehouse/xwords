@@ -593,7 +593,7 @@ static void
 timerFiredForPen( BoardCtxt* board ) 
 {
     XP_UCHAR* text = (XP_UCHAR*)NULL;
-    XP_UCHAR buf[64];
+    XP_UCHAR buf[80];
 
     if ( board->penDownObject == OBJ_BOARD ) {
         XP_U16 col, row;
@@ -618,16 +618,24 @@ timerFiredForPen( BoardCtxt* board )
            tell why, but might want to test and do nothing in this case.  */
         /* XP_ASSERT( player >= 0 ); */
         if ( player >= 0 ) {
+            XP_UCHAR* format;
+            XP_UCHAR scoreExpl[48];
+            XP_U16 explLen;
+
             lp = &board->gi->players[player];
+            format = util_getUserString( board->util, lp->isLocal? 
+                                         STR_LOCAL_NAME: STR_NONLOCAL_NAME );
+            XP_SNPRINTF( buf, sizeof(buf), format, emptyStringIfNull(lp->name) );
 
-            text = emptyStringIfNull(lp->name);
-
-            if ( !lp->isLocal ) {
-                XP_UCHAR* format = util_getUserString(board->util, 
-                                                      STR_NONLOCAL_NAME);
-                XP_SNPRINTF( buf, sizeof(buf), format, text );
-                text = buf;
+            explLen = sizeof(scoreExpl);
+            if ( model_getPlayersLastScore( board->model, player, scoreExpl, 
+                                            &explLen ) ) {
+                XP_STRCAT( buf, XP_CR );
+                XP_ASSERT( XP_STRLEN(buf) + explLen < sizeof(buf) );
+                XP_STRCAT( buf, scoreExpl );
             }
+
+            text = buf;
         }
 
         board->penTimerFired = XP_TRUE;
@@ -1686,7 +1694,7 @@ moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
 
 static void
 makeMiniWindowForText( BoardCtxt* board, XP_UCHAR* text, 
-		       MiniWindowType winType )
+                       MiniWindowType winType )
 {
     XP_Rect rect;
     MiniWindowStuff* stuff = &board->miniWindowStuff[winType];
@@ -1758,15 +1766,18 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
 #endif
 
 /* If there's a password, ask it; if they match, change the state of the tray
- * to TRAY_REVEALED.  Return value talks about whether the tray needs to be
- * redrawn, not the success of the password compare.
+ * to TRAY_REVEALED (unless we're not supposed to show the tiles).  Return
+ * value talks about whether the tray needs to be redrawn, not the success of
+ * the password compare.
  */
 static XP_Bool
 askRevealTray( BoardCtxt* board )
 {
     XP_Bool revealed = XP_FALSE;
+    XP_Bool reversed = board->trayVisState == TRAY_REVERSED;
     XP_U16 selPlayer = board->selPlayer;
     LocalPlayer* lp = &board->gi->players[selPlayer];
+    XP_Bool justReverse = XP_FALSE;
 
     if ( board->gameOver ) {
         revealed = XP_TRUE;
@@ -1777,7 +1788,11 @@ askRevealTray( BoardCtxt* board )
         util_userError( board->util, ERR_NO_PEEK_REMOTE_TILES );
 #endif
     } else if ( lp->isRobot ) {
-        util_userError( board->util, ERR_NO_PEEK_ROBOT_TILES );
+        if ( reversed ) {
+            util_userError( board->util, ERR_NO_PEEK_ROBOT_TILES );
+        } else {
+            justReverse = XP_TRUE;
+        }
     } else {
 		revealed = !player_hasPasswd( lp );
 
@@ -1800,8 +1815,10 @@ askRevealTray( BoardCtxt* board )
 
     if ( revealed ) {
         setTrayVisState( board, TRAY_REVEALED );
+    } else if ( justReverse ) {
+        setTrayVisState( board, TRAY_REVERSED );
     }
-    return revealed;
+    return justReverse || revealed;
 } /* askRevealTray */
 
 XP_Bool
