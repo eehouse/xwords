@@ -1583,9 +1583,7 @@ static Boolean
 handleHideTray( PalmAppGlobals* globals )
 {
     Boolean draw;
-    XW_TrayVisState curState = board_getTrayVisState( globals->game.board );
-
-    if ( curState != TRAY_HIDDEN ) {
+    if ( TRAY_REVEALED == board_getTrayVisState( globals->game.board ) ) {
         draw = board_hideTray( globals->game.board );
     } else {
         draw = board_showTray( globals->game.board );
