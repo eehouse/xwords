@@ -52,6 +52,46 @@ static void palm_clr_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP );
 static void palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, 
                                       XP_Rect* rect, void** closureP );
 
+#ifdef FEATURE_HIGHRES
+#define HIGHRES_PUSH_LOC( dctx ) \
+    { \
+        XP_U16 oldVal = 0; \
+        XP_LOGF( "HIGHRES_PUSH_LOC line %d", __LINE__ ); \
+        if ( (dctx)->doHiRes ) { \
+            oldVal = WinSetCoordinateSystem( kCoordinatesNative ); \
+        } 
+#define HIGHRES_POP_LOC(dctx) \
+        XP_LOGF( "HIGHRES_POP_LOC line %d", __LINE__ ); \
+        if ( (dctx)->doHiRes ) { \
+            (void)WinSetCoordinateSystem( oldVal ); \
+            (dctx)->oldCoord = 0; \
+        } \
+    }
+#define HIGHRES_PUSH_NOPOP( dctx ) \
+    XP_LOGF( "HIGHRES_PUSH_NOPOP line %d", __LINE__ ); \
+    if ( (dctx)->doHiRes ) { \
+        WinSetCoordinateSystem( kCoordinatesNative ); \
+    } 
+#define HIGHRES_PUSH( dctx ) \
+    XP_LOGF( "HIGHRES_PUSH line %d", __LINE__ ); \
+    if ( (dctx)->doHiRes ) { \
+        XP_ASSERT( (dctx)->oldCoord == 0 ); \
+        (dctx)->oldCoord = WinSetCoordinateSystem( kCoordinatesNative ); \
+    } 
+#define HIGHRES_POP(dctx) \
+    XP_LOGF( "HIGHRES_POP line %d", __LINE__ ); \
+    if ( (dctx)->doHiRes ) { \
+         (void)WinSetCoordinateSystem( (dctx)->oldCoord ); \
+        (dctx)->oldCoord = 0; \
+    } 
+#else
+#define HIGHRES_PUSH(dctx)
+#define HIGHRES_PUSH_LOC(dctx)
+#define HIGHRES_PUSH_NOPOP(dctx)
+#define HIGHRES_POP(dctx)
+#define HIGHRES_POP_LOC(dctx)
+#endif
+
 static void
 eraseRect( /* PalmDrawCtx* dctx,  */XP_Rect* rect )
 {
@@ -119,11 +159,9 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
     WinSetTextColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
     WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_WHITE] );
-#ifdef FEATURE_HIGHRES
-    if ( dctx->doHiRes ) {
-        (void)WinSetCoordinateSystem( kCoordinatesNative );
-    }
-#endif
+
+    HIGHRES_PUSH_NOPOP(dctx);
+
     return XP_TRUE;
 } /* palm_clr_draw_boardBegin */
 
@@ -338,11 +376,8 @@ palm_clr_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect,
     WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_TILE] );
     WinSetTextColor( dctx->drawingPrefs->drawColors[COLOR_PLAYER1+owner] );
     WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_PLAYER1+owner] );
-#ifdef FEATURE_HIGHRES
-    if ( dctx->doHiRes ) {
-        (void)WinSetCoordinateSystem( kCoordinatesNative );
-    }
-#endif
+
+    HIGHRES_PUSH_NOPOP(dctx);
 
     palm_bnw_draw_trayBegin( p_dctx, rect, owner, hasfocus );
     return XP_TRUE;
@@ -538,6 +573,8 @@ palm_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers,
                       XP_Bool hasfocus )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+
+    HIGHRES_PUSH( dctx );
 
     WinGetClip( &dctx->oldScoreClip );
     WinSetClip( (RectangleType*)rect );
@@ -776,8 +813,8 @@ palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
     XP_Bool vertical = !globals->gState.showGrid;
 
     palmFormatScore( (char*)scoreBuf, dsi, vertical );
-    palmMeasureDrawText( dctx, rInner, (XP_UCHAR*)scoreBuf, vertical, dsi->isTurn,
-                         SCORE_SEP, XP_TRUE );
+    palmMeasureDrawText( dctx, rInner, (XP_UCHAR*)scoreBuf, vertical, 
+                         dsi->isTurn, SCORE_SEP, XP_TRUE );
 
     if ( vertical && dsi->isTurn ) {
         RectangleType r = *(RectangleType*)rInner;
@@ -810,6 +847,8 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
     RectangleType oldClip, newClip;
     XP_U16 x = rect->left + 1;
 
+    HIGHRES_PUSH_LOC(dctx);
+
     str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
 
     WinGetClip( &oldClip );
@@ -840,6 +879,8 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
                       rect->top + (rect->height/2) - 1 );
         WinSetClip( &oldClip );
     }
+
+    HIGHRES_POP_LOC(dctx);
 } /* palm_draw_score_pendingScore */
 
 static void
@@ -847,6 +888,8 @@ palm_draw_scoreFinished( DrawCtx* p_dctx )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     WinSetClip( &dctx->oldScoreClip );
+
+    HIGHRES_POP(dctx);
 } /* palm_draw_scoreFinished */
 
 static void
@@ -935,12 +978,15 @@ static void
 palm_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str, 
                             XP_U16* widthP, XP_U16* heightP )
 {
+    HIGHRES_PUSH_LOC( (PalmDrawCtx*)p_dctx );
     /*     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx; */
     FntSetFont( stdFont );
     /* 8 stolen from xwords.c*/
     *widthP = FntCharsWidth( (const char*)str, 
                              XP_STRLEN((const char*)str) ) + 8;
     *heightP = VALUE_HINT_RECT_HEIGHT;
+
+    HIGHRES_POP_LOC( (PalmDrawCtx*)p_dctx );
 } /* palm_draw_measureMiniWText */
 
 typedef struct MiniWinData {
@@ -960,6 +1006,8 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
 #ifdef MEM_DEBUG
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 #endif
+
+    HIGHRES_PUSH_LOC(dctx);
 
     if ( hasClosure ) {
         if ( !data ) {
@@ -982,16 +1030,21 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
     WinDrawRectangleFrame( popupFrame, &localR );
     WinDrawChars( (const char*)text, XP_STRLEN((const char*)text), 
                   localR.topLeft.x+2, localR.topLeft.y+1 );
+
+    HIGHRES_POP_LOC( dctx );
 } /* palm_draw_drawMiniWindow */
 
 static void
 palm_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
                            void** closure, XP_Bool* invalUnder )
 {
+#ifdef FEATURE_HIGHRES
+    *invalUnder = XP_TRUE;      /* cop out (for now) */
+#else
     MiniWinData* data = *closure;
-#ifdef DEBUG
+# ifdef DEBUG
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-#endif
+# endif
 
     if ( !!closure && !!*closure ) {
         /* this DELETES data->bitsBehind */
@@ -999,6 +1052,7 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
         XP_FREE( dctx->mpool, data );
         *closure = NULL;
     }
+#endif
 } /* palm_draw_eraseMiniWindow */
 
 static void
