@@ -20,6 +20,8 @@
 #ifndef _CEHNTLIM_H_
 #define _CEHNTLIM_H_
 
+#ifdef XWFEATURE_SEARCHLIMIT
+
 #include "cemain.h"
 
 typedef struct HintLimitsState {
@@ -30,5 +32,7 @@ typedef struct HintLimitsState {
 } HintLimitsState;
 
 LRESULT CALLBACK HintLimitsDlg(HWND, UINT, WPARAM, LPARAM);
+
+#endif /* XWFEATURE_SEARCHLIMIT */
 
 #endif
