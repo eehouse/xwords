@@ -32,7 +32,6 @@ typedef enum {
     ON_MMC
 } FileLoc ;
 
-#define FRANK_DICT_VERSION_1 0x0001
 #define FRANK_DICT_FLAGS_ERROR 0xFFFF
 
 U16 GetDictFlags( ebo_enumerator_t* eboe, FileLoc loc );
