@@ -198,7 +198,7 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
         DrawText( hdc, widebuf, -1, &rt, 
                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
     } else if ( !!bitmap ) {
-        makeAndDrawBitmap( dctx, hdc, rt.left + 2, rt.top + 3, foreColorRef,
+        makeAndDrawBitmap( dctx, hdc, rt.left + 2, rt.top + 2, foreColorRef,
                            (CEBitmapInfo*)bitmap );
     } else if ( isStar ) {
         ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, dctx->origin );
@@ -288,7 +288,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
         DrawText( hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_TOP | DT_LEFT );
         SelectObject( hdc, oldFont );
     } else if ( !!bitmap  ) {
-        makeAndDrawBitmap( dctx, hdc, rt.left + 1, rt.top + 4, 
+        makeAndDrawBitmap( dctx, hdc, rt.left + 1, rt.top + 5, 
                            dctx->globals->appPrefs.colors[USER_COLOR1+dctx->trayOwner],
                            (CEBitmapInfo*)bitmap );
     }
