@@ -15,7 +15,7 @@
 # 	../inc/helloworldbasicappview.h \
 # 	../inc/helloworldbasicdocument.h \
 
-# BLDMAKE_FLAGS = -v
+BLDMAKE_FLAGS = -v
 
 all: wins
 
@@ -27,11 +27,11 @@ armi_bld:
 	bldmake $(BLDMAKE_FLAGS) bldfiles
 	abLD.BAT build $(BLDMAKE_FLAGS) armi urel
 
-armi:
-	bldmake $(BLDMAKE_FLAGS) bldfiles
-	abLD.BAT build $(BLDMAKE_FLAGS) armi urel
+# armi:
+# 	bldmake $(BLDMAKE_FLAGS) bldfiles
+# 	abLD.BAT build $(BLDMAKE_FLAGS) armi udeb
 
-sis: armi xwords.pkg
+sis: armi_bld xwords.pkg
 	makesis xwords.pkg
 
 xwords.pkg:
@@ -57,6 +57,7 @@ vc6:
 	makmake.exe xwords vc6
 
 clean:
+	rm -f xwords.SIS
 	abLD.BAT clean wins udeb
 	abLD.BAT clean armi udeb
 	bldmake $(BLDMAKE_FLAGS) clean
