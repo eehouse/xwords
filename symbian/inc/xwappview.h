@@ -26,6 +26,7 @@
 #include <eikbctrl.h>
 
 #include "game.h"
+#include "memstream.h"
 #include "symdraw.h"
 
 /*! 
@@ -99,18 +100,21 @@ class CXWordsAppView : public CCoeControl
     int HandleCommand( TInt aCommand );
     TBool HandleKeyEvent( const TKeyEvent& aKeyEvent );
 
-    void RunAlert( TInt resourceID );
-
  private:
     /* open game from prefs or start a new one. */
     void InitGameL();
     void DeleteGame();
     void SetUpUtil();
     void PositionBoard();
+    void DisplayFinalScoresL();
+    XWStreamCtxt* MakeSimpleStream( MemStreamCloseCallback cb );
+    TBool AskFromResId( TInt aResource );
+
 
     static void        sym_util_requestTime( XW_UtilCtxt* uc );
     static VTableMgr*  sym_util_getVTManager( XW_UtilCtxt* uc );
     static XP_U32      sym_util_getCurSeconds( XW_UtilCtxt* uc );
+    static void        sym_util_notifyGameOverL( XW_UtilCtxt* uc );
 
     static TInt TimerCallback( TAny* aThis );
 
