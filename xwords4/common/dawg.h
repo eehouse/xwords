@@ -29,10 +29,17 @@
  * bit that's overflow from the highByte field allowing indices to be in
  * the range 0-(2^^17)-1
  */
-#define LETTERMASK 0x1f
-#define ACCEPTINGMASK 0x20
-#define LASTEDGEMASK 0x40
-#define LASTBITMASK 0x80
+#define LETTERMASK_OLD 0x1f
+#define ACCEPTINGMASK_OLD 0x20
+#define LASTEDGEMASK_OLD 0x40
+#define EXTRABITMASK_OLD 0x80
+
+#define LETTERMASK_NEW_4 0x3f
+#define LETTERMASK_NEW_3 0x1f
+#define ACCEPTINGMASK_NEW 0x80
+#define LASTEDGEMASK_NEW 0x40
+/* This guy doesn't exist in 4-byte case */
+#define EXTRABITMASK_NEW 0x20
 
 typedef struct array_edge_old {
     XP_U8 highByte;
