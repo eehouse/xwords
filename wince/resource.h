@@ -18,12 +18,13 @@
 #define IDD_OPTIONSDLG                  117
 #ifdef XWFEATURE_CE_EDITCOLORS
 # define IDD_COLORSDLG                  118
+# define IDD_COLOREDITDLG               119
 #endif
-#define IDB_FLIPBUTTON                  119
-#define IDB_VALUESBUTTON                120
-#define IDB_HINTBUTTON                  121
-#define IDB_JUGGLEBUTTON                122
-#define IDB_ORIGIN                      123
+#define IDB_FLIPBUTTON                  120
+#define IDB_VALUESBUTTON                121
+#define IDB_HINTBUTTON                  122
+#define IDB_JUGGLEBUTTON                123
+#define IDB_ORIGIN                      124
 
 #define FLIP_BUTTON_ID                  1001
 #define VALUE_BUTTON_ID                 1002
@@ -107,9 +108,22 @@
 # define TPLWRD_LABEL                   1071
 # define EMPTYCELL_LABEL                1072
 # define TILEBACK_LABEL                 1073
-#endif
 
+/* editor dlg: assumption is that the edit field's ID is one more
+   than the corresponding slider's */
+# ifdef MY_COLOR_SEL
+#  define CLREDT_SLIDER1                 1074
+#  define RED_EDIT                       1075
+#  define CLREDT_SLIDER2                 1076
+#  define GREEN_EDIT                     1077
+#  define CLREDT_SLIDER3                 1078
+#  define BLUE_EDIT                      1079
 
+#  define RED_LABEL                      1080
+#  define GREEN_LABEL                    1081
+#  define BLUE_LABEL                     1082
+# endif // MY_COLOR_SEL
+#endif // XWFEATURE_CE_EDITCOLORS
 
 #define IDM_FILE_EXIT                   40002
 #define IDM_HELP_ABOUT                  40003
@@ -144,9 +158,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        124
+#define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40025
-#define _APS_NEXT_CONTROL_VALUE         1074
+#define _APS_NEXT_CONTROL_VALUE         1077
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

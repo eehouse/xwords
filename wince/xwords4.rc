@@ -361,6 +361,55 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,20,BUTTON_ROW,38,14
     PUSHBUTTON      "Cancel",IDCANCEL,70,BUTTON_ROW,39,14
 END
+
+//
+// Editor for individual colors
+//
+#ifdef MY_COLOR_SEL
+#define CLRELABEL_COL 3
+#define CLREEDIT_COL  25
+#define CLRESLIDER_COL 50
+#define CLRE_LAB_WIDTH 22
+#define CLRE_LAB_HT    12
+#define CLREDIT_ROW_1 40
+#define CLREDIT_ROW_2 56
+#define CLREDIT_ROW_3 72
+
+IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 20, 130, 125
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Edit color"
+FONT 8, "System"
+BEGIN
+    LTEXT           "Red:",RED_LABEL,CLRELABEL_COL,CLREDIT_ROW_1,
+                    CLRE_LAB_WIDTH,CLRE_LAB_HT
+    EDITTEXT        RED_EDIT,CLREEDIT_COL,CLREDIT_ROW_1,18,12,
+                    ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "foo",CLREDT_SLIDER1,"msctls_trackbar32",
+                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
+                    CLRESLIDER_COL,CLREDIT_ROW_1,50,15
+
+    LTEXT           "Green:",GREEN_LABEL,CLRELABEL_COL,CLREDIT_ROW_2,
+                    CLRE_LAB_WIDTH,CLRE_LAB_HT
+    EDITTEXT        GREEN_EDIT,CLREEDIT_COL,CLREDIT_ROW_2,18,12,
+                    ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "foo",CLREDT_SLIDER2,"msctls_trackbar32",
+                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
+                    CLRESLIDER_COL,CLREDIT_ROW_2,50,15
+
+    LTEXT           "Blue:",BLUE_LABEL,CLRELABEL_COL,CLREDIT_ROW_3,
+                    CLRE_LAB_WIDTH,CLRE_LAB_HT
+    EDITTEXT        BLUE_EDIT,CLREEDIT_COL,CLREDIT_ROW_3,18,12,
+                    ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "foo",CLREDT_SLIDER3,"msctls_trackbar32",
+                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
+                    CLRESLIDER_COL,CLREDIT_ROW_3,50,15
+
+    DEFPUSHBUTTON   "OK",IDOK,20,100,38,14
+    PUSHBUTTON      "Cancel",IDCANCEL,70,100,39,14
+END
+
+#endif
+
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
