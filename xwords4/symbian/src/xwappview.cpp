@@ -34,6 +34,7 @@
 #include <stringloader.h>
 #include <stdlib.h>             // for srand
 #include <s32file.h>
+#include <eikapp.h>
 
 #include "xwappview.h"
 #include "xwappui.h"
@@ -51,22 +52,23 @@
 #include "LocalizedStrIncludes.h"
 
 // Standard construction sequence
-CXWordsAppView* CXWordsAppView::NewL(const TRect& aRect)
+CXWordsAppView* CXWordsAppView::NewL(const TRect& aRect, CEikApplication* aApp )
 {
-    CXWordsAppView* self = CXWordsAppView::NewLC(aRect);
+    CXWordsAppView* self = CXWordsAppView::NewLC( aRect, aApp );
     CleanupStack::Pop(self);
     return self;
 }
 
-CXWordsAppView* CXWordsAppView::NewLC(const TRect& aRect)
+CXWordsAppView* CXWordsAppView::NewLC(const TRect& aRect, CEikApplication* aApp )
 {
-    CXWordsAppView* self = new (ELeave) CXWordsAppView;
+    CXWordsAppView* self = new (ELeave) CXWordsAppView( aApp );
     CleanupStack::PushL(self);
     self->ConstructL(aRect);
     return self;
 }
 
-CXWordsAppView::CXWordsAppView()
+CXWordsAppView::CXWordsAppView( CEikApplication* aApp )
+    : iApp( aApp )
 {
 #ifdef DEBUG
     TInt processHandleCount, threadHandleCount;
@@ -178,7 +180,8 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
     GetXwordsRWDir( &basePath, EGamesLoc );
     iGamesMgr = CXWGamesMgr::NewL( MPPARM(mpool) iCoeEnv, &basePath );
 
-    iDraw = sym_drawctxt_make( MPPARM(mpool) &SystemGc(), iCoeEnv, iEikonEnv );
+    iDraw = sym_drawctxt_make( MPPARM(mpool) &SystemGc(), iCoeEnv, 
+                               iEikonEnv, iApp );
     User::LeaveIfNull( iDraw );
 
     if ( !FindAllDicts() ) {
@@ -412,7 +415,7 @@ CXWordsAppView::sym_util_makeEmptyDict( XW_UtilCtxt* uc )
     CXWordsAppView* self = (CXWordsAppView*)uc->closure;
 
     DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(self->mpool)
-                                                 NULL );
+                                                 NULL, NULL );
     return dict;
 }
 
@@ -598,8 +601,10 @@ CXWordsAppView::MakeOrLoadGameL()
 #endif
                      );
 
+        TFileName path;
+        GetXwordsRWDir( &path, EDictsLoc );        
         DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) 
-                                                     iGi.dictName );
+                                                     &path, iGi.dictName );
         User::LeaveIfNull( dict );
 
         XP_U16 newGameID = SC( XP_U16, sym_util_getCurSeconds( &iUtil ) );
@@ -1000,29 +1005,21 @@ CXWordsAppView::NotImpl()
 void
 CXWordsAppView::GetXwordsRWDir( TFileName* aPathRef, TDriveReason aWhy )
 {
-    aPathRef->Delete( 0, aPathRef->Length() );
+    TFileName fn = iApp->BitmapStoreName(); /* isn't the a method to just get
+                                               the path? */
+    TParse nameParser;
+    nameParser.Set( fn, NULL, NULL );
+    TPtrC path = nameParser.DriveAndPath();
 
     switch( aWhy ) {
     case EGamesLoc:
-        aPathRef->Append( _L("C:") ); /* read-write: must be on C */
-        break;
     case EDictsLoc:
-#if defined __WINS__
-        aPathRef->Append( _L("Z:") );
-#elif defined __MARM__
-        aPathRef->Append( _L("C:") );
-#endif
+        aPathRef->Copy( nameParser.DriveAndPath() );
         break;
     case EPrefsLoc:
+        aPathRef->Copy( nameParser.Path() );
         break;                  /* don't want a drive */
     }
-
-#ifdef XWORDS_DIR
-    _LIT( dir,"\\system\\apps\\" XWORDS_DIR "\\" );
-#else
-    _LIT( dir,"\\system\\apps\\xwords_80\\" );
-#endif
-    aPathRef->Append( dir );
 } /* GetXwordsRWDir */
 
 _LIT(filename,"xwdata.dat");
@@ -1127,8 +1124,11 @@ CXWordsAppView::DoNewGame()
         DictionaryCtxt* prevDict = model_getDictionary( iGame.model );
         if ( 0 != XP_STRCMP( dict_getName(prevDict), iGi.dictName ) ) {
             dict_destroy( prevDict );
+
+            TFileName path;
+            GetXwordsRWDir( &path, EDictsLoc );        
             DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) 
-                                                         iGi.dictName );
+                                                         &path, iGi.dictName );
             model_setDictionary( iGame.model, dict );
         }
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -1180,6 +1180,7 @@ void
 CXWordsAppView::LoadOneGameL( TGameName* aGameName )
 {
     XWStreamCtxt* stream = MakeSimpleStream( NULL );
+    DictionaryCtxt* dict;
 
     iGamesMgr->LoadGameL( aGameName, stream );
     
@@ -1188,7 +1189,9 @@ CXWordsAppView::LoadOneGameL( TGameName* aGameName )
     stream_getBytes( stream, dictName, len );
     dictName[len] = '\0';
 
-    DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) dictName );
+    TFileName path;
+    GetXwordsRWDir( &path, EDictsLoc );        
+    dict = sym_dictionary_makeL( MPPARM(mpool) &path, dictName );
     XP_ASSERT( !!dict );
 
     game_makeFromStream( MPPARM(mpool) stream, &iGame, 

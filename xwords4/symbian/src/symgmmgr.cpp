@@ -27,6 +27,7 @@ extern "C" {
 #if defined SERIES_60
 # include <eikenv.h>
 #endif
+#include <apparc.h>
 
 _LIT( kGameTypeExt, ".xwg" );
 
@@ -145,16 +146,18 @@ CXWGamesMgr::GameNameToPath( TFileName* aPath, const TDesC16* aName )
 void
 CXWGamesMgr::MakeDefaultName( TGameName* aName )
 {
-    /* return a unique new name */
-    for ( ; ; ) {
-        aName->Delete( 0, 256 );
-        aName->Append( _L("game") );
-        aName->AppendNum( ++iGameCount );
+    RFs fs = iCoeEnv->FsSession();
+    TFileName nameD;
+    TGameName tmpName( _L("game") );
+    GameNameToPath( &nameD, &tmpName );
 
-        if ( !Exists( aName ) ) {
-            break;
-        }
-    }
+    TInt err = CApaApplication::GenerateFileName( fs, nameD );
+    User::LeaveIfError( err );
+
+    TParse nameParser;
+    nameParser.Set( nameD, NULL, NULL );
+
+    aName->Copy( nameParser.Name() );
 } // MakeDefaultName
 
 void 

@@ -30,8 +30,8 @@ extern "C" {
 #include "mempool.h"
 }
 
-
-DictionaryCtxt* sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName );
+DictionaryCtxt* sym_dictionary_makeL( MPFORMAL TFileName* path,
+                                      const XP_UCHAR* aDictName );
 
 
 #endif

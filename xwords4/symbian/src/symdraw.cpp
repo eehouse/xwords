@@ -26,6 +26,8 @@ extern "C" {
 
 } // extern "C"
 
+#include <eikapp.h>
+
 #if defined SERIES_60
 
 # include <w32std.h>
@@ -35,6 +37,7 @@ extern "C" {
 # define BMNAME( file, bm ) file ## _60 ## bm
 
 #elif defined SERIES_80
+# include <eikappui.h>
 # include <cknenv.h>
 # include <coemain.h>
 # include "xwords_80.mbg"
@@ -751,7 +754,7 @@ figureFonts( SymDrawCtxt* sctx )
 
 DrawCtx* 
 sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv, 
-                   CEikonEnv* aEikonEnv )
+                   CEikonEnv* aEikonEnv, CEikApplication* aApp )
 {
     XP_LOGF( "in sym_drawctxt_make" );
     SymDrawCtxt* sctx = (SymDrawCtxt*)XP_MALLOC( mpool, sizeof( *sctx ) );
@@ -818,16 +821,8 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
             sctx->colors[COLOR_TRPL_WORD] = KRgbCyan;
 
             figureFonts( sctx );
-
-            /* this path will change for other platforms/devices!!! */
-#if defined __WINS__
-            _LIT( kBitmapsPath, "z:\\system\\apps\\" XWORDS_DIR 
-                  "\\" XWORDS_DIR ".mbm" );
-#elif defined __MARM__
-            _LIT( kBitmapsPath, "c:\\system\\apps\\" XWORDS_DIR 
-                  "\\" XWORDS_DIR ".mbm" );
-#endif
-            TFileName bitmapFile( kBitmapsPath );
+            
+            TFileName bitmapFile = aApp->BitmapStoreName();
 
             XP_LOGF( "loading bitmaps0" );
             sctx->iDownArrow = new (ELeave) CFbsBitmap();
