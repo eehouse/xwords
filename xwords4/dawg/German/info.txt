@@ -17,9 +17,11 @@
 LANGCODE:de_DE
 
 
+# deal with DOS files
+LANGFILTER_PRECLIP: tr -d '\r' |
+
 # substitute for sharfes-s
 LANGFILTER_PRECLIP: sed -e 's/ß/SS/g' |
-
 
 # uppercase all
 LANGFILTER_POSTCLIP: | tr [a-zäöü] [A-ZÄÖÜ]
@@ -27,7 +29,7 @@ LANGFILTER_POSTCLIP: | tr [a-zäöü] [A-ZÄÖÜ]
 LANGFILTER_POSTCLIP: | grep '[AEIOUÄÖÜ]' 
 # none with illegal chars
 LANGFILTER_POSTCLIP: | grep '^[A-ZÄÖÜ]\+$'
-LANGFILTER_POSTCLIP: | tr -s '\n\r' '\000\000'
+LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
 
 # Until I can figure out how to force sort to use a locale's collation
 # rules we can't trust sort in the filtering rules above and so must
