@@ -25,7 +25,7 @@
 #include "xptypes.h"
 #include "cemain.h"
 
-XP_Bool ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals );
+XP_Bool ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors );
 
 #endif
 
