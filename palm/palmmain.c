@@ -289,7 +289,6 @@ locateTrayButtons( PalmAppGlobals* globals, XP_U16 trayTop, XP_U16 trayHt )
         return XP_FALSE;
     }
 
-    trayTop /= 2;           /* get out of highres coords */
     getObjectBounds( XW_MAIN_HIDE_BUTTON_ID, &rect );
     diff = trayTop - rect.topLeft.y;
 
@@ -452,7 +451,7 @@ positionBoard( PalmAppGlobals* globals )
 
     board_prefsChanged( globals->game.board, &globals->gState.cp );
 
-    locateTrayButtons( globals, trayTop, trayScaleV );
+    locateTrayButtons( globals, trayTop/doubler, trayScaleV );
 
 #ifdef SHOW_PROGRESS
     if ( showGrid ) {
