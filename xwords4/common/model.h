@@ -230,6 +230,13 @@ void model_store( ModelCtxt* model, XP_Stream* outStream );
 #endif
 
 
+/* a utility function needed by server too.  Not a clean design, this. */
+void model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
+                          XP_Bool includeBlank, 
+                          XP_U16* nUsed, XP_UCHAR4* texts,
+                          Tile* tiles );
+
+
 #ifdef CPLUS
 }
 #endif
