@@ -254,7 +254,6 @@ evt68k2evtARM( EventType* event, const unsigned char* evt68k )
 
     evt68k += 8;                /* skip to start of data union */
 
-    XP_LOGF( "evt68k2evtARM(%d)", event->eType );
     switch ( event->eType ) {
     case frmLoadEvent:
     case frmOpenEvent:
@@ -336,7 +335,6 @@ evtArm2evt68K( unsigned char* evt68k, const EventType* event )
 
     evt68k += 8;
 
-    XP_LOGF( "evtArm2evt68K(%d)", event->eType );
     switch ( event->eType ) {
     case frmLoadEvent:
     case frmOpenEvent:
@@ -350,7 +348,6 @@ evtArm2evt68K( unsigned char* evt68k, const EventType* event )
                    == &event->data.frmUpdate.formID );
         write_unaligned16( evt68k, event->data.frmLoad.formID );
         write_unaligned16( evt68k + 2, event->data.frmUpdate.updateCode );
-        XP_LOGF( "frmid=%d", event->data.frmLoad.formID );
         break;
     case keyDownEvent:
         write_unaligned16( evt68k, event->data.keyDown.chr );
@@ -465,7 +462,6 @@ FrmDispatchEvent( EventType* eventP )
     Boolean result;
     EventType event68k;
     FUNC_HEADER(FrmDispatchEvent);
-    XP_LOGF("in FrmDispatchEvent" );
     evtArm2evt68K( (unsigned char*)&event68k, eventP );
     {
         PNOState* sp = GET_CALLBACK_STATE();
@@ -476,7 +472,6 @@ FrmDispatchEvent( EventType* eventP )
                                                PceNativeTrapNo(sysTrapFrmDispatchEvent),
                                                stack, 4 );
     }
-    XP_LOGF("FrmDispatchEvent: back from PACE" );
     FUNC_TAIL(FrmDispatchEvent);
     return result;
 } /* FrmDispatchEvent */
@@ -515,7 +510,7 @@ handlerEntryPoint( const void* emulStateP,
 {
     unsigned long* data = (unsigned long*)userData68KP;
     FormEventHandlerType* handler
-        = (FormEventHandlerType*)read_unaligned32( (unsigned long*)&data[0] );
+        = (FormEventHandlerType*)read_unaligned32( (unsigned char*)&data[0] );
     PNOState* state = getStorageLoc();
     unsigned long oldR10;
     EventType evtArm;
@@ -525,9 +520,8 @@ handlerEntryPoint( const void* emulStateP,
     asm( "mov %0, r10" : "=r" (oldR10) );
     asm( "mov r10, %0" : : "r" (state->gotTable) );
 
-    XP_LOGF( "handlerEntryPoint" );
     evt68k2evtARM( &evtArm,
-                   (unsigned char*)read_unaligned32(&data[1]) );
+                   (unsigned char*)read_unaligned32( (unsigned char*)&data[1]) );
 
     result = (*handler)(&evtArm);
 
@@ -582,7 +576,6 @@ void
 FrmSetEventHandler( FormType* formP, FormEventHandlerType* handler )
 {
     FUNC_HEADER(FrmSetEventHandler);
-    XP_LOGF( "FrmSetEventHandler called" );
     {
         PNOState* sp = GET_CALLBACK_STATE();
         unsigned char* handlerStub = makeHandlerStub( handler );
@@ -594,7 +587,6 @@ FrmSetEventHandler( FormType* formP, FormEventHandlerType* handler )
                              PceNativeTrapNo(sysTrapFrmSetEventHandler),
                              stack, 8 );
     }
-    XP_LOGF( "FrmSetEventHandler done" );
     FUNC_TAIL(FrmSetEventHandler);
 } /* FrmSetEventHandler */
 
@@ -654,9 +646,9 @@ flipEngSocketFromArm( unsigned char* sout, const ExgSocketType* sin )
        bits, and pray that no arm code wants to to use it. */
 	write_unaligned16( &sout[46], Byte_Swap16(*(UInt16*)((unsigned char*)&sin->goToParams.matchCustom) 
                        + sizeof(sin->goToParams.matchCustom)) );
-	write_unaligned32( &sout[48], Byte_Swap32(sin->description) );	// Char *description;
-	write_unaligned32( &sout[52], Byte_Swap32(sin->type) );	// Char *type;
-	write_unaligned32( &sout[56], Byte_Swap16(sin->name) );	// Char *name;
+	write_unaligned32( &sout[48], Byte_Swap32((unsigned long)sin->description) );	// Char *description;
+	write_unaligned32( &sout[52], Byte_Swap32((unsigned long)sin->type) );	// Char *type;
+	write_unaligned32( &sout[56], Byte_Swap16((unsigned long)sin->name) );	// Char *name;
 } /* flipEngSocketFromArm */
 
 void
@@ -729,3 +721,140 @@ LstSetListChoices( ListType* listP, Char** itemsText, Int16 numItems )
     FUNC_TAIL(LstSetListChoices);
     EMIT_NAME("LstSetListChoices","'L','s','t','S','e','t','L','i','s','t','C','h','o','i','c','e','s'");
 } /* LstSetListChoices */
+
+static void
+params68KtoParamsArm( SysNotifyParamType* paramsArm,
+                      const unsigned char* params68K )
+{
+    paramsArm->notifyType = read_unaligned32( &params68K[0] );
+    paramsArm->broadcaster = read_unaligned32( &params68K[4] );
+    paramsArm->notifyDetailsP = (void*)read_unaligned32( &params68K[8] );
+    paramsArm->userDataP = (void*)read_unaligned32( &params68K[12] );
+    paramsArm->handled = read_unaligned8( &params68K[16] );
+
+    /* I don't do anything with the data passed in, so no need to swap it...
+       But that'd change for others: make an ARM-corrected copy of the
+       contents of notifyDetailsP if your handler will use it. */
+    switch( paramsArm->notifyType ) {
+    case sysNotifyVolumeUnmountedEvent:
+    case sysNotifyVolumeMountedEvent:
+        break;
+#ifdef FEATURE_HIGHRES                                 
+    case sysNotifyDisplayChangeEvent:
+        break;
+#endif
+    }
+
+} /* params68KtoParamsArm */
+
+static void
+paramsArmtoParams68K( unsigned char* params68K, 
+                      const SysNotifyParamType* armParams )
+{
+    write_unaligned8( &params68K[16], armParams->handled );
+} /* paramsArmtoParams68K */
+
+unsigned long
+notifyEntryPoint( const void* emulStateP, 
+                  void* userData68KP, 
+                  Call68KFuncType* call68KFuncP )
+{
+    unsigned long* data = (unsigned long*)userData68KP;
+    SysNotifyProcPtr callback
+        = (SysNotifyProcPtr)read_unaligned32( (unsigned long*)&data[0] );
+    SysNotifyParamType armParams;
+    PNOState* state = getStorageLoc();
+    unsigned long oldR10;
+    unsigned char* params68K;
+    Err result;
+
+    /* set up stack here too? */
+    asm( "mov %0, r10" : "=r" (oldR10) );
+    asm( "mov r10, %0" : : "r" (state->gotTable) );
+
+    XP_ASSERT( emulStateP == state->emulStateP );
+    XP_ASSERT( call68KFuncP == state->call68KFuncP );
+
+    params68K = (unsigned char*)read_unaligned32(&data[1]);
+    params68KtoParamsArm( &armParams, params68K );
+
+    result = (*callback)(&armParams);
+
+    /* at least need to write 'handled' back out... */
+    paramsArmtoParams68K( params68K, &armParams );
+
+    asm( "mov r10, %0" : : "r" (oldR10) );
+
+    return (unsigned long)result;
+} /* notifyEntryPoint */
+
+/* The stub wants to look like this:
+   static Err SysNotifyProc(SysNotifyParamType *notifyParamsP) 
+   {
+       unsigned long data[] = { armNotifyHandler, notifyParamsP };
+       return (Err)PceNativeCall( handlerEntryPoint, (void*)data );
+   }
+ */
+static unsigned char*
+makeNotifyStub( SysNotifyProcPtr callback )
+{
+    unsigned char* stub;
+    unsigned char code_68k[] = {
+        /* 0:*/	0x4e, 0x56, 0xff, 0xf8,             // linkw %fp,#-8
+        /* 4:*/	0x20, 0x2e, 0x00, 0x08,         	// movel %fp@(8),%d0
+        /* 8:*/	0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, // movel #287454020,%fp@(-8)
+        /*14:*/ 0xff, 0xf8,                         // ????? REQUIRED!!!!
+        /*16:*/	0x2d, 0x40, 0xff, 0xfc,      	    // movel %d0,%fp@(-4)
+        /*20:*/	0x48, 0x6e, 0xff, 0xf8,      	    // pea %fp@(-8)
+        /*24:*/	0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88, // movel #1432778632,%sp@-
+        /*30:*/	0x4e, 0x4f,           	            // trap #15
+        /*32:*/	0xa4, 0x5a,                         // 0122132
+        /*34:*/	0x4e, 0x5e,           	            // unlk %fp
+        /*36:*/	0x4e, 0x75                          // rts
+    };
+
+    stub = MemPtrNew( sizeof(code_68k) );
+    memcpy( stub, code_68k, sizeof(code_68k) );
+
+    write_unaligned32( &stub[10], 
+                        /* replace 0x11223344 */
+                       (unsigned long)callback );
+    write_unaligned32( &stub[26], 
+                       /* replace 0x55667788 */
+                       (unsigned long)notifyEntryPoint );
+    /* Need to register this stub so it can be freed (once leaking ceases to
+       be ok on PalmOS) */
+    
+    return (unsigned char*)stub;
+} /* makeNotifyStub */
+
+/* from file NotifyMgr.h */
+Err
+SysNotifyRegister( UInt16 cardNo, LocalID dbID, UInt32 notifyType, 
+                   SysNotifyProcPtr callbackP, Int8 priority, void* userDataP )
+{
+    Err result;
+    FUNC_HEADER(SysNotifyRegister);
+    /* var decls */
+    /* swapIns */
+    {
+        PNOState* sp = GET_CALLBACK_STATE();
+        unsigned char* handlerStub = makeNotifyStub( callbackP );
+        STACK_START(unsigned char, stack, 20);
+        /* pushes */
+        ADD_TO_STACK2(stack, cardNo, 0);
+        ADD_TO_STACK4(stack, dbID, 2);
+        ADD_TO_STACK4(stack, notifyType, 6);
+        ADD_TO_STACK4(stack, handlerStub, 10);
+        ADD_TO_STACK1(stack, priority, 14);
+        ADD_TO_STACK4(stack, userDataP, 16);
+        STACK_END(stack);
+        result = (Err)(*sp->call68KFuncP)( sp->emulStateP, 
+                                           PceNativeTrapNo(sysTrapSysNotifyRegister),
+                                           stack, 20 );
+        /* swapOuts */
+    }
+    FUNC_TAIL(SysNotifyRegister);
+    EMIT_NAME("SysNotifyRegister","'S','y','s','N','o','t','i','f','y','R','e','g','i','s','t','e','r'");
+    return result;
+} /* SysNotifyRegister */
