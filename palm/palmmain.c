@@ -176,7 +176,7 @@ static void initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame );
  ****************************************************************************/
 #define XW_MOVE_EXG_TYPE "XwMv"
 UInt32
-PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
+PM2(PilotMain)( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
     PalmAppGlobals* globals;
     if ( cmd == sysAppLaunchCmdNormalLaunch ) {
@@ -1040,7 +1040,7 @@ startApplication( PalmAppGlobals** globalsP )
     Boolean leftyFlag;
     MPSLOT;
 
-#ifdef FOR_GREMLINS
+#if defined FOR_GREMLINS || defined FEATURE_PNOAND68K || defined XW_TARGET_PNO
     SysRandom( 1 );
 #else
     SysRandom( TimGetTicks() );		/* initialize */
@@ -1234,7 +1234,7 @@ stopApplication( PalmAppGlobals* globals )
         if ( !globals->isFirstLaunch ) {
             /* temporarily don't save prefs since we crash on opening
                them. */
-#ifndef XW_TARGET_PNO
+#if ! defined XW_TARGET_PNO && ! defined FEATURE_PNOAND68K
             PrefSetAppPreferences( AppType, PrefID, VERSION_NUM, 
                                    &globals->gState, sizeof(globals->gState), 
                                    true );
@@ -2271,6 +2271,28 @@ mainViewHandleEvent( EventPtr event )
             beamBoard( globals );
             break;
 
+#ifdef FEATURE_PNOAND68K
+            /* This probably goes away at ship.... */
+        case XW_RUN68K_PULLDOWN_ID:
+        case XW_RUNARM_PULLDOWN_ID: {
+            UInt32 newVal, val;
+            Err err;
+            if ( event->data.menu.itemID == XW_RUN68K_PULLDOWN_ID ) {
+                newVal = WANTS_68K;
+            } else {
+                newVal = WANTS_ARM;
+            }
+            (void)FtrUnregister( APPID, WANTS_ARM_FEATURE );
+            err = FtrSet( APPID, WANTS_ARM_FEATURE, newVal );
+            XP_ASSERT( err == errNone );
+            err = FtrGet( APPID, WANTS_ARM_FEATURE, &val );
+            XP_ASSERT( err == errNone );
+            XP_ASSERT( val == newVal );
+            XP_LOGF( "WANTS_ARM_FEATURE now %ld", val );
+        }
+            break;
+#endif
+
         case XW_PASSWORDS_PULLDOWN_ID:
             globals->isNewGame = false;
             FrmPopupForm( XW_NEWGAMES_FORM );
@@ -3237,12 +3259,12 @@ palm_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
        events, and it appears that when there's an IR connection up the
        system floods us with nil events.*/
     XP_Bool eventPending = EvtSysEventAvail( true );
-
+#ifdef SHOW_PROGRESS
     if ( !eventPending ) {
         PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
         board_hiliteCellAt( globals->game.board, col, row );
     }
-
+#endif
     
     return !eventPending;
 } /* palm_util_hiliteCell */
