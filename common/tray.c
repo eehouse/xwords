@@ -103,8 +103,6 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
     XP_Rect tileRect;
     short i;
 
-    XP_LOGF( "drawTray" );
-
     if ( (board->trayInvalBits != 0) || board->dividerInvalid ) {
         XP_S16 turn = board->selPlayer;
 
