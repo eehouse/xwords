@@ -787,6 +787,19 @@ board_popTimerSave( BoardCtxt* board )
     }
 } /* board_popTimerSave */
 
+/* Figure out if the current player's tiles should be excluded, then call
+ * server to format.
+ */
+void
+board_formatRemainingTiles( BoardCtxt* board, XWStreamCtxt* stream )
+{
+    XP_S16 curPlayer = board->selPlayer;
+    if ( board->trayVisState != TRAY_REVEALED ) {
+        curPlayer = -1;
+    }
+    server_formatRemainingTiles( board->server, stream, curPlayer );
+} /* board_formatRemainingTiles */
+
 void
 board_invalAll( BoardCtxt* board )
 {

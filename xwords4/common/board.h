@@ -127,6 +127,8 @@ XP_Bool board_commitTurn( BoardCtxt* board );
 void board_pushTimerSave( BoardCtxt* board );
 void board_popTimerSave( BoardCtxt* board );
 
+void board_formatRemainingTiles( BoardCtxt* board, XWStreamCtxt* stream );
+
 #ifdef POINTER_SUPPORT
 XP_Bool board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y,
                              XP_Time when, XP_Bool* handled );
