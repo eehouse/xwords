@@ -282,7 +282,7 @@ cePositionBoard( CEAppGlobals* globals )
                             CE_SCORE_TOP, scoreWidth,
                             CE_SCORE_HEIGHT, XP_TRUE );
     board_setShowColors( globals->game.board, globals->appPrefs.showColors );
-    board_setYOffset( globals->game.board, 0, XP_FALSE /* why bother */ );
+    board_setYOffset( globals->game.board, 0 );
 
     board_prefsChanged( globals->game.board, &globals->appPrefs.cp );
 
