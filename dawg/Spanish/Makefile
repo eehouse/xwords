@@ -17,7 +17,7 @@
 
 LANG=Spanish
 LANGCODE=es_ES
-TARGET_TYPE ?= FRANK
+TARGET_TYPE ?= PALM
 
 ifeq ($(TARGET_TYPE),PALM)
 PBITMS = ./bmps/palm
@@ -39,7 +39,7 @@ include ../Makefile.langcommon
 #$(LANG)Main.dict.gz: SpanishMain.dict.gz
 #	ln -s $< $@
 
-$(LANG)Main.dict.gz: XavSpanish.dict.gz Makefile
+$(LANG)Main.dict.gz: $(XWDICTPATH)/$(LANG)/XavSpanish.dict.gz Makefile
 	zcat $< \
 	| tr '\207\216\222\227\234\237\226' 'aeiouu\321' \
 	| tr [a-zñ] [A-ZÑ] \
