@@ -2373,7 +2373,7 @@ rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 )
 } /* rectContainsRect */
 
 XP_Bool
-rectContainsPt( XP_Rect* rect, XP_U16 x, XP_U16 y )
+rectContainsPt( XP_Rect* rect, XP_S16 x, XP_S16 y )
 {
     /* 7/4 Made <= into <, etc., because a tap on the right boundary of the
        board was still mapped onto the board but dividing by scale put it in
@@ -2382,8 +2382,8 @@ rectContainsPt( XP_Rect* rect, XP_U16 x, XP_U16 y )
        out-of-bounds col/row to the nearest possible. */
     return ( rect->top <= y
              && rect->left <= x
-             && rect->top + rect->height >= y
-             && rect->left + rect->width >= x );
+             && (rect->top + rect->height) >= y
+             && (rect->left + rect->width) >= x );
 } /* rectContainsPt */
 
 XP_Bool

@@ -176,7 +176,7 @@ XP_Bool continueDividerDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool endDividerDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool moveTileToArrowLoc( BoardCtxt* board, XP_U8 index );
 XP_U16 indexForBits( XP_U8 bits );
-XP_Bool rectContainsPt( XP_Rect* rect1, XP_U16 x, XP_U16 y );
+XP_Bool rectContainsPt( XP_Rect* rect1, XP_S16 x, XP_S16 y );
 XP_Bool checkRevealTray( BoardCtxt* board );
 void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
 XP_Bool rectsIntersect( XP_Rect* rect1, XP_Rect* rect2 );
