@@ -985,27 +985,65 @@ palm_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
     return str;
 } /* palm_draw_getMiniWText */
 
-#define VALUE_HINT_RECT_HEIGHT 16
+static void
+splitString( XP_UCHAR* str, XP_U16* nBufsP, XP_UCHAR** bufs )
+{
+    XP_U16 nBufs = 0;
+
+    for ( ; ; ) {
+        XP_UCHAR* nextStr = StrStr( str, XP_CR );
+        XP_U16 len = nextStr==NULL? XP_STRLEN(str): nextStr - str;
+
+        XP_ASSERT( nextStr != str );
+
+        XP_MEMCPY( bufs[nBufs], str, len );
+        bufs[nBufs][len] = '\0';
+        ++nBufs;
+
+        if ( nextStr == NULL ) {
+            break;
+        }
+        str = nextStr + XP_STRLEN(XP_CR);	/* skip '\n' */
+    }
+    *nBufsP = nBufs;
+} /* splitString */
+
+#define VALUE_HINT_RECT_HEIGHT 12
 #define VALUE_HINT_RECT_HEIGHT_HR 29
 static void
 palm_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str, 
                             XP_U16* widthP, XP_U16* heightP )
 {
-    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx; 
-    HIGHRES_PUSH_LOC( dctx );
-    /*     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx; */
+    XP_U16 maxWidth, height;
+    XP_UCHAR buf1[48];
+    XP_UCHAR buf2[48];
+    XP_UCHAR* bufs[2] = { buf1, buf2 };
+    XP_U16 nBufs, i;
+
+    HIGHRES_PUSH_LOC( (PalmDrawCtx*)p_dctx );
     FntSetFont( stdFont );
-    /* 8 stolen from xwords.c*/
-    *widthP = FntCharsWidth( (const char*)str, 
-                             XP_STRLEN((const char*)str) ) + 8;
-    if ( 0 ) {
-#ifdef FEATURE_HIGHRES
-    } else if ( dctx->doHiRes ) {
-        *heightP = VALUE_HINT_RECT_HEIGHT_HR;        
-#endif
-    } else {
-        *heightP = VALUE_HINT_RECT_HEIGHT;
+
+    splitString( str, &nBufs, bufs );
+
+    for ( height = 0, maxWidth = 0, i = 0; i < nBufs; ++i ) {
+        XP_U16 oneWidth = 8 + FntCharsWidth( (const char*)bufs[i], 
+                                             XP_STRLEN(bufs[i]) );
+
+        maxWidth = XP_MAX( maxWidth, oneWidth );
+        height += VALUE_HINT_RECT_HEIGHT;
     }
+
+    *widthP = maxWidth;
+    *heightP = height + 2;
+
+/*     if ( 0 ) { */
+/* #ifdef FEATURE_HIGHRES */
+/*     } else if ( ((PalmDrawCtx*)p_dctx)->doHiRes ) { */
+/*         *heightP = VALUE_HINT_RECT_HEIGHT_HR;         */
+/* #endif */
+/*     } else { */
+/*         *heightP = VALUE_HINT_RECT_HEIGHT; */
+/*     } */
 
     HIGHRES_POP_LOC( (PalmDrawCtx*)p_dctx );
 } /* palm_draw_measureMiniWText */
@@ -1021,6 +1059,10 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
                           XP_Rect* rect, void** closureP )
 {
     RectangleType localR = *(RectangleType*)rect;
+    XP_UCHAR buf1[48];
+    XP_UCHAR buf2[48];
+    XP_UCHAR* bufs[2] = { buf1, buf2 };
+    XP_U16 nBufs, i, offset;
     XP_U16 ignoreErr;
     XP_Bool hasClosure = !!closureP;
     PalmMiniWinData* data = (PalmMiniWinData*)(hasClosure? *closureP: NULL);
@@ -1034,9 +1076,9 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
         if ( !data ) {
             data = XP_MALLOC( dctx->mpool, sizeof(PalmMiniWinData) );
 #ifdef FEATURE_HIGHRES
-            data->bitsBehind = WinSaveBits( &localR, &ignoreErr );
-#else
             data->bitsBehind = NULL;
+#else
+            data->bitsBehind = WinSaveBits( &localR, &ignoreErr );
 #endif
             data->miniX = localR.topLeft.x;
             data->miniY = localR.topLeft.y;
@@ -1053,8 +1095,20 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
     localR.extent.x -= 3;
     localR.extent.y -= 3;
     WinDrawRectangleFrame( popupFrame, &localR );
-    WinDrawChars( (const char*)text, XP_STRLEN((const char*)text), 
-                  localR.topLeft.x+2, localR.topLeft.y+1 );
+
+    splitString( text, &nBufs, bufs );
+
+    offset = 0;
+    for ( i = 0; i < nBufs; ++i ) {
+        XP_UCHAR* txt = bufs[i];
+        XP_U16 len = XP_STRLEN( txt );
+        XP_U16 width = FntCharsWidth( txt, len );
+
+        WinDrawChars( (const char*)txt, len,
+                      localR.topLeft.x + ((localR.extent.x-width)/2),
+                      localR.topLeft.y + 1 + offset );
+        offset += VALUE_HINT_RECT_HEIGHT;
+    }
 
     HIGHRES_POP_LOC( dctx );
 } /* palm_draw_drawMiniWindow */
