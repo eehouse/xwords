@@ -129,7 +129,7 @@ drawFocusRect( SymDrawCtxt* sctx, XP_Rect* rect, XP_Bool hasfocus )
 
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
     sctx->iGC->SetPenStyle( CGraphicsContext::EDottedPen );
-    XP_U16 index = static_cast<XP_U16>(hasfocus? COLOR_BLACK : COLOR_WHITE);
+    XP_U16 index = SC(XP_U16,(hasfocus? COLOR_BLACK : COLOR_WHITE));
     sctx->iGC->SetPenColor( sctx->colors[index] );
     sctx->iGC->DrawRect( lRect );
 } // drawFocusRect
@@ -237,7 +237,7 @@ makeRemText( XP_UCHAR* buf, XP_U16 bufLen, XP_S16 nLeft )
 } // makeRemText
 
 static void 
-sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r, 
+sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* /*r*/, 
                          XP_S16 nTilesLeft, 
                          XP_U16* widthP, XP_U16* heightP )
 {
@@ -254,7 +254,7 @@ sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r,
 
 static void
 sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner, 
-                     XP_Rect* rOuter, XP_S16 nTilesLeft)
+                     XP_Rect* /*rOuter*/, XP_S16 nTilesLeft)
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     XP_UCHAR buf[64];
@@ -276,7 +276,7 @@ sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner,
 
 static void
 sym_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, 
-                     XP_U16 numPlayers, XP_Bool hasfocus )
+                     XP_U16 /*numPlayers*/, XP_Bool hasfocus )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     drawFocusRect( sctx, rect, hasfocus );
@@ -295,7 +295,7 @@ figureScoreText( XP_UCHAR* buf, XP_U16 bufLen, DrawScoreInfo* dsi )
 } // figureScoreText
 
 static void
-sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r, 
+sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* /*r*/, 
                            DrawScoreInfo* dsi,
                            XP_U16* widthP, XP_U16* heightP )
 {
@@ -309,8 +309,8 @@ sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 	TInt width = font->TextWidthInPixels( tbuf );
     TInt height = font->HeightInPixels();
 
-    *widthP = width;
-    *heightP = height;
+    *widthP = SC( XP_U16, width);
+    *heightP = SC( XP_U16, height );
 }
 
 static void
@@ -358,7 +358,7 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
 
 static void
 sym_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, 
-                             XP_S16 score, XP_U16 playerNum )
+                             XP_S16 score, XP_U16 /*playerNum*/ )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     TRect lRect;
@@ -396,8 +396,9 @@ sym_draw_scoreFinished( DrawCtx* /*dctx*/ )
 }
 
 static void
-sym_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
-                    XP_U16 player, XP_S16 secondsLeft )
+sym_draw_drawTimer( DrawCtx* /*p_dctx*/, XP_Rect* /*rInner*/, 
+                    XP_Rect* /*rOuter*/,
+                    XP_U16 /*player*/, XP_S16 /*secondsLeft*/ )
 {
 }
 
@@ -432,9 +433,9 @@ static XP_Bool
 sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                    /* at least one of these two will be null */
                    XP_UCHAR* text, XP_Bitmap bitmap,
-                   XP_S16 owner, /* -1 means don't use */
-                   XWBonusType bonus, HintAtts hintAtts,
-                   XP_Bool isBlank, XP_Bool highlight, 
+                   XP_S16 /*owner*/, /* -1 means don't use */
+                   XWBonusType bonus, HintAtts /*hintAtts*/,
+                   XP_Bool /*isBlank*/, XP_Bool highlight, 
                    XP_Bool isStar )
 {
     TRect lRect;
@@ -443,7 +444,6 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     symLocalRect( &lRect, rect );
     sctx->iGC->SetClippingRect( lRect );
 
-    XP_U16 index = COLOR_TILE;
     TRgb rgb;
     if ( highlight ) { 
         rgb = sctx->colors[COLOR_BLACK];
@@ -472,18 +472,18 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
 }
 
 static void
-sym_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
+sym_draw_invertCell( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/ )
 {
 }
 
 static void
 sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, 
                    /* at least 1 of these two will be null*/
-                   XP_UCHAR* text, XP_Bitmap bitmap,
+                   XP_UCHAR* text, XP_Bitmap /*bitmap*/,
                    XP_S16 val, XP_Bool highlighted )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
-    XP_U16 index = COLOR_PLAYER1 + sctx->iTrayOwner;
+    XP_U16 index = SC(XP_U16,COLOR_PLAYER1 + sctx->iTrayOwner);
 
     TRect lRect;
     symLocalRect( &lRect, rect );
@@ -532,7 +532,6 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         txtbuf.Copy( tmpDesc );
 
         TInt width = font->TextWidthInPixels( txtbuf );
-        TInt ht = font->HeightInPixels();
         TPoint point( lRect.iBr.iX - width, lRect.iBr.iY );
         sctx->iGC->DrawText( txtbuf, point );
         sctx->iGC->DiscardFont();
@@ -547,7 +546,7 @@ sym_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* rect )
 
 static void
 sym_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, 
-                          XP_Bool selected )
+                          XP_Bool /*selected*/ )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     TRect lRect;
@@ -577,7 +576,7 @@ sym_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rect )
 static void
 sym_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect, 
                          XWBonusType bonus, XP_Bool vert,
-                         HintAtts hintAtts )
+                         HintAtts /*hintAtts*/ )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
 
@@ -629,28 +628,28 @@ sym_draw_drawBoardCursor( DrawCtx* p_dctx, XP_Rect* rect )
 #endif
 
 static XP_UCHAR*
-sym_draw_getMiniWText( DrawCtx* p_dctx, 
-                       XWMiniTextType textHint )
+sym_draw_getMiniWText( DrawCtx* /*p_dctx*/, 
+                       XWMiniTextType /*textHint*/ )
 {
     return (XP_UCHAR*)"";
 }
 
 static void
-sym_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* textP, 
-                           XP_U16* width, XP_U16* height )
+sym_draw_measureMiniWText( DrawCtx* /*p_dctx*/, XP_UCHAR* /*textP*/, 
+                           XP_U16* /*width*/, XP_U16* /*height*/ )
 {
 }
 
 static void
-sym_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text,
-                         XP_Rect* rect, void** closure )
+sym_draw_drawMiniWindow( DrawCtx* /*p_dctx*/, XP_UCHAR* /*text*/,
+                         XP_Rect* /*rect*/, void** /*closure*/ )
 {
 }
 
 static void
-sym_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect,
-                          XP_Bool lastTime, void** closure,
-                          XP_Bool* invalUnder )
+sym_draw_eraseMiniWindow( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/,
+                          XP_Bool /*lastTime*/, void** /*closure*/,
+                          XP_Bool* /*invalUnder*/ )
 {
 }
 
@@ -803,11 +802,11 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
 
             figureFonts( sctx );
 
-#if defined DEBUG && defined SERIES_80
+#if defined SERIES_80
             /* this path will change for other platforms/devices!!! */
-#if defined SYM_WINS
+#if defined __WINS__
             _LIT( kBitmapsPath, "z:\\system\\apps\\XWORDS\\xwbitmaps.mbm" );
-#elif defined SYM_ARMI
+#elif defined __MARM__
             _LIT( kBitmapsPath, "c:\\system\\apps\\XWORDS\\xwbitmaps.mbm" );
 #endif
             TFileName bitmapFile( kBitmapsPath );
