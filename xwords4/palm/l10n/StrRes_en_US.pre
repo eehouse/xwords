@@ -51,7 +51,7 @@
 { "STR_DEFAULT_NAME",		"Player %d" },
 { "STR_ABOUT_CONTENT", 
       "Crosswords " XW_PALM_VERSION_STRING ".\n" \
-      "Copyright 1998-2004 by Eric House.  "\
+      "Copyright 1998-2005 by Eric House.  "\
       "All rights reserved.\n\n"\
 
       "See the manual at xwords.sourceforge.net\n\n" \
@@ -63,7 +63,10 @@
       "Corvallis, OR 97330 USA\n\n"
 
       "Developed on Debian GNU/Linux using the prc-tools "\
-      "suite." \
+      "suite."
+#ifdef HANDANGO_REG
+      "\n\nPlease visit handango.com if you choose to register Crosswords."
+#endif
       },
 
 { "STR_CONFIRM_END_GAME",	"Are you sure you want to end the game now?"},
