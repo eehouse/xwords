@@ -82,7 +82,7 @@ countOrLoadPNOCs( UInt32* pnoSizeP, UInt8* base, UInt32 offset )
 
     for ( id = 0; ; ++id ) {
         UInt32 size;
-        MemHandle h = DmGetResource( 'PNOC', id );
+        MemHandle h = DmGetResource( 'Pnoc', id );
 
         if ( !h ) {
             break;
@@ -123,7 +123,7 @@ setupPnolet( UInt32** entryP, UInt32** gotTableP )
         PNOFtrHeader header;
 
         // LOAD: GOT table
-        MemHandle h = DmGetResource( 'PNOG', 0 );
+        MemHandle h = DmGetResource( 'Pnog', 0 );
         if ( !h ) {
             gotSize = 0;
             gotTable = NULL;
@@ -233,7 +233,8 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 #ifdef FEATURE_PNOAND68K
             result = PM2(PilotMain)( cmd, cmdPBP, launchFlags);
 #else
-            alertUser( "Arm-only Crosswords won't run on this device" );
+            alertUser( "This copy of Crosswords runs only on ARM-based Palms.  "
+                       "Get the right version at xwords.sf.net." );
 #endif
         }
     }

@@ -62,7 +62,7 @@ OBJS = $(PLATFORM)/pnolet.o \
 # get made as a matter of course and as long as they all get included
 # in the .prc we're fine.
 
-all: PNOC0000.bin PNOG0000.bin
+all: Pnoc0000.bin Pnog0000.bin
 
 $(PLATFORM)/%.o : %.c $(MAKEFILE)
 	mkdir -p $(PLATFORM)
@@ -72,19 +72,19 @@ $(COMMONOBJDIR)/%.o : $(COMMONDIR)/%.c $(MAKEFILE)
 	mkdir -p $(COMMONOBJDIR)
 	$(CC_ARM) -o $@ -c $(ARM_DEFINES) -DHERE $(ARMCCFS) $<
 
-PNOC_bin.pre PNOG0000.bin: pace_gen.h $(OBJS)
-	$(CC_ARM) $(OBJS) $(ARMCCFS) $(ARMLDFS) -Wl,-Map,PNOC_bin.map -o tmp.out
+Pnoc_bin.pre Pnog0000.bin: pace_gen.h $(OBJS)
+	$(CC_ARM) $(OBJS) $(ARMCCFS) $(ARMLDFS) -Wl,-Map,Pnoc_bin.map -o tmp.out
 #	@$(OD_ARM) --disassemble-all tmp.out
-	$(OC_ARM) -j .text -O binary tmp.out PNOC_bin.pre
-	$(OC_ARM) -j .got -O binary tmp.out PNOG0000.bin
+	$(OC_ARM) -j .text -O binary tmp.out Pnoc_bin.pre
+	$(OC_ARM) -j .got -O binary tmp.out Pnog0000.bin
 #	@rm -f tmp.out 
 
-# create not only PNOC0000.bin but any others required to fit the
+# create not only Pnoc0000.bin but any others required to fit the
 # pnolet into 50K chunks (for hotsyncing...)
-PNOC0000.bin: PNOC_bin.pre
-	rm -f PNOC????.bin
-	split -a 4 -b 50k -d $< PNOC
-	for f in $$(ls PNOC????); do mv $$f $$f.bin; done
+Pnoc0000.bin: Pnoc_bin.pre
+	rm -f Pnoc????.bin
+	split -a 4 -b 50k -d $< Pnoc
+	for f in $$(ls Pnoc????); do mv $$f $$f.bin; done
 
 pace_gen.c pace_gen.h: ./gen_pace.pl funcfile.txt
 	rm -f $@ _dirList
@@ -96,4 +96,4 @@ pace_gen.c pace_gen.h: ./gen_pace.pl funcfile.txt
 	rm -f _dirList
 
 clean:
-	rm -rf $(OBJS) pace_gen.c pace_gen.h *.bin PNOC_bin.pre
+	rm -rf $(OBJS) pace_gen.c pace_gen.h *.bin Pnoc_bin.pre
