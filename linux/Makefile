@@ -32,6 +32,7 @@ DEFINES += -DBEYOND_IR
 
 # Let users pick the tiles going into their trays
 #DEFINES += -DFEATURE_TRAY_EDIT
+DEFINES += -DDONT_ABORT_ENGINE
 
 #-DDEBUG -DEIGHT_TILES
 
@@ -48,6 +49,7 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 	$(PLATFORM)/gtkletterask.o \
 	$(PLATFORM)/gtkpasswdask.o \
 	$(PLATFORM)/gtknewgame.o \
+	$(PLATFORM)/gtkntilesask.o \
 	$(PLATFORM)/cursesmain.o \
 	$(PLATFORM)/cursesdraw.o \
 	$(PLATFORM)/cursesask.o \
