@@ -52,7 +52,8 @@ struct PalmDictList {
 //////////////////////////////////////////////////////////////////////////////
 // Prototypes
 //////////////////////////////////////////////////////////////////////////////
-static PalmDictList* dictListMakePriv( MPFORMAL XP_U32 creatorSought );
+static PalmDictList* dictListMakePriv( MPFORMAL XP_U32 creatorSought, 
+                                       XP_U16 versSought );
 
 
 XP_Bool
@@ -183,7 +184,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
         fit.nameP = (char*)path + pathLen;
 
         while ( dEnum != vfsIteratorStop ) {
-            XP_UCHAR* ext;
+            XP_UCHAR* ext;      
             fit.nameBufLen = pathSize - pathLen;
             err = VFSDirEntryEnumerate( dirRef, &dEnum, &fit );
 
@@ -282,11 +283,11 @@ cleanList( PalmDictList** dl )
 PalmDictList* 
 DictListMake( MPFORMAL_NOCOMMA )
 {
-    return dictListMakePriv( MPPARM(mpool) TYPE_XWRDICT );
+    return dictListMakePriv( MPPARM(mpool) TYPE_XWRDICT, 1 );
 }
 
 static PalmDictList* 
-dictListMakePriv( MPFORMAL XP_U32 creatorSought )
+dictListMakePriv( MPFORMAL XP_U32 creatorSought, XP_U16 versSought )
 {
     Err err;
     DmSearchStateType stateType;
@@ -311,9 +312,10 @@ dictListMakePriv( MPFORMAL XP_U32 creatorSought )
             DictListEntry dle;
             XP_U16 vers;
 
-            err = DmDatabaseInfo( cardNo, dbID, (char*)nameBuf, NULL, &vers, NULL,
-                                  NULL, NULL, NULL, NULL, NULL, NULL, NULL );
-            if ( (err == errNone) && (vers == 1) ) {
+            err = DmDatabaseInfo( cardNo, dbID, (char*)nameBuf, NULL, &vers, 
+                                  NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
+                                  NULL );
+            if ( (err == errNone) && (vers == versSought) ) {
                 nameLen = XP_STRLEN( (const char*)nameBuf ) + 1;
 
                 dle.location = DL_STORAGE;
@@ -486,9 +488,10 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
     XP_ASSERT( err == errNone );
 
     if ( err == errNone ) {
+        XP_U16 newVers = 1;
         creator = TYPE_XWRDICT;
         err = DmSetDatabaseInfo( cardNo, dbID, NULL,
-                                 NULL, NULL, NULL, 
+                                 NULL, &newVers, NULL, 
                                  NULL, NULL, 
                                  NULL, NULL, 
                                  NULL, NULL, 
@@ -511,7 +514,7 @@ confirmDictConvert( PalmAppGlobals* globals, const XP_UCHAR* name )
 void
 offerConvertOldDicts( PalmAppGlobals* globals )
 {
-    PalmDictList* dl = dictListMakePriv( MPPARM(globals->mpool) 'Xwr3' );
+    PalmDictList* dl = dictListMakePriv( MPPARM(globals->mpool) 'Xwr3', 0 );
     XP_U16 count = DictListCount(dl);
     Err err;
 
