@@ -47,9 +47,8 @@ CXWBlankSelDlg::PreLayoutDynInitL()
 
     TInt i;
     for ( i = 0; i < iNTiles; ++i ) {
-        TBuf8<4> buf8( iTexts[i] );
         TBuf16<4> buf16;
-        buf16.Copy( buf8 );
+        buf16.Copy( TPtrC8(iTexts[i]) );
         facesList->AppendL( buf16 );
     }
 
@@ -59,7 +58,7 @@ CXWBlankSelDlg::PreLayoutDynInitL()
 }
 
 TBool
-CXWBlankSelDlg::OkToExitL( TInt aKeyCode )
+CXWBlankSelDlg::OkToExitL( TInt /*aKeyCode*/ )
 {
     CEikChoiceList* list = static_cast<CEikChoiceList*>
         (Control(ESelBlankChoice));
@@ -67,8 +66,7 @@ CXWBlankSelDlg::OkToExitL( TInt aKeyCode )
     return ETrue;
 } // OkToExitL
 
-/* static */
-void 
+/* static */ void 
 CXWBlankSelDlg::UsePickTileDialogL( const XP_UCHAR4* texts, TInt aNTiles,
                                     TInt* resultP )
 {
