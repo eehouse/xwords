@@ -1182,8 +1182,10 @@ saveOpenGame( PalmAppGlobals* globals )
         XP_UCHAR* dictName;
         char namebuf[MAX_GAMENAME_LENGTH];
 
-        board_hideTray( globals->game.board ); /* so won't be visible when
-                                                  next opened */
+/*         if ( server_countNonRobotPlayers() > 1 ) { */
+            board_hideTray( globals->game.board ); /* so won't be visible when
+                                                      next opened */
+/*         } */
         memStream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 0, 
                                      writeToDb );
         stream_open( memStream );
@@ -2650,7 +2652,7 @@ tryGrowAskToFit( FormPtr form, FieldPtr field, XP_UCHAR* str )
 static Boolean 
 handleScrollInAsk( EventPtr event )
 {
-    Int16 linesToScroll = 0;
+    UInt16 linesToScroll = 0;
     Boolean scrollFromButton = false;
     Boolean result = true;
     WinDirectionType direction = 5;
@@ -2686,8 +2688,9 @@ handleScrollInAsk( EventPtr event )
         break;
 
     case sclRepeatEvent: {
-        short newVal = event->data.sclExit.newValue;
-        linesToScroll = XP_ABS(newVal - globals->prevScroll);
+        XP_S16 newVal = event->data.sclRepeat.newValue;
+        XP_S16 tmp = newVal - globals->prevScroll;
+        linesToScroll = XP_ABS( tmp );
         XP_ASSERT( linesToScroll != 0 );
         direction = newVal > globals->prevScroll? winDown: winUp;
         globals->prevScroll = newVal;
