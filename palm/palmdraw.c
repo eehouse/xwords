@@ -42,9 +42,8 @@ static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
                                           XP_S16 owner, XWBonusType bonus, 
                                           HintAtts hintAtts, XP_Bool isBlank, 
                                           XP_Bool isPending, XP_Bool isStar );
-static void palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
-                                            XP_Rect* rInner, XP_Rect* rOuter, 
-                                            DrawScoreInfo* dsi );
+static void palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, 
+                                            XP_Rect* rOuter, DrawScoreInfo* dsi );
 static XP_Bool palm_bnw_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, 
                                         XP_U16 owner, XP_Bool hasfocus );
 static void palm_bnw_draw_trayFinished( DrawCtx* p_dctx );
@@ -206,10 +205,10 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
 } /* palm_clr_draw_drawCell */
 
 static void
-palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
-                                XP_Rect* rInner, XP_Rect* rOuter, 
-                                DrawScoreInfo* dsi )
+palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, 
+                                XP_Rect* rOuter, DrawScoreInfo* dsi )
 {
+    XP_U16 playerNum = dsi->playerNum;
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     IndexedColorType newColor;
     IndexedColorType oldTextColor;
@@ -219,7 +218,7 @@ palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
     oldTextColor = WinSetTextColor( newColor );
     oldFGColor = WinSetForeColor( newColor );
 
-    palm_bnw_draw_score_drawPlayer( p_dctx, playerNum, rInner, rOuter, dsi );
+    palm_bnw_draw_score_drawPlayer( p_dctx, rInner, rOuter, dsi );
     WinSetTextColor( oldTextColor );
     WinSetForeColor( oldFGColor );
 } /* palm_clr_draw_score_drawPlayer */
@@ -900,9 +899,8 @@ palm_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* rect, DrawScoreInfo* dsi,
 } /* palm_draw_measureScoreText */
 
 static void
-palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
-                                XP_Rect* rInner, XP_Rect* rOuter, 
-                                DrawScoreInfo* dsi )
+palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, 
+                                XP_Rect* rOuter, DrawScoreInfo* dsi )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
