@@ -34,6 +34,7 @@ typedef struct DrawScoreInfo {
     LastScoreCallback lsc;
     void* lscClosure;
     XP_UCHAR* name;
+    XP_U16 playerNum;
     XP_S16 score;
     XP_S16 nTilesLeft;		   /* < 0 means don't use */
     XP_Bool isTurn;
@@ -90,8 +91,7 @@ typedef struct DrawCtxVTable {
     void (*m_draw_measureScoreText)( DrawCtx* dctx, XP_Rect* r, 
                                      DrawScoreInfo* dsi,
                                      XP_U16* width, XP_U16* height );
-    void (*m_draw_score_drawPlayer)( DrawCtx* dctx, 
-                                     XP_S16 playerNum, /* -1: don't use */
+    void (*m_draw_score_drawPlayer)( DrawCtx* dctx,
                                      XP_Rect* rInner, XP_Rect* rOuter, 
                                      DrawScoreInfo* dsi );
 
@@ -175,8 +175,8 @@ struct DrawCtx {
 #define draw_measureScoreText(dc,r,dsi,wp,hp) \
          (dc)->vtable->m_draw_measureScoreText((dc),(r),(dsi),(wp),(hp))
 
-#define draw_score_drawPlayer(dc, i, ri, ro, dsi) \
-         (dc)->vtable->m_draw_score_drawPlayer((dc),(i),(ri),(ro),(dsi))
+#define draw_score_drawPlayer(dc, ri, ro, dsi) \
+         (dc)->vtable->m_draw_score_drawPlayer((dc),(ri),(ro),(dsi))
 
 #define draw_score_pendingScore(dc, r, s, p ) \
          (dc)->vtable->m_draw_score_pendingScore((dc), (r), (s), (p))
