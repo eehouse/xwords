@@ -233,11 +233,16 @@ XWThreadPool::real_listener()
             for ( i = 0; i < nSockets && nEvents > 0; ++i ) {
 
                 if ( curfd->revents != 0 ) {
-                    assert( curfd->revents == POLLIN );
                     int socket = curfd->fd;
                     RemoveSocket( socket );
-                    logf( "enqueuing %d", socket );
-                    enqueue( socket );
+
+                    if ( curfd->revents == POLLIN || curfd->revents == POLLPRI ) {
+                        logf( "enqueuing %d", socket );
+                        enqueue( socket );
+                    } else {
+                        logf( "odd revents: %d", curfd->revents );
+                        killSocket( socket, "error/hup in poll()" ); 
+                    }
                     --nEvents;
                 }
                 ++curfd;
