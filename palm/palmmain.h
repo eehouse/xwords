@@ -322,6 +322,24 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
 #endif
 };
 
+enum {
+    PNOLET_STORE_FEATURE = 1
+    , GLOBALS_FEATURE
+    , WANTS_ARM_FEATURE
+};
+enum { WANTS_68K, WANTS_ARM };
+
+
+/* If we're calling the old PilotMain (in palmmain.c) from from the one in
+   enter68k.c it needs a different name.  But if this is the 68K-only app
+   then that is the entry point. */
+#ifdef FEATURE_PNOAND68K
+# define PM2(pm) pm2_ ## pm
+UInt32 PM2(PilotMain)(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
+#else
+# define PM2(pm) pm
+#endif
+
 DrawCtx* palm_drawctxt_make( MPFORMAL GraphicsAbility able,
 			     PalmAppGlobals* globals,
 			     GetResStringFunc getRSF,
@@ -343,5 +361,11 @@ void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index,
 XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
 Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
                  XP_S16 titleID );
+
+#ifdef XW_TARGET_PNO
+# define READ_UNALIGNED16(n) read_unaligned16(n)
+#else
+# define READ_UNALIGNED16(n) *(n)
+#endif
 
 #endif /* _PALMMAIN_H_ */

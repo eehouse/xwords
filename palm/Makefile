@@ -51,53 +51,46 @@ ifneq (x$(OWNERNAME)x,xx)
 HASHDEF = -DOWNER_HASH=$$(./namehash $(OWNERNAME))
 endif
 
-MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
-	-DOVERRIDE_EDGE_FOR_INDEX -DCOLOR_SUPPORT \
+MYDEFS_COMMON = $(PASSTHRU) -DXW_FEATURE_UTILS -DPOINTER_SUPPORT \
+	-DKEY_SUPPORT 	-DOVERRIDE_EDGE_FOR_INDEX -DCOLOR_SUPPORT \
 	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED
 
-
 # turn on letting users pick tiles "face-up"
-MYDEFINES += -DFEATURE_TRAY_EDIT
-
-ifeq (x$(BUILD_AS_PNOLET)x, xx)
-# turn on the HighRes stuff.  Experimental for now, but eventually
-# should always be on.
-# PNO stuff can't do this yet.  Figure it out later...
-FEATURE_HIGHRES = -DFEATURE_HIGHRES
-else
-MYDEFINES += -DXW_TARGET_PNO
-endif
+MYDEFS_COMMON += -DFEATURE_TRAY_EDIT
 
 # turn on limits to searches on board and in tray (number of tiles to
 # use)
-MYDEFINES += -DXWFEATURE_SEARCHLIMIT
+MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 
-MYDEFINES += $(FEATURE_HIGHRES)
-
-#MYDEFINES += -DXWFEATURE_HINT_CONFIG
+#MYDEFS_COMMON += -DXWFEATURE_HINT_CONFIG
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
-# MYDEFINES += -DBEYOND_IR
+# MYDEFS_COMMON += -DBEYOND_IR
 
 # Turn on ability to handle 4-byte-node DAWG files.  These are of type
 # Xwr4, not Xwr3 like the old ones.  Currently this option means the
 # binary won't be able to read or even find the old dictionaries.
 # Don't release with this on until there's a UI decision and code on
 # how to help users transition.
-MYDEFINES += -DNODE_CAN_4
+MYDEFS_COMMON += -DNODE_CAN_4
 
 ifdef XWFEATURE_STANDALONE_ONLY
-MYDEFINES += -DXWFEATURE_STANDALONE_ONLY
+MYDEFS_COMMON += -DXWFEATURE_STANDALONE_ONLY
 else
-MYDEFINES += -DIR_SUPPORT -DIR_EXCHMGR
+MYDEFS_COMMON += -DIR_SUPPORT -DIR_EXCHMGR
 endif
-#	  -DEIGHT_TILES
-# -DSUPPORT_SONY_JOGDIAL
 
-# HS_DUO_SUPPORT = 1
+MYDEFS_ARM = -D__LITTLE_ENDIAN -DXW_TARGET_PNO $(MYDEFS_COMMON)
+MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) 
 
-DEFINES += -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFINES)
+MYDEFS_68K += $(FEATURE_HIGHRES)
+
+ifneq (x$(BUILD_AS_PNOLET)x, xx)
+# comment out for ARM-only build
+	FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
+endif
+
 
 BITMAP_RSRCS = \
 	$(BITMAPS)/rightarrow.pbitm \
@@ -113,13 +106,16 @@ BITMAP_RSRCS = \
 
 INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
 
+# HS_DUO_SUPPORT = 1
+
 ifneq (x$(HS_DUO_SUPPORT)x, xx)
 	INCLUDES += -I/usr/local/share/palmdev/duoIncs 
 	INCLUDES += -I/usr/local/share/palmdev/duoIncs/68K
 	INCLUDES += -I/usr/local/share/palmdev/duoIncs/68K/System 
 	INCLUDES += -I/usr/local/share/palmdev/duoIncs/Common/System 
 
-	MYDEFINES += -DHS_DUO_SUPPORT
+	MYDEFS_68K += -DHS_DUO_SUPPORT
+	MYDEFS_ARM += -DHS_DUO_SUPPORT
 
 	FNAVS = ./fnav03e9.bin
 endif
@@ -128,25 +124,12 @@ ifneq (x$(FEATURE_HIGHRES)x, xx)
 	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs
 	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/System
 	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/Libraries
-	MYDEFINES += -DCPU_TYPE=CPU_68K	
-endif
-
-CSFLAGS = -O2 -g -S -Wall -DAPPID=\'$(APPID)\' $(DEFINES) $(INCLUDES)
-#CFLAGS = -O2 -g -Wall -DAPPID=\'$(APPID)\' $(DEFINES) $(INCLUDES) -palmos3.5
-CFLAGS = -O2 -g -Wall -DAPPID=\'$(APPID)\' $(DEFINES) $(INCLUDES) 
-
-
-# In the non-debug mode (for which DONT_OMIT is undefined) build without
-# the frame pointer.
-ifneq ($(DONT_OMIT), true)
-	CSFLAGS += -fomit-frame-pointer
-	CFLAGS += -fomit-frame-pointer
+	MYDEFS_68K += -DCPU_TYPE=CPU_68K	
 endif
 
 include ../common/config.mk
 
-ifeq (x$(BUILD_AS_PNOLET)x, xx)
-OBJS = 	$(PLATFORM)/palmmain.o \
+OBJS_68K = $(PLATFORM)/palmmain.o \
 	$(PLATFORM)/palmsavg.o \
 	$(PLATFORM)/gameutil.o \
 	$(PLATFORM)/newgame.o \
@@ -159,12 +142,34 @@ OBJS = 	$(PLATFORM)/palmmain.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
 	$(COMMONOBJ)
+
+# if BUILD_AS_PNOLET is defined and FEATURE_PNOAND68K isn't, exclude
+# all but enter68k.o from the 68K part of the binary (code resources).
+ifneq (x$(BUILD_AS_PNOLET)x, xx)
+	OBJS = $(PLATFORM)/enter68k.o
+	PNOLET = pnolet
+endif
+ifeq (x$(BUILD_AS_PNOLET)x, xx)
+	OBJS += $(OBJS_68K)
 else
-OBJS = 	$(PLATFORM)/enter68k.o
-PNOLET = pnolet
+ifneq (x$(FEATURE_PNOAND68K)x, xx)
+	OBJS += $(OBJS_68K)
+endif
 endif
 
+MYDEFS_68K += $(FEATURE_PNOAND68K)
+MYDEFS_ARM += $(FEATURE_PNOAND68K)
+
 include ../common/rules.mk
+
+CSFLAGS = -O2 -g -S -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES)
+CFLAGS = -O2 -g -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES) 
+# In the non-debug mode (for which DONT_OMIT is undefined) build without
+# the frame pointer.
+ifneq ($(DONT_OMIT), true)
+	CSFLAGS += -fomit-frame-pointer
+	CFLAGS += -fomit-frame-pointer
+endif
 
 $(TARGET): $(PLATFORM)/objs.prc $(PLATFORM)/res.prc 
 	$(PAR) -c -a 'resource|backup' -v 4 $@ $(NAME) $(TYPE) $(APPID) $^
@@ -178,13 +183,13 @@ solo:
 	$(MAKE) XWFEATURE_STANDALONE_ONLY=1
 
 debug:
-	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG" $(DEBUG_SET)
+	$(MAKE) PASSTHRU="-DDEBUG" $(DEBUG_SET)
 
 memdebug:
-	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG" $(DEBUG_SET)
+	$(MAKE) PASSTHRU="-DDEBUG -DMEM_DEBUG" $(DEBUG_SET)
 
 gremlins:
-	$(MAKE) MYDEFINES="$(MYDEFINES) -DDEBUG -DMEM_DEBUG -DFOR_GREMLINS" DONT_OMIT=true
+	$(MAKE) PASSTHRU="-DDEBUG -DMEM_DEBUG -DFOR_GREMLINS" DONT_OMIT=true
 
 #
 REL=405
@@ -219,10 +224,10 @@ $(PLATFORM)/res.prc: xwords4.rcp $(HEADERS) $(CODESEG) StrL03e8.bin $(FNAVS) $(P
 	rm -f $< *.bin
 
 xwords4.rcp: l10n/xwords4_$(LANG).rcp.pre xwords4defines.h $(BITMAP_RSRCS)
-	gcc -x c -E -P $(INCLUDES) $(MYDEFINES) \
+	gcc -x c -E -P $(INCLUDES) $(MYDEFS_68K) \
 		-DICONTEXT=\"$(ICONTEXT)\" $< > $@
 
-LocalizedStrIncludes.h StrL03e8.bin: ./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c 
+LocalizedStrIncludes.h StrL03e8.bin: ./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c
 	gcc $(CFLAGS) $(FORMATDEFINES) \
 		-DLANGSTRFILE=\"$<\" ./l10n/mkstrsres.c \
 		-o mkstrsres
@@ -240,7 +245,7 @@ ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet
 
 pnolet: LocalizedStrIncludes.h
-	$(MAKE) -f Makefile.PNO MYDEFINES="$(MYDEFINES) -DAPPID=\'$(APPID)\'"
+	$(MAKE) -f Makefile.PNO MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\'"
 endif
 
 # GDB seems confused by relative paths these days.  So generate the
@@ -261,7 +266,7 @@ ifneq (x$(BUILD_AS_PNOLET)x, xx)
 endif
 
 #cmod03E8.bin: palmdraw.c Makefile
-#	$(CC) -O2 -nostartfiles $(INCLUDES) $(MYDEFINES) -o tmp $<
+#	$(CC) -O2 -nostartfiles $(INCLUDES) $(MYDEFS) -o tmp $<
 #	$(OBJRES) tmp
 #	mv code0001.tmp.grc $@ ; rm *.tmp.grc
 
