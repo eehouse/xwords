@@ -119,7 +119,8 @@ typedef struct DrawCtxVTable {
     void (*m_draw_clearRect)( DrawCtx* dctx, XP_Rect* rect );
 
     void (*m_draw_drawBoardArrow)( DrawCtx* dctx, XP_Rect* rect, 
-                                   XWBonusType bonus, XP_Bool vert );
+                                   XWBonusType bonus, XP_Bool vert,
+                                   HintAtts hintAtts );
 #ifdef KEY_SUPPORT
     void (*m_draw_drawTrayCursor)( DrawCtx* dctx, XP_Rect* rect );
     void (*m_draw_drawBoardCursor)( DrawCtx* dctx, XP_Rect* rect );
@@ -201,8 +202,8 @@ struct DrawCtx {
 
 #define draw_clearRect( dc, rect ) (dc)->vtable->m_draw_clearRect((dc),(rect))
 
-#define draw_drawBoardArrow( dc, r, b, v ) \
-         (dc)->vtable->m_draw_drawBoardArrow((dc),(r),(b), (v))
+#define draw_drawBoardArrow( dc, r, b, v, h ) \
+         (dc)->vtable->m_draw_drawBoardArrow((dc),(r),(b), (v), (h))
 #ifdef KEY_SUPPORT
 # define draw_drawTrayCursor( dc, r ) \
          (dc)->vtable->m_draw_drawTrayCursor((dc),(r))
