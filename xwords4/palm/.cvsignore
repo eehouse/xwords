@@ -1,6 +1,0 @@
-*.out
-LocalizedStrIncludes.h
-app.gdb
-gdbload
-palm
-fnavgen
