@@ -94,6 +94,8 @@ LIBS_ALLSERIES = \
 	$(EPOCTRGREL)/efsrv.lib \
 	$(EPOCTRGREL)/estor.lib \
 	$(EPOCTRGREL)/ws32.lib \
+	$(EPOCTRGREL)/insock.lib \
+	$(EPOCTRGREL)/esock.lib \
 
 LIBS_60 = \
 	$(EPOCTRGREL)/eikcore.lib \
@@ -145,6 +147,7 @@ LCLSRC = \
 	$(SRCDIR)/symblnk.cpp \
 	$(SRCDIR)/symgamdl.cpp \
 	$(SRCDIR)/symgamed.cpp \
+	$(SRCDIR)/symssock.cpp \
 
 IMG_SRC = ../bmps/downarrow_80.bmp \
 	../bmps/rightarrow_80.bmp \
@@ -244,6 +247,9 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(INCLUDES)
 $(NAME).mbg $(NAME).mbm: $(IMG_SRC)
 	$(BMCONV) /h$(NAME).mbg $(NAME).mbm $(subst ..,/2..,$(IMG_SRC))
 
+$(NAME).rss: xwords.rss
+	cp $< $@
+
 clean:
 	rm -rf $(GENERATED) $(NAME).aifspec $(OBJECTS) $(MBG) *.mbm *.rpp *.rsc \
 		*.rsg *.app $(UID_CPP)
@@ -251,8 +257,7 @@ clean:
 
 # remove saved games and data file
 clean_state:
-	rm -rf $(EPOC)/wins/c/system/Apps/xwords_80/xwgames
-	rm -rf $(EPOC)/wins/c/system/Apps/xwords_80/xwdata.dat
+	rm -rf $(EPOC)/wins/c/system/Apps/$(NAME)
 
 #############################################################################
 # from here down added from the linux build system or stolen from
