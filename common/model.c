@@ -553,7 +553,7 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
             ++nMovesUndone;
 
             if ( moveSought < 0 ) {
-                moveSought = entry.moveNum;
+                moveSought = entry.moveNum - 1;
             } else if ( moveSought-- != entry.moveNum ) {
                 success = XP_FALSE;
                 break;
