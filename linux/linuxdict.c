@@ -161,6 +161,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, char* fileName )
     unsigned short xloc;
     XP_U16 flags;
     XP_U16 facesSize;
+    XP_U16 charSize;
 
     XP_ASSERT( dictF );
     (void)fread( &flags, sizeof(flags), 1, dictF );
@@ -169,13 +170,16 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, char* fileName )
 #ifdef NODE_CAN_4
     if ( flags == 0x0001 ) {
         dctx->super.nodeSize = 3;
-        dctx->super.charSize = 1;
+        charSize = 1;
+        dctx->super.is_4_byte = XP_FALSE;
     } else if ( flags == 0x0002 ) {
         dctx->super.nodeSize = 3;
-        dctx->super.charSize = 2;
+        charSize = 2;
+        dctx->super.is_4_byte = XP_FALSE;
     } else if ( flags == 0x0003 ) {
         dctx->super.nodeSize = 4;
-        dctx->super.charSize = 2;
+        charSize = 2;
+        dctx->super.is_4_byte = XP_TRUE;
     } else {
         /* case I don't know how to deal with */
         formatOk = XP_FALSE;
@@ -196,9 +200,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, char* fileName )
         dctx->super.faces16 = XP_MALLOC( dctx->super.mpool, facesSize );
         XP_MEMSET( dctx->super.faces16, 0, facesSize );
 
-        fread( dctx->super.faces16, numFaces * dctx->super.charSize, 
+        fread( dctx->super.faces16, numFaces * charSize, 
                1, dictF );
-        if ( dctx->super.charSize == sizeof(dctx->super.faces16[0]) ) {
+        if ( charSize == sizeof(dctx->super.faces16[0]) ) {
             /* fix endianness */
             XP_U16 i;
             for ( i = 0; i < numFaces; ++i ) {
