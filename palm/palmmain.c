@@ -2909,7 +2909,7 @@ askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, XP_S16 titleID,
 
     XP_ASSERT( nBytes < maxFieldTextLen );
 
-    buffer = MemPtrNew( nBytes + 1 );
+    buffer = XP_MALLOC( globals->mpool, nBytes + 1 );
     stream_getBytes( stream, buffer, nBytes );
     /* nuke trailing <CR> chars to they don't extend length of field */
     while ( buffer[nBytes-1] == '\n' ) {
@@ -2919,7 +2919,8 @@ askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, XP_S16 titleID,
     
     result = palmask( globals, buffer, 
                       getResString( globals, STR_OK ), titleID );
-    MemPtrFree( buffer );
+
+    XP_FREE( globals->mpool, buffer );
 
     if ( closeAndDestroy ) {
         stream_destroy( stream );
