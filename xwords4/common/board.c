@@ -96,7 +96,8 @@ static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
-static void invalCurHintRect( BoardCtxt* board, XP_Bool doMirrow );
+static void invalCurHintRect( BoardCtxt* board, XP_U16 player,
+                              XP_Bool doMirrow );
 
 #else
 # define figureHintAtts(b,c,r) HINT_BORDER_NONE
@@ -540,6 +541,15 @@ board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer )
 
         invalTradeWindow( board, oldPlayer, 
                           board->tradeInProgress[newPlayer] );
+
+#ifdef XWFEATURE_SEARCHLIMIT
+        if ( board->hasHintRect[oldPlayer] ) {
+            invalCurHintRect( board, oldPlayer, XP_FALSE );
+        }
+        if ( board->hasHintRect[newPlayer] ) {
+            invalCurHintRect( board, newPlayer, XP_FALSE );
+        }
+#endif
 
         invalArrowCell( board, XP_FALSE );
         board->selPlayer = (XP_U8)newPlayer;
@@ -1320,6 +1330,9 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
         }
         invalArrowCell( board, XP_FALSE );
         board->scoreBoardInvalid = XP_TRUE; /* b/c what's bold may change */
+#ifdef XWFEATURE_SEARCHLIMIT
+        invalCurHintRect( board, selPlayer, XP_FALSE );
+#endif
 
         util_trayHiddenChange( board->util, board->trayVisState );
     }
@@ -1340,7 +1353,7 @@ board_flip( BoardCtxt* board )
     invalCellsWithTiles( board, XP_TRUE );
 
 #ifdef XWFEATURE_SEARCHLIMIT
-    invalCurHintRect( board, XP_TRUE );
+    invalCurHintRect( board, board->selPlayer, XP_TRUE );
 #endif
 
     board->isFlipped = !board->isFlipped;
@@ -1451,8 +1464,8 @@ board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP )
                                              model_getDictionary(model),
                                              tiles, nTiles, nTilesToUse, 
 #ifdef XWFEATURE_SEARCHLIMIT
-                                             board->hasHintRect?
-                                             &board->limits : NULL,
+                                             board->hasHintRect[selPlayer]?
+                                             &board->limits[selPlayer] : NULL,
 #endif
                                              NO_SCORE_LIMIT, 
                                              &canMove, &newMove );
@@ -1773,33 +1786,38 @@ static HintAtts
 figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     HintAtts result = HINT_BORDER_NONE;
-    XP_Bool isFlipped = board->isFlipped;
 
-    /* while lets us break to exit... */
-    while ( board->hasHintRect || board->hintDragInProgress ) {
-        if ( col < board->limits.left ) break;
-        if ( row < board->limits.top ) break;
-        if ( col > board->limits.right ) break;
-        if ( row > board->limits.bottom ) break;
+    if ( board->trayVisState == TRAY_REVEALED ) {
+        HintLimits limits;
+        XP_Bool isFlipped = board->isFlipped;
+        
+        limits = board->limits[board->selPlayer];
 
-        if ( col == board->limits.left ) {
-            result |= isFlipped? HINT_BORDER_TOP : HINT_BORDER_LEFT;
+        /* while lets us break to exit... */
+        while ( board->hasHintRect[board->selPlayer]
+                || board->hintDragInProgress ) {
+            if ( col < limits.left ) break;
+            if ( row < limits.top ) break;
+            if ( col > limits.right ) break;
+            if ( row > limits.bottom ) break;
+
+            if ( col == limits.left ) {
+                result |= isFlipped? HINT_BORDER_TOP : HINT_BORDER_LEFT;
+            }
+            if ( col == limits.right ) {
+                result |= isFlipped? HINT_BORDER_BOTTOM:HINT_BORDER_RIGHT;
+            }
+            if ( row == limits.top) {
+                result |= isFlipped?HINT_BORDER_LEFT:HINT_BORDER_TOP;
+            }
+            if ( row == limits.bottom ) {
+                result |= isFlipped? HINT_BORDER_RIGHT:HINT_BORDER_BOTTOM;
+            }
+            if ( result == HINT_BORDER_NONE ) {
+                result = HINT_BORDER_CENTER;
+            }
+            break;
         }
-        if ( col == board->limits.right ) {
-            result |= isFlipped? HINT_BORDER_BOTTOM:HINT_BORDER_RIGHT;
-        }
-        if ( row == board->limits.top) {
-            result |= isFlipped?HINT_BORDER_LEFT:HINT_BORDER_TOP;
-        }
-        if ( row == board->limits.bottom ) {
-            result |= isFlipped? HINT_BORDER_RIGHT:HINT_BORDER_BOTTOM;
-        }
-        if ( result == HINT_BORDER_NONE ) {
-            result = HINT_BORDER_CENTER;
-        } else {
-/*             XP_LOGF( "border hints set for {%d,%d}", col, row ); */
-        }
-        break;
     }
 
     return result;
@@ -1865,40 +1883,44 @@ invalHintForNew( BoardCtxt* board, XP_U16 newCol, XP_U16 newRow )
 } /* invalHintForNew */
 
 static void
-invalCurHintRect( BoardCtxt* board, XP_Bool doMirror )
+invalCurHintRect( BoardCtxt* board, XP_U16 player, XP_Bool doMirror )
 {
-    invalCellRegion( board, board->limits.left, board->limits.top, 
-                     board->limits.right, board->limits.bottom, doMirror );
+    HintLimits* limits = &board->limits[player];    
+    invalCellRegion( board, limits->left, limits->top, 
+                     limits->right, limits->bottom, doMirror );
 } /* invalCurHintRect */
 
 static void
 clearCurHintRect( BoardCtxt* board )
 {
-    invalCurHintRect( board, XP_FALSE );
-    board->hasHintRect = XP_FALSE;
+    invalCurHintRect( board, board->selPlayer, XP_FALSE );
+    board->hasHintRect[board->selPlayer] = XP_FALSE;
 } /* clearCurHintRect */
 
 static void
 setHintRect( BoardCtxt* board )
 {
+    HintLimits limits;
     if ( board->hintDragStartRow < board->hintDragCurRow ) {
-        board->limits.top = board->hintDragStartRow;
-        board->limits.bottom = board->hintDragCurRow;
+        limits.top = board->hintDragStartRow;
+        limits.bottom = board->hintDragCurRow;
     } else {
-        board->limits.top =  board->hintDragCurRow;
-        board->limits.bottom = board->hintDragStartRow;
+        limits.top =  board->hintDragCurRow;
+        limits.bottom = board->hintDragStartRow;
     }
     if ( board->hintDragStartCol < board->hintDragCurCol ) {
-        board->limits.left = board->hintDragStartCol;
-        board->limits.right = board->hintDragCurCol;
+        limits.left = board->hintDragStartCol;
+        limits.right = board->hintDragCurCol;
     } else {
-        board->limits.left =  board->hintDragCurCol;
-        board->limits.right = board->hintDragStartCol;
+        limits.left =  board->hintDragCurCol;
+        limits.right = board->hintDragStartCol;
     }
     XP_LOGF( "hintRect now {{%d,%d},{%d,%d}",
-             board->limits.left, board->limits.top,
-             board->limits.right, board->limits.bottom );
-}
+             limits.left, limits.top,
+             limits.right, limits.bottom );
+
+    board->limits[board->selPlayer] = limits;
+} /* setHintRect */
 
 static XP_Bool
 continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
@@ -1913,7 +1935,7 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
         board->hintDragInProgress = XP_TRUE;
 
-        if ( board->hasHintRect ) {
+        if ( board->hasHintRect[board->selPlayer] ) {
             clearCurHintRect( board );
         }
         /* Now that we've moved, this isn't a timer thing.  Clean up any
@@ -1937,18 +1959,33 @@ static XP_Bool
 finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     XP_Bool needsRedraw = XP_FALSE;
+    XP_Bool makeActive;
 
     XP_ASSERT( board->hintDragInProgress );
     needsRedraw = continueHintRegionDrag( board, x, y );
 
-    XP_ASSERT( !board->hasHintRect );
-    board->hasHintRect = XP_TRUE;
-    
-    XP_LOGF( "done with hint drag.  Rect is {{%d,%d},{%d,%d}}",
-             board->limits.left, board->limits.top,
-             board->limits.right, board->limits.bottom );
-    
-    board_resetEngine( board );
+    XP_ASSERT( !board->hasHintRect[board->selPlayer] );
+
+    /* Now check if the whole drag ended above where it started.  If yes, it
+      means erase! */
+    if ( board->isFlipped ) {
+        makeActive = board->hintDragStartCol <= board->hintDragCurCol;
+    } else {
+        makeActive = board->hintDragStartRow <= board->hintDragCurRow;
+    }
+    XP_LOGF( "makeActive = %d", makeActive );
+    board->hasHintRect[board->selPlayer] = makeActive;
+    if ( !makeActive ) {
+        invalCurHintRect( board, board->selPlayer, XP_FALSE );
+        needsRedraw = XP_TRUE;
+    } else {
+        XP_LOGF( "done with hint drag.  Rect is {{%d,%d},{%d,%d}}",
+                 board->limits[board->selPlayer].left, 
+                 board->limits[board->selPlayer].top,
+                 board->limits[board->selPlayer].right, 
+                 board->limits[board->selPlayer].bottom );
+        board_resetEngine( board );
+    }    
 
     return needsRedraw;
 } /* finishHintRegionDrag */

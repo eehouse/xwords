@@ -164,8 +164,8 @@ struct BoardCtxt {
     XP_U16 hintDragCurCol, hintDragCurRow;
     XP_Bool hintDragInProgress;
 
-    XP_Bool hasHintRect;
-    HintLimits limits;
+    XP_Bool hasHintRect[MAX_NUM_PLAYERS];
+    HintLimits limits[MAX_NUM_PLAYERS];
 #endif
 
     MPSLOT
