@@ -141,7 +141,8 @@ my %typeInfo = (
                 "const Char*" => { "size" => 4, "a0" => 1 },
                 "const ControlType*" => { "size" => 4, "a0" => 1 },
                 "const CustomPatternType*" => { "size" => 4, "a0" => 1 }, # UInt8[8]; no need to translate
-                "const EventType*" => { "size" => 4, "a0" => 1 },
+                "const EventType*" => { "size" => 4, "a0" => 1, 
+                                        "autoSwap" => -1 },
                 "const FieldAttrType*" => { "size" => 4, "a0" => 1 },
                 "const FieldType*" => { "size" => 4, "a0" => 1 },
                 "const FormType*" => { "size" => 4, "a0" => 1 },
