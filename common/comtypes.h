@@ -36,6 +36,8 @@ typedef XP_U8 Tile;
 
 typedef void* XP_Bitmap;
 
+typedef XP_UCHAR XP_UCHAR4[4];
+
 /* I'm going to try putting all forward "class" decls in the same file */
 typedef struct BoardCtxt BoardCtxt;
 typedef struct CommMgrCtxt CommMgrCtxt;
