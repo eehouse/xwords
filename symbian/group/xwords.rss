@@ -222,10 +222,14 @@ RESOURCE TBUF64 r_confirm_end_game {
     buf = "Are you sure you want to end the game now?";
 }
 
+RESOURCE TBUF64 r_alert_no_dicts { 
+    buf = "Crosswords requires at least one dictionary.";
+}
+
 RESOURCE DIALOG r_xwords_confirmation_query
 {
     title = "Query";
-#if defined SERIES_80
+#if ! defined SERIES_60
     buttons = R_EIK_BUTTONS_NO_YES;
 #endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
@@ -257,22 +261,6 @@ RESOURCE DIALOG r_xwords_info_only
         }
     };
 }
-
-
-/* I think this is a multi-page dialog like that for to-do notes in the
- * calendar app.  Panes:
-
- * Connection; 
- * Player 1
- * P2
- * P3
- * P4
- * Dictionary
- * Preferences
-
- * (Can I dynamcially remove panes as the number of players changes?)
-
- */
 
 RESOURCE ARRAY r_conn_roles
 {
@@ -315,6 +303,79 @@ RESOURCE ARRAY r_xwords_newgame_page_conn
     };
 }
 
+RESOURCE ARRAY r_four_nums
+{
+    items = {
+        LBUF { txt = "1"; }
+        ,LBUF { txt = "2"; }
+        ,LBUF { txt = "3"; }
+        ,LBUF { txt = "4"; }
+    };
+}
+
+RESOURCE ARRAY r_dummy_nums
+{
+    items = {
+        LBUF { txt = "1"; }
+    };
+}
+
+RESOURCE ARRAY r_xwords_newgame_page_players
+{
+    items = 
+    {
+        DLG_LINE {
+
+            prompt = "Number of players";
+            type = EEikCtChoiceList;
+            control = CHOICELIST { array_id = r_four_nums; };
+            id = ENPlayersList;
+
+        }, DLG_LINE {
+
+            prompt = "Show player";
+            type = EEikCtChoiceList;
+            control = CHOICELIST { array_id = r_dummy_nums; };
+            id = ENPlayersWhichList;
+
+        }, DLG_LINE {
+
+            prompt = "Location";
+            type = EEikCtChoiceList;
+            control = CHOICELIST { array_id = r_location_choices; };
+            id = EPlayerLocationChoice;
+
+        } ,DLG_LINE {
+
+            prompt = "Name";
+            control = EDWIN { width = 20; maxlength = 32; };
+            type = EEikCtEdwin;
+            id = EPlayerName;
+
+        } ,DLG_LINE {
+
+            prompt = "Species";
+            type = EEikCtChoiceList;
+            control = CHOICELIST { array_id = r_player_species; };
+            id = EPlayerSpeciesChoice;
+
+        } ,DLG_LINE {
+
+            type    = EEikCtSecretEd;
+            prompt  = "Password";
+            id      = EDecryptPassword;
+            control = SECRETED { num_letters = 5; };
+        }
+    };
+}
+
+RESOURCE ARRAY r_empty_choice
+{
+    items = {
+        LBUF { txt = ""; }
+    };
+}
+
 RESOURCE ARRAY r_player_species
 {
     items = {
@@ -332,58 +393,8 @@ RESOURCE ARRAY r_location_choices
     };
 }
 
-#define PLAYER(p_id,p_loc,p_nam,p_spec,p_pswd) \
-RESOURCE ARRAY p_id \
-{ \
-    items = \
-    { \
-        DLG_LINE \
-        { \
-            prompt = "Location"; \
-            type = EEikCtChoiceList; \
-            control = CHOICELIST { array_id = r_location_choices; }; \
-            id = p_loc; \
-        } \
-        ,DLG_LINE \
-        { \
-            prompt = "Name"; \
-            control = EDWIN { width = 20; maxlength = 32; }; \
-            type = EEikCtEdwin; \
-            id = p_nam; \
-        } ,DLG_LINE { \
-            prompt = "Species"; \
-            type = EEikCtChoiceList; \
-            control = CHOICELIST { array_id = r_player_species; }; \
-            id = p_spec; \
-        } ,DLG_LINE { \
-            type    = EEikCtSecretEd; \
-            prompt  = "Password"; \
-            id      = p_pswd; \
-            control = SECRETED { num_letters = 5; }; \
-        } \
-    }; \
-}
-
-PLAYER( r_xwords_newgame_page_player1,
-        EPlayerLocationChoice1,
-        EPlayerName1,
-        EPlayerSpeciesChoice1,
-        EDecryptPassword1 )
-PLAYER( r_xwords_newgame_page_player2,
-        EPlayerLocationChoice2,
-        EPlayerName2,
-        EPlayerSpeciesChoice2,
-        EDecryptPassword2 )
-PLAYER( r_xwords_newgame_page_player3,
-        EPlayerLocationChoice3,
-        EPlayerName3,
-        EPlayerSpeciesChoice3,
-        EDecryptPassword3 )
-PLAYER( r_xwords_newgame_page_player4,
-        EPlayerLocationChoice4,
-        EPlayerName4,
-        EPlayerSpeciesChoice4,
-        EDecryptPassword4 )
+/* This flag goes on editors in pages on series 60 */
+/*                 avkon_flags = EAknEditorFlagNoEditIndicators; \ */
 
 #ifdef SERIES_60
 RESOURCE DLG_BUTTONS r_dict_browse_button
@@ -403,10 +414,10 @@ RESOURCE ARRAY r_xwords_newgame_page_dict
 {
     items = {
         DLG_LINE {
-            prompt = "Selected dictionary";
-            control = EDWIN { width = 32; maxlength = 32; };
-            type = EEikCtEdwin;
-            id = ESelDictName;
+            prompt = "Game dictionary";
+            type = EEikCtChoiceList; 
+            control = CHOICELIST { array_id = r_empty_choice; }; 
+            id = ESelDictChoice; 
         }
 #ifdef SERIES_60
         ,DLG_LINE {
@@ -421,20 +432,17 @@ RESOURCE ARRAY r_xwords_newgame_pages
     items =
     {
         PAGE{ text="Connection"; id=EPage1; lines=r_xwords_newgame_page_conn;}
-        ,PAGE{ text="Player 1"; id=EPage2; lines=r_xwords_newgame_page_player1;}
-        ,PAGE{ text="Player 2"; id=EPage2; lines=r_xwords_newgame_page_player2;}
-        ,PAGE{ text="Player 3"; id=EPage2; lines=r_xwords_newgame_page_player3;}
-        ,PAGE{ text="Player 4"; id=EPage2; lines=r_xwords_newgame_page_player4;}
-        ,PAGE{ text="Dictionary"; id=EPage2; lines=r_xwords_newgame_page_dict;}
+        ,PAGE{ text="Players"; id=EPage2; lines=r_xwords_newgame_page_players;}
+        ,PAGE{ text="Dictionary"; id=EPage3; lines=r_xwords_newgame_page_dict;}
     };
 }
 
 RESOURCE DIALOG r_xwords_newgame_dlg
 {
     title = "Game setup";
-#if defined SERIES_80
+    /* This doesn't work in series 60.  How do I differentiate? Sep .rss
+       files? */
     buttons = R_EIK_BUTTONS_CANCEL_OK;
-#endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     pages = r_xwords_newgame_pages;
 }
