@@ -34,7 +34,7 @@
 { "STR_RESEND_IR", "Unable to send message via IR; resend?" },
 #endif
 { "STR_TOO_FEW_TILES", "Too few tiles left to trade." },
-{ "STR_CANT_UNDO_TILEASSIGN", "Tile assignment can't be undone." },
+{ "STR_CANT_UNDO_TILEASSIGN", "Nothing to undo.  (Initial tile picking cannot be undone.)" },
 { "STR_VALUES_TITLE", "Counts and Values" },
 { "STR_VALUES_HEADER",		"Counts[Remain] and Values\n" },
 
@@ -45,7 +45,7 @@
 { "STR_REMTILES",		"rem:%d" },
 { "STR_CANT_TRADE_MIDTURN",	"Remove played tiles before trading."},
 { "STR_ASK_REPLACE_GAME",	"Do you want to overwrite the current game?" },
-{ "STR_NO",			"No" },
+{ "STR_OK",			"Ok" },
 { "STR_ABOUT_TITLE",		"About Crosswords" },
 { "STR_DEFAULT_NAME",		"Player %d" },
 { "STR_ABOUT_CONTENT", 
