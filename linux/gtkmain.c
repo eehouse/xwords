@@ -822,7 +822,7 @@ scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
     newValue = (XP_U16)newValueF;
 
     if ( newValue != curYOffset ) {
-        board_setYOffset( globals->cGlobals.game.board, newValue, XP_FALSE );
+        board_setYOffset( globals->cGlobals.game.board, newValue );
         board_draw( globals->cGlobals.game.board );
     }
 } /* scroll_value_changed */
