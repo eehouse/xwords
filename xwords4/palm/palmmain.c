@@ -281,30 +281,27 @@ getSizes( PalmAppGlobals* globals )
 static void
 locateTrayButtons( PalmAppGlobals* globals, XP_U16 trayTop, XP_U16 trayHt )
 {
-    RectangleType rect;
-    XP_Bool buttonsAtTop, trayAtTop;
-    XP_S16 diff;
-    
-    if ( FrmGetActiveForm() == NULL ) {
-        return XP_FALSE;
-    }
+    if ( FrmGetActiveForm() != NULL ) {
+        RectangleType rect;
+        XP_S16 diff;
 
-    getObjectBounds( XW_MAIN_HIDE_BUTTON_ID, &rect );
-    diff = trayTop - rect.topLeft.y;
+        getObjectBounds( XW_MAIN_HIDE_BUTTON_ID, &rect );
+        diff = trayTop - rect.topLeft.y;
 
-    if ( diff != 0 ) {
-        XP_U16 i;
-        XP_U16 ids[] = {XW_MAIN_SHOWTRAY_BUTTON_ID,
-                        XW_MAIN_HIDE_BUTTON_ID,
-                        XW_MAIN_DONE_BUTTON_ID,
-                        XW_MAIN_TRADE_BUTTON_ID,
-                        XW_MAIN_JUGGLE_BUTTON_ID
-        };
+        if ( diff != 0 ) {
+            XP_U16 i;
+            XP_U16 ids[] = {XW_MAIN_SHOWTRAY_BUTTON_ID,
+                            XW_MAIN_HIDE_BUTTON_ID,
+                            XW_MAIN_DONE_BUTTON_ID,
+                            XW_MAIN_TRADE_BUTTON_ID,
+                            XW_MAIN_JUGGLE_BUTTON_ID
+            };
 
-        for ( i = 0; i < sizeof(ids)/sizeof(ids[0]); ++i ) {
-            getObjectBounds( ids[i], &rect );
-            rect.topLeft.y += diff;
-            setObjectBounds( ids[i], &rect );
+            for ( i = 0; i < sizeof(ids)/sizeof(ids[0]); ++i ) {
+                getObjectBounds( ids[i], &rect );
+                rect.topLeft.y += diff;
+                setObjectBounds( ids[i], &rect );
+            }
         }
     }
 } /* locateTrayButtons */
