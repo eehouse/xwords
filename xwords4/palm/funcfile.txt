@@ -104,6 +104,7 @@ FrmShowObject
 FrmUpdateForm
 FtrGet
 FtrSet
+FtrUnregister
 GrfSetState
 LstDrawList
 LstEraseList
