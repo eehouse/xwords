@@ -265,7 +265,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider,
             /* Tap on selected tile unselects.  If we don't do this,
                then there's no way to unselect and so no way to turn
                off the placement arrow */
-            if ( newIndex == selFlags ) {
+            if ( !waitPenUp && newIndex == selFlags ) {
                 board_invalTrayTiles( board, selFlags );
                 selFlags = NO_TILES;
                 board->traySelBits[selPlayer] = selFlags;
@@ -316,7 +316,6 @@ startTileDrag( BoardCtxt* board, TileBit startBit/* , XP_U16 x, XP_U16 y */ )
     state->movePending = XP_TRUE;
 
     state->dragInProgress = XP_TRUE;
-    XP_STATUSF( "startTileDrag: set dragInProgress\n" );    
     state->prevIndex = board->traySelBits[turn] = startBit;
 
     if ( !state->wasHilited ) {
@@ -335,8 +334,6 @@ moveTileInTray( BoardCtxt* board, TileBit prevTile, TileBit newTile )
     XP_U16 moveFrom = indexForBits( newTile );
     Tile tile;
     XP_U16 dividerLoc;
-
-    XP_STATUSF( "moveTileInTray: %d -> %d\n", prevTile, newTile );
 
     tile = model_removePlayerTile( model, selPlayer, moveFrom );
     model_addPlayerTile( model, selPlayer, moveTo, tile );
@@ -421,7 +418,6 @@ endTileDragIndex( BoardCtxt* board, TileBit last )
     }
 
     state->dragInProgress = XP_FALSE;
-    XP_STATUSF( "endTileDrag: cleared dragInProgress\n" );    
     return result;
 } /* endTileDragIndex */
 
