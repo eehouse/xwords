@@ -33,7 +33,7 @@
 { "STR_RESEND_IR", 		"Error enviando el mensaje; ¿reenviar" },
 #endif
 { "STR_TOO_FEW_TILES",		"Ho quedan tantas fichas." },
-{ "STR_CANT_UNDO_TILEASSIGN", "Tile assignment can't be undone." }, /* translate me */
+{ "STR_CANT_UNDO_TILEASSIGN",	"El reparto de fichas no puede deshacerse." },
 { "STR_VALUES_TITLE",		"Cantidad y Valor" },
 { "STR_VALUES_HEADER",		"Cantidad[quedan] y Valor\n" },
 
