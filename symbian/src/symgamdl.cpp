@@ -188,11 +188,11 @@ CXWGameInfoDlg::HideAndShow()
 {
 /*     XP_LOGF( "HideAndShow" ); */
 #if defined SERIES_80
-    CEikChoiceList* list;
     /* if it's standalone, hide all else.  Then if it's not IP, hide all
        below. */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    CEikChoiceList* list;
     TBool showConnect;
     list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
     XP_ASSERT( list != NULL );
