@@ -43,7 +43,6 @@ PrefsFormHandleEvent( EventPtr event )
     FormPtr form;
     EventType eventToPost;
     Int16 chosen;
-    Boolean checked;
 
     CALLBACK_PROLOGUE();
     globals = getFormRefcon();
@@ -97,12 +96,14 @@ PrefsFormHandleEvent( EventPtr event )
         result = true;
         switch ( event->data.ctlSelect.controlID ) {
 
-        case XW_PREFS_NOHINTS_CHECKBOX_ID:
-            checked = getBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID );
+#ifdef XWFEATURE_SEARCHLIMIT
+        case XW_PREFS_NOHINTS_CHECKBOX_ID: {
+            Boolean checked = getBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID );
             disOrEnable( FrmGetActiveForm(), XW_PREFS_HINTRECT_CHECKBOX_ID, 
                          !checked );
+        }
             break;
-
+#endif
         case XW_PREFS_PHONIES_TRIGGER_ID:
             chosen = LstPopupList( state->phoniesList );
             if ( chosen >= 0 ) {
