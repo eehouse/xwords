@@ -404,7 +404,7 @@ static XP_U8 stub_english_data[] = {
 void
 setStubbedSpecials( DictionaryCtxt* dict )
 {
-    dict->chars = XP_MALLOC( dict->mpool, sizeof(char*) );
+    dict->chars = (XP_UCHAR**)XP_MALLOC( dict->mpool, sizeof(char*) );
     dict->chars[0] = "_";
 
 } /* setStubbedSpecials */
@@ -423,7 +423,7 @@ destroy_stubbed_dict( DictionaryCtxt* dict )
 DictionaryCtxt*
 make_stubbed_dict( MPFORMAL_NOCOMMA )
 {
-    DictionaryCtxt* dict = XP_MALLOC( mpool, sizeof(*dict) );
+    DictionaryCtxt* dict = (DictionaryCtxt*)XP_MALLOC( mpool, sizeof(*dict) );
     XP_U8* data = stub_english_data;
     XP_U16 datasize = sizeof(stub_english_data);
     XP_U16 i;
@@ -436,19 +436,19 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
 
     dict->destructor = destroy_stubbed_dict;
 
-    dict->faces16 = XP_MALLOC( mpool, 
-                               dict->nFaces * sizeof(dict->faces16[0]) );
+    dict->faces16 = (XP_CHAR16*)
+        XP_MALLOC( mpool, dict->nFaces * sizeof(dict->faces16[0]) );
     for ( i = 0; i < datasize/3; ++i ) {
         dict->faces16[i] = (XP_CHAR16)data[(i*3)+2];
     }
     
-    dict->countsAndValues = XP_MALLOC( mpool, dict->nFaces*2 );
+    dict->countsAndValues = (XP_U8*)XP_MALLOC( mpool, dict->nFaces*2 );
     for ( i = 0; i < datasize/3; ++i ) {
         dict->countsAndValues[i*2] = data[(i*3)];
         dict->countsAndValues[(i*2)+1] = data[(i*3)+1];
     }
 
-    dict->bitmaps = XP_MALLOC( mpool, sizeof(SpecialBitmaps) );
+    dict->bitmaps = (SpecialBitmaps*)XP_MALLOC( mpool, sizeof(SpecialBitmaps) );
     dict->bitmaps->largeBM = dict->bitmaps->largeBM = NULL;
     
     setStubbedSpecials( dict );
