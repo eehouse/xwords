@@ -37,10 +37,6 @@
 extern "C" {
 #endif
 
-#ifndef XWORDS_DIR
-# define XWORDS_DIR "xwords_80"
-#endif
-
 #define XP_TRUE ((XP_Bool)(1==1))
 #define XP_FALSE ((XP_Bool)(1==0))
 
