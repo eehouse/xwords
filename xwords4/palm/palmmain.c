@@ -393,7 +393,7 @@ positionBoard( PalmAppGlobals* globals )
         boardTop = PALM_GRIDLESS_BOARD_TOP;
         scoreLeft = isLefty? 0: PALM_GRIDLESS_SCORE_LEFT;
         scoreTop = PALM_GRIDLESS_SCORE_TOP;
-        scoreWidth =  PALM_GRIDLESS_SCORE_WIDTH * doubler;
+        scoreWidth = PALM_GRIDLESS_SCORE_WIDTH;
         scoreHeight = PALM_TRAY_TOP - PALM_GRIDLESS_SCORE_TOP - 2;
 
         if ( !isLefty ) {
@@ -1988,9 +1988,21 @@ hresY( PalmAppGlobals* globals, XP_U16 screenY )
     return screenY;
 }
 
+static void
+hresRect( PalmAppGlobals* globals, RectangleType* r )
+{
+    if ( globals->hasHiRes && globals->width >= 320 ) {
+        r->topLeft.x *= 2;
+        r->topLeft.y *= 2;
+        r->extent.x *= 2;
+        r->extent.y *= 2;
+    }
+}
+
 #else
 # define hresX( g, n ) (n)
 # define hresY( g, n ) (n)
+# define hresRect( g, r )
 #endif
 
 /*****************************************************************************
@@ -2128,6 +2140,7 @@ mainViewHandleEvent( EventPtr event )
             WinGetClip( &clip );
     
             drawFormButtons( globals );
+            hresRect( globals, &clip );
             board_invalRect( globals->game.board, (XP_Rect*)&clip );
             draw = !globals->postponeDraw;
         }
