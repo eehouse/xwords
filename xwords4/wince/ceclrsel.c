@@ -63,10 +63,10 @@ initEditAndSlider( HWND hDlg, XP_U16 sliderID, XP_U8 val )
 static void
 initChooseColor( ClrEditDlgState* eState, HWND hDlg )
 {
-    eState->clrRect.left = 10;
-    eState->clrRect.top = 10;
-    eState->clrRect.right = 40;
-    eState->clrRect.bottom = 40;
+    eState->clrRect.left = 165;
+    eState->clrRect.top = 5;
+    eState->clrRect.right = 195;
+    eState->clrRect.bottom = 90;
 
     InvalidateRect( hDlg, &eState->clrRect, FALSE );
 
@@ -75,24 +75,69 @@ initChooseColor( ClrEditDlgState* eState, HWND hDlg )
     initEditAndSlider( hDlg, CLREDT_SLIDER3, eState->b );
 } /* initChooseColor */
 
-static void
-dragEnded( HWND hDlg, ClrEditDlgState* eState, XP_UCHAR sliderId, XP_U8* val )
+static XP_U8*
+colorForSlider( ClrEditDlgState* eState, XP_U16 sliderID )
 {
-    XP_U16 newVal = SendDlgItemMessage( hDlg, sliderId, TBM_GETPOS, 0, 0L );
-    XP_LOGF( "newVal=%d", newVal );
-    XP_ASSERT( newVal >= 0 && newVal <= 255 );
-    *val = newVal;
+    switch( sliderID ) {
+    case CLREDT_SLIDER1:
+        return &eState->r;
+    case CLREDT_SLIDER2:
+        return &eState->g;
+    case CLREDT_SLIDER3:
+        return &eState->b;
+    default:
+        XP_LOGF( "huh???" );
+        return NULL;
+    }
+} /* colorForSlider */
 
-    ceSetDlgItemNum( hDlg, sliderId+1, newVal );
+static void 
+updateForSlider( HWND hDlg, ClrEditDlgState* eState, XP_U16 sliderID )
+{
+    XP_U8 newColor = SendDlgItemMessage( hDlg, sliderID, TBM_GETPOS, 0, 0L );
+    XP_U8* colorPtr = colorForSlider( eState, sliderID );
+    if ( newColor != *colorPtr ) {
+        *colorPtr = newColor;
 
-    InvalidateRect( hDlg, &eState->clrRect, FALSE );
-} /* dragEnded */
+        ceSetDlgItemNum( hDlg, sliderID+1, (XP_S32)newColor );
+
+        InvalidateRect( hDlg, &eState->clrRect, FALSE );
+    }
+} /* updateForSlider */
+
+static void
+updateForField( HWND hDlg, ClrEditDlgState* eState, XP_U16 fieldID )
+{
+    XP_S32 newColor = ceGetDlgItemNum( hDlg, fieldID );
+    XP_U8* colorPtr = colorForSlider( eState, fieldID - 1 );
+    XP_Bool modified = XP_FALSE;;
+
+    if ( newColor > 255 ) {
+        newColor = 255;
+        modified = XP_TRUE;
+    } else if ( newColor < 0 ) {
+        newColor = 0;
+        modified = XP_TRUE;
+    } 
+    if ( modified ) {
+        ceSetDlgItemNum( hDlg, fieldID, newColor );
+    }
+    
+    if ( newColor != *colorPtr ) {
+        *colorPtr = newColor;
+
+        SendDlgItemMessage( hDlg, fieldID-1, TBM_SETPOS, TRUE, 
+                            (long)newColor );
+        InvalidateRect( hDlg, &eState->clrRect, FALSE );
+    }
+} /* updateForField */
 
 static LRESULT CALLBACK
 EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
     ClrEditDlgState* eState;
     XP_U16 wid;
+    XP_U16 notifyCode;
     NMTOOLBAR* nmToolP; 
     XP_U16 idCtrl;
 
@@ -125,43 +170,35 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         }
             break;
 
-       case WM_NOTIFY:
-           XP_LOGF( "WM_NOTIFY" );
-           nmToolP = (NMTOOLBAR*)lParam;
-           if ( nmToolP->hdr.code == TBN_ENDDRAG ) {
-               XP_LOGF( "TBN_ENDDRAG" );
-               switch( nmToolP->hdr.idFrom ) {
-               case CLREDT_SLIDER1:
-                   dragEnded( hDlg, eState, CLREDT_SLIDER1, &eState->r );
-                   break;
-               case CLREDT_SLIDER2:
-                   dragEnded( hDlg, eState, CLREDT_SLIDER2, &eState->g );
-                   break;
-               case CLREDT_SLIDER3:
-                   dragEnded( hDlg, eState, CLREDT_SLIDER3, &eState->b );
-                   break;
-               default:
-                   XP_LOGF( "some other value: %d", nmToolP->hdr.idFrom );
-                   return FALSE;
-               }
-           } else if ( nmToolP->hdr.code == TBN_BEGINDRAG ) {
-               XP_LOGF( "TBN_BEGINDRAG" );
-           } else if ( nmToolP->hdr.code == TBN_DROPDOWN ) {
-               XP_LOGF( "TBN_DROPDOWN" );
-           } else {
-               XP_LOGF( "something else: 0x%x", nmToolP->hdr.code );
-               XP_LOGF( "ctl id is %d", nmToolP->hdr.idFrom );
-           }
-           break;
+        case WM_NOTIFY:
+            nmToolP = (NMTOOLBAR*)lParam;
+            wid = nmToolP->hdr.idFrom;
+            switch ( wid ) {
+            case CLREDT_SLIDER1:
+            case CLREDT_SLIDER2:
+            case CLREDT_SLIDER3:
+                updateForSlider( hDlg, eState, wid );
+                break;
+            }
+            break;
 
         case WM_COMMAND:
             wid = LOWORD(wParam);
             switch( wid ) {
+            case RED_EDIT:
+            case GREEN_EDIT:
+            case BLUE_EDIT:
+                notifyCode = HIWORD(wParam);
+                if ( notifyCode == EN_CHANGE ) {
+                    updateForField( hDlg, eState, wid );
+                    return TRUE;
+                }
+                break;
 
             case IDOK:
                 eState->cancelled = XP_FALSE;
                 /* fallthrough */
-
+                
             case IDCANCEL:
                 EndDialog(hDlg, wid);
                 return TRUE;
