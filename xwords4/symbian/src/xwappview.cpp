@@ -96,6 +96,7 @@ CXWordsAppView::~CXWordsAppView()
     delete iGamesMgr;
 #ifndef XWFEATURE_STANDALONE_ONLY
     delete iSendSock;
+    delete iReadSock;
 #endif
 }
 
@@ -116,6 +117,9 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 #ifndef XWFEATURE_STANDALONE_ONLY
     iSendSock = CSendSocket::NewL();
     XP_LOGF( "iSendSock created" );
+    iReadSock = CReadSocket::NewL( PacketReceived, (void*)this );
+    iReadSock->SetListenPort( iListenPort );
+    iReadSock->Start();
 #endif
 
     // Set the control's border
@@ -483,9 +487,10 @@ sym_util_warnIllegalWord( XW_UtilCtxt* /*uc*/, BadWordInfo* /*bwi*/,
 
 #ifdef BEYOND_IR
 /*static*/void 
-CXWordsAppView::sym_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 listenPort )
+CXWordsAppView::sym_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 aPort )
 {
-
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+    self->iReadSock->SetListenPort( aPort );
 }
 #endif
 
@@ -1204,6 +1209,30 @@ CXWordsAppView::DrawGameName() const
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+
+/*static*/ void
+CXWordsAppView::PacketReceived( const TDesC8* aBuf, void* aClosure )
+{
+    CXWordsAppView* me = (CXWordsAppView*)aClosure;
+    XP_Bool draw = XP_FALSE;
+
+    XWStreamCtxt* stream = me->MakeSimpleStream( NULL );
+    stream_putBytes( stream, (void*)aBuf->Ptr(), aBuf->Length() );
+
+    CommsAddrRec addr;
+    addr.conType = COMMS_CONN_IP;
+    if ( comms_checkIncommingStream( me->iGame.comms, stream, &addr ) ) {
+        draw = server_receiveMessage( me->iGame.server, stream );
+    }
+    stream_destroy( stream );
+    sym_util_requestTime( &me->iUtil );
+
+    if ( draw ) {
+        me->DoImmediateDraw();        
+    }
+
+} /* CXWordsAppView::PacketReceived */
+
 /*static*/ XP_S16
 CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr, 
                           void* aClosure )
