@@ -26,17 +26,15 @@
 #include <Form.h>
 #include <Menu.h>
 #include <IrLib.h>
-/* #include <TextMgr.h>  */
-/* #include <UIControls.h> */
-/* #include <KeyMgr.h> */
 #include <Chars.h>
 #include <TimeMgr.h>
-/* #include <UIResources.h> */
-/* #include <ExgMgr.h> */
 #include <FeatureMgr.h>
 #include <NotifyMgr.h>
-/* #include <StringMgr.h> */
 #include <unix_stdarg.h>
+#ifdef FEATURE_HIGHRES
+# include <FileStream.h>
+# include <SonyCLIE.h>
+#endif
 
 #include "comtypes.h"
 #include "comms.h"
@@ -235,6 +233,86 @@ cur_screen_depth( void )
 } /* cur_screen_depth */
 #endif
 
+#ifdef FEATURE_HIGHRES
+static void
+getSizes( PalmAppGlobals* globals )
+{
+    XP_U16 width, height;
+    width = 160;
+    height = 160;
+
+    if ( globals->hasHiRes ) {
+        XP_U32 tmp;
+
+        if ( WinScreenGetAttribute( winScreenWidth, &tmp ) == errNone ) {
+            width = tmp;
+        }
+        if ( WinScreenGetAttribute( winScreenHeight, &tmp ) == errNone ) {
+            height = tmp;
+        }
+    }
+
+    if ( width == 320 ) {
+        FormPtr form = FrmGetActiveForm();
+        WinGetDisplayExtent( &width, &height );
+
+        if ( !!form ) {
+            RectangleType r;
+            r.topLeft.x = 0;
+            r.topLeft.y = 0;
+            r.extent.x = width;
+            r.extent.y = height;
+
+            WinSetBounds( FrmGetWindowHandle(FrmGetActiveForm()), &r );
+        }
+        
+        width *= 2;
+        height *= 2;
+    }
+
+    globals->width = width;
+    globals->height = height;
+} /* getSizes */
+#else
+# define getSizes(g)
+#endif
+
+#ifdef FEATURE_HIGHRES
+static void
+locateTrayButtons( PalmAppGlobals* globals, XP_U16 trayTop, XP_U16 trayHt )
+{
+    RectangleType rect;
+    XP_Bool buttonsAtTop, trayAtTop;
+    XP_S16 diff;
+    
+    if ( FrmGetActiveForm() == NULL ) {
+        return XP_FALSE;
+    }
+
+    trayTop /= 2;           /* get out of highres coords */
+    getObjectBounds( XW_MAIN_HIDE_BUTTON_ID, &rect );
+    diff = trayTop - rect.topLeft.y;
+
+    if ( diff != 0 ) {
+        XP_U16 i;
+        XP_U16 ids[] = {XW_MAIN_SHOWTRAY_BUTTON_ID,
+                        XW_MAIN_HIDE_BUTTON_ID,
+                        XW_MAIN_DONE_BUTTON_ID,
+                        XW_MAIN_TRADE_BUTTON_ID,
+                        XW_MAIN_JUGGLE_BUTTON_ID
+        };
+
+        for ( i = 0; i < sizeof(ids)/sizeof(ids[0]); ++i ) {
+            getObjectBounds( ids[i], &rect );
+            rect.topLeft.y += diff;
+            setObjectBounds( ids[i], &rect );
+        }
+    }
+} /* locateTrayButtons */
+#else
+# define locateTrayButtons(g,t,h)
+#endif
+
 static XP_Bool
 positionBoard( PalmAppGlobals* globals )
 {
@@ -282,7 +360,6 @@ positionBoard( PalmAppGlobals* globals )
     if ( !showGrid ) {
         --scale;
     }
-
 
     freeSpace = ((PALM_MAX_ROWS-nCols)/2) * scale;
     if ( isLefty ) {
@@ -353,14 +430,20 @@ positionBoard( PalmAppGlobals* globals )
     if ( trayTop < PALM_TRAY_TOP ) { 
         trayTop = PALM_TRAY_TOP;/* we want it this low even if not
                                    necessary */
+    } else if ( bHeight >= 450) {
+        ++trayTop;              /* just for grins */
+         /* hack: leave it */
     } else {
         while ( trayTop > (PALM_TRAY_TOP_MAX*doubler) ) {
             trayTop -= scale;
             globals->needsScrollbar = true;
         }
     }
-    trayScaleV = bHeight - trayTop;
     trayScaleH = PALM_TRAY_SCALEH * doubler;
+    trayScaleV = bHeight - trayTop;
+    if ( trayScaleV > trayScaleH ) {
+        trayScaleV = trayScaleH;
+    }
     board_setTrayLoc( globals->game.board, 
                       (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
                       trayTop,
@@ -368,6 +451,8 @@ positionBoard( PalmAppGlobals* globals )
                       PALM_DIVIDER_WIDTH * doubler );
 
     board_prefsChanged( globals->game.board, &globals->gState.cp );
+
+    locateTrayButtons( globals, trayTop, trayScaleV );
 
 #ifdef SHOW_PROGRESS
     if ( showGrid ) {
@@ -812,9 +897,8 @@ getResString( PalmAppGlobals* globals, XP_U16 strID )
 static Err
 volChangeEventProc( SysNotifyParamType* notifyParamsP )
 {
-#ifdef REALLY_HANDLE_MEDIA
     PalmAppGlobals* globals = (PalmAppGlobals*)notifyParamsP->userDataP;
-#else
+#ifndef REALLY_HANDLE_MEDIA
     EventType eventToPost;
 #endif
 
@@ -835,7 +919,8 @@ volChangeEventProc( SysNotifyParamType* notifyParamsP )
 
 #ifdef FEATURE_HIGHRES
     if ( notifyParamsP->notifyType == sysNotifyDisplayChangeEvent ) {
-        XP_LOGF( "got sysNotifyDisplayChangeEvent" );
+        eventToPost.eType = doResizeWinEvent;
+        EvtAddEventToQueue( &eventToPost );
         return errNone;
     }
 #endif
@@ -880,15 +965,17 @@ doCallbackReg( PalmAppGlobals* globals, XP_Bool reg )
     }
 } /* doCallbackReg */
 
-static void
-initGlobals( PalmAppGlobals* globals )
-{
 #ifdef FEATURE_HIGHRES
+/* temp workarounds for some sony include file trouble */
+extern Err SilkLibEnableResizeFoo(UInt16 refNum)
+				SILK_LIB_TRAP(sysLibTrapCustom+1);
+extern Err VskSetStateFoo(UInt16 refNum, UInt16 stateType, UInt16 state)
+				SILK_LIB_TRAP(sysLibTrapCustom+3+3);
+static void
+initHighResGlobals( PalmAppGlobals* globals )
+{
     Err err;
     XP_U32 vers;
-    XP_U16 width, height;
-
-    width = height = 160;
 
     err = FtrGet( sysFtrCreator, sysFtrNumWinVersion, &vers );
     globals->hasHiRes = ( err == errNone && vers >= 4 );
@@ -896,25 +983,46 @@ initGlobals( PalmAppGlobals* globals )
     XP_LOGF( "hasHiRes = %d", globals->hasHiRes );
 
     if ( globals->hasHiRes ) {
-        XP_U32 tmp;
+        XP_U16 ref;
 
-        if ( WinScreenGetAttribute( winScreenWidth, &tmp ) == errNone ) {
-            width = tmp;
+        err = SysLibFind(sonySysLibNameSilk, &ref );
+        if ( err == sysErrLibNotFound ) {
+            err = SysLibLoad( 'libr', sonySysFileCSilkLib, &ref );
         }
 
-        if ( WinScreenGetAttribute( winScreenHeight, &tmp ) == errNone ) {
-            height = tmp;
-        }
+        if ( err == errNone ) {
+            XP_U32 tmp;
+            globals->sonyLibRef = ref;
 
+            err = FtrGet( sonySysFtrCreator, sonySysFtrNumVskVersion, &tmp );
+            if ( err == errNone ) {
+                globals->doVSK = XP_TRUE;
+                if ( VskOpen( ref ) == errNone ) {
+                    VskSetStateFoo( ref, vskStateEnable, 1 );
+                }
+            } else {
+                if ( SilkLibOpen( ref ) == errNone ) {
+                    SilkLibEnableResizeFoo( ref );
+                }
+            }
+        }
     }
+} /* initHighResGlobals */
 
-    globals->width = width;
-    globals->height = height;
-
-    XP_LOGF( "using width=%d, height=%d",
-             globals->width, globals->height );
+static void
+uninitHighResGlobals( PalmAppGlobals* globals )
+{
+    if ( globals->hasHiRes && globals->sonyLibRef != 0 ) {
+        if ( globals->doVSK ) {
+            VskClose( globals->sonyLibRef );
+        } else {
+            SilkLibClose( globals->sonyLibRef );
+        }
+    }
+} /* uninitHighResGlobals */
+#else
+# define initHighResGlobals(g)
 #endif
-} /* initGlobals */
 
 /*****************************************************************************
  *
@@ -944,7 +1052,8 @@ startApplication( PalmAppGlobals** globalsP )
     XP_MEMSET( globals, 0, sizeof(PalmAppGlobals) );
     MPASSIGN( globals->mpool, mpool );
 
-    initGlobals( globals );
+    initHighResGlobals( globals );
+    getSizes( globals );
 
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
 
@@ -1166,6 +1275,8 @@ stopApplication( PalmAppGlobals* globals )
             XP_FREE( globals->mpool, globals->savedGamesState );
         }
 #endif
+
+        uninitHighResGlobals( globals );
 
         XP_ASSERT( !!globals->gamesDBP );
         DmCloseDatabase( globals->gamesDBP );
@@ -1709,6 +1820,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     }
 
     XP_ASSERT( !!globals->game.board );
+    getSizes( globals );
     (void)positionBoard( globals );
 
 #ifdef IR_SUPPORT
@@ -1865,7 +1977,7 @@ tryLoadSavedGame( PalmAppGlobals* globals, XP_U16 newIndex )
 static XP_U16
 hresX( PalmAppGlobals* globals, XP_U16 screenX )
 {
-    if ( globals->width == 320 ) {
+    if ( globals->hasHiRes && globals->width >= 320 ) {
         screenX *= 2;
     }
     return screenX;
@@ -1874,15 +1986,15 @@ hresX( PalmAppGlobals* globals, XP_U16 screenX )
 static XP_U16
 hresY( PalmAppGlobals* globals, XP_U16 screenY )
 {
-    if ( globals->width == 320 ) {
+    if ( globals->hasHiRes && globals->width >= 320 ) {
         screenY *= 2;
     }
     return screenY;
 }
 
 #else
-# define hresX( g, n ) n
-# define hresY( g, n ) n
+# define hresX( g, n ) (n)
+# define hresY( g, n ) (n)
 #endif
 
 /*****************************************************************************
@@ -1959,6 +2071,13 @@ mainViewHandleEvent( EventPtr event )
 
     case boardRedrawEvt:
         draw = true;
+        break;
+
+    case doResizeWinEvent:
+        getSizes( globals );
+        positionBoard( globals );
+        board_invalAll( globals->game.board );
+        FrmUpdateForm( 0, frmRedrawUpdateCode );
         break;
 
     case prefsChangedEvent:
