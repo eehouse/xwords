@@ -104,6 +104,12 @@ frank_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
         if ( *letters == LETTER_NONE ) {
             if ( bonus != BONUS_NONE ) {
                 XP_ASSERT( bonus <= 4 );
+#ifdef USE_PATTERNS
+                dctx->window->DrawTiledImage( xprect->left, xprect->top, 
+                                              xprect->width, 
+                                              xprect->height,
+                                              &dctx->bonusImages[bonus-1] );
+#else
                 RECT filledR = rectInset;
                 COLOR color;
                 insetRect( &filledR, 1 );
@@ -127,6 +133,7 @@ frank_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
                 }
 
                 dctx->window->DrawRectFilled( &filledR, color ); 
+#endif
             }
 
             if ( isStar ) {
@@ -184,7 +191,7 @@ frank_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
 
 static void
 frank_draw_drawTile( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letter,
-		     XP_Bitmap* bitmap, XP_S16 val, XP_Bool highlighted )
+                     XP_Bitmap* bitmap, XP_S16 val, XP_Bool highlighted )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char numbuf[3];
@@ -544,6 +551,15 @@ const unsigned char startMark_bits[] = {
     0xc1, 0x80,	   /* ##-- ---# # */
 };
 
+#ifdef USE_PATTERNS
+const unsigned char bonus_bits[][4] = {
+    { 0x88, 0x44, 0x22, 0x11 },
+    { 0xaa, 0x55, 0xaa, 0x55 },
+    { 0xCC, 0x66, 0x33, 0x99 },
+    { 0xCC, 0xCC, 0x33, 0x33 }
+};
+#endif
+
 DrawCtx* 
 frank_drawctxt_make( MPFORMAL CWindow* window )
 {
@@ -613,6 +629,15 @@ frank_drawctxt_make( MPFORMAL CWindow* window )
     XP_MEMCPY( (IMAGE*)&dctx->startMark, &startMark, 
 	       sizeof(dctx->startMark) );
 
+#ifdef USE_PATTERNS
+    for ( i = 0; i < BONUS_LAST; ++i ) {
+        IMAGE bonus = { 8, 4, 1,
+                        COLOR_MODE_MONO, 0, (const COLOR *) 0,
+                        (U8*)bonus_bits[i] };
+        XP_MEMCPY( (IMAGE*)&dctx->bonusImages[i], &bonus, 
+                   sizeof(dctx->bonusImages[i]) );
+    }
+#endif
     return (DrawCtx*)dctx;
 } /* frank_drawctxt_make */
 
