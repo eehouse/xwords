@@ -385,6 +385,23 @@ getFormRefcon()
     XP_ASSERT( ptr != 0L );
     return (void*)ptr;
 } /* getFormRefcon */
+
+void
+fitButtonToString( XP_U16 id )
+{
+    ControlPtr button = getActiveObjectPtr( id );
+    const char* label = CtlGetLabel( button );
+    XP_U16 width = FntCharsWidth( label, XP_STRLEN(label) );
+    RectangleType rect;
+    width += 14;                /* 7 pixels at either end */
+
+    getObjectBounds( id, &rect );
+    rect.topLeft.x -= (rect.extent.x - width);
+    rect.extent.x = width;
+
+    setObjectBounds( id, &rect );
+} /* fitButtonToString */
+
 #endif
 
 #if defined FEATURE_REALLOC || defined XW_FEATURE_UTILS

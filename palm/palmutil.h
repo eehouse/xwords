@@ -72,6 +72,8 @@ XP_Bool penInGadget( EventPtr event, UInt16* whichGadget );
 
 void setFormRefcon( void* refcon );
 void* getFormRefcon();
+void fitButtonToString( XP_U16 id );
+
 
 #ifdef DEBUG
 void logEvent( eventsEnum eType );
