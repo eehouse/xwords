@@ -1,7 +1,7 @@
 TARGET            xwords.app
 TARGETTYPE        app
 // Change this UID!!!!!
-UID               0x100039CE 0x1020680C
+UID               0x100039CE 0x10206D64
 
 // Comment the next line out for a non-debug build.  Isn't this build
 // system advanced?
