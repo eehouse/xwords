@@ -19,15 +19,17 @@
 
 extern "C" {
 #include "dictnry.h"
+#include "util.h"
 }
 
 class CAskLetterWindow : public CWindow {
  private:
-    Tile blank;
-    DictionaryCtxt* fDict;
-    XP_UCHAR* resultP;
+    XP_UCHAR4* fTexts;
+    XP_S16* fResultP;
+    XP_U16 fNTiles;
     CList* list;		/* my own subclass, of course */
  public:
-    CAskLetterWindow( DictionaryCtxt* dict, XP_UCHAR* resultP );
+    CAskLetterWindow( PickInfo* pi, XP_U16 playerNum,
+                      XP_UCHAR4* texts, XP_U16 nTiles, XP_S16* result );
     S32 MsgHandler( MSG_TYPE type, CViewable *object, S32 data );
 };
