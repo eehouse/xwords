@@ -1052,6 +1052,7 @@ startApplication( PalmAppGlobals** globalsP )
 
     globals = (PalmAppGlobals*)XP_MALLOC( mpool, sizeof( PalmAppGlobals ) );
     *globalsP = globals;
+    setFormRefcon( globals );
     XP_MEMSET( globals, 0, sizeof(PalmAppGlobals) );
     MPASSIGN( globals->mpool, mpool );
 
@@ -1231,9 +1232,13 @@ stopApplication( PalmAppGlobals* globals )
         /* Write the state information -- once we're ready to read it in.
            But skip the save if user cancelled launching the first time. */
         if ( !globals->isFirstLaunch ) {
+            /* temporarily don't save prefs since we crash on opening
+               them. */
+#ifndef XW_TARGET_PNO
             PrefSetAppPreferences( AppType, PrefID, VERSION_NUM, 
                                    &globals->gState, sizeof(globals->gState), 
                                    true );
+#endif
         }
 
         if ( !!globals->draw ) {
@@ -1433,7 +1438,6 @@ applicationHandleEvent( PalmAppGlobals* globals, EventPtr event )
 
         switch (formId)	{
         case XW_MAIN_FORM:
-            setFormRefcon( globals );
             handler = mainViewHandleEvent;
             break;
         case XW_NEWGAMES_FORM:
