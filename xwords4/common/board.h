@@ -93,7 +93,8 @@ void board_setTimerLoc( BoardCtxt* board,
                         XP_U16 timerLeft, XP_U16 timerTop,
                         XP_U16 timerWidth, XP_U16 timerHeight );
 void board_invalAll( BoardCtxt* board );
-void board_invalRect( BoardCtxt* board, XP_Rect* rect );
+void board_invalRect( BoardCtxt* board, XP_U16 left, XP_U16 top,
+                      XP_U16 right, XP_U16 bottom );
 
 XP_Bool board_draw( BoardCtxt* board );
 

@@ -1286,17 +1286,24 @@ invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect, XP_Bool doMirror )
 } /* invalCellsUnderRect */
 
 void
-board_invalRect( BoardCtxt* board, XP_Rect* rect )
+board_invalRect( BoardCtxt* board, XP_U16 left, XP_U16 top,
+                 XP_U16 right, XP_U16 bottom )
 {
-    if ( rectsIntersect( rect, &board->boardBounds ) ) {
-        invalCellsUnderRect( board, rect, XP_FALSE );
+    XP_Rect rect;
+    rect.left = left;
+    rect.top = top;
+    rect.width = right - left;
+    rect.height = bottom - top;
+
+    if ( rectsIntersect( &rect, &board->boardBounds ) ) {
+        invalCellsUnderRect( board, &rect, XP_FALSE );
     }
     
-    if ( rectsIntersect( rect, &board->trayBounds ) ) {
-        invalTilesUnderRect( board, rect );
+    if ( rectsIntersect( &rect, &board->trayBounds ) ) {
+        invalTilesUnderRect( board, &rect );
     }
 
-    if ( rectsIntersect( rect, &board->scoreBdBounds ) ) {
+    if ( rectsIntersect( &rect, &board->scoreBdBounds ) ) {
         board->scoreBoardInvalid = XP_TRUE;
     }
 } /* board_invalRect */
