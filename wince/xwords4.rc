@@ -367,15 +367,15 @@ END
 //
 #ifdef MY_COLOR_SEL
 #define CLRELABEL_COL 3
-#define CLREEDIT_COL  25
-#define CLRESLIDER_COL 50
+#define CLREEDIT_COL  28
+#define CLRESLIDER_COL 45
 #define CLRE_LAB_WIDTH 22
 #define CLRE_LAB_HT    12
-#define CLREDIT_ROW_1 40
-#define CLREDIT_ROW_2 56
-#define CLREDIT_ROW_3 72
+#define CLREDIT_ROW_1 5
+#define CLREDIT_ROW_2 21
+#define CLREDIT_ROW_3 37
 
-IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 20, 130, 125
+IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 0, 115, 77
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Edit color"
 FONT 8, "System"
@@ -386,7 +386,7 @@ BEGIN
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "foo",CLREDT_SLIDER1,"msctls_trackbar32",
                     TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
-                    CLRESLIDER_COL,CLREDIT_ROW_1,50,15
+                    CLRESLIDER_COL,CLREDIT_ROW_1,48,15
 
     LTEXT           "Green:",GREEN_LABEL,CLRELABEL_COL,CLREDIT_ROW_2,
                     CLRE_LAB_WIDTH,CLRE_LAB_HT
@@ -394,7 +394,7 @@ BEGIN
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "foo",CLREDT_SLIDER2,"msctls_trackbar32",
                     TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
-                    CLRESLIDER_COL,CLREDIT_ROW_2,50,15
+                    CLRESLIDER_COL,CLREDIT_ROW_2,48,15
 
     LTEXT           "Blue:",BLUE_LABEL,CLRELABEL_COL,CLREDIT_ROW_3,
                     CLRE_LAB_WIDTH,CLRE_LAB_HT
@@ -402,10 +402,10 @@ BEGIN
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "foo",CLREDT_SLIDER3,"msctls_trackbar32",
                     TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
-                    CLRESLIDER_COL,CLREDIT_ROW_3,50,15
+                    CLRESLIDER_COL,CLREDIT_ROW_3,48,15
 
-    DEFPUSHBUTTON   "OK",IDOK,20,100,38,14
-    PUSHBUTTON      "Cancel",IDCANCEL,70,100,39,14
+    DEFPUSHBUTTON   "OK",IDOK,15,57,34,14
+    PUSHBUTTON      "Cancel",IDCANCEL,63,57,39,14
 END
 
 #endif
