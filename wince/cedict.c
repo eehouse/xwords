@@ -109,8 +109,9 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             flags = n_ptr_tohs( &ptr );
             XP_ASSERT( flags == 0x0100 );
 
-            ctxt->super.nFaces = (XP_U8)numFaces = *ptr++;
-            XP_DEBUGF( "read %d faces from dict", numFaces );
+            numFaces = (XP_U16)(*ptr++);
+            ctxt->super.nFaces = (XP_U8)numFaces;
+            XP_DEBUGF( "read %x faces from dict", (short)numFaces );
 
             if ( flags == 0x0100 ) {
                 XP_U16 i;
