@@ -160,10 +160,15 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
                         prefsPrefs->gp.phoniesAction, 0L );
 
     if ( !pState->isNewGame ) {
-        SendDlgItemMessage( hDlg, IDC_CHECKNOHINTS, WM_ENABLE, FALSE, 0L );
+        XP_U16 unavail[] = { TIMER_CHECK, TIMER_EDIT, IDC_CHECKNOHINTS
 #ifdef FEATURE_TRAY_EDIT
-        SendDlgItemMessage( hDlg, IDC_PICKTILES, WM_ENABLE, FALSE, 0L );
+                             ,IDC_PICKTILES
 #endif
+        };
+        XP_U16 i;
+        for ( i = 0; i < sizeof(unavail)/sizeof(unavail[0]); ++i ) {
+            ceEnOrDisable( hDlg, unavail[i], XP_FALSE );
+        }
     }
 } /* loadControlsFromState */
 
