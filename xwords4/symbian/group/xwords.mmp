@@ -10,6 +10,7 @@ MACRO             CPLUS
 MACRO             __LITTLE_ENDIAN KEYBOARD_NAV
 MACRO             KEY_SUPPORT FEATURE_TRAY_EDIT NODE_CAN_4
 MACRO             XWFEATURE_STANDALONE_ONLY STUBBED_DICT
+MACRO             SERIES_80
 
 //FOOBAR
 
@@ -25,6 +26,7 @@ SOURCE            xwdoc.cpp
 SOURCE            symdraw.cpp
 SOURCE            symutil.cpp
 SOURCE            symaskdlg.cpp
+SOURCE            symgamdl.cpp
 SOURCE            symdict.cpp
 
 SOURCEPATH        ..\group
@@ -35,6 +37,14 @@ USERINCLUDE       ..\..\common
 
 SYSTEMINCLUDE     \epoc32\include
 SYSTEMINCLUDE     \epoc32\include\libc
+
+START BITMAP xwbitmaps.mbm
+HEADER
+SOURCEPATH ..\bmps
+SOURCE 2 downarrow_80.bmp
+SOURCE 2 rightarrow_80.bmp
+SOURCE 2 star_80.bmp
+END
 
 LIBRARY           gdi.lib
 LIBRARY           euser.lib
@@ -52,4 +62,9 @@ LIBRARY           commonengine.lib
 LIBRARY           eikdlg.lib
 LIBRARY           EIKFILE.lib
 LIBRARY           efsrv.lib
+LIBRARY           eikctl.lib
+// Bitmaps
+LIBRARY           bitgdi.lib
+LIBRARY           fbscli.lib
+
 LIBRARY           common.lib
