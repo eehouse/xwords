@@ -167,6 +167,9 @@ RESOURCE MENU_PANE r_xwords_game_menu
             ,MENU_ITEM {command = XW_FINALSCORES_COMMAND;  txt = "Final scores";}
             ,MENU_ITEM {command = XW_FLIP_COMMAND; txt = "Flip board"; }
             ,MENU_ITEM {command = XW_TOGGLEVALS_COMMAND; txt = "Toggle values"; }
+#ifndef XWFEATURE_STANDALONE_ONLY
+            ,MENU_ITEM {command = XW_RESEND_COMMAND; txt = "Resend messages"; }
+#endif
         };
 }
 
