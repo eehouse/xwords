@@ -1,0 +1,155 @@
+/* -*- mode: c; -*- */
+/* 
+ * Copyright 1997 - 2002 by Eric House (fixin@peak.org) and others.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+/* This table is where English user-visible strings come from (all
+ * strings meant to wind up in a str# resource, actually.  Each entry
+ * is a pair of strings, first the constant name and then the string
+ * itself.  The build system creats a str# resource with the latter
+ * and generates a .h file of #defines using the former.  */
+
+{ "STR_COMMIT_CONFIRM", "Acceptes la jugada?\n\n" },
+{ "STR_NOT_YOUR_TURN", "No ho pots fer; no és el teu torn!" },
+{ "STR_NO_PEEK_ROBOT_TILES", "No miris les fitxes de la màquina!" },
+#ifndef XWFEATURE_STANDALONE_ONLY
+{ "STR_NO_PEEK_REMOTE_TILES", "No miris les fitxes dels altres!" },
+{ "STR_SERVER_DICT_WINS", 
+      "Conflicte de diccionaris: mana el del servidor." },
+{ "STR_REG_UNEXPECTED_USER",  "Jugador inesperat: no s'accepta" },
+{ "STR_RESEND_IR", "Error enviant el missatge; ¿reenviar?" },
+#endif
+{ "STR_TOO_FEW_TILES", "No hi ha prou fitxes." },
+{ "STR_VALUES_TITLE",  "Quantitat i Valor" },
+{ "STR_VALUES_HEADER", "Quantitat[Queden] i Valor\n" },
+
+{ "STR_DOUBLE_LETTER",		"Doble de lletra" },
+{ "STR_DOUBLE_WORD",		"Doble de paraula" },
+{ "STR_TRIPLE_LETTER",		"Triple de lletra" },
+{ "STR_TRIPLE_WORD",		"Triple de paraula" },
+{ "STR_REMTILES",		"Hi ha:%d" },
+/* { "STR_NO_TILES_IN_POOL",	"No hi ha prou fitxes a la bossa." }, */
+{ "STR_CANT_TRADE_MIDTURN",	"Encara tens fitxes al tauler."},
+{ "STR_ASK_REPLACE_GAME",	"Vols sobreescriure la partida?" },
+{ "STR_NO",			"No" },
+/* { "STR_CONFIRM_ERASE_GAME",	"Segur que vols\n" \ */
+/* 				"esborrar la partida?" }, */
+{ "STR_ABOUT_TITLE",		"Sobre Crosswords" },
+{ "STR_DEFAULT_NAME",		"Jugador %d" },
+{ "STR_ABOUT_CONTENT", 
+      "Crosswords " XW_PALM_VERSION_STRING ".\n" \
+      "Copyright 1998-2003 by Eric House.  "\
+      "Tots els drets reservats.\n\n"\
+
+      "El manual és a www.peak.org/~fixin/xwords\n\n" \
+
+      "Aquest programa és postalware.\nSi el fas servir, " \
+      "envia una postal a:\n" \
+      "The Houses\n" \
+      "124 NW 7th St. No. 310\n" \
+      "Corvallis, OR 97330 USA\n\n"
+
+      "Escrit sobre Debian GNU/Linux usant les prc-tools.\n\n" \
+
+      "Versió catalana de F. Xavier Gil\n(setimig@wanadooadsl.net)." \
+      },
+
+{ "STR_CONFIRM_END_GAME",	"Segur que vols acabar la partida?"},
+/* { "STR_TOO_MANY_TILES_SEL",	"Has triat massa fitxes." }, */
+/*  { "STR_CONFIRM_DISCARD",	"Segur que vols canviar\n" \ */
+/*  				"les fitxes marcades?" }, */
+{ "STR_CONFIRM_TRADE",		"Segur que vols usar el teu torn " \
+				"per canviar fitxes?" },
+{ "STR_TRADING_REMINDER",	"Prem D per acabar." },
+
+#ifndef NO_REG_REQUIRED
+{ "STR_NOT_UNREG_VERS",	  "Només funciona a la versió registrada." },
+#endif
+
+/* { "STRS_LANGUAGE_NAME",		"Diccionari: %s\n" }, */
+{ "STR_NONLOCAL_NAME",          "%s (remot)" },
+
+
+/* { "STR_FINALSCORE_TITLE",	"\n\nPuntuació final\n" }, */
+
+/* { "STR_NO_HISTORY",		"No hi ha jugades." }, */
+
+{ "STR_HISTORY_TITLE",		"Jugades" },
+/* { "STRS_NO_SCORE_MID_PICK",	"No es pot puntuar mentre %s " \ */
+/* 				"estigui jugant." }, */
+
+{ "STRD_REMAINING_TILES_ADD",	"+ %d [fitxes sobreres]" },
+{ "STRD_UNUSED_TILES_SUB",	"- %d [fitxes no usades]" },
+/* { "STR_MOVESCORE_TITLE",	"Punts" }, */
+/* { "STR_ZERO_SCORE",		"Punts: 0 (No hi ha jugada.)" }, */
+{ "STR_BONUS_ALL",		"Per usar les set fitxes: 50\n" },
+{ "STRD_TURN_SCORE",		"Parcial de la jugada: %d\n" },
+/* { "STRSD_RUNNING_TOTAL",	"\nAcumulat per a %s: %d" }, */
+{ "STR_ALL_IN_LINE_ERR",	"Les fitxes no estan en línia." },
+{ "STR_NO_EMPTIES_ERR",	"Les fitxes s'han de tocar." },
+{ "STR_FIRST_MOVE_ERR",	"Has de posar dues o mes fitxes a " \
+				"la primera jugada." },
+{ "STR_MUST_CONTACT_ERR",    	"Les fitxes n'han de tocar d'altres (o " \
+				"el quadre central a la primera jugada)." },
+/* { "STR_EDIT",			"Editar" }, */
+/* { "STR_USE",			"Usar" }, */
+//{ "STRC_BAD_BLANK_VAL",		"\"%c\" no és una fitxa." },
+{ "STR_PTS",			"Punts:" },
+/* { "STR_NA",			"N/A" }, */
+{ "STR_CONFIRM_DEL_GAME",	"Segur que la vols esborrar?" },
+
+/* { "STR_REPLACE_STR",	   	"Canviar" }, */
+/* { "STR_NEW_OR_QUIT",	   "El diccionari no s'ha trobat.\n" \ */
+/* 			   "Surt si no vols modificar\n" \ */
+/* 			   "la partida." }, */
+
+{ "STRD_TIME_PENALTY_SUB",     " - %d [per temps]" },
+
+
+{ "STR_NO_DICT_INSTALLED", "Crosswords 4 necessita algun diccionari." },
+
+/* { "STR_PASS",   "No s'ha trobat cap jugada."}, */
+/* { "STR_TRADED",   "El robot canvia fitxes."}, */
+{ "STR_ILLEGAL_WORD",	      "Ep!, %s no està al diccionari." },
+
+{ "STR_FINAL_SCORES_TITLE",   "Puntuació final"},
+
+{ "STRD_CUMULATIVE_SCORE",    "Acumulat: %d\n" },
+{ "STRS_TRAY_AT_START",       "Faristol inicial: %s\n" },
+{ "STRS_MOVE_ACROSS",         "jugada (%s, horitzontal)\n" },
+{ "STRS_MOVE_DOWN",           "jugada (%s, vertical)\n" },
+{ "STRS_NEW_TILES",           "Noves fitxes: %s\n" },
+{ "STRSS_TRADED_FOR",         "Canvi de %s per %s." },
+{ "STR_PASS",                 "passa\n" },
+{ "STR_PHONY_REJECTED",       "Mot incorrecte; torn perdut!\n" },
+
+{ "STR_ROBOT_MOVED",           "The robot made this move:\n" },
+{ "STR_REMOTE_MOVED",          "Remote player made this move:\n" },
+{ "STRD_ROBOT_TRADED",         "%d tiles traded this turn." },
+{ "STR_ROBOT_TITLE",           "Punts del robot" },
+
+{ "STR_PICK_BLANK",            "Select the letter for your blank." },
+#ifdef FEATURE_TRAY_EDIT
+{ "STRS_PICK_TILE",            "Choose a new tile for %s." },
+#endif
+
+#ifdef NODE_CAN_4
+{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert any existing Crosswords " \
+                               "dictionaries to the new format? " \
+                               "The change is not reversible." }, 
+{ "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" },
+#endif
