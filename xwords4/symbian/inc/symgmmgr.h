@@ -44,6 +44,7 @@ class CXWGamesMgr : public CBase
 
     void BuildListL();
     TBool DeleteFileFor( TPtrC16* aName );
+    void  GameNameToPath( TFileName* path, const TDesC16* name );
 
  public:
     static CXWGamesMgr* NewL( MPFORMAL CCoeEnv* aCoeEnv, TFileName* aBasePath );
@@ -59,6 +60,7 @@ class CXWGamesMgr : public CBase
     void LoadGameL( const TGameName* aName, XWStreamCtxt* stream );
 
     TBool DeleteSelected( TInt aIndex );
+    TBool Exists( TGameName* aName );
 
  private:
 
