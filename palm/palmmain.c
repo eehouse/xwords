@@ -900,6 +900,10 @@ startApplication( PalmAppGlobals** globalsP )
 
     initUtilFuncs( globals );
 
+#ifdef NODE_CAN_4
+    offerConvertOldDicts( globals );
+#endif
+
     globals->dictList = DictListMake( MPPARM_NOCOMMA(globals->mpool) );
     if ( DictListCount( globals->dictList ) == 0 ) {
         userErrorFromStrId( globals, STR_NO_DICT_INSTALLED );
@@ -2516,7 +2520,9 @@ palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton,
     XP_UCHAR* title;
     UInt16 buttonHit;
 
-    board_pushTimerSave( globals->game.board );
+    if ( !!globals->game.board ) {
+        board_pushTimerSave( globals->game.board );
+    }
 
     title = titleID >= 0? getResString( globals, titleID ): NULL;
 
@@ -2535,7 +2541,13 @@ palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton,
         CtlSetLabel( getActiveObjectPtr(XW_ASK_CANCEL_BUTTON_ID), 
                      (const char*)altButton );
     }
-    FrmSetEventHandler( form, handleScrollInAsk );
+
+    /* if we're running before the first form goes up, globals won't be
+       available via the refcon, so don't install handler than requires 'em.
+       That or move globals to a Ftr.... */
+    if ( !!prevForm ) {
+        FrmSetEventHandler( form, handleScrollInAsk );
+    }
     globals->prevScroll = 0;
 
     if ( globals->isLefty ) {
@@ -2561,7 +2573,9 @@ palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton,
     FrmDeleteForm( form );
     FrmSetActiveForm( prevForm );
 
-    board_popTimerSave( globals->game.board );
+    if ( !!globals->game.board ) {
+        board_popTimerSave( globals->game.board );
+    }
 
     return buttonHit == XW_ASK_OK_BUTTON_ID;
 } /* palmask */
