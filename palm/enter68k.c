@@ -47,6 +47,8 @@ byte_swap32( UInt32 in )
 static void
 alertUser( char* str )
 {
+    (void)FrmCustomAlert( XW_ERROR_ALERT_ID,
+                          str, " ", " " );
 }
 
 typedef struct PNOFtrHeader {
@@ -172,19 +174,19 @@ static Boolean
 shouldRunPnolet()
 {
     UInt32 value;
-    Boolean result = false;
+    Boolean runArm = false;
     Err err = FtrGet( sysFtrCreator, sysFtrNumProcessorID, &value );
 
     if ( ( err == errNone ) && sysFtrNumProcessorIsARM( value ) ) {
-        result = true;
+        runArm = true;
     }
-    if ( result ) {
-        err = FtrGet( APPID, WANTS_ARM_FEATURE, &value );
-        if ( (err != errNone) || (value != WANTS_ARM) ) {
-            result = false;
+    if ( runArm ) {
+        err = FtrGet( APPID, FEATURE_WANTS_68K, &value );
+        if ( (err == errNone) && (value == WANTS_68K) ) {
+            runArm = false;
         }            
     }
-    return result;
+    return runArm;
 } /* shouldRunPnolet */
 
 UInt32
@@ -231,9 +233,7 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 #ifdef FEATURE_PNOAND68K
             result = PM2(PilotMain)( cmd, cmdPBP, launchFlags);
 #else
-            (void)FrmCustomAlert( XW_ERROR_ALERT_ID,
-                                  "Arm-only Crosswords won't run on this "
-                                  "device", " ", " " );
+            alertUser( "Arm-only Crosswords won't run on this device" );
 #endif
         }
     }
