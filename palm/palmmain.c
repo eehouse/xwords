@@ -52,6 +52,7 @@
 #include "memstream.h"
 #include "strutils.h"
 #include "palmir.h"
+#include "palmip.h"
 #include "xwcolors.h"
 #include "prefsdlg.h"
 #include "connsdlg.h"
@@ -115,6 +116,9 @@ static Boolean mainViewHandleEvent( EventPtr event );
 
 static UInt16 romVersion( void );
 static Boolean handleHintRequest( PalmAppGlobals* globals );
+static XP_S16 palm_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, 
+                         void* closure );
+static void palm_send_on_close( XWStreamCtxt* stream, void* closure );
 
 /* callbacks */
 static VTableMgr* palm_util_getVTManager( XW_UtilCtxt* uc );
@@ -143,9 +147,6 @@ static DictionaryCtxt* palm_util_makeEmptyDict( XW_UtilCtxt* uc );
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, 
                                                    XP_U16 channelNo );
-#ifdef BEYOND_IR
-static void palm_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort );
-#endif
 #endif
 static XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
@@ -575,7 +576,6 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
     recStream = gameRecordToStream( globals, gIndex );
 
     /* now read everything out of the stream */
-    XP_ASSERT(!!recStream);
     if ( !!recStream ) {
         char ignore[MAX_GAMENAME_LENGTH];
 
@@ -641,9 +641,6 @@ initUtilFuncs( PalmAppGlobals* globals )
     vtable->m_util_makeEmptyDict = palm_util_makeEmptyDict;
 #ifndef XWFEATURE_STANDALONE_ONLY
     vtable->m_util_makeStreamFromAddr = palm_util_makeStreamFromAddr;
-#ifdef BEYOND_IR
-    vtable->m_util_listenPortChange = palm_util_listenPortChange;
-#endif
 #endif
     vtable->m_util_getUserString = palm_util_getUserString;
     vtable->m_util_warnIllegalWord = palm_util_warnIllegalWord;
@@ -1148,6 +1145,10 @@ startApplication( PalmAppGlobals** globalsP )
         return XP_FALSE;
     }
 
+#ifdef BEYOND_IR
+    palm_ip_setup( globals );
+#endif
+
     doCallbackReg( globals, XP_TRUE );
 
     initUtilFuncs( globals );
@@ -1434,7 +1435,7 @@ eventLoop( PalmAppGlobals* globals )
     do {
 #ifdef BEYOND_IR
         if ( !!globals->game.comms 
-             && (comms_getConType(globals->game.comms) == COMMS_CONN_IP) ) {
+             && (comms_getConType(globals->game.comms) == COMMS_CONN_RELAY) ) {
             checkHandleNetEvents( globals );
         }
 #endif
@@ -1879,7 +1880,14 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     if ( newGame ) {
         XP_U32 newGameID = TimGetSeconds();
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
-                    newGameID, &globals->gState.cp, palm_send, globals );
+                    &globals->util, newGameID, &globals->gState.cp, 
+                    palm_send, globals );
+#ifdef BEYOND_IR
+        if ( !!globals->game.comms ) {
+            comms_setAddr( globals->game.comms, 
+                           &globals->newGameState.addr );
+        }
+#endif        
     }
 
     XP_ASSERT( !!globals->game.board );
@@ -3403,18 +3411,56 @@ palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
                                            function? */
     XP_LOGF( "making stream for channel %d", channelNo );
     stream = makeSimpleStream( globals, palm_send_on_close );
+    stream_setAddress( stream, channelNo );
     return stream;
 } /* palm_util_makeStreamFromAddr */
+#endif
+
+static void
+palm_send_on_close( XWStreamCtxt* stream, void* closure )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
+
+    XP_ASSERT( !!globals->game.comms );
+    comms_send( globals->game.comms, stream );
+} /* palm_send_on_close */
+
+static XP_S16
+palm_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
 
 #ifdef BEYOND_IR
-static void
-palm_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort )
+    XP_S16 result = 0;
+    switch( comms_getConType( globals->game.comms ) ) {
+    case COMMS_CONN_IR:
+        result = palm_ir_send( buf, len, globals );
+        break;
+    case COMMS_CONN_RELAY:
+        result = palm_ip_send( buf, len, addr, globals );
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+    return result;
+#else
+    return palm_ir_send( buf, len, globals );
+#endif
+} /* palm_send */
+
+void
+checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream, 
+                 CommsAddrRec* addr )
 {
-    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;    
-    palm_bind_socket( globals, newPort );
-} /* palm_util_getListeningPort */
-#endif
-#endif
+    if ( comms_checkIncomingStream( globals->game.comms, 
+                                     instream, NULL ) ) {
+        globals->msgReceivedDraw = 
+            server_receiveMessage( globals->game.server, instream );
+        globals->msgReceivedDraw = true;
+    }
+    stream_destroy( instream );
+    palm_util_requestTime( &globals->util );
+} /* checkAndDeliver */
 
 static XP_UCHAR* 
 palm_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
