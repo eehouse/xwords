@@ -350,7 +350,7 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 static void
 handleOptionsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 {
-    PrefsDlgState state;
+    CePrefsDlgState state;
 
     /* need to keep my stuff in a temporary place and to read back out of it
        if launched a second time before the user's cancelled or not out of
