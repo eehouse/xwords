@@ -211,7 +211,7 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
 /*         ceDrawBitmapInRect( hdc, rt.left+2, rt.top+2, bm ); */
 /*         DeleteObject( bm ); */
     } else if ( isStar ) {
-        ceDrawBitmapInRect( hdc, rt.left, rt.top, dctx->origin );
+        ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, dctx->origin );
     }
 
     return XP_TRUE;
