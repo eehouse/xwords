@@ -140,7 +140,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
 
 #ifdef NODE_CAN_4
         if ( headerRecP->flags == 0x0002 ) {
-            XP_ASSERT( nodeSize = 3 );
+            XP_ASSERT( nodeSize == 3 );
         } else if ( headerRecP->flags == 0x0003 ) {
             nodeSize = 4;
         } else {
