@@ -27,6 +27,7 @@
 #include "dictlist.h"
 #include "dictui.h"
 #include "palmmain.h"
+#include "pace_man.h"           /* READ_UNALIGNED16 */
 
 typedef struct DictStart {
     unsigned long indexStart;
