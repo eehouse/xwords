@@ -65,6 +65,9 @@ extern "C" {
         const IMAGE rightcursor;
         const IMAGE downcursor;
         const IMAGE startMark;
+#ifdef USE_PATTERNS
+        const IMAGE bonusImages[BONUS_LAST];
+#endif
     } FrankDrawCtx;
 
     void debugf( char* format, ... );
