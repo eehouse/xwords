@@ -271,6 +271,9 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
         model_setDictionary( globals->cGlobals.game.model, params->dict );
 
 /*         params->gi.phoniesAction = PHONIES_DISALLOW; */
+#ifdef XWFEATURE_SEARCHLIMIT
+        params->gi.allowHintRect = XP_TRUE;
+#endif
 
         if ( !isServer ) {
             XWStreamCtxt* stream = 
