@@ -103,8 +103,9 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 } /* game_makeNewGame */
 
 void
-game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XP_U16 gameID,
-            CommonPrefs* cp, TransportSend sendproc, void* closure )
+game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
+            XP_U16 gameID, CommonPrefs* cp, TransportSend sendproc, 
+            void* closure )
 {
     XP_U16 i;
 
@@ -122,6 +123,10 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XP_U16 gameID,
         } else {
             comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT );
         }
+    } else if ( gi->serverRole != SERVER_STANDALONE ) {
+        game->comms = comms_make( MPPARM(mpool) util,
+                                  gi->serverRole != SERVER_ISCLIENT, 
+                                  sendproc, closure );
     }
 #endif
 

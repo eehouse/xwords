@@ -75,8 +75,9 @@ typedef struct XWGame {
 void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi, 
                        XW_UtilCtxt* util, DrawCtx* draw, XP_U16 gameID,
                        CommonPrefs* cp, TransportSend sendproc, void* closure);
-void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XP_U16 gameID,
-                 CommonPrefs* cp, TransportSend sendproc, void* closure );
+void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
+                 XP_U16 gameID, CommonPrefs* cp, TransportSend sendproc, 
+                 void* closure );
 
 void game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                           CurGameInfo* gi, 
