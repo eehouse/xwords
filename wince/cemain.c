@@ -66,8 +66,8 @@ typedef struct FileWriteState {
 /* forward util function decls */
 static VTableMgr* ce_util_getVTManager( XW_UtilCtxt* uc );
 static void ce_util_userError( XW_UtilCtxt* uc, UtilErrID id );
-static XP_U16 ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
-                                 XWStreamCtxt* stream );
+static XP_Bool ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
+                                  XWStreamCtxt* stream );
 static XWBonusType ce_util_getSquareBonus( XW_UtilCtxt* uc, 
                                            ModelCtxt* model,
                                            XP_U16 col, XP_U16 row );
@@ -104,9 +104,9 @@ static void messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str,
                             wchar_t* title );
 static XP_Bool queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg );
 
-static XP_U16 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                               wchar_t* title, XP_Bool isQuery, 
-                               XP_Bool destroy );
+static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
+                                wchar_t* title, XP_Bool isQuery, 
+                                XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
 static XP_Bool doNewGame( CEAppGlobals* globals, XP_Bool silent );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
@@ -795,8 +795,8 @@ ceCountsAndValues( CEAppGlobals* globals )
         server_formatPoolCounts( globals->game.server, stream, 
                                  2 ); /* 2: ncols */
 
-        ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
-                         XP_FALSE, XP_TRUE );
+        (void)ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
+                               XP_FALSE, XP_TRUE );
     }
 } /* ceCountsAndValues */
 
@@ -813,7 +813,8 @@ ceDoHistory( CEAppGlobals* globals )
 
     model_writeGameHistory( globals->game.model, stream, 
                             globals->game.server, gameOver );
-    ceMsgFromStream( globals, stream, L"Game history", XP_FALSE, XP_TRUE );
+    (void)ceMsgFromStream( globals, stream, L"Game history", 
+                           XP_FALSE, XP_TRUE );
 } /* ceDoHistory */
 
 static void
@@ -844,7 +845,8 @@ ceDisplayFinalScores( CEAppGlobals* globals )
     server_writeFinalScores( globals->game.server, stream );
     stream_putU8( stream, '\0' );
 
-    ceMsgFromStream( globals, stream, L"Final scores", XP_FALSE, XP_TRUE );
+    (void)ceMsgFromStream( globals, stream, L"Final scores", 
+                           XP_FALSE, XP_TRUE );
 } /* ceDisplayFinalScores */
 
 static XP_Bool
@@ -1369,7 +1371,7 @@ notImpl( CEAppGlobals* globals )
     messageBoxChar( globals, "feature not implemented", NULL );
 } /* notImpl */
 
-static XP_U16
+static XP_Bool
 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                  wchar_t* title, XP_Bool isQuery, XP_Bool destroy )
 {
@@ -1387,7 +1389,7 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
         stream_destroy( stream );
     }
 
-    return init.result;
+    return init.result == IDOK;
 } /* ceMsgFromStream */
 
 static void
@@ -1613,41 +1615,36 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     
 } /* ce_util_userError */
 
-static XP_U16
+static XP_Bool
 ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
     char* query = NULL;
     char* info = NULL;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-    XP_U16 answer = 0;
+    XP_Bool answer = XP_FALSE;
     XP_Bool queryWithStream = XP_FALSE;
 
     switch( id ) {
     case QUERY_COMMIT_TURN:
-        queryWithStream = XP_TRUE;
-        break;
+        return ceQueryFromStream( globals, stream );
+
     case QUERY_COMMIT_TRADE:
         query = "Are you sure you want to spend this move trading tiles?";
-        break;
+        return queryBoxChar( globals, query );
+
+    case QUERY_ROBOT_MOVE:
+        return ceMsgFromStream( globals, stream, L"FYI", XP_FALSE,
+                                XP_FALSE );
 
     case QUERY_ROBOT_TRADE:
-    case QUERY_ROBOT_MOVE:
-        info = "Robot foo";
+        messageBoxStream( globals, stream, L"FYI" );
         break;
 
     default:
         XP_ASSERT(0);
     }
 
-    if ( queryWithStream ) {
-        answer = ceQueryFromStream( globals, stream );
-    } else if ( !!query ) {
-        answer = queryBoxChar( globals, query );
-    } else if ( !!info ) {
-        messageBoxStream( globals, stream, L"FYI" );
-    }
-
-    return answer == IDOK || answer == IDYES;
+    return XP_FALSE;
 } /* ce_util_userQuery */
 
 static XWBonusType
