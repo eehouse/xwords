@@ -137,7 +137,7 @@ typedef struct UtilVtable {
 #endif
 
 #ifdef SHOW_PROGRESS
-    void (*m_util_engineStarting)( XW_UtilCtxt* uc );
+    void (*m_util_engineStarting)( XW_UtilCtxt* uc, XP_U16 nBlanks );
     void (*m_util_engineStopping)( XW_UtilCtxt* uc );
 #endif
 } UtilVtable;
@@ -217,8 +217,8 @@ struct XW_UtilCtxt {
 
 
 # ifdef SHOW_PROGRESS
-# define util_engineStarting( uc ) \
-         (uc)->vtable->m_util_engineStarting((uc))
+# define util_engineStarting( uc, nb ) \
+         (uc)->vtable->m_util_engineStarting((uc),(nb))
 # define util_engineStopping( uc ) \
          (uc)->vtable->m_util_engineStopping((uc))
 # else
