@@ -33,15 +33,15 @@ CSendSocket::RunL()
     switch ( iSSockState ) {
     case ELookingUp:
         iResolver.Close();      /* we probably won't need this again */
-        XP_ASSERT( iStatus.Int() == KErrNone );
         if ( statusGood ) {
             iNameRecord = iNameEntry();
             XP_LOGF( "name resolved" );
             ConnectL( TInetAddr::Cast(iNameRecord.iAddr).Address() );
+        } else {
+            ResetState();
         }
         break;
     case EConnecting:
-        XP_ASSERT( statusGood );
         if ( statusGood ) {
             iSSockState = EConnected;
             XP_LOGF( "connect successful" );
@@ -50,21 +50,25 @@ CSendSocket::RunL()
             } else if ( iListenPending ) {
                 Listen();
             }
+        } else {
+            ResetState();
         }
         break;
     case ESending:
-        XP_ASSERT( statusGood );
         if ( statusGood ) {
-            iSSockState = EConnected;
-            iSendBuf.SetLength(0);
             XP_LOGF( "send successful" );
+        } else {
+            /* Depending on error, might need to close socket, reconnect, etc.
+               For now we'll just trust the upper layers to figure out they
+               didn't get through, or user to resend. */
+            XP_LOGF( "send failed with error %d", iStatus.Int() );
+        }
 
-            if ( iListenPending ) {
-                Listen();
-            }
+        iSSockState = EConnected;
+        iSendBuf.SetLength(0);
 
-            /* Send was successful.  Need to tell anybody?  Might want to
-               update display somehow. */
+        if ( iListenPending ) {
+            Listen();
         }
         break;
 
@@ -73,8 +77,8 @@ CSendSocket::RunL()
             if ( iDataLen == 0 ) {
                 /* Do nothing; we need to read again via Listen call */
                 iDataLen = XP_NTOHS( *(XP_U16*)iInBufDesc->Ptr() );
-                XP_LOGF( "Recv succeeded with length; now looking for %d byte packet", 
-                         iDataLen );
+                XP_LOGF( "Recv succeeded with length; now looking for %d byte"
+                         "packet", iDataLen );
             } else {
                 iDataLen = 0;
                 XP_LOGF( "Got packet! Calling callback" );
@@ -82,27 +86,33 @@ CSendSocket::RunL()
             }
             iSSockState = EConnected;
             Listen();           /* go back to listening */
+        } else {
+            XP_LOGF( "listen failed with error %d", iStatus.Int() );
+            ResetState();
         }
     }
 } /* RunL */
+
+void
+CSendSocket::ResetState()
+{
+    iSendBuf.SetLength(0);
+    iSSockState = ENotConnected;
+}
 
 TBool
 CSendSocket::Listen()
 {
     XP_LOGF( "CSendSocket::Listen" );
-    TBool result;
     iListenPending = ETrue;
 
     if ( IsActive() ) {
-        if ( iSSockState == ESending ) {
-            result = ETrue;
-        } 
-        result = EFalse;
+        /* since iListenPending is set, we'll eventually get to listening once
+           all the RunL()s get called.  Do nothing. */
     } else {
-
         if ( iSSockState == ENotConnected ) {
             ConnectL();
-        } else {
+        } else if ( iSSockState == EConnected ) {
             delete iInBufDesc;
 
             TInt seekLen = iDataLen == 0? 2: iDataLen;
@@ -113,11 +123,13 @@ CSendSocket::Listen()
 
             SetActive();
             iSSockState = EListening;
-            result = ETrue;
             iListenPending = EFalse;
+        } else {
+            XP_LOGF( "iSSockState=%d", iSSockState );
+            XP_ASSERT( 0 );
         }
     }
-    return result;
+    return ETrue;
 } /* Listen */
 
 TBool
@@ -292,12 +304,12 @@ CSendSocket::SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr )
         success = EFalse;
     } else if ( aLen > KMaxMsgLen ) {
         success = EFalse;
+    } else if ( iSendBuf.Length() != 0 ) {
+        XP_LOGF( "old buffer not sent yet" );
+        success = EFalse;
     } else {
-        XP_ASSERT( iSendBuf.Length() == 0 );
-
         /* TCP-based protocol requires 16-bits of length, in network
            byte-order, followed by data. */
-        iSendBuf.SetLength(0);
         XP_U16 netLen = XP_HTONS( aLen );
         iSendBuf.Append( (TUint8*)&netLen, sizeof(netLen) );
         iSendBuf.Append( aBuf, aLen );
