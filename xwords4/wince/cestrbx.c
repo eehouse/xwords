@@ -41,6 +41,9 @@ stuffTextInField( HWND hDlg, CEAppGlobals* globals, XWStreamCtxt* stream )
     XP_FREE( globals->mpool, sbuf );
 
     SetDlgItemText( hDlg, ID_EDITTEXT, wbuf );
+
+    /* This isn't working to stop the highlighting of text */
+/*     SendDlgItemMessage( hDlg, ID_EDITTEXT, EM_SETSEL, 0, 0L ); */
 } /* stuffTextInField */
 
 LRESULT CALLBACK
@@ -51,13 +54,19 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
+        SetWindowLong( hDlg, GWL_USERDATA, (long)lParam );
         init = (StrBoxInit*)lParam;
 
         globals = init->globals;
-        SetWindowLong( hDlg, GWL_USERDATA, (long)globals );
 
         if  ( !!init->title ) {
             SendMessage( hDlg, WM_SETTEXT, 0, (long)init->title );
+        }
+
+        if ( !init->isQuery ) {
+            ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
+            /* also want to expand the text box to the bottom */
+/*             ceCenterCtl( hDlg, IDOK ); */
         }
 
         positionDlg( hDlg );
@@ -66,7 +75,8 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	
         return TRUE;
     } else {
-        globals = (CEAppGlobals*)GetWindowLong( hDlg, GWL_USERDATA );
+        init = (StrBoxInit*)GetWindowLong( hDlg, GWL_USERDATA );
+
         switch (message) {
 
         case WM_COMMAND:
@@ -75,6 +85,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
             case IDOK:
             case IDCANCEL:
+                init->result = id;
                 EndDialog(hDlg, id);
                 return TRUE;
             }
