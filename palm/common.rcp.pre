@@ -143,6 +143,8 @@ BEGIN
 #endif
 END
 
+STRING ID 1000 "/palm/programs/Crosswords/"
+
 APPLICATIONICONNAME ID 1000 ICONTEXT
 
 /* force hotsync into games category */
