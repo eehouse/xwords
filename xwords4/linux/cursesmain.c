@@ -875,7 +875,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int piperesult;
     DictionaryCtxt* dict;
-    CommsAddrRec addr;
     XP_U16 gameID;
 
     memset( &globals, 0, sizeof(globals) );
@@ -913,14 +912,17 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                       params->util, (DrawCtx*)globals.draw,
                       gameID, &globals.cp, linux_tcp_send, &globals );
 
-    addr.conType = COMMS_CONN_RELAY;
-    addr.u.ip_relay.ipAddr = 0;       /* ??? */
-    addr.u.ip_relay.port = params->defaultSendPort;
-    XP_STRNCPY( addr.u.ip_relay.hostName, params->relayName,
-                sizeof(addr.u.ip_relay.hostName) - 1 );
-    XP_STRNCPY( addr.u.ip_relay.cookie, params->cookie,
-                sizeof(addr.u.ip_relay.cookie) - 1 );
-    comms_setAddr( globals.cGlobals.game.comms, &addr );
+    if ( globals.cGlobals.game.comms ) {
+        CommsAddrRec addr;
+        addr.conType = COMMS_CONN_RELAY;
+        addr.u.ip_relay.ipAddr = 0;       /* ??? */
+        addr.u.ip_relay.port = params->defaultSendPort;
+        XP_STRNCPY( addr.u.ip_relay.hostName, params->relayName,
+                    sizeof(addr.u.ip_relay.hostName) - 1 );
+        XP_STRNCPY( addr.u.ip_relay.cookie, params->cookie,
+                    sizeof(addr.u.ip_relay.cookie) - 1 );
+        comms_setAddr( globals.cGlobals.game.comms, &addr );
+    }
 
 	model_setDictionary( globals.cGlobals.game.model, params->dict );
 
