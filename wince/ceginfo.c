@@ -112,10 +112,8 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         str = "--pick--";
 #endif
     }
-    XP_MEMSET( widebuf, 0, sizeof(widebuf) );
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, strlen(str),
-                         widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
-    SendDlgItemMessage( hDlg, IDC_DICTBUTTON, WM_SETTEXT, 0, (long)widebuf );
+
+    ceSetDlgItemFileName( hDlg, IDC_DICTBUTTON, str );
 
     if ( !giState->isNewGame ) {
         XP_U16 disableIDs[] = { IDC_NPLAYERSCOMBO, 
@@ -416,8 +414,6 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         giState = (GameInfoState*)lParam;
         globals = giState->globals;
 
-        positionDlg( hDlg );
-
         loadFromGameInfo( hDlg, globals, giState );
         loadStateFromCurPrefs( &globals->appPrefs, &globals->gameInfo, 
                                &giState->prefsPrefs );
@@ -488,7 +484,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     if ( ce_pickDictFile( globals, giState->newDictName,
                                           sizeof(giState->newDictName) ) ) {
                         XP_UCHAR* basename = bname(giState->newDictName);
-                        ceSetDlgItemText( hDlg, id, basename );
+                        ceSetDlgItemFileName( hDlg, id, basename );
                     }
                 }
                 break;
