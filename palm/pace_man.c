@@ -20,6 +20,7 @@
 #include <Event.h>
 #include <Menu.h>
 #include <DateTime.h>
+#include <VFSMgr.h>
 
 #include "pace_man.h"
 
@@ -98,7 +99,7 @@ write_unaligned16( unsigned char* dest, unsigned short val )
 #define write_unaligned8( p, v ) *(p) = v
 
 unsigned short 
-read_unaligned16( unsigned char* src )
+read_unaligned16( const unsigned char* src )
 {
     int i;
     unsigned short val = 0;
@@ -114,7 +115,7 @@ read_unaligned16( unsigned char* src )
 #define read_unaligned8(cp) (*(cp))
 
 unsigned long
-read_unaligned32( unsigned char* src )
+read_unaligned32( const unsigned char* src )
 {
     int i;
     unsigned long val = 0;
@@ -243,7 +244,7 @@ TimSecondsToDateTime( UInt32 seconds, DateTimeType* dateTimeP )
  */
 #define EVT_DATASIZE_68K 16 /* sez sizeof(event.data) in 68K code */
 static void
-evt68k2evtARM( unsigned char* evt68k, EventType* event )
+evt68k2evtARM( EventType* event, const unsigned char* evt68k )
 {
     event->eType = read_unaligned16( evt68k );
     event->penDown = read_unaligned8( evt68k+2 );
@@ -325,7 +326,7 @@ evt68k2evtARM( unsigned char* evt68k, EventType* event )
 } /* evt68k2evtARM */
 
 static void
-evtArm2evt68K( unsigned char* evt68k, EventType* event )
+evtArm2evt68K( unsigned char* evt68k, const EventType* event )
 {
     write_unaligned16( evt68k, event->eType );
     write_unaligned8( evt68k + 2, event->penDown );
@@ -429,7 +430,7 @@ EvtGetEvent( EventType* event, Int32 timeout )
                              PceNativeTrapNo(sysTrapEvtGetEvent),
                              stack, 8 );
 
-        evt68k2evtARM( (unsigned char*)&evt68k, event );
+        evt68k2evtARM( event, (unsigned char*)&evt68k );
     }
     FUNC_TAIL(EvtGetEvent);
 } /* EvtGetEvent */
@@ -525,8 +526,8 @@ handlerEntryPoint( const void* emulStateP,
     asm( "mov r10, %0" : : "r" (state->gotTable) );
 
     XP_LOGF( "handlerEntryPoint" );
-    evt68k2evtARM( (unsigned char*)read_unaligned32(&data[1]), 
-                   &evtArm );
+    evt68k2evtARM( &evtArm,
+                   (unsigned char*)read_unaligned32(&data[1]) );
 
     result = (*handler)(&evtArm);
 
@@ -618,3 +619,84 @@ EvtAddEventToQueue( const EventType* event )
     FUNC_TAIL(EvtAddEventToQueue);
     EMIT_NAME("'E','v','t','A','d','d','E','v','e','n','t','T','o','Q','u','e','u','e'");
 } /* EvtAddEventToQueue */
+
+void
+flipRect( RectangleType* rout, RectangleType* rin )
+{
+    rout->topLeft.x = Byte_Swap16(rin->topLeft.x);
+    rout->topLeft.y = Byte_Swap16(rin->topLeft.y);
+    rout->extent.x = Byte_Swap16(rin->extent.x);
+    rout->extent.y = Byte_Swap16(rin->extent.y);
+} /* flipRect */
+
+void
+flipFieldAttr( FieldAttrType* fout, const FieldAttrType* fin )
+{
+    /* It's a bleeding bitfield */
+} /* flipFieldAttr */
+
+void
+flipEngSocketFromArm( unsigned char* sout, const ExgSocketType* sin )
+{
+	write_unaligned16( &sout[0],  Byte_Swap16(sin->libraryRef) ); // UInt16 libraryRef;
+	write_unaligned32( &sout[2],  Byte_Swap32(sin->socketRef) );  // UInt32 	socketRef;
+	write_unaligned32( &sout[6],  Byte_Swap32(sin->target) );     // UInt32 	target;
+	write_unaligned32( &sout[10], Byte_Swap32(sin->count) ); // UInt32	count;
+    write_unaligned32( &sout[14], Byte_Swap32(sin->length) );// UInt32	length;
+	write_unaligned32( &sout[18], Byte_Swap32(sin->time) );// UInt32	time;
+    write_unaligned32( &sout[22], Byte_Swap32(sin->appData) );	// UInt32	appData;
+    write_unaligned32( &sout[26], Byte_Swap32(sin->goToCreator) );	// UInt32 	goToCreator;
+	write_unaligned16( &sout[30], Byte_Swap16(sin->goToParams.dbCardNo) );	// UInt16	goToParams.dbCardNo;
+	write_unaligned32( &sout[32], Byte_Swap32(sin->goToParams.dbID) );	// LocalID	goToParams.dbID;
+	write_unaligned16( &sout[36], Byte_Swap16(sin->goToParams.recordNum) );	// UInt16 	goToParams.recordNum;
+	write_unaligned32( &sout[38], Byte_Swap32(sin->goToParams.uniqueID) );	// UInt32	goToParams.uniqueID;
+	write_unaligned32( &sout[42], Byte_Swap32(sin->goToParams.matchCustom) );	// UInt32	goToParams.matchCustom;
+    /* bitfield.  All we can do is copy the whole thing, assuming it's 16
+       bits, and pray that no arm code wants to to use it. */
+	write_unaligned16( &sout[46], Byte_Swap16(*(UInt16*)((unsigned char*)&sin->goToParams.matchCustom) 
+                       + sizeof(sin->goToParams.matchCustom)) );
+	write_unaligned32( &sout[48], Byte_Swap32(sin->description) );	// Char *description;
+	write_unaligned32( &sout[52], Byte_Swap32(sin->type) );	// Char *type;
+	write_unaligned32( &sout[56], Byte_Swap16(sin->name) );	// Char *name;
+} /* flipEngSocketFromArm */
+
+void
+flipEngSocketToArm( ExgSocketType* sout, const unsigned char* sin )
+{
+    sout->libraryRef = Byte_Swap16(read_unaligned16( &sin[0] ));
+	sout->socketRef = Byte_Swap32(read_unaligned32( &sout[2] ) );
+	sout->target = Byte_Swap32(read_unaligned32( &sout[6] ) );
+	sout->count = Byte_Swap32(read_unaligned32( &sout[10] ) );
+    sout->length = Byte_Swap32(read_unaligned32( &sout[14] ) );
+	sout->time = Byte_Swap32(read_unaligned32( &sout[18] ) );
+    sout->appData = Byte_Swap32(read_unaligned32( &sout[22] )  );
+    sout->goToCreator = Byte_Swap32(read_unaligned32( &sout[26] ) );
+	sout->goToParams.dbCardNo = Byte_Swap16( read_unaligned16( &sout[30] ) );
+	sout->goToParams.dbID = Byte_Swap32( read_unaligned32( &sout[32] ) );
+	sout->goToParams.recordNum = Byte_Swap16(read_unaligned16( &sout[36] ) );
+	sout->goToParams.uniqueID = Byte_Swap32(read_unaligned32( &sout[38]) );
+	sout->goToParams.matchCustom = Byte_Swap32( read_unaligned32( &sout[42] ) );
+    /* bitfield.  All we can do is copy the whole thing, assuming it's 16
+       bits, and pray that no arm code wants to to use it. */
+    *(UInt16*)(((unsigned char*)&sout->goToParams.matchCustom) 
+               + sizeof(sout->goToParams.matchCustom)) = Byte_Swap16(read_unaligned16( &sout[46] ));
+	sout->description = Byte_Swap32( read_unaligned32( &sout[48] ) );
+	sout->type = Byte_Swap32(read_unaligned32( &sout[52]) );
+	sout->name = Byte_Swap32(read_unaligned32( &sout[56]) );
+} /* flipEngSocketToArm */
+
+void
+flipFileInfoFromArm( unsigned char* fiout, const FileInfoType* fiin )
+{
+    write_unaligned32( &fiout[0], fiin->attributes );
+    write_unaligned32( &fiout[4], (unsigned long)fiin->nameP );
+    write_unaligned16( &fiout[8], fiin->nameBufLen );
+}
+
+void
+flipFileInfoToArm( FileInfoType* fout, const unsigned char* fin )
+{
+    fout->attributes = read_unaligned32( &fin[0] );
+    fout->nameP = read_unaligned32( &fin[4] );
+    fout->nameBufLen = read_unaligned16( &fin[8] );
+} /* flipFileInfo */
