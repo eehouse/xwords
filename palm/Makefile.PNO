@@ -3,8 +3,8 @@
 PLATFORM = PALM_PNO
 PALMDIR = /usr/local/share/palmdev/sdk-5r3/include
 
-WHICH = elf
-#WHICH = palmos
+#WHICH = elf
+WHICH = palmos
 
 CC_ARM = arm-$(WHICH)-gcc
 OC_ARM= arm-$(WHICH)-objcopy
@@ -36,7 +36,7 @@ ARMLDFS = -Xlinker --script=./ldscript.arm -lgcc
 # ARM-specific
 ARM_DEFINES = $(MYDEFS) -DXW_TARGET_PNO -D__LITTLE_ENDIAN
 # turn show progress off for now
-ARM_DEFINES += -USHOW_PROGRESS
+# ARM_DEFINES += -USHOW_PROGRESS
 
 include ../common/config.mk
 
