@@ -84,7 +84,6 @@ static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey, 
                                 XP_Bool canCycle );
 
-static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey );
@@ -2723,8 +2722,6 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey )
         loc.col = col;
         loc.row = row;
         board->bdCursor[board->selPlayer] = loc;
-
-        XP_LOGF( "moved cursor to %d,%d", col, row );
     }
     return changed;
 } /* board_moveCursor */
@@ -2889,7 +2886,7 @@ getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row )
     return getArrowFor( board, board->selPlayer, col, row );
 } /* getArrow */
 
-static XP_Bool
+XP_Bool
 setArrowVisible( BoardCtxt* board, XP_Bool visible )
 {
     return setArrowVisibleFor( board, board->selPlayer, visible );
