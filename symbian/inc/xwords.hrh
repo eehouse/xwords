@@ -83,6 +83,9 @@ enum TXWordsIds {
 
     ,EEditNameEdwin
 
+#if defined SERIES_60
+    ,EDictBrowseButton
+#endif
 };
 
 #define XW_UID3 0x10206D64
