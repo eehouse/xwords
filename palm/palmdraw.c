@@ -356,7 +356,10 @@ palm_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
     localR.left += 3;
     localR.width -= 5;
     localR.height -= 5;
+
+    HIGHRES_PUSH_LOC( (PalmDrawCtx*)p_dctx );
     WinInvertRectangle( (RectangleType*)&localR, 0 );
+    HIGHRES_POP_LOC( (PalmDrawCtx*)p_dctx );
 } /* palm_draw_invertCell */
 
 static XP_Bool
@@ -464,7 +467,6 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 
         WinDrawChars( valBuf, len, 0, 0 );
         width = FntCharsWidth( valBuf, len );
-        XP_LOGF( "width=%d", width );
 
         (void)WinSetDrawWindow( curWind );
 
@@ -1022,7 +1024,7 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
     XP_U16 ignoreErr;
     XP_Bool hasClosure = !!closureP;
     PalmMiniWinData* data = (PalmMiniWinData*)(hasClosure? *closureP: NULL);
-#ifdef MEM_DEBUG
+#ifdef DEBUG
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 #endif
 
@@ -1062,7 +1064,7 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
                            void** closure, XP_Bool* invalUnder )
 {
     PalmMiniWinData* data = (PalmMiniWinData*)*closure;
-# ifdef DEBUG
+# ifdef MEM_DEBUG
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 # endif
 
