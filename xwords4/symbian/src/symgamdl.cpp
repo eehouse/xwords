@@ -30,6 +30,9 @@
  * TGameInfoBuf
  ***************************************************************************/
 TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi, 
+#ifndef XWFEATURE_STANDALONE_ONLY
+                            const CommsAddrRec* aCommsAddr,
+#endif
                             CDesC16ArrayFlat* aDictList )
     : iDictList(aDictList), 
      iDictIndex(0)
@@ -54,10 +57,19 @@ TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi,
         dictName.Copy( tmp );
         (void)iDictList->Find( dictName, iDictIndex ); /*iDictIndex ref passed*/
     }
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    iServerRole = aGi->serverRole;
+    iCommsAddr = *aCommsAddr;
+#endif
 } /* TGameInfoBuf::TGameInfoBuf */
 
 void
-TGameInfoBuf::CopyToL( MPFORMAL CurGameInfo* aGi )
+TGameInfoBuf::CopyToL( MPFORMAL CurGameInfo* aGi
+#ifndef XWFEATURE_STANDALONE_ONLY
+                       , CommsAddrRec* aCommsAddr
+#endif
+ )
 {
     TInt i;
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
@@ -67,10 +79,15 @@ TGameInfoBuf::CopyToL( MPFORMAL CurGameInfo* aGi )
                              iPlayerNames[i] );
     }
 
-    aGi->nPlayers = iNPlayers;
+    aGi->nPlayers = SC( XP_U8, iNPlayers );
 
     TPtrC16 dictName = (*iDictList)[iDictIndex];
     symReplaceStrIfDiff( MPPARM(mpool) &aGi->dictName, dictName );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    aGi->serverRole = iServerRole;
+    *aCommsAddr = iCommsAddr;
+#endif
 }
 
 /***************************************************************************
@@ -93,11 +110,14 @@ CXWGameInfoDlg::PreLayoutDynInitL()
     CEikChoiceList* list;
 
     /* This likely belongs in its own method */
-    const TInt deps[] = { EConnectionRole
+#ifndef XWFEATURE_STANDALONE_ONLY
+    const TInt deps[] = { 
+        EConnectionRole
     };
     for ( i = 0; i < sizeof(deps)/sizeof(deps[0]); ++i ) {
         HandleControlStateChangeL( deps[i] );
     }
+#endif
 
     list = static_cast<CEikChoiceList*>(Control(ENPlayersList));
     list->SetCurrentItem( iGib->iNPlayers - 1 );
@@ -112,7 +132,58 @@ CXWGameInfoDlg::PreLayoutDynInitL()
 
     iCurPlayerShown = 0;
     LoadPlayerInfo( iCurPlayerShown );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
+    TInt sel = (TInt)iGib->iServerRole;
+    list->SetCurrentItem( sel );
+    list->DrawDeferred();
+
+    list = static_cast<CEikChoiceList*>(Control(EConnectionType));
+    sel = (TInt)(iGib->iCommsAddr.conType) - 1;
+    XP_ASSERT( sel >= 0 );
+    list->SetCurrentItem( sel );
+    list->DrawDeferred();
+
+    CEikEdwin* hostAddr = static_cast<CEikEdwin*>(Control(ERelayName));
+    TBuf16<MAX_HOSTNAME_LEN> nameBuf;
+    nameBuf.Copy( TBuf8<MAX_HOSTNAME_LEN>(iGib->iCommsAddr.u.ip.hostName) );
+    hostAddr->SetTextL( &nameBuf );
+    hostAddr->DrawDeferred();
+    
+    TInt num = iGib->iCommsAddr.u.ip.port;
+    CEikNumberEditor* hostPort
+        = static_cast<CEikNumberEditor*>(Control(ERelayPort));
+    hostPort->SetNumber( num );
+    hostPort->DrawDeferred();
+
+    HideAndShow();
+#endif    
 } /* PreLayoutDynInitL */
+
+void
+CXWGameInfoDlg::HideAndShow()
+{
+    CEikChoiceList* list;
+    /* if it's standalone, hide all else.  Then if it's not IP, hide all
+       below. */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    TBool showConnect;
+    list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
+    showConnect = list->CurrentItem() != 0;
+
+    TBool showIP = showConnect;
+    if ( showIP ) {
+        list = static_cast<CEikChoiceList*>(Control(EConnectionType));
+        showIP = list->CurrentItem() == 0;
+    }
+
+    MakeLineVisible( EConnectionType, showConnect );
+    MakeLineVisible( ERelayName, showIP );
+    MakeLineVisible( ERelayPort, showIP );
+#endif
+} /* HideAndShow */
 
 void
 CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
@@ -124,13 +195,12 @@ CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
     TBool show;
 
     switch ( aControlId ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
     case EConnectionRole:
-        /* Hide EConnectionType if it's standalone */
-        list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
-
-        MakeLineVisible( EConnectionType, list->CurrentItem() != 0 );
+    case EConnectionType:
+        HideAndShow();
         break;
-
+#endif
     case ENPlayersList:
         /* The ENPlayersWhichList must match the number of players available,
            and we need to display a different player if we're currently
@@ -177,7 +247,7 @@ CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
 }
 
 TBool 
-CXWGameInfoDlg::OkToExitL( TInt aKeyCode )
+CXWGameInfoDlg::OkToExitL( TInt /*aKeyCode*/ )
 {
     CEikChoiceList* list;
 
@@ -192,8 +262,36 @@ CXWGameInfoDlg::OkToExitL( TInt aKeyCode )
     list = static_cast<CEikChoiceList*>(Control(ENPlayersList));
     iGib->iNPlayers = list->CurrentItem() + 1;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
+    TInt sel = list->CurrentItem();
+    iGib->iServerRole = (Connectedness)sel;
+
+    if ( iGib->iServerRole != SERVER_STANDALONE ) {
+
+        list = static_cast<CEikChoiceList*>(Control(EConnectionType));
+        iGib->iCommsAddr.conType = SC(CommsConnType, list->CurrentItem() + 1 );
+    
+        if ( iGib->iCommsAddr.conType == COMMS_CONN_IP ) {
+            /* hostname */
+            CEikEdwin* hostAddr = static_cast<CEikEdwin*>(Control(ERelayName));
+            TBuf16<MAX_HOSTNAME_LEN> nameBuf;
+            hostAddr->GetText( nameBuf );
+            TBuf8<MAX_HOSTNAME_LEN> buf8;
+            buf8.Copy( nameBuf );
+            TInt len = buf8.Length();
+            XP_MEMCPY( iGib->iCommsAddr.u.ip.hostName, (void*)buf8.Ptr(), len );
+            iGib->iCommsAddr.u.ip.hostName[len] = '\0';
+    
+            /* port */
+            CEikNumberEditor* hostPort
+                = static_cast<CEikNumberEditor*>(Control(ERelayPort));
+            iGib->iCommsAddr.u.ip.port = SC( XP_U16, hostPort->Number() );
+        }
+    }
+#endif
     return ETrue;
-}
+} /* OkToExitL */
 
 void
 CXWGameInfoDlg::LoadPlayerInfo( TInt aWhich )
@@ -254,13 +352,10 @@ CXWGameInfoDlg::MakeNumListL( TInt aFirst, TInt aLast )
 
     CDesC16ArrayFlat* list = new (ELeave)CDesC16ArrayFlat(aLast - aFirst + 1);
     TInt i;        
-    char str[2] = { 0, 0 };
     for ( i = aFirst; i <= aLast; ++i ) {
-        str[0] = '0' + i;
-        TBuf8<4> buf8( (unsigned char*)str );
-        TBuf16<4> buf16;
-        buf16.Copy( buf8 );
-        list->AppendL( buf16 );
+        TBuf16<4> num;
+        num.Num( i );
+        list->AppendL( num );
     }
 
     return list;
