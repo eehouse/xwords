@@ -132,6 +132,7 @@ class CXWordsAppView : public CCoeControl
     void StoreOneGameL( TGameName* aGameName );
     TBool DoSavedGames();
     TBool DoNewGame();
+    void DoImmediateDraw();
 
 
     static void        sym_util_requestTime( XW_UtilCtxt* uc );
