@@ -1,0 +1,142 @@
+/* -*- mode: c; -*- */
+/* 
+ * Copyright 1997 - 2002 by Eric House (fixin@peak.org) and others.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+/* This table is where English user-visible strings come from (all
+ * strings meant to wind up in a str# resource, actually.  Each entry
+ * is a pair of strings, first the constant name and then the string
+ * itself.  The build system creats a str# resource with the latter
+ * and generates a .h file of #defines using the former.  */
+
+{ "STR_COMMIT_CONFIRM", "¿Aceptas la jugada?\n\n" },
+{ "STR_NOT_YOUR_TURN", "¡No puedes hacer eso; no es tu turno!" },
+{ "STR_NO_PEEK_ROBOT_TILES", "¡No mires las fichas de la máquina!" },
+#ifndef XWFEATURE_STANDALONE_ONLY
+{ "STR_NO_PEEK_REMOTE_TILES", "¡No mires las fichas de los demás!" },
+{ "STR_SERVER_DICT_WINS", 
+      "Conflicto entre diccionarios: manda el del servidor." },
+{ "STR_REG_UNEXPECTED_USER",  "Jugador inesperado: no se acepta" },
+{ "STR_RESEND_IR", "Error enviando el mensaje; ¿reenviar" },
+#endif
+{ "STR_TOO_FEW_TILES", "Ho quedan tantas fichas." },
+{ "STR_VALUES_TITLE", "Cantidad y Valor" },
+{ "STR_VALUES_HEADER",		"Cantidad[Quedan] y Valor\n" },
+
+{ "STR_DOUBLE_LETTER",		"Doble de letra" },
+{ "STR_DOUBLE_WORD",		"Doble de palabra" },
+{ "STR_TRIPLE_LETTER",		"Triple de letra" },
+{ "STR_TRIPLE_WORD",		"Triple de palabra" },
+{ "STR_REMTILES",		"Hay:%d" },
+/* { "STR_NO_TILES_IN_POOL",	"No hay tantas fichas en la bolsa." }, */
+{ "STR_CANT_TRADE_MIDTURN",	"Aún tienes fichas en el tablero."},
+{ "STR_ASK_REPLACE_GAME",	"¿Quieres sobreescribir la partida?" },
+{ "STR_NO",			"No" },
+/* { "STR_CONFIRM_ERASE_GAME",	"¿Seguro que quieres\n" \ */
+/* 				"borrar la partida?" }, */
+{ "STR_ABOUT_TITLE",		"Acerca de Crosswords" },
+{ "STR_DEFAULT_NAME",		"Jugador %d" },
+{ "STR_ABOUT_CONTENT", 
+      "Crosswords " XW_PALM_VERSION_STRING ".\n" \
+      "Copyright 1998-2003 by Eric House.  "\
+      "Todos los derechos reservados.\n\n"\
+
+      "El manual está en www.peak.org/~fixin/xwords\n\n" \
+
+      "Este programa es postalware.\nSi lo usas " \
+      "manda una postal a:\n" \
+      "The Houses\n" \
+      "124 NW 7th St. No. 310\n" \
+      "Corvallis, OR 97330 USA\n\n"
+
+      "Escrito sobre Debian GNU/Linux usando las prc-tools.\n\n"\
+
+      "Versión española por F. Xavier Gil\n(setimig@wanadooadsl.net)." \
+      },
+
+{ "STR_CONFIRM_END_GAME",	"¿Seguro que quieres terminar la partida?"},
+/* { "STR_TOO_MANY_TILES_SEL",	"Has escogido demasiadas fichas." }, */
+/*  { "STR_CONFIRM_DISCARD",	"¿Seguro que quieres cambiar\n" \ */
+/*  				"las fichas seleccionadas?" }, */
+{ "STR_CONFIRM_TRADE",		"¿Seguro que quieres usar tu turno " \
+				"para cambiar fichas?" },
+{ "STR_TRADING_REMINDER",	"Pulsa D para terminar." },
+
+#ifndef NO_REG_REQUIRED
+{ "STR_NOT_UNREG_VERS",	  "Sólo funciona en la versión registrada." },
+#endif
+
+
+/* { "STRS_LANGUAGE_NAME",		"Diccionario: %s\n" }, */
+{ "STR_NONLOCAL_NAME",          "%s (remoto)" },
+
+
+/* { "STR_FINALSCORE_TITLE",	"\n\nPuntuación final\n" }, */
+
+/* { "STR_NO_HISTORY",		"No hay jugadas." }, */
+
+{ "STR_HISTORY_TITLE",		"Jugadas" },
+/* { "STRS_NO_SCORE_MID_PICK",	"No se puede puntuar mientras %s " \ */
+/* 				"esté jugando." }, */
+
+{ "STRD_REMAINING_TILES_ADD",	"+ %d [fichas sobrantes]" },
+{ "STRD_UNUSED_TILES_SUB",	"- %d [fichas no usadas]" },
+/* { "STR_MOVESCORE_TITLE",	"Puntos" }, */
+/* { "STR_ZERO_SCORE",		"Puntos: 0 (No hay jugada.)" }, */
+{ "STR_BONUS_ALL",		"Por usar las siete fichas: 50\n" },
+{ "STRD_TURN_SCORE",		"Parcial de la jugada: %d\n" },
+/* { "STRSD_RUNNING_TOTAL",	"\nAcumulado para %s: %d" }, */
+{ "STR_ALL_IN_LINE_ERR",	"Las fichas no están en línea." },
+{ "STR_NO_EMPTIES_ERR",	"Las fichas deben tocarse." },
+{ "STR_FIRST_MOVE_ERR",	"Debes usar dos o más fichas en " \
+				"la primera jugada." },
+{ "STR_MUST_CONTACT_ERR",    	"Las fichas deben tocar otras (o el " \
+				"cuadrado central en la primera jugada)." },
+/* { "STR_EDIT",			"Editar" }, */
+/* { "STR_USE",			"Usar" }, */
+//{ "STRC_BAD_BLANK_VAL",		"\"%c\" no es una ficha." },
+{ "STR_PTS",			"Puntos:" },
+/* { "STR_NA",			"N/A" }, */
+{ "STR_CONFIRM_DEL_GAME",	"¿Seguro que quieres borrarla?" },
+
+/* { "STR_REPLACE_STR",	   	"Cambiar" }, */
+/* { "STR_NEW_OR_QUIT",	   "El diccionario no se encuentra.\n" \ */
+/* 			   "Sal si no quieres modificar\n" \ */
+/* 			   "la partida." }, */
+
+{ "STRD_TIME_PENALTY_SUB",     " - %d [por tiempo]" },
+
+
+{ "STR_NO_DICT_INSTALLED", "Crosswords 4 necesita algún diccionario." },
+
+/* { "STR_PASS",   "No se ha encontrado ninguna jugada."}, */
+/* { "STR_TRADED",   "El robot cambia fichas."}, */
+{ "STR_ILLEGAL_WORD",	      "¡Ei!, %s no está en el diccionario." },
+
+{ "STR_FINAL_SCORES_TITLE",   "Puntuación final"},
+
+{ "STRD_CUMULATIVE_SCORE",    "Acumulado: %d\n" },
+{ "STRS_TRAY_AT_START",       "Atril inicial: %s\n" },
+{ "STRS_MOVE_ACROSS",         "jugada (%s, horizontal)\n" },
+{ "STRS_MOVE_DOWN",           "jugada (%s, vertical)\n" },
+{ "STRS_NEW_TILES",           "Nuevas fichas: %s\n" },
+{ "STRSS_TRADED_FOR",         "Cambio de %s por %s." },
+{ "STR_PASS",                 "pasa\n" },
+{ "STR_PHONY_REJECTED",       "Palabra incorrecta; ¡turno perdido!\n" },
+
+{ "STR_ROBOT_DONE",           "El robot ha jugado:\n" },
+{ "STR_ROBOT_TRADED",         "El robot cambió fichas." },
+{ "STR_ROBOT_TITLE",          "Puntos del robot" },
