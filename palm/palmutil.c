@@ -389,6 +389,14 @@ palm_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
 } /* palm_snprintf */
 #endif
 
+#ifdef FOR_GREMLINS
+static Boolean 
+doNothing( EventPtr event )
+{
+    return true;
+} /* doNothing */
+#endif
+
 #ifdef DEBUG
 void
 palm_warnf( char* format, ... )
@@ -533,14 +541,6 @@ palm_debugf( char* format, ...)
 
 /* if -0 isn't passed to compiler it wants to find this!!! */
 void p_ignore(char* s, ...) {}
-
-#ifdef FOR_GREMLINS
-static Boolean 
-doNothing( EventPtr event )
-{
-    return true;
-} /* doNothing */
-#endif
 
 void
 palm_logf( char* format, ... )
