@@ -19,12 +19,16 @@
 
 #include <eikedwin.h>
 #include <eikmfne.h> 
-#include <eikchlst.h>
+#if defined SERIES_60
+# include "xwords_60.rsg"
+#elif defined SERIES_80
+# include <eikchlst.h>
+# include "xwords_80.rsg"
+#endif
 
 #include "symgamdl.h"
 #include "symutil.h"
 #include "xwords.hrh"
-#include "xwords.rsg"
 
 /***************************************************************************
  * TGameInfoBuf
@@ -106,6 +110,7 @@ CXWGameInfoDlg::~CXWGameInfoDlg()
 void 
 CXWGameInfoDlg::PreLayoutDynInitL()
 {
+#if defined SERIES_80
     XP_U16 i;
     CEikChoiceList* list;
 
@@ -158,12 +163,14 @@ CXWGameInfoDlg::PreLayoutDynInitL()
     hostPort->DrawDeferred();
 
     HideAndShow();
-#endif    
+#endif
+#endif
 } /* PreLayoutDynInitL */
 
 void
 CXWGameInfoDlg::HideAndShow()
 {
+#if defined SERIES_80
     CEikChoiceList* list;
     /* if it's standalone, hide all else.  Then if it's not IP, hide all
        below. */
@@ -183,11 +190,13 @@ CXWGameInfoDlg::HideAndShow()
     MakeLineVisible( ERelayName, showIP );
     MakeLineVisible( ERelayPort, showIP );
 #endif
+#endif
 } /* HideAndShow */
 
 void
 CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
 {
+#if defined SERIES_80
     XP_LOGF( "HandleControlStateChangeL got %d", aControlId );
     CEikChoiceList* list;
     CEikChoiceList* whichList;
@@ -244,11 +253,13 @@ CXWGameInfoDlg::HandleControlStateChangeL( TInt aControlId )
     default:
         break;
     }
+#endif
 }
 
 TBool 
 CXWGameInfoDlg::OkToExitL( TInt /*aKeyCode*/ )
 {
+#if defined SERIES_80
     CEikChoiceList* list;
 
     /* Dictionary */
@@ -261,6 +272,7 @@ CXWGameInfoDlg::OkToExitL( TInt /*aKeyCode*/ )
     /* number of players */
     list = static_cast<CEikChoiceList*>(Control(ENPlayersList));
     iGib->iNPlayers = list->CurrentItem() + 1;
+#endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     list = static_cast<CEikChoiceList*>(Control(EConnectionRole));
@@ -308,6 +320,7 @@ CXWGameInfoDlg::LoadPlayerInfo( TInt aWhich )
 
     XP_LOGF( "done setting name" );
 
+#if defined SERIES_80
     /* species */
     CEikChoiceList* list = static_cast<CEikChoiceList*>
         (Control(EPlayerSpeciesChoice ));
@@ -317,6 +330,7 @@ CXWGameInfoDlg::LoadPlayerInfo( TInt aWhich )
         list->SetCurrentItem( newVal );
         list->DrawDeferred();
     }
+#endif
 
     /* password */
 }
@@ -330,9 +344,11 @@ CXWGameInfoDlg::SavePlayerInfo( TInt aWhich )
     nameEditor->GetText( iGib->iPlayerNames[aWhich] );
     
     /* species */
+#if defined SERIES_80
     CEikChoiceList* list = static_cast<CEikChoiceList*>
         (Control(EPlayerSpeciesChoice ));
     iGib->iIsRobot[aWhich] = (list->CurrentItem() == 1);
+#endif
 }
 
 void
