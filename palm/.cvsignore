@@ -1,4 +1,5 @@
 *.out
+*.bin
 LocalizedStrIncludes.h
 app.gdb
 gdbload
