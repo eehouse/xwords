@@ -22,8 +22,6 @@
 #ifndef _CTRL_H_
 #define _CTRL_H_
 
-void* ctrl_thread_main( void* arg );
-
-
+void run_ctrl_thread( int ctrl_listener );
 
 #endif

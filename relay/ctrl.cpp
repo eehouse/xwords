@@ -106,23 +106,37 @@ handle_command( const char* buf, int sock )
     return 1;
 }
 
-void*
+static void*
 ctrl_thread_main( void* arg )
 {
-    ThreadData* localStorage = (ThreadData*)arg;
+    int socket = (int)arg;
 
     for ( ; ; ) {
         char buf[512];
-        ssize_t nGot = recv( localStorage->socket, buf, sizeof(buf)-1, 0 );
+        ssize_t nGot = recv( socket, buf, sizeof(buf)-1, 0 );
         if ( nGot <= 1 ) {      /* break when just \n comes in */
             break;
         }
 
         buf[nGot-2] = '\0';     /* kill \r\n stuff */
-        if ( !handle_command( buf, localStorage->socket ) ) {
+        if ( !handle_command( buf, socket ) ) {
             break;
         }
     }
-    close ( localStorage->socket );
-    delete localStorage;
+    close ( socket );
+}
+
+void
+run_ctrl_thread( int ctrl_listener )
+{
+    logf( "calling accept on socket %d\n", ctrl_listener );
+
+    sockaddr newaddr;
+    socklen_t siz = sizeof(newaddr);
+    int newSock = accept( ctrl_listener, &newaddr, &siz );
+    logf( "got one for ctrl: %d", newSock );
+
+    pthread_t thread;
+    int result = pthread_create( &thread, NULL, 
+                                 ctrl_thread_main, (void*)newSock );
 }
