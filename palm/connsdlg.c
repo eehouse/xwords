@@ -166,13 +166,6 @@ ConnsFormHandleEvent( EventPtr event )
     switch ( event->eType ) {
     case frmOpenEvent:
 
-        if ( !openNetLibIfNot( globals ) ) {
-            beep();
-            cleanupExit( globals );
-            result = true;
-            break;
-        }
-
         state->serverRole = 
             (Connectedness)globals->dlgParams[CONNS_PARAM_ROLE_INDEX];
         state->addr = 
