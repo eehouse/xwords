@@ -267,7 +267,6 @@ tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought,
                                       &bufLen );
         
         if ( err == errNone ) {
-            pathStr[1] = '\0';
             searchDir( MPPARM(mpool) dlp, volNum, pathStr[0],
                        pathStr, sizeof(pathStr), creatorSought, versSought );
         }
