@@ -5,13 +5,8 @@
 # Just to have a record, list the ones that must be hand-coded here.
 # StrVPrintF
 # StrPrintF
-# TimSecondsToDateTime
 # SysHandleEvent
-# EvtGetEvent
-# FrmDispatchEvent
-# MenuHandleEvent
 # FrmSetEventHandler
-# EvtAddEventToQueue
 # LstSetListChoices
 # SysNotifyRegister
 # LstSetDrawFunction
@@ -205,3 +200,8 @@ WinRestoreBits
 WinSetCoordinateSystem
 WinGetDisplayExtent
 WinScreenGetAttribute
+TimSecondsToDateTime
+EvtGetEvent
+FrmDispatchEvent
+MenuHandleEvent
+EvtAddEventToQueue
