@@ -191,8 +191,16 @@ readFileToBuf( XP_UCHAR* dictBuf, const RFile* file )
 } // readFileToBuf
 
 DictionaryCtxt*
-sym_dictionary_makeL( MPFORMAL TFileName* nameD )
+sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
 {
+    _LIT( dir,"z:\\system\\apps\\XWORDS\\" );
+    TFileName nameD;            /* need the full path to name in this */
+    nameD.Copy( dir );
+    TBuf8<32> dname8(aDictName);
+    TBuf16<32> dname16;
+    dname16.Copy( dname8 );
+    nameD.Append( dname16 );
+    nameD.Append( _L(".xwd") );
     SymDictCtxt* ctxt = NULL;
     TInt err;
 
@@ -201,7 +209,7 @@ sym_dictionary_makeL( MPFORMAL TFileName* nameD )
     CleanupClosePushL(fileSession);
 
     RFile file;
-    User::LeaveIfError( file.Open( fileSession, *nameD, EFileRead ) );
+    User::LeaveIfError( file.Open( fileSession, nameD, EFileRead ) );
     CleanupClosePushL(file);
 
     ctxt = (SymDictCtxt*)XP_MALLOC( mpool, sizeof(*ctxt) );
@@ -291,8 +299,8 @@ sym_dictionary_makeL( MPFORMAL TFileName* nameD )
         ctxt->super.base = (array_edge*)NULL;
     }
 
-    CleanupStack::PopAndDestroy();
-    CleanupStack::PopAndDestroy();
+    CleanupStack::PopAndDestroy(); // file
+    CleanupStack::PopAndDestroy(); // fileSession
 
     return &ctxt->super;
 } // sym_dictionary_make
