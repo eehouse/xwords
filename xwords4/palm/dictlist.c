@@ -268,6 +268,7 @@ tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought,
             break;
         }
 
+        /* Search from the default (/palm/Launcher, normally) */
         bufLen = sizeof(pathStr);
         err = VFSGetDefaultDirectory( volNum, ".pdb", (char*)pathStr,
                                       &bufLen );
