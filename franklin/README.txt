@@ -32,6 +32,11 @@ the latter launches the device's App Picker screen, allowing you to
 launch Crosswords the way an end-user would.  sGDB is what I use 95%
 of the time.
 
+(The simulator is a bit rough.  Not all of the buttons work, etc.  To
+at least get started, wait for the two windows to come up.  Go to the
+one titled "Source Window", and choose "Continue" on the "Control"
+menu.  That'll get Crosswords running.)
+
 To build a .seb file you can install on a device, type
 
 # make xwords4.seb
