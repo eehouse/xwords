@@ -177,6 +177,9 @@ static void initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame );
 UInt32
 PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
+#ifdef XW_TARGET_PNO
+    XP_LOGF( "ARM PilotMain called" );
+#else
     PalmAppGlobals* globals;
     if ( cmd == sysAppLaunchCmdNormalLaunch ) {
         if ( ((launchFlags & sysAppLaunchFlagNewGlobals) != 0)
@@ -203,6 +206,7 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
         }
 #endif
     }
+#endif
     return 0;
 } /* PilotMain */
 
@@ -1417,9 +1421,10 @@ eventLoop( PalmAppGlobals* globals )
 static Boolean
 applicationHandleEvent( PalmAppGlobals* globals, EventPtr event ) 
 {
-    FormPtr frm;
+    FormPtr frm = NULL;
     Int16 formId;
     Boolean result = false;
+    FormEventHandlerType* handler = NULL;
 
     switch ( event->eType ) {
     case frmLoadEvent:
@@ -1432,30 +1437,30 @@ applicationHandleEvent( PalmAppGlobals* globals, EventPtr event )
         switch (formId)	{
         case XW_MAIN_FORM:
             setFormRefcon( globals );
-            FrmSetEventHandler( frm, mainViewHandleEvent );
+            handler = mainViewHandleEvent;
             result = true;
             break;
         case XW_NEWGAMES_FORM:
-            FrmSetEventHandler( frm, newGameHandleEvent );
+            handler = newGameHandleEvent;
             result = true;
             break;
         case XW_DICTINFO_FORM:
-            FrmSetEventHandler( frm, dictFormHandleEvent );
+            handler = dictFormHandleEvent;
             result = true;
             break;
         case XW_PREFS_FORM:
-            FrmSetEventHandler( frm, PrefsFormHandleEvent );
+            handler = PrefsFormHandleEvent;
             result = true;
             break;
 #ifdef BEYOND_IR
         case XW_CONNS_FORM:
-            FrmSetEventHandler( frm, ConnsFormHandleEvent );
+            handler = ConnsFormHandleEvent;
             result = true;
             break;
 #endif
 #if defined OWNER_HASH || defined NO_REG_REQUIRED
         case XW_SAVEDGAMES_DIALOG_ID:
-            FrmSetEventHandler( frm, savedGamesHandleEvent );
+            handler = savedGamesHandleEvent;
             result = true;
             break;
 #endif
@@ -1464,6 +1469,12 @@ applicationHandleEvent( PalmAppGlobals* globals, EventPtr event )
     default:
         break;
     }
+
+    if ( result ) {
+        XP_ASSERT( !!frm );
+        FrmSetEventHandler( frm, handler );
+    }
+
     return result;
 } // applicationHandleEvent
 
@@ -1699,7 +1710,7 @@ drawFormButtons( PalmAppGlobals* globals )
         XW_MAIN_SHOWTRAY_BUTTON_ID, SHOWTRAY_BUTTON_BMP_RES_ID, XP_FALSE,
         0,
     };
-    XP_U16* pair = pairs;
+    XP_U16* pair = (XP_U16*)pairs;
 
     if ( FrmGetActiveFormID() == XW_MAIN_FORM ) {
         while ( !!*pair ) {
