@@ -20,6 +20,7 @@
 extern "C" {
 #include "dictnryp.h"
 #include "mempool.h"
+#include "xptypes.h"
 }
 
 #include <f32file.h>
@@ -78,6 +79,35 @@ symCountSpecials( SymDictCtxt* ctxt )
     return result;
 } /* symCountSpecials */
 
+#ifdef DEBUG
+static void
+printBitmap( CFbsBitmap* bmp )
+{
+    TSize bmpSize = bmp->SizeInPixels();
+    TBitmapUtil butil( bmp );
+    butil.Begin( TPoint(0,0) );
+    TInt row, col;
+
+    for ( row = 0; row < bmpSize.iHeight; ++row ) {
+        char buf[64];
+        for ( col = 0; col < bmpSize.iWidth; ++col ) {
+            butil.SetPos( TPoint(col, row) );
+            if ( butil.GetPixel() ) {
+                buf[col] = '*';
+            } else {
+                buf[col] = '_';
+            }
+        }
+        buf[col] = '\0';
+        XP_LOGF( "row %d: %s", row, buf );
+    }
+
+    butil.End();
+}
+#else
+#define printBitmap(b)
+#endif
+
 static XP_Bitmap*
 symMakeBitmap( SymDictCtxt* /*ctxt*/, RFile* file )
 {
@@ -89,7 +119,6 @@ symMakeBitmap( SymDictCtxt* /*ctxt*/, RFile* file )
         
         XP_U8 nRows = readXP_U8( file );
         XP_U8 srcByte = 0;
-        XP_U8 destByte = 0;
         XP_U8 nBits;
         XP_U16 i;
         bitmap = new (ELeave) CFbsBitmap();
@@ -120,6 +149,8 @@ symMakeBitmap( SymDictCtxt* /*ctxt*/, RFile* file )
             }
         }
         butil.End();
+
+        printBitmap( bitmap );
     }
 
     return (XP_Bitmap*)bitmap;
@@ -192,10 +223,22 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
         return &ctxt->super;
     } else {
 
-#if defined __WINS__
+#ifdef XWORDS_DIR
+# if defined __WINS__
         _LIT( dir,"z:\\system\\apps\\" XWORDS_DIR "\\" );
-#elif defined __MARM__
+# elif defined __MARM__
         _LIT( dir,"c:\\system\\apps\\" XWORDS_DIR "\\" );
+# endif
+#else
+        /* Symbian's broken compiler won't let me concatenate XWORDS_DIR with
+           strings nor pass it in defined, so hack here.  If you're using the
+           broken ABLD.BAT system, you get to deal with it. :-) */
+# if defined __WINS__
+        _LIT( dir,"z:\\system\\apps\\xwords_80\\" );
+# elif defined __MARM__
+        _LIT( dir,"c:\\system\\apps\\XWORDS_80\\" );
+# endif
+
 #endif
         TFileName nameD;            /* need the full path to name in this */
         nameD.Copy( dir );
