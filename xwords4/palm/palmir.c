@@ -814,7 +814,7 @@ static void
 checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream, 
                  CommsAddrRec* addr )
 {
-    if ( comms_checkIncommingStream( globals->game.comms, 
+    if ( comms_checkIncomingStream( globals->game.comms, 
                                      instream, addr ) ) {
         globals->msgReceivedDraw = 
             server_receiveMessage( globals->game.server, instream );
