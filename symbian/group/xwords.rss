@@ -86,24 +86,24 @@ RESOURCE CBA r_xwords_cba
     buttons=
     {
         CBA_BUTTON
-            {
+        {
             id=XW_JUGGLE_COMMAND;
             txt="Juggle";
-            },
+        },
         CBA_BUTTON
-            {
+        {
             id=XW_NEXTHINT_COMMAND;
             txt="Next Hint";
-            },
-        CBA_BUTTON
-            {
-            id=XW_FLIP_COMMAND;
-            txt="Flip";
-            },
+        },
         CBA_BUTTON
         {
             id=XW_HIDETRAY_COMMAND;
             txt="Hide tray";
+        },
+        CBA_BUTTON
+        {
+            id=XW_DONE_COMMAND;
+            txt="Done";
         }
     };
 }
@@ -218,18 +218,97 @@ RESOURCE TBUF64 r_nothing_to_undo_alert {
     buf = "Nothing to undo.  (Initial tile picking cannot be undone.)";
 }
 
+RESOURCE TBUF64 r_confirm_end_game { 
+    buf = "Are you sure you want to end the game now?";
+}
+
 RESOURCE DIALOG r_xwords_confirmation_query
 {
-    title = "foobar";
-    buttons = R_EIK_BUTTONS_CANCEL_OK;
+    title = "Query";
+    buttons = R_EIK_BUTTONS_NO_YES;
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     items =
+    {
+        DLG_LINE
         {
-            DLG_LINE
-            {
-                control = EDWIN;
-                type = EEikCtEdwin;
-                id = EAskContents;
-            }
-        };
+            control = EDWIN;
+            type = EEikCtEdwin;
+            id = EAskContents;
+        }
+    };
+}
+
+RESOURCE DIALOG r_xwords_info_only
+{
+    title = "Info";
+    buttons = R_EIK_BUTTONS_CONTINUE;
+    flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
+    items =
+    {
+        DLG_LINE
+        {
+            control = EDWIN { width = 100; maxlength = 1000; };
+            type = EEikCtEdwin;
+            id = EAskContents;
+        }
+    };
+}
+
+
+/* I think this is a multi-page dialog like that for to-do notes in the
+ * calendar app.  Panes:
+
+ * Connection; 
+ * Player 1
+ * P2
+ * P3
+ * P4
+ * Dictionary
+ * Preferences
+
+ * (Can I dynamcially remove panes as the number of players changes?)
+
+ */
+
+RESOURCE ARRAY r_xwords_newgame_page1
+{
+    items =
+    {
+        DLG_LINE
+        {
+            control = EDWIN { width = 100; maxlength = 1000; };
+            type = EEikCtEdwin;
+            id = EAskContents;
+        }
+    };
+}
+
+RESOURCE ARRAY r_xwords_newgame_page2
+{
+    items =
+    {
+        DLG_LINE
+        {
+            control = EDWIN { width = 100; maxlength = 1000; };
+            type = EEikCtEdwin;
+            id = EAskContents;
+        }
+    };
+}
+
+RESOURCE ARRAY r_xwords_newgame_pages
+{
+    items =
+    {
+        PAGE{ text="page1"; id=EPage1; lines=r_xwords_newgame_page1;},
+        PAGE{ text="page2"; id=EPage2; lines=r_xwords_newgame_page2;}
+    };
+}
+
+RESOURCE DIALOG r_xwords_newgame_dlg
+{
+    title = "Game info";
+    buttons = R_EIK_BUTTONS_CANCEL_OK;
+    flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
+    pages = r_xwords_newgame_pages;
 }
