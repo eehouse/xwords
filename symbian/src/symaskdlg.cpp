@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */ 
 /* 
- * Copyright 2004 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 2005 by Eric House (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,13 @@
 #include "xwords.hrh"
 
 CXWAskDlg::CXWAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream ) :
-    iStream(aStream), iKillStream(aKillStream)
+    iStream(aStream), iKillStream(aKillStream), iMessage(NULL)
+{
+    MPASSIGN( this->mpool, mpool );
+}
+
+CXWAskDlg::CXWAskDlg( MPFORMAL TBuf16<128>* aMessage)
+    : iMessage(aMessage), iStream(NULL)
 {
     MPASSIGN( this->mpool, mpool );
 }
@@ -39,29 +45,33 @@ CXWAskDlg::~CXWAskDlg()
 void
 CXWAskDlg::PreLayoutDynInitL()
 {   
-    // Load the stream's contents into a read-only edit control.
-    TInt size = stream_getSize( iStream );
-    XP_U16* buf16 = new(ELeave) XP_U16[size];
-    CleanupStack::PushL( buf16 );
-
-    char* buf8 = (char*)XP_MALLOC( mpool, size + 1 );
-    /* PENDING This belongs on the leave stack */
-    User::LeaveIfNull( buf8 );
-    stream_getBytes( iStream, buf8, size );
-    buf8[size] = '\0';
-
-    TPtrC8 desc8( (const unsigned char*)buf8, size );
-    TPtr16 desc16( buf16, size );
-
-    desc16.Copy( desc8 );
-
     CEikEdwin* contents = (CEikEdwin*)Control( EAskContents );
-    contents->SetTextL( &desc16 );
 
-    CleanupStack::PopAndDestroy( buf16 );
+    // Load the stream's contents into a read-only edit control.
+    if ( iStream ) {
+        TInt size = stream_getSize( iStream );
+        XP_U16* buf16 = new(ELeave) XP_U16[size];
+        CleanupStack::PushL( buf16 );
 
-    XP_FREE( mpool, buf8 );
-}
+        char* buf8 = (char*)XP_MALLOC( mpool, size + 1 );
+        /* PENDING This belongs on the leave stack */
+        User::LeaveIfNull( buf8 );
+        stream_getBytes( iStream, buf8, size );
+        buf8[size] = '\0';
+
+        TPtrC8 desc8( (const unsigned char*)buf8, size );
+        TPtr16 desc16( buf16, size );
+
+        desc16.Copy( desc8 );
+        contents->SetTextL( &desc16 );
+
+        CleanupStack::PopAndDestroy( buf16 );
+
+        XP_FREE( mpool, buf8 );
+    } else {
+        contents->SetTextL( iMessage );
+    }
+} /* PreLayoutDynInitL */
 
 TBool CXWAskDlg::OkToExitL( TInt aButtonID /* pressed button */ ) 
 {
