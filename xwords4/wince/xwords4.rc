@@ -121,7 +121,7 @@ CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4.0.6 for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the GNU Public License. For a manual and source code see xwords.sourceforge.net.",
+    LTEXT           "Crosswords 4.0.7a1 for PocketPC. Copyright 1998-2004 by Eric House.  This software is released under the GNU Public License. For a manual and source code see xwords.sourceforge.net.",
                     IDC_STATIC,32,10,86,89,SS_NOPREFIX
 END
 
@@ -274,7 +274,11 @@ BEGIN
     CONTROL         "Smart robot",IDC_CHECKSMARTROBOT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,22,90,10
     CONTROL         "Disallow hints",IDC_CHECKNOHINTS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,37,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,37,54,10
+#ifdef XWFEATURE_SEARCHLIMIT
+    CONTROL         "Hint limits",IDC_CHECKHINTSLIMITS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,64,37,50,10
+#endif
 
     CONTROL         "Timer on (minutes)",TIMER_CHECK,"Button",
                         BS_AUTOCHECKBOX | WS_TABSTOP,8,52,85,14
