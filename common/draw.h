@@ -37,6 +37,15 @@ typedef struct DrawScoreInfo {
     XP_Bool isRobot;
 } DrawScoreInfo;
 
+enum HINT_ATTS { HINT_BORDER_NONE = 0,
+                 HINT_BORDER_LEFT = 1,
+                 HINT_BORDER_RIGHT = 2,
+                 HINT_BORDER_TOP = 4,
+                 HINT_BORDER_BOTTOM = 8,
+                 HINT_BORDER_CENTER = 0x10
+};
+typedef XP_UCHAR HintAtts;
+
 typedef struct DrawCtxVTable {
 
 #ifdef DRAW_WITH_PRIMITIVES
@@ -91,10 +100,11 @@ typedef struct DrawCtxVTable {
 
     XP_Bool (*m_draw_drawCell)( DrawCtx* dctx, XP_Rect* rect, 
                                 /* at least one of these two will be null */
-                               XP_UCHAR* text, XP_Bitmap bitmap,
-                               XP_S16 owner, /* -1 means don't use */
-                               XWBonusType bonus, XP_Bool isBlank, 
-                               XP_Bool highlight, XP_Bool isStar);
+                                XP_UCHAR* text, XP_Bitmap bitmap,
+                                XP_S16 owner, /* -1 means don't use */
+                                XWBonusType bonus, HintAtts hintAtts,
+                                XP_Bool isBlank, XP_Bool highlight, 
+                                XP_Bool isStar);
 
     void (*m_draw_invertCell)( DrawCtx* dctx, XP_Rect* rect );
 
@@ -175,9 +185,9 @@ struct DrawCtx {
 /*          (dc)->vtable->m_draw_frameBoard((dc),(rect)) */
 /* #define draw_frameTray( dc, rect ) (dc)->vtable->m_draw_frameTray((dc),(rect)) */
 
-#define draw_drawCell( dc, rect, txt, bmap, o, bon, bl, h, s ) \
+#define draw_drawCell( dc, rect, txt, bmap, o, bon, hi, bl, h, s ) \
          (dc)->vtable->m_draw_drawCell((dc),(rect),(txt),(bmap),(o),(bon),\
-            (bl),(h),(s))
+            (hi),(bl),(h),(s))
 
 #define draw_invertCell( dc, rect ) \
          (dc)->vtable->m_draw_invertCell((dc),(rect))

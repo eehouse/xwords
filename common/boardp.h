@@ -23,6 +23,7 @@
 #include "comtypes.h"
 #include "model.h"
 #include "board.h"
+#include "engine.h"
 #include "mempool.h"		/* debug only */
 
 #ifdef CPLUS
@@ -157,6 +158,15 @@ struct BoardCtxt {
     XP_Bool penTimerFired;
     XP_Bool showCellValues;
     XP_Bool showColors;
+
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_U16 hintDragStartCol, hintDragStartRow;
+    XP_U16 hintDragCurCol, hintDragCurRow;
+    XP_Bool hintDragInProgress;
+
+    XP_Bool hasHintRect;
+    HintLimits limits;
+#endif
 
     MPSLOT
 };
