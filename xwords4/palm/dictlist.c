@@ -209,9 +209,10 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                 err = VFSFileOpen( volNum, (const char*)path, vfsModeRead,
                                    &fileRef );
                 if ( err == errNone ) {
+                    XP_U16 vers;
                     err = VFSFileDBInfo( fileRef, NULL, /* name */
                                          NULL, /* attributes */
-                                         NULL, /* versionP   */
+                                         &vers, /* versionP   */
                                          NULL, /* crDateP    */
                                          NULL, NULL, /*UInt32 *modDateP, UInt32 *bckUpDateP,*/
                                          NULL, NULL, /*UInt32 *modNumP, MemHandle *appInfoHP,*/
@@ -221,7 +222,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                     VFSFileClose( fileRef );
                     
                     if ( (err == errNone) && (type == TYPE_DAWG) && 
-                         (creator == creatorSought ) ) {
+                         (creator == creatorSought) && (vers == 1) ) {
                         DictListEntry dl;
 
                         dl.path = copyString( MPPARM(mpool) path );
@@ -308,18 +309,21 @@ dictListMakePriv( MPFORMAL XP_U32 creatorSought )
             XP_UCHAR nameBuf[33];
             XP_U16 nameLen;
             DictListEntry dle;
+            XP_U16 vers;
 
-            err = DmDatabaseInfo( cardNo, dbID, (char*)nameBuf, NULL, NULL, NULL,
+            err = DmDatabaseInfo( cardNo, dbID, (char*)nameBuf, NULL, &vers, NULL,
                                   NULL, NULL, NULL, NULL, NULL, NULL, NULL );
-            nameLen = XP_STRLEN( (const char*)nameBuf ) + 1;
+            if ( (err == errNone) && (vers == 1) ) {
+                nameLen = XP_STRLEN( (const char*)nameBuf ) + 1;
 
-            dle.location = DL_STORAGE;
-            dle.u.dmData.cardNo = cardNo;
-            dle.u.dmData.dbID = dbID;
-            dle.path = dle.baseName = XP_MALLOC( mpool, nameLen );
-            XP_MEMCPY( dle.path, nameBuf, nameLen );
+                dle.location = DL_STORAGE;
+                dle.u.dmData.cardNo = cardNo;
+                dle.u.dmData.dbID = dbID;
+                dle.path = dle.baseName = XP_MALLOC( mpool, nameLen );
+                XP_MEMCPY( dle.path, nameBuf, nameLen );
 
-            addEntry( MPPARM(mpool) &dl, &dle );
+                addEntry( MPPARM(mpool) &dl, &dle );
+            }
         }
 
         newSearch = false;
