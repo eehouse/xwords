@@ -148,3 +148,9 @@
 #ifdef FEATURE_TRAY_EDIT
 { "STRS_PICK_TILE",            "Choose a new tile for %s." },
 #endif
+
+#ifdef NODE_CAN_4
+{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert existing Crosswords " \
+                               "dictionaries to the new format? " \
+                               "The change is not reversible." }, 
+#endif
