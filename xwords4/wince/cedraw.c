@@ -139,7 +139,7 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     RECT rt;
     XP_U16 bkIndex;
     XP_UCHAR* cp = NULL;
-    COLORREF foreIndex;
+    COLORREF foreColorRef;
 
     XP_ASSERT( !!hdc );
 
@@ -150,46 +150,66 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
 
-    if ( isPending ) {
-        foreIndex = dctx->colors[WHITE_COLOR];
-        bkIndex = BLACK_COLOR;
-    } else {
-        foreIndex = dctx->colors[getPlayerColor(owner)];
-        if ( bonus == BONUS_NONE ) {
-            bkIndex = BKG_COLOR;
+    if ( (!!letters && letters[0] != '\0' ) || !!bitmap ) {
+        if ( isPending ) {
+            bkIndex = BLACK_COLOR;
+            foreColorRef = dctx->colors[WHITE_COLOR];
         } else {
-            bkIndex = bonus+BONUS1_COLOR;
+            foreColorRef = dctx->colors[getPlayerColor(owner)];
+            bkIndex = TILEBACK_COLOR;
         }
+    } else if ( bonus == BONUS_NONE ) {
+        bkIndex = BKG_COLOR;
+    } else {
+        bkIndex = (bonus - BONUS_DOUBLE_LETTER) + BONUS1_COLOR;
     }
+
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
     SetBkColor( hdc, dctx->colors[bkIndex] );
 
     if ( !!letters && (letters[0] != '\0') ) {
-        cp = letters;
-    } else if ( !!bitmap ) {
-        /* it's already NULL */
-    }
-
-    if ( !!cp ) {
         wchar_t widebuf[4];
+        cp = letters;
 
         XP_MEMSET( widebuf, 0, sizeof(widebuf) );
     
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, cp, -1,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
 	
-        SetTextColor( hdc, foreIndex );
+        SetTextColor( hdc, foreColorRef );
         DrawText( hdc, widebuf, -1, &rt, 
                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
     } else if ( !!bitmap ) {
-        makeAndDrawBitmap( dctx, hdc, rt.left + 2, rt.top + 3, foreIndex,
+        makeAndDrawBitmap( dctx, hdc, rt.left + 2, rt.top + 3, foreColorRef,
                            (CEBitmapInfo*)bitmap );
-/*         CEBitmapInfo* info = (CEBitmapInfo*)bitmap; */
-/*         HBITMAP bm = CreateBitmap( info->nCols, info->nRows, 1, 1, info->bits ); */
-/*         ceDrawBitmapInRect( hdc, rt.left+2, rt.top+2, bm ); */
-/*         DeleteObject( bm ); */
     } else if ( isStar ) {
         ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, dctx->origin );
+    }
+
+    if ( isBlank ) {
+        HGDIOBJ forePen = CreatePen( PS_SOLID, 1, foreColorRef );
+        HGDIOBJ oldObj = SelectObject( hdc, forePen );
+
+        /* For some reason, I can't do 1x1 dots in the corners because they
+           don't draw when they're black on the normal tile background.  (They
+           do draw when they're white on a black background -- isPending is
+           true.). But if they're 2 pixels in size they do draw.  Bug?  I'll
+           work around it with larger braces in the corners. */
+
+        Rectangle( hdc, rt.left, rt.top, rt.left + 2, rt.top + 1 );
+        Rectangle( hdc, rt.left, rt.top, rt.left + 1, rt.top + 2 );
+
+        Rectangle( hdc, rt.right - 2, rt.bottom - 1, rt.right, rt.bottom );
+        Rectangle( hdc, rt.right - 1, rt.bottom - 2, rt.right, rt.bottom );
+
+        Rectangle( hdc, rt.right - 2, rt.top, rt.right, rt.top + 1 );
+        Rectangle( hdc, rt.right - 1, rt.top, rt.right, rt.top + 2 );
+
+        Rectangle( hdc, rt.left, rt.bottom - 2, rt.left + 1, rt.bottom );
+        Rectangle( hdc, rt.left, rt.bottom - 1, rt.left + 2, rt.bottom );
+
+        SelectObject( hdc, oldObj );
+        DeleteObject( forePen );
     }
 
     return XP_TRUE;
