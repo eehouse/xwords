@@ -2250,8 +2250,13 @@ mainViewHandleEvent( EventPtr event )
 
                 model_writeGameHistory( globals->game.model, stream, 
                                         globals->game.server, gameOver );
-
-                askFromStream( globals, stream, STR_HISTORY_TITLE, true );
+                if ( stream_getSize( stream ) > 0 ) {
+                    askFromStream( globals, stream, STR_HISTORY_TITLE, 
+                                   XP_FALSE );
+                } else {
+                    beep();
+                }
+                stream_destroy( stream );
             }
             break;
 
@@ -2279,14 +2284,14 @@ mainViewHandleEvent( EventPtr event )
         case XW_FINISH_PULLDOWN_ID:
             if ( server_getGameIsOver( globals->game.server ) ) {
                 displayFinalScores( globals );
-            } else if ( palmaskFromStrId( globals, STR_CONFIRM_END_GAME,
-                                          -1, STR_NO ) ) {
+            } else if ( palmaskFromStrId( globals, STR_CONFIRM_END_GAME, -1 ) ) {
                 server_endGame( globals->game.server );
                 draw = true;	    
             }
             break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+            /* Would be better to beep when no remote players.... */
         case XW_RESENDIR_PULLDOWN_ID:
             if ( !!globals->game.comms ) {
                 (void)comms_resendAll( globals->game.comms );
@@ -2348,7 +2353,7 @@ mainViewHandleEvent( EventPtr event )
             break;
 
         case XW_ABOUT_PULLDOWN_ID:
-            palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE,-1 );
+            palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE );
             break;
 	    
         case XW_HINT_PULLDOWN_ID:
@@ -2561,7 +2566,7 @@ mainViewHandleEvent( EventPtr event )
 static void
 askStartNewGame( PalmAppGlobals* globals )
 {
-    if ( palmaskFromStrId( globals, STR_ASK_REPLACE_GAME, -1, STR_NO)) {
+    if ( palmaskFromStrId( globals, STR_ASK_REPLACE_GAME, -1 )) {
         /* do nothing; popping up the NEWGAMES dlg will do it -- if not
            cancelled */
         globals->newGameIsNew = XP_FALSE;
@@ -2692,8 +2697,8 @@ tryGrowAskToFit( FormPtr form, FieldPtr field, XP_UCHAR* str )
     setObjectBounds( XW_ASK_SCROLLBAR_ID, &objBounds );
 
     /* and the buttons */
-    XP_ASSERT( XW_ASK_CANCEL_BUTTON_ID - XW_ASK_OK_BUTTON_ID == 1 );
-    for ( i = XW_ASK_OK_BUTTON_ID; i <= XW_ASK_CANCEL_BUTTON_ID; ++i ){
+    XP_ASSERT( XW_ASK_NO_BUTTON_ID - XW_ASK_YES_BUTTON_ID == 1 );
+    for ( i = XW_ASK_YES_BUTTON_ID; i <= XW_ASK_NO_BUTTON_ID; ++i ){
         getObjectBounds( i, &objBounds );
         objBounds.topLeft.y += growthAmt;
         setObjectBounds( i, &objBounds );
@@ -2811,19 +2816,18 @@ moveLeftOf( UInt16 rightID, UInt16 leftID )
 } /* moveLeftOf */
 
 Boolean
-palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID, 
-                  XP_S16 altButtonID )
+palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID )
 {
     XP_UCHAR* message;
-    XP_UCHAR* alt;
+    XP_UCHAR* yes;
     message = getResString( globals, strId );
     XP_ASSERT( !!message );
-    alt = altButtonID < 0? NULL: getResString( globals, altButtonID );
-    return palmask( globals, message, alt, titleID );
+    yes = titleID < 0? NULL: getResString( globals, STR_OK );
+    return palmask( globals, message, yes, titleID );
 } /* palmaskFromStrId */
 
 Boolean
-palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
+palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* yesButton, 
          XP_S16 titleID )
 {
     FormPtr form, prevForm;
@@ -2842,15 +2846,18 @@ palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton,
 
     FrmSetActiveForm( form );
 
+    if ( !!yesButton ) {
+        CtlSetLabel( getActiveObjectPtr(XW_ASK_YES_BUTTON_ID), 
+                     (const char*)yesButton );
+        fitButtonToString( XW_ASK_YES_BUTTON_ID );
+    }
+
     if ( title != NULL ) {
         FrmSetTitle( form, (char*)title );
         /* Hack: take advantage of fact that for now only non-queries should
            not have a cancel button. */
-        disOrEnable( form, XW_ASK_CANCEL_BUTTON_ID, false );
-        centerControl( form, XW_ASK_OK_BUTTON_ID );
-    } else if ( !!altButton ) {
-        CtlSetLabel( getActiveObjectPtr(XW_ASK_CANCEL_BUTTON_ID), 
-                     (const char*)altButton );
+        disOrEnable( form, XW_ASK_NO_BUTTON_ID, false );
+        centerControl( form, XW_ASK_YES_BUTTON_ID );
     }
 
     /* if we're running before the first form goes up, globals won't be
@@ -2888,7 +2895,7 @@ palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton,
         board_popTimerSave( globals->game.board );
     }
 
-    return buttonHit == XW_ASK_OK_BUTTON_ID;
+    return buttonHit == XW_ASK_YES_BUTTON_ID;
 } /* palmask */
 
 static Boolean
@@ -2909,7 +2916,8 @@ askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, XP_S16 titleID,
     }
     buffer[nBytes] = '\0';	/* just to be safe */
     
-    result = palmask( globals, buffer, NULL, titleID );
+    result = palmask( globals, buffer, 
+                      getResString( globals, STR_OK ), titleID );
     MemPtrFree( buffer );
 
     if ( closeAndDestroy ) {
@@ -3205,7 +3213,7 @@ palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         break;
     }
 
-    return (XP_Bool)palmaskFromStrId( globals, strID, -1, -1 );
+    return (XP_Bool)palmaskFromStrId( globals, strID, -1 );
 } /* palm_util_userQuery */
 
 static XWBonusType
