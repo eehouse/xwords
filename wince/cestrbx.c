@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 2002-2004 by Eric House (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,9 +41,11 @@ stuffTextInField( HWND hDlg, CEAppGlobals* globals, XWStreamCtxt* stream )
     XP_FREE( globals->mpool, sbuf );
 
     SetDlgItemText( hDlg, ID_EDITTEXT, wbuf );
+    XP_FREE( globals->mpool, wbuf );
 
     /* This isn't working to stop the highlighting of text */
-/*     SendDlgItemMessage( hDlg, ID_EDITTEXT, EM_SETSEL, 0, 0L ); */
+    SendDlgItemMessage( hDlg, ID_EDITTEXT, EM_SETSEL, -1, 0L );
+    XP_LOGF( "called SendDlgItemMessage with -1" );
 } /* stuffTextInField */
 
 LRESULT CALLBACK
@@ -68,8 +70,6 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             /* also want to expand the text box to the bottom */
 /*             ceCenterCtl( hDlg, IDOK ); */
         }
-
-        positionDlg( hDlg );
 
         stuffTextInField( hDlg, globals, init->stream );
 	
