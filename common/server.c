@@ -1331,15 +1331,13 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
         Tile tiles[MAX_TRAY_TILES];
 
         pool_requestTiles( pool, tiles, &nLeft );
-        XP_ASSERT( nLeft == nToFetch - nSoFar );
 
         XP_MEMCPY( &resultTiles->tiles[nSoFar], tiles, 
                    nLeft * sizeof(resultTiles->tiles[0]) );
         nSoFar += nLeft;
     }
 
-    XP_ASSERT( nSoFar == nToFetch );
-    resultTiles->nTiles = nToFetch;
+    resultTiles->nTiles = nSoFar;
 } /* fetchTiles */
 
 static void
