@@ -329,7 +329,7 @@ sym_dictionary_makeL( MPFORMAL const XP_UCHAR* aDictName )
 # endif
 
             if ( dawgSize > 0 ) {
-                XP_DEBUGF( "setting topEdge; offset = %ld", offset );
+                XP_DEBUGF( "setting topEdge; offset = %d", offset );
 
                 XP_U8* dictBuf = (XP_U8*)XP_MALLOC( mpool, dawgSize );
                 User::LeaveIfNull( dictBuf ); // will leak ctxt (PENDING...)
