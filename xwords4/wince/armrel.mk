@@ -16,6 +16,10 @@ CC = $(WCE420)/bin/clarm.exe
 LINK = $(WCE420)/bin/link.exe
 RC = $(VSDIR)/Common/MSDev98/Bin/rc.exe
 
+# CC_OPT += /Os
+# CC_OPT += /O1
+# CC_OPT += /Og
+
 include ../common/config.mk
 
 include ./shared.mk
@@ -24,7 +28,7 @@ include ./shared.mk
 # Since three rules use exactly the same command, I'm writing it out
 # only once
 C_CMD = \
-	$(CC) /nologo /W3 /Os /O1 /I "$(WINCE_PATH)\Include\Armv4" \
+	$(CC) /nologo $(CC_OPT) /W3 /I "$(WINCE_PATH)\Include\Armv4" \
 		/I "..\common" /I "." /D _WIN32_WCE=420 /D "WIN32_PLATFORM_PSPC=400" \
 		/D "ARM" /D "_ARM_" /D "ARMV4" /D UNDER_CE=420 /D "UNICODE" \
 		/D "_UNICODE" /D "NDEBUG" $(XW_C_DEFINES) \
