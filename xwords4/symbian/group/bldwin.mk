@@ -23,15 +23,19 @@ PT = $(EPOC)/tools/petran
 LIB = lib.exe
 PERL = c:/activePerl/bin/perl
 MAKEDEF = makedef.pl
+EPOCRC = epocrc.pl
+ECOPYFILE = ecopyfile.pl
 LINK = $(MSVC_DIR)/Bin/link.exe
 DUMPBIN = $(MSVC_DIR)/Bin/dumpbin.exe
 LIB = $(MSVC_DIR)/Bin/lib.exe
 ECHO = /usr/bin/echo
 
 COMMON_FLAGS = \
-	-D__LITTLE_ENDIAN -DKEYBOARD_NAV \
+	-D$(SYMARCH) -D__LITTLE_ENDIAN -DKEYBOARD_NAV \
 	-DKEY_SUPPORT -DFEATURE_TRAY_EDIT -DNODE_CAN_4 \
 	-DOS_INITS_DRAW -DXWFEATURE_STANDALONE_ONLY 
+
+RSS_DEFS = $(COMMON_FLAGS)
 
 ##################################################
 # WINS- vs ARMI-specific settings
@@ -261,14 +265,9 @@ $(UID_CPP):
 	$(ECHO) "__WINS_UID(0x10000079,0x$(U2),0x$(U3))" >> $@
 	$(ECHO) "#pragma data_seg()" >> $@
 
-%.rpp: %.rss
-	$(AMP)$(CPP) $(CPPFLAGS) < $< > $@
-
-%.rsc %.rsg: %.rpp
-	$(AMP)$(ECHO) "[RCOMP ] $*"
-	$(AMP)rm -f $*.rsc $*.rs~
-	$(AMP)$(RC) -u -o$*.rsc -h$*.rs~ -i$*.rss -s$*.rpp
-	@cp $*.rs~ $*.rsg; 
+%.rsc %.rsg: %.rss
+	$(PERL) -S $(EPOCRC) $(RSS_DEFS) -I "." -I "..\inc" -I- -I $(EPOC)/include \
+		-DLANGUAGE_SC -u $< -o$*.rsc  -h$*.rsg -l./
 
 %.aif: %.aifspec
 	@$(ECHO) "[GENAIF] $*"
