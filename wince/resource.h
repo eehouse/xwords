@@ -16,11 +16,14 @@
 #define IDD_ASKBLANK                    113
 #define IDD_ASKPASS                     116
 #define IDD_OPTIONSDLG                  117
-#define IDB_FLIPBUTTON                  118
-#define IDB_VALUESBUTTON                119
-#define IDB_HINTBUTTON                  120
-#define IDB_JUGGLEBUTTON                121
-#define IDB_ORIGIN                      122
+#ifdef XWFEATURE_CE_EDITCOLORS
+# define IDD_COLORSDLG                  118
+#endif
+#define IDB_FLIPBUTTON                  119
+#define IDB_VALUESBUTTON                120
+#define IDB_HINTBUTTON                  121
+#define IDB_JUGGLEBUTTON                122
+#define IDB_ORIGIN                      123
 
 #define FLIP_BUTTON_ID                  1001
 #define VALUE_BUTTON_ID                 1002
@@ -79,9 +82,34 @@
 #define IDC_BPICK                       1050
 #define IDC_PICKMSG                     1051
 #ifdef FEATURE_TRAY_EDIT
-# define IDC_CPICK                       1052
-# define IDC_PICKALL                     1053
+# define IDC_CPICK                      1052
+# define IDC_PICKALL                    1053
 #endif
+
+#ifdef XWFEATURE_CE_EDITCOLORS
+# define DLBLTR_BUTTON                  1054
+# define DBLWRD_BUTTON                  1055
+# define TPLLTR_BUTTON                  1056
+# define TPLWRD_BUTTON                  1057
+# define EMPCELL_BUTTON                 1058
+# define TBACK_BUTTON                   1059
+# define PLAYER1_BUTTON                 1060
+# define PLAYER2_BUTTON                 1061
+# define PLAYER3_BUTTON                 1062
+# define PLAYER4_BUTTON                 1063
+# define PLAYER1_LABEL                  1064
+# define PLAYER2_LABEL                  1065
+# define PLAYER3_LABEL                  1066
+# define PLAYER4_LABEL                  1067
+# define DLBLTR_LABEL                   1068
+# define DBLWRD_LABEL                   1069
+# define TPLLTR_LABEL                   1070
+# define TPLWRD_LABEL                   1071
+# define EMPTYCELL_LABEL                1072
+# define TILEBACK_LABEL                 1073
+#endif
+
+
 
 #define IDM_FILE_EXIT                   40002
 #define IDM_HELP_ABOUT                  40003
@@ -102,9 +130,12 @@
 #define ID_FILE_SAVEDGAMES              40018
 #define ID_EDITTEXT                     40019
 #define ID_FILE_PREFERENCES             40020
-#define ID_FILE_BEAMDICT                40021
-#define ID_FILE_BEAMBOARDS              40022
-#define ID_GAME_RESENDMSGS              40023
+#ifdef XWFEATURE_CE_EDITCOLORS
+# define ID_FILE_EDITCOLORS             40021
+#endif
+#define ID_FILE_BEAMDICT                40022
+#define ID_FILE_BEAMBOARDS              40023
+#define ID_GAME_RESENDMSGS              40024
 
 #define ID_COLORS_RES                   9999
 #define ID_BONUS_RES                    9998
@@ -113,9 +144,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        123
-#define _APS_NEXT_COMMAND_VALUE         40023
-#define _APS_NEXT_CONTROL_VALUE         1054
+#define _APS_NEXT_RESOURCE_VALUE        124
+#define _APS_NEXT_COMMAND_VALUE         40025
+#define _APS_NEXT_CONTROL_VALUE         1074
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

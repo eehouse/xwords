@@ -82,10 +82,10 @@ LINK32=link.exe
 # PROP Target_Dir ""
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "FEATURE_TRAY_EDIT" /r
+# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "FEATURE_TRAY_EDIT" /d "XWFEATURE_CE_EDITCOLORS" /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "XWFEATURE_CE_EDITCOLORS" /YX /M$(CECrtMTDebug) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
@@ -94,7 +94,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 winsock.lib commctrl.lib coredll.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 winsock.lib commctrl.lib coredll.lib commdlg.lib aygshell.lib /nologo /base:"0x00010000" /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Release"
@@ -468,6 +468,101 @@ NODEP_CPP_CEBLA=\
 # End Source File
 # Begin Source File
 
+SOURCE=.\ceclrsel.c
+
+!IF  "$(CFG)" == "xwords - Win32 (WCE ARM) Release"
+
+DEP_CPP_CECLR=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
+	".\ceclrsel.h"\
+	".\cemain.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
+	
+
+!ELSEIF  "$(CFG)" == "xwords - Win32 (WCE ARM) Debug"
+
+DEP_CPP_CECLR=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
+	".\ceclrsel.h"\
+	".\cemain.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
+	
+
+!ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Release"
+
+DEP_CPP_CECLR=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
+	".\ceclrsel.h"\
+	".\cemain.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
+	
+
+!ELSEIF  "$(CFG)" == "xwords - Win32 (WCE x86) Debug"
+
+DEP_CPP_CECLR=\
+	"..\common\board.h"\
+	"..\common\commmgr.h"\
+	"..\common\comms.h"\
+	"..\common\comtypes.h"\
+	"..\common\dawg.h"\
+	"..\common\dictnry.h"\
+	"..\common\draw.h"\
+	"..\common\game.h"\
+	"..\common\mempool.h"\
+	"..\common\model.h"\
+	"..\common\server.h"\
+	"..\common\xwstream.h"\
+	".\ceclrsel.h"\
+	".\cemain.h"\
+	".\stdafx.h"\
+	".\xptypes.h"\
+	".\xwords4.h"\
+	
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\cedict.c
 
 !IF  "$(CFG)" == "xwords - Win32 (WCE ARM) Release"
@@ -813,6 +908,7 @@ DEP_CPP_CEMAI=\
 	"..\common\xwstream.h"\
 	".\ceaskpwd.h"\
 	".\ceblank.h"\
+	".\ceclrsel.h"\
 	".\cedefines.h"\
 	".\cedict.h"\
 	".\ceginfo.h"\
