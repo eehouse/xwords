@@ -45,6 +45,7 @@
 #include "symgamdl.h"
 #include "symblnk.h"
 #include "symgmdlg.h"
+#include "symutil.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -69,6 +70,8 @@ CXWordsAppView::CXWordsAppView()
     // no implementation required
     iDraw = NULL;
     XP_MEMSET( &iGame, 0, sizeof(iGame) );
+
+    iCurGameName.Copy( _L("") );
 }
 
 CXWordsAppView::~CXWordsAppView()
@@ -182,6 +185,8 @@ void CXWordsAppView::Draw( const TRect& aRect ) const
 
         board_draw( iGame.board );
     }
+
+    DrawGameName();
 } // Draw
 
 /* static */ VTableMgr*
@@ -539,8 +544,9 @@ CXWordsAppView::PositionBoard()
     board_setPos( iGame.board, 2, 2, XP_FALSE );
     board_setScale( iGame.board, scaleBoardH, scaleBoardV );
 
-    board_setScoreboardLoc( iGame.board, 2 + (15 * scaleBoardH) + 5, 2,
-                            200, 130, XP_FALSE );
+    TInt scoreLeft = 2 + (15 * scaleBoardH) + 5;
+    board_setScoreboardLoc( iGame.board, scoreLeft, 25,
+                            200, 125, XP_FALSE );
     board_setYOffset( iGame.board, 0, XP_FALSE );
 
     board_setTrayLoc( iGame.board, 
@@ -550,6 +556,10 @@ CXWordsAppView::PositionBoard()
                       scaleTrayH, scaleTrayV,   // v and h scale
                       3 );      // divider width
     board_invalAll( iGame.board );
+
+    iTitleBox.SetRect( scoreLeft, 2, 
+                       scoreLeft + (scaleTrayH * MAX_TRAY_TILES) + 3, 
+                       2 + 20 );
 } // PositionBoard
 
 int 
@@ -985,6 +995,7 @@ CXWordsAppView::DoSavedGames()
             gi_disposePlayerInfo( MPPARM(mpool) &iGi );
 
             LoadOneGameL( &iCurGameName );
+            Window().Invalidate( iTitleBox );
         }
     }
     return confirmed;
@@ -1019,9 +1030,10 @@ CXWordsAppView::StoreOneGameL( TGameName* aGameName )
     XWStreamCtxt* stream = MakeSimpleStream( NULL );
 
     /* save the dict.  NOTE: should be possible to do away with this! */
-    XP_U16 len = XP_STRLEN(iGi.dictName);
-    stream_putU8( stream, len );
-    stream_putBytes( stream, iGi.dictName, len );
+    XP_U32 len = XP_STRLEN(iGi.dictName);
+    XP_ASSERT( len <= 0xFF );
+    stream_putU8( stream, SC(XP_U8, len) );
+    stream_putBytes( stream, iGi.dictName, SC(XP_U16, len) );
 
     /* Now the game */
     game_saveToStream( &iGame, &iGi, stream );
@@ -1067,3 +1079,24 @@ CXWordsAppView::DoImmediateDraw()
 
     DeactivateGc();
 } /* DoImmediateDraw */
+
+void
+CXWordsAppView::DrawGameName() const
+{
+    CWindowGc& gc = SystemGc();
+
+    gc.UseFont( iCoeEnv->NormalFont() );
+
+    TBuf16<48> buf( _L( "Game: " ) );
+    buf.Append( iCurGameName );
+/*     gc.DrawText( buf, iGameNameLoc ); */
+
+    gc.SetPenStyle( CGraphicsContext::ESolidPen );
+    gc.SetPenColor( KRgbBlack );
+    gc.SetBrushStyle( CGraphicsContext::ENullBrush );
+
+    gc.DrawText( buf, iTitleBox, iTitleBox.Height() - 2,/*TInt aBaselineOffset*/
+                 CGraphicsContext::ECenter );
+
+    gc.DiscardFont();
+}
