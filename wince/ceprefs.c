@@ -201,8 +201,6 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         stuffPhoniesList( hDlg );
 
-        positionDlg( hDlg );
-
         loadControlsFromState( hDlg, pState );
         adjustForChoice( hDlg, pState );
 
