@@ -95,7 +95,7 @@ dict_numTileFaces( DictionaryCtxt* dict )
 
 XP_U16
 dict_tilesToString( DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
-		    XP_UCHAR* buf )
+                    XP_UCHAR* buf )
 {
     XP_UCHAR* bufIn = buf;
 
