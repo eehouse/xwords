@@ -26,7 +26,7 @@
 #include "gtkmain.h"
 
 XP_S16 gtkletterask( XP_Bool forBlank, XP_UCHAR* name, XP_U16 nTiles,
-                     XP_UCHAR4* texts );
+                     const XP_UCHAR4* texts );
 
 
 #endif /* _GTKLETTERASK_H_ */

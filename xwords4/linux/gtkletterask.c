@@ -43,7 +43,7 @@ abort_button_event( GtkWidget* widget, void* closure )
 
 XP_S16
 gtkletterask( XP_Bool forBlank, XP_UCHAR* name, 
-              XP_U16 nTiles, XP_UCHAR4* texts )
+              XP_U16 nTiles, const XP_UCHAR4* texts )
 {
     GtkWidget* dialog;
     GtkWidget* label;
