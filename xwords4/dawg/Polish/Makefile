@@ -24,8 +24,9 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-# $(LANG)Main.dict.gz: ods3.txt.gz
-# 	zcat $< | tr a-z A-Z | gzip >$@
+$(LANG)Main.dict.gz: slowa.txt.gz
+	zcat $< | tr -d '\r' | tr [a-z±æê³ñó¶¼¿] [A-Z¡ÆÊ£ÑÓ¦¬¯] | \
+		grep '^[A-PR-UWYZ¡ÆÊ£ÑÓ¦¬¯]*$$' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
