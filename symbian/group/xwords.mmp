@@ -5,7 +5,7 @@ UID               0x100039CE 0x10206D64
 
 // Comment the next line out for a non-debug build.  Isn't this build
 // system advanced?
-MACRO             DEBUG MEM_DEBUG
+MACRO             DEBUG MEM_DEBUG _DEBUG
 MACRO             CPLUS
 MACRO             __LITTLE_ENDIAN KEYBOARD_NAV OS_INITS_DRAW
 MACRO             KEY_SUPPORT FEATURE_TRAY_EDIT NODE_CAN_4
