@@ -57,6 +57,10 @@ typedef struct SpecialBitmaps {
 
 struct DictionaryCtxt {
     void (*destructor)( DictionaryCtxt* dict );
+
+    array_edge* (*func_edge_for_index)( DictionaryCtxt* dict, XP_U32 index );
+    array_edge* (*func_dict_getTopEdge)( DictionaryCtxt* dict );
+
     array_edge* topEdge;
     array_edge* base;		/* the physical beginning of the dictionary; not
                                necessarily the entry point for search!! */
@@ -107,6 +111,9 @@ struct DictionaryCtxt {
 /* #define dict_numTileFaces(dc) (dc)->vtable->m_numTileFaces(dc) */
 
 #define dict_destroy(d) (*((d)->destructor))(d)
+#define dict_edge_for_index(d, i) (*((d)->func_edge_for_index))((d), (i))
+#define dict_getTopEdge(d)        (*((d)->func_dict_getTopEdge))(d)
+
 
 XP_Bool dict_tilesAreSame( DictionaryCtxt* dict1, DictionaryCtxt* dict2 );
 
@@ -133,19 +140,13 @@ void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );
 /* These methods get "overridden" by subclasses.  That is, they must be
  implemented by each platform. */
 
-array_edge* dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index );
-
-#ifdef OVERRIDE_GETTOPEDGE
-/* platform code will implement this */
-array_edge* dict_getTopEdge( DictionaryCtxt* dict );
-#else
-# define dict_getTopEdge( dict ) ((dict)->topEdge)
-#endif
-
-
 #ifdef STUBBED_DICT
 DictionaryCtxt* make_stubbed_dict( MPFORMAL_NOCOMMA );
 #endif
+
+/* To be called only by subclasses!!! */
+void dict_super_init( DictionaryCtxt* ctxt );
+
 
 #ifdef CPLUS
 }

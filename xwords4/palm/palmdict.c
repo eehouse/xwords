@@ -20,6 +20,7 @@
 #include <PalmTypes.h>
 #include <DataMgr.h>
 #include <VFSMgr.h>
+#include <FeatureMgr.h>
 
 #include "dictnryp.h"
 #include "dawg.h"
@@ -60,6 +61,8 @@ static void palm_dictionary_destroy( DictionaryCtxt* dict );
 static XP_U16 countSpecials( FaceType* ptr, UInt16 nChars );
 static void setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt, 
                            Xloc_specialEntry* specialStart, XP_U16 nSpecials );
+static array_edge* palm_dict_edge_for_index_multi( DictionaryCtxt* dict, 
+                                                   XP_U32 index );
 
 DictionaryCtxt*
 palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
@@ -74,7 +77,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
     dawg_header* headerRecP;
     unsigned char* charPtr;
     UInt16 nChars, nSpecials;
-    unsigned long offset = 0;
+    XP_U32 offset;
     DictListEntry* dle;
     Err err;
     XP_U16 i;
@@ -83,6 +86,8 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
     XP_U16 flags;
     XP_U16 nodeSize = 3;        /* init to satisfy compiler */
 #endif
+    XP_U32 totalSize;
+    void* dawgBase;
 
     /* check and see if there's already a dict for this name.  If yes,
        increment its refcount and return. */
@@ -104,6 +109,8 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
 
     XP_MEMSET( ctxt, 0, sizeof(*ctxt) );
     MPASSIGN( ctxt->super.mpool, mpool );
+
+    dict_super_init( (DictionaryCtxt*)ctxt );
 
     if ( !!dictName ) {
         XP_ASSERT( XP_STRLEN((const char*)dictName) > 0 );
@@ -188,6 +195,8 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
             ctxt->super.topEdge = NULL;
             ctxt->nRecords = 0;
         } else {
+            MemHandle record;
+            XP_U16 size;
             short index;
             XP_U16 nRecords;
 
@@ -203,34 +212,78 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
             ctxt->super.is_4_byte = nodeSize == 4;
 #endif
 
+            totalSize = 0;
             for ( index = 0; index < nRecords; ++index ) {
-                MemHandle record = 
-                    DmQueryRecord( dbRef, index + headerRecP->firstEdgeRecNum);
-                ctxt->dictStarts[index].indexStart = offset;
-
-                /* cast to short to avoid libc call */
-                XP_ASSERT( MemHandleSize(record) < 0xFFFF );
-#ifdef NODE_CAN_4
-                XP_ASSERT( 0 == ((unsigned short)(MemHandleSize(record))
-                                 % nodeSize ));
-                offset += ((unsigned short)MemHandleSize(record)) 
-                    / nodeSize;
-#else
-                XP_ASSERT( ((unsigned short)(MemHandleSize(record)) % 3 )==0);
-                offset += ((unsigned short)MemHandleSize(record)) / 3;
-#endif
-                ctxt->dictStarts[index].array = 
-                    (array_edge*)MemHandleLock( record );
-                XP_ASSERT( MemHandleLockCount(record) == 1 );
+                record = DmQueryRecord( dbRef, index
+                                        + headerRecP->firstEdgeRecNum);
+                totalSize += MemHandleSize( record );
             }
 
-            XP_ASSERT( index == ctxt->nRecords );
-            ctxt->dictStarts[index].indexStart = 0xFFFFFFFFL;
-
-            ctxt->super.topEdge = ctxt->dictStarts[0].array;
+            /* NOTE: need to use more than one feature to support having
+               multiple dicts open at once. */
+            err = ~errNone;     /* so test below will pass if nRecords == 1 */
+            if ( 0 && nRecords > 1 ) {
+                err = FtrPtrNew( APPID, DAWG_STORE_FEATURE, totalSize,
+                                 &dawgBase );
+                if ( err == errNone ) {
+                    for ( index = 0, offset = 0; index < nRecords; ++index ) {
+                        record = DmQueryRecord( dbRef, index
+                                                + headerRecP->firstEdgeRecNum );
+                        size = MemHandleSize( record );
+                        XP_LOGF( "size=%d", size );
+                        err = DmWrite( dawgBase, offset, 
+                                       MemHandleLock( record ), size );
+                        XP_ASSERT( err == errNone );
+                        MemHandleUnlock( record );
+                        offset += size;
+                        XP_LOGF( "offset now = %ld", offset );
 #ifdef DEBUG
-            ctxt->super.numEdges = offset;
+#ifdef NODE_CAN_4
+                        ctxt->super.numEdges += size / nodeSize;
+#else
+                        ctxt->super.numEdges += size / 3;
 #endif
+#endif
+                    }
+
+                    ctxt->super.base = dawgBase;
+                    ctxt->super.topEdge = dawgBase;
+                } else {
+                    XP_LOGF( "unable to use Ftr for dict; err=%d", err );
+                }
+            }
+
+            if ( err != errNone ) {
+                offset = 0;
+                for ( index = 0; index < nRecords; ++index ) {
+                    record = DmQueryRecord( dbRef, index + headerRecP->firstEdgeRecNum );
+                    size = MemHandleSize( record );
+
+                    ctxt->dictStarts[index].indexStart = offset;
+
+                    /* cast to short to avoid libc call */
+                    XP_ASSERT( size < 0xFFFF );
+#ifdef NODE_CAN_4
+                    XP_ASSERT( 0 == (size % nodeSize) );
+                    offset += size / nodeSize;
+#else
+                    XP_ASSERT( ((unsigned short)size % 3 )==0);
+                    offset += ((unsigned short)size) / 3;
+#endif
+                    ctxt->dictStarts[index].array = 
+                        (array_edge*)MemHandleLock( record );
+                    XP_ASSERT( MemHandleLockCount(record) == 1 );
+                }
+
+                XP_ASSERT( index == ctxt->nRecords );
+                ctxt->dictStarts[index].indexStart = 0xFFFFFFFFL;
+
+                ctxt->super.topEdge = ctxt->dictStarts[0].array;
+#ifdef DEBUG
+                ctxt->super.numEdges = offset;
+#endif
+                ctxt->super.func_edge_for_index = palm_dict_edge_for_index_multi;
+            }
         }
 
         setBlankTile( (DictionaryCtxt*)ctxt );
@@ -330,8 +383,14 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
 
         XP_FREE( dict->mpool, ctxt->super.faces16 );
 
-        for ( i = 0; i < ctxt->nRecords; ++i ) {
-            MemPtrUnlock( ctxt->dictStarts[i].array );
+        /* Try first to delete the feature. */
+        if ( FtrPtrFree( APPID, DAWG_STORE_FEATURE ) == ftrErrNoSuchFeature ) {
+            for ( i = 0; i < ctxt->nRecords; ++i ) {
+                XP_ASSERT( !!ctxt->dictStarts[i].array );
+                MemPtrUnlock( ctxt->dictStarts[i].array );
+            }
+        } else {
+            XP_ASSERT( ctxt->dictStarts[0].array == NULL );
         }
 
         MemPtrUnlock( headerRecP );
@@ -359,8 +418,8 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
 } /* palm_dictionary_destroy */
 
 #ifdef OVERRIDE_EDGE_FOR_INDEX
-array_edge* 
-dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
+static array_edge* 
+palm_dict_edge_for_index_multi( DictionaryCtxt* dict, XP_U32 index )
 {
     PalmDictionaryCtxt* ctxt = (PalmDictionaryCtxt*)dict;
     array_edge* result;
@@ -397,4 +456,5 @@ dict_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
 
     return result;
 } /* dict_edge_for_index */
+
 #endif
