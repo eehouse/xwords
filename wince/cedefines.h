@@ -52,17 +52,17 @@
 #else  /* tweaked for ce's stupid keyboard button: score on bottom */
 
 #define CE_BOARD_SCALEH 16
-#define CE_BOARD_SCALEV 14
+#define CE_BOARD_SCALEV 15
 #define CE_MAX_ROWS 15
 #define CE_BOARD_LEFT_LH 8
 #define CE_BOARD_LEFT_RH 0
-#define CE_BOARD_TOP 25
+#define CE_BOARD_TOP 0
 #define CE_BOARD_WIDTH (CE_MAX_ROWS*CE_BOARD_SCALEH)
 #define CE_BOARD_HEIGHT (CE_MAX_ROWS*CE_BOARD_SCALEV)
 
 #define CE_TRAY_TOP (CE_BOARD_TOP + CE_BOARD_HEIGHT)
 #define CE_TRAY_SCALEH 34
-#define CE_TRAY_SCALEV 31
+#define CE_TRAY_SCALEV 27
 #define CE_TRAY_TOP_MAX CE_TRAY_TOP
 #define CE_TRAY_LEFT_RH 0
 #define CE_TRAY_LEFT_LH 0
@@ -71,7 +71,7 @@
 #define CE_SCORE_TOP (CE_TRAY_TOP + CE_TRAY_SCALEV)
 #define CE_SCORE_HEIGHT 18
 #define CE_SCORE_LEFT CE_BOARD_LEFT_RH
-#define CE_SCORE_WIDTH (4 * 42)
+#define CE_SCORE_WIDTH (4 * 51)
 
 #define CE_TIMER_WIDTH 30
 #define CE_TIMER_LEFT (CE_SCORE_WIDTH + CE_SCORE_LEFT)
