@@ -54,8 +54,8 @@ typedef struct DrawCtxVTable {
 
     void (*m_draw_destroyCtxt)( DrawCtx* dctx );
 
-    void (*m_draw_boardBegin)( DrawCtx* dctx, XP_Rect* rect, 
-                               XP_Bool hasfocus );
+    XP_Bool (*m_draw_boardBegin)( DrawCtx* dctx, XP_Rect* rect, 
+                                  XP_Bool hasfocus );
     void (*m_draw_boardFinished)( DrawCtx* dctx );
 
     XP_Bool (*m_draw_vertScrollBoard)(DrawCtx* dctx, XP_Rect* rect, 
