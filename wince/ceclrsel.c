@@ -63,9 +63,9 @@ initEditAndSlider( HWND hDlg, XP_U16 sliderID, XP_U8 val )
 static void
 initChooseColor( ClrEditDlgState* eState, HWND hDlg )
 {
-    eState->clrRect.left = 165;
+    eState->clrRect.left = 162;
     eState->clrRect.top = 5;
-    eState->clrRect.right = 195;
+    eState->clrRect.right = 193;
     eState->clrRect.bottom = 90;
 
     InvalidateRect( hDlg, &eState->clrRect, FALSE );
