@@ -129,37 +129,44 @@ linux_getErrString( UtilErrID id )
 
     switch( id ) {
     case ERR_TILES_NOT_IN_LINE:
-	message = "All tiles played must be in a line.";
-	break;
+        message = "All tiles played must be in a line.";
+        break;
     case ERR_NO_EMPTIES_IN_TURN:
-	message = "Empty squares cannot separate tiles played.";
-	break;
+        message = "Empty squares cannot separate tiles played.";
+        break;
+
+    case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
+        message = "Too few tiles left to trade.";
+        break;
 
     case ERR_TWO_TILES_FIRST_MOVE:
-	message = "Must play two or more pieces on the first move.";
-	break;
+        message = "Must play two or more pieces on the first move.";
+        break;
     case ERR_TILES_MUST_CONTACT:
-	message = "New pieces must contact others already in place (or "
-	    "the middle square on the first move).";
-	break;
+        message = "New pieces must contact others already in place (or "
+            "the middle square on the first move).";
+        break;
     case ERR_NOT_YOUR_TURN:
-	message = "You can't do that; it's not your turn!";
-	break;
+        message = "You can't do that; it's not your turn!";
+        break;
     case ERR_NO_PEEK_ROBOT_TILES:
-	message = "No peeking at the robot's tiles!";
-	break;
+        message = "No peeking at the robot's tiles!";
+        break;
     case ERR_NO_PEEK_REMOTE_TILES:
-	message = "No peeking at remote players' tiles!";
-	break;
+        message = "No peeking at remote players' tiles!";
+        break;
     case ERR_REG_UNEXPECTED_USER:
-	message = "Refused attempt to register unexpected user[s].";
-	break;
+        message = "Refused attempt to register unexpected user[s].";
+        break;
     case ERR_SERVER_DICT_WINS:
-	message = "Conflict between Host and Guest dictionaries; Host wins.";
-	XP_WARNF( "GTK may have problems here." );
-	break;
+        message = "Conflict between Host and Guest dictionaries; Host wins.";
+        XP_WARNF( "GTK may have problems here." );
+        break;
+    case ERR_CANT_UNDO_TILEASSIGN:
+        message = "Tile assignment can't be undone.";
+        break;
     default:
-	message = "<unrecognized error code reported>";
+        message = "<unrecognized error code reported>";
     }
 
     return message;
