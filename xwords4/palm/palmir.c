@@ -263,7 +263,7 @@ ir_do_work( PalmAppGlobals* globals )
 	 && globals->ir_timeout < TimGetTicks() ) {
 	Boolean retry;
 
-	retry = palmaskFromStrId( globals, STR_RESEND_IR, -1, STR_NO );
+	retry = palmaskFromStrId( globals, STR_RESEND_IR, -1, -1 );
 
 	/* why did I do this? */
 	if ( IrIsIrLapConnected( globals->irLibRefNum ) ) {
