@@ -14,6 +14,7 @@ include $(EPOC)/lib/makerules/eikon
 
 COMMONDIR = ../../common
 PLATFORM = SYMB_$(SERIES)
+XWORDS_DIR = \"xwords_$(SERIES)\"
 
 include ../../common/config.mk
 
@@ -92,10 +93,10 @@ OBJDIR = $(SRCDIR)/$(PLATFORM)
 
 OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(LCLSRC:.cpp=.o)) $(COMMONOBJ)
 
-THEAPP=$(NAME).app
-MAJOR=2
-MINOR=4
-PKGVERS=$(MAJOR),$(MINOR)
+THEAPP = $(NAME).app
+MAJOR = 4
+MINOR = 1
+PKGVERS = $(MAJOR),$(MINOR)
 
 MBG = $(NAME).mbg 
 
@@ -106,11 +107,12 @@ U2 = 100039ce
 U3 = 10206D64
 
 DEBUG_FLAGS = -DDEBUG -DMEM_DEBUG
-CFLAGS = -O -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
+CFLAGS += -O -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
+	-DXWORDS_DIR=$(XWORDS_DIR) \
 	-D__LITTLE_ENDIAN -DKEYBOARD_NAV \
 	-DKEY_SUPPORT -DFEATURE_TRAY_EDIT -DNODE_CAN_4 \
 	-DXWFEATURE_STANDALONE_ONLY -D$(SYMARCH) \
-	-DSYM_ARMI \
+	-DSYM_ARMI -DOS_INITS_DRAW \
 	$(INCDIR)
 
 # This violates the no-data rule.  Don't allow it for ARMI build.
@@ -125,6 +127,9 @@ CPPFLAGS += -D_EPOC32_6 -DCPLUS -I../inc -D$(SYMARCH)
 
 all: _sanity $(PKGFILES) $(NAME).sis
 	mv $(NAME).sis $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
+ifdef XW_UPLOAD_DIR
+	cp $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis $$XW_UPLOAD_DIR
+endif
 
 _sanity:
 	@if [ "$(EPOC_$(SERIES))" = "" ]; then \
