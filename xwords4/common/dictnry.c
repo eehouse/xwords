@@ -497,6 +497,7 @@ dict_super_init( DictionaryCtxt* ctxt )
     /* subclass may change these later.... */
     ctxt->func_edge_for_index = dict_super_edge_for_index;
     ctxt->func_dict_getTopEdge = dict_super_getTopEdge;
+    ctxt->func_dict_getShortName = dict_getName;
 } /* dict_super_init */
 
 #ifdef CPLUS
