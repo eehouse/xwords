@@ -2163,6 +2163,10 @@ server_handleUndo( ServerCtxt* server )
         }
 #endif
         nextTurn( server, lastTurnUndone );
+    } else {
+        /* I'm a bit nervous about this.  Is this the ONLY thing that cause
+           nUndone to come back 0? */
+        util_userError( server->vol.util, ERR_CANT_UNDO_TILEASSIGN );
     }
 
     return result;
