@@ -692,6 +692,10 @@ CXWordsAppView::HandleKeyEvent( const TKeyEvent& aKeyEvent )
         break;
 
     default:
+        key = (XP_Key)aKeyEvent.iScanCode;
+        if ( key < 0x20 || key > 0x7f ) {
+            key = XP_KEY_NONE;
+        }
         break;
     }
 
@@ -769,7 +773,6 @@ CXWordsAppView::FindAllDicts()
     /* NOTE: CEikFileNameSelector might be the way to do this and the display
      * of the list in the game setup dialog.
      */
-
     TBool found = EFalse;
     RFs fileSession;
     User::LeaveIfError(fileSession.Connect());
