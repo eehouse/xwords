@@ -25,6 +25,7 @@ extern "C" {
 #include "xwstream.h"
 #include "mempool.h"
 #include "game.h"
+#include "comms.h"
 }
 
 #include <e32base.h>
@@ -34,9 +35,16 @@ class TGameInfoBuf
 {
  public:
     TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi,
+#ifndef XWFEATURE_STANDALONE_ONLY
+                                const CommsAddrRec* iCommsAddr,
+#endif
                                 CDesC16ArrayFlat* aDictList );
     CDesC16ArrayFlat* GetDictList() { return iDictList; }
-    void CopyToL( MPFORMAL CurGameInfo* aGi );
+    void CopyToL( MPFORMAL CurGameInfo* aGi
+#ifndef XWFEATURE_STANDALONE_ONLY
+                  , CommsAddrRec* aCommsAddr 
+#endif
+                  );
 
     TBool iIsRobot[MAX_NUM_PLAYERS];
     TBool iIsLocal[MAX_NUM_PLAYERS];
@@ -46,12 +54,18 @@ class TGameInfoBuf
     CDesC16ArrayFlat* iDictList; /* owned externally! */
     TInt iDictIndex;
     TInt iNPlayers;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    Connectedness iServerRole;
+    CommsAddrRec iCommsAddr;
+#endif
 };
 
 class CXWGameInfoDlg : public CEikDialog  /* CEikForm instead? */
 {
  public:
-    static TBool DoGameInfoDlgL( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame );
+    static TBool DoGameInfoDlgL( MPFORMAL TGameInfoBuf* aGib, 
+                                 TBool aNewGame );
 
     ~CXWGameInfoDlg();
 
@@ -66,6 +80,8 @@ class CXWGameInfoDlg : public CEikDialog  /* CEikForm instead? */
     void LoadPlayerInfo( TInt aWhich );
     void SavePlayerInfo( TInt aWhich );
     void SetPlayerShown( TInt aPlayer );
+    void HideAndShow();
+
     CDesC16ArrayFlat* MakeNumListL( TInt aFirst, TInt aLast );
 
     TBool iIsNewGame;
