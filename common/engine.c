@@ -380,6 +380,7 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
     XP_Bool firstMove;
     XP_U16 star_row;
 
+    engine->nTilesMax = MAX_TRAY_TILES;
 #ifdef XWFEATURE_SEARCHLIMIT
     if ( useTileLimits ) {
         /* We'll want to use the numbers we've been using already unless
@@ -405,7 +406,6 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
         engine->nTilesMax = engine->nTilesMaxUser;
     } else {
         engine->nTilesMin = 1;
-        engine->nTilesMax = MAX_TRAY_TILES;
     }
 #endif
 
@@ -925,7 +925,8 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                         tiles[tileLength] = tile;
                         extendRight( engine, tiles, tileLength+1, 
                                      edge_from_tile( dict, edge, tile ), 
-                                     ISACCEPTING( dict, edge ), firstCol, col+1, row );
+                                     ISACCEPTING( dict, edge ), firstCol, 
+                                     col+1, row );
                         rack_replace( engine, tile, isBlank );
                         if ( engine->returnNOW ) {
                             goto no_check;
