@@ -334,7 +334,6 @@ handlePenUpTrayInt( BoardCtxt* board, XP_S16 index )
     } else if ( index < 0 ) {		/* other empty area */
         /* it better be true */
         (void)board_replaceTiles( board );
-        (void)setArrowVisible( board, XP_FALSE );
         result = XP_TRUE;
     }
 
