@@ -83,12 +83,12 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
                    sizeof(goesWithLocal)/sizeof(goesWithLocal[0]),
                    XP_FALSE );
         turnOnOff( hDlg, goesWithGlobal, 
-                sizeof(goesWithGlobal)/sizeof(goesWithGlobal[0]),
-                XP_TRUE);
+                   sizeof(goesWithGlobal)/sizeof(goesWithGlobal[0]),
+                   XP_TRUE);
     } else {
         turnOnOff( hDlg, goesWithGlobal, 
-                 sizeof(goesWithGlobal)/sizeof(goesWithGlobal[0]),
-                 XP_FALSE );
+                   sizeof(goesWithGlobal)/sizeof(goesWithGlobal[0]),
+                   XP_FALSE );
         turnOnOff( hDlg, goesWithLocal, 
                    sizeof(goesWithLocal)/sizeof(goesWithLocal[0]),
                    XP_TRUE);
@@ -159,7 +159,7 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
 
     ceSetChecked( hDlg, IDC_CHECKCOLORPLAYED, prefsPrefs->showColors );
     ceSetChecked( hDlg, IDC_CHECKSMARTROBOT, 
-                    prefsPrefs->gp.robotSmartness > 0 );
+                  prefsPrefs->gp.robotSmartness > 0 );
     ceSetChecked( hDlg, IDC_CHECKNOHINTS, prefsPrefs->gp.hintsNotAllowed );
 
     ceSetChecked( hDlg, IDC_CHECKSHOWCURSOR, prefsPrefs->cp.showBoardArrow );
