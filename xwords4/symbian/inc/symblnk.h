@@ -42,9 +42,9 @@ class CXWBlankSelDlg : public CEikDialog
     TBool OkToExitL( TInt aKeyCode );
 
  private:
-    CDesC16ArrayFlat* iFacesList;
     const XP_UCHAR4* iTexts;
-    TInt* iResultP;
     TInt iNTiles;
+    TInt* iResultP;
+    CDesC16ArrayFlat* iFacesList;
 };
 #endif

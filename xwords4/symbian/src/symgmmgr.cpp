@@ -166,7 +166,7 @@ CXWGamesMgr::StoreGameL( const TGameName* aName, /* does not have extension */
 
     TInt siz = stream_getSize( aStream );
     TUint8* buf = new (ELeave) TUint8[siz];
-    stream_getBytes( aStream, buf, siz );
+    stream_getBytes( aStream, buf, SC(XP_U16, siz) );
     TPtrC8 tbuf( buf, siz );
     err = file.Write( tbuf, siz );
     XP_ASSERT( err == KErrNone );
@@ -195,7 +195,7 @@ CXWGamesMgr::LoadGameL( const TGameName* aName, XWStreamCtxt* aStream )
 
     for ( ; ; ) {
         TBuf8<256> buf;
-        TInt err = file.Read( buf, buf.MaxLength() );
+        file.Read( buf, buf.MaxLength() );
         TInt nRead = buf.Size();
         if ( nRead <= 0 ) {
             break;
@@ -209,7 +209,8 @@ CXWGamesMgr::LoadGameL( const TGameName* aName, XWStreamCtxt* aStream )
 TBool
 CXWGamesMgr::DeleteSelected( TInt aIndex )
 {
-    return DeleteFileFor( &(*iNamesList)[aIndex] );
+    TPtrC16 aName = (*iNamesList)[aIndex];
+    return DeleteFileFor( &aName );
 } /* DeleteSelected */
 
 TBool

@@ -53,7 +53,7 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
     const CListBoxView::CSelectionIndexArray* indices;
     box = static_cast<CEikTextListBox*>(Control(ESelGameChoice));
     TInt index = box->CurrentItemIndex();
-    TDesC16* selName = &(*iGameMgr->GetNames())[index];
+    TDesC16 selName = (*iGameMgr->GetNames())[index];
 
     XP_LOGF( "CXSavedGamesDlg::OkToExitL(%d) called", aKeyCode );
 
@@ -73,11 +73,11 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
         break;
 
     case XW_SGAMES_RENAME_COMMAND:
-        if ( 0 == selName->Compare(*iCurName) ) {
+        if ( 0 == selName.Compare(*iCurName) ) {
             iOwner->UserErrorFromID( R_ALERT_NO_RENAME_OPEN_GAME );
         } else {
             TGameName newName;
-            if ( EditSelName( static_cast<TGameName*>(selName), &newName ) ) {
+            if ( EditSelName( static_cast<TGameName*>(&selName), &newName ) ) {
                 ResetNames( -1, &newName );
                 box->DrawDeferred();
             }
@@ -86,7 +86,7 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
 
     case XW_SGAMES_DELETE_COMMAND: {
         XP_LOGF( "delete" );
-        if ( 0 == selName->Compare(*iCurName) ) {
+        if ( 0 == selName.Compare(*iCurName) ) {
             iOwner->UserErrorFromID( R_ALERT_NO_DELETE_OPEN_GAME );
         } else if ( iOwner->UserQuery( (UtilQueryID)SYM_QUERY_CONFIRM_DELGAME, 
                                        NULL ) ) {
