@@ -41,7 +41,7 @@ print "Number of letters: $letterCount\n\n";
 
 print "**** word sizes ****\n";
 print "SIZE  COUNT   PERCENT\n";
-for ( my $i = 1 ; $i <= 15; ++$i ) {
+for ( my $i = 1 ; $i <= 99; ++$i ) {
     my $count = $wordSizeCounts[$i];
     if ( $count > 0 ) {
         my $pct = (100.00 * $count)/$wordCount;
