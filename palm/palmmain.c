@@ -165,7 +165,7 @@ static void drawFormButtons( PalmAppGlobals* globals );
 static MemHandle findXWPrefsRsrc( PalmAppGlobals* globals, UInt32 resType, 
                                   UInt16 resID );
 #ifdef SHOW_PROGRESS
-static void palm_util_engineStarting( XW_UtilCtxt* uc );
+static void palm_util_engineStarting( XW_UtilCtxt* uc, XP_U16 nBlanks );
 static void palm_util_engineStopping( XW_UtilCtxt* uc );
 #endif
 static void initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame );
@@ -1148,6 +1148,8 @@ startApplication( PalmAppGlobals** globalsP )
         EventType eventToPost;
         eventToPost.eType = loadGameEvent;
         EvtAddEventToQueue( &eventToPost );
+
+        globals->isFirstLaunch = false;
     } else {
         DictListEntry* dlep;
 	
@@ -1263,16 +1265,6 @@ stopApplication( PalmAppGlobals* globals )
         gi_disposePlayerInfo( MEMPOOL &globals->gameInfo );
 
 #ifdef IR_SUPPORT
-# ifndef IR_EXCHMGR
-        /* close down the IR library if it's there */
-        if ( globals->irLibRefNum != 0 ) {
-            if ( IrIsIrLapConnected( globals->irLibRefNum ) ) {
-                IrDisconnectIrLap( globals->irLibRefNum );
-            }
-	    
-            IrClose( globals->irLibRefNum );
-        }
-# endif
 #ifdef BEYOND_IR
         palm_ip_close( globals );
 #endif
@@ -3272,7 +3264,9 @@ palm_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 #ifdef SHOW_PROGRESS
     if ( !eventPending ) {
         PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-        board_hiliteCellAt( globals->game.board, col, row );
+        if ( globals->progress.curLine >= 0 ) {
+            board_hiliteCellAt( globals->game.board, col, row );
+        }
     }
 #endif
     
@@ -3284,7 +3278,7 @@ palm_util_engineProgressCallback( XW_UtilCtxt* uc )
 {
 #ifdef SHOW_PROGRESS
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-    if ( globals->gState.showProgress ) {
+    if ( globals->gState.showProgress && globals->progress.curLine >= 0  ) {
         RectangleType rect = globals->progress.boundsRect;
         short line;
         Boolean draw;
@@ -3420,16 +3414,23 @@ palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
 
 #ifdef SHOW_PROGRESS
 static void
-palm_util_engineStarting( XW_UtilCtxt* uc )
+palm_util_engineStarting( XW_UtilCtxt* uc, XP_U16 nBlanks )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-    if ( globals->gState.showProgress ) {
+
+    if ( globals->gState.showProgress 
+#ifdef XW_TARGET_PNO
+         && ( nBlanks > 0 )
+#endif
+         ) {
         RectangleType* bounds = &globals->progress.boundsRect;
 
         WinEraseRectangle( bounds, 0 );
         WinDrawRectangleFrame( rectangleFrame, bounds );
-
+        
         globals->progress.curLine = 0;
+    } else {
+        globals->progress.curLine = -1;
     }
 } /* palm_util_engineStarting */
 
@@ -3437,7 +3438,7 @@ static void
 palm_util_engineStopping( XW_UtilCtxt* uc )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-    if ( globals->gState.showProgress ) {
+    if ( globals->gState.showProgress && globals->progress.curLine >= 0 ) {
 
         WinEraseRectangle( &globals->progress.boundsRect, 0 );
         WinEraseRectangleFrame( rectangleFrame, 
