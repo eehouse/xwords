@@ -392,6 +392,7 @@ sub parseAndSort() {
     my @wordlist;
     my @word;
 
+    my $lastWord;
   WORDLOOP:
     for ( ; ; ) {
 
@@ -409,14 +410,19 @@ sub parseAndSort() {
                     push @wordlist, [ @word ];
                     ++$gWordCount;
                 }
+                $lastWord = "";
                 next WORDLOOP;
             } elsif ( exists( $gTableHash{$byt} ) ) {
                 if ( !$dropWord ) {
                     push @word, $gTableHash{$byt};
                     die "word too long" if @word > 15;
+                    if ( $gKillIfMissing ) {
+                        $lastWord .= $byt;
+                    }
                 }
             } elsif ($gKillIfMissing) {
-                die "$0: chr $byt (", $byt+0, ") not in map file $gTableFile\n";
+                die "$0: chr $byt (", $byt+0, ") not in map file $gTableFile\n"
+                    . "last word was $lastWord\n";
             } else {
                 $dropWord = 1;
                 splice @word;     # lose anything we already have
