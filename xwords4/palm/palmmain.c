@@ -33,7 +33,9 @@
 #include <unix_stdarg.h>
 #ifdef FEATURE_HIGHRES
 # include <FileStream.h>
+# ifdef FEATURE_SILK
 # include <SonyCLIE.h>
+# endif
 #endif
 
 #include "comtypes.h"
@@ -919,7 +921,7 @@ volChangeEventProc( SysNotifyParamType* notifyParamsP )
     }
 #endif
 
-#ifdef FEATURE_HIGHRES
+#ifdef FEATURE_SILK
     if ( notifyParamsP->notifyType == sysNotifyDisplayChangeEvent ) {
         eventToPost.eType = doResizeWinEvent;
         EvtAddEventToQueue( &eventToPost );
@@ -947,7 +949,7 @@ doCallbackReg( PalmAppGlobals* globals, XP_Bool reg )
         XP_U16 i;
         UInt32 notifyTypes[] = { sysNotifyVolumeUnmountedEvent
                                  , sysNotifyVolumeMountedEvent
-#ifdef FEATURE_HIGHRES                                 
+#ifdef FEATURE_SILK
                                  , sysNotifyDisplayChangeEvent
 #endif
         };
@@ -969,10 +971,13 @@ doCallbackReg( PalmAppGlobals* globals, XP_Bool reg )
 
 #ifdef FEATURE_HIGHRES
 /* temp workarounds for some sony include file trouble */
+# ifdef FEATURE_SILK
 extern Err SilkLibEnableResizeFoo(UInt16 refNum)
 				SILK_LIB_TRAP(sysLibTrapCustom+1);
 extern Err VskSetStateFoo(UInt16 refNum, UInt16 stateType, UInt16 state)
 				SILK_LIB_TRAP(sysLibTrapCustom+3+3);
+# endif
+
 static void
 initHighResGlobals( PalmAppGlobals* globals )
 {
@@ -984,6 +989,7 @@ initHighResGlobals( PalmAppGlobals* globals )
 
     XP_LOGF( "hasHiRes = %d", globals->hasHiRes );
 
+#ifdef FEATURE_SILK
     if ( globals->hasHiRes ) {
         XP_U16 ref;
 
@@ -1009,11 +1015,13 @@ initHighResGlobals( PalmAppGlobals* globals )
             }
         }
     }
+#endif
 } /* initHighResGlobals */
 
 static void
 uninitHighResGlobals( PalmAppGlobals* globals )
 {
+#ifdef FEATURE_SILK
     if ( globals->hasHiRes && globals->sonyLibRef != 0 ) {
         if ( globals->doVSK ) {
             VskClose( globals->sonyLibRef );
@@ -1021,6 +1029,7 @@ uninitHighResGlobals( PalmAppGlobals* globals )
             SilkLibClose( globals->sonyLibRef );
         }
     }
+#endif
 } /* uninitHighResGlobals */
 #else
 # define initHighResGlobals(g)
@@ -2097,7 +2106,7 @@ mainViewHandleEvent( EventPtr event )
         XP_ASSERT( !!globals->game.board );
         break;
 
-#ifdef FEATURE_HIGHRES
+#ifdef FEATURE_SILK
     case doResizeWinEvent:
         getSizes( globals );
         positionBoard( globals );
