@@ -1,4 +1,4 @@
-# -*- mode: Makefile; -*-
+# -*- mode: Makefile; compile-command: "make -f bldwin.mk" -*-
 
 SERIES ?= 80
 TARGET ?= WINS
@@ -30,10 +30,12 @@ DUMPBIN = $(MSVC_DIR)/Bin/dumpbin.exe
 LIB = $(MSVC_DIR)/Bin/lib.exe
 ECHO = /usr/bin/echo
 
+#STANDALONE_ONLY = -DXWFEATURE_STANDALONE_ONLY 
+
 COMMON_FLAGS = \
 	-D$(SYMARCH) -D__LITTLE_ENDIAN -DKEYBOARD_NAV \
 	-DKEY_SUPPORT -DFEATURE_TRAY_EDIT -DNODE_CAN_4 \
-	-DOS_INITS_DRAW -DXWFEATURE_STANDALONE_ONLY 
+	-DOS_INITS_DRAW $(STANDALONE_ONLY)
 
 RSS_DEFS = $(COMMON_FLAGS)
 
@@ -46,11 +48,11 @@ ifeq ($(TARGET),WINS)
 #########################
 CC = $(VSDIR)/VC98/Bin/CL.EXE
 CL_FLAGS = \
-	/MDd /Zi /nologo /Zp4 /GF /QIfist /X /W4 \
+	/MDd /Zi /Yd /Od /nologo /Zp4 /GF /QIfist /X /W4 \
 	/D _DEBUG /D _UNICODE /D UNICODE /D "__SYMBIAN32__" \
 	/D "__VC32__" /D "__WINS__" \
 
-CFLAGS += $(CL_FLAGS) -O -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
+CFLAGS += $(CL_FLAGS) -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
 	-D$(SYMARCH) $(COMMON_FLAGS) \
 	-DSYM_WINS \
 	$(INCDIR)
@@ -130,7 +132,9 @@ SYMARCH = SERIES_$(SERIES)
 INC = ../inc
 SRCDIR = ../src
 UID_CPP = $(SRCDIR)/$(NAME).UID.cpp
-INCDIR = -I $(EPOC)/include -I $(EPOC)/include/libc -I$(INC) -I../../common
+INCDIR = -I $(EPOC)/include -I $(EPOC)/include/libc -I$(INC) \
+	$(subst ../,../../,$(COMMON_INCS))
+
 LCLSRC = \
 	$(SRCDIR)/xwmain.cpp \
 	$(UID_CPP) \
@@ -193,7 +197,7 @@ PKGVERS = $(MAJOR),$(MINOR)
 MBG = $(NAME).mbg 
 
 #PKGFILES=$(THEAPP) $(NAME).aif $(NAME).rsc $(NAME).mbm BasEnglish2to8.xwd
-PKGFILES = $(NAME).app $(NAME).rsc $(NAME).mbm $(DICT)
+PKGFILES = $(NAME).app $(NAME).rsc $(NAME).mbm $(NAME).pdb $(DICT)
 
 DEBUG_FLAGS = -DDEBUG -DMEM_DEBUG
 
@@ -253,11 +257,13 @@ $(NAME).rss: xwords.rss
 clean:
 	rm -rf $(GENERATED) $(NAME).aifspec $(OBJECTS) $(MBG) *.mbm *.rpp *.rsc \
 		*.rsg *.app $(UID_CPP)
-	for f in $(PKGFILES); do rm -f $(DESTDIR)/$$f; done
 
 # remove saved games and data file
-clean_state:
+clean_state: 
+	rm -rf $(EPOC)/wins/c/system/Apps/$(NAME)/*
 	rm -rf $(EPOC)/wins/c/system/Apps/$(NAME)
+	rm -rf $(EPOC)/release/wins/udeb/z/system/apps/$(NAME)/*
+	rm -rf $(EPOC)/release/wins/udeb/z/system/apps/$(NAME)
 
 #############################################################################
 # from here down added from the linux build system or stolen from
@@ -273,7 +279,8 @@ $(UID_CPP): ./bldwin.mk
 	$(ECHO) "#pragma data_seg()" >> $@
 
 %.rsc %.rsg: %.rss
-	$(PERL) -S $(EPOCRC) $(RSS_DEFS) -I "." -I "..\inc" -I- -I $(EPOC)/include \
+	$(PERL) -S $(EPOCRC) $(RSS_DEFS) -I "." -I "..\inc" \
+		$(subst ../,../../,$(COMMON_INCS)) -I- -I $(EPOC)/include \
 		-DLANGUAGE_SC -u $< -o$*.rsc  -h$*.rsg -l./
 
 %.aif: %.aifspec
