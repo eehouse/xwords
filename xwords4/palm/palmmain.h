@@ -73,6 +73,7 @@ typedef struct PalmDrawCtx {
     GraphicsAbility able;
 
 #ifdef FEATURE_HIGHRES
+    UInt16 oldCoord;
     XP_Bool doHiRes;
 #endif
 
