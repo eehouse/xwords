@@ -1,0 +1,285 @@
+# -*- mode: Makefile; -*-
+
+SERIES ?= 80
+TARGET ?= WINS
+
+U1 = 1000007a
+U2 = 100039ce
+U3 = 10206D64
+
+# User should define EPOC_80 and/or EPOC_60 in the environment
+EPOC = $(EPOC_$(SERIES))
+NAME = xwords_$(SERIES)
+DESTDIR = $(EPOC)/release/wins/udeb/z/system/apps/$(NAME)
+
+EDLL_LIB = $(EPOC)/release/wins/udeb/edll.lib
+
+#CPP = $(EPOC)/gcc/bin/gcc -E
+CPP = $(EPOC)/gcc/arm-epoc-pe/bin/gcc.exe -E -
+RC = rcomp
+GA = genaif
+PT = $(EPOC)/tools/petran
+LIB = lib.exe
+PERL = c:/activePerl/bin/perl
+MAKEDEF = makedef.pl
+LINK = $(MSVC_DIR)/Bin/link.exe
+DUMPBIN = $(MSVC_DIR)/Bin/dumpbin.exe
+LIB = $(MSVC_DIR)/Bin/lib.exe
+
+COMMON_FLAGS = \
+	-D__LITTLE_ENDIAN -DKEYBOARD_NAV \
+	-DKEY_SUPPORT -DFEATURE_TRAY_EDIT -DNODE_CAN_4 \
+	-DOS_INITS_DRAW -DXWFEATURE_STANDALONE_ONLY 
+
+##################################################
+# WINS- vs ARMI-specific settings
+##################################################
+ifeq ($(TARGET),WINS)
+#########################
+# WINS
+#########################
+CC = $(VSDIR)/VC98/Bin/CL.EXE
+CL_FLAGS = \
+	/MDd /Zi /nologo /Zp4 /GF /QIfist /X /W4 \
+	/D _DEBUG /D _UNICODE /D UNICODE /D "__SYMBIAN32__" \
+	/D "__VC32__" /D "__WINS__" \
+
+CFLAGS += $(CL_FLAGS) -O -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
+	-D$(SYMARCH) $(COMMON_FLAGS) \
+	-DSYM_WINS \
+	$(INCDIR)
+
+else
+ifeq ($(TARGET),ARMI)
+#########################
+# ARMI (incomplete; build 
+# with linux. :-)
+#########################
+
+CC = $(EPOC)/gcc/bin/g++.exe
+
+endif
+endif
+
+BMCONV = bmconv
+
+COMMONDIR = ../../common
+PLATFORM = SYMB_$(SERIES)_$(TARGET)
+XWORDS_DIR = \"xwords_$(SERIES)\"
+
+include ../../common/config.mk
+
+EPOCTRGREL = $(EPOC)/release/wins/udeb
+
+LIBS_ALLSERIES = \
+	$(EPOCTRGREL)/euser.lib \
+	$(EPOCTRGREL)/apparc.lib \
+	$(EPOCTRGREL)/cone.lib \
+	$(EPOCTRGREL)/gdi.lib \
+	$(EPOCTRGREL)/eikcoctl.lib \
+	$(EPOCTRGREL)/eikcore.lib \
+	$(EPOCTRGREL)/bafl.lib \
+	$(EPOCTRGREL)/egul.lib \
+	$(EPOCTRGREL)/estlib.lib \
+	$(EPOCTRGREL)/flogger.lib  \
+	$(EPOCTRGREL)/commonengine.lib \
+	$(EPOCTRGREL)/eikdlg.lib \
+	$(EPOCTRGREL)/fbscli.lib \
+	$(EPOCTRGREL)/efsrv.lib \
+	$(EPOCTRGREL)/estor.lib \
+	$(EPOCTRGREL)/ws32.lib \
+
+LIBS_60 = \
+	$(EPOCTRGREL)/eikcore.lib \
+	$(EPOCTRGREL)/avkon.lib \
+	$(EPOCTRGREL)/eikcdlg.lib \
+
+LIBS_80 = \
+	$(EPOCTRGREL)/ckndlg.lib \
+	$(EPOCTRGREL)/ckncore.lib \
+	$(EPOCTRGREL)/eikfile.lib \
+	$(EPOCTRGREL)/eikctl.lib \
+	$(EPOCTRGREL)/bitgdi.lib \
+
+LIBS = $(LIBS_ALLSERIES) $(LIBS_$(SERIES))
+
+STAGE1_LINK_FLAGS = \
+	$(EDLL_LIB) $(LIBS) /nologo \
+	/entry:"_E32Dll" /subsystem:windows /dll /incremental:no /machine:IX86 \
+	/nodefaultlib /include:"?_E32Dll@@YGHPAXI0@Z" \
+	/out:$(NAME).app \
+
+STAGE2_LINK_FLAGS = \
+	$(EDLL_LIB) \
+	$(LIBS) /nologo /entry:"_E32Dll" \
+	/subsystem:windows /dll $(NAME).exp /debug \
+	/machine:IX86 /nodefaultlib /include:"?_E32Dll@@YGHPAXI0@Z" \
+	/out:$(NAME).app
+
+ARCH = series$(SERIES)
+SYMARCH = SERIES_$(SERIES)
+
+INC = ../inc
+SRCDIR = ../src
+INCDIR = -I $(EPOC)/include -I $(EPOC)/include/libc -I$(INC) -I../../common
+LCLSRC = \
+	$(SRCDIR)/xwmain.cpp \
+	$(SRCDIR)/xwapp.cpp \
+	$(SRCDIR)/symaskdlg.cpp \
+	$(SRCDIR)/symdraw.cpp \
+	$(SRCDIR)/xwappview.cpp \
+	$(SRCDIR)/symdict.cpp \
+	$(SRCDIR)/symutil.cpp \
+	$(SRCDIR)/xwappui.cpp \
+	$(SRCDIR)/xwdoc.cpp \
+	$(SRCDIR)/symgmmgr.cpp \
+	$(SRCDIR)/symgmdlg.cpp \
+	$(SRCDIR)/symblnk.cpp \
+	$(SRCDIR)/symgamdl.cpp \
+	$(SRCDIR)/symgamed.cpp \
+
+IMG_SRC = ../bmps/downarrow_80.bmp \
+	../bmps/rightarrow_80.bmp \
+	../bmps/star_80.bmp \
+	../bmps/turnicon_80.bmp \
+	../bmps/turniconmask_80.bmp \
+	../bmps/robot_80.bmp \
+	../bmps/robotmask_80.bmp \
+
+INCLUDES = \
+	$(NAME).rsg \
+	$(NAME).mbg \
+	$(INC)/symaskdlg.h \
+	$(INC)/symblnk.h \
+	$(INC)/symdict.h \
+	$(INC)/symdraw.h \
+	$(INC)/symgamdl.h \
+	$(INC)/symgamed.h \
+	$(INC)/symgmdlg.h \
+	$(INC)/symgmmgr.h \
+	$(INC)/symutil.h \
+	$(INC)/xptypes.h \
+	$(INC)/xwapp.h \
+	$(INC)/xwappui.h \
+	$(INC)/xwappview.h \
+	$(INC)/xwdoc.h \
+	$(INC)/xwords.hrh \
+	$(INC)/LocalizedStrIncludes.h \
+
+AIF = ../aif
+ICON_SRC = \
+	$(AIF)/lrgicon.bmp \
+	$(AIF)/lrgiconmask.bmp \
+
+OBJDIR = $(SRCDIR)/$(PLATFORM)
+
+OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(LCLSRC:.cpp=.o)) $(COMMONOBJ)
+
+MAJOR = 4
+MINOR = 1
+PKGVERS = $(MAJOR),$(MINOR)
+
+MBG = $(NAME).mbg 
+
+#PKGFILES=$(THEAPP) $(NAME).aif $(NAME).rsc $(NAME).mbm BasEnglish2to8.xwd
+PKGFILES = $(NAME).app $(NAME).rsc $(NAME).mbm BasEnglish2to8.xwd
+
+DEBUG_FLAGS = -DDEBUG -DMEM_DEBUG
+
+CPFLAGS = $(CFLAGS) -DCPLUS
+
+# Following is used for the resource file
+CPPFLAGS = -I$(EPOC)/include  -I../inc
+
+ifdef VERBOSE
+else
+AMP = @
+endif
+
+ifeq ($(TARGET),WINS)
+all: wins
+else
+ifeq ($(TARGET),ARMI)
+all: armi
+else
+all: define_TARGET_please
+endif
+endif
+
+wins: _sanity $(PKGFILES)
+	@mkdir -p $(DESTDIR)
+	cp $(PKGFILES) $(DESTDIR)
+
+_sanity:
+	@if [ "$(EPOC_$(SERIES))" = "" ]; then \
+		echo " ---> ERROR: EPOC_$(SERIES) undefined in env"; \
+		exit 1; \
+	fi
+
+icon.$(ARCH).mbm: $(ICON_SRC)
+	$(BMCONV) $@ $(subst ..,/c8..,$^)
+
+$(NAME).aifspec: icon.$(ARCH).mbm
+	@echo "mbmfile=$<" > $@
+	@echo "ELangEnglish=$(NAME)" >> $@
+
+# I'm adding my own rules here because I can't figure out how to use
+# the default ones when src and obj live in different directories.
+$(COMMONOBJDIR)/%.o: $(COMMONDIR)/%.c
+	$(AMP)mkdir -p $(COMMONOBJDIR)
+	$(AMP)$(CC) $(CFLAGS) /c /Fo$@ $<
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(INCLUDES)
+	$(AMP)mkdir -p $(OBJDIR)
+	$(AMP)$(CC) $(CPFLAGS) /c /Fo$@ $<
+
+$(NAME).mbg $(NAME).mbm: $(IMG_SRC)
+	$(BMCONV) /h$(NAME).mbg $(NAME).mbm $(subst ..,/2..,$(IMG_SRC))
+
+BasEnglish2to8.xwd: ../../dawg/English/BasEnglish2to8.xwd
+	ln -s $< $@ 
+
+clean:
+	rm -rf $(GENERATED) $(NAME).aifspec $(OBJECTS) $(MBG) *.mbm *.rpp *.rsc \
+		*.rsg *.app
+	rm -rf $(DESTDIR)/*
+
+#############################################################################
+# from here down added from the linux build system or stolen from
+# makefiles generated by the symbian system
+#############################################################################
+
+%.rpp: %.rss
+	echo foo
+	$(AMP)$(CPP) $(CPPFLAGS) < $< > $@
+
+%.rsc %.rsg: %.rpp
+	$(AMP)echo "[RCOMP ] $*"
+	$(AMP)rm -f $*.rsc $*.rs~
+	$(AMP)$(RC) -u -o$*.rsc -h$*.rs~ -i$*.rss -s$*.rpp
+	@cp $*.rs~ $*.rsg; 
+
+%.aif: %.aifspec
+	@echo "[GENAIF] $*"
+	$(AMP)$(GA) -u 0x$(U3) $< $@
+
+%.app: %.ex2
+	$(AMP)$(PT) $< $@ -nocall -uid1 0x$(U1) -uid2 0x$(U2) -uid3 0x$(U3)
+
+%.ex2: %.exp
+	$(AMP)$(LD) $(LDFLAGS) -o $@ $< $(EX) $(OBJECTS) $(LIBS)
+
+$(NAME).app : $(OBJECTS) $(EDLL_LIB) $(LIBS)
+	@echo building $@
+	$(AMP)$(LINK) $(STAGE1_LINK_FLAGS) $(OBJECTS)
+	$(AMP)rm -f $@ $(NAME).exp
+	$(AMP)$(DUMPBIN) /exports /out:$(NAME).inf $(NAME).lib
+	$(AMP)rm -f $(NAME).lib
+	$(AMP)$(PERL) -S $(MAKEDEF) -Inffile $(NAME).inf \
+		-1 ?NewApplication@@YAPAVCApaApplication@@XZ $(NAME).def
+	$(AMP)rm $(NAME).inf
+	$(AMP)$(LIB) /nologo /machine:i386 /nodefaultlib \
+		/name:$@ /def:$(NAME).def /out:$(NAME).lib
+	$(AMP)rm -f $(NAME).lib
+	$(AMP)$(LINK)	$(STAGE2_LINK_FLAGS) $(OBJECTS)
+	$(AMP)rm -f $(NAME).exp
