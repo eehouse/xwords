@@ -28,6 +28,13 @@
 #include "game.h"
 #include "memstream.h"
 #include "symdraw.h"
+#include "symgmmgr.h"
+
+typedef enum  {
+    EGamesLoc
+    ,EDictsLoc
+    ,EPrefsLoc
+} TDriveReason;
 
 /*! 
   @class CXWordsAppView
@@ -79,7 +86,6 @@ class CXWordsAppView : public CCoeControl
   
 
  private:
-
     /*!
       @function ConstructL
   
@@ -98,11 +104,12 @@ class CXWordsAppView : public CCoeControl
     /* Added by eeh */
  public:
     int HandleCommand( TInt aCommand );
+    void Exiting();
     TBool HandleKeyEvent( const TKeyEvent& aKeyEvent );
 
  private:
     /* open game from prefs or start a new one. */
-    void InitGameL();
+    void MakeOrLoadGameL();
     void DeleteGame();
     void SetUpUtil();
     void PositionBoard();
@@ -111,10 +118,19 @@ class CXWordsAppView : public CCoeControl
     TBool AskFromResId( TInt aResource );
     TBool FindAllDicts();
     void UserErrorFromID( TInt aResource );
-    TBool ReadCurrentGame() { return EFalse; } /* later.... */
-    TBool AskSaveGame() { return EFalse; }
+    TBool LoadPrefs();
+    TBool AskSaveGame() { return ETrue; }
     void SaveCurrentGame() {}
     void NotImpl();
+    void GetXwordsRWDir( TFileName* aPathRef, TDriveReason aWhy );
+    void InitPrefs();
+    void WritePrefs();
+    void SaveCurGame();
+
+    void LoadOneGameL( TGameName* aGameName );
+    void StoreOneGameL( TGameName* aGameName );
+    TBool DoSavedGames();
+    TBool DoNewGame();
 
 
     static void        sym_util_requestTime( XW_UtilCtxt* uc );
@@ -122,7 +138,7 @@ class CXWordsAppView : public CCoeControl
     static XP_U32      sym_util_getCurSeconds( XW_UtilCtxt* uc );
     static void        sym_util_notifyGameOverL( XW_UtilCtxt* uc );
     static void        sym_util_userError( XW_UtilCtxt* uc, UtilErrID id );
-
+    static DictionaryCtxt* sym_util_makeEmptyDict( XW_UtilCtxt* uc );
 
     static TInt TimerCallback( TAny* aThis );
 
@@ -131,13 +147,14 @@ class CXWordsAppView : public CCoeControl
     XW_UtilCtxt iUtil;
     XWGame      iGame;
     DrawCtx*    iDraw;
-    XP_Bool     iBoardPosInval;
-
+    TGameName   iCurGameName;
 
     VTableMgr*  iVtMgr;
     TTime       iStartTime;
     TInt        iTimerRunCount;
     CIdle*      iRequestTimer;
+
+    CXWGamesMgr* iGamesMgr;
 
     CDesC16ArrayFlat* iDictList;   /* to pass into the dialog */
 
