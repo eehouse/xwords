@@ -1898,8 +1898,6 @@ startHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
     board->hintDragStartCol = board->hintDragCurCol = col;
     board->hintDragStartRow = board->hintDragCurRow = row;
 
-    XP_LOGF( "starting drag with %d,%d", col, row );
-
     return needsRedraw;
 } /* startHintRegionDrag */
 
@@ -1971,9 +1969,6 @@ setHintRect( BoardCtxt* board )
         limits.left =  board->hintDragCurCol;
         limits.right = board->hintDragStartCol;
     }
-    XP_LOGF( "hintRect now {{%d,%d},{%d,%d}",
-             limits.left, limits.top,
-             limits.right, limits.bottom );
 
     board->limits[board->selPlayer] = limits;
     board->hasHintRect[board->selPlayer] = XP_TRUE;
@@ -2034,7 +2029,6 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
             oldHL = board->limits[selPlayer];
             setHintRect( board );
             invalHintRectDiffs( board, &board->limits[selPlayer], &oldHL );
-            XP_LOGF( "now includes with %d,%d", col, row );
         }
     }
 
@@ -2057,17 +2051,11 @@ finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
     } else {
         makeActive = board->hintDragStartRow <= board->hintDragCurRow;
     }
-    XP_LOGF( "makeActive = %d", makeActive );
+
     board->hasHintRect[board->selPlayer] = makeActive;
     if ( !makeActive ) {
         invalCurHintRect( board, board->selPlayer, XP_FALSE );
         needsRedraw = XP_TRUE;
-    } else {
-        XP_LOGF( "done with hint drag.  Rect is {{%d,%d},{%d,%d}}",
-                 board->limits[board->selPlayer].left, 
-                 board->limits[board->selPlayer].top,
-                 board->limits[board->selPlayer].right, 
-                 board->limits[board->selPlayer].bottom );
     }    
     board_resetEngine( board );
 
