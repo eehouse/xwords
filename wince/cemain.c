@@ -1002,6 +1002,25 @@ isDefaultName( XP_UCHAR* name )
     return 0 == XP_STRCMP( UNSAVEDGAMEFILENAME, name,  );
 } /* isDefaultName */
 
+static void
+makeUniqueName( wchar_t* buf, XP_U16 bufLen )
+{
+    XP_U16 i;
+    DWORD attributes;
+
+    for ( i = 1; i < 100; ++i ) {
+        swprintf( buf, DEFAULT_DIR_NAME L"\\Untitled%d.xwg", i );
+        XP_ASSERT( wcslen(buf) < bufLen );
+
+        attributes = GetFileAttributes( buf );
+        if ( attributes == 0xFFFFFFFF ) {
+            break;
+        }
+    }
+    /* If we fall out of the loop, the user will be asked to confirm delete
+       of Untitled99 or somesuch.  That's ok.... */
+} /* makeUniqueName */
+
 static XP_Bool
 ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 {
@@ -1029,7 +1048,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             XP_MEMSET( &sfs, 0, sizeof(sfs) );
             XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
 
-            wcscpy( nameBuf, DEFAULT_DIR_NAME L"\\Untitled.xwg" );
+            makeUniqueName( nameBuf, sizeof(nameBuf)/sizeof(nameBuf[0]) );
 
             sfs.lStructSize = sizeof(sfs);
             sfs.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
