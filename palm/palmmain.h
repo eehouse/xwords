@@ -332,9 +332,10 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
 };
 
 enum {
-    PNOLET_STORE_FEATURE = 1
-    , GLOBALS_FEATURE
-    , WANTS_ARM_FEATURE
+    PNOLET_STORE_FEATURE = 1    /* where FtrPtr to pnolet code lives */
+    , GLOBALS_FEATURE           /* for passing globals to form handlers */
+    , FEATURE_WANTS_68K         /* support for (pre-ship) ability to choose
+                                   armlet or 68K */
 };
 enum { WANTS_68K, WANTS_ARM };
 
@@ -372,7 +373,7 @@ Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton,
                  XP_S16 titleID );
 
 #ifdef XW_TARGET_PNO
-# define READ_UNALIGNED16(n) read_unaligned16(n)
+# define READ_UNALIGNED16(n) read_unaligned16((unsigned char*)(n))
 #else
 # define READ_UNALIGNED16(n) *(n)
 #endif
