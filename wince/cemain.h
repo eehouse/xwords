@@ -82,6 +82,9 @@ typedef struct CEAppGlobals {
     XP_Bool hintPending;
     XP_Bool doGlobalPrefs;
 
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool askTrayLimits;
+#endif
     MPSLOT
 
 } CEAppGlobals;
