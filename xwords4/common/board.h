@@ -87,12 +87,12 @@ XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset,
 XP_U16 board_getYOffset( BoardCtxt* board );
 
 void board_setScoreboardLoc( BoardCtxt* board, 
-			     XP_U16 scoreLeft, XP_U16 scoreTop,
-			     XP_U16 scoreWidth, XP_U16 scoreHeight,
-			     XP_Bool divideHorizontally );
+                             XP_U16 scoreLeft, XP_U16 scoreTop,
+                             XP_U16 scoreWidth, XP_U16 scoreHeight,
+                             XP_Bool divideHorizontally );
 void board_setTimerLoc( BoardCtxt* board, 
-			XP_U16 timerLeft, XP_U16 timerTop,
-			XP_U16 timerWidth, XP_U16 timerHeight );
+                        XP_U16 timerLeft, XP_U16 timerTop,
+                        XP_U16 timerWidth, XP_U16 timerHeight );
 void board_invalAll( BoardCtxt* board );
 void board_invalRect( BoardCtxt* board, XP_Rect* rect );
 
