@@ -27,11 +27,36 @@ APPID ?= Xwr4
 MLPREFIX = /usr
 DICT = $(shell echo $$BASENG_PATH)
 
+ifdef HANDANGO_REG
+HANDANGO_REG_FLAG = -DHANDANGO_REG
+endif
+
+ARCH ?= COMBINED
+
+ifeq ($(ARCH),ARM_ONLY)
+BUILD_AS_PNOLET = 1
+FEATURE_HIGHRES = -DFEATURE_HIGHRES
+else
+ifeq ($(ARCH),68K_ONLY)
+FEATURE_HIGHRES = -DFEATURE_HIGHRES
+else
+ifeq ($(ARCH),SONY)
+# No highres in sony build case
+BUILD_AS_PNOLET = 1
+FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
+else
+ifeq ($(ARCH),COMBINED)
+BUILD_AS_PNOLET = 1
+FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
+FEATURE_HIGHRES = -DFEATURE_HIGHRES
+endif
+endif
+endif
+endif
+
 DEBUG_SET = APPID=Xwdb ICONTEXT="CrossDbg" NAME="CrossDbg" DONT_OMIT=true
 
 APPNAME = "$(NAME)"
-
-BUILD_AS_PNOLET = 1
 
 PALM_TOOLS_PREFIX = $(shell echo $$PALM_TOOLS_PREFIX)
 
@@ -55,7 +80,7 @@ endif
 
 MYDEFS_COMMON = $(PASSTHRU) -DXW_FEATURE_UTILS -DPOINTER_SUPPORT \
 	-DKEY_SUPPORT 	-DOVERRIDE_EDGE_FOR_INDEX -DCOLOR_SUPPORT \
-	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED
+	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED $(HANDANGO_REG_FLAG)
 
 # turn on letting users pick tiles "face-up"
 MYDEFS_COMMON += -DFEATURE_TRAY_EDIT
@@ -83,21 +108,10 @@ else
 MYDEFS_COMMON += -DIR_SUPPORT -DIR_EXCHMGR
 endif
 
-# comment out next line to disable highres stuff
-FEATURE_HIGHRES = -DFEATURE_HIGHRES
 MYDEFS_COMMON += $(FEATURE_HIGHRES)
 
 MYDEFS_ARM = -D__LITTLE_ENDIAN -DXW_TARGET_PNO $(MYDEFS_COMMON)
 MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) -DAPPNAME=\"$(APPNAME)\"
-
-ifneq (x$(BUILD_AS_PNOLET)x, xx)
-# comment out for ARM-only build
-	FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
-# Turn this on for a menu that lets you relaunch as 68K or ARM.  Good
-# for testing but not the way to ship to users
-#	FEATURE_PNOAND68K += -DFEATURE_DUALCHOOSE
-endif
-
 
 BITMAP_RSRCS = \
 	$(BITMAPS)/rightarrow.pbitm \
@@ -152,14 +166,14 @@ OBJS_68K = $(PLATFORM)/palmmain.o \
 
 # if BUILD_AS_PNOLET is defined and FEATURE_PNOAND68K isn't, exclude
 # all but enter68k.o from the 68K part of the binary (code resources).
-ifneq (x$(BUILD_AS_PNOLET)x, xx)
+ifdef BUILD_AS_PNOLET
 	OBJS = $(PLATFORM)/enter68k.o
 	PNOLET = pnolet
 endif
-ifeq (x$(BUILD_AS_PNOLET)x, xx)
+ifndef BUILD_AS_PNOLET
 	OBJS += $(OBJS_68K)
 else
-ifneq (x$(FEATURE_PNOAND68K)x, xx)
+ifdef FEATURE_PNOAND68K
 	OBJS += $(OBJS_68K)
 endif
 endif
