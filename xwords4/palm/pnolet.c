@@ -30,8 +30,10 @@ ArmletEntryPoint( const void *emulStateP,
     PNOState state;
     PnoletUserData* dataP;
     char* str;
+    char buf[32];
     unsigned long result;
     unsigned long oldR10;
+    unsigned long sp;
 
     loc = getStorageLoc();
 
@@ -45,22 +47,23 @@ ArmletEntryPoint( const void *emulStateP,
         Byte_Swap32((unsigned long)dataP->gotTable);
 
     {
-        unsigned char stack[] = {
-            ADD_TO_STACK4(userData68KP, 0)
-        };
+        STACK_START(unsigned char, stack, 4 );
+        ADD_TO_STACK4(stack, userData68KP, 0);
+        STACK_END(stack);
         (*call68KFuncP)( emulStateP, 
                          Byte_Swap32((unsigned long)dataP->storageCallback),
-                         stack, sizeof(stack) );
+                         stack, 4 );
     }
 
     asm( "mov %0, r10" : "=r" (oldR10) );
     asm( "mov r10, %0" : : "r" (state.gotTable) );
 
-    str = "Launching PilotMain";
-    WinDrawChars( str, StrLen(str), 5, 100 );
+    asm( "mov %0, r13" : "=r" (sp) );
+    StrPrintF( buf, "Launching PilotMain;sp=%lx", sp );
+    WinDrawChars( buf, StrLen(buf), 5, 100 );
 
     result = PilotMain( Byte_Swap16(dataP->cmd), 
-                        Byte_Swap32(dataP->cmdPBP), 
+                        Byte_Swap32((unsigned long)dataP->cmdPBP), 
                         Byte_Swap16(dataP->launchFlags) );
 
     str = "back from PilotMain";
@@ -73,18 +76,12 @@ ArmletEntryPoint( const void *emulStateP,
 PNOState*
 getStorageLoc()
 {
-    PNOState* loc;
-    asm( "mov %0,pc" : "=r" (loc) );
-    asm( "add %0, %1, #8" : "=r" (loc) : "r" (loc) );
-    asm( "bal done" );
+    asm( "adr r0,data" );
+    asm( "mov pc,lr" );
+    asm( "data:" );
     asm( "nop" );
     asm( "nop" );
     asm( "nop" );
-    asm( "nop" );
-    asm( "nop" );
-    asm( "nop" );
-    asm( "nop" );
-    asm( "done:" );
-    return loc;
+    /* The compiler's adding a "mov pc,lr" here too that we can overwrite. */
 }
 
