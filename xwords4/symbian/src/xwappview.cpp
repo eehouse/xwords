@@ -545,12 +545,12 @@ CXWordsAppView::PositionBoard()
     board_setScale( iGame.board, scaleBoardH, scaleBoardV );
 
     TInt scoreLeft = 2 + (15 * scaleBoardH) + 5;
-    board_setScoreboardLoc( iGame.board, scoreLeft, 25,
-                            200, 125, XP_FALSE );
+    board_setScoreboardLoc( iGame.board, scoreLeft, 30,
+                            200, 120, XP_FALSE );
     board_setYOffset( iGame.board, 0, XP_FALSE );
 
     board_setTrayLoc( iGame.board, 
-                      (15 * scaleBoardH) + 5, // to right of board
+                      2 + (15 * scaleBoardH) + 5, // to right of board
                       // make tray bottom same as board's
                       2 + (15*scaleBoardV) - scaleTrayV,
                       scaleTrayH, scaleTrayV,   // v and h scale
@@ -587,7 +587,7 @@ CXWordsAppView::HandleCommand( TInt aCommand )
         if ( iGame.server != NULL ) {
             XWStreamCtxt* stream = MakeSimpleStream( NULL );
             if ( stream != NULL ) {
-                server_formatDictCounts( iGame.server, stream, 4 ); /* 4: ncols */
+                server_formatDictCounts( iGame.server, stream, 7 ); /* 4: ncols */
                 CXWAskDlg::DoInfoDlg(MPPARM(mpool) stream, ETrue);
             }
         }
@@ -1083,20 +1083,20 @@ CXWordsAppView::DoImmediateDraw()
 void
 CXWordsAppView::DrawGameName() const
 {
-    CWindowGc& gc = SystemGc();
+    if ( iGi.dictName != NULL ) {
+        TBuf16<66> buf;
+        buf.Copy( TBuf8<32>(iGi.dictName) );
+        buf.Insert( 0, _L("::") );
+        buf.Insert( 0, iCurGameName );
 
-    gc.UseFont( iCoeEnv->NormalFont() );
+        CWindowGc& gc = SystemGc();
+        gc.SetPenStyle( CGraphicsContext::ESolidPen );
+        gc.SetPenColor( KRgbBlack );
+        gc.SetBrushStyle( CGraphicsContext::ENullBrush );
 
-    TBuf16<48> buf( _L( "Game: " ) );
-    buf.Append( iCurGameName );
-/*     gc.DrawText( buf, iGameNameLoc ); */
-
-    gc.SetPenStyle( CGraphicsContext::ESolidPen );
-    gc.SetPenColor( KRgbBlack );
-    gc.SetBrushStyle( CGraphicsContext::ENullBrush );
-
-    gc.DrawText( buf, iTitleBox, iTitleBox.Height() - 2,/*TInt aBaselineOffset*/
-                 CGraphicsContext::ECenter );
-
-    gc.DiscardFont();
+        gc.UseFont( iCoeEnv->NormalFont() );
+        gc.DrawText( buf, iTitleBox, iTitleBox.Height() - 4,/*TInt aBaselineOffset*/
+                     CGraphicsContext::ECenter );
+        gc.DiscardFont();
+    }
 }
