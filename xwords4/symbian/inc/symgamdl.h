@@ -51,8 +51,12 @@ class TGameInfoBuf
 class CXWGameInfoDlg : public CEikDialog  /* CEikForm instead? */
 {
  public:
-    CXWGameInfoDlg( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame );
+    static TBool DoGameInfoDlgL( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame );
+
     ~CXWGameInfoDlg();
+
+ private:
+    CXWGameInfoDlg( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame );
 
  private:
     void PreLayoutDynInitL();
