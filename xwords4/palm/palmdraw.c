@@ -450,7 +450,6 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
     char valBuf[3];
     XP_Rect localR = *rect;
     XP_U16 len, width;
-    WinHandle numberWin = dctx->numberWin;
     XP_U16 doubler = 1;
 
 #ifdef FEATURE_HIGHRES
@@ -488,38 +487,54 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
     }
 
     if ( val >= 0 ) {
-        RectangleType numRect = {{0,0}, {NUMRECT_WIDTH*2, NUMRECT_HEIGHT*2}};
-        WinHandle curWind;
-
         (void)StrPrintF( valBuf, "%d", val );
         len = XP_STRLEN((const char*)valBuf);
 
-        XP_ASSERT( !!numberWin );
-        curWind = WinSetDrawWindow( numberWin );
-        HIGHRES_PUSH_LOC( dctx );
+        if ( dctx->doHiRes ) {
+            UInt32 oldMode = WinSetScalingMode( kTextScalingOff );
+            FontID curFont = FntGetFont();
+            FntSetFont( boldFont );
+            width = FntCharsWidth( (const char*)valBuf, len );
+            WinDrawChars( valBuf, len, 
+                          localR.left + localR.width - width, 
+                          localR.top + localR.height - dctx->fntHeight - 1 );
+            FntSetFont( curFont );
+            WinSetScalingMode( oldMode );
 
-        WinEraseRectangle( &numRect, 0 );
+        } else {
 
-        WinDrawChars( valBuf, len, 0, 0 );
-        width = FntCharsWidth( valBuf, len );
+            RectangleType numRect = {{0,0}, 
+                                     {NUMRECT_WIDTH*2, NUMRECT_HEIGHT*2}};
+            WinHandle curWind;
+            WinHandle numberWin = dctx->numberWin;
 
-        (void)WinSetDrawWindow( curWind );
+            XP_ASSERT( !!numberWin );
+            curWind = WinSetDrawWindow( numberWin );
+            HIGHRES_PUSH_LOC( dctx );
 
-        HIGHRES_POP_LOC(dctx);
+            WinEraseRectangle( &numRect, 0 );
 
-        numRect.extent.x = width;
+            WinDrawChars( valBuf, len, 0, 0 );
+            width = FntCharsWidth( valBuf, len );
+
+            (void)WinSetDrawWindow( curWind );
+
+            HIGHRES_POP_LOC(dctx);
+
+            numRect.extent.x = width;
 
 #ifdef TILE_SUBSCRIPT
-        WinCopyRectangle( numberWin, 0, &numRect, 
-                          localR.left + localR.width - (width*doubler),
-                          localR.top + localR.height - (10*doubler),
-                          winOverlay );
+            WinCopyRectangle( numberWin, 0, &numRect, 
+                              localR.left + localR.width - (width*doubler),
+                              localR.top + localR.height - (10*doubler),
+                              winOverlay );
 #else
-        WinCopyRectangle( numberWin, 0, &numRect, 
-                          localR.left + localR.width - width,
-                          localR.top,
-                          winOverlay );
+            WinCopyRectangle( numberWin, 0, &numRect, 
+                              localR.left + localR.width - width,
+                              localR.top,
+                              winOverlay );
 #endif
+        }
     }
 
     WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&localR );
@@ -927,6 +942,7 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
         }
 
         if ( rect->height >= PALM_TRAY_SCALEH ) {
+            str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
             WinDrawChars( (const char*)str, 
                           XP_STRLEN((const char*)str), x, rect->top );
         }
@@ -1285,6 +1301,8 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
                             0xCCCC, 0x3333, 0xCCCC, 0x3333 };
         XP_MEMCPY( &dctx->u.bnw.valuePatterns[0], patBits, sizeof(patBits) );
     }
+
+    dctx->fntHeight = FntBaseLine();
 
     return (DrawCtx*)dctx;
 } /* palm_drawctxt_make */
