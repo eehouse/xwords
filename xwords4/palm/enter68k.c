@@ -210,8 +210,11 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
             PnoletUserData* dataP;
             UInt32* pnoCode;
             UInt32 result;
+            Boolean loaded;
 
-            Boolean loaded = setupPnolet( &pnoCode, &gotTable );
+            WinDrawChars( "Loading ARM code...", 19, 5, 25 );
+
+            loaded = setupPnolet( &pnoCode, &gotTable );
             dataP = (PnoletUserData*)MemPtrNew( sizeof(PnoletUserData) );
             dataP->recursive = !loaded;
 
