@@ -32,4 +32,5 @@ typedef struct StrBoxInit {
     XWStreamCtxt* stream;
     XP_U16 result;
     XP_Bool isQuery;
+    XP_Bool textIsSet;
 } StrBoxInit;
