@@ -97,7 +97,7 @@ BITMAP_RSRCS = \
 	$(BITMAPS)/xwcoloricon.ppm \
 	$(BITMAPS)/xwords4small.pbitm \
 
-INCLUDES += -I/usr/local/share/palmdev/sdk-4.0/Extensions/ExpansionMgr
+INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
 
 ifneq (x$(HS_DUO_SUPPORT)x, xx)
 	INCLUDES += -I/usr/local/share/palmdev/duoIncs 
