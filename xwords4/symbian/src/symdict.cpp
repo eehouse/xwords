@@ -82,53 +82,44 @@ static XP_Bitmap*
 symMakeBitmap( SymDictCtxt* /*ctxt*/, RFile* file )
 {
     XP_U8 nCols = readXP_U8( file );
-//     CEBitmapInfo* bitmap = (CEBitmapInfo*)NULL;
-    XP_Bitmap* bitmap = NULL;
+    CFbsBitmap* bitmap = (CFbsBitmap*)NULL;
+    const TDisplayMode dispMode = EGray2;
 
     if ( nCols > 0 ) {
-        XP_ASSERT( 0 );         // don't do this yet!!!!
-#if 0
-        XP_U8* dest;
-        XP_U8* savedDest;
-        XP_U8 nRows = *ptr++;
-        XP_U16 rowBytes = (nCols+7) / 8;
+        
+        XP_U8 nRows = readXP_U8( file );
         XP_U8 srcByte = 0;
         XP_U8 destByte = 0;
         XP_U8 nBits;
         XP_U16 i;
+        bitmap = new (ELeave) CFbsBitmap();
+        bitmap->Create( TSize(nCols, nRows), dispMode );
+        
+        TBitmapUtil butil( bitmap );
+        butil.Begin( TPoint(0,0) );
 
-        bitmap = (CEBitmapInfo*)XP_MALLOC( ctxt->super.mpool, 
-                                           sizeof(bitmap) );
-        bitmap->nCols = nCols;
-        bitmap->nRows = nRows;
-        dest = XP_MALLOC( ctxt->super.mpool, rowBytes * nRows );
-        bitmap->bits = savedDest = dest;
-
+        TInt col, row;
         nBits = nRows * nCols;
-        for ( i = 0; i < nBits; ++i ) {
-            XP_U8 srcBitIndex = i % 8;
-            XP_U8 destBitIndex = (i % nCols) % 8;
-            XP_U8 srcMask, bit;
+        TInt curBit = 0;
+        for ( row = 0; curBit < nBits; ++row ) {
+            for ( col = 0; col < nCols; ++col ) {
+                TUint32 value;
+                TInt index = curBit % 8;
 
-            if ( srcBitIndex == 0 ) {
-                srcByte = *ptr++;
-            }
+                if ( index == 0 ) {
+                    srcByte = readXP_U8( file );
+                }
 
-            srcMask = 1 << (7 - srcBitIndex);
-            bit = (srcByte & srcMask) != 0;
-            destByte |= bit << (7 - destBitIndex);
+                value = ((srcByte & 0x80) == 0) ? 1L : 0L;
 
-            /* we need to put the byte if we've filled it or if we're done
-               with the row */
-            if ( (destBitIndex==7) || ((i%nCols) == (nCols-1)) ) {
-                *dest++ = destByte;
-                destByte = 0;
+                butil.SetPos( TPoint(col, row) );
+                butil.SetPixel( value );
+
+                srcByte <<= 1;
+                ++curBit;
             }
         }
-
-        printBitmapData1( nCols, nRows, savedDest );
-        printBitmapData2( nCols, nRows, savedDest );
-#endif
+        butil.End();
     }
 
     return (XP_Bitmap*)bitmap;
@@ -343,7 +334,10 @@ sym_dictionary_destroy( DictionaryCtxt* dict )
 
     if ( !!sctx->super.bitmaps ) {
         for ( i = 0; i < nSpecials; ++i ) {
-            // Delete sym-specific bitmap data
+            CFbsBitmap* bitmap = (CFbsBitmap*)dict->bitmaps[i].smallBM;
+            delete bitmap;
+            bitmap = (CFbsBitmap*)dict->bitmaps[i].largeBM;
+            delete bitmap;
         }
         XP_FREE( dict->mpool, dict->bitmaps );
     }
