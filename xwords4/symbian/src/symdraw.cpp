@@ -27,11 +27,20 @@ extern "C" {
 } // extern "C"
 
 #if defined SERIES_60
+
 # include <w32std.h>
 # include <eikenv.h>
+# include "xwords_60.mbg"
+
+# define BMNAME( file, bm ) file ## _60 ## bm
+
 #elif defined SERIES_80
 # include <cknenv.h>
 # include <coemain.h>
+# include "xwords_80.mbg"
+
+# define BMNAME( file, bm ) file ## _80 ## bm
+
 #else
 # error define a series platform!!!!
 #endif
@@ -39,7 +48,6 @@ extern "C" {
 #include <stdio.h>
 
 #include "symdraw.h"
-#include <xwords.mbg>
 
 #define TRAY_CURSOR_HT 2
 
@@ -249,7 +257,7 @@ sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* /*r*/,
     TBuf16<64> tbuf;
     makeRemText( &tbuf, nTilesLeft );
 
-    CFont* font = sctx->iScoreFont;
+    CONST_60 CFont* font = sctx->iScoreFont;
 	*widthP = (XP_S16)font->TextWidthInPixels( tbuf );
     *heightP = (XP_S16)font->HeightInPixels();
 } // sym_draw_measureRemText
@@ -270,7 +278,7 @@ sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner,
     sctx->iGC->SetBrushColor( KRgbGray );
     sctx->iGC->SetBrushStyle( CGraphicsContext::ESolidBrush );
 
-    CFont* font = sctx->iScoreFont;
+    CONST_60 CFont* font = sctx->iScoreFont;
     sctx->iGC->UseFont( font );
     sctx->iGC->DrawText( tbuf, lRect, lRect.Height() - 2 );
     sctx->iGC->DiscardFont();
@@ -290,7 +298,7 @@ sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* /*r*/,
                            XP_U16* widthP, XP_U16* heightP )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
-    CFont* font = sctx->iScoreFont;
+    CONST_60 CFont* font = sctx->iScoreFont;
     TInt height = font->HeightInPixels();
 
     *widthP = 10;               /* whatever; we're only using rOuter */
@@ -798,7 +806,6 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
 
             figureFonts( sctx );
 
-#if defined SERIES_80
             /* this path will change for other platforms/devices!!! */
 #if defined __WINS__
             _LIT( kBitmapsPath, "z:\\system\\apps\\XWORDS\\xwords.mbm" );
@@ -810,32 +817,36 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
             XP_LOGF( "loading bitmaps0" );
             sctx->iDownArrow = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iDownArrow->
-                                Load(bitmapFile, EMbmXwordsDownarrow_80 ) );
+                                Load(bitmapFile, 
+                                     BMNAME(EMbmXwords,Downarrow_80) ) );
             sctx->iRightArrow = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iRightArrow->
-                                Load(bitmapFile, EMbmXwordsRightarrow_80 ) );
+                                Load(bitmapFile, 
+                                     BMNAME(EMbmXwords,Rightarrow_80) ) );
             sctx->iStar = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iStar->
-                                Load(bitmapFile, EMbmXwordsStar_80 ) );
+                                Load(bitmapFile, 
+                                     BMNAME(EMbmXwords,Star_80) ) );
 
             sctx->iTurnIcon = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iTurnIcon->
-                                Load(bitmapFile, EMbmXwordsTurnicon_80 ) );
+                                Load(bitmapFile, 
+                                     BMNAME(EMbmXwords,Turnicon_80) ) );
             sctx->iTurnIconMask = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iTurnIconMask->
-                                Load(bitmapFile, EMbmXwordsTurniconmask_80 ) );
+                                Load(bitmapFile, 
+                                     BMNAME(EMbmXwords,Turniconmask_80) ) );
 
             sctx->iRobotIcon = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iRobotIcon->
-                                Load(bitmapFile, EMbmXwordsRobot_80 ) );
+                                Load(bitmapFile, 
+                                     BMNAME(EMbmXwords,Robot_80) ) );
             sctx->iRobotIconMask = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iRobotIconMask->
-                                Load(bitmapFile, EMbmXwordsRobotmask_80 ) );
+                                Load(bitmapFile, 
+                                     BMNAME(EMbmXwords,Robotmask_80) ) );
 
             XP_LOGF( "done loading bitmaps" );
-#else
-            error No bitmaps!!!
-#endif
         } else {
             XP_FREE( mpool, sctx );
             sctx = NULL;
