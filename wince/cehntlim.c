@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
+#ifdef XWFEATURE_SEARCHLIMIT
 
 #include "cehntlim.h"
 
@@ -90,3 +90,5 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
     return FALSE;
 } /* HintLimitsDlg */
+
+#endif /* XWFEATURE_SEARCHLIMIT */
