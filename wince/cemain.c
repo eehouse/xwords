@@ -53,6 +53,8 @@
 /* #define PREFSFILENAME L"\\My Documents\\Crosswords\\.xwprefs" */
 #define PREFSFILENAME L"\\My Documents\\Crosswords\\xwprefs"
 #define UNSAVEDGAMEFILENAME "\\My Documents\\Crosswords\\_newgame"
+#define SCROLLBAR_WIDTH 12
+#define SCROLLBARID 0x4321      /* needs to be unique! */
 
 #ifdef MEM_DEBUG
 # define MEMPOOL globals->mpool,
@@ -73,9 +75,9 @@ static XP_Bool ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
 static XWBonusType ce_util_getSquareBonus( XW_UtilCtxt* uc, 
                                            ModelCtxt* model,
                                            XP_U16 col, XP_U16 row );
-static XP_S16 ce_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, 
+static XP_S16 ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                                     XP_U16 playerNum,
-                                    XP_UCHAR4* texts, XP_U16 nTiles );
+                                    const XP_UCHAR4* texts, XP_U16 nTiles );
 static XP_Bool ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                     XP_UCHAR* buf, XP_U16* len );
 static void ce_util_trayHiddenChange( XW_UtilCtxt* uc, XP_Bool nowHidden );
@@ -249,67 +251,180 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     
 } /* ceInitUtilFuncs */
 
+#ifdef CEFEATURE_CANSCROLL
+static void
+installScroller( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 x, XP_U16 y,
+                 XP_U16 width, XP_U16 height )
+{
+    if ( !globals->scrollHandle ) {
+        HWND hwndSB;
+        hwndSB = CreateWindow( TEXT("SCROLLBAR"),  // Class name
+                               NULL,           // Window text
+                               // Window style
+                               SBS_VERT|WS_VISIBLE|WS_CHILD,
+                               x, y, width, height,
+                               globals->hWnd,
+                               (HMENU)SCROLLBARID,// The control identifier
+                               globals->hInst,     // The instance handle
+                               NULL );             // s'pposed to be NULL
+
+        (void)SetScrollRange( hwndSB, SB_CTL, 0, nHidden - 1, 
+                              FALSE /* redraw */ );
+        EnableWindow( hwndSB, FALSE ); /* tray hidden */
+
+        globals->scrollHandle = hwndSB;
+    }
+} /* installScroller */
+
+static void
+hideScroller( CEAppGlobals* globals )
+{
+    if ( !!globals->scrollHandle ) {
+        ShowWindow( globals->scrollHandle, SW_HIDE );
+    }
+    /* else there's nothing to do */
+}
+#endif
+
+#define MIN_CELL_WIDTH 12
+#define MIN_CELL_HEIGHT 12
+#define MIN_TRAY_HEIGHT 20
+#define TRAY_PADDING 1
+
+typedef struct CEBoardParms {
+    XP_U16  boardHScale;
+    XP_U16  boardVScale;
+    XP_U16  trayTop;
+    XP_U16  trayVScale;
+    XP_U16  trayHScale;
+    XP_U16  leftEdge;
+    XP_U16  scoreWidth;
+    XP_U16  scoreHeight;
+    XP_Bool needsScroller;
+} CEBoardParms;
+
+static void
+figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
+{
+    RECT rc;
+    XP_U16 width, height;
+    XP_U16 trayVScale, leftEdge, scoreWidth, scoreHeight, maxScoreHeight;
+    XP_U16 boardHt, boardWidth, visBoardHt, hScale, vScale, nHiddenRows;
+    XP_U16 boardHtLimit, trayTop;
+    XP_Bool needsScroller;
+
+    GetClientRect( globals->hWnd, &rc );
+    width = rc.right - rc.left;
+    height = rc.bottom - rc.top;
+
+    scoreHeight = CE_SCORE_HEIGHT;
+    maxScoreHeight = height - (nCols * MIN_CELL_HEIGHT);
+    if ( scoreHeight > maxScoreHeight ) {
+        scoreHeight = maxScoreHeight;
+    }
+
+    boardHt = height - scoreHeight - MIN_TRAY_HEIGHT;
+
+    /* Try to make it fit without scrolling.  But if necessary, reduce the
+       width for a scrollbar. */
+    vScale = boardHt / nCols;
+    needsScroller = vScale < MIN_CELL_HEIGHT;
+    if ( needsScroller ) {
+        vScale = MIN_CELL_HEIGHT;
+    }
+
+    boardWidth = width;
+    if ( needsScroller ) {
+        boardWidth -= SCROLLBAR_WIDTH;
+    }
+    hScale = boardWidth / nCols;
+
+    /* Figure tray top.  May overlap board.  The tray's height must be at
+       least the minimum, plus whatever fraction of a row is left when
+       visible board height is determined. */
+    visBoardHt = vScale * nCols;
+    nHiddenRows = 0;
+    boardHtLimit = height - scoreHeight - MIN_TRAY_HEIGHT;
+    while ( visBoardHt > boardHtLimit ) {
+        visBoardHt -= vScale;
+        ++nHiddenRows;
+    }
+    trayTop = scoreHeight + visBoardHt + TRAY_PADDING;
+    trayVScale = height - trayTop;
+
+    /* Center the board */
+    boardWidth = nCols * hScale;
+    if ( needsScroller ) {
+        boardWidth += SCROLLBAR_WIDTH;
+    }
+    leftEdge = (width - boardWidth) / 2; /* center it all */
+
+    scoreWidth = width;
+    if ( globals->gameInfo.timerEnabled ) {
+        scoreWidth -= CE_TIMER_WIDTH;
+    }
+    
+    bparms->boardHScale = hScale;
+    bparms->boardVScale = vScale;
+    bparms->trayTop = trayTop;
+    bparms->trayVScale = trayVScale;
+    bparms->trayHScale = CE_TRAY_SCALEH; /* unchanged so far... */
+    bparms->leftEdge = leftEdge;
+    bparms->scoreWidth = scoreWidth;
+    bparms->scoreHeight = scoreHeight;
+
+#ifdef CEFEATURE_CANSCROLL
+    bparms->needsScroller = needsScroller;
+
+    if ( needsScroller ) {
+        XP_U16 boardRight = leftEdge + (nCols * hScale);
+        installScroller( globals, nHiddenRows,
+                         boardRight,
+                         scoreHeight,
+                         rc.right - boardRight, visBoardHt );
+        XP_LOGF( "NEEDING SCROLLBAR!!!!" );
+        XP_LOGF( "%d rows hidden", nHiddenRows );
+    } else {
+        hideScroller( globals );
+    }
+    globals->nHiddenRows = nHiddenRows;
+#endif
+} /* figureBoardParms */
+
 static XP_Bool
 cePositionBoard( CEAppGlobals* globals )
 {
     XP_Bool erase = XP_FALSE;
-    XP_U16 nCols, leftEdge;
-    XP_U16 boardHeight, trayTop, scoreWidth;
+    XP_U16 nCols;
+    CEBoardParms bparms;
 
     XP_ASSERT( !!globals->game.model );
     nCols = model_numCols( globals->game.model );
     XP_ASSERT( nCols <= CE_MAX_ROWS );
 
-    leftEdge = CE_BOARD_LEFT_RH;
-    leftEdge += ((CE_MAX_ROWS-nCols)/2) * CE_BOARD_SCALEH;
+    figureBoardParms( globals, nCols, &bparms );
 
     board_setTimerLoc( globals->game.board, CE_TIMER_LEFT,
                        CE_TIMER_TOP, CE_TIMER_WIDTH, CE_TIMER_HEIGHT );
 
-    /* If there's no timer, set the scoreboard to include the timer's rect so
-       that the entire screen will be owned and erased as appropriate.
-       Otherwise that region never gets redrawn. */
-    scoreWidth = CE_TIMER_LEFT - CE_SCORE_LEFT;
-    if ( !globals->gameInfo.timerEnabled ) {
-        scoreWidth += CE_TIMER_WIDTH;
-    }
 
-    board_setPos( globals->game.board, leftEdge,
-                  CE_BOARD_TOP, XP_FALSE );
-    board_setScale( globals->game.board, CE_BOARD_SCALEH, CE_BOARD_SCALEV );
+    board_setPos( globals->game.board, bparms.leftEdge,
+                  bparms.scoreHeight, XP_FALSE );
+    board_setScale( globals->game.board, bparms.boardHScale, bparms.boardVScale );
 
     board_setScoreboardLoc( globals->game.board, CE_SCORE_LEFT, 
-                            CE_SCORE_TOP, scoreWidth,
-                            CE_SCORE_HEIGHT, XP_TRUE );
+                            CE_SCORE_TOP, bparms.scoreWidth,
+                            bparms.scoreHeight, XP_TRUE );
     board_setShowColors( globals->game.board, globals->appPrefs.showColors );
     board_setYOffset( globals->game.board, 0 );
 
     board_prefsChanged( globals->game.board, &globals->appPrefs.cp );
 
-    /* figure location for the tray.  If possible, make it smaller than the
-       ideal to avoid using a scrollbar.  Also, note at this point whether a
-       scrollbar will be required. */
-    boardHeight = CE_BOARD_SCALEV * nCols;
-    trayTop = boardHeight + CE_BOARD_TOP + 1;
-    if ( trayTop < CE_TRAY_TOP ) { 
-        trayTop = CE_TRAY_TOP;/* we want it this low even if not
-                                 necessary */
-    } else {
-        /* 	while ( trayTop > CE_TRAY_TOP_MAX ) { */
-        /* 	    XP_DEBUGF( "dropping trayTop from %d\n", trayTop ); */
-        /* 	    trayTop -= scale; */
-        /* 	} */
-    }
-    XP_DEBUGF( "set trayTop to %d", trayTop );
-
     board_setTrayLoc( globals->game.board, 
                       CE_TRAY_LEFT_RH,
-                      trayTop,
-                      CE_TRAY_SCALEH, CE_TRAY_SCALEV,
+                      bparms.trayTop,
+                      bparms.trayHScale, bparms.trayVScale,
                       CE_DIVIDER_WIDTH );
-
-    /*     setCtrlsForTray( globals ); */
-    /*     drawFormButtons( globals ); */
 
     server_prefsChanged( globals->game.server, &globals->appPrefs.cp );
     
@@ -1251,6 +1366,54 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
     return mbi.hwndMB;
 } /* makeCommandBar */
 
+#ifdef CEFEATURE_CANSCROLL
+static XP_Bool
+handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
+              XP_S16 code, HWND wnd )
+{
+    XP_Bool result = XP_FALSE;
+
+    if ( wnd == globals->scrollHandle ) {
+        XP_S16 newOffset;
+        XP_U16 curYOffset = board_getYOffset( globals->game.board );
+ 
+        XP_ASSERT( !!globals->game.board );
+
+        switch ( code ) {
+/*         case SB_BOTTOM: // Scrolls to the lower right  */
+/*         case SB_ENDSCROLL: // Ends scroll  */
+
+        case SB_LINEUP: // Scrolls one line up 
+        case SB_PAGEUP: // 
+            newOffset = curYOffset - 1;
+            break;
+
+        case SB_LINEDOWN: // Scrolls one line down 
+        case SB_PAGEDOWN: // Scrolls one page down 
+            newOffset = curYOffset + 1;
+            break;
+
+        case SB_THUMBTRACK:     /* still dragging; don't redraw */
+        case SB_THUMBPOSITION:
+            XP_LOGF( "Got scroll message: %d", pos );
+            newOffset = pos;
+            break;
+        default:
+            newOffset = -1;
+            /* do nothing */
+        }
+
+        if ( newOffset >= 0 && newOffset <= globals->nHiddenRows ) {
+            result = curYOffset != newOffset;
+            if ( result ) {
+                result = board_setYOffset( globals->game.board, newOffset );
+            }
+        }
+    }
+    return result;
+} /* handleScroll */
+#endif
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1280,6 +1443,14 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_SETTINGCHANGE:
             SHHandleWMSettingChange( hWnd, wParam, lParam, &globals->sai );
             break;
+
+#ifdef CEFEATURE_CANSCROLL
+        case WM_VSCROLL:
+            draw = handleScroll( globals, (short int)HIWORD(wParam),
+                                 (short int)LOWORD(wParam),
+                                 (HWND)lParam );
+            break;
+#endif
 
         case WM_COMMAND:
             wmId    = LOWORD(wParam); 
@@ -1841,9 +2012,9 @@ ce_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* model,
 } /* ce_util_getSquareBonus */
 
 static XP_S16
-ce_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi,
+ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
                       XP_U16 playerNum,
-                      XP_UCHAR4* texts, XP_U16 nTiles )
+                      const XP_UCHAR4* texts, XP_U16 nTiles )
 {
     BlankDialogState state;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
@@ -1882,6 +2053,15 @@ static void
 ce_util_trayHiddenChange( XW_UtilCtxt* uc, XP_Bool nowHidden )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+
+#ifdef CEFEATURE_CANSCROLL
+    /* If there's a scrollbar, hide/show it.  It wants to be
+       active/visible only when the tray is NOT hidden */
+    if ( !!globals->scrollHandle ) {
+        EnableWindow( globals->scrollHandle, nowHidden );
+    }
+#endif
+
     drawInsidePaint( globals->hWnd, globals );
 } /* ce_util_trayHiddenChange */
 
@@ -1889,7 +2069,10 @@ static void
 ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
                        XP_U16 newOffset )
 {
-    XP_ASSERT( XP_FALSE );               /* no scrolling on CE */
+#ifdef CEFEATURE_CANSCROLL
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    (void)SetScrollPos( globals->scrollHandle, SB_CTL, newOffset, XP_TRUE ); 
+#endif
 } /* ce_util_yOffsetChange */
 
 static void
