@@ -55,6 +55,7 @@ linux_dictionary_make( MPFORMAL char* dictFileName )
         (LinuxDictionaryCtxt*)XP_MALLOC(mpool, sizeof(*result));
     XP_MEMSET( result, 0, sizeof(*result) );
 
+    dict_super_init( (DictionaryCtxt*)result );
     MPASSIGN(result->super.mpool, mpool);
 
     if ( !!dictFileName ) {
