@@ -67,7 +67,7 @@ static StreamCtxVTable* make_vtable( MemStreamCtxt* stream );
  */
 XWStreamCtxt* 
 mem_stream_make( MPFORMAL VTableMgr* vtmgr, void* closure, 
-		 XP_PlayerAddr channelNo, MemStreamCloseCallback onClose )
+                 XP_PlayerAddr channelNo, MemStreamCloseCallback onClose )
 {
     StreamCtxVTable* vtable;
     MemStreamCtxt* result = (MemStreamCtxt*)XP_MALLOC( mpool, 
@@ -274,7 +274,7 @@ mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data )
 
 static void
 mem_stream_copyFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src, 
-			   XP_U16 nBytes )
+                           XP_U16 nBytes )
 {
     while ( nBytes-- ) {
         XP_U8 byt = stream_getU8( src );
@@ -397,7 +397,7 @@ make_vtable( MemStreamCtxt* stream )
     XP_ASSERT( !stream->vtable );
     XP_ASSERT( sizeof(stream->vtable) == sizeof(vtable) );
     vtable = (StreamCtxVTable*)XP_MALLOC( stream->mpool, 
-					  sizeof(*stream->vtable) );
+                                          sizeof(*stream->vtable) );
 
     SET_VTABLE_ENTRY( vtable, stream_getU8, mem );
     SET_VTABLE_ENTRY( vtable, stream_getBytes, mem );
