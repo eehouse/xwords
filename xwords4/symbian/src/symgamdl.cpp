@@ -153,18 +153,26 @@ CXWGameInfoDlg::PreLayoutDynInitL()
 
     list = static_cast<CEikChoiceList*>(Control(EConnectionType));
     XP_ASSERT( list != NULL );
-    sel = (TInt)(iGib->iCommsAddr.conType) - 1;
+    sel = (TInt)(iGib->iCommsAddr.conType) - 2; /* first 2 unused */
     XP_ASSERT( sel >= 0 );
     list->SetCurrentItem( sel );
     list->DrawDeferred();
 
-    CEikEdwin* hostAddr = static_cast<CEikEdwin*>(Control(ERelayName));
-    TBuf16<MAX_HOSTNAME_LEN> nameBuf;
-    nameBuf.Copy( TBuf8<MAX_HOSTNAME_LEN>(iGib->iCommsAddr.u.ip.hostName) );
-    hostAddr->SetTextL( &nameBuf );
-    hostAddr->DrawDeferred();
+    CEikEdwin* edwin = static_cast<CEikEdwin*>(Control(ECookie));
+    TBuf16<MAX_COOKIE_LEN> cookieBuf;
+    cookieBuf.Copy( TBuf8<MAX_COOKIE_LEN>
+                    (iGib->iCommsAddr.u.ip_relay.cookie) );
+    edwin->SetTextL( &cookieBuf );
+    edwin->DrawDeferred();
     
-    TInt num = iGib->iCommsAddr.u.ip.port;
+    edwin = static_cast<CEikEdwin*>(Control(ERelayName));
+    TBuf16<MAX_HOSTNAME_LEN> nameBuf;
+    nameBuf.Copy( TBuf8<MAX_HOSTNAME_LEN>
+                  (iGib->iCommsAddr.u.ip_relay.hostName) );
+    edwin->SetTextL( &nameBuf );
+    edwin->DrawDeferred();
+    
+    TInt num = iGib->iCommsAddr.u.ip_relay.port;
     CEikNumberEditor* hostPort
         = static_cast<CEikNumberEditor*>(Control(ERelayPort));
     hostPort->SetNumber( num );
@@ -198,6 +206,7 @@ CXWGameInfoDlg::HideAndShow()
     }
 
     MakeLineVisible( EConnectionType, showConnect );
+    MakeLineVisible( ECookie, showIP );
     MakeLineVisible( ERelayName, showIP );
     MakeLineVisible( ERelayPort, showIP );
 #endif
@@ -293,23 +302,35 @@ CXWGameInfoDlg::OkToExitL( TInt /*aKeyCode*/ )
     if ( iGib->iServerRole != SERVER_STANDALONE ) {
 
         list = static_cast<CEikChoiceList*>(Control(EConnectionType));
-        iGib->iCommsAddr.conType = SC(CommsConnType, list->CurrentItem() + 1 );
+        iGib->iCommsAddr.conType = SC(CommsConnType, list->CurrentItem() + 2 );
     
-        if ( iGib->iCommsAddr.conType == COMMS_CONN_IP ) {
+        if ( iGib->iCommsAddr.conType == COMMS_CONN_RELAY ) {
+            /* cookie */
+            CEikEdwin* edwin = static_cast<CEikEdwin*>(Control(ECookie));
+            TBuf16<MAX_COOKIE_LEN> cookieBuf;
+            edwin->GetText( cookieBuf );
+            TBuf8<MAX_COOKIE_LEN> buf8cookie;
+            buf8cookie.Copy( cookieBuf );
+            TInt len = buf8cookie.Length();
+            XP_MEMCPY( iGib->iCommsAddr.u.ip_relay.cookie,
+                       (void*)buf8cookie.Ptr(), len );
+            iGib->iCommsAddr.u.ip_relay.cookie[len] = '\0';
+
             /* hostname */
-            CEikEdwin* hostAddr = static_cast<CEikEdwin*>(Control(ERelayName));
+            edwin = static_cast<CEikEdwin*>(Control(ERelayName));
             TBuf16<MAX_HOSTNAME_LEN> nameBuf;
-            hostAddr->GetText( nameBuf );
+            edwin->GetText( nameBuf );
             TBuf8<MAX_HOSTNAME_LEN> buf8;
             buf8.Copy( nameBuf );
-            TInt len = buf8.Length();
-            XP_MEMCPY( iGib->iCommsAddr.u.ip.hostName, (void*)buf8.Ptr(), len );
-            iGib->iCommsAddr.u.ip.hostName[len] = '\0';
+            len = buf8.Length();
+            XP_MEMCPY( iGib->iCommsAddr.u.ip_relay.hostName,
+                       (void*)buf8.Ptr(), len );
+            iGib->iCommsAddr.u.ip_relay.hostName[len] = '\0';
     
             /* port */
             CEikNumberEditor* hostPort
                 = static_cast<CEikNumberEditor*>(Control(ERelayPort));
-            iGib->iCommsAddr.u.ip.port = SC( XP_U16, hostPort->Number() );
+            iGib->iCommsAddr.u.ip_relay.port = SC( XP_U16, hostPort->Number() );
         }
     }
 #endif
