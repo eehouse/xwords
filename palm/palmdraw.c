@@ -414,11 +414,13 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
     XP_U16 len, width;
     WinHandle numberWin = dctx->numberWin;
     XP_U16 doubler = 1;
+
 #ifdef FEATURE_HIGHRES
     if ( dctx->doHiRes ) {
         doubler = 2;
     }
 #endif
+
     draw_clearRect( p_dctx, &localR );
 
     localR.width -= 3 * doubler;
@@ -434,7 +436,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
             FontID curFont = FntGetFont();
             FntSetFont( largeFont );
 #ifdef TILE_SUBSCRIPT
-            WinDrawChars( (const char*)letters, doubler,
+            WinDrawChars( (const char*)letters, 1,
                           localR.left+(2*doubler), 
                           rect->top+(2*doubler) );
 #else
@@ -456,6 +458,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 
         XP_ASSERT( !!numberWin );
         curWind = WinSetDrawWindow( numberWin );
+        HIGHRES_PUSH_LOC( dctx );
 
         WinEraseRectangle( &numRect, 0 );
 
@@ -464,10 +467,14 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         XP_LOGF( "width=%d", width );
 
         (void)WinSetDrawWindow( curWind );
+
+        HIGHRES_POP_LOC(dctx);
+
         numRect.extent.x = width;
+
 #ifdef TILE_SUBSCRIPT
         WinCopyRectangle( numberWin, 0, &numRect, 
-                          localR.left + localR.width - width,
+                          localR.left + localR.width - (width*doubler),
                           localR.top + localR.height - (10*doubler),
                           winOverlay );
 #else
@@ -1093,7 +1100,7 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
 
     dctx->able = able;
 #ifdef FEATURE_HIGHRES
-    dctx->doHiRes = globals->hasHiRes;
+    dctx->doHiRes = globals->hasHiRes && globals->width == 320;
 #endif
     dctx->globals = globals;
     dctx->getResStrFunc = getRSF;
