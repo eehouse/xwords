@@ -68,3 +68,5 @@ LIBRARY           eikctl.lib
 // Bitmaps
 LIBRARY           bitgdi.lib
 LIBRARY           fbscli.lib
+// FindWildByDir etc.
+LIBRARY           EFSRV.lib
