@@ -19,6 +19,7 @@
 
 #include "ceprefs.h"
 #include "cemain.h"
+#include "ceclrsel.h"
 #include "ceutil.h"
 
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
@@ -59,10 +60,11 @@ setTimerCtls( HWND hDlg, XP_Bool checked )
 } /* setTimerCtls */
 
 static void
-adjustForChoice( HWND hDlg, PrefsDlgState* state )
+adjustForChoice( HWND hDlg, CePrefsDlgState* state )
 {
     XP_U16 goesWithGlobal[] = {IDC_CHECKCOLORPLAYED, IDC_LEFTYCHECK,
-                               IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES};
+                               IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES,
+                               IDC_PREFCOLORS };
     XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT,IDC_CHECKNOHINTS,
                               TIMER_CHECK, TIMER_EDIT, PHONIES_LABEL,
                               PHONIES_COMBO, IDC_PICKTILES };
@@ -94,7 +96,7 @@ adjustForChoice( HWND hDlg, PrefsDlgState* state )
  */
 void
 loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi, 
-                       PrefsPrefs* prefsPrefs )
+                       CePrefsPrefs* prefsPrefs )
 {
     prefsPrefs->gp.hintsNotAllowed = gi->hintsNotAllowed;
     prefsPrefs->gp.robotSmartness = gi->robotSmartness;
@@ -107,11 +109,15 @@ loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi,
     prefsPrefs->showColors = appPrefs->showColors;
 
     XP_MEMCPY( &prefsPrefs->cp, &appPrefs->cp, sizeof(prefsPrefs->cp) );
+#ifdef XWFEATURE_CE_EDITCOLORS
+    XP_MEMCPY( &prefsPrefs->colors, &appPrefs->colors,
+               sizeof(prefsPrefs->colors) );
+#endif
 } /* loadStateFromCurPrefs */
 
 void
 loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi, 
-                       const PrefsPrefs* prefsPrefs )
+                       const CePrefsPrefs* prefsPrefs )
 {
     gi->hintsNotAllowed = prefsPrefs->gp.hintsNotAllowed;
     gi->robotSmartness = prefsPrefs->gp.robotSmartness;
@@ -124,14 +130,18 @@ loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi,
     appPrefs->showColors = prefsPrefs->showColors;
 
     XP_MEMCPY( &appPrefs->cp, &prefsPrefs->cp, sizeof(appPrefs->cp) );
+#ifdef XWFEATURE_CE_EDITCOLORS
+    XP_MEMCPY( &appPrefs->colors, &prefsPrefs->colors,
+               sizeof(prefsPrefs->colors) );
+#endif
 } /* loadCurPrefsFromState */
 
 /* Reflect local state into the controls user will see.
  */
 static void
-loadControlsFromState( HWND hDlg, PrefsDlgState* pState )
+loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
 {
-    PrefsPrefs* prefsPrefs = &pState->prefsPrefs;
+    CePrefsPrefs* prefsPrefs = &pState->prefsPrefs;
     XP_UCHAR numBuf[10];
 
     ceSetChecked( hDlg, IDC_CHECKCOLORPLAYED, prefsPrefs->showColors );
@@ -165,7 +175,7 @@ loadControlsFromState( HWND hDlg, PrefsDlgState* pState )
  * the values.
  */
 static void
-ceControlsToPrefs( HWND hDlg, PrefsPrefs* prefsPrefs )
+ceControlsToPrefs( HWND hDlg, CePrefsPrefs* prefsPrefs )
 {
     XP_S16 selIndex;
 
@@ -204,11 +214,11 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     CEAppGlobals* globals;
     XP_U16 id;
-    PrefsDlgState* pState;
+    CePrefsDlgState* pState;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
-        pState = (PrefsDlgState*)lParam;
+        pState = (CePrefsDlgState*)lParam;
         globals = pState->globals;
 
         stuffPhoniesList( hDlg );
@@ -220,7 +230,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
     } else {
         XP_Bool timerOn;
-        pState = (PrefsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+        pState = (CePrefsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
         globals = pState->globals;
 
         switch (message) {
@@ -239,7 +249,13 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                               0, 0 );
                 setTimerCtls( hDlg, timerOn );
                 break;
-
+#ifdef XWFEATURE_CE_EDITCOLORS
+            case IDC_PREFCOLORS:
+                pState->colorsChanged = 
+                    ceDoColorsEdit( hDlg, pState->globals, 
+                                    pState->prefsPrefs.colors );
+                break;
+#endif
             case IDOK:
                 ceControlsToPrefs( hDlg, &pState->prefsPrefs );
             case IDCANCEL:
@@ -248,7 +264,6 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 return TRUE;
             }
         }        
-
     }
 
     return FALSE;
@@ -258,8 +273,8 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
    state, put up the dialog and return whether it was cancelled.
  */
 XP_Bool
-WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, PrefsDlgState* state, 
-                 PrefsPrefs* prefsPrefs, XP_Bool isNewGame )
+WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsDlgState* state, 
+                 CePrefsPrefs* prefsPrefs, XP_Bool isNewGame )
 {
     XP_Bool result;
     XP_MEMSET( state, 0, sizeof(*state) );
