@@ -28,6 +28,9 @@ typedef struct CeGamePrefs {
     XP_Bool hintsNotAllowed;
     XP_U8 robotSmartness;
     XP_Bool timerEnabled;
+#ifdef FEATURE_TRAY_EDIT
+    XP_Bool allowPickTiles;
+#endif
     XWPhoniesChoice phoniesAction;
     /* phonies something */
 } CeGamePrefs;

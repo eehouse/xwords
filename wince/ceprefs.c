@@ -65,7 +65,7 @@ adjustForChoice( HWND hDlg, PrefsDlgState* state )
                                IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES};
     XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT,IDC_CHECKNOHINTS,
                               TIMER_CHECK, TIMER_EDIT, PHONIES_LABEL,
-                              PHONIES_COMBO };
+                              PHONIES_COMBO, IDC_PICKTILES };
     XP_U16 resID;
 
     resID = state->globals->doGlobalPrefs? 
@@ -101,7 +101,9 @@ loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi,
     prefsPrefs->gp.timerEnabled = gi->timerEnabled;
     prefsPrefs->gp.gameSeconds = gi->gameSeconds;
     prefsPrefs->gp.phoniesAction = gi->phoniesAction;
-
+#ifdef FEATURE_TRAY_EDIT
+    prefsPrefs->gp.allowPickTiles = gi->allowPickTiles;
+#endif
     prefsPrefs->showColors = appPrefs->showColors;
 
     XP_MEMCPY( &prefsPrefs->cp, &appPrefs->cp, sizeof(prefsPrefs->cp) );
@@ -116,7 +118,9 @@ loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi,
     gi->timerEnabled = prefsPrefs->gp.timerEnabled;
     gi->gameSeconds = prefsPrefs->gp.gameSeconds;
     gi->phoniesAction = prefsPrefs->gp.phoniesAction;
-
+#ifdef FEATURE_TRAY_EDIT
+    gi->allowPickTiles = prefsPrefs->gp.allowPickTiles;
+#endif
     appPrefs->showColors = prefsPrefs->showColors;
 
     XP_MEMCPY( &appPrefs->cp, &prefsPrefs->cp, sizeof(appPrefs->cp) );
@@ -138,6 +142,9 @@ loadControlsFromState( HWND hDlg, PrefsDlgState* pState )
     ceSetChecked( hDlg, IDC_CHECKSHOWCURSOR, prefsPrefs->cp.showBoardArrow );
     ceSetChecked( hDlg, IDC_CHECKROBOTSCORES, prefsPrefs->cp.showRobotScores );
 
+#ifdef FEATURE_TRAY_EDIT
+    ceSetChecked( hDlg, IDC_PICKTILES, prefsPrefs->gp.allowPickTiles );
+#endif
     /* timer */
     sprintf( numBuf, "%d", prefsPrefs->gp.gameSeconds / 60 );
     ceSetDlgItemText( hDlg, TIMER_EDIT, numBuf );
@@ -148,6 +155,9 @@ loadControlsFromState( HWND hDlg, PrefsDlgState* pState )
 
     if ( !pState->isNewGame ) {
         SendDlgItemMessage( hDlg, IDC_CHECKNOHINTS, WM_ENABLE, FALSE, 0L );
+#ifdef FEATURE_TRAY_EDIT
+        SendDlgItemMessage( hDlg, IDC_PICKTILES, WM_ENABLE, FALSE, 0L );
+#endif
     }
 } /* loadControlsFromState */
 
@@ -172,6 +182,9 @@ ceControlsToPrefs( HWND hDlg, PrefsPrefs* prefsPrefs )
 
     prefsPrefs->cp.showBoardArrow = ceGetChecked( hDlg, IDC_CHECKSHOWCURSOR );
     prefsPrefs->cp.showRobotScores = ceGetChecked( hDlg, IDC_CHECKROBOTSCORES );
+#ifdef FEATURE_TRAY_EDIT
+    prefsPrefs->gp.allowPickTiles = ceGetChecked( hDlg, IDC_PICKTILES );
+#endif
 } /* ceControlsToPrefs */
 
 LRESULT CALLBACK
