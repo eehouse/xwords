@@ -238,32 +238,57 @@ cur_screen_depth( void )
 static XP_Bool
 positionBoard( PalmAppGlobals* globals )
 {
+#ifdef FEATURE_HIGHRES
+    XP_U16 bWidth = globals->width;
+    XP_U16 bHeight = globals->height;
+#else
+    XP_U16 bWidth = 160;
+    XP_U16 bHeight = 160;
+#endif
+    XP_Bool canDouble = bWidth >= 320 && bHeight >= 320;
     XP_Bool erase = XP_FALSE;
     XP_Bool isLefty = globals->isLefty;
     XP_U16 nCols, leftEdge;
     XP_U16 scale = PALM_BOARD_SCALE;
-    XP_U16 boardHeight, trayTop, trayScaleV;
+    XP_U16 boardHeight, trayTop, trayScaleV, trayScaleH;
     XP_U16 boardTop, scoreTop, scoreLeft, scoreWidth, scoreHeight;
     XP_U16 timerWidth, timerLeft;
     XP_U16 freeSpace;
     XP_Bool showGrid = globals->gState.showGrid;
+    XP_U16 doubler = canDouble? 2:1;
 #ifdef SHOW_PROGRESS
     RectangleType bounds;
 #endif
-
-    if ( !showGrid ) {
-        --scale;
-    }
 
     XP_ASSERT( !!globals->game.model );
     nCols = model_numCols( globals->game.model );
     XP_ASSERT( nCols <= PALM_MAX_ROWS );
 
+    /* With the screen having variable width and height, we do away with
+     * constants and calculate everything on the fly.  Horizontally, the
+     * screen consists of the board and scrollbar/buttons.  Vertically, it's
+     * the scoreboard, the board, and the tray.  If the board is square the
+     * tray must overlap the board -- but not if the smallest font we can fit
+     * in a cell allows the squares to squeeze down!
+     *
+     * Be careful with squeezing cells!  Custom chars won't allow it.  So
+     * cell size needs to stay constant...  For now we only avoid overlap
+     * cute when the screen is taller than it is wide.
+     */
+
+    /* since we only want the lines between cells one pixel wide, we can
+       increase scale more than 2x when doubling. */
+    scale = scale * doubler + doubler - 1;
+    if ( !showGrid ) {
+        --scale;
+    }
+
+
     freeSpace = ((PALM_MAX_ROWS-nCols)/2) * scale;
     if ( isLefty ) {
-        leftEdge = 160 /*hwrDisplayWidth*/ - (nCols * scale) - freeSpace - 1;
+        leftEdge = bWidth - (nCols * scale) - freeSpace - 1;
     } else {
-        leftEdge = PALM_BOARD_LEFT_RH + freeSpace;
+        leftEdge = (PALM_BOARD_LEFT_RH * doubler) + freeSpace;
     }
 
     /* position the timer.  There are really four cases: width depends on
@@ -275,10 +300,12 @@ positionBoard( PalmAppGlobals* globals )
     } else {
         timerWidth = PALM_GRIDLESS_SCORE_WIDTH;
     }
+    timerWidth *= doubler;
+
     if ( isLefty && !showGrid ) {
         timerLeft = 0;
     } else {
-        timerLeft = 160 - timerWidth;
+        timerLeft = bWidth - timerWidth;
     }
     board_setTimerLoc( globals->game.board, timerLeft, PALM_TIMER_TOP, 
                        timerWidth, PALM_TIMER_HEIGHT );
@@ -287,22 +314,25 @@ positionBoard( PalmAppGlobals* globals )
         boardTop = PALM_BOARD_TOP;
         scoreLeft = PALM_SCORE_LEFT;
         scoreTop = PALM_SCORE_TOP;
-        scoreWidth = 160 - PALM_SCORE_LEFT - timerWidth;
+        scoreWidth = bWidth - PALM_SCORE_LEFT - timerWidth;
         scoreHeight = PALM_SCORE_HEIGHT;
     } else {
-        scoreTop = PALM_GRIDLESS_SCORE_TOP;
         boardTop = PALM_GRIDLESS_BOARD_TOP;
-
-        scoreHeight = PALM_TRAY_TOP - PALM_GRIDLESS_SCORE_TOP - 2;
-
         scoreLeft = isLefty? 0: PALM_GRIDLESS_SCORE_LEFT;
-
+        scoreTop = PALM_GRIDLESS_SCORE_TOP;
         scoreWidth =  PALM_GRIDLESS_SCORE_WIDTH;
+        scoreHeight = PALM_TRAY_TOP - PALM_GRIDLESS_SCORE_TOP - 2;
 
         if ( !isLefty ) {
             ++leftEdge;		/* for the frame */
         }
     }
+
+    boardTop *= doubler;
+    scoreLeft *= doubler;
+    scoreTop *= doubler;
+    scoreWidth *= doubler;
+    scoreHeight *= doubler;
 
     board_setPos( globals->game.board, leftEdge,
                   boardTop, isLefty );
@@ -329,13 +359,13 @@ positionBoard( PalmAppGlobals* globals )
             globals->needsScrollbar = true;
         }
     }
-    trayScaleV = 160 - trayTop;
-
+    trayScaleV = bHeight - trayTop;
+    trayScaleH = PALM_TRAY_SCALEH * doubler;
     board_setTrayLoc( globals->game.board, 
-                      (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH),
+                      (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
                       trayTop,
-                      PALM_TRAY_SCALEH, trayScaleV,
-                      PALM_DIVIDER_WIDTH );
+                      trayScaleH, trayScaleV,
+                      PALM_DIVIDER_WIDTH * doubler );
 
     board_prefsChanged( globals->game.board, &globals->gState.cp );
 
@@ -343,15 +373,15 @@ positionBoard( PalmAppGlobals* globals )
     if ( showGrid ) {
         getObjectBounds( XW_MAIN_SCROLLBAR_ID, &bounds );
 
-        bounds.topLeft.x += 1;
-        bounds.extent.x -= 2;
+        bounds.topLeft.x += doubler;
+        bounds.extent.x -= 2 * doubler;
     } else {
-        bounds.topLeft.y = PALM_TIMER_HEIGHT + 2;
-        bounds.topLeft.x = globals->isLefty? FLIP_BUTTON_WIDTH+3:
-            PALM_GRIDLESS_SCORE_LEFT+2;
+        bounds.topLeft.y = (PALM_TIMER_HEIGHT + 2) * doubler;
+        bounds.topLeft.x = (globals->isLefty? FLIP_BUTTON_WIDTH+3:
+            PALM_GRIDLESS_SCORE_LEFT+2) * doubler;
 
-        bounds.extent.x = RECOMMENDED_SBAR_WIDTH + 2;
-        bounds.extent.y = PALM_GRIDLESS_SCORE_TOP - bounds.topLeft.y - 2;
+        bounds.extent.x = (RECOMMENDED_SBAR_WIDTH + 2) * doubler;
+        bounds.extent.y = (PALM_GRIDLESS_SCORE_TOP - bounds.topLeft.y - 2) * doubler;
     }
     globals->progress.boundsRect = bounds;
 #endif
