@@ -584,8 +584,9 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     TCHAR	szWindowClass[MAX_LOADSTRING];	// The window class name
     CEAppGlobals* globals;
     BOOL result = TRUE;
-    XP_Bool loaded;
+    XP_Bool oldGameLoaded;
     XP_Bool prevStateExists;
+    XP_Bool newDone = XP_FALSE;
     MPSLOT;
 
 #ifdef MEM_DEBUG
@@ -630,7 +631,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
        But that's a long ways off. */
     prevStateExists = ceLoadPrefs( globals );
     if ( result && prevStateExists && ceLoadSavedGame( globals ) ) {
-        loaded = XP_TRUE;
+        oldGameLoaded = XP_TRUE;
         /* nothing to do? */
     } else {
         ceInitPrefs( globals );
@@ -639,12 +640,13 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                           &globals->util, globals->draw, &globals->appPrefs.cp, 
                           (TransportSend)NULL, globals );
 
-        if ( result 
-             && !doNewGame( globals, XP_TRUE ) ) { /* calls ceInitAndStartBoard */
-            result = FALSE;
-            /* we want to exit now! */
+        if ( result ) {
+            newDone = doNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
+            if ( !newDone ) {
+                result = FALSE;
+            }
         }
-        loaded = XP_FALSE;
+        oldGameLoaded = XP_FALSE;
     }
 
     ShowWindow(hWnd, nCmdShow);
@@ -653,8 +655,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         CommandBar_Show(globals->hwndCB, TRUE);
     }
 
-    if ( result ) {
-        ceInitAndStartBoard( globals, !loaded, NULL );
+    if ( result && !newDone ) {
+        ceInitAndStartBoard( globals, !oldGameLoaded, NULL );
     }
 
     return result;
@@ -1553,6 +1555,7 @@ ce_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi,
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_MEMSET( &state, 0, sizeof(state) );
 
+    state.globals = globals;
     state.texts = texts;
     state.nTiles = nTiles;
     state.playerNum = playerNum;
