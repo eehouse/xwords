@@ -18,6 +18,10 @@
 
 FRANK_EXT = xwd
 
+# This is now on for all dicts and languages. dict2dawg.pl can't
+# produce the old form any longer.
+NEWDAWG=foo 
+
 # this will make all dicts the new, larger type
 #FORCE_4 = -force4
 
