@@ -118,9 +118,6 @@ typedef struct XWords4PreferenceType {
 #endif
     /* New for 0x0405 */
     CommonPrefs cp;
-    /* New for 0x0406 */
-    XP_U8 lastNTilesMin;
-    XP_U8 lastNTilesMax;
     
 } XWords4PreferenceType;
 
@@ -282,6 +279,10 @@ struct PalmAppGlobals {
     XP_U16 sonyLibRef;
     XP_Bool doVSK;
     XP_Bool hasHiRes;
+#endif
+
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool askTrayLimits;
 #endif
 
     CurGameInfo gameInfo;	/* for the currently open, or new, game */
