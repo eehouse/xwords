@@ -1,4 +1,21 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* 
+ * Copyright 2004 by Eric House (fixin@peak.org).  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
 #include <PalmTypes.h>
 #include <SystemMgr.h>
@@ -33,32 +50,35 @@ alertUser( char* str )
 {
 }
 
+typedef struct PNOFtrHeader {
+    UInt32* gotTable;
+} PNOFtrHeader;
+
 void
-storageCallback( PnoletUserData* dataP )
+storageCallback( void/*PnoletUserData*/* _dataP )
 {
+    PnoletUserData* dataP = (PnoletUserData*)_dataP;
     char buf[48];
     UInt32 offset;
+    PNOFtrHeader* ftrBase;
 
     StrPrintF( buf, "storageCallback(%lx)", dataP );
-    WinDrawChars( buf, StrLen(buf), 5, 35 );
+    WinDrawChars( buf, StrLen(buf), 5, 40 );
 
     StrPrintF( buf, "src=%lx; dest=%lx", dataP->stateSrc, dataP->stateDest );
     WinDrawChars( buf, StrLen(buf), 5, 50 );
 
-    offset = (char*)dataP->stateDest - (char*)dataP->pnoletEntry;
-    DmWrite( dataP->pnoletEntry, offset, dataP->stateSrc, sizeof(PNOState) );
-    WinDrawChars( "callback done", 13, 5, 65 );
+    ftrBase = (PNOFtrHeader*)dataP->pnoletEntry;
+    --ftrBase;                  /* back up over header */
+    offset = (char*)dataP->stateDest - (char*)ftrBase;
+    DmWrite( ftrBase, offset, dataP->stateSrc, sizeof(PNOState) );
+    WinDrawChars( "callback done", 13, 5, 60 );
 }
 
 static void
-countOrLoadPNOCs( UInt32* pnoSizeP, UInt32* codePtr )
+countOrLoadPNOCs( UInt32* pnoSizeP, UInt8* base, UInt32 offset )
 {
     DmResID id;
-    UInt32 offset = 0;
-
-    if ( !!pnoSizeP ) {
-        *pnoSizeP = 0;
-    }
 
     for ( id = 0; ; ++id ) {
         UInt32 size;
@@ -68,31 +88,35 @@ countOrLoadPNOCs( UInt32* pnoSizeP, UInt32* codePtr )
             break;
         }
         size = MemHandleSize( h );
-        if ( !!pnoSizeP ) {
-            *pnoSizeP += size;
-        }
-        if ( !!codePtr ) {
-            Err err = DmWrite( codePtr, offset, MemHandleLock(h), size );
+        if ( !!base ) {
+            Err err = DmWrite( base, offset, MemHandleLock(h), size );
             if ( err != errNone ) {
                 alertUser( "error from DmWrite" );
             }
-            offset += size;
             MemHandleUnlock(h);
         }
         DmReleaseResource(h);
+        offset += size;
+    }
+
+    if ( !!pnoSizeP ) {
+        *pnoSizeP = offset;
     }
 } /* countOrLoadPNOCs */
 
-static UInt32*
-setupPnoletIfFirstTime( UInt32** gotTableP )
+static void
+setupPnolet( UInt32** entryP, UInt32** gotTableP )
 {
-    UInt32* pnoCode;
-    Err err = FtrGet( APPID, FTR_NUM, (UInt32*)&pnoCode );
-    if ( err == errNone ) {
-        /* we're set to go, I guess */
-    } else {
+    char buf[64];
+    PNOFtrHeader* ftrBase;
+    Err err = FtrGet( APPID, FTR_NUM, (UInt32*)&ftrBase );
+
+    if ( err != errNone ) {
         UInt32* gotTable;
         UInt32 pnoSize, gotSize, pad;
+        UInt32 ftrSize = sizeof( PNOFtrHeader );
+        UInt32* pnoCode;
+        PNOFtrHeader header;
 
         // LOAD: GOT table
         MemHandle h = DmGetResource( 'PNOG', 0 );
@@ -106,12 +130,21 @@ setupPnoletIfFirstTime( UInt32** gotTableP )
             MemHandleUnlock( h );
             DmReleaseResource( h );
         }
+        ftrSize += gotSize;
 
-        countOrLoadPNOCs( &pnoSize, NULL );
+        countOrLoadPNOCs( &pnoSize, NULL, 0 );
+        ftrSize += pnoSize;
         pad = (4 - (pnoSize & 3)) & 3;
-        FtrPtrNew( APPID, FTR_NUM, pnoSize + gotSize + pad, (void**)&pnoCode );
+        ftrSize += pad;
 
-        countOrLoadPNOCs( NULL, pnoCode );
+        FtrPtrNew( APPID, FTR_NUM, ftrSize, (void**)&ftrBase );
+        pnoCode = (UInt32*)&ftrBase[1];
+
+        StrPrintF( buf, "code ends at 0x%lx", 
+                   ((char*)ftrBase) + ftrSize );
+        WinDrawChars( buf, StrLen(buf), 5, 10 );
+
+        countOrLoadPNOCs( NULL, (UInt8*)ftrBase, sizeof(PNOFtrHeader) );
 
         if ( gotSize > 0 ) {
             UInt32 cnt = gotSize >> 2;
@@ -122,14 +155,21 @@ setupPnoletIfFirstTime( UInt32** gotTableP )
                                          + (UInt32)pnoCode));
             }
 
-            DmWrite( pnoCode, pnoSize + pad, gotTable, gotSize );
+            DmWrite( ftrBase, sizeof(PNOFtrHeader) + pnoSize + pad, 
+                     gotTable, gotSize );
             MemPtrFree( gotTable );
-            *gotTableP = (UInt32*)((char*)pnoCode) + pnoSize + pad;
+
+            header.gotTable = (UInt32*)(((char*)pnoCode) + pnoSize + pad);
+            DmWrite( ftrBase, 0, &header, sizeof(header) );
         }
     }
 
-    return pnoCode;
-} /* setupPnoletIfFirstTime */
+    *gotTableP = ftrBase->gotTable;
+    *entryP = (UInt32*)&ftrBase[1];
+
+    StrPrintF( buf, "got at 0x%lx", *gotTableP );
+    WinDrawChars( buf, StrLen(buf), 5, 20 );
+} /* setupPnolet */
 
 static Boolean
 canRunPnolet()
@@ -144,19 +184,31 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 
     if ( cmd == sysAppLaunchCmdNormalLaunch ) {
         if ( canRunPnolet() ) {
+            char buf[64];
             UInt32* gotTable;
             PnoletUserData* dataP;
-            UInt32* pnoCode = setupPnoletIfFirstTime( &gotTable );
+            UInt32* pnoCode;
             UInt32 result;
+
+            setupPnolet( &pnoCode, &gotTable );
 
             dataP = (PnoletUserData*)MemPtrNew( sizeof(PnoletUserData) );
             dataP->pnoletEntry = pnoCode;
             dataP->gotTable = gotTable;
             dataP->storageCallback = storageCallback;
 
+            dataP->cmdPBP = cmdPBP;
+            dataP->cmd = cmd;
+            dataP->launchFlags = launchFlags;
+
+            StrPrintF( buf, "armlet starts at 0x%lx", pnoCode );
+            WinDrawChars( buf, StrLen(buf), 5, 30 );
+
             result = PceNativeCall((NativeFuncType*)pnoCode, (void*)dataP );
             MemPtrFree( dataP );
 
+            /* Might want to hang onto this, though it's a bit selfish.... */
+            FtrPtrFree( APPID, FTR_NUM );
         } else {
             /* warn user: can't run this app!!!! */
         }
