@@ -6,7 +6,7 @@ SERIES ?= 80
 EPOC = $(EPOC_$(SERIES))
 
 
-PATH = $(EPOC)/bin:/local/bin:/usr/bin:/bin
+PATH = $(EPOC)/bin:/local/bin:/usr/bin:/bin:$(HOME)/bin
 
 BMCONV = bmconv
 
@@ -17,6 +17,8 @@ PLATFORM = SYMB_$(SERIES)
 XWORDS_DIR = \"xwords_$(SERIES)\"
 
 include ../../common/config.mk
+
+#STANDALONE_ONLY ?= -DXWFEATURE_STANDALONE_ONLY
 
 LIBS_ALLSERIES = \
 	$(EPOCTRGREL)/euser.lib \
@@ -75,6 +77,7 @@ LCLSRC = \
 	$(SRCDIR)/symblnk.cpp \
 	$(SRCDIR)/symgamdl.cpp \
 	$(SRCDIR)/symgamed.cpp \
+	$(SRCDIR)/symssock.cpp \
 
 IMG_SRC = ../bmps/downarrow_80.bmp \
 	../bmps/rightarrow_80.bmp \
@@ -111,7 +114,7 @@ CFLAGS += -O -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
 	-DXWORDS_DIR=$(XWORDS_DIR) \
 	-D__LITTLE_ENDIAN -DKEYBOARD_NAV \
 	-DKEY_SUPPORT -DFEATURE_TRAY_EDIT -DNODE_CAN_4 \
-	-DXWFEATURE_STANDALONE_ONLY -D$(SYMARCH) \
+	$(STANDALONE_ONLY) -D$(SYMARCH) \
 	-DSYM_ARMI -DOS_INITS_DRAW \
 	$(INCDIR)
 
@@ -129,6 +132,10 @@ all: _sanity $(PKGFILES) $(NAME).sis
 	mv $(NAME).sis $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
 ifdef XW_UPLOAD_DIR
 	cp $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis $$XW_UPLOAD_DIR
+endif
+ifdef XW_UPLOAD_CMD
+	echo $(PATH)
+	$(XW_UPLOAD_CMD) $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
 endif
 
 _sanity:
