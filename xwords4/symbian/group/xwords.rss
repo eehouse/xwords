@@ -21,6 +21,10 @@
 
 NAME XWRD
 
+/* I can't get macros in MMC to be honored here; though the compiler complains
+   about double-definition it doesn't honor the one in the mmp file. */
+#define XWFEATURE_STANDALONE_ONLY
+
 #include <eikon.rh>
 #include <eikon.rsg>
 
@@ -313,9 +317,9 @@ RESOURCE ARRAY r_conn_roles
 RESOURCE ARRAY r_conn_types
 {
     items = {
-        LBUF { txt = "Bluetooth"; }
+        LBUF { txt = "Cellular internet"; }
+        ,LBUF { txt = "Bluetooth"; }
         ,LBUF { txt = "IR"; }
-        ,LBUF { txt = "Cellular internet"; }
     };
 }
 
@@ -338,6 +342,18 @@ RESOURCE ARRAY r_xwords_newgame_page_conn
             control = CHOICELIST { array_id = r_conn_types; };
             id = EConnectionType;
             // itemflags = 
+        },
+        DLG_LINE {
+            prompt = "Relay address";
+            type = EEikCtEdwin;
+            id = ERelayName;
+            control = EDWIN { width = 10; maxlength = 32; };
+        },
+        DLG_LINE {
+            prompt = "Port number";
+            id = ERelayPort;
+            type = EEikCtNumberEditor;
+            control = NUMBER_EDITOR { min = 0; max = 0xFFFF; };
         }
     };
 }
@@ -458,11 +474,13 @@ RESOURCE ARRAY r_xwords_newgame_pages
     items =
     {
 #ifndef XWFEATURE_STANDALONE_ONLY
-        PAGE{ text="Connection"; id=EPage1; lines=r_xwords_newgame_page_conn;}
+        PAGE{ text="Connection"; id=EPageConn; lines=r_xwords_newgame_page_conn;}
         ,
 #endif
-        PAGE{ text="Players"; id=EPage2; lines=r_xwords_newgame_page_players;}
-        ,PAGE{ text="Dictionary"; id=EPage3; lines=r_xwords_newgame_page_dict;}
+        PAGE{ text="Players"; id=EPagePlayers; 
+              lines=r_xwords_newgame_page_players;}
+        ,PAGE{ text="Dictionary"; id=EPageDict; 
+               lines=r_xwords_newgame_page_dict;}
     };
 }
 
