@@ -134,4 +134,5 @@
                                "The change is not reversible." }, 
 { "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" },
 #endif
-{ "STRS_CANNOT_FIND_DICT",       "%s dictionary not found." },
+{ "STRS_CANNOT_FIND_DICT",      "%s dictionary not found." },
+{ "STR_DICT_COPY_EXPL",        "Copying dictionary from card..." },
