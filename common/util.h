@@ -131,6 +131,11 @@ typedef struct UtilVtable {
     void (*m_util_listenPortChange)( XW_UtilCtxt* uc, XP_U16 listenPort );
 #endif
 
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool (*m_util_getTraySearchLimits)(XW_UtilCtxt* uc, 
+                                          XP_U16* min, XP_U16* max );
+#endif
+
 #ifdef SHOW_PROGRESS
     void (*m_util_engineStarting)( XW_UtilCtxt* uc );
     void (*m_util_engineStopping)( XW_UtilCtxt* uc );
@@ -204,6 +209,12 @@ struct XW_UtilCtxt {
 #define util_listenPortChange( uc, port ) \
          (uc)->vtable->m_util_listenPortChange((uc), (port))
 #endif
+
+#ifdef XWFEATURE_SEARCHLIMIT
+#define util_getTraySearchLimits(uc,min,max) \
+         (uc)->vtable->m_util_getTraySearchLimits((uc), (min), (max))
+#endif
+
 
 # ifdef SHOW_PROGRESS
 # define util_engineStarting( uc ) \
