@@ -24,6 +24,7 @@
 #include "comms.h"
 
 #include "util.h"
+#include "game.h"
 #include "xwstream.h"
 #include "memstream.h"
 
@@ -50,6 +51,8 @@ typedef struct AddressRecord {
     MsgID lastMsgReceived;	/* on a per-channel basis */
     XP_PlayerAddr channelNo;
 } AddressRecord;
+
+#define ADDRESSRECORD_SIZE_68K 20
 
 struct CommsCtxt {
     XW_UtilCtxt* util;
@@ -206,12 +209,22 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         XP_MEMSET( rec, 0, sizeof(*rec) );
 
         addr = &rec->addr;
-        addr->conType = stream_getU8( stream );
-        if ( addr->conType == COMMS_CONN_IP ) {
-            addr->u.ip.ipAddr = stream_getU32( stream );
-            addr->u.ip.port = stream_getU16( stream );
+
+        if ( stream_getVersion(stream) <= STREAM_VERS_405 ) {
+            unsigned char trash[ADDRESSRECORD_SIZE_68K];
+            /* Older versions used sizeof and wrote out the whole struct using
+               stream_putBytes.  Size under 68K was 20. */
+            /* now discard the bytes */
+            stream_getBytes( stream, trash, ADDRESSRECORD_SIZE_68K );
+            addr->conType = COMMS_CONN_IR;
+        } else {
+            addr->conType = stream_getU8( stream );
+            if ( addr->conType == COMMS_CONN_IP ) {
+                addr->u.ip.ipAddr = stream_getU32( stream );
+                addr->u.ip.port = stream_getU16( stream );
+            }
         }
-	
+
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgReceived = stream_getU16( stream );
         rec->channelNo = stream_getU16( stream );
