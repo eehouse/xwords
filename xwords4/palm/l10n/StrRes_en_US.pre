@@ -36,7 +36,8 @@
 { "STR_TOO_FEW_TILES", "Too few tiles left to trade." },
 { "STR_CANT_UNDO_TILEASSIGN", "Nothing to undo.  (Initial tile picking cannot be undone.)" },
 { "STR_VALUES_TITLE", "Counts and Values" },
-{ "STR_VALUES_HEADER",		"Counts[Remain] and Values\n" },
+{ "STR_REMAINS_TITLE","Remaining tiles" },
+{ "STRS_VALUES_HEADER",		"%s counts/values:\n" },
 
 { "STR_DOUBLE_LETTER",		"Double letter" },
 { "STR_DOUBLE_WORD",		"Double word" },
