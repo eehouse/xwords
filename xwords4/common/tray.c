@@ -320,13 +320,12 @@ handlePenDownInTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
 XP_Bool
 handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
-    XP_Bool result;
+    XP_Bool result = XP_FALSE;
     XP_Bool ignore;
     XP_S16 index = pointToTileIndex( board, x, y, &ignore );
 
     if ( index >= 0 ) {
         XP_U16 selPlayer = board->selPlayer;
-        TileBit newIndex = 1 << index;
         BoardArrow* arrow = &board->boardArrow[selPlayer];
 	    
         if ( arrow->visible ) {
