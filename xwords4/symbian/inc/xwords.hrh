@@ -64,6 +64,7 @@ enum TXWordsIds {
 #ifndef XWFEATURE_STANDALONE_ONLY
     ,EConnectionRole
     ,EConnectionType
+    ,ECookie
     ,ERelayName
     ,ERelayPort
     ,EPageConn
