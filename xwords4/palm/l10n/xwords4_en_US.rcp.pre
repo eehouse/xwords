@@ -64,7 +64,7 @@ BEGIN
         MENUITEM "Done" XW_DONE_PULLDOWN_ID "D"
         MENUITEM "Juggle" XW_JUGGLE_PULLDOWN_ID "J"
         MENUITEM "Trade tiles" XW_TRADEIN_PULLDOWN_ID "T"
-        MENUITEM "[un]Hide tray" XW_HIDETRAY_PULLDOWN_ID "H"
+        MENUITEM "[un]Hide tray" XW_HIDESHOWTRAY_PULLDOWN_ID "H"
     END
 #ifdef FOR_GREMLINS
     PULLDOWN "Grem" 
