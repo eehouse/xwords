@@ -51,7 +51,7 @@
 { "STR_DEFAULT_NAME",		"Player %d" },
 { "STR_ABOUT_CONTENT", 
       "Crosswords " XW_PALM_VERSION_STRING ".\n" \
-      "Copyright 1998-2004 by Eric House.  "\
+      "Copyright 1998-2005 by Eric House.  "\
       "All rights reserved.\n\n"\
 
       "See the manual at xwords.sourceforge.net\n\n" \
