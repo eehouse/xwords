@@ -57,7 +57,7 @@ initEditAndSlider( HWND hDlg, XP_U16 sliderID, XP_U8 val )
                         MAKELONG(0,255) );
     SendDlgItemMessage( hDlg, sliderID, TBM_SETPOS, TRUE, 
                         (long)val );
-    ceSetDlgItemNum( hDlg, sliderID+1, (XP_S32)val );
+    ceSetDlgItemNum( hDlg, sliderID+1, val );
 } /* initEditAndSlider */
 
 static void
