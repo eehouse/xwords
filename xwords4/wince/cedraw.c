@@ -874,7 +874,7 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     dctx->mainWin = mainWin;
     dctx->globals = globals;
 
-    ce_drawctxt_update( dctx, globals );
+    ce_drawctxt_update( (DrawCtx*)dctx, globals );
 
     ceFontsSetup( globals, dctx );
 
