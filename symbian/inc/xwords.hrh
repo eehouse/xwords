@@ -70,6 +70,8 @@ enum TXWordsIds {
 
     ,ENPlayersList
     ,ENPlayersWhichList
+
+    ,ESelBlankChoice
 };
 
 #endif // __XWORDS_HRH__
