@@ -1,5 +1,11 @@
 # -*- mode: makefile; -*-
 
+# The braindead build system doesn't remove object files from these
+# dirs.  So add to the clean target manually
+COMMON_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/common/armi/urel
+XWORDS_OBJ_DIR = $(EPOC)/BUILD/CYGWIN$(shell pwd)/xwords/symbian/group/XWORDS/armi/urel
+
+
 # SRC = \
 # 	../src/helloworldbasic.cpp \
 # 	../src/helloworldbasicapplication.cpp \
@@ -31,7 +37,8 @@ armi_bld:
 # 	bldmake $(BLDMAKE_FLAGS) bldfiles
 # 	abLD.BAT build $(BLDMAKE_FLAGS) armi udeb
 
-sis: armi_bld xwords.pkg
+# depends on wins because that's where the .aif file gets built
+sis: wins armi_bld xwords.pkg
 	makesis xwords.pkg
 
 xwords.pkg:
@@ -58,6 +65,8 @@ vc6:
 
 clean:
 	rm -f xwords.SIS
+	rm -f $(COMMON_OBJ_DIR)/*.o
+	rm -f $(XWORDS_OBJ_DIR)/*.o
 	abLD.BAT clean wins udeb
 	abLD.BAT clean armi udeb
 	bldmake $(BLDMAKE_FLAGS) clean
