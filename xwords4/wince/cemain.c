@@ -56,6 +56,11 @@
 #define SCROLLBAR_WIDTH 12
 #define SCROLLBARID 0x4321      /* needs to be unique! */
 
+/* CE_DEBUG_SAVEOFTEN: Temporary hack to attempt to get a reproducible case
+ * of the lockup folks are seeing on WM 2003 SE devices.
+ */
+#define CE_DEBUG_SAVEOFTEN
+
 #ifdef MEM_DEBUG
 # define MEMPOOL globals->mpool,
 #else
@@ -1302,9 +1307,10 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 
             fwState.path = globals->curGameName;
             fwState.globals = globals;
-
+#ifndef CE_DEBUG_SAVEOFTEN
             board_hideTray( globals->game.board ); /* so won't be visible when
                                                       next opened */
+#endif
             memStream = mem_stream_make( MEMPOOL globals->vtMgr, &fwState, 0, 
                                          ceWriteToFile );
             stream_open( memStream );
@@ -1412,6 +1418,17 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
     }
     return result;
 } /* handleScroll */
+#endif
+
+#ifdef CE_DEBUG_SAVEOFTEN
+static void
+debug_saveCurState( CEAppGlobals* globals )
+{
+    ceSaveCurGame( globals, XP_TRUE );
+    ceSavePrefs( globals );
+}
+#else
+# define debug_saveCurState(g)
 #endif
 
 LRESULT CALLBACK
@@ -1594,6 +1611,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             globals->penDown = XP_TRUE;
             draw = board_handlePenDown( globals->game.board, LOWORD(lParam), 
                                         HIWORD(lParam), 0, &handled );
+            debug_saveCurState( globals );
             break;
 
         case WM_MOUSEMOVE:
@@ -1601,6 +1619,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = board_handlePenMove( globals->game.board, 
                                             LOWORD(lParam), 
                                             HIWORD(lParam) );
+                debug_saveCurState( globals );
             }
             break;
 
@@ -1609,6 +1628,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = board_handlePenUp( globals->game.board, LOWORD(lParam), 
                                           HIWORD(lParam), 0 );
                 globals->penDown = XP_FALSE;
+                debug_saveCurState( globals );
             }
             break;	
 
@@ -1618,6 +1638,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             draw = board_handleKey( globals->game.board, wParam )
                 || board_handleKey( globals->game.board, wParam - ('a'-'A') );
+            debug_saveCurState( globals );
             break;
 
         case WM_TIMER:
