@@ -1,7 +1,8 @@
 *.bin
-*.xwd
 *.pdb
 *.saved
 *.pdr
 *.ehouse
 *.seb
+decompose
+temp
