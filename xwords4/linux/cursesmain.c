@@ -642,24 +642,19 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
         if ( numEvents > 0 && 
              (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
-            int flen, nBytes;
+            int nBytes;
             XP_U8 buf[256];
             struct sockaddr_in addr_sock;
 
             --numEvents;
 
-            flen = sizeof(addr_sock);
-            nBytes = recvfrom( globals->fdArray[fdIndex].fd,
-                               buf, sizeof(buf), 0,
-                               (struct sockaddr *)&addr_sock, &flen );
+            nBytes = linux_receive( &globals->cGlobals, buf, sizeof(buf) );
 
-            if ( nBytes == -1 ) {
-                XP_WARNF( "recvfrom: errno=%d\n", errno );
-            } else {
+            if ( nBytes != -1 ) {
                 XWStreamCtxt* inboundS;
                 XP_Bool redraw = XP_FALSE;
 
-                XP_STATUSF( "recvfrom=>%d", nBytes );
+                XP_STATUSF( "linuxReceive=>%d", nBytes );
                 inboundS = stream_from_msgbuf( &globals->cGlobals, 
                                                buf, nBytes );
                 if ( !!inboundS ) {
@@ -677,8 +672,9 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                                                     &addrRec ) ) {
                         XP_LOGF( "comms read port: %d", 
                                  addrRec.u.ip.port );
-                        redraw = server_receiveMessage( globals->cGlobals.game.server, 
-                                                        inboundS );
+                        redraw = 
+                            server_receiveMessage( globals->cGlobals.game.server,
+                                                   inboundS );
                     }
                     stream_destroy( inboundS );
                 }

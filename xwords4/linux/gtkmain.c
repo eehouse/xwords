@@ -1419,16 +1419,9 @@ newConnectionInput( GIOChannel *source,
 
     } else if ( (condition & G_IO_IN) != 0 ) {
         ssize_t nRead;
-        unsigned short packetSize;
-        unsigned short tmp;
         unsigned char buf[512];
 
-        XP_LOGF( "activity on socket %d", sock );
-        nRead = recv( sock, &tmp, sizeof(tmp), 0 );
-        assert( nRead == 2 );
-
-        packetSize = ntohs( tmp );
-        nRead = recv( sock, buf, packetSize, 0 );
+        nRead = linux_receive( &globals->cGlobals, buf, sizeof(buf) );
 
         if ( !globals->dropIncommingMsgs && nRead > 0 ) {
             XWStreamCtxt* inboundS;

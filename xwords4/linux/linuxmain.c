@@ -46,7 +46,7 @@
 #include "memstream.h"
 #include "LocalizedStrIncludes.h"
 
-#define DEFAULT_SEND_PORT 4999
+#define DEFAULT_SEND_PORT 10999
 #define DEFAULT_LISTEN_PORT 4998
 
 #ifdef DEBUG
@@ -277,12 +277,31 @@ linux_init_socket( CommonGlobals* cGlobals )
             cGlobals->socket = sock;
         } else {
             close( sock );
+            sock = -1;
             XP_STATUSF( "connect failed: %d", errno );
         }
     }
    
     return sock;
 } /* linux_init_socket */
+
+int
+linux_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
+{
+    int sock = cGlobals->socket;
+    unsigned short tmp;
+    unsigned short packetSize;
+    ssize_t nRead = recv( sock, &tmp, sizeof(tmp), 0 );
+    assert( nRead == 2 );
+
+    packetSize = ntohs( tmp );
+    assert( packetSize <= bufSize );
+    nRead = recv( sock, buf, packetSize, 0 );
+    if ( nRead < 0 ) {
+        XP_WARNF( "linuxReceive: errno=%d\n", errno );
+    }
+    return nRead;
+} /* linuxReceive */
 
 /* Create a stream for the incomming message buffer, and read in any
    information specific to our platform's comms layer (return address, say)
