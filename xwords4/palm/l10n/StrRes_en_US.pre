@@ -75,6 +75,10 @@
 
 { "STR_LOCAL_NAME",             "%s" },
 { "STR_NONLOCAL_NAME",          "%s (remote)" },
+{ "STRSD_SUMMARYSCORED",        "%s:%d" },
+{ "STRD_TRADED",                 "Traded %d" },
+{ "STR_PASSED",                 "Passed" },
+{ "STR_LOSTTURN",               "Lost turn" },
 
 { "STR_HISTORY_TITLE",		"Game history" },
 { "STRD_REMAINING_TILES_ADD",	"+ %d [all remaining tiles]" },
