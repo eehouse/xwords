@@ -55,10 +55,12 @@ typedef signed short XP_FontCode; /* not sure how I'm using this yet */
 typedef TBool XP_Bool;
 typedef XP_U32 XP_Time;
 
+#define SC(t,val) static_cast<t>(val)
+
 #define XP_CR "\n"
 
 #ifndef DEBUG
-void p_ignore( ... );
+void p_ignore( char* fmt, ... );
 #endif
 
 void sym_debugf( char* aFmt, ...);
@@ -95,7 +97,7 @@ char* sym_strcat( XP_UCHAR* dest, const XP_UCHAR* src );
 #define XP_MEMCPY(d,s,l)        sym_memcpy((d),(s),(l))
 #define XP_MEMCMP( a1, a2, l )  sym_memcmp( (a1),(a2),(l))
 #define XP_STRLEN(s)            sym_strlen((unsigned char*)(s))
-#define XP_STRCMP(s1,s2)        sym_strcmp((char*)(s1),(char*)(s2))
+#define XP_STRCMP(s1,s2)        sym_strcmp((XP_UCHAR*)(s1),(XP_UCHAR*)(s2))
 #define XP_STRNCMP(s1,s2,l)     sym_strncmp((char*)(s1),(char*)(s2),(l))
 #define XP_STRCAT(d,s)          sym_strcat((d),(s))
 
@@ -105,9 +107,9 @@ char* sym_strcat( XP_UCHAR* dest, const XP_UCHAR* src );
 #define XP_MAX(a,b) ((a)>(b)?(a):(b))
 
 #ifdef DEBUG
-#define XP_ASSERT(b) sym_assert((XP_Bool)(b), __LINE__, __FILE__ )
+# define XP_ASSERT(b) sym_assert((XP_Bool)(b), __LINE__, __FILE__ )
 #else
-#define XP_ASSERT(b)
+# define XP_ASSERT(b)
 #endif
 
 #define XP_STATUSF XP_DEBUGF
