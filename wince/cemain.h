@@ -108,6 +108,7 @@ typedef struct CEDrawCtx {
     HBITMAP origin;
 
     XP_U16 trayOwner;
+    XP_U16 miniLineHt;
 
     MPSLOT
 } CEDrawCtx;
