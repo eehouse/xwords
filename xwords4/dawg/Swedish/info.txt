@@ -35,10 +35,12 @@ XLOC_HEADER:0x8700
 <BEGIN_TILES>
 2			0		{"_"}
 8			1		'A'
-# A with circle
-2			4		'Å'
 # A with two dots
 2			3		'Ä'
+# A with circle
+2			4		'Å'
+# Æ tile only available for blanks
+0			1		'Æ'
 2			4		'B'
 1			8		'C'
 5			1		'D'
@@ -62,6 +64,8 @@ XLOC_HEADER:0x8700
 8			1		'S'
 8			1		'T'
 3			4		'U'
+# Ü tile only available for blanks
+0			1		'Ü'
 2			3		'V'
 # W tile only available for blanks
 0			1		'W'
