@@ -1,0 +1,102 @@
+# Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+# no way can unix sort handle the control chars I'm adding to text
+# below
+
+NEEDSSORT:true
+
+
+# convert accented vowels
+LANGFILTER_POSTCLIP: | tr '\207\216\222\227\234\237\226' 'aeiouu\321'
+# uppercase
+LANGFILTER_POSTCLIP: | tr [a-zñ] [A-ZÑ]
+# remove words with illegal letters
+LANGFILTER_POSTCLIP: | grep '^[[A-JL-VX-ZÑ]*$'
+# substitute pairs (can't figure out how to use octal values)
+LANGFILTER_POSTCLIP: | sed 's/CH/1/g'
+LANGFILTER_POSTCLIP: | sed 's/LL/2/g'
+LANGFILTER_POSTCLIP: | sed 's/RR/3/g'
+# substitute in the octal control character values
+LANGFILTER_POSTCLIP: | tr '123' '\001\002\003'
+
+
+LANGINFO: <p>Spanish words include all letters in the English alphabet
+LANGINFO: except "K" and "W", and with "Ñ" added. Since there are no
+LANGINFO: tiles for accented vowels, these are replaced by the
+LANGINFO: unaccented forms.</p>
+
+
+LANGINFO: <p>In addition, there are three special two-letter tiles
+LANGINFO: "CH", "LL" and "RR".  The rules say that the corresponding
+LANGINFO: two single tiles may not be used where a two-letter tile is
+LANGINFO: possible (e.g. if a word contains "CH" you must use the "CH"
+LANGINFO: tile rather than a "C" tile followed by a "H" tiles.  Thus
+LANGINFO: we remove all of these pairs from your wordlist and replace
+LANGINFO: them with the appropriate two-letter "letter". </p>
+
+
+LANGCODE:es_ES
+
+# I think dealing with "specials" goes like this.  In the {} pairs
+# below, if the first string is followed by other strings (one or two)
+# they are assumed to be filenames.  The filenames will need to be
+# found, and converted into binary files appropriate for the platform
+# by rules given somewhere -- here?  No, since they're the same for
+# all platforms.  Just put 'em in the byod.cgi file for now.
+
+# It'll be assumed that the first name is for the "small" bitmap, and
+# the second for the "large". It's ok for a file not to exist; it'll
+# just be ignored.  In the unlikely case that you wanted to specify
+# the large but not the small this is what you'd need to do.
+
+# High bit means "official".  Next 7 bits are an enum where
+# Spanish==6.  Low byte is padding
+XLOC_HEADER:0x8600
+
+<BEGIN_TILES>
+2			0	{"_"}
+12			1	'A'
+2			3	'B'
+4			3	'C'
+1			5	{"CH",true,true}
+5			2	'D'
+12			1	'E'
+1			4	'F'
+2			2	'G'
+2			4	'H'
+6			1	'I'
+1			8	'J'
+4			1	'L'
+1			8	{"LL", true, true}
+2			3	'M'
+5			1	'N'
+#	/*'N~'*/
+1			8	 209
+9			1	'O'
+2			3	'P'
+1			5	'Q'
+5			1	'R'
+1			8	{"RR",true,true}
+6			1	'S'
+4			1	'T'
+5			1	'U'
+1			4	'V'
+1			8	'X'
+1			4	'Y'
+1			10	'Z'
+<END_TILES>
+# should ignore all after the <END> above
