@@ -39,6 +39,7 @@ extern "C" {
 #include <stdio.h>
 
 #include "symdraw.h"
+#include <xwbitmaps.mbg>
 
 #define TRAY_CURSOR_HT 2
 
@@ -77,8 +78,9 @@ typedef struct SymDrawCtxt {
     CEikonEnv* iiEikonEnv;      /* iEikonEnv is a macro in Symbian headers!!! */
     CCoeEnv* iCoeEnv;
 
-    CFbsBitmap* rightArrow;
-    CFbsBitmap* downArrow;
+    CFbsBitmap* iRightArrow;
+    CFbsBitmap* iDownArrow;
+    CFbsBitmap* iStar;
 
     CONST_60 CFont* iTileFaceFont;
     CONST_60 CFont* iTileValueFont;
@@ -127,7 +129,7 @@ drawFocusRect( SymDrawCtxt* sctx, XP_Rect* rect, XP_Bool hasfocus )
 
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
     sctx->iGC->SetPenStyle( CGraphicsContext::EDottedPen );
-    XP_U16 index = hasfocus? COLOR_BLACK : COLOR_WHITE;
+    XP_U16 index = static_cast<XP_U16>(hasfocus? COLOR_BLACK : COLOR_WHITE);
     sctx->iGC->SetPenColor( sctx->colors[index] );
     sctx->iGC->DrawRect( lRect );
 } // drawFocusRect
@@ -135,7 +137,7 @@ drawFocusRect( SymDrawCtxt* sctx, XP_Rect* rect, XP_Bool hasfocus )
 static void
 getBonusColor( SymDrawCtxt* sctx, XWBonusType bonus, TRgb* rgb )
 {
-    XP_U16 index;
+    TInt index;
     if ( bonus == BONUS_NONE ) {
         index = COLOR_WHITE;
     } else {
@@ -145,10 +147,34 @@ getBonusColor( SymDrawCtxt* sctx, XWBonusType bonus, TRgb* rgb )
 } // getBonusColor
 
 static void
+drawBitmap( SymDrawCtxt* sctx, CFbsBitmap* bmp, const TRect* aRect )
+{
+    TRect rect( *aRect );
+    TSize bmpSize = bmp->SizeInPixels();
+    if ( bmpSize.iWidth <= rect.Width()
+         && bmpSize.iHeight <= rect.Height() ) {
+
+        rect.Move( (rect.Width() - bmpSize.iWidth)  / 2,
+                    (rect.Height() - bmpSize.iHeight) / 2 );
+        rect.SetSize( bmpSize );
+
+        TRect imgRect( TPoint(0,0), bmpSize );
+        sctx->iGC->BitBltMasked( rect.iTl, bmp, imgRect, bmp, ETrue );
+    } else {
+        XP_LOGF( "bitmap too big" );
+    }
+} /* drawBitmap */
+
+static void
 sym_draw_destroyCtxt( DrawCtx* p_dctx )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     XP_LOGF( "freeing draw ctxt" );
+
+    delete sctx->iRightArrow;
+    delete sctx->iDownArrow;
+    delete sctx->iStar;
+
     XP_ASSERT( sctx );
     XP_ASSERT( sctx->vtable );
     XP_FREE( sctx->mpool, sctx->vtable );
@@ -166,17 +192,19 @@ sym_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect,
 }
 
 static void
-sym_draw_boardFinished( DrawCtx* p_dctx )
+sym_draw_boardFinished( DrawCtx* /*p_dctx*/ )
 {
 }
 
+#ifdef DEBUG
 static XP_Bool
-sym_draw_vertScrollBoard( DrawCtx* p_dctx, XP_Rect* rect, 
-                          XP_S16 dist )
+sym_draw_vertScrollBoard( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/, 
+                          XP_S16 /*dist*/ )
 {
     XP_ASSERT(0);
     return XP_FALSE;
 }
+#endif
 
 static XP_Bool
 sym_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, 
@@ -220,8 +248,8 @@ sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r,
     textToDesc( &tbuf, buf );
 
     const CFont* font = sctx->iScoreFont;
-	*widthP = font->TextWidthInPixels( tbuf );
-    *heightP = font->HeightInPixels();
+	*widthP = (XP_S16)font->TextWidthInPixels( tbuf );
+    *heightP = (XP_S16)font->HeightInPixels();
 } // sym_draw_measureRemText
 
 static void
@@ -309,6 +337,7 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
     symClearRect( sctx, &lRect1, COLOR_WHITE );
     if ( dsi->isTurn ) {
         TPoint point( lRect1.iTl.iX, lRect.iBr.iY - descent );
+        sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] ); /* just in case */
         sctx->iGC->DrawText( _L("T"), point );
     }
 
@@ -337,6 +366,7 @@ sym_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect,
     lRect.Shrink( 1, 1 );
     lRect.SetHeight( lRect.Height() - TRAY_CURSOR_HT );
     sctx->iGC->SetClippingRect( lRect );
+    sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
 
     sctx->iGC->UseFont( sctx->iTileValueFont );
 
@@ -405,7 +435,7 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
                    XP_S16 owner, /* -1 means don't use */
                    XWBonusType bonus, HintAtts hintAtts,
                    XP_Bool isBlank, XP_Bool highlight, 
-                   XP_Bool isStar)
+                   XP_Bool isStar )
 {
     TRect lRect;
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -431,9 +461,11 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
 
     if ( !!bitmap ) {
         XP_ASSERT( 0 );
-    } else if ( !!text ) {
+    } else if ( !!text && (*text != '\0') ) {
         TRect r2(lRect);
         textInCell( sctx, text, &r2, highlight );
+    } else if ( isStar ) {
+        drawBitmap( sctx, sctx->iStar, &lRect );
     }
 
     return XP_TRUE;
@@ -548,20 +580,19 @@ sym_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect,
                          HintAtts hintAtts )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
-    XP_UCHAR* arrow = (XP_UCHAR*)(vert? "|":"-");
 
-    XP_LOGF( "drawBoardArrow: %s", arrow );
-
-#if 0
-    gc.BitBlt( point, arrowBmp );
-#else
     TRect lRect;
     symLocalRect( &lRect, rect );
     sctx->iGC->SetClippingRect( lRect );
 
-    textInCell( sctx, arrow, &lRect, EFalse );
-#endif
-}
+    TRgb rgb;
+    getBonusColor( sctx, bonus, &rgb );
+    sctx->iGC->SetBrushColor( rgb );
+    sctx->iGC->SetBrushStyle( CGraphicsContext::ESolidBrush );
+
+    CFbsBitmap* arrow = vert? sctx->iDownArrow : sctx->iRightArrow;
+    drawBitmap( sctx, arrow, &lRect );
+} /* sym_draw_drawBoardArrow */
 
 #ifdef KEY_SUPPORT
 static void
@@ -639,8 +670,8 @@ figureFonts( SymDrawCtxt* sctx )
 
     for ( TInt i = 0; i < nTypes; ++i ) {
         sdev->TypefaceSupport( tfSupport, i );
-        fontName = tfSupport.iTypeface.iName.Des();
 #if 0        
+        fontName = tfSupport.iTypeface.iName.Des();
         TBuf8<128> tmpb;
         tmpb.Copy( fontName );
         XP_UCHAR buf[128];
@@ -725,7 +756,10 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
             SET_VTABLE_ENTRY( sctx->vtable, draw_destroyCtxt, sym );
             SET_VTABLE_ENTRY( sctx->vtable, draw_boardBegin, sym );
             SET_VTABLE_ENTRY( sctx->vtable, draw_boardFinished, sym );
+#ifdef DEBUG
+            /* Shouldn't get called as thing stand now */
             SET_VTABLE_ENTRY( sctx->vtable, draw_vertScrollBoard, sym );
+#endif
             SET_VTABLE_ENTRY( sctx->vtable, draw_trayBegin, sym );
             SET_VTABLE_ENTRY( sctx->vtable, draw_trayFinished, sym );
             SET_VTABLE_ENTRY( sctx->vtable, draw_measureRemText, sym );
@@ -768,6 +802,27 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
             sctx->colors[COLOR_TRPL_WORD] = KRgbCyan;
 
             figureFonts( sctx );
+
+#if defined DEBUG && defined SERIES_80
+            /* this path will change for other platforms/devices!!! */
+            _LIT( kBitmapsPath, "z:\\system\\apps\\XWORDS\\xwbitmaps.mbm" );
+            TFileName bitmapFile( kBitmapsPath );
+
+            XP_LOGF( "loading bitmaps0" );
+            sctx->iDownArrow = new (ELeave) CFbsBitmap();
+            User::LeaveIfError( sctx->iDownArrow->
+                                Load(bitmapFile, EMbmXwbitmapsDownarrow_80 ) );
+            sctx->iRightArrow = new (ELeave) CFbsBitmap();
+            User::LeaveIfError( sctx->iRightArrow->
+                                Load(bitmapFile, EMbmXwbitmapsRightarrow_80 ) );
+            sctx->iStar = new (ELeave) CFbsBitmap();
+            User::LeaveIfError( sctx->iStar->
+                                Load(bitmapFile, EMbmXwbitmapsStar_80 ) );
+
+            XP_LOGF( "done loading bitmaps" );
+#else
+            error No bitmaps!!!
+#endif
         } else {
             XP_FREE( mpool, sctx );
             sctx = NULL;
