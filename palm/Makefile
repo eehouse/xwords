@@ -60,7 +60,7 @@ MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
 
 # turn on the HighRes stuff.  Experimental for now, but eventually
 # should always be on.
-#FEATURE_HIGHRES = -DFEATURE_HIGHRES
+FEATURE_HIGHRES = -DFEATURE_HIGHRES
 
 # turn on letting users pick tiles "face-up"
 MYDEFINES += -DFEATURE_TRAY_EDIT
