@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-SRC = xwrelay.cpp
+SRC = xwrelay.cpp cref.cpp ctrl.cpp
 LDFLAGS += -lpthread -g
 
 all: xwrelay
@@ -24,4 +24,4 @@ all: xwrelay
 xwrelay: $(SRC)
 
 clean:
-	rm -f xwrelay
+	rm -f xwrelay *.o
