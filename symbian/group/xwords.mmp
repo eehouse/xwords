@@ -51,6 +51,8 @@ SOURCE 2 rightarrow_80.bmp
 SOURCE 2 star_80.bmp
 SOURCE C12 turnicon_80.bmp
 SOURCE 2 turniconmask_80.bmp
+SOURCE C12 robot_80.bmp
+SOURCE 2 robotmask_80.bmp
 END
 
 LIBRARY           common.lib
