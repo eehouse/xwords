@@ -273,7 +273,9 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
                     sizeof(addr.u.ip_relay.cookie) - 1 );
 
         /* This may trigger network activity */
-        comms_setAddr( globals->cGlobals.game.comms, &addr );
+        if ( !!globals->cGlobals.game.comms ) {
+            comms_setAddr( globals->cGlobals.game.comms, &addr );
+        }
 
         model_setDictionary( globals->cGlobals.game.model, params->dict );
 
