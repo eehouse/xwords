@@ -319,8 +319,8 @@ positionBoard( PalmAppGlobals* globals )
     XP_U16 bWidth = globals->width;
     XP_U16 bHeight = globals->height;
 #else
-    XP_U16 bWidth = 160;
-    XP_U16 bHeight = 160;
+# define  bWidth  160
+# define  bHeight 160
 #endif
     XP_Bool canDouble = bWidth >= 320 && bHeight >= 320;
     XP_Bool erase = XP_FALSE;
@@ -1102,6 +1102,9 @@ startApplication( PalmAppGlobals** globalsP )
     prefsFound = PrefGetAppPreferences( AppType, PrefID, &prefs, &prefSize, 
                                         true) == VERSION_NUM;
     if ( prefsFound ) {
+        
+        prefs.versionNum = XP_NTOHS( prefs.versionNum );
+        prefs.curGameIndex = XP_NTOHS( prefs.curGameIndex );
 
         if ( (prefSize == sizeof(prefs)) 
              && (prefs.versionNum == CUR_PREFS_VERS) ) {
@@ -1232,13 +1235,15 @@ stopApplication( PalmAppGlobals* globals )
         /* Write the state information -- once we're ready to read it in.
            But skip the save if user cancelled launching the first time. */
         if ( !globals->isFirstLaunch ) {
+            XWords4PreferenceType prefs;
             /* temporarily don't save prefs since we crash on opening
                them. */
-#if ! defined XW_TARGET_PNO && ! defined FEATURE_PNOAND68K
+            XP_MEMCPY( &prefs, &globals->gState, sizeof(prefs) );
+            prefs.versionNum = XP_HTONS( prefs.versionNum );
+            prefs.curGameIndex = XP_HTONS( prefs.curGameIndex );
+
             PrefSetAppPreferences( AppType, PrefID, VERSION_NUM, 
-                                   &globals->gState, sizeof(globals->gState), 
-                                   true );
-#endif
+                                   &prefs, sizeof(prefs), true );
         }
 
         if ( !!globals->draw ) {
@@ -2090,6 +2095,7 @@ mainViewHandleEvent( EventPtr event )
         initAndStartBoard( globals, event->eType == newGameOkEvent );
         draw = true;
         XP_ASSERT( !!globals->game.board );
+        break;
 
 #ifdef FEATURE_HIGHRES
     case doResizeWinEvent:
