@@ -805,11 +805,9 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
 
 #if defined DEBUG && defined SERIES_80
             /* this path will change for other platforms/devices!!! */
-#if 1
-            /* simulator */
+#if defined SYM_WINS
             _LIT( kBitmapsPath, "z:\\system\\apps\\XWORDS\\xwbitmaps.mbm" );
-#else
-            /* device.  Why do I need this???? */
+#elif defined SYM_ARMI
             _LIT( kBitmapsPath, "c:\\system\\apps\\XWORDS\\xwbitmaps.mbm" );
 #endif
             TFileName bitmapFile( kBitmapsPath );
