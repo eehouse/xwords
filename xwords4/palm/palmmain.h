@@ -322,5 +322,8 @@ void palm_util_requestTime( XW_UtilCtxt* uc ); /* so palmir can call */
 void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index, 
 			    char* newName, XP_U16 len );
 
+XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
+Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
+                 XP_S16 titleID );
 
 #endif /* _PALMMAIN_H_ */

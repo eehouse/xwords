@@ -162,8 +162,6 @@ static void palmSetCtrlsForTray( PalmAppGlobals* globals );
 static void drawFormButtons( PalmAppGlobals* globals );
 static MemHandle findXWPrefsRsrc( PalmAppGlobals* globals, UInt32 resType, 
                                   UInt16 resID );
-static Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* alt,
-                        XP_S16 titleStrID );
 #ifdef SHOW_PROGRESS
 static void palm_util_engineStarting( XW_UtilCtxt* uc );
 static void palm_util_engineStopping( XW_UtilCtxt* uc );
@@ -604,7 +602,6 @@ palmInitPrefs( PalmAppGlobals* globals )
 {
     globals->gState.showGrid = true;
     globals->gState.versionNum = CUR_PREFS_VERS;
-    globals->isFirstLaunch = true;
     globals->gState.cp.showBoardArrow = XP_TRUE;
 
 #ifdef SHOW_PROGRESS
@@ -773,7 +770,7 @@ uninitResources( PalmAppGlobals* globals )
 
 } /* uninitResources */
 
-static XP_UCHAR*
+XP_UCHAR*
 getResString( PalmAppGlobals* globals, XP_U16 strID )
 {
     XP_ASSERT( !!globals->stringsResPtr );
@@ -874,6 +871,8 @@ startApplication( PalmAppGlobals** globalsP )
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
 
     globals->romVersion = romVersion();
+
+    globals->isFirstLaunch = true;
 
     leftyFlag = 0;
     if ( !PrefGetAppPreferencesV10('Lfty', 1, &leftyFlag, 
@@ -2511,7 +2510,7 @@ palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID,
     return palmask( globals, message, alt, titleID );
 } /* palmaskFromStrId */
 
-static Boolean
+Boolean
 palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
          XP_S16 titleID )
 {
