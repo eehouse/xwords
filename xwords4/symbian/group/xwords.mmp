@@ -1,6 +1,6 @@
 TARGET            xwords.app
 TARGETTYPE        app
-// Change this UID!!!!!
+
 UID               0x100039CE 0x10206D64
 
 // Comment the next line out for a non-debug build.  Isn't this build
@@ -9,7 +9,7 @@ MACRO             DEBUG MEM_DEBUG
 MACRO             CPLUS
 MACRO             __LITTLE_ENDIAN KEYBOARD_NAV
 MACRO             KEY_SUPPORT FEATURE_TRAY_EDIT NODE_CAN_4
-MACRO             XWFEATURE_STANDALONE_ONLY STUBBED_DICT
+MACRO             XWFEATURE_STANDALONE_ONLY 
 MACRO             SERIES_80
 
 //FOOBAR
@@ -46,6 +46,8 @@ SOURCE 2 rightarrow_80.bmp
 SOURCE 2 star_80.bmp
 END
 
+LIBRARY           common.lib
+
 LIBRARY           gdi.lib
 LIBRARY           euser.lib
 LIBRARY           apparc.lib
@@ -66,5 +68,3 @@ LIBRARY           eikctl.lib
 // Bitmaps
 LIBRARY           bitgdi.lib
 LIBRARY           fbscli.lib
-
-LIBRARY           common.lib
