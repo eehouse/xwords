@@ -24,8 +24,8 @@
 #include "mempool.h"
 #include "dictui.h"
 
-DictionaryCtxt* palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, 
-                                      PalmDictList* dl );
+DictionaryCtxt* palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
+                                      XP_UCHAR* dictName, PalmDictList* dl );
 /* might eventually belong in the superclass */
 XP_UCHAR* dict_getName( DictionaryCtxt* dict );
 
