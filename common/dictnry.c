@@ -43,7 +43,7 @@ setBlankTile( DictionaryCtxt* dctx )
 
     for ( i = 0; i < dctx->nFaces; ++i ) {
         if ( dctx->faces16[i] == 0 ) {
-            dctx->blankTile = (XP_U8)i;
+            dctx->blankTile = (XP_S8)i;
             XP_LOGF( "blank tile index: %d", i );
             break;
         }
