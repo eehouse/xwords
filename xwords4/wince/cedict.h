@@ -34,4 +34,5 @@ XP_Bool ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 len );
 
 XP_UCHAR* ceLocateNthDict( MPFORMAL XP_U16 which );
 
+XP_UCHAR* bname( XP_UCHAR* in );
 #endif
