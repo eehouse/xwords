@@ -949,7 +949,7 @@ CXWordsAppView::LoadPrefs()
     /* Read in prefs etc. */
     RFileReadStream reader;
     CleanupClosePushL(reader);
-    TInt err = reader.Open( fs, filename, EFileRead );
+    TInt err = reader.Open( fs, nameD, EFileRead );
 
     TBool found = err == KErrNone;
     if ( found ) {
