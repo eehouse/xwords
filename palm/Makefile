@@ -160,6 +160,7 @@ OBJS_68K = $(PLATFORM)/palmmain.o \
 	$(PLATFORM)/dictui.o \
 	$(PLATFORM)/dictlist.o \
 	$(PLATFORM)/palmir.o \
+	$(PLATFORM)/palmip.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
 	$(COMMONOBJ)
@@ -194,11 +195,11 @@ endif
 
 $(TARGET): $(PLATFORM)/objs.prc $(PLATFORM)/res.prc 
 	$(PAR) -c -a 'resource|backup' -v 4 $@ $(NAME) $(TYPE) $(APPID) $^
-	if [ x$(shell echo $$XW_UPLOAD_DIR) != x ]; then \
-		zip -j xw4.zip $@; \
-		mv xw4.zip $(shell echo $$XW_UPLOAD_DIR); \
-		cp $@ $(shell echo $$XW_UPLOAD_DIR); \
-	fi
+ifdef XW_UPLOAD_CMD
+	zip $(TARGET).zip $(TARGET)
+	$(XW_UPLOAD_CMD) $(TARGET)
+	$(XW_UPLOAD_CMD) $(TARGET).zip
+endif
 
 solo:
 	$(MAKE) XWFEATURE_STANDALONE_ONLY=1
