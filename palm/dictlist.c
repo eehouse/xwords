@@ -361,11 +361,13 @@ DictListFree( MPFORMAL PalmDictList* dl )
 XP_U16
 DictListCount( PalmDictList* dl )
 {
+    XP_U16 result;
     if ( !dl ) {
-        return 0;
+        result = 0;
     } else {
-        return dl->nDicts;
+        result = dl->nDicts;
     }
+    return result;
 } /* dictListCount */
 
 #ifdef NODE_CAN_4
