@@ -531,7 +531,7 @@ offerConvertOldDicts( PalmAppGlobals* globals )
     Err err;
 
     if ( count > 0 && palmaskFromStrId( globals, STR_CONFIRM_CONVERTDICT,
-                                        -1, STR_NO ) ) {
+                                        -1 ) ) {
 
         XP_U16 i;
         for ( i = 0; i < count; ++i ) {
