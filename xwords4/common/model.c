@@ -1308,7 +1308,9 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, TrayTileSet* tiles )
 XP_U16
 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn )
 {
-    PlayerCtxt* player = &model->players[turn];
+    PlayerCtxt* player;
+    XP_ASSERT( turn >= 0 );
+    player = &model->players[turn];
     return player->trayTiles.nTiles;
 } /* model_getNumPlayerTiles */
 
