@@ -25,7 +25,6 @@
 #include <Window.h>
 #include <Form.h>
 #include <Menu.h>
-#include <CharAttr.h>
 #include <IrLib.h>
 /* #include <TextMgr.h>  */
 /* #include <UIControls.h> */
@@ -840,6 +839,40 @@ doCallbackReg( PalmAppGlobals* globals, XP_Bool reg )
     }
 } /* doCallbackReg */
 
+static void
+initGlobals( PalmAppGlobals* globals )
+{
+#ifdef FEATURE_HIGHRES
+    Err err;
+    XP_U32 vers;
+
+    err = FtrGet( sysFtrCreator, sysFtrNumWinVersion, &vers );
+    globals->hasHiRes = ( err == errNone && vers >= 4 );
+
+    XP_LOGF( "hasHiRes = %d", globals->hasHiRes );
+
+    if ( globals->hasHiRes ) {
+        XP_U32 tmp;
+
+        if ( WinScreenGetAttribute( winScreenWidth, &tmp ) == errNone ) {
+            globals->width = tmp;
+        } else {
+            globals->width = 160;
+        }
+
+        if ( WinScreenGetAttribute( winScreenHeight, &tmp ) == errNone ) {
+            globals->height = tmp;
+        } else {
+            globals->height = 160;
+        }
+
+        XP_LOGF( "using width=%d, height=%d",
+                 globals->width, globals->height );
+    }
+    
+#endif
+} /* initGlobals */
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -867,6 +900,8 @@ startApplication( PalmAppGlobals** globalsP )
     *globalsP = globals;
     XP_MEMSET( globals, 0, sizeof(PalmAppGlobals) );
     MPASSIGN( globals->mpool, mpool );
+
+    initGlobals( globals );
 
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
 

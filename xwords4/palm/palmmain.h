@@ -72,17 +72,21 @@ typedef struct PalmDrawCtx {
 
     GraphicsAbility able;
 
+#ifdef FEATURE_HIGHRES
+    XP_Bool doHiRes;
+#endif
+
     union {
-	struct {
+        struct {
 /* 	    IndexedColorType black; */
 /* 	    IndexedColorType white; */
 /* 	    IndexedColorType playerColors[MAX_NUM_PLAYERS]; */
 /* 	    IndexedColorType bonusColors[BONUS_LAST-1]; */
         XP_U8 reserved;         /* make CW compiler happy */
-	} clr;
-	struct {
-	    CustomPatternType valuePatterns[4];
-	} bnw;
+        } clr;
+        struct {
+            CustomPatternType valuePatterns[4];
+        } bnw;
     } u;
     MPSLOT
 } PalmDrawCtx;
@@ -267,6 +271,11 @@ struct PalmAppGlobals {
 
 #ifdef SHOW_PROGRESS
     ProgressCtxt progress;
+#endif
+
+#ifdef FEATURE_HIGHRES
+    XP_Bool hasHiRes;
+    XP_U16 width, height;
 #endif
 
     CurGameInfo gameInfo;	/* for the currently open, or new, game */
