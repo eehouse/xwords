@@ -168,24 +168,10 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 // Draw this application's view to the screen
 void CXWordsAppView::Draw( const TRect& aRect ) const
 {
-    // Draw the parent control
-    //CEikBorderedControl::Draw(aRect);
-
     // Get the standard graphics context 
     CWindowGc& gc = SystemGc();
     gc.SetClippingRect( aRect );
-/*     gc.Clear( aRect ); */
-    
-    // Gets the control's extent - Don't encroach on the border
-//     TRect rect = Border().InnerRect(Rect());
-/*     TRect rect = Rect(); */
-
-    // Ensure that the border is not overwritten by future drawing operations
-/*     gc.SetClippingRect( rect ); */
-
-    XP_LOGF( "Draw beginning" );
-
-    XP_LOGF( "clipped rect : %d x %d", aRect.Width(), aRect.Height() );
+    gc.Clear( aRect );
 
     if ( iGame.board ) {
         // This must go!  Board needs a method to inval within a rect.
@@ -196,8 +182,6 @@ void CXWordsAppView::Draw( const TRect& aRect ) const
 
         board_draw( iGame.board );
     }
-
-    XP_LOGF( "Draw done" );
 } // Draw
 
 /* static */ VTableMgr*
@@ -689,7 +673,7 @@ CXWordsAppView::HandleCommand( TInt aCommand )
     }
 
     if ( draw ) {
-        DrawDeferred();
+        DoImmediateDraw();
     }
 
     return 1;
@@ -749,7 +733,7 @@ CXWordsAppView::HandleKeyEvent( const TKeyEvent& aKeyEvent )
     }
 
     if ( draw ) {
-        DrawDeferred();
+        DoImmediateDraw();
     }
 
     // handled if it's one we recognize.  This is probably too broad!!!
@@ -762,7 +746,7 @@ CXWordsAppView::TimerCallback( TAny* aPtr )
     CXWordsAppView* self = (CXWordsAppView*)aPtr;
 
     if ( server_do( self->iGame.server ) ) {
-        self->DrawDeferred();
+        self->DoImmediateDraw();
     }
 
     return --self->iTimerRunCount > 0;
@@ -1072,3 +1056,14 @@ CXWordsAppView::UserQuery( UtilQueryID aId, XWStreamCtxt* aStream )
     XP_ASSERT( 0 );
     return XP_FALSE;
 } /* sym_util_userQuery */
+
+void
+CXWordsAppView::DoImmediateDraw()
+{
+    ActivateGc();
+
+    XP_ASSERT( iGame.board != NULL );
+    board_draw( iGame.board );
+
+    DeactivateGc();
+} /* DoImmediateDraw */
