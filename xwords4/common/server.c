@@ -618,11 +618,11 @@ makeRobotMove( ServerCtxt* server )
             ++server->nv.nPassesInRow;
 
             if ( !!stream ) {
-                XP_UCHAR tradeBuf[64];
+                XP_UCHAR buf[64];
                 str = util_getUserString(util, STRD_ROBOT_TRADED);
-                XP_SNPRINTF( tradeBuf, sizeof(tradeBuf), str, MAX_TRAY_TILES );
+                XP_SNPRINTF( buf, sizeof(buf), str, MAX_TRAY_TILES );
 
-                stream_putBytes( stream, str, (XP_U16)XP_STRLEN(str) );
+                stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
                 XP_ASSERT( !server->vol.prevMoveStream );
                 server->vol.prevMoveStream = stream;
             }
