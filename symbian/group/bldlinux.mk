@@ -100,7 +100,7 @@ PKGVERS = $(MAJOR),$(MINOR)
 
 MBG = $(NAME).mbg 
 
-PKGFILES=$(THEAPP) $(NAME).aif $(NAME).rsc $(NAME).mbm
+PKGFILES=$(THEAPP) $(NAME).aif $(NAME).rsc $(NAME).mbm BasEnglish2to8.xwd
 
 U1 = 1000007a
 U2 = 100039ce
@@ -163,6 +163,9 @@ $(NAME).mbg $(NAME).mbm: $(IMG_SRC)
 # common, 60 and 80 (with the latter two including the first).
 $(NAME).rss: xwords.rss
 	ln -s $< $@
+
+BasEnglish2to8.xwd: ../../dawg/English/BasEnglish2to8.xwd
+	ln -s $< $@ 
 
 clean:
 	rm -f $(GENERATED) $(NAME).aifspec $(OBJECTS) $(MBG) *.mbm
