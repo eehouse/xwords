@@ -51,8 +51,8 @@ class CXSavedGamesDlg : public CEikDialog
     TBool OkToExitL( TInt aKeyCode );
     void PreLayoutDynInitL();
 
-    void ResetNames( TInt aPrefIndex );
-    void EditSelName();
+    void ResetNames( TInt aPrefIndex, const TGameName* aSelName );
+    TBool EditSelName( const TGameName* aSelName, TGameName* aNewName );
 
     CXWordsAppView* iOwner;/* uses: don't own this!!! */
     CXWGamesMgr* iGameMgr; /* I don't own this */
