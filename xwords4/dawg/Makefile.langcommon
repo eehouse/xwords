@@ -39,13 +39,13 @@ BLANK_INFO =  "_" /dev/null /dev/null
 TARGET_TYPE ?= FRANK
 
 ifdef NEWDAWG
-	TABLE_ARG = -mn
+TABLE_ARG = -mn
 else
-	TABLE_ARG = -m
+TABLE_ARG = -m
 endif
 
 ifeq ($(TARGET_TYPE),WINCE)
-	WINCE_ONLY = true
+WINCE_ONLY = true
 endif
 
 .PHONY: clean_common help allbins checkARCH
@@ -57,9 +57,9 @@ endif
 ifeq ($(TARGET_TYPE),PALM)
 
 ifdef NEWDAWG
-	PDBTYPE = XwrD
+PDBTYPE = XwrD
 else
-	PDBTYPE = Xwr3
+PDBTYPE = Xwr3
 endif
 
 all: $(LANG)2to8.pdb
