@@ -1894,21 +1894,6 @@ invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB,
         }
 } /* invalCellRegion */
 
-/* start and end points imply a rect of cells.  Changing the end point means
- * the borders change and we have to inval all cells whose in-border state is
- * changing.  Since we also include whether a cell is inside the rect we also
- * want to inval for that -- though it won't matter unless somebody manages to
- * drag two cols or rows in a single event.
- */
-static void
-invalHintForNew( BoardCtxt* board, XP_U16 newCol, XP_U16 newRow )
-{
-    invalCellRegion( board, board->hintDragStartCol, board->hintDragStartRow,
-                     newCol, newRow, XP_FALSE );
-    invalCellRegion( board, board->hintDragCurCol, board->hintDragCurRow,
-                     newCol, newRow, XP_FALSE );
-} /* invalHintForNew */
-
 static void
 invalCurHintRect( BoardCtxt* board, XP_U16 player, XP_Bool doMirror )
 {
@@ -1991,8 +1976,6 @@ finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
     XP_ASSERT( board->hintDragInProgress );
     needsRedraw = continueHintRegionDrag( board, x, y );
-
-    XP_ASSERT( !board->hasHintRect[board->selPlayer] );
 
     /* Now check if the whole drag ended above where it started.  If yes, it
       means erase! */
