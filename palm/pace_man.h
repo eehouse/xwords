@@ -26,6 +26,7 @@
 #include <Menu.h>
 #include <ExgMgr.h>
 #include <VFSMgr.h>
+#include <NotifyMgr.h>
 
 #include "pnostate.h"
 #include "xptypes.h"
@@ -43,7 +44,9 @@ extern void FrmSetEventHandler( FormType* formP,
 extern void EvtAddEventToQueue( const EventType* event );
 extern void LstSetListChoices( ListType* listP, Char** itemsText, 
                                Int16 numItems );
-
+extern Err SysNotifyRegister( UInt16 cardNo, LocalID dbID, 
+                              UInt32 notifyType, SysNotifyProcPtr callbackP, 
+                              Int8 priority, void* userDataP );
 
 #if 0
 # define FUNC_HEADER(n) XP_LOGF( #n " called" )

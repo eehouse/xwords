@@ -13,7 +13,8 @@
 # FrmSetEventHandler
 # EvtAddEventToQueue
 # LstSetListChoices
-#
+# SysNotifyRegister
+# 
 #################################################################
 CtlEnabled
 CtlGetLabel
@@ -147,7 +148,6 @@ StrNCompare
 StrStr
 SysLibFind
 SysLibLoad
-SysNotifyRegister
 SysNotifyUnregister
 SysRandom
 SysTicksPerSecond
