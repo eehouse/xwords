@@ -127,7 +127,7 @@ all: _sanity $(PKGFILES) $(NAME).sis
 	mv $(NAME).sis $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
 
 _sanity:
-	if [ "$(EPOC_$(SERIES))" = "" ]; then \
+	@if [ "$(EPOC_$(SERIES))" = "" ]; then \
 		echo " ---> ERROR: EPOC_$(SERIES) undefined in env"; \
 		exit 1; \
 	fi
