@@ -21,7 +21,8 @@
 use strict;
 use xloc;
 
-
+# For f*cking windoze linefeeds
+binmode(STDOUT);
 
 my $arg = shift(@ARGV);
 my $lang = shift(@ARGV);

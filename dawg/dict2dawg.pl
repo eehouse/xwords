@@ -624,6 +624,7 @@ sub emitNodes($$) {
 
         my $outName = sprintf("${outFileBase}_%03d.bin", $nextFileNum);
         open OUTFILE, "> $outName";
+        binmode( OUTFILE );
         my $curSize = 0;
 
         while ( $nextIndex < @gNodes ) {
