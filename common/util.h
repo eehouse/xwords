@@ -99,9 +99,9 @@ typedef struct UtilVtable {
                                  XWStreamCtxt* stream );
 
     /* return of < 0 means computer should pick */
-    XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, PickInfo* pi, 
+    XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, const PickInfo* pi, 
                                    XP_U16 playerNum,
-                                   XP_UCHAR4* texts, XP_U16 nTiles );
+                                   const XP_UCHAR4* texts, XP_U16 nTiles );
 
     XP_Bool (*m_util_askPassword)( XW_UtilCtxt* uc, const XP_UCHAR* name,
                                    XP_UCHAR* buf, XP_U16* len );
