@@ -73,7 +73,7 @@ typedef struct CommonGlobals {
     LaunchParams* params;
 
     XWGame game;
-
+    XP_U16 lastNTilesToUse;
     /* UDP comms stuff */
     char* defaultServerName;
 } CommonGlobals;
