@@ -24,12 +24,14 @@ use strict;
 use Fcntl;
 
 my $gInFile;
+my $gDoRaw = 0;
 my $gFileType;
 my $gNodeSize;
 
 sub usage() {
     print STDERR "USAGE: $0 "
-        . "<xwdORpdb>"
+        . "[-raw] "
+        . "-dict <xwdORpdb>"
         . "\n"
         . "\t(Takes a .pdb or .xwd and prints its words to stdout)\n";
     exit 1;
@@ -37,9 +39,14 @@ sub usage() {
 
 sub parseARGV() {
 
-    $gInFile = shift(@ARGV);
-    if ( 0 != @ARGV ) {
-        usage();
+    while ( my $parm = shift(@ARGV) ) {
+        if ( $parm eq "-raw" ) {
+            $gDoRaw = 1;
+        } elsif ( $parm eq "-dict" ) {
+            $gInFile = shift(@ARGV);
+        } else {
+            usage();
+        }
     }
 
     if ( $gInFile =~ m|.xwd$| ) {
@@ -311,6 +318,25 @@ sub printDAWG($$$$) {
     }
 } # printDAWG
 
+sub printNodes($$) {
+    my ( $nr, $fr ) = @_;
+    
+    my $len = @$nr;
+    for ( my $i = 0; $i < $len; ++$i ) {
+        my $node = $$nr[$i];
+
+        my ( $chrIndex, $nextEdge, $accepting, $lastEdge );
+        parseNode( $node, \$chrIndex, \$nextEdge, \$accepting, \$lastEdge );
+
+        printf "%.8x: (%.8x) %2d(%s) %.8x ", $i, $node, $chrIndex, 
+        $$fr[$chrIndex], $nextEdge;
+        print ($accepting? "A":"a");
+        print " ";
+        print ($lastEdge? "L":"l");
+        print "\n";
+    }
+}
+
 #################################################################
 # main
 #################################################################
@@ -333,6 +359,10 @@ if ( $gFileType eq "xwd" ){
 close INFILE;
 
 die "no nodes!!!" if 0 == @nodes;
-printDAWG( [], \@nodes, $startIndex, \@faces );
+if ( $gDoRaw ) {
+    printNodes( \@nodes, \@faces );
+} else {
+    printDAWG( [], \@nodes, $startIndex, \@faces );
+}
 
 exit 0;
