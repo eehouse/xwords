@@ -59,9 +59,11 @@ FrankDictList::IndexForName( XP_UCHAR* name )
 XP_S16
 FrankDictList::dictListInsert( ebo_enumerator_t* eboep, FileLoc loc )
 {
+    U16 flags;
     if ( strcmp( eboep->name.publisher, PUB_ERICHOUSE ) == 0 
          && strcmp( eboep->name.extension, EXT_XWORDSDICT ) == 0 
-         && GetDictFlags( eboep, loc ) == FRANK_DICT_VERSION_1 ) {
+         && ( (flags = GetDictFlags( eboep, loc ) == 0x0001 )
+              || (flags == 0x0002) || (flags == 0x0003) ) ) {
 
         XP_UCHAR* newName = (XP_UCHAR*)eboep->name.name;
         XP_U16 nDicts = fNDicts;
