@@ -572,11 +572,15 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                                   &entry.u.move.moveInfo );
             } else if ( entry.moveType == TRADE_TYPE ) {
 
-                XP_ASSERT ( !!pool );
-                replaceNewTiles( model, pool, turn, &entry.u.trade.newTiles );
+                if ( pool != NULL ) {
+                    /* If there's no pool, assume we're doing this for
+                       scoring purposes only. */
+                    replaceNewTiles( model, pool, turn, 
+                                     &entry.u.trade.newTiles );
 
-                pool_removeTiles( pool, &entry.u.trade.oldTiles );
-                assignPlayerTiles( model, turn, &entry.u.trade.oldTiles );
+                    pool_removeTiles( pool, &entry.u.trade.oldTiles );
+                    assignPlayerTiles( model, turn, &entry.u.trade.oldTiles );
+                }
 
             } else if ( entry.moveType == PHONY_TYPE ) {
 
