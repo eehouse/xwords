@@ -482,6 +482,15 @@ positionBoard( PalmAppGlobals* globals )
     return erase;
 } /* positionBoard */
 
+static XWStreamCtxt* 
+makeSimpleStream( PalmAppGlobals* globals, MemStreamCloseCallback cb )
+{
+    return mem_stream_make( MPPARM(globals->mpool)
+                            globals->vtMgr,
+                            globals, 
+                            CHANNEL_NONE, cb );
+} /* makeSimpleStream */
+
 static XWStreamCtxt*
 gameRecordToStream( PalmAppGlobals* globals, XP_U16 index )
 {
@@ -501,8 +510,7 @@ gameRecordToStream( PalmAppGlobals* globals, XP_U16 index )
         if ( index < numRecs ) {
             handle = DmGetRecord( dbP, index );
 
-            recStream = mem_stream_make( MEMPOOL globals->vtMgr, globals,
-                                         0, NULL );
+            recStream = makeSimpleStream( globals, NULL );
             stream_open( recStream );
             stream_putBytes( recStream, MemHandleLock(handle), 
                              MemHandleSize(handle) );
@@ -1226,8 +1234,7 @@ saveOpenGame( PalmAppGlobals* globals )
             board_hideTray( globals->game.board ); /* so won't be visible when
                                                       next opened */
         }
-        memStream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 0, 
-                                     writeToDb );
+        memStream = makeSimpleStream( globals, writeToDb );
         stream_open( memStream );
 
         /* write the things's name.  Name is first because we want to be able
@@ -1875,8 +1882,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
         XWStreamCtxt* stream;
         XP_ASSERT( !!globals->game.comms );
-        stream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 
-                                  CHANNEL_NONE, palm_send_on_close );
+        stream = makeSimpleStream( globals, palm_send_on_close );
         server_initClientConnection( globals->game.server, stream );
     }
 #endif
@@ -2066,6 +2072,7 @@ mainViewHandleEvent( EventPtr event )
     OpenSavedGameData* savedGameData;
     char newName[MAX_GAMENAME_LENGTH];
     XP_U16 prevSize;
+    XWStreamCtxt* stream;
 
     CALLBACK_PROLOGUE();
 
@@ -2225,28 +2232,27 @@ mainViewHandleEvent( EventPtr event )
 
         case XW_TILEVALUES_PULLDOWN_ID: 
             if ( !!globals->game.server ) {
-                XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
-                                                        globals->vtMgr, 
-                                                        globals, 
-                                                        CHANNEL_NONE, 
-                                                        NULL );
-                XP_UCHAR* s = getResString( globals, STR_VALUES_HEADER );
-                stream_putBytes( stream, s, XP_STRLEN((const char*)s) );
+                stream = makeSimpleStream( globals, NULL );
 
-                server_formatPoolCounts( globals->game.server, stream, 
-                                         3 ); /* 3: ncols */
+                server_formatDictCounts( globals->game.server, stream, 
+                                         4 ); /* 4: ncols */
 
                 askFromStream( globals, stream, STR_VALUES_TITLE, true );
+            }
+            break;
+
+        case XW_TILESLEFT_PULLDOWN_ID:
+            if ( !!globals->game.board ) {
+                stream = makeSimpleStream( globals, NULL );
+                board_formatRemainingTiles( globals->game.board, stream );
+                askFromStream( globals, stream, STR_REMAINS_TITLE, true );
             }
             break;
 
         case XW_HISTORY_PULLDOWN_ID:
             if ( !!globals->game.server ) {
                 XP_Bool gameOver = server_getGameIsOver(globals->game.server);
-                XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
-                                                        globals->vtMgr,
-                                                        globals, 
-                                                        CHANNEL_NONE, NULL );
+                stream = makeSimpleStream( globals, NULL );
 
                 model_writeGameHistory( globals->game.model, stream, 
                                         globals->game.server, gameOver );
@@ -2442,11 +2448,7 @@ mainViewHandleEvent( EventPtr event )
 
         case XW_NETSTATS_PULLDOWN_ID:
             if ( !!globals->game.comms ) {
-                XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
-                                                        globals->vtMgr,
-                                                        globals, 
-                                                        CHANNEL_NONE,
-                                                        askOnClose );
+                stream = makeSimpleStream( globals, askOnClose );
                 comms_getStats( globals->game.comms, stream );
                 stream_destroy( stream );
             }
@@ -2454,11 +2456,7 @@ mainViewHandleEvent( EventPtr event )
 #ifdef MEM_DEBUG
         case XW_MEMSTATS_PULLDOWN_ID :
             if ( !!globals->mpool ) {
-                XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
-                                                        globals->vtMgr,
-                                                        globals, 
-                                                        CHANNEL_NONE,
-                                                        askOnClose );
+                stream = makeSimpleStream( globals, askOnClose );
                 mpool_stats( globals->mpool, stream );
                 stream_destroy( stream );
             }
@@ -2589,8 +2587,7 @@ displayFinalScores( PalmAppGlobals* globals )
 {
     XWStreamCtxt* stream;
 
-    stream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 
-                              CHANNEL_NONE, NULL );
+    stream = makeSimpleStream( globals, NULL );
     server_writeFinalScores( globals->game.server, stream );
     stream_putU8( stream, '\0' );
 
@@ -3382,8 +3379,7 @@ palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
                                            just be passing a null on-close
                                            function? */
     XP_LOGF( "making stream for channel %d", channelNo );
-    stream = mem_stream_make( MEMPOOL globals->vtMgr, globals, 
-                              channelNo, palm_send_on_close );
+    stream = makeSimpleStream( globals, palm_send_on_close );
     return stream;
 } /* palm_util_makeStreamFromAddr */
 
