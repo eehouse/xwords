@@ -27,7 +27,7 @@ FrankDictList::FrankDictList(MPFORMAL_NOCOMMA)
     MPASSIGN( this->mpool, mpool );
     fNDicts = 0;
 
-    for ( XP_U16 i = 0; i < fNDicts; ++i ) {
+    for ( XP_U16 i = 0; i < MAX_DICTS; ++i ) {
         fDictNames[i] = (XP_UCHAR*)NULL;
     }
 
@@ -62,7 +62,7 @@ FrankDictList::dictListInsert( ebo_enumerator_t* eboep, FileLoc loc )
     U16 flags;
     if ( strcmp( eboep->name.publisher, PUB_ERICHOUSE ) == 0 
          && strcmp( eboep->name.extension, EXT_XWORDSDICT ) == 0 
-         && ( (flags = GetDictFlags( eboep, loc ) == 0x0001 )
+         && ( ((flags = GetDictFlags( eboep, loc )) == 0x0001 )
               || (flags == 0x0002) || (flags == 0x0003) ) ) {
 
         XP_UCHAR* newName = (XP_UCHAR*)eboep->name.name;
