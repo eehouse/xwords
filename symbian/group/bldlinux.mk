@@ -64,6 +64,8 @@ IMG_SRC = ../bmps/downarrow_80.bmp \
 	../bmps/star_80.bmp \
 	../bmps/turnicon_80.bmp \
 	../bmps/turniconmask_80.bmp \
+	../bmps/robot_80.bmp \
+	../bmps/robotmask_80.bmp \
 
 AIF = ../aif
 ICON_SRC = \
