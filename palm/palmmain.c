@@ -2623,7 +2623,9 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
     XP_UCHAR* labelFmt;
     FieldPtr fld;
     XP_U16 tapped;
+#ifdef FEATURE_TRAY_EDIT
     XP_Bool forBlank = pi->why == PICK_FOR_BLANK;
+#endif
 
     initListData( MEMPOOL &ld, nTiles );
 

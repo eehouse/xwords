@@ -446,7 +446,6 @@ palm_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool selected )
     --lRect.width;
 
     if ( selected ) {
-        PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
         short pattern[] = { 0xFF00, 0xFF00, 0xFF00, 0xFF00 };
 
         WinSetPattern( (const CustomPatternType*)&pattern );
@@ -854,7 +853,6 @@ static void
 palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
                      XP_U16 player, XP_S16 secondsLeft )
 {
-    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
     XP_Rect localR = *rInner;
     RectangleType saveClip;
