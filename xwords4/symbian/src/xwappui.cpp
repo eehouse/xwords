@@ -62,6 +62,7 @@ void CXWordsAppUi::HandleCommandL(TInt aCommand)
 
         // built-in commands here
     case EEikCmdExit:
+        iAppView->Exiting();
         CBaActiveScheduler::Exit();
         break;
 
