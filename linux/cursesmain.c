@@ -83,16 +83,6 @@ cursesUserError( CursesAppGlobals* globals, char* format, ... )
     va_end(ap);
 } /* cursesUserError */
 
-static void
-curses_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort )
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    XP_LOGF( "listenPortChange  called: not sure what to do" );
-
-    /* if this isn't true, need to tear down and rebind socket */
-    XP_ASSERT( newPort == globals->cGlobals.params->defaultListenPort );
-} /* curses_util_listenPortChange */
-
 static XP_S16 
 curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, XP_U16 playerNum,
                           const XP_UCHAR4* texts, XP_U16 nTiles )
@@ -598,13 +588,40 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock,
     globals->fdArray[globals->fdCount].fd = newSock;
     globals->fdArray[globals->fdCount].events = POLLIN;
 
-    globals->streams[globals->fdCount] = stream;
-
     ++globals->fdCount;
     XP_LOGF( "listenOnSocket: there are now %d sources to poll",
              globals->fdCount );
 } /* cursesListenOnSocket */
 
+static void
+curses_stop_listening( CursesAppGlobals* globals, int sock )
+{
+    int count = globals->fdCount;
+    int i, found = 0;
+
+    for ( i = 0; i < count; ++i ) {
+        if ( globals->fdArray[i].fd == sock ) {
+            found = 1;
+        } else if ( found ) {
+            globals->fdArray[i-1].fd = globals->fdArray[i].fd;
+        }
+    }
+
+    assert( found );
+    --globals->fdCount;
+} /* curses_stop_listening */
+
+static void
+curses_socket_changed( void* closure, int oldSock, int newSock )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
+    if ( oldSock != -1 ) {
+        curses_stop_listening( globals, oldSock );
+    }
+    if ( newSock != -1 ) {
+        cursesListenOnSocket( globals, newSock, NULL );
+    }
+} /* curses_socket_changed */
 
 /* 
  * Ok, so this doesn't block yet.... 
@@ -661,17 +678,18 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                     CommsAddrRec addrRec;
                 
                     XP_MEMSET( &addrRec, 0, sizeof(addrRec) );
-                    addrRec.conType = COMMS_CONN_IP;
+                    addrRec.conType = COMMS_CONN_RELAY;
             
-                    addrRec.u.ip.ipAddr = ntohl(addr_sock.sin_addr.s_addr);
+                    addrRec.u.ip_relay.ipAddr = 
+                        ntohl(addr_sock.sin_addr.s_addr);
                     XP_LOGF( "captured incomming ip address: 0x%lx",
-                             addrRec.u.ip.ipAddr );
+                             addrRec.u.ip_relay.ipAddr );
 
                     if ( comms_checkIncomingStream(globals->cGlobals.game.comms,
                                                     inboundS, 
                                                     &addrRec ) ) {
                         XP_LOGF( "comms read port: %d", 
-                                 addrRec.u.ip.port );
+                                 addrRec.u.ip_relay.port );
                         redraw = 
                             server_receiveMessage( globals->cGlobals.game.server,
                                                    inboundS );
@@ -777,7 +795,7 @@ cursesSendOnClose( XWStreamCtxt* stream, void* closure )
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
 
     XP_LOGF( "cursesSendOnClose called" );
-    result = comms_send( globals->cGlobals.game.comms, COMMS_CONN_IP, stream );
+    result = comms_send( globals->cGlobals.game.comms, stream );
 } /* cursesSendOnClose */
 
 static XWStreamCtxt* 
@@ -814,8 +832,6 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_setTimer = curses_util_setTimer;
     util->vtable->m_util_requestTime = curses_util_requestTime;
 
-    util->vtable->m_util_listenPortChange = curses_util_listenPortChange;
-
     util->closure = globals;
 } /* setupCursesUtilCallbacks */
 
@@ -825,7 +841,7 @@ sendOnClose( XWStreamCtxt* stream, void* closure )
     CursesAppGlobals* globals = closure;
     XP_LOGF( "curses sendOnClose called" );
     XP_ASSERT( !!globals->cGlobals.game.comms );
-    comms_send( globals->cGlobals.game.comms, COMMS_CONN_IP, stream );
+    comms_send( globals->cGlobals.game.comms, stream );
 } /* sendOnClose */
 
 static XP_Bool
@@ -858,7 +874,6 @@ void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int piperesult;
-    int sock;
     DictionaryCtxt* dict;
     CommsAddrRec addr;
     XP_U16 gameID;
@@ -868,6 +883,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     globals.amServer = isServer;
     globals.cGlobals.params = params;
     globals.cGlobals.socket = -1;
+
+    globals.cGlobals.socketChanged = curses_socket_changed;
+    globals.cGlobals.socketChangedClosure = &globals;
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;
@@ -883,11 +901,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     piperesult = pipe( globals.timepipe );
     XP_ASSERT( piperesult == 0 );
 
-    cursesListenOnSocket( &globals, globals.timepipe[0], NULL ); /* reader pipe */
-
-    sock = linux_init_socket( &globals.cGlobals ); 
-    cursesListenOnSocket( &globals, sock, NULL );
-
+    /* reader pipe */
+    cursesListenOnSocket( &globals, globals.timepipe[0], NULL );
     signal( SIGWINCH, SIGWINCH_handler );
     initCurses( &globals );
 
@@ -898,11 +913,14 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                       params->util, (DrawCtx*)globals.draw,
                       gameID, &globals.cp, linux_tcp_send, &globals );
 
-    addr.conType = COMMS_CONN_IP;
-    addr.u.ip.ipAddr = 0;       /* ??? */
-    addr.u.ip.port = params->defaultSendPort;
-    comms_setAddr( globals.cGlobals.game.comms, 
-                   &addr, params->defaultListenPort );
+    addr.conType = COMMS_CONN_RELAY;
+    addr.u.ip_relay.ipAddr = 0;       /* ??? */
+    addr.u.ip_relay.port = params->defaultSendPort;
+    XP_STRNCPY( addr.u.ip_relay.hostName, params->relayName,
+                sizeof(addr.u.ip_relay.hostName) - 1 );
+    XP_STRNCPY( addr.u.ip_relay.cookie, params->cookie,
+                sizeof(addr.u.ip_relay.cookie) - 1 );
+    comms_setAddr( globals.cGlobals.game.comms, &addr );
 
 	model_setDictionary( globals.cGlobals.game.model, params->dict );
 
@@ -926,12 +944,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                                                           &globals,
                                                           (XP_PlayerAddr)0,
                                                           sendOnClose ) );
-#if 0
-            cursesListenOnSocket( 
-                                 &globals, NULL,	/* replaces below */
-                                 /* 		linux_getStreamSocket( params->info.clientInfo.stream ), */
-                                 params->info.clientInfo.stream );
-#endif
         } else {
             cursesUserError( &globals, "Unable to open connection to server");
             exit( 0 );

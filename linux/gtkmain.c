@@ -249,8 +249,10 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
 	stream_destroy( stream );
 
     } else {			/* not reading from a saved file */
-        XP_U16 gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
+        XP_U16 gameID;
         CommsAddrRec addr;
+
+        gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
 
         XP_ASSERT( !!params->relayName );
         globals->cGlobals.defaultServerName = params->relayName;
@@ -262,11 +264,16 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
                           params->util, (DrawCtx*)globals->draw,
                           gameID, &globals->cp, linux_tcp_send, globals );
 
-        addr.conType = COMMS_CONN_IP;
-        addr.u.ip.ipAddr = 0;       /* ??? */
-        addr.u.ip.port = params->defaultSendPort;
-        comms_setAddr( globals->cGlobals.game.comms, 
-                       &addr, params->defaultListenPort );
+        addr.conType = COMMS_CONN_RELAY;
+        addr.u.ip_relay.ipAddr = 0;
+        addr.u.ip_relay.port = params->defaultSendPort;
+        XP_STRNCPY( addr.u.ip_relay.hostName, params->relayName,
+                    sizeof(addr.u.ip_relay.hostName) - 1 );
+        XP_STRNCPY( addr.u.ip_relay.cookie, params->cookie,
+                    sizeof(addr.u.ip_relay.cookie) - 1 );
+
+        /* This may trigger network activity */
+        comms_setAddr( globals->cGlobals.game.comms, &addr );
 
         model_setDictionary( globals->cGlobals.game.model, params->dict );
 
@@ -1141,18 +1148,6 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
     return stream;
 } /* gtk_util_makeStreamFromAddr */
 
-static void
-gtk_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort )
-{
-#ifdef DEBUG
-    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
-#endif
-    XP_LOGF( "listenPortChange  called: not sure what to do" );
-
-    /* if this isn't true, need to tear down and rebind socket */
-    XP_ASSERT( newPort == globals->cGlobals.params->defaultListenPort );
-} /* gtk_util_listenPortChange */
-
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool 
 gtk_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
@@ -1244,24 +1239,24 @@ makeShowButtonFromBitmap( GtkAppGlobals* globals, GtkWidget* parent,
     GtkStyle *style;
 
     if ( file_exists( fileName ) ) {
-	button = gtk_button_new();
+        button = gtk_button_new();
 
-	style = gtk_widget_get_style(parent);
+        style = gtk_widget_get_style(parent);
 
-	pixmap = gdk_pixmap_create_from_xpm( parent->window, &mask,
-					     &style->bg[GTK_STATE_NORMAL],
-					     fileName );
-	pixmapWid = gtk_pixmap_new( pixmap, mask );
-	gtk_container_add( GTK_CONTAINER(button), pixmapWid );
+        pixmap = gdk_pixmap_create_from_xpm( parent->window, &mask,
+                                             &style->bg[GTK_STATE_NORMAL],
+                                             fileName );
+        pixmapWid = gtk_pixmap_new( pixmap, mask );
+        gtk_container_add( GTK_CONTAINER(button), pixmapWid );
 
-	gtk_widget_show( pixmapWid );
+        gtk_widget_show( pixmapWid );
     } else {
-	button = gtk_button_new_with_label( alt );
+        button = gtk_button_new_with_label( alt );
     }
     gtk_widget_show( button );
 
     if ( func != NULL ) {
-	gtk_signal_connect( GTK_OBJECT(button), "clicked", func, globals );
+        gtk_signal_connect( GTK_OBJECT(button), "clicked", func, globals );
     }
 
     return button;
@@ -1394,10 +1389,6 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_getTraySearchLimits = gtk_util_getTraySearchLimits;
 #endif
 
-#ifdef BEYOND_IR
-    util->vtable->m_util_listenPortChange = gtk_util_listenPortChange;
-#endif
-
     util->closure = globals;
 } /* setupGtkUtilCallbacks */
 
@@ -1430,7 +1421,7 @@ newConnectionInput( GIOChannel *source,
             inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nRead );
             if ( !!inboundS ) {
                 if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
-                                                 inboundS, NULL ) ) {
+                                                inboundS, NULL ) ) {
                     redraw = server_receiveMessage(globals->cGlobals.game.server
                                                    , inboundS );
                 }
@@ -1471,13 +1462,26 @@ gtkListenOnSocket( GtkAppGlobals* globals, int newSock )
 } /* gtkListenOnSocket */
 
 static void
+gtk_socket_changed( void* closure, int oldSock, int newSock )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+    if ( oldSock != -1 ) {
+        g_source_remove( oldSock );
+        XP_LOGF( "Removed %d from gtk's list of listened-to sockets" );
+    }
+    if ( newSock != -1 ) {
+        gtkListenOnSocket( globals, newSock );
+    }
+}
+
+static void
 sendOnClose( XWStreamCtxt* stream, void* closure )
 {
     XP_S16 result;
     GtkAppGlobals* globals = closure;
 
     XP_LOGF( "sendOnClose called" );
-    result = comms_send( globals->cGlobals.game.comms, COMMS_CONN_IP, stream );
+    result = comms_send( globals->cGlobals.game.comms, stream );
 } /* sendOnClose */
 
 static void 
@@ -1506,6 +1510,9 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     globals.cGlobals.params = params;
     globals.cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
     globals.cGlobals.socket = -1;
+
+    globals.cGlobals.socketChanged = gtk_socket_changed;
+    globals.cGlobals.socketChangedClosure = &globals;
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;

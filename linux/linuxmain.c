@@ -197,6 +197,7 @@ usage( char* appName, char* msg )
 	     "\t [-v]             # put scoreboard in vertical mode\n"
 	     "\t [-m]             # make the robot duMb (smart is default)\n"
 	     "\t [-c]             # explain robot scores after each move\n"
+	     "\t [-C COOKIE]      # cookie used to groups games on relay\n"
 	     "\t\t # (max of four players total, local and remote)\n"
 	     "\t [-b boardSize]   # number of columns and rows\n"
 	     "\t [-e random_seed] \n"
@@ -228,12 +229,29 @@ linux_tcp_send( XP_U8* buf, XP_U16 buflen, CommsAddrRec* addrRec,
     
     if ( socket == -1 ) {
         XP_STATUSF( "linux_tcp_send: socket uninitialized" );
-    } else {
+        socket = linux_init_socket( globals );
+        if ( socket != -1 ) {
+            assert( globals->socket == socket );
+            (*globals->socketChanged)( globals->socketChangedClosure, 
+                                       -1, socket );
+        }
+    }
+
+    if ( socket != -1 ) {
         XP_U16 netLen = htons( buflen );
         errno = 0;
 
-        (void)send( socket, &netLen, sizeof(netLen), 0 );
-        result = send( socket, buf, buflen, 0 ); 
+        result = send( socket, &netLen, sizeof(netLen), 0 );
+        if ( result == sizeof(netLen) ) {
+            result = send( socket, buf, buflen, 0 ); 
+        }
+        if ( result <= 0 ) {
+            XP_STATUSF( "closing non-functional socket" );
+            close( socket );
+            (*globals->socketChanged)( globals->socketChangedClosure, 
+                                       socket, -1 );
+            globals->socket = -1;
+        }
 
         XP_STATUSF( "linux_tcp_send: send returned %d of %d (err=%d)", 
                     result, buflen, errno );
@@ -512,6 +530,7 @@ main( int argc, char** argv )
     mainParams.defaultListenPort = DEFAULT_LISTEN_PORT;
     mainParams.defaultSendPort = DEFAULT_SEND_PORT;
     mainParams.trayOverlaps = XP_FALSE;
+    mainParams.cookie = "COOKIE";
     mainParams.gi.boardSize = 15;
     mainParams.quitAfter = XP_FALSE;
     mainParams.sleepOnAnchor = XP_FALSE;
@@ -519,6 +538,7 @@ main( int argc, char** argv )
     mainParams.undoWhenDone = XP_FALSE;
     mainParams.gi.timerEnabled = XP_FALSE;
     mainParams.gi.robotSmartness = SMART_ROBOT;
+    
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
 #if defined PLATFORM_GTK
@@ -540,7 +560,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "o"
 #endif
-                      "kKf:l:n:Nsd:a:p:e:r:b:qw:Sit:Umvc" );
+                      "kKf:l:n:Nsd:a:p:e:r:b:qw:Sit:UmvcC:" );
         switch( opt ) {
         case 'h':
         case '?':
@@ -548,6 +568,9 @@ main( int argc, char** argv )
             break;
         case 'c':
             mainParams.showRobotScores = XP_TRUE;
+            break;
+        case 'C':
+            mainParams.cookie = optarg;
             break;
         case 'd':
             mainParams.gi.dictName = copyString( MPPARM(mainParams.util->mpool) 

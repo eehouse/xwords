@@ -43,6 +43,7 @@ typedef struct LaunchParams {
     DictionaryCtxt* dict;
     CurGameInfo gi;
     char* fileName;
+    char* cookie;
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
     XP_Bool trayOverlaps;	/* probably only interesting for GTK case */
@@ -69,6 +70,8 @@ typedef struct LaunchParams {
 
 } LaunchParams;
 
+typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock );
+
 typedef struct CommonGlobals {
     LaunchParams* params;
 
@@ -77,6 +80,8 @@ typedef struct CommonGlobals {
     /* UDP comms stuff */
     char* defaultServerName;
     int socket;
+    SocketChangedFunc socketChanged;
+    void* socketChangedClosure;
 } CommonGlobals;
 
 #endif

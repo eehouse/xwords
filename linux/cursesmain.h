@@ -95,7 +95,6 @@ struct CursesAppGlobals {
     struct sockaddr_in listenerSockAddr;
     short fdCount;
     struct pollfd fdArray[FD_MAX]; /* one for stdio, one for listening socket */
-    XWStreamCtxt* streams[FD_MAX]; /* [0], for stdin, will be null.... */
 
     int timepipe[2];		/* for reading/writing "user events" */
 };
