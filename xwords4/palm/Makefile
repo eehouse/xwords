@@ -29,6 +29,7 @@ DICT = $(shell echo $$BASENG_PATH)
 
 DEBUG_SET = APPID=Xwdb ICONTEXT=CrossDbg NAME="CrossDbg" DONT_OMIT=true
 
+# BUILD_AS_PNOLET = 1
 
 #OWNERNAME = "Eric House"
 NO_REG_REQUIRED = -DNO_REG_REQUIRED
@@ -140,7 +141,7 @@ endif
 
 include ../common/config.mk
 
-
+ifeq (x$(BUILD_AS_PNOLET)x, xx)
 OBJS = 	$(PLATFORM)/palmmain.o \
 	$(PLATFORM)/palmsavg.o \
 	$(PLATFORM)/gameutil.o \
@@ -154,6 +155,10 @@ OBJS = 	$(PLATFORM)/palmmain.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
 	$(COMMONOBJ)
+else
+OBJS = 	$(PLATFORM)/enter68k.o
+PNOLET = pnolet
+endif
 
 include ../common/rules.mk
 
@@ -204,7 +209,7 @@ $(PLATFORM)/objs.prc: LocalizedStrIncludes.h $(OBJS) gdbload
 	$(PAR) -c -a resource $(PLATFORM)/objs.prc Code rsrc rsrc *.grc
 	@rm -f *.grc *.bin
 
-$(PLATFORM)/res.prc: xwords4.rcp $(HEADERS) $(CODESEG) StrL03e8.bin $(FNAVS)
+$(PLATFORM)/res.prc: xwords4.rcp $(HEADERS) $(CODESEG) StrL03e8.bin $(FNAVS) $(PNOLET)
 	$(PILRC) $< >/dev/null
 	$(PAR) -c -a 'resource' $@ Rsrc rsrc rsrc *.bin
 	rm -f $< *.bin
@@ -226,6 +231,13 @@ fnavgen: fnavgen.c
 
 $(FNAVS): ./fnavgen
 	./$<
+
+ifneq (x$(BUILD_AS_PNOLET)x, xx)
+.PHONY : pnolet
+
+pnolet:
+	$(MAKE) -f Makefile.PNO
+endif
 
 # GDB seems confused by relative paths these days.  So generate the
 # file rather than trying to keep in in cvs.
