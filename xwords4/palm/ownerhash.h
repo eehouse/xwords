@@ -18,7 +18,7 @@
  */
 
 #ifndef _OWNERHASH_H_
-
+#ifndef NO_REG_REQUIRED
 static unsigned long
 my_hash( unsigned char* str ) {
     unsigned char ch;
@@ -30,4 +30,5 @@ my_hash( unsigned char* str ) {
 } /* my_hash */
 
 #define HASH(s)	my_hash(s)
+#endif
 #endif
