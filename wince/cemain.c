@@ -992,9 +992,11 @@ ceDoPrefsDlg( CEAppGlobals* globals )
 
         (void)cePositionBoard( globals );
 
+#ifdef XWFEATURE_CE_EDITCOLORS
         if ( state.colorsChanged ) {
             updateForColors( globals );
         }
+#endif
         /* need to reflect vars set in state into globals, and update/inval
            as appropriate. */
     }
