@@ -369,9 +369,10 @@ showHidePrefsWidgets( PalmAppGlobals* globals, FormPtr form )
     if ( !global ) {
         Boolean on = getBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID );
         disOrEnable( form, XW_PREFS_TIMER_FIELD_ID, on );
-
+#ifdef FEATURE_TRAY_EDIT
         on = getBooleanCtrl( XW_PREFS_SEETILES_CHECKBOX_ID );
         disOrEnable( form, XW_PREFS_SEETILESROBOT_CHECKBOX_ID, on );
+#endif
     }
 } /* showHidePrefsWidgets */
 
