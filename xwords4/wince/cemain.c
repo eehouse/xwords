@@ -104,8 +104,9 @@ static void messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str,
                             wchar_t* title );
 static XP_Bool queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg );
 
-static void ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                             wchar_t*  title, XP_Bool destroy );
+static XP_U16 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
+                               wchar_t* title, XP_Bool isQuery, 
+                               XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
 static XP_Bool doNewGame( CEAppGlobals* globals, XP_Bool silent );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
@@ -794,7 +795,8 @@ ceCountsAndValues( CEAppGlobals* globals )
         server_formatPoolCounts( globals->game.server, stream, 
                                  2 ); /* 2: ncols */
 
-        ceMsgFromStream( globals, stream, L"Tile Counts and Values", TRUE );
+        ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
+                         XP_FALSE, XP_TRUE );
     }
 } /* ceCountsAndValues */
 
@@ -811,7 +813,7 @@ ceDoHistory( CEAppGlobals* globals )
 
     model_writeGameHistory( globals->game.model, stream, 
                             globals->game.server, gameOver );
-    ceMsgFromStream( globals, stream, L"Game history", TRUE );
+    ceMsgFromStream( globals, stream, L"Game history", XP_FALSE, XP_TRUE );
 } /* ceDoHistory */
 
 static void
@@ -842,7 +844,7 @@ ceDisplayFinalScores( CEAppGlobals* globals )
     server_writeFinalScores( globals->game.server, stream );
     stream_putU8( stream, '\0' );
 
-    ceMsgFromStream( globals, stream, L"Final scores", TRUE );
+    ceMsgFromStream( globals, stream, L"Final scores", XP_FALSE, XP_TRUE );
 } /* ceDisplayFinalScores */
 
 static XP_Bool
@@ -1025,20 +1027,18 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             XP_MEMSET( &sfs, 0, sizeof(sfs) );
             XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
 
+            wcscpy( nameBuf, DEFAULT_DIR_NAME L"\\Untitled.xwg" );
+
             sfs.lStructSize = sizeof(sfs);
-            sfs.Flags = OFN_PATHMUSTEXIST;
+            sfs.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
             sfs.hwndOwner = globals->hWnd;
             sfs.lpstrFile = nameBuf;
             sfs.nMaxFile = sizeof(nameBuf)/sizeof(nameBuf[0]);
 
             sfs.lpstrDefExt = L"xwg";
 
-            /* Doesn't seem to be working.... */
-            XP_LOGF( "setting the bleeping title to: Save current game as" );
-            sfs.lpstrTitle = L"Save current game as";
-
-/*             XP_ASSERT( !!globals->lastDefaultDir ); */
-            sfs.lpstrInitialDir = L"hello world";
+            // sfs.lpstrTitle: doesn't work
+            // sfs.lpstrInitialDir: doesn't either
 
             confirmed = GetSaveFileName( &sfs );
 
@@ -1369,14 +1369,15 @@ notImpl( CEAppGlobals* globals )
     messageBoxChar( globals, "feature not implemented", NULL );
 } /* notImpl */
 
-static void
+static XP_U16
 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                 wchar_t* title, XP_Bool destroy )
+                 wchar_t* title, XP_Bool isQuery, XP_Bool destroy )
 {
     StrBoxInit init;
 
     init.title = title;
     init.stream = stream;
+    init.isQuery = isQuery;
     init.globals = globals;
 
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
@@ -1385,6 +1386,8 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
     if ( destroy ) {
         stream_destroy( stream );
     }
+
+    return init.result;
 } /* ceMsgFromStream */
 
 static void
@@ -1453,6 +1456,13 @@ queryBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream )
     XP_FREE( globals->mpool, buf );
     return result;
 } /* queryBoxStream */
+
+static XP_Bool
+ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream )
+{
+    return ceMsgFromStream( globals, stream, L"Question", XP_TRUE, 
+                            XP_FALSE );
+} /* ceQueryFromStream */
 
 static void
 RECTtoXPR( XP_Rect* dest, RECT* src )
@@ -1630,7 +1640,7 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     }
 
     if ( queryWithStream ) {
-        answer = queryBoxStream( globals, stream );
+        answer = ceQueryFromStream( globals, stream );
     } else if ( !!query ) {
         answer = queryBoxChar( globals, query );
     } else if ( !!info ) {
