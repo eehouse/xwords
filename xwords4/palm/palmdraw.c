@@ -26,8 +26,8 @@
 #include "xwords4defines.h"
 #include "LocalizedStrIncludes.h"
 
-#define NUMRECT_WIDTH 10
-#define NUMRECT_HEIGHT 10
+#define CHARRECT_WIDTH 12
+#define CHARRECT_HEIGHT 14
 
 #define FONT_HEIGHT 8
 #define LINE_SPACING 1
@@ -229,28 +229,29 @@ palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
 static void
 palmDrawHintBorders( XP_Rect* rect, HintAtts hintAtts )
 {
-    XP_Rect frame = *rect;
-    --frame.width;
-    --frame.height;
+    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
+        XP_Rect frame = *rect;
+        insetRect( &frame, 1 );
 
-    if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
-        WinDrawLine( frame.left, frame.top,
-                     frame.left, frame.top + frame.height );
-    }
-    if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
-        WinDrawLine( frame.left, frame.top,
-                     frame.left + frame.width, frame.top );
-    }
-    if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
-        WinDrawLine( frame.left + frame.width, frame.top,
-                     frame.left + frame.width, 
-                     frame.top  + frame.height );
+        if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
+            WinDrawLine( frame.left, frame.top,
+                         frame.left, frame.top + frame.height );
+        }
+        if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
+            WinDrawLine( frame.left, frame.top,
+                         frame.left + frame.width, frame.top );
+        }
+        if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
+            WinDrawLine( frame.left + frame.width, frame.top,
+                         frame.left + frame.width, 
+                         frame.top  + frame.height );
         
-    }
-    if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
-        WinDrawLine( frame.left, frame.top + frame.height,
-                     frame.left + frame.width, 
-                     frame.top  + frame.height );
+        }
+        if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
+            WinDrawLine( frame.left, frame.top + frame.height,
+                         frame.left + frame.width, 
+                         frame.top  + frame.height );
+        }
     }
 } /* palmDrawHintBorders */
 
@@ -383,9 +384,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         WinEraseRectangleFrame( roundFrame, (RectangleType*)&localR );
     }
 
-    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
-        palmDrawHintBorders( &localR, hintAtts );
-    }
+    palmDrawHintBorders( rect, hintAtts );
 
     WinSetClip( &saveClip );
     return complete;
@@ -497,24 +496,9 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
     /* this will fill it with the tile background color */
     WinEraseRectangle( (const RectangleType*)&localR, 0 );
 
-    if ( !!letters ) {
-        if ( *letters != LETTER_NONE ) { /* blank */
-            FontID curFont = FntGetFont();
-            FntSetFont( largeFont );
-#ifdef TILE_SUBSCRIPT
-            WinDrawChars( (const char*)letters, 1,
-                          localR.left+(2*doubler), 
-                          rect->top+(2*doubler) );
-#else
-            WinDrawChars( letters, 1, localR.left+2, rect->top+7 );
-#endif
-            FntSetFont( curFont );
-        }
-    } else if ( !!bitmap ) {
-        WinDrawBitmap( (BitmapPtr)bitmap, localR.left+(2*doubler), 
-                       localR.top+(2*doubler) );
-    }
-
+    /* Draw the number before the letter.  Some PalmOS version don't honor
+       the winOverlay flag and erase.  Better to erase the value than the
+       letter. */
     if ( val >= 0 ) {
         (void)StrPrintF( valBuf, "%d", val );
         len = XP_STRLEN((const char*)valBuf);
@@ -527,39 +511,46 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
                                localR.top + localR.height - dctx->fntHeight - 1 );
 #endif
         } else {
+            width = FntCharsWidth( valBuf, len );
+            WinDrawChars( valBuf, len, localR.left + localR.width - width,
+                          localR.top + localR.height - dctx->fntHeight - 1 );
+        }
+    }
 
-            RectangleType numRect = {{0,0}, 
-                                     {NUMRECT_WIDTH*2, NUMRECT_HEIGHT*2}};
+    if ( !!letters ) {
+        if ( *letters != LETTER_NONE ) { /* blank */
+            RectangleType charRect = {{0,0}, 
+                                      {CHARRECT_WIDTH*2, CHARRECT_HEIGHT*2}};
+            FontID curFont = FntGetFont();
             WinHandle curWind;
-            WinHandle numberWin = dctx->numberWin;
+            WinHandle offScreenCharWin = dctx->offScreenCharWin;
+            FntSetFont( largeFont );
 
-            XP_ASSERT( !!numberWin );
-            curWind = WinSetDrawWindow( numberWin );
+            XP_ASSERT( !!offScreenCharWin );
+            curWind = WinSetDrawWindow( offScreenCharWin );
             HIGHRES_PUSH_LOC( dctx );
 
-            WinEraseRectangle( &numRect, 0 );
+            WinEraseRectangle( &charRect, 0 );
 
-            WinDrawChars( valBuf, len, 0, 0 );
-            width = FntCharsWidth( valBuf, len );
+            WinDrawChars( (char*)letters, 1, 0, 0 );
+            width = FntCharsWidth( letters, 1 );
 
             (void)WinSetDrawWindow( curWind );
 
             HIGHRES_POP_LOC(dctx);
 
-            numRect.extent.x = width;
+            charRect.extent.x = width;
 
-#ifdef TILE_SUBSCRIPT
-            WinCopyRectangle( numberWin, 0, &numRect, 
-                              localR.left + localR.width - (width*doubler),
-                              localR.top + localR.height - (10*doubler),
+            WinCopyRectangle( offScreenCharWin, 0, &charRect, 
+                              localR.left + (1*doubler),
+                              localR.top + (0*doubler),
                               winOverlay );
-#else
-            WinCopyRectangle( numberWin, 0, &numRect, 
-                              localR.left + localR.width - width,
-                              localR.top,
-                              winOverlay );
-#endif
+
+            FntSetFont( curFont );
         }
+    } else if ( !!bitmap ) {
+        WinDrawBitmap( (BitmapPtr)bitmap, localR.left+(2*doubler), 
+                       localR.top+(2*doubler) );
     }
 
     WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&localR );
@@ -627,7 +618,8 @@ palm_clr_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
 
 static void
 palm_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP, 
-                          XWBonusType cursorBonus, XP_Bool vertical )
+                          XWBonusType cursorBonus, XP_Bool vertical,
+                          HintAtts hintAtts )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     RectangleType oldClip;
@@ -638,6 +630,7 @@ palm_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP,
     WinSetClip( (RectangleType*)rectP );
 
     bitmapInRect( dctx, resID, rectP );
+    palmDrawHintBorders( rectP, hintAtts );
 
     WinSetClip( &oldClip );
 } /* palm_draw_drawBoardArrow */
@@ -645,7 +638,8 @@ palm_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP,
 #ifdef COLOR_SUPPORT
 static void
 palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP, 
-                               XWBonusType cursorBonus, XP_Bool vertical )
+                              XWBonusType cursorBonus, XP_Bool vertical,
+                              HintAtts hintAtts )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_U16 index;
@@ -657,7 +651,7 @@ palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP,
     }
 
     WinSetBackColor( dctx->drawingPrefs->drawColors[index] );
-    palm_draw_drawBoardArrow( p_dctx, rectP, cursorBonus, vertical );
+    palm_draw_drawBoardArrow( p_dctx, rectP, cursorBonus, vertical, hintAtts );
 } /* palm_clr_draw_drawBoardArrow */
 #endif
 
@@ -1244,7 +1238,7 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
 {
     PalmDrawCtx* dctx;
     XP_U16 i;
-    XP_U16 nWinWidth, nWinHeight;
+    XP_U16 cWinWidth, cWinHeight;
     Err ignore;
 
     dctx = XP_MALLOC( mpool, sizeof(PalmDrawCtx) );
@@ -1319,16 +1313,16 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
         SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, palm_bnw );
     }
 
-    nWinWidth = NUMRECT_WIDTH;
-    nWinHeight = NUMRECT_HEIGHT;
+    cWinWidth = CHARRECT_WIDTH;
+    cWinHeight = CHARRECT_HEIGHT;
 #ifdef FEATURE_HIGHRES
     if ( dctx->doHiRes ) {
-        nWinWidth *= 2;
-        nWinHeight *= 2;
+        cWinWidth *= 2;
+        cWinHeight *= 2;
     }
 #endif
-    dctx->numberWin = WinCreateOffscreenWindow( nWinWidth, nWinHeight,
-                                                screenFormat, &ignore );
+    dctx->offScreenCharWin = WinCreateOffscreenWindow( cWinWidth, cWinHeight,
+                                                       nativeFormat, &ignore );
 
     if ( able == COLOR ) {
     } else {
@@ -1350,8 +1344,8 @@ palm_drawctxt_destroy( DrawCtx* p_dctx )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
-    XP_ASSERT( !!dctx->numberWin );
-    WinDeleteWindow( dctx->numberWin, false );
+    XP_ASSERT( !!dctx->offScreenCharWin );
+    WinDeleteWindow( dctx->offScreenCharWin, false );
 
     XP_FREE( dctx->mpool, p_dctx->vtable );
     XP_FREE( dctx->mpool, dctx );
