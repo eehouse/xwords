@@ -53,6 +53,10 @@ CXWordsAppUi::~CXWordsAppUi()
         delete iAppView;
         iAppView = NULL;
     }
+
+    /* Somebody on NewLC says this is required to clean up TLS allocated
+       via use of stdlib calls  */
+    CloseSTDLIB();
 }
 
 // handle any menu commands
