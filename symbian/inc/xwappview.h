@@ -133,6 +133,7 @@ class CXWordsAppView : public CCoeControl
     TBool DoSavedGames();
     TBool DoNewGame();
     void DoImmediateDraw();
+    void DrawGameName() const;
 
 
     static void        sym_util_requestTime( XW_UtilCtxt* uc );
@@ -150,6 +151,7 @@ class CXWordsAppView : public CCoeControl
     XWGame      iGame;
     DrawCtx*    iDraw;
     TGameName   iCurGameName;
+    TRect       iTitleBox;
 
     VTableMgr*  iVtMgr;
     TTime       iStartTime;
