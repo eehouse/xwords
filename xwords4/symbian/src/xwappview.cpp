@@ -157,7 +157,7 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 } // ConstructL
 
 // Draw this application's view to the screen
-void CXWordsAppView::Draw(const TRect& aRect) const
+void CXWordsAppView::Draw(const TRect& /*aRect*/) const
 {
     // Draw the parent control
     //CEikBorderedControl::Draw(aRect);
@@ -224,9 +224,9 @@ sym_util_getSquareBonus( XW_UtilCtxt* /*uc*/, ModelCtxt* /*model*/,
         TW,EM,EM,DL,EM,EM,EM,DW,
     }; /* defaultBoard */
 
-    if ( col > 7 ) col = fourteen - col;
-    if ( row > 7 ) row = fourteen - row;
-    index = (row*8) + col;
+    if ( col > 7 ) col = SC(XP_U16, fourteen - col);
+    if ( row > 7 ) row = SC(XP_U16, fourteen - row);
+    index = SC(XP_U16,(row*8) + col);
     if ( index >= 8*8 ) {
         result = (XWBonusType)EM;
     } else {
@@ -282,44 +282,37 @@ CXWordsAppView::sym_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 } // sym_util_userError
 
 static XP_Bool
-sym_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
+sym_util_userQuery( XW_UtilCtxt* uc, UtilQueryID /*id*/,
                     XWStreamCtxt* stream )
 {
-    XP_Bool clickedOk;
-
-    CXWAskDlg* genericQuery = new(ELeave)CXWAskDlg( MPPARM(uc->mpool) 
-                                                    stream, EFalse );
-    clickedOk = genericQuery->ExecuteLD( R_XWORDS_CONFIRMATION_QUERY );
- 
-    return clickedOk;
+    return CXWAskDlg::DoAskDlg( MPPARM(uc->mpool) stream, EFalse );
 }
 
 static XP_S16
-sym_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
-                       XP_U16 playerNum,
+sym_util_userPickTile( XW_UtilCtxt* /*uc*/, const PickInfo* /*pi*/, 
+                       XP_U16 /*playerNum*/,
                        const XP_UCHAR4* texts, XP_U16 nTiles )
 {
-    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
-    TInt result;
+    TInt result = 0;
     TRAPD( error, CXWBlankSelDlg::UsePickTileDialogL( texts, nTiles, &result ) );
     XP_ASSERT( result >= 0 && result < nTiles );
     return static_cast<XP_S16>(result);
 } /* sym_util_userPickTile */
 
 static XP_Bool
-sym_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
-                      XP_UCHAR* buf, XP_U16* len )
+sym_util_askPassword( XW_UtilCtxt* /*uc*/, const XP_UCHAR* /*name*/,
+                      XP_UCHAR* /*buf*/, XP_U16* /*len*/ )
 {
     return XP_TRUE;
 }
 
 static void
-sym_util_trayHiddenChange(XW_UtilCtxt* uc, XW_TrayVisState newState )
+sym_util_trayHiddenChange(XW_UtilCtxt* /*uc*/, XW_TrayVisState /*newState*/ )
 {
 }
 
 static void
-sym_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
+sym_util_yOffsetChange(XW_UtilCtxt* /*uc*/, XP_U16 /*oldOffset*/, XP_U16 /*newOffset*/ )
 {
 }
 
@@ -338,7 +331,7 @@ sym_util_hiliteCell( XW_UtilCtxt* /*uc*/, XP_U16 /*col*/, XP_U16 /*row*/ )
 }
 
 static XP_Bool
-sym_util_engineProgressCallback( XW_UtilCtxt* uc )
+sym_util_engineProgressCallback( XW_UtilCtxt* /*uc*/ )
 {
 #ifdef SHOW_PROGRESS
 #endif
@@ -346,7 +339,7 @@ sym_util_engineProgressCallback( XW_UtilCtxt* uc )
 }
 
 static void
-sym_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
+sym_util_setTimer( XW_UtilCtxt* /*uc*/, XWTimerReason /*why*/ )
 {
 }
 
@@ -378,13 +371,13 @@ CXWordsAppView::sym_util_getCurSeconds( XW_UtilCtxt* uc )
 }
 
 static DictionaryCtxt*
-sym_util_makeEmptyDict( XW_UtilCtxt* uc )
+sym_util_makeEmptyDict( XW_UtilCtxt* /*uc*/ )
 {
     return NULL;
 }
 
 static XP_UCHAR*
-sym_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
+sym_util_getUserString( XW_UtilCtxt* /*uc*/, XP_U16 stringCode )
 {
     // These belong in resources.  But I haven't yet figured out how
     // to do 8-bit strings in resources.  Also, StringLoader does
@@ -455,15 +448,15 @@ sym_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 } // sym_util_getUserString
 
 static XP_Bool
-sym_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
-                          XP_U16 turn, XP_Bool turnLost )
+sym_util_warnIllegalWord( XW_UtilCtxt* /*uc*/, BadWordInfo* /*bwi*/, 
+                          XP_U16 /*turn*/, XP_Bool /*turnLost*/ )
 {
     return XP_FALSE;
 }
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool
-sym_util_getTraySearchLimits(XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
+sym_util_getTraySearchLimits(XW_UtilCtxt* /*uc*/, XP_U16* /*min*/, XP_U16* /*max*/ )
 {
     return XP_FALSE;
 }
@@ -512,9 +505,7 @@ CXWordsAppView::InitGameL()
         gi_initPlayerInfo( MPPARM(mpool) &iGi, (XP_UCHAR*)"Player %d" );
 
         TGameInfoBuf gib( &iGi, iDictList );
-        CXWGameInfoDlg* gameInfo = 
-            new(ELeave)CXWGameInfoDlg( MPPARM(mpool) &gib, ETrue );
-        if ( !gameInfo->ExecuteLD( R_XWORDS_NEWGAME_DLG ) ) {
+        if ( !CXWGameInfoDlg::DoGameInfoDlgL( MPPARM(mpool) &gib, ETrue ) ) {
             User::Leave(-1);
         }
 
@@ -528,8 +519,9 @@ CXWordsAppView::InitGameL()
         iCp.showBoardArrow = XP_TRUE; // default because no pen
         iCp.showRobotScores = XP_FALSE;
 
+        XP_U16 newGameID = SC( XP_U16, sym_util_getCurSeconds( &iUtil ) );
         game_makeNewGame( MPPARM(mpool) &iGame, &iGi, 
-                          &iUtil, iDraw, &iCp,
+                          &iUtil, iDraw, newGameID, &iCp,
                           (TransportSend)NULL, this );
 
 
@@ -576,22 +568,89 @@ CXWordsAppView::HandleCommand( TInt aCommand )
 
     switch ( aCommand ) {
 
-    case XW_NEWGAME_COMMAND:
-/*     { */
-/*         CXWGameInfoDlg* gameInfo =  */
-/*             new(ELeave)CXWGameInfoDlg( MPPARM_NOCOMMA(mpool) ); */
-/*         (void)gameInfo->ExecuteLD( R_XWORDS_NEWGAME_DLG ); */
-/*     } */
+    case XW_NEWGAME_COMMAND: {
+        /* Give user a chance to save, then pass in a copy of game data
+           (without saving).  If user cancels, make no changes.  If does not
+           cancel, either save and start a new game or overwrite the current
+           one.
+        */
+
+        TBool save = AskSaveGame();
+
+        TGameInfoBuf gib( &iGi, iDictList );
+        if ( CXWGameInfoDlg::DoGameInfoDlgL( MPPARM(mpool) &gib, ETrue ) ) {
+
+            if ( save ) {
+                SaveCurrentGame();
+            }
+            gib.CopyToL( MPPARM(mpool) &iGi );
+            XP_U16 newGameID = SC( XP_U16,sym_util_getCurSeconds( &iUtil ) );
+            game_reset( MPPARM(mpool) &iGame, &iGi, newGameID,
+                        &iCp, (TransportSend)NULL, this );
+
+            DictionaryCtxt* prevDict = model_getDictionary( iGame.model );
+            if ( 0 != XP_STRCMP( dict_getName(prevDict), iGi.dictName ) ) {
+                XP_LOGF( "replacing dicts: %s with %s",
+                         prevDict->name, iGi.dictName );
+                dict_destroy( prevDict );
+                DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) 
+                                                             iGi.dictName );
+                model_setDictionary( iGame.model, dict );
+            }
+
+            board_invalAll( iGame.board );
+            (void)server_do( iGame.server ); // get tiles assigned etc.
+            draw = ETrue;
+        }
+    }
         break;
 
     case XW_SAVEDGAMES_COMMAND:
+        NotImpl();
+        break;
     case XW_PREFS_COMMAND:
     case XW_ABOUT_COMMAND:
+        NotImpl();
+        break;
 
     case XW_VALUES_COMMAND:
+        if ( iGame.server != NULL ) {
+            XWStreamCtxt* stream = MakeSimpleStream( NULL );
+
+            server_formatDictCounts( iGame.server, stream, 4 ); /* 4: ncols */
+            (void)CXWAskDlg::DoAskDlg(MPPARM(mpool) stream, ETrue);
+        }
+        break;
+
     case XW_REMAIN_COMMAND:
-    case XW_CURINFO_COMMAND:
+        if ( iGame.board != NULL ) {
+            XWStreamCtxt* stream = MakeSimpleStream( NULL );
+            if ( stream ) {
+                board_formatRemainingTiles( iGame.board, stream );
+                (void)CXWAskDlg::DoAskDlg(MPPARM(mpool) stream, ETrue);
+            }
+        }
+        break;
+
+    case XW_CURINFO_COMMAND: {
+        NotImpl();
+/*         TGameInfoBuf gib( &iGi, iDictList ); */
+/*         CXWGameInfoDlg::DoGameInfoDlgL( MPPARM(mpool) &gib, EFalse ); */
+    }
+        break;
+
     case XW_HISTORY_COMMAND:
+        if ( iGame.server ) {
+            XP_Bool gameOver = server_getGameIsOver( iGame.server );
+            XWStreamCtxt* stream = MakeSimpleStream( NULL );
+
+            model_writeGameHistory( iGame.model, stream, 
+                                    iGame.server, gameOver );
+            if ( stream_getSize( stream ) > 0 ) {
+                (void)CXWAskDlg::DoAskDlg( MPPARM(mpool) stream, ETrue );
+            }
+        }
+        
         break;
 
     case XW_FINALSCORES_COMMAND:
@@ -741,9 +800,7 @@ CXWordsAppView::DisplayFinalScoresL()
 
     server_writeFinalScores( iGame.server, stream );
 
-    CXWAskDlg* info = new(ELeave)CXWAskDlg( MPPARM(mpool) 
-                                            stream, ETrue );
-    (void)info->ExecuteLD( R_XWORDS_INFO_ONLY );
+    (void)CXWAskDlg::DoAskDlg( MPPARM(mpool) stream, ETrue );
 } /* displayFinalScores */
 
 TBool
@@ -752,8 +809,7 @@ CXWordsAppView::AskFromResId( TInt aResource )
     TBuf16<128> message;
     StringLoader::Load( message, aResource );
 
-    CXWAskDlg* query = new(ELeave)CXWAskDlg( MPPARM(mpool) &message );
-    return 0 != query->ExecuteLD( R_XWORDS_CONFIRMATION_QUERY );
+    return CXWAskDlg::DoAskDlg( MPPARM(mpool) &message );
 }
 
 static void
@@ -815,3 +871,9 @@ CXWordsAppView::UserErrorFromID( TInt aResource )
 #endif
     }
 }
+
+void
+CXWordsAppView::NotImpl()
+{
+    UserErrorFromID( R_ALERT_FEATURE_PENDING );
+} /* NotImpl */
