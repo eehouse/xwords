@@ -686,24 +686,6 @@ updatePlayerInfo( PalmAppGlobals* globals )
         replaceStringIfDifferent(MPPARM(globals->mpool) &lp->name, name);
         replaceStringIfDifferent(MPPARM(globals->mpool) &lp->password, passwd);
     }
-
-#ifdef BEYOND_IR
-    if ( state->connsSettingChanged ) {
-        CommsAddrRec addr;
-        XP_U16 localPort;
-
-        comms_getAddr( globals->game.comms, &addr, &localPort );
-
-        addr.conType = state->connAddrs.conType;
-        if ( addr.conType == COMMS_CONN_IP ) {
-            addr.u.ip.port = state->connAddrs.remotePort;
-            addr.u.ip.ipAddr = state->connAddrs.remoteIP;
-            localPort = state->connAddrs.localPort;
-        }
-        comms_setAddr( globals->game.comms, &addr, localPort );
-    }
-#endif
-
 } /* updatePlayerInfo */
 
 void
@@ -832,7 +814,7 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
     /* Even if it didn't change, pop the connections form */
     if ( hiliteID != SERVER_STANDALONE ) {
         if ( isNewGame || hiliteID==globals->newGameState.curServerHilite ) {
-            PopupConnsForm( globals, hiliteID, &state->connAddrs );
+            PopupConnsForm( globals, hiliteID, &state->addr );
         }
     }
 #endif
@@ -940,14 +922,10 @@ loadNewGameState( PalmAppGlobals* globals )
     XP_ASSERT( state->curNPlayersLocal <= MAX_NUM_PLAYERS );
 
 #ifdef BEYOND_IR
-    {
-        CommsAddrRec addr;
-        comms_getAddr( globals->game.comms, &addr, 
-                       &state->connAddrs.localPort );
-        state->connAddrs.remotePort = addr.u.ip.port;
-        state->connAddrs.remoteIP = addr.u.ip.ipAddr;
-        state->connAddrs.conType = addr.conType;
+    if ( globals->game.comms ) {
+        comms_getAddr( globals->game.comms, &state->addr );
+    } else {
+        comms_getInitialAddr( &state->addr );
     }
 #endif
-
 } /* loadNewGameState */
