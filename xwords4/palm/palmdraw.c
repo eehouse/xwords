@@ -681,6 +681,11 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
     if ( vertical && isTurn ) {
         height += 5;		/* for the horizontal bars */
     }
+#ifdef FEATURE_HIGHRES
+    if ( dctx->doHiRes ) {
+        height *= 2;
+    }
+#endif
 
     XP_ASSERT( height <= bounds->height );
     XP_ASSERT( maxWidth <= bounds->width );
@@ -1009,7 +1014,20 @@ splitString( XP_UCHAR* str, XP_U16* nBufsP, XP_UCHAR** bufs )
 } /* splitString */
 
 #define VALUE_HINT_RECT_HEIGHT 12
-#define VALUE_HINT_RECT_HEIGHT_HR 29
+#define VALUE_HINT_RECT_HEIGHT_HR 24
+static XP_U16
+getMiniLineHt( PalmDrawCtx* dctx )
+{
+    if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+    } else if ( dctx->doHiRes ) {
+        return VALUE_HINT_RECT_HEIGHT_HR;
+#endif
+    } else {
+        return VALUE_HINT_RECT_HEIGHT;
+    }
+} /* getMiniLineHt */
+
 static void
 palm_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str, 
                             XP_U16* widthP, XP_U16* heightP )
@@ -1030,20 +1048,11 @@ palm_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str,
                                              XP_STRLEN(bufs[i]) );
 
         maxWidth = XP_MAX( maxWidth, oneWidth );
-        height += VALUE_HINT_RECT_HEIGHT;
+        height += getMiniLineHt((PalmDrawCtx*)p_dctx);
     }
 
     *widthP = maxWidth;
-    *heightP = height + 2;
-
-/*     if ( 0 ) { */
-/* #ifdef FEATURE_HIGHRES */
-/*     } else if ( ((PalmDrawCtx*)p_dctx)->doHiRes ) { */
-/*         *heightP = VALUE_HINT_RECT_HEIGHT_HR;         */
-/* #endif */
-/*     } else { */
-/*         *heightP = VALUE_HINT_RECT_HEIGHT; */
-/*     } */
+    *heightP = height + 3;
 
     HIGHRES_POP_LOC( (PalmDrawCtx*)p_dctx );
 } /* palm_draw_measureMiniWText */
@@ -1107,7 +1116,7 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
         WinDrawChars( (const char*)txt, len,
                       localR.topLeft.x + ((localR.extent.x-width)/2),
                       localR.topLeft.y + 1 + offset );
-        offset += VALUE_HINT_RECT_HEIGHT;
+        offset += getMiniLineHt( dctx );
     }
 
     HIGHRES_POP_LOC( dctx );
