@@ -35,6 +35,8 @@ class CXWAskDlg : public CEikDialog
     static TBool DoAskDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream );
     static TBool DoAskDlg( MPFORMAL TBuf16<128>* aMessage );
 
+    static void DoInfoDlg( MPFORMAL XWStreamCtxt* aStream, TBool aKillStream );
+
     ~CXWAskDlg();
 
  private:

@@ -616,9 +616,10 @@ CXWordsAppView::HandleCommand( TInt aCommand )
     case XW_VALUES_COMMAND:
         if ( iGame.server != NULL ) {
             XWStreamCtxt* stream = MakeSimpleStream( NULL );
-
-            server_formatDictCounts( iGame.server, stream, 4 ); /* 4: ncols */
-            (void)CXWAskDlg::DoAskDlg(MPPARM(mpool) stream, ETrue);
+            if ( stream != NULL ) {
+                server_formatDictCounts( iGame.server, stream, 4 ); /* 4: ncols */
+                CXWAskDlg::DoInfoDlg(MPPARM(mpool) stream, ETrue);
+            }
         }
         break;
 
@@ -627,7 +628,7 @@ CXWordsAppView::HandleCommand( TInt aCommand )
             XWStreamCtxt* stream = MakeSimpleStream( NULL );
             if ( stream ) {
                 board_formatRemainingTiles( iGame.board, stream );
-                (void)CXWAskDlg::DoAskDlg(MPPARM(mpool) stream, ETrue);
+                CXWAskDlg::DoInfoDlg(MPPARM(mpool) stream, ETrue);
             }
         }
         break;
@@ -647,7 +648,7 @@ CXWordsAppView::HandleCommand( TInt aCommand )
             model_writeGameHistory( iGame.model, stream, 
                                     iGame.server, gameOver );
             if ( stream_getSize( stream ) > 0 ) {
-                (void)CXWAskDlg::DoAskDlg( MPPARM(mpool) stream, ETrue );
+                CXWAskDlg::DoInfoDlg( MPPARM(mpool) stream, ETrue );
             }
         }
         
@@ -800,7 +801,7 @@ CXWordsAppView::DisplayFinalScoresL()
 
     server_writeFinalScores( iGame.server, stream );
 
-    (void)CXWAskDlg::DoAskDlg( MPPARM(mpool) stream, ETrue );
+    CXWAskDlg::DoInfoDlg( MPPARM(mpool) stream, ETrue );
 } /* displayFinalScores */
 
 TBool
