@@ -51,6 +51,9 @@ struct PalmDictList {
 //////////////////////////////////////////////////////////////////////////////
 // Prototypes
 //////////////////////////////////////////////////////////////////////////////
+static PalmDictList* dictListMakePriv( MPFORMAL XP_U32 creator );
+
+
 XP_Bool
 getNthDict( const PalmDictList* dl, short n, DictListEntry** dle )
 {
@@ -275,6 +278,12 @@ cleanList( PalmDictList** dl )
 PalmDictList* 
 DictListMake( MPFORMAL_NOCOMMA )
 {
+    return dictListMakePriv( MPPARM(mpool) TYPE_XWRDICT );
+}
+
+static PalmDictList* 
+dictListMakePriv( MPFORMAL XP_U32 creator )
+{
     Err err;
     DmSearchStateType stateType;
     UInt32 vers;
@@ -287,7 +296,7 @@ DictListMake( MPFORMAL_NOCOMMA )
     /* first the DM case */
     while ( !found ) {
         err = DmGetNextDatabaseByTypeCreator( newSearch, &stateType, TYPE_DAWG, 
-                                              TYPE_XWRDICT/* APPID */, 
+                                              creator/* APPID */, 
                                               false,// onlyLatestVers,
                                               &cardNo, &dbID );
         if ( err != 0 ) {
@@ -348,3 +357,84 @@ DictListCount( PalmDictList* dl )
         return dl->nDicts;
     }
 } /* dictListCount */
+
+#ifdef NODE_CAN_4
+
+static void
+convertOneDict( UInt16 cardNo, LocalID dbID )
+{
+    Err err;
+    UInt32 creator;
+    DmOpenRef ref;
+    MemHandle h;
+    dawg_header* header;
+    dawg_header tmp;
+    XP_U16 siz;
+
+#ifdef DEBUG
+    err = DmDatabaseInfo( cardNo, dbID, NULL,
+                          NULL, NULL, NULL, 
+                          NULL, NULL, 
+                          NULL, NULL, 
+                          NULL, NULL, 
+                          &creator );
+    XP_ASSERT( creator == 'Xwr3' );
+#endif
+    creator = 'Xwr4';
+    err = DmSetDatabaseInfo( cardNo, dbID, NULL,
+                             NULL, NULL, NULL, 
+                             NULL, NULL, 
+                             NULL, NULL, 
+                             NULL, NULL, 
+                             &creator );
+    XP_ASSERT( err == errNone );
+
+    /* now modify the flags */
+    ref = DmOpenDatabase( cardNo, dbID, dmModeReadWrite );
+    XP_ASSERT( ref != 0 );
+    h = DmGetRecord( ref, 0 );
+    siz = MemHandleSize( h );
+    if ( siz < sizeof(*header) ) {
+        MemHandleResize( h, sizeof(*header) );
+    }
+
+    tmp.flags = 0x0002;
+    DmWrite( MemHandleLock(h), OFFSET_OF(dawg_header,flags), &tmp.flags, 
+             sizeof(tmp.flags) );
+    MemHandleUnlock(h);
+    DmReleaseRecord( ref, 0, true );
+    DmCloseDatabase( ref );
+
+} /* convertOneDict */
+
+void
+offerConvertOldDicts( PalmAppGlobals* globals )
+{
+    PalmDictList* dl = dictListMakePriv( MPPARM(globals->mpool) 'Xwr3' );
+    XP_U16 count = DictListCount(dl);
+
+    if ( count > 0 ) {
+
+        if ( palmask( globals, 
+                      "Do you want to convert existing Crosswords "
+                      "dictionaries to the new format? "
+                      "The change is not reversible.", 
+                      NULL, -1 ) ) {
+
+            XP_U16 i;
+            for ( i = 0; i < count; ++i ) {
+                DictListEntry* dle;
+                if ( getNthDict( dl, i, &dle ) ) {
+
+                    if ( dle->location == DL_STORAGE ) {
+                        convertOneDict( dle->u.dmData.cardNo, dle->u.dmData.dbID );
+                    }
+
+                }
+            }
+        }
+    }
+
+    DictListFree( MPPARM(globals->mpool) dl );
+} /* offerConvertOldDicts */
+#endif
