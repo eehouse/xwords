@@ -851,8 +851,7 @@ ceCountsAndValues( CEAppGlobals* globals )
     if ( !!globals->game.server ) {
         XWStreamCtxt* stream = make_generic_stream( globals );
 
-        server_formatDictCounts( globals->game.server, stream, 
-                                 3 ); /* 2: ncols */
+        server_formatDictCounts( globals->game.server, stream, 3 );
 
         (void)ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
                                XP_FALSE, XP_TRUE );
@@ -1695,7 +1694,7 @@ wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
 
     va_start( ap, format );
 
-    vsprintf( buf, format, ap );
+    _vsnprintf( buf, len, format, ap );
 
     /*     FormatMessage( */
     /* 	FORMAT_MESSAGE_FROM_STRING, */
