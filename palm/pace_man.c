@@ -699,3 +699,33 @@ flipFileInfoToArm( FileInfoType* fout, const unsigned char* fin )
     fout->nameP = read_unaligned32( &fin[4] );
     fout->nameBufLen = read_unaligned16( &fin[8] );
 } /* flipFileInfo */
+
+/* from file List.h */
+void
+LstSetListChoices( ListType* listP, Char** itemsText, Int16 numItems )
+{
+    FUNC_HEADER(LstSetListChoices);
+    /* var decls */
+    /* swapIns */
+    {
+        XP_U16 i;
+        PNOState* sp = GET_CALLBACK_STATE();
+        STACK_START(unsigned char, stack, 10);
+        /* pushes */
+        ADD_TO_STACK4(stack, listP, 0);
+        ADD_TO_STACK4(stack, itemsText, 4);
+        ADD_TO_STACK2(stack, numItems, 8);
+        STACK_END(stack);
+
+        for ( i = 0; i < numItems; ++i ) {
+            itemsText[i] = Byte_Swap32( itemsText[i] );
+        }
+
+        (*sp->call68KFuncP)( sp->emulStateP, 
+                             PceNativeTrapNo(sysTrapLstSetListChoices),
+                             stack, 10 );
+        /* swapOuts */
+    }
+    FUNC_TAIL(LstSetListChoices);
+    EMIT_NAME("LstSetListChoices","'L','s','t','S','e','t','L','i','s','t','C','h','o','i','c','e','s'");
+} /* LstSetListChoices */

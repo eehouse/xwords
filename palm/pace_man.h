@@ -41,6 +41,8 @@ extern Boolean MenuHandleEvent( MenuBarType* menuP, EventType* event,
 extern void FrmSetEventHandler( FormType* formP, 
                                 FormEventHandlerType* handler );
 extern void EvtAddEventToQueue( const EventType* event );
+extern void LstSetListChoices( ListType* listP, Char** itemsText, 
+                               Int16 numItems );
 
 
 #if 0
