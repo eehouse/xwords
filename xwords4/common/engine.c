@@ -78,8 +78,9 @@ struct EngineCtxt {
     Crosscheck rowChecks[MAX_ROWS]; // also used in xwscore
     XP_U16 scoreCache[MAX_ROWS];
 
+    XP_U16 nTilesMax;
 #ifdef XWFEATURE_SEARCHLIMIT
-    XP_U16 nTilesMin, nTilesMax;
+    XP_U16 nTilesMin;
     XP_U16 nTilesMinUser, nTilesMaxUser;
     XP_Bool tileLimitsKnown;
     BdHintLimits* searchLimits;
@@ -951,7 +952,11 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
         return;
     }
  check_exit:
-    if ( accepting && tileLength >= engine->nTilesMin ) {
+    if ( accepting
+#ifdef XWFEATURE_SEARCHLIMIT
+         && tileLength >= engine->nTilesMin
+#endif
+         ) {
         considerMove( engine, tiles, tileLength, firstCol, col, row );
     }
 } /* extendRight */

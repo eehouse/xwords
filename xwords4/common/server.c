@@ -590,9 +590,9 @@ makeRobotMove( ServerCtxt* server )
     XP_ASSERT( !!server_getEngineFor( server, turn ) );
     finished = engine_findMove( server_getEngineFor( server, turn ),
                                 model, model_getDictionary( model ), 
-                                tileSet->tiles, tileSet->nTiles, 0,
+                                tileSet->tiles, tileSet->nTiles,
 #ifdef XWFEATURE_SEARCHLIMIT
-                                NULL,
+                                NULL, XP_FALSE,
 #endif
                                 targetScore, &canMove, &newMove );
     if ( finished ) {
