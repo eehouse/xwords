@@ -209,9 +209,12 @@ endif
 # 3: new-style DAWG, four bytes per node
 $(LANG)%_flags.bin: dawg$(LANG)%.stamp
 ifdef NEWDAWG
-	if [ 3 == $$(cat $(LANG)$*_nodesize.bin) ] ; \
+	if [ 3 = $$(cat $(LANG)$*_nodesize.bin) ] ; \
 		then perl -e "print pack(\"n\",0x0002)" > $@; echo "flags=2"; \
-		else perl -e "print pack(\"n\",0x0003)" > $@; echo "flags=3"; \
+	elif [ 4 = $$(cat $(LANG)$*_nodesize.bin) ] ; \
+		then perl -e "print pack(\"n\",0x0003)" > $@; echo "flags=3"; \
+	elif true; \
+		then echo "Unexpected node size"; exit 1; \
 	fi
 else
 	if [ 3 == $$(cat $(LANG)$*_nodesize.bin) ] ; \
