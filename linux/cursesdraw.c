@@ -68,7 +68,7 @@ curses_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     return XP_TRUE;
 } /* draw_finish */
 
-static void
+static XP_Bool
 curses_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner, 
                        XP_Bool hasfocus )
 {
@@ -78,6 +78,7 @@ curses_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
     } else {
         drawRect( dctx->boardWin, rect, '|', '-' ); 
     }
+    return XP_TRUE;
 } /* draw_finish */
 
 static void
@@ -250,8 +251,8 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, XP_S16 playerNum,
 static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                       XP_UCHAR* letter, XP_Bitmap bitmap,
-                      XP_S16 owner, XWBonusType bonus, XP_Bool isBlank, 
-                      XP_Bool highlight, XP_Bool isStar )
+                      XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
+                      XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 
