@@ -1086,7 +1086,7 @@ index_from( DictionaryCtxt* dict, array_edge* p_edge )
     } else if ( dict->nodeSize == 4 ) {
         array_edge_new* edge = (array_edge_new*)p_edge;
         result = ((edge->o.highByte << 8) | edge->o.lowByte) & 0x0000FFFF;
-        result |= edge->moreBits << 17;
+        result |= ((XP_U32)edge->moreBits) << 17;
         if ( (edge->o.bits & LASTBITMASK) != 0 ) { 
             result |= 0x00010000; /* using | instead of + saves 4 bytes */
         }
