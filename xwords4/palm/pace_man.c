@@ -850,11 +850,12 @@ LstSetDrawFunction( ListType* listP, ListDrawDataFuncPtr func )
 void
 flipDateTimeToArm( DateTimeType* out, const unsigned char* in )
 {
-    out->second = read_unaligned16( &in[0] );
-    out->minute = Byte_Swap16( &in[2] );
-    out->hour = Byte_Swap16( &in[4] );
-    out->day = Byte_Swap16( &in[6] );
-    out->month = Byte_Swap16( &in[8] );
-    out->year = Byte_Swap16( &in[10] );
-    out->weekDay = Byte_Swap16( &in[12] );
+    const DateTimeType* inp = (DateTimeType*)in;
+    out->second = Byte_Swap16( inp->second );
+    out->minute = Byte_Swap16( inp->minute );
+    out->hour = Byte_Swap16( inp->hour );
+    out->day = Byte_Swap16( inp->day );
+    out->month = Byte_Swap16( inp->month );
+    out->year = Byte_Swap16( inp->year );
+    out->weekDay = Byte_Swap16( inp->weekDay );
 }
