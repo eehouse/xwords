@@ -21,6 +21,7 @@
 #define _XPTYPES_H_
 
 #include <e32def.h>
+#include <stdlib.h>
 
 /* #include <coeccntx.h> */
 
