@@ -28,6 +28,7 @@ SOURCE            symutil.cpp
 SOURCE            symaskdlg.cpp
 SOURCE            symgamdl.cpp
 SOURCE            symdict.cpp
+SOURCE            symblnk.cpp
 
 SOURCEPATH        ..\group
 RESOURCE          xwords.rss
