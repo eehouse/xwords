@@ -24,6 +24,10 @@ extern "C" {
 }
 #include "symutil.h"
 
+#if defined SERIES_60
+# include <eikenv.h>
+#endif
+
 _LIT( kGameTypeExt, ".xwg" );
 
 
@@ -45,7 +49,11 @@ CXWGamesMgr::NewL( MPFORMAL CCoeEnv* aCoeEnv, TFileName* aBasePath )
     User::LeaveIfNull( self );
 
     // Create the games directory if it doesn't already exist
+#if defined SERIES_80
     RFs fs = aCoeEnv->FsSession();
+#elif defined SERIES_60
+    RFs fs = CEikonEnv::Static()->FsSession();
+#endif
     TInt err = fs.MkDirAll( self->iDir );
 
     if ( err != KErrNone && err != KErrAlreadyExists ) {
@@ -209,8 +217,8 @@ CXWGamesMgr::LoadGameL( const TGameName* aName, XWStreamCtxt* aStream )
 TBool
 CXWGamesMgr::DeleteSelected( TInt aIndex )
 {
-    TPtrC16 aName = (*iNamesList)[aIndex];
-    return DeleteFileFor( &aName );
+    TPtrC16 name = (*iNamesList)[aIndex];
+    return DeleteFileFor( &name );
 } /* DeleteSelected */
 
 TBool

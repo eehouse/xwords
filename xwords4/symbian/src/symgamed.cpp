@@ -17,8 +17,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <eikfsel.h>
-#include "xwords.rsg"
+#if defined SERIES_80
+# include <eikfsel.h>
+# include "xwords_80.rsg"
+#elif defined SERIES_60
+# include "xwords_60.rsg"
+#endif
 #include "xwords.hrh"
 #include "symgamed.h"
 
@@ -31,6 +35,7 @@ CNameEditDlg::CNameEditDlg( TGameName* aGameName )
 TBool 
 CNameEditDlg::OkToExitL( TInt aKeyCode )
 {
+#ifdef SERIES_80
     CEikFileNameEditor* ed;
     ed = static_cast<CEikFileNameEditor*>(Control(EEditNameEdwin));
 
@@ -41,17 +46,19 @@ CNameEditDlg::OkToExitL( TInt aKeyCode )
         ed->GetText( tmp );
         iGameName->Copy( tmp );
     }
-
+#endif
     return ETrue;
 } // OkToExitL
 
 void
 CNameEditDlg::PreLayoutDynInitL()
 {
+#ifdef SERIES_80
     CEikFileNameEditor* ed;
     ed = static_cast<CEikFileNameEditor*>(Control(EEditNameEdwin));
     ed->SetTextL( iGameName );
     ed->SetTextLimit( iGameName->MaxLength() );
+#endif
 }
 
 /* static */ TBool
