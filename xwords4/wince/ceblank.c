@@ -90,8 +90,6 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         bState = (BlankDialogState*)lParam;
 
-        positionDlg( hDlg );
-
 #ifdef FEATURE_TRAY_EDIT
         if ( bState->pi->why == PICK_FOR_CHEAT ) {
             showCurTray( hDlg, bState );
