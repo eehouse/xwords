@@ -42,8 +42,6 @@ extern "C" {
 
 #define sEND 0x73454e44
 
-#define MAX_PASSES 2		/* how many times can all players pass? */
-
 #define LOCAL_ADDR NULL
 
 #define IS_ROBOT(p) ((p)->isRobot)
@@ -84,11 +82,10 @@ typedef struct ServerVolatiles {
                                          someone quits before I can show the
                                          scores?  PENDING(ehouse) */
     XP_Bool showPrevMove;
+    XP_Bool connected;                /* already pinged the relay? */
 } ServerVolatiles;
 
 typedef struct ServerNonvolatiles {
-    XP_U16 nPassesInRow;
-
     XP_U8 nDevices;
     XW_State gameState;
     XP_S8 currentTurn;		/* invalid when game is over */
@@ -96,8 +93,6 @@ typedef struct ServerNonvolatiles {
     XP_Bool showRobotScores;
 
     RemoteAddress addresses[MAX_NUM_PLAYERS];
-
-    /*     TrayTileSet tradedTiles; */
 } ServerNonvolatiles;
 
 struct ServerCtxt {
@@ -115,6 +110,9 @@ struct ServerCtxt {
     XP_Bool serverDoing;
     MPSLOT
 };
+
+
+#define NPASSES_OK(s) model_recentPassCountOk((s)->vol.model)
 
 /******************************* prototypes *******************************/
 static void assignTilesToAll( ServerCtxt* server );
@@ -135,7 +133,7 @@ static void sendBadWordMsgs( ServerCtxt* server );
 static XP_Bool handleIllegalWord( ServerCtxt* server, 
                                   XWStreamCtxt* incomming );
 static void tellMoveWasLegal( ServerCtxt* server );
-
+static XP_Bool tileCountsOk( ServerCtxt* server );
 #endif
 
 #define PICK_NEXT -1
@@ -208,7 +206,7 @@ initServer( ServerCtxt* server )
     }
 
     server->nv.nDevices = 1;	/* local device (0) is always there */
-
+    server->vol.connected = XP_FALSE;
 } /* initServer */
 
 ServerCtxt* 
@@ -236,7 +234,9 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
     XP_U16 i;
 
-    nv->nPassesInRow = (XP_U16)stream_getBits( stream, 3 );
+    /* This should go away when stream format changes */
+    (void)stream_getBits( stream, 3 ); /* was npassesinrow */
+
     /* number of players is upper limit on device count */
     nv->nDevices = (XP_U8)stream_getBits( stream, PLAYERNUM_NBITS );
 
@@ -256,9 +256,7 @@ putNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 {
     XP_U16 i;
 
-    /* Gross hack: with four players nPassesInRow can get bigger than 8.
-       Rather than change the data format I'm just capping it. */
-    stream_putBits( stream, 3, nv->nPassesInRow & 0x0007 );
+    stream_putBits( stream, 3, 0 ); /* was nPassesInRow */
     /* number of players is upper limit on device count */
     stream_putBits( stream, PLAYERNUM_NBITS, nv->nDevices );
 
@@ -652,7 +650,6 @@ makeRobotMove( ServerCtxt* server )
                able to trade for tiles to move and blowing the undo stack.
                This will stop them, and should have no effect if there are any
                human players making real moves. */
-            ++server->nv.nPassesInRow;
 
             if ( !!stream ) {
                 XP_UCHAR buf[64];
@@ -665,14 +662,19 @@ makeRobotMove( ServerCtxt* server )
             }
         } else { 
             /* if canMove is false, this is a fake move, a pass */
-            model_makeTurnFromMoveInfo( model, turn, &newMove );
 
-            if ( !!stream ) {
-                (void)model_checkMoveLegal( model, turn, stream, NULL );
-                XP_ASSERT( !server->vol.prevMoveStream );
-                server->vol.prevMoveStream = stream;
+            if ( canMove || NPASSES_OK(server) ) {
+                model_makeTurnFromMoveInfo( model, turn, &newMove );
+
+                if ( !!stream ) {
+                    (void)model_checkMoveLegal( model, turn, stream, NULL );
+                    XP_ASSERT( !server->vol.prevMoveStream );
+                    server->vol.prevMoveStream = stream;
+                }
+                result = server_commitMove( server );
+            } else {
+                result = XP_FALSE;
             }
-            result = server_commitMove( server );
         }
     }
 
@@ -690,7 +692,7 @@ static XP_Bool
 robotMovePending( ServerCtxt* server )
 {
     XP_S16 turn = server->nv.currentTurn;
-    if ( turn >= 0 ) {
+    if ( turn >= 0 && tileCountsOk(server) && NPASSES_OK(server) ) {
         CurGameInfo* gi = server->vol.gi;
         LocalPlayer* player = &gi->players[turn];
         return IS_ROBOT(player) && IS_LOCAL(player);
@@ -754,10 +756,15 @@ showPrevScore( ServerCtxt* server )
 static void
 connectRelay( ServerCtxt* server )
 {
-    XWStreamCtxt* stream = util_makeStreamFromAddr( server->vol.util, 
-                                                    CHANNEL_NONE );
-    stream_putBytes( stream, &stream, 1 );
-    stream_close( stream );
+    /* THIS is a gross HACK.  Relay-specific stuff belongs in comms.c as an
+       additional protocol layer. PENDING(ehouse) */
+    if ( !server->vol.connected ) {
+        XWStreamCtxt* stream = util_makeStreamFromAddr( server->vol.util, 
+                                                        CHANNEL_NONE );
+        stream_putBytes( stream, &stream, 1 );
+        stream_close( stream );
+        server->vol.connected = XP_TRUE;
+    }
 }
 #else
 # define connectRelay(s)
@@ -1539,27 +1546,25 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
            previous turn was or how many tiles he had: it's a sure thing he
            "has" enough to be allowed to take the turn just undone. */
         playerTilesLeft = MAX_TRAY_TILES;
-        /* prevent game from ending immediately if this was already too high.
-           The right fix is to decrement it by the number being undone while
-           still keeping it >= 0, but that's too much code for what's a very
-           obscure bug.*/
-        server->nv.nPassesInRow = 0;
     }
     SETSTATE( server, XWSTATE_INTURN ); /* unless game over */
 
-    if ( playerTilesLeft > 0 
-         && (server->nv.nPassesInRow / nPlayers < MAX_PASSES) ) {
+    if ( playerTilesLeft > 0 && tileCountsOk(server) && NPASSES_OK(server) ) {
 
         player = &server->players[nxtTurn];
         server->nv.currentTurn = (XP_U8)nxtTurn;
 
     } else {
-        /* I discover that the game should end.  If I'm the client, though,
-           should I wait for the server to deduce this and send out a message.
-           I think so. */
+        /* I discover that the game should end.  If I'm the client,
+           though, should I wait for the server to deduce this and send
+           out a message?  I think so.  Yes, but be sure not to compute
+           another PASS move.  Just don't do anything! */
         if ( server->vol.gi->serverRole != SERVER_ISCLIENT ) {
             SETSTATE( server, XWSTATE_NEEDSEND_ENDGAME );
             moreToDo = XP_TRUE;
+        } else {
+            XP_LOGF( "Doing nothing; waiting for server to end game." );
+            /* I'm the client. Do ++nothing++. */
         }
     }
 
@@ -1909,12 +1914,6 @@ server_commitMove( ServerCtxt* server )
     XP_ASSERT( turn >= 0 );
 
     nTilesMoved = model_getCurrentMoveCount( model, turn );
-    if ( nTilesMoved > 0 ) {
-        server->nv.nPassesInRow = 0;
-    } else {
-        ++server->nv.nPassesInRow;
-    }
-
     fetchTiles( server, turn, nTilesMoved, NULL, &newTiles );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -2070,6 +2069,29 @@ server_endGame( ServerCtxt* server )
 } /* server_endGame */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+/* If game is about to end because one player's out of tiles, we don't want to
+ * keep trying to move */
+static XP_Bool
+tileCountsOk( ServerCtxt* server )
+{
+    XP_Bool maybeOver = 0 == pool_getNTilesLeft( server->pool );
+    if ( maybeOver ) {
+        ModelCtxt* model = server->vol.model;
+        XP_U16 nPlayers = server->vol.gi->nPlayers;
+        XP_Bool zeroFound = XP_FALSE;
+
+        while ( nPlayers-- ) {
+            XP_U16 count = model_getNumTilesInTray( model, nPlayers );
+            if ( count == 0 ) {
+                zeroFound = XP_TRUE;
+                break;
+            }
+        }
+        maybeOver = zeroFound;
+    }
+    return !maybeOver;
+} /* tileCountsOk */
+
 static void
 tellMoveWasLegal( ServerCtxt* server )
 {
