@@ -76,8 +76,8 @@ CXWGamesMgr::BuildListL()
     if ( err == KErrNone ) {
         CleanupStack::PushL( file_list );
 
-        iGameCount = file_list->Count();
-        iNamesList = new (ELeave)CDesC16ArrayFlat( iGameCount );
+        TInt gameCount = file_list->Count();
+        iNamesList = new (ELeave)CDesC16ArrayFlat( gameCount );
 
         TInt i;
         for ( i = 0; i < file_list->Count(); i++ ) {
@@ -105,12 +105,41 @@ CXWGamesMgr::GetNames() const
     return iNamesList;
 } // GetNames
 
+TBool
+CXWGamesMgr::Exists( TGameName* aName )
+{
+    RFs fs = iCoeEnv->FsSession();
+
+    TFileName nameD;
+    GameNameToPath( &nameD, aName );
+
+    TUint attValue;
+    TInt err = fs.Att( nameD, attValue );
+    XP_LOGF( "fs.Att(%S) => %d", aName, err );
+    return err == KErrNone;
+}
+
+void
+CXWGamesMgr::GameNameToPath( TFileName* aPath, const TDesC16* aName )
+{
+    aPath->Copy( iDir );
+    aPath->Append( *aName );
+    aPath->Append( kGameTypeExt );
+}
+
 void
 CXWGamesMgr::MakeDefaultName( TGameName* aName )
 {
-    aName->Delete( 0, 256 );
-    aName->Append( _L("game") );
-    aName->AppendNum( ++iGameCount );
+    /* return a unique new name */
+    for ( ; ; ) {
+        aName->Delete( 0, 256 );
+        aName->Append( _L("game") );
+        aName->AppendNum( ++iGameCount );
+
+        if ( !Exists( aName ) ) {
+            break;
+        }
+    }
 } // MakeDefaultName
 
 void 
@@ -120,9 +149,8 @@ CXWGamesMgr::StoreGameL( const TGameName* aName, /* does not have extension */
     RFs fs = iCoeEnv->FsSession();
 
     // write the stream to a file
-    TFileName nameD( iDir );
-    nameD.Append( *aName );
-    nameD.Append( kGameTypeExt );
+    TFileName nameD;
+    GameNameToPath( &nameD, aName );
     RFile file;
     TInt err = file.Replace( fs, nameD, EFileWrite );
     XP_ASSERT( err == KErrNone );
@@ -147,12 +175,15 @@ CXWGamesMgr::LoadGameL( const TGameName* aName, XWStreamCtxt* aStream )
 {
     RFs fs = iCoeEnv->FsSession();
 
-    TFileName nameD( iDir );
-    nameD.Append( *aName );
-    nameD.Append( kGameTypeExt );
+    TFileName nameD;
+    GameNameToPath( &nameD, aName );
 
     RFile file;
-    User::LeaveIfError( file.Open( fs, nameD, EFileRead ) );
+    TInt err = file.Open( fs, nameD, EFileRead );
+    if ( err != KErrNone ) {
+        XP_LOGF( "file.Open() => %d", err );
+    }
+    User::LeaveIfError( err );
     CleanupClosePushL(file);
 
     for ( ; ; ) {
@@ -162,7 +193,7 @@ CXWGamesMgr::LoadGameL( const TGameName* aName, XWStreamCtxt* aStream )
         if ( nRead <= 0 ) {
             break;
         }
-        stream_putBytes( aStream, (void*)buf.Ptr(), nRead );
+        stream_putBytes( aStream, (void*)buf.Ptr(), SC(XP_U16, nRead) );
     }
 
     CleanupStack::PopAndDestroy( &file );
@@ -177,10 +208,8 @@ CXWGamesMgr::DeleteSelected( TInt aIndex )
 TBool
 CXWGamesMgr::DeleteFileFor( TPtrC16* aName )
 {
-    TFileName nameD( iDir );
-    nameD.Append( *aName );
-    nameD.Append( kGameTypeExt );
-
+    TFileName nameD;
+    GameNameToPath( &nameD, aName );
 
     RFs fs = iCoeEnv->FsSession();
     TInt err = fs.Delete( nameD );
