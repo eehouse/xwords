@@ -21,12 +21,17 @@
 
 #include <eikedwin.h>
 #include <eikmfne.h> 
-#include <eikchlst.h>
+#if defined SERIES_60
+# include <aknlistquerycontrol.h>
+# include "xwords_60.rsg"
+#elif defined SERIES_80
+# include <eikchlst.h>
+# include "xwords_80.rsg"
+#endif
 
 #include "xwords.hrh"
 #include "symblnk.h"
 
-#include "xwords.rsg"
 
 CXWBlankSelDlg::CXWBlankSelDlg( const XP_UCHAR4* aTexts, 
                                 TInt aNTiles, TInt* aResultP )
@@ -42,7 +47,11 @@ void
 CXWBlankSelDlg::PreLayoutDynInitL()
 {
     // stuff the array
+#if defined SERIES_80
     CEikChoiceList* list;
+#elif defined SERIES_60
+    CAknListQueryControl* list;
+#endif
     CDesC16ArrayFlat* facesList = new (ELeave)CDesC16ArrayFlat( iNTiles );
 
     TInt i;
@@ -52,17 +61,23 @@ CXWBlankSelDlg::PreLayoutDynInitL()
         facesList->AppendL( buf16 );
     }
 
+#if defined SERIES_80
     list = static_cast<CEikChoiceList*>(Control(ESelBlankChoice));
     list->SetArrayExternalOwnership( EFalse );
     list->SetArrayL( facesList );
+#elif defined SERIES_60
+    list = static_cast<CAknListQueryControl*>(Control(ESelBlankChoice));
+#endif
 }
 
 TBool
 CXWBlankSelDlg::OkToExitL( TInt /*aKeyCode*/ )
 {
+#if defined SERIES_80
     CEikChoiceList* list = static_cast<CEikChoiceList*>
         (Control(ESelBlankChoice));
     *iResultP = list->CurrentItem();
+#endif
     return ETrue;
 } // OkToExitL
 
