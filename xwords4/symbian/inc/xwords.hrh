@@ -61,12 +61,15 @@ enum TXWordsIds {
     ,EPlayerSpeciesChoice
     ,EDecryptPassword
 
-    ,EPage1
-    ,EPage2
-    ,EPage3
-
+#ifndef XWFEATURE_STANDALONE_ONLY
     ,EConnectionRole
     ,EConnectionType
+    ,ERelayName
+    ,ERelayPort
+    ,EPageConn
+#endif
+    ,EPagePlayers
+    ,EPageDict
 
     ,ESelDictName
     ,ESelDictChoice
@@ -79,6 +82,7 @@ enum TXWordsIds {
     ,ESelGameChoice
 
     ,EEditNameEdwin
+
 };
 
 #define XW_UID3 0x10206D64
