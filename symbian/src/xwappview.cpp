@@ -76,13 +76,11 @@ CXWordsAppView::CXWordsAppView()
 
 CXWordsAppView::~CXWordsAppView()
 {
-    // no implementation required
+    DeleteGame();
+
     if ( iDraw ) {
         draw_destroyCtxt( iDraw );
-        iDraw = NULL;
     }
-
-    DeleteGame();
 
     XP_FREE( mpool, iUtil.vtable );
     vtmgr_destroy( MPPARM(mpool) iVtMgr );
@@ -197,6 +195,18 @@ CXWordsAppView::sym_util_getVTManager( XW_UtilCtxt* uc )
     CXWordsAppView* self = (CXWordsAppView*)uc->closure;
     return self->iVtMgr;
 } /* sym_util_getVTManager */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+/*static*/ XWStreamCtxt*
+CXWordsAppView::sym_util_makeStreamFromAddr( XW_UtilCtxt* uc,
+                                             XP_U16 /*channelNo*/ )
+{
+    XP_LOGF( "sym_util_makeStreamFromAddr called" );
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+    XP_ASSERT( self->iGame.comms );
+    return self->MakeSimpleStream( self->sym_send_on_close );
+}
+#endif
 
 #define EM BONUS_NONE
 #define DL BONUS_DOUBLE_LETTER
@@ -349,8 +359,6 @@ sym_util_setTimer( XW_UtilCtxt* /*uc*/, XWTimerReason /*why*/ )
 /* static */ void
 CXWordsAppView::sym_util_requestTime( XW_UtilCtxt* uc )
 {
-    XP_LOGF( "sym_util_requestTime called" );
-
     CXWordsAppView* self = (CXWordsAppView*)uc->closure;
 
     // Only start it if it's not already running!!
@@ -479,6 +487,9 @@ CXWordsAppView::SetUpUtil()
     MPASSIGN( iUtil.mpool, mpool );
 
     vtable->m_util_getVTManager = sym_util_getVTManager;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    vtable->m_util_makeStreamFromAddr = sym_util_makeStreamFromAddr;
+#endif
     vtable->m_util_getSquareBonus = sym_util_getSquareBonus;
     vtable->m_util_userError = sym_util_userError;
     vtable->m_util_userQuery = sym_util_userQuery;
@@ -510,12 +521,30 @@ CXWordsAppView::MakeOrLoadGameL()
     } else {
         gi_initPlayerInfo( MPPARM(mpool) &iGi, (XP_UCHAR*)"Player %d" );
 
-        TGameInfoBuf gib( &iGi, iDictList );
+#ifndef XWFEATURE_STANDALONE_ONLY
+        CommsAddrRec commsAddr;
+        XP_U16 listenPort = 0;
+        if ( iGame.comms != NULL ) {
+            comms_getAddr( iGame.comms, &commsAddr, &listenPort );
+        } else {
+            commsAddr = iCommsAddr;
+        }
+#endif
+
+        TGameInfoBuf gib( &iGi, 
+#ifndef XWFEATURE_STANDALONE_ONLY
+                          &commsAddr, 
+#endif
+                          iDictList );
         if ( !CXWGameInfoDlg::DoGameInfoDlgL( MPPARM(mpool) &gib, ETrue ) ) {
             User::Leave(-1);
         }
 
-        gib.CopyToL( MPPARM(mpool) &iGi );
+        gib.CopyToL( MPPARM(mpool) &iGi
+#ifndef XWFEATURE_STANDALONE_ONLY
+                     , &iCommsAddr
+#endif
+                     );
 
         DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) 
                                                      iGi.dictName );
@@ -524,8 +553,13 @@ CXWordsAppView::MakeOrLoadGameL()
         XP_U16 newGameID = SC( XP_U16, sym_util_getCurSeconds( &iUtil ) );
         game_makeNewGame( MPPARM(mpool) &iGame, &iGi, 
                           &iUtil, iDraw, newGameID, &iCp,
-                          (TransportSend)NULL, this );
+                          SYM_SEND, this );
         model_setDictionary( iGame.model, dict );
+#ifndef XWFEATURE_STANDALONE_ONLY
+        if ( iGame.comms ) {
+            comms_setAddr( iGame.comms, &iCommsAddr, iListenPort );
+        }
+#endif
 
         iGamesMgr->MakeDefaultName( &iCurGameName );
         StoreOneGameL( &iCurGameName );
@@ -537,7 +571,6 @@ CXWordsAppView::DeleteGame()
 {
     game_dispose( &iGame );
     gi_disposePlayerInfo( MPPARM(mpool) &iGi );
- 
 }
 
 void
@@ -815,18 +848,16 @@ CXWordsAppView::FindAllDicts()
      * of the list in the game setup dialog.
      */
     TBool found = EFalse;
-    RFs fileSession;
-    User::LeaveIfError(fileSession.Connect());
-    CleanupClosePushL(fileSession);
+    RFs fs = iCoeEnv->FsSession();
 
-    TFindFile file_finder( fileSession ); // 1
+    TFindFile file_finder( fs );
     CDir* file_list;
-    _LIT( aWildName, "*.xwd" );
+    _LIT( wildName, "*.xwd" );
 
     TFileName dir;
     GetXwordsRWDir( &dir, EDictsLoc );
 
-    TInt err = file_finder.FindWildByDir( aWildName, dir, file_list );
+    TInt err = file_finder.FindWildByDir( wildName, dir, file_list );
     if ( err == KErrNone ) {
 
         CleanupStack::PushL( file_list );
@@ -843,7 +874,7 @@ CXWordsAppView::FindAllDicts()
         CleanupStack::PopAndDestroy( file_list );
         found = ETrue;
     }
-    CleanupStack::PopAndDestroy( &fileSession ); 
+
     return found;
 } /* FindAllDicts */
 
@@ -944,7 +975,14 @@ CXWordsAppView::InitPrefs()
 {
     iCp.showBoardArrow = XP_TRUE; // default because no pen
     iCp.showRobotScores = XP_FALSE;
-    iCurGameName.Delete( 0, 1000 );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    iGi.serverRole = SERVER_STANDALONE;
+    iCommsAddr.conType = COMMS_CONN_IP;
+    char* name = "aphraea.org";
+    XP_MEMCPY( iCommsAddr.u.ip.hostName, name, XP_STRLEN(name) + 1 );
+    iCommsAddr.u.ip.port = 10999;
+#endif
 }
 
 TBool
@@ -954,7 +992,21 @@ CXWordsAppView::DoNewGame()
 
     TBool save = AskSaveGame();
 
-    TGameInfoBuf gib( &iGi, iDictList );
+#ifndef XWFEATURE_STANDALONE_ONLY
+    CommsAddrRec commsAddr;
+    XP_U16 listenPort = 0;
+    if ( iGame.comms != NULL ) {
+        comms_getAddr( iGame.comms, &commsAddr, &listenPort );
+    } else {
+        commsAddr = iCommsAddr;
+    }
+#endif
+
+    TGameInfoBuf gib( &iGi, 
+#ifndef XWFEATURE_STANDALONE_ONLY
+                      &commsAddr, 
+#endif
+                      iDictList );
     if ( CXWGameInfoDlg::DoGameInfoDlgL( MPPARM(mpool) &gib, ETrue ) ) {
 
         if ( save ) {
@@ -962,10 +1014,14 @@ CXWordsAppView::DoNewGame()
             iGamesMgr->MakeDefaultName( &iCurGameName );
         }
 
-        gib.CopyToL( MPPARM(mpool) &iGi );
+        gib.CopyToL( MPPARM(mpool) &iGi
+#ifndef XWFEATURE_STANDALONE_ONLY
+                     , &iCommsAddr
+#endif
+                     );
         XP_U16 newGameID = SC( XP_U16,sym_util_getCurSeconds( &iUtil ) );
         game_reset( MPPARM(mpool) &iGame, &iGi, newGameID,
-                    &iCp, (TransportSend)NULL, this );
+                    &iCp, SYM_SEND, this );
 
         DictionaryCtxt* prevDict = model_getDictionary( iGame.model );
         if ( 0 != XP_STRCMP( dict_getName(prevDict), iGi.dictName ) ) {
@@ -974,6 +1030,17 @@ CXWordsAppView::DoNewGame()
                                                          iGi.dictName );
             model_setDictionary( iGame.model, dict );
         }
+#ifndef XWFEATURE_STANDALONE_ONLY
+        if ( iGame.comms ) {
+            comms_setAddr( iGame.comms, &iCommsAddr, listenPort );
+
+            if ( iGi.serverRole == SERVER_ISCLIENT ) {
+                XWStreamCtxt* stream = MakeSimpleStream( sym_send_on_close );
+                // server deletes stream
+                server_initClientConnection( iGame.server, stream );
+            }
+        }
+#endif
 
         board_invalAll( iGame.board );
         (void)server_do( iGame.server ); // get tiles assigned etc.
@@ -1025,7 +1092,7 @@ CXWordsAppView::LoadOneGameL( TGameName* aGameName )
 
     game_makeFromStream( MPPARM(mpool) stream, &iGame, 
                          &iGi, dict, &iUtil, iDraw, &iCp,
-                         (TransportSend)NULL, this );
+                         SYM_SEND, this );
     stream_destroy( stream );
 
     PositionBoard();
@@ -1108,3 +1175,28 @@ CXWordsAppView::DrawGameName() const
         gc.DiscardFont();
     }
 }
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+/*static*/ XP_S16
+CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr, 
+                          void* aClosure )
+{
+    XP_S16 result = -1;
+    CXWordsAppView* self = (CXWordsAppView*)aClosure;
+
+    XP_LOGF( "sym_send called with %d bytes, => %d", aLen, result );
+
+    return result;
+} /* sym_send */
+
+/*static*/ void
+CXWordsAppView::sym_send_on_close( XWStreamCtxt* aStream, void* aClosure )
+{
+    XP_LOGF( "sym_send_on_close called" );
+    CXWordsAppView* self = (CXWordsAppView*)aClosure;
+    CommsConnType conType = comms_getConType( self->iGame.comms );
+
+    comms_send( self->iGame.comms, conType, aStream );
+}
+#endif
+
