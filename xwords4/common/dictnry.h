@@ -60,6 +60,7 @@ struct DictionaryCtxt {
 
     array_edge* (*func_edge_for_index)( DictionaryCtxt* dict, XP_U32 index );
     array_edge* (*func_dict_getTopEdge)( DictionaryCtxt* dict );
+    XP_UCHAR* (*func_dict_getShortName)( DictionaryCtxt* dict );
 
     array_edge* topEdge;
     array_edge* base;		/* the physical beginning of the dictionary; not
@@ -113,6 +114,7 @@ struct DictionaryCtxt {
 #define dict_destroy(d) (*((d)->destructor))(d)
 #define dict_edge_for_index(d, i) (*((d)->func_edge_for_index))((d), (i))
 #define dict_getTopEdge(d)        (*((d)->func_dict_getTopEdge))(d)
+#define dict_getShortName(d)      (*((d)->func_dict_getShortName))(d)
 
 
 XP_Bool dict_tilesAreSame( DictionaryCtxt* dict1, DictionaryCtxt* dict2 );
