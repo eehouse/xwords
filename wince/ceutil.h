@@ -26,6 +26,8 @@
 void ceSetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf );
 void ceGetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf, XP_U16* bLen );
 
+void ceSetDlgItemNum( HWND hDlg, XP_U16 id, XP_S32 num );
+
 void ceSetDlgItemFileName( HWND hDlg, XP_U16 id, XP_UCHAR* buf );
 
 void positionDlg( HWND hDlg );

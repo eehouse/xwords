@@ -84,6 +84,14 @@ ceGetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf, XP_U16* bLen )
 } /* ceGetDlgItemText */
 
 void
+ceSetDlgItemNum( HWND hDlg, XP_U16 id, XP_S32 num )
+{
+    XP_UCHAR buf[20];
+    XP_SNPRINTF( buf, sizeof(buf), "%ld", num );
+    ceSetDlgItemText( hDlg, id, buf );
+} /* ceSetDlgItemNum */
+
+void
 ce_selectAndShow( HWND hDlg, XP_U16 resID, XP_U16 index )
 {
     SendDlgItemMessage( hDlg, resID, LB_SETCURSEL, index, 0 );
