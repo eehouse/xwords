@@ -217,10 +217,17 @@
 #define COLORS_RES_ID 1000
 
 #define CARD_0 0
-#define XW_GAMES_DBNAME "xw4games"
-#define XWORDS_GAMES_TYPE 'Xwgm'
-#define XW_PREFS_DBNAME "xw4prefs"
-#define XWORDS_PREFS_TYPE 'Xwpr'
+#ifdef DEBUG
+# define XW_GAMES_DBNAME "xw4games_dbg"
+# define XWORDS_GAMES_TYPE 'Xwdg'
+# define XW_PREFS_DBNAME "xw4prefs_dbg"
+# define XWORDS_PREFS_TYPE 'Xwpd'
+#else
+# define XW_GAMES_DBNAME "xw4games"
+# define XWORDS_GAMES_TYPE 'Xwgm'
+# define XW_PREFS_DBNAME "xw4prefs"
+# define XWORDS_PREFS_TYPE 'Xwpr'
+#endif
 
 #define XW_DICTINFO_LIST_ID 2601
 #define XW_DICTINFO_TRIGGER_ID 2602
