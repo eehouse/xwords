@@ -67,7 +67,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
     UInt16 cardNo;
     LocalID dbID;
     DmOpenRef dbRef;
-    PalmDictionaryCtxt  tDictBuf;
+    PalmDictionaryCtxt tDictBuf;
     PalmDictionaryCtxt* ctxt;
     MemHandle tmpH;
     dawg_header* headerRecP;
@@ -79,6 +79,7 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
     XP_U16 i;
     FaceType* facePtr;
 #ifdef NODE_CAN_4
+    XP_U16 flags;
     XP_U16 nodeSize = 3;        /* init to satisfy compiler */
 #endif
 
@@ -139,12 +140,13 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
         XP_ASSERT( MemHandleLockCount(tmpH) == 1 );
 
 #ifdef NODE_CAN_4
-        if ( headerRecP->flags == 0x0002 ) {
+        flags = XP_NTOHS( headerRecP->flags );
+        if ( flags == 0x0002 ) {
             XP_ASSERT( nodeSize == 3 );
-        } else if ( headerRecP->flags == 0x0003 ) {
+        } else if ( flags == 0x0003 ) {
             nodeSize = 4;
         } else {
-            XP_WARNF( "got flags of %d", headerRecP->flags );
+            XP_WARNF( "got flags of %d", flags );
             XP_ASSERT(0);
             return NULL;
         }
@@ -159,7 +161,13 @@ palm_dictionary_make( MPFORMAL XP_UCHAR* dictName, PalmDictList* dl )
             XP_MALLOC( mpool, nChars * sizeof(ctxt->super.faces16[0]));
         XP_ASSERT( !!ctxt->super.faces16 );
         for ( i = 0; i < nChars; ++i ) {
+#ifdef NODE_CAN_4
+            ctxt->super.faces16[i] = read_unaligned16( &facePtr[i] );
+            XP_LOGF( "faces16[%d] = 0x%x (%d)", i, ctxt->super.faces16[i],
+                     ctxt->super.faces16[i] );
+#else
             ctxt->super.faces16[i] = facePtr[i];
+#endif
         }
         nSpecials = countSpecials( facePtr, nChars );
         MemPtrUnlock( facePtr );
@@ -249,6 +257,7 @@ countSpecials( FaceType* ptr, UInt16 nChars )
             ++result;
         }
     }
+    XP_LOGF( "countSpecials=>%d", result );
     return result;
 } /* countSpecials */
 
@@ -260,25 +269,37 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
                Xloc_specialEntry* specialStart, XP_U16 nSpecials )
 {
     XP_U16 i;
-    char* base = (char*)specialStart;
-    XP_UCHAR** chars = XP_MALLOC( mpool, nSpecials * sizeof(*chars) );
-    SpecialBitmaps* bitmaps = XP_MALLOC( mpool, nSpecials * sizeof(*bitmaps) );
+    char* base;
+    XP_UCHAR** chars;
+    SpecialBitmaps* bitmaps;
+
+    XP_LOGF( "setupSpecials" );
+
+    base = (char*)specialStart;
+    chars = XP_MALLOC( mpool, nSpecials * sizeof(*chars) );
+    bitmaps = XP_MALLOC( mpool, nSpecials * sizeof(*bitmaps) );
 
     XP_MEMSET( bitmaps, 0, nSpecials * sizeof(*bitmaps ) );
 
     for ( i = 0; i < nSpecials; ++i ) {
+        XP_U16 hasLarge, hasSmall;
+
         chars[i] = specialStart->textVersion;
-        if ( specialStart->hasLarge ) {
-            bitmaps[i].largeBM = base + specialStart->hasLarge;
+
+        hasLarge = XP_NTOHS( read_unaligned16(&specialStart->hasLarge) );
+        if ( hasLarge ) {
+            bitmaps[i].largeBM = base + hasLarge;
         }
-        if ( specialStart->hasSmall ) {
-            bitmaps[i].smallBM = base + specialStart->hasSmall;
+        hasSmall = XP_NTOHS( read_unaligned16(&specialStart->hasSmall) );
+        if ( hasSmall ) {
+            bitmaps[i].smallBM = base + hasSmall;
         }
         ++specialStart;
     }
 
     ctxt->super.bitmaps = bitmaps;
     ctxt->super.chars = chars;
+    XP_LOGF( "setupSpecials done" );
 } /* setupSpecials */
 
 static void
