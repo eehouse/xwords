@@ -269,8 +269,8 @@ sub searchOneFile($$) {
 
             $type = clean_type($type);
 
-            my $found = "$type<->$function<->$params<->$trapSel<->$trapType";
-            print STDERR "$found\n";
+#            my $found = "$type<->$function<->$params<->$trapSel<->$trapType";
+#            print STDERR "$found\n";
 
             $params = params_parse($params);
             $funcInfo{$function} = { 'type' => $type,
@@ -499,7 +499,7 @@ while ( my $arg = shift(@ARGV) ) {
 
 foreach my $func (@funcList) {
 
-    print STDERR "looking for $func\n";
+#    print STDERR "looking for $func\n";
 
     my $found = 0;
     foreach my $path (@pathList) {
