@@ -8,9 +8,11 @@ cygwin's installed.
 You can get the SDK, and instructions for installing it, here:
 http://download.franklin.com/franklin/ebookman/developer/
 
-Once you've defined EBOOKMAN_SDK in your environment, you should be
-good to go.
+There are two environment variables you'll need to build for eBookman.
+Add these to your shell startup script.  Here's mine (for bash):
 
+export ARCH=i686
+export EBOOKMAN_SDK=/home/ehouse/franklin/SDK
 
 You can build either for the simulator/debugger, or to run on a
 device.  For the simulator, type at a commandline in this directory:
@@ -25,6 +27,8 @@ Provided you have a copy of BasEnglish2to8.xwd in this directory, you
 can then run Crosswords in the simulator by typing:
 
 # ./sGDB
+
+(To run with additional dictionaries, edit initial.mom.)
 
 The command ./GDB is also available.  The difference is that the
 former is much faster and launches you directly into Crosswords, while
