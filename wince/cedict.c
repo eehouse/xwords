@@ -52,6 +52,8 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 
     ctxt = (CEDictionaryCtxt*)XP_MALLOC(globals->mpool, sizeof(*ctxt));
     XP_MEMSET( ctxt, 0, sizeof(*ctxt) );
+
+    dict_super_init( (DictionaryCtxt*)ctxt );
     MPASSIGN( ctxt->super.mpool, globals->mpool );
 
     if ( !!dictName ) {
