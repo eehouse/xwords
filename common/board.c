@@ -57,7 +57,6 @@ invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect, XP_Bool doMirror );
 
 static XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
 				XP_U16 tileIndex, Tile blankFace );
-static XP_Bool rectsIntersect( XP_Rect* rect1, XP_Rect* rect2 );
 static XP_Bool rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 );
 static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col, 
 			      XP_U16 row, XP_Bool added );
@@ -393,7 +392,7 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
     draw_eraseMiniWindow( board->draw, &stuff->rect,
                           destroy, &stuff->closure, &invalCovers );
     if ( invalCovers ) {
-        invalCellsUnderRect( board, &stuff->rect, XP_FALSE );
+        board_invalRect( board, &stuff->rect );
     }
 
     if ( destroy ) {
@@ -618,7 +617,7 @@ timerFiredForPen( BoardCtxt* board )
 
             if ( !lp->isLocal ) {
                 XP_UCHAR* format = util_getUserString(board->util, 
-                                                  STR_NONLOCAL_NAME);
+                                                      STR_NONLOCAL_NAME);
                 XP_SNPRINTF( buf, sizeof(buf), format, text );
                 text = buf;
             }
@@ -1173,8 +1172,7 @@ board_invalRect( BoardCtxt* board, XP_Rect* rect )
     }
     
     if ( rectsIntersect( rect, &board->trayBounds ) ) {
-        board_invalTrayTiles( board, ALLTILES );
-        board->dividerInvalid = XP_TRUE;
+        invalTilesUnderRect( board, rect );
     }
 
     if ( rectsIntersect( rect, &board->scoreBdBounds ) ) {
@@ -2384,7 +2382,7 @@ rectContainsPt( XP_Rect* rect, XP_U16 x, XP_U16 y )
              && rect->left + rect->width >= x );
 } /* rectContainsPt */
 
-static XP_Bool
+XP_Bool
 rectsIntersect(XP_Rect* rectP1, XP_Rect* rectP2)
 {
     XP_Rect rect1 = *rectP1;
