@@ -159,8 +159,6 @@ symLoadSpecialData( SymDictCtxt* ctxt, RFile* file )
             XP_UCHAR* text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
             TPtr8 desc( text, txtlen );
             file->Read( desc, txtlen );
-//             XP_MEMCPY( text, ptr, txtlen );
-//             ptr += txtlen;
             text[txtlen] = '\0';
             XP_ASSERT( face < nSpecials );
             texts[face] = text;
@@ -181,10 +179,9 @@ readFileToBuf( XP_UCHAR* dictBuf, const RFile* file )
 {
     XP_U32 offset = 0;
     for ( ; ; ) {
-        TBuf8<256> buf;
+        TBuf8<1024> buf;
         TInt err = file->Read( buf, buf.MaxLength() );
         TInt nRead = buf.Size();
-        XP_LOGF( "read %d bytes from file", nRead );
         if ( nRead <= 0 ) {
             break;
         }
