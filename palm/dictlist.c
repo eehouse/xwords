@@ -170,7 +170,8 @@ addEntry( MPFORMAL PalmDictList** dlp, DictListEntry* dle )
 
 static void
 searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
-           unsigned char* path, XP_U16 pathSize, XP_U32 creatorSought )
+           unsigned char* path, XP_U16 pathSize, XP_U32 creatorSought,
+           XP_U16 versSought )
 { 
     Err err;
     FileRef dirRef;
@@ -198,7 +199,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                 path[len] = separator;
                 path[len+1] = '\0';
                 searchDir( MPPARM(mpool) dlp, volNum, separator, 
-                           path, pathSize, creatorSought );
+                           path, pathSize, creatorSought, versSought );
 #endif
             } else if ( (ext = (XP_UCHAR*)StrStr( (const char*)path, ".pdb" ))
                         != NULL ) {
@@ -223,7 +224,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
                     VFSFileClose( fileRef );
                     
                     if ( (err == errNone) && (type == TYPE_DAWG) && 
-                         (creator == creatorSought) && (vers == 1) ) {
+                         (creator == creatorSought) && (vers == versSought) ) {
                         DictListEntry dl;
 
                         dl.path = copyString( MPPARM(mpool) path );
@@ -244,7 +245,8 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
 } /* searchDir */
 
 static void
-tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought )
+tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought, 
+              XP_U16 versSought )
 {
     Err err;
     UInt16 volNum;
@@ -267,7 +269,7 @@ tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought )
         if ( err == errNone ) {
             pathStr[1] = '\0';
             searchDir( MPPARM(mpool) dlp, volNum, pathStr[0],
-                       pathStr, sizeof(pathStr), creatorSought );
+                       pathStr, sizeof(pathStr), creatorSought, versSought );
         }
     }
 
@@ -334,7 +336,7 @@ dictListMakePriv( MPFORMAL XP_U32 creatorSought, XP_U16 versSought )
     /* then the VFS case */
     err = FtrGet( sysFileCVFSMgr, vfsFtrIDVersion, &vers );
     if ( err == errNone ) {
-        tryVFSSearch( MPPARM(mpool) &dl, creatorSought );
+        tryVFSSearch( MPPARM(mpool) &dl, creatorSought, versSought );
     }
 
     cleanList( &dl );
