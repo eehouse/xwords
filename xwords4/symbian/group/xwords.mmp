@@ -43,12 +43,14 @@ USERINCLUDE       ..\..\common
 SYSTEMINCLUDE     \epoc32\include
 SYSTEMINCLUDE     \epoc32\include\libc
 
-START BITMAP xwbitmaps.mbm
+START BITMAP xwords.mbm
 HEADER
 SOURCEPATH ..\bmps
 SOURCE 2 downarrow_80.bmp
 SOURCE 2 rightarrow_80.bmp
 SOURCE 2 star_80.bmp
+SOURCE C12 turnicon_80.bmp
+SOURCE 2 turniconmask_80.bmp
 END
 
 LIBRARY           common.lib
