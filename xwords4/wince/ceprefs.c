@@ -109,10 +109,8 @@ loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi,
     prefsPrefs->showColors = appPrefs->showColors;
 
     XP_MEMCPY( &prefsPrefs->cp, &appPrefs->cp, sizeof(prefsPrefs->cp) );
-#ifdef XWFEATURE_CE_EDITCOLORS
     XP_MEMCPY( &prefsPrefs->colors, &appPrefs->colors,
                sizeof(prefsPrefs->colors) );
-#endif
 } /* loadStateFromCurPrefs */
 
 void
@@ -130,10 +128,8 @@ loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi,
     appPrefs->showColors = prefsPrefs->showColors;
 
     XP_MEMCPY( &appPrefs->cp, &prefsPrefs->cp, sizeof(appPrefs->cp) );
-#ifdef XWFEATURE_CE_EDITCOLORS
     XP_MEMCPY( &appPrefs->colors, &prefsPrefs->colors,
                sizeof(prefsPrefs->colors) );
-#endif
 } /* loadCurPrefsFromState */
 
 /* Reflect local state into the controls user will see.
@@ -231,39 +227,39 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     } else {
         XP_Bool timerOn;
         pState = (CePrefsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
-        globals = pState->globals;
+        if ( !!pState ) {
+            globals = pState->globals;
 
-        switch (message) {
-        case WM_COMMAND:
-            id = LOWORD(wParam);
-            switch( id ) {
+            switch (message) {
+            case WM_COMMAND:
+                id = LOWORD(wParam);
+                switch( id ) {
 
-            case IDC_RADIOGLOBAL:
-            case IDC_RADIOLOCAL:
-                pState->globals->doGlobalPrefs = id == IDC_RADIOGLOBAL;
-                adjustForChoice( hDlg, pState );
-                break;
+                case IDC_RADIOGLOBAL:
+                case IDC_RADIOLOCAL:
+                    pState->globals->doGlobalPrefs = id == IDC_RADIOGLOBAL;
+                    adjustForChoice( hDlg, pState );
+                    break;
 
-            case TIMER_CHECK:
-                timerOn = SendDlgItemMessage( hDlg, TIMER_CHECK, BM_GETCHECK,
-                                              0, 0 );
-                setTimerCtls( hDlg, timerOn );
-                break;
-#ifdef XWFEATURE_CE_EDITCOLORS
-            case IDC_PREFCOLORS:
-                pState->colorsChanged = 
-                    ceDoColorsEdit( hDlg, pState->globals, 
-                                    pState->prefsPrefs.colors );
-                break;
-#endif
-            case IDOK:
-                ceControlsToPrefs( hDlg, &pState->prefsPrefs );
-            case IDCANCEL:
-                EndDialog(hDlg, id);
-                pState->userCancelled = id == IDCANCEL;
-                return TRUE;
-            }
-        }        
+                case TIMER_CHECK:
+                    timerOn = SendDlgItemMessage( hDlg, TIMER_CHECK, BM_GETCHECK,
+                                                  0, 0 );
+                    setTimerCtls( hDlg, timerOn );
+                    break;
+                case IDC_PREFCOLORS:
+                    pState->colorsChanged = 
+                        ceDoColorsEdit( hDlg, pState->globals, 
+                                        pState->prefsPrefs.colors );
+                    break;
+                case IDOK:
+                    ceControlsToPrefs( hDlg, &pState->prefsPrefs );
+                case IDCANCEL:
+                    EndDialog(hDlg, id);
+                    pState->userCancelled = id == IDCANCEL;
+                    return TRUE;
+                }
+            }        
+        }
     }
 
     return FALSE;
