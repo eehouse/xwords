@@ -30,15 +30,9 @@
 extern "C" {
 #endif
 
-/* WARNING: the following assumes that FEATURE_TRAY_EDIT is defined if
-   XWFEATURE_SEARCHLIMIT is*/
-#if defined XWFEATURE_SEARCHLIMIT
-# define CUR_STREAM_VERS 0x03
-#elif defined FEATURE_TRAY_EDIT
-# define CUR_STREAM_VERS 0x02
-#else
-# define CUR_STREAM_VERS 0x01
-#endif
+#define CUR_STREAM_VERS 0x02
+
+#define STREAM_VERS_405  0x01
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
@@ -62,12 +56,8 @@ typedef struct CurGameInfo {
 
     XP_Bool hintsNotAllowed;
     XP_Bool timerEnabled;
-#ifdef FEATURE_TRAY_EDIT
     XP_Bool allowPickTiles;
-#endif
-#ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
-#endif
     XP_U8 robotSmartness;
     XWPhoniesChoice phoniesAction;
 

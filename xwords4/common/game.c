@@ -334,20 +334,18 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->robotSmartness = (XP_U8)stream_getBits( stream, 2 );
     gi->phoniesAction = (XWPhoniesChoice)stream_getBits( stream, 2 );
     gi->timerEnabled = stream_getBits( stream, 1 );
-#ifdef FEATURE_TRAY_EDIT
+
     if ( strVersion >= CUR_STREAM_VERS ) {
         gi->allowPickTiles = stream_getBits( stream, 1 );
     } else {
         gi->allowPickTiles = XP_FALSE;
     }
-#endif
-#ifdef XWFEATURE_SEARCHLIMIT
+
     if ( strVersion >= CUR_STREAM_VERS ) {
         gi->allowHintRect = stream_getBits( stream, 1 );
     } else {
         gi->allowHintRect = XP_FALSE;
     }
-#endif
 
 
     gi->gameID = stream_getU16( stream );
@@ -389,12 +387,8 @@ gi_writeToStream( XWStreamCtxt* stream, CurGameInfo* gi )
     stream_putBits( stream, 2, gi->robotSmartness );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
-#ifdef FEATURE_TRAY_EDIT
     stream_putBits( stream, 1, gi->allowPickTiles );
-#endif
-#ifdef XWFEATURE_SEARCHLIMIT
     stream_putBits( stream, 1, gi->allowHintRect );
-#endif
 
     stream_putU16( stream, gi->gameID );
     if ( gi->timerEnabled) {
