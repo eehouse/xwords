@@ -146,7 +146,10 @@ class CXWordsAppView : public CCoeControl
     static DictionaryCtxt* sym_util_makeEmptyDict( XW_UtilCtxt* uc );
     static XWStreamCtxt*   sym_util_makeStreamFromAddr( XW_UtilCtxt* uc,
                                                         XP_U16 channelNo );
-
+#ifdef BEYOND_IR
+    static void            sym_util_listenPortChange( XW_UtilCtxt* uc, 
+                                                      XP_U16 listenPort );
+#endif
 
 #ifdef XWFEATURE_STANDALONE_ONLY
 # define SYM_SEND      (TransportSend)NULL
@@ -165,7 +168,7 @@ class CXWordsAppView : public CCoeControl
     CommonPrefs iCp;
 #ifndef XWFEATURE_STANDALONE_ONLY
     CommsAddrRec iCommsAddr;    /* for default settings */
-    XP_U16       iListenPort;   /* not sure what for */
+    XP_U16       iListenPort;
 #endif
     XW_UtilCtxt iUtil;
     XWGame      iGame;
