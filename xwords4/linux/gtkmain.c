@@ -951,7 +951,7 @@ pentimer_idle_func( gpointer data )
     struct timeval tv;
     XP_Bool callAgain = XP_TRUE;
     
-    XP_ASSERT( gettimeofday( &tv, NULL ) == 0 );
+    gettimeofday( &tv, NULL );
 
     if ( (tv.tv_usec - globals->penTv.tv_usec) >= globals->penTimerInterval) {
         board_timerFired( globals->cGlobals.game.board, TIMER_PENDOWN );
@@ -979,14 +979,14 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
 
     if ( why == TIMER_PENDOWN ) {
-	globals->penTimerInterval = 35 * 10000;
-	(void)gettimeofday( &globals->penTv, NULL );
-	(void)gtk_idle_add( pentimer_idle_func, globals );    
+        globals->penTimerInterval = 35 * 10000;
+        (void)gettimeofday( &globals->penTv, NULL );
+        (void)gtk_idle_add( pentimer_idle_func, globals );    
     } else if ( why == TIMER_TIMERTICK ) {
-	globals->scoreTimerInterval = 100 * 10000;
-	(void)gettimeofday( &globals->scoreTv, NULL );
+        globals->scoreTimerInterval = 100 * 10000;
+        (void)gettimeofday( &globals->scoreTv, NULL );
 
-	(void)gtk_timeout_add( 1000, score_timer_func, globals );
+        (void)gtk_timeout_add( 1000, score_timer_func, globals );
     }
 
 } /* gtk_util_setTimer */
