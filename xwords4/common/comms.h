@@ -83,6 +83,8 @@ void comms_destroy( CommsCtxt* comms );
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 
 void comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr );
+/* "static" method provides default when no comms present */
+void comms_getInitialAddr( CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr );
 
 CommsConnType comms_getConType( CommsCtxt* comms );
