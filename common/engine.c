@@ -62,7 +62,6 @@ struct EngineCtxt {
     XW_UtilCtxt* util;
 
     Engine_rack rack;
-    XP_U16 nTilesToUse;
     Tile blankTile;
     XP_Bool searchInProgress;
     XP_Bool searchHorizontal;
@@ -80,7 +79,10 @@ struct EngineCtxt {
     XP_U16 scoreCache[MAX_ROWS];
 
 #ifdef XWFEATURE_SEARCHLIMIT
-    HintLimits* searchLimits;
+    XP_U16 nTilesMin, nTilesMax;
+    XP_U16 nTilesMinUser, nTilesMaxUser;
+    XP_Bool tileLimitsKnown;
+    BdHintLimits* searchLimits;
 #endif
     XP_U16 numRowsToFill;
 
@@ -213,6 +215,13 @@ engine_reset( EngineCtxt* engine )
     XP_MEMSET( &engine->miData, 0, sizeof(engine->miData) );   
     engine->miData.lastSeenMove.score = 0xffff; /* max possible */
     engine->searchInProgress = XP_FALSE;
+#ifdef XWFEATURE_SEARCHLIMIT
+    engine->tileLimitsKnown = XP_FALSE;      /* indicates not set */
+    if ( engine->nTilesMin == 0 ) {
+        engine->nTilesMinUser = engine->nTilesMin = 1;
+        engine->nTilesMaxUser = engine->nTilesMax = MAX_TRAY_TILES;
+    }
+#endif
 } /* engine_reset */
 
 void
@@ -358,9 +367,10 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
 XP_Bool
 engine_findMove( EngineCtxt* engine, ModelCtxt* model, 
                  DictionaryCtxt* dict, const Tile* tiles,
-                 XP_U16 nTiles, XP_U16 nTilesToUse,
+                 XP_U16 nTiles, 
 #ifdef XWFEATURE_SEARCHLIMIT
-                 HintLimits* searchLimits,
+                 BdHintLimits* searchLimits,
+                 XP_Bool useTileLimits,
 #endif
                  XP_U16 targetScore, XP_Bool* canMoveP, 
                  MoveInfo* newMove )
@@ -369,18 +379,37 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
     XP_Bool firstMove;
     XP_U16 star_row;
 
-    if ( nTilesToUse == 0 ) {
-        nTilesToUse = nTiles;
-    }
+#ifdef XWFEATURE_SEARCHLIMIT
+    if ( useTileLimits ) {
+        /* We'll want to use the numbers we've been using already unless
+           there's been a reset.  In that case, though, provide the old
+           ones as defaults */
+        if ( !engine->tileLimitsKnown ) {
 
-    if ( nTilesToUse != engine->nTilesToUse ) {
-        /* invalidate the cache; it may contain bad results */
-        engine_reset( engine );
+            XP_U16 nTilesMin = engine->nTilesMinUser;
+            XP_U16 nTilesMax = engine->nTilesMaxUser;
+
+            if ( util_getTraySearchLimits( engine->util, 
+                                           &nTilesMin, &nTilesMax ) ) {
+                engine->tileLimitsKnown = XP_TRUE;
+                engine->nTilesMinUser = nTilesMin;
+                engine->nTilesMaxUser = nTilesMax;
+            } else {
+                *canMoveP = XP_FALSE;                
+                return XP_TRUE;
+            }
+        }
+
+        engine->nTilesMin = engine->nTilesMinUser;
+        engine->nTilesMax = engine->nTilesMaxUser;
+    } else {
+        engine->nTilesMin = 1;
+        engine->nTilesMax = MAX_TRAY_TILES;
     }
+#endif
 
     engine->model = model;
     engine->dict = dict;
-    engine->nTilesToUse = nTilesToUse;
     engine->blankTile = dict_getBlankTile( dict );
     engine->returnNOW = XP_FALSE;
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -838,7 +867,7 @@ leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
 #ifdef NODE_CAN_4
             XP_U16 nodeSize = engine->dict->nodeSize;
 #endif
-            if ( engine->nTilesToUse > 0 ) {
+            if ( engine->nTilesMax > 0 ) {
                 for ( ; ; ) {
                     XP_Bool isBlank;
                     Tile tile = EDGETILE( engine->dict, edge );
@@ -885,7 +914,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
     } else if ( tile == EMPTY_TILE ) {
         Crosscheck check = engine->rowChecks[col]; /* make a local copy */
 
-        if ( engine->nTilesToUse > 0 ) {
+        if ( engine->nTilesMax > 0 ) {
             for ( ; ; ) {
                 tile = EDGETILE( dict, edge );
                 if ( CROSSCHECK_CONTAINS( check, tile ) ) {
@@ -922,7 +951,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
         return;
     }
  check_exit:
-    if ( accepting ) {
+    if ( accepting && tileLength >= engine->nTilesMin ) {
         considerMove( engine, tiles, tileLength, firstCol, col, row );
     }
 } /* extendRight */
@@ -934,7 +963,7 @@ rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank )
 
     XP_ASSERT( tile < 32 );
     XP_ASSERT( tile != blankIndex );
-    XP_ASSERT( engine->nTilesToUse > 0 );
+    XP_ASSERT( engine->nTilesMax > 0 );
 
     if ( engine->rack[(short)tile] > 0 ) { /* we have the tile itself */
         --engine->rack[(short)tile];
@@ -948,7 +977,7 @@ rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank )
         return XP_FALSE;
     }
 
-    --engine->nTilesToUse;
+    --engine->nTilesMax;
     return XP_TRUE;
 } /* rack_remove */
 
@@ -961,7 +990,7 @@ rack_replace( EngineCtxt* engine, Tile tile, XP_Bool isBlank )
     }
     ++engine->rack[(short)tile];
 
-    ++engine->nTilesToUse;
+    ++engine->nTilesMax;
 } /* rack_replace */
 
 static void
