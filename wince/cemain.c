@@ -777,8 +777,10 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     oldGameLoaded = prevStateExists && ceLoadSavedGame( globals );
 
     if ( !oldGameLoaded ) {
+        XP_U16 gameID = 0;      /* good enough until I get networking going */
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
-                          &globals->util, globals->draw, &globals->appPrefs.cp, 
+                          &globals->util, globals->draw, gameID,
+                          &globals->appPrefs.cp, 
                           (TransportSend)NULL, globals );
 
         newDone = doNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
