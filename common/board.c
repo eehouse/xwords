@@ -1969,8 +1969,8 @@ setHintRect( BoardCtxt* board )
 } /* setHintRect */
 
 static void
-invalHintRectDiffs( BoardCtxt* board, HintLimits* newLim, 
-                    HintLimits* oldLim )
+invalHintRectDiffs( BoardCtxt* board, BdHintLimits* newLim, 
+                    BdHintLimits* oldLim )
 {
     /* These two regions will generally have close to 50% of their borders in
        common.  Try not to inval what needn't be inval'd.  But at the moment
@@ -2004,7 +2004,7 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
         checkScrollCell( board, selPlayer, col, row );
 
         if ( col != board->hintDragCurCol || row != board->hintDragCurRow ) {
-            HintLimits oldHL;
+            BdHintLimits oldHL;
 
             needsRedraw = XP_TRUE;
 
