@@ -305,10 +305,14 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         if ( len > 0 ) {
             XP_S16 strWidth = FntCharsWidth( (const char*)letters, len );
             XP_U16 x = localR.left + ((localR.width-strWidth) / 2);
+            XP_U16 y = localR.top-1;
             if ( len == 1 ) {
                 ++x;
             }
-            WinDrawChars( (const char*)letters, len, x, localR.top-1 );
+            if ( dctx->doHiRes ) {
+                --y;
+            }
+            WinDrawChars( (const char*)letters, len, x, y );
 
             showBonus = XP_FALSE;
             empty = XP_FALSE;
@@ -492,7 +496,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 
         if ( 0 ) {
 #ifdef FEATURE_HIGHRES
-        } else if ( dctx->doHiRes ) {
+        } else if ( dctx->doHiRes && dctx->oneDotFiveAvail ) {
             UInt32 oldMode = WinSetScalingMode( kTextScalingOff );
             FontID curFont = FntGetFont();
             FntSetFont( boldFont );
@@ -607,10 +611,16 @@ palm_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP,
                           XWBonusType cursorBonus, XP_Bool vertical )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+    RectangleType oldClip;
 
     Int16 resID = vertical? DOWN_ARROW_RESID:RIGHT_ARROW_RESID;
 
+    WinGetClip( &oldClip );
+    WinSetClip( (RectangleType*)rectP );
+
     bitmapInRect( dctx, resID, rectP );
+
+    WinSetClip( &oldClip );
 } /* palm_draw_drawBoardArrow */
 
 #ifdef COLOR_SUPPORT
@@ -920,8 +930,6 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
     XP_U16 x = rect->left + 1;
 
     HIGHRES_PUSH_LOC(dctx);
-
-    str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
 
     WinGetClip( &oldClip );
     RctGetIntersection( &oldClip, (RectangleType*)rect, &newClip );
@@ -1305,6 +1313,7 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     }
 
     dctx->fntHeight = FntBaseLine();
+    dctx->oneDotFiveAvail = globals->oneDotFiveAvail;
 
     return (DrawCtx*)dctx;
 } /* palm_drawctxt_make */

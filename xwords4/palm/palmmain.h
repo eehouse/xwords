@@ -77,15 +77,12 @@ typedef struct PalmDrawCtx {
 #ifdef FEATURE_HIGHRES
     UInt16 oldCoord;
     XP_Bool doHiRes;
+    XP_Bool oneDotFiveAvail;
 #endif
 
     union {
         struct {
-/* 	    IndexedColorType black; */
-/* 	    IndexedColorType white; */
-/* 	    IndexedColorType playerColors[MAX_NUM_PLAYERS]; */
-/* 	    IndexedColorType bonusColors[BONUS_LAST-1]; */
-        XP_U8 reserved;         /* make CW compiler happy */
+            XP_U8 reserved;     /* make CW compiler happy */
         } clr;
         struct {
             CustomPatternType valuePatterns[4];
@@ -286,6 +283,8 @@ struct PalmAppGlobals {
     XP_U16 sonyLibRef;
     XP_Bool doVSK;
     XP_Bool hasHiRes;
+    XP_Bool oneDotFiveAvail;
+    XP_Bool useHiRes;
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
