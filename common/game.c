@@ -340,7 +340,11 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, XP_U16 strVersion,
     }
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
+    if ( strVersion >= CUR_STREAM_VERS ) {
         gi->allowHintRect = stream_getBits( stream, 1 );
+    } else {
+        gi->allowHintRect = XP_FALSE;
+    }
 #endif
 
 

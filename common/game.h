@@ -32,6 +32,8 @@ extern "C" {
 
 #ifdef FEATURE_TRAY_EDIT
 # define CUR_STREAM_VERS 0x02
+#elif defined XWFEATURE_SEARCHLIMIT
+# define CUR_STREAM_VERS 0x03
 #else
 # define CUR_STREAM_VERS 0x01
 #endif
