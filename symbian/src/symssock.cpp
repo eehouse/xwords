@@ -29,11 +29,12 @@ CSendSocket::RunL()
     XP_LOGF( "CSendSocket::RunL called; iStatus=%d", iStatus.Int() );
 /*     iSendTimer.Cancel(); */
 
+    TBool statusGood = iStatus.Int() == KErrNone;
     switch ( iSSockState ) {
     case ELookingUp:
         iResolver.Close();      /* we probably won't need this again */
         XP_ASSERT( iStatus.Int() == KErrNone );
-        if ( iStatus == KErrNone ) {
+        if ( statusGood ) {
             iNameRecord = iNameEntry();
             XP_LOGF( "name resolved: now:" );
             ConnectL( TInetAddr::Cast(iNameRecord.iAddr).Address() );
@@ -41,27 +42,94 @@ CSendSocket::RunL()
         break;
     case EConnecting:
         XP_ASSERT( iStatus.Int() == KErrNone );
-        if ( iStatus == KErrNone ) {
+        if ( statusGood ) {
             iSSockState = EConnected;
             XP_LOGF( "connect successful" );
             if ( iSendBuf.Length() > 0 ) {
                 DoActualSend();
+            } else if ( iListenPending ) {
+                Listen();
             }
         }
         break;
     case ESending:
         XP_ASSERT( iStatus.Int() == KErrNone );
-        if ( iStatus == KErrNone ) {
+        if ( statusGood ) {
             iSSockState = EConnected;
             iSendBuf.SetLength(0);
             XP_LOGF( "send successful" );
+
+            if ( iListenPending ) {
+                Listen();
+            }
 
             /* Send was successful.  Need to tell anybody?  Might want to
                update display somehow. */
         }
         break;
+
+    case EListening:
+        if ( statusGood ) {
+            if ( iDataLen == 0 ) {
+                /* Do nothing; we need to read again via Listen call */
+                iDataLen = XP_NTOHS( *(XP_U16*)iInBufDesc->Ptr() );
+                XP_LOGF( "Recv succeeded with length; now looking for %d byte packet", 
+                         iDataLen );
+            } else {
+                iDataLen = 0;
+                XP_LOGF( "Got packet! Calling callback" );
+                (*iCallback)( iInBufDesc, iClosure );
+            }
+            iSSockState = EConnected;
+            Listen();           /* go back to listening */
+        }
     }
 } /* RunL */
+
+TBool
+CSendSocket::Listen()
+{
+    XP_LOGF( "CSendSocket::Listen" );
+    TBool result;
+    iListenPending = ETrue;
+
+    if ( IsActive() ) {
+        if ( iSSockState == ESending ) {
+            result = ETrue;
+        } 
+        result = EFalse;
+    } else {
+
+        if ( iSSockState == ENotConnected ) {
+            ConnectL();
+        } else {
+            delete iInBufDesc;
+
+            TInt seekLen = iDataLen == 0? 2: iDataLen;
+            iInBufDesc = new TPtr8( iInBuf, seekLen );
+            XP_LOGF( "calling iSendSocket.Recv; looking for %d bytes", 
+                     iInBufDesc->MaxSize() );
+            iSendSocket.Recv( *iInBufDesc, 0, iStatus );
+
+            SetActive();
+            iSSockState = EListening;
+            result = ETrue;
+            iListenPending = EFalse;
+        }
+    }
+    return result;
+} /* Listen */
+
+TBool
+CSendSocket::CancelListen()
+{
+    TBool result = iSSockState == EListening;
+    if ( result ) {
+        XP_ASSERT( IsActive() );
+        Cancel();
+    }
+    return result;
+} /* CancelListen */
 
 void
 CSendSocket::DoCancel()
@@ -75,13 +143,21 @@ CSendSocket::DoCancel()
     } else if ( iSSockState == ELookingUp ) {
         iResolver.Cancel();
         iResolver.Close();
+    } else if ( iSSockState == EListening ) {
+        iSendSocket.CancelRecv();        
     }
 } /* DoCancel */
 
-CSendSocket::CSendSocket()
+CSendSocket::CSendSocket( ReadNotifyCallback aCallback, 
+                          void* aClosure )
     : CActive(EPriorityStandard)
      ,iSSockState(ENotConnected)
      ,iAddrSet( EFalse )
+     ,iCallback(aCallback)
+     ,iClosure(aClosure)
+     ,iListenPending(EFalse)
+     ,iInBufDesc( NULL )
+     ,iDataLen( 0 )
 {
 }
 
@@ -102,9 +178,9 @@ CSendSocket::ConstructL()
 }
 
 /*static*/ CSendSocket*
-CSendSocket::NewL()
+CSendSocket::NewL( ReadNotifyCallback aCallback, void* aClosure )
 {
-    CSendSocket* me = new CSendSocket();
+    CSendSocket* me = new CSendSocket( aCallback, aClosure );
     CleanupStack::PushL( me );
     me->ConstructL();
     CleanupStack::Pop( me );
@@ -117,7 +193,7 @@ CSendSocket::ConnectL( TUint32 aIpAddr )
     XP_LOGF( "ConnectL( 0x%x )", aIpAddr );
 
     TInt err = iSendSocket.Open( iSocketServer, KAfInet, 
-                            KSockDatagram, KProtocolInetUdp );
+                                 KSockStream, KProtocolInetTcp );
     XP_LOGF( "iSocket.Open => %d", err );
     User::LeaveIfError( err );
 
@@ -126,6 +202,7 @@ CSendSocket::ConnectL( TUint32 aIpAddr )
     iAddress.SetAddress( aIpAddr );
 
     // Initiate socket connection
+    XP_LOGF( "calling iSendSocket.Connect" );
     iSendSocket.Connect( iAddress, iStatus );
 
     SetActive();
@@ -143,26 +220,53 @@ CSendSocket::ConnectL()
     if ( iSSockState == ENotConnected ) {
         TInetAddr ipAddr;
 
-        XP_LOGF( "connecting to %s", iCurAddr.u.ip.hostName );
+        if ( iCurAddr.u.ip.hostName && iCurAddr.u.ip.hostName[0] ) {
 
-        TBuf16<MAX_HOSTNAME_LEN> tbuf;
-        tbuf.Copy( TBuf8<MAX_HOSTNAME_LEN>(iCurAddr.u.ip.hostName) );
-        TInt err = ipAddr.Input( tbuf );
-        XP_LOGF( "ipAddr.Input => %d", err );
+            XP_LOGF( "connecting to %s", iCurAddr.u.ip.hostName );
 
-        if ( err != KErrNone ) {
-            /* need to look it up */
-            err = iResolver.Open( iSocketServer, KAfInet, KProtocolInetUdp );
-            XP_LOGF( "iResolver.Open => %d", err );
-            User::LeaveIfError( err );
+            TBuf16<MAX_HOSTNAME_LEN> tbuf;
+            tbuf.Copy( TBuf8<MAX_HOSTNAME_LEN>(iCurAddr.u.ip.hostName) );
+            TInt err = ipAddr.Input( tbuf );
+            XP_LOGF( "ipAddr.Input => %d", err );
 
-	        iResolver.GetByName( tbuf, iNameEntry, iStatus );
-            iSSockState = ELookingUp;
+            if ( err != KErrNone ) {
+                /* need to look it up */
+                err = iResolver.Open( iSocketServer, KAfInet, KProtocolInetUdp );
+                XP_LOGF( "iResolver.Open => %d", err );
+                User::LeaveIfError( err );
 
-            SetActive();
+                iResolver.GetByName( tbuf, iNameEntry, iStatus );
+                iSSockState = ELookingUp;
+
+                SetActive();
+            } else {
+                ConnectL( ipAddr.Address() );
+            }
         } else {
-            ConnectL( ipAddr.Address() );
+            /* PENDING FIX THIS!!!! */
+            XP_LOGF( "Can't connect: no relay name" );
         }
+    }
+} /* ConnectL */
+
+void
+CSendSocket::ConnectL( const CommsAddrRec* aAddr )
+{
+    /* If we're connected and the address is the same, do nothing.  Otherwise
+       disconnect, change the address, and reconnect. */
+
+    TBool sameAddr = iAddrSet && 
+        (0 == XP_MEMCMP( (void*)&iCurAddr, (void*)aAddr, sizeof(aAddr) ) );
+
+    if ( sameAddr && iSSockState >= EConnected ) {
+        /* do nothing */
+    } else {
+        Disconnect();
+
+        iCurAddr = *aAddr;
+        iAddrSet = ETrue;
+
+        ConnectL();    
     }
 } /* ConnectL */
 
@@ -183,27 +287,27 @@ CSendSocket::SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr )
     XP_LOGF( "CSendSocket::SendL called" );
     TBool success;
 
-    XP_ASSERT( !IsActive() );
+    XP_ASSERT( iSSockState == EListening || !IsActive() );
     if ( iSSockState == ESending ) {
         success = EFalse;
     } else if ( aLen > KMaxMsgLen ) {
         success = EFalse;
     } else {
         XP_ASSERT( iSendBuf.Length() == 0 );
-        iSendBuf.Copy( aBuf, aLen );
 
-        if ( iAddrSet && (0 != XP_MEMCMP( (void*)&iCurAddr, (void*)aAddr, 
-                                          sizeof(aAddr) )) ) {
-            Disconnect();
-        }
-        XP_ASSERT( !iAddrSet );
-        iCurAddr = *aAddr;
-        iAddrSet = ETrue;
+        /* TCP-based protocol requires 16-bits of length, in network
+           byte-order, followed by data. */
+        iSendBuf.SetLength(0);
+        XP_U16 netLen = XP_HTONS( aLen );
+        iSendBuf.Append( (TUint8*)&netLen, sizeof(netLen) );
+        iSendBuf.Append( aBuf, aLen );
 
         if ( iSSockState == ENotConnected ) {
             ConnectL();
-        } else if ( iSSockState == EConnected ) {
+        } else if ( iSSockState == EConnected || iSSockState == EListening ) {
             DoActualSend();
+        } else {
+            XP_ASSERT( 0 );     /* not sure why we'd be here */
         }
         success = ETrue;
     }
@@ -215,6 +319,11 @@ void
 CSendSocket::DoActualSend()
 {
     XP_LOGF( "CSendSocket::DoActualSend called" );
+
+    if ( CancelListen() ) {
+        iListenPending = ETrue;
+    }
+
     iSendSocket.Write( iSendBuf, iStatus ); // Initiate actual write
     SetActive();
     

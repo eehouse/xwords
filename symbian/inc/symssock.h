@@ -33,14 +33,17 @@ const TInt KMaxMsgLen = 512;
 class CSendSocket : public CActive {
 
  public:
-    static CSendSocket* NewL();
+
+    typedef void (*ReadNotifyCallback)( const TDesC8* aBuf,
+                                        void *aClosure );
+    static CSendSocket* NewL( ReadNotifyCallback aCallback, void* aClosure );
+
     ~CSendSocket();
 
     TBool SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr );
+    TBool Listen();
 
-    void ConnectL();
-    void ConnectL( TUint32 aIpAddr );
-
+    void ConnectL( const CommsAddrRec* aAddr );
     void Disconnect();
     
  protected:
@@ -48,15 +51,21 @@ class CSendSocket : public CActive {
     void DoCancel();            /* from CActive */
 
  private:
-    CSendSocket();
+    CSendSocket( ReadNotifyCallback aCallback, void* aClosure );
     void ConstructL();
     void DoActualSend();
+
+    void ConnectL();
+    void ConnectL( TUint32 aIpAddr );
+
+    TBool CancelListen();
 
     enum TSSockState { ENotConnected
                        ,ELookingUp
                        ,EConnecting
                        ,EConnected
                        ,ESending
+                       ,EListening
     };
 
     TSSockState       iSSockState;
@@ -65,10 +74,17 @@ class CSendSocket : public CActive {
     RHostResolver     iResolver;
     TInetAddr         iAddress;
     TBuf8<KMaxMsgLen> iSendBuf;
+    TInt              iDataLen;       /* How big should next packet be */
+    TUint8            iInBuf[KMaxMsgLen];
+    TPtr8*            iInBufDesc;     /* points to above buffer */
     CommsAddrRec      iCurAddr;
     TNameEntry        iNameEntry;
     TNameRecord       iNameRecord;
     TBool             iAddrSet;
+    TBool             iListenPending;
+
+    ReadNotifyCallback iCallback;
+    void* iClosure;
 };
 
 #endif
