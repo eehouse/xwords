@@ -541,10 +541,14 @@ saveGamePrefs( /*PalmAppGlobals* globals, */XWStreamCtxt* stream )
 static void
 reportMissingDict( PalmAppGlobals* globals, XP_UCHAR* name )
 {
-    XP_UCHAR buf[48];
-    XP_UCHAR* str = getResString( globals, STRS_CANNOT_FIND_DICT );
-    StrPrintF( buf, str, name );
-    (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)buf, " ", " " );
+    /* FrmCustomAlert crashes on some OS versions when there's no form under
+       it to "return" to. */
+    if ( FrmGetActiveForm() != NULL ) {
+        XP_UCHAR buf[48];
+        XP_UCHAR* str = getResString( globals, STRS_CANNOT_FIND_DICT );
+        StrPrintF( buf, str, name );
+        (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)buf, " ", " " );
+    }
 } /* reportMissingDict */
 
 static Boolean
@@ -577,7 +581,6 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
             success = dict != NULL;
 
             if ( !success ) {
-                /* putting up a dlog here used to crash */
                 reportMissingDict( globals, name );
                 XP_FREE( globals->mpool, name );
                 beep();
