@@ -34,8 +34,10 @@
 #endif
 { "STR_TOO_FEW_TILES",		"Ho quedan tantas fichas." },
 { "STR_CANT_UNDO_TILEASSIGN",	"El reparto de fichas no puede deshacerse." },
-{ "STR_VALUES_TITLE",		"Cantidad y Valor" },
-{ "STR_VALUES_HEADER",		"Cantidad[quedan] y Valor\n" },
+
+{ "STR_VALUES_TITLE", "Counts and Values" }, /* translate */
+{ "STR_REMAINS_TITLE","Remaining tiles" }, /* translate */
+{ "STRS_VALUES_HEADER",		"%s counts/values:\n" }, /* translate */
 
 { "STR_DOUBLE_LETTER",		"Doble de letra" },
 { "STR_DOUBLE_WORD",		"Doble de palabra" },
@@ -44,7 +46,7 @@
 { "STR_REMTILES",		"Hay:%d" },
 { "STR_CANT_TRADE_MIDTURN",	"Aún tienes fichas en el tablero."},
 { "STR_ASK_REPLACE_GAME",	"¿Quieres sobreescribir la partida?" },
-{ "STR_NO",			"No" },
+{ "STR_OK",			"Ok" },     /* translate */
 { "STR_ABOUT_TITLE",		"Acerca de Crosswords" },
 { "STR_DEFAULT_NAME",		"Jugador %d" },
 { "STR_ABOUT_CONTENT", 
@@ -132,3 +134,5 @@
                                "El cambio no es reversible." },
 { "STRS_CONFIRM_ONEDICT",       "¿Convertir el diccionario %s?" },
 #endif
+{ "STRS_CANNOT_FIND_DICT",      "%s dictionary not found." }, /* translate */
+{ "STR_DICT_COPY_EXPL",        "Copying dictionary from card..." },/* translate */
