@@ -1013,15 +1013,17 @@ board_draw( BoardCtxt* board )
             BoardArrow* arrow = &board->boardArrow[board->selPlayer];
 
             if ( arrow->visible ) {
+                XP_U16 col = arrow->col;
+                XP_U16 row = arrow->row;
                 XP_Bool drawVertical = 
                     (arrow->vert == XP_CURSOR_KEY_DOWN) ^ board->isFlipped;
-                if ( getCellRect( board, arrow->col, arrow->row, 
-                                  &cursorRect ) ) {
+                if ( getCellRect( board, col, row, &cursorRect ) ) {
                     XWBonusType bonus;
-                    bonus = util_getSquareBonus( board->util, model, arrow->col, 
-                                                 arrow->row );
+                    HintAtts hintAtts;
+                    bonus = util_getSquareBonus( board->util, model, col, row );
+                    hintAtts = figureHintAtts( board, col, row );
                     draw_drawBoardArrow( board->draw, &cursorRect, 
-                                         bonus, drawVertical );
+                                         bonus, drawVertical, hintAtts );
                 }
             }
 #ifdef KEYBOARD_NAV
