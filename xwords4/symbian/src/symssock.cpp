@@ -184,7 +184,7 @@ CSendSocket::ConstructL()
 {
 	CActiveScheduler::Add( this );
     XP_LOGF( "calling iSocketServer.Connect()" );
-    TInt err = iSocketServer.Connect();
+    TInt err = iSocketServer.Connect( 2 );
     XP_LOGF( "Connect=>%d", err );
 	User::LeaveIfError( err );
 }
