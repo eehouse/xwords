@@ -383,6 +383,7 @@ MENUID XW_ASK_MENU_ID
 BEGIN
     TITLE "Query"
 
+    /* This has to be non-editable because the field is set via a ptr */
     FIELD XW_ASK_TXT_FIELD_ID LEFT_EDGE-5 16 135 52 \
           NONEDITABLE MULTIPLELINES
 
