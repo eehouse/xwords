@@ -625,6 +625,9 @@ ce_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
     }
 } /* ce_draw_drawTimer */
 
+/* #define LINE_BREAK XP_CR */
+#define LINE_BREAK "\n"
+
 static XP_UCHAR*
 ce_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
 {
@@ -640,7 +643,7 @@ ce_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
     case BONUS_TRIPLE_WORD:
         str = "Triple word"; break;
     case INTRADE_MW_TEXT:
-        str = "Trading tiles; tap 'D' when done"; break;
+        str = "Trading tiles;" LINE_BREAK "select 'Turn done' when ready"; break;
     default:
         XP_ASSERT( XP_FALSE );
     }
@@ -648,6 +651,7 @@ ce_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
     return str;
 } /* ce_draw_getMiniWText */
 
+#define CE_MINI_V_PADDING 6
 static void
 ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str, 
                           XP_U16* widthP, XP_U16* heightP )
@@ -655,16 +659,34 @@ ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = GetDC(dctx->mainWin);//globals->hdc;
-    SIZE size;
-    wchar_t widebuf[40];
+    XP_Bool lastLine = XP_FALSE;
+    XP_U16 height, maxWidth;
 
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, -1,
-                         widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
-    
-    GetTextExtentPoint32( hdc, widebuf, wcslen(widebuf), &size );
+    for ( height = CE_MINI_V_PADDING, maxWidth = 0; ; ) {
+        wchar_t widebuf[64];
+        XP_UCHAR* nextStr = strstr( str, LINE_BREAK );
+        XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
+        SIZE size;
 
-    *widthP = size.cx + 12;
-    *heightP = size.cy + 4;
+        XP_ASSERT( nextStr != str );
+
+        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
+                             widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+        widebuf[len] = 0;
+        GetTextExtentPoint32( hdc, widebuf, wcslen(widebuf), &size );
+
+        maxWidth = XP_MAX( maxWidth, size.cx );
+        height += size.cy + 2;
+        dctx->miniLineHt = size.cy;
+
+        if ( nextStr == NULL ) {
+            break;
+        }
+        str = nextStr + XP_STRLEN(LINE_BREAK);	/* skip '\n' */
+    }
+
+    *widthP = maxWidth + 8;
+    *heightP = height;
 } /* ce_draw_measureMiniWText */
 
 static void
@@ -674,9 +696,9 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc;
-    RECT rt;
+    RECT rt, textRt;
     PAINTSTRUCT ps;
-    wchar_t widebuf[40];
+    wchar_t widebuf[64];
 
     XPRtoRECT( &rt, rect );
 
@@ -689,14 +711,41 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
 
     ceClearToBkground( (CEDrawCtx*)p_dctx, rect );
 
+    SetBkColor( hdc, dctx->colors[BKG_COLOR] );
+    SetTextColor( hdc, dctx->colors[BLACK_COLOR] );
+
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
 
-    XP_MEMSET( widebuf, 0, sizeof(widebuf) );
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, text, -1,
-                         widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
-    DrawText(hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+    textRt = rt;
+    textRt.top += 2;
+    InsetRect( &textRt, 3, 0 );
+
+    for ( ; ; ) { /* draw up to the '\n' each time */
+        XP_UCHAR* nextStr = strstr( text, LINE_BREAK );
+        XP_U16 len;
+
+        if ( nextStr == NULL ) {
+            len = XP_STRLEN(text);
+        } else {
+            len = nextStr - text;
+        }
+
+        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, text, len,
+                             widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+        widebuf[len] = 0;
+
+        textRt.bottom = textRt.top + dctx->miniLineHt;
+
+        DrawText( hdc, widebuf, -1, &textRt, DT_CENTER | DT_VCENTER );
+
+        if ( nextStr == NULL ) {
+            break;
+        }
+        textRt.top = textRt.bottom + 2;
+        text = nextStr + XP_STRLEN(LINE_BREAK);
+    }
 
     if ( !globals->hdc ) {
         EndPaint( dctx->mainWin, &ps );
