@@ -30,6 +30,8 @@ SOURCE            symaskdlg.cpp
 SOURCE            symgamdl.cpp
 SOURCE            symdict.cpp
 SOURCE            symblnk.cpp
+SOURCE            symgmmgr.cpp
+SOURCE            symgmdlg.cpp
 
 SOURCEPATH        ..\group
 RESOURCE          xwords.rss
@@ -73,3 +75,5 @@ LIBRARY           fbscli.lib
 LIBRARY           EFSRV.lib
 // convert to unicode
 // LIBRARY           CHARCONV.lib
+// RFileReadStream
+LIBRARY           ESTOR.lib
