@@ -39,8 +39,7 @@ typedef struct ConnsDlgState {
     ListPtr connTypesList;
     XP_U16 serverRole;
     XP_Bool isNewGame;
-    ConnDlgAddrs* addrState;
-    XP_UCHAR localIPStr[16];
+    CommsAddrRec* addr;
 } ConnsDlgState;
 
 static void
@@ -89,19 +88,15 @@ ctlsFromState( PalmAppGlobals* globals, FormPtr form, ConnsDlgState* state )
 {
     XP_Bool isNewGame = state->isNewGame;
     XP_UCHAR buf[16];
-    ConnDlgAddrs* addrState = state->addrState;
+    CommsAddrRec* addr = state->addr;
 
-    NetLibAddrINToA( globals->nlStuff.netLibRef, 
-                     addrState->remoteIP, buf );
-    fieldFromStr( XW_CONNS_TARGET_FIELD_ID, buf, isNewGame );
+    fieldFromStr( XW_CONNS_RELAY_FIELD_ID, 
+                  addr->u.ip_relay.hostName, isNewGame );
 
-    StrPrintF( buf, "%d", addrState->remotePort );
-    fieldFromStr( XW_CONNS_TPORT_FIELD_ID, buf, isNewGame );
+    StrPrintF( buf, "%d", addr->u.ip_relay.port );
+    fieldFromStr( XW_CONNS_PORT_FIELD_ID, buf, isNewGame );
 
-    StrPrintF( buf, "%d", addrState->localPort );
-    fieldFromStr( XW_CONNS_MYPORT_FIELD_ID, buf, isNewGame );
-
-    fieldFromStr( XW_CONNS_HOSTIP_FIELD_ID, state->localIPStr, XP_FALSE );
+    fieldFromStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie, isNewGame );
 } /* ctlsFromState */
 
 static XP_Bool
@@ -109,65 +104,34 @@ stateFromCtls( PalmAppGlobals* globals, ConnsDlgState* state )
 {
     XP_Bool ok = XP_TRUE;
     XP_UCHAR buf[16];
-    XP_U32 tmpAddr;
-    ConnDlgAddrs* addrState = state->addrState;
-    XP_Bool rejectBadIP = addrState->conType == COMMS_CONN_IP;
+    CommsAddrRec* addr = state->addr;
 
-    strFromField( XW_CONNS_TARGET_FIELD_ID, buf, sizeof(buf) );
-    tmpAddr = NetLibAddrAToIN( globals->nlStuff.netLibRef, buf );
-    if ( tmpAddr != -1L ) {
-        addrState->remoteIP = tmpAddr;
-    } else if ( rejectBadIP ) {
-        NetLibAddrINToA( globals->nlStuff.netLibRef, addrState->remoteIP,
-                         buf );
-        fieldFromStr( XW_CONNS_TARGET_FIELD_ID, buf, state->isNewGame );
-        ok = XP_FALSE;
-    }
+    strFromField( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName,
+                  sizeof(addr->u.ip_relay.hostName) );
 
-    strFromField( XW_CONNS_TPORT_FIELD_ID, buf, sizeof(buf) );
-    addrState->remotePort = StrAToI( buf );        
+    strFromField( XW_CONNS_PORT_FIELD_ID, buf, sizeof(buf) );
+    addr->u.ip_relay.port = StrAToI( buf );        
 
-    strFromField( XW_CONNS_MYPORT_FIELD_ID, buf, sizeof(buf) );
-    addrState->localPort = StrAToI( buf );        
-
+    strFromField( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie,
+                  sizeof(addr->u.ip_relay.cookie) );
     return ok;
 } /* stateFromCtls */
 
-/* Adjust the set of visible form controls based on state.  There are two
- * variables here: whether we're showing for a Host or a Guest, and whether
- * the connection method is IR or IP.  Currently IR means no controls needed,
- * either way.  IP means on set if launched from host button, another if
- * launched from Guest.
- */
 static void
 updateFormCtls( FormPtr form, ConnsDlgState* state )
 {
-    const XP_U16 ipCtlsBoth[] = {
-        XW_CONNS_MYPORT_LABEL_ID,
-        XW_CONNS_MYPORT_FIELD_ID, 
-        XW_CONNS_HOSTIP_LABEL_ID,
-        XW_CONNS_HOSTIP_FIELD_ID,
+    const XP_U16 relayCtls[] = {
+        XW_CONNS_RELAY_LABEL_ID ,
+        XW_CONNS_RELAY_FIELD_ID,
+        XW_CONNS_PORT_LABEL_ID,
+        XW_CONNS_PORT_FIELD_ID,
+        XW_CONNS_COOKIE_LABEL_ID,
+        XW_CONNS_COOKIE_FIELD_ID,
         0
     };
-    const XP_U16 ipCtlsGuest[] = {
-        XW_CONNS_TARGET_LABEL_ID,
-        XW_CONNS_TARGET_FIELD_ID,
-        XW_CONNS_TPORT_LABEL_ID,
-        XW_CONNS_TPORT_FIELD_ID,
-        0
-    };
-
-    if ( state->addrState->conType == COMMS_CONN_IR ) {
-        disOrEnableSet( form, ipCtlsBoth, XP_FALSE );
-        disOrEnableSet( form, ipCtlsGuest, XP_FALSE );
-    } else {
-        disOrEnableSet( form, ipCtlsBoth, XP_TRUE );
-        disOrEnableSet( form, ipCtlsGuest, 
-                        state->serverRole == SERVER_ISCLIENT );
-        setFieldEditable( getActiveObjectPtr(XW_CONNS_HOSTIP_FIELD_ID), 
-                          XP_FALSE );
-    }
-
+    
+    disOrEnableSet( form, relayCtls, 
+                    state->addr->conType == COMMS_CONN_RELAY );
 } /* updateFormCtls */
 
 static void
@@ -177,49 +141,6 @@ cleanupExit( PalmAppGlobals* globals )
     globals->connState = NULL;
     FrmReturnToForm( 0 );
 } /* cleanupExit */
-
-static XP_U32
-figureLocalIP( PalmAppGlobals* globals, XP_UCHAR* buf )
-{
-    Err err;
-    XP_U32 ipAddr = 0L;
-    XP_U16 netLibRef = globals->nlStuff.netLibRef;
-    XP_U16 index;
-
-    for ( index = 0; ; ++index ) {
-        UInt32 creator;
-        UInt16 instance;
-        err = NetLibIFGet( netLibRef, index,
-                           &creator, &instance );
-
-        /* Docs say to iterate until get netErrInvalidInterface, but I'm
-           never getting that, getting netErrInterfaceNotFound instead  */
-        if ( (err == netErrInvalidInterface) || 
-             (err == netErrInterfaceNotFound) ) {
-            break;              /* we're done */
-        } else if ( err == errNone ) {
-            XP_U8 up;
-            UInt16 siz = sizeof(up);
-            err = NetLibIFSettingGet( netLibRef, creator, instance,
-                                      netIFSettingUp, &up, &siz );
-            if ( (err == errNone) && (up != 0) ) {
-
-                siz = sizeof(ipAddr);
-                /* use this interface?? */
-                err = NetLibIFSettingGet( netLibRef, creator, instance,
-                                          netIFSettingReqIPAddr,
-                                          &ipAddr, &siz );
-                XP_ASSERT( siz == 4 );
-            }
-        }
-    }
-
-    if ( !!buf ) {
-        NetLibAddrINToA( globals->nlStuff.netLibRef, ipAddr, buf );
-        XP_LOGF( "got local addr: %s", buf );
-    }
-    return ipAddr;
-} /* figureLocalIP */
 
 Boolean
 ConnsFormHandleEvent( EventPtr event )
@@ -254,17 +175,16 @@ ConnsFormHandleEvent( EventPtr event )
 
         state->serverRole = 
             (Connectedness)globals->dlgParams[CONNS_PARAM_ROLE_INDEX];
-        state->addrState = 
-            (ConnDlgAddrs*)globals->dlgParams[CONNS_PARAM_ADDR_INDEX];
+        state->addr = 
+            (CommsAddrRec*)globals->dlgParams[CONNS_PARAM_ADDR_INDEX];
         state->isNewGame = globals->isNewGame;
-        (void)figureLocalIP( globals, state->localIPStr );
 
         /* setup connection popup */
         state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
-        XP_ASSERT( state->addrState->conType == COMMS_CONN_IR
-                   || state->addrState->conType == COMMS_CONN_IP );
+        XP_ASSERT( state->addr->conType == COMMS_CONN_IR
+                   || state->addr->conType == COMMS_CONN_RELAY );
         setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
-                             state->addrState->conType == COMMS_CONN_IR? 0:1 );
+                             state->addr->conType == COMMS_CONN_IR? 0:1 );
 
         ctlsFromState( globals, form, state );
 
@@ -285,8 +205,8 @@ ConnsFormHandleEvent( EventPtr event )
                 if ( chosen >= 0 ) {
                     setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, 
                                          state->connTypesList, chosen );
-                    state->addrState->conType = 
-                        chosen == 0? COMMS_CONN_IR : COMMS_CONN_IP;
+                    state->addr->conType = 
+                        chosen == 0? COMMS_CONN_IR : COMMS_CONN_RELAY;
                     updateFormCtls( form, state );
                 }
             }
