@@ -72,8 +72,10 @@ typedef enum {
  * already have the notion of per-game and all-game prefs.
  */
 typedef struct CommonPrefs {
-    XP_Bool         showBoardArrow; /* applies to all games */
-    XP_Bool         showRobotScores;  /* applies to all games */
+    XP_Bool         showBoardArrow;  /* applies to all games */
+    XP_Bool         showRobotScores; /* applies to all games */
+    XP_Bool         reserved1;       /* get to 32-bit for ARM... */
+    XP_Bool         reserved2;
 } CommonPrefs;
 
 /* used for all vtables */

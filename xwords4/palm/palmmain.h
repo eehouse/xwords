@@ -117,10 +117,14 @@ typedef struct XWords4PreferenceType {
     Boolean showProgress;
     Boolean showGrid;
     Boolean showColors;
-#ifndef DEBUG_OFF
+#ifdef DEBUG
     Boolean showDebugstrs;
     Boolean windowAvail;
     Boolean logToMemo;
+    Boolean reserved1;
+    Boolean reserved2;
+#else
+    Boolean reserved1;
 #endif
     /* New for 0x0405 */
     CommonPrefs cp;
