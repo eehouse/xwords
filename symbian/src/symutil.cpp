@@ -38,11 +38,9 @@ symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const TDesC16& desc )
         forCmp.Set( *loc, XP_STRLEN( *loc ) );
 
         if ( tmp == forCmp ) {
-            XP_LOGF( "not copying %s", *loc );
             return;
         }
 
-        XP_LOGF( "freeing %s", *loc );
         XP_FREE( mpool, *loc );
     }
 
@@ -51,8 +49,6 @@ symReplaceStrIfDiff( MPFORMAL XP_UCHAR** loc, const TDesC16& desc )
     XP_MEMCPY( newStr, (void*)tmp.Ptr(), len );
     newStr[len] = '\0';
     *loc = newStr;
-
-    XP_LOGF( "created new string: %s", newStr );
 } /* symReplaceStr */
 
 extern "C" {
