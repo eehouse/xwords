@@ -95,7 +95,7 @@ bitmapInRect( PalmDrawCtx* dctx, Int16 resID, XP_Rect* rectP )
     drawBitmapAt( (DrawCtx*)dctx, resID, left, top );
 } /* bitmapInRect */
 
-static void
+static XP_Bool
 palm_common_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
@@ -103,10 +103,11 @@ palm_common_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     if ( !globals->gState.showGrid ) {
         WinDrawRectangleFrame(rectangleFrame, (RectangleType*)rect);
     }
+    return XP_TRUE;
 } /* palm_common_draw_boardBegin */
 
 #ifdef COLOR_SUPPORT
-static void
+static XP_Bool
 palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
@@ -118,6 +119,7 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
     WinSetTextColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
     WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_WHITE] );
+    return XP_TRUE;
 } /* palm_clr_draw_boardBegin */
 
 static void
@@ -933,11 +935,13 @@ static void
 palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, 
                           XP_Rect* rect, void** closureP )
 {
-    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     RectangleType localR = *(RectangleType*)rect;
     XP_U16 ignoreErr;
     XP_Bool hasClosure = !!closureP;
     MiniWinData* data = (MiniWinData*)(hasClosure? *closureP: NULL);
+#ifdef MEM_DEBUG
+    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+#endif
 
     if ( hasClosure ) {
         if ( !data ) {

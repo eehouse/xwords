@@ -185,7 +185,7 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 } /* draw_setup */
 #endif
 
-static void
+static XP_Bool
 gtk_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
     GdkRectangle gdkrect;
@@ -198,10 +198,7 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     ++gdkrect.height;
     gdk_gc_set_clip_rectangle( dctx->drawGC, &gdkrect );
 
-/*     gdk_draw_rectangle( DRAW_WHAT(dctx), */
-/* 			dctx->drawGC, FALSE,  */
-/* 			rect->left, rect->top, rect->width, rect->height ); */
-    
+    return XP_TRUE;
 } /* draw_finish */
 
 static void
