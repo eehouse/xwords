@@ -79,6 +79,11 @@ struct EngineCtxt {
     Crosscheck rowChecks[MAX_ROWS]; // also used in xwscore
     XP_U16 scoreCache[MAX_ROWS];
 
+#ifdef XWFEATURE_SEARCHLIMIT
+    HintLimits* searchLimits;
+#endif
+    XP_U16 numRowsToFill;
+
 #ifdef DEBUG
     XP_U16 curLimit;
 #endif
@@ -241,8 +246,26 @@ findFirstMoves( EngineCtxt* engine )
     XP_S16 prevAnchor = -1;
     XP_U16 star_row = engine->star_row;
 
-    /* all have trivial crosschecks */
-    XP_MEMSET( engine->rowChecks, 0xFF, sizeof(engine->rowChecks) );
+    if ( 0 ) {
+#ifdef XWFEATURE_SEARCHLIMIT
+    } else if ( !!engine->searchLimits ) {
+        if ( engine->searchLimits->top > star_row
+             || engine->searchLimits->bottom < star_row ) {
+            return;
+        } else {
+            XP_U16 left = engine->searchLimits->left;
+            XP_U16 nHintCols = engine->searchLimits->right - left + 1;
+            XP_MEMSET( engine->rowChecks, 0x00, sizeof(engine->rowChecks) );
+            XP_MEMSET( &engine->rowChecks[left], 0xFF, 
+                       sizeof(engine->rowChecks[0]) * nHintCols );
+
+            prevAnchor += left;
+        }
+#endif
+    } else {
+        /* all have trivial crosschecks */
+        XP_MEMSET( engine->rowChecks, 0xFF, sizeof(engine->rowChecks) );
+    }
 
     /* middle square is the only legal anchor */
     engine->searchHorizontal = XP_TRUE;
@@ -336,6 +359,9 @@ XP_Bool
 engine_findMove( EngineCtxt* engine, ModelCtxt* model, 
                  DictionaryCtxt* dict, const Tile* tiles,
                  XP_U16 nTiles, XP_U16 nTilesToUse,
+#ifdef XWFEATURE_SEARCHLIMIT
+                 HintLimits* searchLimits,
+#endif
                  XP_U16 targetScore, XP_Bool* canMoveP, 
                  MoveInfo* newMove )
 {
@@ -357,6 +383,9 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
     engine->nTilesToUse = nTilesToUse;
     engine->blankTile = dict_getBlankTile( dict );
     engine->returnNOW = XP_FALSE;
+#ifdef XWFEATURE_SEARCHLIMIT
+    engine->searchLimits = searchLimits;
+#endif
 
     engine->star_row = star_row = model_numRows(model) / 2;
     firstMove = EMPTY_TILE == localGetBoardTile( engine, star_row, star_row, 
@@ -366,7 +395,8 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
        dictionary's emtpy or there are no tiles, still return TRUE so we don't
        get scheduled again.  Fixes infinite loop with empty dict and a
        robot. */
-    *canMoveP = dict_getTopEdge(dict) != NULL && initTray( engine, tiles, nTiles );
+    *canMoveP = dict_getTopEdge(dict) != NULL && initTray( engine, tiles, 
+                                                           nTiles );
     if ( *canMoveP  ) {
 
         util_engineStarting( engine->util );
@@ -388,6 +418,7 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
                     engine->searchInProgress = XP_TRUE;
                 }
                 for ( ; ; ) {
+                    XP_U16 firstRowToFill = 0;
                     engine->numRows = model_numRows(engine->model);
                     engine->numCols = model_numCols(engine->model);
                     if ( !engine->searchHorizontal ) {
@@ -396,8 +427,23 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
                         engine->numCols = tmp;
                     }
 
-                    for ( engine->curRow = 0;
-                          engine->curRow < engine->numRows;
+                    if ( 0 ) {
+#ifdef XWFEATURE_SEARCHLIMIT
+                    } else if ( !!engine->searchLimits ) {
+                        if ( engine->searchHorizontal ) {
+                            firstRowToFill = searchLimits->top;
+                            engine->numRowsToFill = searchLimits->bottom;
+                        } else {
+                            firstRowToFill = searchLimits->left;
+                            engine->numRowsToFill = searchLimits->right;
+                        }
+#endif
+                    } else {
+                        engine->numRowsToFill = engine->numRows - 1;
+                    }
+
+                    for ( engine->curRow = firstRowToFill;
+                          engine->curRow <= engine->numRowsToFill;
                           ++engine->curRow ) {
                     resumePoint:
                         findMovesOneRow( engine );
@@ -444,19 +490,45 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
 static void
 findMovesOneRow( EngineCtxt* engine )
 {
-    XP_U16 lastCol = engine->numCols;
+    XP_U16 lastCol = engine->numCols - 1;
     XP_U16 col, row = engine->curRow;
     XP_S16 prevAnchor;
+    XP_U16 firstSearchCol, lastSearchCol;
 
-    for ( col = 0; col < lastCol; ++col ) {
-        engine->rowChecks[col] = 
-            figureCrosschecks( engine, col, row, &engine->scoreCache[col] );
+    if ( 0 ) {
+#ifdef XWFEATURE_SEARCHLIMIT
+    } else if ( !!engine->searchLimits ) {
+        if ( engine->searchHorizontal ) {
+            firstSearchCol = engine->searchLimits->left;
+            lastSearchCol = engine->searchLimits->right;
+        } else {
+            firstSearchCol = engine->searchLimits->top;
+            lastSearchCol = engine->searchLimits->bottom;
+        }
+#endif        
+    } else {
+        firstSearchCol = 0;
+        lastSearchCol = lastCol;
+    }
+
+    for ( col = 0; col <= lastCol; ++col ) {
+        Crosscheck check;
+        if ( col < firstSearchCol || col > lastSearchCol ) {
+            check = 0x00000000;
+            engine->scoreCache[col] = 0;
+        } else {
+            check = figureCrosschecks( engine, col, row, 
+                                       &engine->scoreCache[col] );
+        }
+        engine->rowChecks[col] = check;
+
         /* 	XP_DEBUGF( "row %d: set scoreCache[%d] to %d\n", row, col,  */
         /* 		 engine->scoreCache[col] ); */
     }
 
-    prevAnchor = -1;
-    for ( col = 0; col < lastCol && !engine->returnNOW; ++col ) {
+    prevAnchor = firstSearchCol - 1;
+    for ( col = firstSearchCol; col <= lastSearchCol && !engine->returnNOW; 
+          ++col ) {
         if ( isAnchorSquare( engine, col, row ) ) { 
             findMovesForAnchor( engine, &prevAnchor, col, row );
         }

@@ -27,6 +27,13 @@
 extern "C" {
 #endif
 
+typedef struct HintLimits {
+    XP_U16 left;
+    XP_U16 top;
+    XP_U16 right;
+    XP_U16 bottom;
+} HintLimits;
+
 XP_U16 engine_getScoreCache( EngineCtxt* engine, XP_U16 row );
 
 #if 0
@@ -49,6 +56,9 @@ void engine_destroy( EngineCtxt* ctxt );
 XP_Bool engine_findMove( EngineCtxt* ctxt, ModelCtxt* model, 
                          DictionaryCtxt* dict, const Tile* tiles, 
                          XP_U16 nTiles, XP_U16 nTilesToUse,
+#ifdef XWFEATURE_SEARCHLIMIT
+                         HintLimits* searchLimits,
+#endif
                          XP_U16 targetScore, XP_Bool* canMove,
                          MoveInfo* result );
 XP_Bool engine_check( DictionaryCtxt* dict, Tile* buf, XP_U16 buflen );

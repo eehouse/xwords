@@ -591,6 +591,9 @@ makeRobotMove( ServerCtxt* server )
     finished = engine_findMove( server_getEngineFor( server, turn ),
                                 model, model_getDictionary( model ), 
                                 tileSet->tiles, tileSet->nTiles, 0,
+#ifdef XWFEATURE_SEARCHLIMIT
+                                NULL,
+#endif
                                 targetScore, &canMove, &newMove );
     if ( finished ) {
         XP_UCHAR* str;
