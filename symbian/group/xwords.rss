@@ -28,8 +28,12 @@ NAME XWRD
 #include <eikon.rh>
 #include <eikon.rsg>
 
-#include "xwords.hrh"
+#if defined SERIES_60
+# include <avkon.rh>
+# include <avkon.hrh>
+#endif
 
+#include "xwords.hrh"
 
 // ---------------------------------------------------------
 //   
@@ -331,7 +335,9 @@ RESOURCE ARRAY r_xwords_newgame_page_conn
         {
             prompt = "Role";
             type = EEikCtChoiceList;
+#if defined SERIES_80
             control = CHOICELIST { array_id = r_conn_roles; };
+#endif
             id = EConnectionRole;
             // itemflags = 
         },
@@ -339,7 +345,20 @@ RESOURCE ARRAY r_xwords_newgame_page_conn
         {
             prompt = "Connect via";
             type = EEikCtChoiceList;
+#if defined SERIES_80
             control = CHOICELIST { array_id = r_conn_types; };
+#elif defined SERIES_60
+            control = AVKON_LIST_QUERY_CONTROL {
+                listtype = EAknCtSingleHeadingPopupMenuListBox;
+                listbox = LISTBOX {
+                    flags = EAknListBoxMenuList;
+                    height = 5;
+                    width = 20;
+                    array_id = r_conn_types;
+                };
+/*                 heading = qtn_aknexquery_list_title; */
+            };
+#endif
             id = EConnectionType;
             // itemflags = 
         },
@@ -377,21 +396,27 @@ RESOURCE ARRAY r_xwords_newgame_page_players
 
             prompt = "Number of players";
             type = EEikCtChoiceList;
+#if defined SERIES_80
             control = CHOICELIST { array_id = r_four_nums; };
+#endif
             id = ENPlayersList;
 
         }, DLG_LINE {
 
             prompt = "Show player";
             type = EEikCtChoiceList;
+#if defined SERIES_80
             control = CHOICELIST { maxdisplaychar = 2; };
+#endif
             id = ENPlayersWhichList;
 
         }, DLG_LINE {
 
             prompt = "Location";
             type = EEikCtChoiceList;
+#if defined SERIES_80
             control = CHOICELIST { array_id = r_location_choices; };
+#endif
             id = EPlayerLocationChoice;
 
         } ,DLG_LINE {
@@ -405,7 +430,9 @@ RESOURCE ARRAY r_xwords_newgame_page_players
 
             prompt = "Species";
             type = EEikCtChoiceList;
+#if defined SERIES_80
             control = CHOICELIST { array_id = r_player_species; };
+#endif
             id = EPlayerSpeciesChoice;
 
         } ,DLG_LINE {
@@ -446,7 +473,7 @@ RESOURCE DLG_BUTTONS r_dict_browse_button
         {
             id = EDictBrowseButton;
             button = CMBUT { txt = "Browse"; };
-            hotkey = "B";
+/*             hotkey = "B"; */
         }
     };
 }
@@ -458,13 +485,15 @@ RESOURCE ARRAY r_xwords_newgame_page_dict
         DLG_LINE {
             prompt = "Game dictionary";
             type = EEikCtChoiceList; 
+#if defined SERIES_80
             control = CHOICELIST { flags = EEikChlistArrayOwnedExternally; };
+#endif
             id = ESelDictChoice; 
         }
 #ifdef SERIES_60
-        ,DLG_LINE {
-            buttons = r_dict_browse_button;
-        }
+/*         ,DLG_LINE { */
+/*             buttons = r_dict_browse_button; */
+/*         } */
 #endif
     };
 }
@@ -489,7 +518,9 @@ RESOURCE DIALOG r_xwords_newgame_dlg
     title = "Game setup";
     /* This doesn't work in series 60.  How do I differentiate? Sep .rss
        files? */
+#if defined SERIES_80
     buttons = R_EIK_BUTTONS_CANCEL_OK;
+#endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     pages = r_xwords_newgame_pages;
 }
@@ -497,13 +528,18 @@ RESOURCE DIALOG r_xwords_newgame_dlg
 RESOURCE DIALOG r_xwords_blank_picker
 {
     title = "Tile picker";
+#if defined SERIES_80
     buttons = R_EIK_BUTTONS_CONTINUE;
+#endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     items = {
         DLG_LINE {
             prompt = "Choose one";
             type = EEikCtChoiceList; 
+#if defined SERIES_80
             control = CHOICELIST { flags = EEikChlistArrayOwnedExternally; };
+#elif defined SERIES_60
+#endif
             id = ESelBlankChoice; 
         }
     };
@@ -558,7 +594,9 @@ RESOURCE DIALOG r_xwords_savedgames_dlg
 RESOURCE DIALOG r_xwords_editname_dlg
 {
     title = "Change name";
+#if defined SERIES_80
     buttons = R_EIK_BUTTONS_CANCEL_OK;
+#endif
     flags = EEikDialogFlagWait | EEikDialogFlagNotifyEsc;
     items = {
         DLG_LINE {
