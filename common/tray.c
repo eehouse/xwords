@@ -100,92 +100,93 @@ figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect )
 void 
 drawTray( BoardCtxt* board, XP_Bool focussed )
 {
-    DictionaryCtxt* dictionary;
     XP_Rect tileRect;
     short i;
 
     if ( (board->trayInvalBits != 0) || board->dividerInvalid ) {
         XP_S16 turn = board->selPlayer;
 
-        dictionary = model_getDictionary( board->model );
+        if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
+                             focussed ) ) {
+            DictionaryCtxt* dictionary = model_getDictionary( board->model );
 
-        draw_trayBegin( board->draw, &board->trayBounds, turn,
-                        focussed );
+            if ( board->eraseTray ) {
+                draw_clearRect( board->draw, &board->trayBounds );
+                board->eraseTray = XP_FALSE;
+            }
 
-        if ( board->eraseTray ) {
-            draw_clearRect( board->draw, &board->trayBounds );
-            board->eraseTray = XP_FALSE;
-        }
+            if ( (board->trayVisState != TRAY_HIDDEN) && dictionary != NULL ) {
+                XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
 
-        if ( (board->trayVisState != TRAY_HIDDEN) && dictionary != NULL ) {
-            XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
+                if ( turn >= 0 ) {
+                    XP_U16 numInTray = showFaces?
+                        model_getNumTilesInTray( board->model, turn ):
+                        model_getNumTilesTotal( board->model, turn );
 
-            if ( turn >= 0 ) {
-                XP_U16 numInTray = showFaces?
-                    model_getNumTilesInTray( board->model, turn ):
-                    model_getNumTilesTotal( board->model, turn );
+                    /* draw in reverse order so drawing happens after
+                       erasing */
+                    for ( i = MAX_TRAY_TILES - 1; i >= 0; --i ) {
 
-                /* draw in reverse order so drawing happens after erasing */
-                for ( i = MAX_TRAY_TILES - 1; i >= 0; --i ) {
-
-                    if ( (board->trayInvalBits & (1 << i)) == 0 ) {
-                        continue;
-                    }
-
-                    figureTrayTileRect( board, i, &tileRect );
-
-                    if ( i >= numInTray/*  && showFace */ ) {
-                        draw_clearRect( board->draw, &tileRect );
-                    } else if ( showFaces ) {
-                        XP_UCHAR buf[4];
-                        XP_Bitmap bitmap = NULL;
-                        XP_UCHAR* textP = (XP_UCHAR*)NULL;
-                        XP_U8 flags = board->traySelBits[turn];
-                        XP_Bool highlighted = (flags & (1<<i)) != 0;
-                        Tile tile = model_getPlayerTile( board->model, 
-                                                         turn, i );
-                        XP_S16 value;
-
-                        if ( dict_faceIsBitmap( dictionary, tile ) ) {
-                            bitmap = dict_getFaceBitmap( dictionary, tile, 
-                                                         XP_TRUE );
-                        } else {
-                            textP = buf;
-                            dict_tilesToString( dictionary, &tile, 1, textP );
+                        if ( (board->trayInvalBits & (1 << i)) == 0 ) {
+                            continue;
                         }
-                        value = dict_getTileValue( dictionary, tile );
 
-                        draw_drawTile( board->draw, &tileRect, textP, bitmap,
-                                       value, highlighted );
-                    } else {
-                        draw_drawTileBack( board->draw, &tileRect );
+                        figureTrayTileRect( board, i, &tileRect );
+
+                        if ( i >= numInTray/*  && showFace */ ) {
+                            draw_clearRect( board->draw, &tileRect );
+                        } else if ( showFaces ) {
+                            XP_UCHAR buf[4];
+                            XP_Bitmap bitmap = NULL;
+                            XP_UCHAR* textP = (XP_UCHAR*)NULL;
+                            XP_U8 flags = board->traySelBits[turn];
+                            XP_Bool highlighted = (flags & (1<<i)) != 0;
+                            Tile tile = model_getPlayerTile( board->model, 
+                                                             turn, i );
+                            XP_S16 value;
+
+                            if ( dict_faceIsBitmap( dictionary, tile ) ) {
+                                bitmap = dict_getFaceBitmap( dictionary, tile, 
+                                                             XP_TRUE );
+                            } else {
+                                textP = buf;
+                                dict_tilesToString( dictionary, &tile, 1, 
+                                                    textP );
+                            }
+                            value = dict_getTileValue( dictionary, tile );
+
+                            draw_drawTile( board->draw, &tileRect, textP, 
+                                           bitmap, value, highlighted );
+                        } else {
+                            draw_drawTileBack( board->draw, &tileRect );
+                        }
                     }
                 }
-            }
 
-            if ( (board->dividerWidth > 0) && board->dividerInvalid ) {
-                XP_Rect divider;
-                figureDividerRect( board, &divider );
-                draw_drawTrayDivider( board->draw, &divider, 
-                                      board->divDragState.dragInProgress );
-                board->dividerInvalid = XP_FALSE;
-            }
+                if ( (board->dividerWidth > 0) && board->dividerInvalid ) {
+                    XP_Rect divider;
+                    figureDividerRect( board, &divider );
+                    draw_drawTrayDivider( board->draw, &divider, 
+                                          board->divDragState.dragInProgress );
+                    board->dividerInvalid = XP_FALSE;
+                }
 
 #ifdef KEYBOARD_NAV
-            if ( showFaces ) {
-                TileBit cursorLoc = board->trayCursorLoc[turn];
-                if ( !!cursorLoc ) {
-                    XP_U16 index = indexForBits( cursorLoc );
-                    figureTrayTileRect( board, index, &tileRect );
-                    draw_drawTrayCursor( board->draw, &tileRect );
+                if ( showFaces ) {
+                    TileBit cursorLoc = board->trayCursorLoc[turn];
+                    if ( !!cursorLoc ) {
+                        XP_U16 index = indexForBits( cursorLoc );
+                        figureTrayTileRect( board, index, &tileRect );
+                        draw_drawTrayCursor( board->draw, &tileRect );
+                    }
                 }
-            }
 #endif
+            }
+
+            draw_trayFinished(board->draw);
+
+            board->trayInvalBits = 0;
         }
-
-        draw_trayFinished(board->draw);
-
-        board->trayInvalBits = 0;
     }
 
     drawPendingScore( board );

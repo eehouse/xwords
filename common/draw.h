@@ -61,8 +61,8 @@ typedef struct DrawCtxVTable {
     XP_Bool (*m_draw_vertScrollBoard)(DrawCtx* dctx, XP_Rect* rect, 
                                       XP_S16 dist );
 
-    void (*m_draw_trayBegin)( DrawCtx* dctx, XP_Rect* rect, 
-                              XP_U16 owner, XP_Bool hasfocus );
+    XP_Bool (*m_draw_trayBegin)( DrawCtx* dctx, XP_Rect* rect, 
+                                 XP_U16 owner, XP_Bool hasfocus );
     void (*m_draw_trayFinished)( DrawCtx* dctx );
 
     void (*m_draw_measureRemText)( DrawCtx* dctx, XP_Rect* r, 
