@@ -1492,6 +1492,7 @@ board_requestHint( BoardCtxt* board,
     XP_U16 selPlayer;
     EngineCtxt* engine;
     XP_Bool searchComplete = XP_TRUE;
+    XP_Bool redraw = XP_FALSE;
     
     *workRemainsP = XP_FALSE;	/* in case we exit without calling engine */
 
@@ -1509,9 +1510,16 @@ board_requestHint( BoardCtxt* board,
            regardless where its contents are? */
         if ( model_getCurrentMoveCount( model, selPlayer ) > 0 ) {
             model_resetCurrentTurn( model, selPlayer );
-            /* Draw's a no-op on Wince with a null hdc, but it'll draw
-               again.*/
+            /* Draw's a no-op on Wince with a null hdc, but it'll draw again.
+               Should probably define OS_INITS_DRAW on Wince...*/
+#ifdef OS_INITS_DRAW
+            /* On symbian, it's illegal to draw except from inside the Draw
+               method.  But the move search will probably be so fast that it's
+               ok to wait until we've found the move anyway. */
+            redraw = XP_TRUE;
+#else
             board_draw( board );
+#endif
         }
 
         tileSet = model_getPlayerTiles( model, selPlayer );
@@ -1564,7 +1572,7 @@ board_requestHint( BoardCtxt* board,
             }
         }
     }
-    return result;
+    return result || redraw;
 } /* board_requestHint */
 
 static XP_Bool
