@@ -58,6 +58,10 @@ MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
 # turn on letting users pick tiles "face-up"
 MYDEFINES += -DFEATURE_TRAY_EDIT
 
+# turn on the HighRes stuff.  Experimental for now, but eventually
+# should always be on.
+#MYDEFINES += -DFEATURE_HIGHRES
+
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
 # MYDEFINES += -DBEYOND_IR
