@@ -111,5 +111,7 @@ extern void p_ignore(char*, ...);
 #define XP_HTONL(l) htonl(l)
 #define XP_HTONS(s) htons(s)
 
+#define XP_LD "%ld"
+
 #endif
 
