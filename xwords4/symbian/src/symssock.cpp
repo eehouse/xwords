@@ -21,19 +21,67 @@
 #ifndef XWFEATURE_STANDALONE_ONLY
 
 #include "symssock.h"
+#include "symutil.h"
 
 void
 CSendSocket::RunL()
 {
-}
+    XP_LOGF( "CSendSocket::RunL called; iStatus=%d", iStatus.Int() );
+/*     iSendTimer.Cancel(); */
+
+    switch ( iSSockState ) {
+    case ELookingUp:
+        iResolver.Close();      /* we probably won't need this again */
+        XP_ASSERT( iStatus.Int() == KErrNone );
+        if ( iStatus == KErrNone ) {
+            iNameRecord = iNameEntry();
+            XP_LOGF( "name resolved: now:" );
+            ConnectL( TInetAddr::Cast(iNameRecord.iAddr).Address() );
+        }
+        break;
+    case EConnecting:
+        XP_ASSERT( iStatus.Int() == KErrNone );
+        if ( iStatus == KErrNone ) {
+            iSSockState = EConnected;
+            XP_LOGF( "connect successful" );
+            if ( iSendBuf.Length() > 0 ) {
+                DoActualSend();
+            }
+        }
+        break;
+    case ESending:
+        XP_ASSERT( iStatus.Int() == KErrNone );
+        if ( iStatus == KErrNone ) {
+            iSSockState = EConnected;
+            iSendBuf.SetLength(0);
+            XP_LOGF( "send successful" );
+
+            /* Send was successful.  Need to tell anybody?  Might want to
+               update display somehow. */
+        }
+        break;
+    }
+} /* RunL */
 
 void
 CSendSocket::DoCancel()
 {
-}
+    if ( iSSockState == ESending ) {
+        iSendSocket.CancelWrite();
+        iSSockState = EConnected;
+    } else if ( iSSockState == EConnecting ) {
+        iSendSocket.CancelConnect();
+        iSSockState = ENotConnected;
+    } else if ( iSSockState == ELookingUp ) {
+        iResolver.Cancel();
+        iResolver.Close();
+    }
+} /* DoCancel */
 
 CSendSocket::CSendSocket()
     : CActive(EPriorityStandard)
+     ,iSSockState(ENotConnected)
+     ,iAddrSet( EFalse )
 {
 }
 
@@ -44,6 +92,11 @@ CSendSocket::~CSendSocket()
 void
 CSendSocket::ConstructL()
 {
+	CActiveScheduler::Add( this );
+    XP_LOGF( "calling iSocketServer.Connect()" );
+    TInt err = iSocketServer.Connect();
+    XP_LOGF( "Connect=>%d", err );
+	User::LeaveIfError( err );
 }
 
 /*static*/ CSendSocket*
@@ -56,10 +109,118 @@ CSendSocket::NewL()
     return me;
 }
 
+void 
+CSendSocket::ConnectL( TUint32 aIpAddr )
+{
+    XP_LOGF( "ConnectL( 0x%x )", aIpAddr );
+
+    TInt err = iSendSocket.Open( iSocketServer, KAfInet, 
+                            KSockDatagram, KProtocolInetUdp );
+    XP_LOGF( "iSocket.Open => %d", err );
+    User::LeaveIfError( err );
+
+    // Set up address information
+    iAddress.SetPort( iCurAddr.u.ip.port );
+    iAddress.SetAddress( aIpAddr );
+
+    // Initiate socket connection
+    iSendSocket.Connect( iAddress, iStatus );
+    iSSockState = EConnecting;
+        
+    // Start a timeout
+    /* 	    iSendTimer.After( iConnectTimeout ); */
+
+} /* ConnectL */
+
+void 
+CSendSocket::ConnectL()
+{
+    XP_LOGF( "CSendSocket::ConnectL" );
+    if ( iSSockState == ENotConnected ) {
+        TInetAddr ipAddr;
+
+        XP_LOGF( "connecting to %s", iCurAddr.u.ip.hostName );
+
+        TBuf16<MAX_HOSTNAME_LEN> tbuf;
+        tbuf.Copy( TBuf8<MAX_HOSTNAME_LEN>(iCurAddr.u.ip.hostName) );
+        TInt err = ipAddr.Input( tbuf );
+        XP_LOGF( "ipAddr.Input => %d", err );
+
+        if ( err != KErrNone ) {
+            /* need to look it up */
+            err = iResolver.Open( iSocketServer, KAfInet, KProtocolInetUdp );
+            XP_LOGF( "iResolver.Open => %d", err );
+            User::LeaveIfError( err );
+
+	        iResolver.GetByName( tbuf, iNameEntry, iStatus );
+            iSSockState = ELookingUp;
+
+            SetActive();
+        } else {
+            ConnectL( ipAddr.Address() );
+        }
+    }
+} /* ConnectL */
+
+void
+CSendSocket::Disconnect()
+{
+    XP_LOGF( "CSendSocket::Disconnect" );
+    Cancel();
+    if ( iSSockState >= EConnected ) {
+        iSendSocket.Close();
+    }
+    iSSockState = ENotConnected;
+} /* Disconnect */
+
 TBool
-CSendSocket::SendL( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr )
+CSendSocket::SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr )
 {
     XP_LOGF( "CSendSocket::SendL called" );
-    return EFalse;
+    TBool success;
+
+    XP_ASSERT( !IsActive() );
+    XP_LOGF( "here" );
+    if ( iSSockState == ESending ) {
+        success = EFalse;
+    } else if ( aLen > KMaxMsgLen ) {
+        success = EFalse;
+    } else {
+        XP_ASSERT( iSendBuf.Length() == 0 );
+        iSendBuf.Copy( aBuf, aLen );
+        XP_LOGF( "here 1" );
+
+        if ( iAddrSet && (0 != XP_MEMCMP( (void*)&iCurAddr, (void*)aAddr, 
+                                          sizeof(aAddr) )) ) {
+            Disconnect();
+        }
+        XP_ASSERT( !iAddrSet );
+        XP_LOGF( "here 2: aAddr = 0x%x", aAddr );
+        iCurAddr = *aAddr;
+        iAddrSet = ETrue;
+        XP_LOGF( "here 3" );
+
+        if ( iSSockState == ENotConnected ) {
+            ConnectL();
+        } else if ( iSSockState == EConnected ) {
+            DoActualSend();
+        }
+        success = ETrue;
+    }
+
+    return success;
 } /* SendL */
+
+void
+CSendSocket::DoActualSend()
+{
+    XP_LOGF( "CSendSocket::DoActualSend called" );
+    iSendSocket.Write( iSendBuf, iStatus ); // Initiate actual write
+    SetActive();
+    
+    // Request timeout
+/*     iSendTimer.After( iWriteTimeout ); */
+    iSSockState = ESending;
+}
+
 #endif
