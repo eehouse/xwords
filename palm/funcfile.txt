@@ -6,6 +6,14 @@
 # StrVPrintF
 # StrPrintF
 # TimSecondsToDateTime
+# SysHandleEvent
+# EvtGetEvent
+# FrmDispatchEvent
+# MenuHandleEvent
+# FrmSetEventHandler
+# EvtAddEventToQueue
+#
+#################################################################
 CtlEnabled
 CtlGetLabel
 CtlGetValue
@@ -34,8 +42,6 @@ DmReleaseResource
 DmRemoveRecord
 DmWrite
 DmWriteCheck
-EvtAddEventToQueue
-EvtGetEvent
 EvtSysEventAvail
 ExgAccept
 ExgDBWrite
@@ -66,7 +72,6 @@ FntsWidth
 FrmCloseAllForms
 FrmCustomAlert
 FrmDeleteForm
-FrmDispatchEvent
 FrmDoDialog
 FrmDrawForm
 FrmGetActiveForm
@@ -90,7 +95,6 @@ FrmInitForm
 FrmPopupForm
 FrmReturnToForm
 FrmSetActiveForm
-FrmSetEventHandler
 FrmSetFocus
 FrmSetGadgetData
 FrmSetObjectBounds
@@ -124,7 +128,6 @@ MemPtrSize
 MemPtrUnlock
 MemSet
 MenuEraseStatus
-MenuHandleEvent
 PrefGetAppPreferences
 PrefGetAppPreferencesV10
 PrefSetAppPreferences
@@ -140,7 +143,6 @@ StrIToA
 StrLen
 StrNCompare
 StrStr
-SysHandleEvent
 SysLibFind
 SysLibLoad
 SysNotifyRegister
@@ -196,3 +198,4 @@ DmResizeRecord
 VFSExportDatabaseToFile
 VFSFileDelete
 DmSetDatabaseInfo
+DmGetLastErr
