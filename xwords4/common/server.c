@@ -82,7 +82,6 @@ typedef struct ServerVolatiles {
                                          someone quits before I can show the
                                          scores?  PENDING(ehouse) */
     XP_Bool showPrevMove;
-    XP_Bool connected;                /* already pinged the relay? */
 } ServerVolatiles;
 
 typedef struct ServerNonvolatiles {
@@ -206,7 +205,6 @@ initServer( ServerCtxt* server )
     }
 
     server->nv.nDevices = 1;	/* local device (0) is always there */
-    server->vol.connected = XP_FALSE;
 } /* initServer */
 
 ServerCtxt* 
@@ -752,24 +750,6 @@ showPrevScore( ServerCtxt* server )
     SETSTATE( server, server->vol.stateAfterShow );
 } /* showPrevScore */
 
-#if! defined XWFEATURE_STANDALONE_ONLY && defined BEYOND_IR
-static void
-connectRelay( ServerCtxt* server )
-{
-    /* THIS is a gross HACK.  Relay-specific stuff belongs in comms.c as an
-       additional protocol layer. PENDING(ehouse) */
-    if ( !server->vol.connected ) {
-        XWStreamCtxt* stream = util_makeStreamFromAddr( server->vol.util, 
-                                                        CHANNEL_NONE );
-        stream_putBytes( stream, &stream, 1 );
-        stream_close( stream );
-        server->vol.connected = XP_TRUE;
-    }
-}
-#else
-# define connectRelay(s)
-#endif
-
 XP_Bool
 server_do( ServerCtxt* server )
 {
@@ -783,7 +763,6 @@ server_do( ServerCtxt* server )
 
     switch( server->nv.gameState ) {
     case XWSTATE_BEGIN:	
-        connectRelay( server );
         if ( server->nv.pendingRegistrations == 0 ) { /* all players on device */
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_INTURN );
