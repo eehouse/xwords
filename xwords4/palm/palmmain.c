@@ -151,6 +151,10 @@ static XWStreamCtxt* palm_util_makeStreamFromAddr( XW_UtilCtxt* uc,
 static XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                           XP_U16 turn, XP_Bool turnLost );
+#ifdef BEYOND_IR
+static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+                                  const CommsAddrRec* newAddr );
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, 
                                               XP_U16* max );
@@ -541,7 +545,7 @@ loadGamePrefs( /*PalmAppGlobals* globals, */XWStreamCtxt* stream )
 {
     /* Keep in sync with games saved in prev version, which foolishly saved
        hintsNotAllowed separate from the current game's value for the same
-       thing.  When the version changes get rid of this bit. */
+       thing.  When the version changes get rid of this bit. PENDING */
     (void)stream_getBits( stream, 1 ); 
 } /* loadGamePrefs */
 
@@ -644,6 +648,9 @@ initUtilFuncs( PalmAppGlobals* globals )
 #endif
     vtable->m_util_getUserString = palm_util_getUserString;
     vtable->m_util_warnIllegalWord = palm_util_warnIllegalWord;
+#ifdef BEYOND_IR
+    vtable->m_util_addrChange = palm_util_addrChange;
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     vtable->m_util_getTraySearchLimits = palm_util_getTraySearchLimits;
 #endif
@@ -1097,6 +1104,7 @@ startApplication( PalmAppGlobals** globalsP )
     PalmAppGlobals* globals;
     Boolean leftyFlag;
     Int16 vers;
+    UInt32 ignore;
     MPSLOT;
 
 #if defined FOR_GREMLINS
@@ -1117,6 +1125,8 @@ startApplication( PalmAppGlobals** globalsP )
 
     initHighResGlobals( globals );
     getSizes( globals );
+
+    globals->runningOnPOSE = FtrGet( 'pose', 0, &ignore) != ftrErrNoSuchFeature;
 
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
 
@@ -3449,8 +3459,7 @@ palm_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
 } /* palm_send */
 
 void
-checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream, 
-                 CommsAddrRec* addr )
+checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream )
 {
     if ( comms_checkIncomingStream( globals->game.comms, 
                                      instream, NULL ) ) {
@@ -3504,6 +3513,16 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 turn,
     }
     return result;
 } /* palm_util_warnIllegalWord */
+
+#ifdef BEYOND_IR
+static void
+palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+                      const CommsAddrRec* newAddr )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
+    ip_addr_change( globals, oldAddr, newAddr );
+}
+#endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool
