@@ -559,12 +559,15 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
 
                 /* get the tiles out of player's tray and back into the
                    pool */
-                replaceNewTiles( model, pool, turn, &entry.u.move.newTiles );
+                if ( !!pool ) {
+                    replaceNewTiles( model, pool, turn, &entry.u.move.newTiles );
+                }
 		    
                 undoFromMoveInfo( model, turn, blankTile, 
                                   &entry.u.move.moveInfo );
             } else if ( entry.moveType == TRADE_TYPE ) {
 
+                XP_ASSERT ( !!pool );
                 replaceNewTiles( model, pool, turn, &entry.u.trade.newTiles );
 
                 pool_removeTiles( pool, &entry.u.trade.oldTiles );
@@ -1508,12 +1511,28 @@ printMovePost( ModelCtxt* model, XP_U16 moveN, StackEntry* entry,
     printString( stream, (XP_UCHAR*)XP_CR );
 } /* printMovePost */
 
+static ModelCtxt*
+makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
+	      MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
+	      void* closure )
+{
+    ModelCtxt* tmpModel = model_make( MPPARM(model->vol.mpool) 
+                                      model_getDictionary(model),
+                                      model->vol.util, model_numCols(model),
+                                      model_numRows(model));
+    model_setNPlayers( tmpModel, model->nPlayers );
+
+    buildModelFromStack( tmpModel, model->vol.stack, stream, 
+                         mpf_pre, mpf_post, closure );
+    
+    return tmpModel;
+} /* makeTmpModel */
+
 void
 model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
                         ServerCtxt* server, XP_Bool gameOver )
 {
     ModelCtxt* tmpModel;
-    StackCtxt* stack = model->vol.stack;
     MovePrintClosure closure;
 
     closure.stream = stream;
@@ -1521,15 +1540,8 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
     closure.keepHidden = !gameOver;
     closure.nPrinted = 0;
 
-    tmpModel = model_make( MPPARM(model->vol.mpool) 
-                           model_getDictionary(model),
-                           model->vol.util, model_numCols(model),
-                           model_numRows(model));
-    model_setNPlayers( tmpModel, model->nPlayers );
-
-    buildModelFromStack( tmpModel, stack, stream, 
-                         printMovePre, printMovePost,
-                         &closure );
+    tmpModel = makeTmpModel( model, stream, printMovePre, printMovePost, 
+			     &closure );
 
     if ( gameOver ) {
         /* if the game's over, it shouldn't matter which model I pass to this
@@ -1539,6 +1551,76 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
 
     model_destroy( tmpModel );
 } /* model_writeGameHistory */
+
+static void
+scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
+               XP_UCHAR* buf, XP_U16* bufLen )
+{
+
+    if ( moveInfo->nTiles == 0 ) {
+        *bufLen = XP_SNPRINTF( buf, *bufLen, "Passed" );
+    } else {
+        XP_U16 score;
+        XP_UCHAR wordBuf[MAX_ROWS+1];
+
+        ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+        XP_U16 turn;
+        XP_S16 moveNum;
+
+        model_undoLatestMoves( tmpModel, NULL, howMany, &turn, &moveNum );
+
+        score = figureMoveScore( tmpModel, moveInfo, (EngineCtxt*)NULL, 
+                                 (XWStreamCtxt*)NULL, XP_TRUE, 
+                                 (WordNotifierInfo*)NULL, wordBuf );
+
+        model_destroy( tmpModel );
+
+        *bufLen = XP_SNPRINTF( buf, *bufLen, "%s for %d", wordBuf, score );
+    }
+} /* scoreLastMove */
+
+XP_Bool
+model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
+                           XP_UCHAR* expl, XP_U16* explLen )
+{
+    StackCtxt* stack = model->vol.stack;
+    XP_S16 nEntries, which;
+    StackEntry entry;
+    XP_Bool found = XP_FALSE;
+
+    XP_ASSERT( !!stack );
+    XP_ASSERT( player >= 0 );
+
+    nEntries = stack_getNEntries( stack );
+
+    for ( which = nEntries; which >= 0; ) {
+        if ( stack_getNthEntry( stack, --which, &entry ) ) {
+            if ( entry.playerNum == player ) {
+                found = XP_TRUE;
+                break;
+            }
+        }
+    }
+
+    if ( found ) {	/* success? */
+        switch ( entry.moveType ) {
+        case MOVE_TYPE:
+            scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which, expl, explLen );
+            break;
+        case TRADE_TYPE:
+            *explLen = XP_SNPRINTF( expl, *explLen, "Traded" );
+            break;
+        case PHONY_TYPE:
+            *explLen = XP_SNPRINTF( expl, *explLen, "Lost turn" );
+            break;
+        case ASSIGN_TYPE:
+            found = XP_FALSE;
+            break;
+        }
+    }
+
+    return found;
+} /* model_getPlayersLastScore */
 
 static void
 loadPlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
