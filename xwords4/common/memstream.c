@@ -47,6 +47,7 @@ extern "C" {
     MemStreamCloseCallback onClose; \
     XP_U16 nBytesWritten; \
     XP_U16 nBytesAllocated; \
+    XP_U16 version; \
     XP_U8 nReadBits; \
     XP_U8 nWriteBits; \
     XP_Bool isOpen; \
@@ -326,6 +327,21 @@ mem_stream_setAddress( XWStreamCtxt* p_sctx, XP_PlayerAddr channelNo )
     stream->channelNo = channelNo;
 } /* mem_stream_getAddress */
 
+static void
+mem_stream_setVersion( XWStreamCtxt* p_sctx, XP_U16 vers )
+{
+    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    stream->version = vers;
+} /* mem_stream_setVersion */
+
+static XP_U16
+mem_stream_getVersion( XWStreamCtxt* p_sctx )
+{
+    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    return stream->version;
+} /* mem_stream_getVersion */
+
+
 static XWStreamPos
 mem_stream_getPos( XWStreamCtxt* p_sctx, PosWhich which )
 {
@@ -407,6 +423,9 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_getSize, mem );
     SET_VTABLE_ENTRY( vtable, stream_getAddress, mem );
     SET_VTABLE_ENTRY( vtable, stream_setAddress, mem );
+
+    SET_VTABLE_ENTRY( vtable, stream_setVersion, mem );
+    SET_VTABLE_ENTRY( vtable, stream_getVersion, mem );
 
     return vtable;
 } /* make_vtable */

@@ -918,6 +918,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
     if ( streamVersion != CUR_STREAM_VERS ) {
         return XP_FALSE;
     }
+    stream_setVersion( stream, streamVersion );
 
     gameID = stream_getBits( stream, 32 );
     XP_STATUSF( "read gameID of %ld; calling comms_setConnID", gameID );
@@ -925,7 +926,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
     comms_setConnID( server->vol.comms, gameID );
 
     XP_MEMSET( &localGI, 0, sizeof(localGI) );
-    gi_readFromStream( MPPARM(server->mpool) stream, streamVersion, &localGI );
+    gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
     localGI.serverRole = SERVER_ISCLIENT;
 
     /* so it's not lost (HACK!).  Without this, a client won't have a default
