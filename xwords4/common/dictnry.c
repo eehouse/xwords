@@ -290,6 +290,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
 
     XP_ASSERT( !dict->destructor );
     dict->destructor = common_destructor;
+    dict->func_dict_getShortName = dict_getName; /* default */
 
     nFaces = (XP_U8)stream_getBits( stream, 6 );
     maxCountBits = (XP_U16)stream_getBits( stream, 3 );
