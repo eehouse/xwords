@@ -104,7 +104,11 @@ XP_Bool board_getShowColors( BoardCtxt* board );
 XP_Bool board_setShowColors( BoardCtxt* board, XP_Bool showColors );
 XP_Bool board_replaceTiles( BoardCtxt* board );
 
-XP_Bool board_requestHint( BoardCtxt* board, XP_U16 nTilesToUse, XP_Bool* workRemainsP );
+XP_Bool board_requestHint( BoardCtxt* board, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                           XP_Bool useTileLimits,
+#endif
+                           XP_Bool* workRemainsP );
 
 void board_setScale( BoardCtxt* board, XP_U16 hScale, XP_U16 vScale );
 void board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale );
@@ -125,7 +129,7 @@ void board_popTimerSave( BoardCtxt* board );
 
 #ifdef POINTER_SUPPORT
 XP_Bool board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y,
-			       XP_Time when );
+                             XP_Time when, XP_Bool* handled );
 XP_Bool board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when );
 #endif
