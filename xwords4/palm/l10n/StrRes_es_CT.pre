@@ -35,8 +35,10 @@
 #endif
 { "STR_TOO_FEW_TILES", "No hi ha prou fitxes." },
 { "STR_CANT_UNDO_TILEASSIGN", "El repartiment de fitxes no pot desfer-se." },
-{ "STR_VALUES_TITLE",  "Quantitat i Valor" },
-{ "STR_VALUES_HEADER", "Quantitat[queden] i Valor\n" },
+
+{ "STR_VALUES_TITLE", "Counts and Values" }, /* translate */
+{ "STR_REMAINS_TITLE","Remaining tiles" }, /* translate */
+{ "STRS_VALUES_HEADER",		"%s counts/values:\n" }, /* translate */
 
 { "STR_DOUBLE_LETTER",		"Doble de lletra" },
 { "STR_DOUBLE_WORD",		"Doble de paraula" },
@@ -45,7 +47,7 @@
 { "STR_REMTILES",		"Hi ha:%d" },
 { "STR_CANT_TRADE_MIDTURN",	"Encara tens fitxes al tauler."},
 { "STR_ASK_REPLACE_GAME",	"Vols sobreescriure la partida?" },
-{ "STR_NO",			"No" },
+{ "STR_OK",			"Ok" },     /* translate */
 { "STR_ABOUT_TITLE",		"Sobre Crosswords" },
 { "STR_DEFAULT_NAME",		"Jugador %d" },
 { "STR_ABOUT_CONTENT", 
@@ -134,3 +136,5 @@
                                "El canvi no és reversible." },
 { "STRS_CONFIRM_ONEDICT",       "Convertir el diccionari %s?" },
 #endif
+{ "STRS_CANNOT_FIND_DICT",      "%s dictionary not found." }, /* translate */
+{ "STR_DICT_COPY_EXPL",        "Copying dictionary from card..." },/* translate */
