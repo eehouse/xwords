@@ -2956,9 +2956,9 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
     FrmSetActiveForm( form );
 
 #ifdef FEATURE_TRAY_EDIT
-    if ( forBlank ) {
-        disOrEnable( form, XW_BLANK_PICK_BUTTON_ID, XP_FALSE );
-    }
+    disOrEnable( form, XW_BLANK_PICK_BUTTON_ID, !forBlank );
+    disOrEnable( form, XW_BLANK_BACKUP_BUTTON_ID, 
+                 !forBlank && pi->nCurTiles > 0 );
 #endif
 
     lettersList = getActiveObjectPtr( XW_BLANK_LIST_ID );
@@ -2982,7 +2982,7 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
         lenSoFar = XP_STRLEN(labelBuf);
         lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, 
                                  sizeof(labelBuf) - lenSoFar,
-                                 " (%d/%d)\nCur", pi->thisPick, pi->nTotal );
+                                 " (%d/%d)\nCur", pi->thisPick+1, pi->nTotal );
 
         for ( i = 0; i < pi->nCurTiles; ++i ) {
             lenSoFar += XP_SNPRINTF( labelBuf+lenSoFar, 
@@ -3004,7 +3004,9 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
     if ( 0 ) {
 #ifdef FEATURE_TRAY_EDIT
     } else if ( tapped == XW_BLANK_PICK_BUTTON_ID ) {
-        chosen = -1;
+        chosen = PICKER_PICKALL;
+    } else if ( tapped == XW_BLANK_BACKUP_BUTTON_ID ) {
+        chosen = PICKER_BACKUP;
 #endif
     } else {
         chosen = LstGetSelection( lettersList );
@@ -3074,6 +3076,11 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
         strID = STR_TOO_FEW_TILES;
         break;
+
+    case ERR_CANT_UNDO_TILEASSIGN:
+        strID = STR_CANT_UNDO_TILEASSIGN;
+        break;
+
     default:
         XP_DEBUGF( "errcode=%d", id );
         break;
