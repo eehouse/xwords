@@ -23,9 +23,27 @@
 #include "palmmain.h"
 
 unsigned long
+realArmletEntryPoint( const void *emulStateP, 
+                      void *userData68KP, 
+                      Call68KFuncType* call68KFuncP );
+
+/* With arm-palmos-gcc, there can't be any .GOT references in the entry point
+   (since those values get put inline BEFORE the function rather than
+   after.) */
+unsigned long
 ArmletEntryPoint( const void *emulStateP, 
                   void *userData68KP, 
                   Call68KFuncType* call68KFuncP )
+{
+    return realArmletEntryPoint( emulStateP, 
+                                 userData68KP, 
+                                 call68KFuncP );
+}
+
+unsigned long
+realArmletEntryPoint( const void *emulStateP, 
+                      void *userData68KP, 
+                      Call68KFuncType* call68KFuncP )
 {
     PNOState* loc;
     PNOState state;
