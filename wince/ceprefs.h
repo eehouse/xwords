@@ -35,30 +35,38 @@ typedef struct CeGamePrefs {
     /* phonies something */
 } CeGamePrefs;
 
-typedef struct PrefsPrefs {
+typedef struct CePrefsPrefs {
     /* per-game */
     CeGamePrefs gp;
 
     /* global */
-    XP_Bool showColors;
     CommonPrefs cp;
-} PrefsPrefs;
+    XP_Bool showColors;
+    
+#ifdef XWFEATURE_CE_EDITCOLORS
+    COLORREF colors[NUM_EDITABLE_COLORS];
+#endif
+} CePrefsPrefs;
 
-typedef struct PrefsDlgState {
+typedef struct CePrefsDlgState {
     CEAppGlobals* globals;
+    CePrefsPrefs prefsPrefs;
+
     XP_Bool userCancelled;
     //XP_Bool doGlobalPrefs;      /* state of the radio */
     XP_Bool isNewGame;
-    PrefsPrefs prefsPrefs;
-} PrefsDlgState;
+#ifdef XWFEATURE_CE_EDITCOLORS
+    XP_Bool colorsChanged;
+#endif
+} CePrefsDlgState;
 
 XP_Bool WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, 
-                         PrefsDlgState* state, PrefsPrefs* prefsPrefs, 
+                         CePrefsDlgState* state, CePrefsPrefs* prefsPrefs, 
                          XP_Bool isNewGame );
 void loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi, 
-                            PrefsPrefs* prefsPrefs );
+                            CePrefsPrefs* prefsPrefs );
 void loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi, 
-                            const PrefsPrefs* prefsPrefs );
+                            const CePrefsPrefs* prefsPrefs );
 
 LRESULT CALLBACK PrefsDlg(HWND, UINT, WPARAM, LPARAM);
 
