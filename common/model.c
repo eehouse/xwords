@@ -24,6 +24,7 @@
 #include "xwstream.h"
 #include "util.h"
 #include "pool.h"
+#include "memstream.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"
 
@@ -496,7 +497,9 @@ replaceNewTiles( ModelCtxt* model, PoolContext* pool, XP_U16 turn,
         XP_ASSERT( index >= 0 );
         model_removePlayerTile( model, turn, index );
     }
-    pool_replaceTiles( pool, tileSet);
+    if ( !!pool ) {
+        pool_replaceTiles( pool, tileSet);
+    }
 } /* replaceNewTiles */
 
 /* Turn the most recent move into a phony.
@@ -563,9 +566,7 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
 
                 /* get the tiles out of player's tray and back into the
                    pool */
-                if ( !!pool ) {
-                    replaceNewTiles( model, pool, turn, &entry.u.move.newTiles );
-                }
+                replaceNewTiles( model, pool, turn, &entry.u.move.newTiles);
 		    
                 undoFromMoveInfo( model, turn, blankTile, 
                                   &entry.u.move.moveInfo );
@@ -1521,10 +1522,23 @@ printMovePost( ModelCtxt* model, XP_U16 moveN, StackEntry* entry,
     printString( stream, (XP_UCHAR*)XP_CR );
 } /* printMovePost */
 
+static void
+copyStack( ModelCtxt* model, StackCtxt* destStack, const StackCtxt* srcStack )
+{
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool) 
+                                            util_getVTManager(model->vol.util),
+                                            NULL, 0, NULL );
+
+    stack_writeToStream( (StackCtxt*)srcStack, stream );
+    stack_loadFromStream( destStack, stream );
+
+    stream_destroy( stream );
+} /* copyStack */
+
 static ModelCtxt*
 makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
-	      MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
-	      void* closure )
+              MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
+              void* closure )
 {
     ModelCtxt* tmpModel = model_make( MPPARM(model->vol.mpool) 
                                       model_getDictionary(model),
@@ -1551,7 +1565,7 @@ model_writeGameHistory( ModelCtxt* model, XWStreamCtxt* stream,
     closure.nPrinted = 0;
 
     tmpModel = makeTmpModel( model, stream, printMovePre, printMovePost, 
-			     &closure );
+                             &closure );
 
     if ( gameOver ) {
         /* if the game's over, it shouldn't matter which model I pass to this
@@ -1569,8 +1583,9 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 
     if ( moveInfo->nTiles == 0 ) {
         XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
-        *bufLen = XP_STRLEN( str );
-        XP_STRCAT( buf, str );
+        XP_U16 len = XP_STRLEN( str );
+        *bufLen = len;
+        XP_MEMCPY( buf, str, len+1 ); /* no XP_STRCPY yet */
     } else {
         XP_U16 score;
         XP_UCHAR wordBuf[MAX_ROWS+1];
@@ -1578,9 +1593,14 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 
         ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
         XP_U16 turn;
-        XP_S16 moveNum;
+        XP_S16 moveNum = -1;
+        
+        copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
-        model_undoLatestMoves( tmpModel, NULL, howMany, &turn, &moveNum );
+        if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn, 
+                                     &moveNum ) ) {
+            XP_ASSERT( 0 );
+        }
 
         score = figureMoveScore( tmpModel, moveInfo, (EngineCtxt*)NULL, 
                                  (XWStreamCtxt*)NULL, XP_TRUE, 
@@ -1621,7 +1641,8 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
         XP_U16 nTiles;
         switch ( entry.moveType ) {
         case MOVE_TYPE:
-            scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which, expl, explLen );
+            scoreLastMove( model, &entry.u.move.moveInfo, 
+                           nEntries - which - 1, expl, explLen );
             break;
         case TRADE_TYPE:
             nTiles = entry.u.trade.oldTiles.nTiles;
