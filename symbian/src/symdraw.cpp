@@ -39,7 +39,7 @@ extern "C" {
 #include <stdio.h>
 
 #include "symdraw.h"
-#include <xwbitmaps.mbg>
+#include <xwords.mbg>
 
 #define TRAY_CURSOR_HT 2
 
@@ -82,6 +82,8 @@ typedef struct SymDrawCtxt {
     CFbsBitmap* iRightArrow;
     CFbsBitmap* iDownArrow;
     CFbsBitmap* iStar;
+    CFbsBitmap* iTurnIcon;
+    CFbsBitmap* iTurnIconMask;
 
     CONST_60 CFont* iTileFaceFont;
     CONST_60 CFont* iTileValueFont;
@@ -94,13 +96,6 @@ typedef struct SymDrawCtxt {
 
     MPSLOT
 } SymDrawCtxt;
-
-static void
-textToDesc( TBuf16<64>* buf, XP_UCHAR* txt )
-{
-    TBuf8<64> tmpDesc( txt );
-    buf->Copy( tmpDesc );
-} // textToDesc
 
 static void
 symLocalRect( TRect* dest, const XP_Rect* src )
@@ -151,7 +146,8 @@ getBonusColor( SymDrawCtxt* sctx, XWBonusType bonus, TRgb* rgb )
 } // getBonusColor
 
 static void
-drawBitmap( SymDrawCtxt* sctx, CFbsBitmap* bmp, const TRect* aRect )
+drawBitmap( SymDrawCtxt* sctx, CFbsBitmap* bmp, CFbsBitmap* mask, 
+            const TRect* aRect )
 {
     TRect rect( *aRect );
     TSize bmpSize = bmp->SizeInPixels();
@@ -163,7 +159,7 @@ drawBitmap( SymDrawCtxt* sctx, CFbsBitmap* bmp, const TRect* aRect )
         rect.SetSize( bmpSize );
 
         TRect imgRect( TPoint(0,0), bmpSize );
-        sctx->iGC->BitBltMasked( rect.iTl, bmp, imgRect, bmp, ETrue );
+        sctx->iGC->BitBltMasked( rect.iTl, bmp, imgRect, mask, ETrue );
     } else {
         XP_LOGF( "bitmap too big" );
     }
@@ -178,6 +174,8 @@ sym_draw_destroyCtxt( DrawCtx* p_dctx )
     delete sctx->iRightArrow;
     delete sctx->iDownArrow;
     delete sctx->iStar;
+    delete sctx->iTurnIcon;
+    delete sctx->iTurnIconMask;
 
     XP_ASSERT( sctx );
     XP_ASSERT( sctx->vtable );
@@ -249,9 +247,9 @@ sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* /*r*/,
     XP_UCHAR buf[64];
     makeRemText( buf, sizeof(buf), nTilesLeft );
     TBuf16<64> tbuf;
-    textToDesc( &tbuf, buf );
+    tbuf.Copy( TPtrC8(buf) );
 
-    const CFont* font = sctx->iScoreFont;
+    CFont* font = sctx->iScoreFont;
 	*widthP = (XP_S16)font->TextWidthInPixels( tbuf );
     *heightP = (XP_S16)font->HeightInPixels();
 } // sym_draw_measureRemText
@@ -264,17 +262,19 @@ sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner,
     XP_UCHAR buf[64];
     makeRemText( buf, sizeof(buf), nTilesLeft );
     TBuf16<64> tbuf;
-    textToDesc( &tbuf, buf );
+    tbuf.Copy( TPtrC8(buf) );
 
     TRect lRect;
     symLocalRect( &lRect, rInner );
-    symClearRect( sctx, &lRect, COLOR_WHITE );
 
-    TPoint point( lRect.iTl.iX, lRect.iBr.iY );
-    sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
+    sctx->iGC->SetPenStyle( CGraphicsContext::ESolidPen );
+    sctx->iGC->SetPenColor( KRgbBlack );
+    sctx->iGC->SetBrushColor( KRgbGray );
+    sctx->iGC->SetBrushStyle( CGraphicsContext::ESolidBrush );
 
-    sctx->iGC->UseFont( sctx->iScoreFont );
-    sctx->iGC->DrawText( tbuf, point );
+    CFont* font = sctx->iScoreFont;
+    sctx->iGC->UseFont( font );
+    sctx->iGC->DrawText( tbuf, lRect, lRect.Height() - 2 );
     sctx->iGC->DiscardFont();
 } // sym_draw_drawRemText
 
@@ -287,73 +287,98 @@ sym_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect,
 }
 
 static void
-figureScoreText( XP_UCHAR* buf, XP_U16 bufLen, DrawScoreInfo* dsi )
-{
-    const char* fmt = "%s  %d (%d) %c %c";
-
-    sprintf( (char*)buf, fmt, 
-             dsi->name, dsi->score, dsi->nTilesLeft,
-             (dsi->isRemote?'R':'L'),
-             (dsi->isRobot?'R':'H') );
-    XP_ASSERT( XP_STRLEN(buf) < bufLen );
-} // figureScoreText
-
-static void
 sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* /*r*/, 
-                           DrawScoreInfo* dsi,
+                           DrawScoreInfo* /*dsi*/,
                            XP_U16* widthP, XP_U16* heightP )
 {
-    XP_UCHAR buf[64];
-    figureScoreText( buf, sizeof(buf), dsi );
-    TBuf16<64> tbuf;
-    textToDesc( &tbuf, buf );
-
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
-    const CFont* font = sctx->iScoreFont;
-	TInt width = font->TextWidthInPixels( tbuf );
+    CFont* font = sctx->iScoreFont;
     TInt height = font->HeightInPixels();
 
-    *widthP = SC( XP_U16, width);
+    *widthP = 10;               /* whatever; we're only using rOuter */
     *heightP = SC( XP_U16, height );
-}
+} /* sym_draw_measureScoreText */
 
+/* We want the elements of a scoreboard to line up in columns.  So draw them
+ * one at a time. NAME SCORE TILE_LEFT ?LAST_SCORE?  Might be better to show
+ * robot-ness and local/remoteness with colors?  Turn is with an icon.
+ */
 static void
 sym_draw_score_drawPlayer( DrawCtx* p_dctx, 
                            XP_S16 playerNum, /* -1: don't use */
-                           XP_Rect* rInner, XP_Rect* rOuter, 
+                           XP_Rect* /*rInner*/, XP_Rect* rOuter, 
                            DrawScoreInfo* dsi )
 {
-    XP_UCHAR buf[64];
-    figureScoreText( buf, sizeof(buf), dsi );
-    TBuf16<64> tbuf;
-    textToDesc( &tbuf, buf );
+    const TInt KTurnIconWidth = 16;
+    const TInt KNameColumnWidth = 90;
+    const TInt KScoreColumnWidth = 25;
+/*     const TInt KTilesLeftColumnWidth = 15; */
+    const TInt KLastMoveColumnWidth = 100; /* will be clipped down */
 
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     CONST_60 CFont* font = sctx->iScoreFont;
     sctx->iGC->UseFont( font );
-    TInt descent = font->DescentInPixels();
 
     TRect lRect;
-    symLocalRect( &lRect, rInner );
-
-    TRect lRect1;
-    symLocalRect( &lRect1, rOuter );
-    symClearRect( sctx, &lRect1, COLOR_WHITE );
-    if ( dsi->isTurn ) {
-        TPoint point( lRect1.iTl.iX, lRect.iBr.iY - descent );
-        sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] ); /* just in case */
-        sctx->iGC->DrawText( _L("T"), point );
-    }
-
+    symLocalRect( &lRect, rOuter );
+    TInt rightEdge = lRect.iBr.iX;
     symClearRect( sctx, &lRect, dsi->selected? COLOR_BLACK:COLOR_WHITE );
 
-    TPoint point( lRect.iTl.iX, lRect.iBr.iY - descent );
+    TInt fontHeight = font->AscentInPixels();
+    TInt baseline = fontHeight + ((lRect.Height() - fontHeight) / 2);
+    
+    /* The y coords of the rect stay the same, but the x coords change as we
+       do each column. The first time, turn-icon column, the left edge is
+       already where we want it. */
+    lRect.iBr.iX = lRect.iTl.iX + KTurnIconWidth;
+    symClearRect( sctx, &lRect, COLOR_WHITE );
+    if ( dsi->isTurn ) {
+        drawBitmap( sctx, sctx->iTurnIcon, sctx->iTurnIconMask, &lRect );
+    }
+
     if ( playerNum >= 0 && !dsi->selected ) {
         sctx->iGC->SetPenColor( sctx->colors[playerNum + COLOR_PLAYER1] );
     } else {
         sctx->iGC->SetPenColor( sctx->colors[COLOR_WHITE] );
     }
-    sctx->iGC->DrawText( tbuf, point );
+    sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
+
+    TBuf16<64> tbuf;
+    /* Draw name */
+    lRect.iTl.iX = lRect.iBr.iX + 1; /* add one to get name away from edge */
+    lRect.iBr.iX += KNameColumnWidth;
+    tbuf.Copy( TBuf8<32>(dsi->name) );
+    sctx->iGC->DrawText( tbuf, lRect, baseline );
+
+    /* Draw score, right-justified */
+    lRect.iTl.iX = lRect.iBr.iX;
+    lRect.iBr.iX += KScoreColumnWidth;
+    tbuf.Num( dsi->score );
+    sctx->iGC->DrawText( tbuf, lRect, baseline,
+                         CGraphicsContext::ERight );
+
+    /* Draw tiles left.  Not needed when tray can't be hidden perhaps. */
+/*     lRect.iTl.iX = lRect.iBr.iX; */
+/*     lRect.iBr.iX += KTilesLeftColumnWidth; */
+/*     if ( dsi->nTilesLeft >= 0 ) { */
+/*         tbuf.Num( dsi->nTilesLeft ); */
+/*         sctx->iGC->DrawText( tbuf, lRect, baseline, */
+/*                              CGraphicsContext::ERight ); */
+/*     } */
+
+    /* Draw last move */
+    lRect.iTl.iX = lRect.iBr.iX + 3; /* 3 to give it some spacing from r-justified
+                                        score */
+    lRect.iBr.iX += KLastMoveColumnWidth;
+    XP_UCHAR buf[32];
+    XP_U16 len = sizeof(buf);
+    if ( (*dsi->lsc)( dsi->lscClosure, playerNum, buf, &len ) ) {
+        tbuf.Copy( TBuf8<32>(buf) );
+        if ( lRect.iBr.iX > rightEdge ) {
+            lRect.iBr.iX = rightEdge;
+        } 
+        sctx->iGC->DrawText( tbuf, lRect, baseline );
+    }
 
     sctx->iGC->DiscardFont();
 } /* sym_draw_score_drawPlayer */
@@ -378,13 +403,12 @@ sym_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect,
         XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s", "???" );
     }
     TBuf16<64> bottomBuf;
-    textToDesc( &bottomBuf, buf );
+    bottomBuf.Copy( TPtrC8(buf) );
     
     TPoint point( lRect.iTl.iX, lRect.iBr.iY );
     sctx->iGC->DrawText( bottomBuf, point );
 
-    TBuf16<64> topBuf;
-    textToDesc( &topBuf, (XP_UCHAR*)"Pts:" );
+    TBuf16<64> topBuf( _L("Pts:") );
     point.iY = lRect.Center().iY;
     sctx->iGC->DrawText( topBuf, point );
 
@@ -416,7 +440,7 @@ textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect, TBool highlight )
     CONST_60 CFont* font = sctx->iBoardFont;
 
     TBuf16<64> tbuf;
-    textToDesc( &tbuf, text );
+    tbuf.Copy( TPtrC8(text) );
     TInt txtWidth = font->TextWidthInPixels( tbuf );
 
     lRect->Shrink( 2, 2 );
@@ -465,7 +489,7 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         TRect r2(lRect);
         textInCell( sctx, text, &r2, highlight );
     } else if ( isStar ) {
-        drawBitmap( sctx, sctx->iStar, &lRect );
+        drawBitmap( sctx, sctx->iStar, sctx->iStar, &lRect );
     }
 
     return XP_TRUE;
@@ -509,9 +533,8 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
     if ( !!text ) {
         sctx->iGC->UseFont( sctx->iTileFaceFont );
 
-        TBuf8<10> tmpDesc((unsigned char*)text);
         TBuf16<10> txtbuf;
-        txtbuf.Copy( tmpDesc );
+        txtbuf.Copy( TBuf8<10>(text) );
         TInt ht = sctx->iTileFaceFont->HeightInPixels();
         TPoint point( lRect.iTl.iX, lRect.iTl.iY + ht );
         sctx->iGC->DrawText( txtbuf, point );
@@ -525,9 +548,8 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         CONST_60 CFont* font = sctx->iTileValueFont;
         sctx->iGC->UseFont( font );
 
-        TBuf8<5> tmpDesc((unsigned char*)buf);
         TBuf16<5> txtbuf;
-        txtbuf.Copy( tmpDesc );
+        txtbuf.Copy( TBuf8<5>(buf) );
 
         TInt width = font->TextWidthInPixels( txtbuf );
         TPoint point( lRect.iBr.iX - width, lRect.iBr.iY );
@@ -585,7 +607,7 @@ sym_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect,
     sctx->iGC->SetBrushStyle( CGraphicsContext::ESolidBrush );
 
     CFbsBitmap* arrow = vert? sctx->iDownArrow : sctx->iRightArrow;
-    drawBitmap( sctx, arrow, &lRect );
+    drawBitmap( sctx, arrow, arrow, &lRect );
 } /* sym_draw_drawBoardArrow */
 
 #ifdef KEY_SUPPORT
@@ -707,6 +729,7 @@ figureFonts( SymDrawCtxt* sctx )
         TFontSpec fontSpecVal( fontName, (tileHt / 3) * twipAdjust );
         sdev->GetNearestFontInTwips( sctx->iTileValueFont, fontSpecVal );
 
+
         TFontSpec fontSpecScore( fontName, scaleBoardV * twipAdjust );
         sdev->GetNearestFontInTwips( sctx->iScoreFont, fontSpecScore );
 
@@ -802,22 +825,29 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
 #if defined SERIES_80
             /* this path will change for other platforms/devices!!! */
 #if defined __WINS__
-            _LIT( kBitmapsPath, "z:\\system\\apps\\XWORDS\\xwbitmaps.mbm" );
+            _LIT( kBitmapsPath, "z:\\system\\apps\\XWORDS\\xwords.mbm" );
 #elif defined __MARM__
-            _LIT( kBitmapsPath, "c:\\system\\apps\\XWORDS\\xwbitmaps.mbm" );
+            _LIT( kBitmapsPath, "c:\\system\\apps\\XWORDS\\xwords.mbm" );
 #endif
             TFileName bitmapFile( kBitmapsPath );
 
             XP_LOGF( "loading bitmaps0" );
             sctx->iDownArrow = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iDownArrow->
-                                Load(bitmapFile, EMbmXwbitmapsDownarrow_80 ) );
+                                Load(bitmapFile, EMbmXwordsDownarrow_80 ) );
             sctx->iRightArrow = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iRightArrow->
-                                Load(bitmapFile, EMbmXwbitmapsRightarrow_80 ) );
+                                Load(bitmapFile, EMbmXwordsRightarrow_80 ) );
             sctx->iStar = new (ELeave) CFbsBitmap();
             User::LeaveIfError( sctx->iStar->
-                                Load(bitmapFile, EMbmXwbitmapsStar_80 ) );
+                                Load(bitmapFile, EMbmXwordsStar_80 ) );
+
+            sctx->iTurnIcon = new (ELeave) CFbsBitmap();
+            User::LeaveIfError( sctx->iTurnIcon->
+                                Load(bitmapFile, EMbmXwordsTurnicon_80 ) );
+            sctx->iTurnIconMask = new (ELeave) CFbsBitmap();
+            User::LeaveIfError( sctx->iTurnIconMask->
+                                Load(bitmapFile, EMbmXwordsTurniconmask_80 ) );
 
             XP_LOGF( "done loading bitmaps" );
 #else
