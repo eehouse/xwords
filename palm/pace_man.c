@@ -859,3 +859,108 @@ flipDateTimeToArm( DateTimeType* out, const unsigned char* in )
     out->year = Byte_Swap16( inp->year );
     out->weekDay = Byte_Swap16( inp->weekDay );
 }
+
+static unsigned long
+exgWriteEntry( const void* emulStateP, 
+               void* userData68KP, 
+               Call68KFuncType* call68KFuncP )
+{
+    unsigned long* data = (unsigned long*)userData68KP;
+    unsigned long oldR10;
+    ExgDBWriteProcPtr exgProc
+        = (ExgDBWriteProcPtr)read_unaligned32( (unsigned char*)&data[0] );
+    PNOState* state = getStorageLoc();
+    UInt32* sizeP;
+    Err err;
+
+    /* set up stack here too? */
+    asm( "mov %0, r10" : "=r" (oldR10) );
+    asm( "mov r10, %0" : : "r" (state->gotTable) );
+
+    XP_ASSERT( emulStateP == state->emulStateP );
+    XP_ASSERT( call68KFuncP == state->call68KFuncP );
+
+    sizeP = (UInt32*)read_unaligned32( (unsigned char*)&data[2] );
+    SWAP4_NON_NULL_OUT(sizeP);
+    err = (*exgProc)( (const void*)read_unaligned32((unsigned char*)&data[1]), 
+                      sizeP, 
+                      (void*)read_unaligned32( (unsigned char*)&data[3] ) );
+    SWAP4_NON_NULL_IN(sizeP);
+
+    asm( "mov r10, %0" : : "r" (oldR10) );
+
+    return (unsigned long)err;                  /* no result to return */
+} /* exgWriteEntry */
+
+static void
+makeExgWriteStub( ExgDBWriteProcPtr proc, unsigned char* stub, XP_U16 stubSize )
+{
+/* Err	ExgDBWriteProc( const void *dataP, UInt32 *sizeP, void *userDataP)  */
+/* { */
+/*   unsigned long data[] = { */
+/*     (unsigned long)0x11223344,  */
+/*     (unsigned long)dataP,  */
+/*     (unsigned long)sizeP,  */
+/*     (unsigned long)userDataP */
+/*   }; */
+/*   return (Err)PceNativeCall( (void*)0x55667788, (void*)data ); */
+/* } */
+    unsigned char code_68k[] = {
+        /* 0:*/	0x4e, 0x56, 0xff, 0xf0,      	/* linkw %fp,#-16 */
+        /* 4:*/	0x20, 0x2e, 0x00, 0x08,      	/* movel %fp@(8),%d0 */
+        /* 8:*/	0x22, 0x2e, 0x00, 0x0c,      	/* movel %fp@(12),%d1 */
+        /* c:*/	0x24, 0x2e, 0x00, 0x10,      	/* movel %fp@(16),%d2 */
+        /*10:*/	0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44,/*movel #287454020,%fp@(-16)*/
+        /*16:*/	0xff, 0xf0,
+        /*18:*/	0x2d, 0x40, 0xff, 0xf4,      	/* movel %d0,%fp@(-12) */
+        /*1c:*/	0x2d, 0x41, 0xff, 0xf8,      	/* movel %d1,%fp@(-8) */
+        /*20:*/	0x2d, 0x42, 0xff, 0xfc,      	/* movel %d2,%fp@(-4) */
+        /*24:*/	0x48, 0x6e, 0xff, 0xf0,      	/* pea %fp@(-16) */
+        /*28:*/	0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,	/* movel #1432778632,%sp@- */
+        /*2e:*/	0x4e, 0x4f,           	/* trap #15 */
+        /*30:*/	0xa4, 0x5a,           	/* 0122132 */
+        /*32:*/	0x4e, 0x5e,           	/* unlk %fp */
+        /*34:*/	0x4e, 0x75           	/* rts */
+    };
+    XP_ASSERT( sizeof(code_68k) <= stubSize );
+    memcpy( stub, code_68k, sizeof(code_68k) );
+
+    write_unaligned32( &stub[0x12], 
+                       /* replace 0x11223344 */
+                       (unsigned long)proc );
+    write_unaligned32( &stub[0x2a], 
+                       /* replace 0x55667788 */
+                       (unsigned long)exgWriteEntry );
+} /* makeExgWriteStub */
+
+/* from file ExgMgr.h */
+Err
+ExgDBWrite( ExgDBWriteProcPtr writeProcP, void* userDataP, 
+            const char* nameP, LocalID dbID, UInt16 cardNo )
+{
+    Err result;
+    FUNC_HEADER(ExgDBWrite);
+    /* var decls */
+    /* swapIns */
+    {
+    PNOState* sp = GET_CALLBACK_STATE();
+    unsigned char stub[0x36];
+    STACK_START(unsigned char, stack, 18);
+    makeExgWriteStub( writeProcP, stub, sizeof(stub) );
+
+    /* pushes */
+    ADD_TO_STACK4(stack, stub, 0);
+    ADD_TO_STACK4(stack, userDataP, 4);
+    ADD_TO_STACK4(stack, nameP, 8);
+    ADD_TO_STACK4(stack, dbID, 12);
+    ADD_TO_STACK2(stack, cardNo, 16);
+    STACK_END(stack);
+    result = (Err)(*sp->call68KFuncP)( sp->emulStateP, 
+                               PceNativeTrapNo(sysTrapExgDBWrite),
+                               stack, 18 );
+    /* swapOuts */
+    }
+    FUNC_TAIL(ExgDBWrite);
+    EMIT_NAME("ExgDBWrite","'E','x','g','D','B','W','r','i','t','e'");
+    return result;
+} /* ExgDBWrite */
