@@ -30,10 +30,12 @@
 extern "C" {
 #endif
 
-#ifdef FEATURE_TRAY_EDIT
-# define CUR_STREAM_VERS 0x02
-#elif defined XWFEATURE_SEARCHLIMIT
+/* WARNING: the following assumes that FEATURE_TRAY_EDIT is defined if
+   XWFEATURE_SEARCHLIMIT is*/
+#if defined XWFEATURE_SEARCHLIMIT
 # define CUR_STREAM_VERS 0x03
+#elif defined FEATURE_TRAY_EDIT
+# define CUR_STREAM_VERS 0x02
 #else
 # define CUR_STREAM_VERS 0x01
 #endif
@@ -97,8 +99,7 @@ void game_dispose( XWGame* game );
 void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, CurGameInfo* gi );
-void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, XP_U16 strVersion,
-                        CurGameInfo* gi );
+void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
 void gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGi );
 
 XP_Bool player_hasPasswd( LocalPlayer* player );
