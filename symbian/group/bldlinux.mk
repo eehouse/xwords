@@ -1,12 +1,13 @@
-# -*- mode: Makefile; -*-
+# -*- mode: Makefile; compile-command: "make -f bldlinux.mk" -*-
 
 SERIES ?= 80
+DEBUG ?= TRUE
 
 # User should define EPOC_80 and/or EPOC_60 in the environment
 EPOC = $(EPOC_$(SERIES))
 
 
-PATH = $(EPOC)/bin:/local/bin:/usr/bin:/bin:$(HOME)/bin
+PATH = $(EPOC)/bin:/local/bin:/usr/bin:/bin
 
 BMCONV = bmconv
 
@@ -80,6 +81,7 @@ LCLSRC = \
 	$(SRCDIR)/symgamdl.cpp \
 	$(SRCDIR)/symgamed.cpp \
 	$(SRCDIR)/symssock.cpp \
+	$(SRCDIR)/symrsock.cpp \
 
 IMG_SRC = ../bmps/downarrow_80.bmp \
 	../bmps/rightarrow_80.bmp \
@@ -112,8 +114,13 @@ U1 = 1000007a
 U2 = 100039ce
 U3 = 10206D64
 
+ifeq ($(DEBUG),TRUE)
 DEBUG_FLAGS = -DDEBUG -DMEM_DEBUG
-CFLAGS += -O -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
+else
+OPT = -O2 -fomit-frame-pointer
+endif
+
+CFLAGS += $(OPT) -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
 	-DXWORDS_DIR=$(XWORDS_DIR) \
 	-D__LITTLE_ENDIAN -DKEYBOARD_NAV \
 	-DKEY_SUPPORT -DFEATURE_TRAY_EDIT -DNODE_CAN_4 \
