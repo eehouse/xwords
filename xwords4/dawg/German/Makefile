@@ -18,13 +18,13 @@
 LANG=German
 LANGCODE=de_DE
 
-TARGET_TYPE ?= FRANK
+TARGET_TYPE ?= PALM
 
 include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= HansGerman.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/HansGerman.dict.gz
 
 $(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr [a-zäöü] [A-ZÄÖÜ] | \

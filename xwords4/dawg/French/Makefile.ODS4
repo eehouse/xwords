@@ -15,16 +15,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=ODS4
+LANG=ODS4_
 LANGCODE=fr_FR
 
-TARGET_TYPE ?= FRANK
+TARGET_TYPE ?= PALM
 
 include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(LANG)Main.dict.gz: ods4.txt.gz
+$(LANG)Main.dict.gz: $(XWDICTPATH)/$(LANG)/ods4c.txt.gz
 	zcat $< | tr a-z A-Z | tr -d '\r' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
