@@ -150,7 +150,8 @@
 #endif
 
 #ifdef NODE_CAN_4
-{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert existing Crosswords " \
+{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert any existing Crosswords " \
                                "dictionaries to the new format? " \
                                "The change is not reversible." }, 
+{ "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" },
 #endif
