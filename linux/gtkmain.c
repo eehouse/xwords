@@ -101,12 +101,12 @@ static gint
 button_press_event( GtkWidget *widget, GdkEventButton *event,
                     GtkAppGlobals* globals )
 {
-    XP_Bool redraw;
+    XP_Bool redraw, handled;
 
     globals->mouseDown = XP_TRUE;
 
     redraw = board_handlePenDown( globals->cGlobals.game.board, 
-                                  event->x, event->y, event->time );
+                                  event->x, event->y, event->time, &handled );
     if ( redraw ) {
         board_draw( globals->cGlobals.game.board );
     }
@@ -747,7 +747,11 @@ static void
 handle_hint_button( GtkWidget* widget, GtkAppGlobals* globals )
 {
     XP_Bool redo;
-    if ( board_requestHint( globals->cGlobals.game.board, 0, &redo ) ) {
+    if ( board_requestHint( globals->cGlobals.game.board, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                            XP_FALSE,
+#endif
+                            &redo ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_hint_button */
@@ -756,10 +760,13 @@ static void
 handle_nhint_button( GtkWidget* widget, GtkAppGlobals* globals )
 {
     XP_Bool redo;
-    XP_U16 nTiles = askNTiles( globals, MAX_TRAY_TILES, globals->cGlobals.lastNTilesToUse );
 
-    globals->cGlobals.lastNTilesToUse = nTiles;
-    if ( board_requestHint( globals->cGlobals.game.board, nTiles, &redo ) ) {
+    board_resetEngine( globals->cGlobals.game.board );
+    if ( board_requestHint( globals->cGlobals.game.board, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                            XP_TRUE, 
+#endif
+                            &redo ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_hint_button */
@@ -977,7 +984,9 @@ static XP_Bool
 gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+#ifndef DONT_ABORT_ENGINE
     gboolean pending;
+#endif
 
     board_hiliteCellAt( globals->cGlobals.game.board, col, row );
     if ( globals->cGlobals.params->sleepOnAnchor ) {
@@ -1145,7 +1154,18 @@ gtk_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 newPort )
 
     /* if this isn't true, need to tear down and rebind socket */
     XP_ASSERT( newPort == globals->cGlobals.params->defaultListenPort );
-} /* gtk_util_getListeningPort */
+} /* gtk_util_listenPortChange */
+
+#ifdef XWFEATURE_SEARCHLIMIT
+static XP_Bool 
+gtk_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    *max = askNTiles( globals, MAX_TRAY_TILES, *max );
+    return XP_TRUE;
+}
+#endif
+
 
 static void
 gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
@@ -1372,6 +1392,11 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_warnIllegalWord = gtk_util_warnIllegalWord;
 
     util->vtable->m_util_makeStreamFromAddr = gtk_util_makeStreamFromAddr;
+
+#ifdef XWFEATURE_SEARCHLIMIT
+    util->vtable->m_util_getTraySearchLimits = gtk_util_getTraySearchLimits;
+#endif
+
 #ifdef BEYOND_IR
     util->vtable->m_util_listenPortChange = gtk_util_listenPortChange;
 #endif
