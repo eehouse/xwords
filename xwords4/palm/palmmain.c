@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999 - 2002 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 1999 - 2004 by Eric House (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -273,6 +273,7 @@ getSizes( PalmAppGlobals* globals )
         
         width *= 2;
         height *= 2;
+        globals->useHiRes = width >= 320 && height >= 320;
     }
 
     globals->width = width;
@@ -283,35 +284,49 @@ getSizes( PalmAppGlobals* globals )
 #endif
 
 #ifdef FEATURE_HIGHRES
+/* The resources place the tray-related buttons for the high-res case.  If
+ * the device is going to want them in the higher low-res position, move them
+ * here.  And resize 'em too.
+ */
 static void
-locateTrayButtons( PalmAppGlobals* globals, XP_U16 trayTop, XP_U16 trayHt )
+locateTrayButtons( PalmAppGlobals* globals )
 {
-    if ( FrmGetActiveForm() != NULL ) {
-        RectangleType rect;
-        XP_S16 diff;
+    if ( !globals->hasHiRes ) {
+        /* we need to put the buttons into the old position and set their
+           sizes for the larger tray. */
+        XP_U16 buttonInfoTriplets[] = { XW_MAIN_HIDE_BUTTON_ID, 
+                                        TRAY_BUTTONS_Y_LR, 
+                                        TRAY_BUTTON_HEIGHT_LR,
 
-        getObjectBounds( XW_MAIN_HIDE_BUTTON_ID, &rect );
-        diff = trayTop - rect.topLeft.y;
+                                        XW_MAIN_JUGGLE_BUTTON_ID, 
+                                        TRAY_BUTTONS_Y_LR, 
+                                        TRAY_BUTTON_HEIGHT_LR,
 
-        if ( diff != 0 ) {
-            XP_U16 i;
-            XP_U16 ids[] = {XW_MAIN_SHOWTRAY_BUTTON_ID,
-                            XW_MAIN_HIDE_BUTTON_ID,
-                            XW_MAIN_DONE_BUTTON_ID,
-                            XW_MAIN_TRADE_BUTTON_ID,
-                            XW_MAIN_JUGGLE_BUTTON_ID
-            };
+                                        XW_MAIN_TRADE_BUTTON_ID, 
+                                        TRAY_BUTTONS_Y_LR
+                                        + TRAY_BUTTON_HEIGHT_LR,
+                                        TRAY_BUTTON_HEIGHT_LR,
 
-            for ( i = 0; i < sizeof(ids)/sizeof(ids[0]); ++i ) {
-                getObjectBounds( ids[i], &rect );
-                rect.topLeft.y += diff;
-                setObjectBounds( ids[i], &rect );
-            }
+
+                                        XW_MAIN_DONE_BUTTON_ID,
+                                        TRAY_BUTTONS_Y_LR
+                                        + TRAY_BUTTON_HEIGHT_LR,
+                                        TRAY_BUTTON_HEIGHT_LR
+        };
+        XP_U16* ptr;
+        XP_U16 i;
+
+        for ( i = 0, ptr = buttonInfoTriplets; i < 4; ++i, ptr += 3 ) {
+            RectangleType rect;
+            getObjectBounds( ptr[0], &rect );
+            rect.topLeft.y = ptr[1];
+            rect.extent.y = ptr[2];;
+            setObjectBounds( ptr[0], &rect );
         }
     }
 } /* locateTrayButtons */
 #else
-# define locateTrayButtons(g,t,h)
+# define locateTrayButtons(g)
 #endif
 
 static XP_Bool
@@ -319,22 +334,20 @@ positionBoard( PalmAppGlobals* globals )
 {
 #ifdef FEATURE_HIGHRES
     XP_U16 bWidth = globals->width;
-    XP_U16 bHeight = globals->height;
 #else
 # define  bWidth  160
-# define  bHeight 160
 #endif
-    XP_Bool canDouble = bWidth >= 320 && bHeight >= 320;
     XP_Bool erase = XP_FALSE;
     XP_Bool isLefty = globals->isLefty;
     XP_U16 nCols, leftEdge;
     XP_U16 scale = PALM_BOARD_SCALE;
-    XP_U16 boardHeight, trayTop, trayScaleV, trayScaleH;
+    XP_U16 scaleH, scaleV;
+    XP_U16 boardHeight, trayTop, trayScaleV;
     XP_U16 boardTop, scoreTop, scoreLeft, scoreWidth, scoreHeight;
     XP_U16 timerWidth, timerLeft;
-    XP_U16 freeSpace;
+    XP_U16 freeSpaceH;
     XP_Bool showGrid = globals->gState.showGrid;
-    XP_U16 doubler = canDouble? 2:1;
+    XP_U16 doubler = globals->useHiRes? 2:1;
 #ifdef SHOW_PROGRESS
     RectangleType bounds;
 #endif
@@ -361,12 +374,16 @@ positionBoard( PalmAppGlobals* globals )
         --scale;
     }
     scale = scale * doubler;
+    scaleV = scaleH = scale;
+    if ( globals->useHiRes ) {
+        scaleV -= 2;
+    }
 
-    freeSpace = ((PALM_MAX_ROWS-nCols)/2) * scale;
+    freeSpaceH = ((PALM_MAX_COLS-nCols)/2) * scaleH;
     if ( isLefty ) {
-        leftEdge = bWidth - (nCols * scale) - freeSpace - 1;
+        leftEdge = bWidth - (nCols * scaleH) - freeSpaceH - 1;
     } else {
-        leftEdge = PALM_BOARD_LEFT_RH + freeSpace;
+        leftEdge = PALM_BOARD_LEFT_RH + freeSpaceH;
     }
 
     /* position the timer.  There are really four cases: width depends on
@@ -414,7 +431,7 @@ positionBoard( PalmAppGlobals* globals )
 
     board_setPos( globals->game.board, leftEdge,
                   boardTop, isLefty );
-    board_setScale( globals->game.board, scale, scale );
+    board_setScale( globals->game.board, scaleH, scaleV );
 
     board_setScoreboardLoc( globals->game.board, scoreLeft, scoreTop,
                             scoreWidth, scoreHeight, showGrid );
@@ -426,41 +443,33 @@ positionBoard( PalmAppGlobals* globals )
        ideal to avoid using a scrollbar.  Also, note at this point whether a
        scrollbar will be required. */
     globals->needsScrollbar = false; /* default */
-    boardHeight = scale * nCols;
-    trayTop = boardHeight + boardTop + 1;
-    if ( trayTop < PALM_TRAY_TOP ) { 
-        trayTop = PALM_TRAY_TOP;/* we want it this low even if not
-                                   necessary */
-    } else if ( bHeight >= 450) {
-        ++trayTop;              /* just for grins */
-         /* hack: leave it */
+    boardHeight = scaleV * nCols; 
+
+    if ( globals->useHiRes ) {
+        trayTop = 160 - TRAY_HEIGHT_HR;
+        globals->needsScrollbar = false;
     } else {
-        while ( trayTop > (PALM_TRAY_TOP_MAX*doubler) ) {
-            trayTop -= scale;
-            globals->needsScrollbar = true;
-        }
+        trayTop = 160 - TRAY_HEIGHT_LR;
+        globals->needsScrollbar = showGrid && (nCols == PALM_MAX_COLS);
     }
-    trayScaleH = PALM_TRAY_SCALEH * doubler;
-    trayScaleV = bHeight - trayTop;
-    if ( trayScaleV > trayScaleH ) {
-        trayScaleV = trayScaleH;
-    }
+    trayTop *= doubler;
+
+    trayScaleV = globals->useHiRes?
+        (TRAY_HEIGHT_HR*doubler):TRAY_HEIGHT_LR;
     board_setTrayLoc( globals->game.board, 
                       (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
                       trayTop,
-                      trayScaleH, trayScaleV,
+                      PALM_TRAY_SCALEH * doubler, trayScaleV,
                       PALM_DIVIDER_WIDTH * doubler );
 
     board_prefsChanged( globals->game.board, &globals->gState.cp );
-
-    locateTrayButtons( globals, trayTop/doubler, trayScaleV );
 
 #ifdef SHOW_PROGRESS
     if ( showGrid ) {
         getObjectBounds( XW_MAIN_SCROLLBAR_ID, &bounds );
 
         bounds.topLeft.x += doubler;
-        bounds.extent.x -= 2 * doubler;
+        bounds.extent.x -= (doubler << 1);
     } else {
         bounds.topLeft.y = (PALM_TIMER_HEIGHT + 2) * doubler;
         bounds.topLeft.x = (globals->isLefty? FLIP_BUTTON_WIDTH+3:
@@ -995,6 +1004,7 @@ initHighResGlobals( PalmAppGlobals* globals )
 
     err = FtrGet( sysFtrCreator, sysFtrNumWinVersion, &vers );
     globals->hasHiRes = ( err == errNone && vers >= 4 );
+    globals->oneDotFiveAvail = ( err == errNone && vers >= 5 );
 
     XP_LOGF( "hasHiRes = %d", globals->hasHiRes );
 
@@ -2012,7 +2022,7 @@ tryLoadSavedGame( PalmAppGlobals* globals, XP_U16 newIndex )
 static XP_U16
 hresX( PalmAppGlobals* globals, XP_U16 screenX )
 {
-    if ( globals->hasHiRes && globals->width >= 320 ) {
+    if ( globals->useHiRes ) {
         screenX *= 2;
     }
     return screenX;
@@ -2021,7 +2031,7 @@ hresX( PalmAppGlobals* globals, XP_U16 screenX )
 static XP_U16
 hresY( PalmAppGlobals* globals, XP_U16 screenY )
 {
-    if ( globals->hasHiRes && globals->width >= 320 ) {
+    if ( globals->useHiRes ) {
         screenY *= 2;
     }
     return screenY;
@@ -2030,7 +2040,7 @@ hresY( PalmAppGlobals* globals, XP_U16 screenY )
 static void
 hresRect( PalmAppGlobals* globals, RectangleType* r )
 {
-    if ( globals->hasHiRes && globals->width >= 320 ) {
+    if ( globals->useHiRes ) {
         r->topLeft.x *= 2;
         r->topLeft.y *= 2;
         r->extent.x *= 2;
@@ -2160,6 +2170,7 @@ mainViewHandleEvent( EventPtr event )
 
     case frmOpenEvent:
         globals->mainForm = FrmGetActiveForm();
+        locateTrayButtons( globals );
         updateForLefty( globals, globals->mainForm );
         FrmDrawForm( globals->mainForm );
         break;
@@ -3037,7 +3048,7 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, PickInfo* pi,
 #ifdef FEATURE_TRAY_EDIT
     disOrEnable( form, XW_BLANK_PICK_BUTTON_ID, !forBlank );
     disOrEnable( form, XW_BLANK_BACKUP_BUTTON_ID, 
-                 !forBlank && pi->nCurTiles > 0 );
+                 !forBlank && pi->thisPick > 0 );
 #endif
 
     lettersList = getActiveObjectPtr( XW_BLANK_LIST_ID );
