@@ -1194,11 +1194,17 @@ CXWordsAppView::DrawGameName() const
 CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr, 
                           void* aClosure )
 {
+    CommsAddrRec addr;
     XP_S16 result = -1;
     CXWordsAppView* self = (CXWordsAppView*)aClosure;
-    self->iSendSock->SendL( aBuf, aLen, aAddr );
 
-    XP_LOGF( "sym_send called with %d bytes, => %d", aLen, result );
+    if ( aAddr == NULL ) {
+        XP_U16 ignore;
+        comms_getAddr( self->iGame.comms, &addr, &ignore );
+        aAddr = &addr;
+    }
+
+    self->iSendSock->SendL( aBuf, aLen, aAddr );
 
     return result;
 } /* sym_send */
