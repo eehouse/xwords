@@ -126,7 +126,8 @@ class CXWordsAppView : public CCoeControl
     void SetUpUtil();
     void PositionBoard();
     void DisplayFinalScoresL();
-    XWStreamCtxt* MakeSimpleStream( MemStreamCloseCallback cb );
+    XWStreamCtxt* MakeSimpleStream( MemStreamCloseCallback cb,
+                                    XP_U16 channelNo = CHANNEL_NONE );
     TBool AskFromResId( TInt aResource );
     TBool FindAllDicts();
     TBool LoadPrefs();
