@@ -1,0 +1,10 @@
+object  Franklin  _GUI     pkg    _GUI.pkg
+object  Franklin  _Default fnt    _Default.fnt
+object  Franklin  _System  fnt    _System.fnt
+object  Franklin  _jingles piezo  _jingles.dat
+sobject Franklin  _alarms  timer  _alarms.dat
+sobject Franklin  _SysSet_ dat    _settings.dat
+object	Eric_House xwords4	fxe	xwords4.fxe
+	icon	xwords4.icn	Cross- words 4
+	attribute _LFLAGS S
+object	Eric_House    BasEnglish2to8 	xwd	BasEnglish2to8.xwd
