@@ -590,7 +590,7 @@ sub makeTableHash {
 # error.
 
 sub emitNodes($$) {
-    my ( $gNBytesPerOutfile, $outFileBase ) = @_;
+    my ( $nBytesPerOutfile, $outFileBase ) = @_;
 
     # now do the emit.
 
@@ -643,7 +643,7 @@ sub emitNodes($$) {
             }
             ++$i;	# move beyond the terminal
             my $nextSize = ($i - $nextIndex) * $gNBytesPerNode;
-            if ($curSize + $nextSize > $gNBytesPerOutfile) {
+            if ($curSize + $nextSize > $nBytesPerOutfile) {
                 last;
             } else {
                 # emit the subarray
