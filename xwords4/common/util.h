@@ -64,9 +64,11 @@ typedef enum {
 } PICK_WHY;
 
 typedef struct PickInfo {
-    PICK_WHY why;
+    XP_UCHAR4* curTiles;
+    XP_U16 nCurTiles;
     XP_U16 nTotal;
     XP_U16 thisPick;            /* <= nTotal */
+    PICK_WHY why;
 } PickInfo;
 
 typedef struct BadWordInfo {
