@@ -97,10 +97,10 @@ typedef XP_U8 TileBit;	    /* bits indicating selection of tiles in tray */
 
 
 ModelCtxt* model_make( MPFORMAL DictionaryCtxt* dict, XW_UtilCtxt* util,
-		       XP_U16 nCols, XP_U16 nRows );
+                       XP_U16 nCols, XP_U16 nRows );
 
 ModelCtxt* model_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
-				 DictionaryCtxt* dict, XW_UtilCtxt* util );
+                                 DictionaryCtxt* dict, XW_UtilCtxt* util );
 
 void model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream );
 
@@ -112,22 +112,22 @@ void model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict );
 DictionaryCtxt* model_getDictionary( ModelCtxt* model );
 
 XP_Bool model_getTile( ModelCtxt* model, XP_U16 col, XP_U16 row,
-		       XP_Bool getPending, XP_S16 turn,
-		       Tile* tile, XP_Bool* isBlank, 
-		       XP_Bool* isPending, XP_Bool* isRecent );
+                       XP_Bool getPending, XP_S16 turn,
+                       Tile* tile, XP_Bool* isBlank, 
+                       XP_Bool* isPending, XP_Bool* isRecent );
 
 void model_listPlacedBlanks( ModelCtxt* model, XP_U16 turn,
-			     XP_Bool includePending, BlankQueue* bcp );
+                             XP_Bool includePending, BlankQueue* bcp );
 
 XP_U16 model_getCellOwner( ModelCtxt* model, XP_U16 col, XP_U16 row );
 
 void model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
-			      TrayTileSet* tiles );
+                              TrayTileSet* tiles );
 Tile model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
-			  Tile tile );
+                          Tile tile );
 
 /* As an optimization, return a pointer to the model's array of tiles for a
    player.  Don't even think about modifying the array!!!! */
@@ -137,7 +137,7 @@ XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn );
 void model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 void model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, 
-			    XP_U16 row, XP_S16 tileIndex, Tile blankFace );
+                            XP_U16 row, XP_S16 tileIndex, Tile blankFace );
 XP_S16 model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile );
 
 
@@ -149,19 +149,19 @@ XP_U16 model_numCols( ModelCtxt* model );
 /* XP_U16 model_numTilesCurrentTray( ModelCtxt* model ); */
 /* Tile model_currentTrayTile( ModelCtxt* model, XP_U16 index ); */
 void model_addToCurrentMove( ModelCtxt* model, XP_S16 turn, 
-			     XP_U16 col, XP_U16 row, 
-			     Tile tile, XP_Bool isBlank );
+                             XP_U16 col, XP_U16 row, 
+                             Tile tile, XP_Bool isBlank );
 XP_U16 model_getCurrentMoveCount( ModelCtxt* model, XP_S16 turn );
 
 void model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
-			       Tile* tile, XP_U16* col, XP_U16* row, 
-			       XP_Bool* isBlank );
+                               Tile* tile, XP_U16* col, XP_U16* row, 
+                               XP_Bool* isBlank );
 
 void model_commitTurn( ModelCtxt* model, XP_S16 player, 
-		       TrayTileSet* newTiles );
+                       TrayTileSet* newTiles );
 void model_commitRejectedPhony( ModelCtxt* model, XP_S16 player );
 void model_makeTileTrade( ModelCtxt* model, XP_S16 player,
-			  TrayTileSet* oldTiles, TrayTileSet* newTiles );
+                          TrayTileSet* oldTiles, TrayTileSet* newTiles );
 
 XP_Bool model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
                                XP_U16 nMovesSought, XP_U16* turn, 
