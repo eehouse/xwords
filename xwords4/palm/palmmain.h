@@ -40,7 +40,6 @@
 /* #include "prefsdlg.h" */
 #include "xwcolors.h"
 
-#include "plmtraps.h"		/* if DIRECT_PALMOS_CALLS */
 #include "xwords4defines.h"
 
 #ifdef MEM_DEBUG
@@ -64,12 +63,6 @@ typedef struct PalmDrawCtx {
     GetResStringFunc getResStrFunc;
 
     DrawingPrefs* drawingPrefs;
-
-#ifdef DIRECT_PALMOS_CALLS
-    DrawRectFrameProc winDrawRectangleFrameTrap;
-    FillRectangleProc winFillRectangleTrap;
-    DrawCharsProc winDrawCharsTrap;
-#endif
 
     RectangleType oldScoreClip;
     RectangleType oldTrayClip;
