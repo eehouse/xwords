@@ -83,10 +83,10 @@ LINK32=link.exe
 # PROP Target_Dir ""
 RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "FEATURE_TRAY_EDIT" /d "XWFEATURE_CE_EDITCOLORS" /r
+# ADD RSC /l 0x409 /d "DEBUG" /d "ARM" /d "_ARM_" /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "$(CePlatform)" /d "XWFEATURE_STANDALONE_ONLY" /d "FEATURE_TRAY_EDIT" /d "XWFEATURE_CE_EDITCOLORS" /d "MY_COLOR_SEL" /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "XWFEATURE_CE_EDITCOLORS" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /I "." /I "../common" /D "DEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "POINTER_SUPPORT" /D "KEY_SUPPORT" /D "__LITTLE_ENDIAN" /D "XWFEATURE_STANDALONE_ONLY" /D "NODE_CAN_4" /D "FEATURE_TRAY_EDIT" /D "XWFEATURE_CE_EDITCOLORS" /D "MY_COLOR_SEL" /YX /M$(CECrtMTDebug) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
