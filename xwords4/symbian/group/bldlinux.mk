@@ -54,7 +54,7 @@ LIBS = $(LIBS_ALLSERIES) $(LIBS_$(SERIES))
 # 	$(EPOCTRGREL)/bitgdi.lib \
 
 NAME = xwords_$(SERIES)
-
+USERNAME = Crosswords
 ARCH = series$(SERIES)
 SYMARCH = SERIES_$(SERIES)
 
@@ -144,7 +144,7 @@ icon.$(ARCH).mbm: $(ICON_SRC)
 
 $(NAME).aifspec: icon.$(ARCH).mbm
 	@echo "mbmfile=$<" > $@
-	@echo "ELangEnglish=$(NAME)" >> $@
+	@echo "ELangEnglish=$(USERNAME)" >> $@
 
 # I'm adding my own rules here because I can't figure out how to use
 # the default ones when src and obj live in different directories.
