@@ -98,15 +98,32 @@ signedFromStream( XWStreamCtxt* stream, XP_U16 nBits )
 XP_UCHAR*
 stringFromStream( MPFORMAL XWStreamCtxt* stream )
 {
+    XP_UCHAR buf[0xFF];
     XP_UCHAR* str = (XP_UCHAR*)NULL;
-    XP_U16 len = stream_getU8( stream );
+    XP_U16 len = stringFromStreamHere( stream, buf, sizeof(buf) );
+
     if ( len > 0 ) {
         str = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 );
-        stream_getBytes( stream, str, len );
-        str[len] = '\0';
+        XP_MEMCPY( str, buf, len + 1 );
     }
     return str;
 } /* makeStringFromStream */
+
+XP_U16
+stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen )
+{
+    XP_U16 len = stream_getU8( stream );
+    if ( len > 0 ) {
+        XP_ASSERT( len < buflen );
+        if ( len >= buflen ) {
+            /* better to leave stream in bad state than overwrite stack */
+            len = buflen - 1;
+        }
+        stream_getBytes( stream, buf, len );
+        buf[len] = '\0';
+    }
+    return len;
+}
 
 void
 stringToStream( XWStreamCtxt* stream, XP_UCHAR* str )
