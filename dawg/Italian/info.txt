@@ -1,0 +1,62 @@
+# Copyright 2002-2004 by Eric House (fixin@peak.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:it_IT
+
+# deal with DOS files
+LANGFILTER_PRECLIP: tr -d '\r' |
+
+LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
+LANGFILTER_POSTCLIP: | grep '^[A-Z]*$'
+LANGFILTER_POSTCLIP: | tr '\n' '\000'
+LANGFILTER_POSTCLIP: | sort -z
+
+
+NEEDSSORT:false
+
+
+LANGINFO: <p>Italian is treated the same as LANGINFO: English but for
+LANGINFO: missing letters J, W, X and Y.</p>
+
+
+# High bit means "official".  Next 7 bits are an enum where
+# French==2.  Low byte is padding
+XLOC_HEADER:0x8200
+
+<BEGIN_TILES>
+2		  0 		{"_"}
+13        1        'A'
+3         5        'B'
+4         4        'C'
+3         5        'D'
+13        1        'E'
+2         8        'F'
+2         5        'G'
+2         8        'H'
+13        1        'I'
+5         3        'L'
+5         3        'M'
+6         2        'N'
+13        1        'O'
+3         5        'P'
+1         10       'Q'
+6         2        'R'
+6         2        'S'
+6         2        'T'
+5         3        'U'
+4         4        'V'
+2         8        'Z'
+<END_TILES>
