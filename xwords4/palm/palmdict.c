@@ -308,7 +308,14 @@ countSpecials( FaceType* ptr, UInt16 nChars )
     XP_U16 result = 0;
 
     while ( nChars-- ) {
-        FaceType face = *ptr++;
+        FaceType face;
+#ifdef NODE_CAN_4
+        XP_ASSERT( sizeof(face) == 2 );
+        face = READ_UNALIGNED16( ptr );
+        ++ptr;
+#else
+        face = *ptr++;
+#endif
         if ( IS_SPECIAL(face) ) {
             ++result;
         }
@@ -343,11 +350,13 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
         chars[i] = specialStart->textVersion;
 
         /* This may not work!  Get rid of NTOHS???? */
-        hasLarge = XP_NTOHS( READ_UNALIGNED16(&specialStart->hasLarge) );
+        hasLarge = READ_UNALIGNED16( &specialStart->hasLarge );
+        XP_LOGF( "hasLarge: %d", hasLarge );
         if ( hasLarge ) {
             bitmaps[i].largeBM = base + hasLarge;
         }
-        hasSmall = XP_NTOHS( READ_UNALIGNED16(&specialStart->hasSmall) );
+        hasSmall = READ_UNALIGNED16( &specialStart->hasSmall );
+        XP_LOGF( "hasSmall: %d", hasSmall );
         if ( hasSmall ) {
             bitmaps[i].smallBM = base + hasSmall;
         }
