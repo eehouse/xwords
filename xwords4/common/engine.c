@@ -1156,25 +1156,27 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
 static XP_Bool
 scoreQualifies( EngineCtxt* engine, XP_U16 score )
 {
+    XP_Bool qualifies = XP_FALSE;
+
     if ( (score > engine->miData.lastSeenMove.score) 
          || (score > engine->targetScore)
          || (score < engine->miData.lowestSavedScore) ) {
-        return XP_FALSE;
+        /* do nothing */
     } else {
         XP_S16 i;
         /* Look at each saved score, and return true as soon as one's found
-           with a lower score than this.  <eeh> As an optimization, consider
-           remembering what the lowest score is *once there are
-           NUM_SAVED_MOVES moves in here* and doing a quick test on that. */
+           with a lower or equal score to this.  <eeh> As an optimization,
+           consider remembering what the lowest score is *once there are
+           NUM_SAVED_MOVES moves in here* and doing a quick test on that. Or
+           better, keeping the list in sorted order. */
         for ( i = engine->isRobot? 0: NUM_SAVED_MOVES-1; i >= 0; --i ) {
-            if ( score > engine->miData.savedMoves[i].score ) {
-                /* <eeh> We could cache the value of i to know when to start
-                   the saveMoveIfQualifies search that's upcomming. */
-                return XP_TRUE;
+            if ( score >= engine->miData.savedMoves[i].score ) {
+                qualifies = XP_TRUE;
+                break;
             }
         }
-        return XP_FALSE;
     }
+    return qualifies;
 } /* scoreQualifies */
 
 static array_edge*
