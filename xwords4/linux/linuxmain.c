@@ -442,6 +442,15 @@ linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
     case STR_REMOTE_MOVED:
         return "Remote player moved:\n";
 
+    case STR_PASSED: 
+        return "Passed";
+    case STRSD_SUMMARYSCORED: 
+        return "%s:%d";
+    case STRD_TRADED: 
+        return "Traded %d";
+    case STR_LOSTTURN:
+        return "Lost turn";
+
     default:
         return "unknown code to linux_util_getUserString";
     }
