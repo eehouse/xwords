@@ -38,9 +38,13 @@ TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi,
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         iIsRobot[i] = aGi->players[i].isRobot;
-
-        TBuf8<32> tmp( aGi->players[i].name );
-        iPlayerNames[i].Copy( tmp );
+        if ( aGi->players[i].name != NULL ) {
+            XP_LOGF( "name[%d] = %s", i, aGi->players[i].name );
+            TBuf8<32> tmp( aGi->players[i].name );
+            iPlayerNames[i].Copy( tmp );
+        } else {
+            iPlayerNames[i].Copy( _L("") );
+        }
     }
     iNPlayers = aGi->nPlayers;
 
