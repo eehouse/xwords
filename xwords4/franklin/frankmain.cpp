@@ -90,25 +90,27 @@ static VTableMgr* frank_util_getVTManager( XW_UtilCtxt* uc );
 static DictionaryCtxt* frank_util_makeEmptyDict( XW_UtilCtxt* uc );
 static void frank_util_userError( XW_UtilCtxt* uc, UtilErrID id );
 static XP_U16 frank_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
-				    XWStreamCtxt* stream );
-static void frank_util_askBlankFace( XW_UtilCtxt* uc, DictionaryCtxt* dict,
-				     XP_UCHAR* buf );
+                                    XWStreamCtxt* stream );
+static XP_S16 frank_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, 
+                                       XP_U16 playerNum,
+                                       XP_UCHAR4* texts, XP_U16 nTiles );
 static XP_Bool frank_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
-				       XP_UCHAR* buf, XP_U16* len );
+                                       XP_UCHAR* buf, XP_U16* len );
 static void frank_util_trayHiddenChange( XW_UtilCtxt* uc, 
-					 XW_TrayVisState newState );
+                                         XW_TrayVisState newState );
 static void frank_util_notifyGameOver( XW_UtilCtxt* uc );
-static XP_Bool frank_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row );
+static XP_Bool frank_util_hiliteCell( XW_UtilCtxt* uc, 
+                                      XP_U16 col, XP_U16 row );
 static XP_Bool frank_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void frank_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why );
 static void frank_util_requestTime( XW_UtilCtxt* uc );
 static XP_U32 frank_util_getCurSeconds( XW_UtilCtxt* uc );
 static XWBonusType frank_util_getSquareBonus( XW_UtilCtxt* uc, 
-					      ModelCtxt* model,
-					      XP_U16 col, XP_U16 row );
+                                              ModelCtxt* model,
+                                              XP_U16 col, XP_U16 row );
 static XP_UCHAR* frank_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool frank_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
-					   XP_U16 turn, XP_Bool turnLost );
+                                           XP_U16 turn, XP_Bool turnLost );
 static void frank_util_engineStarting( XW_UtilCtxt* uc );
 static void frank_util_engineStopping( XW_UtilCtxt* uc );
 
@@ -406,7 +408,7 @@ CXWordsWindow::initUtil()
 /*     vtable->m_util_yOffsetChange = NULL <--no scrolling */
     vtable->m_util_userError = frank_util_userError;
     vtable->m_util_userQuery = frank_util_userQuery;
-    vtable->m_util_askBlankFace = frank_util_askBlankFace;
+    vtable->m_util_userPickTile = frank_util_userPickTile;
     vtable->m_util_askPassword = frank_util_askPassword;
     vtable->m_util_trayHiddenChange = frank_util_trayHiddenChange;
     vtable->m_util_notifyGameOver = frank_util_notifyGameOver;
@@ -1398,12 +1400,16 @@ frank_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     return askResult;
 } /* frank_util_userQuery */
 
-static void
-frank_util_askBlankFace( XW_UtilCtxt* uc, DictionaryCtxt* dict, 
-			 unsigned char* buf )
+static XP_S16
+frank_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, 
+                         XP_U16 playerNum,
+                         XP_UCHAR4* texts, XP_U16 nTiles )
 {
     CXWordsWindow* self = (CXWordsWindow*)uc->closure;
-    self->wrappedEventLoop( new CAskLetterWindow( dict, buf ) );
+    XP_S16 result;
+    self->wrappedEventLoop( new CAskLetterWindow( pi, playerNum,
+                                                  texts, nTiles, &result ) );
+    return result;
     /* doesn't need to inval because CAskLetterWindow saves bits behind */
 } /* frank_util_askBlankFace */
 

@@ -39,50 +39,41 @@ extern "C" {
 
 class LettersList : public CList {
 private:
-    DictionaryCtxt* fDict;
-    Tile blank;
+    XP_UCHAR4* fTexts;
 
  public:
-    LettersList( DictionaryCtxt* dict, U16 numRows ); 
+    LettersList( XP_UCHAR4* texts, U16 numRows ); 
     
     U16 GetRowHeight( S32 row ) { return LETTER_HEIGHT; }
     void DrawRow( RECT *rect, S32 row );
 };
 
-LettersList::LettersList( DictionaryCtxt* dict, U16 numRows )
+LettersList::LettersList( XP_UCHAR4* texts, U16 numRows )
     : CList( 1001, LETTERS_ROW_WIDTH, 
 	     LETTERS_ROW_HEIGHT * LETTERS_NUM_VISROWS, 
 	     numRows, LISTOPTION_ALWAYS_HIGHLIGHT )
 {
-    fDict = dict;
-    this->blank = dict_getBlankTile( dict );
+    fTexts = texts;
 
     this->SetCurrentRow(0);    // Select the first item so there's a default
 }
 
 void LettersList::DrawRow( RECT *rect, S32 row )
 {
-    unsigned char buf[4];
-    Tile tile = row;
-    // We don't draw the blank, and if it's other than the highest value tile
-    // we need to skip it, drawing instead the next tile above.
-    if ( row >= this->blank ) {
-	++tile;
-    }
-    dict_tilesToString( fDict, &tile, 1, buf );
     CWindow* window = this->GetWindow();
-    window->DrawText( (char*)buf, rect->x, rect->y );
+    window->DrawText( (char*)fTexts[row], rect->x, rect->y );
 } /* LettersList::DrawRow */
 
-CAskLetterWindow::CAskLetterWindow( DictionaryCtxt* dict, 
-				    XP_UCHAR* resultP )
+CAskLetterWindow::CAskLetterWindow( PickInfo* pi, XP_U16 playerNum,
+                                    XP_UCHAR4* texts, XP_U16 nTiles, 
+                                    XP_S16* resultP )
     : CWindow( ASKLETTER_WINDOW_ID, 55, 15, 80, 220, "Blank", TRUE )
 {
-    fDict = dict;
-    this->resultP = resultP;
-    this->blank = dict_getBlankTile( dict );
+    fTexts = texts;
+    fNTiles = nTiles;
+    fResultP = resultP;
 
-    this->list = new LettersList( dict, dict_numTileFaces( dict ) - 1 );
+    this->list = new LettersList( texts, nTiles );
     this->AddChild( this->list, 5, 5 );
 
     CButton* okbutton = new CButton( 1000, 0, 0, "Ok" );    
@@ -93,41 +84,33 @@ S32
 CAskLetterWindow::MsgHandler( MSG_TYPE type, CViewable *object, S32 data )
 {
     S32 result = 0;
-    Tile tile;
 
     switch (type) {
     case MSG_BUTTON_SELECT:	// there's only one button....
-	tile = this->list->GetCurrentRow();
-	if ( tile >= this->blank ) {
-	    ++tile;
-	}
-	dict_tilesToString( fDict, &tile, 1, this->resultP );
+        *fResultP = this->list->GetCurrentRow();
 
-	this->Close();
-	result = 1;
-	break;
+        this->Close();
+        result = 1;
+        break;
 	
     case MSG_KEY: // allow keys to select the matching letter in the list 
-	if ( isalpha( data ) ) {
-	    XP_UCHAR ch = toupper(data);
-	    Tile tile = dict_tileForString( fDict, &ch );
-	    if ( tile != EMPTY_TILE ) {
-		S32 row = tile;
-		XP_ASSERT( tile != this->blank );
-		if ( tile > this->blank ) {
-		    --row;
-		}
-		this->list->SetCurrentRow( row );
-		result = 1;
-	    }
-	}	
+        if ( isalpha( data ) ) {
+            XP_UCHAR ch = toupper(data);
+            for ( U16 i = 0; i < fNTiles; ++i ) {
+                if ( ch == fTexts[i][0] ) {
+                    this->list->SetCurrentRow( i );
+                    result = 1;
+                    break;                    
+                }
+            }
+        }	
 
     default:
-	break;
+        break;
     }
 
     if ( result == 0 ) {
-	result = CWindow::MsgHandler( type, object, data );
+        result = CWindow::MsgHandler( type, object, data );
     }
     return result;
 } // CAskLetterWindow::MsgHandler
