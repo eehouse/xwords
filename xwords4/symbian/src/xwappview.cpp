@@ -541,12 +541,18 @@ CXWordsAppView::DeleteGame()
 void
 CXWordsAppView::PositionBoard() 
 {
+    TRect rect = Rect();
+    TInt boardWidth = 15 * scaleBoardH;
+    const TInt scoreTop = 25;
+    const TInt scoreHt = 120;
+
     board_setPos( iGame.board, 2, 2, XP_FALSE );
     board_setScale( iGame.board, scaleBoardH, scaleBoardV );
 
-    TInt scoreLeft = 2 + (15 * scaleBoardH) + 5;
-    board_setScoreboardLoc( iGame.board, scoreLeft, 30,
-                            200, 120, XP_FALSE );
+    TInt scoreLeft = 2 + boardWidth + 2 + 3; /* 2 for border, 3 for gap */
+    TInt scoreRight = rect.iBr.iX - 2 - 1; /* 2 for border */
+    board_setScoreboardLoc( iGame.board, scoreLeft, scoreTop,
+                            scoreRight - scoreLeft - 1, scoreHt, XP_FALSE );
     board_setYOffset( iGame.board, 0, XP_FALSE );
 
     board_setTrayLoc( iGame.board, 
@@ -557,9 +563,7 @@ CXWordsAppView::PositionBoard()
                       3 );      // divider width
     board_invalAll( iGame.board );
 
-    iTitleBox.SetRect( scoreLeft, 2, 
-                       scoreLeft + (scaleTrayH * MAX_TRAY_TILES) + 3, 
-                       2 + 20 );
+    iTitleBox.SetRect( scoreLeft, 2, scoreRight, scoreTop - 4 );
 } // PositionBoard
 
 int 
@@ -1092,7 +1096,8 @@ CXWordsAppView::DrawGameName() const
         CWindowGc& gc = SystemGc();
         gc.SetPenStyle( CGraphicsContext::ESolidPen );
         gc.SetPenColor( KRgbBlack );
-        gc.SetBrushStyle( CGraphicsContext::ENullBrush );
+        gc.SetBrushColor( KRgbGray );
+        gc.SetBrushStyle( CGraphicsContext::ESolidBrush );
 
         gc.UseFont( iCoeEnv->NormalFont() );
         gc.DrawText( buf, iTitleBox, iTitleBox.Height() - 4,/*TInt aBaselineOffset*/
