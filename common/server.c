@@ -2283,7 +2283,7 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     XP_ASSERT( !!server->vol.model );
 
     dict = model_getDictionary( server->vol.model );
-    dname = dict_getName( dict );
+    dname = dict_getShortName( dict );
     XP_SNPRINTF( buf, sizeof(buf), fmt, dname );
     stream_putBytes( stream, buf, XP_STRLEN(buf) );
 
