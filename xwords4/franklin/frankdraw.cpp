@@ -51,10 +51,11 @@ frank_draw_destroyCtxt( DrawCtx* p_dctx )
 } /* draw_setup */
 #endif
 
-static void
+static XP_Bool
 frank_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
+    return XP_TRUE;
 } /* draw_finish */
 
 static void
@@ -88,9 +89,10 @@ cellDrawPrep( FrankDrawCtx* dctx, const XP_Rect* xprect, RECT* insetRect )
 
 static XP_Bool
 frank_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect, 
-		     XP_UCHAR* letters, XP_Bitmap* bitmap, 
-		     XP_S16 owner, XWBonusType bonus,
-		     XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
+                     XP_UCHAR* letters, XP_Bitmap* bitmap, 
+                     XP_S16 owner, XWBonusType bonus,
+                     HintAtts hintAtts,
+                     XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     RECT rectInset;
@@ -99,55 +101,55 @@ frank_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     cellDrawPrep( dctx, xprect, &rectInset );
 
     if ( !!letters ) {
-	if ( *letters == LETTER_NONE ) {
-	    if ( bonus != BONUS_NONE ) {
-		XP_ASSERT( bonus <= 4 );
-		RECT filledR = rectInset;
-		COLOR color;
-		insetRect( &filledR, 1 );
+        if ( *letters == LETTER_NONE ) {
+            if ( bonus != BONUS_NONE ) {
+                XP_ASSERT( bonus <= 4 );
+                RECT filledR = rectInset;
+                COLOR color;
+                insetRect( &filledR, 1 );
 
-		switch( bonus ) {
-		case BONUS_DOUBLE_LETTER:
-		    color = COLOR_GRAY53;
-		    break;
-		case BONUS_TRIPLE_LETTER:
-		    color = COLOR_GRAY40;
-		    break;
-		case BONUS_DOUBLE_WORD:
-		    color = COLOR_GRAY27;
-		    break;
-		case BONUS_TRIPLE_WORD:
-		    color = COLOR_GRAY13;
-		    break;
-		default:
-		    color = COLOR_WHITE; /* make compiler happy */
-		    XP_ASSERT(0);
-		}
+                switch( bonus ) {
+                case BONUS_DOUBLE_LETTER:
+                    color = COLOR_GRAY53;
+                    break;
+                case BONUS_TRIPLE_LETTER:
+                    color = COLOR_GRAY40;
+                    break;
+                case BONUS_DOUBLE_WORD:
+                    color = COLOR_GRAY27;
+                    break;
+                case BONUS_TRIPLE_WORD:
+                    color = COLOR_GRAY13;
+                    break;
+                default:
+                    color = COLOR_WHITE; /* make compiler happy */
+                    XP_ASSERT(0);
+                }
 
-		dctx->window->DrawRectFilled( &filledR, color ); 
-	    }
+                dctx->window->DrawRectFilled( &filledR, color ); 
+            }
 
-	    if ( isStar ) {
-		dctx->window->DrawImage( xprect->left+2, xprect->top+2, 
-					 &dctx->startMark );
-	    }
+            if ( isStar ) {
+                dctx->window->DrawImage( xprect->left+2, xprect->top+2, 
+                                         &dctx->startMark );
+            }
 
-	} else {
-	    dctx->window->DrawText( (const char*)letters, rectInset.x+2, 
-				    rectInset.y+1 );
-	}
+        } else {
+            dctx->window->DrawText( (const char*)letters, rectInset.x+2, 
+                                    rectInset.y+1 );
+        }
     } else if ( !!bitmap ) {
-	dctx->window->DrawImage( xprect->left+2, xprect->top+2,
-				 (IMAGE*)bitmap );
+        dctx->window->DrawImage( xprect->left+2, xprect->top+2,
+                                 (IMAGE*)bitmap );
     }
 
     if ( showGrid ) {
-	COLOR color = isBlank? COLOR_GRAY53:COLOR_BLACK;
-	dctx->window->DrawRect( &rectInset, color );
+        COLOR color = isBlank? COLOR_GRAY53:COLOR_BLACK;
+        dctx->window->DrawRect( &rectInset, color );
     }
     if ( isPending ) {
-	insetRect( &rectInset, 1 );
-	dctx->window->InvertRect( &rectInset );	
+        insetRect( &rectInset, 1 );
+        dctx->window->InvertRect( &rectInset );	
     }
 
     return XP_TRUE;
@@ -170,13 +172,14 @@ frank_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
     GUI_UpdateNow();
 } /* frank_draw_invertCell */
 
-static void
+static XP_Bool
 frank_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
 		      XP_Bool hasfocus )
 {
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
 /*     clip? */
 /*     eraseRect( dctx, rect ); */
+    return XP_TRUE;
 } /* frank_draw_trayBegin */
 
 static void
