@@ -42,6 +42,7 @@
 #include "symaskdlg.h"
 #include "symdict.h"
 #include "symgamdl.h"
+#include "symblnk.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -294,12 +295,16 @@ sym_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
 }
 
 static XP_S16
-sym_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, 
+sym_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                        XP_U16 playerNum,
-                       XP_UCHAR4* texts, XP_U16 nTiles )
+                       const XP_UCHAR4* texts, XP_U16 nTiles )
 {
-    return 0;
-}
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+    TInt result;
+    TRAPD( error, CXWBlankSelDlg::UsePickTileDialogL( texts, nTiles, &result ) );
+    XP_ASSERT( result >= 0 && result < nTiles );
+    return static_cast<XP_S16>(result);
+} /* sym_util_userPickTile */
 
 static XP_Bool
 sym_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
