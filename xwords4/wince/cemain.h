@@ -54,6 +54,7 @@ typedef struct CEAppPrefs {
 } CEAppPrefs;
 
 #define NUM_BUTTONS 4
+#define N_TIMER_TYPES 2
 
 typedef struct CEAppGlobals {
     HINSTANCE hInst;
@@ -71,6 +72,8 @@ typedef struct CEAppGlobals {
     VTableMgr* vtMgr;
     XP_U16* bonusInfo;
     wchar_t* lastDefaultDir;
+
+    XP_U32 timerIDs[N_TIMER_TYPES];
 
     CEAppPrefs appPrefs;
 
