@@ -210,33 +210,38 @@ gtk_draw_boardFinished( DrawCtx* p_dctx )
 static void
 drawHintBorders( GtkDrawCtx* dctx, XP_Rect* rect, HintAtts hintAtts)
 {
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
+    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
+        XP_Rect lrect = *rect;
+        insetRect( &lrect, 1 );
 
-    if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
-        gdk_draw_rectangle( DRAW_WHAT(dctx),
-                            dctx->drawGC,
-                            FALSE, rect->left, rect->top, 
-                            0, rect->height);
-    }
-    if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
-        gdk_draw_rectangle( DRAW_WHAT(dctx),
-                            dctx->drawGC,
-                            FALSE, rect->left, rect->top, 
-                            rect->width, 0/*rectInset.height*/);
-    }
-    if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
-        gdk_draw_rectangle( DRAW_WHAT(dctx),
-                            dctx->drawGC,
-                            FALSE, rect->left+rect->width, 
-                            rect->top, 
-                            0, rect->height);
-    }
-    if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
-        gdk_draw_rectangle( DRAW_WHAT(dctx),
-                            dctx->drawGC,
-                            FALSE, rect->left, 
-                            rect->top+rect->height, 
-                            rect->width, 0 );
+        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
+
+        if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
+            gdk_draw_rectangle( DRAW_WHAT(dctx),
+                                dctx->drawGC,
+                                FALSE, lrect.left, lrect.top, 
+                                0, lrect.height);
+        }
+        if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
+            gdk_draw_rectangle( DRAW_WHAT(dctx),
+                                dctx->drawGC,
+                                FALSE, lrect.left, lrect.top, 
+                                lrect.width, 0/*rectInset.height*/);
+        }
+        if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
+            gdk_draw_rectangle( DRAW_WHAT(dctx),
+                                dctx->drawGC,
+                                FALSE, lrect.left+lrect.width, 
+                                lrect.top, 
+                                0, lrect.height);
+        }
+        if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
+            gdk_draw_rectangle( DRAW_WHAT(dctx),
+                                dctx->drawGC,
+                                FALSE, lrect.left, 
+                                lrect.top+lrect.height, 
+                                lrect.width, 0 );
+        }
     }
 }
 
@@ -313,9 +318,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
                        letter, 1 );
     }
 
-    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
-        drawHintBorders( dctx, &rectInset, hintAtts );
-   }
+    drawHintBorders( dctx, rect, hintAtts );
 
     return XP_TRUE;
 } /* gtk_draw_drawCell */
@@ -480,7 +483,8 @@ gtk_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
 
 static void
 gtk_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP, 
-                         XWBonusType cursorBonus, XP_Bool vertical )
+                         XWBonusType cursorBonus, XP_Bool vertical,
+                         HintAtts hintAtts )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 /*     XP_Rect rect = *rectP; */
@@ -490,7 +494,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP,
     gdk_draw_text( DRAW_WHAT(dctx), dctx->gdkFont, dctx->drawGC,
 		   rectP->left+3, rectP->top+rectP->height-1,
 		   &curs, 1 );
-
+    drawHintBorders( dctx, rectP, hintAtts );
 } /* gtk_draw_drawBoardCursor */
 
 static void
