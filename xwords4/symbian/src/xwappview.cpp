@@ -22,18 +22,18 @@
 #if defined SERIES_60
 # include <w32std.h>
 # include <eikinfo.h>
+# include "xwords_60.rsg"
 #elif defined SERIES_80
 # include <cknenv.h>
 # include <ckninfo.h>
 # include <eikcfdlg.h>
 # include <eikfile.rsg>
+# include "xwords_80.rsg"
 #endif
 
 #include <stringloader.h>
 #include <stdlib.h>             // for srand
 #include <s32file.h>
-
-#include "xwords.rsg"
 
 #include "xwappview.h"
 #include "xwappui.h"
