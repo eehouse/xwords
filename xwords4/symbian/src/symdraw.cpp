@@ -315,7 +315,6 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
 
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     CONST_60 CFont* font = sctx->iScoreFont;
-    sctx->iGC->UseFont( font );
 
     TRect lRect;
     symLocalRect( &lRect, rOuter );
@@ -344,6 +343,8 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
 
     TBuf16<64> tbuf;
+    sctx->iGC->UseFont( font );
+
     /* Draw name */
     lRect.iTl.iX = lRect.iBr.iX + 1; /* add one to get name away from edge */
     lRect.iBr.iX += KNameColumnWidth;
@@ -354,8 +355,7 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
     lRect.iTl.iX = lRect.iBr.iX;
     lRect.iBr.iX += KScoreColumnWidth;
     tbuf.Num( dsi->score );
-    sctx->iGC->DrawText( tbuf, lRect, baseline,
-                         CGraphicsContext::ERight );
+    sctx->iGC->DrawText( tbuf, lRect, baseline, CGraphicsContext::ERight );
 
     /* Draw last move */
     lRect.iTl.iX = lRect.iBr.iX + 6; /* 6 gives it some spacing from
@@ -671,6 +671,7 @@ sym_draw_eraseMiniWindow( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/,
 static void
 figureFonts( SymDrawCtxt* sctx )
 {
+    /* Look at FontUtils class for info on fonts. */
 #if defined SERIES_80
     XP_LOGF( "figureFonts" );
     TBuf<128> fontName;
@@ -684,17 +685,6 @@ figureFonts( SymDrawCtxt* sctx )
 
     for ( TInt i = 0; i < nTypes; ++i ) {
         sdev->TypefaceSupport( tfSupport, i );
-#if 0        
-        fontName = tfSupport.iTypeface.iName.Des();
-        TBuf8<128> tmpb;
-        tmpb.Copy( fontName );
-        XP_UCHAR buf[128];
-        XP_MEMCPY( buf, (void*)(tmpb.Ptr()), tmpb.Length() );
-        buf[tmpb.Length()] = '\0';
-        XP_LOGF( "got font %s: %d - %d, scalable: %s", buf,
-                 tfSupport.iMinHeightInTwips, tfSupport.iMaxHeightInTwips,
-                 (tfSupport.iIsScalable?"yes":"no") );
-#endif
         if ( tfSupport.iMinHeightInTwips < smallSize ) {
             smallIndex = i;
             smallSize = tfSupport.iMinHeightInTwips;
@@ -707,15 +697,6 @@ figureFonts( SymDrawCtxt* sctx )
         sdev->TypefaceSupport( tfSupport, smallIndex );
         fontName = tfSupport.iTypeface.iName.Des();
 
-#if 0
-        TBuf8<128> tmpb;
-        tmpb.Copy( fontName );
-        XP_UCHAR buf[128];
-        XP_MEMCPY( buf, (void*)(tmpb.Ptr()), tmpb.Length() );
-        buf[tmpb.Length()] = '\0';
-        XP_LOGF( "using font %s: %d ", buf,
-                 tfSupport.iMinHeightInTwips );
-#endif
         TFontSpec fontSpecBoard( fontName, (scaleBoardV) * twipAdjust );
         sdev->GetNearestFontInTwips( sctx->iBoardFont, fontSpecBoard );
 
@@ -725,7 +706,6 @@ figureFonts( SymDrawCtxt* sctx )
 
         TFontSpec fontSpecVal( fontName, (tileHt / 3) * twipAdjust );
         sdev->GetNearestFontInTwips( sctx->iTileValueFont, fontSpecVal );
-
 
         TFontSpec fontSpecScore( fontName, scaleBoardV * twipAdjust );
         sdev->GetNearestFontInTwips( sctx->iScoreFont, fontSpecScore );
@@ -747,7 +727,6 @@ figureFonts( SymDrawCtxt* sctx )
 
     XP_LOGF( "figureFonts done" );
 } // figureFonts
-
 
 DrawCtx* 
 sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv, 
