@@ -1077,10 +1077,7 @@ CXWordsAppView::InitPrefs()
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     iGi.serverRole = SERVER_STANDALONE;
-    iCommsAddr.conType = COMMS_CONN_RELAY;
-    char* name = "aphraea.org";
-    XP_MEMCPY( iCommsAddr.u.ip_relay.hostName, name, XP_STRLEN(name) + 1 );
-    iCommsAddr.u.ip_relay.port = 10999;
+    comms_getInitialAddr( &iCommsAddr );
 #endif
 }
 
@@ -1118,7 +1115,7 @@ CXWordsAppView::DoNewGame()
 #endif
                      );
         XP_U16 newGameID = SC( XP_U16,sym_util_getCurSeconds( &iUtil ) );
-        game_reset( MPPARM(mpool) &iGame, &iGi, newGameID,
+        game_reset( MPPARM(mpool) &iGame, &iGi, &iUtil, newGameID,
                     &iCp, SYM_SEND, this );
 
         DictionaryCtxt* prevDict = model_getDictionary( iGame.model );
