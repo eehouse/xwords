@@ -61,6 +61,8 @@ class CXWGamesMgr : public CBase
 
     TBool DeleteSelected( TInt aIndex );
     TBool Exists( TGameName* aName );
+    TBool IsLegalName( const TGameName* aName );
+    void Rename( const TDesC16* aCurName, const TDesC16* aNewName );
 
  private:
 

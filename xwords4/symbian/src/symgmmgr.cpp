@@ -119,6 +119,13 @@ CXWGamesMgr::Exists( TGameName* aName )
     return err == KErrNone;
 }
 
+TBool
+CXWGamesMgr::IsLegalName( const TGameName* aName )
+{
+    RFs fs = iCoeEnv->FsSession();
+    return fs.IsValidName( *aName );
+} /* IsLegalName */
+
 void
 CXWGamesMgr::GameNameToPath( TFileName* aPath, const TDesC16* aName )
 {
@@ -219,3 +226,20 @@ CXWGamesMgr::DeleteFileFor( TPtrC16* aName )
     }
     return success;
 }
+
+void
+CXWGamesMgr::Rename( const TDesC16* aCurName, const TDesC16* aNewName )
+{
+    TFileName newName;
+    GameNameToPath( &newName, aNewName );
+
+    TFileName anOldName;
+    GameNameToPath( &anOldName, aCurName );
+
+    RFs fs = iCoeEnv->FsSession();
+    TInt err = fs.Rename( anOldName, newName );
+    XP_ASSERT( err == KErrNone );
+    User::LeaveIfError( err );
+
+    BuildListL();
+} /* Rename */
