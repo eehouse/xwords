@@ -87,6 +87,8 @@ CSendSocket::CSendSocket()
 
 CSendSocket::~CSendSocket()
 {
+    Cancel();
+    iSocketServer.Close();
 }
 
 void
@@ -182,7 +184,6 @@ CSendSocket::SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr )
     TBool success;
 
     XP_ASSERT( !IsActive() );
-    XP_LOGF( "here" );
     if ( iSSockState == ESending ) {
         success = EFalse;
     } else if ( aLen > KMaxMsgLen ) {
@@ -190,17 +191,14 @@ CSendSocket::SendL( const XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr )
     } else {
         XP_ASSERT( iSendBuf.Length() == 0 );
         iSendBuf.Copy( aBuf, aLen );
-        XP_LOGF( "here 1" );
 
         if ( iAddrSet && (0 != XP_MEMCMP( (void*)&iCurAddr, (void*)aAddr, 
                                           sizeof(aAddr) )) ) {
             Disconnect();
         }
         XP_ASSERT( !iAddrSet );
-        XP_LOGF( "here 2: aAddr = 0x%x", aAddr );
         iCurAddr = *aAddr;
         iAddrSet = ETrue;
-        XP_LOGF( "here 3" );
 
         if ( iSSockState == ENotConnected ) {
             ConnectL();
