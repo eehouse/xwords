@@ -55,14 +55,16 @@ MYDEFINES = -DXW_FEATURE_UTILS -DPOINTER_SUPPORT -DKEY_SUPPORT \
 	-DOVERRIDE_EDGE_FOR_INDEX -DCOLOR_SUPPORT \
 	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED
 
-# turn on the HighRes stuff.  Experimental for now, but eventually
-# should always be on.
-FEATURE_HIGHRES = -DFEATURE_HIGHRES
 
 # turn on letting users pick tiles "face-up"
 MYDEFINES += -DFEATURE_TRAY_EDIT
 
-ifneq (x$(BUILD_AS_PNOLET)x, xx)
+ifeq (x$(BUILD_AS_PNOLET)x, xx)
+# turn on the HighRes stuff.  Experimental for now, but eventually
+# should always be on.
+# PNO stuff can't do this yet.  Figure it out later...
+FEATURE_HIGHRES = -DFEATURE_HIGHRES
+else
 MYDEFINES += -DXW_TARGET_PNO
 endif
 
