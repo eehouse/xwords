@@ -211,6 +211,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     comms = comms_make( MPPARM(mpool) util, isServer, sendproc, closure );
 
     comms->connID = stream_getU32( stream );
+    comms->localID = stream_getU16( stream );
 
     comms->nextChannelNo = stream_getU16( stream );
 #ifdef DEBUG
@@ -245,6 +246,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgReceived = stream_getU16( stream );
         rec->channelNo = stream_getU16( stream );
+        rec->remotesID = stream_getU16( stream );
 
 #ifdef DEBUG
         rec->lastACK = stream_getU16( stream );
@@ -286,6 +288,9 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
         /* tell client about the port */
         util_listenPortChange( util, comms->listenPort );
+        /* Or about address.  This is for the relay case, the prev for the
+           relay-free case if I get it working again. */
+        util_addrChange( util, &comms->addr );
     }
 #endif
 
@@ -304,6 +309,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
 
     stream_putU8( stream, (XP_U8)comms->isServer );
     stream_putU32( stream, comms->connID );
+    stream_putU16( stream, comms->localID );
     stream_putU16( stream, comms->nextChannelNo );
 #ifdef DEBUG
     stream_putU16( stream, comms->nUniqueBytes );
@@ -326,6 +332,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putU16( stream, (XP_U16)rec->nextMsgID );
         stream_putU16( stream, (XP_U16)rec->lastMsgReceived );
         stream_putU16( stream, rec->channelNo );
+        stream_putU16( stream, rec->remotesID );
 #ifdef DEBUG
         stream_putU16( stream, rec->lastACK );
         stream_putU16( stream, rec->nUniqueBytes );
@@ -604,7 +611,7 @@ comms_resendAll( CommsCtxt* comms )
  * component will be passed in.
  */
 XP_Bool
-comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
+comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
                             CommsAddrRec* addr )
 {
     XP_U16 channelNo;
@@ -623,6 +630,7 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     cookie = stringFromStream( MPPARM(comms->mpool) stream );
     XP_LOGF( "got cookie %s from message", cookie );
     XP_ASSERT( 0 == XP_MEMCMP( cookie, "COOKIE", 6 ) );
+    XP_FREE( comms->mpool, cookie ); /* until we actually use it.... */
     senderID = stream_getU16( stream );
     XP_LOGF( "senderID = 0x%x", senderID );
 #endif
@@ -631,6 +639,7 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_STATUSF( "read connID of %lx", connID );
 
     if ( senderID != 0 && senderID == comms->localID ) {
+        XP_LOGF( "got my own message back?" );
         validMessage = XP_FALSE; /* hack around relay bug */
     } else if ( comms->connID == connID || comms->connID == CONN_ID_NONE ) {
 
@@ -649,6 +658,7 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
         if ( channelNo == 0 ) {
             if ( !comms->isServer ) {
+                XP_LOGF( "not a server" );
                 validMessage = XP_FALSE;
             } else {
                 XP_ASSERT( msgID == 0 );
@@ -689,7 +699,7 @@ comms_checkIncommingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     connID, comms->connID );
     }
     return validMessage;
-} /* comms_checkIncommingStream */
+} /* comms_checkIncomingStream */
 
 #ifdef DEBUG
 void
