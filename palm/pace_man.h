@@ -23,6 +23,9 @@
 #ifdef XW_TARGET_PNO
 
 #include <Form.h>
+#include <Menu.h>
+#include <ExgMgr.h>
+#include <VFSMgr.h>
 
 #include "pnostate.h"
 #include "xptypes.h"
@@ -67,6 +70,22 @@ extern void EvtAddEventToQueue( const EventType* event );
 
 #define SET_SEL_REG(trap, sp) ((unsigned long*)((sp)->emulStateP))[3] = (trap)
 
+void flipRect( RectangleType* rout, RectangleType* rin );
+#define SWAP_RECTANGLETYPE_ARM_TO_68K( dp, sp ) flipRect( (dp), (sp) )
+#define SWAP_RECTANGLETYPE_68K_TO_ARM SWAP_RECTANGLETYPE_ARM_TO_68K
+
+void flipFieldAttr( FieldAttrType* fout, const FieldAttrType* fin );
+#define SWAP_FIELDATTRTYPE_ARM_TO_68K( dp, sp ) flipFieldAttr( (dp), (sp) )
+
+void flipEngSocketFromArm( unsigned char* sout, const ExgSocketType* sin );
+#define SWAP_EXGSOCKETTYPE_ARM_TO_68K( dp, sp ) flipEngSocketFromArm( (dp), (sp) )
+void flipEngSocketToArm( ExgSocketType* out, const unsigned char* sin );
+#define SWAP_EXGSOCKETTYPE_68K_TO_ARM( dp, sp ) flipEngSocketToArm( (dp), (sp) )
+
+void flipFileInfoFromArm( unsigned char* fiout, const FileInfoType* fiin );
+#define SWAP_FILEINFOTYPE_ARM_TO_68K( dp, sp ) flipFileInfoFromArm( (dp), (sp) )
+void flipFileInfotoArm( FileInfoType* fout, const unsigned char* fin );
+#define SWAP_FILEINFOTYPE_68K_TO_ARM( dp, sp ) flipFileInfoToArm( (dp), (sp) )
 
 PNOState* getStorageLoc();
 #define GET_CALLBACK_STATE() getStorageLoc()
@@ -80,12 +99,15 @@ void write_unaligned32( unsigned char* dest, unsigned long val );
 #define write_unaligned8( p, v ) *(p) = v
 
 
-#if 0
-# define EMIT_NAME(n) \
-    asm( ".byte " n ); \
-    asm( ".align" )
+#ifdef DEBUG
+# define EMIT_NAME(name,bytes) \
+    asm( "bal done_" name ); \
+    asm( ".byte " bytes ); \
+    asm( ".align" ); \
+    asm( "done_" name ":" )
+
 #else
-# define EMIT_NAME(n)
+# define EMIT_NAME(n,b)
 #endif
 
 #endif
