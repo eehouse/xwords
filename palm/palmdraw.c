@@ -1072,10 +1072,12 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
     XP_UCHAR buf2[48];
     XP_UCHAR* bufs[2] = { buf1, buf2 };
     XP_U16 nBufs, i, offset;
+#ifndef FEATURE_HIGHRES
     XP_U16 ignoreErr;
+#endif
     XP_Bool hasClosure = !!closureP;
     PalmMiniWinData* data = (PalmMiniWinData*)(hasClosure? *closureP: NULL);
-#ifdef DEBUG
+#if defined DEBUG || defined FEATURE_HIGHRES
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 #endif
 
