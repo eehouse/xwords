@@ -823,11 +823,12 @@ drawInsidePaint( HWND hWnd, CEAppGlobals* globals )
     if ( !hdc ) {
         logLastError( "drawInsidePaint" );
     } else {
+        HDC prevHDC = globals->hdc;
         globals->hdc = hdc;
 
         board_draw( globals->game.board );
 
-        globals->hdc = NULL;
+        globals->hdc = prevHDC;
     }
 } /* drawInsidePaint */
 
@@ -1235,7 +1236,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_MOVE_NEXTHINT:
             case HINT_BUTTON_ID:
                 draw = ceHandleHintRequest( globals );
-                XP_DEBUGF("Hint called");
                 break;
 
             case IDM_FILE_EXIT:
@@ -1725,6 +1725,8 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
 static void
 ce_util_trayHiddenChange( XW_UtilCtxt* uc, XP_Bool nowHidden )
 {
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    drawInsidePaint( globals->hWnd, globals );
 } /* ce_util_trayHiddenChange */
 
 static void
