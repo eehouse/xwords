@@ -237,13 +237,13 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, char* fileName )
 
         if ( dictLength > 0 ) {
 #ifdef DEBUG
-            dctx->super.numEdges = dictLength / 3;
-#endif
-
-#ifdef NODE_CAN_4
+# ifdef NODE_CAN_4
+            dctx->super.numEdges = dictLength / dctx->super.nodeSize;
             XP_ASSERT( (dictLength % dctx->super.nodeSize) == 0 );
-#else
+# else
+            dctx->super.numEdges = dictLength / 3;
             XP_ASSERT( (dictLength % 3) == 0 );
+# endif
 #endif
 
             dctx->super.base = (array_edge*)XP_MALLOC( dctx->super.mpool, 
