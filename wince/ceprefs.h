@@ -43,9 +43,7 @@ typedef struct CePrefsPrefs {
     CommonPrefs cp;
     XP_Bool showColors;
     
-#ifdef XWFEATURE_CE_EDITCOLORS
     COLORREF colors[NUM_EDITABLE_COLORS];
-#endif
 } CePrefsPrefs;
 
 typedef struct CePrefsDlgState {
@@ -55,9 +53,7 @@ typedef struct CePrefsDlgState {
     XP_Bool userCancelled;
     //XP_Bool doGlobalPrefs;      /* state of the radio */
     XP_Bool isNewGame;
-#ifdef XWFEATURE_CE_EDITCOLORS
     XP_Bool colorsChanged;
-#endif
 } CePrefsDlgState;
 
 XP_Bool WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, 
