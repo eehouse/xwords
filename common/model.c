@@ -833,6 +833,68 @@ model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 } /* model_removePlayerTile */
 
 void
+model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
+                     XP_Bool includeBlank, 
+                     XP_U16* nUsed, XP_UCHAR4* texts,
+                     Tile* tiles )
+{
+    DictionaryCtxt* dict = model->vol.dict;
+    XP_U16 nFaces = dict_numTileFaces( dict );
+    Tile blankFace = dict_getBlankTile( dict );
+    Tile tile;
+    XP_U16 nFacesAvail = 0;
+
+    XP_ASSERT( nFaces <= *nUsed );
+
+    for ( tile = 0; tile < nFaces; ++tile ) {
+        XP_U16 nChars;
+
+        if ( includeBlank ) {
+            XP_ASSERT( !!pool );
+            if ( pool_getNTilesLeftFor( pool, tile ) == 0 ) {
+                continue;
+            }
+        } else if ( tile == blankFace ) {
+            continue;
+        }
+            
+        tiles[nFacesAvail] = tile;
+        nChars = dict_tilesToString( dict, &tile, 1, 
+                                     (XP_UCHAR*)&texts[nFacesAvail] );
+        XP_ASSERT( nChars < sizeof(texts[0]) );
+        ++nFacesAvail;
+    }
+
+    *nUsed = nFacesAvail;
+
+} /* model_packTilesUtil */
+
+static Tile
+askBlankTile( ModelCtxt* model, XP_U16 turn )
+{
+    XP_U16 nUsed = MAX_UNIQUE_TILES;
+    XP_S16 chosen;
+    XP_UCHAR4 tfaces[MAX_UNIQUE_TILES];
+    Tile tiles[MAX_UNIQUE_TILES];
+    PickInfo pi;
+
+    pi.why = PICK_FOR_BLANK;
+    pi.nTotal = 1;
+    pi.thisPick = 1;
+
+    model_packTilesUtil( model, NULL, XP_FALSE,
+                         &nUsed, tfaces, tiles );
+
+    chosen = util_userPickTile( model->vol.util, &pi,
+                                turn, tfaces, nUsed );
+
+    if ( chosen < 0 ) {
+        chosen = 0;
+    }
+    return tiles[chosen];
+} /* askBlankTile */
+
+void
 model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
                        XP_S16 tileIndex, Tile blankFace )
 {
@@ -845,9 +907,8 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
         if ( blankFace != EMPTY_TILE ) {
             tile = blankFace;
         } else {
-            XP_UCHAR face[4];
-            util_askBlankFace( model->vol.util, model->vol.dict, face );
-            tile = dict_tileForString( model->vol.dict, face );
+            XP_ASSERT( turn >= 0 );
+            tile = askBlankTile( model, (XP_U16)turn );
         }
         tile |= TILE_BLANK_BIT;
     }
