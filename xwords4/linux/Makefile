@@ -64,7 +64,7 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 LIBS = -lm -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
 # -lprc 
 # -pg
-CFLAGS = -g -Wall -O2 $(GPROFFLAG)
+CFLAGS = -g -Wall $(GPROFFLAG)
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 # 	LIBS += `pkg-config --libs gtk+-2.0`
