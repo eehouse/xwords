@@ -56,7 +56,7 @@ curses_draw_destroyCtxt( DrawCtx* p_dctx )
     // CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 } /* draw_setup */
 
-static void
+static XP_Bool
 curses_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
@@ -65,6 +65,7 @@ curses_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
     } else {
         drawRect( dctx->boardWin, rect, '|', '-' ); 
     }
+    return XP_TRUE;
 } /* draw_finish */
 
 static void
