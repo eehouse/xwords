@@ -43,10 +43,6 @@ stuffTextInField( HWND hDlg, StrBoxInit* init )
 
     SetDlgItemText( hDlg, ID_EDITTEXT, wbuf );
     XP_FREE( globals->mpool, wbuf );
-
-    /* This isn't working to stop the highlighting of text */
-    SendDlgItemMessage( hDlg, ID_EDITTEXT, EM_SETSEL, -1, 0L );
-    XP_LOGF( "called SendDlgItemMessage with -1" );
 } /* stuffTextInField */
 
 LRESULT CALLBACK
