@@ -142,7 +142,7 @@ my %typeInfo = (
                 "const ControlType*" => { "size" => 4, "a0" => 1 },
                 "const CustomPatternType*" => { "size" => 4, "a0" => 1 }, # UInt8[8]; no need to translate
                 "const EventType*" => { "size" => 4, "a0" => 1 },
-                "const FieldAttrType*" => { "size" => 4, "a0" => 1, "autoSwap" => -1 },
+                "const FieldAttrType*" => { "size" => 4, "a0" => 1 },
                 "const FieldType*" => { "size" => 4, "a0" => 1 },
                 "const FormType*" => { "size" => 4, "a0" => 1 },
                 "const ListType*" => { "size" => 4, "a0" => 1 },
@@ -350,7 +350,7 @@ sub makeSwapStuff($$$$$) {
             if ( $swapInfo == -1 ) {
                 my $typeNoStar = $type;
                 $typeNoStar =~ s/\*$//;
-                die "no start found" if $typeNoStar eq $type;
+                die "no star found" if $typeNoStar eq $type;
                 my $isConst = $typeNoStar =~ m|^const|;
                 $typeNoStar =~ s/^const\s+//;
                 my $vName = "${typeNoStar}_68K${vcount}";
