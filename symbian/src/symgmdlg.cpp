@@ -19,14 +19,18 @@
 
 #include <eikedwin.h>
 #include <eikmfne.h> 
-#include <eikchlst.h>
+#if defined SERIES_60
+# include "xwords_60.rsg"
+#elif defined SERIES_80
+# include <eikchlst.h>
+# include "xwords_80.rsg"
+#endif
 #include <eiktxlbm.h>
 
 #include "symgmdlg.h"
 #include "symutil.h"
 #include "symgamed.h"
 #include "xwords.hrh"
-#include "xwords.rsg"
 #include "xwappview.h"
 
 
@@ -48,6 +52,9 @@ CXSavedGamesDlg::PreLayoutDynInitL()
 TBool
 CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
 {
+#if defined SERIES_60
+    return ETrue;
+#elif defined SERIES_80
     TBool canReturn = EFalse;
     CEikTextListBox* box;
     const CListBoxView::CSelectionIndexArray* indices;
@@ -102,12 +109,16 @@ CXSavedGamesDlg::OkToExitL( TInt aKeyCode )
     }
 
     return canReturn;
+#endif
 } /* OkToExitL */
 
 void
 CXSavedGamesDlg::ResetNames( TInt aPrefIndex, 
                              const TGameName* aSelName )
 {
+    /* PENDING aPrefIndex is a hint what to select next  */
+#if defined SERIES_60
+#elif defined SERIES_80
     CDesC16Array* names = iGameMgr->GetNames();
     TInt index = 0;             /* make compiler happy */
     const TGameName* seekName = NULL;
@@ -135,6 +146,7 @@ CXSavedGamesDlg::ResetNames( TInt aPrefIndex,
     box->HandleItemAdditionL();
 
     box->SetCurrentItemIndex( index );
+#endif
 } /* ResetNames */
 
 TBool
