@@ -248,20 +248,26 @@ drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
 
     ceClearToBkground( dctx, xprect );
 
+    SetBkColor( hdc, dctx->colors[TILEBACK_COLOR] );
+    SetTextColor( hdc, dctx->colors[getPlayerColor(dctx->trayOwner)] );
+
     XPRtoRECT( &rt, xprect );
 
     InsetRect( &rt, 1, 1 );
     Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom);
     InsetRect( &rt, 1, 1 );
 
-    FillRect( hdc, &rt, dctx->brushes[TILEBACK_COLOR] );
-    SetBkColor( hdc, dctx->colors[TILEBACK_COLOR] );
-    SetTextColor( hdc, dctx->colors[getPlayerColor(dctx->trayOwner)] );
-
+    /* For some reason Rectangle isn't using the background brush to fill, so
+       FillRect has to get called after Rectangle.  Need to call InsetRect
+       either way to put chars in the right place. */
     if ( highlighted ) {
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
+        InsetRect( &rt, 1, 1 );
     }
-    InsetRect( &rt, 1, 1 );
+    FillRect( hdc, &rt, dctx->brushes[TILEBACK_COLOR] );
+    if ( !highlighted ) {
+        InsetRect( &rt, 1, 1 );
+    }
 
     if ( !!letters ) {
         HFONT oldFont = SelectObject( hdc, dctx->trayFont );
@@ -413,7 +419,6 @@ formatRemText( HDC hdc, wchar_t* buf, XP_S16 nTilesLeft, SIZE* size )
         swprintf( buf, format, nTilesLeft );
         GetTextExtentPoint32( hdc, buf, wcslen(buf), size );
     }
-
 } /* formatRemText */
 
 static void
@@ -429,7 +434,7 @@ ce_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r,
 
     formatRemText( hdc, buf, nTilesLeft, &size );
 
-    *width = (XP_U16)size.cx;
+    *width = (XP_U16)size.cx + 1;   /* 1: don't write up against edge */
     *height = (XP_U16)size.cy;
 } /* ce_draw_measureRemText */
 
@@ -447,6 +452,7 @@ ce_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
     formatRemText( hdc, buf, nTilesLeft, &size );
 
     XPRtoRECT( &rt, rInner );
+    ++rt.left;                  /* 1: don't write up against edge */
     DrawText( hdc, buf, -1, &rt, DT_SINGLELINE | DT_LEFT | DT_VCENTER);
 
     return (XP_U16)size.cx;
