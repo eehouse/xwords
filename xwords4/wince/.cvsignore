@@ -1,2 +1,10 @@
 ARMV4Rel
 emulatorDbg
+ARMDbg
+ARMRel
+X86Dbg
+X86Rel
+xwords.vcb
+xwords.vcl
+xwords.vco
+xwords.vcw
