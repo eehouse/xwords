@@ -227,6 +227,25 @@ figureDividerRect( BoardCtxt* board, XP_Rect* rect )
     rect->width = board->dividerWidth;
 } /* figureDividerRect */
 
+void
+invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect )
+{
+    XP_U16 i;
+    XP_Rect locRect;
+
+    for ( i = 0; i < MAX_TRAY_TILES; ++i ) {
+        figureTrayTileRect( board, i, &locRect );
+        if ( rectsIntersect( rect, &locRect ) ) {
+            board_invalTrayTiles( board, (TileBit)(1 << i) );
+        }
+    }
+
+    figureDividerRect( board, &locRect );
+    if ( rectsIntersect( rect, &locRect ) ) {
+        board->dividerInvalid = XP_TRUE;
+    }
+} /* invalTilesUnderRect */
+
 static XP_Bool
 handleTrayDuringTrade( BoardCtxt* board, XP_S16 index )
 {
