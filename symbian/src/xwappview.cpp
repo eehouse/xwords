@@ -31,6 +31,7 @@
 
 #include <stringloader.h>
 #include <stdlib.h>             // for srand
+#include <s32file.h>
 
 #include "xwords.rsg"
 
@@ -43,6 +44,7 @@
 #include "symdict.h"
 #include "symgamdl.h"
 #include "symblnk.h"
+#include "symgmdlg.h"
 
 #include "LocalizedStrIncludes.h"
 
@@ -66,7 +68,6 @@ CXWordsAppView::CXWordsAppView()
 {
     // no implementation required
     iDraw = NULL;
-    iBoardPosInval = XP_TRUE;
     XP_MEMSET( &iGame, 0, sizeof(iGame) );
 }
 
@@ -87,6 +88,7 @@ CXWordsAppView::~CXWordsAppView()
 
     delete iDictList;
     delete iRequestTimer;
+    delete iGamesMgr;
 }
 
 void CXWordsAppView::ConstructL(const TRect& aRect)
@@ -142,6 +144,10 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
     User::LeaveIfNull( iUtil.vtable );
     SetUpUtil();
 
+    TFileName basePath;
+    GetXwordsRWDir( &basePath, EGamesLoc );
+    iGamesMgr = CXWGamesMgr::NewL( MPPARM(mpool) iCoeEnv, &basePath );
+
     iDraw = sym_drawctxt_make( MPPARM(mpool) &SystemGc(), iCoeEnv, iEikonEnv );
     User::LeaveIfNull( iDraw );
 
@@ -150,7 +156,10 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
         User::Leave( -1 );
     }
 
-    InitGameL();
+    if ( !LoadPrefs() ) {
+        InitPrefs();
+    }
+    MakeOrLoadGameL();
 
     PositionBoard();
     (void)server_do( iGame.server ); // get tiles assigned etc.
@@ -370,10 +379,14 @@ CXWordsAppView::sym_util_getCurSeconds( XW_UtilCtxt* uc )
     return (XP_U32)interval.Int();
 }
 
-static DictionaryCtxt*
-sym_util_makeEmptyDict( XW_UtilCtxt* /*uc*/ )
+/* static */ DictionaryCtxt*
+CXWordsAppView::sym_util_makeEmptyDict( XW_UtilCtxt* uc )
 {
-    return NULL;
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+
+    DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(self->mpool)
+                                                 NULL );
+    return dict;
 }
 
 static XP_UCHAR*
@@ -496,12 +509,9 @@ CXWordsAppView::SetUpUtil()
 // Load the current game from prefs or else create a new one.
 // Eventually this will involve putting up the new game dialog.
 void
-CXWordsAppView::InitGameL()
+CXWordsAppView::MakeOrLoadGameL()
 {
-    if ( ReadCurrentGame() ) {
-        /* load an existing game */
-    } else {
-
+    if ( iCurGameName.Length() == 0 ) {
         gi_initPlayerInfo( MPPARM(mpool) &iGi, (XP_UCHAR*)"Player %d" );
 
         TGameInfoBuf gib( &iGi, iDictList );
@@ -515,19 +525,20 @@ CXWordsAppView::InitGameL()
                                                      iGi.dictName );
         User::LeaveIfNull( dict );
 
-
-        iCp.showBoardArrow = XP_TRUE; // default because no pen
-        iCp.showRobotScores = XP_FALSE;
-
         XP_U16 newGameID = SC( XP_U16, sym_util_getCurSeconds( &iUtil ) );
         game_makeNewGame( MPPARM(mpool) &iGame, &iGi, 
                           &iUtil, iDraw, newGameID, &iCp,
                           (TransportSend)NULL, this );
+        model_setDictionary( iGame.model, dict );
 
+        iGamesMgr->MakeDefaultName( &iCurGameName );
+        StoreOneGameL( &iCurGameName );
 
-        model_setDictionary( iGame.model, dict ); // game_dispose kills this
+    } else {
+        LoadOneGameL( &iCurGameName );
     }
-} /* InitGameL */
+
+} /* MakeOrLoadGameL */
 
 void
 CXWordsAppView::DeleteGame()
@@ -540,24 +551,20 @@ CXWordsAppView::DeleteGame()
 void
 CXWordsAppView::PositionBoard() 
 {
-    if ( iBoardPosInval ) {
-        iBoardPosInval = XP_FALSE;
+    board_setPos( iGame.board, 2, 2, XP_FALSE );
+    board_setScale( iGame.board, scaleBoardH, scaleBoardV );
 
-        board_setPos( iGame.board, 2, 2, XP_FALSE );
-        board_setScale( iGame.board, scaleBoardH, scaleBoardV );
+    board_setScoreboardLoc( iGame.board, 2 + (15 * scaleBoardH) + 5, 2,
+                            200, 130, XP_FALSE );
+    board_setYOffset( iGame.board, 0, XP_FALSE );
 
-        board_setScoreboardLoc( iGame.board, 2 + (15 * scaleBoardH) + 5, 2,
-                                200, 130, XP_FALSE );
-        board_setYOffset( iGame.board, 0, XP_FALSE );
-
-        board_setTrayLoc( iGame.board, 
-                          (15 * scaleBoardH) + 5, // to right of board
-                          // make tray bottom same as board's
-                          2 + (15*scaleBoardV) - scaleTrayV,
-                          scaleTrayH, scaleTrayV,   // v and h scale
-                          3 );      // divider width
-    }
-
+    board_setTrayLoc( iGame.board, 
+                      (15 * scaleBoardH) + 5, // to right of board
+                      // make tray bottom same as board's
+                      2 + (15*scaleBoardV) - scaleTrayV,
+                      scaleTrayH, scaleTrayV,   // v and h scale
+                      3 );      // divider width
+    board_invalAll( iGame.board );
 } // PositionBoard
 
 int 
@@ -568,45 +575,13 @@ CXWordsAppView::HandleCommand( TInt aCommand )
 
     switch ( aCommand ) {
 
-    case XW_NEWGAME_COMMAND: {
-        /* Give user a chance to save, then pass in a copy of game data
-           (without saving).  If user cancels, make no changes.  If does not
-           cancel, either save and start a new game or overwrite the current
-           one.
-        */
-
-        TBool save = AskSaveGame();
-
-        TGameInfoBuf gib( &iGi, iDictList );
-        if ( CXWGameInfoDlg::DoGameInfoDlgL( MPPARM(mpool) &gib, ETrue ) ) {
-
-            if ( save ) {
-                SaveCurrentGame();
-            }
-            gib.CopyToL( MPPARM(mpool) &iGi );
-            XP_U16 newGameID = SC( XP_U16,sym_util_getCurSeconds( &iUtil ) );
-            game_reset( MPPARM(mpool) &iGame, &iGi, newGameID,
-                        &iCp, (TransportSend)NULL, this );
-
-            DictionaryCtxt* prevDict = model_getDictionary( iGame.model );
-            if ( 0 != XP_STRCMP( dict_getName(prevDict), iGi.dictName ) ) {
-                XP_LOGF( "replacing dicts: %s with %s",
-                         prevDict->name, iGi.dictName );
-                dict_destroy( prevDict );
-                DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) 
-                                                             iGi.dictName );
-                model_setDictionary( iGame.model, dict );
-            }
-
-            board_invalAll( iGame.board );
-            (void)server_do( iGame.server ); // get tiles assigned etc.
-            draw = ETrue;
-        }
-    }
+    case XW_NEWGAME_COMMAND:
+        draw = DoNewGame();
         break;
 
     case XW_SAVEDGAMES_COMMAND:
-        NotImpl();
+        draw = DoSavedGames();
+        (void)server_do( iGame.server );
         break;
     case XW_PREFS_COMMAND:
     case XW_ABOUT_COMMAND:
@@ -718,6 +693,13 @@ CXWordsAppView::HandleCommand( TInt aCommand )
 
     return 1;
 } // CXWordsAppView::HandleCommand
+
+void 
+CXWordsAppView::Exiting()
+{
+    StoreOneGameL( &iCurGameName );
+    WritePrefs();
+} /* Exiting */
 
 TBool
 CXWordsAppView::HandleKeyEvent( const TKeyEvent& aKeyEvent )
@@ -838,11 +820,14 @@ CXWordsAppView::FindAllDicts()
     TFindFile file_finder( fileSession ); // 1
     CDir* file_list;
     _LIT( aWildName, "*.xwd" );
-    _LIT( dir,"\\system\\apps\\XWORDS\\" );
+
+    TFileName dir;
+    GetXwordsRWDir( &dir, EDictsLoc );
+
     TInt err = file_finder.FindWildByDir( aWildName, dir, file_list );
     if ( err == KErrNone ) {
-        found = ETrue;
 
+        CleanupStack::PushL( file_list );
         iDictList = new (ELeave)CDesC16ArrayFlat( file_list->Count() );
 
         TInt i;
@@ -852,9 +837,11 @@ CXWordsAppView::FindAllDicts()
             logOneFile( fullentry.Name() );
             iDictList->AppendL( fullentry.Name() );
         }
-        delete file_list;
+
+        CleanupStack::PopAndDestroy( file_list );
+        found = ETrue;
     }
-    CleanupStack::PopAndDestroy(); // fileSession
+    CleanupStack::PopAndDestroy( &fileSession ); 
     return found;
 } /* FindAllDicts */
 
@@ -878,3 +865,180 @@ CXWordsAppView::NotImpl()
 {
     UserErrorFromID( R_ALERT_FEATURE_PENDING );
 } /* NotImpl */
+
+void
+CXWordsAppView::GetXwordsRWDir( TFileName* aPathRef, TDriveReason aWhy )
+{
+    aPathRef->Delete( 0, aPathRef->Length() );
+
+    switch( aWhy ) {
+    case EGamesLoc:
+        aPathRef->Append( _L("C:") ); /* read-write: must be on C */
+        break;
+    case EDictsLoc:
+#if defined __WINS__
+        aPathRef->Append( _L("Z:") );
+#elif defined __MARM__
+        aPathRef->Append( _L("C:") );
+#endif
+        break;
+    case EPrefsLoc:
+        break;                  /* don't want a drive */
+    }
+
+    _LIT( dir,"\\system\\apps\\XWORDS\\" );
+    aPathRef->Append( dir );
+} /* GetXwordsRWDir */
+
+_LIT(filename,"xwdata.dat");
+TBool
+CXWordsAppView::LoadPrefs()
+{
+    RFs fs = iCoeEnv->FsSession();
+
+    TFileName nameD;
+    GetXwordsRWDir( &nameD, EPrefsLoc );
+    nameD.Append( filename );
+
+    /* Read in prefs etc. */
+    RFileReadStream reader;
+    CleanupClosePushL(reader);
+    TInt err = reader.Open( fs, filename, EFileRead );
+
+    TBool found = err == KErrNone;
+    if ( found ) {
+        iCp.showBoardArrow = reader.ReadInt8L();
+        iCp.showRobotScores = reader.ReadInt8L();
+        reader >> iCurGameName;
+    }
+    CleanupStack::PopAndDestroy( &reader ); // reader
+
+    return found;
+} /* LoadPrefs */
+
+void
+CXWordsAppView::WritePrefs()
+{
+    RFs fs = iCoeEnv->FsSession();
+
+    TFileName nameD;
+    GetXwordsRWDir( &nameD, EPrefsLoc );
+    nameD.Append( filename );
+
+    RFileWriteStream writer;
+    CleanupClosePushL(writer);
+    User::LeaveIfError( writer.Replace( fs, filename, EFileWrite ) );
+
+    writer.WriteInt8L( iCp.showBoardArrow );
+    writer.WriteInt8L( iCp.showRobotScores );
+
+    writer << iCurGameName;
+
+    CleanupStack::PopAndDestroy( &writer ); // writer
+} /* WritePrefs */
+
+void
+CXWordsAppView::InitPrefs()
+{
+    iCp.showBoardArrow = XP_TRUE; // default because no pen
+    iCp.showRobotScores = XP_FALSE;
+    iCurGameName.Delete( 0, 1000 );
+}
+
+TBool
+CXWordsAppView::DoNewGame()
+{
+    TBool draw = EFalse;
+
+    TBool save = AskSaveGame();
+
+    TGameInfoBuf gib( &iGi, iDictList );
+    if ( CXWGameInfoDlg::DoGameInfoDlgL( MPPARM(mpool) &gib, ETrue ) ) {
+
+        if ( save ) {
+            StoreOneGameL( &iCurGameName );
+            iGamesMgr->MakeDefaultName( &iCurGameName );
+        }
+
+        gib.CopyToL( MPPARM(mpool) &iGi );
+        XP_U16 newGameID = SC( XP_U16,sym_util_getCurSeconds( &iUtil ) );
+        game_reset( MPPARM(mpool) &iGame, &iGi, newGameID,
+                    &iCp, (TransportSend)NULL, this );
+
+        DictionaryCtxt* prevDict = model_getDictionary( iGame.model );
+        if ( 0 != XP_STRCMP( dict_getName(prevDict), iGi.dictName ) ) {
+            dict_destroy( prevDict );
+            DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) 
+                                                         iGi.dictName );
+            model_setDictionary( iGame.model, dict );
+        }
+
+        board_invalAll( iGame.board );
+        (void)server_do( iGame.server ); // get tiles assigned etc.
+        draw = ETrue;
+    }
+    return draw;
+} /* DoNewGame */
+
+TBool
+CXWordsAppView::DoSavedGames()
+{
+    TGameName openName;
+    TBool confirmed = CXSavedGamesDlg::DoGamesPicker( MPPARM(mpool) 
+                                                      iGamesMgr,
+                                                      &iCurGameName,
+                                                      &openName );
+    if ( confirmed ) {
+        if ( 0 != iCurGameName.Compare( openName ) ) {
+
+            StoreOneGameL( &iCurGameName );
+            iCurGameName = openName;
+
+            game_dispose( &iGame );
+            gi_disposePlayerInfo( MPPARM(mpool) &iGi );
+
+            LoadOneGameL( &iCurGameName );
+        }
+    }
+    return confirmed;
+} /* DoSavedGames */
+
+void
+CXWordsAppView::LoadOneGameL( TGameName* aGameName )
+{
+    XWStreamCtxt* stream = MakeSimpleStream( NULL );
+
+    iGamesMgr->LoadGameL( aGameName, stream );
+    
+    XP_U16 len = stream_getU8( stream );
+    XP_UCHAR dictName[32];
+    stream_getBytes( stream, dictName, len );
+    dictName[len] = '\0';
+
+    DictionaryCtxt* dict = sym_dictionary_makeL( MPPARM(mpool) dictName );
+    XP_ASSERT( !!dict );
+
+    game_makeFromStream( MPPARM(mpool) stream, &iGame, 
+                         &iGi, dict, &iUtil, iDraw, &iCp,
+                         (TransportSend)NULL, this );
+    stream_destroy( stream );
+
+    PositionBoard();
+}
+
+void
+CXWordsAppView::StoreOneGameL( TGameName* aGameName )
+{
+    XWStreamCtxt* stream = MakeSimpleStream( NULL );
+
+    /* save the dict.  NOTE: should be possible to do away with this! */
+    XP_U16 len = XP_STRLEN(iGi.dictName);
+    stream_putU8( stream, len );
+    stream_putBytes( stream, iGi.dictName, len );
+
+    /* Now the game */
+    game_saveToStream( &iGame, &iGi, stream );
+
+    iGamesMgr->StoreGameL( aGameName, stream );
+    stream_destroy( stream );
+}
