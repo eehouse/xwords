@@ -209,3 +209,4 @@ FtrPtrFree
 SysUIAppSwitch
 FntBaseLine
 WinSetScalingMode
+WinGetDrawWindow

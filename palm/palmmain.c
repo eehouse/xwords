@@ -2714,6 +2714,8 @@ handleScrollInAsk( EventPtr event )
     FieldPtr field;
     UInt16 endPosition;
 
+    XP_ASSERT ( !!globals );
+
     field = getActiveObjectPtr( XW_ASK_TXT_FIELD_ID );
 
     switch ( event->eType ) {
@@ -2727,20 +2729,23 @@ handleScrollInAsk( EventPtr event )
         break;
 
     case keyDownEvent:
-        switch ( event->data.keyDown.chr ) {
-        case pageUpChr:
-        case vchrRockerUp:
-            direction = winUp; 
-            break;
-        case pageDownChr:
-        case vchrRockerDown:
-            direction = winDown; 
-            break;
-        default:
-            result = false;
+        /* don't scroll a menu if open! */
+        if ( FrmGetWindowHandle( FrmGetActiveForm() ) == WinGetDrawWindow() ) {
+            switch ( event->data.keyDown.chr ) {
+            case pageUpChr:
+            case vchrRockerUp:
+                direction = winUp; 
+                break;
+            case pageDownChr:
+            case vchrRockerDown:
+                direction = winDown; 
+                break;
+            default:
+                result = false;
+            }
+            linesToScroll = 3;
+            scrollFromButton = true;
         }
-        linesToScroll = 3;
-        scrollFromButton = true;
         break;
 
     case sclRepeatEvent: {
@@ -2860,12 +2865,8 @@ palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* yesButton,
         centerControl( form, XW_ASK_YES_BUTTON_ID );
     }
 
-    /* if we're running before the first form goes up, globals won't be
-       available via the refcon, so don't install handler than requires 'em.
-       That or move globals to a Ftr.... */
-    if ( !!prevForm ) {
-        FrmSetEventHandler( form, handleScrollInAsk );
-    }
+    FrmSetEventHandler( form, handleScrollInAsk );
+
     globals->prevScroll = 0;
 
     if ( globals->isLefty ) {
