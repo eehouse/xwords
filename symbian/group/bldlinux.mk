@@ -37,6 +37,8 @@ LIBS_ALLSERIES = \
 	$(EPOCTRGREL)/efsrv.lib \
 	$(EPOCTRGREL)/estor.lib \
 	$(EPOCTRGREL)/ws32.lib \
+	$(EPOCTRGREL)/insock.lib \
+	$(EPOCTRGREL)/esock.lib \
 
 LIBS_60 = \
 	$(EPOCTRGREL)/eikcore.lib \
@@ -100,6 +102,7 @@ THEAPP = $(NAME).app
 MAJOR = 4
 MINOR = 1
 PKGVERS = $(MAJOR),$(MINOR)
+SISNAME = $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
 
 MBG = $(NAME).mbg 
 
@@ -129,13 +132,12 @@ CPFLAGS = $(CFLAGS) -DCPLUS
 CPPFLAGS += -D_EPOC32_6 -DCPLUS -I../inc -D$(SYMARCH)
 
 all: _sanity $(PKGFILES) $(NAME).sis
-	mv $(NAME).sis $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
+	mv $(NAME).sis $(SISNAME)
 ifdef XW_UPLOAD_DIR
-	cp $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis $$XW_UPLOAD_DIR
+	cp $(SISNAME) $$XW_UPLOAD_DIR
 endif
 ifdef XW_UPLOAD_CMD
-	echo $(PATH)
-	$(XW_UPLOAD_CMD) $(NAME)-$(MAJOR).$(MINOR)-$(ARCH).sis
+	$(XW_UPLOAD_CMD) $(SISNAME)
 endif
 
 _sanity:
