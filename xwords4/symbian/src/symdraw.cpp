@@ -310,10 +310,8 @@ sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* /*r*/,
  * robot-ness and local/remoteness with colors?  Turn is with an icon.
  */
 static void
-sym_draw_score_drawPlayer( DrawCtx* p_dctx, 
-                           XP_S16 playerNum, /* -1: don't use */
-                           XP_Rect* /*rInner*/, XP_Rect* rOuter, 
-                           DrawScoreInfo* dsi )
+sym_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* /*rInner*/, 
+                           XP_Rect* rOuter, DrawScoreInfo* dsi )
 {
     const TInt KTurnIconWidth = 16;
     const TInt KNameColumnWidth = 90;
@@ -343,10 +341,11 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx,
         drawBitmap( sctx, sctx->iRobotIcon, sctx->iRobotIconMask, &lRect );
     }
 
-    if ( playerNum >= 0 && !dsi->selected ) {
-        sctx->iGC->SetPenColor( sctx->colors[playerNum + COLOR_PLAYER1] );
-    } else {
+    XP_U16 playerNum = dsi->playerNum;
+    if ( dsi->selected ) {
         sctx->iGC->SetPenColor( sctx->colors[COLOR_WHITE] );
+    } else {
+        sctx->iGC->SetPenColor( sctx->colors[playerNum + COLOR_PLAYER1] );
     }
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
 
