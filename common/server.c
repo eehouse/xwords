@@ -2276,8 +2276,6 @@ server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
     DictionaryCtxt* dict;
     Tile tile;
     XP_U16 nChars, nPrinted;
-    XP_Bool hasBlank;
-    Tile blank = 0;		/* shut compiler up */
     XP_U16 counts[MAX_UNIQUE_TILES+1]; /* 1 for the blank */
     PoolContext* pool = server->pool;
 
@@ -2292,10 +2290,6 @@ server_formatPoolCounts( ServerCtxt* server, XWStreamCtxt* stream,
 
     dict = model_getDictionary( server->vol.model );
     nChars = dict_numTileFaces( dict );
-    hasBlank = dict_hasBlankTile( dict );
-    if ( hasBlank ) {
-        blank = dict_getBlankTile( dict );
-    }
 
     for ( tile = 0, nPrinted = 0; ; ) {
         XP_UCHAR buf[24];
