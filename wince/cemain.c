@@ -963,10 +963,19 @@ ceChooseAndOpen( CEAppGlobals* globals )
 } /* ceChooseAndOpen */
 
 static void
+updateForColors( CEAppGlobals* globals )
+{
+    ce_drawctxt_update( globals->draw, globals );
+    if ( !!globals->game.board ) {
+        board_invalAll( globals->game.board );
+    }
+} /* updateForColors */
+
+static void
 ceDoPrefsDlg( CEAppGlobals* globals )
 {
-    PrefsDlgState state;
-    PrefsPrefs prefsPrefs;
+    CePrefsDlgState state;
+    CePrefsPrefs prefsPrefs;
 
     XP_MEMSET( &state, 0, sizeof(state) );
 
@@ -983,6 +992,9 @@ ceDoPrefsDlg( CEAppGlobals* globals )
 
         (void)cePositionBoard( globals );
 
+        if ( state.colorsChanged ) {
+            updateForColors( globals );
+        }
         /* need to reflect vars set in state into globals, and update/inval
            as appropriate. */
     }
@@ -1217,8 +1229,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 if ( !state.userCancelled && state.prefsChanged ) {
                     /* need to update some prefs? */
+/*                     if ( state.colorsChanged ) { */
+                        updateForColors( globals );
+/*                     } */
                 }
-            }		
+            }
                 break;
 
             case ID_FILE_NEWGAME:
@@ -1237,19 +1252,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_FILE_PREFERENCES:
                 ceDoPrefsDlg( globals );
                 break;
-
-#ifdef XWFEATURE_CE_EDITCOLORS
-            case ID_FILE_EDITCOLORS:
-                if ( ceDoColorsEdit( hWnd, globals ) ) {
-                    ce_drawctxt_update( globals->draw, globals );
-                    if ( !!globals->game.board ) {
-                        board_invalAll( globals->game.board );
-                        draw = XP_TRUE;
-                    }
-                }
-                break;
-#endif
-
 
             case ID_GAME_FINALSCORES:
                 if ( server_getGameIsOver( globals->game.server ) ) {
