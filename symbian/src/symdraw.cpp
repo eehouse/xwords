@@ -808,9 +808,11 @@ sym_drawctxt_make( MPFORMAL CWindowGc* aGC, CCoeEnv* aCoeEnv,
 
             /* this path will change for other platforms/devices!!! */
 #if defined __WINS__
-            _LIT( kBitmapsPath, "z:\\system\\apps\\XWORDS\\xwords.mbm" );
+            _LIT( kBitmapsPath, "z:\\system\\apps\\" XWORDS_DIR 
+                  "\\" XWORDS_DIR ".mbm" );
 #elif defined __MARM__
-            _LIT( kBitmapsPath, "c:\\system\\apps\\XWORDS\\xwords.mbm" );
+            _LIT( kBitmapsPath, "c:\\system\\apps\\" XWORDS_DIR 
+                  "\\" XWORDS_DIR ".mbm" );
 #endif
             TFileName bitmapFile( kBitmapsPath );
 
