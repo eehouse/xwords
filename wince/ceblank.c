@@ -102,7 +102,7 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         }
         ceShowOrHide( hDlg, IDC_BACKUP, 
                       bState->pi->why == PICK_FOR_CHEAT
-                      && bState->pi->nCurTiles > 0 );
+                      && bState->pi->thisPick > 0 );
 #endif
 
         loadLettersList( hDlg, bState );
