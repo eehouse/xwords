@@ -581,6 +581,41 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
         }
     }
 
+    /* If there's still a move on top of the stack, highlight its tiles since
+       they're now the most recent move. */
+    for ( ; ; ) {
+        StackEntry entry;
+        XP_U16 movesLeft = stack_getNEntries( stack );
+        if ( movesLeft == 0 ||
+             !stack_getNthEntry( stack, movesLeft - 1, &entry ) ) {
+            break;
+        }
+        if ( entry.moveType == MOVE_TYPE ) {
+            XP_U16 nTiles = entry.u.move.moveInfo.nTiles;
+            XP_U16 col, row;
+            XP_U16* varies;
+
+            if ( entry.u.move.moveInfo.isHorizontal ) {
+                row = entry.u.move.moveInfo.commonCoord;
+                varies = &col;
+            } else {
+                col = entry.u.move.moveInfo.commonCoord;
+                varies = &row;
+            }
+
+            while ( nTiles-- ) {
+                CellTile tile;
+
+                *varies = entry.u.move.moveInfo.tiles[nTiles].varCoord;
+                tile = getModelTileRaw( model, col, row );
+                setModelTileRaw( model, col, row, (CellTile)(tile | PREV_MOVE_BIT) );
+
+                notifyBoardListeners( model, entry.playerNum, col, row, XP_FALSE );
+            }
+            break;
+        }
+    }
+
     if ( nMovesUndone != nMovesSought ) {
         success = XP_FALSE;
     }
