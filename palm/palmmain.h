@@ -96,10 +96,16 @@ typedef struct PalmDrawCtx {
      (*((((PalmDrawCtx*)dc))->drawBitmapFunc))((dc),(id),(x),(y))
 
 typedef struct ListData {
-    char** strings;
+    unsigned char** strings;
+    unsigned char* storage;
     XP_U16 nItems;
+    XP_U16 storageLen;
     XP_U16 nextIndex;
     XP_S16 selIndex;
+#ifdef DEBUG
+    XP_Bool choicesSet;    /* ARM hack: don't use strings after PACE
+                              swaps.... */
+#endif
 } ListData;
 
 typedef struct XWords4PreferenceType {

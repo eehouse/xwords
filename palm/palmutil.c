@@ -160,17 +160,40 @@ initListData( MPFORMAL ListData* ld, XP_U16 nItems )
     /* include room for the closure */
     ld->strings = XP_MALLOC( mpool, ((nItems+1) * sizeof(*ld->strings)) );
 
+    ld->storage = XP_MALLOC( mpool, 1 );
+    ld->storage[0] = '\0';
+    ld->storageLen = 1;
+
     ld->nItems = nItems;
     ld->nextIndex = 0;
     ld->selIndex = -1;
+#ifdef DEBUG
+    ld->choicesSet = XP_FALSE;
+#endif
 } /* initListData */
 
 void 
 addListTextItem( MPFORMAL ListData* ld, XP_UCHAR* txt ) 
 {
-    XP_UCHAR* copy = copyString( MPPARM(mpool) txt );
-    XP_ASSERT( ld->nextIndex < ld->nItems );
-    ld->strings[++ld->nextIndex] = (char*)copy; /* ++ skips 0th for closure */
+    XP_U16 curLen = ld->storageLen;
+    XP_U16 strLen = XP_STRLEN( txt ) + 1; /* null byte */
+    XP_S32 diff;
+    unsigned char* storage;
+    XP_S16 i;
+
+    storage = XP_REALLOC( mpool, ld->storage, curLen + strLen );
+    XP_MEMCPY( storage + curLen, txt, strLen );
+
+    /* Now update all the existing ptrs since storage may have moved.
+       Remember to skip item 0. */
+    diff = storage - ld->storage;
+    for ( i = ld->nextIndex; i > 0; --i ) {
+        ld->strings[i] += diff;
+    }
+
+    ld->storage = storage;
+    ld->strings[++ld->nextIndex] = storage + curLen;
+    ld->storageLen += strLen;
 } /* addListTextItem */
 
 /*****************************************************************************
@@ -181,9 +204,12 @@ void
 setListChoices( ListData* ld, ListPtr list, void* closure ) 
 {
     ld->strings[0] = closure;
-    LstSetListChoices( list, &ld->strings[1], ld->nextIndex );
+    LstSetListChoices( list, (Char**)&ld->strings[1], ld->nextIndex );
+#ifdef DEBUG
+    ld->choicesSet = XP_TRUE;
+#endif
     if ( ld->selIndex >= 0 ) {
-	LstSetSelection( list, ld->selIndex );
+        LstSetSelection( list, ld->selIndex );
     }
 } /* setListChoices */
 
@@ -196,16 +222,17 @@ setListChoices( ListData* ld, ListPtr list, void* closure )
 void 
 setListSelection( ListData* ld, char* selName )
 {
+    ld->selIndex = 0;
+    XP_ASSERT( !ld->choicesSet );
+
     if ( !!selName ) {
-	XP_U16 i;
-	for ( i = 0; i < ld->nextIndex; ++i ) {
-	    if ( StrCompare( ld->strings[i+1], selName ) == 0 ) {
-		ld->selIndex = i;
-		break;
-	    }
-	}
-    } else {
-	ld->selIndex = 0;
+        XP_U16 i;
+        for ( i = 0; i < ld->nextIndex; ++i ) {
+            if ( StrCompare( ld->strings[i+1], selName ) == 0 ) {
+                ld->selIndex = i;
+                break;
+            }
+        }
     }
 } /* setListSelection */
 
@@ -218,23 +245,26 @@ void
 sortList( ListData* ld ) 
 {
     XP_S16 i, j, smallest;
-    char** strings = ld->strings;
+    unsigned char** strings = ld->strings;
     char* tmp;
 
+    XP_ASSERT( !ld->choicesSet ); /* if ARM, strings are reversed.  Use list
+                                     API at this point. */
+
     for ( i = 1; i <= ld->nextIndex; ++i ) { /* skip 0th (closure) slot */
-	for ( smallest = i, j = i+1; j <= ld->nextIndex; ++j ) {
-	    if ( StrCompare( strings[smallest], strings[j] ) > 0 ) {
-		smallest = j;
-	    }
-	}
+        for ( smallest = i, j = i+1; j <= ld->nextIndex; ++j ) {
+            if ( StrCompare( strings[smallest], strings[j] ) > 0 ) {
+                smallest = j;
+            }
+        }
 
-	if ( smallest == i ) {	/* we got to the end without finding anything */
-	    break;
-	}
+        if ( smallest == i ) {	/* we got to the end without finding anything */
+            break;
+        }
 
-	tmp = strings[i];
-	strings[i] = strings[smallest];
-	strings[smallest] = tmp;
+        tmp = strings[i];
+        strings[i] = strings[smallest];
+        strings[smallest] = tmp;
     }
 } /* sortList */
 
@@ -245,12 +275,7 @@ sortList( ListData* ld )
 void
 freeListData( MPFORMAL ListData* ld  ) 
 {
-    char** strings = ld->strings;
-    XP_U16 i;
-
-    for ( i = 0; i < ld->nextIndex; ++i ) {
-	XP_FREE( mpool, *++strings ); /* skip 0th */
-    }
+    XP_FREE( mpool, ld->storage );
     XP_FREE( mpool, ld->strings );
 } /* freeListData */
 
@@ -258,7 +283,7 @@ freeListData( MPFORMAL ListData* ld  )
  *
  ****************************************************************************/
 void 
-setSelectorFromList( UInt16 triggerID, ListPtr list, short listSelIndex ) 
+setSelectorFromList( UInt16 triggerID, ListPtr list, XP_S16 listSelIndex ) 
 {
     XP_ASSERT( list != NULL );
     XP_ASSERT( getActiveObjectPtr( triggerID ) != NULL );
@@ -321,28 +346,30 @@ penInGadget( EventPtr event, UInt16* whichGadget )
     XP_Bool result = XP_FALSE;
 
     for ( i = 0, nObjects = FrmGetNumberOfObjects(form); i < nObjects; ++i ) {
-	if ( frmGadgetObj == FrmGetObjectType( form, i ) ) {
-	    UInt16 objId = FrmGetObjectId( form, i );
-	    if ( objId != REFCON_GADGET_ID ) {
-		RectangleType rect;
-		FrmGetObjectBounds( form, i, &rect );
-		if ( RctPtInRectangle( x, y, &rect ) ) {
-		    *whichGadget = objId;
-		    result = XP_TRUE;
-		    break;
-		}
-	    }
-	}
+        if ( frmGadgetObj == FrmGetObjectType( form, i ) ) {
+            UInt16 objId = FrmGetObjectId( form, i );
+            if ( objId != REFCON_GADGET_ID ) {
+                RectangleType rect;
+                FrmGetObjectBounds( form, i, &rect );
+                if ( RctPtInRectangle( x, y, &rect ) ) {
+                    *whichGadget = objId;
+                    result = XP_TRUE;
+                    break;
+                }
+            }
+        }
     }
     
     return result;
 } /* penInGadget */
 
-#define GLOBALS_FEATURE 10
 void
 setFormRefcon( void* refcon )
 {
-    Err err = FtrSet( APPID, GLOBALS_FEATURE, (UInt32)refcon );
+#ifdef DEBUG
+    Err err = 
+#endif
+        FtrSet( APPID, GLOBALS_FEATURE, (UInt32)refcon );
     XP_ASSERT( err == errNone );
 } /* setFormRefcon */
 
@@ -350,7 +377,10 @@ void*
 getFormRefcon()
 {
     UInt32 ptr;
-    Err err = FtrGet( APPID, GLOBALS_FEATURE, &ptr );
+#ifdef DEBUG
+    Err err = 
+#endif
+        FtrGet( APPID, GLOBALS_FEATURE, &ptr );
     XP_ASSERT( err == errNone );
     XP_ASSERT( ptr != 0L );
     return (void*)ptr;
