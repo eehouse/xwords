@@ -124,7 +124,7 @@ $(LANG)%.pdb: dawg$(LANG)%.stamp table.bin palmvalues.bin palmheader%.bin
 #		> $@
 
 # the files to export for byod
-byodbins: table.bin values.bin palmvalues.bin 
+byodbins: table.bin values.bin palmvalues.bin info.txt
 
 #endif				# TARGET_TYPE==PALM
 
@@ -186,7 +186,7 @@ $(LANG)%.atts:			#recreate it each time based on params
 endif
 
 # the files to export for byod
-byodbins: table.bin values.bin frankspecials.bin
+byodbins: table.bin values.bin frankspecials.bin info.txt
 
 
 else
@@ -245,6 +245,7 @@ $(LANG)%_wordcount.bin: dawg$(LANG)%.stamp
 allbins: 
 	$(MAKE) TARGET_TYPE=PALM byodbins
 	$(MAKE) TARGET_TYPE=FRANK byodbins
+	rm palmspecials.bin
 
 table.bin:  ../xloc.pl 
 ifdef NEWDAWG
