@@ -152,7 +152,9 @@ my %typeInfo = (
                 "const char*" => { "size" => 4, "a0" => 1 },
                 "const void*" => { "size" => 4, "a0" => 1 },
                 "FormObjectKind" => { "size" => 1, "a0" => 0 }, # enum
-                "_Palm_va_list" => { "size" => 4, "a0" => 1 },  # it's a char*, likely never returned
+                # it's a char*, likely never returned
+                "_Palm_va_list" => { "size" => 4, "a0" => 1 }, 
+                "WinScreenAttrType" => { "size" => 1, "a0" => 0 }, # enum
                 );
 
 sub name_compact($) {
@@ -255,6 +257,7 @@ sub searchOneFile($$) {
 
     if ( $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^V]*(VFSMGR_TRAP)\(([\w]+)\);/ 
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_TRAP)\(([\w]+)\);/
+        || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^H]*(HIGH_DENSITY_TRAP)\(([\w]+)\);/
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^G]*(GRF_TRAP)\(([\w]+)\);/ ) {
 
         # print STDERR "found something\n";
@@ -417,6 +420,9 @@ sub print_body($$$$$) {
     if ( $trapType eq "VFSMGR_TRAP" ) {
         $result .= "    SET_SEL_REG($trapSel, sp);\n";
         $trapSel = "sysTrapFileSystemDispatch";
+    } elsif ( $trapType eq "HIGH_DENSITY_TRAP" ) {
+        $result .= "    SET_SEL_REG($trapSel, sp);\n";
+        $trapSel = "sysTrapHighDensityDispatch";
     } elsif( $trapType eq "GRF_TRAP" || $trapType eq "SYS_TRAP"  ) {
         # they're the same according to Graffiti.h
     } else {
