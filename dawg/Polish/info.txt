@@ -40,6 +40,12 @@ LANGINFO: this working.</p>
 LANGINFO: <p>Note that the blank is the last tile here, while with all
 LANGINFO: other languages it's the first.</p>
 
+LANGINFO: <p>Also, please note that we currently require the files you
+LANGINFO: upload to use the iso-8859-2 character encoding, which is
+LANGINFO: used on PalmOS and Linux but not on Windows.  This probably
+LANGINFO: means that the Polish dictionaries you build here will only
+LANGINFO: work for the PalmOS version of Crosswords.</p>
+
 # High bit means "official".  Next 7 bits are an enum where
 # Polish==8.  Low byte is padding
 XLOC_HEADER:0x8800
