@@ -1014,7 +1014,11 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 
             /* the dictionary */
             dict = model_getDictionary( globals->game.model );
+#ifdef STUBBED_DICT             /* don't check this in!!! */
+            dictName = NULL;
+#else
             dictName = !!dict? dict_getName( dict ) : NULL;
+#endif
             stream_putU8( memStream, (XP_U8)!!dictName );
             if ( !!dictName ) {
                 stringToStream( memStream, dictName );
@@ -1229,7 +1233,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case XWWM_TIME_RQST:
-            server_do( globals->game.server ); 
+            draw = server_do( globals->game.server ); 
             break;
 
         default:
