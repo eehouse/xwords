@@ -1049,7 +1049,7 @@ startApplication( PalmAppGlobals** globalsP )
     Boolean leftyFlag;
     MPSLOT;
 
-#if defined FOR_GREMLINS || defined FEATURE_PNOAND68K || defined XW_TARGET_PNO
+#if defined FOR_GREMLINS
     SysRandom( 1 );
 #else
     SysRandom( TimGetTicks() );		/* initialize */
@@ -2289,20 +2289,16 @@ mainViewHandleEvent( EventPtr event )
             /* This probably goes away at ship.... */
         case XW_RUN68K_PULLDOWN_ID:
         case XW_RUNARM_PULLDOWN_ID: {
-            UInt32 newVal, val;
+            UInt32 newVal;
             Err err;
             if ( event->data.menu.itemID == XW_RUN68K_PULLDOWN_ID ) {
                 newVal = WANTS_68K;
             } else {
                 newVal = WANTS_ARM;
             }
-            (void)FtrUnregister( APPID, WANTS_ARM_FEATURE );
-            err = FtrSet( APPID, WANTS_ARM_FEATURE, newVal );
+            (void)FtrUnregister( APPID, FEATURE_WANTS_68K );
+            err = FtrSet( APPID, FEATURE_WANTS_68K, newVal );
             XP_ASSERT( err == errNone );
-            err = FtrGet( APPID, WANTS_ARM_FEATURE, &val );
-            XP_ASSERT( err == errNone );
-            XP_ASSERT( val == newVal );
-            XP_LOGF( "WANTS_ARM_FEATURE now %ld", val );
         }
             break;
 #endif
