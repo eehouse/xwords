@@ -24,21 +24,50 @@ extern "C" {
 #include "comtypes.h"
 #include "xwstream.h"
 #include "mempool.h"
+#include "game.h"
 }
 
 #include <e32base.h>
 #include <eikdialg.h>
 
-class CXWGameInfoDlg : public CEikDialog
+class TGameInfoBuf
 {
  public:
-    CXWGameInfoDlg( MPFORMAL_NOCOMMA );
+    TGameInfoBuf::TGameInfoBuf( const CurGameInfo* aGi,
+                                CDesC16ArrayFlat* aDictList );
+    CDesC16ArrayFlat* GetDictList() { return iDictList; }
+    void CopyToL( MPFORMAL CurGameInfo* aGi );
+
+    TBool iIsRobot[MAX_NUM_PLAYERS];
+    TBool iIsLocal[MAX_NUM_PLAYERS];
+
+    TBuf16<32> iPlayerNames[MAX_NUM_PLAYERS];
+
+    CDesC16ArrayFlat* iDictList; /* owned externally! */
+    TInt iDictIndex;
+    TInt iNPlayers;
+};
+
+class CXWGameInfoDlg : public CEikDialog  /* CEikForm instead? */
+{
+ public:
+    CXWGameInfoDlg( MPFORMAL TGameInfoBuf* aGib, TBool aNewGame );
     ~CXWGameInfoDlg();
 
  private:
     void PreLayoutDynInitL();
     void HandleControlStateChangeL( TInt aControlId );
     TBool OkToExitL( TInt aKeyCode );
+
+    void LoadPlayerInfo( TInt aWhich );
+    void SavePlayerInfo( TInt aWhich );
+    void SetPlayerShown( TInt aPlayer );
+    CDesC16ArrayFlat* MakeNumListL( TInt aFirst, TInt aLast );
+
+    TBool iIsNewGame;
+    TGameInfoBuf* iGib;
+
+    TInt iCurPlayerShown;
 
     MPSLOT
 };
