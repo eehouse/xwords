@@ -109,12 +109,16 @@ class CXWordsAppView : public CCoeControl
     void DisplayFinalScoresL();
     XWStreamCtxt* MakeSimpleStream( MemStreamCloseCallback cb );
     TBool AskFromResId( TInt aResource );
-
+    TBool FindAllDicts();
+    void UserErrorFromID( TInt aResource );
+    TBool ReadCurrentGame() { return EFalse; } /* later.... */
 
     static void        sym_util_requestTime( XW_UtilCtxt* uc );
     static VTableMgr*  sym_util_getVTManager( XW_UtilCtxt* uc );
     static XP_U32      sym_util_getCurSeconds( XW_UtilCtxt* uc );
     static void        sym_util_notifyGameOverL( XW_UtilCtxt* uc );
+    static void        sym_util_userError( XW_UtilCtxt* uc, UtilErrID id );
+
 
     static TInt TimerCallback( TAny* aThis );
 
@@ -131,6 +135,10 @@ class CXWordsAppView : public CCoeControl
     TInt        iTimerRunCount;
     CIdle*      iRequestTimer;
 
+/*     MDesCArray* iDictList; */
+    CDesC16ArrayFlat* iDictList;   /* to pass into the dialog */
+/*     TInt        iNDicts; */
+/*     TBuf16<32>* iDictList; */
 
     MPSLOT
 };
