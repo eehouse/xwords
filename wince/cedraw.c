@@ -372,7 +372,7 @@ logLastError()
     XP_LOGF( "system error: %s", msg );
 } /* logLastError */
 #else
-# define logLastError
+# define logLastError()
 #endif
 
 static void
