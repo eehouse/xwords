@@ -93,7 +93,7 @@ typedef struct UtilVtable {
                                 XWStreamCtxt* stream );
 
     /* return of < 0 means computer should pick */
-    XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, PickInfo* why, 
+    XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, PickInfo* pi, 
                                    XP_U16 playerNum,
                                    XP_UCHAR4* texts, XP_U16 nTiles );
 
