@@ -313,6 +313,19 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
     }
 } /* gi_copy */
 
+XP_U16
+gi_countHumans( CurGameInfo* gi )
+{
+    XP_U16 count = 0;
+    XP_U16 nPlayers = gi->nPlayers;
+    while ( nPlayers-- ) {
+        if ( !gi->players[nPlayers].isRobot ) {
+            ++count;
+        }
+    }
+    return count;
+} /* gi_countHumans */
+
 void
 gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 {
