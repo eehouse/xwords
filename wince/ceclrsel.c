@@ -57,7 +57,7 @@ initEditAndSlider( HWND hDlg, XP_U16 sliderID, XP_U8 val )
                         MAKELONG(0,255) );
     SendDlgItemMessage( hDlg, sliderID, TBM_SETPOS, TRUE, 
                         (long)val );
-    ceSetDlgItemNum( hDlg, sliderID+1, val );
+    ceSetDlgItemNum( hDlg, sliderID+1, (XP_S32)val );
 } /* initEditAndSlider */
 
 static void
@@ -94,7 +94,8 @@ colorForSlider( ClrEditDlgState* eState, XP_U16 sliderID )
 static void 
 updateForSlider( HWND hDlg, ClrEditDlgState* eState, XP_U16 sliderID )
 {
-    XP_U8 newColor = SendDlgItemMessage( hDlg, sliderID, TBM_GETPOS, 0, 0L );
+    XP_U8 newColor = (XP_U8)SendDlgItemMessage( hDlg, sliderID, TBM_GETPOS, 
+                                                0, 0L );
     XP_U8* colorPtr = colorForSlider( eState, sliderID );
     if ( newColor != *colorPtr ) {
         *colorPtr = newColor;
@@ -124,7 +125,7 @@ updateForField( HWND hDlg, ClrEditDlgState* eState, XP_U16 fieldID )
     }
     
     if ( newColor != *colorPtr ) {
-        *colorPtr = newColor;
+        *colorPtr = (XP_U8)newColor;
 
         SendDlgItemMessage( hDlg, fieldID-1, TBM_SETPOS, TRUE, 
                             (long)newColor );
@@ -139,7 +140,6 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     XP_U16 wid;
     XP_U16 notifyCode;
     NMTOOLBAR* nmToolP; 
-    XP_U16 idCtrl;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
@@ -240,6 +240,7 @@ myChooseColor( CEAppGlobals* globals, HWND hwnd, COLORREF* cref )
 typedef struct ColorsDlgState {
 
     CEAppGlobals* globals;
+    COLORREF* inColors;
 
     COLORREF colors[NUM_EDITABLE_COLORS];
     HBRUSH brushes[NUM_EDITABLE_COLORS];
@@ -261,7 +262,7 @@ initColorData( ColorsDlgState* cState, HWND hDlg )
     XP_ASSERT( (LAST_BUTTON - FIRST_BUTTON + 1) == NUM_EDITABLE_COLORS );
 
     for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
-        COLORREF ref = globals->appPrefs.colors[i];
+        COLORREF ref = cState->inColors[i];
         cState->colors[i] = ref;
         XP_LOGF( "ref[%d] = 0x%lx", i, (unsigned long)ref );
         cState->brushes[i] = CreateSolidBrush( ref );
@@ -394,12 +395,13 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 } /* ColorsDlg */
 
 XP_Bool
-ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals )
+ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
 {
     ColorsDlgState state;
 
     XP_MEMSET( &state, 0, sizeof(state) );
     state.globals = globals;
+    state.inColors = colors;
 
     (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
                           (DLGPROC)ColorsDlg, (long)&state );
@@ -407,7 +409,7 @@ ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals )
     if ( !state.cancelled ) {
         XP_U16 i;
         for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
-            globals->appPrefs.colors[i] = state.colors[i];
+            colors[i] = state.colors[i];
         }
     }
         
