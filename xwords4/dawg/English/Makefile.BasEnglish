@@ -19,7 +19,7 @@ LANG=BasEnglish
 LANGCODE=en_US
 #NEWDAWG=1
 
-TARGET_TYPE ?= FRANK
+TARGET_TYPE ?= PALM
 
 include ../Makefile.2to8
 
