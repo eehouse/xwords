@@ -631,9 +631,6 @@ ce_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
     }
 } /* ce_draw_drawTimer */
 
-/* #define LINE_BREAK XP_CR */
-#define LINE_BREAK "\n"
-
 static XP_UCHAR*
 ce_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
 {
@@ -649,7 +646,7 @@ ce_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
     case BONUS_TRIPLE_WORD:
         str = "Triple word"; break;
     case INTRADE_MW_TEXT:
-        str = "Trading tiles;" LINE_BREAK "select 'Turn done' when ready"; break;
+        str = "Trading tiles;" XP_CR "select 'Turn done' when ready"; break;
     default:
         XP_ASSERT( XP_FALSE );
     }
@@ -658,6 +655,8 @@ ce_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
 } /* ce_draw_getMiniWText */
 
 #define CE_MINI_V_PADDING 6
+#define CE_INTERLINE_SPACE 0
+
 static void
 ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str, 
                           XP_U16* widthP, XP_U16* heightP )
@@ -670,7 +669,7 @@ ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str,
 
     for ( height = CE_MINI_V_PADDING, maxWidth = 0; ; ) {
         wchar_t widebuf[64];
-        XP_UCHAR* nextStr = strstr( str, LINE_BREAK );
+        XP_UCHAR* nextStr = strstr( str, XP_CR );
         XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
         SIZE size;
 
@@ -682,13 +681,13 @@ ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str,
         GetTextExtentPoint32( hdc, widebuf, wcslen(widebuf), &size );
 
         maxWidth = XP_MAX( maxWidth, size.cx );
-        height += size.cy + 2;
+        height += size.cy + CE_INTERLINE_SPACE;
         dctx->miniLineHt = size.cy;
 
         if ( nextStr == NULL ) {
             break;
         }
-        str = nextStr + XP_STRLEN(LINE_BREAK);	/* skip '\n' */
+        str = nextStr + XP_STRLEN(XP_CR);	/* skip '\n' */
     }
 
     *widthP = maxWidth + 8;
@@ -729,7 +728,7 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
     InsetRect( &textRt, 3, 0 );
 
     for ( ; ; ) { /* draw up to the '\n' each time */
-        XP_UCHAR* nextStr = strstr( text, LINE_BREAK );
+        XP_UCHAR* nextStr = strstr( text, XP_CR );
         XP_U16 len;
 
         if ( nextStr == NULL ) {
@@ -749,8 +748,8 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
         if ( nextStr == NULL ) {
             break;
         }
-        textRt.top = textRt.bottom + 2;
-        text = nextStr + XP_STRLEN(LINE_BREAK);
+        textRt.top = textRt.bottom + CE_INTERLINE_SPACE;
+        text = nextStr + XP_STRLEN(XP_CR);
     }
 
     if ( !globals->hdc ) {
