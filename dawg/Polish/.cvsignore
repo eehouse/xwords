@@ -1,0 +1,8 @@
+*.bin
+*.pdb
+*.saved
+*.pdr
+*.ehouse
+*.seb
+decompose
+temp
