@@ -448,7 +448,8 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
         MemHandleResize( h, sizeof(*header) );
     }
 
-    tmp.flags = 0x0002;
+    tmp.flags = XP_HTONS(0x0002);
+    XP_ASSERT( sizeof(tmp.flags) == 2 );
     header = (dawg_header*)MemHandleLock(h);
     charTableRecNum = header->charTableRecNum;
     firstEdgeRecNum = header->firstEdgeRecNum;
@@ -465,13 +466,16 @@ convertOneDict( UInt16 cardNo, LocalID dbID )
     XP_ASSERT( err == errNone );
 
     if ( err == errNone ) {
-        XP_U16 buf[MAX_UNIQUE_TILES+1];
+        XP_U8 buf[(MAX_UNIQUE_TILES+1)*2];
         XP_S16 i;
         XP_U8* ptr = (XP_U8*)MemHandleLock( h );
+
+        XP_MEMSET( buf, 0, sizeof(buf) );
+
         for ( i = 0; i < nChars; ++i ) {
-            buf[i] = ptr[i];
+            buf[(i*2)+1] = ptr[i];
         }
-        DmWrite( ptr, 0, buf, nChars * sizeof(buf[0]) );
+        DmWrite( ptr, 0, buf, nChars * 2 );
         MemHandleUnlock(h);
     }
     err = DmReleaseRecord( ref, charTableRecNum, true );
