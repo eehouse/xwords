@@ -30,6 +30,8 @@ extern "C" {
 #if defined SERIES_60
 # include <coemain.h>
 # include <aknenv.h>
+#elif defined SERIES_80
+# include <eikenv.h>
 #endif
 
 #define scaleBoardV 13
