@@ -1288,7 +1288,8 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 
     XP_ASSERT( !!pool );
 #ifdef FEATURE_TRAY_EDIT
-    ask = server->nv.allowPickTiles;
+    ask = !server->vol.gi->players[playerNum].isRobot
+        && server->nv.allowPickTiles;
 #else
     ask = XP_FALSE;
 #endif
@@ -1846,9 +1847,7 @@ server_commitTrade( ServerCtxt* server, TileBit selBits )
 {
     TrayTileSet oldTiles;
     TrayTileSet newTiles;
-#ifndef XWFEATURE_STANDALONE_ONLY
     XP_U16 turn = server->nv.currentTurn;
-#endif
 
     removeTradedTiles( server, selBits, &oldTiles );
 
