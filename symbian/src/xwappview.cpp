@@ -50,6 +50,8 @@
 
 #include "LocalizedStrIncludes.h"
 
+#define LISTEN_PORT 10998
+
 // Standard construction sequence
 CXWordsAppView* CXWordsAppView::NewL(const TRect& aRect)
 {
@@ -73,6 +75,7 @@ CXWordsAppView::CXWordsAppView()
     XP_MEMSET( &iGame, 0, sizeof(iGame) );
 
     iCurGameName.Copy( _L("") );
+    iListenPort = LISTEN_PORT;
 }
 
 CXWordsAppView::~CXWordsAppView()
@@ -478,6 +481,14 @@ sym_util_warnIllegalWord( XW_UtilCtxt* /*uc*/, BadWordInfo* /*bwi*/,
     return XP_FALSE;
 }
 
+#ifdef BEYOND_IR
+/*static*/void 
+CXWordsAppView::sym_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 listenPort )
+{
+
+}
+#endif
+
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool
 sym_util_getTraySearchLimits(XW_UtilCtxt* /*uc*/, XP_U16* /*min*/, XP_U16* /*max*/ )
@@ -515,6 +526,9 @@ CXWordsAppView::SetUpUtil()
     vtable->m_util_makeEmptyDict = sym_util_makeEmptyDict;
     vtable->m_util_getUserString = sym_util_getUserString;
     vtable->m_util_warnIllegalWord = sym_util_warnIllegalWord;
+#ifdef BEYOND_IR
+    vtable->m_util_listenPortChange = sym_util_listenPortChange;
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     vtable->m_util_getTraySearchLimits = sym_util_getTraySearchLimits;
 #endif
@@ -1007,7 +1021,7 @@ CXWordsAppView::DoNewGame()
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     CommsAddrRec commsAddr;
-    XP_U16 listenPort = 0;
+    XP_U16 listenPort = iListenPort;
     if ( iGame.comms != NULL ) {
         comms_getAddr( iGame.comms, &commsAddr, &listenPort );
     } else {
