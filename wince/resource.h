@@ -139,24 +139,25 @@
 #define ID_GAME_HISTORY                 40006
 #define ID_GAME_FINALSCORES             40007
 #define ID_GAME_TILECOUNTSANDVALUES     40008
-#define ID_MOVE_HINT                    40009
+#define ID_GAME_TILESLEFT               40009
+#define ID_MOVE_HINT                    40010
 #ifdef XWFEATURE_SEARCHLIMIT
-# define ID_MOVE_LIMITEDHINT            40010
+# define ID_MOVE_LIMITEDHINT            40011
 #endif
-#define ID_MOVE_NEXTHINT                40011
-#define ID_MOVE_UNDOCURRENT             40012
-#define ID_MOVE_UNDOLAST                40013
-#define ID_MOVE_TRADE                   40014
-#define ID_MOVE_JUGGLE                  40015
-#define ID_MOVE_HIDETRAY                40016
-#define ID_MOVE_TURNDONE                40017
-#define ID_FILE_NEWGAME                 40018
-#define ID_FILE_SAVEDGAMES              40019
-#define ID_EDITTEXT                     40020
-#define ID_FILE_PREFERENCES             40021
-#define ID_FILE_BEAMDICT                40022
-#define ID_FILE_BEAMBOARDS              40023
-#define ID_GAME_RESENDMSGS              40024
+#define ID_MOVE_NEXTHINT                40012
+#define ID_MOVE_UNDOCURRENT             40013
+#define ID_MOVE_UNDOLAST                40014
+#define ID_MOVE_TRADE                   40015
+#define ID_MOVE_JUGGLE                  40016
+#define ID_MOVE_HIDETRAY                40017
+#define ID_MOVE_TURNDONE                40018
+#define ID_FILE_NEWGAME                 40019
+#define ID_FILE_SAVEDGAMES              40020
+#define ID_EDITTEXT                     40021
+#define ID_FILE_PREFERENCES             40022
+#define ID_FILE_BEAMDICT                40023
+#define ID_FILE_BEAMBOARDS              40024
+#define ID_GAME_RESENDMSGS              40025
 
 #define ID_COLORS_RES                   9999
 #define ID_BONUS_RES                    9998
@@ -166,7 +167,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40025
+#define _APS_NEXT_COMMAND_VALUE         40026
 #define _APS_NEXT_CONTROL_VALUE         1087
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
