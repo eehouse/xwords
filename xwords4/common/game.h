@@ -59,7 +59,6 @@ typedef struct CurGameInfo {
     XP_Bool hintsNotAllowed;
     XP_Bool timerEnabled;
 #ifdef FEATURE_TRAY_EDIT
-    XP_Bool enablePickTiles;    /* make the next option available */
     XP_Bool allowPickTiles;
 #endif
     XP_U8 robotSmartness;

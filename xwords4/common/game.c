@@ -230,7 +230,6 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate )
     gi->timerEnabled = XP_FALSE;
     gi->gameSeconds = 25 * 60;	/* 25 minute game is common? */
 #ifdef FEATURE_TRAY_EDIT
-    gi->enablePickTiles = XP_FALSE;
     gi->allowPickTiles = XP_FALSE;
 #endif
 
@@ -301,7 +300,6 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
     destGI->robotSmartness = (XP_U8)srcGI->robotSmartness;
     destGI->phoniesAction = srcGI->phoniesAction;
 #ifdef FEATURE_TRAY_EDIT
-    destGI->enablePickTiles = srcGI->enablePickTiles;
     destGI->allowPickTiles = srcGI->allowPickTiles;
 #endif
 
@@ -340,10 +338,8 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, XP_U16 strVersion,
     gi->timerEnabled = stream_getBits( stream, 1 );
 #ifdef FEATURE_TRAY_EDIT
     if ( strVersion >= CUR_STREAM_VERS ) {
-        gi->enablePickTiles = stream_getBits( stream, 1 );
         gi->allowPickTiles = stream_getBits( stream, 1 );
     } else {
-        gi->enablePickTiles = XP_FALSE;
         gi->allowPickTiles = XP_FALSE;
     }
 #endif
@@ -389,7 +385,6 @@ gi_writeToStream( XWStreamCtxt* stream, CurGameInfo* gi )
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
 #ifdef FEATURE_TRAY_EDIT
-    stream_putBits( stream, 1, gi->enablePickTiles );
     stream_putBits( stream, 1, gi->allowPickTiles );
 #endif
 
