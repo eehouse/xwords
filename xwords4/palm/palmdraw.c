@@ -56,30 +56,25 @@ static void palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
 #define HIGHRES_PUSH_LOC( dctx ) \
     { \
         XP_U16 oldVal = 0; \
-        XP_LOGF( "HIGHRES_PUSH_LOC line %d", __LINE__ ); \
         if ( (dctx)->doHiRes ) { \
             oldVal = WinSetCoordinateSystem( kCoordinatesNative ); \
         } 
 #define HIGHRES_POP_LOC(dctx) \
-        XP_LOGF( "HIGHRES_POP_LOC line %d", __LINE__ ); \
         if ( (dctx)->doHiRes ) { \
             (void)WinSetCoordinateSystem( oldVal ); \
             (dctx)->oldCoord = 0; \
         } \
     }
 #define HIGHRES_PUSH_NOPOP( dctx ) \
-    XP_LOGF( "HIGHRES_PUSH_NOPOP line %d", __LINE__ ); \
     if ( (dctx)->doHiRes ) { \
         WinSetCoordinateSystem( kCoordinatesNative ); \
     } 
 #define HIGHRES_PUSH( dctx ) \
-    XP_LOGF( "HIGHRES_PUSH line %d", __LINE__ ); \
     if ( (dctx)->doHiRes ) { \
         XP_ASSERT( (dctx)->oldCoord == 0 ); \
         (dctx)->oldCoord = WinSetCoordinateSystem( kCoordinatesNative ); \
     } 
 #define HIGHRES_POP(dctx) \
-    XP_LOGF( "HIGHRES_POP line %d", __LINE__ ); \
     if ( (dctx)->doHiRes ) { \
          (void)WinSetCoordinateSystem( (dctx)->oldCoord ); \
         (dctx)->oldCoord = 0; \
@@ -418,13 +413,18 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
     XP_Rect localR = *rect;
     XP_U16 len, width;
     WinHandle numberWin = dctx->numberWin;
-
+    XP_U16 doubler = 1;
+#ifdef FEATURE_HIGHRES
+    if ( dctx->doHiRes ) {
+        doubler = 2;
+    }
+#endif
     draw_clearRect( p_dctx, &localR );
 
-    localR.width -= 3;
-    localR.height -= 3;
-    localR.top += 2;
-    localR.left += 2;
+    localR.width -= 3 * doubler;
+    localR.height -= 3 * doubler;
+    localR.top += 2 * doubler;
+    localR.left += 2 * doubler;
 
     /* this will fill it with the tile background color */
     WinEraseRectangle( (const RectangleType*)&localR, 0 );
@@ -434,19 +434,21 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
             FontID curFont = FntGetFont();
             FntSetFont( largeFont );
 #ifdef TILE_SUBSCRIPT
-            WinDrawChars( (const char*)letters, 1, localR.left+2, 
-                          rect->top+2 );
+            WinDrawChars( (const char*)letters, doubler,
+                          localR.left+(2*doubler), 
+                          rect->top+(2*doubler) );
 #else
             WinDrawChars( letters, 1, localR.left+2, rect->top+7 );
 #endif
             FntSetFont( curFont );
         }
     } else if ( !!bitmap ) {
-        WinDrawBitmap( (BitmapPtr)bitmap, localR.left+2, localR.top+2 );
+        WinDrawBitmap( (BitmapPtr)bitmap, localR.left+(2*doubler), 
+                       localR.top+(2*doubler) );
     }
 
     if ( val >= 0 ) {
-        RectangleType numRect = {{0,0}, {NUMRECT_WIDTH, NUMRECT_HEIGHT}};
+        RectangleType numRect = {{0,0}, {NUMRECT_WIDTH*2, NUMRECT_HEIGHT*2}};
         WinHandle curWind;
 
         (void)StrPrintF( valBuf, "%d", val );
@@ -458,14 +460,15 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         WinEraseRectangle( &numRect, 0 );
 
         WinDrawChars( valBuf, len, 0, 0 );
-        width = FntCharsWidth( valBuf, len );     
+        width = FntCharsWidth( valBuf, len );
+        XP_LOGF( "width=%d", width );
 
         (void)WinSetDrawWindow( curWind );
         numRect.extent.x = width;
 #ifdef TILE_SUBSCRIPT
         WinCopyRectangle( numberWin, 0, &numRect, 
                           localR.left + localR.width - width,
-                          localR.top + localR.height - 10,
+                          localR.top + localR.height - (10*doubler),
                           winOverlay );
 #else
         WinCopyRectangle( numberWin, 0, &numRect, 
@@ -974,26 +977,35 @@ palm_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
 } /* palm_draw_getMiniWText */
 
 #define VALUE_HINT_RECT_HEIGHT 16
+#define VALUE_HINT_RECT_HEIGHT_HR 29
 static void
 palm_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str, 
                             XP_U16* widthP, XP_U16* heightP )
 {
-    HIGHRES_PUSH_LOC( (PalmDrawCtx*)p_dctx );
+    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx; 
+    HIGHRES_PUSH_LOC( dctx );
     /*     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx; */
     FntSetFont( stdFont );
     /* 8 stolen from xwords.c*/
     *widthP = FntCharsWidth( (const char*)str, 
                              XP_STRLEN((const char*)str) ) + 8;
-    *heightP = VALUE_HINT_RECT_HEIGHT;
+    if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+    } else if ( dctx->doHiRes ) {
+        *heightP = VALUE_HINT_RECT_HEIGHT_HR;        
+#endif
+    } else {
+        *heightP = VALUE_HINT_RECT_HEIGHT;
+    }
 
     HIGHRES_POP_LOC( (PalmDrawCtx*)p_dctx );
 } /* palm_draw_measureMiniWText */
 
-typedef struct MiniWinData {
+typedef struct PalmMiniWinData {
     WinHandle bitsBehind;
     XP_S16 miniX;
     XP_S16 miniY;
-} MiniWinData;
+} PalmMiniWinData;
 
 static void
 palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, 
@@ -1002,7 +1014,7 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
     RectangleType localR = *(RectangleType*)rect;
     XP_U16 ignoreErr;
     XP_Bool hasClosure = !!closureP;
-    MiniWinData* data = (MiniWinData*)(hasClosure? *closureP: NULL);
+    PalmMiniWinData* data = (PalmMiniWinData*)(hasClosure? *closureP: NULL);
 #ifdef MEM_DEBUG
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 #endif
@@ -1011,8 +1023,12 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text,
 
     if ( hasClosure ) {
         if ( !data ) {
-            data = XP_MALLOC( dctx->mpool, sizeof(MiniWinData) );
+            data = XP_MALLOC( dctx->mpool, sizeof(PalmMiniWinData) );
+#ifdef FEATURE_HIGHRES
             data->bitsBehind = WinSaveBits( &localR, &ignoreErr );
+#else
+            data->bitsBehind = NULL;
+#endif
             data->miniX = localR.topLeft.x;
             data->miniY = localR.topLeft.y;
             *closureP = data;
@@ -1038,21 +1054,21 @@ static void
 palm_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
                            void** closure, XP_Bool* invalUnder )
 {
-#ifdef FEATURE_HIGHRES
-    *invalUnder = XP_TRUE;      /* cop out (for now) */
-#else
-    MiniWinData* data = *closure;
+    PalmMiniWinData* data = (PalmMiniWinData*)*closure;
 # ifdef DEBUG
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 # endif
 
     if ( !!closure && !!*closure ) {
+#ifdef FEATURE_HIGHRES
+        *invalUnder = XP_TRUE;      /* cop out (for now) */
+#else
         /* this DELETES data->bitsBehind */
         WinRestoreBits( data->bitsBehind, data->miniX, data->miniY );
+#endif
         XP_FREE( dctx->mpool, data );
         *closure = NULL;
     }
-#endif
 } /* palm_draw_eraseMiniWindow */
 
 static void
@@ -1067,6 +1083,7 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
 {
     PalmDrawCtx* dctx;
     XP_U16 i;
+    XP_U16 nWinWidth, nWinHeight;
     Err ignore;
 
     dctx = XP_MALLOC( mpool, sizeof(PalmDrawCtx) );
@@ -1141,7 +1158,15 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
         SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, palm_bnw );
     }
 
-    dctx->numberWin = WinCreateOffscreenWindow( NUMRECT_WIDTH, NUMRECT_HEIGHT,
+    nWinWidth = NUMRECT_WIDTH;
+    nWinHeight = NUMRECT_HEIGHT;
+#ifdef FEATURE_HIGHRES
+    if ( dctx->doHiRes ) {
+        nWinWidth *= 2;
+        nWinHeight *= 2;
+    }
+#endif
+    dctx->numberWin = WinCreateOffscreenWindow( nWinWidth, nWinHeight,
                                                 screenFormat, &ignore );
 
     if ( able == COLOR ) {
