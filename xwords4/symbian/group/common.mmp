@@ -1,0 +1,28 @@
+TARGET          common.lib
+TARGETTYPE      lib
+
+MACRO          DEBUG MEM_DEBUG __LITTLE_ENDIAN KEYBOARD_NAV
+MACRO          KEY_SUPPORT FEATURE_TRAY_EDIT NODE_CAN_4
+MACRO          XWFEATURE_STANDALONE_ONLY STUBBED_DICT
+
+SOURCEPATH      ..\..\common
+SOURCE          board.c
+SOURCE          tray.c
+SOURCE          draw.c
+SOURCE          model.c
+SOURCE          mscore.c
+SOURCE          server.c
+SOURCE          pool.c
+SOURCE          game.c
+SOURCE          dictnry.c
+SOURCE          engine.c
+SOURCE          memstream.c
+SOURCE          comms.c
+SOURCE          mempool.c
+SOURCE          movestak.c
+SOURCE          strutils.c
+SOURCE          vtabmgr.c
+
+
+USERINCLUDE     ..\inc
+SYSTEMINCLUDE   \epoc32\include

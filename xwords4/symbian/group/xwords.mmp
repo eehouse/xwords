@@ -1,0 +1,55 @@
+TARGET            xwords.app
+TARGETTYPE        app
+// Change this UID!!!!!
+UID               0x100039CE 0x1020680C
+
+// Comment the next line out for a non-debug build.  Isn't this build
+// system advanced?
+MACRO             DEBUG MEM_DEBUG
+MACRO             CPLUS
+MACRO             __LITTLE_ENDIAN KEYBOARD_NAV
+MACRO             KEY_SUPPORT FEATURE_TRAY_EDIT NODE_CAN_4
+MACRO             XWFEATURE_STANDALONE_ONLY STUBBED_DICT
+
+//FOOBAR
+
+TARGETPATH        \system\apps\xwords
+LANG              SC
+
+SOURCEPATH        ..\src
+SOURCE            xwmain.cpp
+SOURCE            xwapp.cpp
+SOURCE            xwappview.cpp
+SOURCE            xwappui.cpp
+SOURCE            xwdoc.cpp
+SOURCE            symdraw.cpp
+SOURCE            symutil.cpp
+SOURCE            symaskdlg.cpp
+SOURCE            symdict.cpp
+
+SOURCEPATH        ..\group
+RESOURCE          xwords.rss
+
+USERINCLUDE       ..\inc 
+USERINCLUDE       ..\..\common
+
+SYSTEMINCLUDE     \epoc32\include
+SYSTEMINCLUDE     \epoc32\include\libc
+
+LIBRARY           gdi.lib
+LIBRARY           euser.lib
+LIBRARY           apparc.lib
+LIBRARY           cone.lib 
+LIBRARY           eikcore.lib  
+LIBRARY           eikcoctl.lib
+LIBRARY           bafl.lib
+LIBRARY           egul.lib
+LIBRARY           ckndlg.lib
+LIBRARY           ckncore.lib
+LIBRARY           estlib.lib
+LIBRARY           flogger.lib 
+LIBRARY           commonengine.lib
+LIBRARY           eikdlg.lib
+LIBRARY           EIKFILE.lib
+LIBRARY           efsrv.lib
+LIBRARY           common.lib
