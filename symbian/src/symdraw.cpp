@@ -102,6 +102,7 @@ typedef struct SymDrawCtxt {
 
     XP_U16 iTrayOwner;
     XP_Bool iTrayHasFocus;
+    XP_Bool iAllFontsSame;
     TRgb colors[COLOR_NCOLORS];
 
     MPSLOT
@@ -180,6 +181,14 @@ sym_draw_destroyCtxt( DrawCtx* p_dctx )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     XP_LOGF( "freeing draw ctxt" );
+
+    CWsScreenDevice* sdev = sctx->iCoeEnv->ScreenDevice();
+    sdev->ReleaseFont( sctx->iTileFaceFont );
+    if ( ! sctx->iAllFontsSame ) {
+        sdev->ReleaseFont( sctx->iTileValueFont );
+        sdev->ReleaseFont( sctx->iBoardFont );
+        sdev->ReleaseFont( sctx->iScoreFont );
+    }
 
     delete sctx->iRightArrow;
     delete sctx->iDownArrow;
@@ -726,6 +735,7 @@ figureFonts( SymDrawCtxt* sctx )
         sctx->iTileValueFont = sctx->iTileFaceFont;
         sctx->iBoardFont = sctx->iTileFaceFont;
         sctx->iScoreFont = sctx->iTileFaceFont;
+        sctx->iAllFontsSame = XP_TRUE;
     }
 
 #elif defined SERIES_60
