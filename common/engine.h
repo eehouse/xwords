@@ -48,7 +48,8 @@ void engine_destroy( EngineCtxt* ctxt );
 #define NO_SCORE_LIMIT 10000	/* for targetScore */
 XP_Bool engine_findMove( EngineCtxt* ctxt, ModelCtxt* model, 
                          DictionaryCtxt* dict, const Tile* tiles, 
-                         XP_U16 numTiles, XP_U16 targetScore, XP_Bool* canMove,
+                         XP_U16 nTiles, XP_U16 nTilesToUse,
+                         XP_U16 targetScore, XP_Bool* canMove,
                          MoveInfo* result );
 XP_Bool engine_check( DictionaryCtxt* dict, Tile* buf, XP_U16 buflen );
 

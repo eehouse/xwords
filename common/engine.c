@@ -62,6 +62,7 @@ struct EngineCtxt {
     XW_UtilCtxt* util;
 
     Engine_rack rack;
+    XP_U16 nTilesToUse;
     Tile blankTile;
     XP_Bool searchInProgress;
     XP_Bool searchHorizontal;
@@ -320,15 +321,26 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
 XP_Bool
 engine_findMove( EngineCtxt* engine, ModelCtxt* model, 
                  DictionaryCtxt* dict, const Tile* tiles,
-                 XP_U16 numTiles, XP_U16 targetScore, XP_Bool* canMoveP, 
+                 XP_U16 nTiles, XP_U16 nTilesToUse,
+                 XP_U16 targetScore, XP_Bool* canMoveP, 
                  MoveInfo* newMove )
 {
     XP_Bool result = XP_TRUE;
     XP_Bool firstMove;
     XP_U16 star_row;
 
+    if ( nTilesToUse == 0 ) {
+        nTilesToUse = nTiles;
+    }
+
+    if ( nTilesToUse != engine->nTilesToUse ) {
+        /* invalidate the cache; it may contain bad results */
+        engine_reset( engine );
+    }
+
     engine->model = model;
     engine->dict = dict;
+    engine->nTilesToUse = nTilesToUse;
     engine->blankTile = dict_getBlankTile( dict );
     engine->returnNOW = XP_FALSE;
 
@@ -340,7 +352,7 @@ engine_findMove( EngineCtxt* engine, ModelCtxt* model,
        dictionary's emtpy or there are no tiles, still return TRUE so we don't
        get scheduled again.  Fixes infinite loop with empty dict and a
        robot. */
-    *canMoveP = dict_getTopEdge(dict) != NULL && initTray( engine, tiles, numTiles );
+    *canMoveP = dict_getTopEdge(dict) != NULL && initTray( engine, tiles, nTiles );
     if ( *canMoveP  ) {
 
         util_engineStarting( engine->util );
@@ -740,26 +752,28 @@ leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
 #ifdef NODE_CAN_4
             XP_U16 nodeSize = engine->dict->nodeSize;
 #endif
-            for ( ; ; ) {
-                XP_Bool isBlank;
-                Tile tile = EDGETILE( engine->dict, edge );
-                if ( rack_remove( engine, tile, &isBlank ) ) {
-                    tiles[tileLength] = tile;
-                    leftPart( engine, tiles, tileLength+1, 
-                              follow( engine->dict, edge ), 
-                              limit-1, firstCol-1, anchorCol, row );
-                    rack_replace( engine, tile, isBlank );
-                }
+            if ( engine->nTilesToUse > 0 ) {
+                for ( ; ; ) {
+                    XP_Bool isBlank;
+                    Tile tile = EDGETILE( engine->dict, edge );
+                    if ( rack_remove( engine, tile, &isBlank ) ) {
+                        tiles[tileLength] = tile;
+                        leftPart( engine, tiles, tileLength+1, 
+                                  follow( engine->dict, edge ), 
+                                  limit-1, firstCol-1, anchorCol, row );
+                        rack_replace( engine, tile, isBlank );
+                    }
 
-                if ( IS_LAST_EDGE( dict, edge ) || engine->returnNOW ) {
-                    break;
-                }
+                    if ( IS_LAST_EDGE( dict, edge ) || engine->returnNOW ) {
+                        break;
+                    }
 #ifdef NODE_CAN_4
-                edge += nodeSize;
+                    edge += nodeSize;
 #else
-                edge += 3;
+                    edge += 3;
 #endif
 
+                }
             }
         }
     }
@@ -785,30 +799,32 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
     } else if ( tile == EMPTY_TILE ) {
         Crosscheck check = engine->rowChecks[col]; /* make a local copy */
 
-        for ( ; ; ) {
-            tile = EDGETILE( dict, edge );
-            if ( CROSSCHECK_CONTAINS( check, tile ) ) {
-                XP_Bool isBlank;
-                if ( rack_remove( engine, tile, &isBlank ) ) {
-                    tiles[tileLength] = tile;
-                    extendRight( engine, tiles, tileLength+1, 
-                                 edge_from_tile( dict, edge, tile ), 
-                                 ISACCEPTING( dict, edge ), firstCol, col+1, row );
-                    rack_replace( engine, tile, isBlank );
-                    if ( engine->returnNOW ) {
-                        return;
+        if ( engine->nTilesToUse > 0 ) {
+            for ( ; ; ) {
+                tile = EDGETILE( dict, edge );
+                if ( CROSSCHECK_CONTAINS( check, tile ) ) {
+                    XP_Bool isBlank;
+                    if ( rack_remove( engine, tile, &isBlank ) ) {
+                        tiles[tileLength] = tile;
+                        extendRight( engine, tiles, tileLength+1, 
+                                     edge_from_tile( dict, edge, tile ), 
+                                     ISACCEPTING( dict, edge ), firstCol, col+1, row );
+                        rack_replace( engine, tile, isBlank );
+                        if ( engine->returnNOW ) {
+                            return;
+                        }
                     }
                 }
-            }
 
-            if ( IS_LAST_EDGE( dict, edge ) ) {
-                break;
-            }
+                if ( IS_LAST_EDGE( dict, edge ) ) {
+                    break;
+                }
 #ifdef NODE_CAN_4
-            edge += dict->nodeSize;
+                edge += dict->nodeSize;
 #else
-            edge += 3;
+                edge += 3;
 #endif
+            }
         }
 
     } else if ( (edge = edge_with_tile( dict, edge, tile ) ) != NULL ) {
@@ -832,6 +848,7 @@ rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank )
 
     XP_ASSERT( tile < 32 );
     XP_ASSERT( tile != blankIndex );
+    XP_ASSERT( engine->nTilesToUse > 0 );
 
     if ( engine->rack[(short)tile] > 0 ) { /* we have the tile itself */
         --engine->rack[(short)tile];
@@ -844,6 +861,8 @@ rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank )
     } else { /* we can't satisfy the request */
         return XP_FALSE;
     }
+
+    --engine->nTilesToUse;
     return XP_TRUE;
 } /* rack_remove */
 
@@ -855,6 +874,8 @@ rack_replace( EngineCtxt* engine, Tile tile, XP_Bool isBlank )
         tile = engine->blankTile;
     }
     ++engine->rack[(short)tile];
+
+    ++engine->nTilesToUse;
 } /* rack_replace */
 
 static void
