@@ -329,7 +329,7 @@ BEGIN
 
 #ifdef FEATURE_TRAY_EDIT
     CHECKBOX "Atril editable" ID XW_PREFS_PICKTILES_CHECKBOX_ID \
-        AT (LEFTCOL PREVBOTTOM AUTO AUTO) NONUSABLE /* translate me */
+        AT (LEFTCOL PREVBOTTOM AUTO AUTO) NONUSABLE
 #endif
 
     /* buttons at the bottom */
