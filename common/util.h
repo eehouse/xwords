@@ -58,6 +58,17 @@ typedef enum {
     QUERY_ROBOT_TRADE
 } UtilQueryID;
 
+typedef enum {
+    PICK_FOR_BLANK
+    , PICK_FOR_CHEAT
+} PICK_WHY;
+
+typedef struct PickInfo {
+    PICK_WHY why;
+    XP_U16 nTotal;
+    XP_U16 thisPick;            /* <= nTotal */
+} PickInfo;
+
 typedef struct BadWordInfo {
     XP_U16 nWords;
     XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
@@ -79,8 +90,11 @@ typedef struct UtilVtable {
     XP_U16 (*m_util_userQuery)( XW_UtilCtxt* uc, UtilQueryID id,
                                 XWStreamCtxt* stream );
 
-    void (*m_util_askBlankFace)( XW_UtilCtxt* uc, DictionaryCtxt* dict, 
-                                 XP_UCHAR* buf );
+    /* return of < 0 means computer should pick */
+    XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, PickInfo* why, 
+                                   XP_U16 playerNum,
+                                   XP_UCHAR4* texts, XP_U16 nTiles );
+
     XP_Bool (*m_util_askPassword)( XW_UtilCtxt* uc, const XP_UCHAR* name,
                                    XP_UCHAR* buf, XP_U16* len );
 
@@ -142,9 +156,8 @@ struct XW_UtilCtxt {
 #define util_userQuery(uc,qcode,str) \
          (uc)->vtable->m_util_userQuery((uc),(qcode),(str))
 
-#define util_askBlankFace( uc, d, b ) \
-         (uc)->vtable->m_util_askBlankFace((uc), (d), (b) )
-
+#define util_userPickTile( uc, w, n, tx, nt ) \
+         (uc)->vtable->m_util_userPickTile( (uc), (w), (n), (tx), (nt) )
 #define util_askPassword( uc, n, b, lp ) \
          (uc)->vtable->m_util_askPassword( (uc), (n), (b), (lp) )
 
