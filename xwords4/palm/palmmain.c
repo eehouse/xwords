@@ -460,10 +460,9 @@ positionBoard( PalmAppGlobals* globals )
 #ifdef FEATURE_HIGHRES
     } else if ( globals->useHiRes ) {
         trayScaleV = (TRAY_HEIGHT_HR*doubler) + 1;
-#else
+#endif
     } else {
         trayScaleV = TRAY_HEIGHT_LR;
-#endif
     }
     board_setTrayLoc( globals->game.board, 
                       (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
