@@ -85,7 +85,6 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     BlankDialogState* bState;
     XP_U16 id;
-    XP_UCHAR ch;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
@@ -106,9 +105,6 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         loadLettersList( hDlg, bState );
     } else {
-        XP_UCHAR4* texts;
-        XP_U16 i;
-
         bState = (BlankDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
 
         switch (message) {
