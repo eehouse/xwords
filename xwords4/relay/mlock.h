@@ -62,4 +62,36 @@ class SocketWriteLock {
     int m_socket;
 };
 
+class RWReadLock {
+ public:
+    RWReadLock( pthread_rwlock_t* rwl ) {
+        logf( "locking rwlock for read" );
+        pthread_rwlock_rdlock( rwl );
+        logf( "locked rwlock for read" );
+        _rwl = rwl;
+    }
+    ~RWReadLock() {
+        pthread_rwlock_unlock( _rwl );
+        logf( "unlocked rwlock" );
+    }
+
+ private:
+    pthread_rwlock_t* _rwl;
+};
+
+class RWWriteLock {
+ public:
+    RWWriteLock( pthread_rwlock_t* rwl ) : _rwl(rwl) {
+        logf( "locking rwlock for write" );
+        pthread_rwlock_wrlock( rwl );
+        logf( "locked rwlock for write" );
+    }
+    ~RWWriteLock() { 
+        pthread_rwlock_unlock( _rwl );         
+        logf( "unlocked rwlock" ); 
+    }
+ private:
+    pthread_rwlock_t* _rwl;
+};
+
 #endif
