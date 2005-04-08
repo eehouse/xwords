@@ -43,7 +43,7 @@
 #include "xwrelay_priv.h"
 
 /* this is *only* for testing.  Don't abuse!!!! */
-extern pthread_mutex_t gCookieMapMutex;
+extern pthread_rwlock_t gCookieMapRWLock;
 
 typedef int (*CmdPtr)( int socket, const char** args );
 
@@ -112,9 +112,9 @@ static int
 cmd_lock( int socket, const char** args )
 {
     if ( 0 == strcmp( "on", args[1] ) ) {
-        pthread_mutex_lock( &gCookieMapMutex );
+        pthread_rwlock_wrlock( &gCookieMapRWLock );
     } else if ( 0 == strcmp( "off", args[1] ) ) {
-        pthread_mutex_unlock( &gCookieMapMutex );
+        pthread_rwlock_unlock( &gCookieMapRWLock );
     } else {
         print_sock( socket, "%s [on|off] (lock/unlock mutex)", args[0] );
     }
@@ -191,6 +191,7 @@ ctrl_thread_main( void* arg )
         }
     }
     close ( socket );
+    return NULL;
 }
 
 void
@@ -206,4 +207,7 @@ run_ctrl_thread( int ctrl_listener )
     pthread_t thread;
     int result = pthread_create( &thread, NULL, 
                                  ctrl_thread_main, (void*)newSock );
+    if ( result ) {
+        logf( "pthread_create(ctrl) => %d", result );
+    }
 }
