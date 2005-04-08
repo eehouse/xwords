@@ -30,37 +30,43 @@
 using namespace std;
 
 static CookieMap gCookieMap;
-pthread_mutex_t gCookieMapMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_rwlock_t gCookieMapRWLock = PTHREAD_RWLOCK_INITIALIZER;
 
 CookieID CookieRef::ms_nextConnectionID = 1000;
-static pthread_mutex_t gNextConnIDMutex = PTHREAD_MUTEX_INITIALIZER;
 
+/* static */ CookieRef*
+CookieRef::AddNew( string s )
+{
+    RWWriteLock rwl( &gCookieMapRWLock );
+    CookieRef* ref = new CookieRef( s );
+    gCookieMap.insert( pair<CookieID, CookieRef*>(ref->GetConnID(), ref ) );
+    logf( "paired cookie %s with id %d", s.c_str(), ref->GetConnID() );
+    return ref;
+}
 
 CookieRef* 
-get_make_cookieRef( char* cookie )
+get_make_cookieRef( char* cookie, CookieID connID ) /* connID ignored for now */
 {
-    CookieRef* ref;
-
-    MutexLock ml( &gCookieMapMutex );
-
+    CookieRef* ref = NULL;
     string s(cookie);
-    CookieMap::iterator iter = gCookieMap.begin();
-    while ( iter != gCookieMap.end() ) {
-        ref = iter->second;
-        if ( ref->Name() == s ) {
-            break;
+
+    {
+        RWReadLock rwl( &gCookieMapRWLock );
+
+        CookieMap::iterator iter = gCookieMap.begin();
+        while ( iter != gCookieMap.end() ) {
+            ref = iter->second;
+            if ( ref->Name() == s ) {
+                ref = iter->second;
+                break;
+            }
+            ++iter;
         }
-        ++iter;
     }
 
-    if ( iter != gCookieMap.end() ) {
-        logf( "ref found for cookie %s", cookie );
-        ref = iter->second;
-    } else {
-        ref = new CookieRef(s);
-        gCookieMap.insert( pair<CookieID, CookieRef*>(ref->GetConnID(), ref ) );
+    if ( !ref ) {
+        ref = CookieRef::AddNew(s);
     }
-
     return ref;
 }
 
@@ -68,7 +74,7 @@ CookieRef*
 get_cookieRef( CookieID cookieID )
 {
     CookieRef* ref = NULL;
-    MutexLock ml( &gCookieMapMutex );
+    RWReadLock rwl( &gCookieMapRWLock );
 
     CookieMap::iterator iter = gCookieMap.find( cookieID);
     while ( iter != gCookieMap.end() ) {
@@ -85,7 +91,7 @@ get_cookieRef( CookieID cookieID )
 static void
 ForgetCref( CookieRef* cref )
 {
-    MutexLock ml( &gCookieMapMutex );
+    RWWriteLock ml( &gCookieMapRWLock );
 
     CookieMap::iterator iter = gCookieMap.begin();
     while ( iter != gCookieMap.end() ) {
@@ -185,7 +191,6 @@ CookieRef::CookieRef(string s)
     : m_name(s)
 {
     pthread_mutex_init( &m_mutex, NULL );
-    MutexLock ml( &gNextConnIDMutex );
     m_connectionID = ms_nextConnectionID++; /* needs a mutex!!! */
 }
 
