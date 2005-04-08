@@ -144,10 +144,10 @@ XWThreadPool::get_process_packet( int socket )
 XWThreadPool::tpool_main( void* closure )
 {
     XWThreadPool* me = (XWThreadPool*)closure;
-    me->real_tpool_main();
+    return me->real_tpool_main();
 }
 
-void
+void*
 XWThreadPool::real_tpool_main()
 {
     logf( "worker thread starting" );
@@ -168,6 +168,7 @@ XWThreadPool::real_tpool_main()
         } /* else drop it: error */
     }
     logf( "worker thread exiting" );
+    return NULL;
 }
 
 void
@@ -181,7 +182,7 @@ XWThreadPool::interrupt_poll()
     }
 }
 
-void
+void*
 XWThreadPool::real_listener()
 {
     int flags = POLLIN | POLLERR | POLLHUP;
@@ -252,13 +253,14 @@ XWThreadPool::real_listener()
 
         free( fds );
     }
+    return NULL;
 } /* real_listener */
 
 /* static */ void*
 XWThreadPool::listener_main( void* closure )
 {
     XWThreadPool* me = (XWThreadPool*)closure;
-    me->real_listener();
+    return me->real_listener();
 }
 
 void
