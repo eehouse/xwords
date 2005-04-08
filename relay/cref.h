@@ -19,7 +19,6 @@ class CookieRef {
 
  public:
 
-    CookieRef( string s );
     ~CookieRef();
 
     /* Within this cookie, remember that this hostID and socket go together.
@@ -33,8 +32,11 @@ class CookieRef {
     string Name() { return m_name; }
 
     static CookieMapIterator GetCookieNameIterator();
+    static CookieRef* AddNew( string s );
 
  private:
+    CookieRef( string s );
+
     map<HostID,int> m_hostSockets;
     pthread_mutex_t m_mutex;
     CookieID m_connectionID;
@@ -54,7 +56,7 @@ class CookieMapIterator {
     CookieMap::const_iterator _iter;
 };
 
-CookieRef* get_make_cookieRef( char* cookie );
+CookieRef* get_make_cookieRef( char* cookie, CookieID connID );
 CookieRef* get_cookieRef( unsigned short cookieID );
 void Associate( int socket, CookieRef* cref );
 void RemoveSocketRefs( int socket );
