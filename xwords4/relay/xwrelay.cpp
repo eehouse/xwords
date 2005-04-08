@@ -127,9 +127,10 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
 
         if ( bufp < end ) {
             HostID srcID = getNetShort( &bufp );
-            unsigned short connID = getNetShort( &bufp );
+            CookieID connID = getNetShort( &bufp );
             if ( bufp == end ) {
-                cref = get_make_cookieRef( cookie );
+                cref = get_make_cookieRef( cookie, connID );
+                assert( cref != NULL );
                 cref->Associate( socket, srcID );
                 Associate( socket, cref );
             }
@@ -170,7 +171,6 @@ static void
 sendConnResp( CookieRef* cref, int socket )
 {
     /* send cmd, heartbeat, connid */
-    short tmp;
     unsigned char buf[5];
     unsigned char* bufp = buf;
 
@@ -213,10 +213,6 @@ forwardMessage( unsigned char* buf, int bufLen )
 static void
 processMessage( unsigned char* buf, int bufLen, int socket )
 {
-    HostID srcID, destID;
-    unsigned short channelNo;
-    long connId;
-    char* cookie;
     CookieRef* cref;
 
     XWRELAY_Cmd cmd = *buf;
@@ -278,7 +274,6 @@ make_socket( unsigned long addr, unsigned short port )
 int main( int argc, char** argv )
 {
     int port = 10999;
-    int result;
 
     if ( argc > 1 ) {
         port = atoi( argv[1] );

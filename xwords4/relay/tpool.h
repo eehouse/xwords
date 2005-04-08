@@ -52,10 +52,10 @@ class XWThreadPool {
     int get_process_packet( int socket );
     void interrupt_poll();
 
-    void real_tpool_main();
+    void* real_tpool_main();
     static void* tpool_main( void* closure );
 
-    void real_listener();
+    void* real_listener();
     static void* listener_main( void* closure );
 
     /* Sockets main thread listens on */
