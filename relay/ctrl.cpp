@@ -53,12 +53,19 @@ typedef struct FuncRec {
 } FuncRec;
 
 static int cmd_quit( int socket, const char** args );
-static int cmd_printCookies( int socket, const char** args );
+static int cmd_print( int socket, const char** args );
+static int cmd_discon( int socket, const char** args );
 static int cmd_lock( int socket, const char** args );
 static int cmd_help( int socket, const char** args );
+static int cmd_start( int socket, const char** args );
+static int cmd_stop( int socket, const char** args );
+static int cmd_kill( int socket, const char** args );
+static int cmd_get( int socket, const char** args );
+static int cmd_set( int socket, const char** args );
+static int cmd_shutdown( int socket, const char** args );
 
 static void
-print_sock( int sock, const char* what, ... )
+print_to_sock( int sock, const char* what, ... )
 {
     char buf[256];
 
@@ -73,9 +80,16 @@ print_sock( int sock, const char* what, ... )
 
 static const FuncRec gFuncs[] = {
     { "q", cmd_quit },
-    { "cook", cmd_printCookies },
+    { "print", cmd_print },
+    { "dis", cmd_discon },
     { "lock", cmd_lock },
     { "help", cmd_help },
+    { "start", cmd_start },
+    { "stop", cmd_stop },
+    { "kill", cmd_kill },
+    { "shutdown", cmd_shutdown },
+    { "get", cmd_get },
+    { "set", cmd_set },
     { "?", cmd_help },
 };
 
@@ -83,27 +97,166 @@ static int
 cmd_quit( int socket, const char** args )
 {
     if ( 0 == strcmp( "help", args[1] ) ) {
-        print_sock( socket, "%s (close console connection)", args[0] );
+        print_to_sock( socket, "%s (close console connection)", args[0] );
         return 0;
     }
     return 1;
 }
 
 static int
-cmd_printCookies( int socket, const char** args )
+cmd_discon( int socket, const char** args )
 {
     if ( 0 == strcmp( "help", args[1] ) ) {
-        print_sock( socket, "%s (list all cookies)", args[0] );
+        print_to_sock( socket, "disconnect from ctrl port" );
     } else {
-        print_sock( socket, "******************************" );
-    
-        CookieMapIterator iter = CookieRef::GetCookieNameIterator();
-        const char* str;
-        for ( str = iter.Next(); str != NULL; str = iter.Next() ) {
-            print_sock( socket, str );
-        }
+    }
+    return 0;
+}
 
-        print_sock( socket, "******************************" );
+static void
+print_cookies( int socket, CookieID theID )
+{
+    CookieMapIterator iter = CookieRef::GetCookieIterator();
+    CookieID id;
+    for ( id = iter.Next(); id != 0; id = iter.Next() ) {
+        if ( theID == 0 || theID == id ) {
+            CookieRef* cref = get_cookieRef( id );
+            string s;
+            cref->PrintCookieInfo( s );
+
+            print_to_sock( socket, s.c_str() );
+        }
+    }
+}
+
+static int
+cmd_start( int socket, const char** args )
+{
+    return 1;
+}
+
+static int
+cmd_stop( int socket, const char** args )
+{
+    return 1;
+}
+
+static int
+cmd_kill( int socket, const char** args )
+{
+    int found = 0;
+
+    if ( 0 == strcmp( args[1], "socket" ) ) {
+        int victim = atoi( args[2] );
+        if ( victim != 0 ) {
+            killSocket( victim, "ctrl command" );
+            found = 1;
+        }
+    } else if ( 0 == strcmp( args[1], "cookie" ) ) {
+        const char* idhow = args[2];
+        const char* id = args[3];
+        if ( idhow != NULL && id != NULL ) {
+            if ( 0 == strcmp( idhow, "name" ) ) {
+                CookieRef::Delete( id );
+                found = 1;
+            } else if ( 0 == strcmp( idhow, "id" ) ) {
+                CookieRef::Delete( atoi( id ) );
+                found = 1;
+            }
+        }
+    }
+
+    if ( !found ) {
+        char* msg =
+            "%s socket <num>\n"
+            "%s cookie name <name>\n"
+            "%s cookie id <id>\n"
+            ;
+        print_to_sock( socket, msg, args[0], args[0], args[0] );
+    }
+    return 1;
+}
+
+static int
+cmd_get( int socket, const char** args )
+{
+    return 1;
+}
+
+static int
+cmd_set( int socket, const char** args )
+{
+    return 1;
+}
+
+static int
+cmd_shutdown( int socket, const char** args )
+{
+    return 1;
+}
+
+static void
+print_cookies( int socket, const char* name )
+{
+    CookieID id = CookieIdForName( name );
+    print_cookies( socket, id );
+}
+
+static void
+print_socket_info( int out, int which )
+{
+    string s;
+    SocketMgr::PrintSocketInfo( which, s );
+    print_to_sock( out, s.c_str() );
+}
+
+static void
+print_sockets( int out, int sought )
+{
+    SocketsIterator iter = SocketMgr::MakeSocketsIterator();
+    int sock;
+    while ( (sock = iter.Next()) != 0 ) {
+        if ( sought == 0 || sought == sock ) {
+            print_socket_info( out, sock );
+        }
+    }
+}
+
+static int
+cmd_print( int socket, const char** args )
+{
+    logf( "cmd_print called" );
+    int found = 0;
+    if ( 0 == strcmp( "cookie", args[1] ) ) {
+        if ( 0 == strcmp( "all", args[2] ) ) {
+            print_cookies( socket, (CookieID)0 );
+            found = 1;
+        } else if ( 0 == strcmp( "name", args[2] ) ) {
+            print_cookies( socket, args[3] );
+            found = 1;
+        } else if ( 0 == strcmp( "id", args[2] ) ) {
+            print_cookies( socket, atoi(args[3]) );
+            found = 1;
+        }
+    } else if ( 0 == strcmp( "socket", args[1] ) ) {
+        if ( 0 == strcmp( "all", args[2] ) ) {
+            print_sockets( socket, 0 );
+            found = 1;
+        } else if ( 0 == strcmp( "id", args[2] ) ) {
+            print_sockets( socket, atoi(args[3]) );
+            found = 1;
+        }
+    }
+
+    if ( !found ) {
+        char* str =
+            "%s cookie all\n"
+            "%s cookie name <name>\n"
+            "%s cookie id <id>\n"
+            "%s socket all\n"
+            "%s socket <num>  -- print info about cookies and sockets\n";
+        print_to_sock( socket, str, 
+                       args[0], args[0], args[0], args[0], args[0] );
     }
     return 0;
 }
@@ -116,7 +269,7 @@ cmd_lock( int socket, const char** args )
     } else if ( 0 == strcmp( "off", args[1] ) ) {
         pthread_rwlock_unlock( &gCookieMapRWLock );
     } else {
-        print_sock( socket, "%s [on|off] (lock/unlock mutex)", args[0] );
+        print_to_sock( socket, "%s [on|off] (lock/unlock mutex)", args[0] );
     }
     
     return 0;
@@ -154,7 +307,7 @@ dispatch_command( int sock, const char** args )
     }
     
     if ( fp == last ) {
-        print_sock( sock, "unknown command: \"%s\"", cmd );
+        print_to_sock( sock, "unknown command: \"%s\"", cmd );
         cmd_help( sock, args );
     }
 
@@ -192,7 +345,7 @@ ctrl_thread_main( void* arg )
     }
     close ( socket );
     return NULL;
-}
+} /* ctrl_thread_main */
 
 void
 run_ctrl_thread( int ctrl_listener )
@@ -207,7 +360,5 @@ run_ctrl_thread( int ctrl_listener )
     pthread_t thread;
     int result = pthread_create( &thread, NULL, 
                                  ctrl_thread_main, (void*)newSock );
-    if ( result ) {
-        logf( "pthread_create(ctrl) => %d", result );
-    }
+    assert( result == 0 );
 }
