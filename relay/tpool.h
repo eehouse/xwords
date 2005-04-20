@@ -42,12 +42,17 @@ class XWThreadPool {
 
     void Setup( int nThreads, packet_func pFunc );
 
+    /* Add to set being listened on */
     void AddSocket( int socket );
-    void RemoveSocket( int socket );
+    /* remove from tpool altogether, and close */
+    void CloseSocket( int socket );
 
     void Poll();
 
  private:
+    /* Remove from set being listened on */
+    int RemoveSocket( int socket );
+
     void enqueue( int socket );
     int get_process_packet( int socket );
     void interrupt_poll();
@@ -60,7 +65,7 @@ class XWThreadPool {
 
     /* Sockets main thread listens on */
     vector<int> m_activeSockets;
-    pthread_mutex_t m_activeSocketsMutex;
+    pthread_rwlock_t m_activeSocketsRWLock;
 
     /* Sockets waiting for a thread to read 'em */
     deque<int> m_queue;
