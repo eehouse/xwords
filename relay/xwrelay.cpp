@@ -132,7 +132,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
                 cref = get_make_cookieRef( cookie, connID );
                 assert( cref != NULL );
                 cref->Associate( socket, srcID );
-                Associate( socket, cref );
+                SocketMgr::Associate( socket, cref );
             }
         }
     }
@@ -143,7 +143,7 @@ void
 killSocket( int socket, char* why )
 {
     logf( "killSocket(%d): %s", socket, why );
-    RemoveSocketRefs( socket );
+    SocketMgr::RemoveSocketRefs( socket );
     /* Might want to kill the thread it belongs to if we're not in it,
        e.g. when unable to write to another socket. */
 }
@@ -176,9 +176,10 @@ sendConnResp( CookieRef* cref, int socket )
 
     *bufp++ = XWRELAY_CONNECTRESP;
     putNetShort( &bufp, cref->GetHeartbeat() );
-    putNetShort( &bufp, cref->GetConnID() );
+    putNetShort( &bufp, cref->GetCookieID() );
 
     send_with_length( socket, buf, sizeof(buf) );
+    cref->RecordSent( sizeof(buf), socket );
     logf( "sent CONNECTIONRSP" );
 }
 
@@ -197,10 +198,12 @@ forwardMessage( unsigned char* buf, int bufLen )
         HostID dest = getNetShort( &bufp );
         logf( "forwarding from %x to %x", src, dest );
         int socket = cref->SocketForHost( dest );
+
         logf( "got socket %d for dest %x", socket, dest );
         if ( socket != -1 ) {
             *buf = XWRELAY_MSG_FROMRELAY;
             send_with_length( socket, buf, bufLen );
+            cref->RecordSent( bufLen, socket );
             success = 1;
         } else if ( dest == HOST_ID_SERVER ) {
             logf( "server not connected yet; fail silently" );
