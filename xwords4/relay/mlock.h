@@ -47,7 +47,7 @@ class SocketWriteLock {
  public:
     SocketWriteLock( int socket ) {
         m_socket = socket;
-        m_mutex = GetWriteMutexForSocket( socket );
+        m_mutex = SocketMgr::GetWriteMutexForSocket( socket );
         logf( "locking mutex %x for socket %d", m_mutex, socket );
         pthread_mutex_lock( m_mutex );
         logf( "successfully locked mutex %x for socket %d", m_mutex, socket );
@@ -65,14 +65,14 @@ class SocketWriteLock {
 class RWReadLock {
  public:
     RWReadLock( pthread_rwlock_t* rwl ) {
-        logf( "locking rwlock for read" );
+        logf( "locking rwlock %p for read", rwl );
         pthread_rwlock_rdlock( rwl );
-        logf( "locked rwlock for read" );
+        logf( "locked rwlock %p for read", rwl );
         _rwl = rwl;
     }
     ~RWReadLock() {
         pthread_rwlock_unlock( _rwl );
-        logf( "unlocked rwlock" );
+        logf( "unlocked rwlock %p", _rwl );
     }
 
  private:
@@ -82,13 +82,13 @@ class RWReadLock {
 class RWWriteLock {
  public:
     RWWriteLock( pthread_rwlock_t* rwl ) : _rwl(rwl) {
-        logf( "locking rwlock for write" );
+        logf( "locking rwlock %p for write", rwl );
         pthread_rwlock_wrlock( rwl );
-        logf( "locked rwlock for write" );
+        logf( "locked rwlock %p for write", rwl );
     }
     ~RWWriteLock() { 
-        pthread_rwlock_unlock( _rwl );         
-        logf( "unlocked rwlock" ); 
+        pthread_rwlock_unlock( _rwl );
+        logf( "unlocked rwlock %p", _rwl );
     }
  private:
     pthread_rwlock_t* _rwl;
