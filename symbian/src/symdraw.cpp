@@ -104,7 +104,6 @@ typedef struct SymDrawCtxt {
     CONST_60 CFont* iScoreFont;
 
     XP_U16 iTrayOwner;
-    XP_Bool iTrayHasFocus;
     XP_Bool iAllFontsSame;
     TRgb colors[COLOR_NCOLORS];
 
@@ -238,7 +237,6 @@ sym_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect,
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     sctx->iTrayOwner = owner;
-    sctx->iTrayHasFocus = hasfocus;
 
     drawFocusRect( sctx, rect, hasfocus );
 
@@ -451,18 +449,17 @@ textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect, TBool highlight )
     } else {
         sctx->iGC->SetPenColor( sctx->colors[COLOR_BLACK] );
     }
-    sctx->iGC->SetPenStyle( CGraphicsContext::ESolidPen );
     sctx->iGC->SetBrushStyle( CGraphicsContext::ENullBrush );
     CONST_60 CFont* font = sctx->iBoardFont;
 
     TBuf16<64> tbuf;
     tbuf.Copy( TPtrC8(text) );
 
-    lRect->Shrink( 0, 2 );
+    TInt ht = font->AscentInPixels();
+    TInt baseOffset = ht + ((lRect->Height() - ht) / 2);
 
     sctx->iGC->UseFont( font );
-    sctx->iGC->DrawText( tbuf, *lRect, lRect->Height(), 
-                         CGraphicsContext::ECenter ); 
+    sctx->iGC->DrawText( tbuf, *lRect, baseOffset, CGraphicsContext::ECenter );
     sctx->iGC->DiscardFont();
 } /* textInCell */
 
@@ -496,7 +493,7 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
     sctx->iGC->DrawRect( lRect );
 
     if ( !!bitmap ) {
-        XP_ASSERT( 0 );
+        drawBitmap( sctx, (CFbsBitmap*)bitmap, (CFbsBitmap*)bitmap, &lRect );
     } else if ( !!text && (*text != '\0') ) {
         TRect r2(lRect);
         textInCell( sctx, text, &r2, highlight );
@@ -524,7 +521,7 @@ sym_draw_invertCell( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/ )
 static void
 sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, 
                    /* at least 1 of these two will be null*/
-                   XP_UCHAR* text, XP_Bitmap /*bitmap*/,
+                   XP_UCHAR* text, XP_Bitmap bitmap,
                    XP_S16 val, XP_Bool highlighted )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -551,12 +548,14 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 	lRect.Shrink( 2, 2 );
 
     // now put the text in the thing
-    if ( !!text ) {
+    if ( !!bitmap ) {
+        drawBitmap( sctx, (CFbsBitmap*)bitmap, (CFbsBitmap*)bitmap, &lRect );
+    } else if ( !!text ) {
         CONST_60 CFont* font = sctx->iTileFaceFont;
 
         TBuf16<4> txtbuf;
         txtbuf.Copy( TBuf8<4>(text) );
-        TInt ht = font->HeightInPixels();
+        TInt ht = font->AscentInPixels();
         TPoint point( lRect.iTl.iX, lRect.iTl.iY + ht );
 
         sctx->iGC->UseFont( font );
@@ -564,7 +563,7 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         sctx->iGC->DiscardFont();
     }
 
-    if ( val > 0 ) {
+    if ( val >= 0 ) {
         CONST_60 CFont* font = sctx->iTileValueFont;
 
         TBuf16<5> txtbuf;
@@ -708,7 +707,11 @@ figureFonts( SymDrawCtxt* sctx )
 
     for ( TInt i = 0; i < nTypes; ++i ) {
         sdev->TypefaceSupport( tfSupport, i );
-        if ( tfSupport.iMinHeightInTwips < smallSize ) {
+        if (
+#ifdef SYM_ARMI
+            tfSupport.iIsScalable &&
+#endif
+            tfSupport.iMinHeightInTwips < smallSize ) {
             smallIndex = i;
             smallSize = tfSupport.iMinHeightInTwips;
         }
@@ -716,22 +719,21 @@ figureFonts( SymDrawCtxt* sctx )
 
     // Now use the smallest guy
     if ( smallIndex != -1 ) {
-        const TInt twipAdjust = 10;
         sdev->TypefaceSupport( tfSupport, smallIndex );
         fontName = tfSupport.iTypeface.iName.Des();
 
-        TFontSpec fontSpecBoard( fontName, (scaleBoardV) * twipAdjust );
-        sdev->GetNearestFontInTwips( sctx->iBoardFont, fontSpecBoard );
+        TFontSpec fontSpecBoard( fontName, scaleBoardV );
+        sdev->GetNearestFontInPixels( sctx->iBoardFont, fontSpecBoard );
 
         TInt tileHt = scaleTrayV - TRAY_CURSOR_HT;
-        TFontSpec fontSpecTray( fontName, (tileHt * 2 / 3) * twipAdjust );
-        sdev->GetNearestFontInTwips( sctx->iTileFaceFont, fontSpecTray );
+        TFontSpec fontSpecTray( fontName, tileHt * 3 / 4 );
+        sdev->GetNearestFontInPixels( sctx->iTileFaceFont, fontSpecTray );
 
-        TFontSpec fontSpecVal( fontName, (tileHt / 3) * twipAdjust );
-        sdev->GetNearestFontInTwips( sctx->iTileValueFont, fontSpecVal );
+        TFontSpec fontSpecVal( fontName, tileHt / 3 );
+        sdev->GetNearestFontInPixels( sctx->iTileValueFont, fontSpecVal );
 
-        TFontSpec fontSpecScore( fontName, scaleBoardV * twipAdjust );
-        sdev->GetNearestFontInTwips( sctx->iScoreFont, fontSpecScore );
+        TFontSpec fontSpecScore( fontName, scaleBoardV );
+        sdev->GetNearestFontInPixels( sctx->iScoreFont, fontSpecScore );
 
     } else {
         sctx->iTileFaceFont = (CFont*)sctx->iCoeEnv->NormalFont();
