@@ -508,11 +508,12 @@ CXWordsAppView::sym_util_listenPortChange( XW_UtilCtxt* uc, XP_U16 aPort )
 
 /*static*/void 
 CXWordsAppView::sym_util_addrChange( XW_UtilCtxt* uc, 
-                                     const CommsAddrRec* aAddr )
+                                     const CommsAddrRec* aOld,
+                                     const CommsAddrRec* aNew )
 {
     CXWordsAppView* self = (CXWordsAppView*)uc->closure;
     XP_LOGF( "util_addrChange: calling connect" );
-    self->iSendSock->ConnectL( aAddr );
+    self->iSendSock->ConnectL( aNew );
     (void)self->iSendSock->Listen();
 }
 #endif

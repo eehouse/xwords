@@ -160,7 +160,8 @@ class CXWordsAppView : public CCoeControl
     static void            sym_util_listenPortChange( XW_UtilCtxt* uc, 
                                                       XP_U16 listenPort );
     static void            sym_util_addrChange( XW_UtilCtxt* uc, 
-                                                const CommsAddrRec* aAddr );
+                                                const CommsAddrRec* aOld,
+                                                const CommsAddrRec* aNew );
 #endif
 
 #ifdef XWFEATURE_STANDALONE_ONLY
