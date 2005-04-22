@@ -85,6 +85,10 @@ CXWordsAppView::CXWordsAppView( CEikApplication* aApp )
 
     /* CBase derivitaves are zero'd out, they say */
     XP_ASSERT( iTimerReasons[0] == 0 && iTimerReasons[1] == 0 );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    comms_getInitialAddr( &iCommsAddr );
+#endif
 }
 
 CXWordsAppView::~CXWordsAppView()
@@ -1078,7 +1082,6 @@ CXWordsAppView::InitPrefs()
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     iGi.serverRole = SERVER_STANDALONE;
-    comms_getInitialAddr( &iCommsAddr );
 #endif
 }
 
