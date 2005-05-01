@@ -156,6 +156,11 @@ my %typeInfo = (
                 # it's a char*, likely never returned
                 "_Palm_va_list" => { "size" => 4, "a0" => 1 }, 
                 "WinScreenAttrType" => { "size" => 1, "a0" => 0 }, # enum
+                "NetSocketRef" => { "size" => 2, "a0" => 0 },
+                "NetSocketAddrType*" => { "size" => 4, "a0" => 1 },
+                "NetFDSetType*" => { "size" => 4, "a0" => 1, "autoSwap" => 4 },
+                "NetSocketAddrEnum" => { "size" => 1, "a0" => 0 },
+                "NetSocketTypeEnum" => { "size" => 1, "a0" => 0 },
                 );
 
 sub name_compact($) {
@@ -354,7 +359,8 @@ sub makeSwapStuff($$$$$) {
             if ( $swapInfo == -1 ) {
                 my $typeNoStar = $type;
                 $typeNoStar =~ s/\*$//;
-                die "no star found" if $typeNoStar eq $type;
+                # Does anything bad happen if there's no *?
+                # die "no star found" if $typeNoStar eq $type;
                 my $isConst = $typeNoStar =~ m|^const|;
                 $typeNoStar =~ s/^const\s+//;
                 my $vName = "${typeNoStar}_68K${vcount}";
