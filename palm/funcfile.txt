@@ -210,3 +210,13 @@ SysUIAppSwitch
 FntBaseLine
 WinSetScalingMode
 WinGetDrawWindow
+############ These only needed if BEYOND_IR defined
+NetLibOpen
+NetLibSocketOpen
+NetLibClose
+NetLibSocketClose
+NetLibSend
+NetLibReceive
+NetLibSelect
+NetLibSocketConnect
+NetLibSocketOptionSet
