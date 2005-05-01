@@ -64,4 +64,9 @@ for ( my $p = 0; $p < $nPlayers; ++$p ) {
     }
 } 
 
-
+sub usage()
+{
+    print STDERR <<EOF
+    usage : $0 [-nplayers n] [-dict dname] [-port pnum] [-quit]
+EOF
+}
