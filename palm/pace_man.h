@@ -27,6 +27,7 @@
 #include <ExgMgr.h>
 #include <VFSMgr.h>
 #include <NotifyMgr.h>
+#include <NetMgr.h>
 
 #include "pnostate.h"
 #include "xptypes.h"
@@ -99,6 +100,10 @@ void flipFileInfoToArm( FileInfoType* fout, const unsigned char* fin );
 #define SWAP_DATETIMETYPE_ARM_TO_68K( dp, sp ) /* nothing for now */
 void flipDateTimeToArm( DateTimeType* out, const unsigned char* in );
 #define SWAP_DATETIMETYPE_68K_TO_ARM( dp, sp ) flipDateTimeToArm( (dp), (sp) )
+
+NetHostInfoPtr NetLibGetHostByName( UInt16 libRefNum, 
+                                    const Char* nameP, NetHostInfoBufPtr bufP, 
+                                    Int32 timeout, Err* errP );
 
 PNOState* getStorageLoc();
 #define GET_CALLBACK_STATE() getStorageLoc()
