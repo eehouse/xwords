@@ -308,9 +308,13 @@ int main( int argc, char** argv )
         assert( retval > 0 );
         
         if ( FD_ISSET( listener, &rfds ) ) {
-            sockaddr newaddr;
+            struct sockaddr_in newaddr;
             socklen_t siz = sizeof(newaddr);
-            int newSock = accept( listener, &newaddr, &siz );
+            int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
+
+            unsigned long remoteIP = newaddr.sin_addr.s_addr;
+            logf( "accepting connection from 0x%lx", ntohl( remoteIP ) );
+
             tPool->AddSocket( newSock );
             --retval;
         }
