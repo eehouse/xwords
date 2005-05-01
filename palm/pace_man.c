@@ -860,6 +860,52 @@ flipDateTimeToArm( DateTimeType* out, const unsigned char* in )
     out->weekDay = Byte_Swap16( inp->weekDay );
 }
 
+/* from file NetMgr.h */
+NetHostInfoPtr
+NetLibGetHostByName( UInt16 libRefNum, const Char* nameP, 
+                     NetHostInfoBufPtr bufP, Int32 timeout, Err* errP )
+{
+    NetHostInfoPtr result;
+    FUNC_HEADER(NetLibGetHostByName);
+    /* var decls */
+    /* swapIns */
+    {
+        PNOState* sp = GET_CALLBACK_STATE();
+        STACK_START(unsigned char, stack, 18);
+        /* pushes */
+        ADD_TO_STACK2(stack, libRefNum, 0);
+        ADD_TO_STACK4(stack, nameP, 2);
+        ADD_TO_STACK4(stack, bufP, 6);
+        ADD_TO_STACK4(stack, timeout, 10);
+        ADD_TO_STACK4(stack, errP, 14);
+        STACK_END(stack);
+        result = (NetHostInfoPtr)
+            (*sp->call68KFuncP)( sp->emulStateP, 
+                                 PceNativeTrapNo(netLibTrapGetHostByName),
+                                 stack, kPceNativeWantA0 | 18 );
+        /* swapOuts */
+    
+        XP_LOGF( "result = 0x%lx", result );
+        if ( result != NULL ) {
+            result->nameP = Byte_Swap32( result->nameP );
+            result->nameAliasesP = Byte_Swap32( result->nameAliasesP );
+            result->addrType = Byte_Swap16( result->addrType );
+            result->addrLen = Byte_Swap16( result->addrLen );
+            result->addrListP = Byte_Swap32( result->addrListP );
+
+            /* we'll use only the first */
+            result->addrListP[0] = Byte_Swap32( result->addrListP[0] );
+            XP_LOGF( "turning 0x%lx", result->addrListP[0] );
+            *(XP_U32*)result->addrListP[0] = Byte_Swap32( *(XP_U32*)result->addrListP[0] );
+            XP_LOGF( "into 0x%lx", result->addrListP[0] );
+        }
+    }
+    FUNC_TAIL(NetLibGetHostByName);
+    EMIT_NAME("NetLibGetHostByName","'N','e','t','L','i','b','G','e','t','H','o','s','t','B','y','N','a','m','e'");
+    return result;
+} /* NetLibGetHostByName */
+
+
 static unsigned long
 exgWriteEntry( const void* emulStateP, 
                void* userData68KP, 
