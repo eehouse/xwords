@@ -1,4 +1,5 @@
-/* Copyright 1997 - 2002 by Eric House (fixin@peak.org) (fixin@peak.org).  All rights reserved.
+/* -*- mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
+/* Copyright 1997 - 2005 by Eric House (fixin@peak.org) (fixin@peak.org).  All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -20,17 +21,25 @@
 #ifdef PLATFORM_GTK
 #include <gtk/gtk.h>
 #include <sys/time.h>
+#include <pango/pango-font.h>
 
 #include "draw.h"
 #include "main.h"
 #include "game.h"
 #include "dictnry.h"
 
+enum {
+    LAYOUT_BOARD
+    ,LAYOUT_SMALL
+    ,LAYOUT_LARGE
+    ,LAYOUT_NLAYOUTS
+};
+
 typedef struct GtkDrawCtx {
     DrawCtxVTable* vtable;
 
 /*     GdkDrawable* pixmap; */
-    GtkWidget* widget;
+    GtkWidget* drawing_area;
     struct GtkAppGlobals* globals;
 
     GdkGC* drawGC;
@@ -38,13 +47,16 @@ typedef struct GtkDrawCtx {
     GdkColor black;
     GdkColor white;
     GdkColor red;		/* for pending tiles */
+    GdkColor tileBack;	/* for pending tiles */
     GdkColor bonusColors[4];
     GdkColor playerColors[MAX_NUM_PLAYERS];
-    GdkFont *gdkFont;
-    GdkFont *gdkBoldFont;
-    GdkFont *gdkTrayFont;
 
-    gint trayFontHeight;
+    /* new for gtk 2.0 */
+    PangoContext* pangoContext;
+    PangoFontDescription* fontdesc[LAYOUT_NLAYOUTS];
+    PangoLayout* layout[LAYOUT_NLAYOUTS]; 
+    
+    XP_U16 trayOwner;
 } GtkDrawCtx;
 
 typedef struct ClientStreamRec {
@@ -57,6 +69,9 @@ typedef struct GtkAppGlobals {
     CommonGlobals cGlobals;
     GtkWidget* window;
     GtkDrawCtx* draw;
+
+/*     GdkPixmap* pixmap; */
+    GtkWidget* drawing_area;
 
     EngineCtxt* engine;
 
@@ -95,7 +110,7 @@ int gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] );
 #define SCORE_BOARD_PADDING 0
 
 #define HOR_SCORE_LEFT (BOARD_LEFT_MARGIN)
-#define HOR_SCORE_HEIGHT 8
+#define HOR_SCORE_HEIGHT 12
 #define TIMER_HEIGHT HOR_SCORE_HEIGHT
 #define HOR_SCORE_TOP (TOP_MARGIN)
 #define TIMER_PAD 10
