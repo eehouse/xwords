@@ -65,11 +65,12 @@ gtkpasswdask( const char* name, char* outbuf, XP_U16* buflen )
     hbox = gtk_hbox_new(FALSE, 0);
 
     for ( i = 0; i < 2; ++i ) {
-	GtkWidget* button = gtk_button_new_with_label( labels[i] );
-	gtk_signal_connect( GTK_OBJECT(button), "clicked", button_event,
-			    boolps[i] );
-	gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-	gtk_widget_show( button );
+        GtkWidget* button = gtk_button_new_with_label( labels[i] );
+        gtk_signal_connect( GTK_OBJECT(button), "clicked", 
+                            GTK_SIGNAL_FUNC(button_event),
+                            boolps[i] );
+        gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
+        gtk_widget_show( button );
     }
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -81,9 +82,9 @@ gtkpasswdask( const char* name, char* outbuf, XP_U16* buflen )
     gtk_main();
 
     if ( ok ) {
-	char* text = gtk_entry_get_text( GTK_ENTRY(entry) );
-	strncpy( outbuf, text, *buflen );
-	*buflen = strlen(outbuf);
+        const char* text = gtk_entry_get_text( GTK_ENTRY(entry) );
+        strncpy( outbuf, text, *buflen );
+        *buflen = strlen(outbuf);
     }
 
     gtk_widget_destroy( dialog );
