@@ -64,13 +64,12 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 LIBS = -lm -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
 # -lprc 
 # -pg
-CFLAGS = -g -Wall $(GPROFFLAG)
+gtkCFLAGS = -g -Wall $(GPROFFLAG)
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
-# 	LIBS += `pkg-config --libs gtk+-2.0`
-# 	CFLAGS += `pkg-config --cflags gtk+-2.0` -DPOINTER_SUPPORT
-	LIBS += $$(gtk-config --libs) 
-	CFLAGS += `gtk-config --cflags` -DPOINTER_SUPPORT
+	LIBS += `pkg-config --libs gtk+-2.0`
+	CFLAGS += `pkg-config --cflags gtk+-2.0` -DPOINTER_SUPPORT $(gtkCFLAGS) \
+		-DGDK_DISABLE_DEPRECATED
 endif
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
