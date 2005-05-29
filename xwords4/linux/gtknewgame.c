@@ -182,22 +182,22 @@ handle_revert( GtkWidget* widget, void* closure )
 } /* handle_revert */
 
 GtkWidget*
-make_menu_item( gchar* name, GtkSignalFunc func, gpointer data )
+make_menu_item( gchar* name, GCallback func, gpointer data )
 {
     GtkWidget* item;
   
     item = gtk_menu_item_new_with_label( name );
-    gtk_signal_connect( GTK_OBJECT(item), "activate", func, data );
+    g_signal_connect( GTK_OBJECT(item), "activate", func, data );
     gtk_widget_show( item );
 
     return item;
 } /* make_menu_item */
 
 static GtkWidget*
-makeButton( char* text, GtkSignalFunc func, gpointer data )
+makeButton( char* text, GCallback func, gpointer data )
 {
     GtkWidget* button = gtk_button_new_with_label( text );
-    gtk_signal_connect( GTK_OBJECT(button), "clicked", func, data );
+    g_signal_connect( GTK_OBJECT(button), "clicked", func, data );
     gtk_widget_show( button );
 
     return button;

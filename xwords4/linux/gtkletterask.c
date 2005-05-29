@@ -23,7 +23,7 @@
 #include "gtkask.h"
 
 static void
-button_event( GtkWidget* widget, void* closure )
+button_event( GtkWidget* widget, gpointer closure )
 {
     XP_Bool* whichSet = (XP_Bool*)closure;
     *whichSet = 1;
@@ -33,7 +33,7 @@ button_event( GtkWidget* widget, void* closure )
 
 #ifdef FEATURE_TRAY_EDIT
 static void
-abort_button_event( GtkWidget* widget, void* closure )
+abort_button_event( GtkWidget* widget, gpointer closure )
 {
     gtk_main_quit();
 } /* abort_button_event */
@@ -67,8 +67,8 @@ gtkletterask( XP_Bool forBlank, XP_UCHAR* name,
         button = gtk_button_new_with_label( texts[i] );
 
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-        gtk_signal_connect( GTK_OBJECT(button), "clicked", button_event, 
-                            &results[i] );
+        g_signal_connect( GTK_OBJECT(button), "clicked", 
+                          G_CALLBACK(button_event), &results[i] );
         gtk_widget_show( button );
 
         if ( i+1 == nTiles || (i % BUTTONS_PER_ROW == 0) ) {
@@ -80,8 +80,8 @@ gtkletterask( XP_Bool forBlank, XP_UCHAR* name,
 #ifdef FEATURE_TRAY_EDIT
     button = gtk_button_new_with_label( "Just pick em!" );
     hbox = gtk_hbox_new( FALSE, 0 );
-    gtk_signal_connect( GTK_OBJECT(button), "clicked", abort_button_event, 
-                        NULL );
+    g_signal_connect( GTK_OBJECT(button), "clicked", 
+                      G_CALLBACK(abort_button_event), NULL );
     gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
     gtk_widget_show( button );
     gtk_widget_show( hbox );

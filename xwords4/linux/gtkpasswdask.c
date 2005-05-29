@@ -66,9 +66,9 @@ gtkpasswdask( const char* name, char* outbuf, XP_U16* buflen )
 
     for ( i = 0; i < 2; ++i ) {
         GtkWidget* button = gtk_button_new_with_label( labels[i] );
-        gtk_signal_connect( GTK_OBJECT(button), "clicked", 
-                            GTK_SIGNAL_FUNC(button_event),
-                            boolps[i] );
+        g_signal_connect( GTK_OBJECT(button), "clicked", 
+                          G_CALLBACK(button_event),
+                          boolps[i] );
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
         gtk_widget_show( button );
     }
