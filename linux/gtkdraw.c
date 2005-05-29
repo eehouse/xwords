@@ -295,6 +295,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
     if ( !!letter ) {
         if ( *letter == LETTER_NONE && bonus != BONUS_NONE ) {
             XP_ASSERT( bonus <= 4 );
+
             gdk_gc_set_foreground( dctx->drawGC, &dctx->bonusColors[bonus-1] );
             gdk_draw_rectangle( DRAW_WHAT(dctx),
                                 dctx->drawGC,
@@ -302,9 +303,15 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
                                 rectInset.left, rectInset.top,
                                 rectInset.width+1, rectInset.height+1 );
 
-        } else {
+        } else if ( *letter != LETTER_NONE ) {
             GdkColor* foreground;
 
+            gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+            gdk_draw_rectangle( DRAW_WHAT(dctx),
+                                dctx->drawGC,
+                                TRUE,
+                                rectInset.left, rectInset.top,
+                                rectInset.width+1, rectInset.height+1 );
             if ( highlight ) {
                 foreground = &dctx->red;
             } else {
@@ -312,8 +319,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
             }
 
             draw_string_at( dctx, dctx->layout[LAYOUT_BOARD], letter,
-                                rectInset.left, rectInset.top,
-                                foreground, NULL );
+                            rectInset.left, rectInset.top-2,
+                            foreground, NULL );
 
             if ( isBlank ) {
                 gdk_draw_arc( DRAW_WHAT(dctx), dctx->drawGC,
@@ -324,7 +331,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
                               rect->height,/*width, */
                               0, 360*64 );
             }
-        } 
+        }
     } else if ( !!bitmap ) {
         drawBitmapFromLBS( dctx, bitmap, rect );
     }
@@ -381,18 +388,20 @@ gtk_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* textP,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect insetR = *rect;
 
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-
-    /*     insetRect( &insetR, 1 ); */	/* to draw inside the thing */
-    /*     ++insetR.left; */
-    /*     --insetR.width; */
     eraseRect( dctx, &insetR );
 
-    if ( val < 0 ) {
-    } else {
+    if ( val >= 0 ) {
         GdkColor* foreground = &dctx->playerColors[dctx->trayOwner];
 
         insetRect( &insetR, 1 );
+
+        gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+        gdk_draw_rectangle( DRAW_WHAT(dctx),
+                            dctx->drawGC,
+                            TRUE,
+                            insetR.left, insetR.top, insetR.width, 
+                            insetR.height );
+        
 
         if ( !!textP ) {
             if ( *textP != LETTER_NONE ) { /* blank */
@@ -414,6 +423,7 @@ gtk_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* textP,
                         foreground, NULL );
     
         /* frame the tile */
+        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
         gdk_draw_rectangle( DRAW_WHAT(dctx),
                             dctx->drawGC,
                             FALSE,
@@ -438,10 +448,21 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* rect )
 
     insetRect( &r, 1 );
 
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
+    gdk_gc_set_foreground( dctx->drawGC, 
+                           &dctx->playerColors[dctx->trayOwner] );
     gdk_draw_rectangle( DRAW_WHAT(dctx),
                         dctx->drawGC, TRUE, 
                         r.left, r.top, r.width, r.height );
+
+    insetRect( &r, 1 );
+    gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+    gdk_draw_rectangle( DRAW_WHAT(dctx),
+                        dctx->drawGC, TRUE, 
+                        r.left, r.top, r.width, r.height );
+
+    draw_string_at( dctx, dctx->layout[LAYOUT_LARGE], "?", 
+                    r.left, r.top, 
+                    &dctx->playerColors[dctx->trayOwner], NULL );
 } /* gtk_draw_drawTileBack */
 
 static void
@@ -934,9 +955,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     allocAndSet( map, &dctx->playerColors[3], 0xAFFF, 0x0000, 0xAFFF );
 
     allocAndSet( map, &dctx->tileBack, 0xFFFF, 0xFFFF, 0x9999 );
-
     allocAndSet( map, &dctx->red, 0xFFFF, 0x0000, 0x0000 );
-    allocAndSet( map, &dctx->tileBack, 0xFFFF, 0x0000, 0x0000 );
 
     setupLayouts( dctx, drawing_area );
 
