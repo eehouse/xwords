@@ -52,8 +52,8 @@ gtkask( GtkAppGlobals* globals, gchar *message, gint numButtons,
         button = gtk_button_new_with_label( *butList );
 
         results[i] = 0;
-        gtk_signal_connect( GTK_OBJECT( button ), "clicked",
-                            GTK_SIGNAL_FUNC(button_event), &results[i] );
+        g_signal_connect( GTK_OBJECT( button ), "clicked", 
+                          G_CALLBACK(button_event), &results[i] );
 
         gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area),
                            button );
