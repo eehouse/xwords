@@ -1419,8 +1419,8 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
         model_packTilesUtil( server->vol.model, pool,
                              XP_TRUE, &nUsed, texts, tiles );
 
-        chosen = util_userPickTile( server->vol.util, &pi,
-                                    playerNum, texts, nUsed );
+        chosen = util_userPickTile( server->vol.util, &pi, playerNum,
+                                    (const XP_UCHAR4*)texts, nUsed );
 
         if ( chosen == PICKER_PICKALL ) {
             ask = XP_FALSE;
