@@ -138,7 +138,7 @@ stringToStream( XWStreamCtxt* stream, XP_UCHAR* str )
  *
  ****************************************************************************/
 XP_UCHAR* 
-copyString( MPFORMAL XP_UCHAR* instr )
+copyString( MPFORMAL const XP_UCHAR* instr )
 {
     XP_UCHAR* result = (XP_UCHAR*)NULL;
     if ( !!instr ) {
