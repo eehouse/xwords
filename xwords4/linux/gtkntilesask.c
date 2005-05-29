@@ -57,7 +57,8 @@ askNTiles( GtkAppGlobals* globals, XP_U16 max, XP_U16 deflt )
         button = gtk_button_new_with_label( buf );
 
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0 );
-        gtk_signal_connect( GTK_OBJECT(button), "clicked", button_event, 
+        gtk_signal_connect( GTK_OBJECT(button), "clicked", 
+                            GTK_SIGNAL_FUNC(button_event), 
                             &results[i] );
         gtk_widget_show( button );
     }
@@ -67,8 +68,10 @@ askNTiles( GtkAppGlobals* globals, XP_U16 max, XP_U16 deflt )
 
     sprintf( defbuf, "Default (%d)", deflt );
     button = gtk_button_new_with_label( defbuf );
-    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, TRUE, 0 );
-    gtk_signal_connect( GTK_OBJECT(button), "clicked", button_event, 
+    gtk_box_pack_start( GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, 
+                        TRUE, 0 );
+    gtk_signal_connect( GTK_OBJECT(button), "clicked", 
+                        GTK_SIGNAL_FUNC(button_event), 
                         &results[deflt-1] );
     gtk_widget_show( button );
 
