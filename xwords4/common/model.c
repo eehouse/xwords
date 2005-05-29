@@ -947,7 +947,7 @@ askBlankTile( ModelCtxt* model, XP_U16 turn )
                          &nUsed, tfaces, tiles );
 
     chosen = util_userPickTile( model->vol.util, &pi,
-                                turn, tfaces, nUsed );
+                                turn, (const XP_UCHAR4*)tfaces, nUsed );
 
     if ( chosen < 0 ) {
         chosen = 0;
