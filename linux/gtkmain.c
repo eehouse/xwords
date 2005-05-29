@@ -56,7 +56,7 @@
 
 /* static guint gtkSetupClientSocket( GtkAppGlobals* globals, int sock ); */
 static void sendOnClose( XWStreamCtxt* stream, void* closure );
-static XP_Bool file_exists( char* fileName );
+static XP_Bool file_exists( const char* fileName );
 static void gtkListenOnSocket( GtkAppGlobals* globals, int newSock );
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void printFinalScores( GtkAppGlobals* globals );
@@ -152,7 +152,7 @@ button_release_event( GtkWidget *widget, GdkEventMotion *event,
 
 static gint
 key_release_event( GtkWidget *widget, GdkEventKey* event,
-		 GtkAppGlobals* globals )
+                   GtkAppGlobals* globals )
 {
     XP_Key xpkey = XP_KEY_NONE;
     guint keyval = event->keyval;
@@ -225,7 +225,7 @@ streamFromFile( GtkAppGlobals* globals, char* name )
 } /* streamFromFile */
 
 static void
-createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
+createOrLoadObjects( GtkAppGlobals* globals )
 {
     XWStreamCtxt* stream = NULL;
 
@@ -233,7 +233,8 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
     XP_Bool isServer = serverRole != SERVER_ISCLIENT;
     LaunchParams* params = globals->cGlobals.params;
 
-    globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( widget, globals );
+    globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area,
+                                                  globals );
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
 
@@ -300,9 +301,9 @@ createOrLoadObjects( GtkAppGlobals* globals, GtkWidget *widget )
 /* Create a new backing pixmap of the appropriate size and set up contxt to
  * draw using that size.
  */
-static gint
-configure_event( GtkWidget *widget, GdkEventConfigure *event,
-		 GtkAppGlobals* globals )
+static gboolean
+configure_event( GtkWidget* widget, GdkEventConfigure* event,
+                 GtkAppGlobals* globals )
 {
     short width, height, leftMargin, topMargin;
     short timerLeft, timerTop;
@@ -317,7 +318,7 @@ configure_event( GtkWidget *widget, GdkEventConfigure *event,
         int listenSocket = linux_init_socket( &globals->cGlobals );
         gtkListenOnSocket( globals, listenSocket );
 
-        createOrLoadObjects( globals, widget );
+        createOrLoadObjects( globals );
     }
 
     width = widget->allocation.width - (RIGHT_MARGIN + BOARD_LEFT_MARGIN);
@@ -376,16 +377,15 @@ configure_event( GtkWidget *widget, GdkEventConfigure *event,
     setCtrlsForTray( globals );
     
     board_invalAll( globals->cGlobals.game.board );
-    board_draw( globals->cGlobals.game.board );
 
     return TRUE;
 } /* configure_event */
 
 /* Redraw the screen from the backing pixmap */
 static gint
-expose_event( GtkWidget      *widget,
-	      GdkEventExpose *event,
-	      GtkAppGlobals* globals )
+expose_event( GtkWidget* widget,
+              GdkEventExpose* event,
+              GtkAppGlobals* globals )
 {
     /*
     gdk_draw_rectangle( widget->window,//((GtkDrawCtx*)globals->draw)->pixmap,
@@ -654,15 +654,15 @@ handle_memstats( GtkWidget* widget, GtkAppGlobals* globals )
 
 static GtkWidget*
 createAddItem( GtkWidget* parent, gchar* label, 
-	       GtkSignalFunc handlerFunc, GtkAppGlobals* globals ) 
+               GtkSignalFunc handlerFunc, GtkAppGlobals* globals ) 
 {
     GtkWidget* item = gtk_menu_item_new_with_label( label );
 
 /*      g_print( "createAddItem called with label %s\n", label ); */
 
     if ( handlerFunc != NULL ) {
-	gtk_signal_connect( GTK_OBJECT(item), "activate",
-			    GTK_SIGNAL_FUNC(handlerFunc), globals );
+        g_signal_connect( GTK_OBJECT(item), "activate",
+                          G_CALLBACK(handlerFunc), globals );
     }
     
     gtk_menu_append( GTK_MENU(parent), item );
@@ -734,20 +734,24 @@ makeMenus( GtkAppGlobals* globals, int argc, char** argv )
     return menubar;
 } /* makeMenus */
 
-static void
-handle_flip_button( GtkWidget* widget, GtkAppGlobals* globals )
+static gboolean
+handle_flip_button( GtkWidget* widget, gpointer _globals )
 {
+    GtkAppGlobals* globals = (GtkAppGlobals*)_globals;
     if ( board_flip( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
     }
+    return TRUE;
 } /* handle_flip_button */
 
-static void
-handle_value_button( GtkWidget* widget, GtkAppGlobals* globals )
+static gboolean
+handle_value_button( GtkWidget* widget, gpointer closure )
 {
+    GtkAppGlobals* globals = (GtkAppGlobals*)closure;
     if ( board_toggle_showValues( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
     }
+    return TRUE;
 } /* handle_value_button */
 
 static void
@@ -1223,7 +1227,7 @@ gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 } /* gtk_util_userQuery */
 
 static XP_Bool
-file_exists( char* fileName ) 
+file_exists( const char* fileName ) 
 {
     struct stat statBuf;
 
@@ -1232,34 +1236,25 @@ file_exists( char* fileName )
 } /* file_exists */
 
 static GtkWidget*
-makeShowButtonFromBitmap( GtkAppGlobals* globals, GtkWidget* parent,
-			  char* fileName, char* alt, GtkSignalFunc func )
+makeShowButtonFromBitmap( void* closure, const gchar* filename, 
+                          const gchar* alt, GCallback func )
 {
+    GtkWidget* widget;
     GtkWidget* button;
-    GtkWidget* pixmapWid;
-    GdkPixmap* pixmap;
-    GdkBitmap *mask;
-    GtkStyle *style;
 
-    if ( file_exists( fileName ) ) {
-        button = gtk_button_new();
-
-        style = gtk_widget_get_style(parent);
-
-        pixmap = gdk_pixmap_create_from_xpm( parent->window, &mask,
-                                             &style->bg[GTK_STATE_NORMAL],
-                                             fileName );
-        pixmapWid = gtk_pixmap_new( pixmap, mask );
-        gtk_container_add( GTK_CONTAINER(button), pixmapWid );
-
-        gtk_widget_show( pixmapWid );
+    if ( file_exists( filename ) ) {
+        widget = gtk_image_new_from_file (filename);
     } else {
-        button = gtk_button_new_with_label( alt );
+       widget = gtk_label_new( alt );
     }
-    gtk_widget_show( button );
+    gtk_widget_show( widget );
+
+    button = gtk_button_new();
+    gtk_container_add (GTK_CONTAINER (button), widget );
+    gtk_widget_show (button);
 
     if ( func != NULL ) {
-        gtk_signal_connect( GTK_OBJECT(button), "clicked", func, globals );
+        g_signal_connect( GTK_OBJECT(button), "clicked", func, closure );
     }
 
     return button;
@@ -1272,65 +1267,63 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* window )
     GtkWidget* button;
     GtkWidget* vscrollbar;
 
-    vbox = gtk_vbox_new( FALSE, 0 );
+    vbox = gtk_vbutton_box_new();
 
-    button = makeShowButtonFromBitmap( globals, window, "../flip.xpm", "f",
-				       handle_flip_button );
+    button = makeShowButtonFromBitmap( globals, "../flip.xpm", "f", 
+                                       G_CALLBACK(handle_flip_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, window, "../value.xpm", "v",
-				       handle_value_button );
+    button = makeShowButtonFromBitmap( globals, "../value.xpm", "v",
+                                       G_CALLBACK(handle_value_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, window, "../hint.xpm", "?",
-				       handle_hint_button );
+    button = makeShowButtonFromBitmap( globals, "../hint.xpm", "?",
+                                       G_CALLBACK(handle_hint_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, window, "../hintNum.xpm", "n",
-                                       handle_nhint_button );
+    button = makeShowButtonFromBitmap( globals, "../hintNum.xpm", "n",
+                                       G_CALLBACK(handle_nhint_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, window, "../colors.xpm", "c",
-				       handle_colors_button );
+    button = makeShowButtonFromBitmap( globals, "../colors.xpm", "c",
+                                       G_CALLBACK(handle_colors_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     if ( globals->cGlobals.params->trayOverlaps ) {
         globals->adjustment = (GtkAdjustment*)gtk_adjustment_new( 0, 0, 15, 
                                                                   1, 2, 13 );
         vscrollbar = gtk_vscrollbar_new( globals->adjustment );
-        gtk_signal_connect( GTK_OBJECT(globals->adjustment), "value_changed",
-                            GTK_SIGNAL_FUNC(scroll_value_changed), globals );
+        g_signal_connect( GTK_OBJECT(globals->adjustment), "value_changed",
+                          G_CALLBACK(scroll_value_changed), globals );
 
         gtk_widget_show( vscrollbar );
         gtk_box_pack_start( GTK_BOX(vbox), vscrollbar, TRUE, TRUE, 0 );
     }
 
     /* undo and redo buttons */
-    button = makeShowButtonFromBitmap( globals, window, "../undo.xpm", "u",
-				       handle_undo_button );
+    button = makeShowButtonFromBitmap( globals, "../undo.xpm", "u",
+                                       G_CALLBACK(handle_undo_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-    button = makeShowButtonFromBitmap( globals, window, "../redo.xpm", "r",
-				       handle_redo_button );
+    button = makeShowButtonFromBitmap( globals, "../redo.xpm", "r",
+                                       G_CALLBACK(handle_redo_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     /* the four buttons that on palm are beside the tray */
-    button = makeShowButtonFromBitmap( globals, window, "../juggle.xpm", "j",
-				       handle_juggle_button );
+    button = makeShowButtonFromBitmap( globals, "../juggle.xpm", "j",
+                                       G_CALLBACK(handle_juggle_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, window, "../trade.xpm", "t",
-				       handle_trade_button );
+    button = makeShowButtonFromBitmap( globals, "../trade.xpm", "t",
+                                       G_CALLBACK(handle_trade_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, window, "../hide.xpm", "h",
-				       handle_hide_button );
+    button = makeShowButtonFromBitmap( globals, "../hide.xpm", "h",
+                                       G_CALLBACK(handle_hide_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    button = makeShowButtonFromBitmap( globals, window, "../hide.xpm", "d",
-				       handle_commit_button );
+    button = makeShowButtonFromBitmap( globals, "../hide.xpm", "d",
+                                       G_CALLBACK(handle_commit_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-
-
 
     gtk_widget_show( vbox );
     return vbox;
@@ -1345,12 +1338,12 @@ makeButtons( GtkAppGlobals* globals, int argc, char** argv )
 
     struct {
         char* name;
-        GtkSignalFunc func;
+        GCallback func;
     } buttons[] = {
         /* 	{ "Flip", handle_flip_button }, */
-        { "Grid", handle_grid_button },
-        { "Hide", handle_hide_button },
-        { "Commit", handle_commit_button },
+        { "Grid", G_CALLBACK(handle_grid_button) },
+        { "Hide", G_CALLBACK(handle_hide_button) },
+        { "Commit", G_CALLBACK(handle_commit_button) },
     };
     
     hbox = gtk_hbox_new( FALSE, 0 );
@@ -1358,8 +1351,8 @@ makeButtons( GtkAppGlobals* globals, int argc, char** argv )
     for ( i = 0; i < sizeof(buttons)/sizeof(*buttons); ++i ) {
         button = gtk_button_new_with_label( buttons[i].name );
         gtk_widget_show( button );
-        gtk_signal_connect( GTK_OBJECT(button), "clicked",
-                            GTK_SIGNAL_FUNC(buttons[i].func), globals );
+        g_signal_connect( GTK_OBJECT(button), "clicked",
+                          G_CALLBACK(buttons[i].func), globals );
 
         gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);    
     }
@@ -1504,7 +1497,6 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     GtkWidget* buttonbar;
     GtkWidget* vbox;
     GtkWidget* hbox;
-    GtkWidget* vertBar;
     GtkAppGlobals globals;
     GtkWidget* dropCheck;
 
@@ -1545,24 +1537,24 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     gtk_container_add( GTK_CONTAINER(window), vbox );
     gtk_widget_show( vbox );
 
-    gtk_signal_connect( GTK_OBJECT(window), "destroy",
-			GTK_SIGNAL_FUNC (quit), &globals );
+    g_signal_connect( G_OBJECT (window), "destroy",
+                      G_CALLBACK( quit ), &globals );
 
     menubar = makeMenus( &globals, argc, argv );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 
-    dropCheck = gtk_check_button_new_with_label( "drop incomming messages" );
-    gtk_signal_connect(GTK_OBJECT(dropCheck),
-		       "toggled", GTK_SIGNAL_FUNC(drop_msg_toggle), &globals );
+    dropCheck = gtk_check_button_new_with_label( "drop incoming messages" );
+    g_signal_connect( GTK_OBJECT(dropCheck),
+                      "toggled", G_CALLBACK(drop_msg_toggle), &globals );
     gtk_box_pack_start( GTK_BOX(vbox), dropCheck, FALSE, TRUE, 0);
     gtk_widget_show( dropCheck );
 
     buttonbar = makeButtons( &globals, argc, argv );
     gtk_box_pack_start( GTK_BOX(vbox), buttonbar, FALSE, TRUE, 0);
 
-    vertBar = makeVerticalBar( &globals, window );
-
     drawing_area = gtk_drawing_area_new();
+    globals.drawing_area = drawing_area;
+    gtk_widget_show( drawing_area );
 
 #if 0
     width = (MAX_COLS * MIN_SCALE) + LEFT_MARGIN + RIGHT_MARGIN;
@@ -1575,30 +1567,30 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
         height += MIN_SCALE * 2;
     }
 #endif
-    gtk_drawing_area_size( GTK_DRAWING_AREA (drawing_area), 
-                           width, height );
+    gtk_widget_set_size_request( GTK_WIDGET(drawing_area), width, height );
 
     hbox = gtk_hbox_new( FALSE, 0 );
-    gtk_box_pack_start (GTK_BOX (hbox), drawing_area, TRUE, TRUE, 0);
-    gtk_box_pack_start (GTK_BOX (hbox), vertBar, TRUE, TRUE, 0);
+    gtk_box_pack_start( GTK_BOX (hbox), drawing_area, TRUE, TRUE, 0);
+    gtk_box_pack_start( GTK_BOX (hbox), 
+                        makeVerticalBar( &globals, window ), 
+                        FALSE, TRUE, 0 );
     gtk_widget_show( hbox );
-    gtk_widget_show( drawing_area );
 
-    gtk_box_pack_start (GTK_BOX (vbox), hbox/* drawing_area */, TRUE, TRUE, 0);
+    gtk_box_pack_start( GTK_BOX(vbox), hbox/* drawing_area */, TRUE, TRUE, 0);
 
-    gtk_signal_connect( GTK_OBJECT(drawing_area), "expose_event",
-			(GtkSignalFunc) expose_event, &globals );
-    gtk_signal_connect( GTK_OBJECT(drawing_area),"configure_event",
-			(GtkSignalFunc) configure_event, &globals );
-    gtk_signal_connect( GTK_OBJECT(drawing_area), "button_press_event",
-			(GtkSignalFunc)button_press_event, &globals );
-    gtk_signal_connect( GTK_OBJECT(drawing_area), "motion_notify_event",
-			(GtkSignalFunc)motion_notify_event, &globals );
-    gtk_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
-			(GtkSignalFunc)button_release_event, &globals );
+    g_signal_connect( GTK_OBJECT(drawing_area), "expose_event",
+                      G_CALLBACK(expose_event), &globals );
+    g_signal_connect( GTK_OBJECT(drawing_area),"configure_event",
+                      G_CALLBACK(configure_event), &globals );
+    g_signal_connect( GTK_OBJECT(drawing_area), "button_press_event",
+                      G_CALLBACK(button_press_event), &globals );
+    g_signal_connect( GTK_OBJECT(drawing_area), "motion_notify_event",
+                      G_CALLBACK(motion_notify_event), &globals );
+    g_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
+                      G_CALLBACK(button_release_event), &globals );
 
-    gtk_signal_connect( GTK_OBJECT(window), "key_release_event",
-                        GTK_SIGNAL_FUNC(key_release_event), &globals );
+    g_signal_connect( GTK_OBJECT(window), "key_release_event",
+                      G_CALLBACK(key_release_event), &globals );
     
     gtk_widget_set_events( drawing_area, GDK_EXPOSURE_MASK
 			 | GDK_LEAVE_NOTIFY_MASK
