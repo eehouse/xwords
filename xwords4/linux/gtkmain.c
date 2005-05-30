@@ -238,16 +238,16 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
 
-	stream = streamFromFile( globals, params->fileName );
+        stream = streamFromFile( globals, params->fileName );
 
-	game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
-                         &globals->cGlobals.params->gi, 
-                         params->dict, params->util, 
-                         (DrawCtx*)globals->draw, 
-                         &globals->cp,
-                         linux_tcp_send, globals );
+        game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
+                             &globals->cGlobals.params->gi, 
+                             params->dict, params->util, 
+                             (DrawCtx*)globals->draw, 
+                             &globals->cp,
+                             linux_tcp_send, globals );
 
-	stream_destroy( stream );
+        stream_destroy( stream );
 
     } else {			/* not reading from a saved file */
         XP_U16 gameID;
@@ -280,7 +280,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         model_setDictionary( globals->cGlobals.game.model, params->dict );
 
-/*         params->gi.phoniesAction = PHONIES_DISALLOW; */
+        /*         params->gi.phoniesAction = PHONIES_DISALLOW; */
 #ifdef XWFEATURE_SEARCHLIMIT
         params->gi.allowHintRect = XP_TRUE;
 #endif
@@ -679,30 +679,30 @@ makeMenus( GtkAppGlobals* globals, int argc, char** argv )
 
     fileMenu = makeAddSubmenu( menubar, "File" );
     (void)createAddItem( fileMenu, "Tile values", 
-			 GTK_SIGNAL_FUNC(tile_values), globals );
+                         GTK_SIGNAL_FUNC(tile_values), globals );
     (void)createAddItem( fileMenu, "Game history", 
-			 GTK_SIGNAL_FUNC(game_history), globals );
+                         GTK_SIGNAL_FUNC(game_history), globals );
 
     (void)createAddItem( fileMenu, "Final scores", 
-			 GTK_SIGNAL_FUNC(final_scores), globals );
+                         GTK_SIGNAL_FUNC(final_scores), globals );
 
     (void)createAddItem( fileMenu, "New game", 
-			 GTK_SIGNAL_FUNC(new_game), globals );
+                         GTK_SIGNAL_FUNC(new_game), globals );
 
     (void)createAddItem( fileMenu, "Load game", 
-			 GTK_SIGNAL_FUNC(load_game), globals );
+                         GTK_SIGNAL_FUNC(load_game), globals );
     (void)createAddItem( fileMenu, "Save game", 
-			 GTK_SIGNAL_FUNC(save_game), globals );
+                         GTK_SIGNAL_FUNC(save_game), globals );
 
     (void)createAddItem( fileMenu, "Load dictionary", 
-			 GTK_SIGNAL_FUNC(load_dictionary), globals );
+                         GTK_SIGNAL_FUNC(load_dictionary), globals );
 
     fileMenu = makeAddSubmenu( menubar, "Edit" );
 
     (void)createAddItem( fileMenu, "Undo", 
-			 GTK_SIGNAL_FUNC(handle_undo), globals );
+                         GTK_SIGNAL_FUNC(handle_undo), globals );
     (void)createAddItem( fileMenu, "Redo", 
-			 GTK_SIGNAL_FUNC(handle_redo), globals );
+                         GTK_SIGNAL_FUNC(handle_redo), globals );
 
 #ifdef FEATURE_TRAY_EDIT
     (void)createAddItem( fileMenu, "Allow tray edit", 
@@ -714,20 +714,20 @@ makeMenus( GtkAppGlobals* globals, int argc, char** argv )
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
     (void)createAddItem( fileMenu, "Resend", 
-			 GTK_SIGNAL_FUNC(handle_resend), globals );
+                         GTK_SIGNAL_FUNC(handle_resend), globals );
 #ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
-			 GTK_SIGNAL_FUNC(handle_commstats), globals );
+                         GTK_SIGNAL_FUNC(handle_commstats), globals );
 #endif
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
-			 GTK_SIGNAL_FUNC(handle_memstats), globals );
+                         GTK_SIGNAL_FUNC(handle_memstats), globals );
 #endif
 
-/*     (void)createAddItem( fileMenu, "Print board",  */
-/* 			 GTK_SIGNAL_FUNC(handle_print_board), globals ); */
+    /*     (void)createAddItem( fileMenu, "Print board",  */
+    /* 			 GTK_SIGNAL_FUNC(handle_print_board), globals ); */
 
-/*     listAllGames( menubar, argc, argv, globals ); */
+    /*     listAllGames( menubar, argc, argv, globals ); */
 
     gtk_widget_show( menubar );
 
@@ -961,8 +961,8 @@ printFinalScores( GtkAppGlobals* globals )
     XWStreamCtxt* stream;
 
     stream = mem_stream_make( MEMPOOL 
-			      globals->cGlobals.params->vtMgr,
-			      globals, CHANNEL_NONE, catOnClose );
+                              globals->cGlobals.params->vtMgr,
+                              globals, CHANNEL_NONE, catOnClose );
     server_writeFinalScores( globals->cGlobals.game.server, stream );
     stream_putU8( stream, '\n' );
     stream_destroy( stream );
@@ -1109,35 +1109,35 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
     char buf[300];
 
     if ( turnLost ) {
-	char wordsBuf[256];
-	XP_U16 i;
-	XP_UCHAR* name = globals->cGlobals.params->gi.players[player].name;
-	XP_ASSERT( !!name );
+        char wordsBuf[256];
+        XP_U16 i;
+        XP_UCHAR* name = globals->cGlobals.params->gi.players[player].name;
+        XP_ASSERT( !!name );
 
-	for ( i = 0, wordsBuf[0] = '\0'; ; ) {
-	    char wordBuf[18];
-	    sprintf( wordBuf, "\"%s\"", bwi->words[i] );
-	    strcat( wordsBuf, wordBuf );
-	    if ( ++i == bwi->nWords ) {
-		break;
-	    }
-	    strcat( wordsBuf, ", " );
-	}
+        for ( i = 0, wordsBuf[0] = '\0'; ; ) {
+            char wordBuf[18];
+            sprintf( wordBuf, "\"%s\"", bwi->words[i] );
+            strcat( wordsBuf, wordBuf );
+            if ( ++i == bwi->nWords ) {
+                break;
+            }
+            strcat( wordsBuf, ", " );
+        }
 
-	sprintf( buf, "Player %d (%s) played illegal word[s] %s; loses turn.",
-		 player+1, name, wordsBuf );
+        sprintf( buf, "Player %d (%s) played illegal word[s] %s; loses turn.",
+                 player+1, name, wordsBuf );
 
-	if ( globals->cGlobals.params->skipWarnings ) {
-	    XP_LOGF( "%s", buf );
-	}  else {
-	    gtkUserError( globals, buf );
-	}
-	result = XP_TRUE;
+        if ( globals->cGlobals.params->skipWarnings ) {
+            XP_LOGF( "%s", buf );
+        }  else {
+            gtkUserError( globals, buf );
+        }
+        result = XP_TRUE;
     } else {
-	XP_ASSERT( bwi->nWords == 1 );
-	sprintf( buf, "Word \"%s\" not in the current dictionary. "
-		 "Use it anyway?", bwi->words[0] );
-	result = 0 == gtkask( globals, buf, 2, "Ok", "Cancel" );
+        XP_ASSERT( bwi->nWords == 1 );
+        sprintf( buf, "Word \"%s\" not in the current dictionary. "
+                 "Use it anyway?", bwi->words[0] );
+        result = 0 == gtkask( globals, buf, 2, "Ok", "Cancel" );
     }
 
     return result;
@@ -1561,7 +1561,7 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     height = (MAX_ROWS * MIN_SCALE) + TOP_MARGIN + BOTTOM_MARGIN
 	+ MIN_TRAY_SCALE + BOTTOM_MARGIN;
 #else
-    width = 180;
+    width = HOR_SCORE_WIDTH + TIMER_WIDTH + TIMER_PAD;
     height = 196;
     if ( !globals.cGlobals.params->trayOverlaps ) {
         height += MIN_SCALE * 2;
