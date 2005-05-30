@@ -28,6 +28,13 @@
 #include "board.h"
 #include "linuxmain.h"
 
+typedef enum {
+    XP_GTK_JUST_NONE
+    ,XP_GTK_JUST_CENTER
+    ,XP_GTK_JUST_TOPLEFT
+    ,XP_GTK_JUST_BOTTOMRIGHT
+} XP_GTK_JUST;
+
 /* static GdkGC* newGCForColor( GdkWindow* window, XP_Color* newC ); */
 static void
 insetRect( XP_Rect* r, short i )
@@ -123,14 +130,40 @@ gtk_prim_draw_measureText( DrawCtx* p_dctx, XP_UCHAR* str,
 
 static void
 draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout, const char* str, 
-                XP_S16 x, XP_S16 y, 
+                const XP_Rect* where, XP_GTK_JUST just,
                 const GdkColor* frground, const GdkColor* bkgrnd )
 {
+    XP_U16 x = where->left;
+    XP_U16 y = where->top;
+
     pango_layout_set_text( layout, str, strlen(str) );
+
+    if ( just != XP_GTK_JUST_NONE ) {
+        int width, height;
+        pango_layout_get_pixel_size( layout, &width, &height );
+
+        switch( just ) {
+        case XP_GTK_JUST_CENTER:
+            x += (where->width - width) / 2;
+            if ( where->height > height) {
+                y += (where->height - height) / 2;
+            }
+            break;
+        case XP_GTK_JUST_BOTTOMRIGHT:
+            x += where->width - width;
+            y += where->height - height;
+            break;
+        case XP_GTK_JUST_TOPLEFT:
+        default:
+            /* nothing to do?? */
+            break;
+        }
+    }
+
     gdk_draw_layout_with_colors( DRAW_WHAT(dctx), dctx->drawGC,
                                  x, y, layout,
                                  frground, bkgrnd );
-}
+} /* draw_string_at */
 
 static void
 drawBitmapFromLBS( GtkDrawCtx* dctx, XP_Bitmap bm, XP_Rect* rect )
@@ -319,7 +352,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
             }
 
             draw_string_at( dctx, dctx->layout[LAYOUT_BOARD], letter,
-                            rectInset.left, rectInset.top-2,
+                            &rectInset, XP_GTK_JUST_CENTER,
                             foreground, NULL );
 
             if ( isBlank ) {
@@ -338,7 +371,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
 
     if ( isStar ) {
         draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], "*", 
-                        rect->left+3, rect->top,
+                        rect, XP_GTK_JUST_CENTER,
                         &dctx->black, NULL );
     }
 
@@ -392,8 +425,12 @@ gtk_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* textP,
 
     if ( val >= 0 ) {
         GdkColor* foreground = &dctx->playerColors[dctx->trayOwner];
+        XP_Rect formatRect = insetR;
 
         insetRect( &insetR, 1 );
+
+        formatRect.left += 3;
+        formatRect.width -= 6;
 
         gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
         gdk_draw_rectangle( DRAW_WHAT(dctx),
@@ -406,7 +443,7 @@ gtk_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* textP,
         if ( !!textP ) {
             if ( *textP != LETTER_NONE ) { /* blank */
                 draw_string_at( dctx, dctx->layout[LAYOUT_LARGE], textP,
-                                rect->left+3, rect->top-1,
+                                &formatRect, XP_GTK_JUST_TOPLEFT,
                                 foreground, NULL );
 
             }
@@ -418,8 +455,7 @@ gtk_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* textP,
         len = strlen( numbuf );
 
         draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], numbuf, 
-                        insetR.left + (insetR.width/2),
-                        insetR.top + (insetR.height/2),
+                        &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
                         foreground, NULL );
     
         /* frame the tile */
@@ -461,7 +497,7 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* rect )
                         r.left, r.top, r.width, r.height );
 
     draw_string_at( dctx, dctx->layout[LAYOUT_LARGE], "?", 
-                    r.left, r.top, 
+                    &r, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dctx->trayOwner], NULL );
 } /* gtk_draw_drawTileBack */
 
@@ -529,7 +565,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP,
     const char* curs = vertical? "|":"-";
 
     draw_string_at( dctx, dctx->layout[LAYOUT_BOARD], curs,
-                    rectP->left+3, rectP->top,
+                    rectP, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
     drawHintBorders( dctx, rectP, hintAtts );
 } /* gtk_draw_drawBoardCursor */
@@ -659,7 +695,8 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
         eraseRect( dctx, rInner );
     }
 
-    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], scoreBuf, x, rInner->top,
+    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], scoreBuf, 
+                    rInner, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dsi->playerNum], NULL );
 } /* gtk_draw_score_drawPlayer */
 
@@ -686,10 +723,12 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
     eraseRect( dctx, rect );
 
     left = rect->left + 1;
-    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], "Pts:", left, rect->top,
+    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], "Pts:", 
+                    rect, XP_GTK_JUST_TOPLEFT,
                     &dctx->black, NULL );
-    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], buf, left, 
-                    rect->top + (rect->height/2), &dctx->black, NULL );
+    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], buf, 
+                    rect, XP_GTK_JUST_BOTTOMRIGHT,
+                    &dctx->black, NULL );
 } /* gtk_draw_score_pendingScore */
 
 static void
@@ -705,8 +744,8 @@ gtkFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
     XP_U16 minutes, seconds;
 
     if ( secondsLeft < 0 ) {
-	*buf++ = '-';
-	secondsLeft *= -1;
+        *buf++ = '-';
+        secondsLeft *= -1;
     }
 
     minutes = secondsLeft / 60;
@@ -725,8 +764,9 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rInner ); */
     eraseRect( dctx, rInner );
-    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], buf, rInner->left, 
-                    rInner->top + rInner->height, NULL, NULL );
+    draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], buf, 
+                    rInner, XP_GTK_JUST_CENTER,
+                    &dctx->black, NULL );
 } /* gtk_draw_drawTimer */
 
 #define MINI_LINE_HT 12
@@ -794,7 +834,7 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, XP_Rect* rect,
     frameRect( dctx, &localR );
 
     draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], text, 
-                    localR.left+2, localR.top,
+                    &localR, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
 } /* gtk_draw_drawMiniWindow */
 
