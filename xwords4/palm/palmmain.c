@@ -3401,6 +3401,7 @@ palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
                                            function? */
     XP_LOGF( "making stream for channel %d", channelNo );
     stream = makeSimpleStream( globals, palm_send_on_close );
+    stream_setAddress( stream, channelNo );
     return stream;
 } /* palm_util_makeStreamFromAddr */
 
