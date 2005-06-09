@@ -566,7 +566,6 @@ ce_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 
 static void
 ce_draw_score_drawPlayer( DrawCtx* p_dctx, 
-                          XP_S16 playerNum, /* -1: don't use */
                           XP_Rect* rInner, XP_Rect* rOuter, 
                           DrawScoreInfo* dsi )
 {
@@ -587,7 +586,8 @@ ce_draw_score_drawPlayer( DrawCtx* p_dctx,
     }
     oldFont = SelectObject( hdc, newFont );
 
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(playerNum)] );
+    SetTextColor( hdc, dctx->globals->
+                  appPrefs.colors[getPlayerColor(dsi->playerNum)] );
 
     ceWidthAndText( hdc, scoreBuf, dsi, &width, &height );
     DrawText( hdc, scoreBuf, -1, &rt, 
