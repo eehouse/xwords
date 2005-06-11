@@ -28,13 +28,13 @@ LANGFILTER_POSTCLIP: | sort -z
 NEEDSSORT:false
 
 
-LANGINFO: <p>Italian is treated the same as LANGINFO: English but for
+LANGINFO: <p>Italian is treated the same as English but for
 LANGINFO: missing letters J, W, X and Y.</p>
 
 
 # High bit means "official".  Next 7 bits are an enum where
-# French==2.  Low byte is padding
-XLOC_HEADER:0x8200
+# Italian==0xA.  Low byte is padding
+XLOC_HEADER:0x8A00
 
 <BEGIN_TILES>
 2		  0 		{"_"}
