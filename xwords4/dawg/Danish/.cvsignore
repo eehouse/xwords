@@ -1,0 +1,5 @@
+*.bin
+*.xwd
+*.pdb
+*.inf
+*.dict.gz

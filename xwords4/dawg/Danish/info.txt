@@ -1,0 +1,80 @@
+# Copyright 2005 by Eric House (fixin@peak.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:da_DK
+
+
+# deal with DOS files
+LANGFILTER_PRECLIP: tr -d '\r' |
+
+# uppercase all
+LANGFILTER_POSTCLIP: | tr [a-zåæø] [A-ZÅÆØ]
+# no words not containing a vowel
+LANGFILTER_POSTCLIP: | grep '[AEIOUÅÆØ]' 
+# none with illegal chars
+LANGFILTER_POSTCLIP: | grep '^[A-PR-VX-ZÅÆØ]\+$'
+LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
+
+# Until I can figure out how to force sort to use a locale's collation
+# rules we can't trust sort in the filtering rules above and so must
+# leave the sorting work to dict2dawg.pl.
+
+NEEDSSORT:true
+
+LANGINFO: <p>Danish uses all English letters except Q and
+W.  Three non-English letters: 'Å', 'Æ' and 'Ø'.
+</p>
+
+# High bit means "official".  Next 7 bits are an enum where
+# Danish==9.  Low byte is padding
+XLOC_HEADER:0x8900
+
+
+
+<BEGIN_TILES>
+2	0		{"_"}
+7  	1  	  	'A'
+4 	3 	 	'B'
+2 	8 	 	'C'
+5 	2 	 	'D'
+9 	1 	 	'E'
+3 	3 	 	'F'
+3 	3 	 	'G'
+2 	4 	 	'H'
+4 	3 	 	'I'
+2 	4 	 	'J'
+4 	3 	 	'K'
+5 	2 	 	'L'
+3 	3 	 	'M'
+6 	1 	 	'N'
+5 	2 	 	'O'
+2 	4 	 	'P'
+6 	1 	 	'R'
+5 	2 	 	'S'
+5 	2 	 	'T'
+3 	3 	 	'U'
+3 	3 	 	'V'
+1 	8 	 	'X'
+2 	4 	 	'Y'
+1 	8 	 	'Z'
+# These are the hard ones. O-with-slaththru, A-with-circle-over, and
+# AE ASCII for AE is 198, for O-with-slaththru is 216, and for
+# A-WITH-CIRCLE-OVER is 197.
+2   4       'Å'
+2 	4 	    'Æ'
+2 	4 	    'Ø'
+<END_TILES>
+# should ignore all after the <END_TILES> above
