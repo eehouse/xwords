@@ -25,9 +25,9 @@
 
 typedef struct BlankDialogState {
     CEAppGlobals* globals;
-    PickInfo* pi;
+    const PickInfo* pi;
     XP_U16 playerNum;
-    XP_UCHAR4* texts;
+    const XP_UCHAR4* texts;
     XP_U16 nTiles;
     XP_S16 result;
 } BlankDialogState; 
