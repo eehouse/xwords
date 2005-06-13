@@ -1,4 +1,4 @@
-# -*- mode: Makefile; -*-
+# -*- mode: Makefile; compile-command: "make -f armrel.mk"; -*-
 
 # This is the makefile for non-debug (release) ARM builds.  It was
 # built by hand-cribbing commands from the build-time log file EVC
@@ -29,7 +29,7 @@ include ./shared.mk
 # only once
 C_CMD = \
 	$(CC) /nologo $(CC_OPT) /W3 /I "$(WINCE_PATH)\Include\Armv4" \
-		/I "..\common" /I "." /D _WIN32_WCE=420 /D "WIN32_PLATFORM_PSPC=400" \
+		/I"..\common" /I"..\relay" /I"." /D _WIN32_WCE=420 /D "WIN32_PLATFORM_PSPC=400" \
 		/D "ARM" /D "_ARM_" /D "ARMV4" /D UNDER_CE=420 /D "UNICODE" \
 		/D "_UNICODE" /D "NDEBUG" $(XW_C_DEFINES) \
 		/Fo$@ /MC /c $<
