@@ -174,6 +174,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
 
+    /* This won't be enough for 'doze case: square with the SIP visible */
     board->yOffset = (XP_U16)stream_getBits( stream, 2 );
     board->isFlipped = (XP_Bool)stream_getBits( stream, 1 );
     board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
@@ -994,89 +995,92 @@ drawTradeWindowIf( BoardCtxt* board )
 XP_Bool
 board_draw( BoardCtxt* board )
 {
-    drawScoreBoard( board );
+    if ( board->boardBounds.width > 0 ) {
 
-    if ( board->needsDrawing 
-         && draw_boardBegin( board->draw, &board->boardBounds, 
-                             board->focussed == OBJ_BOARD ) ) {
+        drawScoreBoard( board );
 
-        XP_Bool allDrawn = XP_TRUE;
-        XP_S16 lastCol, lastRow, i;
-        ModelCtxt* model = board->model;
-        BlankQueue bq;
+        if ( board->needsDrawing 
+             && draw_boardBegin( board->draw, &board->boardBounds, 
+                                 board->focussed == OBJ_BOARD ) ) {
+
+            XP_Bool allDrawn = XP_TRUE;
+            XP_S16 lastCol, lastRow, i;
+            ModelCtxt* model = board->model;
+            BlankQueue bq;
 
 
-        scrollIfCan( board );	/* this must happen before we count blanks
-                                   since it invalidates squares */
+            scrollIfCan( board );	/* this must happen before we count blanks
+                                       since it invalidates squares */
 
-        model_listPlacedBlanks( model, board->selPlayer, 
-                                board->trayVisState == TRAY_REVEALED, &bq );
-        invalBlanksWithNeighbors( board, &bq );
+            model_listPlacedBlanks( model, board->selPlayer, 
+                                    board->trayVisState == TRAY_REVEALED, &bq );
+            invalBlanksWithNeighbors( board, &bq );
 
-        lastRow = model_numRows( model );
-        while ( lastRow-- ) {
-            XP_U16 rowFlags = board->redrawFlags[lastRow];
-            if ( rowFlags != 0 ) {
-                XP_U16 colMask;
-                XP_U16 failedBits = 0;
-                lastCol = model_numCols( model );
-                for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
-                    if ( (rowFlags & colMask) != 0 ) {
-                        if ( !drawCell( board, lastCol, lastRow, XP_TRUE ) ) {
-                            failedBits |= colMask;
-                            allDrawn = XP_FALSE;
+            lastRow = model_numRows( model );
+            while ( lastRow-- ) {
+                XP_U16 rowFlags = board->redrawFlags[lastRow];
+                if ( rowFlags != 0 ) {
+                    XP_U16 colMask;
+                    XP_U16 failedBits = 0;
+                    lastCol = model_numCols( model );
+                    for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
+                        if ( (rowFlags & colMask) != 0 ) {
+                            if ( !drawCell( board, lastCol, lastRow, XP_TRUE )) {
+                                failedBits |= colMask;
+                                allDrawn = XP_FALSE;
+                            }
                         }
                     }
-                }
-                board->redrawFlags[lastRow] = failedBits;
-            }
-        }
-
-        /* draw the blanks we skipped before */
-        for ( i = 0; i < bq.nBlanks; ++i ) {
-            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
-                allDrawn = XP_FALSE;
-            }
-        }
-
-        if ( board->trayVisState == TRAY_REVEALED ) {
-            XP_Rect cursorRect;
-            BoardArrow* arrow = &board->boardArrow[board->selPlayer];
-
-            if ( arrow->visible ) {
-                XP_U16 col = arrow->col;
-                XP_U16 row = arrow->row;
-                XP_Bool drawVertical = 
-                    (arrow->vert == XP_CURSOR_KEY_DOWN) ^ board->isFlipped;
-                if ( getCellRect( board, col, row, &cursorRect ) ) {
-                    XWBonusType bonus;
-                    HintAtts hintAtts;
-                    bonus = util_getSquareBonus( board->util, model, col, row );
-                    hintAtts = figureHintAtts( board, col, row );
-                    draw_drawBoardArrow( board->draw, &cursorRect, 
-                                         bonus, drawVertical, hintAtts );
+                    board->redrawFlags[lastRow] = failedBits;
                 }
             }
+
+            /* draw the blanks we skipped before */
+            for ( i = 0; i < bq.nBlanks; ++i ) {
+                if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
+                    allDrawn = XP_FALSE;
+                }
+            }
+
+            if ( board->trayVisState == TRAY_REVEALED ) {
+                XP_Rect cursorRect;
+                BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+
+                if ( arrow->visible ) {
+                    XP_U16 col = arrow->col;
+                    XP_U16 row = arrow->row;
+                    XP_Bool drawVertical = 
+                        (arrow->vert == XP_CURSOR_KEY_DOWN) ^ board->isFlipped;
+                    if ( getCellRect( board, col, row, &cursorRect ) ) {
+                        XWBonusType bonus;
+                        HintAtts hintAtts;
+                        bonus = util_getSquareBonus( board->util, model, 
+                                                     col, row );
+                        hintAtts = figureHintAtts( board, col, row );
+                        draw_drawBoardArrow( board->draw, &cursorRect, 
+                                             bonus, drawVertical, hintAtts );
+                    }
+                }
 #ifdef KEYBOARD_NAV
-            {
-                BdCursorLoc loc = board->bdCursor[board->selPlayer];
-                if ( getCellRect( board, loc.col, loc.row, &cursorRect ) ) {
-                    draw_drawBoardCursor( board->draw, &cursorRect );
+                {
+                    BdCursorLoc loc = board->bdCursor[board->selPlayer];
+                    if ( getCellRect( board, loc.col, loc.row, &cursorRect ) ) {
+                        draw_drawBoardCursor( board->draw, &cursorRect );
+                    }
                 }
-            }
 #endif
             
+            }
+
+            drawTradeWindowIf( board );
+
+            draw_boardFinished( board->draw );
+
+            board->needsDrawing = !allDrawn;
         }
 
-        drawTradeWindowIf( board );
-
-        draw_boardFinished( board->draw );
-
-        board->needsDrawing = !allDrawn;
+        drawTray( board, board->focussed==OBJ_TRAY );
     }
-
-    drawTray( board, board->focussed==OBJ_TRAY );
-
     return !board->needsDrawing;
 } /* board_draw */
 
