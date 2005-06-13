@@ -97,7 +97,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 
     } else if ( !!(str = ceLocateNthDict( MPPARM(globals->mpool) 0 ) ) ) {
         XP_MEMCPY( giState->newDictName, str, (XP_U16)XP_STRLEN(str) );
-        XP_FREE( MPPARM(globals->mpool), str );
+        XP_FREE( globals->mpool, str );
         str = bname( giState->newDictName );
 
     } else {
