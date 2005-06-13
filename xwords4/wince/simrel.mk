@@ -1,4 +1,4 @@
-# -*- mode: Makefile; -*-
+# -*- mode: Makefile; compile-command: "make -f simrel.mk"; -*-
 
 PLATFORM = emulatorDbg
 TARGET = $(PLATFORM)/xwords4.exe
@@ -18,7 +18,7 @@ include ./shared.mk
 C_CMD = \
 	$(CC) /nologo /W3 /Zi /Od \
 		/I "$(WINCE_PATH)\Include\Emulator" \
-		/I "..\common" /I "." /D "DEBUG" /D "_i386_" /D UNDER_CE=420 \
+		/I "..\common" /I "..\relay" /I "." /D "DEBUG" /D "_i386_" /D UNDER_CE=420 \
 		/D _WIN32_WCE=420 /D "WIN32_PLATFORM_PSPC=400" /D "i_386_" \
 		/D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" $(XW_C_DEFINES) \
 		/Fo$@ /Gs8192 /GF /c $<
