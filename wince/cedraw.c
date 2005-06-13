@@ -33,8 +33,7 @@
 #include "cedefines.h"
 
 static void ceClearToBkground( CEDrawCtx* dctx, XP_Rect* rect );
-static void ceDrawBitmapInRect( HDC hdc, XP_U32 x, XP_U32 y, 
-                                HBITMAP bitmap );
+static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
 
 
 static void
@@ -240,7 +239,7 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
         makeAndDrawBitmap( dctx, hdc, textRect.left + 2, textRect.top + 2, 
                            foreColorRef, (CEBitmapInfo*)bitmap );
     } else if ( isStar ) {
-        ceDrawBitmapInRect( hdc, textRect.left+2, textRect.top+1, dctx->origin );
+        ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
     }
 
     ceDrawHintBorders( hdc, xprect, hintAtts );
@@ -388,20 +387,27 @@ ce_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
 } /* ce_draw_clearRect */
 
 static void
-ceDrawBitmapInRect( HDC hdc, XP_U32 x, XP_U32 y, HBITMAP bitmap )
+ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
 {
     BITMAP bmp;
     HDC tmpDC;
     int nBytes;
+    int x = rect->left;
+    int y = rect->top;
 
     tmpDC = CreateCompatibleDC( hdc );
     SelectObject( tmpDC, bitmap );
+
+    (void)IntersectClipRect( tmpDC, x, y, rect->right, rect->bottom );
 
     nBytes = GetObject( bitmap, sizeof(bmp), &bmp );
     XP_ASSERT( nBytes > 0 );
     if ( nBytes == 0 ) {
         logLastError( "ceDrawBitmapInRect:GetObject" );
     }
+
+    x += ((rect->right - x) - bmp.bmWidth) / 2;
+    y += ((rect->bottom - y) - bmp.bmHeight) / 2;
 
     BitBlt( hdc, x, y, bmp.bmWidth, bmp.bmHeight, 
             tmpDC, 0, 0, SRCCOPY );	/* BLACKNESS */
@@ -443,7 +449,7 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
     SetTextColor( hdc, dctx->globals->appPrefs.colors[BLACK_COLOR] );
 
-    ceDrawBitmapInRect( hdc, rt.left+2, rt.top+1, cursor );
+    ceDrawBitmapInRect( hdc, &rt, cursor );
 
     ceDrawHintBorders( hdc, xprect, hintAtts );
 } /* ce_draw_drawBoardArrow */
