@@ -83,6 +83,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             XP_DEBUGF( "ptr starting at 0x%lx", ptr );
 		
             flags = n_ptr_tohs( &ptr );
+            XP_DEBUGF( "ce_dictionary_make: flags=0x%x", flags );
 
             numFaces = (XP_U16)(*ptr++);
             ctxt->super.nFaces = (XP_U8)numFaces;
@@ -97,7 +98,6 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             } else if ( flags == 0x0003 ) {
                 ctxt->super.nodeSize = 4;
             } else {
-                XP_DEBUGF( "flags=0x%x", flags );
                 XP_ASSERT( 0 );
             }
 
@@ -491,8 +491,15 @@ checkIfDictAndLegal( wchar_t* path, XP_U16 pathLen, WIN32_FIND_DATA* data )
         XP_U8* base;
         wchar_t pathBuf[257];
 
-        XP_LOGF( "ends in .xwd" );
-
+#ifdef DEBUG
+        {
+            char narrowName[32];
+            int len = wcslen( name );
+            len = WideCharToMultiByte( CP_ACP, 0, name, len + 1,
+                                       narrowName, len + 1, NULL, NULL );
+            XP_LOGF( "%s ends in .xwd", narrowName );
+        }
+#endif
         wcscpy( pathBuf, path );
         pathBuf[pathLen] = 0;
         wcscat( pathBuf, name );
@@ -502,7 +509,7 @@ checkIfDictAndLegal( wchar_t* path, XP_U16 pathLen, WIN32_FIND_DATA* data )
             XP_U8* ptr = base;
         
             flags = n_ptr_tohs( &ptr );
-            XP_LOGF( "flags=0x%x", flags );
+            XP_LOGF( "checkIfDictAndLegal: flags=0x%x", flags );
             UnmapViewOfFile( base );
             CloseHandle( mappedFile );
 
