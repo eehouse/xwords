@@ -257,29 +257,43 @@ ceInitUtilFuncs( CEAppGlobals* globals )
 } /* ceInitUtilFuncs */
 
 #ifdef CEFEATURE_CANSCROLL
+# define SCROLL_SHRINK 1
 static void
-installScroller( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 x, XP_U16 y,
-                 XP_U16 width, XP_U16 height )
+showScroller( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 x, XP_U16 y,
+              XP_U16 width, XP_U16 height )
 {
     if ( !globals->scrollHandle ) {
         HWND hwndSB;
+        SCROLLINFO sinfo;
+        int ret;
+
         hwndSB = CreateWindow( TEXT("SCROLLBAR"),  // Class name
                                NULL,           // Window text
                                // Window style
                                SBS_VERT|WS_VISIBLE|WS_CHILD,
-                               x, y, width, height,
+                               x + SCROLL_SHRINK, y, 
+                               width - SCROLL_SHRINK, height + 1,
                                globals->hWnd,
                                (HMENU)SCROLLBARID,// The control identifier
                                globals->hInst,     // The instance handle
                                NULL );             // s'pposed to be NULL
 
-        (void)SetScrollRange( hwndSB, SB_CTL, 0, nHidden - 1, 
-                              FALSE /* redraw */ );
-        EnableWindow( hwndSB, FALSE ); /* tray hidden */
+        XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
+        sinfo.cbSize = sizeof(sinfo);
+        sinfo.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
+        sinfo.nPos = 0;
+        sinfo.nMin = 0;
+        sinfo.nMax = nHidden;
+        sinfo.nPage = 1;
+        ret = SetScrollInfo( hwndSB, SB_CTL, &sinfo, TRUE );
+
+        EnableWindow( hwndSB, TRUE ); /* tray hidden */
 
         globals->scrollHandle = hwndSB;
     }
-} /* installScroller */
+
+    ShowWindow( globals->scrollHandle, SW_SHOW );
+} /* showScroller */
 
 static void
 hideScroller( CEAppGlobals* globals )
@@ -313,7 +327,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
 {
     RECT rc;
     XP_U16 width, height;
-    XP_U16 trayVScale, leftEdge, scoreWidth, scoreHeight, maxScoreHeight;
+    XP_U16 trayVScale, leftEdge, scoreWidth;
     XP_U16 boardHt, boardWidth, visBoardHt, hScale, vScale, nHiddenRows;
     XP_U16 boardHtLimit, trayTop;
     XP_Bool needsScroller;
@@ -322,13 +336,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
     width = rc.right - rc.left;
     height = rc.bottom - rc.top;
 
-    scoreHeight = CE_SCORE_HEIGHT;
-    maxScoreHeight = height - (nCols * MIN_CELL_HEIGHT);
-    if ( scoreHeight > maxScoreHeight ) {
-        scoreHeight = maxScoreHeight;
-    }
-
-    boardHt = height - scoreHeight - MIN_TRAY_HEIGHT;
+    boardHt = height - CE_SCORE_HEIGHT - MIN_TRAY_HEIGHT;
 
     /* Try to make it fit without scrolling.  But if necessary, reduce the
        width for a scrollbar. */
@@ -349,12 +357,12 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
        visible board height is determined. */
     visBoardHt = vScale * nCols;
     nHiddenRows = 0;
-    boardHtLimit = height - scoreHeight - MIN_TRAY_HEIGHT;
+    boardHtLimit = height - CE_SCORE_HEIGHT - MIN_TRAY_HEIGHT;
     while ( visBoardHt > boardHtLimit ) {
         visBoardHt -= vScale;
         ++nHiddenRows;
     }
-    trayTop = scoreHeight + visBoardHt + TRAY_PADDING;
+    trayTop = CE_SCORE_HEIGHT + visBoardHt + TRAY_PADDING;
     trayVScale = height - trayTop;
 
     /* Center the board */
@@ -376,17 +384,17 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
     bparms->trayHScale = CE_TRAY_SCALEH; /* unchanged so far... */
     bparms->leftEdge = leftEdge;
     bparms->scoreWidth = scoreWidth;
-    bparms->scoreHeight = scoreHeight;
+    bparms->scoreHeight = CE_SCORE_HEIGHT;
 
 #ifdef CEFEATURE_CANSCROLL
     bparms->needsScroller = needsScroller;
 
     if ( needsScroller ) {
         XP_U16 boardRight = leftEdge + (nCols * hScale);
-        installScroller( globals, nHiddenRows,
-                         boardRight,
-                         scoreHeight,
-                         rc.right - boardRight, visBoardHt );
+        showScroller( globals, nHiddenRows,
+                      boardRight,
+                      CE_SCORE_HEIGHT,
+                      rc.right - boardRight, visBoardHt );
         XP_LOGF( "NEEDING SCROLLBAR!!!!" );
         XP_LOGF( "%d rows hidden", nHiddenRows );
     } else {
@@ -411,7 +419,6 @@ cePositionBoard( CEAppGlobals* globals )
 
     board_setTimerLoc( globals->game.board, CE_TIMER_LEFT,
                        CE_TIMER_TOP, CE_TIMER_WIDTH, CE_TIMER_HEIGHT );
-
 
     board_setPos( globals->game.board, bparms.leftEdge,
                   bparms.scoreHeight, XP_FALSE );
@@ -513,7 +520,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp )
 
     if ( newGame ) {
         XP_U16 newGameID = 0;
-        game_reset( MEMPOOL &globals->game, &globals->gameInfo,
+        game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
                     newGameID, &globals->appPrefs.cp, (TransportSend)NULL, 
                     globals );
 
@@ -601,9 +608,8 @@ ceSavePrefs( CEAppGlobals* globals )
 
         XP_DEBUGF( "ceSavePrefs: prefs file written" );
     } else {
-        XP_LOGF( "failed to create prefs file" );
+        logLastError( "failed to create prefs file" );
     }
-
 } /* ceSavePrefs */
 
 static XP_Bool
@@ -1360,9 +1366,7 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
     mbi.hwndParent = hwnd;
     mbi.nToolBarId = IDM_MENU;
     mbi.hInstRes   = hInst;
-    mbi.nBmpId     = 0;
-    mbi.cBmpImages = 0;
-    mbi.dwFlags = SHCMBF_HIDESIPBUTTON; /* eeh added */
+    //mbi.dwFlags = SHCMBF_HIDESIPBUTTON; /* eeh added.  Why??? */
 
     if (!SHCreateMenuBar(&mbi)) {
         XP_LOGF( "SHCreateMenuBar failed" );
@@ -1444,9 +1448,10 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     if ( message == WM_CREATE ) {
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
         SetWindowLong( hWnd, GWL_USERDATA, (long)globals );
-
         globals->hwndCB = makeCommandBar( hWnd, globals->hInst );
         addButtonsToCmdBar( globals );
+
+        globals->sai.cbSize = sizeof(globals->sai);
     } else {
         globals = (CEAppGlobals*)GetWindowLong( hWnd, GWL_USERDATA );
 
@@ -1459,6 +1464,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case WM_SETTINGCHANGE:
             SHHandleWMSettingChange( hWnd, wParam, lParam, &globals->sai );
+            cePositionBoard( globals );
+            board_invalAll( globals->game.board );
+            draw = XP_TRUE;
             break;
 
 #ifdef CEFEATURE_CANSCROLL
