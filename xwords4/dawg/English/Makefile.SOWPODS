@@ -23,7 +23,9 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(LANG)Main.dict.gz: sow-twl.txt.gz 
+SOURCEDICT ?= $(XWDICTPATH)/English/sow-twl.txt.gz 
+
+$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | \
 		gzip -c > $@
 
