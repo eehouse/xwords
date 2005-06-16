@@ -1,3 +1,4 @@
+# -*- mode: Makefile; compile-command: "make -k ARCH=i686"; -*-
 # ©2001 Franklin Electronic Publishers, Inc. Burlington, NJ.
 #	File: gui/test/Makefile
 #
@@ -51,11 +52,11 @@ OBJS = ${COMMONOBJ}
 
 # Include the standard Makefile targets
 ifeq (x$(EBSDK_LIBS)x,xx)
-	# Normal: binary release version
+# Normal: binary release version
 	include ${EBOOKMAN_SDK}/ebsdk.uses
 	include ${ESDK_TARGET_INC}/Makefile.GUI
 else
-	# Special: building the SDK
+# Special: building the SDK
 	include ${EBSDK_LIBS}/ebookman_libs.uses
 	include ../source/Makefile.GUI
 endif
@@ -78,7 +79,7 @@ endif
 #Need this for an os1 link of a program that uses floating-point
 #GCC_LIB = ${ESDK_LIBGCC_INSTALL_LIBFILE_FLOAT}
 
-INCFLAGS += -I$(COMMON) -I./
+INCFLAGS += -I$(COMMON) -I../relay -I./
 CFLAGS += ${XW_DEFINES} -DCPLUS
 CFL_NOCPLUS = $(subst -DCPLUS,,${CFLAGS})
 

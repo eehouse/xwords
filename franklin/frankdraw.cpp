@@ -269,7 +269,8 @@ frank_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
 
 static void
 frank_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect, 
-                           XWBonusType cursorBonus, XP_Bool vertical )
+                           XWBonusType cursorBonus, XP_Bool vertical,
+                           HintAtts hintAtts )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     RECT rect;
@@ -341,8 +342,8 @@ scoreWidthAndText( char* buf, const FONT* font, DrawScoreInfo* dsi )
 
 static void
 frank_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r, 
-			     DrawScoreInfo* dsi,
-			     XP_U16* width, XP_U16* height )
+                             DrawScoreInfo* dsi,
+                             XP_U16* width, XP_U16* height )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char buf[20];
@@ -354,9 +355,8 @@ frank_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 
 static void
 frank_draw_score_drawPlayer( DrawCtx* p_dctx, 
-			     XP_S16 playerNum, /* -1: don't use */
-			     XP_Rect* rInner, XP_Rect* rOuter, 
-			     DrawScoreInfo* dsi )
+                             XP_Rect* rInner, XP_Rect* rOuter, 
+                             DrawScoreInfo* dsi )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char buf[20];
@@ -372,7 +372,7 @@ frank_draw_score_drawPlayer( DrawCtx* p_dctx,
 
 static void
 frank_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
-			       XP_U16 playerNum )
+                               XP_U16 playerNum )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char buf[5];

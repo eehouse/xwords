@@ -24,12 +24,12 @@ extern "C" {
 
 class CAskLetterWindow : public CWindow {
  private:
-    XP_UCHAR4* fTexts;
+    const XP_UCHAR4* fTexts;
     XP_S16* fResultP;
     XP_U16 fNTiles;
     CList* list;		/* my own subclass, of course */
  public:
-    CAskLetterWindow( PickInfo* pi, XP_U16 playerNum,
-                      XP_UCHAR4* texts, XP_U16 nTiles, XP_S16* result );
+    CAskLetterWindow( const PickInfo* pi, XP_U16 playerNum,
+                      const XP_UCHAR4* texts, XP_U16 nTiles, XP_S16* result );
     S32 MsgHandler( MSG_TYPE type, CViewable *object, S32 data );
 };

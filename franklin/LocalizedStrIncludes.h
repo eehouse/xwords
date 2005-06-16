@@ -47,5 +47,7 @@ enum {
     STR_PASSED,
     STR_LOSTTURN,
 
+    STRS_VALUES_HEADER,
+
     STR_LAST
 };
