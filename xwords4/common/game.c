@@ -131,7 +131,13 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
 #endif
 
     model_init( game->model, gi->boardSize, gi->boardSize );
-    server_reset( game->server, game->comms );
+    server_reset( game->server, 
+#ifndef XWFEATURE_STANDALONE_ONLY
+                  game->comms
+#else
+                  NULL
+#endif
+                  );
     board_reset( game->board );
 
     for ( i = 0; i < gi->nPlayers; ++i ) {

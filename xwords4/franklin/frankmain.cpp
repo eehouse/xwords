@@ -91,9 +91,9 @@ static DictionaryCtxt* frank_util_makeEmptyDict( XW_UtilCtxt* uc );
 static void frank_util_userError( XW_UtilCtxt* uc, UtilErrID id );
 static XP_Bool frank_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
                                      XWStreamCtxt* stream );
-static XP_S16 frank_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, 
+static XP_S16 frank_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                                        XP_U16 playerNum,
-                                       XP_UCHAR4* texts, XP_U16 nTiles );
+                                       const XP_UCHAR4* texts, XP_U16 nTiles );
 static XP_Bool frank_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                        XP_UCHAR* buf, XP_U16* len );
 static void frank_util_trayHiddenChange( XW_UtilCtxt* uc, 
@@ -303,7 +303,7 @@ CXWordsWindow::CXWordsWindow(MPFORMAL FrankDictList* dlist )
 
         /* there needs to be a "game" for the saved one to be loaded into. */
         game_makeNewGame( MPPARM(mpool) &fGame, &fGameInfo, &this->util, 
-                          (DrawCtx*)this->draw, &this->cp,
+                          (DrawCtx*)this->draw, 0, &this->cp,
                           (TransportSend)NULL, NULL);
         loadCurrentGame();
 
@@ -363,14 +363,14 @@ CXWordsWindow::positionBoard()
 void
 CXWordsWindow::makeNewGame( U16 newIndex )
 {
+    XP_U32 gameID = frank_util_getCurSeconds( &this->util );
     if ( !!fGame.model ) {
         saveCurrentGame();
-        XP_U32 gameID = frank_util_getCurSeconds( &this->util );
-        game_reset( MEMPOOL(this) &fGame, &fGameInfo, gameID, &this->cp, 
-                    (TransportSend)NULL, NULL );
+        game_reset( MEMPOOL(this) &fGame, &fGameInfo, &this->util, 
+                    gameID, &this->cp, (TransportSend)NULL, NULL );
     } else {
         game_makeNewGame( MPPARM(mpool) &fGame, &fGameInfo, &this->util, 
-                          (DrawCtx*)this->draw, &this->cp, 
+                          (DrawCtx*)this->draw, gameID, &this->cp, 
                           (TransportSend)NULL, NULL);
         positionBoard();
     }
@@ -746,11 +746,8 @@ CXWordsWindow::newGame( XP_Bool allowCancel )
     XP_ASSERT( allowCancel || !cancelled );	/* can't clear cancelled if not
 											   allowed to */
     if ( !cancelled ) {
-#if 0
-        makeNewGame( this->gamesDB->countRecords() );
-#else
         XP_U32 gameID = frank_util_getCurSeconds( &this->util );
-        game_reset( MPPARM(mpool) &fGame, &fGameInfo, gameID,
+        game_reset( MPPARM(mpool) &fGame, &fGameInfo, &this->util, gameID,
                     &this->cp, (TransportSend)NULL, NULL );
         if ( !!fGameInfo.dictName ) {
             DictionaryCtxt* dict = model_getDictionary( fGame.model );
@@ -766,7 +763,6 @@ CXWordsWindow::newGame( XP_Bool allowCancel )
                 model_setDictionary( fGame.model, dict );
             }
         }
-#endif
         server_do( fGame.server );
 
         GUI_NeedUpdate();
@@ -1122,7 +1118,7 @@ CXWordsWindow::doTileValues()
     XWStreamCtxt* stream;
 
     stream = makeMemStream();
-    server_formatPoolCounts( fGame.server, stream, 2 /* cols */ );
+    server_formatDictCounts( fGame.server, stream, 2 /* cols */ );
 
     displayTextFromStream( stream, "Tile counts and values" );
 } /* doTileValues */
@@ -1406,9 +1402,9 @@ frank_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 } /* frank_util_userQuery */
 
 static XP_S16
-frank_util_userPickTile( XW_UtilCtxt* uc, PickInfo* pi, 
+frank_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                          XP_U16 playerNum,
-                         XP_UCHAR4* texts, XP_U16 nTiles )
+                         const XP_UCHAR4* texts, XP_U16 nTiles )
 {
     CXWordsWindow* self = (CXWordsWindow*)uc->closure;
     XP_S16 result;
@@ -1586,6 +1582,9 @@ frank_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
         return (XP_UCHAR*)"Traded %d";
     case STR_LOSTTURN:
         return (XP_UCHAR*)"Lost turn";
+
+    case STRS_VALUES_HEADER:
+        return (XP_UCHAR*)"%s counts/values:\n";
 
     default:
         return (XP_UCHAR*)"unknown code ";

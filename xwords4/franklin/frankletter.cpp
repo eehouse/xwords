@@ -39,16 +39,16 @@ extern "C" {
 
 class LettersList : public CList {
 private:
-    XP_UCHAR4* fTexts;
+    const XP_UCHAR4* fTexts;
 
  public:
-    LettersList( XP_UCHAR4* texts, U16 numRows ); 
+    LettersList( const XP_UCHAR4* texts, U16 numRows ); 
     
     U16 GetRowHeight( S32 row ) { return LETTER_HEIGHT; }
     void DrawRow( RECT *rect, S32 row );
 };
 
-LettersList::LettersList( XP_UCHAR4* texts, U16 numRows )
+LettersList::LettersList( const XP_UCHAR4* texts, U16 numRows )
     : CList( 1001, LETTERS_ROW_WIDTH, 
 	     LETTERS_ROW_HEIGHT * LETTERS_NUM_VISROWS, 
 	     numRows, LISTOPTION_ALWAYS_HIGHLIGHT )
@@ -64,8 +64,8 @@ void LettersList::DrawRow( RECT *rect, S32 row )
     window->DrawText( (char*)fTexts[row], rect->x, rect->y );
 } /* LettersList::DrawRow */
 
-CAskLetterWindow::CAskLetterWindow( PickInfo* pi, XP_U16 playerNum,
-                                    XP_UCHAR4* texts, XP_U16 nTiles, 
+CAskLetterWindow::CAskLetterWindow( const PickInfo* pi, XP_U16 playerNum,
+                                    const XP_UCHAR4* texts, XP_U16 nTiles, 
                                     XP_S16* resultP )
     : CWindow( ASKLETTER_WINDOW_ID, 55, 15, 80, 220, "Blank", TRUE )
 {
