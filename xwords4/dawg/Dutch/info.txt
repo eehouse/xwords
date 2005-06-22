@@ -1,0 +1,76 @@
+# Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:nl_NL
+
+
+# deal with DOS files
+LANGFILTER_PRECLIP: tr -d '\r' |
+
+# uppercase all
+LANGFILTER_POSTCLIP: | tr [a-zäöü] [A-ZÄÖÜ]
+# no words not containing a vowel
+LANGFILTER_POSTCLIP: | grep '[AEIOU]' 
+# none with illegal chars
+LANGFILTER_POSTCLIP: | grep '^[A-Z]\+$'
+LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
+
+# Until I can figure out how to force sort to use a locale's collation
+# rules we can't trust sort in the filtering rules above and so must
+# leave the sorting work to dict2dawg.pl.
+
+NEEDSSORT:true
+
+LANGINFO: <p>Dutch has the same 26 letters as English, though of
+LANGINFO: course the counts and values are different.  Filtering rules
+LANGINFO: eliminate all words that don't contain at least one vowel
+LANGINFO: and any that contain letters not found on tiles.</p>
+
+# High bit means "official".  Next 7 bits are an enum where
+# Dutch==B.  Low byte is padding
+XLOC_HEADER:0x8B00
+
+
+<BEGIN_TILES>
+2			0		{"_"}
+6           1       'A'
+2           3       'B'
+2           5       'C'
+5           2       'D'
+16          1       'E'
+2           4       'F'
+2           3       'G'
+2           4       'H'
+4           1       'I'
+2           4       'J'
+3           3       'K'
+3           3       'L'
+3           3       'M'
+8           1       'N'
+6           1       'O'
+3           3       'P'
+1           10      'Q'
+5           2       'R'
+5           2       'S'
+5           2       'T'
+4           4       'U'
+2           4       'V'
+2           5       'W'
+1           8       'X'
+2           4       'Y'
+2           4       'Z'
+<END_TILES>
+# should ignore all after the <END_TILES> above
