@@ -1028,10 +1028,17 @@ static void
 palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
                      XP_U16 player, XP_S16 secondsLeft )
 {
+    /* This is called both from within drawScoreboard and not, meaning that
+     * sometimes draw_boardBegin() and draw_boardFinished() bracket it and
+     * sometimes they don't.  So it has to do its own HIGHRES_PUSH_LOC stuff.
+     */
+    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
     XP_Rect localR = *rInner;
     RectangleType saveClip;
     XP_U16 len, width;
+
+    HIGHRES_PUSH_LOC(dctx);
 
     palmFormatTimerText( buf, secondsLeft );
     len = XP_STRLEN( (const char*)buf );
@@ -1045,13 +1052,20 @@ palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
         localR.width = width;
     }
 
-    localR.top -= 2;
-    localR.height += 1;
+#ifdef FEATURE_HIGHRES
+    if ( !dctx->doHiRes ) {
+        localR.height += 1;
+    }
+#endif
+/*     localR.top -= 2; */
 
     WinGetClip( &saveClip );
     WinSetClip( (RectangleType*)&localR );
-    WinDrawChars( (const char*)buf, len, localR.left, localR.top );
+
+    WinDrawChars( (const char*)buf, len, localR.left, localR.top - 2 );
     WinSetClip( &saveClip );
+
+    HIGHRES_POP_LOC(dctx);
 } /* palm_draw_drawTimer */
 
 #define MINI_LINE_HT 12

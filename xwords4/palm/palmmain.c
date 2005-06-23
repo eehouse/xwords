@@ -403,7 +403,7 @@ positionBoard( PalmAppGlobals* globals )
         timerLeft = bWidth - timerWidth;
     }
     board_setTimerLoc( globals->game.board, timerLeft, PALM_TIMER_TOP, 
-                       timerWidth, PALM_TIMER_HEIGHT );
+                       timerWidth, PALM_TIMER_HEIGHT * doubler );
 
     if ( showGrid ) {
         boardTop = PALM_BOARD_TOP;
