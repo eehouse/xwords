@@ -1,4 +1,4 @@
-# -*- mode: Makefile; -*-
+# -*- mode: Makefile; compile-command: "make ARCH=COMBINED"; -*-
 # Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -96,7 +96,7 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
-# MYDEFS_COMMON += -DBEYOND_IR
+MYDEFS_COMMON += -DBEYOND_IR
 
 # Turn on ability to handle 4-byte-node DAWG files.  These are of type
 # Xwr4, not Xwr3 like the old ones.  Currently this option means the
