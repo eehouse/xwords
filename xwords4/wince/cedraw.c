@@ -729,9 +729,9 @@ ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str,
         widebuf[len] = 0;
         GetTextExtentPoint32( hdc, widebuf, wcslen(widebuf), &size );
 
-        maxWidth = XP_MAX( maxWidth, size.cx );
+        maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         height += size.cy + CE_INTERLINE_SPACE;
-        dctx->miniLineHt = size.cy;
+        dctx->miniLineHt = (XP_U16)size.cy;
 
         if ( nextStr == NULL ) {
             break;
