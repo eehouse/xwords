@@ -74,7 +74,10 @@ typedef XP_U16 XP_PlayerAddr;
 
 typedef enum {
     TIMER_PENDOWN = 1, /* ARM doesn't like ids of 0... */
-    TIMER_TIMERTICK
+    TIMER_TIMERTICK,
+    TIMER_HEARTBEAT,
+
+    TIMER_NUM_PLUS_ONE          /* must be last */
 } XWTimerReason;
 
 #define MAX_NUM_PLAYERS 4

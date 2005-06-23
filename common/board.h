@@ -119,7 +119,6 @@ BoardObjectType board_getFocusOwner( BoardCtxt* board );
 void board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row );
 
 void board_resetEngine( BoardCtxt* board );
-void board_timerFired( BoardCtxt* board, XWTimerReason why );
 
 XP_Bool board_commitTurn( BoardCtxt* board );
 

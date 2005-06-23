@@ -31,6 +31,7 @@
 #include "strutils.h"
 
 #define cEND 0x65454e44
+#define HEARTBEAT_NONE 0
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 
@@ -113,10 +114,11 @@ static AddressRecord* getRecordFor( CommsCtxt* comms,
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
 static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
 static XP_U16 countAddrRecs( CommsCtxt* comms );
-static void comms_relayConnect( CommsCtxt* comms );
-static XP_Bool comms_send_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
-                                 XWHostID destID, void* data, int dlen );
+static void relayConnect( CommsCtxt* comms );
+static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
+                               XWHostID destID, void* data, int dlen );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
+static void setHeartbeatTimer( CommsCtxt* comms );
 
 /****************************************************************************
  *                               implementation 
@@ -325,7 +327,7 @@ comms_init( CommsCtxt* comms )
 {
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
-        comms_relayConnect( comms );
+        relayConnect( comms );
     }
 }
 
@@ -446,7 +448,7 @@ comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr )
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
     /* We should now have a cookie so we can connect??? */
-    comms_relayConnect( comms );
+    relayConnect( comms );
 } /* comms_setAddr */
 
 CommsConnType 
@@ -618,8 +620,8 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     if ( comms_getConType( comms ) == COMMS_CONN_RELAY ) {
         if ( comms->relayState == COMMS_RELAYSTATE_CONNECTED ) {
             XWHostID destID = getDestID( comms, channelNo );
-            result = comms_send_relay( comms, XWRELAY_MSG_TORELAY, destID, 
-                                       elem->msg, elem->len );
+            result = send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
+                                     elem->msg, elem->len );
         } else {
             XP_LOGF( "skipping message: not connected" );
         }
@@ -676,6 +678,8 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                to be done later since we're inside the platform's socket read
                proc now. */
             comms_resendAll( comms );
+
+            setHeartbeatTimer( comms );
             break;
         case XWRELAY_MSG_FROMRELAY:
             cookieID = stream_getU16( stream );
@@ -791,6 +795,25 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     }
     return validMessage;
 } /* comms_checkIncomingStream */
+
+static void
+p_comms_timerFired( void* closure, XWTimerReason why )
+{
+    CommsCtxt* comms = (CommsCtxt*)closure;
+    XP_ASSERT( why == TIMER_HEARTBEAT );
+    XP_LOGF( "comms_timerFired" );
+    if ( comms->heartbeat != HEARTBEAT_NONE ) {
+        send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, NULL, 0 );
+        setHeartbeatTimer( comms );
+    }
+} /* comms_timerFired */
+
+static void
+setHeartbeatTimer( CommsCtxt* comms )
+{
+    util_setTimer( comms->util, TIMER_HEARTBEAT, comms->heartbeat,
+                   p_comms_timerFired, comms );
+}
 
 #ifdef DEBUG
 void
@@ -926,10 +949,10 @@ countAddrRecs( CommsCtxt* comms )
 } /* countAddrRecs */
 
 static XP_Bool
-comms_send_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID, 
-                  void* data, int dlen )
+send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID, 
+                void* data, int dlen )
 {
-    XP_U16 result = 0;
+    XP_Bool success = XP_FALSE;
     XP_U16 len = 0;
     CommsAddrRec addr;
     XWStreamCtxt* tmpStream;
@@ -961,6 +984,11 @@ comms_send_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU16( tmpStream, comms->cookieID );
 
             comms->relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
+        } else if ( cmd == XWRELAY_HEARTBEAT ) {
+            /* Add these for grins.  Server can assert they match the IP
+               address it expects 'em on. */
+            stream_putU16( tmpStream, comms->cookieID );
+            stream_putU16( tmpStream, comms->myHostID );
         }
 
         len = stream_getSize( tmpStream );
@@ -970,28 +998,34 @@ comms_send_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         }
         stream_destroy( tmpStream );
         if ( buf != NULL ) {
+            XP_U16 result;
             XP_LOGF( "passing %d bytes to sendproc", len );
             result = (*comms->sendproc)( buf, len, &addr, comms->sendClosure );
+            success = result == len;
+            if ( success ) {
+                setHeartbeatTimer( comms );
+            }
         }
         XP_FREE( comms->mpool, buf );
     }
-    return result == len;
-} /* comms_send_relay */
+    return success;
+} /* send_via_relay */
 
 /* Send a CONNECT message to the relay.  This opens up a connection to the
  * relay, and tells it our hostID and cookie so that it can associatate it
  * with a socket.  In the CONNECT_RESP we should get back what?
  */
 static void
-comms_relayConnect( CommsCtxt* comms )
+relayConnect( CommsCtxt* comms )
 {
-    XP_LOGF( "comms_relayConnect called" );
+    XP_LOGF( "relayConnect called" );
     if ( !comms->connecting ) {
         comms->connecting = XP_TRUE;
-        comms_send_relay( comms, XWRELAY_CONNECT, HOST_ID_NONE, NULL, 0 );
+        send_via_relay( comms, XWRELAY_CONNECT, HOST_ID_NONE, NULL, 0 );
         comms->connecting = XP_FALSE;
     }
-} /* comms_relayConnect */
+} /* relayConnect */
+
 
 EXTERN_C_END
 
