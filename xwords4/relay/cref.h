@@ -11,9 +11,21 @@
 
 typedef unsigned short CookieID;
 
+#ifndef HEARTBEAT
+# define HEARTBEAT 60
+#endif
+
 using namespace std;
 
 class CookieMapIterator;        /* forward */
+
+class HostRec {
+ public:
+    HostRec(int socket) : m_socket(socket), m_lastHeartbeat(now()) {}
+    ~HostRec() {}
+    int m_socket;
+    time_t m_lastHeartbeat;
+};
 
 class CookieRef {
 
@@ -24,7 +36,7 @@ class CookieRef {
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
     void Associate( int socket, HostID srcID );
-    short GetHeartbeat() { return 60; }
+    short GetHeartbeat() { return HEARTBEAT; }
     CookieID GetCookieID() { return m_connectionID; }
     int SocketForHost( HostID dest );
     void Remove( int socket );
@@ -35,6 +47,9 @@ class CookieRef {
         /* This really needs a lock.... */
         m_totalSent += nBytes;
     }
+
+    void HandleHeartbeat( HostID id, int socket );
+    void CheckHeartbeats( time_t now, vector<int>* victims );
 
     /* for console */
     void PrintCookieInfo( string& out );
@@ -49,7 +64,7 @@ class CookieRef {
  private:
     CookieRef( string s );
 
-    map<HostID,int> m_hostSockets;
+    map<HostID,HostRec> m_hostSockets;
     pthread_rwlock_t m_sockets_rwlock;
     CookieID m_connectionID;
     string m_name;
@@ -72,6 +87,7 @@ class CookieMapIterator {
 CookieRef* get_make_cookieRef( const char* cookie, CookieID connID );
 CookieRef* get_cookieRef( unsigned short cookieID );
 CookieID CookieIdForName( const char* name );
+void CheckHeartbeats( time_t now, vector<int>* victims );
 
 class SocketStuff;
 typedef map< int, SocketStuff* > SocketMap;

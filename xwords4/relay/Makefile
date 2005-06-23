@@ -19,9 +19,9 @@ CC = g++
 SRC = xwrelay.cpp cref.cpp ctrl.cpp tpool.cpp
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -lpthread -g
-CPPFLAGS += -g -Wall
+CPPFLAGS += -g -Wall -DHEARTBEAT=10
 
-all: xwrelay
+memdebug all: xwrelay
 
 xwrelay: $(OBJ)
 

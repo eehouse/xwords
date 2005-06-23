@@ -108,8 +108,7 @@ XWThreadPool::RemoveSocket( int socket )
         }
     }
     return found;
-}
-
+} /* RemoveSocket */
 
 void
 XWThreadPool::CloseSocket( int socket )
@@ -128,9 +127,13 @@ XWThreadPool::CloseSocket( int socket )
         }
     }
     close( socket );
-    if ( do_interrupt ) {
-        interrupt_poll();
-    }
+/*     if ( do_interrupt ) { */
+    /* We always need to interrupt the poll because the socket we're closing
+       will be in the list being listened to.  That or we need to drop sockets
+       that have been removed on some other thread while the poll call's
+       blocking.*/
+    interrupt_poll();
+/*     } */
 }
 
 int
@@ -208,6 +211,18 @@ XWThreadPool::interrupt_poll()
     }
 }
 
+static int
+figureTimeout()
+{
+    return -1;
+}
+
+static void
+considerFireTimer()
+{
+/*     logf( "timer fired" ); */
+}
+
 void*
 XWThreadPool::real_listener()
 {
@@ -237,8 +252,10 @@ XWThreadPool::real_listener()
         }
         pthread_rwlock_unlock( &m_activeSocketsRWLock );
 
+        int nMillis = figureTimeout();
+
         logf( "calling poll on %s", log );
-        int nEvents = poll( fds, nSockets, -1 ); /* -1: infinite timeout */
+        int nEvents = poll( fds, nSockets, nMillis ); /* -1: infinite timeout */
         logf( "back from  poll: %d", nEvents );
         if ( nEvents < 0 ) {
             logf( "errno: %d", errno );
@@ -261,9 +278,14 @@ XWThreadPool::real_listener()
 
                 if ( curfd->revents != 0 ) {
                     int socket = curfd->fd;
-                    RemoveSocket( socket );
+                    if ( !RemoveSocket( socket ) ) {
+                        /* no further processing if it's been removed while
+                           we've been sleeping in poll */
+                        continue;
+                    }
 
-                    if ( curfd->revents == POLLIN || curfd->revents == POLLPRI ) {
+                    if ( curfd->revents == POLLIN 
+                         ||  curfd->revents == POLLPRI ) {
                         logf( "enqueuing %d", socket );
                         enqueue( socket );
                     } else {
@@ -276,6 +298,8 @@ XWThreadPool::real_listener()
             }
             assert( nEvents == 0 );
         }
+
+        considerFireTimer();
 
         free( fds );
     }

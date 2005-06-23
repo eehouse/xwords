@@ -33,6 +33,7 @@ using namespace std;
 static CookieMap gCookieMap;
 pthread_rwlock_t gCookieMapRWLock = PTHREAD_RWLOCK_INITIALIZER;
 
+
 CookieID CookieRef::ms_nextConnectionID = 1000;
 
 /* static */ CookieRef*
@@ -80,6 +81,20 @@ CookieIdForName( const char* name )
     }
     return 0;
 } /* CookieIdForName */
+
+void
+CheckHeartbeats( time_t now, vector<int>* sockets )
+{
+    logf( "CheckHeartbeats" );
+    RWReadLock rwl( &gCookieMapRWLock );
+    CookieMap::iterator iter = gCookieMap.begin();
+    while ( iter != gCookieMap.end() ) {
+        CookieRef* ref = iter->second;
+        ref->CheckHeartbeats( now, sockets );
+        ++iter;
+    }
+    logf( "CheckHeartbeats done" );
+} /* CheckHeartbeats */
 
 CookieRef* 
 get_make_cookieRef( const char* cookie, 
@@ -268,13 +283,13 @@ CookieRef::~CookieRef()
 
     for ( ; ; ) {
         RWWriteLock rwl( &m_sockets_rwlock );
-        map<HostID,int>::iterator iter = m_hostSockets.begin();
+        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
 
         if ( iter == m_hostSockets.end() ) {
             break;
         }
 
-        int socket = iter->second;
+        int socket = iter->second.m_socket;
         tPool->CloseSocket( socket );
         m_hostSockets.erase( iter );
     }
@@ -289,18 +304,19 @@ CookieRef::Associate( int socket, HostID srcID )
     assert( srcID != HOST_ID_NONE );
     logf( "remembering pair: hostid=%x, socket=%d", srcID, socket );
     RWWriteLock ml( &m_sockets_rwlock );
-    m_hostSockets.insert( pair<HostID,int>(srcID,socket) );
+    HostRec hr(socket);
+    m_hostSockets.insert( pair<HostID,HostRec>(srcID,hr) );
 }
 
 int
 CookieRef::SocketForHost( HostID dest )
 {
     int socket;
-    map<HostID,int>::iterator iter = m_hostSockets.find( dest );
+    map<HostID,HostRec>::iterator iter = m_hostSockets.find( dest );
     if ( iter == m_hostSockets.end() ) {
         socket = -1;
     } else {
-        socket = iter->second;
+        socket = iter->second.m_socket;
         logf( "socketForHost(%x) => %d", dest, socket );
     }
     logf( "returning socket=%d for hostid=%x", socket, dest );
@@ -316,9 +332,9 @@ CookieRef::Remove( int socket )
 
         count = CountSockets();
         assert( count > 0 );
-        map<HostID,int>::iterator iter = m_hostSockets.begin();
+        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
         while ( iter != m_hostSockets.end() ) {
-            if ( iter->second == socket ) {
+            if ( iter->second.m_socket == socket ) {
                 m_hostSockets.erase(iter);
                 --count;
                 break;
@@ -332,6 +348,41 @@ CookieRef::Remove( int socket )
         delete this;
     }
 }
+
+void
+CookieRef::HandleHeartbeat( HostID id, int socket )
+{
+    RWWriteLock rwl( &m_sockets_rwlock );
+
+    map<HostID,HostRec>::iterator iter = m_hostSockets.find(id);
+    assert( iter != m_hostSockets.end() );
+
+    /* PENDING If the message came on an unexpected socket, kill the
+       connection.  An attack is the most likely explanation. */
+    assert( iter->second.m_socket == socket );
+
+    logf( "upping m_lastHeartbeat from %d to %d", 
+          iter->second.m_lastHeartbeat, now() );
+    iter->second.m_lastHeartbeat = now();
+} /* HandleHeartbeat */
+
+void
+CookieRef::CheckHeartbeats( time_t now, vector<int>* victims )
+{
+    logf( "CookieRef::CheckHeartbeats" );
+
+    RWWriteLock rwl( &m_sockets_rwlock );
+
+    map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
+    while ( iter != m_hostSockets.end() ) {
+        time_t last = iter->second.m_lastHeartbeat;
+        if ( (now - last) > HEARTBEAT * 2 ) {
+            victims->push_back( iter->second.m_socket );
+        }
+        ++iter;
+    }
+    logf( "CookieRef::CheckHeartbeats done" );
+} /* CheckHeartbeats */
 
 void
 CookieRef::PrintCookieInfo( string& out )
