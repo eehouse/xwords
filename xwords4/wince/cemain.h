@@ -55,7 +55,6 @@ typedef struct CEAppPrefs {
 } CEAppPrefs;
 
 #define NUM_BUTTONS 4
-#define N_TIMER_TYPES 2
 
 typedef struct CEAppGlobals {
     HINSTANCE hInst;
@@ -76,7 +75,9 @@ typedef struct CEAppGlobals {
     XP_U16* bonusInfo;
     wchar_t* lastDefaultDir;
 
-    XP_U32 timerIDs[N_TIMER_TYPES];
+    XP_U32 timerIDs[TIMER_NUM_PLUS_ONE - 1];
+    TimerProc timerProcs[TIMER_NUM_PLUS_ONE - 1];
+    void* timerClosures[TIMER_NUM_PLUS_ONE - 1];
 
 #ifdef CEFEATURE_CANSCROLL
     XP_U16 nHiddenRows;
