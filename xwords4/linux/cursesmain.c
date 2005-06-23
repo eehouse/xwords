@@ -211,7 +211,8 @@ curses_util_engineProgressCallback( XW_UtilCtxt* uc )
 } /* curses_util_engineProgressCallback */
 
 static void
-curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
+curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+                      TimerProc proc, void* closure )
 {
     XP_ASSERT( 0 );		/* no pen-down events..... */
 } /* curses_util_setTimer */

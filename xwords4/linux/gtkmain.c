@@ -1028,6 +1028,14 @@ gtk_util_engineProgressCallback( XW_UtilCtxt* uc )
 #endif
 } /* gtk_util_engineProgressCallback */
 
+static void
+fireTimer( GtkAppGlobals* globals, XWTimerReason why )
+{
+    TimerProc proc = globals->cGlobals.timerProcs[why-1];
+    void* closure = globals->cGlobals.timerClosures[why-1];
+    (*proc)( closure, why );
+} /* fireTimer */
+
 static gint
 pentimer_idle_func( gpointer data )
 {
@@ -1038,7 +1046,7 @@ pentimer_idle_func( gpointer data )
     gettimeofday( &tv, NULL );
 
     if ( (tv.tv_usec - globals->penTv.tv_usec) >= globals->penTimerInterval) {
-        board_timerFired( globals->cGlobals.game.board, TIMER_PENDOWN );
+        fireTimer( globals, TIMER_PENDOWN );
         callAgain = XP_FALSE;
     } 
 
@@ -1049,28 +1057,46 @@ static gint
 score_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
-    XP_Bool callAgain = XP_TRUE;
 
-    board_timerFired( globals->cGlobals.game.board, TIMER_TIMERTICK );
-    callAgain = XP_FALSE;
+    fireTimer( globals, TIMER_TIMERTICK );
 
-    return callAgain;
+    return XP_FALSE;
 } /* score_timer_func */
 
+static gint
+heartbeat_timer_func( gpointer data )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)data;
+
+    fireTimer( globals, TIMER_HEARTBEAT );
+
+    return (gint)0;
+}
+
 static void
-gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
+gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+                   TimerProc proc, void* closure )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
 
+    globals->cGlobals.timerProcs[why-1] = proc;
+    globals->cGlobals.timerClosures[why-1] = closure;
+
     if ( why == TIMER_PENDOWN ) {
         globals->penTimerInterval = 35 * 10000;
+
         (void)gettimeofday( &globals->penTv, NULL );
-        (void)gtk_idle_add( pentimer_idle_func, globals );    
+        (void)gtk_idle_add( pentimer_idle_func, globals );
     } else if ( why == TIMER_TIMERTICK ) {
         globals->scoreTimerInterval = 100 * 10000;
+
         (void)gettimeofday( &globals->scoreTv, NULL );
 
-        (void)gtk_timeout_add( 1000, score_timer_func, globals );
+        (void)g_timeout_add( 1000, score_timer_func, globals );
+    } else if ( why == TIMER_HEARTBEAT ) {
+        (void)g_timeout_add( 1000 * when, heartbeat_timer_func, globals );
+    } else {
+        XP_ASSERT( 0 );
     }
 
 } /* gtk_util_setTimer */
