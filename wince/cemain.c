@@ -92,7 +92,8 @@ static void ce_util_notifyGameOver( XW_UtilCtxt* uc );
 static XP_Bool ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, 
                                    XP_U16 row );
 static XP_Bool ce_util_engineProgressCallback( XW_UtilCtxt* uc );
-static void ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why );
+static void ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+                              TimerProc proc, void* closure);
 static void ce_util_requestTime( XW_UtilCtxt* uc );
 static XP_U32 ce_util_getCurSeconds( XW_UtilCtxt* uc );
 static DictionaryCtxt* ce_util_makeEmptyDict( XW_UtilCtxt* uc );
@@ -1435,6 +1436,14 @@ debug_saveCurState( CEAppGlobals* globals )
 # define debug_saveCurState(g)
 #endif
 
+static void
+ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
+{
+    TimerProc proc = globals->timerProcs[why-1];
+    void* closure = globals->timerClosures[why-1];
+    (*proc)( closure, why );
+}
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1651,11 +1660,14 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case WM_TIMER:
             why = (XWTimerReason)wParam;
-            if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK ) {
-                board_timerFired( globals->game.board, why );
-                /* they otherwise repeat.... */
-                XP_ASSERT( why <= N_TIMER_TYPES );
+            if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK || why == TIMER_HEARTBEAT ) {
+                XP_ASSERT( why < TIMER_NUM_PLUS_ONE );
+
+                /* Kill since they otherwise repeat, but kill before firing
+                   as fired proc may set another. */
                 (void)KillTimer( hWnd, globals->timerIDs[why-1] );
+
+                ceFireTimer( globals, why );
             }
             break;
 
@@ -2125,25 +2137,36 @@ ce_util_engineProgressCallback( XW_UtilCtxt* uc )
 } /* ce_util_engineProgressCallback */
 
 static void
-ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
+ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+                  TimerProc proc, void* closure)
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_U32 timerID;
     XP_U32 howLong;
 
-    if ( why == TIMER_PENDOWN ) {
+    XP_ASSERT( why < TIMER_NUM_PLUS_ONE );
+    globals->timerProcs[why-1] = proc;
+    globals->timerClosures[why-1] = closure;
+
+    switch ( why ) {
+    case TIMER_PENDOWN:
         howLong = 400;
-    } else if ( why == TIMER_TIMERTICK ) {
+        break;
+    case TIMER_TIMERTICK:
         howLong = 1000;          /* 1 second */
-    } else {
+        break;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case TIMER_HEARTBEAT:
+        howLong = when * 1000;
+        break;
+#endif
+    default:
         XP_ASSERT(0);
         return;
     }
     timerID = SetTimer( globals->hWnd, why, howLong, NULL);
 
-    XP_ASSERT( why <= N_TIMER_TYPES );
     globals->timerIDs[why-1] = timerID;
-        
 } /* ce_util_setTimer */
 
 static void 
