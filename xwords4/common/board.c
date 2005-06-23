@@ -75,6 +75,8 @@ static void makeMiniWindowForText( BoardCtxt* board, XP_UCHAR* text,
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 static void invalSelTradeWindow( BoardCtxt* board );
 static void setTimerIf( BoardCtxt* board );
+static void p_board_timerFired( void* closure, XWTimerReason why );
+
 static XP_Bool replaceLastTile( BoardCtxt* board );
 static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
 static XP_Bool advanceArrow( BoardCtxt* board );
@@ -745,7 +747,8 @@ setTimerIf( BoardCtxt* board )
     XP_Bool timerWanted = board->gi->timerEnabled && !board->gameOver;
 
     if ( timerWanted && !board->timerPending ) {
-        util_setTimer( board->util, TIMER_TIMERTICK ); 
+        util_setTimer( board->util, TIMER_TIMERTICK, 0, 
+                       p_board_timerFired, board ); 
         board->timerPending = XP_TRUE;
     }
 } /* setTimerIf */
@@ -768,9 +771,10 @@ timerFiredForTimer( BoardCtxt* board )
     setTimerIf( board );
 } /* timerFiredForTimer */
 
-void
-board_timerFired( BoardCtxt* board, XWTimerReason why )
+static void
+p_board_timerFired( void* closure, XWTimerReason why )
 {
+    BoardCtxt* board = (BoardCtxt*)closure;
     if ( why == TIMER_PENDOWN ) {
         timerFiredForPen( board );
     } else {
@@ -2136,7 +2140,7 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
     if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, x, y ) ) {
         return XP_FALSE;
     }
-    util_setTimer( board->util, TIMER_PENDOWN );
+    util_setTimer( board->util, TIMER_PENDOWN, 0, p_board_timerFired, board );
 #ifdef XWFEATURE_SEARCHLIMIT
     if ( board->gi->allowHintRect && board->trayVisState == TRAY_REVEALED ) {
         result = startHintRegionDrag( board, x, y );
@@ -2245,7 +2249,8 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when,
 
         case OBJ_SCORE:
             if ( figureScorePlayerTapped( board, x, y ) >= 0 ) {
-                util_setTimer( board->util, TIMER_PENDOWN );
+                util_setTimer( board->util, TIMER_PENDOWN, 0, 
+                               p_board_timerFired, board );
             }
             break;
         default:

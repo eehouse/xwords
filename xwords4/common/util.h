@@ -83,6 +83,8 @@ typedef struct BadWordInfo {
     XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
 } BadWordInfo;
 
+typedef void (*TimerProc)( void* closure, XWTimerReason why );
+
 /* Platform-specific utility functions that need to be
  */
 typedef struct UtilVtable {
@@ -120,7 +122,8 @@ typedef struct UtilVtable {
 
     XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc );
 
-    void (*m_util_setTimer)( XW_UtilCtxt* uc, XWTimerReason why );
+    void (*m_util_setTimer)( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+                             TimerProc proc, void* closure );
 
     void (*m_util_requestTime)( XW_UtilCtxt* uc );
 
@@ -193,8 +196,8 @@ struct XW_UtilCtxt {
 #define util_engineProgressCallback( uc ) \
          (uc)->vtable->m_util_engineProgressCallback((uc))
 
-#define util_setTimer( uc, why ) \
-         (uc)->vtable->m_util_setTimer((uc),(why))
+#define util_setTimer( uc, why, when, proc, clos ) \
+         (uc)->vtable->m_util_setTimer((uc),(why),(when),(proc),(clos))
 
 #define util_requestTime( uc ) \
          (uc)->vtable->m_util_requestTime((uc))
