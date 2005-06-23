@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -55,6 +56,7 @@
 #include "tpool.h"
 
 #define N_WORKER_THREADS 5
+#define MILLIS 1000000
 
 void
 logf( const char* format, ... )
@@ -96,8 +98,13 @@ putNetShort( unsigned char** bufpp, unsigned short s )
 }
 
 static void
-processHeartbeat( const unsigned char* buf, int bufLen )
+processHeartbeat( unsigned char* buf, int bufLen, int socket )
 {
+    CookieID cookieID = getNetShort( &buf );
+    HostID hostID = getNetShort( &buf );
+    logf( "processHeartbeat: cookieID 0x%x, hostID 0x%x", cookieID, hostID );
+    CookieRef* cref = get_cookieRef( cookieID );
+    cref->HandleHeartbeat( hostID, socket );
 } /* processHeartbeat */
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -146,6 +153,13 @@ killSocket( int socket, char* why )
     SocketMgr::RemoveSocketRefs( socket );
     /* Might want to kill the thread it belongs to if we're not in it,
        e.g. when unable to write to another socket. */
+    logf( "killSocket done" );
+}
+
+time_t
+now() 
+{
+    return (unsigned long)time(NULL);
 }
 
 static void
@@ -186,7 +200,7 @@ sendConnResp( CookieRef* cref, int socket )
 /* forward the message.  Need only change the command after looking up the
  * socket and it's ready to go. */
 static int
-forwardMessage( unsigned char* buf, int bufLen )
+forwardMessage( unsigned char* buf, int bufLen, int srcSocket )
 {
     int success = 0;
     unsigned char* bufp = buf + 1; /* skip cmd */
@@ -194,16 +208,20 @@ forwardMessage( unsigned char* buf, int bufLen )
     logf( "cookieID = %d", cookieID );
     CookieRef* cref = get_cookieRef( cookieID );
     if ( cref != NULL ) {
+
         HostID src = getNetShort( &bufp );
+        /* we heard from host: good as a heartbeat */
+        cref->HandleHeartbeat( src, srcSocket );
+
         HostID dest = getNetShort( &bufp );
         logf( "forwarding from %x to %x", src, dest );
-        int socket = cref->SocketForHost( dest );
+        int destSocket = cref->SocketForHost( dest );
 
-        logf( "got socket %d for dest %x", socket, dest );
-        if ( socket != -1 ) {
+        logf( "got socket %d for dest %x", destSocket, dest );
+        if ( destSocket != -1 ) {
             *buf = XWRELAY_MSG_FROMRELAY;
-            send_with_length( socket, buf, bufLen );
-            cref->RecordSent( bufLen, socket );
+            send_with_length( destSocket, buf, bufLen );
+            cref->RecordSent( bufLen, destSocket );
             success = 1;
         } else if ( dest == HOST_ID_SERVER ) {
             logf( "server not connected yet; fail silently" );
@@ -237,12 +255,13 @@ processMessage( unsigned char* buf, int bufLen, int socket )
         break;
     case XWRELAY_HEARTBEAT:
         logf( "processMessage got XWRELAY_HEARTBEAT" );
-        processHeartbeat( buf + 1, bufLen - 1 );
+        processHeartbeat( buf + 1, bufLen - 1, socket );
         break;
     case XWRELAY_MSG_TORELAY:
         logf( "processMessage got XWRELAY_MSG_TORELAY" );
-        if ( !forwardMessage( buf, bufLen ) ) {
+        if ( !forwardMessage( buf, bufLen, socket ) ) {
             killSocket( socket, "couldn't forward message" );
+        } else {
         }
         break;
     }
@@ -274,6 +293,22 @@ make_socket( unsigned long addr, unsigned short port )
     return sock;
 } /* make_socket */
 
+static void
+sighandler( int signal )
+{
+    logf( "sighandler" );
+
+    vector<int> victims;
+    CheckHeartbeats( now(), &victims );
+
+    unsigned int i;
+    for ( i = 0; i < victims.size(); ++i ) {
+        killSocket( victims[i], "heartbeat check failed" );
+    }
+
+    logf( "sighandler done" );
+} /* sighandler */
+
 int main( int argc, char** argv )
 {
     int port = 10999;
@@ -285,9 +320,17 @@ int main( int argc, char** argv )
        which relevant stuff is passed. */
 
     int listener = make_socket( INADDR_ANY, port );
-    if ( listener == -1 ) exit( 1 );
+    if ( listener == -1 ) {
+        exit( 1 );
+    }
     int control = make_socket( INADDR_LOOPBACK, port + 1 );
-    if ( control == -1 ) exit( 1 );
+    if ( control == -1 ) {
+        exit( 1 );
+    }
+
+    /* generate a signal after n milliseconds, then every m milliseconds  */
+    (void)signal( SIGALRM, sighandler );
+    (void)ualarm( 2 * HEARTBEAT * MILLIS, 2 * HEARTBEAT* MILLIS );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
     tPool->Setup( N_WORKER_THREADS, processMessage );
@@ -305,24 +348,26 @@ int main( int argc, char** argv )
         ++highest;
 
         int retval = select( highest, &rfds, NULL, NULL, NULL );
-        assert( retval > 0 );
-        
-        if ( FD_ISSET( listener, &rfds ) ) {
-            struct sockaddr_in newaddr;
-            socklen_t siz = sizeof(newaddr);
-            int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
+        if ( retval < 0 ) {
+            logf( "errno: %d", errno );
+        } else {
+            if ( FD_ISSET( listener, &rfds ) ) {
+                struct sockaddr_in newaddr;
+                socklen_t siz = sizeof(newaddr);
+                int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
 
-            unsigned long remoteIP = newaddr.sin_addr.s_addr;
-            logf( "accepting connection from 0x%lx", ntohl( remoteIP ) );
+                unsigned long remoteIP = newaddr.sin_addr.s_addr;
+                logf( "accepting connection from 0x%lx", ntohl( remoteIP ) );
 
-            tPool->AddSocket( newSock );
-            --retval;
+                tPool->AddSocket( newSock );
+                --retval;
+            }
+            if ( FD_ISSET( control, &rfds ) ) {
+                run_ctrl_thread( control );
+                --retval;
+            }
+            assert( retval == 0 );
         }
-        if ( FD_ISSET( control, &rfds ) ) {
-            run_ctrl_thread( control );
-            --retval;
-        }
-        assert( retval == 0 );
     }
 
     close( listener );

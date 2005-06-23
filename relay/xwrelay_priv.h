@@ -10,4 +10,6 @@ void logf( const char* format, ... );
 
 void killSocket( int socket, char* why );
 
+time_t now();
+
 #endif
