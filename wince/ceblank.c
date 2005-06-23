@@ -26,7 +26,7 @@ loadLettersList( HWND hDlg, BlankDialogState* bState )
 {
     XP_U16 i;
     XP_U16 nTiles = bState->nTiles;
-    XP_UCHAR4* texts = bState->texts;
+    const XP_UCHAR4* texts = bState->texts;
     
     for ( i = 0; i < nTiles; ++i ) {	
         XP_U16 len;
@@ -49,7 +49,7 @@ static void
 showCurTray( HWND hDlg, BlankDialogState* bState )
 {
     if ( bState->pi->why == PICK_FOR_CHEAT ) {
-        PickInfo* pi = bState->pi;
+        const PickInfo* pi = bState->pi;
         XP_U16 lenSoFar = 0;
         XP_U16 i;
         XP_UCHAR labelBuf[48];
