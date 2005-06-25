@@ -364,7 +364,6 @@ Boolean palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId,
                           XP_S16 titleID );
 void freeSavedGamesData( MPFORMAL SavedGamesState* state );
 
-void palm_util_requestTime( XW_UtilCtxt* uc ); /* so palmir can call */
 void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index, 
                             char* newName, XP_U16 len );
 

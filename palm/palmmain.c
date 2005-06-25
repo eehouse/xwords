@@ -144,7 +144,9 @@ static XP_Bool palm_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                                 TimerProc proc, void* closure );
 static XP_U32 palm_util_getCurSeconds( XW_UtilCtxt* uc );
+static void palm_util_requestTime( XW_UtilCtxt* uc );
 static DictionaryCtxt* palm_util_makeEmptyDict( XW_UtilCtxt* uc );
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, 
                                                    XP_U16 channelNo );
@@ -3405,7 +3407,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
     }
 } /* palm_util_setTimer */
 
-void 
+static void 
 palm_util_requestTime( XW_UtilCtxt* uc )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;

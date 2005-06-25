@@ -418,26 +418,12 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
 #endif
 } /* comms_writeToStream */
 
-void
+static void
 comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr )
 {
     XP_ASSERT( !!comms );
     XP_MEMCPY( addr, &comms->addr, sizeof(*addr) );
 } /* comms_getAddr */
-
-void
-comms_getInitialAddr( CommsAddrRec* addr )
-{
-    /* default values; default is still IR where there's a choice */
-    addr->conType = COMMS_CONN_RELAY;
-    addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
-    addr->u.ip_relay.port = 10999;
-    {
-        char* name = "eehouse.org";
-        XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
-    }
-    addr->u.ip_relay.cookie[0] = '\0';
-}
 
 void
 comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr )
@@ -451,7 +437,7 @@ comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr )
     relayConnect( comms );
 } /* comms_setAddr */
 
-CommsConnType 
+static CommsConnType 
 comms_getConType( CommsCtxt* comms )
 {
     return comms->addr.conType;

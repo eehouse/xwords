@@ -190,7 +190,6 @@ XP_Bool rectContainsPt( XP_Rect* rect1, XP_S16 x, XP_S16 y );
 XP_Bool checkRevealTray( BoardCtxt* board );
 void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
 XP_Bool rectsIntersect( XP_Rect* rect1, XP_Rect* rect2 );
-XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey );
