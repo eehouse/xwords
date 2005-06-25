@@ -1,4 +1,4 @@
-# -*- mode: Makefile; -*-
+# -*- mode: Makefile; compile-command: "make ARCH=ARM_ONLY"; -*-
 
 PLATFORM = PALM_PNO
 PALMDIR = /usr/local/share/palmdev/sdk-5r3/include
