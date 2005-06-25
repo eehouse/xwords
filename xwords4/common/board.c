@@ -66,6 +66,8 @@ static void boardGameOver( void* board );
 static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col );
 static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, 
                          XP_U16 row );
+static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
+
 static XP_S16 figureScorePlayerTapped( BoardCtxt* board, XP_U16 x, XP_U16 y );
 static XP_Bool cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                              XP_Bool inclPending );
@@ -2960,7 +2962,7 @@ getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row )
     return getArrowFor( board, board->selPlayer, col, row );
 } /* getArrow */
 
-XP_Bool
+static XP_Bool
 setArrowVisible( BoardCtxt* board, XP_Bool visible )
 {
     return setArrowVisibleFor( board, board->selPlayer, visible );

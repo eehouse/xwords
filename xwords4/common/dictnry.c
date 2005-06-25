@@ -50,11 +50,13 @@ setBlankTile( DictionaryCtxt* dctx )
     }    
 } /* setBlankTile */
 
+#if defined BLANKS_FIRST || defined DEBUG
 XP_Bool
 dict_hasBlankTile( DictionaryCtxt* dict )
 {
     return dict->blankTile >= 0;
 } /* dict_hasBlankTile */
+#endif
 
 Tile
 dict_getBlankTile( DictionaryCtxt* dict )
