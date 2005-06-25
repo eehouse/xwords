@@ -867,7 +867,6 @@ passKeyToBoard( CursesAppGlobals* globals, char ch )
         ch += 'A' - 'a';
         globals->doDraw = board_handleKey( globals->cGlobals.game.board, ch );
     }
-    XP_LOGF( "passKeyToBoard: handled=%d on %x (%c)", handled, ch, ch );
     return handled;
 } /* passKeyToBoard */
 
