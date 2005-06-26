@@ -1052,12 +1052,15 @@ palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
         localR.width = width;
     }
 
+    /* Shorten the clip rect if we're not doing highres */
+    if ( 0 ) {
 #ifdef FEATURE_HIGHRES
-    if ( !dctx->doHiRes ) {
-        localR.height += 1;
-    }
+    } else if ( dctx->doHiRes ) {
+        /* do nothing. */
 #endif
-/*     localR.top -= 2; */
+    } else {
+        localR.height -= 1;
+    }
 
     WinGetClip( &saveClip );
     WinSetClip( (RectangleType*)&localR );
