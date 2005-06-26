@@ -1166,7 +1166,7 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
            remembering what the lowest score is *once there are
            NUM_SAVED_MOVES moves in here* and doing a quick test on that. */
         for ( i = engine->isRobot? 0: NUM_SAVED_MOVES-1; i >= 0; --i ) {
-            if ( score > engine->miData.savedMoves[i].score ) {
+            if ( score >= engine->miData.savedMoves[i].score ) {
                 /* <eeh> We could cache the value of i to know when to start
                    the saveMoveIfQualifies search that's upcomming. */
                 return XP_TRUE;

@@ -315,9 +315,11 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
             if ( len == 1 ) {
                 ++x;
             }
+#ifdef FEATURE_HIGHRES
             if ( dctx->doHiRes ) {
                 --y;
             }
+#endif
             WinDrawChars( (const char*)letters, len, x, y );
 
             showBonus = XP_FALSE;
@@ -965,12 +967,20 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
 
         /* There's no room for the pts string if we're in highres mode and
            WinSetScalingMode isn't available. */
-        if ( !dctx->doHiRes || dctx->oneDotFiveAvail ) {
+        if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+        } else if ( dctx->doHiRes && !dctx->oneDotFiveAvail ) {
+            /* do nothing */
+#endif
+        } else {
             XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
 
-            if ( dctx->oneDotFiveAvail ) {
+            if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+            } else if ( dctx->oneDotFiveAvail ) {
                 smallBoldStringAt( (const char*)str, XP_STRLEN((const char*)str), 
                                    x, rect->top );
+#endif
             } else {
                 WinDrawChars( (const char*)str, 
                               XP_STRLEN((const char*)str), x, rect->top );
@@ -1018,10 +1028,17 @@ static void
 palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
                      XP_U16 player, XP_S16 secondsLeft )
 {
+    /* This is called both from within drawScoreboard and not, meaning that
+     * sometimes draw_boardBegin() and draw_boardFinished() bracket it and
+     * sometimes they don't.  So it has to do its own HIGHRES_PUSH_LOC stuff.
+     */
+    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
     XP_Rect localR = *rInner;
     RectangleType saveClip;
     XP_U16 len, width;
+
+    HIGHRES_PUSH_LOC(dctx);
 
     palmFormatTimerText( buf, secondsLeft );
     len = XP_STRLEN( (const char*)buf );
@@ -1035,13 +1052,23 @@ palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
         localR.width = width;
     }
 
-    localR.top -= 2;
-    localR.height += 1;
+    /* Shorten the clip rect if we're not doing highres */
+    if ( 0 ) {
+#ifdef FEATURE_HIGHRES
+    } else if ( dctx->doHiRes ) {
+        /* do nothing. */
+#endif
+    } else {
+        localR.height -= 1;
+    }
 
     WinGetClip( &saveClip );
     WinSetClip( (RectangleType*)&localR );
-    WinDrawChars( (const char*)buf, len, localR.left, localR.top );
+
+    WinDrawChars( (const char*)buf, len, localR.left, localR.top - 2 );
     WinSetClip( &saveClip );
+
+    HIGHRES_POP_LOC(dctx);
 } /* palm_draw_drawTimer */
 
 #define MINI_LINE_HT 12
@@ -1334,7 +1361,9 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     }
 
     dctx->fntHeight = FntBaseLine();
+#ifdef FEATURE_HIGHRES
     dctx->oneDotFiveAvail = globals->oneDotFiveAvail;
+#endif
 
     return (DrawCtx*)dctx;
 } /* palm_drawctxt_make */
