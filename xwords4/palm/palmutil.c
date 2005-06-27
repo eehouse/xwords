@@ -114,6 +114,18 @@ disOrEnable( FormPtr form, UInt16 id, Boolean enable )
     }
 } /* disOrEnable */
 
+void
+disOrEnableSet( FormPtr form, const UInt16* ids, Boolean enable ) 	 
+{
+    for ( ; ; ) {
+        XP_U16 id = *ids++;
+        if ( !id ) {
+            break;
+        }
+        disOrEnable( form, id, enable );
+    }
+} /* disOrEnableSet */
+
 /* Position a control at the horizontal center of its container.
  */
 void
