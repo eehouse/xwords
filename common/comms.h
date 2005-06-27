@@ -85,7 +85,10 @@ void comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr );
 
 /* "static" method provides default when no comms present */
 void comms_getInitialAddr( CommsAddrRec* addr );
+void comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr );
+
+CommsConnType comms_getConType( CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  XW_UtilCtxt* util, TransportSend sendproc, 

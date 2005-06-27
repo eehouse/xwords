@@ -64,7 +64,7 @@ void freeListData( MPFORMAL ListData* ld  );
 
 /* this should work on either trigger or selector */
 void setSelectorFromList( UInt16 selectorID, ListPtr list, 
-			  short listSelIndex );
+                          short listSelIndex );
 
 void sizeGadgetsForStrings( FormPtr form, ListPtr list, XP_U16 firstGadgetID );
 
