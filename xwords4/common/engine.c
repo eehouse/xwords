@@ -1080,7 +1080,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
 
         --blanksLeft;
         XP_ASSERT( engine->blankValues[blanksLeft] < 128 );
-        bTile = engine->blankValues[blanksLeft];
+        bTile = (Tile)engine->blankValues[blanksLeft];
         bt = &usedBlanks[usedBlanksCount++];
 
         /* for each letter for which the blank might be standing in... */
