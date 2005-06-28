@@ -93,10 +93,10 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     if ( !!gi->dictName ) { 
         str = bname( gi->dictName );
         XP_MEMCPY( giState->newDictName, gi->dictName, 
-                   (XP_U16)XP_STRLEN(gi->dictName) );
+                   (XP_U16)XP_STRLEN(gi->dictName)+1 );
 
     } else if ( !!(str = ceLocateNthDict( MPPARM(globals->mpool) 0 ) ) ) {
-        XP_MEMCPY( giState->newDictName, str, (XP_U16)XP_STRLEN(str) );
+        XP_MEMCPY( giState->newDictName, str, (XP_U16)XP_STRLEN(str)+1 );
         XP_FREE( globals->mpool, str );
         str = bname( giState->newDictName );
 
@@ -481,7 +481,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     if ( giState->isNewGame ) { /* ignore if in info mode */
                         giState->newDictName[0] = 0;
                         if ( ce_pickDictFile( globals, giState->newDictName,
-                                              sizeof(giState->newDictName) ) ) {
+                                              sizeof(giState->newDictName) )) {
                             XP_UCHAR* basename = bname(giState->newDictName);
                             ceSetDlgItemFileName( hDlg, id, basename );
                         }
