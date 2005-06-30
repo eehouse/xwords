@@ -54,7 +54,6 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     wchar_t nameBuf[MAX_PATH+1];
     HANDLE hFile;
     XP_U8* ptr;
-    HANDLE mappedFile;
 
     XP_ASSERT( !!dictName );
     XP_DEBUGF( "looking for dict %s", dictName );
@@ -91,12 +90,12 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 #endif
         ctxt = (CEDictionaryCtxt*)ce_dictionary_make_empty( globals );
 
+        ctxt->mappedFile = mappedFile;
+        ctxt->mappedBase = mappedBase;
         ctxt->super.nodeSize = nodeSize;
-
         ctxt->super.destructor = ce_dict_destroy;
         ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
-        ctxt->mappedBase = mappedBase;
         XP_DEBUGF( "ptr starting at 0x%lx", ptr );
 		
         numFaces = (XP_U16)(*ptr++);
