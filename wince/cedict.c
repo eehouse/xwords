@@ -51,119 +51,137 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     CEDictionaryCtxt* ctxt = (CEDictionaryCtxt*)NULL;
 	HANDLE mappedFile = NULL;
 
-    ctxt = (CEDictionaryCtxt*)XP_MALLOC(globals->mpool, sizeof(*ctxt));
-    XP_MEMSET( ctxt, 0, sizeof(*ctxt) );
+    wchar_t nameBuf[MAX_PATH+1];
+    HANDLE hFile;
+    XP_U8* ptr;
+    HANDLE mappedFile;
 
-    dict_super_init( (DictionaryCtxt*)ctxt );
-    MPASSIGN( ctxt->super.mpool, globals->mpool );
+    XP_ASSERT( !!dictName );
+    XP_DEBUGF( "looking for dict %s", dictName );
 
-    if ( !!dictName ) {
-        wchar_t nameBuf[MAX_PATH+1];
-        HANDLE hFile;
-        XP_U8* ptr;
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, dictName, -1,
+                         nameBuf, sizeof(nameBuf)/sizeof(nameBuf[0]) );
+
+    ptr = openMappedFile( nameBuf, &mappedFile, &hFile );
+
+    while( !!ptr ) {           /* lets us break.... */
+        XP_U32 offset;
+        XP_U16 numFaces;
+        XP_U16 i;
+        XP_U16 flags;
+        XP_U32 dictLength;
+        void* mappedBase = (void*)ptr;
+        XP_U8 nodeSize;
+
+        flags = n_ptr_tohs( &ptr );
+        XP_DEBUGF( "ce_dictionary_make: flags=0x%x", flags );
+
+#ifdef NODE_CAN_4
+        if ( flags == 0x0002 ) {
+            nodeSize = 3;
+        } else if ( flags == 0x0003 ) {
+            nodeSize = 4;
+        } else {
+            break;          /* we want to return NULL */
+        }
+#else
+        if( flags != 0x0001 ) {
+            break;
+        }
+#endif
+        ctxt = (CEDictionaryCtxt*)ce_dictionary_make_empty( globals );
+
+        ctxt->super.nodeSize = nodeSize;
 
         ctxt->super.destructor = ce_dict_destroy;
         ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
-        XP_DEBUGF( "looking for dict %s", dictName );
-
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, dictName, -1,
-                             nameBuf, sizeof(nameBuf)/sizeof(nameBuf[0]) );
-
-        ptr = openMappedFile( nameBuf, &ctxt->mappedFile, &hFile );
-
-        if ( !!ptr ) {
-            XP_U32 offset;
-            XP_U16 numFaces;
-            XP_U16 i;
-            XP_U16 flags;
-            XP_U32 dictLength;
-
-            ctxt->mappedBase = (void*)ptr;
-            XP_DEBUGF( "ptr starting at 0x%lx", ptr );
+        ctxt->mappedBase = mappedBase;
+        XP_DEBUGF( "ptr starting at 0x%lx", ptr );
 		
-            flags = n_ptr_tohs( &ptr );
-            XP_DEBUGF( "ce_dictionary_make: flags=0x%x", flags );
-
-            numFaces = (XP_U16)(*ptr++);
-            ctxt->super.nFaces = (XP_U8)numFaces;
-            XP_DEBUGF( "read %d faces from dict", (short)numFaces );
-            ctxt->super.faces16 = 
-                XP_MALLOC( globals->mpool, 
-                           numFaces * sizeof(ctxt->super.faces16[0]) );
+        numFaces = (XP_U16)(*ptr++);
+        ctxt->super.nFaces = (XP_U8)numFaces;
+        XP_DEBUGF( "read %d faces from dict", (short)numFaces );
+        ctxt->super.faces16 = 
+            XP_MALLOC( globals->mpool, 
+                       numFaces * sizeof(ctxt->super.faces16[0]) );
 
 #ifdef NODE_CAN_4
-            if ( flags == 0x0002 ) {
-                ctxt->super.nodeSize = 3;
-            } else if ( flags == 0x0003 ) {
-                ctxt->super.nodeSize = 4;
-            } else {
-                XP_ASSERT( 0 );
-            }
+        ctxt->super.is_4_byte = (ctxt->super.nodeSize == 4);
 
-            ctxt->super.is_4_byte = ctxt->super.nodeSize == 4;
-
-            for ( i = 0; i < numFaces; ++i ) {
-                ctxt->super.faces16[i] = n_ptr_tohs(&ptr);
-            }
-#else
-            XP_ASSERT( flags == 0x0001 );
-            for ( i = 0; i < numFaces; ++i ) {
-                ctxt->super.faces16[i] = (XP_CHAR16)*ptr++;
-            }
-#endif
-
-            ctxt->super.countsAndValues = 
-                (XP_U8*)XP_MALLOC(globals->mpool, numFaces*2);
-
-            ptr += 2;		/* skip xloc header */
-            XP_DEBUGF( "pre values: ptr now 0x%lx", ptr );
-            for ( i = 0; i < numFaces*2; i += 2 ) {
-                ctxt->super.countsAndValues[i] = *ptr++;
-                ctxt->super.countsAndValues[i+1] = *ptr++;
-            }
-            XP_DEBUGF( "post values: ptr now 0x%lx", ptr );
-
-            ceLoadSpecialData( ctxt, &ptr );
-
-            dictLength = GetFileSize( hFile, NULL );
-            dictLength -= ptr - (XP_U8*)ctxt->mappedBase;
-            if ( dictLength > sizeof(XP_U32) ) {
-                offset = n_ptr_tohl( &ptr );
-                dictLength -= sizeof(offset);
-#ifdef NODE_CAN_4
-                XP_ASSERT( dictLength % ctxt->super.nodeSize == 0 );
-# ifdef DEBUG
-                ctxt->super.numEdges = dictLength / ctxt->super.nodeSize;
-# endif
-#else
-                XP_ASSERT( dictLength % 3 == 0 );
-# ifdef DEBUG
-                ctxt->super.numEdges = dictLength / 3;
-# endif
-#endif
-            }
-
-            if ( dictLength > 0 ) {
-                XP_DEBUGF( "setting topEdge; offset = %ld", offset );
-                ctxt->super.base = (array_edge*)ptr;
-#ifdef NODE_CAN_4
-                ctxt->super.topEdge = ctxt->super.base 
-                    + (offset * ctxt->super.nodeSize);
-#else
-                ctxt->super.topEdge = ctxt->super.base + (offset * 3);
-#endif
-            } else {
-                ctxt->super.topEdge = (array_edge*)NULL;
-                ctxt->super.base = (array_edge*)NULL;
-            }
+        for ( i = 0; i < numFaces; ++i ) {
+            ctxt->super.faces16[i] = n_ptr_tohs(&ptr);
         }
+#else
+        for ( i = 0; i < numFaces; ++i ) {
+            ctxt->super.faces16[i] = (XP_CHAR16)*ptr++;
+        }
+#endif
+
+        ctxt->super.countsAndValues = 
+            (XP_U8*)XP_MALLOC(globals->mpool, numFaces*2);
+
+        ptr += 2;		/* skip xloc header */
+        XP_DEBUGF( "pre values: ptr now 0x%lx", ptr );
+        for ( i = 0; i < numFaces*2; i += 2 ) {
+            ctxt->super.countsAndValues[i] = *ptr++;
+            ctxt->super.countsAndValues[i+1] = *ptr++;
+        }
+        XP_DEBUGF( "post values: ptr now 0x%lx", ptr );
+
+        ceLoadSpecialData( ctxt, &ptr );
+
+        dictLength = GetFileSize( hFile, NULL );
+        dictLength -= ptr - (XP_U8*)ctxt->mappedBase;
+        if ( dictLength > sizeof(XP_U32) ) {
+            offset = n_ptr_tohl( &ptr );
+            dictLength -= sizeof(offset);
+#ifdef NODE_CAN_4
+            XP_ASSERT( dictLength % ctxt->super.nodeSize == 0 );
+# ifdef DEBUG
+            ctxt->super.numEdges = dictLength / ctxt->super.nodeSize;
+# endif
+#else
+            XP_ASSERT( dictLength % 3 == 0 );
+# ifdef DEBUG
+            ctxt->super.numEdges = dictLength / 3;
+# endif
+#endif
+        }
+
+        if ( dictLength > 0 ) {
+            XP_DEBUGF( "setting topEdge; offset = %ld", offset );
+            ctxt->super.base = (array_edge*)ptr;
+#ifdef NODE_CAN_4
+            ctxt->super.topEdge = ctxt->super.base 
+                + (offset * ctxt->super.nodeSize);
+#else
+            ctxt->super.topEdge = ctxt->super.base + (offset * 3);
+#endif
+        } else {
+            ctxt->super.topEdge = (array_edge*)NULL;
+            ctxt->super.base = (array_edge*)NULL;
+        }
+
         setBlankTile( (DictionaryCtxt*)ctxt );
 
         ctxt->super.name = copyString(MPPARM(globals->mpool) dictName);
+        break;              /* exit phony while loop */
     }
     return (DictionaryCtxt*)ctxt;
 } /* ce_dictionary_make */
+
+DictionaryCtxt*
+ce_dictionary_make_empty( CEAppGlobals* globals )
+{
+    CEDictionaryCtxt* ctxt = (CEDictionaryCtxt*)XP_MALLOC(globals->mpool,
+                                                          sizeof(*ctxt));
+    XP_MEMSET( ctxt, 0, sizeof(*ctxt) );
+
+    dict_super_init( (DictionaryCtxt*)ctxt );
+    MPASSIGN( ctxt->super.mpool, globals->mpool );
+    return (DictionaryCtxt*)ctxt;
+} /* ce_dictionary_make_empty */
 
 static void
 ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
@@ -380,7 +398,7 @@ ce_dict_destroy( DictionaryCtxt* dict )
     }
 
     XP_FREE( ctxt->super.mpool, ctxt->super.faces16 );
-        
+
     UnmapViewOfFile( ctxt->mappedBase );
     CloseHandle( ctxt->mappedFile );
     XP_FREE( ctxt->super.mpool, ctxt );
