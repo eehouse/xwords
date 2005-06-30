@@ -418,6 +418,9 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         ceAdjustVisibility( hDlg, giState, XP_FALSE );
 
+        if ( giState->isNewGame ) {
+            (void)SetWindowText( hDlg, L"New game" );
+        }
         return TRUE;
 
     } else {
