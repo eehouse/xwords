@@ -29,6 +29,7 @@ typedef struct CEBitmapInfo {
 } CEBitmapInfo;
 
 DictionaryCtxt* ce_dictionary_make(CEAppGlobals* globals, XP_UCHAR* name);
+DictionaryCtxt* ce_dictionary_make_empty( globals );
 
 XP_Bool ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 len );
 
