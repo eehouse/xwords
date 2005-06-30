@@ -314,9 +314,9 @@ hideScroller( CEAppGlobals* globals )
 typedef struct CEBoardParms {
     XP_U16  boardHScale;
     XP_U16  boardVScale;
+    XP_U8   trayVScale;
+    XP_U8   trayHScale;
     XP_U16  trayTop;
-    XP_U16  trayVScale;
-    XP_U16  trayHScale;
     XP_U16  leftEdge;
     XP_U16  scoreWidth;
     XP_U16  scoreHeight;
@@ -334,8 +334,8 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
     XP_Bool needsScroller;
 
     GetClientRect( globals->hWnd, &rc );
-    width = rc.right - rc.left;
-    height = rc.bottom - rc.top;
+    width = (XP_U16)(rc.right - rc.left);
+    height = (XP_U16)(rc.bottom - rc.top);
 
     boardHt = height - CE_SCORE_HEIGHT - MIN_TRAY_HEIGHT;
 
@@ -381,7 +381,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
     bparms->boardHScale = hScale;
     bparms->boardVScale = vScale;
     bparms->trayTop = trayTop;
-    bparms->trayVScale = trayVScale;
+    bparms->trayVScale = (XP_U8)trayVScale;
     bparms->trayHScale = CE_TRAY_SCALEH; /* unchanged so far... */
     bparms->leftEdge = leftEdge;
     bparms->scoreWidth = scoreWidth;
@@ -736,16 +736,19 @@ ceLoadSavedGame( CEAppGlobals* globals )
             XP_UCHAR* name = stringFromStream( MPPARM(globals->mpool)
                                                stream );
             dict = ce_dictionary_make( globals, name );
+            success = dict != NULL;
 #endif
         } else {
             dict = NULL;
         }
 
-        XP_DEBUGF( "calling game_makeFromStream" ); 
-        game_makeFromStream( MEMPOOL stream, &globals->game, 
-                             &globals->gameInfo,
-                             dict, &globals->util, globals->draw,
-                             &globals->appPrefs.cp, ce_ir_send, globals );
+        if ( success ) {
+            XP_DEBUGF( "calling game_makeFromStream" ); 
+            game_makeFromStream( MEMPOOL stream, &globals->game, 
+                                 &globals->gameInfo,
+                                 dict, &globals->util, globals->draw,
+                                 &globals->appPrefs.cp, ce_ir_send, globals );
+        }
 
         stream_destroy( stream );
     }
@@ -2190,7 +2193,7 @@ ce_util_makeEmptyDict( XW_UtilCtxt* uc )
 #ifdef STUBBED_DICT
     return make_stubbed_dict( MPPARM_NOCOMMA(globals->mpool) );
 #else
-    return ce_dictionary_make( globals, NULL );
+    return ce_dictionary_make_empty( globals );
 #endif
 } /* ce_util_makeEmptyDict */
 
