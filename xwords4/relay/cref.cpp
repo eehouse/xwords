@@ -501,6 +501,15 @@ putNetShort( unsigned char** bufpp, unsigned short s )
     *bufpp += sizeof(s);
 }
 
+static void
+putNetLong( unsigned char** bufpp, unsigned long s )
+{
+    s = htonl( s );
+    memcpy( *bufpp, &s, sizeof(s) );
+    *bufpp += sizeof(s);
+    assert( sizeof(s) == 4 );   /* otherwise need to hardcode */
+}
+
 void
 CookieRef::sendResponse( const CRefEvent* evt )
 {
@@ -514,12 +523,12 @@ CookieRef::sendResponse( const CRefEvent* evt )
     m_hostSockets.insert( pair<HostID,HostRec>(id,hr) );
 
     /* Now send the response */
-    unsigned char buf[5];
+    unsigned char buf[7];
     unsigned char* bufp = buf;
 
     *bufp++ = XWRELAY_CONNECTRESP;
     putNetShort( &bufp, GetHeartbeat() );
-    putNetShort( &bufp, GetCookieID() );
+    putNetLong( &bufp, GetCookieID() );
 
     send_with_length( socket, buf, sizeof(buf) );
     RecordSent( sizeof(buf), socket );
@@ -603,7 +612,7 @@ CookieRef::PrintCookieInfo( string& out )
     out += "\n";
     out += "ID: ";
     char buf[64];
-    snprintf( buf, sizeof(buf), "%d\n", GetCookieID() );
+    snprintf( buf, sizeof(buf), "%ld\n", GetCookieID() );
     out += buf;
 
     snprintf( buf, sizeof(buf), "Bytes sent: %d\n", m_totalSent );

@@ -6,7 +6,7 @@
 #include <time.h>
 
 typedef unsigned short HostID;
-typedef unsigned short CookieID; /* stands in for string after connection established */
+typedef unsigned long CookieID; /* stands in for string after connection established */
 
 void logf( const char* format, ... );
 
