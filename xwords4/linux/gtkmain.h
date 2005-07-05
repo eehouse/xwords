@@ -86,6 +86,8 @@ typedef struct GtkAppGlobals {
 
     ClientStreamRec clientRecs[MAX_NUM_PLAYERS];
 
+    guint timerSources[TIMER_NUM_PLUS_ONE - 1];
+
     CommonPrefs cp;
 
     XP_Bool gridOn;
