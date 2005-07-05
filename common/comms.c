@@ -806,7 +806,7 @@ p_comms_timerFired( void* closure, XWTimerReason why )
     XP_LOGF( "comms_timerFired" );
     if ( comms->heartbeat != HEARTBEAT_NONE ) {
         send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, NULL, 0 );
-        setHeartbeatTimer( comms );
+        /* No need to reset timer.  send_via_relay does that. */
     }
 } /* comms_timerFired */
 
