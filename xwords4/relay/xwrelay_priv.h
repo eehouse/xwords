@@ -3,6 +3,8 @@
 #ifndef _XWRELAY_PRIV_H_
 #define _XWRELAY_PRIV_H_
 
+#include <time.h>
+
 typedef unsigned short HostID;
 typedef unsigned short CookieID; /* stands in for string after connection established */
 
