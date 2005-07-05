@@ -1036,6 +1036,16 @@ fireTimer( GtkAppGlobals* globals, XWTimerReason why )
     (*proc)( closure, why );
 } /* fireTimer */
 
+static void
+cancelTimer( GtkAppGlobals* globals, XWTimerReason why )
+{
+    guint src = globals->timerSources[why-1];
+    if ( src != 0 ) {
+        g_source_remove( src );
+        globals->timerSources[why-1] = 0;
+    }
+} /* cancelTimer */
+
 static gint
 pentimer_idle_func( gpointer data )
 {
@@ -1078,27 +1088,31 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                    TimerProc proc, void* closure )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    guint newSrc;
 
-    globals->cGlobals.timerProcs[why-1] = proc;
-    globals->cGlobals.timerClosures[why-1] = closure;
+    cancelTimer( globals, why );
 
     if ( why == TIMER_PENDOWN ) {
         globals->penTimerInterval = 35 * 10000;
 
         (void)gettimeofday( &globals->penTv, NULL );
-        (void)gtk_idle_add( pentimer_idle_func, globals );
+        newSrc = g_idle_add( pentimer_idle_func, globals );
     } else if ( why == TIMER_TIMERTICK ) {
         globals->scoreTimerInterval = 100 * 10000;
 
         (void)gettimeofday( &globals->scoreTv, NULL );
 
-        (void)g_timeout_add( 1000, score_timer_func, globals );
+        newSrc = g_timeout_add( 1000, score_timer_func, globals );
     } else if ( why == TIMER_HEARTBEAT ) {
-        (void)g_timeout_add( 1000 * when, heartbeat_timer_func, globals );
+        newSrc = g_timeout_add( 1000 * when, heartbeat_timer_func, globals );
     } else {
         XP_ASSERT( 0 );
     }
 
+    globals->cGlobals.timerProcs[why-1] = proc;
+    globals->cGlobals.timerClosures[why-1] = closure;
+    XP_ASSERT( newSrc != 0 );
+    globals->timerSources[why-1] = newSrc;
 } /* gtk_util_setTimer */
 
 static gint
