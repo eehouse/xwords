@@ -87,14 +87,24 @@ getNetShort( unsigned char** bufpp )
     memcpy( &tmp, *bufpp, 2 );
     *bufpp += 2;
     return ntohs( tmp );
-}
+} /* getNetShort */
+
+static unsigned short
+getNetLong( unsigned char** bufpp )
+{
+    unsigned long tmp;
+    memcpy( &tmp, *bufpp, sizeof(tmp) );
+    *bufpp += sizeof(tmp);
+    assert( sizeof(tmp) == 4 );
+    return ntohl( tmp );
+} /* getNetLong */
 
 static void
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
 {
-    CookieID cookieID = getNetShort( &buf );
+    CookieID cookieID = getNetLong( &buf );
     HostID hostID = getNetShort( &buf );
-    logf( "processHeartbeat: cookieID 0x%x, hostID 0x%x", cookieID, hostID );
+    logf( "processHeartbeat: cookieID 0x%lx, hostID 0x%x", cookieID, hostID );
     CookieRef* cref = get_cookieRef( cookieID );
     if ( cref != NULL ) {
         cref->HandleHeartbeat( hostID, socket );
@@ -130,9 +140,9 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
 
         if ( bufp < end ) {
             HostID srcID = getNetShort( &bufp );
-            CookieID connID = getNetShort( &bufp );
+            CookieID cookieID = getNetLong( &bufp );
             if ( bufp == end ) {
-                cref = get_make_cookieRef( cookie, connID );
+                cref = get_make_cookieRef( cookie, cookieID );
                 assert( cref != NULL );
                 cref->Connect( socket, srcID );
             }
@@ -164,7 +174,7 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
 {
     int success = 0;
     unsigned char* bufp = buf + 1; /* skip cmd */
-    unsigned short cookieID = getNetShort( &bufp );
+    CookieID cookieID = getNetLong( &bufp );
     logf( "cookieID = %d", cookieID );
     CookieRef* cref = get_cookieRef( cookieID );
     if ( cref != NULL ) {

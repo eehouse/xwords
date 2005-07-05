@@ -87,7 +87,7 @@ struct CommsCtxt {
     XWHostID myHostID;        /* 0 if unset, 1 if acting as server, random for
                                  client */
     CommsRelaystate relayState; /* not saved: starts at UNCONNECTED */
-    XP_U16 cookieID;         /* standin for cookie; set by relay */
+    XP_U32 cookieID;         /* standin for cookie; set by relay */
 
     /* heartbeat: for periodic pings if relay thinks the network the device is
        on requires them.  Not saved since only valid when connected, and we
@@ -264,7 +264,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     comms->connID = stream_getU32( stream );
     comms->nextChannelNo = stream_getU16( stream );
     comms->myHostID = stream_getU16( stream );
-    comms->cookieID = stream_getU16( stream );
+    comms->cookieID = stream_getU32( stream );
 
 #ifdef DEBUG
     comms->nUniqueBytes = stream_getU16( stream );
@@ -376,7 +376,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
     stream_putU16( stream, comms->myHostID );
-    stream_putU16( stream, comms->cookieID );
+    stream_putU32( stream, comms->cookieID );
 
 #ifdef DEBUG
     stream_putU16( stream, comms->nUniqueBytes );
@@ -662,7 +662,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 {
     XP_Bool consumed;
     XWHostID destID, srcID;
-    XP_U16 cookieID;
+    XP_U32 cookieID;
 
     if ( comms->addr.conType != COMMS_CONN_RELAY ) {
         consumed = XP_FALSE;         /* nothing for us to do here! */
@@ -673,8 +673,8 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             consumed = XP_TRUE;
             comms->relayState = COMMS_RELAYSTATE_CONNECTED;
             comms->heartbeat = stream_getU16( stream );
-            comms->cookieID = stream_getU16( stream );
-            XP_LOGF( "got XWRELAY_CONNECTRESP; set cookieID = %d",
+            comms->cookieID = stream_getU32( stream );
+            XP_LOGF( "got XWRELAY_CONNECTRESP; set cookieID = %ld",
                      comms->cookieID );
             /* We're connected now.  Send any pending messages.  This may need
                to be done later since we're inside the platform's socket read
@@ -684,10 +684,10 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             setHeartbeatTimer( comms );
             break;
         case XWRELAY_MSG_FROMRELAY:
-            cookieID = stream_getU16( stream );
+            cookieID = stream_getU32( stream );
             srcID = stream_getU16( stream );
             destID = stream_getU16( stream );
-            XP_LOGF( "cookieID: %d; srcID: %d; destID: %d",
+            XP_LOGF( "cookieID: %ld; srcID: %d; destID: %d",
                      cookieID, srcID, destID );
             /* If these values don't check out, drop it */
             consumed = cookieID != comms->cookieID
@@ -970,7 +970,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         stream_putU8( tmpStream, cmd );
 
         if ( cmd == XWRELAY_MSG_TORELAY ) {
-            stream_putU16( tmpStream, comms->cookieID );
+            stream_putU32( tmpStream, comms->cookieID );
             stream_putU16( tmpStream, comms->myHostID );
             stream_putU16( tmpStream, destID );
             if ( data != NULL && dlen > 0 ) {
@@ -982,14 +982,14 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, clen );
             stream_putBytes( tmpStream, addr.u.ip_relay.cookie, clen );
             stream_putU16( tmpStream, comms->myHostID );
-            XP_LOGF( "writing cookieID of %d", comms->cookieID );
-            stream_putU16( tmpStream, comms->cookieID );
+            XP_LOGF( "writing cookieID of %ld", comms->cookieID );
+            stream_putU32( tmpStream, comms->cookieID );
 
             comms->relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
         } else if ( cmd == XWRELAY_HEARTBEAT ) {
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
-            stream_putU16( tmpStream, comms->cookieID );
+            stream_putU32( tmpStream, comms->cookieID );
             stream_putU16( tmpStream, comms->myHostID );
         }
 

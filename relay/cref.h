@@ -11,8 +11,6 @@
 #include "xwrelay_priv.h"
 #include "states.h"
 
-typedef unsigned short CookieID;
-
 #ifndef HEARTBEAT
 # define HEARTBEAT 60
 #endif
@@ -139,7 +137,7 @@ class CookieMapIterator {
 };
 
 CookieRef* get_make_cookieRef( const char* cookie, CookieID connID );
-CookieRef* get_cookieRef( unsigned short cookieID );
+CookieRef* get_cookieRef( CookieID cookieID );
 CookieID CookieIdForName( const char* name );
 void CheckHeartbeats( time_t now, vector<int>* victims );
 
