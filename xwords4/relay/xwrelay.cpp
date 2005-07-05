@@ -90,21 +90,17 @@ getNetShort( unsigned char** bufpp )
 }
 
 static void
-putNetShort( unsigned char** bufpp, unsigned short s )
-{
-    s = htons( s );
-    memcpy( *bufpp, &s, sizeof(s) );
-    *bufpp += sizeof(s);
-}
-
-static void
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
 {
     CookieID cookieID = getNetShort( &buf );
     HostID hostID = getNetShort( &buf );
     logf( "processHeartbeat: cookieID 0x%x, hostID 0x%x", cookieID, hostID );
     CookieRef* cref = get_cookieRef( cookieID );
-    cref->HandleHeartbeat( hostID, socket );
+    if ( cref != NULL ) {
+        cref->HandleHeartbeat( hostID, socket );
+    } else {
+        killSocket( socket, "no cref for socket" );
+    }
 } /* processHeartbeat */
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -138,8 +134,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
             if ( bufp == end ) {
                 cref = get_make_cookieRef( cookie, connID );
                 assert( cref != NULL );
-                cref->Associate( socket, srcID );
-                SocketMgr::Associate( socket, cref );
+                cref->Connect( socket, srcID );
             }
         }
     }
@@ -162,45 +157,10 @@ now()
     return (unsigned long)time(NULL);
 }
 
-static void
-send_with_length( int socket, unsigned char* buf, int bufLen )
-{
-    SocketWriteLock slock( socket );
-    int ok = 0;
-    unsigned short len = htons( bufLen );
-    ssize_t nSent = send( socket, &len, 2, 0 );
-    if ( nSent == 2 ) {
-        nSent = send( socket, buf, bufLen, 0 );
-        if ( nSent == bufLen ) {
-            logf( "sent %d bytes on socket %d", nSent, socket );
-            ok = 1;
-        }
-    }
-    if ( !ok ) {
-        killSocket( socket, "couldn't send" );
-    }
-}
-
-static void
-sendConnResp( CookieRef* cref, int socket )
-{
-    /* send cmd, heartbeat, connid */
-    unsigned char buf[5];
-    unsigned char* bufp = buf;
-
-    *bufp++ = XWRELAY_CONNECTRESP;
-    putNetShort( &bufp, cref->GetHeartbeat() );
-    putNetShort( &bufp, cref->GetCookieID() );
-
-    send_with_length( socket, buf, sizeof(buf) );
-    cref->RecordSent( sizeof(buf), socket );
-    logf( "sent CONNECTIONRSP" );
-}
-
 /* forward the message.  Need only change the command after looking up the
  * socket and it's ready to go. */
 static int
-forwardMessage( unsigned char* buf, int bufLen, int srcSocket )
+forwardMessage( unsigned char* buf, int buflen, int srcSocket )
 {
     int success = 0;
     unsigned char* bufp = buf + 1; /* skip cmd */
@@ -208,25 +168,11 @@ forwardMessage( unsigned char* buf, int bufLen, int srcSocket )
     logf( "cookieID = %d", cookieID );
     CookieRef* cref = get_cookieRef( cookieID );
     if ( cref != NULL ) {
-
         HostID src = getNetShort( &bufp );
-        /* we heard from host: good as a heartbeat */
-        cref->HandleHeartbeat( src, srcSocket );
-
         HostID dest = getNetShort( &bufp );
-        logf( "forwarding from %x to %x", src, dest );
-        int destSocket = cref->SocketForHost( dest );
 
-        logf( "got socket %d for dest %x", destSocket, dest );
-        if ( destSocket != -1 ) {
-            *buf = XWRELAY_MSG_FROMRELAY;
-            send_with_length( destSocket, buf, bufLen );
-            cref->RecordSent( bufLen, destSocket );
-            success = 1;
-        } else if ( dest == HOST_ID_SERVER ) {
-            logf( "server not connected yet; fail silently" );
-            success = 1;
-        }
+        cref->Forward( src, dest, buf, buflen );
+        success = 1;
     }
     return success;
 } /* forwardMessage */
@@ -241,11 +187,6 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     case XWRELAY_CONNECT: 
         logf( "processMessage got XWRELAY_CONNECT" );
         cref = processConnect( buf+1, bufLen-1, socket );
-        if ( cref != NULL ) {
-            sendConnResp( cref, socket );
-        } else {
-            killSocket( socket, "no cref found" );
-        }
         break;
     case XWRELAY_CONNECTRESP:
         logf( "bad: processMessage got XWRELAY_CONNECTRESP" );

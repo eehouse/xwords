@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CC = g++
-SRC = xwrelay.cpp cref.cpp ctrl.cpp tpool.cpp
+SRC = xwrelay.cpp cref.cpp ctrl.cpp tpool.cpp states.cpp
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -lpthread -g
 CPPFLAGS += -g -Wall -DHEARTBEAT=10
