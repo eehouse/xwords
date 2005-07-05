@@ -281,6 +281,7 @@ XWThreadPool::real_listener()
                     if ( !RemoveSocket( socket ) ) {
                         /* no further processing if it's been removed while
                            we've been sleeping in poll */
+                        --nEvents;
                         continue;
                     }
 
@@ -302,6 +303,7 @@ XWThreadPool::real_listener()
         considerFireTimer();
 
         free( fds );
+        free( log );
     }
     return NULL;
 } /* real_listener */
