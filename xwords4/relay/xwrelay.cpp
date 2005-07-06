@@ -113,6 +113,21 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
     }
 } /* processHeartbeat */
 
+static int
+readCookie( unsigned char** bufp, const unsigned char* end, 
+            char* outBuf )
+{
+    unsigned char clen = **bufp;
+    ++*bufp;
+    if ( *bufp < end && clen > 0 && clen < MAX_COOKIE_LEN ) {
+        memcpy( outBuf, *bufp, clen );
+        outBuf[clen] = '\0';
+        *bufp += clen;
+        return 1;
+    }
+    return 0;
+} /* readCookie */
+
 /* A CONNECT message from a device gives us the hostID and socket we'll
  * associate with one participant in a relayed session.  We'll store this
  * information with the cookie where other participants can find it when they
@@ -124,31 +139,28 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
  * outstanding.  Otherwise close down the socket.  And maybe the others in the
  * game?
  */
-static CookieRef*
+static void
 processConnect( unsigned char* bufp, int bufLen, int socket )
 {
-    logf( "processConnect" );
-    CookieRef* cref = NULL;
+    char cookie[MAX_COOKIE_LEN+1];
     unsigned char* end = bufp + bufLen;
-    unsigned char clen = *bufp++;
-    if ( bufp < end && clen < MAX_COOKIE_LEN ) {
-        char cookie[MAX_COOKIE_LEN+1];
-        memcpy( cookie, bufp, clen );
-        cookie[clen] = '\0';
-        logf( "got cookie: %s", cookie );
-        bufp += clen;
 
-        if ( bufp < end ) {
-            HostID srcID = getNetShort( &bufp );
-            CookieID cookieID = getNetLong( &bufp );
-            if ( bufp == end ) {
-                cref = get_make_cookieRef( cookie, cookieID );
-                assert( cref != NULL );
-                cref->Connect( socket, srcID );
-            }
+    logf( "processConnect" );
+
+    if ( readCookie( &bufp, end, cookie ) ) {
+
+        HostID srcID;
+        CookieID cookieID;
+
+        if ( bufp + sizeof(srcID) + sizeof(cookieID) == end ) {
+            srcID = getNetShort( &bufp );
+            cookieID = getNetLong( &bufp );
+
+            CookieRef* cref = get_make_cookieRef( cookie, cookieID );
+            assert( cref != NULL );
+            cref->Connect( socket, srcID );
         }
     }
-    return cref;
 } /* processConnect */
 
 void
@@ -190,13 +202,11 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
 static void
 processMessage( unsigned char* buf, int bufLen, int socket )
 {
-    CookieRef* cref;
-
     XWRELAY_Cmd cmd = *buf;
     switch( cmd ) {
     case XWRELAY_CONNECT: 
         logf( "processMessage got XWRELAY_CONNECT" );
-        cref = processConnect( buf+1, bufLen-1, socket );
+        processConnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_CONNECTRESP:
         logf( "bad: processMessage got XWRELAY_CONNECTRESP" );
@@ -215,6 +225,8 @@ processMessage( unsigned char* buf, int bufLen, int socket )
         } else {
         }
         break;
+    default:
+        assert(0);
     }
 } /* processMessage */
 
