@@ -12,6 +12,8 @@ void logf( const char* format, ... );
 
 void killSocket( int socket, char* why );
 
+int send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
+
 time_t now();
 
 #endif

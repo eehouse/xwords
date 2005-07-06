@@ -50,7 +50,9 @@ typedef enum {
 /*     ERR_CANT_ENGINE_MID_MOVE, */
 /*     ERR_NOT_YOUR_TURN_TO_TRADE, */
 /*     ERR_NOT_YOUR_TURN_TO_MOVE, */
-    ERR_CANT_UNDO_TILEASSIGN
+    ERR_CANT_UNDO_TILEASSIGN,
+
+    ERR_RELAY_ERROR
 } UtilErrID;
 
 typedef enum {

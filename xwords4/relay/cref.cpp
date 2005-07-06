@@ -493,17 +493,9 @@ static void
 send_with_length( int socket, unsigned char* buf, int bufLen )
 {
     SocketWriteLock slock( socket );
-    int ok = 0;
-    unsigned short len = htons( bufLen );
-    ssize_t nSent = send( socket, &len, 2, 0 );
-    if ( nSent == 2 ) {
-        nSent = send( socket, buf, bufLen, 0 );
-        if ( nSent == bufLen ) {
-            logf( "sent %d bytes on socket %d", nSent, socket );
-            ok = 1;
-        }
-    }
-    if ( !ok ) {
+
+    if ( !send_with_length_unsafe( socket, buf, bufLen ) ) {
+        /* ok that the slock above is still in scope */
         killSocket( socket, "couldn't send" );
     }
 }

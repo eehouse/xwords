@@ -128,6 +128,42 @@ readCookie( unsigned char** bufp, const unsigned char* end,
     return 0;
 } /* readCookie */
 
+static int
+flagsOK( unsigned char flags )
+{
+    return flags == XWRELAY_PROTO_VERSION;
+} /* flagsOK */
+
+static void
+denyConnection( int socket )
+{
+    unsigned char buf[2];
+
+    buf[0] = XWRELAY_CONNECTDENIED;
+    buf[1] = XWRELAY_ERROR_BADPROTO;
+
+    send_with_length_unsafe( socket, buf, sizeof(buf) );
+}
+
+/* No mutex here.  Caller better be ensuring no other thread can access this
+ * socket. */
+int
+send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
+{
+    int ok = 0;
+    unsigned short len = htons( bufLen );
+    ssize_t nSent = send( socket, &len, 2, 0 );
+    if ( nSent == 2 ) {
+        nSent = send( socket, buf, bufLen, 0 );
+        if ( nSent == bufLen ) {
+            logf( "sent %d bytes on socket %d", nSent, socket );
+            ok = 1;
+        }
+    }
+    return ok;
+} /* send_with_length_unsafe */
+
+
 /* A CONNECT message from a device gives us the hostID and socket we'll
  * associate with one participant in a relayed session.  We'll store this
  * information with the cookie where other participants can find it when they
@@ -147,19 +183,24 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
 
     logf( "processConnect" );
 
-    if ( readCookie( &bufp, end, cookie ) ) {
+    unsigned char flags = *bufp++;
+    if ( flagsOK( flags ) ) {
+        if ( readCookie( &bufp, end, cookie ) ) {
 
-        HostID srcID;
-        CookieID cookieID;
+            HostID srcID;
+            CookieID cookieID;
 
-        if ( bufp + sizeof(srcID) + sizeof(cookieID) == end ) {
-            srcID = getNetShort( &bufp );
-            cookieID = getNetLong( &bufp );
+            if ( bufp + sizeof(srcID) + sizeof(cookieID) == end ) {
+                srcID = getNetShort( &bufp );
+                cookieID = getNetLong( &bufp );
 
-            CookieRef* cref = get_make_cookieRef( cookie, cookieID );
-            assert( cref != NULL );
-            cref->Connect( socket, srcID );
+                CookieRef* cref = get_make_cookieRef( cookie, cookieID );
+                assert( cref != NULL );
+                cref->Connect( socket, srcID );
+            }
         }
+    } else {
+        denyConnection( socket );
     }
 } /* processConnect */
 

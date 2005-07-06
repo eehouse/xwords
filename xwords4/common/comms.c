@@ -691,13 +691,16 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                      cookieID, srcID, destID );
             /* If these values don't check out, drop it */
             consumed = cookieID != comms->cookieID
-                && destID != comms->myHostID;
+                || destID != comms->myHostID;
             if ( consumed ) {
                 XP_LOGF( "rejecting data message" );
             } else {
                 *senderID = srcID;
             }
             break;
+        case XWRELAY_CONNECTDENIED:
+            util_userError( comms->util, ERR_RELAY_ERROR );
+            /* fallthru */
         default:
             consumed = XP_TRUE; /* drop it */
             XP_LOGF( "dropping relay msg with cmd %d", (XP_U16)cmd );
@@ -979,6 +982,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             }
             break;
         case XWRELAY_CONNECT:
+            stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
             stringToStream( tmpStream, addr.u.ip_relay.cookie );
             stream_putU16( tmpStream, comms->myHostID );
             XP_LOGF( "writing cookieID of %ld", comms->cookieID );
