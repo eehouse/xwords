@@ -164,6 +164,11 @@ linux_getErrString( UtilErrID id )
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
         break;
+    case ERR_RELAY_ERROR:
+        message = "Problem communicating with the relay.  Maybe it's "
+            "overloaded or is expecting a newer version of Crosswords";
+        break;
+
     default:
         message = "<unrecognized error code reported>";
     }

@@ -38,6 +38,9 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
        /* Sent from relay to device in response to XWRELAY_CONNECT.
           Format: heartbeat_seconds: 2; connectionID: 2; */
 
+       /* The relay says go away.  Format: reason code: 1 */
+       , XWRELAY_CONNECTDENIED
+
        , XWRELAY_HEARTBEAT
        /* Sent in either direction.  Format: cookieID: 2; srcID: 2 */
 
@@ -59,5 +62,15 @@ typedef unsigned char XWRELAY_Cmd;
 
 #define MAX_COOKIE_LEN 15
 #define MAX_MSG_LEN    256      /* 100 is more like it */
+
+#define XWRELAY_PROTO_VERSION 0x01
+
+/* Errors passed with denied  */
+enum {
+    XWRELAY_ERROR_NONE
+    ,XWRELAY_ERROR_BADPROTO
+    ,XWRELAY_ERROR_RELAYBUSY
+    ,XWRELAY_ERROR_COOKIEINUSE
+};
 
 #endif
