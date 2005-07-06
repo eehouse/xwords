@@ -323,7 +323,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 } /* comms_makeFromStream */
 
 void
-comms_init( CommsCtxt* comms )
+comms_start( CommsCtxt* comms )
 {
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
@@ -969,28 +969,30 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         stream_open( tmpStream );
         stream_putU8( tmpStream, cmd );
 
-        if ( cmd == XWRELAY_MSG_TORELAY ) {
+        switch ( cmd ) {
+        case XWRELAY_MSG_TORELAY:
             stream_putU32( tmpStream, comms->cookieID );
             stream_putU16( tmpStream, comms->myHostID );
             stream_putU16( tmpStream, destID );
             if ( data != NULL && dlen > 0 ) {
                 stream_putBytes( tmpStream, data, dlen );
             }
-        } else if ( cmd == XWRELAY_CONNECT ) {
-            XP_U8 clen;
-            clen = XP_STRLEN( addr.u.ip_relay.cookie );
-            stream_putU8( tmpStream, clen );
-            stream_putBytes( tmpStream, addr.u.ip_relay.cookie, clen );
+            break;
+        case XWRELAY_CONNECT:
+            stringToStream( tmpStream, addr.u.ip_relay.cookie );
             stream_putU16( tmpStream, comms->myHostID );
             XP_LOGF( "writing cookieID of %ld", comms->cookieID );
             stream_putU32( tmpStream, comms->cookieID );
 
             comms->relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
-        } else if ( cmd == XWRELAY_HEARTBEAT ) {
+            break;
+
+        case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
             stream_putU32( tmpStream, comms->cookieID );
             stream_putU16( tmpStream, comms->myHostID );
+            break;
         }
 
         len = stream_getSize( tmpStream );
