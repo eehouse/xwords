@@ -54,13 +54,12 @@ class CookieRef {
     void PrintSocketInfo( string& out, int socket );
 
     static CookieMapIterator GetCookieIterator();
-    static CookieRef* AddNew( string s );
+    static CookieRef* AddNew( string s, CookieID id );
     /* Nuke an existing */
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
  private:
-    CookieRef( string s );
     typedef struct CRefEvent {
         XW_RELAY_EVENT type;
         union {
@@ -87,6 +86,8 @@ class CookieRef {
             } htime;
         } u;
     } CRefEvent;
+
+    CookieRef( string s, CookieID id );
 
     void RecordSent( int nBytes, int socket ) {
         /* This really needs a lock.... */

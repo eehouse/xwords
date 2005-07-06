@@ -35,14 +35,15 @@ using namespace std;
 static CookieMap gCookieMap;
 pthread_rwlock_t gCookieMapRWLock = PTHREAD_RWLOCK_INITIALIZER;
 
+pthread_mutex_t g_IdsMutex = PTHREAD_MUTEX_INITIALIZER;
 
 CookieID CookieRef::ms_nextConnectionID = 1000;
 
 /* static */ CookieRef*
-CookieRef::AddNew( string s )
+CookieRef::AddNew( string s, CookieID id )
 {
     RWWriteLock rwl( &gCookieMapRWLock );
-    CookieRef* ref = new CookieRef( s );
+    CookieRef* ref = new CookieRef( s, id );
     gCookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
     logf( "paired cookie %s with id %d", s.c_str(), ref->GetCookieID() );
     return ref;
@@ -97,17 +98,25 @@ CheckHeartbeats( time_t now, vector<int>* sockets )
     logf( "CheckHeartbeats done" );
 } /* CheckHeartbeats */
 
+/* [Re]connecting.  If there was a game in progress and this host disconnected
+ * briefly then we can just reconnect.  Otherwise we have to create just as if
+ * it were a from-scratch connect, but without choosing the CookieID.
+ */
 CookieRef* 
-get_make_cookieRef( const char* cookie, 
-                    CookieID connID ) /* connID ignored for now */
+get_make_cookieRef( const char* cookie, CookieID cookieID ) 
 {
-    CookieID id = CookieIdForName( cookie );
-    CookieRef* cref;
+    /* start with the cookieID if it's set */
+    CookieRef* cref = cookieID == 0 ? NULL: get_cookieRef( cookieID );
+
+    if ( cref == NULL ) {       /* need to keep looking? */
+
+        CookieID newId = CookieIdForName( cookie );
     
-    if ( id == 0 ) {
-        cref = CookieRef::AddNew( string(cookie) );
-    } else {
-        cref = get_cookieRef( id );
+        if ( newId == 0 ) {     /* not in the system */
+            cref = CookieRef::AddNew( string(cookie), cookieID );
+        } else {
+            cref = get_cookieRef( newId );
+        }
     }
 
     return cref;
@@ -268,14 +277,20 @@ SocketsIterator::Next()
  * CookieRef class
  *****************************************************************************/
 
-CookieRef::CookieRef(string s)
+CookieRef::CookieRef( string s, CookieID id )
     : m_name(s)
     , m_totalSent(0)
     , m_curState(XW_ST_INITED)
 {
     pthread_rwlock_init( &m_sockets_rwlock, NULL );
     pthread_mutex_init( &m_EventsMutex, NULL );
-    m_connectionID = ms_nextConnectionID++; /* needs a mutex!!! */
+
+    if ( id == 0 ) {
+        MutexLock ml( &g_IdsMutex );
+        m_connectionID = ms_nextConnectionID++; /* needs a mutex!!! */
+    } else {
+        m_connectionID = id;
+    }
 }
 
 CookieRef::~CookieRef()
