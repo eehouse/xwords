@@ -1006,7 +1006,9 @@ board_draw( BoardCtxt* board )
         drawScoreBoard( board );
 
         if ( board->needsDrawing 
-             && draw_boardBegin( board->draw, &board->boardBounds, 
+             && draw_boardBegin( board->draw, 
+                                 model_getDictionary( board->model ),
+                                 &board->boardBounds, 
                                  board->focussed == OBJ_BOARD ) ) {
 
             XP_Bool allDrawn = XP_TRUE;
@@ -1681,7 +1683,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             bonus = util_getSquareBonus( board->util, model, col, row );
             hintAtts = figureHintAtts( board, col, row );
             return draw_drawCell( board->draw, &cellRect, textP, bitmap, 
-                                  owner, bonus, hintAtts, isBlank, invert,
+                                  tile, owner, bonus, hintAtts, isBlank, invert,
                                   (isEmpty && (col==board->star_row)
                                    && (row==board->star_row)));
         }

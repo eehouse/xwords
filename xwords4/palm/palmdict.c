@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */
 /* 
- * Copyright 1997-2001 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 1997-2005 by Eric House (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -64,6 +64,10 @@ static void setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
                            Xloc_specialEntry* specialStart, XP_U16 nSpecials );
 static array_edge* palm_dict_edge_for_index_multi( DictionaryCtxt* dict, 
                                                    XP_U32 index );
+#ifdef TALL_FONTS
+static void palm_dict_getFaceBounds( DictionaryCtxt* dict, Tile tile,
+                                     XP_FontBounds* bounds );
+#endif
 
 DictionaryCtxt*
 palm_dictionary_make( MPFORMAL PalmAppGlobals* globals, 
@@ -186,6 +190,10 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
         charPtr = (unsigned char*)MemHandleLock(tmpH);
         XP_ASSERT( MemHandleLockCount( tmpH ) == 1 );
         // use 2; ARM thinks sizeof(Xloc_header) is 4.
+#ifdef TALL_FONTS
+        ctxt->super.langCode = XP_NTOHS(*(XP_U16*)charPtr);
+        XP_LOGF( "read langCode of %x", ctxt->super.langCode );
+#endif
         ctxt->super.countsAndValues = charPtr + 2;
 
         /* for those dicts with special chars */
@@ -291,6 +299,10 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
 #endif
                 ctxt->super.func_edge_for_index
                     = palm_dict_edge_for_index_multi;
+#ifdef TALL_FONTS
+                ctxt->super.func_dict_getFaceBounds
+                    = palm_dict_getFaceBounds;
+#endif
             }
         }
 
@@ -375,6 +387,77 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
     ctxt->super.chars = chars;
     XP_LOGF( "setupSpecials done" );
 } /* setupSpecials */
+
+#ifdef TALL_FONTS
+#define BMP_WIDTH 16
+#define BMP_HT 16
+static void
+measureFace( XP_CHAR16 face, XP_U16* top, XP_U16* bottom )
+{
+    WinHandle win;
+    BitmapType* bitmap;
+    Coord x, y;
+    Err err;
+    XP_Bool gotIt;
+
+    bitmap = BmpCreate( BMP_WIDTH, BMP_HT, 1, NULL, &err );
+    if ( err == errNone ) {
+        win = WinCreateBitmapWindow( bitmap, &err );
+        if ( err == errNone ) {
+            WinHandle oldWin = WinSetDrawWindow( win );
+            WinSetBackColor( 0 ); /* white */
+            (void)WinSetTextColor( 1 ); /* black */
+            (void)WinSetDrawMode( winOverlay );
+
+            WinDrawChar( face, 0, 0 );
+
+            /* Scan from top for top, then from bottom for botton */
+            gotIt = XP_FALSE;
+            for ( y = 0; !gotIt && y < BMP_HT; ++y ) {
+                for ( x = 0; !gotIt && x < BMP_WIDTH; ++x ) {
+                    IndexedColorType pxl = WinGetPixel( x, y );
+                    if ( pxl != 0 ) {
+                        *top = y;
+                        gotIt = XP_TRUE;
+                    }
+                }
+            }
+
+            gotIt = XP_FALSE;
+            for ( y = BMP_HT - 1; !gotIt && y >= 0; --y ) {
+                for ( x = 0; !gotIt && x < BMP_WIDTH; ++x ) {
+                    IndexedColorType pxl = WinGetPixel( x, y );
+                    if ( pxl != 0 ) {
+                        *bottom = y;
+                        gotIt = XP_TRUE;
+                    }
+                }
+            }
+
+            (void)WinSetDrawWindow( oldWin );
+            WinDeleteWindow( win, false );
+        }
+        BmpDelete( bitmap );
+    }
+} /* measureFace */
+
+static void
+palm_dict_getFaceBounds( DictionaryCtxt* ctxt, Tile tile,
+                         XP_FontBounds* bounds )
+{
+    XP_CHAR16 face = ctxt->faces16[tile];
+
+    if ( !IS_SPECIAL(face) ) {
+        XP_U16 top, bottom;
+        measureFace( face, &top, &bottom );
+        bounds->topOffset = top;
+        bounds->height = bottom - top + 1;
+
+        XP_LOGF( "Char %c ranges from %d to %d",
+                 (char)face, top, bottom );
+    }
+} /* palm_dict_getFaceBounds */
+#endif
 
 static void
 palm_dictionary_destroy( DictionaryCtxt* dict )
