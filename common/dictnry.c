@@ -282,6 +282,15 @@ common_destructor( DictionaryCtxt* dict )
     XP_FREE( dict->mpool, dict );
 } /* dict */
 
+#if defined TALL_FONTS && defined DEBUG
+static void
+dict_getFaceBounds_assert( DictionaryCtxt* dict, XP_UCHAR i, 
+                           XP_FontBounds* bounds )
+{
+    XP_ASSERT(0);
+}
+#endif
+
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
 {
@@ -293,6 +302,9 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_ASSERT( !dict->destructor );
     dict->destructor = common_destructor;
     dict->func_dict_getShortName = dict_getName; /* default */
+#if defined TALL_FONTS && defined DEBUG
+    dict->func_dict_getFaceBounds = dict_getFaceBounds_assert;
+#endif
 
     nFaces = (XP_U8)stream_getBits( stream, 6 );
     maxCountBits = (XP_U16)stream_getBits( stream, 3 );
@@ -367,6 +379,14 @@ dict_getFaceBitmap( DictionaryCtxt* dict, Tile tile, XP_Bool isLarge )
     bitmaps = &dict->bitmaps[(XP_U16)face];
     return isLarge? bitmaps->largeBM:bitmaps->smallBM;
 } /* dict_getFaceBitmap */
+
+#ifdef TALL_FONTS
+XP_LangCode
+dict_getLangCode( DictionaryCtxt* dict )
+{
+    return dict->langCode;
+}
+#endif
 
 #ifdef STUBBED_DICT
 

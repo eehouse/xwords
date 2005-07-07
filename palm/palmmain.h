@@ -80,6 +80,11 @@ typedef struct PalmDrawCtx {
     XP_Bool oneDotFiveAvail;
 #endif
 
+#ifdef TALL_FONTS
+    XP_LangCode fontLangCode;
+    XP_FontBounds* fontLangInfo;
+#endif
+
     union {
         struct {
             XP_U8 reserved;     /* make CW compiler happy */

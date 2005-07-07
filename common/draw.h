@@ -69,8 +69,8 @@ typedef struct DrawCtxVTable {
 
     void (*m_draw_destroyCtxt)( DrawCtx* dctx );
 
-    XP_Bool (*m_draw_boardBegin)( DrawCtx* dctx, XP_Rect* rect, 
-                                  XP_Bool hasfocus );
+    XP_Bool (*m_draw_boardBegin)( DrawCtx* dctx, DictionaryCtxt* dict,
+                                  XP_Rect* rect, XP_Bool hasfocus );
     void (*m_draw_boardFinished)( DrawCtx* dctx );
 
     XP_Bool (*m_draw_vertScrollBoard)(DrawCtx* dctx, XP_Rect* rect, 
@@ -106,6 +106,9 @@ typedef struct DrawCtxVTable {
     XP_Bool (*m_draw_drawCell)( DrawCtx* dctx, XP_Rect* rect, 
                                 /* at least one of these two will be null */
                                 XP_UCHAR* text, XP_Bitmap bitmap,
+#ifdef TALL_FONTS
+                                Tile tile,
+#endif
                                 XP_S16 owner, /* -1 means don't use */
                                 XWBonusType bonus, HintAtts hintAtts,
                                 XP_Bool isBlank, XP_Bool highlight, 
@@ -150,8 +153,8 @@ struct DrawCtx {
 #define draw_destroyCtxt(dc) \
          (dc)->vtable->m_draw_destroyCtxt(dc)
 
-#define draw_boardBegin( dc, r, f ) \
-         (dc)->vtable->m_draw_boardBegin((dc), (r), (f))
+#define draw_boardBegin( dc, d, r, f ) \
+         (dc)->vtable->m_draw_boardBegin((dc), (d), (r), (f))
 #define draw_boardFinished( dc ) \
          (dc)->vtable->m_draw_boardFinished(dc)
 
@@ -191,9 +194,16 @@ struct DrawCtx {
 /*          (dc)->vtable->m_draw_frameBoard((dc),(rect)) */
 /* #define draw_frameTray( dc, rect ) (dc)->vtable->m_draw_frameTray((dc),(rect)) */
 
-#define draw_drawCell( dc, rect, txt, bmap, o, bon, hi, bl, h, s ) \
+#ifdef TALL_FONTS
+/* Both of these have same sig, but one drops the Tile arg */
+# define draw_drawCell( dc, rect, txt, bmap, t, o, bon, hi, bl, h, s ) \
+         (dc)->vtable->m_draw_drawCell((dc),(rect),(txt),(bmap),(t),(o),(bon),\
+         (hi),(bl),(h),(s))
+#else
+# define draw_drawCell( dc, rect, txt, bmap, t, o, bon, hi, bl, h, s ) \
          (dc)->vtable->m_draw_drawCell((dc),(rect),(txt),(bmap),(o),(bon),\
-            (hi),(bl),(h),(s))
+         (hi),(bl),(h),(s))
+#endif
 
 #define draw_invertCell( dc, rect ) \
          (dc)->vtable->m_draw_invertCell((dc),(rect))

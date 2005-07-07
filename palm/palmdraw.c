@@ -39,6 +39,9 @@
 
 static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                                           XP_UCHAR* letters, XP_Bitmap bitmap,
+#ifdef TALL_FONTS
+                                          Tile tile,
+#endif
                                           XP_S16 owner, XWBonusType bonus, 
                                           HintAtts hintAtts, XP_Bool isBlank, 
                                           XP_Bool isPending, XP_Bool isStar );
@@ -129,20 +132,55 @@ bitmapInRect( PalmDrawCtx* dctx, Int16 resID, XP_Rect* rectP )
     drawBitmapAt( (DrawCtx*)dctx, resID, left, top );
 } /* bitmapInRect */
 
+#ifdef TALL_FONTS
+static void
+checkFontOffsets( PalmDrawCtx* dctx, DictionaryCtxt* dict )
+{
+    XP_LangCode code;
+    XP_U16 nFaces;
+    Tile tile;
+
+    code = dict_getLangCode( dict );
+    if ( code != dctx->fontLangCode ) {
+
+        if ( !!dctx->fontLangInfo ) {
+            XP_FREE( dctx->mpool, dctx->fontLangInfo );
+        }
+
+        nFaces = dict_numTileFaces( dict );
+        dctx->fontLangInfo = XP_MALLOC( dctx->mpool,
+                                        nFaces * sizeof(*dctx->fontLangInfo) );
+
+        for ( tile = 0; tile < nFaces; ++tile ) {
+            dict_getFaceBounds( dict, tile, &dctx->fontLangInfo[tile] );
+        }
+
+        dctx->fontLangCode = code;
+    }
+}
+#else
+# define checkFontOffsets(a,b)
+#endif
+
 static XP_Bool
-palm_common_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
+palm_common_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict,
+                             XP_Rect* rect, XP_Bool hasfocus )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
     if ( !globals->gState.showGrid ) {
         WinDrawRectangleFrame(rectangleFrame, (RectangleType*)rect);
     }
+
+    checkFontOffsets( dctx, dict );
+
     return XP_TRUE;
 } /* palm_common_draw_boardBegin */
 
 #ifdef COLOR_SUPPORT
 static XP_Bool
-palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
+palm_clr_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict,
+                          XP_Rect* rect, XP_Bool hasfocus )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
@@ -154,7 +192,7 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
 
     HIGHRES_PUSH_NOPOP(dctx);
 
-    palm_common_draw_boardBegin( p_dctx, rect, hasfocus );
+    palm_common_draw_boardBegin( p_dctx, dict, rect, hasfocus );
 
     return XP_TRUE;
 } /* palm_clr_draw_boardBegin */
@@ -168,6 +206,9 @@ palm_clr_draw_boardFinished( DrawCtx* p_dctx )
 static XP_Bool
 palm_clr_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                         XP_UCHAR* letters, XP_Bitmap bitmap,
+#ifdef TALL_FONTS
+                        Tile tile,
+#endif
                         XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                         XP_Bool isBlank, 
                         XP_Bool isPending, XP_Bool isStar )
@@ -200,8 +241,12 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         WinSetTextColor( color );
     }
 
-    return palm_common_draw_drawCell( p_dctx, rect, letters, bitmap, owner,
-                                      bonus, hintAtts, isBlank, isPending, isStar );
+    return palm_common_draw_drawCell( p_dctx, rect, letters, bitmap, 
+#ifdef TALL_FONTS
+                                      tile,
+#endif
+                                      owner, bonus, hintAtts, isBlank, isPending, 
+                                      isStar );
 } /* palm_clr_draw_drawCell */
 
 static void
@@ -257,6 +302,9 @@ palmDrawHintBorders( XP_Rect* rect, HintAtts hintAtts )
 static XP_Bool
 palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
                            XP_UCHAR* letters, XP_Bitmap bitmap,
+#ifdef TALL_FONTS
+                           Tile tile,
+#endif
                            XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                            XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
@@ -309,8 +357,14 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         len = XP_STRLEN( (const char*)letters );
         if ( len > 0 ) {
             XP_S16 strWidth = FntCharsWidth( (const char*)letters, len );
-            XP_U16 x = localR.left + ((localR.width-strWidth) / 2);
-            XP_U16 y = localR.top-1;
+            XP_U16 x, y;
+            x = localR.left + ((localR.width-strWidth) / 2);
+#ifdef TALL_FONTS
+            y = localR.top - dctx->fontLangInfo[tile].topOffset;
+            y += (localR.height - dctx->fontLangInfo[tile].height) / 2;
+#else
+            y = localR.top-1;
+#endif
             if ( len == 1 ) {
                 ++x;
             }
@@ -522,10 +576,9 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
         if ( *letters != LETTER_NONE ) { /* blank */
             RectangleType charRect = {{0,0}, 
                                       {CHARRECT_WIDTH*2, CHARRECT_HEIGHT*2}};
-            FontID curFont = FntGetFont();
             WinHandle curWind;
             WinHandle offScreenCharWin = dctx->offScreenCharWin;
-            FntSetFont( largeFont );
+            FontID curFont = FntSetFont( largeFont );
 
             XP_ASSERT( !!offScreenCharWin );
             curWind = WinSetDrawWindow( offScreenCharWin );
@@ -1369,5 +1422,10 @@ palm_drawctxt_destroy( DrawCtx* p_dctx )
     WinDeleteWindow( dctx->offScreenCharWin, false );
 
     XP_FREE( dctx->mpool, p_dctx->vtable );
+#ifdef TALL_FONTS
+    if ( !!dctx->fontLangInfo ) {
+        XP_FREE( dctx->mpool, dctx->fontLangInfo );
+    }
+#endif
     XP_FREE( dctx->mpool, dctx );
 } /* palm_drawctxt_destroy */
