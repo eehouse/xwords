@@ -1362,7 +1362,9 @@ curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
         }
 
         if ( !toBeTraded ) {
-            dict_tilesToString( dict, &tile, 1, (XP_UCHAR*)&curTrayText[nUsed++] );
+            dict_tilesToString( dict, &tile, 1, 
+                                (XP_UCHAR*)&curTrayText[nUsed++],
+                                sizeof(curTrayText[0]) );
         }
     }
     *nUsedP = nUsed;
@@ -1439,7 +1441,8 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
             pool_removeTiles( pool, &oneTile );
 
             (void)dict_tilesToString( dict, &tile, 1, 
-                                      (XP_UCHAR*)&curTray[pi.nCurTiles++] );
+                                      (XP_UCHAR*)&curTray[pi.nCurTiles++],
+                                      sizeof(curTray[0]) );
             resultTiles->tiles[nSoFar++] = tile;
             ++pi.thisPick;
         }
@@ -2350,7 +2353,7 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
         count = dict_numTiles( dict, tile );
 
         if ( count > 0 ) {
-            dict_tilesToString( dict, &tile, 1, face );
+            dict_tilesToString( dict, &tile, 1, face, sizeof(face) );
             value = dict_getTileValue( dict, tile );
 
             XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d/%d", 
@@ -2419,7 +2422,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
         count = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
 
         if ( count > 0 ) {
-            dict_tilesToString( dict, &tile, 1, face );
+            dict_tilesToString( dict, &tile, 1, face, sizeof(face) );
 
             buf[0] = '\0';
             putNTiles( buf, face, count );

@@ -921,7 +921,8 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
             
         tiles[nFacesAvail] = tile;
         nChars = dict_tilesToString( dict, &tile, 1, 
-                                     (XP_UCHAR*)&texts[nFacesAvail] );
+                                     (XP_UCHAR*)&texts[nFacesAvail],
+                                     sizeof(texts[0]) );
         XP_ASSERT( nChars < sizeof(texts[0]) );
         ++nFacesAvail;
     }
@@ -1383,7 +1384,8 @@ formatTray( const TrayTileSet* tiles, DictionaryCtxt* dict, XP_UCHAR* buf,
         }
         buf[i] = '\0';
     } else {
-        dict_tilesToString( dict, (Tile*)tiles->tiles, tiles->nTiles, buf );
+        dict_tilesToString( dict, (Tile*)tiles->tiles, tiles->nTiles, 
+                            buf, sizeof(buf) );
     }
 
     return buf;

@@ -1677,7 +1677,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                     XP_ASSERT( !!bitmap );
                     textP = (XP_UCHAR*)NULL;
                 } else {
-                    dict_tilesToString( dict, &tile, 1, ch );
+                    dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
                 }
             }
             bonus = util_getSquareBonus( board->util, model, col, row );
