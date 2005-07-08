@@ -56,6 +56,16 @@ typedef struct PalmAppGlobals PalmAppGlobals;
 
 typedef XP_UCHAR* (*GetResStringFunc)( PalmAppGlobals* globals, 
                                        XP_U16 strID );
+
+#ifdef TALL_FONTS
+typedef struct {
+    XP_S16 topOffset;           /* how many pixels from the top of the
+                                   drawing area is the first pixel set in
+                                   the glyph */
+    XP_U16 height;              /* How many rows tall is the image? */
+} PalmFontHtInfo;
+#endif
+
 typedef struct PalmDrawCtx {
     DrawCtxVTable* vtable;
     PalmAppGlobals* globals;
@@ -82,7 +92,7 @@ typedef struct PalmDrawCtx {
 
 #ifdef TALL_FONTS
     XP_LangCode fontLangCode;
-    XP_FontBounds* fontLangInfo;
+    PalmFontHtInfo* fontHtInfo;
 #endif
 
     union {
