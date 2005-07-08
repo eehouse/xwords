@@ -133,8 +133,9 @@ bitmapInRect( PalmDrawCtx* dctx, Int16 resID, XP_Rect* rectP )
 } /* bitmapInRect */
 
 #ifdef TALL_FONTS
-#define BMP_WIDTH 16
-#define BMP_HT 16
+# define BMP_WIDTH 16
+# define BMP_HT 16
+
 static void
 measureFace( PalmDrawCtx* dctx, XP_UCHAR face, PalmFontHtInfo* fhi )
 {
@@ -197,8 +198,11 @@ measureFace( PalmDrawCtx* dctx, XP_UCHAR face, PalmFontHtInfo* fhi )
             fhi->topOffset = top;
             fhi->height = bottom - top + 1;
 
+#ifndef XW_TARGET_PNO
+            /* %c doesn't work with my ARM impl of StrPrintF */
             XP_LOGF( "char: %c; top: %d; height: %d",
                      ch, fhi->topOffset, fhi->height );
+#endif
         }
         BmpDelete( bitmap );
     }
