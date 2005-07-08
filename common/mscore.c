@@ -676,7 +676,8 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
 
                 if ( !legal ) {
                     XP_UCHAR buf[(MAX_ROWS*2)+1];
-                    dict_tilesToString( dict, checkWordBuf, len, buf );
+                    dict_tilesToString( dict, checkWordBuf, len, buf, 
+                                        sizeof(buf) );
                     (*notifyInfo->proc)( buf, notifyInfo->closure );
                 }
             }
@@ -766,7 +767,7 @@ wordScoreFormatterAddTile( WordScoreFormatter* fmtr, Tile tile,
 
     ++fmtr->nTiles;
 
-    dict_tilesToString( fmtr->dict, &tile, 1, buf );
+    dict_tilesToString( fmtr->dict, &tile, 1, buf, sizeof(buf) );
     XP_ASSERT( XP_STRLEN(fmtr->wordBuf) + XP_STRLEN(buf) < sizeof(fmtr->wordBuf) );
     XP_STRCAT( fmtr->wordBuf, buf );
     if ( isBlank ) {
@@ -798,7 +799,8 @@ wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word, XWStreamCtxt* st
                           XP_UCHAR* mainWord )
 {
     XP_UCHAR buf[(MAX_ROWS*2)+1];
-    XP_U16 len = dict_tilesToString( fmtr->dict, word, fmtr->nTiles, buf );
+    XP_U16 len = dict_tilesToString( fmtr->dict, word, fmtr->nTiles, 
+                                     buf, sizeof(buf) );
 
     if ( !!stream ) {
         stream_putBytes( stream, buf, len );

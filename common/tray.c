@@ -151,7 +151,7 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
                             } else {
                                 textP = buf;
                                 dict_tilesToString( dictionary, &tile, 1, 
-                                                    textP );
+                                                    textP, sizeof(buf) );
                             }
                             value = dict_getTileValue( dictionary, tile );
 
