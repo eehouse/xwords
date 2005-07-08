@@ -100,9 +100,11 @@ dict_numTileFaces( DictionaryCtxt* dict )
 
 XP_U16
 dict_tilesToString( DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
-                    XP_UCHAR* buf )
+                    XP_UCHAR* buf, XP_U16 bufSize )
 {
-    XP_UCHAR* bufIn = buf;
+    XP_UCHAR* bufp = buf;
+    XP_UCHAR* end = bufp + bufSize;
+    XP_U16 result = 0;
 
     while ( nTiles-- ) {
         Tile tile = *tiles++;
@@ -111,18 +113,29 @@ dict_tilesToString( DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
         if ( IS_SPECIAL(face) ) {
             XP_UCHAR* chars = ctxt->chars[(XP_U16)face];
             XP_U16 len = XP_STRLEN( chars );
-            XP_MEMCPY( buf, chars, len );
-            buf += len;
+            if ( bufp + len >= end ) {
+                bufp = NULL;
+                break;
+            }
+            XP_MEMCPY( bufp, chars, len );
+            bufp += len;
         } else {
             XP_ASSERT ( tile != ctxt->blankTile ); /* printing blank should be
                                                       handled by specials
                                                       mechanism */
-            *buf++ = face;
+            if ( bufp + 1 >= end ) {
+                bufp = NULL;
+                break;
+            }
+            *bufp++ = face;
         }
     }
-
-    *buf = '\0';
-    return buf - bufIn;
+    
+    if ( bufp != NULL && bufp < end ) {
+        *bufp = '\0';
+        result = bufp - buf;
+    }
+    return result;
 } /* dict_tilesToString */
 
 Tile
@@ -282,15 +295,6 @@ common_destructor( DictionaryCtxt* dict )
     XP_FREE( dict->mpool, dict );
 } /* dict */
 
-#if defined TALL_FONTS && defined DEBUG
-static void
-dict_getFaceBounds_assert( DictionaryCtxt* dict, XP_UCHAR i, 
-                           XP_FontBounds* bounds )
-{
-    XP_ASSERT(0);
-}
-#endif
-
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
 {
@@ -302,9 +306,6 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_ASSERT( !dict->destructor );
     dict->destructor = common_destructor;
     dict->func_dict_getShortName = dict_getName; /* default */
-#if defined TALL_FONTS && defined DEBUG
-    dict->func_dict_getFaceBounds = dict_getFaceBounds_assert;
-#endif
 
     nFaces = (XP_U8)stream_getBits( stream, 6 );
     maxCountBits = (XP_U16)stream_getBits( stream, 3 );
