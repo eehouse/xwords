@@ -33,6 +33,8 @@ extern "C" {
 #define LETTER_NONE '\0'
 #define IS_SPECIAL(face) (((XP_CHAR16)(face)) < 0x0020)
 
+typedef XP_U8 XP_LangCode;
+
 typedef XP_U16 XP_CHAR16;
 
 typedef enum {
@@ -54,20 +56,6 @@ typedef struct SpecialBitmaps {
     XP_Bitmap smallBM;
 } SpecialBitmaps;
 
-#ifdef TALL_FONTS
-    /* This guy's used to vertically center glyphs within cells.  The impetus
-       is the circle-A char in Danish which starts higher than most and must
-       be drawn (on Palm) starting at a smaller y value if the bottom is to be
-       visible.  */
-typedef struct XP_FontBounds {
-    XP_S16 topOffset;           /* how many pixels from the top of the drawing
-                                   area is the first pixel set in the glyph */
-    XP_U16 height;              /* How many rows tall is the image? */
-} XP_FontBounds;
-
-typedef XP_U16 XP_LangCode;     /* corresponds to the XLOC_HEADER field in
-                                   dawg/./info.txt files */
-#endif
 
 struct DictionaryCtxt {
     void (*destructor)( DictionaryCtxt* dict );
@@ -75,10 +63,6 @@ struct DictionaryCtxt {
     array_edge* (*func_edge_for_index)( DictionaryCtxt* dict, XP_U32 index );
     array_edge* (*func_dict_getTopEdge)( DictionaryCtxt* dict );
     XP_UCHAR* (*func_dict_getShortName)( DictionaryCtxt* dict );
-#ifdef TALL_FONTS
-    void (*func_dict_getFaceBounds)( DictionaryCtxt* dict, Tile tile,
-                                     XP_FontBounds* bounds );
-#endif
 
     array_edge* topEdge;
     array_edge* base;		/* the physical beginning of the dictionary; not
@@ -137,7 +121,7 @@ struct DictionaryCtxt {
 #define dict_edge_for_index(d, i) (*((d)->func_edge_for_index))((d), (i))
 #define dict_getTopEdge(d)        (*((d)->func_dict_getTopEdge))(d)
 #define dict_getShortName(d)      (*((d)->func_dict_getShortName))(d)
-#define dict_getFaceBounds(d,n,p) (*((d)->func_dict_getFaceBounds))((d),(n),(p))
+
 
 XP_Bool dict_tilesAreSame( DictionaryCtxt* dict1, DictionaryCtxt* dict2 );
 
@@ -148,7 +132,7 @@ XP_U16 dict_numTiles( DictionaryCtxt* ctxt, Tile tile );
 XP_U16 dict_numTileFaces( DictionaryCtxt* ctxt );
 
 XP_U16 dict_tilesToString( DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
-                           XP_UCHAR* buf );
+                           XP_UCHAR* buf, XP_U16 bufSize );
 XP_UCHAR* dict_getName( DictionaryCtxt* ctxt );
 
 Tile dict_tileForString( DictionaryCtxt* dict, XP_UCHAR* key );
