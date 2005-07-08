@@ -161,6 +161,8 @@ my %typeInfo = (
                 "NetFDSetType*" => { "size" => 4, "a0" => 1, "autoSwap" => 4 },
                 "NetSocketAddrEnum" => { "size" => 1, "a0" => 0 },
                 "NetSocketTypeEnum" => { "size" => 1, "a0" => 0 },
+                "BitmapType*" => { "size" => 4, "a0" => 1 },
+                "ColorTableType*" => { "size" => 4, "a0" => 1 },
                 );
 
 sub name_compact($) {
@@ -262,7 +264,7 @@ sub searchOneFile($$) {
     # $contents =~ m/(\w+)([\s\*]+)$function\s*(\([^)]*\))/;
 
     if ( $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^V]*(VFSMGR_TRAP)\(([\w]+)\);/ 
-        || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_TRAP)\(([\w]+)\);/
+        || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_TRAP)\s*\(([\w]+)\);/
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^H]*(HIGH_DENSITY_TRAP)\(([\w]+)\);/
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^G]*(GRF_TRAP)\(([\w]+)\);/ ) {
 
