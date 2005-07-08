@@ -133,6 +133,77 @@ bitmapInRect( PalmDrawCtx* dctx, Int16 resID, XP_Rect* rectP )
 } /* bitmapInRect */
 
 #ifdef TALL_FONTS
+#define BMP_WIDTH 16
+#define BMP_HT 16
+static void
+measureFace( PalmDrawCtx* dctx, XP_UCHAR face, PalmFontHtInfo* fhi )
+{
+    WinHandle win;
+    BitmapType* bitmap;
+    Coord x, y;
+    Err err;
+    XP_Bool gotIt;
+    XP_U16 top = 0;
+    XP_U16 bottom = 0;
+    XP_UCHAR ch = (XP_UCHAR)face;
+
+    bitmap = BmpCreate( BMP_WIDTH, BMP_HT, 1, NULL, &err );
+    if ( err == errNone ) {
+        win = WinCreateBitmapWindow( bitmap, &err );
+        if ( err == errNone ) {
+            WinHandle oldWin = WinSetDrawWindow( win );
+
+            WinSetBackColor( 0 ); /* white */
+            (void)WinSetTextColor( 1 ); /* black */
+            (void)WinSetDrawMode( winOverlay );
+
+            WinDrawChars( &ch, 1, 0, 0 );
+
+            /* Scan from top for top, then from bottom for botton */
+            gotIt = XP_FALSE;
+            for ( y = 0; !gotIt && y < BMP_HT; ++y ) {
+                for ( x = 0; !gotIt && x < BMP_WIDTH; ++x ) {
+                    IndexedColorType pxl = WinGetPixel( x, y );
+                    if ( pxl != 0 ) {
+                        top = y;
+                        gotIt = XP_TRUE;
+                    }
+                }
+            }
+
+            gotIt = XP_FALSE;
+            for ( y = BMP_HT - 1; !gotIt && y >= 0; --y ) {
+                for ( x = 0; !gotIt && x < BMP_WIDTH; ++x ) {
+                    IndexedColorType pxl = WinGetPixel( x, y );
+                    if ( pxl != 0 ) {
+                        bottom = y;
+                        gotIt = XP_TRUE;
+                    }
+                }
+            }
+
+            (void)WinSetDrawWindow( oldWin );
+            WinDeleteWindow( win, false );
+
+#ifdef FEATURE_HIGHRES
+            /* There should be a way to avoid this, but HIGHRES_PUSH after
+               WinSetDrawWindow isn't working...  Fix this... */
+            if ( dctx->doHiRes ) {
+                top *= 2;
+                bottom *= 2;
+            }
+#endif
+
+            fhi->topOffset = top;
+            fhi->height = bottom - top + 1;
+
+            XP_LOGF( "char: %c; top: %d; height: %d",
+                     ch, fhi->topOffset, fhi->height );
+        }
+        BmpDelete( bitmap );
+    }
+} /* measureFace */
+
 static void
 checkFontOffsets( PalmDrawCtx* dctx, DictionaryCtxt* dict )
 {
@@ -143,16 +214,20 @@ checkFontOffsets( PalmDrawCtx* dctx, DictionaryCtxt* dict )
     code = dict_getLangCode( dict );
     if ( code != dctx->fontLangCode ) {
 
-        if ( !!dctx->fontLangInfo ) {
-            XP_FREE( dctx->mpool, dctx->fontLangInfo );
+        if ( !!dctx->fontHtInfo ) {
+            XP_FREE( dctx->mpool, dctx->fontHtInfo );
         }
 
         nFaces = dict_numTileFaces( dict );
-        dctx->fontLangInfo = XP_MALLOC( dctx->mpool,
-                                        nFaces * sizeof(*dctx->fontLangInfo) );
+        dctx->fontHtInfo = XP_MALLOC( dctx->mpool,
+                                      nFaces * sizeof(*dctx->fontHtInfo) );
 
         for ( tile = 0; tile < nFaces; ++tile ) {
-            dict_getFaceBounds( dict, tile, &dctx->fontLangInfo[tile] );
+            XP_UCHAR face[2];
+            if ( 1 == dict_tilesToString( dict, &tile, 1, 
+                                          face, sizeof(face) ) ) {
+                measureFace( dctx, face[0], &dctx->fontHtInfo[tile] );
+            }
         }
 
         dctx->fontLangCode = code;
@@ -360,19 +435,15 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
             XP_U16 x, y;
             x = localR.left + ((localR.width-strWidth) / 2);
 #ifdef TALL_FONTS
-            y = localR.top - dctx->fontLangInfo[tile].topOffset;
-            y += (localR.height - dctx->fontLangInfo[tile].height) / 2;
+            y = localR.top - dctx->fontHtInfo[tile].topOffset;
+            y += (localR.height - dctx->fontHtInfo[tile].height) / 2;
 #else
             y = localR.top-1;
 #endif
             if ( len == 1 ) {
                 ++x;
             }
-#ifdef FEATURE_HIGHRES
-            if ( dctx->doHiRes ) {
-                --y;
-            }
-#endif
+
             WinDrawChars( (const char*)letters, len, x, y );
 
             showBonus = XP_FALSE;
@@ -1423,8 +1494,8 @@ palm_drawctxt_destroy( DrawCtx* p_dctx )
 
     XP_FREE( dctx->mpool, p_dctx->vtable );
 #ifdef TALL_FONTS
-    if ( !!dctx->fontLangInfo ) {
-        XP_FREE( dctx->mpool, dctx->fontLangInfo );
+    if ( !!dctx->fontHtInfo ) {
+        XP_FREE( dctx->mpool, dctx->fontHtInfo );
     }
 #endif
     XP_FREE( dctx->mpool, dctx );
