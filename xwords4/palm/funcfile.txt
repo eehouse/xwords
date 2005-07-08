@@ -220,3 +220,11 @@ NetLibReceive
 NetLibSelect
 NetLibSocketConnect
 NetLibSocketOptionSet
+#
+# These are currently needed only when TALL_FONTS is #defined
+#
+BmpCreate
+BmpDelete
+WinCreateBitmapWindow
+WinSetDrawMode
+WinGetPixel
