@@ -102,7 +102,9 @@ static void frank_util_notifyGameOver( XW_UtilCtxt* uc );
 static XP_Bool frank_util_hiliteCell( XW_UtilCtxt* uc, 
                                       XP_U16 col, XP_U16 row );
 static XP_Bool frank_util_engineProgressCallback( XW_UtilCtxt* uc );
-static void frank_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why );
+static void frank_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
+                                 XP_U16 when,
+                                 TimerProc proc, void* closure );
 static void frank_util_requestTime( XW_UtilCtxt* uc );
 static XP_U32 frank_util_getCurSeconds( XW_UtilCtxt* uc );
 static XWBonusType frank_util_getSquareBonus( XW_UtilCtxt* uc, 
@@ -127,7 +129,6 @@ class CXWordsWindow : public CWindow {
  public:    /* so util functions can access */
     XWGame fGame;
     CurGameInfo fGameInfo;
-    XP_Bool fTimers[2];
     VTableMgr* fVTableMgr;
 
  private:
@@ -144,6 +145,10 @@ class CXWordsWindow : public CWindow {
 
     RECT fProgressRect;
     U16 fProgressCurLine;
+
+    /* There's a wasted slot here, but it simplifies indexing */
+    TimerProc fTimerProcs[TIMER_NUM_PLUS_ONE];
+    void* fTimerClosures[TIMER_NUM_PLUS_ONE];
 
     XP_U8 phoniesAction;
     BOOL penDown;
@@ -162,7 +167,10 @@ public:
     void setUserEventPending() { this->userEventPending = TRUE; }
     void clearUserEventPending() { this->userEventPending = FALSE; }
     BOOL getUserEventPending() { return this->userEventPending; }
+    void setTimerImpl( XWTimerReason why, 
+                       TimerProc proc, void* closure );
     void setTimerIfNeeded();
+    void fireTimer( XWTimerReason why );
     XP_Bool robotIsHalted() { return fRobotHalted; }
     void updateCtrlsForTray( XW_TrayVisState newState );
     void startProgressBar();
@@ -463,7 +471,6 @@ CXWordsWindow::MsgHandler( MSG_TYPE type, CViewable *from, S32 data )
     XP_Key xpkey;
     S16 drag_x;
     S16 drag_y;
-    XWTimerReason reason;
     XP_Bool handled;
 
     drag_x = (S16) (data >> 16);
@@ -522,10 +529,7 @@ CXWordsWindow::MsgHandler( MSG_TYPE type, CViewable *from, S32 data )
         break;
 
     case MSG_TIMER:
-        reason = this->fTimers[TIMER_PENDOWN]?
-            TIMER_PENDOWN:TIMER_TIMERTICK;
-        fTimers[reason] = XP_FALSE; /* clear now; board may set it again */
-        board_timerFired( fGame.board, reason );
+        fireTimer( (XWTimerReason)data );
         setTimerIfNeeded();
         GUI_NeedUpdate();	/* Needed off-emulator? PENDING */
         break;
@@ -629,18 +633,40 @@ void
 CXWordsWindow::setTimerIfNeeded()
 {
     U32 mSeconds;
-    if ( fTimers[TIMER_PENDOWN] ) { /* faster, so higher priority */
+    XWTimerReason why;
+
+    if ( fTimerProcs[TIMER_PENDOWN] != NULL ) { /* faster, so higher priority */
         mSeconds = (U32)450;
-        XP_DEBUGF( "setting timer %d", TIMER_PENDOWN );
-    } else if ( fTimers[TIMER_TIMERTICK] ) {
+        why = TIMER_PENDOWN;
+    } else if ( fTimerProcs[TIMER_TIMERTICK] != NULL ) {
         mSeconds = (U32)1000;
-        XP_DEBUGF( "setting timer %d", TIMER_TIMERTICK );
+        why = TIMER_TIMERTICK;
     } else {
         return;
     }
 
-    SetTimer( mSeconds, XP_FALSE, 0L );
+    SetTimer( mSeconds, XP_FALSE, why );
 } /* setTimerIfNeeded */
+
+void 
+CXWordsWindow::fireTimer( XWTimerReason why )
+{
+    TimerProc proc = fTimerProcs[why];
+    fTimerProcs[why] = (TimerProc)NULL; /* clear now; board may set it again */
+
+    (*proc)( fTimerClosures[why], why );
+}
+
+void 
+CXWordsWindow::setTimerImpl( XWTimerReason why, TimerProc proc, void* closure )
+{
+    XP_ASSERT( why == TIMER_PENDOWN ||
+               why == TIMER_TIMERTICK );
+
+    fTimerProcs[why] = proc;
+    fTimerClosures[why] = closure;
+    setTimerIfNeeded();
+}
 
 void
 CXWordsWindow::disOrEnableFrank( U16 id, XP_Bool enable )
@@ -1466,15 +1492,11 @@ frank_util_engineProgressCallback( XW_UtilCtxt* uc )
 } /* frank_util_engineProgressCallback */
 
 static void
-frank_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why )
+frank_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+                     TimerProc proc, void* closure )
 {
     CXWordsWindow* self = (CXWordsWindow*)uc->closure;
-
-    XP_ASSERT( why == TIMER_PENDOWN ||
-               why == TIMER_TIMERTICK );
-
-    self->fTimers[why] = XP_TRUE;
-    self->setTimerIfNeeded();
+    self->setTimerImpl( why, proc, closure );
 } /* frank_util_setTimer */
 
 static void
