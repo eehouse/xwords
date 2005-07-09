@@ -45,7 +45,7 @@ eraseRect(FrankDrawCtx* dctx, RECT* rect )
 } /* eraseRect */
 
 static XP_Bool
-frank_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
+frank_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, XP_Bool hasfocus )
 {
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
     return XP_TRUE;
