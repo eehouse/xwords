@@ -28,7 +28,7 @@ SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/LarsDanish.dict.gz
 
 $(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | tr [a-zåæø] [A-ZÅÆØ] | \
-		grep '[AEIOUÅÆØ]' |
+		grep '[AEIOUÅÆØ]' | \
 		grep '^[A-PR-VX-ZÅÆØ]\+$$' | sort -u | \
 		gzip -c > $@
 
