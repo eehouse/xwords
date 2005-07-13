@@ -1663,7 +1663,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case WM_TIMER:
             why = (XWTimerReason)wParam;
-            if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK || why == TIMER_HEARTBEAT ) {
+            if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK
+#ifdef BEYOND_IR
+                 || why == TIMER_HEARTBEAT
+#endif
+                 ) {
                 XP_ASSERT( why < TIMER_NUM_PLUS_ONE );
 
                 /* Kill since they otherwise repeat, but kill before firing
@@ -2158,7 +2162,7 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
     case TIMER_TIMERTICK:
         howLong = 1000;          /* 1 second */
         break;
-#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef BEYOND_IR
     case TIMER_HEARTBEAT:
         howLong = when * 1000;
         break;
