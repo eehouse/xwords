@@ -156,8 +156,6 @@ VFSFileOpen
 VFSGetDefaultDirectory
 VFSImportDatabaseFromFile
 VFSVolumeEnumerate
-WinCopyRectangle
-WinCreateOffscreenWindow
 WinDeleteWindow
 WinDrawBitmap
 WinDrawChars
