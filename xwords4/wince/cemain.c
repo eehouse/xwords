@@ -1630,7 +1630,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONDOWN:
             globals->penDown = XP_TRUE;
             draw = board_handlePenDown( globals->game.board, LOWORD(lParam), 
-                                        HIWORD(lParam), 0, &handled );
+                                        HIWORD(lParam), &handled );
             debug_saveCurState( globals );
             break;
 

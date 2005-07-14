@@ -106,7 +106,7 @@ button_press_event( GtkWidget *widget, GdkEventButton *event,
     globals->mouseDown = XP_TRUE;
 
     redraw = board_handlePenDown( globals->cGlobals.game.board, 
-                                  event->x, event->y, event->time, &handled );
+                                  event->x, event->y, &handled );
     if ( redraw ) {
         board_draw( globals->cGlobals.game.board );
     }
