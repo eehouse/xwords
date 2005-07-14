@@ -418,7 +418,7 @@ positionBoard( PalmAppGlobals* globals )
         boardTop = PALM_BOARD_TOP;
         scoreLeft = PALM_SCORE_LEFT;
         scoreTop = PALM_SCORE_TOP;
-        scoreWidth = (bWidth/doubler) - PALM_SCORE_LEFT - timerWidth;
+        scoreWidth = (bWidth/doubler) - PALM_SCORE_LEFT - (timerWidth/doubler);
         scoreHeight = PALM_SCORE_HEIGHT;
     } else {
         boardTop = PALM_GRIDLESS_BOARD_TOP;

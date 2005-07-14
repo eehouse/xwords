@@ -649,31 +649,15 @@ palm_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 
     if ( !!letters ) {
         if ( *letters != LETTER_NONE ) { /* blank */
-            RectangleType charRect = {{0,0}, 
-                                      {CHARRECT_WIDTH*2, CHARRECT_HEIGHT*2}};
-            WinHandle curWind;
-            WinHandle offScreenCharWin = dctx->offScreenCharWin;
             FontID curFont = FntSetFont( largeFont );
 
-            XP_ASSERT( !!offScreenCharWin );
-            curWind = WinSetDrawWindow( offScreenCharWin );
             HIGHRES_PUSH_LOC( dctx );
 
-            WinEraseRectangle( &charRect, 0 );
-
-            WinDrawChars( (char*)letters, 1, 0, 0 );
-            width = FntCharsWidth( letters, 1 );
-
-            (void)WinSetDrawWindow( curWind );
+            WinDrawChars( (char*)letters, 1, 
+                          localR.left + (1*doubler), 
+                          localR.top + (0*doubler) );
 
             HIGHRES_POP_LOC(dctx);
-
-            charRect.extent.x = width;
-
-            WinCopyRectangle( offScreenCharWin, 0, &charRect, 
-                              localR.left + (1*doubler),
-                              localR.top + (0*doubler),
-                              winOverlay );
 
             FntSetFont( curFont );
         }
@@ -908,6 +892,11 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
             y += 1;
         } else {
             y -= 2;
+#ifdef FEATURE_HIGHRES
+            if ( dctx->doHiRes ) {
+                --y;                     /* tweak it up one high-res pixel */
+            }
+#endif
         }
 
         WinDrawChars( (const char*)txt, len, x, y );
@@ -1160,7 +1149,7 @@ palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
     XP_UCHAR buf[10];
     XP_Rect localR = *rInner;
     RectangleType saveClip;
-    XP_U16 len, width;
+    XP_U16 len, width, y;
 
     HIGHRES_PUSH_LOC(dctx);
 
@@ -1176,8 +1165,11 @@ palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
         localR.width = width;
     }
 
+    y = localR.top - 2;
 #ifdef FEATURE_HIGHRES
-    if ( !dctx->doHiRes ) {
+    if ( dctx->doHiRes ) {
+        y -= 1;                 /* tweak it up one high-res pixel */
+    } else {
         localR.height += 1;
     }
 #endif
@@ -1185,7 +1177,7 @@ palm_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
     WinGetClip( &saveClip );
     WinSetClip( (RectangleType*)&localR );
 
-    WinDrawChars( (const char*)buf, len, localR.left, localR.top - 2 );
+    WinDrawChars( (const char*)buf, len, localR.left, y );
     WinSetClip( &saveClip );
 
     HIGHRES_POP_LOC(dctx);
@@ -1386,7 +1378,6 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     PalmDrawCtx* dctx;
     XP_U16 i;
     XP_U16 cWinWidth, cWinHeight;
-    Err ignore;
 
     dctx = XP_MALLOC( mpool, sizeof(PalmDrawCtx) );
     XP_MEMSET( dctx, 0, sizeof(PalmDrawCtx) );
@@ -1468,8 +1459,6 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
         cWinHeight *= 2;
     }
 #endif
-    dctx->offScreenCharWin = WinCreateOffscreenWindow( cWinWidth, cWinHeight,
-                                                       nativeFormat, &ignore );
 
     if ( able == COLOR ) {
     } else {
@@ -1492,9 +1481,6 @@ void
 palm_drawctxt_destroy( DrawCtx* p_dctx )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-
-    XP_ASSERT( !!dctx->offScreenCharWin );
-    WinDeleteWindow( dctx->offScreenCharWin, false );
 
     XP_FREE( dctx->mpool, p_dctx->vtable );
 #ifdef TALL_FONTS
