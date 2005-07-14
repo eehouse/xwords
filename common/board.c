@@ -2223,8 +2223,7 @@ checkRevealTray( BoardCtxt* board )
 
 #ifdef POINTER_SUPPORT
 XP_Bool
-board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when,
-                     XP_Bool* handled )
+board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
 {
     XP_Bool result = XP_FALSE;
     XP_Bool penDidSomething;
@@ -2263,7 +2262,6 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when,
 
         board->penDownX = x;
         board->penDownY = y;
-        board->penDownTime = when;
         board->penDownObject = onWhich;
         /*     board->inDrag = XP_TRUE; */
     }

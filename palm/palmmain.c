@@ -2249,7 +2249,7 @@ mainViewHandleEvent( EventPtr event )
         draw = board_handlePenDown( globals->game.board, 
                                     hresX(globals, event->screenX), 
                                     hresY(globals, event->screenY), 
-                                    0, &handled );
+                                    &handled );
         break;
 
     case penMoveEvent:

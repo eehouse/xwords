@@ -98,7 +98,6 @@ struct BoardCtxt {
 
     XP_Rect boardBounds;
 
-    XP_Time penDownTime;
     BoardObjectType penDownObject;
 
     XP_Bool needsDrawing;
