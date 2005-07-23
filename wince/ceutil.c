@@ -25,7 +25,11 @@ void
 ceSetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf )
 {
     wchar_t widebuf[BUF_SIZE];
-    XP_U16 len = (XP_U16)XP_STRLEN( buf );
+    XP_U16 len;
+
+    XP_ASSERT( buf != NULL );
+
+    len = (XP_U16)XP_STRLEN( buf );
 
     if ( len >= BUF_SIZE ) {
         len = BUF_SIZE - 1;
