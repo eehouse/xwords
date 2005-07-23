@@ -142,7 +142,7 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
         hostID = HOST_ID_SERVER;
     } else {
         do {
-            hostID = XP_RANDOM();
+            hostID = (XWHostID)XP_RANDOM();
         } while ( hostID == HOST_ID_NONE || hostID == HOST_ID_SERVER );
     }
     result->myHostID = hostID;
@@ -325,10 +325,12 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 void
 comms_start( CommsCtxt* comms )
 {
+#ifdef BEYOND_IR
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
         relayConnect( comms );
     }
+#endif
 }
 
 static void
@@ -426,15 +428,18 @@ comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr )
 } /* comms_getAddr */
 
 void
-comms_setAddr( CommsCtxt* comms, CommsAddrRec* addr )
+comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
+    XP_ASSERT( comms );
 #ifdef BEYOND_IR
     util_addrChange( comms->util, &comms->addr, addr );
 #endif
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
+#ifdef BEYOND_IR
     /* We should now have a cookie so we can connect??? */
     relayConnect( comms );
+#endif
 } /* comms_setAddr */
 
 #ifdef BEYOND_IR
@@ -619,7 +624,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 
     channelNo = elem->channelNo;
 
-    if ( comms_getConType( comms ) == COMMS_CONN_RELAY ) {
+    if ( 0 ) {
+#ifdef BEYOND_IR
+    } else if ( comms_getConType( comms ) == COMMS_CONN_RELAY ) {
         if ( comms->relayState == COMMS_RELAYSTATE_CONNECTED ) {
             XWHostID destID = getDestID( comms, channelNo );
             result = send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
@@ -627,6 +634,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
         } else {
             XP_LOGF( "skipping message: not connected" );
         }
+#endif
     } else {
 
         if ( !channelToAddress( comms, channelNo, &addr ) ) {
@@ -657,6 +665,7 @@ comms_resendAll( CommsCtxt* comms )
     return result;
 } /* comms_resend */
 
+#ifdef BEYOND_IR
 static XP_Bool
 relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 {
@@ -709,6 +718,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     }
     return consumed;
 } /* checkForRelay */
+#endif
 
 /* read a raw buffer into a stream, stripping off the headers and keeping
  * any necessary stats.
@@ -741,9 +751,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
     XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
 
+#ifdef BEYOND_IR
     if ( relayPreProcess( comms, stream, &senderID ) ) {
         return XP_FALSE;
     }
+#endif
 
     connID = stream_getU32( stream );
     XP_STATUSF( "read connID of %lx", connID );
@@ -801,6 +813,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     return validMessage;
 } /* comms_checkIncomingStream */
 
+#ifdef BEYOND_IR
 static void
 p_comms_timerFired( void* closure, XWTimerReason why )
 {
@@ -819,6 +832,7 @@ setHeartbeatTimer( CommsCtxt* comms )
     util_setTimer( comms->util, TIMER_HEARTBEAT, comms->heartbeat,
                    p_comms_timerFired, comms );
 }
+#endif
 
 #ifdef DEBUG
 void
@@ -953,6 +967,7 @@ countAddrRecs( CommsCtxt* comms )
     return count;
 } /* countAddrRecs */
 
+#ifdef BEYOND_IR
 static XP_Bool
 send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID, 
                 void* data, int dlen )
@@ -1033,7 +1048,7 @@ relayConnect( CommsCtxt* comms )
         comms->connecting = XP_FALSE;
     }
 } /* relayConnect */
-
+#endif
 
 EXTERN_C_END
 
