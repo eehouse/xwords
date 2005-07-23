@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 2005 by Eric House (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,28 +17,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _CEGINFO_H_
-#define _CEGINFO_H_
+#ifndef _CECONDLG_H_
+#define _CECONDLG_H_
 
-#include "stdafx.h" 
+#include "comms.h"
 #include "cemain.h"
-#include "ceprefs.h"
 
-typedef struct GameInfoState {
+typedef struct CeConnDlgState {
+    CommsAddrRec addrRec;
     CEAppGlobals* globals;
-    XP_UCHAR newDictName[256];
+    XP_Bool userCancelled;
+} CeConnDlgState;
 
-    XP_Bool isNewGame;              /* newGame or GameInfo */
-    XP_Bool userCancelled;          /* OUT param */
-
-    XP_Bool prefsChanged;
-    XP_Bool colorsChanged;
-    XP_Bool addrChanged;
-    Connectedness curServerHilite;
-    CePrefsPrefs prefsPrefs;
-} GameInfoState;
-
-
-LRESULT CALLBACK GameInfo(HWND, UINT, WPARAM, LPARAM);
+XP_Bool WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, 
+                      const CommsAddrRec* addrRec, CeConnDlgState* state );
 
 #endif

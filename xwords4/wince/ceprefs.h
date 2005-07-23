@@ -43,6 +43,10 @@ typedef struct CePrefsPrefs {
     /* per-game */
     CeGamePrefs gp;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    CommsAddrRec addrRec;
+#endif
+
     /* global */
     CommonPrefs cp;
     XP_Bool showColors;
@@ -63,10 +67,10 @@ typedef struct CePrefsDlgState {
 XP_Bool WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, 
                          CePrefsDlgState* state, CePrefsPrefs* prefsPrefs, 
                          XP_Bool isNewGame );
-void loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi, 
-                            CePrefsPrefs* prefsPrefs );
-void loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi, 
-                            const CePrefsPrefs* prefsPrefs );
+void loadStateFromCurPrefs( CEAppGlobals* globals, const CEAppPrefs* appPrefs, 
+                            const CurGameInfo* gi, CePrefsPrefs* prefsPrefs );
+void loadCurPrefsFromState( CEAppGlobals* globals, CEAppPrefs* appPrefs, 
+                            CurGameInfo* gi, const CePrefsPrefs* prefsPrefs );
 
 LRESULT CALLBACK PrefsDlg(HWND, UINT, WPARAM, LPARAM);
 

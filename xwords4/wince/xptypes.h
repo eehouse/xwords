@@ -111,6 +111,8 @@ XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
 #define XP_HTONL(l) htonl(l)
 #define XP_HTONS(s) htons(s)
 
+#define XP_LD "%ld"
+
 #ifdef CPLUS
 }
 #endif
