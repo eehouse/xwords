@@ -14,6 +14,7 @@ PLATOBJ = \
 	$(PLATFORM)/cedict.o \
 	$(PLATFORM)/cedraw.o \
 	$(PLATFORM)/ceginfo.o \
+	$(PLATFORM)/cecondlg.o \
 	$(PLATFORM)/cemain.o \
 	$(PLATFORM)/ceprefs.o \
 	$(PLATFORM)/cestrbx.o \

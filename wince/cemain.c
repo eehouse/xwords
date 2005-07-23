@@ -73,6 +73,9 @@ typedef struct FileWriteState {
 } FileWriteState;
 
 /* forward util function decls */
+static XP_S16 ce_send_proc( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, 
+                            void* closure );
+
 static VTableMgr* ce_util_getVTManager( XW_UtilCtxt* uc );
 static void ce_util_userError( XW_UtilCtxt* uc, UtilErrID id );
 static XP_Bool ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
@@ -104,6 +107,11 @@ static XWStreamCtxt* ce_util_makeStreamFromAddr( XW_UtilCtxt* uc,
 static XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                         XP_U16 turn, XP_Bool turnLost );
+#ifdef BEYOND_IR
+static void ce_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+                                const CommsAddrRec* newAddr );
+#endif
+
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, 
                                             XP_U16* max );
@@ -247,6 +255,9 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_makeEmptyDict = ce_util_makeEmptyDict;
     vtable->m_util_getUserString = ce_util_getUserString;
     vtable->m_util_warnIllegalWord = ce_util_warnIllegalWord;
+#ifdef BEYOND_IR
+    vtable->m_util_addrChange = ce_util_addrChange;
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     vtable->m_util_getTraySearchLimits = ce_util_getTraySearchLimits;
 #endif
@@ -484,7 +495,8 @@ ceSetTitleFromName( CEAppGlobals* globals )
 } /* ceSetTitleFromName */
 
 static void
-ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp )
+ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
+                     const CommsAddrRec* addr )
 {
     DictionaryCtxt* dict;
     XP_UCHAR* newDictName = globals->gameInfo.dictName;
@@ -522,13 +534,19 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp )
     if ( newGame ) {
         XP_U16 newGameID = 0;
         game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
-                    newGameID, &globals->appPrefs.cp, (TransportSend)NULL, 
+                    newGameID, &globals->appPrefs.cp, ce_send_proc, 
                     globals );
 
         if ( !!gp ) {
             globals->gameInfo.hintsNotAllowed = gp->hintsNotAllowed;
             globals->gameInfo.robotSmartness = gp->robotSmartness;
         }
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+        if ( !!addr ) {
+            comms_setAddr( globals->game.comms, addr );
+        }
+#endif
     }
 
     XP_ASSERT( !!globals->game.board );
@@ -747,7 +765,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
             game_makeFromStream( MEMPOOL stream, &globals->game, 
                                  &globals->gameInfo,
                                  dict, &globals->util, globals->draw,
-                                 &globals->appPrefs.cp, ce_ir_send, globals );
+                                 &globals->appPrefs.cp, ce_send_proc, globals );
         }
 
         stream_destroy( stream );
@@ -755,15 +773,6 @@ ceLoadSavedGame( CEAppGlobals* globals )
 
     return success;
 } /* ceLoadSavedGame */
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-XP_S16
-ce_ir_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
-{
-    XP_DEBUGF( "ce_ir_send called" );
-    return -1;
-} /* ce_ir_send */
-#endif
 
 static void
 colorsFromRsrc( CEAppGlobals* globals )
@@ -911,7 +920,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
                           &globals->util, globals->draw, gameID,
                           &globals->appPrefs.cp, 
-                          (TransportSend)NULL, globals );
+                          ce_send_proc, globals );
 
         newDone = doNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
         if ( !newDone ) {
@@ -926,7 +935,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     }
 
     if ( result && !newDone ) {
-        ceInitAndStartBoard( globals, !oldGameLoaded, NULL );
+        ceInitAndStartBoard( globals, !oldGameLoaded, NULL, NULL );
     }
 
     return result;
@@ -1051,6 +1060,7 @@ static XP_Bool
 doNewGame( CEAppGlobals* globals, XP_Bool silent )
 {
     GameInfoState giState;
+    CommsAddrRec* addr = NULL;
     XP_Bool changed = XP_FALSE;
 
     /* What happens if user cancels below?  I'm hosed without a name, no?
@@ -1074,13 +1084,19 @@ doNewGame( CEAppGlobals* globals, XP_Bool silent )
          ) {
 
         if ( giState.prefsChanged ) {
-            loadCurPrefsFromState( &globals->appPrefs, &globals->gameInfo, 
-                                   &giState.prefsPrefs );
+            loadCurPrefsFromState( globals, &globals->appPrefs, 
+                                   &globals->gameInfo, &giState.prefsPrefs );
             if ( giState.colorsChanged ) {
                 updateForColors( globals );
             }
         }
-        ceInitAndStartBoard( globals, XP_TRUE, NULL );
+#ifndef XWFEATURE_STANDALONE_ONLY
+        if ( giState.addrChanged ) {
+            addr = &giState.prefsPrefs.addrRec;
+        }
+#endif
+
+        ceInitAndStartBoard( globals, XP_TRUE, NULL, addr );
         changed = XP_TRUE;
     }
     
@@ -1130,7 +1146,7 @@ ceChooseAndOpen( CEAppGlobals* globals )
 
             globals->curGameName = name;
             ceLoadSavedGame( globals );
-            ceInitAndStartBoard( globals, XP_FALSE, NULL );
+            ceInitAndStartBoard( globals, XP_FALSE, NULL, NULL );
             ceSetTitleFromName( globals );
         }
     }
@@ -1153,7 +1169,7 @@ ceDoPrefsDlg( CEAppGlobals* globals )
 
     XP_MEMSET( &state, 0, sizeof(state) );
 
-    loadStateFromCurPrefs( &globals->appPrefs, &globals->gameInfo, 
+    loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo, 
                            &prefsPrefs );
 
     (void)WrapPrefsDialog( globals->hWnd, globals, &state, &prefsPrefs,
@@ -1161,7 +1177,7 @@ ceDoPrefsDlg( CEAppGlobals* globals )
 
     if ( !state.userCancelled ) {
 
-        loadCurPrefsFromState( &globals->appPrefs, &globals->gameInfo, 
+        loadCurPrefsFromState( globals, &globals->appPrefs, &globals->gameInfo, 
                                &prefsPrefs );
 
         (void)cePositionBoard( globals );
@@ -1928,6 +1944,13 @@ wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
     return strlen(buf);
 } /* wince_snprintf */
 
+static XP_S16
+ce_send_proc( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
+{
+    XP_LOGF( "ce_send_proc called" );
+    return 0;
+} /* ce_send_proc */
+
 /* I can't believe the stupid compiler's making me implement this */
 void p_ignore(XP_UCHAR* c, ...){}
 
@@ -2313,6 +2336,15 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
     return isOk;
 } /* ce_util_warnIllegalWord */
+
+#ifdef BEYOND_IR
+static void
+ce_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+                    const CommsAddrRec* newAddr )
+{
+    XP_LOGF( "ce_util_addrChange called; DO SOMETHING." );
+} /* ce_util_addrChange */
+#endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool

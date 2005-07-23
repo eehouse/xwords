@@ -106,8 +106,8 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
  * committing should user cancel.
  */
 void
-loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi, 
-                       CePrefsPrefs* prefsPrefs )
+loadStateFromCurPrefs( CEAppGlobals* globals, const CEAppPrefs* appPrefs, 
+                       const CurGameInfo* gi, CePrefsPrefs* prefsPrefs )
 {
     prefsPrefs->gp.hintsNotAllowed = gi->hintsNotAllowed;
     prefsPrefs->gp.robotSmartness = gi->robotSmartness;
@@ -125,11 +125,19 @@ loadStateFromCurPrefs( const CEAppPrefs* appPrefs, const CurGameInfo* gi,
     XP_MEMCPY( &prefsPrefs->cp, &appPrefs->cp, sizeof(prefsPrefs->cp) );
     XP_MEMCPY( &prefsPrefs->colors, &appPrefs->colors,
                sizeof(prefsPrefs->colors) );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    if ( globals->game.comms != NULL ) {
+        comms_getAddr( globals->game.comms, &prefsPrefs->addrRec );
+    } else {
+        comms_getInitialAddr( &prefsPrefs->addrRec );
+    }
+#endif
 } /* loadStateFromCurPrefs */
 
 void
-loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi, 
-                       const CePrefsPrefs* prefsPrefs )
+loadCurPrefsFromState( CEAppGlobals* globals, CEAppPrefs* appPrefs, 
+                       CurGameInfo* gi, const CePrefsPrefs* prefsPrefs )
 {
     gi->hintsNotAllowed = prefsPrefs->gp.hintsNotAllowed;
     gi->robotSmartness = prefsPrefs->gp.robotSmartness;
@@ -147,6 +155,15 @@ loadCurPrefsFromState( CEAppPrefs* appPrefs, CurGameInfo* gi,
     XP_MEMCPY( &appPrefs->cp, &prefsPrefs->cp, sizeof(appPrefs->cp) );
     XP_MEMCPY( &appPrefs->colors, &prefsPrefs->colors,
                sizeof(prefsPrefs->colors) );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    /* I don't think this'll work... */
+    if ( globals->game.comms != NULL ) {
+        comms_setAddr( globals->game.comms, &prefsPrefs->addrRec );
+    } else {
+        XP_LOGF( "no comms to set addr on!!!" );
+    }
+#endif
 } /* loadCurPrefsFromState */
 
 /* Reflect local state into the controls user will see.

@@ -21,10 +21,12 @@
 #include "cemain.h"
 #include "ceutil.h"
 #include "cedict.h"
+#include "cecondlg.h"
 #include "strutils.h"
 
 #define NUM_COLS 4
 
+#if 0
 static XP_U16
 ceCountLocalIn( HWND hDlg, XP_U16 nPlayers )
 {
@@ -39,6 +41,7 @@ ceCountLocalIn( HWND hDlg, XP_U16 nPlayers )
 
     return nLocal;
 } /* ceCountLocalIn */
+#endif
 
 static void
 loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
@@ -63,9 +66,18 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         idToCheck = lp->isRobot? resID : 0;
         CheckRadioButton( hDlg, resID, resID, idToCheck );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+        /* set the remote checkbox */
+        resID = REMOTE_CHECK1 + (NUM_COLS*i);
+        idToCheck = lp->isLocal? 0 : resID;
+        CheckRadioButton( hDlg, resID, resID, idToCheck );
+#endif
+
         /* set the player name */
-        resID = NAME_EDIT1 + (NUM_COLS*i);
-        ceSetDlgItemText( hDlg, resID, lp->name );
+        if ( lp->name != NULL ) {
+            resID = NAME_EDIT1 + (NUM_COLS*i);
+            ceSetDlgItemText( hDlg, resID, lp->name );
+        }
 
         /* set the password, if any */
 
@@ -81,12 +93,12 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                         gi->nPlayers-1, 0L );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    for ( i = 0; i < 3; ++i ) {
+    for ( i = 0; i < (sizeof(roles)/sizeof(roles[0])); ++i ) {
         SendDlgItemMessage( hDlg, IDC_ROLECOMBO, CB_ADDSTRING, 0, 
                             (long)roles[i] );
     }
     SendDlgItemMessage( hDlg, IDC_ROLECOMBO, CB_SETCURSEL, 
-                        gi->serverRole, 0L );
+                        giState->curServerHilite, 0L );
 #endif
 
     /* set the dictionary name */
@@ -114,6 +126,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 
     if ( !giState->isNewGame ) {
         XP_U16 disableIDs[] = { IDC_NPLAYERSCOMBO, 
+                                IDC_ROLECOMBO,
                                 IDC_DICTBUTTON};
         XP_U16 i;
         for( i = 0; i < sizeof(disableIDs)/sizeof(disableIDs[0]); ++i ) {
@@ -195,6 +208,7 @@ countAndSetRemote( HWND hDlg, XP_U16 nPlayers, XP_Bool counterWins,
 static XP_Bool
 ceAdjustVisibility( HWND hDlg, GameInfoState* giState, XP_Bool counterWins )
 {
+    XP_Bool result;
     Connectedness serverRole = (Connectedness)
         SendDlgItemMessage( hDlg, IDC_ROLECOMBO, CB_GETCURSEL, 0, 0L );
     XP_U16 nToDraw = MAX_NUM_PLAYERS;
@@ -256,12 +270,17 @@ ceAdjustVisibility( HWND hDlg, GameInfoState* giState, XP_Bool counterWins )
     if ( !counterWins ) {
         (void)SendDlgItemMessage( hDlg, IDC_NPLAYERSCOMBO,
                                   CB_SETCURSEL, nDrawn - 1, 0L );
-        return XP_TRUE;
+        result = XP_TRUE;
     } else {
         XP_ASSERT( nDrawn <= nToDraw );
-        return nDrawn == nToDraw;
+        result = nDrawn == nToDraw;
     }
-    
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    ceShowOrHide( hDlg, IDC_CONNBUTTON, serverRole != SERVER_STANDALONE );
+#endif
+ 
+    return result;
 } /* ceAdjustVisibility */
 
 static void
@@ -288,6 +307,8 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     Connectedness curServerHilite
         = (Connectedness )SendDlgItemMessage( hDlg, IDC_ROLECOMBO, 
                                               CB_GETCURSEL, 0, 0L );
+    XP_ASSERT( curServerHilite == giState->curServerHilite );
+    gi->serverRole = curServerHilite;
 
     nPlayers = 1 + (XP_U16)SendDlgItemMessage( hDlg, IDC_NPLAYERSCOMBO, 
                                                CB_GETCURSEL, 0, 0 );
@@ -299,12 +320,14 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         XP_Bool checked;
         LocalPlayer* lp = &gi->players[i];
 
+#ifndef XWFEATURE_STANDALONE_ONLY
         if ( curServerHilite == SERVER_ISSERVER ) {
             id = REMOTE_CHECK1 + offset;
             lp->isLocal = !ceGetChecked( hDlg, id );
         } else {
             lp->isLocal = XP_TRUE;
         }
+#endif
 
         /* robot */
         id = ROBOT_CHECK1 + offset;
@@ -339,7 +362,8 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     
     /* preferences */
     if ( giState->prefsChanged ) {
-        loadCurPrefsFromState( &globals->appPrefs, gi, &giState->prefsPrefs );
+        loadCurPrefsFromState( globals, &globals->appPrefs, gi, 
+                               &giState->prefsPrefs );
     }
 
 } /* stateToGameInfo */
@@ -360,6 +384,21 @@ handleOptionsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         /* nothing to do until user finally does confirm the parent dialog */
     }
 } /* handleOptionsButton */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void
+handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals, 
+                         GameInfoState* giState )
+{
+    CeConnDlgState state;
+
+    if ( WrapConnsDlg( hDlg, globals, &giState->prefsPrefs.addrRec, &state ) ) {
+        XP_MEMCPY( &giState->prefsPrefs.addrRec, &state.addrRec, 
+                   sizeof(giState->prefsPrefs.addrRec) );
+        giState->addrChanged = XP_TRUE;
+    }
+}
+#endif
 
 /* playersFollowCounts:
  * Force the data on players into sync with the counts.  This is really only
@@ -413,7 +452,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         globals = giState->globals;
 
         loadFromGameInfo( hDlg, globals, giState );
-        loadStateFromCurPrefs( &globals->appPrefs, &globals->gameInfo, 
+        loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo, 
                                &giState->prefsPrefs );
 
         ceAdjustVisibility( hDlg, giState, XP_FALSE );
@@ -453,15 +492,18 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
                 case IDC_NPLAYERSCOMBO:
                     if ( HIWORD(wParam) == CBN_SELCHANGE ) {
-                        if ( giState->isNewGame ) {    /* ignore if in info mode */
+                        if ( giState->isNewGame ) {   /* ignore if in info mode */
                             XP_U16 role;
                             XP_U16 sel;
                             sel = (XP_U16)SendDlgItemMessage( hDlg, 
                                                               IDC_NPLAYERSCOMBO,
-                                                              CB_GETCURSEL, 0, 0L);
+                                                              CB_GETCURSEL, 
+                                                              0, 0L);
                             ++sel;
-                            role = (XP_U16)SendDlgItemMessage( hDlg, IDC_ROLECOMBO,
-                                                               CB_GETCURSEL, 0, 0L);
+                            role = (XP_U16)SendDlgItemMessage( hDlg, 
+                                                               IDC_ROLECOMBO,
+                                                               CB_GETCURSEL,
+                                                               0, 0L);
                             ceAdjustVisibility( hDlg, giState, XP_TRUE );
                         }
                     }
@@ -469,15 +511,23 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
                 case IDC_ROLECOMBO:
                     if ( HIWORD(wParam) == CBN_SELCHANGE ) {
-                        if ( giState->isNewGame ) {    /* ignore if in info mode */
+                        if ( giState->isNewGame ) {  /* ignore if in info mode */
                             XP_U16 sel;
                             sel = (XP_U16)SendDlgItemMessage( hDlg, IDC_ROLECOMBO,
-                                                              CB_GETCURSEL, 0, 0L);
+                                                              CB_GETCURSEL, 0, 
+                                                              0L);
                             giState->curServerHilite = (Connectedness)sel;
                             ceAdjustVisibility( hDlg, giState, XP_FALSE );
                         }
                     }
                     break;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+                case IDC_CONNBUTTON:
+                    XP_LOGF( "calling handleConnOptionsButton" );
+                    handleConnOptionsButton( hDlg, globals, giState );
+                    break;
+#endif
 
 #ifndef STUBBED_DICT
                 case IDC_DICTBUTTON:
