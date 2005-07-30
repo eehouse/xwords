@@ -73,8 +73,14 @@ typedef struct FileWriteState {
 } FileWriteState;
 
 /* forward util function decls */
-static XP_S16 ce_send_proc( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, 
+#ifndef XWFEATURE_STANDALONE_ONLY
+static XP_S16 ce_send_proc( XP_U8* buf, XP_U16 len, 
+                            const CommsAddrRec* addr, 
                             void* closure );
+#define CE_SEND_PROC ce_send_proc
+#else
+#define CE_SEND_PROC NULL
+#endif
 
 static VTableMgr* ce_util_getVTManager( XW_UtilCtxt* uc );
 static void ce_util_userError( XW_UtilCtxt* uc, UtilErrID id );
@@ -157,13 +163,16 @@ WinMain(	HINSTANCE hInstance,
 
     hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_XWORDS4);
 
-    // Main message loop:
-    while (GetMessage(&msg, NULL, 0, 0)) {
+    // Main message loop.  Return of 0 indicates quit message.  Return of -1
+    // indicates major error (so we just bail.)
+    while ( 0 < GetMessage(&msg, NULL, 0, 0) ) {
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
     }
+
+    /* This would be a good place to free up memory, close sockets, etc. */
 
     return msg.wParam;
 }
@@ -534,7 +543,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
     if ( newGame ) {
         XP_U16 newGameID = 0;
         game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
-                    newGameID, &globals->appPrefs.cp, ce_send_proc, 
+                    newGameID, &globals->appPrefs.cp, CE_SEND_PROC, 
                     globals );
 
         if ( !!gp ) {
@@ -765,7 +774,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
             game_makeFromStream( MEMPOOL stream, &globals->game, 
                                  &globals->gameInfo,
                                  dict, &globals->util, globals->draw,
-                                 &globals->appPrefs.cp, ce_send_proc, globals );
+                                 &globals->appPrefs.cp, CE_SEND_PROC, globals );
         }
 
         stream_destroy( stream );
@@ -920,7 +929,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
                           &globals->util, globals->draw, gameID,
                           &globals->appPrefs.cp, 
-                          ce_send_proc, globals );
+                          CE_SEND_PROC, globals );
 
         newDone = doNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
         if ( !newDone ) {
@@ -1463,6 +1472,25 @@ ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
     (*proc)( closure, why );
 }
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+static XP_Bool
+processPacket( CEAppGlobals* globals, XWStreamCtxt* instream )
+{
+    XP_Bool draw = XP_FALSE;
+
+    XP_ASSERT( globals->game.comms != NULL );
+
+    if ( comms_checkIncomingStream( globals->game.comms, 
+                                    instream, NULL ) ) {
+        draw = server_receiveMessage( globals->game.server, instream );
+    }
+    stream_destroy( instream );
+    ce_util_requestTime( &globals->util );
+
+    return draw;
+} /* processPacket */
+#endif
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1703,6 +1731,12 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             draw = server_do( globals->game.server ); 
             break;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+        case XWWM_PACKET_ARRIVED:
+            draw = processPacket( globals, (XWStreamCtxt*)lParam );
+            break;
+#endif
+
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
@@ -1866,8 +1900,13 @@ static void
 makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 size )
 {
     SYSTEMTIME st;
+    DWORD tid;
+
+    tid = GetCurrentThreadId();
+
     GetLocalTime( &st );
-    sprintf( timeStamp, "%d:%.2d:%.2d ", st.wHour, st.wMinute, st.wSecond );
+    sprintf( timeStamp, "<%lx>%d:%.2d:%.2d ", tid, st.wHour, st.wMinute, 
+             st.wSecond );
     XP_ASSERT( size > strlen(timeStamp) );
 } /* makeTimeStamp */
 
@@ -1944,12 +1983,38 @@ wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
     return strlen(buf);
 } /* wince_snprintf */
 
-static XP_S16
-ce_send_proc( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void
+got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 {
+    /* Remember that this gets called by the reader thread, not by the one
+       running the window loop. */
+    CEAppGlobals* globals = (CEAppGlobals*)closure;
+    BOOL posted;
+    XWStreamCtxt* stream;
+
+    stream = make_generic_stream( globals );
+    stream_putBytes( stream, data, len );
+
+    posted = PostMessage( globals->hWnd, XWWM_PACKET_ARRIVED, 
+                          0, (DWORD)stream );
+    XP_ASSERT( posted );
+} /* got_data_proc */
+
+static XP_S16
+ce_send_proc( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, void* closure )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)closure;
     XP_LOGF( "ce_send_proc called" );
-    return 0;
+
+    if ( !globals->socketWrap ) {
+        globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
+                                               got_data_proc, globals );
+    }
+
+    return ce_sockwrap_send( globals->socketWrap, buf, len, addr );
 } /* ce_send_proc */
+#endif
 
 /* I can't believe the stupid compiler's making me implement this */
 void p_ignore(XP_UCHAR* c, ...){}
@@ -2228,6 +2293,13 @@ ce_util_makeEmptyDict( XW_UtilCtxt* uc )
 static XWStreamCtxt*
 ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
 {
+    XWStreamCtxt* stream;
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+
+    stream = make_generic_stream( globals );
+    stream_setAddress( stream, channelNo );
+
+    return stream;
 } /* ce_util_makeStreamFromAddr */
 #endif
 
