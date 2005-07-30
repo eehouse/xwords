@@ -70,7 +70,7 @@ typedef struct CommsAddrRec {
 } CommsAddrRec;
 
 typedef XP_S16 (*TransportSend)( XP_U8* buf, XP_U16 len, 
-                                 CommsAddrRec* addr,
+                                 const CommsAddrRec* addr,
                                  void* closure );
 
 CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
