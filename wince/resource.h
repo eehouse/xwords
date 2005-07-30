@@ -135,16 +135,17 @@
 #define HC_MIN_COMBO                    1087
 #define HC_MAX_COMBO                    1088
 
-#define IDC_CCONVIA_LAB                 1089
-#define IDC_CRELAYNAME_LAB              1090
-#define IDC_CRELAYPORT_LAB              1091
-#define IDC_COOKIE_LAB                  1092
-
 #ifndef XWFEATURE_STANDALONE_ONLY
-# define IDC_CONNECTCOMBO               1093
-# define RELAYNAME_EDIT                 1094
-# define RELAYPORT_EDIT                 1095
-# define COOKIE_EDIT                    1096
+# define IDC_CCONVIA_LAB                 1089
+# define IDC_CRELAYNAME_LAB              1090
+# define IDC_CRELAYPORT_LAB              1091
+# define IDC_COOKIE_LAB                  1092
+# define IDC_CRELAYHINT_LAB              1093
+
+# define IDC_CONNECTCOMBO                1094
+# define RELAYNAME_EDIT                  1095
+# define RELAYPORT_EDIT                  1096
+# define COOKIE_EDIT                     1097
 
 #endif
 
