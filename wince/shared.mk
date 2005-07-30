@@ -20,6 +20,7 @@ PLATOBJ = \
 	$(PLATFORM)/cestrbx.o \
 	$(PLATFORM)/ceutil.o \
 	$(PLATFORM)/ceclrsel.o \
+	$(PLATFORM)/cesockwr.o \
 	$(PLATFORM)/cehntlim.o \
 
 XW_BOTH_DEFINES = \
