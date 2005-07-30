@@ -25,7 +25,7 @@
 #include "game.h"
 #include "util.h"
 #include "mempool.h"
-
+#include "cesockwr.h"
 
 enum { BONUS1_COLOR,
        BONUS2_COLOR,
@@ -84,6 +84,8 @@ typedef struct CEAppGlobals {
     HWND scrollHandle;
 #endif
 
+    CeSocketWrapper* socketWrap;
+
     CEAppPrefs appPrefs;
 
     XP_Bool isNewGame;
@@ -101,9 +103,9 @@ typedef struct CEAppGlobals {
 #define GAME_IN_PROGRESS(g) ((g)->gameInfo.dictName != 0)
 
 enum {
-    XWWM_TIME_RQST = WM_USER,
+    XWWM_TIME_RQST = WM_APP
+    ,XWWM_PACKET_ARRIVED
 
-    XW_TIME_RQST
 };
 
 #define NUM_EDITABLE_COLORS BLACK_COLOR
