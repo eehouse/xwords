@@ -116,7 +116,7 @@ static Boolean mainViewHandleEvent( EventPtr event );
 
 static UInt16 romVersion( void );
 static Boolean handleHintRequest( PalmAppGlobals* globals );
-static XP_S16 palm_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, 
+static XP_S16 palm_send( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, 
                          void* closure );
 static void palm_send_on_close( XWStreamCtxt* stream, void* closure );
 
@@ -3458,7 +3458,7 @@ palm_send_on_close( XWStreamCtxt* stream, void* closure )
 } /* palm_send_on_close */
 
 static XP_S16
-palm_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, void* closure )
+palm_send( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
 
