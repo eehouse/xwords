@@ -439,6 +439,23 @@ CookieRef::pushForwardEvent( HostID src, HostID dest,
 }
 
 void
+CookieRef::pushDestBadEvent()
+{
+    CRefEvent evt;
+    evt.type = XW_EVENT_DESTBAD;
+    m_eventQueue.push_front( evt );
+}
+
+void
+CookieRef::pushDestOkEvent( const CRefEvent* oldEvt )
+{
+    CRefEvent evt;
+    memcpy( &evt, oldEvt, sizeof(evt) );
+    evt.type = XW_EVENT_DESTOK;
+    m_eventQueue.push_front( evt );
+}
+
+void
 CookieRef::handleEvents()
 {
     XW_RELAY_ACTION takeAction;
@@ -462,6 +479,10 @@ CookieRef::handleEvents()
                 forward( &evt );
                 break;
 
+            case XW_ACTION_CHECKDEST:
+                checkDest( &evt );
+                break;
+
             case XW_ACTION_DISCONNECTALL:
                 disconnectAll( &evt );
                 break;
@@ -475,10 +496,10 @@ CookieRef::handleEvents()
                 break;
 
             case XW_ACTION_HEARTOK:
-                /* nothing to do for this */
+            case XW_ACTION_NONE: 
+                /* nothing to do for these */
                 break;
 
-            case XW_ACTION_NONE: 
             default:
                 assert(0); 
                 break;
@@ -552,13 +573,29 @@ CookieRef::forward( const CRefEvent* evt )
 
     int destSocket = SocketForHost( dest );
 
-    /* This is an ugly hack!!!! */
-    *buf = XWRELAY_MSG_FROMRELAY;
-    send_with_length( destSocket, buf, buflen );
+    if ( destSocket != -1 ) {
+        /* This is an ugly hack!!!! */
+        *buf = XWRELAY_MSG_FROMRELAY;
+        send_with_length( destSocket, buf, buflen );
 
-    /* also note that we've heard from src recently */
-    pushHeartbeatEvent( src, SocketForHost(src) );
+        /* also note that we've heard from src recently */
+        pushHeartbeatEvent( src, SocketForHost(src) );
+    } else {
+        /* We're not really connected yet! */
+    }
 } /* forward */
+
+void
+CookieRef::checkDest( const CRefEvent* evt )
+{
+    HostID dest = evt->u.fwd.dest;
+    int destSocket = SocketForHost( dest );
+    if ( destSocket == -1 ) {
+        pushDestBadEvent();
+    } else {
+        pushDestOkEvent( evt );
+    }
+} /* checkDest */
 
 void
 CookieRef::disconnectAll( const CRefEvent* evt )

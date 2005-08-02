@@ -29,6 +29,33 @@ typedef struct StateTable {
                                    performs the action determine the state? */
 } StateTable;
 
+/* Connecting.  The problem is that we don't know how many devices to expect.
+   So hosts connect and get a response.  Hosts send messages to be forwarded.
+   We may or may not have an ID for the recipient host.  If we do, we forward.
+   If we don't, we drop.  No big deal.  So is there any difference between
+   CONNECTING and CONNECTED?  I don't think so.  Messages come in and we try
+   to forward.  Connection requests come in and we accept them if the host in
+   question is unknown.  NOT QUITE.  There's a DOS vulnerability there.  It's
+   best if we can put the game in a state where others can't connect, if the
+   window where new devices can sign in using a given cookie is fairly small.
+
+   Perhaps a better algorithm is needed for determining when the game is
+   closed.  It's not when the first XW_EVENT_FORWARDMSG comes along, since
+   that can happen before all hosts have arrived (e.g. if a client signs up
+   before the server.)  The goal has been to avoid having the relay know about
+   the xwords protocol.  But it already knows about hostID 0 (I think).  So
+   maybe when that host sends a message for forwarding we know we're set?  Or
+   maybe we add a message the server can send saying "All are present now;
+   lock the game!"  It'd suck if that were spoofed though.
+
+   The problem we want to avoid is bogus connections.  Two are playing using
+   cookie FOO.  Somebody looks over a shoulder and sees FOO, and tries to
+   connect.  The relay must not start forwarding packets from the interloper
+   into the game associated with FOO.
+
+
+ */
+
 StateTable g_stateTable[] = {
 
     /* Initial msg comes in.  Managing object created in init state, sends response */
@@ -36,9 +63,17 @@ StateTable g_stateTable[] = {
 
     /* Another connect msg comes in */
     { XW_ST_CONNECTING,        XW_EVENT_CONNECTMSG,  XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
-    /* Fwd message comes in, tells us we're now fully connected */
-    { XW_ST_CONNECTING,        XW_EVENT_FORWARDMSG,  XW_ACTION_FWD,           XW_ST_ALLCONNECTED },
-    { XW_ST_CONNECTING,        XW_EVENT_HEARTMSG,    XW_ACTION_NOTEHEART,     XW_ST_CONNECTING },
+
+    /* Server can lock game when all players are accounted for.  Not required
+       yet, though.  In fact I'm not sure how to require it. :-) */
+    { XW_ST_CONNECTING,        XW_EVENT_ALLHEREMSG,  XW_ACTION_LOCKGAME,      XW_ST_ALLCONNECTED },
+
+    /* Forward requests while not locked are ok -- but we must check that the
+       target is actually present.  If no socket available must drop the message */
+    { XW_ST_CONNECTING,        XW_EVENT_FORWARDMSG,  XW_ACTION_CHECKDEST,     XW_ST_CHECKINGDEST },
+    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTOK,      XW_ACTION_FWD,           XW_ST_CONNECTING },
+    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTBAD,     XW_ACTION_NONE,          XW_ST_CONNECTING },
+
     /* Timeout before all connected */
     { XW_ST_CONNECTING,        XW_EVENT_CONNTIMER,   XW_ACTION_DISCONNECTALL, XW_ST_DEAD },
     { XW_ST_CONNECTING,        XW_EVENT_HEARTTIMER,  XW_ACTION_CHECKHEART,    XW_ST_HEARTCHECK_CONNECTING },
@@ -46,6 +81,7 @@ StateTable g_stateTable[] = {
     /* This is the entry we'll use most of the time */
     { XW_ST_ALLCONNECTED,      XW_EVENT_FORWARDMSG,  XW_ACTION_FWD,           XW_ST_ALLCONNECTED },
     /* Heartbeat arrived */
+    { XW_ST_CONNECTING,        XW_EVENT_HEARTMSG,    XW_ACTION_NOTEHEART,     XW_ST_CONNECTING },
     { XW_ST_ALLCONNECTED,      XW_EVENT_HEARTMSG,    XW_ACTION_NOTEHEART,     XW_ST_ALLCONNECTED },
 
     /* Heartbeat timer means check for dead connections.  Post event to self if there's a problem. */
@@ -102,6 +138,8 @@ stateString( XW_RELAY_STATE state )
         CASESTR(XW_ST_HEARTCHECK_CONNECTING);
         CASESTR(XW_ST_HEARTCHECK_CONNECTED);
         CASESTR(XW_ST_DEAD);
+        CASESTR(XW_ST_CHECKING_CONN);
+        CASESTR(XW_ST_CHECKINGDEST);
     }
     assert(0);
     return "";
@@ -121,6 +159,10 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XW_EVENT_CONNTIMER);
         CASESTR(XW_EVENT_HEARTOK);
         CASESTR(XW_EVENT_HEARTFAILED);
+        CASESTR(XW_EVENT_ALLHEREMSG);
+        CASESTR(XW_EVENT_DESTOK);
+        CASESTR(XW_EVENT_DESTBAD);
+
     }
     assert(0);
     return "";

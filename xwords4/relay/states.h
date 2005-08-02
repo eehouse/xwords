@@ -35,6 +35,9 @@ typedef enum {
                                    packets have yet arrived to be
                                    forwarded. */
 
+    ,XW_ST_CHECKING_CONN        /* While we're still not fully connected a
+                                   message comes in */
+
     ,XW_ST_ALLCONNECTED         /* All devices are connected and ready for the
                                    relay to do its work.  This is the state
                                    we're in most of the time.  */
@@ -54,6 +57,8 @@ typedef enum {
                                    all devices that remain connected. */
 
     ,XW_ST_DISCONNECTED         /* We're about to kill this object. */
+
+    ,XW_ST_CHECKINGDEST         /* Checking for valid socket */
 
     ,XW_ST_DEAD                 /* About to kill the object */
 } XW_RELAY_STATE;
@@ -81,7 +86,16 @@ typedef enum {
     ,XW_EVENT_CONNTIMER         /* timer for did we get all players hooked
                                    up  */
 
+    ,XW_EVENT_ALLHEREMSG        /* message from server that all expected
+                                   player reg messages have been received and
+                                   no new hosts should be registering selvs
+                                   with cookie. */
+
     ,XW_EVENT_HEARTOK
+
+    ,XW_EVENT_DESTOK
+
+    ,XW_EVENT_DESTBAD
 
     ,XW_EVENT_HEARTFAILED
 } XW_RELAY_EVENT;
@@ -102,6 +116,10 @@ typedef enum {
     ,XW_ACTION_DISCONNECTALL
 
     ,XW_ACTION_HEARTOK          /* allows transition back to stationary state */
+
+    ,XW_ACTION_LOCKGAME         /* lock the cref/cookie session to new hosts */
+
+    ,XW_ACTION_CHECKDEST        /* check that a given hostID has a socket */
 
 } XW_RELAY_ACTION;
 

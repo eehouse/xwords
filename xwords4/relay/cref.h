@@ -99,11 +99,16 @@ class CookieRef {
     void pushHeartTimerEvent( time_t now, vector<int>* victims );
     void pushForwardEvent( HostID src, HostID dest, unsigned char* buf, 
                            int buflen );
+    void pushDestBadEvent();
+    void pushDestOkEvent( const CRefEvent* evt );
+
 
     void handleEvents();
 
     void sendResponse(const CRefEvent* evt);
     void forward(const CRefEvent* evt);
+    void checkDest( const CRefEvent* evt );
+
     void disconnectAll(const CRefEvent* evt);
     void noteHeartbeat(const CRefEvent* evt);
     void checkHeartbeats(const CRefEvent* evt);
