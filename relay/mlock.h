@@ -30,12 +30,18 @@ class MutexLock {
  public:
     MutexLock( pthread_mutex_t* mutex ) { 
         m_mutex = mutex;
+#ifdef DEBUG_LOCKS
         logf( "locking mutex %x", mutex );
+#endif
         pthread_mutex_lock( mutex );
+#ifdef DEBUG_LOCKS
         logf( "successfully locked mutex %x", mutex );
+#endif
     }
     ~MutexLock() { 
+#ifdef DEBUG_LOCKS
         logf( "UNlocking mutex %x", m_mutex );
+#endif
         pthread_mutex_unlock( m_mutex );
     }
 
@@ -48,12 +54,18 @@ class SocketWriteLock {
     SocketWriteLock( int socket ) {
         m_socket = socket;
         m_mutex = SocketMgr::GetWriteMutexForSocket( socket );
+#ifdef DEBUG_LOCKS
         logf( "locking mutex %x for socket %d", m_mutex, socket );
+#endif
         pthread_mutex_lock( m_mutex );
+#ifdef DEBUG_LOCKS
         logf( "successfully locked mutex %x for socket %d", m_mutex, socket );
+#endif
     }
     ~SocketWriteLock() {
+#ifdef DEBUG_LOCKS
         logf( "UNlocking mutex %x for socket %d", m_mutex, m_socket );
+#endif
         pthread_mutex_unlock( m_mutex );
     }
 
@@ -65,14 +77,20 @@ class SocketWriteLock {
 class RWReadLock {
  public:
     RWReadLock( pthread_rwlock_t* rwl ) {
+#ifdef DEBUG_LOCKS
         logf( "locking rwlock %p for read", rwl );
+#endif
         pthread_rwlock_rdlock( rwl );
+#ifdef DEBUG_LOCKS
         logf( "locked rwlock %p for read", rwl );
+#endif
         _rwl = rwl;
     }
     ~RWReadLock() {
         pthread_rwlock_unlock( _rwl );
+#ifdef DEBUG_LOCKS
         logf( "unlocked rwlock %p", _rwl );
+#endif
     }
 
  private:
@@ -82,13 +100,19 @@ class RWReadLock {
 class RWWriteLock {
  public:
     RWWriteLock( pthread_rwlock_t* rwl ) : _rwl(rwl) {
+#ifdef DEBUG_LOCKS
         logf( "locking rwlock %p for write", rwl );
+#endif
         pthread_rwlock_wrlock( rwl );
+#ifdef DEBUG_LOCKS
         logf( "locked rwlock %p for write", rwl );
+#endif
     }
     ~RWWriteLock() { 
         pthread_rwlock_unlock( _rwl );
+#ifdef DEBUG_LOCKS
         logf( "unlocked rwlock %p", _rwl );
+#endif
     }
  private:
     pthread_rwlock_t* _rwl;
