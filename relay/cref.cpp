@@ -87,7 +87,6 @@ CookieIdForName( const char* name )
 void
 CheckHeartbeats( time_t now, vector<int>* sockets )
 {
-    logf( "CheckHeartbeats" );
     RWReadLock rwl( &gCookieMapRWLock );
     CookieMap::iterator iter = gCookieMap.begin();
     while ( iter != gCookieMap.end() ) {
@@ -95,7 +94,6 @@ CheckHeartbeats( time_t now, vector<int>* sockets )
         ref->CheckHeartbeats( now, sockets );
         ++iter;
     }
-    logf( "CheckHeartbeats done" );
 } /* CheckHeartbeats */
 
 /* [Re]connecting.  If there was a game in progress and this host disconnected

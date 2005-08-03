@@ -300,8 +300,6 @@ make_socket( unsigned long addr, unsigned short port )
 static void
 sighandler( int signal )
 {
-    logf( "sighandler" );
-
     vector<int> victims;
     CheckHeartbeats( now(), &victims );
 
@@ -309,8 +307,6 @@ sighandler( int signal )
     for ( i = 0; i < victims.size(); ++i ) {
         killSocket( victims[i], "heartbeat check failed" );
     }
-
-    logf( "sighandler done" );
 } /* sighandler */
 
 int main( int argc, char** argv )
