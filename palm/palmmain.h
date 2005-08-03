@@ -275,8 +275,6 @@ struct PalmAppGlobals {
     XP_Bool runningOnPOSE;    /* Needed for NetLibSelect */
 
     GraphicsAbility able;
-    XP_U32 penTimerFireAt;
-    XP_U32 timerTimerFireAt;
     XP_U16 prevScroll;		/* for scrolling in 'ask' dialog */
     UInt16 romVersion;
 
@@ -308,8 +306,9 @@ struct PalmAppGlobals {
 
     struct ConnsDlgState* connState;
 
-    TimerProc timerProcs[TIMER_NUM_PLUS_ONE - 1];
-    void* timerClosures[TIMER_NUM_PLUS_ONE - 1];
+    TimerProc timerProcs[TIMER_NUM_PLUS_ONE];
+    void* timerClosures[TIMER_NUM_PLUS_ONE];
+    XP_U32 timerFireAt[TIMER_NUM_PLUS_ONE];
 
 #ifdef BEYOND_IR
     NetLibStuff nlStuff;

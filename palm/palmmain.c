@@ -67,7 +67,6 @@
 #include "SonyChars.h"
 #endif
 
-#define TIMER_OFF 0L
 #define PALM_TIMER_DELAY 25
 
 #ifdef IR_SUPPORT
@@ -116,6 +115,8 @@ static Boolean mainViewHandleEvent( EventPtr event );
 
 static UInt16 romVersion( void );
 static Boolean handleHintRequest( PalmAppGlobals* globals );
+static XP_Bool timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, 
+                             XP_U32* when );
 static XP_S16 palm_send( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, 
                          void* closure );
 static void palm_send_on_close( XWStreamCtxt* stream, void* closure );
@@ -1373,7 +1374,8 @@ static Int32
 figureWaitTicks( PalmAppGlobals* globals )
 {
     Int32 result = evtWaitForever;
-    XP_U32 fireTime;
+    XP_U32 when;
+    XWTimerReason why;
 
     if ( 0 ) {
 #ifdef BEYOND_IR
@@ -1383,20 +1385,8 @@ figureWaitTicks( PalmAppGlobals* globals )
 #endif
     } else if ( globals->timeRequested || globals->hintPending ) {
         result = 0;
-#ifdef IR_SUPPORT
-# ifndef IR_EXCHMGR
-    } else if ( ir_work_exists(globals) ) {
-        /* 	XP_DEBUGF( "message pending" ); */
-        result = 0;
-    } else if ( globals->ir_state == IR_STATE_MESSAGE_RECD ) {
-        /* 	XP_DEBUGF( "message recd" ); */
-        result = 0;
-# endif
-#endif
-    } else if ( (fireTime = globals->penTimerFireAt) != TIMER_OFF
-                || (fireTime = globals->timerTimerFireAt ) != TIMER_OFF 
-                || (fireTime = globals->heartTimerFireAt ) != TIMER_OFF ) {
-        result = fireTime - TimGetTicks();
+    } else if ( *timeForTimer( globals, &why, &when ) ) {
+        result = when - TimGetTicks();
         if ( result < 0 ) {
             result = 0;
         }
@@ -1558,36 +1548,51 @@ destroy_on_close( XWStreamCtxt* p_stream )
 static void
 palmFireTimer( PalmAppGlobals* globals, XWTimerReason why )
 {
-    TimerProc proc = globals->timerProcs[why-1];
-    void* closure = globals->timerClosures[why-1];
+    TimerProc proc = globals->timerProcs[why];
+    void* closure = globals->timerClosures[why];
+    XP_ASSERT( TimGetTicks() >= globals->timerFireAt[why] );
+    globals->timerProcs[why] = NULL;
     (*proc)( closure, why );
 } /* fireTimer */
+
+static XP_Bool
+timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
+{
+    XP_U16 i;
+    XWTimerReason nextWhy = 0;
+    XP_U32 nextWhen = 0xFFFFFFFF;
+    XP_Bool found;
+
+    for ( i = 1; i < TIMER_NUM_PLUS_ONE; ++i ) {
+        if ( (globals->timerProcs[i] != NULL) && 
+             (globals->timerFireAt[i] < nextWhen) ) {
+            nextWhy = i;
+            nextWhen = globals->timerFireAt[i];
+        }
+    }
+
+    found = nextWhy != 0;
+    if ( found ) {
+        *why = nextWhy;
+        *when = nextWhen;
+    }
+    return found;
+} /* timeForTimer */
 
 static Boolean
 handleNilEvent( PalmAppGlobals* globals, EventPtr event )
 {
     Boolean handled = true;
+    XP_U32 when;
+    XWTimerReason why;
 
-    if ( false ) {
-    } else if ( globals->menuIsDown ) {
+    if ( globals->menuIsDown ) {
         /* do nothing */
-#ifdef IR_SUPPORT
-# ifndef IR_EXCHMGR
-    } else if ( ir_work_exists(globals) ) {
-        handled = ir_do_work( globals );
-        ir_show_status( globals );
-        /*     } else if ( globals->ir_state == IR_STATE_MESSAGE_RECD ) { */
-        /* 	handled = do_ir_work( globals ); */
-# endif
-#endif
     } else if ( globals->hintPending ) {
         handled = handleHintRequest( globals );
-
-    } else if ( globals->penTimerFireAt != TIMER_OFF &&
-                globals->penTimerFireAt <= TimGetTicks() ) {
-        globals->penTimerFireAt = TIMER_OFF;
-        palmFireTimer( globals, TIMER_PENDOWN );
-
+    } else if ( timeForTimer( globals, &why, &when ) 
+                && (when <= TimGetTicks()) ) {
+        palmFireTimer( globals, why );
     } else if ( globals->timeRequested ) {
         globals->timeRequested = false;
         if ( globals->msgReceivedDraw ) {
@@ -1596,15 +1601,6 @@ handleNilEvent( PalmAppGlobals* globals, EventPtr event )
             globals->msgReceivedDraw = XP_FALSE;
         }
         handled = server_do( globals->game.server ); 
-
-    } else if ( globals->timerTimerFireAt != TIMER_OFF &&
-                globals->timerTimerFireAt <= TimGetTicks() ) {
-        globals->timerTimerFireAt = TIMER_OFF;
-        palmFireTimer( globals, TIMER_TIMERTICK );
-    } else if ( globals->heartTimerFireAt != TIMER_OFF &&
-                globals->heartTimerFireAt <= TimGetTicks() ) {
-        globals->heartTimerFireAt = TIMER_OFF;
-        palmFireTimer( globals, TIMER_TIMERTICK );
     } else {
         handled = false;
     }
@@ -3391,20 +3387,25 @@ palm_util_engineProgressCallback( XW_UtilCtxt* uc )
 } /* palm_util_engineProgressCallback */
 
 static void
-palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 secsFromNow,
                     TimerProc proc, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-    globals->timerProcs[why-1] = proc;
-    globals->timerClosures[why-1] = closure;
+    XP_U32 now = TimGetTicks();
 
     if ( why == TIMER_PENDOWN ) {
-        globals->penTimerFireAt = TimGetTicks() + PALM_TIMER_DELAY;
+        now += PALM_TIMER_DELAY;
     } else if ( why == TIMER_TIMERTICK ) {
-        globals->timerTimerFireAt = TimGetTicks() + SysTicksPerSecond();
+        now += SysTicksPerSecond();
+    } else if ( why == TIMER_HEARTBEAT ) {
+        now += (secsFromNow * SysTicksPerSecond());
     } else {
         XP_ASSERT( 0 );
     }
+
+    globals->timerProcs[why] = proc;
+    globals->timerClosures[why] = closure;
+    globals->timerFireAt[why] = now;
 } /* palm_util_setTimer */
 
 static void 
