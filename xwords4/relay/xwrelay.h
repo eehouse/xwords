@@ -31,15 +31,26 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
        , XWRELAY_CONNECT
        /* Sent from device to relay to establish connection to relay.  Format:
           flags: 1; cookieLen: 1; cookie: <cookieLen>; hostID:
-          2. connectionID: 2.  If connectionID is not 0, host may be
-          attempting to reconnect to an existing game. */
+          2. connectionID: 2. */
+
+       , XWRELAY_RECONNECT
+       /* Connect using ID rather than cookie.  Used by a device that's lost
+          its connection to a game in progress.  Once a game is locked this is
+          the only way a host can get (back) in. */
 
        , XWRELAY_CONNECTRESP
-       /* Sent from relay to device in response to XWRELAY_CONNECT.
-          Format: heartbeat_seconds: 2; connectionID: 2; */
+       /* Sent from relay to device in response to XWRELAY_CONNECT or
+          XWRELAY_RECONNECT.  Format: heartbeat_seconds: 2; connectionID:
+          2; */
 
-       /* The relay says go away.  Format: reason code: 1 */
+       , XWRELAY_LOCKGAME
+       /* Sent by a participant in game when it's satisfied that all desired
+          participants are present.  On seeing this message the relay goes
+          into a state where no further connection requests will be
+          allowed. */
+
        , XWRELAY_CONNECTDENIED
+       /* The relay says go away.  Format: reason code: 1 */
 
        , XWRELAY_HEARTBEAT
        /* Sent in either direction.  Format: cookieID: 2; srcID: 2 */
