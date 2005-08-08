@@ -558,7 +558,7 @@ CookieRef::sendResponse( const CRefEvent* evt )
 
     send_with_length( socket, buf, sizeof(buf) );
     RecordSent( sizeof(buf), socket );
-    logf( "sent CONNECTIONRSP" );
+    logf( "sent XWRELAY_CONNECTRESP" );
 } /* sendResponse */
 
 void
