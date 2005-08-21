@@ -100,7 +100,7 @@ queue_packet( CeSocketWrapper* self, XP_U8* packet, XP_U16 len )
             logLastError( "ReleaseMutex" );
         }
     } else {
-        XP_ASSERT(0);
+        XP_LOGF( "timed out" );
     }
 
     return success;
@@ -259,10 +259,7 @@ WriterThreadProc( LPVOID lpParameter )
 {
     CeSocketWrapper* self = (CeSocketWrapper*)lpParameter;
 
-    /* PENDING: Start up network so we'll have a socket to use.  Once the
-       socket's open and connected, start the reader thread.*/
     connectSocket( self );
-
 
     /* Then loop waiting for packets to write to it. */
     for ( ; ; ) { 
@@ -432,6 +429,6 @@ ce_sockwrap_send( CeSocketWrapper* self, XP_U8* buf, XP_U16 len,
     }
 
     return len;
-}
+} /* ce_sockwrap_send */
 
 #endif
