@@ -553,6 +553,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!addr ) {
+            XP_ASSERT( globals->game.comms != NULL );
             comms_setAddr( globals->game.comms, addr );
         }
 #endif
@@ -1467,10 +1468,13 @@ debug_saveCurState( CEAppGlobals* globals )
 static void
 ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
 {
-    TimerProc proc = globals->timerProcs[why-1];
-    void* closure = globals->timerClosures[why-1];
+    TimerProc proc;
+    void* closure;
+
+    proc = globals->timerProcs[why];
+    closure = globals->timerClosures[why];
     (*proc)( closure, why );
-}
+} /* ceFireTimer */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
@@ -1712,11 +1716,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                  || why == TIMER_HEARTBEAT
 #endif
                  ) {
-                XP_ASSERT( why < TIMER_NUM_PLUS_ONE );
+                XP_ASSERT( why < NUM_TIMERS_PLUS_ONE );
 
                 /* Kill since they otherwise repeat, but kill before firing
                    as fired proc may set another. */
-                (void)KillTimer( hWnd, globals->timerIDs[why-1] );
+                (void)KillTimer( hWnd, globals->timerIDs[why] );
 
                 ceFireTimer( globals, why );
             }
@@ -2239,9 +2243,9 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
     XP_U32 timerID;
     XP_U32 howLong;
 
-    XP_ASSERT( why < TIMER_NUM_PLUS_ONE );
-    globals->timerProcs[why-1] = proc;
-    globals->timerClosures[why-1] = closure;
+    XP_ASSERT( why < NUM_TIMERS_PLUS_ONE );
+    globals->timerProcs[why] = proc;
+    globals->timerClosures[why] = closure;
 
     switch ( why ) {
     case TIMER_PENDOWN:
@@ -2261,7 +2265,7 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
     }
     timerID = SetTimer( globals->hWnd, why, howLong, NULL);
 
-    globals->timerIDs[why-1] = timerID;
+    globals->timerIDs[why] = timerID;
 } /* ce_util_setTimer */
 
 static void 
