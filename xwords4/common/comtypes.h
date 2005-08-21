@@ -79,7 +79,7 @@ typedef enum {
     TIMER_HEARTBEAT,
 #endif
 
-    TIMER_NUM_PLUS_ONE          /* must be last */
+    NUM_TIMERS_PLUS_ONE          /* must be last */
 } XWTimerReason;
 
 #define MAX_NUM_PLAYERS 4
