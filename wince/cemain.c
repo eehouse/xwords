@@ -1912,6 +1912,7 @@ wince_assert( XP_UCHAR* s, int line, char* fileName )
     XP_WARNF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
 } /* wince_assert */
 
+#ifdef DEBUG
 static void
 makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 size )
 {
@@ -1929,29 +1930,30 @@ makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 size )
 void
 wince_debugf(XP_UCHAR* format, ...)
 {
+#ifdef BEYOND_IR
+    static HANDLE s_logMutex = NULL;
+    DWORD wres;
+#endif
     XP_UCHAR buf[256];
-/*     wchar_t widebuf[256]; */
+    XP_UCHAR timeStamp[32];
+    XP_U16 nBytes;
+    XP_U32 nWritten;
+    HANDLE fileH;
     va_list ap;
 
     va_start( ap, format );
     vsprintf( buf, format, ap );
     va_end(ap);
 
-#if 0
-    messageBoxChar( globals, buf, NULL );
-/* #elif defined _WIN32_WCE_EMULATION */
-/*     XP_MEMSET( widebuf, 0, sizeof(widebuf) ); */
-/*     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, strlen(buf), */
-/*                          widebuf, sizeof(widebuf)/sizeof(widebuf[0]) ); */
-/*     OutputDebugString( widebuf ); */
-#else
-    {
-        /* Create logfile if necessary and write to it in ascii. */
-        XP_U16 nBytes;
-        XP_U32 nWritten;
-        HANDLE fileH;
-        XP_UCHAR timeStamp[32];
+    /* Create logfile if necessary and write to it in ascii.  If there are
+       multiple threads, protect with mutex. */
 
+#ifdef BEYOND_IR
+    if ( s_logMutex == NULL ) {
+        s_logMutex = CreateMutex( NULL, FALSE, NULL );
+    }
+    if ( WaitForSingleObject( s_logMutex, 200L ) == WAIT_OBJECT_0 ) {
+#endif
         makeTimeStamp(timeStamp, sizeof(timeStamp));
 
         fileH = CreateFile( L"\\My Documents\\Crosswords\\xwDbgLog.txt", 
@@ -1971,9 +1973,13 @@ wince_debugf(XP_UCHAR* format, ...)
         nBytes = strlen( buf );
         WriteFile( fileH, buf, nBytes, &nWritten, NULL );
         CloseHandle( fileH );
+#ifdef BEYOND_IR
+
+        ReleaseMutex( s_logMutex );
     }
 #endif
 } /* wince_debugf */
+#endif
 
 XP_U16
 wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
