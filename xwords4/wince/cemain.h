@@ -75,9 +75,9 @@ typedef struct CEAppGlobals {
     XP_U16* bonusInfo;
     wchar_t* lastDefaultDir;
 
-    XP_U32 timerIDs[TIMER_NUM_PLUS_ONE - 1];
-    TimerProc timerProcs[TIMER_NUM_PLUS_ONE - 1];
-    void* timerClosures[TIMER_NUM_PLUS_ONE - 1];
+    XP_U32 timerIDs[NUM_TIMERS_PLUS_ONE];
+    TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
+    void* timerClosures[NUM_TIMERS_PLUS_ONE];
 
 #ifdef CEFEATURE_CANSCROLL
     XP_U16 nHiddenRows;
