@@ -86,7 +86,7 @@ typedef struct GtkAppGlobals {
 
     ClientStreamRec clientRecs[MAX_NUM_PLAYERS];
 
-    guint timerSources[TIMER_NUM_PLUS_ONE - 1];
+    guint timerSources[NUM_TIMERS_PLUS_ONE - 1];
 
     CommonPrefs cp;
 
