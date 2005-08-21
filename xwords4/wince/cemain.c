@@ -139,7 +139,8 @@ static void RECTtoXPR( XP_Rect* dest, RECT* src );
 static XP_Bool doNewGame( CEAppGlobals* globals, XP_Bool silent );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void updateForColors( CEAppGlobals* globals );
-
+static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
+static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
@@ -266,6 +267,7 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_warnIllegalWord = ce_util_warnIllegalWord;
 #ifdef BEYOND_IR
     vtable->m_util_addrChange = ce_util_addrChange;
+    vtable->m_util_makeStreamFromAddr = ce_util_makeStreamFromAddr;
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
     vtable->m_util_getTraySearchLimits = ce_util_getTraySearchLimits;
@@ -565,6 +567,16 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
     board_invalAll( globals->game.board );
     InvalidateRect( globals->hWnd, NULL, TRUE /* erase */ );
     
+#ifdef BEYOND_IR
+    if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
+        XWStreamCtxt* stream;
+        XP_ASSERT( !!globals->game.comms );
+        stream = make_generic_stream( globals );
+        stream_setOnCloseProc( stream, ce_send_on_close );
+        server_initClientConnection( globals->game.server, stream );
+    }
+#endif
+
     server_do( globals->game.server );
 
     globals->isNewGame = FALSE;
@@ -1955,11 +1967,9 @@ wince_debugf(XP_UCHAR* format, ...)
 
         nBytes = strlen( timeStamp );
         WriteFile( fileH, timeStamp, nBytes, &nWritten, NULL );
-        XP_ASSERT( nWritten == nBytes );
 
         nBytes = strlen( buf );
         WriteFile( fileH, buf, nBytes, &nWritten, NULL );
-        XP_ASSERT( nWritten == nBytes );
         CloseHandle( fileH );
     }
 #endif
@@ -2018,6 +2028,16 @@ ce_send_proc( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, void* closure )
 
     return ce_sockwrap_send( globals->socketWrap, buf, len, addr );
 } /* ce_send_proc */
+
+static void
+ce_send_on_close( XWStreamCtxt* stream, void* closure )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)closure;
+
+    XP_ASSERT( !!globals->game.comms );
+    comms_send( globals->game.comms, stream );
+}
+
 #endif
 
 /* I can't believe the stupid compiler's making me implement this */
@@ -2293,7 +2313,7 @@ ce_util_makeEmptyDict( XW_UtilCtxt* uc )
 #endif
 } /* ce_util_makeEmptyDict */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef BEYOND_IR
 static XWStreamCtxt*
 ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
 {
@@ -2301,6 +2321,7 @@ ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
 
     stream = make_generic_stream( globals );
+    stream_setOnCloseProc( stream, ce_send_on_close );
     stream_setAddress( stream, channelNo );
 
     return stream;
