@@ -21,6 +21,7 @@
 #define _XWSTREAM_H_
 
 #include "comtypes.h"
+#include "memstream.h"
 /* #include "xptypes.h" */
 
 #define START_OF_STREAM 0
@@ -67,6 +68,9 @@ typedef struct StreamCtxVTable {
 
     void (*m_stream_setVersion)( XWStreamCtxt* dctx, XP_U16 vers );
     XP_U16  (*m_stream_getVersion)( XWStreamCtxt* dctx );
+
+    void  (*m_stream_setOnCloseProc)( XWStreamCtxt* dctx, 
+                                      MemStreamCloseCallback proc );
 } StreamCtxVTable;
 
 
@@ -140,5 +144,8 @@ struct XWStreamCtxt {
 
 #define stream_getVersion(sc) \
          (sc)->vtable->m_stream_getVersion((sc))
+
+#define stream_setOnCloseProc(sc, p) \
+         (sc)->vtable->m_stream_setOnCloseProc((sc), (p))
 
 #endif /* _XWSTREAM_H_ */
