@@ -306,9 +306,9 @@ struct PalmAppGlobals {
 
     struct ConnsDlgState* connState;
 
-    TimerProc timerProcs[TIMER_NUM_PLUS_ONE];
-    void* timerClosures[TIMER_NUM_PLUS_ONE];
-    XP_U32 timerFireAt[TIMER_NUM_PLUS_ONE];
+    TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
+    void* timerClosures[NUM_TIMERS_PLUS_ONE];
+    XP_U32 timerFireAt[NUM_TIMERS_PLUS_ONE];
 
 #ifdef BEYOND_IR
     NetLibStuff nlStuff;

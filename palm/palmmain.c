@@ -1385,7 +1385,7 @@ figureWaitTicks( PalmAppGlobals* globals )
 #endif
     } else if ( globals->timeRequested || globals->hintPending ) {
         result = 0;
-    } else if ( *timeForTimer( globals, &why, &when ) ) {
+    } else if ( timeForTimer( globals, &why, &when ) ) {
         result = when - TimGetTicks();
         if ( result < 0 ) {
             result = 0;
@@ -1563,7 +1563,7 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
     XP_U32 nextWhen = 0xFFFFFFFF;
     XP_Bool found;
 
-    for ( i = 1; i < TIMER_NUM_PLUS_ONE; ++i ) {
+    for ( i = 1; i < NUM_TIMERS_PLUS_ONE; ++i ) {
         if ( (globals->timerProcs[i] != NULL) && 
              (globals->timerFireAt[i] < nextWhen) ) {
             nextWhy = i;
