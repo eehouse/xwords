@@ -341,6 +341,12 @@ mem_stream_getVersion( XWStreamCtxt* p_sctx )
     return stream->version;
 } /* mem_stream_getVersion */
 
+static void
+mem_stream_setOnCloseProc( XWStreamCtxt* p_sctx, MemStreamCloseCallback proc )
+{
+    MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    stream->onClose = proc;
+}
 
 static XWStreamPos
 mem_stream_getPos( XWStreamCtxt* p_sctx, PosWhich which )
@@ -426,6 +432,8 @@ make_vtable( MemStreamCtxt* stream )
 
     SET_VTABLE_ENTRY( vtable, stream_setVersion, mem );
     SET_VTABLE_ENTRY( vtable, stream_getVersion, mem );
+
+    SET_VTABLE_ENTRY( vtable, stream_setOnCloseProc, mem );
 
     return vtable;
 } /* make_vtable */
