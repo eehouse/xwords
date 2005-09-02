@@ -219,7 +219,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
     switch( addr.conType ) {
     case COMMS_CONN_UNUSED:
-        XP_ASSERT( 0 );
+/*         XP_ASSERT( 0 ); */
         break;
     case COMMS_CONN_BT:
     case COMMS_CONN_IR:
@@ -345,7 +345,7 @@ addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
 #ifdef DEBUG
     case COMMS_CONN_UNUSED:
     case LAST_____FOO:
-        XP_ASSERT( 0 );
+/*         XP_ASSERT( 0 ); */
         break;
 #endif
     case COMMS_CONN_BT:
@@ -1006,12 +1006,24 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             comms->relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
             break;
 
+        case XWRELAY_RECONNECT:
+            stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
+            stream_putU16( tmpStream, comms->myHostID );
+            XP_LOGF( "writing cookieID of %ld", comms->cookieID );
+            stream_putU32( tmpStream, comms->cookieID );
+
+            comms->relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
+            break;
+
         case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
             stream_putU32( tmpStream, comms->cookieID );
             stream_putU16( tmpStream, comms->myHostID );
             break;
+
+        default:
+            XP_ASSERT(0); 
         }
 
         len = stream_getSize( tmpStream );
@@ -1044,7 +1056,9 @@ relayConnect( CommsCtxt* comms )
     XP_LOGF( "relayConnect called" );
     if ( !comms->connecting ) {
         comms->connecting = XP_TRUE;
-        send_via_relay( comms, XWRELAY_CONNECT, HOST_ID_NONE, NULL, 0 );
+        send_via_relay( comms, 
+                        comms->cookieID == 0? XWRELAY_CONNECT:XWRELAY_RECONNECT,
+                        comms->myHostID, NULL, 0 );
         comms->connecting = XP_FALSE;
     }
 } /* relayConnect */
