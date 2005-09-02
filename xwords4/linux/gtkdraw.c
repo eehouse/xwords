@@ -241,7 +241,8 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 
 
 static XP_Bool
-gtk_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
+gtk_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, 
+                     XP_Rect* rect, XP_Bool hasfocus )
 {
     GdkRectangle gdkrect;
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
