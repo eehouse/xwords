@@ -123,8 +123,8 @@ class CookieRef {
 
     int SocketForHost( HostID dest );
 
+    void send_with_length( int socket, unsigned char* buf, int bufLen );
     void RecordSent( int nBytes, int socket ) {
-        /* This really needs a lock.... */
         m_totalSent += nBytes;
     }
 
@@ -142,7 +142,6 @@ class CookieRef {
     void pushDestOkEvent( const CRefEvent* evt );
     void pushCanLockEvent( const CRefEvent* evt );
     void pushCantLockEvent( const CRefEvent* evt );
-
 
     void handleEvents();
 
