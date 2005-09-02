@@ -395,9 +395,12 @@ expose_event( GtkWidget* widget,
 			widget->allocation.width,
 			widget->allocation.height+widget->allocation.y );
     */
-    board_invalRect( globals->cGlobals.game.board, (XP_Rect*)&event->area );
+    /* I want to inval only the area that's exposed, but the rect is always
+       empty, even when clearly shouldn't be.  Need to investigate.  Until
+       fixed, use board_invalAll to ensure board is drawn.*/
+/*     board_invalRect( globals->cGlobals.game.board, (XP_Rect*)&event->area ); */
 
-/*     board_invalAll( globals->cGlobals.game.board ); */
+    board_invalAll( globals->cGlobals.game.board );
     board_draw( globals->cGlobals.game.board );
     
 /*     gdk_draw_pixmap( widget->window, */
@@ -617,7 +620,9 @@ static void
 handle_resend( GtkWidget* widget, GtkAppGlobals* globals )
 {
     CommsCtxt* comms = globals->cGlobals.game.comms;
-    comms_resendAll( comms );
+    if ( comms != NULL ) {
+        comms_resendAll( comms );
+    }
 } /* handle_resend */
 
 #ifdef DEBUG

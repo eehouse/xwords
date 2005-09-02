@@ -225,7 +225,7 @@ usage( char* appName, char* msg )
 }
 
 XP_S16
-linux_tcp_send( XP_U8* buf, XP_U16 buflen, CommsAddrRec* addrRec, 
+linux_tcp_send( XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec, 
                 void* closure )
 {
     CommonGlobals* globals = (CommonGlobals*)closure;

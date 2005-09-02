@@ -57,7 +57,8 @@ curses_draw_destroyCtxt( DrawCtx* p_dctx )
 } /* draw_setup */
 
 static XP_Bool
-curses_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
+curses_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, 
+                        XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     if ( hasfocus ) {
