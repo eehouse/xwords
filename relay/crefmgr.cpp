@@ -18,11 +18,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <assert.h>
+#include <pthread.h>
+
 #include "crefmgr.h"
 #include "cref.h"
 #include "mlock.h"
-
-#include <pthread.h>
 
 class SocketStuff {
  public:

@@ -402,12 +402,14 @@ CookieRef::handleEvents()
     }
 } /* handleEvents */
 
-static void
-send_with_length( int socket, unsigned char* buf, int bufLen )
+void
+CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen )
 {
     SocketWriteLock slock( socket );
 
-    if ( !send_with_length_unsafe( socket, buf, bufLen ) ) {
+    if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
+        RecordSent( bufLen, socket );
+    } else {
         /* ok that the slock above is still in scope */
         killSocket( socket, "couldn't send" );
     }
@@ -466,7 +468,6 @@ CookieRef::sendResponse( const CRefEvent* evt )
     putNetLong( &bufp, GetCookieID() );
 
     send_with_length( socket, buf, sizeof(buf) );
-    RecordSent( sizeof(buf), socket );
     logf( "sent XWRELAY_CONNECTRESP" );
 } /* sendResponse */
 
