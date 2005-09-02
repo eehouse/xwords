@@ -25,6 +25,7 @@
 
 #include "xwrelay_priv.h"
 #include "cref.h"
+#include "crefmgr.h"
 
 class MutexLock {
  public:
@@ -51,9 +52,10 @@ class MutexLock {
 
 class SocketWriteLock {
  public:
-    SocketWriteLock( int socket ) {
-        m_socket = socket;
-        m_mutex = SocketMgr::GetWriteMutexForSocket( socket );
+    SocketWriteLock( int socket )
+        : m_socket( socket )
+        , m_mutex( CRefMgr::Get()->GetWriteMutexForSocket( socket ) )
+        {
 #ifdef DEBUG_LOCKS
         logf( "locking mutex %x for socket %d", m_mutex, socket );
 #endif
@@ -70,8 +72,8 @@ class SocketWriteLock {
     }
 
  private:
-    pthread_mutex_t* m_mutex;
     int m_socket;
+    pthread_mutex_t* m_mutex;
 };
 
 class RWReadLock {

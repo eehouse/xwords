@@ -59,27 +59,37 @@ typedef struct StateTable {
 StateTable g_stateTable[] = {
 
     /* Initial msg comes in.  Managing object created in init state, sends response */
-    { XW_ST_INITED,            XW_EVENT_CONNECTMSG,  XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
+    { XW_ST_INITED,            XW_EVENT_CONNECTMSG,    XW_ACTION_SEND_1ST_RSP,  XW_ST_CONNECTING },
+    { XW_ST_INITED,            XW_EVENT_RECONNECTMSG,  XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
 
     /* Another connect msg comes in */
-    { XW_ST_CONNECTING,        XW_EVENT_CONNECTMSG,  XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
-
-    /* Server can lock game when all players are accounted for.  Not required
-       yet, though.  In fact I'm not sure how to require it. :-) */
-    { XW_ST_CONNECTING,        XW_EVENT_ALLHEREMSG,  XW_ACTION_LOCKGAME,      XW_ST_ALLCONNECTED },
+    { XW_ST_CONNECTING,        XW_EVENT_CONNECTMSG,    XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
+    { XW_ST_CONNECTING,        XW_EVENT_RECONNECTMSG,  XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
 
     /* Forward requests while not locked are ok -- but we must check that the
        target is actually present.  If no socket available must drop the message */
-    { XW_ST_CONNECTING,        XW_EVENT_FORWARDMSG,  XW_ACTION_CHECKDEST,     XW_ST_CHECKINGDEST },
-    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTOK,      XW_ACTION_FWD,           XW_ST_CONNECTING },
-    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTBAD,     XW_ACTION_NONE,          XW_ST_CONNECTING },
+    { XW_ST_CONNECTING,        XW_EVENT_FORWARDMSG,  XW_ACTION_CHECKDEST,      XW_ST_CHECKINGDEST },
+    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTOK,      XW_ACTION_CHECK_CAN_LOCK, XW_ST_CHECKING_CAN_LOCK },
+
+    { XW_ST_CHECKING_CAN_LOCK, XW_EVENT_CAN_LOCK,    XW_ACTION_FWD,            XW_ST_ALLCONNECTED },
+    { XW_ST_CHECKING_CAN_LOCK, XW_EVENT_CANT_LOCK,   XW_ACTION_FWD,            XW_ST_CONNECTING },
+
+    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTBAD,     XW_ACTION_NONE,           XW_ST_CONNECTING },
 
     /* Timeout before all connected */
-    { XW_ST_CONNECTING,        XW_EVENT_CONNTIMER,   XW_ACTION_DISCONNECTALL, XW_ST_DEAD },
+    { XW_ST_CONNECTING,        XW_EVENT_CONNTIMER,   XW_ACTION_DISCONNECTALL,  XW_ST_DEAD },
     { XW_ST_CONNECTING,        XW_EVENT_HEARTTIMER,  XW_ACTION_CHECKHEART,    XW_ST_HEARTCHECK_CONNECTING },
+
+
+    { XW_ST_CONNECTING,        XW_EVENT_REMOVESOCKET,  XW_ACTION_REMOVESOCKET,  XW_ST_CONNECTING },
+    { XW_ST_ALLCONNECTED,      XW_EVENT_REMOVESOCKET,  XW_ACTION_REMOVESOCKET,  XW_ST_CONNECTING },
+
+    { XW_ST_CONNECTING,        XW_EVENT_NOMORESOCKETS,  XW_ACTION_NONE,  XW_ST_DEAD },
 
     /* This is the entry we'll use most of the time */
     { XW_ST_ALLCONNECTED,      XW_EVENT_FORWARDMSG,  XW_ACTION_FWD,           XW_ST_ALLCONNECTED },
+    { XW_ST_ALLCONNECTED,      XW_EVENT_CONNTIMER,   XW_ACTION_NONE,          XW_ST_ALLCONNECTED },
+
     /* Heartbeat arrived */
     { XW_ST_CONNECTING,        XW_EVENT_HEARTMSG,    XW_ACTION_NOTEHEART,     XW_ST_CONNECTING },
     { XW_ST_ALLCONNECTED,      XW_EVENT_HEARTMSG,    XW_ACTION_NOTEHEART,     XW_ST_ALLCONNECTED },
@@ -91,6 +101,9 @@ StateTable g_stateTable[] = {
     { XW_ST_HEARTCHECK_CONNECTING,   XW_EVENT_HEARTFAILED, XW_ACTION_DISCONNECTALL, XW_ST_DEAD },
     { XW_ST_HEARTCHECK_CONNECTED,    XW_EVENT_HEARTOK,     XW_ACTION_HEARTOK,       XW_ST_ALLCONNECTED },
     { XW_ST_HEARTCHECK_CONNECTED,    XW_EVENT_HEARTFAILED, XW_ACTION_DISCONNECTALL, XW_ST_DEAD },
+
+    { XW_ST_DEAD,                XW_EVENT_REMOVESOCKET,  XW_ACTION_REMOVESOCKET,  XW_ST_DEAD },
+    { XW_ST_DEAD,                XW_EVENT_ANY,           XW_ACTION_NONE,          XW_ST_DEAD },
 
     /* Reconnect.  Just like a connect but cookieID is supplied.  Can it
        happen in the middle of a game when state is XW_ST_ALLCONNECTED? */
@@ -107,10 +120,12 @@ getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
 {
     StateTable* stp = g_stateTable;
     while ( stp->stateStart != XW_ST_NONE ) {
-        if ( stp->stateStart == curState && stp->stateEvent == curEvent ) {
-            *takeAction = stp->stateAction;
-            *nextState = stp->stateEnd;
-            return 1;
+        if ( stp->stateStart == curState ) {
+            if ( stp->stateEvent == curEvent || stp->stateEvent == XW_EVENT_ANY ) {
+                *takeAction = stp->stateAction;
+                *nextState = stp->stateEnd;
+                return 1;
+            }
         }
         ++stp;
     }
@@ -140,6 +155,7 @@ stateString( XW_RELAY_STATE state )
         CASESTR(XW_ST_DEAD);
         CASESTR(XW_ST_CHECKING_CONN);
         CASESTR(XW_ST_CHECKINGDEST);
+        CASESTR(XW_ST_CHECKING_CAN_LOCK);
     }
     assert(0);
     return "";
@@ -162,7 +178,11 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XW_EVENT_ALLHEREMSG);
         CASESTR(XW_EVENT_DESTOK);
         CASESTR(XW_EVENT_DESTBAD);
-
+        CASESTR(XW_EVENT_CAN_LOCK);
+        CASESTR(XW_EVENT_CANT_LOCK);
+        CASESTR(XW_EVENT_ANY);
+        CASESTR(XW_EVENT_REMOVESOCKET);
+        CASESTR(XW_EVENT_NOMORESOCKETS);
     }
     assert(0);
     return "";

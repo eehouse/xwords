@@ -60,6 +60,9 @@ typedef enum {
 
     ,XW_ST_CHECKINGDEST         /* Checking for valid socket */
 
+    ,XW_ST_CHECKING_CAN_LOCK    /* Is this message one that implies all
+                                   players are present? */
+
     ,XW_ST_DEAD                 /* About to kill the object */
 } XW_RELAY_STATE;
 
@@ -97,13 +100,24 @@ typedef enum {
 
     ,XW_EVENT_DESTBAD
 
+    ,XW_EVENT_CAN_LOCK          /* ready to stop allowing new connections */
+    ,XW_EVENT_CANT_LOCK         /* can't disallow new connections yet  */
+
     ,XW_EVENT_HEARTFAILED
+
+    ,XW_EVENT_REMOVESOCKET      /* Need to remove socket from this cref */
+
+    ,XW_EVENT_NOMORESOCKETS     /* last socket's been removed */
+
+    ,XW_EVENT_ANY               /* wildcard; matches all */
 } XW_RELAY_EVENT;
 
 
 /* actions */
 typedef enum {
     XW_ACTION_NONE
+
+    ,XW_ACTION_SEND_1ST_RSP
 
     ,XW_ACTION_SENDRSP          /* Send a connection response */
 
@@ -115,11 +129,15 @@ typedef enum {
 
     ,XW_ACTION_DISCONNECTALL
 
-    ,XW_ACTION_HEARTOK          /* allows transition back to stationary state */
-
-    ,XW_ACTION_LOCKGAME         /* lock the cref/cookie session to new hosts */
+    ,XW_ACTION_HEARTOK          /* allows transition back to stationary
+                                   state */
 
     ,XW_ACTION_CHECKDEST        /* check that a given hostID has a socket */
+
+    ,XW_ACTION_REMOVESOCKET
+
+    ,XW_ACTION_CHECK_CAN_LOCK    /* check whether this message implies all
+                                    expected players present */
 
 } XW_RELAY_ACTION;
 

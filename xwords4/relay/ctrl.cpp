@@ -40,6 +40,7 @@
 
 #include "ctrl.h"
 #include "cref.h"
+#include "crefmgr.h"
 #include "xwrelay_priv.h"
 
 /* this is *only* for testing.  Don't abuse!!!! */
@@ -116,15 +117,18 @@ cmd_discon( int socket, const char** args )
 static void
 print_cookies( int socket, CookieID theID )
 {
-    CookieMapIterator iter = CookieRef::GetCookieIterator();
+    CRefMgr* cmgr = CRefMgr::Get();
+    CookieMapIterator iter = cmgr->GetCookieIterator();
     CookieID id;
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
         if ( theID == 0 || theID == id ) {
-            CookieRef* cref = get_cookieRef( id );
-            string s;
-            cref->PrintCookieInfo( s );
+            SafeCref scr( id );
+            if ( scr.IsValid() ) {
+                string s;
+                scr.PrintCookieInfo( s );
 
-            print_to_sock( socket, s.c_str() );
+                print_to_sock( socket, s.c_str() );
+            }
         }
     }
 }
@@ -157,10 +161,10 @@ cmd_kill( int socket, const char** args )
         const char* id = args[3];
         if ( idhow != NULL && id != NULL ) {
             if ( 0 == strcmp( idhow, "name" ) ) {
-                CookieRef::Delete( id );
+                CRefMgr::Get()->Delete( id );
                 found = 1;
             } else if ( 0 == strcmp( idhow, "id" ) ) {
-                CookieRef::Delete( atoi( id ) );
+                CRefMgr::Get()->Delete( atoi( id ) );
                 found = 1;
             }
         }
@@ -198,7 +202,7 @@ cmd_shutdown( int socket, const char** args )
 static void
 print_cookies( int socket, const char* name )
 {
-    CookieID id = CookieIdForName( name );
+    CookieID id = CRefMgr::Get()->CookieIdForName( name );
     print_cookies( socket, id );
 }
 
@@ -206,14 +210,14 @@ static void
 print_socket_info( int out, int which )
 {
     string s;
-    SocketMgr::PrintSocketInfo( which, s );
+    CRefMgr::Get()->PrintSocketInfo( which, s );
     print_to_sock( out, s.c_str() );
 }
 
 static void
 print_sockets( int out, int sought )
 {
-    SocketsIterator iter = SocketMgr::MakeSocketsIterator();
+    SocketsIterator iter = CRefMgr::Get()->MakeSocketsIterator();
     int sock;
     while ( (sock = iter.Next()) != 0 ) {
         if ( sought == 0 || sought == sock ) {
@@ -264,10 +268,11 @@ cmd_print( int socket, const char** args )
 static int
 cmd_lock( int socket, const char** args )
 {
+    CRefMgr* mgr = CRefMgr::Get();
     if ( 0 == strcmp( "on", args[1] ) ) {
-        pthread_rwlock_wrlock( &gCookieMapRWLock );
+        mgr->LockAll();
     } else if ( 0 == strcmp( "off", args[1] ) ) {
-        pthread_rwlock_unlock( &gCookieMapRWLock );
+        mgr->UnlockAll();
     } else {
         print_to_sock( socket, "%s [on|off] (lock/unlock mutex)", args[0] );
     }

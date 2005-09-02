@@ -1,5 +1,24 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
+/* 
+ * Copyright 2005 by Eric House (fixin@peak.org).  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+
 #ifndef _CREF_H_
 #define _CREF_H_
 
@@ -10,10 +29,6 @@
 #include <pthread.h>
 #include "xwrelay_priv.h"
 #include "states.h"
-
-#ifndef HEARTBEAT
-# define HEARTBEAT 60
-#endif
 
 using namespace std;
 
@@ -35,22 +50,19 @@ class CookieRef {
 
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
-    void Connect( int socket, HostID srcID );
-    short GetHeartbeat() { return HEARTBEAT; }
+    short GetHeartbeat() { return m_heatbeat; }
     CookieID GetCookieID() { return m_connectionID; }
-    int SocketForHost( HostID dest );
-    void Remove( int socket );
+    int HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_hostSockets.size(); }
+    int HasSocket( int socket );
     string Name() { return m_name; }
 
     int NotFullyConnected() { return m_curState != XW_ST_ALLCONNECTED; }
 
-    void HandleHeartbeat( HostID id, int socket );
     void CheckHeartbeats( time_t now, vector<int>* victims );
-    void Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
 
     /* for console */
-    void PrintCookieInfo( string& out );
+    void _PrintCookieInfo( string& out );
     void PrintSocketInfo( string& out, int socket );
 
     static CookieMapIterator GetCookieIterator();
@@ -59,7 +71,18 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
+    /* These need to become private */
+    void _Connect( int socket, HostID srcID );
+    void _Reconnect( int socket, HostID srcID );
+    void _HandleHeartbeat( HostID id, int socket );
+    void _Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
+    void _Remove( int socket );
+    void _CheckAllConnected();
+
+    int ShouldDie() { return m_curState == XW_ST_DEAD; }
+
  private:
+
     typedef struct CRefEvent {
         XW_RELAY_EVENT type;
         union {
@@ -74,7 +97,8 @@ class CookieRef {
                 HostID srcID;
             } con;
             struct {
-                
+                int socket;
+                HostID srcID;
             } recon;
             struct {
                 HostID id;
@@ -84,10 +108,20 @@ class CookieRef {
                 time_t now;
                 vector<int>* victims;
             } htime;
+            struct {
+                HostID hostID;
+                int reason;
+            } discon;
+            struct {
+                int socket;
+            } rmsock;
         } u;
     } CRefEvent;
 
+    friend class CRefMgr;
     CookieRef( string s, CookieID id );
+
+    int SocketForHost( HostID dest );
 
     void RecordSent( int nBytes, int socket ) {
         /* This really needs a lock.... */
@@ -95,27 +129,43 @@ class CookieRef {
     }
 
     void pushConnectEvent( int socket, HostID srcID );
+    void pushReconnectEvent( int socket, HostID srcID );
     void pushHeartbeatEvent( HostID id, int socket );
+
     void pushHeartTimerEvent( time_t now, vector<int>* victims );
     void pushForwardEvent( HostID src, HostID dest, unsigned char* buf, 
                            int buflen );
     void pushDestBadEvent();
+    void pushLastSocketGoneEvent();
+    void pushRemoveSocketEvent( int socket );
+
     void pushDestOkEvent( const CRefEvent* evt );
+    void pushCanLockEvent( const CRefEvent* evt );
+    void pushCantLockEvent( const CRefEvent* evt );
 
 
     void handleEvents();
 
-    void sendResponse(const CRefEvent* evt);
-    void forward(const CRefEvent* evt);
+    void sendResponse( const CRefEvent* evt );
+    void setAllConnectedTimer();
+    void cancelAllConnectedTimer();
+
+    void forward( const CRefEvent* evt );
     void checkDest( const CRefEvent* evt );
+    void checkFromServer( const CRefEvent* evt );
 
     void disconnectAll(const CRefEvent* evt);
     void noteHeartbeat(const CRefEvent* evt);
     void checkHeartbeats(const CRefEvent* evt);
+    void removeSocket(const CRefEvent* evt);
+
+    /* timer callback */
+    static void s_checkAllConnected( void* closure );
 
     map<HostID,HostRec> m_hostSockets;
     pthread_rwlock_t m_sockets_rwlock;
     CookieID m_connectionID;
+    short m_heatbeat;           /* might change per carrier or something. */
     string m_name;
     int m_totalSent;
 
@@ -124,53 +174,12 @@ class CookieRef {
        current ones. */
     pthread_mutex_t    m_EventsMutex;
 
+
     XW_RELAY_STATE     m_curState;
     XW_RELAY_STATE     m_nextState;
     deque<CRefEvent>   m_eventQueue;
 
     static CookieID ms_nextConnectionID;
 }; /* CookieRef */
-
-typedef map<CookieID,CookieRef*> CookieMap;
-
-class CookieMapIterator {
- public:
-    CookieMapIterator();
-    ~CookieMapIterator() {}
-    CookieID Next();
- private:
-    CookieMap::const_iterator _iter;
-};
-
-CookieRef* get_make_cookieRef( const char* cookie, CookieID connID );
-CookieRef* get_cookieRef( CookieID cookieID );
-CookieID CookieIdForName( const char* name );
-void CheckHeartbeats( time_t now, vector<int>* victims );
-
-class SocketStuff;
-typedef map< int, SocketStuff* > SocketMap;
-
-class SocketsIterator {
- public:
-    SocketsIterator( SocketMap::iterator iter );
-    int Next();
- private:
-    SocketMap::iterator m_iter;
-};
-
-class SocketMgr {
- public:
-    static void Associate( int socket, CookieRef* cref );
-    static pthread_mutex_t* GetWriteMutexForSocket( int socket );
-    static void RemoveSocketRefs( int socket );
-    static void PrintSocketInfo( int socket, string& out );
-    static SocketsIterator MakeSocketsIterator();
-
- private:
-    static CookieRef* CookieRefForSocket( int socket );
-    static SocketMap ms_SocketStuff;
-    static pthread_mutex_t ms_SocketStuffMutex;
-};
-
 
 #endif

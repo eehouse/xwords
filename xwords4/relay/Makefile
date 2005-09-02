@@ -16,10 +16,18 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CC = g++
-SRC = xwrelay.cpp cref.cpp ctrl.cpp tpool.cpp states.cpp
+SRC = xwrelay.cpp \
+	cref.cpp \
+	ctrl.cpp \
+	tpool.cpp \
+	states.cpp \
+	timermgr.cpp \
+	configs.cpp \
+	crefmgr.cpp \
+
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -lpthread -g
-CPPFLAGS += -g -Wall -DHEARTBEAT=10
+CPPFLAGS += -g -Wall
 
 memdebug all: xwrelay
 
