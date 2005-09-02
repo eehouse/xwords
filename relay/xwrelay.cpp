@@ -47,16 +47,19 @@
 #include <assert.h>
 #include <sys/select.h>
 #include <stdarg.h>
+#include <getopt.h>
 #include <sys/time.h>
 
 #include "xwrelay.h"
-#include "cref.h"
+#include "crefmgr.h"
 #include "ctrl.h"
 #include "mlock.h"
 #include "tpool.h"
+#include "configs.h"
+#include "timermgr.h"
 
 #define N_WORKER_THREADS 5
-#define MILLIS 1000000
+#define MILLIS 1000
 
 void
 logf( const char* format, ... )
@@ -105,9 +108,10 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
     CookieID cookieID = getNetLong( &buf );
     HostID hostID = getNetShort( &buf );
     logf( "processHeartbeat: cookieID 0x%lx, hostID 0x%x", cookieID, hostID );
-    CookieRef* cref = get_cookieRef( cookieID );
-    if ( cref != NULL ) {
-        cref->HandleHeartbeat( hostID, socket );
+
+    SafeCref scr( cookieID );
+    if ( scr.IsValid() ) {
+        scr.HandleHeartbeat( hostID, socket );
     } else {
         killSocket( socket, "no cref for socket" );
     }
@@ -176,16 +180,18 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
  * game?
  */
 static void
-processConnect( unsigned char* bufp, int bufLen, int socket )
+processConnect( unsigned char* bufp, int bufLen, int socket, int recon )
 {
     char cookie[MAX_COOKIE_LEN+1];
     unsigned char* end = bufp + bufLen;
 
     logf( "processConnect" );
 
+    cookie[0] = '\0';
+
     unsigned char flags = *bufp++;
     if ( flagsOK( flags ) ) {
-        if ( readCookie( &bufp, end, cookie ) ) {
+        if ( recon || readCookie( &bufp, end, cookie ) ) {
 
             HostID srcID;
             CookieID cookieID;
@@ -194,9 +200,14 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
                 srcID = getNetShort( &bufp );
                 cookieID = getNetLong( &bufp );
 
-                CookieRef* cref = get_make_cookieRef( cookie, cookieID );
-                assert( cref != NULL );
-                cref->Connect( socket, srcID );
+                SafeCref scr( cookie, cookieID );
+                if ( scr.IsValid() ) {
+                    if ( recon ) {
+                        scr.Reconnect( socket, srcID );
+                    } else {
+                        scr.Connect( socket, srcID );
+                    }
+                }
             }
         }
     } else {
@@ -208,7 +219,7 @@ void
 killSocket( int socket, char* why )
 {
     logf( "killSocket(%d): %s", socket, why );
-    SocketMgr::RemoveSocketRefs( socket );
+    CRefMgr::Get()->RemoveSocketRefs( socket );
     /* Might want to kill the thread it belongs to if we're not in it,
        e.g. when unable to write to another socket. */
     logf( "killSocket done" );
@@ -229,12 +240,14 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
     unsigned char* bufp = buf + 1; /* skip cmd */
     CookieID cookieID = getNetLong( &bufp );
     logf( "cookieID = %d", cookieID );
-    CookieRef* cref = get_cookieRef( cookieID );
-    if ( cref != NULL ) {
+
+
+    SafeCref scr( cookieID );
+    if ( scr.IsValid() ) {
         HostID src = getNetShort( &bufp );
         HostID dest = getNetShort( &bufp );
 
-        cref->Forward( src, dest, buf, buflen );
+        scr.Forward( src, dest, buf, buflen );
         success = 1;
     }
     return success;
@@ -247,7 +260,11 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     switch( cmd ) {
     case XWRELAY_CONNECT: 
         logf( "processMessage got XWRELAY_CONNECT" );
-        processConnect( buf+1, bufLen-1, socket );
+        processConnect( buf+1, bufLen-1, socket, 0 );
+        break;
+    case XWRELAY_RECONNECT: 
+        logf( "processMessage got XWRELAY_RECONNECT" );
+        processConnect( buf+1, bufLen-1, socket, 1 );
         break;
     case XWRELAY_CONNECTRESP:
         logf( "bad: processMessage got XWRELAY_CONNECTRESP" );
@@ -263,7 +280,6 @@ processMessage( unsigned char* buf, int bufLen, int socket )
         logf( "processMessage got XWRELAY_MSG_TORELAY" );
         if ( !forwardMessage( buf, bufLen, socket ) ) {
             killSocket( socket, "couldn't forward message" );
-        } else {
         }
         break;
     default:
@@ -298,42 +314,142 @@ make_socket( unsigned long addr, unsigned short port )
 } /* make_socket */
 
 static void
-sighandler( int signal )
+HeartbeatProc( void* closure )
 {
     vector<int> victims;
-    CheckHeartbeats( now(), &victims );
+    CRefMgr::Get()->CheckHeartbeats( now(), &victims );
 
     unsigned int i;
     for ( i = 0; i < victims.size(); ++i ) {
         killSocket( victims[i], "heartbeat check failed" );
     }
-} /* sighandler */
+} /* HeartbeatProc */
+
+enum { FLAG_HELP
+       ,FLAG_CONFFILE
+       ,FLAG_PORT
+       ,FLAG_CPORT
+       ,FLAG_NTHREADS
+};
+
+struct option longopts[] = {
+    {
+        "help",
+        0,
+        NULL,
+        FLAG_HELP
+    }
+    ,{
+        "conffile",
+        1,
+        NULL,
+        FLAG_CONFFILE
+    }
+    ,{
+        "port",
+        1,
+        NULL,
+        FLAG_PORT
+    }
+    ,{
+        "ctrlport",
+        1,
+        NULL,
+        FLAG_CPORT
+    }
+    ,{
+        "nthreads",
+        1,
+        NULL,
+        FLAG_NTHREADS
+    }
+};
+
+static void
+usage( char* arg0 )
+{
+    unsigned int i;
+    fprintf( stderr, "usage: %s \\\n", arg0 );
+    for ( i = 0; i < sizeof(longopts)/sizeof(longopts[0]); ++i ) {
+        struct option* opt = &longopts[i];
+        fprintf( stderr, "\t--%s", opt->name );
+        if ( opt->has_arg ) {
+            fprintf( stderr, " <%s>", opt->name );
+        }
+        fprintf( stderr, "\\\n" );
+    }
+}
+
 
 int main( int argc, char** argv )
 {
-    int port = 10999;
+    int port = 0;
+    int ctrlport = 0;
+    int nWorkerThreads = 0;
+    char* conffile = NULL;
 
-    if ( argc > 1 ) {
-        port = atoi( argv[1] );
+    /* Read options. Options trump config file values when they conflict, but
+       the name of the config file is an option so we have to get that
+       first. */
+
+    for ( ; ; ) {
+       int opt = getopt_long(argc, argv, "hc:p:l:",longopts, NULL);
+
+       if ( opt == -1 ) {
+           break;
+       }
+
+       switch( opt ) {
+       case FLAG_HELP:
+           usage( argv[0] );
+           exit( 0 );
+       case FLAG_CONFFILE:
+           conffile = optarg;
+           break;
+       case FLAG_PORT:
+           port = atoi( optarg );
+           break;
+       case FLAG_CPORT:
+           ctrlport = atoi( optarg );
+           break;
+       case FLAG_NTHREADS:
+           nWorkerThreads = atoi( optarg );
+           break;
+       default:
+           usage( argv[0] );
+           exit( 1 );
+       }
     }
-    /* Open a listening socket.  For each received message, fork a thread into
-       which relevant stuff is passed. */
+
+    RelayConfigs::InitConfigs( conffile );
+    RelayConfigs* cfg = RelayConfigs::GetConfigs();
+
+    if ( port == 0 ) {
+        port = cfg->GetPort();
+    }
+    if ( ctrlport == 0 ) {
+        ctrlport = cfg->GetCtrlPort();
+    }
+    if ( nWorkerThreads == 0 ) {
+        nWorkerThreads = cfg->GetNWorkerThreads();
+    }
+
 
     int listener = make_socket( INADDR_ANY, port );
     if ( listener == -1 ) {
         exit( 1 );
     }
-    int control = make_socket( INADDR_LOOPBACK, port + 1 );
+    int control = make_socket( INADDR_LOOPBACK, ctrlport );
     if ( control == -1 ) {
         exit( 1 );
     }
 
-    /* generate a signal after n milliseconds, then every m milliseconds  */
-    (void)signal( SIGALRM, sighandler );
-    (void)ualarm( 2 * HEARTBEAT * MILLIS, 2 * HEARTBEAT* MILLIS );
-
     XWThreadPool* tPool = XWThreadPool::GetTPool();
-    tPool->Setup( N_WORKER_THREADS, processMessage );
+    tPool->Setup( nWorkerThreads, processMessage );
+
+    short heartbeat = cfg->GetHeartbeatInterval();
+    TimerMgr::getTimerMgr()->setTimer( heartbeat, HeartbeatProc, NULL, 
+                                       heartbeat );
 
     /* set up select call */
     fd_set rfds;
@@ -349,7 +465,9 @@ int main( int argc, char** argv )
 
         int retval = select( highest, &rfds, NULL, NULL, NULL );
         if ( retval < 0 ) {
-            logf( "errno: %d", errno );
+            if ( errno != 4 ) { /* 4's what we get when signal interrupts */
+                logf( "errno: %d", errno );
+            }
         } else {
             if ( FD_ISSET( listener, &rfds ) ) {
                 struct sockaddr_in newaddr;
@@ -372,5 +490,8 @@ int main( int argc, char** argv )
 
     close( listener );
     close( control );
+
+    delete cfg;
+
     return 0;
 } // main

@@ -43,12 +43,6 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           XWRELAY_RECONNECT.  Format: heartbeat_seconds: 2; connectionID:
           2; */
 
-       , XWRELAY_LOCKGAME
-       /* Sent by a participant in game when it's satisfied that all desired
-          participants are present.  On seeing this message the relay goes
-          into a state where no further connection requests will be
-          allowed. */
-
        , XWRELAY_CONNECTDENIED
        /* The relay says go away.  Format: reason code: 1 */
 

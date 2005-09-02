@@ -29,6 +29,7 @@
 #include "tpool.h"
 #include "xwrelay_priv.h"
 #include "xwrelay.h"
+#include "timermgr.h"
 #include "mlock.h"
 
 XWThreadPool* XWThreadPool::g_instance = NULL;
@@ -211,22 +212,11 @@ XWThreadPool::interrupt_poll()
     }
 }
 
-static int
-figureTimeout()
-{
-    return -1;
-}
-
-static void
-considerFireTimer()
-{
-/*     logf( "timer fired" ); */
-}
-
 void*
 XWThreadPool::real_listener()
 {
     int flags = POLLIN | POLLERR | POLLHUP;
+    TimerMgr* tmgr = TimerMgr::getTimerMgr();
 
     for ( ; ; ) {
 
@@ -252,14 +242,15 @@ XWThreadPool::real_listener()
         }
         pthread_rwlock_unlock( &m_activeSocketsRWLock );
 
-        int nMillis = figureTimeout();
+        int nMillis = tmgr->getPollTimeout();
 
-        logf( "calling poll on %s", log );
         int nEvents = poll( fds, nSockets, nMillis ); /* -1: infinite timeout */
         logf( "back from  poll: %d", nEvents );
-        if ( nEvents < 0 ) {
+        if ( nEvents == 0 ) {
+            tmgr->fireElapsedTimers();
+        } else if ( nEvents < 0 ) {
             logf( "errno: %d", errno );
-        }
+        } 
 
         if ( fds[0].revents != 0 ) {
             logf( "poll interrupted" );
@@ -299,8 +290,6 @@ XWThreadPool::real_listener()
             }
             assert( nEvents == 0 );
         }
-
-        considerFireTimer();
 
         free( fds );
         free( log );
