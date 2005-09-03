@@ -45,18 +45,26 @@ class HostRec {
 
 class CookieRef {
 
- public:
+ private:
+    /* These classes have access to CookieRef.  All others should go through
+       SafeCref instances. */
+    friend class CRefMgr;
+    friend class SafeCref;
+    friend class CookieMapIterator;
 
+    CookieRef( string s, CookieID id );
     ~CookieRef();
 
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
-    short GetHeartbeat() { return m_heatbeat; }
     CookieID GetCookieID() { return m_connectionID; }
     int HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_hostSockets.size(); }
     int HasSocket( int socket );
     string Name() { return m_name; }
+
+    short GetHeartbeat() { return m_heatbeat; }
+    int SocketForHost( HostID dest );
 
     int NotFullyConnected() { return m_curState != XW_ST_ALLCONNECTED; }
 
@@ -70,7 +78,6 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
-    /* These need to become private */
     void _Connect( int socket, HostID srcID );
     void _Reconnect( int socket, HostID srcID );
     void _HandleHeartbeat( HostID id, int socket );
@@ -80,8 +87,6 @@ class CookieRef {
     void _CheckAllConnected();
 
     int ShouldDie() { return m_curState == XW_ST_DEAD; }
-
- private:
 
     typedef struct CRefEvent {
         XW_RELAY_EVENT type;
@@ -121,11 +126,6 @@ class CookieRef {
             } disnote;
         } u;
     } CRefEvent;
-
-    friend class CRefMgr;
-    CookieRef( string s, CookieID id );
-
-    int SocketForHost( HostID dest );
 
     void send_with_length( int socket, unsigned char* buf, int bufLen );
     void RecordSent( int nBytes, int socket ) {
