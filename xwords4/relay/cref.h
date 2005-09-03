@@ -157,6 +157,7 @@ class CookieRef {
     void forward( const CRefEvent* evt );
     void checkDest( const CRefEvent* evt );
     void checkFromServer( const CRefEvent* evt );
+    void notifyOthers( int socket, XWREASON why );
 
     void disconnectSockets( int socket, XWREASON why );
     void noteHeartbeat(const CRefEvent* evt);

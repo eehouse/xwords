@@ -152,10 +152,10 @@ void
 CookieRef::notifyDisconn( const CRefEvent* evt )
 {
     int socket = evt->u.disnote.socket;
-    unsigned char buf[2];
-
-    buf[0] = XWRELAY_DISCONNECT;
-    buf[1] = evt->u.disnote.why;
+    unsigned char buf[] = { 
+        XWRELAY_DISCONNECT_YOU,
+        evt->u.disnote.why 
+    };
 
     send_with_length( socket, buf, sizeof(buf) );
 } /* notifyDisconn */
@@ -225,7 +225,7 @@ CookieRef::_CheckHeartbeats( time_t now )
         map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
         while ( iter != m_hostSockets.end() ) {
             time_t last = iter->second.m_lastHeartbeat;
-            if ( (now - last) > GetHeartbeat() * 2 ) {
+            if ( (now - last) > GetHeartbeat() ) {
                 pushHeartFailedEvent( iter->second.m_socket );
             }
             ++iter;
@@ -403,7 +403,9 @@ CookieRef::handleEvents()
                 disconnectSockets( 0, XWRELAY_ERROR_TIMEOUT );
                 break;
             case XW_ACTION_HEARTDISCONNECT:
-                disconnectSockets( evt.u.heart.socket, XWRELAY_ERROR_HEART );
+                notifyOthers( evt.u.heart.socket, XWRELAY_ERROR_HEART_OTHER );
+                disconnectSockets( evt.u.heart.socket, 
+                                   XWRELAY_ERROR_HEART_YOU );
                 break;
 
             case XW_ACTION_NOTEHEART:
@@ -547,6 +549,31 @@ CookieRef::checkFromServer( const CRefEvent* evt )
         pushCantLockEvent( evt );
     }
 }
+
+void
+CookieRef::notifyOthers( int socket, XWREASON why )
+{
+    assert( socket != 0 );
+
+    RWReadLock ml( &m_sockets_rwlock );
+
+    map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
+    while ( iter != m_hostSockets.end() ) { 
+        int other = iter->second.m_socket;
+        if ( other != socket ) {
+            unsigned char buf[4];
+            buf[0] = XWRELAY_DISCONNECT_OTHER;
+            buf[1] = why;
+            
+            HostID id = iter->first;
+            short tmp = htons( id );
+            memcpy( &buf[2], &tmp, 2 );
+
+            send_with_length( other, buf, sizeof(buf) );
+        }
+        ++iter;
+    }
+} /* notifyOthers */
 
 void
 CookieRef::disconnectSockets( int socket, XWREASON why )
