@@ -107,6 +107,8 @@ typedef enum {
 
     ,XW_EVENT_REMOVESOCKET      /* Need to remove socket from this cref */
 
+    ,XW_EVENT_NOTIFYDISCON      /* Send a discon */
+
     ,XW_EVENT_NOMORESOCKETS     /* last socket's been removed */
 
     ,XW_EVENT_ANY               /* wildcard; matches all */
@@ -128,16 +130,21 @@ typedef enum {
     ,XW_ACTION_CHECKHEART       /* Check for heartbeats */
 
     ,XW_ACTION_DISCONNECTALL
+    ,XW_ACTION_TIMERDISCONNECT  /* disconnect all because of a timer */
 
     ,XW_ACTION_HEARTOK          /* allows transition back to stationary
                                    state */
 
     ,XW_ACTION_CHECKDEST        /* check that a given hostID has a socket */
 
+    ,XW_ACTION_NOTIFYDISCON
+
     ,XW_ACTION_REMOVESOCKET
 
     ,XW_ACTION_CHECK_CAN_LOCK    /* check whether this message implies all
                                     expected players present */
+
+    ,XW_ACTION_HEARTDISCONNECT
 
 } XW_RELAY_ACTION;
 

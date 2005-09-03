@@ -313,13 +313,15 @@ CRefMgr::getCookieRef_impl( CookieID cookieID )
 }
 
 void
-CRefMgr::CheckHeartbeats( time_t now, vector<int>* sockets )
+CRefMgr::CheckHeartbeats( time_t now )
 {
     RWReadLock rwl( &m_cookieMapRWLock );
     CookieMap::iterator iter = m_cookieMap.begin();
     while ( iter != m_cookieMap.end() ) {
-        CookieRef* ref = iter->second;
-        ref->CheckHeartbeats( now, sockets );
+        SafeCref scr( iter->second );
+        if ( scr.IsValid() ) {
+            scr.CheckHeartbeats( now );
+        }
         ++iter;
     }
 } /* CheckHeartbeats */

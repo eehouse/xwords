@@ -28,6 +28,7 @@
 #include <deque>
 #include <pthread.h>
 #include "xwrelay_priv.h"
+#include "xwrelay.h"
 #include "states.h"
 
 using namespace std;
@@ -59,8 +60,6 @@ class CookieRef {
 
     int NotFullyConnected() { return m_curState != XW_ST_ALLCONNECTED; }
 
-    void CheckHeartbeats( time_t now, vector<int>* victims );
-
     /* for console */
     void _PrintCookieInfo( string& out );
     void PrintSocketInfo( string& out, int socket );
@@ -75,6 +74,7 @@ class CookieRef {
     void _Connect( int socket, HostID srcID );
     void _Reconnect( int socket, HostID srcID );
     void _HandleHeartbeat( HostID id, int socket );
+    void _CheckHeartbeats( time_t now );
     void _Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
     void _Remove( int socket );
     void _CheckAllConnected();
@@ -115,6 +115,10 @@ class CookieRef {
             struct {
                 int socket;
             } rmsock;
+            struct {
+                int socket;
+                XWREASON why;
+            } disnote;
         } u;
     } CRefEvent;
 
@@ -131,6 +135,8 @@ class CookieRef {
     void pushConnectEvent( int socket, HostID srcID );
     void pushReconnectEvent( int socket, HostID srcID );
     void pushHeartbeatEvent( HostID id, int socket );
+    void pushHeartFailedEvent( int socket );
+    
 
     void pushHeartTimerEvent( time_t now, vector<int>* victims );
     void pushForwardEvent( HostID src, HostID dest, unsigned char* buf, 
@@ -138,6 +144,7 @@ class CookieRef {
     void pushDestBadEvent();
     void pushLastSocketGoneEvent();
     void pushRemoveSocketEvent( int socket );
+    void pushNotifyDisconEvent( int socket, XWREASON why );
 
     void pushDestOkEvent( const CRefEvent* evt );
     void pushCanLockEvent( const CRefEvent* evt );
@@ -153,10 +160,12 @@ class CookieRef {
     void checkDest( const CRefEvent* evt );
     void checkFromServer( const CRefEvent* evt );
 
-    void disconnectAll(const CRefEvent* evt);
+    void disconnectSockets( int socket, XWREASON why );
     void noteHeartbeat(const CRefEvent* evt);
     void checkHeartbeats(const CRefEvent* evt);
+    void notifyDisconn(const CRefEvent* evt);
     void removeSocket(const CRefEvent* evt);
+    
 
     /* timer callback */
     static void s_checkAllConnected( void* closure );

@@ -316,13 +316,7 @@ make_socket( unsigned long addr, unsigned short port )
 static void
 HeartbeatProc( void* closure )
 {
-    vector<int> victims;
-    CRefMgr::Get()->CheckHeartbeats( now(), &victims );
-
-    unsigned int i;
-    for ( i = 0; i < victims.size(); ++i ) {
-        killSocket( victims[i], "heartbeat check failed" );
-    }
+    CRefMgr::Get()->CheckHeartbeats( now() );
 } /* HeartbeatProc */
 
 enum { FLAG_HELP
