@@ -290,16 +290,6 @@ CookieRef::pushHeartFailedEvent( int socket )
 }
 
 void
-CookieRef::pushHeartTimerEvent( time_t now, vector<int>* victims )
-{
-    CRefEvent evt;
-    evt.type = XW_EVENT_HEARTTIMER;
-    evt.u.htime.now = now;
-    evt.u.htime.victims = victims;
-    m_eventQueue.push_back( evt );
-}
-
-void
 CookieRef::pushForwardEvent( HostID src, HostID dest, 
                              unsigned char* buf, int buflen )
 {
@@ -420,10 +410,6 @@ CookieRef::handleEvents()
                 noteHeartbeat( &evt );
                 break;
 
-            case XW_ACTION_CHECKHEART:
-                checkHeartbeats( &evt );
-                break;
-
             case XW_ACTION_NOTIFYDISCON:
                 notifyDisconn( &evt );
                 break;
@@ -432,7 +418,6 @@ CookieRef::handleEvents()
                 removeSocket( &evt );
                 break;
 
-            case XW_ACTION_HEARTOK:
             case XW_ACTION_NONE: 
                 /* nothing to do for these */
                 break;
@@ -602,30 +587,6 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
         iter->second.m_lastHeartbeat = now();
     }
 } /* noteHeartbeat */
-
-void
-CookieRef::checkHeartbeats( const CRefEvent* evt )
-{
-    int vcount = 0;
-    time_t now = evt->u.htime.now;
-
-    RWReadLock rwl( &m_sockets_rwlock );
-
-    map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
-    while ( iter != m_hostSockets.end() ) {
-        time_t last = iter->second.m_lastHeartbeat;
-        if ( (now - last) > GetHeartbeat() * 2 ) {
-            pushHeartFailedEvent( iter->second.m_socket );
-        }
-        ++iter;
-    }
-    logf( "CookieRef::CheckHeartbeats done" );
-
-    /* Post an event */
-    CRefEvent newEvt;
-    newEvt.type = vcount > 0 ? XW_EVENT_HEARTFAILED : XW_EVENT_HEARTOK;
-    m_eventQueue.push_back( newEvt );
-} /* checkHeartbeats */
 
 /* timer callback */
 /* static */ void

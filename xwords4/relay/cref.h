@@ -137,8 +137,6 @@ class CookieRef {
     void pushHeartbeatEvent( HostID id, int socket );
     void pushHeartFailedEvent( int socket );
     
-
-    void pushHeartTimerEvent( time_t now, vector<int>* victims );
     void pushForwardEvent( HostID src, HostID dest, unsigned char* buf, 
                            int buflen );
     void pushDestBadEvent();
@@ -162,7 +160,6 @@ class CookieRef {
 
     void disconnectSockets( int socket, XWREASON why );
     void noteHeartbeat(const CRefEvent* evt);
-    void checkHeartbeats(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket(const CRefEvent* evt);
     
