@@ -1083,7 +1083,9 @@ heartbeat_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    fireTimer( globals, TIMER_HEARTBEAT );
+    if ( !globals->cGlobals.params->noHeartbeat ) {
+        fireTimer( globals, TIMER_HEARTBEAT );
+    }
 
     return (gint)0;
 }
