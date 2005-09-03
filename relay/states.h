@@ -48,16 +48,6 @@ typedef enum {
                                    all connections if we don't hear back from
                                    the missing guy soon.  */
 
-
-    ,XW_ST_HEARTCHECK_CONNECTING      /* In the middle of checking heartbeat situation. */
-    ,XW_ST_HEARTCHECK_CONNECTED       /* Need two states so we know where to
-                                         go back to. */
-
-    ,XW_ST_SENDING_DISCON       /* We're in the process of pulling the plug on
-                                   all devices that remain connected. */
-
-    ,XW_ST_DISCONNECTED         /* We're about to kill this object. */
-
     ,XW_ST_CHECKINGDEST         /* Checking for valid socket */
 
     ,XW_ST_CHECKING_CAN_LOCK    /* Is this message one that implies all
@@ -81,20 +71,8 @@ typedef enum {
 
     ,XW_EVENT_HEARTMSG          /* A heartbeat message arrived */
 
-    ,XW_EVENT_HEARTTIMER        /* Time to check for missing heartbeats */
-
-    ,XW_EVENT_DISCONTIMER       /* No reconnect received: time to kill the
-                                   remaining connections */
-
     ,XW_EVENT_CONNTIMER         /* timer for did we get all players hooked
                                    up  */
-
-    ,XW_EVENT_ALLHEREMSG        /* message from server that all expected
-                                   player reg messages have been received and
-                                   no new hosts should be registering selvs
-                                   with cookie. */
-
-    ,XW_EVENT_HEARTOK
 
     ,XW_EVENT_DESTOK
 
@@ -127,13 +105,8 @@ typedef enum {
 
     ,XW_ACTION_NOTEHEART        /* Record heartbeat received */
 
-    ,XW_ACTION_CHECKHEART       /* Check for heartbeats */
-
     ,XW_ACTION_DISCONNECTALL
     ,XW_ACTION_TIMERDISCONNECT  /* disconnect all because of a timer */
-
-    ,XW_ACTION_HEARTOK          /* allows transition back to stationary
-                                   state */
 
     ,XW_ACTION_CHECKDEST        /* check that a given hostID has a socket */
 
@@ -147,7 +120,6 @@ typedef enum {
     ,XW_ACTION_HEARTDISCONNECT
 
 } XW_RELAY_ACTION;
-
 
 int getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
                   XW_RELAY_ACTION* takeAction, XW_RELAY_STATE* nextState );
