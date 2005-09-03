@@ -26,7 +26,7 @@
 /* Set if device is acting a server; cleared if as client */
 #define FLAGS_SERVER_BIT 0x01
 
-enum { XWRELAY_NONE             /* 0 is an illegal value */
+typedef enum { XWRELAY_NONE             /* 0 is an illegal value */
 
        , XWRELAY_CONNECT
        /* Sent from device to relay to establish connection to relay.  Format:
@@ -42,6 +42,9 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
        /* Sent from relay to device in response to XWRELAY_CONNECT or
           XWRELAY_RECONNECT.  Format: heartbeat_seconds: 2; connectionID:
           2; */
+
+       , XWRELAY_OTHERCONNECT   /* Another device has [re]joined your game.
+                                 Format: ??? */
 
        , XWRELAY_DISCONNECT_YOU
        /* Sent from relay when existing connection is terminated.  
@@ -64,7 +67,7 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
        , XWRELAY_MSG_TORELAY
        /* Sent from device to relay.  Format: connectionID: 2; src_hostID:
           2; dest_hostID: 2 */
-};
+} XWRelayMsg;
 
 #ifndef CANT_DO_TYPEDEF
 typedef unsigned char XWRELAY_Cmd;
