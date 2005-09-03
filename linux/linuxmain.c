@@ -164,9 +164,11 @@ linux_getErrString( UtilErrID id )
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
         break;
-    case ERR_RELAY_ERROR:
-        message = "Problem communicating with the relay.  Maybe it's "
-            "overloaded or is expecting a newer version of Crosswords";
+    case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
+        message = "The relay timed you out; maybe the other players didn't show.";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART:
+        message = "You were disconnected from relay because it didn't hear from you in too long.";
         break;
 
     default:
