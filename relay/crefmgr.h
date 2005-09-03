@@ -57,7 +57,7 @@ class CRefMgr {
     CookieMapIterator GetCookieIterator();
 
     /* PENDING.  These need to go through SafeCref */
-    void CheckHeartbeats( time_t now, vector<int>* sockets );
+    void CheckHeartbeats( time_t now );
     void Delete( CookieID id );
     void Delete( CookieRef* cref );
     void Delete( const char* name );
@@ -127,6 +127,9 @@ class SafeCref {
     }
     void HandleHeartbeat( HostID id, int socket ) {
         m_cref->_HandleHeartbeat( id, socket );
+    }
+    void CheckHeartbeats( time_t now ) {
+        m_cref->_CheckHeartbeats( now );
     }
     void PrintCookieInfo( string& out ) {
         m_cref->_PrintCookieInfo( out );

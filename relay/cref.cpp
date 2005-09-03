@@ -149,6 +149,18 @@ CookieRef::SocketForHost( HostID dest )
 }
 
 void
+CookieRef::notifyDisconn( const CRefEvent* evt )
+{
+    int socket = evt->u.disnote.socket;
+    unsigned char buf[2];
+
+    buf[0] = XWRELAY_DISCONNECT;
+    buf[1] = evt->u.disnote.why;
+
+    send_with_length( socket, buf, sizeof(buf) );
+} /* notifyDisconn */
+
+void
 CookieRef::removeSocket( const CRefEvent* evt )
 {
     int socket = evt->u.rmsock.socket;
@@ -177,7 +189,6 @@ CookieRef::removeSocket( const CRefEvent* evt )
     }
 } /* Remove */
 
-
 int
 CookieRef::HasSocket( int socket )
 {
@@ -205,11 +216,21 @@ CookieRef::_HandleHeartbeat( HostID id, int socket )
 } /* HandleHeartbeat */
 
 void
-CookieRef::CheckHeartbeats( time_t now, vector<int>* victims )
+CookieRef::_CheckHeartbeats( time_t now )
 {
-    logf( "CookieRef::CheckHeartbeats" );
-    MutexLock ml( &m_EventsMutex );
-    pushHeartTimerEvent( now, victims );
+    logf( "CookieRef::_CheckHeartbeats" );
+    MutexLock ml( &m_EventsMutex ); 
+    {
+        RWReadLock rwl( &m_sockets_rwlock );
+        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
+        while ( iter != m_hostSockets.end() ) {
+            time_t last = iter->second.m_lastHeartbeat;
+            if ( (now - last) > GetHeartbeat() * 2 ) {
+                pushHeartFailedEvent( iter->second.m_socket );
+            }
+            ++iter;
+        }
+    }
     handleEvents();
 } /* CheckHeartbeats */
 
@@ -236,7 +257,7 @@ CookieRef::pushConnectEvent( int socket, HostID srcID )
     evt.type = XW_EVENT_CONNECTMSG;
     evt.u.con.socket = socket;
     evt.u.con.srcID = srcID;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 } /* pushConnectEvent */
 
 void 
@@ -246,7 +267,7 @@ CookieRef::pushReconnectEvent( int socket, HostID srcID )
     evt.type = XW_EVENT_RECONNECTMSG;
     evt.u.recon.socket = socket;
     evt.u.recon.srcID = srcID;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 } /* pushConnectEvent */
 
 void
@@ -256,7 +277,16 @@ CookieRef::pushHeartbeatEvent( HostID id, int socket )
     evt.type = XW_EVENT_HEARTMSG;
     evt.u.heart.id = id;
     evt.u.heart.socket = socket;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
+}
+
+void
+CookieRef::pushHeartFailedEvent( int socket )
+{
+    CRefEvent evt;
+    evt.type = XW_EVENT_HEARTFAILED;
+    evt.u.heart.socket = socket;
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -266,7 +296,7 @@ CookieRef::pushHeartTimerEvent( time_t now, vector<int>* victims )
     evt.type = XW_EVENT_HEARTTIMER;
     evt.u.htime.now = now;
     evt.u.htime.victims = victims;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -279,7 +309,7 @@ CookieRef::pushForwardEvent( HostID src, HostID dest,
     evt.u.fwd.dest = dest;
     evt.u.fwd.buf = buf;
     evt.u.fwd.buflen = buflen;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -288,7 +318,17 @@ CookieRef::pushRemoveSocketEvent( int socket )
     CRefEvent evt;
     evt.type = XW_EVENT_REMOVESOCKET;
     evt.u.rmsock.socket = socket;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
+}
+
+void
+CookieRef::pushNotifyDisconEvent( int socket, XWREASON why )
+{
+    CRefEvent evt;
+    evt.type = XW_EVENT_NOTIFYDISCON;
+    evt.u.disnote.socket = socket;
+    evt.u.disnote.why = why;
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -296,7 +336,7 @@ CookieRef::pushDestBadEvent()
 {
     CRefEvent evt;
     evt.type = XW_EVENT_DESTBAD;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -305,7 +345,7 @@ CookieRef::pushDestOkEvent( const CRefEvent* oldEvt )
     CRefEvent evt;
     memcpy( &evt, oldEvt, sizeof(evt) );
     evt.type = XW_EVENT_DESTOK;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -314,7 +354,7 @@ CookieRef::pushCanLockEvent( const CRefEvent* oldEvt )
     CRefEvent evt;
     memcpy( &evt, oldEvt, sizeof(evt) );
     evt.type = XW_EVENT_CAN_LOCK;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -323,7 +363,7 @@ CookieRef::pushCantLockEvent( const CRefEvent* oldEvt )
     CRefEvent evt;
     memcpy( &evt, oldEvt, sizeof(evt) );
     evt.type = XW_EVENT_CANT_LOCK;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -331,7 +371,7 @@ CookieRef::pushLastSocketGoneEvent()
 {
     CRefEvent evt;
     evt.type = XW_EVENT_NOMORESOCKETS;
-    m_eventQueue.push_front( evt );
+    m_eventQueue.push_back( evt );
 }
 
 void
@@ -369,8 +409,11 @@ CookieRef::handleEvents()
                 checkFromServer( &evt );
                 break;
 
-            case XW_ACTION_DISCONNECTALL:
-                disconnectAll( &evt );
+            case XW_ACTION_TIMERDISCONNECT:
+                disconnectSockets( 0, XWRELAY_ERROR_TIMEOUT );
+                break;
+            case XW_ACTION_HEARTDISCONNECT:
+                disconnectSockets( evt.u.heart.socket, XWRELAY_ERROR_HEART );
                 break;
 
             case XW_ACTION_NOTEHEART:
@@ -379,6 +422,10 @@ CookieRef::handleEvents()
 
             case XW_ACTION_CHECKHEART:
                 checkHeartbeats( &evt );
+                break;
+
+            case XW_ACTION_NOTIFYDISCON:
+                notifyDisconn( &evt );
                 break;
 
             case XW_ACTION_REMOVESOCKET:
@@ -517,16 +564,21 @@ CookieRef::checkFromServer( const CRefEvent* evt )
 }
 
 void
-CookieRef::disconnectAll( const CRefEvent* evt )
+CookieRef::disconnectSockets( int socket, XWREASON why )
 {
-    logf( "disconnectAll" );
-    map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
-    while ( iter != m_hostSockets.end() ) {
-        pushRemoveSocketEvent( iter->second.m_socket );
-        ++iter;
+    if ( socket == 0 ) {
+        RWReadLock ml( &m_sockets_rwlock );
+        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
+        while ( iter != m_hostSockets.end() ) { 
+            assert( iter->second.m_socket != 0 );
+            disconnectSockets( iter->second.m_socket, why );
+            ++iter;
+        }
+    } else {
+        pushNotifyDisconEvent( socket, why );
+        pushRemoveSocketEvent( socket );
     }
-    logf( "disconnectAll done" );
-}
+} /* disconnectSockets */
 
 void
 CookieRef::noteHeartbeat( const CRefEvent* evt )
@@ -555,17 +607,15 @@ void
 CookieRef::checkHeartbeats( const CRefEvent* evt )
 {
     int vcount = 0;
-    vector<int>* victims = evt->u.htime.victims;
     time_t now = evt->u.htime.now;
 
-    RWWriteLock rwl( &m_sockets_rwlock );
+    RWReadLock rwl( &m_sockets_rwlock );
 
     map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
     while ( iter != m_hostSockets.end() ) {
         time_t last = iter->second.m_lastHeartbeat;
         if ( (now - last) > GetHeartbeat() * 2 ) {
-            victims->push_back( iter->second.m_socket );
-            ++vcount;
+            pushHeartFailedEvent( iter->second.m_socket );
         }
         ++iter;
     }
@@ -574,7 +624,7 @@ CookieRef::checkHeartbeats( const CRefEvent* evt )
     /* Post an event */
     CRefEvent newEvt;
     newEvt.type = vcount > 0 ? XW_EVENT_HEARTFAILED : XW_EVENT_HEARTOK;
-    m_eventQueue.push_front( newEvt );
+    m_eventQueue.push_back( newEvt );
 } /* checkHeartbeats */
 
 /* timer callback */
@@ -596,7 +646,7 @@ CookieRef::_CheckAllConnected()
     MutexLock ml( &m_EventsMutex );
     CRefEvent newEvt;
     newEvt.type = XW_EVENT_CONNTIMER;
-    m_eventQueue.push_front( newEvt );
+    m_eventQueue.push_back( newEvt );
     handleEvents();
 }
 
