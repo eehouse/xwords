@@ -707,8 +707,10 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                 *senderID = srcID;
             }
             break;
+
+        case XWRELAY_DISCONNECT:
         case XWRELAY_CONNECTDENIED:
-            util_userError( comms->util, ERR_RELAY_ERROR );
+            util_userError( comms->util, ERR_RELAY_BASE  + stream_getU8( stream ) );
             /* fallthru */
         default:
             consumed = XP_TRUE; /* drop it */
