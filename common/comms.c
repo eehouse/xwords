@@ -686,9 +686,10 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             comms->cookieID = stream_getU32( stream );
             XP_LOGF( "got XWRELAY_CONNECTRESP; set cookieID = %ld",
                      comms->cookieID );
-            /* We're connected now.  Send any pending messages.  This may need
-               to be done later since we're inside the platform's socket read
-               proc now. */
+
+            /* We're [re-]connected now.  Send any pending messages.  This may
+               need to be done later since we're inside the platform's socket
+               read proc now. */
             comms_resendAll( comms );
 
             setHeartbeatTimer( comms );
@@ -716,6 +717,19 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             /* we will eventually want to tell the user which player's gone */
             util_userError( comms->util, ERR_RELAY_BASE + relayErr );
             consumed = XP_TRUE; 
+            break;
+
+        case XWRELAY_OTHERCONNECT:
+            /* If I'm a client connecting before the server, resend initial
+               message to server now that it may be avialable.  This is a bit
+               of a hack. */
+            comms_resendAll( comms );
+            consumed = XP_TRUE;
+            /* util_userError is synchronous, and so prevents a couple of
+               robots from going at it until the user taps "ok".  That sucks.
+               For now let's see if the user can deduce the connection from
+               the activity on the board. */
+/*             util_userError( comms->util, INFO_REMOTE_CONNECTED ); */
             break;
 
         case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
