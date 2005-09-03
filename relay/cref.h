@@ -102,10 +102,6 @@ class CookieRef {
                 HostID srcID;
             } con;
             struct {
-                int socket;
-                HostID srcID;
-            } recon;
-            struct {
                 HostID id;
                 int socket;
             } heart;
@@ -128,6 +124,8 @@ class CookieRef {
     } CRefEvent;
 
     void send_with_length( int socket, unsigned char* buf, int bufLen );
+    void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why );
+
     void RecordSent( int nBytes, int socket ) {
         m_totalSent += nBytes;
     }
@@ -157,7 +155,7 @@ class CookieRef {
     void forward( const CRefEvent* evt );
     void checkDest( const CRefEvent* evt );
     void checkFromServer( const CRefEvent* evt );
-    void notifyOthers( int socket, XWREASON why );
+    void notifyOthers( int socket, XWRelayMsg msg, XWREASON why );
 
     void disconnectSockets( int socket, XWREASON why );
     void noteHeartbeat(const CRefEvent* evt);
