@@ -265,10 +265,10 @@ CookieRef::pushReconnectEvent( int socket, HostID srcID )
 {
     CRefEvent evt;
     evt.type = XW_EVENT_RECONNECTMSG;
-    evt.u.recon.socket = socket;
-    evt.u.recon.srcID = srcID;
+    evt.u.con.socket = socket;
+    evt.u.con.srcID = srcID;
     m_eventQueue.push_back( evt );
-} /* pushConnectEvent */
+} /* pushReconnectEvent */
 
 void
 CookieRef::pushHeartbeatEvent( HostID id, int socket )
@@ -382,8 +382,12 @@ CookieRef::handleEvents()
             switch( takeAction ) {
             case XW_ACTION_SEND_1ST_RSP:
                 setAllConnectedTimer();
-                /* fallthru */
+                sendResponse( &evt );
+                break;
+
             case XW_ACTION_SENDRSP:
+                notifyOthers( evt.u.con.socket, XWRELAY_OTHERCONNECT, 
+                              XWRELAY_ERROR_NONE );
                 sendResponse( &evt );
                 break;
 
@@ -403,7 +407,8 @@ CookieRef::handleEvents()
                 disconnectSockets( 0, XWRELAY_ERROR_TIMEOUT );
                 break;
             case XW_ACTION_HEARTDISCONNECT:
-                notifyOthers( evt.u.heart.socket, XWRELAY_ERROR_HEART_OTHER );
+                notifyOthers( evt.u.heart.socket, XWRELAY_DISCONNECT_OTHER, 
+                              XWRELAY_ERROR_HEART_OTHER );
                 disconnectSockets( evt.u.heart.socket, 
                                    XWRELAY_ERROR_HEART_YOU );
                 break;
@@ -551,7 +556,32 @@ CookieRef::checkFromServer( const CRefEvent* evt )
 }
 
 void
-CookieRef::notifyOthers( int socket, XWREASON why )
+CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why )
+{
+    unsigned char buf[10];
+    short tmp;
+    int len = 0;
+    buf[len++] = msg;
+
+    switch ( msg ) {
+    case XWRELAY_DISCONNECT_OTHER:
+        buf[len++] = why;
+        tmp = htons( id );
+        memcpy( &buf[len], &tmp, 2 );
+        len += 2;
+        break;
+    case XWRELAY_OTHERCONNECT:
+        break;
+    default:
+        logf( "not handling message %d", msg );
+        assert(0);
+    }
+
+    send_with_length( socket, buf, sizeof(buf) );
+} /* send_msg */
+
+void
+CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 {
     assert( socket != 0 );
 
@@ -561,15 +591,7 @@ CookieRef::notifyOthers( int socket, XWREASON why )
     while ( iter != m_hostSockets.end() ) { 
         int other = iter->second.m_socket;
         if ( other != socket ) {
-            unsigned char buf[4];
-            buf[0] = XWRELAY_DISCONNECT_OTHER;
-            buf[1] = why;
-            
-            HostID id = iter->first;
-            short tmp = htons( id );
-            memcpy( &buf[2], &tmp, 2 );
-
-            send_with_length( other, buf, sizeof(buf) );
+            send_msg( other, iter->first, msg, why );
         }
         ++iter;
     }
