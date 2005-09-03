@@ -43,9 +43,13 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           XWRELAY_RECONNECT.  Format: heartbeat_seconds: 2; connectionID:
           2; */
 
-       , XWRELAY_DISCONNECT
-       /* Sent from relay when existing connection is terminated.  Includes
-          reason code */
+       , XWRELAY_DISCONNECT_YOU
+       /* Sent from relay when existing connection is terminated.  
+          Format: errorCode: 1 */
+
+       , XWRELAY_DISCONNECT_OTHER
+       /* Another device has left the game. 
+          Format: errorCode: 1; lostHostId: 2 */
 
        , XWRELAY_CONNECTDENIED
        /* The relay says go away.  Format: reason code: 1 */
@@ -81,7 +85,8 @@ typedef enum {
     ,XWRELAY_ERROR_RELAYBUSY
     ,XWRELAY_ERROR_SHUTDOWN    /* relay's going down */
     ,XWRELAY_ERROR_TIMEOUT     /* Other players didn't show */
-    ,XWRELAY_ERROR_HEART       /* Haven't heard from you in too long */
+    ,XWRELAY_ERROR_HEART_YOU   /* Haven't heard from somebody in too long */
+    ,XWRELAY_ERROR_HEART_OTHER
 
     ,XWRELAY_ERROR_LASTERR
 } XWREASON;
