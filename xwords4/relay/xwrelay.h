@@ -43,6 +43,10 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           XWRELAY_RECONNECT.  Format: heartbeat_seconds: 2; connectionID:
           2; */
 
+       , XWRELAY_DISCONNECT
+       /* Sent from relay when existing connection is terminated.  Includes
+          reason code */
+
        , XWRELAY_CONNECTDENIED
        /* The relay says go away.  Format: reason code: 1 */
 
@@ -71,11 +75,14 @@ typedef unsigned char XWRELAY_Cmd;
 #define XWRELAY_PROTO_VERSION 0x01
 
 /* Errors passed with denied  */
-enum {
+typedef enum {
     XWRELAY_ERROR_NONE
     ,XWRELAY_ERROR_BADPROTO
     ,XWRELAY_ERROR_RELAYBUSY
-    ,XWRELAY_ERROR_COOKIEINUSE
-};
+    ,XWRELAY_ERROR_SHUTDOWN    /* relay's going down */
+    ,XWRELAY_ERROR_TIMEOUT     /* Other players didn't show */
+    ,XWRELAY_ERROR_HEART       /* Haven't heard from you in too long */
 
+    ,XWRELAY_ERROR_LASTERR
+} XWREASON;
 #endif
