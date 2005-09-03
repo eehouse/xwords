@@ -164,6 +164,11 @@ linux_getErrString( UtilErrID id )
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
         break;
+
+/*     case INFO_REMOTE_CONNECTED: */
+/*         message = "Another device has joined the game"; */
+/*         break; */
+
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
         message = "The relay timed you out; maybe the other players "
             "didn't show.";
