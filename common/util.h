@@ -29,6 +29,8 @@
 #include "vtabmgr.h"
 #include "comms.h"
 
+#include "xwrelay.h"
+
 #define LETTER_NONE '\0'
 
 typedef enum {
@@ -52,7 +54,8 @@ typedef enum {
 /*     ERR_NOT_YOUR_TURN_TO_MOVE, */
     ERR_CANT_UNDO_TILEASSIGN,
 
-    ERR_RELAY_ERROR
+    ERR_RELAY_BASE,
+    ERR_RELAY_END = ERR_RELAY_BASE + XWRELAY_ERROR_LASTERR
 } UtilErrID;
 
 typedef enum {
