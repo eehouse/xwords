@@ -56,6 +56,7 @@ typedef struct LaunchParams {
     //    XP_Bool mainParams;
     XP_Bool skipWarnings;
     XP_Bool showRobotScores;
+    XP_Bool noHeartbeat;
 
     Connectedness serverRole;
 

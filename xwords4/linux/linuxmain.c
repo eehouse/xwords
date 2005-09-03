@@ -165,10 +165,15 @@ linux_getErrString( UtilErrID id )
         message = "Tile assignment can't be undone.";
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
-        message = "The relay timed you out; maybe the other players didn't show.";
+        message = "The relay timed you out; maybe the other players "
+            "didn't show.";
         break;
-    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART:
-        message = "You were disconnected from relay because it didn't hear from you in too long.";
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_YOU:
+        message = "You were disconnected from relay because it didn't "
+            "hear from you in too long.";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
+        message = "The relay has lost contact with a device in this game.";
         break;
 
     default:
@@ -198,6 +203,7 @@ usage( char* appName, char* msg )
 	     "\t [-S]             # slow robot down \n"
 	     "\t [-i]             # print game history when game over\n"
 	     "\t [-U]             # call 'Undo' after game ends\n"
+	     "\t [-H]             # Don't send heartbeats to relay\n"
 	     "\t [-r name]*       # same-process robot\n"
 	     "\t [-n name]*       # same-process player (no network used)\n"
 	     "\t [-w pwd]*        # passwd for matching local player\n"
@@ -554,6 +560,7 @@ main( int argc, char** argv )
     mainParams.undoWhenDone = XP_FALSE;
     mainParams.gi.timerEnabled = XP_FALSE;
     mainParams.gi.robotSmartness = SMART_ROBOT;
+    mainParams.noHeartbeat = XP_FALSE;
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
@@ -576,7 +583,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "o"
 #endif
-                      "kKf:l:n:Nsd:a:p:e:r:b:qw:Sit:UmvcC:" );
+                      "kKf:l:n:Nsd:a:p:e:r:b:qw:Sit:HUmvcC:" );
         switch( opt ) {
         case 'h':
         case '?':
@@ -648,6 +655,9 @@ main( int argc, char** argv )
             break;
         case 'U':
             mainParams.undoWhenDone = XP_TRUE;
+            break;
+        case 'H':
+            mainParams.noHeartbeat = XP_TRUE;
             break;
         case 'a':
             /* mainParams.info.clientInfo.serverName =  */
