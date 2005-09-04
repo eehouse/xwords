@@ -382,6 +382,10 @@ int main( int argc, char** argv )
     int nWorkerThreads = 0;
     char* conffile = NULL;
 
+    /* Verify sizes here... */
+    assert( sizeof(CookieID) == 4 );
+                   
+
     /* Read options. Options trump config file values when they conflict, but
        the name of the config file is an option so we have to get that
        first. */
@@ -468,8 +472,8 @@ int main( int argc, char** argv )
                 socklen_t siz = sizeof(newaddr);
                 int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
 
-                unsigned long remoteIP = newaddr.sin_addr.s_addr;
-                logf( "accepting connection from 0x%lx", ntohl( remoteIP ) );
+                logf( "accepting connection from %s", 
+                      inet_ntoa(newaddr.sin_addr) );
 
                 tPool->AddSocket( newSock );
                 --retval;
