@@ -315,14 +315,23 @@ CRefMgr::getCookieRef_impl( CookieID cookieID )
 void
 CRefMgr::CheckHeartbeats( time_t now )
 {
-    RWReadLock rwl( &m_cookieMapRWLock );
-    CookieMap::iterator iter = m_cookieMap.begin();
-    while ( iter != m_cookieMap.end() ) {
-        SafeCref scr( iter->second );
+    vector<CookieRef*> crefs;
+
+    {
+        RWReadLock rwl( &m_cookieMapRWLock );
+        CookieMap::iterator iter = m_cookieMap.begin();
+        while ( iter != m_cookieMap.end() ) {
+            crefs.push_back(iter->second);
+            ++iter;
+        }
+    }
+
+    unsigned int i;
+    for ( i = 0; i < crefs.size(); ++i ) {
+        SafeCref scr( crefs[i] );
         if ( scr.IsValid() ) {
             scr.CheckHeartbeats( now );
         }
-        ++iter;
     }
 } /* CheckHeartbeats */
 
