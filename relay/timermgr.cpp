@@ -81,7 +81,6 @@ TimerMgr::getPollTimeout()
             tout = 0;
         }
     }
-    logf( "getTimeout => %d", tout );
     return tout * 1000;
 }
 
@@ -128,8 +127,6 @@ TimerMgr::figureNextFire()
     }
 
     m_nextFireTime = t == 0x7FFFFFFF? 0 : t;
-    logf( "figureNextFire: m_nextFireTime=%d (now=%d)",
-          m_nextFireTime, now() );
 } /* figureNextFire */
 
 void
@@ -142,8 +139,6 @@ TimerMgr::clearTimer( TimerProc proc, void* closure )
 void
 TimerMgr::fireElapsedTimers()
 {
-    logf( "fireElapsedTimers" );
-
     pthread_mutex_lock( &m_timersMutex );
 
     time_t curTime = now();
