@@ -87,7 +87,7 @@ struct CommsCtxt {
     XWHostID myHostID;        /* 0 if unset, 1 if acting as server, random for
                                  client */
     CommsRelaystate relayState; /* not saved: starts at UNCONNECTED */
-    XP_U32 cookieID;         /* standin for cookie; set by relay */
+    CookieID cookieID;         /* standin for cookie; set by relay */
 
     /* heartbeat: for periodic pings if relay thinks the network the device is
        on requires them.  Not saved since only valid when connected, and we
@@ -192,6 +192,9 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer )
     comms->nextChannelNo = 0;
 
     comms->connID = CONN_ID_NONE;
+#ifdef BEYOND_IR
+    comms->cookieID = COOKIE_ID_NONE;
+#endif
 } /* comms_reset */
 
 void
@@ -430,7 +433,7 @@ comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr )
 void
 comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
-    XP_ASSERT( comms );
+    XP_ASSERT( comms != NULL );
 #ifdef BEYOND_IR
     util_addrChange( comms->util, &comms->addr, addr );
 #endif
@@ -1084,7 +1087,8 @@ relayConnect( CommsCtxt* comms )
     if ( !comms->connecting ) {
         comms->connecting = XP_TRUE;
         send_via_relay( comms, 
-                        comms->cookieID == 0? XWRELAY_CONNECT:XWRELAY_RECONNECT,
+                        comms->cookieID == COOKIE_ID_NONE ?
+                        XWRELAY_CONNECT:XWRELAY_RECONNECT,
                         comms->myHostID, NULL, 0 );
         comms->connecting = XP_FALSE;
     }
