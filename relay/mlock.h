@@ -32,16 +32,16 @@ class MutexLock {
     MutexLock( pthread_mutex_t* mutex ) { 
         m_mutex = mutex;
 #ifdef DEBUG_LOCKS
-        logf( "locking mutex %x", mutex );
+        logf( "tlm %p", mutex );
 #endif
         pthread_mutex_lock( mutex );
 #ifdef DEBUG_LOCKS
-        logf( "successfully locked mutex %x", mutex );
+        logf( "slm %p", mutex );
 #endif
     }
     ~MutexLock() { 
 #ifdef DEBUG_LOCKS
-        logf( "UNlocking mutex %x", m_mutex );
+        logf( "ULM %p", m_mutex );
 #endif
         pthread_mutex_unlock( m_mutex );
     }
@@ -57,16 +57,16 @@ class SocketWriteLock {
         , m_mutex( CRefMgr::Get()->GetWriteMutexForSocket( socket ) )
         {
 #ifdef DEBUG_LOCKS
-        logf( "locking mutex %x for socket %d", m_mutex, socket );
+        logf( "tlm %p for socket %d", m_mutex, socket );
 #endif
         pthread_mutex_lock( m_mutex );
 #ifdef DEBUG_LOCKS
-        logf( "successfully locked mutex %x for socket %d", m_mutex, socket );
+        logf( "slm %p for socket %d", m_mutex, socket );
 #endif
     }
     ~SocketWriteLock() {
 #ifdef DEBUG_LOCKS
-        logf( "UNlocking mutex %x for socket %d", m_mutex, m_socket );
+        logf( "ULM %p for socket %d", m_mutex, m_socket );
 #endif
         pthread_mutex_unlock( m_mutex );
     }
@@ -80,18 +80,18 @@ class RWReadLock {
  public:
     RWReadLock( pthread_rwlock_t* rwl ) {
 #ifdef DEBUG_LOCKS
-        logf( "locking rwlock %p for read", rwl );
+        logf( "tlrr %p", rwl );
 #endif
         pthread_rwlock_rdlock( rwl );
 #ifdef DEBUG_LOCKS
-        logf( "locked rwlock %p for read", rwl );
+        logf( "slrr %p", rwl );
 #endif
         _rwl = rwl;
     }
     ~RWReadLock() {
         pthread_rwlock_unlock( _rwl );
 #ifdef DEBUG_LOCKS
-        logf( "unlocked rwlock %p", _rwl );
+        logf( "ULRR %p", _rwl );
 #endif
     }
 
@@ -103,17 +103,17 @@ class RWWriteLock {
  public:
     RWWriteLock( pthread_rwlock_t* rwl ) : _rwl(rwl) {
 #ifdef DEBUG_LOCKS
-        logf( "locking rwlock %p for write", rwl );
+        logf( "tlww %p", rwl );
 #endif
         pthread_rwlock_wrlock( rwl );
 #ifdef DEBUG_LOCKS
-        logf( "locked rwlock %p for write", rwl );
+        logf( "slww %p", rwl );
 #endif
     }
     ~RWWriteLock() { 
         pthread_rwlock_unlock( _rwl );
 #ifdef DEBUG_LOCKS
-        logf( "unlocked rwlock %p", _rwl );
+        logf( "ULWW %p", _rwl );
 #endif
     }
  private:
