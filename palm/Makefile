@@ -98,6 +98,10 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 # experimental at this point!
 MYDEFS_COMMON += -DBEYOND_IR
 
+# For Danish and perhaps other languages, custom-measure glyph height
+# so that overtall letters have a chance of fitting.
+MYDEFS_COMMON += -DTALL_FONTS
+
 # Turn on ability to handle 4-byte-node DAWG files.  These are of type
 # Xwr4, not Xwr3 like the old ones.  Currently this option means the
 # binary won't be able to read or even find the old dictionaries.
