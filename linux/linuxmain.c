@@ -169,6 +169,10 @@ linux_getErrString( UtilErrID id )
 /*         message = "Another device has joined the game"; */
 /*         break; */
 
+    case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
+        message = "XWRELAY_ERROR_LOST_OTHER";
+        break;
+
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
         message = "The relay timed you out; maybe the other players "
             "didn't show.";
@@ -182,6 +186,7 @@ linux_getErrString( UtilErrID id )
         break;
 
     default:
+        XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";
     }
 
@@ -321,6 +326,16 @@ linux_init_socket( CommonGlobals* cGlobals )
     return sock;
 } /* linux_init_socket */
 
+static void
+linux_close_socket( CommonGlobals* cGlobals )
+{
+    int socket = cGlobals->socket;
+    cGlobals->socket = -1;
+
+    XP_LOGF( "linux_close_socket" );
+    close( socket );
+}
+
 int
 linux_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
@@ -328,13 +343,18 @@ linux_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     unsigned short tmp;
     unsigned short packetSize;
     ssize_t nRead = recv( sock, &tmp, sizeof(tmp), 0 );
-    assert( nRead == 2 );
+    if ( nRead != 2 ) {
+        XP_LOGF( "recv => %d, errno=%d", nRead, errno );
+        linux_close_socket( cGlobals );
+        nRead = -1;
+    } else {
 
-    packetSize = ntohs( tmp );
-    assert( packetSize <= bufSize );
-    nRead = recv( sock, buf, packetSize, 0 );
-    if ( nRead < 0 ) {
-        XP_WARNF( "linuxReceive: errno=%d\n", errno );
+        packetSize = ntohs( tmp );
+        assert( packetSize <= bufSize );
+        nRead = recv( sock, buf, packetSize, 0 );
+        if ( nRead < 0 ) {
+            XP_WARNF( "linuxReceive: errno=%d\n", errno );
+        }
     }
     return nRead;
 } /* linuxReceive */
