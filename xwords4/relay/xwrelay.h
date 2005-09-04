@@ -89,7 +89,8 @@ typedef enum {
     ,XWRELAY_ERROR_SHUTDOWN    /* relay's going down */
     ,XWRELAY_ERROR_TIMEOUT     /* Other players didn't show */
     ,XWRELAY_ERROR_HEART_YOU   /* Haven't heard from somebody in too long */
-    ,XWRELAY_ERROR_HEART_OTHER
+    ,XWRELAY_ERROR_HEART_OTHER /* Haven't heard from other in too long */
+    ,XWRELAY_ERROR_LOST_OTHER  /* Generic other-left-we-dunno-why error */
 
     ,XWRELAY_ERROR_LASTERR
 } XWREASON;
