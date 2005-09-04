@@ -179,6 +179,8 @@ resolveAddressIfNot( PalmAppGlobals* globals, CommsAddrRec* addr,
 
             *resolvedP = resolved = XP_TRUE;
             globals->nlStuff.ipAddrInval = XP_FALSE;
+
+            comms_setAddr( globals->game.comms, addr );
         }
     }
     return resolved;
@@ -235,22 +237,22 @@ sendLoop( PalmAppGlobals* globals, XP_U8* buf, XP_U16 len )
 } /* sendLoop */
 
 XP_S16
-palm_ip_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr,
+palm_ip_send( XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
               PalmAppGlobals* globals )
 {
     CommsAddrRec localRec;
+    CommsAddrRec* addr = &localRec;
     XP_S16 nSent = 0;
     XP_Bool resolved = XP_FALSE;
 
     XP_LOGF( "palm_ip_send: len=%d", len );
     XP_ASSERT( len < MAX_MSG_LEN );
 
-    if ( !!addr ) {
-        XP_MEMCPY( &localRec, addr, sizeof(localRec) );
+    if ( !!addrp ) {
+        XP_MEMCPY( addr, addrp, sizeof(*addr) );
     } else {
-        comms_getAddr( globals->game.comms, &localRec );
+        comms_getAddr( globals->game.comms, addr );
     }
-    addr = &localRec;
 
     if ( openNetLibIfNot( globals ) ) {
         if ( resolveAddressIfNot( globals, addr, &resolved ) ) {
