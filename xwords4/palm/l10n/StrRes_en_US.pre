@@ -136,3 +136,11 @@
 #endif
 { "STRS_CANNOT_FIND_DICT",      "%s dictionary not found." },
 { "STR_DICT_COPY_EXPL",        "Copying dictionary from card..." },
+
+#ifdef BEYOND_IR
+{ "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
+                               "connect." },
+{ "STR_RELAY_LOST_OTHER",      "Relay error: another device has lost its "
+                               "connection." },
+{ "STR_RELAY_GENERIC",         "Relay error: something's wrong." },
+#endif

@@ -3221,6 +3221,19 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         strID = STR_CANT_UNDO_TILEASSIGN;
         break;
 
+#ifdef BEYOND_IR
+    case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
+        strID = STR_RELAY_TIMEOUT;
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_YOU:
+        strID = STR_RELAY_GENERIC;
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
+    case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
+        strID = STR_RELAY_LOST_OTHER;
+        break;
+#endif
+
     default:
         XP_DEBUGF( "errcode=%d", id );
         break;
