@@ -422,6 +422,8 @@ CookieRef::handleEvents()
                 break;
 
             case XW_ACTION_REMOVESOCKET:
+                notifyOthers( evt.u.rmsock.socket, XWRELAY_DISCONNECT_OTHER,
+                              XWRELAY_ERROR_LOST_OTHER );
                 removeSocket( &evt );
                 break;
 
@@ -668,7 +670,8 @@ CookieRef::_PrintCookieInfo( string& out )
     out += "\n";
     out += "ID: ";
     char buf[64];
-    snprintf( buf, sizeof(buf), "%ld\n", GetCookieID() );
+
+    snprintf( buf, sizeof(buf), "%d\n", GetCookieID() );
     out += buf;
 
     snprintf( buf, sizeof(buf), "Bytes sent: %d\n", m_totalSent );
