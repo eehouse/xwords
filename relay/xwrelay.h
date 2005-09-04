@@ -94,4 +94,9 @@ typedef enum {
 
     ,XWRELAY_ERROR_LASTERR
 } XWREASON;
+
+
+typedef unsigned int CookieID;
+#define COOKIE_ID_NONE 0L
+
 #endif
