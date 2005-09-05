@@ -30,8 +30,11 @@ typedef struct GtkNewGameState {
     GtkWidget* playerEntries[MAX_NUM_PLAYERS];
     gboolean revert;
     gboolean cancelled;
+    Connectedness role;
     short nPlayers;
     short nCols;
+
+    GtkWidget* roleMenuItems[3];
 } GtkNewGameState;
 
 gboolean newGameDialog( GtkAppGlobals* globals/* , GtkGameInfo* gameInfo */ );
