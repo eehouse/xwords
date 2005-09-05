@@ -127,7 +127,7 @@ XWThreadPool::CloseSocket( int socket )
             ++iter;
         }
     }
-    close( socket );
+/*     close( socket ); */
 /*     if ( do_interrupt ) { */
     /* We always need to interrupt the poll because the socket we're closing
        will be in the list being listened to.  That or we need to drop sockets
