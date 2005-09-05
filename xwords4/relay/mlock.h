@@ -59,17 +59,24 @@ class SocketWriteLock {
 #ifdef DEBUG_LOCKS
         logf( "tlm %p for socket %d", m_mutex, socket );
 #endif
-        pthread_mutex_lock( m_mutex );
+        if ( m_mutex != NULL ) {
+            pthread_mutex_lock( m_mutex );
+        }
 #ifdef DEBUG_LOCKS
         logf( "slm %p for socket %d", m_mutex, socket );
 #endif
-    }
+        }
+
     ~SocketWriteLock() {
 #ifdef DEBUG_LOCKS
         logf( "ULM %p for socket %d", m_mutex, m_socket );
 #endif
-        pthread_mutex_unlock( m_mutex );
+        if  ( m_mutex != NULL ) {
+            pthread_mutex_unlock( m_mutex );
+        }
     }
+
+    int socketFound() { return (int)(m_mutex != NULL); }
 
  private:
     int m_socket;
