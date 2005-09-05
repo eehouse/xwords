@@ -70,7 +70,7 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, CookieID connID )
         CookieID newId = CookieIdForName( cookie );
     
         if ( newId == 0 ) {     /* not in the system */
-            cref = AddNew( string(cookie), connID );
+            cref = AddNew( cookie, connID );
         } else {
             cref = getCookieRef_impl( newId );
         }
@@ -94,7 +94,7 @@ CRefMgr::CookieIdForName( const char* name )
     CookieMap::iterator iter = m_cookieMap.begin();
     while ( iter != m_cookieMap.end() ) {
         cref = iter->second;
-        if ( cref->Name() == s && cref->NotFullyConnected() ) {
+        if ( cref->Name() == s && cref->NeverFullyConnected() ) {
             return cref->GetCookieID();
         }
         ++iter;
@@ -115,6 +115,21 @@ CRefMgr::Associate( int socket, CookieRef* cref )
     m_SocketStuff.insert( pair< int, SocketStuff* >( socket, stuff ) );
 }
 
+void 
+CRefMgr::Disassociate( int socket, CookieRef* cref )
+{
+    MutexLock ml( &m_SocketStuffMutex );
+    SocketMap::iterator iter = m_SocketStuff.find( socket );
+    if ( iter == m_SocketStuff.end() ) {
+        logf( "can't find cref/threadID pair for socket %d", socket );
+    } else {
+        SocketStuff* stuff = iter->second;
+        assert( stuff->m_cref == cref );
+        delete stuff;
+        m_SocketStuff.erase( iter );
+    }
+}
+
 pthread_mutex_t* 
 CRefMgr::GetWriteMutexForSocket( int socket )
 {
@@ -124,7 +139,8 @@ CRefMgr::GetWriteMutexForSocket( int socket )
         SocketStuff* stuff = iter->second;
         return &stuff->m_writeMutex;
     }
-    assert( 0 );
+    logf( "GetWriteMutexForSocket: not found" );
+    return NULL;
 } /* GetWriteMutexForSocket */
 
 void 
@@ -240,13 +256,13 @@ CRefMgr::UnlockCref( CookieRef* cref )
 }
 
 CookieRef*
-CRefMgr::AddNew( string s, CookieID id )
+CRefMgr::AddNew( const char* s, CookieID id )
 {
     RWWriteLock rwl( &m_cookieMapRWLock );
     logf( "making new cref" );
     CookieRef* ref = new CookieRef( s, id );
     m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
-    logf( "paired cookie %s with id %d", s.c_str(), ref->GetCookieID() );
+    logf( "paired cookie %s with id %d", s, ref->GetCookieID() );
     return ref;
 } /* AddNew */
 
@@ -366,7 +382,6 @@ CookieMapIterator::Next()
 
 SafeCref::SafeCref( const char* cookie, CookieID connID )
      : m_cref( NULL )
-     , m_connID(0)
      , m_mgr( CRefMgr::Get() )
 {
     CookieRef* cref = m_mgr->getMakeCookieRef_locked( cookie, connID );
@@ -379,7 +394,6 @@ SafeCref::SafeCref( const char* cookie, CookieID connID )
 
 SafeCref::SafeCref( CookieID connID )
      : m_cref( NULL )
-     , m_connID(0)
      , m_mgr( CRefMgr::Get() )
 {
     CookieRef* cref = m_mgr->getCookieRef_locked( connID );
@@ -392,7 +406,6 @@ SafeCref::SafeCref( CookieID connID )
 
 SafeCref::SafeCref( int socket )
      : m_cref( NULL )
-     , m_connID(0)
      , m_mgr( CRefMgr::Get() )
 {
     CookieRef* cref = m_mgr->getCookieRef_locked( socket );
@@ -405,7 +418,6 @@ SafeCref::SafeCref( int socket )
 
 SafeCref::SafeCref( CookieRef* cref )
      : m_cref( NULL )
-     , m_connID(0)
      , m_mgr( CRefMgr::Get() )
 {
     if ( m_mgr->checkCookieRef_locked( cref ) ) {

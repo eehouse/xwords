@@ -26,17 +26,23 @@
 /* Set if device is acting a server; cleared if as client */
 #define FLAGS_SERVER_BIT 0x01
 
-typedef enum { XWRELAY_NONE             /* 0 is an illegal value */
+typedef
+enum { XWRELAY_NONE             /* 0 is an illegal value */
 
-       , XWRELAY_CONNECT
+       , XWRELAY_GAME_CONNECT
        /* Sent from device to relay to establish connection to relay.  Format:
           flags: 1; cookieLen: 1; cookie: <cookieLen>; hostID:
           2. connectionID: 2. */
 
-       , XWRELAY_RECONNECT
+       , XWRELAY_GAME_RECONNECT
        /* Connect using ID rather than cookie.  Used by a device that's lost
           its connection to a game in progress.  Once a game is locked this is
           the only way a host can get (back) in. */
+
+       , XWRELAY_GAME_DISCONNECT
+       /* Tell the relay that we're gone for this game.  After this message is
+          sent, the host can reconnect on the same socket for a new game.
+          Format: cookieID: 4; srcID: 2 */
 
        , XWRELAY_CONNECTRESP
        /* Sent from relay to device in response to XWRELAY_CONNECT or
@@ -58,10 +64,10 @@ typedef enum { XWRELAY_NONE             /* 0 is an illegal value */
        /* The relay says go away.  Format: reason code: 1 */
 
        , XWRELAY_HEARTBEAT
-       /* Sent in either direction.  Format: cookieID: 2; srcID: 2 */
+       /* Sent in either direction.  Format: cookieID: 4; srcID: 2 */
 
        , XWRELAY_MSG_FROMRELAY
-       /* Sent from relay to device.  Format: cookieID: 2; src_hostID: 2;
+       /* Sent from relay to device.  Format: cookieID: 4; src_hostID: 2;
           dest_hostID: 2; data <len-headerLen> */
 
        , XWRELAY_MSG_TORELAY

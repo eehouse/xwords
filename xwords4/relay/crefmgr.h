@@ -69,6 +69,7 @@ class CRefMgr {
 
     /* Track sockets independent of cookie refs */
     void Associate( int socket, CookieRef* cref );
+    void Disassociate( int socket, CookieRef* cref );
     pthread_mutex_t* GetWriteMutexForSocket( int socket );
     void RemoveSocketRefs( int socket );
     void PrintSocketInfo( int socket, string& out );
@@ -76,12 +77,12 @@ class CRefMgr {
 
  private:
     friend class SafeCref;
-    CookieRef* getMakeCookieRef_locked( const char* cookie, CookieID connID );
+    CookieRef* getMakeCookieRef_locked( const char* cookie, CookieID cid );
     CookieRef* getCookieRef_locked( CookieID cookieID );
     CookieRef* getCookieRef_locked( int socket );
     int checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
-    CookieRef* AddNew( string s, CookieID id );
+    CookieRef* AddNew( const char* s, CookieID id );
 
     int LockCref( CookieRef* cref );
     void UnlockCref( CookieRef* cref );
@@ -105,8 +106,8 @@ class SafeCref {
        CookieRef instance at a time. */
 
  public:
-    SafeCref( const char* cookie, CookieID connID );
-    SafeCref( CookieID connID );
+    SafeCref( const char* cookie, CookieID cid );
+    SafeCref( CookieID cid );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
     ~SafeCref();
@@ -121,6 +122,9 @@ class SafeCref {
     }
     void Reconnect( int socket, HostID srcID ) {
         m_cref->_Reconnect( socket, srcID );
+    }
+    void Disconnect(int socket, HostID hostID ) {
+        m_cref->_Disconnect( socket, hostID );
     }
     void Remove( int socket ) {
         m_cref->_Remove( socket );
@@ -142,7 +146,6 @@ class SafeCref {
 
  private:
     CookieRef* m_cref;
-    CookieID m_connID;
     CRefMgr* m_mgr;
 };
 
