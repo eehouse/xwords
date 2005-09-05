@@ -84,6 +84,19 @@ nplayers_menu_select( GtkWidget* item, GtkNewGameState* state )
 } /* nplayers_menu_select */
 
 static void
+role_menu_select( GtkWidget* item, GtkNewGameState* state )
+{
+    int i;
+    for ( i = 0; i < 3; ++i ) {
+        if ( item == state->roleMenuItems[i] ) {
+            break;
+        }
+    }
+    XP_ASSERT( i < 3 );         /* did we not find it? */
+    state->role = (Connectedness)i;
+} /* role_menu_select */
+
+static void
 size_menu_select( GtkWidget* item, GtkNewGameState* state )
 {
     ItemNumPair pair;    
@@ -210,17 +223,44 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* vbox;
     GtkWidget* hbox;
     GtkWidget* item;
+    GtkWidget* roleMenu;
     GtkWidget* nPlayersMenu;
     GtkWidget* boardSizeMenu;
     GtkWidget* opt;
     CurGameInfo* gi;
     short i;
+    char* roles[] = { "Standalone", "Host", "Guest" };
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
 
     vbox = gtk_vbox_new( FALSE, 0 );
 
+    /* Role menu */
+    state->role = state->globals->cGlobals.params->serverRole;
+
+    hbox = gtk_hbox_new( FALSE, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
+                        FALSE, TRUE, 0 );
+    opt = gtk_option_menu_new();
+    roleMenu = gtk_menu_new();
+
+    for ( i = 0; i < sizeof(roles)/sizeof(roles[0]); ++i ) {
+        item = make_menu_item( roles[i], GTK_SIGNAL_FUNC(role_menu_select),
+                               state );
+        state->roleMenuItems[i] = item;
+        gtk_menu_append( GTK_MENU(roleMenu), item );
+        if ( i == state->role ) {
+            gtk_menu_set_active( GTK_MENU(roleMenu), i );
+        }
+    }
+
+    gtk_option_menu_set_menu( GTK_OPTION_MENU(opt), roleMenu );
+    gtk_widget_show( opt );
+    gtk_box_pack_start( GTK_BOX(hbox), opt, FALSE, TRUE, 0 );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+
+    /* NPlayers menu */
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Number of players"),
                         FALSE, TRUE, 0 );
