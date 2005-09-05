@@ -22,7 +22,8 @@
 
 
 /* states */
-typedef enum {
+typedef
+enum {
     XW_ST_NONE
 
     ,XW_ST_INITED               /* Relay's running and the object's been
@@ -41,6 +42,10 @@ typedef enum {
     ,XW_ST_ALLCONNECTED         /* All devices are connected and ready for the
                                    relay to do its work.  This is the state
                                    we're in most of the time.  */
+
+    ,XW_ST_MISSING              /* We've been fully connected before but lost
+                                   somebody.  Once [s]he's back we can be
+                                   fully connected again. */
 
     ,XW_ST_WAITING_RECON        /* At least one device has been timed out or
                                    sent a disconnect message.  We can't flow
@@ -66,6 +71,8 @@ typedef enum {
 
     ,XW_EVENT_RECONNECTMSG      /* A device is re-connecting using the
                                    connID for this object */
+
+    ,XW_EVENT_DISCONNECTMSG     /* disconnect socket from this game/cref */
 
     ,XW_EVENT_FORWARDMSG        /* A message needs forwarding */
 
@@ -109,6 +116,8 @@ typedef enum {
     ,XW_ACTION_TIMERDISCONNECT  /* disconnect all because of a timer */
 
     ,XW_ACTION_CHECKDEST        /* check that a given hostID has a socket */
+
+    ,XW_ACTION_DISCONNECT
 
     ,XW_ACTION_NOTIFYDISCON
 

@@ -71,7 +71,7 @@ SocketsIterator::Next()
  * CookieRef class
  *****************************************************************************/
 
-CookieRef::CookieRef( string s, CookieID id )
+CookieRef::CookieRef( const char* s, CookieID id )
     : m_heatbeat(RelayConfigs::GetConfigs()->GetHeartbeatInterval())
     , m_name(s)
     , m_totalSent(0)
@@ -97,15 +97,15 @@ CookieRef::~CookieRef()
 
     for ( ; ; ) {
         RWWriteLock rwl( &m_sockets_rwlock );
-        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
+        map<HostID,HostRec>::iterator iter = m_sockets.begin();
 
-        if ( iter == m_hostSockets.end() ) {
+        if ( iter == m_sockets.end() ) {
             break;
         }
 
         int socket = iter->second.m_socket;
         tPool->CloseSocket( socket );
-        m_hostSockets.erase( iter );
+        m_sockets.erase( iter );
     }
 
     pthread_rwlock_destroy( &m_sockets_rwlock );
@@ -133,12 +133,28 @@ CookieRef::_Reconnect( int socket, HostID srcID )
     handleEvents();
 }
 
+void
+CookieRef::_Disconnect( int socket, HostID hostID )
+{
+    CRefMgr::Get()->Disassociate( socket, this );
+
+    MutexLock ml( &m_EventsMutex );
+
+    CRefEvent evt;
+    evt.type = XW_EVENT_DISCONNECTMSG;
+    evt.u.discon.socket = socket;
+    evt.u.discon.srcID = hostID;
+    m_eventQueue.push_back( evt );
+
+    handleEvents();
+}
+
 int
 CookieRef::SocketForHost( HostID dest )
 {
     int socket;
-    map<HostID,HostRec>::iterator iter = m_hostSockets.find( dest );
-    if ( iter == m_hostSockets.end() ) {
+    map<HostID,HostRec>::iterator iter = m_sockets.find( dest );
+    if ( iter == m_sockets.end() ) {
         socket = -1;
     } else {
         socket = iter->second.m_socket;
@@ -146,6 +162,18 @@ CookieRef::SocketForHost( HostID dest )
     }
     logf( "returning socket=%d for hostid=%x", socket, dest );
     return socket;
+}
+
+/* The idea here is: have we never seen the XW_ST_ALLCONNECTED state.  This
+   needs to include any states reachable from XW_ST_ALLCONNECTED from which
+   recovery back to XW_ST_ALLCONNECTED is possible.  This is used to decide
+   whether to admit a connection based on its cookie -- whether that cookie
+   should join an existing cref or get a new one? */
+int
+CookieRef::NeverFullyConnected()
+{
+    return m_curState != XW_ST_ALLCONNECTED
+        && m_curState != XW_ST_MISSING;
 }
 
 void
@@ -161,28 +189,24 @@ CookieRef::notifyDisconn( const CRefEvent* evt )
 } /* notifyDisconn */
 
 void
-CookieRef::removeSocket( const CRefEvent* evt )
+CookieRef::removeSocket( int socket )
 {
-    int socket = evt->u.rmsock.socket;
     int count;
     {
         RWWriteLock rwl( &m_sockets_rwlock );
 
-        count = CountSockets();
+        count = m_sockets.size();
         assert( count > 0 );
-        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
-        while ( iter != m_hostSockets.end() ) {
+        map<HostID,HostRec>::iterator iter = m_sockets.begin();
+        while ( iter != m_sockets.end() ) {
             if ( iter->second.m_socket == socket ) {
-                m_hostSockets.erase(iter);
+                m_sockets.erase(iter);
                 --count;
                 break;
             }
             ++iter;
         }
     }
-
-    /* Does this belong here or at a higher level? */
-    XWThreadPool::GetTPool()->CloseSocket( socket );
 
     if ( count == 0 ) {
         pushLastSocketGoneEvent();
@@ -196,8 +220,8 @@ CookieRef::HasSocket( int socket )
     logf( "CookieRef::HasSocket" );
     RWReadLock rwl( &m_sockets_rwlock );
 
-    map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
-    while ( iter != m_hostSockets.end() ) {
+    map<HostID,HostRec>::iterator iter = m_sockets.begin();
+    while ( iter != m_sockets.end() ) {
         if ( iter->second.m_socket == socket ) {
             found = 1;
             break;
@@ -222,8 +246,8 @@ CookieRef::_CheckHeartbeats( time_t now )
     MutexLock ml( &m_EventsMutex ); 
     {
         RWReadLock rwl( &m_sockets_rwlock );
-        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
-        while ( iter != m_hostSockets.end() ) {
+        map<HostID,HostRec>::iterator iter = m_sockets.begin();
+        while ( iter != m_sockets.end() ) {
             time_t last = iter->second.m_lastHeartbeat;
             if ( (now - last) > GetHeartbeat() ) {
                 pushHeartFailedEvent( iter->second.m_socket );
@@ -375,9 +399,9 @@ CookieRef::handleEvents()
         XW_RELAY_ACTION takeAction;
         if ( getFromTable( m_curState, evt.type, &takeAction, &m_nextState ) ) {
 
-            logf( "moving from state %s to state %s for event %s",
-                  stateString(m_curState), stateString(m_nextState),
-                  eventString(evt.type) );
+            logf( "cid %d: moving from state %s to state %s for event %s",
+                  m_connectionID, stateString(m_curState), 
+                  stateString(m_nextState), eventString(evt.type) );
 
             switch( takeAction ) {
             case XW_ACTION_SEND_1ST_RSP:
@@ -413,6 +437,11 @@ CookieRef::handleEvents()
                                    XWRELAY_ERROR_HEART_YOU );
                 break;
 
+            case XW_ACTION_DISCONNECT:
+                removeSocket( evt.u.discon.socket );
+                /* Don't notify.  This is a normal part of a game ending. */
+                break;
+
             case XW_ACTION_NOTEHEART:
                 noteHeartbeat( &evt );
                 break;
@@ -424,7 +453,7 @@ CookieRef::handleEvents()
             case XW_ACTION_REMOVESOCKET:
                 notifyOthers( evt.u.rmsock.socket, XWRELAY_DISCONNECT_OTHER,
                               XWRELAY_ERROR_LOST_OTHER );
-                removeSocket( &evt );
+                removeSocket( evt.u.rmsock.socket );
                 break;
 
             case XW_ACTION_NONE: 
@@ -437,8 +466,6 @@ CookieRef::handleEvents()
             }
 
             m_curState = m_nextState;
-        } else {
-            assert(0);
         }
     }
 } /* handleEvents */
@@ -447,12 +474,14 @@ void
 CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen )
 {
     SocketWriteLock slock( socket );
+    if ( slock.socketFound() ) {
 
-    if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
-        RecordSent( bufLen, socket );
-    } else {
-        /* ok that the slock above is still in scope */
-        killSocket( socket, "couldn't send" );
+        if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
+            RecordSent( bufLen, socket );
+        } else {
+            /* ok that the slock above is still in scope */
+            killSocket( socket, "couldn't send" );
+        }
     }
 }
 
@@ -498,7 +527,7 @@ CookieRef::sendResponse( const CRefEvent* evt )
     logf( "remembering pair: hostid=%x, socket=%d", id, socket );
     RWWriteLock ml( &m_sockets_rwlock );
     HostRec hr(socket);
-    m_hostSockets.insert( pair<HostID,HostRec>(id,hr) );
+    m_sockets.insert( pair<HostID,HostRec>(id,hr) );
 
     /* Now send the response */
     unsigned char buf[7];
@@ -589,8 +618,8 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 
     RWReadLock ml( &m_sockets_rwlock );
 
-    map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
-    while ( iter != m_hostSockets.end() ) { 
+    map<HostID,HostRec>::iterator iter = m_sockets.begin();
+    while ( iter != m_sockets.end() ) { 
         int other = iter->second.m_socket;
         if ( other != socket ) {
             send_msg( other, iter->first, msg, why );
@@ -604,8 +633,8 @@ CookieRef::disconnectSockets( int socket, XWREASON why )
 {
     if ( socket == 0 ) {
         RWReadLock ml( &m_sockets_rwlock );
-        map<HostID,HostRec>::iterator iter = m_hostSockets.begin();
-        while ( iter != m_hostSockets.end() ) { 
+        map<HostID,HostRec>::iterator iter = m_sockets.begin();
+        while ( iter != m_sockets.end() ) { 
             assert( iter->second.m_socket != 0 );
             disconnectSockets( iter->second.m_socket, why );
             ++iter;
@@ -624,8 +653,8 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
 
     RWWriteLock rwl( &m_sockets_rwlock );
 
-    map<HostID,HostRec>::iterator iter = m_hostSockets.find(id);
-    if ( iter == m_hostSockets.end() ) {
+    map<HostID,HostRec>::iterator iter = m_sockets.find(id);
+    if ( iter == m_sockets.end() ) {
         logf( "no socket for HostID %d", id );
     } else {
 

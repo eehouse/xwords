@@ -215,6 +215,22 @@ processConnect( unsigned char* bufp, int bufLen, int socket, int recon )
     }
 } /* processConnect */
 
+static void
+processDisconnect( unsigned char* bufp, int bufLen, int socket )
+{
+    if ( bufLen == 6 ) {
+        CookieID cookieID = getNetLong( &bufp );
+        HostID hostID = getNetShort( &bufp );
+
+        SafeCref scr( cookieID );
+        if ( scr.IsValid() ) {
+            scr.Disconnect( socket, hostID );
+        }
+    } else {
+        logf( "dropping XWRELAY_GAME_DISCONNECT; wrong length" );
+    }
+}
+
 void
 killSocket( int socket, char* why )
 {
@@ -223,6 +239,7 @@ killSocket( int socket, char* why )
     /* Might want to kill the thread it belongs to if we're not in it,
        e.g. when unable to write to another socket. */
     logf( "killSocket done" );
+    XWThreadPool::GetTPool()->CloseSocket( socket );
 }
 
 time_t
@@ -258,13 +275,16 @@ processMessage( unsigned char* buf, int bufLen, int socket )
 {
     XWRELAY_Cmd cmd = *buf;
     switch( cmd ) {
-    case XWRELAY_CONNECT: 
+    case XWRELAY_GAME_CONNECT: 
         logf( "processMessage got XWRELAY_CONNECT" );
         processConnect( buf+1, bufLen-1, socket, 0 );
         break;
-    case XWRELAY_RECONNECT: 
+    case XWRELAY_GAME_RECONNECT: 
         logf( "processMessage got XWRELAY_RECONNECT" );
         processConnect( buf+1, bufLen-1, socket, 1 );
+        break;
+    case XWRELAY_GAME_DISCONNECT:
+        processDisconnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_CONNECTRESP:
         logf( "bad: processMessage got XWRELAY_CONNECTRESP" );

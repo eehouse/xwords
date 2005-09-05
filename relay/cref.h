@@ -52,34 +52,35 @@ class CookieRef {
     friend class SafeCref;
     friend class CookieMapIterator;
 
-    CookieRef( string s, CookieID id );
+    CookieRef( const char* s, CookieID id );
     ~CookieRef();
 
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
     CookieID GetCookieID() { return m_connectionID; }
     int HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
-    int CountSockets() { return m_hostSockets.size(); }
+    int CountSockets() { return m_sockets.size(); }
     int HasSocket( int socket );
     string Name() { return m_name; }
 
     short GetHeartbeat() { return m_heatbeat; }
     int SocketForHost( HostID dest );
 
-    int NotFullyConnected() { return m_curState != XW_ST_ALLCONNECTED; }
+    int NeverFullyConnected();
 
     /* for console */
     void _PrintCookieInfo( string& out );
     void PrintSocketInfo( string& out, int socket );
 
     static CookieMapIterator GetCookieIterator();
-    static CookieRef* AddNew( string s, CookieID id );
+
     /* Nuke an existing */
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
     void _Connect( int socket, HostID srcID );
     void _Reconnect( int socket, HostID srcID );
+    void _Disconnect(int socket, HostID hostID );
     void _HandleHeartbeat( HostID id, int socket );
     void _CheckHeartbeats( time_t now );
     void _Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
@@ -102,6 +103,10 @@ class CookieRef {
                 HostID srcID;
             } con;
             struct {
+                int socket;
+                HostID srcID;
+            } discon;
+            struct {
                 HostID id;
                 int socket;
             } heart;
@@ -109,10 +114,6 @@ class CookieRef {
                 time_t now;
                 vector<int>* victims;
             } htime;
-            struct {
-                HostID hostID;
-                int reason;
-            } discon;
             struct {
                 int socket;
             } rmsock;
@@ -160,14 +161,15 @@ class CookieRef {
     void disconnectSockets( int socket, XWREASON why );
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
-    void removeSocket(const CRefEvent* evt);
+    void removeSocket( int socket );
     
 
     /* timer callback */
     static void s_checkAllConnected( void* closure );
 
-    map<HostID,HostRec> m_hostSockets;
+    map<HostID,HostRec> m_sockets;
     pthread_rwlock_t m_sockets_rwlock;
+
     CookieID m_connectionID;
     short m_heatbeat;           /* might change per carrier or something. */
     string m_name;
