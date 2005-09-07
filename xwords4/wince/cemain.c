@@ -2093,6 +2093,19 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         message = "Tile assignment can't be undone.";
         break;
 
+    case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
+        message = "The relay timed you out; usually that means "
+            "the other players didn't show.";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_YOU:
+        message = "You were disconnected from relay because it didn't "
+            "hear from you in too long.";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
+    case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
+        message = "The relay has lost contact with a device in this game.";
+        break;
+
     default:
         message = "unknown errorcode ID!!!";
         break;
