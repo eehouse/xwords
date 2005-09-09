@@ -1035,14 +1035,6 @@ gtk_util_engineProgressCallback( XW_UtilCtxt* uc )
 } /* gtk_util_engineProgressCallback */
 
 static void
-fireTimer( GtkAppGlobals* globals, XWTimerReason why )
-{
-    TimerProc proc = globals->cGlobals.timerProcs[why];
-    void* closure = globals->cGlobals.timerClosures[why];
-    (*proc)( closure, why );
-} /* fireTimer */
-
-static void
 cancelTimer( GtkAppGlobals* globals, XWTimerReason why )
 {
     guint src = globals->timerSources[why-1];
@@ -1062,7 +1054,7 @@ pentimer_idle_func( gpointer data )
     gettimeofday( &tv, NULL );
 
     if ( (tv.tv_usec - globals->penTv.tv_usec) >= globals->penTimerInterval) {
-        fireTimer( globals, TIMER_PENDOWN );
+        linuxFireTimer( globals, TIMER_PENDOWN );
         callAgain = XP_FALSE;
     } 
 
@@ -1074,7 +1066,7 @@ score_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    fireTimer( globals, TIMER_TIMERTICK );
+    linuxFireTimer( globals, TIMER_TIMERTICK );
 
     return XP_FALSE;
 } /* score_timer_func */
@@ -1085,7 +1077,7 @@ heartbeat_timer_func( gpointer data )
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
     if ( !globals->cGlobals.params->noHeartbeat ) {
-        fireTimer( globals, TIMER_HEARTBEAT );
+        linuxFireTimer( globals, TIMER_HEARTBEAT );
     }
 
     return (gint)0;
