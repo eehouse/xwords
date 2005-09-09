@@ -214,7 +214,13 @@ static void
 curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                       TimerProc proc, void* closure )
 {
-    XP_ASSERT( 0 );		/* no pen-down events..... */
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+
+    XP_ASSERT( why == TIMER_HEARTBEAT );
+
+    globals->cGlobals.timerProcs[why] = proc;
+    globals->cGlobals.timerClosures[why] = closure;
+    globals->nextTimer = util_getCurSeconds(uc) + when;
 } /* curses_util_setTimer */
 
 static void
@@ -624,6 +630,24 @@ curses_socket_changed( void* closure, int oldSock, int newSock )
     }
 } /* curses_socket_changed */
 
+static int
+figureTimeout( CursesAppGlobals* globals )
+{
+    int result = INFINITE_TIMEOUT;
+
+    if ( globals->cGlobals.timerProcs[TIMER_HEARTBEAT] != 0 ) {
+        XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util );
+        XP_U32 then = globals->nextTimer;
+        if ( now >= then ) {
+            result = 0;
+        } else {
+            result = (then - now) * 1000;
+        }
+    }
+
+    return result;
+} /* figureTimeout */
+
 /* 
  * Ok, so this doesn't block yet.... 
  */
@@ -635,9 +659,14 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
     short fdIndex;
     XP_Bool redraw = XP_FALSE;
 
-    numEvents = poll( globals->fdArray, globals->fdCount, INFINITE_TIMEOUT );
+    int timeout = figureTimeout( globals );
+    numEvents = poll( globals->fdArray, globals->fdCount, timeout );
 
-    if ( numEvents > 0 ) {
+    if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) {
+        if ( !globals->cGlobals.params->noHeartbeat ) {
+            linuxFireTimer( &globals->cGlobals, TIMER_HEARTBEAT );
+        }
+    } else if ( numEvents > 0 ) {
 	
         /* stdin first */
         if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) {
@@ -670,7 +699,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
             if ( nBytes != -1 ) {
                 XWStreamCtxt* inboundS;
-                XP_Bool redraw = XP_FALSE;
+                redraw = XP_FALSE;
 
                 XP_STATUSF( "linuxReceive=>%d", nBytes );
                 inboundS = stream_from_msgbuf( &globals->cGlobals, 
