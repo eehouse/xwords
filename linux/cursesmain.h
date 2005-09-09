@@ -97,6 +97,8 @@ struct CursesAppGlobals {
     struct pollfd fdArray[FD_MAX]; /* one for stdio, one for listening socket */
 
     int timepipe[2];		/* for reading/writing "user events" */
+
+    XP_U32 nextTimer;
 };
 
 
