@@ -404,6 +404,17 @@ linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XP_U16 channelNo )
 } /* linux_util_makeStreamFromAddr */
 #endif
 
+void
+linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
+{
+    TimerProc proc = cGlobals->timerProcs[why];
+    void* closure = cGlobals->timerClosures[why];
+
+    cGlobals->timerProcs[why] = NULL;
+
+    (*proc)( closure, why );
+} /* fireTimer */
+
 static DictionaryCtxt*
 linux_util_makeEmptyDict( XW_UtilCtxt* uctx )
 {

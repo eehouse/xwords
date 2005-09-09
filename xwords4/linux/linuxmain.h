@@ -42,6 +42,9 @@ XP_S16 linux_tcp_send( XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
 int linux_init_socket( CommonGlobals* cGlobals );
 int linux_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize );
 
+void linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
+
+
 XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals, char* bufPtr, 
                                   XP_U16 nBytes );
 XP_UCHAR* linux_getErrString( UtilErrID id );
