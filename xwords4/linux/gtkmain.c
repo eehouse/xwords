@@ -1037,8 +1037,8 @@ gtk_util_engineProgressCallback( XW_UtilCtxt* uc )
 static void
 fireTimer( GtkAppGlobals* globals, XWTimerReason why )
 {
-    TimerProc proc = globals->cGlobals.timerProcs[why-1];
-    void* closure = globals->cGlobals.timerClosures[why-1];
+    TimerProc proc = globals->cGlobals.timerProcs[why];
+    void* closure = globals->cGlobals.timerClosures[why];
     (*proc)( closure, why );
 } /* fireTimer */
 
@@ -1117,8 +1117,8 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
         XP_ASSERT( 0 );
     }
 
-    globals->cGlobals.timerProcs[why-1] = proc;
-    globals->cGlobals.timerClosures[why-1] = closure;
+    globals->cGlobals.timerProcs[why] = proc;
+    globals->cGlobals.timerClosures[why] = closure;
     XP_ASSERT( newSrc != 0 );
     globals->timerSources[why-1] = newSrc;
 } /* gtk_util_setTimer */
