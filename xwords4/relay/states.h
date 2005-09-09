@@ -76,7 +76,7 @@ typedef enum {
 
     ,XW_EVENT_FORWARDMSG        /* A message needs forwarding */
 
-    ,XW_EVENT_HEARTMSG          /* A heartbeat message arrived */
+    ,XW_EVENT_HEARTRCVD         /* A heartbeat message arrived */
 
     ,XW_EVENT_CONNTIMER         /* timer for did we get all players hooked
                                    up  */
