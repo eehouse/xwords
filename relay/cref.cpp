@@ -298,7 +298,7 @@ void
 CookieRef::pushHeartbeatEvent( HostID id, int socket )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_HEARTMSG;
+    evt.type = XW_EVENT_HEARTRCVD;
     evt.u.heart.id = id;
     evt.u.heart.socket = socket;
     m_eventQueue.push_back( evt );
