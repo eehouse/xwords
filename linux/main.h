@@ -84,8 +84,8 @@ typedef struct CommonGlobals {
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
 
-    TimerProc timerProcs[NUM_TIMERS_PLUS_ONE - 1];
-    void* timerClosures[NUM_TIMERS_PLUS_ONE - 1];
+    TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
+    void* timerClosures[NUM_TIMERS_PLUS_ONE];
 } CommonGlobals;
 
 #endif
