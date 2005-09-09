@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <ctype.h>
 #include <gdk/gdkkeysyms.h>
+#include <errno.h>
 #ifndef CLIENT_ONLY
 /*  # include <prc.h> */
 #endif
