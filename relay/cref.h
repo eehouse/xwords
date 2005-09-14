@@ -168,7 +168,7 @@ class CookieRef {
     static void s_checkAllConnected( void* closure );
 
     map<HostID,HostRec> m_sockets;
-    pthread_rwlock_t m_sockets_rwlock;
+/*     pthread_rwlock_t m_sockets_rwlock; */
 
     CookieID m_connectionID;
     short m_heatbeat;           /* might change per carrier or something. */
@@ -178,7 +178,7 @@ class CookieRef {
     /* Guard the event queue.  Only one thread at a time can post to the
        queue, but once in a thread can post new events while processing
        current ones. */
-    pthread_mutex_t    m_EventsMutex;
+/*     pthread_mutex_t    m_EventsMutex; */
 
 
     XW_RELAY_STATE     m_curState;

@@ -77,8 +77,8 @@ CookieRef::CookieRef( const char* s, CookieID id )
     , m_totalSent(0)
     , m_curState(XW_ST_INITED)
 {
-    pthread_rwlock_init( &m_sockets_rwlock, NULL );
-    pthread_mutex_init( &m_EventsMutex, NULL );
+/*     pthread_rwlock_init( &m_sockets_rwlock, NULL ); */
+/*     pthread_mutex_init( &m_EventsMutex, NULL ); */
 
     if ( id == 0 ) {
         MutexLock ml( &g_IdsMutex );
@@ -96,7 +96,7 @@ CookieRef::~CookieRef()
     XWThreadPool* tPool = XWThreadPool::GetTPool();
 
     for ( ; ; ) {
-        RWWriteLock rwl( &m_sockets_rwlock );
+/*         RWWriteLock rwl( &m_sockets_rwlock ); */
         map<HostID,HostRec>::iterator iter = m_sockets.begin();
 
         if ( iter == m_sockets.end() ) {
@@ -108,18 +108,18 @@ CookieRef::~CookieRef()
         m_sockets.erase( iter );
     }
 
-    pthread_rwlock_destroy( &m_sockets_rwlock );
+/*     pthread_rwlock_destroy( &m_sockets_rwlock ); */
     logf( "CookieRef for %d being deleted", m_connectionID );
 
-    pthread_mutex_destroy( &m_EventsMutex );
-    pthread_rwlock_destroy( &m_sockets_rwlock );
+/*     pthread_mutex_destroy( &m_EventsMutex ); */
+/*     pthread_rwlock_destroy( &m_sockets_rwlock ); */
 } /* ~CookieRef */
 
 void
 CookieRef::_Connect( int socket, HostID srcID )
 {
     CRefMgr::Get()->Associate( socket, this );
-    MutexLock ml( &m_EventsMutex );
+/*     MutexLock ml( &m_EventsMutex ); */
     pushConnectEvent( socket, srcID );
     handleEvents();
 }
@@ -128,7 +128,7 @@ void
 CookieRef::_Reconnect( int socket, HostID srcID )
 {
     CRefMgr::Get()->Associate( socket, this );
-    MutexLock ml( &m_EventsMutex );
+/*     MutexLock ml( &m_EventsMutex ); */
     pushReconnectEvent( socket, srcID );
     handleEvents();
 }
@@ -138,10 +138,10 @@ CookieRef::_Disconnect( int socket, HostID hostID )
 {
     CRefMgr::Get()->Disassociate( socket, this );
 
-    MutexLock ml( &m_EventsMutex );
+/*     MutexLock ml( &m_EventsMutex ); */
 
     CRefEvent evt;
-    evt.type = XW_EVENT_DISCONNECTMSG;
+    evt.type = XW_EVT_DISCONNECTMSG;
     evt.u.discon.socket = socket;
     evt.u.discon.srcID = hostID;
     m_eventQueue.push_back( evt );
@@ -193,7 +193,7 @@ CookieRef::removeSocket( int socket )
 {
     int count;
     {
-        RWWriteLock rwl( &m_sockets_rwlock );
+/*         RWWriteLock rwl( &m_sockets_rwlock ); */
 
         count = m_sockets.size();
         assert( count > 0 );
@@ -218,7 +218,7 @@ CookieRef::HasSocket( int socket )
 {
     int found = 0;
     logf( "CookieRef::HasSocket" );
-    RWReadLock rwl( &m_sockets_rwlock );
+/*     RWReadLock rwl( &m_sockets_rwlock ); */
 
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) {
@@ -234,7 +234,7 @@ CookieRef::HasSocket( int socket )
 void
 CookieRef::_HandleHeartbeat( HostID id, int socket )
 {
-    MutexLock ml( &m_EventsMutex );
+/*     MutexLock ml( &m_EventsMutex ); */
     pushHeartbeatEvent( id, socket );
     handleEvents();
 } /* HandleHeartbeat */
@@ -243,9 +243,9 @@ void
 CookieRef::_CheckHeartbeats( time_t now )
 {
     logf( "CookieRef::_CheckHeartbeats" );
-    MutexLock ml( &m_EventsMutex ); 
+/*     MutexLock ml( &m_EventsMutex );  */
     {
-        RWReadLock rwl( &m_sockets_rwlock );
+/*         RWReadLock rwl( &m_sockets_rwlock ); */
         map<HostID,HostRec>::iterator iter = m_sockets.begin();
         while ( iter != m_sockets.end() ) {
             time_t last = iter->second.m_lastHeartbeat;
@@ -261,7 +261,7 @@ CookieRef::_CheckHeartbeats( time_t now )
 void
 CookieRef::_Forward( HostID src, HostID dest, unsigned char* buf, int buflen )
 {
-    MutexLock ml( &m_EventsMutex );
+/*     MutexLock ml( &m_EventsMutex ); */
     pushForwardEvent( src, dest, buf, buflen );
     handleEvents();
 } /* Forward */
@@ -269,7 +269,7 @@ CookieRef::_Forward( HostID src, HostID dest, unsigned char* buf, int buflen )
 void
 CookieRef::_Remove( int socket )
 {
-    MutexLock ml( &m_EventsMutex );
+/*     MutexLock ml( &m_EventsMutex ); */
     pushRemoveSocketEvent( socket );
     handleEvents();
 } /* Forward */
@@ -278,7 +278,7 @@ void
 CookieRef::pushConnectEvent( int socket, HostID srcID )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_CONNECTMSG;
+    evt.type = XW_EVT_CONNECTMSG;
     evt.u.con.socket = socket;
     evt.u.con.srcID = srcID;
     m_eventQueue.push_back( evt );
@@ -288,7 +288,7 @@ void
 CookieRef::pushReconnectEvent( int socket, HostID srcID )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_RECONNECTMSG;
+    evt.type = XW_EVT_RECONNECTMSG;
     evt.u.con.socket = socket;
     evt.u.con.srcID = srcID;
     m_eventQueue.push_back( evt );
@@ -298,7 +298,7 @@ void
 CookieRef::pushHeartbeatEvent( HostID id, int socket )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_HEARTRCVD;
+    evt.type = XW_EVT_HEARTRCVD;
     evt.u.heart.id = id;
     evt.u.heart.socket = socket;
     m_eventQueue.push_back( evt );
@@ -308,7 +308,7 @@ void
 CookieRef::pushHeartFailedEvent( int socket )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_HEARTFAILED;
+    evt.type = XW_EVT_HEARTFAILED;
     evt.u.heart.socket = socket;
     m_eventQueue.push_back( evt );
 }
@@ -318,7 +318,7 @@ CookieRef::pushForwardEvent( HostID src, HostID dest,
                              unsigned char* buf, int buflen )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_FORWARDMSG;
+    evt.type = XW_EVT_FORWARDMSG;
     evt.u.fwd.src = src;
     evt.u.fwd.dest = dest;
     evt.u.fwd.buf = buf;
@@ -330,7 +330,7 @@ void
 CookieRef::pushRemoveSocketEvent( int socket )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_REMOVESOCKET;
+    evt.type = XW_EVT_REMOVESOCKET;
     evt.u.rmsock.socket = socket;
     m_eventQueue.push_back( evt );
 }
@@ -339,7 +339,7 @@ void
 CookieRef::pushNotifyDisconEvent( int socket, XWREASON why )
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_NOTIFYDISCON;
+    evt.type = XW_EVT_NOTIFYDISCON;
     evt.u.disnote.socket = socket;
     evt.u.disnote.why = why;
     m_eventQueue.push_back( evt );
@@ -349,7 +349,7 @@ void
 CookieRef::pushDestBadEvent()
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_DESTBAD;
+    evt.type = XW_EVT_DESTBAD;
     m_eventQueue.push_back( evt );
 }
 
@@ -358,7 +358,7 @@ CookieRef::pushDestOkEvent( const CRefEvent* oldEvt )
 {
     CRefEvent evt;
     memcpy( &evt, oldEvt, sizeof(evt) );
-    evt.type = XW_EVENT_DESTOK;
+    evt.type = XW_EVT_DESTOK;
     m_eventQueue.push_back( evt );
 }
 
@@ -367,7 +367,7 @@ CookieRef::pushCanLockEvent( const CRefEvent* oldEvt )
 {
     CRefEvent evt;
     memcpy( &evt, oldEvt, sizeof(evt) );
-    evt.type = XW_EVENT_CAN_LOCK;
+    evt.type = XW_EVT_CAN_LOCK;
     m_eventQueue.push_back( evt );
 }
 
@@ -376,7 +376,7 @@ CookieRef::pushCantLockEvent( const CRefEvent* oldEvt )
 {
     CRefEvent evt;
     memcpy( &evt, oldEvt, sizeof(evt) );
-    evt.type = XW_EVENT_CANT_LOCK;
+    evt.type = XW_EVT_CANT_LOCK;
     m_eventQueue.push_back( evt );
 }
 
@@ -384,7 +384,7 @@ void
 CookieRef::pushLastSocketGoneEvent()
 {
     CRefEvent evt;
-    evt.type = XW_EVENT_NOMORESOCKETS;
+    evt.type = XW_EVT_NOMORESOCKETS;
     m_eventQueue.push_back( evt );
 }
 
@@ -404,59 +404,59 @@ CookieRef::handleEvents()
                   stateString(m_nextState), eventString(evt.type) );
 
             switch( takeAction ) {
-            case XW_ACTION_SEND_1ST_RSP:
+            case XW_ACT_SEND_1ST_RSP:
                 setAllConnectedTimer();
                 sendResponse( &evt );
                 break;
 
-            case XW_ACTION_SENDRSP:
+            case XW_ACT_SENDRSP:
                 notifyOthers( evt.u.con.socket, XWRELAY_OTHERCONNECT, 
                               XWRELAY_ERROR_NONE );
                 sendResponse( &evt );
                 break;
 
-            case XW_ACTION_FWD:
+            case XW_ACT_FWD:
                 forward( &evt );
                 break;
 
-            case XW_ACTION_CHECKDEST:
+            case XW_ACT_CHECKDEST:
                 checkDest( &evt );
                 break;
 
-            case XW_ACTION_CHECK_CAN_LOCK:
+            case XW_ACT_CHECK_CAN_LOCK:
                 checkFromServer( &evt );
                 break;
 
-            case XW_ACTION_TIMERDISCONNECT:
+            case XW_ACT_TIMERDISCONNECT:
                 disconnectSockets( 0, XWRELAY_ERROR_TIMEOUT );
                 break;
-            case XW_ACTION_HEARTDISCONNECT:
+            case XW_ACT_HEARTDISCONNECT:
                 notifyOthers( evt.u.heart.socket, XWRELAY_DISCONNECT_OTHER, 
                               XWRELAY_ERROR_HEART_OTHER );
                 disconnectSockets( evt.u.heart.socket, 
                                    XWRELAY_ERROR_HEART_YOU );
                 break;
 
-            case XW_ACTION_DISCONNECT:
+            case XW_ACT_DISCONNECT:
                 removeSocket( evt.u.discon.socket );
                 /* Don't notify.  This is a normal part of a game ending. */
                 break;
 
-            case XW_ACTION_NOTEHEART:
+            case XW_ACT_NOTEHEART:
                 noteHeartbeat( &evt );
                 break;
 
-            case XW_ACTION_NOTIFYDISCON:
+            case XW_ACT_NOTIFYDISCON:
                 notifyDisconn( &evt );
                 break;
 
-            case XW_ACTION_REMOVESOCKET:
+            case XW_ACT_REMOVESOCKET:
                 notifyOthers( evt.u.rmsock.socket, XWRELAY_DISCONNECT_OTHER,
                               XWRELAY_ERROR_LOST_OTHER );
                 removeSocket( evt.u.rmsock.socket );
                 break;
 
-            case XW_ACTION_NONE: 
+            case XW_ACT_NONE: 
                 /* nothing to do for these */
                 break;
 
@@ -525,7 +525,7 @@ CookieRef::sendResponse( const CRefEvent* evt )
 
     assert( id != HOST_ID_NONE );
     logf( "remembering pair: hostid=%x, socket=%d", id, socket );
-    RWWriteLock ml( &m_sockets_rwlock );
+/*     RWWriteLock ml( &m_sockets_rwlock ); */
     HostRec hr(socket);
     m_sockets.insert( pair<HostID,HostRec>(id,hr) );
 
@@ -616,7 +616,7 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 {
     assert( socket != 0 );
 
-    RWReadLock ml( &m_sockets_rwlock );
+/*     RWReadLock ml( &m_sockets_rwlock ); */
 
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) { 
@@ -632,7 +632,7 @@ void
 CookieRef::disconnectSockets( int socket, XWREASON why )
 {
     if ( socket == 0 ) {
-        RWReadLock ml( &m_sockets_rwlock );
+/*         RWReadLock ml( &m_sockets_rwlock ); */
         map<HostID,HostRec>::iterator iter = m_sockets.begin();
         while ( iter != m_sockets.end() ) { 
             assert( iter->second.m_socket != 0 );
@@ -651,7 +651,7 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
     int socket = evt->u.heart.socket;
     HostID id = evt->u.heart.id;
 
-    RWWriteLock rwl( &m_sockets_rwlock );
+/*     RWWriteLock rwl( &m_sockets_rwlock ); */
 
     map<HostID,HostRec>::iterator iter = m_sockets.find(id);
     if ( iter == m_sockets.end() ) {
@@ -684,9 +684,9 @@ void
 CookieRef::_CheckAllConnected()
 {
     logf( "checkAllConnected" );
-    MutexLock ml( &m_EventsMutex );
+/*     MutexLock ml( &m_EventsMutex ); */
     CRefEvent newEvt;
-    newEvt.type = XW_EVENT_CONNTIMER;
+    newEvt.type = XW_EVT_CONNTIMER;
     m_eventQueue.push_back( newEvt );
     handleEvents();
 }
