@@ -202,8 +202,18 @@ cmd_shutdown( int socket, const char** args )
 static void
 print_cookies( int socket, const char* name )
 {
-    CookieID id = CRefMgr::Get()->CookieIdForName( name );
-    print_cookies( socket, id );
+    CookieMapIterator iter = CRefMgr::Get()->GetCookieIterator();
+    CookieID id;
+
+    for ( id = iter.Next(); id != 0; id = iter.Next() ) {
+        SafeCref scr( id );
+        if ( scr.IsValid() && scr.Name() == name ) {
+            string s;
+            scr.PrintCookieInfo( s );
+
+            print_to_sock( socket, s.c_str() );
+        }
+    }
 }
 
 static void
