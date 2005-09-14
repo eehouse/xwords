@@ -1210,9 +1210,14 @@ static void
 gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
-    XP_UCHAR* message = linux_getErrString( id );
+    XP_Bool silent;
+    XP_UCHAR* message = linux_getErrString( id, &silent );
 
-    gtkUserError( globals, message );
+    if ( silent ) {
+        XP_LOGF( message );
+    } else {
+        gtkUserError( globals, message );
+    }
 } /* gtk_util_userError */
 
 static XP_Bool
