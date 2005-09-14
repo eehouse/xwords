@@ -64,69 +64,69 @@ enum {
 
 /* events */
 typedef enum {
-    XW_EVENT_NONE
+    XW_EVT_NONE
 
-    ,XW_EVENT_CONNECTMSG        /* A device is connecting using the cookie for
+    ,XW_EVT_CONNECTMSG        /* A device is connecting using the cookie for
                                    this object */
 
-    ,XW_EVENT_RECONNECTMSG      /* A device is re-connecting using the
+    ,XW_EVT_RECONNECTMSG      /* A device is re-connecting using the
                                    connID for this object */
 
-    ,XW_EVENT_DISCONNECTMSG     /* disconnect socket from this game/cref */
+    ,XW_EVT_DISCONNECTMSG     /* disconnect socket from this game/cref */
 
-    ,XW_EVENT_FORWARDMSG        /* A message needs forwarding */
+    ,XW_EVT_FORWARDMSG        /* A message needs forwarding */
 
-    ,XW_EVENT_HEARTRCVD         /* A heartbeat message arrived */
+    ,XW_EVT_HEARTRCVD         /* A heartbeat message arrived */
 
-    ,XW_EVENT_CONNTIMER         /* timer for did we get all players hooked
+    ,XW_EVT_CONNTIMER         /* timer for did we get all players hooked
                                    up  */
 
-    ,XW_EVENT_DESTOK
+    ,XW_EVT_DESTOK
 
-    ,XW_EVENT_DESTBAD
+    ,XW_EVT_DESTBAD
 
-    ,XW_EVENT_CAN_LOCK          /* ready to stop allowing new connections */
-    ,XW_EVENT_CANT_LOCK         /* can't disallow new connections yet  */
+    ,XW_EVT_CAN_LOCK          /* ready to stop allowing new connections */
+    ,XW_EVT_CANT_LOCK         /* can't disallow new connections yet  */
 
-    ,XW_EVENT_HEARTFAILED
+    ,XW_EVT_HEARTFAILED
 
-    ,XW_EVENT_REMOVESOCKET      /* Need to remove socket from this cref */
+    ,XW_EVT_REMOVESOCKET      /* Need to remove socket from this cref */
 
-    ,XW_EVENT_NOTIFYDISCON      /* Send a discon */
+    ,XW_EVT_NOTIFYDISCON      /* Send a discon */
 
-    ,XW_EVENT_NOMORESOCKETS     /* last socket's been removed */
+    ,XW_EVT_NOMORESOCKETS     /* last socket's been removed */
 
-    ,XW_EVENT_ANY               /* wildcard; matches all */
+    ,XW_EVT_ANY               /* wildcard; matches all */
 } XW_RELAY_EVENT;
 
 
 /* actions */
 typedef enum {
-    XW_ACTION_NONE
+    XW_ACT_NONE
 
-    ,XW_ACTION_SEND_1ST_RSP
+    ,XW_ACT_SEND_1ST_RSP
 
-    ,XW_ACTION_SENDRSP          /* Send a connection response */
+    ,XW_ACT_SENDRSP          /* Send a connection response */
 
-    ,XW_ACTION_FWD              /* Forward a message */
+    ,XW_ACT_FWD              /* Forward a message */
 
-    ,XW_ACTION_NOTEHEART        /* Record heartbeat received */
+    ,XW_ACT_NOTEHEART        /* Record heartbeat received */
 
-    ,XW_ACTION_DISCONNECTALL
-    ,XW_ACTION_TIMERDISCONNECT  /* disconnect all because of a timer */
+    ,XW_ACT_DISCONNECTALL
+    ,XW_ACT_TIMERDISCONNECT  /* disconnect all because of a timer */
 
-    ,XW_ACTION_CHECKDEST        /* check that a given hostID has a socket */
+    ,XW_ACT_CHECKDEST        /* check that a given hostID has a socket */
 
-    ,XW_ACTION_DISCONNECT
+    ,XW_ACT_DISCONNECT
 
-    ,XW_ACTION_NOTIFYDISCON
+    ,XW_ACT_NOTIFYDISCON
 
-    ,XW_ACTION_REMOVESOCKET
+    ,XW_ACT_REMOVESOCKET
 
-    ,XW_ACTION_CHECK_CAN_LOCK    /* check whether this message implies all
+    ,XW_ACT_CHECK_CAN_LOCK    /* check whether this message implies all
                                     expected players present */
 
-    ,XW_ACTION_HEARTDISCONNECT
+    ,XW_ACT_HEARTDISCONNECT
 
 } XW_RELAY_ACTION;
 

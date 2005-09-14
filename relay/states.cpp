@@ -40,7 +40,7 @@ typedef struct StateTable {
    window where new devices can sign in using a given cookie is fairly small.
 
    Perhaps a better algorithm is needed for determining when the game is
-   closed.  It's not when the first XW_EVENT_FORWARDMSG comes along, since
+   closed.  It's not when the first XW_EVT_FORWARDMSG comes along, since
    that can happen before all hosts have arrived (e.g. if a client signs up
    before the server.)  The goal has been to avoid having the relay know about
    the xwords protocol.  But it already knows about hostID 0 (I think).  So
@@ -59,67 +59,67 @@ typedef struct StateTable {
 StateTable g_stateTable[] = {
 
     /* Initial msg comes in.  Managing object created in init state, sends response */
-    { XW_ST_INITED,            XW_EVENT_CONNECTMSG,    XW_ACTION_SEND_1ST_RSP,  XW_ST_CONNECTING },
-    { XW_ST_INITED,            XW_EVENT_RECONNECTMSG,  XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
+    { XW_ST_INITED,            XW_EVT_CONNECTMSG,    XW_ACT_SEND_1ST_RSP,  XW_ST_CONNECTING },
+    { XW_ST_INITED,            XW_EVT_RECONNECTMSG,  XW_ACT_SENDRSP,       XW_ST_CONNECTING },
 
     /* Another connect msg comes in */
-    { XW_ST_CONNECTING,        XW_EVENT_CONNECTMSG,    XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
-    { XW_ST_CONNECTING,        XW_EVENT_RECONNECTMSG,  XW_ACTION_SENDRSP,       XW_ST_CONNECTING },
+    { XW_ST_CONNECTING,        XW_EVT_CONNECTMSG,    XW_ACT_SENDRSP,       XW_ST_CONNECTING },
+    { XW_ST_CONNECTING,        XW_EVT_RECONNECTMSG,  XW_ACT_SENDRSP,       XW_ST_CONNECTING },
 
     /* Disconnect. */
-    { XW_ST_ALLCONNECTED,      XW_EVENT_DISCONNECTMSG, XW_ACTION_DISCONNECT,    XW_ST_MISSING },
-    { XW_ST_CONNECTING,        XW_EVENT_DISCONNECTMSG, XW_ACTION_DISCONNECT,    XW_ST_CONNECTING },
-    { XW_ST_MISSING,           XW_EVENT_DISCONNECTMSG, XW_ACTION_DISCONNECT,    XW_ST_MISSING },
-    { XW_ST_MISSING,           XW_EVENT_NOMORESOCKETS, XW_ACTION_NONE,          XW_ST_DEAD },
+    { XW_ST_ALLCONNECTED,      XW_EVT_DISCONNECTMSG, XW_ACT_DISCONNECT,    XW_ST_MISSING },
+    { XW_ST_CONNECTING,        XW_EVT_DISCONNECTMSG, XW_ACT_DISCONNECT,    XW_ST_CONNECTING },
+    { XW_ST_MISSING,           XW_EVT_DISCONNECTMSG, XW_ACT_DISCONNECT,    XW_ST_MISSING },
+    { XW_ST_MISSING,           XW_EVT_NOMORESOCKETS, XW_ACT_NONE,          XW_ST_DEAD },
 
     /* Forward requests while not locked are ok -- but we must check that the
        target is actually present.  If no socket available must drop the message */
-    { XW_ST_CONNECTING,        XW_EVENT_FORWARDMSG,  XW_ACTION_CHECKDEST,      XW_ST_CHECKINGDEST },
-    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTOK,      XW_ACTION_CHECK_CAN_LOCK, XW_ST_CHECKING_CAN_LOCK },
+    { XW_ST_CONNECTING,        XW_EVT_FORWARDMSG,  XW_ACT_CHECKDEST,      XW_ST_CHECKINGDEST },
+    { XW_ST_CHECKINGDEST,      XW_EVT_DESTOK,      XW_ACT_CHECK_CAN_LOCK, XW_ST_CHECKING_CAN_LOCK },
 
-    { XW_ST_CHECKING_CAN_LOCK, XW_EVENT_CAN_LOCK,    XW_ACTION_FWD,            XW_ST_ALLCONNECTED },
-    { XW_ST_CHECKING_CAN_LOCK, XW_EVENT_CANT_LOCK,   XW_ACTION_FWD,            XW_ST_CONNECTING },
+    { XW_ST_CHECKING_CAN_LOCK, XW_EVT_CAN_LOCK,    XW_ACT_FWD,            XW_ST_ALLCONNECTED },
+    { XW_ST_CHECKING_CAN_LOCK, XW_EVT_CANT_LOCK,   XW_ACT_FWD,            XW_ST_CONNECTING },
 
-    { XW_ST_CHECKINGDEST,      XW_EVENT_DESTBAD,     XW_ACTION_NONE,           XW_ST_CONNECTING },
+    { XW_ST_CHECKINGDEST,      XW_EVT_DESTBAD,     XW_ACT_NONE,           XW_ST_CONNECTING },
 
     /* Timeout before all connected */
-    { XW_ST_CONNECTING,        XW_EVENT_CONNTIMER,   XW_ACTION_TIMERDISCONNECT,XW_ST_DEAD },
+    { XW_ST_CONNECTING,        XW_EVT_CONNTIMER,   XW_ACT_TIMERDISCONNECT,XW_ST_DEAD },
 
-    { XW_ST_ALLCONNECTED,      XW_EVENT_HEARTFAILED, XW_ACTION_HEARTDISCONNECT, XW_ST_MISSING },
-    { XW_ST_CONNECTING,        XW_EVENT_HEARTFAILED, XW_ACTION_HEARTDISCONNECT, XW_ST_CONNECTING },
-    { XW_ST_MISSING,           XW_EVENT_HEARTFAILED, XW_ACTION_HEARTDISCONNECT, XW_ST_MISSING },
+    { XW_ST_ALLCONNECTED,      XW_EVT_HEARTFAILED, XW_ACT_HEARTDISCONNECT, XW_ST_MISSING },
+    { XW_ST_CONNECTING,        XW_EVT_HEARTFAILED, XW_ACT_HEARTDISCONNECT, XW_ST_CONNECTING },
+    { XW_ST_MISSING,           XW_EVT_HEARTFAILED, XW_ACT_HEARTDISCONNECT, XW_ST_MISSING },
 
-    { XW_ST_CONNECTING,        XW_EVENT_REMOVESOCKET,  XW_ACTION_REMOVESOCKET,  XW_ST_CONNECTING },
-    { XW_ST_ALLCONNECTED,      XW_EVENT_REMOVESOCKET,  XW_ACTION_REMOVESOCKET,  XW_ST_MISSING },
-    { XW_ST_MISSING,           XW_EVENT_REMOVESOCKET,  XW_ACTION_REMOVESOCKET,  XW_ST_MISSING },
+    { XW_ST_CONNECTING,        XW_EVT_REMOVESOCKET,  XW_ACT_REMOVESOCKET,  XW_ST_CONNECTING },
+    { XW_ST_ALLCONNECTED,      XW_EVT_REMOVESOCKET,  XW_ACT_REMOVESOCKET,  XW_ST_MISSING },
+    { XW_ST_MISSING,           XW_EVT_REMOVESOCKET,  XW_ACT_REMOVESOCKET,  XW_ST_MISSING },
 
-    { XW_ST_CONNECTING,        XW_EVENT_NOMORESOCKETS,  XW_ACTION_NONE,         XW_ST_DEAD },
-    { XW_ST_DEAD,              XW_EVENT_NOMORESOCKETS,  XW_ACTION_NONE,         XW_ST_DEAD },
+    { XW_ST_CONNECTING,        XW_EVT_NOMORESOCKETS,  XW_ACT_NONE,         XW_ST_DEAD },
+    { XW_ST_DEAD,              XW_EVT_NOMORESOCKETS,  XW_ACT_NONE,         XW_ST_DEAD },
 
     /* This is the entry we'll use most of the time */
-    { XW_ST_ALLCONNECTED,      XW_EVENT_FORWARDMSG,  XW_ACTION_FWD,           XW_ST_ALLCONNECTED },
-    { XW_ST_ALLCONNECTED,      XW_EVENT_CONNTIMER,   XW_ACTION_NONE,          XW_ST_ALLCONNECTED },
+    { XW_ST_ALLCONNECTED,      XW_EVT_FORWARDMSG,  XW_ACT_FWD,           XW_ST_ALLCONNECTED },
+    { XW_ST_ALLCONNECTED,      XW_EVT_CONNTIMER,   XW_ACT_NONE,          XW_ST_ALLCONNECTED },
 
     /* Heartbeat arrived */
-    { XW_ST_CONNECTING,     XW_EVENT_HEARTRCVD,     XW_ACTION_NOTEHEART,     XW_ST_CONNECTING },
-    { XW_ST_ALLCONNECTED,   XW_EVENT_HEARTRCVD,     XW_ACTION_NOTEHEART,     XW_ST_ALLCONNECTED },
-    { XW_ST_MISSING,        XW_EVENT_HEARTRCVD,     XW_ACTION_NOTEHEART,     XW_ST_MISSING },
+    { XW_ST_CONNECTING,     XW_EVT_HEARTRCVD,     XW_ACT_NOTEHEART,     XW_ST_CONNECTING },
+    { XW_ST_ALLCONNECTED,   XW_EVT_HEARTRCVD,     XW_ACT_NOTEHEART,     XW_ST_ALLCONNECTED },
+    { XW_ST_MISSING,        XW_EVT_HEARTRCVD,     XW_ACT_NOTEHEART,     XW_ST_MISSING },
 
     /* I think we need a state XW_ST_SOMEMISSING.  The game can't be played,
        but we're open to XWRELAY_RECONNECT (but not to XWRELAY_CONNECT) */
-    { XW_ST_CONNECTING,       XW_EVENT_NOTIFYDISCON,     XW_ACTION_NOTIFYDISCON,    XW_ST_CONNECTING },
-    { XW_ST_ALLCONNECTED,     XW_EVENT_NOTIFYDISCON,     XW_ACTION_NOTIFYDISCON,    XW_ST_MISSING },
-    { XW_ST_MISSING,          XW_EVENT_NOTIFYDISCON,     XW_ACTION_NOTIFYDISCON,    XW_ST_DEAD },
-    { XW_ST_DEAD,             XW_EVENT_NOTIFYDISCON,     XW_ACTION_NOTIFYDISCON,    XW_ST_DEAD },
-    { XW_ST_DEAD,             XW_EVENT_REMOVESOCKET,     XW_ACTION_REMOVESOCKET,    XW_ST_DEAD },
+    { XW_ST_CONNECTING,       XW_EVT_NOTIFYDISCON,     XW_ACT_NOTIFYDISCON,    XW_ST_CONNECTING },
+    { XW_ST_ALLCONNECTED,     XW_EVT_NOTIFYDISCON,     XW_ACT_NOTIFYDISCON,    XW_ST_MISSING },
+    { XW_ST_MISSING,          XW_EVT_NOTIFYDISCON,     XW_ACT_NOTIFYDISCON,    XW_ST_DEAD },
+    { XW_ST_DEAD,             XW_EVT_NOTIFYDISCON,     XW_ACT_NOTIFYDISCON,    XW_ST_DEAD },
+    { XW_ST_DEAD,             XW_EVT_REMOVESOCKET,     XW_ACT_REMOVESOCKET,    XW_ST_DEAD },
 
-    //    { XW_ST_DEAD,                XW_EVENT_ANY,           XW_ACTION_NONE,          XW_ST_DEAD },
+    //    { XW_ST_DEAD,                XW_EVT_ANY,           XW_ACT_NONE,          XW_ST_DEAD },
 
     /* Reconnect.  Just like a connect but cookieID is supplied.  Can it
        happen in the middle of a game when state is XW_ST_ALLCONNECTED? */
 
     /* Marks end of table */
-    { XW_ST_NONE,              XW_EVENT_NONE,        XW_ACTION_NONE,          XW_ST_NONE }
+    { XW_ST_NONE,              XW_EVT_NONE,        XW_ACT_NONE,          XW_ST_NONE }
 };
 
 
@@ -130,7 +130,7 @@ getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
     StateTable* stp = g_stateTable;
     while ( stp->stateStart != XW_ST_NONE ) {
         if ( stp->stateStart == curState ) {
-            if ( stp->stateEvent == curEvent || stp->stateEvent == XW_EVENT_ANY ) {
+            if ( stp->stateEvent == curEvent || stp->stateEvent == XW_EVT_ANY ) {
                 *takeAction = stp->stateAction;
                 *nextState = stp->stateEnd;
                 return 1;
@@ -170,22 +170,22 @@ char*
 eventString( XW_RELAY_EVENT evt )
 {
     switch( evt ) {
-        CASESTR(XW_EVENT_NONE);
-        CASESTR(XW_EVENT_CONNECTMSG);
-        CASESTR(XW_EVENT_RECONNECTMSG);
-        CASESTR(XW_EVENT_DISCONNECTMSG);
-        CASESTR(XW_EVENT_FORWARDMSG);
-        CASESTR(XW_EVENT_HEARTRCVD);
-        CASESTR(XW_EVENT_CONNTIMER);
-        CASESTR(XW_EVENT_HEARTFAILED);
-        CASESTR(XW_EVENT_DESTOK);
-        CASESTR(XW_EVENT_DESTBAD);
-        CASESTR(XW_EVENT_CAN_LOCK);
-        CASESTR(XW_EVENT_CANT_LOCK);
-        CASESTR(XW_EVENT_ANY);
-        CASESTR(XW_EVENT_REMOVESOCKET);
-        CASESTR(XW_EVENT_NOMORESOCKETS);
-        CASESTR(XW_EVENT_NOTIFYDISCON);
+        CASESTR(XW_EVT_NONE);
+        CASESTR(XW_EVT_CONNECTMSG);
+        CASESTR(XW_EVT_RECONNECTMSG);
+        CASESTR(XW_EVT_DISCONNECTMSG);
+        CASESTR(XW_EVT_FORWARDMSG);
+        CASESTR(XW_EVT_HEARTRCVD);
+        CASESTR(XW_EVT_CONNTIMER);
+        CASESTR(XW_EVT_HEARTFAILED);
+        CASESTR(XW_EVT_DESTOK);
+        CASESTR(XW_EVT_DESTBAD);
+        CASESTR(XW_EVT_CAN_LOCK);
+        CASESTR(XW_EVT_CANT_LOCK);
+        CASESTR(XW_EVT_ANY);
+        CASESTR(XW_EVT_REMOVESOCKET);
+        CASESTR(XW_EVT_NOMORESOCKETS);
+        CASESTR(XW_EVT_NOTIFYDISCON);
     }
     assert(0);
     return "";
