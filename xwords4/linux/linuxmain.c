@@ -122,8 +122,9 @@ strFromStream( XWStreamCtxt* stream )
 } /* strFromStream */
 
 XP_UCHAR*
-linux_getErrString( UtilErrID id )
+linux_getErrString( UtilErrID id, XP_Bool* silent )
 {
+    *silent = XP_FALSE;
     char* message = NULL;
 
     switch( id ) {
@@ -170,6 +171,7 @@ linux_getErrString( UtilErrID id )
 /*         break; */
 
     case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
+        *silent = XP_TRUE;
         message = "XWRELAY_ERROR_LOST_OTHER";
         break;
 
@@ -182,6 +184,7 @@ linux_getErrString( UtilErrID id )
             "hear from you in too long.";
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
+        *silent = XP_TRUE;
         message = "The relay has lost contact with a device in this game.";
         break;
 

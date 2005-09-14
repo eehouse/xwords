@@ -47,7 +47,7 @@ void linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
 
 XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals, char* bufPtr, 
                                   XP_U16 nBytes );
-XP_UCHAR* linux_getErrString( UtilErrID id );
+XP_UCHAR* linux_getErrString( UtilErrID id, XP_Bool* silent );
 XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 
 void catGameHistory( CommonGlobals* cGlobals );
