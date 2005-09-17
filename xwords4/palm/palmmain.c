@@ -3410,8 +3410,10 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 secsFromNow,
         now += PALM_TIMER_DELAY;
     } else if ( why == TIMER_TIMERTICK ) {
         now += SysTicksPerSecond();
+#ifdef BEYOND_IR
     } else if ( why == TIMER_HEARTBEAT ) {
         now += (secsFromNow * SysTicksPerSecond());
+#endif
     } else {
         XP_ASSERT( 0 );
     }
