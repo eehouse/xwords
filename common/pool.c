@@ -124,6 +124,13 @@ getNthPoolTile( PoolContext* pool, short index )
 static Tile
 getRandomTile( PoolContext* pool )
 {
+    /* There's a good little article on shuffling algorithms here:
+     * http://en.wikipedia.org/wiki/Shuffle#Shuffling_algorithms This puppy
+     * can definitely be improved.  PENDING.  But note that what's here still
+     * works when tiles are re-inserted in the pool.  Will need to reshuffle
+     * in that case if move to shuffling once and just taking tiles off the
+     * top thereafter.
+     */
     XP_U16 index = (XP_U16)(XP_RANDOM() % pool->numTilesLeft);
     Tile result;
 
