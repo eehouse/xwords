@@ -103,9 +103,14 @@ static void
 curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    XP_UCHAR* message = linux_getErrString( id );
+    XP_Bool silent;
+    XP_UCHAR* message = linux_getErrString( id, &silent );
 
-    cursesUserError( globals, message );
+    if ( silent ) {
+        XP_LOGF( "silent userError: %s", message );
+    } else {
+        cursesUserError( globals, message );
+    }
 } /* curses_util_userError */
 
 static XP_Bool
