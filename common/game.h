@@ -30,8 +30,9 @@
 extern "C" {
 #endif
 
-#define CUR_STREAM_VERS 0x02
+#define CUR_STREAM_VERS  0x03
 
+#define STREAM_VERS_41   0x02
 #define STREAM_VERS_405  0x01
 
 typedef struct LocalPlayer {
