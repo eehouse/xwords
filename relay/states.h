@@ -105,8 +105,10 @@ typedef enum {
     XW_ACT_NONE
 
     ,XW_ACT_SEND_1ST_RSP
+    ,XW_ACT_SEND_1ST_RERSP
 
-    ,XW_ACT_SENDRSP          /* Send a connection response */
+    ,XW_ACT_SEND_RSP         /* Send a connection response */
+    ,XW_ACT_SEND_RERSP
 
     ,XW_ACT_FWD              /* Forward a message */
 

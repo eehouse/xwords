@@ -123,12 +123,10 @@ print_cookies( int socket, CookieID theID )
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
         if ( theID == 0 || theID == id ) {
             SafeCref scr( id );
-            if ( scr.IsValid() ) {
-                string s;
-                scr.PrintCookieInfo( s );
+            string s;
+            scr.PrintCookieInfo( s );
 
-                print_to_sock( socket, s.c_str() );
-            }
+            print_to_sock( socket, s.c_str() );
         }
     }
 }
@@ -173,7 +171,7 @@ cmd_kill( int socket, const char** args )
     if ( !found ) {
         char* msg =
             "%s socket <num>\n"
-            "%s cookie name <name>\n"
+            "%s cookie name <connName>\n"
             "%s cookie id <id>\n"
             ;
         print_to_sock( socket, msg, args[0], args[0], args[0] );
@@ -207,7 +205,7 @@ print_cookies( int socket, const char* name )
 
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
         SafeCref scr( id );
-        if ( scr.IsValid() && scr.Name() == name ) {
+        if ( scr.Name() == name ) {
             string s;
             scr.PrintCookieInfo( s );
 

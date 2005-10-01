@@ -24,6 +24,7 @@
 #include "crefmgr.h"
 #include "cref.h"
 #include "mlock.h"
+#include "permid.h"
 
 class SocketStuff {
  public:
@@ -48,6 +49,7 @@ CRefMgr::Get()
 } /* Get */
 
 CRefMgr::CRefMgr()
+    : m_nextCID(0)
 {
     /* should be using pthread_once() here */
     pthread_mutex_init( &m_guard, NULL );
@@ -59,21 +61,93 @@ CRefMgr::~CRefMgr()
 }
 
 CookieRef*
-CRefMgr::getMakeCookieRef_locked( const char* cookie, CookieID connID )
+CRefMgr::FindOpenGameFor( const char* cORn, int isCookie )
 {
+    CookieRef* cref = NULL;
+    RWReadLock rwl( &m_cookieMapRWLock );
+
+    CookieMap::iterator iter = m_cookieMap.begin();
+    while ( iter != m_cookieMap.end() ) {
+        cref = iter->second;
+        if ( isCookie ) {
+            if ( cref->NeverFullyConnected() ) {
+                if ( 0 == strcmp( cref->Name(), cORn ) ) {
+                    break;
+                }
+            }
+        } else {
+            if ( cref->AcceptingConnections() ) {
+                if ( 0 == strcmp( cref->ConnName(), cORn ) ) {
+                    break;
+                }
+            }
+        }
+        ++iter;
+    }
+
+    return (iter == m_cookieMap.end()) ? NULL : cref;
+} /* FindOpenGameFor */
+
+CookieID
+CRefMgr::nextCID( const char* connName )
+{
+    /* Later may want to guarantee that wrap-around doesn't cause an overlap.
+       But that's really only a theoretical possibility. */
+    return ++m_nextCID;
+} /* nextCID */
+
+CookieID
+CRefMgr::cookieIDForConnName( const char* connName )
+{
+    CookieID cid = 0;
+    /* for now, just walk the existing data structure and see if the thing's
+       in use.  If it isn't, return a new id. */
+
+    RWReadLock rwl( &m_cookieMapRWLock );
+
+    CookieMap::iterator iter = m_cookieMap.begin();
+    while ( iter != m_cookieMap.end() ) {
+        CookieRef* cref = iter->second;
+        if ( 0 == strcmp( cref->ConnName(), connName ) ) {
+            cid = iter->first;
+            break;
+        }
+        ++iter;
+    }
+
+    return cid;
+} /* cookieIDForConnName */
+
+CookieRef*
+CRefMgr::getMakeCookieRef_locked( const char* cORn, int isCookie, HostID hid )
+{
+    CookieRef* cref;
+
     pthread_mutex_lock( &m_guard );
 
-    CookieRef* cref = connID == 0 ? NULL: getCookieRef_impl( connID );
+    /* We have a cookie from a new connection.  This may be the first time
+       it's been seen, or there may be a game currently in the
+       XW_ST_CONNECTING state.  So we need to look up the cookie first, then
+       generate new connName and cookieIDs if it's not found. */
 
-    if ( cref == NULL ) {       /* need to keep looking? */
-
-        CookieID newId = CookieIdForName( cookie );
-    
-        if ( newId == 0 ) {     /* not in the system */
-            cref = AddNew( cookie, connID );
+    cref = FindOpenGameFor( cORn, isCookie );
+    if ( cref == NULL ) {
+        const char* connName;
+        const char* cookie = NULL;
+        if ( isCookie ) {
+            cookie = cORn;
+            string s = PermID::GetNextUniqueID();
+            connName = s.c_str();
         } else {
-            cref = getCookieRef_impl( newId );
+            connName = cORn;
         }
+
+        CookieID cid = cookieIDForConnName( connName );
+        if ( cid == 0 ) {
+            cid = nextCID( connName );
+        }
+
+        cref = AddNew( cookie, connName, cid );
     }
 
     if ( cref == NULL ) {
@@ -82,25 +156,6 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, CookieID connID )
 
     return cref;
 } /* getMakeCookieRef_locked */
-
-CookieID
-CRefMgr::CookieIdForName( const char* name )
-{
-    CookieRef* cref = NULL;
-    string s(name);
-
-    RWReadLock rwl( &m_cookieMapRWLock );
-
-    CookieMap::iterator iter = m_cookieMap.begin();
-    while ( iter != m_cookieMap.end() ) {
-        cref = iter->second;
-        if ( cref->Name() == s && cref->NeverFullyConnected() ) {
-            return cref->GetCookieID();
-        }
-        ++iter;
-    }
-    return 0;
-} /* CookieIdForName */
 
 void
 CRefMgr::Associate( int socket, CookieRef* cref )
@@ -147,22 +202,21 @@ void
 CRefMgr::RemoveSocketRefs( int socket )
 {
     SafeCref scr( socket );
-    if ( scr.IsValid() ) {
-        scr.Remove( socket );
-    }
+    scr.Remove( socket );
 }
 
 void
 CRefMgr::PrintSocketInfo( int socket, string& out )
 {
     SafeCref scr( socket );
-    if ( scr.IsValid() ) {
+    const char* name = scr.Name();
+    if ( name != NULL && name[0] != '\0' ) {
         char buf[64];
 
         snprintf( buf, sizeof(buf), "* socket: %d\n", socket );
         out += buf;
 
-        snprintf( buf, sizeof(buf), "  in cookie: %s\n", scr.Name().c_str() );
+        snprintf( buf, sizeof(buf), "  in cookie: %s\n", name );
         out += buf;
     }
 }
@@ -256,13 +310,14 @@ CRefMgr::UnlockCref( CookieRef* cref )
 }
 
 CookieRef*
-CRefMgr::AddNew( const char* s, CookieID id )
+CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 {
     RWWriteLock rwl( &m_cookieMapRWLock );
-    logf( "making new cref" );
-    CookieRef* ref = new CookieRef( s, id );
+    logf( "making new cref: %d", id );
+    CookieRef* ref = new CookieRef( cookie, connName, id );
     m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
-    logf( "paired cookie %s with id %d", s, ref->GetCookieID() );
+    logf( "paired cookie %s/connName %s with id %d", 
+          (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
     return ref;
 } /* AddNew */
 
@@ -304,9 +359,9 @@ CRefMgr::Delete( CookieID id )
 } /* Delete */
 
 void
-CRefMgr::Delete( const char* name )
+CRefMgr::Delete( const char* connName )
 {
-    CookieID id = CookieIdForName( name );
+    CookieID id = cookieIDForConnName( connName );
     Delete( id );
 } /* Delete */
 
@@ -345,9 +400,7 @@ CRefMgr::CheckHeartbeats( time_t now )
     unsigned int i;
     for ( i = 0; i < crefs.size(); ++i ) {
         SafeCref scr( crefs[i] );
-        if ( scr.IsValid() ) {
-            scr.CheckHeartbeats( now );
-        }
+        scr.CheckHeartbeats( now );
     }
 } /* CheckHeartbeats */
 
@@ -380,11 +433,13 @@ CookieMapIterator::Next()
 // SafeCref
 //////////////////////////////////////////////////////////////////////////////
 
-SafeCref::SafeCref( const char* cookie, CookieID connID )
+SafeCref::SafeCref( const char* cORn, int isCookie, HostID hid )
      : m_cref( NULL )
      , m_mgr( CRefMgr::Get() )
 {
-    CookieRef* cref = m_mgr->getMakeCookieRef_locked( cookie, connID );
+    CookieRef* cref;
+
+    cref = m_mgr->getMakeCookieRef_locked( cORn, isCookie, hid );
     if ( cref != NULL ) {
         if ( m_mgr->LockCref( cref ) ) {
             m_cref = cref;

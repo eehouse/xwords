@@ -40,31 +40,31 @@ typedef struct StateTable {
    window where new devices can sign in using a given cookie is fairly small.
 
    Perhaps a better algorithm is needed for determining when the game is
-   closed.  It's not when the first XW_EVT_FORWARDMSG comes along, since
-   that can happen before all hosts have arrived (e.g. if a client signs up
-   before the server.)  The goal has been to avoid having the relay know about
-   the xwords protocol.  But it already knows about hostID 0 (I think).  So
-   maybe when that host sends a message for forwarding we know we're set?  Or
-   maybe we add a message the server can send saying "All are present now;
-   lock the game!"  It'd suck if that were spoofed though.
+   closed.  It's not when the first XW_EVT_FORWARDMSG comes along, since that
+   can happen before all hosts have arrived (e.g. if a client signs up before
+   the server.)  The goal has been to avoid having the relay know about the
+   xwords protocol.  But it already knows about hostID 1.  So maybe when that
+   host sends a message for forwarding we know we're set?  Yes: the server
+   sends only after all clients have reported in, at least now.
 
    The problem we want to avoid is bogus connections.  Two are playing using
    cookie FOO.  Somebody looks over a shoulder and sees FOO, and tries to
    connect.  The relay must not start forwarding packets from the interloper
    into the game associated with FOO.
-
-
  */
 
 StateTable g_stateTable[] = {
 
     /* Initial msg comes in.  Managing object created in init state, sends response */
     { XW_ST_INITED,            XW_EVT_CONNECTMSG,    XW_ACT_SEND_1ST_RSP,  XW_ST_CONNECTING },
-    { XW_ST_INITED,            XW_EVT_RECONNECTMSG,  XW_ACT_SENDRSP,       XW_ST_CONNECTING },
+    { XW_ST_INITED,            XW_EVT_RECONNECTMSG,  XW_ACT_SEND_1ST_RERSP,XW_ST_CONNECTING },
 
     /* Another connect msg comes in */
-    { XW_ST_CONNECTING,        XW_EVT_CONNECTMSG,    XW_ACT_SENDRSP,       XW_ST_CONNECTING },
-    { XW_ST_CONNECTING,        XW_EVT_RECONNECTMSG,  XW_ACT_SENDRSP,       XW_ST_CONNECTING },
+    { XW_ST_CONNECTING,        XW_EVT_CONNECTMSG,    XW_ACT_SEND_RSP,      XW_ST_CONNECTING },
+    { XW_ST_CONNECTING,        XW_EVT_RECONNECTMSG,  XW_ACT_SEND_RERSP,    XW_ST_CONNECTING },
+
+    { XW_ST_MISSING,           XW_EVT_CONNECTMSG,    XW_ACT_SEND_RSP,      XW_ST_CONNECTING },
+    { XW_ST_MISSING,           XW_EVT_RECONNECTMSG,  XW_ACT_SEND_RERSP,    XW_ST_CONNECTING },
 
     /* Disconnect. */
     { XW_ST_ALLCONNECTED,      XW_EVT_DISCONNECTMSG, XW_ACT_DISCONNECT,    XW_ST_MISSING },

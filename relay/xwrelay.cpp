@@ -57,6 +57,7 @@
 #include "tpool.h"
 #include "configs.h"
 #include "timermgr.h"
+#include "permid.h"
 
 #define N_WORKER_THREADS 5
 #define MILLIS 1000
@@ -83,54 +84,63 @@ logf( const char* format, ... )
     fprintf( where, "\n" );
 } /* logf */
 
-static unsigned short
-getNetShort( unsigned char** bufpp )
+static int
+getNetShort( unsigned char** bufpp, unsigned char* end, unsigned short* out )
 {
-    unsigned short tmp;
-    memcpy( &tmp, *bufpp, 2 );
-    *bufpp += 2;
-    return ntohs( tmp );
+    int ok = *bufpp + 2 <= end;
+    if ( ok ) {
+        unsigned short tmp;
+        memcpy( &tmp, *bufpp, 2 );
+        *bufpp += 2;
+        *out = ntohs( tmp );
+    }
+    return ok;
 } /* getNetShort */
 
-static unsigned short
-getNetLong( unsigned char** bufpp )
+static int
+getNetByte( unsigned char** bufpp, unsigned char* end, unsigned char* out )
 {
-    unsigned long tmp;
-    memcpy( &tmp, *bufpp, sizeof(tmp) );
-    *bufpp += sizeof(tmp);
-    assert( sizeof(tmp) == 4 );
-    return ntohl( tmp );
-} /* getNetLong */
+    int ok = *bufpp < end;
+    if ( ok ) {
+        *out = **bufpp;
+        ++*bufpp;
+    }
+    return ok;
+} /* getNetByte */
 
 static void
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
 {
-    CookieID cookieID = getNetLong( &buf );
-    HostID hostID = getNetShort( &buf );
-    logf( "processHeartbeat: cookieID 0x%lx, hostID 0x%x", cookieID, hostID );
+    unsigned char* end = buf + bufLen;
+    CookieID cookieID; 
+    HostID hostID;
 
-    SafeCref scr( cookieID );
-    if ( scr.IsValid() ) {
-        scr.HandleHeartbeat( hostID, socket );
-    } else {
-        killSocket( socket, "no cref for socket" );
+    if ( getNetShort( &buf, end, &cookieID )
+         && getNetByte( &buf, end, &hostID ) ) {
+        logf( "processHeartbeat: cookieID 0x%lx, hostID 0x%x", 
+              cookieID, hostID );
+
+        SafeCref scr( cookieID );
+        if ( !scr.HandleHeartbeat( hostID, socket ) ) {
+            killSocket( socket, "no cref for socket" );
+        }
     }
 } /* processHeartbeat */
 
 static int
-readCookie( unsigned char** bufp, const unsigned char* end, 
-            char* outBuf )
+readStr( unsigned char** bufp, const unsigned char* end, 
+         char* outBuf, int bufLen )
 {
     unsigned char clen = **bufp;
     ++*bufp;
-    if ( *bufp < end && clen > 0 && clen < MAX_COOKIE_LEN ) {
+    if ( ((*bufp + clen) <= end) && (clen < bufLen) ) {
         memcpy( outBuf, *bufp, clen );
         outBuf[clen] = '\0';
         *bufp += clen;
         return 1;
     }
     return 0;
-} /* readCookie */
+} /* readStr */
 
 static int
 flagsOK( unsigned char flags )
@@ -180,10 +190,11 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
  * game?
  */
 static void
-processConnect( unsigned char* bufp, int bufLen, int socket, int recon )
+processConnect( unsigned char* bufp, int bufLen, int socket )
 {
     char cookie[MAX_COOKIE_LEN+1];
     unsigned char* end = bufp + bufLen;
+    int success = 0;
 
     logf( "processConnect" );
 
@@ -191,45 +202,63 @@ processConnect( unsigned char* bufp, int bufLen, int socket, int recon )
 
     unsigned char flags = *bufp++;
     if ( flagsOK( flags ) ) {
-        if ( recon || readCookie( &bufp, end, cookie ) ) {
+        HostID srcID;
+        if ( readStr( &bufp, end, cookie, sizeof(cookie) ) 
+             && getNetByte( &bufp, end, &srcID ) ) {
 
-            HostID srcID;
-            CookieID cookieID;
-
-            if ( bufp + sizeof(srcID) + sizeof(cookieID) == end ) {
-                srcID = getNetShort( &bufp );
-                cookieID = getNetLong( &bufp );
-
-                SafeCref scr( cookie, cookieID );
-                if ( scr.IsValid() ) {
-                    if ( recon ) {
-                        scr.Reconnect( socket, srcID );
-                    } else {
-                        scr.Connect( socket, srcID );
-                    }
-                }
-            }
+            SafeCref scr( cookie, 1, srcID );
+            success = scr.Connect( socket, srcID );
         }
-    } else {
+    }
+
+    if ( !success ) {
         denyConnection( socket );
     }
 } /* processConnect */
 
 static void
+processReconnect( unsigned char* bufp, int bufLen, int socket )
+{
+    char connName[MAX_CONNNAME_LEN+1];
+    unsigned char* end = bufp + bufLen;
+    int success = 0;
+
+    logf( "processReconnect" );
+
+    connName[0] = '\0';
+
+    unsigned char flags = *bufp++;
+    if ( flagsOK( flags ) ) {
+        HostID srcID;
+        if ( getNetByte( &bufp, end, &srcID )
+             && readStr( &bufp, end, connName, sizeof(connName) ) ) {
+
+            SafeCref scr( connName, 0, srcID );
+            success = scr.Connect( socket, srcID );
+        }
+    }
+
+    if ( !success ) {
+        denyConnection( socket );
+    }
+}
+
+static void
 processDisconnect( unsigned char* bufp, int bufLen, int socket )
 {
-    if ( bufLen == 6 ) {
-        CookieID cookieID = getNetLong( &bufp );
-        HostID hostID = getNetShort( &bufp );
+    unsigned char* end = bufp + bufLen;
+    CookieID cookieID;
+    HostID hostID;
+
+    if ( getNetShort( &bufp, end, &cookieID ) 
+         && getNetByte( &bufp, end, &hostID ) ) {
 
         SafeCref scr( cookieID );
-        if ( scr.IsValid() ) {
-            scr.Disconnect( socket, hostID );
-        }
+        scr.Disconnect( socket, hostID );
     } else {
         logf( "dropping XWRELAY_GAME_DISCONNECT; wrong length" );
     }
-}
+} /* processDisconnect */
 
 void
 killSocket( int socket, char* why )
@@ -255,17 +284,18 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
 {
     int success = 0;
     unsigned char* bufp = buf + 1; /* skip cmd */
-    CookieID cookieID = getNetLong( &bufp );
-    logf( "cookieID = %d", cookieID );
+    unsigned char* end = buf + buflen;
+    CookieID cookieID;
+    HostID src;
+    HostID dest;
 
+    if ( getNetShort( &bufp, end, &cookieID )
+         && getNetByte( &bufp, end, &src ) 
+         && getNetByte( &bufp, end, &dest ) ) {
+        logf( "cookieID = %d", cookieID );
 
-    SafeCref scr( cookieID );
-    if ( scr.IsValid() ) {
-        HostID src = getNetShort( &bufp );
-        HostID dest = getNetShort( &bufp );
-
-        scr.Forward( src, dest, buf, buflen );
-        success = 1;
+        SafeCref scr( cookieID );
+        success = scr.Forward( src, dest, buf, buflen );
     }
     return success;
 } /* forwardMessage */
@@ -277,20 +307,14 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     switch( cmd ) {
     case XWRELAY_GAME_CONNECT: 
         logf( "processMessage got XWRELAY_CONNECT" );
-        processConnect( buf+1, bufLen-1, socket, 0 );
+        processConnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_RECONNECT: 
         logf( "processMessage got XWRELAY_RECONNECT" );
-        processConnect( buf+1, bufLen-1, socket, 1 );
+        processReconnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_DISCONNECT:
         processDisconnect( buf+1, bufLen-1, socket );
-        break;
-    case XWRELAY_CONNECTRESP:
-        logf( "bad: processMessage got XWRELAY_CONNECTRESP" );
-        break;
-    case XWRELAY_MSG_FROMRELAY:
-        logf( "bad: processMessage got XWRELAY_MSG_FROMRELAY" );
         break;
     case XWRELAY_HEARTBEAT:
         logf( "processMessage got XWRELAY_HEARTBEAT" );
@@ -303,7 +327,9 @@ processMessage( unsigned char* buf, int bufLen, int socket )
         }
         break;
     default:
-        assert(0);
+        logf( "processMessage bad: %d", cmd );
+        break;
+        /* just drop it */
     }
 } /* processMessage */
 
@@ -344,6 +370,7 @@ enum { FLAG_HELP
        ,FLAG_PORT
        ,FLAG_CPORT
        ,FLAG_NTHREADS
+       ,FLAG_NAME
 };
 
 struct option longopts[] = {
@@ -364,6 +391,12 @@ struct option longopts[] = {
         1,
         NULL,
         FLAG_PORT
+    }
+    ,{
+        "name",
+        1,
+        NULL,
+        FLAG_NAME
     }
     ,{
         "ctrlport",
@@ -401,9 +434,10 @@ int main( int argc, char** argv )
     int ctrlport = 0;
     int nWorkerThreads = 0;
     char* conffile = NULL;
+    const char* serverName = NULL;
 
     /* Verify sizes here... */
-    assert( sizeof(CookieID) == 4 );
+    assert( sizeof(CookieID) == 2 );
                    
 
     /* Read options. Options trump config file values when they conflict, but
@@ -411,7 +445,7 @@ int main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt_long(argc, argv, "hc:p:l:",longopts, NULL);
+       int opt = getopt_long(argc, argv, "hc:p:l:n:",longopts, NULL);
 
        if ( opt == -1 ) {
            break;
@@ -426,6 +460,9 @@ int main( int argc, char** argv )
            break;
        case FLAG_PORT:
            port = atoi( optarg );
+           break;
+       case FLAG_NAME:
+           serverName = optarg;
            break;
        case FLAG_CPORT:
            ctrlport = atoi( optarg );
@@ -451,7 +488,11 @@ int main( int argc, char** argv )
     if ( nWorkerThreads == 0 ) {
         nWorkerThreads = cfg->GetNWorkerThreads();
     }
+    if ( serverName == NULL ) {
+        serverName = cfg->GetServerName();
+    }
 
+    PermID::SetServerName( serverName );
 
     int listener = make_socket( INADDR_ANY, port );
     if ( listener == -1 ) {

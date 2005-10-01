@@ -35,9 +35,6 @@
 
 using namespace std;
 
-pthread_mutex_t g_IdsMutex = PTHREAD_MUTEX_INITIALIZER;
-CookieID CookieRef::ms_nextConnectionID = 1000;
-
 /*****************************************************************************
  * SocketsIterator class
  *****************************************************************************/
@@ -71,21 +68,17 @@ SocketsIterator::Next()
  * CookieRef class
  *****************************************************************************/
 
-CookieRef::CookieRef( const char* s, CookieID id )
+CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
     : m_heatbeat(RelayConfigs::GetConfigs()->GetHeartbeatInterval())
-    , m_name(s)
+    , m_name(cookie==NULL?"":cookie)
+    , m_connName(connName)
+    , m_cookieID(id)
     , m_totalSent(0)
     , m_curState(XW_ST_INITED)
+    , m_nextState(XW_ST_INITED)
+    , m_eventQueue()
+    , m_nextHostID(HOST_ID_SERVER)
 {
-/*     pthread_rwlock_init( &m_sockets_rwlock, NULL ); */
-/*     pthread_mutex_init( &m_EventsMutex, NULL ); */
-
-    if ( id == 0 ) {
-        MutexLock ml( &g_IdsMutex );
-        m_connectionID = ms_nextConnectionID++; /* needs a mutex!!! */
-    } else {
-        m_connectionID = id;
-    }
 }
 
 CookieRef::~CookieRef()
@@ -96,7 +89,6 @@ CookieRef::~CookieRef()
     XWThreadPool* tPool = XWThreadPool::GetTPool();
 
     for ( ; ; ) {
-/*         RWWriteLock rwl( &m_sockets_rwlock ); */
         map<HostID,HostRec>::iterator iter = m_sockets.begin();
 
         if ( iter == m_sockets.end() ) {
@@ -108,18 +100,18 @@ CookieRef::~CookieRef()
         m_sockets.erase( iter );
     }
 
-/*     pthread_rwlock_destroy( &m_sockets_rwlock ); */
-    logf( "CookieRef for %d being deleted", m_connectionID );
-
-/*     pthread_mutex_destroy( &m_EventsMutex ); */
-/*     pthread_rwlock_destroy( &m_sockets_rwlock ); */
+    logf( "CookieRef for %d being deleted; sent %d bytes", 
+          m_cookieID, m_totalSent );
 } /* ~CookieRef */
 
 void
 CookieRef::_Connect( int socket, HostID srcID )
 {
     CRefMgr::Get()->Associate( socket, this );
-/*     MutexLock ml( &m_EventsMutex ); */
+    if ( srcID == HOST_ID_NONE ) {
+        srcID = nextHostID();
+        logf( "assigned host id: %x", srcID );
+    }
     pushConnectEvent( socket, srcID );
     handleEvents();
 }
@@ -174,6 +166,14 @@ CookieRef::NeverFullyConnected()
 {
     return m_curState != XW_ST_ALLCONNECTED
         && m_curState != XW_ST_MISSING;
+}
+
+int
+CookieRef::AcceptingConnections()
+{
+    return m_curState == XW_ST_INITED
+        || m_curState == XW_ST_CONNECTING
+        || m_curState == XW_ST_MISSING;
 }
 
 void
@@ -400,19 +400,21 @@ CookieRef::handleEvents()
         if ( getFromTable( m_curState, evt.type, &takeAction, &m_nextState ) ) {
 
             logf( "cid %d: moving from state %s to state %s for event %s",
-                  m_connectionID, stateString(m_curState), 
+                  m_cookieID, stateString(m_curState), 
                   stateString(m_nextState), eventString(evt.type) );
 
             switch( takeAction ) {
             case XW_ACT_SEND_1ST_RSP:
+            case XW_ACT_SEND_1ST_RERSP:
                 setAllConnectedTimer();
-                sendResponse( &evt );
+                sendResponse( &evt, takeAction == XW_ACT_SEND_1ST_RSP );
                 break;
 
-            case XW_ACT_SENDRSP:
+            case XW_ACT_SEND_RSP:
+            case XW_ACT_SEND_RERSP:
                 notifyOthers( evt.u.con.socket, XWRELAY_OTHERCONNECT, 
                               XWRELAY_ERROR_NONE );
-                sendResponse( &evt );
+                sendResponse( &evt, takeAction == XW_ACT_SEND_RSP );
                 break;
 
             case XW_ACT_FWD:
@@ -493,15 +495,6 @@ putNetShort( unsigned char** bufpp, unsigned short s )
     *bufpp += sizeof(s);
 }
 
-static void
-putNetLong( unsigned char** bufpp, unsigned long s )
-{
-    s = htonl( s );
-    memcpy( *bufpp, &s, sizeof(s) );
-    *bufpp += sizeof(s);
-    assert( sizeof(s) == 4 );   /* otherwise need to hardcode */
-}
-
 void
 CookieRef::setAllConnectedTimer()
 {
@@ -518,26 +511,39 @@ CookieRef::cancelAllConnectedTimer()
 }
 
 void
-CookieRef::sendResponse( const CRefEvent* evt )
+CookieRef::sendResponse( const CRefEvent* evt, int initial )
 {
     int socket = evt->u.con.socket;
     HostID id = evt->u.con.srcID;
 
     assert( id != HOST_ID_NONE );
     logf( "remembering pair: hostid=%x, socket=%d", id, socket );
-/*     RWWriteLock ml( &m_sockets_rwlock ); */
     HostRec hr(socket);
     m_sockets.insert( pair<HostID,HostRec>(id,hr) );
 
     /* Now send the response */
-    unsigned char buf[7];
+    unsigned char buf[1 +       /* cmd */
+                      sizeof(short) + /* heartbeat */
+                      sizeof(CookieID) + 
+                      1 +       /* hostID */
+                      MAX_CONNNAME_LEN+1];
     unsigned char* bufp = buf;
 
-    *bufp++ = XWRELAY_CONNECTRESP;
+    *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     putNetShort( &bufp, GetHeartbeat() );
-    putNetLong( &bufp, GetCookieID() );
+    putNetShort( &bufp, GetCookieID() );
+    logf( "writing hostID of %d into mgs", id );
+    *bufp++ = (char)id;
+    if ( initial ) {
+        const char* connName = ConnName();
+        int len = strlen( connName );
+        assert( len < MAX_CONNNAME_LEN );
+        *bufp++ = (char)len;
+        memcpy( bufp, connName, len );
+        bufp += len;
+    }
 
-    send_with_length( socket, buf, sizeof(buf) );
+    send_with_length( socket, buf, bufp - buf );
     logf( "sent XWRELAY_CONNECTRESP" );
 } /* sendResponse */
 
@@ -655,7 +661,7 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
 
     map<HostID,HostRec>::iterator iter = m_sockets.find(id);
     if ( iter == m_sockets.end() ) {
-        logf( "no socket for HostID %d", id );
+        logf( "no socket for HostID %x", id );
     } else {
 
         /* PENDING If the message came on an unexpected socket, kill the
@@ -675,9 +681,7 @@ CookieRef::s_checkAllConnected( void* closure )
     /* Need to ensure */
     CookieRef* self = (CookieRef*)closure;
     SafeCref scr(self);
-    if ( scr.IsValid() ) {
-        scr.CheckAllConnected();
-    }
+    scr.CheckAllConnected();
 }
 
 void
@@ -698,9 +702,12 @@ CookieRef::_PrintCookieInfo( string& out )
     out += Name();
     out += "\n";
     out += "ID: ";
-    char buf[64];
+    char buf[MAX_CONNNAME_LEN+MAX_COOKIE_LEN];
 
-    snprintf( buf, sizeof(buf), "%d\n", GetCookieID() );
+    snprintf( buf, sizeof(buf), "%s\n", Name() );
+    out += buf;
+
+    snprintf( buf, sizeof(buf), "%s\n", ConnName() );
     out += buf;
 
     snprintf( buf, sizeof(buf), "Bytes sent: %d\n", m_totalSent );

@@ -24,6 +24,7 @@ SRC = xwrelay.cpp \
 	timermgr.cpp \
 	configs.cpp \
 	crefmgr.cpp \
+	permid.cpp \
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -lpthread -g
