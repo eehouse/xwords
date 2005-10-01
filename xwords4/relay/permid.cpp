@@ -26,11 +26,15 @@
 using namespace std;
 
 pthread_mutex_t PermID::s_guard = PTHREAD_MUTEX_INITIALIZER;
+string          PermID::s_serverName;
 
 string
 PermID::GetNextUniqueID()
 {
     MutexLock ml( &s_guard );
+
+    string s = s_serverName;
+    s += ":";
     
     char buf[32];               /* should last for a while :-) */
 
@@ -40,6 +44,7 @@ PermID::GetNextUniqueID()
         rewind( f );
     } else {
         f = fopen( "/etc/xwrelay/xwrelay_id.txt", "w" );
+        assert ( f != NULL );
         buf[0] = '0';
         buf[1] = '\0';
     }
@@ -50,8 +55,13 @@ PermID::GetNextUniqueID()
     fprintf( f, "%s\n", buf );
     fclose( f );
     
-    string s(buf);
-    logf( "new id will be %s", s.c_str() );
+    s += buf;
 
     return s;
+}
+
+/* static */ void
+PermID::SetServerName( const char* name )
+{
+    s_serverName = name;
 }

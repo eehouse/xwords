@@ -52,21 +52,24 @@ class CookieRef {
     friend class SafeCref;
     friend class CookieMapIterator;
 
-    CookieRef( const char* s, CookieID id );
+    CookieRef( const char* cookie, const char* connName, CookieID id );
     ~CookieRef();
 
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
-    CookieID GetCookieID() { return m_connectionID; }
+    CookieID GetCookieID() { return m_cookieID; }
+
     int HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_sockets.size(); }
     int HasSocket( int socket );
-    string Name() { return m_name; }
+    const char* Name() { return m_name.c_str(); }
+    const char* ConnName() { return m_connName.c_str(); }
 
     short GetHeartbeat() { return m_heatbeat; }
     int SocketForHost( HostID dest );
 
     int NeverFullyConnected();
+    int AcceptingConnections();
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -149,7 +152,7 @@ class CookieRef {
 
     void handleEvents();
 
-    void sendResponse( const CRefEvent* evt );
+    void sendResponse( const CRefEvent* evt, int initial );
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
 
@@ -163,16 +166,17 @@ class CookieRef {
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
     
-
+    HostID nextHostID() { return ++m_nextHostID; }
     /* timer callback */
     static void s_checkAllConnected( void* closure );
 
     map<HostID,HostRec> m_sockets;
 /*     pthread_rwlock_t m_sockets_rwlock; */
 
-    CookieID m_connectionID;
     short m_heatbeat;           /* might change per carrier or something. */
-    string m_name;
+    string m_name;              /* cookie used for initial connections */
+    string m_connName;          /* globally unique name */
+    CookieID m_cookieID;        /* Unique among current games on this server */
     int m_totalSent;
 
     /* Guard the event queue.  Only one thread at a time can post to the
@@ -185,7 +189,7 @@ class CookieRef {
     XW_RELAY_STATE     m_nextState;
     deque<CRefEvent>   m_eventQueue;
 
-    static CookieID ms_nextConnectionID;
+    HostID m_nextHostID;
 }; /* CookieRef */
 
 #endif

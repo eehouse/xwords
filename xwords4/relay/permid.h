@@ -32,9 +32,15 @@
  */
 class PermID {
  public:
-  static std::string GetNextUniqueID();
+    static void SetServerName( const char* name );
+    static std::string GetNextUniqueID();
 
  private:
-  static pthread_mutex_t    s_guard;   /* guard access to the whole process */
+    static pthread_mutex_t    s_guard;        /* guard access to the whole
+                                                 process */
+    static std::string        s_serverName;   /* All ID's generated start with
+                                                 this, which is supposed to be
+                                                 unique to this relay
+                                                 instance. */
 };
 #endif

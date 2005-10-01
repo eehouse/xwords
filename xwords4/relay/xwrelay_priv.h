@@ -5,7 +5,7 @@
 
 #include <time.h>
 
-typedef unsigned short HostID;
+typedef unsigned char HostID;
 
 void logf( const char* format, ... );
 

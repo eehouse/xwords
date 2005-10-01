@@ -31,23 +31,27 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
 
        , XWRELAY_GAME_CONNECT
        /* Sent from device to relay to establish connection to relay.  Format:
-          flags: 1; cookieLen: 1; cookie: <cookieLen>; hostID:
-          2. connectionID: 2. */
+          flags: 1; cookieLen: 1; cookie: <cookieLen>; hostID: 1. */
 
        , XWRELAY_GAME_RECONNECT
-       /* Connect using ID rather than cookie.  Used by a device that's lost
-          its connection to a game in progress.  Once a game is locked this is
-          the only way a host can get (back) in. */
+       /* Connect using connName rather than cookie.  Used by a device that's
+          lost its connection to a game in progress.  Once a game is locked
+          this is the only way a host can get (back) in. Format: flags: 1;
+          hostID: 1; connNameLen: 1; connName<connNameLen>*/
 
        , XWRELAY_GAME_DISCONNECT
        /* Tell the relay that we're gone for this game.  After this message is
           sent, the host can reconnect on the same socket for a new game.
-          Format: cookieID: 4; srcID: 2 */
+          Format: cookieID: 2; srcID: 1 */
 
-       , XWRELAY_CONNECTRESP
-       /* Sent from relay to device in response to XWRELAY_CONNECT or
-          XWRELAY_RECONNECT.  Format: heartbeat_seconds: 2; connectionID:
-          2; */
+       , XWRELAY_CONNECT_RESP
+       /* Sent from relay to device in response to XWRELAY_CONNECT.  Format:
+          heartbeat_seconds: 2; connectionID: 2; assignedHostID: 1;
+          connNameLen: 1; connName: <connNameLen>; */
+
+       , XWRELAY_RECONNECT_RESP
+       /* Sent from relay to device in response to XWRELAY_RECONNECT.  Format:
+          heartbeat_seconds: 2; connectionID: 2; */
 
        , XWRELAY_OTHERCONNECT   /* Another device has [re]joined your game.
                                  Format: ??? */
@@ -58,21 +62,21 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
 
        , XWRELAY_DISCONNECT_OTHER
        /* Another device has left the game. 
-          Format: errorCode: 1; lostHostId: 2 */
+          Format: errorCode: 1; lostHostId: 1 */
 
        , XWRELAY_CONNECTDENIED
        /* The relay says go away.  Format: reason code: 1 */
 
        , XWRELAY_HEARTBEAT
-       /* Sent in either direction.  Format: cookieID: 4; srcID: 2 */
+       /* Sent in either direction.  Format: cookieID: 2; srcID: 1 */
 
        , XWRELAY_MSG_FROMRELAY
-       /* Sent from relay to device.  Format: cookieID: 4; src_hostID: 2;
-          dest_hostID: 2; data <len-headerLen> */
+       /* Sent from relay to device.  Format: cookieID: 2; src_hostID: 1;
+          dest_hostID: 1; data <len-headerLen> */
 
        , XWRELAY_MSG_TORELAY
        /* Sent from device to relay.  Format: connectionID: 2; src_hostID:
-          2; dest_hostID: 2 */
+          1; dest_hostID: 1 */
 } XWRelayMsg;
 
 #ifndef CANT_DO_TYPEDEF
@@ -84,6 +88,7 @@ typedef unsigned char XWRELAY_Cmd;
 
 #define MAX_COOKIE_LEN 15
 #define MAX_MSG_LEN    256      /* 100 is more like it */
+#define MAX_CONNNAME_LEN 35     /* host id plus a small integer, typically */
 
 #define XWRELAY_PROTO_VERSION 0x01
 
@@ -102,7 +107,7 @@ typedef enum {
 } XWREASON;
 
 
-typedef unsigned int CookieID;
+typedef unsigned short CookieID;
 #define COOKIE_ID_NONE 0L
 
 #endif
