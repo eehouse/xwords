@@ -131,7 +131,7 @@ static void registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream );
 static void server_sendInitialMessage( ServerCtxt* server );
 static void sendBadWordMsgs( ServerCtxt* server );
 static XP_Bool handleIllegalWord( ServerCtxt* server, 
-                                  XWStreamCtxt* incomming );
+                                  XWStreamCtxt* incoming );
 static void tellMoveWasLegal( ServerCtxt* server );
 #endif
 
@@ -235,8 +235,10 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     /* This should go away when stream format changes */
     (void)stream_getBits( stream, 3 ); /* was npassesinrow */
 
-    /* number of players is upper limit on device count */
-    nv->nDevices = (XP_U8)stream_getBits( stream, PLAYERNUM_NBITS );
+    nv->nDevices = (XP_U8)stream_getBits( stream, NDEVICES_NBITS );
+    if ( stream_getVersion( stream ) > STREAM_VERS_41 ) {
+        ++nv->nDevices;
+    }
 
     XP_ASSERT( XWSTATE_GAMEOVER < 1<<4 );
     nv->gameState = (XW_State)stream_getBits( stream, 4 );
@@ -256,7 +258,7 @@ putNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
 
     stream_putBits( stream, 3, 0 ); /* was nPassesInRow */
     /* number of players is upper limit on device count */
-    stream_putBits( stream, PLAYERNUM_NBITS, nv->nDevices );
+    stream_putBits( stream, NDEVICES_NBITS, nv->nDevices-1 );
 
     XP_ASSERT( XWSTATE_GAMEOVER < 1<<4 );
     stream_putBits( stream, 4, nv->gameState );
@@ -2087,13 +2089,13 @@ tellMoveWasLegal( ServerCtxt* server )
 } /* tellMoveWasLegal */
 
 static XP_Bool
-handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incomming )
+handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incoming )
 {
     BadWordInfo bwi;
     XP_U16 whichPlayer;
 
-    whichPlayer = stream_getBits( incomming, PLAYERNUM_NBITS );
-    bwiFromStream( MPPARM(server->mpool) incomming, &bwi );
+    whichPlayer = stream_getBits( incoming, PLAYERNUM_NBITS );
+    bwiFromStream( MPPARM(server->mpool) incoming, &bwi );
 
     badWordMoveUndoAndTellUser( server, &bwi );
 
@@ -2103,7 +2105,7 @@ handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incomming )
 } /* handleIllegalWord */
 
 static XP_Bool
-handleMoveOk( ServerCtxt* server, XWStreamCtxt* incomming /* unused */ )
+handleMoveOk( ServerCtxt* server, XWStreamCtxt* incoming /* unused */ )
 {
     XP_Bool accepted = XP_TRUE;
     XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
