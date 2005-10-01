@@ -30,7 +30,7 @@ EXTERN_C_START
 #define CONN_ID_NONE 0L
 
 typedef XP_U32 MsgID;
-typedef XP_U16 XWHostID;
+typedef XP_U8  XWHostID;
 
 typedef enum {
     COMMS_CONN_UNUSED,          /* I want errors on uninited case */
