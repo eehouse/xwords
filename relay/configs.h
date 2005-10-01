@@ -21,6 +21,7 @@
 #ifndef _CONFIGS_H_
 #define _CONFIGS_H_
 
+#include <string>
 #include "xwrelay_priv.h"
 
 class RelayConfigs {
@@ -36,6 +37,7 @@ class RelayConfigs {
     int    GetNWorkerThreads()  { return m_nWorkerThreads; }
     time_t GetAllConnectedInterval() { return m_allConnInterval; }
     time_t GetHeartbeatInterval() { return m_heartbeatInterval; }
+    const char*  GetServerName() { return m_serverName.c_str(); }
 
 
  private:
@@ -46,6 +48,7 @@ class RelayConfigs {
     int m_ctrlport;
     int m_port;
     int m_nWorkerThreads;
+    std::string m_serverName;
 
     static RelayConfigs* instance;
 };

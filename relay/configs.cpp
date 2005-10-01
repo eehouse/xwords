@@ -99,6 +99,8 @@ RelayConfigs::RelayConfigs( const char* cfile )
                 m_port = atoi( value );
             } else if ( 0 == strcmp( line, "NTHREADS" ) ) {
                 m_nWorkerThreads = atoi( value );
+            } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
+                m_serverName = value;
             } else {
                 logf( "unknown key %s with value %s\n",
                       line, value );
