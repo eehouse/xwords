@@ -41,26 +41,30 @@ assertUtilOK( XW_UtilCtxt* util )
 #endif
 
 static void
-checkServerRole( CurGameInfo* gi )
+checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
 {
     if ( !!gi ) {
+        XP_Bool standAlone = gi->serverRole == SERVER_STANDALONE;
+        XP_U16 i, remoteCount = 0;
 
-        if ( gi->serverRole != SERVER_ISCLIENT ) {
-            XP_Bool standAlone = gi->serverRole == SERVER_STANDALONE;
-            XP_U16 i, remoteCount = 0;
-
-            for ( i = 0; i < gi->nPlayers; ++i ) {
-                LocalPlayer* player = &gi->players[i];
-                if ( !player->isLocal ) {
-                    ++remoteCount;
-                    if ( standAlone ) {
-                        player->isLocal = XP_TRUE;
-                    }
+        for ( i = 0; i < gi->nPlayers; ++i ) {
+            LocalPlayer* player = &gi->players[i];
+            if ( !player->isLocal ) {
+                ++remoteCount;
+                if ( standAlone ) {
+                    player->isLocal = XP_TRUE;
                 }
             }
-            if ( remoteCount == 0 ) {
-                gi->serverRole = SERVER_STANDALONE;
-            }
+        }
+        if ( remoteCount == 0 && gi->serverRole != SERVER_ISCLIENT ) {
+            gi->serverRole = SERVER_STANDALONE;
+        }
+
+        *nPlayersHere = gi->nPlayers - remoteCount;
+        if ( gi->serverRole == SERVER_ISCLIENT ) {
+            *nPlayersTotal = 0;
+        } else {
+            *nPlayersTotal = gi->nPlayers;
         }
     }
 } /* checkServerRole */
@@ -71,8 +75,10 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XP_U16 gameID, CommonPrefs* cp,
                   TransportSend sendproc, void* closure )
 {
+    XP_U16 nPlayersHere, nPlayersTotal;
+
     assertUtilOK( util );
-    checkServerRole( gi );
+    checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
 
     gi->gameID = gameID;
 
@@ -83,6 +89,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
     if ( !!sendproc && gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
+                                  nPlayersHere, nPlayersTotal, 
                                   sendproc, closure );
     } else {
         game->comms = (CommsCtxt*)NULL;
@@ -108,11 +115,12 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
             void* closure )
 {
     XP_U16 i;
+    XP_U16 nPlayersHere, nPlayersTotal;
 
     XP_ASSERT( !!game->model );
     XP_ASSERT( !!gi );
 
-    checkServerRole( gi );
+    checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
     gi->gameID = gameID;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -121,11 +129,13 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
             comms_destroy( game->comms );
             game->comms = NULL;
         } else {
-            comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT );
+            comms_reset( game->comms, gi->serverRole != SERVER_ISCLIENT,
+                         nPlayersHere, nPlayersTotal );
         }
     } else if ( gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
+                                  nPlayersHere, nPlayersTotal, 
                                   sendproc, closure );
     }
 #endif

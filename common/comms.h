@@ -29,7 +29,7 @@ EXTERN_C_START
 #define CHANNEL_NONE ((XP_PlayerAddr)0)
 #define CONN_ID_NONE 0L
 
-typedef XP_U32 MsgID;
+typedef XP_U32 MsgID;           /* this is too big!!! PENDING */
 typedef XP_U8  XWHostID;
 
 typedef enum {
@@ -74,10 +74,12 @@ typedef XP_S16 (*TransportSend)( XP_U8* buf, XP_U16 len,
                                  void* closure );
 
 CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
-                       XP_Bool isServer, TransportSend sendproc, 
-                       void* closure );
+                       XP_Bool isServer, 
+                       XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
+                       TransportSend sendproc, void* closure );
 
-void comms_reset( CommsCtxt* comms, XP_Bool isServer );
+void comms_reset( CommsCtxt* comms, XP_Bool isServer, 
+                  XP_U16 nPlayersHere, XP_U16 nPlayersTotal );
 void comms_destroy( CommsCtxt* comms );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );

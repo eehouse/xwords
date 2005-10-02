@@ -203,11 +203,15 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
     unsigned char flags = *bufp++;
     if ( flagsOK( flags ) ) {
         HostID srcID;
+        unsigned char nPlayersH;
+        unsigned char nPlayersT;
         if ( readStr( &bufp, end, cookie, sizeof(cookie) ) 
-             && getNetByte( &bufp, end, &srcID ) ) {
+             && getNetByte( &bufp, end, &srcID )
+             && getNetByte( &bufp, end, &nPlayersH )
+             && getNetByte( &bufp, end, &nPlayersT ) ) {
 
-            SafeCref scr( cookie, 1, srcID );
-            success = scr.Connect( socket, srcID );
+            SafeCref scr( cookie, 1, srcID, nPlayersH, nPlayersT );
+            success = scr.Connect( socket, srcID, nPlayersH, nPlayersT );
         }
     }
 
@@ -230,18 +234,22 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
     unsigned char flags = *bufp++;
     if ( flagsOK( flags ) ) {
         HostID srcID;
+        unsigned char nPlayersH;
+        unsigned char nPlayersT;
         if ( getNetByte( &bufp, end, &srcID )
+             && getNetByte( &bufp, end, &nPlayersH )
+             && getNetByte( &bufp, end, &nPlayersT )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
-            SafeCref scr( connName, 0, srcID );
-            success = scr.Connect( socket, srcID );
+            SafeCref scr( connName, 0, srcID, nPlayersH, nPlayersT );
+            success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT );
         }
     }
 
     if ( !success ) {
         denyConnection( socket );
     }
-}
+} /* processReconnect */
 
 static void
 processDisconnect( unsigned char* bufp, int bufLen, int socket )

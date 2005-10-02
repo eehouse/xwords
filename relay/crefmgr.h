@@ -77,13 +77,16 @@ class CRefMgr {
 
  private:
     friend class SafeCref;
-    CookieRef* getMakeCookieRef_locked( const char* cORn, int isCookie, HostID hid );
+    CookieRef* getMakeCookieRef_locked( const char* cORn, int isCookie, 
+                                        HostID hid, 
+                                        int nPlayersH, int nPlayersT );
     CookieRef* getCookieRef_locked( CookieID cookieID );
     CookieRef* getCookieRef_locked( int socket );
     int checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
-    CookieRef* FindOpenGameFor( const char* cORn, int isCookie );
+    CookieRef* FindOpenGameFor( const char* cORn, int isCookie,
+                                HostID hid, int nPlayersH, int nPlayersT );
 
     CookieID cookieIDForConnName( const char* connName );
     CookieID nextCID( const char* connName );
@@ -112,7 +115,8 @@ class SafeCref {
        CookieRef instance at a time. */
 
  public:
-    SafeCref( const char* cookieOrConnName, int cookie, HostID hid );
+    SafeCref( const char* cookieOrConnName, int cookie, HostID hid, 
+              int nPlayersH, int nPlayersT );
     SafeCref( CookieID cid );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
@@ -126,17 +130,17 @@ class SafeCref {
             return 0;
         }
     }
-    int Connect( int socket, HostID srcID ) {
+    int Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
         if ( IsValid() ) {
-            m_cref->_Connect( socket, srcID );
+            m_cref->_Connect( socket, srcID, nPlayersH, nPlayersT );
             return 1;
         } else {
             return 0;
         }
     }
-    int Reconnect( int socket, HostID srcID ) {
+    int Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
         if ( IsValid() ) {
-            m_cref->_Reconnect( socket, srcID );
+            m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersT );
             return 1;
         } else {
             return 0;

@@ -26,6 +26,19 @@ typedef
 enum {
     XW_ST_NONE
 
+    ,XW_ST_CHKCOUNTS_INIT       /* from initial state, check if all players
+                                   are here.  Success should be an error,
+                                   actually: 1-device game.  */
+
+    ,XW_ST_CHKCOUNTS_MISS       /* from the missing state */
+    ,XW_ST_CHKCOUNTS            /* check from any other state */
+
+    ,XW_ST_CHK_ALLHERE          /* Need to see if all expected devices/players
+                                   are on board. */
+
+    ,XW_ST_CHK_2ND_ALLHERE      /* same as above, but triggered by a reconnect
+                                   rather than a connect request */
+
     ,XW_ST_INITED               /* Relay's running and the object's been
                                    created, but nobody's signed up yet.  This
                                    is a very short-lived state since an
@@ -65,6 +78,12 @@ enum {
 /* events */
 typedef enum {
     XW_EVT_NONE
+
+    ,XW_EVT_OKTOSEND
+    ,XW_EVT_COUNTSBAD
+
+    ,XW_EVT_ALLHERE             /* notify that all expected players are arrived */
+    ,XW_EVT_SOMEMISSING         /* notify that some expected players are still missing */
 
     ,XW_EVT_CONNECTMSG        /* A device is connecting using the cookie for
                                    this object */
@@ -107,12 +126,19 @@ typedef enum {
     ,XW_ACT_SEND_1ST_RSP
     ,XW_ACT_SEND_1ST_RERSP
 
-    ,XW_ACT_SEND_RSP         /* Send a connection response */
+    ,XW_ACT_CHKCOUNTS
+
+    ,XW_ACT_REJECT
+
+    ,XW_ACT_SEND_RSP        /* Send a connection response */
     ,XW_ACT_SEND_RERSP
 
-    ,XW_ACT_FWD              /* Forward a message */
+    ,XW_ACT_SENDALLHERE     /* Let all devices know we're in business */
+    ,XW_ACT_2ND_SNDALLHERE
 
-    ,XW_ACT_NOTEHEART        /* Record heartbeat received */
+    ,XW_ACT_FWD             /* Forward a message */
+
+    ,XW_ACT_NOTEHEART       /* Record heartbeat received */
 
     ,XW_ACT_DISCONNECTALL
     ,XW_ACT_TIMERDISCONNECT  /* disconnect all because of a timer */
@@ -138,5 +164,6 @@ int getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
 
 char* stateString( XW_RELAY_STATE state );
 char* eventString( XW_RELAY_EVENT evt );
+char* actString( XW_RELAY_ACTION act );
 
 #endif
