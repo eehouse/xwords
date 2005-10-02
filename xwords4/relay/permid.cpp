@@ -34,6 +34,7 @@ PermID::GetNextUniqueID()
     MutexLock ml( &s_guard );
 
     string s = s_serverName;
+    assert( s.length() > 0 );
     s += ":";
     
     char buf[32];               /* should last for a while :-) */

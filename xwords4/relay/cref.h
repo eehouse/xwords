@@ -37,9 +37,16 @@ class CookieMapIterator;        /* forward */
 
 class HostRec {
  public:
-    HostRec(int socket) : m_socket(socket), m_lastHeartbeat(now()) {}
+    HostRec(int socket, int nPlayersH, int nPlayersT) 
+        : m_socket(socket)
+        , m_nPlayersH(nPlayersH) 
+        , m_nPlayersT(nPlayersT) 
+        , m_lastHeartbeat(now()) 
+        {}
     ~HostRec() {}
     int m_socket;
+    int m_nPlayersH;
+    int m_nPlayersT;
     time_t m_lastHeartbeat;
 };
 
@@ -69,7 +76,7 @@ class CookieRef {
     int SocketForHost( HostID dest );
 
     int NeverFullyConnected();
-    int AcceptingConnections();
+    int AcceptingReconnections( HostID hid, int nPlayersH, int nPlayersT );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -81,8 +88,8 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
-    void _Connect( int socket, HostID srcID );
-    void _Reconnect( int socket, HostID srcID );
+    void _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT );
+    void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT );
     void _Disconnect(int socket, HostID hostID );
     void _HandleHeartbeat( HostID id, int socket );
     void _CheckHeartbeats( time_t now );
@@ -103,6 +110,8 @@ class CookieRef {
             } fwd;
             struct {
                 int socket;
+                int nPlayersH;
+                int nPlayersT;
                 HostID srcID;
             } con;
             struct {
@@ -134,8 +143,10 @@ class CookieRef {
         m_totalSent += nBytes;
     }
 
-    void pushConnectEvent( int socket, HostID srcID );
-    void pushReconnectEvent( int socket, HostID srcID );
+    void pushConnectEvent( int socket, HostID srcID, 
+                           int nPlayersH, int nPlayersT );
+    void pushReconnectEvent( int socket, HostID srcID, 
+                             int nPlayersH, int nPlayersT );
     void pushHeartbeatEvent( HostID id, int socket );
     void pushHeartFailedEvent( int socket );
     
@@ -153,6 +164,10 @@ class CookieRef {
     void handleEvents();
 
     void sendResponse( const CRefEvent* evt, int initial );
+    void increasePlayerCounts( const CRefEvent* evt );
+    void reducePlayerCounts( int socket );
+    void checkCounts( const CRefEvent* evt );
+
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
 
@@ -165,6 +180,7 @@ class CookieRef {
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
+    void sendAllHere( int includeName );
     
     HostID nextHostID() { return ++m_nextHostID; }
     /* timer callback */
@@ -190,6 +206,8 @@ class CookieRef {
     deque<CRefEvent>   m_eventQueue;
 
     HostID m_nextHostID;
+    int m_nPlayersTotal;
+    int m_nPlayersHere;
 }; /* CookieRef */
 
 #endif
