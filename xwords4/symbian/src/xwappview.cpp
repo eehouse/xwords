@@ -389,7 +389,8 @@ sym_util_engineProgressCallback( XW_UtilCtxt* /*uc*/ )
 }
 
 static void
-sym_util_setTimer( XW_UtilCtxt* /*uc*/, XWTimerReason /*why*/ )
+sym_util_setTimer( XW_UtilCtxt* /*uc*/, XWTimerReason /*why*/, XP_U16 /*when*/,
+                   TimerProc /* proc */, void* /* closure */ )
 {
 }
 
@@ -1296,7 +1297,7 @@ CXWordsAppView::PacketReceived( const TDesC8* aBuf, void* aClosure )
 } /* CXWordsAppView::PacketReceived */
 
 /*static*/ XP_S16
-CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, CommsAddrRec* aAddr, 
+CXWordsAppView::sym_send( XP_U8* aBuf, XP_U16 aLen, const CommsAddrRec* aAddr, 
                           void* aClosure )
 {
     CommsAddrRec addr;

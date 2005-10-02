@@ -207,7 +207,7 @@ sym_draw_destroyCtxt( DrawCtx* p_dctx )
 }
 
 static XP_Bool
-sym_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, 
                      XP_Bool hasfocus )
 {
     XP_LOGF( "sym_draw_boardBegin" );

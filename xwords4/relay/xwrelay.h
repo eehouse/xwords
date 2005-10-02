@@ -26,7 +26,9 @@
 /* Set if device is acting a server; cleared if as client */
 #define FLAGS_SERVER_BIT 0x01
 
+#ifndef CANT_DO_TYPEDEF
 typedef
+#endif
 enum { XWRELAY_NONE             /* 0 is an illegal value */
 
        , XWRELAY_GAME_CONNECT
@@ -82,7 +84,11 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
        , XWRELAY_MSG_TORELAY
        /* Sent from device to relay.  Format: connectionID: 2; src_hostID:
           1; dest_hostID: 1 */
-} XWRelayMsg;
+}
+#ifndef CANT_DO_TYPEDEF
+ XWRelayMsg
+#endif
+;
 
 #ifndef CANT_DO_TYPEDEF
 typedef unsigned char XWRELAY_Cmd;
@@ -98,7 +104,10 @@ typedef unsigned char XWRELAY_Cmd;
 #define XWRELAY_PROTO_VERSION 0x01
 
 /* Errors passed with denied  */
-typedef enum {
+#ifndef CANT_DO_TYPEDEF
+typedef 
+#endif
+enum {
     XWRELAY_ERROR_NONE
     ,XWRELAY_ERROR_BADPROTO
     ,XWRELAY_ERROR_RELAYBUSY
@@ -109,10 +118,16 @@ typedef enum {
     ,XWRELAY_ERROR_LOST_OTHER  /* Generic other-left-we-dunno-why error */
 
     ,XWRELAY_ERROR_LASTERR
-} XWREASON;
+}
+#ifndef CANT_DO_TYPEDEF
+XWREASON
+#endif
+;
 
-
+#ifndef CANT_DO_TYPEDEF
 typedef unsigned short CookieID;
+#endif
+
 #define COOKIE_ID_NONE 0L
 
 #endif
