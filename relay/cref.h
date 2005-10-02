@@ -97,7 +97,7 @@ class CookieRef {
     void _Remove( int socket );
     void _CheckAllConnected();
 
-    int ShouldDie() { return m_curState == XW_ST_DEAD; }
+    int ShouldDie() { return m_curState == XWS_DEAD; }
 
     typedef struct CRefEvent {
         XW_RELAY_EVENT type;

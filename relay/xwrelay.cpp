@@ -63,7 +63,7 @@
 #define MILLIS 1000
 
 void
-logf( const char* format, ... )
+logf( XW_LogLevel level, const char* format, ... )
 {
     FILE* where = stderr;
     struct tm* timp;
@@ -117,7 +117,7 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
 
     if ( getNetShort( &buf, end, &cookieID )
          && getNetByte( &buf, end, &hostID ) ) {
-        logf( "processHeartbeat: cookieID 0x%lx, hostID 0x%x", 
+        logf( XW_LOGINFO, "processHeartbeat: cookieID 0x%lx, hostID 0x%x", 
               cookieID, hostID );
 
         SafeCref scr( cookieID );
@@ -170,7 +170,7 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
     if ( nSent == 2 ) {
         nSent = send( socket, buf, bufLen, 0 );
         if ( nSent == bufLen ) {
-            logf( "sent %d bytes on socket %d", nSent, socket );
+            logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
             ok = 1;
         }
     }
@@ -196,7 +196,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
     unsigned char* end = bufp + bufLen;
     int success = 0;
 
-    logf( "processConnect" );
+    logf( XW_LOGINFO, "processConnect" );
 
     cookie[0] = '\0';
 
@@ -227,7 +227,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
     unsigned char* end = bufp + bufLen;
     int success = 0;
 
-    logf( "processReconnect" );
+    logf( XW_LOGINFO, "processReconnect" );
 
     connName[0] = '\0';
 
@@ -264,18 +264,18 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
         SafeCref scr( cookieID );
         scr.Disconnect( socket, hostID );
     } else {
-        logf( "dropping XWRELAY_GAME_DISCONNECT; wrong length" );
+        logf( XW_LOGERROR, "dropping XWRELAY_GAME_DISCONNECT; wrong length" );
     }
 } /* processDisconnect */
 
 void
 killSocket( int socket, char* why )
 {
-    logf( "killSocket(%d): %s", socket, why );
+    logf( XW_LOGERROR, "killSocket(%d): %s", socket, why );
     CRefMgr::Get()->RemoveSocketRefs( socket );
     /* Might want to kill the thread it belongs to if we're not in it,
        e.g. when unable to write to another socket. */
-    logf( "killSocket done" );
+    logf( XW_LOGINFO,  "killSocket done" );
     XWThreadPool::GetTPool()->CloseSocket( socket );
 }
 
@@ -300,7 +300,7 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
     if ( getNetShort( &bufp, end, &cookieID )
          && getNetByte( &bufp, end, &src ) 
          && getNetByte( &bufp, end, &dest ) ) {
-        logf( "cookieID = %d", cookieID );
+        logf( XW_LOGINFO, "cookieID = %d", cookieID );
 
         SafeCref scr( cookieID );
         success = scr.Forward( src, dest, buf, buflen );
@@ -314,28 +314,28 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     XWRELAY_Cmd cmd = *buf;
     switch( cmd ) {
     case XWRELAY_GAME_CONNECT: 
-        logf( "processMessage got XWRELAY_CONNECT" );
+        logf( XW_LOGINFO, "processMessage got XWRELAY_CONNECT" );
         processConnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_RECONNECT: 
-        logf( "processMessage got XWRELAY_RECONNECT" );
+        logf( XW_LOGINFO, "processMessage got XWRELAY_RECONNECT" );
         processReconnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_DISCONNECT:
         processDisconnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_HEARTBEAT:
-        logf( "processMessage got XWRELAY_HEARTBEAT" );
+        logf( XW_LOGINFO, "processMessage got XWRELAY_HEARTBEAT" );
         processHeartbeat( buf + 1, bufLen - 1, socket );
         break;
     case XWRELAY_MSG_TORELAY:
-        logf( "processMessage got XWRELAY_MSG_TORELAY" );
+        logf( XW_LOGINFO, "processMessage got XWRELAY_MSG_TORELAY" );
         if ( !forwardMessage( buf, bufLen, socket ) ) {
             killSocket( socket, "couldn't forward message" );
         }
         break;
     default:
-        logf( "processMessage bad: %d", cmd );
+        logf( XW_LOGINFO, "processMessage bad: %d", cmd );
         break;
         /* just drop it */
     }
@@ -353,15 +353,15 @@ make_socket( unsigned long addr, unsigned short port )
 
     int result = bind( sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr) );
     if ( result != 0 ) {
-        logf( "exiting: unable to bind port %d: %d, errno = %d\n", 
+        logf( XW_LOGERROR, "exiting: unable to bind port %d: %d, errno = %d\n", 
               port, result, errno );
         return -1;
     }
-    logf( "bound socket %d on port %d", sock, port );
+    logf( XW_LOGINFO, "bound socket %d on port %d", sock, port );
 
     result = listen( sock, 5 );
     if ( result != 0 ) {
-        logf( "exiting: unable to listen: %d, errno = %d\n", result, errno );
+        logf( XW_LOGERROR, "exiting: unable to listen: %d, errno = %d\n", result, errno );
         return -1;
     }
     return sock;
@@ -533,7 +533,7 @@ int main( int argc, char** argv )
         int retval = select( highest, &rfds, NULL, NULL, NULL );
         if ( retval < 0 ) {
             if ( errno != 4 ) { /* 4's what we get when signal interrupts */
-                logf( "errno: %d", errno );
+                logf( XW_LOGINFO, "errno: %d", errno );
             }
         } else {
             if ( FD_ISSET( listener, &rfds ) ) {
@@ -541,7 +541,7 @@ int main( int argc, char** argv )
                 socklen_t siz = sizeof(newaddr);
                 int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
 
-                logf( "accepting connection from %s", 
+                logf( XW_LOGINFO, "accepting connection from %s", 
                       inet_ntoa(newaddr.sin_addr) );
 
                 tPool->AddSocket( newSock );

@@ -237,7 +237,7 @@ print_sockets( int out, int sought )
 static int
 cmd_print( int socket, const char** args )
 {
-    logf( "cmd_print called" );
+    logf( XW_LOGINFO, "cmd_print called" );
     int found = 0;
     if ( 0 == strcmp( "cookie", args[1] ) ) {
         if ( 0 == strcmp( "all", args[2] ) ) {
@@ -363,12 +363,12 @@ ctrl_thread_main( void* arg )
 void
 run_ctrl_thread( int ctrl_listener )
 {
-    logf( "calling accept on socket %d\n", ctrl_listener );
+    logf( XW_LOGINFO, "calling accept on socket %d\n", ctrl_listener );
 
     sockaddr newaddr;
     socklen_t siz = sizeof(newaddr);
     int newSock = accept( ctrl_listener, &newaddr, &siz );
-    logf( "got one for ctrl: %d", newSock );
+    logf( XW_LOGINFO, "got one for ctrl: %d", newSock );
 
     pthread_t thread;
     int result = pthread_create( &thread, NULL, 

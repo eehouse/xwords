@@ -54,7 +54,7 @@ XWThreadPool::XWThreadPool()
 
     int fd[2];
     if ( pipe( fd ) ) {
-        logf( "pipe failed" );
+        logf( XW_LOGERROR, "pipe failed" );
     }
     m_pipeRead = fd[0];
     m_pipeWrite = fd[1];
@@ -83,7 +83,7 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc )
 void
 XWThreadPool::AddSocket( int socket )
 {
-    logf( "AddSocket(%d)", socket );
+    logf( XW_LOGINFO, "AddSocket(%d)", socket );
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
         m_activeSockets.push_back( socket );
@@ -162,9 +162,9 @@ XWThreadPool::get_process_packet( int socket )
         killSocket( socket, "nRead != packetSize" ); 
         return 0;
     }
-    logf( "read %d bytes\n", nRead );
+    logf( XW_LOGINFO, "read %d bytes\n", nRead );
 
-    logf( "calling m_pFunc" );
+    logf( XW_LOGINFO, "calling m_pFunc" );
     (*m_pFunc)( buf, packetSize, socket );
 
     return 1;
@@ -180,7 +180,7 @@ XWThreadPool::tpool_main( void* closure )
 void*
 XWThreadPool::real_tpool_main()
 {
-    logf( "worker thread starting" );
+    logf( XW_LOGINFO, "worker thread starting" );
     for ( ; ; ) {
 
         pthread_mutex_lock( &m_queueMutex );
@@ -191,24 +191,24 @@ XWThreadPool::real_tpool_main()
         int socket = m_queue.front();
         m_queue.pop_front();
         pthread_mutex_unlock( &m_queueMutex );
-        logf( "worker thread got socket %d from queue", socket );
+        logf( XW_LOGINFO, "worker thread got socket %d from queue", socket );
 
         if ( get_process_packet( socket ) ) {
             AddSocket( socket );
         } /* else drop it: error */
     }
-    logf( "worker thread exiting" );
+    logf( XW_LOGINFO, "worker thread exiting" );
     return NULL;
 }
 
 void
 XWThreadPool::interrupt_poll()
 {
-    logf( "interrupt_poll" );
+    logf( XW_LOGINFO, "interrupt_poll" );
     unsigned char byt = 0;
     int nSent = write( m_pipeWrite, &byt, 1 );
     if ( nSent != 1 ) {
-        logf( "errno = %d", errno );
+        logf( XW_LOGERROR, "errno = %d", errno );
     }
 }
 
@@ -245,15 +245,15 @@ XWThreadPool::real_listener()
         int nMillis = tmgr->getPollTimeout();
 
         int nEvents = poll( fds, nSockets, nMillis ); /* -1: infinite timeout */
-        logf( "back from poll: %d", nEvents );
+        logf( XW_LOGINFO, "back from poll: %d", nEvents );
         if ( nEvents == 0 ) {
             tmgr->fireElapsedTimers();
         } else if ( nEvents < 0 ) {
-            logf( "errno: %d", errno );
+            logf( XW_LOGERROR, "errno: %d", errno );
         } 
 
         if ( fds[0].revents != 0 ) {
-            logf( "poll interrupted" );
+            logf( XW_LOGINFO, "poll interrupted" );
             assert( fds[0].revents == POLLIN );
             unsigned char byt;
             read( fds[0].fd, &byt, 1 );
@@ -278,10 +278,10 @@ XWThreadPool::real_listener()
 
                     if ( curfd->revents == POLLIN 
                          ||  curfd->revents == POLLPRI ) {
-                        logf( "enqueuing %d", socket );
+                        logf( XW_LOGINFO, "enqueuing %d", socket );
                         enqueue( socket );
                     } else {
-                        logf( "odd revents: %d", curfd->revents );
+                        logf( XW_LOGERROR, "odd revents: %d", curfd->revents );
                         killSocket( socket, "error/hup in poll()" ); 
                     }
                     --nEvents;
@@ -310,7 +310,7 @@ XWThreadPool::enqueue( int socket )
     MutexLock ml( &m_queueMutex );
     m_queue.push_back( socket );
 
-    logf( "calling pthread_cond_signal" );
+    logf( XW_LOGINFO, "calling pthread_cond_signal" );
     pthread_cond_signal( &m_queueCondVar );
     /* implicit unlock */
 }

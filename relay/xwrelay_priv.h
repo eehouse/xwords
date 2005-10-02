@@ -7,7 +7,12 @@
 
 typedef unsigned char HostID;
 
-void logf( const char* format, ... );
+typedef enum {
+    XW_LOGINFO
+    ,XW_LOGERROR
+} XW_LogLevel;
+
+void logf( XW_LogLevel level, const char* format, ... );
 
 void killSocket( int socket, char* why );
 

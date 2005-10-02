@@ -48,7 +48,7 @@ void
 TimerMgr::setTimer( time_t inMillis, TimerProc proc, void* closure,
                     int interval )
 {
-    logf( "setTimer: now = %d", now() );
+    logf( XW_LOGINFO, "setTimer: now = %d", now() );
     TimerInfo ti;
     ti.proc = proc;
     ti.closure = closure;
@@ -64,7 +64,7 @@ TimerMgr::setTimer( time_t inMillis, TimerProc proc, void* closure,
     m_timers.push_back( ti );
 
     figureNextFire();
-    logf( "setTimer done" );
+    logf( XW_LOGINFO, "setTimer done" );
 }
 
 time_t 
