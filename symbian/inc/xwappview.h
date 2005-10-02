@@ -169,8 +169,8 @@ class CXWordsAppView : public CCoeControl
 #else
 # define SYM_SEND      sym_send
 
-    static XP_S16      sym_send( XP_U8* buf, XP_U16 len, CommsAddrRec* addr, 
-                                 void* closure );
+    static XP_S16      sym_send( XP_U8* buf, XP_U16 len, 
+                                 const CommsAddrRec* addr, void* closure );
     static void        sym_send_on_close( XWStreamCtxt* stream, 
                                           void* closure );
     static void PacketReceived( const TDesC8* aBuf, void* aClosure );
