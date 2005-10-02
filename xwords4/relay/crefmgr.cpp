@@ -64,7 +64,7 @@ CookieRef*
 CRefMgr::FindOpenGameFor( const char* cORn, int isCookie,
                           HostID hid, int nPlayersH, int nPlayersT )
 {
-    logf( "FindOpenGameFor with %s", cORn );
+    logf( XW_LOGINFO, "FindOpenGameFor with %s", cORn );
     CookieRef* cref = NULL;
     RWReadLock rwl( &m_cookieMapRWLock );
 
@@ -168,7 +168,7 @@ CRefMgr::Associate( int socket, CookieRef* cref )
     MutexLock ml( &m_SocketStuffMutex );
     SocketMap::iterator iter = m_SocketStuff.find( socket );
     if ( iter != m_SocketStuff.end() ) {
-        logf( "replacing existing cref/threadID pair for socket %d", socket );
+        logf( XW_LOGINFO, "replacing existing cref/threadID pair for socket %d", socket );
     }
     
     SocketStuff* stuff = new SocketStuff( cref );
@@ -181,7 +181,7 @@ CRefMgr::Disassociate( int socket, CookieRef* cref )
     MutexLock ml( &m_SocketStuffMutex );
     SocketMap::iterator iter = m_SocketStuff.find( socket );
     if ( iter == m_SocketStuff.end() ) {
-        logf( "can't find cref/threadID pair for socket %d", socket );
+        logf( XW_LOGERROR, "can't find cref/threadID pair for socket %d", socket );
     } else {
         SocketStuff* stuff = iter->second;
         assert( stuff->m_cref == cref );
@@ -199,7 +199,7 @@ CRefMgr::GetWriteMutexForSocket( int socket )
         SocketStuff* stuff = iter->second;
         return &stuff->m_writeMutex;
     }
-    logf( "GetWriteMutexForSocket: not found" );
+    logf( XW_LOGERROR, "GetWriteMutexForSocket: not found" );
     return NULL;
 } /* GetWriteMutexForSocket */
 
@@ -280,7 +280,7 @@ CRefMgr::checkCookieRef_locked( CookieRef* cref )
     pthread_mutex_lock( &m_guard );
 
     pthread_mutex_t* cref_mutex = m_crefMutexes[cref];
-    logf( "checkCookieRef_locked: cref_mutex=%p", cref_mutex );
+    logf( XW_LOGINFO, "checkCookieRef_locked: cref_mutex=%p", cref_mutex );
 
     if ( cref_mutex == NULL ) {
         pthread_mutex_unlock( &m_guard );
@@ -321,10 +321,10 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
     assert( exists == NULL );
 
     RWWriteLock rwl( &m_cookieMapRWLock );
-    logf( "making new cref: %d", id );
+    logf( XW_LOGINFO, "making new cref: %d", id );
     CookieRef* ref = new CookieRef( cookie, connName, id );
     m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
-    logf( "paired cookie %s/connName %s with id %d", 
+    logf( XW_LOGINFO, "paired cookie %s/connName %s with id %d", 
           (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
     return ref;
 } /* AddNew */
@@ -338,7 +338,7 @@ CRefMgr::Delete( CookieRef* cref )
     while ( iter != m_cookieMap.end() ) {
         CookieRef* ref = iter->second;
         if ( ref == cref ) {
-            logf( "erasing cref" );
+            logf( XW_LOGINFO, "erasing cref" );
             m_cookieMap.erase( iter );
             break;
         }
@@ -354,7 +354,7 @@ CRefMgr::Delete( CookieRef* cref )
     iter2 = m_crefMutexes.find(cref);
     m_crefMutexes.erase( iter2 );
 
-    logf( "CRefMgr::Delete done" );
+    logf( XW_LOGINFO, "CRefMgr::Delete done" );
 }
 
 void

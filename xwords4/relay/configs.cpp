@@ -102,7 +102,7 @@ RelayConfigs::RelayConfigs( const char* cfile )
             } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
                 m_serverName = value;
             } else {
-                logf( "unknown key %s with value %s\n",
+                logf( XW_LOGERROR, "unknown key %s with value %s\n",
                       line, value );
                 assert( 0 );
             }
