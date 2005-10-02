@@ -56,63 +56,62 @@ RelayConfigs::RelayConfigs( const char* cfile )
     : m_allConnInterval(_ALLCONN)
     , m_heartbeatInterval(_HEARTBEAT)
 {
-    FILE* f = NULL;
-    if ( cfile != NULL ) {
-        f = fopen( cfile, "r" );
-    }
-    if ( f == NULL ) {
-        f = fopen( "./xwrelay.conf", "r" );
-    }        
-    if ( f == NULL ) {
-        f = fopen( "/etc/xwrelay/xwrelay.conf", "r" );
-    }        
-    if ( f != NULL ) {
-        char line[MAX_LINE];
+    /* There's an order here.  Open multiple files, if present.  File in /etc
+       is first, but overridden by local file which is in turn overridden by
+       file passed in. */
+    parse( "/etc/xwrelay/xwrelay.conf" );
+    parse( "./xwrelay.conf" );
+    parse( cfile );
+} /* RelayConfigs::RelayConfigs */
 
-        for ( ; ; ) {
-            if ( !fgets( line, sizeof(line), f ) ) {
-                break;
-            }
-
-            int len = strlen( line );
-            if ( line[len-1] == '\n' ) {
-                line[--len] = '\0';
-            }
-
-            if ( len == 0 || line[0] == '#' ) {
-                continue;
-            }
-
-            char* value = strchr( line, '=' );
-            if ( value == NULL ) {
-                continue;
-            }
-
-            *value++ = '\0';    /* terminate "key" substring */
-            if ( 0 == strcmp( line, "HEARTBEAT" ) ) {
-                m_heartbeatInterval = atoi( value );
-            } else if ( 0 == strcmp( line, "ALLCONN" ) ) {
-                m_allConnInterval = atoi( value );
-            } else if ( 0 == strcmp( line, "CTLPORT" ) ) {
-                m_ctrlport = atoi( value );
-            } else if ( 0 == strcmp( line, "PORT" ) ) {
-                m_port = atoi( value );
-            } else if ( 0 == strcmp( line, "NTHREADS" ) ) {
-                m_nWorkerThreads = atoi( value );
-            } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
-                m_serverName = value;
-            } else {
-                logf( XW_LOGERROR, "unknown key %s with value %s\n",
-                      line, value );
-                assert( 0 );
-            }
-        }
-        fclose( f );
-    }
-}
-
-    
-RelayConfigs::~RelayConfigs()
+void
+RelayConfigs::parse( const char* fname )
 {
-}
- 
+    if ( fname != NULL ) {
+        FILE* f = fopen( fname, "r" );
+        if ( f != NULL ) {
+            logf( XW_LOGINFO, "config: reading from %s", fname );
+            char line[MAX_LINE];
+
+            for ( ; ; ) {
+                if ( !fgets( line, sizeof(line), f ) ) {
+                    break;
+                }
+
+                int len = strlen( line );
+                if ( line[len-1] == '\n' ) {
+                    line[--len] = '\0';
+                }
+
+                if ( len == 0 || line[0] == '#' ) {
+                    continue;
+                }
+
+                char* value = strchr( line, '=' );
+                if ( value == NULL ) {
+                    continue;
+                }
+
+                *value++ = '\0';    /* terminate "key" substring */
+                if ( 0 == strcmp( line, "HEARTBEAT" ) ) {
+                    m_heartbeatInterval = atoi( value );
+                } else if ( 0 == strcmp( line, "ALLCONN" ) ) {
+                    m_allConnInterval = atoi( value );
+                } else if ( 0 == strcmp( line, "CTLPORT" ) ) {
+                    m_ctrlport = atoi( value );
+                } else if ( 0 == strcmp( line, "PORT" ) ) {
+                    m_port = atoi( value );
+                } else if ( 0 == strcmp( line, "NTHREADS" ) ) {
+                    m_nWorkerThreads = atoi( value );
+                } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
+                    m_serverName = value;
+                } else {
+                    logf( XW_LOGERROR, "unknown key %s with value %s\n",
+                          line, value );
+                    assert( 0 );
+                }
+            }
+            fclose( f );
+        }
+    }
+} /* parse */

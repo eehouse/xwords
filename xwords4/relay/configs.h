@@ -30,7 +30,7 @@ class RelayConfigs {
     static void InitConfigs( const char* confFile );
     static RelayConfigs* GetConfigs();
 
-    ~RelayConfigs();
+    ~RelayConfigs() {}
 
     int    GetPort() { return m_port; }
     int    GetCtrlPort() { return m_ctrlport; }
@@ -42,6 +42,7 @@ class RelayConfigs {
 
  private:
     RelayConfigs( const char* cfile );
+    void parse( const char* fname );
 
     time_t m_allConnInterval;
     time_t m_heartbeatInterval;
