@@ -118,7 +118,7 @@ class CXWordsAppView : public CCoeControl
         EUtilRequest
         , EProcessPacket
         , ENumReasons
-    } XWTimerReason ;
+    } XWTimerReason_symb ;
 
     /* open game from prefs or start a new one. */
     void MakeOrLoadGameL();
@@ -145,7 +145,7 @@ class CXWordsAppView : public CCoeControl
     TBool DoNewGame();
     void DoImmediateDraw();
     void DrawGameName() const;
-    void StartIdleTimer( XWTimerReason aWhy );
+    void StartIdleTimer( XWTimerReason_symb aWhy );
 
     static void            sym_util_requestTime( XW_UtilCtxt* uc );
     static VTableMgr*      sym_util_getVTManager( XW_UtilCtxt* uc );
@@ -162,6 +162,9 @@ class CXWordsAppView : public CCoeControl
     static void            sym_util_addrChange( XW_UtilCtxt* uc, 
                                                 const CommsAddrRec* aOld,
                                                 const CommsAddrRec* aNew );
+    static void            sym_util_setTimer( XW_UtilCtxt* uc, 
+                                              XWTimerReason why, XP_U16 when,
+                                              TimerProc proc, void* closure );
 #endif
 
 #ifdef XWFEATURE_STANDALONE_ONLY
@@ -178,6 +181,14 @@ class CXWordsAppView : public CCoeControl
 #endif
 
     static TInt TimerCallback( TAny* aThis );
+    static TInt HeartbeatTimerCallback( TAny* closure );
+
+    void SetHeartbeatCB( TimerProc aHBP, void* aHBC) {
+        iHeartbeatProc =aHBP; iHeartbeatClosure = aHBC;
+    }
+    void GetHeartbeatCB( TimerProc* aHBP, void** aHBC) {
+        *aHBP = iHeartbeatProc; *aHBC = iHeartbeatClosure;
+    }
 
     CEikApplication* iApp;      /* remove if there's some way to get from
                                    env  */
@@ -202,6 +213,14 @@ class CXWordsAppView : public CCoeControl
 
     CDesC16ArrayFlat* iDictList;   /* to pass into the dialog */
 
+    CDeltaTimer* iDeltaTimer;
+
+    TimerProc    iHeartbeatProc;
+    void*        iHeartbeatClosure;
+    TCallBack    iHeartbeatCB;
+    TDeltaTimerEntry iHeartbeatDTE;
+    XP_Bool      iHBQueued;
+
 #ifndef XWFEATURE_STANDALONE_ONLY
     CSendSocket* iSendSock;
     CDesC8ArrayFlat* iNewPacketQueue;
@@ -209,6 +228,5 @@ class CXWordsAppView : public CCoeControl
 
     MPSLOT
 };
-
 
 #endif // _XWORDSAPPVIEW_H_
