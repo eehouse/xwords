@@ -99,14 +99,6 @@ typedef enum {
 
     ,XWE_CONNTIMER         /* timer for did we get all players hooked
                                    up  */
-
-    ,XWE_DESTOK
-
-    ,XWE_DESTBAD
-
-    ,XWE_CAN_LOCK          /* ready to stop allowing new connections */
-    ,XWE_CANT_LOCK         /* can't disallow new connections yet  */
-
     ,XWE_HEARTFAILED
 
     ,XWE_REMOVESOCKET      /* Need to remove socket from this cref */
@@ -134,25 +126,19 @@ typedef enum {
     ,XWA_SEND_RERSP
 
     ,XWA_SENDALLHERE     /* Let all devices know we're in business */
-    ,XWA_SNDALLHERE_2
+    ,XWA_SNDALLHERE_2    /* Ditto, but for a reconnect */
 
     ,XWA_FWD             /* Forward a message */
 
     ,XWA_NOTEHEART       /* Record heartbeat received */
 
-    ,XWA_DISCONNECTALL
     ,XWA_TIMERDISCONN  /* disconnect all because of a timer */
-
-    ,XWA_CHECKDEST        /* check that a given hostID has a socket */
 
     ,XWA_DISCONNECT
 
     ,XWA_NOTIFYDISCON
 
     ,XWA_REMOVESOCKET
-
-    ,XWA_CHECK_CAN_LOCK    /* check whether this message implies all
-                                    expected players present */
 
     ,XWA_HEARTDISCONN
 
