@@ -276,10 +276,6 @@ ceAdjustVisibility( HWND hDlg, GameInfoState* giState, XP_Bool counterWins )
         result = nDrawn == nToDraw;
     }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-    ceShowOrHide( hDlg, IDC_CONNBUTTON, serverRole != SERVER_STANDALONE );
-#endif
- 
     return result;
 } /* ceAdjustVisibility */
 
@@ -509,6 +505,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
                 case IDC_ROLECOMBO:
                     if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                         if ( giState->isNewGame ) {  /* ignore if in info mode */
@@ -518,14 +515,14 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                                               0L);
                             giState->curServerHilite = (Connectedness)sel;
                             ceAdjustVisibility( hDlg, giState, XP_FALSE );
+
+                            /* If we've switched to a state where we'll be
+                               connecting */
+                            if ( sel != SERVER_STANDALONE ) {
+                                handleConnOptionsButton( hDlg, globals, giState );
+                            }
                         }
                     }
-                    break;
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-                case IDC_CONNBUTTON:
-                    XP_LOGF( "calling handleConnOptionsButton" );
-                    handleConnOptionsButton( hDlg, globals, giState );
                     break;
 #endif
 
