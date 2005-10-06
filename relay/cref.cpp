@@ -373,41 +373,6 @@ CookieRef::pushNotifyDisconEvent( int socket, XWREASON why )
 }
 
 void
-CookieRef::pushDestBadEvent()
-{
-    CRefEvent evt;
-    evt.type = XWE_DESTBAD;
-    m_eventQueue.push_back( evt );
-}
-
-void
-CookieRef::pushDestOkEvent( const CRefEvent* oldEvt )
-{
-    CRefEvent evt;
-    memcpy( &evt, oldEvt, sizeof(evt) );
-    evt.type = XWE_DESTOK;
-    m_eventQueue.push_back( evt );
-}
-
-void
-CookieRef::pushCanLockEvent( const CRefEvent* oldEvt )
-{
-    CRefEvent evt;
-    memcpy( &evt, oldEvt, sizeof(evt) );
-    evt.type = XWE_CAN_LOCK;
-    m_eventQueue.push_back( evt );
-}
-
-void
-CookieRef::pushCantLockEvent( const CRefEvent* oldEvt )
-{
-    CRefEvent evt;
-    memcpy( &evt, oldEvt, sizeof(evt) );
-    evt.type = XWE_CANT_LOCK;
-    m_eventQueue.push_back( evt );
-}
-
-void
 CookieRef::pushLastSocketGoneEvent()
 {
     CRefEvent evt;
@@ -452,14 +417,6 @@ CookieRef::handleEvents()
 
             case XWA_FWD:
                 forward( &evt );
-                break;
-
-            case XWA_CHECKDEST:
-                checkDest( &evt );
-                break;
-
-            case XWA_CHECK_CAN_LOCK:
-                checkFromServer( &evt );
                 break;
 
             case XWA_TIMERDISCONN:
@@ -694,29 +651,6 @@ CookieRef::forward( const CRefEvent* evt )
         /* We're not really connected yet! */
     }
 } /* forward */
-
-void
-CookieRef::checkDest( const CRefEvent* evt )
-{
-    HostID dest = evt->u.fwd.dest;
-    int destSocket = SocketForHost( dest );
-    if ( destSocket == -1 ) {
-        pushDestBadEvent();
-    } else {
-        pushDestOkEvent( evt );
-    }
-} /* checkDest */
-
-void
-CookieRef::checkFromServer( const CRefEvent* evt )
-{
-    HostID src = evt->u.fwd.src;
-    if ( src == HOST_ID_SERVER ) {
-        pushCanLockEvent( evt );
-    } else {
-        pushCantLockEvent( evt );
-    }
-}
 
 void
 CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why )
