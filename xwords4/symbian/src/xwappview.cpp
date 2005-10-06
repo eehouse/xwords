@@ -69,6 +69,9 @@ CXWordsAppView* CXWordsAppView::NewLC(const TRect& aRect, CEikApplication* aApp 
 
 CXWordsAppView::CXWordsAppView( CEikApplication* aApp )
     : iApp( aApp )
+    , iHeartbeatCB( HeartbeatTimerCallback, this )
+    , iHeartbeatDTE(iHeartbeatCB)
+    , iHBQueued(XP_FALSE)
 {
 #ifdef DEBUG
     TInt processHandleCount, threadHandleCount;
@@ -134,6 +137,8 @@ void CXWordsAppView::ConstructL(const TRect& aRect)
 
     iRequestTimer = CIdle::NewL( CActive::EPriorityIdle );
     iTimerRunCount = 0;
+    iDeltaTimer = CDeltaTimer::NewL( CActive::EPriorityStandard );
+
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     iSendSock = CSendSocket::NewL( PacketReceived, (void*)this );
@@ -362,7 +367,8 @@ sym_util_trayHiddenChange(XW_UtilCtxt* /*uc*/, XW_TrayVisState /*newState*/ )
 }
 
 static void
-sym_util_yOffsetChange(XW_UtilCtxt* /*uc*/, XP_U16 /*oldOffset*/, XP_U16 /*newOffset*/ )
+sym_util_yOffsetChange(XW_UtilCtxt* /*uc*/, XP_U16 /*oldOffset*/, 
+                       XP_U16 /*newOffset*/ )
 {
 }
 
@@ -388,10 +394,35 @@ sym_util_engineProgressCallback( XW_UtilCtxt* /*uc*/ )
     return XP_TRUE;
 }
 
-static void
-sym_util_setTimer( XW_UtilCtxt* /*uc*/, XWTimerReason /*why*/, XP_U16 /*when*/,
-                   TimerProc /* proc */, void* /* closure */ )
+/*static*/ TInt
+CXWordsAppView::HeartbeatTimerCallback( TAny* closure )
 {
+    CXWordsAppView* self = (CXWordsAppView*)closure;
+    self->iHBQueued = XP_FALSE;
+
+    TimerProc proc;
+    void* hbclosure;
+    self->GetHeartbeatCB( &proc, &hbclosure );
+    (*proc)( hbclosure, TIMER_HEARTBEAT );
+    return 0;
+}
+
+/* static */ void
+CXWordsAppView::sym_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
+                                   XP_U16 when,
+                                   TimerProc proc, void* closure )
+{
+    CXWordsAppView* self = (CXWordsAppView*)uc->closure;
+
+    self->SetHeartbeatCB( proc, closure );
+
+    if ( self->iHBQueued ) {
+        self->iDeltaTimer->Remove( self->iHeartbeatDTE );
+        self->iHBQueued = XP_FALSE;
+    }
+
+    self->iDeltaTimer->Queue( when * 1000000, self->iHeartbeatDTE );
+    self->iHBQueued = XP_TRUE;
 }
 
 /* static */ void
@@ -1330,7 +1361,7 @@ CXWordsAppView::sym_send_on_close( XWStreamCtxt* aStream, void* aClosure )
 #endif
 
 void
-CXWordsAppView::StartIdleTimer( XWTimerReason aWhy )
+CXWordsAppView::StartIdleTimer( XWTimerReason_symb aWhy )
 {
     ++iTimerReasons[aWhy];
 
