@@ -80,7 +80,6 @@
 #define IDC_PREFCOLORS                  1044
 #define PHONIES_LABEL                   1045
 #define IDC_ROLECOMBO                   1046
-#define IDC_CONNBUTTON                  1047
 #define IDC_LOCALP_LABEL                1048
 #define IDC_TOTAL_LABEL                 1049
 #define IDC_REMOTE_LABEL                1050
