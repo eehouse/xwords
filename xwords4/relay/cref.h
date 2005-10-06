@@ -157,10 +157,6 @@ class CookieRef {
     void pushRemoveSocketEvent( int socket );
     void pushNotifyDisconEvent( int socket, XWREASON why );
 
-    void pushDestOkEvent( const CRefEvent* evt );
-    void pushCanLockEvent( const CRefEvent* evt );
-    void pushCantLockEvent( const CRefEvent* evt );
-
     void handleEvents();
 
     void sendResponse( const CRefEvent* evt, int initial );
@@ -172,7 +168,6 @@ class CookieRef {
     void cancelAllConnectedTimer();
 
     void forward( const CRefEvent* evt );
-    void checkDest( const CRefEvent* evt );
     void checkFromServer( const CRefEvent* evt );
     void notifyOthers( int socket, XWRelayMsg msg, XWREASON why );
 
