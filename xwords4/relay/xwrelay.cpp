@@ -108,12 +108,13 @@ getNetByte( unsigned char** bufpp, unsigned char* end, unsigned char* out )
     return ok;
 } /* getNetByte */
 
-static void
+static int
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
 {
     unsigned char* end = buf + bufLen;
     CookieID cookieID; 
     HostID hostID;
+    int success = 0;
 
     if ( getNetShort( &buf, end, &cookieID )
          && getNetByte( &buf, end, &hostID ) ) {
@@ -121,10 +122,12 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
               cookieID, hostID );
 
         SafeCref scr( cookieID );
-        if ( !scr.HandleHeartbeat( hostID, socket ) ) {
+        success = scr.HandleHeartbeat( hostID, socket );
+        if ( !success ) {
             killSocket( socket, "no cref for socket" );
         }
     }
+    return success;
 } /* processHeartbeat */
 
 static int
@@ -142,19 +145,20 @@ readStr( unsigned char** bufp, const unsigned char* end,
     return 0;
 } /* readStr */
 
-static int
+static XWREASON
 flagsOK( unsigned char flags )
 {
-    return flags == XWRELAY_PROTO_VERSION;
+    return flags == XWRELAY_PROTO_VERSION ?
+        XWRELAY_ERROR_NONE : XWRELAY_ERROR_OLDFLAGS;
 } /* flagsOK */
 
 static void
-denyConnection( int socket )
+denyConnection( int socket, XWREASON err )
 {
     unsigned char buf[2];
 
     buf[0] = XWRELAY_CONNECTDENIED;
-    buf[1] = XWRELAY_ERROR_BADPROTO;
+    buf[1] = err;
 
     send_with_length_unsafe( socket, buf, sizeof(buf) );
 }
@@ -189,7 +193,7 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
  * outstanding.  Otherwise close down the socket.  And maybe the others in the
  * game?
  */
-static void
+static int
 processConnect( unsigned char* bufp, int bufLen, int socket )
 {
     char cookie[MAX_COOKIE_LEN+1];
@@ -201,7 +205,10 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
     cookie[0] = '\0';
 
     unsigned char flags = *bufp++;
-    if ( flagsOK( flags ) ) {
+    XWREASON err = flagsOK( flags );
+    if ( err != XWRELAY_ERROR_NONE ) {
+        denyConnection( socket, err );
+    } else {
         HostID srcID;
         unsigned char nPlayersH;
         unsigned char nPlayersT;
@@ -213,29 +220,33 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
             SafeCref scr( cookie, 1, srcID, nPlayersH, nPlayersT );
             success = scr.Connect( socket, srcID, nPlayersH, nPlayersT );
         }
-    }
 
-    if ( !success ) {
-        denyConnection( socket );
+        if ( !success ) {
+            denyConnection( socket, XWRELAY_ERROR_BADPROTO );
+        }
     }
+    return success;
 } /* processConnect */
 
-static void
+static int
 processReconnect( unsigned char* bufp, int bufLen, int socket )
 {
-    char connName[MAX_CONNNAME_LEN+1];
     unsigned char* end = bufp + bufLen;
     int success = 0;
 
     logf( XW_LOGINFO, "processReconnect" );
 
-    connName[0] = '\0';
-
     unsigned char flags = *bufp++;
-    if ( flagsOK( flags ) ) {
+    XWREASON err = flagsOK( flags );
+    if ( err != XWRELAY_ERROR_NONE ) {
+        denyConnection( socket, err );
+    } else {
+        char connName[MAX_CONNNAME_LEN+1];
         HostID srcID;
         unsigned char nPlayersH;
         unsigned char nPlayersT;
+
+        connName[0] = '\0';
         if ( getNetByte( &bufp, end, &srcID )
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT )
@@ -244,28 +255,32 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
             SafeCref scr( connName, 0, srcID, nPlayersH, nPlayersT );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT );
         }
-    }
 
-    if ( !success ) {
-        denyConnection( socket );
+        if ( !success ) {
+            denyConnection( socket, XWRELAY_ERROR_BADPROTO );
+        }
     }
+    return success;
 } /* processReconnect */
 
-static void
+static int
 processDisconnect( unsigned char* bufp, int bufLen, int socket )
 {
     unsigned char* end = bufp + bufLen;
     CookieID cookieID;
     HostID hostID;
+    int success = 0;
 
     if ( getNetShort( &bufp, end, &cookieID ) 
          && getNetByte( &bufp, end, &hostID ) ) {
 
         SafeCref scr( cookieID );
         scr.Disconnect( socket, hostID );
+        success = 1;
     } else {
         logf( XW_LOGERROR, "dropping XWRELAY_GAME_DISCONNECT; wrong length" );
     }
+    return success;
 } /* processDisconnect */
 
 void
@@ -308,37 +323,42 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
     return success;
 } /* forwardMessage */
 
-static void
+static int
 processMessage( unsigned char* buf, int bufLen, int socket )
 {
+    int success = 0;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
     switch( cmd ) {
     case XWRELAY_GAME_CONNECT: 
         logf( XW_LOGINFO, "processMessage got XWRELAY_CONNECT" );
-        processConnect( buf+1, bufLen-1, socket );
+        success = processConnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_RECONNECT: 
         logf( XW_LOGINFO, "processMessage got XWRELAY_RECONNECT" );
-        processReconnect( buf+1, bufLen-1, socket );
+        success = processReconnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_DISCONNECT:
-        processDisconnect( buf+1, bufLen-1, socket );
+        success = processDisconnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_HEARTBEAT:
         logf( XW_LOGINFO, "processMessage got XWRELAY_HEARTBEAT" );
-        processHeartbeat( buf + 1, bufLen - 1, socket );
+        success = processHeartbeat( buf + 1, bufLen - 1, socket );
         break;
     case XWRELAY_MSG_TORELAY:
         logf( XW_LOGINFO, "processMessage got XWRELAY_MSG_TORELAY" );
-        if ( !forwardMessage( buf, bufLen, socket ) ) {
-            killSocket( socket, "couldn't forward message" );
-        }
+        success = forwardMessage( buf, bufLen, socket );
         break;
     default:
         logf( XW_LOGINFO, "processMessage bad: %d", cmd );
         break;
         /* just drop it */
     }
+
+    if ( !success ) {
+        killSocket( socket, "couldn't forward message" );
+    }
+
+    return success;        /* caller defines non-0 as failure */
 } /* processMessage */
 
 static int 

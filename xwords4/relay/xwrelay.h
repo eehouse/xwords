@@ -109,6 +109,7 @@ typedef
 #endif
 enum {
     XWRELAY_ERROR_NONE
+    ,XWRELAY_ERROR_OLDFLAGS    /* You have the wrong flags */
     ,XWRELAY_ERROR_BADPROTO
     ,XWRELAY_ERROR_RELAYBUSY
     ,XWRELAY_ERROR_SHUTDOWN    /* relay's going down */
