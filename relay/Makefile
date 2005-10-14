@@ -29,6 +29,8 @@ SRC = xwrelay.cpp \
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -lpthread -g
 CPPFLAGS += -g -Wall
+# turn on semaphore debugging
+# CPPFLAGS += -DDEBUG_LOCKS
 
 memdebug all: xwrelay
 
