@@ -66,7 +66,7 @@ static int cmd_set( int socket, const char** args );
 static int cmd_shutdown( int socket, const char** args );
 
 static void
-print_to_sock( int sock, const char* what, ... )
+print_to_sock( int sock, int addCR, const char* what, ... )
 {
     char buf[256];
 
@@ -75,7 +75,9 @@ print_to_sock( int sock, const char* what, ... )
     vsnprintf( buf, sizeof(buf) - 1, what, ap );
     va_end(ap);
 
-    strncat( buf, "\n", sizeof(buf) );
+    if ( addCR ) {
+        strncat( buf, "\n", sizeof(buf) );
+    }
     send( sock, buf, strlen(buf), 0 );
 }
 
@@ -98,7 +100,7 @@ static int
 cmd_quit( int socket, const char** args )
 {
     if ( 0 == strcmp( "help", args[1] ) ) {
-        print_to_sock( socket, "%s (close console connection)", args[0] );
+        print_to_sock( socket, 1, "%s (close console connection)", args[0] );
         return 0;
     }
     return 1;
@@ -108,7 +110,7 @@ static int
 cmd_discon( int socket, const char** args )
 {
     if ( 0 == strcmp( "help", args[1] ) ) {
-        print_to_sock( socket, "disconnect from ctrl port" );
+        print_to_sock( socket, 1, "disconnect from ctrl port" );
     } else {
     }
     return 0;
@@ -126,7 +128,7 @@ print_cookies( int socket, CookieID theID )
             string s;
             scr.PrintCookieInfo( s );
 
-            print_to_sock( socket, s.c_str() );
+            print_to_sock( socket, 1, s.c_str() );
         }
     }
 }
@@ -174,7 +176,7 @@ cmd_kill( int socket, const char** args )
             "%s cookie name <connName>\n"
             "%s cookie id <id>\n"
             ;
-        print_to_sock( socket, msg, args[0], args[0], args[0] );
+        print_to_sock( socket, 1, msg, args[0], args[0], args[0] );
     }
     return 1;
 }
@@ -209,7 +211,7 @@ print_cookies( int socket, const char* name )
             string s;
             scr.PrintCookieInfo( s );
 
-            print_to_sock( socket, s.c_str() );
+            print_to_sock( socket, 1, s.c_str() );
         }
     }
 }
@@ -219,7 +221,7 @@ print_socket_info( int out, int which )
 {
     string s;
     CRefMgr::Get()->PrintSocketInfo( which, s );
-    print_to_sock( out, s.c_str() );
+    print_to_sock( out, 1, s.c_str() );
 }
 
 static void
@@ -267,11 +269,11 @@ cmd_print( int socket, const char** args )
             "%s cookie id <id>\n"
             "%s socket all\n"
             "%s socket <num>  -- print info about cookies and sockets\n";
-        print_to_sock( socket, str, 
+        print_to_sock( socket, 1, str, 
                        args[0], args[0], args[0], args[0], args[0] );
     }
     return 0;
-}
+} /* cmd_print */
 
 static int
 cmd_lock( int socket, const char** args )
@@ -282,7 +284,7 @@ cmd_lock( int socket, const char** args )
     } else if ( 0 == strcmp( "off", args[1] ) ) {
         mgr->UnlockAll();
     } else {
-        print_to_sock( socket, "%s [on|off] (lock/unlock mutex)", args[0] );
+        print_to_sock( socket, 1, "%s [on|off] (lock/unlock mutex)", args[0] );
     }
     
     return 0;
@@ -306,6 +308,12 @@ cmd_help( int socket, const char** args )
     return 0;
 }
 
+static void
+print_prompt( int socket )
+{
+    print_to_sock( socket, 0, "=> " );
+}
+
 static int
 dispatch_command( int sock, const char** args )
 {
@@ -320,7 +328,7 @@ dispatch_command( int sock, const char** args )
     }
     
     if ( fp == last ) {
-        print_to_sock( sock, "unknown command: \"%s\"", cmd );
+        print_to_sock( sock, 1, "unknown command: \"%s\"", cmd );
         cmd_help( sock, args );
     }
 
@@ -333,6 +341,8 @@ ctrl_thread_main( void* arg )
     int socket = (int)arg;
 
     for ( ; ; ) {
+        print_prompt( socket );
+
         char buf[512];
         ssize_t nGot = recv( socket, buf, sizeof(buf)-1, 0 );
         if ( nGot <= 1 ) {      /* break when just \n comes in */
