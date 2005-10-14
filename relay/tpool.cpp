@@ -165,9 +165,9 @@ XWThreadPool::get_process_packet( int socket )
     logf( XW_LOGINFO, "read %d bytes\n", nRead );
 
     logf( XW_LOGINFO, "calling m_pFunc" );
-    (*m_pFunc)( buf, packetSize, socket );
+    int success = (*m_pFunc)( buf, packetSize, socket );
 
-    return 1;
+    return success;
 } /* get_process_packet */
 
 /* static */ void*
@@ -244,6 +244,7 @@ XWThreadPool::real_listener()
 
         int nMillis = tmgr->getPollTimeout();
 
+        logf( XW_LOGINFO, "polling %s", log );
         int nEvents = poll( fds, nSockets, nMillis ); /* -1: infinite timeout */
         logf( XW_LOGINFO, "back from poll: %d", nEvents );
         if ( nEvents == 0 ) {

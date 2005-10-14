@@ -35,8 +35,8 @@ class XWThreadPool {
 
  public:
     static XWThreadPool* GetTPool();
-    typedef void (*packet_func)( unsigned char* buf,
-                                 int bufLen, int socket );
+    typedef int (*packet_func)( unsigned char* buf, int bufLen, int socket );
+
     XWThreadPool();
     ~XWThreadPool();
 
