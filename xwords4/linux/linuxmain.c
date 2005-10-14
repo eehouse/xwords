@@ -188,6 +188,10 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "The relay has lost contact with a device in this game.";
         break;
 
+    case ERR_RELAY_BASE + XWRELAY_ERROR_OLDFLAGS:
+        message = "You need to upgrade your copy of Crosswords.";
+        break;
+
     default:
         XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";
