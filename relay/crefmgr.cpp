@@ -25,6 +25,8 @@
 #include "cref.h"
 #include "mlock.h"
 #include "permid.h"
+#include "configs.h"
+#include "timermgr.h"
 
 class SocketStuff {
  public:
@@ -314,6 +316,13 @@ CRefMgr::UnlockCref( CookieRef* cref )
     pthread_mutex_unlock( cref_mutex );
 }
 
+/* static */ void
+CRefMgr::heartbeatProc( void* closure )
+{
+    CRefMgr* self = (CRefMgr*)closure;
+    self->checkHeartbeats( now() );
+} /* heartbeatProc */
+
 CookieRef*
 CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 {
@@ -326,6 +335,14 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
     m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
     logf( XW_LOGINFO, "paired cookie %s/connName %s with id %d", 
           (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
+
+    if ( m_cookieMap.size() == 1 ) {
+        RelayConfigs* cfg = RelayConfigs::GetConfigs();
+        short heartbeat = cfg->GetHeartbeatInterval();
+        TimerMgr::GetTimerMgr()->SetTimer( heartbeat, heartbeatProc, this,
+                                           heartbeat );
+    }
+
     return ref;
 } /* AddNew */
 
@@ -353,6 +370,12 @@ CRefMgr::Delete( CookieRef* cref )
     map<CookieRef*,pthread_mutex_t*>::iterator iter2;
     iter2 = m_crefMutexes.find(cref);
     m_crefMutexes.erase( iter2 );
+
+    delete cref;
+
+    if ( m_cookieMap.size() == 0 ) {
+        TimerMgr::GetTimerMgr()->ClearTimer( heartbeatProc, this );
+    }
 
     logf( XW_LOGINFO, "CRefMgr::Delete done" );
 }
@@ -392,7 +415,7 @@ CRefMgr::getCookieRef_impl( CookieID cookieID )
 }
 
 void
-CRefMgr::CheckHeartbeats( time_t now )
+CRefMgr::checkHeartbeats( time_t now )
 {
     vector<CookieRef*> crefs;
 
@@ -410,7 +433,7 @@ CRefMgr::CheckHeartbeats( time_t now )
         SafeCref scr( crefs[i] );
         scr.CheckHeartbeats( now );
     }
-} /* CheckHeartbeats */
+} /* checkHeartbeats */
 
 /* static */ CookieMapIterator
 CRefMgr::GetCookieIterator()

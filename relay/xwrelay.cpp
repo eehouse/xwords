@@ -387,12 +387,6 @@ make_socket( unsigned long addr, unsigned short port )
     return sock;
 } /* make_socket */
 
-static void
-HeartbeatProc( void* closure )
-{
-    CRefMgr::Get()->CheckHeartbeats( now() );
-} /* HeartbeatProc */
-
 enum { FLAG_HELP
        ,FLAG_CONFFILE
        ,FLAG_PORT
@@ -533,10 +527,6 @@ int main( int argc, char** argv )
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
     tPool->Setup( nWorkerThreads, processMessage );
-
-    short heartbeat = cfg->GetHeartbeatInterval();
-    TimerMgr::GetTimerMgr()->SetTimer( heartbeat, HeartbeatProc, NULL, 
-                                       heartbeat );
 
     /* set up select call */
     fd_set rfds;
