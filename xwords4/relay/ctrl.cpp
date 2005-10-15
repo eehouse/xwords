@@ -55,12 +55,11 @@ typedef struct FuncRec {
 
 static int cmd_quit( int socket, const char** args );
 static int cmd_print( int socket, const char** args );
-static int cmd_discon( int socket, const char** args );
 static int cmd_lock( int socket, const char** args );
 static int cmd_help( int socket, const char** args );
 static int cmd_start( int socket, const char** args );
 static int cmd_stop( int socket, const char** args );
-static int cmd_kill( int socket, const char** args );
+static int cmd_kill_eject( int socket, const char** args );
 static int cmd_get( int socket, const char** args );
 static int cmd_set( int socket, const char** args );
 static int cmd_shutdown( int socket, const char** args );
@@ -82,35 +81,25 @@ print_to_sock( int sock, int addCR, const char* what, ... )
 }
 
 static const FuncRec gFuncs[] = {
-    { "q", cmd_quit },
-    { "print", cmd_print },
-    { "dis", cmd_discon },
-    { "lock", cmd_lock },
+    { "?", cmd_help },
     { "help", cmd_help },
+    { "quit", cmd_quit },
+    { "print", cmd_print },
+    { "lock", cmd_lock },
     { "start", cmd_start },
     { "stop", cmd_stop },
-    { "kill", cmd_kill },
+    { "kill", cmd_kill_eject },
+    { "eject", cmd_kill_eject },
     { "shutdown", cmd_shutdown },
     { "get", cmd_get },
     { "set", cmd_set },
-    { "?", cmd_help },
 };
 
 static int
 cmd_quit( int socket, const char** args )
 {
     if ( 0 == strcmp( "help", args[1] ) ) {
-        print_to_sock( socket, 1, "%s (close console connection)", args[0] );
-        return 0;
-    }
-    return 1;
-}
-
-static int
-cmd_discon( int socket, const char** args )
-{
-    if ( 0 == strcmp( "help", args[1] ) ) {
-        print_to_sock( socket, 1, "disconnect from ctrl port" );
+        print_to_sock( socket, 1, "* %s (disconnect from ctrl port)", args[0] );
     } else {
     }
     return 0;
@@ -136,19 +125,22 @@ print_cookies( int socket, CookieID theID )
 static int
 cmd_start( int socket, const char** args )
 {
+    print_to_sock( socket, 1, "* %s (unimplemented)", args[0] );
     return 1;
 }
 
 static int
 cmd_stop( int socket, const char** args )
 {
+    print_to_sock( socket, 1, "* %s (unimplemented)", args[0] );
     return 1;
 }
 
 static int
-cmd_kill( int socket, const char** args )
+cmd_kill_eject( int socket, const char** args )
 {
     int found = 0;
+    int isKill = 0 == strcmp( args[0], "kill" );
 
     if ( 0 == strcmp( args[1], "socket" ) ) {
         int victim = atoi( args[2] );
@@ -168,34 +160,47 @@ cmd_kill( int socket, const char** args )
                 found = 1;
             }
         }
+    } else if ( 0 == strcmp( args[1], "relay" ) ) {
+        print_to_sock( socket, 1, "not yet unimplemented" );
     }
 
+    const char* expl = isKill? 
+        "silently remove from game"
+        : "remove from game with error to device";
     if ( !found ) {
         char* msg =
-            "%s socket <num>\n"
-            "%s cookie name <connName>\n"
-            "%s cookie id <id>\n"
+            "* %s socket <num>  -- %s\n"
+            "  %s cookie name <connName>\n"
+            "  %s cookie id <id>"
             ;
-        print_to_sock( socket, 1, msg, args[0], args[0], args[0] );
+        print_to_sock( socket, 1, msg, args[0], expl, args[0], args[0] );
     }
     return 1;
-}
+} /* cmd_kill_eject */
 
 static int
 cmd_get( int socket, const char** args )
 {
+    print_to_sock( socket, 1,
+                   "* %s -- lists all attributes (unimplemented)\n"
+                   "* %s <attribute> (unimplemented)",
+                   args[0], args[0] );
     return 1;
 }
 
 static int
 cmd_set( int socket, const char** args )
 {
+    print_to_sock( socket, 1, "* %s <attribute> (unimplemented)", args[0] );
     return 1;
 }
 
 static int
 cmd_shutdown( int socket, const char** args )
 {
+    print_to_sock( socket, 1,
+                   "* %s  -- shuts down relay (exiting main) (unimplemented)",
+                   args[0] );
     return 1;
 }
 
@@ -264,11 +269,11 @@ cmd_print( int socket, const char** args )
 
     if ( !found ) {
         char* str =
-            "%s cookie all\n"
-            "%s cookie name <name>\n"
-            "%s cookie id <id>\n"
-            "%s socket all\n"
-            "%s socket <num>  -- print info about cookies and sockets\n";
+            "* %s cookie all\n"
+            "  %s cookie name <name>\n"
+            "  %s cookie id <id>\n"
+            "  %s socket all\n"
+            "  %s socket <num>  -- print info about cookies and sockets";
         print_to_sock( socket, 1, str, 
                        args[0], args[0], args[0], args[0], args[0] );
     }
@@ -284,7 +289,8 @@ cmd_lock( int socket, const char** args )
     } else if ( 0 == strcmp( "off", args[1] ) ) {
         mgr->UnlockAll();
     } else {
-        print_to_sock( socket, 1, "%s [on|off] (lock/unlock mutex)", args[0] );
+        print_to_sock( socket, 1, "* %s [on|off]  -- lock/unlock access mutex", 
+                       args[0] );
     }
     
     return 0;
@@ -294,6 +300,7 @@ static int
 cmd_help( int socket, const char** args )
 {
     if ( 0 == strcmp( "help", args[1] ) ) {
+        print_to_sock( socket, 1, "* %s  -- prints this", args[0] );
     } else {
 
         const char* help[] = { NULL, "help", NULL, NULL };
