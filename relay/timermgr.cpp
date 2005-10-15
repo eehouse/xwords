@@ -35,7 +35,7 @@ TimerMgr::TimerMgr()
 }
 
 /* static */TimerMgr* 
-TimerMgr::getTimerMgr()
+TimerMgr::GetTimerMgr()
 {
     static TimerMgr* mgr = NULL;
     if ( mgr == NULL ) {
@@ -45,7 +45,7 @@ TimerMgr::getTimerMgr()
 }
 
 void
-TimerMgr::setTimer( time_t inMillis, TimerProc proc, void* closure,
+TimerMgr::SetTimer( time_t inMillis, TimerProc proc, void* closure,
                     int interval )
 {
     logf( XW_LOGINFO, "setTimer: now = %d", now() );
@@ -68,7 +68,7 @@ TimerMgr::setTimer( time_t inMillis, TimerProc proc, void* closure,
 }
 
 time_t 
-TimerMgr::getPollTimeout()
+TimerMgr::GetPollTimeout()
 {
     MutexLock ml( &m_timersMutex );
 
@@ -130,14 +130,14 @@ TimerMgr::figureNextFire()
 } /* figureNextFire */
 
 void
-TimerMgr::clearTimer( TimerProc proc, void* closure )
+TimerMgr::ClearTimer( TimerProc proc, void* closure )
 {
     MutexLock ml( &m_timersMutex );
     clearTimerImpl( proc, closure );
 }
 
 void
-TimerMgr::fireElapsedTimers()
+TimerMgr::FireElapsedTimers()
 {
     pthread_mutex_lock( &m_timersMutex );
 

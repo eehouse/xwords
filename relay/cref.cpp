@@ -588,14 +588,14 @@ CookieRef::setAllConnectedTimer()
 {
     time_t inHowLong;
     inHowLong = RelayConfigs::GetConfigs()->GetAllConnectedInterval();
-    TimerMgr::getTimerMgr()->setTimer( inHowLong,
+    TimerMgr::GetTimerMgr()->SetTimer( inHowLong,
                                        s_checkAllConnected, this, 0 );
 }
 
 void
 CookieRef::cancelAllConnectedTimer()
 {
-    TimerMgr::getTimerMgr()->clearTimer( s_checkAllConnected, this );
+    TimerMgr::GetTimerMgr()->ClearTimer( s_checkAllConnected, this );
 }
 
 void
