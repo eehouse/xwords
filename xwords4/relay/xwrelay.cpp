@@ -535,7 +535,7 @@ int main( int argc, char** argv )
     tPool->Setup( nWorkerThreads, processMessage );
 
     short heartbeat = cfg->GetHeartbeatInterval();
-    TimerMgr::getTimerMgr()->setTimer( heartbeat, HeartbeatProc, NULL, 
+    TimerMgr::GetTimerMgr()->SetTimer( heartbeat, HeartbeatProc, NULL, 
                                        heartbeat );
 
     /* set up select call */

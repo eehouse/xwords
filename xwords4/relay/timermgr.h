@@ -33,38 +33,38 @@ typedef void (*TimerProc)( void* closure );
 class TimerMgr {
 
  public:
-  static TimerMgr* getTimerMgr();
+    static TimerMgr* GetTimerMgr();
 
-  void setTimer( time_t inMillis, TimerProc proc, void* closure,
-                 int interval ); /* 0 means non-recurring */
-  void clearTimer( TimerProc proc, void* closure );
+    void SetTimer( time_t inMillis, TimerProc proc, void* closure,
+                   int interval ); /* 0 means non-recurring */
+    void ClearTimer( TimerProc proc, void* closure );
   
-  time_t getPollTimeout();
-  void fireElapsedTimers();
+    time_t GetPollTimeout();
+    void FireElapsedTimers();
 
  private:
 
-  typedef struct {
-      TimerProc proc;
-      void* closure;
-      time_t when;
-      int interval;
-  } TimerInfo;
+    typedef struct {
+        TimerProc proc;
+        void* closure;
+        time_t when;
+        int interval;
+    } TimerInfo;
   
 
-  TimerMgr();
-  static void sighandler( int signal );
+    TimerMgr();
+    static void sighandler( int signal );
 
-  /* run once we have the mutex */
-  void clearTimerImpl( TimerProc proc, void* closure );
-  int getTimer( TimerProc proc, void* closure );
-  void figureNextFire();
+    /* run once we have the mutex */
+    void clearTimerImpl( TimerProc proc, void* closure );
+    int getTimer( TimerProc proc, void* closure );
+    void figureNextFire();
   
-  pthread_mutex_t m_timersMutex;
-  list<TimerInfo> m_timers;
+    pthread_mutex_t m_timersMutex;
+    list<TimerInfo> m_timers;
 
-  time_t m_nextFireTime;
-  time_t m_heartbeat;
+    time_t m_nextFireTime;
+    time_t m_heartbeat;
 };
 
 #endif

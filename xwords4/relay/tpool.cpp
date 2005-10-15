@@ -216,7 +216,7 @@ void*
 XWThreadPool::real_listener()
 {
     int flags = POLLIN | POLLERR | POLLHUP;
-    TimerMgr* tmgr = TimerMgr::getTimerMgr();
+    TimerMgr* tmgr = TimerMgr::GetTimerMgr();
 
     for ( ; ; ) {
 
@@ -242,13 +242,13 @@ XWThreadPool::real_listener()
         }
         pthread_rwlock_unlock( &m_activeSocketsRWLock );
 
-        int nMillis = tmgr->getPollTimeout();
+        int nMillis = tmgr->GetPollTimeout();
 
         logf( XW_LOGINFO, "polling %s", log );
         int nEvents = poll( fds, nSockets, nMillis ); /* -1: infinite timeout */
         logf( XW_LOGINFO, "back from poll: %d", nEvents );
         if ( nEvents == 0 ) {
-            tmgr->fireElapsedTimers();
+            tmgr->FireElapsedTimers();
         } else if ( nEvents < 0 ) {
             logf( XW_LOGERROR, "errno: %d", errno );
         } 
