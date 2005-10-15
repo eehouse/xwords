@@ -451,10 +451,9 @@ CookieRef::handleEvents()
                 break;
 
             case XWA_SENDALLHERE:
-                sendAllHere( 1 );
-                break;
             case XWA_SNDALLHERE_2:
-                sendAllHere( 0 );
+                cancelAllConnectedTimer();
+                sendAllHere( takeAction == XWA_SENDALLHERE );
                 break;
 
             case XWA_REJECT:
