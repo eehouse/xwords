@@ -181,9 +181,16 @@ class SafeCref {
             m_cref->_CheckAllConnected();
         }
     }
-    const char* Name() { 
+    const char* Cookie() { 
         if ( IsValid() ) {
-            return m_cref->Name();
+            return m_cref->Cookie();
+        } else {
+            return "";          /* so don't crash.... */
+        }
+    }
+    const char* ConnName() { 
+        if ( IsValid() ) {
+            return m_cref->ConnName();
         } else {
             return "";          /* so don't crash.... */
         }

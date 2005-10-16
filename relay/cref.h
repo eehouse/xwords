@@ -69,7 +69,7 @@ class CookieRef {
     int HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_sockets.size(); }
     int HasSocket( int socket );
-    const char* Name() { return m_name.c_str(); }
+    const char* Cookie() { return m_cookie.c_str(); }
     const char* ConnName() { return m_connName.c_str(); }
 
     short GetHeartbeat() { return m_heatbeat; }
@@ -185,7 +185,7 @@ class CookieRef {
 /*     pthread_rwlock_t m_sockets_rwlock; */
 
     short m_heatbeat;           /* might change per carrier or something. */
-    string m_name;              /* cookie used for initial connections */
+    string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */
     CookieID m_cookieID;        /* Unique among current games on this server */
     int m_totalSent;

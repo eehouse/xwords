@@ -74,7 +74,7 @@ CRefMgr::FindOpenGameFor( const char* cORn, int isCookie,
     while ( iter != m_cookieMap.end() ) {
         cref = iter->second;
         if ( isCookie ) {
-            if ( 0 == strcmp( cref->Name(), cORn ) ) {
+            if ( 0 == strcmp( cref->Cookie(), cORn ) ) {
                 if ( cref->NeverFullyConnected() ) {
                     break;
                 }
@@ -216,7 +216,7 @@ void
 CRefMgr::PrintSocketInfo( int socket, string& out )
 {
     SafeCref scr( socket );
-    const char* name = scr.Name();
+    const char* name = scr.Cookie();
     if ( name != NULL && name[0] != '\0' ) {
         char buf[64];
 
