@@ -76,7 +76,7 @@ void sym_memset( void* dest, XP_UCHAR val, XP_U32 nBytes );
 XP_S16 sym_strcmp( XP_UCHAR* str1, XP_UCHAR* str2 );
 XP_U32 sym_strlen( XP_UCHAR* str );
 XP_S16 sym_strncmp( XP_UCHAR* str1, XP_UCHAR* str2, XP_U32 len );
-void sym_memcpy( void* dest, void* src, XP_U32 nbytes );
+void sym_memcpy( void* dest, const void* src, XP_U32 nbytes );
 XP_S16 sym_memcmp( void* m1, void* m2, XP_U32 nbytes );
 char* sym_strcat( XP_UCHAR* dest, const XP_UCHAR* src );
 

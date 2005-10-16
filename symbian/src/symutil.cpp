@@ -148,7 +148,7 @@ sym_assert( XP_Bool b, XP_U32 line, const char* file )
 }
 
 void
-sym_memcpy( void* dest, void* src, XP_U32 nbytes )
+sym_memcpy( void* dest, const void* src, XP_U32 nbytes )
 {
     memcpy( dest, src, nbytes );
 }
