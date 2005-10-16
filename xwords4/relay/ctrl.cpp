@@ -148,7 +148,7 @@ cmd_kill_eject( int socket, const char** args )
             killSocket( victim, "ctrl command" );
             found = 1;
         }
-    } else if ( 0 == strcmp( args[1], "cookie" ) ) {
+    } else if ( 0 == strcmp( args[1], "cref" ) ) {
         const char* idhow = args[2];
         const char* id = args[3];
         if ( idhow != NULL && id != NULL ) {
@@ -170,8 +170,8 @@ cmd_kill_eject( int socket, const char** args )
     if ( !found ) {
         char* msg =
             "* %s socket <num>  -- %s\n"
-            "  %s cookie name <connName>\n"
-            "  %s cookie id <id>"
+            "  %s cref connName <connName>\n"
+            "  %s cref id <id>"
             ;
         print_to_sock( socket, 1, msg, args[0], expl, args[0], args[0] );
     }
@@ -205,19 +205,25 @@ cmd_shutdown( int socket, const char** args )
 }
 
 static void
-print_cookies( int socket, const char* name )
+print_cookies( int socket, const char* cookie, const char* connName )
 {
     CookieMapIterator iter = CRefMgr::Get()->GetCookieIterator();
     CookieID id;
 
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
         SafeCref scr( id );
-        if ( scr.Name() == name ) {
-            string s;
-            scr.PrintCookieInfo( s );
-
-            print_to_sock( socket, 1, s.c_str() );
+        if ( cookie != NULL && 0 == strcmp( scr.Cookie(), cookie ) ) {
+            /* print this one */
+        } else if ( connName != NULL && 
+                    0 == strcmp( scr.ConnName(), connName ) ) {
+            /* print this one */
+        } else {
+            continue;
         }
+        string s;
+        scr.PrintCookieInfo( s );
+
+        print_to_sock( socket, 1, s.c_str() );
     }
 }
 
@@ -246,12 +252,15 @@ cmd_print( int socket, const char** args )
 {
     logf( XW_LOGINFO, "cmd_print called" );
     int found = 0;
-    if ( 0 == strcmp( "cookie", args[1] ) ) {
+    if ( 0 == strcmp( "cref", args[1] ) ) {
         if ( 0 == strcmp( "all", args[2] ) ) {
             print_cookies( socket, (CookieID)0 );
             found = 1;
-        } else if ( 0 == strcmp( "name", args[2] ) ) {
-            print_cookies( socket, args[3] );
+        } else if ( 0 == strcmp( "cookie", args[2] ) ) {
+            print_cookies( socket, args[3], NULL );
+            found = 1;
+        } else if ( 0 == strcmp( "connName", args[2] ) ) {
+            print_cookies( socket, NULL, args[3] );
             found = 1;
         } else if ( 0 == strcmp( "id", args[2] ) ) {
             print_cookies( socket, atoi(args[3]) );
@@ -269,11 +278,12 @@ cmd_print( int socket, const char** args )
 
     if ( !found ) {
         char* str =
-            "* %s cookie all\n"
-            "  %s cookie name <name>\n"
-            "  %s cookie id <id>\n"
+            "* %s cref all\n"
+            "  %s cref name <name>\n"
+            "  %s cref connName <name>\n"
+            "  %s cref id <id>\n"
             "  %s socket all\n"
-            "  %s socket <num>  -- print info about cookies and sockets";
+            "  %s socket <num>  -- print info about crefs and sockets";
         print_to_sock( socket, 1, str, 
                        args[0], args[0], args[0], args[0], args[0] );
     }
@@ -346,21 +356,22 @@ static void*
 ctrl_thread_main( void* arg )
 {
     int socket = (int)arg;
+    string arg0, arg1, arg2, arg3;
 
     for ( ; ; ) {
         print_prompt( socket );
 
         char buf[512];
         ssize_t nGot = recv( socket, buf, sizeof(buf)-1, 0 );
+        logf( XW_LOGINFO, "nGot=%d", nGot );
         if ( nGot <= 1 ) {      /* break when just \n comes in */
             break;
+        } else if ( nGot > 2 ) {
+            /* if nGot is 2, reuse prev string */
+            buf[nGot] = '\0';
+            istringstream cmd( buf );
+            cmd >> arg0 >> arg1 >> arg2 >> arg3;
         }
-
-        buf[nGot] = '\0';
-
-        string arg0, arg1, arg2, arg3;
-        istringstream cmd( buf );
-        cmd >> arg0 >> arg1 >> arg2 >> arg3;
 
         const char* args[] = {
             arg0.c_str(), 

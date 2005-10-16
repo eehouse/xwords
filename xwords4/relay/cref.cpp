@@ -70,7 +70,7 @@ SocketsIterator::Next()
 
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
     : m_heatbeat(RelayConfigs::GetConfigs()->GetHeartbeatInterval())
-    , m_name(cookie==NULL?"":cookie)
+    , m_cookie(cookie==NULL?"":cookie)
     , m_connName(connName)
     , m_cookieID(id)
     , m_totalSent(0)
@@ -780,19 +780,24 @@ CookieRef::_CheckAllConnected()
 void
 CookieRef::_PrintCookieInfo( string& out )
 {
-    out += "Name: ";
-    out += Name();
+    out += "Cookie=";
+    out += Cookie();
     out += "\n";
-    out += "ID: ";
+    out += "connName=";
     char buf[MAX_CONNNAME_LEN+MAX_COOKIE_LEN];
-
-    snprintf( buf, sizeof(buf), "%s\n", Name() );
-    out += buf;
 
     snprintf( buf, sizeof(buf), "%s\n", ConnName() );
     out += buf;
 
-    snprintf( buf, sizeof(buf), "Bytes sent: %d\n", m_totalSent );
+    snprintf( buf, sizeof(buf), "id=%d\n", GetCookieID() );
+    out += buf;
+
+    snprintf( buf, sizeof(buf), "Bytes sent=%d\n", m_totalSent );
+    out += buf;
+
+    snprintf( buf, sizeof(buf), "Total players=%d\n", m_nPlayersTotal );
+    out += buf;
+    snprintf( buf, sizeof(buf), "Players here=%d\n", m_nPlayersHere );
     out += buf;
 
     /* n messages */

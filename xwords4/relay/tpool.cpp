@@ -244,8 +244,8 @@ XWThreadPool::real_listener()
 
         int nMillis = tmgr->GetPollTimeout();
 
-        logf( XW_LOGINFO, "polling %s", log );
-        int nEvents = poll( fds, nSockets, nMillis ); /* -1: infinite timeout */
+        logf( XW_LOGINFO, "polling %s nmillis=%d", log, nMillis );
+        int nEvents = poll( fds, nSockets, nMillis );
         logf( XW_LOGINFO, "back from poll: %d", nEvents );
         if ( nEvents == 0 ) {
             tmgr->FireElapsedTimers();
