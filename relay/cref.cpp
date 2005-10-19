@@ -422,14 +422,18 @@ CookieRef::handleEvents()
             case XWA_TIMERDISCONN:
                 disconnectSockets( 0, XWRELAY_ERROR_TIMEOUT );
                 break;
+
             case XWA_HEARTDISCONN:
                 notifyOthers( evt.u.heart.socket, XWRELAY_DISCONNECT_OTHER, 
                               XWRELAY_ERROR_HEART_OTHER );
+                setAllConnectedTimer();
+                reducePlayerCounts( evt.u.discon.socket );
                 disconnectSockets( evt.u.heart.socket, 
                                    XWRELAY_ERROR_HEART_YOU );
                 break;
 
             case XWA_DISCONNECT:
+                setAllConnectedTimer();
                 reducePlayerCounts( evt.u.discon.socket );
                 removeSocket( evt.u.discon.socket );
                 /* Don't notify.  This is a normal part of a game ending. */
@@ -444,6 +448,7 @@ CookieRef::handleEvents()
                 break;
 
             case XWA_REMOVESOCKET:
+                setAllConnectedTimer();
                 reducePlayerCounts( evt.u.rmsock.socket );
                 notifyOthers( evt.u.rmsock.socket, XWRELAY_DISCONNECT_OTHER,
                               XWRELAY_ERROR_LOST_OTHER );
@@ -800,9 +805,25 @@ CookieRef::_PrintCookieInfo( string& out )
     snprintf( buf, sizeof(buf), "Players here=%d\n", m_nPlayersHere );
     out += buf;
 
+    snprintf( buf, sizeof(buf), "State=%s\n", stateString( m_curState ) );
+    out += buf;
+
+    /* Timer state: how long since last heartbeat; how long til disconn timer
+       fires. */
+
     /* n messages */
-    /* n bytes */
     /* open since when */
-    /* sockets */
+
+    snprintf( buf, sizeof(buf), "Hosts connected=%d; cur time = %ld\n", 
+              m_sockets.size(), now() );
+    out += buf;
+    map<HostID,HostRec>::iterator iter = m_sockets.begin();
+    while ( iter != m_sockets.end() ) {
+        snprintf( buf, sizeof(buf), "  HostID=%d; socket=%d;last hbeat=%ld\n", 
+                  iter->first, iter->second.m_socket, 
+                  iter->second.m_lastHeartbeat );
+        out += buf;
+        ++iter;
+    }
 
 } /* PrintCookieInfo */
