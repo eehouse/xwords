@@ -297,7 +297,8 @@ killSocket( int socket, char* why )
 time_t
 now() 
 {
-    return (unsigned long)time(NULL);
+    static time_t startTime = time(NULL);
+    return time(NULL) - startTime;
 }
 
 /* forward the message.  Need only change the command after looking up the
