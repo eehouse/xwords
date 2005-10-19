@@ -63,6 +63,7 @@ static int cmd_kill_eject( int socket, const char** args );
 static int cmd_get( int socket, const char** args );
 static int cmd_set( int socket, const char** args );
 static int cmd_shutdown( int socket, const char** args );
+static int cmd_uptime( int socket, const char** args );
 
 static void
 print_to_sock( int sock, int addCR, const char* what, ... )
@@ -93,6 +94,7 @@ static const FuncRec gFuncs[] = {
     { "shutdown", cmd_shutdown },
     { "get", cmd_get },
     { "set", cmd_set },
+    { "uptime", cmd_uptime },
 };
 
 static int
@@ -193,6 +195,32 @@ cmd_set( int socket, const char** args )
 {
     print_to_sock( socket, 1, "* %s <attribute> (unimplemented)", args[0] );
     return 1;
+}
+
+static int
+cmd_uptime( int socket, const char** args )
+{
+    if ( 0 == strcmp( args[1], "help" ) ) {
+        print_to_sock( socket, 1,
+                       "* %s -- prints how long the relay's been running",
+                       args[0] );
+    } else {
+        time_t seconds = now();
+
+        int days = seconds / (24*60*60);
+        seconds %= (24*60*60);
+
+        int hours = seconds / (60*60);
+        seconds %= (60*60);
+
+        int minutes = seconds / 60;
+        seconds %= 60;
+        
+        print_to_sock( socket, 1, 
+                       "uptime: %d days, %d hours, %d minutes, %ld seconds",
+                       days, hours, minutes, seconds );
+    }
+    return 0;
 }
 
 static int
@@ -363,7 +391,6 @@ ctrl_thread_main( void* arg )
 
         char buf[512];
         ssize_t nGot = recv( socket, buf, sizeof(buf)-1, 0 );
-        logf( XW_LOGINFO, "nGot=%d", nGot );
         if ( nGot <= 1 ) {      /* break when just \n comes in */
             break;
         } else if ( nGot > 2 ) {
