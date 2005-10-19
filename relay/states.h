@@ -25,6 +25,7 @@
 typedef
 enum {
     XWS_NONE
+    ,XWS_ANY                  /* wildcard */
 
     ,XWS_CHKCOUNTS_INIT       /* from initial state, check if all players
                                    are here.  Success should be an error,
