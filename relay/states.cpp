@@ -80,8 +80,8 @@ StateTable g_stateTable[] = {
 { XWS_ALLCONNECTED,   XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_MISSING },
 { XWS_CONNECTING,     XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_CONNECTING },
 { XWS_MISSING,        XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_MISSING },
-{ XWS_MISSING,        XWE_NOMORESOCKETS, XWA_NONE,         XWS_DEAD },
-{ XWS_CONNECTING,     XWE_NOMORESOCKETS, XWA_NONE,         XWS_DEAD },
+
+{ XWS_ANY,            XWE_NOMORESOCKETS, XWA_NONE,         XWS_DEAD },
 
 { XWS_INITED,         XWE_RECONNECTMSG,  XWA_SEND_RERSP,   XWS_CHK_ALLHERE_2 },
 { XWS_MISSING,        XWE_RECONNECTMSG,  XWA_SEND_RERSP,   XWS_CHK_ALLHERE_2 },
@@ -103,11 +103,12 @@ StateTable g_stateTable[] = {
 
     /* Connect timer */
 { XWS_CONNECTING,     XWE_CONNTIMER,     XWA_TIMERDISCONN, XWS_DEAD },
+{ XWS_MISSING,        XWE_CONNTIMER,     XWA_TIMERDISCONN, XWS_DEAD },
 { XWS_ALLCONNECTED,   XWE_CONNTIMER,     XWA_NONE,         XWS_ALLCONNECTED },
 
 { XWS_CONNECTING,     XWE_NOTIFYDISCON,  XWA_NOTIFYDISCON, XWS_CONNECTING },
 { XWS_ALLCONNECTED,   XWE_NOTIFYDISCON,  XWA_NOTIFYDISCON, XWS_MISSING },
-{ XWS_MISSING,        XWE_NOTIFYDISCON,  XWA_NOTIFYDISCON, XWS_DEAD },
+{ XWS_MISSING,        XWE_NOTIFYDISCON,  XWA_NOTIFYDISCON, XWS_MISSING },
 { XWS_DEAD,           XWE_NOTIFYDISCON,  XWA_NOTIFYDISCON, XWS_DEAD },
 
     /* This is our bread-n-butter */
@@ -126,7 +127,7 @@ getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
 {
     StateTable* stp = g_stateTable;
     while ( stp->stateStart != XWS_NONE ) {
-        if ( stp->stateStart == curState ) {
+        if ( stp->stateStart == curState || stp->stateStart == XWS_ANY ) {
             if ( stp->stateEvent == curEvent || stp->stateEvent == XWE_ANY ) {
                 *takeAction = stp->stateAction;
                 *nextState = stp->stateEnd;
@@ -149,6 +150,7 @@ stateString( XW_RELAY_STATE state )
 {
     switch( state ) {
         CASESTR(XWS_NONE);
+        CASESTR(XWS_ANY);
         CASESTR(XWS_INITED);
         CASESTR(XWS_CONNECTING);
         CASESTR(XWS_ALLCONNECTED);
