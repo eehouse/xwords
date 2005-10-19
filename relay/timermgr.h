@@ -64,7 +64,6 @@ class TimerMgr {
     list<TimerInfo> m_timers;
 
     time_t m_nextFireTime;
-    time_t m_heartbeat;
 };
 
 #endif
