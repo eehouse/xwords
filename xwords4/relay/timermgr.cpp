@@ -29,7 +29,6 @@
 
 TimerMgr::TimerMgr()
     : m_nextFireTime(0)
-    , m_heartbeat(RelayConfigs::GetConfigs()->GetHeartbeatInterval() )
 {
     pthread_mutex_init( &m_timersMutex, NULL );
 }
@@ -74,15 +73,16 @@ TimerMgr::GetPollTimeout()
 
     time_t tout = m_nextFireTime;
     if ( tout == 0 ) {
-        tout = m_heartbeat;
+        tout = -1;
     } else {
         tout -= now();
         if ( tout < 0 ) {
             tout = 0;
         }
+        tout *= 1000;
     }
-    return tout * 1000;
-}
+    return tout;
+} /* GetPollTimeout */
 
 int
 TimerMgr::getTimer( TimerProc proc, void* closure )
