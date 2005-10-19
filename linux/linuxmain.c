@@ -176,15 +176,16 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         break;
 
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
-        message = "The relay timed you out; maybe the other players "
-            "didn't show.";
+        message = "The relay timed you out; other players "
+            "have left or never showed up.";
         break;
+
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_YOU:
         message = "You were disconnected from relay because it didn't "
             "hear from you in too long.";
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
-        *silent = XP_TRUE;
+/*         *silent = XP_TRUE; */
         message = "The relay has lost contact with a device in this game.";
         break;
 
@@ -366,7 +367,7 @@ linux_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     return nRead;
 } /* linuxReceive */
 
-/* Create a stream for the incomming message buffer, and read in any
+/* Create a stream for the incoming message buffer, and read in any
    information specific to our platform's comms layer (return address, say)
  */
 XWStreamCtxt*

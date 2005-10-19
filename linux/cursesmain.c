@@ -717,7 +717,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
             
                     addrRec.u.ip_relay.ipAddr = 
                         ntohl(addr_sock.sin_addr.s_addr);
-                    XP_LOGF( "captured incomming ip address: 0x%lx",
+                    XP_LOGF( "captured incoming ip address: 0x%lx",
                              addrRec.u.ip_relay.ipAddr );
 
                     if ( comms_checkIncomingStream(globals->cGlobals.game.comms,
