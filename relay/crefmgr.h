@@ -54,6 +54,8 @@ class CRefMgr {
     CRefMgr();
     ~CRefMgr();
 
+    void CloseAll();
+
     CookieMapIterator GetCookieIterator();
 
     /* PENDING.  These need to go through SafeCref */

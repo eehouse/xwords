@@ -41,6 +41,7 @@ class XWThreadPool {
     ~XWThreadPool();
 
     void Setup( int nThreads, packet_func pFunc );
+    void Stop();
 
     /* Add to set being listened on */
     void AddSocket( int socket );
@@ -76,6 +77,7 @@ class XWThreadPool {
     int m_pipeRead;
     int m_pipeWrite;
 
+    int m_timeToDie;
     int m_nThreads;
     packet_func m_pFunc;
 

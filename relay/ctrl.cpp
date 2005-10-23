@@ -41,6 +41,7 @@
 #include "ctrl.h"
 #include "cref.h"
 #include "crefmgr.h"
+#include "mlock.h"
 #include "xwrelay_priv.h"
 
 /* this is *only* for testing.  Don't abuse!!!! */
@@ -52,6 +53,10 @@ typedef struct FuncRec {
     char* name;
     CmdPtr func;
 } FuncRec;
+
+vector<int> g_ctrlSocks;
+pthread_mutex_t g_ctrlSocksMutex = PTHREAD_MUTEX_INITIALIZER;
+
 
 static int cmd_quit( int socket, const char** args );
 static int cmd_print( int socket, const char** args );
@@ -386,6 +391,11 @@ ctrl_thread_main( void* arg )
     int socket = (int)arg;
     string arg0, arg1, arg2, arg3;
 
+    {
+        MutexLock ml( &g_ctrlSocksMutex );
+        g_ctrlSocks.push_back( socket );
+    }
+
     for ( ; ; ) {
         print_prompt( socket );
 
@@ -411,22 +421,46 @@ ctrl_thread_main( void* arg )
             break;
         }
     }
+
     close ( socket );
+
+    MutexLock ml( &g_ctrlSocksMutex );
+    vector<int>::iterator iter = g_ctrlSocks.begin();
+    while ( iter != g_ctrlSocks.end() ) {
+        if ( *iter == socket ) {
+            g_ctrlSocks.erase(iter);
+            break;
+        }
+    }
     return NULL;
 } /* ctrl_thread_main */
 
 void
-run_ctrl_thread( int ctrl_listener )
+run_ctrl_thread( int ctrl_sock )
 {
-    logf( XW_LOGINFO, "calling accept on socket %d\n", ctrl_listener );
+    logf( XW_LOGINFO, "calling accept on socket %d\n", ctrl_sock );
 
     sockaddr newaddr;
     socklen_t siz = sizeof(newaddr);
-    int newSock = accept( ctrl_listener, &newaddr, &siz );
+    int newSock = accept( ctrl_sock, &newaddr, &siz );
     logf( XW_LOGINFO, "got one for ctrl: %d", newSock );
 
     pthread_t thread;
     int result = pthread_create( &thread, NULL, 
                                  ctrl_thread_main, (void*)newSock );
+    pthread_detach( thread );
+
     assert( result == 0 );
+}
+
+void
+stop_ctrl_threads()
+{
+    MutexLock ml( &g_ctrlSocksMutex );
+    vector<int>::iterator iter = g_ctrlSocks.begin();
+    while ( iter != g_ctrlSocks.end() ) {
+        int sock = *iter++;
+        print_to_sock( sock, 1, "relay going down..." );
+        close( sock );
+    }
 }

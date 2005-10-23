@@ -46,6 +46,8 @@ XWThreadPool::GetTPool()
 }
 
 XWThreadPool::XWThreadPool()
+    : m_timeToDie(0)
+    , m_nThreads(0)
 {
     pthread_rwlock_init( &m_activeSocketsRWLock, NULL );
     pthread_mutex_init ( &m_queueMutex, NULL );
@@ -58,9 +60,15 @@ XWThreadPool::XWThreadPool()
     }
     m_pipeRead = fd[0];
     m_pipeWrite = fd[1];
-
-    m_nThreads = 0;
 }
+
+XWThreadPool::~XWThreadPool()
+{
+    pthread_cond_destroy( &m_queueCondVar );
+
+    pthread_rwlock_destroy( &m_activeSocketsRWLock );
+    pthread_mutex_destroy ( &m_queueMutex );
+} /* ~XWThreadPool */
 
 void
 XWThreadPool::Setup( int nThreads, packet_func pFunc )
@@ -74,10 +82,24 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc )
     for ( i = 0; i < nThreads; ++i ) {
         int result = pthread_create( &thread, NULL, tpool_main, this );
         assert( result == 0 );
+        pthread_detach( thread );
     }
 
     int result = pthread_create( &thread, NULL, listener_main, this );
     assert( result == 0 );
+}
+
+void
+XWThreadPool::Stop()
+{
+    m_timeToDie = 1;
+
+    int i;
+    for ( i = 0; i < m_nThreads; ++i ) {
+        enqueue( 0 );
+    }
+
+    interrupt_poll();
 }
 
 void
@@ -180,12 +202,16 @@ XWThreadPool::tpool_main( void* closure )
 void*
 XWThreadPool::real_tpool_main()
 {
-    logf( XW_LOGINFO, "worker thread starting" );
+    logf( XW_LOGINFO, "tpool worker thread starting" );
     for ( ; ; ) {
 
         pthread_mutex_lock( &m_queueMutex );
-        while ( m_queue.size() == 0 ) {
+        while ( !m_timeToDie && m_queue.size() == 0 ) {
             pthread_cond_wait( &m_queueCondVar, &m_queueMutex );
+        }
+
+        if ( m_timeToDie ) {
+            break;
         }
 
         int socket = m_queue.front();
@@ -197,7 +223,7 @@ XWThreadPool::real_tpool_main()
             AddSocket( socket );
         } /* else drop it: error */
     }
-    logf( XW_LOGINFO, "worker thread exiting" );
+    logf( XW_LOGINFO, "tpool worker thread exiting" );
     return NULL;
 }
 
@@ -247,6 +273,10 @@ XWThreadPool::real_listener()
         logf( XW_LOGINFO, "polling %s nmillis=%d", log, nMillis );
         int nEvents = poll( fds, nSockets, nMillis );
         logf( XW_LOGINFO, "back from poll: %d", nEvents );
+        if ( m_timeToDie ) {
+            break;
+        }
+
         if ( nEvents == 0 ) {
             tmgr->FireElapsedTimers();
         } else if ( nEvents < 0 ) {
@@ -295,6 +325,8 @@ XWThreadPool::real_listener()
         free( fds );
         free( log );
     }
+
+    logf( XW_LOGINFO, "real_listener returning" );
     return NULL;
 } /* real_listener */
 

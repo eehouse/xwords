@@ -40,14 +40,15 @@ class SocketStuff {
     pthread_mutex_t m_writeMutex; /* so only one thread writes at a time */
 };
 
+static CRefMgr* s_instance = NULL;
+
 /* static */ CRefMgr*
 CRefMgr::Get() 
 {
-    static CRefMgr* instance = NULL;
-    if ( instance == NULL ) {
-        instance = new CRefMgr();
+    if ( s_instance == NULL ) {
+        s_instance = new CRefMgr();
     }
-    return instance;
+    return s_instance;
 } /* Get */
 
 CRefMgr::CRefMgr()
@@ -60,7 +61,30 @@ CRefMgr::CRefMgr()
 
 CRefMgr::~CRefMgr()
 {
+    assert( this == s_instance );
+
+    pthread_mutex_destroy( &m_guard );
+    pthread_rwlock_destroy( &m_cookieMapRWLock );
+
+    s_instance = NULL;
 }
+
+void
+CRefMgr::CloseAll()
+{
+    MutexLock ml( &m_guard );
+
+    /* Get every cref instance, shut it down */
+    CookieMap::iterator iter = m_cookieMap.begin();
+    while ( iter != m_cookieMap.end() ) {
+
+        CookieRef* cref = iter->second;
+        delete cref;
+
+        ++iter;
+    }
+
+} /* CloseAll */
 
 CookieRef*
 CRefMgr::FindOpenGameFor( const char* cORn, int isCookie,
