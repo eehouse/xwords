@@ -105,6 +105,8 @@ RelayConfigs::parse( const char* fname )
                     m_nWorkerThreads = atoi( value );
                 } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
                     m_serverName = value;
+                } else if ( 0 == strcmp( line, "IDFILE" ) ) {
+                    m_idFileName = value;
                 } else {
                     logf( XW_LOGERROR, "unknown key %s with value %s\n",
                           line, value );

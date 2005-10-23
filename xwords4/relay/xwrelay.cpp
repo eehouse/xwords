@@ -394,6 +394,7 @@ enum { FLAG_HELP
        ,FLAG_CPORT
        ,FLAG_NTHREADS
        ,FLAG_NAME
+       ,FLAG_IDNAME
 };
 
 struct option longopts[] = {
@@ -420,6 +421,12 @@ struct option longopts[] = {
         1,
         NULL,
         FLAG_NAME
+    }
+    ,{
+        "idFile",
+        1,
+        NULL,
+        FLAG_IDNAME
     }
     ,{
         "ctrlport",
@@ -493,6 +500,7 @@ int main( int argc, char** argv )
     int nWorkerThreads = 0;
     char* conffile = NULL;
     const char* serverName = NULL;
+    const char* idFileName = NULL;
 
     /* Verify sizes here... */
     assert( sizeof(CookieID) == 2 );
@@ -503,7 +511,7 @@ int main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt_long(argc, argv, "hc:p:l:n:",longopts, NULL);
+       int opt = getopt_long(argc, argv, "hc:p:l:n:i:", longopts, NULL);
 
        if ( opt == -1 ) {
            break;
@@ -521,6 +529,9 @@ int main( int argc, char** argv )
            break;
        case FLAG_NAME:
            serverName = optarg;
+           break;
+       case FLAG_IDNAME:
+           idFileName = optarg;
            break;
        case FLAG_CPORT:
            ctrlport = atoi( optarg );
@@ -549,8 +560,12 @@ int main( int argc, char** argv )
     if ( serverName == NULL ) {
         serverName = cfg->GetServerName();
     }
+    if ( idFileName == NULL ) {
+        idFileName = cfg->GetIdFileName();
+    }
 
     PermID::SetServerName( serverName );
+    PermID::SetIDFileName( idFileName );
 
     g_listener = make_socket( INADDR_ANY, port );
     if ( g_listener == -1 ) {

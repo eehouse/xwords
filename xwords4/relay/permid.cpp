@@ -27,10 +27,12 @@ using namespace std;
 
 pthread_mutex_t PermID::s_guard = PTHREAD_MUTEX_INITIALIZER;
 string          PermID::s_serverName;
+string          PermID::s_idFileName;
 
 string
 PermID::GetNextUniqueID()
 {
+    const char* fileName = s_idFileName.c_str();
     MutexLock ml( &s_guard );
 
     string s = s_serverName;
@@ -39,12 +41,12 @@ PermID::GetNextUniqueID()
     
     char buf[32];               /* should last for a while :-) */
 
-    FILE* f = fopen( "/etc/xwrelay/xwrelay_id.txt", "r+" );
+    FILE* f = fopen( fileName, "r+" );
     if ( f ) {
         fscanf( f, "%s\n", buf );
         rewind( f );
     } else {
-        f = fopen( "/etc/xwrelay/xwrelay_id.txt", "w" );
+        f = fopen( fileName, "w" );
         assert ( f != NULL );
         buf[0] = '0';
         buf[1] = '\0';
@@ -65,4 +67,10 @@ PermID::GetNextUniqueID()
 PermID::SetServerName( const char* name )
 {
     s_serverName = name;
+}
+
+/* static */ void
+PermID::SetIDFileName( const char* name )
+{
+    s_idFileName = name;
 }

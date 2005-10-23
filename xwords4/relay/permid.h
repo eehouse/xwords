@@ -33,6 +33,7 @@
 class PermID {
  public:
     static void SetServerName( const char* name );
+    static void SetIDFileName( const char* name );
     static std::string GetNextUniqueID();
 
  private:
@@ -42,5 +43,7 @@ class PermID {
                                                  this, which is supposed to be
                                                  unique to this relay
                                                  instance. */
+    static std::string        s_idFileName;   /* The incremented part of the
+                                                 name is stored where? */
 };
 #endif

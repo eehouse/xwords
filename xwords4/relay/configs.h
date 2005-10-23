@@ -38,7 +38,7 @@ class RelayConfigs {
     time_t GetAllConnectedInterval() { return m_allConnInterval; }
     time_t GetHeartbeatInterval() { return m_heartbeatInterval; }
     const char*  GetServerName() { return m_serverName.c_str(); }
-
+    const char*  GetIdFileName() { return m_idFileName.c_str(); }
 
  private:
     RelayConfigs( const char* cfile );
@@ -50,6 +50,7 @@ class RelayConfigs {
     int m_port;
     int m_nWorkerThreads;
     std::string m_serverName;
+    std::string m_idFileName;
 
     static RelayConfigs* instance;
 };
