@@ -450,6 +450,41 @@ usage( char* arg0 )
     }
 }
 
+/* sockets that need to be closable from interrupt handler */
+int g_listener;
+int g_control;
+
+void
+shutdown()
+{
+    XWThreadPool* tPool = XWThreadPool::GetTPool();
+    if ( tPool != NULL ) {
+        tPool->Stop();
+    }
+
+    CRefMgr* cmgr = CRefMgr::Get();
+    if ( cmgr != NULL ) {
+        cmgr->CloseAll();
+        delete cmgr;
+    }
+
+    delete tPool;
+
+    stop_ctrl_threads();
+
+    close( g_listener );
+    close( g_control );
+
+    exit( 0 );
+    logf( XW_LOGINFO, "exit done" );
+}
+
+static void
+SIGINT_handler( int sig )
+{
+    logf( XW_LOGERROR, "sig handler called" );
+    shutdown();
+}
 
 int main( int argc, char** argv )
 {
@@ -517,14 +552,20 @@ int main( int argc, char** argv )
 
     PermID::SetServerName( serverName );
 
-    int listener = make_socket( INADDR_ANY, port );
-    if ( listener == -1 ) {
+    g_listener = make_socket( INADDR_ANY, port );
+    if ( g_listener == -1 ) {
         exit( 1 );
     }
-    int control = make_socket( INADDR_LOOPBACK, ctrlport );
-    if ( control == -1 ) {
+    g_control = make_socket( INADDR_LOOPBACK, ctrlport );
+    if ( g_control == -1 ) {
         exit( 1 );
     }
+
+    struct sigaction act;
+    memset( &act, 0, sizeof(act) );
+    act.sa_handler = SIGINT_handler;
+    int err = sigaction( SIGINT, &act, NULL );
+    logf( XW_LOGERROR, "sigaction=>%d", err );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
     tPool->Setup( nWorkerThreads, processMessage );
@@ -533,11 +574,11 @@ int main( int argc, char** argv )
     fd_set rfds;
     for ( ; ; ) {
         FD_ZERO(&rfds);
-        FD_SET( listener, &rfds );
-        FD_SET( control, &rfds );
-        int highest = listener;
-        if ( control > listener ) {
-            highest = control;
+        FD_SET( g_listener, &rfds );
+        FD_SET( g_control, &rfds );
+        int highest = g_listener;
+        if ( g_control > g_listener ) {
+            highest = g_control;
         }
         ++highest;
 
@@ -547,10 +588,10 @@ int main( int argc, char** argv )
                 logf( XW_LOGINFO, "errno: %d", errno );
             }
         } else {
-            if ( FD_ISSET( listener, &rfds ) ) {
+            if ( FD_ISSET( g_listener, &rfds ) ) {
                 struct sockaddr_in newaddr;
                 socklen_t siz = sizeof(newaddr);
-                int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
+                int newSock = accept( g_listener, (sockaddr*)&newaddr, &siz );
 
                 logf( XW_LOGINFO, "accepting connection from %s", 
                       inet_ntoa(newaddr.sin_addr) );
@@ -558,16 +599,16 @@ int main( int argc, char** argv )
                 tPool->AddSocket( newSock );
                 --retval;
             }
-            if ( FD_ISSET( control, &rfds ) ) {
-                run_ctrl_thread( control );
+            if ( FD_ISSET( g_control, &rfds ) ) {
+                run_ctrl_thread( g_control );
                 --retval;
             }
             assert( retval == 0 );
         }
     }
 
-    close( listener );
-    close( control );
+    close( g_listener );
+    close( g_control );
 
     delete cfg;
 

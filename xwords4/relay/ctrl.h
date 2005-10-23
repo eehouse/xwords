@@ -22,6 +22,7 @@
 #ifndef _CTRL_H_
 #define _CTRL_H_
 
-void run_ctrl_thread( int ctrl_listener );
+void run_ctrl_thread( int ctrl_sock );
+void stop_ctrl_threads();
 
 #endif
