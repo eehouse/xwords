@@ -21,6 +21,7 @@
 #include "permid.h"
 
 #include <stdio.h>
+#include <assert.h>
 #include "mlock.h"
 
 using namespace std;
