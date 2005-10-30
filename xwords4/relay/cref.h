@@ -91,6 +91,7 @@ class CookieRef {
     void _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT );
     void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT );
     void _Disconnect(int socket, HostID hostID );
+    void _Shutdown();
     void _HandleHeartbeat( HostID id, int socket );
     void _CheckHeartbeats( time_t now );
     void _Forward( HostID src, HostID dest, unsigned char* buf, int buflen );
@@ -98,6 +99,8 @@ class CookieRef {
     void _CheckAllConnected();
 
     int ShouldDie() { return m_curState == XWS_DEAD; }
+
+    void logf( XW_LogLevel level, const char* format, ... );
 
     typedef struct CRefEvent {
         XW_RELAY_EVENT type;
