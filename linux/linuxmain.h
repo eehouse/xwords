@@ -34,7 +34,7 @@ typedef struct LinuxBMStruct {
     XP_U8 nBytes;
 } LinuxBMStruct;
 
-DictionaryCtxt* linux_dictionary_make( MPFORMAL char* dictFileName );
+DictionaryCtxt* linux_dictionary_make( MPFORMAL const char* dictFileName );
 
 int initListenerSocket( int port );
 XP_S16 linux_tcp_send( XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec, 
