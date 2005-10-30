@@ -696,15 +696,14 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     XP_U8 relayErr;
     XP_U8 hasName;
 
-    if ( comms->addr.conType != COMMS_CONN_RELAY ) {
-        consumed = XP_FALSE;         /* nothing for us to do here! */
-    } else {
+    /* nothing for us to do here if not using relay */
+    consumed = comms->addr.conType == COMMS_CONN_RELAY;
+    if ( consumed ) {
         XWRELAY_Cmd cmd = stream_getU8( stream );
         switch( cmd ) {
 
         case XWRELAY_CONNECT_RESP:
         case XWRELAY_RECONNECT_RESP:
-            consumed = XP_TRUE;
             comms->relayState = COMMS_RELAYSTATE_CONNECTED;
             comms->heartbeat = stream_getU16( stream );
             comms->cookieID = stream_getU16( stream );
@@ -753,7 +752,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             XP_LOGF( "host id %x disconnected", srcID );
             /* we will eventually want to tell the user which player's gone */
             util_userError( comms->util, ERR_RELAY_BASE + relayErr );
-            consumed = XP_TRUE; 
             break;
 
         case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
@@ -764,7 +762,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
             /* fallthru */
         default:
-            consumed = XP_TRUE; /* drop it */
             XP_LOGF( "dropping relay msg with cmd %d", (XP_U16)cmd );
         }
     
