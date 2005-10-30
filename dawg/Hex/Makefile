@@ -14,24 +14,25 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=Hex
-LANGCODE=hex
+LANG = Hex
+LANGCODE = hex
 
-LANG_SPECIAL_INFO = \
-		"_" /dev/null /dev/null
+TARGET_TYPE = WINCE
 
 include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
+# Pass in your own dict here by setting DICT
+DICT ?= $(XWDICTPATH)/English/SOWPODS_official.txt.gz
+
 # Feel free to base this on whatever dictionary you have at hand.  I'm
 # using CollegeEng for no particular reason.
-$(LANG)Main.dict.gz: ../English/CollegeEng.dict.gz
+$(LANG)Main.dict.gz: $(DICT)
+	@echo "building $@ from $<"
 	zcat $< | tr [a-f] [A-F] | grep -e '^[A-F]\{2,8\}$$' | \
 		echo CAFEBABE DEADBEEF $$(cat -) | \
 		tr ' ' '\n' | sort | gzip > $@
-
-#		cat - $$(echo 'CAFEBABE' 'DEADBEEF') | sort | gzip > $@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
