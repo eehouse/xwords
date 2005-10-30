@@ -59,29 +59,28 @@
 #include "timermgr.h"
 #include "permid.h"
 
-#define N_WORKER_THREADS 5
-#define MILLIS 1000
-
 void
 logf( XW_LogLevel level, const char* format, ... )
 {
-    FILE* where = stderr;
-    struct tm* timp;
-    struct timeval tv;
-    struct timezone tz;
-    gettimeofday( &tv, &tz );
-    timp = localtime( &tv.tv_sec );
+    if ( level <= XW_LOGINFO ) {
+        FILE* where = stderr;
+        struct tm* timp;
+        struct timeval tv;
+        struct timezone tz;
+        gettimeofday( &tv, &tz );
+        timp = localtime( &tv.tv_sec );
 
-    pthread_t me = pthread_self();
+        pthread_t me = pthread_self();
 
-    fprintf( where, "<%lx>%d:%d:%d: ", me, timp->tm_hour, timp->tm_min, 
-             timp->tm_sec );
+        fprintf( where, "<%lx>%d:%d:%d: ", me, timp->tm_hour, timp->tm_min, 
+                 timp->tm_sec );
 
-    va_list ap;
-    va_start( ap, format );
-    vfprintf( where, format, ap );
-    va_end(ap);
-    fprintf( where, "\n" );
+        va_list ap;
+        va_start( ap, format );
+        vfprintf( where, format, ap );
+        va_end(ap);
+        fprintf( where, "\n" );
+    }
 } /* logf */
 
 static int
