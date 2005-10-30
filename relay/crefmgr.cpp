@@ -72,15 +72,16 @@ CRefMgr::~CRefMgr()
 void
 CRefMgr::CloseAll()
 {
-    MutexLock ml( &m_guard );
-
     /* Get every cref instance, shut it down */
+
+    RWWriteLock rwl( &m_cookieMapRWLock );
     CookieMap::iterator iter = m_cookieMap.begin();
     while ( iter != m_cookieMap.end() ) {
-
-        CookieRef* cref = iter->second;
-        delete cref;
-
+        CookieRef* cref = iter->second; 
+        {
+            SafeCref scr( cref );
+            scr.Shutdown();
+        }
         ++iter;
     }
 
@@ -153,7 +154,13 @@ CRefMgr::getMakeCookieRef_locked( const char* cORn, int isCookie, HostID hid,
 {
     CookieRef* cref;
 
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "tlm %p", &m_guard );
+#endif
     pthread_mutex_lock( &m_guard );
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "slm %p", &m_guard );
+#endif
 
     /* We have a cookie from a new connection.  This may be the first time
        it's been seen, or there may be a game currently in the
@@ -182,6 +189,9 @@ CRefMgr::getMakeCookieRef_locked( const char* cORn, int isCookie, HostID hid,
     }
 
     if ( cref == NULL ) {
+#ifdef DEBUG_LOCKS
+        logf( XW_LOGINFO, "ULM %p", &m_guard );
+#endif
         pthread_mutex_unlock( &m_guard );
     }
 
@@ -264,11 +274,20 @@ CRefMgr::MakeSocketsIterator()
 CookieRef* 
 CRefMgr::getCookieRef_locked( CookieID cookieID )
 {
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "tlm %p", &m_guard );
+#endif
     pthread_mutex_lock( &m_guard );
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "slm %p", &m_guard );
+#endif
 
     CookieRef* cref = getCookieRef_impl( cookieID );
 
     if ( cref == NULL ) {
+#ifdef DEBUG_LOCKS
+        logf( XW_LOGINFO, "ULM %p", &m_guard );
+#endif
         pthread_mutex_unlock( &m_guard );
     }
 
@@ -278,7 +297,13 @@ CRefMgr::getCookieRef_locked( CookieID cookieID )
 CookieRef* 
 CRefMgr::getCookieRef_locked( int socket )
 {
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "tlm %p", &m_guard );
+#endif
     pthread_mutex_lock( &m_guard );
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "slm %p", &m_guard );
+#endif
     CookieRef* cref = NULL;
 
     CookieMap::iterator iter = m_cookieMap.begin();
@@ -292,6 +317,9 @@ CRefMgr::getCookieRef_locked( int socket )
     }
 
     if ( cref == NULL ) {
+#ifdef DEBUG_LOCKS
+        logf( XW_LOGINFO, "ULM %p", &m_guard );
+#endif
         pthread_mutex_unlock( &m_guard );
     }
 
@@ -303,12 +331,22 @@ CRefMgr::checkCookieRef_locked( CookieRef* cref )
 {
     int exists = 1;
     assert( cref != NULL );
+
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "tlm %p", &m_guard );
+#endif
     pthread_mutex_lock( &m_guard );
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "slm %p", &m_guard );
+#endif
 
     pthread_mutex_t* cref_mutex = m_crefMutexes[cref];
     logf( XW_LOGINFO, "checkCookieRef_locked: cref_mutex=%p", cref_mutex );
 
     if ( cref_mutex == NULL ) {
+#ifdef DEBUG_LOCKS
+        logf( XW_LOGINFO, "ULM %p", &m_guard );
+#endif
         pthread_mutex_unlock( &m_guard );
         exists = 0;
     }
@@ -327,8 +365,17 @@ CRefMgr::LockCref( CookieRef* cref )
         pthread_mutex_init( cref_mutex, NULL );
         m_crefMutexes[cref] = cref_mutex;
     }
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "tlm %p", cref_mutex );
+#endif
     pthread_mutex_lock( cref_mutex );
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "slm %p", cref_mutex );
+#endif
 
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "ULM %p", &m_guard );
+#endif
     pthread_mutex_unlock( &m_guard );
     return 1;
 } /* LockCref */
@@ -337,6 +384,9 @@ void
 CRefMgr::UnlockCref( CookieRef* cref )
 {
     pthread_mutex_t* cref_mutex = m_crefMutexes[cref];
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "ULM %p", cref_mutex );
+#endif
     pthread_mutex_unlock( cref_mutex );
 }
 
@@ -387,6 +437,9 @@ CRefMgr::Delete( CookieRef* cref )
     }
 
     pthread_mutex_t* cref_mutex = m_crefMutexes[cref];
+#ifdef DEBUG_LOCKS
+    logf( XW_LOGINFO, "ULM %p", cref_mutex );
+#endif
     pthread_mutex_unlock( cref_mutex );
     pthread_mutex_destroy( cref_mutex );
     free( cref_mutex );

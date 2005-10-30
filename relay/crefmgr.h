@@ -155,6 +155,11 @@ class SafeCref {
             m_cref->_Disconnect( socket, hostID );
         }
     }
+    void Shutdown() {
+        if ( IsValid() ) {
+            m_cref->_Shutdown();
+        }
+    }
     void Remove( int socket ) {
         if ( IsValid() ) {
             m_cref->_Remove( socket );
