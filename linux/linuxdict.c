@@ -42,14 +42,15 @@ typedef struct LinuxDictionaryCtxt {
 
 
 /************************ Prototypes ***********************/
-static XP_Bool initFromDictFile( LinuxDictionaryCtxt* dctx, char* fileName );
+static XP_Bool initFromDictFile( LinuxDictionaryCtxt* dctx, 
+                                 const char* fileName );
 static void linux_dictionary_destroy( DictionaryCtxt* dict );
 
 /*****************************************************************************
  *
  ****************************************************************************/
 DictionaryCtxt* 
-linux_dictionary_make( MPFORMAL char* dictFileName )
+linux_dictionary_make( MPFORMAL const char* dictFileName )
 {
     LinuxDictionaryCtxt* result = 
         (LinuxDictionaryCtxt*)XP_MALLOC(mpool, sizeof(*result));
@@ -152,7 +153,7 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
 } /* skipBitmaps */
 
 static XP_Bool
-initFromDictFile( LinuxDictionaryCtxt* dctx, char* fileName )
+initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 {
     XP_Bool formatOk = XP_TRUE;
     XP_U8 numFaces;
@@ -318,7 +319,7 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
  */
 #define RECS_BEFORE_DAWG 3	/* a hack */
 static XP_Bool
-initFromDictFile( LinuxDictionaryCtxt* dctx, char* fileName )
+initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 {
     short i;
     unsigned short* dataP;
