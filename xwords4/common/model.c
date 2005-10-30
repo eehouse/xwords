@@ -1375,7 +1375,7 @@ printString( XWStreamCtxt* stream, XP_UCHAR* str )
 
 static XP_UCHAR*
 formatTray( const TrayTileSet* tiles, DictionaryCtxt* dict, XP_UCHAR* buf, 
-            XP_Bool keepHidden )
+            XP_U16 bufSize, XP_Bool keepHidden )
 {
     if ( keepHidden ) {
         XP_U16 i;
@@ -1385,7 +1385,7 @@ formatTray( const TrayTileSet* tiles, DictionaryCtxt* dict, XP_UCHAR* buf,
         buf[i] = '\0';
     } else {
         dict_tilesToString( dict, (Tile*)tiles->tiles, tiles->nTiles, 
-                            buf, sizeof(buf) );
+                            buf, bufSize );
     }
 
     return buf;
@@ -1461,9 +1461,9 @@ printMovePre( ModelCtxt* model, XP_U16 moveN, StackEntry* entry,
 
     if ( !closure->keepHidden ) {
         format = util_getUserString( model->vol.util, STRS_TRAY_AT_START );
-        formatTray( model_getPlayerTiles( model, 
-                                          entry->playerNum ),
-                    closure->dict, (XP_UCHAR*)traybuf, XP_FALSE );
+        formatTray( model_getPlayerTiles( model, entry->playerNum ),
+                    closure->dict, (XP_UCHAR*)traybuf, sizeof(traybuf),
+                    XP_FALSE );
         XP_SNPRINTF( buf, sizeof(buf), format, traybuf );
         printString( stream, buf );
     }
@@ -1494,9 +1494,9 @@ printMovePost( ModelCtxt* model, XP_U16 moveN, StackEntry* entry,
     switch( entry->moveType ) {
     case TRADE_TYPE:
         formatTray( (const TrayTileSet*)&entry->u.trade.oldTiles, 
-                    dict, traybuf1, closure->keepHidden );
+                    dict, traybuf1, sizeof(traybuf1), closure->keepHidden );
         formatTray( (const TrayTileSet*) &entry->u.trade.newTiles, 
-                    dict, traybuf2, closure->keepHidden );
+                    dict, traybuf2, sizeof(traybuf2), closure->keepHidden );
 
         format = util_getUserString( model->vol.util, STRSS_TRADED_FOR );
         XP_SNPRINTF( buf, sizeof(buf), format, traybuf1, traybuf2 );
@@ -1526,7 +1526,8 @@ printMovePost( ModelCtxt* model, XP_U16 moveN, StackEntry* entry,
                 format = util_getUserString(model->vol.util, STRS_NEW_TILES);
                 XP_SNPRINTF( buf, sizeof(buf), format,
                              formatTray( &entry->u.move.newTiles, dict, 
-                                         traybuf1, XP_FALSE ) );
+                                         traybuf1, sizeof(traybuf1), 
+                                         XP_FALSE ) );
                 printString( stream, buf );
             }
         }
