@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <netinet/in.h>
+#include <stdarg.h>
 
 #include "cref.h"
 #include "xwrelay.h"
@@ -81,6 +82,8 @@ CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
     , m_nPlayersTotal(0)
     , m_nPlayersHere(0)
 {
+    logf( XW_LOGINFO, "creating cref for cookie %s, connName %s",
+          m_cookie.c_str(), m_connName.c_str() );
 }
 
 CookieRef::~CookieRef()
@@ -132,8 +135,6 @@ CookieRef::_Disconnect( int socket, HostID hostID )
 {
     CRefMgr::Get()->Disassociate( socket, this );
 
-/*     MutexLock ml( &m_EventsMutex ); */
-
     CRefEvent evt;
     evt.type = XWE_DISCONNMSG;
     evt.u.discon.socket = socket;
@@ -142,6 +143,16 @@ CookieRef::_Disconnect( int socket, HostID hostID )
 
     handleEvents();
 }
+
+void
+CookieRef::_Shutdown()
+{
+    CRefEvent evt;
+    evt.type = XWE_SHUTDOWN;
+    m_eventQueue.push_back( evt );
+
+    handleEvents();
+} /* _Shutdown */
 
 int
 CookieRef::SocketForHost( HostID dest )
@@ -152,9 +163,8 @@ CookieRef::SocketForHost( HostID dest )
         socket = -1;
     } else {
         socket = iter->second.m_socket;
-        logf( XW_LOGINFO, "socketForHost(%x) => %d", dest, socket );
     }
-    logf( XW_LOGINFO, "returning socket=%d for hostid=%x", socket, dest );
+    logf( XW_LOGVERBOSE0, "returning socket=%d for hostid=%x", socket, dest );
     return socket;
 }
 
@@ -233,7 +243,7 @@ CookieRef::removeSocket( int socket )
     if ( count == 0 ) {
         pushLastSocketGoneEvent();
     }
-} /* Remove */
+} /* removeSocket */
 
 int
 CookieRef::HasSocket( int socket )
@@ -263,25 +273,22 @@ void
 CookieRef::_CheckHeartbeats( time_t now )
 {
     logf( XW_LOGINFO, "CookieRef::_CheckHeartbeats" );
-/*     MutexLock ml( &m_EventsMutex );  */
-    {
-/*         RWReadLock rwl( &m_sockets_rwlock ); */
-        map<HostID,HostRec>::iterator iter = m_sockets.begin();
-        while ( iter != m_sockets.end() ) {
-            time_t last = iter->second.m_lastHeartbeat;
-            if ( (now - last) > GetHeartbeat() ) {
-                pushHeartFailedEvent( iter->second.m_socket );
-            }
-            ++iter;
+
+    map<HostID,HostRec>::iterator iter = m_sockets.begin();
+    while ( iter != m_sockets.end() ) {
+        time_t last = iter->second.m_lastHeartbeat;
+        if ( (now - last) > GetHeartbeat() ) {
+            pushHeartFailedEvent( iter->second.m_socket );
         }
+        ++iter;
     }
+
     handleEvents();
 } /* CheckHeartbeats */
 
 void
 CookieRef::_Forward( HostID src, HostID dest, unsigned char* buf, int buflen )
 {
-/*     MutexLock ml( &m_EventsMutex ); */
     pushForwardEvent( src, dest, buf, buflen );
     handleEvents();
 } /* Forward */
@@ -289,7 +296,6 @@ CookieRef::_Forward( HostID src, HostID dest, unsigned char* buf, int buflen )
 void
 CookieRef::_Remove( int socket )
 {
-/*     MutexLock ml( &m_EventsMutex ); */
     pushRemoveSocketEvent( socket );
     handleEvents();
 } /* Forward */
@@ -343,7 +349,7 @@ void
 CookieRef::pushForwardEvent( HostID src, HostID dest, 
                              unsigned char* buf, int buflen )
 {
-    logf( XW_LOGINFO, "pushForwardEvent: %d -> %d", src, dest );
+    logf( XW_LOGVERBOSE1, "pushForwardEvent: %d -> %d", src, dest );
     CRefEvent evt;
     evt.type = XWE_FORWARDMSG;
     evt.u.fwd.src = src;
@@ -391,10 +397,9 @@ CookieRef::handleEvents()
         XW_RELAY_ACTION takeAction;
         if ( getFromTable( m_curState, evt.type, &takeAction, &m_nextState ) ) {
 
-            logf( XW_LOGINFO, "cid %d: moving from state %s to state %s", m_cookieID, 
-                  stateString(m_curState), stateString(m_nextState) );
-            logf( XW_LOGINFO, "event = %s, action = %s", eventString(evt.type), 
-                  actString(takeAction) );
+            logf( XW_LOGINFO, "%s -> %s on evt %s, act=%s",
+                  stateString(m_curState), stateString(m_nextState),
+                  eventString(evt.type), actString(takeAction) );
 
             switch( takeAction ) {
 
@@ -421,6 +426,10 @@ CookieRef::handleEvents()
 
             case XWA_TIMERDISCONN:
                 disconnectSockets( 0, XWRELAY_ERROR_TIMEOUT );
+                break;
+
+            case XWA_SHUTDOWN:
+                disconnectSockets( 0, XWRELAY_ERROR_SHUTDOWN );
                 break;
 
             case XWA_HEARTDISCONN:
@@ -508,7 +517,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
     int nPlayersT = evt->u.con.nPlayersT;
     HostID hid = evt->u.con.srcID;
  
-    logf( XW_LOGINFO, "increasePlayerCounts: hid=%d, nPlayersH=%d, nPlayersT=%d",
+    logf( XW_LOGVERBOSE1, "increasePlayerCounts: hid=%d, nPlayersH=%d, nPlayersT=%d",
           hid, nPlayersH, nPlayersT );
 
     if ( hid == HOST_ID_SERVER ) {
@@ -520,7 +529,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
     }
     m_nPlayersHere += nPlayersH;
 
-    logf( XW_LOGINFO, "increasePlayerCounts: here=%d; total=%d",
+    logf( XW_LOGVERBOSE1, "increasePlayerCounts: here=%d; total=%d",
           m_nPlayersHere, m_nPlayersTotal );
 
     CRefEvent newevt;
@@ -532,7 +541,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
 void
 CookieRef::reducePlayerCounts( int socket )
 {
-    logf( XW_LOGINFO, "reducePlayerCounts on socket %d", socket );
+    logf( XW_LOGVERBOSE1, "reducePlayerCounts on socket %d", socket );
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) {
 
@@ -546,7 +555,7 @@ CookieRef::reducePlayerCounts( int socket )
             }
             m_nPlayersHere -= iter->second.m_nPlayersH;
 
-            logf( XW_LOGINFO, "reducePlayerCounts: m_nPlayersHere=%d; m_nPlayersTotal=%d", 
+            logf( XW_LOGVERBOSE1, "reducePlayerCounts: m_nPlayersHere=%d; m_nPlayersTotal=%d", 
                   m_nPlayersHere, m_nPlayersTotal );
 
             break;
@@ -565,7 +574,7 @@ CookieRef::checkCounts( const CRefEvent* evt )
     HostID hid = evt->u.con.srcID;
     int success;
 
-    logf( XW_LOGINFO, "checkCounts: hid=%d, nPlayers=%d, m_nPlayersTotal = %d, "
+    logf( XW_LOGVERBOSE1, "checkCounts: hid=%d, nPlayers=%d, m_nPlayersTotal = %d, "
           "m_nPlayersHere = %d",
           hid, nPlayersH, m_nPlayersTotal, m_nPlayersHere );
 
@@ -575,7 +584,7 @@ CookieRef::checkCounts( const CRefEvent* evt )
         success = (m_nPlayersTotal == 0) /* if no server present yet */
             || (m_nPlayersTotal >= m_nPlayersHere + nPlayersH);
     }
-    logf( XW_LOGINFO, "success = %d", success );
+    logf( XW_LOGVERBOSE1, "success = %d", success );
 
     CRefEvent newevt;
     if ( success ) {
@@ -627,11 +636,11 @@ CookieRef::sendResponse( const CRefEvent* evt, int initial )
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     putNetShort( &bufp, GetHeartbeat() );
     putNetShort( &bufp, GetCookieID() );
-    logf( XW_LOGINFO, "writing hostID of %d into mgs", id );
+    logf( XW_LOGVERBOSE0, "writing hostID of %d into msg", id );
     *bufp++ = (char)id;
 
     send_with_length( socket, buf, bufp - buf );
-    logf( XW_LOGINFO, "sent XWRELAY_CONNECTRESP" );
+    logf( XW_LOGVERBOSE0, "sent XWRELAY_CONNECTRESP" );
 } /* sendResponse */
 
 void
@@ -755,7 +764,7 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
            connection.  An attack is the most likely explanation. */
         assert( iter->second.m_socket == socket );
 
-        logf( XW_LOGINFO, "upping m_lastHeartbeat from %d to %d",
+        logf( XW_LOGVERBOSE1, "upping m_lastHeartbeat from %d to %d",
               iter->second.m_lastHeartbeat, now() );
         iter->second.m_lastHeartbeat = now();
     }
@@ -774,12 +783,29 @@ CookieRef::s_checkAllConnected( void* closure )
 void
 CookieRef::_CheckAllConnected()
 {
-    logf( XW_LOGINFO, "checkAllConnected" );
+    logf( XW_LOGVERBOSE0, "checkAllConnected" );
 /*     MutexLock ml( &m_EventsMutex ); */
     CRefEvent newEvt;
     newEvt.type = XWE_CONNTIMER;
     m_eventQueue.push_back( newEvt );
     handleEvents();
+}
+
+
+void
+CookieRef::logf( XW_LogLevel level, const char* format, ... )
+{
+    char buf[256];
+    int len;
+
+    len = snprintf( buf, sizeof(buf), "cid:%d ", m_cookieID );
+
+    va_list ap;
+    va_start( ap, format );
+    vsnprintf( buf + len, sizeof(buf) - len, format, ap );
+    va_end(ap);
+
+    ::logf( level, buf );
 }
 
 void
