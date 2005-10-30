@@ -119,12 +119,6 @@ $(LANG)%.pdb: dawg$(LANG)%.stamp table.bin palmvalues.bin palmheader%.bin
 		$(basename $(@F)) $(PALM_DICT_TYPE) $(PDBTYPE) \
 		palmheader$*.bin table.bin palmvalues.bin dawg$(LANG)$*_*.bin
 
-#	start=$$(echo $@ | sed -e 's/$(LANG)\([0-9]*\)to[0-9]*.pdb/\1/'); \
-#	end=$$(echo $@ | sed -e 's/$(LANG)[0-9]*to\([0-9]*\).pdb/\1/'); \
-#	zcat $< | grep "^.\{$${start},$${end}\}$$" | \
-#		../dict2pdb -t table.bin -v values.bin -n $(basename $(@F)) \
-#		> $@
-
 # the files to export for byod
 byodbins: table.bin values.bin palmvalues.bin info.txt
 
@@ -198,7 +192,7 @@ frankspecials.bin: ../frank_mkspecials.pl  $(BMPFILES)
 # a binary file (one byte) giving the number of tiles in the dict
 charcount.bin: table.bin
 ifdef NEWDAWG
-	siz=$$(wc -c $< | sed -e 's/$<//'); \
+	siz=$$(wc $< | awk '{print $$3}'); \
 	perl -e "print pack(\"c\",$$siz/2)" > $@
 else
 	siz=$$(wc -c $< | sed -e 's/$<//'); \
