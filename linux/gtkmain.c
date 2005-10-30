@@ -308,17 +308,11 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
 {
     short width, height, leftMargin, topMargin;
     short timerLeft, timerTop;
-    gboolean firstTime;
     gint hscale, vscale;
     gint trayTop;
     gint boardTop = 0;
 
-    firstTime = (globals->draw == NULL);
-
-    if ( firstTime ) {
-        int listenSocket = linux_init_socket( &globals->cGlobals );
-        gtkListenOnSocket( globals, listenSocket );
-
+    if ( globals->draw == NULL ) {
         createOrLoadObjects( globals );
     }
 
