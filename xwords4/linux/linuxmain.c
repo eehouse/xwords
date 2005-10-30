@@ -192,13 +192,17 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
     case ERR_RELAY_BASE + XWRELAY_ERROR_OLDFLAGS:
         message = "You need to upgrade your copy of Crosswords.";
         break;
+        
+    case ERR_RELAY_BASE + XWRELAY_ERROR_SHUTDOWN:
+        message = "Relay disconnected you to shut down (and probably reboot).";
+        break;
 
     default:
         XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";
     }
 
-    return message;
+    return (XP_UCHAR*)message;
 } /* linux_getErrString */
 
 static void
@@ -478,60 +482,60 @@ linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
 {
     switch( code ) {
     case STRD_REMAINING_TILES_ADD:
-        return "+ %d [all remaining tiles]";
+        return (XP_UCHAR*)"+ %d [all remaining tiles]";
     case STRD_UNUSED_TILES_SUB:
-        return "- %d [unused tiles]";
+        return (XP_UCHAR*)"- %d [unused tiles]";
     case STR_COMMIT_CONFIRM:
-        return "Are you sure you want to commit the current move?\n";
+        return (XP_UCHAR*)"Are you sure you want to commit the current move?\n";
     case STRD_TURN_SCORE:
-        return "Score for turn: %d\n";
+        return (XP_UCHAR*)"Score for turn: %d\n";
     case STR_BONUS_ALL:
-        return "Bonus for using all tiles: 50\n";
+        return (XP_UCHAR*)"Bonus for using all tiles: 50\n";
     case STR_LOCAL_NAME:
-        return "%s";
+        return (XP_UCHAR*)"%s";
     case STR_NONLOCAL_NAME:
-        return "%s (remote)";
+        return (XP_UCHAR*)"%s (remote)";
     case STRD_TIME_PENALTY_SUB:
-        return " - %d [time]";
+        return (XP_UCHAR*)" - %d [time]";
         /* added.... */
     case STRD_CUMULATIVE_SCORE:
-        return "Cumulative score: %d\n";
+        return (XP_UCHAR*)"Cumulative score: %d\n";
     case STRS_TRAY_AT_START:
-        return "Tray at start: %s\n";
+        return (XP_UCHAR*)"Tray at start: %s\n";
     case STRS_MOVE_DOWN:
-        return "move (from %s down)\n";
+        return (XP_UCHAR*)"move (from %s down)\n";
     case STRS_MOVE_ACROSS:
-        return "move (from %s across)\n";
+        return (XP_UCHAR*)"move (from %s across)\n";
     case STRS_NEW_TILES:
-        return "New tiles: %s\n";
+        return (XP_UCHAR*)"New tiles: %s\n";
     case STRSS_TRADED_FOR:
-        return "Traded %s for %s.";
+        return (XP_UCHAR*)"Traded %s for %s.";
     case STR_PASS:
-        return "pass\n";
+        return (XP_UCHAR*)"pass\n";
     case STR_PHONY_REJECTED:
-        return "Illegal word in move; turn lost!\n";
+        return (XP_UCHAR*)"Illegal word in move; turn lost!\n";
 
     case STRD_ROBOT_TRADED:
-        return "%d tiles traded this turn.";
+        return (XP_UCHAR*)"%d tiles traded this turn.";
     case STR_ROBOT_MOVED:
-        return "The robot moved:\n";
+        return (XP_UCHAR*)"The robot moved:\n";
     case STR_REMOTE_MOVED:
-        return "Remote player moved:\n";
+        return (XP_UCHAR*)"Remote player moved:\n";
 
     case STR_PASSED: 
-        return "Passed";
+        return (XP_UCHAR*)"Passed";
     case STRSD_SUMMARYSCORED: 
-        return "%s:%d";
+        return (XP_UCHAR*)"%s:%d";
     case STRD_TRADED: 
-        return "Traded %d";
+        return (XP_UCHAR*)"Traded %d";
     case STR_LOSTTURN:
-        return "Lost turn";
+        return (XP_UCHAR*)"Lost turn";
 
     case STRS_VALUES_HEADER:
-        return "%s counts/values:\n";
+        return (XP_UCHAR*)"%s counts/values:\n";
 
     default:
-        return "unknown code to linux_util_getUserString";
+        return (XP_UCHAR*)"unknown code to linux_util_getUserString";
     }
 } /* linux_util_getUserString */
 
@@ -641,7 +645,7 @@ main( int argc, char** argv )
             break;
         case 'd':
             mainParams.gi.dictName = copyString( MPPARM(mainParams.util->mpool) 
-                                                 optarg );
+                                                 (XP_UCHAR*)optarg );
             break;
         case 'e':
             seed = atoi(optarg);
@@ -657,7 +661,7 @@ main( int argc, char** argv )
             break;
         case 'w':
             mainParams.gi.players[mainParams.nLocalPlayers-1].password
-                = optarg;
+                = (XP_UCHAR*)optarg;
             break;
         case 'm':		/* dumb robot */
             mainParams.gi.robotSmartness = DUMB_ROBOT;
@@ -668,7 +672,7 @@ main( int argc, char** argv )
             mainParams.gi.players[index].isRobot = XP_FALSE;
             mainParams.gi.players[index].isLocal = XP_TRUE;
             mainParams.gi.players[index].name = 
-                copyString(MPPARM(mainParams.util->mpool) optarg);
+                copyString(MPPARM(mainParams.util->mpool) (XP_UCHAR*)optarg);
             break;
         case 'N':
             index = mainParams.gi.nPlayers++;
@@ -685,7 +689,7 @@ main( int argc, char** argv )
             mainParams.gi.players[index].isRobot = XP_TRUE;
             mainParams.gi.players[index].isLocal = XP_TRUE;
             mainParams.gi.players[index].name = 
-                copyString(MPPARM(mainParams.util->mpool) optarg);
+                copyString(MPPARM(mainParams.util->mpool) (XP_UCHAR*)optarg);
             break;
         case 's':
             isServer = XP_TRUE;
