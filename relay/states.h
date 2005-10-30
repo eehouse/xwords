@@ -108,6 +108,8 @@ typedef enum {
 
     ,XWE_NOMORESOCKETS     /* last socket's been removed */
 
+    ,XWE_SHUTDOWN          /* shutdown this game */
+
     ,XWE_ANY               /* wildcard; matches all */
 } XW_RELAY_EVENT;
 
@@ -142,6 +144,8 @@ typedef enum {
     ,XWA_REMOVESOCKET
 
     ,XWA_HEARTDISCONN
+
+    ,XWA_SHUTDOWN
 
 } XW_RELAY_ACTION;
 

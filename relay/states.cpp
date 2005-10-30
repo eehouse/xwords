@@ -82,6 +82,7 @@ StateTable g_stateTable[] = {
 { XWS_MISSING,        XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_MISSING },
 
 { XWS_ANY,            XWE_NOMORESOCKETS, XWA_NONE,         XWS_DEAD },
+{ XWS_ANY,            XWE_SHUTDOWN,      XWA_SHUTDOWN,     XWS_DEAD },
 
 { XWS_INITED,         XWE_RECONNECTMSG,  XWA_SEND_RERSP,   XWS_CHK_ALLHERE_2 },
 { XWS_MISSING,        XWE_RECONNECTMSG,  XWA_SEND_RERSP,   XWS_CHK_ALLHERE_2 },
@@ -190,6 +191,7 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XWE_SOMEMISSING);
         CASESTR(XWE_OKTOSEND);
         CASESTR(XWE_COUNTSBAD);
+        CASESTR(XWE_SHUTDOWN);
     }
     assert(0);
     return "";
@@ -215,6 +217,7 @@ actString( XW_RELAY_ACTION act )
         CASESTR(XWA_NOTIFYDISCON);
         CASESTR(XWA_REMOVESOCKET);
         CASESTR(XWA_HEARTDISCONN);
+        CASESTR(XWA_SHUTDOWN);
     }
     assert(0);
     return "";
