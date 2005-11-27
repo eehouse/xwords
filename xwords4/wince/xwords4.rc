@@ -32,7 +32,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_XWORDS4             ICON    DISCARDABLE     "bmps/xwords4.ICO"
+IDI_XWORDS4             ICON    DISCARDABLE     "bmps/xwords4.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ BEGIN
 
 	I_IMAGENONE, 65003, TBSTATE_ENABLED,
 	TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE,
-	IDS_MOVE, 0, 2,
+	IDS_MOVE, 0, 2
 
 END
 
@@ -411,6 +411,7 @@ END
 #define CLR_ROW_3  36
 #define CLR_ROW_4  53
 #define CLR_ROW_5  67
+#undef BUTTON_ROW
 #define BUTTON_ROW 84
 #define CLR_COL_1  2
 #define CLR_COL_2  43
@@ -619,7 +620,7 @@ BEGIN
     0x00, 0x00, 0xFF,
     0x00, 0xFF, 0x00,
     0x00, 0x00, 0x00,		/* black */
-    0xFF, 0xFF, 0xFF,		/* white */
+    0xFF, 0xFF, 0xFF		/* white */
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -637,7 +638,7 @@ BEGIN
     0x0000, 0x2000,
     0x0300, 0x0300,
     0x0010, 0x0010,
-    0x4001, 0x0002,
+    0x4001, 0x0002
 END
 
 /////////////////////////////////////////////////////////////////////////////
