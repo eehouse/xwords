@@ -19,7 +19,7 @@
 /* #include <stdlib.h> */
 /* #include <stdio.h> */
 
-#include <Windowsx.h>
+#include <windowsx.h>
 
 #include <stdio.h>              /* for sprintf, etc. */
 
@@ -94,7 +94,8 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, XP_U32 x, XP_U32 y,
 } /* makeAndDrawBitmap */
 
 static XP_Bool
-ce_draw_boardBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool hasfocus )
+ce_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, 
+                    XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -163,7 +164,7 @@ ceDrawHintBorders( HDC hdc, XP_Rect* xprect, HintAtts hintAtts )
 
 static XP_Bool
 ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect, 
-                  XP_UCHAR* letters, XP_Bitmap* bitmap, 
+                  XP_UCHAR* letters, XP_Bitmap bitmap, 
                   XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                   XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
@@ -290,7 +291,7 @@ ce_draw_trayFinished( DrawCtx* p_dctx )
 
 static void
 drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
-                  XP_Bitmap* bitmap, XP_S16 val, XP_Bool highlighted )
+                  XP_Bitmap bitmap, XP_S16 val, XP_Bool highlighted )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -341,7 +342,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
 
 static void
 ce_draw_drawTile( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
-                  XP_Bitmap* bitmap, XP_S16 val, XP_Bool highlighted )
+                  XP_Bitmap bitmap, XP_S16 val, XP_Bool highlighted )
 {
     drawDrawTileGuts( p_dctx, xprect, letters, bitmap, val, highlighted );
 } /* ce_draw_drawTile */
@@ -497,7 +498,7 @@ ce_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r,
     *height = (XP_U16)size.cy;
 } /* ce_draw_measureRemText */
 
-static XP_U16
+static void
 ce_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter, 
                      XP_S16 nTilesLeft )
 {
@@ -513,8 +514,6 @@ ce_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
     XPRtoRECT( &rt, rInner );
     ++rt.left;                  /* 1: don't write up against edge */
     DrawText( hdc, buf, -1, &rt, DT_SINGLELINE | DT_LEFT | DT_VCENTER);
-
-    return (XP_U16)size.cx;
 } /* ce_draw_drawRemText */
 
 static void
