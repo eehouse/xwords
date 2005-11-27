@@ -234,8 +234,17 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
 	
         SetTextColor( hdc, foreColorRef );
+#ifdef TARGET_OS_WIN32
+        HFONT oldFont = SelectObject( hdc, dctx->trayFont );
+        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
+                             widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+#endif
         DrawText( hdc, widebuf, -1, &textRect, 
                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+#ifdef TARGET_OS_WIN32
+        SelectObject( hdc, oldFont );
+#endif
+
     } else if ( !!bitmap ) {
         makeAndDrawBitmap( dctx, hdc, textRect.left + 2, textRect.top + 2, 
                            foreColorRef, (CEBitmapInfo*)bitmap );

@@ -200,15 +200,17 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
 {
     WNDCLASS	wc;
 
+    XP_MEMSET( &wc, 0, sizeof(wc) );
+
     wc.style			= CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc		= (WNDPROC) WndProc;
-    wc.cbClsExtra		= 0;
     wc.cbWndExtra		= sizeof(CEAppGlobals*);
     wc.hInstance		= hInstance;
     wc.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_XWORDS4));
-    wc.hCursor			= 0;
     wc.hbrBackground	= (HBRUSH) GetStockObject(WHITE_BRUSH);
-    wc.lpszMenuName		= 0;
+#if defined TARGET_OS_WIN32
+    wc.lpszMenuName		= (LPCTSTR)IDM_MENU;
+#endif
     wc.lpszClassName	= szWindowClass;
 
     return RegisterClass(&wc);
@@ -338,7 +340,11 @@ hideScroller( CEAppGlobals* globals )
 
 #define MIN_CELL_WIDTH 12
 #define MIN_CELL_HEIGHT 12
-#define MIN_TRAY_HEIGHT 20
+#if defined TARGET_OS_WINCE
+# define MIN_TRAY_HEIGHT 20
+#elif defined TARGET_OS_WIN32
+# define MIN_TRAY_HEIGHT 40
+#endif
 #define TRAY_PADDING 1
 
 typedef struct CEBoardParms {
