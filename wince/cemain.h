@@ -20,7 +20,9 @@
 #ifndef _CEMAIN_H_
 #define _CEMAIN_H_
 
-#include <aygshell.h>
+#ifndef CANT_DO_SHELL_THING
+# include <aygshell.h>
+#endif
 #include "draw.h"
 #include "game.h"
 #include "util.h"
@@ -60,11 +62,15 @@ typedef struct CEAppGlobals {
     HINSTANCE hInst;
     HDC hdc;			/* to pass drawing ctxt to draw code */
     HWND hWnd;
+#if defined TARGET_OS_WINCE
     HWND hwndCB;
+#endif
 
     HWND buttons[NUM_BUTTONS];
 
+#ifndef CANT_DO_SHELL_THING
     SHACTIVATEINFO sai;
+#endif
 
     DrawCtx* draw;
     XWGame game;
