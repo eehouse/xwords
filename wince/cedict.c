@@ -40,7 +40,7 @@ static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 
 static XP_U32 n_ptr_tohl( XP_U8** in );
 static XP_U16 n_ptr_tohs( XP_U8** in );
-static XP_U8* openMappedFile( wchar_t* name, HANDLE* mappedFileP,
+static XP_U8* openMappedFile( const wchar_t* name, HANDLE* mappedFileP,
                               HANDLE* hFileP);
 
 #define ALIGN_COUNT 2
@@ -451,12 +451,13 @@ ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
 } /* ce_pickDictFile */
 
 static XP_U8*
-openMappedFile( wchar_t* name, HANDLE* mappedFileP, HANDLE* hFileP )
+openMappedFile( const wchar_t* name, HANDLE* mappedFileP, HANDLE* hFileP )
 {
     XP_U8* ptr = NULL;
     HANDLE mappedFile = NULL;
     HANDLE hFile;
 
+#if defined TARGET_OS_WINCE
     hFile = CreateFileForMapping( name,
                                   GENERIC_READ,
                                   FILE_SHARE_READ, /* (was 0: no sharing) */
@@ -488,7 +489,17 @@ openMappedFile( wchar_t* name, HANDLE* mappedFileP, HANDLE* hFileP )
             *hFileP = hFile;
         }
     }
-
+#elif defined TARGET_OS_WIN32
+    hFile = CreateFile( name, 
+                        GENERIC_READ, 
+                        FILE_SHARE_READ,
+                        NULL,   /* security */
+                        OPEN_EXISTING,
+                        FILE_FLAG_RANDOM_ACCESS,
+                        NULL );
+    *hFileP = hFile;
+    *mappedFileP = NULL;
+#endif
     return ptr;
 } /* openMappedFile */
 
