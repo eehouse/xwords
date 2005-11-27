@@ -25,7 +25,7 @@
 #include "xwords4.h"
 #include <commctrl.h>
 #include <winuser.h>
-#include <Winsock.h>
+#include <winsock.h>
 
 /* #include <stddef.h> */
 /* #include <stdio.h> */
@@ -54,7 +54,11 @@ typedef XP_U32 XP_Time;
 
 #define XP_CR "\015\012" /* 'Doze expects a carraige return followed by a linefeed */
 
-#define XP_RANDOM() Random()
+#if defined TARGET_OS_WINCE
+# define XP_RANDOM() Random()
+#elif defined TARGET_OS_WIN32
+# define XP_RANDOM() rand()
+#endif
 
 #ifdef MEM_DEBUG
 # define XP_PLATMALLOC(nbytes) malloc(nbytes)
