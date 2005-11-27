@@ -25,7 +25,9 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <winuser.h>
-#include <aygshell.h>
+#ifndef CANT_DO_SHELL_THING
+# include <aygshell.h>
+#endif
 #include "strutils.h"
 
 #include "memstream.h"
@@ -94,7 +96,8 @@ static XP_S16 ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
                                     const XP_UCHAR4* texts, XP_U16 nTiles );
 static XP_Bool ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                     XP_UCHAR* buf, XP_U16* len );
-static void ce_util_trayHiddenChange( XW_UtilCtxt* uc, XP_Bool nowHidden );
+static void ce_util_trayHiddenChange( XW_UtilCtxt* uc, 
+                                      XW_TrayVisState newState );
 static void ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
                                    XP_U16 newOffset );
 static void ce_util_notifyGameOver( XW_UtilCtxt* uc );
@@ -151,7 +154,11 @@ LRESULT CALLBACK	About			(HWND, UINT, WPARAM, LPARAM);
 int WINAPI
 WinMain(	HINSTANCE hInstance,
             HINSTANCE hPrevInstance,
-            LPTSTR    lpCmdLine,
+#if defined TARGET_OS_WINCE
+            LPWSTR    lpCmdLine,
+#elif defined TARGET_OS_WIN32
+            LPSTR    lpCmdLine,
+#endif
             int       nCmdShow)
 {
     MSG msg;
@@ -228,6 +235,7 @@ addButtonsToCmdBar( CEAppGlobals* globals )
             -1
     };
 
+#ifdef TARGET_OS_WINCE
     for ( i = 0; i < N_TOOLBAR_BUTTONS; ++i ) {
         index = CommandBar_AddBitmap(globals->hwndCB, globals->hInst,
                                      resIDs[i], 1, 16, 16 );
@@ -235,7 +243,7 @@ addButtonsToCmdBar( CEAppGlobals* globals )
         buttData.idCommand = cmds[i];
         success = CommandBar_InsertButton( globals->hwndCB, -1, &buttData );
     }
-
+#endif
 } /* addButtonsToCmdBar */
 
 static void
@@ -857,6 +865,19 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_U16 len;
     MPSLOT;
 
+    {
+        WORD wVersionRequested;
+        WSADATA wsaData;
+        int err;
+        wVersionRequested = MAKEWORD( 2, 2 );
+        err = WSAStartup( wVersionRequested, &wsaData );
+        if ( err != 0 ) {
+            /* Tell the user that we could not find a usable */
+            /* WinSock DLL.                                  */
+            XP_LOGF( "unable to laod winsock" );
+        }
+    }
+
     LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadString(hInstance, IDC_XWORDS4, szWindowClass, MAX_LOADSTRING);
 
@@ -899,6 +920,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 
+#ifdef TARGET_OS_WINCE
     if ( globals->hwndCB ) {
         RECT rc, rcmb;
 
@@ -909,7 +931,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         MoveWindow(hWnd, rc.left, rc.top, rc.right-rc.left, 
                    rc.bottom-rc.top, FALSE);
     }
-
+#endif
     ceInitUtilFuncs( globals );
 
     /* choose one.  If none found it's an error. */
@@ -952,10 +974,11 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
+#ifdef TARGET_OS_WINCE
     if (globals->hwndCB) {
         CommandBar_Show(globals->hwndCB, TRUE);
     }
-
+#endif
     if ( result && !newDone ) {
         ceInitAndStartBoard( globals, !oldGameLoaded, NULL, NULL );
     }
@@ -1250,7 +1273,7 @@ ceWriteToFile( XWStreamCtxt* stream, void* closure )
 static XP_Bool 
 isDefaultName( XP_UCHAR* name ) 
 {
-    return 0 == XP_STRCMP( UNSAVEDGAMEFILENAME, name,  );
+    return 0 == XP_STRCMP( UNSAVEDGAMEFILENAME, name );
 } /* isDefaultName */
 
 static void
@@ -1401,6 +1424,7 @@ ceConfirmAndSave( CEAppGlobals* globals )
 static HWND
 makeCommandBar( HWND hwnd, HINSTANCE hInst )
 {
+#ifndef CANT_DO_SHELL_THING
     SHMENUBARINFO mbi;
 
     XP_MEMSET( &mbi, 0, sizeof(SHMENUBARINFO) );
@@ -1416,6 +1440,9 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
     }
 
     return mbi.hwndMB;
+#else
+    return NULL;
+#endif
 } /* makeCommandBar */
 
 #ifdef CEFEATURE_CANSCROLL
@@ -1520,15 +1547,20 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     if ( message == WM_CREATE ) {
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
         SetWindowLong( hWnd, GWL_USERDATA, (long)globals );
+#ifdef TARGET_OS_WINCE
         globals->hwndCB = makeCommandBar( hWnd, globals->hInst );
         addButtonsToCmdBar( globals );
+#endif
 
+#ifndef CANT_DO_SHELL_THING
         globals->sai.cbSize = sizeof(globals->sai);
+#endif
     } else {
         globals = (CEAppGlobals*)GetWindowLong( hWnd, GWL_USERDATA );
 
         switch (message) {
 
+#ifndef CANT_DO_SHELL_THING
         case WM_ACTIVATE:
             // Notify shell of our activate message
             SHHandleWMActivate( hWnd, wParam, lParam, &globals->sai, FALSE );
@@ -1540,6 +1572,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             board_invalAll( globals->game.board );
             draw = XP_TRUE;
             break;
+#endif
 
 #ifdef CEFEATURE_CANSCROLL
         case WM_VSCROLL:
@@ -1739,7 +1772,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_DESTROY:
+#ifdef TARGET_OS_WINCE
             CommandBar_Destroy(globals->hwndCB); /* supposedly not needed */
+#endif
             PostQuitMessage(0);
             break;
 
@@ -1940,6 +1975,7 @@ wince_debugf(XP_UCHAR* format, ...)
     XP_U32 nWritten;
     HANDLE fileH;
     va_list ap;
+    wchar_t* logFileName;
 
     va_start( ap, format );
     vsprintf( buf, format, ap );
@@ -1956,7 +1992,12 @@ wince_debugf(XP_UCHAR* format, ...)
 #endif
         makeTimeStamp(timeStamp, sizeof(timeStamp));
 
-        fileH = CreateFile( L"\\My Documents\\Crosswords\\xwDbgLog.txt", 
+#if defined TARGET_OS_WINCE
+        logFileName = L"\\My Documents\\Crosswords\\xwDbgLog.txt";
+#elif defined TARGET_OS_WIN32
+        logFileName = L"xwDbgLog.txt";
+#endif
+        fileH = CreateFile( logFileName,
                             GENERIC_WRITE, 0, NULL, 
                             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 
@@ -1974,7 +2015,6 @@ wince_debugf(XP_UCHAR* format, ...)
         WriteFile( fileH, buf, nBytes, &nWritten, NULL );
         CloseHandle( fileH );
 #ifdef BEYOND_IR
-
         ReleaseMutex( s_logMutex );
     }
 #endif
@@ -2229,7 +2269,7 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
 } /* ce_util_askPassword */
 
 static void
-ce_util_trayHiddenChange( XW_UtilCtxt* uc, XP_Bool nowHidden )
+ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
 
@@ -2237,7 +2277,7 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XP_Bool nowHidden )
     /* If there's a scrollbar, hide/show it.  It wants to be
        active/visible only when the tray is NOT hidden */
     if ( !!globals->scrollHandle ) {
-        EnableWindow( globals->scrollHandle, nowHidden );
+        EnableWindow( globals->scrollHandle, TRAY_HIDDEN != newState );
     }
 #endif
 
