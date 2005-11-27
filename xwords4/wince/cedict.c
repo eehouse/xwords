@@ -40,8 +40,10 @@ static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 
 static XP_U32 n_ptr_tohl( XP_U8** in );
 static XP_U16 n_ptr_tohs( XP_U8** in );
-static XP_U8* openMappedFile( const wchar_t* name, HANDLE* mappedFileP,
-                              HANDLE* hFileP);
+static XP_U8* openMappedFile( MPFORMAL const wchar_t* name, 
+                              HANDLE* mappedFileP, HANDLE* hFileP, 
+                              XP_U32* sizep );
+static void closeMappedFile( MPFORMAL XP_U8* base, HANDLE mappedFile );
 
 #define ALIGN_COUNT 2
 
@@ -54,6 +56,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     wchar_t nameBuf[MAX_PATH+1];
     HANDLE hFile;
     XP_U8* ptr;
+    XP_U32 dictLength;
 
     XP_ASSERT( !!dictName );
     XP_DEBUGF( "looking for dict %s", dictName );
@@ -61,14 +64,14 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, dictName, -1,
                          nameBuf, sizeof(nameBuf)/sizeof(nameBuf[0]) );
 
-    ptr = openMappedFile( nameBuf, &mappedFile, &hFile );
+    ptr = openMappedFile( MPPARM(globals->mpool) nameBuf, &mappedFile, 
+                          &hFile, &dictLength );
 
     while( !!ptr ) {           /* lets us break.... */
         XP_U32 offset;
         XP_U16 numFaces;
         XP_U16 i;
         XP_U16 flags;
-        XP_U32 dictLength;
         void* mappedBase = (void*)ptr;
         XP_U8 nodeSize;
 
@@ -130,7 +133,6 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 
         ceLoadSpecialData( ctxt, &ptr );
 
-        dictLength = GetFileSize( hFile, NULL );
         dictLength -= ptr - (XP_U8*)ctxt->mappedBase;
         if ( dictLength > sizeof(XP_U32) ) {
             offset = n_ptr_tohl( &ptr );
@@ -398,8 +400,8 @@ ce_dict_destroy( DictionaryCtxt* dict )
 
     XP_FREE( ctxt->super.mpool, ctxt->super.faces16 );
 
-    UnmapViewOfFile( ctxt->mappedBase );
-    CloseHandle( ctxt->mappedFile );
+    closeMappedFile( MPPARM(ctxt->super.mpool) ctxt->mappedBase, 
+                     ctxt->mappedFile );
     XP_FREE( ctxt->super.mpool, ctxt );
 } // ce_dict_destroy
 
@@ -451,7 +453,8 @@ ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
 } /* ce_pickDictFile */
 
 static XP_U8*
-openMappedFile( const wchar_t* name, HANDLE* mappedFileP, HANDLE* hFileP )
+openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP, 
+                HANDLE* hFileP, XP_U32* sizep )
 {
     XP_U8* ptr = NULL;
     HANDLE mappedFile = NULL;
@@ -487,6 +490,9 @@ openMappedFile( const wchar_t* name, HANDLE* mappedFileP, HANDLE* hFileP )
             ptr = (XP_U8*)mappedBase;
             *mappedFileP = mappedFile;
             *hFileP = hFile;
+            if ( sizep != NULL ) {
+                *sizep = GetFileSize( hFile, NULL );
+            }
         }
     }
 #elif defined TARGET_OS_WIN32
@@ -497,14 +503,47 @@ openMappedFile( const wchar_t* name, HANDLE* mappedFileP, HANDLE* hFileP )
                         OPEN_EXISTING,
                         FILE_FLAG_RANDOM_ACCESS,
                         NULL );
-    *hFileP = hFile;
-    *mappedFileP = NULL;
+    XP_ASSERT( hFile != INVALID_HANDLE_VALUE );
+
+    DWORD size = GetFileSize( hFile, NULL );
+    XP_LOGF( "file size: %d", size );
+
+    ptr = XP_MALLOC( mpool, size );
+    if ( ptr != NULL ) {
+        DWORD nRead;
+        if ( ReadFile( hFile, ptr, size, &nRead, NULL ) ) {
+            XP_ASSERT( nRead == size );
+        } else {
+            XP_FREE( mpool, ptr );
+            ptr = NULL;
+        }
+    }
+
+    CloseHandle( hFile );
+
+    *hFileP = NULL;             /* nothing to close later */
+    if ( sizep != NULL ) {
+        *sizep = GetFileSize( hFile, NULL );
+    }
+    *mappedFileP = (HANDLE)ptr;
 #endif
     return ptr;
 } /* openMappedFile */
 
+static void
+closeMappedFile( MPFORMAL XP_U8* base, HANDLE mappedFile )
+{
+#if defined TARGET_OS_WINCE
+    UnmapViewOfFile( base );
+    CloseHandle( mappedFile );
+#elif defined TARGET_OS_WIN32
+    XP_FREE( mpool, base );
+#endif
+}
+
 static XP_Bool
-checkIfDictAndLegal( wchar_t* path, XP_U16 pathLen, WIN32_FIND_DATA* data )
+checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen, 
+                     WIN32_FIND_DATA* data )
 {
     XP_Bool result = XP_FALSE;
     wchar_t* name = data->cFileName;
@@ -532,15 +571,14 @@ checkIfDictAndLegal( wchar_t* path, XP_U16 pathLen, WIN32_FIND_DATA* data )
         pathBuf[pathLen] = 0;
         wcscat( pathBuf, name );
 
-        base = openMappedFile( pathBuf, &mappedFile, &hFile );
+        base = openMappedFile( MPPARM(mpool) pathBuf, &mappedFile, 
+                               &hFile, NULL );
         if ( !!base ) {
             XP_U8* ptr = base;
         
             flags = n_ptr_tohs( &ptr );
             XP_LOGF( "checkIfDictAndLegal: flags=0x%x", flags );
-            UnmapViewOfFile( base );
-            CloseHandle( mappedFile );
-
+            closeMappedFile( MPPARM(mpool) base, mappedFile );
 #ifdef NODE_CAN_4
             /* are the flags what we expect */
             result = flags == 0x0002 || flags == 0x0003;
@@ -554,14 +592,18 @@ checkIfDictAndLegal( wchar_t* path, XP_U16 pathLen, WIN32_FIND_DATA* data )
 } /* checkIfDictAndLegal */
 
 static XP_Bool
-locateOneDir( wchar_t* path, XP_U16* which )
+locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
 {
     WIN32_FIND_DATA data;
     HANDLE fileH;
     XP_Bool result = XP_FALSE;
     XP_U16 startLen;
 
+#if defined TARGET_OS_WINCE
     lstrcat( path, L"\\" );
+#elif defined TARGET_OS_WIN32
+    lstrcat( path, L".\\" );
+#endif
     startLen = wcslen(path);    /* record where we were so can back up */
     lstrcat( path, L"*" );
 
@@ -576,14 +618,18 @@ locateOneDir( wchar_t* path, XP_U16* which )
     if ( fileH != INVALID_HANDLE_VALUE ) {
         for ( ; ; ) {
 
-            if ( (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0 ) {
+            if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0){
+#if defined TARGET_OS_WINCE
+                /* We don't do recursive search on Win32!!! */
                 lstrcpy( path+startLen, data.cFileName );
-                result = locateOneDir( path, which );
+                result = locateOneDir( MPPARM(mpool) path, which );
                 if ( result ) {
                     break;
                 }
                 path[startLen] = 0;
-            } else if ( checkIfDictAndLegal( path, startLen, &data )
+#endif
+            } else if ( checkIfDictAndLegal( MPPARM(mpool) path, startLen,
+                                             &data )
                         && (*which-- == 0)) {
                 /* we're done! */
                 lstrcpy( path+startLen, data.cFileName );
@@ -611,7 +657,7 @@ ceLocateNthDict( MPFORMAL XP_U16 which )
 
     pathBuf[0] = 0;
 
-    if ( locateOneDir( pathBuf, &which ) ) {
+    if ( locateOneDir( MPPARM(mpool) pathBuf, &which ) ) {
         XP_U16 len = wcslen( pathBuf );
         result = XP_MALLOC( mpool, len + 1 );
         len = WideCharToMultiByte( CP_ACP, 0, pathBuf, len + 1,
