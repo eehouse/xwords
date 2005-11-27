@@ -10,3 +10,5 @@ xwords.vcl
 xwords.vco
 xwords.vcw
 vc60.pdb
+obj_win32
+obj_wince
