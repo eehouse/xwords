@@ -78,8 +78,8 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
             case WM_COMMAND:
                 if ( !init->textIsSet ) {
-                    stuffTextInField( hDlg, init );
                     init->textIsSet = XP_TRUE;
+                    stuffTextInField( hDlg, init );
                 }
 
                 id = LOWORD(wParam);
