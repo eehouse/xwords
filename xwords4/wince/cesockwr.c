@@ -43,7 +43,7 @@ typedef enum {
 
 #define MAX_QUEUE_SIZE 3
 
-typedef struct CeSocketWrapper {
+ struct CeSocketWrapper {
     DataRecvProc dataProc;
     void* dataClosure;
 
@@ -67,7 +67,7 @@ typedef struct CeSocketWrapper {
 #endif
 
     MPSLOT
-} CeSocketWrapper;
+};
 
 /* queue_packet: Place packet on queue using semaphore.  Return false
  * if no room or fail for some other reason.
