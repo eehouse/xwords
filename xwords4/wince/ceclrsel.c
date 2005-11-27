@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <Windowsx.h>
+#include <windowsx.h>
 #include "stdafx.h" 
 #include <commdlg.h>
 
