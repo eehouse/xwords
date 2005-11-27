@@ -938,6 +938,11 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                    rc.bottom-rc.top, FALSE);
     }
 #endif
+
+#ifdef TARGET_OS_WIN32
+    srand( time(NULL) );
+#endif
+
     ceInitUtilFuncs( globals );
 
     /* choose one.  If none found it's an error. */
