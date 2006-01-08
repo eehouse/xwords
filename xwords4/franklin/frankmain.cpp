@@ -147,8 +147,8 @@ class CXWordsWindow : public CWindow {
     U16 fProgressCurLine;
 
     /* There's a wasted slot here, but it simplifies indexing */
-    TimerProc fTimerProcs[TIMER_NUM_PLUS_ONE];
-    void* fTimerClosures[TIMER_NUM_PLUS_ONE];
+    TimerProc fTimerProcs[NUM_TIMERS_PLUS_ONE];
+    void* fTimerClosures[NUM_TIMERS_PLUS_ONE];
 
     XP_U8 phoniesAction;
     BOOL penDown;
@@ -501,7 +501,7 @@ CXWordsWindow::MsgHandler( MSG_TYPE type, CViewable *from, S32 data )
 
     case MSG_PEN_DOWN:
         this->penDown = TRUE;
-        if ( board_handlePenDown( fGame.board, drag_x, drag_y, 0, &handled ) ) {
+        if ( board_handlePenDown( fGame.board, drag_x, drag_y, &handled ) ) {
             GUI_NeedUpdate();
             result = 1;
         }
