@@ -2,7 +2,7 @@
 
 ##############################################################################
 # adapted from C++ code Copyright (C) 2000 Falk Hueffner
-# This version Copyright (C) 2002 Eric House (fixin@peak.org)
+# This version Copyright (C) 2002 Eric House (xwords@eehouse.org)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

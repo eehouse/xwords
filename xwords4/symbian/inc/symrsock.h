@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005 by Eric House (fixin@peak.org).  (based on sample
+ * Copyright 2005 by Eric House (xwords@eehouse.org).  (based on sample
  * app helloworldbasic "Copyright (c) 2002, Nokia. All rights
  * reserved.")
  *
