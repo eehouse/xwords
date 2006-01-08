@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999-2002 by Eric House (fixin@peak.org).  All rights reserved.
+ * Copyright 1999-2002 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1091,7 +1091,7 @@ CXWordsWindow::doAbout()
 
     stream = makeMemStream();
     char* txt = "Crosswords " VERSION_STRING "\n"
-        "Copyright 2000-2004 by Eric House (fixin@peak.org).\n"
+        "Copyright 2000-2004 by Eric House (xwords@eehouse.org).\n"
         "All rights reserved.\n"
         "For further information see www.peak.org/~fixin/xwords/ebm.html.";
     stream_putBytes( stream, txt, strlen(txt) );

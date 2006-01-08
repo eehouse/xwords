@@ -1,4 +1,4 @@
-# Copyright 2002 by Eric House (fixin@peak.org).  All rights reserved.
+# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -34,7 +34,7 @@ LANGINFO: Yet while I call it "supported", in fact this combination
 LANGINFO: has never been tested because I don't have a Polish
 LANGINFO: wordlist.  So if you are the first and have problems you've
 LANGINFO: probably found a bug.  Please let <a
-LANGINFO: href="mailto:fixin@peak.org">me</a> know so that I can get
+LANGINFO: href="mailto:xwords@eehouse.org">me</a> know so that I can get
 LANGINFO: this working.</p>
 
 LANGINFO: <p>Note that the blank is the last tile here, while with all

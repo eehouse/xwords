@@ -1,4 +1,4 @@
-/* Copyright 2001 by Eric House (fixin@peak.org) (fixin@peak.org).  All rights reserved.
+/* Copyright 2001 by Eric House (xwords@eehouse.org) (fixin@peak.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
