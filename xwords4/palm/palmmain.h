@@ -67,7 +67,6 @@ typedef struct PalmDrawCtx {
 
     RectangleType oldScoreClip;
     RectangleType oldTrayClip;
-    WinHandle offScreenCharWin;
 
     XP_S16 trayOwner;
     XP_U16 fntHeight;
