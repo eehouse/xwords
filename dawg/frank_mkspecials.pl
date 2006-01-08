@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright 2001 by Eric House (fixin@peak.org)
+# Copyright 2001 by Eric House (xwords@eehouse.org)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
