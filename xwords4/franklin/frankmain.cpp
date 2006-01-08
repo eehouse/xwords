@@ -1093,7 +1093,7 @@ CXWordsWindow::doAbout()
     char* txt = "Crosswords " VERSION_STRING "\n"
         "Copyright 2000-2004 by Eric House (xwords@eehouse.org).\n"
         "All rights reserved.\n"
-        "For further information see www.peak.org/~fixin/xwords/ebm.html.";
+        "For further information see http://xwords.sf.net.";
     stream_putBytes( stream, txt, strlen(txt) );
     stream_putU8( stream, '\0' );
 
