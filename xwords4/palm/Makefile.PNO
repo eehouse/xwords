@@ -3,8 +3,13 @@
 PLATFORM = PALM_PNO
 PALMDIR = /usr/local/share/palmdev/sdk-5r3/include
 
-#WHICH = elf
-WHICH = palmos
+# Which arm suite to use?  Well, the suite in prc-tools-arm is broken
+# on debian at the moment: builds code that doesn't work.  But older
+# versions, e.g. on current debian stable, are ok.  For current debian
+# the workaround is to build your own crosscompilation toolchain,
+# which should put arm-elf-gcc in your path.  We'll use that if we
+# find it.  Otherwise we fall back to the prc-tools-arm chain.
+WHICH = $(shell if which arm-elf-gcc > /dev/null ; then echo elf; else echo palmos; fi)
 
 CC_ARM = arm-$(WHICH)-gcc
 OC_ARM= arm-$(WHICH)-objcopy
@@ -25,7 +30,7 @@ INCLUDE += \
 # NOTE!!!! Added the -w flag to supress all warnings since arm-elf-gcc
 # does so much bitching about the Palm headers.  Need to fix that, or
 # use the arm-palmos-gcc, or something.  But for now, -w....
-CCFLAGS = -O2 -g -Wall -Wno-multichar -D__PALMOS__
+CCFLAGS = -Os -Wall -Wno-multichar -D__PALMOS__
 ARMCCFS = $(CCFLAGS) -DNATIVE \
 	-nostartfiles -mshort-load-bytes -nodefaultlibs -ffixed-r9 \
 	-mpic-register=r10 -msingle-pic-base -fpic \
