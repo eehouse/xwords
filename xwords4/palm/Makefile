@@ -30,7 +30,7 @@ ifdef HANDANGO_REG
 HANDANGO_REG_FLAG = -DHANDANGO_REG
 endif
 
-ARCH ?= COMBINED
+ARCH ?= ARM_ONLY
 
 ifeq ($(ARCH),ARM_ONLY)
 BUILD_AS_PNOLET = 1
@@ -71,8 +71,14 @@ endif
 CC = $(PALM_TOOLS_PREFIX)gcc
 AR = $(PALM_TOOLS_PREFIX)ar
 MULTILINK = $(PALM_TOOLS_PREFIX)multilink
+###############################################################################
+# par is a utility for manipulating .prc and .pdb files.  See
+# http://djw.org/product/palm/par/index.html to download source.
+###############################################################################
 PAR = par
 PILRC = pilrc
+BUILD-PRC = build-prc
+OBJ-RES = m68k-palmos-obj-res
 
 MULTILINK_OPTIONS = -basename $(ROOTNAME) -segmentsize 27k -g \
 	-deadstrip -verbose -gdb-script app.gdb
@@ -243,11 +249,18 @@ $(BITMAPS)/%.pbitm: $(BITMAPS)/%.bmp
 
 $(PLATFORM)/objs.prc: LocalizedStrIncludes.h $(OBJS) gdbload
 	@rm -f *.grc *.bin
+ifeq ($(ARCH),ARM_ONLY)
+	$(CC) $(OBJS) -o tmp.o
+	$(OBJ-RES) tmp.o
+	rm -f tmp.o
+else
 	$(MULTILINK) $(MULTILINK_OPTIONS) $(OBJS)
+endif
 	$(PAR) -c -a resource $(PLATFORM)/objs.prc Code rsrc rsrc *.grc
 	@rm -f *.grc *.bin
 
-$(PLATFORM)/res.prc: xwords4.rcp $(HEADERS) $(CODESEG) StrL03e8.bin $(FNAVS) $(PNOLET)
+
+$(PLATFORM)/res.prc: xwords4.rcp $(HEADERS) StrL03e8.bin $(FNAVS) $(PNOLET)
 	$(PILRC) $< >/dev/null
 	$(PAR) -c -a 'resource' $@ Rsrc rsrc rsrc *.bin
 	rm -f $< *.bin
@@ -289,8 +302,7 @@ gdbload:
 clean:
 	cd ../common && $(MAKE) PLATFORM=$(PLATFORM) $@
 	rm -rf $(PLATFORM)/*.[oa] xwords4 *.bin *.stamp *.[pg]rc \
-		xwords4.rcp *.btxt $(PLATFORM)/* $(CODESEG) \
-		LocalizedStrIncludes.h gdbload
+		xwords4.rcp *.btxt $(PLATFORM)/* LocalizedStrIncludes.h gdbload
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
 	$(MAKE) -f Makefile.PNO clean
 endif
