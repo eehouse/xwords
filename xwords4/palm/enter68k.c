@@ -214,7 +214,9 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
             UInt32 result;
             Boolean loaded;
 
+#ifdef DEBUG
             WinDrawChars( "Loading ARM code...", 19, 5, 25 );
+#endif
 
             loaded = setupPnolet( &pnoCode, &gotTable );
             dataP = (PnoletUserData*)MemPtrNew( sizeof(PnoletUserData) );
@@ -238,7 +240,7 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 #ifdef FEATURE_PNOAND68K
             result = PM2(PilotMain)( cmd, cmdPBP, launchFlags);
 #else
-            alertUser( "This copy of Crosswords runs only on ARM-based Palms.  "
+            alertUser( "This copy of Crosswords runs only on ARM-based Palms. "
                        "Get the right version at xwords.sf.net." );
 #endif
         }
