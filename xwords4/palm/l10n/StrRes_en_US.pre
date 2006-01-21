@@ -63,10 +63,7 @@
       "Corvallis, OR 97330 USA\n\n"
 
       "Developed on Debian GNU/Linux using the prc-tools "\
-      "suite."
-#ifdef HANDANGO_REG
-      "\n\nPlease visit handango.com if you choose to register Crosswords."
-#endif
+      "suite." \
       },
 
 { "STR_CONFIRM_END_GAME",	"Are you sure you want to end the game now?"},
