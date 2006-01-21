@@ -51,8 +51,8 @@
 { "STR_DEFAULT_NAME",		"Player %d" },
 { "STR_ABOUT_CONTENT", 
       "Crosswords " XW_PALM_VERSION_STRING ".\n" \
-      "Copyright 1998-2005 by Eric House.  "\
-      "All rights reserved.\n\n"\
+      "Copyright 1998-2006 by Eric House.  "\
+      "Released under the GNU Public License.\n\n"\
 
       "See the manual at xwords.sourceforge.net\n\n" \
 
@@ -100,7 +100,8 @@
 
 { "STRD_TIME_PENALTY_SUB",     " - %d [time]" },
 
-{ "STR_NO_DICT_INSTALLED", "Crosswords 4 requires at least one dictionary." },
+{ "STR_NO_DICT_INSTALLED",    "Crosswords 4 requires at least one dictionary." \
+                              "Download one or more from xwords.sf.net." },
 { "STR_ILLEGAL_WORD",	      "Word[s] %s not found in dictionary." },
 
 { "STR_FINAL_SCORES_TITLE",   "Final scores"},
