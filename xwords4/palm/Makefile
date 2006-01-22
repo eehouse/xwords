@@ -1,4 +1,4 @@
-# -*- mode: Makefile; -*-
+# -*- mode: Makefile; compile-command: "make ARCH=COMBINED"; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -64,6 +64,10 @@ endif
 CC = $(PALM_TOOLS_PREFIX)gcc
 AR = $(PALM_TOOLS_PREFIX)ar
 MULTILINK = $(PALM_TOOLS_PREFIX)multilink
+###############################################################################
+# par is a utility for manipulating .prc and .pdb files.  See
+# http://djw.org/product/palm/par/index.html to download source.
+###############################################################################
 PAR = par
 PILRC = pilrc
 
