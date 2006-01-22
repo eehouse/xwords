@@ -38,7 +38,7 @@ HEX "Clrs" ID 1000
     0xFF 0xFF 0x99		/* tile background */
 #endif
 
-ICONFAMILY "./bmps/xwbandwicon.ppm" "" "" "./bmps/xwcoloricon.ppm"
+ICONFAMILY "./bmps/xwbandwicon.bmp" "" "" "./bmps/xwcoloricon.bmp" TRANSPARENT 255 255 255
 SMALLICON "bmps/xwords4small.pbitm"
 
 BITMAP ID SHOWTRAY_BUTTON_BMP_RES_ID "bmps/showtray.pbitm" AUTOCOMPRESS

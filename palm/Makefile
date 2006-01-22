@@ -26,10 +26,6 @@ APPID ?= Xwr4
 MLPREFIX = /usr
 DICT = $(shell echo $$BASENG_PATH)
 
-ifdef HANDANGO_REG
-HANDANGO_REG_FLAG = -DHANDANGO_REG
-endif
-
 ARCH ?= ARM_ONLY
 
 ifeq ($(ARCH),ARM_ONLY)
@@ -89,7 +85,7 @@ endif
 
 MYDEFS_COMMON = $(PASSTHRU) -DXW_FEATURE_UTILS -DPOINTER_SUPPORT \
 	-DKEY_SUPPORT 	-DOVERRIDE_EDGE_FOR_INDEX -DCOLOR_SUPPORT \
-	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED $(HANDANGO_REG_FLAG)
+	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED
 
 # turn on letting users pick tiles "face-up"
 MYDEFS_COMMON += -DFEATURE_TRAY_EDIT
@@ -135,7 +131,6 @@ BITMAP_RSRCS = \
 	$(BITMAPS)/traybuttons.pbitm \
 	$(BITMAPS)/showtray.pbitm \
 	$(BITMAPS)/xwords4.pbitm \
-	$(BITMAPS)/xwcoloricon.ppm \
 	$(BITMAPS)/xwords4small.pbitm \
 
 INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
