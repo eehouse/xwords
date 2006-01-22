@@ -118,7 +118,6 @@ BITMAP_RSRCS = \
 	$(BITMAPS)/traybuttons.pbitm \
 	$(BITMAPS)/showtray.pbitm \
 	$(BITMAPS)/xwords4.pbitm \
-	$(BITMAPS)/xwcoloricon.ppm \
 	$(BITMAPS)/xwords4small.pbitm \
 
 INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
