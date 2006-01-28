@@ -31,6 +31,7 @@
 #include "cemain.h"
 #include "cedict.h"
 #include "cedefines.h"
+#include "debhacks.h"
 
 static void ceClearToBkground( CEDrawCtx* dctx, XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
@@ -486,7 +487,7 @@ formatRemText( HDC hdc, wchar_t* buf, XP_S16 nTilesLeft, SIZE* size )
         size->cx = size->cy = 0;
     } else {
         swprintf( buf, format, nTilesLeft );
-        GetTextExtentPoint32( hdc, buf, wcslen(buf), size );
+        DH(GetTextExtentPoint32)( hdc, buf, wcslen(buf), size );
     }
 } /* formatRemText */
 
@@ -549,7 +550,7 @@ ceWidthAndText( HDC hdc, wchar_t* buf, DrawScoreInfo* dsi,
     len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, tbuf, -1,
                                buf, 10 );
 
-    GetTextExtentPoint32( hdc, buf, len, &size );
+    DH(GetTextExtentPoint32)( hdc, buf, len, &size );
     *widthP = (XP_U16)size.cx;
     *heightP = (XP_U16)size.cy;
 } /* ceWidthAndText */
@@ -735,7 +736,7 @@ ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str,
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
         widebuf[len] = 0;
-        GetTextExtentPoint32( hdc, widebuf, wcslen(widebuf), &size );
+        DH(GetTextExtentPoint32)( hdc, widebuf, wcslen(widebuf), &size );
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         height += size.cy + CE_INTERLINE_SPACE;

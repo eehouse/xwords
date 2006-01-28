@@ -20,6 +20,7 @@
 
 #include "cesockwr.h"
 #include "cemain.h"
+#include "debhacks.h"
 
 #include <winsock.h>
 
@@ -92,7 +93,7 @@ queue_packet( CeSocketWrapper* self, XP_U8* packet, XP_U16 len )
             XP_LOGF( "there are now %d packets on send queue", self->nPackets );
 
             /* signal the writer thread */
-            SetEvent( self->queueAddEvent );
+            DH(SetEvent)( self->queueAddEvent );
             success = XP_TRUE;
         }
 
@@ -216,7 +217,7 @@ connectSocket( CeSocketWrapper* self )
                 self->socket = sock;
 
                 /* Let the reader thread know there's now a socket to listen on */
-                SetEvent( self->socketConnEvent );
+                DH(SetEvent)( self->socketConnEvent );
 
             } else {
                 logLastError( "connect" );
@@ -246,7 +247,7 @@ closeConnection( CeSocketWrapper* self )
     if ( self->connState >= CE_IP_UNCONNECTED ) {
 
         if ( self->socket != -1 ) {
-            closesocket( self->socket );
+            MS(closesocket)( self->socket );
         }
 
         self->socket = -1;
@@ -279,7 +280,7 @@ WriterThreadProc( LPVOID lpParameter )
 
         /* Should this happen sooner?  What if other thread signals in the
            meantime? */
-        ResetEvent( self->queueAddEvent );
+        DH(ResetEvent)( self->queueAddEvent );
     }
 
     ExitThread(0);              /* docs say to exit this way */

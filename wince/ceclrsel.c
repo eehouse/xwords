@@ -23,6 +23,7 @@
 
 #include "ceclrsel.h" 
 #include "ceutil.h" 
+#include "debhacks.h"
 
 #ifdef MY_COLOR_SEL
 
@@ -224,8 +225,8 @@ myChooseColor( CEAppGlobals* globals, HWND hwnd, COLORREF* cref )
 
     XP_LOGF( "setting up IDD_COLOREDITDLG" );
 
-    result = DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, hwnd,
-                             (DLGPROC)EditColorsDlg, (long)&state );
+    result = DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, hwnd,
+                                 (DLGPROC)EditColorsDlg, (long)&state );
 
     XP_LOGF( "DialogBoxParam=>%d", result );
 
@@ -405,8 +406,8 @@ ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
     state.globals = globals;
     state.inColors = colors;
 
-    (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
-                          (DLGPROC)ColorsDlg, (long)&state );
+    (void)DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
+                              (DLGPROC)ColorsDlg, (long)&state );
 
     if ( !state.cancelled ) {
         XP_U16 i;

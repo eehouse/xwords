@@ -21,6 +21,7 @@
 #include "cemain.h"
 #include "ceclrsel.h"
 #include "ceutil.h"
+#include "debhacks.h"
 
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
  */
@@ -332,8 +333,8 @@ WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsDlgState* state,
     state->isNewGame = isNewGame;
     XP_MEMCPY( &state->prefsPrefs, prefsPrefs, sizeof( state->prefsPrefs ) );
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_OPTIONSDLG, hDlg,
-                    (DLGPROC)PrefsDlg, (long)state );
+    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_OPTIONSDLG, hDlg,
+                        (DLGPROC)PrefsDlg, (long)state );
     
     result = !state->userCancelled;
 
