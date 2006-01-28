@@ -22,7 +22,7 @@ WINDRES = arm-wince-pe-windres
 STRIP = arm-wince-pe-strip
 CELIBS = -L/usr/arm-wince-pe/lib
 TARGET_OS_DEF = -DTARGET_OS_WINCE
-CFLAGS += -DUNDER_CE
+CFLAGS += -DUNDER_CE -DCANT_DO_CMDBAR -DUSE_DEB_HACKS -fdollars-in-identifiers
 else
 ifeq ($(TARGET_OS),win32)
 CC = i586-mingw32msvc-gcc
@@ -60,6 +60,7 @@ WINCESRC = \
 	ceprefs.c \
 	cestrbx.c \
 	cedraw.c \
+	debhacks.c \
 
 WINCEOBJS = $(patsubst %.c,%.o,$(addprefix $(OBJDIR)/,$(WINCESRC)))
 
@@ -110,8 +111,8 @@ $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
 
 SHIP: $(TARGET)
 	$(STRIP) $<
-ifdef UPLOAD_LOC
-	cp $< $(UPLOAD_LOC)
+ifdef WINCE_UPLOAD_LOC
+	cp $< $(WINCE_UPLOAD_LOC)
 endif
 
 test:
