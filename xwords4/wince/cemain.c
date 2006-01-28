@@ -46,7 +46,7 @@
 #include "ceclrsel.h"
 #include "cehntlim.h"
 #include "LocalizedStrIncludes.h"
-
+#include "debhacks.h"
 
 #define MAX_LOADSTRING 100
 /* #define PREFSFILENAME L"\\My Documents\\Personal\\.xwprefs" */
@@ -185,6 +185,23 @@ WinMain(	HINSTANCE hInstance,
     return msg.wParam;
 }
 
+#ifdef __GNUC__
+int
+main()
+{
+    XP_LOGF( "main called" );
+    
+    return WinMain( GetModuleHandle(NULL), 0, 
+#if defined TARGET_OS_WINCE
+                    GetCommandLineW(), 
+#elif defined TARGET_OS_WIN32
+                    GetCommandLineA(), 
+#endif
+                    0 );
+}
+#endif
+
+
 //
 //  FUNCTION: MyRegisterClass()
 //
@@ -237,6 +254,7 @@ addButtonsToCmdBar( CEAppGlobals* globals )
             -1
     };
 
+#ifndef CANT_DO_CMDBAR
 #ifdef TARGET_OS_WINCE
     for ( i = 0; i < N_TOOLBAR_BUTTONS; ++i ) {
         index = CommandBar_AddBitmap(globals->hwndCB, globals->hInst,
@@ -245,6 +263,7 @@ addButtonsToCmdBar( CEAppGlobals* globals )
         buttData.idCommand = cmds[i];
         success = CommandBar_InsertButton( globals->hwndCB, -1, &buttData );
     }
+#endif
 #endif
 } /* addButtonsToCmdBar */
 
@@ -606,8 +625,7 @@ logLastError( XP_UCHAR* comment )
     XP_U16 len;
     XP_U16 lenSoFar;
 
-    strcpy( msg, comment );
-    strcat( msg, ": " );
+    sprintf( msg, "%s (err: %d): ", comment, lastErr );
     lenSoFar = strlen( msg );
 
     FormatMessage( 
@@ -985,10 +1003,12 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
+#ifndef CANT_DO_CMDBAR
 #ifdef TARGET_OS_WINCE
     if (globals->hwndCB) {
         CommandBar_Show(globals->hwndCB, TRUE);
     }
+#endif
 #endif
     if ( result && !newDone ) {
         ceInitAndStartBoard( globals, !oldGameLoaded, NULL, NULL );
@@ -1130,8 +1150,8 @@ doNewGame( CEAppGlobals* globals, XP_Bool silent )
     giState.globals = globals;
     giState.isNewGame = XP_TRUE;
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
-                    (DLGPROC)GameInfo, (long)&giState );
+    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
+                        (DLGPROC)GameInfo, (long)&giState );
 
     if ( !giState.userCancelled
 #ifndef STUBBED_DICT
@@ -1599,8 +1619,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Parse the menu selections:
             switch (wmId) {
             case ID_FILE_ABOUT:
-                DialogBox(globals->hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, 
-                          (DLGPROC)About);
+                DH(DialogBoxParam)(globals->hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, 
+                          (DLGPROC)About, NULL );
                 break;
             case ID_GAME_GAMEINFO: {
                 GameInfoState state;
@@ -1609,8 +1629,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 state.globals = globals;
                 state.isNewGame = XP_FALSE;
 
-                DialogBoxParam(globals->hInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
-                               (DLGPROC)GameInfo, (long)&state );
+                DH(DialogBoxParam)(globals->hInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
+                                   (DLGPROC)GameInfo, (long)&state );
 
                 if ( !state.userCancelled && state.prefsChanged ) {
                     /* need to update some prefs? */
@@ -1783,8 +1803,10 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_DESTROY:
+#ifndef CANT_DO_CMDBAR
 #ifdef TARGET_OS_WINCE
             CommandBar_Destroy(globals->hwndCB); /* supposedly not needed */
+#endif
 #endif
             PostQuitMessage(0);
             break;
@@ -1859,8 +1881,8 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
     init.isQuery = isQuery;
     init.globals = globals;
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
-                    (DLGPROC)StrBox, (long)&init );
+    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
+                        (DLGPROC)StrBox, (long)&init );
 
     if ( destroy ) {
         stream_destroy( stream );
@@ -1965,7 +1987,7 @@ makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 size )
     SYSTEMTIME st;
     DWORD tid;
 
-    tid = GetCurrentThreadId();
+    tid = DH(GetCurrentThreadId)();
 
     GetLocalTime( &st );
     sprintf( timeStamp, "<%lx>%d:%.2d:%.2d ", tid, st.wHour, st.wMinute, 
@@ -2256,8 +2278,8 @@ ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
     state.playerNum = playerNum;
     state.pi = pi;
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
-                    (DLGPROC)BlankDlg, (long)&state );
+    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
+                        (DLGPROC)BlankDlg, (long)&state );
     return state.result;
 } /* ce_util_userPickTile */
 
@@ -2273,8 +2295,8 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     state.buf = buf;
     state.lenp = len;
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKPASS, globals->hWnd, 
-                    (DLGPROC)PasswdDlg, (long)&state );
+    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_ASKPASS, globals->hWnd, 
+                        (DLGPROC)PasswdDlg, (long)&state );
 
     return !state.userCancelled;
 } /* ce_util_askPassword */
@@ -2526,8 +2548,8 @@ ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
     hls.min = *min;
     hls.max = *max;
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
-                    (DLGPROC)HintLimitsDlg, (long)&hls );
+    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
+                        (DLGPROC)HintLimitsDlg, (long)&hls );
 
     if ( !hls.cancelled ) {
         *min = hls.min;
