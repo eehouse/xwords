@@ -21,6 +21,7 @@
 
 #include "cecondlg.h"
 #include "ceutil.h"
+#include "debhacks.h"
 
 static void
 ceControlsToAddrRec( HWND hDlg, CeConnDlgState* cState )
@@ -112,8 +113,8 @@ WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRec,
 
     XP_MEMCPY( &state->addrRec, addrRec, sizeof(state->addrRec) );
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_CONNSSDLG, hDlg,
-                    (DLGPROC)ConnsDlg, (long)state );
+    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_CONNSSDLG, hDlg,
+                        (DLGPROC)ConnsDlg, (long)state );
 
     result = !state->userCancelled;
     return result;
