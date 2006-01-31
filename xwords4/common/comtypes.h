@@ -137,4 +137,8 @@ typedef struct CommonPrefs {
 
 #endif
 
+#define LOG_FUNC()  XP_LOGF( "IN: %s", __FUNCTION__ )
+#define LOG_RETURNF(fmt,val)  XP_LOGF( "%s => " fmt, __FUNCTION__, val )
+#define LOG_RETURN_VOID() LOG_RETURNF("%s","void")
+
 #endif
