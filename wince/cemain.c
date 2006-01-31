@@ -139,7 +139,7 @@ static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
                                 wchar_t* title, XP_Bool isQuery, 
                                 XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
-static XP_Bool doNewGame( CEAppGlobals* globals, XP_Bool silent );
+static XP_Bool ceDoNewGame( CEAppGlobals* globals, XP_Bool silent );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
@@ -189,7 +189,8 @@ WinMain(	HINSTANCE hInstance,
 int
 main()
 {
-    XP_LOGF( "main called" );
+    XP_LOGF( "" );
+    LOG_FUNC();
     
     return WinMain( GetModuleHandle(NULL), 0, 
 #if defined TARGET_OS_WINCE
@@ -197,7 +198,7 @@ main()
 #elif defined TARGET_OS_WIN32
                     GetCommandLineA(), 
 #endif
-                    0 );
+                    SW_SHOWDEFAULT );
 }
 #endif
 
@@ -617,7 +618,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
 
 #ifdef DEBUG
 void
-logLastError( XP_UCHAR* comment )
+logLastError( const char* comment )
 {
     LPVOID lpMsgBuf;
     DWORD lastErr = GetLastError();
@@ -742,8 +743,6 @@ fileToStream( CEAppGlobals* globals, XP_UCHAR* path )
     HANDLE fileH;
     wchar_t widebuf[257];
     XP_U16 len;
-
-    XP_DEBUGF( "fileToStream" );
 
     len = (XP_U16)XP_STRLEN( path );
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, path, len + 1, 
@@ -995,7 +994,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                           &globals->appPrefs.cp, 
                           CE_SEND_PROC, globals );
 
-        newDone = doNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
+        newDone = ceDoNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
         if ( !newDone ) {
             result = FALSE;
         }
@@ -1108,7 +1107,7 @@ drawInsidePaint( HWND hWnd, CEAppGlobals* globals )
 
     hdc = GetDC( hWnd );
     if ( !hdc ) {
-        logLastError( "drawInsidePaint" );
+        logLastError( __FUNCTION__ );
     } else {
         HDC prevHDC = globals->hdc;
         globals->hdc = hdc;
@@ -1133,7 +1132,7 @@ ceDisplayFinalScores( CEAppGlobals* globals )
 } /* ceDisplayFinalScores */
 
 static XP_Bool
-doNewGame( CEAppGlobals* globals, XP_Bool silent )
+ceDoNewGame( CEAppGlobals* globals, XP_Bool silent )
 {
     GameInfoState giState;
     CommsAddrRec* addr = NULL;
@@ -1177,7 +1176,7 @@ doNewGame( CEAppGlobals* globals, XP_Bool silent )
     }
     
     return changed;
-} /* doNewGame */
+} /* ceDoNewGame */
 
 static void
 ceChooseAndOpen( CEAppGlobals* globals )
@@ -1620,7 +1619,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (wmId) {
             case ID_FILE_ABOUT:
                 DH(DialogBoxParam)(globals->hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, 
-                          (DLGPROC)About, NULL );
+                          (DLGPROC)About, 0L );
                 break;
             case ID_GAME_GAMEINFO: {
                 GameInfoState state;
@@ -1646,7 +1645,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if ( ceSaveCurGame( globals, XP_FALSE )
                      || queryBoxChar( globals, "Do you really want to "
                                       "overwrite the current game?" ) ) {
-                    draw = doNewGame( globals, XP_FALSE );
+                    draw = ceDoNewGame( globals, XP_FALSE );
                 }
                 break;
 
@@ -2040,10 +2039,10 @@ wince_debugf(XP_UCHAR* format, ...)
         strcat( buf, XP_CR );
 #endif
         SetFilePointer( fileH, 0, 0, FILE_END );
-
+#ifdef DEBUG_TS
         nBytes = strlen( timeStamp );
         WriteFile( fileH, timeStamp, nBytes, &nWritten, NULL );
-
+#endif
         nBytes = strlen( buf );
         WriteFile( fileH, buf, nBytes, &nWritten, NULL );
         CloseHandle( fileH );
