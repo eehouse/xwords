@@ -42,7 +42,7 @@ ceControlsToAddrRec( HWND hDlg, CeConnDlgState* cState )
 static void
 ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* cState )
 {
-    XP_UCHAR* str;
+    wchar_t* str;
 
     switch( cState->addrRec.conType ) {
     case COMMS_CONN_RELAY:
@@ -54,7 +54,7 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* cState )
         str = L"bad conType";
         break;
     }
-    SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_ADDSTRING, 0, str );
+    SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_ADDSTRING, 0, (LPARAM)str );
     SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_SETCURSEL, 0, 0L );
 
     ceSetDlgItemText( hDlg, RELAYNAME_EDIT, cState->addrRec.u.ip_relay.hostName );

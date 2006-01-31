@@ -23,7 +23,7 @@
 #include "stdafx.h" 
 #include "cemain.h"
 
-void ceSetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf );
+void ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* buf );
 void ceGetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf, XP_U16* bLen );
 
 void ceSetDlgItemNum( HWND hDlg, XP_U16 id, XP_S32 num );

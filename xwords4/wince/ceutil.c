@@ -22,7 +22,7 @@
 #define BUF_SIZE 128
 
 void
-ceSetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf )
+ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* buf )
 {
     wchar_t widebuf[BUF_SIZE];
     XP_U16 len;
