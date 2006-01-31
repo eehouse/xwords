@@ -131,10 +131,10 @@ getRandomTile( PoolContext* pool )
      * in that case if move to shuffling once and just taking tiles off the
      * top thereafter.
      */
-    XP_U16 index = (XP_U16)(XP_RANDOM() % pool->numTilesLeft);
-    Tile result;
-
-    result = getNthPoolTile( pool, index );
+    
+    XP_U16 r = (XP_U16)XP_RANDOM();
+    XP_U16 index = (XP_U16)(r % pool->numTilesLeft);
+    Tile result = getNthPoolTile( pool, index );
 
     --pool->lettersLeft[result];
     --pool->numTilesLeft;
