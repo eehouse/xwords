@@ -32,6 +32,7 @@ STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 CFLAGS += -D_WIN32_WCE=400 -DUNDER_CE \
 	$(STANDALONE) \
 	-fdollars-in-identifiers -D__W32API_USE_DLLIMPORT__
+LFLAGS += -Wl,--major-subsystem-version,4,--minor-subsystem-version,20
 ifdef HAVE_COMMCTRL
 CELIBS += -lcommctrl -laygshell
 else
@@ -50,10 +51,12 @@ endif
 
 CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay 
 
-DEBUG ?= -DDEBUG
-# include timestamp in logs
-DEBUG += -DDEBUG_TS
-MEM_DEBUG ?= -DMEM_DEBUG
+ifdef DEBUG
+CFLAGS += -g -DDEBUG_TS
+else
+CFLAGS += -Os
+endif
+
 
 OBJDIR = obj_$(TARGET_OS)
 TARGET = $(OBJDIR)/xwords4.exe
@@ -106,12 +109,12 @@ CFLAGS += $(XW_BOTH_DEFINES) -DARM
 ####################################################################
 
 all : $(TARGET)
-	@echo "####################################################################"
-	@echo "# need to hexedit the three bytes starting at offset c8 to 0x040014 "
-	@echo "####################################################################"
+
+memdebug:
+	$(MAKE) DEBUG=-DDEBUG MEM_DEBUG=-DMEM_DEBUG all
 
 $(TARGET) : $(OBJS) $(RESOBJS)
-	$(CC) $(CFLAGS) -mwindows $^ $(CELIBS) -o $@
+	$(CC) $(CFLAGS) $(LFLAGS) -mwindows $^ $(CELIBS) -o $@
 
 $(OBJDIR)/%.o : %.c $(INCLUDES)
 	mkdir -p $(dir $@)
@@ -122,7 +125,7 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
-	$(WINDRES) -v -I$(MINGW_INC_PATH) \
+	$(WINDRES) -v -I$(MINGW_INC_PATH) $(DEBUG) $(MEM_DEBUG) \
 		-D_WIN32_WCE=400 -D_WIN32 -D_WIN32_IE=0x0400 \
 		$(STANDALONE) \
 		-o $@ $< 
