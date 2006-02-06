@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince"-*- */
 /* 
  * Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -241,10 +241,10 @@ addButtonsToCmdBar( CEAppGlobals* globals )
     XP_Bool success;
     XP_U16 i;
     int index;
-    int cmds[N_TOOLBAR_BUTTONS] = { FLIP_BUTTON_ID, VALUE_BUTTON_ID, 
-                                    HINT_BUTTON_ID, JUGGLE_BUTTON_ID };
-    int resIDs[N_TOOLBAR_BUTTONS] = { IDB_FLIPBUTTON, IDB_VALUESBUTTON,
-                                      IDB_HINTBUTTON, IDB_JUGGLEBUTTON };
+    int cmds[] = { FLIP_BUTTON_ID, VALUE_BUTTON_ID, 
+                   HINT_BUTTON_ID, JUGGLE_BUTTON_ID };
+    int resIDs[] = { IDB_FLIPBUTTON, IDB_VALUESBUTTON,
+                     IDB_HINTBUTTON, IDB_JUGGLEBUTTON };
 
     TBBUTTON buttData = {
             0, /*iBitmap; */
@@ -257,12 +257,13 @@ addButtonsToCmdBar( CEAppGlobals* globals )
 
 #ifndef CANT_DO_CMDBAR
 #ifdef TARGET_OS_WINCE
-    for ( i = 0; i < N_TOOLBAR_BUTTONS; ++i ) {
+    for ( i = 0; i < sizeof(cmds)/sizeof(cmds[0]); ++i ) {
         index = CommandBar_AddBitmap(globals->hwndCB, globals->hInst,
                                      resIDs[i], 1, 16, 16 );
         buttData.iBitmap = index;
         buttData.idCommand = cmds[i];
-        success = CommandBar_InsertButton( globals->hwndCB, -1, &buttData );
+        success = CommandBar_InsertButton( globals->hwndCB, -1, 
+                                           (LPARAM)&buttData );
     }
 #endif
 #endif
@@ -680,6 +681,7 @@ ceSavePrefs( CEAppGlobals* globals )
 
         SetEndOfFile( fileH );  /* truncate anything previously there */
 
+        CloseHandle( fileH );   /* am I not supposed to do this? PENDING */
         XP_DEBUGF( "ceSavePrefs: prefs file written" );
     } else {
         logLastError( "failed to create prefs file" );
@@ -790,7 +792,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
     XP_Bool success = XP_FALSE;
     XWStreamCtxt* stream;
 
-    XP_DEBUGF( "ceLoadSavedGame" );
+    LOG_FUNC();
 
     stream = fileToStream( globals, globals->curGameName );
     success = stream != NULL;
@@ -888,6 +890,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_U16 len;
     MPSLOT;
 
+#ifdef BEYOND_IR
     {
         WORD wVersionRequested;
         WSADATA wsaData;
@@ -897,9 +900,10 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         if ( err != 0 ) {
             /* Tell the user that we could not find a usable */
             /* WinSock DLL.                                  */
-            XP_LOGF( "unable to laod winsock" );
+            XP_LOGF( "unable to load winsock" );
         }
     }
+#endif
 
     LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadString(hInstance, IDC_XWORDS4, szWindowClass, MAX_LOADSTRING);
@@ -943,7 +947,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 
-#ifdef TARGET_OS_WINCE
+#ifdef _WIN32_WCE
     if ( globals->hwndCB ) {
         RECT rc, rcmb;
 
@@ -1149,8 +1153,8 @@ ceDoNewGame( CEAppGlobals* globals, XP_Bool silent )
     giState.globals = globals;
     giState.isNewGame = XP_TRUE;
 
-    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
-                        (DLGPROC)GameInfo, (long)&giState );
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
+                    (DLGPROC)GameInfo, (long)&giState );
 
     if ( !giState.userCancelled
 #ifndef STUBBED_DICT
@@ -1457,8 +1461,8 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
 #ifndef CANT_DO_SHELL_THING
     SHMENUBARINFO mbi;
 
-    XP_MEMSET( &mbi, 0, sizeof(SHMENUBARINFO) );
-    mbi.cbSize = sizeof(SHMENUBARINFO);
+    XP_MEMSET( &mbi, 0, sizeof(mbi) );
+    mbi.cbSize = sizeof(mbi);
     mbi.hwndParent = hwnd;
     mbi.nToolBarId = IDM_MENU;
     mbi.hInstRes   = hInst;
@@ -1577,7 +1581,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     if ( message == WM_CREATE ) {
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
         SetWindowLong( hWnd, GWL_USERDATA, (long)globals );
-#ifdef TARGET_OS_WINCE
+#ifdef _WIN32_WCE
         globals->hwndCB = makeCommandBar( hWnd, globals->hInst );
         addButtonsToCmdBar( globals );
 #endif
@@ -1595,14 +1599,16 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Notify shell of our activate message
             SHHandleWMActivate( hWnd, wParam, lParam, &globals->sai, FALSE );
             break;
+#endif
 
         case WM_SETTINGCHANGE:
+#ifndef CANT_DO_SHELL_THING
             SHHandleWMSettingChange( hWnd, wParam, lParam, &globals->sai );
+#endif
             cePositionBoard( globals );
             board_invalAll( globals->game.board );
             draw = XP_TRUE;
             break;
-#endif
 
 #ifdef CEFEATURE_CANSCROLL
         case WM_VSCROLL:
@@ -1618,8 +1624,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Parse the menu selections:
             switch (wmId) {
             case ID_FILE_ABOUT:
-                DH(DialogBoxParam)(globals->hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, 
-                          (DLGPROC)About, 0L );
+                DialogBoxParam(globals->hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, 
+                               (DLGPROC)About, 0L );
                 break;
             case ID_GAME_GAMEINFO: {
                 GameInfoState state;
@@ -1628,8 +1634,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 state.globals = globals;
                 state.isNewGame = XP_FALSE;
 
-                DH(DialogBoxParam)(globals->hInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
-                                   (DLGPROC)GameInfo, (long)&state );
+                DialogBoxParam(globals->hInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
+                               (DLGPROC)GameInfo, (long)&state );
 
                 if ( !state.userCancelled && state.prefsChanged ) {
                     /* need to update some prefs? */
@@ -1880,8 +1886,8 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
     init.isQuery = isQuery;
     init.globals = globals;
 
-    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
-                        (DLGPROC)StrBox, (long)&init );
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
+                    (DLGPROC)StrBox, (long)&init );
 
     if ( destroy ) {
         stream_destroy( stream );
@@ -1986,7 +1992,7 @@ makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 size )
     SYSTEMTIME st;
     DWORD tid;
 
-    tid = DH(GetCurrentThreadId)();
+    tid = GetCurrentThreadId();
 
     GetLocalTime( &st );
     sprintf( timeStamp, "<%lx>%d:%.2d:%.2d ", tid, st.wHour, st.wMinute, 
@@ -2165,6 +2171,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         message = "Tile assignment can't be undone.";
         break;
 
+#ifdef BEYOND_IR
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
         message = "The relay timed you out; usually that means "
             "the other players didn't show.";
@@ -2177,6 +2184,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
         message = "The relay has lost contact with a device in this game.";
         break;
+#endif
 
     default:
         message = "unknown errorcode ID!!!";
@@ -2277,8 +2285,8 @@ ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
     state.playerNum = playerNum;
     state.pi = pi;
 
-    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
-                        (DLGPROC)BlankDlg, (long)&state );
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
+                    (DLGPROC)BlankDlg, (long)&state );
     return state.result;
 } /* ce_util_userPickTile */
 
@@ -2294,8 +2302,8 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     state.buf = buf;
     state.lenp = len;
 
-    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_ASKPASS, globals->hWnd, 
-                        (DLGPROC)PasswdDlg, (long)&state );
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKPASS, globals->hWnd, 
+                    (DLGPROC)PasswdDlg, (long)&state );
 
     return !state.userCancelled;
 } /* ce_util_askPassword */
@@ -2547,8 +2555,8 @@ ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
     hls.min = *min;
     hls.max = *max;
 
-    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
-                        (DLGPROC)HintLimitsDlg, (long)&hls );
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
+                    (DLGPROC)HintLimitsDlg, (long)&hls );
 
     if ( !hls.cancelled ) {
         *min = hls.min;
