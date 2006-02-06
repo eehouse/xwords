@@ -1,24 +1,53 @@
+/* -*- fill-column: 77; c-basic-offset: 4; -*- */
+/* 
+ * Copyright 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
-#ifdef USE_DEB_HACKS
+#ifdef _WIN32_WCE
 
-#include "xptypes.h"
-#include "debhacks.h"
+#include <windows.h>
+#include <commctrl.h>
+
+/* #include "xptypes.h" */
+/* #include "debhacks.h" */
+
+/* These should eventually be replaced by implementations moved into
+ * mingw or the Debian pocketpc-sdk 
+ */
+
+/* These belong in mingw headers */
+wchar_t* wcscat( wchar_t *, const wchar_t * );
+wchar_t *wcscpy( wchar_t*,const wchar_t* );
 
 wchar_t*
-DH(lstrcat)(wchar_t *s1, const wchar_t* s2)
+lstrcatW( wchar_t *dest, const wchar_t* src )
 {
-    return wcscat( s1, s2 );
+    return wcscat( dest, src );
 }
 
 wchar_t* 
-DH(lstrcpy)(wchar_t* dest, const wchar_t* src)
+lstrcpyW( wchar_t* dest, const wchar_t* src )
 {
     return wcscpy( dest, src );
 }
 
 int
-DH(DialogBoxParam)( HINSTANCE hinst, LPCWSTR name, HWND hwnd, 
-                        DLGPROC proc, LPARAM lparam )
+DialogBoxParamW( HINSTANCE hinst, LPCWSTR name, HWND hwnd, 
+                 DLGPROC proc, LPARAM lparam )
 {
     HRSRC resstr = FindResource( hinst, name, RT_DIALOG );
     HGLOBAL lr = LoadResource( hinst, resstr );
@@ -26,25 +55,28 @@ DH(DialogBoxParam)( HINSTANCE hinst, LPCWSTR name, HWND hwnd,
 }
 
 BOOL
-DH(GetTextExtentPoint32)( HDC hdc, LPCWSTR str, int i, LPSIZE siz )
+GetTextExtentPoint32W( HDC hdc, LPCWSTR str, int i, LPSIZE siz )
 {
     return GetTextExtentExPointW(hdc, str, i, 0, NULL, NULL, siz );
 }
 
+#if 0
 BOOL
-DH(SetEvent)(HANDLE h)
+debhack_SetEvent(HANDLE h)
 {
     return FALSE;
 }
 
 BOOL
-DH(ResetEvent)(HANDLE h)
+debhack_ResetEvent(HANDLE h)
 {
     return FALSE;
 }
+
+#endif
 
 DWORD
-DH(GetCurrentThreadId)(void)
+GetCurrentThreadId(void)
 {
     return 0;
 }
