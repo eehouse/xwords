@@ -1,3 +1,4 @@
+# -*- compile-command: "make TARGET_OS=wince"; -*-
 # This Makefile is meant to allow building Crosswords for PocketPC and
 # Windows using Linux.  As of Nov 27, 2005, it compiles and runs (on
 # XP) enough to draw its board, but then crashes.  It appears from the
@@ -13,8 +14,13 @@
 
 PLATFORM = wince
 
-# TARGET_OS = wince
-TARGET_OS = win32
+TARGET_OS ?= win32
+#TARGET_OS = wince
+
+MINGW_INC_PATH ?= /usr/i586-mingw32msvc/include
+
+# This requires custom Debian pocketpc-sdk package at the moment
+HAVE_COMMCTRL = 1
 
 ifeq ($(TARGET_OS),wince)
 CC = arm-wince-pe-gcc
@@ -22,7 +28,15 @@ WINDRES = arm-wince-pe-windres
 STRIP = arm-wince-pe-strip
 CELIBS = -L/usr/arm-wince-pe/lib
 TARGET_OS_DEF = -DTARGET_OS_WINCE
-CFLAGS += -DUNDER_CE -DCANT_DO_CMDBAR -DUSE_DEB_HACKS -fdollars-in-identifiers
+STANDALONE = -DXWFEATURE_STANDALONE_ONLY
+CFLAGS += -D_WIN32_WCE=400 -DUNDER_CE \
+	$(STANDALONE) \
+	-fdollars-in-identifiers -D__W32API_USE_DLLIMPORT__
+ifdef HAVE_COMMCTRL
+CELIBS += -lcommctrl -laygshell
+else
+CFLAGS += -DCANT_DO_CMDBAR -DCANT_DO_SHELL_THING -DBEYOND_IR
+endif
 else
 ifeq ($(TARGET_OS),win32)
 CC = i586-mingw32msvc-gcc
@@ -30,12 +44,15 @@ WINDRES = i586-mingw32msvc-windres
 STRIP = i586-mingw32msvc-strip
 TARGET_OS_DEF = -DTARGET_OS_WIN32
 CELIBS += -lws2_32 
+CFLAGS += -DCANT_DO_CMDBAR -DCANT_DO_SHELL_THING -DBEYOND_IR
 endif
 endif
 
-CFLAGS += -DARM -I/usr/i586-mingw32msvc/include -I./ -I../common -I../relay 
+CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay 
 
 DEBUG ?= -DDEBUG
+# include timestamp in logs
+DEBUG += -DDEBUG_TS
 MEM_DEBUG ?= -DMEM_DEBUG
 
 OBJDIR = obj_$(TARGET_OS)
@@ -43,8 +60,6 @@ TARGET = $(OBJDIR)/xwords4.exe
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \
-
-WINCEOBJS = $(OBJDIR)/
 
 WINCESRC = \
 	ceaskpwd.c \
@@ -77,12 +92,11 @@ INCLUDES = $(WINCE_INCLUDES) $(COMMON_INCLUDES)
 
 XW_BOTH_DEFINES = \
 	$(TARGET_OS_DEF) \
-	-DBEYOND_IR -DNODE_CAN_4 -DMY_COLOR_SEL \
+	-DNODE_CAN_4 -DMY_COLOR_SEL \
 	-DCOLOR_SUPPORT -DFEATURE_TRAY_EDIT -DXWFEATURE_SEARCHLIMIT \
 	-DXWFEATURE_HINT_CONFIG \
 	-DPOINTER_SUPPORT -DKEY_SUPPORT -D__LITTLE_ENDIAN \
 	-DCEFEATURE_CANSCROLL -DUNICODE \
-	-DCANT_DO_SHELL_THING \
 	$(DEBUG) $(MEM_DEBUG) \
 
 CFLAGS += $(XW_BOTH_DEFINES) -DARM
@@ -92,6 +106,9 @@ CFLAGS += $(XW_BOTH_DEFINES) -DARM
 ####################################################################
 
 all : $(TARGET)
+	@echo "####################################################################"
+	@echo "# need to hexedit the three bytes starting at offset c8 to 0x040014 "
+	@echo "####################################################################"
 
 $(TARGET) : $(OBJS) $(RESOBJS)
 	$(CC) $(CFLAGS) -mwindows $^ $(CELIBS) -o $@
@@ -105,8 +122,9 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
-	$(WINDRES) -v -I/usr/i586-mingw32msvc/include \
-	-D_WIN32_WCE -D_WIN32 -D_WIN32_IE=0x0400 \
+	$(WINDRES) -v -I$(MINGW_INC_PATH) \
+		-D_WIN32_WCE=400 -D_WIN32 -D_WIN32_IE=0x0400 \
+		$(STANDALONE) \
 		-o $@ $< 
 
 SHIP: $(TARGET)
@@ -120,3 +138,7 @@ test:
 
 clean :
 	rm -rf $(OBJDIR) $(TARGET)
+
+help:
+	@echo "try 'make TARGET_OS=wince'"
+	@echo "or 'make TARGET_OS=win32'"
