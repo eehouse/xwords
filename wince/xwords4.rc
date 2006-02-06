@@ -648,8 +648,13 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+#ifdef DEBUG
+    IDS_APP_TITLE           "Crossw_dbg"
+    IDC_XWORDS4             "XWORDS4_DBG"
+#else
     IDS_APP_TITLE           "Crosswords"
     IDC_XWORDS4             "XWORDS4"
+#endif
     IDS_FILE                "File"
     IDS_GAME                "Game"
     IDS_MOVE                "Move"
@@ -658,6 +663,11 @@ END
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
+/* This is supposed to keep the OS from running us in "emulation mode", but it 
+   isn't working.  Changing the versions as reported by objdump does work */
+/* #ifdef _WIN32_WCE */
+/* HI_RES_AWARE CEUX {1} */
+/* #endif */
 
 
 #ifndef APSTUDIO_INVOKED
