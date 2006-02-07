@@ -51,14 +51,16 @@ endif
 
 CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay 
 
-ifdef DEBUG
+ifeq ($(DEBUG),TRUE)
+MEM_DEBUG_FLAG=-DMEM_DEBUG 
+DEBUG_FLAG=-DDEBUG 
 CFLAGS += -g -DDEBUG_TS
+OBJDIR = obj_$(TARGET_OS)_dbg
 else
 CFLAGS += -Os
+OBJDIR = obj_$(TARGET_OS)
 endif
 
-
-OBJDIR = obj_$(TARGET_OS)
 TARGET = $(OBJDIR)/xwords4.exe
 
 RESOBJS = \
@@ -100,7 +102,7 @@ XW_BOTH_DEFINES = \
 	-DXWFEATURE_HINT_CONFIG \
 	-DPOINTER_SUPPORT -DKEY_SUPPORT -D__LITTLE_ENDIAN \
 	-DCEFEATURE_CANSCROLL -DUNICODE \
-	$(DEBUG) $(MEM_DEBUG) \
+	$(DEBUG_FLAG) $(MEM_DEBUG_FLAG) \
 
 CFLAGS += $(XW_BOTH_DEFINES) -DARM
 
@@ -111,7 +113,7 @@ CFLAGS += $(XW_BOTH_DEFINES) -DARM
 all : $(TARGET)
 
 memdebug:
-	$(MAKE) DEBUG=-DDEBUG MEM_DEBUG=-DMEM_DEBUG all
+	$(MAKE) DEBUG=TRUE all
 
 $(TARGET) : $(OBJS) $(RESOBJS)
 	$(CC) $(CFLAGS) $(LFLAGS) -mwindows $^ $(CELIBS) -o $@
@@ -125,7 +127,7 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
-	$(WINDRES) -v -I$(MINGW_INC_PATH) $(DEBUG) $(MEM_DEBUG) \
+	$(WINDRES) -v -I$(MINGW_INC_PATH) $(DEBUG_FLAG) $(MEM_DEBUG_FLAG) \
 		-D_WIN32_WCE=400 -D_WIN32 -D_WIN32_IE=0x0400 \
 		$(STANDALONE) \
 		-o $@ $< 
