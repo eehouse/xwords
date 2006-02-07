@@ -371,9 +371,9 @@ hideScroller( CEAppGlobals* globals )
 typedef struct CEBoardParms {
     XP_U16  boardHScale;
     XP_U16  boardVScale;
-    XP_U8   trayVScale;
-    XP_U8   trayHScale;
     XP_U16  trayTop;
+    XP_U16  trayVScale;
+    XP_U16  trayHScale;
     XP_U16  leftEdge;
     XP_U16  scoreWidth;
     XP_U16  scoreHeight;
@@ -438,7 +438,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
     bparms->boardHScale = hScale;
     bparms->boardVScale = vScale;
     bparms->trayTop = trayTop;
-    bparms->trayVScale = (XP_U8)trayVScale;
+    bparms->trayVScale = trayVScale;
     bparms->trayHScale = CE_TRAY_SCALEH; /* unchanged so far... */
     bparms->leftEdge = leftEdge;
     bparms->scoreWidth = scoreWidth;
