@@ -235,10 +235,10 @@ dawg$(LANG)%.stamp: $(LANG)Main.dict.gz ../dict2dawg.pl table.bin ../Makefile.la
 	start=$$(echo $@ | sed -e 's/dawg$(LANG)\([0-9]*\)to[0-9]*.stamp/\1/'); \
 	end=$$(echo $@ | sed -e 's/dawg$(LANG)[0-9]*to\([0-9]*\).stamp/\1/'); \
 	echo $${start} and $$end; \
-	zcat $< | grep "^.\{$${start},$${end}\}$$" | tr '\n' '\0'| \
-		sort -z | ../dict2dawg.pl $(TABLE_ARG) table.bin -b 28000 \
+	zcat $< | grep "^.\{$${start},$${end}\}$$" | \
+		sort -u | ../dict2dawg.pl $(TABLE_ARG) table.bin -b 28000 \
 		-ob dawg$(LANG)$* \
-		-sn $(LANG)StartLoc.bin -k -term 0 -wc $(LANG)$*_wordcount.bin \
+		-sn $(LANG)StartLoc.bin -k -term 10 -wc $(LANG)$*_wordcount.bin \
 		$(FORCE_4) -ns $(LANG)$*_nodesize.bin
 	touch $@
 
