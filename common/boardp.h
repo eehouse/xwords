@@ -131,12 +131,12 @@ struct BoardCtxt {
     XP_Rect scoreBdBounds;
     XP_Rect timerBounds;
     XP_U8 selPlayer;	/* which player is selected (!= turn) */
-    XP_U8 remDim;	/* width (or ht) of the "rem:" string in scoreboard */
 
     /* tray state */
     XP_U8 trayScaleH;
     XP_U8 trayScaleV;
     XP_Rect trayBounds;
+    XP_U16 remDim;	/* width (or ht) of the "rem:" string in scoreboard */
     XP_U8 dividerWidth;		/* 0 would mean invisible */
     XP_Bool dividerInvalid;
 
