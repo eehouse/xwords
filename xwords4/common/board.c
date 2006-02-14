@@ -1230,9 +1230,8 @@ drawScoreBoard( BoardCtxt* board )
                 *adjustPt += remDim;
             }
 
-            XP_ASSERT( remDim <= 0x00FF );
-            board->remDim = (XP_U8)remDim;	/* save now so register can be
-                                               reused */
+            board->remDim = remDim;	/* save now so register can be reused */
+
             for ( dp = datum, i = 0; i < nPlayers; ++dp, ++i ) {
                 XP_Rect innerRect;
                 XP_U16 dim = isVertical? dp->height:dp->width;
