@@ -237,7 +237,7 @@ myChooseColor( CEAppGlobals* globals, HWND hwnd, COLORREF* cref )
     return !state.cancelled;
 } /* myChooseColor */
 
-#endif
+#endif /* MY_COLOR_SEL */
 
 typedef struct ColorsDlgState {
 
@@ -400,6 +400,12 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 XP_Bool
 ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
 {
+#if 1
+    MessageBox( globals->hWnd, 
+                L"Color selection will be fixed in the next Beta.",
+                L"Sorry...", MB_OK );
+    return XP_FALSE;
+#else
     ColorsDlgState state;
 
     XP_MEMSET( &state, 0, sizeof(state) );
@@ -417,4 +423,5 @@ ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
     }
         
     return !state.cancelled;
+#endif
 } /* ceDoColorsEdit */
