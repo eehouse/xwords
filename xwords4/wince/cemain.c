@@ -49,12 +49,17 @@
 #include "debhacks.h"
 
 #define MAX_LOADSTRING 100
-/* #define PREFSFILENAME L"\\My Documents\\Personal\\.xwprefs" */
-/* #define UNSAVEDGAMEFILENAME "\\My Documents\\Personal\\_newgame" */
-#define DEFAULT_DIR_NAME L"\\My Documents\\Crosswords"
-/* #define PREFSFILENAME L"\\My Documents\\Crosswords\\.xwprefs" */
-#define PREFSFILENAME L"\\My Documents\\Crosswords\\xwprefs"
-#define UNSAVEDGAMEFILENAME "\\My Documents\\Crosswords\\_newgame"
+
+#ifdef _WIN32_WCE
+# define DEFAULT_DIR_NAME L"\\My Documents\\Crosswords"
+# define PREFSFILENAME L"\\My Documents\\Crosswords\\xwprefs"
+# define UNSAVEDGAMEFILENAME "\\My Documents\\Crosswords\\_newgame"
+#else
+# define DEFAULT_DIR_NAME L"."
+# define PREFSFILENAME L".\\xwprefs"
+# define UNSAVEDGAMEFILENAME ".\\_newgame"
+#endif
+
 #define SCROLLBAR_WIDTH 12
 #define SCROLLBARID 0x4321      /* needs to be unique! */
 
