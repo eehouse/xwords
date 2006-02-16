@@ -225,8 +225,8 @@ myChooseColor( CEAppGlobals* globals, HWND hwnd, COLORREF* cref )
 
     XP_LOGF( "setting up IDD_COLOREDITDLG" );
 
-    result = DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, hwnd,
-                                 (DLGPROC)EditColorsDlg, (long)&state );
+    result = DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, hwnd,
+                             (DLGPROC)EditColorsDlg, (long)&state );
 
     XP_LOGF( "DialogBoxParam=>%d", result );
 
@@ -266,7 +266,6 @@ initColorData( ColorsDlgState* cState, HWND hDlg )
     for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
         COLORREF ref = cState->inColors[i];
         cState->colors[i] = ref;
-        XP_LOGF( "ref[%d] = 0x%lx", i, (unsigned long)ref );
         cState->brushes[i] = CreateSolidBrush( ref );
         cState->buttons[i] = GetDlgItem( hDlg, FIRST_BUTTON + i );
     }
@@ -305,6 +304,8 @@ wrapChooseColor( ColorsDlgState* cState, HWND owner, XP_U16 button )
         cState->colors[index] = clrref;
         DeleteObject( cState->brushes[index] );
         cState->brushes[index] = CreateSolidBrush( clrref );
+        XP_LOGF( "%s: may need to invalidate the button since color's changed", 
+                 __FUNCTION__ );
     }
 #else
     CHOOSECOLOR ccs;
@@ -336,11 +337,20 @@ wrapChooseColor( ColorsDlgState* cState, HWND owner, XP_U16 button )
 #endif
 } /* wrapChooseColor */
 
+static void
+ceDrawColorButton( ColorsDlgState* cState, DRAWITEMSTRUCT* dis )
+{
+    HBRUSH brush = brushForButton( cState, dis->hwndItem );
+    XP_ASSERT( !!brush );
+    FillRect( dis->hDC, &dis->rcItem, brush );
+} /* ceDrawColorButton */
+
 LRESULT CALLBACK
 ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
     ColorsDlgState* cState;
     XP_U16 wid;
+    BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
@@ -349,7 +359,7 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         cState->cancelled = XP_TRUE;
         cState->inited = XP_FALSE;
 
-        return TRUE;
+        result = TRUE;
     } else {
         cState = (ColorsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!cState ) {
@@ -361,15 +371,10 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
             switch (message) {
 
-            case WM_CTLCOLORBTN: {
-                HDC hdcButton = (HDC)wParam; 
-                HWND hwndButton = (HWND)lParam;
-                HBRUSH brush = brushForButton( cState, hwndButton );
-                /*             if ( !!brush ) { */
-                /*                 SetSysColors( hdcButton ) */
-                /*             } */
-                return (BOOL)brush;
-            }
+            case WM_DRAWITEM:   /* passed when button has BS_OWNERDRAW style */
+                ceDrawColorButton( cState, (DRAWITEMSTRUCT*)lParam );
+                result = TRUE;
+                break;
 
             case WM_COMMAND:
                 wid = LOWORD(wParam);
@@ -382,25 +387,27 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 case IDCANCEL:
                     deleteButtonBrushes( cState );
                     EndDialog(hDlg, wid);
-                    return TRUE;
+                    result = TRUE;
+                    break;
                 default:
                     /* it's one of the color buttons.  Set up with the
                        appropriate color and launch ChooseColor */
                     wrapChooseColor( cState, hDlg, wid );
-                    return TRUE;
+                    result = TRUE;
+                    break;
                 }
 
             }
         }
     }
 
-    return FALSE;
+    return result;
 } /* ColorsDlg */
 
 XP_Bool
 ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
 {
-#if 1
+#ifdef _WIN32_WCE
     MessageBox( globals->hWnd, 
                 L"Color selection will be fixed in the next Beta.",
                 L"Sorry...", MB_OK );
