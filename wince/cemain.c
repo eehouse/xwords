@@ -1284,8 +1284,6 @@ ceWriteToFile( XWStreamCtxt* stream, void* closure )
     XP_U16 len = (XP_U16)XP_STRLEN( path );
     HANDLE fileH;
 
-    XP_DEBUGF( "ceWriteToFile called for %s", path );
-
     len = (XP_U16)XP_STRLEN( path );
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, path, len + 1, 
                          widebuf, len + 1 );
