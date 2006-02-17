@@ -62,10 +62,10 @@ typedef unsigned long XP_Time;
 
 #ifdef DEBUG
 extern void linux_debugf(char*, ...);
-#define XP_DEBUGF linux_debugf
+#define XP_DEBUGF(...) linux_debugf(__VA_ARGS__)
+
 #else
-extern void p_ignore(char*, ...);
-#define XP_DEBUGF if(0)p_ignore
+#define XP_DEBUGF(ch,...)
 #endif
 
 #define XP_WARNF XP_DEBUGF
