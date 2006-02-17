@@ -36,7 +36,7 @@ LFLAGS += -Wl,--major-subsystem-version,4,--minor-subsystem-version,20
 ifdef HAVE_COMMCTRL
 CELIBS += -lcommctrl -laygshell
 else
-CFLAGS += -DCANT_DO_CMDBAR -DCANT_DO_SHELL_THING -DBEYOND_IR
+CFLAGS += -DCANT_DO_CMDBAR -DBEYOND_IR
 endif
 else
 ifeq ($(TARGET_OS),win32)
@@ -45,7 +45,7 @@ WINDRES = i586-mingw32msvc-windres
 STRIP = i586-mingw32msvc-strip
 TARGET_OS_DEF = -DTARGET_OS_WIN32
 CELIBS += -lws2_32 
-CFLAGS += -DCANT_DO_CMDBAR -DCANT_DO_SHELL_THING -DBEYOND_IR
+CFLAGS += -DCANT_DO_CMDBAR -DBEYOND_IR
 endif
 endif
 
@@ -58,7 +58,7 @@ CFLAGS += -g -DDEBUG_TS
 OBJDIR = obj_$(TARGET_OS)_dbg
 else
 CFLAGS += -Os
-OBJDIR = obj_$(TARGET_OS)
+OBJDIR = obj_$(TARGET_OS)_rel
 endif
 
 TARGET = $(OBJDIR)/xwords4.exe

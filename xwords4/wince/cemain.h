@@ -20,7 +20,7 @@
 #ifndef _CEMAIN_H_
 #define _CEMAIN_H_
 
-#ifndef CANT_DO_SHELL_THING
+#ifdef _WIN32_WCE
 # include <aygshell.h>
 #endif
 #include "draw.h"
@@ -68,7 +68,7 @@ typedef struct CEAppGlobals {
 
     HWND buttons[NUM_BUTTONS];
 
-#ifndef CANT_DO_SHELL_THING
+#ifdef _WIN32_WCE
     SHACTIVATEINFO sai;
 #endif
 
