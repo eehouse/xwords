@@ -242,9 +242,9 @@ usage( char* appName, char* msg )
 	     "\t -d xwd_file      # provides tile counts & values\n"
 	     "\t\t # list each player as local or remote\n"
 	     "\t [-N]*            # remote client (listen for connection)\n"
-	     "\t [-a relay_addr] # use relay (via port spec'd above)\n"
+	     "\t [-p relay_port]  # relay is at this port\n"
+	     "\t [-a relay_addr]  # use relay (via port spec'd above)\n"
 	     ""                   " (default localhost)\n"
-	     "\t [-p relay_port] # relay is at this port\n"
 /* 	     "# --------------- OR client-only ----------\n" */
 /* 	     "\t [-p client_port] # must != server's port if on same device" */
          "\nexample: \n"
