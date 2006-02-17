@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef PLATFORM_GTK
+
 #include "gtkntilesask.h"
 
 static void
@@ -90,3 +92,5 @@ askNTiles( GtkAppGlobals* globals, XP_U16 max, XP_U16 deflt )
 
     return result;
 } /* askNTiles */
+
+#endif /* PLATFORM_GTK */
