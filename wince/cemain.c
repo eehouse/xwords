@@ -25,7 +25,7 @@
 #include <commdlg.h>
 #include <stdio.h>
 #include <winuser.h>
-#ifndef CANT_DO_SHELL_THING
+#ifdef _WIN32_WCE
 # include <aygshell.h>
 #endif
 #include "strutils.h"
@@ -239,6 +239,7 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
     return RegisterClass(&wc);
 }
 
+#ifdef _WIN32_WCE
 #define N_TOOLBAR_BUTTONS 4
 static void
 addButtonsToCmdBar( CEAppGlobals* globals )
@@ -260,8 +261,6 @@ addButtonsToCmdBar( CEAppGlobals* globals )
             -1
     };
 
-#ifndef CANT_DO_CMDBAR
-#ifdef TARGET_OS_WINCE
     for ( i = 0; i < sizeof(cmds)/sizeof(cmds[0]); ++i ) {
         index = CommandBar_AddBitmap(globals->hwndCB, globals->hInst,
                                      resIDs[i], 1, 16, 16 );
@@ -270,9 +269,8 @@ addButtonsToCmdBar( CEAppGlobals* globals )
         success = CommandBar_InsertButton( globals->hwndCB, -1, 
                                            (LPARAM)&buttData );
     }
-#endif
-#endif
 } /* addButtonsToCmdBar */
+#endif
 
 static void
 ceInitUtilFuncs( CEAppGlobals* globals )
@@ -1011,12 +1009,10 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
-#ifndef CANT_DO_CMDBAR
-#ifdef TARGET_OS_WINCE
+#ifdef _WIN32_WCE
     if (globals->hwndCB) {
         CommandBar_Show(globals->hwndCB, TRUE);
     }
-#endif
 #endif
     if ( result && !newDone ) {
         ceInitAndStartBoard( globals, !oldGameLoaded, NULL, NULL );
@@ -1461,7 +1457,7 @@ ceConfirmAndSave( CEAppGlobals* globals )
 static HWND
 makeCommandBar( HWND hwnd, HINSTANCE hInst )
 {
-#ifndef CANT_DO_SHELL_THING
+#ifdef _WIN32_WCE
     SHMENUBARINFO mbi;
 
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
@@ -1589,7 +1585,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         addButtonsToCmdBar( globals );
 #endif
 
-#ifndef CANT_DO_SHELL_THING
+#ifdef _WIN32_WCE
         globals->sai.cbSize = sizeof(globals->sai);
 #endif
     } else {
@@ -1597,7 +1593,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         switch (message) {
 
-#ifndef CANT_DO_SHELL_THING
+#ifdef _WIN32_WCE
         case WM_ACTIVATE:
             // Notify shell of our activate message
             SHHandleWMActivate( hWnd, wParam, lParam, &globals->sai, FALSE );
@@ -1605,7 +1601,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
         case WM_SETTINGCHANGE:
-#ifndef CANT_DO_SHELL_THING
+#ifdef _WIN32_WCE
             SHHandleWMSettingChange( hWnd, wParam, lParam, &globals->sai );
 #endif
             cePositionBoard( globals );
@@ -1811,10 +1807,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_DESTROY:
-#ifndef CANT_DO_CMDBAR
-#ifdef TARGET_OS_WINCE
+#ifdef _WIN32_WCE
             CommandBar_Destroy(globals->hwndCB); /* supposedly not needed */
-#endif
 #endif
             PostQuitMessage(0);
             break;
@@ -2126,9 +2120,6 @@ ce_send_on_close( XWStreamCtxt* stream, void* closure )
 }
 
 #endif
-
-/* I can't believe the stupid compiler's making me implement this */
-void p_ignore(XP_UCHAR* c, ...){}
 
 static VTableMgr*
 ce_util_getVTManager( XW_UtilCtxt* uc )
