@@ -20,12 +20,12 @@ all: $(TARGET)
 
 # Rule for (xplatform) objfiles in this directory
 $(COMMONOBJDIR)/%.o: ../common/%.c 
-	ls -d $(COMMONOBJDIR) || mkdir $(COMMONOBJDIR)
+	mkdir -p $(COMMONOBJDIR)
 	$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) -DPLATFORM=$(PLATFORM) \
 		 $< -o $@
 
 # Rule for single-platform objfiles in directory of including Makefile
 $(PLATFORM)/%.o: %.c
-	ls -d $(PLATFORM) || mkdir $(PLATFORM)
+	mkdir -p $(PLATFORM)
 	$(CC) -c -dD $(CFLAGS) $(INCLUDES) $(DEFINES) -DPLATFORM=$(PLATFORM) $< -o $@
 

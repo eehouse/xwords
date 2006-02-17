@@ -15,20 +15,44 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-PLATFORM=linux
+ifeq ($(MEMDEBUG),TRUE)
+DEFINES = -DMEM_DEBUG -DDEBUG 
+CFLAGS += -g $(GPROFFLAG)
+CFLAGS += -DDEBUG_TS
+PLATFORM = obj_linux_memdbg
+else
+DEFINES =
+PLATFORM = obj_linux_rel
+CFLAGS += -Os
+endif
+
+DO_CURSES = -DPLATFORM_NCURSES
+DO_GTK = -DPLATFORM_GTK
+
+ifdef CURSES_ONLY
+DO_GTK =
+# := avoids recursion
+PLATFORM := $(PLATFORM)_curses
+endif
+ifdef GTK_ONLY
+DO_CURSES =
+PLATFORM := $(PLATFORM)_gtk
+endif
+
+DEFINES += $(DO_CURSES) $(DO_GTK)
+
 TARGET=$(PLATFORM)/xwords
+
 CC = gcc
 
 include ../common/config.mk
 
-DEFINES = -DPLATFORM_LINUX -DKEY_SUPPORT -DKEYBOARD_NAV -DNODE_CAN_4
+DEFINES += -DPLATFORM_LINUX -DKEY_SUPPORT -DKEYBOARD_NAV -DNODE_CAN_4
 DEFINES += -DSTUBBED_DICT
+ifdef DO_GTK
 DEFINES += -DXWFEATURE_SEARCHLIMIT
+endif
 DEFINES += -DFEATURE_TRAY_EDIT
-# build with GTK
-DEFINES += -DPLATFORM_GTK
-# build with ncurses (-u flag chooses over gtk if both present)
-DEFINES += -DPLATFORM_NCURSES
 #DEFINES += -DDRAW_WITH_PRIMITIVES
 DEFINES += -DBEYOND_IR
 
@@ -36,12 +60,12 @@ DEFINES += -DBEYOND_IR
 #DEFINES += -DFEATURE_TRAY_EDIT
 DEFINES += -DDONT_ABORT_ENGINE
 
+
 #-DDEBUG -DEIGHT_TILES
 
 #GPROFFLAG = -pg
 
 # INCLUDES += -I/usr/lib/glib/include
-INCLUDES += -I$(HOME)/usr/local/include/ -I/home/ehouse/usr/local/lib/glib/include -I$(HOME)/usr/local/pilot/include
 
 OBJ =   $(PLATFORM)/linuxmain.o \
 	$(PLATFORM)/linuxdict.o \
@@ -62,13 +86,10 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 #	$(PLATFORM)/linuxcommpipe.o \
 
 LIBS = -lm -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
-# -lprc 
-# -pg
-gtkCFLAGS = -g -Wall $(GPROFFLAG)
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-2.0`
-	CFLAGS += `pkg-config --cflags gtk+-2.0` -DPOINTER_SUPPORT $(gtkCFLAGS) \
+	CFLAGS += `pkg-config --cflags gtk+-2.0` -DPOINTER_SUPPORT \
 		-DGDK_DISABLE_DEPRECATED
 endif
 
@@ -76,16 +97,11 @@ ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
 	LIBS += -lncurses
 endif
 
-ifeq (,$(findstring -DCLIENT_ONLY,$(DEFINES)))
-# 	LIBS += -lprc
-endif
-
 # provides an all: target
 include ../common/rules.mk
 
 help:
-	@echo -n "make debug | curses_debug | gtk_debug | "
-	@echo "curses_client_debug | gtk_client_debug"
+	@echo "make [MEMDEBUG=TRUE] [CURSES_ONLY=TRUE] [GTK_ONLY=TRUE]"
 
 #test:
 #	$(MAKE) test1 DEFINES="$(DEFINES) -FOOBAR"
@@ -94,33 +110,25 @@ help:
 #	echo $(findstring FOO,$(DEFINES))
 #	echo $(DEFINES)
 
-curses_client_debug:
-	$(MAKE) $(TARGET) DEFINES="$(DEFINES) -DDEBUG -DPLATFORM_NCURSES -DCLIENT_ONLY"
+curses:
+	$(MAKE) CURSES_ONLY=TRUE
 
-curses_debug:
-	$(MAKE) $(TARGET) DEFINES="$(DEFINES) -DDEBUG -DPLATFORM_NCURSES"
-
-gtk_client_debug:
-	$(MAKE) $(TARGET) DEFINES="$(DEFINES) -DDEBUG -DPLATFORM_GTK -DCLIENT_ONLY"
-
-gtk_debug:
-	$(MAKE) $(TARGET) DEFINES="$(DEFINES) -DDEBUG -DPLATFORM_GTK"
-
-debug:
-	$(MAKE) $(TARGET) DEFINES="$(DEFINES) -DDEBUG -DPLATFORM_NCURSES -DPLATFORM_GTK"
+gtk:
+	$(MAKE) GTK_ONLY=TRUE
 
 memdebug:
-	$(MAKE) $(TARGET) DEFINES="$(DEFINES) -DDEBUG -DPLATFORM_NCURSES -DPLATFORM_GTK -DMEM_DEBUG"
+	$(MAKE) MEMDEBUG=TRUE
 
 gprof:
-	$(MAKE) $(TARGET) GPROFFLAG=-pg DEFINES="$(DEFINES) -DPLATFORM_NCURSES -DPLATFORM_GTK"
+	$(MAKE) GPROFFLAG=-pg MEMDEBUG=TRUE
+
 
 $(TARGET): $(COMMONOBJ) $(OBJ) *.h Makefile
-	@ls -d $(PLATFORM)  >/dev/null || mkdir $(PLATFORM)
+	mkdir -p $(PLATFORM)
 	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) $(LIBS) -o $@
 
 $(PLATFORM)/%.o: %.c
-	@ls -d $(PLATFORM) >/dev/null || mkdir $(PLATFORM)
+	mkdir -p $(PLATFORM)
 	$(CC) -c $(INCLUDES) $(DEFINES) -DPLATFORM=$(PLATFORM) $(CFLAGS) $< -o $@
 
 clean:
