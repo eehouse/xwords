@@ -94,11 +94,11 @@ typedef XP_U32 XP_Time;
 #define XP_WARNF XP_DEBUGF
 
 #ifdef DEBUG
-#define XP_DEBUGF wince_debugf
-#define XP_LOGF wince_debugf
+#define XP_DEBUGF(...) wince_debugf(__VA_ARGS__)
+#define XP_LOGF(...) wince_debugf(__VA_ARGS__)
 #else
-#define XP_DEBUGF if(0)p_ignore
-#define XP_LOGF if(0)p_ignore
+#define XP_DEBUGF(...)
+#define XP_LOGF(...)
 #endif
 
 #ifdef CPLUS
