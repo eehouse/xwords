@@ -681,7 +681,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
             --numEvents;
         }
         if ( (globals->fdArray[FD_STDIN].revents & ~POLLIN ) ) {
-	    XP_LOGF( "some other events set on stdin" );
+            XP_LOGF( "some other events set on stdin" );
         }
 
         if ( (globals->fdArray[FD_TIMEEVT].revents & POLLIN) != 0 ) {
