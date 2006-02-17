@@ -377,11 +377,16 @@ ce_sockwrap_new( MPFORMAL DataRecvProc proc, void* closure )
     self->queueAddEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
     self->socketConnEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
     
-
-    self->threads[WRITER_THREAD] = CreateThread( NULL, 0, WriterThreadProc, 
-                                                 self, 0, NULL );
-    self->threads[READER_THREAD] = CreateThread( NULL, 0, ReaderThreadProc,
-                                                 self, 0, NULL );
+    /* I have no idea why these casts are necessary to prevent warnings. All
+       sigs look right to me. */
+    self->threads[WRITER_THREAD] = 
+        CreateThread( NULL, 0, 
+                      (LPTHREAD_START_ROUTINE)WriterThreadProc, 
+                      self, 0, NULL );
+    self->threads[READER_THREAD] = 
+        CreateThread( NULL, 0, 
+                      (LPTHREAD_START_ROUTINE)ReaderThreadProc,
+                      self, 0, NULL );
     return self;
 } /* ce_sockwrap_new */
 
