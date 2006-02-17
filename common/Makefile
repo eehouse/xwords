@@ -1,5 +1,5 @@
 # -*- mode: Makefile; -*-
 
 clean:
-	rm -rf $(PLATFORM)/*.o
+	rm -rf $(PLATFORM)
 
