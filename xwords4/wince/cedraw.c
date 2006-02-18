@@ -33,12 +33,12 @@
 #include "cedefines.h"
 #include "debhacks.h"
 
-static void ceClearToBkground( CEDrawCtx* dctx, XP_Rect* rect );
+static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
 
 
 static void
-XPRtoRECT( RECT* rt, XP_Rect* xprect )
+XPRtoRECT( RECT* rt, const XP_Rect* xprect )
 {
     rt->left = xprect->left;
     rt->top = xprect->top;
@@ -95,8 +95,8 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, XP_U32 x, XP_U32 y,
 } /* makeAndDrawBitmap */
 
 static XP_Bool
-ce_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, 
-                    XP_Bool hasfocus )
+ce_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
+                    const XP_Rect* rect, XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -141,7 +141,7 @@ ceDrawLine( HDC hdc, XP_S32 x1, XP_S32 y1, XP_S32 x2, XP_S32 y2 )
 } /* ceDrawLine */
 
 static void
-ceDrawHintBorders( HDC hdc, XP_Rect* xprect, HintAtts hintAtts )
+ceDrawHintBorders( HDC hdc, const XP_Rect* xprect, HintAtts hintAtts )
 {
     if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
         RECT rt;
@@ -164,8 +164,8 @@ ceDrawHintBorders( HDC hdc, XP_Rect* xprect, HintAtts hintAtts )
 } /* ceDrawHintBorders */
 
 static XP_Bool
-ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect, 
-                  XP_UCHAR* letters, XP_Bitmap bitmap, 
+ce_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* xprect, 
+                  const XP_UCHAR* letters, XP_Bitmap bitmap, 
                   XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                   XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
@@ -175,7 +175,7 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
     RECT rt;
     RECT textRect;
     XP_U16 bkIndex;
-    XP_UCHAR* cp = NULL;
+    const XP_UCHAR* cp = NULL;
     COLORREF foreColorRef;
 
     XP_ASSERT( !!hdc );
@@ -259,7 +259,7 @@ ce_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
 } /* ce_draw_drawCell */
 
 static void
-ce_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
+ce_draw_invertCell( DrawCtx* p_dctx, const XP_Rect* rect )
 {
 } /* ce_draw_invertCell */
 
@@ -280,7 +280,7 @@ logClipResult( int icrResult )
 #endif
 
 static XP_Bool
-ce_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
+ce_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner,
                    XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -300,7 +300,8 @@ ce_draw_trayFinished( DrawCtx* p_dctx )
 } /* ce_draw_trayFinished */
 
 static void
-drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
+drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect, 
+                  const XP_UCHAR* letters,
                   XP_Bitmap bitmap, XP_S16 val, XP_Bool highlighted )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -351,20 +352,22 @@ drawDrawTileGuts( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
 } /* drawDrawTileGuts */
 
 static void
-ce_draw_drawTile( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letters,
-                  XP_Bitmap bitmap, XP_S16 val, XP_Bool highlighted )
+ce_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* xprect, 
+                  const XP_UCHAR* letters, XP_Bitmap bitmap, 
+                  XP_S16 val, XP_Bool highlighted )
 {
     drawDrawTileGuts( p_dctx, xprect, letters, bitmap, val, highlighted );
 } /* ce_draw_drawTile */
 
 static void
-ce_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* xprect )
+ce_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* xprect )
 {
     drawDrawTileGuts( p_dctx, xprect, "?", NULL, -1, XP_FALSE );
 } /* ce_draw_drawTileBack */
 
 static void
-ce_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool selected )
+ce_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
+                         XP_Bool selected )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -380,7 +383,7 @@ ce_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool selected )
 } /* ce_draw_drawTrayDivider */
 
 static void
-ceClearToBkground( CEDrawCtx* dctx, XP_Rect* rect )
+ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect )
 {
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
@@ -392,7 +395,7 @@ ceClearToBkground( CEDrawCtx* dctx, XP_Rect* rect )
 } /* ceClearToBkground */
 
 static void 
-ce_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
+ce_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 {
     ceClearToBkground( (CEDrawCtx*)p_dctx, rectP );
 } /* ce_draw_clearRect */
@@ -427,7 +430,7 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
 } /* ceDrawBitmapInRect */
 
 static void
-ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect, 
+ce_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* xprect, 
                         XWBonusType cursorBonus, XP_Bool vertical,
                         HintAtts hintAtts )
 {
@@ -466,7 +469,7 @@ ce_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
 } /* ce_draw_drawBoardArrow */
 
 static void
-ce_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers,
+ce_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 numPlayers,
                     XP_Bool hasfocus )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -492,7 +495,7 @@ formatRemText( HDC hdc, wchar_t* buf, XP_S16 nTilesLeft, SIZE* size )
 } /* formatRemText */
 
 static void
-ce_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r, 
+ce_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* r, 
                         XP_S16 nTilesLeft, 
                         XP_U16* width, XP_U16* height )
 {
@@ -509,8 +512,8 @@ ce_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r,
 } /* ce_draw_measureRemText */
 
 static void
-ce_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter, 
-                     XP_S16 nTilesLeft )
+ce_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                     const XP_Rect* rOuter, XP_S16 nTilesLeft )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -527,7 +530,7 @@ ce_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 } /* ce_draw_drawRemText */
 
 static void
-ceWidthAndText( HDC hdc, wchar_t* buf, DrawScoreInfo* dsi,
+ceWidthAndText( HDC hdc, wchar_t* buf, const DrawScoreInfo* dsi,
                 XP_U16* widthP, XP_U16* heightP )
 {
     XP_UCHAR borders[] = {'•', '\0'};
@@ -556,8 +559,8 @@ ceWidthAndText( HDC hdc, wchar_t* buf, DrawScoreInfo* dsi,
 } /* ceWidthAndText */
 
 static void
-ce_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r, 
-                          DrawScoreInfo* dsi,
+ce_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r, 
+                          const DrawScoreInfo* dsi,
                           XP_U16* widthP, XP_U16* heightP )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -581,8 +584,8 @@ ce_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 
 static void
 ce_draw_score_drawPlayer( DrawCtx* p_dctx, 
-                          XP_Rect* rInner, XP_Rect* rOuter, 
-                          DrawScoreInfo* dsi )
+                          const XP_Rect* rInner, const XP_Rect* rOuter, 
+                          const DrawScoreInfo* dsi )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -612,8 +615,8 @@ ce_draw_score_drawPlayer( DrawCtx* p_dctx,
 } /* ce_draw_score_drawPlayer */
 
 static void
-ce_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
-                            XP_U16 playerNum )
+ce_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
+                            XP_S16 score, XP_U16 playerNum )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -651,7 +654,8 @@ ce_draw_scoreFinished( DrawCtx* p_dctx )
 } /* ce_draw_scoreFinished */
 
 static void
-ce_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
+ce_draw_drawTimer( DrawCtx* p_dctx, 
+                   const XP_Rect* rInner, const XP_Rect* rOuter,
                    XP_U16 player, XP_S16 secondsLeft )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -716,7 +720,7 @@ ce_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
 #define CE_INTERLINE_SPACE 0
 
 static void
-ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str, 
+ce_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str, 
                           XP_U16* widthP, XP_U16* heightP )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -753,8 +757,8 @@ ce_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str,
 } /* ce_draw_measureMiniWText */
 
 static void
-ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
-                        void** closureP )
+ce_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
+                        const XP_Rect* rect, void** closureP )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -816,7 +820,7 @@ ce_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
 } /* ce_draw_drawMiniWindow */
 
 static void
-ce_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
+ce_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect, XP_Bool lastTime,
                          void** closure, XP_Bool* invalUnder )
 {
     *invalUnder = XP_TRUE;

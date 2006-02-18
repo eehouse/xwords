@@ -55,57 +55,59 @@ typedef XP_UCHAR HintAtts;
 typedef struct DrawCtxVTable {
 
 #ifdef DRAW_WITH_PRIMITIVES
-    void (*m_draw_setClip)( DrawCtx* dctx, XP_Rect* newClip, 
-                           XP_Rect* oldClip );
-    void (*m_draw_frameRect)( DrawCtx* dctx, XP_Rect* rect );
-    void (*m_draw_invertRect)( DrawCtx* dctx, XP_Rect* rect );
-    void (*m_draw_drawString)( DrawCtx* dctx, XP_UCHAR* str, 
+    void (*m_draw_setClip)( DrawCtx* dctx, const XP_Rect* newClip, 
+                            const XP_Rect* oldClip );
+    void (*m_draw_frameRect)( DrawCtx* dctx, const XP_Rect* rect );
+    void (*m_draw_invertRect)( DrawCtx* dctx, const XP_Rect* rect );
+    void (*m_draw_drawString)( DrawCtx* dctx, const XP_UCHAR* str, 
                                XP_U16 x, XP_U16 y );
-    void (*m_draw_drawBitmap)( DrawCtx* dctx, XP_Bitmap bm, 
+    void (*m_draw_drawBitmap)( DrawCtx* dctx, const XP_Bitmap bm, 
                                XP_U16 x, XP_U16 y );
-    void (*m_draw_measureText)( DrawCtx* dctx, XP_UCHAR* buf, 
+    void (*m_draw_measureText)( DrawCtx* dctx, const XP_UCHAR* buf, 
                                 XP_U16* widthP, XP_U16* heightP );
 #endif
 
     void (*m_draw_destroyCtxt)( DrawCtx* dctx );
 
-    XP_Bool (*m_draw_boardBegin)( DrawCtx* dctx, DictionaryCtxt* dict,
-                                  XP_Rect* rect, XP_Bool hasfocus );
+    XP_Bool (*m_draw_boardBegin)( DrawCtx* dctx, const DictionaryCtxt* dict,
+                                  const XP_Rect* rect, XP_Bool hasfocus );
     void (*m_draw_boardFinished)( DrawCtx* dctx );
 
+    /* rect is not const: set by callee */
     XP_Bool (*m_draw_vertScrollBoard)(DrawCtx* dctx, XP_Rect* rect, 
                                       XP_S16 dist );
 
-    XP_Bool (*m_draw_trayBegin)( DrawCtx* dctx, XP_Rect* rect, 
+    XP_Bool (*m_draw_trayBegin)( DrawCtx* dctx, const XP_Rect* rect, 
                                  XP_U16 owner, XP_Bool hasfocus );
     void (*m_draw_trayFinished)( DrawCtx* dctx );
 
-    void (*m_draw_measureRemText)( DrawCtx* dctx, XP_Rect* r, 
+    void (*m_draw_measureRemText)( DrawCtx* dctx, const XP_Rect* r, 
                                    XP_S16 nTilesLeft, 
                                    XP_U16* width, XP_U16* height );
-    void (*m_draw_drawRemText)(DrawCtx* dctx, XP_Rect* rInner, 
-                               XP_Rect* rOuter, XP_S16 nTilesLeft);
+    void (*m_draw_drawRemText)(DrawCtx* dctx, const XP_Rect* rInner, 
+                               const XP_Rect* rOuter, XP_S16 nTilesLeft);
 
-    void (*m_draw_scoreBegin)( DrawCtx* dctx, XP_Rect* rect, 
+    void (*m_draw_scoreBegin)( DrawCtx* dctx, const XP_Rect* rect, 
                                XP_U16 numPlayers, XP_Bool hasfocus );
-    void (*m_draw_measureScoreText)( DrawCtx* dctx, XP_Rect* r, 
-                                     DrawScoreInfo* dsi,
+    void (*m_draw_measureScoreText)( DrawCtx* dctx, const XP_Rect* r, 
+                                     const DrawScoreInfo* dsi,
                                      XP_U16* width, XP_U16* height );
     void (*m_draw_score_drawPlayer)( DrawCtx* dctx,
-                                     XP_Rect* rInner, XP_Rect* rOuter, 
-                                     DrawScoreInfo* dsi );
+                                     const XP_Rect* rInner, const XP_Rect* rOuter, 
+                                     const DrawScoreInfo* dsi );
 
-    void (*m_draw_score_pendingScore)( DrawCtx* dctx, XP_Rect* rect, 
+    void (*m_draw_score_pendingScore)( DrawCtx* dctx, const XP_Rect* rect, 
                                        XP_S16 score, XP_U16 playerNum );
 
     void (*m_draw_scoreFinished)( DrawCtx* dctx );
 
-    void (*m_draw_drawTimer)( DrawCtx* dctx, XP_Rect* rInner, XP_Rect* rOuter,
+    void (*m_draw_drawTimer)( DrawCtx* dctx, const XP_Rect* rInner, 
+                              const XP_Rect* rOuter,
                               XP_U16 player, XP_S16 secondsLeft );
 
-    XP_Bool (*m_draw_drawCell)( DrawCtx* dctx, XP_Rect* rect, 
+    XP_Bool (*m_draw_drawCell)( DrawCtx* dctx, const XP_Rect* rect, 
                                 /* at least one of these two will be null */
-                                XP_UCHAR* text, XP_Bitmap bitmap,
+                                const XP_UCHAR* text, const XP_Bitmap bitmap,
 #ifdef TALL_FONTS
                                 Tile tile,
 #endif
@@ -114,33 +116,33 @@ typedef struct DrawCtxVTable {
                                 XP_Bool isBlank, XP_Bool highlight, 
                                 XP_Bool isStar);
 
-    void (*m_draw_invertCell)( DrawCtx* dctx, XP_Rect* rect );
+    void (*m_draw_invertCell)( DrawCtx* dctx, const XP_Rect* rect );
 
-    void (*m_draw_drawTile)( DrawCtx* dctx, XP_Rect* rect, 
+    void (*m_draw_drawTile)( DrawCtx* dctx, const XP_Rect* rect, 
                              /* at least 1 of these two will be null*/
-                             XP_UCHAR* text, XP_Bitmap bitmap,
+                             const XP_UCHAR* text, const XP_Bitmap bitmap,
                              XP_S16 val, XP_Bool highlighted );
-    void (*m_draw_drawTileBack)( DrawCtx* dctx, XP_Rect* rect );
-    void (*m_draw_drawTrayDivider)( DrawCtx* dctx, XP_Rect* rect, 
+    void (*m_draw_drawTileBack)( DrawCtx* dctx, const XP_Rect* rect );
+    void (*m_draw_drawTrayDivider)( DrawCtx* dctx, const XP_Rect* rect, 
                                     XP_Bool selected );
 
-    void (*m_draw_clearRect)( DrawCtx* dctx, XP_Rect* rect );
+    void (*m_draw_clearRect)( DrawCtx* dctx, const XP_Rect* rect );
 
-    void (*m_draw_drawBoardArrow)( DrawCtx* dctx, XP_Rect* rect, 
+    void (*m_draw_drawBoardArrow)( DrawCtx* dctx, const XP_Rect* rect, 
                                    XWBonusType bonus, XP_Bool vert,
                                    HintAtts hintAtts );
 #ifdef KEY_SUPPORT
-    void (*m_draw_drawTrayCursor)( DrawCtx* dctx, XP_Rect* rect );
-    void (*m_draw_drawBoardCursor)( DrawCtx* dctx, XP_Rect* rect );
+    void (*m_draw_drawTrayCursor)( DrawCtx* dctx, const XP_Rect* rect );
+    void (*m_draw_drawBoardCursor)( DrawCtx* dctx, const XP_Rect* rect );
 #endif
 
     XP_UCHAR* (*m_draw_getMiniWText)( DrawCtx* dctx, 
                                       XWMiniTextType textHint );
-    void (*m_draw_measureMiniWText)( DrawCtx* dctx, XP_UCHAR* textP, 
+    void (*m_draw_measureMiniWText)( DrawCtx* dctx, const XP_UCHAR* textP, 
                                      XP_U16* width, XP_U16* height );
-    void (*m_draw_drawMiniWindow)( DrawCtx* dctx, XP_UCHAR* text,
-                                   XP_Rect* rect, void** closure );
-    void (*m_draw_eraseMiniWindow)( DrawCtx* dctx, XP_Rect* rect,
+    void (*m_draw_drawMiniWindow)( DrawCtx* dctx, const XP_UCHAR* text,
+                                   const XP_Rect* rect, void** closure );
+    void (*m_draw_eraseMiniWindow)( DrawCtx* dctx, const XP_Rect* rect,
                                     XP_Bool lastTime, void** closure,
                                     XP_Bool* invalUnder );
 

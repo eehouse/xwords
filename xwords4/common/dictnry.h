@@ -125,13 +125,13 @@ struct DictionaryCtxt {
 
 XP_Bool dict_tilesAreSame( DictionaryCtxt* dict1, DictionaryCtxt* dict2 );
 
-XP_Bool dict_hasBlankTile( DictionaryCtxt* dict );
-Tile dict_getBlankTile( DictionaryCtxt* dict );
-XP_U16 dict_getTileValue( DictionaryCtxt* ctxt, Tile tile );
-XP_U16 dict_numTiles( DictionaryCtxt* ctxt, Tile tile );
-XP_U16 dict_numTileFaces( DictionaryCtxt* ctxt );
+XP_Bool dict_hasBlankTile( const DictionaryCtxt* dict );
+Tile dict_getBlankTile( const DictionaryCtxt* dict );
+XP_U16 dict_getTileValue( const DictionaryCtxt* ctxt, Tile tile );
+XP_U16 dict_numTiles( const DictionaryCtxt* ctxt, Tile tile );
+XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 
-XP_U16 dict_tilesToString( DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
+XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
                            XP_UCHAR* buf, XP_U16 bufSize );
 XP_UCHAR* dict_getName( DictionaryCtxt* ctxt );
 
@@ -142,7 +142,7 @@ XP_Bitmap dict_getFaceBitmap( DictionaryCtxt* dict, Tile tile,
                               XP_Bool isLarge );
 
 #ifdef TALL_FONTS
-XP_LangCode dict_getLangCode( DictionaryCtxt* dict );
+XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
 #endif
 
 void dict_writeToStream( DictionaryCtxt* ctxt, XWStreamCtxt* stream );
