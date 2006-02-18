@@ -1,7 +1,11 @@
 franklin
-linux
 palm
-wince
 ARMV4Rel
 emulatorDbg
 PALM_PNO
+obj_linux_memdbg
+obj_linux_rel
+obj_win32_dbg
+obj_win32_rel
+obj_wince_dbg
+obj_wince_rel
