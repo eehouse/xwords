@@ -1048,7 +1048,7 @@ pentimer_idle_func( gpointer data )
     gettimeofday( &tv, NULL );
 
     if ( (tv.tv_usec - globals->penTv.tv_usec) >= globals->penTimerInterval) {
-        linuxFireTimer( globals, TIMER_PENDOWN );
+        linuxFireTimer( &globals->cGlobals, TIMER_PENDOWN );
         callAgain = XP_FALSE;
     } 
 
@@ -1060,7 +1060,7 @@ score_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    linuxFireTimer( globals, TIMER_TIMERTICK );
+    linuxFireTimer( &globals->cGlobals, TIMER_TIMERTICK );
 
     return XP_FALSE;
 } /* score_timer_func */
@@ -1071,7 +1071,7 @@ heartbeat_timer_func( gpointer data )
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
     if ( !globals->cGlobals.params->noHeartbeat ) {
-        linuxFireTimer( globals, TIMER_HEARTBEAT );
+        linuxFireTimer( &globals->cGlobals, TIMER_HEARTBEAT );
     }
 
     return (gint)0;
