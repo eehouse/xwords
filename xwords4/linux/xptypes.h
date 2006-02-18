@@ -38,7 +38,7 @@
 
 typedef unsigned char XP_U8;
 typedef signed char XP_S8;
-typedef unsigned char XP_UCHAR;
+typedef char XP_UCHAR;
 
 typedef unsigned short XP_U16;
 typedef signed short XP_S16;
