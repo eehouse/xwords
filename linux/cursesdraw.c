@@ -28,7 +28,7 @@
 #include "board.h"
 
 static void
-drawRect( WINDOW* win, XP_Rect* rect, char vert, char hor )
+drawRect( WINDOW* win, const XP_Rect* rect, char vert, char hor )
 {
     wmove( win, rect->top-1, rect->left );
     whline( win, hor, rect->width );
@@ -42,7 +42,7 @@ drawRect( WINDOW* win, XP_Rect* rect, char vert, char hor )
 } /* drawRect */
 
 static void
-eraseRect( CursesDrawCtx* dctx, XP_Rect* rect )
+eraseRect( CursesDrawCtx* dctx, const XP_Rect* rect )
 {
     int y, bottom = rect->top + rect->height;
     for ( y = rect->top; y < bottom; ++y ) {
@@ -57,8 +57,8 @@ curses_draw_destroyCtxt( DrawCtx* p_dctx )
 } /* draw_setup */
 
 static XP_Bool
-curses_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, 
-                        XP_Bool hasfocus )
+curses_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
+                        const XP_Rect* rect, XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     if ( hasfocus ) {
@@ -70,8 +70,8 @@ curses_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect,
 } /* draw_finish */
 
 static XP_Bool
-curses_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner, 
-                       XP_Bool hasfocus )
+curses_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                       XP_U16 owner, XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     if ( hasfocus ) {
@@ -83,7 +83,7 @@ curses_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
 } /* draw_finish */
 
 static void
-curses_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers, 
+curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 numPlayers, 
                         XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
@@ -108,7 +108,7 @@ formatRemText( char* buf, XP_S16 nTilesLeft )
 } /* formatRemText */
 
 static void
-curses_draw_measureRemText( DrawCtx* dctx, XP_Rect* r, 
+curses_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r, 
                             XP_S16 nTilesLeft, 
                             XP_U16* width, XP_U16* height )
 {
@@ -121,8 +121,8 @@ curses_draw_measureRemText( DrawCtx* dctx, XP_Rect* r,
 } /* curses_draw_measureRemText */
 
 static void
-curses_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
-                         XP_S16 nTilesLeft )
+curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                         const XP_Rect* rOuter, XP_S16 nTilesLeft )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[32];
@@ -135,7 +135,7 @@ curses_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 #define RECENT_COL 31
 
 static void
-formatScoreText( char* buf, DrawScoreInfo* dsi )
+formatScoreText( XP_UCHAR* buf, const DrawScoreInfo* dsi )
 {
     XP_S16 nTilesLeft = dsi->nTilesLeft;
     XP_Bool isRobot = dsi->isRobot;
@@ -170,11 +170,11 @@ formatScoreText( char* buf, DrawScoreInfo* dsi )
 } /* formatScoreText */
 
 static void
-curses_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r, 
-                              DrawScoreInfo* dsi,
+curses_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r, 
+                              const DrawScoreInfo* dsi,
                               XP_U16* width, XP_U16* height )
 {
-    char buf[100];
+    XP_UCHAR buf[100];
     formatScoreText( buf, dsi );
 
     *width = strlen( buf );
@@ -182,7 +182,7 @@ curses_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 } /* curses_draw_measureScoreText */
 
 static void
-curses_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
+curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 score,
                                 XP_U16 playerNum )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
@@ -223,8 +223,8 @@ curses_draw_scoreFinished( DrawCtx* p_dctx )
 #define MY_PAIR 1
 
 static void
-curses_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
-                              DrawScoreInfo* dsi )
+curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                              const XP_Rect* rOuter, const DrawScoreInfo* dsi )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[100];
@@ -247,25 +247,28 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 } /* curses_draw_score_drawPlayer */
 
 static XP_Bool
-curses_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
-                      XP_UCHAR* letter, XP_Bitmap bitmap,
+curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
+                      const XP_UCHAR* letter, XP_Bitmap bitmap,
                       XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                       XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    XP_UCHAR loc[4];
+    XP_ASSERT( XP_STRLEN(letter) < sizeof(loc) );
+    XP_STRNCPY( loc, letter, sizeof(loc) );
 
-    if ( *letter == LETTER_NONE ) {
+    if ( loc[0] == LETTER_NONE ) {
         switch ( bonus ) {
         case BONUS_DOUBLE_LETTER:
-            letter[0] = '+'; break;
+            loc[0] = '+'; break;
         case BONUS_DOUBLE_WORD:
-            letter[0] = '*'; break;
+            loc[0] = '*'; break;
         case BONUS_TRIPLE_LETTER:
-            letter[0] = '^'; break;
+            loc[0] = '^'; break;
         case BONUS_TRIPLE_WORD:
-            letter[0] = '#'; break;
+            loc[0] = '#'; break;
         default:
-            letter[0] = ' ';
+            loc[0] = ' ';
         } /* switch */
     }
 
@@ -273,8 +276,8 @@ curses_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
         wstandout( dctx->boardWin );
     }
 
-    mvwaddnstr( dctx->boardWin, rect->top, rect->left, letter, 
-                strlen(letter) );
+    mvwaddnstr( dctx->boardWin, rect->top, rect->left, loc, 
+                strlen(loc) );
 
     if ( highlight ) {
         wstandend( dctx->boardWin );
@@ -284,7 +287,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
 } /* curses_draw_drawCell */
 
 static void
-curses_stringInTile( CursesDrawCtx* dctx, XP_Rect* rect, 
+curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect, 
                      XP_UCHAR* letter, XP_UCHAR* val )
 {
     eraseRect( dctx, rect );
@@ -300,8 +303,8 @@ curses_stringInTile( CursesDrawCtx* dctx, XP_Rect* rect,
 } /* curses_stringInTile */
 
 static void
-curses_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, 
-                      XP_UCHAR* textP, XP_Bitmap bitmap,
+curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
+                      const XP_UCHAR* textP, XP_Bitmap bitmap,
                       XP_S16 val, XP_Bool highlighted )
 {
     char numbuf[5];
@@ -328,14 +331,14 @@ curses_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 } /* curses_draw_drawTile */
 
 static  void
-curses_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* rect )
+curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     curses_stringInTile( dctx, rect, "?", "?" );
 } /* curses_draw_drawTileBack */
 
 static void
-curses_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, 
+curses_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
                              XP_Bool selected )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
@@ -345,7 +348,7 @@ curses_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect,
 } /* curses_draw_drawTrayDivider */
 
 static void
-curses_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect, 
+curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect, 
                             XWBonusType cursorBonus, XP_Bool vertical,
                             HintAtts hintAtts )
 {
@@ -362,7 +365,7 @@ curses_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect,
 } /* curses_draw_drawBoardArrow */
 
 static void
-curses_draw_drawBoardCursor( DrawCtx* p_dctx, XP_Rect* rect )
+curses_draw_drawBoardCursor( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     chtype curChar = mvwinch(dctx->boardWin, rect->top, rect->left );
@@ -372,7 +375,7 @@ curses_draw_drawBoardCursor( DrawCtx* p_dctx, XP_Rect* rect )
 } /* curses_draw_drawBoardCursor */
 
 static void
-curses_draw_drawTrayCursor( DrawCtx* p_dctx, XP_Rect* rect )
+curses_draw_drawTrayCursor( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     wmove( dctx->boardWin, rect->top, rect->left );
@@ -380,7 +383,7 @@ curses_draw_drawTrayCursor( DrawCtx* p_dctx, XP_Rect* rect )
 } /* curses_draw_drawTrayCursor */
 
 static void 
-curses_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
+curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Rect rect = *rectP;
@@ -395,7 +398,7 @@ curses_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
 } /* curses_draw_getMiniWText */
 
 static void
-curses_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str, 
+curses_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str, 
                               XP_U16* widthP, XP_U16* heightP )
 {
     *widthP = strlen(str) + 4;
@@ -403,8 +406,8 @@ curses_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str,
 } /* curses_draw_measureMiniWText */
 
 static void
-curses_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text,
-                            XP_Rect* rect, void** closure )
+curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
+                            const XP_Rect* rect, void** closure )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Rect smallerR;
@@ -422,7 +425,7 @@ curses_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text,
 } /* curses_draw_drawMiniWindow */
 
 static void
-curses_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect,
+curses_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect,
                              XP_Bool lastTime, void** closure,
                              XP_Bool* invalUnder )
 {

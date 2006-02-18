@@ -52,21 +52,21 @@ setBlankTile( DictionaryCtxt* dctx )
 
 #if defined BLANKS_FIRST || defined DEBUG
 XP_Bool
-dict_hasBlankTile( DictionaryCtxt* dict )
+dict_hasBlankTile( const DictionaryCtxt* dict )
 {
     return dict->blankTile >= 0;
 } /* dict_hasBlankTile */
 #endif
 
 Tile
-dict_getBlankTile( DictionaryCtxt* dict )
+dict_getBlankTile( const DictionaryCtxt* dict )
 {
     XP_ASSERT( dict_hasBlankTile(dict) );
     return (Tile)dict->blankTile;
 } /* dict_getBlankTile */
 
 XP_U16
-dict_getTileValue( DictionaryCtxt* dict, Tile tile )
+dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
 {
     if ( (tile & TILE_VALUE_MASK) != tile ) {
         XP_ASSERT( tile == 32 && 
@@ -78,7 +78,7 @@ dict_getTileValue( DictionaryCtxt* dict, Tile tile )
 } /* dict_getTileValue */
 
 static XP_UCHAR
-dict_getTileChar( DictionaryCtxt* dict, Tile tile )
+dict_getTileChar( const DictionaryCtxt* dict, Tile tile )
 {
     XP_ASSERT( tile < dict->nFaces );
     XP_ASSERT( (dict->faces16[tile] & 0xFF00) == 0 ); /* no unicode yet */
@@ -86,20 +86,20 @@ dict_getTileChar( DictionaryCtxt* dict, Tile tile )
 } /* dict_getTileValue */
 
 XP_U16
-dict_numTiles( DictionaryCtxt* dict, Tile tile )
+dict_numTiles( const DictionaryCtxt* dict, Tile tile )
 {
     tile *= 2;
     return dict->countsAndValues[tile];
 } /* dict_numTiles */
 
 XP_U16
-dict_numTileFaces( DictionaryCtxt* dict )
+dict_numTileFaces( const DictionaryCtxt* dict )
 {
     return dict->nFaces;
 } /* dict_numTileFaces */
 
 XP_U16
-dict_tilesToString( DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
+dict_tilesToString( const DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
                     XP_UCHAR* buf, XP_U16 bufSize )
 {
     XP_UCHAR* bufp = buf;
@@ -383,7 +383,7 @@ dict_getFaceBitmap( DictionaryCtxt* dict, Tile tile, XP_Bool isLarge )
 
 #ifdef TALL_FONTS
 XP_LangCode
-dict_getLangCode( DictionaryCtxt* dict )
+dict_getLangCode( const DictionaryCtxt* dict )
 {
     return dict->langCode;
 }

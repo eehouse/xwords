@@ -55,7 +55,7 @@ insetRect( XP_Rect* r, short i )
 
 
 static void
-eraseRect(GtkDrawCtx* dctx, XP_Rect* rect )
+eraseRect( GtkDrawCtx* dctx, const XP_Rect* rect )
 {
     gdk_draw_rectangle( DRAW_WHAT(dctx),
                         dctx->drawing_area->style->white_gc,
@@ -166,7 +166,7 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout, const char* str,
 } /* draw_string_at */
 
 static void
-drawBitmapFromLBS( GtkDrawCtx* dctx, XP_Bitmap bm, XP_Rect* rect )
+drawBitmapFromLBS( GtkDrawCtx* dctx, XP_Bitmap bm, const XP_Rect* rect )
 {
     GdkPixmap* pm;
     LinuxBMStruct* lbs = (LinuxBMStruct*)bm;
@@ -241,8 +241,8 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 
 
 static XP_Bool
-gtk_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, 
-                     XP_Rect* rect, XP_Bool hasfocus )
+gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
+                     const XP_Rect* rect, XP_Bool hasfocus )
 {
     GdkRectangle gdkrect;
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -264,7 +264,7 @@ gtk_draw_boardFinished( DrawCtx* p_dctx )
 } /* draw_finished */
 
 static void
-drawHintBorders( GtkDrawCtx* dctx, XP_Rect* rect, HintAtts hintAtts)
+drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
 {
     if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
         XP_Rect lrect = *rect;
@@ -302,7 +302,7 @@ drawHintBorders( GtkDrawCtx* dctx, XP_Rect* rect, HintAtts hintAtts)
 }
 
 static XP_Bool
-gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter, 
+gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter, 
                    XP_Bitmap bitmap, XP_S16 owner, XWBonusType bonus, 
                    HintAtts hintAtts,
                    XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
@@ -382,7 +382,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* letter,
 } /* gtk_draw_drawCell */
 
 static void
-gtk_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
+gtk_draw_invertCell( DrawCtx* p_dctx, const XP_Rect* rect )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
 /*     (void)gtk_draw_drawMiniWindow( p_dctx, "f", rect); */
@@ -402,7 +402,7 @@ gtk_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
 } /* gtk_draw_invertCell */
 
 static XP_Bool
-gtk_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner, 
+gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner, 
                     XP_Bool hasfocus )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -414,10 +414,10 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
 } /* gtk_draw_trayBegin */
 
 static void
-gtk_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* textP,
+gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                    XP_Bitmap bitmap, XP_S16 val, XP_Bool highlighted )
 {
-    unsigned char numbuf[3];
+    XP_UCHAR numbuf[3];
     gint len; 
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect insetR = *rect;
@@ -478,7 +478,7 @@ gtk_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, XP_UCHAR* textP,
 } /* gtk_draw_drawTile */
 
 static void
-gtk_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* rect )
+gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect r = *rect;
@@ -503,7 +503,8 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* rect )
 } /* gtk_draw_drawTileBack */
 
 static void
-gtk_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool selected )
+gtk_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
+                          XP_Bool selected )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect r = *rect;
@@ -538,14 +539,14 @@ gtk_draw_frameBoard( DrawCtx* p_dctx, XP_Rect* rect )
 } /* gtk_draw_frameBoard */
 
 static void 
-gtk_draw_frameTray( DrawCtx* p_dctx, XP_Rect* rect )
+gtk_draw_frameTray( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     //    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 } /* gtk_draw_frameBoard */
 #endif
 
 static void 
-gtk_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
+gtk_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect rect = *rectP;
@@ -558,7 +559,7 @@ gtk_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
 } /* gtk_draw_clearRect */
 
 static void
-gtk_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP, 
+gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP, 
                          XWBonusType cursorBonus, XP_Bool vertical,
                          HintAtts hintAtts )
 {
@@ -572,8 +573,8 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rectP,
 } /* gtk_draw_drawBoardCursor */
 
 static void
-gtk_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers, 
-		     XP_Bool hasfocus )
+gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 numPlayers, 
+                     XP_Bool hasfocus )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 
@@ -582,7 +583,7 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers,
 } /* gtk_draw_scoreBegin */
 
 static void
-gtkDrawDrawRemText( DrawCtx* p_dctx, XP_Rect* r, XP_U16 nTilesLeft,
+gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_U16 nTilesLeft,
                     XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -614,22 +615,22 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, XP_Rect* r, XP_U16 nTilesLeft,
 } /* gtkDrawDrawRemText */
 
 static void
-gtk_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r, XP_S16 nTilesLeft,
+gtk_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_S16 nTilesLeft,
                          XP_U16* width, XP_U16* height )
 {
     gtkDrawDrawRemText( p_dctx, r, nTilesLeft, width, height );
 } /* gtk_draw_measureRemText */
 
 static void
-gtk_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
-                      XP_S16 nTilesLeft )
+gtk_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                      const XP_Rect* rOuter, XP_S16 nTilesLeft )
 {
     gtkDrawDrawRemText( p_dctx, rInner, nTilesLeft, NULL, NULL );
 } /* gtk_draw_drawRemText */
 
 static void
 scoreWidthAndText( GtkDrawCtx* dctx, PangoLayout* layout, char* buf, 
-                   DrawScoreInfo* dsi, XP_U16* widthP, XP_U16* heightP )
+                   const DrawScoreInfo* dsi, XP_U16* widthP, XP_U16* heightP )
 {
     XP_S16 score = dsi->score;
     XP_U16 nTilesLeft = dsi->nTilesLeft;
@@ -664,8 +665,8 @@ scoreWidthAndText( GtkDrawCtx* dctx, PangoLayout* layout, char* buf,
 } /* scoreWidthAndText */
 
 static void
-gtk_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r, 
-                           DrawScoreInfo* dsi,
+gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r, 
+                           const DrawScoreInfo* dsi,
                            XP_U16* width, XP_U16* height )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -675,8 +676,8 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 } /* gtk_draw_measureScoreText */
 
 static void
-gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter, 
-                           DrawScoreInfo* dsi )
+gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                           const XP_Rect* rOuter, const DrawScoreInfo* dsi )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char scoreBuf[20];
@@ -702,7 +703,7 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 } /* gtk_draw_score_drawPlayer */
 
 static void
-gtk_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
+gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 score,
                              XP_U16 playerNum )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -719,16 +720,15 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); */
 
     localR = *rect;
-    rect = &localR;
-    insetRect( rect, 1 );
-    eraseRect( dctx, rect );
+    insetRect( &localR, 1 );
+    eraseRect( dctx, &localR );
 
-    left = rect->left + 1;
+    left = localR.left + 1;
     draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], "Pts:", 
-                    rect, XP_GTK_JUST_TOPLEFT,
+                    &localR, XP_GTK_JUST_TOPLEFT,
                     &dctx->black, NULL );
     draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], buf, 
-                    rect, XP_GTK_JUST_BOTTOMRIGHT,
+                    &localR, XP_GTK_JUST_BOTTOMRIGHT,
                     &dctx->black, NULL );
 } /* gtk_draw_score_pendingScore */
 
@@ -755,8 +755,9 @@ gtkFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
 } /* gtkFormatTimerText */
 
 static void
-gtk_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
-		    XP_U16 player, XP_S16 secondsLeft )
+gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                    const XP_Rect* rOuter,
+                    XP_U16 player, XP_S16 secondsLeft )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
@@ -774,11 +775,11 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
 #define MINI_V_PADDING 6
 #define MINI_H_PADDING 8
 
-static unsigned char*
+static XP_UCHAR*
 gtk_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
-    unsigned char* str;
+    XP_UCHAR* str;
 
     switch( textHint ) {
     case BONUS_DOUBLE_LETTER:
@@ -798,7 +799,7 @@ gtk_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
 } /* gtk_draw_getMiniWText */
 
 static void
-gtk_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str, 
+gtk_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str, 
                            XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -811,8 +812,8 @@ gtk_draw_measureMiniWText( DrawCtx* p_dctx, unsigned char* str,
 } /* gtk_draw_measureMiniWText */
 
 static void
-gtk_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, XP_Rect* rect,
-                         void** closureP )
+gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
+                         const XP_Rect* rect, void** closureP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect localR = *rect;
@@ -840,8 +841,9 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, unsigned char* text, XP_Rect* rect,
 } /* gtk_draw_drawMiniWindow */
 
 static void
-gtk_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
-			  void** closure, XP_Bool* invalUnder )
+gtk_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect, 
+                          XP_Bool lastTime,
+                          void** closure, XP_Bool* invalUnder )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
     *invalUnder = XP_TRUE;

@@ -63,7 +63,7 @@ typedef struct BdCursorLoc {
    as there are (local) players, but they can all use the same window. */
 typedef struct MiniWindowStuff {
     void* closure;
-    unsigned char* text;
+    XP_UCHAR* text;
     XP_Rect rect;
 } MiniWindowStuff;
 
