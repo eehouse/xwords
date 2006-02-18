@@ -308,6 +308,7 @@ endif
 #	mv code0001.tmp.grc $@ ; rm *.tmp.grc
 
 help:
+	@echo make [ARCH=(ARM_ONLY|68K_ONLY|SONY|COMBINED)]
 	@echo make memdebug OR
 	@echo make LANG=en_US OR
 	@echo make ship-all OR
