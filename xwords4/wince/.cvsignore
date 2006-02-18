@@ -2,6 +2,8 @@ ARMV4Rel
 ARMV4Dbg
 obj_win32_dbg
 obj_win32_rel
+obj_wince_dbg
+obj_wince_rel
 emulatorDbg
 ARMDbg
 ARMRel
@@ -17,3 +19,4 @@ obj_wince
 *.xwg
 *.xwd
 _newgame
+xwDbgLog.txt
