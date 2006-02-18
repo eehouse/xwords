@@ -1,4 +1,37 @@
-This document describes how to build Crosswords for PocketPC.
+This document describes how to build Crosswords for PocketPC (and for
+desktop Windows).  You can build using Debian Linux, or using
+Microsoft's embedded visual tools (which are free provided you have a
+copy of Visual Studio.)
+
+(Caveat: I've had to make modifications to the MinGW and pocketpc-sdk
+packages to support Crosswords.  I have submitted the changes back to
+the tool maintainers, but it may take some time before they appear in
+Debian.  Please contact me if you need them in the meantime, at
+ehouse@users.sf.net.)
+
+To build for PocketPC with Debian, you need to install the MinGW and
+pocketpc packages:
+
+sudo apt-get install pocketpc-binutils pocketpc-gas pocketpc-gcc \
+pocketpc-sdk mingw32-runtime
+
+If you're building for Windows, you also need the mingw tools: 
+
+sudo apt-get install mingw32-binutils mingw32
+
+Once those are installed, it's just a matter of typing
+
+make TARGET_OS=wince
+
+or
+
+make TARGET_OS=win32
+
+at the commandline in this directory.
+
+******************************************************************************
+The rest of this file is older, and talks about building with
+Microsoft's tools.
 
 First, you need to install Microsoft's SDK for Wince/PocketPC.  It's
 available for about $8 shipping and handling from Microsoft, and is
