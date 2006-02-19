@@ -394,7 +394,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
     XP_Bool needsScroller;
 
     GetClientRect( globals->hWnd, &rc );
-    width = (XP_U16)(rc.right - rc.left);
+    boardWidth = width = (XP_U16)(rc.right - rc.left);
     height = (XP_U16)(rc.bottom - rc.top);
 
     boardHt = height - CE_SCORE_HEIGHT - MIN_TRAY_HEIGHT;
@@ -405,10 +405,6 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
     needsScroller = vScale < MIN_CELL_HEIGHT;
     if ( needsScroller ) {
         vScale = MIN_CELL_HEIGHT;
-    }
-
-    boardWidth = width;
-    if ( needsScroller ) {
         boardWidth -= SCROLLBAR_WIDTH;
     }
     hScale = boardWidth / nCols;
