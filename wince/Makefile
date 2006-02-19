@@ -117,6 +117,9 @@ memdebug:
 
 $(TARGET) : $(OBJS) $(RESOBJS)
 	$(CC) $(CFLAGS) $(LFLAGS) -mwindows $^ $(CELIBS) -o $@
+ifneq ($(DEBUG),TRUE)
+	$(STRIP) $@
+endif
 
 $(OBJDIR)/%.o : %.c $(INCLUDES)
 	mkdir -p $(dir $@)
