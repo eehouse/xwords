@@ -45,6 +45,8 @@ static XP_U8* openMappedFile( MPFORMAL const wchar_t* name,
                               HANDLE* mappedFileP, HANDLE* hFileP, 
                               XP_U32* sizep );
 static void closeMappedFile( MPFORMAL XP_U8* base, HANDLE mappedFile );
+static XP_Bool checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen, 
+                                    wchar_t* name );
 
 #define ALIGN_COUNT 2
 
@@ -434,9 +436,21 @@ ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
     openFileStruct.lpstrFile = nameBuf;
     openFileStruct.nMaxFile = sizeof(nameBuf)/sizeof(nameBuf[0]);
 
-    if ( GetOpenFileName( &openFileStruct ) ) {
+    while ( GetOpenFileName( &openFileStruct ) ) {
         XP_U16 len;
         XP_UCHAR multiBuf[256];
+
+        if ( !checkIfDictAndLegal( MPPARM(globals->mpool) nameBuf, 
+                                   openFileStruct.nFileOffset, 
+                                   nameBuf + openFileStruct.nFileOffset ) ) {
+            wchar_t errBuf[128];
+            (void)swprintf( errBuf,
+                            L"\"%s\" is not a valid Crosswords dictionary.",
+                            nameBuf + openFileStruct.nFileOffset );
+            MessageBox( globals->hWnd, errBuf, NULL, MB_OK );
+            continue;
+        }
+
         len = WideCharToMultiByte( CP_ACP, 0, nameBuf, wcslen(nameBuf),
                                    multiBuf,
                                    sizeof(multiBuf), NULL, NULL );
@@ -447,6 +461,7 @@ ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
             XP_MEMCPY( buf, multiBuf, len );
             buf[len] = '\0';
             result = XP_TRUE;
+            break;
         }
     }
 
@@ -544,10 +559,9 @@ closeMappedFile( MPFORMAL XP_U8* base, HANDLE mappedFile )
 
 static XP_Bool
 checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen, 
-                     DH(WIN32_FIND_DATA)* data )
+                     wchar_t* name )
 {
     XP_Bool result = XP_FALSE;
-    wchar_t* name = data->cFileName;
     XP_U16 len;
 
     len = wcslen(name);
@@ -630,7 +644,7 @@ locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
                 path[startLen] = 0;
 #endif
             } else if ( checkIfDictAndLegal( MPPARM(mpool) path, startLen,
-                                             &data )
+                                             data.cFileName )
                         && (*which-- == 0)) {
                 /* we're done! */
                 DH(lstrcpy)( path+startLen, data.cFileName );
