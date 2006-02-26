@@ -39,7 +39,7 @@ HEX "Clrs" ID 1000
 #endif
 
 ICONFAMILY "./bmps/xwbandwicon.bmp" "" "" "./bmps/xwcoloricon.bmp" TRANSPARENT 255 255 255
-SMALLICON "bmps/xwords4small.pbitm"
+SMALLICONFAMILY "bmps/xwbandwicon_sm.bmp" "" "" "./bmps/xwcoloricon_sm.bmp" TRANSPARENT 255 255 255
 
 BITMAP ID SHOWTRAY_BUTTON_BMP_RES_ID "bmps/showtray.pbitm" AUTOCOMPRESS
 
