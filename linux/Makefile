@@ -132,5 +132,8 @@ $(PLATFORM)/%.o: %.c
 	$(CC) -c $(INCLUDES) $(DEFINES) -DPLATFORM=$(PLATFORM) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf $(PLATFORM)/*.o $(TARGET)
+	rm -rf $(PLATFORM)/*.o $(TARGET) $(DESTDIR)/usr/local/bin/xwords
 	cd ../common && $(MAKE) PLATFORM=$(PLATFORM) $@
+
+install: $(TARGET)
+	cp $< $(DESTDIR)/usr/local/bin
