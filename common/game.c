@@ -380,18 +380,13 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->phoniesAction = (XWPhoniesChoice)stream_getBits( stream, 2 );
     gi->timerEnabled = stream_getBits( stream, 1 );
 
-    if ( strVersion >= CUR_STREAM_VERS ) {
+    if ( strVersion >= STREAM_VERS_41b4 ) {
         gi->allowPickTiles = stream_getBits( stream, 1 );
-    } else {
-        gi->allowPickTiles = XP_FALSE;
-    }
-
-    if ( strVersion >= CUR_STREAM_VERS ) {
         gi->allowHintRect = stream_getBits( stream, 1 );
     } else {
+        gi->allowPickTiles = XP_FALSE;
         gi->allowHintRect = XP_FALSE;
     }
-
 
     gi->gameID = stream_getU16( stream );
     if ( gi->timerEnabled ) {
