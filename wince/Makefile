@@ -136,7 +136,9 @@ $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
 SHIP: $(TARGET)
 	$(STRIP) $<
 ifdef WINCE_UPLOAD_LOC
-	cp $< $(WINCE_UPLOAD_LOC)
+	zip $<.zip $<
+	scp $<.zip $(WINCE_UPLOAD_LOC)
+	scp $< $(WINCE_UPLOAD_LOC)
 endif
 
 test:
