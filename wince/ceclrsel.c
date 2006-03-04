@@ -407,20 +407,14 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 XP_Bool
 ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
 {
-#ifdef _WIN32_WCE
-    MessageBox( globals->hWnd, 
-                L"Color selection will be fixed in the next Beta.",
-                L"Sorry...", MB_OK );
-    return XP_FALSE;
-#else
     ColorsDlgState state;
 
     XP_MEMSET( &state, 0, sizeof(state) );
     state.globals = globals;
     state.inColors = colors;
 
-    (void)DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
-                              (DLGPROC)ColorsDlg, (long)&state );
+    (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
+                          (DLGPROC)ColorsDlg, (long)&state );
 
     if ( !state.cancelled ) {
         XP_U16 i;
@@ -430,5 +424,4 @@ ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
     }
         
     return !state.cancelled;
-#endif
 } /* ceDoColorsEdit */
