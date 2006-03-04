@@ -32,13 +32,14 @@ STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 CFLAGS += -D_WIN32_WCE=400 -DUNDER_CE -DMY_COLOR_SEL \
 	$(STANDALONE) \
 	-fdollars-in-identifiers -D__W32API_USE_DLLIMPORT__
+RESFLAGS += -DMY_COLOR_SEL -D_WIN32_WCE=400 
 LFLAGS += -Wl,--major-subsystem-version,4,--minor-subsystem-version,20
 ifdef HAVE_COMMCTRL
 CELIBS += -lcommctrl -laygshell
 else
 CFLAGS += -DCANT_DO_CMDBAR -DBEYOND_IR
 endif
-else
+else							# ifeq ($(TARGET_OS),wince)
 ifeq ($(TARGET_OS),win32)
 CC = i586-mingw32msvc-gcc
 WINDRES = i586-mingw32msvc-windres
@@ -105,6 +106,8 @@ XW_BOTH_DEFINES = \
 	$(DEBUG_FLAG) $(MEM_DEBUG_FLAG) \
 
 CFLAGS += $(XW_BOTH_DEFINES) -DARM
+RESFLAGS += $(XW_BOTH_DEFINES) $(STANDALONE) \
+	-D_WIN32 -D_WIN32_IE=0x0400 
 
 ####################################################################
 # Rules start here
@@ -128,10 +131,7 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
-	$(WINDRES) -v -I$(MINGW_INC_PATH) $(DEBUG_FLAG) $(MEM_DEBUG_FLAG) \
-		-D_WIN32_WCE=400 -D_WIN32 -D_WIN32_IE=0x0400 \
-		$(STANDALONE) \
-		-o $@ $< 
+	$(WINDRES) -v -I$(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
 
 SHIP: $(TARGET)
 	$(STRIP) $<
