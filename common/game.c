@@ -329,9 +329,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
     destGI->timerEnabled = srcGI->timerEnabled;
     destGI->robotSmartness = (XP_U8)srcGI->robotSmartness;
     destGI->phoniesAction = srcGI->phoniesAction;
-#ifdef FEATURE_TRAY_EDIT
     destGI->allowPickTiles = srcGI->allowPickTiles;
-#endif
 
     for ( srcPl = srcGI->players, destPl = destGI->players, i = 0; 
           i < nPlayers; ++srcPl, ++destPl, ++i ) {
