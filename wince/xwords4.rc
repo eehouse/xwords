@@ -66,6 +66,7 @@ END
 // Menubar
 //
 
+#ifdef _WIN32_WCE
 IDM_MENU RCDATA
 BEGIN
     IDM_MENU, 3,
@@ -83,6 +84,7 @@ BEGIN
 	IDS_MOVE, 0, 2
 
 END
+#endif
 
 IDM_MENU MENU DISCARDABLE 
 BEGIN
@@ -117,7 +119,7 @@ BEGIN
     BEGIN
         MENUITEM "H&int",                       ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
-        MENUITEM "Limited hint (&c)"            ID_MOVE_LIMITEDHINT
+        MENUITEM "Limited hint (&c)",           ID_MOVE_LIMITEDHINT
 	    MENUITEM SEPARATOR
 #endif
         MENUITEM "Next hint (&m)",              ID_MOVE_NEXTHINT
@@ -474,15 +476,16 @@ END
 // Editor for individual colors
 //
 #ifdef MY_COLOR_SEL
-#define CLRELABEL_COL 3
-#define CLREEDIT_COL  28
-#define CLRESLIDER_COL 45
-#define CLRE_LAB_WIDTH 22
-#define CLRE_LAB_HT    12
-#define CLREDIT_ROW_1 5
-#define CLREDIT_ROW_2 21
-#define CLREDIT_ROW_3 37
-#define SLIDER_WIDTH 46
+
+# define CLRELABEL_COL 3
+# define CLREEDIT_COL  28
+# define CLRESLIDER_COL 45
+# define CLRE_LAB_WIDTH 22
+# define CLRE_LAB_HT    12
+# define CLREDIT_ROW_1 5
+# define CLREDIT_ROW_2 21
+# define CLREDIT_ROW_3 37
+# define SLIDER_WIDTH 46
 
 IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 0, 112, 75
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
