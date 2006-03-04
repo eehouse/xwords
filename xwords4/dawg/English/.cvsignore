@@ -7,3 +7,4 @@
 *.seb
 decompose
 temp
+*.stamp
