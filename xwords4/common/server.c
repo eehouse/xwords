@@ -236,7 +236,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     (void)stream_getBits( stream, 3 ); /* was npassesinrow */
 
     nv->nDevices = (XP_U8)stream_getBits( stream, NDEVICES_NBITS );
-    if ( stream_getVersion( stream ) > STREAM_VERS_41 ) {
+    if ( stream_getVersion( stream ) > STREAM_VERS_41b4 ) {
         ++nv->nDevices;
     }
 

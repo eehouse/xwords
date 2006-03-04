@@ -208,7 +208,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        if ( stream_getVersion( stream ) >= CUR_STREAM_VERS ) {
+        if ( stream_getVersion( stream ) >= STREAM_VERS_41b4 ) {
             board->hasHintRect[i] = stream_getBits( stream, 1 );
         } else {
             board->hasHintRect[i] = XP_FALSE;
