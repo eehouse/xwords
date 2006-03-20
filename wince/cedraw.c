@@ -309,11 +309,13 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     HDC hdc = globals->hdc;
     wchar_t widebuf[4];
     RECT rt;
+    XP_U16 index;
 
     ceClearToBkground( dctx, xprect );
 
     SetBkColor( hdc, dctx->globals->appPrefs.colors[TILEBACK_COLOR] );
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(dctx->trayOwner)] );
+    index = getPlayerColor(dctx->trayOwner);
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[index] );
 
     XPRtoRECT( &rt, xprect );
 
@@ -490,7 +492,7 @@ formatRemText( HDC hdc, wchar_t* buf, XP_S16 nTilesLeft, SIZE* size )
         size->cx = size->cy = 0;
     } else {
         swprintf( buf, format, nTilesLeft );
-        DH(GetTextExtentPoint32)( hdc, buf, wcslen(buf), size );
+        GetTextExtentPoint32( hdc, buf, wcslen(buf), size );
     }
 } /* formatRemText */
 
@@ -553,7 +555,7 @@ ceWidthAndText( HDC hdc, wchar_t* buf, const DrawScoreInfo* dsi,
     len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, tbuf, -1,
                                buf, 10 );
 
-    DH(GetTextExtentPoint32)( hdc, buf, len, &size );
+    GetTextExtentPoint32( hdc, buf, len, &size );
     *widthP = (XP_U16)size.cx;
     *heightP = (XP_U16)size.cy;
 } /* ceWidthAndText */
@@ -740,7 +742,7 @@ ce_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
         widebuf[len] = 0;
-        DH(GetTextExtentPoint32)( hdc, widebuf, wcslen(widebuf), &size );
+        GetTextExtentPoint32( hdc, widebuf, wcslen(widebuf), &size );
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         height += size.cy + CE_INTERLINE_SPACE;

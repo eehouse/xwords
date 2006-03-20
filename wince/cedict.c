@@ -609,18 +609,18 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
 static XP_Bool
 locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
 {
-    DH(WIN32_FIND_DATA) data;
+    WIN32_FIND_DATA data;
     HANDLE fileH;
     XP_Bool result = XP_FALSE;
     XP_U16 startLen;
 
 #if defined TARGET_OS_WINCE
-    DH(lstrcat)( path, L"\\" );
+    lstrcat( path, L"\\" );
 #elif defined TARGET_OS_WIN32
-    DH(lstrcat)( path, L".\\" );
+    lstrcat( path, L".\\" );
 #endif
     startLen = wcslen(path);    /* record where we were so can back up */
-    DH(lstrcat)( path, L"*" );
+    lstrcat( path, L"*" );
 
     XP_MEMSET( &data, 0, sizeof(data) );
 
@@ -636,7 +636,7 @@ locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
             if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0){
 #if defined TARGET_OS_WINCE
                 /* We don't do recursive search on Win32!!! */
-                DH(lstrcpy)( path+startLen, data.cFileName );
+                lstrcpy( path+startLen, data.cFileName );
                 result = locateOneDir( MPPARM(mpool) path, which );
                 if ( result ) {
                     break;
@@ -647,7 +647,7 @@ locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
                                              data.cFileName )
                         && (*which-- == 0)) {
                 /* we're done! */
-                DH(lstrcpy)( path+startLen, data.cFileName );
+                lstrcpy( path+startLen, data.cFileName );
                 result = XP_TRUE;
                 break;
             }

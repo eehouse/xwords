@@ -113,7 +113,7 @@ WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRec,
 
     XP_MEMCPY( &state->addrRec, addrRec, sizeof(state->addrRec) );
 
-    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_CONNSSDLG, hDlg,
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_CONNSSDLG, hDlg,
                         (DLGPROC)ConnsDlg, (long)state );
 
     result = !state->userCancelled;
