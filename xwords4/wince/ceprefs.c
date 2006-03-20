@@ -333,8 +333,8 @@ WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsDlgState* state,
     state->isNewGame = isNewGame;
     XP_MEMCPY( &state->prefsPrefs, prefsPrefs, sizeof( state->prefsPrefs ) );
 
-    DH(DialogBoxParam)( globals->hInst, (LPCTSTR)IDD_OPTIONSDLG, hDlg,
-                        (DLGPROC)PrefsDlg, (long)state );
+    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_OPTIONSDLG, hDlg,
+                    (DLGPROC)PrefsDlg, (long)state );
     
     result = !state->userCancelled;
 
