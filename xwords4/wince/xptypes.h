@@ -117,6 +117,15 @@ XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
 
 #define XP_LD "%ld"
 
+/* The pocketpc sdk on linux renames certain functions to avoid conflicts
+   with same-named posix symbols. */
+#if defined  __GNUC__ && defined _WIN32_WCE
+# define MS(func) M$_##func
+#else
+# define MS(func) func
+#endif
+
+
 #ifdef CPLUS
 }
 #endif
