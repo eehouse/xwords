@@ -152,7 +152,7 @@ static XP_Bool
 sendAll( CeSocketWrapper* self, XP_U8* buf, XP_U16 len )
 {
     for ( ; ; ) {
-        int nSent = send( self->socket, buf, len, 0 ); /* flags? */
+        int nSent = MS(send)( self->socket, buf, len, 0 ); /* flags? */
         if ( nSent == SOCKET_ERROR ) {
             return XP_FALSE;
         } else if ( nSent == len ) {
@@ -189,7 +189,7 @@ connectSocket( CeSocketWrapper* self )
     /* first look up the ip address */
     if ( self->addrRec.u.ip_relay.ipAddr == 0 ) {
         struct hostent* ent;
-        ent = gethostbyname( self->addrRec.u.ip_relay.hostName );
+        ent = MS(gethostbyname)( self->addrRec.u.ip_relay.hostName );
         if ( ent != NULL ) {
             XP_U32 tmp;
             XP_MEMCPY( &tmp, &ent->h_addr_list[0][0], 
@@ -201,7 +201,7 @@ connectSocket( CeSocketWrapper* self )
     }
 
     if ( self->addrRec.u.ip_relay.ipAddr != 0 ) {
-        sock = socket( AF_INET, SOCK_STREAM, IPPROTO_IP );
+        sock = MS(socket)( AF_INET, SOCK_STREAM, IPPROTO_IP );
         XP_LOGF( "got socket %d", sock );
 
         if ( sock != INVALID_SOCKET ) {
@@ -211,8 +211,8 @@ connectSocket( CeSocketWrapper* self )
             name.sin_port = XP_HTONS( self->addrRec.u.ip_relay.port );
             name.sin_addr.S_un.S_addr = XP_HTONL(self->addrRec.u.ip_relay.ipAddr);
 
-            if ( SOCKET_ERROR != connect( sock, (struct sockaddr *)&name, 
-                                          sizeof(name) ) ) {
+            if ( SOCKET_ERROR != MS(connect)( sock, (struct sockaddr *)&name, 
+                                              sizeof(name) ) ) {
                 self->connState = CE_IP_CONNECTED;
                 self->socket = sock;
 
@@ -300,14 +300,14 @@ read_bytes_blocking( CeSocketWrapper* self, XP_U8* buf, XP_U16 len )
         /* There also needs to be a pipe in here for interrupting */
         FD_SET( self->socket, &readSet );
 
-        sres = select( 0,   /* nFds is ignored on wince */
-                       &readSet, NULL, NULL, /* others not interesting */
-                       NULL ); /* no timeout */
+        sres = MS(select)( 0,   /* nFds is ignored on wince */
+                           &readSet, NULL, NULL, /* others not interesting */
+                           NULL ); /* no timeout */
         XP_LOGF( "back from select: got %d", sres );
         if ( sres == 0 ) {
             break;
         } else if ( sres == 1 && FD_ISSET( self->socket, &readSet ) ) {
-            int nRead = recv( self->socket, buf, len, 0 );
+            int nRead = MS(recv)( self->socket, buf, len, 0 );
             if ( nRead > 0 ) {
                 XP_LOGF( "read %d bytes", nRead );
                 XP_ASSERT( nRead <= len );
