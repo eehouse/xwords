@@ -24,6 +24,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "cref.h"
 #include "xwrelay.h"
@@ -798,7 +799,7 @@ CookieRef::logf( XW_LogLevel level, const char* format, ... )
     char buf[256];
     int len;
 
-    len = snprintf( buf, sizeof(buf), "cid:%d ", m_cookieID );
+      len = snprintf( buf, sizeof(buf), "cid:%d ", m_cookieID );
 
     va_list ap;
     va_start( ap, format );

@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/types.h>
