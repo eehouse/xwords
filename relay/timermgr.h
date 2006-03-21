@@ -23,6 +23,8 @@
 
 #include "list"
 
+#include <pthread.h>
+
 #include "xwrelay_priv.h"
 
 using namespace std;

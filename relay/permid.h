@@ -23,6 +23,7 @@
 #define _PERMID_H
 
 #include <string>
+#include <pthread.h>
 
 /* Able to get a unique ID for every game ever started.  A simple file
  * somewhere stores an ascii string representing a number.  That's
