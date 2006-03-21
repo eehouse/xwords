@@ -60,20 +60,38 @@ GetTextExtentPoint32W( HDC hdc, LPCWSTR str, int i, LPSIZE siz )
     return GetTextExtentExPointW(hdc, str, i, 0, NULL, NULL, siz );
 }
 
-#if 0
+/*
+see
+http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcehardware5/html/wce50lrfCeLogImportTable.asp
+for how to implement SetEvent and ResetEvent in terms of EventModify
+
+SetEvent(h)->pEventModify(h, EVENT_SET)
+
+ResetEvent(h)->pEventModify(h, EVENT_RESET)
+
+PulseEvent(h)->pEventModify(h, EVENT_PULSE) 
+
+http://www.opennetcf.org/forums/topic.asp?TOPIC_ID=257 defines the constants,
+which are verified if this all works. :-)
+*/
+
+enum {
+    EVENT_PULSE     = 1,
+    EVENT_RESET     = 2,
+    EVENT_SET       = 3
+};
+
 BOOL
 debhack_SetEvent(HANDLE h)
 {
-    return FALSE;
+    return EventModify(h, EVENT_SET);
 }
 
 BOOL
 debhack_ResetEvent(HANDLE h)
 {
-    return FALSE;
+    return EventModify(h, EVENT_RESET);
 }
-
-#endif
 
 DWORD
 GetCurrentThreadId(void)
@@ -81,4 +99,4 @@ GetCurrentThreadId(void)
     return 0;
 }
 
-#endif
+#endif /* #ifdef _WIN32_WCE */
