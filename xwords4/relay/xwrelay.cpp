@@ -47,7 +47,17 @@
 #include <assert.h>
 #include <sys/select.h>
 #include <stdarg.h>
-#include <getopt.h>
+
+#if defined(__FreeBSD__)
+# if (OSVERSION > 500000)
+#  include "getopt.h"
+# else
+#  include "unistd.h"
+# endif
+#else
+# include <getopt.h>
+#endif
+
 #include <sys/time.h>
 
 #include "xwrelay.h"
@@ -72,8 +82,8 @@ logf( XW_LogLevel level, const char* format, ... )
 
         pthread_t me = pthread_self();
 
-        fprintf( where, "<%lx>%d:%d:%d: ", me, timp->tm_hour, timp->tm_min, 
-                 timp->tm_sec );
+        fprintf( where, "<%p>%d:%d:%d: ", (void*)me, timp->tm_hour, 
+                 timp->tm_min, timp->tm_sec );
 
         va_list ap;
         va_start( ap, format );
@@ -381,79 +391,28 @@ make_socket( unsigned long addr, unsigned short port )
 
     result = listen( sock, 5 );
     if ( result != 0 ) {
-        logf( XW_LOGERROR, "exiting: unable to listen: %d, errno = %d\n", result, errno );
+        logf( XW_LOGERROR, "exiting: unable to listen: %d, errno = %d\n", 
+              result, errno );
         return -1;
     }
     return sock;
 } /* make_socket */
 
-enum { FLAG_HELP
-       ,FLAG_CONFFILE
-       ,FLAG_PORT
-       ,FLAG_CPORT
-       ,FLAG_NTHREADS
-       ,FLAG_NAME
-       ,FLAG_IDNAME
-};
-
-struct option longopts[] = {
-    {
-        "help",
-        0,
-        NULL,
-        FLAG_HELP
-    }
-    ,{
-        "conffile",
-        1,
-        NULL,
-        FLAG_CONFFILE
-    }
-    ,{
-        "port",
-        1,
-        NULL,
-        FLAG_PORT
-    }
-    ,{
-        "name",
-        1,
-        NULL,
-        FLAG_NAME
-    }
-    ,{
-        "idFile",
-        1,
-        NULL,
-        FLAG_IDNAME
-    }
-    ,{
-        "ctrlport",
-        1,
-        NULL,
-        FLAG_CPORT
-    }
-    ,{
-        "nthreads",
-        1,
-        NULL,
-        FLAG_NTHREADS
-    }
-};
-
 static void
 usage( char* arg0 )
 {
-    unsigned int i;
     fprintf( stderr, "usage: %s \\\n", arg0 );
-    for ( i = 0; i < sizeof(longopts)/sizeof(longopts[0]); ++i ) {
-        struct option* opt = &longopts[i];
-        fprintf( stderr, "\t--%s", opt->name );
-        if ( opt->has_arg ) {
-            fprintf( stderr, " <%s>", opt->name );
-        }
-        fprintf( stderr, "\\\n" );
-    }
+
+    fprintf( stderr,
+             "\t-?                   (print this help)\\\n"
+             "\t-c <cport>           (localhost port for control console)\\\n"
+             "\t-f <conffile>        (config file)\\\n"
+             "\t-h                   (print this help)\\\n"
+             "\t-i <idfile>          (file where next global id stored)\\\n"
+             "\t-n <serverName>      (used in permID generation)\\\n"
+             "\t-p <port>            (port to listen on)\\\n"
+             "\t-t <nWorkerThreads>  (how many worker threads to use)\\\n"
+             );
 }
 
 /* sockets that need to be closable from interrupt handler */
@@ -510,32 +469,32 @@ int main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt_long(argc, argv, "hc:p:l:n:i:", longopts, NULL);
+       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:" );
 
        if ( opt == -1 ) {
            break;
        }
-
        switch( opt ) {
-       case FLAG_HELP:
+       case '?':
+       case 'h':
            usage( argv[0] );
            exit( 0 );
-       case FLAG_CONFFILE:
-           conffile = optarg;
-           break;
-       case FLAG_PORT:
-           port = atoi( optarg );
-           break;
-       case FLAG_NAME:
-           serverName = optarg;
-           break;
-       case FLAG_IDNAME:
-           idFileName = optarg;
-           break;
-       case FLAG_CPORT:
+       case 'c':
            ctrlport = atoi( optarg );
            break;
-       case FLAG_NTHREADS:
+       case 'f':
+           conffile = optarg;
+           break;
+       case 'i':
+           idFileName = optarg;
+           break;
+       case 'n':
+           serverName = optarg;
+           break;
+       case 'p':
+           port = atoi( optarg );
+           break;
+       case 't':
            nWorkerThreads = atoi( optarg );
            break;
        default:
