@@ -15,45 +15,60 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-PLATFORM=palm
-LANG=en_US
-ROOTNAME = Crosswords
-BITMAPS = ./bmps
-NAME ?= "Crosswords"
-TYPE = appl
-ICONTEXT ?= "Crosswords"
+PLATFORM=obj_palm
+
+ifeq ($(MEMDEBUG),TRUE)
+PLATFORM := $(PLATFORM)_memdebug
+CFLAGS += -DMEM_DEBUG -DDEBUG -g -O0
+CSFLAGS += -O0 -g
+NAME = "CrossDbg"
+ICONTEXT = "CrossDbg"
+APPID ?= Xwdb
+else
+PLATFORM := $(PLATFORM)_rel
+CFLAGS += -O2 -fomit-frame-pointer
+# The -Os flag breaks multilink, at least as I'm using it
+CSFLAGS += -OS -fomit-frame-pointer
+NAME = "Crosswords"
+ICONTEXT = "Crosswords"
 APPID ?= Xwr4
+endif
+
+LANG=en_US
+ROOTNAME = $(NAME)
+BITMAPS = ./bmps
+TYPE = appl
 MLPREFIX = /usr
 DICT = $(shell echo $$BASENG_PATH)
 
 ARCH ?= ARM_ONLY
 
 ifeq ($(ARCH),ARM_ONLY)
+PLATFORM := $(PLATFORM)_armonly
 BUILD_AS_PNOLET = 1
-FEATURE_HIGHRES = -DFEATURE_HIGHRES
 TARGET=$(PLATFORM)/xw4_ARM.prc
 else
 ifeq ($(ARCH),68K_ONLY)
-FEATURE_HIGHRES = -DFEATURE_HIGHRES
+PLATFORM := $(PLATFORM)_68konly
 TARGET=$(PLATFORM)/xw4_68K.prc
 else
 ifeq ($(ARCH),SONY)
 # No highres in sony build case
+PLATFORM := $(PLATFORM)_sony
 BUILD_AS_PNOLET = 1
 FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
 TARGET=$(PLATFORM)/xw4_SONY.prc
 else
 ifeq ($(ARCH),COMBINED)
+PLATFORM := $(PLATFORM)_combined
 BUILD_AS_PNOLET = 1
 FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
-FEATURE_HIGHRES = -DFEATURE_HIGHRES
 TARGET=$(PLATFORM)/xwords4.prc
 endif
 endif
 endif
 endif
 
-DEBUG_SET = APPID=Xwdb ICONTEXT="CrossDbg" NAME="CrossDbg" DONT_OMIT=true
 
 APPNAME = "$(NAME)"
 
@@ -117,8 +132,6 @@ else
 MYDEFS_COMMON += -DIR_SUPPORT -DIR_EXCHMGR
 endif
 
-MYDEFS_COMMON += $(FEATURE_HIGHRES)
-
 MYDEFS_ARM = -D__LITTLE_ENDIAN -DXW_TARGET_PNO $(MYDEFS_COMMON)
 MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) -DAPPNAME=\"$(APPNAME)\"
 
@@ -148,12 +161,10 @@ ifneq (x$(HS_DUO_SUPPORT)x, xx)
 	FNAVS = ./fnav03e9.bin
 endif
 
-ifneq (x$(FEATURE_HIGHRES)x, xx)
-	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs
-	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/System
-	INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/Libraries
-	MYDEFS_68K += -DCPU_TYPE=CPU_68K	
-endif
+INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs
+INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/System
+INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs/Libraries
+MYDEFS_68K += -DCPU_TYPE=CPU_68K	
 
 include ../common/config.mk
 
@@ -191,14 +202,10 @@ MYDEFS_ARM += $(FEATURE_PNOAND68K)
 
 include ../common/rules.mk
 
-CSFLAGS = -O2 -g -S -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES)
-CFLAGS = -O2 -g -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES) 
+CSFLAGS += -S -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES)
+CFLAGS +=  -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES) 
 # In the non-debug mode (for which DONT_OMIT is undefined) build without
 # the frame pointer.
-ifneq ($(DONT_OMIT), true)
-	CSFLAGS += -fomit-frame-pointer
-	CFLAGS += -fomit-frame-pointer
-endif
 
 $(TARGET): $(PLATFORM)/objs.prc $(PLATFORM)/res.prc 
 	$(PAR) -c -a 'resource|backup' -v 4 $@ $(NAME) $(TYPE) $(APPID) $^
@@ -210,12 +217,6 @@ endif
 
 solo:
 	$(MAKE) XWFEATURE_STANDALONE_ONLY=1
-
-debug:
-	$(MAKE) PASSTHRU="-DDEBUG" $(DEBUG_SET)
-
-memdebug:
-	$(MAKE) PASSTHRU="-DDEBUG -DMEM_DEBUG" $(DEBUG_SET)
 
 gremlins:
 	$(MAKE) PASSTHRU="-DDEBUG -DMEM_DEBUG -DFOR_GREMLINS" DONT_OMIT=true
@@ -281,7 +282,7 @@ ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet
 
 pnolet: LocalizedStrIncludes.h
-	$(MAKE) -f Makefile.PNO MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\' \
+	$(MAKE) -f Makefile.PNO MEMDEBUG=$(MEMDEBUG) MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\' \
 	-DAPPNAME=\\\"$(APPNAME)\\\""
 endif
 
@@ -307,9 +308,8 @@ endif
 #	mv code0001.tmp.grc $@ ; rm *.tmp.grc
 
 help:
-	@echo make [ARCH=(ARM_ONLY|68K_ONLY|SONY|COMBINED)]
-	@echo make memdebug OR
-	@echo make LANG=en_US OR
-	@echo make ship-all OR
-	@echo make gremlins OR
-	@echo make clean
+	@echo "make [ARCH=(ARM_ONLY|68K_ONLY|SONY|COMBINED)] [MEMDEBUG=TRUE] [LANG=fr_FR|en_US|es_ES|es_CT|sv_SE|de_DE] [clean]"
+	@echo OR
+	@echo "make ship-all"
+	@echo OR
+	@echo "make gremlins"

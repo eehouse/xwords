@@ -31,11 +31,9 @@
 #include <FeatureMgr.h>
 #include <NotifyMgr.h>
 #include <unix_stdarg.h>
-#ifdef FEATURE_HIGHRES
-# include <FileStream.h>
-# ifdef FEATURE_SILK
-# include <SonyCLIE.h>
-# endif
+#include <FileStream.h>
+#ifdef FEATURE_SILK
+#include <SonyCLIE.h>
 #endif
 
 #include "comtypes.h"
@@ -247,7 +245,6 @@ cur_screen_depth( void )
 } /* cur_screen_depth */
 #endif
 
-#ifdef FEATURE_HIGHRES
 static void
 getSizes( PalmAppGlobals* globals )
 {
@@ -288,11 +285,7 @@ getSizes( PalmAppGlobals* globals )
     globals->width = width;
     globals->height = height;
 } /* getSizes */
-#else
-# define getSizes(g)
-#endif
 
-#ifdef FEATURE_HIGHRES
 /* The resources place the tray-related buttons for the high-res case.  If
  * the device is going to want them in the higher low-res position, move them
  * here.  And resize 'em too.
@@ -329,18 +322,11 @@ locateTrayButtons( PalmAppGlobals* globals )
         }
     }
 } /* locateTrayButtons */
-#else
-# define locateTrayButtons(g)
-#endif
 
 static XP_Bool
 positionBoard( PalmAppGlobals* globals )
 {
-#ifdef FEATURE_HIGHRES
     XP_U16 bWidth = globals->width;
-#else
-# define  bWidth  160
-#endif
     XP_Bool erase = XP_FALSE;
     XP_Bool isLefty = globals->isLefty;
     XP_U16 nCols, leftEdge;
@@ -351,11 +337,7 @@ positionBoard( PalmAppGlobals* globals )
     XP_U16 timerWidth, timerLeft;
     XP_U16 freeSpaceH;
     XP_Bool showGrid = globals->gState.showGrid;
-    XP_U16 doubler = 
-#ifdef FEATURE_HIGHRES
-        globals->useHiRes? 2:
-#endif
-        1;
+    XP_U16 doubler = globals->useHiRes? 2 : 1;
 #ifdef SHOW_PROGRESS
     RectangleType bounds;
 #endif
@@ -383,11 +365,9 @@ positionBoard( PalmAppGlobals* globals )
     }
     scale = scale * doubler;
     scaleV = scaleH = scale;
-#ifdef FEATURE_HIGHRES
     if ( globals->useHiRes ) {
         scaleV -= 2;
     }
-#endif
 
     freeSpaceH = ((PALM_MAX_COLS-nCols)/2) * scaleH;
     if ( isLefty ) {
@@ -455,21 +435,16 @@ positionBoard( PalmAppGlobals* globals )
     globals->needsScrollbar = false; /* default */
     boardHeight = scaleV * nCols; 
 
-    if ( 0 ) {
-#ifdef FEATURE_HIGHRES
-    } else if ( globals->useHiRes ) {
+    if ( globals->useHiRes ) {
         trayTop = ((160 - TRAY_HEIGHT_HR) * doubler) - 1;
         globals->needsScrollbar = false;
-#endif
     } else {
         trayTop = 160 - TRAY_HEIGHT_LR;
         globals->needsScrollbar = showGrid && (nCols == PALM_MAX_COLS);
     }
 
     trayScaleV = 
-#ifdef FEATURE_HIGHRES
         globals->useHiRes? (TRAY_HEIGHT_HR*doubler) + 1:
-#endif
         TRAY_HEIGHT_LR;
     board_setTrayLoc( globals->game.board, 
                       (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
@@ -1012,7 +987,6 @@ doCallbackReg( PalmAppGlobals* globals, XP_Bool reg )
     }
 } /* doCallbackReg */
 
-#ifdef FEATURE_HIGHRES
 /* temp workarounds for some sony include file trouble */
 # ifdef FEATURE_SILK
 extern Err SilkLibEnableResizeFoo(UInt16 refNum)
@@ -1075,10 +1049,6 @@ uninitHighResGlobals( PalmAppGlobals* globals )
     }
 #endif
 } /* uninitHighResGlobals */
-#else
-# define initHighResGlobals(g)
-# define uninitHighResGlobals(g)
-#endif
 
 static XP_Bool
 canConvertPrefs( XWords4PreferenceType* prefs, UInt16 prefSize, XP_S16 vers )
@@ -2065,7 +2035,6 @@ tryLoadSavedGame( PalmAppGlobals* globals, XP_U16 newIndex )
     return loaded;
 } /* tryLoadSavedGame */
 
-#ifdef FEATURE_HIGHRES
 static XP_U16
 hresX( PalmAppGlobals* globals, XP_U16 screenX )
 {
@@ -2094,12 +2063,6 @@ hresRect( PalmAppGlobals* globals, RectangleType* r )
         r->extent.y *= 2;
     }
 }
-
-#else
-# define hresX( g, n ) (n)
-# define hresY( g, n ) (n)
-# define hresRect( g, r )
-#endif
 
 /*****************************************************************************
  *
@@ -2241,11 +2204,11 @@ mainViewHandleEvent( EventPtr event )
         break;
 
     case penDownEvent:
-        globals->penDown = handled;
         draw = board_handlePenDown( globals->game.board, 
                                     hresX(globals, event->screenX), 
                                     hresY(globals, event->screenY), 
                                     &handled );
+        globals->penDown = handled;
         break;
 
     case penMoveEvent:
