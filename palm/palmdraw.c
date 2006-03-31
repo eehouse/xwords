@@ -56,7 +56,6 @@ static void palm_clr_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
 static void palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
                                       const XP_Rect* rect, void** closureP );
 
-#ifdef FEATURE_HIGHRES
 #define HIGHRES_PUSH_LOC( dctx ) \
     { \
         XP_U16 oldVal = 0; \
@@ -83,13 +82,6 @@ static void palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
          (void)WinSetCoordinateSystem( (dctx)->oldCoord ); \
         (dctx)->oldCoord = 0; \
     } 
-#else
-#define HIGHRES_PUSH(dctx)
-#define HIGHRES_PUSH_LOC(dctx)
-#define HIGHRES_PUSH_NOPOP(dctx)
-#define HIGHRES_POP(dctx)
-#define HIGHRES_POP_LOC(dctx)
-#endif
 
 static void
 eraseRect( /* PalmDrawCtx* dctx,  */const XP_Rect* rect )
@@ -188,14 +180,12 @@ measureFace( PalmDrawCtx* dctx, XP_UCHAR face, PalmFontHtInfo* fhi )
             (void)WinSetDrawWindow( oldWin );
             WinDeleteWindow( win, false );
 
-#ifdef FEATURE_HIGHRES
             /* There should be a way to avoid this, but HIGHRES_PUSH after
                WinSetDrawWindow isn't working...  Fix this... */
             if ( dctx->doHiRes ) {
                 top *= 2;
                 bottom *= 2;
             }
-#endif
 
             fhi->topOffset = top;
             fhi->height = bottom - top + 1;
@@ -458,6 +448,8 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         }
     } else if ( !!bitmap ) {
         XP_Bool doColor = (able == COLOR) && (owner >= 0);
+        XP_U16 x = localR.left+1;
+        XP_U16 y = localR.top+1;
         /* cheating again; this belongs in a palm_clr method.  But the
            special bitmaps are rare enough that we shouldn't change the palm
            draw state every time. */
@@ -465,7 +457,13 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
             WinSetForeColor( 
                 dctx->drawingPrefs->drawColors[COLOR_PLAYER1+owner] );
         }
-        WinDrawBitmap( (BitmapPtr)bitmap, localR.left+1, localR.top+1 );
+
+        if ( dctx->doHiRes ) {
+            ++x;
+            ++y;
+        }
+
+        WinDrawBitmap( (BitmapPtr)bitmap, x, y );
         if ( doColor ) {
             WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
         }
@@ -488,12 +486,10 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         r.topLeft.x = localR.left + ((PALM_BOARD_SCALE-1)/2);
         r.topLeft.y = localR.top + ((PALM_BOARD_SCALE-1)/2);
 
-#ifdef FEATURE_HIGHRES
         if ( dctx->doHiRes ) {
             r.topLeft.x += PALM_BOARD_SCALE/2;
             r.topLeft.y += PALM_BOARD_SCALE/2;
         }
-#endif
 
         if ( globals->romVersion >= 35 ) {
             WinDrawPixel( r.topLeft.x, r.topLeft.y );
@@ -582,7 +578,6 @@ palm_bnw_draw_trayFinished( DrawCtx* p_dctx )
     WinSetClip( &dctx->oldTrayClip );
 } /* palm_draw_trayFinished */
 
-#ifdef FEATURE_HIGHRES
 static void
 smallBoldStringAt( const char* str, XP_U16 len, XP_S16 x, XP_U16 y )
 {
@@ -600,7 +595,6 @@ smallBoldStringAt( const char* str, XP_U16 len, XP_S16 x, XP_U16 y )
     FntSetFont( curFont );
     WinSetScalingMode( oldMode );
 } /* smallBoldStringAt */
-#endif
 
 static void
 palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
@@ -613,11 +607,9 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_U16 len, width;
     XP_U16 doubler = 1;
 
-#ifdef FEATURE_HIGHRES
     if ( dctx->doHiRes ) {
         doubler = 2;
     }
-#endif
 
     draw_clearRect( p_dctx, &localR );
 
@@ -637,12 +629,10 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
         len = XP_STRLEN((const char*)valBuf);
 
         if ( 0 ) {
-#ifdef FEATURE_HIGHRES
         } else if ( dctx->doHiRes && dctx->oneDotFiveAvail ) {
             smallBoldStringAt( valBuf, len, 
                                -(localR.left + localR.width), 
                                localR.top + localR.height - dctx->fntHeight - 1 );
-#endif
         } else {
             width = FntCharsWidth( valBuf, len );
             WinDrawChars( valBuf, len, localR.left + localR.width - width,
@@ -842,11 +832,9 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
     XP_UCHAR* second = NULL;
     XP_U16 doubler = 1;
 
-#ifdef FEATURE_HIGHRES
     if ( dctx->doHiRes ) {
         doubler = 2;
     }
-#endif
 
     widths[0] = FntCharsWidth( (const char*)txt, len ) + 1;
 
@@ -895,11 +883,9 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
             y += 1;
         } else {
             y -= 2;
-#ifdef FEATURE_HIGHRES
             if ( dctx->doHiRes ) {
                 --y;                     /* tweak it up one high-res pixel */
             }
-#endif
         }
 
         WinDrawChars( (const char*)txt, len, x, y );
@@ -1086,23 +1072,17 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 
         /* There's no room for the pts string if we're in highres mode and
            WinSetScalingMode isn't available. */
-#ifdef FEATURE_HIGHRES
-        if ( !dctx->doHiRes || dctx->oneDotFiveAvail ) 
-#endif
-            {
-                XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
+        if ( !dctx->doHiRes || dctx->oneDotFiveAvail ) {
+            XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
 
-                if ( 0 ) {
-#ifdef FEATURE_HIGHRES
-                    } else if ( dctx->oneDotFiveAvail ) {
-                        smallBoldStringAt( (const char*)str, XP_STRLEN((const char*)str), 
-                                           x, rect->top );
-#endif
-                    } else {
-                        WinDrawChars( (const char*)str, 
-                                      XP_STRLEN((const char*)str), x, rect->top );
-                    }
+            if ( dctx->oneDotFiveAvail ) {
+                smallBoldStringAt( (const char*)str, XP_STRLEN((const char*)str), 
+                                   x, rect->top );
+            } else {
+                WinDrawChars( (const char*)str, 
+                              XP_STRLEN((const char*)str), x, rect->top );
             }
+        }
 
         WinDrawChars( buf, PENDING_DIGITS, x, 
                       rect->top + (rect->height/2) - 1 );
@@ -1171,13 +1151,11 @@ palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
     }
 
     y = localR.top - 2;
-#ifdef FEATURE_HIGHRES
     if ( dctx->doHiRes ) {
         y -= 1;                 /* tweak it up one high-res pixel */
     } else {
         localR.height += 1;
     }
-#endif
 
     WinGetClip( &saveClip );
     WinSetClip( (RectangleType*)&localR );
@@ -1247,11 +1225,8 @@ splitString( const XP_UCHAR* str, XP_U16* nBufsP, XP_UCHAR** bufs )
 static XP_U16
 getMiniLineHt( PalmDrawCtx* dctx )
 {
-    if ( 0 ) {
-#ifdef FEATURE_HIGHRES
-    } else if ( dctx->doHiRes ) {
+    if ( dctx->doHiRes ) {
         return VALUE_HINT_RECT_HEIGHT_HR;
-#endif
     } else {
         return VALUE_HINT_RECT_HEIGHT;
     }
@@ -1355,9 +1330,7 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect,
                            void** closure, XP_Bool* invalUnder )
 {
     PalmMiniWinData* data = (PalmMiniWinData*)*closure;
-#if defined MEM_DEBUG || defined FEATURE_HIGHRES
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-#endif
 
     if ( !!closure && !!*closure ) {
         HIGHRES_PUSH_LOC(dctx);
@@ -1391,9 +1364,7 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     MPASSIGN(dctx->mpool, mpool);
 
     dctx->able = able;
-#ifdef FEATURE_HIGHRES
     dctx->doHiRes = globals->hasHiRes && globals->width == 320;
-#endif
     dctx->globals = globals;
     dctx->getResStrFunc = getRSF;
     dctx->drawingPrefs = drawprefs;
@@ -1459,12 +1430,10 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
 
     cWinWidth = CHARRECT_WIDTH;
     cWinHeight = CHARRECT_HEIGHT;
-#ifdef FEATURE_HIGHRES
     if ( dctx->doHiRes ) {
         cWinWidth *= 2;
         cWinHeight *= 2;
     }
-#endif
 
     if ( able == COLOR ) {
     } else {
@@ -1476,9 +1445,7 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     }
 
     dctx->fntHeight = FntBaseLine();
-#ifdef FEATURE_HIGHRES
     dctx->oneDotFiveAvail = globals->oneDotFiveAvail;
-#endif
 
     return (DrawCtx*)dctx;
 } /* palm_drawctxt_make */

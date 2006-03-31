@@ -83,11 +83,9 @@ typedef struct PalmDrawCtx {
 
     GraphicsAbility able;
 
-#ifdef FEATURE_HIGHRES
     UInt16 oldCoord;
     XP_Bool doHiRes;
     XP_Bool oneDotFiveAvail;
-#endif
 
 #ifdef TALL_FONTS
     XP_LangCode fontLangCode;
@@ -284,14 +282,12 @@ struct PalmAppGlobals {
     ProgressCtxt progress;
 #endif
 
-#ifdef FEATURE_HIGHRES
     XP_U16 width, height;
     XP_U16 sonyLibRef;
     XP_Bool doVSK;
     XP_Bool hasHiRes;
     XP_Bool oneDotFiveAvail;
     XP_Bool useHiRes;
-#endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool askTrayLimits;
