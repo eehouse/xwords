@@ -186,9 +186,7 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
         charPtr = (unsigned char*)MemHandleLock(tmpH);
         XP_ASSERT( MemHandleLockCount( tmpH ) == 1 );
         // use 2; ARM thinks sizeof(Xloc_header) is 4.
-#ifdef TALL_FONTS
         ctxt->super.langCode = *charPtr;
-#endif
         ctxt->super.countsAndValues = charPtr + 2;
 
         /* for those dicts with special chars */
