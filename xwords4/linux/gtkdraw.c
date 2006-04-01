@@ -302,9 +302,9 @@ drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
 }
 
 static XP_Bool
-gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter, 
-                   XP_Bitmap bitmap, XP_S16 owner, XWBonusType bonus, 
-                   HintAtts hintAtts,
+gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
+                   XP_Bitmap bitmap, Tile tile, XP_S16 owner, 
+                   XWBonusType bonus, HintAtts hintAtts,
                    XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;

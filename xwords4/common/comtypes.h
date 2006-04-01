@@ -104,6 +104,12 @@ typedef struct CommonPrefs {
 #define SET_VTABLE_ENTRY( vt, name, prefix ) \
          (vt)->m_##name = prefix##_##name
 
+#ifdef DRAW_LINK_DIRECT
+# define DLSTATIC
+#else
+# define DLSTATIC static
+#endif
+
 #ifdef DEBUG
 # define DEBUG_ASSIGN(a,b) (a) = (b)
 #else
