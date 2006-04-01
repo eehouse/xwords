@@ -48,7 +48,6 @@ static XP_Bool
 frank_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
                        const XP_Rect* rect, XP_Bool hasfocus )
 {
-/*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
     return XP_TRUE;
 } /* draw_finish */
 
@@ -203,26 +202,26 @@ frank_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* xprect,
     dctx->window->DrawRect( &rect, COLOR_BLACK );
 	
     if ( !!letter ) {
-	if ( *letter != LETTER_NONE ) { /* blank */
-	    dctx->window->DrawText( (char*)letter, rect.x+1, rect.y+1, 
-				    dctx->trayFont );
-	}
+        if ( *letter != LETTER_NONE ) { /* blank */
+            dctx->window->DrawText( (char*)letter, rect.x+1, rect.y+1, 
+                                    dctx->trayFont );
+        }
     } else if ( !!bitmap ) {
-	dctx->window->DrawImage( rect.x+2, rect.y+3, (IMAGE*)bitmap );
+        dctx->window->DrawImage( rect.x+2, rect.y+3, (IMAGE*)bitmap );
     }
 
     if ( val >= 0 ) {
-	sprintf( (char*)numbuf, (const char*)"%d", val );
-	width = GUI_TextWidth( dctx->valFont, numbuf, strlen(numbuf)); 
-	U16 height = GUI_FontHeight( dctx->valFont ); 
-	dctx->window->DrawText( (char*)numbuf, rect.x+rect.width - width - 1, 
-				rect.y + rect.height - height - 1, 
-				dctx->valFont );
+        sprintf( (char*)numbuf, (const char*)"%d", val );
+        width = GUI_TextWidth( dctx->valFont, numbuf, strlen(numbuf)); 
+        U16 height = GUI_FontHeight( dctx->valFont ); 
+        dctx->window->DrawText( (char*)numbuf, rect.x+rect.width - width - 1, 
+                                rect.y + rect.height - height - 1, 
+                                dctx->valFont );
     }
     
     if ( highlighted ) {
-	insetRect( &rect, 1 );
-	dctx->window->DrawRect( &rect, COLOR_BLACK );
+        insetRect( &rect, 1 );
+        dctx->window->DrawRect( &rect, COLOR_BLACK );
     }
 } /* frank_draw_drawTile */
 
@@ -232,7 +231,7 @@ frank_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* xprect )
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
 
     frank_draw_drawTile( p_dctx, xprect, (XP_UCHAR*)"?", 
-			 (XP_Bitmap*)NULL, -1, XP_FALSE );
+                         (XP_Bitmap*)NULL, -1, XP_FALSE );
 } /* frank_draw_drawTileBack */
 
 static void
@@ -250,9 +249,9 @@ frank_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
 
     COLOR color;
     if ( selected ) {
-	color = COLOR_GRAY27;
+        color = COLOR_GRAY27;
     } else {
-	color = COLOR_BLACK;
+        color = COLOR_BLACK;
     }
 
     dctx->window->DrawRectFilled( &winRect, color );
@@ -281,7 +280,7 @@ frank_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* xprect,
     cellDrawPrep( dctx, xprect, &rect );
 
     dctx->window->DrawImage( rect.x+3, rect.y+2, 
-			     vertical?&dctx->downcursor:&dctx->rightcursor );
+                             vertical?&dctx->downcursor:&dctx->rightcursor );
     /* frame the cell */
     dctx->window->DrawRect( &rect, COLOR_BLACK );
 } /* frank_draw_drawBoardArrow */
@@ -309,7 +308,7 @@ frank_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* r,
     char buf[15];
     sprintf( (char*)buf, "rem:%d", nTilesLeft );
     *width  = GUI_TextWidth( dctx->scoreFnt, (char*)buf, 
-			     strlen(buf) ); 
+                             strlen(buf) ); 
 } /* frank_draw_measureRemText */
 
 static void
@@ -320,7 +319,7 @@ frank_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
     char buf[15];
     sprintf( (char*)buf, "rem:%d", nTilesLeft );
     dctx->window->DrawText( (char*)buf, rInner->left, rInner->top, 
-			    dctx->scoreFnt );
+                            dctx->scoreFnt );
 } /* frank_draw_drawRemText */
 
 static XP_U16
@@ -328,14 +327,14 @@ scoreWidthAndText( char* buf, const FONT* font, const DrawScoreInfo* dsi )
 {
     char* borders = "";
     if ( dsi->isTurn ) {
-	borders = "*";
+        borders = "*";
     }
 
     sprintf( buf, "%s%.3d", borders, dsi->score );
     if ( dsi->nTilesLeft >= 0 ) {
-	char nbuf[10];
-	sprintf( nbuf, ":%d", dsi->nTilesLeft );
-	strcat( buf, nbuf );
+        char nbuf[10];
+        sprintf( nbuf, ":%d", dsi->nTilesLeft );
+        strcat( buf, nbuf );
     }
     strcat( buf, borders );
     
@@ -382,11 +381,10 @@ frank_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_U16 left;
 
     if ( score >= 0 ) {
-	sprintf( buf, "%.3d", score );
+        sprintf( buf, "%.3d", score );
     } else {
-	strcpy( buf, "???" );
+        strcpy( buf, "???" );
     }
-
 
     RECT r;
     XP_RectToRECT( &r, rect );
@@ -395,7 +393,7 @@ frank_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     left = r.x+1;
     dctx->window->DrawText( "Pts:", left, r.y, dctx->valFont );
     dctx->window->DrawText( buf, left, r.y+(r.height/2), 
-			    dctx->scoreFnt );
+                            dctx->scoreFnt );
 } /* frank_draw_score_pendingScore */
 
 static void
@@ -411,9 +409,9 @@ frankFormatTimerText( char* buf, XP_S16 secondsLeft )
     XP_U16 nChars = 0;
 
     if ( secondsLeft < 0 ) {
-	*buf++ = '-';
-	secondsLeft *= -1;
-	++nChars;
+        *buf++ = '-';
+        secondsLeft *= -1;
+        ++nChars;
     }
 
     minutes = secondsLeft / 60;
@@ -423,7 +421,7 @@ frankFormatTimerText( char* buf, XP_S16 secondsLeft )
     sprintf( secBuf, "0%d", seconds );
 
     nChars += sprintf( buf, "%d:%s", minutes, 
-		    secBuf[2] == '\0'? secBuf:&secBuf[1] );
+                       secBuf[2] == '\0'? secBuf:&secBuf[1] );
     return nChars;
 } /* frankFormatTimerText */
 
@@ -438,7 +436,7 @@ frank_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
     (void)frankFormatTimerText( buf, secondsLeft );
 
     XP_DEBUGF( "drawing timer text: %s at %d,%d", buf, rInner->left, 
-	       rInner->top );
+               rInner->top );
     RECT r;
     XP_RectToRECT( &r, rInner );
     eraseRect( dctx, &r );
@@ -452,17 +450,17 @@ frank_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
 
     switch( whichText ) {
     case BONUS_DOUBLE_LETTER:
-	str = "Double letter"; break;
+        str = "Double letter"; break;
     case BONUS_DOUBLE_WORD:
-	str = "Double word"; break;
+        str = "Double word"; break;
     case BONUS_TRIPLE_LETTER:
-	str = "Triple letter"; break;
+        str = "Triple letter"; break;
     case BONUS_TRIPLE_WORD:
-	str = "Triple word"; break;
+        str = "Triple word"; break;
     case INTRADE_MW_TEXT:	
-	str = "Click D when done"; break;
+        str = "Click D when done"; break;
     default:
-	XP_ASSERT( XP_FALSE );
+        XP_ASSERT( XP_FALSE );
     }
     return (XP_UCHAR*)str;
 } /* frank_draw_getMiniWText */
@@ -473,7 +471,7 @@ frank_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     *widthP = 6 + GUI_TextWidth( dctx->scoreFnt, (const char*)str,
-				strlen((const char*)str) ); 
+                                 strlen((const char*)str) ); 
     *heightP = 6 + GUI_FontHeight( dctx->scoreFnt ); 
 } /* frank_draw_measureMiniWText */
 
@@ -562,14 +560,14 @@ DrawCtx*
 frank_drawctxt_make( MPFORMAL CWindow* window )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)XP_MALLOC( mpool,
-						   sizeof(FrankDrawCtx) );
+                                                   sizeof(FrankDrawCtx) );
     U16 i;
 
-    dctx->vtable = (DrawCtxVTable*)XP_MALLOC( mpool,
-	sizeof(*(((FrankDrawCtx*)dctx)->vtable)) );
+    dctx->vtable = (DrawCtxVTable*)
+        XP_MALLOC( mpool, sizeof(*(((FrankDrawCtx*)dctx)->vtable)) );
 
     for ( i = 0; i < sizeof(*dctx->vtable)/4; ++i ) {
-	((void**)(dctx->vtable))[i] = draw_doNothing;
+        ((void**)(dctx->vtable))[i] = draw_doNothing;
     }
 
 /*     SET_VTABLE_ENTRY( dctx, draw_destroyCtxt, frank_ ); */
@@ -610,22 +608,22 @@ frank_drawctxt_make( MPFORMAL CWindow* window )
     dctx->trayFont = GUI_GetFont( 16, CTRL_NORMAL ); 
 
     IMAGE downcursor = { 9, 9, 2,
-			 COLOR_MODE_MONO, 0, (const COLOR *) 0,
-			 (U8*)downcursor_bits };
+                         COLOR_MODE_MONO, 0, (const COLOR *) 0,
+                         (U8*)downcursor_bits };
     XP_MEMCPY( (IMAGE*)&dctx->downcursor, &downcursor, 
-	       sizeof(dctx->downcursor) );
+               sizeof(dctx->downcursor) );
 
     IMAGE rightcursor = { 9, 9, 2,
-			  COLOR_MODE_MONO, 0, (const COLOR *) 0,
-			  (U8*)rightcursor_bits };
+                          COLOR_MODE_MONO, 0, (const COLOR *) 0,
+                          (U8*)rightcursor_bits };
     XP_MEMCPY( (IMAGE*)&dctx->rightcursor, &rightcursor, 
-	       sizeof(dctx->rightcursor) );
+               sizeof(dctx->rightcursor) );
 
     IMAGE startMark = { 9, 9, 2,
-			COLOR_MODE_MONO, 0, (const COLOR *) 0,
-			(U8*)startMark_bits };
+                        COLOR_MODE_MONO, 0, (const COLOR *) 0,
+                        (U8*)startMark_bits };
     XP_MEMCPY( (IMAGE*)&dctx->startMark, &startMark, 
-	       sizeof(dctx->startMark) );
+               sizeof(dctx->startMark) );
 
 #ifdef USE_PATTERNS
     for ( i = 0; i < BONUS_LAST; ++i ) {
@@ -638,4 +636,3 @@ frank_drawctxt_make( MPFORMAL CWindow* window )
 #endif
     return (DrawCtx*)dctx;
 } /* frank_drawctxt_make */
-
