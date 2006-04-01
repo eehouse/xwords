@@ -39,9 +39,7 @@
 
 static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                                           const XP_UCHAR* letters, XP_Bitmap bitmap,
-#ifdef TALL_FONTS
                                           Tile tile,
-#endif
                                           XP_S16 owner, XWBonusType bonus, 
                                           HintAtts hintAtts, XP_Bool isBlank, 
                                           XP_Bool isPending, XP_Bool isStar );
@@ -126,7 +124,6 @@ bitmapInRect( PalmDrawCtx* dctx, Int16 resID, const XP_Rect* rectP )
     drawBitmapAt( (DrawCtx*)dctx, resID, left, top );
 } /* bitmapInRect */
 
-#ifdef TALL_FONTS
 # define BMP_WIDTH 16
 # define BMP_HT 16
 
@@ -229,9 +226,6 @@ checkFontOffsets( PalmDrawCtx* dctx, const DictionaryCtxt* dict )
         dctx->fontLangCode = code;
     }
 }
-#else
-# define checkFontOffsets(a,b)
-#endif
 
 static XP_Bool
 palm_common_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
@@ -277,9 +271,7 @@ palm_clr_draw_boardFinished( DrawCtx* p_dctx )
 static XP_Bool
 palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                         const XP_UCHAR* letters, XP_Bitmap bitmap,
-#ifdef TALL_FONTS
                         Tile tile,
-#endif
                         XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                         XP_Bool isBlank, 
                         XP_Bool isPending, XP_Bool isStar )
@@ -313,9 +305,7 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
     return palm_common_draw_drawCell( p_dctx, rect, letters, bitmap, 
-#ifdef TALL_FONTS
                                       tile,
-#endif
                                       owner, bonus, hintAtts, isBlank, isPending, 
                                       isStar );
 } /* palm_clr_draw_drawCell */
@@ -374,9 +364,7 @@ palmDrawHintBorders( const XP_Rect* rect, HintAtts hintAtts )
 static XP_Bool
 palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                            const XP_UCHAR* letters, XP_Bitmap bitmap,
-#ifdef TALL_FONTS
                            Tile tile,
-#endif
                            XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
                            XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
@@ -431,12 +419,8 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
             XP_S16 strWidth = FntCharsWidth( (const char*)letters, len );
             XP_U16 x, y;
             x = localR.left + ((localR.width-strWidth) / 2);
-#ifdef TALL_FONTS
             y = localR.top - dctx->fontHtInfo[tile].topOffset;
             y += (localR.height - dctx->fontHtInfo[tile].height) / 2;
-#else
-            y = localR.top-1;
-#endif
             if ( len == 1 ) {
                 ++x;
             }
@@ -1456,10 +1440,8 @@ palm_drawctxt_destroy( DrawCtx* p_dctx )
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
     XP_FREE( dctx->mpool, p_dctx->vtable );
-#ifdef TALL_FONTS
     if ( !!dctx->fontHtInfo ) {
         XP_FREE( dctx->mpool, dctx->fontHtInfo );
     }
-#endif
     XP_FREE( dctx->mpool, dctx );
 } /* palm_drawctxt_destroy */
