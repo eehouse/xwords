@@ -45,7 +45,8 @@ eraseRect(FrankDrawCtx* dctx, RECT* rect )
 } /* eraseRect */
 
 static XP_Bool
-frank_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, XP_Bool hasfocus )
+frank_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
+                       const XP_Rect* rect, XP_Bool hasfocus )
 {
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
     return XP_TRUE;
@@ -81,9 +82,9 @@ cellDrawPrep( FrankDrawCtx* dctx, const XP_Rect* xprect, RECT* insetRect )
 } /* cellDrawPrep */
 
 static XP_Bool
-frank_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect, 
-                     XP_UCHAR* letters, XP_Bitmap* bitmap, 
-                     XP_S16 owner, XWBonusType bonus,
+frank_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* xprect, 
+                     const XP_UCHAR* letters, const XP_Bitmap* bitmap, 
+                     Tile tile, XP_S16 owner, XWBonusType bonus,
                      HintAtts hintAtts,
                      XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
 {
@@ -156,7 +157,7 @@ frank_draw_drawCell( DrawCtx* p_dctx, XP_Rect* xprect,
 } /* frank_draw_drawCell */
 
 static void
-frank_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
+frank_draw_invertCell( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     RECT r;
@@ -173,8 +174,8 @@ frank_draw_invertCell( DrawCtx* p_dctx, XP_Rect* rect )
 } /* frank_draw_invertCell */
 
 static XP_Bool
-frank_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
-		      XP_Bool hasfocus )
+frank_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner,
+                      XP_Bool hasfocus )
 {
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
 /*     clip? */
@@ -183,7 +184,8 @@ frank_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 owner,
 } /* frank_draw_trayBegin */
 
 static void
-frank_draw_drawTile( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letter,
+frank_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* xprect, 
+                     const XP_UCHAR* letter,
                      XP_Bitmap* bitmap, XP_S16 val, XP_Bool highlighted )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
@@ -225,7 +227,7 @@ frank_draw_drawTile( DrawCtx* p_dctx, XP_Rect* xprect, XP_UCHAR* letter,
 } /* frank_draw_drawTile */
 
 static void
-frank_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* xprect )
+frank_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* xprect )
 {
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
 
@@ -234,7 +236,8 @@ frank_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* xprect )
 } /* frank_draw_drawTileBack */
 
 static void
-frank_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool selected )
+frank_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
+                            XP_Bool selected )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     RECT winRect;
@@ -256,7 +259,7 @@ frank_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool selected )
 } /* frank_draw_drawTrayDivider */
 
 static void 
-frank_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
+frank_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     RECT rect;
@@ -268,7 +271,7 @@ frank_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rectP )
 } /* frank_draw_clearRect */
 
 static void
-frank_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect, 
+frank_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* xprect, 
                            XWBonusType cursorBonus, XP_Bool vertical,
                            HintAtts hintAtts )
 {
@@ -284,8 +287,8 @@ frank_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* xprect,
 } /* frank_draw_drawBoardArrow */
 
 static void
-frank_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers,
-		       XP_Bool hasfocus )
+frank_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                       XP_U16 numPlayers, XP_Bool hasfocus )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     RECT r;
@@ -295,7 +298,7 @@ frank_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, XP_U16 numPlayers,
 } /* frank_draw_scoreBegin */
 
 static void
-frank_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r, 
+frank_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* r, 
                            XP_S16 nTilesLeft, 
                            XP_U16* width, XP_U16* height )
 {
@@ -310,8 +313,8 @@ frank_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* r,
 } /* frank_draw_measureRemText */
 
 static void
-frank_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner, 
-                        XP_Rect* rOuter, XP_S16 nTilesLeft )
+frank_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                        const XP_Rect* rOuter, XP_S16 nTilesLeft )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char buf[15];
@@ -321,7 +324,7 @@ frank_draw_drawRemText( DrawCtx* p_dctx, XP_Rect* rInner,
 } /* frank_draw_drawRemText */
 
 static XP_U16
-scoreWidthAndText( char* buf, const FONT* font, DrawScoreInfo* dsi )
+scoreWidthAndText( char* buf, const FONT* font, const DrawScoreInfo* dsi )
 {
     char* borders = "";
     if ( dsi->isTurn ) {
@@ -341,8 +344,8 @@ scoreWidthAndText( char* buf, const FONT* font, DrawScoreInfo* dsi )
 } /* scoreWidthAndText */
 
 static void
-frank_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r, 
-                             DrawScoreInfo* dsi,
+frank_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r, 
+                             const DrawScoreInfo* dsi,
                              XP_U16* width, XP_U16* height )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
@@ -355,8 +358,8 @@ frank_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* r,
 
 static void
 frank_draw_score_drawPlayer( DrawCtx* p_dctx, 
-                             XP_Rect* rInner, XP_Rect* rOuter, 
-                             DrawScoreInfo* dsi )
+                             const XP_Rect* rInner, const XP_Rect* rOuter, 
+                             const DrawScoreInfo* dsi )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char buf[20];
@@ -371,8 +374,8 @@ frank_draw_score_drawPlayer( DrawCtx* p_dctx,
 } /* frank_draw_score_drawPlayer */
 
 static void
-frank_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 score,
-                               XP_U16 playerNum )
+frank_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
+                               XP_S16 score, XP_U16 playerNum )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char buf[5];
@@ -425,8 +428,9 @@ frankFormatTimerText( char* buf, XP_S16 secondsLeft )
 } /* frankFormatTimerText */
 
 static void
-frank_draw_drawTimer( DrawCtx* p_dctx, XP_Rect* rInner, XP_Rect* rOuter,
-		      XP_U16 player, XP_S16 secondsLeft )
+frank_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                      const XP_Rect* rOuter, XP_U16 player, 
+                      XP_S16 secondsLeft )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     char buf[12];
@@ -464,8 +468,8 @@ frank_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType whichText )
 } /* frank_draw_getMiniWText */
 
 static void
-frank_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str, 
-			     XP_U16* widthP, XP_U16* heightP )
+frank_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str, 
+                             XP_U16* widthP, XP_U16* heightP )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     *widthP = 6 + GUI_TextWidth( dctx->scoreFnt, (const char*)str,
@@ -474,8 +478,8 @@ frank_draw_measureMiniWText( DrawCtx* p_dctx, XP_UCHAR* str,
 } /* frank_draw_measureMiniWText */
 
 static void
-frank_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
-			   void** closureP )
+frank_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
+                           const XP_Rect* rect, void** closureP )
 {
     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx;
     RECT r;
@@ -498,8 +502,9 @@ frank_draw_drawMiniWindow( DrawCtx* p_dctx, XP_UCHAR* text, XP_Rect* rect,
 } /* frank_draw_drawMiniWindow */
 
 static void
-frank_draw_eraseMiniWindow( DrawCtx* p_dctx, XP_Rect* rect, XP_Bool lastTime,
-			    void** closure, XP_Bool* invalUnder )
+frank_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect, 
+                            XP_Bool lastTime,
+                            void** closure, XP_Bool* invalUnder )
 {
 /*     FrankDrawCtx* dctx = (FrankDrawCtx*)p_dctx; */
     *invalUnder = XP_TRUE;
