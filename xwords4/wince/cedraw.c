@@ -51,13 +51,14 @@ XPRtoRECT( RECT* rt, const XP_Rect* xprect )
 } /* XPRtoRECT */
 
 static void
-makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, XP_U32 x, XP_U32 y,
+makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, XP_Bool center,
                    COLORREF foreRef, CEBitmapInfo* info )
 {
 #if 1
     POINT points[2];
     HGDIOBJ forePen;
     XP_U16 nCols, nRows, row, col, rowBytes;
+    XP_S32 x, y;
     XP_UCHAR* bits = info->bits;
     HGDIOBJ oldObj;
     forePen = CreatePen( PS_SOLID, 1, foreRef );
@@ -68,6 +69,14 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, XP_U32 x, XP_U32 y,
     rowBytes = (nCols + 7) / 8;
     while ( (rowBytes % 2) != 0 ) {
         ++rowBytes;
+    }
+
+    x = bnds->left;
+    y = bnds->top;
+    if ( center ) {
+        /* the + 1 is to round up */
+        x += ((bnds->right - bnds->left) - nCols + 1) / 2;
+        y += ((bnds->bottom - bnds->top) - nRows + 1) / 2;
     }
 
     for ( row = 0; row < nRows; ++row ) {
@@ -252,7 +261,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 #endif
 
     } else if ( !!bitmap ) {
-        makeAndDrawBitmap( dctx, hdc, textRect.left + 2, textRect.top + 2, 
+        makeAndDrawBitmap( dctx, hdc, &rt, XP_TRUE,
                            foreColorRef, (CEBitmapInfo*)bitmap );
     } else if ( isStar ) {
         ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
@@ -347,7 +356,10 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         DrawText( hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_TOP | DT_LEFT );
         SelectObject( hdc, oldFont );
     } else if ( !!bitmap  ) {
-        makeAndDrawBitmap( dctx, hdc, rt.left + 1, rt.top + 5, 
+        RECT lrt = rt;
+        ++lrt.left;
+        lrt.top += 4;
+        makeAndDrawBitmap( dctx, hdc, &lrt, XP_FALSE,
                            dctx->globals->appPrefs.colors[USER_COLOR1+dctx->trayOwner],
                            (CEBitmapInfo*)bitmap );
     }
