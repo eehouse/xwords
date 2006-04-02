@@ -1600,9 +1600,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 #ifdef _WIN32_WCE
             SHHandleWMSettingChange( hWnd, wParam, lParam, &globals->sai );
 #endif
-            cePositionBoard( globals );
-            board_invalAll( globals->game.board );
-            draw = XP_TRUE;
+            if ( !!globals && !!globals->game.model ) {
+                cePositionBoard( globals );
+                board_invalAll( globals->game.board );
+                draw = XP_TRUE;
+            }
             break;
 
 #ifdef CEFEATURE_CANSCROLL
