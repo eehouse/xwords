@@ -1,16 +1,19 @@
 # -*- compile-command: "make TARGET_OS=wince"; -*-
+
 # This Makefile is meant to allow building Crosswords for PocketPC and
-# Windows using Linux.  As of Nov 27, 2005, it compiles and runs (on
-# XP) enough to draw its board, but then crashes.  It appears from the
-# log that an assert is failing.
-#
-# It does not yet link for PPC.
+# Windows using Linux.  As of March 2006, it compiles and runs on
+# PocketPC as well as when built with eVC.  Better, since bugs have
+# been fixed since then.  It also runs on Windows natively and under
+# WINE.
 #
 # I'm bulding on Debian's "testing" distribution, current as of the
 # above date.  Here are some of the packages I had to install to build
-# for win32.  I make no guarantees this list is complete.
+# for win32.  I make no guarantees this list is complete.  Patches are
+# required to the pocketpc-sdk and mingw32 packages to build.  They've
+# been submitted to the maintainers and should be included soon.
+# Contact me if you need them in the interim.
 #
-# mingw32 mingw32-binutils mingw32-runtime
+# mingw32 mingw32-binutils mingw32-runtime pocketpc-sdk
 
 PLATFORM = wince
 
