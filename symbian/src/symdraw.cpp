@@ -128,7 +128,7 @@ symClearRect( SymDrawCtxt* sctx, const TRect* rect, TInt clearTo )
 } // symClearRect
 
 static void
-drawFocusRect( SymDrawCtxt* sctx, XP_Rect* rect, XP_Bool hasfocus )
+drawFocusRect( SymDrawCtxt* sctx, const XP_Rect* rect, XP_Bool hasfocus )
 {
     TRect lRect;
     symLocalRect( &lRect, rect );
@@ -207,8 +207,8 @@ sym_draw_destroyCtxt( DrawCtx* p_dctx )
 }
 
 static XP_Bool
-sym_draw_boardBegin( DrawCtx* p_dctx, DictionaryCtxt* dict, XP_Rect* rect, 
-                     XP_Bool hasfocus )
+sym_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
+                     const XP_Rect* rect, XP_Bool hasfocus )
 {
     XP_LOGF( "sym_draw_boardBegin" );
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -232,7 +232,7 @@ sym_draw_vertScrollBoard( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/,
 #endif
 
 static XP_Bool
-sym_draw_trayBegin( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                     XP_U16 owner, XP_Bool hasfocus )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -259,7 +259,7 @@ makeRemText( TBuf16<64>* buf, XP_S16 nLeft )
 } // makeRemText
 
 static void 
-sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* /*r*/, 
+sym_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* /*r*/, 
                          XP_S16 nTilesLeft, 
                          XP_U16* widthP, XP_U16* heightP )
 {
@@ -273,8 +273,8 @@ sym_draw_measureRemText( DrawCtx* p_dctx, XP_Rect* /*r*/,
 } // sym_draw_measureRemText
 
 static void
-sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner, 
-                     XP_Rect* /*rOuter*/, XP_S16 nTilesLeft)
+sym_draw_drawRemText(DrawCtx* p_dctx, const XP_Rect* rInner, 
+                     const XP_Rect* /*rOuter*/, XP_S16 nTilesLeft)
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     TBuf16<64> tbuf;
@@ -295,7 +295,7 @@ sym_draw_drawRemText(DrawCtx* p_dctx, XP_Rect* rInner,
 } // sym_draw_drawRemText
 
 static void
-sym_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 /*numPlayers*/, XP_Bool hasfocus )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -303,8 +303,8 @@ sym_draw_scoreBegin( DrawCtx* p_dctx, XP_Rect* rect,
 }
 
 static void
-sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* /*r*/, 
-                           DrawScoreInfo* /*dsi*/,
+sym_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* /*r*/, 
+                           const DrawScoreInfo* /*dsi*/,
                            XP_U16* widthP, XP_U16* heightP )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -320,8 +320,8 @@ sym_draw_measureScoreText( DrawCtx* p_dctx, XP_Rect* /*r*/,
  * robot-ness and local/remoteness with colors?  Turn is with an icon.
  */
 static void
-sym_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* /*rInner*/, 
-                           XP_Rect* rOuter, DrawScoreInfo* dsi )
+sym_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* /*rInner*/, 
+                           const XP_Rect* rOuter, const DrawScoreInfo* dsi )
 {
     const TInt KTurnIconWidth = 16;
     const TInt KNameColumnWidth = 90;
@@ -396,7 +396,7 @@ sym_draw_score_drawPlayer( DrawCtx* p_dctx, XP_Rect* /*rInner*/,
 } /* sym_draw_score_drawPlayer */
 
 static void
-sym_draw_score_pendingScore( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
                              XP_S16 score, XP_U16 /*playerNum*/ )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -435,14 +435,15 @@ sym_draw_scoreFinished( DrawCtx* /*dctx*/ )
 }
 
 static void
-sym_draw_drawTimer( DrawCtx* /*p_dctx*/, XP_Rect* /*rInner*/, 
-                    XP_Rect* /*rOuter*/,
+sym_draw_drawTimer( DrawCtx* /*p_dctx*/, const XP_Rect* /*rInner*/, 
+                    const XP_Rect* /*rOuter*/,
                     XP_U16 /*player*/, XP_S16 /*secondsLeft*/ )
 {
 }
 
 static void
-textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect, TBool highlight )
+textInCell( SymDrawCtxt* sctx, const XP_UCHAR* text, const TRect* lRect,
+            TBool highlight )
 {
     if ( highlight ) {
         sctx->iGC->SetPenColor( sctx->colors[COLOR_WHITE] );
@@ -464,10 +465,10 @@ textInCell( SymDrawCtxt* sctx, XP_UCHAR* text, TRect* lRect, TBool highlight )
 } /* textInCell */
 
 static XP_Bool
-sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                    /* at least one of these two will be null */
-                   XP_UCHAR* text, XP_Bitmap bitmap,
-                   XP_S16 /*owner*/, /* -1 means don't use */
+                   const XP_UCHAR* text, XP_Bitmap bitmap,
+                   Tile tile, XP_S16 /*owner*/, /* -1 means don't use */
                    XWBonusType bonus, HintAtts /*hintAtts*/,
                    XP_Bool isBlank, XP_Bool highlight, 
                    XP_Bool isStar )
@@ -514,14 +515,14 @@ sym_draw_drawCell( DrawCtx* p_dctx, XP_Rect* rect,
 } /* sym_draw_drawCell */
 
 static void
-sym_draw_invertCell( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/ )
+sym_draw_invertCell( DrawCtx* /*p_dctx*/, const XP_Rect* /*rect*/ )
 {
 }
 
 static void
-sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                    /* at least 1 of these two will be null*/
-                   XP_UCHAR* text, XP_Bitmap bitmap,
+                   const XP_UCHAR* text, XP_Bitmap bitmap,
                    XP_S16 val, XP_Bool highlighted )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -578,13 +579,13 @@ sym_draw_drawTile( DrawCtx* p_dctx, XP_Rect* rect,
 } // sym_draw_drawTile
 
 static void
-sym_draw_drawTileBack( DrawCtx* p_dctx, XP_Rect* rect )
+sym_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     sym_draw_drawTile( p_dctx, rect, (XP_UCHAR*)"?", NULL, -1, XP_FALSE );
 }
 
 static void
-sym_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
                           XP_Bool /*selected*/ )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
@@ -602,7 +603,7 @@ sym_draw_drawTrayDivider( DrawCtx* p_dctx, XP_Rect* rect,
 }
 
 static void
-sym_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rect )
+sym_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     TRect lRect;
@@ -611,7 +612,7 @@ sym_draw_clearRect( DrawCtx* p_dctx, XP_Rect* rect )
 }
 
 static void
-sym_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect, 
+sym_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect, 
                          XWBonusType bonus, XP_Bool vert,
                          HintAtts /*hintAtts*/ )
 {
@@ -631,7 +632,7 @@ sym_draw_drawBoardArrow( DrawCtx* p_dctx, XP_Rect* rect,
 
 #ifdef KEY_SUPPORT
 static void
-sym_draw_drawTrayCursor( DrawCtx* p_dctx, XP_Rect* rect )
+sym_draw_drawTrayCursor( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     TRect lRect;
@@ -646,7 +647,7 @@ sym_draw_drawTrayCursor( DrawCtx* p_dctx, XP_Rect* rect )
 }
 
 static void
-sym_draw_drawBoardCursor( DrawCtx* p_dctx, XP_Rect* rect )
+sym_draw_drawBoardCursor( DrawCtx* p_dctx, const XP_Rect* rect )
 {
     SymDrawCtxt* sctx = (SymDrawCtxt*)p_dctx;
     TRect lRect;
@@ -672,19 +673,19 @@ sym_draw_getMiniWText( DrawCtx* /*p_dctx*/,
 }
 
 static void
-sym_draw_measureMiniWText( DrawCtx* /*p_dctx*/, XP_UCHAR* /*textP*/, 
+sym_draw_measureMiniWText( DrawCtx* /*p_dctx*/, const XP_UCHAR* /*textP*/, 
                            XP_U16* /*width*/, XP_U16* /*height*/ )
 {
 }
 
 static void
-sym_draw_drawMiniWindow( DrawCtx* /*p_dctx*/, XP_UCHAR* /*text*/,
-                         XP_Rect* /*rect*/, void** /*closure*/ )
+sym_draw_drawMiniWindow( DrawCtx* /*p_dctx*/, const XP_UCHAR* /*text*/,
+                         const XP_Rect* /*rect*/, void** /*closure*/ )
 {
 }
 
 static void
-sym_draw_eraseMiniWindow( DrawCtx* /*p_dctx*/, XP_Rect* /*rect*/,
+sym_draw_eraseMiniWindow( DrawCtx* /*p_dctx*/, const XP_Rect* /*rect*/,
                           XP_Bool /*lastTime*/, void** /*closure*/,
                           XP_Bool* /*invalUnder*/ )
 {
