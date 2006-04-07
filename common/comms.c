@@ -82,7 +82,9 @@ struct CommsCtxt {
     MsgQueueElem* msgQueueTail;
     XP_U16 queueLen;
 
-#ifdef BEYOND_IR
+    /* The following fields, down to isServer, are only used if BEYOND_IR is
+       defined, but I'm leaving them in here so apps built both ways can open
+       each saved games files.*/
     CommsAddrRec addr;
 
     /* Stuff for relays */
@@ -101,7 +103,7 @@ struct CommsCtxt {
     XP_U16 heartbeat;
     XP_U16 nPlayersHere;
     XP_U16 nPlayersTotal;
-#endif
+
     XP_Bool isServer;
     XP_Bool connecting;
 #ifdef DEBUG
@@ -148,12 +150,14 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
     result->sendClosure = closure;
     result->util = util;
 
+#ifdef BEYOND_IR
     result->myHostID = isServer? HOST_ID_SERVER: HOST_ID_NONE;
     XP_LOGF( "set myHostID to %d", result->myHostID );
 
     result->relayState = COMMS_RELAYSTATE_UNCONNECTED;
     result->nPlayersHere = nPlayersHere;
     result->nPlayersTotal = nPlayersTotal;
+#endif
     return result;
 } /* comms_make */
 
