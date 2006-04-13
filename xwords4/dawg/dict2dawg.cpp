@@ -372,24 +372,6 @@ registerSubArray( NodeList& edgesR, int nodeLoc )
     gSubsHash[edgesR] = nodeLoc;
 } // registerSubArray
 
-#if 0
-sub toWord($) {
-    my ( $tileARef ) = @_;
-    my $word = "";
-
-    foreach my $tile (@$tileARef) {
-        foreach my $letter (keys (%gTableHash) ) {
-            if ( $tile == $gTableHash{$letter} ) {
-                $word .= $letter;
-                last;
-            }
-        }
-    }
-
-    return $word;
-}
-#endif
-
 static void
 readNextWord( void )
 {
@@ -445,45 +427,9 @@ readNextWord( void )
 static bool
 firstBeforeSecond( const char* lhs, const char* rhs )
 {
-    char sl[16];
-    char sr[16];
-
-//     tileToAscii( sl, lhs );
-//     tileToAscii( sr, rhs );
-
     bool gt = 0 > strcmp( lhs, rhs );
-//     fprintf( stderr, "comparing %s, %s; returning %s\n", 
-//              sl, sr, gt?"true":"false" );
-    
     return gt;
 }
-
-#if 0
-// passed to sort.  Should remain unprototyped for effeciency's sake
-
-sub cmpWords {
-
-    my $lenA = @{$a};
-    my $lenB = @{$b};
-    my $min = $lenA > $lenB? $lenB: $lenA;
-
-    for ( my $i = 0; $i < $min; ++$i ) {
-        my $ac = ${$a}[$i];
-        my $bc = ${$b}[$i];
-
-        my $res = $ac <=> $bc;
-
-        if ( $res != 0 ) {
-            return $res;        // we're done
-        }
-    }
-
-    // If we got here, they match up to their common length.  Longer is
-    // greater.
-    my $res = @{$a} <=> @{$b};
-    return $res; // which is longer?
-} // cmpWords
-#endif
 
 static char*
 tileToAscii( char* out, int outSize, const char* in )
@@ -608,24 +554,6 @@ printWords( std::vector<char*>* strings )
 //         char* str = strings[i];
 //     }
 }
-
-#if 0
-// Print binary representation of trie array.  This isn't used yet, but
-// eventually it'll want to dump to multiple files appropriate for Palm
-// that can be catenated together on other platforms.  There'll need to
-// be a file giving the offset of the first node too.  Also, might want
-// to move to 4-byte representation when the input can't otherwise be
-// handled.
-
-sub dumpNodes {
-
-    for ( my $i = 0; $i < @gNodes; ++$i ) {
-        my $node = $gNodes[$i];
-        my $bstr = pack( "I", $node );
-        print STDOUT $bstr;
-    }
-}
-#endif
 
 /*****************************************************************************
  * Little node-field setters and getters to hide what bits represent
