@@ -252,9 +252,10 @@ sub printNode {
 
     print STDERR "[$index] ";
 
+    my $letter = TrieNodeGetLetter($node);
     printf( STDERR
-            "letter=%d; isTerminal=%d; isLastSib=%d; fco=%d;\n",
-            TrieNodeGetLetter($node),
+            "letter=%d(%s); isTerminal=%d; isLastSib=%d; fco=%d;\n",
+            $letter, "" . $gRevMap[$letter],
             TrieNodeGetIsTerminal($node),
             TrieNodeGetIsLastSibling($node),
             TrieNodeGetFirstChildOffset($node));
