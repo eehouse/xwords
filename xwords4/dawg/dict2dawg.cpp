@@ -53,6 +53,8 @@ typedef unsigned int Node;
 typedef std::vector<Node> NodeList;
 typedef std::vector<char*> WordList;
 
+#define MAX_WORD_LEN 15
+
 int gFirstDiff;
 char* gCurrentWord = "";
 int gCurrentWordLen;
@@ -76,7 +78,9 @@ int gWordCount = 0;
 std::map<char,int> gTableHash;
 int gBlankIndex;
 std::vector<char> gRevMap;
+#ifdef DEBUG
 bool gDebug = false;
+#endif
 std::map<NodeList, int> gSubsHash;
 bool gForceFour = false;             // use four bytes regardless of need?
 int gNBytesPerNode;
@@ -95,7 +99,7 @@ static WordList* parseAndSort( FILE* file );
 static void printWords( WordList* strings );
 static void readNextWord( void );
 static bool firstBeforeSecond( const char* lhs, const char* rhs );
-static char* tileToAscii( char* out, const char* in );
+static char* tileToAscii( char* out, int outSize, const char* in );
 static int buildNode( int depth );
 static void TrieNodeSetIsLastSibling( Node* nodeR, bool isLastSibling );
 static int addNodes( NodeList& newedgesR );
@@ -142,11 +146,11 @@ main( int argc, char** argv )
     if ( gInFileName ) {
         fclose( infile );
     }
-
+#ifdef DEBUG
     if ( gDebug ) {
         printWords( gInputStrings );
     }
-
+#endif
     // Do I need this stupid thing?  Better to move the first row to
     // the front of the array and patch everything else.  Or fix the
     // non-palm dictionary format to include the offset of the first
@@ -165,11 +169,12 @@ main( int argc, char** argv )
         writeOutStartNode( gStartNodeOut, firstRootChildOffset );
     }
 
+#ifdef DEBUG
     if ( gDebug ) {
         fprintf( stderr, "\n... dumping table ...\n" );
         printNodes( gNodes );
     }
-
+#endif
     // write out the number of nodes if requested
     if ( gCountFile ) {
         FILE* OFILE;
@@ -185,7 +190,7 @@ main( int argc, char** argv )
     }
 
     if ( gDumpText && gNodes.size() > 0 ) {
-        char buf[31];
+        char buf[(MAX_WORD_LEN*2)+1];
         printOneLevel( firstRootChildOffset, buf, 0 );
     }
 
@@ -220,7 +225,7 @@ moveTopToFront( int* firstRef )
         lastSub.assign( gNodes.begin() + firstChild, gNodes.end() );
         gNodes.erase( gNodes.begin() + firstChild, gNodes.end() );
     } else if ( gWordCount != 0 ) {
-        error_exit( "there should be no words!!" );
+        ERROR_EXIT( "there should be no words!!" );
     }
 
     // remove the first (garbage) node
@@ -231,7 +236,7 @@ moveTopToFront( int* firstRef )
         // -1 because all move down by 1; see prev line
         diff = lastSub.size() - 1;
         if ( diff < 0 ) {
-            error_exit( "something wrong with lastSub.size()" );
+            ERROR_EXIT( "something wrong with lastSub.size()" );
         }
     } else {
         diff = 0;
@@ -291,23 +296,26 @@ addNodes( NodeList& newedgesR )
     int found = findSubArray( newedgesR );
 
     if ( found == 0 ) {
-        error_exit( "0 is an invalid match!!!" );
+        ERROR_EXIT( "0 is an invalid match!!!" );
     }
 
     if ( found < 0 ) {
         found = gNodes.size();
-
+#ifdef DEBUG
         if ( gDebug ) {
             fprintf( stderr, "adding...\n" );
             printNodes( newedgesR );
         }
+#endif
         gNodes.insert( gNodes.end(), newedgesR.begin(), newedgesR.end() );
 
         registerSubArray( newedgesR, found );
     }
+#ifdef DEBUG
     if ( gDebug ) {
         fprintf( stderr, "%s => %d\n", __FUNCTION__, found );
     }
+#endif
     return found;
 } // addNodes
 
@@ -315,6 +323,7 @@ static void
 printNode( int index, Node node )
 {
     int letter = TrieNodeGetLetter(node);
+    assert( letter < gRevMap.size() );
     fprintf( stderr,
              "[%d] letter=%d(%c); isTerminal=%s; isLastSib=%s; fco=%d;\n", 
              index, letter, gRevMap[letter],
@@ -356,7 +365,7 @@ registerSubArray( NodeList& edgesR, int nodeLoc )
 #ifdef DEBUG
     std::map<NodeList, int>::iterator iter = gSubsHash.find( edgesR );
     if ( iter != gSubsHash.end() ) {
-        error_exit( "entry for key shouldn't exist!!" );
+        ERROR_EXIT( "entry for key shouldn't exist!!" );
     }
 #endif
     gSubsHash[edgesR] = nodeLoc;
@@ -389,12 +398,16 @@ readNextWord( void )
         gDone = gNextWordIndex == gInputStrings->size();
         if ( !gDone ) {
             word = gInputStrings->at(gNextWordIndex++);
+#ifdef DEBUG
         } else if ( gDebug ) {
             fprintf( stderr, "gDone set to true\n" );
+#endif
         }
+#ifdef DEBUG
         if ( gDebug ) {
             fprintf( stderr, "got word: %s\n", word );
         }
+#endif
     }
     int numCommonLetters = 0;
     int len = strlen( word );
@@ -410,20 +423,23 @@ readNextWord( void )
     gFirstDiff = numCommonLetters;
     if ( (gCurrentWordLen > 0) && (strlen(word) > 0)
          && !firstBeforeSecond( gCurrentWord, word ) ) {
-        char buf1[16];
-        char buf2[16];
-        tileToAscii( buf1, gCurrentWord );
-        tileToAscii( buf1, word );
-        error_exit( "words %s and %s are out of order\n",
+        char buf1[MAX_WORD_LEN+1];
+        char buf2[MAX_WORD_LEN+1];
+        tileToAscii( buf1, sizeof(buf1), gCurrentWord );
+        tileToAscii( buf2, sizeof(buf2), word );
+        ERROR_EXIT( "words %s and %s are out of order\n",
                     buf1, buf2 );
     }
     gCurrentWord = word;
     gCurrentWordLen = strlen(word);
 
+#ifdef DEBUG
     if ( gDebug ) {
-        char buf[16];
-        fprintf( stderr, "gCurrentWord now %s\n", tileToAscii(buf, gCurrentWord) );
+        char buf[MAX_WORD_LEN+1];
+        fprintf( stderr, "gCurrentWord now %s\n", 
+                 tileToAscii( buf, sizeof(buf), gCurrentWord) );
     }
+#endif
 } // readNextWord
 
 static bool
@@ -432,8 +448,8 @@ firstBeforeSecond( const char* lhs, const char* rhs )
     char sl[16];
     char sr[16];
 
-    tileToAscii( sl, lhs );
-    tileToAscii( sr, rhs );
+//     tileToAscii( sl, lhs );
+//     tileToAscii( sr, rhs );
 
     bool gt = 0 > strcmp( lhs, rhs );
 //     fprintf( stderr, "comparing %s, %s; returning %s\n", 
@@ -470,7 +486,7 @@ sub cmpWords {
 #endif
 
 static char*
-tileToAscii( char* out, const char* in )
+tileToAscii( char* out, int outSize, const char* in )
 {
     char* orig = out;
     for ( ; ; ) {
@@ -479,7 +495,9 @@ tileToAscii( char* out, const char* in )
             *out = '\0';
             break;
         }
+        assert( ch < gRevMap.size() );
         *out++ = gRevMap[ch];
+        assert( (out - orig) < outSize );
     }
     return orig;
 }
@@ -515,27 +533,36 @@ parseAndSort( FILE* infile )
                     int len = word.length() + 1;
                     char* str = (char*)malloc( len );
                     assert( str );
-                    memcpy( str, word.c_str(), word.length());
-                    str[len] = '\0';
+                    memcpy( str, word.c_str(), len);
                     wordlist->push_back( str );
                     ++gWordCount;
+#ifdef DEBUG
+                    if ( gDebug ) {
+                        char buf[MAX_WORD_LEN+1];
+                        fprintf( stderr, "loaded %s\n", asciiWord.c_str() );
+                        fprintf( stderr, "from tiles: %s\n", 
+                                 tileToAscii( buf, sizeof(buf), str ) );
+                    }
+#endif
                 }
                 asciiWord = "";
                 break;
             } else if ( gTableHash.find(byt) != gTableHash.end() ) {
                 if ( !dropWord ) {
+#ifdef DEBUG
                     if ( gDebug ) {
                         fprintf( stderr, "adding %d for %c\n", 
                                  gTableHash[byt], (char)byt );
                     }
+#endif
                     word += (char)gTableHash[byt];
-                    assert( word.size() <= 15 );
+                    assert( word.size() <= MAX_WORD_LEN );
                     if ( gKillIfMissing ) {
                         asciiWord += byt;
                     }
                 }
             } else if ( gKillIfMissing ) {
-                error_exit( "chr %c (%d) not in map file %s\n"
+                ERROR_EXIT( "chr %c (%d) not in map file %s\n"
                             "last word was %s\n",
                             byt, (int)byt, gTableFile, asciiWord.c_str() );
             } else {
@@ -546,17 +573,17 @@ parseAndSort( FILE* infile )
     }
  done:
     if ( gNeedsSort && (gWordCount > 1) ) {
+#ifdef DEBUG
         if ( gDebug ) {
             fprintf( stderr, "starting sort...\n" );
         }
+#endif
         std::sort( wordlist->begin(), wordlist->end(), firstBeforeSecond );
+#ifdef DEBUG
         if ( gDebug ) {
             fprintf( stderr, "sort finished\n" );
         }
-    }
-
-    if ( gDebug ) {
-        fprintf( stderr, "length of list is %d.\n", wordlist->size() );
+#endif
     }
     return wordlist;
 } // parseAndSort
@@ -566,8 +593,8 @@ printWords( std::vector<char*>* strings )
 {
     std::vector<char*>::iterator iter = strings->begin();
     while ( iter != strings->end() ) {
-        char buf[16];
-        tileToAscii( buf, *iter );
+        char buf[MAX_WORD_LEN+1];
+        tileToAscii( buf, sizeof(buf), *iter );
         fprintf( stderr, "%s\n", buf );
         ++iter;
     }
@@ -640,7 +667,7 @@ static void
 TrieNodeSetLetter( Node* nodeR, int letter )
 {
     if( letter >= 64 ) {
-        error_exit( "letter %d too big", letter );
+        ERROR_EXIT( "letter %d too big", letter );
     }
 
     int mask = ~(0x3F << 24);
@@ -660,7 +687,7 @@ static void
 TrieNodeSetFirstChildOffset( Node* nodeR, int fco )
 {
     if ( (fco & 0xFF000000) != 0 ) {
-        error_exit( "%x larger than 24 bits", fco );
+        ERROR_EXIT( "%x larger than 24 bits", fco );
     }
 
     int mask = ~0x00FFFFFF;
@@ -769,7 +796,7 @@ emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase )
             fprintf( stderr, "blank's at 32; 3-byte-nodes still ok\n" );
             gNBytesPerNode = 3;
         } else {
-            error_exit( "move blank to last position in info.txt "
+            ERROR_EXIT( "move blank to last position in info.txt "
                         "for smaller DAWG." );
         }
     }
@@ -784,7 +811,7 @@ emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase )
         }
 
         if ( nextFileNum > 99 ) {
-            error_exit( "Too many outfiles; infinite loop?" );
+            ERROR_EXIT( "Too many outfiles; infinite loop?" );
         }
 
         char outName[256];
@@ -801,7 +828,7 @@ emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase )
 
                 // do nothing but a sanity check
                 if ( i >= gNodes.size() ) {
-                    error_exit( "bad trie format: last node not last sibling" );
+                    ERROR_EXIT( "bad trie format: last node not last sibling" );
                 }
 
             }
@@ -833,15 +860,18 @@ printOneLevel( int index, char* str, int curlen )
 //         char* newStr = str;
         Node node = gNodes[index++];
 
+        assert( TrieNodeGetLetter(node) < gRevMap.size() );
         char lindx = gRevMap[TrieNodeGetLetter(node)];
 
         if ( (int)lindx >= 0x20 ) {
 //             newStr .= "$lindx";
             str[curlen++] = lindx;
         } else {
+#ifdef DEBUG
             if ( gDebug ) {
                 fprintf( stderr, "sub space\n" );
             }
+#endif
 //             $newStr .= "\\" . chr('0'+$lindx);
             str[curlen++] = '\\';
             str[curlen++] = '0' + lindx;
@@ -874,7 +904,7 @@ outputNode( Node node, int nBytes, FILE* outfile )
     if ( nBytes == 4 ) {
         fourthByte = fco >> 16;
         if ( fourthByte > 0xFF ) {
-            error_exit( "fco too big" );
+            ERROR_EXIT( "fco too big" );
         }
         fco &= 0xFFFF;
     }
@@ -907,13 +937,13 @@ outputNode( Node node, int nBytes, FILE* outfile )
     }
     fco >>= 16;                // it should now be 1 or 0
     if ( fco > 1 ) {
-        error_exit( "fco not 1 or 0" );
+        ERROR_EXIT( "fco not 1 or 0" );
     }
 
     unsigned char chIn5 = TrieNodeGetLetter(node);
     unsigned char bits = chIn5;
     if ( bits > 0x1F && nBytes == 3 ) {
-        error_exit( "char %d too big", bits );
+        ERROR_EXIT( "char %d too big", bits );
     }
 
     if ( TrieNodeGetIsLastSibling(node) ) {
@@ -951,7 +981,9 @@ usage( const char* name )
              "\t[-nosort] (input already sorted in accord with -m; " 
              " default=sort'\n"
              "\t[-dump]  (write dictionary as text to STDERR for testing)\n"
+#ifdef DEBUG
              "\t[-debug] (turn on verbose output)\n"
+#endif
              "\t[-force4](use 4 bytes per node regardless of need)\n"
              "\t[-r]     (reject words with letters not in mapfile)\n"
              "\t[-k]     (kill if any letters not in mapfile -- default)\n",
@@ -962,7 +994,7 @@ usage( const char* name )
 static void
 error_exit( int line, const char* fmt, ... )
 {
-    fprintf( stderr, "Line %d: ", line );
+    fprintf( stderr, "Error on line %d: ", line );
     va_list ap;
     va_start( ap, fmt );
     vfprintf( stderr, fmt, ap );
@@ -1008,13 +1040,16 @@ parseARGV( int argc, char** argv )
             gBytesPerNodeFile = argv[index++];
         } else if ( 0 == strcmp( arg, "-force4" ) ) {
             gForceFour = true;
+#ifdef DEBUG
         } else if ( 0 == strcmp( arg, "-debug" ) ) {
             gDebug = true;
+#endif
         } else {
-            error_exit( "unexpected arg %s", arg );
+            ERROR_EXIT( "unexpected arg %s", arg );
         }
     }
 
+#ifdef DEBUG
     if ( gDebug ) {
         fprintf( stderr, "gNBytesPerOutfile=$gNBytesPerOutfile\n" );
         fprintf( stderr, "gTableFile=$gTableFile\n" );
@@ -1022,6 +1057,6 @@ parseARGV( int argc, char** argv )
         fprintf( stderr, "gStartNodeOut=$gStartNodeOut\n" );
         fprintf( stderr, "gTermChar=%c(%d)\n", gTermChar, (int)gTermChar );
     }
-
+#endif
     return gTableFile;
 } // parseARGV
