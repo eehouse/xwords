@@ -87,7 +87,8 @@ int gNBytesPerNode;
 bool gUseUnicode;
 
 
-#define MAX_POOL_SIZE 1000000
+// OWL is 1.7M
+#define MAX_POOL_SIZE 3000000
 #define ERROR_EXIT(...) error_exit( __LINE__, __VA_ARGS__ );
 
 static char* parseARGV( int argc, char** argv );
@@ -301,7 +302,7 @@ addNodes( NodeList& newedgesR )
 
     if ( found < 0 ) {
         found = gNodes.size();
-#ifdef DEBUG
+#if defined DEBUG && defined SEVERE_DEBUG
         if ( gDebug ) {
             fprintf( stderr, "adding...\n" );
             printNodes( newedgesR );
@@ -425,10 +426,9 @@ readNextWord( void )
          && !firstBeforeSecond( gCurrentWord, word ) ) {
         char buf1[MAX_WORD_LEN+1];
         char buf2[MAX_WORD_LEN+1];
-        tileToAscii( buf1, sizeof(buf1), gCurrentWord );
-        tileToAscii( buf2, sizeof(buf2), word );
         ERROR_EXIT( "words %s and %s are out of order\n",
-                    buf1, buf2 );
+                    tileToAscii( buf1, sizeof(buf1), gCurrentWord ),
+                    tileToAscii( buf2, sizeof(buf2), word ) );
     }
     gCurrentWord = word;
     gCurrentWordLen = strlen(word);
@@ -510,12 +510,13 @@ parseAndSort( FILE* infile )
     // allocate storage for the actual chars.  wordlist's char*
     // elements will point into this.  It'll leak.  So what.
     
-//     void* pool = malloc( MAX_POOL_SIZE );
-//     assert( NULL != pool );
-//     memset( pool, 0, MAX_POOL_SIZE );
+    char* str = (char*)malloc( MAX_POOL_SIZE );
+    assert( NULL != str );
 
     std::string word;
+#ifdef DEBUG
     std::string asciiWord;
+#endif
 
     for ( ; ; ) {
 
@@ -531,25 +532,26 @@ parseAndSort( FILE* infile )
             } else if ( byt == gTermChar ) {
                 if ( !dropWord ) {
                     int len = word.length() + 1;
-                    char* str = (char*)malloc( len );
-                    assert( str );
                     memcpy( str, word.c_str(), len);
                     wordlist->push_back( str );
+                    str += len;
                     ++gWordCount;
 #ifdef DEBUG
                     if ( gDebug ) {
                         char buf[MAX_WORD_LEN+1];
                         fprintf( stderr, "loaded %s\n", asciiWord.c_str() );
-                        fprintf( stderr, "from tiles: %s\n", 
-                                 tileToAscii( buf, sizeof(buf), str ) );
                     }
 #endif
                 }
-                asciiWord = "";
+#ifdef DEBUG
+                asciiWord.clear();
+#endif
                 break;
+
+                // Don't call into the hashtable twice here!!
             } else if ( gTableHash.find(byt) != gTableHash.end() ) {
                 if ( !dropWord ) {
-#ifdef DEBUG
+#if defined DEBUG && defined SEVERE_DEBUG
                     if ( gDebug ) {
                         fprintf( stderr, "adding %d for %c\n", 
                                  gTableHash[byt], (char)byt );
@@ -557,17 +559,21 @@ parseAndSort( FILE* infile )
 #endif
                     word += (char)gTableHash[byt];
                     assert( word.size() <= MAX_WORD_LEN );
+#ifdef DEBUG
                     if ( gKillIfMissing ) {
                         asciiWord += byt;
                     }
+#endif
                 }
             } else if ( gKillIfMissing ) {
+                char buf[MAX_WORD_LEN+1];
                 ERROR_EXIT( "chr %c (%d) not in map file %s\n"
                             "last word was %s\n",
-                            byt, (int)byt, gTableFile, asciiWord.c_str() );
+                            byt, (int)byt, gTableFile, 
+                            tileToAscii( buf, sizeof(buf), word.c_str() ) );
             } else {
                 dropWord = true;
-                word = "";     // lose anything we already have
+                word.clear();     // lose anything we already have
             }
         }
     }
