@@ -30,6 +30,11 @@ PAR = ../par.pl
 
 LANGUAGE = $(shell basename $$(pwd))
 
+# prefer the compiled version if available.  But don't compile it
+# automatically until it's a bit better tested.
+DICT2DAWG = $(if $(shell test -x ../dict2dawg && echo foo),\
+		../dict2dawg,../dict2dawg.pl)
+
 #all: target_all
 
 # let languages set this first, but we always add blank to it.
@@ -231,12 +236,12 @@ else
 	fi
 endif
 
-dawg$(LANG)%.stamp: $(LANG)Main.dict.gz ../dict2dawg.pl table.bin ../Makefile.langcommon
+dawg$(LANG)%.stamp: $(LANG)Main.dict.gz $(DICT2DAWG) table.bin ../Makefile.langcommon
 	start=$$(echo $@ | sed -e 's/dawg$(LANG)\([0-9]*\)to[0-9]*.stamp/\1/'); \
 	end=$$(echo $@ | sed -e 's/dawg$(LANG)[0-9]*to\([0-9]*\).stamp/\1/'); \
 	echo $${start} and $$end; \
 	zcat $< | grep "^.\{$${start},$${end}\}$$" | \
-		sort -u | ../dict2dawg.pl $(TABLE_ARG) table.bin -b 28000 \
+		sort -u | $(DICT2DAWG) $(TABLE_ARG) table.bin -b 28000 \
 		-ob dawg$(LANG)$* \
 		-sn $(LANG)StartLoc.bin -k -term 10 -wc $(LANG)$*_wordcount.bin \
 		$(FORCE_4) -ns $(LANG)$*_nodesize.bin
