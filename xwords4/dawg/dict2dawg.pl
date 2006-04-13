@@ -37,7 +37,7 @@
 # map file, however.
 
 # This is meant eventually to be runnable as part of a cgi system for
-# letting users generating Crosswords dicts online.
+# letting users generate Crosswords dicts online.
 
 
 
@@ -799,6 +799,7 @@ sub usage {
     print STDERR "usage: $0 \n"
         . "\t[-b    bytesPerFile] (default = 0xFFFFFFFF)\n"
         . "\t-m     mapFile\n"
+        . "\t-mn    mapFile (unicode)\n"
         . "\t-ob    outFileBase\n"
         . "\t-sn    start node out file\n"
         . "\t[-if   input file name]  -- default = stdin\n"
@@ -809,6 +810,7 @@ sub usage {
         . "\t[-force4](use 4 bytes per node regardless of need)\n"
         . "\t[-r]     (reject words with letters not in mapfile)\n"
         . "\t[-k]     (kill if any letters no in mapfile -- default)\n"
+        . "\t[-debug] (print a bunch of stuff)\n"
         ;
 
 } # usage
@@ -835,6 +837,7 @@ sub parseARGV {
           if ($arg =~ /-wc/) {$gCountFile = shift(@ARGV); last SWITCH;}
           if ($arg =~ /-ns/) {$gBytesPerNodeFile = shift(@ARGV); last SWITCH;}
           if ($arg =~ /-force4/) {$gForceFour = 1; last SWITCH;}
+          if ($arg =~ /-debug/) {$debug = 1; last SWITCH;}
           die "unexpected arg $arg\n";
       }
     }
