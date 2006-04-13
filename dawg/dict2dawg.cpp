@@ -550,9 +550,6 @@ printWords( std::vector<char*>* strings )
         fprintf( stderr, "%s\n", buf );
         ++iter;
     }
-//     for ( int i = 0; i < strings->size(); ++i ) {
-//         char* str = strings[i];
-//     }
 }
 
 /*****************************************************************************
@@ -669,9 +666,6 @@ makeTableHash( void )
 {
     int i;
     FILE* TABLEFILE = fopen( gTableFile, "r"  );
-//     open TABLEFILE, "< $gTableFile";
-
-    //splice @gRevMap;            // empty it
 
     for ( i = 0; ; ++i ) {
         int ch = getc(TABLEFILE);
@@ -686,7 +680,6 @@ makeTableHash( void )
             break;
         }
 
-//         push @gRevMap, $ch;
         gRevMap.push_back(ch);
 
         if ( ch == 0 ) {	// blank
@@ -697,7 +690,7 @@ makeTableHash( void )
         }
         // die "$0: $gTableFile too large\n" 
         assert( i < 64 );
-//         die "$0: only blank (0) can be 64th char\n" ;
+        // die "$0: only blank (0) can be 64th char\n" ;
         assert( i < 64 || ch == 0 );
 
         gTableHash[ch] = i;
@@ -791,14 +784,12 @@ printOneLevel( int index, char* str, int curlen )
 {
     int inlen = curlen;
     for ( ; ; ) {
-//         char* newStr = str;
         Node node = gNodes[index++];
 
         assert( TrieNodeGetLetter(node) < gRevMap.size() );
         char lindx = gRevMap[TrieNodeGetLetter(node)];
 
         if ( (int)lindx >= 0x20 ) {
-//             newStr .= "$lindx";
             str[curlen++] = lindx;
         } else {
 #ifdef DEBUG
@@ -806,7 +797,6 @@ printOneLevel( int index, char* str, int curlen )
                 fprintf( stderr, "sub space\n" );
             }
 #endif
-//             $newStr .= "\\" . chr('0'+$lindx);
             str[curlen++] = '\\';
             str[curlen++] = '0' + lindx;
         }
