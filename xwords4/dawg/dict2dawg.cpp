@@ -1,4 +1,4 @@
-/* -*- compile-command: "g++ -g -o dict2dawg dict2dawg.cpp"; -*- */
+/* -*- compile-command: "g++ -O -o dict2dawg dict2dawg.cpp"; -*- */
 /*************************************************************************
  * adapted from perl code that was itself adapted from C++ code
  * Copyright (C) 2000 Falk Hueffner
@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <netinet/in.h>
+#include <assert.h>
 
 #include <string>
 #include <map>
@@ -750,6 +751,9 @@ makeTableHash( void )
 {
     int i;
     FILE* TABLEFILE = fopen( gTableFile, "r"  );
+    if ( NULL == TABLEFILE ) {
+        ERROR_EXIT( "unable to open %s\n", gTableFile );
+    }
 
     for ( i = 0; ; ++i ) {
         int ch = getc(TABLEFILE);
