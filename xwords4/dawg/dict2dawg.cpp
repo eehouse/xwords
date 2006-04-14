@@ -56,19 +56,22 @@ typedef std::vector<char*> WordList;
 #define MAX_WORD_LEN 15
 
 int gFirstDiff;
-char* gCurrentWord = "";
-int gCurrentWordLen;
+
+static char gCurrentWordBuf[MAX_WORD_LEN+1] = { '\0' };
+ // this will never change for non-sort case
+static char* gCurrentWord = gCurrentWordBuf;
+static int gCurrentWordLen;
+
 char* gCurWord = NULL;                   // save so can check for sortedness
 bool gDone = false;
-WordList* gInputStrings;
 static int gNextWordIndex;
-bool gNeedsSort = true;
+static void (*gReadWordProc)(void) = NULL;
 NodeList gNodes;       // final array of nodes
 unsigned int gNBytesPerOutfile = 0xFFFFFFFF;
 char* gTableFile = NULL;
 char* gOutFileBase = NULL;
 char* gStartNodeOut = NULL;
-char* gInFileName = NULL;
+static FILE* gInFile = NULL;
 bool gKillIfMissing = true;
 char gTermChar = '\n';
 bool gDumpText = false;                // dump the dict as text after?
@@ -91,14 +94,13 @@ bool gUseUnicode;
 #define MAX_POOL_SIZE 3000000
 #define ERROR_EXIT(...) error_exit( __LINE__, __VA_ARGS__ );
 
-static char* parseARGV( int argc, char** argv );
+static char* parseARGV( int argc, char** argv, const char** inFileName );
 static void usage( const char* name );
 static void error_exit( int line, const char* fmt, ... );
 static char parsechar( const char* in );
 static void makeTableHash( void );
 static WordList* parseAndSort( FILE* file );
 static void printWords( WordList* strings );
-static void readNextWord( void );
 static bool firstBeforeSecond( const char* lhs, const char* rhs );
 static char* tileToAscii( char* out, int outSize, const char* in );
 static int buildNode( int depth );
@@ -124,34 +126,21 @@ static void writeOutStartNode( const char* startNodeOut,
 static void emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase );
 static void outputNode( Node node, int nBytes, FILE* outfile );
 static void printOneLevel( int index, char* str, int curlen );
+static void readFromSortedArray( void );
 
 int 
 main( int argc, char** argv ) 
 { 
-    if ( NULL == parseARGV( argc, argv ) ) {
+    gReadWordProc = readFromSortedArray;
+
+    const char* inFileName;
+    if ( NULL == parseARGV( argc, argv, &inFileName ) ) {
         usage(argv[0]);
         exit(1);
     }
 
     makeTableHash();
 
-    FILE* infile;
-    if ( gInFileName ) {
-        infile = fopen( gInFileName, "r" );
-    } else {
-        infile = stdin;
-    }
-
-    gInputStrings = parseAndSort( infile );
-    gNextWordIndex = 0;
-    if ( gInFileName ) {
-        fclose( infile );
-    }
-#ifdef DEBUG
-    if ( gDebug ) {
-        printWords( gInputStrings );
-    }
-#endif
     // Do I need this stupid thing?  Better to move the first row to
     // the front of the array and patch everything else.  Or fix the
     // non-palm dictionary format to include the offset of the first
@@ -160,8 +149,14 @@ main( int argc, char** argv )
     Node dummyNode = (Node)0xFFFFFFFF;
     assert( sizeof(Node) == 4 );
     gNodes.push_back(dummyNode);
+
+    if ( NULL == inFileName ) {
+        gInFile = stdin;
+    } else {
+        gInFile = fopen( inFileName, "r" );
+    }
     
-    readNextWord();
+    (*gReadWordProc)();
 
     int firstRootChildOffset = buildNode(0);
     moveTopToFront( &firstRootChildOffset );
@@ -201,6 +196,11 @@ main( int argc, char** argv )
         fclose( OFILE );
     }
     fprintf( stderr, "Used %d per node.\n", gNBytesPerNode );
+
+    if ( NULL != inFileName ) {
+        fclose( gInFile );
+    }
+
 } /* main */
 
 // We now have an array of nodes with the last subarray being the
@@ -264,7 +264,7 @@ buildNode( int depth )
         // End of word reached. If the next word isn't a continuation
         // of the current one, then we've reached the bottom of the
         // recursion tree.
-        readNextWord();
+        (*gReadWordProc)();
         if (gFirstDiff < depth || gDone) {
             return 0;
         }
@@ -373,14 +373,28 @@ registerSubArray( NodeList& edgesR, int nodeLoc )
 } // registerSubArray
 
 static void
-readNextWord( void )
+readFromSortedArray( void )
 {
+    // The first time we need a new word, we read 'em all in.
+    static WordList* sInputStrings = NULL; // we'll just let this leak
+
+    if ( sInputStrings == NULL ) {
+        sInputStrings = parseAndSort( gInFile );
+        gNextWordIndex = 0;
+
+#ifdef DEBUG
+        if ( gDebug ) {
+            printWords( sInputStrings );
+        }
+#endif
+    }
+
     char* word = "";
 
     if ( !gDone ) {
-        gDone = gNextWordIndex == gInputStrings->size();
+        gDone = gNextWordIndex == sInputStrings->size();
         if ( !gDone ) {
-            word = gInputStrings->at(gNextWordIndex++);
+            word = sInputStrings->at(gNextWordIndex++);
 #ifdef DEBUG
         } else if ( gDebug ) {
             fprintf( stderr, "gDone set to true\n" );
@@ -422,7 +436,115 @@ readNextWord( void )
                  tileToAscii( buf, sizeof(buf), gCurrentWord) );
     }
 #endif
-} // readNextWord
+} // readFromSortedArray
+
+static char*
+readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
+{
+    char* result = NULL;
+    int count = 0;
+    bool dropWord = false;
+    bool done = false;
+
+    // for each byte
+    for ( ; ; ) {
+        int byt = getc( gInFile );
+
+        // EOF is special: we don't try for another word even if
+        // dropWord is true; we must leave now.
+        if ( byt == EOF || byt == gTermChar ) {
+            *gotEOF = byt == EOF;
+
+            if ( !dropWord || *gotEOF ) {
+                if ( count != 0 ) {
+                    wordBuf[count] = '\0';
+                    result = wordBuf;
+                    *lenp = count;
+                    ++gWordCount;
+                }
+                break;          // we've finished a word
+            } else if ( *gotEOF ) {
+                break;
+            }
+
+            // Don't call into the hashtable twice here!!
+        } else if ( gTableHash.find(byt) != gTableHash.end() ) {
+            if ( !dropWord ) {
+                wordBuf[count++] = (char)gTableHash[byt];
+                if ( count >= bufLen ) {
+                    char buf[MAX_WORD_LEN+1];
+                    ERROR_EXIT( "word starting \"%s\" too long", 
+                                tileToAscii( buf, sizeof(buf), wordBuf ));
+                }
+            }
+        } else if ( gKillIfMissing ) {
+            char buf[MAX_WORD_LEN+1];
+            ERROR_EXIT( "chr %c (%d) not in map file %s\n"
+                        "last word was %s\n",
+                        byt, (int)byt, gTableFile, 
+                        tileToAscii( buf, sizeof(buf), wordBuf ) );
+        } else {
+            dropWord = true;
+            count = 0;     // lose anything we already have
+        }
+    }
+
+//     if ( NULL != result ) {
+//         char buf[MAX_WORD_LEN+1];
+//         fprintf( stderr, "%s returning %s\n", __FUNCTION__,
+//                  tileToAscii( buf, sizeof(buf), result ) );
+//     }
+    return result;
+} // readOneWord
+
+static void
+readFromFile( void )
+{
+    char wordBuf[MAX_WORD_LEN+1];
+    static bool s_eof = false;;
+    char* word;
+    int len;
+
+    gDone = s_eof;
+    if ( !gDone ) {
+        word = readOneWord( wordBuf, sizeof(wordBuf), &len, &s_eof );
+        gDone = NULL == word;
+    }
+    if ( gDone ) {
+        word = "";
+        len = 0;
+    }
+
+    int numCommonLetters = 0;
+    if ( gCurrentWordLen < len ) {
+        len = gCurrentWordLen;
+    }
+
+    while ( gCurrentWord[numCommonLetters] == word[numCommonLetters]
+            && numCommonLetters < len ) {
+        ++numCommonLetters;
+    }
+
+    gFirstDiff = numCommonLetters;
+    if ( (gCurrentWordLen > 0) && (strlen(word) > 0)
+         && !firstBeforeSecond( gCurrentWord, word ) ) {
+        char buf1[MAX_WORD_LEN+1];
+        char buf2[MAX_WORD_LEN+1];
+        ERROR_EXIT( "words %s and %s are out of order\n",
+                    tileToAscii( buf1, sizeof(buf1), gCurrentWord ),
+                    tileToAscii( buf2, sizeof(buf2), word ) );
+    }
+    gCurrentWordLen = strlen(word);
+    strncpy( gCurrentWordBuf, word, sizeof(gCurrentWordBuf) );
+
+#ifdef DEBUG
+    if ( gDebug ) {
+        char buf[MAX_WORD_LEN+1];
+        fprintf( stderr, "gCurrentWord now %s\n", 
+                 tileToAscii( buf, sizeof(buf), gCurrentWord) );
+    }
+#endif
+} // readFromFile
 
 static bool
 firstBeforeSecond( const char* lhs, const char* rhs )
@@ -456,75 +578,37 @@ parseAndSort( FILE* infile )
     // allocate storage for the actual chars.  wordlist's char*
     // elements will point into this.  It'll leak.  So what.
     
-    char* str = (char*)malloc( MAX_POOL_SIZE );
-    assert( NULL != str );
+    int memleft = MAX_POOL_SIZE;
+    char* str = (char*)malloc( memleft );
+    if ( NULL == str ) {
+        ERROR_EXIT( "can't allocate main string storage" );
+    }
 
-    std::string word;
-#ifdef DEBUG
-    std::string asciiWord;
-#endif
-
+    bool eof = false;
     for ( ; ; ) {
+        int len;
+        char buf[MAX_WORD_LEN+1];
+        char* word = readOneWord( str, memleft, &len, &eof );
 
-        bool dropWord = false;
-        word.clear();
+        if ( NULL == word ) {
+            break;
+        }
 
-        // for each byte
-        for ( ; ; ) {
-            int byt = getc( infile );
+        wordlist->push_back( str );
+        ++len;                  // include null byte
+        str += len;
+        memleft -= len;
+        ++gWordCount;
 
-            if ( byt == EOF ) {
-                goto done;
-            } else if ( byt == gTermChar ) {
-                if ( !dropWord ) {
-                    int len = word.length() + 1;
-                    memcpy( str, word.c_str(), len);
-                    wordlist->push_back( str );
-                    str += len;
-                    ++gWordCount;
-#ifdef DEBUG
-                    if ( gDebug ) {
-                        char buf[MAX_WORD_LEN+1];
-                        fprintf( stderr, "loaded %s\n", asciiWord.c_str() );
-                    }
-#endif
-                }
-#ifdef DEBUG
-                asciiWord.clear();
-#endif
-                break;
-
-                // Don't call into the hashtable twice here!!
-            } else if ( gTableHash.find(byt) != gTableHash.end() ) {
-                if ( !dropWord ) {
-#if defined DEBUG && defined SEVERE_DEBUG
-                    if ( gDebug ) {
-                        fprintf( stderr, "adding %d for %c\n", 
-                                 gTableHash[byt], (char)byt );
-                    }
-#endif
-                    word += (char)gTableHash[byt];
-                    assert( word.size() <= MAX_WORD_LEN );
-#ifdef DEBUG
-                    if ( gKillIfMissing ) {
-                        asciiWord += byt;
-                    }
-#endif
-                }
-            } else if ( gKillIfMissing ) {
-                char buf[MAX_WORD_LEN+1];
-                ERROR_EXIT( "chr %c (%d) not in map file %s\n"
-                            "last word was %s\n",
-                            byt, (int)byt, gTableFile, 
-                            tileToAscii( buf, sizeof(buf), word.c_str() ) );
-            } else {
-                dropWord = true;
-                word.clear();     // lose anything we already have
-            }
+        if ( eof  ) {
+            break;
+        }
+        if ( memleft <= 0 ) {
+            ERROR_EXIT( "no memory left\n" );
         }
     }
- done:
-    if ( gNeedsSort && (gWordCount > 1) ) {
+
+    if ( gWordCount > 1 ) {
 #ifdef DEBUG
         if ( gDebug ) {
             fprintf( stderr, "starting sort...\n" );
@@ -928,8 +1012,9 @@ error_exit( int line, const char* fmt, ... )
 }
 
 static char*
-parseARGV( int argc, char** argv )
+parseARGV( int argc, char** argv, const char** inFileName )
 {
+    *inFileName = NULL;
     int index = 1;
     while ( index < argc ) {
 
@@ -947,7 +1032,7 @@ parseARGV( int argc, char** argv )
         } else if ( 0 == strcmp( arg, "-sn" ) ) {
             gStartNodeOut = argv[index++];
         } else if ( 0 == strcmp( arg, "-if" ) ) {
-            gInFileName = argv[index++];
+            *inFileName = argv[index++];
         } else if ( 0 == strcmp( arg, "-r" ) ) {
             gKillIfMissing = false;
         } else if ( 0 == strcmp( arg, "-k" ) ) {
@@ -957,7 +1042,7 @@ parseARGV( int argc, char** argv )
         } else if ( 0 == strcmp( arg, "-dump" ) ) {
             gDumpText = true;
         } else if ( 0 == strcmp( arg, "-nosort" ) ) {
-            gNeedsSort = false;
+            gReadWordProc = readFromFile;
         } else if ( 0 == strcmp( arg, "-wc" ) ) {
             gCountFile = argv[index++];
         } else if ( 0 == strcmp( arg, "-ns" ) ) {
