@@ -573,18 +573,19 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
         XP_U8* base;
         wchar_t pathBuf[257];
 
+        wcscpy( pathBuf, path );
+        pathBuf[pathLen] = 0;
+        wcscat( pathBuf, name );
+
 #ifdef DEBUG
         {
-            char narrowName[32];
-            int len = wcslen( name );
-            len = WideCharToMultiByte( CP_ACP, 0, name, len + 1,
+            char narrowName[257];
+            int len = wcslen( pathBuf );
+            len = WideCharToMultiByte( CP_ACP, 0, pathBuf, len + 1,
                                        narrowName, len + 1, NULL, NULL );
             XP_LOGF( "%s ends in .xwd", narrowName );
         }
 #endif
-        wcscpy( pathBuf, path );
-        pathBuf[pathLen] = 0;
-        wcscat( pathBuf, name );
 
         base = openMappedFile( MPPARM(mpool) pathBuf, &mappedFile, 
                                &hFile, NULL );
@@ -606,8 +607,9 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
     return result;
 } /* checkIfDictAndLegal */
 
-static XP_Bool
-locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
+static void
+locateOneDir( MPFORMAL wchar_t* path, XP_UCHAR** bufs, XP_U16 nSought,
+              XP_U16* nFoundP )
 {
     WIN32_FIND_DATA data;
     HANDLE fileH;
@@ -637,19 +639,31 @@ locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
 #if defined TARGET_OS_WINCE
                 /* We don't do recursive search on Win32!!! */
                 lstrcpy( path+startLen, data.cFileName );
-                result = locateOneDir( MPPARM(mpool) path, which );
-                if ( result ) {
+                locateOneDir( MPPARM(mpool) path, bufs, nSought, nFoundP );
+                if ( *nFoundP == nSought ) {
                     break;
                 }
                 path[startLen] = 0;
 #endif
             } else if ( checkIfDictAndLegal( MPPARM(mpool) path, startLen,
-                                             data.cFileName )
-                        && (*which-- == 0)) {
-                /* we're done! */
-                lstrcpy( path+startLen, data.cFileName );
-                result = XP_TRUE;
-                break;
+                                             data.cFileName ) ) {
+                XP_U16 len;
+                XP_UCHAR* str;
+                XP_ASSERT( *nFoundP < nSought );
+
+                len = startLen + wcslen( data.cFileName ) + 1;
+                str = XP_MALLOC( mpool, len );
+                WideCharToMultiByte( CP_ACP, 0, path, startLen, 
+                                     str, startLen, NULL, NULL ); 
+                WideCharToMultiByte( CP_ACP, 0, data.cFileName, -1, 
+                                     str + startLen, len - startLen, 
+                                     NULL, NULL ); 
+                XP_LOGF( "%s: got %s at end\n", __FUNCTION__, str );
+
+                bufs[(*nFoundP)++] = str;
+                if ( *nFoundP == nSought ) {
+                    break;
+                }
             }
 
             if ( !FindNextFile( fileH, &data ) ) {
@@ -660,25 +674,18 @@ locateOneDir( MPFORMAL wchar_t* path, XP_U16* which )
 
         (void)FindClose( fileH );
     }
-          
-    return result;
 } /* locateOneDir */
 
-XP_UCHAR*
-ceLocateNthDict( MPFORMAL XP_U16 which )
+XP_U16
+ceLocateNDicts( MPFORMAL XP_UCHAR** bufs, XP_U16 nSought )
 {
+    XP_U16 nFound = 0;
     wchar_t pathBuf[257];
-    XP_UCHAR* result = NULL;
 
     pathBuf[0] = 0;
 
-    if ( locateOneDir( MPPARM(mpool) pathBuf, &which ) ) {
-        XP_U16 len = wcslen( pathBuf );
-        result = XP_MALLOC( mpool, len + 1 );
-        len = WideCharToMultiByte( CP_ACP, 0, pathBuf, len + 1,
-                                   result, len + 1, NULL, NULL );
-    }
-    return result;
+    locateOneDir( MPPARM(mpool) pathBuf, bufs, nSought, &nFound );
+    return nFound;
 } /* ceLocateNthDict */
 
 static XP_U32
