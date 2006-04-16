@@ -6,7 +6,7 @@
 
 use strict;
 
-my $provider = "-p \"Crosswords project\"";
+my $provider = "\"Crosswords project\"";
 
 usage() if 0 == @ARGV;
 
@@ -23,17 +23,21 @@ while ( my $path = shift @ARGV ) {
 
     my $fname = "/tmp/file$$.list";
 
+    # see this url for %CE5% and other definitions:
+    # http://msdn.microsoft.com/library/default.asp?url=/library/en-us/DevGuideSP/html/sp_wce51consmartphonewindowscestringsozup.asp
+
     open FILE, "> $fname";
     print FILE "$path ";
-    print FILE '%CE1%\\Crosswords', "\n";
+    print FILE '%CE5%\\Crosswords', "\n";
     close FILE;
 
     my $cabname = `basename $path`;
     chomp $cabname;
-    $cabname =~ s/.xwd$/_xwd/;
-    $cabname .= ".cab";
+    $cabname =~ s/.xwd$//;
+    my $appname = $cabname;
+    $cabname .= "_xwd.cab";
 
-    `pocketpc-cab $provider $fname $cabname`;
+    `pocketpc-cab -p $provider -a $appname $fname $cabname`;
 
     print STDERR "$cabname done\n";
     unlink $fname;
