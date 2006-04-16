@@ -967,8 +967,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT
-    globals->gameInfo.dictName = ceLocateNthDict( MPPARM(mpool) 0 );
-    result = globals->gameInfo.dictName != NULL;
+    result = 1 == ceLocateNDicts(MPPARM(mpool) &globals->gameInfo.dictName, 1);
     if ( !result ) {
         messageBoxChar( globals, "Please install at least one Crosswords "
                         "dictionary.", L"Fatal error" );

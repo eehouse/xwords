@@ -33,7 +33,12 @@ DictionaryCtxt* ce_dictionary_make_empty( CEAppGlobals* globals );
 
 XP_Bool ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 len );
 
-XP_UCHAR* ceLocateNthDict( MPFORMAL XP_U16 which );
+/* ceLocateNDicts: Allocate and store in bufs ptrs to up to nSought paths to
+ * dict files.  Return the number actually found.  Caller is responsible for
+ * making sure bufs contains nSought slots.
+ */
+XP_U16 ceLocateNDicts( MPFORMAL XP_UCHAR** bufs, XP_U16 nSought );
+
 
 XP_UCHAR* bname( XP_UCHAR* in );
 #endif

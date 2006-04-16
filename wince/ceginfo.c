@@ -109,7 +109,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         XP_MEMCPY( giState->newDictName, gi->dictName, 
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
 
-    } else if ( !!(str = ceLocateNthDict( MPPARM(globals->mpool) 0 ) ) ) {
+    } else if ( 1 == ceLocateNDicts( MPPARM(globals->mpool) &str, 1 ) ) {
         XP_MEMCPY( giState->newDictName, str, (XP_U16)XP_STRLEN(str)+1 );
         XP_FREE( globals->mpool, str );
         str = bname( giState->newDictName );
