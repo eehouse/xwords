@@ -28,7 +28,7 @@
 typedef struct GameInfoState {
     CEAppGlobals* globals;
     HWND hDlg;
-    XP_UCHAR newDictName[CE_MAX_PATH_LEN];
+    XP_UCHAR newDictName[CE_MAX_PATH_LEN+1];
 
     XP_Bool isNewGame;              /* newGame or GameInfo */
     XP_Bool userCancelled;          /* OUT param */
