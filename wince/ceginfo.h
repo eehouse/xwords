@@ -23,10 +23,12 @@
 #include "stdafx.h" 
 #include "cemain.h"
 #include "ceprefs.h"
+#include "cedict.h"
 
 typedef struct GameInfoState {
     CEAppGlobals* globals;
-    XP_UCHAR newDictName[256];
+    HWND hDlg;
+    XP_UCHAR newDictName[CE_MAX_PATH_LEN];
 
     XP_Bool isNewGame;              /* newGame or GameInfo */
     XP_Bool userCancelled;          /* OUT param */
@@ -34,6 +36,7 @@ typedef struct GameInfoState {
     XP_Bool prefsChanged;
     XP_Bool colorsChanged;
     XP_Bool addrChanged;
+    XP_Bool curSelSet;
     Connectedness curServerHilite;
     CePrefsPrefs prefsPrefs;
 } GameInfoState;

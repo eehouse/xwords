@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
-/* Copyright 1999-2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+/* Copyright 1999-2006 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,8 @@
 
 #include "cemain.h"
 
+#define CE_MAX_PATH_LEN 256
+
 typedef struct CEBitmapInfo {
     XP_U8* bits;
     XP_U16 nCols;
@@ -31,13 +33,12 @@ typedef struct CEBitmapInfo {
 DictionaryCtxt* ce_dictionary_make(CEAppGlobals* globals, XP_UCHAR* name);
 DictionaryCtxt* ce_dictionary_make_empty( CEAppGlobals* globals );
 
-XP_Bool ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 len );
-
 /* ceLocateNDicts: Allocate and store in bufs ptrs to up to nSought paths to
  * dict files.  Return the number actually found.  Caller is responsible for
  * making sure bufs contains nSought slots.
  */
-XP_U16 ceLocateNDicts( MPFORMAL XP_UCHAR** bufs, XP_U16 nSought );
+typedef XP_Bool (*OnePathCB)( const wchar_t* wPath, XP_U16 index, void* ctxt );
+XP_U16 ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt );
 
 
 XP_UCHAR* bname( XP_UCHAR* in );
