@@ -601,17 +601,6 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
                 if ( !(*cb)( path, (*nFoundP)++, ctxt ) ) {
                     break;
                 }
-                
-/*                 len = startLen + wcslen( data.cFileName ) + 1; */
-/*                 WideCharToMultiByte( CP_ACP, 0, path, startLen,  */
-/*                                      buf, startLen, NULL, NULL );  */
-/*                 WideCharToMultiByte( CP_ACP, 0, data.cFileName, -1,  */
-/*                                      buf + startLen, len - startLen,  */
-/*                                      NULL, NULL );  */
-
-/*                 if ( !(*cb)( buf, (*nFoundP)++, ctxt ) ) { */
-/*                     break; */
-/*                 } */
 
                 if ( *nFoundP == nSought ) {
                     break;
