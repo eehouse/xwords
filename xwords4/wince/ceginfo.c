@@ -43,6 +43,31 @@ ceCountLocalIn( HWND hDlg, XP_U16 nPlayers )
 } /* ceCountLocalIn */
 #endif
 
+
+static XP_Bool
+addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
+{
+    GameInfoState* giState = (GameInfoState*)ctxt;
+    XP_LOGF( "%s called %dth time", __FUNCTION__, index );
+    SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_ADDSTRING, 0, 
+                        (long)wPath );
+
+    if ( giState->newDictName[0] != 0 && !giState->curSelSet ) {
+        XP_UCHAR buf[CE_MAX_PATH_LEN+1];
+        WideCharToMultiByte( CP_ACP, 0, wPath, -1, buf, sizeof(buf),
+                             NULL, NULL );
+        XP_LOGF( "%s: comparing %s, %s", __FUNCTION__, buf, giState->newDictName );
+        if ( 0 == XP_STRCMP( buf, giState->newDictName ) ) {
+            XP_LOGF( "%s: they're the same; setting to %d", __FUNCTION__, index );
+            giState->curSelSet = XP_TRUE;
+            SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, 
+                                index, 0L );
+        }
+    }
+
+    return XP_TRUE;
+}
+
 static void
 loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 {
@@ -101,40 +126,28 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                         giState->curServerHilite, 0L );
 #endif
 
-    /* set the dictionary name */
-    if ( 0 ) {
 #ifndef STUBBED_DICT
-    } else if ( !!gi->dictName ) { 
-        str = bname( gi->dictName );
-        XP_MEMCPY( giState->newDictName, gi->dictName, 
+    if ( !!gi->dictName ) { 
+        XP_LOGF( "%s: copying %s to giState->newDictName",
+                 __FUNCTION__, gi->dictName );
+        XP_MEMCPY( giState->newDictName, gi->dictName,
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
-
-    } else if ( 1 == ceLocateNDicts( MPPARM(globals->mpool) &str, 1 ) ) {
-        XP_MEMCPY( giState->newDictName, str, (XP_U16)XP_STRLEN(str)+1 );
-        XP_FREE( globals->mpool, str );
-        str = bname( giState->newDictName );
-#endif
-    } else {
-#ifdef STUBBED_DICT
-        /* assumption is there's no dict on the device */
-        str = "(Stub dict)";
-#else
-        str = "--pick--";
-#endif
     }
-
-    ceSetDlgItemFileName( hDlg, IDC_DICTBUTTON, str );
+    if ( giState->isNewGame ) {
+        (void)ceLocateNDicts( MPPARM(globals->mpool) 32, addDictToMenu, 
+                              giState );
+    }
+#endif
 
     if ( !giState->isNewGame ) {
         XP_U16 disableIDs[] = { IDC_NPLAYERSCOMBO, 
                                 IDC_ROLECOMBO,
-                                IDC_DICTBUTTON};
+                                IDC_DICTCOMBO};
         XP_U16 i;
         for( i = 0; i < sizeof(disableIDs)/sizeof(disableIDs[0]); ++i ) {
             ceEnOrDisable( hDlg, disableIDs[i], XP_FALSE );
         }
     }
-
 } /* loadFromGameInfo */
 
 static void
@@ -340,7 +353,21 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         getStringAndReplace( globals, hDlg, id, &lp->name );
     }
 
-    /* dictionary */
+    /* dictionary */ {
+        XP_LOGF( "%s: sending CB_GETCURSEL", __FUNCTION__ );
+        int sel = SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETCURSEL, 0, 0L );
+        XP_LOGF( "%s: sel came back %d", __FUNCTION__, sel );
+        if ( sel >= 0 ) {
+            wchar_t widebuf[CE_MAX_PATH_LEN+1];
+            int len;
+            (void)SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETLBTEXT, sel, 
+                                      (long)widebuf );
+            WideCharToMultiByte( CP_ACP, 0, widebuf, -1, giState->newDictName, 
+                                 sizeof(giState->newDictName), NULL, NULL );
+            XP_LOGF( "%s: text is %s", __FUNCTION__, giState->newDictName );
+        }
+    }
+
     replaceStringIfDifferent( MPPARM(globals->mpool) &gi->dictName,
                               giState->newDictName );
 
@@ -363,6 +390,7 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                                &giState->prefsPrefs );
     }
 
+    LOG_RETURN_VOID();
 } /* stateToGameInfo */
 
 static void
@@ -446,6 +474,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         giState = (GameInfoState*)lParam;
+        giState->hDlg = hDlg;
         globals = giState->globals;
 
         loadFromGameInfo( hDlg, globals, giState );
@@ -526,20 +555,6 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 #endif
-
-#ifndef STUBBED_DICT
-                case IDC_DICTBUTTON:
-                    if ( giState->isNewGame ) { /* ignore if in info mode */
-                        giState->newDictName[0] = 0;
-                        if ( ce_pickDictFile( globals, giState->newDictName,
-                                              sizeof(giState->newDictName) )) {
-                            XP_UCHAR* basename = bname(giState->newDictName);
-                            ceSetDlgItemFileName( hDlg, id, basename );
-                        }
-                    }
-                    break;
-#endif
-
                 case OPTIONS_BUTTON:
                     handleOptionsButton( hDlg, globals, giState );
                     break;

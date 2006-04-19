@@ -60,7 +60,7 @@
 #define TIMER_CHECK                     1024
 #define NAME_EDIT5                      1025
 #define TIMER_EDIT                      1026
-#define IDC_DICTBUTTON                  1027
+#define IDC_DICTCOMBO                   1027
 #define IDC_COMBO3                      1028
 #define BLANKFACE_COMBO                 1029
 #define PHONIES_COMBO                   1030

@@ -149,6 +149,8 @@ static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
 static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
+static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
+
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
@@ -967,7 +969,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT
-    result = 1 == ceLocateNDicts(MPPARM(mpool) &globals->gameInfo.dictName, 1);
+    result = 1 == ceLocateNDicts(MPPARM(mpool) 1, ceSetDictName, globals );
+/*     result = 1 == ceLocateNDicts(MPPARM(mpool) &globals->gameInfo.dictName, 1); */
     if ( !result ) {
         messageBoxChar( globals, "Please install at least one Crosswords "
                         "dictionary.", L"Fatal error" );
@@ -1015,6 +1018,24 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     return result;
 } /* InitInstance */
+
+static XP_Bool
+ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)ctxt;
+    XP_UCHAR* str;
+    XP_UCHAR buf[CE_MAX_PATH_LEN];
+    XP_ASSERT( index == 0 );    /* we said one only! */
+
+    WideCharToMultiByte( CP_ACP, 0, wPath, -1,
+                         buf, sizeof(buf)-1, NULL, NULL );
+
+    XP_LOGF( "%s: got path \"%s\"", __FUNCTION__, buf );
+    str = copyString( MPPARM(globals->mpool) buf );
+    XP_ASSERT( NULL == globals->gameInfo.dictName );
+    globals->gameInfo.dictName = str;
+    return NULL != str;
+} /* ceSetDictName */
 
 static XP_Bool
 ceHandleHintRequest( CEAppGlobals* globals )

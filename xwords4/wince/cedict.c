@@ -415,59 +415,6 @@ ce_dict_getShortName( DictionaryCtxt* dict )
     return bname( name );
 } /* ce_dict_getShortName */
 
-XP_Bool
-ce_pickDictFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
-{
-    XP_Bool result = XP_FALSE;
-    wchar_t nameBuf[256];
-    OPENFILENAME openFileStruct;
-
-    XP_MEMSET( &openFileStruct, 0, sizeof(openFileStruct) );
-    XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
-
-    openFileStruct.lStructSize = sizeof(openFileStruct);
-    openFileStruct.hwndOwner = globals->hWnd;
-    openFileStruct.lpstrFilter = L"Crosswords dictionaries" L"\0"
-        L"*.xwd" L"\0\0";
-    openFileStruct.Flags = OFN_FILEMUSTEXIST
-        | OFN_HIDEREADONLY
-        | OFN_PATHMUSTEXIST;
-
-    openFileStruct.lpstrFile = nameBuf;
-    openFileStruct.nMaxFile = sizeof(nameBuf)/sizeof(nameBuf[0]);
-
-    while ( GetOpenFileName( &openFileStruct ) ) {
-        XP_U16 len;
-        XP_UCHAR multiBuf[256];
-
-        if ( !checkIfDictAndLegal( MPPARM(globals->mpool) nameBuf, 
-                                   openFileStruct.nFileOffset, 
-                                   nameBuf + openFileStruct.nFileOffset ) ) {
-            wchar_t errBuf[128];
-            (void)swprintf( errBuf,
-                            L"\"%s\" is not a valid Crosswords dictionary.",
-                            nameBuf + openFileStruct.nFileOffset );
-            MessageBox( globals->hWnd, errBuf, NULL, MB_OK );
-            continue;
-        }
-
-        len = WideCharToMultiByte( CP_ACP, 0, nameBuf, wcslen(nameBuf),
-                                   multiBuf,
-                                   sizeof(multiBuf), NULL, NULL );
-
-        if ( len > 0 && len < bufLen ) {
-            multiBuf[len] = '\0';
-            len = (XP_U16)XP_STRLEN( multiBuf );
-            XP_MEMCPY( buf, multiBuf, len );
-            buf[len] = '\0';
-            result = XP_TRUE;
-            break;
-        }
-    }
-
-    return result;
-} /* ce_pickDictFile */
-
 static XP_U8*
 openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP, 
                 HANDLE* hFileP, XP_U32* sizep )
@@ -571,7 +518,7 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
         XP_U16 flags;
         HANDLE mappedFile, hFile;
         XP_U8* base;
-        wchar_t pathBuf[257];
+        wchar_t pathBuf[CE_MAX_PATH_LEN+1];
 
         wcscpy( pathBuf, path );
         pathBuf[pathLen] = 0;
@@ -579,7 +526,7 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
 
 #ifdef DEBUG
         {
-            char narrowName[257];
+            char narrowName[CE_MAX_PATH_LEN+1];
             int len = wcslen( pathBuf );
             len = WideCharToMultiByte( CP_ACP, 0, pathBuf, len + 1,
                                        narrowName, len + 1, NULL, NULL );
@@ -608,7 +555,7 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
 } /* checkIfDictAndLegal */
 
 static void
-locateOneDir( MPFORMAL wchar_t* path, XP_UCHAR** bufs, XP_U16 nSought,
+locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
               XP_U16* nFoundP )
 {
     WIN32_FIND_DATA data;
@@ -639,28 +586,33 @@ locateOneDir( MPFORMAL wchar_t* path, XP_UCHAR** bufs, XP_U16 nSought,
 #if defined TARGET_OS_WINCE
                 /* We don't do recursive search on Win32!!! */
                 lstrcpy( path+startLen, data.cFileName );
-                locateOneDir( MPPARM(mpool) path, bufs, nSought, nFoundP );
+                locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, nFoundP );
                 if ( *nFoundP == nSought ) {
                     break;
                 }
-                path[startLen] = 0;
 #endif
             } else if ( checkIfDictAndLegal( MPPARM(mpool) path, startLen,
                                              data.cFileName ) ) {
                 XP_U16 len;
-                XP_UCHAR* str;
+                XP_UCHAR buf[CE_MAX_PATH_LEN+1];
                 XP_ASSERT( *nFoundP < nSought );
 
-                len = startLen + wcslen( data.cFileName ) + 1;
-                str = XP_MALLOC( mpool, len );
-                WideCharToMultiByte( CP_ACP, 0, path, startLen, 
-                                     str, startLen, NULL, NULL ); 
-                WideCharToMultiByte( CP_ACP, 0, data.cFileName, -1, 
-                                     str + startLen, len - startLen, 
-                                     NULL, NULL ); 
-                XP_LOGF( "%s: got %s at end\n", __FUNCTION__, str );
+                lstrcpy( path+startLen, data.cFileName );
+                if ( !(*cb)( path, (*nFoundP)++, ctxt ) ) {
+                    break;
+                }
+                
+/*                 len = startLen + wcslen( data.cFileName ) + 1; */
+/*                 WideCharToMultiByte( CP_ACP, 0, path, startLen,  */
+/*                                      buf, startLen, NULL, NULL );  */
+/*                 WideCharToMultiByte( CP_ACP, 0, data.cFileName, -1,  */
+/*                                      buf + startLen, len - startLen,  */
+/*                                      NULL, NULL );  */
 
-                bufs[(*nFoundP)++] = str;
+/*                 if ( !(*cb)( buf, (*nFoundP)++, ctxt ) ) { */
+/*                     break; */
+/*                 } */
+
                 if ( *nFoundP == nSought ) {
                     break;
                 }
@@ -670,6 +622,7 @@ locateOneDir( MPFORMAL wchar_t* path, XP_UCHAR** bufs, XP_U16 nSought,
                 XP_ASSERT( GetLastError() == ERROR_NO_MORE_FILES );
                 break;
             }
+            path[startLen] = 0;
         }
 
         (void)FindClose( fileH );
@@ -677,14 +630,14 @@ locateOneDir( MPFORMAL wchar_t* path, XP_UCHAR** bufs, XP_U16 nSought,
 } /* locateOneDir */
 
 XP_U16
-ceLocateNDicts( MPFORMAL XP_UCHAR** bufs, XP_U16 nSought )
+ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
 {
     XP_U16 nFound = 0;
-    wchar_t pathBuf[257];
+    wchar_t pathBuf[CE_MAX_PATH_LEN+1];
 
     pathBuf[0] = 0;
 
-    locateOneDir( MPPARM(mpool) pathBuf, bufs, nSought, &nFound );
+    locateOneDir( MPPARM(mpool) pathBuf, cb, ctxt, nSought, &nFound );
     return nFound;
 } /* ceLocateNthDict */
 
