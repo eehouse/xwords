@@ -56,9 +56,11 @@ addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
         XP_UCHAR buf[CE_MAX_PATH_LEN+1];
         WideCharToMultiByte( CP_ACP, 0, wPath, -1, buf, sizeof(buf),
                              NULL, NULL );
-        XP_LOGF( "%s: comparing %s, %s", __FUNCTION__, buf, giState->newDictName );
+        XP_LOGF( "%s: comparing %s, %s", __FUNCTION__, buf, 
+                 giState->newDictName );
         if ( 0 == XP_STRCMP( buf, giState->newDictName ) ) {
-            XP_LOGF( "%s: they're the same; setting to %d", __FUNCTION__, index );
+            XP_LOGF( "%s: they're the same; setting to %d", __FUNCTION__, 
+                     index );
             giState->curSelSet = XP_TRUE;
             SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, 
                                 index, 0L );
@@ -66,7 +68,7 @@ addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
     }
 
     return XP_TRUE;
-}
+} /* addDictToMenu */
 
 static void
 loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
@@ -136,6 +138,10 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     if ( giState->isNewGame ) {
         (void)ceLocateNDicts( MPPARM(globals->mpool) 32, addDictToMenu, 
                               giState );
+        if ( !giState->curSelSet ) {
+            SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, 
+                                0, 0L );
+        }
     }
 #endif
 
