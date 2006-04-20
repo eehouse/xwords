@@ -30,6 +30,10 @@ typedef struct GameInfoState {
     HWND hDlg;
     XP_UCHAR newDictName[CE_MAX_PATH_LEN+1];
 
+    XP_U16 capMenuDicts;
+    XP_U16 nMenuDicts;
+    wchar_t** menuDicts;
+
     XP_Bool isNewGame;              /* newGame or GameInfo */
     XP_Bool userCancelled;          /* OUT param */
 
