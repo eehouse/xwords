@@ -25,6 +25,7 @@
 #include "strutils.h"
 
 #define NUM_COLS 4
+#define MENUDICTS_INCR 16
 
 #if 0
 static XP_U16
@@ -44,13 +45,72 @@ ceCountLocalIn( HWND hDlg, XP_U16 nPlayers )
 #endif
 
 
+static wchar_t*
+wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in )
+{
+    int len;
+    wchar_t* result;
+
+    snwprintf( buf, buflen, L"%s", in );
+    result = buf + wcslen( buf ) - 1;
+
+    /* wipe out extension */
+    while ( *result != '.' ) {
+        --result;
+        XP_ASSERT( result > buf );
+    }
+    *result = 0;
+
+    while ( result >= buf && *result != '\\' ) {
+        --result;
+    }
+
+    return result + 1;
+} /* wbname */
+
 static XP_Bool
 addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
 {
     GameInfoState* giState = (GameInfoState*)ctxt;
+    /* Let's display only the short form, but save the whole path */
+    wchar_t shortPath[CE_MAX_PATH_LEN+1];
+    wchar_t* shortname;
+    wchar_t* wstr;
+    XP_U16 len;
+
     XP_LOGF( "%s called %dth time", __FUNCTION__, index );
+
+    /* make a copy of the long name */
+    len = wcslen( wPath ) + 1;
+    XP_LOGF( "len(wPath) = %d", len );
+    XP_ASSERT( len < sizeof(shortPath) );
+    wstr = (wchar_t*)XP_MALLOC( giState->globals->mpool, 
+                                len * sizeof(wstr[0]) );
+
+    /* insert the short name in the menu */
+    shortname = wbname( shortPath, sizeof(shortPath), wPath );
     SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_ADDSTRING, 0, 
-                        (long)wPath );
+                        (long)shortname );
+
+
+    XP_MEMCPY( wstr, wPath, len*sizeof(wstr[0]) );
+    if ( !giState->menuDicts ) {
+        XP_ASSERT( giState->nMenuDicts == 0 );
+        XP_ASSERT( giState->capMenuDicts == 0 );
+        giState->capMenuDicts = MENUDICTS_INCR;
+        giState->menuDicts
+            = (wchar_t**)XP_MALLOC( giState->globals->mpool, 
+                                    giState->capMenuDicts 
+                                    * sizeof(giState->menuDicts[0]) );
+    } else if ( giState->nMenuDicts == giState->capMenuDicts ) {
+        giState->capMenuDicts += MENUDICTS_INCR;
+        giState->menuDicts
+            = (wchar_t**)XP_REALLOC( giState->globals->mpool, 
+                                     giState->menuDicts, 
+                                     giState->capMenuDicts 
+                                     * sizeof(giState->menuDicts[0]) );
+    }
+    giState->menuDicts[giState->nMenuDicts++] = wstr;
 
     if ( giState->newDictName[0] != 0 && !giState->curSelSet ) {
         XP_UCHAR buf[CE_MAX_PATH_LEN+1];
@@ -69,6 +129,20 @@ addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
 
     return XP_TRUE;
 } /* addDictToMenu */
+
+static void
+cleanupGameInfoState( GameInfoState* giState )
+{
+    if ( !!giState->menuDicts ) {
+        XP_U16 nMenuDicts = giState->nMenuDicts;
+        XP_U16 i;
+        for ( i = 0; i < nMenuDicts; ++i ) {
+            XP_FREE( giState->globals->mpool, giState->menuDicts[i] );
+        }
+        XP_FREE( giState->globals->mpool, giState->menuDicts );
+        giState->menuDicts = NULL;
+    }
+} /* cleanupGameInfoState */
 
 static void
 loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
@@ -360,22 +434,20 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     }
 
     /* dictionary */ {
+        int sel;
         XP_LOGF( "%s: sending CB_GETCURSEL", __FUNCTION__ );
-        int sel = SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETCURSEL, 0, 0L );
+        sel = SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETCURSEL, 0, 0L );
         XP_LOGF( "%s: sel came back %d", __FUNCTION__, sel );
         if ( sel >= 0 ) {
-            wchar_t widebuf[CE_MAX_PATH_LEN+1];
-            int len;
-            (void)SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETLBTEXT, sel, 
-                                      (long)widebuf );
-            WideCharToMultiByte( CP_ACP, 0, widebuf, -1, giState->newDictName, 
+            WideCharToMultiByte( CP_ACP, 0, giState->menuDicts[sel], -1,
+                                 giState->newDictName, 
                                  sizeof(giState->newDictName), NULL, NULL );
             XP_LOGF( "%s: text is %s", __FUNCTION__, giState->newDictName );
         }
+        replaceStringIfDifferent( MPPARM(globals->mpool) &gi->dictName,
+                                  giState->newDictName );
     }
 
-    replaceStringIfDifferent( MPPARM(globals->mpool) &gi->dictName,
-                              giState->newDictName );
 
     /* timer */
     timerOn = ceGetChecked( hDlg, TIMER_CHECK );
@@ -570,6 +642,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 case IDCANCEL:
                     EndDialog(hDlg, id);
                     giState->userCancelled = id == IDCANCEL;
+                    cleanupGameInfoState( giState );
                     return TRUE;
                 }
                 break;
