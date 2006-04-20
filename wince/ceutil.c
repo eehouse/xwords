@@ -191,3 +191,14 @@ ceCenterCtl( HWND hDlg, XP_U16 resID )
         XP_LOGF( "MoveWindow=>%d", GetLastError() );
     }
 } /* ceCenterCtl */
+
+#ifdef DEBUG
+void
+XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg )
+{
+    XP_UCHAR buf[512];
+    (void)WideCharToMultiByte( CP_ACP, 0, arg, -1,
+                               buf, sizeof(buf), NULL, NULL );
+    XP_LOGF( "%s: %s", prefix, buf );
+}
+#endif
