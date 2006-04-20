@@ -42,4 +42,11 @@ XP_Bool ceGetChecked( HWND hDlg, XP_U16 resID );
 void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
+
+#ifdef DEBUG
+void XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg );
+#else
+# define XP_LOGW( prefix, arg )
+#endif
+
 #endif
