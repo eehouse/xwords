@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,7 +52,7 @@ wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in )
     int len;
     wchar_t* result;
 
-    snwprintf( buf, buflen, L"%s", in );
+    _snwprintf( buf, buflen, L"%s", in );
     result = buf + wcslen( buf ) - 1;
 
     /* wipe out extension */
