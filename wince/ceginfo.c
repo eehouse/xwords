@@ -217,6 +217,12 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
             SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, 
                                 0, 0L );
         }
+    } else {
+        wchar_t wPath[CE_MAX_PATH_LEN+1];
+        XP_ASSERT( gi->dictName[0] != '\0' );
+        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, gi->dictName, -1,
+                             wPath, sizeof(wPath)/sizeof(wPath[0]) );
+        (void)addDictToMenu( wPath, 0, giState );
     }
 #endif
 
