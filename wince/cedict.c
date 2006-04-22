@@ -628,7 +628,8 @@ ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought,
 
     for ( id = IDS_DICTDIRS; ; ++id ) {
         wchar_t pathBuf[CE_MAX_PATH_LEN+1];
-        if ( 0 >= LoadString( hInstance, id, pathBuf, sizeof(pathBuf) ) ) {
+        if ( 0 >= LoadString( hInstance, id, pathBuf, 
+                              sizeof(pathBuf)/sizeof(pathBuf[0]) ) ) {
             break;
         }
 
