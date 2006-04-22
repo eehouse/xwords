@@ -563,11 +563,7 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
     XP_Bool result = XP_FALSE;
     XP_U16 startLen;
 
-#if defined TARGET_OS_WINCE
     lstrcat( path, L"\\" );
-#elif defined TARGET_OS_WIN32
-    lstrcat( path, L".\\" );
-#endif
     startLen = wcslen(path);    /* record where we were so can back up */
     lstrcat( path, L"*" );
 
@@ -583,14 +579,18 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
         for ( ; ; ) {
 
             if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0){
-#if defined TARGET_OS_WINCE
-                /* We don't do recursive search on Win32!!! */
-                lstrcpy( path+startLen, data.cFileName );
-                locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, nFoundP );
-                if ( *nFoundP == nSought ) {
-                    break;
+
+                if ( ( data.cFileName[0] == '.' ) 
+                     && ( (data.cFileName[1] == '.') 
+                          || (data.cFileName[1] == '\0' ) ) ) {
+                    /* skip . and .. */
+                } else {
+                    lstrcpy( path+startLen, data.cFileName );
+                    locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, nFoundP );
+                    if ( *nFoundP == nSought ) {
+                        break;
+                    }
                 }
-#endif
             } else if ( checkIfDictAndLegal( MPPARM(mpool) path, startLen,
                                              data.cFileName ) ) {
                 XP_U16 len;
@@ -619,14 +619,27 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
 } /* locateOneDir */
 
 XP_U16
-ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
+ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
+                OnePathCB cb, void* ctxt )
 {
     XP_U16 nFound = 0;
-    wchar_t pathBuf[CE_MAX_PATH_LEN+1];
+    UINT id;
 
-    pathBuf[0] = 0;
+    for ( id = IDS_DICTDIRS; ; ++id ) {
+        wchar_t pathBuf[CE_MAX_PATH_LEN+1];
+        int len = LoadString( hInstance, id, pathBuf, sizeof(pathBuf) );
+        XP_LOGF( "%s: LoadString => %d", __FUNCTION__, len );
+        if ( len == 0 ) {
+            break;
+        }
 
-    locateOneDir( MPPARM(mpool) pathBuf, cb, ctxt, nSought, &nFound );
+        locateOneDir( MPPARM(mpool) pathBuf, cb, ctxt, nSought, &nFound );
+
+        if ( nFound >= nSought ) {
+            break;
+        }
+    }
+
     return nFound;
 } /* ceLocateNthDict */
 

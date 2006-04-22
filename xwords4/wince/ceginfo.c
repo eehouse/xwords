@@ -211,8 +211,8 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
     }
     if ( giState->isNewGame ) {
-        (void)ceLocateNDicts( MPPARM(globals->mpool) 32, addDictToMenu, 
-                              giState );
+        (void)ceLocateNDicts( MPPARM(globals->mpool) globals->hInst, 32, 
+                              addDictToMenu, giState );
         if ( !giState->curSelSet ) {
             SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, 
                                 0, 0L );
