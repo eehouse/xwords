@@ -28,7 +28,7 @@ while ( my $path = shift @ARGV ) {
 
     open FILE, "> $fname";
     print FILE "$path ";
-    print FILE '%CE5%\\Crosswords', "\n";
+    print FILE '%CE1%\\Crosswords', "\n";
     close FILE;
 
     my $cabname = `basename $path`;
