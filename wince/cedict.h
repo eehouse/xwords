@@ -38,7 +38,8 @@ DictionaryCtxt* ce_dictionary_make_empty( CEAppGlobals* globals );
  * making sure bufs contains nSought slots.
  */
 typedef XP_Bool (*OnePathCB)( const wchar_t* wPath, XP_U16 index, void* ctxt );
-XP_U16 ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt );
+XP_U16 ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
+                       OnePathCB cb, void* ctxt );
 
 
 XP_UCHAR* bname( XP_UCHAR* in );

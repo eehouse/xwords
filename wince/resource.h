@@ -184,6 +184,10 @@
 #define IDS_FILE                        40002
 #define IDS_GAME                        40003
 #define IDS_MOVE                        40004
+// Don't use the numbers after 4005: one string needs not to be there
+// to stop the progression in cedict.c 
+#define IDS_DICTDIRS                    40005
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

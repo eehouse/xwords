@@ -249,7 +249,8 @@ BEGIN
     EDITTEXT        PASS_EDIT4,GAME_PWD_LEFT,PLAYER_ROW_4,20,ROW_HEIGHT,
                     ES_PASSWORD | ES_AUTOHSCROLL
 
-    LTEXT           "Dictionary:",IDC_STATIC,LEFT_COL,DICTPICK_ROW,36,8,SS_NOPREFIX
+    LTEXT           "Dictionary:",IDC_STATIC,LEFT_COL,DICTPICK_ROW,36,8,
+                    SS_NOPREFIX
     COMBOBOX        IDC_DICTCOMBO,43,DICTPICK_ROW,85,58,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
@@ -662,6 +663,12 @@ BEGIN
     IDS_FILE                "File"
     IDS_GAME                "Game"
     IDS_MOVE                "Move"
+#ifdef _WIN32
+    IDS_DICTDIRS            "."
+#else
+    IDS_DICTDIRS            "\\Program Files\\Crosswords"
+    IDS_DICTDIRS+1          "\\SD Card\\Crosswords"
+#endif
 END
 
 #endif    // English (U.S.) resources
