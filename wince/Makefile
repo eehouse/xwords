@@ -1,4 +1,4 @@
-# -*- compile-command: "make TARGET_OS=wince"; -*-
+# -*- compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*-
 
 # This Makefile is meant to allow building Crosswords for PocketPC and
 # Windows using Linux.  As of March 2006, it compiles and runs on
