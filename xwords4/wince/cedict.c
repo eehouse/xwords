@@ -586,7 +586,8 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
                     /* skip . and .. */
                 } else {
                     lstrcpy( path+startLen, data.cFileName );
-                    locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, nFoundP );
+                    locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, 
+                                  nFoundP );
                     if ( *nFoundP == nSought ) {
                         break;
                     }
@@ -627,9 +628,7 @@ ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought,
 
     for ( id = IDS_DICTDIRS; ; ++id ) {
         wchar_t pathBuf[CE_MAX_PATH_LEN+1];
-        int len = LoadString( hInstance, id, pathBuf, sizeof(pathBuf) );
-        XP_LOGF( "%s: LoadString => %d", __FUNCTION__, len );
-        if ( len == 0 ) {
+        if ( 0 >= LoadString( hInstance, id, pathBuf, sizeof(pathBuf) ) ) {
             break;
         }
 
