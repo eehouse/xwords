@@ -466,29 +466,30 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
                         OPEN_EXISTING,
                         FILE_FLAG_RANDOM_ACCESS,
                         NULL );
-    XP_ASSERT( hFile != INVALID_HANDLE_VALUE );
+    if ( hFile != INVALID_HANDLE_VALUE ) {
 
-    DWORD size = GetFileSize( hFile, NULL );
-    XP_LOGF( "file size: %d", size );
+        DWORD size = GetFileSize( hFile, NULL );
+        XP_LOGF( "file size: %d", size );
 
-    ptr = XP_MALLOC( mpool, size );
-    if ( ptr != NULL ) {
-        DWORD nRead;
-        if ( ReadFile( hFile, ptr, size, &nRead, NULL ) ) {
-            XP_ASSERT( nRead == size );
-        } else {
-            XP_FREE( mpool, ptr );
-            ptr = NULL;
+        ptr = XP_MALLOC( mpool, size );
+        if ( ptr != NULL ) {
+            DWORD nRead;
+            if ( ReadFile( hFile, ptr, size, &nRead, NULL ) ) {
+                XP_ASSERT( nRead == size );
+            } else {
+                XP_FREE( mpool, ptr );
+                ptr = NULL;
+            }
         }
-    }
 
-    CloseHandle( hFile );
+        CloseHandle( hFile );
 
-    *hFileP = NULL;             /* nothing to close later */
-    if ( sizep != NULL ) {
-        *sizep = GetFileSize( hFile, NULL );
+        *hFileP = NULL;             /* nothing to close later */
+        if ( sizep != NULL ) {
+            *sizep = GetFileSize( hFile, NULL );
+        }
+        *mappedFileP = (HANDLE)ptr;
     }
-    *mappedFileP = (HANDLE)ptr;
 #endif
     return ptr;
 } /* openMappedFile */
