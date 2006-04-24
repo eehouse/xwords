@@ -40,7 +40,7 @@ DictionaryCtxt* ce_dictionary_make_empty( CEAppGlobals* globals );
 typedef XP_Bool (*OnePathCB)( const wchar_t* wPath, XP_U16 index, void* ctxt );
 XP_U16 ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
                        OnePathCB cb, void* ctxt );
-
+void ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance );
 
 XP_UCHAR* bname( XP_UCHAR* in );
 #endif
