@@ -150,6 +150,8 @@ static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
 static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
+static void messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
+                              wchar_t* title );
 
 
 // Forward declarations of functions included in this code module:
@@ -972,8 +974,16 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     result = 1 == ceLocateNDicts( MPPARM(mpool) hInstance, 1, ceSetDictName, 
                                   globals );
     if ( !result ) {
-        messageBoxChar( globals, "Please install at least one Crosswords "
-                        "dictionary.", L"Fatal error" );
+        XWStreamCtxt* stream = make_generic_stream( globals );
+        char* str = "Please install a Crosswords dictionary "
+            "in one of these directories: ";
+        stream_putBytes( stream, str, XP_STRLEN(str) );
+        ceFormatDictDirs( stream, hInstance );
+        str = ". Download dictionaries from http://xwords.sf.net.";
+        stream_putBytes( stream, str, XP_STRLEN(str) );
+        
+        messageBoxStream( globals, stream, L"Dictionary Not Found" );
+        stream_destroy( stream );
         return FALSE;
     }
 #endif

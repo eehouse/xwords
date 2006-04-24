@@ -619,6 +619,106 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
     }
 } /* locateOneDir */
 
+#define USE_FOREACH  /* FOREACH avoids code duplication, but may not be worth
+                        the extra complexity.  Size is the same. */
+#ifdef USE_FOREACH
+typedef XP_Bool (*ForEachCB)( wchar_t* dir, void* ctxt );
+
+static void
+forEachDictDir( HINSTANCE hInstance, ForEachCB cb, void* ctxt )
+{
+    UINT id;
+    for ( id = IDS_DICTDIRS; ; ++id ) {
+        wchar_t pathBuf[CE_MAX_PATH_LEN+1];
+        if ( 0 >= LoadString( hInstance, id, pathBuf, 
+                              sizeof(pathBuf)/sizeof(pathBuf[0]) ) ) {
+            break;
+        }
+
+        if ( !(*cb)( pathBuf, ctxt ) ) {
+            break;
+        }
+    }
+} /* forEachDictDir */
+
+typedef struct LocateOneData {
+    XP_U16 nFound;
+    XP_U16 nSought;
+    OnePathCB cb;
+    void* ctxt;
+
+    MPSLOT
+} LocateOneData;
+
+static XP_Bool
+locateOneDirCB( wchar_t* dir, void* ctxt )
+{
+    LocateOneData* datap = (LocateOneData*)ctxt;
+
+    locateOneDir( MPPARM(datap->mpool) dir, datap->cb, 
+                  datap->ctxt, datap->nSought, &datap->nFound );
+
+    if ( datap->nFound >= datap->nSought ) {
+        return XP_FALSE;
+    }
+    return XP_TRUE;
+} /* locateOneDirCB */
+
+XP_U16
+ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
+                OnePathCB cb, void* ctxt )
+{
+    LocateOneData data;
+
+    data.nFound = 0;
+    data.nSought = nSought;
+    data.cb = cb;
+    data.ctxt = ctxt;
+#ifdef MEM_DEBUG
+    data.mpool = mpool;
+#endif
+
+    forEachDictDir( hInstance, locateOneDirCB, &data );
+    return data.nFound;
+}
+
+typedef struct FormatDirsData {
+    XWStreamCtxt* stream;
+    XP_Bool firstPassDone;
+} FormatDirsData;
+
+static XP_Bool 
+formatDirsCB( wchar_t* dir, void* ctxt )
+{
+    FormatDirsData* datap = (FormatDirsData*)ctxt;
+    XP_UCHAR narrow[CE_MAX_PATH_LEN+1];
+    int len;
+
+    if ( datap->firstPassDone ) {
+        stream_putBytes( datap->stream, ", ", 2 );
+    } else {
+        datap->firstPassDone = XP_TRUE;
+    }
+
+    len = WideCharToMultiByte( CP_ACP, 0, dir, -1,
+                               narrow, sizeof(narrow)/sizeof(narrow[0]), 
+                               NULL, NULL );
+    stream_putBytes( datap->stream, narrow, len-1 ); /* skip null */
+    return XP_TRUE;
+} /* formatDirsCB */
+
+void
+ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
+{
+    FormatDirsData data;
+    data.stream = stream;
+    data.firstPassDone = XP_FALSE;
+
+    forEachDictDir( hInstance, formatDirsCB, &data );
+}
+
+#else
+
 XP_U16
 ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
                 OnePathCB cb, void* ctxt )
@@ -641,7 +741,33 @@ ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought,
     }
 
     return nFound;
-} /* ceLocateNthDict */
+} /* ceLocateNDicts */
+
+void
+ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
+{
+    UINT id;
+
+    for ( id = IDS_DICTDIRS; ; ++id ) {
+        wchar_t wide[CE_MAX_PATH_LEN+1];
+        XP_UCHAR narrow[CE_MAX_PATH_LEN+1];
+        XP_U16 len;
+
+        if ( 0 >= LoadString( hInstance, id, wide, 
+                              sizeof(wide)/sizeof(wide[0]) ) ) {
+            break;
+        }
+
+        if ( id != IDS_DICTDIRS ) {
+            stream_putBytes( stream, ", ", 2 );
+        }
+        len = WideCharToMultiByte( CP_ACP, 0, wide, -1,
+                                   narrow, sizeof(narrow)/sizeof(narrow[0]), 
+                                   NULL, NULL );
+        stream_putBytes( stream, narrow, len-1 ); /* skip null */
+    }
+}
+#endif /* USE_FOREACH */
 
 static XP_U32
 n_ptr_tohl( XP_U8** inp )

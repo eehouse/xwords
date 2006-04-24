@@ -663,11 +663,11 @@ BEGIN
     IDS_FILE                "File"
     IDS_GAME                "Game"
     IDS_MOVE                "Move"
-#ifdef _WIN32
-    IDS_DICTDIRS            "."
-#else
+#ifdef _WIN32_WCE
     IDS_DICTDIRS            "\\Program Files\\Crosswords"
     IDS_DICTDIRS+1          "\\SD Card\\Crosswords"
+#else
+    IDS_DICTDIRS            "."
 #endif
 END
 
