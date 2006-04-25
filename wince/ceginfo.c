@@ -46,29 +46,6 @@ ceCountLocalIn( HWND hDlg, XP_U16 nPlayers )
 #endif
 
 
-static wchar_t*
-wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in )
-{
-    int len;
-    wchar_t* result;
-
-    _snwprintf( buf, buflen, L"%s", in );
-    result = buf + wcslen( buf ) - 1;
-
-    /* wipe out extension */
-    while ( *result != '.' ) {
-        --result;
-        XP_ASSERT( result > buf );
-    }
-    *result = 0;
-
-    while ( result >= buf && *result != '\\' ) {
-        --result;
-    }
-
-    return result + 1;
-} /* wbname */
-
 static XP_Bool
 addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
 {
@@ -128,7 +105,7 @@ addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
         }
     }
 
-    return XP_TRUE;
+    return XP_FALSE;
 } /* addDictToMenu */
 
 static void

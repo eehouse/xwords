@@ -30,7 +30,6 @@ typedef struct CEDictionaryCtxt {
     DictionaryCtxt super;
     HANDLE mappedFile;
     void* mappedBase;
-    /*     size_t dictSize; */
 } CEDictionaryCtxt;
 
 static void ce_dict_destroy( DictionaryCtxt* dict );
@@ -47,8 +46,10 @@ static XP_U8* openMappedFile( MPFORMAL const wchar_t* name,
 static void closeMappedFile( MPFORMAL XP_U8* base, HANDLE mappedFile );
 static XP_Bool checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen, 
                                     wchar_t* name );
+static XP_Bool findAlternateDict( CEAppGlobals* globals, wchar_t* dictName );
 
 #define ALIGN_COUNT 2
+#define CE_MAXDICTS 0x7FFF
 
 DictionaryCtxt*
 ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
@@ -60,6 +61,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     HANDLE hFile;
     XP_U8* ptr;
     XP_U32 dictLength;
+    XP_UCHAR buf[CE_MAX_PATH_LEN+1]; /* in case we have to look */
 
     XP_ASSERT( !!dictName );
     XP_DEBUGF( "looking for dict %s", dictName );
@@ -69,6 +71,17 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 
     ptr = openMappedFile( MPPARM(globals->mpool) nameBuf, &mappedFile, 
                           &hFile, &dictLength );
+    if ( !ptr ) {
+        if ( findAlternateDict( globals, nameBuf ) ) {
+            (void)WideCharToMultiByte( CP_ACP, 0, nameBuf, -1,
+                                       buf, sizeof(buf), NULL, NULL );
+            ptr = openMappedFile( MPPARM(globals->mpool) nameBuf, &mappedFile, 
+                                  &hFile, &dictLength );
+            if ( !!ptr ) {
+                dictName = buf;
+            }
+        }
+    }
 
     while( !!ptr ) {           /* lets us break.... */
         XP_U32 offset;
@@ -486,7 +499,7 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
 
         *hFileP = NULL;             /* nothing to close later */
         if ( sizep != NULL ) {
-            *sizep = GetFileSize( hFile, NULL );
+            *sizep = size;
         }
         *mappedFileP = (HANDLE)ptr;
     }
@@ -555,13 +568,13 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
     return result;
 } /* checkIfDictAndLegal */
 
-static void
+static XP_Bool
 locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
               XP_U16* nFoundP )
 {
     WIN32_FIND_DATA data;
     HANDLE fileH;
-    XP_Bool result = XP_FALSE;
+    XP_Bool done = XP_FALSE;
     XP_U16 startLen;
 
     lstrcat( path, L"\\" );
@@ -587,9 +600,10 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
                     /* skip . and .. */
                 } else {
                     lstrcpy( path+startLen, data.cFileName );
-                    locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, 
-                                  nFoundP );
-                    if ( *nFoundP == nSought ) {
+                    done = locateOneDir( MPPARM(mpool) path, cb, ctxt, 
+                                         nSought, nFoundP );
+                    XP_ASSERT( done || *nFoundP < nSought );
+                    if ( done ) {
                         break;
                     }
                 }
@@ -600,11 +614,9 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
                 XP_ASSERT( *nFoundP < nSought );
 
                 lstrcpy( path+startLen, data.cFileName );
-                if ( !(*cb)( path, (*nFoundP)++, ctxt ) ) {
-                    break;
-                }
-
-                if ( *nFoundP == nSought ) {
+                done = (*cb)( path, (*nFoundP)++, ctxt )
+                    || *nFoundP == nSought;
+                if ( done ) {
                     break;
                 }
             }
@@ -618,11 +630,13 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
 
         (void)FindClose( fileH );
     }
+    return done;
 } /* locateOneDir */
 
 #define USE_FOREACH  /* FOREACH avoids code duplication, but may not be worth
                         the extra complexity.  Size is the same. */
 #ifdef USE_FOREACH
+/* return true when done */
 typedef XP_Bool (*ForEachCB)( wchar_t* dir, void* ctxt );
 
 static void
@@ -636,7 +650,7 @@ forEachDictDir( HINSTANCE hInstance, ForEachCB cb, void* ctxt )
             break;
         }
 
-        if ( !(*cb)( pathBuf, ctxt ) ) {
+        if ( (*cb)( pathBuf, ctxt ) ) {
             break;
         }
     }
@@ -656,13 +670,9 @@ locateOneDirCB( wchar_t* dir, void* ctxt )
 {
     LocateOneData* datap = (LocateOneData*)ctxt;
 
-    locateOneDir( MPPARM(datap->mpool) dir, datap->cb, 
-                  datap->ctxt, datap->nSought, &datap->nFound );
-
-    if ( datap->nFound >= datap->nSought ) {
-        return XP_FALSE;
-    }
-    return XP_TRUE;
+    return locateOneDir( MPPARM(datap->mpool) dir, datap->cb, 
+                         datap->ctxt, datap->nSought, &datap->nFound )
+        || datap->nFound >= datap->nSought;
 } /* locateOneDirCB */
 
 XP_U16
@@ -705,7 +715,7 @@ formatDirsCB( wchar_t* dir, void* ctxt )
                                narrow, sizeof(narrow)/sizeof(narrow[0]), 
                                NULL, NULL );
     stream_putBytes( datap->stream, narrow, len-1 ); /* skip null */
-    return XP_TRUE;
+    return XP_FALSE;
 } /* formatDirsCB */
 
 void
@@ -770,6 +780,52 @@ ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
 }
 #endif /* USE_FOREACH */
 
+typedef struct FindOneData {
+    wchar_t* result;
+    const wchar_t* sought;
+    XP_Bool found;
+} FindOneData;
+
+static XP_Bool 
+matchShortName( const wchar_t* wPath, XP_U16 index, void* ctxt )
+{
+    FindOneData* datap = (FindOneData*)ctxt;
+    wchar_t buf[CE_MAX_PATH_LEN+1];
+    wchar_t* name;
+
+    LOG_FUNC();
+
+    XP_ASSERT( !datap->found );
+
+    name = wbname( buf, sizeof(buf), wPath );
+    if ( 0 == wcscmp( name, datap->sought ) ) {
+        wcscpy( datap->result, wPath );
+        datap->found = XP_TRUE;
+    }
+    return datap->found;
+} /* matchShortName */
+
+/* Users sometimes move dicts.  Given a path to a dict that doesn't exist, See
+ * if another with the same short name exists somewhere else we're willing to
+ * look.
+ */
+static XP_Bool
+findAlternateDict( CEAppGlobals* globals, wchar_t* path )
+{
+    wchar_t shortPath[CE_MAX_PATH_LEN+1];
+    wchar_t* shortName; 
+    XP_U16 nFound;
+    FindOneData data;
+
+    XP_MEMSET( &data, 0, sizeof(data) );
+    data.sought = wbname( shortPath, sizeof(shortPath), path );
+    data.result = path;
+
+    (void)ceLocateNDicts( MPPARM(globals->mpool) globals->hInst, CE_MAXDICTS, 
+                          matchShortName, &data );
+    return data.found;
+} /* findAlternateDict */
+
 static XP_U32
 n_ptr_tohl( XP_U8** inp )
 {
@@ -803,5 +859,28 @@ bname( XP_UCHAR* in )
     }
     return out + 1;
 } /* bname */
+
+wchar_t*
+wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in )
+{
+    int len;
+    wchar_t* result;
+
+    _snwprintf( buf, buflen, L"%s", in );
+    result = buf + wcslen( buf ) - 1;
+
+    /* wipe out extension */
+    while ( *result != '.' ) {
+        --result;
+        XP_ASSERT( result > buf );
+    }
+    *result = 0;
+
+    while ( result >= buf && *result != '\\' ) {
+        --result;
+    }
+
+    return result + 1;
+} /* wbname */
 
 #endif /* ifndef STUBBED_DICT */
