@@ -1116,7 +1116,7 @@ CXWordsWindow::doAbout()
         "Copyright 2000-2004 by Eric House (xwords@eehouse.org).\n"
         "All rights reserved.\n"
         "For further information see www.peak.org/~fixin/xwords/ebm.html.";
-    stream_putBytes( stream, txt, strlen(txt) );
+    stream_putString( stream, txt );
     stream_putU8( stream, '\0' );
 
     wrappedEventLoop( new CShowTextWindow( MEMPOOL(this) stream, 
