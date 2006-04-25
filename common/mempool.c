@@ -221,13 +221,13 @@ mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream )
                  "Number of free blocks: %d\n"
                  "Total number of blocks allocated: %d\n",
                  mpool->nUsed, mpool->nFree, mpool->nAllocs );
-    stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+    stream_putString( stream, buf );
 
     for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
                      (XP_UCHAR*)"%ld byte block allocated %s: line %ld\n", 
                      entry->size, entry->fileName, entry->lineNo );
-        stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+        stream_putString( stream, buf );
     }
 } /* mpool_stats */
 

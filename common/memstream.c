@@ -213,6 +213,13 @@ mem_stream_putBytes( XWStreamCtxt* p_sctx, void* whence, XP_U16 count )
 } /* mem_stream_putBytes */
 
 static void
+mem_stream_putString( XWStreamCtxt* p_sctx, const char* whence )
+{
+    XP_U16 len = XP_STRLEN( whence );
+    mem_stream_putBytes( p_sctx, (void*)whence, len );
+}
+
+static void
 mem_stream_putU8( XWStreamCtxt* p_sctx, XP_U8 data )
 {
     mem_stream_putBytes( p_sctx, &data, sizeof(data) );
@@ -413,6 +420,7 @@ make_vtable( MemStreamCtxt* stream )
 
     SET_VTABLE_ENTRY( vtable, stream_putU8, mem );
     SET_VTABLE_ENTRY( vtable, stream_putBytes, mem );
+    SET_VTABLE_ENTRY( vtable, stream_putString, mem );
     SET_VTABLE_ENTRY( vtable, stream_putU16, mem );
     SET_VTABLE_ENTRY( vtable, stream_putU32, mem );
     SET_VTABLE_ENTRY( vtable, stream_putBits, mem );

@@ -1370,7 +1370,7 @@ notifyTrayListeners( ModelCtxt* model, XP_U16 turn, TileBit bits )
 static void
 printString( XWStreamCtxt* stream, XP_UCHAR* str )
 {
-    stream_putBytes( stream, str, (XP_U16)XP_STRLEN((char*)str) );
+    stream_putString( stream, str );
 } /* printString */
 
 static XP_UCHAR*
