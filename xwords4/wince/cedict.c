@@ -706,7 +706,7 @@ formatDirsCB( wchar_t* dir, void* ctxt )
     int len;
 
     if ( datap->firstPassDone ) {
-        stream_putBytes( datap->stream, ", ", 2 );
+        stream_putString( datap->stream, ", " );
     } else {
         datap->firstPassDone = XP_TRUE;
     }
@@ -714,7 +714,7 @@ formatDirsCB( wchar_t* dir, void* ctxt )
     len = WideCharToMultiByte( CP_ACP, 0, dir, -1,
                                narrow, sizeof(narrow)/sizeof(narrow[0]), 
                                NULL, NULL );
-    stream_putBytes( datap->stream, narrow, len-1 ); /* skip null */
+    stream_putString( datap->stream, narrow );
     return XP_FALSE;
 } /* formatDirsCB */
 
@@ -770,12 +770,12 @@ ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
         }
 
         if ( id != IDS_DICTDIRS ) {
-            stream_putBytes( stream, ", ", 2 );
+            stream_putString( stream, ", " );
         }
         len = WideCharToMultiByte( CP_ACP, 0, wide, -1,
                                    narrow, sizeof(narrow)/sizeof(narrow[0]), 
                                    NULL, NULL );
-        stream_putBytes( stream, narrow, len-1 ); /* skip null */
+        stream_putString( stream, narrow );
     }
 }
 #endif /* USE_FOREACH */

@@ -975,13 +975,11 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                                   globals );
     if ( !result ) {
         XWStreamCtxt* stream = make_generic_stream( globals );
-        char* str = "Please install a Crosswords dictionary "
-            "in one of these directories: ";
-        stream_putBytes( stream, str, XP_STRLEN(str) );
+        stream_putString( stream, "Please install a Crosswords dictionary "
+                          "in one of these directories: " );
         ceFormatDictDirs( stream, hInstance );
-        str = ". Download dictionaries from http://xwords.sf.net.";
-        stream_putBytes( stream, str, XP_STRLEN(str) );
-        
+        stream_putString( stream, ". Download dictionaries from "
+                          "http://xwords.sf.net." );
         messageBoxStream( globals, stream, L"Dictionary Not Found" );
         stream_destroy( stream );
         return FALSE;

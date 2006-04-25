@@ -658,7 +658,7 @@ makeRobotMove( ServerCtxt* server )
                 str = util_getUserString(util, STRD_ROBOT_TRADED);
                 XP_SNPRINTF( buf, sizeof(buf), str, MAX_TRAY_TILES );
 
-                stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+                stream_putString( stream, buf );
                 XP_ASSERT( !server->vol.prevMoveStream );
                 server->vol.prevMoveStream = stream;
             }
@@ -733,7 +733,7 @@ showPrevScore( ServerCtxt* server )
     stream = mkServerStream( server );
 
     str = util_getUserString( util, strCode );
-    stream_putBytes( stream, str, (XP_U16)XP_STRLEN(str) );
+    stream_putString( stream, str );
 
     if ( !!server->vol.prevMoveStream ) {
         XWStreamCtxt* prevStream = server->vol.prevMoveStream;
@@ -1762,7 +1762,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
             XP_SNPRINTF( tradeBuf, sizeof(tradeBuf),
                          tradeStr, tradedTiles.nTiles );
             mvStream = mkServerStream( server );
-            stream_putBytes( mvStream, tradeBuf, XP_STRLEN(tradeBuf) );
+            stream_putString( mvStream, tradeBuf );
         }
 
     } else {
@@ -2343,7 +2343,7 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     dict = model_getDictionary( server->vol.model );
     dname = dict_getShortName( dict );
     XP_SNPRINTF( buf, sizeof(buf), fmt, dname );
-    stream_putBytes( stream, buf, XP_STRLEN(buf) );
+    stream_putString( stream, buf );
 
     nChars = dict_numTileFaces( dict );
 
@@ -2360,16 +2360,16 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
 
             XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d/%d", 
                          face, count, value );
-            stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+            stream_putString( stream, buf );
         }
 
         if ( ++tile >= nChars ) {
             break;
         } else if ( count > 0 ) {
             if ( ++nPrinted % nCols == 0 ) {
-                stream_putBytes( stream, XP_CR, (XP_U16)XP_STRLEN(XP_CR) );
+                stream_putString( stream, XP_CR );
             } else {
-                stream_putBytes( stream, (void*)"      ", 3 );
+                stream_putString( stream, (void*)"   " );
             }
         }
     }
@@ -2429,13 +2429,13 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
             buf[0] = '\0';
             putNTiles( buf, face, count );
 
-            stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+            stream_putString( stream, buf );
         }
 
         if ( ++tile >= nChars ) {
             break;
         } else if ( count > 0 ) {
-            stream_putBytes( stream, (void*)"      ", 3 );
+            stream_putString( stream, (void*)"   " );
         }
     }
 } /* server_formatRemainingTiles */
@@ -2483,7 +2483,7 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         if ( highestIndex == -1 ) {
             break;		/* we're done */
         } else if ( place > 1 ) {
-            stream_putBytes( stream, XP_CR, (XP_U16)XP_STRLEN(XP_CR) );
+            stream_putString( stream, XP_CR );
         }
         scores[highestIndex] = IMPOSSIBLY_LOW_SCORE;
 
@@ -2514,7 +2514,7 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                      place, 
                      emptyStringIfNull(gi->players[highestIndex].name),
                      highestScore, curScore, tmpbuf, timeStr );
-        stream_putBytes( stream, buf, (XP_U16)XP_STRLEN(buf) );
+        stream_putString( stream, buf );
     }
 } /* server_writeFinalScores */
 

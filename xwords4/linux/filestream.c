@@ -91,6 +91,12 @@ linux_file_stream_putBytes( XWStreamCtxt* p_sctx, void* where,
 } /* linux_file_stream_putBytes */
 
 static void
+linux_file_stream_putString( XWStreamCtxt* p_sctx, const char* where )
+{
+    linux_file_stream_putBytes( p_sctx, (void*)where, XP_STRLEN(where) );
+}
+
+static void
 linux_file_stream_putU8( XWStreamCtxt* p_sctx, XP_U8 data )
 {
     linux_file_stream_putBytes( p_sctx, &data, sizeof(data) );
@@ -152,6 +158,7 @@ make_vtable( LinuxFileStreamCtxt* stream )
 
     SET_VTABLE_ENTRY( stream, stream_putU8, linux_file );
     SET_VTABLE_ENTRY( stream, stream_putBytes, linux_file );
+    SET_VTABLE_ENTRY( stream, stream_putString, linux_file );
     SET_VTABLE_ENTRY( stream, stream_putU16, linux_file );
     SET_VTABLE_ENTRY( stream, stream_putU32, linux_file );
 
