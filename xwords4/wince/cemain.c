@@ -574,7 +574,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
 #else
         XP_ASSERT( !!newDictName );
         XP_DEBUGF( "calling ce_dictionary_make" );
-        dict = ce_dictionary_make( globals, copyString( MEMPOOL newDictName ));
+        dict = ce_dictionary_make( globals, newDictName);
 #endif
         XP_ASSERT( !!dict );	
         model_setDictionary( globals->game.model, dict );
@@ -1044,7 +1044,7 @@ ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt )
     str = copyString( MPPARM(globals->mpool) buf );
     XP_ASSERT( NULL == globals->gameInfo.dictName );
     globals->gameInfo.dictName = str;
-    return NULL != str;
+    return XP_FALSE;
 } /* ceSetDictName */
 
 static XP_Bool
@@ -1185,7 +1185,7 @@ ceDoNewGame( CEAppGlobals* globals, XP_Bool silent )
 
     if ( !giState.userCancelled
 #ifndef STUBBED_DICT
-         && ((XP_U16)XP_STRLEN(giState.newDictName) > 0)
+         && ( giState.newDictName[0] != '\0' )
 #endif
          ) {
 
@@ -1251,9 +1251,12 @@ ceChooseAndOpen( CEAppGlobals* globals )
             }
 
             globals->curGameName = name;
-            ceLoadSavedGame( globals );
-            ceInitAndStartBoard( globals, XP_FALSE, NULL, NULL );
-            ceSetTitleFromName( globals );
+            if ( ceLoadSavedGame( globals ) ) {
+                ceInitAndStartBoard( globals, XP_FALSE, NULL, NULL );
+                ceSetTitleFromName( globals );
+            } else {
+                XP_LOGF( "failed to open chosen game" );
+            }
         }
     }
 } /* ceChooseAndOpen */
