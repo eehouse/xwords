@@ -1027,7 +1027,7 @@ parseARGV( int argc, char** argv, const char** inFileName )
         char* arg = argv[index++];
 
         if ( 0 == strcmp( arg, "-v" ) ) {
-            fprintf( stderr, "%s (Subversion revision %s)", argv[0], 
+            fprintf( stderr, "%s (Subversion revision %s)\n", argv[0], 
                      VERSION_STR );
             exit( 0 );
         } else if ( 0 == strcmp( arg, "-b" ) ) {
