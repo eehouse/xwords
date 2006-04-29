@@ -55,6 +55,7 @@ typedef std::vector<Node> NodeList;
 typedef std::vector<char*> WordList;
 
 #define MAX_WORD_LEN 15
+#define VERSION_STR "$Rev$"
 
 int gFirstDiff;
 
@@ -983,6 +984,7 @@ static void
 usage( const char* name )
 {
     fprintf( stderr, "usage: %s \n"
+             "\t[-v]                 (print version and exit)\n"
              "\t[-b    bytesPerFile] (default = 0xFFFFFFFF)\n"
              "\t-m     mapFile\n"
              "\t-mn    mapFile (unicode)\n"
@@ -1024,7 +1026,11 @@ parseARGV( int argc, char** argv, const char** inFileName )
 
         char* arg = argv[index++];
 
-        if ( 0 == strcmp( arg, "-b" ) ) {
+        if ( 0 == strcmp( arg, "-v" ) ) {
+            fprintf( stderr, "%s (Subversion revision %s)", argv[0], 
+                     VERSION_STR );
+            exit( 0 );
+        } else if ( 0 == strcmp( arg, "-b" ) ) {
             gNBytesPerOutfile = atol( argv[index++] );
         } else if ( 0 == strcmp( arg, "-mn" ) ) {
             gTableFile = argv[index++];
