@@ -49,7 +49,6 @@ static XP_Bool checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
 static XP_Bool findAlternateDict( CEAppGlobals* globals, wchar_t* dictName );
 
 #define ALIGN_COUNT 2
-#define CE_MAXDICTS 0x7FFF
 
 DictionaryCtxt*
 ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )

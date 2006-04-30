@@ -23,6 +23,7 @@
 #include "cemain.h"
 
 #define CE_MAX_PATH_LEN 256
+#define CE_MAXDICTS 0x7FFF
 
 typedef struct CEBitmapInfo {
     XP_U8* bits;
