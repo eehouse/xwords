@@ -1,4 +1,5 @@
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -49,7 +50,7 @@ LANGINFO: <p>In addition, there are three special two-letter tiles
 LANGINFO: "CH", "LL" and "RR".  The rules say that the corresponding
 LANGINFO: two single tiles may not be used where a two-letter tile is
 LANGINFO: possible (e.g. if a word contains "CH" you must use the "CH"
-LANGINFO: tile rather than a "C" tile followed by a "H" tiles.  Thus
+LANGINFO: tile rather than a "C" tile followed by an "H" tile.  Thus
 LANGINFO: we remove all of these pairs from your wordlist and replace
 LANGINFO: them with the appropriate two-letter "letter". </p>
 
