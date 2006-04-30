@@ -1,0 +1,96 @@
+# Copyright 2002,2006 by Eric House (fixin@peak.org).  All rights
+# reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:ca_ES
+
+NEEDSSORT:true
+
+LANGINFO: <p>Catalan includes several special tiles, "L.L", "NY" and
+LANGINFO: "QU" in addition to Ç.  There are no "Y" or "Q" tiles,
+LANGINFO: and all words containing either of these letters not in
+LANGINFO: combination with a "N" or "U" will be excluded from the
+LANGINFO: dictionary. </p>
+
+LANGINFO: <p>"L" is legal by itself, as are words in which two "L"s
+LANGINFO: appear side-by-side.  If you want your dictionary to include
+LANGINFO: the "L.L" tile you'll need to make sure that the exact
+LANGINFO: string "L.L" (or "l.l") appears in the wordlist you
+LANGINFO: upload.</p>
+
+
+LANGFILTER_PRECLIP: tr 'ça-z' 'ÇA-Z' |
+LANGFILTER_PRECLIP: grep -v 'Q[^U]' |
+LANGFILTER_PRECLIP: grep -v '[^N]Y' |
+LANGFILTER_PRECLIP: grep -v '^Y' |
+LANGFILTER_PRECLIP: grep '^[ÇA-JL-VXYZ\.]*$' |
+LANGFILTER_PRECLIP: sed -e 's/L\.L/1/g' -e 's/NY/2/g' -e 's/QU/3/g' |
+
+LANGFILTER_POSTCLIP: | tr -d '\r'
+LANGFILTER_POSTCLIP: | sort -u
+LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
+
+#LANGFILTER_PRECLIP: sed 's/NY/2/g' |
+#LANGFILTER_PRECLIP: sed 's/QU/3/g' |
+
+
+LANGFILTER_POSTCLIP: | tr '123' '\001\002\003'
+
+# High bit means "official".  Next 7 bits are an enum where
+# Catalan==c.  Low byte is padding
+XLOC_HEADER:0x8C00
+
+
+<BEGIN_TILES>
+2	0	  {"_"}
+12	1     'A'
+2	3     'B'
+3	2     'C'
+1	10	  'Ç'
+3	2	  'D'
+13	1     'E'
+1	4     'F'
+2	3     'G'
+1	8     'H'
+8	1     'I'
+1	8     'J'
+4	1     'L'
+1	10    {"L.L"}
+3	2     'M'
+6	1     'N'
+1	10    {"NY"}
+5	1     'O'
+2	3     'P'
+1	8     {"QU"}
+8	1     'R'
+8	1     'S'
+5	1     'T'
+4	1     'U'
+1	4     'V'
+1	10    'X'
+1	8     'Z'
+<END_TILES>
+#
+# NOTES:
+#------
+#    (1) - Just for avoiding character set mistakes: in the "INT." section of the Palm 
+#          screen keyboard, this letter is on the first line, at the very right of "ae".
+#    (2) - This is another curious catalan double-letter: two "L" separated by a dot.
+#    (3) - In catalan, the "Y" is only used for the double-letter "NY".
+#    (4) - In catalan, the tile is not [Q], i [QU]; because it is not possible to
+#          use a "Q" alone.
+#    (5) - Blank tile.
+
