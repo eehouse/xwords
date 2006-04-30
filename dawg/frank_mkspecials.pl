@@ -38,7 +38,9 @@ sub doOne {
 
   print STDERR "looking at $largebmp", "\n";
 
+  die "file $largebmp does not exist\n" unless -e $largebmp;
   print `cat $largebmp | ../pbitm2bin.pl`;
+  die "file $smallbmp does not exist\n" unless -e $smallbmp;
   print `cat $smallbmp | ../pbitm2bin.pl`;
 }
 

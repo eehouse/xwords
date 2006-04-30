@@ -24,6 +24,10 @@ PBITMS = ./bmps/palm
 else
 ifeq ($(TARGET_TYPE),FRANK)
 PBITMS = ./bmps/franklin
+else
+ifeq ($(TARGET_TYPE),WINCE)
+PBITMS = ./bmps/franklin
+endif
 endif
 endif
 
