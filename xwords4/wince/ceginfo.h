@@ -40,7 +40,6 @@ typedef struct GameInfoState {
     XP_Bool prefsChanged;
     XP_Bool colorsChanged;
     XP_Bool addrChanged;
-    XP_Bool curSelSet;
     Connectedness curServerHilite;
     CePrefsPrefs prefsPrefs;
 } GameInfoState;

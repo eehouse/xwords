@@ -45,68 +45,112 @@ ceCountLocalIn( HWND hDlg, XP_U16 nPlayers )
 } /* ceCountLocalIn */
 #endif
 
+static XP_S16
+findInsertPoint( const wchar_t* wPath, wchar_t** menuDicts, 
+                 XP_U16 nMenuDicts )
+{ 
+    XP_S16 loc = 0;             /* simple case: nothing here */
 
-static XP_Bool
-addDictToMenu( const wchar_t* wPath, XP_U16 index, void* ctxt )
-{
-    GameInfoState* giState = (GameInfoState*)ctxt;
-    /* Let's display only the short form, but save the whole path */
-    wchar_t shortPath[CE_MAX_PATH_LEN+1];
-    wchar_t* shortname;
-    wchar_t* wstr;
-    XP_U16 len;
+    if ( nMenuDicts > 0 ) {
+        wchar_t thisShortBuf[CE_MAX_PATH_LEN+1];
+        wchar_t* thisShortName = wbname( thisShortBuf, sizeof(thisShortBuf), 
+                                         wPath );
 
-    XP_LOGF( "%s called %dth time", __FUNCTION__, index );
-
-    /* make a copy of the long name */
-    len = wcslen( wPath ) + 1;
-    XP_LOGF( "len(wPath) = %d", len );
-    XP_ASSERT( len < sizeof(shortPath) );
-    wstr = (wchar_t*)XP_MALLOC( giState->globals->mpool, 
-                                len * sizeof(wstr[0]) );
-
-    /* insert the short name in the menu */
-    shortname = wbname( shortPath, sizeof(shortPath), wPath );
-    SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_ADDSTRING, 0, 
-                        (long)shortname );
-
-
-    XP_MEMCPY( wstr, wPath, len*sizeof(wstr[0]) );
-    if ( !giState->menuDicts ) {
-        XP_ASSERT( giState->nMenuDicts == 0 );
-        XP_ASSERT( giState->capMenuDicts == 0 );
-        giState->capMenuDicts = MENUDICTS_INCR;
-        giState->menuDicts
-            = (wchar_t**)XP_MALLOC( giState->globals->mpool, 
-                                    giState->capMenuDicts 
-                                    * sizeof(giState->menuDicts[0]) );
-    } else if ( giState->nMenuDicts == giState->capMenuDicts ) {
-        giState->capMenuDicts += MENUDICTS_INCR;
-        giState->menuDicts
-            = (wchar_t**)XP_REALLOC( giState->globals->mpool, 
-                                     giState->menuDicts, 
-                                     giState->capMenuDicts 
-                                     * sizeof(giState->menuDicts[0]) );
-    }
-    giState->menuDicts[giState->nMenuDicts++] = wstr;
-
-    if ( giState->newDictName[0] != 0 && !giState->curSelSet ) {
-        XP_UCHAR buf[CE_MAX_PATH_LEN+1];
-        WideCharToMultiByte( CP_ACP, 0, wPath, -1, buf, sizeof(buf),
-                             NULL, NULL );
-        XP_LOGF( "%s: comparing %s, %s", __FUNCTION__, buf, 
-                 giState->newDictName );
-        if ( 0 == XP_STRCMP( buf, giState->newDictName ) ) {
-            XP_LOGF( "%s: they're the same; setting to %d", __FUNCTION__, 
-                     index );
-            giState->curSelSet = XP_TRUE;
-            SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, 
-                                index, 0L );
+    /* If the short path doesn't already exist, find where it belongs.  This
+       is wasteful if we're doing this a lot since the short path isn't
+       cached. */
+        for ( /* loc = 0*/; loc < nMenuDicts; ++loc ) {
+            wchar_t oneShortBuf[CE_MAX_PATH_LEN+1];
+            wchar_t* oneShortName = wbname( oneShortBuf, sizeof(oneShortBuf), 
+                                            menuDicts[loc] );
+            int diff = _wcsicmp( thisShortName, oneShortName );
+            if ( diff > 0 ) {
+                continue;
+            } else if ( diff == 0 ) {
+                loc = -1;
+            }
+            break;
         }
     }
 
+    return loc;
+} /* findInsertPoint */
+
+static XP_Bool
+addDictToState( const wchar_t* wPath, XP_U16 index, void* ctxt )
+{
+    GameInfoState* giState = (GameInfoState*)ctxt;
+    /* Let's display only the short form, but save the whole path */
+    wchar_t* wstr;
+    XP_U16 len;
+    XP_S16 loc;                 /* < 0 means skip it */
+
+    loc = findInsertPoint( wPath, giState->menuDicts, 
+                           giState->nMenuDicts );
+
+    if ( loc >= 0 ) {
+        /* make a copy of the long name */
+        len = wcslen( wPath ) + 1;
+        wstr = (wchar_t*)XP_MALLOC( giState->globals->mpool, 
+                                    len * sizeof(wstr[0]) );
+
+        XP_MEMCPY( wstr, wPath, len*sizeof(wstr[0]) );
+        if ( !giState->menuDicts ) {
+            XP_ASSERT( giState->nMenuDicts == 0 );
+            XP_ASSERT( giState->capMenuDicts == 0 );
+            giState->capMenuDicts = MENUDICTS_INCR;
+            giState->menuDicts
+                = (wchar_t**)XP_MALLOC( giState->globals->mpool, 
+                                        giState->capMenuDicts 
+                                        * sizeof(giState->menuDicts[0]) );
+        } else if ( giState->nMenuDicts == giState->capMenuDicts ) {
+            giState->capMenuDicts += MENUDICTS_INCR;
+            giState->menuDicts
+                = (wchar_t**)XP_REALLOC( giState->globals->mpool, 
+                                         giState->menuDicts, 
+                                         giState->capMenuDicts 
+                                         * sizeof(giState->menuDicts[0]) );
+        }
+
+        if ( loc < giState->nMenuDicts ) {
+            XP_MEMMOVE( &giState->menuDicts[loc+1], &giState->menuDicts[loc],
+                        (giState->nMenuDicts - loc) 
+                        * sizeof(giState->menuDicts[0]) );
+        }
+        giState->menuDicts[loc] = wstr;
+        ++giState->nMenuDicts;
+    }
+
     return XP_FALSE;
-} /* addDictToMenu */
+} /* addDictToState */
+
+static void
+addDictsToMenu( GameInfoState* giState )
+{
+    wchar_t* shortname;
+    wchar_t shortPath[CE_MAX_PATH_LEN+1];
+    XP_U16 i, nMenuDicts = giState->nMenuDicts;
+    XP_S16 sel = 0;
+
+    /* insert the short names in the menu */
+    for ( i = 0; i < nMenuDicts; ++i ) {
+        wchar_t* wPath = giState->menuDicts[i];
+        shortname = wbname( shortPath, sizeof(shortPath), wPath );
+        SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_ADDSTRING, 0, 
+                            (long)shortname );
+
+        if ( giState->newDictName[0] != 0 && sel == 0 ) {
+            XP_UCHAR buf[CE_MAX_PATH_LEN+1];
+            WideCharToMultiByte( CP_ACP, 0, wPath, -1, buf, sizeof(buf),
+                                 NULL, NULL );
+            if ( 0 == XP_STRCMP( buf, giState->newDictName ) ) {
+                sel = i;
+            }
+        }
+    }
+
+    SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, sel, 0L );
+} /* addDictsToMenu */
 
 static void
 cleanupGameInfoState( GameInfoState* giState )
@@ -188,19 +232,16 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
     }
     if ( giState->isNewGame ) {
-        (void)ceLocateNDicts( MPPARM(globals->mpool) globals->hInst, 32, 
-                              addDictToMenu, giState );
-        if ( !giState->curSelSet ) {
-            SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, 
-                                0, 0L );
-        }
+        (void)ceLocateNDicts( MPPARM(globals->mpool) globals->hInst, 
+                              CE_MAXDICTS, addDictToState, giState );
     } else {
         wchar_t wPath[CE_MAX_PATH_LEN+1];
         XP_ASSERT( gi->dictName[0] != '\0' );
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, gi->dictName, -1,
                              wPath, sizeof(wPath)/sizeof(wPath[0]) );
-        (void)addDictToMenu( wPath, 0, giState );
+        (void)addDictToState( wPath, 0, giState );
     }
+    addDictsToMenu( giState );
 #endif
 
     if ( !giState->isNewGame ) {
