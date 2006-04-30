@@ -358,6 +358,7 @@ XP_UCHAR*
 dict_getName( DictionaryCtxt* dict )
 {
     XP_ASSERT( !!dict );
+    XP_ASSERT( !!dict->name );
     return dict->name;
 } /* dict_getName */
 
