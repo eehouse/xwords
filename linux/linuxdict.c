@@ -26,6 +26,7 @@
 #include "comtypes.h"
 #include "dictnryp.h"
 #include "linuxmain.h"
+#include "strutils.h"
 
 typedef struct DictStart {
     XP_U32 numNodes;
@@ -258,6 +259,8 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             dctx->super.base = NULL;
             dctx->super.topEdge = NULL;
         }
+
+        dctx->super.name = copyString( MPPARM(dctx->super.mpool) fileName);
     }
 
     fclose( dictF );
@@ -309,6 +312,7 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
 
     XP_FREE( dict->mpool, ctxt->super.countsAndValues );
     XP_FREE( dict->mpool, ctxt->super.faces16 );
+    XP_FREE( dict->mpool, ctxt->super.name );
     XP_FREE( dict->mpool, ctxt );
 } /* linux_dictionary_destroy */
 
