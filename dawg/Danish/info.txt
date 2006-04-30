@@ -26,6 +26,8 @@ LANGFILTER_POSTCLIP: | tr [a-zåæø] [A-ZÅÆØ]
 LANGFILTER_POSTCLIP: | grep '[AEIOUÅÆØ]' 
 # none with illegal chars
 LANGFILTER_POSTCLIP: | grep '^[A-PR-VX-ZÅÆØ]\+$'
+# remove duplicates
+LANGFILTER_POSTCLIP: | sort -u
 LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
 
 # Until I can figure out how to force sort to use a locale's collation
@@ -34,9 +36,8 @@ LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
 
 NEEDSSORT:true
 
-LANGINFO: <p>Danish uses all English letters except Q and
-W.  Three non-English letters: 'Å', 'Æ' and 'Ø'.
-</p>
+LANGINFO: <p>Danish uses all English letters except Q and W.  There
+LANGINFO: are three non-English letters: 'Å', 'Æ' and 'Ø'.  </p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Danish==9.  Low byte is padding
