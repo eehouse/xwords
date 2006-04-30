@@ -1,4 +1,5 @@
-# Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,7 +21,7 @@ LANGCODE:it_IT
 LANGFILTER_PRECLIP: tr -d '\r' |
 
 LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
-LANGFILTER_POSTCLIP: | grep '^[A-Z]*$'
+LANGFILTER_POSTCLIP: | grep '^[A-IL-VZ]*$'
 LANGFILTER_POSTCLIP: | tr '\n' '\000'
 LANGFILTER_POSTCLIP: | sort -z
 
@@ -29,13 +30,14 @@ NEEDSSORT:false
 
 
 LANGINFO: <p>Italian is treated the same as English but for
-LANGINFO: missing letters J, W, X and Y.</p>
+LANGINFO: missing letters J, K, W, X and Y.</p>
 
 
 # High bit means "official".  Next 7 bits are an enum where
 # Italian==0xA.  Low byte is padding
 XLOC_HEADER:0x8A00
 
+# tile values taken from http://www.gtoal.com/wordgames/details/italian/
 <BEGIN_TILES>
 2		  0 		{"_"}
 13        1        'A'
@@ -44,7 +46,7 @@ XLOC_HEADER:0x8A00
 3         5        'D'
 13        1        'E'
 2         8        'F'
-2         5        'G'
+3         5        'G'
 2         8        'H'
 13        1        'I'
 5         3        'L'
