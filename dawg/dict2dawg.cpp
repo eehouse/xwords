@@ -475,7 +475,8 @@ readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
                 wordBuf[count++] = (char)gTableHash[byt];
                 if ( count >= bufLen ) {
                     char buf[MAX_WORD_LEN+1];
-                    ERROR_EXIT( "word starting \"%s\" too long", 
+                    ERROR_EXIT( "no space for word %d (starting \"%s\")", 
+                                gWordCount, 
                                 tileToAscii( buf, sizeof(buf), wordBuf ));
                 }
             }
@@ -600,7 +601,6 @@ parseAndSort( FILE* infile )
         ++len;                  // include null byte
         str += len;
         memleft -= len;
-        ++gWordCount;
 
         if ( eof  ) {
             break;
