@@ -78,7 +78,8 @@ bool gKillIfMissing = true;
 char gTermChar = '\n';
 bool gDumpText = false;                // dump the dict as text after?
 char* gCountFile = NULL;
-char* gBytesPerNodeFile = NULL;        // where to write whether node size 3 or 4
+char* gBytesPerNodeFile = NULL;        // where to write whether node
+                                       // size 3 or 4
 int gWordCount = 0;
 std::map<char,int> gTableHash;
 int gBlankIndex;
@@ -88,12 +89,13 @@ bool gDebug = false;
 #endif
 std::map<NodeList, int> gSubsHash;
 bool gForceFour = false;             // use four bytes regardless of need?
+static int gFileSize = 0;
 int gNBytesPerNode;
 bool gUseUnicode;
 
 
 // OWL is 1.7M
-#define MAX_POOL_SIZE 3000000
+#define MAX_POOL_SIZE (3 * 0x100000)
 #define ERROR_EXIT(...) error_exit( __LINE__, __VA_ARGS__ );
 
 static char* parseARGV( int argc, char** argv, const char** inFileName );
@@ -581,7 +583,10 @@ parseAndSort( FILE* infile )
     // allocate storage for the actual chars.  wordlist's char*
     // elements will point into this.  It'll leak.  So what.
     
-    int memleft = MAX_POOL_SIZE;
+    int memleft = gFileSize;
+    if ( memleft == 0 ) {
+        memleft = MAX_POOL_SIZE;
+    }
     char* str = (char*)malloc( memleft );
     if ( NULL == str ) {
         ERROR_EXIT( "can't allocate main string storage" );
@@ -985,6 +990,7 @@ usage( const char* name )
 {
     fprintf( stderr, "usage: %s \n"
              "\t[-v]                 (print version and exit)\n"
+             "\t[-poolsize]          (print size of hardcoded pool and exit)\n"
              "\t[-b    bytesPerFile] (default = 0xFFFFFFFF)\n"
              "\t-m     mapFile\n"
              "\t-mn    mapFile (unicode)\n"
@@ -1030,6 +1036,9 @@ parseARGV( int argc, char** argv, const char** inFileName )
             fprintf( stderr, "%s (Subversion revision %s)\n", argv[0], 
                      VERSION_STR );
             exit( 0 );
+        } else if ( 0 == strcmp( arg, "-poolsize" ) ) {
+            printf( "%d", MAX_POOL_SIZE );
+            exit( 0 );
         } else if ( 0 == strcmp( arg, "-b" ) ) {
             gNBytesPerOutfile = atol( argv[index++] );
         } else if ( 0 == strcmp( arg, "-mn" ) ) {
@@ -1059,6 +1068,8 @@ parseARGV( int argc, char** argv, const char** inFileName )
             gBytesPerNodeFile = argv[index++];
         } else if ( 0 == strcmp( arg, "-force4" ) ) {
             gForceFour = true;
+        } else if ( 0 == strcmp( arg, "-fsize" ) ) {
+            gFileSize = (char)atoi(argv[index++]);
 #ifdef DEBUG
         } else if ( 0 == strcmp( arg, "-debug" ) ) {
             gDebug = true;

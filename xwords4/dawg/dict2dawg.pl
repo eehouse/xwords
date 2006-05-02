@@ -838,6 +838,8 @@ sub parseARGV {
           if ($arg =~ /-wc/) {$gCountFile = shift(@ARGV); last SWITCH;}
           if ($arg =~ /-ns/) {$gBytesPerNodeFile = shift(@ARGV); last SWITCH;}
           if ($arg =~ /-force4/) {$gForceFour = 1; last SWITCH;}
+          # accept -fsize for compatibility with c++ version (but drop it)
+          if ($arg =~ /-fsize/) {shift(@ARGV); last SWITCH;}
           if ($arg =~ /-debug/) {$debug = 1; last SWITCH;}
           die "unexpected arg $arg\n";
       }
