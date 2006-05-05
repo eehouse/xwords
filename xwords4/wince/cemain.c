@@ -1,4 +1,4 @@
-/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince"-*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"-*- */
 /* 
  * Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -152,6 +152,7 @@ static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static void messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                               wchar_t* title );
+static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
 
 
 // Forward declarations of functions included in this code module:
@@ -682,6 +683,9 @@ ceSavePrefs( CEAppGlobals* globals )
         WriteFile( fileH, &nameLen, sizeof(nameLen), &nWritten, NULL );
         WriteFile( fileH, name, nameLen, &nWritten, NULL );
 
+        WriteFile( fileH, &globals->flags, sizeof(globals->flags), &nWritten,
+                   NULL );
+
         SetEndOfFile( fileH );  /* truncate anything previously there */
 
         CloseHandle( fileH );   /* am I not supposed to do this? PENDING */
@@ -712,16 +716,26 @@ ceLoadPrefs( CEAppGlobals* globals )
                            &bytesRead, NULL ) ) {
 
                 if ( tmpPrefs.versionFlags == CUR_CE_PREFS_FLAGS ) {
+                    XP_U16 flags;
 
                     XP_MEMCPY( &globals->appPrefs, &tmpPrefs, 
                            sizeof(globals->appPrefs) );
                     result = XP_TRUE;
 
-                    ReadFile( fileH, &nameLen, sizeof(nameLen), &bytesRead, NULL );
+                    ReadFile( fileH, &nameLen, sizeof(nameLen), &bytesRead, 
+                              NULL );
                     name = XP_MALLOC( globals->mpool, nameLen + 1 );
                     ReadFile( fileH, name, nameLen, &bytesRead, NULL );
                     name[nameLen] = '\0';
                     globals->curGameName = name;
+
+                    if ( ReadFile( fileH, &flags, sizeof(flags), &bytesRead, 
+                                   NULL )
+                         && bytesRead == sizeof(flags) ) {
+                    } else {
+                        flags = 0;
+                    }
+                    globals->flags = flags;
 
                     XP_DEBUGF( "loaded saved name: %s", name );
                 }
@@ -867,7 +881,41 @@ ceInitPrefs( CEAppGlobals* globals )
     globals->appPrefs.cp.showRobotScores = XP_FALSE;
 
     colorsFromRsrc( globals );
+
+#ifdef DICTS_MOVED_ALERT
+    /* The assumption is that if you didn't have prefs already you don't need
+       to be told to move dicts. */
+    globals->flags = FLAGS_BIT_SHOWN_NEWDICTLOC;
+#endif
 } /* ceInitPrefs */
+
+#ifdef DICTS_MOVED_ALERT
+static void
+doDictsMovedAlert( CEAppGlobals* globals )
+{
+    XP_Bool hide;
+
+    XWStreamCtxt* stream = make_generic_stream( globals );
+
+    stream_putString( stream, 
+                      "Please be aware that starting with this version "
+                      "Crosswords will not find dictionaries unless they "
+                      "are located in one of these directories: " );
+    ceFormatDictDirs( stream, globals->hInst );
+    stream_putString( stream, ". From now on, dictionaries will be "
+                      "available as .cab files which will put them in the "
+                      "right place."
+                      XP_CR
+                      XP_CR
+                      "Do you want to disable this warning?" );
+
+    hide = ceMsgFromStream( globals, stream, L"Warning", XP_TRUE, XP_TRUE );
+
+    if ( hide ) {
+        globals->flags |= FLAGS_BIT_SHOWN_NEWDICTLOC;
+    }
+}
+#endif
 
 //
 //  FUNCTION: InitInstance(HANDLE, int)
@@ -993,6 +1041,10 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     prevStateExists = ceLoadPrefs( globals );
     if ( !prevStateExists ) {
         ceInitPrefs( globals );
+#ifdef DICTS_MOVED_ALERT
+    } else if ( (globals->flags & FLAGS_BIT_SHOWN_NEWDICTLOC) == 0 ) {
+        doDictsMovedAlert( globals );
+#endif
     }
     /* must load prefs before creating draw ctxt */
     globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
