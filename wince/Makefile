@@ -55,6 +55,9 @@ endif
 
 CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay 
 
+# warn upgrading users of new dict location
+CFLAGS += -DDICTS_MOVED_ALERT
+
 ifeq ($(DEBUG),TRUE)
 MEM_DEBUG_FLAG=-DMEM_DEBUG 
 DEBUG_FLAG=-DDEBUG 
