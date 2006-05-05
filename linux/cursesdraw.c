@@ -249,8 +249,9 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                       const XP_UCHAR* letter, XP_Bitmap bitmap,
-                      XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
-                      XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
+                      Tile tile, XP_S16 owner, XWBonusType bonus, 
+                      HintAtts hintAtts, XP_Bool isBlank, XP_Bool highlight, 
+                      XP_Bool isStar )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_UCHAR loc[4];
