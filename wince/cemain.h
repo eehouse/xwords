@@ -85,6 +85,8 @@ typedef struct CEAppGlobals {
     TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
 
+    XP_U16 flags;               /* bits defined below */
+
 #ifdef CEFEATURE_CANSCROLL
     XP_U16 nHiddenRows;
     HWND scrollHandle;
@@ -105,6 +107,10 @@ typedef struct CEAppGlobals {
     MPSLOT
 
 } CEAppGlobals;
+
+#ifdef DICTS_MOVED_ALERT
+# define FLAGS_BIT_SHOWN_NEWDICTLOC 0x0001
+#endif
 
 #define GAME_IN_PROGRESS(g) ((g)->gameInfo.dictName != 0)
 
