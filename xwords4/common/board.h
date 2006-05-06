@@ -145,8 +145,8 @@ XP_Bool board_toggle_arrowDir( BoardCtxt* board );
 #define NO_TILES ((TileBit)0)
 
 void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
-                       XP_U8 trayScaleH, XP_U8 trayScaleV, 
-                       XP_U8 dividerWidth );
+                       XP_U16 trayWidth, XP_U16 trayHeight,
+                       XP_U16 minDividerWidth );
 XP_Bool board_hideTray( BoardCtxt* board );
 XP_Bool board_showTray( BoardCtxt* board );
 XW_TrayVisState board_getTrayVisState( BoardCtxt* board );
