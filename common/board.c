@@ -1260,20 +1260,24 @@ drawScoreBoard( BoardCtxt* board )
 
 void
 board_setTrayLoc( BoardCtxt* board, XP_U16 left, XP_U16 top, 
-                  XP_U8 trayScaleH, XP_U8 trayScaleV, 
-                  XP_U8 dividerWidth )
+                  XP_U16 trayWidth, XP_U16 trayHeight,
+                  XP_U16 minDividerWidth )
 {
+    XP_U16 dividerWidth;
     board->trayBounds.left = left;
     board->trayBounds.top = top;
     /* what's this +1 for? */
-    board->trayBounds.width = (trayScaleH * MAX_TRAY_TILES) + 1;
-    board->trayBounds.height = trayScaleV;
 
-    board->trayScaleH = trayScaleH;
-    board->trayScaleV = trayScaleV;
+    board->trayBounds.width = trayWidth;
+    board->trayBounds.height = trayHeight;
+
+    dividerWidth = minDividerWidth + 
+        ((trayWidth - minDividerWidth) % MAX_TRAY_TILES);
+
+    board->trayScaleH = (trayWidth - dividerWidth) / MAX_TRAY_TILES;
+    board->trayScaleV = trayHeight;
 
     board->dividerWidth = dividerWidth;
-    board->trayBounds.width += (XP_U8)dividerWidth;
 
     /* boardObscuresTray is about whether they *can* overlap, not just about
      * they do given the current scroll position of the board. Remember
