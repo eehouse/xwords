@@ -121,7 +121,7 @@ int gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] );
 #define TIMER_WIDTH 40
 #define TIMER_TOP HOR_SCORE_TOP
 #define HOR_SCORE_WIDTH ((MIN_SCALE*MAX_COLS)-TIMER_PAD)
-#define VERT_SCORE_WIDTH 30
+#define VERT_SCORE_WIDTH 40
 
 #define BOARD_TOP (SCORE_TOP + SCORE_HEIGHT + SCORE_BOARD_PADDING )
 #define BOARD_LEFT (BOARD_LEFT_MARGIN)
