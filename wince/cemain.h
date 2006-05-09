@@ -142,6 +142,7 @@ typedef struct CEDrawCtx {
 
     XP_U16 trayOwner;
     XP_U16 miniLineHt;
+    XP_Bool scoreIsVertical;
 
     MPSLOT
 } CEDrawCtx;
