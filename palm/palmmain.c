@@ -449,8 +449,8 @@ positionBoard( PalmAppGlobals* globals )
     board_setTrayLoc( globals->game.board, 
                       (isLefty? PALM_TRAY_LEFT_LH:PALM_TRAY_LEFT_RH) * doubler,
                       trayTop,
-                      PALM_TRAY_SCALEH * doubler, trayScaleV,
-                      PALM_DIVIDER_WIDTH * doubler );
+                      PALM_TRAY_WIDTH * doubler, trayScaleV,
+                      PALM_DIVIDER_WIDTH );
 
     board_prefsChanged( globals->game.board, &globals->gState.cp );
 

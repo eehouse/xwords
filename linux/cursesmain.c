@@ -965,7 +965,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     board_setScoreboardLoc( globals.cGlobals.game.board, 20, 1, 50, 
                             5, /*4 players + rem*/ XP_FALSE );
 
-    board_setTrayLoc( globals.cGlobals.game.board, 25, 8, 3, 4, 1 );
+    board_setTrayLoc( globals.cGlobals.game.board, 25, 8, (3*MAX_TRAY_TILES)+1, 
+                      4, 1 );
     /* no divider -- yet */
     /*     board_setTrayVisible( globals.board, XP_TRUE, XP_FALSE ); */
 
