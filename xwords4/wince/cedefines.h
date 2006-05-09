@@ -32,6 +32,9 @@
 #define CE_TIMER_WIDTH 35
 #define CE_SCORE_WIDTH (4 * 51)
 
+#define CE_TIMER_HT_HORIZ CE_SCORE_HEIGHT
+#define CE_TIMER_HT_VERT CE_SCORE_WIDTH
+
 #if 1                          /* Palm-like case */
 
 #define CE_SCORE_TOP 0

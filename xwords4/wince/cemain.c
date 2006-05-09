@@ -371,98 +371,171 @@ hideScroller( CEAppGlobals* globals )
 #define MIN_CELL_HEIGHT 12
 #if defined TARGET_OS_WINCE
 # define MIN_TRAY_HEIGHT 20
+# define CE_MIN_SCORE_WIDTH 20    /* for vertical score case */
 #elif defined TARGET_OS_WIN32
 # define MIN_TRAY_HEIGHT 40
+# define CE_MIN_SCORE_WIDTH 34
 #endif
 #define TRAY_PADDING 1
 
 typedef struct CEBoardParms {
     XP_U16  boardHScale;
     XP_U16  boardVScale;
+    XP_U16  boardTop;
     XP_U16  trayTop;
-    XP_U16  trayVScale;
-    XP_U16  trayHScale;
-    XP_U16  leftEdge;
+
+    XP_U16  trayHeight;
+    XP_U16  trayWidth;
+
+    XP_U16 timerLeft, timerTop, timerWidth, timerHeight;
+
+    XP_U16  boardLeft, trayLeft;
     XP_U16  scoreWidth;
     XP_U16  scoreHeight;
     XP_Bool needsScroller;
+    XP_Bool horiz;
 } CEBoardParms;
 
+static XP_U16
+sizeBoard( XP_U16* bdHeightP,  /* INOUT */
+           XP_U16* nRowsP,     /* INOUT: on OUT, gives nRowsVisible */ 
+           XP_U16* scrollWidthP )
+{
+    /* given the initial max board height, figure how many rows are visible
+       and the adjusted heights of the board and tray. */
+    XP_U16 bdHeight = *bdHeightP;
+    XP_U16 nVisibleRows = *nRowsP;
+    XP_U16 vScale;
+    XP_U16 boardHtLimit;
+
+    *scrollWidthP = 0;
+
+    vScale = bdHeight / nVisibleRows;
+    if ( vScale < MIN_CELL_HEIGHT ) {
+        vScale = MIN_CELL_HEIGHT;
+    }
+
+    /* Now adjust tray height to make board height a multiple  */
+    boardHtLimit = nVisibleRows * vScale;
+    while ( boardHtLimit > bdHeight ) {
+        boardHtLimit -= vScale;
+        --nVisibleRows;
+        *scrollWidthP = SCROLLBAR_WIDTH;
+    }
+
+    *bdHeightP = boardHtLimit;
+    *nRowsP = nVisibleRows;
+    return vScale;
+} /* sizeBoard */
+
 static void
-figureBoardParms( CEAppGlobals* globals, XP_U16 nCols, CEBoardParms* bparms )
+figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 {
     RECT rc;
-    XP_U16 width, height;
-    XP_U16 trayVScale, leftEdge, scoreWidth;
-    XP_U16 boardHt, boardWidth, visBoardHt, hScale, vScale, nHiddenRows;
-    XP_U16 boardHtLimit, trayTop;
-    XP_Bool needsScroller;
+    XP_U16 scrnWidth, scrnHeight;
+    XP_U16 trayVScale, boardLeft, scoreWidth, scoreHeight;
+    XP_U16 boardHt, boardWidth, visBoardHt, hScale, vScale, nVisibleRows;
+    XP_U16 boardHtLimit, trayTop, boardTop;
+    XP_Bool horiz;
+    XP_U16 trayWidth;
+    XP_U16 scrollWidth = 0;
 
     GetClientRect( globals->hWnd, &rc );
-    boardWidth = width = (XP_U16)(rc.right - rc.left);
-    height = (XP_U16)(rc.bottom - rc.top);
+#if 1
+#ifndef _WIN32_WCE
+    {
+        int width = rc.right - rc.left;
+        int height = rc.bottom - rc.top;
+        if ( width > height ) {
+            width = (height * 3) / 4;
+            rc.right = rc.left + width;
+        }
+    }
+#endif
+#endif
 
-    boardHt = height - CE_SCORE_HEIGHT - MIN_TRAY_HEIGHT;
+    scrnWidth = (XP_U16)(rc.right - rc.left);
+    scrnHeight = (XP_U16)(rc.bottom - rc.top);
+
+    horiz = (scrnHeight - CE_SCORE_HEIGHT) >= (scrnWidth - CE_MIN_SCORE_WIDTH);
+    nVisibleRows = nRows;
+
+    if ( horiz ) {
+        scoreHeight = horiz? CE_SCORE_HEIGHT : 0;
+    }
+    boardTop = scoreHeight;
 
     /* Try to make it fit without scrolling.  But if necessary, reduce the
        width for a scrollbar. */
-    vScale = boardHt / nCols;
-    needsScroller = vScale < MIN_CELL_HEIGHT;
-    if ( needsScroller ) {
-        vScale = MIN_CELL_HEIGHT;
-        boardWidth -= SCROLLBAR_WIDTH;
-    }
-    hScale = boardWidth / nCols;
+    boardHt = scrnHeight - scoreHeight - MIN_TRAY_HEIGHT;
+    vScale = sizeBoard( &boardHt, &nVisibleRows, &scrollWidth );
 
-    /* Figure tray top.  May overlap board.  The tray's height must be at
-       least the minimum, plus whatever fraction of a row is left when
-       visible board height is determined. */
-    visBoardHt = vScale * nCols;
-    nHiddenRows = 0;
-    boardHtLimit = height - CE_SCORE_HEIGHT - MIN_TRAY_HEIGHT;
-    while ( visBoardHt > boardHtLimit ) {
-        visBoardHt -= vScale;
-        ++nHiddenRows;
+    boardWidth = scrnWidth - scrollWidth;
+    if ( horiz ) {
+        scoreWidth = scrnWidth;
+        hScale = boardWidth / nRows;
+        /* center the board */
+        boardWidth += scrollWidth;
+        boardLeft = (scrnWidth - boardWidth) / 2; /* center it all */
+    } else {
+        /* move extra pixels into scoreboard */
+        hScale = (boardWidth - CE_MIN_SCORE_WIDTH) / nRows;
+        boardWidth = hScale * nRows;
+        scoreWidth = scrnWidth - boardWidth - scrollWidth;
+        boardLeft = scoreWidth;
     }
-    trayTop = CE_SCORE_HEIGHT + visBoardHt + TRAY_PADDING;
-    trayVScale = height - trayTop;
+    trayWidth = boardWidth;
 
-    /* Center the board */
-    boardWidth = nCols * hScale;
-    if ( needsScroller ) {
-        boardWidth += SCROLLBAR_WIDTH;
-    }
-    leftEdge = (width - boardWidth) / 2; /* center it all */
-
-    scoreWidth = width;
-    if ( globals->gameInfo.timerEnabled ) {
-        scoreWidth -= CE_TIMER_WIDTH;
-    }
+    trayTop = boardHt + scoreHeight + TRAY_PADDING;
+    trayVScale = scrnHeight - trayTop;
     
+    if ( !horiz ) {
+        scoreHeight = scrnHeight;
+    }
+
+    if ( globals->gameInfo.timerEnabled ) {
+        if ( horiz ) {
+            scoreWidth -= CE_TIMER_WIDTH;
+            bparms->timerLeft = scoreWidth;
+            bparms->timerTop = 0;
+            bparms->timerWidth = CE_TIMER_WIDTH; 
+            bparms->timerHeight = CE_SCORE_HEIGHT;
+        } else {
+            bparms->timerLeft = 0;
+            bparms->timerHeight = CE_SCORE_HEIGHT * 2;
+            bparms->timerTop = scrnHeight - bparms->timerHeight;
+            bparms->timerWidth = scoreWidth;
+
+            scoreHeight -= bparms->timerHeight;
+        }
+    }
+
     bparms->boardHScale = hScale;
     bparms->boardVScale = vScale;
+    bparms->boardTop = boardTop;
     bparms->trayTop = trayTop;
-    bparms->trayVScale = trayVScale;
-    bparms->trayHScale = CE_TRAY_SCALEH; /* unchanged so far... */
-    bparms->leftEdge = leftEdge;
+    bparms->trayHeight = trayVScale;
+    bparms->trayWidth = trayWidth;
+    bparms->boardLeft = boardLeft;
+    bparms->trayLeft = boardLeft;
     bparms->scoreWidth = scoreWidth;
-    bparms->scoreHeight = CE_SCORE_HEIGHT;
+    bparms->scoreHeight = scoreHeight;
+    bparms->horiz = horiz;
 
 #ifdef CEFEATURE_CANSCROLL
-    bparms->needsScroller = needsScroller;
-
-    if ( needsScroller ) {
-        XP_U16 boardRight = leftEdge + (nCols * hScale);
-        showScroller( globals, nHiddenRows,
+    bparms->needsScroller = nVisibleRows < nRows;
+    if ( bparms->needsScroller ) {
+        XP_U16 boardRight = boardLeft + (nRows * hScale);
+        showScroller( globals, nRows - nVisibleRows,
                       boardRight,
                       CE_SCORE_HEIGHT,
                       rc.right - boardRight, visBoardHt );
         XP_LOGF( "NEEDING SCROLLBAR!!!!" );
-        XP_LOGF( "%d rows hidden", nHiddenRows );
+        XP_LOGF( "%d rows hidden", nRows - nVisibleRows );
     } else {
         hideScroller( globals );
     }
-    globals->nHiddenRows = nHiddenRows;
+    globals->nHiddenRows = nVisibleRows - nVisibleRows;
 #endif
 } /* figureBoardParms */
 
@@ -479,26 +552,26 @@ cePositionBoard( CEAppGlobals* globals )
 
     figureBoardParms( globals, nCols, &bparms );
 
-    board_setTimerLoc( globals->game.board, CE_TIMER_LEFT,
-                       CE_TIMER_TOP, CE_TIMER_WIDTH, CE_TIMER_HEIGHT );
+    if ( globals->gameInfo.timerEnabled ) {
+        board_setTimerLoc( globals->game.board, bparms.timerLeft, 
+                           bparms.timerTop, bparms.timerWidth, 
+                           bparms.timerHeight );
+    }
 
-    board_setPos( globals->game.board, bparms.leftEdge,
-                  bparms.scoreHeight, XP_FALSE );
+    board_setPos( globals->game.board, bparms.boardLeft,
+                  bparms.boardTop, XP_FALSE );
     board_setScale( globals->game.board, bparms.boardHScale, bparms.boardVScale );
 
     board_setScoreboardLoc( globals->game.board, CE_SCORE_LEFT, 
                             CE_SCORE_TOP, bparms.scoreWidth,
-                            bparms.scoreHeight, XP_TRUE );
+                            bparms.scoreHeight, bparms.horiz );
     board_setShowColors( globals->game.board, globals->appPrefs.showColors );
     board_setYOffset( globals->game.board, 0 );
 
     board_prefsChanged( globals->game.board, &globals->appPrefs.cp );
 
-    board_setTrayLoc( globals->game.board, 
-                      CE_TRAY_LEFT_RH,
-                      bparms.trayTop,
-                      bparms.trayHScale, bparms.trayVScale,
-                      CE_DIVIDER_WIDTH );
+    board_setTrayLoc( globals->game.board, bparms.trayLeft, bparms.trayTop,
+                      bparms.trayWidth, bparms.trayHeight, CE_DIVIDER_WIDTH );
 
     server_prefsChanged( globals->game.server, &globals->appPrefs.cp );
     
