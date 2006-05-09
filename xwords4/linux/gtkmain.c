@@ -317,15 +317,17 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
     }
 
     width = widget->allocation.width - (RIGHT_MARGIN + BOARD_LEFT_MARGIN);
+    if ( globals->cGlobals.params->verticalScore ) {
+        width -= VERT_SCORE_WIDTH;
+    }
     height = widget->allocation.height - (TOP_MARGIN + BOTTOM_MARGIN)
         - MIN_TRAY_SCALEV - BOTTOM_MARGIN;
 
     hscale = width / NUM_COLS;
     vscale = (height / (NUM_ROWS + 2)); /* makd tray height 2x cell height */
 
-    leftMargin = (widget->allocation.width - (hscale*NUM_COLS)) / 2;
-    topMargin = (widget->allocation.height - (vscale*(NUM_ROWS*2))) / 2;
-
+    leftMargin = (width - (hscale*NUM_COLS)) / 2;
+    topMargin = (height - (vscale*(NUM_ROWS*2))) / 2;
 
     if ( !globals->cGlobals.params->verticalScore ) {
         boardTop += HOR_SCORE_HEIGHT;
@@ -341,32 +343,31 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
     board_setShowColors( globals->cGlobals.game.board, XP_TRUE );
     globals->gridOn = XP_TRUE;
 
+    timerTop = TIMER_TOP;
     if ( globals->cGlobals.params->verticalScore ) {
+        timerLeft = BOARD_LEFT + (hscale*NUM_COLS) + 1;
         board_setScoreboardLoc( globals->cGlobals.game.board, 
-                                BOARD_LEFT + (MIN_SCALE*NUM_COLS) + 1,
+                                timerLeft,
                                 VERT_SCORE_TOP,
                                 VERT_SCORE_WIDTH, 
-                                VERT_SCORE_HEIGHT,
+                                vscale*NUM_COLS,
                                 XP_FALSE );
 
-        timerLeft = BOARD_LEFT + (MIN_SCALE*NUM_COLS) + 1;
-        timerTop = TIMER_TOP;
-
     } else {
+        timerLeft = BOARD_LEFT + (hscale*NUM_COLS) - TIMER_WIDTH;
         board_setScoreboardLoc( globals->cGlobals.game.board, 
                                 BOARD_LEFT, HOR_SCORE_TOP,
-                                HOR_SCORE_WIDTH, HOR_SCORE_HEIGHT, 
+                                timerLeft-BOARD_LEFT,
+                                HOR_SCORE_HEIGHT, 
                                 XP_TRUE );
 
-        timerLeft = BOARD_LEFT + (MIN_SCALE*NUM_COLS) + 1;
-        timerTop = TIMER_TOP;
     }
 
     board_setTimerLoc( globals->cGlobals.game.board, timerLeft, timerTop,
                        TIMER_WIDTH, HOR_SCORE_HEIGHT );
 
     board_setTrayLoc( globals->cGlobals.game.board, TRAY_LEFT, trayTop, 
-                      width, vscale * 2, GTK_DIVIDER_WIDTH );
+                      hscale * NUM_COLS, vscale * 2, GTK_DIVIDER_WIDTH );
 
     setCtrlsForTray( globals );
     
@@ -1600,6 +1601,9 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
 	+ MIN_TRAY_SCALE + BOTTOM_MARGIN;
 #else
     width = HOR_SCORE_WIDTH + TIMER_WIDTH + TIMER_PAD;
+    if ( globals.cGlobals.params->verticalScore ) {
+        width += VERT_SCORE_WIDTH;
+    }
     height = 196;
     if ( !globals.cGlobals.params->trayOverlaps ) {
         height += MIN_SCALE * 2;
