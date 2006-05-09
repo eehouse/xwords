@@ -362,12 +362,12 @@
 /* #define PALM_TRAY_LEFT 0 */
 #define PALM_TRAY_TOP (160-PALM_TRAY_SCALEV-1)
 #define PALM_TRAY_TOP_MAX 144	/* the lowest we can put the top */
+#define PALM_TRAY_WIDTH 143
 #ifdef EIGHT_TILES
-#define PALM_TRAY_SCALEH 18
+#define PALM_TRAY_SCALEV 18
 #else
-#define PALM_TRAY_SCALEH 20
+#define PALM_TRAY_SCALEV 20
 #endif
-#define PALM_TRAY_SCALEV PALM_TRAY_SCALEH
 #define PALM_DIVIDER_WIDTH 3
 
 #define PALM_BOARD_LEFT_LH 9
