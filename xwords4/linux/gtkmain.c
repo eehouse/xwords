@@ -366,8 +366,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
                        TIMER_WIDTH, HOR_SCORE_HEIGHT );
 
     board_setTrayLoc( globals->cGlobals.game.board, TRAY_LEFT, trayTop, 
-                      hscale * 2, vscale * 2,
-                      GTK_DIVIDER_WIDTH );
+                      width, vscale * 2, GTK_DIVIDER_WIDTH );
 
     setCtrlsForTray( globals );
     
