@@ -1210,11 +1210,7 @@ drawScoreBoard( BoardCtxt* board )
                here is for the scores to be closer to each other than they are
                to the rem: string and timer on the ends. */
             nShares = nPlayers;
-            if ( remDim > 0 ) {
-                ++nShares;
-            }
             XP_ASSERT( *adjustDim >= totalDim );
-/*             XP_LOGF( "*adjustDim=%d, totalDim=%d", *adjustDim, totalDim ); */
             extra = (*adjustDim - totalDim) / nShares;
 
             /* at this point, the scoreRect should be anchored at the
@@ -1226,7 +1222,6 @@ drawScoreBoard( BoardCtxt* board )
                 draw_drawRemText( board->draw, &scoreRect, &scoreRect, 
                                   nTilesInPool );
 
-                remDim += extra;
                 *adjustPt += remDim;
             }
 

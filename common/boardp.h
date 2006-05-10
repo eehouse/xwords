@@ -125,7 +125,7 @@ struct BoardCtxt {
 #endif
     XP_U8 dividerLoc[MAX_NUM_PLAYERS];	/* 0 means left of 0th tile, etc. */
 
-    XP_U8 scoreDims[MAX_NUM_PLAYERS];
+    XP_U16 scoreDims[MAX_NUM_PLAYERS];
 
     /* scoreboard state */
     XP_Rect scoreBdBounds;
