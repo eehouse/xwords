@@ -591,19 +591,18 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_U16 nTilesLeft,
     XP_U16 left = r->left;
     XP_U16 top = r->top;
     XP_Bool draw = !widthP;
+    PangoLayout* layout = dctx->layout[LAYOUT_SMALL];
     
     sprintf( buf, "rem:%d", nTilesLeft );
-
-    pango_layout_set_text( dctx->layout[LAYOUT_SMALL], buf, strlen(buf) );
+    pango_layout_set_text( layout, buf, strlen(buf) );
 
     if ( draw ) {
         gdk_draw_layout_with_colors( DRAW_WHAT(dctx), dctx->drawGC,
-                                     left, top, dctx->layout[LAYOUT_SMALL],
+                                     left, top, layout,
                                      &dctx->black, NULL );
     } else {
         int width, height;
-        pango_layout_get_pixel_size( dctx->layout[LAYOUT_SMALL], 
-                                     &width, &height );
+        pango_layout_get_pixel_size( layout, &width, &height );
 
         if ( height > HOR_SCORE_HEIGHT ) {
             height = HOR_SCORE_HEIGHT;
