@@ -115,9 +115,10 @@ measureText( CEDrawCtx* dctx, const XP_UCHAR* str,
              XP_U16* widthP, XP_U16* heightP )
 {
     HDC hdc = GetDC(dctx->mainWin);//globals->hdc;
-    XP_U16 height, maxWidth;
+    XP_U16 height = 0;
+    XP_U16 maxWidth = 0;
 
-    for ( height = 0, maxWidth = 0; ; ) {
+    for ( ; ; ) {
         wchar_t widebuf[64];
         XP_UCHAR* nextStr = strstr( str, XP_CR );
         XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
@@ -141,7 +142,7 @@ measureText( CEDrawCtx* dctx, const XP_UCHAR* str,
         str = nextStr + XP_STRLEN(XP_CR);	/* skip '\n' */
     }
 
-    *widthP = maxWidth;// + 8;
+    *widthP = maxWidth + 8;
     *heightP = height;
 }
 
@@ -602,7 +603,6 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* r,
 
     formatRemText( hdc, nTilesLeft, dctx->scoreIsVertical, buf );
     measureText( dctx, buf, width, height );
-    XP_LOGF( "width(Rem) = %d", *width );
 } /* ce_draw_measureRemText */
 
 DLSTATIC void
