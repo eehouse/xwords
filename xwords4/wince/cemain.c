@@ -369,10 +369,10 @@ hideScroller( CEAppGlobals* globals )
 
 #define MIN_CELL_WIDTH 12
 #define MIN_CELL_HEIGHT 12
-#if defined TARGET_OS_WINCE
-# define MIN_TRAY_HEIGHT 20
-# define CE_MIN_SCORE_WIDTH 20    /* for vertical score case */
-#elif defined TARGET_OS_WIN32
+#if defined _WIN32_WCE
+# define MIN_TRAY_HEIGHT 28
+# define CE_MIN_SCORE_WIDTH 24    /* for vertical score case */
+#else
 # define MIN_TRAY_HEIGHT 40
 # define CE_MIN_SCORE_WIDTH 34
 #endif
@@ -434,7 +434,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     RECT rc;
     XP_U16 scrnWidth, scrnHeight;
     XP_U16 trayVScale, boardLeft, scoreWidth, scoreHeight;
-    XP_U16 boardHt, boardWidth, visBoardHt, hScale, vScale, nVisibleRows;
+    XP_U16 boardHt, boardWidth, hScale, vScale, nVisibleRows;
     XP_U16 boardHtLimit, trayTop, boardTop;
     XP_Bool horiz;
     XP_U16 trayWidth;
@@ -460,9 +460,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     horiz = (scrnHeight - CE_SCORE_HEIGHT) >= (scrnWidth - CE_MIN_SCORE_WIDTH);
     nVisibleRows = nRows;
 
-    if ( horiz ) {
-        scoreHeight = horiz? CE_SCORE_HEIGHT : 0;
-    }
+    scoreHeight = horiz? CE_SCORE_HEIGHT : 0;
     boardTop = scoreHeight;
 
     /* Try to make it fit without scrolling.  But if necessary, reduce the
@@ -484,7 +482,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
         scoreWidth = scrnWidth - boardWidth - scrollWidth;
         boardLeft = scoreWidth;
     }
-    trayWidth = boardWidth;
+    trayWidth = boardWidth + scrollWidth;
 
     trayTop = boardHt + scoreHeight + TRAY_PADDING;
     trayVScale = scrnHeight - trayTop;
@@ -523,19 +521,18 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     bparms->horiz = horiz;
 
 #ifdef CEFEATURE_CANSCROLL
+    globals->nHiddenRows = nRows - nVisibleRows;
     bparms->needsScroller = nVisibleRows < nRows;
     if ( bparms->needsScroller ) {
         XP_U16 boardRight = boardLeft + (nRows * hScale);
-        showScroller( globals, nRows - nVisibleRows,
-                      boardRight,
-                      CE_SCORE_HEIGHT,
-                      rc.right - boardRight, visBoardHt );
+        showScroller( globals, globals->nHiddenRows,
+                      boardRight, boardTop,
+                      scrollWidth, boardHt );
         XP_LOGF( "NEEDING SCROLLBAR!!!!" );
-        XP_LOGF( "%d rows hidden", nRows - nVisibleRows );
+        XP_LOGF( "%d rows hidden", globals->nHiddenRows );
     } else {
         hideScroller( globals );
     }
-    globals->nHiddenRows = nVisibleRows - nVisibleRows;
 #endif
 } /* figureBoardParms */
 
@@ -560,7 +557,8 @@ cePositionBoard( CEAppGlobals* globals )
 
     board_setPos( globals->game.board, bparms.boardLeft,
                   bparms.boardTop, XP_FALSE );
-    board_setScale( globals->game.board, bparms.boardHScale, bparms.boardVScale );
+    board_setScale( globals->game.board, bparms.boardHScale, 
+                    bparms.boardVScale );
 
     board_setScoreboardLoc( globals->game.board, CE_SCORE_LEFT, 
                             CE_SCORE_TOP, bparms.scoreWidth,
