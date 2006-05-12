@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */ 
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"-*- */
 /* 
- * Copyright 2000-2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2006 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,7 +38,10 @@
 #endif
 
 #define CE_MINI_V_PADDING 6
-#define CE_INTERLINE_SPACE 0
+#define CE_MINIW_PADDING 0
+#define CE_SCORE_PADDING -3
+#define CE_REM_PADDING -1
+#define CE_TIMER_PADDING -2
 
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
@@ -111,7 +114,7 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, XP_Bool center,
 } /* makeAndDrawBitmap */
 
 static void
-measureText( CEDrawCtx* dctx, const XP_UCHAR* str, 
+measureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
              XP_U16* widthP, XP_U16* heightP )
 {
     HDC hdc = GetDC(dctx->mainWin);//globals->hdc;
@@ -119,7 +122,7 @@ measureText( CEDrawCtx* dctx, const XP_UCHAR* str,
     XP_U16 maxWidth = 0;
 
     for ( ; ; ) {
-        wchar_t widebuf[64];
+        wchar_t widebuf[32];
         XP_UCHAR* nextStr = strstr( str, XP_CR );
         XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
         SIZE size;
@@ -128,8 +131,7 @@ measureText( CEDrawCtx* dctx, const XP_UCHAR* str,
 
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
-        widebuf[len] = 0;
-        GetTextExtentPoint32( hdc, widebuf, wcslen(widebuf), &size );
+        GetTextExtentPoint32( hdc, widebuf, len, &size );
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         height += size.cy;
@@ -138,17 +140,17 @@ measureText( CEDrawCtx* dctx, const XP_UCHAR* str,
         if ( nextStr == NULL ) {
             break;
         }
-        height += CE_INTERLINE_SPACE;
+        height += padding;
         str = nextStr + XP_STRLEN(XP_CR);	/* skip '\n' */
     }
 
     *widthP = maxWidth + 8;
     *heightP = height;
-}
+} /* measureText */
 
 static void
-drawLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, const RECT* rp, 
-           int flags )
+drawLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
+           const RECT* rp, int flags )
 {
     wchar_t widebuf[128];
     RECT textRt = *rp;
@@ -165,16 +167,15 @@ drawLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, const RECT* rp,
 
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, text, len,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
-        widebuf[len] = 0;
 
         textRt.bottom = textRt.top + dctx->miniLineHt;
 
-        DrawText( hdc, widebuf, -1, &textRt, flags );
+        DrawText( hdc, widebuf, len, &textRt, flags );
 
         if ( nextStr == NULL ) {
             break;
         }
-        textRt.top = textRt.bottom + CE_INTERLINE_SPACE;
+        textRt.top = textRt.bottom + padding;
         text = nextStr + XP_STRLEN(XP_CR);
     }
 } /* drawLines */
@@ -322,15 +323,11 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 	
         SetTextColor( hdc, foreColorRef );
 #ifdef TARGET_OS_WIN32
-        HFONT oldFont = SelectObject( hdc, dctx->trayFont );
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
 #endif
         DrawText( hdc, widebuf, -1, &textRect, 
                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
-#ifdef TARGET_OS_WIN32
-        SelectObject( hdc, oldFont );
-#endif
 
     } else if ( !!bitmap ) {
         makeAndDrawBitmap( dctx, hdc, &rt, XP_TRUE,
@@ -602,7 +599,7 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* r,
     XP_UCHAR buf[16];
 
     formatRemText( hdc, nTilesLeft, dctx->scoreIsVertical, buf );
-    measureText( dctx, buf, width, height );
+    measureText( dctx, buf, CE_REM_PADDING, width, height );
 } /* ce_draw_measureRemText */
 
 DLSTATIC void
@@ -619,7 +616,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     XPRtoRECT( &rt, rInner );
     ++rt.left;                  /* 1: don't write up against edge */
-    drawLines( dctx, hdc, buf, &rt, 
+    drawLines( dctx, hdc, buf, CE_REM_PADDING, &rt, 
                DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_CENTER );
 } /* ce_draw_drawRemText */
 
@@ -628,30 +625,61 @@ ceWidthAndText( CEDrawCtx* dctx, HDC hdc, const DrawScoreInfo* dsi,
                 XP_UCHAR* buf, XP_U16* widthP, XP_U16* heightP )
 {
     XP_UCHAR borders[] = {'•', '\0'};
-    XP_UCHAR tilesLeftTxt[8];
+    XP_UCHAR tmp[16];
+        
+    /* For a horizontal scoreboard, we want *300:6*
+     * For a vertical, it's
+     *       
+     *       *
+     *      300
+     *       6 
+     *       *
+     */       
+              
 
-    if ( !dsi->isTurn ) {
-        borders[0] = '\0';
+    buf[0] = '\0';
+    if ( dsi->isTurn ) {
+        strcat( buf, borders );
+        if ( dctx->scoreIsVertical ) {
+            strcat( buf, XP_CR );
+        }
     }
 
-    if ( dctx->scoreIsVertical ) {
-        sprintf( buf, "%d", dsi->score );
-        if ( dsi->nTilesLeft >= 0 ) {
-            XP_UCHAR smallBuf[32];
-            snprintf( smallBuf, sizeof(smallBuf), XP_CR "%s%d%s", borders, 
-                      dsi->nTilesLeft, borders );
-            strcat( buf, smallBuf );
-        }
-    } else {
-        if ( dsi->nTilesLeft >= 0 ) {
-            sprintf( tilesLeftTxt, ":%d", dsi->nTilesLeft );
+    sprintf( tmp, "%d", dsi->score );
+    strcat( buf, tmp );
+
+    if ( dsi->nTilesLeft >= 0 ) {
+        if ( dctx->scoreIsVertical ) {
+            strcat( buf, XP_CR );
         } else {
-            tilesLeftTxt[0] = '\0';
+            strcat( buf, ":" );
         }
-        sprintf( buf, "%s%d%s%s", borders, dsi->score, tilesLeftTxt, borders );
+        sprintf( tmp, "%d", dsi->nTilesLeft );
+        strcat( buf, tmp );
     }
 
-    measureText( dctx, buf, widthP, heightP );
+    if ( dsi->isTurn ) {
+        if (  dctx->scoreIsVertical ) {
+            strcat( buf, XP_CR );
+        }
+        strcat( buf, borders );
+    }
+
+/*     if ( dctx->scoreIsVertical ) { */
+/*         XP_U16 len = sprintf( buf, "%s%d%s", borders, dsi->score, borders ); */
+/*         if ( dsi->nTilesLeft >= 0 ) { */
+/*             sprintf( buf + len, XP_CR "%d", dsi->nTilesLeft ); */
+/*         } */
+/*     } else { */
+/*         if ( dsi->nTilesLeft >= 0 ) { */
+/*             sprintf( tilesLeftTxt, ":%d", dsi->nTilesLeft ); */
+/*         } else { */
+/*             tilesLeftTxt[0] = '\0'; */
+/*         } */
+/*         sprintf( buf, "%s%d%s%s", borders, dsi->score, tilesLeftTxt, borders ); */
+/*     } */
+
+    measureText( dctx, buf, CE_SCORE_PADDING, widthP, heightP );
 } /* ceWidthAndText */
 
 DLSTATIC void
@@ -662,7 +690,7 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* r,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    XP_UCHAR buf[16];
+    XP_UCHAR buf[32];
     HFONT newFont;
     HFONT oldFont;
 
@@ -705,7 +733,9 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
 
     ceWidthAndText( dctx, hdc, dsi, scoreBuf, &width, &height );
 
-    drawLines( dctx, hdc, scoreBuf, &rt, DT_SINGLELINE | DT_VCENTER | DT_CENTER );
+    ++rt.top;                   /* tweak for ce */
+    drawLines( dctx, hdc, scoreBuf, CE_SCORE_PADDING, &rt, 
+               DT_SINGLELINE | DT_VCENTER | DT_CENTER );
 
     SelectObject( hdc, oldFont );
 } /* ce_draw_score_drawPlayer */
@@ -784,7 +814,8 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx,
 
     SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(player)] );
     ceClearToBkground( dctx, rInner );
-    drawLines( dctx, hdc, buf, &rt, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+    drawLines( dctx, hdc, buf, CE_TIMER_PADDING, &rt, 
+               DT_SINGLELINE | DT_VCENTER | DT_CENTER);
 
     if ( !globals->hdc ) {
         EndPaint( dctx->mainWin, &ps );
@@ -819,7 +850,7 @@ DRAW_FUNC_NAME(measureMiniWText)( DrawCtx* p_dctx, const XP_UCHAR* str,
                                   XP_U16* widthP, XP_U16* heightP )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-    measureText( dctx, str, widthP, heightP );
+    measureText( dctx, str, CE_MINIW_PADDING, widthP, heightP );
     *heightP += CE_MINI_V_PADDING;
 } /* ce_draw_measureMiniWText */
 
@@ -855,7 +886,8 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
     textRt.top += 2;
     InsetRect( &textRt, 3, 0 );
 
-    drawLines( dctx, hdc, text, &textRt, DT_CENTER | DT_VCENTER );
+    drawLines( dctx, hdc, text, CE_MINIW_PADDING, &textRt, 
+               DT_CENTER | DT_VCENTER );
 
     if ( !globals->hdc ) {
         EndPaint( dctx->mainWin, &ps );
