@@ -258,7 +258,6 @@ typedef struct ColorsDlgState {
 static void
 initColorData( ColorsDlgState* cState, HWND hDlg )
 {
-    CEAppGlobals* globals = cState->globals;
     XP_U16 i;
 
     XP_ASSERT( (LAST_BUTTON - FIRST_BUTTON + 1) == NUM_EDITABLE_COLORS );
