@@ -861,16 +861,25 @@ handle_grid_button( GtkWidget* widget, GtkAppGlobals* globals )
 static void
 handle_hide_button( GtkWidget* widget, GtkAppGlobals* globals )
 {
-    if ( globals->cGlobals.params->trayOverlaps ) {
-	globals->adjustment->page_size = MAX_ROWS;
-	globals->adjustment->value = 0.0;
+    BoardCtxt* board;
+    XP_Bool draw = XP_FALSE;
 
-	gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
-	gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
+    if ( globals->cGlobals.params->trayOverlaps ) {
+        globals->adjustment->page_size = MAX_ROWS;
+        globals->adjustment->value = 0.0;
+
+        gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
+        gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
     }
-/*     board_setTrayVisible( globals->board, XP_FALSE, XP_TRUE ); */
-    if ( board_hideTray( globals->cGlobals.game.board ) ) {
-        board_draw( globals->cGlobals.game.board );
+
+    board = globals->cGlobals.game.board;
+    if ( TRAY_REVEALED == board_getTrayVisState( board ) ) {
+        draw = board_hideTray( board );
+    } else {
+        draw = board_showTray( board );
+    }
+    if ( draw ) {
+        board_draw( board );
     }
 } /* handle_hide_button */
 
