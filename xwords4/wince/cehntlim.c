@@ -19,6 +19,7 @@
 
 #ifdef XWFEATURE_SEARCHLIMIT
 
+#include <stdio.h>
 #include "cehntlim.h"
 
 static void
