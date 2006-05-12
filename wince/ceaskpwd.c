@@ -20,6 +20,7 @@
 #include "ceaskpwd.h"
 #include "cemain.h"
 #include "ceutil.h"
+#include <stdio.h>              /* swprintf */
 
 static void
 nameToLabel( HWND hDlg, const XP_UCHAR* name, XP_U16 labelID )

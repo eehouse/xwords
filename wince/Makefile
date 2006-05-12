@@ -53,7 +53,9 @@ CFLAGS += -DCANT_DO_CMDBAR -DBEYOND_IR -DDRAW_LINK_DIRECT
 endif
 endif
 
-CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay 
+CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay
+
+CFLAGS += -Wall
 
 # warn upgrading users of new dict location
 CFLAGS += -DDICTS_MOVED_ALERT

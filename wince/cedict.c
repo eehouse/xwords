@@ -19,6 +19,9 @@
 
 #ifndef STUBBED_DICT
 
+#include <stdio.h>              /* _snwprintf */
+#include <string.h>              /* _snwprintf */
+
 #include "stdafx.h" 
 #include <commdlg.h>
 #include "dictnryp.h"
@@ -432,10 +435,10 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
                 HANDLE* hFileP, XP_U32* sizep )
 {
     XP_U8* ptr = NULL;
-    HANDLE mappedFile = NULL;
     HANDLE hFile;
 
-#if defined TARGET_OS_WINCE
+#if defined _WIN32_WCE
+    HANDLE mappedFile = NULL;
     hFile = CreateFileForMapping( name,
                                   GENERIC_READ,
                                   FILE_SHARE_READ, /* (was 0: no sharing) */
@@ -608,8 +611,6 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
                 }
             } else if ( checkIfDictAndLegal( MPPARM(mpool) path, startLen,
                                              data.cFileName ) ) {
-                XP_U16 len;
-                XP_UCHAR buf[CE_MAX_PATH_LEN+1];
                 XP_ASSERT( *nFoundP < nSought );
 
                 lstrcpy( path+startLen, data.cFileName );
@@ -812,8 +813,6 @@ static XP_Bool
 findAlternateDict( CEAppGlobals* globals, wchar_t* path )
 {
     wchar_t shortPath[CE_MAX_PATH_LEN+1];
-    wchar_t* shortName; 
-    XP_U16 nFound;
     FindOneData data;
 
     XP_MEMSET( &data, 0, sizeof(data) );
@@ -862,7 +861,6 @@ bname( XP_UCHAR* in )
 wchar_t*
 wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in )
 {
-    int len;
     wchar_t* result;
 
     _snwprintf( buf, buflen, L"%s", in );
