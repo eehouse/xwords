@@ -17,6 +17,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+/* What about trays that are partially hidden?  They need to be redrawn so
+   they don't just show what used to be there.
+   *
+   * Why would tray need to be drawn last.  What nukes it?  When might
+ */
+
 #include "comtypes.h"
 #include "board.h"
 #include "game.h"
@@ -1005,6 +1011,8 @@ board_draw( BoardCtxt* board )
 
         drawScoreBoard( board );
 
+        drawTray( board, board->focussed==OBJ_TRAY );
+
         if ( board->needsDrawing 
              && draw_boardBegin( board->draw, 
                                  model_getDictionary( board->model ),
@@ -1087,7 +1095,7 @@ board_draw( BoardCtxt* board )
             board->needsDrawing = !allDrawn;
         }
 
-        drawTray( board, board->focussed==OBJ_TRAY );
+/*         drawTray( board, board->focussed==OBJ_TRAY ); */
     }
     return !board->needsDrawing;
 } /* board_draw */
@@ -1254,13 +1262,15 @@ drawScoreBoard( BoardCtxt* board )
 } /* drawScoreBoard */
 
 void
-board_setTrayLoc( BoardCtxt* board, XP_U16 left, XP_U16 top, 
+board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
                   XP_U16 trayWidth, XP_U16 trayHeight,
                   XP_U16 minDividerWidth )
 {
     XP_U16 dividerWidth;
-    board->trayBounds.left = left;
-    board->trayBounds.top = top;
+    XP_U16 boardBottom, boardRight;
+    XP_Bool boardHidesTray;
+    board->trayBounds.left = trayLeft;
+    board->trayBounds.top = trayTop;
     /* what's this +1 for? */
 
     board->trayBounds.width = trayWidth;
@@ -1277,14 +1287,27 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 left, XP_U16 top,
     /* boardObscuresTray is about whether they *can* overlap, not just about
      * they do given the current scroll position of the board. Remember
      * (e.g. for curses version) that vertical intersection isn't enough.*/
-    board->boardObscuresTray = 
-        (top < (board->boardBounds.top + 
-                board->boardVScale * model_numRows( board->model )))
-        && (left < (board->boardBounds.left + 
-                    board->boardHScale * model_numCols( board->model )));
-    if ( !board->boardObscuresTray && board->trayVisState == TRAY_HIDDEN ) {
-        XW_TrayVisState state = TRAY_REVERSED;
-        setTrayVisState( board, state );
+    boardBottom = board->boardBounds.top
+        + (board->boardVScale * model_numRows( board->model ));
+    boardRight = board->boardBounds.left
+        + (board->boardHScale * model_numCols( board->model ));
+    board->boardObscuresTray = (trayTop < boardBottom) && (trayLeft < boardRight);
+
+    boardHidesTray = board->boardObscuresTray;
+    if ( boardHidesTray ) { /* can't hide if doesn't obscure */
+        if ( (trayTop + trayHeight) > boardBottom ) {
+            boardHidesTray = XP_FALSE;
+        } else if ( (trayLeft + trayWidth) > boardRight ) {
+            boardHidesTray = XP_FALSE;
+        }
+    }
+    board->boardHidesTray = boardHidesTray;
+
+    if ( board->trayVisState == TRAY_HIDDEN ) {
+        if ( !board->boardHidesTray ) {
+            XW_TrayVisState state = TRAY_REVERSED;
+            setTrayVisState( board, state );
+        }
     }
     figureBoardRect( board );
 } /* board_setTrayLoc */
@@ -1438,7 +1461,7 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
             /* Can't always set this to TRUE since in obscuring case tray will
              * get erased after the cells that are supposed to be revealed
              * get drawn. */
-            board->eraseTray = !board->boardObscuresTray;
+            board->eraseTray = !board->boardHidesTray;
             invalCellsUnderRect( board, &board->trayBounds, XP_FALSE );
         }
         invalArrowCell( board, XP_FALSE );
