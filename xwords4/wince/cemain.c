@@ -24,6 +24,7 @@
 #include <commctrl.h>
 #include <commdlg.h>
 #include <stdio.h>
+#include <time.h>               /* time() */
 #include <winuser.h>
 #ifdef _WIN32_WCE
 # include <aygshell.h>
@@ -135,7 +136,6 @@ static void ce_util_engineStarting( XW_UtilCtxt* uc );
 static void ce_util_engineStopping( XW_UtilCtxt* uc );
 #endif
 
-static void notImpl( CEAppGlobals* globals );
 static void messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str,
                             wchar_t* title );
 static XP_Bool queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg );
@@ -435,7 +435,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     XP_U16 scrnWidth, scrnHeight;
     XP_U16 trayVScale, boardLeft, scoreWidth, scoreHeight;
     XP_U16 boardHt, boardWidth, hScale, vScale, nVisibleRows;
-    XP_U16 boardHtLimit, trayTop, boardTop;
+    XP_U16 trayTop, boardTop;
     XP_Bool horiz;
     XP_U16 trayWidth;
     XP_U16 scrollWidth = 0;
@@ -702,7 +702,7 @@ logLastError( const char* comment )
     XP_U16 len;
     XP_U16 lenSoFar;
 
-    sprintf( msg, "%s (err: %d): ", comment, lastErr );
+    sprintf( msg, "%s (err: %ld): ", comment, lastErr );
     lenSoFar = strlen( msg );
 
     FormatMessage( 
@@ -1604,10 +1604,10 @@ ceConfirmAndSave( CEAppGlobals* globals )
     return confirmed;
 } /* ceConfirmAndSave */
 
+#ifdef _WIN32_WCE
 static HWND
 makeCommandBar( HWND hwnd, HINSTANCE hInst )
 {
-#ifdef _WIN32_WCE
     SHMENUBARINFO mbi;
 
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
@@ -1623,10 +1623,8 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
     }
 
     return mbi.hwndMB;
-#else
-    return NULL;
-#endif
 } /* makeCommandBar */
+#endif
 
 #ifdef CEFEATURE_CANSCROLL
 static XP_Bool
@@ -2018,12 +2016,6 @@ About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 } /* About */
 
-static void
-notImpl( CEAppGlobals* globals )
-{
-    messageBoxChar( globals, "feature not implemented", NULL );
-} /* notImpl */
-
 static XP_Bool
 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                  wchar_t* title, XP_Bool isQuery, XP_Bool destroy )
@@ -2104,15 +2096,6 @@ queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg )
 } /* queryBoxChar */
 
 static XP_Bool
-queryBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream )
-{
-    XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
-    XP_Bool result = queryBoxChar( globals, buf );
-    XP_FREE( globals->mpool, buf );
-    return result;
-} /* queryBoxStream */
-
-static XP_Bool
 ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream )
 {
     return ceMsgFromStream( globals, stream, L"Question", XP_TRUE, 
@@ -2154,7 +2137,6 @@ wince_debugf(XP_UCHAR* format, ...)
 {
 #ifdef BEYOND_IR
     static HANDLE s_logMutex = NULL;
-    DWORD wres;
 #endif
     XP_UCHAR buf[256];
     XP_UCHAR timeStamp[32];
@@ -2345,10 +2327,7 @@ static XP_Bool
 ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
     char* query = NULL;
-    char* info = NULL;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-    XP_Bool answer = XP_FALSE;
-    XP_Bool queryWithStream = XP_FALSE;
 
     switch( id ) {
     case QUERY_COMMIT_TURN:

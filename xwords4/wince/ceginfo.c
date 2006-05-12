@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <stdio.h>   /* swprintf */
 #include "ceginfo.h"
 #include "cemain.h"
 #include "ceutil.h"
@@ -175,7 +176,6 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 #ifndef XWFEATURE_STANDALONE_ONLY
     wchar_t* roles[] = { L"Standalone", L"Host", L"Guest" };
 #endif
-    XP_UCHAR* str;
 
     giState->curServerHilite = gi->serverRole;
 

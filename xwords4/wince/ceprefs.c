@@ -190,7 +190,7 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
     ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS, prefsPrefs->gp.allowHintRect );
 #endif
     /* timer */
-    sprintf( numBuf, "%d", prefsPrefs->gp.gameSeconds / 60 );
+    snprintf( numBuf, sizeof(numBuf), "%d", prefsPrefs->gp.gameSeconds / 60 );
     ceSetDlgItemText( hDlg, TIMER_EDIT, numBuf );
     setTimerCtls( hDlg, prefsPrefs->gp.timerEnabled );
 
