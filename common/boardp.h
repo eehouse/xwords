@@ -112,6 +112,7 @@ struct BoardCtxt {
     XP_Bool tradeInProgress[MAX_NUM_PLAYERS];
     XP_Bool eraseTray;
     XP_Bool boardObscuresTray;
+    XP_Bool boardHidesTray;
     XP_Bool scoreSplitHor;	/* how to divide the scoreboard? */
 
     XP_U16 star_row;
