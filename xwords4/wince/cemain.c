@@ -1,4 +1,4 @@
-/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"-*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -154,6 +154,68 @@ static void messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream,
                               wchar_t* title );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
 
+#if defined DEBUG && ! defined _WIN32_WCE
+/* Very basic cmdline args meant at first to let me vary the size of the
+ * screen.  Form is of arg=digits, with no spaces and digits having to be an
+ * integer.  Right now only width and height work: e.g. 
+ * "wine obj_win32_dbg/xwords4.exe height=240 width=320"
+ */
+
+static int g_dbWidth = 0;
+static  int g_dbHeight = 0;
+
+static void
+doCmd( const char* cmd )
+{
+    struct { char* p; int* v; } params[] = {
+        { "width", &g_dbWidth },
+        { "height", &g_dbHeight }
+    };
+    int i;
+
+    for ( i = 0; i < sizeof(params)/sizeof(params[0]); ++i ) {
+        char* p = params[i].p;
+        int len = strlen(p);
+        if ( 0 == strncmp( p, cmd, len ) ) {
+            cmd += len;
+            if ( *cmd == '=' ) {
+                ++cmd;
+                *(params[i].v) = atoi(cmd);
+                break;
+            }
+        }
+    }
+
+    if ( i == sizeof(params)/sizeof(params[0]) ) {
+        XP_LOGF( "failed to match cmdline arg \"%s\"", cmd );
+    }
+} /* doCmd */
+
+static void
+parseCmdLine( const char* cmdline )
+{
+    for ( ; ; ) {
+        const char* cmd;
+        char ch;
+        char buf[64];
+        int len;
+        for ( cmd = cmdline ; ; ++cmd ) {
+            ch = *cmd;
+            if ( ch == '\0' || ch == ' ' ) {
+                break;
+            }
+        }
+        len = cmd - cmdline;
+        memcpy( buf, cmdline, cmd - cmdline );
+        buf[len] = '\0';
+        doCmd( buf );
+        if ( ch == '\0' ) {
+            break;
+        }
+        cmdline = ++cmd;
+    }
+}
+#endif
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
@@ -173,6 +235,10 @@ WinMain(	HINSTANCE hInstance,
 {
     MSG msg;
     HACCEL hAccelTable;
+
+#if defined DEBUG && ! defined _WIN32_WCE
+    parseCmdLine( lpCmdLine );
+#endif
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow)) {
@@ -374,7 +440,7 @@ hideScroller( CEAppGlobals* globals )
 # define CE_MIN_SCORE_WIDTH 24    /* for vertical score case */
 #else
 # define MIN_TRAY_HEIGHT 40
-# define CE_MIN_SCORE_WIDTH 34
+# define CE_MIN_SCORE_WIDTH 36
 #endif
 #define TRAY_PADDING 1
 
@@ -441,15 +507,16 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     XP_U16 scrollWidth = 0;
 
     GetClientRect( globals->hWnd, &rc );
-#if 1
 #ifndef _WIN32_WCE
-    {
-        int width = rc.right - rc.left;
-        int height = rc.bottom - rc.top;
-        if ( width > height ) {
-            width = (height * 3) / 4;
-            rc.right = rc.left + width;
-        }
+#if defined FORCE_HEIGHT && defined FORCE_WIDTH
+    rc.right = rc.left + FORCE_WIDTH;
+    rc.bottom = rc.top + FORCE_HEIGHT;
+#else
+    if ( g_dbWidth != 0 ) {
+        rc.right = rc.left + g_dbWidth;
+    }
+    if ( g_dbHeight != 0 ) {
+        rc.bottom = rc.top + g_dbHeight;
     }
 #endif
 #endif
@@ -472,6 +539,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     if ( horiz ) {
         scoreWidth = scrnWidth;
         hScale = boardWidth / nRows;
+        boardWidth = nRows * hScale;
         /* center the board */
         boardWidth += scrollWidth;
         boardLeft = (scrnWidth - boardWidth) / 2; /* center it all */
