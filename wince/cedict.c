@@ -166,6 +166,8 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             ctxt->super.numEdges = dictLength / 3;
 # endif
 #endif
+        } else {
+            offset = 0;
         }
 
         if ( dictLength > 0 ) {
