@@ -209,7 +209,7 @@ static void
 usage( char* appName, char* msg )
 {
     if ( msg != NULL ) {
-	fprintf( stderr, "Error: %s\n\n", msg );
+        fprintf( stderr, "Error: %s\n\n", msg );
     }
     fprintf( stderr, "usage: %s \n"
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
@@ -251,6 +251,7 @@ usage( char* appName, char* msg )
              "\tserver: ./xwords -d dict.xwd -s -a localhost -p 10999 -r Eric -N\n"
              "\tclient: ./xwords -d dict.xwd -a localhost -p 10999 -r Kati\n"
 	     , appName );
+    fprintf( stderr, "\n(revision: %s)\n", SVN_REV);
     exit(1);
 }
 

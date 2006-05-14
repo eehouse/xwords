@@ -29,6 +29,9 @@ endif
 DO_CURSES = -DPLATFORM_NCURSES
 DO_GTK = -DPLATFORM_GTK
 
+SVNDEF = -D'SVN_REV="$(shell svnversion -n .)"'
+CFLAGS += $(SVNDEF)
+
 ifdef CURSES_ONLY
 DO_GTK =
 # := avoids recursion
