@@ -58,6 +58,10 @@ CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay
 
 CFLAGS += -Wall
 
+SVNDEF = -DSVN_REV='\"$(shell svnversion -n .)\"'
+CFLAGS += $(SVNDEF)
+RESFLAGS += $(SVNDEF)
+
 # warn upgrading users of new dict location
 CFLAGS += -DDICTS_MOVED_ALERT
 
@@ -141,6 +145,10 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
 	$(WINDRES) -v -I$(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
+
+CAB: $(TARGET)
+	$(STRIP) $<
+	./exe2cab.pl $<
 
 SHIP: $(TARGET)
 	$(STRIP) $<
