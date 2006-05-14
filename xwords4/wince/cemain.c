@@ -386,14 +386,34 @@ ceInitUtilFuncs( CEAppGlobals* globals )
 
 #ifdef CEFEATURE_CANSCROLL
 # define SCROLL_SHRINK 1
+
+static void
+updateScrollInfo( HWND hwnd, XP_U16 nHidden )
+{
+    SCROLLINFO sinfo;
+
+    XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
+    sinfo.cbSize = sizeof(sinfo);
+    sinfo.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
+    sinfo.nPos = 0;
+    sinfo.nMin = 0;
+    sinfo.nMax = nHidden;
+    sinfo.nPage = 1;
+
+    (void)SetScrollInfo( hwnd, SB_CTL, &sinfo, TRUE );
+}
+
 static void
 showScroller( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 x, XP_U16 y,
               XP_U16 width, XP_U16 height )
 {
+    if ( !!globals->scrollHandle ) {
+        DestroyWindow( globals->scrollHandle );
+        globals->scrollHandle = NULL;
+    }
+
     if ( !globals->scrollHandle ) {
         HWND hwndSB;
-        SCROLLINFO sinfo;
-        int ret;
 
         hwndSB = CreateWindow( TEXT("SCROLLBAR"),  // Class name
                                NULL,           // Window text
@@ -406,16 +426,9 @@ showScroller( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 x, XP_U16 y,
                                globals->hInst,     // The instance handle
                                NULL );             // s'pposed to be NULL
 
-        XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
-        sinfo.cbSize = sizeof(sinfo);
-        sinfo.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
-        sinfo.nPos = 0;
-        sinfo.nMin = 0;
-        sinfo.nMax = nHidden;
-        sinfo.nPage = 1;
-        ret = SetScrollInfo( hwndSB, SB_CTL, &sinfo, TRUE );
+        updateScrollInfo( hwndSB, nHidden );
 
-        EnableWindow( hwndSB, TRUE ); /* tray hidden */
+        EnableWindow( hwndSB, nHidden > 0 );
 
         globals->scrollHandle = hwndSB;
     }
@@ -1321,11 +1334,11 @@ ceDoHistory( CEAppGlobals* globals )
 } /* ceDoHistory */
 
 static void
-drawInsidePaint( HWND hWnd, CEAppGlobals* globals )
+drawInsidePaint( CEAppGlobals* globals )
 {
     HDC hdc;
 
-    hdc = GetDC( hWnd );
+    hdc = GetDC( globals->hWnd );
     if ( !hdc ) {
         logLastError( __FUNCTION__ );
     } else {
@@ -1965,7 +1978,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     RECTtoXPR( &rect, &rt );
                     board_invalRect( globals->game.board, &rect );
 
-                    drawInsidePaint( hWnd, globals );
+                    XP_ASSERT( globals->hWnd == hWnd );
+                    drawInsidePaint( globals );
                 }
                 if ( !ValidateRect( hWnd, &rt ) ) {
                     logLastError( "WM_PAINT:ValidateRect" );
@@ -2514,7 +2528,7 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState )
     }
 #endif
 
-    drawInsidePaint( globals->hWnd, globals );
+    drawInsidePaint( globals );
 } /* ce_util_trayHiddenChange */
 
 static void
@@ -2531,7 +2545,7 @@ static void
 ce_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-    drawInsidePaint( globals->hWnd, globals );
+    drawInsidePaint( globals );
     ceDisplayFinalScores( globals );
 } /* ce_util_notifyGameOver */
 
