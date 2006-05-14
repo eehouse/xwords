@@ -682,6 +682,7 @@ positionMiniWRect( BoardCtxt* board, XP_Rect* rect, XP_Bool center )
         } else {
             rect->left = x - rect->width > 0? x - rect->width : x;
         }
+        rect->left = XP_MAX( board->boardBounds.left + 1, rect->left );
         rect->top = XP_MAX( board->boardBounds.top + 1, y - rect->height );
     }
 } /* positionBonusRect */
@@ -1291,7 +1292,8 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
         + (board->boardVScale * model_numRows( board->model ));
     boardRight = board->boardBounds.left
         + (board->boardHScale * model_numCols( board->model ));
-    board->boardObscuresTray = (trayTop < boardBottom) && (trayLeft < boardRight);
+    board->boardObscuresTray = (trayTop < boardBottom)
+        && (trayLeft < boardRight);
 
     boardHidesTray = board->boardObscuresTray;
     if ( boardHidesTray ) { /* can't hide if doesn't obscure */
