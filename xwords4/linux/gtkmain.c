@@ -962,7 +962,7 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     board_invalAll( globals->cGlobals.game.board );
 /*     board_draw( globals->board ); */
-} /* gtk_util_trayHiddenChange */
+} /* gtk_util_yOffsetChange */
 
 static void
 printFinalScores( GtkAppGlobals* globals )
@@ -1313,7 +1313,6 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* window )
 {
     GtkWidget* vbox;
     GtkWidget* button;
-    GtkWidget* vscrollbar;
 
     vbox = gtk_vbutton_box_new();
 
@@ -1337,17 +1336,6 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* window )
                                        G_CALLBACK(handle_colors_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
-    if ( globals->cGlobals.params->trayOverlaps ) {
-        globals->adjustment = (GtkAdjustment*)gtk_adjustment_new( 0, 0, 15, 
-                                                                  1, 2, 13 );
-        vscrollbar = gtk_vscrollbar_new( globals->adjustment );
-        g_signal_connect( GTK_OBJECT(globals->adjustment), "value_changed",
-                          G_CALLBACK(scroll_value_changed), globals );
-
-        gtk_widget_show( vscrollbar );
-        gtk_box_pack_start( GTK_BOX(vbox), vscrollbar, TRUE, TRUE, 0 );
-    }
-
     /* undo and redo buttons */
     button = makeShowButtonFromBitmap( globals, "../undo.xpm", "u",
                                        G_CALLBACK(handle_undo_button) );
@@ -1363,14 +1351,6 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* window )
 
     button = makeShowButtonFromBitmap( globals, "../trade.xpm", "t",
                                        G_CALLBACK(handle_trade_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-
-    button = makeShowButtonFromBitmap( globals, "../hide.xpm", "h",
-                                       G_CALLBACK(handle_hide_button) );
-    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
-
-    button = makeShowButtonFromBitmap( globals, "../hide.xpm", "d",
-                                       G_CALLBACK(handle_commit_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );
@@ -1622,6 +1602,20 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
 
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX (hbox), drawing_area, TRUE, TRUE, 0);
+
+    if ( globals.cGlobals.params->trayOverlaps ) {
+        GtkWidget* vscrollbar;
+        globals.adjustment = (GtkAdjustment*)gtk_adjustment_new( 0, 0, 
+                                                                 MAX_ROWS, 
+                                                                 1, 2, 13 );
+        vscrollbar = gtk_vscrollbar_new( globals.adjustment );
+        g_signal_connect( GTK_OBJECT(globals.adjustment), "value_changed",
+                          G_CALLBACK(scroll_value_changed), &globals );
+
+        gtk_widget_show( vscrollbar );
+        gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, TRUE, TRUE, 0 );
+    }
+
     gtk_box_pack_start( GTK_BOX (hbox), 
                         makeVerticalBar( &globals, window ), 
                         FALSE, TRUE, 0 );
