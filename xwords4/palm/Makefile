@@ -126,6 +126,8 @@ MYDEFS_COMMON += -DTALL_FONTS
 # how to help users transition.
 MYDEFS_COMMON += -DNODE_CAN_4
 
+MYDEFS_COMMON += -DSVN_REV=\"$(shell svnversion -n .)\"
+
 ifdef XWFEATURE_STANDALONE_ONLY
 MYDEFS_COMMON += -DXWFEATURE_STANDALONE_ONLY
 else

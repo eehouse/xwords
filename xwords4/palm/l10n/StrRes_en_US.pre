@@ -50,7 +50,7 @@
 { "STR_ABOUT_TITLE",		"About Crosswords" },
 { "STR_DEFAULT_NAME",		"Player %d" },
 { "STR_ABOUT_CONTENT", 
-      "Crosswords " XW_PALM_VERSION_STRING ".\n" \
+      "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2006 by Eric House.  "\
       "Released under the GNU Public License.\n\n"\
 
