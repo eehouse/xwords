@@ -50,11 +50,11 @@
 { "STR_ABOUT_TITLE",		"Acerca de Crosswords" },
 { "STR_DEFAULT_NAME",		"Jugador %d" },
 { "STR_ABOUT_CONTENT", 
-      "Crosswords " XW_PALM_VERSION_STRING ".\n" \
+      "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2004 by Eric House.  "\
       "Todos los derechos reservados.\n\n"\
 
-      "El manual está en www.peak.org/~fixin/xwords\n\n" \
+      "El manual está en xwords.sourceforge.net\n\n" \
 
       "Este programa es postalware.\nSi lo usas " \
       "manda una postal a:\n" \
