@@ -46,7 +46,7 @@ typedef struct LaunchParams {
     char* cookie;
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
-    XP_Bool trayOverlaps;	/* probably only interesting for GTK case */
+    XP_U16 nHidden;
     XP_Bool askNewGame;
     XP_Bool quitAfter;
     XP_Bool sleepOnAnchor;
