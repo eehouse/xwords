@@ -62,6 +62,7 @@ static void gtkListenOnSocket( GtkAppGlobals* globals, int newSock );
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void printFinalScores( GtkAppGlobals* globals );
 
+#define TRAY_HT_ROWS 3
 
 #if 0
 static XWStreamCtxt*
@@ -334,9 +335,8 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
     }
 
     trayTop = boardTop + (vscale * NUM_ROWS) + BOTTOM_MARGIN + 1;
-    if ( globals->cGlobals.params->trayOverlaps ) {
-        trayTop -= vscale * 2;
-    }
+    /* move tray up if part of board's meant to be hidden */
+    trayTop -= vscale * globals->cGlobals.params->nHidden;
     board_setPos( globals->cGlobals.game.board, BOARD_LEFT, boardTop,
                   XP_FALSE );
     board_setScale( globals->cGlobals.game.board, hscale, vscale );
@@ -367,7 +367,8 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
                        TIMER_WIDTH, HOR_SCORE_HEIGHT );
 
     board_setTrayLoc( globals->cGlobals.game.board, TRAY_LEFT, trayTop, 
-                      hscale * NUM_COLS, vscale * 2, GTK_DIVIDER_WIDTH );
+                      hscale * NUM_COLS, vscale * TRAY_HT_ROWS, 
+                      GTK_DIVIDER_WIDTH );
 
     setCtrlsForTray( globals );
     
@@ -826,7 +827,8 @@ scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
     XP_U16 curYOffset, newValue;
     gfloat newValueF = adj->value;
 
-    XP_ASSERT( newValueF >= 0.0 && newValueF <= 2.0 );
+    XP_ASSERT( newValueF >= 0.0
+               && newValueF <= globals->cGlobals.params->nHidden );
     curYOffset = board_getYOffset( globals->cGlobals.game.board );
     newValue = (XP_U16)newValueF;
 
@@ -864,8 +866,8 @@ handle_hide_button( GtkWidget* widget, GtkAppGlobals* globals )
     BoardCtxt* board;
     XP_Bool draw = XP_FALSE;
 
-    if ( globals->cGlobals.params->trayOverlaps ) {
-        globals->adjustment->page_size = MAX_ROWS;
+    if ( globals->cGlobals.params->nHidden > 0 ) {
+        globals->adjustment->page_size = NUM_ROWS;
         globals->adjustment->value = 0.0;
 
         gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
@@ -939,12 +941,24 @@ setCtrlsForTray( GtkAppGlobals* globals )
 {
     XW_TrayVisState state = 
         board_getTrayVisState( globals->cGlobals.game.board );
-    if ( globals->cGlobals.params->trayOverlaps ) {
-        globals->adjustment->page_size = state==TRAY_HIDDEN? 15 : 13;
-        if ( state != TRAY_HIDDEN ) { /* do we need to adjust scrollbar? */
-            globals->adjustment->value = 
-                board_getYOffset( globals->cGlobals.game.board );
+    XP_S16 nHidden = globals->cGlobals.params->nHidden;
+
+    if ( nHidden != 0 ) {
+        XP_U16 pageSize = NUM_ROWS;
+
+        if ( state == TRAY_HIDDEN ) { /* we recover what tray covers */
+            nHidden -= TRAY_HT_ROWS;
         }
+        if ( nHidden > 0 ) {
+            pageSize -= nHidden;
+        }
+        globals->adjustment->page_size = pageSize;
+
+        XP_LOGF( "%s: set pageSize = %d", __FUNCTION__,
+                 pageSize );
+
+        globals->adjustment->value = 
+            board_getYOffset( globals->cGlobals.game.board );
         gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
     }
 } /* setCtrlsForTray */
@@ -1594,8 +1608,8 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
         width += VERT_SCORE_WIDTH;
     }
     height = 196;
-    if ( !globals.cGlobals.params->trayOverlaps ) {
-        height += MIN_SCALE * 2;
+    if ( globals.cGlobals.params->nHidden == 0 ) {
+        height += MIN_SCALE * TRAY_HT_ROWS;
     }
 #endif
     gtk_widget_set_size_request( GTK_WIDGET(drawing_area), width, height );
@@ -1603,11 +1617,11 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX (hbox), drawing_area, TRUE, TRUE, 0);
 
-    if ( globals.cGlobals.params->trayOverlaps ) {
+    if ( globals.cGlobals.params->nHidden != 0 ) {
         GtkWidget* vscrollbar;
-        globals.adjustment = (GtkAdjustment*)gtk_adjustment_new( 0, 0, 
-                                                                 MAX_ROWS, 
-                                                                 1, 2, 13 );
+        globals.adjustment = 
+            (GtkAdjustment*)gtk_adjustment_new( 0, 0, NUM_ROWS, 1, 2, 
+                                NUM_ROWS-globals.cGlobals.params->nHidden );
         vscrollbar = gtk_vscrollbar_new( globals.adjustment );
         g_signal_connect( GTK_OBJECT(globals.adjustment), "value_changed",
                           G_CALLBACK(scroll_value_changed), &globals );

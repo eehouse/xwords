@@ -217,8 +217,8 @@ usage( char* appName, char* msg )
 	     "\t [-u]             # ncurses (for dumb terminal)\n"
 #endif
 #if defined PLATFORM_GTK
-	     "\t [-o]             # tray overlaps board (like small screen)\n"
 	     "\t [-k]             # ask for parameters via \"new games\" dlg\n"
+	     "\t [-h numRowsHidded] \n"
 #endif
 	     "\t [-f file]        # use this file to save/load game\n"
 	     "\t [-q]             # quit when game over (useful for robot-only)\n"
@@ -600,7 +600,6 @@ main( int argc, char** argv )
     /* defaults */
     mainParams.defaultListenPort = DEFAULT_LISTEN_PORT;
     mainParams.defaultSendPort = DEFAULT_SEND_PORT;
-    mainParams.trayOverlaps = XP_FALSE;
     mainParams.cookie = "COOKIE";
     mainParams.gi.boardSize = 15;
     mainParams.quitAfter = XP_FALSE;
@@ -610,6 +609,7 @@ main( int argc, char** argv )
     mainParams.gi.timerEnabled = XP_FALSE;
     mainParams.gi.robotSmartness = SMART_ROBOT;
     mainParams.noHeartbeat = XP_FALSE;
+    mainParams.nHidden = 0;
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
@@ -630,11 +630,10 @@ main( int argc, char** argv )
                       "gu"
 #endif
 #if defined PLATFORM_GTK
-                      "o"
+                      "h:"
 #endif
                       "kKf:l:n:Nsd:a:p:e:r:b:qw:Sit:HUmvcC:" );
         switch( opt ) {
-        case 'h':
         case '?':
             usage(argv[0], NULL);
             break;
@@ -731,11 +730,11 @@ main( int argc, char** argv )
             break;
 #endif
 #if defined PLATFORM_GTK
-        case 'o':
-            mainParams.trayOverlaps = XP_TRUE;
-            break;
         case 'k':
             mainParams.askNewGame = XP_TRUE;
+            break;
+        case 'h':
+            mainParams.nHidden = atoi(optarg);
             break;
 #endif
         }
