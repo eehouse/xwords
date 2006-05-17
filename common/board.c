@@ -17,10 +17,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* What about trays that are partially hidden?  They need to be redrawn so
-   they don't just show what used to be there.
-   *
-   * Why would tray need to be drawn last.  What nukes it?  When might
+/* Re: boards that can't fit on the screen.  Let's have an assumption, that
+ * the tray is always either below the board or overlapping its bottom.  There
+ * is never any board visible below the tray.  But it's possible to have a
+ * board small enough that scrolling is necessary even with the tray hidden.
+ *
+ * Currently we don't specify the board bounds.  We give top,left and the size
+ * of cells, and the board figures out the bounds.  That's probably a mistake.
+ * Better to give bounds, and maybe a min scale, and let it figure out how
+ * many cells can be visible.  Could it also decide if the tray should overlap
+ * or be below?  Some platforms have to own that decision since the tray is
+ * narrower than the board.  So give them separate bounds-setting functions,
+ * and let the board code figure out if they overlap.
+ *
+ * Problem: the board size must always be a multiple of the scale.  The
+ * platform-specific code has an easy time doing that math.  The board can't:
+ * it'd have to take bounds, then spit them back out slightly modified.  It'd
+ * also have to refuse to work (maybe just assert) if asked to take bounds
+ * before it had a min_scale.
+ *
+ * Another way of looking at it closer to the current: the board's position
+ * and the tray's bounds determine the board's bounds.  If the board's vScale
+ * times the number of rows places its would-be bottom at or above the bottom
+ * of the tray, then it's potentially visible.  If its would-be bottom is
+ * above the top of the tray, no scrolling is needed.  But if it's below the
+ * tray entirely then scrolling will happen even with the tray hidden.  As
+ * above, we assume the board never appears below the tray.
  */
 
 #include "comtypes.h"
@@ -1726,6 +1748,11 @@ figureBoardRect( BoardCtxt* board )
 
     if ( board->trayVisState != TRAY_HIDDEN && board->boardObscuresTray ) {
         boardBounds.height = board->trayBounds.top - boardBounds.top - 1;
+    } else {
+        XP_U16 trayBottom = board->trayBounds.top + board->trayBounds.height;
+        if ( trayBottom < boardBounds.top + boardBounds.height ) {
+            boardBounds.height = trayBottom - boardBounds.top;
+        }
     }
 
     board->boardBounds = boardBounds;
