@@ -133,7 +133,8 @@ static XP_S16 palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
 static XP_Bool palm_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                       XP_UCHAR* buf, XP_U16* len );
 static void palm_util_trayHiddenChange( XW_UtilCtxt* uc, 
-                                        XW_TrayVisState newState );
+                                        XW_TrayVisState newState,
+                                        XP_U16 nVisibleRows );
 static void palm_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
                                      XP_U16 newOffset );
 static void palm_util_notifyGameOver( XW_UtilCtxt* uc );
@@ -3289,7 +3290,8 @@ palm_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, XP_UCHAR* buf,
 } /* palm_util_askPassword */
 
 static void 
-palm_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState )
+palm_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState,
+                            XP_U16 nVisibleRows )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     palmSetCtrlsForTray( globals );

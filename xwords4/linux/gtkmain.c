@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000-2003 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -334,7 +334,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
         boardTop += HOR_SCORE_HEIGHT;
     }
 
-    trayTop = boardTop + (vscale * NUM_ROWS) + BOTTOM_MARGIN + 1;
+    trayTop = boardTop + (vscale * NUM_ROWS);
     /* move tray up if part of board's meant to be hidden */
     trayTop -= vscale * globals->cGlobals.params->nHidden;
     board_setPos( globals->cGlobals.game.board, BOARD_LEFT, boardTop,
@@ -964,7 +964,8 @@ setCtrlsForTray( GtkAppGlobals* globals )
 } /* setCtrlsForTray */
 
 static void
-gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState state )
+gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState state,
+                           XP_U16 nVisibleRows )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     setCtrlsForTray( globals );
@@ -1598,11 +1599,6 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     globals.drawing_area = drawing_area;
     gtk_widget_show( drawing_area );
 
-#if 0
-    width = (MAX_COLS * MIN_SCALE) + LEFT_MARGIN + RIGHT_MARGIN;
-    height = (MAX_ROWS * MIN_SCALE) + TOP_MARGIN + BOTTOM_MARGIN
-	+ MIN_TRAY_SCALE + BOTTOM_MARGIN;
-#else
     width = HOR_SCORE_WIDTH + TIMER_WIDTH + TIMER_PAD;
     if ( globals.cGlobals.params->verticalScore ) {
         width += VERT_SCORE_WIDTH;
@@ -1611,7 +1607,7 @@ gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
     if ( globals.cGlobals.params->nHidden == 0 ) {
         height += MIN_SCALE * TRAY_HT_ROWS;
     }
-#endif
+
     gtk_widget_set_size_request( GTK_WIDGET(drawing_area), width, height );
 
     hbox = gtk_hbox_new( FALSE, 0 );

@@ -82,6 +82,7 @@ struct BoardCtxt {
     XP_U16 boardHScale;
     XP_U16 boardVScale;
     XP_U16 yOffset;
+    XP_U16 lastVisibleRow;
     XP_U16 preHideYOffset;
     XP_U16 prevYScrollOffset;	/* represents where the last draw took place;
 				   used to see if bit scrolling can be used */
