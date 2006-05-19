@@ -322,6 +322,7 @@ board_reset( BoardCtxt* board )
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         board->traySelBits[i] = 0;
         board->tradeInProgress[i] = XP_FALSE;
+        board->dividerLoc[i] = 0;
     }
     XP_MEMSET( &board->boardArrow, 0, sizeof(board->boardArrow) );
     board->gameOver = XP_FALSE;
