@@ -497,7 +497,7 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 } /* stateToGameInfo */
 
 static void
-handleOptionsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
+handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 {
     CePrefsDlgState state;
 
@@ -511,7 +511,7 @@ handleOptionsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         giState->colorsChanged = state.colorsChanged;
         /* nothing to do until user finally does confirm the parent dialog */
     }
-} /* handleOptionsButton */
+} /* handlePrefsButton */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
@@ -659,7 +659,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     break;
 #endif
                 case OPTIONS_BUTTON:
-                    handleOptionsButton( hDlg, globals, giState );
+                    handlePrefsButton( hDlg, globals, giState );
                     break;
 
                 case IDOK:
