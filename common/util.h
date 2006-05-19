@@ -117,7 +117,8 @@ typedef struct UtilVtable {
                                    XP_UCHAR* buf, XP_U16* len );
 
     void (*m_util_trayHiddenChange)(XW_UtilCtxt* uc, 
-                                    XW_TrayVisState newState );
+                                    XW_TrayVisState newState,
+                                    XP_U16 nVisibleRows );
     void (*m_util_yOffsetChange)(XW_UtilCtxt* uc, XP_U16 oldOffset,
                                  XP_U16 newOffset );
 
@@ -186,8 +187,8 @@ struct XW_UtilCtxt {
 #define util_askPassword( uc, n, b, lp ) \
          (uc)->vtable->m_util_askPassword( (uc), (n), (b), (lp) )
 
-#define util_trayHiddenChange( uc, b ) \
-         (uc)->vtable->m_util_trayHiddenChange((uc), (b))
+#define util_trayHiddenChange( uc, b, n ) \
+         (uc)->vtable->m_util_trayHiddenChange((uc), (b), (n))
 
 #define util_yOffsetChange( uc, o, n ) \
          (uc)->vtable->m_util_yOffsetChange((uc), (o), (n) )

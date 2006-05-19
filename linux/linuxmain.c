@@ -350,7 +350,7 @@ linux_close_socket( CommonGlobals* cGlobals )
 }
 
 int
-linux_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
+linux_receive( CommonGlobals* cGlobals, XP_UCHAR* buf, int bufSize )
 {
     int sock = cGlobals->socket;
     unsigned short tmp;

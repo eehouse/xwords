@@ -160,7 +160,8 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 } /* curses_util_userQuery */
 
 static void
-curses_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState state )
+curses_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState state,
+                              XP_U16 nVisibleRows )
 {
     /* nothing to do if we don't have a scrollbar */
 } /* curses_util_trayHiddenChange */
@@ -695,7 +696,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
         if ( numEvents > 0 && 
              (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
             int nBytes;
-            XP_U8 buf[256];
+            XP_UCHAR buf[256];
             struct sockaddr_in addr_sock;
 
             --numEvents;

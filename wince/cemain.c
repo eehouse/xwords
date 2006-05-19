@@ -103,7 +103,8 @@ static XP_S16 ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
 static XP_Bool ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                     XP_UCHAR* buf, XP_U16* len );
 static void ce_util_trayHiddenChange( XW_UtilCtxt* uc, 
-                                      XW_TrayVisState newState );
+                                      XW_TrayVisState newState,
+                                      XP_U16 nVisibleRows );
 static void ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
                                    XP_U16 newOffset );
 static void ce_util_notifyGameOver( XW_UtilCtxt* uc );
@@ -455,7 +456,6 @@ hideScroller( CEAppGlobals* globals )
 # define MIN_TRAY_HEIGHT 40
 # define CE_MIN_SCORE_WIDTH 36
 #endif
-#define TRAY_PADDING 1
 
 typedef struct CEBoardParms {
     XP_U16  boardHScale;
@@ -565,7 +565,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     }
     trayWidth = boardWidth + scrollWidth;
 
-    trayTop = boardHt + scoreHeight + TRAY_PADDING;
+    trayTop = boardHt + scoreHeight;
     trayVScale = scrnHeight - trayTop;
     
     if ( !horiz ) {
@@ -2516,15 +2516,18 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
 } /* ce_util_askPassword */
 
 static void
-ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState )
+ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState,
+                          XP_U16 nVisibleRows )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
 
 #ifdef CEFEATURE_CANSCROLL
     /* If there's a scrollbar, hide/show it.  It wants to be
        active/visible only when the tray is NOT hidden */
+
     if ( !!globals->scrollHandle ) {
-        EnableWindow( globals->scrollHandle, TRAY_HIDDEN != newState );
+        updateScrollInfo( globals->scrollHandle, 
+                          model_numRows( globals->game.model ) - nVisibleRows );
     }
 #endif
 

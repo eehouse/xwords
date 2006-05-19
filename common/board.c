@@ -1044,10 +1044,10 @@ board_draw( BoardCtxt* board )
                                  board->focussed == OBJ_BOARD ) ) {
 
             XP_Bool allDrawn = XP_TRUE;
-            XP_S16 lastCol, lastRow, i;
+            XP_S16 lastCol, i;
+            XP_U16 row;
             ModelCtxt* model = board->model;
             BlankQueue bq;
-
 
             scrollIfCan( board );	/* this must happen before we count blanks
                                        since it invalidates squares */
@@ -1056,22 +1056,21 @@ board_draw( BoardCtxt* board )
                                     board->trayVisState == TRAY_REVEALED, &bq );
             invalBlanksWithNeighbors( board, &bq );
 
-            lastRow = model_numRows( model );
-            while ( lastRow-- ) {
-                XP_U16 rowFlags = board->redrawFlags[lastRow];
+            for ( row = board->yOffset; row < board->lastVisibleRow; ++row ) {
+                XP_U16 rowFlags = board->redrawFlags[row];
                 if ( rowFlags != 0 ) {
                     XP_U16 colMask;
                     XP_U16 failedBits = 0;
                     lastCol = model_numCols( model );
                     for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
                         if ( (rowFlags & colMask) != 0 ) {
-                            if ( !drawCell( board, lastCol, lastRow, XP_TRUE )) {
+                            if ( !drawCell( board, lastCol, row, XP_TRUE )) {
                                 failedBits |= colMask;
                                 allDrawn = XP_FALSE;
                             }
                         }
                     }
-                    board->redrawFlags[lastRow] = failedBits;
+                    board->redrawFlags[row] = failedBits;
                 }
             }
 
@@ -1455,6 +1454,7 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
     if ( changed ) {
         XP_Bool nowHidden = newState == TRAY_HIDDEN;
         XP_U16 selPlayer = board->selPlayer;
+        XP_U16 nVisible;
 
         /* redraw cells that are pending; whether tile is visible may
            change */
@@ -1495,7 +1495,8 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
         invalCurHintRect( board, selPlayer, XP_FALSE );
 #endif
 
-        util_trayHiddenChange( board->util, board->trayVisState );
+        nVisible = board->lastVisibleRow - board->yOffset;
+        util_trayHiddenChange( board->util, board->trayVisState, nVisible );
     }
     return changed;
 } /* setTrayVisState */
@@ -1686,7 +1687,6 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
     XP_Bool showPending = board->trayVisState == TRAY_REVEALED
         && curCount > 0;
 
-
     if ( dict != NULL && getCellRect( board, col, row, &cellRect ) ) {
 
         /* This 'while' is only here so I can 'break' below */
@@ -1741,22 +1741,30 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
 static void
 figureBoardRect( BoardCtxt* board )
 {
-    XP_Rect boardBounds = board->boardBounds;
+    XP_U16 boardVScale = board->boardVScale;
+    if ( boardVScale > 0 ) {
+        XP_Rect boardBounds = board->boardBounds;
+        XP_U16 nVisible;
 
-    boardBounds.width = model_numCols( board->model ) * board->boardHScale;
-    boardBounds.height = (model_numRows( board->model ) - board->yOffset)
-        * board->boardVScale;
+        boardBounds.width = model_numCols( board->model ) * board->boardHScale;
+        boardBounds.height = (model_numRows( board->model ) - board->yOffset)
+            * board->boardVScale;
 
-    if ( board->trayVisState != TRAY_HIDDEN && board->boardObscuresTray ) {
-        boardBounds.height = board->trayBounds.top - boardBounds.top - 1;
-    } else {
-        XP_U16 trayBottom = board->trayBounds.top + board->trayBounds.height;
-        if ( trayBottom < boardBounds.top + boardBounds.height ) {
-            boardBounds.height = trayBottom - boardBounds.top;
+        if ( board->trayVisState != TRAY_HIDDEN && board->boardObscuresTray ) {
+            boardBounds.height = board->trayBounds.top - boardBounds.top;
+        } else {
+            XP_U16 trayBottom = board->trayBounds.top + board->trayBounds.height;
+            if ( trayBottom < boardBounds.top + boardBounds.height ) {
+                boardBounds.height = trayBottom - boardBounds.top;
+            }
         }
-    }
+        /* round down */
+        nVisible = boardBounds.height / boardVScale;
+        boardBounds.height = nVisible * boardVScale;
+        board->lastVisibleRow = nVisible + board->yOffset;
 
-    board->boardBounds = boardBounds;
+        board->boardBounds = boardBounds;
+    }
 } /* figureBoardRect */
 
 static XP_Bool
