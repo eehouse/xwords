@@ -565,7 +565,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     }
     trayWidth = boardWidth + scrollWidth;
 
-    trayTop = boardHt + scoreHeight;
+    trayTop = boardHt + scoreHeight + 1;
     trayVScale = scrnHeight - trayTop;
     
     if ( !horiz ) {
@@ -2520,14 +2520,16 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState,
                           XP_U16 nVisibleRows )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    XP_U16 nHiddenRows;
 
 #ifdef CEFEATURE_CANSCROLL
     /* If there's a scrollbar, hide/show it.  It wants to be
        active/visible only when the tray is NOT hidden */
 
     if ( !!globals->scrollHandle ) {
-        updateScrollInfo( globals->scrollHandle, 
-                          model_numRows( globals->game.model ) - nVisibleRows );
+        nHiddenRows = model_numRows( globals->game.model ) - nVisibleRows;
+        updateScrollInfo( globals->scrollHandle, nHiddenRows );
+        globals->nHiddenRows = nHiddenRows;
     }
 #endif
 
