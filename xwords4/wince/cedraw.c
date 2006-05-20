@@ -42,6 +42,7 @@
 #define CE_SCORE_PADDING -3
 #define CE_REM_PADDING -1
 #define CE_TIMER_PADDING -2
+#define IS_TURN_VPAD 2
 
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
@@ -624,62 +625,41 @@ static void
 ceWidthAndText( CEDrawCtx* dctx, HDC hdc, const DrawScoreInfo* dsi, 
                 XP_UCHAR* buf, XP_U16* widthP, XP_U16* heightP )
 {
-    XP_UCHAR borders[] = {'•', '\0'};
+    XP_UCHAR bullet[] = {'•', '\0'};
     XP_UCHAR tmp[16];
         
     /* For a horizontal scoreboard, we want *300:6*
      * For a vertical, it's
      *       
-     *       *
      *      300
      *       6 
-     *       *
+     *
+     * with IS_TURN_VPAD-height rects above and below
      */       
-              
+
+    if ( !dsi->isTurn || dctx->scoreIsVertical ) {
+        bullet[0] = '\0';
+    }
 
     buf[0] = '\0';
-    if ( dsi->isTurn ) {
-        strcat( buf, borders );
-        if ( dctx->scoreIsVertical ) {
-            strcat( buf, XP_CR );
-        }
-    }
+    strcat( buf, bullet );
 
     sprintf( tmp, "%d", dsi->score );
     strcat( buf, tmp );
 
     if ( dsi->nTilesLeft >= 0 ) {
-        if ( dctx->scoreIsVertical ) {
-            strcat( buf, XP_CR );
-        } else {
-            strcat( buf, ":" );
-        }
+        strcat( buf, dctx->scoreIsVertical? XP_CR : ":" );
+
         sprintf( tmp, "%d", dsi->nTilesLeft );
         strcat( buf, tmp );
     }
 
-    if ( dsi->isTurn ) {
-        if (  dctx->scoreIsVertical ) {
-            strcat( buf, XP_CR );
-        }
-        strcat( buf, borders );
-    }
-
-/*     if ( dctx->scoreIsVertical ) { */
-/*         XP_U16 len = sprintf( buf, "%s%d%s", borders, dsi->score, borders ); */
-/*         if ( dsi->nTilesLeft >= 0 ) { */
-/*             sprintf( buf + len, XP_CR "%d", dsi->nTilesLeft ); */
-/*         } */
-/*     } else { */
-/*         if ( dsi->nTilesLeft >= 0 ) { */
-/*             sprintf( tilesLeftTxt, ":%d", dsi->nTilesLeft ); */
-/*         } else { */
-/*             tilesLeftTxt[0] = '\0'; */
-/*         } */
-/*         sprintf( buf, "%s%d%s%s", borders, dsi->score, tilesLeftTxt, borders ); */
-/*     } */
+    strcat( buf, bullet );
 
     measureText( dctx, buf, CE_SCORE_PADDING, widthP, heightP );
+    if ( dsi->isTurn && dctx->scoreIsVertical ) {
+        *heightP += IS_TURN_VPAD * 2;
+    }
 } /* ceWidthAndText */
 
 DLSTATIC void
@@ -719,6 +699,7 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
     XP_UCHAR scoreBuf[20];
     HFONT newFont;
     HFONT oldFont;
+    XP_Bool frameScore;
 
     XPRtoRECT( &rt, rInner );
     if ( dsi->selected ) {
@@ -734,8 +715,20 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
     ceWidthAndText( dctx, hdc, dsi, scoreBuf, &width, &height );
 
     ++rt.top;                   /* tweak for ce */
+
+    frameScore = dsi->isTurn && dctx->scoreIsVertical;
+    if ( frameScore ) {
+        rt.top += IS_TURN_VPAD;
+        rt.bottom -= IS_TURN_VPAD;
+    }
+
     drawLines( dctx, hdc, scoreBuf, CE_SCORE_PADDING, &rt, 
                DT_SINGLELINE | DT_VCENTER | DT_CENTER );
+
+    if ( frameScore ) {
+        Rectangle( hdc, rt.left, rt.top-IS_TURN_VPAD, rt.right, rt.top );
+        Rectangle( hdc, rt.left, rt.bottom, rt.right, rt.bottom + IS_TURN_VPAD );
+    }
 
     SelectObject( hdc, oldFont );
 } /* ce_draw_score_drawPlayer */
@@ -929,7 +922,6 @@ DLSTATIC XP_Bool
 DRAW_FUNC_NAME(vertScrollBoard)( DrawCtx* dctx, XP_Rect* rect, 
                                   XP_S16 dist )
 {
-    XP_ASSERT(0);
     return XP_FALSE;
 }
 #else
