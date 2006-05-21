@@ -2376,17 +2376,19 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
 } /* server_formatDictCounts */
 
 static void
-putNTiles( XP_UCHAR* buf, const XP_UCHAR* face, XP_U16 count )
+putNTiles( XP_UCHAR* buf, XP_U16 bufSize, const XP_UCHAR* face, XP_U16 count )
 {
     XP_U16 done = 0;
     XP_U16 len = XP_STRLEN( face );
     while ( count-- != 0 ) {
         XP_STRCAT( buf + done, face );
         done += len;
+        XP_ASSERT( done < bufSize );
         if ( count > 0 ) {
             XP_STRCAT( buf + done, "." );
             ++done;
         }
+        XP_ASSERT( done < bufSize );
     }
 } /* putNTiles */
 
@@ -2417,7 +2419,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
     nChars = dict_numTileFaces( dict );
 
     for ( tile = 0, nPrinted = 0; ; ) {
-        XP_UCHAR buf[24];
+        XP_UCHAR buf[48];       /* allows 23 or 24 tiles with same char */
         XP_UCHAR face[4];
         XP_U16 count;
 
@@ -2427,7 +2429,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
             dict_tilesToString( dict, &tile, 1, face, sizeof(face) );
 
             buf[0] = '\0';
-            putNTiles( buf, face, count );
+            putNTiles( buf, sizeof(buf), face, count );
 
             stream_putString( stream, buf );
         }
