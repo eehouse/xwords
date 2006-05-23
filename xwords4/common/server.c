@@ -2375,23 +2375,6 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     }
 } /* server_formatDictCounts */
 
-static void
-putNTiles( XP_UCHAR* buf, XP_U16 bufSize, const XP_UCHAR* face, XP_U16 count )
-{
-    XP_U16 done = 0;
-    XP_U16 len = XP_STRLEN( face );
-    while ( count-- != 0 ) {
-        XP_STRCAT( buf + done, face );
-        done += len;
-        XP_ASSERT( done < bufSize );
-        if ( count > 0 ) {
-            XP_STRCAT( buf + done, "." );
-            ++done;
-        }
-        XP_ASSERT( done < bufSize );
-    }
-} /* putNTiles */
-
 /* Print the faces of all tiles left in the pool, including those currently in
  * trays !unless! player is >= 0, in which case his tiles get removed from the
  * pool.  The idea is to show him what tiles are left in play.
@@ -2402,7 +2385,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 {
     DictionaryCtxt* dict;
     Tile tile;
-    XP_U16 nChars, nPrinted;
+    XP_U16 nChars;
     XP_U16 counts[MAX_UNIQUE_TILES+1]; /* 1 for the blank */
     PoolContext* pool = server->pool;
 
@@ -2418,25 +2401,26 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
     dict = model_getDictionary( server->vol.model );
     nChars = dict_numTileFaces( dict );
 
-    for ( tile = 0, nPrinted = 0; ; ) {
-        XP_UCHAR buf[48];       /* allows 23 or 24 tiles with same char */
-        XP_UCHAR face[4];
-        XP_U16 count;
+    for ( tile = 0; ; ) {
+        XP_U16 count = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
+        XP_Bool hasCount = count > 0;
 
-        count = pool_getNTilesLeftFor( pool, tile ) + counts[tile];
-
-        if ( count > 0 ) {
+        if ( hasCount ) {
+            XP_UCHAR face[4];
             dict_tilesToString( dict, &tile, 1, face, sizeof(face) );
 
-            buf[0] = '\0';
-            putNTiles( buf, sizeof(buf), face, count );
-
-            stream_putString( stream, buf );
+            for ( ; ; ) {
+                stream_putString( stream, face );
+                if ( --count == 0 ) {
+                    break;
+                }
+                stream_putString( stream, "." );
+            }
         }
 
         if ( ++tile >= nChars ) {
             break;
-        } else if ( count > 0 ) {
+        } else if ( hasCount ) {
             stream_putString( stream, (void*)"   " );
         }
     }
