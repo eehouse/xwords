@@ -556,8 +556,8 @@ board_commitTurn( BoardCtxt* board )
                 result = server_commitTrade( board->server, 
                                              board->traySelBits[turn] );
                 /* 		XP_DEBUGF( "server_commitTrade returned %d\n", result ); */
-                board->traySelBits[turn] = 0x00;
             }
+            board->traySelBits[turn] = 0x00;
         } else {
             XP_Bool warn, legal;
             WordNotifierInfo info;
