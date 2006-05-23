@@ -25,21 +25,27 @@ static void
 stuffTextInField( HWND hDlg, StrBoxInit* init )
 {
     XP_U16 nBytes = stream_getSize(init->stream);
-    XP_U16 len;
+    XP_U16 len, crlen;
     XP_UCHAR* sbuf;
     wchar_t* wbuf;
     CEAppGlobals* globals = init->globals;
 
-    sbuf = XP_MALLOC( globals->mpool, nBytes );
+    sbuf = XP_MALLOC( globals->mpool, nBytes + 1 );
     stream_getBytes( init->stream, sbuf, nBytes );
+
+    crlen = strlen(XP_CR);
+    if ( 0 == strncmp( XP_CR, &sbuf[nBytes-crlen], crlen ) ) {
+        nBytes -= crlen;
+    }
+    sbuf[nBytes] = '\0';
 
     len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sbuf, nBytes,
                                NULL, 0 );
     wbuf = XP_MALLOC( globals->mpool, (len+1) * sizeof(*wbuf) );
-    XP_MEMSET( wbuf, 0, (len+1) * sizeof(*wbuf) );
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sbuf, nBytes,
                          wbuf, len );
     XP_FREE( globals->mpool, sbuf );
+    wbuf[len] = 0;
 
     SetDlgItemText( hDlg, ID_EDITTEXT, wbuf );
     XP_FREE( globals->mpool, wbuf );
