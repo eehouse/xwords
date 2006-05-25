@@ -574,6 +574,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
     if ( message == WM_INITDIALOG ) {
+        XP_U16 buttons[] = { IDOK, IDCANCEL };
 
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         giState = (GameInfoState*)lParam;
@@ -589,6 +590,8 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( giState->isNewGame ) {
             (void)SetWindowText( hDlg, L"New game" );
         }
+        ceStackButtonsRight( globals, hDlg, buttons, 
+                             sizeof(buttons)/sizeof(buttons[0]), 8 );
         return TRUE;
 
     } else {

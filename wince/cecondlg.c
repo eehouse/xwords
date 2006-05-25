@@ -71,11 +71,17 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     CEAppGlobals* globals;
 
     if ( message == WM_INITDIALOG ) {
+        XP_U16 buttons[] = { IDOK, IDCANCEL };
+
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         cState = (CeConnDlgState*)lParam;
         globals = cState->globals;
 
         ceControlsFromAddrRec( hDlg, cState );
+
+        ceStackButtonsRight( globals, hDlg, buttons, 
+                             sizeof(buttons)/sizeof(buttons[0]), 8 );
+
         result = TRUE;
     } else {
         cState = (CeConnDlgState*)GetWindowLong( hDlg, GWL_USERDATA );

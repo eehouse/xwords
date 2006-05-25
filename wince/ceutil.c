@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -191,6 +191,50 @@ ceCenterCtl( HWND hDlg, XP_U16 resID )
         XP_LOGF( "MoveWindow=>%d", GetLastError() );
     }
 } /* ceCenterCtl */
+
+void
+ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg,
+                     XP_U16* resIDs, XP_U16 nResIDs,
+                     XP_U16 top )
+{
+    if ( globals->isLandscape ) {
+        RECT rect;
+        XP_U16 left;
+        XP_U16 maxWidth = 0;
+        XP_U16 maxHt = 0;
+
+        GetClientRect( hDlg, &rect );
+        left = rect.right;
+
+        /* Now move any and all buttons into position along the right side */
+        while ( nResIDs-- ) {
+            HWND itemH = GetDlgItem( hDlg, *resIDs++ );
+            XP_U16 ht, width;
+            GetClientRect( itemH, &rect );
+
+            width = rect.right - rect.left;
+            if ( maxWidth < width ) {
+                maxWidth = width;
+            }
+            ht = rect.bottom - rect.top;
+            if ( maxHt < ht ) {
+                maxHt = ht;
+            }
+
+            (void)MoveWindow( itemH, left, top, width, ht, TRUE );
+            
+            top += ht + (REPOS_BUTTON_VPAD*2);
+        }
+
+        maxWidth += 4;          /* padding */
+
+        GetWindowRect( hDlg, &rect );
+        MoveWindow( hDlg, rect.left - (maxWidth/2), rect.top,
+                    rect.right - rect.left + maxWidth,
+                    rect.bottom - rect.top - maxHt - 2, 
+                    FALSE );
+    }
+} /* ceStackButtonsRight */
 
 #ifdef DEBUG
 void
