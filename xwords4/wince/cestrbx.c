@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -59,6 +59,8 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
+        XP_U16 buttons[] = { IDOK, IDCANCEL };
+
         SetWindowLong( hDlg, GWL_USERDATA, (long)lParam );
         init = (StrBoxInit*)lParam;
 
@@ -68,12 +70,16 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             SendMessage( hDlg, WM_SETTEXT, 0, (long)init->title );
         }
 
+        ceStackButtonsRight( globals, hDlg, buttons, 
+                             sizeof(buttons)/sizeof(buttons[0]), 8 );
         if ( !init->isQuery ) {
             ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
             /* also want to expand the text box to the bottom */
-            ceCenterCtl( hDlg, IDOK );
+            if ( !globals->isLandscape ) {
+                ceCenterCtl( hDlg, IDOK );
+            }
         }
-        init->textIsSet = XP_FALSE; /* postpone to avoid highlight. */
+        stuffTextInField( hDlg, init );
 
         return TRUE;
     } else {
@@ -81,13 +87,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         if ( !!init ) {
             switch (message) {
-
             case WM_COMMAND:
-                if ( !init->textIsSet ) {
-                    init->textIsSet = XP_TRUE;
-                    stuffTextInField( hDlg, init );
-                }
-
                 id = LOWORD(wParam);
                 switch( id ) {
 

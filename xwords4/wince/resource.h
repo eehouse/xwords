@@ -173,8 +173,6 @@
 #define ID_FILE_SAVEDGAMES              40020
 #define ID_EDITTEXT                     40021
 #define ID_FILE_PREFERENCES             40022
-#define ID_FILE_BEAMDICT                40023
-#define ID_FILE_BEAMBOARDS              40024
 #define ID_GAME_RESENDMSGS              40025
 
 #define ID_COLORS_RES                   9999
@@ -198,3 +196,8 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
+
+#define REPOS_BUTTON_HT 14
+#define REPOS_BUTTON_WIDTH 39
+#define REPOS_BUTTON_VPAD 2
+#define REPOS_BUTTON_HPAD 2

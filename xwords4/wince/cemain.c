@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -629,6 +629,8 @@ cePositionBoard( CEAppGlobals* globals )
     XP_ASSERT( nCols <= CE_MAX_ROWS );
 
     figureBoardParms( globals, nCols, &bparms );
+
+    globals->isLandscape = !bparms.horiz;
 
     if ( globals->gameInfo.timerEnabled ) {
         board_setTimerLoc( globals->game.board, bparms.timerLeft, 

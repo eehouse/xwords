@@ -43,6 +43,11 @@ void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
 
+/* If app's in portrait mode, resize with some buttons at right rather than
+   bottom */
+void ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg,
+                          XP_U16* resIDs, XP_U16 nResIDs, XP_U16 top );
+
 #ifdef DEBUG
 void XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg );
 #else
