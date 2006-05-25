@@ -641,8 +641,7 @@ ceWidthAndText( CEDrawCtx* dctx, HDC hdc, const DrawScoreInfo* dsi,
         bullet[0] = '\0';
     }
 
-    buf[0] = '\0';
-    strcat( buf, bullet );
+    strcpy( buf, bullet );
 
     sprintf( tmp, "%d", dsi->score );
     strcat( buf, tmp );
