@@ -249,10 +249,11 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
 
     if ( ceIsLandscape( globals ) ) {
         XP_U16 resIDs[] = { IDOK, IDCANCEL };
-        RECT rect;
+        RECT wrect, crect;
         XP_U16 left, top;
         XP_U16 butWidth, butHeight;
         XP_U16 barHt, i, nButtons, spacing;
+        XP_U16 newWidth;
 
         /* First, figure height and width to use */
         butHeight = 0;
@@ -274,33 +275,36 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
             }
         }
 
-        GetWindowRect( hDlg, &rect ); 
-        barHt = rect.bottom - rect.top;
+        /* Make sure we're not proposing to make the dialog wider than the
+           screen */
+        GetClientRect( hDlg, &crect );
+        newWidth = crect.right - crect.left + butWidth + (HPADDING*2);
+        GetWindowRect( globals->hWnd, &wrect );
+        if ( newWidth <= wrect.right - wrect.left ) {
 
-        GetClientRect( hDlg, &rect );
-        barHt -= rect.bottom;
+            GetWindowRect( hDlg, &wrect ); 
+            barHt = wrect.bottom - wrect.top - crect.bottom;
 
-        spacing = rect.bottom - (nButtons * (butHeight + (VPADDING*2)));
-        spacing /= nButtons + 1;
+            spacing = crect.bottom - (nButtons * (butHeight + (VPADDING*2)));
+            spacing /= nButtons + 1;
 
-        top = spacing - (butHeight / 2) + VPADDING;
-        left = rect.right + HPADDING;
+            top = spacing - (butHeight / 2) + VPADDING;
+            left = crect.right + HPADDING;
 
-        for ( i = 0; i < sizeof(resIDs)/sizeof(resIDs[0]); ++i ) {
-            HWND itemH = GetDlgItem( hDlg, resIDs[i] );
-            if ( ceIsVisible( itemH ) ) { 
-                (void)MoveWindow( itemH, left, top, butWidth, butHeight, TRUE );
-                top += butHeight + spacing + (VPADDING * 2);
+            for ( i = 0; i < sizeof(resIDs)/sizeof(resIDs[0]); ++i ) {
+                HWND itemH = GetDlgItem( hDlg, resIDs[i] );
+                if ( ceIsVisible( itemH ) ) { 
+                    (void)MoveWindow( itemH, left, top, butWidth, butHeight, 
+                                      TRUE );
+                    top += butHeight + spacing + (VPADDING * 2);
+                }
             }
+
+            butWidth += HPADDING*2;
+            MoveWindow( hDlg, wrect.left - (butWidth/2), wrect.top,
+                        newWidth, wrect.bottom - wrect.top - butHeight - 2, 
+                        FALSE );
         }
-
-        butWidth += HPADDING*2;
-        GetWindowRect( hDlg, &rect );
-
-        MoveWindow( hDlg, rect.left - (butWidth/2), rect.top,
-                    rect.right - rect.left + butWidth,
-                    rect.bottom - rect.top - butHeight - 2, 
-                    FALSE );
     }
 } /* ceStackButtonsRight */
 
