@@ -447,16 +447,6 @@ hideScroller( CEAppGlobals* globals )
 }
 #endif
 
-#define MIN_CELL_WIDTH 12
-#define MIN_CELL_HEIGHT 12
-#if defined _WIN32_WCE
-# define MIN_TRAY_HEIGHT 28
-# define CE_MIN_SCORE_WIDTH 24    /* for vertical score case */
-#else
-# define MIN_TRAY_HEIGHT 40
-# define CE_MIN_SCORE_WIDTH 36
-#endif
-
 typedef struct CEBoardParms {
     XP_U16  boardHScale;
     XP_U16  boardVScale;
@@ -629,8 +619,6 @@ cePositionBoard( CEAppGlobals* globals )
     XP_ASSERT( nCols <= CE_MAX_ROWS );
 
     figureBoardParms( globals, nCols, &bparms );
-
-    globals->isLandscape = !bparms.horiz;
 
     if ( globals->gameInfo.timerEnabled ) {
         board_setTimerLoc( globals->game.board, bparms.timerLeft, 
@@ -1131,6 +1119,11 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_DEBUGF( "globals created: 0x%lx", globals );
     XP_MEMSET( globals, 0, sizeof(*globals) );
     MPASSIGN( globals->mpool, mpool );
+
+#if defined DEBUG && !defined _WIN32_WCE
+    globals->dbWidth = g_dbWidth;
+    globals->dbHeight = g_dbHeight;
+#endif
 
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
 
@@ -2105,6 +2098,8 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
                  wchar_t* title, XP_Bool isQuery, XP_Bool destroy )
 {
     StrBoxInit init;
+
+    XP_MEMSET( &init, 0, sizeof(init) );
 
     init.title = title;
     init.stream = stream;

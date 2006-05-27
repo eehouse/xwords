@@ -18,8 +18,11 @@
  */
 
 #include "ceutil.h"
+#include "cedefines.h"
 
 #define BUF_SIZE 128
+#define VPADDING 4
+#define HPADDING 2
 
 void
 ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* buf )
@@ -192,46 +195,111 @@ ceCenterCtl( HWND hDlg, XP_U16 resID )
     }
 } /* ceCenterCtl */
 
-void
-ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg,
-                     XP_U16* resIDs, XP_U16 nResIDs,
-                     XP_U16 top )
+XP_Bool
+ceIsLandscape( CEAppGlobals* globals )
 {
-    if ( globals->isLandscape ) {
+    XP_U16 width, height;
+    XP_Bool landscape;
+
+    XP_ASSERT( !!globals );
+    XP_ASSERT( !!globals->hWnd );
+
+    if ( 0 ) {
+#if defined DEBUG && !defined _WIN32_WCE
+    } else if ( globals->dbWidth != 0 ) {
+        width = globals->dbWidth;
+        height = globals->dbHeight;
+#endif
+    } else {
         RECT rect;
-        XP_U16 left;
-        XP_U16 maxWidth = 0;
-        XP_U16 maxHt = 0;
+        GetClientRect( globals->hWnd, &rect );
+        width = (XP_U16)(rect.right - rect.left);
+        height = (XP_U16)(rect.bottom - rect.top);
+    }
 
-        GetClientRect( hDlg, &rect );
-        left = rect.right;
+    landscape = (height - CE_SCORE_HEIGHT) 
+        < (width - CE_MIN_SCORE_WIDTH);
+    return landscape;
+} /* ceIsLandscape */
 
-        /* Now move any and all buttons into position along the right side */
-        while ( nResIDs-- ) {
-            HWND itemH = GetDlgItem( hDlg, *resIDs++ );
-            XP_U16 ht, width;
-            GetClientRect( itemH, &rect );
+/* Can't figure out how to do this on CE.  IsWindowVisible doesn't work, and
+   GetWindowInfo isn't even there. */
+static XP_Bool
+ceIsVisible( HWND hwnd )
+{
+#ifdef _WIN32_WCE              /* GetWindowInfo isn't on CE */
+    return XP_TRUE;
+#else
+    XP_Bool visible = XP_FALSE;
+    WINDOWINFO wi;
+    wi.cbSize = sizeof(wi);
 
-            width = rect.right - rect.left;
-            if ( maxWidth < width ) {
-                maxWidth = width;
+    if ( !!hwnd && GetWindowInfo( hwnd, &wi ) ) {
+        visible = (wi.dwStyle & WS_VISIBLE) != 0;
+    }
+
+    return visible;
+#endif
+} /* ceIsVisible */
+
+void
+ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
+{
+    XP_ASSERT( !!globals );
+
+    if ( ceIsLandscape( globals ) ) {
+        XP_U16 resIDs[] = { IDOK, IDCANCEL };
+        RECT rect;
+        XP_U16 left, top;
+        XP_U16 butWidth, butHeight;
+        XP_U16 barHt, i, nButtons, spacing;
+
+        /* First, figure height and width to use */
+        butHeight = 0;
+        butWidth = 0;
+        nButtons = 0;
+        for ( i = 0; i < sizeof(resIDs)/sizeof(resIDs[0]); ++i ) {
+            HWND itemH = GetDlgItem( hDlg, resIDs[i] );
+            if ( ceIsVisible( itemH ) ) {
+                RECT buttonRect;
+                GetClientRect( itemH, &buttonRect );
+
+                if ( butWidth < buttonRect.right ) {
+                    butWidth = buttonRect.right;
+                }
+                if ( butHeight < buttonRect.bottom ) {
+                    butHeight = buttonRect.bottom;
+                }
+                ++nButtons;
             }
-            ht = rect.bottom - rect.top;
-            if ( maxHt < ht ) {
-                maxHt = ht;
-            }
-
-            (void)MoveWindow( itemH, left, top, width, ht, TRUE );
-            
-            top += ht + (REPOS_BUTTON_VPAD*2);
         }
 
-        maxWidth += 4;          /* padding */
+        GetWindowRect( hDlg, &rect ); 
+        barHt = rect.bottom - rect.top;
 
+        GetClientRect( hDlg, &rect );
+        barHt -= rect.bottom;
+
+        spacing = rect.bottom - (nButtons * (butHeight + (VPADDING*2)));
+        spacing /= nButtons + 1;
+
+        top = spacing - (butHeight / 2) + VPADDING;
+        left = rect.right + HPADDING;
+
+        for ( i = 0; i < sizeof(resIDs)/sizeof(resIDs[0]); ++i ) {
+            HWND itemH = GetDlgItem( hDlg, resIDs[i] );
+            if ( ceIsVisible( itemH ) ) { 
+                (void)MoveWindow( itemH, left, top, butWidth, butHeight, TRUE );
+                top += butHeight + spacing + (VPADDING * 2);
+            }
+        }
+
+        butWidth += HPADDING*2;
         GetWindowRect( hDlg, &rect );
-        MoveWindow( hDlg, rect.left - (maxWidth/2), rect.top,
-                    rect.right - rect.left + maxWidth,
-                    rect.bottom - rect.top - maxHt - 2, 
+
+        MoveWindow( hDlg, rect.left - (butWidth/2), rect.top,
+                    rect.right - rect.left + butWidth,
+                    rect.bottom - rect.top - butHeight - 2, 
                     FALSE );
     }
 } /* ceStackButtonsRight */

@@ -100,7 +100,10 @@ typedef struct CEAppGlobals {
     XP_Bool penDown;
     XP_Bool hintPending;
     XP_Bool doGlobalPrefs;
-    XP_Bool isLandscape;
+
+#if defined DEBUG && !defined _WIN32_WCE
+    int dbWidth, dbHeight;
+#endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool askTrayLimits;
