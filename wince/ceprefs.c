@@ -261,8 +261,6 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     CePrefsDlgState* pState;
 
     if ( message == WM_INITDIALOG ) {
-        XP_U16 buttons[] = { IDOK, IDCANCEL };
-
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         pState = (CePrefsDlgState*)lParam;
         globals = pState->globals;
@@ -272,8 +270,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         loadControlsFromState( hDlg, pState );
         adjustForChoice( hDlg, pState );
 
-        ceStackButtonsRight( globals, hDlg, buttons, 
-                             sizeof(buttons)/sizeof(buttons[0]), 8 );
+        ceStackButtonsRight( globals, hDlg );
 
         return TRUE;
 

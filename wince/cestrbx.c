@@ -54,13 +54,12 @@ stuffTextInField( HWND hDlg, StrBoxInit* init )
 LRESULT CALLBACK
 StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    LRESULT handled = FALSE;
     CEAppGlobals* globals = NULL;
     StrBoxInit* init;
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
-        XP_U16 buttons[] = { IDOK, IDCANCEL };
-
         SetWindowLong( hDlg, GWL_USERDATA, (long)lParam );
         init = (StrBoxInit*)lParam;
 
@@ -70,24 +69,32 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             SendMessage( hDlg, WM_SETTEXT, 0, (long)init->title );
         }
 
-        ceStackButtonsRight( globals, hDlg, buttons, 
-                             sizeof(buttons)/sizeof(buttons[0]), 8 );
         if ( !init->isQuery ) {
             ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
             /* also want to expand the text box to the bottom */
-            if ( !globals->isLandscape ) {
+            if ( !ceIsLandscape( globals ) ) {
                 ceCenterCtl( hDlg, IDOK );
             }
         }
-        stuffTextInField( hDlg, init );
 
-        return TRUE;
+        ceStackButtonsRight( globals, hDlg );
+
+        handled = TRUE;
     } else {
         init = (StrBoxInit*)GetWindowLong( hDlg, GWL_USERDATA );
 
         if ( !!init ) {
+
             switch (message) {
-            case WM_COMMAND:
+            case WM_COMMAND:                
+
+                /* If I add the text above in the WM_INITDIALOG section it
+                   shows up selected though selStart and selEnd are 0. */
+                if ( !init->textIsSet ) { 	 
+                    init->textIsSet = XP_TRUE; 	 
+                    stuffTextInField( hDlg, init ); 	 
+                } 	 
+
                 id = LOWORD(wParam);
                 switch( id ) {
 
@@ -95,11 +102,11 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 case IDCANCEL:
                     init->result = id;
                     EndDialog(hDlg, id);
-                    return TRUE;
+                    handled = TRUE;
                 }
                 break;
             }
         }
     }
-    return FALSE;
+    return handled;
 } /* StrBox */
