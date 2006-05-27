@@ -147,6 +147,8 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         eState->cancelled = XP_TRUE;
         eState->inited = XP_FALSE;
 
+        ceStackButtonsRight( eState->globals, hDlg );
+
         return TRUE;
     } else {
         eState = (ClrEditDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
@@ -357,6 +359,8 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         cState = (ColorsDlgState*)lParam;
         cState->cancelled = XP_TRUE;
         cState->inited = XP_FALSE;
+
+        ceStackButtonsRight( cState->globals, hDlg );
 
         result = TRUE;
     } else {
