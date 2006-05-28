@@ -440,7 +440,6 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
     HANDLE hFile;
 
 #if defined _WIN32_WCE
-    HANDLE mappedFile = NULL;
     hFile = CreateFileForMapping( name,
                                   GENERIC_READ,
                                   FILE_SHARE_READ, /* (was 0: no sharing) */
