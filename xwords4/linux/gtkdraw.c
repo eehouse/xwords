@@ -145,9 +145,7 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout, const char* str,
         switch( just ) {
         case XP_GTK_JUST_CENTER:
             x += (where->width - width) / 2;
-            if ( where->height > height) {
-                y += (where->height - height) / 2;
-            }
+            y += (where->height - height) / 2;
             break;
         case XP_GTK_JUST_BOTTOMRIGHT:
             x += where->width - width;
