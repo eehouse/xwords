@@ -278,13 +278,16 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     InsetRect( &rt, 1, 1 );
 
+    /* always init to silence compiler warning */
+    foreColorRef = dctx->globals->appPrefs.colors[getPlayerColor(owner)];
+
     if ( (!!letters && letters[0] != '\0' ) || !!bitmap ) {
         if ( isPending ) {
             bkIndex = BLACK_COLOR;
             foreColorRef = dctx->globals->appPrefs.colors[WHITE_COLOR];
         } else {
-            foreColorRef = dctx->globals->appPrefs.colors[getPlayerColor(owner)];
             bkIndex = TILEBACK_COLOR;
+            // foreColorRef already has right val
         }
     } else if ( bonus == BONUS_NONE ) {
         bkIndex = BKG_COLOR;
@@ -821,17 +824,24 @@ DRAW_FUNC_NAME(getMiniWText)( DrawCtx* p_dctx, XWMiniTextType whichText )
 
     switch( whichText ) {
     case BONUS_DOUBLE_LETTER:
-        str = "Double letter"; break;
+        str = "Double letter"; 
+        break;
     case BONUS_DOUBLE_WORD:
-        str = "Double word"; break;
+        str = "Double word"; 
+        break;
     case BONUS_TRIPLE_LETTER:
-        str = "Triple letter"; break;
+        str = "Triple letter"; 
+        break;
     case BONUS_TRIPLE_WORD:
-        str = "Triple word"; break;
+        str = "Triple word"; 
+        break;
     case INTRADE_MW_TEXT:
-        str = "Trading tiles;" XP_CR "select 'Turn done' when ready"; break;
+        str = "Trading tiles;" XP_CR "select 'Turn done' when ready"; 
+        break;
     default:
         XP_ASSERT( XP_FALSE );
+        str = NULL;
+        break;
     }
 
     return str;
