@@ -197,7 +197,3 @@
 #endif
 #endif
 
-#define REPOS_BUTTON_HT 14
-#define REPOS_BUTTON_WIDTH 28
-#define REPOS_BUTTON_VPAD 2
-#define REPOS_BUTTON_HPAD 2
