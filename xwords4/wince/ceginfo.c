@@ -203,10 +203,13 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         }
 
         /* set the password, if any */
+        if ( lp->password != NULL ) {
+            resID = PASS_EDIT1 + (NUM_COLS*i);
+            ceSetDlgItemText( hDlg, resID, lp->password );
+        }
 
         /* put a string in the moronic combobox */
         swprintf( widebuf, L"%d", i + 1 );
-
         SendDlgItemMessage( hDlg, IDC_NPLAYERSCOMBO, CB_ADDSTRING, 0, 
                             (long)widebuf );
     }
