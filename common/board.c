@@ -895,23 +895,19 @@ invalCellsWithTiles( BoardCtxt* board, XP_Bool doMirror )
     XP_Bool includePending = board->trayVisState == TRAY_REVEALED;
     XP_S16 col, row;
 
-    /* for each col,row pair, invalidate it if it holds a tile that's visible
-       AND if the rect itself is visible */
+    /* For each col,row pair, invalidate it if it holds a tile.  Previously we
+     * optimized by checking that the tile was actually visible, but with
+     * flipping and now boards obscured by more than just the tray that's hard
+     * to get right.  The cell drawing code is pretty good about exiting
+     * quickly when its cell is off the visible board.  We'll count on that
+     * for now.
+     */
     for ( row = model_numRows( model )-1; row >= 0; --row ) {
         for ( col = model_numCols( model )-1; col >= 0; --col ) {
             Tile tile;
             XP_Bool ignore;
             if ( model_getTile( model, col, row, includePending,
                                 turn, &tile, &ignore, &ignore, &ignore ) ) {
-
-                if ( board->boardObscuresTray ) {
-                    XP_Rect cellR;
-                    if ( !getCellRect( board, col, row, &cellR ) 
-                         || (board->trayVisState != TRAY_HIDDEN &&
-                             rectContainsRect( &board->trayBounds, &cellR )) ) {
-                        continue;
-                    }
-                }
                 invalCell( board, col, row, doMirror );
             }
         }
@@ -1045,7 +1041,7 @@ board_draw( BoardCtxt* board )
 
             XP_Bool allDrawn = XP_TRUE;
             XP_S16 lastCol, i;
-            XP_U16 row;
+            XP_S16 row;
             ModelCtxt* model = board->model;
             BlankQueue bq;
 
@@ -1056,7 +1052,10 @@ board_draw( BoardCtxt* board )
                                     board->trayVisState == TRAY_REVEALED, &bq );
             invalBlanksWithNeighbors( board, &bq );
 
-            for ( row = board->yOffset; row < board->lastVisibleRow; ++row ) {
+            /* Don't try to optimize this using lastVisibleRow etc.  If the
+               board is flipped, "lastVisibleRow" here is really col.
+               redrawFlags is at the model level, pre-flip. */
+            for ( row = model_numRows(model) - 1; row >= 0; --row ) {
                 XP_U16 rowFlags = board->redrawFlags[row];
                 if ( rowFlags != 0 ) {
                     XP_U16 colMask;
@@ -1678,16 +1677,17 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
     XWBonusType bonus;
     ModelCtxt* model = board->model;
     DictionaryCtxt* dict = model_getDictionary( model );
-    XP_U16 selPlayer = board->selPlayer;
-    /* We want to invert EITHER the current pending tiles OR the most recent
-     * move.  So if the tray is visible AND there are tiles missing from it,
-     * show them.  Otherwise show the most recent move.
-     */
-    XP_U16 curCount = model_getCurrentMoveCount( model, selPlayer );
-    XP_Bool showPending = board->trayVisState == TRAY_REVEALED
-        && curCount > 0;
 
     if ( dict != NULL && getCellRect( board, col, row, &cellRect ) ) {
+
+        /* We want to invert EITHER the current pending tiles OR the most recent
+         * move.  So if the tray is visible AND there are tiles missing from it,
+         * show them.  Otherwise show the most recent move.
+         */
+        XP_U16 selPlayer = board->selPlayer;
+        XP_U16 curCount = model_getCurrentMoveCount( model, selPlayer );
+        XP_Bool showPending = board->trayVisState == TRAY_REVEALED
+            && curCount > 0;
 
         /* This 'while' is only here so I can 'break' below */
         while ( board->trayVisState == TRAY_HIDDEN ||
