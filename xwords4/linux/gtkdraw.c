@@ -133,8 +133,8 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout, const char* str,
                 const XP_Rect* where, XP_GTK_JUST just,
                 const GdkColor* frground, const GdkColor* bkgrnd )
 {
-    XP_U16 x = where->left;
-    XP_U16 y = where->top;
+    gint x = where->left;
+    gint y = where->top;
 
     pango_layout_set_text( layout, str, strlen(str) );
 
@@ -586,8 +586,8 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_U16 nTilesLeft,
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char buf[10];
-    XP_U16 left = r->left;
-    XP_U16 top = r->top;
+    gint left = r->left;
+    gint top = r->top;
     XP_Bool draw = !widthP;
     PangoLayout* layout = dctx->layout[LAYOUT_SMALL];
     
