@@ -149,7 +149,9 @@ static XP_Bool ceDoNewGame( CEAppGlobals* globals, XP_Bool silent );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
+#ifdef BEYOND_IR
 static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
+#endif
 static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static void messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                               wchar_t* title );
@@ -312,7 +314,6 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
 }
 
 #ifdef _WIN32_WCE
-#define N_TOOLBAR_BUTTONS 4
 static void
 addButtonsToCmdBar( CEAppGlobals* globals )
 {
@@ -324,20 +325,18 @@ addButtonsToCmdBar( CEAppGlobals* globals )
     int resIDs[] = { IDB_FLIPBUTTON, IDB_VALUESBUTTON,
                      IDB_HINTBUTTON, IDB_JUGGLEBUTTON };
 
-    TBBUTTON buttData = {
-            0, /*iBitmap; */
-            0, //FLIP_BUTTON_ID,
-            TBSTATE_ENABLED,                  /* state */
-            TBSTYLE_BUTTON,
-            0,
-            -1
-    };
-
     for ( i = 0; i < sizeof(cmds)/sizeof(cmds[0]); ++i ) {
+        TBBUTTON buttData;
+
         index = CommandBar_AddBitmap(globals->hwndCB, globals->hInst,
                                      resIDs[i], 1, 16, 16 );
+
+        XP_MEMSET( &buttData, 0, sizeof(buttData) );
+        buttData.fsState = TBSTATE_ENABLED; 
+        buttData.fsStyle = TBSTYLE_BUTTON;
         buttData.iBitmap = index;
         buttData.idCommand = cmds[i];
+
         success = CommandBar_InsertButton( globals->hwndCB, -1, 
                                            (LPARAM)&buttData );
     }
@@ -1500,7 +1499,9 @@ static void
 ceWriteToFile( XWStreamCtxt* stream, void* closure )
 {
     FileWriteState* fwState = (FileWriteState*)closure;
+#ifdef MEM_DEBUG
     CEAppGlobals* globals = fwState->globals;
+#endif
     XP_UCHAR* path = fwState->path;
     wchar_t widebuf[257];
     XP_U16 len = (XP_U16)XP_STRLEN( path );
