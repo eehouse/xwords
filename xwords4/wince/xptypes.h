@@ -126,6 +126,10 @@ XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
 # define MS(func) func
 #endif
 
+#ifdef _WIN32_WCE
+# undef CALLBACK
+# define CALLBACK
+#endif
 
 #ifdef CPLUS
 }
