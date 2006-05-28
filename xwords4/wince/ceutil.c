@@ -22,7 +22,8 @@
 
 #define BUF_SIZE 128
 #define VPADDING 4
-#define HPADDING 2
+#define HPADDING_L 2
+#define HPADDING_R 3
 
 void
 ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* buf )
@@ -253,7 +254,7 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
         XP_U16 left, top;
         XP_U16 butWidth, butHeight;
         XP_U16 barHt, i, nButtons, spacing;
-        XP_U16 newWidth;
+        XP_U16 newWidth, mainWidth;
 
         /* First, figure height and width to use */
         butHeight = 0;
@@ -275,21 +276,25 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
             }
         }
 
+        GetWindowRect( globals->hWnd, &wrect );
+        mainWidth = wrect.right - wrect.left;
+
         /* Make sure we're not proposing to make the dialog wider than the
            screen */
-        GetClientRect( hDlg, &crect );
-        newWidth = crect.right - crect.left + butWidth + (HPADDING*2);
-        GetWindowRect( globals->hWnd, &wrect );
-        if ( newWidth <= wrect.right - wrect.left ) {
+        GetWindowRect( hDlg, &wrect );
+        newWidth = wrect.right - wrect.left + butWidth 
+            + HPADDING_L + HPADDING_R;
 
-            GetWindowRect( hDlg, &wrect ); 
+        if ( newWidth <= mainWidth ) {
+
+            GetClientRect( hDlg, &crect ); 
             barHt = wrect.bottom - wrect.top - crect.bottom;
 
             spacing = crect.bottom - (nButtons * (butHeight + (VPADDING*2)));
             spacing /= nButtons + 1;
 
             top = spacing - (butHeight / 2) + VPADDING;
-            left = crect.right + HPADDING;
+            left = crect.right + HPADDING_L;
 
             for ( i = 0; i < sizeof(resIDs)/sizeof(resIDs[0]); ++i ) {
                 HWND itemH = GetDlgItem( hDlg, resIDs[i] );
@@ -300,7 +305,7 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
                 }
             }
 
-            butWidth += HPADDING*2;
+            butWidth += HPADDING_L + HPADDING_R;
             MoveWindow( hDlg, wrect.left - (butWidth/2), wrect.top,
                         newWidth, wrect.bottom - wrect.top - butHeight - 2, 
                         FALSE );
