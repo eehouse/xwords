@@ -142,10 +142,10 @@ copyString( MPFORMAL const XP_UCHAR* instr )
 {
     XP_UCHAR* result = (XP_UCHAR*)NULL;
     if ( !!instr ) {
-        XP_U16 len = XP_STRLEN( (const char*)instr );
-        result = (XP_UCHAR*)XP_MALLOC( (MemPoolCtx*)mpool, len + 1 );
+        XP_U16 len = 1 + XP_STRLEN( (const char*)instr );
+        result = (XP_UCHAR*)XP_MALLOC( (MemPoolCtx*)mpool, len );
         XP_ASSERT( !!result );
-        XP_MEMCPY( result, instr, len + 1);
+        XP_MEMCPY( result, instr, len );
     }
     return result;
 } /* copyString */
