@@ -419,6 +419,8 @@ ce_dict_destroy( DictionaryCtxt* dict )
     }
 
     XP_FREE( ctxt->super.mpool, ctxt->super.faces16 );
+    XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
+    XP_FREE( ctxt->super.mpool, ctxt->super.name );
 
     closeMappedFile( MPPARM(ctxt->super.mpool) ctxt->mappedBase, 
                      ctxt->mappedFile );
