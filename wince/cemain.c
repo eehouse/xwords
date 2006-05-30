@@ -261,6 +261,7 @@ WinMain(	HINSTANCE hInstance,
 
     /* This would be a good place to free up memory, close sockets, etc. */
 
+    LOG_RETURNF( "%d", msg.wParam );
     return msg.wParam;
 }
 
@@ -715,7 +716,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
         dict = make_stubbed_dict( MPPARM_NOCOMMA(globals->mpool) );
 #else
         XP_ASSERT( !!newDictName );
-        XP_DEBUGF( "calling ce_dictionary_make" );
+        XP_LOGF( "calling ce_dictionary_make" );
         dict = ce_dictionary_make( globals, newDictName);
 #endif
         XP_ASSERT( !!dict );	
@@ -967,6 +968,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
             XP_UCHAR* name = stringFromStream( MPPARM(globals->mpool)
                                                stream );
             dict = ce_dictionary_make( globals, name );
+            XP_FREE( globals->mpool, name );
             success = dict != NULL;
 #endif
         } else {
@@ -1163,6 +1165,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     ceInitUtilFuncs( globals );
 
+    gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, "Player %d" );
+
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT
     result = 1 == ceLocateNDicts( MPPARM(mpool) hInstance, 1, ceSetDictName, 
@@ -1179,8 +1183,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         return FALSE;
     }
 #endif
-
-    gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, "Player %d" );
 
     /* here's where we want to behave differently if there's saved state.
        But that's a long ways off. */
@@ -1228,18 +1230,19 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 static XP_Bool
 ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt )
 {
-    CEAppGlobals* globals = (CEAppGlobals*)ctxt;
-    XP_UCHAR* str;
-    XP_UCHAR buf[CE_MAX_PATH_LEN];
+/*     CEAppGlobals* globals = (CEAppGlobals*)ctxt; */
+/*     XP_UCHAR* str; */
+/*     XP_UCHAR buf[CE_MAX_PATH_LEN]; */
     XP_ASSERT( index == 0 );    /* we said one only! */
 
-    WideCharToMultiByte( CP_ACP, 0, wPath, -1,
-                         buf, sizeof(buf)-1, NULL, NULL );
+/*     WideCharToMultiByte( CP_ACP, 0, wPath, -1, */
+/*                          buf, sizeof(buf)-1, NULL, NULL ); */
 
-    XP_LOGF( "%s: got path \"%s\"", __FUNCTION__, buf );
-    str = copyString( MPPARM(globals->mpool) buf );
-    XP_ASSERT( NULL == globals->gameInfo.dictName );
-    globals->gameInfo.dictName = str;
+/*     XP_LOGF( "%s: got path \"%s\"", __FUNCTION__, buf ); */
+/*     str = copyString( MPPARM(globals->mpool) buf ); */
+/*     XP_LOGF( "%s: got %p", __FUNCTION__, str ); /\* this is leaking *\/ */
+/*     XP_ASSERT( NULL == globals->gameInfo.dictName ); */
+/*     globals->gameInfo.dictName = str; */
     return XP_FALSE;
 } /* ceSetDictName */
 
@@ -1681,6 +1684,39 @@ ceConfirmAndSave( CEAppGlobals* globals )
     return confirmed;
 } /* ceConfirmAndSave */
 
+static void
+freeGlobals( CEAppGlobals* globals )
+{
+    MPSLOT;
+
+    MPASSIGN( mpool, globals->mpool );
+
+    draw_destroyCtxt( globals->draw );
+
+    game_dispose( &globals->game );
+    gi_disposePlayerInfo( MPPARM(mpool) &globals->gameInfo );
+
+    if ( globals->curGameName ) {
+        XP_FREE( mpool, globals->curGameName );
+    }
+
+    if ( !!globals->vtMgr ) {
+        vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
+    }
+    if ( !!globals->util.vtable ) {
+        XP_FREE( mpool, globals->util.vtable );
+    }
+
+    if ( !!globals->lastDefaultDir ) {
+        XP_FREE( mpool, globals->lastDefaultDir );
+    }
+
+    XP_FREE( globals->mpool, globals );
+    mpool_destroy( mpool );
+
+    LOG_RETURN_VOID();
+} /* freeGlobals */
+
 #ifdef _WIN32_WCE
 static HWND
 makeCommandBar( HWND hwnd, HINSTANCE hInst )
@@ -2039,6 +2075,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             CommandBar_Destroy(globals->hwndCB); /* supposedly not needed */
 #endif
             PostQuitMessage(0);
+            freeGlobals( globals );
             break;
 
         case XWWM_TIME_RQST:

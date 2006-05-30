@@ -910,7 +910,7 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     XP_U16 i;
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
 
-    for ( i = 0; i < 5; ++i ) {
+    for ( i = 0; i < NUM_COLORS; ++i ) {
         DeleteObject( dctx->brushes[i] );
     }
 
@@ -922,7 +922,10 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     DeleteObject( dctx->downArrow );
     DeleteObject( dctx->origin );
 
+#ifndef DRAW_LINK_DIRECT
     XP_FREE( dctx->mpool, p_dctx->vtable );
+#endif
+
     XP_FREE( dctx->mpool, dctx );
 } /* ce_draw_destroyCtxt */
 
@@ -970,7 +973,7 @@ ce_drawctxt_update( DrawCtx* p_dctx, CEAppGlobals* globals )
         if ( !!dctx->brushes[i] ) {
             DeleteObject( dctx->brushes[i] );
         }
-        dctx->brushes[i] = CreateSolidBrush( dctx->globals->appPrefs.colors[i] );
+        dctx->brushes[i] = CreateSolidBrush(dctx->globals->appPrefs.colors[i]);
     }
 } /* ce_drawctxt_update */
 
@@ -979,6 +982,7 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)XP_MALLOC( mpool,
                                              sizeof(*dctx) );
+    MPASSIGN(dctx->mpool, mpool);
 
 #ifndef DRAW_LINK_DIRECT
     dctx->vtable = (DrawCtxVTable*)XP_MALLOC( mpool, sizeof(*((dctx)->vtable)));
