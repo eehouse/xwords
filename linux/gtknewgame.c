@@ -78,7 +78,7 @@ nplayers_menu_select( GtkWidget* item, GtkNewGameState* state )
     gtk_container_foreach( GTK_CONTAINER(item->parent), countBeforeSame, 
                            &pair );
     value.ng_u16 = pair.index + 1;
-    gamedlg_attrChanged( state->newGameCtxt, NG_ATTR_NPLAYERS, value );
+    newg_attrChanged( state->newGameCtxt, NG_ATTR_NPLAYERS, value );
 } /* nplayers_menu_select */
 
 static void
@@ -95,7 +95,7 @@ role_menu_select( GtkWidget* item, GtkNewGameState* state )
     XP_ASSERT( i < 3 );         /* did we not find it? */
 
     value.ng_role = (Connectedness)i;
-    gamedlg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
+    newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
 } /* role_menu_select */
 
 static void
@@ -112,13 +112,19 @@ callChangedWithIndex( GtkNewGameState* state, GtkWidget* item,
     XP_ASSERT( player < MAX_NUM_PLAYERS );
 
     value.ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) );
-    gamedlg_colChanged( state->newGameCtxt, player, NG_COL_ROBOT, value );
+    newg_colChanged( state->newGameCtxt, player, NG_COL_ROBOT, value );
 } /* callChangedWithIndex */
 
 static void
 handle_robot_toggled( GtkWidget* item, GtkNewGameState* state )
 {
     callChangedWithIndex( state, item, state->robotChecks, NG_COL_ROBOT );
+}
+
+static void
+handle_juggle( GtkWidget* item, GtkNewGameState* state )
+{
+    newg_juggle( state->newGameCtxt );
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -253,6 +259,11 @@ makeNewGameDialog( GtkNewGameState* state )
 
     gtk_widget_show( opt );
     gtk_box_pack_start( GTK_BOX(hbox), opt, FALSE, TRUE, 0 );
+
+    gtk_box_pack_start( GTK_BOX(hbox), 
+                        makeButton( "Juggle", GTK_SIGNAL_FUNC(handle_juggle),
+                                    state ),
+                        FALSE, TRUE, 0 );
     gtk_widget_show( hbox );
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -432,12 +443,10 @@ gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col,
 
 static void
 gtk_newgame_col_get( void* closure, XP_U16 player, NewGameColumn col, 
-                     NGValue* value )
+                     NgCpCallbk cpcb, const void* cbClosure )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
-
-    XP_LOGF( "%s: player=%d; col = %d", __FUNCTION__,
-             player, (int)col );
+    NGValue value;
 
     GtkWidget* widget = widgetForCol( state, player, col );
     switch ( col ) {
@@ -445,14 +454,16 @@ gtk_newgame_col_get( void* closure, XP_U16 player, NewGameColumn col,
     case NG_COL_LOCAL:
 #endif
     case NG_COL_ROBOT:
-        value->ng_bool =
+        value.ng_bool =
             gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget));
         break;
     case NG_COL_PASSWD:
     case NG_COL_NAME:
-        value->ng_cp = gtk_entry_get_text( GTK_ENTRY(widget) );
+        value.ng_cp = gtk_entry_get_text( GTK_ENTRY(widget) );
         break;
     }
+
+    (*cpcb)( value, cbClosure );
 } /* gtk_newgame_col_get */
 
 static void
@@ -475,28 +486,28 @@ newGameDialog( GtkAppGlobals* globals/* , GtkGameInfo* gameInfo */ )
     XP_MEMSET( &state, 0, sizeof(state) );
 
     state.globals = globals;
-    state.newGameCtxt = gamedlg_make( MPPARM(globals->cGlobals.params
-                                             ->util->mpool)  
-                                      XP_TRUE, /* does gtk have concept of new
-                                                  game yet? */
-                                      gtk_newgame_col_enable,
-                                      gtk_newgame_attr_enable,
-                                      gtk_newgame_col_get,
-                                      gtk_newgame_col_set,
-                                      gtk_newgame_attr_set,
-                                      &state );
+    state.newGameCtxt = newg_make( MPPARM(globals->cGlobals.params
+                                          ->util->mpool)  
+                                   XP_TRUE, /* does gtk have concept of new
+                                               game yet? */
+                                   gtk_newgame_col_enable,
+                                   gtk_newgame_attr_enable,
+                                   gtk_newgame_col_get,
+                                   gtk_newgame_col_set,
+                                   gtk_newgame_attr_set,
+                                   &state );
 
     /* returns when button handler calls gtk_main_quit */
     do {
         GtkWidget* dialog = makeNewGameDialog( &state );
         state.revert = FALSE;
 
-        gamedlg_load( state.newGameCtxt, 
+        newg_load( state.newGameCtxt, 
                       &globals->cGlobals.params->gi );
 
         gtk_main();
         if ( !state.cancelled && !state.revert ) {
-            gamedlg_store( state.newGameCtxt, &globals->cGlobals.params->gi );
+            newg_store( state.newGameCtxt, &globals->cGlobals.params->gi );
         }
 
         gtk_widget_destroy( dialog );
