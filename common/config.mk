@@ -31,6 +31,7 @@ COMMONSRC = \
 	$(COMMONDIR)/server.c \
 	$(COMMONDIR)/pool.c \
 	$(COMMONDIR)/game.c \
+	$(COMMONDIR)/nwgamest.c \
 	$(COMMONDIR)/dictnry.c \
 	$(COMMONDIR)/engine.c \
 	$(COMMONDIR)/memstream.c \
@@ -55,6 +56,7 @@ COMMON2 = \
 
 COMMON3 = \
 	$(COMMONOBJDIR)/game.o \
+	$(COMMONOBJDIR)/nwgamest.o \
 	$(COMMONOBJDIR)/dictnry.o \
 	$(COMMONOBJDIR)/engine.o \
 
