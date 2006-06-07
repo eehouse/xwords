@@ -25,19 +25,7 @@
 
 #include "gtkmain.h"
 
-typedef struct GtkNewGameState {
-    GtkAppGlobals* globals;
-    GtkWidget* playerEntries[MAX_NUM_PLAYERS];
-    gboolean revert;
-    gboolean cancelled;
-    Connectedness role;
-    short nPlayers;
-    short nCols;
-
-    GtkWidget* roleMenuItems[3];
-} GtkNewGameState;
-
-gboolean newGameDialog( GtkAppGlobals* globals/* , GtkGameInfo* gameInfo */ );
+gboolean newGameDialog( GtkAppGlobals* globals );
 
 #endif /* _GTKNEWGAME_H_ */
 #endif /* PLATFORM_GTK */

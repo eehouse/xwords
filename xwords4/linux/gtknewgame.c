@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +23,7 @@
 
 #include "gtknewgame.h"
 #include "strutils.h"
+#include "nwgamest.h"
 
 #define MAX_SIZE_CHOICES 10
 
@@ -32,6 +34,26 @@ typedef struct ItemNumPair {
     short index;
     gboolean found;
 } ItemNumPair;
+
+typedef struct GtkNewGameState {
+    GtkAppGlobals* globals;
+    NewGameCtx* newGameCtxt;
+
+    gboolean revert;
+    gboolean cancelled;
+    short nCols;                /* for board size */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    GtkWidget* localChecks[MAX_NUM_PLAYERS];
+#endif
+    GtkWidget* robotChecks[MAX_NUM_PLAYERS];
+    GtkWidget* nameFields[MAX_NUM_PLAYERS];
+    GtkWidget* passwdFields[MAX_NUM_PLAYERS];
+    GtkWidget* nPlayersMenu;
+    GtkWidget* roleMenu;
+
+    GtkWidget* roleMenuItems[3];
+} GtkNewGameState;
 
 void
 countBeforeSame( GtkWidget *widget, gpointer data )
@@ -47,54 +69,65 @@ countBeforeSame( GtkWidget *widget, gpointer data )
 } /* countBeforeSame */
 
 static void
-setChildrenSensitivity( GtkWidget* hbox, gboolean enabling )
-{
-    gtk_widget_set_sensitive( hbox, enabling );
-} /* setChildrenSensitivity */
-
-static void
 nplayers_menu_select( GtkWidget* item, GtkNewGameState* state )
 {
-    short prevNPlayers = state->nPlayers;
-    short newNPlayers;
-    GtkWidget* parent = item->parent;
-
-    ItemNumPair pair;
-    short high, low;
-    gboolean enabling;
-
-    pair.item = item;
-    pair.index = 0;
-    pair.found = FALSE;
+    NGValue value;
+    short nPlayers;
+    ItemNumPair pair = { .item = item, .index = 0, .found = FALSE };
     
-    gtk_container_foreach( GTK_CONTAINER(parent), countBeforeSame, &pair );
-
-    newNPlayers = pair.index + 1;
-
-    low = XP_MIN( newNPlayers, prevNPlayers );
-    high = XP_MAX( newNPlayers, prevNPlayers );
-    enabling = newNPlayers > prevNPlayers;
-
-    /* now loop through all the hboxes */
-    while ( low < high ) {
-        setChildrenSensitivity( state->playerEntries[low], enabling );
-        ++low;
-    }
-    state->nPlayers = newNPlayers;
+    gtk_container_foreach( GTK_CONTAINER(item->parent), countBeforeSame, 
+                           &pair );
+    value.ng_u16 = pair.index + 1;
+    gamedlg_attrChanged( state->newGameCtxt, NG_ATTR_NPLAYERS, value );
 } /* nplayers_menu_select */
 
 static void
 role_menu_select( GtkWidget* item, GtkNewGameState* state )
 {
+    NGValue value;
     int i;
+
     for ( i = 0; i < 3; ++i ) {
         if ( item == state->roleMenuItems[i] ) {
             break;
         }
     }
     XP_ASSERT( i < 3 );         /* did we not find it? */
-    state->role = (Connectedness)i;
+
+    value.ng_role = (Connectedness)i;
+    gamedlg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
 } /* role_menu_select */
+
+static void
+callChangedWithIndex( GtkNewGameState* state, GtkWidget* item, 
+                      GtkWidget** items, NewGameColumn col  )
+{
+    NGValue value;
+    gint player;
+    for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
+        if ( item == items[player] ) {
+            break;
+        }
+    }
+    XP_ASSERT( player < MAX_NUM_PLAYERS );
+
+    value.ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) );
+    gamedlg_colChanged( state->newGameCtxt, player, NG_COL_ROBOT, value );
+} /* callChangedWithIndex */
+
+static void
+handle_robot_toggled( GtkWidget* item, GtkNewGameState* state )
+{
+    callChangedWithIndex( state, item, state->robotChecks, NG_COL_ROBOT );
+}
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void
+handle_local_toggled( GtkWidget* item, GtkNewGameState* state )
+{
+    callChangedWithIndex( state, item, state->localChecks, NG_COL_LOCAL );
+}
+#endif
 
 static void
 size_menu_select( GtkWidget* item, GtkNewGameState* state )
@@ -112,71 +145,14 @@ size_menu_select( GtkWidget* item, GtkNewGameState* state )
     state->nCols = MAX_COLS - pair.index;
 } /* size_menu_select  */
 
-typedef struct LoadPair {
-    LocalPlayer* info;
-    XP_U16 counter;
-    MPSLOT
-} LoadPair;
-
-static void
-loadCopyValues( GtkWidget* item, gpointer data )
-{
-    LoadPair* lp = (LoadPair*)data;
-    LocalPlayer* player = lp->info;
-    const char* entryText;
-
-    switch( lp->counter ) {
-    case 0:			/* labels */
-    case 2:
-        break;
-    case 1:			/* name field */
-        entryText = gtk_entry_get_text( GTK_ENTRY(item) );
-        player->name = copyString( MPPARM(lp->mpool) entryText );
-        break;
-    case 3:			/* passwd field */
-        entryText = gtk_entry_get_text( GTK_ENTRY(item) );
-        player->password = copyString( MPPARM(lp->mpool) entryText );
-        break;
-    case 4:			/* is Robot */
-        player->isRobot = GTK_WIDGET_STATE( item ) == GTK_STATE_ACTIVE;
-        break;
-    case 5:			/* is local */
-        player->isLocal = GTK_WIDGET_STATE( item ) == GTK_STATE_ACTIVE;
-        break;
-    default:
-        XP_ASSERT( 0 );
-    }
-    ++lp->counter;
-} /* loadCopyValues */
-
 static void
 handle_ok( GtkWidget* widget, gpointer closure )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
-    CurGameInfo* gi = &state->globals->cGlobals.params->gi;
-    short i;
-    LoadPair lp;
-
-    MPASSIGN( lp.mpool, state->globals->cGlobals.params->util->mpool );
-
-    gi->nPlayers = state->nPlayers;
-    gi->boardSize = state->nCols;	/* they're the same for now */
-
-    for ( i = 0; i < state->nPlayers; ++i ) {
-        LocalPlayer* player = &gi->players[i];
-        GtkWidget* hbox = state->playerEntries[i];
-
-        lp.info = player;
-        lp.counter = 0;
-	
-        /* Read values out of the items in the hbox, which are, in order, the
-           name entry, passwd entry, isLocal box and isRobot box */
-        gtk_container_foreach( GTK_CONTAINER(hbox), loadCopyValues, &lp );
-    }
-
     state->cancelled = XP_FALSE;
+
     gtk_main_quit();
-}
+} /* handle_ok */
 
 static void
 handle_cancel( GtkWidget* widget, void* closure )
@@ -236,23 +212,18 @@ makeNewGameDialog( GtkNewGameState* state )
 
     vbox = gtk_vbox_new( FALSE, 0 );
 
-    /* Role menu */
-    state->role = state->globals->cGlobals.params->serverRole;
-
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
                         FALSE, TRUE, 0 );
     opt = gtk_option_menu_new();
     roleMenu = gtk_menu_new();
+    state->roleMenu = roleMenu;
 
     for ( i = 0; i < sizeof(roles)/sizeof(roles[0]); ++i ) {
         item = make_menu_item( roles[i], GTK_SIGNAL_FUNC(role_menu_select),
                                state );
         state->roleMenuItems[i] = item;
         gtk_menu_append( GTK_MENU(roleMenu), item );
-        if ( i == state->role ) {
-            gtk_menu_set_active( GTK_MENU(roleMenu), i );
-        }
     }
 
     gtk_option_menu_set_menu( GTK_OPTION_MENU(opt), roleMenu );
@@ -267,9 +238,9 @@ makeNewGameDialog( GtkNewGameState* state )
 
     opt = gtk_option_menu_new();
     nPlayersMenu = gtk_menu_new();
+    state->nPlayersMenu = nPlayersMenu;
 
     gi = &state->globals->cGlobals.params->gi;
-    state->nPlayers = gi->nPlayers;
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         char buf[2];
@@ -277,9 +248,6 @@ makeNewGameDialog( GtkNewGameState* state )
         item = make_menu_item( buf, GTK_SIGNAL_FUNC(nplayers_menu_select),
                                state );
         gtk_menu_append( GTK_MENU(nPlayersMenu), item );
-        if ( i+1 == state->nPlayers ) {
-            gtk_menu_set_active( GTK_MENU(nPlayersMenu), i );
-        }
     }
     gtk_option_menu_set_menu( GTK_OPTION_MENU(opt), nPlayersMenu );
 
@@ -290,57 +258,48 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        GtkWidget* label;
+        GtkWidget* label = gtk_label_new("Name:");
+#ifndef XWFEATURE_STANDALONE_ONLY
+        GtkWidget* localCheck = gtk_check_button_new_with_label( "Local" );
+#endif
         GtkWidget* nameField = gtk_entry_new();
         GtkWidget* passwdField = gtk_entry_new_with_max_length( 6 );
-        GtkWidget* robotCheck = gtk_check_button_new_with_label( "robot" );
-        GtkWidget* localCheck = gtk_check_button_new_with_label( "is local" );
-        hbox = gtk_hbox_new( FALSE, 0 );
-        state->playerEntries[i] = hbox;
+        GtkWidget* robotCheck = gtk_check_button_new_with_label( "Robot" );
 
-        label = gtk_label_new("name:");
+#ifndef XWFEATURE_STANDALONE_ONLY
+        g_signal_connect( GTK_OBJECT(localCheck), "toggled", 
+                          GTK_SIGNAL_FUNC(handle_local_toggled), state );
+#endif
+        g_signal_connect( GTK_OBJECT(robotCheck), "toggled", 
+                          GTK_SIGNAL_FUNC(handle_robot_toggled), state );
+
+        hbox = gtk_hbox_new( FALSE, 0 );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+        gtk_box_pack_start( GTK_BOX(hbox), localCheck, FALSE, TRUE, 0 );
+        gtk_widget_show( localCheck );
+        state->localChecks[i] = localCheck;
+#endif
+        
         gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
         gtk_widget_show( label );
 
         gtk_box_pack_start( GTK_BOX(hbox), nameField, FALSE, TRUE, 0 );
         gtk_widget_show( nameField );
+        state->nameFields[i] = nameField;
 
-        label = gtk_label_new("passwd:");
+        gtk_box_pack_start( GTK_BOX(hbox), robotCheck, FALSE, TRUE, 0 );
+        gtk_widget_show( robotCheck );
+        state->robotChecks[i] = robotCheck;
+
+        label = gtk_label_new("Passwd:");
         gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
         gtk_widget_show( label );
 
         gtk_box_pack_start( GTK_BOX(hbox), passwdField, FALSE, TRUE, 0 );
         gtk_widget_show( passwdField );
+        state->passwdFields[i] = passwdField;
 
-        gtk_box_pack_start( GTK_BOX(hbox), robotCheck, FALSE, TRUE, 0 );
-        gtk_widget_show( robotCheck );
-
-        gtk_box_pack_start( GTK_BOX(hbox), localCheck, FALSE, TRUE, 0 );
-        gtk_widget_show( localCheck );
-
-        if ( i < state->nPlayers ) {
-            XP_Bool isSet;
-            gtk_entry_set_text( 
-                               GTK_ENTRY(nameField), 
-                               gi->players[i].name );
-
-            isSet = gi->players[i].isRobot;
-            gtk_toggle_button_set_state( GTK_TOGGLE_BUTTON(robotCheck),
-                                         isSet );
-            XP_DEBUGF( "isRobot set to %d\n", isSet );
-            isSet = gi->players[i].isLocal;
-            gtk_toggle_button_set_state( GTK_TOGGLE_BUTTON(localCheck), 
-                                         isSet );
-            XP_DEBUGF( "isLocal set to %d\n", isSet );
-        } else {
-            char buf[10];
-            snprintf( buf, sizeof(buf), "Player %d", i+1 );
-            gtk_entry_set_text( GTK_ENTRY(nameField), buf );
-
-            gtk_widget_set_sensitive( hbox, FALSE );
-            gtk_toggle_button_set_state( GTK_TOGGLE_BUTTON(localCheck), 
-                                         XP_TRUE );
-        }
         gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
         gtk_widget_show( hbox );
     }
@@ -406,17 +365,140 @@ makeNewGameDialog( GtkNewGameState* state )
     return dialog;
 } /* makeNewGameDialog */
 
+static GtkWidget*
+widgetForCol( const GtkNewGameState* state, XP_U16 player, NewGameColumn col )
+{
+    GtkWidget* widget = NULL;
+    if ( col == NG_COL_NAME ) {
+        widget = state->nameFields[player];
+    } else if ( col == NG_COL_PASSWD ) {
+        widget = state->passwdFields[player];
+#ifndef XWFEATURE_STANDALONE_ONLY
+    } else if ( col == NG_COL_LOCAL ) {
+        widget = state->localChecks[player];
+#endif
+    } else if ( col == NG_COL_ROBOT ) {
+        widget = state->robotChecks[player];
+    } 
+    XP_ASSERT( !!widget );
+    return widget;
+} /* widgetForCol */
+
+static void
+gtk_newgame_col_enable( void* closure, XP_U16 player, NewGameColumn col, 
+                        XP_Bool enable )
+{
+    GtkNewGameState* state = (GtkNewGameState*)closure;
+    gtk_widget_set_sensitive( widgetForCol( state, player, col ), enable );
+}
+
+static void
+gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_Bool enable )
+{
+    GtkNewGameState* state = (GtkNewGameState*)closure;
+    GtkWidget* menu = NULL;
+    if ( attr == NG_ATTR_NPLAYERS ) {
+        menu = state->nPlayersMenu;
+    } else if ( attr == NG_ATTR_ROLE ) {
+        menu = state->roleMenu;
+    }
+    XP_ASSERT( !!menu );
+    gtk_widget_set_sensitive( menu, enable );
+}
+
+static void
+gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col, 
+                     NGValue value )
+{
+    GtkNewGameState* state = (GtkNewGameState*)closure;
+    GtkWidget* widget = widgetForCol( state, player, col );
+    const XP_UCHAR* cp;
+
+    switch ( col ) {
+    case NG_COL_NAME:
+    case NG_COL_PASSWD:
+        cp = value.ng_cp? value.ng_cp : "";
+        gtk_entry_set_text( GTK_ENTRY(widget), cp );
+        break;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case NG_COL_LOCAL:
+#endif
+    case NG_COL_ROBOT:
+        gtk_toggle_button_set_state( GTK_TOGGLE_BUTTON(widget),
+                                     value.ng_bool );
+        break;
+    }
+} /* gtk_newgame_set */
+
+static void
+gtk_newgame_col_get( void* closure, XP_U16 player, NewGameColumn col, 
+                     NGValue* value )
+{
+    GtkNewGameState* state = (GtkNewGameState*)closure;
+
+    XP_LOGF( "%s: player=%d; col = %d", __FUNCTION__,
+             player, (int)col );
+
+    GtkWidget* widget = widgetForCol( state, player, col );
+    switch ( col ) {
+#ifndef XWFEATURE_STANDALONE_ONLY        
+    case NG_COL_LOCAL:
+#endif
+    case NG_COL_ROBOT:
+        value->ng_bool =
+            gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(widget));
+        break;
+    case NG_COL_PASSWD:
+    case NG_COL_NAME:
+        value->ng_cp = gtk_entry_get_text( GTK_ENTRY(widget) );
+        break;
+    }
+} /* gtk_newgame_col_get */
+
+static void
+gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
+{
+    GtkNewGameState* state = (GtkNewGameState*)closure;
+    if ( attr == NG_ATTR_NPLAYERS ) {
+        XP_U16 i = value.ng_u16;
+        XP_LOGF( "%s: setting menu %d", __FUNCTION__, i-1 );
+        gtk_menu_set_active( GTK_MENU(state->nPlayersMenu), i-1 );
+    } else if ( attr == NG_ATTR_ROLE ) {
+        
+    }
+}
+
 gboolean
 newGameDialog( GtkAppGlobals* globals/* , GtkGameInfo* gameInfo */ )
 {
     GtkNewGameState state;
+    XP_MEMSET( &state, 0, sizeof(state) );
+
     state.globals = globals;
+    state.newGameCtxt = gamedlg_make( MPPARM(globals->cGlobals.params
+                                             ->util->mpool)  
+                                      XP_TRUE, /* does gtk have concept of new
+                                                  game yet? */
+                                      gtk_newgame_col_enable,
+                                      gtk_newgame_attr_enable,
+                                      gtk_newgame_col_get,
+                                      gtk_newgame_col_set,
+                                      gtk_newgame_attr_set,
+                                      &state );
 
     /* returns when button handler calls gtk_main_quit */
     do {
         GtkWidget* dialog = makeNewGameDialog( &state );
         state.revert = FALSE;
+
+        gamedlg_load( state.newGameCtxt, 
+                      &globals->cGlobals.params->gi );
+
         gtk_main();
+        if ( !state.cancelled && !state.revert ) {
+            gamedlg_store( state.newGameCtxt, &globals->cGlobals.params->gi );
+        }
+
         gtk_widget_destroy( dialog );
     } while ( state.revert );
 
