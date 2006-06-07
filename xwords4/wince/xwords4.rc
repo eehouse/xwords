@@ -148,7 +148,7 @@ CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4.1b8 (rev " SVN_REV ") "\
+    LTEXT           "Crosswords 4.1b9 (rev " SVN_REV ") "\
                     "for PocketPC. Copyright 1998-2006 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
@@ -705,6 +705,7 @@ BEGIN
 #ifdef _WIN32_WCE
     IDS_DICTDIRS            "\\Program Files\\Crosswords"
     IDS_DICTDIRS+1          "\\SD Card\\Crosswords"
+    IDS_DICTDIRS+2          "\\Storage Card\\Crosswords"
 #else
     IDS_DICTDIRS            "."
 #endif
