@@ -151,7 +151,7 @@ copyString( MPFORMAL const XP_UCHAR* instr )
 } /* copyString */
 
 void
-replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, XP_UCHAR* newStr )
+replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr )
 {
     XP_UCHAR* curStr = *curLoc;
 

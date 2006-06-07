@@ -42,7 +42,8 @@ XP_U16 stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len );
 void stringToStream( XWStreamCtxt* stream, XP_UCHAR* str );
 
 XP_UCHAR* copyString( MPFORMAL const XP_UCHAR* instr );
-void replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, XP_UCHAR* newStr );
+void replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, 
+                               const XP_UCHAR* newStr );
 
 XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
 
