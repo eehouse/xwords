@@ -69,8 +69,10 @@ typedef void (*NewGameEnableAttrProc)( void* closure, NewGameAttr attr,
                                        XP_Bool enable );
 /* Get the contents of a control.  Type of param "value" is either
    boolean or char* */
+typedef void (*NgCpCallbk)( NGValue value, const void* cpClosure );
 typedef void (*NewGameGetColProc)( void* closure, XP_U16 player, 
-                                   NewGameColumn col, NGValue* value );
+                                   NewGameColumn col, 
+                                   NgCpCallbk cpcb, const void* cbClosure );
 /* Set the contents of a control.  Type of param "value" is either
    boolean or char* */
 typedef void (*NewGameSetColProc)( void* closure, XP_U16 player, 
@@ -80,24 +82,24 @@ typedef void (*NewGameSetAttrProc)(void* closure, NewGameAttr attr,
                                    const NGValue value );
 
 
-NewGameCtx* gamedlg_make( MPFORMAL XP_Bool isNewGame, 
-                          NewGameEnableColProc enableColProc, 
-                          NewGameEnableAttrProc enableAttrProc, 
-                          NewGameGetColProc getColProc,
-                          NewGameSetColProc setColProc,
-                          NewGameSetAttrProc setAttrProc,
-                          void* closure );
-void gamedlg_destroy( NewGameCtx* ngc );
+NewGameCtx* newg_make( MPFORMAL XP_Bool isNewGame, 
+                       NewGameEnableColProc enableColProc, 
+                       NewGameEnableAttrProc enableAttrProc, 
+                       NewGameGetColProc getColProc,
+                       NewGameSetColProc setColProc,
+                       NewGameSetAttrProc setAttrProc,
+                       void* closure );
+void newg_destroy( NewGameCtx* ngc );
 
-void gamedlg_load( NewGameCtx* ngc, const CurGameInfo* gi );
-void gamedlg_store( NewGameCtx* ngc, CurGameInfo* gi );
+void newg_load( NewGameCtx* ngc, const CurGameInfo* gi );
+void newg_store( NewGameCtx* ngc, CurGameInfo* gi );
 
-void gamedlg_colChanged( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
-                          NGValue value );
-void gamedlg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, 
-                          NGValue value );
+void newg_colChanged( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
+                      NGValue value );
+void newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, 
+                       NGValue value );
 
-void gamedlg_juggle( NewGameCtx* ngc );
+void newg_juggle( NewGameCtx* ngc );
 
 EXTERN_C_END
 
