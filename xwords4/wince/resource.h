@@ -145,8 +145,9 @@
 # define RELAYNAME_EDIT                  1095
 # define RELAYPORT_EDIT                  1096
 # define COOKIE_EDIT                     1097
-
 #endif
+
+#define GIJUGGLE_BUTTON                 1098
 
 
 
