@@ -44,7 +44,7 @@ typedef struct GtkNewGameState {
     short nCols;                /* for board size */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    GtkWidget* localChecks[MAX_NUM_PLAYERS];
+    GtkWidget* remoteChecks[MAX_NUM_PLAYERS];
 #endif
     GtkWidget* robotChecks[MAX_NUM_PLAYERS];
     GtkWidget* nameFields[MAX_NUM_PLAYERS];
@@ -129,9 +129,9 @@ handle_juggle( GtkWidget* item, GtkNewGameState* state )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-handle_local_toggled( GtkWidget* item, GtkNewGameState* state )
+handle_remote_toggled( GtkWidget* item, GtkNewGameState* state )
 {
-    callChangedWithIndex( state, item, state->localChecks, NG_COL_LOCAL );
+    callChangedWithIndex( state, item, state->remoteChecks, NG_COL_REMOTE );
 }
 #endif
 
@@ -271,15 +271,15 @@ makeNewGameDialog( GtkNewGameState* state )
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         GtkWidget* label = gtk_label_new("Name:");
 #ifndef XWFEATURE_STANDALONE_ONLY
-        GtkWidget* localCheck = gtk_check_button_new_with_label( "Local" );
+        GtkWidget* remoteCheck = gtk_check_button_new_with_label( "Remote" );
 #endif
         GtkWidget* nameField = gtk_entry_new();
         GtkWidget* passwdField = gtk_entry_new_with_max_length( 6 );
         GtkWidget* robotCheck = gtk_check_button_new_with_label( "Robot" );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        g_signal_connect( GTK_OBJECT(localCheck), "toggled", 
-                          GTK_SIGNAL_FUNC(handle_local_toggled), state );
+        g_signal_connect( GTK_OBJECT(remoteCheck), "toggled", 
+                          GTK_SIGNAL_FUNC(handle_remote_toggled), state );
 #endif
         g_signal_connect( GTK_OBJECT(robotCheck), "toggled", 
                           GTK_SIGNAL_FUNC(handle_robot_toggled), state );
@@ -287,9 +287,9 @@ makeNewGameDialog( GtkNewGameState* state )
         hbox = gtk_hbox_new( FALSE, 0 );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        gtk_box_pack_start( GTK_BOX(hbox), localCheck, FALSE, TRUE, 0 );
-        gtk_widget_show( localCheck );
-        state->localChecks[i] = localCheck;
+        gtk_box_pack_start( GTK_BOX(hbox), remoteCheck, FALSE, TRUE, 0 );
+        gtk_widget_show( remoteCheck );
+        state->remoteChecks[i] = remoteCheck;
 #endif
         
         gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
@@ -385,8 +385,8 @@ widgetForCol( const GtkNewGameState* state, XP_U16 player, NewGameColumn col )
     } else if ( col == NG_COL_PASSWD ) {
         widget = state->passwdFields[player];
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( col == NG_COL_LOCAL ) {
-        widget = state->localChecks[player];
+    } else if ( col == NG_COL_REMOTE ) {
+        widget = state->remoteChecks[player];
 #endif
     } else if ( col == NG_COL_ROBOT ) {
         widget = state->robotChecks[player];
@@ -432,7 +432,7 @@ gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col,
         gtk_entry_set_text( GTK_ENTRY(widget), cp );
         break;
 #ifndef XWFEATURE_STANDALONE_ONLY
-    case NG_COL_LOCAL:
+    case NG_COL_REMOTE:
 #endif
     case NG_COL_ROBOT:
         gtk_toggle_button_set_state( GTK_TOGGLE_BUTTON(widget),
@@ -451,7 +451,7 @@ gtk_newgame_col_get( void* closure, XP_U16 player, NewGameColumn col,
     GtkWidget* widget = widgetForCol( state, player, col );
     switch ( col ) {
 #ifndef XWFEATURE_STANDALONE_ONLY        
-    case NG_COL_LOCAL:
+    case NG_COL_REMOTE:
 #endif
     case NG_COL_ROBOT:
         value.ng_bool =
@@ -510,6 +510,7 @@ newGameDialog( GtkAppGlobals* globals/* , GtkGameInfo* gameInfo */ )
             newg_store( state.newGameCtxt, &globals->cGlobals.params->gi );
         }
 
+        newg_destroy( state.newGameCtxt );
         gtk_widget_destroy( dialog );
     } while ( state.revert );
 
