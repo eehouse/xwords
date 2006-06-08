@@ -91,35 +91,34 @@ void
 newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
 {
     void* closure = ngc->closure;
-    NGValue cValue;
-    NGValue aValue;
+    NGValue value;
     XP_U16 i;
 
     ngc->nPlayers = gi->nPlayers;
-    aValue.ng_u16 = ngc->nPlayers;
-    (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYERS, aValue );
+    value.ng_u16 = ngc->nPlayers;
+    (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYERS, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame );
 
     ngc->role = gi->serverRole;
-    aValue.ng_role = ngc->role;
-    (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, aValue );
+    value.ng_role = ngc->role;
+    (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame );
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
 
 #ifndef XWFEATURE_STANDALONE_ONLY        
-        cValue.ng_bool = gi->players[i].isLocal;
-        (*ngc->setColProc)(closure, i, NG_COL_LOCAL, cValue );
+        value.ng_bool = !gi->players[i].isLocal;
+        (*ngc->setColProc)(closure, i, NG_COL_REMOTE, value );
 #endif
 
-        cValue.ng_cp = gi->players[i].name;
-        (*ngc->setColProc)(closure, i, NG_COL_NAME, cValue );
+        value.ng_cp = gi->players[i].name;
+        (*ngc->setColProc)(closure, i, NG_COL_NAME, value );
 
-        cValue.ng_cp = gi->players[i].password;
-        (*ngc->setColProc)(closure, i, NG_COL_PASSWD, cValue );
+        value.ng_cp = gi->players[i].password;
+        (*ngc->setColProc)(closure, i, NG_COL_PASSWD, value );
 
-        cValue.ng_bool = gi->players[i].isRobot;
-        (*ngc->setColProc)(closure, i, NG_COL_ROBOT, cValue );
+        value.ng_bool = gi->players[i].isRobot;
+        (*ngc->setColProc)(closure, i, NG_COL_ROBOT, value );
     }
     
     adjustAllRows( ngc, XP_TRUE );
@@ -141,7 +140,7 @@ cpToGI( NGValue value, const void* cbClosure )
     
     switch ( cpcl->col ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    case NG_COL_LOCAL:
+    case NG_COL_REMOTE:
         pl->isLocal = value.ng_bool;
         break;
 #endif
@@ -189,8 +188,11 @@ void
 newg_colChanged( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
                  NGValue value )
 {
-    XP_ASSERT( player < ngc->nPlayers );
-    adjustOneRow( ngc, player, XP_FALSE );
+    /* Sometimes we'll get this notification for inactive rows, e.g. when
+       setting default values. */
+    if ( player < ngc->nPlayers ) {
+        adjustOneRow( ngc, player, XP_FALSE );
+    }
 }
 
 void
@@ -240,7 +242,7 @@ deepCopy( NGValue value, const void* closure )
     DeepValue* dvp = (DeepValue*)closure;
     switch ( dvp->col ) {
     case NG_COL_ROBOT:
-    case NG_COL_LOCAL:
+    case NG_COL_REMOTE:
         dvp->value.ng_bool = value.ng_bool;
         break;
     case NG_COL_NAME:
@@ -302,18 +304,12 @@ newg_juggle( NewGameCtx* ngc )
             (*ngc->getColProc)(closure, pos[0], col, deepCopy, &tmpValues[col] );
         }
 
-        /* Strings must be copied */
-/*         for ( col = 0; col < sizeof(strCols)/sizeof(strCols[0]); ++col ) { */
-/*             NewGameColumn strCol = strCols[col]; */
-/*             tmpValues[strCol].ng_cp = copyString( MPPARM(ngc->mpool) */
-/*                                                   tmpValues[strCol].ng_cp ); */
-/*         } */
-
         cur = 0;
         while ( ++cur < nPlayers ) {
             XP_LOGF( "%s: copying player %d to player %d", __FUNCTION__, 
                      pos[cur], pos[cur-1] );
             copyFromTo( ngc, pos[cur], pos[cur-1] );
+            adjustOneRow( ngc, pos[cur-1], XP_FALSE );
         }
 
         --cur;
@@ -323,11 +319,7 @@ newg_juggle( NewGameCtx* ngc )
             (*ngc->setColProc)(closure, pos[cur], col, tmpValues[col].value );
             deepFree( &tmpValues[col] );
         }
-        /* copied strings must be freed  */
-/*         for ( col = 0; col < sizeof(strCols)/sizeof(strCols[0]); ++col ) { */
-/*             NewGameColumn strCol = strCols[col]; */
-/*             XP_FREE( ngc->mpool, (void*)tmpValues[strCol].ng_cp ); */
-/*         } */
+        adjustOneRow( ngc, pos[cur], XP_FALSE );
     }
 } /* newg_juggle */
 
@@ -359,7 +351,6 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     XP_MEMSET( enable, 0, sizeof(enable) );
     XP_Bool isLocal = XP_TRUE;
     DeepValue dValue;
-/*     NGValue value; */
 
     /* If there aren't this many players, all are disabled */
     if ( player >= ngc->nPlayers ) {
@@ -368,12 +359,13 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     } else {
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        /* If standalone or client, local is disabled */
+        /* If standalone or client, remote is disabled */
         if ( ngc->role == SERVER_ISSERVER ) {
-            enable[NG_COL_LOCAL] = XP_TRUE;
-            dValue.col = NG_COL_LOCAL;
-            (*ngc->getColProc)( ngc->closure, player, NG_COL_LOCAL, deepCopy, &dValue );
-            isLocal = dValue.value.ng_bool;
+            enable[NG_COL_REMOTE] = XP_TRUE;
+            dValue.col = NG_COL_REMOTE;
+            (*ngc->getColProc)( ngc->closure, player, NG_COL_REMOTE,
+                                deepCopy, &dValue );
+            isLocal = !dValue.value.ng_bool;
         }
 #endif
 
