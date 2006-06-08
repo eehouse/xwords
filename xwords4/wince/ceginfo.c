@@ -280,9 +280,11 @@ resIDForCol( XP_U16 player, NewGameColumn col )
 {
     XP_U16 resID;
     switch ( col ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
         resID = REMOTE_CHECK1;
         break;
+#endif
     case NG_COL_ROBOT:
         resID = ROBOT_CHECK1;
         break;
@@ -340,7 +342,9 @@ ceGetColProc( void* closure, XP_U16 player, NewGameColumn col,
     XP_U16 len;
 
     switch ( col ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
+#endif
     case NG_COL_ROBOT:
         value.ng_bool = ceGetChecked( giState->hDlg, resID );
         break;
@@ -375,7 +379,9 @@ ceSetColProc( void* closure, XP_U16 player, NewGameColumn col,
         }
         ceSetDlgItemText( giState->hDlg, resID, cp );
         break;
+#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
+#endif
     case NG_COL_ROBOT:
         ceSetChecked( giState->hDlg, resID, value.ng_bool );
         break;

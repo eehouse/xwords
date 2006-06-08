@@ -42,9 +42,9 @@ typedef struct NewGameCtx NewGameCtx;
 
 typedef enum {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    NG_COL_REMOTE
+    NG_COL_REMOTE,
 #endif
-    ,NG_COL_NAME
+    NG_COL_NAME
     ,NG_COL_ROBOT
     ,NG_COL_PASSWD
     ,NG_NUM_COLS

@@ -99,10 +99,12 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYERS, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     ngc->role = gi->serverRole;
     value.ng_role = ngc->role;
     (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame );
+#endif
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
 
@@ -174,7 +176,9 @@ newg_store( NewGameCtx* ngc, CurGameInfo* gi )
     cpcl.gi = gi;
 
     gi->nPlayers = nPlayers = ngc->nPlayers;
+#ifndef XWFEATURE_STANDALONE_ONLY
     gi->serverRole = ngc->role;
+#endif
 
     for ( cpcl.player = 0; cpcl.player < nPlayers; ++cpcl.player ) {
         for ( cpcl.col = 0; cpcl.col < NG_NUM_COLS; ++cpcl.col ) {
@@ -201,8 +205,10 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
     XP_LOGF( "%s(%d)", __FUNCTION__ );
     if ( attr == NG_ATTR_NPLAYERS ) {
         ngc->nPlayers = value.ng_u16;
+#ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( NG_ATTR_ROLE == attr ) { 
         ngc->role = value.ng_role;
+#endif
     } else {
         XP_ASSERT( 0 );
     }
@@ -242,7 +248,9 @@ deepCopy( NGValue value, const void* closure )
     DeepValue* dvp = (DeepValue*)closure;
     switch ( dvp->col ) {
     case NG_COL_ROBOT:
+#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
+#endif
         dvp->value.ng_bool = value.ng_bool;
         break;
     case NG_COL_NAME:
