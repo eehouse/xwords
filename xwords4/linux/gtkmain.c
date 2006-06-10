@@ -539,7 +539,7 @@ new_game( GtkWidget* widget, GtkAppGlobals* globals )
 {
     gboolean confirmed;
 
-    confirmed = newGameDialog( globals );
+    confirmed = newGameDialog( globals, XP_TRUE );
     if ( confirmed ) {
         CurGameInfo* gi = &globals->cGlobals.params->gi;
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
@@ -567,6 +567,16 @@ new_game( GtkWidget* widget, GtkAppGlobals* globals )
     }
 
 } /* new_game */
+
+static void
+game_info( GtkWidget* widget, GtkAppGlobals* globals )
+{
+    /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
+       server_do in case one's become a robot. */
+    if ( newGameDialog( globals, XP_FALSE ) ) {
+        (void)server_do( globals->cGlobals.game.server ); /* assign tiles, etc. */
+    }
+}
 
 static void
 load_game( GtkWidget* widget, GtkAppGlobals* globals )
@@ -689,6 +699,8 @@ makeMenus( GtkAppGlobals* globals, int argc, char** argv )
 
     (void)createAddItem( fileMenu, "New game", 
                          GTK_SIGNAL_FUNC(new_game), globals );
+    (void)createAddItem( fileMenu, "Game info", 
+                         GTK_SIGNAL_FUNC(game_info), globals );
 
     (void)createAddItem( fileMenu, "Load game", 
                          GTK_SIGNAL_FUNC(load_game), globals );

@@ -25,7 +25,7 @@
 
 #include "gtkmain.h"
 
-gboolean newGameDialog( GtkAppGlobals* globals );
+gboolean newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame );
 
 #endif /* _GTKNEWGAME_H_ */
 #endif /* PLATFORM_GTK */

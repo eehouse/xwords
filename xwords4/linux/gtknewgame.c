@@ -47,10 +47,13 @@ typedef struct GtkNewGameState {
     GtkWidget* remoteChecks[MAX_NUM_PLAYERS];
 #endif
     GtkWidget* robotChecks[MAX_NUM_PLAYERS];
+    GtkWidget* nameLabels[MAX_NUM_PLAYERS];
     GtkWidget* nameFields[MAX_NUM_PLAYERS];
+    GtkWidget* passwdLabels[MAX_NUM_PLAYERS];
     GtkWidget* passwdFields[MAX_NUM_PLAYERS];
     GtkWidget* nPlayersMenu;
     GtkWidget* roleMenu;
+    GtkWidget* nPlayersLabel;
 
     GtkWidget* roleMenuItems[3];
 } GtkNewGameState;
@@ -199,7 +202,7 @@ makeButton( char* text, GCallback func, gpointer data )
 } /* makeButton */
 
 static GtkWidget*
-makeNewGameDialog( GtkNewGameState* state )
+makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
 {
     GtkWidget* dialog;
     GtkWidget* vbox;
@@ -209,6 +212,7 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* nPlayersMenu;
     GtkWidget* boardSizeMenu;
     GtkWidget* opt;
+    GtkWidget* juggleButton;
     CurGameInfo* gi;
     short i;
     char* roles[] = { "Standalone", "Host", "Guest" };
@@ -239,8 +243,8 @@ makeNewGameDialog( GtkNewGameState* state )
 
     /* NPlayers menu */
     hbox = gtk_hbox_new( FALSE, 0 );
-    gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Number of players"),
-                        FALSE, TRUE, 0 );
+    state->nPlayersLabel = gtk_label_new("");
+    gtk_box_pack_start( GTK_BOX(hbox), state->nPlayersLabel, FALSE, TRUE, 0 );
 
     opt = gtk_option_menu_new();
     nPlayersMenu = gtk_menu_new();
@@ -260,10 +264,10 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_widget_show( opt );
     gtk_box_pack_start( GTK_BOX(hbox), opt, FALSE, TRUE, 0 );
 
-    gtk_box_pack_start( GTK_BOX(hbox), 
-                        makeButton( "Juggle", GTK_SIGNAL_FUNC(handle_juggle),
-                                    state ),
-                        FALSE, TRUE, 0 );
+    juggleButton = makeButton( "Juggle", GTK_SIGNAL_FUNC(handle_juggle),
+                               state );
+    gtk_box_pack_start( GTK_BOX(hbox), juggleButton, FALSE, TRUE, 0 );
+    gtk_widget_set_sensitive( juggleButton, isNewGame );
     gtk_widget_show( hbox );
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -294,6 +298,7 @@ makeNewGameDialog( GtkNewGameState* state )
         
         gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
         gtk_widget_show( label );
+        state->nameLabels[i] = label;
 
         gtk_box_pack_start( GTK_BOX(hbox), nameField, FALSE, TRUE, 0 );
         gtk_widget_show( nameField );
@@ -306,6 +311,7 @@ makeNewGameDialog( GtkNewGameState* state )
         label = gtk_label_new("Passwd:");
         gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );
         gtk_widget_show( label );
+        state->passwdLabels[i] = label;
 
         gtk_box_pack_start( GTK_BOX(hbox), passwdField, FALSE, TRUE, 0 );
         gtk_widget_show( passwdField );
@@ -395,16 +401,43 @@ widgetForCol( const GtkNewGameState* state, XP_U16 player, NewGameColumn col )
     return widget;
 } /* widgetForCol */
 
-static void
-gtk_newgame_col_enable( void* closure, XP_U16 player, NewGameColumn col, 
-                        XP_Bool enable )
+static GtkWidget*
+labelForCol( const GtkNewGameState* state, XP_U16 player, NewGameColumn col )
 {
-    GtkNewGameState* state = (GtkNewGameState*)closure;
-    gtk_widget_set_sensitive( widgetForCol( state, player, col ), enable );
-}
+    GtkWidget* widget = NULL;
+    if ( col == NG_COL_NAME ) {
+        widget = state->nameLabels[player];
+    } else if ( col == NG_COL_PASSWD ) {
+        widget = state->passwdLabels[player];
+    } 
+    return widget;
+} /* widgetForCol */
 
 static void
-gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_Bool enable )
+gtk_newgame_col_enable( void* closure, XP_U16 player, NewGameColumn col, 
+                        NewGameEnable enable )
+{
+    GtkNewGameState* state = (GtkNewGameState*)closure;
+    GtkWidget* widget = widgetForCol( state, player, col );
+    GtkWidget* label = labelForCol( state, player, col );
+
+    if ( enable == NGEnableHidden ) {
+        gtk_widget_hide( widget );
+        if ( !!label ) {
+            gtk_widget_hide( label );
+        }
+    } else {
+        gtk_widget_show( widget );
+        gtk_widget_set_sensitive( widget, enable == NGEnableEnabled );
+        if ( !!label ) {
+            gtk_widget_show( label );
+        gtk_widget_set_sensitive( label, enable == NGEnableEnabled );
+        }
+    }
+} /* gtk_newgame_col_enable */
+
+static void
+gtk_newgame_attr_enable( void* closure, NewGameAttr attr, NewGameEnable enable )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
     GtkWidget* menu = NULL;
@@ -413,8 +446,9 @@ gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_Bool enable )
     } else if ( attr == NG_ATTR_ROLE ) {
         menu = state->roleMenu;
     }
-    XP_ASSERT( !!menu );
-    gtk_widget_set_sensitive( menu, enable );
+    if ( !!menu ) {
+        gtk_widget_set_sensitive( menu, enable == NGEnableEnabled );
+    }
 }
 
 static void
@@ -476,20 +510,24 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
         gtk_menu_set_active( GTK_MENU(state->nPlayersMenu), i-1 );
     } else if ( attr == NG_ATTR_ROLE ) {
         
+    } else if ( attr == NG_ATTR_REMHEADER ) {
+        /* ignored on GTK: no headers at all */
+    } else if ( attr == NG_ATTR_NPLAYHEADER ) {
+        gtk_label_set_text( GTK_LABEL(state->nPlayersLabel), value.ng_cp );
     }
 }
 
 gboolean
-newGameDialog( GtkAppGlobals* globals/* , GtkGameInfo* gameInfo */ )
+newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame )
 {
     GtkNewGameState state;
     XP_MEMSET( &state, 0, sizeof(state) );
 
     state.globals = globals;
     state.newGameCtxt = newg_make( MPPARM(globals->cGlobals.params
-                                          ->util->mpool)  
-                                   XP_TRUE, /* does gtk have concept of new
-                                               game yet? */
+                                          ->util->mpool) 
+                                   isNewGame,
+                                   globals->cGlobals.params->util,
                                    gtk_newgame_col_enable,
                                    gtk_newgame_attr_enable,
                                    gtk_newgame_col_get,
@@ -499,20 +537,21 @@ newGameDialog( GtkAppGlobals* globals/* , GtkGameInfo* gameInfo */ )
 
     /* returns when button handler calls gtk_main_quit */
     do {
-        GtkWidget* dialog = makeNewGameDialog( &state );
+        GtkWidget* dialog = makeNewGameDialog( &state, isNewGame );
         state.revert = FALSE;
 
         newg_load( state.newGameCtxt, 
-                      &globals->cGlobals.params->gi );
+                   &globals->cGlobals.params->gi );
 
         gtk_main();
         if ( !state.cancelled && !state.revert ) {
             newg_store( state.newGameCtxt, &globals->cGlobals.params->gi );
         }
 
-        newg_destroy( state.newGameCtxt );
         gtk_widget_destroy( dialog );
     } while ( state.revert );
+
+    newg_destroy( state.newGameCtxt );
 
     return !state.cancelled;
 } /* newGameDialog */
