@@ -80,7 +80,7 @@
 #define IDC_PREFCOLORS                  1044
 #define PHONIES_LABEL                   1045
 #define IDC_ROLECOMBO                   1046
-#define IDC_LOCALP_LABEL                1048
+#define GIJUGGLE_BUTTON                 1048
 #define IDC_TOTAL_LABEL                 1049
 #define IDC_REMOTE_LABEL                1050
 #define IDC_PICKTILES                   1051
@@ -147,7 +147,6 @@
 # define COOKIE_EDIT                     1097
 #endif
 
-#define GIJUGGLE_BUTTON                 1098
 
 
 

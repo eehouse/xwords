@@ -308,27 +308,48 @@ resIDForAttr( NewGameAttr attr )
     case NG_ATTR_NPLAYERS:
         resID = IDC_NPLAYERSCOMBO;
         break;
+#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
         resID = IDC_ROLECOMBO;
         break;
+    case NG_ATTR_REMHEADER:
+        resID = IDC_REMOTE_LABEL;
+        break;
+#endif
+    case NG_ATTR_NPLAYHEADER:
+        resID = IDC_TOTAL_LABEL;
+        break;
+    default:
+        XP_ASSERT(0);
     }
     return resID;
 } /* resIDForAttr */
 
 static void
+doForNWEnable( HWND hDlg, XP_U16 resID, NewGameEnable enable )
+{
+    XP_Bool makeVisible = enable != NGEnableHidden;
+    ceShowOrHide( hDlg, resID, makeVisible );
+    if ( makeVisible ) {
+        ceEnOrDisable( hDlg, resID, enable == NGEnableEnabled );
+    }
+} /* doForNWEnable */
+
+static void
 ceEnableColProc( void* closure, XP_U16 player, NewGameColumn col, 
-                 XP_Bool enable )
+                 NewGameEnable enable )
 {
     GameInfoState* giState = (GameInfoState*)closure;
-    ceShowOrHide( giState->hDlg, resIDForCol( player, col ), enable );
+    XP_U16 resID = resIDForCol( player, col );
+    doForNWEnable( giState->hDlg, resID, enable );
 }
 
 static void
-ceEnableAttrProc( void* closure, NewGameAttr attr, XP_Bool enable )
+ceEnableAttrProc( void* closure, NewGameAttr attr, NewGameEnable enable )
 {
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForAttr( attr );
-    ceEnOrDisable( giState->hDlg, resID, enable );
+    doForNWEnable( giState->hDlg, resID, enable );
 } /* ceEnableAttrProc */
 
 static void 
@@ -402,8 +423,15 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
     switch ( attr ) {
     case NG_ATTR_NPLAYERS:
         --val;                  /* adjust: it's 1-based */
+#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
+#endif
         SendDlgItemMessage( giState->hDlg, resID, CB_SETCURSEL, val, 0L );
+        break;
+    case NG_ATTR_NPLAYHEADER:
+        ceSetDlgItemText( giState->hDlg, resID, value.ng_cp );
+        break;
+    default:
         break;
     }
 } /* ceSetAttrProc */
@@ -444,6 +472,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         giState->newGameCtx = newg_make( MPPARM(globals->mpool)
                                          giState->isNewGame,
+                                         &globals->util,
                                          ceEnableColProc, 
                                          ceEnableAttrProc, 
                                          ceGetColProc,
