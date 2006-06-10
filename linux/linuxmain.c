@@ -532,6 +532,15 @@ linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
     case STR_LOSTTURN:
         return (XP_UCHAR*)"Lost turn";
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case STR_LOCALPLAYERS:
+        return (XP_UCHAR*)"Local players";
+    case STR_REMOTE:
+        return (XP_UCHAR*)"Remote";
+#endif
+    case STR_TOTALPLAYERS:
+        return (XP_UCHAR*)"Total players";
+
     case STRS_VALUES_HEADER:
         return (XP_UCHAR*)"%s counts/values:\n";
 
