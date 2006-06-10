@@ -2432,6 +2432,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 #endif
 
     default:
+        XP_LOGF( "%s(%d)", __FUNCTION__, id );
         message = "unknown errorcode ID!!!";
         break;
     }
@@ -2728,6 +2729,13 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
         return (XP_UCHAR*)"Traded %d";
     case STR_LOSTTURN:
         return (XP_UCHAR*)"Lost turn";
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case STR_LOCALPLAYERS:
+        return (XP_UCHAR*)"Local playrs";
+#endif
+    case STR_TOTALPLAYERS:
+        return (XP_UCHAR*)"Player count";
 
     case STRS_VALUES_HEADER:
         return (XP_UCHAR*)"%s counts/values:" XP_CR;
