@@ -389,7 +389,6 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
            hidden.  But if it's not a new game, they're disabled.  Password is
            always hidden if robot is set. */
         if ( isLocal ) {
-            NewGameEnable passwdEn;
             /* No changing name or robotness since they're sent to remote
                host. */
             enable[NG_COL_NAME] = NGEnableEnabled;
@@ -400,8 +399,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
                                 &dValue );
             if ( !dValue.value.ng_bool ) {
                 /* It is's a robot, leave it hidden */
-                enable[NG_COL_PASSWD] = passwdEn = ngc->isNewGame?
-                    NGEnableEnabled : NGEnableDisabled;
+                enable[NG_COL_PASSWD] = NGEnableEnabled;
             }
                                   
         } else {
