@@ -35,6 +35,7 @@ EXTERN_C_START
 #include "mempool.h"
 #include "server.h"
 #include "comms.h"
+#include "util.h"
 #include "game.h"
 
 typedef struct NewGameCtx NewGameCtx;
@@ -51,9 +52,19 @@ typedef enum {
 } NewGameColumn;
 
 typedef enum {
+#ifndef XWFEATURE_STANDALONE_ONLY
+    NG_ATTR_ROLE,
+    NG_ATTR_REMHEADER,
+#endif
     NG_ATTR_NPLAYERS
-    ,NG_ATTR_ROLE
+    ,NG_ATTR_NPLAYHEADER
+    ,NG_ATTR_CANJUGGLE
 } NewGameAttr;
+
+typedef enum { NGEnableHidden, 
+               NGEnableDisabled, 
+               NGEnableEnabled
+} NewGameEnable;
 
 typedef union NGValue {
     const XP_UCHAR* ng_cp;
@@ -64,9 +75,9 @@ typedef union NGValue {
 
 /* Enable or disable (show or hide) controls */
 typedef void (*NewGameEnableColProc)( void* closure, XP_U16 player, 
-                                      NewGameColumn col, XP_Bool enable );
+                                      NewGameColumn col, NewGameEnable enable );
 typedef void (*NewGameEnableAttrProc)( void* closure, NewGameAttr attr, 
-                                       XP_Bool enable );
+                                       NewGameEnable enable );
 /* Get the contents of a control.  Type of param "value" is either
    boolean or char* */
 typedef void (*NgCpCallbk)( NGValue value, const void* cpClosure );
@@ -83,6 +94,7 @@ typedef void (*NewGameSetAttrProc)(void* closure, NewGameAttr attr,
 
 
 NewGameCtx* newg_make( MPFORMAL XP_Bool isNewGame, 
+                       XW_UtilCtxt* util,
                        NewGameEnableColProc enableColProc, 
                        NewGameEnableAttrProc enableAttrProc, 
                        NewGameGetColProc getColProc,

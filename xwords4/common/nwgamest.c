@@ -21,6 +21,7 @@
 
 #include "nwgamest.h"
 #include "strutils.h"
+#include "LocalizedStrIncludes.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -32,11 +33,12 @@ struct NewGameCtx {
     NewGameSetColProc setColProc;
     NewGameGetColProc getColProc;
     NewGameSetAttrProc setAttrProc;
+    XW_UtilCtxt* util;
     void* closure;
 
     /* Palm needs to store cleartext passwords separately in order to
        store '***' in the visible field */
-    XP_Bool enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
+    NewGameEnable enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
     XP_U16 nPlayers;
 #ifndef XWFEATURE_STANDALONE_ONLY
     Connectedness role;
@@ -47,12 +49,15 @@ struct NewGameCtx {
 };
 
 static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
-                       XP_Bool enable, XP_Bool force );
+                       NewGameEnable enable, XP_Bool force );
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
+static void setRoleStrings( NewGameCtx* ngc );
+
 
 NewGameCtx*
 newg_make( MPFORMAL XP_Bool isNewGame, 
+           XW_UtilCtxt* util,
            NewGameEnableColProc enableColProc, 
            NewGameEnableAttrProc enableAttrProc, 
            NewGameGetColProc getColProc, NewGameSetColProc setColProc,
@@ -66,9 +71,9 @@ newg_make( MPFORMAL XP_Bool isNewGame,
     result->setColProc = setColProc;
     result->getColProc = getColProc;
     result->setAttrProc = setAttrProc;
-/*     result->getAttrProc = getAttrProc; */
     result->closure = closure;
     result->isNewGame = isNewGame;
+    result->util = util;
     MPASSIGN(result->mpool, mpool);
 
     return result;
@@ -77,14 +82,7 @@ newg_make( MPFORMAL XP_Bool isNewGame,
 void
 newg_destroy( NewGameCtx* ngc )
 {
-#ifdef PLATFORM_PALM
-    for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        XP_UCHAR* passwd = ngc->passwds[i];
-        if ( !!passwd ) {
-            XP_FREE( ngc->mpool, passwd );
-        }
-    }
-#endif
+    XP_FREE( ngc->mpool, ngc );
 } /* newg_destroy */
 
 void
@@ -97,14 +95,17 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     ngc->nPlayers = gi->nPlayers;
     value.ng_u16 = ngc->nPlayers;
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYERS, value );
-    (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame );
+    (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame?
+                            NGEnableEnabled : NGEnableDisabled );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     ngc->role = gi->serverRole;
     value.ng_role = ngc->role;
     (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
-    (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame );
+    (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame? 
+                            NGEnableEnabled : NGEnableDisabled );
 #endif
+    setRoleStrings( ngc );
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
 
@@ -143,7 +144,7 @@ cpToGI( NGValue value, const void* cbClosure )
     switch ( cpcl->col ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
-        pl->isLocal = value.ng_bool;
+        pl->isLocal = !value.ng_bool;
         break;
 #endif
     case NG_COL_NAME:
@@ -208,6 +209,7 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( NG_ATTR_ROLE == attr ) { 
         ngc->role = value.ng_role;
+        setRoleStrings( ngc );
 #endif
     } else {
         XP_ASSERT( 0 );
@@ -333,9 +335,9 @@ newg_juggle( NewGameCtx* ngc )
 
 static void
 enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
-           XP_Bool enable, XP_Bool force )
+           NewGameEnable enable, XP_Bool force )
 {
-    XP_Bool* esp = &ngc->enabled[col][player];
+    NewGameEnable* esp = &ngc->enabled[col][player];
     if ( force || (*esp != enable) ) {
         (*ngc->enableColProc)( ngc->closure, player, col, enable );
     }
@@ -354,22 +356,28 @@ adjustAllRows( NewGameCtx* ngc, XP_Bool force )
 static void
 adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
 {
-    XP_Bool enable[NG_NUM_COLS];
+    NewGameEnable enable[NG_NUM_COLS];
     NewGameColumn col;
-    XP_MEMSET( enable, 0, sizeof(enable) );
     XP_Bool isLocal = XP_TRUE;
     DeepValue dValue;
 
+    for ( col = 0; col < NG_NUM_COLS; ++col ) {
+        enable[col] = NGEnableHidden;
+    }
+
     /* If there aren't this many players, all are disabled */
     if ( player >= ngc->nPlayers ) {
-        /* do nothing: all are false */
-
+        /* do nothing: all are hidden above */
     } else {
-
 #ifndef XWFEATURE_STANDALONE_ONLY
-        /* If standalone or client, remote is disabled */
+        /* If standalone or client, remote is hidden.  If server but not
+           new game, it's disabled */
         if ( ngc->role == SERVER_ISSERVER ) {
-            enable[NG_COL_REMOTE] = XP_TRUE;
+            if ( ngc->isNewGame ) {
+                enable[NG_COL_REMOTE] = NGEnableEnabled;
+            } else {
+                enable[NG_COL_REMOTE] = NGEnableDisabled;
+            }
             dValue.col = NG_COL_REMOTE;
             (*ngc->getColProc)( ngc->closure, player, NG_COL_REMOTE,
                                 deepCopy, &dValue );
@@ -377,23 +385,68 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
         }
 #endif
 
-        /* If local is enabled and not set, all else is disabled */
+        /* If remote is enabled and set, then if it's a new game all else is
+           hidden.  But if it's not a new game, they're disabled.  Password is
+           always hidden if robot is set. */
         if ( isLocal ) {
-            enable[NG_COL_NAME] = XP_TRUE;
-            enable[NG_COL_ROBOT] = XP_TRUE;
+            NewGameEnable passwdEn;
+            /* No changing name or robotness since they're sent to remote
+               host. */
+            enable[NG_COL_NAME] = NGEnableEnabled;
+            enable[NG_COL_ROBOT] = NGEnableEnabled;
+
             dValue.col = NG_COL_ROBOT;
             (*ngc->getColProc)( ngc->closure, player, NG_COL_ROBOT, deepCopy,
                                 &dValue );
             if ( !dValue.value.ng_bool ) {
-                enable[NG_COL_PASSWD] = XP_TRUE;
+                /* It is's a robot, leave it hidden */
+                enable[NG_COL_PASSWD] = passwdEn = ngc->isNewGame?
+                    NGEnableEnabled : NGEnableDisabled;
+            }
+                                  
+        } else {
+            if ( ngc->isNewGame ) {
+                /* leave 'em hidden */
+            } else {
+                enable[NG_COL_NAME] = NGEnableDisabled;
+                enable[NG_COL_ROBOT] = NGEnableDisabled;
+                /* leave passwd hidden */
             }
         }
-    } 
+    }
 
     for ( col = 0; col < NG_NUM_COLS; ++col ) {
         enableOne( ngc, player, col, enable[col], force );
     }
 } /* adjustOneRow */
+
+static void
+setRoleStrings( NewGameCtx* ngc )
+{
+    XP_U16 strID;
+    NGValue value;
+    void* closure = ngc->closure;
+    /* Tell client to set/change players label text, and also to add remote
+     checkbox column header if required. */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    (*ngc->enableAttrProc)( closure, NG_ATTR_REMHEADER, 
+                            ngc->role == SERVER_ISSERVER?
+                            NGEnableEnabled : NGEnableHidden );
+#endif
+
+    if ( 0 ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
+    } else if ( ngc->role == SERVER_ISCLIENT ) {
+        strID = STR_LOCALPLAYERS;
+#endif
+    } else {
+        strID = STR_TOTALPLAYERS;
+    }
+
+    value.ng_cp = util_getUserString( ngc->util, strID );
+    (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYHEADER, value );
+} /* setRoleStrings */
 
 #ifdef CPLUS
 }
