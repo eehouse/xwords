@@ -28,7 +28,9 @@ stuffTextInField( HWND hDlg, StrBoxInit* init )
     XP_U16 len, crlen;
     XP_UCHAR* sbuf;
     wchar_t* wbuf;
+#ifdef MEM_DEBUG
     CEAppGlobals* globals = init->globals;
+#endif
 
     sbuf = XP_MALLOC( globals->mpool, nBytes + 1 );
     stream_getBytes( init->stream, sbuf, nBytes );

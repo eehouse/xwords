@@ -27,6 +27,8 @@
 extern "C" {
 #endif
 
+#define NG_NUM_COLS ((XP_U16)(NG_COL_PASSWD+1))
+
 struct NewGameCtx {
     NewGameEnableColProc enableColProc;
     NewGameEnableAttrProc enableAttrProc;
@@ -156,8 +158,6 @@ cpToGI( NGValue value, const void* cbClosure )
     case NG_COL_ROBOT:
         pl->isRobot = value.ng_bool;
         break;
-    default:
-        XP_ASSERT(0);
     }
 
     if ( !!strAddr ) {
@@ -259,8 +259,6 @@ deepCopy( NGValue value, const void* closure )
     case NG_COL_PASSWD:
         dvp->value.ng_cp = copyString( MPPARM(dvp->mpool) value.ng_cp );
         break;
-    default:
-        XP_ASSERT(0);
     }
 }
 
