@@ -510,12 +510,15 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     rc.right = rc.left + FORCE_WIDTH;
     rc.bottom = rc.top + FORCE_HEIGHT;
 #else
+#if defined DEBUG
+
     if ( g_dbWidth != 0 ) {
         rc.right = rc.left + g_dbWidth;
     }
     if ( g_dbHeight != 0 ) {
         rc.bottom = rc.top + g_dbHeight;
     }
+#endif
 #endif
 #endif
 

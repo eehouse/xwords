@@ -48,7 +48,6 @@ typedef enum {
     NG_COL_NAME
     ,NG_COL_ROBOT
     ,NG_COL_PASSWD
-    ,NG_NUM_COLS
 } NewGameColumn;
 
 typedef enum {
@@ -58,7 +57,6 @@ typedef enum {
 #endif
     NG_ATTR_NPLAYERS
     ,NG_ATTR_NPLAYHEADER
-    ,NG_ATTR_CANJUGGLE
 } NewGameAttr;
 
 typedef enum { NGEnableHidden, 

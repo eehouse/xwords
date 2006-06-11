@@ -278,7 +278,7 @@ handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals,
 static XP_U16 
 resIDForCol( XP_U16 player, NewGameColumn col )
 {
-    XP_U16 resID;
+    XP_U16 resID = 0;
     switch ( col ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
@@ -294,16 +294,15 @@ resIDForCol( XP_U16 player, NewGameColumn col )
     case NG_COL_PASSWD:
         resID = PASS_EDIT1;
         break;
-    default:
-        XP_ASSERT( 0 );
     }
+    XP_ASSERT( resID != 0 );
     return resID + ( player * NUM_COLS );
 } /* resIDForCol */
 
 static XP_U16 
 resIDForAttr( NewGameAttr attr )
 {
-    XP_U16 resID;
+    XP_U16 resID = 0;
     switch( attr ) {
     case NG_ATTR_NPLAYERS:
         resID = IDC_NPLAYERSCOMBO;
@@ -319,9 +318,8 @@ resIDForAttr( NewGameAttr attr )
     case NG_ATTR_NPLAYHEADER:
         resID = IDC_TOTAL_LABEL;
         break;
-    default:
-        XP_ASSERT(0);
     }
+    XP_ASSERT( resID != 0 );
     return resID;
 } /* resIDForAttr */
 
