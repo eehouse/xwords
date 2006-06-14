@@ -574,7 +574,9 @@ game_info( GtkWidget* widget, GtkAppGlobals* globals )
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
     if ( newGameDialog( globals, XP_FALSE ) ) {
-        (void)server_do( globals->cGlobals.game.server ); /* assign tiles, etc. */
+        if ( server_do( globals->cGlobals.game.server ) ) {
+            board_draw( globals->cGlobals.game.board );
+        }
     }
 }
 
