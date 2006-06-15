@@ -229,9 +229,10 @@ randIntArray( XP_U16* rnums, XP_U16 count )
     }
 
     do {
-        for ( i = 1; i < count; ++i ) {
+        for ( i = count; i > 0 ; ) {
             XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % i;
             XP_U16 tmp = rnums[rIndex];
+            --i;
             rnums[rIndex] = rnums[i];
             rnums[i] = tmp;
         }
@@ -312,8 +313,7 @@ newg_juggle( NewGameCtx* ngc )
             (*ngc->getColProc)(closure, pos[0], col, deepCopy, &tmpValues[col] );
         }
 
-        cur = 0;
-        while ( ++cur < nPlayers ) {
+        for ( cur = 0; ++cur < nPlayers; ) {
             XP_LOGF( "%s: copying player %d to player %d", __FUNCTION__, 
                      pos[cur], pos[cur-1] );
             copyFromTo( ngc, pos[cur], pos[cur-1] );
