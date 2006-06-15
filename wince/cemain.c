@@ -1880,16 +1880,15 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 XP_MEMSET( &state, 0, sizeof(state) );
                 state.globals = globals;
-                state.isNewGame = XP_FALSE;
 
                 DialogBoxParam(globals->hInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
                                (DLGPROC)GameInfo, (long)&state );
 
-                if ( !state.userCancelled && state.prefsChanged ) {
-                    /* need to update some prefs? */
-/*                     if ( state.colorsChanged ) { */
+                if ( !state.userCancelled ) { 
+                    if ( state.prefsChanged ) {
                         updateForColors( globals );
-/*                     } */
+                    }
+                    draw = server_do( globals->game.server );
                 }
             }
                 break;
