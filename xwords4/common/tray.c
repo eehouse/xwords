@@ -565,31 +565,12 @@ invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1,
     board_invalTrayTiles( board, bits );
 } /* invalTrayTilesBetween */
 
-static void
-juggleTiles( Tile* tiles, XP_U16 nTiles )
-{
-    Tile newTiles[MAX_TRAY_TILES];
-
-    XP_ASSERT( nTiles <= MAX_TRAY_TILES );
-    XP_MEMCPY( newTiles, tiles, nTiles * sizeof(newTiles[0]) );
-
-    /* Pull out a tile at random, and swap the top tile down into its place so
-       the array doesn't get sparse. */
-    while ( nTiles > 0 ) {
-        XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % nTiles;
-        *tiles++ = newTiles[rIndex];
-        newTiles[rIndex] = newTiles[--nTiles];
-    }
-
-} /* juggleTiles */
-
 XP_Bool
 board_juggleTray( BoardCtxt* board )
 {
     XP_Bool result = XP_FALSE;
     XP_S16 turn = board->selPlayer;
     
-
     if ( checkRevealTray( board ) ) {
         XP_S16 nTiles;
         XP_U16 dividerLoc = board->dividerLoc[board->selPlayer];
@@ -599,21 +580,14 @@ board_juggleTray( BoardCtxt* board )
         if ( nTiles > 1 ) {
             XP_S16 i;
             Tile tmpT[MAX_TRAY_TILES];
-            Tile newT[MAX_TRAY_TILES];
+            XP_U16 newT[MAX_TRAY_TILES];
 
-            /* create unique indices to be juggled; then juggle 'em until
-               changed. */
-            for ( i = 0; i < nTiles; ++i ) {
-                tmpT[i] = newT[i] = (Tile)i;
-            }
-            do {
-                juggleTiles( newT, nTiles );
-            } while ( XP_MEMCMP( newT, tmpT, nTiles * sizeof(newT[0]) ) == 0 );
+            randIntArray( newT, nTiles );
 
             /* save copies of the tiles in juggled order */
             for ( i = 0; i < nTiles; ++i ) {
                 tmpT[i] = model_getPlayerTile( model, turn, 
-                                               dividerLoc + newT[i] );
+                                               (Tile)(dividerLoc + newT[i]) );
             }
 
             /* delete tiles off right end; put juggled ones back on the other */
