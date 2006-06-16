@@ -455,6 +455,24 @@ handleColChecked( GameInfoState* giState, XP_U16 id, XP_U16 base,
     newg_colChanged( giState->newGameCtx, player, col, value );
 }
 
+/* It's too much work at this point to get the icon button looking good,
+ * e.g. properly greyed-out when disabled.  So I'm sticking with the "J".
+ * Here's the code to start with if I get more ambitious.  Remember: the
+ * GIJUGGLE_BUTTON needs to have the BS_OWNERDRAW attribute for this to work.
+ */
+#ifdef OWNERDRAW_JUGGLE
+static void
+ceDrawIconButton( CEAppGlobals* globals, DRAWITEMSTRUCT* dis )
+{
+    HBITMAP bmp = LoadBitmap( globals->hInst, 
+                              MAKEINTRESOURCE(IDB_JUGGLEBUTTON) );
+    if ( !!bmp ) {
+        ceDrawBitmapInRect( dis->hDC, &dis->rcItem, bmp );
+        DeleteObject( bmp );
+    }
+} /* ceDrawColorButton */
+#endif
+
 LRESULT CALLBACK
 GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -494,6 +512,13 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             globals = giState->globals;
 
             switch (message) {
+
+#ifdef OWNERDRAW_JUGGLE
+            case WM_DRAWITEM:   /* for BS_OWNERDRAW style */
+                ceDrawIconButton( globals, (DRAWITEMSTRUCT*)lParam );
+                return TRUE;
+#endif
+
             case WM_COMMAND:
                 id = LOWORD(wParam);
                 switch( id ) {
