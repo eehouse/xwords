@@ -579,17 +579,15 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* rect,
 static void
 formatRemText( HDC hdc, XP_S16 nTilesLeft, XP_Bool isVertical, XP_UCHAR* buf )
 {
-    if ( nTilesLeft <= 0 ) {
-        buf[0] = 0;
-    } else { 
-        char* fmt;
-        if ( isVertical ) {
-            fmt = "Rem" XP_CR "%d";
-        } else {
-            fmt = "Rem:%d";
-        }
-        sprintf( buf, fmt, nTilesLeft );
+    char* fmt;
+    XP_ASSERT( nTilesLeft > 0 );
+
+    if ( isVertical ) {
+        fmt = "Rem" XP_CR "%d";
+    } else {
+        fmt = "Rem:%d";
     }
+    sprintf( buf, fmt, nTilesLeft );
 } /* formatRemText */
 
 DLSTATIC void
@@ -602,8 +600,12 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* r,
     HDC hdc = globals->hdc;
     XP_UCHAR buf[16];
 
-    formatRemText( hdc, nTilesLeft, dctx->scoreIsVertical, buf );
-    measureText( dctx, buf, CE_REM_PADDING, width, height );
+    if ( nTilesLeft > 0 ) {
+        formatRemText( hdc, nTilesLeft, dctx->scoreIsVertical, buf );
+        measureText( dctx, buf, CE_REM_PADDING, width, height );
+    } else {
+        *width = *height = 0;
+    }
 } /* ce_draw_measureRemText */
 
 DLSTATIC void
