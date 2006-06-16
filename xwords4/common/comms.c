@@ -125,12 +125,14 @@ static AddressRecord* getRecordFor( CommsCtxt* comms,
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
 static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
 static XP_U16 countAddrRecs( CommsCtxt* comms );
+#ifdef BEYOND_IR
 static void relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
                                XWHostID destID, void* data, int dlen );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 static void setHeartbeatTimer( CommsCtxt* comms );
+#endif
 
 /****************************************************************************
  *                               implementation 
@@ -992,24 +994,6 @@ channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
     }
 } /* channelToAddress */
 
-static XWHostID
-getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
-{
-    XWHostID id = HOST_ID_NONE;
-    if ( channelNo == CHANNEL_NONE ) {
-        id = HOST_ID_SERVER;
-    } else {
-        AddressRecord* recs;
-        for ( recs = comms->recs; !!recs; recs = recs->next ) {
-            if ( recs->channelNo == channelNo ) {
-                id = recs->hostID;
-            }
-        }
-    }
-    XP_LOGF( "getDestID(%d) => %x", channelNo, id );
-    return id;
-} /* getDestID */
-
 static AddressRecord* 
 getRecordFor( CommsCtxt* comms, XP_PlayerAddr channelNo )
 {
@@ -1039,6 +1023,24 @@ countAddrRecs( CommsCtxt* comms )
 } /* countAddrRecs */
 
 #ifdef BEYOND_IR
+static XWHostID
+getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
+{
+    XWHostID id = HOST_ID_NONE;
+    if ( channelNo == CHANNEL_NONE ) {
+        id = HOST_ID_SERVER;
+    } else {
+        AddressRecord* recs;
+        for ( recs = comms->recs; !!recs; recs = recs->next ) {
+            if ( recs->channelNo == channelNo ) {
+                id = recs->hostID;
+            }
+        }
+    }
+    XP_LOGF( "getDestID(%d) => %x", channelNo, id );
+    return id;
+} /* getDestID */
+
 static XP_Bool
 send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID, 
                 void* data, int dlen )
