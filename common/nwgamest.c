@@ -217,28 +217,6 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
     adjustAllRows( ngc, XP_FALSE );
 }
 
-/* This belongs as a util the tray juggling code can also call */
-static void
-randIntArray( XP_U16* rnums, XP_U16 count )
-{
-    XP_U16 array[count];        /* C99 thing */
-    XP_U16 i;
-
-    for ( i = 0; i < count; ++i ) {
-        rnums[i] = array[i] = i;           /* initial state for comparison */
-    }
-
-    do {
-        for ( i = count; i > 0 ; ) {
-            XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % i;
-            XP_U16 tmp = rnums[rIndex];
-            --i;
-            rnums[rIndex] = rnums[i];
-            rnums[i] = tmp;
-        }
-    } while ( XP_MEMCMP( rnums, array, count * sizeof(array[0]) ) == 0 );
-} /* randIntArray */
-
 typedef struct DeepValue {
     NGValue value;
     NewGameColumn col;
