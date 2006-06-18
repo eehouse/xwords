@@ -196,7 +196,6 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 
     if ( !giState->isNewGame ) {
         ceEnOrDisable( hDlg, IDC_DICTCOMBO, XP_FALSE );
-        ceEnOrDisable( hDlg, GIJUGGLE_BUTTON, XP_FALSE );
     }
 } /* loadFromGameInfo */
 
@@ -317,6 +316,9 @@ resIDForAttr( NewGameAttr attr )
 #endif
     case NG_ATTR_NPLAYHEADER:
         resID = IDC_TOTAL_LABEL;
+        break;
+    case NG_ATTR_CANJUGGLE:
+        resID = GIJUGGLE_BUTTON;
         break;
     }
     XP_ASSERT( resID != 0 );

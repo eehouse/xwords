@@ -57,6 +57,7 @@ typedef enum {
 #endif
     NG_ATTR_NPLAYERS
     ,NG_ATTR_NPLAYHEADER
+    ,NG_ATTR_CANJUGGLE
 } NewGameAttr;
 
 typedef enum { NGEnableHidden, 
