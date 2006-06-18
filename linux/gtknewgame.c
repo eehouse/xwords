@@ -54,6 +54,7 @@ typedef struct GtkNewGameState {
     GtkWidget* nPlayersMenu;
     GtkWidget* roleMenu;
     GtkWidget* nPlayersLabel;
+    GtkWidget* juggleButton;
 
     GtkWidget* roleMenuItems[3];
 } GtkNewGameState;
@@ -212,7 +213,6 @@ makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
     GtkWidget* nPlayersMenu;
     GtkWidget* boardSizeMenu;
     GtkWidget* opt;
-    GtkWidget* juggleButton;
     CurGameInfo* gi;
     short i;
     char* roles[] = { "Standalone", "Host", "Guest" };
@@ -264,10 +264,10 @@ makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
     gtk_widget_show( opt );
     gtk_box_pack_start( GTK_BOX(hbox), opt, FALSE, TRUE, 0 );
 
-    juggleButton = makeButton( "Juggle", GTK_SIGNAL_FUNC(handle_juggle),
-                               state );
-    gtk_box_pack_start( GTK_BOX(hbox), juggleButton, FALSE, TRUE, 0 );
-    gtk_widget_set_sensitive( juggleButton, isNewGame );
+    state->juggleButton = makeButton( "Juggle", 
+                                      GTK_SIGNAL_FUNC(handle_juggle),
+                                      state );
+    gtk_box_pack_start( GTK_BOX(hbox), state->juggleButton, FALSE, TRUE, 0 );
     gtk_widget_show( hbox );
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -440,14 +440,17 @@ static void
 gtk_newgame_attr_enable( void* closure, NewGameAttr attr, NewGameEnable enable )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
-    GtkWidget* menu = NULL;
+    GtkWidget* widget = NULL;
     if ( attr == NG_ATTR_NPLAYERS ) {
-        menu = state->nPlayersMenu;
+        widget = state->nPlayersMenu;
     } else if ( attr == NG_ATTR_ROLE ) {
-        menu = state->roleMenu;
+        widget = state->roleMenu;
+    } else if ( attr == NG_ATTR_CANJUGGLE ) {
+        widget = state->juggleButton;
     }
-    if ( !!menu ) {
-        gtk_widget_set_sensitive( menu, enable == NGEnableEnabled );
+
+    if ( !!widget ) {
+        gtk_widget_set_sensitive( widget, enable == NGEnableEnabled );
     }
 }
 

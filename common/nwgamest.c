@@ -46,6 +46,7 @@ struct NewGameCtx {
     Connectedness role;
 #endif
     XP_Bool isNewGame;
+    NewGameEnable juggleEnabled;
 
     MPSLOT
 };
@@ -55,7 +56,7 @@ static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
 static void setRoleStrings( NewGameCtx* ngc );
-
+static void considerEnableJuggle( NewGameCtx* ngc );
 
 NewGameCtx*
 newg_make( MPFORMAL XP_Bool isNewGame, 
@@ -108,6 +109,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
                             NGEnableEnabled : NGEnableDisabled );
 #endif
     setRoleStrings( ngc );
+    considerEnableJuggle( ngc );   
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
 
@@ -169,19 +171,20 @@ cpToGI( NGValue value, const void* cbClosure )
 void
 newg_store( NewGameCtx* ngc, CurGameInfo* gi )
 {
-    XP_U16 nPlayers;
     void* closure = ngc->closure;
     NGCopyClosure cpcl;
 
     cpcl.ngc = ngc;
     cpcl.gi = gi;
 
-    gi->nPlayers = nPlayers = ngc->nPlayers;
+    gi->nPlayers = ngc->nPlayers;
 #ifndef XWFEATURE_STANDALONE_ONLY
     gi->serverRole = ngc->role;
 #endif
 
-    for ( cpcl.player = 0; cpcl.player < nPlayers; ++cpcl.player ) {
+    for ( cpcl.player = 0; 
+          cpcl.player < (sizeof(gi->players)/sizeof(gi->players[0]));
+          ++cpcl.player ) {
         for ( cpcl.col = 0; cpcl.col < NG_NUM_COLS; ++cpcl.col ) {
             (*ngc->getColProc)( closure, cpcl.player, cpcl.col, 
                                 cpToGI, &cpcl );
@@ -206,6 +209,7 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
     XP_LOGF( "%s(%d)", __FUNCTION__ );
     if ( attr == NG_ATTR_NPLAYERS ) {
         ngc->nPlayers = value.ng_u16;
+        considerEnableJuggle( ngc );
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( NG_ATTR_ROLE == attr ) { 
         ngc->role = value.ng_role;
@@ -421,6 +425,19 @@ setRoleStrings( NewGameCtx* ngc )
     value.ng_cp = util_getUserString( ngc->util, strID );
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYHEADER, value );
 } /* setRoleStrings */
+
+static void
+considerEnableJuggle( NewGameCtx* ngc )
+{
+    NewGameEnable newEnable;
+    newEnable = (ngc->isNewGame && ngc->nPlayers > 1)?
+        NGEnableEnabled : NGEnableDisabled;
+
+    if ( newEnable != ngc->juggleEnabled ) {
+        (*ngc->enableAttrProc)( ngc->closure, NG_ATTR_CANJUGGLE, newEnable );
+        ngc->juggleEnabled = newEnable;
+    }
+} /* considerEnableJuggle */
 
 #ifdef CPLUS
 }
