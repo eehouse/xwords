@@ -165,5 +165,5 @@ clean :
 	rm -rf $(OBJDIR) $(TARGET)
 
 help:
-	@echo "try 'make TARGET_OS=wince'"
-	@echo "or 'make TARGET_OS=win32'"
+	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
+	@echo "or 'make TARGET_OS=win32 [DEBUG=TRUE]'"
