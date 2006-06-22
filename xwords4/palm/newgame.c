@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999 - 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,8 +21,8 @@
 #include <PalmTypes.h>
 #include <Form.h>
 #include <List.h>
-#include <Chars.h>		/* for nextFieldChr */
-#include <Graffiti.h>		/* for GrfSetState */
+#include <Chars.h>	    /* for nextFieldChr */
+#include <Graffiti.h>   /* for GrfSetState */
 #include <Event.h>
 #ifdef HS_DUO_SUPPORT
 # include <Hs.h>
@@ -43,8 +44,6 @@
 
 static void handlePasswordTrigger( PalmAppGlobals* globals, 
                                    UInt16 controlID );
-static void adjustVisibility( PalmAppGlobals* globals, XP_Bool canDraw );
-static void setNPlayersAndAdjust( PalmAppGlobals* globals, Int16 chosen );
 static void updatePlayerInfo( PalmAppGlobals* globals );
 static XP_Bool tryFieldNavigationKey( XP_U16 key );
 static void loadNewGameState( PalmAppGlobals* globals );
@@ -57,7 +56,22 @@ static XP_Bool considerGadgetFocus( PalmNewGameState* state, EventType* event );
 # define tryDuoRockerKey(g,key) XP_FALSE
 #endif
 
+static void palmEnableColProc( void* closure, XP_U16 player, 
+                               NewGameColumn col, NewGameEnable enable );
+static void palmEnableAttrProc( void* closure, NewGameAttr attr, 
+                                NewGameEnable enable );
+static void palmGetColProc( void* closure, XP_U16 player, NewGameColumn col, 
+                            NgCpCallbk cpcb, const void* cbClosure );
+static void palmSetColProc( void* closure, XP_U16 player, NewGameColumn col, 
+                            const NGValue value );
+static void palmSetAttrProc( void* closure, NewGameAttr attr, 
+                             const NGValue value );
+static void handleRobotChanged( PalmNewGameState* state, XP_U16 controlID,
+                                XP_Bool on );
+
 #ifndef XWFEATURE_STANDALONE_ONLY
+static void handleRemoteChanged( PalmNewGameState* state, XP_U16 controlID,
+                                 XP_Bool on );
 static Boolean checkHiliteGadget(PalmAppGlobals* globals, EventType* event,
                                  PalmNewGameState* state );
 static void drawConnectGadgets( PalmAppGlobals* globals );
@@ -82,15 +96,11 @@ newGameHandleEvent( EventPtr event )
     EventType eventToPost;	/* used only with OK button */
     PalmAppGlobals* globals;
     FormPtr form;
-    LocalPlayer* lp;
     CurGameInfo* gi;
     PalmNewGameState* state;
     Int16 chosen;
-    XP_U16 i;
     XP_U16 controlID;
-    XP_U16 index;
     Boolean on;
-    Boolean canEdit;
 
     CALLBACK_PROLOGUE();
 
@@ -104,66 +114,25 @@ newGameHandleEvent( EventPtr event )
 
         GlobalPrefsToLocal( globals );
 
-        loadNewGameState( globals );
-
         form = FrmGetActiveForm();
+
+        XP_ASSERT( !state->ngc );
+        XP_MEMSET( state, 0, sizeof(*state) );
+
+        state->form = form;
+
 #ifndef XWFEATURE_STANDALONE_ONLY
         sizeGadgetsForStrings( form,
                                getActiveObjectPtr( XW_SERVERTYPES_LIST_ID ),
                                XW_SOLO_GADGET_ID );
 #endif
-        state->playerNumList = 
-            getActiveObjectPtr( XW_NPLAYERS_LIST_ID );
-        XP_ASSERT( state->playerNumList != NULL );
-
-        setSelectorFromList( XW_NPLAYERS_SELECTOR_ID, 
-                             state->playerNumList,
-                             gi->nPlayers - 1 );
+        loadNewGameState( globals );
 
         XP_ASSERT( !!state->dictName );
         setNameThatFits( state );
 
         XP_ASSERT( !!globals->game.server );
-
-        canEdit = state->curServerHilite == SERVER_STANDALONE
-            || globals->isNewGame;
-
-        /* load the fields from what we already have */
-        for ( lp = gi->players, i = 0; i < MAX_NUM_PLAYERS; ++lp, ++i ) {
-            XP_U16 offset = i * NUM_PLAYER_COLS;
-            ControlPtr check;
-            XP_UCHAR* name;
-            FieldPtr nameField;
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-            Boolean isLocal = lp->isLocal;
-            check = getActiveObjectPtr(XW_REMOTE_1_CHECKBOX_ID + offset);
-            CtlSetValue( check, !isLocal );
-#endif
-            check = getActiveObjectPtr(XW_ROBOT_1_CHECKBOX_ID+offset);
-            CtlSetValue( check, lp->isRobot );
-
-            nameField = getActiveObjectPtr(XW_PLAYERNAME_1_FIELD_ID+offset);
-            name = lp->name;
-            if ( !!name && !!*name ) {
-                FldInsert( nameField, (const char*)name, 
-                           XP_STRLEN((const char*)name) );
-            }
-            setFieldEditable( nameField, canEdit );
-
-            /* set up the password */
-            if ( !!lp->password ) {
-                CtlSetLabel( getActiveObjectPtr( 
-                                XW_PLAYERPASSWD_1_TRIGGER_ID+offset ),
-                             "*" );
-            }
-        }
-        /* 	form = FrmGetActiveForm(); */
-        FrmSetFocus(form, FrmGetObjectIndex(form, XW_PLAYERNAME_1_FIELD_ID));
-	
     case frmUpdateEvent:
-        adjustVisibility( globals, XP_FALSE );
-
         GrfSetState( false, false, false );
         FrmDrawForm( FrmGetActiveForm() );
 
@@ -207,6 +176,7 @@ newGameHandleEvent( EventPtr event )
         case XW_REMOTE_3_CHECKBOX_ID:
         case XW_REMOTE_4_CHECKBOX_ID:
 #endif
+        case XW_GINFO_JUGGLE_ID:
         case XW_DICT_SELECTOR_ID:
         case XW_NPLAYERS_SELECTOR_ID:
             if ( !globals->isNewGame ) {
@@ -226,20 +196,14 @@ newGameHandleEvent( EventPtr event )
         case XW_ROBOT_2_CHECKBOX_ID:
         case XW_ROBOT_3_CHECKBOX_ID:
         case XW_ROBOT_4_CHECKBOX_ID:
-            index = (controlID - XW_ROBOT_1_CHECKBOX_ID) / NUM_PLAYER_COLS;
-            state->isRobot[index] = on;
-            adjustVisibility( globals, XP_TRUE );
+            handleRobotChanged( state, controlID, on );
             break;
 #ifndef XWFEATURE_STANDALONE_ONLY
         case XW_REMOTE_1_CHECKBOX_ID:
         case XW_REMOTE_2_CHECKBOX_ID:
         case XW_REMOTE_3_CHECKBOX_ID:
         case XW_REMOTE_4_CHECKBOX_ID:
-            XP_ASSERT( state->curServerHilite == SERVER_ISSERVER );
-            index = (controlID - XW_REMOTE_1_CHECKBOX_ID) / NUM_PLAYER_COLS;
-            state->isLocal[index] = !on;
-            state->curNPlayersLocal += on? -1:1;
-            adjustVisibility( globals, XP_TRUE );
+            handleRemoteChanged( state, controlID, on );
             break;
 #endif
 
@@ -247,17 +211,12 @@ newGameHandleEvent( EventPtr event )
             XP_ASSERT( globals->isNewGame );
             chosen = LstPopupList( state->playerNumList );
             if ( chosen >= 0 ) {
-                setSelectorFromList( XW_NPLAYERS_SELECTOR_ID, 
+                NGValue value;
+                setSelectorFromList( XW_NPLAYERS_SELECTOR_ID,
                                      state->playerNumList,
                                      chosen );
-                ++chosen;	/* chosen is 0-based */
-                if (state->curServerHilite==SERVER_ISCLIENT) {
-                    state->curNPlayersLocal = chosen;
-                    XP_ASSERT( state->curNPlayersLocal <= MAX_NUM_PLAYERS );
-                } else {
-                    state->curNPlayersTotal = chosen;
-                }
-                setNPlayersAndAdjust( globals, chosen );
+                value.ng_u16 = chosen + 1;
+                newg_attrChanged( state->ngc, NG_ATTR_NPLAYERS, value );
             }
             break;
 
@@ -270,6 +229,10 @@ newGameHandleEvent( EventPtr event )
                are no preferences to set. The results should all be
                cancellable, so don't delete the existing dictionary (if
                any) until OK is chosen */
+            break;
+
+        case XW_GINFO_JUGGLE_ID:
+            newg_juggle( state->ngc );
             break;
 
         case XW_OK_BUTTON_ID:
@@ -285,16 +248,11 @@ newGameHandleEvent( EventPtr event )
                 state->forwardChange = false;
             }
 
+            updatePlayerInfo( globals );
             if ( globals->isNewGame ) {
-                updatePlayerInfo( globals );
-
                 eventToPost.eType = newGameOkEvent;
                 EvtAddEventToQueue( &eventToPost );
                 globals->postponeDraw = true;
-
-            } else if ( state->curServerHilite
-                        == SERVER_STANDALONE ) {
-                updatePlayerInfo( globals );
             }
 
             unloadNewGameState( globals );
@@ -370,73 +328,6 @@ setNameThatFits( PalmNewGameState* state )
     CtlSetLabel( getActiveObjectPtr( XW_DICT_SELECTOR_ID ), 
                  (const char*)state->shortDictName );
 } /* setNameThatFits */
-
-static XP_U16
-countLocalIn( PalmNewGameState* state, XP_U16 nPlayers )
-{
-    XP_U16 nLocal = 0;
-    XP_U16 i;
-
-    for ( i = 0; i < nPlayers; ++i ) {
-        if ( state->isLocal[i] ) {
-            ++nLocal;
-        }
-    }
-
-    return nLocal;
-} /* countLocalIn */
-
-/* If we're in GUEST mode, only local players are visible, and so this means
- * an increase in the number of local players.  If we're in a different mode
- * then it means a simple increase in all players.  Only the first case is
- * difficult, because if the number's getting larger we need to confirm that
- * there's another local player to show, and if there's not we need to
- * convert the first non-local player.
- */
-static void
-setNPlayersAndAdjust( PalmAppGlobals* globals, Int16 chosen )
-{
-#ifndef XWFEATURE_STANDALONE_ONLY
-    PalmNewGameState* state = &globals->newGameState;
-
-    if ( state->curServerHilite == SERVER_ISCLIENT ) {
-        XP_U16 i;
-        XP_S16 nRemote = 0;
-        XP_S16 nLocal = 0;
-
-        /* find the first non-local player */
-        for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-            if ( state->isLocal[i] ) {
-                ++nLocal;
-            } else {
-                ++nRemote;
-            }
-        }
-
-        /* Make as many local as necessary */
-        for ( i = 0; nLocal < chosen && i < MAX_NUM_PLAYERS; ++i ) {
-            if ( !state->isLocal[i] ) {
-                state->isLocal[i] = true;
-                setBooleanCtrl( XW_REMOTE_1_CHECKBOX_ID +
-                                (i * NUM_PLAYER_COLS), false );
-                ++nLocal;
-                --nRemote;
-            }
-        }
-
-        state->curNPlayersLocal = chosen;
-        XP_ASSERT( state->curNPlayersLocal <= MAX_NUM_PLAYERS );
-        state->curNPlayersTotal = chosen + nRemote;
-        XP_ASSERT( state->curNPlayersTotal <= MAX_NUM_PLAYERS );
-    } else {
-        state->curNPlayersTotal = chosen;
-        state->curNPlayersLocal = countLocalIn( state, chosen );
-        XP_ASSERT( state->curNPlayersLocal <= MAX_NUM_PLAYERS );
-    }
-#endif
-
-    adjustVisibility( globals, XP_TRUE );
-} /* setNPlayersAndAdjust */
 
 static Boolean
 tryFieldNavigationKey( XP_U16 key )
@@ -536,108 +427,7 @@ tryDuoRockerKey( PalmAppGlobals* globals, XP_U16 key )
     }
     return result;
 } /* tryDuoRockerKey */
-#endif
-
-static void
-adjustVisibility( PalmAppGlobals* globals, XP_Bool canDraw )
-{
-    FormPtr form = FrmGetActiveForm();
-    short i;
-    PalmNewGameState* state = &globals->newGameState;
-    XP_Bool isNewGame = globals->isNewGame;
-
-    Connectedness curServerHilite = state->curServerHilite;
-    Boolean canShowRemote = curServerHilite != SERVER_STANDALONE;
-    Boolean isClient = curServerHilite == SERVER_ISCLIENT;
-    XP_U16 nShown = 0;
-    Boolean canEdit = (curServerHilite == SERVER_STANDALONE) || isNewGame;
-    XP_U16 nToShow = (isClient && isNewGame)? 
-        state->curNPlayersLocal:state->curNPlayersTotal;
-
-    /* It's illegal for there to be 0 players selected.  So if that ever
-       happens, make the first player local.  And beep? */
-    if ( nToShow == 0 ) {
-        XP_ASSERT( isClient );	/* the only way this can happen is if someone
-                                   sets type to SERVER_ISCLIENT when there
-                                   are no local players. */
-        state->isLocal[0] = true;
-        nToShow = state->curNPlayersLocal = 1;
-        setBooleanCtrl( XW_REMOTE_1_CHECKBOX_ID, false );
-    }
-
-    if ( canShowRemote && isClient ) {
-        canShowRemote = !isNewGame;
-    }
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-    disOrEnable( form, XW_LOCAL_LABEL_ID, canShowRemote );
-    if ( canShowRemote ) {
-        disOrEnable( form, XW_TOTALP_LABEL_ID, XP_TRUE );
-    } else {
-        disOrEnable( form, XW_LOCALP_LABEL_ID, XP_TRUE );
-    }
-#endif
-
-    for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        short offset = NUM_PLAYER_COLS * i;
-        Boolean lineVisible = nShown < nToShow;
-        Boolean isLocal;
-#ifndef XWFEATURE_STANDALONE_ONLY
-        Boolean showRemote;
-        Boolean remoteChecked = !state->isLocal[i];
-
-        if ( isClient && lineVisible && remoteChecked && isNewGame ) {
-            lineVisible = false;
-        }
-#endif
-        /* Since the user of a device can change at will whether a local
-           player is a robot, we don't show that attribute except when it's
-           for a local player; don't keep track of what's going on on the
-           other device. */
-        isLocal = lineVisible;
-#ifndef XWFEATURE_STANDALONE_ONLY
-        showRemote = lineVisible && canShowRemote;
-        isLocal = isLocal && 
-            (curServerHilite == SERVER_STANDALONE
-             || (showRemote && !remoteChecked)
-             || (isClient && isNewGame) );
-
-        /* show local/remote checkbox if not standalone */
-        disOrEnable( form, XW_REMOTE_1_CHECKBOX_ID + offset, 
-                     lineVisible && showRemote );
-#endif
-        /* show name no matter what (if line's showing) */
-        disOrEnable( form, XW_PLAYERNAME_1_FIELD_ID + offset, 
-                     lineVisible && (isLocal || !isNewGame) );
-
-        if ( lineVisible ) {
-            FieldPtr nameField = 
-                getActiveObjectPtr(XW_PLAYERNAME_1_FIELD_ID + offset);
-            setFieldEditable( nameField, canEdit );
-            if ( canDraw ) {
-                FldDrawField( nameField );
-            }
-        }
-
-        /* show robot checkbox if player is local */
-        disOrEnable( form, XW_ROBOT_1_CHECKBOX_ID + offset, isLocal );
-
-        /* and show password if not a robot (and if local) */
-        disOrEnable( form, XW_PLAYERPASSWD_1_TRIGGER_ID + offset, 
-                     isLocal && !state->isRobot[i] );
-
-        if ( lineVisible ) {
-            ++nShown;
-        }
-        XP_ASSERT( nShown <= MAX_NUM_PLAYERS );
-    }
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-    XP_ASSERT( nShown > 0 );
-    setSelectorFromList( XW_NPLAYERS_SELECTOR_ID, 
-                         state->playerNumList, nShown - 1 );
-#endif
-} /* adjustVisibility */
+#endif /* #ifdef HS_DUO_SUPPORT */
 
 /* 
  * Copy the local state into global state.
@@ -645,47 +435,16 @@ adjustVisibility( PalmAppGlobals* globals, XP_Bool canDraw )
 static void
 updatePlayerInfo( PalmAppGlobals* globals )
 {
-    UInt16 i;
     CurGameInfo* gi;
-    LocalPlayer* lp;
     PalmNewGameState* state = &globals->newGameState;
-    Connectedness curServerHilite = globals->newGameState.curServerHilite;
 
     gi = &globals->gameInfo;
-
-    gi->nPlayers = curServerHilite == SERVER_ISCLIENT?
-        state->curNPlayersLocal: state->curNPlayersTotal;
-    XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
+    newg_store( state->ngc, gi );
 
     gi->boardSize = globals->prefsDlgState->curBdSize;
-    gi->serverRole = curServerHilite;
 
     replaceStringIfDifferent( MPPARM(globals->mpool) &gi->dictName, 
                               globals->newGameState.dictName );
-
-    for ( i = 0, lp = gi->players; i < MAX_NUM_PLAYERS; ++i, ++lp ) {
-        XP_UCHAR* name = NULL;
-        XP_UCHAR* passwd = NULL;
-        short offset = NUM_PLAYER_COLS * i;
-        XP_Bool isLocal = state->isLocal[i];
-
-        if ( isLocal ) {
-            MemPtr p = getActiveObjectPtr( offset + 
-                                           XW_PLAYERNAME_1_FIELD_ID );
-            name = (XP_UCHAR*)FldGetTextPtr( p );
-                
-            if ( name == NULL ) {
-                name = (XP_UCHAR*)"";
-            }
-            passwd = globals->newGameState.passwds[i];
-        }
-
-        lp->isRobot = state->isRobot[i];
-        lp->isLocal = isLocal;
-
-        replaceStringIfDifferent(MPPARM(globals->mpool) &lp->name, name);
-        replaceStringIfDifferent(MPPARM(globals->mpool) &lp->password, passwd);
-    }
 } /* updatePlayerInfo */
 
 void
@@ -802,9 +561,13 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
     if ( hiliteID != state->curServerHilite ) {
         /* if it's not a new game, don't recognize the change */
         if ( isNewGame ) {
+            NGValue value;
+
             state->curServerHilite = hiliteID;
             drawConnectGadgets( globals );
-            adjustVisibility( globals, XP_TRUE );
+
+            value.ng_role = hiliteID;
+            newg_attrChanged( state->ngc, NG_ATTR_ROLE, value );
         } else {
             beep();
         }
@@ -838,6 +601,14 @@ checkHiliteGadget( PalmAppGlobals* globals, EventType* event,
 } /* checkHiliteGadget */
 #endif
 
+static void
+showMaskedPwd( XP_U16 objectID, XP_Bool set )
+{
+    const char* label = set? "*" : "   ";
+    /* control owns the string passed in */
+    CtlSetLabel( getActiveObjectPtr( objectID ), label );
+}
+
 /* If there's currently no password set, just let 'em set one.  If there is
  * one set, they need to know the old before setting the new.
  */
@@ -846,80 +617,274 @@ handlePasswordTrigger( PalmAppGlobals* globals, UInt16 controlID )
 {
     UInt16 playerNum;
     PalmNewGameState* state = &globals->newGameState;
-    XP_UCHAR** password;
     XP_UCHAR* name;
     FieldPtr nameField;
     XP_U16 len;
-    XP_UCHAR buf[32];
-    char* label;
 
     playerNum = (controlID - XW_PLAYERPASSWD_1_TRIGGER_ID) / NUM_PLAYER_COLS;
     XP_ASSERT( playerNum < MAX_NUM_PLAYERS );
 
-    password = &state->passwds[playerNum];
     nameField = getActiveObjectPtr( XW_PLAYERNAME_1_FIELD_ID +
                                     (NUM_PLAYER_COLS * playerNum) );
     name = (XP_UCHAR*)FldGetTextPtr( nameField );
 
-    len = sizeof(buf);
-    if ( askPassword( globals, name, true, buf, &len ) ) {
-
-        if ( len == 0 ) {
-            buf[0] = '\0';
-            label = "   ";
-        } else {
-            label = "*";
-        }
-        replaceStringIfDifferent(MPPARM(globals->mpool) password, 
-                                 (unsigned char*)buf);
-
-        /* control owns the string passed in */
-        CtlSetLabel( getActiveObjectPtr( controlID ), label );
+    len = sizeof(state->passwds[playerNum]);
+    if ( askPassword( globals, name, true, state->passwds[playerNum], &len )) {
+        showMaskedPwd( controlID, len > 0 );
     }
 } /* handlePasswordTrigger */
 
 static void
 unloadNewGameState( PalmAppGlobals* globals )
 {
-    XP_U16 i;
-    XP_UCHAR** passwd;
     PalmNewGameState* state = &globals->newGameState;
 
-    for ( passwd = state->passwds, i = 0;
-          i < MAX_NUM_PLAYERS; ++i, ++passwd ) {
-        if ( !!*passwd ) {
-            XP_FREE( globals->mpool, *passwd );
-            *passwd = NULL;
-        }
-    }
-    /*     XP_WARNF( "freeing string 0x%lx", state->dictName ); */
     XP_FREE( globals->mpool, state->dictName );
     state->dictName = NULL;
+
+    newg_destroy( state->ngc );
+    state->ngc = NULL;
 } /* unloadNewGameState */
+
+static XP_U16
+getBaseForCol( NewGameColumn col )
+{
+    XP_U16 resID = 0;
+    switch ( col ) {
+#ifndef XWFEATURE_STANDALONE_ONLY        
+    case NG_COL_REMOTE:
+        resID = XW_REMOTE_1_CHECKBOX_ID;
+        break;
+#endif
+    case NG_COL_NAME:
+        resID = XW_PLAYERNAME_1_FIELD_ID;
+        break;
+    case NG_COL_ROBOT:
+        resID = XW_ROBOT_1_CHECKBOX_ID;
+        break;
+    case NG_COL_PASSWD:
+        resID = XW_PLAYERPASSWD_1_TRIGGER_ID;
+        break;
+    default:
+        XP_ASSERT( XP_FALSE );
+    }
+    XP_ASSERT( !!resID );
+    return resID;
+} /* getBaseForCol */
+
+static XP_U16
+objIDForCol( XP_U16 player, NewGameColumn col )
+{
+    XP_U16 base = getBaseForCol( col );
+    return base + (NUM_PLAYER_COLS * player);
+}
+
+static ControlPtr
+getControlForCol( XP_U16 player, NewGameColumn col )
+{
+    XP_U16 objID = objIDForCol( player, col );
+    ControlPtr ctrl = getActiveObjectPtr( objID );
+    return ctrl;
+}
+
+static void
+palmEnableColProc( void* closure, XP_U16 player, NewGameColumn col, 
+                   NewGameEnable enable )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
+    PalmNewGameState* state = &globals->newGameState;
+    XP_U16 objID = objIDForCol( player, col );
+    disOrEnable( state->form, objID, enable == NGEnableEnabled );
+}
+ 
+/* Palm doesn't really do "disabled."  Things are visible or not.  But we
+ * want the player count dropdown in particular visible since it give
+ * information.  So different objects get treated differently.  The code
+ * handling ctlEnterEvent can disable for non-newgame dialogs even if a
+ * control is technically enabled.
+ */
+static void
+palmEnableAttrProc(void* closure, NewGameAttr attr, NewGameEnable ngEnable )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
+    PalmNewGameState* state = &globals->newGameState;
+    XP_Bool enable;
+    XP_U16 objID = 0;
+
+    switch ( attr ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case NG_ATTR_ROLE:
+        /* always enabled */
+        break;
+    case NG_ATTR_REMHEADER:
+        enable = ngEnable != NGEnableHidden;
+        objID = XW_LOCAL_LABEL_ID;
+        break;
+#endif
+    case NG_ATTR_NPLAYERS:
+        enable = ngEnable != NGEnableHidden;
+        objID = XW_NPLAYERS_SELECTOR_ID;
+        break;
+    case NG_ATTR_NPLAYHEADER:
+        break;
+    case NG_ATTR_CANJUGGLE:
+        enable = ngEnable == NGEnableEnabled;
+        objID = XW_GINFO_JUGGLE_ID;
+        break;
+    }
+
+    if ( objID != 0 ) {
+        disOrEnable( state->form, objID, enable );
+    }
+} /* palmEnableAttrProc */
+
+static void
+palmGetColProc( void* closure, XP_U16 player, NewGameColumn col, 
+                NgCpCallbk cpcb, const void* cbClosure )
+{
+    PalmAppGlobals* globals;
+    PalmNewGameState* state;
+    NGValue value;
+    XP_U16 objID = objIDForCol( player, col );
+
+    switch ( col ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case NG_COL_REMOTE:
+#endif
+    case NG_COL_ROBOT:
+        value.ng_bool = getBooleanCtrl( objID );
+        break;
+    case NG_COL_NAME:
+        value.ng_cp = FldGetTextPtr( getActiveObjectPtr( objID ) );
+        break;
+    case NG_COL_PASSWD:
+        globals = (PalmAppGlobals*)closure;
+        state = &globals->newGameState;
+        value.ng_cp = state->passwds[player];
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+
+    (*cpcb)( value, cbClosure );
+}
+
+static void
+palmSetColProc( void* closure, XP_U16 player, NewGameColumn col, 
+                const NGValue value )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
+    PalmNewGameState* state = &globals->newGameState;
+    ControlPtr ctrl;
+    XP_U16 objID = objIDForCol( player, col );
+
+    switch ( col ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case NG_COL_REMOTE:
+#endif
+    case NG_COL_ROBOT:
+        ctrl = getControlForCol( player, col );
+        CtlSetValue( ctrl, value.ng_bool );
+        break;
+    case NG_COL_NAME:
+        setFieldStr( objID, value.ng_cp );
+        break;
+    case NG_COL_PASSWD:
+        if ( !!value.ng_cp ) {
+            XP_SNPRINTF( state->passwds[player], sizeof(state->passwds[player]),
+                         "%s", value.ng_cp );
+            showMaskedPwd( objID, *value.ng_cp != '\0' );
+        }
+
+    default:                    /* shut up compiler */
+        break;
+    }
+} /* palmSetColProc */
+
+static void
+palmSetAttrProc( void* closure, NewGameAttr attr, const NGValue value )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
+    PalmNewGameState* state = &globals->newGameState;
+    FieldPtr field;
+
+    switch ( attr ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case NG_ATTR_ROLE:
+        state->curServerHilite = value.ng_role;
+        /* Don't do this until frmUpdateEvent's been received... */
+/*         drawConnectGadgets( globals ); */
+        break;
+    case NG_ATTR_REMHEADER:
+        break;
+#endif
+    case NG_ATTR_NPLAYERS:
+        setSelectorFromList( XW_NPLAYERS_SELECTOR_ID, 
+                             state->playerNumList, value.ng_u16 - 1 );
+        break;
+    case NG_ATTR_NPLAYHEADER:
+        field = getActiveObjectPtr( XW_TOTALP_FIELD_ID );
+        FldSetTextPtr( field, (char*)value.ng_cp );
+        break;
+    case NG_ATTR_CANJUGGLE:
+        XP_ASSERT(0);           /* doesn't make sense */
+        break;
+    }
+}
+
+static XP_U16
+palmPlayerFromID( XP_U16 id, XP_U16 base )
+{
+    XP_U16 player;
+    player = (id - base) / NUM_PLAYER_COLS;
+    return player;
+} /* palmPlayerFromID */
+
+static void
+handleRobotChanged( PalmNewGameState* state, XP_U16 controlID, XP_Bool on )
+{
+    XP_U16 player;
+    NGValue value;
+
+    player = palmPlayerFromID( controlID, XW_ROBOT_1_CHECKBOX_ID );
+    value.ng_bool = on;
+    newg_colChanged( state->ngc, player, NG_COL_ROBOT, value );
+}
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void
+handleRemoteChanged( PalmNewGameState* state, XP_U16 controlID, XP_Bool on )
+{
+    XP_U16 player;
+    NGValue value;
+
+    XP_LOGF( "%s: controlID=%d", __FUNCTION__, controlID );
+
+    player = palmPlayerFromID( controlID, XW_REMOTE_1_CHECKBOX_ID );
+    value.ng_bool = on;
+    newg_colChanged( state->ngc, player, NG_COL_REMOTE, value );
+}
+#endif
 
 static void
 loadNewGameState( PalmAppGlobals* globals )
 {
     CurGameInfo* gi = &globals->gameInfo;
     PalmNewGameState* state = &globals->newGameState;
-    XP_U16 i;
-    LocalPlayer* lp;
-
-    XP_MEMSET( state, 0, sizeof(*state) );
 
     state->dictName = copyString( MPPARM(globals->mpool) gi->dictName );
-    state->curServerHilite = gi->serverRole;
+    state->playerNumList = getActiveObjectPtr( XW_NPLAYERS_LIST_ID );
 
-    for ( i = 0, lp=gi->players; i < MAX_NUM_PLAYERS; ++i, ++lp ) {
-        state->isLocal[i] = lp->isLocal;
-        state->isRobot[i] = lp->isRobot;
-        state->passwds[i] = copyString( MPPARM(globals->mpool) 
-                                        lp->password );
-    }
-
-    state->curNPlayersTotal = gi->nPlayers;
-    state->curNPlayersLocal = countLocalIn( state, gi->nPlayers );
-    XP_ASSERT( state->curNPlayersLocal <= MAX_NUM_PLAYERS );
+    state->ngc = newg_make( MPPARM(globals->mpool)
+                            globals->isNewGame, 
+                            &globals->util,
+                            palmEnableColProc, 
+                            palmEnableAttrProc, 
+                            palmGetColProc,
+                            palmSetColProc,
+                            palmSetAttrProc,
+                            globals );
+    newg_load( state->ngc, gi );
 
 #ifdef BEYOND_IR
     if ( globals->game.comms ) {

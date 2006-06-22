@@ -43,16 +43,6 @@ typedef struct ConnsDlgState {
 } ConnsDlgState;
 
 static void
-fieldFromStr( XP_U16 id, XP_UCHAR* buf, XP_Bool editable )
-{
-    FieldPtr field = getActiveObjectPtr( id );
-    UInt16 len = FldGetTextLength( field );
-    FldSetSelection( field, 0, len );
-    FldInsert( field, buf, XP_STRLEN(buf) );
-    setFieldEditable( field, editable );
-} /* fieldFromStr */
-
-static void
 strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
 {
     FieldPtr field = getActiveObjectPtr( id );
@@ -90,13 +80,15 @@ ctlsFromState( PalmAppGlobals* globals, FormPtr form, ConnsDlgState* state )
     XP_UCHAR buf[16];
     CommsAddrRec* addr = state->addr;
 
-    fieldFromStr( XW_CONNS_RELAY_FIELD_ID, 
-                  addr->u.ip_relay.hostName, isNewGame );
+    setFieldStr( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName );
+    setFieldEditable( XW_CONNS_RELAY_FIELD_ID, isNewGame );
 
     StrPrintF( buf, "%d", addr->u.ip_relay.port );
-    fieldFromStr( XW_CONNS_PORT_FIELD_ID, buf, isNewGame );
+    setFieldStr( XW_CONNS_PORT_FIELD_ID, buf );
+    setFieldEditable( XW_CONNS_PORT_FIELD_ID, isNewGame );
 
-    fieldFromStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie, isNewGame );
+    setFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie );
+    setFieldEditable( XW_CONNS_COOKIE_FIELD_ID, isNewGame );
 } /* ctlsFromState */
 
 static XP_Bool

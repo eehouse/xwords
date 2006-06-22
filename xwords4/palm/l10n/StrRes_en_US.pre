@@ -138,6 +138,9 @@
 { "STRS_CANNOT_FIND_DICT",      "%s dictionary not found." },
 { "STR_DICT_COPY_EXPL",        "Copying dictionary from card..." },
 
+{ "STR_LOCALPLAYERS",          "Local players" },
+{ "STR_TOTALPLAYERS",          "Total players" },
+
 #ifdef BEYOND_IR
 { "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
                                "connect." },

@@ -84,8 +84,9 @@ setBooleanCtrl( UInt16 objectID, Boolean isSet )
 } /* setBooleanCtrl */
 
 void
-setFieldEditable( FieldPtr fld, Boolean editable )
+setFieldEditable( UInt16 objectID, Boolean editable )
 {
+    FieldPtr fld = getActiveObjectPtr( objectID );
     FieldAttrType attrs;
 
     FldGetAttributes( fld, &attrs );
@@ -149,6 +150,20 @@ getBooleanCtrl( UInt16 objectID )
 {
     return CtlGetValue( getActiveObjectPtr( objectID ) );
 } /* getBooleanCtrl */
+
+void
+setFieldStr( XP_U16 id, const XP_UCHAR* buf )
+{
+    FieldPtr field = getActiveObjectPtr( id );
+    UInt16 len = FldGetTextLength( field );
+
+    if ( !buf ) {
+        buf = "";
+    }
+
+    FldSetSelection( field, 0, len );
+    FldInsert( field, buf, XP_STRLEN(buf) );
+} /* setFieldStr */
 
 /*****************************************************************************
  * Set up to build the string and ptr-to-string lists needed for the
