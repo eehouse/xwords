@@ -113,7 +113,7 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
-MYDEFS_COMMON += -DBEYOND_IR
+# MYDEFS_COMMON += -DBEYOND_IR
 
 # For Danish and perhaps other languages, custom-measure glyph height
 # so that overtall letters have a chance of fitting.
