@@ -1765,7 +1765,6 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
 
         case SB_THUMBTRACK:     /* still dragging; don't redraw */
         case SB_THUMBPOSITION:
-            XP_LOGF( "Got scroll message: %d", pos );
             newOffset = pos;
             break;
         default:
