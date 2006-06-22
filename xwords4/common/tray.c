@@ -19,6 +19,7 @@
 
 #include "boardp.h"
 #include "engine.h"
+#include "strutils.h"
 
 #ifdef CPLUS
 extern "C" {
