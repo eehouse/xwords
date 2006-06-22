@@ -37,6 +37,7 @@
 #include "game.h"
 #include "util.h"
 #include "mempool.h"
+#include "nwgamest.h"
 
 /* #include "prefsdlg.h" */
 #include "xwcolors.h"
@@ -192,14 +193,12 @@ typedef struct DictState {
 } DictState;
 
 typedef struct PalmNewGameState {
+    FormPtr form;
     ListPtr playerNumList;
-    XP_UCHAR* passwds[MAX_NUM_PLAYERS];
+    NewGameCtx* ngc;
+    XP_UCHAR passwds[MAX_PASSWORD_LENGTH+1][MAX_NUM_PLAYERS];
     XP_UCHAR* dictName;
-    XP_Bool isLocal[MAX_NUM_PLAYERS];
-    XP_Bool isRobot[MAX_NUM_PLAYERS];
     XP_UCHAR shortDictName[32]; /* as long as a dict name can be */
-    XP_U8 curNPlayersLocal;
-    XP_U8 curNPlayersTotal;
     XP_Bool forwardChange;
     Connectedness curServerHilite;
 #ifdef BEYOND_IR
