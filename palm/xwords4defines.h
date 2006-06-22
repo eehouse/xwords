@@ -176,6 +176,7 @@
 #define XW_NPLAYERS_LIST_ID 2121
 #define XW_NPLAYERS_SELECTOR_ID 2122
 #define XW_PREFS_BUTTON_ID 2123
+#define XW_GINFO_JUGGLE_ID 2124
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 #define XW_SOLO_GADGET_ID 2125
@@ -192,7 +193,7 @@
 /* we need to hide these labels, so no AUTOID */
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define XW_LOCAL_LABEL_ID 2130
-# define XW_TOTALP_LABEL_ID 2131
+# define XW_TOTALP_FIELD_ID 2131
 # define XW_LOCALP_LABEL_ID 2132
 #endif
 
@@ -400,7 +401,7 @@
 #endif
 
 /* versioning stuff */
-#define XW_PALM_VERSION_STRING "4.2a2"
+#define XW_PALM_VERSION_STRING "4.1.5b1"
 #define CUR_PREFS_VERS 0x0405
 
 

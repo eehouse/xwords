@@ -52,7 +52,8 @@ void centerControl( FormPtr form, UInt16 id );
 void setBooleanCtrl( UInt16 objectID, Boolean isSet );
 Boolean getBooleanCtrl( UInt16 objectID );
 
-void setFieldEditable( FieldPtr fld, Boolean editable );
+void setFieldStr( XP_U16 id, const XP_UCHAR* buf );
+void setFieldEditable( UInt16 objectID, Boolean editable );
 
 /* list item stuff */
 void initListData( MPFORMAL ListData* ld, XP_U16 nItems );
