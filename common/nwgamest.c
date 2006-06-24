@@ -57,6 +57,9 @@ static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
 static void setRoleStrings( NewGameCtx* ngc );
 static void considerEnableJuggle( NewGameCtx* ngc );
+static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
+static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
+                        const LocalPlayer* lp );
 
 NewGameCtx*
 newg_make( MPFORMAL XP_Bool isNewGame, 
@@ -112,20 +115,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     considerEnableJuggle( ngc );   
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-
-#ifndef XWFEATURE_STANDALONE_ONLY        
-        value.ng_bool = !gi->players[i].isLocal;
-        (*ngc->setColProc)(closure, i, NG_COL_REMOTE, value );
-#endif
-
-        value.ng_cp = gi->players[i].name;
-        (*ngc->setColProc)(closure, i, NG_COL_NAME, value );
-
-        value.ng_cp = gi->players[i].password;
-        (*ngc->setColProc)(closure, i, NG_COL_PASSWD, value );
-
-        value.ng_bool = gi->players[i].isRobot;
-        (*ngc->setColProc)(closure, i, NG_COL_ROBOT, value );
+        loadPlayer( ngc, i, &gi->players[i] );
     }
     
     adjustAllRows( ngc, XP_TRUE );
@@ -135,30 +125,30 @@ typedef struct NGCopyClosure {
     XP_U16 player;
     NewGameColumn col;
     NewGameCtx* ngc;
-    CurGameInfo* gi;
+    LocalPlayer* lp;
 } NGCopyClosure;
 
 static void
-cpToGI( NGValue value, const void* cbClosure )
+cpToLP( NGValue value, const void* cbClosure )
 {
     NGCopyClosure* cpcl = (NGCopyClosure*)cbClosure;
-    LocalPlayer* pl = &cpcl->gi->players[cpcl->player];
+    LocalPlayer* lp = cpcl->lp;
     XP_UCHAR** strAddr = NULL;
     
     switch ( cpcl->col ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
-        pl->isLocal = !value.ng_bool;
+        lp->isLocal = !value.ng_bool;
         break;
 #endif
     case NG_COL_NAME:
-        strAddr = &pl->name;
+        strAddr = &lp->name;
         break;
     case NG_COL_PASSWD:
-        strAddr = &pl->password;
+        strAddr = &lp->password;
         break;
     case NG_COL_ROBOT:
-        pl->isRobot = value.ng_bool;
+        lp->isRobot = value.ng_bool;
         break;
     }
 
@@ -166,29 +156,20 @@ cpToGI( NGValue value, const void* cbClosure )
         replaceStringIfDifferent( MPPARM(cpcl->ngc->mpool) strAddr,
                                   value.ng_cp );
     }
-} /* cpToGI */
+} /* cpToLP */
 
 void
 newg_store( NewGameCtx* ngc, CurGameInfo* gi )
 {
-    void* closure = ngc->closure;
-    NGCopyClosure cpcl;
-
-    cpcl.ngc = ngc;
-    cpcl.gi = gi;
+    XP_U16 player;
 
     gi->nPlayers = ngc->nPlayers;
 #ifndef XWFEATURE_STANDALONE_ONLY
     gi->serverRole = ngc->role;
 #endif
 
-    for ( cpcl.player = 0; 
-          cpcl.player < (sizeof(gi->players)/sizeof(gi->players[0]));
-          ++cpcl.player ) {
-        for ( cpcl.col = 0; cpcl.col < NG_NUM_COLS; ++cpcl.col ) {
-            (*ngc->getColProc)( closure, cpcl.player, cpcl.col, 
-                                cpToGI, &cpcl );
-        }
+    for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
+        storePlayer( ngc, player, &gi->players[player] );
     }
 } /* newg_store */
 
@@ -206,7 +187,6 @@ newg_colChanged( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
 void
 newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
 {
-    XP_LOGF( "%s(%d)", __FUNCTION__ );
     if ( attr == NG_ATTR_NPLAYERS ) {
         ngc->nPlayers = value.ng_u16;
         considerEnableJuggle( ngc );
@@ -245,71 +225,42 @@ deepCopy( NGValue value, const void* closure )
     }
 }
 
-static void
-deepFree( DeepValue* dvp )
-{
-    if ( dvp->col == NG_COL_NAME || dvp->col == NG_COL_PASSWD ) {
-        XP_FREE( dvp->mpool, (void*)dvp->value.ng_cp );
-    }
-}
-
-static void
-copyFromTo( NewGameCtx* ngc, XP_U16 srcPlayer, XP_U16 destPlayer )
-{
-    DeepValue dValue;
-    void* closure = ngc->closure;
-    MPASSIGN(dValue.mpool, ngc->mpool);
-
-    for ( dValue.col = 0; dValue.col < NG_NUM_COLS; ++dValue.col ) {
-        (*ngc->getColProc)( closure, srcPlayer, dValue.col, deepCopy, &dValue );
-        (*ngc->setColProc)( closure, destPlayer, dValue.col, dValue.value );
-        deepFree( &dValue );
-    }
-} /* copyFromTo */
-
 void
 newg_juggle( NewGameCtx* ngc )
 {
     XP_U16 nPlayers = ngc->nPlayers;
-/*     NewGameColumn strCols[] = { NG_COL_NAME, NG_COL_PASSWD }; */
-
-    LOG_FUNC();
     
     if ( nPlayers > 1 ) {
+        LocalPlayer tmpPlayers[MAX_NUM_PLAYERS];
         XP_U16 pos[MAX_NUM_PLAYERS];
-        void* closure = ngc->closure;
-        DeepValue tmpValues[NG_NUM_COLS];
-        XP_U16 cur;
-        NewGameColumn col;
+        XP_U16 player;
 
     /* Get a randomly juggled array of numbers 0..nPlayers-1.  Then the number
-       at pos[n] inicates where the entry currently at n should be.  The first
-       must be copied into tmp, after which each can be moved in sequence
-       before tmp is copied into the last empty slot. */
+       at pos[n] inicates where the entry currently at n should be. */
         randIntArray( pos, nPlayers );
 
-        XP_LOGF( "%s: saving off player %d as tmp", __FUNCTION__, pos[0] );
-        for ( col = 0; col < NG_NUM_COLS; ++col ) {
-            tmpValues[col].col = col;
-            MPASSIGN( tmpValues[col].mpool, ngc->mpool );
-            (*ngc->getColProc)(closure, pos[0], col, deepCopy, &tmpValues[col] );
+
+            /* Deep-copy off to tmp storage.  But skip lines that won't be
+               moved in the juggle. */
+        XP_MEMSET( &tmpPlayers, 0, sizeof(tmpPlayers) );
+        for ( player = 0; player < nPlayers; ++player ) {
+            if ( player != pos[player] ) {
+                storePlayer( ngc, player, &tmpPlayers[player] );
+            }
         }
 
-        for ( cur = 0; ++cur < nPlayers; ) {
-            XP_LOGF( "%s: copying player %d to player %d", __FUNCTION__, 
-                     pos[cur], pos[cur-1] );
-            copyFromTo( ngc, pos[cur], pos[cur-1] );
-            adjustOneRow( ngc, pos[cur-1], XP_FALSE );
+        for ( player = 0; player < nPlayers; ++player ) {
+            if ( player != pos[player] ) {
+                LocalPlayer* lp = &tmpPlayers[player];
+                loadPlayer( ngc, pos[player], lp );
+                if ( !!lp->name ) {
+                    XP_FREE( ngc->mpool, lp->name );
+                }
+                if ( !!lp->password ) {
+                    XP_FREE( ngc->mpool, lp->password );
+                }
+            }
         }
-
-        --cur;
-        XP_LOGF( "%s:  writing tmp back to player %d", __FUNCTION__, 
-                 pos[cur] );
-        for ( col = 0; col < NG_NUM_COLS; ++col ) {
-            (*ngc->setColProc)(closure, pos[cur], col, tmpValues[col].value );
-            deepFree( &tmpValues[col] );
-        }
-        adjustOneRow( ngc, pos[cur], XP_FALSE );
     }
 } /* newg_juggle */
 
@@ -438,6 +389,41 @@ considerEnableJuggle( NewGameCtx* ngc )
         ngc->juggleEnabled = newEnable;
     }
 } /* considerEnableJuggle */
+
+static void
+storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp )
+{
+    void* closure = ngc->closure;
+    NGCopyClosure cpcl;
+    cpcl.player = player;
+    cpcl.ngc = ngc;
+    cpcl.lp = lp;
+
+    for ( cpcl.col = 0; cpcl.col < NG_NUM_COLS; ++cpcl.col ) {
+        (*ngc->getColProc)( closure, cpcl.player, cpcl.col, 
+                            cpToLP, &cpcl );
+    }
+}
+
+static void
+loadPlayer( NewGameCtx* ngc, XP_U16 player, const LocalPlayer* lp )
+{
+    NGValue value;
+    void* closure = ngc->closure;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    value.ng_bool = !lp->isLocal;
+    (*ngc->setColProc)(closure, player, NG_COL_REMOTE, value );
+#endif
+    value.ng_cp = lp->name;
+    (*ngc->setColProc)(closure, player, NG_COL_NAME, value );
+
+    value.ng_cp = lp->password;
+    (*ngc->setColProc)(closure, player, NG_COL_PASSWD, value );
+
+    value.ng_bool = lp->isRobot;
+    (*ngc->setColProc)(closure, player, NG_COL_ROBOT, value );
+}
 
 #ifdef CPLUS
 }
