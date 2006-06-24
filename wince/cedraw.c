@@ -936,50 +936,42 @@ DLSTATIC XP_Bool
 DRAW_FUNC_NAME(vertScrollBoard)( DrawCtx* p_dctx, XP_Rect* rect, 
                                  XP_S16 dist )
 {
-#if 0                           /* don't turn this on until after ship? */
-    if ( dist < 0 ) {
-        return XP_FALSE;
+    XP_Bool success = XP_FALSE;
+    /* board passes in the whole board rect, so we need to subtract from it
+       the height of the area to be overwritten.  If dist is negative, the
+       dest is above the src.  Otherwise it's below. */
+
+    CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
+    CEAppGlobals* globals = dctx->globals;
+    int destY, srcY;
+    XP_Bool down = dist <= 0;
+
+    if ( down ) {
+        srcY = rect->top;
+        dist = -dist;           /* make it positive */
+        destY = srcY + dist;
     } else {
-        XP_Bool success = XP_FALSE;
-        /* board passes in the whole board rect, so we need to subtract from it
-           the height of the area to be overwritten.  If dist is negative, the
-           dest is above the src.  Otherwise it's below. */
-
-        CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-        CEAppGlobals* globals = dctx->globals;
-        int destY, srcY;
-        XP_Bool down = dist <= 0;
-
-        if ( down ) {
-            srcY = rect->top;
-            dist = -dist;           /* make it positive */
-            destY = srcY + dist;
-        } else {
-            destY = rect->top;
-            srcY = destY + dist;
-        }
-
-        success = BitBlt( globals->hdc,  /* HDC hdcDest, */
-                          rect->left,    /* int nXDest */
-                          destY, 
-                          rect->width,   /* width */
-                          rect->height - dist,  /* int nHeight */
-                          globals->hdc,  /* HDC hdcSrc */
-                          rect->left,    /* int nXSrc */
-                          srcY, 
-                          SRCCOPY );     /* DWORD dwRop */
-        /* need to return the rect that must still be redrawn */
-        if ( success ) {
-            if ( !down ) {
-                rect->top += rect->height - dist;
-            }
-            rect->height = dist;
-        }
-        return success;
+        destY = rect->top;
+        srcY = destY + dist;
     }
-#else
-    return XP_FALSE;
-#endif
+
+    success = FALSE != BitBlt( globals->hdc,  /* HDC hdcDest, */
+                               rect->left,    /* int nXDest */
+                               destY, 
+                               rect->width,   /* width */
+                               rect->height - dist,  /* int nHeight */
+                               globals->hdc,  /* HDC hdcSrc */
+                               rect->left,    /* int nXSrc */
+                               srcY, 
+                               SRCCOPY );     /* DWORD dwRop */
+    /* need to return the rect that must still be redrawn */
+    if ( success ) {
+        if ( !down ) {
+            rect->top += rect->height - dist;
+        }
+        rect->height = dist;
+    }
+    return success;
 }
 #else  /* #ifdef DRAW_LINK_DIRECT */
 static void
