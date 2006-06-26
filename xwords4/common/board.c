@@ -2531,7 +2531,7 @@ handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 
 #ifdef POINTER_SUPPORT
 XP_Bool
-board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Time when )
+board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     XP_Bool result = XP_FALSE;
     BoardObjectType prevObj = board->penDownObject;
