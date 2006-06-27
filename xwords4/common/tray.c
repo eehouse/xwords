@@ -583,7 +583,9 @@ board_juggleTray( BoardCtxt* board )
             Tile tmpT[MAX_TRAY_TILES];
             XP_U16 newT[MAX_TRAY_TILES];
 
-            randIntArray( newT, nTiles );
+            /* loop until there'll be change */
+            while ( !randIntArray( newT, nTiles ) ) {
+            }
 
             /* save copies of the tiles in juggled order */
             for ( i = 0; i < nTiles; ++i ) {

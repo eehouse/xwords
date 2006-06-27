@@ -48,7 +48,7 @@ void replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc,
 XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
 
 /* Produce an array of ints 0..count-1, juggled */
-void randIntArray( XP_U16* rnums, XP_U16 count );
+XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 
 #ifdef CPLUS
 }
