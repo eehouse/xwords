@@ -235,31 +235,34 @@ newg_juggle( NewGameCtx* ngc )
         XP_U16 pos[MAX_NUM_PLAYERS];
         XP_U16 player;
 
-    /* Get a randomly juggled array of numbers 0..nPlayers-1.  Then the number
-       at pos[n] inicates where the entry currently at n should be. */
-        randIntArray( pos, nPlayers );
+        /* Get a randomly juggled array of numbers 0..nPlayers-1.  Then the
+           number at pos[n] inicates where the entry currently at n should
+           be. */
+        if ( randIntArray( pos, nPlayers ) ) {
 
-
-            /* Deep-copy off to tmp storage.  But skip lines that won't be
-               moved in the juggle. */
-        XP_MEMSET( &tmpPlayers, 0, sizeof(tmpPlayers) );
-        for ( player = 0; player < nPlayers; ++player ) {
-            if ( player != pos[player] ) {
-                storePlayer( ngc, player, &tmpPlayers[player] );
-            }
-        }
-
-        for ( player = 0; player < nPlayers; ++player ) {
-            if ( player != pos[player] ) {
-                LocalPlayer* lp = &tmpPlayers[player];
-                loadPlayer( ngc, pos[player], lp );
-                if ( !!lp->name ) {
-                    XP_FREE( ngc->mpool, lp->name );
-                }
-                if ( !!lp->password ) {
-                    XP_FREE( ngc->mpool, lp->password );
+            /* Deep-copy off to tmp storage.  But skip lines that won't be moved
+               in the juggle. */
+            XP_MEMSET( &tmpPlayers, 0, sizeof(tmpPlayers) );
+            for ( player = 0; player < nPlayers; ++player ) {
+                if ( player != pos[player] ) {
+                    storePlayer( ngc, player, &tmpPlayers[player] );
                 }
             }
+
+            for ( player = 0; player < nPlayers; ++player ) {
+                if ( player != pos[player] ) {
+                    LocalPlayer* lp = &tmpPlayers[player];
+                    loadPlayer( ngc, pos[player], lp );
+                    if ( !!lp->name ) {
+                        XP_FREE( ngc->mpool, lp->name );
+                    }
+                    if ( !!lp->password ) {
+                        XP_FREE( ngc->mpool, lp->password );
+                    }
+                }
+            }
+        } else {
+            XP_LOGF( "%s: no juggle this time", __FUNCTION__ );
         }
     }
 } /* newg_juggle */

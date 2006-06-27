@@ -177,25 +177,29 @@ emptyStringIfNull( XP_UCHAR* str )
     return !!str? str : (XP_UCHAR*)"";
 } /* emptyStringIfNull */
 
-void
+XP_Bool
 randIntArray( XP_U16* rnums, XP_U16 count )
 {
-    XP_U16 array[count];        /* C99 thing */
+    XP_Bool changed = XP_FALSE;
     XP_U16 i;
 
     for ( i = 0; i < count; ++i ) {
-        rnums[i] = array[i] = i;           /* initial state for comparison */
+        rnums[i] = i;
     }
 
-    do {
-        for ( i = count; i > 0 ; ) {
-            XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % i;
+    for ( i = count; i > 0 ; ) {
+        XP_U16 rIndex = ((XP_U16)XP_RANDOM()) % i;
+        if ( --i != rIndex ) {
             XP_U16 tmp = rnums[rIndex];
-            --i;
             rnums[rIndex] = rnums[i];
             rnums[i] = tmp;
+            if ( !changed ) {
+                changed = XP_TRUE;
+            }
         }
-    } while ( XP_MEMCMP( rnums, array, count * sizeof(array[0]) ) == 0 );
+    }
+
+    return changed;
 } /* randIntArray */
 
 #ifdef CPLUS
