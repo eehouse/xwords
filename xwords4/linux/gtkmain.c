@@ -143,7 +143,7 @@ button_release_event( GtkWidget *widget, GdkEventMotion *event,
     if ( globals->mouseDown ) {
         redraw = board_handlePenUp( globals->cGlobals.game.board, 
                                     event->x, 
-                                    event->y, event->time );
+                                    event->y );
         if ( redraw ) {
             board_draw( globals->cGlobals.game.board );
         }
