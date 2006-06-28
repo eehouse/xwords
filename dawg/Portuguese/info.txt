@@ -25,6 +25,7 @@ LANGFILTER_POSTCLIP: | tr [a-zç] [A-ZÇ]
 LANGFILTER_POSTCLIP: | grep '[AEIOU]' 
 # none with illegal chars
 LANGFILTER_POSTCLIP: | grep '^[A-JL-VXZÇ]\+$'
+LANGFILTER_POSTCLIP: | sort -u 
 LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
 
 # Until I can figure out how to force sort to use a locale's collation
