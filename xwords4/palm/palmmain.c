@@ -2225,8 +2225,7 @@ mainViewHandleEvent( EventPtr event )
         if ( globals->penDown ) {
             draw = board_handlePenUp( globals->game.board, 
                                       hresX( globals, event->screenX),
-                                      hresY( globals, event->screenY ), 
-                                      0 );
+                                      hresY( globals, event->screenY ) );
             handled = draw;     /* this is wrong!!!! */
             globals->penDown = false;
 
