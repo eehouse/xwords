@@ -506,7 +506,7 @@ static void
 readFromFile( void )
 {
     char wordBuf[MAX_WORD_LEN+1];
-    static bool s_eof = false;;
+    static bool s_eof = false;
     char* word;
     int len;
 
@@ -1069,7 +1069,7 @@ parseARGV( int argc, char** argv, const char** inFileName )
         } else if ( 0 == strcmp( arg, "-force4" ) ) {
             gForceFour = true;
         } else if ( 0 == strcmp( arg, "-fsize" ) ) {
-            gFileSize = (char)atoi(argv[index++]);
+            gFileSize = atoi(argv[index++]);
 #ifdef DEBUG
         } else if ( 0 == strcmp( arg, "-debug" ) ) {
             gDebug = true;
