@@ -1,0 +1,72 @@
+# Copyright 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:pt_PT
+
+# deal with DOS files
+LANGFILTER_PRECLIP: tr -d '\r' |
+
+# uppercase all
+LANGFILTER_POSTCLIP: | tr [a-zç] [A-ZÇ]
+# no words not containing a vowel
+LANGFILTER_POSTCLIP: | grep '[AEIOU]' 
+# none with illegal chars
+LANGFILTER_POSTCLIP: | grep '^[A-JL-VXZÇ]\+$'
+LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
+
+# Until I can figure out how to force sort to use a locale's collation
+# rules we can't trust sort in the filtering rules above and so must
+# leave the sorting work to dict2dawg.pl.
+
+NEEDSSORT:true
+
+LANGINFO: <p>Portugese uses the letter A-Z, excluding K, W and Y, and adds
+LANGINFO: Ç.  Words containing any other letters are dropped. </p>
+
+# High bit means "official".  Next 7 bits are an enum where
+# Portuguese==D.  Low byte is padding
+XLOC_HEADER:0x8D00
+
+
+<BEGIN_TILES>
+3			0		{"_"}
+14          1       'A'
+3           3       'B'
+4           2       'C'
+2           3       'Ç'
+5           2       'D'
+11          1       'E'
+2           4       'F'
+2           4       'G'
+2           4       'H'
+10          1       'I'
+2           5       'J'
+5           2       'L'
+6           1       'M'
+4           3       'N'
+10          1       'O'
+4           2       'P'
+1           6       'Q'
+6           1       'R'
+8           1       'S'
+5           1       'T'
+7           1       'U'
+2           4       'V'
+1           8       'X'
+1           8       'Z'
+
+<END_TILES>
+# should ignore all after the <END_TILES> above
