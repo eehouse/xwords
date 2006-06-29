@@ -225,9 +225,10 @@ deepCopy( NGValue value, const void* closure )
     }
 }
 
-void
+XP_Bool
 newg_juggle( NewGameCtx* ngc )
 {
+    XP_Bool changed = XP_FALSE;
     XP_U16 nPlayers = ngc->nPlayers;
     
     if ( nPlayers > 1 ) {
@@ -238,7 +239,8 @@ newg_juggle( NewGameCtx* ngc )
         /* Get a randomly juggled array of numbers 0..nPlayers-1.  Then the
            number at pos[n] inicates where the entry currently at n should
            be. */
-        if ( randIntArray( pos, nPlayers ) ) {
+        changed = randIntArray( pos, nPlayers );
+        if ( changed ) {
 
             /* Deep-copy off to tmp storage.  But skip lines that won't be moved
                in the juggle. */
@@ -261,10 +263,9 @@ newg_juggle( NewGameCtx* ngc )
                     }
                 }
             }
-        } else {
-            XP_LOGF( "%s: no juggle this time", __FUNCTION__ );
         }
     }
+    return changed;
 } /* newg_juggle */
 
 static void

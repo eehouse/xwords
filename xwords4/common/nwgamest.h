@@ -110,7 +110,11 @@ void newg_colChanged( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
 void newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, 
                        NGValue value );
 
-void newg_juggle( NewGameCtx* ngc );
+/** newg_juggle: Return XP_TRUE if a juggle happened, XP_FALSE if randomness
+ * dictated that all players stay put.  Platforms can call repeatedly until
+ * true if they want to force change.
+ */
+XP_Bool newg_juggle( NewGameCtx* ngc );
 
 EXTERN_C_END
 
