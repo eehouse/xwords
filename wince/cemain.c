@@ -2020,7 +2020,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONUP:
             if ( globals->penDown ) {
                 draw = board_handlePenUp( globals->game.board, LOWORD(lParam), 
-                                          HIWORD(lParam), 0 );
+                                          HIWORD(lParam) );
                 globals->penDown = XP_FALSE;
             }
             break;	
