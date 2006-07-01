@@ -232,7 +232,9 @@ newGameHandleEvent( EventPtr event )
             break;
 
         case XW_GINFO_JUGGLE_ID:
-            newg_juggle( state->ngc );
+            while ( !newg_juggle( state->ngc ) ) {
+            }
+            (void)newg_juggle( state->ngc );
             break;
 
         case XW_OK_BUTTON_ID:
