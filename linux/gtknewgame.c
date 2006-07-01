@@ -128,7 +128,8 @@ handle_robot_toggled( GtkWidget* item, GtkNewGameState* state )
 static void
 handle_juggle( GtkWidget* item, GtkNewGameState* state )
 {
-    newg_juggle( state->newGameCtxt );
+    while ( !newg_juggle( state->newGameCtxt ) ) {
+    }
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
