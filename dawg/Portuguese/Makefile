@@ -25,10 +25,10 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/portugueseBR.txt
+SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/portugueseBR.txt.gz
 
 $(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	cat $< | tr [a-zç] [A-ZÇ] | \
+	zcat $< | tr [a-zç] [A-ZÇ] | \
 		grep '^[A-JL-VXZÇ]\+$$' | \
 		gzip -c > $@
 
