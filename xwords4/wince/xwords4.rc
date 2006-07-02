@@ -148,7 +148,7 @@ CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4.1rc2 (rev " SVN_REV ") "\
+    LTEXT           "Crosswords 4.1rc3 (rev " SVN_REV ") "\
                     "for PocketPC. Copyright 1998-2006 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
@@ -353,6 +353,7 @@ END
 #define PR_WIDTH 118
 #define PR_OK_LEFT   ((PR_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
 #define PR_CANCEL_LEFT   ((PR_WIDTH/2)+10)
+#define PREFS_ROW_HT 9
 
 IDD_OPTIONSDLG DIALOG DISCARDABLE  0, 20, PR_WIDTH, 112
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
@@ -364,30 +365,30 @@ BEGIN
     CONTROL         "Game prefs",IDC_RADIOLOCAL,"Button",BS_AUTORADIOBUTTON,
                     64,5,53,10
     CONTROL         "Color played tiles",IDC_CHECKCOLORPLAYED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,20,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,20,90,PREFS_ROW_HT
     CONTROL         "Enable cursor",IDC_CHECKSHOWCURSOR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,35,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,35,90,PREFS_ROW_HT
     CONTROL         "Explain robot scores",IDC_CHECKROBOTSCORES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,50,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,50,90,PREFS_ROW_HT
     PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,67,60,12
     CONTROL         "Smart robot",IDC_CHECKSMARTROBOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,20,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,20,90,PREFS_ROW_HT
     CONTROL         "Disallow hints",IDC_CHECKNOHINTS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,35,60,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,35,60,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT
     CONTROL         "Hint limits",IDC_CHECKHINTSLIMITS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,69,35,50,10
 #endif
 
     CONTROL         "Timer on (minutes)",TIMER_CHECK,"Button",
-                        BS_AUTOCHECKBOX | WS_TABSTOP,8,50,85,14
+                        BS_AUTOCHECKBOX | WS_TABSTOP,8,50,85,PREFS_ROW_HT
     EDITTEXT        TIMER_EDIT,93,52,24,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Phonies:",PHONIES_LABEL,8,65,28,8
+    LTEXT           "Phonies:",PHONIES_LABEL,8,65,28,PREFS_ROW_HT
     COMBOBOX        PHONIES_COMBO,38,65,67,58,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
 #ifdef FEATURE_TRAY_EDIT
     CONTROL         "Pick tiles face-up", IDC_PICKTILES, "Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,80,90,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,80,90,PREFS_ROW_HT
 #else
 #endif
     DEFPUSHBUTTON   "OK",IDOK,PR_OK_LEFT,95,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
