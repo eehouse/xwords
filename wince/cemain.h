@@ -157,6 +157,7 @@ void ce_drawctxt_update( DrawCtx* dctx, CEAppGlobals* globals );
 
 #ifdef DEBUG
 void logLastError( const char* comment );
+void messageToBuf( UINT message, char* buf, int bufSize );
 #else
 # define logLastError(c)
 #endif
