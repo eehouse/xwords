@@ -254,13 +254,18 @@ newg_juggle( NewGameCtx* ngc )
             for ( player = 0; player < nPlayers; ++player ) {
                 if ( player != pos[player] ) {
                     LocalPlayer* lp = &tmpPlayers[player];
-                    loadPlayer( ngc, pos[player], lp );
+                    XP_U16 dest = pos[player];
+
+                    loadPlayer( ngc, dest, lp );
+
                     if ( !!lp->name ) {
                         XP_FREE( ngc->mpool, lp->name );
                     }
                     if ( !!lp->password ) {
                         XP_FREE( ngc->mpool, lp->password );
                     }
+
+                    adjustOneRow( ngc, dest, XP_FALSE );
                 }
             }
         }
