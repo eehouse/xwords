@@ -2285,6 +2285,46 @@ wince_debugf(XP_UCHAR* format, ...)
     }
 #endif
 } /* wince_debugf */
+
+void
+messageToBuf( UINT message, char* buf, int bufSize )
+{
+    char* str = NULL;
+#define STRCASE(s)   case s : str = #s; break
+    switch( message ) {
+        STRCASE(WM_TIMER);
+        STRCASE(WM_SETCURSOR);
+        STRCASE(WM_NCHITTEST);
+        STRCASE(WM_MOUSEMOVE);
+        STRCASE(WM_SYSKEYDOWN);
+        STRCASE(WM_SYSKEYUP);
+        STRCASE(WM_SYSCHAR);
+        STRCASE(WM_SYSCOMMAND);
+        STRCASE(WM_ENTERMENULOOP);
+        STRCASE(WM_INITMENU);
+        STRCASE(WM_MENUSELECT);
+        STRCASE(WM_COMMAND);
+        STRCASE(WM_SETTEXT);
+        STRCASE(WM_QUERYNEWPALETTE);
+        STRCASE(WM_NCACTIVATE);
+        STRCASE(WM_ACTIVATE);
+        STRCASE(WM_SHOWWINDOW);
+        STRCASE(WM_CTLCOLOREDIT);
+        STRCASE(WM_MOUSEACTIVATE);
+        STRCASE(WM_CTLCOLORBTN);
+        STRCASE(WM_PASTE);
+        STRCASE(WM_WINDOWPOSCHANGING);
+        STRCASE(WM_SETFOCUS);
+        STRCASE(WM_WINDOWPOSCHANGED);
+    default:
+        snprintf( buf, bufSize, "%d", message );
+        return;
+    }
+#undef STRCASE
+    if ( !!str ) {
+        snprintf( buf, bufSize, "%s", str );
+    }
+}
 #endif
 
 XP_U16
@@ -2712,10 +2752,10 @@ ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
-        return (XP_UCHAR*)"Local playrs";
+        return (XP_UCHAR*)"Locl playrs:";
 #endif
     case STR_TOTALPLAYERS:
-        return (XP_UCHAR*)"Player count";
+        return (XP_UCHAR*)"Player count:";
 
     case STRS_VALUES_HEADER:
         return (XP_UCHAR*)"%s counts/values:" XP_CR;
