@@ -97,12 +97,13 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
                    XP_TRUE);
     }
 
-#ifdef XWFEATURE_SEARCHLIMIT
     if ( !doGlobalPrefs ) {
+        setTimerCtls( hDlg, ceGetChecked( hDlg, TIMER_CHECK ) );
+#ifdef XWFEATURE_SEARCHLIMIT
         ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, 
                       !ceGetChecked( hDlg, IDC_CHECKNOHINTS) );
-    }
 #endif
+    }
 } /* adjustForChoice */
 
 /* Copy global state into a local copy that can be changed without
@@ -175,7 +176,6 @@ static void
 loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
 {
     CePrefsPrefs* prefsPrefs = &pState->prefsPrefs;
-    XP_UCHAR numBuf[10];
 
     ceSetChecked( hDlg, IDC_CHECKCOLORPLAYED, prefsPrefs->showColors );
     ceSetChecked( hDlg, IDC_CHECKSMARTROBOT, 
@@ -192,9 +192,7 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
     ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS, prefsPrefs->gp.allowHintRect );
 #endif
     /* timer */
-    snprintf( numBuf, sizeof(numBuf), "%d", prefsPrefs->gp.gameSeconds / 60 );
-    ceSetDlgItemText( hDlg, TIMER_EDIT, numBuf );
-    setTimerCtls( hDlg, prefsPrefs->gp.timerEnabled );
+    ceSetDlgItemNum( hDlg, TIMER_EDIT, prefsPrefs->gp.gameSeconds / 60 );
 
     SendDlgItemMessage( hDlg, PHONIES_COMBO, CB_SETCURSEL, 
                         prefsPrefs->gp.phoniesAction, 0L );
@@ -236,12 +234,9 @@ ceControlsToPrefs( HWND hDlg, CePrefsPrefs* prefsPrefs )
     prefsPrefs->gp.timerEnabled = ceGetChecked( hDlg, TIMER_CHECK );
 
     if ( prefsPrefs->gp.timerEnabled ) {
-        XP_UCHAR buf[10];
         XP_U16 minutes;
-        XP_U16 bLen = sizeof(buf) / sizeof(buf[0]);
 
-        ceGetDlgItemText( hDlg, TIMER_EDIT, buf, &bLen );
-        minutes = atoi( buf );
+        minutes = ceGetDlgItemNum( hDlg, TIMER_EDIT );
 
         prefsPrefs->gp.gameSeconds = minutes * 60;
     }
