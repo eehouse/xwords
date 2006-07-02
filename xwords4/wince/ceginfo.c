@@ -482,6 +482,14 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
     GameInfoState* giState;
 
+/* #ifdef DEBUG */
+/*     { */
+/*         char buf[64]; */
+/*         messageToBuf( message, buf, sizeof(buf) ); */
+/*         XP_LOGF( "%s: %s", __FUNCTION__, buf ); */
+/*     } */
+/* #endif */
+
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         giState = (GameInfoState*)lParam;
@@ -583,7 +591,18 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
                 case GIJUGGLE_BUTTON:
                     XP_ASSERT( giState->isNewGame );
-                    newg_juggle( giState->newGameCtx );
+                    /* Juggle vs switch.  On Win32, updates are coalesced so
+                       you don't see anything on screen if you change a field
+                       then change it back.  In terms of messages, all we see
+                       here is a WM_CTLCOLOREDIT for each field being
+                       changed.  If I post a custom event here, it comes in
+                       *before* the WM_CTLCOLOREDIT events.  Short of a
+                       timer, which starts a race with the user, I see no way
+                       to get notified after the drawing's done.  So for now,
+                       we switch rather than juggle: call juggle until
+                       something actually happens. */
+                    while ( !newg_juggle( giState->newGameCtx ) ) {
+                    }
                     break;
 
                 case OPTIONS_BUTTON:
