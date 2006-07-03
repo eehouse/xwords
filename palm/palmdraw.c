@@ -1137,8 +1137,6 @@ palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
     y = localR.top - 2;
     if ( dctx->doHiRes ) {
         y -= 1;                 /* tweak it up one high-res pixel */
-    } else {
-        localR.height += 1;
     }
 
     WinGetClip( &saveClip );
