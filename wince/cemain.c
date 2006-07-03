@@ -2316,6 +2316,15 @@ messageToBuf( UINT message, char* buf, int bufSize )
         STRCASE(WM_WINDOWPOSCHANGING);
         STRCASE(WM_SETFOCUS);
         STRCASE(WM_WINDOWPOSCHANGED);
+        STRCASE(WM_PAINT);
+        STRCASE(WM_VSCROLL);
+        STRCASE(WM_LBUTTONDOWN);
+        STRCASE(WM_LBUTTONUP);
+        STRCASE(WM_INITMENUPOPUP);
+        STRCASE(WM_CANCELMODE);
+        STRCASE(WM_EXITMENULOOP);
+        STRCASE(WM_KILLFOCUS);
+        STRCASE(WM_ERASEBKGND);
     default:
         snprintf( buf, bufSize, "%d", message );
         return;
@@ -2324,7 +2333,7 @@ messageToBuf( UINT message, char* buf, int bufSize )
     if ( !!str ) {
         snprintf( buf, bufSize, "%s", str );
     }
-}
+} /* messageToBuf */
 #endif
 
 XP_U16
