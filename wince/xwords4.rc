@@ -218,7 +218,7 @@ BEGIN
     // "R" for rearrange.  Go to J if no change becomes possible.
     PUSHBUTTON      "R",GIJUGGLE_BUTTON,65,NPLAYERS_ROW,12,12
 
-    PUSHBUTTON      "Preferences...",OPTIONS_BUTTON,80,NPLAYERS_ROW,50,12
+    PUSHBUTTON      "Preferences...",OPTIONS_BUTTON,79,NPLAYERS_ROW,51,12
     LTEXT           "Name",IDC_STATIC,GAME_NAMELABEL_LEFT,
                     LABELS_ROW,19,8,SS_NOPREFIX
     LTEXT           "Robot",IDC_STATIC,GAME_ROBOTLABEL_LEFT,LABELS_ROW,20,8
