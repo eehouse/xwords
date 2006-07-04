@@ -420,7 +420,10 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
             XP_U16 x, y;
             x = localR.left + ((localR.width-strWidth) / 2);
             y = localR.top - dctx->fontHtInfo[tile].topOffset;
-            y += (localR.height - dctx->fontHtInfo[tile].height) / 2;
+            /* '+ 1' below causes us to round up.  Without this "Q" is drawn
+               with its top higher than other ASCII letters because it's
+               taller; looks bad. */
+            y += (localR.height + 1 - dctx->fontHtInfo[tile].height) / 2;
             if ( len == 1 ) {
                 ++x;
             }
