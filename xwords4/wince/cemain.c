@@ -1813,10 +1813,21 @@ processPacket( CEAppGlobals* globals, XWStreamCtxt* instream )
 } /* processPacket */
 #endif
 
+static XP_Bool
+checkPenDown( CEAppGlobals* globals )
+{
+    XP_Bool draw = globals->penDown;
+    if ( draw ) {
+        draw = board_handlePenUp( globals->game.board, 0x7FFF, 0x7FFF );
+        globals->penDown = XP_FALSE;
+    }
+    return draw;
+} /* checkPenDown */
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    int wmId, wmEvent;
+    int wmId;
     RECT rt;
     XP_Bool draw = XP_FALSE;
     XWTimerReason why;
@@ -1859,15 +1870,17 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 #ifdef CEFEATURE_CANSCROLL
         case WM_VSCROLL:
+            draw = checkPenDown( globals );
             draw = handleScroll( globals, (short int)HIWORD(wParam),
                                  (short int)LOWORD(wParam),
-                                 (HWND)lParam );
+                                 (HWND)lParam ) || draw;
             break;
 #endif
 
         case WM_COMMAND:
-            wmId    = LOWORD(wParam); 
-            wmEvent = HIWORD(wParam); 
+            (void)checkPenDown( globals );
+            wmId = LOWORD(wParam); 
+
             // Parse the menu selections:
             switch (wmId) {
             case ID_FILE_ABOUT:
@@ -1947,6 +1960,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = handleDoneCmd( globals);
                 break;
 
+#ifndef _WIN32_WCE
+            case ID_MOVE_FLIP:
+#endif
             case FLIP_BUTTON_ID:
                 draw = board_flip( globals->game.board );
                 break;
@@ -2004,9 +2020,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case WM_LBUTTONDOWN:
+            draw = checkPenDown( globals );
             globals->penDown = XP_TRUE;
             draw = board_handlePenDown( globals->game.board, LOWORD(lParam), 
-                                        HIWORD(lParam), &handled );
+                                        HIWORD(lParam), &handled )
+                || draw;
             break;
 
         case WM_MOUSEMOVE:

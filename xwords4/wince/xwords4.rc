@@ -125,6 +125,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Turn &done",                  ID_MOVE_TURNDONE
         MENUITEM "&Juggle",                     ID_MOVE_JUGGLE
+#ifndef _WIN32_WCE
+        MENUITEM "&Flip",                       ID_MOVE_FLIP
+#endif
         MENUITEM "&Trade",                      ID_MOVE_TRADE
         MENUITEM "(un)&Hide tray",              ID_MOVE_HIDETRAY
     END
