@@ -78,10 +78,9 @@ static void figureBoardRect( BoardCtxt* board );
 
 static void drawTimer( BoardCtxt* board );
 static void drawScoreBoard( BoardCtxt* board );
-static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                       XP_Bool doMirror );
+static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
 static void
-invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect, XP_Bool doMirror );
+invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect );
 
 static XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                                 XP_U16 tileIndex, Tile blankFace );
@@ -127,8 +126,7 @@ static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
-static void invalCurHintRect( BoardCtxt* board, XP_U16 player,
-                              XP_Bool doMirrow );
+static void invalCurHintRect( BoardCtxt* board, XP_U16 player );
 static void clearCurHintRect( BoardCtxt* board );
 
 #else
@@ -461,18 +459,18 @@ board_getFocusOwner( BoardCtxt* board )
 #endif
 
 static void
-invalArrowCell( BoardCtxt* board, XP_Bool doMirror )
+invalArrowCell( BoardCtxt* board )
 {
     BoardArrow* arrow = &board->boardArrow[board->selPlayer];
-    invalCell( board, arrow->col, arrow->row, doMirror );
+    invalCell( board, arrow->col, arrow->row );
 } /* invalArrowCell */
 
 #ifdef KEYBOARD_NAV
 static void
-invalCursorCell( BoardCtxt* board, XP_Bool doMirror )
+invalCursorCell( BoardCtxt* board )
 {
     BdCursorLoc loc = board->bdCursor[board->selPlayer];
-    invalCell( board, loc.col, loc.row, doMirror );
+    invalCell( board, loc.col, loc.row );
 } /* invalCursorCell */
 #endif
 
@@ -483,7 +481,7 @@ invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw )
 
     if ( board->tradeInProgress[turn] ) {
         MiniWindowStuff* stuff = &board->miniWindowStuff[MINIWINDOW_TRADING];
-        invalCellsUnderRect( board, &stuff->rect, XP_FALSE );
+        invalCellsUnderRect( board, &stuff->rect );
         if ( redraw ) {
             board->tradingMiniWindowInvalid = XP_TRUE;
         }
@@ -647,16 +645,16 @@ board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer )
 
 #ifdef XWFEATURE_SEARCHLIMIT
         if ( board->hasHintRect[oldPlayer] ) {
-            invalCurHintRect( board, oldPlayer, XP_FALSE );
+            invalCurHintRect( board, oldPlayer );
         }
         if ( board->hasHintRect[newPlayer] ) {
-            invalCurHintRect( board, newPlayer, XP_FALSE );
+            invalCurHintRect( board, newPlayer );
         }
 #endif
 
-        invalArrowCell( board, XP_FALSE );
+        invalArrowCell( board );
         board->selPlayer = (XP_U8)newPlayer;
-        invalArrowCell( board, XP_FALSE );
+        invalArrowCell( board );
 
         board_invalTrayTiles( board, ALLTILES );
         board->dividerInvalid = XP_TRUE;
@@ -674,7 +672,7 @@ board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row )
 
     if ( getCellRect( board, col, row, &cellRect ) ) {
         draw_invertCell( board->draw, &cellRect );
-        invalCell( board, col, row, XP_FALSE );
+        invalCell( board, col, row );
     }
     /*     sleep(1); */
 } /* board_hiliteCellAt */
@@ -888,7 +886,7 @@ board_invalAll( BoardCtxt* board )
  * actually happens.
  */
 static XP_Bool
-invalCellsWithTiles( BoardCtxt* board, XP_Bool doMirror )
+invalCellsWithTiles( BoardCtxt* board )
 {
     ModelCtxt* model = board->model;
     XP_S16 turn = board->selPlayer;
@@ -908,7 +906,7 @@ invalCellsWithTiles( BoardCtxt* board, XP_Bool doMirror )
             XP_Bool ignore;
             if ( model_getTile( model, col, row, includePending,
                                 turn, &tile, &ignore, &ignore, &ignore ) ) {
-                invalCell( board, col, row, doMirror );
+                invalCell( board, col, row );
             }
         }
     }
@@ -969,7 +967,7 @@ invalBlanksWithNeighbors( BoardCtxt* board, BlankQueue* bqp )
              || (row > 0 && INVAL_BIT_SET( board, col, row-1 ))
              || (row < lastRow && INVAL_BIT_SET( board, col, row+1 )) ) {
 
-            invalCell( board, col, row, XP_FALSE );
+            invalCell( board, col, row );
 
             invalBlanks.col[nInvalBlanks] = (XP_U8)col;
             invalBlanks.row[nInvalBlanks] = (XP_U8)row;
@@ -998,7 +996,7 @@ scrollIfCan( BoardCtxt* board )
             /* inval the rows that have been scrolled into view.  I'm cheating
                making the client figure the inval rect, but Palm's the only
                client now and it does it so well.... */
-            invalCellsUnderRect( board, &scrollR, XP_FALSE );
+            invalCellsUnderRect( board, &scrollR );
         } else {
             board_invalAll( board );
         }
@@ -1336,7 +1334,7 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
 } /* board_setTrayLoc */
 
 static void
-invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect, XP_Bool doMirror )
+invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect )
 {
     XP_U16 lastCol, lastRow;
 
@@ -1348,7 +1346,7 @@ invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect, XP_Bool doMirror )
 
             if ( getCellRect( board, lastCol, lastRow, &cell ) &&
                  rectsIntersect( rect, &cell ) ) {
-                invalCell( board, lastCol, lastRow, doMirror );
+                invalCell( board, lastCol, lastRow );
             }
         }
     }
@@ -1358,7 +1356,7 @@ void
 board_invalRect( BoardCtxt* board, XP_Rect* rect )
 {
     if ( rectsIntersect( rect, &board->boardBounds ) ) {
-        invalCellsUnderRect( board, rect, XP_FALSE );
+        invalCellsUnderRect( board, rect );
     }
     
     if ( rectsIntersect( rect, &board->trayBounds ) ) {
@@ -1486,12 +1484,12 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
              * get erased after the cells that are supposed to be revealed
              * get drawn. */
             board->eraseTray = !board->boardHidesTray;
-            invalCellsUnderRect( board, &board->trayBounds, XP_FALSE );
+            invalCellsUnderRect( board, &board->trayBounds );
         }
-        invalArrowCell( board, XP_FALSE );
+        invalArrowCell( board );
         board->scoreBoardInvalid = XP_TRUE; /* b/c what's bold may change */
 #ifdef XWFEATURE_SEARCHLIMIT
-        invalCurHintRect( board, selPlayer, XP_FALSE );
+        invalCurHintRect( board, selPlayer );
 #endif
 
         nVisible = board->lastVisibleRow - board->yOffset;
@@ -1500,37 +1498,56 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
     return changed;
 } /* setTrayVisState */
 
+static void
+invalReflection( BoardCtxt* board )
+{
+    XP_U16 nRows = model_numRows( board->model );
+    XP_U16 saveCols = model_numCols( board->model );
+
+    while ( nRows-- ) {
+        XP_U16 nCols;
+        XP_U16 redrawFlag = board->redrawFlags[nRows];
+        if ( !redrawFlag ) {
+            continue;           /* nothing set this row */
+        }
+        nCols = saveCols;
+        while ( nCols-- ) {
+            if ( 0 != (redrawFlag & (1<<nCols)) ) {
+                invalCell( board, nRows, nCols );
+            }
+        }
+    }
+} /* invalReflection */
+
 XP_Bool
 board_flip( BoardCtxt* board )
 {
-    invalArrowCell( board, XP_TRUE );
+    invalArrowCell( board );
 #ifdef KEYBOARD_NAV
-    invalCursorCell( board, XP_TRUE );
+    invalCursorCell( board );
 #endif
 
     if ( board->boardObscuresTray ) {
-        invalCellsUnderRect( board, &board->trayBounds, XP_TRUE );
+        invalCellsUnderRect( board, &board->trayBounds );
     }
-    invalCellsWithTiles( board, XP_TRUE );
+    invalCellsWithTiles( board );
 
 #ifdef XWFEATURE_SEARCHLIMIT
-    invalCurHintRect( board, board->selPlayer, XP_TRUE );
+    invalCurHintRect( board, board->selPlayer );
 #endif
 
     board->isFlipped = !board->isFlipped;
 
+    invalReflection( board ); /* For every x,y set, also set y,x */
+    
     return board->needsDrawing;
-    /* invalCellsWithTiles won't work here because we need to invalidate
-     * cells that are empty, or that will be empty after the flip. */
-    /*     board_invalAll( board ); */
-    /*     return XP_TRUE; */
 } /* board_flip */
 
 XP_Bool
 board_toggle_showValues( BoardCtxt* board )
 {
     board->showCellValues = !board->showCellValues;
-    return invalCellsWithTiles( board, XP_FALSE );
+    return invalCellsWithTiles( board );
 } /* board_toggle_showValues */
 
 XP_Bool
@@ -1538,7 +1555,7 @@ board_setShowColors( BoardCtxt* board, XP_Bool showColors )
 {
     board->showColors = showColors;
     board->scoreBoardInvalid = XP_TRUE;
-    return invalCellsWithTiles( board, XP_FALSE );
+    return invalCellsWithTiles( board );
 } /* board_setShowColors */
 
 XP_Bool
@@ -1834,13 +1851,9 @@ getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
 } /* getCellRect */
 
 static void
-invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool doMirror )
+invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     board->redrawFlags[row] |= 1 << col;
-
-    if ( doMirror ) {
-        board->redrawFlags[col] |= 1 << row;
-    }
 
     /* if the trade window is up and this cell intersects it, set up to draw
        it again */
@@ -2034,7 +2047,7 @@ startHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
 static void
 invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
-                 XP_U16 rowB, XP_Bool doMirror )
+                 XP_U16 rowB )
 {
         XP_U16 col, row;
         XP_U16 firstCol, lastCol, firstRow, lastRow;
@@ -2056,7 +2069,7 @@ invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB,
 
         for ( row = firstRow; row <= lastRow; ++row ) {
             for ( col = firstCol; col <= lastCol; ) {
-                invalCell( board, col, row, doMirror );
+                invalCell( board, col, row );
                 ++col;
 #ifndef XWFEATURE_SEARCHLIMIT_DOCENTERS
                 if ( row > firstRow && row < lastRow && (col < lastCol) ) {
@@ -2068,17 +2081,17 @@ invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB,
 } /* invalCellRegion */
 
 static void
-invalCurHintRect( BoardCtxt* board, XP_U16 player, XP_Bool doMirror )
+invalCurHintRect( BoardCtxt* board, XP_U16 player )
 {
     BdHintLimits* limits = &board->limits[player];    
     invalCellRegion( board, limits->left, limits->top, 
-                     limits->right, limits->bottom, doMirror );
+                     limits->right, limits->bottom );
 } /* invalCurHintRect */
 
 static void
 clearCurHintRect( BoardCtxt* board )
 {
-    invalCurHintRect( board, board->selPlayer, XP_FALSE );
+    invalCurHintRect( board, board->selPlayer );
     board->hasHintRect[board->selPlayer] = XP_FALSE;
 } /* clearCurHintRect */
 
@@ -2114,9 +2127,9 @@ invalHintRectDiffs( BoardCtxt* board, BdHintLimits* newLim,
        performance seems good enough without adding the complexity and new
        bugs... */
     invalCellRegion( board, newLim->left, newLim->top, 
-                     newLim->right, newLim->bottom, XP_FALSE );
+                     newLim->right, newLim->bottom );
     invalCellRegion( board, oldLim->left, oldLim->top, 
-                     oldLim->right, oldLim->bottom, XP_FALSE );
+                     oldLim->right, oldLim->bottom );
 
     /* The challenge in doing a smarter diff is that some squares need to be
        invalidated even if they're part of the borders of both limits rects,
@@ -2185,7 +2198,7 @@ finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
     board->hasHintRect[board->selPlayer] = makeActive;
     if ( !makeActive ) {
-        invalCurHintRect( board, board->selPlayer, XP_FALSE );
+        invalCurHintRect( board, board->selPlayer );
         needsRedraw = XP_TRUE;
     }    
     board_resetEngine( board );
@@ -2472,12 +2485,12 @@ tryMoveArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
                 arrow->visible = XP_TRUE;
                 arrow->vert = XP_FALSE;
             } else {
-                invalArrowCell( board, XP_FALSE );
+                invalArrowCell( board );
             }
             arrow->col = (XP_U8)col;
             arrow->row = (XP_U8)row;
         }
-        invalCell( board, col, row, XP_FALSE );
+        invalCell( board, col, row );
         result = XP_TRUE;
     }
     return result;
@@ -2708,7 +2721,7 @@ board_toggle_arrowDir( BoardCtxt* board )
     BoardArrow* arrow = &board->boardArrow[board->selPlayer];
     if ( arrow->visible ) {
         arrow->vert = !arrow->vert;
-        invalArrowCell( board, XP_FALSE );
+        invalArrowCell( board );
         return XP_TRUE;
     } else {
         return XP_FALSE;
@@ -2852,8 +2865,8 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey )
     changed = figureNextLoc( board, cursorKey, XP_TRUE, XP_FALSE, 
                              &col, &row );
     if ( changed ) {
-        invalCell( board, loc.col, loc.row, XP_FALSE );
-        invalCell( board, col, row, XP_FALSE );
+        invalCell( board, loc.col, loc.row );
+        invalCell( board, col, row );
         loc.col = col;
         loc.row = row;
         board->bdCursor[board->selPlayer] = loc;
@@ -2991,8 +3004,8 @@ static void
 setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, XP_U16 row )
 {
     BoardArrow* arrow = &board->boardArrow[player];
-    invalCell( board, arrow->col, arrow->row, XP_FALSE );
-    invalCell( board, col, row, XP_FALSE );
+    invalCell( board, arrow->col, arrow->row );
+    invalCell( board, col, row );
 
     arrow->col = (XP_U8)col;
     arrow->row = (XP_U8)row;
@@ -3034,7 +3047,7 @@ setArrowVisibleFor( BoardCtxt* board, XP_U16 player, XP_Bool visible )
     XP_Bool result = arrow->visible;
     if ( arrow->visible != visible ) {
         arrow->visible = visible;
-        invalArrowCell( board, XP_FALSE );
+        invalArrowCell( board );
     }
     return result;
 } /* setArrowVisibleFor */
@@ -3086,7 +3099,7 @@ boardCellChanged( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row,
         checkScrollCell( board, turn, col, row );
     }
 
-    invalCell( (BoardCtxt*)p_board, col, row, XP_FALSE );
+    invalCell( (BoardCtxt*)p_board, col, row );
 } /* boardCellChanged */
 
 static void
