@@ -169,10 +169,13 @@
 #define ID_MOVE_JUGGLE                  40016
 #define ID_MOVE_HIDETRAY                40017
 #define ID_MOVE_TURNDONE                40018
-#define ID_FILE_NEWGAME                 40019
-#define ID_FILE_SAVEDGAMES              40020
-#define ID_EDITTEXT                     40021
-#define ID_FILE_PREFERENCES             40022
+#ifndef _WIN32_WCE
+# define ID_MOVE_FLIP                   40019
+#endif
+#define ID_FILE_NEWGAME                 40020
+#define ID_FILE_SAVEDGAMES              40021
+#define ID_EDITTEXT                     40022
+#define ID_FILE_PREFERENCES             40023
 #define ID_GAME_RESENDMSGS              40025
 
 #define ID_COLORS_RES                   9999
