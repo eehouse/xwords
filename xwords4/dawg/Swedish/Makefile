@@ -27,10 +27,12 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
+SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/swedish15.dict.gz
+
 # Q and W are not available as tiles, but I'm told there's a custom in
 # Swedish play of allowing blanks to stand for those letters as well.
 # So we don't exclude words with those letters from the dictionary.
-$(LANG)Main.dict.gz: swedish15.dict.gz
+$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr [a-zäåæöü] [A-ZÄÅÆÖÜ] | \
 		grep '^[A-ZÄÅÆÖÜ]\{2,15\}$$' | \
 		gzip -c > $@
