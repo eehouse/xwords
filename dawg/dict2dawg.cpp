@@ -610,7 +610,7 @@ parseAndSort( FILE* infile )
         if ( eof  ) {
             break;
         }
-        if ( memleft <= 0 ) {
+        if ( memleft < 0 ) {
             ERROR_EXIT( "no memory left\n" );
         }
     }
@@ -743,11 +743,11 @@ MakeTrieNode( int letter, bool isTerminal, int firstChildOffset,
 static void
 writeOutStartNode( const char* startNodeOut, int firstRootChildOffset )
 {
-    FILE* NODEOUT;
-    NODEOUT = fopen( startNodeOut, "w" );
+    FILE* nodeout;
+    nodeout = fopen( startNodeOut, "w" );
     unsigned long be = htonl( firstRootChildOffset );
-    (void)fwrite( &be, sizeof(be), 1, NODEOUT );
-    fclose( NODEOUT );
+    (void)fwrite( &be, sizeof(be), 1, nodeout );
+    fclose( nodeout );
 } // writeOutStartNode
 
 // build the hash for translating.  I'm using a hash assuming it'll be
