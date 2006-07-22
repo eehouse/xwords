@@ -17,14 +17,14 @@
 LANGCODE:sv_SE
 
 
-LANGFILTER_POSTCLIP: | tr [a-zäåö] [A-ZÄÅÖ]
-LANGFILTER_POSTCLIP: | grep '^[A-ZÄÅÖ]*$'
+LANGFILTER_POSTCLIP: | tr [a-zäåæöü] [A-ZÄÅÆÖÜ]
+LANGFILTER_POSTCLIP: | grep '^[A-ZÄÅÆÖÜ]*$'
 LANGFILTER_POSTCLIP: | tr '\n' '\000'
 
 NEEDSSORT:true
 
-LANGINFO: <p>From and English-spaker's perspective, Swedish drops Q
-LANGINFO: and W, and adds Ä, Å, and Ö.</p>
+LANGINFO: <p>From an English-speaker's perspective, Swedish drops Q
+LANGINFO: and W, and adds Ä, Å, Æ, Ö and Ü.</p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Swedish==7.  Low byte is padding
