@@ -54,6 +54,9 @@ enum {
 
     STRS_VALUES_HEADER,
 
+    STR_LOCALPLAYERS,
+    STR_TOTALPLAYERS,
+
     STR_NOT_USED
 };
 

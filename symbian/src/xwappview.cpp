@@ -362,7 +362,8 @@ sym_util_askPassword( XW_UtilCtxt* /*uc*/, const XP_UCHAR* /*name*/,
 }
 
 static void
-sym_util_trayHiddenChange(XW_UtilCtxt* /*uc*/, XW_TrayVisState /*newState*/ )
+sym_util_trayHiddenChange(XW_UtilCtxt* /*uc*/, XW_TrayVisState /*newState*/,
+                          XP_U16 /*nVisibleRows*/)
 {
 }
 
