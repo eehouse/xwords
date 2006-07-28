@@ -808,7 +808,6 @@ palmSetAttrProc( void* closure, NewGameAttr attr, const NGValue value )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
     PalmNewGameState* state = &globals->newGameState;
-    FieldPtr field;
 
     switch ( attr ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -824,15 +823,22 @@ palmSetAttrProc( void* closure, NewGameAttr attr, const NGValue value )
         setSelectorFromList( XW_NPLAYERS_SELECTOR_ID, 
                              state->playerNumList, value.ng_u16 - 1 );
         break;
-    case NG_ATTR_NPLAYHEADER:
-        field = getActiveObjectPtr( XW_TOTALP_FIELD_ID );
-        FldSetTextPtr( field, (char*)value.ng_cp );
+    case NG_ATTR_NPLAYHEADER: {
+        FieldPtr field = getActiveObjectPtr( XW_TOTALP_FIELD_ID );
+        char* cur = FldGetTextPtr( field );
+        /* Need to update to get it drawn and that flashes the whole dialog.
+           So avoid if possible. */
+        if ( !cur || (0 != StrCompare( cur, value.ng_cp ) ) ) {
+            FldSetTextPtr( field, (char*)value.ng_cp );
+            FrmUpdateForm( 0, frmRedrawUpdateCode );
+        }
+    }
         break;
     case NG_ATTR_CANJUGGLE:
         XP_ASSERT(0);           /* doesn't make sense */
         break;
     }
-}
+} /* palmSetAttrProc */
 
 static XP_U16
 palmPlayerFromID( XP_U16 id, XP_U16 base )
