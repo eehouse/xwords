@@ -1,4 +1,4 @@
-# -*- mode: Makefile; compile-command: "make ARCH=COMBINED"; -*-
+# -*- mode: Makefile; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
