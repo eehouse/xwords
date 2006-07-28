@@ -187,11 +187,6 @@ measureFace( PalmDrawCtx* dctx, XP_UCHAR face, PalmFontHtInfo* fhi )
             fhi->topOffset = top;
             fhi->height = bottom - top + 1;
 
-#ifndef XW_TARGET_PNO
-            /* %c doesn't work with my ARM impl of StrPrintF */
-            XP_LOGF( "char: %c; top: %d; height: %d",
-                     ch, fhi->topOffset, fhi->height );
-#endif
         }
         BmpDelete( bitmap );
     }
