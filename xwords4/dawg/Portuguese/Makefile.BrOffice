@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=Portuguese
+LANG=PortugueseBR
 LANGCODE=pt_PT
 
 TARGET_TYPE ?= PALM
@@ -25,9 +25,9 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/portugueseBR.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portugueseBR.txt.gz
 
-$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
+$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile.BrOffice
 	zcat $< | tr [a-zç] [A-ZÇ] | \
 		grep '^[A-JL-VXZÇ]\+$$' | \
 		gzip -c > $@
@@ -39,4 +39,4 @@ clean: clean_common
 	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb
 
 help:
-	@echo "make [SOURCEDICT=$(XWDICTPATH)/$(LANG)/portugueseBR.txt]"
+	@echo "make [SOURCEDICT=$(XWDICTPATH)/Portuguese/portugueseBR.txt]"
