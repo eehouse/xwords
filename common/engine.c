@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org).  All rights reserved.  
+ * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,7 +55,8 @@ typedef struct MoveIterationData {
     XP_U16 leftInMoveCache;
 } MoveIterationData;
 
-typedef XP_U32 Crosscheck;	/* one bit per tile that's possible here */
+/* one bit per tile that's possible here *\/ */
+typedef struct Crosscheck { XP_U32 bits[2]; } Crosscheck;
 
 struct EngineCtxt {
     ModelCtxt* model;
@@ -100,8 +102,9 @@ static array_edge* edge_with_tile( DictionaryCtxt* dict, array_edge* from, Tile 
 static XP_Bool scoreQualifies( EngineCtxt* engine, XP_U16 score );
 static void findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 
                                 XP_U16 col, XP_U16 row ) ;
-static Crosscheck figureCrosschecks( EngineCtxt* engine, XP_U16 col, 
-                                     XP_U16 row, XP_U16* scoreP );
+static void figureCrosschecks( EngineCtxt* engine, XP_U16 col, 
+                               XP_U16 row, XP_U16* scoreP,
+                               Crosscheck* check );
 static XP_Bool isAnchorSquare( EngineCtxt* engine, XP_U16 col, XP_U16 row );
 static array_edge* follow( DictionaryCtxt* dict, array_edge* in );
 static array_edge* edge_from_tile( DictionaryCtxt* dict, array_edge* from, 
@@ -153,7 +156,8 @@ static XP_S16 cmpMoves( PossibleMove* m1, PossibleMove* m2 );
     ((Tile)(((array_edge_old*)(edge))->bits & LETTERMASK_OLD))
 #endif
 
-#define CROSSCHECK_CONTAINS(chk,tile) (((chk) & (1L<<(tile))) != 0)
+/* #define CROSSCHECK_CONTAINS(chk,tile) (((chk) & (1L<<(tile))) != 0) */
+#define CROSSCHECK_CONTAINS(chk,tile) checkIsSet( (chk), (tile) )
 
 #define HILITE_CELL( engine, col, row ) \
     util_hiliteCell( (engine)->util, (col), (row) )
@@ -242,7 +246,7 @@ initTray( EngineCtxt* engine, const Tile* tiles, XP_U16 numTiles )
         XP_MEMSET( engine->rack, 0, sizeof(engine->rack) );
         for ( i = 0; i < numTiles; ++i ) {
             Tile tile = *tiles++;
-            XP_ASSERT( tile <= MAX_UNIQUE_TILES+1 );
+            XP_ASSERT( tile < MAX_UNIQUE_TILES );
             ++engine->rack[tile];
         }
     }
@@ -542,16 +546,15 @@ findMovesOneRow( EngineCtxt* engine )
         lastSearchCol = lastCol;
     }
 
+    XP_MEMSET( &engine->rowChecks, 0, sizeof(engine->rowChecks) ); /* clear */
     for ( col = 0; col <= lastCol; ++col ) {
-        Crosscheck check;
         if ( col < firstSearchCol || col > lastSearchCol ) {
-            check = 0x00000000;
             engine->scoreCache[col] = 0;
         } else {
-            check = figureCrosschecks( engine, col, row, 
-                                       &engine->scoreCache[col] );
+            figureCrosschecks( engine, col, row, 
+                               &engine->scoreCache[col],
+                               &engine->rowChecks[col]);
         }
-        engine->rowChecks[col] = check;
 
         /* 	XP_DEBUGF( "row %d: set scoreCache[%d] to %d\n", row, col,  */
         /* 		 engine->scoreCache[col] ); */
@@ -587,10 +590,36 @@ lookup( DictionaryCtxt* dict, array_edge* edge, Tile* buf, XP_U16 tileIndex,
     return XP_FALSE;
 } /* lookup */
 
-static Crosscheck
-figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP )
+static void
+setCheck( Crosscheck* check, Tile tile )
 {
-    Crosscheck result = 0L;  /* nothing's possible */
+    XP_U32* ptr = &check->bits[0];
+    XP_ASSERT( tile < MAX_UNIQUE_TILES );
+    while ( tile > 31 ) {
+        ++ptr;
+        tile -= 32;
+        XP_ASSERT( tile <= 31 ); /* only iterate once!!! */
+    }
+    *ptr |= 1L << tile;
+} /* setCheck */
+
+static XP_Bool
+checkIsSet( const Crosscheck* check, Tile tile )
+{
+    const XP_U32* ptr = &check->bits[0];
+    XP_ASSERT( tile < MAX_UNIQUE_TILES );
+    while ( tile > 31 ) {
+        ++ptr;
+        tile -= 32;
+        XP_ASSERT( tile <= 31 ); /* only iterate once!!! */
+    }
+    return (*ptr & (1L<<tile)) != 0;
+} /* checkIsSet */
+
+static void
+figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
+                   Crosscheck* check )
+{
     XP_S16 startY, maybeY;
     XP_U16 numRows = engine->numRows;
     Tile tile;
@@ -622,8 +651,9 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP )
         if ( (y == startY) &&
              ((y == numRows-1) ||
               (localGetBoardTile( engine, x, y+1, XP_FALSE ) == EMPTY_TILE))){
-            result = 0xFFFFFFFF; /* all tiles legal and checkScore remains 0,
-                                    as there are no neighbors */
+            /* all tiles legal and checkScore remains 0, as there are no
+               neighbors */
+            XP_MEMSET( check, 0xFF, sizeof(*check) );
             goto outer;
         }
 
@@ -653,7 +683,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP )
             if ( in_edge == NULL ) {
                 /* Only way to have gotten here is if a user's played a word
                    not in this dict.  We'll not be able to build on it! */
-                result = 0L; 
+                XP_ASSERT( check->bits[0] == 0L && check->bits[1] == 0L );
                 goto outer;
             }
             ++startY;
@@ -683,9 +713,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP )
             XP_ASSERT( tile < MAX_UNIQUE_TILES );
             tiles[0] = tile;
             if ( lookup( dict, in_edge, tiles, 0, tilesAfter ) ) {
-                Crosscheck tmp = (1L << tile);
-                XP_ASSERT( tmp != 0 );
-                result |= tmp;
+                setCheck( check, tile );
             }
 
             if ( IS_LAST_EDGE(dict,candidateEdge ) ) {
@@ -702,7 +730,6 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP )
     if ( scoreP != NULL ) { 
         *scoreP = checkScore;
     }
-    return result;
 } /* figureCrosschecks */
 
 XP_Bool
@@ -914,7 +941,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
             goto no_check; // don't check at the end
         }
     } else if ( tile == EMPTY_TILE ) {
-        Crosscheck check = engine->rowChecks[col]; /* make a local copy */
+        const Crosscheck* check = &engine->rowChecks[col];
 
         if ( engine->nTilesMax > 0 ) {
             for ( ; ; ) {
@@ -970,7 +997,7 @@ rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank )
 {
     Tile blankIndex = engine->blankTile;
 
-    XP_ASSERT( tile < 32 );
+    XP_ASSERT( tile < MAX_UNIQUE_TILES );
     XP_ASSERT( tile != blankIndex );
     XP_ASSERT( engine->nTilesMax > 0 );
 
