@@ -42,24 +42,24 @@ extern "C" {
 
 #define MIN_TRADE_TILES MAX_TRAY_TILES
 /* apply to CellTile */
-#define TILE_VALUE_MASK 0x001F 
-#define TILE_BLANK_BIT 0x0020
+#define TILE_VALUE_MASK 0x003F 
+#define TILE_BLANK_BIT 0x0040
 #define IS_BLANK(t)  (((t)&TILE_BLANK_BIT)!= 0)
-#define TILE_EMPTY_BIT 0x0040
-#define TILE_PENDING_BIT 0x0080
-#define PREV_MOVE_BIT 0x100
+#define TILE_EMPTY_BIT 0x0080
+#define TILE_PENDING_BIT 0x0100
+#define PREV_MOVE_BIT 0x200
 
-#define CELL_OWNER_MASK 0x0600
-#define CELL_OWNER_OFFSET 9
+#define CELL_OWNER_MASK 0x0C00
+#define CELL_OWNER_OFFSET 10
 #define CELL_OWNER(t) (((t)&CELL_OWNER_MASK) >> CELL_OWNER_OFFSET)
 
-#define MAX_UNIQUE_TILES 32	/* max tile non-blank faces */
+#define MAX_UNIQUE_TILES 64	/* max tile non-blank faces */
 #define MAX_NUM_BLANKS 4
 
 /* Used by scoring code and engine as fast representation of moves. */
 typedef struct MoveInfoTile {
     XP_U8 varCoord;		/* 5 bits ok (0-16 for 17x17 board) */
-    Tile tile;			/* 5 bits will do */
+    Tile tile;			/* 6 bits will do */
 } MoveInfoTile;
 
 typedef struct MoveInfo {
