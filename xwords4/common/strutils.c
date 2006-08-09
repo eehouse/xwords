@@ -39,7 +39,7 @@ bitsForMax( XP_U32 n )
 } /* bitsForMax */
 
 static void
-tilesToStream( XWStreamCtxt* stream, Tile* tiles, XP_U16 nTiles )
+tilesToStream( XWStreamCtxt* stream, const Tile* tiles, XP_U16 nTiles )
 {
     while ( nTiles-- ) {
         stream_putBits( stream, TILE_NBITS, *tiles++ );
@@ -47,7 +47,7 @@ tilesToStream( XWStreamCtxt* stream, Tile* tiles, XP_U16 nTiles )
 } /* tilesToStream */
 
 void
-traySetToStream( XWStreamCtxt* stream, TrayTileSet* ts )
+traySetToStream( XWStreamCtxt* stream, const TrayTileSet* ts )
 {
     XP_U16 nTiles = ts->nTiles;
     stream_putBits( stream, NTILES_NBITS, nTiles );
