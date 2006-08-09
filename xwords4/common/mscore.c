@@ -303,7 +303,8 @@ normalizeMoves( ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
         /* we've found the next to transfer (4 bytes smaller without a temp
            local ptr. */
         pt = &player->pendingTiles[lowIndex];
-        moveInfo->tiles[i].varCoord = (XP_U8)(lastTaken = lowCol);
+        lastTaken = lowCol;
+        moveInfo->tiles[i].varCoord = (XP_U8)lastTaken;
 
         moveInfo->tiles[i].tile = pt->tile;
     }
