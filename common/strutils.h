@@ -31,7 +31,7 @@ extern "C" {
 
 XP_U16 bitsForMax( XP_U32 n );
 
-void traySetToStream( XWStreamCtxt* stream, TrayTileSet* ts );
+void traySetToStream( XWStreamCtxt* stream, const TrayTileSet* ts );
 void traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts );
 
 XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits );
