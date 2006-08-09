@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001, 2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -115,7 +116,7 @@ stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream )
 } /* stack_writeToStream */
 
 static void
-pushEntry( StackCtxt* stack, StackEntry* entry )
+pushEntry( StackCtxt* stack, const StackEntry* entry )
 {
     XP_U16 i;
     XWStreamPos oldLoc;
@@ -143,7 +144,8 @@ pushEntry( StackCtxt* stack, StackEntry* entry )
         for ( i = 0; i < nTiles; ++i ) {
             stream_putBits( stream, 5, 
                             entry->u.move.moveInfo.tiles[i].varCoord );
-            stream_putBits( stream, 6, entry->u.move.moveInfo.tiles[i].tile );
+            stream_putBits( stream, TILE_NBITS+1, /* 1 for blank */
+                            entry->u.move.moveInfo.tiles[i].tile );
         }
         if ( entry->moveType == MOVE_TYPE ) {
             traySetToStream( stream, &entry->u.move.newTiles );
@@ -190,8 +192,10 @@ readEntry( StackCtxt* stack, StackEntry* entry )
         for ( i = 0; i < nTiles; ++i ) {
             entry->u.move.moveInfo.tiles[i].varCoord = 
                 (XP_U8)stream_getBits(stream, 5);
+            /* PENDING: this is changing from 6 to 7.  Need to detect old
+               version and be able to open it!!! */
             entry->u.move.moveInfo.tiles[i].tile = 
-                (Tile)stream_getBits( stream, 6 );
+                (Tile)stream_getBits( stream, TILE_NBITS + 1 );
         }
 
         if ( entry->moveType == MOVE_TYPE ) {
