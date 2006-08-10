@@ -41,6 +41,7 @@ struct StackCtxt {
 
     XP_U16 cacheNext;
     XP_U16 nEntries;
+    XP_U16 bitsPerTile;
     XP_U16 highWaterMark;
 
     MPSLOT
@@ -55,6 +56,14 @@ stack_init( StackCtxt* stack )
     /* I see little point in freeing or shrinking stack->data.  It'll get
        shrunk to fit as soon as we serialize/deserialize anyway. */
 } /* stack_init */
+
+void
+stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
+{
+    XP_ASSERT( !!stack );
+    XP_LOGF( "%s(%d)", __FUNCTION__, bitsPerTile );
+    stack->bitsPerTile = bitsPerTile;
+}
 
 StackCtxt*
 stack_make( MPFORMAL VTableMgr* vtmgr )
@@ -118,7 +127,7 @@ stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream )
 static void
 pushEntry( StackCtxt* stack, const StackEntry* entry )
 {
-    XP_U16 i;
+    XP_U16 i, bitsPerTile;
     XWStreamPos oldLoc;
     XP_U16 nTiles = entry->u.move.moveInfo.nTiles;
     XWStreamCtxt* stream = stack->data;
@@ -141,11 +150,16 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
         stream_putBits( stream, NTILES_NBITS, nTiles );
         stream_putBits( stream, 5, entry->u.move.moveInfo.commonCoord );
         stream_putBits( stream, 1, entry->u.move.moveInfo.isHorizontal );
+        bitsPerTile = stack->bitsPerTile;
+        XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
         for ( i = 0; i < nTiles; ++i ) {
+            Tile tile;
             stream_putBits( stream, 5, 
                             entry->u.move.moveInfo.tiles[i].varCoord );
-            stream_putBits( stream, TILE_NBITS+1, /* 1 for blank */
-                            entry->u.move.moveInfo.tiles[i].tile );
+
+            tile = entry->u.move.moveInfo.tiles[i].tile;
+            stream_putBits( stream, bitsPerTile, tile & TILE_VALUE_MASK );
+            stream_putBits( stream, 1, (tile & TILE_BLANK_BIT) != 0 );
         }
         if ( entry->moveType == MOVE_TYPE ) {
             traySetToStream( stream, &entry->u.move.newTiles );
@@ -174,7 +188,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
 static void
 readEntry( StackCtxt* stack, StackEntry* entry )
 {
-    XP_U16 nTiles, i;
+    XP_U16 nTiles, i, bitsPerTile;
     XWStreamCtxt* stream = stack->data;
 
     entry->moveType = (StackMoveType)stream_getBits( stream, 2 );
@@ -189,13 +203,17 @@ readEntry( StackCtxt* stack, StackEntry* entry )
         XP_ASSERT( nTiles <= MAX_TRAY_TILES );
         entry->u.move.moveInfo.commonCoord = (XP_U8)stream_getBits(stream, 5);
         entry->u.move.moveInfo.isHorizontal = (XP_U8)stream_getBits(stream, 1);
+        bitsPerTile = stack->bitsPerTile;
+        XP_ASSERT( bitsPerTile == 5 || bitsPerTile == 6 );
         for ( i = 0; i < nTiles; ++i ) {
+            Tile tile;
             entry->u.move.moveInfo.tiles[i].varCoord = 
                 (XP_U8)stream_getBits(stream, 5);
-            /* PENDING: this is changing from 6 to 7.  Need to detect old
-               version and be able to open it!!! */
-            entry->u.move.moveInfo.tiles[i].tile = 
-                (Tile)stream_getBits( stream, TILE_NBITS + 1 );
+            tile = (Tile)stream_getBits( stream, bitsPerTile );
+            if ( 0 != stream_getBits( stream, 1 ) ) {
+                tile |= TILE_BLANK_BIT;
+            }
+            entry->u.move.moveInfo.tiles[i].tile = tile;
         }
 
         if ( entry->moveType == MOVE_TYPE ) {

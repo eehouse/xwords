@@ -81,13 +81,14 @@ model_make( MPFORMAL DictionaryCtxt* dict, XW_UtilCtxt* util, XP_U16 nCols,
         XP_MEMSET( result, 0, sizeof(*result) );
         MPASSIGN(result->vol.mpool, mpool);
 
-        result->vol.dict = dict;
         result->vol.util = util;
 
         model_init( result, nCols, nRows );
 
         XP_ASSERT( !!util->gameInfo );
         result->vol.gi = util->gameInfo;
+
+        model_setDictionary( result, dict );
     }
 
     return result;
@@ -261,7 +262,13 @@ model_setNPlayers( ModelCtxt* model, XP_U16 nPlayers )
 void
 model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 {
-    model->vol.dict = dict;
+     model->vol.dict = dict;
+
+     if ( !!dict ) {
+         XP_U16 nFaces = dict_numTileFaces( dict );
+         XP_ASSERT( !!model->vol.stack );
+         stack_setBitsPerTile( model->vol.stack, nFaces <= 32? 5 : 6 );
+     }
 } /* model_setDictionary */
 
 DictionaryCtxt*
