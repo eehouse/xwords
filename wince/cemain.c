@@ -1960,9 +1960,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = handleDoneCmd( globals);
                 break;
 
-#ifndef _WIN32_WCE
             case ID_MOVE_FLIP:
-#endif
             case FLIP_BUTTON_ID:
                 draw = board_flip( globals->game.board );
                 break;
