@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=Spanish
+XWLANG=Spanish
 LANGCODE=es_ES
 TARGET_TYPE ?= PALM
 
@@ -43,7 +43,7 @@ include ../Makefile.langcommon
 #$(LANG)Main.dict.gz: SpanishMain.dict.gz
 #	ln -s $< $@
 
-$(LANG)Main.dict.gz: $(XWDICTPATH)/$(LANG)/XavSpanish.dict.gz Makefile
+$(XWLANG)Main.dict.gz: $(XWDICTPATH)/$(XWLANG)/XavSpanish.dict.gz Makefile
 	zcat $< \
 	| tr '\207\216\222\227\234\237\226' 'aeiouu\321' \
 	| tr [a-zñ] [A-ZÑ] \

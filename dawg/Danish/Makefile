@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=Danish
+XWLANG=Danish
 LANGCODE=da_DK
 
 TARGET_TYPE ?= PALM
@@ -24,9 +24,9 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/LarsDanish.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/LarsDanish.dict.gz
 
-$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | tr [a-zåæø] [A-ZÅÆØ] | \
 		grep '[AEIOUÅÆØ]' | \
 		grep '^[A-PR-VX-ZÅÆØ]\+$$' | sort -u | \
@@ -36,7 +36,7 @@ $(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb
 
 help:
 	@echo 'make [SOURCEDICT=LarsDanish.dict.gz] [TARGET_TYPE=WINCE|PALM]'

@@ -67,9 +67,9 @@ else
 PDBTYPE = Xwr3
 endif
 
-all: $(LANG)2to8.pdb
+all: $(XWLANG)2to8.pdb
 
-empty: $(LANG)0to0.pdb
+empty: $(XWLANG)0to0.pdb
 
 # Those languages that have bitmap files for custom glyphs will need to
 # define BMPBINFILES and perhaps provide a rule for building the files
@@ -102,7 +102,7 @@ palmvalues.bin: values.bin palmspecials.bin
 #    unsigned char reserved[3]; // worst case this points to a new resource
 
 # include "flags" as used on the other platforms
-palmheader%.bin: $(LANG)%_wordcount.bin $(LANG)%_flags.bin
+palmheader%.bin: $(XWLANG)%_wordcount.bin $(XWLANG)%_flags.bin
 	rm -f $@
 	touch $@
 	cat $< >> $@
@@ -111,7 +111,7 @@ palmheader%.bin: $(LANG)%_wordcount.bin $(LANG)%_flags.bin
 	perl -e "print pack(\"C\",2)" >> $@	# valTable rec number
 	perl -e "print pack(\"CCC\",0)" >> $@	# reserved 3 bytes
 ifdef NEWDAWG
-	cat $(LANG)$*_flags.bin >> $@
+	cat $(XWLANG)$*_flags.bin >> $@
 else
 	perl -e "print pack(\"CC\",0)" >> $@	# c code added two more...
 endif
@@ -119,10 +119,10 @@ endif
 
 # This works, but leaves out the header info that the current version
 # has.  I'm not sure anybody cares, though...
-$(LANG)%.pdb: dawg$(LANG)%.stamp table.bin palmvalues.bin palmheader%.bin 
+$(XWLANG)%.pdb: dawg$(XWLANG)%.stamp table.bin palmvalues.bin palmheader%.bin 
 	$(PAR) c -a backup $@ \
 		$(basename $(@F)) $(PALM_DICT_TYPE) $(PDBTYPE) \
-		palmheader$*.bin table.bin palmvalues.bin dawg$(LANG)$*_*.bin
+		palmheader$*.bin table.bin palmvalues.bin dawg$(XWLANG)$*_*.bin
 
 # the files to export for byod
 byodbins: table.bin values.bin palmvalues.bin info.txt
@@ -140,11 +140,11 @@ ifeq ($(TARGET_TYPE),FRANK)
 # platforms is a by-product).  But if the EBM tools aren't there, just
 # build the .xwd file.
 ifeq (x$(shell echo -n $$EBOOKMAN_SDK)x,xx)
-all: $(LANG)2to8.xwd
-empty: $(LANG)0to0.xwd
+all: $(XWLANG)2to8.xwd
+empty: $(XWLANG)0to0.xwd
 else
-all: checkARCH $(LANG)2to8.seb
-empty: $(LANG)0to0.seb
+all: checkARCH $(XWLANG)2to8.seb
+empty: $(XWLANG)0to0.seb
 include ${EBOOKMAN_SDK}/ebsdk.uses
 endif
 
@@ -153,13 +153,13 @@ checkARCH:
 		 $(error "ARCH must be defined in ENV if TARGET_TYPE==FRANK"); \
 	fi
 
-$(LANG)%.seb: $(LANG)%.$(FRANK_EXT) $(LANG)%.atts 
+$(XWLANG)%.seb: $(XWLANG)%.$(FRANK_EXT) $(XWLANG)%.atts 
 	${ESDK_CREATESEB_EXE} $<
 	cp $< $<.saved
 
-$(LANG)%.atts:			#recreate it each time based on params
+$(XWLANG)%.atts:			#recreate it each time based on params
 	echo '_PUB|global+read-only|"Eric_House"' >> $@
-	echo "_NAME|global+read-only|\"$(LANG)2to8\""  >> $@
+	echo "_NAME|global+read-only|\"$(XWLANG)2to8\""  >> $@
 	echo "_EXT|global+read-only|\"$(FRANK_EXT)\""  >> $@
 	echo '_LCAT|nosign+global|"CONTENT"'  >> $@
 	echo '_PERM|global+read-only|"r"' >> $@
@@ -172,7 +172,7 @@ else
 ifeq ($(TARGET_TYPE),WINCE)
 
 ### WINCE section here ###
-all: $(LANG)2to8.xwd
+all: $(XWLANG)2to8.xwd
 	../mkxwdcab.pl -f $<
 
 else
@@ -204,14 +204,14 @@ else
 	perl -e "print pack(\"c\",$$siz)" > $@
 endif
 
-$(LANG)%.$(FRANK_EXT): dawg$(LANG)%.stamp $(LANG)%_flags.bin charcount.bin table.bin values.bin frankspecials.bin 
-	cat $(LANG)$*_flags.bin charcount.bin table.bin values.bin \
-		frankspecials.bin $(LANG)StartLoc.bin  \
-		$$(ls dawg$(LANG)$*_*.bin) > $@
+$(XWLANG)%.$(FRANK_EXT): dawg$(XWLANG)%.stamp $(XWLANG)%_flags.bin charcount.bin table.bin values.bin frankspecials.bin 
+	cat $(XWLANG)$*_flags.bin charcount.bin table.bin values.bin \
+		frankspecials.bin $(XWLANG)StartLoc.bin  \
+		$$(ls dawg$(XWLANG)$*_*.bin) > $@
 	cp $@ saveme.bin
 
 
-# For some reason I can't fathom dawg$(LANG)% gets nuked every time
+# For some reason I can't fathom dawg$(XWLANG)% gets nuked every time
 # the top-level rule fires (all: for whatever TARGET_TYPE.)  It
 # happens after the rule finishes....
 
@@ -220,34 +220,34 @@ $(LANG)%.$(FRANK_EXT): dawg$(LANG)%.stamp $(LANG)%_flags.bin charcount.bin table
 # 1: old-style DAWG.
 # 2: new-style DAWG, three bytes per node.
 # 3: new-style DAWG, four bytes per node
-$(LANG)%_flags.bin: dawg$(LANG)%.stamp
+$(XWLANG)%_flags.bin: dawg$(XWLANG)%.stamp
 ifdef NEWDAWG
-	if [ 3 = $$(cat $(LANG)$*_nodesize.bin) ] ; \
+	if [ 3 = $$(cat $(XWLANG)$*_nodesize.bin) ] ; \
 		then perl -e "print pack(\"n\",0x0002)" > $@; echo "flags=2"; \
-	elif [ 4 = $$(cat $(LANG)$*_nodesize.bin) ] ; \
+	elif [ 4 = $$(cat $(XWLANG)$*_nodesize.bin) ] ; \
 		then perl -e "print pack(\"n\",0x0003)" > $@; echo "flags=3"; \
 	elif true; \
 		then echo "Unexpected node size"; exit 1; \
 	fi
 else
-	if [ 3 == $$(cat $(LANG)$*_nodesize.bin) ] ; \
+	if [ 3 == $$(cat $(XWLANG)$*_nodesize.bin) ] ; \
 		then perl -e "print pack(\"n\",0x0001)" > $@; echo "flags=1"; \
 		else echo "ERROR: old format can't handle 4-byte"; exit 1; \
 	fi
 endif
 
-dawg$(LANG)%.stamp: $(LANG)Main.dict.gz $(DICT2DAWG) table.bin ../Makefile.langcommon
-	start=$$(echo $@ | sed -e 's/dawg$(LANG)\([0-9]*\)to[0-9]*.stamp/\1/'); \
-	end=$$(echo $@ | sed -e 's/dawg$(LANG)[0-9]*to\([0-9]*\).stamp/\1/'); \
+dawg$(XWLANG)%.stamp: $(XWLANG)Main.dict.gz $(DICT2DAWG) table.bin ../Makefile.langcommon
+	start=$$(echo $@ | sed -e 's/dawg$(XWLANG)\([0-9]*\)to[0-9]*.stamp/\1/'); \
+	end=$$(echo $@ | sed -e 's/dawg$(XWLANG)[0-9]*to\([0-9]*\).stamp/\1/'); \
 	echo $${start} and $$end; \
 	zcat $< | grep "^.\{$${start},$${end}\}$$" | \
 		sort -u | $(DICT2DAWG) $(TABLE_ARG) table.bin -b 28000 \
-		-ob dawg$(LANG)$* \
-		-sn $(LANG)StartLoc.bin -k -term 10 -wc $(LANG)$*_wordcount.bin \
-		$(FORCE_4) -ns $(LANG)$*_nodesize.bin
+		-ob dawg$(XWLANG)$* \
+		-sn $(XWLANG)StartLoc.bin -k -term 10 -wc $(XWLANG)$*_wordcount.bin \
+		$(FORCE_4) -ns $(XWLANG)$*_nodesize.bin
 	touch $@
 
-$(LANG)%_wordcount.bin: dawg$(LANG)%.stamp
+$(XWLANG)%_wordcount.bin: dawg$(XWLANG)%.stamp
 	@echo
 
 # the files to export for byod
@@ -270,8 +270,8 @@ values.bin:  ../xloc.pl
 	zcat $< > $@
 
 clean_common:
-	rm -f $(LANG)Main.dict *.bin *.pdb *.seb dawg*.stamp *.$(FRANK_EXT) \
-		$(LANG)*.pdb $(LANG)*.seb 
+	rm -f $(XWLANG)Main.dict *.bin *.pdb *.seb dawg*.stamp *.$(FRANK_EXT) \
+		$(XWLANG)*.pdb $(XWLANG)*.seb 
 
 help:
 	@echo "make TARGET_TYPE=[FRANK|PALM]"

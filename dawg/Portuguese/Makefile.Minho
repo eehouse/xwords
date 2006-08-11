@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=PortuguesePT
+XWLANG=PortuguesePT
 LANGCODE=pt_PT
 
 TARGET_TYPE ?= PALM
@@ -27,7 +27,7 @@ include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portuguese_pt.bz2
 
-$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile.Minho
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile.Minho
 	bzcat $< | tr [a-zç] [A-ZÇ] | \
 		grep '^[A-JL-VXZÇ]\+$$' | \
 		gzip -c > $@
@@ -36,7 +36,7 @@ $(LANG)Main.dict.gz: $(SOURCEDICT) Makefile.Minho
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb
 
 help:
 	@echo "make [SOURCEDICT=$(XWDICTPATH)/Portuguese/portuguese_pt.bz2]"

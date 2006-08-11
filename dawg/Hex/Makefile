@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG = Hex
+XWLANG = Hex
 LANGCODE = hex
 
 TARGET_TYPE = WINCE
@@ -28,7 +28,7 @@ DICT ?= $(XWDICTPATH)/English/SOWPODS_official.txt.gz
 
 # Feel free to base this on whatever dictionary you have at hand.  I'm
 # using CollegeEng for no particular reason.
-$(LANG)Main.dict.gz: $(DICT)
+$(XWLANG)Main.dict.gz: $(DICT)
 	@echo "building $@ from $<"
 	zcat $< | tr [a-f] [A-F] | grep -e '^[A-F]\{2,8\}$$' | \
 		echo CAFEBABE DEADBEEF $$(cat -) | \
@@ -38,4 +38,4 @@ $(LANG)Main.dict.gz: $(DICT)
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb

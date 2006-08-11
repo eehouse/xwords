@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=Swedish
+XWLANG=Swedish
 LANGCODE=sv_SE
 
 # Swedish has too many chars for the old format.
@@ -27,12 +27,12 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/$(LANG)/swedish15.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/swedish15.dict.gz
 
 # Q and W are not available as tiles, but I'm told there's a custom in
 # Swedish play of allowing blanks to stand for those letters as well.
 # So we don't exclude words with those letters from the dictionary.
-$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr [a-zäåæöü] [A-ZÄÅÆÖÜ] | \
 		grep '^[A-ZÄÅÆÖÜ]\{2,15\}$$' | \
 		gzip -c > $@
@@ -41,5 +41,5 @@ $(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb
 
