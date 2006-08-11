@@ -20,7 +20,7 @@
 # then gzippped it.
 #
 
-LANG=Enable
+XWLANG=Enable
 LANGCODE=en_US
 TARGET_TYPE=FRANK
 
@@ -28,7 +28,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(LANG)Main.dict.gz: Enable1.txt.gz
+$(XWLANG)Main.dict.gz: Enable1.txt.gz
 	zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | \
 		gzip -c > $@
 
@@ -36,4 +36,4 @@ $(LANG)Main.dict.gz: Enable1.txt.gz
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb 
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb 

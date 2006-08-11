@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=Polish
+XWLANG=Polish
 LANGCODE=pl_PL
 
 TARGET_TYPE ?= FRANK
@@ -24,7 +24,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(LANG)Main.dict.gz: slowa.txt.gz
+$(XWLANG)Main.dict.gz: slowa.txt.gz
 	zcat $< | tr -d '\r' | tr [a-z±æê³ñó¶¼¿] [A-Z¡ÆÊ£ÑÓ¦¬¯] | \
 		grep '^[A-PR-UWYZ¡ÆÊ£ÑÓ¦¬¯]*$$' | gzip >$@
 
@@ -32,4 +32,4 @@ $(LANG)Main.dict.gz: slowa.txt.gz
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb

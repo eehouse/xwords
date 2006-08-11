@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=SOWPODS
+XWLANG=SOWPODS
 LANGCODE=en_US
 TARGET_TYPE=FRANK
 
@@ -25,7 +25,7 @@ include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/English/sow-twl.txt.gz 
 
-$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | \
 		gzip -c > $@
 
@@ -33,4 +33,4 @@ $(LANG)Main.dict.gz: $(SOURCEDICT) Makefile
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb 
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb 

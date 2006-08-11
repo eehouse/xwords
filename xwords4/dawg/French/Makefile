@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=French
+XWLANG=French
 LANGCODE=fr_FR
 
 TARGET_TYPE ?= FRANK
@@ -24,11 +24,11 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(LANG)Main.dict.gz: ods3.txt.gz
+$(XWLANG)Main.dict.gz: ods3.txt.gz
 	zcat $< | tr a-z A-Z | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
-	rm -f $(LANG)Main.dict.gz *.bin $(LANG)*.pdb $(LANG)*.seb
+	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb
