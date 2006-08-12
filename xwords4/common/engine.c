@@ -56,7 +56,8 @@ typedef struct MoveIterationData {
 } MoveIterationData;
 
 /* one bit per tile that's possible here *\/ */
-typedef struct Crosscheck { XP_U32 bits[2]; } Crosscheck;
+typedef XP_U32 CrossBits;
+typedef struct Crosscheck { CrossBits bits[2]; } Crosscheck;
 
 struct EngineCtxt {
     ModelCtxt* model;
@@ -593,7 +594,7 @@ lookup( DictionaryCtxt* dict, array_edge* edge, Tile* buf, XP_U16 tileIndex,
 static void
 setCheck( Crosscheck* check, Tile tile )
 {
-    XP_U32* ptr = &check->bits[0];
+    CrossBits* ptr = &check->bits[0];
     XP_ASSERT( tile < MAX_UNIQUE_TILES );
     while ( tile > 31 ) {
         ++ptr;
@@ -602,19 +603,6 @@ setCheck( Crosscheck* check, Tile tile )
     }
     *ptr |= 1L << tile;
 } /* setCheck */
-
-static XP_Bool
-checkIsSet( const Crosscheck* check, Tile tile )
-{
-    const XP_U32* ptr = &check->bits[0];
-    XP_ASSERT( tile < MAX_UNIQUE_TILES );
-    while ( tile > 31 ) {
-        ++ptr;
-        tile -= 32;
-        XP_ASSERT( tile <= 31 ); /* only iterate once!!! */
-    }
-    return (*ptr & (1L<<tile)) != 0;
-} /* checkIsSet */
 
 static void
 figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
@@ -941,12 +929,28 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
             goto no_check; // don't check at the end
         }
     } else if ( tile == EMPTY_TILE ) {
-        const Crosscheck* check = &engine->rowChecks[col];
-
         if ( engine->nTilesMax > 0 ) {
+            CrossBits check = engine->rowChecks[col].bits[0];
+            XP_Bool advanced = XP_FALSE;
             for ( ; ; ) {
+                XP_Bool contains;
                 tile = EDGETILE( dict, edge );
-                if ( CROSSCHECK_CONTAINS( check, tile ) ) {
+
+                /* If it's bigger than 32, use the second crosscheck.  This is
+                   a hack to optimize for the vastly more common case.  Even
+                   with languages that have more than 32 tiles at least half
+                   will be less than 32 in value. */
+                if ( (tile & ~0x1F) != 0 ) {
+                    if ( !advanced ) {
+                        check = engine->rowChecks[col].bits[1];
+                        advanced = XP_TRUE;
+                    }
+                    contains = (check & (1L << (tile>>5))) != 0;
+                } else {
+                    contains = (check & (1L << tile)) != 0;
+                }
+
+                if ( contains ) {
                     XP_Bool isBlank;
                     if ( rack_remove( engine, tile, &isBlank ) ) {
                         tiles[tileLength] = tile;
