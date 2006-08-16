@@ -15,6 +15,8 @@
 #
 # mingw32 mingw32-binutils mingw32-runtime pocketpc-sdk
 
+SVNREV = $(shell svnversion -n .)
+
 PLATFORM = wince
 
 TARGET_OS ?= win32
@@ -58,7 +60,7 @@ CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay
 
 CFLAGS += -Wall
 
-SVNDEF = -DSVN_REV='\"$(shell svnversion -n .)\"'
+SVNDEF = -DSVN_REV='\"$(SVNREV)\"'
 CFLAGS += $(SVNDEF)
 RESFLAGS += $(SVNDEF)
 
@@ -75,7 +77,7 @@ CFLAGS += -Os
 OBJDIR = obj_$(TARGET_OS)_rel
 endif
 
-TARGET = $(OBJDIR)/xwords4.exe
+TARGET = $(OBJDIR)/xwords4_$(SVNREV).exe
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \
