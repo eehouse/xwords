@@ -84,8 +84,9 @@ cursesUserError( CursesAppGlobals* globals, char* format, ... )
 } /* cursesUserError */
 
 static XP_S16 
-curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, XP_U16 playerNum,
-                          const XP_UCHAR4* texts, XP_U16 nTiles )
+curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi), 
+                          XP_U16 playerNum, const XP_UCHAR4* texts, 
+                          XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char query[128];
@@ -160,8 +161,9 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 } /* curses_util_userQuery */
 
 static void
-curses_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState state,
-                              XP_U16 nVisibleRows )
+curses_util_trayHiddenChange( XW_UtilCtxt* XP_UNUSED(uc), 
+                              XW_TrayVisState XP_UNUSED(state),
+                              XP_U16 XP_UNUSED(nVisibleRows) )
 {
     /* nothing to do if we don't have a scrollbar */
 } /* curses_util_trayHiddenChange */
@@ -205,13 +207,14 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
 } /* curses_util_notifyGameOver */
 
 static XP_Bool
-curses_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
+curses_util_hiliteCell( XW_UtilCtxt* XP_UNUSED(uc), 
+                        XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row) )
 {
     return XP_TRUE;
 } /* curses_util_hiliteCell */
 
 static XP_Bool
-curses_util_engineProgressCallback( XW_UtilCtxt* uc )
+curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 {
     return XP_TRUE;
 } /* curses_util_engineProgressCallback */
@@ -593,7 +596,7 @@ SIGWINCH_handler( int signal )
 
 static void
 cursesListenOnSocket( CursesAppGlobals* globals, int newSock, 
-                      XWStreamCtxt* stream )
+                      XWStreamCtxt* XP_UNUSED(stream) )
 {
     XP_ASSERT( globals->fdCount+1 < FD_MAX );
 
@@ -696,7 +699,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
         if ( numEvents > 0 && 
              (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
             int nBytes;
-            XP_UCHAR buf[256];
+            unsigned char buf[256];
             struct sockaddr_in addr_sock;
 
             --numEvents;
@@ -800,15 +803,17 @@ curses_util_getVTManager(XW_UtilCtxt* uc)
 } /* linux_util_getVTManager */
 
 static XP_Bool
-curses_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
-                         XP_UCHAR* buf, XP_U16* len )
+curses_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), 
+                         const XP_UCHAR* XP_UNUSED(name), 
+                         XP_UCHAR* XP_UNUSED(buf), XP_U16* XP_UNUSED(len) )
 {
     XP_WARNF( "curses_util_askPassword not implemented" );
     return XP_FALSE;
 } /* curses_util_askPassword */
 
 static void
-curses_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
+curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 oldOffset, 
+                           XP_U16 newOffset )
 {
     if ( oldOffset != newOffset ) {
 	XP_WARNF( "curses_util_yOffsetChange(%d,%d) not implemented",
@@ -817,8 +822,10 @@ curses_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
 } /* curses_util_yOffsetChange */
 
 static XP_Bool
-curses_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
-                             XP_Bool turnLost )
+curses_util_warnIllegalWord( XW_UtilCtxt* XP_UNUSED(uc), 
+                             BadWordInfo* XP_UNUSED(bwi), 
+                             XP_U16 XP_UNUSED(player),
+                             XP_Bool XP_UNUSED(turnLost) )
 {
     XP_WARNF( "curses_util_warnIllegalWord not implemented" );
     return XP_FALSE;

@@ -23,7 +23,7 @@
 #include "gtkask.h"
 
 static void
-button_event( GtkWidget* widget, gpointer closure )
+button_event( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     XP_Bool* whichSet = (XP_Bool*)closure;
     *whichSet = 1;
@@ -33,7 +33,7 @@ button_event( GtkWidget* widget, gpointer closure )
 
 #ifdef FEATURE_TRAY_EDIT
 static void
-abort_button_event( GtkWidget* widget, gpointer closure )
+abort_button_event( GtkWidget* XP_UNUSED(widget), gpointer XP_UNUSED(closure) )
 {
     gtk_main_quit();
 } /* abort_button_event */

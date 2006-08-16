@@ -152,7 +152,7 @@ typedef struct CEDrawCtx {
 } CEDrawCtx;
 
 DrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );
-void ce_drawctxt_update( DrawCtx* dctx, CEAppGlobals* globals );
+void ce_drawctxt_update( DrawCtx* dctx );
 
 
 #ifdef DEBUG

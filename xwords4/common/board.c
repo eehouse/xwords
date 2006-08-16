@@ -914,7 +914,7 @@ invalCellsWithTiles( BoardCtxt* board )
 } /* invalCellsWithTiles */
 
 static void
-checkScrollCell( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row )
+checkScrollCell( void* p_board, XP_U16 col, XP_U16 row )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     XP_Rect rect;
@@ -2151,7 +2151,7 @@ continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
     if ( coordToCell( board, x, y, &col, &row ) ) {
         XP_U16 selPlayer = board->selPlayer;
 
-        checkScrollCell( board, selPlayer, col, row );
+        checkScrollCell( board, col, row );
 
         if ( col != board->hintDragCurCol || row != board->hintDragCurRow ) {
             BdHintLimits oldHL;
@@ -3010,7 +3010,7 @@ setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, XP_U16 row )
     arrow->col = (XP_U8)col;
     arrow->row = (XP_U8)row;
 
-    checkScrollCell( board, player, col, row );
+    checkScrollCell( board, col, row );
 } /* setArrowFor */
 
 static void
@@ -3096,7 +3096,7 @@ boardCellChanged( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row,
             }
         }
 
-        checkScrollCell( board, turn, col, row );
+        checkScrollCell( board, col, row );
     }
 
     invalCell( (BoardCtxt*)p_board, col, row );

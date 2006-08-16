@@ -1209,7 +1209,8 @@ messageStreamWithHeader( ServerCtxt* server, XP_U16 devIndex, XW_Proto code )
  * already come out.
  */
 static XP_Bool
-readStreamHeader( ServerCtxt* server, XWStreamCtxt* stream )
+readStreamHeader( ServerCtxt* XP_UNUSED(server), 
+                  XWStreamCtxt* XP_UNUSED(stream) )
 {
     return XP_TRUE;
 } /* readStreamHeader */
@@ -2016,7 +2017,7 @@ doEndGame( ServerCtxt* server )
  * GAME_OVER message to all clients including the one that requested it.
  */
 static void
-endGameInternal( ServerCtxt* server, GameEndReason why )
+endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why) )
 {
     XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
 
@@ -2105,7 +2106,7 @@ handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incoming )
 } /* handleIllegalWord */
 
 static XP_Bool
-handleMoveOk( ServerCtxt* server, XWStreamCtxt* incoming /* unused */ )
+handleMoveOk( ServerCtxt* server, XWStreamCtxt* XP_UNUSED(incoming) )
 {
     XP_Bool accepted = XP_TRUE;
     XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );

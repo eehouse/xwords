@@ -389,7 +389,7 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
 
         if ( !!ctxt->super.name ) {
             /* Remove from dict list */
-            removeFromDictCache( ctxt->dl, ctxt->super.name, dict );
+            removeFromDictCache( ctxt->dl, ctxt->super.name );
         }
 
         dbRef = ctxt->dbRef;

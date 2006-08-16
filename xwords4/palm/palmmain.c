@@ -107,8 +107,7 @@ static IrIasObject xwordsIRObject = {
 static XP_Bool startApplication( PalmAppGlobals** globalsP );
 static void eventLoop( PalmAppGlobals* globals );
 static void stopApplication( PalmAppGlobals* globals );
-static Boolean applicationHandleEvent( PalmAppGlobals* globals, 
-                                       EventPtr event );
+static Boolean applicationHandleEvent( EventPtr event );
 static Boolean mainViewHandleEvent( EventPtr event );
 
 static UInt16 romVersion( void );
@@ -919,7 +918,7 @@ getResString( PalmAppGlobals* globals, XP_U16 strID )
 } /* getResString */
 
 static Err
-volChangeEventProc( SysNotifyParamType* notifyParamsP )
+volChangeEventProc( SysNotifyParamType* XP_UNUSED_SILK(notifyParamsP) )
 {
 #ifndef REALLY_HANDLE_MEDIA
     EventType eventToPost;
@@ -1038,7 +1037,7 @@ initHighResGlobals( PalmAppGlobals* globals )
 } /* initHighResGlobals */
 
 static void
-uninitHighResGlobals( PalmAppGlobals* globals )
+uninitHighResGlobals( PalmAppGlobals* XP_UNUSED_SILK(globals) )
 {
 #ifdef FEATURE_SILK
     if ( globals->hasHiRes && globals->sonyLibRef != 0 ) {
@@ -1441,7 +1440,7 @@ eventLoop( PalmAppGlobals* globals )
         if ( !SysHandleEvent(&event)) {
             UInt16 error;
             if ( !MenuHandleEvent( NULL, &event, &error)) {
-                if ( !applicationHandleEvent( globals, &event )) {
+                if ( !applicationHandleEvent( &event )) {
                     FrmDispatchEvent(&event);
                 }
             }
@@ -1453,7 +1452,7 @@ eventLoop( PalmAppGlobals* globals )
  * applicationHandleEvent
  **********************************************************************/
 static Boolean
-applicationHandleEvent( PalmAppGlobals* globals, EventPtr event ) 
+applicationHandleEvent( EventPtr event ) 
 {
     FormPtr frm = NULL;
     Int16 formId;
@@ -1551,7 +1550,7 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
 } /* timeForTimer */
 
 static Boolean
-handleNilEvent( PalmAppGlobals* globals, EventPtr event )
+handleNilEvent( PalmAppGlobals* globals )
 {
     Boolean handled = true;
     XP_U32 when;
@@ -1982,7 +1981,7 @@ beamBoard( PalmAppGlobals* globals )
 } /* beamBoard */
 
 static XP_Bool
-considerMenuShow( PalmAppGlobals* globals, EventPtr event )
+considerMenuShow( EventPtr event )
 {
     XP_S16 y = event->screenY;
     XP_Bool penInRightPlace = (y < PALM_BOARD_TOP) && (y >= 0);
@@ -2091,7 +2090,7 @@ mainViewHandleEvent( EventPtr event )
     switch ( event->eType ) {
 
     case nilEvent:
-        draw = handled = handleNilEvent( globals, event );
+        draw = handled = handleNilEvent( globals );
         break;
 
     case newGameCancelEvent:
@@ -2230,7 +2229,7 @@ mainViewHandleEvent( EventPtr event )
             globals->penDown = false;
 
             if ( !handled ) {
-                handled = considerMenuShow( globals, event );
+                handled = considerMenuShow( event );
             }
         }
         break;
@@ -2938,8 +2937,8 @@ askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, XP_S16 titleID,
 } /* askFromStream */
 
 Boolean
-askPassword( PalmAppGlobals* globals, const XP_UCHAR* name, Boolean isNew,
-             XP_UCHAR* retbuf, XP_U16* len )
+askPassword( const XP_UCHAR* name, Boolean isNew, XP_UCHAR* retbuf, 
+             XP_U16* len )
 {
     Boolean result = false;
     FormPtr prevForm, form;
@@ -3281,16 +3280,16 @@ palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
 } /* palm_util_userPickTile */
 
 static XP_Bool 
-palm_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, XP_UCHAR* buf, 
+palm_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* name, XP_UCHAR* buf, 
                        XP_U16* len )
 {
-    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-    return askPassword( globals, name, false, buf, len );
+    return askPassword( name, false, buf, len );
 } /* palm_util_askPassword */
 
 static void 
-palm_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState,
-                            XP_U16 nVisibleRows )
+palm_util_trayHiddenChange( XW_UtilCtxt* uc, 
+                            XW_TrayVisState XP_UNUSED(newState),
+                            XP_U16 XP_UNUSED(nVisibleRows) )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     palmSetCtrlsForTray( globals );
@@ -3299,7 +3298,8 @@ palm_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState,
 } /* palm_util_trayHiddenChange */
 
 static void 
-palm_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
+palm_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
+                         XP_U16 newOffset )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     XP_ASSERT( oldOffset != newOffset );
@@ -3364,7 +3364,8 @@ palm_util_engineProgressCallback( XW_UtilCtxt* uc )
 } /* palm_util_engineProgressCallback */
 
 static void
-palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 secsFromNow,
+palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
+                    XP_U16 XP_UNUSED(secsFromNow),
                     TimerProc proc, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
@@ -3395,7 +3396,7 @@ palm_util_requestTime( XW_UtilCtxt* uc )
 } /* palm_util_requestTime */
 
 static XP_U32
-palm_util_getCurSeconds( XW_UtilCtxt* uc )
+palm_util_getCurSeconds( XW_UtilCtxt* XP_UNUSED(uc) )
 {
     return TimGetSeconds();
 } /* palm_util_getCurSeconds */
@@ -3438,7 +3439,9 @@ palm_send_on_close( XWStreamCtxt* stream, void* closure )
 } /* palm_send_on_close */
 
 static XP_S16
-palm_send( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, void* closure )
+palm_send( XP_U8* buf, XP_U16 len, 
+           const CommsAddrRec* XP_UNUSED(addr), /* !!!? */
+           void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
 
@@ -3498,7 +3501,8 @@ formatBadWords( BadWordInfo* bwi, char buf[] )
 } /* formatBadWords */
 
 static XP_Bool
-palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 turn, 
+palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
+                           XP_U16 XP_UNUSED(turn), 
                            XP_Bool turnLost )
 {
     XP_Bool result = XP_TRUE;
@@ -3528,7 +3532,8 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool
-palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
+palm_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc),
+                               XP_U16* min, XP_U16* max )
 {
     return doHintConfig( min, max );
 } /* palm_util_getTraySearchLimits */

@@ -888,7 +888,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
 #ifdef BEYOND_IR
 static void
-p_comms_timerFired( void* closure, XWTimerReason why )
+p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
     CommsCtxt* comms = (CommsCtxt*)closure;
     XP_ASSERT( why == TIMER_HEARTBEAT );

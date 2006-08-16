@@ -228,8 +228,7 @@ void model_figureFinalScores( ModelCtxt* model, XP_S16* scores,
 /* figureMoveScore is meant only for the engine's use */
 XP_U16 figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, 
                         EngineCtxt* engine, XWStreamCtxt* stream, 
-                        XP_Bool silent, WordNotifierInfo* notifyInfo,
-                        XP_UCHAR* mainWord );
+                        WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord );
 
 /********************* persistence ********************/
 #ifdef INCLUDE_IO_SUPPORT

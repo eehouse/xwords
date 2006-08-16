@@ -96,7 +96,7 @@ typedef struct GtkAppGlobals {
 } GtkAppGlobals;
 
 /* DictionaryCtxt* gtk_dictionary_make(); */
-int gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] );
+int gtkmain( LaunchParams* params, int argc, char *argv[] );
 
 #define NUM_COLS 15
 #define NUM_ROWS 15

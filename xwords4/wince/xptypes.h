@@ -131,6 +131,14 @@ XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
 # define CALLBACK
 #endif
 
+#ifdef _WIN32_WCE
+# define XP_UNUSED_CE(x) XP_UNUSED(x)
+# define XP_UNUSED_32(x) x
+#else
+# define XP_UNUSED_32(x) XP_UNUSED(x)
+# define XP_UNUSED_CE(x) x
+#endif
+
 #ifdef CPLUS
 }
 #endif

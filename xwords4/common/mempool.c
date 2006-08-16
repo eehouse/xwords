@@ -180,7 +180,7 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize )
 } /* mpool_realloc */
 
 void
-mpool_free( MemPoolCtx* mpool, void* ptr, char* file, XP_U32 lineNo )
+mpool_free( MemPoolCtx* mpool, void* ptr )
 {
     MemPoolEntry* entry;
     MemPoolEntry* prev;

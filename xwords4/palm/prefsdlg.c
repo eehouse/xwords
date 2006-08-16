@@ -24,14 +24,12 @@
 #include "newgame.h" /* for drawOneGadget */
 
 void localPrefsToGlobal( PalmAppGlobals* globals );
-static void localPrefsToControls( PalmAppGlobals* globals, 
-                                  PrefsDlgState* state );
+static void localPrefsToControls( PrefsDlgState* state );
 static void drawPrefsTypeGadgets( PalmAppGlobals* globals );
 static void showHidePrefsWidgets( PalmAppGlobals* globals, FormPtr form );
 static Boolean checkPrefsHiliteGadget( PalmAppGlobals* globals, FormPtr form, 
                                        EventType* event );
-static void controlsToLocalPrefs( PalmAppGlobals* globals, 
-                                  PrefsDlgState* state );
+static void controlsToLocalPrefs( PrefsDlgState* state );
 static Boolean dropCtlUnlessNewGame( PalmAppGlobals* globals, XP_U16 id );
 
 Boolean
@@ -69,7 +67,7 @@ PrefsFormHandleEvent( EventPtr event )
     case frmUpdateEvent:
         form = FrmGetActiveForm();
 
-        localPrefsToControls( globals, state );
+        localPrefsToControls( state );
 
         showHidePrefsWidgets( globals, form );
 
@@ -130,7 +128,7 @@ PrefsFormHandleEvent( EventPtr event )
             break;
 
         case XW_PREFS_OK_BUTTON_ID:
-            controlsToLocalPrefs( globals, state );
+            controlsToLocalPrefs( state );
             eventToPost.eType = prefsChangedEvent;
             EvtAddEventToQueue( &eventToPost );
             globals->postponeDraw = true;
@@ -259,7 +257,7 @@ numToField( UInt16 id, XP_S16 num )
 } /* numToField */
 
 static void
-localPrefsToControls( PalmAppGlobals* globals, PrefsDlgState* state ) 
+localPrefsToControls( PrefsDlgState* state ) 
 {
     setSelectorFromList( XW_PREFS_BDSIZE_SELECTOR_ID, 
                          state->playerBdSizeList, 
@@ -300,7 +298,7 @@ fieldToNum( UInt16 id )
 } /* fieldToNum */
 
 static void
-controlsToLocalPrefs( PalmAppGlobals* globals, PrefsDlgState* state )
+controlsToLocalPrefs( PrefsDlgState* state )
 {
     state->showColors = getBooleanCtrl( XW_PREFS_PLAYERCOLORS_CHECKBOX_ID );
     state->smartRobot = getBooleanCtrl( XW_PREFS_ROBOTSMART_CHECKBOX_ID );

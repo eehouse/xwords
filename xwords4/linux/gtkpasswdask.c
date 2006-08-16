@@ -22,7 +22,7 @@
 #include <gtk/gtk.h>
 
 static void
-button_event( GtkWidget* widget, void* closure )
+button_event( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     XP_Bool* okptr = (XP_Bool*)closure;
     *okptr = XP_TRUE;

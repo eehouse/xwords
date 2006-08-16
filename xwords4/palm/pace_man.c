@@ -412,9 +412,9 @@ SysHandleEvent( EventPtr eventP )
 } /* SysHandleEvent */
 
 unsigned long
-handlerEntryPoint( const void* emulStateP, 
+handlerEntryPoint( const void* XP_UNUSED(emulStateP), 
                    void* userData68KP, 
-                   Call68KFuncType* call68KFuncP )
+                   Call68KFuncType* XP_UNUSED(call68KFuncP) )
 {
     unsigned long* data = (unsigned long*)userData68KP;
     FormEventHandlerType* handler
@@ -506,12 +506,6 @@ flipRect( RectangleType* rout, const RectangleType* rin )
     rout->extent.x = Byte_Swap16(rin->extent.x);
     rout->extent.y = Byte_Swap16(rin->extent.y);
 } /* flipRect */
-
-void
-flipFieldAttr( FieldAttrType* fout, const FieldAttrType* fin )
-{
-    /* It's a bleeding bitfield */
-} /* flipFieldAttr */
 
 void
 flipEngSocketFromArm( unsigned char* sout, const ExgSocketType* sin )
@@ -644,9 +638,9 @@ paramsArmtoParams68K( unsigned char* params68K,
 } /* paramsArmtoParams68K */
 
 unsigned long
-notifyEntryPoint( const void* emulStateP, 
+notifyEntryPoint( const void* XP_UNUSED(emulStateP), 
                   void* userData68KP, 
-                  Call68KFuncType* call68KFuncP )
+                  Call68KFuncType* XP_UNUSED(call68KFuncP) )
 {
     unsigned long* data = (unsigned long*)userData68KP;
     SysNotifyProcPtr callback
@@ -749,9 +743,9 @@ SysNotifyRegister( UInt16 cardNo, LocalID dbID, UInt32 notifyType,
 } /* SysNotifyRegister */
 
 unsigned long
-listDrawEntryPoint( const void* emulStateP, 
+listDrawEntryPoint( const void* XP_UNUSED(emulStateP), 
                     void* userData68KP, 
-                    Call68KFuncType* call68KFuncP )
+                    Call68KFuncType* XP_UNUSED(call68KFuncP) )
 {
     unsigned long* data = (unsigned long*)userData68KP;
     ListDrawDataFuncPtr listDrawProc
@@ -907,9 +901,9 @@ NetLibGetHostByName( UInt16 libRefNum, const Char* nameP,
 
 
 static unsigned long
-exgWriteEntry( const void* emulStateP, 
+exgWriteEntry( const void* XP_UNUSED(emulStateP), 
                void* userData68KP, 
-               Call68KFuncType* call68KFuncP )
+               Call68KFuncType* XP_UNUSED(call68KFuncP) )
 {
     unsigned long* data = (unsigned long*)userData68KP;
     unsigned long oldR10;
@@ -939,7 +933,8 @@ exgWriteEntry( const void* emulStateP,
 } /* exgWriteEntry */
 
 static void
-makeExgWriteStub( ExgDBWriteProcPtr proc, unsigned char* stub, XP_U16 stubSize )
+makeExgWriteStub( ExgDBWriteProcPtr proc, unsigned char* stub, 
+                  XP_U16 XP_UNUSED_DBG(stubSize) )
 {
 /* Err	ExgDBWriteProc( const void *dataP, UInt32 *sizeP, void *userDataP)  */
 /* { */

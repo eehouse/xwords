@@ -239,8 +239,8 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 
 
 static XP_Bool
-gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
-                     const XP_Rect* rect, XP_Bool hasfocus )
+gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict), 
+                     const XP_Rect* rect, XP_Bool XP_UNUSED(hasfocus) )
 {
     GdkRectangle gdkrect;
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -256,7 +256,7 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 } /* draw_finish */
 
 static void
-gtk_draw_boardFinished( DrawCtx* p_dctx )
+gtk_draw_boardFinished( DrawCtx* XP_UNUSED(p_dctx) )
 {
     //    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 } /* draw_finished */
@@ -301,7 +301,7 @@ drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
 
 static XP_Bool
 gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
-                   XP_Bitmap bitmap, Tile tile, XP_S16 owner, 
+                   XP_Bitmap bitmap, Tile XP_UNUSED(tile), XP_S16 owner, 
                    XWBonusType bonus, HintAtts hintAtts,
                    XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
 {
@@ -380,7 +380,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
 } /* gtk_draw_drawCell */
 
 static void
-gtk_draw_invertCell( DrawCtx* p_dctx, const XP_Rect* rect )
+gtk_draw_invertCell( DrawCtx* XP_UNUSED(p_dctx), 
+                     const XP_Rect* XP_UNUSED(rect) )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
 /*     (void)gtk_draw_drawMiniWindow( p_dctx, "f", rect); */
@@ -401,7 +402,7 @@ gtk_draw_invertCell( DrawCtx* p_dctx, const XP_Rect* rect )
 
 static XP_Bool
 gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner, 
-                    XP_Bool hasfocus )
+                    XP_Bool XP_UNUSED(hasfocus) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect clip = *rect;
@@ -558,7 +559,7 @@ gtk_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 
 static void
 gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP, 
-                         XWBonusType cursorBonus, XP_Bool vertical,
+                         XWBonusType XP_UNUSED(cursorBonus), XP_Bool vertical,
                          HintAtts hintAtts )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -571,8 +572,9 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 } /* gtk_draw_drawBoardCursor */
 
 static void
-gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 numPlayers, 
-                     XP_Bool hasfocus )
+gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                     XP_U16 XP_UNUSED(numPlayers), 
+                     XP_Bool XP_UNUSED(hasfocus) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 
@@ -620,13 +622,13 @@ gtk_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_S16 nTilesLeft,
 
 static void
 gtk_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                      const XP_Rect* rOuter, XP_S16 nTilesLeft )
+                      const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft )
 {
     gtkDrawDrawRemText( p_dctx, rInner, nTilesLeft, NULL, NULL );
 } /* gtk_draw_drawRemText */
 
 static void
-scoreWidthAndText( GtkDrawCtx* dctx, PangoLayout* layout, char* buf, 
+scoreWidthAndText( GtkDrawCtx* XP_UNUSED(dctx), PangoLayout* layout, char* buf,
                    const DrawScoreInfo* dsi, XP_U16* widthP, XP_U16* heightP )
 {
     XP_S16 score = dsi->score;
@@ -662,7 +664,7 @@ scoreWidthAndText( GtkDrawCtx* dctx, PangoLayout* layout, char* buf,
 } /* scoreWidthAndText */
 
 static void
-gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r, 
+gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(r), 
                            const DrawScoreInfo* dsi,
                            XP_U16* width, XP_U16* height )
 {
@@ -700,8 +702,8 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 } /* gtk_draw_score_drawPlayer */
 
 static void
-gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 score,
-                             XP_U16 playerNum )
+gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
+                             XP_S16 score, XP_U16 XP_UNUSED(playerNum) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char buf[5];
@@ -730,7 +732,7 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 score,
 } /* gtk_draw_score_pendingScore */
 
 static void
-gtk_draw_scoreFinished( DrawCtx* p_dctx )
+gtk_draw_scoreFinished( DrawCtx* XP_UNUSED(p_dctx) )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
 
@@ -753,8 +755,8 @@ gtkFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
 
 static void
 gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                    const XP_Rect* rOuter,
-                    XP_U16 player, XP_S16 secondsLeft )
+                    const XP_Rect* XP_UNUSED(rOuter),
+                    XP_U16 XP_UNUSED(player), XP_S16 secondsLeft )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
@@ -773,7 +775,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
 #define MINI_H_PADDING 8
 
 static XP_UCHAR*
-gtk_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
+gtk_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWMiniTextType textHint )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
     XP_UCHAR* str;
@@ -810,7 +812,7 @@ gtk_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
 
 static void
 gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
-                         const XP_Rect* rect, void** closureP )
+                         const XP_Rect* rect, void** XP_UNUSED(closureP) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect localR = *rect;
@@ -838,9 +840,10 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 } /* gtk_draw_drawMiniWindow */
 
 static void
-gtk_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect, 
-                          XP_Bool lastTime,
-                          void** closure, XP_Bool* invalUnder )
+gtk_draw_eraseMiniWindow( DrawCtx* XP_UNUSED(p_dctx), 
+                          const XP_Rect* XP_UNUSED(rect), 
+                          XP_Bool XP_UNUSED(lastTime),
+                          void** XP_UNUSED(closure), XP_Bool* invalUnder )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
     *invalUnder = XP_TRUE;
@@ -852,7 +855,7 @@ gtk_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect,
      c.blue = (b); \
 }
 static void
-draw_doNothing( DrawCtx* dctx, ... )
+draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
 } /* draw_doNothing */
 

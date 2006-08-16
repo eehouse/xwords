@@ -140,7 +140,7 @@ static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
                                 wchar_t* title, XP_Bool isQuery, 
                                 XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
-static XP_Bool ceDoNewGame( CEAppGlobals* globals, XP_Bool silent );
+static XP_Bool ceDoNewGame( CEAppGlobals* globals );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
@@ -223,11 +223,11 @@ LRESULT CALLBACK	About			(HWND, UINT, WPARAM, LPARAM);
 
 int WINAPI
 WinMain(	HINSTANCE hInstance,
-            HINSTANCE hPrevInstance,
+            HINSTANCE XP_UNUSED(hPrevInstance),
 #if defined TARGET_OS_WINCE
             LPWSTR    lpCmdLine,
 #elif defined TARGET_OS_WIN32
-            LPSTR    lpCmdLine,
+            LPSTR    XP_UNUSED_DBG(lpCmdLine),
 #endif
             int       nCmdShow)
 {
@@ -932,17 +932,6 @@ fileToStream( CEAppGlobals* globals, XP_UCHAR* path )
     return stream;
 } /* fileToStream */
 
-static void
-ceSaveGamePrefs( CEAppGlobals* globals, XWStreamCtxt* stream )
-{
-} /* ceSaveGamePrefs */
-
-static void
-ceLoadGamePrefs( CEAppGlobals* globals, XWStreamCtxt* stream )
-{
-    XP_DEBUGF( "ceLoadGamePrefs" );
-} /* ceLoadGamePrefs */
-
 static XP_Bool
 ceLoadSavedGame( CEAppGlobals* globals )
 {
@@ -956,7 +945,6 @@ ceLoadSavedGame( CEAppGlobals* globals )
     if ( success ) {
         DictionaryCtxt* dict;
         XP_Bool hasDict;
-        ceLoadGamePrefs( globals, stream );
 
         hasDict = stream_getU8( stream );
         if ( hasDict ) {
@@ -1205,7 +1193,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                           &globals->appPrefs.cp, 
                           CE_SEND_PROC, globals );
 
-        newDone = ceDoNewGame( globals, XP_TRUE ); /* calls ceInitAndStartBoard */
+        newDone = ceDoNewGame( globals ); /* calls ceInitAndStartBoard */
         if ( !newDone ) {
             result = FALSE;
         }
@@ -1226,7 +1214,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 } /* InitInstance */
 
 static XP_Bool
-ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt )
+ceSetDictName( const wchar_t* XP_UNUSED(wPath), XP_U16 XP_UNUSED_DBG(index), 
+               void* XP_UNUSED(ctxt) )
 {
 /*     CEAppGlobals* globals = (CEAppGlobals*)ctxt; */
 /*     XP_UCHAR* str; */
@@ -1360,7 +1349,7 @@ ceDisplayFinalScores( CEAppGlobals* globals )
 } /* ceDisplayFinalScores */
 
 static XP_Bool
-ceDoNewGame( CEAppGlobals* globals, XP_Bool silent )
+ceDoNewGame( CEAppGlobals* globals )
 {
     GameInfoState giState;
     CommsAddrRec* addr = NULL;
@@ -1461,7 +1450,7 @@ ceChooseAndOpen( CEAppGlobals* globals )
 static void
 updateForColors( CEAppGlobals* globals )
 {
-    ce_drawctxt_update( globals->draw, globals );
+    ce_drawctxt_update( globals->draw );
     if ( !!globals->game.board ) {
         board_invalAll( globals->game.board );
     }
@@ -1538,7 +1527,7 @@ isDefaultName( XP_UCHAR* name )
 } /* isDefaultName */
 
 static void
-makeUniqueName( wchar_t* buf, XP_U16 bufLen )
+makeUniqueName( wchar_t* buf, XP_U16 XP_UNUSED_DBG(bufLen) )
 {
     XP_U16 i;
     DWORD attributes;
@@ -1645,8 +1634,6 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             memStream = mem_stream_make( MEMPOOL globals->vtMgr, &fwState, 0, 
                                          ceWriteToFile );
             stream_open( memStream );
-
-            ceSaveGamePrefs( globals, memStream );
 
             /* the dictionary */
             dict = model_getDictionary( globals->game.model );
@@ -1910,7 +1897,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if ( ceSaveCurGame( globals, XP_FALSE )
                      || queryBoxChar( globals, "Do you really want to "
                                       "overwrite the current game?" ) ) {
-                    draw = ceDoNewGame( globals, XP_FALSE );
+                    draw = ceDoNewGame( globals );
                 }
                 break;
 
@@ -2110,7 +2097,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 // Mesage handler for the About box.
 LRESULT CALLBACK
-About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+About(HWND hDlg, UINT message, WPARAM wParam, LPARAM XP_UNUSED(lParam))
 {
     switch (message) {
     case WM_INITDIALOG:
@@ -2225,7 +2212,8 @@ RECTtoXPR( XP_Rect* dest, RECT* src )
 } /* RECTtoXPR */
 
 void
-wince_assert( XP_UCHAR* s, int line, char* fileName )
+wince_assert( XP_UCHAR* XP_UNUSED_DBG(s), int XP_UNUSED_DBG(line), 
+              char* XP_UNUSED_DBG(fileName) )
 {
     XP_WARNF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
 } /* wince_assert */
@@ -2516,7 +2504,7 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 } /* ce_util_userQuery */
 
 static XWBonusType
-ce_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* model,
+ce_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* XP_UNUSED(model),
                         XP_U16 col, XP_U16 row )
 {
     XP_U16 index;
@@ -2597,7 +2585,7 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
 } /* ce_util_askPassword */
 
 static void
-ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState,
+ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(newState),
                           XP_U16 nVisibleRows )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
@@ -2618,7 +2606,7 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState newState,
 } /* ce_util_trayHiddenChange */
 
 static void
-ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
+ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
                        XP_U16 newOffset )
 {
 #ifdef CEFEATURE_CANSCROLL
@@ -2636,13 +2624,14 @@ ce_util_notifyGameOver( XW_UtilCtxt* uc )
 } /* ce_util_notifyGameOver */
 
 static XP_Bool
-ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
+ce_util_hiliteCell( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 XP_UNUSED(col), 
+                    XP_U16 XP_UNUSED(row) )
 {
     return XP_TRUE;
 } /* ce_util_hiliteCell */
 
 static XP_Bool 
-ce_util_engineProgressCallback( XW_UtilCtxt* uc )
+ce_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 {
     return XP_TRUE;
 } /* ce_util_engineProgressCallback */
@@ -2689,7 +2678,7 @@ ce_util_requestTime( XW_UtilCtxt* uc )
 } /* palm_util_requestTime */
 
 static XP_U32
-ce_util_getCurSeconds( XW_UtilCtxt* uc )
+ce_util_getCurSeconds( XW_UtilCtxt* XP_UNUSED(uc) )
 {
     return 0L;
 } /* ce_util_getCurSeconds */
@@ -2721,7 +2710,7 @@ ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
 #endif
 
 static XP_UCHAR*
-ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
+ce_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 stringCode )
 {
     switch( stringCode ) {
     case STRD_REMAINING_TILES_ADD:
@@ -2812,7 +2801,7 @@ ce_formatBadWords( BadWordInfo* bwi, XP_UCHAR buf[], XP_U16 bufsiz )
 
 static XP_Bool
 ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
-                         XP_U16 turn, XP_Bool turnLost )
+                         XP_U16 XP_UNUSED(turn), XP_Bool turnLost )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_UCHAR wordsBuf[256];
@@ -2835,8 +2824,9 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #ifdef BEYOND_IR
 static void
-ce_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
-                    const CommsAddrRec* newAddr )
+ce_util_addrChange( XW_UtilCtxt* XP_UNUSED(uc), 
+                    const CommsAddrRec* XP_UNUSED(oldAddr),
+                    const CommsAddrRec* XP_UNUSED(newAddr) )
 {
     XP_LOGF( "ce_util_addrChange called; DO SOMETHING." );
 } /* ce_util_addrChange */

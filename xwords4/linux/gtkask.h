@@ -25,8 +25,7 @@
 
 #include "gtkmain.h"
 
-gint gtkask( GtkAppGlobals* globals, gchar *message, gint numButtons,
-	     char* button1, ... );
+gint gtkask( gchar *message, gint numButtons, char* button1, ... );
 
 #endif
 #endif /* PLATFORM_GTK */

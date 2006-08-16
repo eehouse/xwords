@@ -105,8 +105,7 @@ void newg_destroy( NewGameCtx* ngc );
 void newg_load( NewGameCtx* ngc, const CurGameInfo* gi );
 void newg_store( NewGameCtx* ngc, CurGameInfo* gi );
 
-void newg_colChanged( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
-                      NGValue value );
+void newg_colChanged( NewGameCtx* ngc, XP_U16 player );
 void newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, 
                        NGValue value );
 

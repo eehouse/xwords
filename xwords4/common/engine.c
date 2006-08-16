@@ -121,7 +121,7 @@ static array_edge* consumeFromLeft( EngineCtxt* engine, array_edge* edge,
 static XP_Bool rack_remove( EngineCtxt* engine, Tile tile, XP_Bool* isBlank );
 static void rack_replace( EngineCtxt* engine, Tile tile, XP_Bool isBlank );
 static void considerMove( EngineCtxt* engine, Tile* tiles, short tileLength,
-                          short firstCol, short lastCol, short lastRow );
+                          short firstCol, short lastRow );
 static void considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
                                         PossibleMove* posmove,
                                         XP_U16 lastRow,
@@ -192,7 +192,8 @@ engine_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isRobot )
 } /* engine_make */
 
 void
-engine_writeToStream( EngineCtxt* ctxt, XWStreamCtxt* stream )
+engine_writeToStream( EngineCtxt* XP_UNUSED(ctxt), 
+                      XWStreamCtxt* XP_UNUSED_DBG(stream) )
 {
     /* nothing to save; see comment below */
 #ifdef DEBUG
@@ -201,8 +202,8 @@ engine_writeToStream( EngineCtxt* ctxt, XWStreamCtxt* stream )
 } /* engine_writeToStream */
 
 EngineCtxt* 
-engine_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util, 
-                       XP_Bool isRobot )
+engine_makeFromStream( MPFORMAL XWStreamCtxt* XP_UNUSED_DBG(stream), 
+                       XW_UtilCtxt* util, XP_Bool isRobot )
 {
     EngineCtxt* engine = engine_make( MPPARM(mpool) util, isRobot );
 
@@ -990,7 +991,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
          && tileLength >= engine->nTilesMin
 #endif
          ) {
-        considerMove( engine, tiles, tileLength, firstCol, col, row );
+        considerMove( engine, tiles, tileLength, firstCol, row );
     }
  no_check:
     return;
@@ -1035,7 +1036,7 @@ rack_replace( EngineCtxt* engine, Tile tile, XP_Bool isBlank )
 
 static void
 considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
-              XP_S16 firstCol, XP_S16 lastCol, XP_S16 lastRow )
+              XP_S16 firstCol, XP_S16 lastRow )
 {
     PossibleMove posmove;
     short col;
@@ -1086,7 +1087,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
         score = figureMoveScore( engine->model,
                                  &posmove->moveInfo,
                                  engine, (XWStreamCtxt*)NULL,
-                                 XP_TRUE, (WordNotifierInfo*)NULL, NULL );
+                                 (WordNotifierInfo*)NULL, NULL );
 
         /* First, check that the score is even what we're interested in.  If
            it is, then go to the expense of filling in a PossibleMove to be

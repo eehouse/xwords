@@ -61,7 +61,7 @@ findInsertPoint( const wchar_t* wPath, wchar_t** menuDicts,
 } /* findInsertPoint */
 
 static XP_Bool
-addDictToState( const wchar_t* wPath, XP_U16 index, void* ctxt )
+addDictToState( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
 {
     GameInfoState* giState = (GameInfoState*)ctxt;
     /* Let's display only the short form, but save the whole path */
@@ -446,15 +446,14 @@ playerFromID( XP_U16 id, XP_U16 base )
 }
 
 static void
-handleColChecked( GameInfoState* giState, XP_U16 id, XP_U16 base,
-                  NewGameColumn col )
+handleColChecked( GameInfoState* giState, XP_U16 id, XP_U16 base )
 {
     NGValue value;
     XP_U16 player = playerFromID( id, base );
 
     value.ng_bool = ceGetChecked( giState->hDlg, id );
 
-    newg_colChanged( giState->newGameCtx, player, col, value );
+    newg_colChanged( giState->newGameCtx, player );
 }
 
 /* It's too much work at this point to get the icon button looking good,
@@ -537,8 +536,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 case ROBOT_CHECK2:
                 case ROBOT_CHECK3:
                 case ROBOT_CHECK4:
-                    handleColChecked( giState, id, ROBOT_CHECK1, 
-                                      NG_COL_ROBOT );
+                    handleColChecked( giState, id, ROBOT_CHECK1 );
                     break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -546,8 +544,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 case REMOTE_CHECK2:
                 case REMOTE_CHECK3:
                 case REMOTE_CHECK4:
-                    handleColChecked( giState, id, REMOTE_CHECK1, 
-                                      NG_COL_REMOTE );
+                    handleColChecked( giState, id, REMOTE_CHECK1 );
                     break;
 #endif
 

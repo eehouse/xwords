@@ -17,7 +17,7 @@
 
 ifeq ($(MEMDEBUG),TRUE)
 DEFINES = -DMEM_DEBUG -DDEBUG 
-CFLAGS += -g $(GPROFFLAG)
+CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter
 CFLAGS += -DDEBUG_TS
 PLATFORM = obj_linux_memdbg
 else

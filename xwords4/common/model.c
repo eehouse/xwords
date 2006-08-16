@@ -384,8 +384,8 @@ model_foreachPrevCell( ModelCtxt* model, BoardListener bl, void* closure )
 } /* model_foreachPrevCell */
 
 static void
-clearAndNotify( void* closure, XP_U16 turn, XP_U16 col, XP_U16 row, 
-                XP_Bool added )
+clearAndNotify( void* closure, XP_U16 XP_UNUSED(turn), XP_U16 col, XP_U16 row, 
+                XP_Bool XP_UNUSED(added) )
 {
     ModelCtxt* model = (ModelCtxt*)closure;
     CellTile tile = getModelTileRaw( model, col, row );
@@ -1406,7 +1406,7 @@ typedef struct MovePrintClosure {
 } MovePrintClosure;
 
 static void
-printMovePre( ModelCtxt* model, XP_U16 moveN, StackEntry* entry, 
+printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry, 
               void* p_closure )
 {
     XWStreamCtxt* stream;
@@ -1478,8 +1478,8 @@ printMovePre( ModelCtxt* model, XP_U16 moveN, StackEntry* entry,
 } /* printMovePre */
 
 static void
-printMovePost( ModelCtxt* model, XP_U16 moveN, StackEntry* entry, 
-               XP_S16 score, void* p_closure )
+printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry, 
+               XP_S16 XP_UNUSED(score), void* p_closure )
 {
     MovePrintClosure* closure = (MovePrintClosure*)p_closure;
     XWStreamCtxt* stream = closure->stream;
@@ -1625,8 +1625,8 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
         }
 
         score = figureMoveScore( tmpModel, moveInfo, (EngineCtxt*)NULL, 
-                                 (XWStreamCtxt*)NULL, XP_TRUE, 
-                                 (WordNotifierInfo*)NULL, wordBuf );
+                                 (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL, 
+                                 wordBuf );
 
         model_destroy( tmpModel );
 

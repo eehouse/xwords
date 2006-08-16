@@ -280,7 +280,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate )
 } /* game_initPlayerInfo */
 
 static void
-disposePlayerInfoInt( MPFORMAL CurGameInfo* gi, XP_Bool namesToo )
+disposePlayerInfoInt( MPFORMAL CurGameInfo* gi )
 {
     XP_U16 i;
     LocalPlayer* lp;
@@ -300,7 +300,7 @@ disposePlayerInfoInt( MPFORMAL CurGameInfo* gi, XP_Bool namesToo )
 void
 gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 {
-    disposePlayerInfoInt( MPPARM(mpool) gi, XP_TRUE );
+    disposePlayerInfoInt( MPPARM(mpool) gi );
 
     if ( !!gi->dictName ) {
         XP_FREE( mpool, gi->dictName );

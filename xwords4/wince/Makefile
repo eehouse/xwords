@@ -58,7 +58,7 @@ endif
 
 CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay
 
-CFLAGS += -Wall
+CFLAGS += -Wall -Wunused-parameter
 
 SVNDEF = -DSVN_REV='\"$(SVNREV)\"'
 CFLAGS += $(SVNDEF)
