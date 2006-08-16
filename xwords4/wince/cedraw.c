@@ -988,6 +988,7 @@ ceFontsSetup( CEAppGlobals* globals, CEDrawCtx* dctx )
     XP_MEMSET( &font, 0, sizeof(font) );
     font.lfHeight = (CE_TRAY_SCALEV*2)/3;
     font.lfWeight = 600;     /* FW_DEMIBOLD */
+    wcscpy( font.lfFaceName, L"Arial" );
     dctx->trayFont = CreateFontIndirect( &font );
 
     font.lfWeight = FW_LIGHT;
