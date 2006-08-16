@@ -587,7 +587,7 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
 
 static Boolean
 checkHiliteGadget( PalmAppGlobals* globals, EventType* event,
-                   PalmNewGameState* state )
+                   PalmNewGameState* XP_UNUSED_DBG(state) )
 {
     Boolean result = false;
     UInt16 selGadget;
@@ -631,7 +631,7 @@ handlePasswordTrigger( PalmAppGlobals* globals, UInt16 controlID )
     name = (XP_UCHAR*)FldGetTextPtr( nameField );
 
     len = sizeof(state->passwds[playerNum]);
-    if ( askPassword( globals, name, true, state->passwds[playerNum], &len )) {
+    if ( askPassword( name, true, state->passwds[playerNum], &len )) {
         showMaskedPwd( controlID, len > 0 );
     }
 } /* handlePasswordTrigger */
@@ -856,7 +856,7 @@ handleRobotChanged( PalmNewGameState* state, XP_U16 controlID, XP_Bool on )
 
     player = palmPlayerFromID( controlID, XW_ROBOT_1_CHECKBOX_ID );
     value.ng_bool = on;
-    newg_colChanged( state->ngc, player, NG_COL_ROBOT, value );
+    newg_colChanged( state->ngc, player );
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -870,7 +870,7 @@ handleRemoteChanged( PalmNewGameState* state, XP_U16 controlID, XP_Bool on )
 
     player = palmPlayerFromID( controlID, XW_REMOTE_1_CHECKBOX_ID );
     value.ng_bool = on;
-    newg_colChanged( state->ngc, player, NG_COL_REMOTE, value );
+    newg_colChanged( state->ngc, player );
 }
 #endif
 

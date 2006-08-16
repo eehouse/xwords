@@ -51,13 +51,13 @@ eraseRect( CursesDrawCtx* dctx, const XP_Rect* rect )
 } /* eraseRect */
 
 static void
-curses_draw_destroyCtxt( DrawCtx* p_dctx )
+curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx) )
 {
     // CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 } /* draw_setup */
 
 static XP_Bool
-curses_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict, 
+curses_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict),
                         const XP_Rect* rect, XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
@@ -71,7 +71,7 @@ curses_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 
 static XP_Bool
 curses_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
-                       XP_U16 owner, XP_Bool hasfocus )
+                       XP_U16 XP_UNUSED(owner), XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     if ( hasfocus ) {
@@ -83,8 +83,8 @@ curses_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* draw_finish */
 
 static void
-curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 numPlayers, 
-                        XP_Bool hasfocus )
+curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                        XP_U16 XP_UNUSED(numPlayers), XP_Bool hasfocus )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     if ( hasfocus ) {
@@ -108,7 +108,8 @@ formatRemText( char* buf, XP_S16 nTilesLeft )
 } /* formatRemText */
 
 static void
-curses_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r, 
+curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx), 
+                            const XP_Rect* XP_UNUSED(r), 
                             XP_S16 nTilesLeft, 
                             XP_U16* width, XP_U16* height )
 {
@@ -122,7 +123,7 @@ curses_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r,
 
 static void
 curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                         const XP_Rect* rOuter, XP_S16 nTilesLeft )
+                         const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[32];
@@ -170,7 +171,8 @@ formatScoreText( XP_UCHAR* buf, const DrawScoreInfo* dsi )
 } /* formatScoreText */
 
 static void
-curses_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r, 
+curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx), 
+                              const XP_Rect* XP_UNUSED(r), 
                               const DrawScoreInfo* dsi,
                               XP_U16* width, XP_U16* height )
 {
@@ -182,8 +184,8 @@ curses_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r,
 } /* curses_draw_measureScoreText */
 
 static void
-curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 score,
-                                XP_U16 playerNum )
+curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
+                                XP_S16 score, XP_U16 XP_UNUSED(playerNum) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[4];
@@ -248,10 +250,11 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
 static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
-                      const XP_UCHAR* letter, XP_Bitmap bitmap,
-                      Tile tile, XP_S16 owner, XWBonusType bonus, 
-                      HintAtts hintAtts, XP_Bool isBlank, XP_Bool highlight, 
-                      XP_Bool isStar )
+                      const XP_UCHAR* letter, XP_Bitmap XP_UNUSED(bitmap),
+                      Tile XP_UNUSED(tile), XP_S16 XP_UNUSED(owner), 
+                      XWBonusType bonus, HintAtts XP_UNUSED(hintAtts), 
+                      XP_Bool XP_UNUSED(isBlank), XP_Bool highlight, 
+                      XP_Bool XP_UNUSED(isStar) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_UCHAR loc[4];
@@ -305,7 +308,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 
 static void
 curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
-                      const XP_UCHAR* textP, XP_Bitmap bitmap,
+                      const XP_UCHAR* textP, XP_Bitmap XP_UNUSED(bitmap),
                       XP_S16 val, XP_Bool highlighted )
 {
     char numbuf[5];
@@ -340,7 +343,7 @@ curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect )
 
 static void
 curses_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
-                             XP_Bool selected )
+                             XP_Bool XP_UNUSED(selected) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     wmove( dctx->boardWin, rect->top, rect->left );
@@ -350,8 +353,8 @@ curses_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
 
 static void
 curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect, 
-                            XWBonusType cursorBonus, XP_Bool vertical,
-                            HintAtts hintAtts )
+                            XWBonusType XP_UNUSED(cursorBonus), 
+                            XP_Bool vertical, HintAtts XP_UNUSED(hintAtts) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 #if 1
@@ -393,13 +396,14 @@ curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 } /* curses_draw_clearRect */
 
 static XP_UCHAR*
-curses_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
+curses_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), 
+                          XWMiniTextType XP_UNUSED(textHint) )
 {
     return "Trading...";
 } /* curses_draw_getMiniWText */
 
 static void
-curses_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str, 
+curses_draw_measureMiniWText( DrawCtx* XP_UNUSED(p_dctx), const XP_UCHAR* str, 
                               XP_U16* widthP, XP_U16* heightP )
 {
     *widthP = strlen(str) + 4;
@@ -408,7 +412,7 @@ curses_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
 
 static void
 curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
-                            const XP_Rect* rect, void** closure )
+                            const XP_Rect* rect, void** XP_UNUSED(closure) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Rect smallerR;
@@ -426,8 +430,10 @@ curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 } /* curses_draw_drawMiniWindow */
 
 static void
-curses_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect,
-                             XP_Bool lastTime, void** closure,
+curses_draw_eraseMiniWindow( DrawCtx* XP_UNUSED(p_dctx), 
+                             const XP_Rect* XP_UNUSED(rect),
+                             XP_Bool XP_UNUSED(lastTime), 
+                             void** XP_UNUSED(closure),
                              XP_Bool* invalUnder )
 {
     *invalUnder = XP_TRUE;
@@ -443,7 +449,7 @@ curses_draw_frameTray( DrawCtx* p_dctx, XP_Rect* rect )
 #endif
 
 static void
-draw_doNothing( DrawCtx* dctx, ... )
+draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
 } /* draw_doNothing */
 

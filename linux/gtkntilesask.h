@@ -25,7 +25,7 @@
 
 #include "gtkmain.h"
 
-XP_U16 askNTiles( GtkAppGlobals* globals, XP_U16 nTilesMax, XP_U16 deflt );
+XP_U16 askNTiles( XP_U16 nTilesMax, XP_U16 deflt );
 
 
 #endif

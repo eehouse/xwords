@@ -45,8 +45,7 @@ static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn,
 /* 			       WordNotifierInfo* notifyInfo ); */
 static XP_U16 scoreWord( ModelCtxt* model, MoveInfo* movei,
                          EngineCtxt* engine, XWStreamCtxt* stream, 
-                         XP_Bool silent, WordNotifierInfo* notifyInfo,
-                         XP_UCHAR* mainWord );
+                         WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord );
 
 /* for formatting when caller wants an explanation of the score.  These live
    in separate function called only when stream != NULL so that they'll have
@@ -105,7 +104,7 @@ adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn )
         moveScore = 0;
     } else {
         moveScore = figureMoveScore( model, mi, (EngineCtxt*)NULL, 
-                                     (XWStreamCtxt*)NULL, XP_TRUE,
+                                     (XWStreamCtxt*)NULL, 
                                      (WordNotifierInfo*)NULL, NULL );
     }
     player->score -= moveScore;
@@ -241,7 +240,7 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
 
         if ( isLegalMove( model, &moveInfo, silent ) ) {
             score = figureMoveScore( model, &moveInfo, engine, stream, 
-                                     silent, notifyInfo, NULL );
+                                     notifyInfo, NULL );
         }
     } else if ( !silent ) {		/* tiles out of line */
         util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
@@ -445,8 +444,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 
 XP_U16
 figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
-                 XWStreamCtxt* stream, XP_Bool silent, 
-                 WordNotifierInfo* notifyInfo,
+                 XWStreamCtxt* stream, WordNotifierInfo* notifyInfo,
                  XP_UCHAR* mainWord )
 {
     XP_U16 col, row;
@@ -476,7 +474,7 @@ figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
     }
 
     oneScore = scoreWord( model, moveInfo, (EngineCtxt*)NULL, stream,
-                          silent, notifyInfo, mainWord );
+                          notifyInfo, mainWord );
     if ( !!stream ) {
         formatWordScore( stream, oneScore, moveMultiplier );
     }
@@ -501,7 +499,7 @@ figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
         tmpMI.commonCoord = tiles->varCoord;
         tmpMI.tiles[0].tile = tiles->tile;
 
-        oneScore = scoreWord( model, &tmpMI, engine, stream, silent, 
+        oneScore = scoreWord( model, &tmpMI, engine, stream, 
                               notifyInfo, mainWord );
         if ( !!stream ) {
             formatWordScore( stream, oneScore, multipliers[i] );
@@ -561,7 +559,6 @@ static XP_U16
 scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
-           XP_Bool silent,	/* report error via dialog */
            WordNotifierInfo* notifyInfo,
            XP_UCHAR* mainWord )
 {

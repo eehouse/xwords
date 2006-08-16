@@ -362,8 +362,8 @@ void palm_drawctxt_destroy( DrawCtx* dctx );
 
 void palm_warnf( char* format, ... );
 
-Boolean askPassword( PalmAppGlobals* globals, const XP_UCHAR* name, 
-                     Boolean isNew, XP_UCHAR* retbuf, XP_U16* len );
+Boolean askPassword( const XP_UCHAR* name, Boolean isNew, XP_UCHAR* retbuf, 
+                     XP_U16* len );
 Boolean palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, 
                           XP_S16 titleID );
 void freeSavedGamesData( MPFORMAL SavedGamesState* state );

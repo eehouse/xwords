@@ -193,7 +193,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 } /* ce_dictionary_make */
 
 DictionaryCtxt*
-ce_dictionary_make_empty( CEAppGlobals* globals )
+ce_dictionary_make_empty( CEAppGlobals* XP_UNUSED_DBG(globals) )
 {
     CEDictionaryCtxt* ctxt = (CEDictionaryCtxt*)XP_MALLOC(globals->mpool,
                                                           sizeof(*ctxt));
@@ -335,7 +335,7 @@ longSwapData( XP_U8* destBase, XP_U16 nRows, XP_U16 rowBytes )
 #endif
 
 static XP_Bitmap*
-ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
+ceMakeBitmap( CEDictionaryCtxt* XP_UNUSED_DBG(ctxt), XP_U8** ptrp )
 {
     XP_U8* ptr = *ptrp;
     XP_U8 nCols = *ptr++;
@@ -513,12 +513,13 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
 } /* openMappedFile */
 
 static void
-closeMappedFile( MPFORMAL XP_U8* base, HANDLE mappedFile )
+closeMappedFile( MPFORMAL XP_U8* base, 
+                 HANDLE XP_UNUSED_32(mappedFile) )
 {
-#if defined TARGET_OS_WINCE
+#ifdef _WIN32_WCE
     UnmapViewOfFile( base );
     CloseHandle( mappedFile );
-#elif defined TARGET_OS_WIN32
+#else
     XP_FREE( mpool, base );
 #endif
 }
@@ -790,7 +791,7 @@ typedef struct FindOneData {
 } FindOneData;
 
 static XP_Bool 
-matchShortName( const wchar_t* wPath, XP_U16 index, void* ctxt )
+matchShortName( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
 {
     FindOneData* datap = (FindOneData*)ctxt;
     wchar_t buf[CE_MAX_PATH_LEN+1];

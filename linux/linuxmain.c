@@ -77,7 +77,7 @@ linux_debugf( char* format, ... )
 #endif
 
 void
-catOnClose( XWStreamCtxt* stream, void* closure )
+catOnClose( XWStreamCtxt* stream, void* XP_UNUSED(closure) )
 {
     XP_U16 nBytes;
     char* buffer;
@@ -256,7 +256,8 @@ usage( char* appName, char* msg )
 }
 
 XP_S16
-linux_tcp_send( XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec, 
+linux_tcp_send( XP_U8* buf, XP_U16 buflen, 
+                const CommsAddrRec* XP_UNUSED(addrRec), 
                 void* closure )
 {
     CommonGlobals* globals = (CommonGlobals*)closure;
@@ -350,7 +351,7 @@ linux_close_socket( CommonGlobals* cGlobals )
 }
 
 int
-linux_receive( CommonGlobals* cGlobals, XP_UCHAR* buf, int bufSize )
+linux_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
     int sock = cGlobals->socket;
     unsigned short tmp;
@@ -376,7 +377,8 @@ linux_receive( CommonGlobals* cGlobals, XP_UCHAR* buf, int bufSize )
    information specific to our platform's comms layer (return address, say)
  */
 XWStreamCtxt*
-stream_from_msgbuf( CommonGlobals* globals, char* bufPtr, XP_U16 nBytes )
+stream_from_msgbuf( CommonGlobals* globals, unsigned char* bufPtr, 
+                    XP_U16 nBytes )
 {
     XWStreamCtxt* result;
     result = mem_stream_make( MPPARM(globals->params->util->mpool)
@@ -442,8 +444,9 @@ linux_util_makeEmptyDict( XW_UtilCtxt* uctx )
 #define TW BONUS_TRIPLE_WORD
 
 static XWBonusType
-linux_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* model,
-			   XP_U16 col, XP_U16 row )
+linux_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc), 
+                           ModelCtxt* XP_UNUSED(model),
+                           XP_U16 col, XP_U16 row )
 {
     XP_U16 index;
     /* This must be static or won't compile under multilink (for Palm).
@@ -473,13 +476,13 @@ linux_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* model,
 } /* linux_util_getSquareBonus */
 
 static XP_U32
-linux_util_getCurSeconds( XW_UtilCtxt* uc ) 
+linux_util_getCurSeconds( XW_UtilCtxt* XP_UNUSED(uc) ) 
 {
     return (XP_U32)time(NULL);//tv.tv_sec;
 } /* gtk_util_getCurSeconds */
 
 static XP_UCHAR*
-linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
+linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
 {
     switch( code ) {
     case STRD_REMAINING_TILES_ADD:
@@ -551,8 +554,9 @@ linux_util_getUserString( XW_UtilCtxt* uc, XP_U16 code )
 
 #ifdef BEYOND_IR
 static void
-linux_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
-                       const CommsAddrRec* newAddr )
+linux_util_addrChange( XW_UtilCtxt* XP_UNUSED(uc), 
+                       const CommsAddrRec* XP_UNUSED(oldAddr),
+                       const CommsAddrRec* XP_UNUSED(newAddr) )
 {
     XP_LOGF( "linux_util_addrChange called; what to do?" );
 }
@@ -841,7 +845,7 @@ main( int argc, char** argv )
 #endif
         } else {
 #if defined PLATFORM_GTK
-            gtkmain( isServer, &mainParams, argc, argv );
+            gtkmain( &mainParams, argc, argv );
 #endif
         }
     } else {

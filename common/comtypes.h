@@ -123,7 +123,7 @@ typedef struct CommonPrefs {
 # define XP_MALLOC(pool,nbytes) \
       mpool_alloc((pool),(nbytes),__FILE__,__LINE__)
 # define XP_REALLOC(pool,p,s)         mpool_realloc((pool),(p),(s))
-# define XP_FREE(pool,p)              mpool_free((pool), (p), __FILE__, __LINE__)
+# define XP_FREE(pool,p)              mpool_free((pool), (p))
 
 # define MPFORMAL_NOCOMMA MemPoolCtx* mpool
 # define MPFORMAL         MPFORMAL_NOCOMMA,
@@ -146,5 +146,19 @@ typedef struct CommonPrefs {
 #define LOG_FUNC()  XP_LOGF( "IN: %s", __FUNCTION__ )
 #define LOG_RETURNF(fmt,val)  XP_LOGF( "%s => " fmt, __FUNCTION__, val )
 #define LOG_RETURN_VOID() LOG_RETURNF("%s","void")
+
+#ifndef XP_UNUSED
+# if defined __GNUC__
+#  define XP_UNUSED(x) UNUSED__ ## x __attribute__((unused))
+# else
+#  define XP_UNUSED(x) x
+# endif
+#endif
+
+#ifdef DEBUG
+# define XP_UNUSED_DBG(x) x
+#else
+# define XP_UNUSED_DBG(x) XP_UNUSED(x)
+#endif
 
 #endif

@@ -433,7 +433,7 @@ palm_realloc( XP_U8* in, XP_U16 size )
 } /* palm_realloc */
 
 XP_U16
-palm_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
+palm_snprintf( XP_UCHAR* buf, XP_U16 XP_UNUSED(len), XP_UCHAR* format, ... )
 {
     XP_U16 nChars;
     /* PENDING use len to avoid writing too many chars */

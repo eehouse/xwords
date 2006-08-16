@@ -23,7 +23,7 @@
 #include "gtkask.h"
 
 static void
-button_event( GtkWidget* widget, void* closure )
+button_event( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     gboolean* whichSet = (gboolean*)closure;
     *whichSet = 1;
@@ -32,8 +32,7 @@ button_event( GtkWidget* widget, void* closure )
 }
 
 gint
-gtkask( GtkAppGlobals* globals, gchar *message, gint numButtons,
-        char* button1, ... )
+gtkask( gchar *message, gint numButtons, char* button1, ... )
 {
     GtkWidget* dialog;
     GtkWidget* label;

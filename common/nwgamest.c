@@ -174,8 +174,7 @@ newg_store( NewGameCtx* ngc, CurGameInfo* gi )
 } /* newg_store */
 
 void
-newg_colChanged( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
-                 NGValue value )
+newg_colChanged( NewGameCtx* ngc, XP_U16 player )
 {
     /* Sometimes we'll get this notification for inactive rows, e.g. when
        setting default values. */

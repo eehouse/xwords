@@ -22,7 +22,7 @@
 #include "gtkntilesask.h"
 
 static void
-button_event( GtkWidget* widget, void* closure )
+button_event( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     XP_Bool* result = (XP_Bool*)closure;
     *result = XP_TRUE;
@@ -30,7 +30,7 @@ button_event( GtkWidget* widget, void* closure )
 } /* button_event */
 
 XP_U16
-askNTiles( GtkAppGlobals* globals, XP_U16 max, XP_U16 deflt )
+askNTiles( XP_U16 max, XP_U16 deflt )
 {
     XP_U16 result = 0;
     XP_Bool results[MAX_TRAY_TILES];

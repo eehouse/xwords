@@ -76,7 +76,6 @@ static void
 nplayers_menu_select( GtkWidget* item, GtkNewGameState* state )
 {
     NGValue value;
-    short nPlayers;
     ItemNumPair pair = { .item = item, .index = 0, .found = FALSE };
     
     gtk_container_foreach( GTK_CONTAINER(item->parent), countBeforeSame, 
@@ -104,7 +103,7 @@ role_menu_select( GtkWidget* item, GtkNewGameState* state )
 
 static void
 callChangedWithIndex( GtkNewGameState* state, GtkWidget* item, 
-                      GtkWidget** items, NewGameColumn col  )
+                      GtkWidget** items  )
 {
     NGValue value;
     gint player;
@@ -116,17 +115,17 @@ callChangedWithIndex( GtkNewGameState* state, GtkWidget* item,
     XP_ASSERT( player < MAX_NUM_PLAYERS );
 
     value.ng_bool = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) );
-    newg_colChanged( state->newGameCtxt, player, NG_COL_ROBOT, value );
+    newg_colChanged( state->newGameCtxt, player );
 } /* callChangedWithIndex */
 
 static void
 handle_robot_toggled( GtkWidget* item, GtkNewGameState* state )
 {
-    callChangedWithIndex( state, item, state->robotChecks, NG_COL_ROBOT );
+    callChangedWithIndex( state, item, state->robotChecks );
 }
 
 static void
-handle_juggle( GtkWidget* item, GtkNewGameState* state )
+handle_juggle( GtkWidget* XP_UNUSED(item), GtkNewGameState* state )
 {
     while ( !newg_juggle( state->newGameCtxt ) ) {
     }
@@ -136,7 +135,7 @@ handle_juggle( GtkWidget* item, GtkNewGameState* state )
 static void
 handle_remote_toggled( GtkWidget* item, GtkNewGameState* state )
 {
-    callChangedWithIndex( state, item, state->remoteChecks, NG_COL_REMOTE );
+    callChangedWithIndex( state, item, state->remoteChecks );
 }
 #endif
 
@@ -157,7 +156,7 @@ size_menu_select( GtkWidget* item, GtkNewGameState* state )
 } /* size_menu_select  */
 
 static void
-handle_ok( GtkWidget* widget, gpointer closure )
+handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
     state->cancelled = XP_FALSE;
@@ -166,7 +165,7 @@ handle_ok( GtkWidget* widget, gpointer closure )
 } /* handle_ok */
 
 static void
-handle_cancel( GtkWidget* widget, void* closure )
+handle_cancel( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
     state->cancelled = XP_TRUE;
@@ -174,7 +173,7 @@ handle_cancel( GtkWidget* widget, void* closure )
 }
 
 static void
-handle_revert( GtkWidget* widget, void* closure )
+handle_revert( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
     state->revert = TRUE;
@@ -204,7 +203,7 @@ makeButton( char* text, GCallback func, gpointer data )
 } /* makeButton */
 
 static GtkWidget*
-makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
+makeNewGameDialog( GtkNewGameState* state )
 {
     GtkWidget* dialog;
     GtkWidget* vbox;
@@ -541,7 +540,7 @@ newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame )
 
     /* returns when button handler calls gtk_main_quit */
     do {
-        GtkWidget* dialog = makeNewGameDialog( &state, isNewGame );
+        GtkWidget* dialog = makeNewGameDialog( &state );
         state.revert = FALSE;
 
         newg_load( state.newGameCtxt, 

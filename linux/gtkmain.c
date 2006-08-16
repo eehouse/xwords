@@ -100,7 +100,7 @@ rememberClient( GtkAppGlobals* globals, guint key, int sock,
 #endif
 
 static gint
-button_press_event( GtkWidget *widget, GdkEventButton *event,
+button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
                     GtkAppGlobals* globals )
 {
     XP_Bool redraw, handled;
@@ -116,7 +116,7 @@ button_press_event( GtkWidget *widget, GdkEventButton *event,
 } /* button_press_event */
 
 static gint
-motion_notify_event( GtkWidget *widget, GdkEventMotion *event,
+motion_notify_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                      GtkAppGlobals* globals )
 {
     XP_Bool handled;
@@ -135,7 +135,7 @@ motion_notify_event( GtkWidget *widget, GdkEventMotion *event,
 } /* motion_notify_event */
 
 static gint
-button_release_event( GtkWidget *widget, GdkEventMotion *event,
+button_release_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                       GtkAppGlobals* globals )
 {
     XP_Bool redraw;
@@ -153,7 +153,7 @@ button_release_event( GtkWidget *widget, GdkEventMotion *event,
 } /* button_release_event */
 
 static gint
-key_release_event( GtkWidget *widget, GdkEventKey* event,
+key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
                    GtkAppGlobals* globals )
 {
     XP_Key xpkey = XP_KEY_NONE;
@@ -304,7 +304,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
  * draw using that size.
  */
 static gboolean
-configure_event( GtkWidget* widget, GdkEventConfigure* event,
+configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                  GtkAppGlobals* globals )
 {
     short width, height, leftMargin, topMargin;
@@ -379,8 +379,8 @@ configure_event( GtkWidget* widget, GdkEventConfigure* event,
 
 /* Redraw the screen from the backing pixmap */
 static gint
-expose_event( GtkWidget* widget,
-              GdkEventExpose* event,
+expose_event( GtkWidget* XP_UNUSED(widget),
+              GdkEventExpose* XP_UNUSED(event),
               GtkAppGlobals* globals )
 {
     /*
@@ -445,7 +445,7 @@ writeToFile( XWStreamCtxt* stream, void* closure )
 } /* writeToFile */
 
 static void
-quit( void* dunno, GtkAppGlobals* globals )
+quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 {
     if ( !!globals->cGlobals.params->fileName ) {
         XWStreamCtxt* outStream;
@@ -489,7 +489,7 @@ makeAddSubmenu( GtkWidget* menubar, gchar* label )
 } /* makeAddSubmenu */
 
 static void
-tile_values( GtkWidget* widget, GtkAppGlobals* globals )
+tile_values( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( !!globals->cGlobals.game.server ) {
         XWStreamCtxt* stream = 
@@ -506,13 +506,13 @@ tile_values( GtkWidget* widget, GtkAppGlobals* globals )
 } /* tile_values */
 
 static void
-game_history( GtkWidget* widget, GtkAppGlobals* globals )
+game_history( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     catGameHistory( &globals->cGlobals );
 } /* game_history */
 
 static void
-final_scores( GtkWidget* widget, GtkAppGlobals* globals )
+final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     XP_Bool gameOver = server_getGameIsOver( globals->cGlobals.game.server );
 
@@ -521,8 +521,7 @@ final_scores( GtkWidget* widget, GtkAppGlobals* globals )
     } else {
         XP_Bool confirmed;
         confirmed = 
-            gtkask( globals,
-                    "Are you sure everybody wants to end the game now?",
+            gtkask( "Are you sure everybody wants to end the game now?",
                     2, "Yes", "No" ) == 0;
 
         if ( confirmed ) {
@@ -535,7 +534,7 @@ final_scores( GtkWidget* widget, GtkAppGlobals* globals )
 } /* final_scores */
 
 static void
-new_game( GtkWidget* widget, GtkAppGlobals* globals )
+new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     gboolean confirmed;
 
@@ -569,7 +568,7 @@ new_game( GtkWidget* widget, GtkAppGlobals* globals )
 } /* new_game */
 
 static void
-game_info( GtkWidget* widget, GtkAppGlobals* globals )
+game_info( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
@@ -581,33 +580,36 @@ game_info( GtkWidget* widget, GtkAppGlobals* globals )
 }
 
 static void
-load_game( GtkWidget* widget, GtkAppGlobals* globals )
+load_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* load_game */
 
 static void
-save_game( GtkWidget* widget, GtkAppGlobals* globals )
+save_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* save_game */
 
 static void
-load_dictionary( GtkWidget* widget, GtkAppGlobals* globals )
+load_dictionary( GtkWidget* XP_UNUSED(widget), 
+                 GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* load_dictionary */
 
 static void
-handle_undo( GtkWidget* widget, GtkAppGlobals* globals )
+handle_undo( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* handle_undo */
 
 static void
-handle_redo( GtkWidget* widget, GtkAppGlobals* globals )
+handle_redo( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* handle_redo */
 
 #ifdef FEATURE_TRAY_EDIT
 static void
-handle_trayEditToggle( GtkWidget* widget, GtkAppGlobals* globals, XP_Bool on )
+handle_trayEditToggle( GtkWidget* XP_UNUSED(widget), 
+                       GtkAppGlobals* XP_UNUSED(globals), 
+                       XP_Bool XP_UNUSED(on) )
 {
 } /* handle_trayEditToggle */
 
@@ -625,7 +627,7 @@ handle_trayEditToggle_off( GtkWidget* widget, GtkAppGlobals* globals )
 #endif
 
 static void
-handle_resend( GtkWidget* widget, GtkAppGlobals* globals )
+handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     CommsCtxt* comms = globals->cGlobals.game.comms;
     if ( comms != NULL ) {
@@ -635,7 +637,7 @@ handle_resend( GtkWidget* widget, GtkAppGlobals* globals )
 
 #ifdef DEBUG
 static void
-handle_commstats( GtkWidget* widget, GtkAppGlobals* globals )
+handle_commstats( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     CommsCtxt* comms = globals->cGlobals.game.comms;
 
@@ -653,7 +655,7 @@ handle_commstats( GtkWidget* widget, GtkAppGlobals* globals )
 
 #ifdef MEM_DEBUG
 static void
-handle_memstats( GtkWidget* widget, GtkAppGlobals* globals )
+handle_memstats( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     XWStreamCtxt* stream = mem_stream_make( MEMPOOL 
 					    globals->cGlobals.params->vtMgr,
@@ -685,7 +687,8 @@ createAddItem( GtkWidget* parent, gchar* label,
 } /* createAddItem */
 
 static GtkWidget* 
-makeMenus( GtkAppGlobals* globals, int argc, char** argv )
+makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc), 
+           char** XP_UNUSED(argv) )
 {
     GtkWidget* menubar = gtk_menu_bar_new();
     GtkWidget* fileMenu;
@@ -750,7 +753,7 @@ makeMenus( GtkAppGlobals* globals, int argc, char** argv )
 } /* makeMenus */
 
 static gboolean
-handle_flip_button( GtkWidget* widget, gpointer _globals )
+handle_flip_button( GtkWidget* XP_UNUSED(widget), gpointer _globals )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)_globals;
     if ( board_flip( globals->cGlobals.game.board ) ) {
@@ -760,7 +763,7 @@ handle_flip_button( GtkWidget* widget, gpointer _globals )
 } /* handle_flip_button */
 
 static gboolean
-handle_value_button( GtkWidget* widget, gpointer closure )
+handle_value_button( GtkWidget* XP_UNUSED(widget), gpointer closure )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
     if ( board_toggle_showValues( globals->cGlobals.game.board ) ) {
@@ -770,7 +773,7 @@ handle_value_button( GtkWidget* widget, gpointer closure )
 } /* handle_value_button */
 
 static void
-handle_hint_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_hint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     XP_Bool redo;
     if ( board_requestHint( globals->cGlobals.game.board, 
@@ -783,7 +786,7 @@ handle_hint_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_hint_button */
 
 static void
-handle_nhint_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_nhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     XP_Bool redo;
 
@@ -798,7 +801,8 @@ handle_nhint_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_hint_button */
 
 static void
-handle_colors_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_colors_button( GtkWidget* XP_UNUSED(widget), 
+                      GtkAppGlobals* XP_UNUSED(globals) )
 {
 /*     XP_Bool oldVal = board_getShowColors( globals->cGlobals.game.board ); */
 /*     if ( board_setShowColors( globals->cGlobals.game.board, !oldVal ) ) { */
@@ -807,7 +811,7 @@ handle_colors_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_colors_button */
 
 static void
-handle_juggle_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_juggle_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( board_juggleTray( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
@@ -815,7 +819,7 @@ handle_juggle_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_juggle_button */
 
 static void
-handle_undo_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_undo_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( server_handleUndo( globals->cGlobals.game.server ) ) {
         board_draw( globals->cGlobals.game.board );
@@ -823,12 +827,13 @@ handle_undo_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_undo_button */
 
 static void
-handle_redo_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_redo_button( GtkWidget* XP_UNUSED(widget), 
+                    GtkAppGlobals* XP_UNUSED(globals) )
 {
 } /* handle_redo_button */
 
 static void
-handle_trade_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( board_beginTrade( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
@@ -853,7 +858,7 @@ scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
 } /* scroll_value_changed */
 
 static void
-handle_grid_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_grid_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     XP_U16 scaleH, scaleV;
     XP_Bool gridOn = globals->gridOn;
@@ -875,7 +880,7 @@ handle_grid_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_grid_button */
 
 static void
-handle_hide_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_hide_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     BoardCtxt* board;
     XP_Bool draw = XP_FALSE;
@@ -900,7 +905,7 @@ handle_hide_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_hide_button */
 
 static void
-handle_commit_button( GtkWidget* widget, GtkAppGlobals* globals )
+handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     if ( board_commitTurn( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
@@ -908,7 +913,7 @@ handle_commit_button( GtkWidget* widget, GtkAppGlobals* globals )
 } /* handle_commit_button */
 
 static void
-gtkUserError( GtkAppGlobals* globals, char* format, ... )
+gtkUserError( GtkAppGlobals* XP_UNUSED(globals), char* format, ... )
 {
     char buf[512];
     va_list ap;
@@ -917,7 +922,7 @@ gtkUserError( GtkAppGlobals* globals, char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    (void)gtkask( globals, buf, 1, "OK" );
+    (void)gtkask( buf, 1, "OK" );
 
     va_end(ap);
 } /* gtkUserError */
@@ -943,8 +948,8 @@ gtk_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
 } /* gtk_util_userPickTile */
 
 static XP_Bool
-gtk_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
-		      XP_UCHAR* buf, XP_U16* len )
+gtk_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* name, 
+                      XP_UCHAR* buf, XP_U16* len )
 {
     XP_Bool ok = gtkpasswdask( name, buf, len );
     return ok;
@@ -978,15 +983,16 @@ setCtrlsForTray( GtkAppGlobals* globals )
 } /* setCtrlsForTray */
 
 static void
-gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState state,
-                           XP_U16 nVisibleRows )
+gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(state),
+                           XP_U16 XP_UNUSED(nVisibleRows) )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     setCtrlsForTray( globals );
 } /* gtk_util_trayHiddenChange */
 
 static void
-gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
+gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
+                        XP_U16 XP_UNUSED(newOffset) )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     board_invalAll( globals->cGlobals.game.board );
@@ -1053,7 +1059,7 @@ gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 } /* gtk_util_hiliteCell */
 
 static XP_Bool
-gtk_util_engineProgressCallback( XW_UtilCtxt* uc )
+gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 {
 #ifdef DONT_ABORT_ENGINE
     return XP_TRUE;		/* keep going */
@@ -1209,7 +1215,7 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         XP_ASSERT( bwi->nWords == 1 );
         sprintf( buf, "Word \"%s\" not in the current dictionary. "
                  "Use it anyway?", bwi->words[0] );
-        result = 0 == gtkask( globals, buf, 2, "Ok", "Cancel" );
+        result = 0 == gtkask( buf, 2, "Ok", "Cancel" );
     }
 
     return result;
@@ -1229,10 +1235,10 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool 
-gtk_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
+gtk_util_getTraySearchLimits( XW_UtilCtxt* XP_UNUSED(uc), 
+                              XP_U16* XP_UNUSED(min), XP_U16* max )
 {
-    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
-    *max = askNTiles( globals, MAX_TRAY_TILES, *max );
+    *max = askNTiles( MAX_TRAY_TILES, *max );
     return XP_TRUE;
 }
 #endif
@@ -1253,10 +1259,10 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 } /* gtk_util_userError */
 
 static XP_Bool
-gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
+gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id, 
+                    XWStreamCtxt* stream )
 {
     XP_Bool result;
-    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     char* question;
     char* answers[3];
     gint numAnswers = 0;
@@ -1293,7 +1299,7 @@ gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         return XP_FALSE;
     }
 
-    result = gtkask( globals, question, numAnswers, 
+    result = gtkask( question, numAnswers, 
                      answers[0], answers[1], answers[2] ) == okIndex;
 
     if ( freeMe > 0 ) {
@@ -1338,7 +1344,7 @@ makeShowButtonFromBitmap( void* closure, const gchar* filename,
 } /* makeShowButtonFromBitmap */
 
 static GtkWidget* 
-makeVerticalBar( GtkAppGlobals* globals, GtkWidget* window )
+makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
 {
     GtkWidget* vbox;
     GtkWidget* button;
@@ -1387,7 +1393,8 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* window )
 } /* makeVerticalBar */
 
 static GtkWidget* 
-makeButtons( GtkAppGlobals* globals, int argc, char** argv )
+makeButtons( GtkAppGlobals* globals, int XP_UNUSED(argc), 
+             char** XP_UNUSED(argv) )
 {
     short i;
     GtkWidget* hbox;
@@ -1545,7 +1552,7 @@ drop_msg_toggle( GtkWidget* toggle, GtkAppGlobals* globals )
 } /* drop_msg_toggle */
 
 int
-gtkmain( XP_Bool isServer, LaunchParams* params, int argc, char *argv[] )
+gtkmain( LaunchParams* params, int argc, char *argv[] )
 {
     short width, height;
     GtkWidget* window;

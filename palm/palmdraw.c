@@ -98,7 +98,7 @@ insetRect( XP_Rect* rect, XP_S16 by )
 } /* insetRect */
 
 static void
-drawBitmapAt( DrawCtx* p_dctx, Int16 resID, Int16 x, Int16  y ) 
+drawBitmapAt( DrawCtx* XP_UNUSED(p_dctx), Int16 resID, Int16 x, Int16  y ) 
 {
     MemHandle handle;
     handle = DmGetResource( bitmapRsc, resID );
@@ -224,7 +224,7 @@ checkFontOffsets( PalmDrawCtx* dctx, const DictionaryCtxt* dict )
 
 static XP_Bool
 palm_common_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
-                             const XP_Rect* rect, XP_Bool hasfocus )
+                             const XP_Rect* rect, XP_Bool XP_UNUSED(hasfocus) )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
@@ -258,7 +258,7 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 } /* palm_clr_draw_boardBegin */
 
 static void
-palm_clr_draw_boardFinished( DrawCtx* p_dctx )
+palm_clr_draw_boardFinished( DrawCtx* XP_UNUSED(p_dctx) )
 {
     WinPopDrawState();
 } /* palm_clr_draw_boardFinished */
@@ -536,8 +536,9 @@ palm_clr_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* palm_clr_draw_trayBegin */
 
 static XP_Bool
-palm_bnw_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner,
-                         XP_Bool hasfocus )
+palm_bnw_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                         XP_U16 XP_UNUSED(owner),
+                         XP_Bool XP_UNUSED(hasfocus) )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
@@ -677,7 +678,7 @@ palm_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, XP_Bool selecte
 } /* palm_draw_drawTrayDivider */
 
 static void 
-palm_bnw_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
+palm_bnw_draw_clearRect( DrawCtx* XP_UNUSED(p_dctx), const XP_Rect* rectP )
 {
     eraseRect( rectP );
 } /* palm_draw_clearRect */
@@ -706,7 +707,7 @@ palm_clr_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 
 static void
 palm_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP, 
-                          XWBonusType cursorBonus, XP_Bool vertical,
+                          XWBonusType XP_UNUSED(cursorBonus), XP_Bool vertical,
                           HintAtts hintAtts )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
@@ -744,8 +745,9 @@ palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 #endif
 
 static void
-palm_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 numPlayers, 
-                      XP_Bool hasfocus )
+palm_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                      XP_U16 XP_UNUSED(numPlayers), 
+                      XP_Bool XP_UNUSED(hasfocus) )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
@@ -770,7 +772,8 @@ rectContainsRect( const XP_Rect* rect1, const XP_Rect* rect2 )
 } /* rectContainsRect */
 
 static XP_Bool
-palm_draw_vertScrollBoard( DrawCtx* p_dctx, XP_Rect* rect, XP_S16 dist )
+palm_draw_vertScrollBoard( DrawCtx* XP_UNUSED(p_dctx), XP_Rect* rect, 
+                           XP_S16 dist )
 {
     RectangleType clip;
     XP_Bool canDoIt;
@@ -918,7 +921,7 @@ palm_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLef
 
 static void
 palm_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                       const XP_Rect* rOuter, XP_S16 nTilesLeft )
+                       const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
@@ -989,7 +992,8 @@ palm_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* rect,
 
 static void
 palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                                const XP_Rect* rOuter, const DrawScoreInfo* dsi )
+                                const XP_Rect* XP_UNUSED(rOuter), 
+                                const DrawScoreInfo* dsi )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
@@ -1023,7 +1027,7 @@ palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 #define PENDING_DIGITS 3
 static void
 palm_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
-                              XP_S16 score, XP_U16 playerNum )
+                              XP_S16 score, XP_U16 XP_UNUSED(playerNum) )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     char buf[PENDING_DIGITS+1] = "000";
@@ -1105,8 +1109,8 @@ palmFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
 
 static void
 palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                     const XP_Rect* rOuter,
-                     XP_U16 player, XP_S16 secondsLeft )
+                     const XP_Rect* XP_UNUSED(rOuter),
+                     XP_U16 XP_UNUSED(player), XP_S16 secondsLeft )
 {
     /* This is called both from within drawScoreboard and not, meaning that
      * sometimes draw_boardBegin() and draw_boardFinished() bracket it and
@@ -1305,9 +1309,9 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 } /* palm_draw_drawMiniWindow */
 
 static void
-palm_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect, 
-                           XP_Bool lastTime,
-                           void** closure, XP_Bool* invalUnder )
+palm_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect), 
+                           XP_Bool XP_UNUSED(lastTime),
+                           void** closure, XP_Bool* XP_UNUSED(invalUnder) )
 {
     PalmMiniWinData* data = (PalmMiniWinData*)*closure;
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
@@ -1325,7 +1329,7 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* palm_draw_eraseMiniWindow */
 
 static void
-draw_doNothing( DrawCtx* dctx, ... )
+draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
 } /* draw_doNothing */
 

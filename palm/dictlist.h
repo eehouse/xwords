@@ -48,8 +48,7 @@ XP_Bool getDictWithName( const PalmDictList* dl, unsigned char* name,
                          DictListEntry** dle );
 void cacheDictForName( PalmDictList* dl, XP_UCHAR* dictName, 
                        DictionaryCtxt* ctxt );
-void removeFromDictCache( PalmDictList* dl, XP_UCHAR* dictName,
-                          DictionaryCtxt* dict );
+void removeFromDictCache( PalmDictList* dl, XP_UCHAR* dictName );
 
 XP_Bool getNthDict( const PalmDictList* dl, short n, DictListEntry** dle );
 

@@ -131,8 +131,7 @@ cacheDictForName( PalmDictList* dl, XP_UCHAR* dictName,
 } /* cacheDictForName */
 
 void
-removeFromDictCache( PalmDictList* dl, XP_UCHAR* dictName, 
-                     DictionaryCtxt* dict )
+removeFromDictCache( PalmDictList* dl, XP_UCHAR* dictName )
 {
     DictListEntry* dle;
     (void)getDictWithName( dl, dictName, &dle );
@@ -172,7 +171,8 @@ addEntry( MPFORMAL PalmDictList** dlp, DictListEntry* dle )
 } /* addEntry */
 
 static void
-searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, unsigned char separator,
+searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum, 
+           unsigned char XP_UNUSED(separator),
            unsigned char* path, XP_U16 pathSize, XP_U32 creatorSought,
            XP_U16 versSought )
 { 
@@ -293,7 +293,7 @@ tryVFSSearch( MPFORMAL PalmDictList** dlp, XP_U32 creatorSought,
 /* if we've allocated extra space in the array as an optimization now's when
  * we pull back */
 static void
-cleanList( PalmDictList** dl )
+cleanList( PalmDictList** XP_UNUSED(dl) )
 {
 } /* cleanList */
 
