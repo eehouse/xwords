@@ -311,9 +311,6 @@ controlsToLocalPrefs( PrefsDlgState* state )
 
     /* trapping ctlEnterEvent should mean it can't have changed, so no need
        to test before grabbing the value. */
-    XP_ASSERT( globals->isNewGame ||
-               (state->hintsNotAllowed == 
-                getBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID) ) );
     state->hintsNotAllowed = getBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID );
 #ifdef XWFEATURE_SEARCHLIMIT
     state->allowHintRect = getBooleanCtrl( XW_PREFS_HINTRECT_CHECKBOX_ID );
