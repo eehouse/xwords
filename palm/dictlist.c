@@ -137,7 +137,6 @@ removeFromDictCache( PalmDictList* dl, XP_UCHAR* dictName )
     (void)getDictWithName( dl, dictName, &dle );
     XP_ASSERT( getDictWithName( dl, dictName, &dle ) );
     XP_ASSERT( !!dle->dict );
-    XP_ASSERT( dle->dict == dict );
 
     dle->dict = NULL;
 } /* removeFromDictCache */

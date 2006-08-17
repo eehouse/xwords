@@ -3298,7 +3298,7 @@ palm_util_trayHiddenChange( XW_UtilCtxt* uc,
 } /* palm_util_trayHiddenChange */
 
 static void 
-palm_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
+palm_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED_DBG(oldOffset), 
                          XP_U16 newOffset )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
