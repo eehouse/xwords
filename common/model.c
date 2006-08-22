@@ -1175,7 +1175,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
         row = pt->row;
         tile = getModelTileRaw( model, col, row );
 
-        XP_ASSERT( tile & TILE_PENDING_BIT );
+        XP_ASSERT( (tile & TILE_PENDING_BIT) != 0 );
 
         val = tile & TILE_VALUE_MASK;
         if ( val > 1 ) {	/* somebody else is using this square too! */
