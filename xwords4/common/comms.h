@@ -69,7 +69,7 @@ typedef struct CommsAddrRec {
     } u;
 } CommsAddrRec;
 
-typedef XP_S16 (*TransportSend)( XP_U8* buf, XP_U16 len, 
+typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
                                  const CommsAddrRec* addr,
                                  void* closure );
 

@@ -42,7 +42,7 @@ typedef struct StreamCtxVTable {
     XP_U32 (*m_stream_getBits)( XWStreamCtxt* dctx, XP_U16 nBits );
 
     void (*m_stream_putU8)( XWStreamCtxt* dctx, XP_U8 byt );
-    void (*m_stream_putBytes)( XWStreamCtxt* dctx, void* whence, 
+    void (*m_stream_putBytes)( XWStreamCtxt* dctx, const void* whence, 
                                XP_U16 count );
     void (*m_stream_putString)( XWStreamCtxt* dctx, const char* whence );
     void (*m_stream_putU16)( XWStreamCtxt* dctx, XP_U16 data );

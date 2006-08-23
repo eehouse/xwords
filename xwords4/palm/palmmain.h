@@ -215,7 +215,7 @@ typedef struct NetLibStuff {
     NetSocketRef socket;
     XP_Bool ipAddrInval;
 } NetLibStuff;
-#define socketIsOpen(g) ((g)->nlStuff.socket != -1)
+#define ipSocketIsOpen(g) ((g)->nlStuff.socket != -1)
 #endif
 
 #define MAX_DLG_PARAMS 2
@@ -304,6 +304,9 @@ struct PalmAppGlobals {
 #ifdef BEYOND_IR
     NetLibStuff nlStuff;
     XP_U32 heartTimerFireAt;
+# ifdef XWFEATURE_PALM_BLUETOOTH
+    struct PalmBTStuff* btStuff;
+# endif
 #endif
 
 #ifdef DEBUG

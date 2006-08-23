@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1999 - 2004 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -33,7 +33,7 @@
 #include <unix_stdarg.h>
 #include <FileStream.h>
 #ifdef FEATURE_SILK
-#include <SonyCLIE.h>
+# include <SonyCLIE.h>
 #endif
 
 #include "comtypes.h"
@@ -51,6 +51,7 @@
 #include "strutils.h"
 #include "palmir.h"
 #include "palmip.h"
+#include "palmbt.h"
 #include "xwcolors.h"
 #include "prefsdlg.h"
 #include "connsdlg.h"
@@ -114,8 +115,8 @@ static UInt16 romVersion( void );
 static Boolean handleHintRequest( PalmAppGlobals* globals );
 static XP_Bool timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, 
                              XP_U32* when );
-static XP_S16 palm_send( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, 
-                         void* closure );
+static XP_S16 palm_send( const XP_U8* buf, XP_U16 len, 
+                         const CommsAddrRec* addr, void* closure );
 static void palm_send_on_close( XWStreamCtxt* stream, void* closure );
 
 /* callbacks */
@@ -155,7 +156,7 @@ static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
                                           XP_U16 turn, XP_Bool turnLost );
 #ifdef BEYOND_IR
 static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
-                                  const CommsAddrRec* newAddr );
+                                  const CommsAddrRec* newAddr, XP_Bool isServer );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, 
@@ -1302,6 +1303,9 @@ stopApplication( PalmAppGlobals* globals )
         palm_ip_close( globals );
 #endif
 #endif
+#ifdef XWFEATURE_PALM_BLUETOOTH
+        palm_bt_close( globals );
+#endif
 
         if ( !!globals->dictList ) {
             DictListFree( MPPARM(globals->mpool) globals->dictList );
@@ -1349,9 +1353,15 @@ figureWaitTicks( PalmAppGlobals* globals )
 
     if ( 0 ) {
 #ifdef BEYOND_IR
-    } else if ( socketIsOpen(globals) ) {
+    } else if ( ipSocketIsOpen(globals) ) {
 /*         we'll do our sleeping in NetLibSelect */
         result = 0;
+# ifdef XWFEATURE_PALM_BLUETOOTH
+    } else if ( btSocketIsOpen(globals) ) {
+        /* From Whiteboard.  But: what to use here?  BTLib needs nil events
+           AFAIK. */
+        result = SysTicksPerSecond() / 10;
+# endif
 #endif
     } else if ( globals->timeRequested || globals->hintPending ) {
         result = 0;
@@ -3365,7 +3375,7 @@ palm_util_engineProgressCallback( XW_UtilCtxt* uc )
 
 static void
 palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
-                    XP_U16 XP_UNUSED(secsFromNow),
+                    XP_U16 XP_UNUSED_IR(secsFromNow),
                     TimerProc proc, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
@@ -3439,8 +3449,8 @@ palm_send_on_close( XWStreamCtxt* stream, void* closure )
 } /* palm_send_on_close */
 
 static XP_S16
-palm_send( XP_U8* buf, XP_U16 len, 
-           const CommsAddrRec* XP_UNUSED(addr), /* !!!? */
+palm_send( const XP_U8* buf, XP_U16 len, 
+           const CommsAddrRec* XP_UNUSED_IR(addr), /* !!!? */
            void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
@@ -3454,6 +3464,11 @@ palm_send( XP_U8* buf, XP_U16 len,
     case COMMS_CONN_RELAY:
         result = palm_ip_send( buf, len, addr, globals );
         break;
+#ifdef XWFEATURE_PALM_BLUETOOTH
+    case COMMS_CONN_BT:
+        result = palm_bt_send( buf, len, globals );
+        break;
+#endif
     default:
         XP_ASSERT(0);
     }
@@ -3521,12 +3536,31 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 } /* palm_util_warnIllegalWord */
 
 #ifdef BEYOND_IR
+#ifdef XWFEATURE_PALM_BLUETOOTH
+static void
+btDataHandler( PalmAppGlobals* globals, const XP_U8* data, XP_U16 len )
+{
+    XWStreamCtxt* instream;
+    LOG_FUNC();
+    instream = makeSimpleStream( globals, NULL );
+    stream_putBytes( instream, data, len );
+    checkAndDeliver( globals, instream );
+    LOG_RETURN_VOID();
+}
+#endif
+
 static void
 palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
-                      const CommsAddrRec* newAddr )
+                      const CommsAddrRec* newAddr, XP_Bool isServer )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-    ip_addr_change( globals, oldAddr, newAddr );
+    if ( COMMS_CONN_RELAY == newAddr->conType ) {
+        ip_addr_change( globals, oldAddr, newAddr );
+#ifdef XWFEATURE_PALM_BLUETOOTH
+    } else if ( COMMS_CONN_BT == newAddr->conType ) {
+        palm_bt_init( globals, btDataHandler, isServer );
+#endif
+    }
 }
 #endif
 

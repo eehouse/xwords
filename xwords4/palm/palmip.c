@@ -204,7 +204,7 @@ ip_addr_change( PalmAppGlobals* globals, const CommsAddrRec* oldAddr,
 
 /* Deal with NetLibSend's willingness to send less than the full buffer */
 static XP_Bool
-sendLoop( PalmAppGlobals* globals, XP_U8* buf, XP_U16 len )
+sendLoop( PalmAppGlobals* globals, const XP_U8* buf, XP_U16 len )
 {
     XP_U16 totalSent = 0;
 
@@ -237,7 +237,7 @@ sendLoop( PalmAppGlobals* globals, XP_U8* buf, XP_U16 len )
 } /* sendLoop */
 
 XP_S16
-palm_ip_send( XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
+palm_ip_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
               PalmAppGlobals* globals )
 {
     CommsAddrRec localRec;
@@ -344,7 +344,7 @@ packetToStream( PalmAppGlobals* globals )
 void
 checkHandleNetEvents( PalmAppGlobals* globals )
 {
-    if ( socketIsOpen( globals ) ) {
+    if ( ipSocketIsOpen( globals ) ) {
         NetFDSetType readFDs;
         NetFDSetType writeFDs;
         NetFDSetType ignoreFDs;

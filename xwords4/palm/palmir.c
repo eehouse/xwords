@@ -462,7 +462,7 @@ ir_cleanup( PalmAppGlobals* globals )
  * outgoing.
  */
 XP_S16
-palm_ir_send( XP_U8* buf, XP_U16 len, PalmAppGlobals* globals )
+palm_ir_send( const XP_U8* buf, XP_U16 len, PalmAppGlobals* globals )
 {
 #ifdef IR_EXCHMGR
     UInt32 sent = 0;

@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 - 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,17 +17,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _PALMIP_H_
-#define _PALMIP_H_
+#ifndef _PALMBT_H_
+#define _PALMBT_H_
 
+#ifdef XWFEATURE_PALM_BLUETOOTH
+
+#include "comms.h"
 #include "palmmain.h"
 
-void palm_ip_setup( PalmAppGlobals* globals );
-void palm_ip_close( PalmAppGlobals* globals );
-XP_S16 palm_ip_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-                     PalmAppGlobals* globals );
-void ip_addr_change( PalmAppGlobals* globals, const CommsAddrRec* oldAddr,
-                     const CommsAddrRec* newAddr );
-void checkHandleNetEvents( PalmAppGlobals* globals );
+typedef void (*DataCb)( PalmAppGlobals* globals, 
+                        const XP_U8* data, XP_U16 len );
 
+void palm_bt_init( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster );
+void palm_bt_close( PalmAppGlobals* globals );
+
+XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, PalmAppGlobals* globals );
+XP_Bool btSocketIsOpen( PalmAppGlobals* globals );
+#endif
 #endif
