@@ -28,6 +28,7 @@ INCLUDE += \
 	-I$(PALMDIR)/Core/System \
 	-I$(PALMDIR)/Core/System/Unix \
 	-I$(PALMDIR)/Core/Hardware \
+	-I$(PALMDIR)/Extensions/Bluetooth \
 	-I. -I../common -I../relay
 
 # NOTE!!!! Added the -w flag to supress all warnings since arm-elf-gcc
@@ -61,6 +62,7 @@ OBJS = $(PLATFORM)/pnolet.o \
 	$(PLATFORM)/dictlist.o \
 	$(PLATFORM)/palmir.o \
 	$(PLATFORM)/palmip.o \
+	$(PLATFORM)/palmbt.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
 	$(PLATFORM)/pace_gen.o \

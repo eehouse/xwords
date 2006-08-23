@@ -115,6 +115,9 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 # experimental at this point!
 # MYDEFS_COMMON += -DBEYOND_IR
 
+# turn on bluetooth comms option -- off by default until ready
+# MYDEFS_COMMON += -DXWFEATURE_PALM_BLUETOOTH
+
 # For Danish and perhaps other languages, custom-measure glyph height
 # so that overtall letters have a chance of fitting.
 MYDEFS_COMMON += -DTALL_FONTS
@@ -147,7 +150,8 @@ BITMAP_RSRCS = \
 	$(BITMAPS)/showtray.pbitm \
 	$(BITMAPS)/xwords4.pbitm \
 
-INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
+# INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
+INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/Extensions/Bluetooth
 
 # HS_DUO_SUPPORT = 1
 
@@ -181,6 +185,7 @@ OBJS_68K = $(PLATFORM)/palmmain.o \
 	$(PLATFORM)/dictlist.o \
 	$(PLATFORM)/palmir.o \
 	$(PLATFORM)/palmip.o \
+	$(PLATFORM)/palmbt.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
 	$(COMMONOBJ)

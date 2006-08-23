@@ -55,24 +55,6 @@ strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
     buf[len] = '\0';
 } /* strFromField */
 
-#if 0
-static void
-stateFromGlobals( PalmAppGlobals* globals, ConnsDlgState* state )
-{
-    comms_getAddr( globals->game.comms, &state->targetAddr,
-                   &state->myPort );
-
-    state->isNewGame = globals->isNewGame;
-} /* stateFromGlobals */
-
-static void
-globalsFromState( PalmAppGlobals* globals, ConnsDlgState* state )
-{
-    comms_setAddr( globals->game.comms, &state->targetAddr,
-                   state->myPort );
-} /* globalsFromState */
-#endif
-
 static void
 ctlsFromState( PalmAppGlobals* globals, FormPtr form, ConnsDlgState* state )
 {
@@ -134,6 +116,43 @@ cleanupExit( PalmAppGlobals* globals )
     FrmReturnToForm( 0 );
 } /* cleanupExit */
 
+static XP_U16
+conTypeToSel( CommsConnType conType )
+{
+    XP_U16 result;
+    switch ( conType ) {
+#ifdef XWFEATURE_PALM_BLUETOOTH
+    case COMMS_CONN_BT: result = 0; break;
+    case COMMS_CONN_IR: result = 1; break;
+    case COMMS_CONN_RELAY: result = 2; break;
+#else
+    case COMMS_CONN_IR: result = 0; break;
+    case COMMS_CONN_RELAY: result = 1; break;
+#endif
+    default:
+        XP_ASSERT(0);
+    }
+    return result;
+} /* conTypeToSel */
+
+static CommsConnType
+selToConType( XP_U16 sel )
+{
+    CommsConnType conType;
+    switch( sel ) {
+#ifdef XWFEATURE_PALM_BLUETOOTH
+    case 0: conType = COMMS_CONN_BT; break;
+    case 1: conType = COMMS_CONN_IR; break;
+    case 2: conType = COMMS_CONN_RELAY; break;
+#else
+    case 0: conType = COMMS_CONN_IR; break;
+    case 1: conType = COMMS_CONN_RELAY; break;
+#endif
+    default: XP_ASSERT(0);
+    }
+    return conType;
+}
+
 Boolean
 ConnsFormHandleEvent( EventPtr event )
 {
@@ -167,9 +186,10 @@ ConnsFormHandleEvent( EventPtr event )
         /* setup connection popup */
         state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
         XP_ASSERT( state->addr->conType == COMMS_CONN_IR
-                   || state->addr->conType == COMMS_CONN_RELAY );
+                   || state->addr->conType == COMMS_CONN_RELAY
+                   || state->addr->conType == COMMS_CONN_BT );
         setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
-                             state->addr->conType == COMMS_CONN_IR? 0:1 );
+                             conTypeToSel(state->addr->conType) );
 
         ctlsFromState( globals, form, state );
 
@@ -190,8 +210,7 @@ ConnsFormHandleEvent( EventPtr event )
                 if ( chosen >= 0 ) {
                     setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, 
                                          state->connTypesList, chosen );
-                    state->addr->conType = 
-                        chosen == 0? COMMS_CONN_IR : COMMS_CONN_RELAY;
+                    state->addr->conType = selToConType( chosen );
                     updateFormCtls( form, state );
                 }
             }

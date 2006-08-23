@@ -459,13 +459,15 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
     XP_ASSERT( comms != NULL );
 #ifdef BEYOND_IR
-    util_addrChange( comms->util, &comms->addr, addr );
+    util_addrChange( comms->util, &comms->addr, addr, comms->isServer );
 #endif
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
 #ifdef BEYOND_IR
     /* We should now have a cookie so we can connect??? */
-    relayConnect( comms );
+    if ( addr->conType == COMMS_CONN_RELAY ) {
+        relayConnect( comms );
+    }
 #endif
 } /* comms_setAddr */
 
@@ -1133,7 +1135,7 @@ static void
 relayConnect( CommsCtxt* comms )
 {
     XP_LOGF( "relayConnect called" );
-    if ( !comms->connecting ) {
+    if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->connecting ) {
         comms->connecting = XP_TRUE;
         send_via_relay( comms, 
                         comms->connName[0] == '\0' ?
@@ -1148,9 +1150,11 @@ relayDisconnect( CommsCtxt* comms )
 {
 #ifdef BEYOND_IR
     XP_LOGF( "relayDisconnect called" );
-    if ( comms->relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
-        comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
-        send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, NULL, 0 );
+    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+        if ( comms->relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
+            comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
+            send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, NULL, 0 );
+        }
     }
 #endif
 } /* relayDisconnect */

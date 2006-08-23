@@ -87,7 +87,7 @@ XP_Bool loadReceivedMove( PalmAppGlobals* globals, MemHandle moveData );
 
 void palm_ir_receiveMove( PalmAppGlobals* globals, ExgSocketPtr socket );
 
-XP_S16 palm_ir_send( XP_U8* buf, XP_U16 len, PalmAppGlobals* globals );
+XP_S16 palm_ir_send( const XP_U8* buf, XP_U16 len, PalmAppGlobals* globals );
 
 #ifdef XWFEATURE_STANDALONE_ONLY
 # define palm_ir_send (TransportSend)NULL

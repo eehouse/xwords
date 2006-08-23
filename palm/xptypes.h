@@ -132,5 +132,11 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 # define XP_UNUSED_SILK(x) XP_UNUSED(x)
 #endif
 
+#ifdef BEYOND_IR
+# define XP_UNUSED_IR(x) x
+#else
+# define XP_UNUSED_IR(x) XP_UNUSED(x)
+#endif
+
 #endif
 
