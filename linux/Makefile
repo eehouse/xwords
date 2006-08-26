@@ -59,6 +59,9 @@ DEFINES += -DFEATURE_TRAY_EDIT
 #DEFINES += -DDRAW_WITH_PRIMITIVES
 DEFINES += -DBEYOND_IR
 
+# Bluetooth support
+DEFINES += -DXWFEATURE_BLUETOOTH
+
 # Let users pick the tiles going into their trays
 #DEFINES += -DFEATURE_TRAY_EDIT
 DEFINES += -DDONT_ABORT_ENGINE
@@ -85,10 +88,11 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 	$(PLATFORM)/cursesdlgutil.o \
 	$(PLATFORM)/cursesletterask.o \
 	$(PLATFORM)/filestream.o \
+	$(PLATFORM)/linuxbt.o \
 
 #	$(PLATFORM)/linuxcommpipe.o \
 
-LIBS = -lm -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
+LIBS = -lm -lbluetooth -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-2.0`

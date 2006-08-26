@@ -704,7 +704,8 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
             --numEvents;
 
-            nBytes = linux_receive( &globals->cGlobals, buf, sizeof(buf) );
+            nBytes = linux_relay_receive( &globals->cGlobals, buf, 
+                                          sizeof(buf) );
 
             if ( nBytes != -1 ) {
                 XWStreamCtxt* inboundS;
@@ -935,7 +936,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     setupCursesUtilCallbacks( &globals, params->util );
 
-    globals.cGlobals.defaultServerName = params->relayName;
+    if ( params->conType == COMMS_CONN_RELAY ) {
+        globals.cGlobals.u.relay.defaultServerName
+            = params->connInfo.relay.relayName;
+    }
 
     cursesListenOnSocket( &globals, 0, NULL ); /* stdin */
 
@@ -952,16 +956,16 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     gameID = (XP_U16)util_getCurSeconds( globals.cGlobals.params->util );
     game_makeNewGame( MEMPOOL &globals.cGlobals.game, &params->gi,
                       params->util, (DrawCtx*)globals.draw,
-                      gameID, &globals.cp, linux_tcp_send, &globals );
+                      gameID, &globals.cp, linux_send, &globals );
 
     if ( globals.cGlobals.game.comms ) {
         CommsAddrRec addr;
         addr.conType = COMMS_CONN_RELAY;
         addr.u.ip_relay.ipAddr = 0;       /* ??? */
-        addr.u.ip_relay.port = params->defaultSendPort;
-        XP_STRNCPY( addr.u.ip_relay.hostName, params->relayName,
+        addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+        XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
                     sizeof(addr.u.ip_relay.hostName) - 1 );
-        XP_STRNCPY( addr.u.ip_relay.cookie, params->cookie,
+        XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
                     sizeof(addr.u.ip_relay.cookie) - 1 );
         comms_setAddr( globals.cGlobals.game.comms, &addr );
     }

@@ -20,6 +20,8 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
+#include <bluetooth/bluetooth.h> /* for bdaddr_t, which should move */
+
 #include "comtypes.h"
 #include "util.h"
 #include "game.h"
@@ -43,7 +45,6 @@ typedef struct LaunchParams {
     DictionaryCtxt* dict;
     CurGameInfo gi;
     char* fileName;
-    char* cookie;
     VTableMgr* vtMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
@@ -60,14 +61,23 @@ typedef struct LaunchParams {
 
     Connectedness serverRole;
 
-    char* relayName;
+    CommsConnType conType;
+    union {
+        struct {
+            char* relayName;
+            char* cookie;
+            short defaultSendPort;
+            short defaultListenPort;
+        } relay;
+        struct {
+            bdaddr_t hostAddr;      /* unused if a host */
+        } bt;
+    } connInfo;
+
     union {
         ServerInfo serverInfo;
         ClientInfo clientInfo;
     } info;
-
-    short defaultSendPort;
-    short defaultListenPort;
 
 } LaunchParams;
 
@@ -78,14 +88,25 @@ typedef struct CommonGlobals {
 
     XWGame game;
     XP_U16 lastNTilesToUse;
-    /* UDP comms stuff */
-    char* defaultServerName;
-    int socket;
+
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
 
+    int socket;                 /* either relay or bt */
+
+    union {
+        struct {
+            char* defaultServerName;
+        } relay;
+        struct {
+            struct LinBtStuff* btStuff;
+        } bt;
+    } u;
+
     TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
+
+    MPSLOT
 } CommonGlobals;
 
 #endif
