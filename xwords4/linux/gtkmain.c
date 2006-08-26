@@ -41,6 +41,7 @@
 
 #include "main.h"
 #include "linuxmain.h"
+#include "linuxbt.h"
 /* #include "gtkmain.h" */
 
 #include "draw.h"
@@ -247,7 +248,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
                              params->dict, params->util, 
                              (DrawCtx*)globals->draw, 
                              &globals->cp,
-                             linux_tcp_send, globals );
+                             linux_send, globals );
 
         stream_destroy( stream );
 
@@ -255,25 +256,37 @@ createOrLoadObjects( GtkAppGlobals* globals )
         XP_U16 gameID;
         CommsAddrRec addr;
 
+        addr.conType = params->conType;
+
         gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
 
-        XP_ASSERT( !!params->relayName );
-        globals->cGlobals.defaultServerName = params->relayName;
+        if ( addr.conType == COMMS_CONN_RELAY ) {
+            XP_ASSERT( !!params->connInfo.relay.relayName );
+            globals->cGlobals.u.relay.defaultServerName
+                = params->connInfo.relay.relayName;
+        }
 
         params->gi.gameID = util_getCurSeconds(globals->cGlobals.params->util);
         XP_STATUSF( "grabbed gameID: %ld\n", params->gi.gameID );
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          gameID, &globals->cp, linux_tcp_send, globals );
+                          gameID, &globals->cp, linux_send, globals );
 
-        addr.conType = COMMS_CONN_RELAY;
-        addr.u.ip_relay.ipAddr = 0;
-        addr.u.ip_relay.port = params->defaultSendPort;
-        XP_STRNCPY( addr.u.ip_relay.hostName, params->relayName,
-                    sizeof(addr.u.ip_relay.hostName) - 1 );
-        XP_STRNCPY( addr.u.ip_relay.cookie, params->cookie,
-                    sizeof(addr.u.ip_relay.cookie) - 1 );
+        addr.conType = params->conType;
+        if ( addr.conType == COMMS_CONN_RELAY ) {
+            addr.u.ip_relay.ipAddr = 0;
+            addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+            XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
+                        sizeof(addr.u.ip_relay.hostName) - 1 );
+            XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
+                        sizeof(addr.u.ip_relay.cookie) - 1 );
+        } else if ( addr.conType == COMMS_CONN_BT ) {
+            XP_ASSERT( sizeof(addr.u.bt.btAddr) 
+                       >= sizeof(params->connInfo.bt.hostAddr));
+            XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                       sizeof(params->connInfo.bt.hostAddr) );
+        }
 
         /* This may trigger network activity */
         if ( !!globals->cGlobals.game.comms ) {
@@ -463,6 +476,8 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 
     game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
     gi_disposePlayerInfo( MEMPOOL &globals->cGlobals.params->gi );
+
+    linux_bt_close( &globals->cGlobals );
  
     vtmgr_destroy( MEMPOOL globals->cGlobals.params->vtMgr );
     
@@ -547,7 +562,7 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
         XP_STATUSF( "grabbed gameID: %ld\n", gameID );
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    gameID, &globals->cp, linux_tcp_send, globals );
+                    gameID, &globals->cp, linux_send, globals );
 
         if ( isClient ) {
             XWStreamCtxt* stream =
@@ -1472,7 +1487,14 @@ newConnectionInput( GIOChannel *source,
         ssize_t nRead;
         unsigned char buf[512];
 
-        nRead = linux_receive( &globals->cGlobals, buf, sizeof(buf) );
+        if ( globals->cGlobals.params->conType == COMMS_CONN_RELAY ) {
+            nRead = linux_relay_receive( &globals->cGlobals, 
+                                         buf, sizeof(buf) );
+        } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
+            nRead = linux_bt_receive( &globals->cGlobals, buf, sizeof(buf) );
+        } else {
+            XP_ASSERT( 0 );
+        }
 
         if ( !globals->dropIncommingMsgs && nRead > 0 ) {
             XWStreamCtxt* inboundS;
@@ -1482,8 +1504,9 @@ newConnectionInput( GIOChannel *source,
             if ( !!inboundS ) {
                 if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
                                                 inboundS, NULL ) ) {
-                    redraw = server_receiveMessage(globals->cGlobals.game.server
-                                                   , inboundS );
+                    redraw =
+                        server_receiveMessage(globals->cGlobals.game.server,
+                                              inboundS );
                 }
                 stream_destroy( inboundS );
             }
@@ -1525,6 +1548,7 @@ static void
 gtk_socket_changed( void* closure, int oldSock, int newSock )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+    XP_ASSERT( oldSock == globals->cGlobals.socket );
     if ( oldSock != -1 ) {
         g_source_remove( oldSock );
         XP_LOGF( "Removed %d from gtk's list of listened-to sockets" );
@@ -1532,6 +1556,7 @@ gtk_socket_changed( void* closure, int oldSock, int newSock )
     if ( newSock != -1 ) {
         gtkListenOnSocket( globals, newSock );
     }
+    globals->cGlobals.socket = newSock;
 }
 
 static void
