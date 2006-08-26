@@ -50,6 +50,14 @@ XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
 /* Produce an array of ints 0..count-1, juggled */
 XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 
+
+#ifdef DEBUG
+void log_hex(  const XP_U8*memp, XP_U16 len, const char* tag );
+# define LOG_HEX(m,l,t) log_hex((const XP_U8*)(m),(l),(t))
+#else
+# define LOG_HEX(m,l,t)
+#endif
+
 #ifdef CPLUS
 }
 #endif
