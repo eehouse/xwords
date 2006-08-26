@@ -20,7 +20,7 @@
 #ifndef _PALMBT_H_
 #define _PALMBT_H_
 
-#ifdef XWFEATURE_PALM_BLUETOOTH
+#ifdef XWFEATURE_BLUETOOTH
 
 #include "comms.h"
 #include "palmmain.h"
@@ -28,10 +28,15 @@
 typedef void (*DataCb)( PalmAppGlobals* globals, 
                         const XP_U8* data, XP_U16 len );
 
-void palm_bt_init( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster );
+Err palm_bt_init( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster );
 void palm_bt_close( PalmAppGlobals* globals );
 
-XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, PalmAppGlobals* globals );
+XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
+                     PalmAppGlobals* globals );
 XP_Bool btSocketIsOpen( PalmAppGlobals* globals );
-#endif
+
+XP_Bool palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
+                               XP_UCHAR* out,XP_U16 len );
+
+#endif /* XWFEATURE_BLUETOOTH */
 #endif

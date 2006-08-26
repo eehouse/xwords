@@ -100,6 +100,11 @@ typedef struct CommonPrefs {
     XP_Bool         reserved2;
 } CommonPrefs;
 
+#ifdef XWFEATURE_BLUETOOTH
+/* temporary debugging hack */
+# define XW_PSM     0x3131
+#endif
+
 /* used for all vtables */
 #define SET_VTABLE_ENTRY( vt, name, prefix ) \
          (vt)->m_##name = prefix##_##name

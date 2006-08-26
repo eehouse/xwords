@@ -334,6 +334,11 @@
 #define XW_CONNS_PORT_FIELD_ID    2907
 #define XW_CONNS_RELAY_LABEL_ID   2908
 #define XW_CONNS_RELAY_FIELD_ID   2909
+#ifdef XWFEATURE_BLUETOOTH
+# define XW_CONNS_BT_HOSTNAME_LABEL_ID 2910
+# define XW_CONNS_BT_HOSTFIELD_ID      2911
+# define XW_CONNS_BT_BROWSEBUTTON_ID   2912
+#endif
 
 /*
  * selector for number of tiles during hint

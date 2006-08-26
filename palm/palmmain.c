@@ -1303,7 +1303,7 @@ stopApplication( PalmAppGlobals* globals )
         palm_ip_close( globals );
 #endif
 #endif
-#ifdef XWFEATURE_PALM_BLUETOOTH
+#ifdef XWFEATURE_BLUETOOTH
         palm_bt_close( globals );
 #endif
 
@@ -1356,7 +1356,7 @@ figureWaitTicks( PalmAppGlobals* globals )
     } else if ( ipSocketIsOpen(globals) ) {
 /*         we'll do our sleeping in NetLibSelect */
         result = 0;
-# ifdef XWFEATURE_PALM_BLUETOOTH
+# ifdef XWFEATURE_BLUETOOTH
     } else if ( btSocketIsOpen(globals) ) {
         /* From Whiteboard.  But: what to use here?  BTLib needs nil events
            AFAIK. */
@@ -1888,6 +1888,8 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         if ( !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, 
                            &globals->newGameState.addr );
+        } else {
+            XP_ASSERT(0);
         }
 #endif        
     }
@@ -3450,8 +3452,7 @@ palm_send_on_close( XWStreamCtxt* stream, void* closure )
 
 static XP_S16
 palm_send( const XP_U8* buf, XP_U16 len, 
-           const CommsAddrRec* XP_UNUSED_IR(addr), /* !!!? */
-           void* closure )
+           const CommsAddrRec* addr, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
 
@@ -3464,9 +3465,9 @@ palm_send( const XP_U8* buf, XP_U16 len,
     case COMMS_CONN_RELAY:
         result = palm_ip_send( buf, len, addr, globals );
         break;
-#ifdef XWFEATURE_PALM_BLUETOOTH
+#ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
-        result = palm_bt_send( buf, len, globals );
+        result = palm_bt_send( buf, len, addr, globals );
         break;
 #endif
     default:
@@ -3536,7 +3537,7 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 } /* palm_util_warnIllegalWord */
 
 #ifdef BEYOND_IR
-#ifdef XWFEATURE_PALM_BLUETOOTH
+#ifdef XWFEATURE_BLUETOOTH
 static void
 btDataHandler( PalmAppGlobals* globals, const XP_U8* data, XP_U16 len )
 {
@@ -3554,10 +3555,18 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                       const CommsAddrRec* newAddr, XP_Bool isServer )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
+
+#ifdef XWFEATURE_BLUETOOTH
+    XP_Bool isBT = COMMS_CONN_BT == newAddr->conType;
+    if ( !isBT ) {
+        palm_bt_close( globals );
+    }
+#endif
+
     if ( COMMS_CONN_RELAY == newAddr->conType ) {
         ip_addr_change( globals, oldAddr, newAddr );
-#ifdef XWFEATURE_PALM_BLUETOOTH
-    } else if ( COMMS_CONN_BT == newAddr->conType ) {
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( isBT ) {
         palm_bt_init( globals, btDataHandler, isServer );
 #endif
     }

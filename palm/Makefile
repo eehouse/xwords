@@ -115,8 +115,11 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 # experimental at this point!
 # MYDEFS_COMMON += -DBEYOND_IR
 
-# turn on bluetooth comms option -- off by default until ready
-# MYDEFS_COMMON += -DXWFEATURE_PALM_BLUETOOTH
+# turn on bluetooth comms option for 68K and ARM -- which won't work yet
+# MYDEFS_COMMON += -DXWFEATURE_BLUETOOTH 
+
+# Add menu allowing to choose to run 68K or ARM
+# MYDEFS_COMMON += -DFEATURE_DUALCHOOSE
 
 # For Danish and perhaps other languages, custom-measure glyph height
 # so that overtall letters have a chance of fitting.
@@ -138,7 +141,10 @@ MYDEFS_COMMON += -DIR_SUPPORT -DIR_EXCHMGR
 endif
 
 MYDEFS_ARM = -D__LITTLE_ENDIAN -DXW_TARGET_PNO $(MYDEFS_COMMON)
-MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) -DAPPNAME=\"$(APPNAME)\"
+MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) \
+	-DAPPNAME=\"$(APPNAME)\" \
+
+#	-DXWFEATURE_BLUETOOTH
 
 BITMAP_RSRCS = \
 	$(BITMAPS)/rightarrow.pbitm \

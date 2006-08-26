@@ -17,10 +17,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifdef XWFEATURE_PALM_BLUETOOTH
+#ifdef XWFEATURE_BLUETOOTH
 
 #include "xptypes.h"
 #include "palmbt.h"
+#include "strutils.h"
 
 # include <BtLib.h>
 # include <BtLibTypes.h>
@@ -44,6 +45,7 @@ typedef struct PalmBTStuff {
         struct {
             BtLibDeviceAddressType masterAddr;
             BtLibSocketRef spdSocket;
+            XP_Bool addrSet;
         } slave;
         struct {
             BtLibSocketRef listenSocket;
@@ -55,6 +57,9 @@ typedef struct PalmBTStuff {
 } PalmBTStuff;
 
 #define LOG_ERR(f,e) palm_bt_log( #f, __FUNCTION__, e )
+#define CALL_ERR(e,f,...) \
+        e = f(__VA_ARGS__); \
+        LOG_ERR(f,e)
 
 /* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
 static const BtLibSdpUuidType XWORDS_UUID = {
@@ -62,9 +67,11 @@ static const BtLibSdpUuidType XWORDS_UUID = {
     { 0x83, 0xe0, 0x87, 0xae, 0x4e, 0x18, 0x46, 0xbe, 
       0x83, 0xe0, 0x7b, 0x3d, 0xe6, 0xa1, 0xc3, 0x3b } };
 
-static void initBTStuff( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster );
+static Err initBTStuff( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster );
 static void palm_bt_log( const char* btfunc, const char* func, Err err );
 static void pbt_connect_slave( PalmBTStuff* btStuff, BtLibL2CapPsmType psm );
+static Err bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr );
+static void pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 
 #ifdef DEBUG
 static const char* btErrToStr( Err err );
@@ -81,44 +88,87 @@ static void libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon );
 static void spdSocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 static void l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 
-void
+Err
 palm_bt_init( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster )
 {
     XP_LOGF( "%s(amMaster=%d)", __FUNCTION__, (XP_U16)amMaster );
 
-    initBTStuff( globals, cb, amMaster );
+    return initBTStuff( globals, cb, amMaster );
 }
 
 void
 palm_bt_close( PalmAppGlobals* globals )
 {
     PalmBTStuff* btStuff = globals->btStuff;
-    if ( !!btStuff ) {
 
-        /* Need to unregister callbacks */
-        (void)BtLibUnregisterManagementNotification( btStuff->btLibRefNum,
-                                                     libMgmtCallback );
-        if ( btStuff->amMaster
-             && btStuff->u.master.listenSocket != SOCK_INVAL ) {
-            (void)BtLibSocketClose( btStuff->btLibRefNum,  
-                                    btStuff->u.master.listenSocket );
-            btStuff->u.master.listenSocket = SOCK_INVAL;
-        }
-        if ( btStuff->dataSocket != SOCK_INVAL ) {
-            (void)BtLibSocketClose( btStuff->btLibRefNum,  
-                                    btStuff->u.master.listenSocket );
-            btStuff->dataSocket = SOCK_INVAL;
-        }
-        
-        if ( btStuff->btLibRefNum != 0 ) {
-            Err err = BtLibClose( btStuff->btLibRefNum );
-            LOG_ERR( BtLibClose, err );
+    if ( !!btStuff ) {
+        XP_U16 btLibRefNum = btStuff->btLibRefNum;
+        if ( btLibRefNum != 0 ) {
+            Err err;
+
+            /* Need to unregister callbacks */
+            (void)BtLibUnregisterManagementNotification( btLibRefNum,
+                                                         libMgmtCallback );
+            if ( btStuff->amMaster
+                 && btStuff->u.master.listenSocket != SOCK_INVAL ) {
+                CALL_ERR( err, BtLibSocketClose, btLibRefNum,  
+                          btStuff->u.master.listenSocket );
+/*                 btStuff->u.master.listenSocket = SOCK_INVAL; */
+            }
+            if ( btStuff->dataSocket != SOCK_INVAL ) {
+                CALL_ERR( err, BtLibSocketClose, btLibRefNum,  
+                          btStuff->u.master.listenSocket );
+/*                 btStuff->dataSocket = SOCK_INVAL; */
+            }
+
+            if ( !!btStuff->sdpRecordH ) {
+                CALL_ERR( err, BtLibSdpServiceRecordDestroy, btLibRefNum, 
+                          btStuff->sdpRecordH );
+            }
+
+            CALL_ERR( err, BtLibClose, btLibRefNum );
             XP_ASSERT( errNone == err );
         }
         XP_FREE( globals->mpool, btStuff );
         globals->btStuff = NULL;
     }
 } /* palm_bt_close */
+
+XP_Bool
+palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
+                       XP_UCHAR* out, XP_U16 len )
+{
+    Err err;
+    PalmBTStuff* btStuff;
+
+    err = initBTStuff( globals, NULL, XP_FALSE );
+    if ( errNone == err ) {
+        UInt16 index;
+        BtLibDeviceAddressType addr;
+        btStuff = globals->btStuff;
+
+        err = bpd_discover( btStuff, &addr );
+        CALL_ERR( err, BtLibSecurityFindTrustedDeviceRecord, 
+                  btStuff->btLibRefNum, &addr, &index );
+        CALL_ERR( err, BtLibSecurityGetTrustedDeviceRecordInfo, 
+                  btStuff->btLibRefNum, index, NULL, out, len, 
+                  NULL, NULL, NULL );
+        XP_ASSERT( sizeof(*btAddr) >= sizeof(addr) );
+        XP_MEMCPY( btAddr, &addr, sizeof(addr) );
+        
+        LOG_HEX( &addr, sizeof(addr), __FUNCTION__ );
+
+/*         err = BtLibGetRemoteDeviceName( btStuff->btLibRefNum,   */
+/*                                         BtLibDeviceAddressTypePtr remoteDeviceP,  */
+/*                                         BtLibFriendlyNameType* nameP,  */
+/*                                         BtLibGetNameEnum retrievalMethod ); */
+/*         err = BtLibAddrBtdToA( btStuff->btLibRefNum, &btStuff->u.slave.masterAddr,  */
+/*                                out, len ); */
+    } else {
+        XP_WARNF( "%s: err = %s", __FUNCTION__, btErrToStr(err) );
+    }
+    return errNone == err;
+} /* palm_bt_browse_device */
 
 XP_Bool
 btSocketIsOpen( PalmAppGlobals* globals )
@@ -128,74 +178,118 @@ btSocketIsOpen( PalmAppGlobals* globals )
 }
 
 static void
-pbt_send_pending( PalmBTStuff* btStuff )
+pbt_send_pending( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 {
+    Err err;
     LOG_FUNC();
     if ( btStuff->sendPending && !btStuff->sendInProgress ) {
-        if ( !!btStuff->dataSocket ) {
-            Err err = BtLibSocketSend( btStuff->btLibRefNum, btStuff->dataSocket, 
-                                       btStuff->bufOut, btStuff->lenOut );
-            LOG_ERR( BtLibSocketSend, err );
-            if ( err == errNone ) {
-                // clear on receipt of btLibSocketEventSendComplete 
-                btStuff->sendInProgress = XP_TRUE;
+        if ( btStuff->dataSocket != SOCK_INVAL ) {
+            if ( btStuff->lenOut > 0 ) { /* hack: zero-len send to cause connect */
+                CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
+                          btStuff->dataSocket, 
+                          btStuff->bufOut, btStuff->lenOut );
+                if ( err == errNone ) {
+                    // clear on receipt of btLibSocketEventSendComplete 
+                    btStuff->sendInProgress = XP_TRUE;
+                }
+            } else {
+                btStuff->sendPending = XP_FALSE;
             }
+        } else {
+            /* No data socket? */
+            if ( !btStuff->amMaster ) {
+                pbt_setup_slave( btStuff, addr );
+            }
+        }
+    }
+} /* pbt_send_pending */
+
+static void
+pbt_check_socket( PalmBTStuff* btStuff, const CommsAddrRec* addr )
+{
+    LOG_FUNC();
+    if ( btStuff->dataSocket == SOCK_INVAL ) {
+        if ( btStuff->amMaster ) {
+            XP_ASSERT(0);
+/*             pbt_setup_master( btStuff ); */
+        } else {
+            pbt_setup_slave( btStuff, addr );
         }
     }
 }
 
 XP_S16
-palm_bt_send( const XP_U8* buf, XP_U16 len, PalmAppGlobals* globals )
+palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
+              PalmAppGlobals* globals )
 {
+    XP_S16 nSent = -1;
     PalmBTStuff* btStuff;
+    CommsAddrRec remoteAddr;
     XP_LOGF( "%s(len=%d)", __FUNCTION__, len );
 
-    btStuff = globals->btStuff;
-    XP_ASSERT( !!btStuff );
-
-    if ( !!btStuff ) {
-        if ( !btStuff->sendInProgress ) {
-            if ( len > sizeof( btStuff->bufOut ) ) {
-                len = sizeof( btStuff->bufOut );
-            }
-            XP_MEMCPY( btStuff->bufOut, buf, len );
-            btStuff->lenOut = len;
-            btStuff->sendPending = XP_TRUE;            
-
-            pbt_send_pending( btStuff );
-        }
+    if ( !addr ) {
+        comms_getAddr( globals->game.comms, &remoteAddr );
+        addr = &remoteAddr;
     }
-    return -1;
+    XP_ASSERT( !!addr );
+
+    btStuff = globals->btStuff;
+    if ( !!btStuff ) {
+        pbt_check_socket( btStuff, addr );
+
+        if ( !!btStuff ) {
+            if ( !btStuff->sendInProgress ) {
+                if ( len > sizeof( btStuff->bufOut ) ) {
+                    len = sizeof( btStuff->bufOut );
+                }
+                XP_MEMCPY( btStuff->bufOut, buf, len );
+                btStuff->lenOut = len;
+                btStuff->sendPending = XP_TRUE;            
+
+                pbt_send_pending( btStuff, addr );
+                nSent = len;
+            } else {
+                XP_LOGF( "%s: send ALREADY in progress", __FUNCTION__ );
+            }
+        }
+    } else {
+        XP_LOGF( "%s: btStuff null", __FUNCTION__ );
+    }
+    LOG_RETURNF( "%d", nSent );
+    return nSent;
 } /* palm_bt_send */
 
 static void
 pbt_find_psm( PalmBTStuff* btStuff )
 {
     Err err;
-    XP_ASSERT( !btStuff->amMaster );
-    err = BtLibSocketCreate( btStuff->btLibRefNum, &btStuff->u.slave.spdSocket, 
-                             spdSocketCallback,
-                             (UInt32)btStuff, btLibSdpProtocol );
-    LOG_ERR( BtLibSocketCreate, err );
+    LOG_FUNC();
 
-     err = BtLibSdpGetPsmByUuid( btStuff->btLibRefNum, 
-                                 btStuff->u.slave.spdSocket,
-                                 &btStuff->u.slave.masterAddr,
-                                 (BtLibSdpUuidType*)&XWORDS_UUID, 1 );
-    LOG_ERR( BtLibSdpGetPSMByUuid, err );
+    XP_ASSERT( !btStuff->amMaster );
+
+    CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
+              &btStuff->u.slave.spdSocket, 
+              spdSocketCallback, (UInt32)btStuff, btLibSdpProtocol );
+
+    /* sends btLibSocketEventSdpGetPsmByUuid */
+    CALL_ERR( err, BtLibSdpGetPsmByUuid, btStuff->btLibRefNum, 
+              btStuff->u.slave.spdSocket,
+              &btStuff->u.slave.masterAddr,
+              (BtLibSdpUuidType*)&XWORDS_UUID, 1 );
 }
 
 static void
 pbt_connect_slave( PalmBTStuff* btStuff, BtLibL2CapPsmType psm )
 {
     Err err;
-    LOG_FUNC();
     XP_ASSERT( !btStuff->amMaster );
 
-    err = BtLibSocketCreate( btStuff->btLibRefNum, &btStuff->dataSocket, 
-                             l2SocketCallback, (UInt32)btStuff, 
-                             btLibL2CapProtocol );
-    LOG_ERR( BtLibSocketCreate, err );
+    XP_LOGF( "%s(psm=%x)", __FUNCTION__, psm );
+
+    CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
+              &btStuff->dataSocket, 
+              l2SocketCallback, (UInt32)btStuff, 
+              btLibL2CapProtocol );
 
     if ( btLibErrNoError == err ) {
         BtLibSocketConnectInfoType connInfo;
@@ -204,9 +298,9 @@ pbt_connect_slave( PalmBTStuff* btStuff, BtLibL2CapPsmType psm )
         connInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
         connInfo.remoteDeviceP = &btStuff->u.slave.masterAddr;
 	
-        err = BtLibSocketConnect( btStuff->btLibRefNum, 
-                                  btStuff->dataSocket, &connInfo );
-        LOG_ERR( BtLibSocketConnect, err );
+        /* sends btLibManagementEventACLConnectOutbound */
+        CALL_ERR( err, BtLibSocketConnect, btStuff->btLibRefNum, 
+                  btStuff->dataSocket, &connInfo );
     }
 }
 
@@ -218,48 +312,43 @@ pbt_setup_master( PalmBTStuff* btStuff )
     Err err;
     BtLibSocketListenInfoType listenInfo;
 
-
     btStuff->u.master.listenSocket = SOCK_INVAL;
 
     /*    1. BtLibSocketCreate: create an L2CAP socket. */
-    err = BtLibSocketCreate( btStuff->btLibRefNum, 
-                             &btStuff->u.master.listenSocket, l2SocketCallback,
-                             (UInt32)btStuff, btLibL2CapProtocol );
-    LOG_ERR( BtLibSocketCreate, err );
+    CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
+              &btStuff->u.master.listenSocket, l2SocketCallback,
+              (UInt32)btStuff, btLibL2CapProtocol );
 
     /*    2. BtLibSocketListen: set up an L2CAP socket as a listener. */
     XP_MEMSET( &listenInfo, 0, sizeof(listenInfo) );
-    listenInfo.data.L2Cap.localPsm = BT_L2CAP_RANDOM_PSM;
+    listenInfo.data.L2Cap.localPsm = XW_PSM; // BT_L2CAP_RANDOM_PSM;
 	listenInfo.data.L2Cap.localMtu = L2CAPSOCKETMTU; 
 	listenInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
-    err = BtLibSocketListen( btStuff->btLibRefNum, 
-                             btStuff->u.master.listenSocket, &listenInfo );
-    LOG_ERR( BtLibSocketListen, err );
+    CALL_ERR( err, BtLibSocketListen, btStuff->btLibRefNum, 
+              btStuff->u.master.listenSocket, &listenInfo );
 
     /*    3. BtLibSdpServiceRecordCreate: allocate a memory chunk that
          represents an SDP service record. */
-    err = BtLibSdpServiceRecordCreate(btStuff->btLibRefNum, &btStuff->sdpRecordH );
-    LOG_ERR( BtLibSdpServiceRecordCreate, err );
+    CALL_ERR( err, BtLibSdpServiceRecordCreate,
+              btStuff->btLibRefNum, &btStuff->sdpRecordH );
 
     /*    4. BtLibSdpServiceRecordSetAttributesForSocket: initialize an SDP
          memory record so it can represent the newly-created L2CAP listener
          socket as a service */
-    err = BtLibSdpServiceRecordSetAttributesForSocket( 
-             btStuff->btLibRefNum, btStuff->u.master.listenSocket, 
-             (BtLibSdpUuidType*)&XWORDS_UUID, 1, APPNAME, 
-             StrLen(APPNAME), btStuff->sdpRecordH );
-    LOG_ERR( BtLibSdpServiceRecordSetAttributesForSocket, err );
+    CALL_ERR( err, BtLibSdpServiceRecordSetAttributesForSocket,
+              btStuff->btLibRefNum, btStuff->u.master.listenSocket, 
+              (BtLibSdpUuidType*)&XWORDS_UUID, 1, APPNAME, 
+              StrLen(APPNAME), btStuff->sdpRecordH );
 
 /*    5. BtLibSdpServiceRecordStartAdvertising: make an SDP memory record
          representing a local SDP service record visible to remote
          devices.  */
-    err = BtLibSdpServiceRecordStartAdvertising( btStuff->btLibRefNum,
-                                                 btStuff->sdpRecordH );
-    LOG_ERR( BtLibSdpServiceRecordStartAdvertising, err );
+    CALL_ERR( err, BtLibSdpServiceRecordStartAdvertising, btStuff->btLibRefNum,
+              btStuff->sdpRecordH );
 } /* pbt_setup_master */
 
-static void
-pbt_setup_slave( PalmBTStuff* btStuff )
+static Err
+bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr )
 {
     Err err;
     static const BtLibClassOfDeviceType deviceFilter
@@ -267,68 +356,103 @@ pbt_setup_slave( PalmBTStuff* btStuff )
         | btLibCOD_Major_Any // btLibCOD_Major_Computer
         | btLibCOD_Minor_Comp_Any; //btLibCOD_Minor_Comp_Palm;
 
+    CALL_ERR( err, BtLibDiscoverSingleDevice, btStuff->btLibRefNum, "Crosswords host",
+              (BtLibClassOfDeviceType*)&deviceFilter, 1,
+              addr, false, false );
+    LOG_RETURNF( "%s", btErrToStr(err) );
+    return err;
+} /* bpd_discover */
+
+static void
+pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
+{
+    LOG_FUNC();
     XP_ASSERT( !btStuff->amMaster );
 
-    err = BtLibDiscoverSingleDevice( btStuff->btLibRefNum, "Crosswords host",
-                                     (BtLibClassOfDeviceType*)&deviceFilter, 1, 
-                                     &btStuff->u.slave.masterAddr, 
-                                     false, false );
-    LOG_ERR( BtLibDiscoverSingleDevice, err );
+    if ( !!addr ) {
+        char buf[64];
+        if ( errNone == BtLibAddrBtdToA( btStuff->btLibRefNum, 
+                                         (BtLibDeviceAddressType*)&addr->u.bt.btAddr,
+                                         buf, sizeof(buf) ) ) {
+            XP_LOGF( "%s(%s)", __FUNCTION__, buf );
+        }
+    } else {
+        XP_LOGF( "null addr" );
+    }
 
-    if ( errNone == err ) {
-        err = BtLibLinkConnect( btStuff->btLibRefNum, 
-                                &btStuff->u.slave.masterAddr );
-        LOG_ERR( BtLibLinkConnect, err );
+    if ( !btStuff->u.slave.addrSet && !!addr ) {
+        Err err;
+
+        /* Our xp type better be big enough */
+        XP_ASSERT( sizeof(addr->u.bt.btAddr)
+                   >= sizeof(btStuff->u.slave.masterAddr) );
+        XP_MEMCPY( &btStuff->u.slave.masterAddr, addr->u.bt.btAddr, 
+                   sizeof(btStuff->u.slave.masterAddr) );
+
+        btStuff->u.slave.addrSet = XP_TRUE;
+
+        CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
+                  &btStuff->u.slave.masterAddr );
         XP_ASSERT( err == btLibErrPending );
+    } else {
+        XP_LOGF( "%s: doing nothing", __FUNCTION__ );
     }
 } /* pbt_setup_slave */
 
-static void
+static Err
 initBTStuff( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster )
 {
     PalmBTStuff* btStuff;
     Err err;
-    XP_U16 btLibRefNum;
+
+    LOG_FUNC();
 
     btStuff = globals->btStuff;
     if ( btStuff != NULL ) {
+        if ( NULL != cb ) {
+            btStuff->cb = cb;
+        }
         if ( btStuff->amMaster == amMaster ) {
             /* nothing to do */
         } else {
             /* role change.  Adapt... */
             XP_ASSERT( 0 );
         }
+        err = errNone;
     } else {
+        XP_U16 btLibRefNum;
 
-        btStuff = XP_MALLOC( globals->mpool, sizeof(*btStuff) );
-        XP_ASSERT( !!btStuff );
-        XP_MEMSET( btStuff, 0, sizeof(*btStuff) );
-        globals->btStuff = btStuff;
+        CALL_ERR( err, SysLibFind, btLibName, &btLibRefNum );
+        if ( errNone == err ) {
 
-        btStuff->globals = globals;
-        btStuff->cb = cb;
-        btStuff->amMaster = amMaster;
-        btStuff->dataSocket = SOCK_INVAL;
+            btStuff = XP_MALLOC( globals->mpool, sizeof(*btStuff) );
+            XP_ASSERT( !!btStuff );
+            XP_MEMSET( btStuff, 0, sizeof(*btStuff) );
+            globals->btStuff = btStuff;
 
-        err = SysLibFind( btLibName, &btLibRefNum );
-        XP_LOGF( "%s: SysLibFind(%s) => %d\n", __FUNCTION__, btLibName, err );
-        XP_ASSERT( errNone == err );
-        btStuff->btLibRefNum = btLibRefNum;
+            btStuff->globals = globals;
+            btStuff->cb = cb;
+            btStuff->amMaster = amMaster;
+            btStuff->dataSocket = SOCK_INVAL;
 
-        err = BtLibOpen( btLibRefNum, false );
-        LOG_ERR( BtLibOpen, err );
-        XP_ASSERT( errNone == err );
+            btStuff->btLibRefNum = btLibRefNum;
 
-        err = BtLibRegisterManagementNotification( btLibRefNum, libMgmtCallback,
-                                                   (UInt32)btStuff );
-        LOG_ERR( BtLibRegisterManagementNotification, err );
+            CALL_ERR( err, BtLibOpen, btLibRefNum, false );
+            XP_ASSERT( errNone == err );
 
-        if ( btStuff->amMaster ) {
-            pbt_setup_master( btStuff );
-        } else {
-            pbt_setup_slave( btStuff );
+            CALL_ERR( err, BtLibRegisterManagementNotification, btLibRefNum, 
+                      libMgmtCallback, (UInt32)btStuff );
+
+            if ( btStuff->amMaster ) {
+                pbt_setup_master( btStuff );
+            } else {
+                /* Can't set up b/c don't have address yet. */
+ /*                pbt_setup_slave( btStuff, addr ); */
+            }
         }
     }
+    LOG_RETURNF( "%s", btErrToStr(err) );
+    return err;
 } /* initBTStuff */
 
 static void
@@ -342,24 +466,24 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
 
     switch( event ) {
     case btLibSocketEventConnectRequest: 
-        err = BtLibSocketRespondToConnection( btStuff->btLibRefNum,  
-                                              sEvent->socket, true );
-        LOG_ERR( BtLibSocketRespondToConnection, err );
+        CALL_ERR( err, BtLibSocketRespondToConnection, btStuff->btLibRefNum,  
+                  sEvent->socket, true );
         break;
     case btLibSocketEventConnectedInbound:
         if ( sEvent->status == errNone ) {
             btStuff->dataSocket = sEvent->eventData.newSocket;
             XP_LOGF( "we have a data socket!!!" );
-            pbt_send_pending( btStuff );
+            pbt_send_pending( btStuff, NULL );
         } else {
             XP_LOGF( "%s: status = %d(%s)", __FUNCTION__, 
                      sEvent->status, btErrToStr(sEvent->status) );
         }
         break;
     case btLibSocketEventConnectedOutbound:
-        pbt_send_pending( btStuff );
+        pbt_send_pending( btStuff, NULL );
         break;
     case btLibSocketEventData:
+        XP_ASSERT( !!btStuff->cb );
         (*btStuff->cb)( btStuff->globals, sEvent->eventData.data.data,
                         sEvent->eventData.data.dataLen );
         break;
@@ -385,11 +509,11 @@ spdSocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
     switch( event ) {
     case btLibSocketEventSdpGetPsmByUuid:
         if ( btLibErrNoError == sEvent->status ) {
-            err = BtLibSocketClose( btStuff->btLibRefNum, 
-                                    sEvent->socket );
-            LOG_ERR( BtLibSocketClose, err );
+            CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
+                      sEvent->socket );
             btStuff->u.slave.spdSocket = SOCK_INVAL;
-            pbt_connect_slave( btStuff, sEvent->eventData.sdpByUuid.param.psm );
+            pbt_connect_slave( btStuff, 
+                               sEvent->eventData.sdpByUuid.param.psm );
         }
         break;
     default:                    /* happy now, compiler? */
@@ -616,4 +740,4 @@ NOTE: I've read conflicting reports on whether a listening socket is good for
 accepting more than one inbound connection.  Confirm.  Or just do a piconet.
 
 */
-#endif /* #ifdef XWFEATURE_PALM_BLUETOOTH */
+#endif /* #ifdef XWFEATURE_BLUETOOTH */
