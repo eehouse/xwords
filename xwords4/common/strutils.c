@@ -202,6 +202,55 @@ randIntArray( XP_U16* rnums, XP_U16 count )
     return changed;
 } /* randIntArray */
 
+#ifdef DEBUG
+#define NUM_PER_LINE 8
+void
+log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
+{
+    const char* hex = "0123456789ABCDEF";
+    XP_U16 i, j;
+    XP_U16 offset = 0;
+
+    while ( offset < len ) {
+        XP_UCHAR buf[128];
+        XP_UCHAR vals[NUM_PER_LINE*3];
+        XP_UCHAR* valsp = vals;
+        XP_UCHAR chars[NUM_PER_LINE+1];
+        XP_UCHAR* charsp = chars;
+        XP_U16 oldOffset = offset;
+
+        for ( i = 0; i < NUM_PER_LINE && offset < len; ++i ) {
+            XP_U8 byte = memp[offset];
+            for ( j = 0; j < 2; ++j ) {
+                *valsp++ = hex[byte & 0x0F];
+                byte >>= 4;
+            }
+            *valsp++ = ':';
+
+            byte = memp[offset];
+            if ( (byte >= 'A' && byte <= 'Z')
+                 || (byte >= 'a' && byte <= 'z')
+                 || (byte >= '0' && byte <= '9') ) {
+                /* keep it */
+            } else {
+                byte = '.';
+            }
+            *charsp++ = byte;
+            ++offset;
+        }
+        *(valsp-1) = '\0';      /* -1 to overwrite ':' */
+        *charsp = '\0';
+
+        if ( (NULL == tag) || (XP_STRLEN(tag) + sizeof(vals) >= sizeof(buf)) ) {
+            tag = "<tag>";
+        }
+        XP_SNPRINTF( buf, sizeof(buf), "%s[%d]: %s %s", tag, oldOffset, 
+                     vals, chars );
+        XP_LOGF( buf );
+    }
+}
+#endif
+
 #ifdef CPLUS
 }
 #endif
