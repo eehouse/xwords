@@ -24,9 +24,11 @@
 #include "callback.h"
 
 #include "connsdlg.h"
+#include "strutils.h"
 #include "palmmain.h"
 #include "palmutil.h"
 #include "palmir.h"
+#include "palmbt.h"
 
 /* When user pops up via Host gadget, we want to get the port to listen on.
  * When pops up via the Guest gadget, we want to get the port and IP address
@@ -40,6 +42,7 @@ typedef struct ConnsDlgState {
     XP_U16 serverRole;
     XP_Bool isNewGame;
     CommsAddrRec* addr;
+    XP_BtAddr btAddr;           /* since there's no field, save it here */
 } ConnsDlgState;
 
 static void
@@ -56,38 +59,58 @@ strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
 } /* strFromField */
 
 static void
-ctlsFromState( PalmAppGlobals* globals, FormPtr form, ConnsDlgState* state )
+ctlsFromState( ConnsDlgState* state )
 {
     XP_Bool isNewGame = state->isNewGame;
     XP_UCHAR buf[16];
     CommsAddrRec* addr = state->addr;
 
-    setFieldStr( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName );
-    setFieldEditable( XW_CONNS_RELAY_FIELD_ID, isNewGame );
+    if ( addr->conType == COMMS_CONN_RELAY ) {
+        setFieldStr( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName );
+        setFieldEditable( XW_CONNS_RELAY_FIELD_ID, isNewGame );
 
-    StrPrintF( buf, "%d", addr->u.ip_relay.port );
-    setFieldStr( XW_CONNS_PORT_FIELD_ID, buf );
-    setFieldEditable( XW_CONNS_PORT_FIELD_ID, isNewGame );
+        StrPrintF( buf, "%d", addr->u.ip_relay.port );
+        setFieldStr( XW_CONNS_PORT_FIELD_ID, buf );
+        setFieldEditable( XW_CONNS_PORT_FIELD_ID, isNewGame );
 
-    setFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie );
-    setFieldEditable( XW_CONNS_COOKIE_FIELD_ID, isNewGame );
+        setFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie );
+        setFieldEditable( XW_CONNS_COOKIE_FIELD_ID, isNewGame );
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( addr->conType == COMMS_CONN_BT 
+                && state->serverRole == SERVER_ISCLIENT ) {
+        setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName );
+#endif
+    }
 } /* ctlsFromState */
 
 static XP_Bool
-stateFromCtls( PalmAppGlobals* globals, ConnsDlgState* state )
+stateFromCtls( ConnsDlgState* state )
 {
     XP_Bool ok = XP_TRUE;
     XP_UCHAR buf[16];
     CommsAddrRec* addr = state->addr;
 
-    strFromField( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName,
-                  sizeof(addr->u.ip_relay.hostName) );
+    if ( addr->conType == COMMS_CONN_RELAY ) {
+        strFromField( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName,
+                      sizeof(addr->u.ip_relay.hostName) );
 
-    strFromField( XW_CONNS_PORT_FIELD_ID, buf, sizeof(buf) );
-    addr->u.ip_relay.port = StrAToI( buf );        
+        strFromField( XW_CONNS_PORT_FIELD_ID, buf, sizeof(buf) );
+        addr->u.ip_relay.port = StrAToI( buf );        
 
-    strFromField( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie,
-                  sizeof(addr->u.ip_relay.cookie) );
+        strFromField( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie,
+                      sizeof(addr->u.ip_relay.cookie) );
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( addr->conType == COMMS_CONN_BT 
+                && state->serverRole == SERVER_ISCLIENT ) {
+        strFromField( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName,
+                      sizeof(addr->u.bt.hostName) );
+        /* Not exactly from a control... */
+        XP_MEMCPY( &addr->u.bt.btAddr, state->btAddr, 
+                   sizeof(addr->u.bt.btAddr) );
+        LOG_HEX( addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __FUNCTION__ );
+#endif
+    }
+
     return ok;
 } /* stateFromCtls */
 
@@ -103,9 +126,41 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
         XW_CONNS_COOKIE_FIELD_ID,
         0
     };
-    
-    disOrEnableSet( form, relayCtls, 
-                    state->addr->conType == COMMS_CONN_RELAY );
+    const XP_U16 btGuestCtls[] = {
+#ifdef XWFEATURE_BLUETOOTH
+        XW_CONNS_BT_HOSTNAME_LABEL_ID,
+        XW_CONNS_BT_HOSTFIELD_ID,
+        XW_CONNS_BT_BROWSEBUTTON_ID,
+#endif
+        0
+    };
+    const XP_U16* allCtls[] = {
+        relayCtls, btGuestCtls
+    };
+    const XP_U16* on;
+    XP_U16 i;
+
+    if ( state->addr->conType == COMMS_CONN_RELAY ) {
+        on = relayCtls;
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( state->addr->conType == COMMS_CONN_BT
+                && state->serverRole == SERVER_ISCLIENT ) {
+        on = btGuestCtls;
+#endif
+    } else {
+        on = NULL;
+    }
+
+    for ( i = 0; i < sizeof(allCtls)/sizeof(allCtls[0]); ++i ) {
+        const XP_U16* cur = allCtls[i];
+        if ( cur != on ) {
+            disOrEnableSet( form, cur, XP_FALSE );
+        }
+    }
+    if ( on != NULL ) {
+        disOrEnableSet( form, on, XP_TRUE );
+    }
+
 } /* updateFormCtls */
 
 static void
@@ -119,14 +174,14 @@ cleanupExit( PalmAppGlobals* globals )
 static XP_U16
 conTypeToSel( CommsConnType conType )
 {
-    XP_U16 result;
+    XP_U16 result = 0;
     switch ( conType ) {
-#ifdef XWFEATURE_PALM_BLUETOOTH
-    case COMMS_CONN_BT: result = 0; break;
+#ifdef XWFEATURE_BLUETOOTH
+    case COMMS_CONN_BT: /* result = 0;  */break;
     case COMMS_CONN_IR: result = 1; break;
     case COMMS_CONN_RELAY: result = 2; break;
 #else
-    case COMMS_CONN_IR: result = 0; break;
+    case COMMS_CONN_IR: /* result = 0;  */break;
     case COMMS_CONN_RELAY: result = 1; break;
 #endif
     default:
@@ -140,7 +195,7 @@ selToConType( XP_U16 sel )
 {
     CommsConnType conType;
     switch( sel ) {
-#ifdef XWFEATURE_PALM_BLUETOOTH
+#ifdef XWFEATURE_BLUETOOTH
     case 0: conType = COMMS_CONN_BT; break;
     case 1: conType = COMMS_CONN_IR; break;
     case 2: conType = COMMS_CONN_RELAY; break;
@@ -152,6 +207,20 @@ selToConType( XP_U16 sel )
     }
     return conType;
 }
+
+#ifdef XWFEATURE_BLUETOOTH
+static void
+browseForDeviceName( PalmAppGlobals* globals, ConnsDlgState* state )
+{
+    char buf[32];
+    XP_BtAddr btAddr;
+    if ( palm_bt_browse_device( globals, &btAddr, buf, sizeof( buf ) ) ) {
+        setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, buf );
+        XP_MEMCPY( state->btAddr, &btAddr, sizeof(state->btAddr) );
+        LOG_HEX( state->btAddr, sizeof(state->btAddr), __FUNCTION__ );
+    }
+} /* browseForDeviceName */
+#endif
 
 Boolean
 ConnsFormHandleEvent( EventPtr event )
@@ -176,12 +245,13 @@ ConnsFormHandleEvent( EventPtr event )
 
     switch ( event->eType ) {
     case frmOpenEvent:
-
         state->serverRole = 
             (Connectedness)globals->dlgParams[CONNS_PARAM_ROLE_INDEX];
         state->addr = 
             (CommsAddrRec*)globals->dlgParams[CONNS_PARAM_ADDR_INDEX];
         state->isNewGame = globals->isNewGame;
+        XP_MEMCPY( state->btAddr, &state->addr->u.bt.btAddr, 
+                   sizeof(state->btAddr) );
 
         /* setup connection popup */
         state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
@@ -191,7 +261,7 @@ ConnsFormHandleEvent( EventPtr event )
         setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
                              conTypeToSel(state->addr->conType) );
 
-        ctlsFromState( globals, form, state );
+        ctlsFromState( state );
 
         updateFormCtls( form, state );
 
@@ -203,6 +273,12 @@ ConnsFormHandleEvent( EventPtr event )
     case ctlSelectEvent:
         result = true;
         switch ( event->data.ctlSelect.controlID ) {
+
+#ifdef XWFEATURE_BLUETOOTH
+        case XW_CONNS_BT_BROWSEBUTTON_ID:
+            browseForDeviceName( globals, state );
+            break;
+#endif
 
         case XW_CONNS_TYPE_TRIGGER_ID:
             if ( state->isNewGame ) {
@@ -219,7 +295,7 @@ ConnsFormHandleEvent( EventPtr event )
         case XW_CONNS_OK_BUTTON_ID:
             if ( !state->isNewGame ) {
                 /* do nothing; same as cancel */
-            } else if ( !stateFromCtls( globals, state ) ) {
+            } else if ( !stateFromCtls( state ) ) {
                 beep();
                 break;
             } else {

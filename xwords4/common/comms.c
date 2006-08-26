@@ -132,6 +132,9 @@ static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd,
                                XWHostID destID, void* data, int dlen );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 static void setHeartbeatTimer( CommsCtxt* comms );
+# ifdef XWFEATURE_BLUETOOTH
+static void btConnect( CommsCtxt* comms );
+# endif
 #endif
 
 /****************************************************************************
@@ -354,6 +357,10 @@ comms_start( CommsCtxt* comms )
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
         relayConnect( comms );
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( comms->addr.conType == COMMS_CONN_BT ) {
+        btConnect( comms );
+#endif
     }
 #endif
 }
@@ -476,14 +483,17 @@ void
 comms_getInitialAddr( CommsAddrRec* addr )
 { 	 
     /* default values; default is still IR where there's a choice */ 	 
-    addr->conType = COMMS_CONN_RELAY; 	 
-    addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */ 	 
-    addr->u.ip_relay.port = 10999; 	 
-    { 	 
-        char* name = "eehouse.org"; 	 
-        XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 ); 	 
-    } 	 
-    addr->u.ip_relay.cookie[0] = '\0'; 	 
+#ifdef XWFEATURE_BLUETOOTH
+    addr->conType = COMMS_CONN_BT; /* for temporary ease in debugging */
+#else
+    addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
+    addr->u.ip_relay.port = 10999;
+    {
+        char* name = "eehouse.org";
+        XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
+    }
+    addr->u.ip_relay.cookie[0] = '\0';
+#endif
 } /* comms_getInitialAddr */
 #endif
 
@@ -812,10 +822,12 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
 
 #ifdef BEYOND_IR
+    /* relayPreProcess returns true if consumes the message.  May just eat the
+       header and leave a regular message to be processed below. */
     if ( relayPreProcess( comms, stream, &senderID ) ) {
         return XP_FALSE;
     }
-    usingRelay = XP_TRUE;
+    usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
 #endif
 
     connID = stream_getU32( stream );
@@ -977,6 +989,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
             XP_ASSERT( recs->hostID == hostID );
         } else {
             XP_MEMSET( &recs->addr, 0, sizeof(recs->addr) );
+            recs->addr.conType = comms->addr.conType;
         }
     }
     return recs;
@@ -1145,6 +1158,17 @@ relayConnect( CommsCtxt* comms )
     }
 } /* relayConnect */
 
+#ifdef XWFEATURE_BLUETOOTH
+static void
+btConnect( CommsCtxt* comms )
+{
+    /* Ping the bt layer so it'll get sockets set up.  PENDING: if I'm server
+       need to do this once per guest record with non-null address. */
+    (void)(*comms->sendproc)( (const void*)comms, /* any valid ptr will do */
+                              0, NULL, comms->sendClosure );
+} /* btConnect */
+#endif
+
 static void
 relayDisconnect( CommsCtxt* comms )
 {
@@ -1153,7 +1177,8 @@ relayDisconnect( CommsCtxt* comms )
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         if ( comms->relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
             comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
-            send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, NULL, 0 );
+            send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, 
+                            NULL, 0 );
         }
     }
 #endif

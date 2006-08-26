@@ -304,7 +304,7 @@ struct PalmAppGlobals {
 #ifdef BEYOND_IR
     NetLibStuff nlStuff;
     XP_U32 heartTimerFireAt;
-# ifdef XWFEATURE_PALM_BLUETOOTH
+# ifdef XWFEATURE_BLUETOOTH
     struct PalmBTStuff* btStuff;
 # endif
 #endif

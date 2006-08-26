@@ -171,7 +171,8 @@ mem_stream_getBits( XWStreamCtxt* p_sctx, XP_U16 nBits )
 } /* stream_getBits */
 
 static void
-mem_stream_putBytes( XWStreamCtxt* p_sctx, void* whence, XP_U16 count )
+mem_stream_putBytes( XWStreamCtxt* p_sctx, const void* whence, 
+                     XP_U16 count )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     XP_U32 newSize;
