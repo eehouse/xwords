@@ -813,7 +813,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_U32 connID;
     MsgID msgID;
     MsgID lastMsgRcd;
-    XP_Bool validMessage = XP_TRUE;
+    XP_Bool validMessage = XP_FALSE;
     AddressRecord* recs = (AddressRecord*)NULL;
     XWHostID senderID;
     XP_Bool usingRelay = XP_FALSE;
@@ -830,72 +830,85 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
 #endif
 
-    connID = stream_getU32( stream );
-    XP_STATUSF( "read connID of %lx", connID );
+    if ( stream_getSize( stream ) >= sizeof(connID) ) {
+        connID = stream_getU32( stream );
+        XP_STATUSF( "read connID of %lx", connID );
 
-    if ( comms->connID == connID || comms->connID == CONN_ID_NONE ) {
+        if ( comms->connID == connID || comms->connID == CONN_ID_NONE ) {
+            if ( stream_getSize( stream ) 
+                 >= sizeof(channelNo) + sizeof(msgID) + sizeof(lastMsgRcd) ) {
 
-        channelNo = stream_getU16( stream );
-        msgID = stream_getU32( stream );
-        lastMsgRcd = stream_getU32( stream );
+                validMessage = XP_TRUE;
 
-        XP_DEBUGF( "rcd: msg " XP_LD " on chnl %d", msgID, channelNo );
+                channelNo = stream_getU16( stream );
+                msgID = stream_getU32( stream );
+                lastMsgRcd = stream_getU32( stream );
 
-        removeFromQueue( comms, channelNo, lastMsgRcd );
+                XP_DEBUGF( "rcd: msg " XP_LD " on chnl %d", msgID, channelNo );
 
-        /* Problem: need to detect duplicate messages even before the server's
-           had a chance to assign channels.  Solution, which is a hack: since
-           hostID does the same thing, use it in the relay case.  But in the
-           relay-less case, which still needs to work, do assign channels.
-           The dup message problem is far less common there.  */
+                removeFromQueue( comms, channelNo, lastMsgRcd );
 
-        if ( channelNo == 0 ) {
-            XP_ASSERT( comms->isServer );
-            if ( usingRelay ) {
-                XP_ASSERT( senderID != 0 );
-                channelNo = senderID;
-            } else {
-                XP_ASSERT( msgID == 0 );
-                channelNo = ++comms->nextChannelNo;
-                channelWas0 = XP_TRUE;
-            }
-            XP_STATUSF( "assigning channelNo=%d", channelNo );
-        } 
-        if ( usingRelay || !channelWas0 ) {
-            recs = getRecordFor( comms, channelNo );	
-            /* messageID for an incomming message should be one greater than
-             * the id most recently used for that channel. */
-            if ( !!recs && (msgID != recs->lastMsgReceived + 1)  ) {
-                XP_DEBUGF( "on channel %d, old msgID " XP_LD 
-                           " (next should be " XP_LD ")", channelNo,
-                           msgID, recs->lastMsgReceived+1 );
-                validMessage = XP_FALSE;
-            }
+                /* Problem: need to detect duplicate messages even before the
+                   server's had a chance to assign channels.  Solution, which
+                   is a hack: since hostID does the same thing, use it in the
+                   relay case.  But in the relay-less case, which still needs
+                   to work, do assign channels.  The dup message problem is
+                   far less common there.  */
+
+                if ( channelNo == 0 ) {
+                    XP_ASSERT( comms->isServer );
+                    if ( usingRelay ) {
+                        XP_ASSERT( senderID != 0 );
+                        channelNo = senderID;
+                    } else {
+                        XP_ASSERT( msgID == 0 );
+                        channelNo = ++comms->nextChannelNo;
+                        channelWas0 = XP_TRUE;
+                    }
+                    XP_STATUSF( "assigning channelNo=%d", channelNo );
+                } 
+                if ( usingRelay || !channelWas0 ) {
+                    recs = getRecordFor( comms, channelNo );	
+                    /* messageID for an incomming message should be one
+                     * greater than the id most recently used for that
+                     * channel. */
+                    if ( !!recs && (msgID != recs->lastMsgReceived + 1)  ) {
+                        XP_DEBUGF( "on channel %d, old msgID " XP_LD 
+                                   " (next should be " XP_LD ")", channelNo,
+                                   msgID, recs->lastMsgReceived+1 );
+                        validMessage = XP_FALSE;
+                    }
 #ifdef DEBUG
-            if ( !!recs ) {
-                XP_ASSERT( lastMsgRcd < 0x0000FFFF );
-                recs->lastACK = (XP_U16)lastMsgRcd;
-            }
+                    if ( !!recs ) {
+                        XP_ASSERT( lastMsgRcd < 0x0000FFFF );
+                        recs->lastACK = (XP_U16)lastMsgRcd;
+                    }
 #endif
-        }
+                }
     
-        if ( validMessage ) {
-            XP_LOGF( "remembering senderID %x for channel %d",
-                     senderID, channelNo );
+                if ( validMessage ) {
+                    XP_LOGF( "remembering senderID %x for channel %d",
+                             senderID, channelNo );
 
-            recs = rememberChannelAddress( comms, channelNo, senderID, addr );
-            stream_setAddress( stream, channelNo );
+                    recs = rememberChannelAddress( comms, channelNo, senderID,
+                                                   addr );
+                    stream_setAddress( stream, channelNo );
 
-            if ( !!recs ) {
-                recs->lastMsgReceived = msgID;
+                    if ( !!recs ) {
+                        recs->lastMsgReceived = msgID;
+                    }
+                    XP_STATUSF( "set channel %d's lastMsgReceived to " XP_LD,
+                                channelNo, msgID );
+                }
+            } else {
+                XP_LOGF( "%s: message too small", __FUNCTION__ );
             }
-            XP_STATUSF( "set channel %d's lastMsgReceived to " XP_LD,
-                        channelNo, msgID );
+        } else {
+            XP_STATUSF( "refusing non-matching connID; got %lx, wanted %lx",
+                        connID, comms->connID );
         }
     } else {
-        validMessage = XP_FALSE;
-        XP_STATUSF( "refusing non-matching connID; got %lx, wanted %lx",
-                    connID, comms->connID );
+        XP_LOGF( "%s: message too small", __FUNCTION__ );
     }
     return validMessage;
 } /* comms_checkIncomingStream */
