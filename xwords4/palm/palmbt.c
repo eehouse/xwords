@@ -44,7 +44,6 @@ typedef struct PalmBTStuff {
     union {
         struct {
             BtLibDeviceAddressType masterAddr;
-            BtLibSocketRef spdSocket;
             XP_Bool addrSet;
         } slave;
         struct {
@@ -69,7 +68,7 @@ static const BtLibSdpUuidType XWORDS_UUID = {
 
 static Err initBTStuff( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster );
 static void palm_bt_log( const char* btfunc, const char* func, Err err );
-static void pbt_connect_slave( PalmBTStuff* btStuff, BtLibL2CapPsmType psm );
+static void pbt_connect_slave( PalmBTStuff* btStuff );
 static Err bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr );
 static void pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 
@@ -85,7 +84,6 @@ static const char* mgmtEvtToStr( BtLibManagementEventEnum event );
 
 /* callbacks */
 static void libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon );
-static void spdSocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 static void l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 
 Err
@@ -260,31 +258,10 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 } /* palm_bt_send */
 
 static void
-pbt_find_psm( PalmBTStuff* btStuff )
-{
-    Err err;
-    LOG_FUNC();
-
-    XP_ASSERT( !btStuff->amMaster );
-
-    CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
-              &btStuff->u.slave.spdSocket, 
-              spdSocketCallback, (UInt32)btStuff, btLibSdpProtocol );
-
-    /* sends btLibSocketEventSdpGetPsmByUuid */
-    CALL_ERR( err, BtLibSdpGetPsmByUuid, btStuff->btLibRefNum, 
-              btStuff->u.slave.spdSocket,
-              &btStuff->u.slave.masterAddr,
-              (BtLibSdpUuidType*)&XWORDS_UUID, 1 );
-}
-
-static void
-pbt_connect_slave( PalmBTStuff* btStuff, BtLibL2CapPsmType psm )
+pbt_connect_slave( PalmBTStuff* btStuff )
 {
     Err err;
     XP_ASSERT( !btStuff->amMaster );
-
-    XP_LOGF( "%s(psm=%x)", __FUNCTION__, psm );
 
     CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
               &btStuff->dataSocket, 
@@ -293,7 +270,7 @@ pbt_connect_slave( PalmBTStuff* btStuff, BtLibL2CapPsmType psm )
 
     if ( btLibErrNoError == err ) {
         BtLibSocketConnectInfoType connInfo;
-        connInfo.data.L2Cap.remotePsm = psm;
+        connInfo.data.L2Cap.remotePsm = XW_PSM;
         connInfo.data.L2Cap.localMtu = L2CAPSOCKETMTU; 
         connInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
         connInfo.remoteDeviceP = &btStuff->u.slave.masterAddr;
@@ -391,8 +368,12 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 
         btStuff->u.slave.addrSet = XP_TRUE;
 
+         /* sends btLibManagementEventACLConnectOutbound */
         CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
                   &btStuff->u.slave.masterAddr );
+        if ( btLibErrAlreadyConnected == err ) {
+            pbt_connect_slave( btStuff );
+        }
         XP_ASSERT( err == btLibErrPending );
     } else {
         XP_LOGF( "%s: doing nothing", __FUNCTION__ );
@@ -483,6 +464,8 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         pbt_send_pending( btStuff, NULL );
         break;
     case btLibSocketEventData:
+        XP_ASSERT( sEvent->status == errNone );
+        XP_ASSERT( sEvent->socket == btStuff->dataSocket );
         XP_ASSERT( !!btStuff->cb );
         (*btStuff->cb)( btStuff->globals, sEvent->eventData.data.data,
                         sEvent->eventData.data.dataLen );
@@ -496,32 +479,6 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
  * Callbacks
  ***********************************************************************/
 static void
-spdSocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
-{
-    Err err;
-    PalmBTStuff* btStuff = (PalmBTStuff*)refCon;
-    BtLibSocketEventEnum event = sEvent->event;
-
-    XP_LOGF( "%s(%s)", __FUNCTION__, btEvtToStr(event) );
-    XP_ASSERT( sEvent->socket == btStuff->u.slave.spdSocket );
-    XP_ASSERT( !btStuff->amMaster );
-
-    switch( event ) {
-    case btLibSocketEventSdpGetPsmByUuid:
-        if ( btLibErrNoError == sEvent->status ) {
-            CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
-                      sEvent->socket );
-            btStuff->u.slave.spdSocket = SOCK_INVAL;
-            pbt_connect_slave( btStuff, 
-                               sEvent->eventData.sdpByUuid.param.psm );
-        }
-        break;
-    default:                    /* happy now, compiler? */
-        break;
-    }
-} /* spdSocketCallback */
-
-static void
 libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
 {
     PalmBTStuff* btStuff = (PalmBTStuff*)refCon;
@@ -532,7 +489,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
     case btLibManagementEventACLConnectOutbound:
         if ( btLibErrNoError == mEvent->status ) {
             XP_LOGF( "successful ACL connection to master!" );
-            pbt_find_psm( btStuff );
+            pbt_connect_slave( btStuff );
         }
         break;
 
