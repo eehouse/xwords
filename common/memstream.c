@@ -317,8 +317,8 @@ static XP_U16
 mem_stream_getSize( XWStreamCtxt* p_sctx )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
-    
-    return stream->nBytesWritten;
+    XP_U16 size = stream->nBytesWritten - stream->curReadPos;
+    return size;
 } /* mem_stream_getSize */
 
 static XP_PlayerAddr
