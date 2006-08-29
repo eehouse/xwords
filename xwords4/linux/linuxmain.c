@@ -897,9 +897,13 @@ main( int argc, char** argv )
         }
     } else if ( conType == COMMS_CONN_BT ) {
         bdaddr_t ba;
-        XP_Bool success = XP_FALSE;
+        XP_Bool success;
         XP_ASSERT( btaddr );
-        if ( btaddr[1] == ':' ) {
+        if ( isServer ) {
+            success = XP_TRUE;
+            /* any format is ok */
+        } else if ( btaddr[1] == ':' ) {
+            success = XP_FALSE;
             if ( btaddr[0] == 'n' ) {
                 if ( !nameToBtAddr( btaddr+2, &ba ) ) {
                     fprintf( stderr, "fatal error: unable to find device %s\n",

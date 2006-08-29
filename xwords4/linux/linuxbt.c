@@ -74,6 +74,37 @@ btConnectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
             XP_LOGF( "%s: connect->%s", __FUNCTION__, strerror(errno) );
         }
     }
+} /* btConnectSocket */
+
+static void
+btWaitConnection( CommonGlobals* globals )
+{
+    struct sockaddr_l2 saddr;
+    struct sockaddr_l2 inaddr;
+    int listener, sock;
+    socklen_t slen;
+
+    listener = socket( AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP );
+
+    XP_MEMSET( &saddr, 0, sizeof(saddr) );
+    saddr.l2_family = AF_BLUETOOTH;
+    saddr.l2_bdaddr = *BDADDR_ANY;
+    saddr.l2_psm = htobs( XW_PSM );
+
+    bind( listener, (struct sockaddr *)&saddr, sizeof(saddr) );
+
+    listen( listener, 3 );        /* eventually can accept up to 3 -- piconet */
+
+    // accept one connection
+    XP_LOGF( "%s: blocking on accept", __FUNCTION__ );
+    slen = sizeof( inaddr );
+    sock = accept( listener, (struct sockaddr *)&inaddr, &slen );
+    XP_LOGF( "%s: accept returned", __FUNCTION__ );
+
+    close( listener );
+
+    (*globals->socketChanged)( globals->socketChangedClosure,
+                               -1, sock );
 }
 
 void
@@ -87,6 +118,10 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
         btStuff->globals = globals;
         globals->u.bt.btStuff = btStuff;
         
+    }
+
+    if ( amMaster ) {
+        btWaitConnection( globals );
     }
 }
 
