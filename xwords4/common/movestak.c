@@ -110,7 +110,16 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
 void
 stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream )
 {
-    XP_U16 nBytes = !!stack->data? stream_getSize( stack->data ): 0;
+    XP_U16 nBytes;
+    XWStreamCtxt* data = stack->data;
+    XWStreamPos oldPos = START_OF_STREAM;
+
+    if ( !!data ) {
+        oldPos = stream_setPos( data, START_OF_STREAM, POS_READ );    
+        nBytes = stream_getSize( data );
+    } else {
+        nBytes = 0;
+    }
 
     stream_putU16( stream, nBytes );
 
@@ -119,8 +128,13 @@ stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream )
         stream_putU16( stream, stack->nEntries );
         stream_putU32( stream, stack->top );
 
-        stream_setPos( stack->data, START_OF_STREAM, POS_READ );
-        stream_copyFromStream( stream, stack->data, nBytes );
+        stream_setPos( data, START_OF_STREAM, POS_READ );
+        stream_copyFromStream( stream, data, nBytes );
+    }
+
+    if ( !!data ) {
+        /* in case it'll be used further */
+        (void)stream_setPos( data, oldPos, POS_READ );
     }
 } /* stack_writeToStream */
 
