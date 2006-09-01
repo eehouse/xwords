@@ -575,11 +575,11 @@ palm_warnf( char* format, ... )
 } /* palm_warnf */
 
 void
-palm_assert( Boolean b, int line, char* fileName )
+palm_assert( Boolean b, int line, const char* func, const char* file )
 {
     if ( !b ) {
-        XP_LOGF( "ASSERTION FAILED: line %d in %s", line, fileName );
-        XP_WARNF( "ASSERTION FAILED: line %d in %s", line, fileName );
+        XP_LOGF( "ASSERTION FAILED: line %d, %s(), %s", line, func, file );
+        XP_WARNF( "ASSERTION FAILED: line %d, %s(), %s", line, func, file );
     }
 } /* palmassert */
 

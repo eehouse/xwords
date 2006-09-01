@@ -44,7 +44,7 @@ typedef XP_U32 XP_Time;
 
 void palm_debugf(char*, ...);
 void p_ignore(char*, ...);
-void palm_assert(Boolean b, int line, char* fileName );
+void palm_assert(Boolean b, int line, const char* func, const char* file );
 void palm_warnf( char* format, ... );
 void palm_logf( char* format, ... );
 XP_U16 palm_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
@@ -84,7 +84,7 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #define XP_ABS(a)   ((a)>=0?(a):-(a))
 
 #ifdef DEBUG
-#define XP_ASSERT(b) palm_assert(b, __LINE__, __FILE__)
+#define XP_ASSERT(b) palm_assert(b, __LINE__, __FUNCTION__, __FILE__)
 #else
 #define XP_ASSERT(b)
 #endif
