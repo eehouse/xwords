@@ -143,6 +143,7 @@ getOneBit( MemStreamCtxt* stream )
     if ( stream->nReadBits == 0 ) {
         ++stream->curReadPos;
     }
+    XP_ASSERT( stream->curReadPos <= stream->nBytesWritten );
 
     rack = stream->buf[stream->curReadPos-1];
     mask = 1 << stream->nReadBits++;
