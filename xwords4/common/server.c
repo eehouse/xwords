@@ -163,9 +163,11 @@ getStateStr( XW_State st )
 static void
 logNewState( XW_State old, XW_State newst )
 {
-    char* oldStr = getStateStr(old);
-    char* newStr = getStateStr(newst);
-    XP_LOGF( "state transition %s => %s", oldStr, newStr );
+    if ( old != newst ) {
+        char* oldStr = getStateStr(old);
+        char* newStr = getStateStr(newst);
+        XP_LOGF( "state transition %s => %s", oldStr, newStr );
+    }
 }
 # define    SETSTATE( s, st ) { XW_State old = (s)->nv.gameState; \
                                 (s)->nv.gameState = (st); \
