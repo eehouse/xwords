@@ -60,9 +60,9 @@ typedef struct SpecialBitmaps {
 struct DictionaryCtxt {
     void (*destructor)( DictionaryCtxt* dict );
 
-    array_edge* (*func_edge_for_index)( DictionaryCtxt* dict, XP_U32 index );
-    array_edge* (*func_dict_getTopEdge)( DictionaryCtxt* dict );
-    XP_UCHAR* (*func_dict_getShortName)( DictionaryCtxt* dict );
+    array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, XP_U32 index );
+    array_edge* (*func_dict_getTopEdge)( const DictionaryCtxt* dict );
+    XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
 
     array_edge* topEdge;
     array_edge* base;		/* the physical beginning of the dictionary; not
@@ -123,7 +123,8 @@ struct DictionaryCtxt {
 #define dict_getShortName(d)      (*((d)->func_dict_getShortName))(d)
 
 
-XP_Bool dict_tilesAreSame( DictionaryCtxt* dict1, DictionaryCtxt* dict2 );
+XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1, 
+                           const DictionaryCtxt* dict2 );
 
 XP_Bool dict_hasBlankTile( const DictionaryCtxt* dict );
 Tile dict_getBlankTile( const DictionaryCtxt* dict );
@@ -131,14 +132,14 @@ XP_U16 dict_getTileValue( const DictionaryCtxt* ctxt, Tile tile );
 XP_U16 dict_numTiles( const DictionaryCtxt* ctxt, Tile tile );
 XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 
-XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
-                           XP_UCHAR* buf, XP_U16 bufSize );
-XP_UCHAR* dict_getName( DictionaryCtxt* ctxt );
+XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
+                           XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize );
+XP_UCHAR* dict_getName( const DictionaryCtxt* ctxt );
 
-Tile dict_tileForString( DictionaryCtxt* dict, XP_UCHAR* key );
+Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
 
-XP_Bool dict_faceIsBitmap( DictionaryCtxt* dict, Tile tile );
-XP_Bitmap dict_getFaceBitmap( DictionaryCtxt* dict, Tile tile, 
+XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
+XP_Bitmap dict_getFaceBitmap( const DictionaryCtxt* dict, Tile tile, 
                               XP_Bool isLarge );
 
 #ifdef TALL_FONTS
