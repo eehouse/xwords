@@ -946,7 +946,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
                         check = engine->rowChecks[col].bits[1];
                         advanced = XP_TRUE;
                     }
-                    contains = (check & (1L << (tile>>5))) != 0;
+                    contains = (check & (1L << (tile-32))) != 0;
                 } else {
                     contains = (check & (1L << tile)) != 0;
                 }
