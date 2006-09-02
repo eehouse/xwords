@@ -99,8 +99,8 @@ dict_numTileFaces( const DictionaryCtxt* dict )
 } /* dict_numTileFaces */
 
 XP_U16
-dict_tilesToString( const DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
-                    XP_UCHAR* buf, XP_U16 bufSize )
+dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
+                    XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize )
 {
     XP_UCHAR* bufp = buf;
     XP_UCHAR* end = bufp + bufSize;
@@ -139,7 +139,7 @@ dict_tilesToString( const DictionaryCtxt* ctxt, Tile* tiles, XP_U16 nTiles,
 } /* dict_tilesToString */
 
 Tile
-dict_tileForString( DictionaryCtxt* dict, XP_UCHAR* key )
+dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key )
 {
     XP_U16 nFaces = dict_numTileFaces( dict );
     Tile tile;
@@ -160,7 +160,7 @@ dict_tileForString( DictionaryCtxt* dict, XP_UCHAR* key )
 } /* dict_tileForChar */
 
 XP_Bool
-dict_tilesAreSame( DictionaryCtxt* dict1, DictionaryCtxt* dict2 )
+dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
 {
     XP_Bool result = XP_FALSE;
 
@@ -355,7 +355,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
 } /* dict_loadFromStream */
 
 XP_UCHAR*
-dict_getName( DictionaryCtxt* dict )
+dict_getName( const DictionaryCtxt* dict )
 {
     XP_ASSERT( !!dict );
     XP_ASSERT( !!dict->name );
@@ -363,14 +363,14 @@ dict_getName( DictionaryCtxt* dict )
 } /* dict_getName */
 
 XP_Bool
-dict_faceIsBitmap( DictionaryCtxt* dict, Tile tile )
+dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile )
 {
     XP_UCHAR face = dict_getTileChar( dict, tile );
     return /* face != 0 &&  */IS_SPECIAL(face);
 } /* dict_faceIsBitmap */
 
 XP_Bitmap
-dict_getFaceBitmap( DictionaryCtxt* dict, Tile tile, XP_Bool isLarge )
+dict_getFaceBitmap( const DictionaryCtxt* dict, Tile tile, XP_Bool isLarge )
 {
     SpecialBitmaps* bitmaps;
     XP_UCHAR face = dict_getTileChar( dict, tile );
@@ -485,7 +485,7 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
 #endif /* STUBBED_DICT */
 
 static array_edge* 
-dict_super_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
+dict_super_edge_for_index( const DictionaryCtxt* dict, XP_U32 index )
 {
     array_edge* result;
 
@@ -510,7 +510,7 @@ dict_super_edge_for_index( DictionaryCtxt* dict, XP_U32 index )
 } /* dict_edge_for_index */
 
 static array_edge*
-dict_super_getTopEdge( DictionaryCtxt* dict )
+dict_super_getTopEdge( const DictionaryCtxt* dict )
 {
     return dict->topEdge;
 } /* dict_super_getTopEdge */
