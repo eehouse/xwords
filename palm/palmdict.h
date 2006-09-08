@@ -26,8 +26,6 @@
 
 DictionaryCtxt* palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
                                       XP_UCHAR* dictName, PalmDictList* dl );
-/* might eventually belong in the superclass */
-XP_UCHAR* dict_getName( DictionaryCtxt* dict );
 
 #ifdef NODE_CAN_4
 void offerConvertOldDicts( PalmAppGlobals* globals );
