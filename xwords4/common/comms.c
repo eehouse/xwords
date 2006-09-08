@@ -246,6 +246,10 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 /*         XP_ASSERT( 0 ); */
         break;
     case COMMS_CONN_BT:
+        stringFromStreamHere( stream, addr.u.bt.hostName,
+                              sizeof(addr.u.bt.hostName) );
+        stream_getBytes( stream, &addr.u.bt.btAddr, sizeof(addr.u.bt.btAddr) );
+        break;
     case COMMS_CONN_IR:
         /* nothing to save */
         break;
@@ -381,6 +385,9 @@ addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
         break;
 #endif
     case COMMS_CONN_BT:
+        stringToStream( stream, addr.u.bt.hostName );
+        stream_putBytes( stream, &addr.u.bt.btAddr, sizeof(addr.u.bt.btAddr) );
+        break;
     case COMMS_CONN_IR:
         /* nothing to save */
         break;
@@ -466,7 +473,7 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
     XP_ASSERT( comms != NULL );
 #ifdef BEYOND_IR
-    util_addrChange( comms->util, &comms->addr, addr, comms->isServer );
+    util_addrChange( comms->util, &comms->addr, addr );
 #endif
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
@@ -502,6 +509,12 @@ comms_getConType( CommsCtxt* comms )
 {
     return comms->addr.conType;
 } /* comms_getConType */
+
+XP_Bool
+comms_getIsServer( CommsCtxt* comms )
+{
+    return comms->isServer;
+}
 
 /* Send a message using the sequentially next MsgID.  Save the message so
  * resend can work. */
@@ -698,7 +711,8 @@ comms_resendAll( CommsCtxt* comms )
         if ( result == 0 && oneResult != 0 ) {
             result = oneResult;
         }
-        XP_STATUSF( "resend: msgid=" XP_LD "; rslt=%d", msg->msgID, oneResult );
+        XP_STATUSF( "resend: msgid=" XP_LD "; rslt=%d", 
+                    msg->msgID, oneResult );
     }
 
     return result;

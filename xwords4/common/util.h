@@ -143,7 +143,7 @@ typedef struct UtilVtable {
                                        XP_U16 turn, XP_Bool turnLost );
 #ifdef BEYOND_IR
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
-                               const CommsAddrRec* newAddr, XP_Bool isServer );
+                               const CommsAddrRec* newAddr );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -221,8 +221,8 @@ struct XW_UtilCtxt {
          (uc)->vtable->m_util_warnIllegalWord((uc),(w),(p),(b))
 
 #ifdef BEYOND_IR
-#define util_addrChange( uc, addro, addrn, srvr ) \
-         (uc)->vtable->m_util_addrChange((uc), (addro), (addrn), (srvr))
+#define util_addrChange( uc, addro, addrn ) \
+         (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT

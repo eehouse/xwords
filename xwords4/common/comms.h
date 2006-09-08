@@ -45,6 +45,7 @@ typedef enum {
 /* on Palm BtLibDeviceAddressType is a 48-bit quantity.  Linux's typeis the
    same size.  Goal is something all platforms support */
 typedef XP_U8 XP_BtAddr[6];
+typedef XP_UCHAR XP_BtAddrStr[18];
 
 #define MAX_HOSTNAME_LEN 63
 typedef struct CommsAddrRec {
@@ -95,6 +96,7 @@ void comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 
 CommsConnType comms_getConType( CommsCtxt* comms );
+XP_Bool comms_getIsServer( CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  XW_UtilCtxt* util, TransportSend sendproc, 
