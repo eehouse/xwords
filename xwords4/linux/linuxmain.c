@@ -34,6 +34,8 @@
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 
+#include <pthread.h>
+
 #include "linuxmain.h"
 #include "linuxbt.h"
 #include "main.h"
@@ -64,11 +66,13 @@ linux_debugf( char* format, ... )
     struct tm* timp;
     struct timeval tv;
     struct timezone tz;
+    pthread_t me = pthread_self();
 
     gettimeofday( &tv, &tz );
     timp = localtime( &tv.tv_sec );
 
-    sprintf( buf, "%d:%d:%d: ", timp->tm_hour, timp->tm_min, timp->tm_sec );
+    sprintf( buf, "<%p>%d:%d:%d: ", (void*)me, 
+             timp->tm_hour, timp->tm_min, timp->tm_sec );
 
     va_start(ap, format);
 
@@ -321,6 +325,8 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
     if ( conType == COMMS_CONN_RELAY ) {
         nSent = linux_tcp_send( buf, buflen, addrRec, globals );
     } else if ( conType == COMMS_CONN_BT ) {
+        XP_Bool isServer = comms_getIsServer( globals->game.comms );
+        linux_bt_open( globals, isServer );
         nSent = linux_bt_send( buf, buflen, addrRec, globals );
     } else {
         XP_ASSERT(0);
@@ -589,11 +595,11 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
 static void
 linux_util_addrChange( XW_UtilCtxt* uc, 
                        const CommsAddrRec* XP_UNUSED(oldAddr),
-                       const CommsAddrRec* newAddr,
-                       XP_Bool isServer )
+                       const CommsAddrRec* newAddr )
 {
     if ( newAddr->conType == COMMS_CONN_BT ) {
         CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+        XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
         linux_bt_open( cGlobals, isServer );
     }
 }
