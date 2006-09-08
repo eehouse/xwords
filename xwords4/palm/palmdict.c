@@ -62,7 +62,7 @@ static void palm_dictionary_destroy( DictionaryCtxt* dict );
 static XP_U16 countSpecials( FaceType* ptr, UInt16 nChars );
 static void setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt, 
                            Xloc_specialEntry* specialStart, XP_U16 nSpecials );
-static array_edge* palm_dict_edge_for_index_multi( DictionaryCtxt* dict, 
+static array_edge* palm_dict_edge_for_index_multi( const DictionaryCtxt* dict, 
                                                    XP_U32 index );
 
 DictionaryCtxt*
@@ -441,7 +441,7 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
 
 #ifdef OVERRIDE_EDGE_FOR_INDEX
 static array_edge* 
-palm_dict_edge_for_index_multi( DictionaryCtxt* dict, XP_U32 index )
+palm_dict_edge_for_index_multi( const DictionaryCtxt* dict, XP_U32 index )
 {
     PalmDictionaryCtxt* ctxt = (PalmDictionaryCtxt*)dict;
     array_edge* result;
