@@ -1467,21 +1467,29 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->closure = globals;
 } /* setupGtkUtilCallbacks */
 
-
 static gboolean
 newConnectionInput( GIOChannel *source,
                     GIOCondition condition,
                     gpointer data )
 {
+    gboolean keepSource;
     int sock = g_io_channel_unix_get_fd( source );
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    XP_ASSERT( sock == globals->cGlobals.socket );
+    XP_LOGF( "%s:condition = 0x%x", __FUNCTION__, (int)condition );
 
-    if ( (condition & G_IO_HUP) != 0 ) {
+/*     XP_ASSERT( sock == globals->cGlobals.socket ); */
 
+    if ( (condition & (G_IO_HUP | G_IO_ERR)) != 0 ) {
+        XP_LOGF( "dropping socket %d", sock );
+        close( sock );
         globals->cGlobals.socket = -1;
-        return FALSE;           /* remove the event source */
+#ifdef XWFEATURE_BLUETOOTH
+        if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
+            linux_bt_socketclosed( &globals->cGlobals, sock );
+        }
+#endif
+        keepSource = FALSE;           /* remove the event source */
 
     } else if ( (condition & G_IO_IN) != 0 ) {
         ssize_t nRead;
@@ -1491,7 +1499,7 @@ newConnectionInput( GIOChannel *source,
             nRead = linux_relay_receive( &globals->cGlobals, 
                                          buf, sizeof(buf) );
         } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
-            nRead = linux_bt_receive( &globals->cGlobals, buf, sizeof(buf) );
+            nRead = linux_bt_receive( sock, buf, sizeof(buf) );
         } else {
             XP_ASSERT( 0 );
         }
@@ -1526,8 +1534,9 @@ newConnectionInput( GIOChannel *source,
         } else {
             XP_LOGF( "errno from read: %d", errno );
         }
+        keepSource = TRUE;
     }
-    return TRUE;                /* FALSE means to remove event source */
+    return keepSource;                /* FALSE means to remove event source */
 } /* newConnectionInput */
 
 /* Make gtk listen for events on the socket that clients will use to
@@ -1536,19 +1545,20 @@ newConnectionInput( GIOChannel *source,
 static void
 gtkListenOnSocket( GtkAppGlobals* globals, int newSock )
 {
+
     GIOChannel* channel = g_io_channel_unix_new( newSock );
     guint result = g_io_add_watch( channel,
-                                   G_IO_IN | G_IO_HUP,
+                                   G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
                                    newConnectionInput,
                                    globals );
-    XP_LOGF( "g_io_add_watch => %d", result );
+    XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
 } /* gtkListenOnSocket */
 
 static void
 gtk_socket_changed( void* closure, int oldSock, int newSock )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
-    XP_ASSERT( oldSock == globals->cGlobals.socket );
+
     if ( oldSock != -1 ) {
         g_source_remove( oldSock );
         XP_LOGF( "Removed %d from gtk's list of listened-to sockets" );

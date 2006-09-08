@@ -30,7 +30,9 @@ void linux_bt_close( CommonGlobals* globals );
 XP_S16 linux_bt_send( const XP_U8* buf, XP_U16 buflen, 
                       const CommsAddrRec* addrRec, 
                       CommonGlobals* globals );
-XP_S16 linux_bt_receive( CommonGlobals* globals, XP_U8* buf, XP_U16 buflen );
+XP_S16 linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen );
+
+void linux_bt_socketclosed( CommonGlobals* globals, int sock );
 
 #endif /* XWFEATURE_BLUETOOTH */
 #endif /* #ifndef _LINUXBT_H_ */
