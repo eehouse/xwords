@@ -584,7 +584,7 @@ palm_assert( Boolean b, int line, const char* func, const char* file )
 } /* palmassert */
 
 static void
-logToMemo( char* buf )
+logToDB( const char* buf, const char* dbName, XP_U32 dbCreator, XP_U32 dbType )
 {
     const XP_U16 MAX_MEMO_SIZE = 4000;
     const XP_U16 MAX_NRECORDS = 200;
@@ -604,8 +604,8 @@ logToMemo( char* buf )
                dtType.second );
     tsLen = XP_STRLEN(tsBuf);
 
-    (void)DmCreateDatabase( CARD_0, "MemoDB", 'memo', 'DATA', false );
-    dbID = DmFindDatabase( CARD_0, "MemoDB" );
+    (void)DmCreateDatabase( CARD_0, dbName, dbCreator, dbType, false );
+    dbID = DmFindDatabase( CARD_0, dbName );
     ref = DmOpenDatabase( CARD_0, dbID, dmModeWrite );
 
     nRecords = DmNumRecordsInCategory( ref, dmAllCategories );
@@ -657,7 +657,13 @@ logToMemo( char* buf )
 
     DmReleaseRecord( ref, index, true );
     DmCloseDatabase( ref );
-} /* logToMemo */
+} /* logToDB */
+
+static void
+logToMemo( const char* buf )
+{
+    logToDB( buf, "MemoDB", 'memo', 'DATA' );
+}
 
 void
 palm_debugf( char* format, ...)
@@ -686,6 +692,7 @@ palm_logf( char* format, ... )
     va_end( ap );
 
     logToMemo( buf );
+    logToDB( buf, "XWLogfile", 'XWLG', 'TEXT' );
 } /* palm_logf */
 
 #define ROWSIZE 8
