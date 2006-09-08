@@ -25,18 +25,29 @@
 #include "comms.h"
 #include "palmmain.h"
 
+/**
+ * palm_bt_appendWaitTicks
+ * reduce waitTicks if have work to do
+ */
+void palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result );
+XP_Bool palm_bt_doWork( PalmAppGlobals* globals );
+
 typedef void (*DataCb)( PalmAppGlobals* globals, 
                         const XP_U8* data, XP_U16 len );
 
-Err palm_bt_init( PalmAppGlobals* globals, DataCb cb, XP_Bool amMaster );
+Err palm_bt_init( PalmAppGlobals* globals, DataCb cb );
 void palm_bt_close( PalmAppGlobals* globals );
 
+void palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
+                         XP_BtAddrStr* str );
+
 XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-                     PalmAppGlobals* globals );
-XP_Bool btSocketIsOpen( PalmAppGlobals* globals );
+                     DataCb cb, PalmAppGlobals* globals );
 
 XP_Bool palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
                                XP_UCHAR* out,XP_U16 len );
 
+#else
+* define palm_bt_appendWaitTicks( g, r )
 #endif /* XWFEATURE_BLUETOOTH */
 #endif

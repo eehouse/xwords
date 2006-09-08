@@ -156,8 +156,13 @@ static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
                                           XP_U16 turn, XP_Bool turnLost );
 #ifdef BEYOND_IR
 static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
-                                  const CommsAddrRec* newAddr, XP_Bool isServer );
+                                  const CommsAddrRec* newAddr );
 #endif
+#ifdef XWFEATURE_BLUETOOTH
+static void btDataHandler( PalmAppGlobals* globals, const XP_U8* data, 
+                           XP_U16 len );
+#endif
+
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, 
                                               XP_U16* max );
@@ -1277,6 +1282,10 @@ stopApplication( PalmAppGlobals* globals )
 	
         uninitResources( globals );
 
+#ifdef XWFEATURE_BLUETOOTH
+        palm_bt_close( globals );
+#endif
+
         /* Write the state information -- once we're ready to read it in.
            But skip the save if user cancelled launching the first time. */
         if ( !globals->isFirstLaunch ) {
@@ -1302,9 +1311,6 @@ stopApplication( PalmAppGlobals* globals )
 #ifdef BEYOND_IR
         palm_ip_close( globals );
 #endif
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-        palm_bt_close( globals );
 #endif
 
         if ( !!globals->dictList ) {
@@ -1356,12 +1362,6 @@ figureWaitTicks( PalmAppGlobals* globals )
     } else if ( ipSocketIsOpen(globals) ) {
 /*         we'll do our sleeping in NetLibSelect */
         result = 0;
-# ifdef XWFEATURE_BLUETOOTH
-    } else if ( btSocketIsOpen(globals) ) {
-        /* From Whiteboard.  But: what to use here?  BTLib needs nil events
-           AFAIK. */
-        result = SysTicksPerSecond() / 10;
-# endif
 #endif
     } else if ( globals->timeRequested || globals->hintPending ) {
         result = 0;
@@ -1374,6 +1374,11 @@ figureWaitTicks( PalmAppGlobals* globals )
         /* leave it */
     }
     /*     XP_DEBUGF( "figureWaitTicks returning %d", result ); */
+
+# ifdef XWFEATURE_BLUETOOTH
+    palm_bt_amendWaitTicks( globals, &result );
+# endif
+
     return result;
 } /* figureWaitTicks */
 
@@ -1573,6 +1578,8 @@ handleNilEvent( PalmAppGlobals* globals )
     } else if ( timeForTimer( globals, &why, &when ) 
                 && (when <= TimGetTicks()) ) {
         palmFireTimer( globals, why );
+    } else if ( palm_bt_doWork( globals ) ) {
+        /* nothing to do */
     } else if ( globals->timeRequested ) {
         globals->timeRequested = false;
         if ( globals->msgReceivedDraw ) {
@@ -1888,7 +1895,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         if ( !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, 
                            &globals->newGameState.addr );
-        } else {
+        } else if ( globals->gameInfo.serverRole != SERVER_STANDALONE ) {
             XP_ASSERT(0);
         }
 #endif        
@@ -3467,7 +3474,7 @@ palm_send( const XP_U8* buf, XP_U16 len,
         break;
 #ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
-        result = palm_bt_send( buf, len, addr, globals );
+        result = palm_bt_send( buf, len, addr, btDataHandler, globals );
         break;
 #endif
     default:
@@ -3552,7 +3559,7 @@ btDataHandler( PalmAppGlobals* globals, const XP_U8* data, XP_U16 len )
 
 static void
 palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
-                      const CommsAddrRec* newAddr, XP_Bool isServer )
+                      const CommsAddrRec* newAddr )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
 
@@ -3567,7 +3574,7 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
         ip_addr_change( globals, oldAddr, newAddr );
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( isBT ) {
-        palm_bt_init( globals, btDataHandler, isServer );
+        palm_bt_init( globals, btDataHandler );
 #endif
     }
 }
