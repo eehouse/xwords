@@ -59,7 +59,7 @@ strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
 } /* strFromField */
 
 static void
-ctlsFromState( ConnsDlgState* state )
+ctlsFromState( PalmAppGlobals* globals, ConnsDlgState* state )
 {
     XP_Bool isNewGame = state->isNewGame;
     XP_UCHAR buf[16];
@@ -78,7 +78,13 @@ ctlsFromState( ConnsDlgState* state )
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
-        setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName );
+        if ( '\0' == addr->u.bt.hostName[0] ) {
+            XP_BtAddrStr tmp;
+            palm_bt_addrString( globals, &addr->u.bt.btAddr, &tmp );
+            setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, tmp );
+        } else {
+            setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName );
+        }
 #endif
     }
 } /* ctlsFromState */
@@ -261,7 +267,7 @@ ConnsFormHandleEvent( EventPtr event )
         setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
                              conTypeToSel(state->addr->conType) );
 
-        ctlsFromState( state );
+        ctlsFromState( globals, state );
 
         updateFormCtls( form, state );
 
