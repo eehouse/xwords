@@ -285,9 +285,15 @@ static void
 mem_stream_copyFromStream( XWStreamCtxt* p_sctx, XWStreamCtxt* src, 
                            XP_U16 nBytes )
 {
-    while ( nBytes-- ) {
-        XP_U8 byt = stream_getU8( src );
-        stream_putU8( p_sctx, byt );
+    while ( nBytes > 0 ) {
+        XP_U8 buf[256];
+        XP_U16 len = sizeof(buf);
+        if ( nBytes < len ) {
+            len = nBytes;
+        }
+        stream_getBytes( src, buf, len );
+        stream_putBytes( p_sctx, buf, len );
+        nBytes -= len;
     }
 } /* mem_stream_copyFromStream */
 
