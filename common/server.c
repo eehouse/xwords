@@ -145,7 +145,7 @@ getStateStr( XW_State st )
     switch( st ) {
         CASESTR(XWSTATE_NONE);
         CASESTR(XWSTATE_BEGIN);
-        CASESTR(XWSTATE_POOL_INITED);
+/*         CASESTR(XWSTATE_POOL_INITED); */
         CASESTR(XWSTATE_NEED_SHOWSCORE);
         CASESTR(XWSTATE_WAITING_ALL_REG);
         CASESTR(XWSTATE_RECEIVED_ALL_REG);
@@ -1034,9 +1034,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         pool_removeTiles( pool, &tiles );
     }
 
-    if ( gi->players->isLocal ) {
-        SETSTATE( server, XWSTATE_INTURN );
-    }
+    SETSTATE( server, XWSTATE_INTURN );
     server->nv.currentTurn = 0;
 
     /* Give board a chance to redraw self with the full compliment of
@@ -1830,6 +1828,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 static XP_Bool
 reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    XP_Bool moveOk;
     XP_Bool isTrade;
     XP_Bool isLegal;
     XP_U16 whoMoved;
@@ -1837,30 +1836,35 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     TrayTileSet tradedTiles;
     ModelCtxt* model = server->vol.model;
 
-    readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
-                  &tradedTiles, &isLegal );
+    moveOk = XWSTATE_INTURN == server->nv.gameState;
+    if ( moveOk ) {
+        readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
+                      &tradedTiles, &isLegal );
 
-    if ( isTrade ) {
+        if ( isTrade ) {
 
-        model_makeTileTrade( model, whoMoved, &tradedTiles, &newTiles );
-        pool_replaceTiles( server->pool, &tradedTiles );
-        /* 	pool_removeTiles( server->pool, &newTiles ); */
-        server->vol.showPrevMove = XP_TRUE;
+            model_makeTileTrade( model, whoMoved, &tradedTiles, &newTiles );
+            pool_replaceTiles( server->pool, &tradedTiles );
+            /* 	pool_removeTiles( server->pool, &newTiles ); */
+            server->vol.showPrevMove = XP_TRUE;
+        } else {
+            server->vol.showPrevMove = XP_TRUE;
+            model_commitTurn( model, whoMoved, &newTiles );
+        }
+
+        resetEngines( server );
+
+        if ( !isLegal ) {
+            XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
+            handleIllegalWord( server, stream );
+        }
     } else {
-        server->vol.showPrevMove = XP_TRUE;
-        model_commitTurn( model, whoMoved, &newTiles );
+        XP_LOGF( "%s: dropping move: state=%s", __FUNCTION__,
+                 getStateStr(server->nv.gameState ) );
     }
-
-    resetEngines( server );
-
-    if ( !isLegal ) {
-        XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
-        handleIllegalWord( server, stream );
-    }
-
-    return XP_TRUE;
+    return moveOk;
 } /* reflectMove */
-#endif
+#endif /* XWFEATURE_STANDALONE_ONLY */
 
 /* A local player is done with his turn.  If a client device, broadcast
  * the move to the server (after which a response should be coming soon.)
