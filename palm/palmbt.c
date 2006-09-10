@@ -36,16 +36,20 @@ typedef enum {
     , PBT_EVENT_CONNECT_ACL
     , PBT_EVENT_CONNECT_L2C
     , PBT_EVENT_GOTDATA
+    , PBT_EVENT_TRYSEND
 } PBT_EVENT;
 
 typedef enum {
     PBTST_NONE
+    , PBTST_ACL_CONNECTING
     , PBTST_ACL_CONNECTED
+    , PBTST_L2C_CONNECTING
     , PBTST_L2C_CONNECTED
 } PBT_STATE;
 
 #define PBT_MAX_EVTS 4
-#define HASWORK(s)  ((s)->queueCur != (s)->queueNext)
+#define HASWORK(s)  ((s)->vol.queueCur != (s)->vol.queueNext)
+#define MAX_INCOMING 4
 
 typedef struct PalmBTStuff {
     DataCb cb;
@@ -53,20 +57,22 @@ typedef struct PalmBTStuff {
 
     XP_U16 btLibRefNum;
 
-    XP_U16 lenOut;
-    XP_UCHAR bufOut[L2CAPSOCKETMTU];       /* what's the mmu? */
-    XP_U16 lenIn;
-    XP_UCHAR bufIn[L2CAPSOCKETMTU];       /* what's the mmu? */
+    struct {
+        XP_U16 lenOut;
+        XP_UCHAR bufOut[L2CAPSOCKETMTU];       /* what's the mmu? */
+        XP_U16 lens[MAX_INCOMING];
+        XP_U8 bufIn[L2CAPSOCKETMTU*2];       /* what's the mmu? */
+
+        XP_U16 queueCur;
+        XP_U16 queueNext;
+        PBT_EVENT evtQueue[PBT_MAX_EVTS];
+
+        XP_Bool sendInProgress;
+        XP_Bool sendPending;
+    } vol;
 
     BtLibSocketRef dataSocket;
-    XP_Bool sendInProgress;
-    XP_Bool sendPending;
     PBT_SetState setState;
-
-
-    XP_U16 queueCur;
-    XP_U16 queueNext;
-    PBT_EVENT evtQueue[PBT_MAX_EVTS];
 
     PBT_STATE connState;
 
@@ -79,7 +85,6 @@ typedef struct PalmBTStuff {
             BtLibSocketRef listenSocket;
         } master;
     } u;
-
 
     BtLibSdpRecordHandle sdpRecordH;
 
@@ -107,6 +112,9 @@ static void pbt_setup_master( PalmBTStuff* btStuff );
 static void pbt_takedown_master( PalmBTStuff* btStuff );
 static void pbt_do_work( PalmBTStuff* btStuff );
 static void pbt_postpone( PalmBTStuff* btStuff, PBT_EVENT evt );
+static void pbt_enqueIncoming( PalmBTStuff* btStuff, XP_U8* data, XP_U16 len );
+static void pbt_processIncoming( PalmBTStuff* btStuff );
+static void pbt_reset( PalmBTStuff* btStuff );
 
 #ifdef DEBUG
 static const char* btErrToStr( Err err );
@@ -130,10 +138,14 @@ palm_bt_init( PalmAppGlobals* globals, DataCb cb )
 {
     PalmBTStuff* btStuff;
 
-    btStuff = pbt_checkInit( globals );
-    if ( !!btStuff ) {
-        btStuff->cb = cb;
+    btStuff = globals->btStuff;
+    if ( !btStuff ) {
+        btStuff = pbt_checkInit( globals );
+    } else {
+        pbt_reset( btStuff );
     }
+
+    btStuff->cb = cb;
     return errNone;
 } /* palm_bt_init */
 
@@ -247,18 +259,19 @@ pbt_send_pending( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 {
     Err err;
     LOG_FUNC();
-    if ( btStuff->sendPending && !btStuff->sendInProgress ) {
+    if ( btStuff->vol.sendPending && !btStuff->vol.sendInProgress ) {
         if ( btStuff->dataSocket != SOCK_INVAL ) {
-            if ( btStuff->lenOut > 0 ) { /* hack: zero-len send to cause connect */
+            /* hack: zero-len send to cause connect */
+            if ( btStuff->vol.lenOut > 0 ) {
                 CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
                           btStuff->dataSocket, 
-                          btStuff->bufOut, btStuff->lenOut );
+                          btStuff->vol.bufOut, btStuff->vol.lenOut );
                 if ( err == errNone ) {
                     // clear on receipt of btLibSocketEventSendComplete 
-                    btStuff->sendInProgress = XP_TRUE;
+                    btStuff->vol.sendInProgress = XP_TRUE;
                 }
             } else {
-                btStuff->sendPending = XP_FALSE;
+                btStuff->vol.sendPending = XP_FALSE;
             }
         } else {
             /* No data socket? */
@@ -305,13 +318,13 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
             pbt_setup_slave( btStuff, addr );
         }
 
-        if ( !btStuff->sendInProgress ) {
-            if ( len > sizeof( btStuff->bufOut ) ) {
-                len = sizeof( btStuff->bufOut );
+        if ( !btStuff->vol.sendInProgress ) {
+            if ( len > sizeof( btStuff->vol.bufOut ) ) {
+                len = sizeof( btStuff->vol.bufOut );
             }
-            XP_MEMCPY( btStuff->bufOut, buf, len );
-            btStuff->lenOut = len;
-            btStuff->sendPending = XP_TRUE;            
+            XP_MEMCPY( btStuff->vol.bufOut, buf, len );
+            btStuff->vol.lenOut = len;
+            btStuff->vol.sendPending = XP_TRUE;            
 
             pbt_send_pending( btStuff, addr );
             nSent = len;
@@ -415,48 +428,58 @@ pbt_do_work( PalmBTStuff* btStuff )
 
     LOG_FUNC();
 
-    evt = btStuff->evtQueue[btStuff->queueCur++];
-    btStuff->queueCur %= PBT_MAX_EVTS;
+    evt = btStuff->vol.evtQueue[btStuff->vol.queueCur++];
+    btStuff->vol.queueCur %= PBT_MAX_EVTS;
 
     switch( evt ) {
     case PBT_EVENT_CONNECT_ACL:
-         /* sends btLibManagementEventACLConnectOutbound */
-        CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
-                  &btStuff->u.slave.masterAddr );
+        if ( btStuff->connState == PBTST_NONE ) {
+            /* sends btLibManagementEventACLConnectOutbound */
+            CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
+                      &btStuff->u.slave.masterAddr );
+            btStuff->connState = PBTST_ACL_CONNECTING;
+        } else {
+            err = btLibErrAlreadyConnected;
+        }
         if ( btLibErrAlreadyConnected == err ) {
             pbt_postpone( btStuff, PBT_EVENT_CONNECT_L2C );
         }
         break;
 
     case PBT_EVENT_CONNECT_L2C:
-        XP_ASSERT( SOCK_INVAL == btStuff->dataSocket );
-        CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
-                  &btStuff->dataSocket, 
-                  l2SocketCallback, (UInt32)btStuff, 
-                  btLibL2CapProtocol );
+        if ( btStuff->connState == PBTST_ACL_CONNECTED ) {
+            XP_ASSERT( SOCK_INVAL == btStuff->dataSocket ); /* firing */
+            CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
+                      &btStuff->dataSocket, 
+                      l2SocketCallback, (UInt32)btStuff, 
+                      btLibL2CapProtocol );
 
-        if ( btLibErrNoError == err ) {
-            BtLibSocketConnectInfoType connInfo;
-            connInfo.data.L2Cap.remotePsm = XW_PSM;
-            connInfo.data.L2Cap.localMtu = L2CAPSOCKETMTU; 
-            connInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
-            connInfo.remoteDeviceP = &btStuff->u.slave.masterAddr;
+            if ( btLibErrNoError == err ) {
+                BtLibSocketConnectInfoType connInfo;
+                connInfo.data.L2Cap.remotePsm = XW_PSM;
+                connInfo.data.L2Cap.localMtu = L2CAPSOCKETMTU; 
+                connInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
+                connInfo.remoteDeviceP = &btStuff->u.slave.masterAddr;
 	
-            /* sends btLibSocketEventConnectedOutbound */
-            CALL_ERR( err, BtLibSocketConnect, btStuff->btLibRefNum, 
-                      btStuff->dataSocket, &connInfo );
-        } else {
-            btStuff->dataSocket = SOCK_INVAL;
+                /* sends btLibSocketEventConnectedOutbound */
+                CALL_ERR( err, BtLibSocketConnect, btStuff->btLibRefNum, 
+                          btStuff->dataSocket, &connInfo );
+                btStuff->connState = PBTST_L2C_CONNECTING;
+            } else {
+                btStuff->dataSocket = SOCK_INVAL;
+            }
         }
 
         break;
 
     case PBT_EVENT_GOTDATA:
-        if ( !!btStuff->cb ) {
-            (*btStuff->cb)( btStuff->globals, btStuff->bufIn, btStuff->lenIn );
-        }
-        btStuff->lenIn = 0;     /* ready for next packet */
+        pbt_processIncoming( btStuff );
         break;
+
+    case PBT_EVENT_TRYSEND:
+        pbt_send_pending( btStuff, NULL );
+        break;
+
     default:
         XP_ASSERT( 0 );
     }
@@ -471,9 +494,57 @@ pbt_postpone( PalmBTStuff* btStuff, PBT_EVENT evt )
     XP_LOGF( "%s(%s)", __FUNCTION__, evtToStr(evt) );
     EvtAddEventToQueue( &eventToPost );
 
-    btStuff->evtQueue[ btStuff->queueNext++ ] = evt;
-    btStuff->queueNext %= PBT_MAX_EVTS;
-    XP_ASSERT( btStuff->queueNext != btStuff->queueCur );
+    btStuff->vol.evtQueue[ btStuff->vol.queueNext++ ] = evt;
+    btStuff->vol.queueNext %= PBT_MAX_EVTS;
+    XP_ASSERT( btStuff->vol.queueNext != btStuff->vol.queueCur );
+}
+
+static void
+pbt_enqueIncoming( PalmBTStuff* btStuff, XP_U8* indata, XP_U16 inlen )
+{
+    XP_U16 i;
+    XP_U16 total = 0;
+
+    for ( i = 0; i < MAX_INCOMING; ++i ) {
+        XP_U16 len = btStuff->vol.lens[i];
+        if ( !len ) {
+            break;
+        }
+        total += len;
+    }
+
+    if ( (i < MAX_INCOMING) && 
+         ((total + inlen) < sizeof(btStuff->vol.bufIn)) ) {
+        btStuff->vol.lens[i] = inlen;
+        XP_MEMCPY( &btStuff->vol.bufIn[total], indata, inlen );
+        pbt_postpone( btStuff, PBT_EVENT_GOTDATA );
+    } else {
+        XP_LOGF( "%s: dropping packet of len %d", __FUNCTION__, inlen );
+    }
+} /* pbt_enqueIncoming */
+
+static void
+pbt_processIncoming( PalmBTStuff* btStuff )
+{
+    XP_U16 len = btStuff->vol.lens[0];
+    XP_ASSERT( !!btStuff->cb );
+    if ( !!btStuff->cb ) {
+        (*btStuff->cb)( btStuff->globals, btStuff->vol.bufIn, len );
+
+        /* slide the remaining packets down */
+        XP_MEMCPY( &btStuff->vol.lens[0], &btStuff->vol.lens[1], 
+                   sizeof(btStuff->vol.lens) - sizeof(btStuff->vol.lens[0]) );
+        btStuff->vol.lens[MAX_INCOMING-1] = 0; /* be safe */
+        XP_MEMCPY( btStuff->vol.bufIn, btStuff->vol.bufIn + len, 
+                   sizeof(btStuff->vol.bufIn) - len );
+    }
+} /* pbt_processIncoming */
+
+static void
+pbt_reset( PalmBTStuff* btStuff )
+{
+    LOG_FUNC();
+    XP_MEMSET( &btStuff->vol, 0, sizeof(btStuff->vol) );
 }
 
 static Err
@@ -514,15 +585,19 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
         XP_LOGF( "null addr" );
     }
 
-    if ( !btStuff->u.slave.addrSet && !!addr ) {
-
-        /* Our xp type better be big enough */
-        XP_ASSERT( sizeof(addr->u.bt.btAddr)
-                   >= sizeof(btStuff->u.slave.masterAddr) );
-        XP_MEMCPY( &btStuff->u.slave.masterAddr, addr->u.bt.btAddr, 
-                   sizeof(btStuff->u.slave.masterAddr) );
-
-        btStuff->u.slave.addrSet = XP_TRUE;
+    if ( btStuff->connState == PBTST_ACL_CONNECTED ) {
+        pbt_postpone( btStuff, PBT_EVENT_CONNECT_L2C );
+    } else if ( btStuff->connState == PBTST_L2C_CONNECTED ) {
+        /* do nothing */
+    } else if ( !!addr || btStuff->u.slave.addrSet ) {
+        if ( !btStuff->u.slave.addrSet ) {
+            /* Our xp type better be big enough */
+            XP_ASSERT( sizeof(addr->u.bt.btAddr)
+                       >= sizeof(btStuff->u.slave.masterAddr) );
+            XP_MEMCPY( &btStuff->u.slave.masterAddr, addr->u.bt.btAddr, 
+                       sizeof(btStuff->u.slave.masterAddr) );
+            btStuff->u.slave.addrSet = XP_TRUE;
+        }
 
         pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
     } else {
@@ -541,11 +616,15 @@ pbt_takedown_slave( PalmBTStuff* btStuff )
         CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum,  
                   btStuff->dataSocket );
         /* fallthru */
+    case PBTST_L2C_CONNECTING:
     case PBTST_ACL_CONNECTED:
-        CALL_ERR( err, BtLibLinkDisconnect,
-                  btStuff->btLibRefNum,
-                  &btStuff->u.slave.masterAddr );
+        if ( PBT_SLAVE == btStuff->setState ) {
+            CALL_ERR( err, BtLibLinkDisconnect,
+                      btStuff->btLibRefNum,
+                      &btStuff->u.slave.masterAddr );
+        }
         /* fallthru */
+    case PBTST_ACL_CONNECTING:
     case PBTST_NONE:
         btStuff->connState = PBTST_NONE;
     }
@@ -591,10 +670,12 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
     BtLibSocketEventEnum event = sEvent->event;
     Err err;
 
-    XP_LOGF( "%s(%s)", __FUNCTION__, btEvtToStr(event) );
+    XP_LOGF( "%s(%s); status:%s", __FUNCTION__, btEvtToStr(event),
+             btErrToStr(sEvent->status) );
 
     switch( event ) {
     case btLibSocketEventConnectRequest: 
+        /* sends btLibSocketEventConnectedInbound */
         CALL_ERR( err, BtLibSocketRespondToConnection, btStuff->btLibRefNum,  
                   sEvent->socket, true );
         break;
@@ -602,38 +683,30 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         if ( sEvent->status == errNone ) {
             btStuff->dataSocket = sEvent->eventData.newSocket;
             XP_LOGF( "we have a data socket!!!" );
-            pbt_send_pending( btStuff, NULL );
-        } else {
-            XP_LOGF( "%s: status = %d(%s)", __FUNCTION__, 
-                     sEvent->status, btErrToStr(sEvent->status) );
+            pbt_postpone( btStuff, PBT_EVENT_TRYSEND );
         }
         break;
     case btLibSocketEventConnectedOutbound:
         if ( errNone == sEvent->status ) {
             btStuff->connState = PBTST_L2C_CONNECTED;
-            pbt_send_pending( btStuff, NULL );
-        } else {
-            XP_LOGF( "%s: status = %d(%s)", __FUNCTION__, 
-                     sEvent->status, btErrToStr(sEvent->status) );
+            pbt_postpone( btStuff, PBT_EVENT_TRYSEND );
         }
         break;
     case btLibSocketEventData:
         XP_ASSERT( sEvent->status == errNone );
         XP_ASSERT( sEvent->socket == btStuff->dataSocket );
-        XP_ASSERT( !!btStuff->cb );
-
-        XP_ASSERT( 0 == btStuff->lenIn );
-        if ( btStuff->lenIn == 0 ) {
-            btStuff->lenIn = sEvent->eventData.data.dataLen;
-            XP_ASSERT( btStuff->lenIn <= sizeof(btStuff->bufIn) );
-            XP_MEMCPY( btStuff->bufIn, sEvent->eventData.data.data, 
-                       btStuff->lenIn );
-            pbt_postpone( btStuff, PBT_EVENT_GOTDATA );
-        }
+        pbt_enqueIncoming( btStuff, sEvent->eventData.data.data, 
+                           sEvent->eventData.data.dataLen );
         break;
 
     case btLibSocketEventSendComplete:
-        btStuff->sendInProgress = XP_FALSE;
+        btStuff->vol.sendInProgress = XP_FALSE;
+        break;
+
+    case btLibSocketEventDisconnected:
+        XP_ASSERT( sEvent->socket == btStuff->dataSocket );
+        btStuff->dataSocket = SOCK_INVAL;
+        btStuff->connState = PBTST_ACL_CONNECTED;
         break;
 
     default:
@@ -668,6 +741,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
 
     case btLibManagementEventACLConnectInbound:
         if ( btLibErrNoError == mEvent->status ) {
+            btStuff->connState = PBTST_ACL_CONNECTED;
             XP_LOGF( "successful ACL connection!" );
         }
         break;
@@ -694,6 +768,7 @@ evtToStr(PBT_EVENT evt)
         CASESTR(PBT_EVENT_CONNECT_ACL);
         CASESTR(PBT_EVENT_CONNECT_L2C);
         CASESTR(PBT_EVENT_GOTDATA);
+        CASESTR(PBT_EVENT_TRYSEND);
     default:
         XP_ASSERT(0);
         return "";
