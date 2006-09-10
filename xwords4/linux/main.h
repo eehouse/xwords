@@ -81,9 +81,14 @@ typedef struct LaunchParams {
 
 } LaunchParams;
 
-typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock );
+typedef struct CommonGlobals CommonGlobals;
 
-typedef struct CommonGlobals {
+typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock );
+typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
+typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
+                                CommonGlobals* globals );
+
+struct CommonGlobals {
     LaunchParams* params;
 
     XWGame game;
@@ -91,6 +96,11 @@ typedef struct CommonGlobals {
 
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
+
+    /* Allow listener sockets to be installed in either gtk or ncurses'
+     * polling mechanism.*/
+    AddAcceptorFunc addAcceptor;
+    Acceptor acceptor;
 
     int socket;                 /* either relay or bt */
 
@@ -107,6 +117,6 @@ typedef struct CommonGlobals {
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
 
     MPSLOT
-} CommonGlobals;
+};
 
 #endif

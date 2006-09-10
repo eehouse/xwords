@@ -26,14 +26,8 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
 
-/* #define XW_USE_THREADS */
-#ifdef XW_USE_THREADS
-# include <pthread.h>
-#endif
-
 #include "linuxbt.h"
 #include "comms.h"
-
 
 #define MAX_CLIENTS 3
 
@@ -44,14 +38,11 @@ typedef struct BtaddrSockMap {
 
 typedef struct LinBtStuff {
     CommonGlobals* globals;
-    int listener;               /* socket */
 
     union {
         struct {
-#ifdef XW_USE_THREADS
-            pthread_t acceptThread;
-#endif
             BtaddrSockMap socks[MAX_CLIENTS];
+            int listener;               /* socket */
             XP_U16 nSocks;
             XP_Bool threadDie;
         } master;
@@ -97,7 +88,7 @@ lbt_removeSock( LinBtStuff* btStuff, int sock )
         }
     }
     XP_ASSERT( i < MAX_CLIENTS );
-} /* lbt_addSock */
+} /* lbt_removeSock */
 
 static LinBtStuff*
 lbt_make( MPFORMAL XP_Bool amMaster )
@@ -147,79 +138,55 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
     }
 } /* lbt_connectSocket */
 
-static void
-waitForOne( LinBtStuff* btStuff )
+static XP_Bool
+lbt_accept( int listener, void* ctxt )
 {
-    int sock;
+    CommonGlobals* globals = (CommonGlobals*)ctxt;
+    LinBtStuff* btStuff = globals->u.bt.btStuff;
+    int sock = -1;
     struct sockaddr_l2 inaddr;
     socklen_t slen;
+    XP_Bool success;
 
-    // accept one connection
-    XP_LOGF( "%s: blocking on accept", __FUNCTION__ );
+    LOG_FUNC();
+
+    XP_LOGF( "%s: calling accept", __FUNCTION__ );
     slen = sizeof( inaddr );
-    sock = accept( btStuff->listener, (struct sockaddr *)&inaddr, &slen );
+    XP_ASSERT( listener == btStuff->u.master.listener );
+    sock = accept( listener, (struct sockaddr *)&inaddr, &slen );
     XP_LOGF( "%s: accept returned; sock = %d", __FUNCTION__, sock );
-
-    {
-        char buf[18];
-        (void)ba2str( &inaddr.l2_bdaddr, buf );
-        XP_LOGF( "got connection from %s", buf );
-    }
-
-    if ( sock >= 0 ) {
-        CommonGlobals* globals = btStuff->globals;
+    
+    success = sock >= 0;
+    if ( success ) {
         lbt_addSock( btStuff, &inaddr.l2_bdaddr, sock );
-        (*globals->socketChanged)( globals->socketChangedClosure,
+        (*globals->socketChanged)( globals->socketChangedClosure, 
                                    -1, sock );
     } else {
-        XP_LOGF( "%s: accept failed with %s", __FUNCTION__,
-                 strerror(errno) );
+        XP_LOGF( "%s: accept->%s", __FUNCTION__, strerror(errno) );
     }
-} /* waitForOne */
-
-#ifdef XW_USE_THREADS
-static void*
-lbt_acceptThreadProc( void* arg )
-{
-    CommonGlobals* globals = (CommonGlobals*)arg;
-    LinBtStuff* btStuff = globals->u.bt.btStuff;
-
-    while ( !btStuff->u.master.threadDie ) {
-        waitForOne( btStuff );
-    }
-
-    LOG_RETURN_VOID();
-    return NULL;
-} /* acceptThreadProc */
-#endif
+    return success;
+} /* lbt_accept */
 
 static void
-lbt_waitConnection( CommonGlobals* globals )
+lbt_listenerSetup( CommonGlobals* globals )
 {
     LinBtStuff* btStuff = globals->u.bt.btStuff;
     struct sockaddr_l2 saddr;
+    int listener;
 
-    btStuff->listener = socket( AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP );
+    listener = socket( AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP );
+    btStuff->u.master.listener = listener;
 
     XP_MEMSET( &saddr, 0, sizeof(saddr) );
     saddr.l2_family = AF_BLUETOOTH;
     saddr.l2_bdaddr = *BDADDR_ANY;
     saddr.l2_psm = htobs( XW_PSM );
-    bind( btStuff->listener, (struct sockaddr *)&saddr, sizeof(saddr) );
+    bind( listener, (struct sockaddr *)&saddr, sizeof(saddr) );
 
-    listen( btStuff->listener, MAX_CLIENTS );
+    listen( listener, MAX_CLIENTS );
 
-#ifdef XW_USE_THREADS
-    int pthread_err;
-    btStuff->u.master.threadDie = XP_FALSE;
-    pthread_err = pthread_create( &btStuff->u.master.acceptThread, 
-                                  NULL, lbt_acceptThreadProc, globals );
-    XP_ASSERT( 0 == pthread_err );
-    pthread_detach( btStuff->u.master.acceptThread );
-#else
-    waitForOne( btStuff );    
-#endif
-}
+    (*globals->addAcceptor)( listener, lbt_accept, globals );
+} /* lbt_listenerSetup */
 
 void
 linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
@@ -232,7 +199,7 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
         globals->u.bt.btStuff = btStuff;
 
         if ( amMaster ) {
-            lbt_waitConnection( globals );
+            lbt_listenerSetup( globals );
         }
     }
 } /* linux_bt_open */
@@ -244,15 +211,7 @@ linux_bt_close( CommonGlobals* globals )
 
     if ( !!btStuff ) {
         if ( btStuff->amMaster ) {
-#ifdef XW_USE_THREADS
-            int ret;
-            btStuff->u.master.threadDie = XP_TRUE;
-            ret = pthread_join( btStuff->u.master.acceptThread, NULL );
-            if ( 0 != ret ) {
-                XP_LOGF( "pthread_join=>%s", strerror(errno) );
-            }
-#endif
-            close( btStuff->listener );
+            close( btStuff->u.master.listener );
         }
         XP_FREE( globals->params->util->mpool, btStuff );
         globals->u.bt.btStuff = NULL;
@@ -292,9 +251,8 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
         } else {
             XP_LOGF( "%s: socket still not set", __FUNCTION__ );
         }
-
-        LOG_RETURNF( "%d", nSent );
     }
+    LOG_RETURNF( "%d", nSent );
     return nSent;
 } /* linux_bt_send */
 
@@ -318,7 +276,9 @@ void
 linux_bt_socketclosed( CommonGlobals* globals, int sock )
 {
     LinBtStuff* btStuff = globals->u.bt.btStuff;
-    lbt_removeSock( btStuff, sock );
+    if ( btStuff->amMaster ) {
+        lbt_removeSock( btStuff, sock );
+    }
 }
 
 #endif /* XWFEATURE_BLUETOOTH */
