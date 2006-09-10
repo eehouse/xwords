@@ -1569,6 +1569,41 @@ gtk_socket_changed( void* closure, int oldSock, int newSock )
     globals->cGlobals.socket = newSock;
 }
 
+static gboolean
+acceptorInput( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    gboolean keepSource;
+    CommonGlobals* globals = (CommonGlobals*)data;
+    LOG_FUNC();
+
+    if ( (condition & G_IO_IN) != 0 ) {
+        int listener = g_io_channel_unix_get_fd( source );
+        keepSource = (*globals->acceptor)( listener, data );
+    } else {
+        keepSource = FALSE;
+    }
+
+    return keepSource;
+}
+
+static void
+gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals )
+{
+    GIOChannel* channel;
+    guint result;
+
+    LOG_FUNC();
+
+    XP_ASSERT( !globals->acceptor || (func == globals->acceptor) );
+    globals->acceptor = func;
+
+    channel = g_io_channel_unix_new( listener );
+    result = g_io_add_watch( channel,
+                             G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
+                             acceptorInput, globals );
+    XP_LOGF( "%s: g_io_add_watch(%d) => %d", __FUNCTION__, listener, result );
+}
+
 static void
 sendOnClose( XWStreamCtxt* stream, void* closure )
 {
@@ -1607,6 +1642,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 
     globals.cGlobals.socketChanged = gtk_socket_changed;
     globals.cGlobals.socketChangedClosure = &globals;
+    globals.cGlobals.addAcceptor = gtk_socket_acceptor;
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;
