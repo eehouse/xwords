@@ -27,7 +27,7 @@
 typedef enum {
     XWSTATE_NONE,
     XWSTATE_BEGIN,
-    XWSTATE_POOL_INITED,
+    __UNUSED1,              /*XWSTATE_POOL_INITED,*/
     XWSTATE_NEED_SHOWSCORE,	/* client-only */
     XWSTATE_WAITING_ALL_REG,	/* includes waiting for dict from server */
     XWSTATE_RECEIVED_ALL_REG,	/* includes waiting for dict from server */
