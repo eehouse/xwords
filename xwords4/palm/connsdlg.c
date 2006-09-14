@@ -81,7 +81,7 @@ ctlsFromState( PalmAppGlobals* globals, ConnsDlgState* state )
         if ( '\0' == addr->u.bt.hostName[0] ) {
             XP_BtAddrStr tmp;
             palm_bt_addrString( globals, &addr->u.bt.btAddr, &tmp );
-            setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, tmp );
+            setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, tmp.chars );
         } else {
             setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName );
         }
@@ -111,9 +111,9 @@ stateFromCtls( ConnsDlgState* state )
         strFromField( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName,
                       sizeof(addr->u.bt.hostName) );
         /* Not exactly from a control... */
-        XP_MEMCPY( &addr->u.bt.btAddr, state->btAddr, 
+        XP_MEMCPY( &addr->u.bt.btAddr, &state->btAddr, 
                    sizeof(addr->u.bt.btAddr) );
-        LOG_HEX( addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __FUNCTION__ );
+        LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __FUNCTION__ );
 #endif
     }
 
@@ -222,8 +222,8 @@ browseForDeviceName( PalmAppGlobals* globals, ConnsDlgState* state )
     XP_BtAddr btAddr;
     if ( palm_bt_browse_device( globals, &btAddr, buf, sizeof( buf ) ) ) {
         setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, buf );
-        XP_MEMCPY( state->btAddr, &btAddr, sizeof(state->btAddr) );
-        LOG_HEX( state->btAddr, sizeof(state->btAddr), __FUNCTION__ );
+        XP_MEMCPY( &state->btAddr, &btAddr, sizeof(state->btAddr) );
+        LOG_HEX( &state->btAddr, sizeof(state->btAddr), __FUNCTION__ );
     }
 } /* browseForDeviceName */
 #endif
@@ -256,7 +256,7 @@ ConnsFormHandleEvent( EventPtr event )
         state->addr = 
             (CommsAddrRec*)globals->dlgParams[CONNS_PARAM_ADDR_INDEX];
         state->isNewGame = globals->isNewGame;
-        XP_MEMCPY( state->btAddr, &state->addr->u.bt.btAddr, 
+        XP_MEMCPY( &state->btAddr, &state->addr->u.bt.btAddr, 
                    sizeof(state->btAddr) );
 
         /* setup connection popup */
