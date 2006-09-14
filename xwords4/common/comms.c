@@ -84,7 +84,7 @@ struct CommsCtxt {
 
     /* The following fields, down to isServer, are only used if BEYOND_IR is
        defined, but I'm leaving them in here so apps built both ways can open
-       each saved games files.*/
+       each other's saved games files.*/
     CommsAddrRec addr;
 
     /* Stuff for relays */
@@ -117,7 +117,8 @@ struct CommsCtxt {
  ****************************************************************************/
 static AddressRecord* rememberChannelAddress( CommsCtxt* comms, 
                                               XP_PlayerAddr channelNo, 
-                                              XWHostID id, CommsAddrRec* addr );
+                                              XWHostID id, 
+                                              const CommsAddrRec* addr );
 static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
                                  CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, 
@@ -316,7 +317,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgReceived = stream_getU16( stream );
         rec->channelNo = stream_getU16( stream );
-        rec->hostID = stream_getU8( stream );
+        rec->hostID = stream_getU8( stream );  /* unneeded unless RELAY */
 
 #ifdef DEBUG
         rec->lastACK = stream_getU16( stream );
@@ -439,7 +440,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putU16( stream, (XP_U16)rec->nextMsgID );
         stream_putU16( stream, (XP_U16)rec->lastMsgReceived );
         stream_putU16( stream, rec->channelNo );
-        stream_putU8( stream, rec->hostID );
+        stream_putU8( stream, rec->hostID ); /* unneeded unless RELAY */
 #ifdef DEBUG
         stream_putU16( stream, rec->lastACK );
         stream_putU16( stream, rec->nUniqueBytes );
@@ -821,7 +822,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
  */
 XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
-                           CommsAddrRec* addr )
+                           const CommsAddrRec* addr )
 {
     XP_U16 channelNo;
     XP_U32 connID;
@@ -829,7 +830,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     MsgID lastMsgRcd;
     XP_Bool validMessage = XP_FALSE;
     AddressRecord* recs = (AddressRecord*)NULL;
-    XWHostID senderID;
+    XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
     XP_Bool channelWas0 = XP_FALSE;
 
@@ -990,7 +991,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 
 static AddressRecord*
 rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
-                        XWHostID hostID, CommsAddrRec* addr )
+                        XWHostID hostID, const CommsAddrRec* addr )
 {
     AddressRecord* recs = NULL;
     recs = getRecordFor( comms, channelNo );
