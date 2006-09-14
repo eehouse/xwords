@@ -32,6 +32,9 @@
 #include "palmmain.h"
 #include "comtypes.h"
 
+#define MEMO "MemoDB"
+#define LOGFILE "XWLogfile"
+
 /*****************************************************************************
  * This is meant to be replaced by an actual beep....
  ****************************************************************************/
@@ -457,7 +460,6 @@ doNothing( EventPtr event )
 #endif
 
 #ifdef DEBUG
-
 void
 logEvent( eventsEnum eType )
 {
@@ -660,9 +662,43 @@ logToDB( const char* buf, const char* dbName, XP_U32 dbCreator, XP_U32 dbType )
 } /* logToDB */
 
 static void
+deleteDB( const char* dbName ) 
+{
+    LocalID dbID;
+ 	dbID = DmFindDatabase( CARD_0, dbName );
+    if ( 0 != dbID ) {
+		Err err = DmDeleteDatabase( CARD_0, dbID );
+        XP_ASSERT( errNone == err );
+    } else {
+        XP_WARNF( "%s(%s): got back 0", __FUNCTION__, dbName );
+    }
+} /* deleteDB */
+
+void
+PalmClearLogs( void )
+{
+    deleteDB( MEMO );
+    deleteDB( LOGFILE );
+}
+
+static void
 logToMemo( const char* buf )
 {
-    logToDB( buf, "MemoDB", 'memo', 'DATA' );
+    UInt32 val = 0L;
+    Err err = FtrGet( APPID, LOG_MEMO_FEATURE, (UInt32*)&val );
+    if ( errNone == err && val != 0 ) {
+        logToDB( buf, MEMO, 'memo', 'DATA' );
+    }
+}
+
+static void
+logToFile( const char* buf )
+{
+    UInt32 val = 0L;
+    Err err = FtrGet( APPID, LOG_FILE_FEATURE, (UInt32*)&val );
+    if ( errNone == err && val != 0 ) {
+        logToDB( buf, LOGFILE, 'XWLG', 'TEXT' );
+    }
 }
 
 void
@@ -676,6 +712,7 @@ palm_debugf( char* format, ...)
     va_end( ap );
 
     logToMemo( buf );
+    logToFile( buf );
 } /* debugf */
 
 /* if -0 isn't passed to compiler it wants to find this!!! */
@@ -692,33 +729,7 @@ palm_logf( char* format, ... )
     va_end( ap );
 
     logToMemo( buf );
-    logToDB( buf, "XWLogfile", 'XWLG', 'TEXT' );
+    logToFile( buf );
 } /* palm_logf */
-
-#define ROWSIZE 8
-
-void
-palm_logmem( unsigned char* ptr, int nBytes )
-{
-    XP_U16 nRows = (nBytes + ROWSIZE-1) / ROWSIZE;
-    char buf[(ROWSIZE*3)+5];
-    char* bp;
-    unsigned char* end = ptr + nBytes;
-    XP_U16 i, j;
-
-    for ( i = 0; i < nRows; ++i ) {
-        bp = buf;
-        bp += StrPrintF( (Char*)buf, "%3x:", i * ROWSIZE );
-
-        for ( j = 0; j < ROWSIZE && ptr < end; ++j ) {
-            char sbuf[6];
-            StrPrintF( sbuf, "%x ", (XP_U16)*ptr++ );
-            StrCat( buf, &sbuf[2] );
-            bp += 3;
-        }
-
-        logToMemo( buf );
-    }
-}
 
 #endif /* DEBUG */
