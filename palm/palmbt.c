@@ -32,12 +32,12 @@
 typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_SetState;
 
 typedef enum {
-    PBT_EVENT_NONE
-    , PBT_EVENT_CONNECT_ACL
-    , PBT_EVENT_CONNECT_L2C
-    , PBT_EVENT_GOTDATA
-    , PBT_EVENT_TRYSEND
-} PBT_EVENT;
+    PBT_ACT_NONE
+    , PBT_ACT_CONNECT_ACL
+    , PBT_ACT_CONNECT_L2C
+    , PBT_ACT_GOTDATA
+    , PBT_ACT_TRYSEND
+} PBT_ACTION;
 
 typedef enum {
     PBTST_NONE
@@ -47,7 +47,7 @@ typedef enum {
     , PBTST_L2C_CONNECTED
 } PBT_STATE;
 
-#define PBT_MAX_EVTS 4
+#define PBT_MAX_ACTS 4
 #define HASWORK(s)  ((s)->vol.queueCur != (s)->vol.queueNext)
 #define MAX_INCOMING 4
 
@@ -65,7 +65,7 @@ typedef struct PalmBTStuff {
 
         XP_U16 queueCur;
         XP_U16 queueNext;
-        PBT_EVENT evtQueue[PBT_MAX_EVTS];
+        PBT_ACTION actQueue[PBT_MAX_ACTS];
 
         XP_Bool sendInProgress;
         XP_Bool sendPending;
@@ -112,7 +112,7 @@ static void pbt_takedown_slave( PalmBTStuff* btStuff );
 static void pbt_setup_master( PalmBTStuff* btStuff );
 static void pbt_takedown_master( PalmBTStuff* btStuff );
 static void pbt_do_work( PalmBTStuff* btStuff );
-static void pbt_postpone( PalmBTStuff* btStuff, PBT_EVENT evt );
+static void pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act );
 static void pbt_enqueIncoming( PalmBTStuff* btStuff, XP_U8* data, XP_U16 len );
 static void pbt_processIncoming( PalmBTStuff* btStuff );
 static void pbt_reset( PalmBTStuff* btStuff );
@@ -127,7 +127,7 @@ static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
 static const char* btErrToStr( Err err );
 static const char* btEvtToStr( BtLibSocketEventEnum evt );
 static const char* mgmtEvtToStr( BtLibManagementEventEnum event );
-static const char* evtToStr(PBT_EVENT evt);
+static const char* actToStr(PBT_ACTION act);
 static const char* stateToStr(PBT_STATE st);
 static const char* connEnumToStr( BtLibAccessibleModeEnum mode );
 
@@ -135,7 +135,7 @@ static const char* connEnumToStr( BtLibAccessibleModeEnum mode );
 # define btErrToStr( err ) ""
 # define btEvtToStr( evt ) ""
 # define mgmtEvtToStr( evt ) ""
-# define evtToStr(evt) ""
+# define actToStr(act) ""
 #endif
 
 /* callbacks */
@@ -434,17 +434,17 @@ pbt_takedown_master( PalmBTStuff* btStuff )
 static void
 pbt_do_work( PalmBTStuff* btStuff )
 {
-    PBT_EVENT evt;
+    PBT_ACTION act;
     Err err;
 
-    evt = btStuff->vol.evtQueue[btStuff->vol.queueCur++];
-    btStuff->vol.queueCur %= PBT_MAX_EVTS;
+    act = btStuff->vol.actQueue[btStuff->vol.queueCur++];
+    btStuff->vol.queueCur %= PBT_MAX_ACTS;
 
-    XP_LOGF( "%s: evt=%s; state=%s", __FUNCTION__, evtToStr(evt),
+    XP_LOGF( "%s: evt=%s; state=%s", __FUNCTION__, actToStr(act),
              stateToStr(GET_STATE(btStuff)) );
 
-    switch( evt ) {
-    case PBT_EVENT_CONNECT_ACL:
+    switch( act ) {
+    case PBT_ACT_CONNECT_ACL:
         if ( GET_STATE(btStuff) == PBTST_NONE ) {
             /* sends btLibManagementEventACLConnectOutbound */
             CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
@@ -454,11 +454,11 @@ pbt_do_work( PalmBTStuff* btStuff )
             err = btLibErrAlreadyConnected;
         }
         if ( btLibErrAlreadyConnected == err ) {
-            pbt_postpone( btStuff, PBT_EVENT_CONNECT_L2C );
+            pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
         }
         break;
 
-    case PBT_EVENT_CONNECT_L2C:
+    case PBT_ACT_CONNECT_L2C:
         if ( GET_STATE(btStuff) == PBTST_ACL_CONNECTED ) {
             XP_ASSERT( SOCK_INVAL == btStuff->dataSocket );
             CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
@@ -484,11 +484,11 @@ pbt_do_work( PalmBTStuff* btStuff )
 
         break;
 
-    case PBT_EVENT_GOTDATA:
+    case PBT_ACT_GOTDATA:
         pbt_processIncoming( btStuff );
         break;
 
-    case PBT_EVENT_TRYSEND:
+    case PBT_ACT_TRYSEND:
         pbt_send_pending( btStuff, NULL );
         break;
 
@@ -499,15 +499,15 @@ pbt_do_work( PalmBTStuff* btStuff )
 } /* pbt_do_work */
 
 static void
-pbt_postpone( PalmBTStuff* btStuff, PBT_EVENT evt )
+pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
 {
     EventType eventToPost = { .eType = nilEvent };
 
-    XP_LOGF( "%s(%s)", __FUNCTION__, evtToStr(evt) );
+    XP_LOGF( "%s(%s)", __FUNCTION__, actToStr(act) );
     EvtAddEventToQueue( &eventToPost );
 
-    btStuff->vol.evtQueue[ btStuff->vol.queueNext++ ] = evt;
-    btStuff->vol.queueNext %= PBT_MAX_EVTS;
+    btStuff->vol.actQueue[ btStuff->vol.queueNext++ ] = act;
+    btStuff->vol.queueNext %= PBT_MAX_ACTS;
     XP_ASSERT( btStuff->vol.queueNext != btStuff->vol.queueCur );
 }
 
@@ -529,7 +529,7 @@ pbt_enqueIncoming( PalmBTStuff* btStuff, XP_U8* indata, XP_U16 inlen )
          ((total + inlen) < sizeof(btStuff->vol.bufIn)) ) {
         btStuff->vol.lens[i] = inlen;
         XP_MEMCPY( &btStuff->vol.bufIn[total], indata, inlen );
-        pbt_postpone( btStuff, PBT_EVENT_GOTDATA );
+        pbt_postpone( btStuff, PBT_ACT_GOTDATA );
     } else {
         XP_LOGF( "%s: dropping packet of len %d", __FUNCTION__, inlen );
     }
@@ -603,7 +603,7 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
     }
 
     if ( GET_STATE(btStuff) == PBTST_NONE ) {
-        pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
+        pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
     } else {
         XP_LOGF( "%s: doing nothing", __FUNCTION__ );
     }
@@ -711,13 +711,13 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         if ( sEvent->status == errNone ) {
             btStuff->dataSocket = sEvent->eventData.newSocket;
             XP_LOGF( "we have a data socket!!!" );
-            pbt_postpone( btStuff, PBT_EVENT_TRYSEND );
+            pbt_postpone( btStuff, PBT_ACT_TRYSEND );
         }
         break;
     case btLibSocketEventConnectedOutbound:
         if ( errNone == sEvent->status ) {
             SET_STATE( btStuff, PBTST_L2C_CONNECTED );
-            pbt_postpone( btStuff, PBT_EVENT_TRYSEND );
+            pbt_postpone( btStuff, PBT_ACT_TRYSEND );
         }
         break;
     case btLibSocketEventData:
@@ -741,7 +741,7 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
          * trying to connect.... 
          */
         if ( PBT_SLAVE == btStuff->setState ) {
-            pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
+            pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
         }
         break;
 
@@ -775,10 +775,10 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         if ( btLibErrNoError == mEvent->status ) {
             SET_STATE( btStuff, PBTST_ACL_CONNECTED );
             XP_LOGF( "successful ACL connection to master!" );
-            pbt_postpone( btStuff, PBT_EVENT_CONNECT_L2C );
+            pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
         } else {
             SET_STATE(btStuff, PBTST_NONE);
-            pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
+            pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
         }
         break;
 
@@ -803,7 +803,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         SET_STATE(btStuff, PBTST_NONE);
         /* See comment at btLibSocketEventDisconnected */
         if ( PBT_SLAVE == btStuff->setState ) {
-            pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
+            pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
         }
         break;
     default:
@@ -833,19 +833,19 @@ stateToStr(PBT_STATE st)
 } /* stateToStr */
 
 static const char*
-evtToStr(PBT_EVENT evt)
+actToStr(PBT_ACTION act)
 {
-    switch( evt ) {
-        CASESTR(PBT_EVENT_NONE);
-        CASESTR(PBT_EVENT_CONNECT_ACL);
-        CASESTR(PBT_EVENT_CONNECT_L2C);
-        CASESTR(PBT_EVENT_GOTDATA);
-        CASESTR(PBT_EVENT_TRYSEND);
+    switch( act ) {
+        CASESTR(PBT_ACT_NONE);
+        CASESTR(PBT_ACT_CONNECT_ACL);
+        CASESTR(PBT_ACT_CONNECT_L2C);
+        CASESTR(PBT_ACT_GOTDATA);
+        CASESTR(PBT_ACT_TRYSEND);
     default:
         XP_ASSERT(0);
         return "";
     }
-} /* evtToStr */
+} /* actToStr */
 
 static const char*
 connEnumToStr( BtLibAccessibleModeEnum mode )
