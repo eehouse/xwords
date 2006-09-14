@@ -159,8 +159,9 @@ static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                   const CommsAddrRec* newAddr );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-static void btDataHandler( PalmAppGlobals* globals, const XP_U8* data, 
-                           XP_U16 len );
+static void btDataHandler( PalmAppGlobals* globals, 
+                           const CommsAddrRec* fromAddr, 
+                           const XP_U8* data, XP_U16 len );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -1934,6 +1935,16 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
 
 #ifdef DEBUG
 static void
+toggleBoolFtr( XP_U16 ftr )
+{
+    UInt32 val;
+    FtrGet( APPID, ftr, &val );
+    val = !val;
+    FtrSet( APPID, ftr, val );
+    XP_WARNF( "Turned %s.", val==0? "OFF" : "ON" );
+} /* toggleBoolFtr */
+
+static void
 askOnClose( XWStreamCtxt* stream, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
@@ -2445,23 +2456,16 @@ mainViewHandleEvent( EventPtr event )
 #endif
 
 #ifdef DEBUG	 
-        case XW_DEBUGSHOW_PULLDOWN_ID:
-            globals->gState.showDebugstrs = true;
+        case XW_LOGFILE_PULLDOWN_ID:
+            toggleBoolFtr( LOG_FILE_FEATURE );
             break;
-        case XW_DEBUGHIDE_PULLDOWN_ID:
-            globals->gState.showDebugstrs = false;
-            board_invalAll( globals->game.board );
-            draw = true;
+        case XW_LOGMEMO_PULLDOWN_ID:
+            toggleBoolFtr( LOG_MEMO_FEATURE );
             break;
 
-        case XW_DEBUGMEMO_PULLDOWN_ID:
-            globals->gState.logToMemo = true;
+        case XW_CLEARLOGS_PULLDOWN_ID:
+            PalmClearLogs();
             break;
-        case XW_DEBUGSCREEN_PULLDOWN_ID:
-            globals->gState.logToMemo = false;
-            break;
-
-
 # if 0
         case XW_RESET_PULLDOWN_ID: {
             EventType eventToPost;
@@ -3487,10 +3491,11 @@ palm_send( const XP_U8* buf, XP_U16 len,
 } /* palm_send */
 
 void
-checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream )
+checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr, 
+                 XWStreamCtxt* instream )
 {
     if ( comms_checkIncomingStream( globals->game.comms, 
-                                     instream, NULL ) ) {
+                                     instream, addr ) ) {
         globals->msgReceivedDraw = 
             server_receiveMessage( globals->game.server, instream );
         globals->msgReceivedDraw = true;
@@ -3546,13 +3551,14 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 #ifdef BEYOND_IR
 #ifdef XWFEATURE_BLUETOOTH
 static void
-btDataHandler( PalmAppGlobals* globals, const XP_U8* data, XP_U16 len )
+btDataHandler( PalmAppGlobals* globals, const CommsAddrRec* fromAddr, 
+               const XP_U8* data, XP_U16 len )
 {
     XWStreamCtxt* instream;
     LOG_FUNC();
     instream = makeSimpleStream( globals, NULL );
     stream_putBytes( instream, data, len );
-    checkAndDeliver( globals, instream );
+    checkAndDeliver( globals, fromAddr, instream );
     LOG_RETURN_VOID();
 }
 #endif

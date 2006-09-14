@@ -127,7 +127,6 @@ typedef struct XWords4PreferenceType {
     Boolean showColors;
 #ifdef DEBUG
     Boolean showDebugstrs;
-    Boolean logToMemo;
     Boolean reserved1;
     Boolean reserved2;
 #else
@@ -336,6 +335,9 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
 enum {
     PNOLET_STORE_FEATURE = 1    /* where FtrPtr to pnolet code lives */
     , GLOBALS_FEATURE           /* for passing globals to form handlers */
+    , LOG_FILE_FEATURE            /* these three for debugging */
+    , LOG_MEMO_FEATURE
+    , LOG_SCREEN_FEATURE
 #ifdef FEATURE_DUALCHOOSE
     , FEATURE_WANTS_68K         /* support for (pre-ship) ability to choose
                                    armlet or 68K */
@@ -377,7 +379,8 @@ void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index,
 XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
 Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
                  XP_S16 titleID );
-void checkAndDeliver( PalmAppGlobals* globals, XWStreamCtxt* instream );
+void checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr, 
+                      XWStreamCtxt* instream );
 
 #ifdef XW_TARGET_PNO
 # define READ_UNALIGNED16(n) read_unaligned16((unsigned char*)(n))
