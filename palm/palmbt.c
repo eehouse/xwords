@@ -71,15 +71,16 @@ typedef struct PalmBTStuff {
         XP_Bool sendPending;
     } vol;
 
+    /* peer's addr: passed in by UI in case of slave, received via connection
+       in case of master.  Piconet master will need an array of these. */
+    BtLibDeviceAddressType otherAddr;
     BtLibSocketRef dataSocket;
     PBT_SetState setState;
-
-    PBT_STATE connState;
+    PBT_STATE p_connState;
+    BtLibAccessibleModeEnum accState;
 
     union {
         struct {
-            BtLibDeviceAddressType masterAddr;
-            XP_Bool addrSet;
         } slave;
         struct {
             BtLibSocketRef listenSocket;
@@ -115,12 +116,20 @@ static void pbt_postpone( PalmBTStuff* btStuff, PBT_EVENT evt );
 static void pbt_enqueIncoming( PalmBTStuff* btStuff, XP_U8* data, XP_U16 len );
 static void pbt_processIncoming( PalmBTStuff* btStuff );
 static void pbt_reset( PalmBTStuff* btStuff );
+static void pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock );
+static void pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
+static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
+                          const char* whence );
+#define SET_STATE(b,s)  pbt_setstate((b),(s),__FUNCTION__)
+#define GET_STATE(b)    ((b)->p_connState)
 
 #ifdef DEBUG
 static const char* btErrToStr( Err err );
 static const char* btEvtToStr( BtLibSocketEventEnum evt );
 static const char* mgmtEvtToStr( BtLibManagementEventEnum event );
 static const char* evtToStr(PBT_EVENT evt);
+static const char* stateToStr(PBT_STATE st);
+static const char* connEnumToStr( BtLibAccessibleModeEnum mode );
 
 #else
 # define btErrToStr( err ) ""
@@ -204,7 +213,7 @@ palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr,
                     XP_BtAddrStr* str )
 {
     PalmBTStuff* btStuff = pbt_checkInit( globals );
-    *str[0] = '\0';
+    str->chars[0] = '\0';
     if ( !!btStuff ) {
         Err err;
         CALL_ERR( err, BtLibAddrBtdToA, btStuff->btLibRefNum, 
@@ -310,6 +319,8 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
         XP_Bool amMaster = comms_getIsServer( globals->game.comms );
         setState = amMaster? PBT_MASTER : PBT_SLAVE;
     }
+
+    pbt_checkAddress( btStuff, addr );
 
     if ( !!btStuff ) {
         if ( setState == PBT_MASTER ) {
@@ -426,18 +437,19 @@ pbt_do_work( PalmBTStuff* btStuff )
     PBT_EVENT evt;
     Err err;
 
-    LOG_FUNC();
-
     evt = btStuff->vol.evtQueue[btStuff->vol.queueCur++];
     btStuff->vol.queueCur %= PBT_MAX_EVTS;
 
+    XP_LOGF( "%s: evt=%s; state=%s", __FUNCTION__, evtToStr(evt),
+             stateToStr(GET_STATE(btStuff)) );
+
     switch( evt ) {
     case PBT_EVENT_CONNECT_ACL:
-        if ( btStuff->connState == PBTST_NONE ) {
+        if ( GET_STATE(btStuff) == PBTST_NONE ) {
             /* sends btLibManagementEventACLConnectOutbound */
             CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
-                      &btStuff->u.slave.masterAddr );
-            btStuff->connState = PBTST_ACL_CONNECTING;
+                      &btStuff->otherAddr );
+            SET_STATE( btStuff, PBTST_ACL_CONNECTING );
         } else {
             err = btLibErrAlreadyConnected;
         }
@@ -447,8 +459,8 @@ pbt_do_work( PalmBTStuff* btStuff )
         break;
 
     case PBT_EVENT_CONNECT_L2C:
-        if ( btStuff->connState == PBTST_ACL_CONNECTED ) {
-            XP_ASSERT( SOCK_INVAL == btStuff->dataSocket ); /* firing */
+        if ( GET_STATE(btStuff) == PBTST_ACL_CONNECTED ) {
+            XP_ASSERT( SOCK_INVAL == btStuff->dataSocket );
             CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
                       &btStuff->dataSocket, 
                       l2SocketCallback, (UInt32)btStuff, 
@@ -459,12 +471,12 @@ pbt_do_work( PalmBTStuff* btStuff )
                 connInfo.data.L2Cap.remotePsm = XW_PSM;
                 connInfo.data.L2Cap.localMtu = L2CAPSOCKETMTU; 
                 connInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
-                connInfo.remoteDeviceP = &btStuff->u.slave.masterAddr;
+                connInfo.remoteDeviceP = &btStuff->otherAddr;
 	
                 /* sends btLibSocketEventConnectedOutbound */
                 CALL_ERR( err, BtLibSocketConnect, btStuff->btLibRefNum, 
                           btStuff->dataSocket, &connInfo );
-                btStuff->connState = PBTST_L2C_CONNECTING;
+                SET_STATE( btStuff, PBTST_L2C_CONNECTING );
             } else {
                 btStuff->dataSocket = SOCK_INVAL;
             }
@@ -529,7 +541,12 @@ pbt_processIncoming( PalmBTStuff* btStuff )
     XP_U16 len = btStuff->vol.lens[0];
     XP_ASSERT( !!btStuff->cb );
     if ( !!btStuff->cb ) {
-        (*btStuff->cb)( btStuff->globals, btStuff->vol.bufIn, len );
+        CommsAddrRec fromAddr;
+        fromAddr.conType = COMMS_CONN_BT;
+        XP_MEMCPY( &fromAddr.u.bt.btAddr, &btStuff->otherAddr,
+                   sizeof(fromAddr.u.bt.btAddr) );
+
+        (*btStuff->cb)( btStuff->globals, &fromAddr, btStuff->vol.bufIn, len );
 
         /* slide the remaining packets down */
         XP_MEMCPY( &btStuff->vol.lens[0], &btStuff->vol.lens[1], 
@@ -566,7 +583,7 @@ bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr )
 static void
 pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 {
-    LOG_FUNC();
+    XP_LOGF( "%s; state=%s", __FUNCTION__, stateToStr(GET_STATE(btStuff)));
 
     if ( btStuff->setState == PBT_MASTER ) {
         pbt_takedown_master( btStuff );
@@ -585,20 +602,7 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
         XP_LOGF( "null addr" );
     }
 
-    if ( btStuff->connState == PBTST_ACL_CONNECTED ) {
-        pbt_postpone( btStuff, PBT_EVENT_CONNECT_L2C );
-    } else if ( btStuff->connState == PBTST_L2C_CONNECTED ) {
-        /* do nothing */
-    } else if ( !!addr || btStuff->u.slave.addrSet ) {
-        if ( !btStuff->u.slave.addrSet ) {
-            /* Our xp type better be big enough */
-            XP_ASSERT( sizeof(addr->u.bt.btAddr)
-                       >= sizeof(btStuff->u.slave.masterAddr) );
-            XP_MEMCPY( &btStuff->u.slave.masterAddr, addr->u.bt.btAddr, 
-                       sizeof(btStuff->u.slave.masterAddr) );
-            btStuff->u.slave.addrSet = XP_TRUE;
-        }
-
+    if ( GET_STATE(btStuff) == PBTST_NONE ) {
         pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
     } else {
         XP_LOGF( "%s: doing nothing", __FUNCTION__ );
@@ -609,26 +613,7 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 static void
 pbt_takedown_slave( PalmBTStuff* btStuff )
 {
-    Err err;
-    switch ( btStuff->connState ) {
-    case PBTST_L2C_CONNECTED:
-        XP_ASSERT ( SOCK_INVAL != btStuff->dataSocket );
-        CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum,  
-                  btStuff->dataSocket );
-        /* fallthru */
-    case PBTST_L2C_CONNECTING:
-    case PBTST_ACL_CONNECTED:
-        if ( PBT_SLAVE == btStuff->setState ) {
-            CALL_ERR( err, BtLibLinkDisconnect,
-                      btStuff->btLibRefNum,
-                      &btStuff->u.slave.masterAddr );
-        }
-        /* fallthru */
-    case PBTST_ACL_CONNECTING:
-    case PBTST_NONE:
-        btStuff->connState = PBTST_NONE;
-    }
-
+    pbt_killL2C( btStuff, btStuff->dataSocket );
     btStuff->setState = PBT_UNINIT;
 }
 
@@ -664,6 +649,49 @@ pbt_checkInit( PalmAppGlobals* globals )
 } /* pbt_checkInit */
 
 static void
+pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
+{
+    Err err;
+    XP_U16 btLibRefNum = btStuff->btLibRefNum;
+
+    XP_ASSERT( sock == btStuff->dataSocket );
+    if ( sock != SOCK_INVAL ) {
+        CALL_ERR( err, BtLibSocketClose, btLibRefNum, sock );
+        btStuff->dataSocket = SOCK_INVAL;
+    }
+
+    /* Harm in calling this when not connected? */
+    CALL_ERR( err, BtLibLinkDisconnect, btLibRefNum, &btStuff->otherAddr );
+    SET_STATE( btStuff, PBTST_NONE );
+} /* pbt_killL2C */
+
+static void
+pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
+{
+    LOG_FUNC();
+    XP_ASSERT( !!addr );
+   
+    if ( 0 != XP_MEMCMP( &btStuff->otherAddr, &addr->u.bt.btAddr, 
+                         sizeof(btStuff->otherAddr) ) ) {
+
+        LOG_HEX( &btStuff->otherAddr, sizeof(btStuff->otherAddr), "cur" );
+        LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), "new" );
+
+        pbt_killL2C( btStuff, btStuff->dataSocket );
+
+        XP_MEMCPY( &btStuff->otherAddr, &addr->u.bt.btAddr, 
+                   sizeof(btStuff->otherAddr) );
+    }
+} /* pbt_checkAddress */
+
+static void
+pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState, const char* whence )
+{
+    btStuff->p_connState = newState;
+    XP_LOGF( "setting state to %s, from %s", stateToStr(newState), whence );
+}
+
+static void
 l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
 {
     PalmBTStuff* btStuff = (PalmBTStuff*)refCon;
@@ -688,7 +716,7 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         break;
     case btLibSocketEventConnectedOutbound:
         if ( errNone == sEvent->status ) {
-            btStuff->connState = PBTST_L2C_CONNECTED;
+            SET_STATE( btStuff, PBTST_L2C_CONNECTED );
             pbt_postpone( btStuff, PBT_EVENT_TRYSEND );
         }
         break;
@@ -704,9 +732,17 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         break;
 
     case btLibSocketEventDisconnected:
-        XP_ASSERT( sEvent->socket == btStuff->dataSocket );
-        btStuff->dataSocket = SOCK_INVAL;
-        btStuff->connState = PBTST_ACL_CONNECTED;
+        pbt_killL2C( btStuff, sEvent->socket );
+        /* We'll see this as client if the host quits.  What to do?  I think
+         * we need to start trying to reconnect hoping the host got
+         * restarted.  Presumably users will not sit there forever running
+         * the app once one of the players has taken his device and gone
+         * home.  But there should probably be UI warning users that it's
+         * trying to connect.... 
+         */
+        if ( PBT_SLAVE == btStuff->setState ) {
+            pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
+        }
         break;
 
     default:
@@ -721,33 +757,54 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
 static void
 libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
 {
+    Err err;
     PalmBTStuff* btStuff = (PalmBTStuff*)refCon;
     BtLibManagementEventEnum event = mEvent->event;
-    XP_LOGF( "%s(%s)", __FUNCTION__, mgmtEvtToStr(event) );
+    XP_LOGF( "%s(%s); status=%s", __FUNCTION__, mgmtEvtToStr(event),
+             btErrToStr(mEvent->status) );
 
     switch( event ) {
+    case btLibManagementEventAccessibilityChange:
+        XP_LOGF( "%s", connEnumToStr(mEvent->eventData.accessible) );
+        btStuff->accState = mEvent->eventData.accessible;
+        break;
     case btLibManagementEventRadioState:
         XP_LOGF( "status: %s", btErrToStr(mEvent->status) );
         break;
     case btLibManagementEventACLConnectOutbound:
         if ( btLibErrNoError == mEvent->status ) {
-            btStuff->connState = PBTST_ACL_CONNECTED;
+            SET_STATE( btStuff, PBTST_ACL_CONNECTED );
             XP_LOGF( "successful ACL connection to master!" );
             pbt_postpone( btStuff, PBT_EVENT_CONNECT_L2C );
         } else {
-            XP_LOGF( "bad ACL connection: %s", btErrToStr(mEvent->status) );
+            SET_STATE(btStuff, PBTST_NONE);
+            pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
         }
         break;
 
     case btLibManagementEventACLConnectInbound:
         if ( btLibErrNoError == mEvent->status ) {
-            btStuff->connState = PBTST_ACL_CONNECTED;
+            SET_STATE(btStuff, PBTST_ACL_CONNECTED);
             XP_LOGF( "successful ACL connection!" );
+            XP_MEMCPY( &btStuff->otherAddr, 
+                       &mEvent->eventData.bdAddr,
+                       sizeof(btStuff->otherAddr) );
         }
         break;
     case btLibManagementEventACLDisconnect:
-        btStuff->dataSocket = SOCK_INVAL;
-        btStuff->connState = PBTST_NONE;
+        XP_ASSERT( 0 == XP_MEMCMP( &mEvent->eventData.bdAddr,
+                                   &btStuff->otherAddr,
+                                   sizeof(btStuff->otherAddr) ) );
+        if ( SOCK_INVAL != btStuff->dataSocket ) {
+            CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
+                      btStuff->dataSocket );
+            btStuff->dataSocket = SOCK_INVAL;
+        }
+        SET_STATE(btStuff, PBTST_NONE);
+        /* See comment at btLibSocketEventDisconnected */
+        if ( PBT_SLAVE == btStuff->setState ) {
+            pbt_postpone( btStuff, PBT_EVENT_CONNECT_ACL );
+        }
         break;
     default:
         break;
@@ -759,6 +816,21 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
  ***********************************************************************/
 #ifdef DEBUG
 # define CASESTR(e)    case(e): return #e
+
+static const char*
+stateToStr(PBT_STATE st)
+{
+    switch( st ) {
+        CASESTR(PBTST_NONE);
+        CASESTR(PBTST_ACL_CONNECTING);
+        CASESTR(PBTST_ACL_CONNECTED);
+        CASESTR(PBTST_L2C_CONNECTING);
+        CASESTR(PBTST_L2C_CONNECTED);
+    default:
+        XP_ASSERT(0);
+        return "";
+    }
+} /* stateToStr */
 
 static const char*
 evtToStr(PBT_EVENT evt)
@@ -774,6 +846,19 @@ evtToStr(PBT_EVENT evt)
         return "";
     }
 } /* evtToStr */
+
+static const char*
+connEnumToStr( BtLibAccessibleModeEnum mode )
+{
+    switch( mode ) {
+        CASESTR(btLibNotAccessible);
+        CASESTR(btLibConnectableOnly);
+        CASESTR(btLibDiscoverableAndConnectable);
+    default:
+        XP_ASSERT(0);
+        return "";
+    }
+}
 
 static const char*
 btEvtToStr( BtLibSocketEventEnum evt )
