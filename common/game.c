@@ -152,10 +152,15 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
 
     for ( i = 0; i < gi->nPlayers; ++i ) {
         LocalPlayer* player = &gi->players[i];
-        XP_Bool isLocal = player->isLocal;
-        if ( !isLocal ) {
-            player->name = (XP_UCHAR*)NULL;
-        }
+        XP_LOGF( "%s: name[%d] = %s", __FUNCTION__,
+                 i, emptyStringIfNull(player->name) );
+        /* Why null out the name???? */
+/*         if ( !player->isLocal ) { */
+/*             if ( !!player->name ) { */
+/*                 XP_FREE( mpool, player->name ); */
+/*             } */
+/*             player->name = (XP_UCHAR*)NULL; */
+/*         } */
         player->secondsUsed = 0;
     }
 
@@ -209,7 +214,8 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 } /* game_makeFromStream */
 
 void
-game_saveToStream( XWGame* game, CurGameInfo* gi, XWStreamCtxt* stream )
+game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
+                   XWStreamCtxt* stream )
 {
     stream_putU8( stream, CUR_STREAM_VERS );
 
@@ -270,7 +276,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate )
         if ( !!nameTemplate ) {
             XP_SNPRINTF( buf, sizeof(buf), nameTemplate, i+1 );
             XP_ASSERT( fp->name == NULL );
-            fp->name = copyString( MPPARM(mpool) buf );
+            fp->name = copyString( mpool, buf );
         }
 
         fp->isRobot = (i == 0);	/* one robot */
@@ -315,7 +321,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
     LocalPlayer* srcPl;
     LocalPlayer* destPl;
 
-    replaceStringIfDifferent( MPPARM(mpool) &destGI->dictName, 
+    replaceStringIfDifferent( mpool, &destGI->dictName, 
                               srcGI->dictName );
 
     destGI->gameID = srcGI->gameID;
@@ -334,8 +340,8 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
     for ( srcPl = srcGI->players, destPl = destGI->players, i = 0; 
           i < nPlayers; ++srcPl, ++destPl, ++i ) {
 
-        replaceStringIfDifferent( MPPARM(mpool) &destPl->name, srcPl->name );
-        replaceStringIfDifferent( MPPARM(mpool) &destPl->password, 
+        replaceStringIfDifferent( mpool, &destPl->name, srcPl->name );
+        replaceStringIfDifferent( mpool, &destPl->password, 
                                   srcPl->password );
         destPl->secondsUsed = srcPl->secondsUsed;
         destPl->isRobot = srcPl->isRobot;
@@ -344,7 +350,7 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
 } /* gi_copy */
 
 XP_U16
-gi_countHumans( CurGameInfo* gi )
+gi_countHumans( const CurGameInfo* gi )
 {
     XP_U16 count = 0;
     XP_U16 nPlayers = gi->nPlayers;
@@ -365,7 +371,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     XP_U16 strVersion = stream_getVersion( stream );
 
     str = stringFromStream( MPPARM(mpool) stream );
-    replaceStringIfDifferent( MPPARM(mpool) &gi->dictName, str );
+    replaceStringIfDifferent( mpool, &gi->dictName, str );
     if ( !!str ) {
         XP_FREE( mpool, str );
     }
@@ -393,13 +399,13 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     for ( pl = gi->players, i = 0; i < gi->nPlayers; ++pl, ++i ) {
         str = stringFromStream( MPPARM(mpool) stream );
-        replaceStringIfDifferent( MPPARM(mpool) &pl->name, str );
+        replaceStringIfDifferent( mpool, &pl->name, str );
         if ( !!str ) {
             XP_FREE( mpool, str );
         }
 
         str = stringFromStream( MPPARM(mpool) stream );
-        replaceStringIfDifferent( MPPARM(mpool) &pl->password, str );
+        replaceStringIfDifferent( mpool, &pl->password, str );
         if ( !!str ) {
             XP_FREE( mpool, str );
         }
@@ -411,9 +417,9 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 } /* gi_readFromStream */
 
 void
-gi_writeToStream( XWStreamCtxt* stream, CurGameInfo* gi )
+gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
 {
-    LocalPlayer* pl;
+    const LocalPlayer* pl;
     XP_U16 i;
 
     stringToStream( stream, gi->dictName );

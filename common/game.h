@@ -86,14 +86,15 @@ void game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                           DrawCtx* draw, CommonPrefs* cp,
                           TransportSend sendProc, void* closure );
 
-void game_saveToStream( XWGame* game, CurGameInfo* gi, XWStreamCtxt* stream );
+void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
+                        XWStreamCtxt* stream );
 void game_dispose( XWGame* game );
 void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
-void gi_writeToStream( XWStreamCtxt* stream, CurGameInfo* gi );
+void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
 void gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGi );
-XP_U16 gi_countHumans( CurGameInfo* gi );
+XP_U16 gi_countHumans( const CurGameInfo* gi );
 
 XP_Bool player_hasPasswd( LocalPlayer* player );
 XP_Bool player_passwordMatches( LocalPlayer* player, XP_U8* buf, XP_U16 len );
