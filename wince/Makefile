@@ -15,7 +15,7 @@
 #
 # mingw32 mingw32-binutils mingw32-runtime pocketpc-sdk
 
-SVNREV = $(shell svnversion -n .)
+SVNREV = $(shell svnversion -n . | tr ':' '_')
 
 PLATFORM = wince
 
