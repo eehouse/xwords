@@ -445,7 +445,7 @@ updatePlayerInfo( PalmAppGlobals* globals )
 
     gi->boardSize = globals->prefsDlgState->curBdSize;
 
-    replaceStringIfDifferent( MPPARM(globals->mpool) &gi->dictName, 
+    replaceStringIfDifferent( globals->mpool, &gi->dictName, 
                               globals->newGameState.dictName );
 } /* updatePlayerInfo */
 
@@ -710,7 +710,7 @@ palmEnableAttrProc(void* closure, NewGameAttr attr, NewGameEnable ngEnable )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
     PalmNewGameState* state = &globals->newGameState;
-    XP_Bool enable;
+    XP_Bool enable = XP_FALSE;  /* make compiler happy */
     XP_U16 objID = 0;
 
     switch ( attr ) {
@@ -880,7 +880,7 @@ loadNewGameState( PalmAppGlobals* globals )
     CurGameInfo* gi = &globals->gameInfo;
     PalmNewGameState* state = &globals->newGameState;
 
-    state->dictName = copyString( MPPARM(globals->mpool) gi->dictName );
+    state->dictName = copyString( globals->mpool, gi->dictName );
     state->playerNumList = getActiveObjectPtr( XW_NPLAYERS_LIST_ID );
 
     state->ngc = newg_make( MPPARM(globals->mpool)

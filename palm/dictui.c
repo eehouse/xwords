@@ -143,7 +143,7 @@ dictFormHandleEvent( EventPtr event )
 
                 eventToPost.eType = dictSelectedEvent;
                 ((DictSelectedData*)&eventToPost.data.generic)->dictName
-                    = copyString( MEMPOOL dictName );
+                    = copyString( globals->mpool, dictName );
                 EvtAddEventToQueue( &eventToPost );
             }
 
