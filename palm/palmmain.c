@@ -1204,7 +1204,7 @@ startApplication( PalmAppGlobals** globalsP )
         globals->isNewGame = true;
 
         getNthDict( globals->dictList, 0, &dlep );
-        globals->gameInfo.dictName = copyString( MPPARM(globals->mpool)
+        globals->gameInfo.dictName = copyString( globals->mpool,
                                                  dlep->baseName );
 
         gameID = TimGetSeconds();
@@ -1579,8 +1579,10 @@ handleNilEvent( PalmAppGlobals* globals )
     } else if ( timeForTimer( globals, &why, &when ) 
                 && (when <= TimGetTicks()) ) {
         palmFireTimer( globals, why );
+#ifdef XWFEATURE_BLUETOOTH
     } else if ( palm_bt_doWork( globals ) ) {
         /* nothing to do */
+#endif
     } else if ( globals->timeRequested ) {
         globals->timeRequested = false;
         if ( globals->msgReceivedDraw ) {
@@ -1873,15 +1875,15 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
             dict_destroy( dict );
             dict = NULL;
         } else {
-            replaceStringIfDifferent( MEMPOOL &globals->gameInfo.dictName,
-                                      dictName );
+            replaceStringIfDifferent( globals->mpool, 
+                                      &globals->gameInfo.dictName, dictName );
         }
     }
 
     if ( !dict ) {
         XP_ASSERT( !!newDictName );
         dict = palm_dictionary_make( MPPARM(globals->mpool) globals,
-                                     copyString( MEMPOOL newDictName ),
+                                     copyString( globals->mpool, newDictName ),
                                      globals->dictList );
         XP_ASSERT( !!dict );	
         model_setDictionary( globals->game.model, dict );

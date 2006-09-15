@@ -91,12 +91,17 @@ typedef struct PalmBTStuff {
 
 } PalmBTStuff;
 
+#ifdef DEBUG
+static void palm_bt_log( const char* btfunc, const char* func, Err err );
 #define LOG_ERR(f,e) palm_bt_log( #f, __FUNCTION__, e )
 #define CALL_ERR(e,f,...) \
     XP_LOGF( "%s: calling %s", __FUNCTION__, #f ); \
     e = f(__VA_ARGS__); \
     LOG_ERR(f,e); \
     if ( e == btLibErrFailed ) { XP_WARNF( "%s=>btLibErrFailed", #f ); }
+#else
+#define CALL_ERR(e,f,...)    e = f(__VA_ARGS__) 
+#endif
 
 /* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
 static const BtLibSdpUuidType XWORDS_UUID = {
@@ -105,7 +110,6 @@ static const BtLibSdpUuidType XWORDS_UUID = {
       0x83, 0xe0, 0x7b, 0x3d, 0xe6, 0xa1, 0xc3, 0x3b } };
 
 static PalmBTStuff* pbt_checkInit( PalmAppGlobals* globals );
-static void palm_bt_log( const char* btfunc, const char* func, Err err );
 static Err bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr );
 static void pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_takedown_slave( PalmBTStuff* btStuff );
@@ -136,6 +140,8 @@ static const char* connEnumToStr( BtLibAccessibleModeEnum mode );
 # define btEvtToStr( evt ) ""
 # define mgmtEvtToStr( evt ) ""
 # define actToStr(act) ""
+# define stateToStr(st) ""
+# define connEnumToStr(mode) ""
 #endif
 
 /* callbacks */
@@ -228,13 +234,13 @@ XP_Bool
 palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
                        XP_UCHAR* out, XP_U16 len )
 {
-    Err err;
+    XP_Bool success = XP_FALSE;
     PalmBTStuff* btStuff;
 
     btStuff = pbt_checkInit( globals );
     if ( NULL != btStuff ) {
         BtLibDeviceAddressType addr;
-        err = bpd_discover( btStuff, &addr );
+        Err err = bpd_discover( btStuff, &addr );
 
         if ( errNone == err ) {
             UInt16 index;
@@ -257,10 +263,9 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
 /*                                    &btStuff->u.slave.masterAddr, */
 /*                                    out, len ); */
         }
-    } else {
-        XP_LOGF( "%s: err = %s", __FUNCTION__, btErrToStr(err) );
+        success = errNone == err;
     }
-    return errNone == err;
+    return success;
 } /* palm_bt_browse_device */
 
 static void
