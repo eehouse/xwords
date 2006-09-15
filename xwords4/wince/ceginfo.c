@@ -215,7 +215,7 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                                  giState->newDictName, 
                                  sizeof(giState->newDictName), NULL, NULL );
         }
-        replaceStringIfDifferent( MPPARM(globals->mpool) &gi->dictName,
+        replaceStringIfDifferent( globals->mpool, &gi->dictName,
                                   giState->newDictName );
     }
 
@@ -416,18 +416,20 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
 {
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForAttr( attr );
-    XP_U16 val = value.ng_u16;
 
     LOG_FUNC();
 
     switch ( attr ) {
     case NG_ATTR_NPLAYERS:
-        --val;                  /* adjust: it's 1-based */
+        SendDlgItemMessage( giState->hDlg, resID, CB_SETCURSEL, 
+                            value.ng_u16 - 1, 0L );
+        break;
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
-#endif
-        SendDlgItemMessage( giState->hDlg, resID, CB_SETCURSEL, val, 0L );
+        SendDlgItemMessage( giState->hDlg, resID, CB_SETCURSEL, 
+                            value.ng_role, 0L );
         break;
+#endif
     case NG_ATTR_NPLAYHEADER:
         ceSetDlgItemText( giState->hDlg, resID, value.ng_cp );
         break;
