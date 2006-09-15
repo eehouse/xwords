@@ -455,7 +455,7 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
     XP_MEMSET( dict, 0, sizeof(*dict) );
 
     MPASSIGN( dict->mpool, mpool );
-    dict->name = copyString( MPPARM(mpool) "Stub dictionary" );
+    dict->name = copyString( mpool, "Stub dictionary" );
     dict->nFaces = datasize/3;
 
     dict->destructor = destroy_stubbed_dict;
