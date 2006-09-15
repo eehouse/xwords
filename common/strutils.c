@@ -19,6 +19,8 @@
 
 #include "strutils.h"
 #include "xwstream.h"
+#include "mempool.h"
+#include "xptypes.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -138,12 +140,21 @@ stringToStream( XWStreamCtxt* stream, XP_UCHAR* str )
  *
  ****************************************************************************/
 XP_UCHAR* 
-copyString( MPFORMAL const XP_UCHAR* instr )
+p_copyString( MPFORMAL const XP_UCHAR* instr
+#ifdef MEM_DEBUG
+            , const char* file, XP_U32 lineNo 
+#endif
+            )
 {
     XP_UCHAR* result = (XP_UCHAR*)NULL;
     if ( !!instr ) {
         XP_U16 len = 1 + XP_STRLEN( (const char*)instr );
-        result = (XP_UCHAR*)XP_MALLOC( (MemPoolCtx*)mpool, len );
+#ifdef MEM_DEBUG
+        result = mpool_alloc( mpool, len, file, lineNo );
+#else
+        result = XP_MALLOC( ignore, len );
+#endif
+
         XP_ASSERT( !!result );
         XP_MEMCPY( result, instr, len );
     }
@@ -151,7 +162,11 @@ copyString( MPFORMAL const XP_UCHAR* instr )
 } /* copyString */
 
 void
-replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr )
+p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
+#ifdef MEM_DEBUG
+            , const char* file, XP_U32 lineNo 
+#endif
+                          )
 {
     XP_UCHAR* curStr = *curLoc;
 
@@ -162,7 +177,11 @@ replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr )
         if ( !!curStr ) {
             XP_FREE( mpool, curStr );
         }
-        curStr = copyString( MPPARM(mpool) newStr );
+#ifdef MEM_DEBUG
+        curStr = p_copyString( mpool, newStr, file, lineNo );
+#else
+        curStr = p_copyString( newStr );
+#endif
     }
 
     *curLoc = curStr;
