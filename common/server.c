@@ -898,7 +898,7 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
     stream_getBytes( stream, name, nameLen );
     name[nameLen] = '\0';
 
-    replaceStringIfDifferent( MPPARM(server->mpool) &lp->name, name );
+    replaceStringIfDifferent( server->mpool, &lp->name, name );
     XP_FREE( server->mpool, name );
 
     channelNo = stream_getAddress( stream );
@@ -974,7 +974,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
     /* so it's not lost (HACK!).  Without this, a client won't have a default
        dict name when a new game is started. */
-    localGI.dictName = copyString( MPPARM(server->mpool) gi->dictName );
+    localGI.dictName = copyString( server->mpool, gi->dictName );
     gi_copy( MPPARM(server->mpool) gi, &localGI );
 
     nCols = localGI.boardSize;
@@ -1606,7 +1606,7 @@ storeBadWords( XP_UCHAR* word, void* closure )
     XP_STATUSF( "storeBadWords called with \"%s\"", word );
 
     server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
-        = copyString( MPPARM(server->mpool) word );
+        = copyString( server->mpool, word );
 
     return XP_TRUE;
 } /* storeBadWords */
@@ -2288,7 +2288,8 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             /* 	    break; */
 
         case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
-            accepted = reflectMoveAndInform( server, incoming );
+            accepted = (XWSTATE_INTURN == server->nv.gameState)
+                && reflectMoveAndInform( server, incoming );
             break;
 
         case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
