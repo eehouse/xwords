@@ -42,9 +42,7 @@ struct NewGameCtx {
        store '***' in the visible field */
     NewGameEnable enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
     XP_U16 nPlayers;
-#ifndef XWFEATURE_STANDALONE_ONLY
     Connectedness role;
-#endif
     XP_Bool isNewGame;
     NewGameEnable juggleEnabled;
 
@@ -96,27 +94,55 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
 {
     void* closure = ngc->closure;
     NGValue value;
-    XP_U16 i;
+    XP_U16 nPlayers, nShown;
+    XP_S16 i;
+    Connectedness role;
+    XP_Bool localOnly;
+    XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
 
-    ngc->nPlayers = gi->nPlayers;
+    ngc->role = role = gi->serverRole;
+    localOnly = role == SERVER_ISCLIENT;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    value.ng_role = role;
+    (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
+    (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame? 
+                            NGEnableEnabled : NGEnableDisabled );
+#endif
+
+    nPlayers = gi->nPlayers;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    if ( localOnly ) {
+        for ( i = nPlayers - 1; i >= 0; --i ) {
+            if ( !gi->players[i].isLocal ) {
+                --nPlayers;
+            }
+        }
+    }
+#endif
+    ngc->nPlayers = nPlayers;
     value.ng_u16 = ngc->nPlayers;
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYERS, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame?
                             NGEnableEnabled : NGEnableDisabled );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-    ngc->role = gi->serverRole;
-    value.ng_role = ngc->role;
-    (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
-    (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame? 
-                            NGEnableEnabled : NGEnableDisabled );
-#endif
     setRoleStrings( ngc );
     considerEnableJuggle( ngc );   
 
-    for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        loadPlayer( ngc, i, &gi->players[i] );
-    }
+    /* Load local players first */
+    nShown = 0;
+    do {
+        for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
+            const LocalPlayer* lp = &gi->players[i];
+            if ( shown[i] ) {
+                /* already got it */
+            } else if ( !localOnly || lp->isLocal ) {
+                shown[i] = XP_TRUE;
+                loadPlayer( ngc, nShown++, lp );
+            } /* else skip it */
+        }
+        XP_ASSERT( localOnly || nShown == MAX_NUM_PLAYERS );
+        localOnly = XP_FALSE;   /* for second pass */
+    } while ( nShown < MAX_NUM_PLAYERS );
     
     adjustAllRows( ngc, XP_TRUE );
 } /* newg_load */
@@ -153,7 +179,9 @@ cpToLP( NGValue value, const void* cbClosure )
     }
 
     if ( !!strAddr ) {
-        replaceStringIfDifferent( MPPARM(cpcl->ngc->mpool) strAddr,
+        /* This is leaking!!!  But doesn't leak if am playing via IR, at least
+           in the simulator.  */
+        replaceStringIfDifferent( cpcl->ngc->mpool, strAddr,
                                   value.ng_cp );
     }
 } /* cpToLP */
@@ -219,7 +247,7 @@ deepCopy( NGValue value, const void* closure )
         break;
     case NG_COL_NAME:
     case NG_COL_PASSWD:
-        dvp->value.ng_cp = copyString( MPPARM(dvp->mpool) value.ng_cp );
+        dvp->value.ng_cp = copyString( dvp->mpool, value.ng_cp );
         break;
     }
 }
