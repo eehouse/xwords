@@ -494,6 +494,7 @@ comms_getInitialAddr( CommsAddrRec* addr )
 #ifdef XWFEATURE_BLUETOOTH
     addr->conType = COMMS_CONN_BT; /* for temporary ease in debugging */
 #else
+    addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
     addr->u.ip_relay.port = 10999;
     {
@@ -622,44 +623,44 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 
     XP_STATUSF( "looking to remove msgs prior or equal to " XP_LD 
                 " for channel %d (queue len now %d)",
-		msgID, channelNo, comms->queueLen );
+                msgID, channelNo, comms->queueLen );
 
     for ( prev = (MsgQueueElem*)NULL, elem = comms->msgQueueHead; 
-	  !!elem; prev = elem, elem = elem->next ) {
+          !!elem; prev = elem, elem = elem->next ) {
 
-	/* remove the 0-channel message if we've established a channel number.
-	   Only clients should have any 0-channel messages in the queue, and
-	   receiving something from the server is an implicit ACK */
+        /* remove the 0-channel message if we've established a channel number.
+           Only clients should have any 0-channel messages in the queue, and
+           receiving something from the server is an implicit ACK */
 
-	if ( elem->channelNo == 0 && channelNo != 0 ) {
-	    XP_ASSERT( !comms->isServer );      /* I've seen this fail once */
-	    XP_ASSERT( elem->msgID == 0 );	/* will the check below pass? */
-	} else if ( elem->channelNo != channelNo ) {
-	    continue;
-	}
+        if ( elem->channelNo == 0 && channelNo != 0 ) {
+            XP_ASSERT( !comms->isServer );      /* I've seen this fail once */
+            XP_ASSERT( elem->msgID == 0 );	/* will the check below pass? */
+        } else if ( elem->channelNo != channelNo ) {
+            continue;
+        }
 
-	if ( elem->msgID <= msgID ) {
+        if ( elem->msgID <= msgID ) {
 
-	    if ( !prev ) {	/* it's the first element */
-		comms->msgQueueHead = elem->next;
-		prev = comms->msgQueueHead; /* so elem=prev below will work */
-	    } else {
-		prev->next = elem->next;
-	    }
+            if ( !prev ) {	/* it's the first element */
+                comms->msgQueueHead = elem->next;
+                prev = comms->msgQueueHead; /* so elem=prev below will work */
+            } else {
+                prev->next = elem->next;
+            }
 
-	    if ( comms->msgQueueTail == elem ) {
-		comms->msgQueueTail = prev;
-	    }
+            if ( comms->msgQueueTail == elem ) {
+                comms->msgQueueTail = prev;
+            }
 
-	    XP_FREE( comms->mpool, elem->msg );
-	    XP_FREE( comms->mpool, elem );
-	    elem = prev;
-	    --comms->queueLen;
+            XP_FREE( comms->mpool, elem->msg );
+            XP_FREE( comms->mpool, elem );
+            elem = prev;
+            --comms->queueLen;
 
-	    if ( !elem ) {
-		break;
-	    }
-	}
+            if ( !elem ) {
+                break;
+            }
+        }
     }
     XP_STATUSF( "removeFromQueue: queueLen now %d", comms->queueLen );
 
@@ -853,52 +854,58 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             if ( stream_getSize( stream ) 
                  >= sizeof(channelNo) + sizeof(msgID) + sizeof(lastMsgRcd) ) {
 
-                validMessage = XP_TRUE;
-
                 channelNo = stream_getU16( stream );
-                msgID = stream_getU32( stream );
-                lastMsgRcd = stream_getU32( stream );
+                XP_STATUSF( "read channelNo %d", channelNo );
+                if ( channelNo == 0 || channelNo <= comms->nextChannelNo ) {
 
-                XP_DEBUGF( "rcd: msg " XP_LD " on chnl %d", msgID, channelNo );
+                    validMessage = XP_TRUE;
 
-                removeFromQueue( comms, channelNo, lastMsgRcd );
+                    msgID = stream_getU32( stream );
+                    lastMsgRcd = stream_getU32( stream );
 
-                /* Problem: need to detect duplicate messages even before the
-                   server's had a chance to assign channels.  Solution, which
-                   is a hack: since hostID does the same thing, use it in the
-                   relay case.  But in the relay-less case, which still needs
-                   to work, do assign channels.  The dup message problem is
-                   far less common there.  */
+                    XP_DEBUGF( "rcd: msg " XP_LD " on chnl %d", msgID, 
+                               channelNo );
 
-                if ( channelNo == 0 ) {
-                    XP_ASSERT( comms->isServer );
-                    if ( usingRelay ) {
-                        XP_ASSERT( senderID != 0 );
-                        channelNo = senderID;
-                    } else {
-                        XP_ASSERT( msgID == 0 );
-                        channelNo = ++comms->nextChannelNo;
-                        channelWas0 = XP_TRUE;
-                    }
-                    XP_STATUSF( "assigning channelNo=%d", channelNo );
-                } 
-                if ( usingRelay || !channelWas0 ) {
-                    recs = getRecordFor( comms, channelNo );	
-                    /* messageID for an incomming message should be one
-                     * greater than the id most recently used for that
-                     * channel. */
-                    if ( !!recs && (msgID != recs->lastMsgReceived + 1)  ) {
-                        XP_DEBUGF( "on channel %d, old msgID " XP_LD 
-                                   " (next should be " XP_LD ")", channelNo,
-                                   msgID, recs->lastMsgReceived+1 );
-                        validMessage = XP_FALSE;
-                    }
+                    removeFromQueue( comms, channelNo, lastMsgRcd );
+
+                    /* Problem: need to detect duplicate messages even before
+                       the server's had a chance to assign channels.
+                       Solution, which is a hack: since hostID does the same
+                       thing, use it in the relay case.  But in the relay-less
+                       case, which still needs to work, do assign channels.
+                       The dup message problem is far less common there.  */
+
+                    if ( channelNo == 0 ) {
+                        XP_ASSERT( comms->isServer );
+                        if ( usingRelay ) {
+                            XP_ASSERT( senderID != 0 );
+                            channelNo = senderID;
+                        } else {
+                            XP_ASSERT( msgID == 0 );
+                            channelNo = ++comms->nextChannelNo;
+                            channelWas0 = XP_TRUE;
+                        }
+                        XP_STATUSF( "assigning channelNo=%d", channelNo );
+                    } 
+                    if ( usingRelay || !channelWas0 ) {
+                        recs = getRecordFor( comms, channelNo );
+                        /* messageID for an incomming message should be one
+                         * greater than the id most recently used for that
+                         * channel. */
+                        if ( !!recs && (msgID != recs->lastMsgReceived + 1)  ) {
+                            XP_DEBUGF( "on channel %d, old msgID " XP_LD 
+                                       " (next should be " XP_LD ")", channelNo,
+                                       msgID, recs->lastMsgReceived+1 );
+                            validMessage = XP_FALSE;
+                        }
 #ifdef DEBUG
-                    if ( !!recs ) {
-                        XP_ASSERT( lastMsgRcd < 0x0000FFFF );
-                        recs->lastACK = (XP_U16)lastMsgRcd;
-                    }
+                        if ( !!recs ) {
+                            XP_ASSERT( lastMsgRcd <= recs->nextMsgID );
+                            XP_ASSERT( lastMsgRcd < 0x0000FFFF );
+                            recs->lastACK = (XP_U16)lastMsgRcd;
+                        }
 #endif
+                    }
                 }
     
                 if ( validMessage ) {
@@ -925,6 +932,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     } else {
         XP_LOGF( "%s: message too small", __FUNCTION__ );
     }
+    LOG_RETURNF( "%d", (XP_U16)validMessage );
     return validMessage;
 } /* comms_checkIncomingStream */
 
