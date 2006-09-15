@@ -41,9 +41,31 @@ XP_UCHAR* stringFromStream( MPFORMAL XWStreamCtxt* stream );
 XP_U16 stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len );
 void stringToStream( XWStreamCtxt* stream, XP_UCHAR* str );
 
-XP_UCHAR* copyString( MPFORMAL const XP_UCHAR* instr );
-void replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, 
-                               const XP_UCHAR* newStr );
+XP_UCHAR* p_copyString( MPFORMAL const XP_UCHAR* instr 
+#ifdef MEM_DEBUG
+                        , const char* file, XP_U32 lineNo 
+#endif
+                      );
+#ifdef MEM_DEBUG
+# define copyString( p, in ) p_copyString( (p), (in), __FILE__, __LINE__ )
+#else
+# define copyString( p, in ) p_copyString( in )
+#endif
+
+
+void p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, 
+                                 const XP_UCHAR* newStr
+#ifdef MEM_DEBUG
+                                 , const char* file, XP_U32 lineNo 
+#endif
+                               );
+#ifdef MEM_DEBUG
+# define replaceStringIfDifferent(p, sp, n) \
+         p_replaceStringIfDifferent( (p), (sp), (n), __FILE__, __LINE__ )
+#else
+# define replaceStringIfDifferent(p, sp, n) p_replaceStringIfDifferent((sp),(n))
+#endif
+
 
 XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
 
