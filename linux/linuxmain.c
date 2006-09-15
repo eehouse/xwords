@@ -667,6 +667,8 @@ main( int argc, char** argv )
     CommsConnType conType = COMMS_CONN_UNUSED;
     const char* btaddr = NULL;
 
+    XP_LOGF( "main started: pid = %d", getpid() );
+
 #ifdef DEBUG
     {
         int i;
@@ -740,7 +742,7 @@ main( int argc, char** argv )
             conType = COMMS_CONN_RELAY;
             break;
         case 'd':
-            mainParams.gi.dictName = copyString( MPPARM(mainParams.util->mpool) 
+            mainParams.gi.dictName = copyString( mainParams.util->mpool,
                                                  (XP_UCHAR*)optarg );
             break;
         case 'e':
@@ -768,7 +770,7 @@ main( int argc, char** argv )
             mainParams.gi.players[index].isRobot = XP_FALSE;
             mainParams.gi.players[index].isLocal = XP_TRUE;
             mainParams.gi.players[index].name = 
-                copyString(MPPARM(mainParams.util->mpool) (XP_UCHAR*)optarg);
+                copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
             break;
         case 'N':
             index = mainParams.gi.nPlayers++;
@@ -788,7 +790,7 @@ main( int argc, char** argv )
             mainParams.gi.players[index].isRobot = XP_TRUE;
             mainParams.gi.players[index].isLocal = XP_TRUE;
             mainParams.gi.players[index].name = 
-                copyString(MPPARM(mainParams.util->mpool) (XP_UCHAR*)optarg);
+                copyString( mainParams.util->mpool, (XP_UCHAR*)optarg);
             break;
         case 's':
             isServer = XP_TRUE;

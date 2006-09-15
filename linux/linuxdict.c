@@ -260,7 +260,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             dctx->super.topEdge = NULL;
         }
 
-        dctx->super.name = copyString( MPPARM(dctx->super.mpool) fileName);
+        dctx->super.name = copyString( dctx->super.mpool, fileName);
     }
 
     fclose( dictF );
