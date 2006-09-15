@@ -29,7 +29,7 @@ extern "C" {
 
 typedef struct MemPoolEntry {
     struct MemPoolEntry* next;
-    char* fileName;
+    const char* fileName;
     XP_U32 lineNo;
     XP_U32 size;
     void* ptr;
@@ -120,7 +120,7 @@ mpool_destroy( MemPoolCtx* mpool )
 } /* mpool_destroy */
 
 void*
-mpool_alloc( MemPoolCtx* mpool, XP_U32 size, char* file, XP_U32 lineNo )
+mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file, XP_U32 lineNo )
 {
     MemPoolEntry* entry;
 
