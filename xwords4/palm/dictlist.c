@@ -229,7 +229,7 @@ searchDir( MPFORMAL PalmDictList** dlp, UInt16 volNum,
                          (creator == creatorSought) && (vers == versSought) ) {
                         DictListEntry dl;
 
-                        dl.path = copyString( MPPARM(mpool) path );
+                        dl.path = copyString( mpool, path );
                         dl.location = DL_VFS;
                         dl.u.vfsData.volNum = volNum;
                         dl.baseName = dl.path + pathLen;
