@@ -48,7 +48,5 @@ XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 XP_Bool palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
                                XP_UCHAR* out,XP_U16 len );
 
-#else
-* define palm_bt_appendWaitTicks( g, r )
 #endif /* XWFEATURE_BLUETOOTH */
 #endif
