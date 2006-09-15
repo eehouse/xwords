@@ -42,20 +42,21 @@ ceControlsToAddrRec( HWND hDlg, CeConnDlgState* cState )
 static void
 ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* cState )
 {
-    wchar_t* str;
+    XP_U16 i;
+    wchar_t* strs[] = { L"WiFi/Cellular data"
+#ifdef XWFEATURE_BLUETOOTH
+                        , L"Bluetooth" 
+#endif
+    };
 
-    switch( cState->addrRec.conType ) {
-    case COMMS_CONN_RELAY:
-        str = L"WiFi/Cellular data";
-        break;
-    default:
-        XP_LOGF( "conType is %d", cState->addrRec.conType );
-        XP_ASSERT( 0 );
-        str = L"bad conType";
-        break;
+    for ( i = 0; i < sizeof(strs)/sizeof(strs[0]); ++i ) {
+        SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_ADDSTRING, 
+                            0, (LPARAM)strs[i] );
     }
-    SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_ADDSTRING, 0, (LPARAM)str );
-    SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_SETCURSEL, 0, 0L );
+    XP_ASSERT( cState->addrRec.conType == COMMS_CONN_RELAY
+               || cState->addrRec.conType == COMMS_CONN_BT );
+    SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_SETCURSEL, 
+                        cState->addrRec.conType - COMMS_CONN_RELAY, 0L );
 
     ceSetDlgItemText( hDlg, RELAYNAME_EDIT, cState->addrRec.u.ip_relay.hostName );
     ceSetDlgItemNum( hDlg, RELAYPORT_EDIT, cState->addrRec.u.ip_relay.port );

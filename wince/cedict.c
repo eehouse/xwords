@@ -36,7 +36,7 @@ typedef struct CEDictionaryCtxt {
 } CEDictionaryCtxt;
 
 static void ce_dict_destroy( DictionaryCtxt* dict );
-static XP_UCHAR* ce_dict_getShortName( DictionaryCtxt* dict );
+static XP_UCHAR* ce_dict_getShortName( const DictionaryCtxt* dict );
 static void ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 static XP_U16 ceCountSpecials( CEDictionaryCtxt* ctxt );
 static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
@@ -186,7 +186,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 
         setBlankTile( (DictionaryCtxt*)ctxt );
 
-        ctxt->super.name = copyString(MPPARM(globals->mpool) dictName);
+        ctxt->super.name = copyString(globals->mpool, dictName);
         break;              /* exit phony while loop */
     }
     return (DictionaryCtxt*)ctxt;
@@ -428,7 +428,7 @@ ce_dict_destroy( DictionaryCtxt* dict )
 } // ce_dict_destroy
 
 static XP_UCHAR* 
-ce_dict_getShortName( DictionaryCtxt* dict )
+ce_dict_getShortName( const DictionaryCtxt* dict )
 {
     XP_UCHAR* name = dict_getName( dict );
     return bname( name );

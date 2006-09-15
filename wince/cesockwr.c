@@ -413,7 +413,7 @@ ce_sockwrap_delete( CeSocketWrapper* self )
 } /* ce_sockwrap_delete */
 
 XP_U16
-ce_sockwrap_send( CeSocketWrapper* self, XP_U8* buf, XP_U16 len, 
+ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
                   const CommsAddrRec* addr )
 {
     XP_U8* packet;

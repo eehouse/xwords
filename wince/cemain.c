@@ -77,7 +77,7 @@ typedef struct FileWriteState {
 
 /* forward util function decls */
 #ifndef XWFEATURE_STANDALONE_ONLY
-static XP_S16 ce_send_proc( XP_U8* buf, XP_U16 len, 
+static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len, 
                             const CommsAddrRec* addr, 
                             void* closure );
 #define CE_SEND_PROC ce_send_proc
@@ -704,7 +704,8 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
             dict_destroy( dict );
             dict = NULL;
         } else {
-            replaceStringIfDifferent( MEMPOOL &globals->gameInfo.dictName,
+            replaceStringIfDifferent( globals->mpool,
+                                      &globals->gameInfo.dictName, 
                                       curDictName );
         }
     }
@@ -2381,7 +2382,8 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 } /* got_data_proc */
 
 static XP_S16
-ce_send_proc( XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, void* closure )
+ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, 
+              void* closure )
 {
     CEAppGlobals* globals = (CEAppGlobals*)closure;
     XP_LOGF( "ce_send_proc called" );
