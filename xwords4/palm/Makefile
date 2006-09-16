@@ -18,8 +18,9 @@
 PLATFORM=obj_palm
 
 ifeq ($(MEMDEBUG),TRUE)
+DEBUG = -DMEM_DEBUG -DDEBUG
 PLATFORM := $(PLATFORM)_memdebug
-CFLAGS += -DMEM_DEBUG -DDEBUG -g -O0
+CFLAGS += $(DEBUG) -g -O0
 CSFLAGS += -O0 -g
 NAME = "CrossDbg"
 ICONTEXT = "CrossDbg"
@@ -274,7 +275,7 @@ $(PLATFORM)/res.prc: xwords4.rcp $(HEADERS) StrL03e8.bin $(FNAVS) $(PNOLET)
 	rm -f $< *.bin
 
 xwords4.rcp: l10n/xwords4_$(LANG).rcp.pre xwords4defines.h $(BITMAP_RSRCS)
-	gcc -x c -E -P $(INCLUDES) $(MYDEFS_68K) \
+	gcc -x c -E -P $(INCLUDES) $(MYDEFS_68K) $(DEBUG) \
 		-DICONTEXT=\"$(ICONTEXT)\" $< > $@
 
 LocalizedStrIncludes.h StrL03e8.bin: ./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c
