@@ -18,6 +18,10 @@ OD_ARM = arm-$(WHICH)-objdump
 OPT = -Os
 MINUS_G = -g
 
+ifeq ($(MEMDEBUG),TRUE)
+DEBUG = -DMEM_DEBUG -DDEBUG
+endif
+
 INCLUDE += \
 	-I$(PALMDIR) \
 	-I$(PALMDIR)/Libraries \
@@ -35,7 +39,7 @@ INCLUDE += \
 # does so much bitching about the Palm headers.  Need to fix that, or
 # use the arm-palmos-gcc, or something.  But for now, -w....
 CCFLAGS = $(OPT) $(MINUS_G) -Wall -Wunused-parameter -D__PALMOS__ -D__palmos__ -Asystem=palmos
-ARMCCFS = $(CCFLAGS) -DNATIVE \
+ARMCCFS = $(CCFLAGS) -DNATIVE $(DEBUG) \
 	-nostartfiles -mshort-load-bytes -nodefaultlibs -ffixed-r9 \
 	-mpic-register=r10 -msingle-pic-base -fpic \
 	-Wno-multichar \

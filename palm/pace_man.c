@@ -638,9 +638,9 @@ paramsArmtoParams68K( unsigned char* params68K,
 } /* paramsArmtoParams68K */
 
 unsigned long
-notifyEntryPoint( const void* XP_UNUSED(emulStateP), 
+notifyEntryPoint( const void* XP_UNUSED_DBG(emulStateP), 
                   void* userData68KP, 
-                  Call68KFuncType* XP_UNUSED(call68KFuncP) )
+                  Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
 {
     unsigned long* data = (unsigned long*)userData68KP;
     SysNotifyProcPtr callback
@@ -743,9 +743,9 @@ SysNotifyRegister( UInt16 cardNo, LocalID dbID, UInt32 notifyType,
 } /* SysNotifyRegister */
 
 unsigned long
-listDrawEntryPoint( const void* XP_UNUSED(emulStateP), 
+listDrawEntryPoint( const void* XP_UNUSED_DBG(emulStateP), 
                     void* userData68KP, 
-                    Call68KFuncType* XP_UNUSED(call68KFuncP) )
+                    Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
 {
     unsigned long* data = (unsigned long*)userData68KP;
     ListDrawDataFuncPtr listDrawProc
@@ -901,9 +901,9 @@ NetLibGetHostByName( UInt16 libRefNum, const Char* nameP,
 
 
 static unsigned long
-exgWriteEntry( const void* XP_UNUSED(emulStateP), 
+exgWriteEntry( const void* XP_UNUSED_DBG(emulStateP), 
                void* userData68KP, 
-               Call68KFuncType* XP_UNUSED(call68KFuncP) )
+               Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
 {
     unsigned long* data = (unsigned long*)userData68KP;
     unsigned long oldR10;
