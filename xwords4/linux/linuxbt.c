@@ -134,6 +134,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
                                        -1, sock );
         } else {
             XP_LOGF( "%s: connect->%s", __FUNCTION__, strerror(errno) );
+            close( sock );
         }
     }
 } /* lbt_connectSocket */
@@ -200,6 +201,12 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
 
         if ( amMaster ) {
             lbt_listenerSetup( globals );
+        } else {
+            if ( globals->socket < 0 ) {
+                CommsAddrRec addr;
+                comms_getAddr( globals->game.comms, &addr );
+                lbt_connectSocket( btStuff, &addr );
+            }
         }
     }
 } /* linux_bt_open */
@@ -224,19 +231,19 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
                CommonGlobals* globals )
 {
     XP_S16 nSent = -1;
-    LinBtStuff* btStuff = globals->u.bt.btStuff;
+    LinBtStuff* btStuff;
+
+    XP_LOGF( "%s(len=%d)", __FUNCTION__, buflen );
+
+    btStuff = globals->u.bt.btStuff;
     if ( !!btStuff ) {
         CommsAddrRec addr;
-
-        LOG_FUNC();
-
-        XP_ASSERT( !!btStuff );
         if ( !addrP ) {
             comms_getAddr( globals->game.comms, &addr );
             addrP = &addr;
         }
 
-        if ( globals->socket < 0 ) {
+        if ( globals->socket < 0  && !btStuff->amMaster ) {
             lbt_connectSocket( btStuff, addrP );
         }
 
