@@ -284,7 +284,7 @@ xwords4.rcp: l10n/xwords4_$(LANG).rcp.pre xwords4defines.h $(BITMAP_RSRCS)
 # about this....  Clean builds are probably a safe fallback.
 
 LocalizedStrIncludes.h StrL03e8.bin: \
-		./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c svn_stamp
+		./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c
 	gcc $(CFLAGS) $(FORMATDEFINES) \
 		-DLANGSTRFILE=\"$<\" ./l10n/mkstrsres.c \
 		-o mkstrsres
