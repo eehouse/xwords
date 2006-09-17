@@ -224,9 +224,9 @@ CFLAGS +=  -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES)
 $(TARGET): $(PLATFORM)/objs.prc $(PLATFORM)/res.prc 
 	$(PAR) -c -a 'resource|backup' -v 4 $@ $(NAME) $(TYPE) $(APPID) $^
 ifdef XW_UPLOAD_CMD
-	zip $(TARGET).zip $(TARGET)
-	$(XW_UPLOAD_CMD) $(TARGET)
-	$(XW_UPLOAD_CMD) $(TARGET).zip
+# 	zip $(TARGET).zip $(TARGET)
+# 	$(XW_UPLOAD_CMD) $(TARGET)
+# 	$(XW_UPLOAD_CMD) $(TARGET).zip
 endif
 
 solo:
@@ -278,7 +278,13 @@ xwords4.rcp: l10n/xwords4_$(LANG).rcp.pre xwords4defines.h $(BITMAP_RSRCS)
 	gcc -x c -E -P $(INCLUDES) $(MYDEFS_68K) $(DEBUG) \
 		-DICONTEXT=\"$(ICONTEXT)\" $< > $@
 
-LocalizedStrIncludes.h StrL03e8.bin: ./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c
+# LocalizedStrIncludes.h: SVN_REV can change, but I don't have a way
+# to express a dependency on it.  If it does change, strings can wind
+# up with offsets out of sync with the .h file.  Not sure what to do
+# about this....  Clean builds are probably a safe fallback.
+
+LocalizedStrIncludes.h StrL03e8.bin: \
+		./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c svn_stamp
 	gcc $(CFLAGS) $(FORMATDEFINES) \
 		-DLANGSTRFILE=\"$<\" ./l10n/mkstrsres.c \
 		-o mkstrsres
