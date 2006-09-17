@@ -49,23 +49,6 @@
 { "STR_OK",			"Ok" },
 { "STR_ABOUT_TITLE",		"About Crosswords" },
 { "STR_DEFAULT_NAME",		"Player %d" },
-{ "STR_ABOUT_CONTENT", 
-      "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
-      "Copyright 1998-2006 by Eric House.  "\
-      "Released under the GNU Public License.\n\n"\
-
-      "See the manual at xwords.sourceforge.net\n\n" \
-
-      "This program is postcardware. If you like it " \
-      "please mail a postcard to:\n" \
-      "The Houses\n" \
-      "1610 NW 14th Place\n" \
-      "Corvallis, OR 97330 USA\n\n"
-
-      "Developed on Debian GNU/Linux using the prc-tools "\
-      "suite." \
-      },
-
 { "STR_CONFIRM_END_GAME",	"Are you sure you want to end the game now?"},
 { "STR_CONFIRM_TRADE",		"Are you sure you want to use your " \
 				"turn trading tiles?" },
@@ -148,3 +131,19 @@
                                "connection." },
 { "STR_RELAY_GENERIC",         "Relay error: something's wrong." },
 #endif
+{ "STR_ABOUT_CONTENT", 
+      "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
+      "Copyright 1998-2006 by Eric House.  "\
+      "Released under the GNU Public License.\n\n"\
+
+      "See the manual at xwords.sourceforge.net\n\n" \
+
+      "This program is postcardware. If you like it " \
+      "please mail a postcard to:\n" \
+      "The Houses\n" \
+      "1610 NW 14th Place\n" \
+      "Corvallis, OR 97330 USA\n\n"
+
+      "Developed on Debian GNU/Linux using the prc-tools "\
+      "suite." \
+      },
