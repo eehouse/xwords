@@ -224,9 +224,9 @@ CFLAGS +=  -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES)
 $(TARGET): $(PLATFORM)/objs.prc $(PLATFORM)/res.prc 
 	$(PAR) -c -a 'resource|backup' -v 4 $@ $(NAME) $(TYPE) $(APPID) $^
 ifdef XW_UPLOAD_CMD
-# 	zip $(TARGET).zip $(TARGET)
-# 	$(XW_UPLOAD_CMD) $(TARGET)
-# 	$(XW_UPLOAD_CMD) $(TARGET).zip
+	zip $(TARGET).zip $(TARGET)
+	$(XW_UPLOAD_CMD) $(TARGET)
+	$(XW_UPLOAD_CMD) $(TARGET).zip
 endif
 
 solo:
