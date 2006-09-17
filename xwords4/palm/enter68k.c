@@ -196,7 +196,7 @@ PilotMain( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
     UInt32 result = 0;
     if ( ( cmd == sysAppLaunchCmdNormalLaunch )
-#ifdef IR_EXCHMGR
+#ifdef XWFEATURE_IR
          || ( cmd == sysAppLaunchCmdExgAskUser )
          || ( cmd == sysAppLaunchCmdSyncNotify )
          || ( cmd == sysAppLaunchCmdExgReceiveData ) 

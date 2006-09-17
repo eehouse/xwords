@@ -68,39 +68,6 @@
 
 #define PALM_TIMER_DELAY 25
 
-#ifdef IR_SUPPORT
-# ifndef IR_EXCHMGR
-/* These are globals!  But the ptrs must remain valid until they're removed
-   from the IR lib, and is seems stupid to alloc them on the heap when they
-   have to live in the code anyway */
-UInt8 deviceInfo[] = { IR_HINT_PDA, 
-                       IR_CHAR_ASCII,
-                       'X','W','O','R','D','S','4' };
-UInt8 deviceName[] = { 
-    IAS_ATTRIB_USER_STRING, IR_CHAR_ASCII, 
-    7,'X','W','O','R','D','S','4'};
-
-UInt8 xwordsIRResult[] = { 
-    0x01, /* Type for Integer is 1 */ 
-    0x00,0x00,0x00,0x02 /* Assumed Lsap */ 
-}; 
-
-/* IrDemo attribute */ 
-const IrIasAttribute xwordsIRAttribs = { 
-    (UInt8*) "IrDA:IrLMP:LsapSel",18, 0,
-    (UInt8*)xwordsIRResult, sizeof(xwordsIRResult)
-}; 
-
-static IrIasObject xwordsIRObject = { 
-    (UInt8*)"Xwords4", 7, 1, 
-    NULL
-    /*     (IrIasAttribute*)&irdemoAttribs  */
-}; 
-# endif
-# else
-# define ir_setup(g)
-#endif
-
 /*-------------------------------- defines and consts-----------------------*/
 /*  #define COLORCHANGE_THRESHOLD 300 */
 
@@ -204,7 +171,7 @@ PM2(PilotMain)( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
         }
         stopApplication( globals );
 
-#ifdef IR_EXCHMGR
+#ifdef XWFEATURE_IR
     } else if ( cmd == sysAppLaunchCmdExgAskUser ) {
         if ( (launchFlags & sysAppLaunchFlagSubCall) != 0 ) {
             ((ExgAskParamPtr)cmdPBP)->result = exgAskOk;
@@ -645,75 +612,6 @@ initUtilFuncs( PalmAppGlobals* globals )
     vtable->m_util_engineStopping = palm_util_engineStopping;
 #endif
 } /* initUtilFuncs */
-
-#ifdef IR_SUPPORT
-#ifndef IR_EXCHMGR
-/* Make the IR library available if possible.  Or should this be put off
- * until we know we're not playing stand-alone? 
- */
-static void
-ir_setup( PalmAppGlobals* globals )
-{
-    Err err;
-    UInt16 refNum;
-
-    if ( globals->irLibRefNum == 0 ) { /* been inited before? */
-
-        err = SysLibFind( irLibName, &refNum ); 
-        XP_ASSERT( !err );
-
-        if ( err == 0 ) {		/* we have the library */
-            err = IrOpen( refNum, irOpenOptSpeed9600 );
-            XP_ASSERT( !err );
-
-            if ( err == 0 ) {
-                /* 	    IrSetConTypeLMP( &globals->irC_in.irCon ); */
-                IrSetConTypeLMP( &globals->irC_out.irCon );
-
-                /* 	    globals->irC_in.globals = globals; */
-                /* 	    err = IrBind( refNum, (IrConnect*)&globals->irC_in,  */
-                /* 			  ir_callback_in );  */
-                /* 	    XP_ASSERT( !err ); */
-
-                globals->irC_out.globals = globals;
-                err = IrBind( refNum, &globals->irC_out.irCon, 
-                              ir_callback_out);
-                XP_ASSERT( !err );
-
-                if ( err == 0 ) {
-
-                    XP_DEBUGF( "con->lLsap == %d", 
-                               globals->irC_out.irCon.lLsap );
-
-                    if (IR_STATUS_SUCCESS ==
-                        IrSetDeviceInfo( refNum, deviceInfo,
-                                         sizeof(deviceInfo) ) ) { 
-#if 1
-
-                        xwordsIRObject.attribs =
-                            (IrIasAttribute*)&xwordsIRAttribs;
-
-                        IrIAS_SetDeviceName( refNum, 
-                                             deviceName,
-                                             sizeof(deviceName)); 
-                        IrIAS_Add( refNum, &xwordsIRObject ); 
-#endif
-                        globals->irLibRefNum = refNum;
-                    } else {
-                        IrUnbind( refNum, &globals->irC_out.irCon ); 
-                        IrClose( refNum ); 
-                    }
-                } else {
-                    IrClose( refNum ); 
-                }
-            }
-        }
-    }
-
-    ir_cleanup( globals );
-} /* ir_setup */
-# endif
-#endif
 
 #ifdef COLOR_SUPPORT
 static void
@@ -1308,7 +1206,7 @@ stopApplication( PalmAppGlobals* globals )
         game_dispose( &globals->game );
         gi_disposePlayerInfo( MEMPOOL &globals->gameInfo );
 
-#ifdef IR_SUPPORT
+#ifdef XWFEATURE_IR
 #ifdef BEYOND_IR
         palm_ip_close( globals );
 #endif
@@ -1908,14 +1806,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     getSizes( globals );
     (void)positionBoard( globals );
 
-#ifdef IR_SUPPORT
-# ifndef IR_EXCHMGR
-    if ( globals->gameInfo.serverRole == SERVER_STANDALONE ) {
-        ir_cleanup( globals );
-    } else {
-        ir_setup( globals );
-    }
-# endif
+#ifdef XWFEATURE_IR
 
     if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
         XWStreamCtxt* stream;
