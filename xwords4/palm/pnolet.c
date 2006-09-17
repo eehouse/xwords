@@ -46,7 +46,7 @@ ArmletEntryPoint( const void *emulStateP,
                                  call68KFuncP );
 }
 
-#ifdef IR_EXCHMGR
+#ifdef XWFEATURE_IR
 static XP_Bool
 convertParamToArm( UInt16 cmd, ParamStub* armParam, MemPtr parm68K )
 {
@@ -124,7 +124,7 @@ realArmletEntryPoint( const void *emulStateP,
     cmd = Byte_Swap16( dataP->cmd );
     cmdPBP = (MemPtr)Byte_Swap32((unsigned long)dataP->cmdPBP);
 
-#ifdef IR_EXCHMGR
+#ifdef XWFEATURE_IR
     /* if the cmd is sysAppLaunchCmdExgAskUser or
        sysAppLaunchCmdExgReceiveData then we're going to be making use of the
        cmdPBP value in PilotMain.  Need to convert it here. */
@@ -136,7 +136,7 @@ realArmletEntryPoint( const void *emulStateP,
 
     result = PM2(PilotMain)( cmd, cmdPBP, Byte_Swap16(dataP->launchFlags) );
 
-#ifdef IR_EXCHMGR
+#ifdef XWFEATURE_IR
     if ( mustRevert ) {
         convertParamFromArm( cmd, oldVal, &ptrStorage );
     }
