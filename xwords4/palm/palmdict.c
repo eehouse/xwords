@@ -237,13 +237,11 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
                         record = DmQueryRecord( dbRef, index
                                                 + headerRecP->firstEdgeRecNum );
                         size = MemHandleSize( record );
-                        XP_LOGF( "size=%d", size );
                         err = DmWrite( dawgBase, offset, 
                                        MemHandleLock( record ), size );
                         XP_ASSERT( err == errNone );
                         MemHandleUnlock( record );
                         offset += size;
-                        XP_LOGF( "offset now = %ld", offset );
 #ifdef DEBUG
 #ifdef NODE_CAN_4
                         ctxt->super.numEdges += size / nodeSize;
@@ -329,7 +327,6 @@ countSpecials( FaceType* ptr, UInt16 nChars )
             ++result;
         }
     }
-    XP_LOGF( "countSpecials=>%d", result );
     return result;
 } /* countSpecials */
 
@@ -345,8 +342,6 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
     XP_UCHAR** chars;
     SpecialBitmaps* bitmaps;
 
-    XP_LOGF( "setupSpecials" );
-
     base = (char*)specialStart;
     chars = XP_MALLOC( mpool, nSpecials * sizeof(*chars) );
     bitmaps = XP_MALLOC( mpool, nSpecials * sizeof(*bitmaps) );
@@ -360,12 +355,10 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
 
         /* This may not work!  Get rid of NTOHS???? */
         hasLarge = READ_UNALIGNED16( &specialStart->hasLarge );
-        XP_LOGF( "hasLarge: %d", hasLarge );
         if ( hasLarge ) {
             bitmaps[i].largeBM = base + hasLarge;
         }
         hasSmall = READ_UNALIGNED16( &specialStart->hasSmall );
-        XP_LOGF( "hasSmall: %d", hasSmall );
         if ( hasSmall ) {
             bitmaps[i].smallBM = base + hasSmall;
         }
@@ -374,7 +367,6 @@ setupSpecials( MPFORMAL PalmDictionaryCtxt* ctxt,
 
     ctxt->super.bitmaps = bitmaps;
     ctxt->super.chars = chars;
-    XP_LOGF( "setupSpecials done" );
 } /* setupSpecials */
 
 static void

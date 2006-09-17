@@ -61,7 +61,6 @@ void
 stack_setBitsPerTile( StackCtxt* stack, XP_U16 bitsPerTile )
 {
     XP_ASSERT( !!stack );
-    XP_LOGF( "%s(%d)", __FUNCTION__, bitsPerTile );
     stack->bitsPerTile = bitsPerTile;
 }
 
