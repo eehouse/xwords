@@ -59,7 +59,7 @@ strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
 } /* strFromField */
 
 static void
-ctlsFromState( PalmAppGlobals* globals, ConnsDlgState* state )
+ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
 {
     XP_Bool isNewGame = state->isNewGame;
     XP_UCHAR buf[16];
@@ -137,6 +137,8 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
         XW_CONNS_BT_HOSTNAME_LABEL_ID,
         XW_CONNS_BT_HOSTFIELD_ID,
         XW_CONNS_BT_BROWSEBUTTON_ID,
+#else
+        XW_CONNS_BT_NOTSUPPORT_LABEL_ID,
 #endif
         0
     };
@@ -148,11 +150,12 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
 
     if ( state->addr->conType == COMMS_CONN_RELAY ) {
         on = relayCtls;
-#ifdef XWFEATURE_BLUETOOTH
     } else if ( state->addr->conType == COMMS_CONN_BT
-                && state->serverRole == SERVER_ISCLIENT ) {
-        on = btGuestCtls;
+#ifdef XWFEATURE_BLUETOOTH
+                && state->serverRole == SERVER_ISCLIENT 
 #endif
+                ) {
+        on = btGuestCtls;
     } else {
         on = NULL;
     }
@@ -182,14 +185,9 @@ conTypeToSel( CommsConnType conType )
 {
     XP_U16 result = 0;
     switch ( conType ) {
-#ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT: /* result = 0;  */break;
     case COMMS_CONN_IR: result = 1; break;
     case COMMS_CONN_RELAY: result = 2; break;
-#else
-    case COMMS_CONN_IR: /* result = 0;  */break;
-    case COMMS_CONN_RELAY: result = 1; break;
-#endif
     default:
         XP_ASSERT(0);
     }
@@ -199,20 +197,15 @@ conTypeToSel( CommsConnType conType )
 static CommsConnType
 selToConType( XP_U16 sel )
 {
-    CommsConnType conType;
+    CommsConnType conType = COMMS_CONN_BT;
     switch( sel ) {
-#ifdef XWFEATURE_BLUETOOTH
-    case 0: conType = COMMS_CONN_BT; break;
+    case 0: /* conType = COMMS_CONN_BT;  */break;
     case 1: conType = COMMS_CONN_IR; break;
     case 2: conType = COMMS_CONN_RELAY; break;
-#else
-    case 0: conType = COMMS_CONN_IR; break;
-    case 1: conType = COMMS_CONN_RELAY; break;
-#endif
     default: XP_ASSERT(0);
     }
     return conType;
-}
+} /* selToConType */
 
 #ifdef XWFEATURE_BLUETOOTH
 static void

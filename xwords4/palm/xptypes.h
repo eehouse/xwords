@@ -135,5 +135,11 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 # define XP_UNUSED_IR(x) XP_UNUSED(x)
 #endif
 
+#ifdef XWFEATURE_BLUETOOTH
+# define XP_UNUSED_BT(x) x
+#else
+# define XP_UNUSED_BT(x) XP_UNUSED(x)
+#endif
+
 #endif
 
