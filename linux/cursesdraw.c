@@ -27,6 +27,8 @@
 #include "draw.h"
 #include "board.h"
 
+static void curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
+
 static void
 drawRect( WINDOW* win, const XP_Rect* rect, char vert, char hor )
 {
@@ -231,7 +233,9 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[100];
     int y = rInner->top;
-    
+
+    curses_draw_clearRect( p_dctx, rOuter );
+
     if ( dsi->selected ) {
         wstandout( dctx->boardWin );
     }
