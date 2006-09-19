@@ -41,6 +41,7 @@
 #include "cursesmain.h"
 #include "cursesask.h"
 #include "cursesletterask.h"
+#include "linuxbt.h"
 #include "model.h"
 #include "draw.h"
 #include "board.h"
@@ -595,8 +596,7 @@ SIGWINCH_handler( int signal )
 } /* SIGWINCH_handler */
 
 static void
-cursesListenOnSocket( CursesAppGlobals* globals, int newSock, 
-                      XWStreamCtxt* XP_UNUSED(stream) )
+cursesListenOnSocket( CursesAppGlobals* globals, int newSock )
 {
     XP_ASSERT( globals->fdCount+1 < FD_MAX );
 
@@ -635,9 +635,19 @@ curses_socket_changed( void* closure, int oldSock, int newSock )
         curses_stop_listening( globals, oldSock );
     }
     if ( newSock != -1 ) {
-        cursesListenOnSocket( globals, newSock, NULL );
+        cursesListenOnSocket( globals, newSock );
     }
 } /* curses_socket_changed */
+
+static void
+curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)cGlobals;
+    XP_ASSERT( !cGlobals->acceptor || (func == cGlobals->acceptor) );
+    cGlobals->acceptor = func;
+    globals->csInfo.server.serverSocket = listener;
+    cursesListenOnSocket( globals, listener );
+}
 
 static int
 figureTimeout( CursesAppGlobals* globals )
@@ -704,48 +714,63 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
             --numEvents;
 
-            nBytes = linux_relay_receive( &globals->cGlobals, buf, 
-                                          sizeof(buf) );
+            if ( globals->fdArray[fdIndex].fd 
+                 == globals->csInfo.server.serverSocket ) {
+                /* It's the listening socket: call platform's accept()
+                   wrapper */
+                (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd, 
+                                               globals );
+            } else {
+                /* It's a normal data socket */
+                if ( globals->cGlobals.params->conType == COMMS_CONN_RELAY ) {
+                    nBytes = linux_relay_receive( &globals->cGlobals, buf, 
+                                                  sizeof(buf) );
+                } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
+                    nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd, 
+                                               buf, sizeof(buf) );
+                } else {
+                    XP_ASSERT( 0 );
+                }
 
-            if ( nBytes != -1 ) {
-                XWStreamCtxt* inboundS;
-                redraw = XP_FALSE;
+                if ( nBytes != -1 ) {
+                    XWStreamCtxt* inboundS;
+                    redraw = XP_FALSE;
 
-                XP_STATUSF( "linuxReceive=>%d", nBytes );
-                inboundS = stream_from_msgbuf( &globals->cGlobals, 
-                                               buf, nBytes );
-                if ( !!inboundS ) {
-                    CommsAddrRec addrRec;
+                    XP_STATUSF( "linuxReceive=>%d", nBytes );
+                    inboundS = stream_from_msgbuf( &globals->cGlobals, 
+                                                   buf, nBytes );
+                    if ( !!inboundS ) {
+                        CommsAddrRec addrRec;
                 
-                    XP_MEMSET( &addrRec, 0, sizeof(addrRec) );
-                    addrRec.conType = COMMS_CONN_RELAY;
+                        XP_MEMSET( &addrRec, 0, sizeof(addrRec) );
+                        addrRec.conType = COMMS_CONN_RELAY;
             
-                    addrRec.u.ip_relay.ipAddr = 
-                        ntohl(addr_sock.sin_addr.s_addr);
-                    XP_LOGF( "captured incoming ip address: 0x%lx",
-                             addrRec.u.ip_relay.ipAddr );
+                        addrRec.u.ip_relay.ipAddr = 
+                            ntohl(addr_sock.sin_addr.s_addr);
+                        XP_LOGF( "captured incoming ip address: 0x%lx",
+                                 addrRec.u.ip_relay.ipAddr );
 
-                    if ( comms_checkIncomingStream(globals->cGlobals.game.comms,
-                                                    inboundS, 
-                                                    &addrRec ) ) {
-                        XP_LOGF( "comms read port: %d", 
-                                 addrRec.u.ip_relay.port );
-                        redraw = 
-                            server_receiveMessage( globals->cGlobals.game.server,
-                                                   inboundS );
+                        if ( comms_checkIncomingStream(
+                                globals->cGlobals.game.comms,
+                                inboundS, &addrRec ) ) {
+                            XP_LOGF( "comms read port: %d", 
+                                     addrRec.u.ip_relay.port );
+                            redraw = server_receiveMessage( 
+                                  globals->cGlobals.game.server, inboundS );
+                        }
+                        stream_destroy( inboundS );
                     }
-                    stream_destroy( inboundS );
-                }
                 
-                /* if there's something to draw resulting from the message, we
-                   need to give the main loop time to reflect that on the
-                   screen before giving the server another shot.  So just call
-                   the idle proc. */
-                if ( redraw ) {
-                    curses_util_requestTime(globals->cGlobals.params->util);
+                    /* if there's something to draw resulting from the
+                       message, we need to give the main loop time to reflect
+                       that on the screen before giving the server another
+                       shot.  So just call the idle proc. */
+                    if ( redraw ) {
+                        curses_util_requestTime(globals->cGlobals.params->util);
+                    }
                 }
-            }
 
+            }
             ++fdIndex;
         }
 
@@ -928,6 +953,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     globals.cGlobals.socketChanged = curses_socket_changed;
     globals.cGlobals.socketChangedClosure = &globals;
+    globals.cGlobals.addAcceptor = curses_socket_acceptor;
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;
@@ -937,17 +963,17 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     setupCursesUtilCallbacks( &globals, params->util );
 
     if ( params->conType == COMMS_CONN_RELAY ) {
-        globals.cGlobals.u.relay.defaultServerName
+        globals.cGlobals.defaultServerName
             = params->connInfo.relay.relayName;
     }
 
-    cursesListenOnSocket( &globals, 0, NULL ); /* stdin */
+    cursesListenOnSocket( &globals, 0 ); /* stdin */
 
     piperesult = pipe( globals.timepipe );
     XP_ASSERT( piperesult == 0 );
 
     /* reader pipe */
-    cursesListenOnSocket( &globals, globals.timepipe[0], NULL );
+    cursesListenOnSocket( &globals, globals.timepipe[0] );
     signal( SIGWINCH, SIGWINCH_handler );
     initCurses( &globals );
 
@@ -960,13 +986,22 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     if ( globals.cGlobals.game.comms ) {
         CommsAddrRec addr;
-        addr.conType = COMMS_CONN_RELAY;
-        addr.u.ip_relay.ipAddr = 0;       /* ??? */
-        addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-        XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
-                    sizeof(addr.u.ip_relay.hostName) - 1 );
-        XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
-                    sizeof(addr.u.ip_relay.cookie) - 1 );
+
+        if ( params->conType == COMMS_CONN_RELAY ) {
+            addr.conType = COMMS_CONN_RELAY;
+            addr.u.ip_relay.ipAddr = 0;       /* ??? */
+            addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+            XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
+                        sizeof(addr.u.ip_relay.hostName) - 1 );
+            XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
+                        sizeof(addr.u.ip_relay.cookie) - 1 );
+        } else if ( params->conType == COMMS_CONN_BT ) {
+            addr.conType = COMMS_CONN_BT;
+            XP_ASSERT( sizeof(addr.u.bt.btAddr) 
+                       >= sizeof(params->connInfo.bt.hostAddr));
+            XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                       sizeof(params->connInfo.bt.hostAddr) );
+        }
         comms_setAddr( globals.cGlobals.game.comms, &addr );
     }
 

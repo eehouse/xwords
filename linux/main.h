@@ -104,14 +104,11 @@ struct CommonGlobals {
 
     int socket;                 /* either relay or bt */
 
-    union {
-        struct {
-            char* defaultServerName;
-        } relay;
-        struct {
-            struct LinBtStuff* btStuff;
-        } bt;
-    } u;
+    /* Used only for relay case */
+    char* defaultServerName;
+
+    /* Used only for bluetooth case */
+    struct LinBtStuff* btStuff;
 
     TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
