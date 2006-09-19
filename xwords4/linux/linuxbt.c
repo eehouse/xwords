@@ -143,7 +143,7 @@ static XP_Bool
 lbt_accept( int listener, void* ctxt )
 {
     CommonGlobals* globals = (CommonGlobals*)ctxt;
-    LinBtStuff* btStuff = globals->u.bt.btStuff;
+    LinBtStuff* btStuff = globals->btStuff;
     int sock = -1;
     struct sockaddr_l2 inaddr;
     socklen_t slen;
@@ -171,7 +171,7 @@ lbt_accept( int listener, void* ctxt )
 static void
 lbt_listenerSetup( CommonGlobals* globals )
 {
-    LinBtStuff* btStuff = globals->u.bt.btStuff;
+    LinBtStuff* btStuff = globals->btStuff;
     struct sockaddr_l2 saddr;
     int listener;
 
@@ -192,12 +192,12 @@ lbt_listenerSetup( CommonGlobals* globals )
 void
 linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
 {
-    LinBtStuff* btStuff = globals->u.bt.btStuff;
+    LinBtStuff* btStuff = globals->btStuff;
     if ( !btStuff ) {
-        btStuff = globals->u.bt.btStuff
+        btStuff = globals->btStuff
             = lbt_make( MPPARM(globals->params->util->mpool) amMaster );
         btStuff->globals = globals;
-        globals->u.bt.btStuff = btStuff;
+        globals->btStuff = btStuff;
 
         if ( amMaster ) {
             lbt_listenerSetup( globals );
@@ -214,14 +214,14 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
 void
 linux_bt_close( CommonGlobals* globals )
 {
-    LinBtStuff* btStuff = globals->u.bt.btStuff;
+    LinBtStuff* btStuff = globals->btStuff;
 
     if ( !!btStuff ) {
         if ( btStuff->amMaster ) {
             close( btStuff->u.master.listener );
         }
         XP_FREE( globals->params->util->mpool, btStuff );
-        globals->u.bt.btStuff = NULL;
+        globals->btStuff = NULL;
     }
 } /* linux_bt_close */
 
@@ -235,7 +235,7 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
 
     XP_LOGF( "%s(len=%d)", __FUNCTION__, buflen );
 
-    btStuff = globals->u.bt.btStuff;
+    btStuff = globals->btStuff;
     if ( !!btStuff ) {
         CommsAddrRec addr;
         if ( !addrP ) {
@@ -282,7 +282,7 @@ linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen )
 void
 linux_bt_socketclosed( CommonGlobals* globals, int sock )
 {
-    LinBtStuff* btStuff = globals->u.bt.btStuff;
+    LinBtStuff* btStuff = globals->btStuff;
     if ( btStuff->amMaster ) {
         lbt_removeSock( btStuff, sock );
     }

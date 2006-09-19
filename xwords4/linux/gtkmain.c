@@ -262,7 +262,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         if ( addr.conType == COMMS_CONN_RELAY ) {
             XP_ASSERT( !!params->connInfo.relay.relayName );
-            globals->cGlobals.u.relay.defaultServerName
+            globals->cGlobals.defaultServerName
                 = params->connInfo.relay.relayName;
         }
 

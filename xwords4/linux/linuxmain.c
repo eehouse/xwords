@@ -359,7 +359,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals )
             return -1;
         } else {
             XP_WARNF( "gethostbyname for %s worked", 
-                      cGlobals->u.relay.defaultServerName );
+                      cGlobals->defaultServerName );
         }
         memcpy( &(to_sock.sin_addr.s_addr), host->h_addr_list[0],  
                 sizeof(struct in_addr));
