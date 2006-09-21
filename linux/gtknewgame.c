@@ -27,14 +27,6 @@
 
 #define MAX_SIZE_CHOICES 10
 
-/* make the appropriate set of entries sensitive or not
- */
-typedef struct ItemNumPair {
-    GtkWidget* item;
-    short index;
-    gboolean found;
-} ItemNumPair;
-
 typedef struct GtkNewGameState {
     GtkAppGlobals* globals;
     NewGameCtx* newGameCtxt;
@@ -51,55 +43,33 @@ typedef struct GtkNewGameState {
     GtkWidget* nameFields[MAX_NUM_PLAYERS];
     GtkWidget* passwdLabels[MAX_NUM_PLAYERS];
     GtkWidget* passwdFields[MAX_NUM_PLAYERS];
-    GtkWidget* nPlayersMenu;
-    GtkWidget* roleMenu;
+    GtkWidget* nPlayersCombo;
+    GtkWidget* roleCombo;
     GtkWidget* nPlayersLabel;
     GtkWidget* juggleButton;
-
-    GtkWidget* roleMenuItems[3];
 } GtkNewGameState;
 
-void
-countBeforeSame( GtkWidget *widget, gpointer data )
+static void
+nplayers_menu_changed( GtkComboBox* combo, GtkNewGameState* state )
 {
-    ItemNumPair* pair = (ItemNumPair*)data;
-    if ( !pair->found ) {
-        if ( pair->item == widget ) {
-            pair->found = TRUE;
-        } else {
-            ++pair->index;
-        }
+    gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
+    if ( index >= 0 ) {
+        NGValue value = { .ng_u16 = index + 1 };
+        newg_attrChanged( state->newGameCtxt, NG_ATTR_NPLAYERS, value );
     }
-} /* countBeforeSame */
+} /* nplayers_menu_changed */
 
 static void
-nplayers_menu_select( GtkWidget* item, GtkNewGameState* state )
+role_combo_changed( GtkComboBox* combo, gpointer gp )
 {
     NGValue value;
-    ItemNumPair pair = { .item = item, .index = 0, .found = FALSE };
-    
-    gtk_container_foreach( GTK_CONTAINER(item->parent), countBeforeSame, 
-                           &pair );
-    value.ng_u16 = pair.index + 1;
-    newg_attrChanged( state->newGameCtxt, NG_ATTR_NPLAYERS, value );
-} /* nplayers_menu_select */
-
-static void
-role_menu_select( GtkWidget* item, GtkNewGameState* state )
-{
-    NGValue value;
-    int i;
-
-    for ( i = 0; i < 3; ++i ) {
-        if ( item == state->roleMenuItems[i] ) {
-            break;
-        }
+    GtkNewGameState* state = (GtkNewGameState*)gp;
+    gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
+    if ( index >= 0 ) {    
+        value.ng_role = (Connectedness)index;
+        newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
     }
-    XP_ASSERT( i < 3 );         /* did we not find it? */
-
-    value.ng_role = (Connectedness)i;
-    newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
-} /* role_menu_select */
+} /* role_combo_changed */
 
 static void
 callChangedWithIndex( GtkNewGameState* state, GtkWidget* item, 
@@ -140,20 +110,15 @@ handle_remote_toggled( GtkWidget* item, GtkNewGameState* state )
 #endif
 
 static void
-size_menu_select( GtkWidget* item, GtkNewGameState* state )
+size_combo_changed( GtkComboBox* combo, gpointer gp )
 {
-    ItemNumPair pair;    
-
-    pair.item = item;
-    pair.index = 0;
-    pair.found = FALSE;
-
-    gtk_container_foreach( GTK_CONTAINER(item->parent), countBeforeSame, &pair );
-
-    XP_DEBUGF( "changing nCols from %d to %d\n", state->nCols, 
-               MAX_COLS - pair.index );
-    state->nCols = MAX_COLS - pair.index;
-} /* size_menu_select  */
+    GtkNewGameState* state = (GtkNewGameState*)gp;
+    gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
+    if ( index >= 0 ) {
+        state->nCols = MAX_COLS - index;
+        XP_LOGF( "set nCols = %d", state->nCols );
+    }
+} /* size_combo_changed  */
 
 static void
 handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
@@ -180,18 +145,6 @@ handle_revert( GtkWidget* XP_UNUSED(widget), void* closure )
     gtk_main_quit();
 } /* handle_revert */
 
-GtkWidget*
-make_menu_item( gchar* name, GCallback func, gpointer data )
-{
-    GtkWidget* item;
-  
-    item = gtk_menu_item_new_with_label( name );
-    g_signal_connect( GTK_OBJECT(item), "activate", func, data );
-    gtk_widget_show( item );
-
-    return item;
-} /* make_menu_item */
-
 static GtkWidget*
 makeButton( char* text, GCallback func, gpointer data )
 {
@@ -208,11 +161,9 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* dialog;
     GtkWidget* vbox;
     GtkWidget* hbox;
-    GtkWidget* item;
-    GtkWidget* roleMenu;
-    GtkWidget* nPlayersMenu;
-    GtkWidget* boardSizeMenu;
-    GtkWidget* opt;
+    GtkWidget* roleCombo;
+    GtkWidget* nPlayersCombo;
+    GtkWidget* boardSizeCombo;
     CurGameInfo* gi;
     short i;
     char* roles[] = { "Standalone", "Host", "Guest" };
@@ -225,20 +176,16 @@ makeNewGameDialog( GtkNewGameState* state )
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
                         FALSE, TRUE, 0 );
-    opt = gtk_option_menu_new();
-    roleMenu = gtk_menu_new();
-    state->roleMenu = roleMenu;
+    roleCombo = gtk_combo_box_new_text();
+    state->roleCombo = roleCombo;
 
     for ( i = 0; i < sizeof(roles)/sizeof(roles[0]); ++i ) {
-        item = make_menu_item( roles[i], GTK_SIGNAL_FUNC(role_menu_select),
-                               state );
-        state->roleMenuItems[i] = item;
-        gtk_menu_append( GTK_MENU(roleMenu), item );
+        gtk_combo_box_append_text( GTK_COMBO_BOX(roleCombo), roles[i] );
     }
+    g_signal_connect( GTK_OBJECT(roleCombo), "changed", 
+                      role_combo_changed, state );
 
-    gtk_option_menu_set_menu( GTK_OPTION_MENU(opt), roleMenu );
-    gtk_widget_show( opt );
-    gtk_box_pack_start( GTK_BOX(hbox), opt, FALSE, TRUE, 0 );
+    gtk_box_pack_start( GTK_BOX(hbox), roleCombo, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     /* NPlayers menu */
@@ -246,23 +193,20 @@ makeNewGameDialog( GtkNewGameState* state )
     state->nPlayersLabel = gtk_label_new("");
     gtk_box_pack_start( GTK_BOX(hbox), state->nPlayersLabel, FALSE, TRUE, 0 );
 
-    opt = gtk_option_menu_new();
-    nPlayersMenu = gtk_menu_new();
-    state->nPlayersMenu = nPlayersMenu;
+    nPlayersCombo = gtk_combo_box_new_text();
+    state->nPlayersCombo = nPlayersCombo;
 
     gi = &state->globals->cGlobals.params->gi;
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        char buf[2];
-        snprintf( buf, 2, "%d", i+1 );
-        item = make_menu_item( buf, GTK_SIGNAL_FUNC(nplayers_menu_select),
-                               state );
-        gtk_menu_append( GTK_MENU(nPlayersMenu), item );
+        char buf[2] = { i + '1', '\0' };
+        gtk_combo_box_append_text( GTK_COMBO_BOX(nPlayersCombo), buf );
     }
-    gtk_option_menu_set_menu( GTK_OPTION_MENU(opt), nPlayersMenu );
 
-    gtk_widget_show( opt );
-    gtk_box_pack_start( GTK_BOX(hbox), opt, FALSE, TRUE, 0 );
+    gtk_widget_show( nPlayersCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), nPlayersCombo, FALSE, TRUE, 0 );
+    g_signal_connect( GTK_OBJECT(nPlayersCombo), "changed", 
+                      nplayers_menu_changed, state );
 
     state->juggleButton = makeButton( "Juggle", 
                                       GTK_SIGNAL_FUNC(handle_juggle),
@@ -326,25 +270,23 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Board size"),
                         FALSE, TRUE, 0 );
 
-    opt = gtk_option_menu_new();
-    boardSizeMenu = gtk_menu_new();
+    boardSizeCombo = gtk_combo_box_new_text();
 
-    state->nCols = gi->boardSize;
     for ( i = 0; i < MAX_SIZE_CHOICES; ++i ) {
         char buf[10];
         XP_U16 siz = MAX_COLS - i;
         snprintf( buf, sizeof(buf), "%dx%d", siz, siz );
-        item = make_menu_item( buf, GTK_SIGNAL_FUNC(size_menu_select),
-                               state );
-        gtk_menu_append( GTK_MENU(boardSizeMenu), item );
+        gtk_combo_box_append_text( GTK_COMBO_BOX(boardSizeCombo), buf );
         if ( siz == state->nCols ) {
-            gtk_menu_set_active( GTK_MENU(boardSizeMenu), i );
+            gtk_combo_box_set_active( GTK_COMBO_BOX(boardSizeCombo), i );
         }
     }
-    gtk_option_menu_set_menu( GTK_OPTION_MENU(opt), boardSizeMenu );
 
-    gtk_widget_show( opt );
-    gtk_box_pack_start( GTK_BOX(hbox), opt, FALSE, TRUE, 0 );
+    g_signal_connect( GTK_OBJECT(boardSizeCombo), "changed", 
+                      size_combo_changed, state );
+
+    gtk_widget_show( boardSizeCombo );
+    gtk_box_pack_start( GTK_BOX(hbox), boardSizeCombo, FALSE, TRUE, 0 );
 
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Dictionary: "),
                         FALSE, TRUE, 0 );
@@ -442,9 +384,9 @@ gtk_newgame_attr_enable( void* closure, NewGameAttr attr, NewGameEnable enable )
     GtkNewGameState* state = (GtkNewGameState*)closure;
     GtkWidget* widget = NULL;
     if ( attr == NG_ATTR_NPLAYERS ) {
-        widget = state->nPlayersMenu;
+        widget = state->nPlayersCombo;
     } else if ( attr == NG_ATTR_ROLE ) {
-        widget = state->roleMenu;
+        widget = state->roleCombo;
     } else if ( attr == NG_ATTR_CANJUGGLE ) {
         widget = state->juggleButton;
     }
@@ -510,9 +452,10 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
     if ( attr == NG_ATTR_NPLAYERS ) {
         XP_U16 i = value.ng_u16;
         XP_LOGF( "%s: setting menu %d", __FUNCTION__, i-1 );
-        gtk_menu_set_active( GTK_MENU(state->nPlayersMenu), i-1 );
+        gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), i-1 );
     } else if ( attr == NG_ATTR_ROLE ) {
-        
+        gtk_combo_box_set_active( GTK_COMBO_BOX(state->roleCombo), 
+                                  value.ng_role );
     } else if ( attr == NG_ATTR_REMHEADER ) {
         /* ignored on GTK: no headers at all */
     } else if ( attr == NG_ATTR_NPLAYHEADER ) {
@@ -540,8 +483,12 @@ newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame )
 
     /* returns when button handler calls gtk_main_quit */
     do {
-        GtkWidget* dialog = makeNewGameDialog( &state );
+        GtkWidget* dialog;
+
         state.revert = FALSE;
+        state.nCols = globals->cGlobals.params->gi.boardSize;
+
+        dialog = makeNewGameDialog( &state );
 
         newg_load( state.newGameCtxt, 
                    &globals->cGlobals.params->gi );
@@ -549,6 +496,7 @@ newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame )
         gtk_main();
         if ( !state.cancelled && !state.revert ) {
             newg_store( state.newGameCtxt, &globals->cGlobals.params->gi );
+            globals->cGlobals.params->gi.boardSize = state.nCols;
         }
 
         gtk_widget_destroy( dialog );
