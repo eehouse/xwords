@@ -88,6 +88,9 @@ BEGIN
         MENUITEM "Log to memo" XW_LOGMEMO_PULLDOWN_ID
         MENUITEM "Clear logs" XW_CLEARLOGS_PULLDOWN_ID
         MENUITEM "Network stats..." XW_NETSTATS_PULLDOWN_ID
+#ifdef DEBUG
+        MENUITEM "BT stats..."  XW_BTSTATS_PULLDOWN_ID
+#endif
 #ifdef MEM_DEBUG
         MENUITEM "Mem stats..." XW_MEMSTATS_PULLDOWN_ID
 #endif

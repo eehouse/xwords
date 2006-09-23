@@ -25,6 +25,18 @@
 #include "comms.h"
 #include "palmmain.h"
 
+/* Needed: feedback to main so status can be posted on the board.  Events we
+ * might care about:
+ *
+ * - BT disconnected -- not available
+ * - Server up and socket available
+ * - client trying to connect (includes having ACL conn)
+ * - client has a connection (L2CAP socket open)
+ * - received data
+ * - sending data
+ * - done sending data
+ */
+
 /**
  * palm_bt_appendWaitTicks
  * reduce waitTicks if have work to do
@@ -48,5 +60,8 @@ XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 XP_Bool palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
                                XP_UCHAR* out,XP_U16 len );
 
+#ifdef DEBUG
+void palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream );
+#endif
 #endif /* XWFEATURE_BLUETOOTH */
 #endif

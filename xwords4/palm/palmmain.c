@@ -2377,6 +2377,14 @@ mainViewHandleEvent( EventPtr event )
                 stream_destroy( stream );
             }
             break;
+#if defined XWFEATURE_BLUETOOTH && defined DEBUG
+        case XW_BTSTATS_PULLDOWN_ID:
+            stream = makeSimpleStream( globals, askOnClose );
+            palm_bt_getStats( globals, stream );
+            stream_destroy( stream );
+            break;
+#endif
+
 #ifdef MEM_DEBUG
         case XW_MEMSTATS_PULLDOWN_ID :
             if ( !!globals->mpool ) {
