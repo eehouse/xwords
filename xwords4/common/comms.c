@@ -249,7 +249,8 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     case COMMS_CONN_BT:
         stringFromStreamHere( stream, addr.u.bt.hostName,
                               sizeof(addr.u.bt.hostName) );
-        stream_getBytes( stream, &addr.u.bt.btAddr, sizeof(addr.u.bt.btAddr) );
+        stream_getBytes( stream, &addr.u.bt.btAddr.bits, 
+                         sizeof(addr.u.bt.btAddr.bits) );
         break;
     case COMMS_CONN_IR:
         /* nothing to save */
@@ -324,7 +325,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         rec->nUniqueBytes = stream_getU16( stream );
 #endif
 
-        rec->next = (AddressRecord*)NULL;
         *prevsAddrNext = rec;
         prevsAddrNext = &rec->next;
     }
@@ -387,7 +387,9 @@ addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
 #endif
     case COMMS_CONN_BT:
         stringToStream( stream, addr.u.bt.hostName );
-        stream_putBytes( stream, &addr.u.bt.btAddr, sizeof(addr.u.bt.btAddr) );
+        /* sizeof(.bits) below defeats ARM's padding. */
+        stream_putBytes( stream, &addr.u.bt.btAddr.bits, 
+                         sizeof(addr.u.bt.btAddr.bits) );
         break;
     case COMMS_CONN_IR:
         /* nothing to save */
