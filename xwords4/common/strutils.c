@@ -122,8 +122,8 @@ stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen )
             len = buflen - 1;
         }
         stream_getBytes( stream, buf, len );
-        buf[len] = '\0';
     }
+    buf[len] = '\0';
     return len;
 }
 
