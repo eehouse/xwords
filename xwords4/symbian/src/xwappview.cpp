@@ -398,6 +398,7 @@ sym_util_engineProgressCallback( XW_UtilCtxt* /*uc*/ )
 /*static*/ TInt
 CXWordsAppView::HeartbeatTimerCallback( TAny* closure )
 {
+#ifdef BEYOND_IR
     CXWordsAppView* self = (CXWordsAppView*)closure;
     self->iHBQueued = XP_FALSE;
 
@@ -405,6 +406,7 @@ CXWordsAppView::HeartbeatTimerCallback( TAny* closure )
     void* hbclosure;
     self->GetHeartbeatCB( &proc, &hbclosure );
     (*proc)( hbclosure, TIMER_HEARTBEAT );
+#endif
     return 0;
 }
 
