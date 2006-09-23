@@ -708,7 +708,7 @@ comms_resendAll( CommsCtxt* comms )
 {
     MsgQueueElem* msg;
     XP_S16 result = 0;
-
+    LOG_FUNC();
     for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
         XP_S16 oneResult = sendMsg( comms, msg );
         if ( result == 0 && oneResult != 0 ) {
@@ -1204,9 +1204,12 @@ static void
 btConnect( CommsCtxt* comms )
 {
     /* Ping the bt layer so it'll get sockets set up.  PENDING: if I'm server
-       need to do this once per guest record with non-null address. */
-    (void)(*comms->sendproc)( (const void*)comms, /* any valid ptr will do */
-                              0, NULL, comms->sendClosure );
+       need to do this once per guest record with non-null address.  Might as
+       well use real messages if we have 'em.  Otherwise a fake size-0 msg. */
+    if ( comms_resendAll( comms ) <= 0 ) {
+        (void)(*comms->sendproc)( (const void*)comms, /* any valid ptr will do */
+                                  0, NULL, comms->sendClosure );
+    }
 } /* btConnect */
 #endif
 
