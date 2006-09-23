@@ -151,17 +151,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
     board_reset( game->board );
 
     for ( i = 0; i < gi->nPlayers; ++i ) {
-        LocalPlayer* player = &gi->players[i];
-        XP_LOGF( "%s: name[%d] = %s", __FUNCTION__,
-                 i, emptyStringIfNull(player->name) );
-        /* Why null out the name???? */
-/*         if ( !player->isLocal ) { */
-/*             if ( !!player->name ) { */
-/*                 XP_FREE( mpool, player->name ); */
-/*             } */
-/*             player->name = (XP_UCHAR*)NULL; */
-/*         } */
-        player->secondsUsed = 0;
+        gi->players[i].secondsUsed = 0;
     }
 
     server_prefsChanged( game->server, cp );
