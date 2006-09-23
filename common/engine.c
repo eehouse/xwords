@@ -593,19 +593,6 @@ lookup( DictionaryCtxt* dict, array_edge* edge, Tile* buf, XP_U16 tileIndex,
 } /* lookup */
 
 static void
-setCheck( Crosscheck* check, Tile tile )
-{
-    CrossBits* ptr = &check->bits[0];
-    XP_ASSERT( tile < MAX_UNIQUE_TILES );
-    while ( tile > 31 ) {
-        ++ptr;
-        tile -= 32;
-        XP_ASSERT( tile <= 31 ); /* only iterate once!!! */
-    }
-    *ptr |= 1L << tile;
-} /* setCheck */
-
-static void
 figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
                    Crosscheck* check )
 {
@@ -702,7 +689,9 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
             XP_ASSERT( tile < MAX_UNIQUE_TILES );
             tiles[0] = tile;
             if ( lookup( dict, in_edge, tiles, 0, tilesAfter ) ) {
-                setCheck( check, tile );
+                XP_ASSERT( (tile >> 5)
+                           < (sizeof(check->bits)/sizeof(check->bits[0])) );
+                check->bits[tile>>5] |= (1 << (tile & 0x1F));
             }
 
             if ( IS_LAST_EDGE(dict,candidateEdge ) ) {
