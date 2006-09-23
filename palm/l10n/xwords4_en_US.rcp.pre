@@ -239,14 +239,14 @@ BEGIN
     POPUPTRIGGER "" ID XW_CONNS_TYPE_TRIGGER_ID
         AT (PREVRIGHT+5 PREVTOP 72 12) LEFTANCHOR
     LIST
-        "Bluetooth" "IR" "Internet/IP" ID XW_CONNS_TYPE_LIST_ID 
+        "Bluetooth" "Beaming" "Internet/IP" ID XW_CONNS_TYPE_LIST_ID 
         PREVLEFT PREVTOP 72 12 VISIBLEITEMS 3
     NONUSABLE POPUPLIST XW_CONNS_TYPE_TRIGGER_ID XW_CONNS_TYPE_LIST_ID 
 
 /* Bluetooth stuff must be here even if XWFEATURE_BLUETOOTH is not defined
    since, e.g. ARM and 68K share these resources yet may not both support
    BT */
-    LABEL "Bluetooth not supported" XW_CONNS_BT_NOTSUPPORT_LABEL_ID
+    LABEL "No bluetooth on Arm (yet)." XW_CONNS_BT_NOTSUPPORT_LABEL_ID
         AT ( LEFTCOL+10 LOCALIP_TOP ) NONUSABLE
     LABEL "host name:" XW_CONNS_BT_HOSTNAME_LABEL_ID
         AT ( PREVLEFT PREVTOP ) NONUSABLE
