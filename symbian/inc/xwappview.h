@@ -156,15 +156,15 @@ class CXWordsAppView : public CCoeControl
     static XWStreamCtxt*   sym_util_makeStreamFromAddr( XW_UtilCtxt* uc,
                                                         XP_U16 channelNo );
 
+    static void            sym_util_setTimer( XW_UtilCtxt* uc, 
+                                              XWTimerReason why, XP_U16 when,
+                                              TimerProc proc, void* closure );
 #ifdef BEYOND_IR
     static void            sym_util_listenPortChange( XW_UtilCtxt* uc, 
                                                       XP_U16 listenPort );
     static void            sym_util_addrChange( XW_UtilCtxt* uc, 
                                                 const CommsAddrRec* aOld,
                                                 const CommsAddrRec* aNew );
-    static void            sym_util_setTimer( XW_UtilCtxt* uc, 
-                                              XWTimerReason why, XP_U16 when,
-                                              TimerProc proc, void* closure );
 #endif
 
 #ifdef XWFEATURE_STANDALONE_ONLY

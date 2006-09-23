@@ -20,6 +20,7 @@ XWORDS_DIR = \"xwords_$(SERIES)\"
 include ../../common/config.mk
 
 #STANDALONE_ONLY ?= -DXWFEATURE_STANDALONE_ONLY
+BEYOND_IR = -DBEYOND_IR
 
 LIBS_ALLSERIES = \
 	$(EPOCTRGREL)/euser.lib \
@@ -125,7 +126,7 @@ CFLAGS += $(OPT) -I. -DUID3=0x$(U3) $(DEBUG_FLAGS) \
 	-D__LITTLE_ENDIAN -DKEYBOARD_NAV \
 	-DKEY_SUPPORT -DFEATURE_TRAY_EDIT -DNODE_CAN_4 \
 	$(STANDALONE_ONLY) -D$(SYMARCH) \
-	-DSYM_ARMI -DOS_INITS_DRAW -DBEYOND_IR \
+	-DSYM_ARMI -DOS_INITS_DRAW $(BEYOND_IR) \
 	$(INCDIR)
 
 # This violates the no-data rule.  Don't allow it for ARMI build.
