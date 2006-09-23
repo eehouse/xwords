@@ -48,7 +48,7 @@ typedef enum {
 } PBT_STATE;
 
 #define PBT_MAX_ACTS 4
-#define HASWORK(s)  ((s)->vol.queueCur != (s)->vol.queueNext)
+#define HASWORK(s)  ((s)->queueCur != (s)->queueNext)
 #define MAX_INCOMING 4
 
 typedef struct PalmBTStuff {
@@ -63,10 +63,6 @@ typedef struct PalmBTStuff {
         XP_U16 lens[MAX_INCOMING];
         XP_U8 bufIn[L2CAPSOCKETMTU*2];       /* what's the mmu? */
 
-        XP_U16 queueCur;
-        XP_U16 queueNext;
-        PBT_ACTION actQueue[PBT_MAX_ACTS];
-
         XP_Bool sendInProgress;
         XP_Bool sendPending;
     } vol;
@@ -79,6 +75,10 @@ typedef struct PalmBTStuff {
     PBT_STATE p_connState;
     BtLibAccessibleModeEnum accState;
 
+    XP_U16 queueCur;
+    XP_U16 queueNext;
+    PBT_ACTION actQueue[PBT_MAX_ACTS];
+
     union {
         struct {
         } slave;
@@ -86,9 +86,6 @@ typedef struct PalmBTStuff {
             BtLibSocketRef listenSocket;
         } master;
     } u;
-
-    BtLibSdpRecordHandle sdpRecordH;
-
 } PalmBTStuff;
 
 #ifdef DEBUG
@@ -380,24 +377,6 @@ pbt_setup_master( PalmBTStuff* btStuff )
         CALL_ERR( err, BtLibSocketListen, btStuff->btLibRefNum, 
                   btStuff->u.master.listenSocket, &listenInfo );
 
-        /*    3. BtLibSdpServiceRecordCreate: allocate a memory chunk that
-              represents an SDP service record. */
-        CALL_ERR( err, BtLibSdpServiceRecordCreate,
-                  btStuff->btLibRefNum, &btStuff->sdpRecordH );
-
-        /*    4. BtLibSdpServiceRecordSetAttributesForSocket: initialize an
-              SDP memory record so it can represent the newly-created L2CAP
-              listener socket as a service */
-        CALL_ERR( err, BtLibSdpServiceRecordSetAttributesForSocket,
-                  btStuff->btLibRefNum, btStuff->u.master.listenSocket, 
-                  (BtLibSdpUuidType*)&XWORDS_UUID, 1, APPNAME, 
-                  StrLen(APPNAME), btStuff->sdpRecordH );
-
-        /*    5. BtLibSdpServiceRecordStartAdvertising: make an SDP memory
-              record representing a local SDP service record visible to
-              remote devices.  */
-        CALL_ERR( err, BtLibSdpServiceRecordStartAdvertising, 
-                  btStuff->btLibRefNum, btStuff->sdpRecordH );
     }
 } /* pbt_setup_master */
 
@@ -417,16 +396,6 @@ pbt_takedown_master( PalmBTStuff* btStuff )
                   btStuff->dataSocket );
     }
 
-    if ( !!btStuff->sdpRecordH ) {
-        CALL_ERR( err, BtLibSdpServiceRecordStopAdvertising,
-                  btLibRefNum, btStuff->sdpRecordH );
-        XP_ASSERT( errNone == err ); /* no errors if it was being advertised */
-
-        CALL_ERR( err, BtLibSdpServiceRecordDestroy, btLibRefNum, 
-                  btStuff->sdpRecordH );
-        btStuff->sdpRecordH = NULL;
-    }
-
     if ( SOCK_INVAL != btStuff->u.master.listenSocket ) {
         CALL_ERR( err, BtLibSocketClose, btLibRefNum,  
                   btStuff->u.master.listenSocket );
@@ -442,8 +411,8 @@ pbt_do_work( PalmBTStuff* btStuff )
     PBT_ACTION act;
     Err err;
 
-    act = btStuff->vol.actQueue[btStuff->vol.queueCur++];
-    btStuff->vol.queueCur %= PBT_MAX_ACTS;
+    act = btStuff->actQueue[btStuff->queueCur++];
+    btStuff->queueCur %= PBT_MAX_ACTS;
 
     XP_LOGF( "%s: evt=%s; state=%s", __FUNCTION__, actToStr(act),
              stateToStr(GET_STATE(btStuff)) );
@@ -454,18 +423,18 @@ pbt_do_work( PalmBTStuff* btStuff )
             /* sends btLibManagementEventACLConnectOutbound */
             CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
                       &btStuff->otherAddr );
-            SET_STATE( btStuff, PBTST_ACL_CONNECTING );
-        } else {
-            err = btLibErrAlreadyConnected;
-        }
-        if ( btLibErrAlreadyConnected == err ) {
-            pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
+            if ( btLibErrPending == err ) {
+                SET_STATE( btStuff, PBTST_ACL_CONNECTING );
+            } else if ( btLibErrAlreadyConnected == err ) {
+                SET_STATE( btStuff, PBTST_ACL_CONNECTED );
+                pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
+            }
         }
         break;
 
     case PBT_ACT_CONNECT_L2C:
         if ( GET_STATE(btStuff) == PBTST_ACL_CONNECTED ) {
-            XP_ASSERT( SOCK_INVAL == btStuff->dataSocket );
+            XP_ASSERT( SOCK_INVAL == btStuff->dataSocket ); /* fired */
             CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
                       &btStuff->dataSocket, 
                       l2SocketCallback, (UInt32)btStuff, 
@@ -481,7 +450,14 @@ pbt_do_work( PalmBTStuff* btStuff )
                 /* sends btLibSocketEventConnectedOutbound */
                 CALL_ERR( err, BtLibSocketConnect, btStuff->btLibRefNum, 
                           btStuff->dataSocket, &connInfo );
-                SET_STATE( btStuff, PBTST_L2C_CONNECTING );
+                if ( errNone == err ) {
+                    SET_STATE( btStuff, PBTST_L2C_CONNECTED );
+                } else if ( btLibErrPending == err ) {
+                    SET_STATE( btStuff, PBTST_L2C_CONNECTING );
+                } else {
+                    SET_STATE( btStuff, PBTST_NONE );
+                    pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+                }
             } else {
                 btStuff->dataSocket = SOCK_INVAL;
             }
@@ -511,9 +487,9 @@ pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
     XP_LOGF( "%s(%s)", __FUNCTION__, actToStr(act) );
     EvtAddEventToQueue( &eventToPost );
 
-    btStuff->vol.actQueue[ btStuff->vol.queueNext++ ] = act;
-    btStuff->vol.queueNext %= PBT_MAX_ACTS;
-    XP_ASSERT( btStuff->vol.queueNext != btStuff->vol.queueCur );
+    btStuff->actQueue[ btStuff->queueNext++ ] = act;
+    btStuff->queueNext %= PBT_MAX_ACTS;
+    XP_ASSERT( btStuff->queueNext != btStuff->queueCur );
 }
 
 static void
@@ -666,8 +642,11 @@ pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
     }
 
     /* Harm in calling this when not connected? */
-    CALL_ERR( err, BtLibLinkDisconnect, btLibRefNum, &btStuff->otherAddr );
-    SET_STATE( btStuff, PBTST_NONE );
+    if ( GET_STATE(btStuff) != PBTST_NONE ) {
+        SET_STATE( btStuff, PBTST_NONE ); /* set first */
+        /* sends btLibManagementEventACLDisconnect */
+        CALL_ERR( err, BtLibLinkDisconnect, btLibRefNum, &btStuff->otherAddr );
+    }
 } /* pbt_killL2C */
 
 static void
@@ -750,6 +729,16 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         }
         break;
 
+    case btLibL2DiscConnPsmUnsupported:
+        /* Probably need to warn the user when this happens since not having
+           established trust will be a common error.  Or: figure out if
+           there's a way to fall back and establish trust programatically.
+           For alpha just do the error message. :-) Also, no point in
+           continuing to try to connect.  User will have to quit in order to
+           establish trust.  So warn once per inited session. */
+        XP_LOGF( "Crosswords not running on host or host not trusted." );
+        break;
+
     default:
         break;
     }
@@ -782,14 +771,14 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
             XP_LOGF( "successful ACL connection to master!" );
             pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
         } else {
-            SET_STATE(btStuff, PBTST_NONE);
+            SET_STATE( btStuff, PBTST_NONE );
             pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
         }
         break;
 
     case btLibManagementEventACLConnectInbound:
         if ( btLibErrNoError == mEvent->status ) {
-            SET_STATE(btStuff, PBTST_ACL_CONNECTED);
+            SET_STATE( btStuff, PBTST_ACL_CONNECTED );
             XP_LOGF( "successful ACL connection!" );
             XP_MEMCPY( &btStuff->otherAddr, 
                        &mEvent->eventData.bdAddr,
@@ -797,6 +786,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         }
         break;
     case btLibManagementEventACLDisconnect:
+        /* This is getting called from inside the BtLibLinkDisconnect call!!!! */
         XP_ASSERT( 0 == XP_MEMCMP( &mEvent->eventData.bdAddr,
                                    &btStuff->otherAddr,
                                    sizeof(btStuff->otherAddr) ) );
@@ -805,7 +795,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
                       btStuff->dataSocket );
             btStuff->dataSocket = SOCK_INVAL;
         }
-        SET_STATE(btStuff, PBTST_NONE);
+        SET_STATE( btStuff, PBTST_NONE );
         /* See comment at btLibSocketEventDisconnected */
         if ( PBT_SLAVE == btStuff->setState ) {
             pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
