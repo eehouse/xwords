@@ -708,7 +708,7 @@ comms_resendAll( CommsCtxt* comms )
 {
     MsgQueueElem* msg;
     XP_S16 result = 0;
-    LOG_FUNC();
+
     for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
         XP_S16 oneResult = sendMsg( comms, msg );
         if ( result == 0 && oneResult != 0 ) {
