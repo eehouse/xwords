@@ -349,9 +349,7 @@ static void
 cleanupServer( ServerCtxt* server )
 {
     XP_U16 i;
-    XP_U16 nPlayers = server->vol.gi->nPlayers;
-
-    for ( i = 0; i < nPlayers; ++i ) {
+    for ( i = 0; i < sizeof(server->players)/sizeof(server->players[0]); ++i ){
         ServerPlayer* player = &server->players[i];
         if ( player->engine != NULL ) {
             engine_destroy( player->engine );
@@ -421,7 +419,7 @@ void
 server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 {
     CurGameInfo* gi = server->vol.gi;
-    XP_U16 nLocalPlayers;
+    XP_U16 nPlayers;
     LocalPlayer* lp;
 #ifdef DEBUG
     XP_U16 i = 0;
@@ -435,30 +433,27 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
     stream_putBits( stream, XWPROTO_NBITS, XWPROTO_DEVICE_REGISTRATION );
 
-    nLocalPlayers = gi->nPlayers;
-    XP_ASSERT( nLocalPlayers > 0 );
-    stream_putBits( stream, NPLAYERS_NBITS, nLocalPlayers );
+    nPlayers = gi->nPlayers;
+    XP_ASSERT( nPlayers > 0 );
+    stream_putBits( stream, NPLAYERS_NBITS, nPlayers );
 
-    for ( lp = gi->players; nLocalPlayers > 0; ++lp ) {
+    for ( lp = gi->players; nPlayers-- > 0; ++lp ) {
+        XP_UCHAR* name;
+        XP_U8 len;
 
         XP_ASSERT( i++ < MAX_NUM_PLAYERS );
 
-        if ( lp->isLocal ) {
+        stream_putBits( stream, 1, lp->isRobot );
 
-            XP_UCHAR* name = emptyStringIfNull(lp->name);
-            XP_Bool isRobot = lp->isRobot;
-            XP_U8 len;
-            stream_putBits( stream, 1, isRobot );
-            len = XP_STRLEN(name);
-            if ( len > MAX_NAME_LEN ) {
-                len = MAX_NAME_LEN;
-            }
-            stream_putBits( stream, NAME_LEN_NBITS, len );
-            stream_putBytes( stream, name, len );
-	
-            XP_ASSERT( nLocalPlayers > 0 );
-            --nLocalPlayers;
+        /* The first nPlayers players are the ones we'll use.  The local flag
+           doesn't matter when for SERVER_ISCLIENT. */
+        name = emptyStringIfNull(lp->name);
+        len = XP_STRLEN(name);
+        if ( len > MAX_NAME_LEN ) {
+            len = MAX_NAME_LEN;
         }
+        stream_putBits( stream, NAME_LEN_NBITS, len );
+        stream_putBytes( stream, name, len );
     }
 
     stream_destroy( stream );
@@ -1338,14 +1333,14 @@ curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
     DictionaryCtxt* dict = model_getDictionary( server->vol.model );
     XP_U16 i, j;
     XP_U16 size = tileSet->nTiles;
-    Tile* tp = tileSet->tiles;
+    const Tile* tp = tileSet->tiles;
     XP_U16 tradedTiles[MAX_TRAY_TILES];
     XP_U16 nNotInTray = 0;
     XP_U16 nUsed = 0;
 
     XP_MEMSET( tradedTiles, 0xFF, sizeof(tradedTiles) );
     if ( !!notInTray ) {
-        Tile* tp = notInTray->tiles;
+        const Tile* tp = notInTray->tiles;
         nNotInTray = notInTray->nTiles;
         for ( i = 0; i < nNotInTray; ++i ) {
             tradedTiles[i] = *tp++;
