@@ -1135,7 +1135,7 @@ saveOpenGame( PalmAppGlobals* globals )
     if ( !!globals->game.server ) {
         XWStreamCtxt* memStream;
         DictionaryCtxt* dict;
-        XP_UCHAR* dictName;
+        const XP_UCHAR* dictName;
         char namebuf[MAX_GAMENAME_LENGTH];
 
         if ( gi_countHumans( &globals->gameInfo ) > 1 ) {
@@ -1463,6 +1463,32 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
     return found;
 } /* timeForTimer */
 
+#ifdef XWFEATURE_BLUETOOTH
+static void
+showBTState( PalmAppGlobals* globals )
+{
+    if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
+        char ch = 'x';
+        switch( globals->btUIState ) {
+        case BTUI_NONE:
+            /* ch = 'x'; */ break;
+        case BTUI_LISTENING:
+            ch = 'L'; break;
+        case BTUI_CONNECTING:
+            ch = 'c'; break;
+        case BTUI_CONNECTED:
+            ch = 'C'; break;
+        case BTUI_SERVING:
+            ch = 'S'; break;
+        }
+
+        /* Looks ok on T650, bad on lowres.  Need to replace with gadget or
+           icon or something long before ship. */
+        WinDrawChars( &ch, 1, 160-7, 160-25 );
+    }
+} /* showBTState */
+#endif
+
 static Boolean
 handleNilEvent( PalmAppGlobals* globals )
 {
@@ -1478,8 +1504,8 @@ handleNilEvent( PalmAppGlobals* globals )
                 && (when <= TimGetTicks()) ) {
         palmFireTimer( globals, why );
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( palm_bt_doWork( globals ) ) {
-        /* nothing to do */
+    } else if ( palm_bt_doWork( globals, &globals->btUIState ) ) {
+        showBTState( globals );
 #endif
     } else if ( globals->timeRequested ) {
         globals->timeRequested = false;
@@ -1492,6 +1518,11 @@ handleNilEvent( PalmAppGlobals* globals )
     } else {
         handled = false;
     }
+
+#ifdef XWFEATURE_BLUETOOTH      /* don't check this in */
+    showBTState( globals );
+#endif
+
     return handled;
 } /* handleNilEvent */
 
@@ -1767,7 +1798,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     dict = model_getDictionary( globals->game.model );
 
     if ( !!dict ) {
-        XP_UCHAR* dictName = dict_getName( dict );
+        const XP_UCHAR* dictName = dict_getName( dict );
         if ( !!newDictName && 0 != XP_STRCMP( (const char*)dictName, 
                                               (const char*)newDictName ) ) {
             dict_destroy( dict );

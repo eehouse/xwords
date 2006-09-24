@@ -29,7 +29,7 @@
 #define L2CAPSOCKETMTU 500
 #define SOCK_INVAL 0XFFFF
 
-typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_SetState;
+typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_PicoRole;
 
 typedef enum {
     PBT_ACT_NONE
@@ -50,7 +50,12 @@ typedef enum {
 
 #define PBT_MAX_ACTS 4
 #define HASWORK(s)  ((s)->queueCur != (s)->queueNext)
-#define MAX_INCOMING 4
+#define MAX_PACKETS 4
+
+typedef struct PBT_queue {
+    XP_U16 lens[MAX_PACKETS];
+    XP_U8 bufs[L2CAPSOCKETMTU*2];       /* what's the mmu? */
+} PBT_queue;
 
 typedef struct PalmBTStuff {
     DataCb cb;
@@ -59,20 +64,17 @@ typedef struct PalmBTStuff {
     XP_U16 btLibRefNum;
 
     struct {
-        XP_U16 lenOut;
-        XP_UCHAR bufOut[L2CAPSOCKETMTU];       /* what's the mmu? */
-        XP_U16 lens[MAX_INCOMING];
-        XP_U8 bufIn[L2CAPSOCKETMTU*2];       /* what's the mmu? */
+        PBT_queue in;
+        PBT_queue out;
 
         XP_Bool sendInProgress;
-        XP_Bool sendPending;
     } vol;
 
     /* peer's addr: passed in by UI in case of slave, received via connection
        in case of master.  Piconet master will need an array of these. */
     BtLibDeviceAddressType otherAddr;
     BtLibSocketRef dataSocket;
-    PBT_SetState setState;
+    PBT_PicoRole picoRole;
     PBT_STATE p_connState;
     BtLibAccessibleModeEnum accState;
 
@@ -122,8 +124,9 @@ static void pbt_setup_master( PalmBTStuff* btStuff );
 static void pbt_takedown_master( PalmBTStuff* btStuff );
 static void pbt_do_work( PalmBTStuff* btStuff );
 static void pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act );
-static void pbt_enqueIncoming( PalmBTStuff* btStuff, XP_U8* data, XP_U16 len );
+static XP_S16 pbt_enque( PBT_queue* queue, const XP_U8* data, XP_S16 len );
 static void pbt_processIncoming( PalmBTStuff* btStuff );
+
 static void pbt_reset( PalmBTStuff* btStuff );
 static void pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock );
 static void pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
@@ -179,9 +182,9 @@ palm_bt_close( PalmAppGlobals* globals )
         if ( btLibRefNum != 0 ) {
             Err err;
 
-            if ( btStuff->setState == PBT_MASTER ) {
+            if ( btStuff->picoRole == PBT_MASTER ) {
                 pbt_takedown_master( btStuff );
-            } else if ( btStuff->setState == PBT_SLAVE ) {
+            } else if ( btStuff->picoRole == PBT_SLAVE ) {
                 pbt_takedown_slave( btStuff );
             }
 
@@ -208,7 +211,7 @@ palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result )
 }
 
 XP_Bool
-palm_bt_doWork( PalmAppGlobals* globals )
+palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btUIStateP )
 {
     PalmBTStuff* btStuff = globals->btStuff;
     XP_Bool haveWork = !!btStuff && HASWORK(btStuff);
@@ -216,8 +219,28 @@ palm_bt_doWork( PalmAppGlobals* globals )
     if ( haveWork ) {
         pbt_do_work( btStuff );
     }
+    if ( !!btStuff && !!btUIStateP ) {
+        BtUIState btUIState = BTUI_NONE; /* default */
+        switch( GET_STATE(btStuff) ) {
+        case PBTST_NONE: 
+            break;
+        case PBTST_LISTENING:
+            btUIState = BTUI_LISTENING; 
+            break;
+        case PBTST_ACL_CONNECTING:
+        case PBTST_ACL_CONNECTED:
+        case PBTST_L2C_CONNECTING:
+            btUIState = BTUI_CONNECTING; 
+            break;
+        case PBTST_L2C_CONNECTED:
+            btUIState = btStuff->picoRole == PBT_MASTER?
+                BTUI_SERVING : BTUI_CONNECTED; 
+            break;
+        }
+        *btUIStateP = btUIState;
+    }
     return haveWork;
-}
+} /* palm_bt_doWork */
 
 void
 palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
@@ -285,7 +308,8 @@ palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
         XP_U16 cur;
 
         XP_SNPRINTF( buf, sizeof(buf), "Role: %s\n", 
-                     btStuff->setState == PBT_MASTER? "master":"slave" );
+                     btStuff->picoRole == PBT_MASTER? "master":
+                     (btStuff->picoRole == PBT_SLAVE? "slave":"unknown") );
         stream_putString( stream, buf );
         XP_SNPRINTF( buf, sizeof(buf), "State: %s\n", 
                      stateToStr( GET_STATE(btStuff)) );
@@ -312,29 +336,44 @@ palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
 }
 #endif
 
+static XP_U16
+pbt_peekQueue( const PBT_queue* queue, const XP_U8** bufp )
+{
+    XP_U16 len = queue->lens[0];
+    if ( len > 0 ) {
+        *bufp = &queue->bufs[0];
+    }
+    return len;
+}
+
+static XP_U16
+pbt_shiftQueue( PBT_queue* queue )
+{
+    XP_U16 len = queue->lens[0];
+    XP_ASSERT( len != 0 );
+    XP_MEMCPY( &queue->lens[0], &queue->lens[1], 
+               sizeof(queue->lens) - sizeof(queue->lens[0]) );
+    queue->lens[MAX_PACKETS-1] = 0; /* be safe */
+    XP_MEMCPY( queue->bufs, queue->bufs + len, 
+               sizeof(queue->bufs) - len );
+    return len;
+} /* pbt_shiftQueue */
+
 static void
-pbt_send_pending( PalmBTStuff* btStuff, const CommsAddrRec* addr )
+pbt_send_pending( PalmBTStuff* btStuff )
 {
     Err err;
     LOG_FUNC();
-    if ( btStuff->vol.sendPending && !btStuff->vol.sendInProgress ) {
-        if ( btStuff->dataSocket != SOCK_INVAL ) {
-            /* hack: zero-len send to cause connect */
-            if ( btStuff->vol.lenOut > 0 ) {
-                CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
-                          btStuff->dataSocket, 
-                          btStuff->vol.bufOut, btStuff->vol.lenOut );
-                if ( err == errNone ) {
-                    // clear on receipt of btLibSocketEventSendComplete 
-                    btStuff->vol.sendInProgress = XP_TRUE;
-                }
-            } else {
-                btStuff->vol.sendPending = XP_FALSE;
-            }
-        } else {
-            /* No data socket? */
-            if ( btStuff->setState == PBT_SLAVE ) {
-                pbt_setup_slave( btStuff, addr );
+
+    if ( !btStuff->vol.sendInProgress ) {
+        const XP_U8* buf;
+        XP_U16 len = pbt_peekQueue( &btStuff->vol.out, &buf );
+
+        if ( len > 0 ) {
+            CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
+                      btStuff->dataSocket, (char*)buf, len );
+            if ( btLibErrPending == err ) {
+                btStuff->vol.sendInProgress = XP_TRUE;
             }
         }
     }
@@ -347,7 +386,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     XP_S16 nSent = -1;
     PalmBTStuff* btStuff;
     CommsAddrRec remoteAddr;
-    PBT_SetState setState;
+    PBT_PicoRole picoRole;
     XP_LOGF( "%s(len=%d)", __FUNCTION__, len );
 
     btStuff = pbt_checkInit( globals );
@@ -363,34 +402,23 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     }
     XP_ASSERT( !!addr );
 
-    setState = btStuff->setState;
-    if ( setState == PBT_UNINIT ) {
+    picoRole = btStuff->picoRole;
+    if ( picoRole == PBT_UNINIT ) {
         XP_Bool amMaster = comms_getIsServer( globals->game.comms );
-        setState = amMaster? PBT_MASTER : PBT_SLAVE;
+        picoRole = amMaster? PBT_MASTER : PBT_SLAVE;
     }
 
     pbt_checkAddress( btStuff, addr );
 
     if ( !!btStuff ) {
-        if ( setState == PBT_MASTER ) {
+        if ( picoRole == PBT_MASTER ) {
             pbt_setup_master( btStuff );
         } else {
             pbt_setup_slave( btStuff, addr );
         }
 
-        if ( !btStuff->vol.sendInProgress ) {
-            if ( len > sizeof( btStuff->vol.bufOut ) ) {
-                len = sizeof( btStuff->vol.bufOut );
-            }
-            XP_MEMCPY( btStuff->vol.bufOut, buf, len );
-            btStuff->vol.lenOut = len;
-            btStuff->vol.sendPending = XP_TRUE;            
-
-            pbt_send_pending( btStuff, addr );
-            nSent = len;
-        } else {
-            XP_LOGF( "%s: send ALREADY in progress", __FUNCTION__ );
-        }
+        nSent = pbt_enque( &btStuff->vol.out, buf, len );
+        pbt_send_pending( btStuff );
     }
     LOG_RETURNF( "%d", nSent );
     return nSent;
@@ -399,10 +427,10 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 static void
 pbt_setup_master( PalmBTStuff* btStuff )
 {
-    if ( btStuff->setState == PBT_SLAVE ) {
+    if ( btStuff->picoRole == PBT_SLAVE ) {
         pbt_takedown_slave( btStuff );
     }
-    btStuff->setState = PBT_MASTER;
+    btStuff->picoRole = PBT_MASTER;
 
     if ( btStuff->u.master.listenSocket == SOCK_INVAL ) {
         /* Will eventually want to create a piconet here for more than two
@@ -434,6 +462,17 @@ pbt_setup_master( PalmBTStuff* btStuff )
 } /* pbt_setup_master */
 
 static void
+pbt_close_datasocket( PalmBTStuff* btStuff )
+{
+    if ( SOCK_INVAL != btStuff->dataSocket ) {
+        Err err;
+        CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum,
+                  btStuff->dataSocket );
+        btStuff->dataSocket = SOCK_INVAL;
+    }
+}
+
+static void
 pbt_takedown_master( PalmBTStuff* btStuff )
 {
     XP_U16 btLibRefNum;
@@ -441,13 +480,10 @@ pbt_takedown_master( PalmBTStuff* btStuff )
 
     LOG_FUNC();
     
-    XP_ASSERT( btStuff->setState == PBT_MASTER );
+    XP_ASSERT( btStuff->picoRole == PBT_MASTER );
     btLibRefNum = btStuff->btLibRefNum;
 
-    if ( SOCK_INVAL != btStuff->dataSocket ) {
-        CALL_ERR( err, BtLibSocketClose, btLibRefNum,  
-                  btStuff->dataSocket );
-    }
+    pbt_close_datasocket( btStuff );
 
     if ( SOCK_INVAL != btStuff->u.master.listenSocket ) {
         CALL_ERR( err, BtLibSocketClose, btLibRefNum,  
@@ -455,7 +491,7 @@ pbt_takedown_master( PalmBTStuff* btStuff )
         btStuff->u.master.listenSocket = SOCK_INVAL;
     }
 
-    btStuff->setState = PBT_UNINIT;
+    btStuff->picoRole = PBT_UNINIT;
     SET_STATE( btStuff, PBTST_NONE );
 } /* pbt_takedown_master */
 
@@ -464,6 +500,7 @@ pbt_do_work( PalmBTStuff* btStuff )
 {
     PBT_ACTION act;
     Err err;
+    XP_U16 btLibRefNum = btStuff->btLibRefNum;
 
     act = btStuff->actQueue[btStuff->queueCur++];
     btStuff->queueCur %= PBT_MAX_ACTS;
@@ -475,7 +512,7 @@ pbt_do_work( PalmBTStuff* btStuff )
     case PBT_ACT_CONNECT_ACL:
         if ( GET_STATE(btStuff) == PBTST_NONE ) {
             /* sends btLibManagementEventACLConnectOutbound */
-            CALL_ERR( err, BtLibLinkConnect, btStuff->btLibRefNum, 
+            CALL_ERR( err, BtLibLinkConnect, btLibRefNum, 
                       &btStuff->otherAddr );
             if ( btLibErrPending == err ) {
                 SET_STATE( btStuff, PBTST_ACL_CONNECTING );
@@ -487,9 +524,10 @@ pbt_do_work( PalmBTStuff* btStuff )
         break;
 
     case PBT_ACT_CONNECT_L2C:
+        XP_ASSERT( btStuff->picoRole == PBT_SLAVE );
         if ( GET_STATE(btStuff) == PBTST_ACL_CONNECTED ) {
-            XP_ASSERT( SOCK_INVAL == btStuff->dataSocket ); /* fired */
-            CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
+            pbt_close_datasocket( btStuff );
+            CALL_ERR( err, BtLibSocketCreate, btLibRefNum, 
                       &btStuff->dataSocket, 
                       l2SocketCallback, (UInt32)btStuff, 
                       btLibL2CapProtocol );
@@ -502,7 +540,7 @@ pbt_do_work( PalmBTStuff* btStuff )
                 connInfo.remoteDeviceP = &btStuff->otherAddr;
 	
                 /* sends btLibSocketEventConnectedOutbound */
-                CALL_ERR( err, BtLibSocketConnect, btStuff->btLibRefNum, 
+                CALL_ERR( err, BtLibSocketConnect, btLibRefNum, 
                           btStuff->dataSocket, &connInfo );
                 if ( errNone == err ) {
                     SET_STATE( btStuff, PBTST_L2C_CONNECTED );
@@ -524,7 +562,7 @@ pbt_do_work( PalmBTStuff* btStuff )
         break;
 
     case PBT_ACT_TRYSEND:
-        pbt_send_pending( btStuff, NULL );
+        pbt_send_pending( btStuff );
         break;
 
     default:
@@ -546,52 +584,48 @@ pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
     XP_ASSERT( btStuff->queueNext != btStuff->queueCur );
 }
 
-static void
-pbt_enqueIncoming( PalmBTStuff* btStuff, XP_U8* indata, XP_U16 inlen )
+static XP_S16
+pbt_enque( PBT_queue* queue, const XP_U8* data, XP_S16 len )
 {
     XP_U16 i;
     XP_U16 total = 0;
 
-    for ( i = 0; i < MAX_INCOMING; ++i ) {
-        XP_U16 len = btStuff->vol.lens[i];
-        if ( !len ) {
+    for ( i = 0; i < MAX_PACKETS; ++i ) {
+        XP_U16 curlen = queue->lens[i];
+        if ( !curlen ) {
             break;
         }
-        total += len;
+        total += curlen;
     }
 
-    if ( (i < MAX_INCOMING) && 
-         ((total + inlen) < sizeof(btStuff->vol.bufIn)) ) {
-        btStuff->vol.lens[i] = inlen;
-        XP_MEMCPY( &btStuff->vol.bufIn[total], indata, inlen );
-        pbt_postpone( btStuff, PBT_ACT_GOTDATA );
-#ifdef DEBUG
-        btStuff->stats.totalRcvd += inlen;
-#endif        
+    if ( (i < MAX_PACKETS) && ((total + len) < sizeof(queue->bufs)) ) {
+        queue->lens[i] = len;
+        XP_MEMCPY( &queue->bufs[total], data, len );
     } else {
-        XP_LOGF( "%s: dropping packet of len %d", __FUNCTION__, inlen );
+        XP_LOGF( "%s: dropping packet of len %d", __FUNCTION__, len );
+        len = -1;
     }
-} /* pbt_enqueIncoming */
+    return len;
+} /* pbt_enque */
 
 static void
 pbt_processIncoming( PalmBTStuff* btStuff )
 {
-    XP_U16 len = btStuff->vol.lens[0];
-    XP_ASSERT( !!btStuff->cb );
-    if ( !!btStuff->cb ) {
-        CommsAddrRec fromAddr;
-        fromAddr.conType = COMMS_CONN_BT;
-        XP_MEMCPY( &fromAddr.u.bt.btAddr, &btStuff->otherAddr,
-                   sizeof(fromAddr.u.bt.btAddr) );
+    const XP_U8* buf;
+    
+    XP_U16 len = pbt_peekQueue( &btStuff->vol.in, &buf );
 
-        (*btStuff->cb)( btStuff->globals, &fromAddr, btStuff->vol.bufIn, len );
+    if ( len > 0 ) {
+        XP_ASSERT( !!btStuff->cb );
+        if ( !!btStuff->cb ) {
+            CommsAddrRec fromAddr;
+            fromAddr.conType = COMMS_CONN_BT;
+            XP_MEMCPY( &fromAddr.u.bt.btAddr, &btStuff->otherAddr,
+                       sizeof(fromAddr.u.bt.btAddr) );
 
-        /* slide the remaining packets down */
-        XP_MEMCPY( &btStuff->vol.lens[0], &btStuff->vol.lens[1], 
-                   sizeof(btStuff->vol.lens) - sizeof(btStuff->vol.lens[0]) );
-        btStuff->vol.lens[MAX_INCOMING-1] = 0; /* be safe */
-        XP_MEMCPY( btStuff->vol.bufIn, btStuff->vol.bufIn + len, 
-                   sizeof(btStuff->vol.bufIn) - len );
+            (*btStuff->cb)( btStuff->globals, &fromAddr, buf, len );
+            pbt_shiftQueue( &btStuff->vol.in );
+        }
     }
 } /* pbt_processIncoming */
 
@@ -623,10 +657,10 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 {
     XP_LOGF( "%s; state=%s", __FUNCTION__, stateToStr(GET_STATE(btStuff)));
 
-    if ( btStuff->setState == PBT_MASTER ) {
+    if ( btStuff->picoRole == PBT_MASTER ) {
         pbt_takedown_master( btStuff );
     }
-    btStuff->setState = PBT_SLAVE;
+    btStuff->picoRole = PBT_SLAVE;
 
     if ( !!addr ) {
         char buf[64];
@@ -652,7 +686,7 @@ static void
 pbt_takedown_slave( PalmBTStuff* btStuff )
 {
     pbt_killL2C( btStuff, btStuff->dataSocket );
-    btStuff->setState = PBT_UNINIT;
+    btStuff->picoRole = PBT_UNINIT;
 }
 
 static PalmBTStuff*
@@ -693,10 +727,7 @@ pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
     XP_U16 btLibRefNum = btStuff->btLibRefNum;
 
     XP_ASSERT( sock == btStuff->dataSocket );
-    if ( sock != SOCK_INVAL ) {
-        CALL_ERR( err, BtLibSocketClose, btLibRefNum, sock );
-        btStuff->dataSocket = SOCK_INVAL;
-    }
+    pbt_close_datasocket( btStuff );
 
     /* Harm in calling this when not connected? */
     if ( GET_STATE(btStuff) != PBTST_NONE ) {
@@ -744,13 +775,13 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
 
     switch( event ) {
     case btLibSocketEventConnectRequest: 
-        XP_ASSERT( btStuff->setState == PBT_MASTER );
+        XP_ASSERT( btStuff->picoRole == PBT_MASTER );
         /* sends btLibSocketEventConnectedInbound */
         CALL_ERR( err, BtLibSocketRespondToConnection, btStuff->btLibRefNum,  
                   sEvent->socket, true );
         break;
     case btLibSocketEventConnectedInbound:
-        XP_ASSERT( btStuff->setState == PBT_MASTER );
+        XP_ASSERT( btStuff->picoRole == PBT_MASTER );
         if ( sEvent->status == errNone ) {
             btStuff->dataSocket = sEvent->eventData.newSocket;
             XP_LOGF( "we have a data socket!!!" );
@@ -767,15 +798,22 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
     case btLibSocketEventData:
         XP_ASSERT( sEvent->status == errNone );
         XP_ASSERT( sEvent->socket == btStuff->dataSocket );
-        pbt_enqueIncoming( btStuff, sEvent->eventData.data.data, 
-                           sEvent->eventData.data.dataLen );
+
+        if ( 0 < pbt_enque( &btStuff->vol.in, sEvent->eventData.data.data, 
+                            sEvent->eventData.data.dataLen ) ) {
+            pbt_postpone( btStuff, PBT_ACT_GOTDATA );
+        }
+#ifdef DEBUG
+            btStuff->stats.totalRcvd += sEvent->eventData.data.dataLen;
+#endif        
         break;
 
     case btLibSocketEventSendComplete:
         btStuff->vol.sendInProgress = XP_FALSE;
 #ifdef DEBUG
-        btStuff->stats.totalSent += btStuff->vol.lenOut;
+        btStuff->stats.totalSent +=
 #endif
+            pbt_shiftQueue( &btStuff->vol.out );
         break;
 
     case btLibSocketEventDisconnected:
@@ -786,14 +824,11 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
          * home.  But there should probably be UI warning users that it's
          * trying to connect.... 
          */
-        if ( PBT_SLAVE == btStuff->setState ) {
+        if ( PBT_SLAVE == btStuff->picoRole ) {
             pbt_killL2C( btStuff, sEvent->socket );
             pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
-        } else if ( PBT_MASTER == btStuff->setState ) {
-            XP_ASSERT( btStuff->dataSocket == sEvent->socket );
-            CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
-                      sEvent->socket );
-            btStuff->dataSocket = SOCK_INVAL;
+        } else if ( PBT_MASTER == btStuff->picoRole ) {
+            pbt_close_datasocket( btStuff );
             SET_STATE( btStuff, PBTST_LISTENING );
         }
         break;
@@ -866,7 +901,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         }
         SET_STATE( btStuff, PBTST_NONE );
         /* See comment at btLibSocketEventDisconnected */
-        if ( PBT_SLAVE == btStuff->setState ) {
+        if ( PBT_SLAVE == btStuff->picoRole ) {
             pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
         }
         break;

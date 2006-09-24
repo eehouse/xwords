@@ -42,7 +42,7 @@
  * reduce waitTicks if have work to do
  */
 void palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result );
-XP_Bool palm_bt_doWork( PalmAppGlobals* globals );
+XP_Bool palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btState );
 
 typedef void (*DataCb)( PalmAppGlobals* globals, 
                         const CommsAddrRec* fromAddr,
