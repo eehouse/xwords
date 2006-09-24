@@ -156,7 +156,7 @@ makeButton( char* text, GCallback func, gpointer data )
 } /* makeButton */
 
 static GtkWidget*
-makeNewGameDialog( GtkNewGameState* state )
+makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
 {
     GtkWidget* dialog;
     GtkWidget* vbox;
@@ -183,7 +183,7 @@ makeNewGameDialog( GtkNewGameState* state )
         gtk_combo_box_append_text( GTK_COMBO_BOX(roleCombo), roles[i] );
     }
     g_signal_connect( GTK_OBJECT(roleCombo), "changed", 
-                      role_combo_changed, state );
+                      G_CALLBACK(role_combo_changed), state );
 
     gtk_box_pack_start( GTK_BOX(hbox), roleCombo, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -206,7 +206,7 @@ makeNewGameDialog( GtkNewGameState* state )
     gtk_widget_show( nPlayersCombo );
     gtk_box_pack_start( GTK_BOX(hbox), nPlayersCombo, FALSE, TRUE, 0 );
     g_signal_connect( GTK_OBJECT(nPlayersCombo), "changed", 
-                      nplayers_menu_changed, state );
+                      G_CALLBACK(nplayers_menu_changed), state );
 
     state->juggleButton = makeButton( "Juggle", 
                                       GTK_SIGNAL_FUNC(handle_juggle),
@@ -271,6 +271,9 @@ makeNewGameDialog( GtkNewGameState* state )
                         FALSE, TRUE, 0 );
 
     boardSizeCombo = gtk_combo_box_new_text();
+    if ( !isNewGame ) {
+        gtk_widget_set_sensitive( boardSizeCombo, FALSE );
+    }
 
     for ( i = 0; i < MAX_SIZE_CHOICES; ++i ) {
         char buf[10];
@@ -283,7 +286,7 @@ makeNewGameDialog( GtkNewGameState* state )
     }
 
     g_signal_connect( GTK_OBJECT(boardSizeCombo), "changed", 
-                      size_combo_changed, state );
+                      G_CALLBACK(size_combo_changed), state );
 
     gtk_widget_show( boardSizeCombo );
     gtk_box_pack_start( GTK_BOX(hbox), boardSizeCombo, FALSE, TRUE, 0 );
@@ -488,7 +491,7 @@ newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame )
         state.revert = FALSE;
         state.nCols = globals->cGlobals.params->gi.boardSize;
 
-        dialog = makeNewGameDialog( &state );
+        dialog = makeNewGameDialog( &state, isNewGame );
 
         newg_load( state.newGameCtxt, 
                    &globals->cGlobals.params->gi );
