@@ -46,6 +46,7 @@ typedef struct LinuxDictionaryCtxt {
 static XP_Bool initFromDictFile( LinuxDictionaryCtxt* dctx, 
                                  const char* fileName );
 static void linux_dictionary_destroy( DictionaryCtxt* dict );
+static const XP_UCHAR* linux_dict_getShortName( const DictionaryCtxt* dict );
 
 /*****************************************************************************
  *
@@ -64,6 +65,7 @@ linux_dictionary_make( MPFORMAL const char* dictFileName )
         XP_Bool success = initFromDictFile( result, dictFileName );
         if ( success ) {
             result->super.destructor = linux_dictionary_destroy;
+            result->super.func_dict_getShortName = linux_dict_getShortName;
             setBlankTile( &result->super );
         } else {
             XP_FREE( mpool, result );
@@ -315,6 +317,19 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
     XP_FREE( dict->mpool, ctxt->super.name );
     XP_FREE( dict->mpool, ctxt );
 } /* linux_dictionary_destroy */
+
+static const XP_UCHAR*
+linux_dict_getShortName( const DictionaryCtxt* dict )
+{
+    const XP_UCHAR* full = dict_getName( dict );
+    const char* c = strrchr( full, '/' );
+    if ( !!c ) {
+        ++c;
+    } else {
+        c = full;
+    }
+    return c;
+}
 
 #else  /* CLIENT_ONLY *IS* defined */
 
