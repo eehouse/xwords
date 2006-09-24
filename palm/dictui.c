@@ -40,7 +40,7 @@
 // Prototypes
 //////////////////////////////////////////////////////////////////////////////
 static XP_U16 populateDictionaryList( MPFORMAL ListData* sLd, 
-                                      XP_UCHAR* curDictName,
+                                      const XP_UCHAR* curDictName,
                                       ListPtr list, Int16 triggerID,
                                       PalmDictList* dl );
 static Boolean beamDict( const PalmDictList* dl, XP_UCHAR* dictName );
@@ -66,7 +66,7 @@ dictFormHandleEvent( EventPtr event )
 
     switch ( event->eType ) {
     case frmOpenEvent: {
-        XP_UCHAR* curName;
+        const XP_UCHAR* curName;
         XP_U16 width;
         RectangleType rect;
 
@@ -168,7 +168,7 @@ dictFormHandleEvent( EventPtr event )
  *
  ****************************************************************************/
 static XP_U16
-populateDictionaryList( MPFORMAL ListData* sLd, XP_UCHAR* curDictName,
+populateDictionaryList( MPFORMAL ListData* sLd, const XP_UCHAR* curDictName,
                         ListPtr list, Int16 triggerID, PalmDictList* dl )
 {
     XP_U16 i;

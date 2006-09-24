@@ -39,7 +39,7 @@ void signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num );
 
 XP_UCHAR* stringFromStream( MPFORMAL XWStreamCtxt* stream );
 XP_U16 stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len );
-void stringToStream( XWStreamCtxt* stream, XP_UCHAR* str );
+void stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str );
 
 XP_UCHAR* p_copyString( MPFORMAL const XP_UCHAR* instr 
 #ifdef MEM_DEBUG

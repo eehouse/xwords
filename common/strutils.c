@@ -128,7 +128,7 @@ stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 buflen )
 }
 
 void
-stringToStream( XWStreamCtxt* stream, XP_UCHAR* str )
+stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
 {
     XP_U16 len = str==NULL? 0: XP_STRLEN( (const char*)str );
     XP_ASSERT( len < 0xFF );
