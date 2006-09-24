@@ -101,7 +101,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
 
     ngc->role = role = gi->serverRole;
-    localOnly = role == SERVER_ISCLIENT;
+    localOnly = role == SERVER_ISCLIENT && ngc->isNewGame;
 #ifndef XWFEATURE_STANDALONE_ONLY
     value.ng_role = role;
     (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
@@ -326,6 +326,8 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     NewGameEnable enable[NG_NUM_COLS];
     NewGameColumn col;
     XP_Bool isLocal = XP_TRUE;
+    XP_Bool isNewGame = ngc->isNewGame;
+    Connectedness role = ngc->role;
     DeepValue dValue;
 
     for ( col = 0; col < NG_NUM_COLS; ++col ) {
@@ -339,8 +341,9 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* If standalone or client, remote is hidden.  If server but not
            new game, it's disabled */
-        if ( ngc->role == SERVER_ISSERVER ) {
-            if ( ngc->isNewGame ) {
+        if ( (role == SERVER_ISSERVER ) 
+             || (role == SERVER_ISCLIENT && !isNewGame ) ) {
+            if ( isNewGame ) {
                 enable[NG_COL_REMOTE] = NGEnableEnabled;
             } else {
                 enable[NG_COL_REMOTE] = NGEnableDisabled;
@@ -356,21 +359,31 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
            hidden.  But if it's not a new game, they're disabled.  Password is
            always hidden if robot is set. */
         if ( isLocal ) {
+            NewGameEnable tmp;
+
             /* No changing name or robotness since they're sent to remote
                host. */
-            enable[NG_COL_NAME] = NGEnableEnabled;
-            enable[NG_COL_ROBOT] = NGEnableEnabled;
+            tmp = (isNewGame || role == SERVER_STANDALONE)? 
+                NGEnableEnabled:NGEnableDisabled;
+            enable[NG_COL_NAME] = tmp;
+            enable[NG_COL_ROBOT] = tmp;
+
+            /* Password and game info (the not isNewGame case): passwords are
+               not transmitted: they're local only.  There's no harm in
+               allowing local players to change them.  So passwords should be
+               enabled whenever it's not a robot regardless of both isNewGame
+               and role. */
 
             dValue.col = NG_COL_ROBOT;
             (*ngc->getColProc)( ngc->closure, player, NG_COL_ROBOT, deepCopy,
                                 &dValue );
             if ( !dValue.value.ng_bool ) {
-                /* It is's a robot, leave it hidden */
+                /* If it's a robot, leave it hidden */
                 enable[NG_COL_PASSWD] = NGEnableEnabled;
             }
                                   
         } else {
-            if ( ngc->isNewGame ) {
+            if ( isNewGame ) {
                 /* leave 'em hidden */
             } else {
                 enable[NG_COL_NAME] = NGEnableDisabled;
@@ -396,13 +409,15 @@ setRoleStrings( NewGameCtx* ngc )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     (*ngc->enableAttrProc)( closure, NG_ATTR_REMHEADER, 
-                            ngc->role == SERVER_ISSERVER?
+                            ( (ngc->role == SERVER_ISSERVER)
+                              || (!ngc->isNewGame
+                                  && (ngc->role != SERVER_STANDALONE)) )?
                             NGEnableEnabled : NGEnableHidden );
 #endif
 
     if ( 0 ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( ngc->role == SERVER_ISCLIENT ) {
+    } else if ( ngc->role == SERVER_ISCLIENT && !ngc->isNewGame ) {
         strID = STR_LOCALPLAYERS;
 #endif
     } else {
