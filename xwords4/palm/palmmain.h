@@ -191,6 +191,8 @@ typedef struct DictState {
     XP_U16 nDicts;
 } DictState;
 
+#define MAX_DISABLED 24         /* I've seen 19.... */
+
 typedef struct PalmNewGameState {
     FormPtr form;
     ListPtr playerNumList;
@@ -198,6 +200,10 @@ typedef struct PalmNewGameState {
     XP_UCHAR passwds[MAX_PASSWORD_LENGTH+1][MAX_NUM_PLAYERS];
     XP_UCHAR* dictName;
     XP_UCHAR shortDictName[32]; /* as long as a dict name can be */
+
+    XP_U16 disabled[MAX_DISABLED];
+    XP_U16 nDisabled;
+
     XP_Bool forwardChange;
     Connectedness curServerHilite;
 #ifdef BEYOND_IR
@@ -218,6 +224,16 @@ typedef struct NetLibStuff {
 #endif
 
 #define MAX_DLG_PARAMS 2
+
+#ifdef XWFEATURE_BLUETOOTH
+typedef enum {
+    BTUI_NONE
+    , BTUI_LISTENING
+    , BTUI_CONNECTING
+    , BTUI_CONNECTED            /* slave */
+    , BTUI_SERVING              /* master */
+} BtUIState;
+#endif
 
 struct PalmAppGlobals {
     FormPtr mainForm;
@@ -305,6 +321,7 @@ struct PalmAppGlobals {
     XP_U32 heartTimerFireAt;
 # ifdef XWFEATURE_BLUETOOTH
     struct PalmBTStuff* btStuff;
+    BtUIState btUIState;          /* For showing user what's up */
 # endif
 #endif
 

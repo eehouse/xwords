@@ -56,6 +56,11 @@ static XP_Bool considerGadgetFocus( PalmNewGameState* state, EventType* event );
 # define tryDuoRockerKey(g,key) XP_FALSE
 #endif
 
+static XP_Bool onDisabledList( const PalmNewGameState* state, 
+                               XP_U16 controlID );
+static void modDisabledList( PalmNewGameState* state, XP_U16 controlID,
+                             NewGameEnable enable );
+
 static void palmEnableColProc( void* closure, XP_U16 player, 
                                NewGameColumn col, NewGameEnable enable );
 static void palmEnableAttrProc( void* closure, NewGameAttr attr, 
@@ -127,6 +132,9 @@ newGameHandleEvent( EventPtr event )
                                XW_SOLO_GADGET_ID );
 #endif
         loadNewGameState( globals );
+        if ( !globals->isNewGame ) {
+            modDisabledList( state, XW_DICT_SELECTOR_ID, NGEnableDisabled );
+        }
 
         XP_ASSERT( !!state->dictName );
         setNameThatFits( state );
@@ -168,21 +176,11 @@ newGameHandleEvent( EventPtr event )
         state->forwardChange = true;
         break;
 
+    case fldEnterEvent:
     case ctlEnterEvent:
-        switch ( event->data.ctlEnter.controlID ) {
-#ifndef XWFEATURE_STANDALONE_ONLY
-        case XW_REMOTE_1_CHECKBOX_ID:
-        case XW_REMOTE_2_CHECKBOX_ID:
-        case XW_REMOTE_3_CHECKBOX_ID:
-        case XW_REMOTE_4_CHECKBOX_ID:
-#endif
-        case XW_GINFO_JUGGLE_ID:
-        case XW_DICT_SELECTOR_ID:
-        case XW_NPLAYERS_SELECTOR_ID:
-            if ( !globals->isNewGame ) {
-                result = true;
-                beep();
-            }
+        if ( onDisabledList( state, event->data.ctlEnter.controlID ) ) {
+            result = true;
+            beep();
         }
         break;
 
@@ -576,7 +574,8 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
     }
 
 #ifdef BEYOND_IR
-    /* Even if it didn't change, pop the connections form */
+    /* Even if it didn't change, pop the connections form.  It's only
+       informational in the non-new-game case; nothing can be changed. */
     if ( hiliteID != SERVER_STANDALONE ) {
         if ( isNewGame || hiliteID==globals->newGameState.curServerHilite ) {
             PopupConnsForm( globals, hiliteID, &state->addr );
@@ -648,6 +647,46 @@ unloadNewGameState( PalmAppGlobals* globals )
     state->ngc = NULL;
 } /* unloadNewGameState */
 
+static XP_S16
+findDisabled( const PalmNewGameState* state, XP_U16 controlID )
+{
+    XP_U16 i;
+    XP_S16 loc = -1;
+    for ( i = 0; i < state->nDisabled; ++i ) {
+        if ( state->disabled[i] == controlID ) {
+            loc = i;
+            break;
+        }
+    }
+    return loc;
+}
+
+static XP_Bool
+onDisabledList( const PalmNewGameState* state, XP_U16 controlID )
+{
+    return 0 <= findDisabled( state, controlID );
+}
+
+static void
+modDisabledList( PalmNewGameState* state, XP_U16 controlID, 
+                 NewGameEnable enable )
+{
+    XP_S16 loc = findDisabled( state, controlID );
+    XP_Bool include = enable != NGEnableEnabled;
+    if ( loc < 0 && include ) {
+        /* not there but should be; add it */
+        state->disabled[state->nDisabled++] = controlID;
+        XP_ASSERT( state->nDisabled < MAX_DISABLED );
+    } else if ( loc >= 0 && !include ) {
+        /* is there; shouldn't be; remove it */
+        state->disabled[loc] = state->disabled[--state->nDisabled];
+    } else {
+        /* all's well */
+        XP_ASSERT( (loc >= 0 && include)
+                   || ( loc < 0 && !include ) );
+    }
+}
+
 static XP_U16
 getBaseForCol( NewGameColumn col )
 {
@@ -696,7 +735,8 @@ palmEnableColProc( void* closure, XP_U16 player, NewGameColumn col,
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
     PalmNewGameState* state = &globals->newGameState;
     XP_U16 objID = objIDForCol( player, col );
-    disOrEnable( state->form, objID, enable == NGEnableEnabled );
+    disOrEnable( state->form, objID, enable != NGEnableHidden );
+    modDisabledList( state, objID, enable );
 }
  
 /* Palm doesn't really do "disabled."  Things are visible or not.  But we
@@ -737,6 +777,7 @@ palmEnableAttrProc(void* closure, NewGameAttr attr, NewGameEnable ngEnable )
 
     if ( objID != 0 ) {
         disOrEnable( state->form, objID, enable );
+        modDisabledList( state, objID, ngEnable );
     }
 } /* palmEnableAttrProc */
 
