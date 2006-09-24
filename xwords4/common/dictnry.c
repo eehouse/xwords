@@ -354,7 +354,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     setBlankTile( dict );
 } /* dict_loadFromStream */
 
-XP_UCHAR*
+const XP_UCHAR*
 dict_getName( const DictionaryCtxt* dict )
 {
     XP_ASSERT( !!dict );

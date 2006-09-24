@@ -62,7 +62,7 @@ struct DictionaryCtxt {
 
     array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, XP_U32 index );
     array_edge* (*func_dict_getTopEdge)( const DictionaryCtxt* dict );
-    XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
+    const XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
 
     array_edge* topEdge;
     array_edge* base;		/* the physical beginning of the dictionary; not
@@ -134,7 +134,7 @@ XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 
 XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
                            XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize );
-XP_UCHAR* dict_getName( const DictionaryCtxt* ctxt );
+const XP_UCHAR* dict_getName( const DictionaryCtxt* ctxt );
 
 Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
 
