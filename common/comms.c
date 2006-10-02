@@ -55,7 +55,9 @@ typedef struct AddressRecord {
     MsgID nextMsgID;		    /* on a per-channel basis */
     MsgID lastMsgReceived;	    /* on a per-channel basis */
     XP_PlayerAddr channelNo;
-    XWHostID hostID;            /* used for relay case */
+    struct {
+        XWHostID hostID;            /* used for relay case */
+    } r;
 } AddressRecord;
 
 #define ADDRESSRECORD_SIZE_68K 20
@@ -88,24 +90,26 @@ struct CommsCtxt {
     CommsAddrRec addr;
 
     /* Stuff for relays */
-    XWHostID myHostID;        /* 0 if unset, 1 if acting as server, random for
-                                 client */
-    CommsRelaystate relayState; /* not saved: starts at UNCONNECTED */
-    CookieID cookieID;         /* not saved; temp standin for cookie; set by
-                                  relay */
-    /* permanent globally unique name, set by relay and forever after
-       associated with this game.  Used to reconnect. */
-    XP_UCHAR connName[MAX_CONNNAME_LEN+1];
+    struct {
+        XWHostID myHostID;          /* 0 if unset, 1 if acting as server,
+                                       random for client */
+        CommsRelaystate relayState; /* not saved: starts at UNCONNECTED */
+        CookieID cookieID;          /* not saved; temp standin for cookie; set
+                                       by relay */
+        /* permanent globally unique name, set by relay and forever after
+           associated with this game.  Used to reconnect. */
+        XP_UCHAR connName[MAX_CONNNAME_LEN+1];
 
-    /* heartbeat: for periodic pings if relay thinks the network the device is
-       on requires them.  Not saved since only valid when connected, and we
-       reconnect for every game and after restarting. */
-    XP_U16 heartbeat;
-    XP_U16 nPlayersHere;
-    XP_U16 nPlayersTotal;
+        /* heartbeat: for periodic pings if relay thinks the network the
+           device is on requires them.  Not saved since only valid when
+           connected, and we reconnect for every game and after restarting. */
+        XP_U16 heartbeat;
+        XP_U16 nPlayersHere;
+        XP_U16 nPlayersTotal;
+        XP_Bool connecting;
+    } r;
 
     XP_Bool isServer;
-    XP_Bool connecting;
 #ifdef DEBUG
     XP_U16 nUniqueBytes;
 #endif
@@ -157,12 +161,12 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
     result->util = util;
 
 #ifdef BEYOND_IR
-    result->myHostID = isServer? HOST_ID_SERVER: HOST_ID_NONE;
-    XP_LOGF( "set myHostID to %d", result->myHostID );
+    result->r.myHostID = isServer? HOST_ID_SERVER: HOST_ID_NONE;
+    XP_LOGF( "set myHostID to %d", result->r.myHostID );
 
-    result->relayState = COMMS_RELAYSTATE_UNCONNECTED;
-    result->nPlayersHere = nPlayersHere;
-    result->nPlayersTotal = nPlayersTotal;
+    result->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
+    result->r.nPlayersHere = nPlayersHere;
+    result->r.nPlayersTotal = nPlayersTotal;
 #endif
     return result;
 } /* comms_make */
@@ -212,9 +216,9 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
 
     comms->connID = CONN_ID_NONE;
 #ifdef BEYOND_IR
-    comms->cookieID = COOKIE_ID_NONE;
-    comms->nPlayersHere = nPlayersHere;
-    comms->nPlayersTotal = nPlayersTotal;
+    comms->r.cookieID = COOKIE_ID_NONE;
+    comms->r.nPlayersHere = nPlayersHere;
+    comms->r.nPlayersTotal = nPlayersTotal;
     relayConnect( comms );
 #endif
 } /* comms_reset */
@@ -297,8 +301,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
     comms->connID = stream_getU32( stream );
     comms->nextChannelNo = stream_getU16( stream );
-    comms->myHostID = stream_getU8( stream );
-    stringFromStreamHere( stream, comms->connName, sizeof(comms->connName) );
+    comms->r.myHostID = stream_getU8( stream );
+    stringFromStreamHere( stream, comms->r.connName, sizeof(comms->r.connName) );
 
 #ifdef DEBUG
     comms->nUniqueBytes = stream_getU16( stream );
@@ -318,7 +322,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgReceived = stream_getU16( stream );
         rec->channelNo = stream_getU16( stream );
-        rec->hostID = stream_getU8( stream );  /* unneeded unless RELAY */
+        rec->r.hostID = stream_getU8( stream );  /* unneeded unless RELAY */
 
 #ifdef DEBUG
         rec->lastACK = stream_getU16( stream );
@@ -360,7 +364,7 @@ comms_start( CommsCtxt* comms )
 {
 #ifdef BEYOND_IR
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
+        comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
         relayConnect( comms );
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( comms->addr.conType == COMMS_CONN_BT ) {
@@ -416,13 +420,13 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
     MsgQueueElem* msg;
 
     stream_putU8( stream, (XP_U8)comms->isServer );
-    stream_putBits( stream, 4, comms->nPlayersHere );
-    stream_putBits( stream, 4, comms->nPlayersTotal );
+    stream_putBits( stream, 4, comms->r.nPlayersHere );
+    stream_putBits( stream, 4, comms->r.nPlayersTotal );
 
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
-    stream_putU8( stream, comms->myHostID );
-    stringToStream( stream, comms->connName );
+    stream_putU8( stream, comms->r.myHostID );
+    stringToStream( stream, comms->r.connName );
 
 #ifdef DEBUG
     stream_putU16( stream, comms->nUniqueBytes );
@@ -442,7 +446,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putU16( stream, (XP_U16)rec->nextMsgID );
         stream_putU16( stream, (XP_U16)rec->lastMsgReceived );
         stream_putU16( stream, rec->channelNo );
-        stream_putU8( stream, rec->hostID ); /* unneeded unless RELAY */
+        stream_putU8( stream, rec->r.hostID ); /* unneeded unless RELAY */
 #ifdef DEBUG
         stream_putU16( stream, rec->lastACK );
         stream_putU16( stream, rec->nUniqueBytes );
@@ -683,7 +687,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     if ( 0 ) {
 #ifdef BEYOND_IR
     } else if ( comms_getConType( comms ) == COMMS_CONN_RELAY ) {
-        if ( comms->relayState == COMMS_RELAYSTATE_ALLCONNECTED ) {
+        if ( comms->r.relayState == COMMS_RELAYSTATE_ALLCONNECTED ) {
             XWHostID destID = getDestID( comms, channelNo );
             result = send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
                                      elem->msg, elem->len );
@@ -740,25 +744,25 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
         case XWRELAY_CONNECT_RESP:
         case XWRELAY_RECONNECT_RESP:
-            comms->relayState = COMMS_RELAYSTATE_CONNECTED;
-            comms->heartbeat = stream_getU16( stream );
-            comms->cookieID = stream_getU16( stream );
-            comms->myHostID = (XWHostID)stream_getU8( stream );
+            comms->r.relayState = COMMS_RELAYSTATE_CONNECTED;
+            comms->r.heartbeat = stream_getU16( stream );
+            comms->r.cookieID = stream_getU16( stream );
+            comms->r.myHostID = (XWHostID)stream_getU8( stream );
             XP_LOGF( "got XWRELAY_CONNECTRESP; set cookieID = %d; "
                      "set hostid: %x",
-                     comms->cookieID, comms->myHostID );
+                     comms->r.cookieID, comms->r.myHostID );
             setHeartbeatTimer( comms );
             break;
 
         case XWRELAY_ALLHERE:
-            comms->relayState = COMMS_RELAYSTATE_ALLCONNECTED;
+            comms->r.relayState = COMMS_RELAYSTATE_ALLCONNECTED;
             hasName = stream_getU8( stream );
             if ( hasName ) {
-                stringFromStreamHere( stream, comms->connName, 
-                                      sizeof(comms->connName) );
-                XP_LOGF( "read connName: %s", comms->connName );
+                stringFromStreamHere( stream, comms->r.connName, 
+                                      sizeof(comms->r.connName) );
+                XP_LOGF( "read connName: %s", comms->r.connName );
             } else {
-                XP_ASSERT( comms->connName[0] != '\0' );
+                XP_ASSERT( comms->r.connName[0] != '\0' );
             }
 
             /* We're [re-]connected now.  Send any pending messages.  This may
@@ -773,8 +777,8 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             XP_LOGF( "cookieID: %d; srcID: %x; destID: %x",
                      cookieID, srcID, destID );
             /* If these values don't check out, drop it */
-            consumed = cookieID != comms->cookieID
-                || destID != comms->myHostID;
+            consumed = cookieID != comms->r.cookieID
+                || destID != comms->r.myHostID;
             if ( consumed ) {
                 XP_LOGF( "rejecting data message" );
             } else {
@@ -795,7 +799,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             XP_LOGF( "XWRELAY_DISCONNECT_YOU|XWRELAY_CONNECTDENIED" );
             relayErr = stream_getU8( stream );
             util_userError( comms->util, ERR_RELAY_BASE + relayErr );
-            comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
+            comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
             /* fallthru */
         default:
             XP_LOGF( "dropping relay msg with cmd %d", (XP_U16)cmd );
@@ -949,7 +953,7 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
     CommsCtxt* comms = (CommsCtxt*)closure;
     XP_ASSERT( why == TIMER_HEARTBEAT );
     XP_LOGF( "comms_timerFired" );
-    if ( comms->heartbeat != HEARTBEAT_NONE ) {
+    if ( comms->r.heartbeat != HEARTBEAT_NONE ) {
         send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, NULL, 0 );
         /* No need to reset timer.  send_via_relay does that. */
     }
@@ -958,7 +962,7 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 static void
 setHeartbeatTimer( CommsCtxt* comms )
 {
-    util_setTimer( comms->util, TIMER_HEARTBEAT, comms->heartbeat,
+    util_setTimer( comms->util, TIMER_HEARTBEAT, comms->r.heartbeat,
                    p_comms_timerFired, comms );
 }
 #endif
@@ -1023,7 +1027,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
 
         recs->nextMsgID = 0;
         recs->channelNo = channelNo;
-        recs->hostID = hostID;
+        recs->r.hostID = hostID;
 #ifdef DEBUG
         recs->nUniqueBytes = 0;
 #endif
@@ -1036,7 +1040,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
     if ( !!recs ) {
         if ( !!addr ) {
             XP_MEMCPY( &recs->addr, addr, sizeof(recs->addr) );
-            XP_ASSERT( recs->hostID == hostID );
+            XP_ASSERT( recs->r.hostID == hostID );
         } else {
             XP_MEMSET( &recs->addr, 0, sizeof(recs->addr) );
             recs->addr.conType = comms->addr.conType;
@@ -1098,7 +1102,7 @@ getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
         AddressRecord* recs;
         for ( recs = comms->recs; !!recs; recs = recs->next ) {
             if ( recs->channelNo == channelNo ) {
-                id = recs->hostID;
+                id = recs->r.hostID;
             }
         }
     }
@@ -1127,8 +1131,8 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
         switch ( cmd ) {
         case XWRELAY_MSG_TORELAY:
-            stream_putU16( tmpStream, comms->cookieID );
-            stream_putU8( tmpStream, comms->myHostID );
+            stream_putU16( tmpStream, comms->r.cookieID );
+            stream_putU8( tmpStream, comms->r.myHostID );
             stream_putU8( tmpStream, destID );
             if ( data != NULL && dlen > 0 ) {
                 stream_putBytes( tmpStream, data, dlen );
@@ -1137,33 +1141,33 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         case XWRELAY_GAME_CONNECT:
             stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
             stringToStream( tmpStream, addr.u.ip_relay.cookie );
-            stream_putU8( tmpStream, comms->myHostID );
-            stream_putU8( tmpStream, comms->nPlayersHere );
-            stream_putU8( tmpStream, comms->nPlayersTotal );
+            stream_putU8( tmpStream, comms->r.myHostID );
+            stream_putU8( tmpStream, comms->r.nPlayersHere );
+            stream_putU8( tmpStream, comms->r.nPlayersTotal );
 
-            comms->relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
+            comms->r.relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
             break;
 
         case XWRELAY_GAME_RECONNECT:
             stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
-            stream_putU8( tmpStream, comms->myHostID );
-            stream_putU8( tmpStream, comms->nPlayersHere );
-            stream_putU8( tmpStream, comms->nPlayersTotal );
-            stringToStream( tmpStream, comms->connName );
+            stream_putU8( tmpStream, comms->r.myHostID );
+            stream_putU8( tmpStream, comms->r.nPlayersHere );
+            stream_putU8( tmpStream, comms->r.nPlayersTotal );
+            stringToStream( tmpStream, comms->r.connName );
 
-            comms->relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
+            comms->r.relayState = COMMS_RELAYSTATE_CONNECT_PENDING;
             break;
 
         case XWRELAY_GAME_DISCONNECT:
-            stream_putU16( tmpStream, comms->cookieID );
-            stream_putU8( tmpStream, comms->myHostID );
+            stream_putU16( tmpStream, comms->r.cookieID );
+            stream_putU8( tmpStream, comms->r.myHostID );
             break;
 
         case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
-            stream_putU16( tmpStream, comms->cookieID );
-            stream_putU8( tmpStream, comms->myHostID );
+            stream_putU16( tmpStream, comms->r.cookieID );
+            stream_putU8( tmpStream, comms->r.myHostID );
             break;
 
         default:
@@ -1198,13 +1202,13 @@ static void
 relayConnect( CommsCtxt* comms )
 {
     XP_LOGF( "relayConnect called" );
-    if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->connecting ) {
-        comms->connecting = XP_TRUE;
+    if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->r.connecting ) {
+        comms->r.connecting = XP_TRUE;
         send_via_relay( comms, 
-                        comms->connName[0] == '\0' ?
+                        comms->r.connName[0] == '\0' ?
                         XWRELAY_GAME_CONNECT:XWRELAY_GAME_RECONNECT,
-                        comms->myHostID, NULL, 0 );
-        comms->connecting = XP_FALSE;
+                        comms->r.myHostID, NULL, 0 );
+        comms->r.connecting = XP_FALSE;
     }
 } /* relayConnect */
 
@@ -1228,8 +1232,8 @@ relayDisconnect( CommsCtxt* comms )
 #ifdef BEYOND_IR
     XP_LOGF( "relayDisconnect called" );
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        if ( comms->relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
-            comms->relayState = COMMS_RELAYSTATE_UNCONNECTED;
+        if ( comms->r.relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
+            comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
             send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, 
                             NULL, 0 );
         }
