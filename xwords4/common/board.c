@@ -201,6 +201,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 {
     BoardCtxt* board;
     XP_U16 i;
+    XP_U16 version = stream_getVersion( stream );
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
 
@@ -211,7 +212,9 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
     board->showCellValues = (XP_Bool)stream_getBits( stream, 1 );
 #ifdef KEYBOARD_NAV
-    board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
+    if ( version >= STREAM_VERS_RELAY ) {
+        board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
+    }
 #endif
 
     XP_ASSERT( !!server );
@@ -228,13 +231,15 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
                                                          MAX_TRAY_TILES );
         board->tradeInProgress[i] = (XP_Bool)stream_getBits( stream, 1 );
 #ifdef KEYBOARD_NAV 
-        board->bdCursor[i].col = stream_getBits( stream, 4 );
-        board->bdCursor[i].row = stream_getBits( stream, 4 );
-        board->trayCursorLoc[i] = stream_getBits( stream, 3 );
+        if ( version >= STREAM_VERS_RELAY ) {
+            board->bdCursor[i].col = stream_getBits( stream, 4 );
+            board->bdCursor[i].row = stream_getBits( stream, 4 );
+            board->trayCursorLoc[i] = stream_getBits( stream, 3 );
+        }
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        if ( stream_getVersion( stream ) >= STREAM_VERS_41b4 ) {
+        if ( version >= STREAM_VERS_41B4 ) {
             board->hasHintRect[i] = stream_getBits( stream, 1 );
         } else {
             board->hasHintRect[i] = XP_FALSE;

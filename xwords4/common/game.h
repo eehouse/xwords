@@ -30,10 +30,11 @@
 extern "C" {
 #endif
 
-#define CUR_STREAM_VERS  0x03
-
-#define STREAM_VERS_41b4 0x02
+#define STREAM_VERS_RELAY 0x03
+#define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
+
+#define CUR_STREAM_VERS  STREAM_VERS_RELAY
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;

@@ -238,7 +238,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     (void)stream_getBits( stream, 3 ); /* was npassesinrow */
 
     nv->nDevices = (XP_U8)stream_getBits( stream, NDEVICES_NBITS );
-    if ( stream_getVersion( stream ) > STREAM_VERS_41b4 ) {
+    if ( stream_getVersion( stream ) > STREAM_VERS_41B4 ) {
         ++nv->nDevices;
     }
 
@@ -443,7 +443,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
         XP_ASSERT( i++ < MAX_NUM_PLAYERS );
 
-        stream_putBits( stream, 1, lp->isRobot );
+        stream_putBits( stream, 1, lp->isRobot ); /* better not to send this */
 
         /* The first nPlayers players are the ones we'll use.  The local flag
            doesn't matter when for SERVER_ISCLIENT. */
@@ -952,8 +952,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
     /* version */
     XP_U8 streamVersion = stream_getU8( stream );
-    XP_ASSERT( streamVersion == CUR_STREAM_VERS );
-    if ( streamVersion != CUR_STREAM_VERS ) {
+    XP_ASSERT( streamVersion == STREAM_VERS_41B4 );
+    if ( streamVersion != STREAM_VERS_41B4 ) {
         return XP_FALSE;
     }
     stream_setVersion( stream, streamVersion );
@@ -1090,8 +1090,9 @@ server_sendInitialMessage( ServerCtxt* server )
         stream_open( stream );
         stream_putBits( stream, XWPROTO_NBITS, XWPROTO_CLIENT_SETUP );
 
-        /* write version for server's benefit */
-        stream_putU8( stream, CUR_STREAM_VERS );
+        /* write version for server's benefit; use old version until format
+           changes */
+        stream_putU8( stream, STREAM_VERS_41B4 );
 
         XP_STATUSF( "putting gameID %lx into msg", gameID );
         stream_putU32( stream, gameID );
@@ -2339,7 +2340,7 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     XP_U16 nChars, nPrinted;
     XP_UCHAR buf[48];
     XP_UCHAR* fmt = util_getUserString( server->vol.util, STRS_VALUES_HEADER );
-    XP_UCHAR* dname;
+    const XP_UCHAR* dname;
 
     XP_ASSERT( !!server->vol.model );
 
