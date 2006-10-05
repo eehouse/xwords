@@ -244,7 +244,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 {
     CommsAddrRec addr;
 
-    addr.conType = stream_getBits( stream, 3 );
+    addr.conType = stream_getU8( stream );
 
     switch( addr.conType ) {
     case COMMS_CONN_UNUSED:
@@ -290,19 +290,37 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     XP_U16 nAddrRecs, nPlayersHere, nPlayersTotal;
     AddressRecord** prevsAddrNext;
     MsgQueueElem** prevsQueueNext;
+    XP_U16 version = stream_getVersion( stream );
+    CommsAddrRec addr;
     short i;
 
     isServer = stream_getU8( stream );
-    nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
-    nPlayersTotal = (XP_U16)stream_getBits( stream, 4 );
+    if ( version < STREAM_VERS_RELAY ) {
+        XP_MEMSET( &addr, 0, sizeof(addr) );
+        addr.conType = COMMS_CONN_IR; /* all there was back then */
+    } else {
+        addrFromStream( &addr, stream );
+    }
+
+    if ( addr.conType == COMMS_CONN_RELAY ) {
+        nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
+        nPlayersTotal = (XP_U16)stream_getBits( stream, 4 );
+    } else {
+        nPlayersHere = 0;
+        nPlayersTotal = 0;
+    }
     comms = comms_make( MPPARM(mpool) util, isServer, 
                         nPlayersHere, nPlayersTotal,
                         sendproc, closure );
+    XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
 
     comms->connID = stream_getU32( stream );
     comms->nextChannelNo = stream_getU16( stream );
-    comms->r.myHostID = stream_getU8( stream );
-    stringFromStreamHere( stream, comms->r.connName, sizeof(comms->r.connName) );
+    if ( addr.conType == COMMS_CONN_RELAY ) {
+        comms->r.myHostID = stream_getU8( stream );
+        stringFromStreamHere( stream, comms->r.connName, 
+                              sizeof(comms->r.connName) );
+    }
 
 #ifdef DEBUG
     comms->nUniqueBytes = stream_getU16( stream );
@@ -313,16 +331,16 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     prevsAddrNext = &comms->recs;
     for ( i = 0; i < nAddrRecs; ++i ) {
         AddressRecord* rec = (AddressRecord*)XP_MALLOC( mpool, sizeof(*rec));
-        CommsAddrRec* addr;
         XP_MEMSET( rec, 0, sizeof(*rec) );
 
-        addr = &rec->addr;
-        addrFromStream( addr, stream );
+        addrFromStream( &rec->addr, stream );
 
         rec->nextMsgID = stream_getU16( stream );
         rec->lastMsgReceived = stream_getU16( stream );
         rec->channelNo = stream_getU16( stream );
-        rec->r.hostID = stream_getU8( stream );  /* unneeded unless RELAY */
+        if ( rec->addr.conType == COMMS_CONN_RELAY ) {
+            rec->r.hostID = stream_getU8( stream );
+        }
 
 #ifdef DEBUG
         rec->lastACK = stream_getU16( stream );
@@ -349,8 +367,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->msgQueueTail = msg;
         prevsQueueNext = &msg->next;
     }
-
-    addrFromStream( &comms->addr, stream );
 
 #ifdef DEBUG
     XP_ASSERT( stream_getU32( stream ) == cEND );
@@ -380,7 +396,7 @@ addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
     CommsAddrRec addr;
     XP_MEMCPY( &addr, addrP, sizeof(addr) );
 
-    stream_putBits( stream, 3, addr.conType );
+    stream_putU8( stream, addr.conType );
 
     switch( addr.conType ) {
 #ifdef DEBUG
@@ -420,13 +436,18 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
     MsgQueueElem* msg;
 
     stream_putU8( stream, (XP_U8)comms->isServer );
-    stream_putBits( stream, 4, comms->r.nPlayersHere );
-    stream_putBits( stream, 4, comms->r.nPlayersTotal );
+    addrToStream( stream, &comms->addr );
+    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+        stream_putBits( stream, 4, comms->r.nPlayersHere );
+        stream_putBits( stream, 4, comms->r.nPlayersTotal );
+    }
 
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
-    stream_putU8( stream, comms->r.myHostID );
-    stringToStream( stream, comms->r.connName );
+    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+        stream_putU8( stream, comms->r.myHostID );
+        stringToStream( stream, comms->r.connName );
+    }
 
 #ifdef DEBUG
     stream_putU16( stream, comms->nUniqueBytes );
@@ -446,7 +467,9 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putU16( stream, (XP_U16)rec->nextMsgID );
         stream_putU16( stream, (XP_U16)rec->lastMsgReceived );
         stream_putU16( stream, rec->channelNo );
-        stream_putU8( stream, rec->r.hostID ); /* unneeded unless RELAY */
+        if ( rec->addr.conType == COMMS_CONN_RELAY ) {
+            stream_putU8( stream, rec->r.hostID ); /* unneeded unless RELAY */
+        }
 #ifdef DEBUG
         stream_putU16( stream, rec->lastACK );
         stream_putU16( stream, rec->nUniqueBytes );
@@ -460,8 +483,6 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_putU16( stream, msg->len );
         stream_putBytes( stream, msg->msg, msg->len );
     }
-
-    addrToStream( stream, &comms->addr );
 
 #ifdef DEBUG
     stream_putU32( stream, cEND );
