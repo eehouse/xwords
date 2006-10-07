@@ -142,6 +142,7 @@ static const char* mgmtEvtToStr( BtLibManagementEventEnum event );
 static const char* actToStr(PBT_ACTION act);
 static const char* stateToStr(PBT_STATE st);
 static const char* connEnumToStr( BtLibAccessibleModeEnum mode );
+static const char* proleToString( PBT_PicoRole r );
 
 #else
 # define btErrToStr( err ) ""
@@ -150,6 +151,7 @@ static const char* connEnumToStr( BtLibAccessibleModeEnum mode );
 # define actToStr(act) ""
 # define stateToStr(st) ""
 # define connEnumToStr(mode) ""
+# define proleToString(r) ""
 #endif
 
 /* callbacks */
@@ -161,14 +163,24 @@ palm_bt_init( PalmAppGlobals* globals, DataCb cb )
 {
     PalmBTStuff* btStuff;
 
+    LOG_FUNC();
+
     btStuff = globals->btStuff;
     if ( !btStuff ) {
         btStuff = pbt_checkInit( globals );
+        /* Should I start master/slave setup here?  If not, how? */
     } else {
         pbt_reset( btStuff );
     }
 
+    if ( comms_getIsServer( globals->game.comms ) ) {
+        pbt_setup_master( btStuff );
+    } else if ( btStuff->picoRole == PBT_MASTER ) {
+        pbt_takedown_master( btStuff );
+    }
+
     btStuff->cb = cb;
+    LOG_RETURN_VOID();
     return errNone;
 } /* palm_bt_init */
 
@@ -265,6 +277,8 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
     XP_Bool success = XP_FALSE;
     PalmBTStuff* btStuff;
 
+    LOG_FUNC();
+
     btStuff = pbt_checkInit( globals );
     if ( NULL != btStuff ) {
         BtLibDeviceAddressType addr;
@@ -293,6 +307,7 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
         }
         success = errNone == err;
     }
+    LOG_RETURNF( "%d", (XP_U16)success );
     return success;
 } /* palm_bt_browse_device */
 
@@ -369,7 +384,7 @@ pbt_send_pending( PalmBTStuff* btStuff )
         const XP_U8* buf;
         XP_U16 len = pbt_peekQueue( &btStuff->vol.out, &buf );
 
-        if ( len > 0 ) {
+        if ( SOCK_INVAL != btStuff->dataSocket && len > 0 ) {
             CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
                       btStuff->dataSocket, (char*)buf, len );
             if ( btLibErrPending == err ) {
@@ -387,7 +402,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     PalmBTStuff* btStuff;
     CommsAddrRec remoteAddr;
     PBT_PicoRole picoRole;
-    XP_LOGF( "%s(len=%d)", __FUNCTION__, len );
+    XP_LOGF( "%s(len=%d)", __FUNCTION__, len);
 
     btStuff = pbt_checkInit( globals );
     if ( !btStuff->cb ) {
@@ -403,6 +418,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     XP_ASSERT( !!addr );
 
     picoRole = btStuff->picoRole;
+    XP_LOGF( "%s: role=%s", __FUNCTION__, proleToString(picoRole) );
     if ( picoRole == PBT_UNINIT ) {
         XP_Bool amMaster = comms_getIsServer( globals->game.comms );
         picoRole = amMaster? PBT_MASTER : PBT_SLAVE;
@@ -493,6 +509,7 @@ pbt_takedown_master( PalmBTStuff* btStuff )
 
     btStuff->picoRole = PBT_UNINIT;
     SET_STATE( btStuff, PBTST_NONE );
+    LOG_RETURN_VOID();
 } /* pbt_takedown_master */
 
 static void
@@ -634,6 +651,7 @@ pbt_reset( PalmBTStuff* btStuff )
 {
     LOG_FUNC();
     XP_MEMSET( &btStuff->vol, 0, sizeof(btStuff->vol) );
+    LOG_RETURN_VOID();
 }
 
 static Err
@@ -754,6 +772,7 @@ pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
         XP_MEMCPY( &btStuff->otherAddr, &addr->u.bt.btAddr, 
                    sizeof(btStuff->otherAddr) );
     }
+    LOG_RETURN_VOID();
 } /* pbt_checkAddress */
 
 static void
@@ -890,19 +909,25 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         }
         break;
     case btLibManagementEventACLDisconnect:
-        /* This is getting called from inside the BtLibLinkDisconnect call!!!! */
-        XP_ASSERT( 0 == XP_MEMCMP( &mEvent->eventData.bdAddr,
-                                   &btStuff->otherAddr,
-                                   sizeof(btStuff->otherAddr) ) );
-        if ( SOCK_INVAL != btStuff->dataSocket ) {
-            CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
-                      btStuff->dataSocket );
-            btStuff->dataSocket = SOCK_INVAL;
-        }
-        SET_STATE( btStuff, PBTST_NONE );
-        /* See comment at btLibSocketEventDisconnected */
-        if ( PBT_SLAVE == btStuff->picoRole ) {
-            pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+        if ( mEvent->status == btLibMeStatusLocalTerminated ) {
+            /* We caused this, probably switching roles.  Perhaps we've already
+               done what's needed, e.g. opened socket to listen */
+        } else {
+            XP_ASSERT( mEvent->status == btLibMeStatusUserTerminated );/* fired */
+            /* This is getting called from inside the BtLibLinkDisconnect call!!!! */
+            XP_ASSERT( 0 == XP_MEMCMP( &mEvent->eventData.bdAddr,
+                                       &btStuff->otherAddr,
+                                       sizeof(btStuff->otherAddr) ) );
+            if ( SOCK_INVAL != btStuff->dataSocket ) {
+                CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
+                          btStuff->dataSocket );
+                btStuff->dataSocket = SOCK_INVAL;
+            }
+            SET_STATE( btStuff, PBTST_NONE );
+            /* See comment at btLibSocketEventDisconnected */
+            if ( PBT_SLAVE == btStuff->picoRole ) {
+                pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+            }
         }
         break;
     default:
@@ -1126,6 +1151,19 @@ btErrToStr( Err err )
         return "unknown err";
     }
 } /* btErrToStr */
+
+static const char*
+proleToString( PBT_PicoRole r )
+{
+    switch ( r ) {
+        CASESTR(PBT_UNINIT);
+        CASESTR(PBT_MASTER);
+        CASESTR(PBT_SLAVE);
+    default:
+        XP_ASSERT(0);
+        return "";
+    }
+}
 
 static void
 palm_bt_log( const char* btfunc, const char* func, Err err )
