@@ -1484,7 +1484,7 @@ showBTState( PalmAppGlobals* globals )
 
         /* Looks ok on T650, bad on lowres.  Need to replace with gadget or
            icon or something long before ship. */
-        WinDrawChars( &ch, 1, 160-7, 160-25 );
+        WinDrawChars( &ch, 1, 160-7, 160-27 );
     }
 } /* showBTState */
 #endif
