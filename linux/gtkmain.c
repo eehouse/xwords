@@ -260,11 +260,13 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
 
+#ifdef XWFEATURE_RELAY
         if ( addr.conType == COMMS_CONN_RELAY ) {
             XP_ASSERT( !!params->connInfo.relay.relayName );
             globals->cGlobals.defaultServerName
                 = params->connInfo.relay.relayName;
         }
+#endif
 
         params->gi.gameID = util_getCurSeconds(globals->cGlobals.params->util);
         XP_STATUSF( "grabbed gameID: %ld\n", params->gi.gameID );
@@ -274,18 +276,23 @@ createOrLoadObjects( GtkAppGlobals* globals )
                           gameID, &globals->cp, linux_send, globals );
 
         addr.conType = params->conType;
-        if ( addr.conType == COMMS_CONN_RELAY ) {
+        if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+        } else if ( addr.conType == COMMS_CONN_RELAY ) {
             addr.u.ip_relay.ipAddr = 0;
             addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
             XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
                         sizeof(addr.u.ip_relay.hostName) - 1 );
             XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
                         sizeof(addr.u.ip_relay.cookie) - 1 );
+#endif
+#ifdef XWFEATURE_BLUETOOTH
         } else if ( addr.conType == COMMS_CONN_BT ) {
             XP_ASSERT( sizeof(addr.u.bt.btAddr) 
                        >= sizeof(params->connInfo.bt.hostAddr));
             XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
                        sizeof(params->connInfo.bt.hostAddr) );
+#endif
         }
 
         /* This may trigger network activity */
@@ -477,8 +484,9 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
     game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
     gi_disposePlayerInfo( MEMPOOL &globals->cGlobals.params->gi );
 
+#ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &globals->cGlobals );
- 
+#endif
     vtmgr_destroy( MEMPOOL globals->cGlobals.params->vtMgr );
     
     mpool_destroy( globals->cGlobals.params->util->mpool );
@@ -1124,6 +1132,7 @@ score_timer_func( gpointer data )
     return XP_FALSE;
 } /* score_timer_func */
 
+#ifdef XWFEATURE_RELAY
 static gint
 heartbeat_timer_func( gpointer data )
 {
@@ -1135,9 +1144,11 @@ heartbeat_timer_func( gpointer data )
 
     return (gint)0;
 }
+#endif
 
 static void
-gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
+                   XP_U16 XP_UNUSED_RELAY(when),
                    TimerProc proc, void* closure )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
@@ -1156,8 +1167,10 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
         (void)gettimeofday( &globals->scoreTv, NULL );
 
         newSrc = g_timeout_add( 1000, score_timer_func, globals );
+#ifdef XWFEATURE_RELAY
     } else if ( why == TIMER_HEARTBEAT ) {
         newSrc = g_timeout_add( 1000 * when, heartbeat_timer_func, globals );
+#endif
     } else {
         XP_ASSERT( 0 );
     }
@@ -1495,11 +1508,16 @@ newConnectionInput( GIOChannel *source,
         ssize_t nRead;
         unsigned char buf[512];
 
-        if ( globals->cGlobals.params->conType == COMMS_CONN_RELAY ) {
+        if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+        } else if ( globals->cGlobals.params->conType == COMMS_CONN_RELAY ) {
             nRead = linux_relay_receive( &globals->cGlobals, 
                                          buf, sizeof(buf) );
+#endif
+#ifdef XWFEATURE_BLUETOOTH
         } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
             nRead = linux_bt_receive( sock, buf, sizeof(buf) );
+#endif
         } else {
             XP_ASSERT( 0 );
         }

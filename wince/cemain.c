@@ -118,7 +118,7 @@ static XWStreamCtxt* ce_util_makeStreamFromAddr( XW_UtilCtxt* uc,
 static XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                         XP_U16 turn, XP_Bool turnLost );
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void ce_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                 const CommsAddrRec* newAddr );
 #endif
@@ -144,7 +144,7 @@ static XP_Bool ceDoNewGame( CEAppGlobals* globals );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 #endif
 static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
@@ -366,7 +366,7 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_makeEmptyDict = ce_util_makeEmptyDict;
     vtable->m_util_getUserString = ce_util_getUserString;
     vtable->m_util_warnIllegalWord = ce_util_warnIllegalWord;
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     vtable->m_util_addrChange = ce_util_addrChange;
     vtable->m_util_makeStreamFromAddr = ce_util_makeStreamFromAddr;
 #endif
@@ -747,7 +747,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
     board_invalAll( globals->game.board );
     InvalidateRect( globals->hWnd, NULL, TRUE /* erase */ );
     
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
         XWStreamCtxt* stream;
         XP_ASSERT( !!globals->game.comms );
@@ -1071,7 +1071,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_U16 len;
     MPSLOT;
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     {
         WORD wVersionRequested;
         WSADATA wsaData;
@@ -2040,7 +2040,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_TIMER:
             why = (XWTimerReason)wParam;
             if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
                  || why == TIMER_HEARTBEAT
 #endif
                  ) {
@@ -2237,7 +2237,7 @@ makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 size )
 void
 wince_debugf(XP_UCHAR* format, ...)
 {
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     static HANDLE s_logMutex = NULL;
 #endif
     XP_UCHAR buf[256];
@@ -2255,7 +2255,7 @@ wince_debugf(XP_UCHAR* format, ...)
     /* Create logfile if necessary and write to it in ascii.  If there are
        multiple threads, protect with mutex. */
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     if ( s_logMutex == NULL ) {
         s_logMutex = CreateMutex( NULL, FALSE, NULL );
     }
@@ -2285,7 +2285,7 @@ wince_debugf(XP_UCHAR* format, ...)
         nBytes = strlen( buf );
         WriteFile( fileH, buf, nBytes, &nWritten, NULL );
         CloseHandle( fileH );
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
         ReleaseMutex( s_logMutex );
     }
 #endif
@@ -2451,7 +2451,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         message = "Tile assignment can't be undone.";
         break;
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
         message = "The relay timed you out; usually that means "
             "the other players didn't show.";
@@ -2657,7 +2657,7 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
     case TIMER_TIMERTICK:
         howLong = 1000;          /* 1 second */
         break;
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     case TIMER_HEARTBEAT:
         howLong = when * 1000;
         break;
@@ -2696,7 +2696,7 @@ ce_util_makeEmptyDict( XW_UtilCtxt* uc )
 #endif
 } /* ce_util_makeEmptyDict */
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 static XWStreamCtxt*
 ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
 {
@@ -2824,7 +2824,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     return isOk;
 } /* ce_util_warnIllegalWord */
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 static void
 ce_util_addrChange( XW_UtilCtxt* XP_UNUSED(uc), 
                     const CommsAddrRec* XP_UNUSED(oldAddr),

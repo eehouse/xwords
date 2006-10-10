@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 
 #include <TimeMgr.h>
 

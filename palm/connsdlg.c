@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 
 #include <NetMgr.h>
 
@@ -61,11 +61,13 @@ strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
 static void
 ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
 {
-    XP_Bool isNewGame = state->isNewGame;
-    XP_UCHAR buf[16];
     CommsAddrRec* addr = state->addr;
 
-    if ( addr->conType == COMMS_CONN_RELAY ) {
+    if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+    } else if ( addr->conType == COMMS_CONN_RELAY ) {
+        XP_Bool isNewGame = state->isNewGame;
+        XP_UCHAR buf[16];
         setFieldStr( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName );
         setFieldEditable( XW_CONNS_RELAY_FIELD_ID, isNewGame );
 
@@ -75,6 +77,7 @@ ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
 
         setFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie );
         setFieldEditable( XW_CONNS_COOKIE_FIELD_ID, isNewGame );
+#endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
@@ -93,10 +96,12 @@ static XP_Bool
 stateFromCtls( ConnsDlgState* state )
 {
     XP_Bool ok = XP_TRUE;
-    XP_UCHAR buf[16];
     CommsAddrRec* addr = state->addr;
 
-    if ( addr->conType == COMMS_CONN_RELAY ) {
+    if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+    } else if ( addr->conType == COMMS_CONN_RELAY ) {
+        XP_UCHAR buf[16];
         strFromField( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName,
                       sizeof(addr->u.ip_relay.hostName) );
 
@@ -105,6 +110,7 @@ stateFromCtls( ConnsDlgState* state )
 
         strFromField( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie,
                       sizeof(addr->u.ip_relay.cookie) );
+#endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
@@ -125,11 +131,13 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
 {
     const XP_U16 relayCtls[] = {
         XW_CONNS_RELAY_LABEL_ID ,
+#ifdef XWFEATURE_RELAY
         XW_CONNS_RELAY_FIELD_ID,
         XW_CONNS_PORT_LABEL_ID,
         XW_CONNS_PORT_FIELD_ID,
         XW_CONNS_COOKIE_LABEL_ID,
         XW_CONNS_COOKIE_FIELD_ID,
+#endif
         0
     };
     const XP_U16 btGuestCtls[] = {
@@ -316,4 +324,4 @@ ConnsFormHandleEvent( EventPtr event )
     return result;
 } /* ConnsFormHandleEvent */
 
-#endif /* BEYOND_IR */
+#endif /* #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY */

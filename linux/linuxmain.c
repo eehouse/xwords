@@ -234,7 +234,9 @@ usage( char* appName, char* msg )
 	     "\t [-S]             # slow robot down \n"
 	     "\t [-i]             # print game history when game over\n"
 	     "\t [-U]             # call 'Undo' after game ends\n"
+#ifdef XWFEATURE_RELAY
 	     "\t [-H]             # Don't send heartbeats to relay\n"
+#endif
 	     "\t [-r name]*       # same-process robot\n"
 	     "\t [-n name]*       # same-process player (no network used)\n"
 	     "\t [-w pwd]*        # passwd for matching local player\n"
@@ -251,90 +253,41 @@ usage( char* appName, char* msg )
 	     "\t -d xwd_file      # provides tile counts & values\n"
 	     "\t\t # list each player as local or remote\n"
 	     "\t [-N]*            # remote client (listen for connection)\n"
+#ifdef XWFEATURE_RELAY
 	     "\t [-p relay_port]  # relay is at this port\n"
 	     "\t [-a relay_addr]  # use relay (via port spec'd above)\n"
 	     ""                   " (default localhost)\n"
+#endif
+#ifdef XWFEATURE_BLUETOOTH
 	     "\t [-B n:name|a:00:11:22:33:44:55]\n"
              "\t\t\t# connect via bluetooth [param ignored if -s]\n"
+#endif
 /* 	     "# --------------- OR client-only ----------\n" */
 /* 	     "\t [-p client_port] # must != server's port if on same device" */
          "\nexample: \n"
-             "\tserver: ./xwords -d dict.xwd -s -a localhost -p 10999 -r Eric -N\n"
-             "\tclient: ./xwords -d dict.xwd -a localhost -p 10999 -r Kati\n"
+             "\tserver: ./xwords -d dict.xwd -s -r Eric -N" 
+#ifdef XWFEATURE_RELAY
+             " -a localhost -p 10999"
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+             " -B ignored "
+#endif
+             "\n"
+             "\tclient: ./xwords -d dict.xwd -r Kati"
+#ifdef XWFEATURE_RELAY
+             " -a localhost -p 10999"
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+             " -B a:11:22:33:44:55:66 | n:my_treo "
+#endif
+             "\n"
 	     , appName );
     fprintf( stderr, "\n(revision: %s)\n", SVN_REV);
     exit(1);
-}
+} /* usage */
 
-static XP_S16
-linux_tcp_send( const XP_U8* buf, XP_U16 buflen, 
-                const CommsAddrRec* XP_UNUSED(addrRec), 
-                CommonGlobals* globals )
-{
-    XP_S16 result = 0;
-    int socket = globals->socket;
-    
-    if ( socket == -1 ) {
-        XP_STATUSF( "linux_tcp_send: socket uninitialized" );
-        socket = linux_init_relay_socket( globals );
-        if ( socket != -1 ) {
-            assert( globals->socket == socket );
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       -1, socket );
-        }
-    }
-
-    if ( socket != -1 ) {
-        XP_U16 netLen = htons( buflen );
-        errno = 0;
-
-        result = send( socket, &netLen, sizeof(netLen), 0 );
-        if ( result == sizeof(netLen) ) {
-            result = send( socket, buf, buflen, 0 ); 
-        }
-        if ( result <= 0 ) {
-            XP_STATUSF( "closing non-functional socket" );
-            close( socket );
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       socket, -1 );
-            globals->socket = -1;
-        }
-
-        XP_STATUSF( "linux_tcp_send: send returned %d of %d (err=%d)", 
-                    result, buflen, errno );
-    }
- 
-    return result;
-} /* linux_tcp_send */
-
-XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, 
-            const CommsAddrRec* addrRec, 
-            void* closure )
-{
-    XP_S16 nSent = -1;
-    CommonGlobals* globals = (CommonGlobals*)closure;   
-    CommsConnType conType;
-
-    if ( !!addrRec ) {
-        conType = addrRec->conType;
-    } else {
-        conType = globals->params->conType;
-    }
-    
-    if ( conType == COMMS_CONN_RELAY ) {
-        nSent = linux_tcp_send( buf, buflen, addrRec, globals );
-    } else if ( conType == COMMS_CONN_BT ) {
-        XP_Bool isServer = comms_getIsServer( globals->game.comms );
-        linux_bt_open( globals, isServer );
-        nSent = linux_bt_send( buf, buflen, addrRec, globals );
-    } else {
-        XP_ASSERT(0);
-    }
-    return nSent;
-} /* linux_send */
-
-int
+#ifdef XWFEATURE_RELAY
+static int
 linux_init_relay_socket( CommonGlobals* cGlobals )
 {
     struct sockaddr_in to_sock;
@@ -378,6 +331,80 @@ linux_init_relay_socket( CommonGlobals* cGlobals )
    
     return sock;
 } /* linux_init_relay_socket */
+
+static XP_S16
+linux_tcp_send( const XP_U8* buf, XP_U16 buflen, 
+                const CommsAddrRec* XP_UNUSED(addrRec), 
+                CommonGlobals* globals )
+{
+    XP_S16 result = 0;
+    int socket = globals->socket;
+    
+    if ( socket == -1 ) {
+        XP_STATUSF( "linux_tcp_send: socket uninitialized" );
+        socket = linux_init_relay_socket( globals );
+        if ( socket != -1 ) {
+            assert( globals->socket == socket );
+            (*globals->socketChanged)( globals->socketChangedClosure, 
+                                       -1, socket );
+        }
+    }
+
+    if ( socket != -1 ) {
+        XP_U16 netLen = htons( buflen );
+        errno = 0;
+
+        result = send( socket, &netLen, sizeof(netLen), 0 );
+        if ( result == sizeof(netLen) ) {
+            result = send( socket, buf, buflen, 0 ); 
+        }
+        if ( result <= 0 ) {
+            XP_STATUSF( "closing non-functional socket" );
+            close( socket );
+            (*globals->socketChanged)( globals->socketChangedClosure, 
+                                       socket, -1 );
+            globals->socket = -1;
+        }
+
+        XP_STATUSF( "linux_tcp_send: send returned %d of %d (err=%d)", 
+                    result, buflen, errno );
+    }
+ 
+    return result;
+} /* linux_tcp_send */
+#endif
+
+XP_S16
+linux_send( const XP_U8* buf, XP_U16 buflen, 
+            const CommsAddrRec* addrRec, 
+            void* closure )
+{
+    XP_S16 nSent = -1;
+    CommonGlobals* globals = (CommonGlobals*)closure;   
+    CommsConnType conType;
+
+    if ( !!addrRec ) {
+        conType = addrRec->conType;
+    } else {
+        conType = globals->params->conType;
+    }
+
+    if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+    } else if ( conType == COMMS_CONN_RELAY ) {
+        nSent = linux_tcp_send( buf, buflen, addrRec, globals );
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( conType == COMMS_CONN_BT ) {
+        XP_Bool isServer = comms_getIsServer( globals->game.comms );
+        linux_bt_open( globals, isServer );
+        nSent = linux_bt_send( buf, buflen, addrRec, globals );
+#endif
+    } else {
+        XP_ASSERT(0);
+    }
+    return nSent;
+} /* linux_send */
 
 static void
 linux_close_socket( CommonGlobals* cGlobals )
@@ -591,16 +618,19 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     }
 } /* linux_util_getUserString */
 
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void
-linux_util_addrChange( XW_UtilCtxt* uc, 
+linux_util_addrChange( XW_UtilCtxt* XP_UNUSED_BT(uc), 
                        const CommsAddrRec* XP_UNUSED(oldAddr),
-                       const CommsAddrRec* newAddr )
+                       const CommsAddrRec* XP_UNUSED_BT(newAddr) )
 {
-    if ( newAddr->conType == COMMS_CONN_BT ) {
+    if ( 0 ) {
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( newAddr->conType == COMMS_CONN_BT ) {
         CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
         XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
         linux_bt_open( cGlobals, isServer );
+#endif
     }
 }
 #endif
@@ -618,6 +648,7 @@ defaultRandomSeed()
 } /* defaultRandomSeed */
 
 /* This belongs in linuxbt.c */
+#ifdef XWFEATURE_BLUETOOTH
 static XP_Bool
 nameToBtAddr( const char* name, bdaddr_t* ba )
 {
@@ -650,6 +681,7 @@ nameToBtAddr( const char* name, bdaddr_t* ba )
     }
     return success;
 } /* nameToBtAddr */
+#endif
 
 int
 main( int argc, char** argv )
@@ -665,7 +697,9 @@ main( int argc, char** argv )
     XP_U16 robotCount = 0;
     
     CommsConnType conType = COMMS_CONN_UNUSED;
+#ifdef XWFEATURE_BLUETOOTH
     const char* btaddr = NULL;
+#endif
 
     XP_LOGF( "main started: pid = %d", getpid() );
 
@@ -693,9 +727,11 @@ main( int argc, char** argv )
     /*     (void)fgetc( stdin ); */
 
     /* defaults */
+#ifdef XWFEATURE_RELAY
     mainParams.connInfo.relay.defaultListenPort = DEFAULT_LISTEN_PORT;
     mainParams.connInfo.relay.defaultSendPort = DEFAULT_SEND_PORT;
     mainParams.connInfo.relay.cookie = "COOKIE";
+#endif
     mainParams.gi.boardSize = 15;
     mainParams.quitAfter = XP_FALSE;
     mainParams.sleepOnAnchor = XP_FALSE;
@@ -727,7 +763,14 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:"
 #endif
-                      "kKf:l:n:Nsd:a:p:e:r:b:qw:Sit:HUmvcC:B:" );
+                      "kKf:l:n:Nsd:e:r:b:qw:Sit:Umvc"
+#ifdef XWFEATURE_RELAY
+                      "a:p:C:H"
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+                      "B:" 
+#endif
+                      );
         switch( opt ) {
         case '?':
             usage(argv[0], NULL);
@@ -735,12 +778,14 @@ main( int argc, char** argv )
         case 'c':
             mainParams.showRobotScores = XP_TRUE;
             break;
+#ifdef XWFEATURE_RELAY
         case 'C':
             XP_ASSERT( conType == COMMS_CONN_UNUSED ||
                        conType == COMMS_CONN_RELAY );
             mainParams.connInfo.relay.cookie = optarg;
             conType = COMMS_CONN_RELAY;
             break;
+#endif
         case 'd':
             mainParams.gi.dictName = copyString( mainParams.util->mpool,
                                                  (XP_UCHAR*)optarg );
@@ -821,12 +866,14 @@ main( int argc, char** argv )
         case 'b':
             mainParams.gi.boardSize = atoi(optarg);
             break;
+#ifdef XWFEATURE_BLUETOOTH
         case 'B':
             XP_ASSERT( conType == COMMS_CONN_UNUSED ||
                        conType == COMMS_CONN_BT );
             conType = COMMS_CONN_BT;
             btaddr = optarg;
             break;
+#endif
         case 'v':
             mainParams.verticalScore = XP_TRUE;
             break;
@@ -895,7 +942,9 @@ main( int argc, char** argv )
         }	    
     }
 
-    if ( conType == COMMS_CONN_RELAY ) {
+    if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+    } else if ( conType == COMMS_CONN_RELAY ) {
         mainParams.connInfo.relay.relayName = relayName;
 
         /* convert strings to whatever */
@@ -903,6 +952,8 @@ main( int argc, char** argv )
             mainParams.connInfo.relay.defaultSendPort = 
                 atoi( sendPortNumString );
         }
+#endif
+#ifdef XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {
         bdaddr_t ba;
         XP_Bool success;
@@ -929,6 +980,7 @@ main( int argc, char** argv )
         }
         XP_MEMCPY( &mainParams.connInfo.bt.hostAddr, &ba, 
                    sizeof(mainParams.connInfo.bt.hostAddr) );
+#endif
     }
     mainParams.conType = conType;
 
@@ -948,7 +1000,7 @@ main( int argc, char** argv )
         linux_util_getCurSeconds;
     mainParams.util->vtable->m_util_getUserString = 
         linux_util_getUserString;
-#ifdef BEYOND_IR
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     mainParams.util->vtable->m_util_addrChange = linux_util_addrChange;
 #endif
 

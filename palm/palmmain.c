@@ -121,7 +121,7 @@ static XWStreamCtxt* palm_util_makeStreamFromAddr( XW_UtilCtxt* uc,
 static XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
 static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                           XP_U16 turn, XP_Bool turnLost );
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                   const CommsAddrRec* newAddr );
 #endif
@@ -601,7 +601,7 @@ initUtilFuncs( PalmAppGlobals* globals )
 #endif
     vtable->m_util_getUserString = palm_util_getUserString;
     vtable->m_util_warnIllegalWord = palm_util_warnIllegalWord;
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
     vtable->m_util_addrChange = palm_util_addrChange;
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -1034,7 +1034,7 @@ startApplication( PalmAppGlobals** globalsP )
         return XP_FALSE;
     }
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     palm_ip_setup( globals );
 #endif
 
@@ -1206,10 +1206,8 @@ stopApplication( PalmAppGlobals* globals )
         game_dispose( &globals->game );
         gi_disposePlayerInfo( MEMPOOL &globals->gameInfo );
 
-#ifdef XWFEATURE_IR
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
         palm_ip_close( globals );
-#endif
 #endif
 
         if ( !!globals->dictList ) {
@@ -1257,7 +1255,7 @@ figureWaitTicks( PalmAppGlobals* globals )
     XWTimerReason why;
 
     if ( 0 ) {
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     } else if ( ipSocketIsOpen(globals) ) {
 /*         we'll do our sleeping in NetLibSelect */
         result = 0;
@@ -1321,7 +1319,7 @@ eventLoop( PalmAppGlobals* globals )
     EventType event;
 	
     do {
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
         if ( !!globals->game.comms 
              && (comms_getConType(globals->game.comms) == COMMS_CONN_RELAY) ) {
             checkHandleNetEvents( globals );
@@ -1393,7 +1391,7 @@ applicationHandleEvent( EventPtr event )
         case XW_PREFS_FORM:
             handler = PrefsFormHandleEvent;
             break;
-#ifdef BEYOND_IR
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
         case XW_CONNS_FORM:
             handler = ConnsFormHandleEvent;
             break;
@@ -1467,25 +1465,24 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
 static void
 showBTState( PalmAppGlobals* globals )
 {
+    char ch[] = { ' ', ' ' };
     if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
-        char ch = 'x';
         switch( globals->btUIState ) {
         case BTUI_NONE:
-            /* ch = 'x'; */ break;
+            ch[0] = 'x'; break;
         case BTUI_LISTENING:
-            ch = 'L'; break;
+            ch[0] = 'L'; break;
         case BTUI_CONNECTING:
-            ch = 'c'; break;
+            ch[0] = 'c'; break;
         case BTUI_CONNECTED:
-            ch = 'C'; break;
+            ch[0] = 'C'; break;
         case BTUI_SERVING:
-            ch = 'S'; break;
+            ch[0] = 'S'; break;
         }
-
-        /* Looks ok on T650, bad on lowres.  Need to replace with gadget or
-           icon or something long before ship. */
-        WinDrawChars( &ch, 1, 160-7, 160-27 );
     }
+    /* Looks ok on T650, bad on lowres.  Need to replace with gadget or icon
+       or something long before ship. */
+    WinDrawChars( ch, 2, 160-7, 160-27 );
 } /* showBTState */
 #endif
 
@@ -1823,7 +1820,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
                     &globals->util, newGameID, &globals->gState.cp, 
                     palm_send, globals );
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
         if ( !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, 
                            &globals->newGameState.addr );
@@ -3138,7 +3135,7 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         strID = STR_CANT_UNDO_TILEASSIGN;
         break;
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
         strID = STR_RELAY_TIMEOUT;
         break;
@@ -3330,7 +3327,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         now += PALM_TIMER_DELAY;
     } else if ( why == TIMER_TIMERTICK ) {
         now += SysTicksPerSecond();
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     } else if ( why == TIMER_HEARTBEAT ) {
         now += (secsFromNow * SysTicksPerSecond());
 #endif
@@ -3399,15 +3396,18 @@ palm_send( const XP_U8* buf, XP_U16 len,
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
 
-#ifdef BEYOND_IR
     XP_S16 result = 0;
     switch( comms_getConType( globals->game.comms ) ) {
+#ifdef XWFEATURE_IR
     case COMMS_CONN_IR:
         result = palm_ir_send( buf, len, globals );
         break;
+#endif
+#ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         result = palm_ip_send( buf, len, addr, globals );
         break;
+#endif
 #ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
         result = palm_bt_send( buf, len, addr, btDataHandler, globals );
@@ -3417,9 +3417,6 @@ palm_send( const XP_U8* buf, XP_U16 len,
         XP_ASSERT(0);
     }
     return result;
-#else
-    return palm_ir_send( buf, len, globals );
-#endif
 } /* palm_send */
 
 void
@@ -3480,7 +3477,6 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     return result;
 } /* palm_util_warnIllegalWord */
 
-#ifdef BEYOND_IR
 #ifdef XWFEATURE_BLUETOOTH
 static void
 btDataHandler( PalmAppGlobals* globals, const CommsAddrRec* fromAddr, 
@@ -3495,28 +3491,33 @@ btDataHandler( PalmAppGlobals* globals, const CommsAddrRec* fromAddr,
 }
 #endif
 
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void
 palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                       const CommsAddrRec* newAddr )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
 
-#ifdef XWFEATURE_BLUETOOTH
+# ifdef XWFEATURE_BLUETOOTH
     XP_Bool isBT = COMMS_CONN_BT == newAddr->conType;
     if ( !isBT ) {
         palm_bt_close( globals );
+        showBTState( globals );
     }
-#endif
+# endif
 
-    if ( COMMS_CONN_RELAY == newAddr->conType ) {
+    if ( 0 ) {
+# ifdef XWFEATURE_RELAY
+    } else if ( COMMS_CONN_RELAY == newAddr->conType ) {
         ip_addr_change( globals, oldAddr, newAddr );
-#ifdef XWFEATURE_BLUETOOTH
+# endif
+# ifdef XWFEATURE_BLUETOOTH
     } else if ( isBT ) {
         palm_bt_init( globals, btDataHandler );
-#endif
+# endif
     }
 }
-#endif
+#endif /* #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY */
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool

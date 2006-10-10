@@ -30,7 +30,7 @@
 #include <List.h>
 #include <Form.h>
 #include <IrLib.h>
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 # include <NetMgr.h>
 #endif
 
@@ -206,7 +206,7 @@ typedef struct PalmNewGameState {
 
     XP_Bool forwardChange;
     Connectedness curServerHilite;
-#ifdef BEYOND_IR
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     CommsAddrRec addr;
     XP_Bool connsSettingChanged;
 #endif
@@ -214,7 +214,7 @@ typedef struct PalmNewGameState {
 
 typedef struct PalmDictList PalmDictList;
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 typedef struct NetLibStuff {
     UInt16 netLibRef;
     NetSocketRef socket;
@@ -261,7 +261,7 @@ struct PalmAppGlobals {
     DmOpenRef gamesDBP;
     LocalID gamesDBID;
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     UInt16 exgLibraryRef;    /* what library did user choose for sending? */
 #endif
 
@@ -316,13 +316,14 @@ struct PalmAppGlobals {
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
     XP_U32 timerFireAt[NUM_TIMERS_PLUS_ONE];
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     NetLibStuff nlStuff;
     XP_U32 heartTimerFireAt;
-# ifdef XWFEATURE_BLUETOOTH
+#endif
+
+#ifdef XWFEATURE_BLUETOOTH
     struct PalmBTStuff* btStuff;
     BtUIState btUIState;          /* For showing user what's up */
-# endif
 #endif
 
 #ifdef DEBUG
@@ -341,7 +342,7 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
        ,loadGameEvent
        ,prefsChangedEvent
        ,openSavedGameEvent
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
        ,connsSettingChgEvent
 #endif
 #ifdef FEATURE_SILK
