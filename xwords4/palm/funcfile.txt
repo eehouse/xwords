@@ -208,7 +208,7 @@ SysUIAppSwitch
 FntBaseLine
 WinSetScalingMode
 WinGetDrawWindow
-############ These only needed if BEYOND_IR defined
+############ These only needed if XWFEATURE_RELAY defined
 NetLibOpen
 NetLibSocketOpen
 NetLibClose

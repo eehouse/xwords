@@ -220,6 +220,7 @@ curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
     return XP_TRUE;
 } /* curses_util_engineProgressCallback */
 
+#ifdef XWFEATURE_RELAY
 static void
 curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                       TimerProc proc, void* closure )
@@ -232,6 +233,7 @@ curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
     globals->cGlobals.timerClosures[why] = closure;
     globals->nextTimer = util_getCurSeconds(uc) + when;
 } /* curses_util_setTimer */
+#endif
 
 static void
 curses_util_requestTime( XW_UtilCtxt* uc ) 
@@ -650,10 +652,10 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals )
 }
 
 static int
-figureTimeout( CursesAppGlobals* globals )
+figureTimeout( CursesAppGlobals* XP_UNUSED_RELAY(globals) )
 {
     int result = INFINITE_TIMEOUT;
-
+#ifdef XWFEATURE_RELAY
     if ( globals->cGlobals.timerProcs[TIMER_HEARTBEAT] != 0 ) {
         XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util );
         XP_U32 then = globals->nextTimer;
@@ -663,7 +665,7 @@ figureTimeout( CursesAppGlobals* globals )
             result = (then - now) * 1000;
         }
     }
-
+#endif
     return result;
 } /* figureTimeout */
 
@@ -682,9 +684,11 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
     numEvents = poll( globals->fdArray, globals->fdCount, timeout );
 
     if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) {
+#ifdef XWFEATURE_RELAY
         if ( !globals->cGlobals.params->noHeartbeat ) {
             linuxFireTimer( &globals->cGlobals, TIMER_HEARTBEAT );
         }
+#endif
     } else if ( numEvents > 0 ) {
 	
         /* stdin first */
@@ -722,12 +726,19 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                                                globals );
             } else {
                 /* It's a normal data socket */
-                if ( globals->cGlobals.params->conType == COMMS_CONN_RELAY ) {
+                if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+                } else if ( globals->cGlobals.params->conType
+                            == COMMS_CONN_RELAY ) {
                     nBytes = linux_relay_receive( &globals->cGlobals, buf, 
                                                   sizeof(buf) );
-                } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+                } else if ( globals->cGlobals.params->conType
+                            == COMMS_CONN_BT ) {
                     nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd, 
                                                buf, sizeof(buf) );
+#endif
                 } else {
                     XP_ASSERT( 0 );
                 }
@@ -898,7 +909,9 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
     util->vtable->m_util_engineProgressCallback = 
 	curses_util_engineProgressCallback;
+#ifdef XWFEATURE_RELAY
     util->vtable->m_util_setTimer = curses_util_setTimer;
+#endif
     util->vtable->m_util_requestTime = curses_util_requestTime;
 
     util->closure = globals;
@@ -962,11 +975,12 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     setupCursesUtilCallbacks( &globals, params->util );
 
+#ifdef XWFEATURE_RELAY
     if ( params->conType == COMMS_CONN_RELAY ) {
         globals.cGlobals.defaultServerName
             = params->connInfo.relay.relayName;
     }
-
+#endif
     cursesListenOnSocket( &globals, 0 ); /* stdin */
 
     piperesult = pipe( globals.timepipe );
@@ -987,7 +1001,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     if ( globals.cGlobals.game.comms ) {
         CommsAddrRec addr;
 
-        if ( params->conType == COMMS_CONN_RELAY ) {
+        if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+        } else if ( params->conType == COMMS_CONN_RELAY ) {
             addr.conType = COMMS_CONN_RELAY;
             addr.u.ip_relay.ipAddr = 0;       /* ??? */
             addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
@@ -995,12 +1011,15 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                         sizeof(addr.u.ip_relay.hostName) - 1 );
             XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
                         sizeof(addr.u.ip_relay.cookie) - 1 );
+#endif
+#ifdef XWFEATURE_BLUETOOTH
         } else if ( params->conType == COMMS_CONN_BT ) {
             addr.conType = COMMS_CONN_BT;
             XP_ASSERT( sizeof(addr.u.bt.btAddr) 
                        >= sizeof(params->connInfo.bt.hostAddr));
             XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
                        sizeof(params->connInfo.bt.hostAddr) );
+#endif
         }
         comms_setAddr( globals.cGlobals.game.comms, &addr );
     }

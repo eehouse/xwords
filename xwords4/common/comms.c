@@ -84,9 +84,9 @@ struct CommsCtxt {
     MsgQueueElem* msgQueueTail;
     XP_U16 queueLen;
 
-    /* The following fields, down to isServer, are only used if BEYOND_IR is
-       defined, but I'm leaving them in here so apps built both ways can open
-       each other's saved games files.*/
+    /* The following fields, down to isServer, are only used if
+       XWFEATURE_RELAY is defined, but I'm leaving them in here so apps built
+       both ways can open each other's saved games files.*/
     CommsAddrRec addr;
 
     /* Stuff for relays */
@@ -130,16 +130,16 @@ static AddressRecord* getRecordFor( CommsCtxt* comms,
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
 static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
 static XP_U16 countAddrRecs( CommsCtxt* comms );
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 static void relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
                                XWHostID destID, void* data, int dlen );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 static void setHeartbeatTimer( CommsCtxt* comms );
-# ifdef XWFEATURE_BLUETOOTH
+#endif
+#ifdef XWFEATURE_BLUETOOTH
 static void btConnect( CommsCtxt* comms );
-# endif
 #endif
 
 /****************************************************************************
@@ -147,7 +147,8 @@ static void btConnect( CommsCtxt* comms );
  ****************************************************************************/
 CommsCtxt* 
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
-            XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
+            XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
+            XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
             TransportSend sendproc, void* closure )
 {
     CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
@@ -160,7 +161,7 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
     result->sendClosure = closure;
     result->util = util;
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     result->r.myHostID = isServer? HOST_ID_SERVER: HOST_ID_NONE;
     XP_LOGF( "set myHostID to %d", result->r.myHostID );
 
@@ -201,9 +202,10 @@ cleanupAddrRecs( CommsCtxt* comms )
 
 void
 comms_reset( CommsCtxt* comms, XP_Bool isServer, 
-             XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
+             XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
+             XP_U16 XP_UNUSED_RELAY(nPlayersTotal) )
 {
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     relayDisconnect( comms );
 #endif
 
@@ -215,7 +217,7 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
     comms->nextChannelNo = 0;
 
     comms->connID = CONN_ID_NONE;
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     comms->r.cookieID = COOKIE_ID_NONE;
     comms->r.nPlayersHere = nPlayersHere;
     comms->r.nPlayersTotal = nPlayersTotal;
@@ -378,17 +380,18 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 void
 comms_start( CommsCtxt* comms )
 {
-#ifdef BEYOND_IR
-    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+    if ( 0 ) {
+#ifdef XWFEATURE_RELAY
+    } else if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
         relayConnect( comms );
+#endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( comms->addr.conType == COMMS_CONN_BT ) {
         btConnect( comms );
 #endif
     }
-#endif
-}
+} /* comms_start */
 
 static void
 addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
@@ -500,12 +503,12 @@ void
 comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
     XP_ASSERT( comms != NULL );
-#ifdef BEYOND_IR
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     util_addrChange( comms->util, &comms->addr, addr );
 #endif
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     /* We should now have a cookie so we can connect??? */
     if ( addr->conType == COMMS_CONN_RELAY ) {
         relayConnect( comms );
@@ -513,14 +516,14 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 #endif
 } /* comms_setAddr */
 
-#ifdef BEYOND_IR
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 void
 comms_getInitialAddr( CommsAddrRec* addr )
 { 	 
     /* default values; default is still IR where there's a choice */ 	 
-#ifdef XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_BLUETOOTH
     addr->conType = COMMS_CONN_BT; /* for temporary ease in debugging */
-#else
+#elif defined  XWFEATURE_RELAY
     addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
     addr->u.ip_relay.port = 10999;
@@ -706,7 +709,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     channelNo = elem->channelNo;
 
     if ( 0 ) {
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     } else if ( comms_getConType( comms ) == COMMS_CONN_RELAY ) {
         if ( comms->r.relayState == COMMS_RELAYSTATE_ALLCONNECTED ) {
             XWHostID destID = getDestID( comms, channelNo );
@@ -747,7 +750,7 @@ comms_resendAll( CommsCtxt* comms )
     return result;
 } /* comms_resend */
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 static XP_Bool
 relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 {
@@ -861,18 +864,20 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
     XP_Bool channelWas0 = XP_FALSE;
+    XP_Bool done = XP_FALSE;
 
     XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     /* relayPreProcess returns true if consumes the message.  May just eat the
        header and leave a regular message to be processed below. */
-    if ( relayPreProcess( comms, stream, &senderID ) ) {
-        /* validMessage already false */
-    } else {
+    done = relayPreProcess( comms, stream, &senderID );
+    if ( !done ) {
         usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
+    }
 #endif
 
+    if ( !done ) {
         if ( stream_getSize( stream ) >= sizeof(connID) ) {
             connID = stream_getU32( stream );
             XP_STATUSF( "read connID of %lx", connID );
@@ -969,7 +974,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     return validMessage;
 } /* comms_checkIncomingStream */
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 static void
 p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
@@ -1114,7 +1119,7 @@ countAddrRecs( CommsCtxt* comms )
     return count;
 } /* countAddrRecs */
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 static XWHostID
 getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
 {
@@ -1234,6 +1239,7 @@ relayConnect( CommsCtxt* comms )
         comms->r.connecting = XP_FALSE;
     }
 } /* relayConnect */
+#endif
 
 #ifdef XWFEATURE_BLUETOOTH
 static void
@@ -1249,10 +1255,10 @@ btConnect( CommsCtxt* comms )
 } /* btConnect */
 #endif
 
+#ifdef XWFEATURE_RELAY
 static void
 relayDisconnect( CommsCtxt* comms )
 {
-#ifdef BEYOND_IR
     XP_LOGF( "relayDisconnect called" );
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         if ( comms->r.relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
@@ -1261,7 +1267,6 @@ relayDisconnect( CommsCtxt* comms )
                             NULL, 0 );
         }
     }
-#endif
 } /* relayDisconnect */
 #endif
 

@@ -63,15 +63,19 @@ typedef struct LaunchParams {
 
     CommsConnType conType;
     union {
+#ifdef XWFEATURE_RELAY
         struct {
             char* relayName;
             char* cookie;
             short defaultSendPort;
             short defaultListenPort;
         } relay;
+#endif
+#ifdef XWFEATURE_BLUETOOTH
         struct {
             bdaddr_t hostAddr;      /* unused if a host */
         } bt;
+#endif
     } connInfo;
 
     union {

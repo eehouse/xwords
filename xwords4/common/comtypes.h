@@ -75,7 +75,7 @@ typedef XP_U16 XP_PlayerAddr;
 typedef enum {
     TIMER_PENDOWN = 1, /* ARM doesn't like ids of 0... */
     TIMER_TIMERTICK,
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
     TIMER_HEARTBEAT,
 #endif
 
@@ -164,6 +164,18 @@ typedef struct CommonPrefs {
 # define XP_UNUSED_DBG(x) x
 #else
 # define XP_UNUSED_DBG(x) XP_UNUSED(x)
+#endif
+
+#ifdef XWFEATURE_RELAY
+#  define XP_UNUSED_RELAY(x) x
+#else
+#  define XP_UNUSED_RELAY(x) UNUSED__ ## x __attribute__((unused))
+#endif
+
+#ifdef XWFEATURE_BLUETOOTH
+#  define XP_UNUSED_BT(x) x
+#else
+#  define XP_UNUSED_BT(x) UNUSED__ ## x __attribute__((unused))
 #endif
 
 #endif

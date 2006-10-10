@@ -114,13 +114,16 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
-# MYDEFS_COMMON += -DBEYOND_IR
+# MYDEFS_COMMON += -DXWFEATURE_RELAY
 
 # turn on bluetooth comms option for 68K and ARM -- which won't work yet
-# MYDEFS_COMMON += -DXWFEATURE_BLUETOOTH 
+# BLUETOOTH = -DXWFEATURE_BLUETOOTH
+#MYDEFS_COMMON += $(BLUETOOTH)
 
 # Add menu allowing to choose to run 68K or ARM
+# ifdef DEBUG
 # MYDEFS_COMMON += -DFEATURE_DUALCHOOSE
+# endif
 
 # For Danish and perhaps other languages, custom-measure glyph height
 # so that overtall letters have a chance of fitting.
@@ -144,8 +147,8 @@ endif
 MYDEFS_ARM = -D__LITTLE_ENDIAN -DXW_TARGET_PNO $(MYDEFS_COMMON)
 MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) \
 	-DAPPNAME=\"$(APPNAME)\" \
+	$(BLUETOOTH)
 
-#	-DXWFEATURE_BLUETOOTH
 
 BITMAP_RSRCS = \
 	$(BITMAPS)/rightarrow.pbitm \

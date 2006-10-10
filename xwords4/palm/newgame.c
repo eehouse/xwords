@@ -149,7 +149,7 @@ newGameHandleEvent( EventPtr event )
         result = true;
         break;
 
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
     case connsSettingChgEvent:
         XP_ASSERT( globals->isNewGame );
         state->connsSettingChanged = XP_TRUE;
@@ -573,7 +573,7 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
         }
     }
 
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
     /* Even if it didn't change, pop the connections form.  It's only
        informational in the non-new-game case; nothing can be changed. */
     if ( hiliteID != SERVER_STANDALONE ) {
@@ -935,7 +935,7 @@ loadNewGameState( PalmAppGlobals* globals )
                             globals );
     newg_load( state->ngc, gi );
 
-#ifdef BEYOND_IR
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
     if ( globals->game.comms ) {
         comms_getAddr( globals->game.comms, &state->addr );
     } else {
