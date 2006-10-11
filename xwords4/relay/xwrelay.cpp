@@ -47,6 +47,7 @@
 #include <assert.h>
 #include <sys/select.h>
 #include <stdarg.h>
+#include <sys/wait.h>
 
 #if defined(__FreeBSD__)
 # if (OSVERSION > 500000)
@@ -451,6 +452,20 @@ SIGINT_handler( int sig )
     shutdown();
 }
 
+static void
+printWhy( int status ) 
+{
+    if ( WIFEXITED(status) ) {
+        logf( XW_LOGINFO, "why: exited" );
+    } else if ( WIFSIGNALED(status) ) {
+        logf( XW_LOGINFO, "why: signaled" );
+    } else if ( WCOREDUMP(status) ) {
+        logf( XW_LOGINFO, "why: core" );
+    } else if ( WIFSTOPPED(status) ) {
+        logf( XW_LOGINFO, "why: traced" );
+    }
+} /* printWhy */
+
 int main( int argc, char** argv )
 {
     int port = 0;
@@ -524,6 +539,22 @@ int main( int argc, char** argv )
 
     PermID::SetServerName( serverName );
     PermID::SetIDFileName( idFileName );
+
+    /* loop forever, relaunching children as they die. */
+    for ( ; ; ) {
+        pid_t pid = fork();
+        if ( pid == 0 ) {       /* child */
+            break;
+        } else if ( pid > 0 ) {
+            int status;
+            logf( XW_LOGINFO, "parent waiting on child pid=%d", pid );
+            waitpid( pid, &status, 0 );
+            printWhy( status );
+            sleep( 45 );        /* give time to close sockets? */
+        } else {
+            logf( XW_LOGERROR, "fork() => %s", strerror(errno) );
+        }
+    }
 
     g_listener = make_socket( INADDR_ANY, port );
     if ( g_listener == -1 ) {
