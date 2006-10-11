@@ -666,7 +666,6 @@ bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr )
     CALL_ERR( err, BtLibDiscoverSingleDevice, btStuff->btLibRefNum, 
               "Crosswords host", (BtLibClassOfDeviceType*)&deviceFilter, 1,
               addr, false, false );
-    LOG_RETURNF( "%s", btErrToStr(err) );
     return err;
 } /* bpd_discover */
 
