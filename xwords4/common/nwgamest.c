@@ -417,7 +417,7 @@ setRoleStrings( NewGameCtx* ngc )
 
     if ( 0 ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( ngc->role == SERVER_ISCLIENT && !ngc->isNewGame ) {
+    } else if ( ngc->role == SERVER_ISCLIENT && ngc->isNewGame ) {
         strID = STR_LOCALPLAYERS;
 #endif
     } else {
