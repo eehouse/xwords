@@ -715,9 +715,6 @@ palm_debugf( char* format, ...)
     logToFile( buf );
 } /* debugf */
 
-/* if -0 isn't passed to compiler it wants to find this!!! */
-void p_ignore(char* s, ...) {}
-
 void
 palm_logf( char* format, ... )
 {

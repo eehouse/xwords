@@ -43,7 +43,6 @@ typedef Boolean XP_Bool;
 typedef XP_U32 XP_Time;
 
 void palm_debugf(char*, ...);
-void p_ignore(char*, ...);
 void palm_assert(Boolean b, int line, const char* func, const char* file );
 void palm_warnf( char* format, ... );
 void palm_logf( char* format, ... );
@@ -89,20 +88,19 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #endif
 
 #ifdef DEBUG
-# define XP_DEBUGF palm_debugf
+# define XP_DEBUGF(...) palm_debugf(__VA_ARGS__)
 #else
-# define XP_DEBUGF if(0)p_ignore
+# define XP_DEBUGF(...)
 #endif
 
-//#define XP_STATUSF if(0)p_ignore
 #define XP_STATUSF XP_LOGF      /* for now */
 
 #ifdef DEBUG
-#define XP_LOGF palm_logf
-#define XP_WARNF palm_warnf
+#define XP_LOGF(...) palm_logf(__VA_ARGS__)
+#define XP_WARNF(...) palm_warnf(__VA_ARGS__)
 #else
-#define XP_WARNF if(0)p_ignore
-#define XP_LOGF if(0)p_ignore
+#define XP_WARNF(...)
+#define XP_LOGF(...)
 #endif
 
 /* Assumes big-endian, of course */
