@@ -158,9 +158,10 @@ static const char* proleToString( PBT_PicoRole r );
 static void libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon );
 static void l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 
-Err
+XP_Bool
 palm_bt_init( PalmAppGlobals* globals, DataCb cb )
 {
+    XP_Bool inited;
     PalmBTStuff* btStuff;
 
     LOG_FUNC();
@@ -173,15 +174,18 @@ palm_bt_init( PalmAppGlobals* globals, DataCb cb )
         pbt_reset( btStuff );
     }
 
-    if ( comms_getIsServer( globals->game.comms ) ) {
-        pbt_setup_master( btStuff );
-    } else if ( btStuff->picoRole == PBT_MASTER ) {
-        pbt_takedown_master( btStuff );
-    }
+    inited = !!btStuff;
+    if ( inited ) {
+        if ( comms_getIsServer( globals->game.comms ) ) {
+            pbt_setup_master( btStuff );
+        } else if ( btStuff->picoRole == PBT_MASTER ) {
+            pbt_takedown_master( btStuff );
+        }
 
-    btStuff->cb = cb;
-    LOG_RETURN_VOID();
-    return errNone;
+        btStuff->cb = cb;
+    }
+    LOG_RETURNF( "%d", (XP_U16)inited );
+    return inited;
 } /* palm_bt_init */
 
 void
@@ -405,36 +409,38 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     XP_LOGF( "%s(len=%d)", __FUNCTION__, len);
 
     btStuff = pbt_checkInit( globals );
-    if ( !btStuff->cb ) {
-        btStuff->cb = cb;
-    } else {
-        XP_ASSERT( cb == btStuff->cb );
-    }
-
-    if ( !addr ) {
-        comms_getAddr( globals->game.comms, &remoteAddr );
-        addr = &remoteAddr;
-    }
-    XP_ASSERT( !!addr );
-
-    picoRole = btStuff->picoRole;
-    XP_LOGF( "%s: role=%s", __FUNCTION__, proleToString(picoRole) );
-    if ( picoRole == PBT_UNINIT ) {
-        XP_Bool amMaster = comms_getIsServer( globals->game.comms );
-        picoRole = amMaster? PBT_MASTER : PBT_SLAVE;
-    }
-
-    pbt_checkAddress( btStuff, addr );
-
     if ( !!btStuff ) {
-        if ( picoRole == PBT_MASTER ) {
-            pbt_setup_master( btStuff );
+        if ( !btStuff->cb ) {
+            btStuff->cb = cb;
         } else {
-            pbt_setup_slave( btStuff, addr );
+            XP_ASSERT( cb == btStuff->cb );
         }
 
-        nSent = pbt_enque( &btStuff->vol.out, buf, len );
-        pbt_send_pending( btStuff );
+        if ( !addr ) {
+            comms_getAddr( globals->game.comms, &remoteAddr );
+            addr = &remoteAddr;
+        }
+        XP_ASSERT( !!addr );
+
+        picoRole = btStuff->picoRole;
+        XP_LOGF( "%s: role=%s", __FUNCTION__, proleToString(picoRole) );
+        if ( picoRole == PBT_UNINIT ) {
+            XP_Bool amMaster = comms_getIsServer( globals->game.comms );
+            picoRole = amMaster? PBT_MASTER : PBT_SLAVE;
+        }
+
+        pbt_checkAddress( btStuff, addr );
+
+        if ( !!btStuff ) {
+            if ( picoRole == PBT_MASTER ) {
+                pbt_setup_master( btStuff );
+            } else {
+                pbt_setup_slave( btStuff, addr );
+            }
+
+            nSent = pbt_enque( &btStuff->vol.out, buf, len );
+            pbt_send_pending( btStuff );
+        }
     }
     LOG_RETURNF( "%d", nSent );
     return nSent;

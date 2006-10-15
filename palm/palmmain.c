@@ -1470,26 +1470,28 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
 static void
 showBTState( PalmAppGlobals* globals )
 {
-    char ch[] = { ' ', ' ' };
     CommsCtxt* comms = globals->game.comms;
-    if ( (comms != NULL)
-         && COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
-        switch( globals->btUIState ) {
-        case BTUI_NONE:
-            ch[0] = 'x'; break;
-        case BTUI_LISTENING:
-            ch[0] = 'L'; break;
-        case BTUI_CONNECTING:
-            ch[0] = 'c'; break;
-        case BTUI_CONNECTED:
-            ch[0] = 'C'; break;
-        case BTUI_SERVING:
-            ch[0] = 'S'; break;
+    char ch[] = { ' ', ' ' };
+    if ( comms != NULL ) {
+
+        if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
+            switch( globals->btUIState ) {
+            case BTUI_NONE:
+                ch[0] = 'x'; break;
+            case BTUI_LISTENING:
+                ch[0] = 'L'; break;
+            case BTUI_CONNECTING:
+                ch[0] = 'c'; break;
+            case BTUI_CONNECTED:
+                ch[0] = 'C'; break;
+            case BTUI_SERVING:
+                ch[0] = 'S'; break;
+            }
         }
     }
     /* Looks ok on T650, bad on lowres.  Need to replace with gadget or icon
        or something long before ship. */
-    WinDrawChars( ch, 2, 160-7, 160-27 );
+    WinDrawChars( ch, sizeof(ch), 160-7, 160-27 );
 } /* showBTState */
 #endif
 
@@ -3520,7 +3522,9 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
 # endif
 # ifdef XWFEATURE_BLUETOOTH
     } else if ( isBT ) {
-        palm_bt_init( globals, btDataHandler );
+        if ( !palm_bt_init( globals, btDataHandler ) ) {
+            userErrorFromStrId( globals, STR_BT_NOINIT );
+        }
 # endif
     }
 }

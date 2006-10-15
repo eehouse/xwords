@@ -43,20 +43,9 @@ typedef struct ConnsDlgState {
     XP_Bool isNewGame;
     CommsAddrRec* addr;
     XP_BtAddr btAddr;           /* since there's no field, save it here */
+    XP_BtAddrStr tmp;
+    char btName[32];
 } ConnsDlgState;
-
-static void
-strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
-{
-    FieldPtr field = getActiveObjectPtr( id );
-    XP_UCHAR* str = FldGetTextPtr( field );
-    XP_U16 len = FldGetTextLength( field );
-    if ( len > max-1 ) {
-        len = max - 1;
-    }
-    XP_MEMCPY( buf, str, len );
-    buf[len] = '\0';
-} /* strFromField */
 
 static void
 ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
@@ -81,12 +70,12 @@ ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
+        ControlPtr ctrl = getActiveObjectPtr( XW_CONNS_BT_HOSTTRIGGER_ID );
         if ( '\0' == addr->u.bt.hostName[0] ) {
-            XP_BtAddrStr tmp;
-            palm_bt_addrString( globals, &addr->u.bt.btAddr, &tmp );
-            setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, tmp.chars );
+            palm_bt_addrString( globals, &addr->u.bt.btAddr, &state->tmp );
+            CtlSetLabel( ctrl, state->tmp.chars );
         } else {
-            setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName );
+            CtlSetLabel( ctrl, addr->u.bt.hostName );
         }
 #endif
     }
@@ -114,9 +103,9 @@ stateFromCtls( ConnsDlgState* state )
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
-        strFromField( XW_CONNS_BT_HOSTFIELD_ID, addr->u.bt.hostName,
-                      sizeof(addr->u.bt.hostName) );
         /* Not exactly from a control... */
+        XP_MEMCPY( addr->u.bt.hostName, state->btName, 
+                   sizeof(addr->u.bt.hostName) );
         XP_MEMCPY( &addr->u.bt.btAddr, &state->btAddr, 
                    sizeof(addr->u.bt.btAddr) );
         LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __FUNCTION__ );
@@ -143,8 +132,7 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
     const XP_U16 btGuestCtls[] = {
 #ifdef XWFEATURE_BLUETOOTH
         XW_CONNS_BT_HOSTNAME_LABEL_ID,
-        XW_CONNS_BT_HOSTFIELD_ID,
-        XW_CONNS_BT_BROWSEBUTTON_ID,
+        XW_CONNS_BT_HOSTTRIGGER_ID,
 #else
         XW_CONNS_BT_NOTSUPPORT_LABEL_ID,
 #endif
@@ -219,10 +207,11 @@ selToConType( XP_U16 sel )
 static void
 browseForDeviceName( PalmAppGlobals* globals, ConnsDlgState* state )
 {
-    char buf[32];
     XP_BtAddr btAddr;
-    if ( palm_bt_browse_device( globals, &btAddr, buf, sizeof( buf ) ) ) {
-        setFieldStr( XW_CONNS_BT_HOSTFIELD_ID, buf );
+    if ( palm_bt_browse_device( globals, &btAddr, 
+                                state->btName, sizeof( state->btName ) ) ) {
+        CtlSetLabel( getActiveObjectPtr( XW_CONNS_BT_HOSTTRIGGER_ID ),
+                     state->btName );
         XP_MEMCPY( &state->btAddr, &btAddr, sizeof(state->btAddr) );
         LOG_HEX( &state->btAddr, sizeof(state->btAddr), __FUNCTION__ );
     }
@@ -282,7 +271,7 @@ ConnsFormHandleEvent( EventPtr event )
         switch ( event->data.ctlSelect.controlID ) {
 
 #ifdef XWFEATURE_BLUETOOTH
-        case XW_CONNS_BT_BROWSEBUTTON_ID:
+        case XW_CONNS_BT_HOSTTRIGGER_ID:
             browseForDeviceName( globals, state );
             break;
 #endif
