@@ -520,10 +520,7 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 void
 comms_getInitialAddr( CommsAddrRec* addr )
 { 	 
-    /* default values; default is still IR where there's a choice */ 	 
-#if defined XWFEATURE_BLUETOOTH
-    addr->conType = COMMS_CONN_BT; /* for temporary ease in debugging */
-#elif defined  XWFEATURE_RELAY
+#if defined  XWFEATURE_RELAY
     addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
     addr->u.ip_relay.port = 10999;
@@ -532,6 +529,12 @@ comms_getInitialAddr( CommsAddrRec* addr )
         XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
     }
     addr->u.ip_relay.cookie[0] = '\0';
+#elif defined PLATFORM_PALM
+    /* default values; default is still IR where there's a choice, at least on
+       Palm... */
+    addr->conType = COMMS_CONN_IR;
+#else
+    addr->conType = COMMS_CONN_BT;
 #endif
 } /* comms_getInitialAddr */
 #endif
