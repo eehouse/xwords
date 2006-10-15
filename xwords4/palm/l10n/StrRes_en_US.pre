@@ -131,6 +131,12 @@
                                "connection." },
 { "STR_RELAY_GENERIC",         "Relay error: something's wrong." },
 #endif
+
+#ifdef XWFEATURE_BLUETOOTH
+{ "STR_BT_NOINIT",             "Unable to initialize Bluetooth. "
+                               "Is it enabled?" },
+#endif
+
 { "STR_ABOUT_CONTENT", 
 #if 1
                                "THANKS FOR LOOKING at this alpha version of "

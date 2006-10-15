@@ -48,7 +48,7 @@ typedef void (*DataCb)( PalmAppGlobals* globals,
                         const CommsAddrRec* fromAddr,
                         const XP_U8* data, XP_U16 len );
 
-Err palm_bt_init( PalmAppGlobals* globals, DataCb cb );
+XP_Bool palm_bt_init( PalmAppGlobals* globals, DataCb cb );
 void palm_bt_close( PalmAppGlobals* globals );
 
 void palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
