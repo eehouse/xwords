@@ -1073,6 +1073,11 @@ startApplication( PalmAppGlobals** globalsP )
                                         getResString,
                                         &globals->drawingPrefs );
 
+    if ( !globals->gState.reserved1 ) {
+        palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE );
+        globals->gState.reserved1 = XP_TRUE;
+    }
+
     FrmGotoForm( XW_MAIN_FORM );
 
     /* do this first so players who don't exist have default names */
@@ -1466,7 +1471,9 @@ static void
 showBTState( PalmAppGlobals* globals )
 {
     char ch[] = { ' ', ' ' };
-    if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
+    CommsCtxt* comms = globals->game.comms;
+    if ( (comms != NULL)
+         && COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
         switch( globals->btUIState ) {
         case BTUI_NONE:
             ch[0] = 'x'; break;

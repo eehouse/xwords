@@ -124,7 +124,7 @@
 { "STR_LOCALPLAYERS",          "Local players" },
 { "STR_TOTALPLAYERS",          "Total players" },
 
-#ifdef BEYOND_IR
+#ifdef XWFEATURE_RELAY
 { "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
                                "connect." },
 { "STR_RELAY_LOST_OTHER",      "Relay error: another device has lost its "
@@ -132,6 +132,13 @@
 { "STR_RELAY_GENERIC",         "Relay error: something's wrong." },
 #endif
 { "STR_ABOUT_CONTENT", 
+#if 1
+                               "THANKS FOR LOOKING at this alpha version of "
+                               "Crosswords.  Please see the notes and caveats at "
+                               "xwords.sf.net/bt_palm.php.  Please report bugs to "
+                               "ehouse@users.sf.net.  Enjoy!\n\n"
+
+#endif
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2006 by Eric House.  "\
       "Released under the GNU Public License.\n\n"\
