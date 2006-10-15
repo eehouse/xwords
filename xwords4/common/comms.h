@@ -92,17 +92,17 @@ void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 
 /* "static" method provides default when no comms present */
 void comms_getInitialAddr( CommsAddrRec* addr );
-void comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr );
+void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 
-CommsConnType comms_getConType( CommsCtxt* comms );
-XP_Bool comms_getIsServer( CommsCtxt* comms );
+CommsConnType comms_getConType( const CommsCtxt* comms );
+XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  XW_UtilCtxt* util, TransportSend sendproc, 
                                  void* closure );
 void comms_start( CommsCtxt* comms );
-void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream );
+void comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream );
 
 XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
 XP_S16 comms_resendAll( CommsCtxt* comms );

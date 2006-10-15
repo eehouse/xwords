@@ -129,7 +129,7 @@ static AddressRecord* getRecordFor( CommsCtxt* comms,
                                     XP_PlayerAddr channelNo );
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
 static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
-static XP_U16 countAddrRecs( CommsCtxt* comms );
+static XP_U16 countAddrRecs( const CommsCtxt* comms );
 #ifdef XWFEATURE_RELAY
 static void relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
@@ -394,7 +394,7 @@ comms_start( CommsCtxt* comms )
 } /* comms_start */
 
 static void
-addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
+addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 {
     CommsAddrRec addr;
     XP_MEMCPY( &addr, addrP, sizeof(addr) );
@@ -432,7 +432,7 @@ addrToStream( XWStreamCtxt* stream, CommsAddrRec* addrP )
 } /* addrToStream */
 
 void
-comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
+comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
 {
     XP_U16 nAddrRecs;
     AddressRecord* rec;
@@ -493,7 +493,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream )
 } /* comms_writeToStream */
 
 void
-comms_getAddr( CommsCtxt* comms, CommsAddrRec* addr )
+comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr )
 {
     XP_ASSERT( !!comms );
     XP_MEMCPY( addr, &comms->addr, sizeof(*addr) );
@@ -537,13 +537,13 @@ comms_getInitialAddr( CommsAddrRec* addr )
 #endif
 
 CommsConnType 
-comms_getConType( CommsCtxt* comms )
+comms_getConType( const CommsCtxt* comms )
 {
     return comms->addr.conType;
 } /* comms_getConType */
 
 XP_Bool
-comms_getIsServer( CommsCtxt* comms )
+comms_getIsServer( const CommsCtxt* comms )
 {
     return comms->isServer;
 }
@@ -1109,7 +1109,7 @@ getRecordFor( CommsCtxt* comms, XP_PlayerAddr channelNo )
 } /* getRecordFor */
 
 static XP_U16
-countAddrRecs( CommsCtxt* comms )
+countAddrRecs( const CommsCtxt* comms )
 {
     short count = 0;
     AddressRecord* recs;
