@@ -36,7 +36,7 @@ typedef struct CEDictionaryCtxt {
 } CEDictionaryCtxt;
 
 static void ce_dict_destroy( DictionaryCtxt* dict );
-static XP_UCHAR* ce_dict_getShortName( const DictionaryCtxt* dict );
+static const XP_UCHAR* ce_dict_getShortName( const DictionaryCtxt* dict );
 static void ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 static XP_U16 ceCountSpecials( CEDictionaryCtxt* ctxt );
 static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
@@ -427,10 +427,10 @@ ce_dict_destroy( DictionaryCtxt* dict )
     XP_FREE( ctxt->super.mpool, ctxt );
 } // ce_dict_destroy
 
-static XP_UCHAR* 
+static const XP_UCHAR* 
 ce_dict_getShortName( const DictionaryCtxt* dict )
 {
-    XP_UCHAR* name = dict_getName( dict );
+    const XP_UCHAR* name = dict_getName( dict );
     return bname( name );
 } /* ce_dict_getShortName */
 
@@ -850,11 +850,11 @@ n_ptr_tohs( XP_U8** inp )
     return XP_NTOHS(t);
 } /* n_ptr_tohs */
 
-XP_UCHAR*
-bname( XP_UCHAR* in )
+const XP_UCHAR*
+bname( const XP_UCHAR* in )
 {
     XP_U16 len = (XP_U16)XP_STRLEN(in);
-    XP_UCHAR* out = in + len - 1;
+    const XP_UCHAR* out = in + len - 1;
 
     while ( *out != '\\' && out >= in ) {
         --out;

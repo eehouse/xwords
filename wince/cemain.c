@@ -698,7 +698,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
     dict = model_getDictionary( globals->game.model );
 
     if ( !!dict ) {
-        XP_UCHAR* curDictName = dict_getName( dict );
+        const XP_UCHAR* curDictName = dict_getName( dict );
         if ( !!newDictName &&
             ( !curDictName || 0 != strcmp( curDictName, newDictName ) ) ) {
             dict_destroy( dict );
@@ -1626,7 +1626,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             XWStreamCtxt* memStream;
             DictionaryCtxt* dict;
             FileWriteState fwState;
-            char* dictName;
+            const char* dictName;
 
             fwState.path = globals->curGameName;
             fwState.globals = globals;
