@@ -49,5 +49,5 @@ void ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance );
    return value (which is into buf, but not necessarily the first char.) */
 wchar_t* wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in );
 
-XP_UCHAR* bname( XP_UCHAR* in );
+const XP_UCHAR* bname( const XP_UCHAR* in );
 #endif
