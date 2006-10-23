@@ -95,10 +95,17 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     void* closure = ngc->closure;
     NGValue value;
     XP_U16 nPlayers, nShown;
-    XP_S16 i;
+    XP_S16 i, j;
     Connectedness role;
     XP_Bool localOnly;
     XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
+
+    ngc->juggleEnabled = NGEnable_UNSET;
+    for ( i = 0; i < NG_NUM_COLS; ++i ) {
+        for ( j = 0; j < MAX_NUM_PLAYERS; ++j ) {
+            ngc->enabled[i][j] = NGEnable_UNSET;
+        }
+    }
 
     ngc->role = role = gi->serverRole;
     localOnly = role == SERVER_ISCLIENT && ngc->isNewGame;
@@ -257,6 +264,8 @@ newg_juggle( NewGameCtx* ngc )
 {
     XP_Bool changed = XP_FALSE;
     XP_U16 nPlayers = ngc->nPlayers;
+
+    XP_ASSERT( ngc->isNewGame );
     
     if ( nPlayers > 1 ) {
         LocalPlayer tmpPlayers[MAX_NUM_PLAYERS];
@@ -417,7 +426,7 @@ setRoleStrings( NewGameCtx* ngc )
 
     if ( 0 ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( ngc->role == SERVER_ISCLIENT && ngc->isNewGame ) {
+    } else if ( ngc->role == SERVER_ISCLIENT && !ngc->isNewGame ) {
         strID = STR_LOCALPLAYERS;
 #endif
     } else {

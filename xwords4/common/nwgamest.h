@@ -60,7 +60,8 @@ typedef enum {
     ,NG_ATTR_CANJUGGLE
 } NewGameAttr;
 
-typedef enum { NGEnableHidden, 
+typedef enum { NGEnable_UNSET,   /* internal use only */
+               NGEnableHidden, 
                NGEnableDisabled, 
                NGEnableEnabled
 } NewGameEnable;
