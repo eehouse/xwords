@@ -134,19 +134,26 @@
 #define HC_MIN_COMBO                    1087
 #define HC_MAX_COMBO                    1088
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-# define IDC_CCONVIA_LAB                 1089
-# define IDC_CRELAYNAME_LAB              1090
-# define IDC_CRELAYPORT_LAB              1091
-# define IDC_COOKIE_LAB                  1092
+#define IDC_CCONVIA_LAB                 1089
+
+#define IDC_COOKIE_LAB                   1090
+#ifdef XWFEATURE_RELAY
+# define IDC_CRELAYNAME_LAB              1091
+# define IDC_CRELAYPORT_LAB              1092
 # define IDC_CRELAYHINT_LAB              1093
 
 # define IDC_CONNECTCOMBO                1094
 # define RELAYNAME_EDIT                  1095
 # define RELAYPORT_EDIT                  1096
 # define COOKIE_EDIT                     1097
+
 #endif
 
+#define IDC_BLUET_ADDR_LAB               1100
+#ifdef XWFEATURE_BLUETOOTH
+# define IDC_BLUET_ADDR_EDIT             1101
+# define IDC_BLUET_ADDR_BROWSE           1102
+#endif
 
 
 

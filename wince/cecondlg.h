@@ -25,11 +25,13 @@
 
 typedef struct CeConnDlgState {
     CommsAddrRec addrRec;
+    Connectedness role;
     CEAppGlobals* globals;
     XP_Bool userCancelled;
 } CeConnDlgState;
 
 XP_Bool WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, 
-                      const CommsAddrRec* addrRec, CeConnDlgState* state );
+                      const CommsAddrRec* addrRec, 
+                      Connectedness role, CeConnDlgState* state );
 
 #endif

@@ -76,7 +76,7 @@ typedef struct FileWriteState {
 } FileWriteState;
 
 /* forward util function decls */
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len, 
                             const CommsAddrRec* addr, 
                             void* closure );
@@ -111,7 +111,7 @@ static void ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
 static void ce_util_requestTime( XW_UtilCtxt* uc );
 static XP_U32 ce_util_getCurSeconds( XW_UtilCtxt* uc );
 static DictionaryCtxt* ce_util_makeEmptyDict( XW_UtilCtxt* uc );
-#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef XWFEATURE_RELAY
 static XWStreamCtxt* ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, 
                                                  XP_U16 channelNo );
 #endif
@@ -733,7 +733,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
             globals->gameInfo.robotSmartness = gp->robotSmartness;
         }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
         if ( !!addr ) {
             XP_ASSERT( globals->game.comms != NULL );
             comms_setAddr( globals->game.comms, addr );
@@ -1383,7 +1383,7 @@ ceDoNewGame( CEAppGlobals* globals )
                 updateForColors( globals );
             }
         }
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
         if ( giState.addrChanged ) {
             addr = &giState.prefsPrefs.addrRec;
         }
@@ -2363,7 +2363,7 @@ wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
     return strlen(buf);
 } /* wince_snprintf */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef XWFEATURE_RELAY
 static void
 got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 {
@@ -2380,7 +2380,9 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
                           0, (DWORD)stream );
     XP_ASSERT( posted );
 } /* got_data_proc */
+#endif
 
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 static XP_S16
 ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, 
               void* closure )
@@ -2390,6 +2392,7 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 
     if ( !globals->socketWrap ) {
         globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
+                                               addr->conType,
                                                got_data_proc, globals );
     }
 
@@ -2404,7 +2407,6 @@ ce_send_on_close( XWStreamCtxt* stream, void* closure )
     XP_ASSERT( !!globals->game.comms );
     comms_send( globals->game.comms, stream );
 }
-
 #endif
 
 static VTableMgr*
@@ -2639,7 +2641,8 @@ ce_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 } /* ce_util_engineProgressCallback */
 
 static void
-ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
+ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
+                  XP_U16 XP_UNUSED_RELAY(when),
                   TimerProc proc, void* closure)
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
@@ -2824,7 +2827,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     return isOk;
 } /* ce_util_warnIllegalWord */
 
-#ifdef XWFEATURE_RELAY
+#if defined XWFEATURE_RELAY || defined  XWFEATURE_BLUETOOTH
 static void
 ce_util_addrChange( XW_UtilCtxt* XP_UNUSED(uc), 
                     const CommsAddrRec* XP_UNUSED(oldAddr),

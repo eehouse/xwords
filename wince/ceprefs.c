@@ -130,7 +130,7 @@ loadStateFromCurPrefs( CEAppGlobals* globals, const CEAppPrefs* appPrefs,
     XP_MEMCPY( &prefsPrefs->colors, &appPrefs->colors,
                sizeof(prefsPrefs->colors) );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     if ( globals->game.comms != NULL ) {
         comms_getAddr( globals->game.comms, &prefsPrefs->addrRec );
     } else {
