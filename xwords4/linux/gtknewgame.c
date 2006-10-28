@@ -360,29 +360,29 @@ labelForCol( const GtkNewGameState* state, XP_U16 player, NewGameColumn col )
 
 static void
 gtk_newgame_col_enable( void* closure, XP_U16 player, NewGameColumn col, 
-                        NewGameEnable enable )
+                        XP_TriEnable enable )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
     GtkWidget* widget = widgetForCol( state, player, col );
     GtkWidget* label = labelForCol( state, player, col );
 
-    if ( enable == NGEnableHidden ) {
+    if ( enable == TRI_ENAB_HIDDEN ) {
         gtk_widget_hide( widget );
         if ( !!label ) {
             gtk_widget_hide( label );
         }
     } else {
         gtk_widget_show( widget );
-        gtk_widget_set_sensitive( widget, enable == NGEnableEnabled );
+        gtk_widget_set_sensitive( widget, enable == TRI_ENAB_ENABLED );
         if ( !!label ) {
             gtk_widget_show( label );
-        gtk_widget_set_sensitive( label, enable == NGEnableEnabled );
+        gtk_widget_set_sensitive( label, enable == TRI_ENAB_ENABLED );
         }
     }
 } /* gtk_newgame_col_enable */
 
 static void
-gtk_newgame_attr_enable( void* closure, NewGameAttr attr, NewGameEnable enable )
+gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_TriEnable enable )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
     GtkWidget* widget = NULL;
@@ -395,7 +395,7 @@ gtk_newgame_attr_enable( void* closure, NewGameAttr attr, NewGameEnable enable )
     }
 
     if ( !!widget ) {
-        gtk_widget_set_sensitive( widget, enable == NGEnableEnabled );
+        gtk_widget_set_sensitive( widget, enable == TRI_ENAB_ENABLED );
     }
 }
 
