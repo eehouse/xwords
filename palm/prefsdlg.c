@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
-/* 
- * Copyright 1999 - 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+/* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*- */
+/*
+ * Copyright 1999 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,20 +18,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef XWFEATURE_FIVEWAY
+# include <Hs.h>
+#endif
+
 #include "prefsdlg.h"
 #include "callback.h"
 #include "palmutil.h"
 #include "xwords4defines.h"
-#include "newgame.h" /* for drawOneGadget */
 
 void localPrefsToGlobal( PalmAppGlobals* globals );
 static void localPrefsToControls( PrefsDlgState* state );
 static void drawPrefsTypeGadgets( PalmAppGlobals* globals );
 static void showHidePrefsWidgets( PalmAppGlobals* globals, FormPtr form );
-static Boolean checkPrefsHiliteGadget( PalmAppGlobals* globals, FormPtr form, 
-                                       EventType* event );
+static void checkPrefsHiliteGadget( PalmAppGlobals* globals, UInt16 selGadget );
 static void controlsToLocalPrefs( PrefsDlgState* state );
-static Boolean dropCtlUnlessNewGame( PalmAppGlobals* globals, XP_U16 id );
+static XP_Bool ignoredUnlessNewgame( XP_U16 id );
 
 Boolean
 PrefsFormHandleEvent( EventPtr event )
@@ -41,6 +44,7 @@ PrefsFormHandleEvent( EventPtr event )
     FormPtr form;
     EventType eventToPost;
     Int16 chosen;
+    XP_U16 selGadget;
 
     CALLBACK_PROLOGUE();
     globals = getFormRefcon();
@@ -54,10 +58,6 @@ PrefsFormHandleEvent( EventPtr event )
             GlobalPrefsToLocal( globals );
             state = globals->prefsDlgState;
         }
-
-        sizeGadgetsForStrings( FrmGetActiveForm(),
-                               getActiveObjectPtr( XW_PREFS_TYPES_LIST_ID ),
-                               XW_PREFS_APPWIDE_CHECKBX_ID );
 
         state->playerBdSizeList = 
             getActiveObjectPtr( XW_PREFS_BDSIZE_LIST_ID );
@@ -77,18 +77,32 @@ PrefsFormHandleEvent( EventPtr event )
         break;
 
     case penDownEvent:
-        form = FrmGetActiveForm();
-        result = checkPrefsHiliteGadget( globals, form, event );
+        result = penInGadget( event, &selGadget );
+        if ( result ) {
+            checkPrefsHiliteGadget( globals, selGadget );
+        }
         break;
 
-    case fldEnterEvent:
-        result = dropCtlUnlessNewGame( globals,
-                                       event->data.fldEnter.fieldID );
+#ifdef XWFEATURE_FIVEWAY
+    case keyDownEvent:
+        selGadget = getFocusOwner();
+        if ( tryRockerKey( event->data.keyDown.chr, selGadget, 
+                           XW_PREFS_ALLGAMES_GADGET_ID, 
+                           XW_PREFS_ONEGAME_GADGET_ID ) ) {
+            checkPrefsHiliteGadget( globals, selGadget );
+            result = XP_TRUE;
+        } else if ( !globals->isNewGame
+                    && vchrRockerCenter == event->data.keyDown.chr ) {
+            result = ignoredUnlessNewgame( selGadget );
+        }
         break;
-    case ctlEnterEvent:
-        result = dropCtlUnlessNewGame( globals,
-                                       event->data.ctlSelect.controlID );
+
+    case frmObjectFocusTakeEvent:
+    case frmObjectFocusLostEvent:
+        result = considerGadgetFocus( event, XW_PREFS_ALLGAMES_GADGET_ID,
+                                      XW_PREFS_ONEGAME_GADGET_ID );
         break;
+#endif
 
     case ctlSelectEvent:
         result = true;
@@ -147,13 +161,11 @@ PrefsFormHandleEvent( EventPtr event )
     return result;
 } /* prefsFormHandleEvent */
 
-static Boolean
-dropCtlUnlessNewGame( PalmAppGlobals* globals, XP_U16 id )
+static XP_Bool
+ignoredUnlessNewgame( XP_U16 id )
 {
-    Boolean result = false;
-
+    XP_Bool ignored = XP_FALSE;
     switch ( id ) {
-
     case XW_PREFS_NOHINTS_CHECKBOX_ID:
     case XW_PREFS_BDSIZE_SELECTOR_ID:
     case XW_PREFS_TIMERON_CHECKBOX_ID:
@@ -161,19 +173,11 @@ dropCtlUnlessNewGame( PalmAppGlobals* globals, XP_U16 id )
 #ifdef FEATURE_TRAY_EDIT
     case XW_PREFS_PICKTILES_CHECKBOX_ID:
 #endif
-        if ( globals->isNewGame ) {
-            break;
-        }
-        result = true;		
+        ignored = XP_TRUE;
         break;
     }
-
-    if ( result ) {
-        beep();
-    }
-
-    return result;
-} /* dropCtlUnlessNewGame */
+    return ignored;
+} /* ignoredUnlessNewgame */
 
 void
 GlobalPrefsToLocal( PalmAppGlobals* globals )
@@ -328,23 +332,37 @@ controlsToLocalPrefs( PrefsDlgState* state )
 static void
 drawPrefsTypeGadgets( PalmAppGlobals* globals )
 {
-    UInt16 i;
-    ListPtr list = getActiveObjectPtr( XW_PREFS_TYPES_LIST_ID );
-    UInt16 active = globals->prefsDlgState->stateTypeIsGlobal? 0:1;
+    ListPtr list;
+    UInt16 active;
 
+    list = getActiveObjectPtr( XW_PREFS_TYPES_LIST_ID );
     XP_ASSERT( !!list );
+    XP_ASSERT( !!globals->prefsDlgState );
 
-    for ( i = 0; i < 2; ++i ) {
-        char* text = LstGetSelectionText( list, i );
-        drawOneGadget( i + XW_PREFS_APPWIDE_CHECKBX_ID, text, i==active );
-    }
+    active = globals->prefsDlgState->stateTypeIsGlobal ?
+        XW_PREFS_ALLGAMES_GADGET_ID : XW_PREFS_ONEGAME_GADGET_ID;
+
+    drawGadgetsFromList( list, XW_PREFS_ALLGAMES_GADGET_ID,
+                         XW_PREFS_ONEGAME_GADGET_ID, active );
+#ifdef XWFEATURE_FIVEWAY
+    drawFocusRingOnGadget( XW_PREFS_ALLGAMES_GADGET_ID,
+                           XW_PREFS_ONEGAME_GADGET_ID );
+#endif
+    LOG_RETURN_VOID();
 } /* drawPrefsTypeGadgets */
 
 static void
-doOneSet( FormPtr form, XP_U16 first, XP_U16 last, XP_Bool enable )
+doOneSet( FormPtr form, XP_U16 first, XP_U16 last, XP_Bool enable, 
+          XP_Bool isNewGame )
 {
     while ( first <= last ) {
-        disOrEnable( form, first, enable );
+        XP_TriEnable stat = enable? TRI_ENAB_ENABLED : TRI_ENAB_HIDDEN;
+
+        if ( enable && !isNewGame && ignoredUnlessNewgame( first ) ) {
+            stat = TRI_ENAB_DISABLED;
+        }
+        disOrEnableTri( form, first, stat );
+
         ++first;
     }
 } /* doOneSet */
@@ -355,12 +373,14 @@ doOneSet( FormPtr form, XP_U16 first, XP_U16 last, XP_Bool enable )
 static void
 showHidePrefsWidgets( PalmAppGlobals* globals, FormPtr form )
 {
-    XP_Bool global = globals->prefsDlgState->stateTypeIsGlobal;
-
+    XP_Bool isGlobal;
+    XP_Bool isNewGame = globals->isNewGame;
     XP_U16 firstToEnable, lastToEnable, firstToDisable, lastToDisable;
 
+    isGlobal = globals->prefsDlgState->stateTypeIsGlobal;
+
     /* Need to do the disabling first */
-    if ( global ) {
+    if ( isGlobal ) {
         firstToEnable = XW_PREFS_FIRST_GLOBAL_ID;
         lastToEnable =  XW_PREFS_LAST_GLOBAL_ID;
         firstToDisable = XW_PREFS_FIRST_PERGAME_ID;
@@ -372,35 +392,30 @@ showHidePrefsWidgets( PalmAppGlobals* globals, FormPtr form )
         lastToEnable =  XW_PREFS_LAST_PERGAME_ID;
     }
 
-    doOneSet( form, firstToDisable, lastToDisable, XP_FALSE );
-    doOneSet( form, firstToEnable, lastToEnable, XP_TRUE );
+    doOneSet( form, firstToDisable, lastToDisable, XP_FALSE, isNewGame );
+    doOneSet( form, firstToEnable, lastToEnable, XP_TRUE, isNewGame );
 
-    if ( !global ) {
+    if ( !isGlobal ) {
         Boolean on = getBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID );
         disOrEnable( form, XW_PREFS_TIMER_FIELD_ID, on );
     }
 } /* showHidePrefsWidgets */
 
-static Boolean
-checkPrefsHiliteGadget( PalmAppGlobals* globals, FormPtr form, 
-			EventType* event )
+static void
+checkPrefsHiliteGadget( PalmAppGlobals* globals, UInt16 selGadget )
 {
+    FormPtr form = FrmGetActiveForm();
     Boolean result = false;
-    UInt16 selGadget;
 
-    result = penInGadget( event, &selGadget );
-    if ( result ) {
-        XP_Bool globalChosen = selGadget == XW_PREFS_APPWIDE_CHECKBX_ID;
+    XP_Bool globalChosen = selGadget == XW_PREFS_ALLGAMES_GADGET_ID;
+    XP_LOGF( "%s: selGadget=%d", __FUNCTION__, selGadget );
 
-        result = globalChosen != globals->prefsDlgState->stateTypeIsGlobal;
+    result = globalChosen != globals->prefsDlgState->stateTypeIsGlobal;
 	    
-        if ( result ) {
-            globals->prefsDlgState->stateTypeIsGlobal = globalChosen;
+    if ( result ) {
+        globals->prefsDlgState->stateTypeIsGlobal = globalChosen;
 
-            showHidePrefsWidgets( globals, form );
-            drawPrefsTypeGadgets( globals );
-        }
+        showHidePrefsWidgets( globals, form );
+        drawPrefsTypeGadgets( globals );
     }
-
-    return result;
 } /* checkPrefsHiliteGadget */

@@ -27,6 +27,4 @@
 
 Boolean newGameHandleEvent( EventPtr event );
 
-void drawOneGadget( UInt16 id, char* text, Boolean hilite );
-
 #endif

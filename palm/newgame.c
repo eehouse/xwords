@@ -24,7 +24,7 @@
 #include <Chars.h>	    /* for nextFieldChr */
 #include <Graffiti.h>   /* for GrfSetState */
 #include <Event.h>
-#ifdef HS_DUO_SUPPORT
+#ifdef XWFEATURE_FIVEWAY
 # include <Hs.h>
 #endif
 
@@ -45,26 +45,14 @@
 static void handlePasswordTrigger( PalmAppGlobals* globals, 
                                    UInt16 controlID );
 static void updatePlayerInfo( PalmAppGlobals* globals );
-static XP_Bool tryFieldNavigationKey( XP_U16 key );
 static void loadNewGameState( PalmAppGlobals* globals );
 static void unloadNewGameState( PalmAppGlobals* globals );
 static void setNameThatFits( PalmNewGameState* state );
-#ifdef HS_DUO_SUPPORT
-static XP_Bool tryDuoRockerKey( PalmAppGlobals* globals,XP_U16 key );
-static XP_Bool considerGadgetFocus( PalmNewGameState* state, EventType* event );
-#else
-# define tryDuoRockerKey(g,key) XP_FALSE
-#endif
-
-static XP_Bool onDisabledList( const PalmNewGameState* state, 
-                               XP_U16 controlID );
-static void modDisabledList( PalmNewGameState* state, XP_U16 controlID,
-                             NewGameEnable enable );
 
 static void palmEnableColProc( void* closure, XP_U16 player, 
-                               NewGameColumn col, NewGameEnable enable );
+                               NewGameColumn col, XP_TriEnable enable );
 static void palmEnableAttrProc( void* closure, NewGameAttr attr, 
-                                NewGameEnable enable );
+                                XP_TriEnable enable );
 static void palmGetColProc( void* closure, XP_U16 player, NewGameColumn col, 
                             NgCpCallbk cpcb, const void* cbClosure );
 static void palmSetColProc( void* closure, XP_U16 player, NewGameColumn col, 
@@ -77,7 +65,8 @@ static void handleRobotChanged( PalmNewGameState* state, XP_U16 controlID,
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void handleRemoteChanged( PalmNewGameState* state, XP_U16 controlID,
                                  XP_Bool on );
-static Boolean checkHiliteGadget(PalmAppGlobals* globals, EventType* event,
+static Boolean checkHiliteGadget(PalmAppGlobals* globals, 
+                                 const EventType* event,
                                  PalmNewGameState* state );
 static void drawConnectGadgets( PalmAppGlobals* globals );
 static void changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID );
@@ -86,10 +75,6 @@ static void changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID );
 # define checkHiliteGadget(globals, event, state) XP_FALSE
 # define drawConnectGadgets( globals )
 #endif
-
-#define IS_SERVER_GADGET(id) \
-     ((id) >= XW_SOLO_GADGET_ID && (id) <= XW_CLIENT_GADGET_ID)
-
 
 /*****************************************************************************
  *
@@ -104,7 +89,7 @@ newGameHandleEvent( EventPtr event )
     CurGameInfo* gi;
     PalmNewGameState* state;
     Int16 chosen;
-    XP_U16 controlID;
+    XP_U16 itemId;
     Boolean on;
 
     CALLBACK_PROLOGUE();
@@ -126,14 +111,9 @@ newGameHandleEvent( EventPtr event )
 
         state->form = form;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-        sizeGadgetsForStrings( form,
-                               getActiveObjectPtr( XW_SERVERTYPES_LIST_ID ),
-                               XW_SOLO_GADGET_ID );
-#endif
         loadNewGameState( globals );
         if ( !globals->isNewGame ) {
-            modDisabledList( state, XW_DICT_SELECTOR_ID, NGEnableDisabled );
+            disOrEnableTri( form, XW_DICT_SELECTOR_ID, TRI_ENAB_DISABLED );
         }
 
         XP_ASSERT( !!state->dictName );
@@ -156,10 +136,13 @@ newGameHandleEvent( EventPtr event )
         break;
 #endif
 
-#ifdef HS_DUO_SUPPORT
+#ifdef XWFEATURE_FIVEWAY
+        /* docs say to return HANDLED for both take and lost if the right
+           object */
     case frmObjectFocusTakeEvent:
     case frmObjectFocusLostEvent:
-        result = considerGadgetFocus( state, event );
+        result = considerGadgetFocus( event, XW_SOLO_GADGET_ID, 
+                                      XW_CLIENT_GADGET_ID );
         break;
 #endif
 
@@ -167,41 +150,39 @@ newGameHandleEvent( EventPtr event )
         result = checkHiliteGadget( globals, event, state );
         break;
 
+#ifdef XWFEATURE_FIVEWAY
     case keyDownEvent:
-        result = tryFieldNavigationKey( event->data.keyDown.chr )
-            || tryDuoRockerKey( globals, event->data.keyDown.chr );
+        itemId = getFocusOwner();
+        result = tryRockerKey( event->data.keyDown.chr, itemId,
+                               XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID );
+        if ( result ) {
+            changeGadgetHilite( globals, itemId );
+        }
         break;
+#endif
 
     case prefsChangedEvent:
         state->forwardChange = true;
         break;
 
-    case fldEnterEvent:
-    case ctlEnterEvent:
-        if ( onDisabledList( state, event->data.ctlEnter.controlID ) ) {
-            result = true;
-            beep();
-        }
-        break;
-
     case ctlSelectEvent:
         result = true;
-        controlID = event->data.ctlSelect.controlID;
+        itemId = event->data.ctlSelect.controlID;
         on = event->data.ctlSelect.on;
-        switch ( controlID ) {
+        switch ( itemId ) {
 
         case XW_ROBOT_1_CHECKBOX_ID:
         case XW_ROBOT_2_CHECKBOX_ID:
         case XW_ROBOT_3_CHECKBOX_ID:
         case XW_ROBOT_4_CHECKBOX_ID:
-            handleRobotChanged( state, controlID, on );
+            handleRobotChanged( state, itemId, on );
             break;
 #ifndef XWFEATURE_STANDALONE_ONLY
         case XW_REMOTE_1_CHECKBOX_ID:
         case XW_REMOTE_2_CHECKBOX_ID:
         case XW_REMOTE_3_CHECKBOX_ID:
         case XW_REMOTE_4_CHECKBOX_ID:
-            handleRemoteChanged( state, controlID, on );
+            handleRemoteChanged( state, itemId, on );
             break;
 #endif
 
@@ -278,7 +259,7 @@ newGameHandleEvent( EventPtr event )
         case XW_PLAYERPASSWD_2_TRIGGER_ID:
         case XW_PLAYERPASSWD_3_TRIGGER_ID:
         case XW_PLAYERPASSWD_4_TRIGGER_ID:
-            handlePasswordTrigger( globals, controlID );
+            handlePasswordTrigger( globals, itemId );
             break;
 
         default:		/* one of the password selectors? */
@@ -329,106 +310,6 @@ setNameThatFits( PalmNewGameState* state )
                  (const char*)state->shortDictName );
 } /* setNameThatFits */
 
-static Boolean
-tryFieldNavigationKey( XP_U16 key )
-{
-    FormPtr form;
-    Int16 curFocus, nextFocus, change;
-    UInt16 nObjects;
-
-    if ( key == prevFieldChr ) {
-        change = -1;
-    } else if ( key == nextFieldChr ) {
-        change = 1;
-    } else {
-        return false;
-    }
-
-    form = FrmGetActiveForm();
-    curFocus = nextFocus = FrmGetFocus( form );
-    nObjects = FrmGetNumberOfObjects(form);
-
-    /* find the next (in either direction) usable field */
-    for ( ; ; ) {
-        nextFocus += change;
-
-        if ( nextFocus == nObjects ) {
-            nextFocus = 0;
-        } else if ( nextFocus < 0 ) {
-            nextFocus = nObjects-1;
-        }
-
-        if ( nextFocus == curFocus ) {
-            break;
-        } else if ( FrmGetObjectType(form, nextFocus) != frmFieldObj ) {
-            continue;
-        } else {
-            FieldPtr field = FrmGetObjectPtr( form, nextFocus );
-            FieldAttrType attrs;
-            FldGetAttributes( field, &attrs );
-            if ( attrs.usable ) {
-                break;
-            }
-        }
-    }
-
-    FrmSetFocus( form, nextFocus );
-    return true;
-} /* tryFieldNavigationKey */
-
-#ifdef HS_DUO_SUPPORT
-#ifdef DEBUG
-static XP_UCHAR*
-keyToStr( XP_U16 key )
-{
-#define keyCase(k)  case (k): return #k
-    switch( key ) {
-        keyCase(vchrRockerUp);
-        keyCase(vchrRockerDown);
-        keyCase(vchrRockerLeft);
-        keyCase(vchrRockerRight);
-        keyCase(vchrRockerCenter);
-    default:
-        return "huh?";
-    }
-#undef keyCase
-}
-#endif
-
-static XP_Bool
-tryDuoRockerKey( PalmAppGlobals* globals, XP_U16 key )
-{
-    XP_Bool result = XP_FALSE;
-    XP_U16 focusID;
-    FormPtr form;
-
-    switch( key ) {
-    case vchrRockerUp:
-    case vchrRockerDown:
-    case vchrRockerLeft:
-    case vchrRockerRight:
-        XP_LOGF( "got rocker key: %s", keyToStr(key) );
-        result = XP_FALSE;
-        break;
-    case vchrRockerCenter:
-        /* if one of the gadgets is focussed, "tap" it. */
-        XP_LOGF( "got rocker key: %s", keyToStr(key) );
-        form = FrmGetActiveForm();
-        focusID = FrmGetObjectId( form, FrmGetFocus( form ) );
-        if ( IS_SERVER_GADGET( focusID ) ) {
-            changeGadgetHilite( globals, focusID );
-            result = XP_TRUE;
-        } else {
-            XP_LOGF( "%d not server gadget", focusID );
-        }
-        break;
-    default:
-        break;
-    }
-    return result;
-} /* tryDuoRockerKey */
-#endif /* #ifdef HS_DUO_SUPPORT */
-
 /* 
  * Copy the local state into global state.
  */
@@ -447,108 +328,24 @@ updatePlayerInfo( PalmAppGlobals* globals )
                               globals->newGameState.dictName );
 } /* updatePlayerInfo */
 
-void
-drawOneGadget( UInt16 id, char* text, Boolean hilite )
-{
-    RectangleType divRect;
-    XP_U16 len = XP_STRLEN(text);
-    XP_U16 width = FntCharsWidth( text, len );
-    XP_U16 left;
-
-    getObjectBounds( id, &divRect );
-    WinDrawRectangleFrame( rectangleFrame, &divRect );
-    WinEraseRectangle( &divRect, 0 );
-    left = divRect.topLeft.x;
-    left += (divRect.extent.x - width) / 2;
-    WinDrawChars( text, len, left, divRect.topLeft.y );
-    if ( hilite ) {
-        WinInvertRectangle( &divRect, 0 );
-    }
-} /* drawOneGadget */
-
 /* Frame 'em, draw their text, and highlight the one that's selected
  */
 #ifndef XWFEATURE_STANDALONE_ONLY
 
-#ifdef HS_DUO_SUPPORT
-static void
-drawFocusRingOnGadget()
-{
-    FormPtr form = FrmGetActiveForm();
-    XP_U16 focusID = FrmGetObjectId( form, FrmGetFocus(form) );
-    if ( IS_SERVER_GADGET(focusID) ) {
-        Err err;
-        RectangleType rect;
-
-        getObjectBounds( focusID, &rect );
-
-        err = HsNavDrawFocusRing( form, focusID, 0, &rect,
-                                  hsNavFocusRingStyleObjectTypeDefault,
-                                  false );
-        XP_ASSERT( err == errNone );
-    }
-} /* drawFocusRingOnGadget */
-#endif
-
 static void
 drawConnectGadgets( PalmAppGlobals* globals )
 {
-    UInt16 i;
+    XP_U16 hiliteItem = globals->newGameState.curServerHilite 
+        + XW_SOLO_GADGET_ID ;
     ListPtr list = getActiveObjectPtr( XW_SERVERTYPES_LIST_ID );
     XP_ASSERT( !!list );
 
-    for ( i = 0; i < 3; ++i ) {
-        char* text = LstGetSelectionText( list, i );
-        Boolean hilite = i == globals->newGameState.curServerHilite;
-        drawOneGadget( i + XW_SOLO_GADGET_ID, text, hilite );
-    }
-
-#ifdef HS_DUO_SUPPORT
-    drawFocusRingOnGadget();
+    drawGadgetsFromList( list, XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID,
+                         hiliteItem );
+#ifdef XWFEATURE_FIVEWAY
+    drawFocusRingOnGadget( XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID );
 #endif
-
 } /* drawConnectGadgets */
-
-#ifdef HS_DUO_SUPPORT
-static XP_Bool
-considerGadgetFocus( PalmNewGameState* state, EventType* event )
-{
-    XP_Bool result = XP_FALSE;
-    XP_Bool isTake;
-    XP_U16 eType = event->eType;
-    FormPtr form = FrmGetActiveForm();
-    XP_U16 objectID;
-
-    XP_ASSERT( eType == frmObjectFocusTakeEvent
-               || eType == frmObjectFocusLostEvent );
-    XP_ASSERT( event->data.frmObjectFocusTake.formID == FrmGetActiveFormID() );
-
-
-    isTake = eType == frmObjectFocusTakeEvent;
-    if ( isTake ) {
-        objectID = event->data.frmObjectFocusTake.objectID;
-    } else {
-        objectID = event->data.frmObjectFocusLost.objectID;
-    }
-
-    /* docs say to return HANDLED for both take and lost */
-    result = IS_SERVER_GADGET( objectID );
-
-    if ( result ) {
-        Err err;
-        if ( isTake ) {
-
-            FrmSetFocus(form, FrmGetObjectIndex(form, objectID));
-            drawFocusRingOnGadget();
-            result = XP_TRUE;
-/*         } else { */
-/*             err = HsNavRemoveFocusRing( form ); */
-        }
-    }
-
-    return result;
-} /* considerGadgetFocus */
-#endif
 
 static void
 changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
@@ -585,7 +382,7 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
 } /* changeGadgetHilite */
 
 static Boolean
-checkHiliteGadget( PalmAppGlobals* globals, EventType* event,
+checkHiliteGadget( PalmAppGlobals* globals, const EventType* event,
                    PalmNewGameState* XP_UNUSED_DBG(state) )
 {
     Boolean result = false;
@@ -647,46 +444,6 @@ unloadNewGameState( PalmAppGlobals* globals )
     state->ngc = NULL;
 } /* unloadNewGameState */
 
-static XP_S16
-findDisabled( const PalmNewGameState* state, XP_U16 controlID )
-{
-    XP_U16 i;
-    XP_S16 loc = -1;
-    for ( i = 0; i < state->nDisabled; ++i ) {
-        if ( state->disabled[i] == controlID ) {
-            loc = i;
-            break;
-        }
-    }
-    return loc;
-}
-
-static XP_Bool
-onDisabledList( const PalmNewGameState* state, XP_U16 controlID )
-{
-    return 0 <= findDisabled( state, controlID );
-}
-
-static void
-modDisabledList( PalmNewGameState* state, XP_U16 controlID, 
-                 NewGameEnable enable )
-{
-    XP_S16 loc = findDisabled( state, controlID );
-    XP_Bool include = enable != NGEnableEnabled;
-    if ( loc < 0 && include ) {
-        /* not there but should be; add it */
-        state->disabled[state->nDisabled++] = controlID;
-        XP_ASSERT( state->nDisabled < MAX_DISABLED );
-    } else if ( loc >= 0 && !include ) {
-        /* is there; shouldn't be; remove it */
-        state->disabled[loc] = state->disabled[--state->nDisabled];
-    } else {
-        /* all's well */
-        XP_ASSERT( (loc >= 0 && include)
-                   || ( loc < 0 && !include ) );
-    }
-}
-
 static XP_U16
 getBaseForCol( NewGameColumn col )
 {
@@ -730,13 +487,15 @@ getControlForCol( XP_U16 player, NewGameColumn col )
 
 static void
 palmEnableColProc( void* closure, XP_U16 player, NewGameColumn col, 
-                   NewGameEnable enable )
+                   XP_TriEnable enable )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
     PalmNewGameState* state = &globals->newGameState;
-    XP_U16 objID = objIDForCol( player, col );
-    disOrEnable( state->form, objID, enable != NGEnableHidden );
-    modDisabledList( state, objID, enable );
+    XP_U16 objID;
+
+    /* If it's a field, there need to be three states */
+    objID = objIDForCol( player, col );
+    disOrEnableTri( state->form, objID, enable );
 }
  
 /* Palm doesn't really do "disabled."  Things are visible or not.  But we
@@ -746,11 +505,10 @@ palmEnableColProc( void* closure, XP_U16 player, NewGameColumn col,
  * control is technically enabled.
  */
 static void
-palmEnableAttrProc(void* closure, NewGameAttr attr, NewGameEnable ngEnable )
+palmEnableAttrProc(void* closure, NewGameAttr attr, XP_TriEnable ngEnable )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
     PalmNewGameState* state = &globals->newGameState;
-    XP_Bool enable = XP_FALSE;  /* make compiler happy */
     XP_U16 objID = 0;
 
     switch ( attr ) {
@@ -759,25 +517,21 @@ palmEnableAttrProc(void* closure, NewGameAttr attr, NewGameEnable ngEnable )
         /* always enabled */
         break;
     case NG_ATTR_REMHEADER:
-        enable = ngEnable != NGEnableHidden;
         objID = XW_LOCAL_LABEL_ID;
         break;
 #endif
     case NG_ATTR_NPLAYERS:
-        enable = ngEnable != NGEnableHidden;
         objID = XW_NPLAYERS_SELECTOR_ID;
         break;
     case NG_ATTR_NPLAYHEADER:
         break;
     case NG_ATTR_CANJUGGLE:
-        enable = ngEnable == NGEnableEnabled;
         objID = XW_GINFO_JUGGLE_ID;
         break;
     }
 
     if ( objID != 0 ) {
-        disOrEnable( state->form, objID, enable );
-        modDisabledList( state, objID, ngEnable );
+        disOrEnableTri( state->form, objID, ngEnable );
     }
 } /* palmEnableAttrProc */
 
@@ -854,8 +608,6 @@ palmSetAttrProc( void* closure, NewGameAttr attr, const NGValue value )
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
         state->curServerHilite = value.ng_role;
-        /* Don't do this until frmUpdateEvent's been received... */
-/*         drawConnectGadgets( globals ); */
         break;
     case NG_ATTR_REMHEADER:
         break;
