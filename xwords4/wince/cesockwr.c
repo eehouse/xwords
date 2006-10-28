@@ -361,7 +361,8 @@ ReaderThreadProc( LPVOID lpParameter )
 
 
 CeSocketWrapper* 
-ce_sockwrap_new( MPFORMAL DataRecvProc proc, void* closure )
+ce_sockwrap_new( MPFORMAL CommsConnType conType, DataRecvProc proc, 
+                 void* closure )
 {
     CeSocketWrapper* self = XP_MALLOC( mpool, sizeof(*self) );
     XP_MEMSET( self, 0, sizeof(*self) );

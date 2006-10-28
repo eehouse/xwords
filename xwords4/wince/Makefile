@@ -28,12 +28,14 @@ MINGW_INC_PATH ?= /usr/i586-mingw32msvc/include
 HAVE_COMMCTRL = 1
 
 ifeq ($(TARGET_OS),wince)
+BLUETOOTH = -DXWFEATURE_BLUETOOTH
+RELAY = -DXWFEATURE_RELAY
 CC = arm-wince-pe-gcc
 WINDRES = arm-wince-pe-windres
 STRIP = arm-wince-pe-strip
 CELIBS = -L/usr/arm-wince-pe/lib
 TARGET_OS_DEF = -DTARGET_OS_WINCE
-STANDALONE = -DXWFEATURE_STANDALONE_ONLY
+#STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 CFLAGS += -D_WIN32_WCE=400 -DUNDER_CE -DMY_COLOR_SEL \
 	$(STANDALONE) -DDRAW_LINK_DIRECT \
 	-fdollars-in-identifiers -D__W32API_USE_DLLIMPORT__
@@ -42,16 +44,18 @@ LFLAGS += -Wl,--major-subsystem-version,4,--minor-subsystem-version,20
 ifdef HAVE_COMMCTRL
 CELIBS += -lcommctrl -laygshell
 else
-CFLAGS += -DCANT_DO_CMDBAR -DXWFEATURE_RELAY
+CFLAGS += -DCANT_DO_CMDBAR 
 endif
 else							# ifeq ($(TARGET_OS),wince)
 ifeq ($(TARGET_OS),win32)
+BLUETOOTH = -DXWFEATURE_BLUETOOTH
+RELAY = -DXWFEATURE_RELAY
 CC = i586-mingw32msvc-gcc
 WINDRES = i586-mingw32msvc-windres
 STRIP = i586-mingw32msvc-strip
 TARGET_OS_DEF = -DTARGET_OS_WIN32
 CELIBS += -lws2_32 
-CFLAGS += -DCANT_DO_CMDBAR -DXWFEATURE_RELAY -DDRAW_LINK_DIRECT
+CFLAGS += -DCANT_DO_CMDBAR -DDRAW_LINK_DIRECT
 #CFLAGS += -DFORCE_HEIGHT=240 -DFORCE_WIDTH=320
 endif
 endif
@@ -59,6 +63,8 @@ endif
 CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay
 
 CFLAGS += -Wall -Wunused-parameter
+
+CFLAGS += $(BLUETOOTH) $(RELAY)
 
 SVNDEF = -DSVN_REV='\"$(SVNREV)\"'
 CFLAGS += $(SVNDEF)
@@ -121,7 +127,7 @@ XW_BOTH_DEFINES = \
 	$(DEBUG_FLAG) $(MEM_DEBUG_FLAG) \
 
 CFLAGS += $(XW_BOTH_DEFINES) -DARM
-RESFLAGS += $(XW_BOTH_DEFINES) $(STANDALONE) \
+RESFLAGS += $(XW_BOTH_DEFINES) $(STANDALONE) $(BLUETOOTH) $(RELAY) \
 	-D_WIN32 -D_WIN32_IE=0x0400 
 
 ####################################################################

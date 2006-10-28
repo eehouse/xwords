@@ -156,7 +156,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     XP_U16 i;
     CurGameInfo* gi = &globals->gameInfo;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     wchar_t* roles[] = { L"Standalone", L"Host", L"Guest" };
     for ( i = 0; i < (sizeof(roles)/sizeof(roles[0])); ++i ) {
         SendDlgItemMessage( hDlg, IDC_ROLECOMBO, CB_ADDSTRING, 0, 
@@ -258,15 +258,15 @@ handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     }
 } /* handlePrefsButton */
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 static void
 handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals,
-                         GameInfoState* giState )
+                         Connectedness role, GameInfoState* giState )
 {
     CeConnDlgState state;
 
     if ( WrapConnsDlg( hDlg, globals, &giState->prefsPrefs.addrRec, 
-                       &state ) ) {
+                       role, &state ) ) {
         XP_MEMCPY( &giState->prefsPrefs.addrRec, &state.addrRec,
                    sizeof(giState->prefsPrefs.addrRec) );
         giState->addrChanged = XP_TRUE;
@@ -306,7 +306,7 @@ resIDForAttr( NewGameAttr attr )
     case NG_ATTR_NPLAYERS:
         resID = IDC_NPLAYERSCOMBO;
         break;
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     case NG_ATTR_ROLE:
         resID = IDC_ROLECOMBO;
         break;
@@ -320,24 +320,26 @@ resIDForAttr( NewGameAttr attr )
     case NG_ATTR_CANJUGGLE:
         resID = GIJUGGLE_BUTTON;
         break;
+    default:
+        break;
     }
     XP_ASSERT( resID != 0 );
     return resID;
 } /* resIDForAttr */
 
 static void
-doForNWEnable( HWND hDlg, XP_U16 resID, NewGameEnable enable )
+doForNWEnable( HWND hDlg, XP_U16 resID, XP_TriEnable enable )
 {
-    XP_Bool makeVisible = enable != NGEnableHidden;
+    XP_Bool makeVisible = enable != TRI_ENAB_HIDDEN;
     ceShowOrHide( hDlg, resID, makeVisible );
     if ( makeVisible ) {
-        ceEnOrDisable( hDlg, resID, enable == NGEnableEnabled );
+        ceEnOrDisable( hDlg, resID, enable == TRI_ENAB_ENABLED );
     }
 } /* doForNWEnable */
 
 static void
 ceEnableColProc( void* closure, XP_U16 player, NewGameColumn col, 
-                 NewGameEnable enable )
+                 XP_TriEnable enable )
 {
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForCol( player, col );
@@ -345,7 +347,7 @@ ceEnableColProc( void* closure, XP_U16 player, NewGameColumn col,
 }
 
 static void
-ceEnableAttrProc( void* closure, NewGameAttr attr, NewGameEnable enable )
+ceEnableAttrProc( void* closure, NewGameAttr attr, XP_TriEnable enable )
 {
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForAttr( attr );
@@ -565,7 +567,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
                 case IDC_ROLECOMBO:
                     if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                         if ( giState->isNewGame ) {  /* ignore if in info
@@ -582,6 +584,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                connecting */
                             if ( value.ng_role != SERVER_STANDALONE ) {
                                 handleConnOptionsButton( hDlg, globals, 
+                                                         value.ng_role, 
                                                          giState );
                             }
                         }
