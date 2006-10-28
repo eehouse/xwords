@@ -25,6 +25,9 @@
 #include <Form.h>
 #include <FeatureMgr.h>                                                         
 #include <unix_stdarg.h>
+#ifdef XWFEATURE_FIVEWAY
+# include <Hs.h>
+#endif
 
 #include "strutils.h"
 #include "palmutil.h"
@@ -117,6 +120,38 @@ disOrEnable( FormPtr form, UInt16 id, Boolean enable )
         CtlSetEnabled( ctl, enable );
     }
 } /* disOrEnable */
+
+void
+disOrEnableTri( FormPtr form, UInt16 id, XP_TriEnable enable )
+{
+    UInt16 index;
+    XP_ASSERT( enable != TRI_ENAB_NONE );
+
+    index = FrmGetObjectIndex( form, id );
+
+    if ( enable == TRI_ENAB_HIDDEN ) {
+        FrmHideObject( form, index );
+    } else {
+        FormObjectKind typ = FrmGetObjectType( form, index );
+        XP_Bool active = enable == TRI_ENAB_ENABLED;
+
+        FrmShowObject( form, index );
+
+        switch( typ ) {
+        case frmFieldObj:
+            setFieldEditable( id, active );
+            break;
+        case frmControlObj:
+            CtlSetEnabled( getActiveObjectPtr( id ), enable );
+            break;
+        case frmLabelObj:            /* what to do? */
+            break;
+        default:
+            XP_WARNF( "%s: %d not handled", __FUNCTION__, (XP_U16)typ );
+            XP_ASSERT(0);
+        }
+    }
+} /* disOrEnableTri */
 
 void
 disOrEnableSet( FormPtr form, const UInt16* ids, Boolean enable ) 	 
@@ -310,52 +345,8 @@ setSelectorFromList( UInt16 triggerID, ListPtr list, XP_S16 listSelIndex )
 		 LstGetSelectionText( list, listSelIndex ) );
 } /* setTriggerFromList */
 
-#define MAX_GADGET_COUNT 3	/* the most we need at this point */
-void
-sizeGadgetsForStrings( FormPtr form, ListPtr list, XP_U16 firstGadgetID )
-{
-    XP_U16 i;
-    XP_U16 nGadgets = LstGetNumberOfItems( list );
-    XP_U16 strWidths[MAX_GADGET_COUNT];
-    XP_U16 totalStrWidth, totalGadgetWidth;
-    XP_U16 left, extra;
-    RectangleType rects[MAX_GADGET_COUNT];
-    RectangleType* rp;
-
-    XP_ASSERT( nGadgets <= MAX_GADGET_COUNT );
-
-    totalStrWidth = totalGadgetWidth = 0;
-    for ( i = 0, rp = rects; i < nGadgets; ++i, ++rp ) {
-        XP_U16 len;
-        XP_UCHAR* txt = (XP_UCHAR*)LstGetSelectionText( list, i );
-
-        len = XP_STRLEN( (const char*)txt );
-        totalStrWidth += strWidths[i] = FntCharsWidth( (const char*)txt, len );
-
-        getObjectBounds( firstGadgetID+i, rp );
-        totalGadgetWidth += rp->extent.x;
-    }
-
-    XP_ASSERT( totalGadgetWidth >= totalStrWidth );
-    extra = (totalGadgetWidth - totalStrWidth) / nGadgets;
-
-    left = rects[0].topLeft.x;
-    for ( i = 0, rp = rects; i < nGadgets; ++i, ++rp ) {
-        UInt16 index;
-        UInt16 width;
-
-        rp->topLeft.x = left;
-        rp->extent.x = width = strWidths[i] + extra;
-
-        index = FrmGetObjectIndex( form, firstGadgetID+i );
-        FrmSetObjectBounds( form, index, rp );
-
-        left += width;
-    }
-} /* sizeGadgetsForStrings */
-
 XP_Bool
-penInGadget( EventPtr event, UInt16* whichGadget )
+penInGadget( const EventType* event, UInt16* whichGadget )
 {
     UInt16 x = event->screenX;
     UInt16 y = event->screenY;
@@ -380,6 +371,130 @@ penInGadget( EventPtr event, UInt16* whichGadget )
     
     return result;
 } /* penInGadget */
+
+void
+drawOneGadget( UInt16 id, const char* text, Boolean hilite )
+{
+    RectangleType divRect;
+    XP_U16 len = XP_STRLEN(text);
+    XP_U16 width = FntCharsWidth( text, len );
+    XP_U16 left;
+
+    getObjectBounds( id, &divRect );
+    WinDrawRectangleFrame( rectangleFrame, &divRect );
+    WinEraseRectangle( &divRect, 0 );
+    left = divRect.topLeft.x;
+    left += (divRect.extent.x - width) / 2;
+    WinDrawChars( text, len, left, divRect.topLeft.y );
+    if ( hilite ) {
+        WinInvertRectangle( &divRect, 0 );
+    }
+} /* drawOneGadget */
+
+#ifdef XWFEATURE_FIVEWAY
+XP_U16
+getFocusOwner( void )
+{
+    FormPtr form = FrmGetActiveForm();
+    XP_U16 ownerID = FrmGetObjectId( form, FrmGetFocus( form ) );
+    return ownerID;
+} /* getFocusOwner */
+
+void
+drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
+{
+    FormPtr form;
+    XP_S16 index;
+    XP_U16 focusID;
+
+    LOG_FUNC();
+
+    form = FrmGetActiveForm();
+    index = FrmGetFocus( form );
+    XP_LOGF( "%s: FrmGetFocus=>%d", __FUNCTION__, index );
+    if ( index >= 0 ) {
+        focusID = FrmGetObjectId( form, index );
+        XP_LOGF( "%s: FrmGetObjectId=>%d", __FUNCTION__, focusID );
+
+        if ( (focusID >= idLow) && (focusID <= idHigh) ) {
+            Err err;
+            RectangleType rect;
+
+            getObjectBounds( focusID, &rect );
+            XP_LOGF( "focusID=%d; index=%d", focusID, index );
+            XP_LOGF( "rect=%d,%d,%d,%d", rect.topLeft.x, rect.topLeft.y,
+                     rect.extent.x, rect.extent.y );
+
+            /* growing the rect didn't work to fix glitches in ring drawing. */
+
+            err = HsNavDrawFocusRing( form, focusID, 0, &rect,
+                                      hsNavFocusRingStyleObjectTypeDefault,
+                                      false );
+            if ( err != errNone ) {
+                XP_LOGF( "%s: err=%d (0x%x)", __FUNCTION__, err, err );
+            }
+            XP_ASSERT( err == errNone ); /* firing */
+        }
+    }
+    LOG_RETURN_VOID();
+} /* drawFocusRingOnGadget */
+
+XP_Bool
+considerGadgetFocus( const EventType* event, XP_U16 idLow, XP_U16 idHigh )
+{
+    XP_Bool handled;
+    XP_U16 objectID;
+
+    XP_ASSERT( event->eType == frmObjectFocusLostEvent
+               || event->eType == frmObjectFocusTakeEvent );
+    XP_ASSERT( event->data.frmObjectFocusTake.formID == FrmGetActiveFormID() );
+    XP_ASSERT( &event->data.frmObjectFocusTake.objectID
+               == &event->data.frmObjectFocusLost.objectID );
+
+    objectID = event->data.frmObjectFocusTake.objectID;
+    XP_LOGF( "%s: objectID=%d", __FUNCTION__, objectID );
+    handled = (objectID >= idLow) && (objectID <= idHigh);
+    if ( handled ) {
+        if ( event->eType == frmObjectFocusTakeEvent ) {
+            FormPtr form = FrmGetActiveForm();
+            FrmSetFocus( form, FrmGetObjectIndex(form, objectID) );
+            drawFocusRingOnGadget( idLow, idHigh );
+        }
+    }
+
+    LOG_RETURNF( "%d", (XP_U16)handled );
+    return handled;
+} /* considerGadgetFocus */
+
+XP_Bool
+tryRockerKey( XP_U16 key, XP_U16 selGadget, XP_U16 idLow, XP_U16 idHigh )
+{
+    XP_Bool result = XP_FALSE;
+
+    if ( vchrRockerCenter == key ) {
+        if ( selGadget >= idLow && selGadget <= idHigh ) {
+            result = XP_TRUE;
+        }
+    }
+    return result;
+} /* tryRockerKey */
+#endif
+
+void
+drawGadgetsFromList( ListPtr list, XP_U16 idLow, XP_U16 idHigh, 
+                     XP_U16 hiliteItem )
+{
+    XP_U16 i;
+    LOG_FUNC();
+    XP_ASSERT( idLow <= idHigh );
+
+    for ( i = 0; idLow <= idHigh; ++i, ++idLow ) {
+        const char* text = LstGetSelectionText( list, i );
+        Boolean hilite = idLow == hiliteItem;
+        drawOneGadget( idLow, text, hilite );
+    }
+    LOG_RETURN_VOID();
+} /* drawGadgetsFromList */
 
 void
 setFormRefcon( void* refcon )

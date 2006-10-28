@@ -1,5 +1,6 @@
 # -*- mode: Makefile; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -163,16 +164,18 @@ BITMAP_RSRCS = \
 # INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
 INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/Extensions/Bluetooth
 
-# HS_DUO_SUPPORT = 1
+XWFEATURE_FIVEWAY = -DXWFEATURE_FIVEWAY
 
-ifneq (x$(HS_DUO_SUPPORT)x, xx)
-	INCLUDES += -I/usr/local/share/palmdev/duoIncs 
-	INCLUDES += -I/usr/local/share/palmdev/duoIncs/68K
-	INCLUDES += -I/usr/local/share/palmdev/duoIncs/68K/System 
-	INCLUDES += -I/usr/local/share/palmdev/duoIncs/Common/System 
+ifneq (x$(XWFEATURE_FIVEWAY)x, xx)
+	INCLUDES += -I/usr/local/share/palmdev/Handspring5
+	INCLUDES += -I/usr/local/share/palmdev/Handspring5/68K
+# 	INCLUDES += -I/usr/local/share/palmdev/duoIncs 
+# 	INCLUDES += -I/usr/local/share/palmdev/duoIncs/68K
+# 	INCLUDES += -I/usr/local/share/palmdev/duoIncs/68K/System 
+# 	INCLUDES += -I/usr/local/share/palmdev/duoIncs/Common/System 
 
-	MYDEFS_68K += -DHS_DUO_SUPPORT
-	MYDEFS_ARM += -DHS_DUO_SUPPORT
+	MYDEFS_68K += $(XWFEATURE_FIVEWAY)
+	MYDEFS_ARM += $(XWFEATURE_FIVEWAY)
 
 	FNAVS = ./fnav03e9.bin
 endif
@@ -226,10 +229,8 @@ CFLAGS +=  -Wall -DAPPID=\'$(APPID)\' $(MYDEFS_68K) $(INCLUDES)
 
 $(TARGET): $(PLATFORM)/objs.prc $(PLATFORM)/res.prc 
 	$(PAR) -c -a 'resource|backup' -v 4 $@ $(NAME) $(TYPE) $(APPID) $^
-ifdef XW_UPLOAD_CMD
-	zip $(TARGET).zip $(TARGET)
-	$(XW_UPLOAD_CMD) $(TARGET)
-	$(XW_UPLOAD_CMD) $(TARGET).zip
+ifdef XW_UPLOAD_SCRIPT
+	$(XW_UPLOAD_SCRIPT) $@
 endif
 
 solo:

@@ -256,8 +256,8 @@
 /* 
  * prefs dialog
  */
-#define XW_PREFS_APPWIDE_CHECKBX_ID 2700
-#define XW_PREFS_ONEGAME_CHECKBX_ID 2701
+#define XW_PREFS_ALLGAMES_GADGET_ID 2700
+#define XW_PREFS_ONEGAME_GADGET_ID 2701
 #define XW_PREFS_TYPES_LIST_ID 2702
 
 /* global */
@@ -408,8 +408,11 @@
 # define DMCLOSEDATABASE(d)
 #endif
 
+#define	kFrmNavHeaderFlagsObjectFocusStartState  0x00000001
+#define	kFrmNavHeaderFlagsAppFocusStartState     0x00000002
+
 /* versioning stuff */
-#define XW_PALM_VERSION_STRING "4.2a1"
+#define XW_PALM_VERSION_STRING "4.2a2"
 #define CUR_PREFS_VERS 0x0405
 
 

@@ -47,6 +47,8 @@ void setObjectBounds( UInt16 objectID, RectangleType* rectP );
 void disOrEnable( FormPtr form, UInt16 id, Boolean enable );
 void disOrEnableSet( FormPtr form, const UInt16* id, Boolean enable );
 
+void disOrEnableTri( FormPtr form, UInt16 id, XP_TriEnable enable );
+
 void centerControl( FormPtr form, UInt16 id );
 
 void setBooleanCtrl( UInt16 objectID, Boolean isSet );
@@ -68,8 +70,20 @@ void setSelectorFromList( UInt16 selectorID, ListPtr list,
                           short listSelIndex );
 
 void sizeGadgetsForStrings( FormPtr form, ListPtr list, XP_U16 firstGadgetID );
+void drawGadgetsFromList( ListPtr list, XP_U16 idLow, XP_U16 idHigh, 
+                          XP_U16 hiliteItem );
 
-XP_Bool penInGadget( EventPtr event, UInt16* whichGadget );
+XP_Bool penInGadget( const EventType* event, UInt16* whichGadget );
+void drawOneGadget( UInt16 id, const char* text, Boolean hilite );
+# ifdef XWFEATURE_FIVEWAY
+XP_U16 getFocusOwner( void );
+void drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh );
+XP_Bool considerGadgetFocus( const EventType* event, XP_U16 idLow, 
+                             XP_U16 idHigh );
+
+XP_Bool tryRockerKey( XP_U16 key, XP_U16 selGadget, 
+                      XP_U16 idLow, XP_U16 idHigh );
+# endif
 
 void setFormRefcon( void* refcon );
 void* getFormRefcon();

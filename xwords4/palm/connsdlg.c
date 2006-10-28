@@ -41,6 +41,7 @@ typedef struct ConnsDlgState {
     ListPtr connTypesList;
     XP_U16 serverRole;
     XP_Bool isNewGame;
+    CommsConnType conType;
     CommsAddrRec* addr;
     XP_BtAddr btAddr;           /* since there's no field, save it here */
     XP_BtAddrStr tmp;
@@ -51,11 +52,12 @@ static void
 ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
 {
     CommsAddrRec* addr = state->addr;
+    XP_Bool isNewGame = state->isNewGame;
+    state->conType = addr->conType;
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( addr->conType == COMMS_CONN_RELAY ) {
-        XP_Bool isNewGame = state->isNewGame;
         XP_UCHAR buf[16];
         setFieldStr( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName );
         setFieldEditable( XW_CONNS_RELAY_FIELD_ID, isNewGame );
@@ -77,15 +79,17 @@ ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
         } else {
             CtlSetLabel( ctrl, addr->u.bt.hostName );
         }
+        CtlSetEnabled( ctrl, isNewGame );
 #endif
     }
 } /* ctlsFromState */
 
-static XP_Bool
+static void
 stateFromCtls( ConnsDlgState* state )
 {
-    XP_Bool ok = XP_TRUE;
     CommsAddrRec* addr = state->addr;
+
+    addr->conType = state->conType;
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
@@ -111,8 +115,6 @@ stateFromCtls( ConnsDlgState* state )
         LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __FUNCTION__ );
 #endif
     }
-
-    return ok;
 } /* stateFromCtls */
 
 static void
@@ -144,9 +146,9 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
     const XP_U16* on;
     XP_U16 i;
 
-    if ( state->addr->conType == COMMS_CONN_RELAY ) {
+    if ( state->conType == COMMS_CONN_RELAY ) {
         on = relayCtls;
-    } else if ( state->addr->conType == COMMS_CONN_BT
+    } else if ( state->conType == COMMS_CONN_BT
 #ifdef XWFEATURE_BLUETOOTH
                 && state->serverRole == SERVER_ISCLIENT 
 #endif
@@ -249,15 +251,15 @@ ConnsFormHandleEvent( EventPtr event )
         XP_MEMCPY( &state->btAddr, &state->addr->u.bt.btAddr, 
                    sizeof(state->btAddr) );
 
+        ctlsFromState( globals, state );
+
         /* setup connection popup */
         state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
-        XP_ASSERT( state->addr->conType == COMMS_CONN_IR
-                   || state->addr->conType == COMMS_CONN_RELAY
-                   || state->addr->conType == COMMS_CONN_BT );
+        XP_ASSERT( state->conType == COMMS_CONN_IR
+                   || state->conType == COMMS_CONN_RELAY
+                   || state->conType == COMMS_CONN_BT );
         setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
-                             conTypeToSel(state->addr->conType) );
-
-        ctlsFromState( globals, state );
+                             conTypeToSel(state->conType) );
 
         updateFormCtls( form, state );
 
@@ -272,7 +274,9 @@ ConnsFormHandleEvent( EventPtr event )
 
 #ifdef XWFEATURE_BLUETOOTH
         case XW_CONNS_BT_HOSTTRIGGER_ID:
-            browseForDeviceName( globals, state );
+            if ( state->isNewGame ) {
+                browseForDeviceName( globals, state );
+            }
             break;
 #endif
 
@@ -282,7 +286,7 @@ ConnsFormHandleEvent( EventPtr event )
                 if ( chosen >= 0 ) {
                     setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, 
                                          state->connTypesList, chosen );
-                    state->addr->conType = selToConType( chosen );
+                    state->conType = selToConType( chosen );
                     updateFormCtls( form, state );
                 }
             }
@@ -291,15 +295,12 @@ ConnsFormHandleEvent( EventPtr event )
         case XW_CONNS_OK_BUTTON_ID:
             if ( !state->isNewGame ) {
                 /* do nothing; same as cancel */
-            } else if ( !stateFromCtls( state ) ) {
-                beep();
-                break;
             } else {
-                EventType eventToPost;
-                eventToPost.eType = connsSettingChgEvent;
+                EventType eventToPost = { .eType = connsSettingChgEvent };
+                stateFromCtls( state );
                 EvtAddEventToQueue( &eventToPost );
             }
-
+            /* FALLTHRU */
         case XW_CONNS_CANCEL_BUTTON_ID:
             cleanupExit( globals );
             break;

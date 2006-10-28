@@ -200,9 +200,6 @@ typedef struct PalmNewGameState {
     XP_UCHAR* dictName;
     XP_UCHAR shortDictName[32]; /* as long as a dict name can be */
 
-    XP_U16 disabled[MAX_DISABLED];
-    XP_U16 nDisabled;
-
     XP_Bool forwardChange;
     Connectedness curServerHilite;
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
