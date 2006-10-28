@@ -60,12 +60,6 @@ typedef enum {
     ,NG_ATTR_CANJUGGLE
 } NewGameAttr;
 
-typedef enum { NGEnable_UNSET,   /* internal use only */
-               NGEnableHidden, 
-               NGEnableDisabled, 
-               NGEnableEnabled
-} NewGameEnable;
-
 typedef union NGValue {
     const XP_UCHAR* ng_cp;
     XP_U16 ng_u16;
@@ -75,9 +69,9 @@ typedef union NGValue {
 
 /* Enable or disable (show or hide) controls */
 typedef void (*NewGameEnableColProc)( void* closure, XP_U16 player, 
-                                      NewGameColumn col, NewGameEnable enable );
+                                      NewGameColumn col, XP_TriEnable enable );
 typedef void (*NewGameEnableAttrProc)( void* closure, NewGameAttr attr, 
-                                       NewGameEnable enable );
+                                       XP_TriEnable enable );
 /* Get the contents of a control.  Type of param "value" is either
    boolean or char* */
 typedef void (*NgCpCallbk)( NGValue value, const void* cpClosure );

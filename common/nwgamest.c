@@ -40,17 +40,17 @@ struct NewGameCtx {
 
     /* Palm needs to store cleartext passwords separately in order to
        store '***' in the visible field */
-    NewGameEnable enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
+    XP_TriEnable enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
     XP_U16 nPlayers;
     Connectedness role;
     XP_Bool isNewGame;
-    NewGameEnable juggleEnabled;
+    XP_TriEnable juggleEnabled;
 
     MPSLOT
 };
 
 static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
-                       NewGameEnable enable, XP_Bool force );
+                       XP_TriEnable enable, XP_Bool force );
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
 static void setRoleStrings( NewGameCtx* ngc );
@@ -95,17 +95,10 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     void* closure = ngc->closure;
     NGValue value;
     XP_U16 nPlayers, nShown;
-    XP_S16 i, j;
+    XP_S16 i;
     Connectedness role;
     XP_Bool localOnly;
     XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
-
-    ngc->juggleEnabled = NGEnable_UNSET;
-    for ( i = 0; i < NG_NUM_COLS; ++i ) {
-        for ( j = 0; j < MAX_NUM_PLAYERS; ++j ) {
-            ngc->enabled[i][j] = NGEnable_UNSET;
-        }
-    }
 
     ngc->role = role = gi->serverRole;
     localOnly = role == SERVER_ISCLIENT && ngc->isNewGame;
@@ -113,7 +106,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     value.ng_role = role;
     (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_ROLE, ngc->isNewGame? 
-                            NGEnableEnabled : NGEnableDisabled );
+                            TRI_ENAB_ENABLED : TRI_ENAB_DISABLED );
 #endif
 
     nPlayers = gi->nPlayers;
@@ -130,7 +123,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     value.ng_u16 = ngc->nPlayers;
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYERS, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame?
-                            NGEnableEnabled : NGEnableDisabled );
+                            TRI_ENAB_ENABLED : TRI_ENAB_DISABLED );
 
     setRoleStrings( ngc );
     considerEnableJuggle( ngc );   
@@ -264,8 +257,6 @@ newg_juggle( NewGameCtx* ngc )
 {
     XP_Bool changed = XP_FALSE;
     XP_U16 nPlayers = ngc->nPlayers;
-
-    XP_ASSERT( ngc->isNewGame );
     
     if ( nPlayers > 1 ) {
         LocalPlayer tmpPlayers[MAX_NUM_PLAYERS];
@@ -311,9 +302,9 @@ newg_juggle( NewGameCtx* ngc )
 
 static void
 enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
-           NewGameEnable enable, XP_Bool force )
+           XP_TriEnable enable, XP_Bool force )
 {
-    NewGameEnable* esp = &ngc->enabled[col][player];
+    XP_TriEnable* esp = &ngc->enabled[col][player];
     if ( force || (*esp != enable) ) {
         (*ngc->enableColProc)( ngc->closure, player, col, enable );
     }
@@ -332,7 +323,7 @@ adjustAllRows( NewGameCtx* ngc, XP_Bool force )
 static void
 adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
 {
-    NewGameEnable enable[NG_NUM_COLS];
+    XP_TriEnable enable[NG_NUM_COLS];
     NewGameColumn col;
     XP_Bool isLocal = XP_TRUE;
     XP_Bool isNewGame = ngc->isNewGame;
@@ -340,7 +331,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     DeepValue dValue;
 
     for ( col = 0; col < NG_NUM_COLS; ++col ) {
-        enable[col] = NGEnableHidden;
+        enable[col] = TRI_ENAB_HIDDEN;
     }
 
     /* If there aren't this many players, all are disabled */
@@ -353,9 +344,9 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
         if ( (role == SERVER_ISSERVER ) 
              || (role == SERVER_ISCLIENT && !isNewGame ) ) {
             if ( isNewGame ) {
-                enable[NG_COL_REMOTE] = NGEnableEnabled;
+                enable[NG_COL_REMOTE] = TRI_ENAB_ENABLED;
             } else {
-                enable[NG_COL_REMOTE] = NGEnableDisabled;
+                enable[NG_COL_REMOTE] = TRI_ENAB_DISABLED;
             }
             dValue.col = NG_COL_REMOTE;
             (*ngc->getColProc)( ngc->closure, player, NG_COL_REMOTE,
@@ -368,12 +359,12 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
            hidden.  But if it's not a new game, they're disabled.  Password is
            always hidden if robot is set. */
         if ( isLocal ) {
-            NewGameEnable tmp;
+            XP_TriEnable tmp;
 
             /* No changing name or robotness since they're sent to remote
                host. */
             tmp = (isNewGame || role == SERVER_STANDALONE)? 
-                NGEnableEnabled:NGEnableDisabled;
+                TRI_ENAB_ENABLED:TRI_ENAB_DISABLED;
             enable[NG_COL_NAME] = tmp;
             enable[NG_COL_ROBOT] = tmp;
 
@@ -388,15 +379,15 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
                                 &dValue );
             if ( !dValue.value.ng_bool ) {
                 /* If it's a robot, leave it hidden */
-                enable[NG_COL_PASSWD] = NGEnableEnabled;
+                enable[NG_COL_PASSWD] = TRI_ENAB_ENABLED;
             }
                                   
         } else {
             if ( isNewGame ) {
                 /* leave 'em hidden */
             } else {
-                enable[NG_COL_NAME] = NGEnableDisabled;
-                enable[NG_COL_ROBOT] = NGEnableDisabled;
+                enable[NG_COL_NAME] = TRI_ENAB_DISABLED;
+                enable[NG_COL_ROBOT] = TRI_ENAB_DISABLED;
                 /* leave passwd hidden */
             }
         }
@@ -421,12 +412,12 @@ setRoleStrings( NewGameCtx* ngc )
                             ( (ngc->role == SERVER_ISSERVER)
                               || (!ngc->isNewGame
                                   && (ngc->role != SERVER_STANDALONE)) )?
-                            NGEnableEnabled : NGEnableHidden );
+                            TRI_ENAB_ENABLED : TRI_ENAB_HIDDEN );
 #endif
 
     if ( 0 ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    } else if ( ngc->role == SERVER_ISCLIENT && !ngc->isNewGame ) {
+    } else if ( ngc->role == SERVER_ISCLIENT && ngc->isNewGame ) {
         strID = STR_LOCALPLAYERS;
 #endif
     } else {
@@ -440,9 +431,9 @@ setRoleStrings( NewGameCtx* ngc )
 static void
 considerEnableJuggle( NewGameCtx* ngc )
 {
-    NewGameEnable newEnable;
+    XP_TriEnable newEnable;
     newEnable = (ngc->isNewGame && ngc->nPlayers > 1)?
-        NGEnableEnabled : NGEnableDisabled;
+        TRI_ENAB_ENABLED : TRI_ENAB_HIDDEN;
 
     if ( newEnable != ngc->juggleEnabled ) {
         (*ngc->enableAttrProc)( ngc->closure, NG_ATTR_CANJUGGLE, newEnable );

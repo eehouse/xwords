@@ -54,6 +54,13 @@ typedef void* XP_Bitmap;
 
 typedef XP_UCHAR XP_UCHAR4[4];
 
+typedef enum {
+    TRI_ENAB_NONE
+    ,TRI_ENAB_HIDDEN
+    ,TRI_ENAB_DISABLED
+    ,TRI_ENAB_ENABLED
+} XP_TriEnable;
+
 /* I'm going to try putting all forward "class" decls in the same file */
 typedef struct BoardCtxt BoardCtxt;
 typedef struct CommMgrCtxt CommMgrCtxt;
