@@ -32,8 +32,8 @@
 #define FONT_HEIGHT 8
 #define LINE_SPACING 1
 
-#define SCORE_SEP '.'
-#define SCORE_SEPSTR "."
+#define SCORE_SEP ':'
+#define SCORE_SEPSTR ":"
 
 #define TILE_SUBSCRIPT 1             /* draw tile with numbers below letters? */
 
@@ -976,8 +976,8 @@ palm_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* rect,
     /*     } */
 
     palmFormatScore( buf, dsi, vertical );
-    palmMeasureDrawText( dctx, &localRect, (XP_UCHAR*)buf, dsi->isTurn, vertical, 
-                         SCORE_SEP, XP_FALSE );
+    palmMeasureDrawText( dctx, &localRect, (XP_UCHAR*)buf, dsi->isTurn, 
+                         vertical, SCORE_SEP, XP_FALSE );
 
     *widthP = localRect.width;
     *heightP = localRect.height;
