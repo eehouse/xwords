@@ -89,7 +89,7 @@ newGameHandleEvent( EventPtr event )
     CurGameInfo* gi;
     PalmNewGameState* state;
     Int16 chosen;
-    XP_U16 itemId;
+    XP_S16 itemId;
     Boolean on;
 
     CALLBACK_PROLOGUE();
@@ -153,10 +153,12 @@ newGameHandleEvent( EventPtr event )
 #ifdef XWFEATURE_FIVEWAY
     case keyDownEvent:
         itemId = getFocusOwner();
-        result = tryRockerKey( event->data.keyDown.chr, itemId,
-                               XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID );
-        if ( result ) {
-            changeGadgetHilite( globals, itemId );
+        if ( itemId >= 0 ) {
+            result = tryRockerKey( event->data.keyDown.chr, itemId,
+                                   XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID );
+            if ( result ) {
+                changeGadgetHilite( globals, itemId );
+            }
         }
         break;
 #endif

@@ -76,7 +76,7 @@ void drawGadgetsFromList( ListPtr list, XP_U16 idLow, XP_U16 idHigh,
 XP_Bool penInGadget( const EventType* event, UInt16* whichGadget );
 void drawOneGadget( UInt16 id, const char* text, Boolean hilite );
 # ifdef XWFEATURE_FIVEWAY
-XP_U16 getFocusOwner( void );
+XP_S16 getFocusOwner( void );
 void drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh );
 XP_Bool considerGadgetFocus( const EventType* event, XP_U16 idLow, 
                              XP_U16 idHigh );

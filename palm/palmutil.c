@@ -392,11 +392,15 @@ drawOneGadget( UInt16 id, const char* text, Boolean hilite )
 } /* drawOneGadget */
 
 #ifdef XWFEATURE_FIVEWAY
-XP_U16
+XP_S16
 getFocusOwner( void )
 {
     FormPtr form = FrmGetActiveForm();
-    XP_U16 ownerID = FrmGetObjectId( form, FrmGetFocus( form ) );
+    XP_S16 ownerID = -1;
+    XP_S16 focus = FrmGetFocus( form );
+    if ( focus >= 0 ) {
+        ownerID = FrmGetObjectId( form, focus );
+    }
     return ownerID;
 } /* getFocusOwner */
 

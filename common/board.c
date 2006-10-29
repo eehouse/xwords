@@ -395,14 +395,17 @@ board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale )
 XP_Bool
 board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
 {
-    XP_Bool changed;
-    XP_Bool oldVal = board->disableArrow;
+    XP_Bool showArrowChanged;
+    XP_Bool hideValChanged;
+
+    showArrowChanged = cp->showBoardArrow == board->disableArrow;
+    hideValChanged = cp->hideTileValues != board->hideValsInTray;
 
     board->disableArrow = !cp->showBoardArrow;
-    changed = oldVal != board->disableArrow;
+    board->hideValsInTray = cp->hideTileValues;
 
-    if ( changed ) {
-        changed = setArrowVisible( board, XP_FALSE );
+    if ( showArrowChanged ) {
+        showArrowChanged = setArrowVisible( board, XP_FALSE );
     }
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -419,7 +422,7 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     }
 #endif
 
-    return changed;
+    return showArrowChanged || hideValChanged;
 } /* board_prefsChanged */
 
 XP_Bool

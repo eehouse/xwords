@@ -44,7 +44,7 @@ PrefsFormHandleEvent( EventPtr event )
     FormPtr form;
     EventType eventToPost;
     Int16 chosen;
-    XP_U16 selGadget;
+    XP_S16 selGadget;
 
     CALLBACK_PROLOGUE();
     globals = getFormRefcon();
@@ -86,14 +86,16 @@ PrefsFormHandleEvent( EventPtr event )
 #ifdef XWFEATURE_FIVEWAY
     case keyDownEvent:
         selGadget = getFocusOwner();
-        if ( tryRockerKey( event->data.keyDown.chr, selGadget, 
-                           XW_PREFS_ALLGAMES_GADGET_ID, 
-                           XW_PREFS_ONEGAME_GADGET_ID ) ) {
-            checkPrefsHiliteGadget( globals, selGadget );
-            result = XP_TRUE;
-        } else if ( !globals->isNewGame
-                    && vchrRockerCenter == event->data.keyDown.chr ) {
-            result = ignoredUnlessNewgame( selGadget );
+        if ( selGadget >= 0 ) {
+            if ( tryRockerKey( event->data.keyDown.chr, selGadget, 
+                               XW_PREFS_ALLGAMES_GADGET_ID, 
+                               XW_PREFS_ONEGAME_GADGET_ID ) ) {
+                checkPrefsHiliteGadget( globals, selGadget );
+                result = XP_TRUE;
+            } else if ( !globals->isNewGame
+                        && vchrRockerCenter == event->data.keyDown.chr ) {
+                result = ignoredUnlessNewgame( selGadget );
+            }
         }
         break;
 
@@ -281,6 +283,9 @@ localPrefsToControls( PrefsDlgState* state )
     setBooleanCtrl( XW_PREFS_SHOWARROW_CHECKBOX_ID, state->cp.showBoardArrow );
     setBooleanCtrl( XW_PREFS_ROBOTSCORE_CHECKBOX_ID,
                     state->cp.showRobotScores );
+    setBooleanCtrl( XW_PREFS_HIDETRAYVAL_CHECKBOX_ID, 
+                    state->cp.hideTileValues );
+    
     setBooleanCtrl( XW_PREFS_TIMERON_CHECKBOX_ID, state->timerEnabled );
 
 #ifdef FEATURE_TRAY_EDIT
@@ -311,6 +316,9 @@ controlsToLocalPrefs( PrefsDlgState* state )
         getBooleanCtrl( XW_PREFS_SHOWARROW_CHECKBOX_ID );
     state->cp.showRobotScores = 
         getBooleanCtrl( XW_PREFS_ROBOTSCORE_CHECKBOX_ID );
+    state->cp.hideTileValues = 
+        getBooleanCtrl( XW_PREFS_HIDETRAYVAL_CHECKBOX_ID );
+
     state->showProgress = getBooleanCtrl( XW_PREFS_PROGRESSBAR_CHECKBOX_ID );
 
     /* trapping ctlEnterEvent should mean it can't have changed, so no need
