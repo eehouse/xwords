@@ -103,8 +103,8 @@ typedef enum {
 typedef struct CommonPrefs {
     XP_Bool         showBoardArrow;  /* applies to all games */
     XP_Bool         showRobotScores; /* applies to all games */
-    XP_Bool         reserved1;       /* get to 32-bit for ARM... */
-    XP_Bool         reserved2;
+    XP_Bool         hideTileValues; 
+    XP_Bool         reserved2;       /* get to 32-bit for ARM... */
 } CommonPrefs;
 
 #ifdef XWFEATURE_BLUETOOTH

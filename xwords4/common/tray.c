@@ -154,8 +154,11 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
                                 dict_tilesToString( dictionary, &tile, 1, 
                                                     textP, sizeof(buf) );
                             }
-                            value = dict_getTileValue( dictionary, tile );
-
+                            if ( board->hideValsInTray ) {
+                                value = -1;
+                            } else {
+                                value = dict_getTileValue( dictionary, tile );
+                            }
                             draw_drawTile( board->draw, &tileRect, textP, 
                                            bitmap, value, highlighted );
                         } else {

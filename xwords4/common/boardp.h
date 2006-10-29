@@ -109,6 +109,7 @@ struct BoardCtxt {
     XP_Bool badWordRejected;
     XP_Bool timerPending;
     XP_Bool disableArrow;
+    XP_Bool hideValsInTray;
 
     XP_Bool tradeInProgress[MAX_NUM_PLAYERS];
     XP_Bool eraseTray;
