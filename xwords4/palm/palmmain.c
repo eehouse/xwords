@@ -2462,13 +2462,15 @@ mainViewHandleEvent( EventPtr event )
             if ( ch < 255 && ch > ' ' ) {
                 draw = board_handleKey( globals->game.board, ch );
                 if ( !draw && ch >= 'a' ) {
-                    draw = board_handleKey( globals->game.board, ch - ('a' - 'A') );
+                    draw = board_handleKey( globals->game.board, 
+                                            ch - ('a' - 'A') );
                 }
             }
         }
         if ( xpkey != XP_KEY_NONE ) {
             draw = board_handleKey( globals->game.board, xpkey );
         }
+        handled = draw;
     }
         break;
 
