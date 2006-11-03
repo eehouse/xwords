@@ -240,7 +240,7 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 
 static XP_Bool
 gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict), 
-                     const XP_Rect* rect, XP_Bool XP_UNUSED(hasfocus) )
+                     const XP_Rect* rect, DrawFocusState XP_UNUSED(dfs) )
 {
     GdkRectangle gdkrect;
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -402,7 +402,7 @@ gtk_draw_invertCell( DrawCtx* XP_UNUSED(p_dctx),
 
 static XP_Bool
 gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner, 
-                    XP_Bool XP_UNUSED(hasfocus) )
+                    DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect clip = *rect;
@@ -574,7 +574,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 static void
 gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 XP_UNUSED(numPlayers), 
-                     XP_Bool XP_UNUSED(hasfocus) )
+                     DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 

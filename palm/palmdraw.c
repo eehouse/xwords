@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE";-*- */
 /* 
  * Copyright 1999 - 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -19,8 +19,12 @@
 
 #include <UIResources.h>
 #include <SystemMgr.h>
+#ifdef XWFEATURE_FIVEWAY
+# include <Hs.h>
+#endif
 
 #include "draw.h"
+#include "dbgutil.h"
 
 #include "palmmain.h"
 #include "xwords4defines.h"
@@ -48,7 +52,7 @@ static void palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx,
                                             const XP_Rect* rOuter, 
                                             const DrawScoreInfo* dsi );
 static XP_Bool palm_bnw_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
-                                        XP_U16 owner, XP_Bool hasfocus );
+                                        XP_U16 owner, DrawFocusState dfs );
 static void palm_bnw_draw_trayFinished( DrawCtx* p_dctx );
 static void palm_clr_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
 static void palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
@@ -123,6 +127,65 @@ bitmapInRect( PalmDrawCtx* dctx, Int16 resID, const XP_Rect* rectP )
     }
     drawBitmapAt( (DrawCtx*)dctx, resID, left, top );
 } /* bitmapInRect */
+
+#ifdef KEYBOARD_NAV
+#ifdef XWFEATURE_FIVEWAY
+static void
+drawFocusRect( PalmDrawCtx* dctx, const XP_Rect* rect )
+{
+    XP_Rect r;
+    Err err;
+    PalmAppGlobals* globals = dctx->globals;
+
+    XP_ASSERT( dctx->doHiRes );
+    r.left = rect->left >> 1;
+    r.top = rect->top >> 1;
+    r.width = rect->width >> 1;
+    r.height = rect->height >> 1;
+    ++r.height;
+    ++r.width;
+    insetRect( &r, 3 );         /* draw inside the thing */
+    rect = &r;
+
+    XP_LOGF( "%s: HsNavDrawFocusRing at {%d,%d,%d,%d}", __FUNCTION__, 
+             rect->left, rect->top, rect->width, rect->height );
+
+    err = HsNavDrawFocusRing( globals->mainForm, XW_SCOREBOARD_GADGET_ID, 0, 
+                              (RectangleType*)rect, 
+                              hsNavFocusRingStyleObjectTypeDefault, false );
+/*     XP_LOGF( "%s: HsNavDrawFocusRing => %x", __FUNCTION__, err ); */
+}
+#else
+# define drawFocusRect( a, b )
+#endif
+
+static void
+dfsDrawIf( PalmDrawCtx* dctx, BoardObjectType obj )
+{
+    if ( dctx->topFocusObj == obj ) {
+        drawFocusRect( dctx, &dctx->topFocusRect );
+        dctx->topFocusObj = OBJ_NONE;
+    }
+}
+
+static void
+dfsCopyIf( PalmDrawCtx* dctx, DrawFocusState dfs, 
+           const XP_Rect* rect, BoardObjectType obj )
+{
+    XP_LOGF( "%s(%s, %s)", __FUNCTION__, DrawFocusState_2str(dfs),
+             BoardObjectType_2str(obj) );
+    if ( dfs == DFS_TOP ) {
+        dctx->topFocusObj = obj;
+        XP_MEMCPY( &dctx->topFocusRect, rect, sizeof(dctx->topFocusRect) );
+    } else /* if ( dfs == DFS_DIVED ) */ {
+        dctx->topFocusObj = OBJ_NONE;
+    }
+}
+
+#else
+# define dfsCopyIf( dctx, dfs, rect, obj )
+# define dfsDrawIf( dctx, obj )
+#endif
 
 # define BMP_WIDTH 16
 # define BMP_HT 16
@@ -224,7 +287,7 @@ checkFontOffsets( PalmDrawCtx* dctx, const DictionaryCtxt* dict )
 
 static XP_Bool
 palm_common_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
-                             const XP_Rect* rect, XP_Bool XP_UNUSED(hasfocus) )
+                             const XP_Rect* rect, DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
@@ -234,13 +297,15 @@ palm_common_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 
     checkFontOffsets( dctx, dict );
 
+    dfsCopyIf( dctx, dfs, rect, OBJ_BOARD );
+
     return XP_TRUE;
 } /* palm_common_draw_boardBegin */
 
 #ifdef COLOR_SUPPORT
 static XP_Bool
 palm_clr_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
-                          const XP_Rect* rect, XP_Bool hasfocus )
+                          const XP_Rect* rect, DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
@@ -252,14 +317,16 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 
     HIGHRES_PUSH_NOPOP(dctx);
 
-    palm_common_draw_boardBegin( p_dctx, dict, rect, hasfocus );
+    palm_common_draw_boardBegin( p_dctx, dict, rect, dfs );
 
     return XP_TRUE;
 } /* palm_clr_draw_boardBegin */
 
 static void
-palm_clr_draw_boardFinished( DrawCtx* XP_UNUSED(p_dctx) )
+palm_clr_draw_boardFinished( DrawCtx* p_dctx )
 {
+    dfsDrawIf( (PalmDrawCtx*)p_dctx, OBJ_BOARD );
+
     WinPopDrawState();
 } /* palm_clr_draw_boardFinished */
 
@@ -518,7 +585,7 @@ palm_draw_invertCell( DrawCtx* p_dctx, const XP_Rect* rect )
 
 static XP_Bool
 palm_clr_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
-                         XP_U16 owner, XP_Bool hasfocus )
+                         XP_U16 owner, DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
@@ -531,21 +598,23 @@ palm_clr_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 
     HIGHRES_PUSH_NOPOP(dctx);
 
-    palm_bnw_draw_trayBegin( p_dctx, rect, owner, hasfocus );
+    palm_bnw_draw_trayBegin( p_dctx, rect, owner, dfs );
     return XP_TRUE;
 } /* palm_clr_draw_trayBegin */
 
 static XP_Bool
 palm_bnw_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                          XP_U16 XP_UNUSED(owner),
-                         XP_Bool XP_UNUSED(hasfocus) )
+                         DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+
+    dfsCopyIf( dctx, dfs, rect, OBJ_TRAY );
 
     WinGetClip( &dctx->oldTrayClip );
     WinSetClip( (RectangleType*)rect );
     return XP_TRUE;
-} /* palm_draw_trayBegin */
+} /* palm_bnw_draw_trayBegin */
 
 static void
 palm_clr_draw_trayFinished( DrawCtx* p_dctx )
@@ -558,6 +627,7 @@ static void
 palm_bnw_draw_trayFinished( DrawCtx* p_dctx )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;    
+    dfsDrawIf( dctx, OBJ_TRAY );
     WinSetClip( &dctx->oldTrayClip );
 } /* palm_draw_trayFinished */
 
@@ -580,6 +650,15 @@ smallBoldStringAt( const char* str, XP_U16 len, XP_S16 x, XP_U16 y )
 } /* smallBoldStringAt */
 
 static void
+adjustTileRect( XP_Rect* r, XP_U16 doubler )
+{
+    r->width -= 3 * doubler;
+    r->height -= 3 * doubler;
+    r->top += 2 * doubler;
+    r->left += 2 * doubler;
+}
+
+static void
 palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                     const XP_UCHAR* letters, XP_Bitmap bitmap,
                     XP_S16 val, XP_Bool highlighted )
@@ -596,10 +675,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 
     draw_clearRect( p_dctx, &localR );
 
-    localR.width -= 3 * doubler;
-    localR.height -= 3 * doubler;
-    localR.top += 2 * doubler;
-    localR.left += 2 * doubler;
+    adjustTileRect( &localR, doubler );
 
     /* this will fill it with the tile background color */
     WinEraseRectangle( (const RectangleType*)&localR, 0 );
@@ -747,9 +823,11 @@ palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 static void
 palm_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                       XP_U16 XP_UNUSED(numPlayers), 
-                      XP_Bool XP_UNUSED(hasfocus) )
+                      DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+
+    dfsCopyIf( dctx, dfs, rect, OBJ_SCORE );
 
     HIGHRES_PUSH( dctx );
 
@@ -1082,6 +1160,7 @@ static void
 palm_draw_scoreFinished( DrawCtx* p_dctx )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+    dfsDrawIf( dctx, OBJ_SCORE );
     WinSetClip( &dctx->oldScoreClip );
 
     HIGHRES_POP(dctx);
@@ -1328,6 +1407,32 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
     }
 } /* palm_draw_eraseMiniWindow */
 
+#ifdef KEYBOARD_NAV
+static void
+palm_draw_drawCursor( DrawCtx* p_dctx, BoardObjectType obj, 
+                      const XP_Rect* rect )
+{
+    XP_Rect localR;
+
+    if ( OBJ_TRAY == obj ) {
+        PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+        XP_U16 doubler = dctx->doHiRes? 2 : 1;
+
+        localR = *rect;
+        rect = &localR;
+        adjustTileRect( &localR, doubler );
+
+        localR.left += 2;
+        localR.top += 1;
+        localR.width -= 4;
+        localR.height -= 2;
+
+        insetRect( &localR, 1 ); 
+    }
+    drawFocusRect( (PalmDrawCtx*)p_dctx, rect );
+}
+#endif
+
 static void
 draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
@@ -1387,6 +1492,10 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_eraseMiniWindow, palm );
+
+#ifdef KEYBOARD_NAV
+    SET_VTABLE_ENTRY( dctx->vtable, draw_drawCursor, palm );
+#endif
 
     if ( able == COLOR ) {
 #ifdef COLOR_SUPPORT

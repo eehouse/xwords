@@ -991,7 +991,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     signal( SIGWINCH, SIGWINCH_handler );
     initCurses( &globals );
 
-    globals.draw = (CursesDrawCtx*)cursesDrawCtxtMake( globals.boardWin );
+    globals.draw = (struct CursesDrawCtx*)cursesDrawCtxtMake( globals.boardWin );
     
     gameID = (XP_U16)util_getCurSeconds( globals.cGlobals.params->util );
     game_makeNewGame( MEMPOOL &globals.cGlobals.game, &params->gi,

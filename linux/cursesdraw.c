@@ -27,6 +27,13 @@
 #include "draw.h"
 #include "board.h"
 
+typedef struct CursesDrawCtx {
+    DrawCtxVTable* vtable;
+
+    WINDOW* boardWin;
+
+} CursesDrawCtx;
+
 static void curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
 
 static void
@@ -53,48 +60,68 @@ eraseRect( CursesDrawCtx* dctx, const XP_Rect* rect )
 } /* eraseRect */
 
 static void
+cursesHiliteRect( WINDOW* window, const XP_Rect* rect )
+{
+    int right, width, x, y;
+    LOG_FUNC();
+    width = rect->width;
+    right = width + rect->left;
+    wstandout( window );
+    for ( y = rect->top; y < rect->top + rect->height; ++y ) {
+        for ( x = rect->left; x < right; ++x ) {
+            chtype cht = mvwinch( window, y, x );
+            char ch = cht & A_CHARTEXT;
+            mvwaddch( window, y, x, ch );
+        }
+    }
+    wstandend( window );
+}
+
+static void
 curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx) )
 {
     // CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 } /* draw_setup */
 
+static void
+drawFocusRect( CursesDrawCtx* dctx, DrawFocusState dfs, const XP_Rect* rect )
+{
+    WINDOW* boardWin = dctx->boardWin;
+    if ( dfs == DFS_NONE ) {
+        drawRect( boardWin, rect, '|', '-' ); 
+    } else if ( dfs == DFS_TOP ) {
+        drawRect( boardWin, rect, '*', '*' ); 
+    } else if ( dfs == DFS_DIVED ) {
+        drawRect( boardWin, rect, '+', '+' ); 
+    } else {
+        XP_ASSERT(0);
+    }
+}
+
 static XP_Bool
 curses_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict),
-                        const XP_Rect* rect, XP_Bool hasfocus )
+                        const XP_Rect* rect, DrawFocusState dfs )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    if ( hasfocus ) {
-        drawRect( dctx->boardWin, rect, '+', '+' ); 
-    } else {
-        drawRect( dctx->boardWin, rect, '|', '-' ); 
-    }
+    drawFocusRect( dctx, dfs, rect );
     return XP_TRUE;
 } /* draw_finish */
 
 static XP_Bool
 curses_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
-                       XP_U16 XP_UNUSED(owner), XP_Bool hasfocus )
+                       XP_U16 XP_UNUSED(owner), DrawFocusState dfs )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    if ( hasfocus ) {
-        drawRect( dctx->boardWin, rect, '+', '+' );
-    } else {
-        drawRect( dctx->boardWin, rect, '|', '-' ); 
-    }
+    drawFocusRect( dctx, dfs, rect );
     return XP_TRUE;
 } /* draw_finish */
 
 static void
 curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
-                        XP_U16 XP_UNUSED(numPlayers), XP_Bool hasfocus )
+                        XP_U16 XP_UNUSED(numPlayers), DrawFocusState dfs )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    if ( hasfocus ) {
-        drawRect( dctx->boardWin, rect, '+', '+' ); 
-    } else {
-        drawRect( dctx->boardWin, rect, '|', '-' ); 
-    }
-
+    drawFocusRect( dctx, dfs, rect );
 } /* curses_draw_scoreBegin */
 
 static void
@@ -154,7 +181,9 @@ formatScoreText( XP_UCHAR* buf, const DrawScoreInfo* dsi )
         label = toupper(label);
     }
 
-    len = sprintf( buf, "%s[%c] %s (%d)", (dsi->isTurn?"->":"  "), 
+    len = sprintf( buf, "%c:%c [%c] %s (%d)", 
+                   (dsi->isTurn? 'T' : ' '), 
+                   (dsi->selected? 'S' : ' '), 
                    label, dsi->name, nTilesLeft );
     while ( len < SCORE_COL ) {
         ++len;
@@ -236,20 +265,12 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     curses_draw_clearRect( p_dctx, rOuter );
 
-    if ( dsi->selected ) {
-        wstandout( dctx->boardWin );
-    }
     /* first blank out the whole thing! */
     mvwhline( dctx->boardWin, y, rOuter->left, ' ', rOuter->width );
 
     /* print the name and turn/remoteness indicator */
     formatScoreText( buf, dsi );
     mvwprintw( dctx->boardWin, y, rOuter->left, buf );
-
-    if ( dsi->selected ) {
-        wstandend( dctx->boardWin );
-    }
-    /*     (void)wcolor_set( dctx->boardWin, prev, NULL ); */
 } /* curses_draw_score_drawPlayer */
 
 static XP_Bool
@@ -373,22 +394,12 @@ curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawBoardArrow */
 
 static void
-curses_draw_drawBoardCursor( DrawCtx* p_dctx, const XP_Rect* rect )
+curses_draw_drawCursor( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ), 
+                        const XP_Rect* rect )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    chtype curChar = mvwinch(dctx->boardWin, rect->top, rect->left );
-    wstandout( dctx->boardWin );
-    mvwaddch( dctx->boardWin, rect->top, rect->left, curChar);
-    wstandend( dctx->boardWin );
+    cursesHiliteRect( dctx->boardWin, rect );
 } /* curses_draw_drawBoardCursor */
-
-static void
-curses_draw_drawTrayCursor( DrawCtx* p_dctx, const XP_Rect* rect )
-{
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    wmove( dctx->boardWin, rect->top, rect->left );
-    whline( dctx->boardWin, 'v', rect->width );
-} /* curses_draw_drawTrayCursor */
 
 static void 
 curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
@@ -490,8 +501,7 @@ cursesDrawCtxtMake( WINDOW* boardWin )
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, curses );
     
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardCursor, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayCursor, curses );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_drawCursor, curses );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, curses );
 

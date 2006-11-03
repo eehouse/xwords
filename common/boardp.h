@@ -125,6 +125,7 @@ struct BoardCtxt {
     BoardArrow boardArrow[MAX_NUM_PLAYERS];
 #ifdef KEYBOARD_NAV
     BdCursorLoc bdCursor[MAX_NUM_PLAYERS];
+    XP_Bool focusHasDived;
 #endif
     XP_U8 dividerLoc[MAX_NUM_PLAYERS];	/* 0 means left of 0th tile, etc. */
 
@@ -154,6 +155,7 @@ struct BoardCtxt {
     TileBit traySelBits[MAX_NUM_PLAYERS];
 #ifdef KEYBOARD_NAV
     XP_U8   trayCursorLoc[MAX_NUM_PLAYERS];
+    XP_U8   scoreCursorLoc;
 #endif
 
     XW_TrayVisState trayVisState;
@@ -181,7 +183,7 @@ struct BoardCtxt {
 /* tray-related functions */
 XP_Bool handlePenDownInTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
-void drawTray( BoardCtxt* board, XP_Bool focussed );
+void drawTray( BoardCtxt* board );
 TileBit continueTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool endTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool continueDividerDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
@@ -196,6 +198,9 @@ XP_Bool rectsIntersect( XP_Rect* rect1, XP_Rect* rect2 );
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey );
 XP_Bool tray_keyAction( BoardCtxt* board );
+DrawFocusState dfsFor( BoardCtxt* board, BoardObjectType obj );
+#else
+# define dfsFor( board, obj ) DFS_NONE
 #endif
 
 #ifdef CPLUS

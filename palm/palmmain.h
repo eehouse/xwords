@@ -89,6 +89,11 @@ typedef struct PalmDrawCtx {
     XP_LangCode fontLangCode;
     PalmFontHtInfo* fontHtInfo;
 
+#ifdef XWFEATURE_FIVEWAY
+    BoardObjectType topFocusObj;
+    XP_Rect topFocusRect;
+#endif
+
     union {
         struct {
             XP_U8 reserved;     /* make CW compiler happy */

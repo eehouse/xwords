@@ -289,6 +289,15 @@
 # endif
 #endif
 
+
+#ifdef XWFEATURE_FIVEWAY
+/* These should be in same order as BoardObjectType */
+# define XW_BOARD_GADGET_ID 3001
+# define XW_SCOREBOARD_GADGET_ID 3002
+# define XW_TRAY_GADGET_ID 3003
+#endif
+
+
 /* These aren't part of the hide/show thing as they're displayed only
  * explicitly byother controls */
 #define XW_PREFS_PHONIES_LIST_ID 2750
