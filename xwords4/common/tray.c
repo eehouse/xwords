@@ -19,6 +19,7 @@
 
 #include "boardp.h"
 #include "engine.h"
+#include "draw.h"
 #include "strutils.h"
 
 #ifdef CPLUS
@@ -99,7 +100,7 @@ figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect )
 } /* figureTileRect */
 
 void 
-drawTray( BoardCtxt* board, XP_Bool focussed )
+drawTray( BoardCtxt* board )
 {
     XP_Rect tileRect;
     short i;
@@ -108,7 +109,7 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
         XP_S16 turn = board->selPlayer;
 
         if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
-                             focussed ) ) {
+                             dfsFor( board, OBJ_TRAY ) ) ) {
             DictionaryCtxt* dictionary = model_getDictionary( board->model );
 
             if ( board->eraseTray ) {
@@ -175,13 +176,15 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
                     board->dividerInvalid = XP_FALSE;
                 }
 
+                drawPendingScore( board );
+
 #ifdef KEYBOARD_NAV
-                if ( showFaces ) {
+                if ( board->focusHasDived && board->focussed == OBJ_TRAY ) {
                     TileBit cursorLoc = 1 << board->trayCursorLoc[turn];
                     if ( !!cursorLoc ) {
                         XP_U16 index = indexForBits( cursorLoc );
                         figureTrayTileRect( board, index, &tileRect );
-                        draw_drawTrayCursor( board->draw, &tileRect );
+                        draw_drawCursor( board->draw, OBJ_TRAY, &tileRect );
                     }
                 }
 #endif
@@ -193,7 +196,6 @@ drawTray( BoardCtxt* board, XP_Bool focussed )
         }
     }
 
-    drawPendingScore( board );
 } /* drawTray */
 
 static void

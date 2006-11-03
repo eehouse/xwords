@@ -41,14 +41,6 @@
 #include "util.h"
 /* #include "compipe.h" */
 
-typedef struct CursesDrawCtx {
-    DrawCtxVTable* vtable;
-
-    WINDOW* boardWin;
-/*     WINDOW* trayWin; */
-
-} CursesDrawCtx;
-
 typedef struct CursesAppGlobals CursesAppGlobals;
 
 typedef XP_Bool (*EventFunc)(CursesAppGlobals* globals, int ch);
@@ -62,7 +54,7 @@ typedef XP_Bool (*EventFunc)(CursesAppGlobals* globals, int ch);
 struct CursesAppGlobals {
     CommonGlobals cGlobals;
 
-    CursesDrawCtx* draw;
+    struct CursesDrawCtx* draw;
 
     DictionaryCtxt* dictionary;
     EngineCtxt* engine;

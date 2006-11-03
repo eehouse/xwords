@@ -96,7 +96,7 @@ typedef struct DrawCtxVTable {
     XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, 
                                            const DictionaryCtxt* dict,
                                            const XP_Rect* rect, 
-                                           XP_Bool hasfocus );
+                                           DrawFocusState dfs );
     void DRAW_VTABLE_NAME(boardFinished) ( DrawCtx* dctx );
 
     /* rect is not const: set by callee */
@@ -104,7 +104,8 @@ typedef struct DrawCtxVTable {
                                                XP_S16 dist );
 
     XP_Bool DRAW_VTABLE_NAME(trayBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                          XP_U16 owner, XP_Bool hasfocus );
+                                          XP_U16 owner, 
+                                          DrawFocusState dfs );
     void DRAW_VTABLE_NAME(trayFinished) ( DrawCtx* dctx );
 
     void DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
@@ -115,8 +116,7 @@ typedef struct DrawCtxVTable {
                                         XP_S16 nTilesLeft);
 
     void DRAW_VTABLE_NAME(scoreBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                        XP_U16 numPlayers, 
-                                        XP_Bool hasfocus );
+                                        XP_U16 numPlayers, DrawFocusState dfs );
     void DRAW_VTABLE_NAME(measureScoreText) ( DrawCtx* dctx, 
                                               const XP_Rect* r, 
                                               const DrawScoreInfo* dsi,
@@ -161,8 +161,8 @@ typedef struct DrawCtxVTable {
                                             XWBonusType bonus, XP_Bool vert,
                                             HintAtts hintAtts );
 #ifdef KEY_SUPPORT
-    void DRAW_VTABLE_NAME(drawTrayCursor) ( DrawCtx* dctx, const XP_Rect* rect );
-    void DRAW_VTABLE_NAME(drawBoardCursor) ( DrawCtx* dctx, const XP_Rect* rect );
+    void DRAW_VTABLE_NAME(drawCursor) ( DrawCtx* dctx, BoardObjectType typ,
+                                        const XP_Rect* rect );
 #endif
 
     XP_UCHAR* DRAW_VTABLE_NAME(getMiniWText) ( DrawCtx* dctx, 
@@ -250,11 +250,9 @@ struct DrawCtx {
 #define draw_drawBoardArrow( dc, r, b, v, h ) \
     CALL_DRAW_NAME4(drawBoardArrow,(dc),(r),(b), (v), (h))
 #ifdef KEY_SUPPORT
-# define draw_drawTrayCursor( dc, r ) CALL_DRAW_NAME1(drawTrayCursor,(dc),(r))
-# define draw_drawBoardCursor( dc, r ) CALL_DRAW_NAME1(drawBoardCursor,(dc),(r))
+# define draw_drawCursor( dc, t, r ) CALL_DRAW_NAME2(drawCursor,(dc),(t),(r))
 #else
-# define draw_drawTrayCursor( dc, r )
-# define draw_drawBoardCursor( dc, r )
+# define draw_drawCursor( dc, t, r )
 #endif
 
 #define draw_getMiniWText( dc, b ) CALL_DRAW_NAME1(getMiniWText, (dc),(b) )

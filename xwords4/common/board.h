@@ -34,19 +34,6 @@ extern "C" {
 #endif
 
 typedef enum {
-    TRAY_HIDDEN,	/* doesn't happen unless tray overlaps board */
-    TRAY_REVERSED,
-    TRAY_REVEALED
-} XW_TrayVisState;
-
-typedef enum {
-    OBJ_NONE,
-    OBJ_BOARD,
-    OBJ_SCORE,
-    OBJ_TRAY
-} BoardObjectType;
-
-typedef enum {
     /* keep these three together: for the cursor */
     XP_KEY_NONE,
     XP_CURSOR_KEY_DOWN,
@@ -67,7 +54,7 @@ typedef enum {
 
 
 BoardCtxt* board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, 
-		       DrawCtx* draw, XW_UtilCtxt* util );
+                       DrawCtx* draw, XW_UtilCtxt* util );
 BoardCtxt* board_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  ModelCtxt* model, ServerCtxt* server, 
                                  DrawCtx* draw, XW_UtilCtxt* util,
@@ -138,6 +125,8 @@ XP_Bool board_handleKey( BoardCtxt* board, XP_Key key );
 
 #ifdef KEYBOARD_NAV
 /* void board_focusChange( BoardCtxt* board ); */
+XP_Bool board_focusChanged( BoardCtxt* board, BoardObjectType typ, 
+                            XP_Bool gained );
 XP_Bool board_toggle_arrowDir( BoardCtxt* board );
 #endif
 

@@ -2024,6 +2024,48 @@ hresRect( PalmAppGlobals* globals, RectangleType* r )
     }
 }
 
+#ifdef XWFEATURE_FIVEWAY
+static XP_Bool
+handleChangeFocus( PalmAppGlobals* globals, const EventType* event, 
+                   XP_Bool* drawP )
+{
+    XP_Bool handled = XP_FALSE;
+    XP_U16 objectID = event->data.frmObjectFocusTake.objectID;
+    XP_ASSERT( &event->data.frmObjectFocusTake.objectID
+               == &event->data.frmObjectFocusLost.objectID );
+
+/*     XP_LOGF( "%s(%d,%s)", __FUNCTION__, objectID,  */
+/*              (event->eType == frmObjectFocusTakeEvent? "take":"lost") ); */
+
+    handled = ( objectID == XW_BOARD_GADGET_ID 
+                || objectID == XW_SCOREBOARD_GADGET_ID 
+                || objectID == XW_TRAY_GADGET_ID );
+
+    if ( handled ) {
+        XP_Bool take = event->eType == frmObjectFocusTakeEvent;
+        BoardObjectType typ = (objectID - XW_BOARD_GADGET_ID) + OBJ_BOARD;
+        *drawP = board_focusChanged( globals->game.board, typ, take );
+        if ( take ) {
+            FrmSetFocus( globals->mainForm, 
+                         FrmGetObjectIndex( globals->mainForm, objectID ) );
+        }
+    }
+
+    return handled;
+} /* handleChangeFocus */
+
+static void
+checkSetFocus( PalmAppGlobals* globals )
+{
+    BoardObjectType typ = board_getFocusOwner( globals->game.board );
+    XP_U16 objectID = XW_BOARD_GADGET_ID + (typ - OBJ_BOARD);
+    XP_LOGF( "%s: FrmSetFocus(%d)", __FUNCTION__, objectID );
+    FrmSetFocus( globals->mainForm, 
+                 FrmGetObjectIndex( globals->mainForm, objectID ) );
+}
+
+#endif
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -2439,6 +2481,13 @@ mainViewHandleEvent( EventPtr event )
         }
         break;
 
+#ifdef XWFEATURE_FIVEWAY
+    case frmObjectFocusTakeEvent:
+    case frmObjectFocusLostEvent:
+        handled = handleChangeFocus( globals, event, &draw );
+        break;
+#endif
+
     case keyDownEvent: {
         XP_Key xpkey = XP_KEY_NONE;
         Int16 ch = event->data.keyDown.chr;
@@ -2453,6 +2502,27 @@ mainViewHandleEvent( EventPtr event )
         case backspaceChr:
             xpkey = XP_CURSOR_KEY_DEL;
             break;
+
+#ifdef XWFEATURE_FIVEWAY
+        case vchrRockerCenter:
+            xpkey = XP_RETURN_KEY;
+            break;
+        case vchrRockerLeft:
+            xpkey = XP_CURSOR_KEY_LEFT;
+            break;
+        case vchrRockerRight:
+            xpkey = XP_CURSOR_KEY_RIGHT;
+            break;
+        case vchrRockerUp:
+            xpkey = XP_CURSOR_KEY_UP;
+            break;
+        case vchrRockerDown:
+            xpkey = XP_CURSOR_KEY_DOWN;
+            break;
+        case chrSpace:
+            xpkey = XP_FOCUSCHANGE_KEY;
+            break;
+#endif
         default:
             /* I'm not interested in being dependent on a particular version
                of the OS, (can't manage to link against the intl library
@@ -2469,6 +2539,11 @@ mainViewHandleEvent( EventPtr event )
         }
         if ( xpkey != XP_KEY_NONE ) {
             draw = board_handleKey( globals->game.board, xpkey );
+#ifdef XWFEATURE_FIVEWAY
+            if ( xpkey == XP_FOCUSCHANGE_KEY ) {
+                checkSetFocus( globals );
+            }
+#endif
         }
         handled = draw;
     }

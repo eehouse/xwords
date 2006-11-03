@@ -60,6 +60,7 @@
 #include "LocalizedStrIncludes.h"
 
 #include "boardp.h"
+#include "dbgutil.h"
 
 #define bEND 0x62454e44
 
@@ -76,11 +77,11 @@ static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row,
                          XP_Bool skipBlanks );
 static void figureBoardRect( BoardCtxt* board );
 
+static void drawBoard( BoardCtxt* board );
 static void drawTimer( BoardCtxt* board );
 static void drawScoreBoard( BoardCtxt* board );
 static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
-static void
-invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect );
+static void invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect );
 
 static XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                                 XP_U16 tileIndex, Tile blankFace );
@@ -123,6 +124,7 @@ static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey );
 #ifdef KEYBOARD_NAV
 static XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key );
 static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey );
+static XP_Bool invalFocusOwner( BoardCtxt* board );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
@@ -874,18 +876,25 @@ board_formatRemainingTiles( BoardCtxt* board, XWStreamCtxt* stream )
     server_formatRemainingTiles( board->server, stream, curPlayer );
 } /* board_formatRemainingTiles */
 
-void
-board_invalAll( BoardCtxt* board )
+static void
+board_invalAllTiles( BoardCtxt* board )
 {
     XP_U16 lastRow = model_numRows( board->model );
     while ( lastRow-- ) {
         board->redrawFlags[lastRow] = ~0;
     }
+    board->tradingMiniWindowInvalid = XP_TRUE;
+
     board->needsDrawing = XP_TRUE;
+} /* board_invalAllTiles */
+
+void
+board_invalAll( BoardCtxt* board )
+{
+    board_invalAllTiles( board );
 
     board_invalTrayTiles( board, ALLTILES );
     board->dividerInvalid = XP_TRUE;
-    board->tradingMiniWindowInvalid = XP_TRUE;
     board->scoreBoardInvalid = XP_TRUE;
 } /* board_invalAll */
 
@@ -1037,96 +1046,100 @@ board_draw( BoardCtxt* board )
 
         drawScoreBoard( board );
 
-        drawTray( board, board->focussed==OBJ_TRAY );
+        drawTray( board );
 
-        if ( board->needsDrawing 
-             && draw_boardBegin( board->draw, 
-                                 model_getDictionary( board->model ),
-                                 &board->boardBounds, 
-                                 board->focussed == OBJ_BOARD ) ) {
-
-            XP_Bool allDrawn = XP_TRUE;
-            XP_S16 lastCol, i;
-            XP_S16 row;
-            ModelCtxt* model = board->model;
-            BlankQueue bq;
-
-            scrollIfCan( board );	/* this must happen before we count blanks
-                                       since it invalidates squares */
-
-            model_listPlacedBlanks( model, board->selPlayer, 
-                                    board->trayVisState == TRAY_REVEALED, &bq );
-            invalBlanksWithNeighbors( board, &bq );
-
-            /* Don't try to optimize this using lastVisibleRow etc.  If the
-               board is flipped, "lastVisibleRow" here is really col.
-               redrawFlags is at the model level, pre-flip. */
-            for ( row = model_numRows(model) - 1; row >= 0; --row ) {
-                XP_U16 rowFlags = board->redrawFlags[row];
-                if ( rowFlags != 0 ) {
-                    XP_U16 colMask;
-                    XP_U16 failedBits = 0;
-                    lastCol = model_numCols( model );
-                    for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
-                        if ( (rowFlags & colMask) != 0 ) {
-                            if ( !drawCell( board, lastCol, row, XP_TRUE )) {
-                                failedBits |= colMask;
-                                allDrawn = XP_FALSE;
-                            }
-                        }
-                    }
-                    board->redrawFlags[row] = failedBits;
-                }
-            }
-
-            /* draw the blanks we skipped before */
-            for ( i = 0; i < bq.nBlanks; ++i ) {
-                if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
-                    allDrawn = XP_FALSE;
-                }
-            }
-
-            if ( board->trayVisState == TRAY_REVEALED ) {
-                XP_Rect cursorRect;
-                BoardArrow* arrow = &board->boardArrow[board->selPlayer];
-
-                if ( arrow->visible ) {
-                    XP_U16 col = arrow->col;
-                    XP_U16 row = arrow->row;
-                    XP_Bool drawVertical = 
-                        (arrow->vert == XP_CURSOR_KEY_DOWN) ^ board->isFlipped;
-                    if ( getCellRect( board, col, row, &cursorRect ) ) {
-                        XWBonusType bonus;
-                        HintAtts hintAtts;
-                        bonus = util_getSquareBonus( board->util, model, 
-                                                     col, row );
-                        hintAtts = figureHintAtts( board, col, row );
-                        draw_drawBoardArrow( board->draw, &cursorRect, 
-                                             bonus, drawVertical, hintAtts );
-                    }
-                }
-#ifdef KEYBOARD_NAV
-                {
-                    BdCursorLoc loc = board->bdCursor[board->selPlayer];
-                    if ( getCellRect( board, loc.col, loc.row, &cursorRect ) ) {
-                        draw_drawBoardCursor( board->draw, &cursorRect );
-                    }
-                }
-#endif
-            
-            }
-
-            drawTradeWindowIf( board );
-
-            draw_boardFinished( board->draw );
-
-            board->needsDrawing = !allDrawn;
-        }
-
-/*         drawTray( board, board->focussed==OBJ_TRAY ); */
+        drawBoard( board );
     }
     return !board->needsDrawing;
 } /* board_draw */
+
+static void
+drawBoard( BoardCtxt* board )
+{
+    if ( board->needsDrawing 
+         && draw_boardBegin( board->draw, 
+                             model_getDictionary( board->model ),
+                             &board->boardBounds, 
+                             dfsFor( board, OBJ_BOARD ) ) ) {
+
+        XP_Bool allDrawn = XP_TRUE;
+        XP_S16 lastCol, i;
+        XP_S16 row;
+        ModelCtxt* model = board->model;
+        BlankQueue bq;
+        XP_Rect cursorRect;
+
+        scrollIfCan( board );	/* this must happen before we count blanks
+                                   since it invalidates squares */
+
+        model_listPlacedBlanks( model, board->selPlayer, 
+                                board->trayVisState == TRAY_REVEALED, &bq );
+        invalBlanksWithNeighbors( board, &bq );
+
+        /* Don't try to optimize this using lastVisibleRow etc.  If the
+           board is flipped, "lastVisibleRow" here is really col.
+           redrawFlags is at the model level, pre-flip. */
+        for ( row = model_numRows(model) - 1; row >= 0; --row ) {
+            XP_U16 rowFlags = board->redrawFlags[row];
+            if ( rowFlags != 0 ) {
+                XP_U16 colMask;
+                XP_U16 failedBits = 0;
+                lastCol = model_numCols( model );
+                for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
+                    if ( (rowFlags & colMask) != 0 ) {
+                        if ( !drawCell( board, lastCol, row, XP_TRUE )) {
+                            failedBits |= colMask;
+                            allDrawn = XP_FALSE;
+                        }
+                    }
+                }
+                board->redrawFlags[row] = failedBits;
+            }
+        }
+
+        /* draw the blanks we skipped before */
+        for ( i = 0; i < bq.nBlanks; ++i ) {
+            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
+                allDrawn = XP_FALSE;
+            }
+        }
+
+        if ( board->trayVisState == TRAY_REVEALED ) {
+            BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+
+            if ( arrow->visible ) {
+                XP_U16 col = arrow->col;
+                XP_U16 row = arrow->row;
+                XP_Bool drawVertical = 
+                    (arrow->vert == XP_CURSOR_KEY_DOWN) ^ board->isFlipped;
+                if ( getCellRect( board, col, row, &cursorRect ) ) {
+                    XWBonusType bonus;
+                    HintAtts hintAtts;
+                    bonus = util_getSquareBonus( board->util, model, 
+                                                 col, row );
+                    hintAtts = figureHintAtts( board, col, row );
+                    draw_drawBoardArrow( board->draw, &cursorRect, 
+                                         bonus, drawVertical, hintAtts );
+                }
+            }
+        }
+
+#ifdef KEYBOARD_NAV
+        if ( board->focussed == OBJ_BOARD && board->focusHasDived ) {
+            BdCursorLoc loc = board->bdCursor[board->selPlayer];
+            if ( getCellRect( board, loc.col, loc.row, &cursorRect ) ){
+                draw_drawCursor( board->draw, OBJ_BOARD, &cursorRect );
+            }
+        }
+#endif
+
+        drawTradeWindowIf( board );
+
+        draw_boardFinished( board->draw );
+
+        board->needsDrawing = !allDrawn;
+    }
+} /* drawBoard */
 
 static XP_S16
 figureSecondsLeft( BoardCtxt* board )
@@ -1185,9 +1198,12 @@ drawScoreBoard( BoardCtxt* board )
             DrawScoreData datum[MAX_NUM_PLAYERS];
             XP_S16 scores[MAX_NUM_PLAYERS];
             XP_Bool isVertical = !board->scoreSplitHor;
-
-            draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers,
-                             board->focussed==OBJ_SCORE );
+#ifdef KEYBOARD_NAV
+            XP_Rect cursorRect;
+            XP_Rect* cursorRectP = NULL;
+#endif
+            draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
+                             dfsFor( board, OBJ_SCORE ) );
 
             /* Let platform decide whether the rem: string should be given any
                space once there are no tiles left.  On Palm that space is
@@ -1277,8 +1293,22 @@ drawScoreBoard( BoardCtxt* board )
 
                 draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
                                        &dp->dsi );
+#ifdef KEYBOARD_NAV
+                if ( i == board->scoreCursorLoc
+                     && board->focussed == OBJ_SCORE
+                     && board->focusHasDived ) {
+                    cursorRect = scoreRect;
+                    cursorRectP = &cursorRect;
+                }
+#endif
                 *adjustPt += *adjustDim;
             }
+
+#ifdef KEYBOARD_NAV
+            if ( !!cursorRectP ) {
+                draw_drawCursor( board->draw, OBJ_SCORE, cursorRectP );
+            }
+#endif
 
             draw_scoreFinished( board->draw );
         }
@@ -1288,6 +1318,24 @@ drawScoreBoard( BoardCtxt* board )
 	    
     drawTimer( board );
 } /* drawScoreBoard */
+
+#ifdef KEYBOARD_NAV
+DrawFocusState
+dfsFor( BoardCtxt* board, BoardObjectType obj )
+{
+    DrawFocusState dfs;
+    if ( board->focussed == obj ) {
+        if ( board->focusHasDived ) {
+            dfs = DFS_DIVED;
+        } else {
+            dfs = DFS_TOP;
+        }
+    } else {
+        dfs = DFS_NONE;
+    }
+    return dfs;
+} /* dfsFor */
+#endif
 
 void
 board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
@@ -1882,13 +1930,22 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 static XP_Bool
 focusNext( BoardCtxt* board )
 {
-    short numHolders = 3;	/* board */
-    short tmp = (short)board->focussed; /* avoid franklin casting crap */
+    BoardObjectType typ;
+    switch ( board->focussed ) {
+    case OBJ_SCORE:
+        typ = OBJ_BOARD;
+        break;
+    case OBJ_BOARD:
+        typ = OBJ_TRAY;
+        break;
+    case OBJ_TRAY:
+    case OBJ_NONE:
+        typ = OBJ_SCORE;
+        break;
+    }
 
-    tmp %= numHolders;
-    board->focussed = (BoardObjectType)(tmp + 1); /* skip OBJ_NONE */
-
-    return numHolders > 1;
+    board->focussed = typ;
+    return XP_TRUE;
 } /* focusNext */
 #endif
 
@@ -2663,13 +2720,14 @@ board_handleKey( BoardCtxt* board, XP_Key key )
     case XP_CURSOR_KEY_UP:
     case XP_CURSOR_KEY_LEFT:
     case XP_CURSOR_KEY_RIGHT:
-        if ( board->focussed == OBJ_BOARD ) {
-            result = trayVisible && board_moveCursor( board, 
-                                                      flipKey(board,key) );
-        } else if ( board->focussed == OBJ_SCORE ) {
-            result = moveScoreCursor( board, key );
-        } else if ( trayVisible && board->focussed == OBJ_TRAY ) {
-            result = tray_moveCursor( board, key );
+        if ( board->focusHasDived ) {
+            if ( board->focussed == OBJ_BOARD ) {
+                result = board_moveCursor( board, flipKey( board, key ) );
+            } else if ( board->focussed == OBJ_SCORE ) {
+                result = moveScoreCursor( board, key );
+            } else if ( board->focussed == OBJ_TRAY ) {
+                result = tray_moveCursor( board, key );
+            }
         }
         break;
 #endif
@@ -2683,27 +2741,40 @@ board_handleKey( BoardCtxt* board, XP_Key key )
 
 #ifdef KEYBOARD_NAV
     case XP_FOCUSCHANGE_KEY:
-        if ( focusNext( board ) ) {
-            board_invalAll( board ); /* really just want to inval borders! */
-            result = XP_TRUE;
+        invalFocusOwner( board );
+        if ( board->focusHasDived ) {
+            board->focusHasDived = XP_FALSE; /* come back up */
+        } else if ( focusNext( board ) ) {
+            invalFocusOwner( board );
         }
+        result = XP_TRUE;
         break;
 
     case XP_RETURN_KEY:
-        if ( board->focussed == OBJ_TRAY ) {
-            if ( trayVisible ) {
-                result = tray_keyAction( board );
-            } else {
-                result = askRevealTray( board );
-            }
-        } else if ( board->focussed == OBJ_BOARD ) {
-            /* mimic pen-down/pen-up on cursor */
-            BdCursorLoc loc = board->bdCursor[board->selPlayer];
-            result = handleActionInCell( board, loc.col, loc.row );
-        } else if ( board->focussed == OBJ_SCORE ) {
-	    /* tap on what's already selected: reveal tray, etc. */
-            board_selectPlayer( board, board->selPlayer );
-	    result = XP_TRUE;
+        if ( board->focusHasDived ) {
+            result = XP_TRUE;   /* even if don't draw, we handle it!! */
+            if ( board->focussed == OBJ_TRAY ) {
+                if ( trayVisible ) {
+                    (void)tray_keyAction( board );
+                } else {
+                    (void)askRevealTray( board );
+                }
+            } else if ( board->focussed == OBJ_BOARD ) {
+                /* mimic pen-down/pen-up on cursor */
+                if ( trayVisible ) {
+                    BdCursorLoc loc = board->bdCursor[board->selPlayer];
+                    (void)handleActionInCell( board, loc.col, loc.row );
+                } else {
+                    askRevealTray( board );
+                }
+            } else if ( board->focussed == OBJ_SCORE ) {
+                /* tap on what's already selected: reveal tray, etc. */
+                board_selectPlayer( board, board->scoreCursorLoc );
+            } 
+        } else if ( board->focussed != OBJ_NONE ) {
+            board->focusHasDived = XP_TRUE;
+            board_invalAll( board ); /* just want to inval borders! */
+            result = XP_TRUE;
         }
         break;
 #endif
@@ -2721,8 +2792,88 @@ board_handleKey( BoardCtxt* board, XP_Key key )
     return result;
 } /* board_handleKey */
 
-/* used by curses version only! */
 #ifdef KEYBOARD_NAV
+
+static XP_Bool
+invalFocusOwner( BoardCtxt* board )
+{
+    XP_Bool draw = XP_TRUE;
+    XP_S16 selPlayer = board->selPlayer;
+    switch( board->focussed ) {
+    case OBJ_SCORE:
+        board->scoreBoardInvalid = XP_TRUE;
+        break;
+    case OBJ_BOARD:
+        if ( board->focusHasDived ) {
+            BdCursorLoc loc = board->bdCursor[selPlayer];
+            invalCell( board, loc.col, loc.row );
+        } else {
+            board_invalAllTiles( board );
+        }
+        break;
+    case OBJ_TRAY:
+        if ( board->focusHasDived ) {
+            XP_U16 loc = board->trayCursorLoc[selPlayer];
+            board_invalTrayTiles( board, 1 << loc );
+        } else {
+            board_invalTrayTiles( board, ALLTILES );
+            board->dividerInvalid = XP_TRUE;
+        }
+        break;
+    default:                    /* for compiler */
+        draw = XP_FALSE;
+        break;
+    }
+    board->needsDrawing = draw;
+    return draw;
+} /* invalFocusOwner */
+
+XP_Bool
+board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
+{
+    XP_Bool draw = XP_FALSE;
+    LOG_FUNC();
+    /* Called when there's been a decision to advance the focus to a new
+       object, or when an object will lose it.  Need to update internal data
+       structures, but also to communicate to client draw code in a way that
+       doesn't assume how it's representing focus.
+
+       Should pop focus to top on gaining it.  Calling code should not be
+       seeing internal movement as focus events, but as key events we handle
+
+       One rule: each object must draw focus indicator entirely within its own
+       space.  No interdependencies.  So handling updating of focus indication
+       within the tray drawing process, for example, is ok.
+
+       Problem: on palm at least take and lost are inverted: you get a take on
+       the new object before a lose on the previous one.  So we want to ignore
+       lost events *except* when it's a loss of something we have currently --
+       meaning the focus is moving to soemthing we don't control (a
+       platform-specific object)
+    */
+
+    if ( gained ) {
+        /* Are we losing focus we currently have elsewhere? */
+        if ( typ != board->focussed ) {
+            draw = invalFocusOwner( board ) || draw;
+        }
+        board->focussed = typ;
+        XP_LOGF( "%s: set focussed to %d", __FUNCTION__, (int)typ );
+        draw = invalFocusOwner( board ) || draw;
+        board->focusHasDived = XP_FALSE;
+    } else {
+        /* we're losing it; inval and clear IFF we currently have same focus,
+           otherwise ignore */
+        if ( typ == board->focussed ) {
+            draw = invalFocusOwner( board ) || draw;
+            board->focussed = OBJ_NONE;
+        }
+    }
+
+    LOG_RETURNF( "%d", (int)draw );
+    return draw;
+} /* board_focusChanged */
+
 XP_Bool
 board_toggle_arrowDir( BoardCtxt* board )
 {
@@ -2741,24 +2892,26 @@ moveScoreCursor( BoardCtxt* board, XP_Key key )
 {
     XP_Bool result = XP_TRUE;
     XP_U16 nPlayers = board->gi->nPlayers;
-    XP_U16 selPlayer = board->selPlayer + nPlayers;
+    XP_U16 scoreCursorLoc = board->scoreCursorLoc + nPlayers;
 
     switch ( key ) {
     case XP_CURSOR_KEY_DOWN:
     case XP_CURSOR_KEY_RIGHT:
-        ++selPlayer;
+        ++scoreCursorLoc;
         break;
     case XP_CURSOR_KEY_UP:
     case XP_CURSOR_KEY_LEFT:
-        --selPlayer;
+        --scoreCursorLoc;
         break;
     default:
         result = XP_FALSE;
     }
-    board_selectPlayer( board, selPlayer % nPlayers );
+    board->scoreCursorLoc = scoreCursorLoc % nPlayers;
+    board->scoreBoardInvalid = XP_TRUE;
+
     return result;
 } /* moveScoreCursor */
-#endif
+#endif /* KEYBOARD_NAV */
 
 static XP_Bool
 advanceArrow( BoardCtxt* board )
@@ -2785,61 +2938,58 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canCycle,
 
     /*     XP_ASSERT( board->focussed == OBJ_BOARD ); */
     /* don't allow cursor's jumps to reveal hidden tiles */
-    if ( board->trayVisState != TRAY_REVEALED || cursorKey == XP_KEY_NONE ) {
-        return XP_FALSE;
-    }
+    if ( cursorKey != XP_KEY_NONE ) {
 
-    numRows = model_numRows( board->model );
-    numCols = model_numCols( board->model );
+        numRows = model_numRows( board->model );
+        numCols = model_numCols( board->model );
 
-    switch ( cursorKey ) {
+        switch ( cursorKey ) {
 	     
-    case XP_CURSOR_KEY_DOWN:
-        incr = 1;
-        useWhat = (XP_S16*)rowP;
-        max = numRows;
-        end = max;
-        break;
-    case XP_CURSOR_KEY_UP:
-        incr = -1;
-        useWhat = (XP_S16*)rowP;
-        max = numRows;
-        end = -1;
-        break;
-    case XP_CURSOR_KEY_LEFT:
-        incr = -1;
-        useWhat = (XP_S16*)colP;
-        max = numCols;
-        end = -1;
-        break;
-    case XP_CURSOR_KEY_RIGHT:
-        incr = 1;
-        useWhat = (XP_S16*)colP;
-        max = numCols;
-        end = max;
-        break;
-    default:
-        XP_ASSERT( XP_FALSE );
-        return XP_FALSE;
-    }
-
-    XP_ASSERT( incr != 0 );
-
-    for ( counter = max; ; --counter ) {
-
-        *useWhat += incr;
-
-        if ( (counter == 0) || (!canCycle && (*useWhat == end)) ) {
-            result = XP_FALSE;
+        case XP_CURSOR_KEY_DOWN:
+            incr = 1;
+            useWhat = (XP_S16*)rowP;
+            max = numRows;
+            end = max;
             break;
+        case XP_CURSOR_KEY_UP:
+            incr = -1;
+            useWhat = (XP_S16*)rowP;
+            max = numRows;
+            end = -1;
+            break;
+        case XP_CURSOR_KEY_LEFT:
+            incr = -1;
+            useWhat = (XP_S16*)colP;
+            max = numCols;
+            end = -1;
+            break;
+        case XP_CURSOR_KEY_RIGHT:
+            incr = 1;
+            useWhat = (XP_S16*)colP;
+            max = numCols;
+            end = max;
+            break;
+        default:
+            XP_ASSERT( XP_FALSE );
         }
 
-        *useWhat = (*useWhat + max) % max;
+        XP_ASSERT( incr != 0 );
 
-        if ( !avoidOccupied 
-             || !cellOccupied( board, *colP, *rowP, XP_TRUE ) ) {
-            result = XP_TRUE;
-            break;
+        for ( counter = max; ; --counter ) {
+
+            *useWhat += incr;
+
+            if ( (counter == 0) || (!canCycle && (*useWhat == end)) ) {
+                break;
+            }
+
+            *useWhat = (*useWhat + max) % max;
+
+            if ( !avoidOccupied 
+                 || !cellOccupied( board, *colP, *rowP, XP_TRUE ) ) {
+                result = XP_TRUE;
+                break;
+            }
         }
     }
 
@@ -3115,7 +3265,7 @@ boardTileChanged( void* p_board, XP_U16 turn, TileBit bits )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     if ( turn == board->selPlayer ) {
-	board_invalTrayTiles( board, bits );
+        board_invalTrayTiles( board, bits );
     }
 } /* boardTileChanged */
 

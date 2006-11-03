@@ -164,7 +164,7 @@ BITMAP_RSRCS = \
 # INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
 INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/Extensions/Bluetooth
 
-XWFEATURE_FIVEWAY = -DXWFEATURE_FIVEWAY
+XWFEATURE_FIVEWAY = -DXWFEATURE_FIVEWAY -DKEYBOARD_NAV
 
 ifneq (x$(XWFEATURE_FIVEWAY)x, xx)
 	INCLUDES += -I/usr/local/share/palmdev/Handspring5

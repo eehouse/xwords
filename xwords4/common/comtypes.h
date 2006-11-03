@@ -61,6 +61,25 @@ typedef enum {
     ,TRI_ENAB_ENABLED
 } XP_TriEnable;
 
+typedef enum {
+    DFS_NONE
+    ,DFS_TOP                    /* focus is on the object */
+    ,DFS_DIVED                  /* focus is inside the object */
+} DrawFocusState;
+
+typedef enum {
+    TRAY_HIDDEN,	/* doesn't happen unless tray overlaps board */
+    TRAY_REVERSED,
+    TRAY_REVEALED
+} XW_TrayVisState;
+
+typedef enum {
+    OBJ_NONE,
+    OBJ_BOARD,
+    OBJ_SCORE,
+    OBJ_TRAY
+} BoardObjectType;
+
 /* I'm going to try putting all forward "class" decls in the same file */
 typedef struct BoardCtxt BoardCtxt;
 typedef struct CommMgrCtxt CommMgrCtxt;
