@@ -231,6 +231,7 @@ static void
 createOrLoadObjects( GtkAppGlobals* globals )
 {
     XWStreamCtxt* stream = NULL;
+    XP_Bool opened = XP_FALSE;
 
     Connectedness serverRole = globals->cGlobals.params->serverRole;
     XP_Bool isServer = serverRole != SERVER_ISCLIENT;
@@ -243,16 +244,17 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         stream = streamFromFile( globals, params->fileName );
 
-        game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
-                             &globals->cGlobals.params->gi, 
-                             params->dict, params->util, 
-                             (DrawCtx*)globals->draw, 
-                             &globals->cp,
-                             linux_send, globals );
-
+        opened = game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
+                                      &globals->cGlobals.params->gi, 
+                                      params->dict, params->util, 
+                                      (DrawCtx*)globals->draw, 
+                                      &globals->cp,
+                                      linux_send, globals );
+        
         stream_destroy( stream );
+    }
 
-    } else {			/* not reading from a saved file */
+    if ( !opened ) {
         XP_U16 gameID;
         CommsAddrRec addr;
 

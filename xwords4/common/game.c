@@ -158,12 +158,13 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
     board_prefsChanged( game->board, cp );
 } /* game_reset */
 
-void
+XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                      CurGameInfo* gi, DictionaryCtxt* dict, 
                      XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp, 
                      TransportSend sendProc, void* closure )
 {
+    XP_Bool success = XP_FALSE;
     XP_U8 strVersion;
 #ifndef XWFEATURE_STANDALONE_ONLY
     XP_Bool hasComms;
@@ -171,36 +172,42 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     strVersion = stream_getU8( stream );
     XP_DEBUGF( "strVersion = %d", (XP_U16)strVersion );
 
-    stream_setVersion( stream, strVersion );
+    if ( strVersion <= CUR_STREAM_VERS ) {
+        stream_setVersion( stream, strVersion );
 
-    gi_readFromStream( MPPARM(mpool) stream, gi );
+        gi_readFromStream( MPPARM(mpool) stream, gi );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    hasComms = stream_getU8( stream );
-    if ( hasComms ) {
-        game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
-                                            sendProc, closure );
-        comms_start( game->comms );
-    } else {
-        game->comms = NULL;
-    }
+        hasComms = stream_getU8( stream );
+        if ( hasComms ) {
+            game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
+                                                sendProc, closure );
+            comms_start( game->comms );
+        } else {
+            game->comms = NULL;
+        }
 #endif
-    game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
+        game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
 
-    game->server = server_makeFromStream( MPPARM(mpool) stream, 
-                                          game->model, 
+        game->server = server_makeFromStream( MPPARM(mpool) stream, 
+                                              game->model, 
 #ifndef XWFEATURE_STANDALONE_ONLY
-                                          game->comms, 
+                                              game->comms, 
 #else
-                                          (CommsCtxt*)NULL,
+                                              (CommsCtxt*)NULL,
 #endif
-                                          util, gi->nPlayers );
+                                              util, gi->nPlayers );
 
-    game->board = board_makeFromStream( MPPARM(mpool) stream, game->model, 
-                                        game->server, draw, util, 
-                                        gi->nPlayers );
-    server_prefsChanged( game->server, cp );
-    board_prefsChanged( game->board, cp );
+        game->board = board_makeFromStream( MPPARM(mpool) stream, game->model, 
+                                            game->server, draw, util, 
+                                            gi->nPlayers );
+        server_prefsChanged( game->server, cp );
+        board_prefsChanged( game->board, cp );
+        success = XP_TRUE;
+    } else {
+        XP_LOGF( "%s: aborting; stream version too new!", __FUNCTION__ );
+    }
+    return success;
 } /* game_makeFromStream */
 
 void

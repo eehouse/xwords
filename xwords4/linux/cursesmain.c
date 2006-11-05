@@ -427,6 +427,7 @@ MenuList sharedMenuList[] = {
     { NULL, NULL, NULL, '\0'}
 };
 
+#ifdef KEYBOARD_NAV
 static XP_Bool
 handleLeft( CursesAppGlobals* globals )
 {
@@ -474,28 +475,33 @@ handleDown( CursesAppGlobals* globals )
                                        XP_CURSOR_KEY_DOWN );
     return XP_TRUE;
 } /* handleDown */
+#endif
 
 MenuList boardMenuList[] = {
+#ifdef KEYBOARD_NAV
     { handleLeft, "Left", "H", 'H' },
     { handleRight, "Right", "L", 'L' },
     { handleUp, "Up", "J", 'J' },
     { handleDown, "Down", "K", 'K' },
-
+#endif
     { NULL, NULL, NULL, '\0'}
 };
 
 MenuList scoreMenuList[] = {
+#ifdef KEYBOARD_NAV
     { handleUp, "Up", "J", 'J' },
     { handleDown, "Down", "K", 'K' },
-
+#endif
     { NULL, NULL, NULL, '\0'}
 };
 
 MenuList trayMenuList[] = {
+#ifdef KEYBOARD_NAV
     { handleLeft, "Left", "H", 'H' },
     { handleRight, "Right", "L", 'L' },
     { handleDivLeft, "Div left", "{", '{' },
     { handleDivRight, "Div right", "}", '}' },
+#endif
     { handleJuggle, "Juggle", "J", 'J' },
     { handleHide, "[un]hIde", "I", 'I' },
 
@@ -798,6 +804,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 static void
 changeFocus( CursesAppGlobals* globals )
 {
+#ifdef KEYBOARD_NAV
     BoardObjectType focussed = 
         board_getFocusOwner( globals->cGlobals.game.board );
     if ( focussed == OBJ_TRAY ) {
@@ -812,6 +819,7 @@ changeFocus( CursesAppGlobals* globals )
     } else {
         XP_ASSERT(0);
     }
+#endif
 } /* changeFocus */
 
 #if 0

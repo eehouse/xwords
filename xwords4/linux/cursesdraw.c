@@ -26,6 +26,7 @@
 #include "cursesmain.h"
 #include "draw.h"
 #include "board.h"
+#include "dbgutil.h"
 
 typedef struct CursesDrawCtx {
     DrawCtxVTable* vtable;
@@ -83,45 +84,31 @@ curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx) )
     // CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 } /* draw_setup */
 
-static void
-drawFocusRect( CursesDrawCtx* dctx, DrawFocusState dfs, const XP_Rect* rect )
-{
-    WINDOW* boardWin = dctx->boardWin;
-    if ( dfs == DFS_NONE ) {
-        drawRect( boardWin, rect, '|', '-' ); 
-    } else if ( dfs == DFS_TOP ) {
-        drawRect( boardWin, rect, '*', '*' ); 
-    } else if ( dfs == DFS_DIVED ) {
-        drawRect( boardWin, rect, '+', '+' ); 
-    } else {
-        XP_ASSERT(0);
-    }
-}
-
 static XP_Bool
-curses_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict),
-                        const XP_Rect* rect, DrawFocusState dfs )
+curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), 
+                        const DictionaryCtxt* XP_UNUSED(dict),
+                        const XP_Rect* XP_UNUSED(rect), 
+                        DrawFocusState XP_UNUSED(dfs) )
 {
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    drawFocusRect( dctx, dfs, rect );
     return XP_TRUE;
 } /* draw_finish */
 
 static XP_Bool
-curses_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
-                       XP_U16 XP_UNUSED(owner), DrawFocusState dfs )
+curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx), 
+                       const XP_Rect* XP_UNUSED(rect), 
+                       XP_U16 XP_UNUSED(owner), 
+                       DrawFocusState XP_UNUSED(dfs) )
 {
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    drawFocusRect( dctx, dfs, rect );
     return XP_TRUE;
 } /* draw_finish */
 
 static void
 curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
-                        XP_U16 XP_UNUSED(numPlayers), DrawFocusState dfs )
+                        XP_U16 XP_UNUSED(numPlayers), 
+                        DrawFocusState XP_UNUSED(dfs) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    drawFocusRect( dctx, dfs, rect );
+    eraseRect( dctx, rect );
 } /* curses_draw_scoreBegin */
 
 static void
@@ -229,29 +216,18 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 
     mvwprintw( dctx->boardWin, rect->top+1, rect->left, "pt:" );
     mvwprintw( dctx->boardWin, rect->top+2, rect->left, "%s", buf );
-    wrefresh( dctx->boardWin );
 } /* curses_draw_score_pendingScore */
 
 static void
-curses_draw_boardFinished( DrawCtx* p_dctx )
+curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ, 
+                         const XP_Rect* rect, DrawFocusState dfs )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
+    if ( dfs == DFS_TOP ) {
+        cursesHiliteRect( dctx->boardWin, rect );
+    }
     wrefresh( dctx->boardWin );
-} /* curses_draw_boardFinished */
-
-static void
-curses_draw_trayFinished( DrawCtx* p_dctx )
-{
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    wrefresh( dctx->boardWin );
-} /* draw_finished */
-
-static void
-curses_draw_scoreFinished( DrawCtx* p_dctx )
-{
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    wrefresh( dctx->boardWin );
-} /* draw_finished */
+} /* curses_draw_objFinished */
 
 #define MY_PAIR 1
 
@@ -264,9 +240,6 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     int y = rInner->top;
 
     curses_draw_clearRect( p_dctx, rOuter );
-
-    /* first blank out the whole thing! */
-    mvwhline( dctx->boardWin, y, rOuter->left, ' ', rOuter->width );
 
     /* print the name and turn/remoteness indicator */
     formatScoreText( buf, dsi );
@@ -482,10 +455,8 @@ cursesDrawCtxtMake( WINDOW* boardWin )
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_boardFinished, curses );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_trayFinished, curses );
-
     SET_VTABLE_ENTRY( dctx->vtable, draw_scoreBegin, curses );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureRemText, curses );
@@ -493,7 +464,6 @@ cursesDrawCtxtMake( WINDOW* boardWin )
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_scoreFinished, curses );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, curses );

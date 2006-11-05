@@ -59,6 +59,11 @@
 #include "dictui.h"
 #include "LocalizedStrIncludes.h"
 
+#ifdef XWFEATURE_FIVEWAY
+# include <Hs.h>
+/* # include <HsKeyCommon.h> */
+#endif
+
 #include "callback.h"
 #include "pace_man.h"           /* for crash() macro */
 
@@ -560,9 +565,10 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
         }
 
         if ( success ) {
-            game_makeFromStream( MEMPOOL recStream, game, ginfo, dict,
-                                 &globals->util, globals->draw, 
-                                 &globals->gState.cp, palm_send, globals );
+            success = game_makeFromStream( MEMPOOL recStream, game, ginfo, 
+                                           dict, &globals->util, 
+                                           globals->draw, &globals->gState.cp, 
+                                           palm_send, globals );
         }
 
         stream_destroy( recStream );
@@ -910,7 +916,10 @@ initHighResGlobals( PalmAppGlobals* globals )
     globals->hasHiRes = ( err == errNone && vers >= 4 );
     globals->oneDotFiveAvail = ( err == errNone && vers >= 5 );
 
+    err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
     XP_LOGF( "hasHiRes = %d", globals->hasHiRes );
+    globals->hasFiveWay = ( (err == errNone)
+                            && ((vers & sysFtrNumUIHardwareHas5Way) != 0) );
 
 #ifdef FEATURE_SILK
     if ( globals->hasHiRes ) {
@@ -2030,6 +2039,7 @@ handleChangeFocus( PalmAppGlobals* globals, const EventType* event,
                    XP_Bool* drawP )
 {
     XP_Bool handled = XP_FALSE;
+    XP_Bool redraw = XP_FALSE;
     XP_U16 objectID = event->data.frmObjectFocusTake.objectID;
     XP_ASSERT( &event->data.frmObjectFocusTake.objectID
                == &event->data.frmObjectFocusLost.objectID );
@@ -2037,9 +2047,20 @@ handleChangeFocus( PalmAppGlobals* globals, const EventType* event,
 /*     XP_LOGF( "%s(%d,%s)", __FUNCTION__, objectID,  */
 /*              (event->eType == frmObjectFocusTakeEvent? "take":"lost") ); */
 
-    handled = ( objectID == XW_BOARD_GADGET_ID 
-                || objectID == XW_SCOREBOARD_GADGET_ID 
-                || objectID == XW_TRAY_GADGET_ID );
+    switch ( objectID ) {
+    case XW_BOARD_GADGET_ID:
+    case XW_SCOREBOARD_GADGET_ID:
+    case XW_TRAY_GADGET_ID:
+        handled = XP_TRUE;
+        break;
+
+    case XW_MAIN_DONE_BUTTON_ID:
+    case XW_MAIN_JUGGLE_BUTTON_ID:
+    case XW_MAIN_TRADE_BUTTON_ID:
+    case XW_MAIN_HIDE_BUTTON_ID:
+        redraw = XP_TRUE;
+        break;
+    }
 
     if ( handled ) {
         XP_Bool take = event->eType == frmObjectFocusTakeEvent;
@@ -2050,6 +2071,10 @@ handleChangeFocus( PalmAppGlobals* globals, const EventType* event,
                          FrmGetObjectIndex( globals->mainForm, objectID ) );
         }
     }
+    if ( redraw ) {
+        drawBitmapButton( globals, XW_MAIN_HIDE_BUTTON_ID, 
+                          TRAY_BUTTONS_BMP_RES_ID, XP_FALSE );
+    }
 
     return handled;
 } /* handleChangeFocus */
@@ -2057,11 +2082,13 @@ handleChangeFocus( PalmAppGlobals* globals, const EventType* event,
 static void
 checkSetFocus( PalmAppGlobals* globals )
 {
-    BoardObjectType typ = board_getFocusOwner( globals->game.board );
-    XP_U16 objectID = XW_BOARD_GADGET_ID + (typ - OBJ_BOARD);
-    XP_LOGF( "%s: FrmSetFocus(%d)", __FUNCTION__, objectID );
-    FrmSetFocus( globals->mainForm, 
-                 FrmGetObjectIndex( globals->mainForm, objectID ) );
+    if ( globals->hasFiveWay ) {
+        BoardObjectType typ = board_getFocusOwner( globals->game.board );
+        XP_U16 objectID = XW_BOARD_GADGET_ID + (typ - OBJ_BOARD);
+        XP_LOGF( "%s: FrmSetFocus(%d)", __FUNCTION__, objectID );
+        FrmSetFocus( globals->mainForm, 
+                     FrmGetObjectIndex( globals->mainForm, objectID ) );
+    }
 }
 
 #endif
@@ -2484,7 +2511,8 @@ mainViewHandleEvent( EventPtr event )
 #ifdef XWFEATURE_FIVEWAY
     case frmObjectFocusTakeEvent:
     case frmObjectFocusLostEvent:
-        handled = handleChangeFocus( globals, event, &draw );
+        handled = globals->hasFiveWay
+            && handleChangeFocus( globals, event, &draw );
         break;
 #endif
 

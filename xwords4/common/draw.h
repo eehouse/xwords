@@ -97,7 +97,9 @@ typedef struct DrawCtxVTable {
                                            const DictionaryCtxt* dict,
                                            const XP_Rect* rect, 
                                            DrawFocusState dfs );
-    void DRAW_VTABLE_NAME(boardFinished) ( DrawCtx* dctx );
+    void DRAW_VTABLE_NAME(objFinished)( DrawCtx* dctx, BoardObjectType typ, 
+                                        const XP_Rect* rect, 
+                                        DrawFocusState dfs );
 
     /* rect is not const: set by callee */
     XP_Bool DRAW_VTABLE_NAME(vertScrollBoard) (DrawCtx* dctx, XP_Rect* rect, 
@@ -106,8 +108,6 @@ typedef struct DrawCtxVTable {
     XP_Bool DRAW_VTABLE_NAME(trayBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
                                           XP_U16 owner, 
                                           DrawFocusState dfs );
-    void DRAW_VTABLE_NAME(trayFinished) ( DrawCtx* dctx );
-
     void DRAW_VTABLE_NAME(measureRemText) ( DrawCtx* dctx, const XP_Rect* r, 
                                             XP_S16 nTilesLeft, 
                                             XP_U16* width, XP_U16* height );
@@ -126,10 +126,10 @@ typedef struct DrawCtxVTable {
                                               const XP_Rect* rOuter, 
                                               const DrawScoreInfo* dsi );
 
-    void DRAW_VTABLE_NAME(score_pendingScore) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                                XP_S16 score, XP_U16 playerNum );
-
-    void DRAW_VTABLE_NAME(scoreFinished) ( DrawCtx* dctx );
+    void DRAW_VTABLE_NAME(score_pendingScore) ( DrawCtx* dctx, 
+                                                const XP_Rect* rect, 
+                                                XP_S16 score, 
+                                                XP_U16 playerNum );
 
     void DRAW_VTABLE_NAME(drawTimer) ( DrawCtx* dctx, const XP_Rect* rInner, 
                                        const XP_Rect* rOuter,
@@ -215,9 +215,8 @@ struct DrawCtx {
 
 #define draw_destroyCtxt(dc) CALL_DRAW_NAME0(destroyCtxt, dc)
 #define draw_boardBegin( dc,d,r,f ) CALL_DRAW_NAME3(boardBegin, dc, d,r,f)
-#define draw_boardFinished( dc ) CALL_DRAW_NAME0(boardFinished, (dc))
+#define draw_objFinished( dc, t, r, d ) CALL_DRAW_NAME3(objFinished, (dc), (t), (r), (d))
 #define draw_trayBegin( dc, r, o, f ) CALL_DRAW_NAME3(trayBegin,dc, r, o, f)
-#define draw_trayFinished( dc )  CALL_DRAW_NAME0(trayFinished,dc)
 #define draw_vertScrollBoard( dc, r, d ) \
     CALL_DRAW_NAME2(vertScrollBoard, (dc),(r),(d))
 #define draw_scoreBegin( dc, r, t, f ) \
@@ -232,8 +231,6 @@ struct DrawCtx {
     CALL_DRAW_NAME3(score_drawPlayer,(dc),(ri),(ro),(dsi))
 #define draw_score_pendingScore(dc, r, s, p ) \
     CALL_DRAW_NAME3(score_pendingScore,(dc), (r), (s), (p))
-#define draw_scoreFinished( dc ) \
-    CALL_DRAW_NAME0(scoreFinished,dc)
 #define draw_drawTimer( dc, ri, ro, plyr, sec ) \
     CALL_DRAW_NAME4(drawTimer,(dc),(ri),(ro),(plyr),(sec))
 #define draw_drawCell( dc, rect, txt, bmap, t, o, bon, hi, bl, h, s ) \

@@ -89,11 +89,6 @@ typedef struct PalmDrawCtx {
     XP_LangCode fontLangCode;
     PalmFontHtInfo* fontHtInfo;
 
-#ifdef XWFEATURE_FIVEWAY
-    BoardObjectType topFocusObj;
-    XP_Rect topFocusRect;
-#endif
-
     union {
         struct {
             XP_U8 reserved;     /* make CW compiler happy */
@@ -299,6 +294,7 @@ struct PalmAppGlobals {
     XP_Bool hasHiRes;
     XP_Bool oneDotFiveAvail;
     XP_Bool useHiRes;
+    XP_Bool hasFiveWay;
 
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool askTrayLimits;
