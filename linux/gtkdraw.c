@@ -256,7 +256,10 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict),
 } /* draw_finish */
 
 static void
-gtk_draw_boardFinished( DrawCtx* XP_UNUSED(p_dctx) )
+gtk_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx), 
+                      BoardObjectType XP_UNUSED(typ),
+                      const XP_Rect* XP_UNUSED(rect), 
+                      DrawFocusState XP_UNUSED(dfs) )
 {
     //    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 } /* draw_finished */
@@ -732,13 +735,6 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* gtk_draw_score_pendingScore */
 
 static void
-gtk_draw_scoreFinished( DrawCtx* XP_UNUSED(p_dctx) )
-{
-/*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
-
-} /* gtk_draw_scoreFinished */
-
-static void
 gtkFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
 {
     XP_U16 minutes, seconds;
@@ -931,7 +927,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_boardFinished, gtk );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, gtk );
@@ -946,7 +942,6 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_scoreFinished, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTimer, gtk );
 

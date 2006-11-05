@@ -30,11 +30,16 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_KEYNAV 0x04
 #define STREAM_VERS_RELAY 0x03
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS  STREAM_VERS_RELAY
+#ifdef KEYBOARD_NAV
+# define CUR_STREAM_VERS  STREAM_VERS_KEYNAV
+#else
+# define CUR_STREAM_VERS  STREAM_VERS_RELAY
+#endif
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
@@ -81,11 +86,11 @@ void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
                  XP_U16 gameID, CommonPrefs* cp, TransportSend sendproc, 
                  void* closure );
 
-void game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
-                          CurGameInfo* gi, 
-                          DictionaryCtxt* dict, XW_UtilCtxt* util, 
-                          DrawCtx* draw, CommonPrefs* cp,
-                          TransportSend sendProc, void* closure );
+XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
+                             CurGameInfo* gi, 
+                             DictionaryCtxt* dict, XW_UtilCtxt* util, 
+                             DrawCtx* draw, CommonPrefs* cp,
+                             TransportSend sendProc, void* closure );
 
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                         XWStreamCtxt* stream );

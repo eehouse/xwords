@@ -190,7 +190,8 @@ drawTray( BoardCtxt* board )
 #endif
             }
 
-            draw_trayFinished(board->draw);
+            draw_objFinished( board->draw, OBJ_TRAY, &board->trayBounds,
+                              dfsFor( board, OBJ_TRAY ) );
 
             board->trayInvalBits = 0;
         }

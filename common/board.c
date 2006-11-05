@@ -214,8 +214,10 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
     board->showCellValues = (XP_Bool)stream_getBits( stream, 1 );
 #ifdef KEYBOARD_NAV
-    if ( version >= STREAM_VERS_RELAY ) {
+    if ( version >= STREAM_VERS_KEYNAV ) {
         board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
+        board->focusHasDived = (BoardObjectType)stream_getBits( stream, 1 );
+        board->scoreCursorLoc = (BoardObjectType)stream_getBits( stream, 2 );
     }
 #endif
 
@@ -233,7 +235,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
                                                          MAX_TRAY_TILES );
         board->tradeInProgress[i] = (XP_Bool)stream_getBits( stream, 1 );
 #ifdef KEYBOARD_NAV 
-        if ( version >= STREAM_VERS_RELAY ) {
+        if ( version >= STREAM_VERS_KEYNAV ) {
             board->bdCursor[i].col = stream_getBits( stream, 4 );
             board->bdCursor[i].row = stream_getBits( stream, 4 );
             board->trayCursorLoc[i] = stream_getBits( stream, 3 );
@@ -275,6 +277,8 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
     stream_putBits( stream, 1, board->showCellValues );
 #ifdef KEYBOARD_NAV
     stream_putBits( stream, 2, board->focussed );
+    stream_putBits( stream, 1, board->focusHasDived );
+    stream_putBits( stream, 2, board->scoreCursorLoc );
 #endif
 
     XP_ASSERT( !!board->server );
@@ -1135,7 +1139,8 @@ drawBoard( BoardCtxt* board )
 
         drawTradeWindowIf( board );
 
-        draw_boardFinished( board->draw );
+        draw_objFinished( board->draw, OBJ_BOARD, &board->boardBounds, 
+                          dfsFor( board, OBJ_BOARD ) );
 
         board->needsDrawing = !allDrawn;
     }
@@ -1310,7 +1315,8 @@ drawScoreBoard( BoardCtxt* board )
             }
 #endif
 
-            draw_scoreFinished( board->draw );
+            draw_objFinished( board->draw, OBJ_SCORE, &board->scoreBdBounds, 
+                              dfsFor( board, OBJ_SCORE ) );
         }
 
         board->scoreBoardInvalid = XP_FALSE;
@@ -1703,7 +1709,8 @@ board_requestHint( BoardCtxt* board,
             board_pushTimerSave( board );
 
 #ifdef XWFEATURE_SEARCHLIMIT
-            XP_ASSERT( board->gi->allowHintRect || !board->hasHintRect[selPlayer] );
+            XP_ASSERT( board->gi->allowHintRect
+                       || !board->hasHintRect[selPlayer] );
 #endif
             searchComplete = engine_findMove(engine, model, 
                                              model_getDictionary(model),
@@ -1823,12 +1830,15 @@ figureBoardRect( BoardCtxt* board )
         boardBounds.height = (model_numRows( board->model ) - board->yOffset)
             * board->boardVScale;
 
-        if ( board->trayVisState != TRAY_HIDDEN && board->boardObscuresTray ) {
-            boardBounds.height = board->trayBounds.top - boardBounds.top;
-        } else {
-            XP_U16 trayBottom = board->trayBounds.top + board->trayBounds.height;
-            if ( trayBottom < boardBounds.top + boardBounds.height ) {
-                boardBounds.height = trayBottom - boardBounds.top;
+        if ( board->boardObscuresTray ) {
+            if ( board->trayVisState != TRAY_HIDDEN ) {
+                boardBounds.height = board->trayBounds.top - boardBounds.top;
+            } else {
+                XP_U16 trayBottom;
+                trayBottom = board->trayBounds.top + board->trayBounds.height;
+                if ( trayBottom < boardBounds.top + boardBounds.height ) {
+                    boardBounds.height = trayBottom - boardBounds.top;
+                }
             }
         }
         /* round down */
