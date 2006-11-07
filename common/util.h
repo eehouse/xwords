@@ -155,6 +155,11 @@ typedef struct UtilVtable {
     void (*m_util_engineStarting)( XW_UtilCtxt* uc, XP_U16 nBlanks );
     void (*m_util_engineStopping)( XW_UtilCtxt* uc );
 #endif
+
+#ifdef KEYBOARD_NAV
+    void (*m_util_notifyFocusChange)( XW_UtilCtxt* uc, BoardObjectType cur,
+                                      XP_Key key, BoardObjectType* next );
+#endif
 } UtilVtable;
 
 
@@ -241,4 +246,8 @@ struct XW_UtilCtxt {
 # define util_engineStopping( uc )
 # endif
 
+# ifdef KEYBOARD_NAV
+# define util_notifyFocusChange( uc, c, k, n ) \
+    (uc)->vtable->m_util_notifyFocusChange((uc),(c),(k),(n))
+# endif
 #endif

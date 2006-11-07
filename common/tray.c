@@ -617,33 +617,26 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
 {
     XP_Bool result;
     XP_U16 selPlayer = board->selPlayer;
-    XP_U16 numTrayTiles = model_getNumTilesInTray( board->model, 
-                                                   selPlayer );
-    XP_U16 pos;
-    TileBit newSel;
-    TileBit oldSel = 1 << board->trayCursorLoc[selPlayer];
-
-    numTrayTiles = MAX_TRAY_TILES;
 
     if ( cursorKey == XP_CURSOR_KEY_UP ) {
         result = board_moveDivider( board, XP_FALSE );
     } else if ( cursorKey == XP_CURSOR_KEY_DOWN ) {
         result = board_moveDivider( board, XP_TRUE );
     } else {
-        pos = indexForBits( oldSel );
+        XP_S16 pos;
 
-        pos += numTrayTiles;  /* add what we'll mod by below: makes circular */
-        if ( cursorKey == XP_CURSOR_KEY_LEFT ) {
-            --pos;
-        } else if ( cursorKey == XP_CURSOR_KEY_RIGHT ) {
-            ++pos;
+        board_invalTrayTiles( board, 1 << board->trayCursorLoc[selPlayer] );
+
+        pos = board->trayCursorLoc[selPlayer];
+        pos += cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
+        if ( pos < 0 || pos >= MAX_TRAY_TILES ) {
+            shiftFocusUp( board, cursorKey );
+        } else {
+            board->trayCursorLoc[selPlayer] = pos;
+            board_invalTrayTiles( board, 1 << pos );
         }
-        
-        pos %= numTrayTiles;
-        board->trayCursorLoc[selPlayer] = pos;
-        newSel = 1 << pos;
 
-        board_invalTrayTiles( board, newSel | oldSel );
+        board_invalTrayTiles( board, 1 << board->trayCursorLoc[selPlayer] );
         result = XP_TRUE;
     }
 

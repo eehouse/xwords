@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -53,13 +53,20 @@
 #include "server.h"
 #include "memstream.h"
 #include "util.h"
+#include "dbgutil.h"
 
 #define MENU_WINDOW_HEIGHT 5	/* three lines plus borders */
 #define INFINITE_TIMEOUT -1
 
 CursesAppGlobals globals;	/* must be global b/c of SIGWINCH_handler */
 
-static void changeFocus( CursesAppGlobals* globals );
+static void changeMenuForFocus( CursesAppGlobals* globals, 
+                                BoardObjectType obj );
+static XP_Bool handleLeft( CursesAppGlobals* globals );
+static XP_Bool handleRight( CursesAppGlobals* globals );
+static XP_Bool handleUp( CursesAppGlobals* globals );
+static XP_Bool handleDown( CursesAppGlobals* globals );
+
 
 #ifdef MEM_DEBUG
 # define MEMPOOL params->util->mpool,
@@ -220,6 +227,30 @@ curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
     return XP_TRUE;
 } /* curses_util_engineProgressCallback */
 
+static void
+curses_util_notifyFocusChange( XW_UtilCtxt* uc, BoardObjectType cur,
+                              XP_Key key, BoardObjectType* nextP )
+{
+    BoardObjectType nxt;
+    CursesAppGlobals* globals;
+
+    XP_LOGF( "%s(%s)", __FUNCTION__, BoardObjectType_2str(cur) );
+    XP_Bool forward = key == XP_CURSOR_KEY_DOWN
+        || key == XP_CURSOR_KEY_RIGHT;
+    switch( cur ) {
+    case OBJ_SCORE: nxt = forward? OBJ_TRAY : OBJ_BOARD; break;
+    case OBJ_BOARD: nxt = forward? OBJ_SCORE : OBJ_TRAY; break;
+    case OBJ_TRAY: nxt = forward? OBJ_BOARD : OBJ_SCORE; break;
+    case OBJ_NONE: nxt = OBJ_BOARD;
+    }
+
+    globals = (CursesAppGlobals*)uc->closure;
+    changeMenuForFocus( globals, nxt );
+
+    *nextP = nxt;
+    XP_LOGF( "%s()=>%s", __FUNCTION__, BoardObjectType_2str(*nextP) );
+}
+
 #ifdef XWFEATURE_RELAY
 static void
 curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
@@ -322,7 +353,6 @@ handleTab( CursesAppGlobals* globals )
 {
     globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
                                        XP_FOCUSCHANGE_KEY );
-    changeFocus( globals );
     return XP_TRUE;
 } /* handleTab */
 
@@ -416,6 +446,14 @@ MenuList sharedMenuList[] = {
     { handleTab, "Change focus", "<tab>", '\t' },
     { handleRet, "Click/tap", "<ret>", '\r' },
     { handleHint, "Hint", "?", '?' },
+
+#ifdef KEYBOARD_NAV
+    { handleLeft, "Left", "H", 'H' },
+    { handleRight, "Right", "L", 'L' },
+    { handleUp, "Up", "J", 'J' },
+    { handleDown, "Down", "K", 'K' },
+#endif
+
     { handleCommit, "Commit move", "C", 'C' },
     { handleFlip, "Flip", "F", 'F' },
     { handleToggleValues, "Show values", "V", 'V' },
@@ -435,22 +473,6 @@ handleLeft( CursesAppGlobals* globals )
                                        XP_CURSOR_KEY_LEFT );
     return XP_TRUE;
 } /* handleLeft */
-
-static XP_Bool
-handleDivLeft( CursesAppGlobals* globals )
-{
-    globals->doDraw = board_moveDivider( globals->cGlobals.game.board, 
-                                         XP_FALSE );
-    return XP_TRUE;
-} /* handleDivLeft */
-
-static XP_Bool
-handleDivRight( CursesAppGlobals* globals )
-{
-    globals->doDraw = board_moveDivider( globals->cGlobals.game.board, 
-                                         XP_TRUE );
-    return XP_TRUE;
-} /* handleDivRight */
 
 static XP_Bool
 handleRight( CursesAppGlobals* globals )
@@ -478,31 +500,17 @@ handleDown( CursesAppGlobals* globals )
 #endif
 
 MenuList boardMenuList[] = {
-#ifdef KEYBOARD_NAV
-    { handleLeft, "Left", "H", 'H' },
-    { handleRight, "Right", "L", 'L' },
-    { handleUp, "Up", "J", 'J' },
-    { handleDown, "Down", "K", 'K' },
-#endif
     { NULL, NULL, NULL, '\0'}
 };
 
 MenuList scoreMenuList[] = {
 #ifdef KEYBOARD_NAV
-    { handleUp, "Up", "J", 'J' },
-    { handleDown, "Down", "K", 'K' },
 #endif
     { NULL, NULL, NULL, '\0'}
 };
 
 MenuList trayMenuList[] = {
-#ifdef KEYBOARD_NAV
-    { handleLeft, "Left", "H", 'H' },
-    { handleRight, "Right", "L", 'L' },
-    { handleDivLeft, "Div left", "{", '{' },
-    { handleDivRight, "Div right", "}", '}' },
-#endif
-    { handleJuggle, "Juggle", "J", 'J' },
+    { handleJuggle, "Juggle", "G", 'G' },
     { handleHide, "[un]hIde", "I", 'I' },
 
     { NULL, NULL, NULL, '\0'}
@@ -556,6 +564,9 @@ drawMenuFromList( CursesAppGlobals* globals, MenuList* menuList )
                 if ( !isShared ) {
                     done = XP_TRUE;
                     break;
+                } else if ( menuList->handler == NULL )  {
+                    done = XP_TRUE;
+                    break;
                 } else {
                     isShared = XP_FALSE;
                     entry = menuList;
@@ -563,6 +574,7 @@ drawMenuFromList( CursesAppGlobals* globals, MenuList* menuList )
                 }
             }
 
+            XP_ASSERT( nLines > 0 );
             if ( line % nLines == 0 ) {
                 line = 0;
                 col += maxKey + maxCmd + 2;
@@ -802,11 +814,9 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 } /* blocking_gotEvent */
 
 static void
-changeFocus( CursesAppGlobals* globals )
+changeMenuForFocus( CursesAppGlobals* globals, BoardObjectType focussed )
 {
 #ifdef KEYBOARD_NAV
-    BoardObjectType focussed = 
-        board_getFocusOwner( globals->cGlobals.game.board );
     if ( focussed == OBJ_TRAY ) {
         globals->menuList = trayMenuList;
         drawMenuFromList( globals, trayMenuList );
@@ -820,7 +830,7 @@ changeFocus( CursesAppGlobals* globals )
         XP_ASSERT(0);
     }
 #endif
-} /* changeFocus */
+} /* changeMenuForFocus */
 
 #if 0
 static void
@@ -916,7 +926,12 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_notifyGameOver = curses_util_notifyGameOver;
     util->vtable->m_util_hiliteCell = curses_util_hiliteCell;
     util->vtable->m_util_engineProgressCallback = 
-	curses_util_engineProgressCallback;
+        curses_util_engineProgressCallback;
+
+#ifdef KEYBOARD_NAV
+    util->vtable->m_util_notifyFocusChange = curses_util_notifyFocusChange;
+#endif
+
 #ifdef XWFEATURE_RELAY
     util->vtable->m_util_setTimer = curses_util_setTimer;
 #endif
