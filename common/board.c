@@ -1,4 +1,4 @@
-E/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
  * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
