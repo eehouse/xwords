@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+E/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
  * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -113,8 +113,7 @@ static XP_Bool advanceArrow( BoardCtxt* board );
 
 #ifdef KEY_SUPPORT
 static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
-static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey, 
-                                XP_Bool canCycle );
+static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
 
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
@@ -1921,6 +1920,9 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     board->redrawFlags[row] |= 1 << col;
 
+    XP_ASSERT( col < MAX_ROWS );
+    XP_ASSERT( row < MAX_ROWS );
+
     /* if the trade window is up and this cell intersects it, set up to draw
        it again */
     if ( (board->trayVisState != TRAY_HIDDEN) && TRADE_IN_PROGRESS(board) ) {
@@ -1935,29 +1937,6 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
     
     board->needsDrawing = XP_TRUE;
 } /* invalCell */
-
-#ifdef KEYBOARD_NAV
-static XP_Bool
-focusNext( BoardCtxt* board )
-{
-    BoardObjectType typ;
-    switch ( board->focussed ) {
-    case OBJ_SCORE:
-        typ = OBJ_BOARD;
-        break;
-    case OBJ_BOARD:
-        typ = OBJ_TRAY;
-        break;
-    case OBJ_TRAY:
-    case OBJ_NONE:
-        typ = OBJ_SCORE;
-        break;
-    }
-
-    board->focussed = typ;
-    return XP_TRUE;
-} /* focusNext */
-#endif
 
 #ifdef POINTER_SUPPORT
 static XP_Bool
@@ -2738,6 +2717,10 @@ board_handleKey( BoardCtxt* board, XP_Key key )
             } else if ( board->focussed == OBJ_TRAY ) {
                 result = tray_moveCursor( board, key );
             }
+        } else {
+            invalFocusOwner( board );
+            shiftFocusUp( board, key );
+            result = XP_TRUE;
         }
         break;
 #endif
@@ -2751,12 +2734,7 @@ board_handleKey( BoardCtxt* board, XP_Key key )
 
 #ifdef KEYBOARD_NAV
     case XP_FOCUSCHANGE_KEY:
-        invalFocusOwner( board );
-        if ( board->focusHasDived ) {
-            board->focusHasDived = XP_FALSE; /* come back up */
-        } else if ( focusNext( board ) ) {
-            invalFocusOwner( board );
-        }
+        shiftFocusUp( board, XP_CURSOR_KEY_RIGHT );
         result = XP_TRUE;
         break;
 
@@ -2868,7 +2846,8 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
             draw = invalFocusOwner( board ) || draw;
         }
         board->focussed = typ;
-        XP_LOGF( "%s: set focussed to %d", __FUNCTION__, (int)typ );
+        XP_LOGF( "%s: set focussed to %s", __FUNCTION__, 
+                 BoardObjectType_2str(typ) );
         draw = invalFocusOwner( board ) || draw;
         board->focusHasDived = XP_FALSE;
     } else {
@@ -2897,12 +2876,27 @@ board_toggle_arrowDir( BoardCtxt* board )
     }
 } /* board_toggle_cursorDir */
 
+void
+shiftFocusUp( BoardCtxt* board, XP_Key key )
+{
+    BoardObjectType next = OBJ_NONE;
+    util_notifyFocusChange( board->util, board->focussed, key, &next );
+
+    if ( board->focussed != next ) {
+        (void)board_focusChanged( board, board->focussed, XP_FALSE );
+
+        board->focusHasDived = XP_FALSE;
+
+        (void)board_focusChanged( board, next, XP_TRUE );
+    }
+}
+
 static XP_Bool
 moveScoreCursor( BoardCtxt* board, XP_Key key )
 {
     XP_Bool result = XP_TRUE;
     XP_U16 nPlayers = board->gi->nPlayers;
-    XP_U16 scoreCursorLoc = board->scoreCursorLoc + nPlayers;
+    XP_S16 scoreCursorLoc = board->scoreCursorLoc;
 
     switch ( key ) {
     case XP_CURSOR_KEY_DOWN:
@@ -2916,7 +2910,11 @@ moveScoreCursor( BoardCtxt* board, XP_Key key )
     default:
         result = XP_FALSE;
     }
-    board->scoreCursorLoc = scoreCursorLoc % nPlayers;
+    if ( scoreCursorLoc < 0 || scoreCursorLoc >= nPlayers ) {
+        shiftFocusUp( board, key );
+    } else {
+        board->scoreCursorLoc = scoreCursorLoc;
+    }
     board->scoreBoardInvalid = XP_TRUE;
 
     return result;
@@ -2931,17 +2929,16 @@ advanceArrow( BoardCtxt* board )
 	    
     XP_ASSERT( board->trayVisState == TRAY_REVEALED );
 
-    return board_moveArrow( board, key, XP_FALSE );
+    return board_moveArrow( board, key );
 } /* advanceArrow */
 
 static XP_Bool
-figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canCycle, 
+figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canShiftFocus, 
                XP_Bool avoidOccupied, XP_U16* colP, XP_U16* rowP )
 {
     XP_S16 max;
     XP_S16* useWhat;
     XP_S16 end = 0;
-    XP_U16 counter = 0;
     XP_S16 incr = 0;
     XP_U16 numCols, numRows;
     XP_Bool result = XP_FALSE;
@@ -2958,25 +2955,25 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canCycle,
         case XP_CURSOR_KEY_DOWN:
             incr = 1;
             useWhat = (XP_S16*)rowP;
-            max = numRows;
+            max = numRows - 1;
             end = max;
             break;
         case XP_CURSOR_KEY_UP:
             incr = -1;
             useWhat = (XP_S16*)rowP;
-            max = numRows;
-            end = -1;
+            max = numRows - 1;
+            end = 0;
             break;
         case XP_CURSOR_KEY_LEFT:
             incr = -1;
             useWhat = (XP_S16*)colP;
-            max = numCols;
-            end = -1;
+            max = numCols - 1;
+            end = 0;
             break;
         case XP_CURSOR_KEY_RIGHT:
             incr = 1;
             useWhat = (XP_S16*)colP;
-            max = numCols;
+            max = numCols - 1;
             end = max;
             break;
         default:
@@ -2985,19 +2982,18 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canCycle,
 
         XP_ASSERT( incr != 0 );
 
-        for ( counter = max; ; --counter ) {
-
-            *useWhat += incr;
-
-            if ( (counter == 0) || (!canCycle && (*useWhat == end)) ) {
+        for ( ; ; ) {
+            if ( *useWhat == end ) {
+                if ( canShiftFocus ) {
+                    shiftFocusUp( board, cursorKey );
+                    result = XP_TRUE;
+                }
                 break;
             }
-
-            *useWhat = (*useWhat + max) % max;
-
+            result = XP_TRUE;
+            *useWhat += incr;
             if ( !avoidOccupied 
-                 || !cellOccupied( board, *colP, *rowP, XP_TRUE ) ) {
-                result = XP_TRUE;
+                        || !cellOccupied( board, *colP, *rowP, XP_TRUE ) ) {
                 break;
             }
         }
@@ -3007,14 +3003,14 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canCycle,
 } /* figureNextLoc */
 
 static XP_Bool
-board_moveArrow( BoardCtxt* board, XP_Key cursorKey, XP_Bool canCycle )
+board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
 {
     XP_U16 col, row;
     XP_Bool changed;
 
     setArrowVisible( board, XP_TRUE );
     (void)getArrow( board, &col, &row );
-    changed = figureNextLoc( board, cursorKey, canCycle, XP_TRUE, &col, &row );
+    changed = figureNextLoc( board, cursorKey, XP_FALSE, XP_TRUE, &col, &row );
     if ( changed ) {
         (void)setArrow( board, col, row );
     }

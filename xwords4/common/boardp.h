@@ -199,6 +199,7 @@ XP_Bool rectsIntersect( XP_Rect* rect1, XP_Rect* rect2 );
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey );
 XP_Bool tray_keyAction( BoardCtxt* board );
 DrawFocusState dfsFor( BoardCtxt* board, BoardObjectType obj );
+void shiftFocusUp( BoardCtxt* board, XP_Key key );
 #else
 # define dfsFor( board, obj ) DFS_NONE
 #endif
