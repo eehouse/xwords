@@ -201,6 +201,7 @@ OBJS_68K = $(PLATFORM)/palmmain.o \
 	$(PLATFORM)/palmbt.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
+	$(PLATFORM)/palmdbg.o \
 	$(COMMONOBJ)
 
 # if BUILD_AS_PNOLET is defined and FEATURE_PNOAND68K isn't, exclude
