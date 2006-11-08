@@ -2717,7 +2717,7 @@ board_handleKey( BoardCtxt* board, XP_Key key )
             } else if ( board->focussed == OBJ_TRAY ) {
                 result = tray_moveCursor( board, key );
             }
-        } else {
+        } else if ( board->focussed != OBJ_NONE ) {
             invalFocusOwner( board );
             shiftFocusUp( board, key );
             result = XP_TRUE;
@@ -2734,8 +2734,10 @@ board_handleKey( BoardCtxt* board, XP_Key key )
 
 #ifdef KEYBOARD_NAV
     case XP_FOCUSCHANGE_KEY:
-        shiftFocusUp( board, XP_CURSOR_KEY_RIGHT );
-        result = XP_TRUE;
+        if ( board->focussed != OBJ_NONE ) {
+            shiftFocusUp( board, XP_CURSOR_KEY_RIGHT );
+            result = XP_TRUE;
+        }
         break;
 
     case XP_RETURN_KEY:
@@ -2880,6 +2882,7 @@ void
 shiftFocusUp( BoardCtxt* board, XP_Key key )
 {
     BoardObjectType next = OBJ_NONE;
+    XP_ASSERT( board->focussed != OBJ_NONE );
     util_notifyFocusChange( board->util, board->focussed, key, &next );
 
     if ( board->focussed != next ) {
