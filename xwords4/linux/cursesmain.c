@@ -348,9 +348,19 @@ handleQuit( CursesAppGlobals* globals )
     return XP_TRUE;
 } /* handleQuit */
 
+static void
+checkAssignFocus( BoardCtxt* board )
+{
+    if ( OBJ_NONE == board_getFocusOwner(board) ) {
+        board_focusChanged( board, OBJ_BOARD, XP_TRUE );
+    }
+}
+
 static XP_Bool
 handleTab( CursesAppGlobals* globals )
 {
+    checkAssignFocus( globals->cGlobals.game.board );
+
     globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
                                        XP_FOCUSCHANGE_KEY );
     return XP_TRUE;
@@ -469,6 +479,7 @@ MenuList sharedMenuList[] = {
 static XP_Bool
 handleLeft( CursesAppGlobals* globals )
 {
+    checkAssignFocus( globals->cGlobals.game.board );
     globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
                                        XP_CURSOR_KEY_LEFT );
     return XP_TRUE;
@@ -477,6 +488,7 @@ handleLeft( CursesAppGlobals* globals )
 static XP_Bool
 handleRight( CursesAppGlobals* globals )
 {
+    checkAssignFocus( globals->cGlobals.game.board );
     globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
                                        XP_CURSOR_KEY_RIGHT );
     return XP_TRUE;
@@ -485,6 +497,7 @@ handleRight( CursesAppGlobals* globals )
 static XP_Bool
 handleUp( CursesAppGlobals* globals )
 {
+    checkAssignFocus( globals->cGlobals.game.board );
     globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
                                        XP_CURSOR_KEY_UP );
     return XP_TRUE;
@@ -493,6 +506,7 @@ handleUp( CursesAppGlobals* globals )
 static XP_Bool
 handleDown( CursesAppGlobals* globals )
 {
+    checkAssignFocus( globals->cGlobals.game.board );
     globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
                                        XP_CURSOR_KEY_DOWN );
     return XP_TRUE;
