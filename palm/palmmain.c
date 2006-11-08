@@ -42,6 +42,8 @@
 #include "xwords4defines.h"
 #include "palmmain.h"
 #include "newgame.h"
+#include "palmdbg.h"
+#include "dbgutil.h"
 #include "dictui.h"
 #include "dictlist.h"
 #include "palmutil.h"
@@ -154,6 +156,11 @@ static MemHandle findXWPrefsRsrc( PalmAppGlobals* globals, UInt32 resType,
 static void palm_util_engineStarting( XW_UtilCtxt* uc, XP_U16 nBlanks );
 static void palm_util_engineStopping( XW_UtilCtxt* uc );
 #endif
+#ifdef XWFEATURE_FIVEWAY
+static void palm_util_notifyFocusChange( XW_UtilCtxt* uc, BoardObjectType cur,
+                                         XP_Key key, BoardObjectType* next );
+#endif
+
 static void initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame );
 
 /*-------------------------------- Globals ---------------------------------*/
@@ -616,6 +623,9 @@ initUtilFuncs( PalmAppGlobals* globals )
 #ifdef SHOW_PROGRESS
     vtable->m_util_engineStarting = palm_util_engineStarting;
     vtable->m_util_engineStopping = palm_util_engineStopping;
+#endif
+#ifdef XWFEATURE_FIVEWAY
+    vtable->m_util_notifyFocusChange = palm_util_notifyFocusChange;
 #endif
 } /* initUtilFuncs */
 
@@ -2035,17 +2045,20 @@ hresRect( PalmAppGlobals* globals, RectangleType* r )
 
 #ifdef XWFEATURE_FIVEWAY
 static XP_Bool
-handleChangeFocus( PalmAppGlobals* globals, const EventType* event, 
-                   XP_Bool* drawP )
+handleFocusEvent( PalmAppGlobals* globals, const EventType* event, 
+                  XP_Bool* drawP )
 {
     XP_Bool handled = XP_FALSE;
     XP_Bool redraw = XP_FALSE;
     XP_U16 objectID = event->data.frmObjectFocusTake.objectID;
+    XP_Bool take;
+
     XP_ASSERT( &event->data.frmObjectFocusTake.objectID
                == &event->data.frmObjectFocusLost.objectID );
+    take = event->eType == frmObjectFocusTakeEvent;
 
-/*     XP_LOGF( "%s(%d,%s)", __FUNCTION__, objectID,  */
-/*              (event->eType == frmObjectFocusTakeEvent? "take":"lost") ); */
+/*     XP_LOGF( "%s(%s,%s)", __FUNCTION__, frmObjId_2str(objectID), */
+/*              (take? "take":"lost") ); */
 
     switch ( objectID ) {
     case XW_BOARD_GADGET_ID:
@@ -2063,7 +2076,6 @@ handleChangeFocus( PalmAppGlobals* globals, const EventType* event,
     }
 
     if ( handled ) {
-        XP_Bool take = event->eType == frmObjectFocusTakeEvent;
         BoardObjectType typ = (objectID - XW_BOARD_GADGET_ID) + OBJ_BOARD;
         *drawP = board_focusChanged( globals->game.board, typ, take );
         if ( take ) {
@@ -2077,15 +2089,14 @@ handleChangeFocus( PalmAppGlobals* globals, const EventType* event,
     }
 
     return handled;
-} /* handleChangeFocus */
+} /* handleFocusEvent */
 
 static void
-checkSetFocus( PalmAppGlobals* globals )
+checkSetFocus( PalmAppGlobals* globals, BoardObjectType typ )
 {
     if ( globals->hasFiveWay ) {
-        BoardObjectType typ = board_getFocusOwner( globals->game.board );
         XP_U16 objectID = XW_BOARD_GADGET_ID + (typ - OBJ_BOARD);
-        XP_LOGF( "%s: FrmSetFocus(%d)", __FUNCTION__, objectID );
+/*         XP_LOGF( "%s: FrmSetFocus(%s)", __FUNCTION__, frmObjId_2str(objectID) ); */
         FrmSetFocus( globals->mainForm, 
                      FrmGetObjectIndex( globals->mainForm, objectID ) );
     }
@@ -2512,7 +2523,7 @@ mainViewHandleEvent( EventPtr event )
     case frmObjectFocusTakeEvent:
     case frmObjectFocusLostEvent:
         handled = globals->hasFiveWay
-            && handleChangeFocus( globals, event, &draw );
+            && handleFocusEvent( globals, event, &draw );
         break;
 #endif
 
@@ -2569,7 +2580,8 @@ mainViewHandleEvent( EventPtr event )
             draw = board_handleKey( globals->game.board, xpkey );
 #ifdef XWFEATURE_FIVEWAY
             if ( xpkey == XP_FOCUSCHANGE_KEY ) {
-                checkSetFocus( globals );
+                checkSetFocus( globals, 
+                               board_getFocusOwner( globals->game.board ) );
             }
 #endif
         }
@@ -3681,4 +3693,73 @@ palm_util_engineStopping( XW_UtilCtxt* uc )
         }
     }
 } /* palm_util_engineStopping */
+#endif
+
+#ifdef XWFEATURE_FIVEWAY
+static void
+palm_util_notifyFocusChange( XW_UtilCtxt* uc, BoardObjectType cur,
+                             XP_Key key, BoardObjectType* nextP )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
+
+    if ( !globals->hasFiveWay ) {
+        *nextP = cur;
+    } else {
+        XP_U16 nextID = 0;
+        BoardObjectType nxt = OBJ_NONE;
+        XP_Bool forward = key == XP_CURSOR_KEY_DOWN
+            || key == XP_CURSOR_KEY_RIGHT;
+        XW_TrayVisState state;
+        state = board_getTrayVisState( globals->game.board );
+
+        switch( cur ) {
+        case OBJ_NONE:          /* hi compiler */
+            XP_ASSERT(0);
+            break;
+
+        case OBJ_SCORE:
+            if ( forward ) {
+                nxt = OBJ_BOARD;
+            } else {
+                nextID = state == TRAY_REVEALED?
+                    XW_MAIN_DONE_BUTTON_ID : XW_MAIN_HIDE_BUTTON_ID;
+            }
+            break;
+        case OBJ_BOARD:
+            if ( forward ) {
+                nextID = XW_MAIN_FLIP_BUTTON_ID;
+            } else {
+                nxt = OBJ_SCORE;
+            }
+            break;
+        case OBJ_TRAY:
+            if ( forward ) {
+                nextID = XW_MAIN_HIDE_BUTTON_ID;
+            } else {
+                nextID = state == TRAY_REVEALED?
+                    XW_MAIN_HINT_BUTTON_ID : XW_MAIN_VALUE_BUTTON_ID;
+            }
+            break;
+        }
+
+        *nextP = nxt;
+
+        if ( nxt != OBJ_NONE ) {
+            XP_ASSERT( nextID == 0 );
+            checkSetFocus( globals, nxt );
+        } else if ( nextID != 0 ) {
+            FormPtr form = globals->mainForm;
+            RectangleType rect;
+            XP_U16 index = FrmGetObjectIndex( form, nextID );
+            FrmSetFocus( form, index );
+
+            getObjectBounds( nextID, &rect );
+            (void)HsNavDrawFocusRing( form, nextID, 0, &rect, 
+                                      hsNavFocusRingStyleObjectTypeDefault, 
+                                      false );
+        } else {
+            XP_ASSERT(0);
+        }
+    }
+} /* palm_util_notifyFocusChange */
 #endif
