@@ -117,7 +117,8 @@ static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
 
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
-static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey );
+static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
+                                   XP_Bool* gotArrow );
 #endif
 
 #ifdef KEYBOARD_NAV
@@ -2702,6 +2703,7 @@ board_handleKey( BoardCtxt* board, XP_Key key )
 {
     XP_Bool result = XP_FALSE;
     XP_Bool trayVisible = board->trayVisState == TRAY_REVEALED;
+    XP_Bool gotArrow;
 
     switch( key ) {
 #ifdef KEYBOARD_NAV
@@ -2772,9 +2774,9 @@ board_handleKey( BoardCtxt* board, XP_Key key )
     default:
         XP_ASSERT( key >= XP_KEY_LAST );
 
-        result = trayVisible && moveKeyTileToBoard( board, key );
+        result = trayVisible && moveKeyTileToBoard( board, key, &gotArrow );
 
-        if ( result && !advanceArrow( board ) ) {
+        if ( result && gotArrow && !advanceArrow( board ) ) {
             setArrowVisible( board, XP_FALSE );
         }
     } /* switch */
@@ -3126,45 +3128,60 @@ moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_U16 tileIndex,
 } /* moveTileToBoard */
 
 static XP_Bool
-moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey )
+moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
 {
     /* keep compiler happy: assign defaults */
-    Tile tile, blankFace;  
+    Tile tile, blankFace;
     XP_U16 col, row;
     DictionaryCtxt* dict = model_getDictionary( board->model );
     XP_S16 turn = board->selPlayer;
     XP_S16 tileIndex;
     XP_UCHAR buf[2];
+    XP_Bool success;
 
     /* Is there a cursor at all? */
-    if ( !getArrow( board, &col, &row ) ) {
-        return XP_FALSE;
+    *gotArrow = success = getArrow( board, &col, &row );
+#ifdef KEYBOARD_NAV
+    if ( !success && (board->focussed == OBJ_BOARD) && board->focusHasDived ) {
+        BdCursorLoc loc = board->bdCursor[turn];
+        col = loc.col;
+        row = loc.row;
+        success = XP_TRUE;
     }
+#endif
 
-    XP_ASSERT( !TRADE_IN_PROGRESS(board) );
+    if ( success ) {
+        XP_ASSERT( !TRADE_IN_PROGRESS(board) );
 
-    /* Figure out if we have the tile in the tray  */
-    buf[0] = cursorKey;
-    buf[1] = '\0';
-    tile = dict_tileForString( dict, buf );
-    if ( tile == EMPTY_TILE ) { /* not found in dict */
-        return XP_FALSE;
-    }
-
-    tileIndex = model_trayContains( board->model, turn, tile );
-    if ( tileIndex >= 0 ) {
-        blankFace = EMPTY_TILE;	/* will be ignored */
-    } else {
-        Tile blankTile = dict_getBlankTile( dict );
-        tileIndex = model_trayContains( board->model, turn, blankTile );
-        if ( tileIndex >= 0 ) {	/* there's a blank for it */
-            blankFace = tile;
-        } else {
-            return XP_FALSE;
+        /* Figure out if we have the tile in the tray  */
+        buf[0] = cursorKey;
+        buf[1] = '\0';
+        tile = dict_tileForString( dict, buf );
+        if ( tile == EMPTY_TILE ) { /* not found in dict */
+            success = XP_FALSE;
         }
     }
 
-    return moveTileToBoard( board, col, row, tileIndex, blankFace );
+    if ( success ) {
+        tileIndex = model_trayContains( board->model, turn, tile );
+        if ( tileIndex >= 0 ) {
+            blankFace = EMPTY_TILE;	/* will be ignored */
+        } else {
+            Tile blankTile = dict_getBlankTile( dict );
+            tileIndex = model_trayContains( board->model, turn, blankTile );
+            if ( tileIndex >= 0 ) {	/* there's a blank for it */
+                blankFace = tile;
+            } else {
+                success = XP_FALSE;
+            }
+        }
+    }
+
+    if ( success ) {
+        success = moveTileToBoard( board, col, row, tileIndex, blankFace );
+    }
+
+    return success;
 } /* moveKeyTileToBoard */
 
 static void
