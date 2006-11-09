@@ -2559,7 +2559,7 @@ mainViewHandleEvent( EventPtr event )
             xpkey = XP_CURSOR_KEY_DOWN;
             break;
         case chrSpace:
-            xpkey = XP_FOCUSCHANGE_KEY;
+            xpkey = XP_RAISEFOCUS_KEY;
             break;
 #endif
         default:
@@ -2578,12 +2578,6 @@ mainViewHandleEvent( EventPtr event )
         }
         if ( xpkey != XP_KEY_NONE ) {
             draw = board_handleKey( globals->game.board, xpkey );
-#ifdef XWFEATURE_FIVEWAY
-            if ( xpkey == XP_FOCUSCHANGE_KEY ) {
-                checkSetFocus( globals, 
-                               board_getFocusOwner( globals->game.board ) );
-            }
-#endif
         }
         handled = draw;
     }

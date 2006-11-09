@@ -2735,9 +2735,11 @@ board_handleKey( BoardCtxt* board, XP_Key key )
         break;
 
 #ifdef KEYBOARD_NAV
-    case XP_FOCUSCHANGE_KEY:
-        if ( board->focussed != OBJ_NONE ) {
-            shiftFocusUp( board, XP_CURSOR_KEY_RIGHT );
+    case XP_RAISEFOCUS_KEY:
+        if ( board->focussed != OBJ_NONE && board->focusHasDived ) {
+            invalFocusOwner( board );
+            board->focusHasDived = XP_FALSE;
+            invalFocusOwner( board );
             result = XP_TRUE;
         }
         break;
@@ -2939,7 +2941,7 @@ advanceArrow( BoardCtxt* board )
 
 static XP_Bool
 figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canShiftFocus, 
-               XP_Bool avoidOccupied, XP_U16* colP, XP_U16* rowP )
+               XP_Bool inclPending, XP_U16* colP, XP_U16* rowP )
 {
     XP_S16 max;
     XP_S16* useWhat;
@@ -2997,8 +2999,7 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canShiftFocus,
             }
             result = XP_TRUE;
             *useWhat += incr;
-            if ( !avoidOccupied 
-                        || !cellOccupied( board, *colP, *rowP, XP_TRUE ) ) {
+            if ( !cellOccupied( board, *colP, *rowP, inclPending ) ) {
                 break;
             }
         }

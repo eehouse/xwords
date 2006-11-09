@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -357,14 +358,14 @@ checkAssignFocus( BoardCtxt* board )
 }
 
 static XP_Bool
-handleTab( CursesAppGlobals* globals )
+handleSpace( CursesAppGlobals* globals )
 {
     checkAssignFocus( globals->cGlobals.game.board );
 
     globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
-                                       XP_FOCUSCHANGE_KEY );
+                                       XP_RAISEFOCUS_KEY );
     return XP_TRUE;
-} /* handleTab */
+} /* handleSpace */
 
 static XP_Bool
 handleRet( CursesAppGlobals* globals )
@@ -453,7 +454,8 @@ handleReplace( CursesAppGlobals* globals )
 
 MenuList sharedMenuList[] = {
     { handleQuit, "Quit", "Q", 'Q' },
-    { handleTab, "Change focus", "<tab>", '\t' },
+    { handleRight, "Tab right", "<tab>", '\t' },
+    { handleSpace, "Raise focus", "<spc>", ' ' },
     { handleRet, "Click/tap", "<ret>", '\r' },
     { handleHint, "Hint", "?", '?' },
 

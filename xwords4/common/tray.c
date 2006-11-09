@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -628,14 +628,24 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
         board_invalTrayTiles( board, 1 << board->trayCursorLoc[selPlayer] );
 
         pos = board->trayCursorLoc[selPlayer];
-        pos += cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
-        if ( pos < 0 || pos >= MAX_TRAY_TILES ) {
-            shiftFocusUp( board, cursorKey );
-        } else {
-            board->trayCursorLoc[selPlayer] = pos;
-            board_invalTrayTiles( board, 1 << pos );
+        /* Loop in order to skip all empty tile slots but one */
+        for ( ; ; ) {
+            pos += cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
+            if ( pos < 0 || pos >= MAX_TRAY_TILES ) {
+                shiftFocusUp( board, cursorKey );
+            } else {
+                if ( board->trayVisState == TRAY_REVEALED ) {
+                    XP_U16 count = model_getNumTilesInTray( board->model, 
+                                                            selPlayer );
+                    if ( (pos > count) && (pos < MAX_TRAY_TILES-1) ) {
+                        continue;
+                    }
+                }
+                board->trayCursorLoc[selPlayer] = pos;
+                board_invalTrayTiles( board, 1 << pos );
+            }
+            break;
         }
-
         board_invalTrayTiles( board, 1 << board->trayCursorLoc[selPlayer] );
         result = XP_TRUE;
     }

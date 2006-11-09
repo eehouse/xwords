@@ -35,7 +35,7 @@ XP_Key_2str( XP_Key key )
         CASESTR(XP_CURSOR_KEY_UP);
         CASESTR(XP_CURSOR_KEY_LEFT);
         CASESTR(XP_CURSOR_KEY_DEL);
-        CASESTR(XP_FOCUSCHANGE_KEY);
+        CASESTR(XP_RAISEFOCUS_KEY);
         CASESTR(XP_RETURN_KEY);
         CASESTR(XP_KEY_LAST );
     default: return FUNC(__FUNCTION__) " unknown";
