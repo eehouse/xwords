@@ -691,7 +691,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
             if ( lookup( dict, in_edge, tiles, 0, tilesAfter ) ) {
                 XP_ASSERT( (tile >> 5)
                            < (sizeof(check->bits)/sizeof(check->bits[0])) );
-                check->bits[tile>>5] |= (1 << (tile & 0x1F));
+                check->bits[tile>>5] |= (1L << (tile & 0x1F));
             }
 
             if ( IS_LAST_EDGE(dict,candidateEdge ) ) {
