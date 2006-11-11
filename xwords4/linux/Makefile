@@ -93,7 +93,7 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 
 #	$(PLATFORM)/linuxcommpipe.o \
 
-LIBS = -pthread -lm -lbluetooth -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
+LIBS = -pthread -lm -lmcheck -lbluetooth -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-2.0`
