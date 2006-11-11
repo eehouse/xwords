@@ -472,6 +472,7 @@ callTurnChangeListener( ServerCtxt* server )
 static XP_Bool
 handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    XP_Bool success = XP_TRUE;
     XP_U16 playersInMsg, i;
     XP_STATUSF( "handleRegistrationMsg" );
 
@@ -481,24 +482,24 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 
     if ( server->nv.pendingRegistrations < playersInMsg ) {
         util_userError( server->vol.util, ERR_REG_UNEXPECTED_USER );
-        return XP_FALSE;
-    }
+        success = XP_FALSE;
+    } else {
+        for ( i = 0; i < playersInMsg; ++i ) {
+            registerRemotePlayer( server, stream );
 
-    for ( i = 0; i < playersInMsg; ++i ) {
-        registerRemotePlayer( server, stream );
+            /* This is abusing the semantics of turn change -- at least in the
+               case where there is another device yet to register -- but we
+               need to let the board know to redraw the scoreboard with more
+               players there. */
+            callTurnChangeListener( server );
+        }
 
-        /* This is abusing the semantics of turn change -- at least in the
-           case where there is another device yet to register -- but we
-           need to let the board know to redraw the scoreboard with more
-           players there. */
-        callTurnChangeListener( server );
+        if ( server->nv.pendingRegistrations == 0 ) {
+            assignTilesToAll( server );
+            SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
+        }
     }
-
-    if ( server->nv.pendingRegistrations == 0 ) {
-        assignTilesToAll( server );
-        SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
-    }
-    return XP_TRUE;
+    return success;
 } /* handleRegistrationMsg */
 #endif
 
