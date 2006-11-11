@@ -37,6 +37,7 @@ typedef enum {
     , PBT_ACT_CONNECT_L2C
     , PBT_ACT_GOTDATA
     , PBT_ACT_TRYSEND
+    , PBT_ACT_TELLCONN
 } PBT_ACTION;
 
 typedef enum {
@@ -58,7 +59,8 @@ typedef struct PBT_queue {
 } PBT_queue;
 
 typedef struct PalmBTStuff {
-    DataCb cb;
+    DataCb dataCb;
+    OnConnCb connCb;
     PalmAppGlobals* globals;
 
     XP_U16 btLibRefNum;
@@ -159,7 +161,7 @@ static void libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon );
 static void l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 
 XP_Bool
-palm_bt_init( PalmAppGlobals* globals, DataCb cb )
+palm_bt_init( PalmAppGlobals* globals, DataCb dataCb )
 {
     XP_Bool inited;
     PalmBTStuff* btStuff;
@@ -174,6 +176,11 @@ palm_bt_init( PalmAppGlobals* globals, DataCb cb )
         pbt_reset( btStuff );
     }
 
+    /* If we're the master, and a new game is starting without shutting down,
+       and the client has already sent its initial reg message, we'll have
+       dropped it.  Best way to force it to resend is to kill the connection
+       and force it to connect again.  */
+
     inited = !!btStuff;
     if ( inited ) {
         if ( comms_getIsServer( globals->game.comms ) ) {
@@ -182,7 +189,7 @@ palm_bt_init( PalmAppGlobals* globals, DataCb cb )
             pbt_takedown_master( btStuff );
         }
 
-        btStuff->cb = cb;
+        btStuff->dataCb = dataCb;
     }
     LOG_RETURNF( "%d", (XP_U16)inited );
     return inited;
@@ -223,6 +230,12 @@ palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result )
     PalmBTStuff* btStuff = globals->btStuff;
     if ( !!btStuff && HASWORK(btStuff) ) {
         *result = 0;
+    } else {
+        XP_ASSERT( (btStuff == NULL)
+                   || (btStuff->vol.out.lens[0] == 0)
+                   || btStuff->vol.sendInProgress 
+                   || (SOCK_INVAL == btStuff->dataSocket)
+                   || (btStuff->p_connState != PBTST_L2C_CONNECTED) );
     }
 }
 
@@ -231,6 +244,12 @@ palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btUIStateP )
 {
     PalmBTStuff* btStuff = globals->btStuff;
     XP_Bool haveWork = !!btStuff && HASWORK(btStuff);
+    
+    XP_ASSERT( haveWork
+               || (btStuff->vol.out.lens[0] == 0 )
+               || btStuff->vol.sendInProgress 
+               || (SOCK_INVAL == btStuff->dataSocket)
+               || (btStuff->p_connState != PBTST_L2C_CONNECTED) );
 
     if ( haveWork ) {
         pbt_do_work( btStuff );
@@ -388,7 +407,11 @@ pbt_send_pending( PalmBTStuff* btStuff )
         const XP_U8* buf;
         XP_U16 len = pbt_peekQueue( &btStuff->vol.out, &buf );
 
-        if ( SOCK_INVAL != btStuff->dataSocket && len > 0 ) {
+        if ( SOCK_INVAL == btStuff->dataSocket ) {
+/*             XP_LOGF( "abort: inval socket" ); */
+        } else if ( len <= 0 ) {
+/*             XP_LOGF( "abort: len is %d", len ); */
+        } else {
             CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
                       btStuff->dataSocket, (char*)buf, len );
             if ( btLibErrPending == err ) {
@@ -396,11 +419,12 @@ pbt_send_pending( PalmBTStuff* btStuff )
             }
         }
     }
+    LOG_RETURN_VOID();
 } /* pbt_send_pending */
 
 XP_S16
 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-              DataCb cb, PalmAppGlobals* globals )
+              DataCb dataCb, OnConnCb connCb, PalmAppGlobals* globals )
 {
     XP_S16 nSent = -1;
     PalmBTStuff* btStuff;
@@ -410,10 +434,11 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 
     btStuff = pbt_checkInit( globals );
     if ( !!btStuff ) {
-        if ( !btStuff->cb ) {
-            btStuff->cb = cb;
+        if ( !btStuff->dataCb ) {
+            btStuff->dataCb = dataCb;
+            btStuff->connCb = connCb;
         } else {
-            XP_ASSERT( cb == btStuff->cb );
+            XP_ASSERT( dataCb == btStuff->dataCb );
         }
 
         if ( !addr ) {
@@ -588,6 +613,12 @@ pbt_do_work( PalmBTStuff* btStuff )
         pbt_send_pending( btStuff );
         break;
 
+    case PBT_ACT_TELLCONN:
+        if ( !!btStuff->connCb ) {
+            (*btStuff->connCb)( btStuff->globals );
+        }
+        break;
+
     default:
         XP_ASSERT( 0 );
     }
@@ -624,6 +655,9 @@ pbt_enque( PBT_queue* queue, const XP_U8* data, XP_S16 len )
     if ( (i < MAX_PACKETS) && ((total + len) < sizeof(queue->bufs)) ) {
         queue->lens[i] = len;
         XP_MEMCPY( &queue->bufs[total], data, len );
+/*         XP_LOGF( "%s: adding %d; total now %d (%d packets)",
+           __FUNCTION__,  */
+/*                  len, len+total, i+1 ); */
     } else {
         XP_LOGF( "%s: dropping packet of len %d", __FUNCTION__, len );
         len = -1;
@@ -639,14 +673,14 @@ pbt_processIncoming( PalmBTStuff* btStuff )
     XP_U16 len = pbt_peekQueue( &btStuff->vol.in, &buf );
 
     if ( len > 0 ) {
-        XP_ASSERT( !!btStuff->cb );
-        if ( !!btStuff->cb ) {
+        XP_ASSERT( !!btStuff->dataCb );
+        if ( !!btStuff->dataCb ) {
             CommsAddrRec fromAddr;
             fromAddr.conType = COMMS_CONN_BT;
             XP_MEMCPY( &fromAddr.u.bt.btAddr, &btStuff->otherAddr,
                        sizeof(fromAddr.u.bt.btAddr) );
 
-            (*btStuff->cb)( btStuff->globals, &fromAddr, buf, len );
+            (*btStuff->dataCb)( btStuff->globals, &fromAddr, buf, len );
             pbt_shiftQueue( &btStuff->vol.in );
         }
     }
@@ -657,6 +691,7 @@ pbt_reset( PalmBTStuff* btStuff )
 {
     LOG_FUNC();
     XP_MEMSET( &btStuff->vol, 0, sizeof(btStuff->vol) );
+
     LOG_RETURN_VOID();
 }
 
@@ -809,14 +844,14 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         if ( sEvent->status == errNone ) {
             btStuff->dataSocket = sEvent->eventData.newSocket;
             XP_LOGF( "we have a data socket!!!" );
-            pbt_postpone( btStuff, PBT_ACT_TRYSEND );
+            pbt_postpone( btStuff, PBT_ACT_TELLCONN );
             SET_STATE( btStuff, PBTST_L2C_CONNECTED );
         }
         break;
     case btLibSocketEventConnectedOutbound:
         if ( errNone == sEvent->status ) {
             SET_STATE( btStuff, PBTST_L2C_CONNECTED );
-            pbt_postpone( btStuff, PBT_ACT_TRYSEND );
+            pbt_postpone( btStuff, PBT_ACT_TELLCONN );
         }
         break;
     case btLibSocketEventData:
@@ -838,6 +873,7 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         btStuff->stats.totalSent +=
 #endif
             pbt_shiftQueue( &btStuff->vol.out );
+        pbt_postpone( btStuff, PBT_ACT_TRYSEND ); /* in case there's more */
         break;
 
     case btLibSocketEventDisconnected:
@@ -918,8 +954,8 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
             /* We caused this, probably switching roles.  Perhaps we've already
                done what's needed, e.g. opened socket to listen */
         } else {
-            XP_ASSERT( mEvent->status == btLibMeStatusUserTerminated );/* fired */
-            /* This is getting called from inside the BtLibLinkDisconnect call!!!! */
+            /* This is getting called from inside the BtLibLinkDisconnect
+               call!!!! */
             XP_ASSERT( 0 == XP_MEMCMP( &mEvent->eventData.bdAddr,
                                        &btStuff->otherAddr,
                                        sizeof(btStuff->otherAddr) ) );
@@ -971,6 +1007,7 @@ actToStr(PBT_ACTION act)
         CASESTR(PBT_ACT_CONNECT_L2C);
         CASESTR(PBT_ACT_GOTDATA);
         CASESTR(PBT_ACT_TRYSEND);
+        CASESTR(PBT_ACT_TELLCONN);
     default:
         XP_ASSERT(0);
         return "";

@@ -136,6 +136,7 @@ static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
 static void btDataHandler( PalmAppGlobals* globals, 
                            const CommsAddrRec* fromAddr, 
                            const XP_U8* data, XP_U16 len );
+static void btConnHandler( PalmAppGlobals* globals );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -3273,6 +3274,8 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
+    XP_LOGF( "%s(%d)", __FUNCTION__, strID );
+
     XP_ASSERT( strID < STR_LAST_STRING );
     globals = (PalmAppGlobals*)uc->closure;
     userErrorFromStrId( globals, strID );
@@ -3530,7 +3533,8 @@ palm_send( const XP_U8* buf, XP_U16 len,
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
-        result = palm_bt_send( buf, len, addr, btDataHandler, globals );
+        result = palm_bt_send( buf, len, addr, btDataHandler, btConnHandler,
+                               globals );
         break;
 #endif
     default:
@@ -3545,8 +3549,7 @@ checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr,
 {
     if ( comms_checkIncomingStream( globals->game.comms, 
                                      instream, addr ) ) {
-        globals->msgReceivedDraw = 
-            server_receiveMessage( globals->game.server, instream );
+        (void)server_receiveMessage( globals->game.server, instream );
         globals->msgReceivedDraw = true;
     }
     stream_destroy( instream );
@@ -3608,7 +3611,13 @@ btDataHandler( PalmAppGlobals* globals, const CommsAddrRec* fromAddr,
     stream_putBytes( instream, data, len );
     checkAndDeliver( globals, fromAddr, instream );
     LOG_RETURN_VOID();
-}
+} /* btDataHandler */
+
+static void
+btConnHandler( PalmAppGlobals* globals )
+{
+    comms_resendAll( globals->game.comms );
+} /* btConnHandler */
 #endif
 
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
