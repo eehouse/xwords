@@ -741,6 +741,8 @@ comms_resendAll( CommsCtxt* comms )
     MsgQueueElem* msg;
     XP_S16 result = 0;
 
+    XP_ASSERT( !!comms );
+
     for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
         XP_S16 oneResult = sendMsg( comms, msg );
         if ( result == 0 && oneResult != 0 ) {
@@ -837,6 +839,39 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 } /* checkForRelay */
 #endif
 
+static XP_Bool
+addressUnknown( CommsCtxt* comms, const CommsAddrRec* addr )
+{
+    XP_Bool unknown = XP_TRUE;
+    AddressRecord* rec;
+    CommsConnType conType = addr->conType;
+
+    XP_ASSERT( !!addr );
+
+    for ( rec = comms->recs; !!rec && unknown ; rec = rec->next ) {
+        XP_ASSERT( conType == rec->addr.conType );
+        switch( conType ) {
+        case COMMS_CONN_RELAY:
+            if ( (addr->u.ip_relay.ipAddr == rec->addr.u.ip_relay.ipAddr)
+                 && (addr->u.ip_relay.port == rec->addr.u.ip_relay.port ) ) {
+                unknown = XP_FALSE;
+            }
+            break;
+        case COMMS_CONN_BT:
+            if ( 0 == XP_MEMCMP( &addr->u.bt.btAddr, &rec->addr.u.bt.btAddr,
+                                 sizeof(addr->u.bt.btAddr) ) ) {
+                unknown = XP_FALSE;
+            }
+            break;
+        case COMMS_CONN_IR:              /* no way to test */
+        default:
+            break;
+        }
+    }
+
+    return unknown;
+} /* addressUnknown */
+
 /* read a raw buffer into a stream, stripping off the headers and keeping
  * any necessary stats.
  *
@@ -899,7 +934,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                                channelNo );
 
                     removeFromQueue( comms, channelNo, lastMsgRcd );
-                    validMessage = XP_TRUE;
 
                     /* Problem: need to detect duplicate messages even before
                        the server's had a chance to assign channels.
@@ -908,21 +942,34 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                        case, which still needs to work, do assign channels.
                        The dup message problem is far less common there.  */
 
-                    if ( channelNo == 0 ) {
-                        XP_ASSERT( comms->isServer );
-                        if ( usingRelay ) {
-                            XP_ASSERT( senderID != 0 );
-                            channelNo = senderID;
-                        } else {
-                            XP_ASSERT( msgID == 0 );
-                            channelNo = ++comms->nextChannelNo;
-                            XP_LOGF( "%s: incrementled nextChannelNo to %d",
-                                     __FUNCTION__, comms->nextChannelNo );
-                            channelWas0 = XP_TRUE;
+                    if ( channelNo != 0 ) {
+                        validMessage = XP_TRUE;
+                    } else {
+                        /* If we've seen a channel0 msg from same addr, drop
+                           it. It's most likely a dupe, and server can't
+                           handle e.g. duplicate client reg messages.. */
+                        validMessage = addressUnknown( comms, addr );
+
+                        if ( validMessage ) {
+                            XP_ASSERT( comms->isServer );
+                            if ( usingRelay ) {
+                                XP_ASSERT( senderID != 0 );
+                                channelNo = senderID;
+                            } else {
+                                XP_ASSERT( msgID == 0 );
+                                /* check that address isn't already associated
+                                   with an existing channel. */
+                                channelNo = ++comms->nextChannelNo;
+                                XP_LOGF( "%s: incrementled nextChannelNo "
+                                         "to %d", __FUNCTION__, 
+                                         comms->nextChannelNo );
+                                channelWas0 = XP_TRUE;
+                            }
+                            XP_STATUSF( "assigning channelNo=%d", channelNo );
                         }
-                        XP_STATUSF( "assigning channelNo=%d", channelNo );
-                    } 
-                    if ( usingRelay || !channelWas0 ) {
+                    }
+
+                    if ( validMessage && (usingRelay || !channelWas0) ) {
                         recs = getRecordFor( comms, channelNo );
                         /* messageID for an incoming message should be one
                          * greater than the id most recently used for that
@@ -1252,8 +1299,9 @@ btConnect( CommsCtxt* comms )
        need to do this once per guest record with non-null address.  Might as
        well use real messages if we have 'em.  Otherwise a fake size-0 msg. */
     if ( comms_resendAll( comms ) <= 0 ) {
-        (void)(*comms->sendproc)( (const void*)comms, /* any valid ptr will do */
-                                  0, NULL, comms->sendClosure );
+        /* any valid ptr will do */
+        (void)(*comms->sendproc)( (const void*)comms, 0, NULL, 
+                                  comms->sendClosure );
     }
 } /* btConnect */
 #endif
