@@ -1281,6 +1281,8 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     XP_Bool silent;
     XP_UCHAR* message = linux_getErrString( id, &silent );
 
+    XP_LOGF( "%s(%d)", __FUNCTION__, id );
+
     if ( silent ) {
         XP_LOGF( message );
     } else {
@@ -1587,6 +1589,12 @@ gtk_socket_changed( void* closure, int oldSock, int newSock )
         gtkListenOnSocket( globals, newSock );
     }
     globals->cGlobals.socket = newSock;
+
+    /* A hack for the bluetooth case. */
+    CommsCtxt* comms = globals->cGlobals.game.comms;
+    if ( comms != NULL ) {
+        comms_resendAll( comms );
+    }
 }
 
 static gboolean
