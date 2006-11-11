@@ -699,7 +699,10 @@ void
 palm_assert( Boolean b, int line, const char* func, const char* file )
 {
     if ( !b ) {
+        /* force file logging on if not already */
+        FtrSet( APPID, LOG_FILE_FEATURE, 1 );
         XP_LOGF( "ASSERTION FAILED: line %d, %s(), %s", line, func, file );
+
         XP_WARNF( "ASSERTION FAILED: line %d, %s(), %s", line, func, file );
     }
 } /* palmassert */
