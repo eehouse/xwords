@@ -85,7 +85,7 @@
 
 { "STR_NO_DICT_INSTALLED",    "Crosswords 4 requires at least one dictionary." \
                               "Download one or more from xwords.sf.net." },
-{ "STR_ILLEGAL_WORD",	      "Word[s] %s not found in dictionary." },
+{ "STR_ILLEGAL_WORD",	      "Word[s] %s not found in dictionary.  Allow anyway?" },
 
 { "STR_FINAL_SCORES_TITLE",   "Final scores"},
 
