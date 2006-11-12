@@ -38,6 +38,7 @@ enum {
 
     COLOR_EMPTY,
     COLOR_TILE,
+    COLOR_CURSOR,       /* not read from resource */
 
     COLOR_NCOLORS		/* 12 */
 };

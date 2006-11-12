@@ -30,6 +30,16 @@
 typedef XP_Bool (*LastScoreCallback)( void* closure, XP_S16 player,
                                       XP_UCHAR* expl, XP_U16* explLen );
 
+typedef enum {
+    CELL_NONE = 0x00
+    , CELL_ISBLANK = 0x01
+    , CELL_HIGHLIGHT = 0x02
+    , CELL_ISSTAR = 0x04
+    , CELL_ISCURSOR = 0x08
+    , CELL_ISEMPTY = 0x10       /* of a tray tile slot */
+    , CELL_ALL = 0xFF
+} CellFlags;
+
 typedef struct DrawScoreInfo {
     LastScoreCallback lsc;
     void* lscClosure;
@@ -37,6 +47,7 @@ typedef struct DrawScoreInfo {
     XP_U16 playerNum;
     XP_S16 score;
     XP_S16 nTilesLeft;		   /* < 0 means don't use */
+    CellFlags flags;
     XP_Bool isTurn;
     XP_Bool selected;
     XP_Bool isRemote;
@@ -129,37 +140,41 @@ typedef struct DrawCtxVTable {
     void DRAW_VTABLE_NAME(score_pendingScore) ( DrawCtx* dctx, 
                                                 const XP_Rect* rect, 
                                                 XP_S16 score, 
-                                                XP_U16 playerNum );
+                                                XP_U16 playerNum,
+                                                CellFlags flags );
 
     void DRAW_VTABLE_NAME(drawTimer) ( DrawCtx* dctx, const XP_Rect* rInner, 
                                        const XP_Rect* rOuter,
                                        XP_U16 player, XP_S16 secondsLeft );
 
     XP_Bool DRAW_VTABLE_NAME(drawCell) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                         /* at least one of these two will be null */
+                                         /* at least one of these two will be
+                                            null */
                                          const XP_UCHAR* text, 
                                          const XP_Bitmap bitmap,
                                          Tile tile,
                                          XP_S16 owner, /* -1 means don't use */
                                          XWBonusType bonus, HintAtts hintAtts,
-                                         XP_Bool isBlank, XP_Bool highlight, 
-                                         XP_Bool isStar);
+                                         CellFlags flags );
 
     void DRAW_VTABLE_NAME(invertCell) ( DrawCtx* dctx, const XP_Rect* rect );
 
     void DRAW_VTABLE_NAME(drawTile) ( DrawCtx* dctx, const XP_Rect* rect, 
                                       /* at least 1 of these two will be null*/
                                       const XP_UCHAR* text, const XP_Bitmap bitmap,
-                                      XP_S16 val, XP_Bool highlighted );
-    void DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect );
+                                      XP_S16 val, CellFlags flags );
+    void DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
+                                          CellFlags flags );
     void DRAW_VTABLE_NAME(drawTrayDivider) ( DrawCtx* dctx, const XP_Rect* rect, 
                                              XP_Bool selected );
 
     void DRAW_VTABLE_NAME(clearRect) ( DrawCtx* dctx, const XP_Rect* rect );
 
-    void DRAW_VTABLE_NAME(drawBoardArrow) ( DrawCtx* dctx, const XP_Rect* rect, 
+    void DRAW_VTABLE_NAME(drawBoardArrow) ( DrawCtx* dctx, 
+                                            const XP_Rect* rect, 
                                             XWBonusType bonus, XP_Bool vert,
-                                            HintAtts hintAtts );
+                                            HintAtts hintAtts,
+                                            CellFlags flags);
 #ifdef KEY_SUPPORT
     void DRAW_VTABLE_NAME(drawCursor) ( DrawCtx* dctx, BoardObjectType typ,
                                         const XP_Rect* rect );
@@ -194,6 +209,8 @@ struct DrawCtx {
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4))
 # define CALL_DRAW_NAME5(name,dc,p1,p2,p3,p4,p5) \
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5))
+# define CALL_DRAW_NAME8(name,dc,p1,p2,p3,p4,p5,p6,p7,p8) \
+   linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),(p8))
 # define CALL_DRAW_NAME10(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10) \
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
    (p8),(p9),(p10))
@@ -208,6 +225,9 @@ struct DrawCtx {
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4))
 # define CALL_DRAW_NAME5(name,dc,p1,p2,p3,p4,p5) \
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5))
+# define CALL_DRAW_NAME8(name,dc,p1,p2,p3,p4,p5,p6,p7,p8) \
+   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
+   (p8))
 # define CALL_DRAW_NAME10(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10) \
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
    (p8),(p9),(p10))
@@ -229,23 +249,23 @@ struct DrawCtx {
     CALL_DRAW_NAME4(measureScoreText,(dc),(r),(dsi),(wp),(hp))
 #define draw_score_drawPlayer(dc, ri, ro, dsi) \
     CALL_DRAW_NAME3(score_drawPlayer,(dc),(ri),(ro),(dsi))
-#define draw_score_pendingScore(dc, r, s, p ) \
-    CALL_DRAW_NAME3(score_pendingScore,(dc), (r), (s), (p))
+#define draw_score_pendingScore(dc, r, s, p, f ) \
+    CALL_DRAW_NAME4(score_pendingScore,(dc), (r), (s), (p), (f))
 #define draw_drawTimer( dc, ri, ro, plyr, sec ) \
     CALL_DRAW_NAME4(drawTimer,(dc),(ri),(ro),(plyr),(sec))
-#define draw_drawCell( dc, rect, txt, bmap, t, o, bon, hi, bl, h, s ) \
-    CALL_DRAW_NAME10(drawCell,(dc),(rect),(txt),(bmap),(t),(o),(bon),(hi),\
-    (bl),(h),(s))
+#define draw_drawCell( dc, rect, txt, bmap, t, o, bon, hi, f ) \
+    CALL_DRAW_NAME8(drawCell,(dc),(rect),(txt),(bmap),(t),(o),(bon),(hi),\
+    (f))
 #define draw_invertCell( dc, rect ) CALL_DRAW_NAME1(invertCell,(dc),(rect))
 #define draw_drawTile( dc, rect, text, bmp, val, hil ) \
     CALL_DRAW_NAME5(drawTile,(dc),(rect),(text),(bmp),(val),(hil))
-#define draw_drawTileBack( dc, rect ) \
-    CALL_DRAW_NAME1(drawTileBack, (dc), (rect) )
+#define draw_drawTileBack( dc, rect, f ) \
+    CALL_DRAW_NAME2(drawTileBack, (dc), (rect), (f) )
 #define draw_drawTrayDivider( dc, rect, s ) \
     CALL_DRAW_NAME2(drawTrayDivider,(dc),(rect), (s))
 #define draw_clearRect( dc, rect ) CALL_DRAW_NAME1(clearRect,(dc),(rect))
-#define draw_drawBoardArrow( dc, r, b, v, h ) \
-    CALL_DRAW_NAME4(drawBoardArrow,(dc),(r),(b), (v), (h))
+#define draw_drawBoardArrow( dc, r, b, v, h, f ) \
+    CALL_DRAW_NAME5(drawBoardArrow,(dc),(r),(b), (v), (h), (f))
 #ifdef KEY_SUPPORT
 # define draw_drawCursor( dc, t, r ) CALL_DRAW_NAME2(drawCursor,(dc),(t),(r))
 #else

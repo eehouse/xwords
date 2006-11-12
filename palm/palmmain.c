@@ -651,6 +651,10 @@ loadColorsFromRsrc( DrawingPrefs* prefs, MemHandle colorH )
         prefs->drawColors[index++] = WinRGBToIndex( &color );
     } while ( (count -= 3) != 0 );
 
+#ifdef XWFEATURE_FIVEWAY
+    prefs->drawColors[COLOR_CURSOR] 
+        = UIColorGetTableEntryIndex( UIObjectSelectedFill );
+#endif
     MemHandleUnlock( colorH );
 } /* loadColorsFromRsrc */
 #endif
@@ -725,7 +729,7 @@ findXWPrefsRsrc( PalmAppGlobals* globals, UInt32 resType, UInt16 resID )
 {
     Int16 index;
     MemHandle handle = NULL;
-    Boolean beenThere = false;
+    Boolean beenThere = XP_FALSE;
 
     for ( ; ; ) {
         XP_ASSERT( !!globals->boardDBP );
@@ -736,26 +740,24 @@ findXWPrefsRsrc( PalmAppGlobals* globals, UInt32 resType, UInt16 resID )
             MemHandle newH;
             UInt32 size;
 
-            if ( beenThere ) {
-                return NULL;
+            if ( !beenThere ) {
+                builtinH = DmGetResource( resType, resID );
+                XP_ASSERT( !!builtinH );
+                size = MemHandleSize( builtinH );
+                newH = DmNewResource( globals->boardDBP, resType, 
+                                      resID, size );
+                XP_ASSERT( !!newH );
+                DmWrite( MemHandleLock( newH ), 0, MemHandleLock(builtinH), 
+                         size );
+                MemHandleUnlock( newH );
+                MemHandleUnlock( builtinH );
+                DmReleaseResource( newH );
+                DmReleaseResource( builtinH );
+
+                beenThere = XP_TRUE;
+                continue;
             }
-
-            builtinH = DmGetResource( resType, resID );
-            XP_ASSERT( !!builtinH );
-            size = MemHandleSize( builtinH );
-            newH = DmNewResource( globals->boardDBP, resType, 
-                                  resID, size );
-            XP_ASSERT( !!newH );
-            DmWrite( MemHandleLock( newH ), 0, MemHandleLock(builtinH), 
-                     size );
-            MemHandleUnlock( newH );
-            MemHandleUnlock( builtinH );
-            DmReleaseResource( newH );
-            DmReleaseResource( builtinH );
-
-            beenThere = true;
-
-            continue;
+            break;
         }
 
         handle = DmGetResourceIndex( globals->boardDBP, index );
@@ -927,10 +929,12 @@ initHighResGlobals( PalmAppGlobals* globals )
     globals->hasHiRes = ( err == errNone && vers >= 4 );
     globals->oneDotFiveAvail = ( err == errNone && vers >= 5 );
 
+#ifdef XWFEATURE_FIVEWAY
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
     XP_LOGF( "hasHiRes = %d", globals->hasHiRes );
     globals->hasFiveWay = ( (err == errNone)
                             && ((vers & sysFtrNumUIHardwareHas5Way) != 0) );
+#endif
 
 #ifdef FEATURE_SILK
     if ( globals->hasHiRes ) {
