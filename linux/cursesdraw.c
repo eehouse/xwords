@@ -294,8 +294,10 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 {
     eraseRect( dctx, rect );
 
-    mvwaddnstr( dctx->boardWin, rect->top+1, rect->left+(rect->width/2),
-                letter, strlen(letter) );
+    if ( !!letter ) {
+        mvwaddnstr( dctx->boardWin, rect->top+1, rect->left+(rect->width/2),
+                    letter, strlen(letter) );
+    }
 
     if ( !!val ) {
         int len = strlen( val );
@@ -312,19 +314,22 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     char numbuf[5];
     char letterbuf[5];
     char* nump = NULL;
+    char* letterp = NULL;
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 
-    letterbuf[0] = !!textP? *textP: '_'; /* BLANK or bitmap */
-    letterbuf[1] = '\0';
-    if ( val >= 0 ) {
-        sprintf( numbuf, "%.2d", val );
-        if ( numbuf[0] == '0' ) {
-            numbuf[0] = ' ';
+    if ( (flags&CELL_ISEMPTY) == 0 ) {
+        letterbuf[0] = !!textP? *textP: '_'; /* BLANK or bitmap */
+        letterbuf[1] = '\0';
+        if ( val >= 0 ) {
+            sprintf( numbuf, "%.2d", val );
+            if ( numbuf[0] == '0' ) {
+                numbuf[0] = ' ';
+            }
+            nump = numbuf;
         }
-        nump = numbuf;
+        letterp = letterbuf;
     }
-
-    curses_stringInTile( dctx, rect, letterbuf, nump );
+    curses_stringInTile( dctx, rect, letterp, nump );
 
     if ( (flags&CELL_HIGHLIGHT) != 0 ) {
         mvwaddnstr( dctx->boardWin, rect->top+rect->height-1, 
