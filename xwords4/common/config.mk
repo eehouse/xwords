@@ -24,6 +24,7 @@ COMMONOBJDIR = ../common/$(PLATFORM)
 
 COMMONSRC = \
 	$(COMMONDIR)/board.c \
+	$(COMMONDIR)/scorebdp.c \
 	$(COMMONDIR)/tray.c \
 	$(COMMONDIR)/draw.c \
 	$(COMMONDIR)/model.c \
@@ -47,10 +48,11 @@ COMMONSRC = \
 COMMON1 = \
 	$(COMMONOBJDIR)/board.o \
 	$(COMMONOBJDIR)/tray.o \
+	$(COMMONOBJDIR)/scorebdp.o \
 	$(COMMONOBJDIR)/draw.o \
-	$(COMMONOBJDIR)/model.o \
 
 COMMON2 = \
+	$(COMMONOBJDIR)/model.o \
 	$(COMMONOBJDIR)/mscore.o \
 	$(COMMONOBJDIR)/server.o \
 	$(COMMONOBJDIR)/pool.o \

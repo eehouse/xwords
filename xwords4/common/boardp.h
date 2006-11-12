@@ -195,6 +195,8 @@ XP_Bool checkRevealTray( BoardCtxt* board );
 void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
 XP_Bool rectsIntersect( XP_Rect* rect1, XP_Rect* rect2 );
 
+void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer );
+
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey );
 XP_Bool tray_keyAction( BoardCtxt* board );
