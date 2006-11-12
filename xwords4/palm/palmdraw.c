@@ -41,12 +41,11 @@
 
 #define TILE_SUBSCRIPT 1             /* draw tile with numbers below letters? */
 
-static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
-                                          const XP_UCHAR* letters, XP_Bitmap bitmap,
-                                          Tile tile,
+static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
+                                          const XP_UCHAR* letters, 
+                                          XP_Bitmap bitmap, Tile tile,
                                           XP_S16 owner, XWBonusType bonus, 
-                                          HintAtts hintAtts, XP_Bool isBlank, 
-                                          XP_Bool isPending, XP_Bool isStar );
+                                          HintAtts hintAtts, CellFlags flags );
 static void palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, 
                                             const XP_Rect* rInner, 
                                             const XP_Rect* rOuter, 
@@ -56,6 +55,8 @@ static XP_Bool palm_bnw_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 static void palm_clr_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
 static void palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
                                       const XP_Rect* rect, void** closureP );
+static void doDrawPlayer( PalmDrawCtx* dctx, const DrawScoreInfo* dsi,
+                          const XP_Rect* rInner );
 
 #define HIGHRES_PUSH_LOC( dctx ) \
     { \
@@ -91,13 +92,21 @@ eraseRect( /* PalmDrawCtx* dctx,  */const XP_Rect* rect )
 } /* eraseRect */
 
 static void
+insetRect2( XP_Rect* rect, XP_S16 byX, XP_S16 byY )
+{
+    XP_U16 i;
+    rect->left += byX;
+    rect->top += byY;
+    for ( i = 0; i < 2; ++i ) {
+        rect->width -= byX;
+        rect->height -= byY;
+    }
+} /* insetRect */
+
+static void
 insetRect( XP_Rect* rect, XP_S16 by )
 {
-    rect->left += by;
-    rect->top += by;
-    by *= 2;
-    rect->width -= by;
-    rect->height -= by;
+    insetRect2( rect, by, by );
 } /* insetRect */
 
 static void
@@ -318,16 +327,18 @@ palm_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ,
 static XP_Bool
 palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                         const XP_UCHAR* letters, XP_Bitmap bitmap,
-                        Tile tile,
-                        XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
-                        XP_Bool isBlank, 
-                        XP_Bool isPending, XP_Bool isStar )
+                        Tile tile, XP_S16 owner, XWBonusType bonus, 
+                        HintAtts hintAtts, CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;    
     IndexedColorType color;
     XP_U16 index;
+    XP_Bool isCursor =  (flags & CELL_ISCURSOR) != 0;
+    XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
 
-    if ( isPending ) { 
+    if ( isCursor ) {
+        index = COLOR_CURSOR;
+    } else if ( isPending ) { 
         /* don't color background if will invert */
         index = COLOR_WHITE;
     } else if ( !!bitmap || (!!letters && XP_STRLEN((const char*)letters) > 0)){
@@ -352,9 +363,7 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
     return palm_common_draw_drawCell( p_dctx, rect, letters, bitmap, 
-                                      tile,
-                                      owner, bonus, hintAtts, isBlank, isPending, 
-                                      isStar );
+                                      tile, owner, bonus, hintAtts, flags );
 } /* palm_clr_draw_drawCell */
 
 static void
@@ -364,17 +373,34 @@ palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 {
     XP_U16 playerNum = dsi->playerNum;
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+    XP_U16 txtIndex;
     IndexedColorType newColor;
-    IndexedColorType oldTextColor;
-    IndexedColorType oldFGColor;
 
-    newColor = dctx->drawingPrefs->drawColors[COLOR_PLAYER1+playerNum];
-    oldTextColor = WinSetTextColor( newColor );
-    oldFGColor = WinSetForeColor( newColor );
+    WinPushDrawState();
 
-    palm_bnw_draw_score_drawPlayer( p_dctx, rInner, rOuter, dsi );
-    WinSetTextColor( oldTextColor );
-    WinSetForeColor( oldFGColor );
+    if ( dsi->flags && CELL_ISCURSOR ) {
+        WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+        eraseRect( rOuter );
+    }
+
+    if ( dsi->selected ) {
+        XP_Rect r = *rInner;
+        insetRect2( &r, (r.width - rOuter->width) >> 2, 
+                    (r.height - rOuter->height) >> 2 );
+        WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
+        eraseRect( &r );
+        txtIndex = COLOR_WHITE;
+    } else {
+        txtIndex = COLOR_PLAYER1+playerNum;
+    }
+
+    newColor = dctx->drawingPrefs->drawColors[txtIndex];
+    (void)WinSetTextColor( newColor );
+    (void)WinSetForeColor( newColor );
+
+    doDrawPlayer( dctx, dsi, rInner );
+
+    WinPopDrawState();
 } /* palm_clr_draw_score_drawPlayer */
 
 #endif
@@ -411,9 +437,8 @@ palmDrawHintBorders( const XP_Rect* rect, HintAtts hintAtts )
 static XP_Bool
 palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
                            const XP_UCHAR* letters, XP_Bitmap bitmap,
-                           Tile tile,
-                           XP_S16 owner, XWBonusType bonus, HintAtts hintAtts,
-                           XP_Bool isBlank, XP_Bool isPending, XP_Bool isStar )
+                           Tile tile, XP_S16 owner, XWBonusType bonus, 
+                           HintAtts hintAtts, CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     GraphicsAbility able = dctx->able;
@@ -505,7 +530,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         empty = XP_FALSE;
     }
 
-    if ( isStar ) {
+    if ( (flags & CELL_ISSTAR) != 0 ) {
         bitmapInRect( dctx, STAR_BMP_RES_ID, rect );
     } else if ( showBonus && (able == ONEBIT) ) {
         /* this is my one refusal to totally factor bandw and color
@@ -533,17 +558,19 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         }
     }
 
-    if ( isPending ) {
-        XP_ASSERT( !!bitmap ||
-                   (!!letters && XP_STRLEN((const char*)letters)>0));
-        WinInvertRectangle( (RectangleType*)&localR, 0 );
+    if ( (flags & CELL_HIGHLIGHT) != 0 ) {
+        if ( (flags & CELL_ISCURSOR ) == 0 ) {
+            XP_ASSERT( !!bitmap ||
+                       (!!letters && XP_STRLEN((const char*)letters)>0));
+            WinInvertRectangle( (RectangleType*)&localR, 0 );
+        }
     }
 
     if ( showGrid ) {
         WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&localR);
     }
 
-    if ( isBlank ) {
+    if ( (flags & CELL_ISBLANK) != 0 ) {
         WinEraseRectangleFrame( roundFrame, (RectangleType*)&localR );
     }
 
@@ -629,13 +656,16 @@ adjustTileRect( XP_Rect* r, XP_U16 doubler )
 static void
 palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                     const XP_UCHAR* letters, XP_Bitmap bitmap,
-                    XP_S16 val, XP_Bool highlighted )
+                    XP_S16 val, CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     char valBuf[3];
     XP_Rect localR = *rect;
     XP_U16 len, width;
     XP_U16 doubler = 1;
+    XP_Bool cursor = (flags & CELL_ISCURSOR) != 0;
+    IndexedColorType oclr = 0;
+    XP_Bool empty = (flags & CELL_ISEMPTY) != 0;
 
     if ( dctx->doHiRes ) {
         doubler = 2;
@@ -645,59 +675,76 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 
     adjustTileRect( &localR, doubler );
 
+    if ( cursor ) {
+        oclr = WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+    }
+
     /* this will fill it with the tile background color */
-    WinEraseRectangle( (const RectangleType*)&localR, 0 );
+    if ( !empty || cursor ) {
+        WinEraseRectangle( (const RectangleType*)&localR, 0 );
+    }
 
-    /* Draw the number before the letter.  Some PalmOS version don't honor
-       the winOverlay flag and erase.  Better to erase the value than the
-       letter. */
-    if ( val >= 0 ) {
-        (void)StrPrintF( valBuf, "%d", val );
-        len = XP_STRLEN((const char*)valBuf);
+    if ( !empty ) {
+        /* Draw the number before the letter.  Some PalmOS version don't
+           honor the winOverlay flag and erase.  Better to erase the value
+           than the letter. */
+        if ( val >= 0 ) {
+            (void)StrPrintF( valBuf, "%d", val );
+            len = XP_STRLEN((const char*)valBuf);
 
-        if ( 0 ) {
-        } else if ( dctx->doHiRes && dctx->oneDotFiveAvail ) {
-            smallBoldStringAt( valBuf, len, 
-                               -(localR.left + localR.width), 
-                               localR.top + localR.height - dctx->fntHeight - 1 );
-        } else {
-            width = FntCharsWidth( valBuf, len );
-            WinDrawChars( valBuf, len, localR.left + localR.width - width,
-                          localR.top + localR.height - (10*doubler) );
+            if ( dctx->doHiRes && dctx->oneDotFiveAvail ) {
+                smallBoldStringAt( valBuf, len, 
+                                   -(localR.left + localR.width), 
+                                   localR.top + localR.height - dctx->fntHeight
+                                   - 1 );
+            } else {
+                width = FntCharsWidth( valBuf, len );
+                WinDrawChars( valBuf, len, localR.left + localR.width - width,
+                              localR.top + localR.height - (10*doubler) );
+            }
+        }
+
+        if ( !!letters ) {
+            if ( *letters != LETTER_NONE ) { /* blank */
+                FontID curFont = FntSetFont( largeFont );
+
+                HIGHRES_PUSH_LOC( dctx );
+
+                WinDrawChars( (char*)letters, 1, 
+                              localR.left + (1*doubler), 
+                              localR.top + (0*doubler) );
+
+                HIGHRES_POP_LOC(dctx);
+
+                FntSetFont( curFont );
+            }
+        } else if ( !!bitmap ) {
+            WinDrawBitmap( (BitmapPtr)bitmap, localR.left+(2*doubler), 
+                           localR.top+(2*doubler) );
+        }
+
+        WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&localR );
+        if ( (flags & CELL_HIGHLIGHT) != 0 ) {
+            insetRect( &localR, 1 );
+            WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&localR );
+            if ( dctx->doHiRes ) {
+                insetRect( &localR, 1 );
+                WinDrawRectangleFrame(rectangleFrame, 
+                                      (RectangleType*)&localR );
+            }
         }
     }
 
-    if ( !!letters ) {
-        if ( *letters != LETTER_NONE ) { /* blank */
-            FontID curFont = FntSetFont( largeFont );
-
-            HIGHRES_PUSH_LOC( dctx );
-
-            WinDrawChars( (char*)letters, 1, 
-                          localR.left + (1*doubler), 
-                          localR.top + (0*doubler) );
-
-            HIGHRES_POP_LOC(dctx);
-
-            FntSetFont( curFont );
-        }
-    } else if ( !!bitmap ) {
-        WinDrawBitmap( (BitmapPtr)bitmap, localR.left+(2*doubler), 
-                       localR.top+(2*doubler) );
-    }
-
-    WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&localR );
-    if ( highlighted ) {
-        insetRect( &localR, 1 );
-        WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&localR );
+    if ( cursor ) {
+        WinSetBackColor( oclr );
     }
 } /* palm_draw_drawTile */
 
 static void
-palm_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect )
+palm_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, CellFlags flags )
 {
     palm_draw_drawTile( p_dctx, rect, (unsigned char*)"?", (XP_Bitmap)NULL, 
-                        -1, XP_FALSE );
+                        -1, flags & CELL_ISCURSOR );
 } /* palm_draw_drawTileBack */
 
 static void
@@ -752,7 +799,7 @@ palm_clr_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 static void
 palm_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP, 
                           XWBonusType XP_UNUSED(cursorBonus), XP_Bool vertical,
-                          HintAtts hintAtts )
+                          HintAtts hintAtts, CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     RectangleType oldClip;
@@ -772,19 +819,22 @@ palm_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 static void
 palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP, 
                               XWBonusType cursorBonus, XP_Bool vertical,
-                              HintAtts hintAtts )
+                              HintAtts hintAtts, CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_U16 index;
 
-    if ( cursorBonus == BONUS_NONE ) { 
+    if ( (flags & CELL_ISCURSOR) != 0 ) { 
+        index = COLOR_CURSOR;
+    } else if ( cursorBonus == BONUS_NONE ) { 
         index = COLOR_EMPTY;
     } else {
         index = COLOR_DBL_LTTR + cursorBonus - 1;
     }
 
     WinSetBackColor( dctx->drawingPrefs->drawColors[index] );
-    palm_draw_drawBoardArrow( p_dctx, rectP, cursorBonus, vertical, hintAtts );
+    palm_draw_drawBoardArrow( p_dctx, rectP, cursorBonus, vertical, 
+                              hintAtts, flags );
 } /* palm_clr_draw_drawBoardArrow */
 #endif
 
@@ -1035,14 +1085,12 @@ palm_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* palm_draw_measureScoreText */
 
 static void
-palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                                const XP_Rect* XP_UNUSED(rOuter), 
-                                const DrawScoreInfo* dsi )
+doDrawPlayer( PalmDrawCtx* dctx, const DrawScoreInfo* dsi,
+              const XP_Rect* rInner )
 {
-    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
-    XP_UCHAR scoreBuf[20];
     XP_Bool vertical = !globals->gState.showGrid;
+    XP_UCHAR scoreBuf[20];
 
     palmFormatScore( (char*)scoreBuf, dsi, vertical );
     palmMeasureDrawText( dctx, (XP_Rect*)rInner, (XP_UCHAR*)scoreBuf, vertical, 
@@ -1059,26 +1107,41 @@ palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
         y += r.extent.y - 3;
         WinDrawLine( x, y, x + r.extent.x - 1, y );
     }
+}
+
+static void
+palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner, 
+                                const XP_Rect* rOuter, 
+                                const DrawScoreInfo* dsi )
+{
+    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+
+    doDrawPlayer( dctx, dsi, rInner );
 
     if ( dsi->selected ) {
         WinInvertRectangle( (RectangleType*)rInner, 0 );
-        /* 	if ( !vertical ) { */
-        /* 	    FntSetFont( oldFont ); */
-        /* 	} */
     }
 } /* palm_bnw_draw_score_drawPlayer */
 
 #define PENDING_DIGITS 3
 static void
 palm_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
-                              XP_S16 score, XP_U16 XP_UNUSED(playerNum) )
+                              XP_S16 score, XP_U16 XP_UNUSED(playerNum),
+                              CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     char buf[PENDING_DIGITS+1] = "000";
     RectangleType oldClip, newClip;
     XP_U16 x = rect->left + 1;
+    IndexedColorType oclr = 0;
+
+    XP_ASSERT( flags == CELL_NONE || flags == CELL_ISCURSOR );
 
     HIGHRES_PUSH_LOC(dctx);
+
+    if ( flags != 0 ) {
+        oclr = WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+    }
 
     WinGetClip( &oldClip );
     RctGetIntersection( &oldClip, (RectangleType*)rect, &newClip );
@@ -1117,6 +1180,10 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
         WinDrawChars( buf, PENDING_DIGITS, x, 
                       rect->top + (rect->height/2) - 1 );
         WinSetClip( &oldClip );
+    }
+
+    if ( flags != 0 ) {
+        (void)WinSetBackColor( oclr );
     }
 
     HIGHRES_POP_LOC(dctx);
@@ -1363,32 +1430,6 @@ palm_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
     }
 } /* palm_draw_eraseMiniWindow */
 
-#ifdef KEYBOARD_NAV
-static void
-palm_draw_drawCursor( DrawCtx* p_dctx, BoardObjectType obj, 
-                      const XP_Rect* rect )
-{
-    XP_Rect localR;
-
-    if ( OBJ_TRAY == obj ) {
-        PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-        XP_U16 doubler = dctx->doHiRes? 2 : 1;
-
-        localR = *rect;
-        rect = &localR;
-        adjustTileRect( &localR, doubler );
-
-        localR.left += 2;
-        localR.top += 1;
-        localR.width -= 4;
-        localR.height -= 2;
-
-        insetRect( &localR, 1 ); 
-    }
-    drawFocusRect( (PalmDrawCtx*)p_dctx, rect );
-}
-#endif
-
 static void
 draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
@@ -1448,10 +1489,6 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_eraseMiniWindow, palm );
-
-#ifdef KEYBOARD_NAV
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawCursor, palm );
-#endif
 
     if ( able == COLOR ) {
 #ifdef COLOR_SUPPORT

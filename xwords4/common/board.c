@@ -74,7 +74,7 @@ static XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row,
 static XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, 
                             XP_U16* colP, XP_U16* rowP );
 static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                         XP_Bool skipBlanks );
+                         XP_Bool skipBlanks, XP_Bool cellFocused );
 static void figureBoardRect( BoardCtxt* board );
 
 static void drawBoard( BoardCtxt* board );
@@ -1071,7 +1071,18 @@ drawBoard( BoardCtxt* board )
         XP_S16 row;
         ModelCtxt* model = board->model;
         BlankQueue bq;
-        XP_Rect cursorRect;
+        XP_Rect arrowRect;
+#ifdef KEYBOARD_NAV
+        XP_Bool someCellFocused = 
+            (board->focussed == OBJ_BOARD) && board->focusHasDived;
+        BdCursorLoc cursorLoc;
+        if ( someCellFocused ) {
+            cursorLoc = board->bdCursor[board->selPlayer];
+        }
+
+#else
+#       define someCellFocused XP_FALSE
+#endif
 
         scrollIfCan( board );	/* this must happen before we count blanks
                                    since it invalidates squares */
@@ -1091,7 +1102,8 @@ drawBoard( BoardCtxt* board )
                 lastCol = model_numCols( model );
                 for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
                     if ( (rowFlags & colMask) != 0 ) {
-                        if ( !drawCell( board, lastCol, row, XP_TRUE )) {
+                        if ( !drawCell( board, lastCol, row, XP_TRUE, 
+                                        someCellFocused )) {
                             failedBits |= colMask;
                             allDrawn = XP_FALSE;
                         }
@@ -1103,7 +1115,8 @@ drawBoard( BoardCtxt* board )
 
         /* draw the blanks we skipped before */
         for ( i = 0; i < bq.nBlanks; ++i ) {
-            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
+            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE, 
+                            someCellFocused ) ) {
                 allDrawn = XP_FALSE;
             }
         }
@@ -1116,23 +1129,31 @@ drawBoard( BoardCtxt* board )
                 XP_U16 row = arrow->row;
                 XP_Bool drawVertical = 
                     (arrow->vert == XP_CURSOR_KEY_DOWN) ^ board->isFlipped;
-                if ( getCellRect( board, col, row, &cursorRect ) ) {
+                if ( getCellRect( board, col, row, &arrowRect ) ) {
                     XWBonusType bonus;
                     HintAtts hintAtts;
+                    CellFlags flags = CELL_NONE;
                     bonus = util_getSquareBonus( board->util, model, 
                                                  col, row );
                     hintAtts = figureHintAtts( board, col, row );
-                    draw_drawBoardArrow( board->draw, &cursorRect, 
-                                         bonus, drawVertical, hintAtts );
+#ifdef KEYBOARD_NAV
+                    if ( someCellFocused ) {
+                        if ( cursorLoc.col == col && cursorLoc.row == row ) {
+                            flags |= CELL_ISCURSOR;
+                        }
+                    }
+#endif
+                    draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
+                                         drawVertical, hintAtts, flags );
                 }
             }
         }
 
 #ifdef KEYBOARD_NAV
-        if ( board->focussed == OBJ_BOARD && board->focusHasDived ) {
-            BdCursorLoc loc = board->bdCursor[board->selPlayer];
-            if ( getCellRect( board, loc.col, loc.row, &cursorRect ) ){
-                draw_drawCursor( board->draw, OBJ_BOARD, &cursorRect );
+        if ( someCellFocused ) {
+            XP_Rect crect;
+            if ( getCellRect( board, cursorLoc.col, cursorLoc.row, &crect ) ){
+                draw_drawCursor( board->draw, OBJ_BOARD, &crect );
             }
         }
 #endif
@@ -1204,6 +1225,9 @@ drawScoreBoard( BoardCtxt* board )
             XP_S16 scores[MAX_NUM_PLAYERS];
             XP_Bool isVertical = !board->scoreSplitHor;
 #ifdef KEYBOARD_NAV
+            XP_S16 cursorIndex = ( (board->focussed == OBJ_SCORE)
+                                  && board->focusHasDived ) ?
+                board->scoreCursorLoc : -1;
             XP_Rect cursorRect;
             XP_Rect* cursorRectP = NULL;
 #endif
@@ -1238,13 +1262,18 @@ drawScoreBoard( BoardCtxt* board )
             totalDim = remDim;
 
             /* figure spacing for each scoreboard entry */
+            XP_MEMSET( &datum, 0, sizeof(datum) );
             for ( dp = datum, i = 0; i < nPlayers; ++i, ++dp ) {
                 LocalPlayer* lp = &board->gi->players[i];
 
                 /* This is a hack! */
                 dp->dsi.lsc = board_ScoreCallback;
                 dp->dsi.lscClosure = model;
-
+#ifdef KEYBOARD_NAV
+                if ( i == cursorIndex ) {
+                    dp->dsi.flags |= CELL_ISCURSOR;
+                }
+#endif
                 dp->dsi.playerNum = i;
                 dp->dsi.score = scores[i];
                 dp->dsi.isTurn = (i == curTurn);
@@ -1299,9 +1328,7 @@ drawScoreBoard( BoardCtxt* board )
                 draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
                                        &dp->dsi );
 #ifdef KEYBOARD_NAV
-                if ( i == board->scoreCursorLoc
-                     && board->focussed == OBJ_SCORE
-                     && board->focusHasDived ) {
+                if ( i == cursorIndex ) {
                     cursorRect = scoreRect;
                     cursorRectP = &cursorRect;
                 }
@@ -1748,7 +1775,8 @@ board_requestHint( BoardCtxt* board,
 } /* board_requestHint */
 
 static XP_Bool
-drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
+drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks,
+          XP_Bool cellFocused )
 {
     XP_Rect cellRect;
     Tile tile;
@@ -1777,6 +1805,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_Bitmap bitmap = NULL;
             XP_UCHAR* textP = (XP_UCHAR*)ch;
             HintAtts hintAtts;
+            CellFlags flags = CELL_NONE;
 
             isEmpty = !model_getTile( model, col, row, showPending,
                                       selPlayer, &tile, &isBlank,
@@ -1808,10 +1837,27 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             }
             bonus = util_getSquareBonus( board->util, model, col, row );
             hintAtts = figureHintAtts( board, col, row );
+
+            if ( isEmpty && (col==board->star_row)
+                 && (row==board->star_row ) ) {
+                flags |= CELL_ISSTAR;
+            }
+            if ( invert ) {
+                flags |= CELL_HIGHLIGHT;
+            }
+            if ( isBlank ) {
+                flags |= CELL_ISBLANK;
+            }
+#ifdef KEYBOARD_NAV
+            if ( cellFocused
+                 && (col == board->bdCursor[selPlayer].col)
+                 && (row == board->bdCursor[selPlayer].row) ) {
+                flags |= CELL_ISCURSOR;
+            }
+#endif
+
             return draw_drawCell( board->draw, &cellRect, textP, bitmap, 
-                                  tile, owner, bonus, hintAtts, isBlank, invert,
-                                  (isEmpty && (col==board->star_row)
-                                   && (row==board->star_row)));
+                                  tile, owner, bonus, hintAtts, flags );
         }
     }
 
@@ -2991,10 +3037,12 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canShiftFocus,
 
         for ( ; ; ) {
             if ( *useWhat == end ) {
+#ifdef KEYBOARD_NAV
                 if ( canShiftFocus ) {
                     shiftFocusUp( board, cursorKey );
                     result = XP_TRUE;
                 }
+#endif
                 break;
             }
             result = XP_TRUE;

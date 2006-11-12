@@ -30,7 +30,7 @@ extern "C" {
 static XP_Bool startDividerDrag( BoardCtxt* board );
 static XP_Bool startTileDrag( BoardCtxt* board, XP_U8 startIndex );
 static void figureDividerRect( BoardCtxt* board, XP_Rect* rect );
-static void drawPendingScore( BoardCtxt* board );
+static void drawPendingScore( BoardCtxt* board, XP_Bool hasCursor );
 static void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                                    XP_U16 tileIndex2 );
 static XP_Bool endTileDragIndex( BoardCtxt* board, TileBit last );
@@ -111,14 +111,24 @@ drawTray( BoardCtxt* board )
         if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
                              dfsFor( board, OBJ_TRAY ) ) ) {
             DictionaryCtxt* dictionary = model_getDictionary( board->model );
-
-            if ( board->eraseTray ) {
-                draw_clearRect( board->draw, &board->trayBounds );
-                board->eraseTray = XP_FALSE;
+            XP_S16 cursorIndex = -1;
+#ifdef KEYBOARD_NAV
+            if ( board->focusHasDived && board->focussed == OBJ_TRAY ) {
+                TileBit cursorLoc = 1 << board->trayCursorLoc[turn];
+                if ( !!cursorLoc ) {
+                    cursorIndex = indexForBits( cursorLoc );
+                }
             }
+#endif
+
+/*             if ( board->eraseTray ) { */
+/*                 draw_clearRect( board->draw, &board->trayBounds ); */
+/*                 board->eraseTray = XP_FALSE; */
+/*             } */
 
             if ( (board->trayVisState != TRAY_HIDDEN) && dictionary != NULL ) {
                 XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
+                Tile blank = dict_getBlankTile( dictionary );
 
                 if ( turn >= 0 ) {
                     XP_U16 numInTray = showFaces?
@@ -128,24 +138,29 @@ drawTray( BoardCtxt* board )
                     /* draw in reverse order so drawing happens after
                        erasing */
                     for ( i = MAX_TRAY_TILES - 1; i >= 0; --i ) {
+                        CellFlags flags = CELL_NONE;
 
                         if ( (board->trayInvalBits & (1 << i)) == 0 ) {
                             continue;
                         }
-
+#ifdef KEYBOARD_NAV
+                        if ( cursorIndex == i ) {
+                            flags |= CELL_ISCURSOR;
+                        }
+#endif
                         figureTrayTileRect( board, i, &tileRect );
 
-                        if ( i >= numInTray/*  && showFace */ ) {
-                            draw_clearRect( board->draw, &tileRect );
+                        if ( i >= numInTray ) {
+                            draw_drawTile( board->draw, &tileRect, NULL,
+                                           NULL, -1, flags | CELL_ISEMPTY );
                         } else if ( showFaces ) {
                             XP_UCHAR buf[4];
                             XP_Bitmap bitmap = NULL;
                             XP_UCHAR* textP = (XP_UCHAR*)NULL;
-                            XP_U8 flags = board->traySelBits[turn];
-                            XP_Bool highlighted = (flags & (1<<i)) != 0;
+                            XP_U8 traySelBits = board->traySelBits[turn];
+                            XP_S16 value;
                             Tile tile = model_getPlayerTile( board->model, 
                                                              turn, i );
-                            XP_S16 value;
 
                             if ( dict_faceIsBitmap( dictionary, tile ) ) {
                                 bitmap = dict_getFaceBitmap( dictionary, tile, 
@@ -160,10 +175,19 @@ drawTray( BoardCtxt* board )
                             } else {
                                 value = dict_getTileValue( dictionary, tile );
                             }
+
+                            if ( (traySelBits & (1<<i)) != 0 ) {
+                                flags |= CELL_HIGHLIGHT;
+                            }
+                            if ( tile == blank ) {
+                                flags |= CELL_ISBLANK;
+                            }
+
                             draw_drawTile( board->draw, &tileRect, textP, 
-                                           bitmap, value, highlighted );
+                                           bitmap, value, flags );
                         } else {
-                            draw_drawTileBack( board->draw, &tileRect );
+                            draw_drawTileBack( board->draw, &tileRect, 
+                                               flags );
                         }
                     }
                 }
@@ -176,16 +200,12 @@ drawTray( BoardCtxt* board )
                     board->dividerInvalid = XP_FALSE;
                 }
 
-                drawPendingScore( board );
+                drawPendingScore( board, cursorIndex == MAX_TRAY_TILES - 1 );
 
 #ifdef KEYBOARD_NAV
-                if ( board->focusHasDived && board->focussed == OBJ_TRAY ) {
-                    TileBit cursorLoc = 1 << board->trayCursorLoc[turn];
-                    if ( !!cursorLoc ) {
-                        XP_U16 index = indexForBits( cursorLoc );
-                        figureTrayTileRect( board, index, &tileRect );
-                        draw_drawCursor( board->draw, OBJ_TRAY, &tileRect );
-                    }
+                if ( cursorIndex >= 0 ) {
+                    figureTrayTileRect( board, cursorIndex, &tileRect );
+                    draw_drawCursor( board->draw, OBJ_TRAY, &tileRect );
                 }
 #endif
             }
@@ -200,12 +220,12 @@ drawTray( BoardCtxt* board )
 } /* drawTray */
 
 static void
-drawPendingScore( BoardCtxt* board )
+drawPendingScore( BoardCtxt* board, XP_Bool hasCursor )
 {
     /* Draw the pending score down in the last tray's rect */
-    XP_U16 selPlayer = board->selPlayer;
     if ( board->trayVisState == TRAY_REVEALED ) {
-        XP_U16 tilesInTray = model_getNumTilesInTray( board->model, selPlayer );
+        XP_U16 selPlayer = board->selPlayer;
+        XP_U16 tilesInTray = model_getNumTilesInTray( board->model, selPlayer);
         if ( tilesInTray < MAX_TRAY_TILES ) {
 
             XP_S16 turnScore = 0;
@@ -215,7 +235,8 @@ drawPendingScore( BoardCtxt* board )
                                               (XWStreamCtxt*)NULL, &turnScore );
             figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
             draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
-                                     selPlayer );
+                                     selPlayer, 
+                                     hasCursor?CELL_ISCURSOR:CELL_NONE );
         }
     }
 } /* drawPendingScore */
@@ -634,13 +655,16 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
             if ( pos < 0 || pos >= MAX_TRAY_TILES ) {
                 shiftFocusUp( board, cursorKey );
             } else {
-                if ( board->trayVisState == TRAY_REVEALED ) {
-                    XP_U16 count = model_getNumTilesInTray( board->model, 
-                                                            selPlayer );
-                    if ( (pos > count) && (pos < MAX_TRAY_TILES-1) ) {
-                        continue;
-                    }
-                }
+                /* Revisit this when able to never draw the cursor in a place
+                   this won't allow it, e.g. when the tiles move after a
+                   hint*/
+/*                 if ( board->trayVisState == TRAY_REVEALED ) { */
+/*                     XP_U16 count = model_getNumTilesInTray( board->model,  */
+/*                                                             selPlayer ); */
+/*                     if ( (pos > count) && (pos < MAX_TRAY_TILES-1) ) { */
+/*                         continue; */
+/*                     } */
+/*                 } */
                 board->trayCursorLoc[selPlayer] = pos;
                 board_invalTrayTiles( board, 1 << pos );
             }
