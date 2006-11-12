@@ -245,7 +245,7 @@ palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btUIStateP )
     PalmBTStuff* btStuff = globals->btStuff;
     XP_Bool haveWork = !!btStuff && HASWORK(btStuff);
     
-    XP_ASSERT( haveWork
+    XP_ASSERT( !btStuff || haveWork
                || (btStuff->vol.out.lens[0] == 0 )
                || btStuff->vol.sendInProgress 
                || (SOCK_INVAL == btStuff->dataSocket)
