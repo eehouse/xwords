@@ -1776,7 +1776,7 @@ board_requestHint( BoardCtxt* board,
 
 static XP_Bool
 drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks,
-          XP_Bool cellFocused )
+          XP_Bool XP_UNUSED_KEYBOARD_NAV(cellFocused) )
 {
     XP_Rect cellRect;
     Tile tile;
@@ -2986,7 +2986,8 @@ advanceArrow( BoardCtxt* board )
 } /* advanceArrow */
 
 static XP_Bool
-figureNextLoc( BoardCtxt* board, XP_Key cursorKey, XP_Bool canShiftFocus, 
+figureNextLoc( BoardCtxt* board, XP_Key cursorKey, 
+               XP_Bool XP_UNUSED_KEYBOARD_NAV(canShiftFocus), 
                XP_Bool inclPending, XP_U16* colP, XP_U16* rowP )
 {
     XP_S16 max;

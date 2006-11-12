@@ -204,4 +204,10 @@ typedef struct CommonPrefs {
 #  define XP_UNUSED_BT(x) UNUSED__ ## x __attribute__((unused))
 #endif
 
+#ifdef KEYBOARD_NAV
+#  define XP_UNUSED_KEYBOARD_NAV(x) x
+#else
+#  define XP_UNUSED_KEYBOARD_NAV(x) UNUSED__ ## x __attribute__((unused))
+#endif
+
 #endif
