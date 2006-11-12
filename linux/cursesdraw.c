@@ -203,7 +203,8 @@ curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx),
 
 static void
 curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
-                                XP_S16 score, XP_U16 XP_UNUSED(playerNum) )
+                                XP_S16 score, XP_U16 XP_UNUSED(playerNum),
+                                CellFlags XP_UNUSED(flags) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[4];
@@ -219,7 +220,7 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_score_pendingScore */
 
 static void
-curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ, 
+curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ), 
                          const XP_Rect* rect, DrawFocusState dfs )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
@@ -251,8 +252,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
                       const XP_UCHAR* letter, XP_Bitmap XP_UNUSED(bitmap),
                       Tile XP_UNUSED(tile), XP_S16 XP_UNUSED(owner), 
                       XWBonusType bonus, HintAtts XP_UNUSED(hintAtts), 
-                      XP_Bool XP_UNUSED(isBlank), XP_Bool highlight, 
-                      XP_Bool XP_UNUSED(isStar) )
+                      CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_UCHAR loc[4];
@@ -274,14 +274,14 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         } /* switch */
     }
 
-    if ( highlight ) {
+    if ( (flags&CELL_HIGHLIGHT) != 0 ) {
         wstandout( dctx->boardWin );
     }
 
     mvwaddnstr( dctx->boardWin, rect->top, rect->left, loc, 
                 strlen(loc) );
 
-    if ( highlight ) {
+    if ( (flags&CELL_HIGHLIGHT) != 0 ) {
         wstandend( dctx->boardWin );
     }
 
@@ -307,7 +307,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 static void
 curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                       const XP_UCHAR* textP, XP_Bitmap XP_UNUSED(bitmap),
-                      XP_S16 val, XP_Bool highlighted )
+                      XP_S16 val, CellFlags flags )
 {
     char numbuf[5];
     char letterbuf[5];
@@ -326,14 +326,15 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 
     curses_stringInTile( dctx, rect, letterbuf, nump );
 
-    if ( highlighted ) {
+    if ( (flags&CELL_HIGHLIGHT) != 0 ) {
         mvwaddnstr( dctx->boardWin, rect->top+rect->height-1, 
                     rect->left, "*-*", 3 );
     }
 } /* curses_draw_drawTile */
 
 static  void
-curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect )
+curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
+                          CellFlags XP_UNUSED(flags) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     curses_stringInTile( dctx, rect, "?", "?" );
@@ -352,7 +353,8 @@ curses_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
 static void
 curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect, 
                             XWBonusType XP_UNUSED(cursorBonus), 
-                            XP_Bool vertical, HintAtts XP_UNUSED(hintAtts) )
+                            XP_Bool vertical, HintAtts XP_UNUSED(hintAtts),
+                            CellFlags XP_UNUSED(flags) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 #if 1
