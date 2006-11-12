@@ -2616,7 +2616,7 @@ invalFocusOwner( BoardCtxt* board )
         draw = XP_FALSE;
         break;
     }
-    board->needsDrawing = draw;
+    board->needsDrawing = draw || board->needsDrawing;
     return draw;
 } /* invalFocusOwner */
 
