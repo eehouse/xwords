@@ -305,8 +305,7 @@ drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
 static XP_Bool
 gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                    XP_Bitmap bitmap, Tile XP_UNUSED(tile), XP_S16 owner, 
-                   XWBonusType bonus, HintAtts hintAtts,
-                   XP_Bool isBlank, XP_Bool highlight, XP_Bool isStar )
+                   XWBonusType bonus, HintAtts hintAtts, CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect rectInset = *rect;
@@ -347,7 +346,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                                 TRUE,
                                 rectInset.left, rectInset.top,
                                 rectInset.width+1, rectInset.height+1 );
-            if ( highlight ) {
+            if ( (flags & CELL_HIGHLIGHT) != 0 ) {
                 foreground = &dctx->red;
             } else {
                 foreground = &dctx->playerColors[owner];
@@ -357,7 +356,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                             &rectInset, XP_GTK_JUST_CENTER,
                             foreground, NULL );
 
-            if ( isBlank ) {
+            if ( (flags & CELL_ISBLANK) != 0 ) {
                 gdk_draw_arc( DRAW_WHAT(dctx), dctx->drawGC,
                               0,	/* filled */
                               rect->left, /* x */
@@ -371,7 +370,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
         drawBitmapFromLBS( dctx, bitmap, rect );
     }
 
-    if ( isStar ) {
+    if ( (flags & CELL_ISSTAR) != 0 ) {
         draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], "*", 
                         rect, XP_GTK_JUST_CENTER,
                         &dctx->black, NULL );
@@ -417,7 +416,7 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner,
 
 static void
 gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
-                   XP_Bitmap bitmap, XP_S16 val, XP_Bool highlighted )
+                   XP_Bitmap bitmap, XP_S16 val, CellFlags flags )
 {
     XP_UCHAR numbuf[3];
     gint len; 
@@ -469,7 +468,7 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                             insetR.left, insetR.top, insetR.width, 
                             insetR.height );
 
-        if ( highlighted ) {
+        if ( (flags & CELL_HIGHLIGHT) != 0 ) {
             insetRect( &insetR, 1 );
             gdk_draw_rectangle( DRAW_WHAT(dctx),
                                 dctx->drawGC,
@@ -480,7 +479,8 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 } /* gtk_draw_drawTile */
 
 static void
-gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect )
+gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
+                       CellFlags XP_UNUSED(flags) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect r = *rect;
@@ -563,7 +563,7 @@ gtk_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 static void
 gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP, 
                          XWBonusType XP_UNUSED(cursorBonus), XP_Bool vertical,
-                         HintAtts hintAtts )
+                         HintAtts hintAtts, CellFlags XP_UNUSED(flags) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     const char* curs = vertical? "|":"-";
@@ -706,7 +706,8 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
 static void
 gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
-                             XP_S16 score, XP_U16 XP_UNUSED(playerNum) )
+                             XP_S16 score, XP_U16 XP_UNUSED(playerNum),
+                             CellFlags XP_UNUSED(flags) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char buf[5];
