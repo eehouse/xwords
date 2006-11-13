@@ -866,6 +866,14 @@ handle_trade_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 } /* handle_juggle_button */
 
 static void
+handle_done_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    if ( board_commitTurn( globals->cGlobals.game.board ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
+} /* handle_done_button */
+
+static void
 scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
 {
     XP_U16 curYOffset, newValue;
@@ -1418,6 +1426,9 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
 
     button = makeShowButtonFromBitmap( globals, "../trade.xpm", "t",
                                        G_CALLBACK(handle_trade_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    button = makeShowButtonFromBitmap( globals, "../done.xpm", "d",
+                                       G_CALLBACK(handle_done_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );
