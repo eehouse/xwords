@@ -108,6 +108,7 @@ static void p_board_timerFired( void* closure, XWTimerReason why );
 static XP_Bool replaceLastTile( BoardCtxt* board );
 static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
 static XP_Bool advanceArrow( BoardCtxt* board );
+static XP_Bool exitTradeMode( BoardCtxt* board );
 
 #ifdef KEY_SUPPORT
 static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
@@ -539,7 +540,11 @@ board_commitTurn( BoardCtxt* board )
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
     } else if ( turn != board->selPlayer ) {
-        util_userError( board->util, ERR_NOT_YOUR_TURN );
+        if ( board->tradeInProgress[board->selPlayer] ) {
+            result = exitTradeMode( board );
+        } else {
+            util_userError( board->util, ERR_NOT_YOUR_TURN );
+        }
     } else if ( checkRevealTray( board ) ) {
         if ( board->tradeInProgress[turn] ) {
             result = XP_TRUE;	/* there's at least the window to clean up
@@ -2395,6 +2400,17 @@ handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 } /* handleActionInCell */
 #endif /* POINTER_SUPPORT || KEYBOARD_NAV */
 
+static XP_Bool
+exitTradeMode( BoardCtxt* board )
+{
+    XP_U16 selPlayer = board->selPlayer;
+    invalSelTradeWindow( board );
+    board->tradeInProgress[selPlayer] = XP_FALSE;
+    board_invalTrayTiles( board, board->traySelBits[selPlayer] );
+    board->traySelBits[selPlayer] = 0x00;
+    return XP_TRUE;
+} /* exitTradeMode */
+
 #ifdef POINTER_SUPPORT
 XP_Bool
 board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
@@ -2439,13 +2455,7 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
                     if ( TRADE_IN_PROGRESS(board) ) {
                         if ( ptOnTradeWindow( board, x, y )) {
-                            XP_U16 selPlayer = board->selPlayer;
-                            invalSelTradeWindow( board );
-                            board->tradeInProgress[selPlayer] = XP_FALSE;
-                            board_invalTrayTiles( 
-                                board, board->traySelBits[selPlayer] );
-                            board->traySelBits[selPlayer] = 0x00;
-                            result = XP_TRUE;
+                            result = exitTradeMode( board );
                         }
                     } else {
                         XP_U16 col, row;
