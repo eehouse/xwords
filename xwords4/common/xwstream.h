@@ -31,6 +31,14 @@ typedef XP_U32 XWStreamPos;     /* low 3 bits are bit offset; rest byte offset *
 enum { POS_READ, POS_WRITE };
 typedef XP_U8 PosWhich;
 
+#ifdef DEBUG
+# define DBG_LINE_FILE_FORMAL  , XP_U16 lin, const char* fil
+# define DBG_LINE_FILE_PARM  , __LINE__, __FILE__
+#else
+# define DBG_LINE_FILE_FORMAL
+# define DBG_LINE_FILE_PARM
+#endif
+
 typedef struct StreamCtxVTable {
     void (*m_stream_destroy)( XWStreamCtxt* dctx );
 
@@ -47,7 +55,8 @@ typedef struct StreamCtxVTable {
     void (*m_stream_putString)( XWStreamCtxt* dctx, const char* whence );
     void (*m_stream_putU16)( XWStreamCtxt* dctx, XP_U16 data );
     void (*m_stream_putU32)( XWStreamCtxt* dctx, XP_U32 data );
-    void (*m_stream_putBits)( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32 bits );
+    void (*m_stream_putBits)( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32 bits
+                              DBG_LINE_FILE_FORMAL );
 
     void (*m_stream_copyFromStream)( XWStreamCtxt* dctx, XWStreamCtxt* src,
                                      XP_U16 nBytes );
@@ -114,7 +123,7 @@ struct XWStreamCtxt {
          (sc)->vtable->m_stream_putU32((sc), (d))
 
 #define stream_putBits(sc, n, b) \
-         (sc)->vtable->m_stream_putBits((sc), (n), (b))
+         (sc)->vtable->m_stream_putBits((sc), (n), (b) DBG_LINE_FILE_PARM )
 
 #define stream_copyFromStream( sc, src, nb ) \
          (sc)->vtable->m_stream_copyFromStream((sc), (src), (nb))
