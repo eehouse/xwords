@@ -268,9 +268,13 @@ putOneBit( MemStreamCtxt* stream, XP_U16 bit )
 } /* putOneBit */
 
 static void
-mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data )
+mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data
+                    DBG_LINE_FILE_FORMAL )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+#ifdef DEBUG
+    XP_U16 origBits = nBits;
+#endif
 
     XP_ASSERT( nBits > 0 );
 
@@ -278,7 +282,13 @@ mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data )
         putOneBit( stream, (XP_U16)(((data & 1L) != 0)? 1:0) );
         data >>= 1;
     }
-    XP_ASSERT( data == 0 );	/* otherwise nBits was too small */
+    XP_ASSERT( data == 0 );     /* otherwise nBits was too small */
+#ifdef DEBUG
+    if ( data != 0 ) {
+        XP_LOGF( "%s: nBits was %d from line %d, %s", __FUNCTION__, 
+                 origBits, lin, fil );
+    }
+#endif
 } /* mem_stream_putBits */
 
 static void
