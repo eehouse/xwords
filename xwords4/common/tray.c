@@ -111,12 +111,13 @@ drawTray( BoardCtxt* board )
         if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
                              dfsFor( board, OBJ_TRAY ) ) ) {
             DictionaryCtxt* dictionary = model_getDictionary( board->model );
-            XP_S16 cursorIndex = -1;
+            XP_S16 cursorBits = 0;
 #ifdef KEYBOARD_NAV
-            if ( board->focusHasDived && board->focussed == OBJ_TRAY ) {
-                TileBit cursorLoc = 1 << board->trayCursorLoc[turn];
-                if ( !!cursorLoc ) {
-                    cursorIndex = indexForBits( cursorLoc );
+            if ( board->focussed == OBJ_TRAY ) {
+                if ( board->focusHasDived ) {
+                    cursorBits = 1 << board->trayCursorLoc[turn];
+                } else {
+                    cursorBits = ALLTILES;
                 }
             }
 #endif
@@ -139,12 +140,13 @@ drawTray( BoardCtxt* board )
                        erasing */
                     for ( i = MAX_TRAY_TILES - 1; i >= 0; --i ) {
                         CellFlags flags = CELL_NONE;
+                        XP_U16 mask = 1 << i;
 
-                        if ( (board->trayInvalBits & (1 << i)) == 0 ) {
+                        if ( (board->trayInvalBits & mask) == 0 ) {
                             continue;
                         }
 #ifdef KEYBOARD_NAV
-                        if ( cursorIndex == i ) {
+                        if ( (cursorBits & mask) != 0 ) {
                             flags |= CELL_ISCURSOR;
                         }
 #endif
@@ -200,11 +202,13 @@ drawTray( BoardCtxt* board )
                     board->dividerInvalid = XP_FALSE;
                 }
 
-                drawPendingScore( board, cursorIndex == MAX_TRAY_TILES - 1 );
+                drawPendingScore( board, 
+                                  (cursorBits & (1<<(MAX_TRAY_TILES-1))) != 0 );
 
 #ifdef KEYBOARD_NAV
-                if ( cursorIndex >= 0 ) {
-                    figureTrayTileRect( board, cursorIndex, &tileRect );
+                if ( (cursorBits != 0) && (cursorBits != ALLTILES) ) {
+                    figureTrayTileRect( board, indexForBits(cursorBits),
+                                        &tileRect );
                     draw_drawCursor( board->draw, OBJ_TRAY, &tileRect );
                 }
 #endif
@@ -634,32 +638,40 @@ board_juggleTray( BoardCtxt* board )
 
 #ifdef KEYBOARD_NAV
 XP_Bool
-tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
+tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
 {
     XP_Bool result;
     XP_U16 selPlayer = board->selPlayer;
+    XP_S16 pos;
 
-    if ( cursorKey == XP_CURSOR_KEY_UP ) {
-        result = board_moveDivider( board, XP_FALSE );
-    } else if ( cursorKey == XP_CURSOR_KEY_DOWN ) {
-        result = board_moveDivider( board, XP_TRUE );
-    } else {
-        XP_S16 pos;
-
+    switch (cursorKey ) {
+    case XP_CURSOR_KEY_UP:
+    case XP_CURSOR_KEY_DOWN:
+        *up = XP_TRUE;
+        /* moving the divider needs to be hard to do accidentally since it
+           confuses users when juggle and hint stop working.  But all things
+           must be possible via keyboard on devices that don't have
+           touchscreens.  Probably need a new keytype XP_CURSOR_KEY_ALTDOWN
+           etc. */
+/*         result = board_moveDivider( board, XP_FALSE ); */
+/*         result = board_moveDivider( board, XP_TRUE ); */
+        break;
+    case XP_CURSOR_KEY_RIGHT:
+    case XP_CURSOR_KEY_LEFT:
         board_invalTrayTiles( board, 1 << board->trayCursorLoc[selPlayer] );
 
         pos = board->trayCursorLoc[selPlayer];
         /* Loop in order to skip all empty tile slots but one */
         for ( ; ; ) {
-            pos += cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
+            pos += (cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1);
             if ( pos < 0 || pos >= MAX_TRAY_TILES ) {
-                shiftFocusUp( board, cursorKey );
+                *up = XP_TRUE;
             } else {
                 /* Revisit this when able to never draw the cursor in a place
                    this won't allow it, e.g. when the tiles move after a
-                   hint*/
+                   hint */
 /*                 if ( board->trayVisState == TRAY_REVEALED ) { */
-/*                     XP_U16 count = model_getNumTilesInTray( board->model,  */
+/*                     XP_U16 count = model_getNumTilesInTray( board->model, */
 /*                                                             selPlayer ); */
 /*                     if ( (pos > count) && (pos < MAX_TRAY_TILES-1) ) { */
 /*                         continue; */
@@ -672,6 +684,10 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey )
         }
         board_invalTrayTiles( board, 1 << board->trayCursorLoc[selPlayer] );
         result = XP_TRUE;
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
     }
 
     return result;

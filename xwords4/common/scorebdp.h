@@ -31,7 +31,7 @@ XP_Bool handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y );
 #endif
 
 #ifdef KEYBOARD_NAV
-XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key );
+XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool* up );
 #endif
 
 #endif
