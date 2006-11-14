@@ -74,12 +74,6 @@ drawScoreBoard( BoardCtxt* board )
                     cursorIndex = board->scoreCursorLoc;
                 }
             }
-            
-/*             XP_Bool focusAll = (board->focussed == OBJ_SCORE) */
-/*                 && !board->focusHasDived; */
-/*             XP_S16 cursorIndex = ( (board->focussed == OBJ_SCORE) */
-/*                                   && board->focusHasDived ) ? */
-/*                 board->scoreCursorLoc : -1; */
 #endif
             draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
                              dfsFor( board, OBJ_SCORE ) );
@@ -285,30 +279,40 @@ handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
 #ifdef KEYBOARD_NAV
 XP_Bool
-moveScoreCursor( BoardCtxt* board, XP_Key key )
+moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool* pUp )
 {
     XP_Bool result = XP_TRUE;
     XP_U16 nPlayers = board->gi->nPlayers;
     XP_S16 scoreCursorLoc = board->scoreCursorLoc;
+    XP_Bool up = XP_FALSE;
+
+    /* Depending on scoreboard layout, keys move cursor or leave. */
+    key = flipKey( key, board->scoreSplitHor );
 
     switch ( key ) {
     case XP_CURSOR_KEY_DOWN:
-    case XP_CURSOR_KEY_RIGHT:
         ++scoreCursorLoc;
         break;
+    case XP_CURSOR_KEY_RIGHT:
+        up = XP_TRUE;
+        break;
     case XP_CURSOR_KEY_UP:
-    case XP_CURSOR_KEY_LEFT:
         --scoreCursorLoc;
+        break;
+    case XP_CURSOR_KEY_LEFT:
+        up = XP_TRUE;
         break;
     default:
         result = XP_FALSE;
     }
-    if ( scoreCursorLoc < 0 || scoreCursorLoc >= nPlayers ) {
-        shiftFocusUp( board, key );
+    if ( !up && ((scoreCursorLoc < 0) || (scoreCursorLoc >= nPlayers)) ) {
+        up = XP_TRUE;
     } else {
         board->scoreCursorLoc = scoreCursorLoc;
+        board->scoreBoardInvalid = XP_TRUE;
     }
-    board->scoreBoardInvalid = XP_TRUE;
+
+    *pUp = up;
 
     return result;
 } /* moveScoreCursor */

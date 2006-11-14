@@ -121,7 +121,7 @@ XP_Bool board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y );
 #endif
 
-XP_Bool board_handleKey( BoardCtxt* board, XP_Key key );
+XP_Bool board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* handled );
 
 #ifdef KEYBOARD_NAV
 /* void board_focusChange( BoardCtxt* board ); */

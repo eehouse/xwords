@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -121,7 +122,8 @@ static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
 #endif
 
 #ifdef KEYBOARD_NAV
-static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey );
+static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
+                                 XP_Bool* up );
 static XP_Bool invalFocusOwner( BoardCtxt* board );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -2486,30 +2488,32 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 #endif /* #ifdef POINTER_SUPPORT */
 
 #ifdef KEYBOARD_NAV
-static XP_Key
-flipKey( BoardCtxt* board, XP_Key key ) {
-    if ( board->isFlipped ) {
+XP_Key
+flipKey( XP_Key key, XP_Bool flip ) {
+    XP_Key result = key;
+    if ( flip ) {
         switch( key ) {
         case XP_CURSOR_KEY_DOWN:
-            return XP_CURSOR_KEY_RIGHT;
+            result = XP_CURSOR_KEY_RIGHT; break;
         case XP_CURSOR_KEY_UP:
-            return XP_CURSOR_KEY_LEFT;
+            result = XP_CURSOR_KEY_LEFT; break;
         case XP_CURSOR_KEY_LEFT:
-            return XP_CURSOR_KEY_UP;
+            result = XP_CURSOR_KEY_UP; break;
         case XP_CURSOR_KEY_RIGHT:
-            return XP_CURSOR_KEY_DOWN;
+            result = XP_CURSOR_KEY_DOWN; break;
         default:
             XP_ASSERT(0);
         }
     }
-    return key;
+    return result;
 } /* flipKey */
 #endif
 
 XP_Bool
-board_handleKey( BoardCtxt* board, XP_Key key )
+board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 {
-    XP_Bool result = XP_FALSE;
+    XP_Bool redraw = XP_FALSE;
+    XP_Bool handled = XP_FALSE;
     XP_Bool trayVisible = board->trayVisState == TRAY_REVEALED;
     XP_Bool gotArrow;
 
@@ -2520,25 +2524,33 @@ board_handleKey( BoardCtxt* board, XP_Key key )
     case XP_CURSOR_KEY_LEFT:
     case XP_CURSOR_KEY_RIGHT:
         if ( board->focusHasDived ) {
+            XP_Bool up = XP_FALSE;
             if ( board->focussed == OBJ_BOARD ) {
-                result = board_moveCursor( board, flipKey( board, key ) );
+                redraw = board_moveCursor( board, 
+                                           flipKey( key, board->isFlipped ),
+                                           &up );
             } else if ( board->focussed == OBJ_SCORE ) {
-                result = moveScoreCursor( board, key );
+                redraw = moveScoreCursor( board, key, &up );
             } else if ( board->focussed == OBJ_TRAY ) {
-                result = tray_moveCursor( board, key );
+                redraw = tray_moveCursor( board, key, &up );
             }
-        } else if ( board->focussed != OBJ_NONE ) {
-            invalFocusOwner( board );
-            shiftFocusUp( board, key );
-            result = XP_TRUE;
+            if ( up ) {
+                invalFocusOwner( board );
+                board->focusHasDived = XP_FALSE;
+                invalFocusOwner( board );
+            } else {
+                handled = XP_TRUE;
+            }
+        } else {
+            /* Do nothing.  We don't handle transition among top-level
+               focussed objects.  Platform must.  */
         }
         break;
 #endif
 
     case XP_CURSOR_KEY_DEL:
         if ( trayVisible ) {
-            replaceLastTile( board );
-            result = XP_TRUE;
+            handled = redraw = replaceLastTile( board );
         }
         break;
 
@@ -2548,35 +2560,37 @@ board_handleKey( BoardCtxt* board, XP_Key key )
             invalFocusOwner( board );
             board->focusHasDived = XP_FALSE;
             invalFocusOwner( board );
-            result = XP_TRUE;
+            handled = redraw = XP_TRUE;
         }
         break;
 
     case XP_RETURN_KEY:
         if ( board->focusHasDived ) {
-            result = XP_TRUE;   /* even if don't draw, we handle it!! */
+            handled = XP_TRUE;   /* even if don't draw, we handle it!! */
             if ( board->focussed == OBJ_TRAY ) {
                 if ( trayVisible ) {
-                    (void)tray_keyAction( board );
+                    redraw = tray_keyAction( board );
                 } else {
-                    (void)askRevealTray( board );
+                    redraw = askRevealTray( board );
                 }
             } else if ( board->focussed == OBJ_BOARD ) {
                 /* mimic pen-down/pen-up on cursor */
                 if ( trayVisible ) {
                     BdCursorLoc loc = board->bdCursor[board->selPlayer];
-                    (void)handleActionInCell( board, loc.col, loc.row );
+                    redraw = handleActionInCell( board, loc.col, loc.row );
                 } else {
-                    askRevealTray( board );
+                    redraw = askRevealTray( board );
                 }
             } else if ( board->focussed == OBJ_SCORE ) {
                 /* tap on what's already selected: reveal tray, etc. */
                 board_selectPlayer( board, board->scoreCursorLoc );
+                redraw = XP_TRUE; /* must assume */
             } 
         } else if ( board->focussed != OBJ_NONE ) {
+            redraw = invalFocusOwner( board );
             board->focusHasDived = XP_TRUE;
-            board_invalAll( board ); /* just want to inval borders! */
-            result = XP_TRUE;
+            redraw = invalFocusOwner( board );
+            handled = XP_TRUE;
         }
         break;
 #endif
@@ -2584,14 +2598,18 @@ board_handleKey( BoardCtxt* board, XP_Key key )
     default:
         XP_ASSERT( key >= XP_KEY_LAST );
 
-        result = trayVisible && moveKeyTileToBoard( board, key, &gotArrow );
+        handled = redraw = trayVisible
+            && moveKeyTileToBoard( board, key, &gotArrow );
 
-        if ( result && gotArrow && !advanceArrow( board ) ) {
+        if ( handled && gotArrow && !advanceArrow( board ) ) {
             setArrowVisible( board, XP_FALSE );
         }
     } /* switch */
 
-    return result;
+    if ( !!pHandled ) {
+        *pHandled = handled;
+    }
+    return redraw;
 } /* board_handleKey */
 
 #ifdef KEYBOARD_NAV
@@ -2690,21 +2708,6 @@ board_toggle_arrowDir( BoardCtxt* board )
     }
 } /* board_toggle_cursorDir */
 
-void
-shiftFocusUp( BoardCtxt* board, XP_Key key )
-{
-    BoardObjectType next = OBJ_NONE;
-    XP_ASSERT( board->focussed != OBJ_NONE );
-    util_notifyFocusChange( board->util, board->focussed, key, &next );
-
-    if ( board->focussed != next ) {
-        (void)board_focusChanged( board, board->focussed, XP_FALSE );
-
-        board->focusHasDived = XP_FALSE;
-
-        (void)board_focusChanged( board, next, XP_TRUE );
-    }
-}
 #endif /* KEYBOARD_NAV */
 
 static XP_Bool
@@ -2720,8 +2723,8 @@ advanceArrow( BoardCtxt* board )
 
 static XP_Bool
 figureNextLoc( BoardCtxt* board, XP_Key cursorKey, 
-               XP_Bool XP_UNUSED_KEYBOARD_NAV(canShiftFocus), 
-               XP_Bool inclPending, XP_U16* colP, XP_U16* rowP )
+               XP_Bool inclPending, XP_U16* colP, XP_U16* rowP, 
+               XP_Bool* pUp )
 {
     XP_S16 max;
     XP_S16* useWhat;
@@ -2772,9 +2775,8 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey,
         for ( ; ; ) {
             if ( *useWhat == end ) {
 #ifdef KEYBOARD_NAV
-                if ( canShiftFocus ) {
-                    shiftFocusUp( board, cursorKey );
-                    result = XP_TRUE;
+                if ( !!pUp ) {
+                    *pUp = XP_TRUE;
                 }
 #endif
                 break;
@@ -2798,7 +2800,7 @@ board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
 
     setArrowVisible( board, XP_TRUE );
     (void)getArrow( board, &col, &row );
-    changed = figureNextLoc( board, cursorKey, XP_FALSE, XP_TRUE, &col, &row );
+    changed = figureNextLoc( board, cursorKey, XP_TRUE, &col, &row, NULL );
     if ( changed ) {
         (void)setArrow( board, col, row );
     }
@@ -2807,15 +2809,14 @@ board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
 
 #ifdef KEYBOARD_NAV
 static XP_Bool
-board_moveCursor( BoardCtxt* board, XP_Key cursorKey )
+board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
 {
     BdCursorLoc loc = board->bdCursor[board->selPlayer];
     XP_U16 col = loc.col;
     XP_U16 row = loc.row;
     XP_Bool changed;
 
-    changed = figureNextLoc( board, cursorKey, XP_TRUE, XP_FALSE, 
-                             &col, &row );
+    changed = figureNextLoc( board, cursorKey, XP_FALSE, &col, &row, up );
     if ( changed ) {
         invalCell( board, loc.col, loc.row );
         invalCell( board, col, row );
