@@ -158,6 +158,7 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
                    GtkAppGlobals* globals )
 {
     XP_Key xpkey = XP_KEY_NONE;
+    XP_Bool movesCursor = XP_FALSE;
     guint keyval = event->keyval;
 
     XP_LOGF( "got key 0x%x", keyval );
@@ -166,15 +167,19 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
 
     case GDK_Left:
         xpkey = XP_CURSOR_KEY_LEFT;
+        movesCursor = XP_TRUE;
         break;
     case GDK_Right:
         xpkey = XP_CURSOR_KEY_RIGHT;
+        movesCursor = XP_TRUE;
         break;
     case GDK_Up:
         xpkey = XP_CURSOR_KEY_UP;
+        movesCursor = XP_TRUE;
         break;
     case GDK_Down:
         xpkey = XP_CURSOR_KEY_DOWN;
+        movesCursor = XP_TRUE;
         break;
     case GDK_BackSpace:
         XP_LOGF( "... it's a DEL" );
@@ -190,7 +195,15 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
     }
 
     if ( xpkey != XP_KEY_NONE ) {
-        if ( board_handleKey( globals->cGlobals.game.board, xpkey ) ) {
+        XP_Bool handled;
+        XP_Bool draw;
+        draw = board_handleKey( globals->cGlobals.game.board, xpkey, &handled );
+
+        if ( movesCursor || !handled ) {
+            XP_LOGF( "need to handle focus shift" );
+        }
+
+        if ( draw ) {
             board_draw( globals->cGlobals.game.board );
         }
     }

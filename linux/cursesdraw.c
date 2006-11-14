@@ -220,11 +220,11 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_score_pendingScore */
 
 static void
-curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ), 
+curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ, 
                          const XP_Rect* rect, DrawFocusState dfs )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    if ( dfs == DFS_TOP ) {
+    if ( dfs == DFS_TOP && typ == OBJ_BOARD ) {
         cursesHiliteRect( dctx->boardWin, rect );
     }
     wrefresh( dctx->boardWin );
@@ -245,6 +245,10 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     /* print the name and turn/remoteness indicator */
     formatScoreText( buf, dsi );
     mvwprintw( dctx->boardWin, y, rOuter->left, buf );
+
+    if ( (dsi->flags&CELL_ISCURSOR) != 0 ) {
+        cursesHiliteRect( dctx->boardWin, rOuter );
+    }
 } /* curses_draw_score_drawPlayer */
 
 static XP_Bool
@@ -335,14 +339,21 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
         mvwaddnstr( dctx->boardWin, rect->top+rect->height-1, 
                     rect->left, "*-*", 3 );
     }
+
+    if ( (flags&CELL_ISCURSOR) != 0 ) {
+        cursesHiliteRect( dctx->boardWin, rect );
+    }
 } /* curses_draw_drawTile */
 
 static  void
 curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
-                          CellFlags XP_UNUSED(flags) )
+                          CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     curses_stringInTile( dctx, rect, "?", "?" );
+    if ( (flags&CELL_ISCURSOR) != 0 ) {
+        cursesHiliteRect( dctx->boardWin, rect );
+    }
 } /* curses_draw_drawTileBack */
 
 static void
@@ -374,11 +385,13 @@ curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawBoardArrow */
 
 static void
-curses_draw_drawCursor( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ), 
+curses_draw_drawCursor( DrawCtx* p_dctx, BoardObjectType typ, 
                         const XP_Rect* rect )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    cursesHiliteRect( dctx->boardWin, rect );
+    if ( typ == OBJ_BOARD ) {
+        cursesHiliteRect( dctx->boardWin, rect );
+    }
 } /* curses_draw_drawBoardCursor */
 
 static void 
