@@ -142,26 +142,18 @@ static void
 drawFocusRect( PalmDrawCtx* dctx, const XP_Rect* rect )
 {
     XP_Rect r;
-    Err err;
-    PalmAppGlobals* globals = dctx->globals;
+    XP_U16 i;
+    IndexedColorType oldColor;
 
-    XP_ASSERT( dctx->doHiRes );
-    r.left = rect->left >> 1;
-    r.top = rect->top >> 1;
-    r.width = rect->width >> 1;
-    r.height = rect->height >> 1;
-    ++r.height;
-    ++r.width;
-    insetRect( &r, 3 );         /* draw inside the thing */
-    rect = &r;
+    oldColor = WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+    r = *rect;
 
-    XP_LOGF( "%s: HsNavDrawFocusRing at {%d,%d,%d,%d}", __FUNCTION__, 
-             rect->left, rect->top, rect->width, rect->height );
-
-    err = HsNavDrawFocusRing( globals->mainForm, XW_SCOREBOARD_GADGET_ID, 0, 
-                              (RectangleType*)rect, 
-                              hsNavFocusRingStyleObjectTypeDefault, false );
-/*     XP_LOGF( "%s: HsNavDrawFocusRing => %x", __FUNCTION__, err ); */
+    insetRect( &r, 1 );
+    for ( i = 0; i < 6; ++i ) {
+        insetRect( &r, 1 );
+        WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&r );
+    }
+    (void)WinSetForeColor( oldColor );
 }
 #else
 # define drawFocusRect( a, b )
@@ -308,7 +300,7 @@ palm_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ,
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 #ifdef XWFEATURE_FIVEWAY
     PalmAppGlobals* globals = dctx->globals;
-    if ( globals->hasFiveWay && dfs == DFS_TOP ) {
+    if ( globals->hasFiveWay && (dfs == DFS_TOP) && (typ == OBJ_BOARD) ) {
         drawFocusRect( dctx, rect );
     }
 #endif
@@ -645,15 +637,6 @@ smallBoldStringAt( const char* str, XP_U16 len, XP_S16 x, XP_U16 y )
 } /* smallBoldStringAt */
 
 static void
-adjustTileRect( XP_Rect* r, XP_U16 doubler )
-{
-    r->width -= 3 * doubler;
-    r->height -= 3 * doubler;
-    r->top += 2 * doubler;
-    r->left += 2 * doubler;
-}
-
-static void
 palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                     const XP_UCHAR* letters, XP_Bitmap bitmap,
                     XP_S16 val, CellFlags flags )
@@ -663,7 +646,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_Rect localR = *rect;
     XP_U16 len, width;
     XP_U16 doubler = 1;
-    XP_Bool cursor = (flags & CELL_ISCURSOR) != 0;
+    const XP_Bool cursor = (flags & CELL_ISCURSOR) != 0;
     IndexedColorType oclr = 0;
     XP_Bool empty = (flags & CELL_ISEMPTY) != 0;
 
@@ -673,14 +656,20 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 
     draw_clearRect( p_dctx, &localR );
 
-    adjustTileRect( &localR, doubler );
+    localR.height -= 3 * doubler;
+    localR.top += 2 * doubler;
 
     if ( cursor ) {
         oclr = WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+        /* this will fill it with the tile background color */
+        WinEraseRectangle( (const RectangleType*)&localR, 0 );
     }
 
+    localR.width -= 3 * doubler;
+    localR.left += 2 * doubler;
+
     /* this will fill it with the tile background color */
-    if ( !empty || cursor ) {
+    if ( !empty && !cursor ) {
         WinEraseRectangle( (const RectangleType*)&localR, 0 );
     }
 
