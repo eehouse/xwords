@@ -85,6 +85,7 @@ typedef struct PalmDrawCtx {
     UInt16 oldCoord;
     XP_Bool doHiRes;
     XP_Bool oneDotFiveAvail;
+    XP_Bool topFocus;
 
     XP_LangCode fontLangCode;
     PalmFontHtInfo* fontHtInfo;

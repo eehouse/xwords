@@ -615,6 +615,7 @@ palm_bnw_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 
     WinGetClip( &dctx->oldTrayClip );
     WinSetClip( (RectangleType*)rect );
+    dctx->topFocus = dfs == DFS_TOP;
     return XP_TRUE;
 } /* palm_bnw_draw_trayBegin */
 
@@ -647,26 +648,32 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_U16 len, width;
     XP_U16 doubler = 1;
     const XP_Bool cursor = (flags & CELL_ISCURSOR) != 0;
-    IndexedColorType oclr = 0;
     XP_Bool empty = (flags & CELL_ISEMPTY) != 0;
+
+    WinPushDrawState();
 
     if ( dctx->doHiRes ) {
         doubler = 2;
     }
 
     draw_clearRect( p_dctx, &localR );
+    
+    if ( dctx->topFocus || cursor ) {
+        (void)WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+        if ( dctx->topFocus ) {
+            WinEraseRectangle( (const RectangleType*)&localR, 0 );
+        }
+    }
 
     localR.height -= 3 * doubler;
     localR.top += 2 * doubler;
+    localR.width -= 3 * doubler;
+    localR.left += 2 * doubler;
 
-    if ( cursor ) {
-        oclr = WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+    if ( cursor && !dctx->topFocus ) {
         /* this will fill it with the tile background color */
         WinEraseRectangle( (const RectangleType*)&localR, 0 );
     }
-
-    localR.width -= 3 * doubler;
-    localR.left += 2 * doubler;
 
     /* this will fill it with the tile background color */
     if ( !empty && !cursor ) {
@@ -723,10 +730,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
             }
         }
     }
-
-    if ( cursor ) {
-        WinSetBackColor( oclr );
-    }
+    WinPopDrawState();
 } /* palm_draw_drawTile */
 
 static void
