@@ -67,6 +67,7 @@ static XP_Bool handleLeft( CursesAppGlobals* globals );
 static XP_Bool handleRight( CursesAppGlobals* globals );
 static XP_Bool handleUp( CursesAppGlobals* globals );
 static XP_Bool handleDown( CursesAppGlobals* globals );
+static XP_Bool handleFocusKey( CursesAppGlobals* globals, XP_Key key );
 
 
 #ifdef MEM_DEBUG
@@ -395,6 +396,19 @@ handleHide( CursesAppGlobals* globals )
 } /* handleJuggle */
 
 static XP_Bool
+handleAltLeft( CursesAppGlobals* globals )
+{
+    return handleFocusKey( globals, XP_CURSOR_KEY_ALTLEFT );
+}
+
+static XP_Bool
+handleAltRight( CursesAppGlobals* globals )
+{
+    return handleFocusKey( globals, XP_CURSOR_KEY_ALTRIGHT );
+}
+
+
+static XP_Bool
 handleFlip( CursesAppGlobals* globals )
 {
     globals->doDraw = board_flip( globals->cGlobals.game.board );
@@ -461,41 +475,39 @@ static XP_Bool
 shiftFocus( CursesAppGlobals* globals, XP_Key key )
 {
     BoardCtxt* board = globals->cGlobals.game.board;
-    BoardObjectType typ = board_getFocusOwner( board );
-    BoardObjectType nxt;
-    XP_Bool forward = key == XP_CURSOR_KEY_DOWN || key == XP_CURSOR_KEY_RIGHT;
-    XP_Bool handled;
+    XP_Bool handled = XP_FALSE;
 
-    switch( typ ) {
-    case OBJ_NONE:
-        XP_ASSERT( 0 );         /* not in curses anyway */
-        break;
-    case OBJ_SCORE:
-        if ( forward ) {
-            nxt = OBJ_TRAY;
+    do {                        /* allow break */
+        XP_Bool forward;
+        BoardObjectType nxt;
+
+        if ( key == XP_CURSOR_KEY_DOWN || key == XP_CURSOR_KEY_RIGHT ) {
+            forward = XP_TRUE;
+        } else if ( key == XP_CURSOR_KEY_UP || key == XP_CURSOR_KEY_LEFT ) {
+            forward = XP_FALSE;
         } else {
-            nxt = OBJ_BOARD;
+            break;
         }
-        break;
-    case OBJ_BOARD:
-        if ( forward ) {
-            nxt = OBJ_SCORE;
-        } else {
-            nxt = OBJ_TRAY;
+
+        switch( board_getFocusOwner( board ) ) {
+        case OBJ_NONE:
+            XP_ASSERT( 0 );         /* not in curses anyway */
+            break;
+        case OBJ_SCORE:
+            nxt = forward ? OBJ_TRAY :  OBJ_BOARD;
+            break;
+        case OBJ_BOARD:
+            nxt =  forward ? OBJ_SCORE : OBJ_TRAY;
+            break;
+        case OBJ_TRAY:
+            nxt =  forward ? OBJ_BOARD : OBJ_SCORE;
+            break;
         }
-        break;
-    case OBJ_TRAY:
-        if ( forward ) {
-            nxt = OBJ_BOARD;
-        } else {
-            nxt = OBJ_SCORE;
+        handled = board_focusChanged( board, nxt, XP_TRUE );
+        if ( handled ) {
+            changeMenuForFocus( globals, nxt );
         }
-        break;
-    }
-    handled = board_focusChanged( board, nxt, XP_TRUE );
-    if ( handled ) {
-        changeMenuForFocus( globals, nxt );
-    }
+    } while ( 0 );
     return handled;
 }
 
@@ -554,6 +566,8 @@ MenuList scoreMenuList[] = {
 MenuList trayMenuList[] = {
     { handleJuggle, "Juggle", "G", 'G' },
     { handleHide, "[un]hIde", "I", 'I' },
+    { handleAltLeft, "Divider left", "{", '{' },
+    { handleAltRight, "Divider right", "}", '}' },
 
     { NULL, NULL, NULL, '\0'}
 };
@@ -754,6 +768,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
         /* stdin first */
         if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) {
             int evtCh = fgetc(stdin);
+            XP_LOGF( "%s: got key: %x", __FUNCTION__, evtCh );
             *ch = evtCh;
             result = XP_TRUE;
             --numEvents;
