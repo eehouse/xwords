@@ -2570,6 +2570,15 @@ mainViewHandleEvent( EventPtr event )
         }
         if ( xpkey != XP_KEY_NONE ) {
             draw = board_handleKey( globals->game.board, xpkey, &handled );
+            /* If handled comes back false yet something changed (draw),
+               we'll be getting another event shortly.  Put the draw off
+               until then so we don't flash the tray focussed then not.  This
+               is a hack, but I can't think of a way to integrate it into
+               board.c logic without making too many palm-centric assumptions
+               there. */
+            if ( draw && !handled ) {
+                draw = XP_FALSE;
+            }
         } else {
             /* remove this and break focus drilldown.  Why? */
             handled = draw;
