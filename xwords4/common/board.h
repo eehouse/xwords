@@ -36,11 +36,16 @@ extern "C" {
 typedef enum {
     /* keep these three together: for the cursor */
     XP_KEY_NONE,
-    XP_CURSOR_KEY_DOWN,
-    XP_CURSOR_KEY_RIGHT,
 
+    XP_CURSOR_KEY_DOWN,
+    XP_CURSOR_KEY_ALTDOWN,
+    XP_CURSOR_KEY_RIGHT,
+    XP_CURSOR_KEY_ALTRIGHT,
     XP_CURSOR_KEY_UP,
+    XP_CURSOR_KEY_ALTUP,
     XP_CURSOR_KEY_LEFT,
+    XP_CURSOR_KEY_ALTLEFT,
+
     XP_CURSOR_KEY_DEL,
     XP_RAISEFOCUS_KEY,
     XP_RETURN_KEY,

@@ -2521,6 +2521,7 @@ mainViewHandleEvent( EventPtr event )
     case keyDownEvent: {
         XP_Key xpkey = XP_KEY_NONE;
         Int16 ch = event->data.keyDown.chr;
+        XP_Bool altOn = (event->data.keyDown.modifiers & shiftKeyMask) != 0;
 
         switch ( ch ) {
         case pageUpChr:
@@ -2538,10 +2539,10 @@ mainViewHandleEvent( EventPtr event )
             xpkey = XP_RETURN_KEY;
             break;
         case vchrRockerLeft:
-            xpkey = XP_CURSOR_KEY_LEFT;
+            xpkey = altOn ? XP_CURSOR_KEY_ALTLEFT : XP_CURSOR_KEY_LEFT;
             break;
         case vchrRockerRight:
-            xpkey = XP_CURSOR_KEY_RIGHT;
+            xpkey = altOn ? XP_CURSOR_KEY_ALTRIGHT : XP_CURSOR_KEY_RIGHT;
             break;
         case vchrRockerUp:
             xpkey = XP_CURSOR_KEY_UP;

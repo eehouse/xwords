@@ -2495,12 +2495,20 @@ flipKey( XP_Key key, XP_Bool flip ) {
         switch( key ) {
         case XP_CURSOR_KEY_DOWN:
             result = XP_CURSOR_KEY_RIGHT; break;
+        case XP_CURSOR_KEY_ALTDOWN:
+            result = XP_CURSOR_KEY_ALTRIGHT; break;
         case XP_CURSOR_KEY_UP:
             result = XP_CURSOR_KEY_LEFT; break;
+        case XP_CURSOR_KEY_ALTUP:
+            result = XP_CURSOR_KEY_ALTLEFT; break;
         case XP_CURSOR_KEY_LEFT:
             result = XP_CURSOR_KEY_UP; break;
+        case XP_CURSOR_KEY_ALTLEFT:
+            result = XP_CURSOR_KEY_ALTUP; break;
         case XP_CURSOR_KEY_RIGHT:
             result = XP_CURSOR_KEY_DOWN; break;
+        case XP_CURSOR_KEY_ALTRIGHT:
+            result = XP_CURSOR_KEY_ALTDOWN; break;
         default:
             XP_ASSERT(0);
         }
@@ -2520,9 +2528,13 @@ board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     switch( key ) {
 #ifdef KEYBOARD_NAV
     case XP_CURSOR_KEY_DOWN:
+    case XP_CURSOR_KEY_ALTDOWN:
     case XP_CURSOR_KEY_UP:
+    case XP_CURSOR_KEY_ALTUP:
     case XP_CURSOR_KEY_LEFT:
+    case XP_CURSOR_KEY_ALTLEFT:
     case XP_CURSOR_KEY_RIGHT:
+    case XP_CURSOR_KEY_ALTRIGHT:
         if ( board->focusHasDived ) {
             XP_Bool up = XP_FALSE;
             if ( board->focussed == OBJ_BOARD ) {
@@ -2539,7 +2551,7 @@ board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
                 board->focusHasDived = XP_FALSE;
                 invalFocusOwner( board );
             } else {
-                handled = XP_TRUE;
+                handled = redraw;//XP_TRUE;
             }
         } else {
             /* Do nothing.  We don't handle transition among top-level

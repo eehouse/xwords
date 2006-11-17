@@ -638,23 +638,26 @@ board_juggleTray( BoardCtxt* board )
 
 #ifdef KEYBOARD_NAV
 XP_Bool
-tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
+tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* pUp )
 {
-    XP_Bool result;
+    XP_Bool draw = XP_FALSE;
+    XP_Bool up = XP_FALSE;
     XP_U16 selPlayer = board->selPlayer;
     XP_S16 pos;
 
-    switch (cursorKey ) {
+    switch ( cursorKey ) {
     case XP_CURSOR_KEY_UP:
     case XP_CURSOR_KEY_DOWN:
-        *up = XP_TRUE;
+        up = XP_TRUE;
+        break;
         /* moving the divider needs to be hard to do accidentally since it
            confuses users when juggle and hint stop working.  But all things
            must be possible via keyboard on devices that don't have
            touchscreens.  Probably need a new keytype XP_CURSOR_KEY_ALTDOWN
            etc. */
-/*         result = board_moveDivider( board, XP_FALSE ); */
-/*         result = board_moveDivider( board, XP_TRUE ); */
+    case XP_CURSOR_KEY_ALTRIGHT:
+    case XP_CURSOR_KEY_ALTLEFT:
+        draw = board_moveDivider( board, cursorKey == XP_CURSOR_KEY_ALTRIGHT );
         break;
     case XP_CURSOR_KEY_RIGHT:
     case XP_CURSOR_KEY_LEFT:
@@ -665,7 +668,7 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
         for ( ; ; ) {
             pos += (cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1);
             if ( pos < 0 || pos >= MAX_TRAY_TILES ) {
-                *up = XP_TRUE;
+                up = XP_TRUE;
             } else {
                 /* Revisit this when able to never draw the cursor in a place
                    this won't allow it, e.g. when the tiles move after a
@@ -683,14 +686,15 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
             break;
         }
         board_invalTrayTiles( board, 1 << board->trayCursorLoc[selPlayer] );
-        result = XP_TRUE;
+        draw = XP_TRUE;
         break;
     default:
-        XP_ASSERT(0);
+        draw = XP_FALSE;
         break;
     }
 
-    return result;
+    *pUp = up;
+    return draw;
 } /* tray_moveCursor */
 
 XP_Bool
