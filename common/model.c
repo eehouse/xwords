@@ -24,6 +24,7 @@
 #include "xwstream.h"
 #include "util.h"
 #include "pool.h"
+#include "game.h"
 #include "memstream.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"
@@ -1733,9 +1734,12 @@ loadPlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
 
     for ( i = 0; i < pc->nPending; ++i ) {
         PendingTile* pt = &pc->pendingTiles[i];
+        XP_U16 nBits;
         pt->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
         pt->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
-        pt->tile = (Tile)stream_getBits( stream, 6 );
+
+        nBits = (stream_getVersion( stream ) <= STREAM_VERS_RELAY) ? 6 : 7;
+        pt->tile = (Tile)stream_getBits( stream, nBits );
     }
 
 } /* loadPlayerCtxt */
@@ -1755,10 +1759,10 @@ writePlayerCtxt( XWStreamCtxt* stream, PlayerCtxt* pc )
         PendingTile* pt = &pc->pendingTiles[i];
         stream_putBits( stream, NUMCOLS_NBITS, pt->col );
         stream_putBits( stream, NUMCOLS_NBITS, pt->row );
-        stream_putBits( stream, 6, pt->tile );
+        stream_putBits( stream, 7, pt->tile );
     }
     
-} /* loadPlayerCtxt */
+} /* writePlayerCtxt */
 
 #ifdef CPLUS
 }
