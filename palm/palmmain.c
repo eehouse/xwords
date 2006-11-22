@@ -2545,10 +2545,10 @@ mainViewHandleEvent( EventPtr event )
             xpkey = altOn ? XP_CURSOR_KEY_ALTRIGHT : XP_CURSOR_KEY_RIGHT;
             break;
         case vchrRockerUp:
-            xpkey = XP_CURSOR_KEY_UP;
+            xpkey = altOn ? XP_CURSOR_KEY_ALTUP : XP_CURSOR_KEY_UP;
             break;
         case vchrRockerDown:
-            xpkey = XP_CURSOR_KEY_DOWN;
+            xpkey = altOn ? XP_CURSOR_KEY_ALTDOWN : XP_CURSOR_KEY_DOWN;
             break;
         case chrSpace:
             xpkey = XP_RAISEFOCUS_KEY;
