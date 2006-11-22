@@ -407,6 +407,17 @@ handleAltRight( CursesAppGlobals* globals )
     return handleFocusKey( globals, XP_CURSOR_KEY_ALTRIGHT );
 }
 
+static XP_Bool
+handleAltUp( CursesAppGlobals* globals )
+{
+    return handleFocusKey( globals, XP_CURSOR_KEY_ALTUP );
+}
+
+static XP_Bool
+handleAltDown( CursesAppGlobals* globals )
+{
+    return handleFocusKey( globals, XP_CURSOR_KEY_ALTDOWN );
+}
 
 static XP_Bool
 handleFlip( CursesAppGlobals* globals )
@@ -554,6 +565,10 @@ handleDown( CursesAppGlobals* globals )
 #endif
 
 MenuList boardMenuList[] = {
+    { handleAltLeft,  "Force left", "{", '{' },
+    { handleAltRight, "Force right", "}", '}' },
+    { handleAltUp,    "Force up", "_", '_' },
+    { handleAltDown,  "Force down", "+", '+' },
     { NULL, NULL, NULL, '\0'}
 };
 

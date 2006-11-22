@@ -2735,8 +2735,8 @@ advanceArrow( BoardCtxt* board )
 
 static XP_Bool
 figureNextLoc( BoardCtxt* board, XP_Key cursorKey, 
-               XP_Bool inclPending, XP_U16* colP, XP_U16* rowP, 
-               XP_Bool* pUp )
+               XP_Bool inclPending, XP_Bool forceFirst, 
+               XP_U16* colP, XP_U16* rowP, XP_Bool* pUp )
 {
     XP_S16 max;
     XP_S16* useWhat;
@@ -2795,7 +2795,8 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey,
             }
             result = XP_TRUE;
             *useWhat += incr;
-            if ( !cellOccupied( board, *colP, *rowP, inclPending ) ) {
+            if ( forceFirst || !cellOccupied( board, 
+                                              *colP, *rowP, inclPending ) ) {
                 break;
             }
         }
@@ -2812,7 +2813,8 @@ board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
 
     setArrowVisible( board, XP_TRUE );
     (void)getArrow( board, &col, &row );
-    changed = figureNextLoc( board, cursorKey, XP_TRUE, &col, &row, NULL );
+    changed = figureNextLoc( board, cursorKey, XP_TRUE, XP_FALSE, 
+                             &col, &row, NULL );
     if ( changed ) {
         (void)setArrow( board, col, row );
     }
@@ -2820,6 +2822,27 @@ board_moveArrow( BoardCtxt* board, XP_Key cursorKey )
 } /* board_moveArrow */
 
 #ifdef KEYBOARD_NAV
+static XP_Key
+stripAlt( XP_Key key, XP_Bool* wasAlt )
+{
+    XP_Bool alt = XP_FALSE;
+    switch ( key ) {
+    case XP_CURSOR_KEY_ALTDOWN:
+    case XP_CURSOR_KEY_ALTRIGHT:
+    case XP_CURSOR_KEY_ALTUP:
+    case XP_CURSOR_KEY_ALTLEFT:
+        alt = XP_TRUE;
+        --key;
+    default:
+        break;
+    }
+
+    if ( !!wasAlt ) {
+        *wasAlt = alt;
+    }
+    return key;
+} /* stripAlt */
+
 static XP_Bool
 board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
 {
@@ -2828,7 +2851,11 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
     XP_U16 row = loc.row;
     XP_Bool changed;
 
-    changed = figureNextLoc( board, cursorKey, XP_FALSE, &col, &row, up );
+    XP_Bool altSet;
+    cursorKey = stripAlt( cursorKey, &altSet );
+
+    changed = figureNextLoc( board, cursorKey, XP_FALSE, altSet,
+                             &col, &row, up );
     if ( changed ) {
         invalCell( board, loc.col, loc.row );
         invalCell( board, col, row );
