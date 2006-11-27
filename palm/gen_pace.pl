@@ -163,6 +163,7 @@ my %typeInfo = (
                 "NetSocketTypeEnum" => { "size" => 1, "a0" => 0 },
                 "BitmapType*" => { "size" => 4, "a0" => 1 },
                 "ColorTableType*" => { "size" => 4, "a0" => 1 },
+                "UIColorTableEntries" => { "size" => 1, "a0" => 0 }, # enum
                 );
 
 sub name_compact($) {
@@ -265,18 +266,18 @@ sub searchOneFile($$) {
 
     if ( $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^V]*(VFSMGR_TRAP)\(([\w]+)\);/ 
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_TRAP)\s*\(([\w]+)\);/
+        || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_SEL_TRAP)\s*\(([\w]+)\s*,\s*([\w]+)\);/
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^H]*(HIGH_DENSITY_TRAP)\(([\w]+)\);/
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^G]*(GRF_TRAP)\(([\w]+)\);/ ) {
 
         # print STDERR "found something\n";
 
-        my ( $type, $params, $trapType, $trapSel ) = ( "$1$2", $3, $4, $5 );
-        # my ( $type, $params, $trapSel ) = ( $1, $2, $3 );
+        my ( $type, $params, $trapType, $trapSel, $trapSubSel ) = ( "$1$2", $3, $4, $5, $6 );
         if ( $type && $params ) {
 
             $type = clean_type($type);
 
-#            my $found = "$type<->$function<->$params<->$trapSel<->$trapType";
+#            my $found = "$type<->$function<->$params<->$trapSel<->$trapType<->$trapSubSel";
 #            print STDERR "$found\n";
 
             $params = params_parse($params);
@@ -434,8 +435,15 @@ sub print_body($$$$$) {
         $trapSel = "sysTrapHighDensityDispatch";
     } elsif( $trapType eq "GRF_TRAP" || $trapType eq "SYS_TRAP"  ) {
         # they're the same according to Graffiti.h
+    } elsif ( $trapType eq "SYS_SEL_TRAP" ) {
+        print( STDERR "name = $name\n" );
+        print( STDERR "returnType = $returnType\n" );
+        print( STDERR "params = $params\n" );
+        print( STDERR "trapSel = $trapSel\n" );
+        print( STDERR "trapType = $trapType\n" );
+        die "can't emit for SYS_SEL_TRAP yet";
     } else {
-        die "unknown dispatch type";
+        die "unknown dispatch type: \"$trapType\"";
     }
 
     $result .= "    ";
