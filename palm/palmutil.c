@@ -407,6 +407,8 @@ getFocusOwner( void )
 void
 drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
 {
+#ifndef XW_TARGET_PNO           /* temporary: I need to figure out how to call
+                                   HsNavDrawFocusRing from ARM code */
     FormPtr form;
     XP_S16 index;
     XP_U16 focusID;
@@ -441,6 +443,7 @@ drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
         }
     }
     LOG_RETURN_VOID();
+#endif
 } /* drawFocusRingOnGadget */
 
 XP_Bool
