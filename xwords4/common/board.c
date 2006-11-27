@@ -2215,10 +2215,16 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
         board->penDownObject = OBJ_NONE;
     } else {
 
+#ifdef KEYBOARD_NAV
+        /* clear focus as soon as pen touches board */
+        result = invalFocusOwner( board );
+        board->focussed = OBJ_NONE;
+#endif
+
         switch ( onWhich ) {
 
         case OBJ_BOARD:
-            result = handlePenDownOnBoard( board, x, y );
+            result = handlePenDownOnBoard( board, x, y ) || result;
             break;
 
         case OBJ_TRAY:
@@ -2226,7 +2232,7 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
             XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
 
             if ( board->trayVisState != TRAY_REVERSED ) {
-                result = handlePenDownInTray( board, x, y );
+                result = handlePenDownInTray( board, x, y ) || result;
             }
             break;
 
@@ -2652,7 +2658,7 @@ invalFocusOwner( BoardCtxt* board )
             board->dividerInvalid = XP_TRUE;
         }
         break;
-    default:                    /* for compiler */
+    case OBJ_NONE:
         draw = XP_FALSE;
         break;
     }
