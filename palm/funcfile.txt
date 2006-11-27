@@ -226,3 +226,8 @@ BmpDelete
 WinCreateBitmapWindow
 WinSetDrawMode
 WinGetPixel
+#
+# Needed for five-way navigation
+#
+UIColorGetTableEntryIndex
+#HsNavDrawFocusRing

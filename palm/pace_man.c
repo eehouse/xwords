@@ -256,6 +256,15 @@ evt68k2evtARM( EventType* event, const unsigned char* evt68k )
         event->data.ctlSelect.value = read_unaligned16(evt68k+8);
         break;
 
+#ifdef XWFEATURE_FIVEWAY
+    case frmObjectFocusTakeEvent:
+    case frmObjectFocusLostEvent:
+        event->data.frmObjectFocusTake.formID = read_unaligned16(evt68k);
+        event->data.frmObjectFocusTake.objectID = read_unaligned16(evt68k+2);
+        event->data.frmObjectFocusTake.dispatchHint = read_unaligned32(evt68k+4);
+        break;
+#endif
+
     case winExitEvent:
     case winEnterEvent:
         XP_ASSERT( &event->data.winEnter.enterWindow == 
@@ -340,6 +349,15 @@ evtArm2evt68K( unsigned char* evt68k, const EventType* event )
         write_unaligned8( evt68k+7, event->data.ctlSelect.reserved1 );
         write_unaligned16( evt68k+8, event->data.ctlSelect.value );
         break;
+
+#ifdef XWFEATURE_FIVEWAY
+    case frmObjectFocusTakeEvent:
+    case frmObjectFocusLostEvent:
+        write_unaligned16( evt68k, event->data.frmObjectFocusTake.formID );
+        write_unaligned16( evt68k+2, event->data.frmObjectFocusTake.objectID );
+        write_unaligned32( evt68k+4, event->data.frmObjectFocusTake.dispatchHint );
+        break;
+#endif
 
     case winExitEvent:
     case winEnterEvent:
