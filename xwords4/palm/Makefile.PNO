@@ -33,12 +33,19 @@ INCLUDE += \
 	-I$(PALMDIR)/Core/System/Unix \
 	-I$(PALMDIR)/Core/Hardware \
 	-I$(PALMDIR)/Extensions/Bluetooth \
+
+ifneq (, $(findstring XWFEATURE_FIVEWAY,$(MYDEFS)))
+INCLUDE += -I/usr/local/share/palmdev/Handspring5
+INCLUDE += -I/usr/local/share/palmdev/Handspring5/68K
+endif
+
+INCLUDE += \
 	-I. -I../common -I../relay
 
 # NOTE!!!! Added the -w flag to supress all warnings since arm-elf-gcc
 # does so much bitching about the Palm headers.  Need to fix that, or
 # use the arm-palmos-gcc, or something.  But for now, -w....
-CCFLAGS = $(OPT) $(MINUS_G) -Wall -Wunused-parameter -D__PALMOS__ -D__palmos__ -Asystem=palmos
+CCFLAGS = $(OPT) $(MINUS_G) -Wall -D__PALMOS__ -D__palmos__ -Asystem=palmos
 ARMCCFS = $(CCFLAGS) -DNATIVE $(DEBUG) \
 	-nostartfiles -mshort-load-bytes -nodefaultlibs -ffixed-r9 \
 	-mpic-register=r10 -msingle-pic-base -fpic \
@@ -48,7 +55,8 @@ ARMCCFS = $(CCFLAGS) -DNATIVE $(DEBUG) \
 ARMLDFS = -Xlinker --script=./ldscript.arm -lgcc
 
 # ARM-specific
-ARM_DEFINES = $(MYDEFS) -DXW_TARGET_PNO -D__LITTLE_ENDIAN
+ARM_DEFINES = $(MYDEFS) -DXW_TARGET_PNO -D__LITTLE_ENDIAN -include undef_hack.h
+
 # turn show progress off for now
 # ARM_DEFINES += -USHOW_PROGRESS
 
@@ -108,6 +116,7 @@ pace_gen.c pace_gen.h: ./gen_pace.pl funcfile.txt
 		-file $(PALMDIR)/Core/UI \
 		-file $(PALMDIR)/Core/System \
 		-file $(PALMDIR)/Extensions/ExpansionMgr \
+		-file /usr/local/share/palmdev/Handspring5/68K/System \
 		-oc pace_gen.c -oh pace_gen.h
 	rm -f _dirList
 
