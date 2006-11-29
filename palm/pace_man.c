@@ -128,6 +128,41 @@ read_unaligned32( const unsigned char* src )
     return val;
 } /* read_unaligned32 */
 
+#ifdef XWFEATURE_FIVEWAY
+#include "pnostate.h"
+Err
+HsNavDrawFocusRing (FormType* formP, UInt16 objectID, Int16 extraInfo,
+				    RectangleType* rP,
+					HsNavFocusRingStyleEnum ringStyle, Boolean forceRestore)
+{
+    Err result;
+    FUNC_HEADER(HsNavDrawFocusRing);
+
+    RectangleType RectangleType_68K1;
+    SWAP_RECTANGLETYPE_ARM_TO_68K( &RectangleType_68K1, rP );
+    {
+    PNOState* sp = GET_CALLBACK_STATE();
+    STACK_START(unsigned char, stack, 18);
+
+    ADD_TO_STACK2(stack, hsSelNavDrawFocusRing, 0);
+    ADD_TO_STACK4(stack, formP, 2);
+    ADD_TO_STACK2(stack, objectID, 6);
+    ADD_TO_STACK2(stack, extraInfo, 8);
+    ADD_TO_STACK4(stack, &RectangleType_68K1, 10);
+    ADD_TO_STACK1(stack, ringStyle, 14);
+    ADD_TO_STACK1(stack, forceRestore, 16);
+    STACK_END(stack);
+
+    result = (Err)(*sp->call68KFuncP)( sp->emulStateP, 
+                                       PceNativeTrapNo(sysTrapHsSelector),
+                                       stack, 18 );
+    sp->emulStateP->regA[7] -= 2;
+    }
+    FUNC_TAIL(HsNavDrawFocusRing);
+    return result;
+}
+#endif
+
 /* Need to parse the format string */
 Int16
 StrPrintF( Char* s, const Char* formatStr, ... )

@@ -129,5 +129,15 @@ unsigned short read_unaligned16( const unsigned char* src );
 # define EMIT_NAME(n,b)
 #endif
 
+/* Temporary until can generate */
+#ifdef XWFEATURE_FIVEWAY
+#include <Hs.h>
+extern Err HsNavDrawFocusRing( FormType* formP, UInt16 objectID, 
+                               Int16 extraInfo,
+                               RectangleType* boundsInsideRingP,
+                               HsNavFocusRingStyleEnum ringStyle, 
+                               Boolean forceRestore);
+#endif
+
 #endif
 #endif

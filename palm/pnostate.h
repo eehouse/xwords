@@ -6,9 +6,17 @@
 #include <PceNativeCall.h>
 #include <MemoryMgr.h>
 
+/* from http://news.palmos.com/read/messages?id=159373 */
+typedef struct EmulStateType {
+    UInt32 instr;
+    UInt32 regD[8];
+    UInt32 regA[8];
+    UInt32 regPC;
+} EmulStateType;
+
 /* This gets written into the code by the callback below. */
 typedef struct PNOState {
-    const void* emulStateP;
+    const EmulStateType* emulStateP;
     Call68KFuncType* call68KFuncP;
     void* gotTable;
 } PNOState;
