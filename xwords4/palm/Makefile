@@ -118,7 +118,7 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 # MYDEFS_COMMON += -DXWFEATURE_RELAY
 
 # turn on bluetooth comms option for 68K and ARM -- which won't work yet
-BLUETOOTH = -DXWFEATURE_BLUETOOTH
+#BLUETOOTH = -DXWFEATURE_BLUETOOTH
 #MYDEFS_COMMON += $(BLUETOOTH)
 
 # Add menu allowing to choose to run 68K or ARM
@@ -162,7 +162,9 @@ BITMAP_RSRCS = \
 	$(BITMAPS)/xwords4.pbitm \
 
 # INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
+ifdef BLUETOOTH
 INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/Extensions/Bluetooth
+endif
 
 XWFEATURE_FIVEWAY = -DXWFEATURE_FIVEWAY -DKEYBOARD_NAV
 
@@ -177,7 +179,6 @@ ifneq (x$(XWFEATURE_FIVEWAY)x, xx)
 	MYDEFS_68K += $(XWFEATURE_FIVEWAY)
 	MYDEFS_ARM += $(XWFEATURE_FIVEWAY)
 
-	FNAVS = ./fnav03e9.bin
 endif
 
 INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/SonyIncs
@@ -297,11 +298,6 @@ LocalizedStrIncludes.h StrL03e8.bin: \
 	rm -f mkstrsres
 
 namehash: namehash.c ownerhash.h
-fnavgen: fnavgen.c
-	gcc $< -o $@
-
-$(FNAVS): ./fnavgen
-	./$<
 
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet

@@ -422,7 +422,11 @@
 #define	kFrmNavHeaderFlagsAppFocusStartState     0x00000002
 
 /* versioning stuff */
-#define XW_PALM_VERSION_STRING "4.2a3"
+#ifdef XWFEATURE_BLUETOOTH
+# define XW_PALM_VERSION_STRING "4.3a4"
+#else
+# define XW_PALM_VERSION_STRING "4.2b1"
+#endif
 #define CUR_PREFS_VERS 0x0405
 
 
