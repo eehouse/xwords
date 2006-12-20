@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*- */
+/* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=ARM_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1999 - 2004 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -1090,6 +1090,7 @@ startApplication( PalmAppGlobals** globalsP )
                                         getResString,
                                         &globals->drawingPrefs );
 
+    /* ifdef BLUETOOTH??? */
     if ( !globals->gState.reserved1 ) {
         palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE );
         globals->gState.reserved1 = XP_TRUE;
@@ -2042,15 +2043,37 @@ hresRect( PalmAppGlobals* globals, RectangleType* r )
 }
 
 #ifdef XWFEATURE_FIVEWAY
+static void
+invalRectAroundButton( PalmAppGlobals* globals, XP_U16 objectID )
+{
+    RectangleType rect;
+    getObjectBounds( objectID, &rect );
+
+    rect.topLeft.x -= 3;
+    rect.topLeft.y -= 3;
+    rect.extent.x += 6;
+    rect.extent.y += 6;
+    hresRect( globals, &rect );
+
+    board_invalRect( globals->game.board, (XP_Rect*)&rect );
+}
+
+static XP_Bool
+isBoardObject( XP_U16 id )
+{
+    return id == XW_BOARD_GADGET_ID
+        || id == XW_SCOREBOARD_GADGET_ID
+        || id == XW_TRAY_GADGET_ID;
+}
+
 static XP_Bool
 handleFocusEvent( PalmAppGlobals* globals, const EventType* event, 
                   XP_Bool* drawP )
 {
-    XP_Bool handled = XP_FALSE;
-    XP_Bool redraw = XP_FALSE;
     XP_U16 objectID = event->data.frmObjectFocusTake.objectID;
+    XP_Bool isBoardObj = isBoardObject( objectID );
     XP_Bool take;
-    XP_Bool drawBoard = XP_FALSE;
+    BoardObjectType typ;
 
     XP_ASSERT( &event->data.frmObjectFocusTake.objectID
                == &event->data.frmObjectFocusLost.objectID );
@@ -2059,39 +2082,32 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
 /*     XP_LOGF( "%s(%s,%s)", __FUNCTION__, frmObjId_2str(objectID), */
 /*              (take? "take":"lost") ); */
 
-    switch ( objectID ) {
-    case XW_BOARD_GADGET_ID:
-    case XW_SCOREBOARD_GADGET_ID:
-    case XW_TRAY_GADGET_ID:
-        handled = XP_TRUE;
-        drawBoard = !take;
-        break;
+    /* Need to invalidate the neighborhood of buttons on which palm draws the
+       focus ring when they lose focus -- to redraw where the focus ring may
+       have been.  No need unless we have the focus now, however, since we'll
+       otherwise have drawn the object correctly (unfocussed). */
 
-    case XW_MAIN_DONE_BUTTON_ID:
-    case XW_MAIN_JUGGLE_BUTTON_ID:
-    case XW_MAIN_TRADE_BUTTON_ID:
-    case XW_MAIN_HIDE_BUTTON_ID:
-        redraw = XP_TRUE;
-        break;
+    if ( (!take) && (!isBoardObj) && isBoardObject( getFocusOwner() ) ) {
+        EventType event;
+        event.eType = updateAfterFocusEvent;
+        event.data.generic.datum[0] = objectID;
+        EvtAddEventToQueue( &event );
     }
 
-    if ( handled ) {
-        BoardObjectType typ = (objectID - XW_BOARD_GADGET_ID) + OBJ_BOARD;
-        drawBoard = board_focusChanged( globals->game.board, typ, take )
-            || drawBoard;
-        if ( take ) {
-            FrmSetFocus( globals->mainForm, 
-                         FrmGetObjectIndex( globals->mainForm, objectID ) );
-        }
-    }
-    if ( redraw ) {
-        drawBitmapButton( globals, XW_MAIN_HIDE_BUTTON_ID, 
-                          TRAY_BUTTONS_BMP_RES_ID, XP_FALSE );
+    /* Board needs to know about any change involving it, including something
+       else taking the focus it may think it has.  Why?  Because takes
+       preceed losses, yet the board must draw itself without focus before
+       some button draws itself with focus and snags as part of the
+       background the board in focussed state. */
+
+    typ = isBoardObj? OBJ_BOARD + (objectID - XW_BOARD_GADGET_ID) : OBJ_NONE;
+    *drawP = board_focusChanged( globals->game.board, typ, take );
+    if ( isBoardObj && take ) {
+        FrmSetFocus( globals->mainForm, 
+                     FrmGetObjectIndex( globals->mainForm, objectID ) );
     }
 
-    *drawP = drawBoard;
-
-    return handled;
+    return isBoardObj;
 } /* handleFocusEvent */
 #endif
 
@@ -2189,6 +2205,11 @@ mainViewHandleEvent( EventPtr event )
         }
         globals->postponeDraw = false;
         FrmUpdateForm( 0, frmRedrawUpdateCode ); /* <- why is this necessary? */
+        break;
+
+    case updateAfterFocusEvent:
+        invalRectAroundButton( globals, event->data.generic.datum[0] );
+        draw = XP_TRUE;
         break;
 
     case winExitEvent:
