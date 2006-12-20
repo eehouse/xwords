@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 PLATFORM=obj_palm
+SVNREV = $(shell svnversion -n . | tr ':' '_')
 
 ifeq ($(MEMDEBUG),TRUE)
 DEBUG = -DMEM_DEBUG -DDEBUG
@@ -48,24 +49,24 @@ ARCH ?= ARM_ONLY
 ifeq ($(ARCH),ARM_ONLY)
 PLATFORM := $(PLATFORM)_armonly
 BUILD_AS_PNOLET = 1
-TARGET=$(PLATFORM)/xw4_ARM.prc
+TARGET=$(PLATFORM)/xw4_ARM_$(SVNREV).prc
 else
 ifeq ($(ARCH),68K_ONLY)
 PLATFORM := $(PLATFORM)_68konly
-TARGET=$(PLATFORM)/xw4_68K.prc
+TARGET=$(PLATFORM)/xw4_68K_$(SVNREV).prc
 else
 ifeq ($(ARCH),SONY)
 # No highres in sony build case
 PLATFORM := $(PLATFORM)_sony
 BUILD_AS_PNOLET = 1
 FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
-TARGET=$(PLATFORM)/xw4_SONY.prc
+TARGET=$(PLATFORM)/xw4_SONY_$(SVNREV).prc
 else
 ifeq ($(ARCH),COMBINED)
 PLATFORM := $(PLATFORM)_combined
 BUILD_AS_PNOLET = 1
 FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
-TARGET=$(PLATFORM)/xwords4.prc
+TARGET=$(PLATFORM)/xwords4_$(SVNREV).prc
 endif
 endif
 endif
