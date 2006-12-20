@@ -2219,6 +2219,7 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
         /* clear focus as soon as pen touches board */
         result = invalFocusOwner( board );
         board->focussed = OBJ_NONE;
+        board->focusHasDived = XP_FALSE;
 #endif
 
         switch ( onWhich ) {
@@ -2897,18 +2898,15 @@ rectContainsPt( XP_Rect* rect, XP_S16 x, XP_S16 y )
 } /* rectContainsPt */
 
 XP_Bool
-rectsIntersect(XP_Rect* rectP1, XP_Rect* rectP2)
+rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 )
 {
-    XP_Rect rect1 = *rectP1;
-    XP_Rect rect2 = *rectP2;
-
-    if ( rect1.top >= rect2.top + rect2.height ) {
+    if ( rect1->top >= rect2->top + rect2->height ) {
         return XP_FALSE;
-    } else if ( rect1.left >= rect2.left + rect2.width ) {
+    } else if ( rect1->left >= rect2->left + rect2->width ) {
         return XP_FALSE;
-    } else if ( rect2.top >= rect1.top + rect1.height ) {
+    } else if ( rect2->top >= rect1->top + rect1->height ) {
         return XP_FALSE;
-    } else if ( rect2.left >= rect1.left + rect1.width ) {
+    } else if ( rect2->left >= rect1->left + rect1->width ) {
         return XP_FALSE;
     } else {
         return XP_TRUE;
