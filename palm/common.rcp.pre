@@ -139,6 +139,10 @@ END /* XW_MAIN_FORM */
 #ifdef XWFEATURE_FIVEWAY
 NAVIGATION ID XW_MAIN_FORM
 INITIALSTATE kFrmNavHeaderFlagsObjectFocusStartState
+/* INITIALOBJECTID: I don't like this, but without it the OS sets the focus to
+ * one of the buttons below.  Need to figure out how to control that -- want
+ * nothing focussed to start, or to save/restore it myself. */
+INITIALOBJECTID XW_SCOREBOARD_GADGET_ID
 NAVIGATIONMAP
     ROW XW_SCOREBOARD_GADGET_ID
     ROW XW_BOARD_GADGET_ID 
