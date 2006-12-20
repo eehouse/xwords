@@ -77,6 +77,7 @@ OBJS = $(PLATFORM)/pnolet.o \
 	$(PLATFORM)/palmbt.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
+	$(PLATFORM)/palmdbg.o \
 	$(PLATFORM)/pace_gen.o \
 	$(PLATFORM)/pace_man.o \
 	$(COMMONOBJ)
