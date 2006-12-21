@@ -1729,6 +1729,13 @@ drawFormButtons( PalmAppGlobals* globals )
             pair += 3;
         }
     }
+
+#ifdef XWFEATURE_FIVEWAY
+    if ( globals->hasFiveWay ) {
+        drawFocusRingOnGadget( XW_MAIN_DONE_BUTTON_ID,
+                               XW_MAIN_HIDE_BUTTON_ID );
+    }
+#endif
 } /* drawFormButtons */
 
 static void
