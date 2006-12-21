@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE";-*- */
 /* 
- * Copyright 1999 - 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999 - 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -135,30 +135,6 @@ bitmapInRect( PalmDrawCtx* dctx, Int16 resID, const XP_Rect* rectP )
     }
     drawBitmapAt( (DrawCtx*)dctx, resID, left, top );
 } /* bitmapInRect */
-
-#ifdef KEYBOARD_NAV
-#ifdef XWFEATURE_FIVEWAY
-static void
-drawFocusRect( PalmDrawCtx* dctx, const XP_Rect* rect )
-{
-    XP_Rect r;
-    XP_U16 i;
-    IndexedColorType oldColor;
-
-    oldColor = WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
-    r = *rect;
-
-    insetRect( &r, 1 );
-    for ( i = 0; i < 6; ++i ) {
-        insetRect( &r, 1 );
-        WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&r );
-    }
-    (void)WinSetForeColor( oldColor );
-}
-#else
-# define drawFocusRect( a, b )
-#endif
-#endif
 
 # define BMP_WIDTH 16
 # define BMP_HT 16
@@ -295,13 +271,29 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 
 static void
 palm_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ, 
-                           const XP_Rect* rect, DrawFocusState dfs )
+                       const XP_Rect* rect, DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 #ifdef XWFEATURE_FIVEWAY
     PalmAppGlobals* globals = dctx->globals;
     if ( globals->hasFiveWay && (dfs == DFS_TOP) && (typ == OBJ_BOARD) ) {
-        drawFocusRect( dctx, rect );
+        XP_Rect r;
+        XP_U16 i;
+        IndexedColorType oldColor;
+
+        oldColor
+            = WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+
+        r.left = rect->left + 1;
+        r.top = rect->top + 1;
+        r.width = rect->width - 1;
+        r.height = rect->height - 1;
+
+        for ( i = 0; i < 6; ++i ) {
+            insetRect( &r, 1 );
+            WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&r );
+        }
+        (void)WinSetForeColor( oldColor );
     }
 #endif
 
