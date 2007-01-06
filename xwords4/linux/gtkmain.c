@@ -153,17 +153,20 @@ button_release_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
     return 1;
 } /* button_release_event */
 
-static gint
-key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
-                   GtkAppGlobals* globals )
+static XP_Key
+evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
 {
     XP_Key xpkey = XP_KEY_NONE;
     XP_Bool movesCursor = XP_FALSE;
     guint keyval = event->keyval;
 
-    XP_LOGF( "got key 0x%x", keyval );
-
-    switch( keyval ) {    
+    switch( keyval ) {
+    case GDK_Return:
+        xpkey = XP_RETURN_KEY;
+        break;
+    case GDK_space:
+        xpkey = XP_RAISEFOCUS_KEY;
+        break;
 
     case GDK_Left:
         xpkey = XP_CURSOR_KEY_LEFT;
@@ -191,16 +194,43 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
             xpkey = toupper(keyval);
             break;
         }
-        return FALSE;
     }
+    *movesCursorP = movesCursor;
+    return xpkey;
+} /* evtToXPKey */
+
+static gint
+key_press_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
+                 GtkAppGlobals* globals )
+{
+    XP_Bool handled = XP_FALSE;
+    XP_Bool movesCursor;
+    XP_Key xpkey = evtToXPKey( event, &movesCursor );
+    if ( xpkey != XP_KEY_NONE ) {
+        if ( board_handleKeyDown( globals->cGlobals.game.board, xpkey,
+                                  &handled ) ) {
+            board_draw( globals->cGlobals.game.board );
+        }
+    }
+    return 1;
+}
+
+static gint
+key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
+                   GtkAppGlobals* globals )
+{
+    XP_Bool handled = XP_FALSE;
+    XP_Bool movesCursor;
+    XP_Key xpkey = evtToXPKey( event, &movesCursor );
 
     if ( xpkey != XP_KEY_NONE ) {
-        XP_Bool handled;
         XP_Bool draw;
-        draw = board_handleKey( globals->cGlobals.game.board, xpkey, &handled );
+        draw = board_handleKeyUp( globals->cGlobals.game.board, xpkey, &handled );
 
-        if ( movesCursor || !handled ) {
-            XP_LOGF( "need to handle focus shift" );
+        if ( movesCursor && !handled ) {
+            BoardObjectType order[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
+            draw = linShiftFocus( &globals->cGlobals, xpkey, order,
+                                  NULL ) || draw;
         }
 
         if ( draw ) {
@@ -208,7 +238,7 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
         }
     }
 
-    return 0;
+    return handled? 1 : 0;        /* gtk will do something with the key if 0 returned  */
 } /* key_release_event */
 
 #ifdef MEM_DEBUG
@@ -1134,7 +1164,7 @@ pentimer_idle_func( gpointer data )
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
     struct timeval tv;
     XP_Bool callAgain = XP_TRUE;
-    
+
     gettimeofday( &tv, NULL );
 
     if ( (tv.tv_usec - globals->penTv.tv_usec) >= globals->penTimerInterval) {
@@ -1788,6 +1818,8 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     g_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
                       G_CALLBACK(button_release_event), &globals );
 
+    g_signal_connect( GTK_OBJECT(window), "key_press_event",
+                      G_CALLBACK(key_press_event), &globals );
     g_signal_connect( GTK_OBJECT(window), "key_release_event",
                       G_CALLBACK(key_release_event), &globals );
     

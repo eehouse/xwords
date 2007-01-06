@@ -340,8 +340,8 @@ handleSpace( CursesAppGlobals* globals )
     XP_Bool handled;
     checkAssignFocus( globals->cGlobals.game.board );
 
-    globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
-                                       XP_RAISEFOCUS_KEY, &handled );
+    globals->doDraw = board_handleKeyUp( globals->cGlobals.game.board, 
+                                         XP_RAISEFOCUS_KEY, &handled );
     return XP_TRUE;
 } /* handleSpace */
 
@@ -349,8 +349,8 @@ static XP_Bool
 handleRet( CursesAppGlobals* globals )
 {
     XP_Bool handled;
-    globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
-                                       XP_RETURN_KEY, &handled );
+    globals->doDraw = board_handleKeyUp( globals->cGlobals.game.board, 
+                                         XP_RETURN_KEY, &handled );
     return XP_TRUE;
 } /* handleRet */
 
@@ -437,8 +437,8 @@ static XP_Bool
 handleBackspace( CursesAppGlobals* globals )
 {
     XP_Bool handled;
-    globals->doDraw = board_handleKey( globals->cGlobals.game.board,
-                                       XP_CURSOR_KEY_DEL, &handled );
+    globals->doDraw = board_handleKeyUp( globals->cGlobals.game.board,
+                                         XP_CURSOR_KEY_DEL, &handled );
     return XP_TRUE;
 } /* handleBackspace */
 
@@ -483,46 +483,6 @@ MenuList sharedMenuList[] = {
 
 #ifdef KEYBOARD_NAV
 static XP_Bool
-shiftFocus( CursesAppGlobals* globals, XP_Key key )
-{
-    BoardCtxt* board = globals->cGlobals.game.board;
-    XP_Bool handled = XP_FALSE;
-
-    do {                        /* allow break */
-        XP_Bool forward;
-        BoardObjectType nxt;
-
-        if ( key == XP_CURSOR_KEY_DOWN || key == XP_CURSOR_KEY_RIGHT ) {
-            forward = XP_TRUE;
-        } else if ( key == XP_CURSOR_KEY_UP || key == XP_CURSOR_KEY_LEFT ) {
-            forward = XP_FALSE;
-        } else {
-            break;
-        }
-
-        switch( board_getFocusOwner( board ) ) {
-        case OBJ_NONE:
-            XP_ASSERT( 0 );         /* not in curses anyway */
-            break;
-        case OBJ_SCORE:
-            nxt = forward ? OBJ_TRAY :  OBJ_BOARD;
-            break;
-        case OBJ_BOARD:
-            nxt =  forward ? OBJ_SCORE : OBJ_TRAY;
-            break;
-        case OBJ_TRAY:
-            nxt =  forward ? OBJ_BOARD : OBJ_SCORE;
-            break;
-        }
-        handled = board_focusChanged( board, nxt, XP_TRUE );
-        if ( handled ) {
-            changeMenuForFocus( globals, nxt );
-        }
-    } while ( 0 );
-    return handled;
-}
-
-static XP_Bool
 handleFocusKey( CursesAppGlobals* globals, XP_Key key )
 {
     XP_Bool handled;
@@ -530,9 +490,14 @@ handleFocusKey( CursesAppGlobals* globals, XP_Key key )
 
     checkAssignFocus( globals->cGlobals.game.board );
 
-    draw = board_handleKey( globals->cGlobals.game.board, key, &handled );
+    draw = board_handleKeyUp( globals->cGlobals.game.board, key, &handled );
     if ( !handled ) {
-        draw = shiftFocus( globals, key ) || draw;
+        BoardObjectType nxt;
+        BoardObjectType order[] = { OBJ_BOARD, OBJ_SCORE, OBJ_TRAY };
+        draw = linShiftFocus( &globals->cGlobals, key, order, &nxt ) || draw;
+        if ( nxt != OBJ_NONE ) {
+            changeMenuForFocus( globals, nxt );
+        }
     }
 
     globals->doDraw = draw || globals->doDraw;
@@ -1037,8 +1002,8 @@ passKeyToBoard( CursesAppGlobals* globals, char ch )
     XP_Bool handled = ch >= 'a' && ch <= 'z';
     if ( handled ) {
         ch += 'A' - 'a';
-        globals->doDraw = board_handleKey( globals->cGlobals.game.board, 
-                                           ch, NULL );
+        globals->doDraw = board_handleKeyUp( globals->cGlobals.game.board, 
+                                             ch, NULL );
     }
     return handled;
 } /* passKeyToBoard */

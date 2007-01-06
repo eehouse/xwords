@@ -53,4 +53,10 @@ XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 void catGameHistory( CommonGlobals* cGlobals );
 void catOnClose( XWStreamCtxt* stream, void* closure );
 
+#ifdef KEYBOARD_NAV
+XP_Bool linShiftFocus( CommonGlobals* cGlobals, XP_Key key,
+                       const BoardObjectType* order,
+                       BoardObjectType* nxtP );
+#endif
+
 #endif

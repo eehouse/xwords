@@ -57,6 +57,7 @@ typedef struct GtkDrawCtx {
     PangoLayout* layout[LAYOUT_NLAYOUTS]; 
     
     XP_U16 trayOwner;
+    XP_Bool topFocus;
 } GtkDrawCtx;
 
 typedef struct ClientStreamRec {

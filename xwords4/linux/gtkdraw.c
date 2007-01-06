@@ -1,6 +1,6 @@
-/* -*- mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
+/* -*- mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */ 
 /* 
- * Copyright 1997-2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -256,12 +256,38 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict),
 } /* draw_finish */
 
 static void
-gtk_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx), 
-                      BoardObjectType XP_UNUSED(typ),
-                      const XP_Rect* XP_UNUSED(rect), 
-                      DrawFocusState XP_UNUSED(dfs) )
+drawFocusFrame( GtkDrawCtx* dctx, const XP_Rect* r )
 {
-    //    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    XP_Rect rectInset = *r;
+    XP_U16 i;
+    XP_U16 targetDim;
+
+    targetDim = XP_MIN( rectInset.width, rectInset.height );
+    targetDim >>= 1;
+
+    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
+
+    for ( i = 0; i < 5; ++i ) {
+        insetRect( &rectInset, 1 );
+        if ( rectInset.width < targetDim || rectInset.height < targetDim ) {
+            break;
+        }
+        gdk_draw_rectangle( DRAW_WHAT(dctx),
+                            dctx->drawGC,
+                            FALSE,
+                            rectInset.left, rectInset.top,
+                            rectInset.width+1, rectInset.height+1 );
+    }
+}
+
+static void
+gtk_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ),
+                      const XP_Rect* rect, DrawFocusState dfs )
+{
+    if ( dfs == DFS_TOP ) {
+        GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+        drawFocusFrame( dctx, rect );
+    }
 } /* draw_finished */
 
 static void
@@ -378,6 +404,10 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
 
     drawHintBorders( dctx, rect, hintAtts );
 
+    if ( (flags & CELL_ISCURSOR) != 0 ) {
+        drawFocusFrame( dctx, rect );
+    }
+
     return XP_TRUE;
 } /* gtk_draw_drawCell */
 
@@ -404,12 +434,14 @@ gtk_draw_invertCell( DrawCtx* XP_UNUSED(p_dctx),
 
 static XP_Bool
 gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner, 
-                    DrawFocusState XP_UNUSED(dfs) )
+                    DrawFocusState dfs )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect clip = *rect;
     insetRect( &clip, -1 );
     dctx->trayOwner = owner;
+    dctx->topFocus = dfs == DFS_TOP;
+
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)&clip ); */
     return XP_TRUE;
 } /* gtk_draw_trayBegin */
@@ -476,11 +508,16 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                                 insetR.width, insetR.height);
         }
     }
+
+    if ( !dctx->topFocus && (flags & CELL_ISCURSOR) != 0 ) {
+        drawFocusFrame( dctx, rect );
+    }
+
 } /* gtk_draw_drawTile */
 
 static void
 gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
-                       CellFlags XP_UNUSED(flags) )
+                       CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect r = *rect;
@@ -502,6 +539,10 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
     draw_string_at( dctx, dctx->layout[LAYOUT_LARGE], "?", 
                     &r, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dctx->trayOwner], NULL );
+
+    if ( !dctx->topFocus && (flags & CELL_ISCURSOR) != 0 ) {
+        drawFocusFrame( dctx, rect );
+    }
 } /* gtk_draw_drawTileBack */
 
 static void
@@ -577,12 +618,13 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 static void
 gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 XP_UNUSED(numPlayers), 
-                     DrawFocusState XP_UNUSED(dfs) )
+                     DrawFocusState dfs )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); */
     eraseRect( dctx, rect );
+    dctx->topFocus = dfs == DFS_TOP;
 } /* gtk_draw_scoreBegin */
 
 static void
@@ -702,12 +744,16 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], scoreBuf, 
                     rInner, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dsi->playerNum], NULL );
+
+    if ( !dctx->topFocus && ((dsi->flags & CELL_ISCURSOR) != 0) ) {
+        drawFocusFrame( dctx, rOuter );
+    }
 } /* gtk_draw_score_drawPlayer */
 
 static void
 gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect, 
                              XP_S16 score, XP_U16 XP_UNUSED(playerNum),
-                             CellFlags XP_UNUSED(flags) )
+                             CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char buf[5];
@@ -733,6 +779,10 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     draw_string_at( dctx, dctx->layout[LAYOUT_SMALL], buf, 
                     &localR, XP_GTK_JUST_BOTTOMRIGHT,
                     &dctx->black, NULL );
+
+    if ( !dctx->topFocus && (flags & CELL_ISCURSOR) != 0 ) {
+        drawFocusFrame( dctx, rect );
+    }
 } /* gtk_draw_score_pendingScore */
 
 static void
