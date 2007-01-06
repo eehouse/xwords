@@ -277,6 +277,7 @@ evt68k2evtARM( EventType* event, const unsigned char* evt68k )
         event->data.frmUpdate.updateCode = read_unaligned16( evt68k + 2 );
         break;
     case keyDownEvent:
+    case keyUpEvent:
         event->data.keyDown.chr = read_unaligned16( evt68k );
         event->data.keyDown.keyCode = read_unaligned16( evt68k+2 );
         event->data.keyDown.modifiers = read_unaligned16( evt68k+4 );
@@ -371,6 +372,7 @@ evtArm2evt68K( unsigned char* evt68k, const EventType* event )
         write_unaligned16( evt68k + 2, event->data.frmUpdate.updateCode );
         break;
     case keyDownEvent:
+    case keyUpEvent:
         write_unaligned16( evt68k, event->data.keyDown.chr );
         write_unaligned16( evt68k+2, event->data.keyDown.keyCode );
         write_unaligned16( evt68k+4, event->data.keyDown.modifiers );

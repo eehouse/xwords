@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=ARM_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1999 - 2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -920,11 +920,13 @@ initHighResGlobals( PalmAppGlobals* globals )
 
     err = FtrGet( sysFtrCreator, sysFtrNumWinVersion, &vers );
     globals->hasHiRes = ( err == errNone && vers >= 4 );
+    XP_LOGF( "hasHiRes = %d", (XP_U16)globals->hasHiRes );
     globals->oneDotFiveAvail = ( err == errNone && vers >= 5 );
 
-#ifdef XWFEATURE_FIVEWAY
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
-    XP_LOGF( "hasHiRes = %d", globals->hasHiRes );
+    globals->hasKeyboard = ( (err == errNone)
+                            && ((vers & sysFtrNumUIHardwareHasKbd) != 0) );
+#ifdef XWFEATURE_FIVEWAY
     globals->hasFiveWay = ( (err == errNone)
                             && ((vers & sysFtrNumUIHardwareHas5Way) != 0) );
 #endif
@@ -2118,6 +2120,96 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
 } /* handleFocusEvent */
 #endif
 
+static XP_Bool
+handleKeyEvent( PalmAppGlobals* globals, const EventType* event, 
+                XP_Bool* handledP )
+{
+    /* keyDownEvent: be very careful here.  keyUpEvent is only sent on
+       devices with a hard keyboard.  Do not assume keyUpEvent or all
+       non-Treos will be broken!!! */
+
+    XP_Bool draw = XP_FALSE;
+    XP_Key xpkey = XP_KEY_NONE;
+    XP_Bool handled = XP_FALSE;
+    XP_Bool altOn = (event->data.keyUp.modifiers & shiftKeyMask) != 0;
+    XP_Bool treatAsUp = !globals->hasKeyboard || (event->eType == keyUpEvent);
+    Int16 chr;
+
+    XP_ASSERT( OFFSET_OF(EventType, data.keyUp.modifiers)
+               == OFFSET_OF(EventType, data.keyDown.modifiers) );
+    XP_ASSERT( OFFSET_OF(EventType, data.keyUp.keyCode)
+               == OFFSET_OF(EventType, data.keyDown.keyCode) );
+
+    switch ( event->data.keyDown.keyCode ) {
+    case pageUpChr:
+        draw = treatAsUp && scrollBoard( globals, 0, false );
+        break;
+    case pageDownChr:
+        draw = treatAsUp && scrollBoard( globals, 2, false );
+        break;
+    case backspaceChr:
+        xpkey = XP_CURSOR_KEY_DEL;
+        break;
+
+#ifdef XWFEATURE_FIVEWAY
+    case vchrRockerCenter:
+        xpkey = XP_RETURN_KEY;
+        break;
+    case vchrRockerLeft:
+        xpkey = altOn ? XP_CURSOR_KEY_ALTLEFT : XP_CURSOR_KEY_LEFT;
+        break;
+    case vchrRockerRight:
+        xpkey = altOn ? XP_CURSOR_KEY_ALTRIGHT : XP_CURSOR_KEY_RIGHT;
+        break;
+    case vchrRockerUp:
+        xpkey = altOn ? XP_CURSOR_KEY_ALTUP : XP_CURSOR_KEY_UP;
+        break;
+    case vchrRockerDown:
+        xpkey = altOn ? XP_CURSOR_KEY_ALTDOWN : XP_CURSOR_KEY_DOWN;
+        break;
+    case chrSpace:
+        xpkey = XP_RAISEFOCUS_KEY;
+        break;
+#endif
+    default:
+        chr = event->data.keyUp.chr;
+        /* I'm not interested in being dependent on a particular version
+           of the OS, (can't manage to link against the intl library
+           anyway) and so don't want to use the 3.5-only text tests.  So
+           let's give the board two shots at each char, one lower case
+           and another upper. */
+        if ( chr < 255 && chr > ' ' ) {
+            draw = treatAsUp && board_handleKeyUp( globals->game.board, 
+                                                   chr, &handled );
+            if ( !handled && chr >= 'a' ) {
+                draw = treatAsUp && board_handleKeyUp( globals->game.board, 
+                                                       chr - ('a' - 'A'), 
+                                                       &handled );
+            }
+        }
+    }
+    if ( xpkey != XP_KEY_NONE ) {
+        draw = treatAsUp?
+            board_handleKeyUp( globals->game.board, xpkey, &handled ) 
+            : board_handleKeyDown( globals->game.board, xpkey, &handled );
+        /* If handled comes back false yet something changed (draw),
+           we'll be getting another event shortly.  Put the draw off
+           until then so we don't flash the tray focussed then not.  This
+           is a hack, but I can't think of a way to integrate it into
+           board.c logic without making too many palm-centric assumptions
+           there. */
+        if ( draw && !handled ) {
+            draw = XP_FALSE;
+        }
+    } else {
+        /* remove this and break focus drilldown.  Why? */
+        handled = draw;
+    }
+    LOG_RETURNF( "%d", draw );
+    *handledP = handled;
+    return draw;
+} /* handleKeyEvent */
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -2546,72 +2638,9 @@ mainViewHandleEvent( EventPtr event )
         break;
 #endif
 
-    case keyDownEvent: {
-        XP_Key xpkey = XP_KEY_NONE;
-        Int16 ch = event->data.keyDown.chr;
-        XP_Bool altOn = (event->data.keyDown.modifiers & shiftKeyMask) != 0;
-
-        switch ( ch ) {
-        case pageUpChr:
-            draw = scrollBoard( globals, 0, false );
-            break;
-        case pageDownChr:
-            draw = scrollBoard( globals, 2, false );
-            break;
-        case backspaceChr:
-            xpkey = XP_CURSOR_KEY_DEL;
-            break;
-
-#ifdef XWFEATURE_FIVEWAY
-        case vchrRockerCenter:
-            xpkey = XP_RETURN_KEY;
-            break;
-        case vchrRockerLeft:
-            xpkey = altOn ? XP_CURSOR_KEY_ALTLEFT : XP_CURSOR_KEY_LEFT;
-            break;
-        case vchrRockerRight:
-            xpkey = altOn ? XP_CURSOR_KEY_ALTRIGHT : XP_CURSOR_KEY_RIGHT;
-            break;
-        case vchrRockerUp:
-            xpkey = altOn ? XP_CURSOR_KEY_ALTUP : XP_CURSOR_KEY_UP;
-            break;
-        case vchrRockerDown:
-            xpkey = altOn ? XP_CURSOR_KEY_ALTDOWN : XP_CURSOR_KEY_DOWN;
-            break;
-        case chrSpace:
-            xpkey = XP_RAISEFOCUS_KEY;
-            break;
-#endif
-        default:
-            /* I'm not interested in being dependent on a particular version
-               of the OS, (can't manage to link against the intl library
-               anyway) and so don't want to use the 3.5-only text tests.  So
-               let's give the board two shots at each char, one lower case
-               and another upper. */
-            if ( ch < 255 && ch > ' ' ) {
-                draw = board_handleKey( globals->game.board, ch, &handled );
-                if ( !handled && ch >= 'a' ) {
-                    draw = board_handleKey( globals->game.board, 
-                                            ch - ('a' - 'A'), &handled );
-                }
-            }
-        }
-        if ( xpkey != XP_KEY_NONE ) {
-            draw = board_handleKey( globals->game.board, xpkey, &handled );
-            /* If handled comes back false yet something changed (draw),
-               we'll be getting another event shortly.  Put the draw off
-               until then so we don't flash the tray focussed then not.  This
-               is a hack, but I can't think of a way to integrate it into
-               board.c logic without making too many palm-centric assumptions
-               there. */
-            if ( draw && !handled ) {
-                draw = XP_FALSE;
-            }
-        } else {
-            /* remove this and break focus drilldown.  Why? */
-            handled = draw;
-        }
-    }
+    case keyDownEvent:
+    case keyUpEvent:
+        draw = handleKeyEvent( globals, event, &handled );
         break;
 
     case sclRepeatEvent:
