@@ -516,7 +516,6 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 #endif
 } /* comms_setAddr */
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 void
 comms_getInitialAddr( CommsAddrRec* addr )
 { 	 
@@ -537,7 +536,6 @@ comms_getInitialAddr( CommsAddrRec* addr )
     addr->conType = COMMS_CONN_BT;
 #endif
 } /* comms_getInitialAddr */
-#endif
 
 CommsConnType 
 comms_getConType( const CommsCtxt* comms )
@@ -846,7 +844,7 @@ addressUnknown( CommsCtxt* comms, const CommsAddrRec* addr )
     AddressRecord* rec;
     CommsConnType conType = addr->conType;
 
-    XP_ASSERT( !!addr );
+    XP_ASSERT( !!addr || comms->addr.conType == COMMS_CONN_IR );
 
     for ( rec = comms->recs; !!rec && unknown ; rec = rec->next ) {
         XP_ASSERT( conType == rec->addr.conType );

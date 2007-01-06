@@ -1854,7 +1854,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
                     &globals->util, newGameID, &globals->gState.cp, 
                     palm_send, globals );
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY || defined XWFEATURE_IR
         if ( !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, 
                            &globals->newGameState.addr );

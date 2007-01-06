@@ -695,5 +695,7 @@ loadNewGameState( PalmAppGlobals* globals )
     } else {
         comms_getInitialAddr( &state->addr );
     }
+#elif defined XWFEATURE_IR
+    state->addr.conType = COMMS_CONN_IR;
 #endif
 } /* loadNewGameState */
