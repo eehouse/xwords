@@ -645,6 +645,9 @@ logEvent( eventsEnum eType )
 
         CASE_STR(firstUserEvent);
         CASE_STR(lastUserEvent);
+    default: 
+        name = "<unknown>";
+        break;
     }
 #undef CASE_STR
     if ( !!name ) {

@@ -296,6 +296,7 @@ struct PalmAppGlobals {
     XP_Bool oneDotFiveAvail;
     XP_Bool useHiRes;
     XP_Bool hasFiveWay;
+    XP_Bool hasKeyboard;
 
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool askTrayLimits;
