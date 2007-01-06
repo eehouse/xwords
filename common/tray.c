@@ -85,7 +85,7 @@ pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* onDividerP )
     return result;
 } /* pointToTileIndex */
 
-static void
+void
 figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect )
 {
     rect->left = board->trayBounds.left + (index * board->trayScaleH);
@@ -673,13 +673,13 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* pUp )
                 /* Revisit this when able to never draw the cursor in a place
                    this won't allow it, e.g. when the tiles move after a
                    hint */
-/*                 if ( board->trayVisState == TRAY_REVEALED ) { */
-/*                     XP_U16 count = model_getNumTilesInTray( board->model, */
-/*                                                             selPlayer ); */
-/*                     if ( (pos > count) && (pos < MAX_TRAY_TILES-1) ) { */
-/*                         continue; */
-/*                     } */
-/*                 } */
+                if ( board->trayVisState == TRAY_REVEALED ) {
+                    XP_U16 count = model_getNumTilesInTray( board->model,
+                                                            selPlayer );
+                    if ( (pos > count) && (pos < MAX_TRAY_TILES-1) ) {
+                        continue;
+                    }
+                }
                 board->trayCursorLoc[selPlayer] = pos;
                 board_invalTrayTiles( board, 1 << pos );
             }

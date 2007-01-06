@@ -124,6 +124,7 @@ struct BoardCtxt {
 
     BoardArrow boardArrow[MAX_NUM_PLAYERS];
 #ifdef KEYBOARD_NAV
+    XP_Rect scoreRects[MAX_NUM_PLAYERS];
     BdCursorLoc bdCursor[MAX_NUM_PLAYERS];
     XP_Bool focusHasDived;
 #endif
@@ -193,6 +194,7 @@ XP_U16 indexForBits( XP_U8 bits );
 XP_Bool rectContainsPt( XP_Rect* rect1, XP_S16 x, XP_S16 y );
 XP_Bool checkRevealTray( BoardCtxt* board );
 void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
+void figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect );
 XP_Bool rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 );
 
 void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer );

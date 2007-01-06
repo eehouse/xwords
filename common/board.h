@@ -35,7 +35,7 @@ extern "C" {
 
 typedef enum {
     /* keep these three together: for the cursor */
-    XP_KEY_NONE,
+    XP_KEY_NONE = 0,
 
     XP_CURSOR_KEY_DOWN,
     XP_CURSOR_KEY_ALTDOWN,
@@ -126,7 +126,8 @@ XP_Bool board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y );
 #endif
 
-XP_Bool board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* handled );
+XP_Bool board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* handled );
+XP_Bool board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* handled );
 
 #ifdef KEYBOARD_NAV
 /* void board_focusChange( BoardCtxt* board ); */

@@ -2201,6 +2201,41 @@ checkRevealTray( BoardCtxt* board )
     return result;
 } /* checkRevealTray */
 
+static XP_Bool
+handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
+{
+    XP_Bool result = XP_FALSE;
+
+    switch ( onWhich ) {
+    case OBJ_BOARD:
+        result = handlePenDownOnBoard( board, x, y ) || result;
+        break;
+
+    case OBJ_TRAY:
+        XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
+
+        if ( board->trayVisState != TRAY_REVERSED ) {
+            result = handlePenDownInTray( board, x, y ) || result;
+        }
+        break;
+
+    case OBJ_SCORE:
+        if ( figureScorePlayerTapped( board, x, y ) >= 0 ) {
+            util_setTimer( board->util, TIMER_PENDOWN, 0, 
+                           p_board_timerFired, board );
+        }
+        break;
+    default:
+        break;
+    }
+
+    board->penDownX = x;
+    board->penDownY = y;
+    board->penDownObject = onWhich;
+
+    return result;
+} /* handleLikeDown */
+
 #ifdef POINTER_SUPPORT
 XP_Bool
 board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
@@ -2222,37 +2257,8 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
         board->focusHasDived = XP_FALSE;
 #endif
 
-        switch ( onWhich ) {
-
-        case OBJ_BOARD:
-            result = handlePenDownOnBoard( board, x, y ) || result;
-            break;
-
-        case OBJ_TRAY:
-            /* 	XP_ASSERT( board->trayIsVisible ); */
-            XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
-
-            if ( board->trayVisState != TRAY_REVERSED ) {
-                result = handlePenDownInTray( board, x, y ) || result;
-            }
-            break;
-
-        case OBJ_SCORE:
-            if ( figureScorePlayerTapped( board, x, y ) >= 0 ) {
-                util_setTimer( board->util, TIMER_PENDOWN, 0, 
-                               p_board_timerFired, board );
-            }
-            break;
-        default:
-            break;
-        }
-
-        board->penDownX = x;
-        board->penDownY = y;
-        board->penDownObject = onWhich;
-        /*     board->inDrag = XP_TRUE; */
+        result = handleLikeDown( board, onWhich, x, y );
     }
-
     *handled = penDidSomething;
 
     return result;		/* no redraw needed */
@@ -2524,8 +2530,82 @@ flipKey( XP_Key key, XP_Bool flip ) {
 } /* flipKey */
 #endif
 
+static void
+getRectCenter( const XP_Rect* rect, XP_U16* xp, XP_U16* yp )
+{
+    *xp = rect->left + ( rect->width >> 1 );
+    *yp = rect->top + ( rect->height >> 1 );
+}
+
+static void
+getFocussedCellCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
+{
+    XP_Rect rect;
+    XP_U16 selPlayer = board->selPlayer;
+    BdCursorLoc* cursorLoc = &board->bdCursor[selPlayer];
+
+    getCellRect( board, cursorLoc->col, cursorLoc->row, &rect );
+    getRectCenter( &rect, xp, yp );
+}
+
+static void
+getFocussedTileCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
+{
+    XP_Rect rect;
+    XP_U16 indx = board->trayCursorLoc[board->selPlayer];
+    figureTrayTileRect( board, indx, &rect );
+    getRectCenter( &rect, xp, yp );
+}
+
+static void
+getFocussedScoreCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
+{
+    getRectCenter( &board->scoreRects[board->scoreCursorLoc], xp, yp );
+}
+
+static XP_Bool
+focusToCoords( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
+{
+    XP_Bool result = board->focusHasDived;
+    if ( result ) {
+        switch( board->focussed ) {
+        case OBJ_NONE:
+            result = XP_FALSE;
+            break;
+        case OBJ_BOARD:
+            getFocussedCellCenter( board, xp, yp );
+            break;
+        case OBJ_TRAY:
+            getFocussedTileCenter( board, xp, yp );
+            break;
+        case OBJ_SCORE:
+            getFocussedScoreCenter( board, xp, yp );
+            break;
+        }
+    }
+
+    return result;
+}
+
 XP_Bool
-board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
+board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
+{
+    XP_Bool draw = XP_FALSE;
+    XP_U16 x, y;
+
+    if ( key == XP_RETURN_KEY ) {
+        if ( focusToCoords( board, &x, &y ) ) {
+            draw = handleLikeDown( board, board->focussed, x, y );
+        }
+    }
+
+    *pHandled = (board->focussed != OBJ_NONE) && board->focusHasDived;
+
+    return draw;
+}
+
+XP_Bool
+board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 {
     XP_Bool redraw = XP_FALSE;
     XP_Bool handled = XP_FALSE;
@@ -2585,26 +2665,11 @@ board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 
     case XP_RETURN_KEY:
         if ( board->focusHasDived ) {
-            handled = XP_TRUE;   /* even if don't draw, we handle it!! */
-            if ( board->focussed == OBJ_TRAY ) {
-                if ( trayVisible ) {
-                    redraw = tray_keyAction( board );
-                } else {
-                    redraw = askRevealTray( board );
-                }
-            } else if ( board->focussed == OBJ_BOARD ) {
-                /* mimic pen-down/pen-up on cursor */
-                if ( trayVisible ) {
-                    BdCursorLoc loc = board->bdCursor[board->selPlayer];
-                    redraw = handleActionInCell( board, loc.col, loc.row );
-                } else {
-                    redraw = askRevealTray( board );
-                }
-            } else if ( board->focussed == OBJ_SCORE ) {
-                /* tap on what's already selected: reveal tray, etc. */
-                board_selectPlayer( board, board->scoreCursorLoc );
-                redraw = XP_TRUE; /* must assume */
-            } 
+            XP_U16 x, y;
+            if ( focusToCoords( board, &x, &y ) ) {
+                redraw = board_handlePenUp( board, x, y );
+                handled = XP_TRUE;
+            }
         } else if ( board->focussed != OBJ_NONE ) {
             redraw = invalFocusOwner( board );
             board->focusHasDived = XP_TRUE;
@@ -2629,7 +2694,7 @@ board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
         *pHandled = handled;
     }
     return redraw;
-} /* board_handleKey */
+} /* board_handleKeyUp */
 
 #ifdef KEYBOARD_NAV
 
