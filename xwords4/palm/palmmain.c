@@ -1092,11 +1092,12 @@ startApplication( PalmAppGlobals** globalsP )
                                         getResString,
                                         &globals->drawingPrefs );
 
-    /* ifdef BLUETOOTH??? */
+#ifdef XWFEATURE_BLUETOOTH
     if ( !globals->gState.reserved1 ) {
         palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE );
         globals->gState.reserved1 = XP_TRUE;
     }
+#endif
 
     FrmGotoForm( XW_MAIN_FORM );
 
