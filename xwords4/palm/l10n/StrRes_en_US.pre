@@ -145,7 +145,7 @@
                                "ehouse@users.sf.net.  Enjoy!\n\n"
 #endif
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
-      "Copyright 1998-2006 by Eric House.  "\
+      "Copyright 1998-2007 by Eric House.  "\
       "Released under the GNU Public License.\n\n"\
 
       "See the manual at xwords.sourceforge.net\n\n" \
