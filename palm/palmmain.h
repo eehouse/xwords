@@ -203,7 +203,7 @@ typedef struct PalmNewGameState {
 
     XP_Bool forwardChange;
     Connectedness curServerHilite;
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IR
     CommsAddrRec addr;
     XP_Bool connsSettingChanged;
 #endif
