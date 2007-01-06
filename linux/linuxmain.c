@@ -286,6 +286,50 @@ usage( char* appName, char* msg )
     exit(1);
 } /* usage */
 
+#ifdef KEYBOARD_NAV
+XP_Bool
+linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order,
+               BoardObjectType* nxtP )
+{
+    BoardCtxt* board = cGlobals->game.board;
+    XP_Bool handled = XP_FALSE;
+    BoardObjectType nxt = OBJ_NONE;
+    BoardObjectType cur;
+    XP_U16 i, curIndex;
+
+    cur = board_getFocusOwner( board );
+    if ( cur == OBJ_NONE ) {
+        cur = order[0];
+    }
+    for ( i = 0; i < 3; ++i ) {
+        if ( cur == order[i] ) {
+            curIndex = i;
+            break;
+        }
+    }
+    XP_ASSERT( curIndex < 3 );
+
+    curIndex += 3;
+    if ( key == XP_CURSOR_KEY_DOWN || key == XP_CURSOR_KEY_RIGHT ) {
+        ++curIndex;
+    } else if ( key == XP_CURSOR_KEY_UP || key == XP_CURSOR_KEY_LEFT ) {
+        --curIndex;
+    } else {
+        XP_ASSERT(0);
+    }
+    curIndex %= 3;
+
+    nxt = order[curIndex];
+    handled = board_focusChanged( board, nxt, XP_TRUE );
+
+    if ( !!nxtP ) {
+        *nxtP = nxt;
+    }
+
+    return handled;
+} /* linShiftFocus */
+#endif
+
 #ifdef XWFEATURE_RELAY
 static int
 linux_init_relay_socket( CommonGlobals* cGlobals )
