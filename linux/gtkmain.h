@@ -94,6 +94,9 @@ typedef struct GtkAppGlobals {
     XP_Bool gridOn;
     XP_Bool dropIncommingMsgs;
     XP_Bool mouseDown;
+#ifdef KEYBOARD_NAV
+    XP_Bool keyDown;
+#endif
 } GtkAppGlobals;
 
 /* DictionaryCtxt* gtk_dictionary_make(); */
