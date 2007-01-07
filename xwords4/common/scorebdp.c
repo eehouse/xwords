@@ -169,12 +169,11 @@ drawScoreBoard( BoardCtxt* board )
                 innerRect.top = scoreRect.top + 
                     ((scoreRect.height - innerRect.height) / 2);
 
-                XP_MEMCPY( &board->scoreRects[i], &scoreRect, 
-                           sizeof(scoreRect) );
-
                 draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
                                        &dp->dsi );
 #ifdef KEYBOARD_NAV
+                XP_MEMCPY( &board->scoreRects[i], &scoreRect, 
+                           sizeof(scoreRect) );
                 if ( i == cursorIndex ) {
                     cursorRect = scoreRect;
                     cursorRectP = &cursorRect;
