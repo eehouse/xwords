@@ -2142,7 +2142,7 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.keyCode)
                == OFFSET_OF(EventType, data.keyDown.keyCode) );
 
-    if ( event->eType == keyUpEvent ) {
+    if ( treatAsUp ) {
         handler = board_handleKeyUp;
     } else if ( globals->hasKeyboard ) {
         if ( (event->data.keyDown.modifiers & autoRepeatKeyMask) != 0 ) {
@@ -2155,16 +2155,6 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     }
 
     switch ( event->data.keyDown.keyCode ) {
-    case pageUpChr:
-        draw = treatAsUp && scrollBoard( globals, 0, false );
-        break;
-    case pageDownChr:
-        draw = treatAsUp && scrollBoard( globals, 2, false );
-        break;
-    case backspaceChr:
-        xpkey = XP_CURSOR_KEY_DEL;
-        break;
-
 #ifdef XWFEATURE_FIVEWAY
     case vchrRockerCenter:
         xpkey = XP_RETURN_KEY;
@@ -2200,10 +2190,22 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
                                                 chr - ('a' - 'A'), 
                                                 &handled );
             }
+        } else {
+            switch ( chr ) {
+            case pageUpChr:
+                draw = treatAsUp && scrollBoard( globals, 0, false );
+                break;
+            case pageDownChr:
+                draw = treatAsUp && scrollBoard( globals, 2, false );
+                break;
+            case backspaceChr:
+                xpkey = XP_CURSOR_KEY_DEL;
+            }
         }
     }
+
     if ( xpkey != XP_KEY_NONE ) {
-        XP_ASSERT( handler );
+        XP_ASSERT( !!handler );
         draw = (*handler)( globals->game.board, xpkey, &handled );
         /* If handled comes back false yet something changed (draw),
            we'll be getting another event shortly.  Put the draw off
