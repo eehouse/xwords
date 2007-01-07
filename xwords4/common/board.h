@@ -131,6 +131,7 @@ XP_Bool board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* handled );
 
 # ifdef KEYBOARD_NAV
 XP_Bool board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* handled );
+XP_Bool board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled );
 XP_Bool board_focusChanged( BoardCtxt* board, BoardObjectType typ, 
                             XP_Bool gained );
 XP_Bool board_toggle_arrowDir( BoardCtxt* board );

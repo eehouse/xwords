@@ -210,12 +210,18 @@ key_press_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
     XP_Bool handled = XP_FALSE;
     XP_Bool movesCursor;
     XP_Key xpkey = evtToXPKey( event, &movesCursor );
+
     if ( xpkey != XP_KEY_NONE ) {
-        if ( board_handleKeyDown( globals->cGlobals.game.board, xpkey,
-                                  &handled ) ) {
+        XP_Bool draw = globals->keyDown ?
+            board_handleKeyRepeat( globals->cGlobals.game.board, xpkey, 
+                                   &handled )
+            : board_handleKeyDown( globals->cGlobals.game.board, xpkey,
+                                   &handled );
+        if ( draw ) {
             board_draw( globals->cGlobals.game.board );
         }
     }
+    globals->keyDown = XP_TRUE;
     return 1;
 }
 #endif
@@ -243,6 +249,9 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
             board_draw( globals->cGlobals.game.board );
         }
     }
+
+    XP_ASSERT( globals->keyDown );
+    globals->keyDown = XP_FALSE;
 
     return handled? 1 : 0;        /* gtk will do something with the key if 0 returned  */
 } /* key_release_event */

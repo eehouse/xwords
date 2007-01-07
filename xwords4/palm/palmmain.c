@@ -2135,11 +2135,24 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     XP_Bool altOn = (event->data.keyUp.modifiers & shiftKeyMask) != 0;
     XP_Bool treatAsUp = !globals->hasKeyboard || (event->eType == keyUpEvent);
     Int16 chr;
+    XP_Bool (*handler)( BoardCtxt*, XP_Key, XP_Bool* );
 
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.modifiers)
                == OFFSET_OF(EventType, data.keyDown.modifiers) );
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.keyCode)
                == OFFSET_OF(EventType, data.keyDown.keyCode) );
+
+    if ( event->eType == keyUpEvent ) {
+        handler = board_handleKeyUp;
+    } else if ( globals->hasKeyboard ) {
+        if ( (event->data.keyDown.modifiers & autoRepeatKeyMask) != 0 ) {
+            handler = board_handleKeyRepeat;
+        } else {
+            handler = board_handleKeyDown;
+        }
+    } else {
+        handler = NULL;
+    }
 
     switch ( event->data.keyDown.keyCode ) {
     case pageUpChr:
@@ -2180,19 +2193,18 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
            let's give the board two shots at each char, one lower case
            and another upper. */
         if ( chr < 255 && chr > ' ' ) {
-            draw = treatAsUp && board_handleKeyUp( globals->game.board, 
-                                                   chr, &handled );
+            draw = !!handler && (*handler)( globals->game.board, 
+                                            chr, &handled );
             if ( !handled && chr >= 'a' ) {
-                draw = treatAsUp && board_handleKeyUp( globals->game.board, 
-                                                       chr - ('a' - 'A'), 
-                                                       &handled );
+                draw = !!handler && (*handler)( globals->game.board, 
+                                                chr - ('a' - 'A'), 
+                                                &handled );
             }
         }
     }
     if ( xpkey != XP_KEY_NONE ) {
-        draw = treatAsUp?
-            board_handleKeyUp( globals->game.board, xpkey, &handled ) 
-            : board_handleKeyDown( globals->game.board, xpkey, &handled );
+        XP_ASSERT( handler );
+        draw = (*handler)( globals->game.board, xpkey, &handled );
         /* If handled comes back false yet something changed (draw),
            we'll be getting another event shortly.  Put the draw off
            until then so we don't flash the tray focussed then not.  This

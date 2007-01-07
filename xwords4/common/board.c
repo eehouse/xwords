@@ -2602,6 +2602,16 @@ board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 
     return draw;
 }
+
+XP_Bool
+board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
+{
+    XP_Bool draw = board_handleKeyUp( board, key, handled );
+    if ( *handled ) {
+        draw = board_handleKeyDown( board, key, handled ) || draw;
+    }
+    return draw;
+}
 #endif /* KEYBOARD_NAV */
 
 #ifdef KEY_SUPPORT
