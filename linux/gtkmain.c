@@ -153,6 +153,7 @@ button_release_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
     return 1;
 } /* button_release_event */
 
+#ifdef KEY_SUPPORT
 static XP_Key
 evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
 {
@@ -161,6 +162,7 @@ evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
     guint keyval = event->keyval;
 
     switch( keyval ) {
+#ifdef KEYBOARD_NAV
     case GDK_Return:
         xpkey = XP_RETURN_KEY;
         break;
@@ -184,6 +186,7 @@ evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
         xpkey = XP_CURSOR_KEY_DOWN;
         movesCursor = XP_TRUE;
         break;
+#endif
     case GDK_BackSpace:
         XP_LOGF( "... it's a DEL" );
         xpkey = XP_CURSOR_KEY_DEL;
@@ -199,6 +202,7 @@ evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
     return xpkey;
 } /* evtToXPKey */
 
+#ifdef KEYBOARD_NAV
 static gint
 key_press_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
                  GtkAppGlobals* globals )
@@ -214,6 +218,7 @@ key_press_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
     }
     return 1;
 }
+#endif
 
 static gint
 key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
@@ -225,14 +230,15 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
 
     if ( xpkey != XP_KEY_NONE ) {
         XP_Bool draw;
-        draw = board_handleKeyUp( globals->cGlobals.game.board, xpkey, &handled );
-
+        draw = board_handleKeyUp( globals->cGlobals.game.board, xpkey, 
+                                  &handled );
+#ifdef KEYBOARD_NAV
         if ( movesCursor && !handled ) {
             BoardObjectType order[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
             draw = linShiftFocus( &globals->cGlobals, xpkey, order,
                                   NULL ) || draw;
         }
-
+#endif
         if ( draw ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -240,6 +246,7 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
 
     return handled? 1 : 0;        /* gtk will do something with the key if 0 returned  */
 } /* key_release_event */
+#endif
 
 #ifdef MEM_DEBUG
 # define MEMPOOL globals->cGlobals.params->util->mpool,
@@ -1818,18 +1825,26 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     g_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
                       G_CALLBACK(button_release_event), &globals );
 
+#ifdef KEY_SUPPORT
+# ifdef KEYBOARD_NAV
     g_signal_connect( GTK_OBJECT(window), "key_press_event",
                       G_CALLBACK(key_press_event), &globals );
+# endif
     g_signal_connect( GTK_OBJECT(window), "key_release_event",
                       G_CALLBACK(key_release_event), &globals );
-    
+#endif
+
     gtk_widget_set_events( drawing_area, GDK_EXPOSURE_MASK
 			 | GDK_LEAVE_NOTIFY_MASK
 			 | GDK_BUTTON_PRESS_MASK
 			 | GDK_POINTER_MOTION_MASK
 			 | GDK_BUTTON_RELEASE_MASK
+#ifdef KEY_SUPPORT
+# ifdef KEYBOARD_NAV
 			 | GDK_KEY_PRESS_MASK
+# endif
 			 | GDK_KEY_RELEASE_MASK
+#endif
 /*  			 | GDK_POINTER_MOTION_HINT_MASK */
 			   );
 

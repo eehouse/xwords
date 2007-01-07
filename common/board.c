@@ -111,12 +111,12 @@ static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
 static XP_Bool advanceArrow( BoardCtxt* board );
 static XP_Bool exitTradeMode( BoardCtxt* board );
 
-#ifdef KEY_SUPPORT
 static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
-static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
-
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
+static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
+
+#ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
                                    XP_Bool* gotArrow );
 #endif
@@ -2528,7 +2528,6 @@ flipKey( XP_Key key, XP_Bool flip ) {
     }
     return result;
 } /* flipKey */
-#endif
 
 static void
 getRectCenter( const XP_Rect* rect, XP_U16* xp, XP_U16* yp )
@@ -2603,7 +2602,9 @@ board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 
     return draw;
 }
+#endif /* KEYBOARD_NAV */
 
+#ifdef KEY_SUPPORT
 XP_Bool
 board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 {
@@ -2695,6 +2696,7 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     }
     return redraw;
 } /* board_handleKeyUp */
+#endif
 
 #ifdef KEYBOARD_NAV
 
@@ -2808,7 +2810,8 @@ advanceArrow( BoardCtxt* board )
 static XP_Bool
 figureNextLoc( BoardCtxt* board, XP_Key cursorKey, 
                XP_Bool inclPending, XP_Bool forceFirst, 
-               XP_U16* colP, XP_U16* rowP, XP_Bool* pUp )
+               XP_U16* colP, XP_U16* rowP, 
+               XP_Bool* XP_UNUSED_KEYBOARD_NAV(pUp) )
 {
     XP_S16 max;
     XP_S16* useWhat;
@@ -3019,6 +3022,7 @@ moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_U16 tileIndex,
     return XP_TRUE;
 } /* moveTileToBoard */
 
+#ifdef KEY_SUPPORT
 static XP_Bool
 moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
 {
@@ -3075,6 +3079,7 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
 
     return success;
 } /* moveKeyTileToBoard */
+#endif
 
 static void
 setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, XP_U16 row )
