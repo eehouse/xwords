@@ -697,22 +697,7 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* pUp )
     return draw;
 } /* tray_moveCursor */
 
-XP_Bool
-tray_keyAction( BoardCtxt* board )
-{
-    TileBit cursor = 1 << board->trayCursorLoc[board->selPlayer];
-    XP_Bool result;
-    if ( !!cursor ) {
-        XP_S16 index = trayLocToIndex( board, indexForBits( cursor ) );
-        result = handleActionInTray( board, index, XP_FALSE, XP_FALSE )
-            || handlePenUpTrayInt( board, index );
-    } else {
-        result = XP_FALSE;
-    }
-
-    return result;
-} /* tray_keyAction */
-#endif
+#endif /* KEYBOARD_NAV */
 
 #if defined FOR_GREMLINS || defined KEYBOARD_NAV
 XP_Bool
