@@ -841,29 +841,28 @@ static XP_Bool
 addressUnknown( CommsCtxt* comms, const CommsAddrRec* addr )
 {
     XP_Bool unknown = XP_TRUE;
-    AddressRecord* rec;
-    CommsConnType conType = addr->conType;
-
-    XP_ASSERT( !!addr || comms->addr.conType == COMMS_CONN_IR );
-
-    for ( rec = comms->recs; !!rec && unknown ; rec = rec->next ) {
-        XP_ASSERT( conType == rec->addr.conType );
-        switch( conType ) {
-        case COMMS_CONN_RELAY:
-            if ( (addr->u.ip_relay.ipAddr == rec->addr.u.ip_relay.ipAddr)
-                 && (addr->u.ip_relay.port == rec->addr.u.ip_relay.port ) ) {
-                unknown = XP_FALSE;
+    if ( !!addr ) {
+        CommsConnType conType = addr->conType;
+        const AddressRecord* rec;
+        for ( rec = comms->recs; !!rec && unknown ; rec = rec->next ) {
+            XP_ASSERT( conType == rec->addr.conType );
+            switch( conType ) {
+            case COMMS_CONN_RELAY:
+                if ( (addr->u.ip_relay.ipAddr == rec->addr.u.ip_relay.ipAddr)
+                     && (addr->u.ip_relay.port == rec->addr.u.ip_relay.port ) ) {
+                    unknown = XP_FALSE;
+                }
+                break;
+            case COMMS_CONN_BT:
+                if ( 0 == XP_MEMCMP( &addr->u.bt.btAddr, &rec->addr.u.bt.btAddr,
+                                     sizeof(addr->u.bt.btAddr) ) ) {
+                    unknown = XP_FALSE;
+                }
+                break;
+            case COMMS_CONN_IR:              /* no way to test */
+            default:
+                break;
             }
-            break;
-        case COMMS_CONN_BT:
-            if ( 0 == XP_MEMCMP( &addr->u.bt.btAddr, &rec->addr.u.bt.btAddr,
-                                 sizeof(addr->u.bt.btAddr) ) ) {
-                unknown = XP_FALSE;
-            }
-            break;
-        case COMMS_CONN_IR:              /* no way to test */
-        default:
-            break;
         }
     }
 
