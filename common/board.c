@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -123,7 +123,7 @@ static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
 
 #ifdef KEYBOARD_NAV
 static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
-                                 XP_Bool* up );
+                                 XP_Bool preflightOnly, XP_Bool* up );
 static XP_Bool invalFocusOwner( BoardCtxt* board );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -2584,7 +2584,45 @@ focusToCoords( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
     }
 
     return result;
-}
+} /* focusToCoords */
+
+/* The focus keys are special because they can cause focus to leave one object
+ * and move to another (which the platform needs to be involved with).  On
+ * palm, that only works if the keyDown handler claims not to have handled the
+ * event.  So we must preflight, determining if the keyUp handler will handle
+ * the event should it get to it.  If it wouldn't, then the platform wants a
+ * chance not to generate a keyUp event at all.
+ */
+static XP_Bool
+handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
+                  XP_Bool* pHandled )
+{
+    XP_Bool redraw = XP_FALSE;
+    if ( board->focusHasDived ) {
+        XP_Bool up = XP_FALSE;
+        if ( board->focussed == OBJ_BOARD ) {
+            redraw = board_moveCursor( board, flipKey( key, board->isFlipped ),
+                                       preflightOnly, &up );
+        } else if ( board->focussed == OBJ_SCORE ) {
+            redraw = moveScoreCursor( board, key, preflightOnly, &up );
+        } else if ( board->focussed == OBJ_TRAY ) {
+            redraw = tray_moveCursor( board, key, preflightOnly, &up );
+        }
+        if ( up ) {
+            if ( !preflightOnly ) {
+                invalFocusOwner( board );
+                board->focusHasDived = XP_FALSE;
+                invalFocusOwner( board );
+            }
+        } else {
+            *pHandled = redraw;
+        }
+    } else {
+        /* Do nothing.  We don't handle transition among top-level
+           focussed objects.  Platform must.  */
+    }
+    return redraw;
+} /* handleFocusKeyUp */
 
 XP_Bool
 board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
@@ -2592,13 +2630,16 @@ board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     XP_Bool draw = XP_FALSE;
     XP_U16 x, y;
 
+    *pHandled = XP_FALSE;
+
     if ( key == XP_RETURN_KEY ) {
         if ( focusToCoords( board, &x, &y ) ) {
             draw = handleLikeDown( board, board->focussed, x, y );
+            *pHandled = draw;
         }
+    } else if ( board->focussed != OBJ_NONE ) {
+        draw = handleFocusKeyUp( board, key, XP_TRUE, pHandled ) || draw;
     }
-
-    *pHandled = (board->focussed != OBJ_NONE) && board->focusHasDived;
 
     return draw;
 }
@@ -2636,28 +2677,7 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     case XP_CURSOR_KEY_ALTLEFT:
     case XP_CURSOR_KEY_RIGHT:
     case XP_CURSOR_KEY_ALTRIGHT:
-        if ( board->focusHasDived ) {
-            XP_Bool up = XP_FALSE;
-            if ( board->focussed == OBJ_BOARD ) {
-                redraw = board_moveCursor( board, 
-                                           flipKey( key, board->isFlipped ),
-                                           &up );
-            } else if ( board->focussed == OBJ_SCORE ) {
-                redraw = moveScoreCursor( board, key, &up );
-            } else if ( board->focussed == OBJ_TRAY ) {
-                redraw = tray_moveCursor( board, key, &up );
-            }
-            if ( up ) {
-                invalFocusOwner( board );
-                board->focusHasDived = XP_FALSE;
-                invalFocusOwner( board );
-            } else {
-                handled = redraw;//XP_TRUE;
-            }
-        } else {
-            /* Do nothing.  We don't handle transition among top-level
-               focussed objects.  Platform must.  */
-        }
+        redraw = handleFocusKeyUp( board, key, XP_FALSE, &handled );
         break;
 #endif
 
@@ -2932,7 +2952,8 @@ stripAlt( XP_Key key, XP_Bool* wasAlt )
 } /* stripAlt */
 
 static XP_Bool
-board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
+board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
+                  XP_Bool* up )
 {
     BdCursorLoc loc = board->bdCursor[board->selPlayer];
     XP_U16 col = loc.col;
@@ -2944,7 +2965,7 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up )
 
     changed = figureNextLoc( board, cursorKey, XP_FALSE, altSet,
                              &col, &row, up );
-    if ( changed ) {
+    if ( changed && !preflightOnly ) {
         invalCell( board, loc.col, loc.row );
         invalCell( board, col, row );
         loc.col = col;
