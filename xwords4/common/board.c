@@ -2638,7 +2638,11 @@ board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
             *pHandled = draw;
         }
     } else if ( board->focussed != OBJ_NONE ) {
-        draw = handleFocusKeyUp( board, key, XP_TRUE, pHandled ) || draw;
+        if ( board->focusHasDived && (key == XP_RAISEFOCUS_KEY) ) {
+            *pHandled = XP_TRUE;
+        } else {
+            draw = handleFocusKeyUp( board, key, XP_TRUE, pHandled ) || draw;
+        }
     }
 
     return draw;
@@ -2647,13 +2651,16 @@ board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 XP_Bool
 board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
 {
-    XP_Bool upHandled, downHandled;
     XP_Bool draw;
 
-    draw = board_handleKeyUp( board, key, &upHandled );
-    draw = board_handleKeyDown( board, key, &downHandled ) || draw;
-
-    *handled = upHandled || downHandled;
+    if ( key == XP_RETURN_KEY ) {
+        *handled = XP_FALSE;
+    } else {
+        XP_Bool upHandled, downHandled;
+        draw = board_handleKeyUp( board, key, &upHandled );
+        draw = board_handleKeyDown( board, key, &downHandled ) || draw;
+        *handled = upHandled || downHandled;
+    }
     return draw;
 }
 #endif /* KEYBOARD_NAV */
@@ -2887,25 +2894,25 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey,
             end = max;
             break;
         default:
-            XP_ASSERT( XP_FALSE );
+            XP_LOGF( "%s: odd cursor key: %d", __FUNCTION__, cursorKey ); 
         }
 
-        XP_ASSERT( incr != 0 );
-
-        for ( ; ; ) {
-            if ( *useWhat == end ) {
+        if ( incr != 0 ) {
+            for ( ; ; ) {
+                if ( *useWhat == end ) {
 #ifdef KEYBOARD_NAV
-                if ( !!pUp ) {
-                    *pUp = XP_TRUE;
-                }
+                    if ( !!pUp ) {
+                        *pUp = XP_TRUE;
+                    }
 #endif
-                break;
-            }
-            result = XP_TRUE;
-            *useWhat += incr;
-            if ( forceFirst || !cellOccupied( board, 
-                                              *colP, *rowP, inclPending ) ) {
-                break;
+                    break;
+                }
+                result = XP_TRUE;
+                *useWhat += incr;
+                if ( forceFirst
+                     || !cellOccupied( board, *colP, *rowP, inclPending ) ) {
+                    break;
+                }
             }
         }
     }
