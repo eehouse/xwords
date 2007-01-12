@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999 - 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -297,6 +297,8 @@ struct PalmAppGlobals {
     XP_Bool useHiRes;
     XP_Bool hasFiveWay;
     XP_Bool hasKeyboard;
+
+    XP_U16 lastKeyDown;
 
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool askTrayLimits;

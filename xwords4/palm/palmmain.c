@@ -2144,11 +2144,14 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
 
     if ( treatAsUp ) {
         handler = board_handleKeyUp;
+        globals->lastKeyDown = XP_KEY_NONE;
     } else if ( globals->hasKeyboard ) {
         if ( (event->data.keyDown.modifiers & autoRepeatKeyMask) != 0 ) {
             handler = board_handleKeyRepeat;
         } else {
             handler = board_handleKeyDown;
+            XP_ASSERT( globals->lastKeyDown == XP_KEY_NONE );
+            globals->lastKeyDown = event->data.keyDown.keyCode;
         }
     } else {
         handler = NULL;
@@ -2327,8 +2330,17 @@ mainViewHandleEvent( EventPtr event )
         break;
 
     case winExitEvent:
-		if ( event->data.winExit.exitWindow == (WinHandle)FrmGetActiveForm() ) {
+		if ( event->data.winExit.exitWindow == (WinHandle)FrmGetActiveForm() ){
 			globals->menuIsDown = true;
+        }
+        if ( globals->lastKeyDown != XP_KEY_NONE ) {
+            EventType event;
+            XP_Bool ignore;
+
+            event.eType = keyUpEvent;
+            event.data.keyUp.chr = event.data.keyUp.keyCode
+                = globals->lastKeyDown;
+            (void)handleKeyEvent( globals, &event, &ignore );
         }
         break;
 
@@ -2340,7 +2352,7 @@ mainViewHandleEvent( EventPtr event )
 		// the first form opened is not the one you are currently watching
 		// for)
 		if (event->data.winEnter.enterWindow == (WinHandle)FrmGetActiveForm() &&
-			event->data.winEnter.enterWindow == (WinHandle)FrmGetFirstForm() ) {
+			event->data.winEnter.enterWindow == (WinHandle)FrmGetFirstForm() ){
             globals->menuIsDown = false;
 		}
         break;
