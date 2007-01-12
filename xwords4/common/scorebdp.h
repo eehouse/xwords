@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,7 +31,8 @@ XP_Bool handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y );
 #endif
 
 #ifdef KEYBOARD_NAV
-XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool* up );
+XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
+                         XP_Bool* up );
 #endif
 
 #endif

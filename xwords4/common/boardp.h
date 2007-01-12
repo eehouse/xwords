@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -201,7 +201,8 @@ void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer );
 
 #ifdef KEYBOARD_NAV
 XP_Key flipKey( XP_Key key, XP_Bool flip );
-XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool* up );
+XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
+                         XP_Bool preflightOnly, XP_Bool* up );
 XP_Bool tray_keyAction( BoardCtxt* board );
 DrawFocusState dfsFor( BoardCtxt* board, BoardObjectType obj );
 void shiftFocusUp( BoardCtxt* board, XP_Key key );
