@@ -2806,8 +2806,8 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
         board->focussed = typ;
         XP_LOGF( "%s: set focussed to %s", __FUNCTION__, 
                  BoardObjectType_2str(typ) );
-        draw = invalFocusOwner( board ) || draw;
         board->focusHasDived = XP_FALSE;
+        draw = invalFocusOwner( board ) || draw;
     } else {
         /* we're losing it; inval and clear IFF we currently have same focus,
            otherwise ignore */
