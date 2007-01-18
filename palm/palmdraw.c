@@ -275,8 +275,7 @@ palm_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ,
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 #ifdef XWFEATURE_FIVEWAY
-    PalmAppGlobals* globals = dctx->globals;
-    if ( globals->hasFiveWay && (dfs == DFS_TOP) && (typ == OBJ_BOARD) ) {
+    if ( (dfs == DFS_TOP) && (typ == OBJ_BOARD) ) {
         XP_Rect r;
         XP_U16 i;
         IndexedColorType oldColor;
@@ -1332,51 +1331,27 @@ palm_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
     HIGHRES_POP_LOC( (PalmDrawCtx*)p_dctx );
 } /* palm_draw_measureMiniWText */
 
-typedef struct PalmMiniWinData {
-    WinHandle bitsBehind;
-    XP_S16 miniX;
-    XP_S16 miniY;
-} PalmMiniWinData;
-
 static void
 palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text, 
-                          const XP_Rect* rect, void** closureP )
+                          const XP_Rect* rect, void** XP_UNUSED(closureP) )
 {
-    RectangleType localR = *(RectangleType*)rect;
+    XP_Rect localR;
     XP_UCHAR buf1[48];
     XP_UCHAR buf2[48];
     XP_UCHAR* bufs[2] = { buf1, buf2 };
     XP_U16 nBufs, i, offset;
-    XP_U16 ignoreErr;
-    XP_Bool hasClosure = !!closureP;
-    PalmMiniWinData* data = (PalmMiniWinData*)(hasClosure? *closureP: NULL);
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
     HIGHRES_PUSH_LOC(dctx);
 
-    if ( hasClosure ) {
-        if ( !data ) {
-            /* capture a bit extra to avoid ghosting on hires devices */
-            localR = *(RectangleType*)rect;
-            insetRect( (XP_Rect*)&localR, -2 );
-            data = XP_MALLOC( dctx->mpool, sizeof(PalmMiniWinData) );
-            data->bitsBehind = WinSaveBits( &localR, &ignoreErr );
-            data->miniX = localR.topLeft.x;
-            data->miniY = localR.topLeft.y;
-            *closureP = data;
-        } else {
-            XP_ASSERT( data->miniX == localR.topLeft.x );
-            XP_ASSERT( data->miniY == localR.topLeft.y );
-        }
-    }
-
-    localR = *(RectangleType*)rect;
-    WinEraseRectangle( &localR, 0 );
-    localR.topLeft.x++;
-    localR.topLeft.y++;
-    localR.extent.x -= 3;
-    localR.extent.y -= 3;
-    WinDrawRectangleFrame( popupFrame, &localR );
+    localR = *rect;
+    insetRect( &localR, 1 );
+    WinEraseRectangle( (RectangleType*)&localR, 0 );
+    localR.left++;
+    localR.top++;
+    localR.width -= 3;
+    localR.height -= 3;
+    WinDrawRectangleFrame( popupFrame, (RectangleType*)&localR );
 
     splitString( text, &nBufs, bufs );
 
@@ -1387,8 +1362,8 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
         XP_U16 width = FntCharsWidth( txt, len );
 
         WinDrawChars( (const char*)txt, len,
-                      localR.topLeft.x + ((localR.extent.x-width)/2),
-                      localR.topLeft.y + 1 + offset );
+                      localR.left + ((localR.width-width)/2),
+                      localR.top + 1 + offset );
         offset += getMiniLineHt( dctx );
     }
 
@@ -1396,23 +1371,12 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 } /* palm_draw_drawMiniWindow */
 
 static void
-palm_draw_eraseMiniWindow( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect), 
+palm_draw_eraseMiniWindow( DrawCtx* XP_UNUSED(p_dctx),
+                           const XP_Rect* XP_UNUSED(rect), 
                            XP_Bool XP_UNUSED(lastTime),
-                           void** closure, XP_Bool* XP_UNUSED(invalUnder) )
+                           void** XP_UNUSED(closure), XP_Bool* invalUnder )
 {
-    PalmMiniWinData* data = (PalmMiniWinData*)*closure;
-    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-
-    if ( !!closure && !!*closure ) {
-        HIGHRES_PUSH_LOC(dctx);
-
-        /* this DELETES data->bitsBehind */
-        WinRestoreBits( data->bitsBehind, data->miniX, data->miniY );
-
-        HIGHRES_POP_LOC(dctx);
-        XP_FREE( dctx->mpool, data );
-        *closure = NULL;
-    }
+    *invalUnder = XP_TRUE;
 } /* palm_draw_eraseMiniWindow */
 
 static void
