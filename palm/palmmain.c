@@ -924,11 +924,11 @@ initHighResGlobals( PalmAppGlobals* globals )
     globals->oneDotFiveAvail = ( err == errNone && vers >= 5 );
 
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
-    globals->hasKeyboard = ( (err == errNone)
-                            && ((vers & sysFtrNumUIHardwareHasKbd) != 0) );
+    globals->hasTreoKeyboard = ( (err == errNone)
+                                 && ((vers & sysFtrNumUIHardwareHasKbd) != 0) );
 #ifdef XWFEATURE_FIVEWAY
-    globals->hasFiveWay = ( (err == errNone)
-                            && ((vers & sysFtrNumUIHardwareHas5Way) != 0) );
+    globals->hasTreoFiveWay = ( (err == errNone)
+                                && ((vers & sysFtrNumUIHardwareHas5Way) != 0) );
 #endif
 
 #ifdef FEATURE_SILK
@@ -1734,7 +1734,7 @@ drawFormButtons( PalmAppGlobals* globals )
     }
 
 #ifdef XWFEATURE_FIVEWAY
-    if ( globals->hasFiveWay ) {
+    if ( globals->hasTreoFiveWay ) {
         drawFocusRingOnGadget( XW_MAIN_DONE_BUTTON_ID,
                                XW_MAIN_HIDE_BUTTON_ID );
     }
@@ -2121,6 +2121,26 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
 } /* handleFocusEvent */
 #endif
 
+#ifdef DO_TUNGSTEN_FIVEWAY
+/* These are supposed to be defined in some SDK headers but I can't find 'em,
+ * and if I could they're obscure enough that I wouldn't want the build to
+ * depend on 'em since they're copyrighted and I couldn't distribute. */
+# define vchrNavChange (vchrPalmMin + 3)
+# define navBitUp         0x0001
+# define navBitDown       0x0002
+# define navBitLeft       0x0004
+# define navBitRight      0x0008
+# define navBitSelect     0x0010
+# define navBitsAll       0x001F
+
+# define navChangeUp      0x0100
+# define navChangeDown    0x0200
+# define navChangeLeft    0x0400
+# define navChangeRight   0x0800
+# define navChangeSelect  0x1000
+# define navChangeBitsAll 0x1F00
+#endif
+
 static XP_Bool
 handleKeyEvent( PalmAppGlobals* globals, const EventType* event, 
                 XP_Bool* handledP )
@@ -2133,31 +2153,54 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     XP_Key xpkey = XP_KEY_NONE;
     XP_Bool handled = XP_FALSE;
     XP_Bool altOn = (event->data.keyUp.modifiers & shiftKeyMask) != 0;
-    XP_Bool treatAsUp = !globals->hasKeyboard || (event->eType == keyUpEvent);
+    XP_Bool treatAsUp = !globals->hasTreoKeyboard
+        || (event->eType == keyUpEvent);
+    XP_U16 keyCode = event->data.keyDown.keyCode;
     Int16 chr;
     XP_Bool (*handler)( BoardCtxt*, XP_Key, XP_Bool* );
+    BoardCtxt* board = globals->game.board;
+
+#ifdef DO_TUNGSTEN_FIVEWAY
+    XP_S16 incr = 0;
+    if ( !globals->hasTreoKeyboard
+         && (event->data.keyDown.chr == vchrNavChange) ) {
+        if ( (keyCode & (/* navBitUp |  */navChangeUp )) != 0 ) {
+            keyCode = vchrRockerUp;
+            incr = -1;
+        } else if ( (keyCode & (/* navBitDown |  */navChangeDown )) != 0 ) {
+            keyCode = vchrRockerDown;
+            incr = 1;
+        } else if ( (keyCode & (navBitLeft /* |navChangeLeft */ )) != 0 ) {
+            keyCode = vchrRockerLeft;
+            incr = -1;
+        } else if ( (keyCode & ( navBitRight /* | navChangeRight */ )) != 0 ) {
+            keyCode = vchrRockerRight;
+            incr = 1;
+        } else if ( (keyCode & (navBitSelect /* | navChangeSelect */ )) != 0 ) {
+            keyCode = vchrRockerCenter;
+        }
+    }
+#endif
 
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.modifiers)
                == OFFSET_OF(EventType, data.keyDown.modifiers) );
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.keyCode)
                == OFFSET_OF(EventType, data.keyDown.keyCode) );
 
-    if ( treatAsUp ) {
+    if ( !globals->hasTreoKeyboard ) {
+        handler = board_handleKey;
+    } else if ( event->eType == keyUpEvent ) {
         handler = board_handleKeyUp;
         globals->lastKeyDown = XP_KEY_NONE;
-    } else if ( globals->hasKeyboard ) {
-        if ( (event->data.keyDown.modifiers & autoRepeatKeyMask) != 0 ) {
-            handler = board_handleKeyRepeat;
-        } else {
-            handler = board_handleKeyDown;
-            XP_ASSERT( globals->lastKeyDown == XP_KEY_NONE );
-            globals->lastKeyDown = event->data.keyDown.keyCode;
-        }
+    } else if ( (event->data.keyDown.modifiers & autoRepeatKeyMask) != 0 ) {
+        handler = board_handleKeyRepeat;
     } else {
-        handler = NULL;
+        handler = board_handleKeyDown;
+        XP_ASSERT( globals->lastKeyDown == XP_KEY_NONE );
+        globals->lastKeyDown = event->data.keyDown.keyCode;
     }
 
-    switch ( event->data.keyDown.keyCode ) {
+    switch ( keyCode ) {
 #ifdef XWFEATURE_FIVEWAY
     case vchrRockerCenter:
         xpkey = XP_RETURN_KEY;
@@ -2186,11 +2229,9 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
            let's give the board two shots at each char, one lower case
            and another upper. */
         if ( chr < 255 && chr > ' ' ) {
-            draw = !!handler && (*handler)( globals->game.board, 
-                                            chr, &handled );
+            draw = !!handler && (*handler)( board, chr, &handled );
             if ( !handled && chr >= 'a' ) {
-                draw = !!handler && (*handler)( globals->game.board, 
-                                                chr - ('a' - 'A'), 
+                draw = !!handler && (*handler)( board, chr - ('a' - 'A'), 
                                                 &handled );
             }
         } else {
@@ -2203,20 +2244,42 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
                 break;
             case backspaceChr:
                 xpkey = XP_CURSOR_KEY_DEL;
+                break;
+            case chrSpace:
+                xpkey = XP_RAISEFOCUS_KEY;
+                break;
             }
         }
     }
 
     if ( xpkey != XP_KEY_NONE ) {
         XP_ASSERT( !!handler );
-        draw = (*handler)( globals->game.board, xpkey, &handled );
+        draw = (*handler)( board, xpkey, &handled );
         /* If handled comes back false yet something changed (draw),
            we'll be getting another event shortly.  Put the draw off
            until then so we don't flash the tray focussed then not.  This
            is a hack, but I can't think of a way to integrate it into
            board.c logic without making too many palm-centric assumptions
            there. */
-        if ( draw && !handled ) {
+        if ( 0 ) {
+#ifdef DO_TUNGSTEN_FIVEWAY
+        } else if ( !globals->hasTreoKeyboard && !handled && (incr != 0) ) {
+            /* order'll be different if scoreboard is vertical */
+            BoardObjectType typs[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
+            BoardObjectType nxt = board_getFocusOwner( board );
+            XP_U16 indx = 0;
+            if ( nxt != OBJ_NONE ) {
+                for ( ; indx < sizeof(typs)/sizeof(typs[0]); ++indx ){
+                    if ( nxt == typs[indx] ) {
+                        indx = (indx + (sizeof(typs)/sizeof(typs[0]) + incr));
+                        indx %= sizeof(typs)/sizeof(typs[0]);
+                        break;
+                    }
+                }
+            }
+            draw = board_focusChanged( board, typs[indx], XP_TRUE ) || draw;
+#endif
+        } else if ( draw && !handled ) {
             draw = XP_FALSE;
         }
     } else {
@@ -2340,7 +2403,7 @@ mainViewHandleEvent( EventPtr event )
             event.eType = keyUpEvent;
             event.data.keyUp.chr = event.data.keyUp.keyCode
                 = globals->lastKeyDown;
-            (void)handleKeyEvent( globals, &event, &ignore );
+            draw = handleKeyEvent( globals, &event, &ignore );
         }
         break;
 
@@ -2660,14 +2723,17 @@ mainViewHandleEvent( EventPtr event )
 #ifdef XWFEATURE_FIVEWAY
     case frmObjectFocusTakeEvent:
     case frmObjectFocusLostEvent:
-        handled = globals->hasFiveWay
+        handled = globals->hasTreoFiveWay
             && handleFocusEvent( globals, event, &draw );
         break;
 #endif
 
-    case keyDownEvent:
     case keyUpEvent:
-        draw = handleKeyEvent( globals, event, &handled );
+        XP_ASSERT( globals->hasTreoKeyboard );
+    case keyDownEvent:
+        if ( !globals->menuIsDown ) {
+            draw = handleKeyEvent( globals, event, &handled );
+        }
         break;
 
     case sclRepeatEvent:

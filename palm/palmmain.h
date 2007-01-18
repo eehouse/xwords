@@ -295,8 +295,8 @@ struct PalmAppGlobals {
     XP_Bool hasHiRes;
     XP_Bool oneDotFiveAvail;
     XP_Bool useHiRes;
-    XP_Bool hasFiveWay;
-    XP_Bool hasKeyboard;
+    XP_Bool hasTreoFiveWay;
+    XP_Bool hasTreoKeyboard;
 
     XP_U16 lastKeyDown;
 
