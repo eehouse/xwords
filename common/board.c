@@ -2736,6 +2736,17 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     }
     return redraw;
 } /* board_handleKeyUp */
+
+XP_Bool
+board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* handled )
+{
+    XP_Bool handled1, handled2;
+    XP_Bool draw = board_handleKeyDown( board, key, &handled1 );
+    draw = board_handleKeyUp( board, key, &handled2 ) || draw;
+    *handled = handled1 || handled2;
+    return draw;
+}
+
 #endif
 
 #ifdef KEYBOARD_NAV

@@ -2033,8 +2033,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if ( wParam == 0x08 ) {
                 wParam = XP_CURSOR_KEY_DEL;
             }
-            draw = board_handleKeyUp( globals->game.board, wParam, &handled )
-                || board_handleKeyUp( globals->game.board, wParam - ('a'-'A'),
+            draw = board_handleKey( globals->game.board, wParam, &handled )
+                || board_handleKey( globals->game.board, wParam - ('a'-'A'),
                                       &handled );
             break;
 
