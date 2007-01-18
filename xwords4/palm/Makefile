@@ -168,6 +168,7 @@ INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/include/Extensions/Bluetooth
 endif
 
 XWFEATURE_FIVEWAY = -DXWFEATURE_FIVEWAY -DKEYBOARD_NAV
+XWFEATURE_FIVEWAY += -DDO_TUNGSTEN_FIVEWAY
 
 ifneq (x$(XWFEATURE_FIVEWAY)x, xx)
 	INCLUDES += -I/usr/local/share/palmdev/Handspring5
