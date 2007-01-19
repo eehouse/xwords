@@ -460,14 +460,20 @@ END
 #define CLR_OK_LEFT   ((CLR_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
 #define CLR_CANCEL_LEFT   ((CLR_WIDTH/2)+10)
 #define CLR_LAB_WIDTH 40
-#define CLR_LAB_HT 14
+#define CLR_LAB_HT 12
 #define CLR_BUT_WIDTH 12
-#define CLR_BUT_HT 12
-#define CLR_ROW_1  5
-#define CLR_ROW_2  19
-#define CLR_ROW_3  36
-#define CLR_ROW_4  53
-#define CLR_ROW_5  67
+#define CLR_BUT_HT 10
+
+#define CLR_SMALL_GAP 12
+#define CLR_LRG_GAP   14
+
+#define CLR_ROW_1  4
+#define CLR_ROW_2  (CLR_ROW_1+CLR_SMALL_GAP)
+#define CLR_ROW_3  (CLR_ROW_2+CLR_LRG_GAP)
+#define CLR_ROW_4  (CLR_ROW_3+CLR_SMALL_GAP)
+#define CLR_ROW_5  (CLR_ROW_4+CLR_LRG_GAP)
+#define CLR_ROW_6  (CLR_ROW_5+CLR_SMALL_GAP)
+
 #define CLR_BUTTON_ROW 81
 #define CLR_COL_1  2
 #define CLR_COL_2  43
@@ -509,24 +515,29 @@ BEGIN
     PUSHBUTTON      "",TBACK_BUTTON,CLR_COL_4,CLR_ROW_3,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
-    LTEXT           "Player 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_4,
+    LTEXT           "Focus color:",FOCURCLR_LABEL,CLR_COL_1,CLR_ROW_4,
                      CLR_LAB_WIDTH,CLR_LAB_HT
-    PUSHBUTTON      "",PLAYER1_BUTTON,CLR_COL_2,CLR_ROW_4,CLR_BUT_WIDTH,
+    PUSHBUTTON      "",FOCUS_BUTTON,CLR_COL_2,CLR_ROW_4,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
-    LTEXT           "Player 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_4,
+    LTEXT           "Player 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_5,
                      CLR_LAB_WIDTH,CLR_LAB_HT
-    PUSHBUTTON      "",PLAYER2_BUTTON,CLR_COL_4,CLR_ROW_4,CLR_BUT_WIDTH,
+    PUSHBUTTON      "",PLAYER1_BUTTON,CLR_COL_2,CLR_ROW_5,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
-    LTEXT           "Player 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_5,
+    LTEXT           "Player 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_5,
                      CLR_LAB_WIDTH,CLR_LAB_HT
-    PUSHBUTTON      "",PLAYER3_BUTTON,CLR_COL_2,CLR_ROW_5,CLR_BUT_WIDTH,
+    PUSHBUTTON      "",PLAYER2_BUTTON,CLR_COL_4,CLR_ROW_5,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
-    LTEXT           "Player 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_5,
+    LTEXT           "Player 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_6,
                      CLR_LAB_WIDTH,CLR_LAB_HT
-    PUSHBUTTON      "",PLAYER4_BUTTON,CLR_COL_4,CLR_ROW_5,CLR_BUT_WIDTH,
+    PUSHBUTTON      "",PLAYER3_BUTTON,CLR_COL_2,CLR_ROW_6,CLR_BUT_WIDTH,
+                    CLR_BUT_HT,BS_OWNERDRAW
+
+    LTEXT           "Player 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_6,
+                     CLR_LAB_WIDTH,CLR_LAB_HT
+    PUSHBUTTON      "",PLAYER4_BUTTON,CLR_COL_4,CLR_ROW_6,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
     DEFPUSHBUTTON   "OK",IDOK,CLR_OK_LEFT,CLR_BUTTON_ROW,
@@ -684,6 +695,7 @@ BEGIN
     0xAF, 0xAF, 0xAF,
     0xFF, 0xFF, 0xFF,		/* empty cells */
     0xFF, 0xFF, 0x99,		/* tile background */
+    0x70, 0x70, 0xFF,		/* focus */
     0x00, 0x00, 0x00,		/* player 1 */
     0xFF, 0x00, 0x00,
     0x00, 0x00, 0xFF,

@@ -266,6 +266,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     const XP_UCHAR* cp = NULL;
     COLORREF foreColorRef;
     XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
+    XP_Bool isFocussed = (flags & CELL_ISCURSOR) != 0;
 
     XP_ASSERT( !!hdc );
 
@@ -296,6 +297,10 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         bkIndex = (bonus - BONUS_DOUBLE_LETTER) + CE_BONUS1_COLOR;
     }
 
+    if ( isFocussed ) {
+        bkIndex = CE_FOCUS_COLOR;
+    }
+
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
 
     if ( (flags&CELL_ISBLANK) != 0 ) {
@@ -304,8 +309,8 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
            whole rect and then erase all but the corners.  File this under
            "don't ask, but it works". */
         RECT tmpRT;
-        FillRect( hdc, &rt, dctx->brushes[isPending?CE_WHITE_COLOR:CE_BLACK_COLOR] );
-
+        FillRect( hdc, &rt, 
+                  dctx->brushes[isPending?CE_WHITE_COLOR:CE_BLACK_COLOR] );
         tmpRT = rt;
         InsetRect( &tmpRT, 0, 2 );
         FillRect( hdc, &tmpRT, dctx->brushes[bkIndex] );
@@ -396,14 +401,15 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     RECT rt;
     XP_U16 index;
     XP_Bool highlighted;
+    XP_Bool isFocussed = (flags & CELL_ISCURSOR) != 0;
+    XP_Bool isEmpty = (flags & CELL_ISEMPTY) != 0;
 
     ceClearToBkground( dctx, xprect );
 
-    if ( (flags&CELL_ISEMPTY) == 0 ) {
+    if ( !isEmpty || isFocussed ) {
+        XP_U16 backIndex = isFocussed? CE_FOCUS_COLOR : CE_TILEBACK_COLOR;
 
-        SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_TILEBACK_COLOR] );
-        index = getPlayerColor(dctx->trayOwner);
-        SetTextColor( hdc, dctx->globals->appPrefs.colors[index] );
+        SetBkColor( hdc, dctx->globals->appPrefs.colors[backIndex] );
 
         XPRtoRECT( &rt, xprect );
 
@@ -411,39 +417,50 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom);
         InsetRect( &rt, 1, 1 );
 
-        /* For some reason Rectangle isn't using the background brush to
-           fill, so FillRect has to get called after Rectangle.  Need to call
-           InsetRect either way to put chars in the right place. */
-        highlighted = (flags&CELL_HIGHLIGHT) != 0;
-        if ( highlighted ) {
-            Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
-            InsetRect( &rt, 1, 1 );
-        }
-        FillRect( hdc, &rt, dctx->brushes[CE_TILEBACK_COLOR] );
-        if ( !highlighted ) {
-            InsetRect( &rt, 1, 1 );
+        if ( !isEmpty ) {
+            index = getPlayerColor(dctx->trayOwner);
+            SetTextColor( hdc, dctx->globals->appPrefs.colors[index] );
+
+            /* For some reason Rectangle isn't using the background brush to
+               fill, so FillRect has to get called after Rectangle.  Need to
+               call InsetRect either way to put chars in the right place. */
+            highlighted = (flags & CELL_HIGHLIGHT) != 0;
+            if ( highlighted ) {
+                Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
+                InsetRect( &rt, 1, 1 );
+            }
         }
 
-        if ( !!letters ) {
-            HFONT oldFont = SelectObject( hdc, dctx->trayFont );
-            MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
-                                 widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
-            DrawText( hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_TOP | DT_LEFT );
-            SelectObject( hdc, oldFont );
-        } else if ( !!bitmap  ) {
-            RECT lrt = rt;
-            XP_U16 tmp = CE_USER_COLOR1+dctx->trayOwner;
-            ++lrt.left;
-            lrt.top += 4;
-            makeAndDrawBitmap( dctx, hdc, &lrt, XP_FALSE,
-                               dctx->globals->appPrefs.colors[tmp],
-                               (CEBitmapInfo*)bitmap );
-        }
+        FillRect( hdc, &rt, dctx->brushes[backIndex] );
 
-        if ( val >= 0 ) {
-            swprintf( widebuf, L"%d", val );
-            DrawText(hdc, widebuf, -1, &rt, 
-                     DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);	
+        if ( !isEmpty ) {
+            if ( !highlighted ) {
+                InsetRect( &rt, 1, 1 );
+            }
+
+            if ( !!letters ) {
+                HFONT oldFont = SelectObject( hdc, dctx->trayFont );
+                MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
+                                     widebuf, 
+                                     sizeof(widebuf)/sizeof(widebuf[0]) );
+                DrawText( hdc, widebuf, -1, &rt, 
+                          DT_SINGLELINE | DT_TOP | DT_LEFT );
+                SelectObject( hdc, oldFont );
+            } else if ( !!bitmap  ) {
+                RECT lrt = rt;
+                XP_U16 tmp = CE_USER_COLOR1+dctx->trayOwner;
+                ++lrt.left;
+                lrt.top += 4;
+                makeAndDrawBitmap( dctx, hdc, &lrt, XP_FALSE,
+                                   dctx->globals->appPrefs.colors[tmp],
+                                   (CEBitmapInfo*)bitmap );
+            }
+
+            if ( val >= 0 ) {
+                swprintf( widebuf, L"%d", val );
+                DrawText(hdc, widebuf, -1, &rt, 
+                         DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);	
+            }
         }
     }
 } /* drawDrawTileGuts */
@@ -530,7 +547,7 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
 DLSTATIC void
 DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                                 XWBonusType cursorBonus, XP_Bool vertical,
-                                HintAtts hintAtts, CellFlags XP_UNUSED(flags) )
+                                HintAtts hintAtts, CellFlags flags )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -552,7 +569,9 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
         cursor = dctx->rightArrow;
     }
 
-    if ( cursorBonus == BONUS_NONE ) {
+    if ( (flags & CELL_ISCURSOR) != 0 ) {
+        bkIndex = CE_FOCUS_COLOR;
+    } else if ( cursorBonus == BONUS_NONE ) {
         bkIndex = CE_BKG_COLOR;
     } else {
         bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + CE_BONUS1_COLOR;
@@ -697,7 +716,7 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(r),
 DLSTATIC void
 DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx, 
                                   const XP_Rect* rInner, 
-                                  const XP_Rect* XP_UNUSED(rOuter), 
+                                  const XP_Rect* rOuter, 
                                   const DrawScoreInfo* dsi )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -709,8 +728,9 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
     HFONT newFont;
     HFONT oldFont;
     XP_Bool frameScore;
+    XP_Bool isFocussed = (dsi->flags & CELL_ISCURSOR) != 0;
+    XP_U16 bkIndex = isFocussed ? CE_FOCUS_COLOR : CE_BKG_COLOR;
 
-    XPRtoRECT( &rt, rInner );
     if ( dsi->selected ) {
         newFont = dctx->selPlayerFont;
     } else {
@@ -720,9 +740,16 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
 
     SetTextColor( hdc, dctx->globals->
                   appPrefs.colors[getPlayerColor(dsi->playerNum)] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
+        
+    if ( isFocussed ) {
+        XPRtoRECT( &rt, rOuter );
+        FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
+    }
 
     ceWidthAndText( dctx, dsi, scoreBuf, &width, &height );
 
+    XPRtoRECT( &rt, rInner );
     ++rt.top;                   /* tweak for ce */
 
     frameScore = dsi->isTurn && dctx->scoreIsVertical;
@@ -736,7 +763,8 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
 
     if ( frameScore ) {
         Rectangle( hdc, rt.left, rt.top-IS_TURN_VPAD, rt.right, rt.top );
-        Rectangle( hdc, rt.left, rt.bottom, rt.right, rt.bottom + IS_TURN_VPAD );
+        Rectangle( hdc, rt.left, rt.bottom, rt.right, 
+                   rt.bottom + IS_TURN_VPAD );
     }
 
     SelectObject( hdc, oldFont );
@@ -745,7 +773,7 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
 DLSTATIC void
 DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect, 
                                     XP_S16 score, XP_U16 XP_UNUSED(playerNum),
-                                    CellFlags XP_UNUSED(flags) )
+                                    CellFlags flags )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -754,12 +782,14 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
     wchar_t widebuf[5];
     XP_UCHAR buf[5];
     RECT rt;
+    XP_U16 bkIndex = (flags & CELL_ISCURSOR) == 0? 
+        CE_BKG_COLOR : CE_FOCUS_COLOR;
 
     SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
 
     XPRtoRECT( &rt, rect );
-    FillRect( hdc, &rt, dctx->brushes[CE_BKG_COLOR] );
+    FillRect( hdc, &rt, dctx->brushes[bkIndex] );
 
     if ( score < 0 ) {
         buf[0] = '?';
@@ -901,16 +931,6 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
 } /* ce_draw_drawMiniWindow */
 
 DLSTATIC void
-DRAW_FUNC_NAME(eraseMiniWindow)( DrawCtx* XP_UNUSED(p_dctx), 
-                                 const XP_Rect* XP_UNUSED(rect), 
-                                 XP_Bool XP_UNUSED(lastTime),
-                                 void** XP_UNUSED(closure), 
-                                 XP_Bool* invalUnder )
-{
-    *invalUnder = XP_TRUE;
-} /* ce_draw_eraseMiniWindow */
-
-DLSTATIC void
 DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 {
     XP_U16 i;
@@ -1039,10 +1059,7 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, ce );
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_boardFinished, ce );
-
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, ce );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_trayFinished, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, ce );
@@ -1056,14 +1073,14 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureScoreText, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_drawPlayer, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_score_pendingScore, ce );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_scoreFinished, ce );
+
+    SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, ce );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTimer, ce );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, ce );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_eraseMiniWindow, ce );
 #endif
 
     dctx->mainWin = mainWin;

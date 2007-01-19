@@ -101,51 +101,53 @@
 #define TPLWRD_BUTTON                  1061
 #define EMPCELL_BUTTON                 1062
 #define TBACK_BUTTON                   1063
-#define PLAYER1_BUTTON                 1064
-#define PLAYER2_BUTTON                 1065
-#define PLAYER3_BUTTON                 1066
-#define PLAYER4_BUTTON                 1067
-#define PLAYER1_LABEL                  1068
-#define PLAYER2_LABEL                  1069
-#define PLAYER3_LABEL                  1070
-#define PLAYER4_LABEL                  1071
-#define DLBLTR_LABEL                   1072
-#define DBLWRD_LABEL                   1073
-#define TPLLTR_LABEL                   1074
-#define TPLWRD_LABEL                   1075
-#define EMPTYCELL_LABEL                1076
-#define TILEBACK_LABEL                 1077
+#define FOCUS_BUTTON                   1064
+#define PLAYER1_BUTTON                 1065
+#define PLAYER2_BUTTON                 1066
+#define PLAYER3_BUTTON                 1067
+#define PLAYER4_BUTTON                 1068
+#define PLAYER1_LABEL                  1069
+#define PLAYER2_LABEL                  1070
+#define PLAYER3_LABEL                  1071
+#define PLAYER4_LABEL                  1072
+#define DLBLTR_LABEL                   1073
+#define DBLWRD_LABEL                   1074
+#define TPLLTR_LABEL                   1075
+#define TPLWRD_LABEL                   1076
+#define EMPTYCELL_LABEL                1077
+#define TILEBACK_LABEL                 1078
+#define FOCURCLR_LABEL                 1079
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */
 #ifdef MY_COLOR_SEL
-# define CLREDT_SLIDER1                 1078
-# define RED_EDIT                       1079
-# define CLREDT_SLIDER2                 1080
-# define GREEN_EDIT                     1081
-# define CLREDT_SLIDER3                 1082
-# define BLUE_EDIT                      1083
+# define CLREDT_SLIDER1                 1080
+# define RED_EDIT                       1081
+# define CLREDT_SLIDER2                 1082
+# define GREEN_EDIT                     1083
+# define CLREDT_SLIDER3                 1084
+# define BLUE_EDIT                      1085
 
-# define RED_LABEL                      1084
-# define GREEN_LABEL                    1085
-# define BLUE_LABEL                     1086
+# define RED_LABEL                      1086
+# define GREEN_LABEL                    1087
+# define BLUE_LABEL                     1088
 #endif // MY_COLOR_SEL
 
-#define HC_MIN_COMBO                    1087
-#define HC_MAX_COMBO                    1088
+#define HC_MIN_COMBO                    1089
+#define HC_MAX_COMBO                    1090
 
-#define IDC_CCONVIA_LAB                 1089
+#define IDC_CCONVIA_LAB                 1091
 
-#define IDC_COOKIE_LAB                   1090
+#define IDC_COOKIE_LAB                   1092
 #ifdef XWFEATURE_RELAY
-# define IDC_CRELAYNAME_LAB              1091
-# define IDC_CRELAYPORT_LAB              1092
-# define IDC_CRELAYHINT_LAB              1093
+# define IDC_CRELAYNAME_LAB              1093
+# define IDC_CRELAYPORT_LAB              1094
+# define IDC_CRELAYHINT_LAB              1095
 
-# define IDC_CONNECTCOMBO                1094
-# define RELAYNAME_EDIT                  1095
-# define RELAYPORT_EDIT                  1096
-# define COOKIE_EDIT                     1097
+# define IDC_CONNECTCOMBO                1096
+# define RELAYNAME_EDIT                  1097
+# define RELAYPORT_EDIT                  1098
+# define COOKIE_EDIT                     1099
 
 #endif
 

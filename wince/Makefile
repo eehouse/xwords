@@ -15,7 +15,7 @@
 #
 # mingw32 mingw32-binutils mingw32-runtime pocketpc-sdk
 
-SVNREV = $(shell svnversion -n . | tr ':' '_')
+SVNREV = $(shell svnversion -n .. | tr ':' '_')
 
 PLATFORM = wince
 
@@ -72,6 +72,8 @@ RESFLAGS += $(SVNDEF)
 
 # warn upgrading users of new dict location
 CFLAGS += -DDICTS_MOVED_ALERT
+CFLAGS += -DKEYBOARD_NAV
+CFLAGS += -DPERIMETER_FOCUS
 
 ifeq ($(DEBUG),TRUE)
 MEM_DEBUG_FLAG=-DMEM_DEBUG 
