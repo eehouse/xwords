@@ -203,15 +203,7 @@ drawTray( BoardCtxt* board )
                 }
 
                 drawPendingScore( board, 
-                                  (cursorBits & (1<<(MAX_TRAY_TILES-1))) != 0 );
-
-#ifdef KEYBOARD_NAV
-                if ( (cursorBits != 0) && (cursorBits != ALLTILES) ) {
-                    figureTrayTileRect( board, indexForBits(cursorBits),
-                                        &tileRect );
-                    draw_drawCursor( board->draw, OBJ_TRAY, &tileRect );
-                }
-#endif
+                                  (cursorBits & (1<<(MAX_TRAY_TILES-1))) != 0);
             }
 
             draw_objFinished( board->draw, OBJ_TRAY, &board->trayBounds,

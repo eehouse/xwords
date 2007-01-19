@@ -76,7 +76,7 @@ static XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row,
 static XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, 
                             XP_U16* colP, XP_U16* rowP );
 static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                         XP_Bool skipBlanks, XP_Bool cellFocused );
+                         XP_Bool skipBlanks );
 static void figureBoardRect( BoardCtxt* board );
 
 static void drawBoard( BoardCtxt* board );
@@ -501,14 +501,9 @@ invalSelTradeWindow( BoardCtxt* board )
 static void
 hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 {
-    XP_Bool invalCovers;
     MiniWindowStuff* stuff = &board->miniWindowStuff[winType];
 
-    draw_eraseMiniWindow( board->draw, &stuff->rect,
-                          destroy, &stuff->closure, &invalCovers );
-    if ( invalCovers ) {
-        board_invalRect( board, &stuff->rect );
-    }
+    board_invalRect( board, &stuff->rect );
 
     if ( destroy ) {
         stuff->text = (XP_UCHAR*)NULL;
@@ -884,6 +879,25 @@ board_invalAllTiles( BoardCtxt* board )
     board->needsDrawing = XP_TRUE;
 } /* board_invalAllTiles */
 
+#ifdef KEYBOARD_NAV
+#ifdef PERIMETER_FOCUS
+static void
+board_invalPerimeter( BoardCtxt* board )
+{
+    XP_U16 lastRow = model_numRows( board->model ) - 1;
+    XP_U16 firstAndLast = (1 << lastRow) | 1;
+
+    /* top and bottom rows */
+    board->redrawFlags[lastRow] = ~0;
+    board->redrawFlags[0] = ~0;
+    
+    while ( --lastRow > 0 ) {
+        board->redrawFlags[lastRow] |= firstAndLast;
+    }
+}
+#endif
+#endif
+
 void
 board_invalAll( BoardCtxt* board )
 {
@@ -1049,6 +1063,34 @@ board_draw( BoardCtxt* board )
     return !board->needsDrawing;
 } /* board_draw */
 
+#ifdef KEYBOARD_NAV
+static XP_Bool
+cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
+{
+    XP_Bool focussed = XP_FALSE;
+
+    if ( board->focussed == OBJ_BOARD ) {
+        if ( board->focusHasDived ) {
+            if ( (col == board->bdCursor[board->selPlayer].col)
+                 && (row == board->bdCursor[board->selPlayer].row) ) {
+                focussed = XP_TRUE;
+            }
+        } else {
+#ifdef PERIMETER_FOCUS
+            focussed = (col == 0) || (row == 0);
+            if ( !focussed ) {
+                XP_U16 lastRow = model_numRows( board->model ) - 1;
+                focussed = (col == lastRow) || (row == lastRow);
+            }
+#else
+            focussed = XP_TRUE;
+#endif
+        }
+    }
+    return focussed;
+} /* cellFocused */
+#endif
+
 static void
 drawBoard( BoardCtxt* board )
 {
@@ -1064,17 +1106,6 @@ drawBoard( BoardCtxt* board )
         ModelCtxt* model = board->model;
         BlankQueue bq;
         XP_Rect arrowRect;
-#ifdef KEYBOARD_NAV
-        XP_Bool someCellFocused = 
-            (board->focussed == OBJ_BOARD) && board->focusHasDived;
-        BdCursorLoc cursorLoc;
-        if ( someCellFocused ) {
-            cursorLoc = board->bdCursor[board->selPlayer];
-        }
-
-#else
-#       define someCellFocused XP_FALSE
-#endif
 
         scrollIfCan( board );	/* this must happen before we count blanks
                                    since it invalidates squares */
@@ -1094,8 +1125,7 @@ drawBoard( BoardCtxt* board )
                 lastCol = model_numCols( model );
                 for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
                     if ( (rowFlags & colMask) != 0 ) {
-                        if ( !drawCell( board, lastCol, row, XP_TRUE, 
-                                        someCellFocused )) {
+                        if ( !drawCell( board, lastCol, row, XP_TRUE )) {
                             failedBits |= colMask;
                             allDrawn = XP_FALSE;
                         }
@@ -1107,8 +1137,7 @@ drawBoard( BoardCtxt* board )
 
         /* draw the blanks we skipped before */
         for ( i = 0; i < bq.nBlanks; ++i ) {
-            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE, 
-                            someCellFocused ) ) {
+            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
                 allDrawn = XP_FALSE;
             }
         }
@@ -1129,10 +1158,8 @@ drawBoard( BoardCtxt* board )
                                                  col, row );
                     hintAtts = figureHintAtts( board, col, row );
 #ifdef KEYBOARD_NAV
-                    if ( someCellFocused ) {
-                        if ( cursorLoc.col == col && cursorLoc.row == row ) {
-                            flags |= CELL_ISCURSOR;
-                        }
+                    if ( cellFocused( board, col, row ) ) {
+                        flags |= CELL_ISCURSOR;
                     }
 #endif
                     draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
@@ -1140,15 +1167,6 @@ drawBoard( BoardCtxt* board )
                 }
             }
         }
-
-#ifdef KEYBOARD_NAV
-        if ( someCellFocused ) {
-            XP_Rect crect;
-            if ( getCellRect( board, cursorLoc.col, cursorLoc.row, &crect ) ){
-                draw_drawCursor( board->draw, OBJ_BOARD, &crect );
-            }
-        }
-#endif
 
         drawTradeWindowIf( board );
 
@@ -1582,8 +1600,7 @@ board_requestHint( BoardCtxt* board,
 } /* board_requestHint */
 
 static XP_Bool
-drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks,
-          XP_Bool XP_UNUSED_KEYBOARD_NAV(cellFocused) )
+drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
 {
     XP_Rect cellRect;
     Tile tile;
@@ -1656,9 +1673,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks,
                 flags |= CELL_ISBLANK;
             }
 #ifdef KEYBOARD_NAV
-            if ( cellFocused
-                 && (col == board->bdCursor[selPlayer].col)
-                 && (row == board->bdCursor[selPlayer].row) ) {
+            if ( cellFocused( board, col, row ) ) {
                 flags |= CELL_ISCURSOR;
             }
 #endif
@@ -2625,30 +2640,6 @@ handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
 } /* handleFocusKeyUp */
 
 XP_Bool
-board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
-{
-    XP_Bool draw = XP_FALSE;
-    XP_U16 x, y;
-
-    *pHandled = XP_FALSE;
-
-    if ( key == XP_RETURN_KEY ) {
-        if ( focusToCoords( board, &x, &y ) ) {
-            draw = handleLikeDown( board, board->focussed, x, y );
-            *pHandled = draw;
-        }
-    } else if ( board->focussed != OBJ_NONE ) {
-        if ( board->focusHasDived && (key == XP_RAISEFOCUS_KEY) ) {
-            *pHandled = XP_TRUE;
-        } else {
-            draw = handleFocusKeyUp( board, key, XP_TRUE, pHandled ) || draw;
-        }
-    }
-
-    return draw;
-}
-
-XP_Bool
 board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
 {
     XP_Bool draw;
@@ -2666,6 +2657,31 @@ board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
 #endif /* KEYBOARD_NAV */
 
 #ifdef KEY_SUPPORT
+XP_Bool
+board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
+{
+    XP_Bool draw = XP_FALSE;
+#ifdef KEYBOARD_NAV
+    XP_U16 x, y;
+
+    *pHandled = XP_FALSE;
+
+    if ( key == XP_RETURN_KEY ) {
+        if ( focusToCoords( board, &x, &y ) ) {
+            draw = handleLikeDown( board, board->focussed, x, y );
+            *pHandled = draw;
+        }
+    } else if ( board->focussed != OBJ_NONE ) {
+        if ( board->focusHasDived && (key == XP_RAISEFOCUS_KEY) ) {
+            *pHandled = XP_TRUE;
+        } else {
+            draw = handleFocusKeyUp( board, key, XP_TRUE, pHandled ) || draw;
+        }
+    }
+#endif
+    return draw;
+} /* board_handleKeyDown */
+
 XP_Bool
 board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 {
@@ -2746,11 +2762,9 @@ board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* handled )
     *handled = handled1 || handled2;
     return draw;
 }
-
-#endif
+#endif /* KEY_SUPPORT */
 
 #ifdef KEYBOARD_NAV
-
 static XP_Bool
 invalFocusOwner( BoardCtxt* board )
 {
@@ -2765,7 +2779,11 @@ invalFocusOwner( BoardCtxt* board )
             BdCursorLoc loc = board->bdCursor[selPlayer];
             invalCell( board, loc.col, loc.row );
         } else {
+#ifdef PERIMETER_FOCUS
+            board_invalPerimeter( board );
+#else
             board_invalAllTiles( board );
+#endif
         }
         break;
     case OBJ_TRAY:

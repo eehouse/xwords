@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -175,20 +175,12 @@ typedef struct DrawCtxVTable {
                                             XWBonusType bonus, XP_Bool vert,
                                             HintAtts hintAtts,
                                             CellFlags flags);
-#ifdef KEY_SUPPORT
-    void DRAW_VTABLE_NAME(drawCursor) ( DrawCtx* dctx, BoardObjectType typ,
-                                        const XP_Rect* rect );
-#endif
-
     XP_UCHAR* DRAW_VTABLE_NAME(getMiniWText) ( DrawCtx* dctx, 
                                                XWMiniTextType textHint );
     void DRAW_VTABLE_NAME(measureMiniWText) ( DrawCtx* dctx, const XP_UCHAR* textP, 
                                               XP_U16* width, XP_U16* height );
     void DRAW_VTABLE_NAME(drawMiniWindow)( DrawCtx* dctx, const XP_UCHAR* text,
                                            const XP_Rect* rect, void** closure );
-    void DRAW_VTABLE_NAME(eraseMiniWindow)( DrawCtx* dctx, const XP_Rect* rect,
-                                            XP_Bool lastTime, void** closure,
-                                            XP_Bool* invalUnder );
 #ifndef DRAW_LINK_DIRECT
 } DrawCtxVTable; /*  */
 #endif
@@ -266,19 +258,12 @@ struct DrawCtx {
 #define draw_clearRect( dc, rect ) CALL_DRAW_NAME1(clearRect,(dc),(rect))
 #define draw_drawBoardArrow( dc, r, b, v, h, f ) \
     CALL_DRAW_NAME5(drawBoardArrow,(dc),(r),(b), (v), (h), (f))
-#ifdef KEY_SUPPORT
-# define draw_drawCursor( dc, t, r ) CALL_DRAW_NAME2(drawCursor,(dc),(t),(r))
-#else
-# define draw_drawCursor( dc, t, r )
-#endif
 
 #define draw_getMiniWText( dc, b ) CALL_DRAW_NAME1(getMiniWText, (dc),(b) )
 #define draw_measureMiniWText( dc, t, wp, hp) \
     CALL_DRAW_NAME3(measureMiniWText, (dc),(t), (wp), (hp) )
 #define draw_drawMiniWindow( dc, t, r, c ) \
     CALL_DRAW_NAME3(drawMiniWindow, (dc), (t), (r), (c) )
-#define draw_eraseMiniWindow(dc, r, l, c, b) \
-    CALL_DRAW_NAME4(eraseMiniWindow, (dc), (r), (l), (c), (b) )
 
 #ifdef DRAW_WITH_PRIMITIVES
 # define draw_setClip( dc, rn, ro ) CALL_DRAW_NAME2(setClip, (dc), (rn), (ro))
