@@ -182,12 +182,6 @@ drawScoreBoard( BoardCtxt* board )
                 *adjustPt += *adjustDim;
             }
 
-#ifdef KEYBOARD_NAV
-            if ( !!cursorRectP ) {
-                draw_drawCursor( board->draw, OBJ_SCORE, cursorRectP );
-            }
-#endif
-
             draw_objFinished( board->draw, OBJ_SCORE, &board->scoreBdBounds, 
                               dfsFor( board, OBJ_SCORE ) );
         }
