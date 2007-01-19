@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"-*- */
 /* 
- * Copyright 2000-2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -209,9 +209,9 @@ static XP_U16
 getPlayerColor( XP_S16 player )
 {
     if ( player < 0 ) {
-        return BLACK_COLOR;
+        return CE_BLACK_COLOR;
     } else {
-        return USER_COLOR1 + player;
+        return CE_USER_COLOR1 + player;
     }
 } /* getPlayerColor */
 
@@ -284,16 +284,16 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     if ( (!!letters && letters[0] != '\0' ) || !!bitmap ) {
         if ( isPending ) {
-            bkIndex = BLACK_COLOR;
-            foreColorRef = dctx->globals->appPrefs.colors[WHITE_COLOR];
+            bkIndex = CE_BLACK_COLOR;
+            foreColorRef = dctx->globals->appPrefs.colors[CE_WHITE_COLOR];
         } else {
-            bkIndex = TILEBACK_COLOR;
+            bkIndex = CE_TILEBACK_COLOR;
             // foreColorRef already has right val
         }
     } else if ( bonus == BONUS_NONE ) {
-        bkIndex = BKG_COLOR;
+        bkIndex = CE_BKG_COLOR;
     } else {
-        bkIndex = (bonus - BONUS_DOUBLE_LETTER) + BONUS1_COLOR;
+        bkIndex = (bonus - BONUS_DOUBLE_LETTER) + CE_BONUS1_COLOR;
     }
 
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
@@ -304,7 +304,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
            whole rect and then erase all but the corners.  File this under
            "don't ask, but it works". */
         RECT tmpRT;
-        FillRect( hdc, &rt, dctx->brushes[isPending?WHITE_COLOR:BLACK_COLOR] );
+        FillRect( hdc, &rt, dctx->brushes[isPending?CE_WHITE_COLOR:CE_BLACK_COLOR] );
 
         tmpRT = rt;
         InsetRect( &tmpRT, 0, 2 );
@@ -401,7 +401,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     if ( (flags&CELL_ISEMPTY) == 0 ) {
 
-        SetBkColor( hdc, dctx->globals->appPrefs.colors[TILEBACK_COLOR] );
+        SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_TILEBACK_COLOR] );
         index = getPlayerColor(dctx->trayOwner);
         SetTextColor( hdc, dctx->globals->appPrefs.colors[index] );
 
@@ -419,7 +419,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
             InsetRect( &rt, 1, 1 );
         }
-        FillRect( hdc, &rt, dctx->brushes[TILEBACK_COLOR] );
+        FillRect( hdc, &rt, dctx->brushes[CE_TILEBACK_COLOR] );
         if ( !highlighted ) {
             InsetRect( &rt, 1, 1 );
         }
@@ -432,7 +432,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             SelectObject( hdc, oldFont );
         } else if ( !!bitmap  ) {
             RECT lrt = rt;
-            XP_U16 tmp = USER_COLOR1+dctx->trayOwner;
+            XP_U16 tmp = CE_USER_COLOR1+dctx->trayOwner;
             ++lrt.left;
             lrt.top += 4;
             makeAndDrawBitmap( dctx, hdc, &lrt, XP_FALSE,
@@ -476,7 +476,7 @@ DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect,
     if ( selected ) {
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     } else {
-        FillRect( hdc, &rt, dctx->brushes[BLACK_COLOR] );
+        FillRect( hdc, &rt, dctx->brushes[CE_BLACK_COLOR] );
     }
 } /* ce_draw_drawTrayDivider */
 
@@ -489,7 +489,7 @@ ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect )
 
     XPRtoRECT( &rt, rect );
 
-    FillRect( hdc, &rt, dctx->brushes[BKG_COLOR] );
+    FillRect( hdc, &rt, dctx->brushes[CE_BKG_COLOR] );
 } /* ceClearToBkground */
 
 /* DLSTATIC void  */
@@ -553,13 +553,13 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     }
 
     if ( cursorBonus == BONUS_NONE ) {
-        bkIndex = BKG_COLOR;
+        bkIndex = CE_BKG_COLOR;
     } else {
-        bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + BONUS1_COLOR;
+        bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + CE_BONUS1_COLOR;
     }
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[BLACK_COLOR] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
 
     ceDrawBitmapInRect( hdc, &rt, cursor );
 
@@ -574,7 +574,7 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* rect,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[BKG_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
 
     dctx->scoreIsVertical = rect->height > rect->width;
 
@@ -755,11 +755,11 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_UCHAR buf[5];
     RECT rt;
 
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[BLACK_COLOR] );
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[BKG_COLOR] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
 
     XPRtoRECT( &rt, rect );
-    FillRect( hdc, &rt, dctx->brushes[BKG_COLOR] );
+    FillRect( hdc, &rt, dctx->brushes[CE_BKG_COLOR] );
 
     if ( score < 0 ) {
         buf[0] = '?';
@@ -881,8 +881,8 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
 
     ceClearToBkground( (CEDrawCtx*)p_dctx, rect );
 
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[BKG_COLOR] );
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[BLACK_COLOR] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
@@ -916,7 +916,7 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     XP_U16 i;
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
 
-    for ( i = 0; i < NUM_COLORS; ++i ) {
+    for ( i = 0; i < CE_NUM_COLORS; ++i ) {
         DeleteObject( dctx->brushes[i] );
     }
 
@@ -1011,7 +1011,7 @@ ce_drawctxt_update( DrawCtx* p_dctx )
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     XP_U16 i;
 
-    for ( i = 0; i < NUM_COLORS; ++i ) {
+    for ( i = 0; i < CE_NUM_COLORS; ++i ) {
         if ( !!dctx->brushes[i] ) {
             DeleteObject( dctx->brushes[i] );
         }

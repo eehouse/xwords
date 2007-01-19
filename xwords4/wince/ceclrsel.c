@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2004-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -246,9 +246,9 @@ typedef struct ColorsDlgState {
     CEAppGlobals* globals;
     COLORREF* inColors;
 
-    COLORREF colors[NUM_EDITABLE_COLORS];
-    HBRUSH brushes[NUM_EDITABLE_COLORS];
-    HWND buttons[NUM_EDITABLE_COLORS];
+    COLORREF colors[CE_NUM_EDITABLE_COLORS];
+    HBRUSH brushes[CE_NUM_EDITABLE_COLORS];
+    HWND buttons[CE_NUM_EDITABLE_COLORS];
 
     XP_Bool cancelled;
     XP_Bool inited;
@@ -262,9 +262,9 @@ initColorData( ColorsDlgState* cState, HWND hDlg )
 {
     XP_U16 i;
 
-    XP_ASSERT( (LAST_BUTTON - FIRST_BUTTON + 1) == NUM_EDITABLE_COLORS );
+    XP_ASSERT( (LAST_BUTTON - FIRST_BUTTON + 1) == CE_NUM_EDITABLE_COLORS );
 
-    for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
+    for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
         COLORREF ref = cState->inColors[i];
         cState->colors[i] = ref;
         cState->brushes[i] = CreateSolidBrush( ref );
@@ -276,7 +276,7 @@ static HBRUSH
 brushForButton( ColorsDlgState* cState, HWND hwndButton )
 {
     XP_U16 i;
-    for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
+    for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
         if ( cState->buttons[i] == hwndButton ) {
             return cState->brushes[i];
         }
@@ -288,7 +288,7 @@ static void
 deleteButtonBrushes( ColorsDlgState* cState )
 {
     XP_U16 i;
-    for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
+    for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
         DeleteObject( cState->brushes[i] );
     }
 } /* deleteButtonBrushes */
@@ -317,7 +317,7 @@ wrapChooseColor( ColorsDlgState* cState, HWND owner, XP_U16 button )
     XP_MEMSET( &ccs, 0, sizeof(ccs) );
     XP_MEMSET( &arr, 0, sizeof(arr) );
 
-    for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
+    for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
         arr[i] = cState->colors[i];
     }
 
@@ -421,7 +421,7 @@ ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
 
     if ( !state.cancelled ) {
         XP_U16 i;
-        for ( i = 0; i < NUM_EDITABLE_COLORS; ++i ) {
+        for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
             colors[i] = state.colors[i];
         }
     }
