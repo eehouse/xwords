@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,7 +51,7 @@ typedef struct CePrefsPrefs {
     CommonPrefs cp;
     XP_Bool showColors;
     
-    COLORREF colors[NUM_EDITABLE_COLORS];
+    COLORREF colors[CE_NUM_EDITABLE_COLORS];
 } CePrefsPrefs;
 
 typedef struct CePrefsDlgState {

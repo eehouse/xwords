@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */ 
 /* 
- * Copyright 2000-2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,30 +29,30 @@
 #include "mempool.h"
 #include "cesockwr.h"
 
-enum { BONUS1_COLOR,
-       BONUS2_COLOR,
-       BONUS3_COLOR,
-       BONUS4_COLOR,
+enum { CE_BONUS1_COLOR,
+       CE_BONUS2_COLOR,
+       CE_BONUS3_COLOR,
+       CE_BONUS4_COLOR,
        
-       BKG_COLOR, 
-       TILEBACK_COLOR,
+       CE_BKG_COLOR, 
+       CE_TILEBACK_COLOR,
 
-       USER_COLOR1,
-       USER_COLOR2,
-       USER_COLOR3,
-       USER_COLOR4,
+       CE_USER_COLOR1,
+       CE_USER_COLOR2,
+       CE_USER_COLOR3,
+       CE_USER_COLOR4,
 
-       BLACK_COLOR,     /* not editable by users */
-       WHITE_COLOR,
+       CE_BLACK_COLOR,     /* not editable by users */
+       CE_WHITE_COLOR,
 
-       NUM_COLORS		/* last */
+       CE_NUM_COLORS		/* last */
 };
 
 #define CUR_CE_PREFS_FLAGS 0x0002
 typedef struct CEAppPrefs {
     XP_U16 versionFlags;
     CommonPrefs cp;
-    COLORREF colors[NUM_COLORS];
+    COLORREF colors[CE_NUM_COLORS];
     XP_Bool showColors;
 } CEAppPrefs;
 
@@ -124,7 +124,7 @@ enum {
 
 };
 
-#define NUM_EDITABLE_COLORS BLACK_COLOR
+#define CE_NUM_EDITABLE_COLORS CE_BLACK_COLOR
 
 typedef struct CEDrawCtx {
     DrawCtxVTable* vtable;
@@ -134,7 +134,7 @@ typedef struct CEDrawCtx {
 
     COLORREF prevBkColor;
 
-    HBRUSH brushes[NUM_COLORS];
+    HBRUSH brushes[CE_NUM_COLORS];
 
     HFONT trayFont;
     HFONT selPlayerFont;

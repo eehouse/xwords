@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -991,7 +991,7 @@ colorsFromRsrc( CEAppGlobals* globals )
 
     XP_LOGF( "setting colors in globals" );
 
-    for ( i = 0; i < NUM_COLORS; ++i ) {
+    for ( i = 0; i < CE_NUM_COLORS; ++i ) {
         XP_U8 r = (XP_U8)*ptr++;
         XP_U8 g = (XP_U8)*ptr++;
         XP_U8 b = (XP_U8)*ptr++;
@@ -2033,8 +2033,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if ( wParam == 0x08 ) {
                 wParam = XP_CURSOR_KEY_DEL;
             }
-            draw = board_handleKey( globals->game.board, wParam, &handled )
-                || board_handleKey( globals->game.board, wParam - ('a'-'A'),
+            draw = board_handleKeyUp( globals->game.board, wParam, &handled )
+                || board_handleKeyUp( globals->game.board, wParam - ('a'-'A'),
                                       &handled );
             break;
 
