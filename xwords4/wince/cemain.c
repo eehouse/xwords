@@ -49,6 +49,8 @@
 #include "LocalizedStrIncludes.h"
 #include "debhacks.h"
 
+#include "dbgutil.h"
+
 #define MAX_LOADSTRING 100
 
 #ifdef _WIN32_WCE
@@ -1812,6 +1814,77 @@ checkPenDown( CEAppGlobals* globals )
     return draw;
 } /* checkPenDown */
 
+#ifdef KEYBOARD_NAV
+
+static XP_Bool
+ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, XP_Bool* handledP )
+{
+    XP_Bool draw = XP_FALSE;
+    XP_Key key;
+    XP_S16 incr = 0;
+
+    XP_LOGF( "%s: 0x%x", __FUNCTION__, wParam );
+
+    switch ( wParam ) {
+        /* get constants for these!!! */
+    case 0x26: 
+        key = XP_CURSOR_KEY_UP;
+        incr = -1;
+        break;
+    case 0x27:
+        key = XP_CURSOR_KEY_RIGHT;
+        incr = 1;
+        break;
+    case 0x28:
+        key = XP_CURSOR_KEY_DOWN;
+        incr = 1;
+        break;
+    case 0x25:
+        key = XP_CURSOR_KEY_LEFT;
+        incr = -1;
+        break;
+    case 0x0d:
+        key = XP_RETURN_KEY;
+        XP_LOGF( "XP_RETURN_KEY" );
+        break;
+
+/*     XP_CURSOR_KEY_ALTRIGHT, */
+/*     XP_CURSOR_KEY_ALTUP, */
+/*     XP_CURSOR_KEY_ALTLEFT, */
+/*     XP_CURSOR_KEY_ALTDOWN, */
+
+    default:
+        key = XP_KEY_NONE;
+        break;
+    }
+
+    if ( key != XP_KEY_NONE ) {
+        BoardCtxt* board = globals->game.board;
+        draw = board_handleKey( board, key, handledP );
+        if ( !*handledP && incr != 0 ) {
+            BoardObjectType order[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
+            BoardObjectType cur = board_getFocusOwner( board );
+            XP_U16 index = 0;
+            XP_LOGF( "here" );
+            if ( cur != OBJ_NONE ) {
+                for ( ; ; ) {
+                    if ( order[index] == cur ) {
+                        break;
+                    }
+                    ++index;
+                    XP_ASSERT( index < 3 );
+                }
+                index = (index + 3 + incr) % 3;
+            }
+            XP_LOGF( "calling board_focusChanged" );
+            draw = board_focusChanged( board, order[index], XP_TRUE );
+        }
+    }
+
+    return draw;
+} /* ceHandleFocusKey */
+#endif /* KEYBOARD_NAV */
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -2029,13 +2102,23 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             break;	
 
+#ifdef KEYBOARD_NAV
+/*         case WM_KEYDOWN: */
+        case WM_KEYUP:
+            draw = ceHandleFocusKey( globals, wParam, &handled );
+            break;
+#endif
         case WM_CHAR:
             if ( wParam == 0x08 ) {
                 wParam = XP_CURSOR_KEY_DEL;
+#ifdef KEYBOARD_NAV
+            } else if ( wParam == ' ' ) {
+                wParam = XP_RAISEFOCUS_KEY;
+#endif
             }
-            draw = board_handleKeyUp( globals->game.board, wParam, &handled )
-                || board_handleKeyUp( globals->game.board, wParam - ('a'-'A'),
-                                      &handled );
+            draw = board_handleKey( globals->game.board, wParam, &handled )
+                || board_handleKey( globals->game.board, wParam - ('a'-'A'),
+                                    &handled );
             break;
 
         case WM_TIMER:
