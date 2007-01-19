@@ -1,5 +1,6 @@
 # -*- mode: makefile; compile-command: "make MEMDEBUG=TRUE"; -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2002-2007 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -67,6 +68,7 @@ DEFINES += -DXWFEATURE_BLUETOOTH
 #DEFINES += -DFEATURE_TRAY_EDIT
 DEFINES += -DDONT_ABORT_ENGINE
 
+DEFINES += -DPERIMETER_FOCUS
 
 #-DDEBUG -DEIGHT_TILES
 

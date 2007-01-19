@@ -281,13 +281,11 @@ drawFocusFrame( GtkDrawCtx* dctx, const XP_Rect* r )
 }
 
 static void
-gtk_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ),
-                      const XP_Rect* rect, DrawFocusState dfs )
+gtk_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx), 
+                      BoardObjectType XP_UNUSED(typ),
+                      const XP_Rect* XP_UNUSED(rect), 
+                      DrawFocusState XP_UNUSED(dfs) )
 {
-    if ( dfs == DFS_TOP ) {
-        GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-        drawFocusFrame( dctx, rect );
-    }
 } /* draw_finished */
 
 static void
@@ -509,7 +507,7 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
         }
     }
 
-    if ( !dctx->topFocus && (flags & CELL_ISCURSOR) != 0 ) {
+    if ((flags & CELL_ISCURSOR) != 0 ) {
         drawFocusFrame( dctx, rect );
     }
 
@@ -540,7 +538,7 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
                     &r, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dctx->trayOwner], NULL );
 
-    if ( !dctx->topFocus && (flags & CELL_ISCURSOR) != 0 ) {
+    if ( (flags & CELL_ISCURSOR) != 0 ) {
         drawFocusFrame( dctx, rect );
     }
 } /* gtk_draw_drawTileBack */
@@ -745,7 +743,7 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
                     rInner, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dsi->playerNum], NULL );
 
-    if ( !dctx->topFocus && ((dsi->flags & CELL_ISCURSOR) != 0) ) {
+    if ( ((dsi->flags & CELL_ISCURSOR) != 0) ) {
         drawFocusFrame( dctx, rOuter );
     }
 } /* gtk_draw_score_drawPlayer */
@@ -886,16 +884,6 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
                     &dctx->black, NULL );
 } /* gtk_draw_drawMiniWindow */
 
-static void
-gtk_draw_eraseMiniWindow( DrawCtx* XP_UNUSED(p_dctx), 
-                          const XP_Rect* XP_UNUSED(rect), 
-                          XP_Bool XP_UNUSED(lastTime),
-                          void** XP_UNUSED(closure), XP_Bool* invalUnder )
-{
-/*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */
-    *invalUnder = XP_TRUE;
-} /* gtk_draw_eraseMiniWindow */
-
 #define SET_GDK_COLOR( c, r, g, b ) { \
      c.red = (r); \
      c.green = (g); \
@@ -999,7 +987,6 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, gtk );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_eraseMiniWindow, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, gtk );
 #endif

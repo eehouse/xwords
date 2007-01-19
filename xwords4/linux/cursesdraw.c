@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
 /* 
- * Copyright 1997-2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -220,13 +220,11 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_score_pendingScore */
 
 static void
-curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ, 
-                         const XP_Rect* rect, DrawFocusState dfs )
+curses_draw_objFinished( DrawCtx* p_dctx, BoardObjectType XP_UNUSED(typ), 
+                         const XP_Rect* XP_UNUSED(rect), 
+                         DrawFocusState XP_UNUSED(dfs) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    if ( dfs == DFS_TOP && typ == OBJ_BOARD ) {
-        cursesHiliteRect( dctx->boardWin, rect );
-    }
     wrefresh( dctx->boardWin );
 } /* curses_draw_objFinished */
 
@@ -287,6 +285,10 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 
     if ( (flags&CELL_HIGHLIGHT) != 0 ) {
         wstandend( dctx->boardWin );
+    }
+
+    if ( (flags&CELL_ISCURSOR) != 0 ) {
+        cursesHiliteRect( dctx->boardWin, rect );
     }
 
     return XP_TRUE;
@@ -384,16 +386,6 @@ curses_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rect,
 #endif
 } /* curses_draw_drawBoardArrow */
 
-static void
-curses_draw_drawCursor( DrawCtx* p_dctx, BoardObjectType typ, 
-                        const XP_Rect* rect )
-{
-    CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    if ( typ == OBJ_BOARD ) {
-        cursesHiliteRect( dctx->boardWin, rect );
-    }
-} /* curses_draw_drawBoardCursor */
-
 static void 
 curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
 {
@@ -425,6 +417,8 @@ curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Rect smallerR;
 
+    XP_ASSERT(0);               /* does this really get called? */
+
     smallerR.top = rect->top + 1;
     smallerR.left = rect->left + 1;
     smallerR.width = rect->width - 2;
@@ -436,16 +430,6 @@ curses_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
     mvwprintw( dctx->boardWin, smallerR.top, smallerR.left, text, 
                strlen(text) );
 } /* curses_draw_drawMiniWindow */
-
-static void
-curses_draw_eraseMiniWindow( DrawCtx* XP_UNUSED(p_dctx), 
-                             const XP_Rect* XP_UNUSED(rect),
-                             XP_Bool XP_UNUSED(lastTime), 
-                             void** XP_UNUSED(closure),
-                             XP_Bool* invalUnder )
-{
-    *invalUnder = XP_TRUE;
-} /*  curses_draw_eraseMiniWindow*/
 
 #if 0
 static void
@@ -491,21 +475,12 @@ cursesDrawCtxtMake( WINDOW* boardWin )
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, curses );
     
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_drawCursor, curses );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, curses );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, curses );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_eraseMiniWindow, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, curses );
-
-
-    /*     SET_VTABLE_ENTRY( dctx, draw_getBonusText, gtk ); */
-    /*     SET_VTABLE_ENTRY( dctx, draw_eraseMiniWindow, gtk ); */
-
-
-    /*     SET_VTABLE_ENTRY( dctx, draw_frameTray, curses ); */
 
     dctx->boardWin = boardWin;
 
