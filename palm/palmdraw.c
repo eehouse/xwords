@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE";-*- */
 /* 
- * Copyright 1999 - 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999 - 2007 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -40,6 +41,9 @@
 #define SCORE_SEPSTR ":"
 
 #define TILE_SUBSCRIPT 1             /* draw tile with numbers below letters? */
+
+/* Let's try both for a while */
+#define DRAW_FOCUS_FRAME 1
 
 static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
                                           const XP_UCHAR* letters, 
@@ -246,6 +250,9 @@ palm_common_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 
     checkFontOffsets( dctx, dict );
 
+#ifdef DRAW_FOCUS_FRAME
+    dctx->topFocus = dfs == DFS_TOP;
+#endif
     return XP_TRUE;
 } /* palm_common_draw_boardBegin */
 
@@ -274,7 +281,7 @@ palm_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ,
                        const XP_Rect* rect, DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-#ifdef XWFEATURE_FIVEWAY
+#if defined XWFEATURE_FIVEWAY && defined DRAW_FOCUS_FRAME
     if ( (dfs == DFS_TOP) && (typ == OBJ_BOARD) ) {
         XP_Rect r;
         XP_U16 i;
@@ -316,9 +323,12 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;    
     IndexedColorType color;
     XP_U16 index;
-    XP_Bool isCursor =  (flags & CELL_ISCURSOR) != 0;
+    XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0
+#ifdef DRAW_FOCUS_FRAME
+        && !dctx->topFocus
+#endif
+        ;
     XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
-
     if ( isCursor ) {
         index = COLOR_CURSOR;
     } else if ( isPending ) { 
@@ -1371,15 +1381,6 @@ palm_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
 } /* palm_draw_drawMiniWindow */
 
 static void
-palm_draw_eraseMiniWindow( DrawCtx* XP_UNUSED(p_dctx),
-                           const XP_Rect* XP_UNUSED(rect), 
-                           XP_Bool XP_UNUSED(lastTime),
-                           void** XP_UNUSED(closure), XP_Bool* invalUnder )
-{
-    *invalUnder = XP_TRUE;
-} /* palm_draw_eraseMiniWindow */
-
-static void
 draw_doNothing( DrawCtx* XP_UNUSED(dctx), ... )
 {
 } /* draw_doNothing */
@@ -1437,7 +1438,6 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     SET_VTABLE_ENTRY( dctx->vtable, draw_getMiniWText, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_measureMiniWText, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, palm );
-    SET_VTABLE_ENTRY( dctx->vtable, draw_eraseMiniWindow, palm );
 
     if ( able == COLOR ) {
 #ifdef COLOR_SUPPORT
