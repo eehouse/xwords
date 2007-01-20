@@ -44,6 +44,11 @@
 
 /* Let's try both for a while */
 #define DRAW_FOCUS_FRAME 1
+#ifdef DRAW_FOCUS_FRAME
+# define TREAT_AS_CURSOR(d,f) ((((f) & CELL_ISCURSOR) != 0) && !(d)->topFocus )
+#else
+# define TREAT_AS_CURSOR(d,f) (((f) & CELL_ISCURSOR) != 0)
+#endif
 
 static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
                                           const XP_UCHAR* letters, 
@@ -323,11 +328,7 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;    
     IndexedColorType color;
     XP_U16 index;
-    XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0
-#ifdef DRAW_FOCUS_FRAME
-        && !dctx->topFocus
-#endif
-        ;
+    XP_Bool isCursor = TREAT_AS_CURSOR( dctx, flags );
     XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
     if ( isCursor ) {
         index = COLOR_CURSOR;
@@ -552,7 +553,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
     if ( (flags & CELL_HIGHLIGHT) != 0 ) {
-        if ( (flags & CELL_ISCURSOR ) == 0 ) {
+        if ( !TREAT_AS_CURSOR( dctx, flags ) ) {
             XP_ASSERT( !!bitmap ||
                        (!!letters && XP_STRLEN((const char*)letters)>0));
             WinInvertRectangle( (RectangleType*)&localR, 0 );
@@ -659,7 +660,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 
     draw_clearRect( p_dctx, &localR );
     
-    if ( dctx->topFocus || cursor ) {
+    if ( cursor ) {
         (void)WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
         if ( dctx->topFocus ) {
             WinEraseRectangle( (const RectangleType*)&localR, 0 );
@@ -818,7 +819,7 @@ palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_U16 index;
 
-    if ( (flags & CELL_ISCURSOR) != 0 ) { 
+    if ( TREAT_AS_CURSOR( dctx, flags ) ) {
         index = COLOR_CURSOR;
     } else if ( cursorBonus == BONUS_NONE ) { 
         index = COLOR_EMPTY;
