@@ -96,6 +96,7 @@ extern void linux_debugf(char*, ...);
 
 #define XP_MIN(a,b) ((a)<(b)?(a):(b))
 #define XP_MAX(a,b) ((a)>(b)?(a):(b))
+#define XP_ABS(a)   ((a)>=0?(a):-(a))
 
 #ifdef DEBUG
 # define XP_ASSERT(b) assert(b)

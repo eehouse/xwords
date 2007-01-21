@@ -958,7 +958,7 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 #ifdef DRAW_LINK_DIRECT
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(vertScrollBoard)( DrawCtx* p_dctx, XP_Rect* rect, 
-                                 XP_S16 dist )
+                                 XP_S16 dist, DrawFocusState XP_UNUSED(dfs) )
 {
     XP_Bool success = XP_FALSE;
     /* board passes in the whole board rect, so we need to subtract from it

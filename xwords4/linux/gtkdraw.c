@@ -288,6 +288,27 @@ gtk_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx),
 {
 } /* draw_finished */
 
+
+static XP_Bool
+gtk_draw_vertScrollBoard( DrawCtx* XP_UNUSED(p_dctx), XP_Rect* XP_UNUSED(rect),
+                          XP_S16 XP_UNUSED(dist), 
+                          DrawFocusState XP_UNUSED(dfs) )
+{
+    /* Turn this on to mimic what palm does, but need to figure out some gtk
+       analog to copybits for it to actually work. */
+#if 0
+    XP_Bool up = dist < 0;
+    if ( up ) {
+        dist *= -1;
+    } else {
+        rect->top += rect->height - dist;
+    }
+    rect->height = dist;
+#endif
+    return XP_TRUE;
+}
+
+
 static void
 drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
 {
@@ -967,7 +988,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, gtk );
-
+    SET_VTABLE_ENTRY( dctx->vtable, draw_vertScrollBoard, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, gtk );

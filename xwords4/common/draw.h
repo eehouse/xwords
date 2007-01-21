@@ -114,7 +114,7 @@ typedef struct DrawCtxVTable {
 
     /* rect is not const: set by callee */
     XP_Bool DRAW_VTABLE_NAME(vertScrollBoard) (DrawCtx* dctx, XP_Rect* rect, 
-                                               XP_S16 dist );
+                                               XP_S16 dist, DrawFocusState dfs );
 
     XP_Bool DRAW_VTABLE_NAME(trayBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
                                           XP_U16 owner, 
@@ -229,8 +229,8 @@ struct DrawCtx {
 #define draw_boardBegin( dc,d,r,f ) CALL_DRAW_NAME3(boardBegin, dc, d,r,f)
 #define draw_objFinished( dc, t, r, d ) CALL_DRAW_NAME3(objFinished, (dc), (t), (r), (d))
 #define draw_trayBegin( dc, r, o, f ) CALL_DRAW_NAME3(trayBegin,dc, r, o, f)
-#define draw_vertScrollBoard( dc, r, d ) \
-    CALL_DRAW_NAME2(vertScrollBoard, (dc),(r),(d))
+#define draw_vertScrollBoard( dc, r, d, f ) \
+    CALL_DRAW_NAME3(vertScrollBoard, (dc),(r),(d),(f))
 #define draw_scoreBegin( dc, r, t, f ) \
     CALL_DRAW_NAME3( scoreBegin,(dc), (r), (t), (f))
 #define draw_measureRemText( dc, r, n, wp, hp ) \

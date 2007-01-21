@@ -892,7 +892,31 @@ board_invalAllTiles( BoardCtxt* board )
 #ifdef KEYBOARD_NAV
 #ifdef PERIMETER_FOCUS
 static void
-board_invalPerimeter( BoardCtxt* board )
+invalOldPerimeter( BoardCtxt* board )
+{
+    /* We need to inval the center of the row that's moving into the center
+       from a border (at which point it got borders drawn on it.) */
+    XP_S16 diff = board->yOffset - board->prevYScrollOffset;
+    XP_U16 firstRow, lastRow;
+    XP_ASSERT( diff != 0 );
+    if ( diff < 0 ) {
+        /* moving up; inval row previously on bottom */
+        firstRow = board->yOffset + 1;
+        lastRow = board->prevYScrollOffset;
+    } else {
+        XP_U16 nVisible = board->lastVisibleRow - board->yOffset;
+        lastRow = board->prevYScrollOffset + nVisible - 1;
+        firstRow = lastRow - diff + 1;
+    }
+    XP_ASSERT( firstRow <= lastRow );
+    while ( firstRow <= lastRow ) {
+        board->redrawFlags[firstRow] |= ~0;
+        ++firstRow;
+    }
+} /* invalOldPerimeter */
+
+static void
+invalPerimeter( BoardCtxt* board )
 {
     XP_U16 lastCol = model_numCols( board->model ) - 1;
     XP_U16 firstAndLast = (1 << lastCol) | 1;
@@ -906,7 +930,7 @@ board_invalPerimeter( BoardCtxt* board )
     while ( --lastRow > firstRow ) {
         board->redrawFlags[lastRow] |= firstAndLast;
     }
-}
+} /* invalPerimeter */
 #endif
 #endif
 
@@ -1062,32 +1086,29 @@ static void
 scrollIfCan( BoardCtxt* board )
 {
     if ( board->yOffset != board->prevYScrollOffset ) {
-        if ( board->focussed == OBJ_BOARD && !board->focusHasDived ) {
-            /* an edge case.  Just brute force it. */
-            board_invalAllTiles( board );
+        XP_Rect scrollR = board->boardBounds;
+        XP_Bool scrolled;
+        XP_S16 dist;
+
+#ifdef PERIMETER_FOCUS
+        if ( (board->focussed == OBJ_BOARD) && !board->focusHasDived ) {
+            invalOldPerimeter( board );
+        }
+#endif
+        invalSelTradeWindow( board );
+        dist = (board->yOffset - board->prevYScrollOffset)
+            * board->boardVScale;
+
+        scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist, 
+                                         dfsFor( board, OBJ_BOARD ) );
+
+        if ( scrolled ) {
+            /* inval the rows that have been scrolled into view.  I'm cheating
+               making the client figure the inval rect, but Palm's the only
+               client now and it does it so well.... */
+            invalCellsUnderRect( board, &scrollR );
         } else {
-            XP_Rect scrollR = board->boardBounds;
-            XP_Bool scrolled;
-            XP_S16 dist;
-
-            /* If there's a focus-rect drawn on the board, we need to inval any
-               row of it that's going to get scrolled into the center since it
-               needs to be redrawn without the border. */
-
-            invalSelTradeWindow( board );
-            dist = (board->yOffset - board->prevYScrollOffset)
-                * board->boardVScale;
-
-            scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist );
-
-            if ( scrolled ) {
-                /* inval the rows that have been scrolled into view.  I'm cheating
-                   making the client figure the inval rect, but Palm's the only
-                   client now and it does it so well.... */
-                invalCellsUnderRect( board, &scrollR );
-            } else {
-                board_invalAll( board );
-            }
+            board_invalAll( board );
         }
         board->prevYScrollOffset = board->yOffset;
     }
@@ -2808,7 +2829,7 @@ invalFocusOwner( BoardCtxt* board )
             invalCell( board, loc.col, loc.row );
         } else {
 #ifdef PERIMETER_FOCUS
-            board_invalPerimeter( board );
+            invalPerimeter( board );
 #else
             board_invalAllTiles( board );
 #endif
