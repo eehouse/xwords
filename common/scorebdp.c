@@ -274,6 +274,35 @@ handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y )
 #endif
 
 #ifdef KEYBOARD_NAV
+static XP_Key
+flipKey( XP_Key key, XP_Bool flip ) 
+{
+    XP_Key result = key;
+    if ( flip ) {
+        switch( key ) {
+        case XP_CURSOR_KEY_DOWN:
+            result = XP_CURSOR_KEY_RIGHT; break;
+        case XP_CURSOR_KEY_ALTDOWN:
+            result = XP_CURSOR_KEY_ALTRIGHT; break;
+        case XP_CURSOR_KEY_UP:
+            result = XP_CURSOR_KEY_LEFT; break;
+        case XP_CURSOR_KEY_ALTUP:
+            result = XP_CURSOR_KEY_ALTLEFT; break;
+        case XP_CURSOR_KEY_LEFT:
+            result = XP_CURSOR_KEY_UP; break;
+        case XP_CURSOR_KEY_ALTLEFT:
+            result = XP_CURSOR_KEY_ALTUP; break;
+        case XP_CURSOR_KEY_RIGHT:
+            result = XP_CURSOR_KEY_DOWN; break;
+        case XP_CURSOR_KEY_ALTRIGHT:
+            result = XP_CURSOR_KEY_ALTDOWN; break;
+        default:
+            XP_ASSERT(0);
+        }
+    }
+    return result;
+} /* flipKey */
+
 XP_Bool
 moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly, 
                  XP_Bool* pUp )

@@ -200,7 +200,6 @@ XP_Bool rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 );
 void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer );
 
 #ifdef KEYBOARD_NAV
-XP_Key flipKey( XP_Key key, XP_Bool flip );
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
                          XP_Bool preflightOnly, XP_Bool* up );
 XP_Bool tray_keyAction( BoardCtxt* board );
