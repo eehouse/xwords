@@ -425,7 +425,7 @@
 #ifdef XWFEATURE_BLUETOOTH
 # define XW_PALM_VERSION_STRING "4.3a4"
 #else
-# define XW_PALM_VERSION_STRING "4.2b3"
+# define XW_PALM_VERSION_STRING "4.2b4"
 #endif
 #define CUR_PREFS_VERS 0x0405
 

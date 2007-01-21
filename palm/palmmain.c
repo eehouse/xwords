@@ -912,6 +912,20 @@ extern Err VskSetStateFoo(UInt16 refNum, UInt16 stateType, UInt16 state)
 				SILK_LIB_TRAP(sysLibTrapCustom+3+3);
 # endif
 
+static XP_Bool
+isOnZodiac( void )
+{
+    // from http://tamspalm.tamoggemon.com/2006/03/02/determining-if-your-app-runs-on-a-zodiac/
+    const XP_U32 twCreatorID = 'Tpwv';
+    Err err;
+    UInt32 manufacturer;
+    XP_Bool result;
+    err = FtrGet( sysFileCSystem, sysFtrNumOEMCompanyID, &manufacturer );
+    result = (err == errNone) && (manufacturer == twCreatorID);
+    LOG_RETURNF( "%d", (int)result );
+    return result;
+}
+
 static void
 initHighResGlobals( PalmAppGlobals* globals )
 {
@@ -919,16 +933,18 @@ initHighResGlobals( PalmAppGlobals* globals )
     XP_U32 vers;
 
     err = FtrGet( sysFtrCreator, sysFtrNumWinVersion, &vers );
-    globals->hasHiRes = ( err == errNone && vers >= 4 );
+    globals->hasHiRes = (err == errNone) && (vers >= 4) && !globals->isZodiac;
     XP_LOGF( "hasHiRes = %d", (XP_U16)globals->hasHiRes );
-    globals->oneDotFiveAvail = ( err == errNone && vers >= 5 );
+    globals->oneDotFiveAvail = globals->hasHiRes
+        && (err == errNone) && (vers >= 5);
 
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
-    globals->hasTreoKeyboard = ( (err == errNone)
-                                 && ((vers & sysFtrNumUIHardwareHasKbd) != 0) );
+    globals->generatesKeyUp = ( (err == errNone) && 
+                                ((vers & sysFtrNumUIHardwareHasKbd) != 0) )
+        || globals->isZodiac;
 #ifdef XWFEATURE_FIVEWAY
-    globals->hasTreoFiveWay = ( (err == errNone)
-                                && ((vers & sysFtrNumUIHardwareHas5Way) != 0) );
+    globals->hasTreoFiveWay = (err == errNone)
+        && ((vers & sysFtrNumUIHardwareHas5Way) != 0) && !globals->isZodiac;
 #endif
 
 #ifdef FEATURE_SILK
@@ -1020,6 +1036,8 @@ startApplication( PalmAppGlobals** globalsP )
     setFormRefcon( globals );
     XP_MEMSET( globals, 0, sizeof(PalmAppGlobals) );
     MPASSIGN( globals->mpool, mpool );
+
+    globals->isZodiac = isOnZodiac();
 
     initHighResGlobals( globals );
     getSizes( globals );
@@ -2153,31 +2171,34 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     XP_Key xpkey = XP_KEY_NONE;
     XP_Bool handled = XP_FALSE;
     XP_Bool altOn = (event->data.keyUp.modifiers & shiftKeyMask) != 0;
-    XP_Bool treatAsUp = !globals->hasTreoKeyboard
+    XP_Bool treatAsUp = !globals->generatesKeyUp
         || (event->eType == keyUpEvent);
     XP_U16 keyCode = event->data.keyDown.keyCode;
     Int16 chr;
     XP_Bool (*handler)( BoardCtxt*, XP_Key, XP_Bool* );
     BoardCtxt* board = globals->game.board;
-
+    XP_S16 incr = 0; /* needed for tungsten and zodiac, but not treo since
+                        the OS handled focus movement between objects. */
 #ifdef DO_TUNGSTEN_FIVEWAY
-    XP_S16 incr = 0;
-    if ( !globals->hasTreoKeyboard
-         && (event->data.keyDown.chr == vchrNavChange) ) {
-        if ( (keyCode & (/* navBitUp |  */navChangeUp )) != 0 ) {
-            keyCode = vchrRockerUp;
-            incr = -1;
-        } else if ( (keyCode & (/* navBitDown |  */navChangeDown )) != 0 ) {
-            keyCode = vchrRockerDown;
-            incr = 1;
-        } else if ( (keyCode & (navBitLeft /* |navChangeLeft */ )) != 0 ) {
-            keyCode = vchrRockerLeft;
-            incr = -1;
-        } else if ( (keyCode & ( navBitRight /* | navChangeRight */ )) != 0 ) {
-            keyCode = vchrRockerRight;
-            incr = 1;
-        } else if ( (keyCode & (navBitSelect /* | navChangeSelect */ )) != 0 ) {
-            keyCode = vchrRockerCenter;
+    if ( !globals->generatesKeyUp ) { /* this is the Tungsten case */
+        if ( event->data.keyDown.chr == vchrNavChange ) {
+            if ( (keyCode & (/* navBitUp |  */navChangeUp )) != 0 ) {
+                keyCode = vchrRockerUp;
+                incr = -1;
+            } else if ( (keyCode & (/* navBitDown |  */navChangeDown )) != 0 ) {
+                keyCode = vchrRockerDown;
+                incr = 1;
+            } else if ( (keyCode & (navBitLeft /* |navChangeLeft */ )) != 0 ) {
+                keyCode = vchrRockerLeft;
+                incr = -1;
+            } else if ( (keyCode & ( navBitRight /* | navChangeRight */ )) != 0 ) {
+                keyCode = vchrRockerRight;
+                incr = 1;
+            } else if ( (keyCode & (navBitSelect /* | navChangeSelect */ )) != 0 ) {
+                keyCode = vchrRockerCenter;
+            }
+        } else {
+            keyCode = event->data.keyUp.chr;
         }
     }
 #endif
@@ -2187,7 +2208,7 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.keyCode)
                == OFFSET_OF(EventType, data.keyDown.keyCode) );
 
-    if ( !globals->hasTreoKeyboard ) {
+    if ( !globals->generatesKeyUp ) {
         handler = board_handleKey;
     } else if ( event->eType == keyUpEvent ) {
         handler = board_handleKeyUp;
@@ -2200,6 +2221,11 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
         globals->lastKeyDown = event->data.keyDown.keyCode;
     }
 
+    /* Unlike Treo, zodiac doesn't use keyCode as documented */
+    if ( globals->isZodiac ) {
+        keyCode = event->data.keyDown.chr;
+    }
+
     switch ( keyCode ) {
 #ifdef XWFEATURE_FIVEWAY
     case vchrRockerCenter:
@@ -2207,15 +2233,19 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
         break;
     case vchrRockerLeft:
         xpkey = altOn ? XP_CURSOR_KEY_ALTLEFT : XP_CURSOR_KEY_LEFT;
+        incr = -1;
         break;
     case vchrRockerRight:
         xpkey = altOn ? XP_CURSOR_KEY_ALTRIGHT : XP_CURSOR_KEY_RIGHT;
+        incr = 1;
         break;
     case vchrRockerUp:
         xpkey = altOn ? XP_CURSOR_KEY_ALTUP : XP_CURSOR_KEY_UP;
+        incr = -1;
         break;
     case vchrRockerDown:
         xpkey = altOn ? XP_CURSOR_KEY_ALTDOWN : XP_CURSOR_KEY_DOWN;
+        incr = 1;
         break;
     case chrSpace:
         xpkey = XP_RAISEFOCUS_KEY;
@@ -2263,7 +2293,8 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
            there. */
         if ( 0 ) {
 #ifdef DO_TUNGSTEN_FIVEWAY
-        } else if ( !globals->hasTreoKeyboard && !handled && (incr != 0) ) {
+        } else if ( !globals->hasTreoFiveWay && !treatAsUp
+                    && !handled && (incr != 0) ) {
             /* order'll be different if scoreboard is vertical */
             BoardObjectType typs[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
             BoardObjectType nxt = board_getFocusOwner( board );
@@ -2729,7 +2760,7 @@ mainViewHandleEvent( EventPtr event )
 #endif
 
     case keyUpEvent:
-        XP_ASSERT( globals->hasTreoKeyboard );
+        XP_ASSERT( globals->generatesKeyUp );
     case keyDownEvent:
         if ( !globals->menuIsDown ) {
             draw = handleKeyEvent( globals, event, &handled );
