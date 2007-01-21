@@ -250,7 +250,7 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
         }
     }
 
-    XP_ASSERT( globals->keyDown );
+/*     XP_ASSERT( globals->keyDown ); */
     globals->keyDown = XP_FALSE;
 
     return handled? 1 : 0;        /* gtk will do something with the key if 0 returned  */
@@ -1083,12 +1083,10 @@ gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(state),
 } /* gtk_util_trayHiddenChange */
 
 static void
-gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
+gtk_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), 
+                        XP_U16 XP_UNUSED(oldOffset), 
                         XP_U16 XP_UNUSED(newOffset) )
 {
-    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
-    board_invalAll( globals->cGlobals.game.board );
-/*     board_draw( globals->board ); */
 } /* gtk_util_yOffsetChange */
 
 static void
