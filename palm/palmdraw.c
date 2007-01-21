@@ -46,6 +46,7 @@
 #define DRAW_FOCUS_FRAME 1
 #ifdef DRAW_FOCUS_FRAME
 # define TREAT_AS_CURSOR(d,f) ((((f) & CELL_ISCURSOR) != 0) && !(d)->topFocus )
+# define FOCUS_BORDER_WIDTH 6
 #else
 # define TREAT_AS_CURSOR(d,f) (((f) & CELL_ISCURSOR) != 0)
 #endif
@@ -300,7 +301,8 @@ palm_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ,
         r.width = rect->width - 1;
         r.height = rect->height - 1;
 
-        for ( i = 0; i < 6; ++i ) {
+        for ( i = dctx->doHiRes?FOCUS_BORDER_WIDTH:FOCUS_BORDER_WIDTH/2;
+              i > 0; --i ) { 
             insetRect( &r, 1 );
             WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&r );
         }
@@ -836,7 +838,7 @@ palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 static void
 palm_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                       XP_U16 XP_UNUSED(numPlayers), 
-                      DrawFocusState dfs )
+                      DrawFocusState XP_UNUSED(dfs) )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
@@ -862,7 +864,7 @@ rectContainsRect( const XP_Rect* rect1, const XP_Rect* rect2 )
 
 static XP_Bool
 palm_draw_vertScrollBoard( DrawCtx* XP_UNUSED(p_dctx), XP_Rect* rect, 
-                           XP_S16 dist )
+                           XP_S16 dist, DrawFocusState dfs )
 {
     RectangleType clip;
     XP_Bool canDoIt;
@@ -882,6 +884,15 @@ palm_draw_vertScrollBoard( DrawCtx* XP_UNUSED(p_dctx), XP_Rect* rect,
             dir = winDown;
             dist = -dist;
         }
+
+#ifdef PERIMETER_FOCUS
+        if ( dfs == DFS_TOP ) {
+            rect->height -= FOCUS_BORDER_WIDTH;
+            if ( dir == winDown ) {
+                rect->top += FOCUS_BORDER_WIDTH;
+            }
+        }
+#endif
 
         WinScrollRectangle( (RectangleType*)rect, dir, dist, &vacated );
         *rect = *(XP_Rect*)&vacated;
@@ -1337,7 +1348,7 @@ palm_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
     }
 
     *widthP = maxWidth;
-    *heightP = height + 3;
+    *heightP = height + 4;
 
     HIGHRES_POP_LOC( (PalmDrawCtx*)p_dctx );
 } /* palm_draw_measureMiniWText */
