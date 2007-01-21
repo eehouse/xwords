@@ -467,6 +467,16 @@ invalArrowCell( BoardCtxt* board )
     invalCell( board, arrow->col, arrow->row );
 } /* invalArrowCell */
 
+static void
+flipArrow( BoardCtxt* board )
+{
+    BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+    XP_U16 tmp = arrow->col;
+    arrow->col = arrow->row;
+    arrow->row = tmp;
+    arrow->vert = !arrow->vert;
+} /* flipArrow */
+
 #ifdef KEYBOARD_NAV
 static void
 invalCursorCell( BoardCtxt* board )
@@ -884,14 +894,16 @@ board_invalAllTiles( BoardCtxt* board )
 static void
 board_invalPerimeter( BoardCtxt* board )
 {
-    XP_U16 lastRow = model_numRows( board->model ) - 1;
-    XP_U16 firstAndLast = (1 << lastRow) | 1;
+    XP_U16 lastCol = model_numCols( board->model ) - 1;
+    XP_U16 firstAndLast = (1 << lastCol) | 1;
+    XP_U16 firstRow = board->yOffset;
+    XP_U16 lastRow = board->lastVisibleRow - 1;
 
     /* top and bottom rows */
+    board->redrawFlags[firstRow] = ~0;
     board->redrawFlags[lastRow] = ~0;
-    board->redrawFlags[0] = ~0;
     
-    while ( --lastRow > 0 ) {
+    while ( --lastRow > firstRow ) {
         board->redrawFlags[lastRow] |= firstAndLast;
     }
 }
@@ -907,6 +919,43 @@ board_invalAll( BoardCtxt* board )
     board->dividerInvalid = XP_TRUE;
     board->scoreBoardInvalid = XP_TRUE;
 } /* board_invalAll */
+
+static void
+flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
+        XP_U16* fCol, XP_U16* fRow )
+{
+    XP_U16 tmp = col;           /* might be the same */
+    if ( board->isFlipped ) {
+        *fCol = row;
+        *fRow = tmp;
+    } else {
+        *fRow = row;
+        *fCol = tmp;
+    }
+} /* flipIf */
+
+#ifdef XWFEATURE_SEARCHLIMIT
+static void
+flipLimits( BdHintLimits* lim )
+{
+    XP_U16 tmp = lim->left;
+    lim->left = lim->top;
+    lim->top = tmp;
+    tmp = lim->right;
+    lim->right = lim->bottom;
+    lim->bottom = tmp;
+}
+
+static void
+flipAllLimits( BoardCtxt* board )
+{
+    XP_U16 nPlayers = board->gi->nPlayers;
+    XP_U16 i;
+    for ( i = 0; i < nPlayers; ++i ) {
+        flipLimits( &board->limits[i] );
+    }
+}
+#endif
 
 /* 
  * invalidate all cells that contain a tile.  Return TRUE if any invalidation
@@ -933,7 +982,9 @@ invalCellsWithTiles( BoardCtxt* board )
             XP_Bool ignore;
             if ( model_getTile( model, col, row, includePending,
                                 turn, &tile, &ignore, &ignore, &ignore ) ) {
-                invalCell( board, col, row );
+                XP_U16 boardCol, boardRow;
+                flipIf( board, col, row, &boardCol, &boardRow );
+                invalCell( board, boardCol, boardRow );
             }
         }
     }
@@ -975,18 +1026,20 @@ checkScrollCell( void* p_board, XP_U16 col, XP_U16 row )
 static void
 invalBlanksWithNeighbors( BoardCtxt* board, BlankQueue* bqp ) 
 {
-    ModelCtxt* model = board->model;
     XP_U16 i;
     XP_U16 lastCol, lastRow;
     BlankQueue invalBlanks;
     XP_U16 nInvalBlanks = 0;
 
-    lastCol = model_numCols(model) - 1;
-    lastRow = model_numRows(model) - 1;
+    lastCol = model_numCols(board->model) - 1;
+    lastRow = model_numRows(board->model) - 1;
 
     for ( i = 0; i < bqp->nBlanks; ++i ) {
-        XP_U16 col = bqp->col[i];
-        XP_U16 row = bqp->row[i];
+        XP_U16 modelCol = bqp->col[i];
+        XP_U16 modelRow = bqp->row[i];
+        XP_U16 col, row;
+
+        flipIf( board, modelCol, modelRow, &col, &row );
 
         if ( INVAL_BIT_SET( board, col, row )
              || (col > 0 && INVAL_BIT_SET( board, col-1, row ))
@@ -1077,11 +1130,10 @@ cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
             }
         } else {
 #ifdef PERIMETER_FOCUS
-            focussed = (col == 0) || (row == 0);
-            if ( !focussed ) {
-                XP_U16 lastRow = model_numRows( board->model ) - 1;
-                focussed = (col == lastRow) || (row == lastRow);
-            }
+            focussed = (col == 0)
+                || (col == model_numCols(board->model) - 1)
+                || (row == board->yOffset)
+                || (row == board->lastVisibleRow - 1);
 #else
             focussed = XP_TRUE;
 #endif
@@ -1110,14 +1162,14 @@ drawBoard( BoardCtxt* board )
         scrollIfCan( board );	/* this must happen before we count blanks
                                    since it invalidates squares */
 
+        /* This is freaking expensive!!!! PENDING FIXME Can't we start from
+           what's invalid rather than scanning the entire model every time
+           somebody dirties a single cell? */
         model_listPlacedBlanks( model, board->selPlayer, 
                                 board->trayVisState == TRAY_REVEALED, &bq );
         invalBlanksWithNeighbors( board, &bq );
 
-        /* Don't try to optimize this using lastVisibleRow etc.  If the
-           board is flipped, "lastVisibleRow" here is really col.
-           redrawFlags is at the model level, pre-flip. */
-        for ( row = model_numRows(model) - 1; row >= 0; --row ) {
+        for ( row = board->yOffset; row < board->lastVisibleRow; ++row ) {
             XP_U16 rowFlags = board->redrawFlags[row];
             if ( rowFlags != 0 ) {
                 XP_U16 colMask;
@@ -1148,8 +1200,6 @@ drawBoard( BoardCtxt* board )
             if ( arrow->visible ) {
                 XP_U16 col = arrow->col;
                 XP_U16 row = arrow->row;
-                XP_Bool drawVertical = 
-                    (arrow->vert == XP_CURSOR_KEY_DOWN) ^ board->isFlipped;
                 if ( getCellRect( board, col, row, &arrowRect ) ) {
                     XWBonusType bonus;
                     HintAtts hintAtts;
@@ -1163,7 +1213,7 @@ drawBoard( BoardCtxt* board )
                     }
 #endif
                     draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
-                                         drawVertical, hintAtts, flags );
+                                         arrow->vert, hintAtts, flags );
                 }
             }
         }
@@ -1437,6 +1487,7 @@ XP_Bool
 board_flip( BoardCtxt* board )
 {
     invalArrowCell( board );
+    flipArrow( board );
 #ifdef KEYBOARD_NAV
     invalCursorCell( board );
 #endif
@@ -1448,6 +1499,7 @@ board_flip( BoardCtxt* board )
 
 #ifdef XWFEATURE_SEARCHLIMIT
     invalCurHintRect( board, board->selPlayer );
+    flipAllLimits( board );
 #endif
 
     board->isFlipped = !board->isFlipped;
@@ -1549,6 +1601,10 @@ board_requestHint( BoardCtxt* board,
         nTiles = tileSet->nTiles - board->dividerLoc[selPlayer];
         result = nTiles > 0;
         if ( result ) {
+#ifdef XWFEATURE_SEARCHLIMIT
+            BdHintLimits limits;
+            BdHintLimits* lp = NULL;
+#endif
             XP_Bool wasVisible;
             XP_Bool canMove;
 
@@ -1563,15 +1619,19 @@ board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_SEARCHLIMIT
             XP_ASSERT( board->gi->allowHintRect
                        || !board->hasHintRect[selPlayer] );
+            if ( board->gi->allowHintRect && board->hasHintRect[selPlayer] ) {
+                limits = board->limits[selPlayer];
+                lp = &limits;
+                if ( board->isFlipped ) {
+                    flipLimits( lp );
+                }
+            }
 #endif
             searchComplete = engine_findMove(engine, model, 
                                              model_getDictionary(model),
                                              tiles, nTiles,
 #ifdef XWFEATURE_SEARCHLIMIT
-                                             (board->gi->allowHintRect &&
-                                              board->hasHintRect[selPlayer])?
-                                             &board->limits[selPlayer] : NULL,
-                                             useTileLimits,
+                                             lp, useTileLimits,
 #endif
                                              NO_SCORE_LIMIT, 
                                              &canMove, &newMove );
@@ -1609,6 +1669,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
     XWBonusType bonus;
     ModelCtxt* model = board->model;
     DictionaryCtxt* dict = model_getDictionary( model );
+    XP_U16 modelCol, modelRow;
 
     if ( dict != NULL && getCellRect( board, col, row, &cellRect ) ) {
 
@@ -1621,6 +1682,8 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
         XP_Bool showPending = board->trayVisState == TRAY_REVEALED
             && curCount > 0;
 
+        flipIf( board, col, row, &modelCol, &modelRow );
+
         /* This 'while' is only here so I can 'break' below */
         while ( board->trayVisState == TRAY_HIDDEN ||
                 !rectContainsRect( &board->trayBounds, &cellRect ) ) {
@@ -1631,7 +1694,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
 
-            isEmpty = !model_getTile( model, col, row, showPending,
+            isEmpty = !model_getTile( model, modelCol, modelRow, showPending,
                                       selPlayer, &tile, &isBlank,
                                       &pending, &recent );
 
@@ -1642,7 +1705,8 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                 break;
             } else {
                 if ( board->showColors ) {
-                    owner = (XP_S16)model_getCellOwner( model, col, row );
+                    owner = (XP_S16)model_getCellOwner( model, modelCol, 
+                                                        modelRow );
                 }
 
                 invert = showPending? pending : recent;
@@ -1732,12 +1796,6 @@ coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, XP_U16* rowP )
     col = x / board->boardHScale;
     row = y / board->boardVScale;
 
-    if ( board->isFlipped ) {
-        XP_U16 tmp = col;
-        col = row;
-        row = tmp;
-    }
-
     max = model_numCols( board->model ) - 1;
     /* I don't deal with non-square boards yet. */
     XP_ASSERT( max + 1 == model_numRows( board->model ) );
@@ -1760,12 +1818,6 @@ getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
 {
     XP_S16 top;
     XP_Bool onBoard = XP_TRUE;
-
-    if ( board->isFlipped ) {
-        XP_U16 tmp = col;
-        col = row;
-        row = tmp;
-    }
 
     if ( row < board->yOffset ) {
         onBoard = XP_FALSE;
@@ -1918,10 +1970,7 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
     HintAtts result = HINT_BORDER_NONE;
 
     if ( board->trayVisState == TRAY_REVEALED && board->gi->allowHintRect ) {
-        BdHintLimits limits;
-        XP_Bool isFlipped = board->isFlipped;
-        
-        limits = board->limits[board->selPlayer];
+        BdHintLimits limits = board->limits[board->selPlayer];
 
         /* while lets us break to exit... */
         while ( board->hasHintRect[board->selPlayer]
@@ -1932,16 +1981,16 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
             if ( row > limits.bottom ) break;
 
             if ( col == limits.left ) {
-                result |= isFlipped? HINT_BORDER_TOP : HINT_BORDER_LEFT;
+                result |= HINT_BORDER_LEFT;
             }
             if ( col == limits.right ) {
-                result |= isFlipped? HINT_BORDER_BOTTOM:HINT_BORDER_RIGHT;
+                result |= HINT_BORDER_RIGHT;
             }
             if ( row == limits.top) {
-                result |= isFlipped?HINT_BORDER_LEFT:HINT_BORDER_TOP;
+                result |= HINT_BORDER_TOP;
             }
             if ( row == limits.bottom ) {
-                result |= isFlipped? HINT_BORDER_RIGHT:HINT_BORDER_BOTTOM;
+                result |= HINT_BORDER_BOTTOM;
             }
 #ifndef XWFEATURE_SEARCHLIMIT_DOCENTERS
             if ( result == HINT_BORDER_NONE ) {
@@ -2112,12 +2161,8 @@ finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
     needsRedraw = continueHintRegionDrag( board, x, y );
 
     /* Now check if the whole drag ended above where it started.  If yes, it
-      means erase! */
-    if ( board->isFlipped ) {
-        makeActive = board->hintDragStartCol <= board->hintDragCurCol;
-    } else {
-        makeActive = board->hintDragStartRow <= board->hintDragCurRow;
-    }
+       means erase! */
+    makeActive = board->hintDragStartRow <= board->hintDragCurRow;
 
     board->hasHintRect[board->selPlayer] = makeActive;
     if ( !makeActive ) {
@@ -2339,10 +2384,12 @@ cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool inclPending )
 {
     Tile tile;
     XP_Bool ignr;
+    XP_Bool result;
 
-    XP_Bool result = model_getTile( board->model, col, row, inclPending,
-                                    board->selPlayer, &tile, 
-                                    &ignr, &ignr, &ignr );
+    flipIf( board, col, row, &col, &row );
+    result = model_getTile( board->model, col, row, inclPending,
+                            board->selPlayer, &tile, 
+                            &ignr, &ignr, &ignr );
     return result;
 } /* cellOccupied */
 
@@ -2396,6 +2443,7 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
     Tile tile;
     XP_Bool ignore, isPending;
 
+    flipIf( board, pencol, penrow, &pencol, &penrow );
     if ( model_getTile( board->model, pencol, penrow, XP_TRUE,
                         board->selPlayer, &tile, &ignore, &isPending, 
                         (XP_Bool*)NULL )
@@ -2516,34 +2564,6 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 #endif /* #ifdef POINTER_SUPPORT */
 
 #ifdef KEYBOARD_NAV
-XP_Key
-flipKey( XP_Key key, XP_Bool flip ) {
-    XP_Key result = key;
-    if ( flip ) {
-        switch( key ) {
-        case XP_CURSOR_KEY_DOWN:
-            result = XP_CURSOR_KEY_RIGHT; break;
-        case XP_CURSOR_KEY_ALTDOWN:
-            result = XP_CURSOR_KEY_ALTRIGHT; break;
-        case XP_CURSOR_KEY_UP:
-            result = XP_CURSOR_KEY_LEFT; break;
-        case XP_CURSOR_KEY_ALTUP:
-            result = XP_CURSOR_KEY_ALTLEFT; break;
-        case XP_CURSOR_KEY_LEFT:
-            result = XP_CURSOR_KEY_UP; break;
-        case XP_CURSOR_KEY_ALTLEFT:
-            result = XP_CURSOR_KEY_ALTUP; break;
-        case XP_CURSOR_KEY_RIGHT:
-            result = XP_CURSOR_KEY_DOWN; break;
-        case XP_CURSOR_KEY_ALTRIGHT:
-            result = XP_CURSOR_KEY_ALTDOWN; break;
-        default:
-            XP_ASSERT(0);
-        }
-    }
-    return result;
-} /* flipKey */
-
 static void
 getRectCenter( const XP_Rect* rect, XP_U16* xp, XP_U16* yp )
 {
@@ -2616,8 +2636,7 @@ handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
     if ( board->focusHasDived ) {
         XP_Bool up = XP_FALSE;
         if ( board->focussed == OBJ_BOARD ) {
-            redraw = board_moveCursor( board, flipKey( key, board->isFlipped ),
-                                       preflightOnly, &up );
+            redraw = board_moveCursor( board, key, preflightOnly, &up );
         } else if ( board->focussed == OBJ_SCORE ) {
             redraw = moveScoreCursor( board, key, preflightOnly, &up );
         } else if ( board->focussed == OBJ_TRAY ) {
@@ -2646,6 +2665,7 @@ board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
 
     if ( key == XP_RETURN_KEY ) {
         *handled = XP_FALSE;
+        draw = XP_FALSE;
     } else {
         XP_Bool upHandled, downHandled;
         draw = board_handleKeyUp( board, key, &upHandled );
@@ -2883,7 +2903,7 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey,
                XP_Bool* XP_UNUSED_KEYBOARD_NAV(pUp) )
 {
     XP_S16 max;
-    XP_S16* useWhat;
+    XP_S16* useWhat = NULL;     /* make compiler happy */
     XP_S16 end = 0;
     XP_S16 incr = 0;
     XP_U16 numCols, numRows;
@@ -3007,6 +3027,7 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         loc.col = col;
         loc.row = row;
         board->bdCursor[board->selPlayer] = loc;
+        checkScrollCell( board, col, row );
     }
     return changed;
 } /* board_moveCursor */
@@ -3070,6 +3091,7 @@ replaceLastTile( BoardCtxt* board )
 
         model_moveBoardToTray( board->model, board->selPlayer, index );
 
+        flipIf( board, col, row, &col, &row );
         setArrow( board, col, row );
 
         result = XP_TRUE;
@@ -3086,6 +3108,7 @@ moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_U16 tileIndex,
         return XP_FALSE;
     }
 
+    flipIf( board, col, row, &col, &row );
     model_moveTrayToBoard( board->model, board->selPlayer, col, row, 
                            tileIndex, blankFace );
 
@@ -3097,7 +3120,7 @@ static XP_Bool
 moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
 {
     /* keep compiler happy: assign defaults */
-    Tile tile, blankFace;
+    Tile tile, blankFace = EMPTY_TILE; /* make compiler happy */
     XP_U16 col, row;
     DictionaryCtxt* dict = model_getDictionary( board->model );
     XP_S16 turn = board->selPlayer;
@@ -3131,7 +3154,7 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
     if ( success ) {
         tileIndex = model_trayContains( board->model, turn, tile );
         if ( tileIndex >= 0 ) {
-            blankFace = EMPTY_TILE;	/* will be ignored */
+            // blankFace = EMPTY_TILE;	/* already set (and will be ignored) */
         } else {
             Tile blankTile = dict_getBlankTile( dict );
             tileIndex = model_trayContains( board->model, turn, blankTile );
@@ -3207,16 +3230,18 @@ setArrowVisibleFor( BoardCtxt* board, XP_U16 player, XP_Bool visible )
  * Listener callbacks
  ****************************************************************************/
 static void
-boardCellChanged( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row,
+boardCellChanged( void* p_board, XP_U16 turn, XP_U16 modelCol, XP_U16 modelRow,
                   XP_Bool added )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     XP_Bool pending, found, ignoreBlank;
     Tile ignoreTile;
-    XP_U16 ccol, crow;
+    XP_U16 col, row;
+
+    flipIf( board, modelCol, modelRow, &col, &row );
 
     /* for each player, check if the tile overwrites the cursor */
-    found = model_getTile( board->model, col, row, XP_TRUE, turn,
+    found = model_getTile( board->model, modelCol, modelRow, XP_TRUE, turn,
                            &ignoreTile, &ignoreBlank, &pending, 
                            (XP_Bool*)NULL );
 
@@ -3225,6 +3250,7 @@ boardCellChanged( void* p_board, XP_U16 turn, XP_U16 col, XP_U16 row,
     if ( !added && !found ) {
         /* nothing to do */
     } else {
+        XP_U16 ccol, crow;
         XP_U16 player, nPlayers;
     
         nPlayers = board->gi->nPlayers;
