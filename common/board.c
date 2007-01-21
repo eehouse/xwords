@@ -1062,25 +1062,33 @@ static void
 scrollIfCan( BoardCtxt* board )
 {
     if ( board->yOffset != board->prevYScrollOffset ) {
-        XP_Rect scrollR = board->boardBounds;
-        XP_Bool scrolled;
-        XP_S16 dist;
-
-        invalSelTradeWindow( board );
-        dist = (board->yOffset - board->prevYScrollOffset)
-            * board->boardVScale;
-
-        scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist );
-
-        if ( scrolled ) {
-            /* inval the rows that have been scrolled into view.  I'm cheating
-               making the client figure the inval rect, but Palm's the only
-               client now and it does it so well.... */
-            invalCellsUnderRect( board, &scrollR );
+        if ( board->focussed == OBJ_BOARD && !board->focusHasDived ) {
+            /* an edge case.  Just brute force it. */
+            board_invalAllTiles( board );
         } else {
-            board_invalAll( board );
-        }
+            XP_Rect scrollR = board->boardBounds;
+            XP_Bool scrolled;
+            XP_S16 dist;
 
+            /* If there's a focus-rect drawn on the board, we need to inval any
+               row of it that's going to get scrolled into the center since it
+               needs to be redrawn without the border. */
+
+            invalSelTradeWindow( board );
+            dist = (board->yOffset - board->prevYScrollOffset)
+                * board->boardVScale;
+
+            scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist );
+
+            if ( scrolled ) {
+                /* inval the rows that have been scrolled into view.  I'm cheating
+                   making the client figure the inval rect, but Palm's the only
+                   client now and it does it so well.... */
+                invalCellsUnderRect( board, &scrollR );
+            } else {
+                board_invalAll( board );
+            }
+        }
         board->prevYScrollOffset = board->yOffset;
     }
 } /* scrollIfCan */
