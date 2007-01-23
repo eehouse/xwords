@@ -681,6 +681,7 @@ board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     XP_Rect cellRect;
 
+    flipIf( board, col, row, &col, &row );
     if ( getCellRect( board, col, row, &cellRect ) ) {
         draw_invertCell( board->draw, &cellRect );
         invalCell( board, col, row );
