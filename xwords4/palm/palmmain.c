@@ -2179,6 +2179,9 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     BoardCtxt* board = globals->game.board;
     XP_S16 incr = 0; /* needed for tungsten and zodiac, but not treo since
                         the OS handled focus movement between objects. */
+
+    globals->handlingKeyEvent = XP_TRUE;
+
 #ifdef DO_TUNGSTEN_FIVEWAY
     if ( !globals->generatesKeyUp ) { /* this is the Tungsten case */
         if ( event->data.keyDown.chr == vchrNavChange ) {
@@ -2319,6 +2322,9 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     }
     LOG_RETURNF( "%d", draw );
     *handledP = handled;
+
+    globals->handlingKeyEvent = XP_FALSE;
+
     return draw;
 } /* handleKeyEvent */
 
@@ -2992,8 +2998,12 @@ handleScrollInAsk( EventPtr event )
         break;
 
     case keyDownEvent:
-        /* don't scroll a menu if open! */
-        if ( FrmGetWindowHandle( FrmGetActiveForm() ) == WinGetDrawWindow() ) {
+        if ( globals->ignoreFirstKeyDown ) {
+            globals->ignoreFirstKeyDown = XP_FALSE;
+            XP_ASSERT( result );
+        } else if ( FrmGetWindowHandle( FrmGetActiveForm() ) 
+                    == WinGetDrawWindow() ) {
+            /* don't scroll a menu if open! */
             switch ( event->data.keyDown.chr ) {
             case pageUpChr:
             case vchrRockerUp:
@@ -3126,6 +3136,11 @@ palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* yesButton,
            not have a cancel button. */
         disOrEnable( form, XW_ASK_NO_BUTTON_ID, false );
         centerControl( form, XW_ASK_YES_BUTTON_ID );
+    }
+
+    /* This is making me puke.... :-) */
+    if ( globals->handlingKeyEvent ) {
+        globals->ignoreFirstKeyDown = XP_TRUE;
     }
 
     FrmSetEventHandler( form, handleScrollInAsk );
