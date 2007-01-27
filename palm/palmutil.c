@@ -415,29 +415,20 @@ drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
 
     form = FrmGetActiveForm();
     index = FrmGetFocus( form );
-    XP_LOGF( "%s: FrmGetFocus=>%d", __FUNCTION__, index );
     if ( index >= 0 ) {
         focusID = FrmGetObjectId( form, index );
-        XP_LOGF( "%s: FrmGetObjectId=>%d", __FUNCTION__, focusID );
 
         if ( (focusID >= idLow) && (focusID <= idHigh) ) {
             Err err;
             RectangleType rect;
 
             getObjectBounds( focusID, &rect );
-            XP_LOGF( "focusID=%d; index=%d", focusID, index );
-            XP_LOGF( "rect=%d,%d,%d,%d", rect.topLeft.x, rect.topLeft.y,
-                     rect.extent.x, rect.extent.y );
 
             /* growing the rect didn't work to fix glitches in ring drawing. */
-
             err = HsNavDrawFocusRing( form, focusID, 0, &rect,
                                       hsNavFocusRingStyleObjectTypeDefault,
                                       false );
-            if ( err != errNone ) {
-                XP_LOGF( "%s: err=%d (0x%x)", __FUNCTION__, err, err );
-            }
-            XP_ASSERT( err == errNone ); /* firing */
+            XP_ASSERT( err == errNone );
         }
     }
     LOG_RETURN_VOID();
