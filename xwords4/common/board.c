@@ -115,6 +115,8 @@ static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
+static void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
+                    XP_U16* fCol, XP_U16* fRow );
 
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
