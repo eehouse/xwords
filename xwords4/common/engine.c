@@ -72,7 +72,7 @@ struct EngineCtxt {
     XP_U16 numRows, numCols;
     XP_U16 curRow;
     XP_U16 blankCount;
-    XP_U16 targetScore;		/* not used at the moment */
+    XP_U16 targetScore;
     XP_U16 star_row;
     XP_Bool returnNOW;
     MoveIterationData miData;
@@ -286,7 +286,6 @@ findFirstMoves( EngineCtxt* engine )
     /* middle square is the only legal anchor */
     engine->searchHorizontal = XP_TRUE;
     findMovesForAnchor( engine, &prevAnchor, star_row, star_row );
-    /*    util_hiliteCell( engine->util, STAR_ROW, STAR_ROW ); */
     HILITE_CELL( engine, star_row, star_row );
 } /* findFirstMoves */
 
@@ -782,7 +781,7 @@ hiliteForAnchor( EngineCtxt* engine, XP_U16 col, XP_U16 row )
         row = tmp;
     }
 
-    if ( !util_hiliteCell( engine->util, col, row ) ) {
+    if ( !HILITE_CELL( engine, col, row ) ) {
         engine->returnNOW = XP_TRUE;
     }
 } /* hiliteForAnchor */
