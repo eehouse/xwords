@@ -23,7 +23,7 @@ LANGFILTER_PRECLIP: tr -d '\r' |
 # uppercase all
 LANGFILTER_POSTCLIP: | tr [a-zåæø] [A-ZÅÆØ]
 # no words not containing a vowel
-LANGFILTER_POSTCLIP: | grep '[AEIOUÅÆØ]' 
+LANGFILTER_POSTCLIP: | grep '[AEIOUYÅÆØ]' 
 # none with illegal chars
 LANGFILTER_POSTCLIP: | grep '^[A-PR-VX-ZÅÆØ]\+$'
 # remove duplicates
