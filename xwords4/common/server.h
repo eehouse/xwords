@@ -42,7 +42,7 @@ enum {
     SERVER_ISSERVER,
     SERVER_ISCLIENT
 };
-typedef XP_U8 Connectedness;
+typedef XP_U8 DeviceRole;
 
 /* typedef struct ServerCtxt ServerCtxt; */
 

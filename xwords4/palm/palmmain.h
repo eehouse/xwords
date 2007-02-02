@@ -202,7 +202,7 @@ typedef struct PalmNewGameState {
     XP_UCHAR shortDictName[32]; /* as long as a dict name can be */
 
     XP_Bool forwardChange;
-    Connectedness curServerHilite;
+    DeviceRole curServerHilite;
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IR
     CommsAddrRec addr;
     XP_Bool connsSettingChanged;

@@ -66,7 +66,7 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
     GtkNewGameState* state = (GtkNewGameState*)gp;
     gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
     if ( index >= 0 ) {    
-        value.ng_role = (Connectedness)index;
+        value.ng_role = (DeviceRole)index;
         newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
     }
 } /* role_combo_changed */

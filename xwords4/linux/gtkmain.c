@@ -292,7 +292,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
     XWStreamCtxt* stream = NULL;
     XP_Bool opened = XP_FALSE;
 
-    Connectedness serverRole = globals->cGlobals.params->serverRole;
+    DeviceRole serverRole = globals->cGlobals.params->serverRole;
     XP_Bool isServer = serverRole != SERVER_ISCLIENT;
     LaunchParams* params = globals->cGlobals.params;
 
