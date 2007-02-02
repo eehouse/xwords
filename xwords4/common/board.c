@@ -1895,6 +1895,7 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 static XP_Bool
 pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, BoardObjectType* wp )
 {
+    XP_Bool result = XP_TRUE;
     if ( board->trayVisState != TRAY_HIDDEN
          && rectContainsPt( &board->trayBounds, x, y ) ) {
         *wp = OBJ_TRAY;
@@ -1903,10 +1904,10 @@ pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, BoardObjectType* wp )
     } else if ( rectContainsPt( &board->scoreBdBounds, x, y ) ) {
         *wp = OBJ_SCORE;
     } else {
-        return XP_FALSE;
+        result = XP_FALSE;
     }
 
-    return XP_TRUE;
+    return result;
 } /* pointOnSomething */
 #endif
 
