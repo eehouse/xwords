@@ -634,8 +634,21 @@ logEvent( eventsEnum eType )
         CASE_STR(firstLicenseeEvent);
         CASE_STR(lastLicenseeEvent);
 
-        CASE_STR(firstUserEvent);
         CASE_STR(lastUserEvent);
+
+        CASE_STR( dictSelectedEvent );
+        CASE_STR( newGameOkEvent );
+        CASE_STR( newGameCancelEvent);
+        CASE_STR( loadGameEvent);
+        CASE_STR( prefsChangedEvent);
+        CASE_STR( openSavedGameEvent);
+        CASE_STR( updateAfterFocusEvent);
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+        CASE_STR( connsSettingChgEvent);
+#endif
+#ifdef FEATURE_SILK
+        CASE_STR( doResizeWinEvent );
+#endif
     default: 
         name = "<unknown>";
         break;
