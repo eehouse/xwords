@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -41,9 +41,12 @@ struct NewGameCtx {
     /* Palm needs to store cleartext passwords separately in order to
        store '***' in the visible field */
     XP_TriEnable enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
-    XP_U16 nPlayers;
+    XP_U16 nPlayersShown;       /* real nPlayers lives in gi */
+    XP_U16 nPlayersTotal;       /* used only until changedNPlayers set */
+    XP_U16 nLocalPlayers;
     Connectedness role;
     XP_Bool isNewGame;
+    XP_Bool changedNPlayers;
     XP_TriEnable juggleEnabled;
 
     MPSLOT
@@ -54,6 +57,7 @@ static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
 static void setRoleStrings( NewGameCtx* ngc );
+static void changeRole( NewGameCtx* ngc, Connectedness role );
 static void considerEnableJuggle( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
@@ -94,11 +98,18 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
 {
     void* closure = ngc->closure;
     NGValue value;
-    XP_U16 nPlayers, nShown;
-    XP_S16 i;
+    XP_U16 nPlayers, nLoaded;
+    XP_S16 ii, jj;
     Connectedness role;
     XP_Bool localOnly;
     XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
+
+    ngc->juggleEnabled = TRI_ENAB_NONE;
+    for ( ii = 0; ii < NG_NUM_COLS; ++ii ) {
+        for ( jj = 0; jj < MAX_NUM_PLAYERS; ++jj ) {
+            ngc->enabled[ii][jj] = TRI_ENAB_NONE;
+        }
+    }
 
     ngc->role = role = gi->serverRole;
     localOnly = role == SERVER_ISCLIENT && ngc->isNewGame;
@@ -110,17 +121,20 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
 #endif
 
     nPlayers = gi->nPlayers;
+    ngc->nPlayersTotal = nPlayers;
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( localOnly ) {
-        for ( i = nPlayers - 1; i >= 0; --i ) {
-            if ( !gi->players[i].isLocal ) {
-                --nPlayers;
-            }
+    for ( ii = nPlayers - 1; ii >= 0; --ii ) {
+        if ( gi->players[ii].isLocal ) {
+            ++ngc->nLocalPlayers;
         }
     }
 #endif
-    ngc->nPlayers = nPlayers;
-    value.ng_u16 = ngc->nPlayers;
+    if ( localOnly ) {
+        nPlayers = ngc->nLocalPlayers;
+    }
+    ngc->nPlayersShown = nPlayers;
+        
+    value.ng_u16 = ngc->nPlayersShown;
     (*ngc->setAttrProc)( closure, NG_ATTR_NPLAYERS, value );
     (*ngc->enableAttrProc)( closure, NG_ATTR_NPLAYERS, ngc->isNewGame?
                             TRI_ENAB_ENABLED : TRI_ENAB_DISABLED );
@@ -129,20 +143,21 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     considerEnableJuggle( ngc );   
 
     /* Load local players first */
-    nShown = 0;
+    nLoaded = 0;
     do {
-        for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-            const LocalPlayer* lp = &gi->players[i];
-            if ( shown[i] ) {
-                /* already got it */
-            } else if ( !localOnly || lp->isLocal ) {
-                shown[i] = XP_TRUE;
-                loadPlayer( ngc, nShown++, lp );
-            } /* else skip it */
+        for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+            if ( !shown[ii] ) {
+                const LocalPlayer* lp = &gi->players[ii];
+                if ( !localOnly
+                     || (lp->isLocal && (nLoaded < ngc->nLocalPlayers)) ) {
+                    shown[ii] = XP_TRUE;
+                    loadPlayer( ngc, nLoaded++, lp );
+                }
+            }
         }
-        XP_ASSERT( localOnly || nShown == MAX_NUM_PLAYERS );
+        XP_ASSERT( localOnly || nLoaded == MAX_NUM_PLAYERS );
         localOnly = XP_FALSE;   /* for second pass */
-    } while ( nShown < MAX_NUM_PLAYERS );
+    } while ( nLoaded < MAX_NUM_PLAYERS );
     
     adjustAllRows( ngc, XP_TRUE );
 } /* newg_load */
@@ -191,7 +206,7 @@ newg_store( NewGameCtx* ngc, CurGameInfo* gi )
 {
     XP_U16 player;
 
-    gi->nPlayers = ngc->nPlayers;
+    gi->nPlayers = ngc->nPlayersShown;
 #ifndef XWFEATURE_STANDALONE_ONLY
     gi->serverRole = ngc->role;
 #endif
@@ -206,7 +221,7 @@ newg_colChanged( NewGameCtx* ngc, XP_U16 player )
 {
     /* Sometimes we'll get this notification for inactive rows, e.g. when
        setting default values. */
-    if ( player < ngc->nPlayers ) {
+    if ( player < ngc->nPlayersShown ) {
         adjustOneRow( ngc, player, XP_FALSE );
     }
 }
@@ -215,12 +230,14 @@ void
 newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
 {
     if ( attr == NG_ATTR_NPLAYERS ) {
-        ngc->nPlayers = value.ng_u16;
-        considerEnableJuggle( ngc );
+        if ( ngc->nPlayersShown != value.ng_u16 ) {
+            ngc->nPlayersShown = value.ng_u16;
+            ngc->changedNPlayers = XP_TRUE;
+            considerEnableJuggle( ngc );
+        }
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( NG_ATTR_ROLE == attr ) { 
-        ngc->role = value.ng_role;
-        setRoleStrings( ngc );
+        changeRole( ngc, value.ng_role );
 #endif
     } else {
         XP_ASSERT( 0 );
@@ -256,7 +273,9 @@ XP_Bool
 newg_juggle( NewGameCtx* ngc )
 {
     XP_Bool changed = XP_FALSE;
-    XP_U16 nPlayers = ngc->nPlayers;
+    XP_U16 nPlayers = ngc->nPlayersShown;
+
+    XP_ASSERT( ngc->isNewGame );
     
     if ( nPlayers > 1 ) {
         LocalPlayer tmpPlayers[MAX_NUM_PLAYERS];
@@ -335,7 +354,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     }
 
     /* If there aren't this many players, all are disabled */
-    if ( player >= ngc->nPlayers ) {
+    if ( player >= ngc->nPlayersShown ) {
         /* do nothing: all are hidden above */
     } else {
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -398,6 +417,40 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     }
 } /* adjustOneRow */
 
+/* changeRole.  When role changes, number of players displayed, and which
+ * players, may change.  Host shows all players (up to nPlayers).  Guest shows
+ * only local players, but if role changes should show the rest.  Change from
+ * Host or Standalone to guest should reduce the number shown.
+ * 
+ * Here's the fun part: what happens when user changes nPlayers, then changes
+ * role?  Say we're a guest with one player.  User makes it two, than makes us
+ * host.  Do we pull in a new player?  No.  Let's not change any of this stuff
+ * ONCE USER'S CHANGED NPLAYERS.  Goal is to prevent his having to do that for
+ * the most common case, which is playing again with the same players.  In
+ * that case changing role then back again should not lose/change data.
+ */
+static void
+changeRole( NewGameCtx* ngc, Connectedness newRole )
+{
+    Connectedness oldRole = ngc->role;
+    if ( oldRole != newRole ) {
+        if ( !ngc->changedNPlayers ) {
+            NGValue value;
+            if ( newRole == SERVER_ISCLIENT ) {
+                value.ng_u16 = ngc->nLocalPlayers;
+            } else {
+                value.ng_u16 = ngc->nPlayersTotal;
+            }
+            if ( value.ng_u16 != ngc->nPlayersShown ) {
+                ngc->nPlayersShown = value.ng_u16;
+                (*ngc->setAttrProc)( ngc->closure, NG_ATTR_NPLAYERS, value );
+            }
+        }
+        ngc->role = newRole;
+        setRoleStrings( ngc );
+    }
+}
+
 static void
 setRoleStrings( NewGameCtx* ngc )
 {
@@ -432,7 +485,7 @@ static void
 considerEnableJuggle( NewGameCtx* ngc )
 {
     XP_TriEnable newEnable;
-    newEnable = (ngc->isNewGame && ngc->nPlayers > 1)?
+    newEnable = (ngc->isNewGame && ngc->nPlayersShown > 1)?
         TRI_ENAB_ENABLED : TRI_ENAB_HIDDEN;
 
     if ( newEnable != ngc->juggleEnabled ) {
