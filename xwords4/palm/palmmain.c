@@ -1317,7 +1317,9 @@ figureWaitTicks( PalmAppGlobals* globals )
     /*     XP_DEBUGF( "figureWaitTicks returning %d", result ); */
 
 # ifdef XWFEATURE_BLUETOOTH
-    palm_bt_amendWaitTicks( globals, &result );
+    if ( !!globals->mainForm ) {
+        palm_bt_amendWaitTicks( globals, &result );
+    }
 # endif
 
     return result;
@@ -1898,6 +1900,10 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         server_initClientConnection( globals->game.server, stream );
     }
 #endif
+
+    if ( !!globals->game.comms ) {
+        comms_start( globals->game.comms );
+    }
 
     /* do this before drawing the board.  If it assigns tiles, for example,
        that'll make a difference on the screen. */
@@ -3731,8 +3737,13 @@ palm_send( const XP_U8* buf, XP_U16 len,
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
-        result = palm_bt_send( buf, len, addr, btDataHandler, btConnHandler,
-                               globals );
+        if ( !!globals->mainForm ) {
+            result = palm_bt_send( buf, len, addr, btDataHandler, 
+                                   btConnHandler, globals );
+            if ( result < 0 ) {
+                userErrorFromStrId( globals, STR_BT_NOINIT );
+            }
+        }
         break;
 #endif
     default:
@@ -3828,6 +3839,7 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
 # ifdef XWFEATURE_BLUETOOTH
     XP_Bool isBT = COMMS_CONN_BT == newAddr->conType;
     if ( !isBT ) {
+        XP_ASSERT( !!globals->mainForm );
         palm_bt_close( globals );
         showBTState( globals );
     }
@@ -3840,6 +3852,7 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
 # endif
 # ifdef XWFEATURE_BLUETOOTH
     } else if ( isBT ) {
+        XP_ASSERT( !!globals->mainForm );
         if ( !palm_bt_init( globals, btDataHandler ) ) {
             userErrorFromStrId( globals, STR_BT_NOINIT );
         }
