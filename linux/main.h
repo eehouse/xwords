@@ -59,7 +59,7 @@ typedef struct LaunchParams {
     XP_Bool showRobotScores;
     XP_Bool noHeartbeat;
 
-    Connectedness serverRole;
+    DeviceRole serverRole;
 
     CommsConnType conType;
     union {

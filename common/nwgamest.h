@@ -64,7 +64,7 @@ typedef union NGValue {
     const XP_UCHAR* ng_cp;
     XP_U16 ng_u16;
     XP_Bool ng_bool;
-    Connectedness ng_role;
+    DeviceRole ng_role;
 } NGValue;
 
 /* Enable or disable (show or hide) controls */

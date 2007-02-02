@@ -261,7 +261,7 @@ handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 static void
 handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals,
-                         Connectedness role, GameInfoState* giState )
+                         DeviceRole role, GameInfoState* giState )
 {
     CeConnDlgState state;
 
@@ -574,7 +574,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                                         mode */
                             NGValue value;
                             value.ng_role = 
-                                (Connectedness)SendDlgItemMessage( hDlg, 
+                                (DeviceRole)SendDlgItemMessage( hDlg, 
                                                             IDC_ROLECOMBO,
                                                             CB_GETCURSEL, 0, 
                                                             0L);

@@ -44,7 +44,7 @@ struct NewGameCtx {
     XP_U16 nPlayersShown;       /* real nPlayers lives in gi */
     XP_U16 nPlayersTotal;       /* used only until changedNPlayers set */
     XP_U16 nLocalPlayers;
-    Connectedness role;
+    DeviceRole role;
     XP_Bool isNewGame;
     XP_Bool changedNPlayers;
     XP_TriEnable juggleEnabled;
@@ -57,7 +57,7 @@ static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
 static void setRoleStrings( NewGameCtx* ngc );
-static void changeRole( NewGameCtx* ngc, Connectedness role );
+static void changeRole( NewGameCtx* ngc, DeviceRole role );
 static void considerEnableJuggle( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
@@ -100,7 +100,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     NGValue value;
     XP_U16 nPlayers, nLoaded;
     XP_S16 ii, jj;
-    Connectedness role;
+    DeviceRole role;
     XP_Bool localOnly;
     XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
 
@@ -346,7 +346,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
     NewGameColumn col;
     XP_Bool isLocal = XP_TRUE;
     XP_Bool isNewGame = ngc->isNewGame;
-    Connectedness role = ngc->role;
+    DeviceRole role = ngc->role;
     DeepValue dValue;
 
     for ( col = 0; col < NG_NUM_COLS; ++col ) {
@@ -430,9 +430,9 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
  * that case changing role then back again should not lose/change data.
  */
 static void
-changeRole( NewGameCtx* ngc, Connectedness newRole )
+changeRole( NewGameCtx* ngc, DeviceRole newRole )
 {
-    Connectedness oldRole = ngc->role;
+    DeviceRole oldRole = ngc->role;
     if ( oldRole != newRole ) {
         if ( !ngc->changedNPlayers ) {
             NGValue value;

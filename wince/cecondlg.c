@@ -218,7 +218,7 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
 XP_Bool
 WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRec, 
-              Connectedness role, CeConnDlgState* state )
+              DeviceRole role, CeConnDlgState* state )
 {
     XP_Bool result;
     XP_MEMSET( state, 0, sizeof( *state ) );

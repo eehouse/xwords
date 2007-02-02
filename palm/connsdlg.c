@@ -244,7 +244,7 @@ ConnsFormHandleEvent( EventPtr event )
     switch ( event->eType ) {
     case frmOpenEvent:
         state->serverRole = 
-            (Connectedness)globals->dlgParams[CONNS_PARAM_ROLE_INDEX];
+            (DeviceRole)globals->dlgParams[CONNS_PARAM_ROLE_INDEX];
         state->addr = 
             (CommsAddrRec*)globals->dlgParams[CONNS_PARAM_ADDR_INDEX];
         state->isNewGame = globals->isNewGame;

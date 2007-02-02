@@ -59,7 +59,7 @@ typedef struct CurGameInfo {
     XP_U16 gameSeconds;		/* for timer */
     XP_U8 nPlayers;
     XP_U8 boardSize;
-    Connectedness serverRole;
+    DeviceRole serverRole;
 
     XP_Bool hintsNotAllowed;
     XP_Bool timerEnabled;

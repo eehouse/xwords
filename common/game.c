@@ -375,7 +375,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
 
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, 4 );
-    gi->serverRole = (Connectedness)stream_getBits( stream, 2 );
+    gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
     gi->robotSmartness = (XP_U8)stream_getBits( stream, 2 );
     gi->phoniesAction = (XWPhoniesChoice)stream_getBits( stream, 2 );
