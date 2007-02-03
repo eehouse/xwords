@@ -175,8 +175,8 @@ typedef struct DrawCtxVTable {
                                             XWBonusType bonus, XP_Bool vert,
                                             HintAtts hintAtts,
                                             CellFlags flags);
-    XP_UCHAR* DRAW_VTABLE_NAME(getMiniWText) ( DrawCtx* dctx, 
-                                               XWMiniTextType textHint );
+    const XP_UCHAR* DRAW_VTABLE_NAME(getMiniWText) ( DrawCtx* dctx, 
+                                                     XWMiniTextType textHint );
     void DRAW_VTABLE_NAME(measureMiniWText) ( DrawCtx* dctx, const XP_UCHAR* textP, 
                                               XP_U16* width, XP_U16* height );
     void DRAW_VTABLE_NAME(drawMiniWindow)( DrawCtx* dctx, const XP_UCHAR* text,

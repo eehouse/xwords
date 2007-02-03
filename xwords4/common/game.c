@@ -256,7 +256,7 @@ game_dispose( XWGame* game )
 } /* game_dispose */
 
 void
-gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate )
+gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
 {
     XP_U16 i;
 

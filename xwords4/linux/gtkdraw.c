@@ -840,7 +840,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
 #define MINI_V_PADDING 6
 #define MINI_H_PADDING 8
 
-static XP_UCHAR*
+static const XP_UCHAR*
 gtk_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), XWMiniTextType textHint )
 {
 /*     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx; */

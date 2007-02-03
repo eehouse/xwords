@@ -992,7 +992,7 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
 static void
 palmFormatRemText( PalmDrawCtx* dctx, XP_UCHAR* buf, XP_S16 nTilesLeft )
 {
-    XP_UCHAR* remStr = (*dctx->getResStrFunc)(dctx->globals, STR_REMTILES);
+    const XP_UCHAR* remStr = (*dctx->getResStrFunc)(dctx->globals, STR_REMTILES);
     if ( nTilesLeft < 0 ) {
         nTilesLeft = 0;
     }
@@ -1172,7 +1172,8 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
         /* There's no room for the pts string if we're in highres mode and
            WinSetScalingMode isn't available. */
         if ( !dctx->doHiRes || dctx->oneDotFiveAvail ) {
-            XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, STR_PTS );
+            const XP_UCHAR* str = (*dctx->getResStrFunc)( dctx->globals, 
+                                                          STR_PTS );
 
             if ( dctx->oneDotFiveAvail ) {
                 smallBoldStringAt( (const char*)str, XP_STRLEN((const char*)str), 
@@ -1262,11 +1263,11 @@ palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
 #define MINI_V_PADDING 6
 #define MINI_H_PADDING 8
 
-static XP_UCHAR*
+static const XP_UCHAR*
 palm_draw_getMiniWText( DrawCtx* p_dctx, XWMiniTextType textHint )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx; 
-    XP_UCHAR* str;
+    const XP_UCHAR* str;
     XP_U16 strID = 0;		/* make compiler happy */
 
     switch( textHint ) {

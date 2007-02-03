@@ -46,7 +46,7 @@ void palm_debugf(char*, ...);
 void palm_assert(Boolean b, int line, const char* func, const char* file );
 void palm_warnf( char* format, ... );
 void palm_logf( char* format, ... );
-XP_U16 palm_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
+XP_U16 palm_snprintf( XP_UCHAR* buf, XP_U16 len, const XP_UCHAR* format, ... );
 XP_S16 palm_memcmp( XP_U8* p1, XP_U8* p2, XP_U16 nBytes );
 XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 

@@ -117,7 +117,8 @@ static DictionaryCtxt* ce_util_makeEmptyDict( XW_UtilCtxt* uc );
 static XWStreamCtxt* ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, 
                                                  XP_U16 channelNo );
 #endif
-static XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
+static const XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc, 
+                                              XP_U16 stringCode );
 static XP_Bool ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                         XP_U16 turn, XP_Bool turnLost );
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
@@ -2426,7 +2427,7 @@ messageToBuf( UINT message, char* buf, int bufSize )
 #endif
 
 XP_U16
-wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... )
+wince_snprintf( XP_UCHAR* buf, XP_U16 len, const XP_UCHAR* format, ... )
 {
     va_list ap;
 
@@ -2798,7 +2799,7 @@ ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
 } /* ce_util_makeStreamFromAddr */
 #endif
 
-static XP_UCHAR*
+static const XP_UCHAR*
 ce_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 stringCode )
 {
     switch( stringCode ) {
