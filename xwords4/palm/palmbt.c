@@ -230,12 +230,6 @@ palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result )
     PalmBTStuff* btStuff = globals->btStuff;
     if ( !!btStuff && HASWORK(btStuff) ) {
         *result = 0;
-    } else {
-        XP_ASSERT( (btStuff == NULL)
-                   || (btStuff->vol.out.lens[0] == 0)
-                   || btStuff->vol.sendInProgress 
-                   || (SOCK_INVAL == btStuff->dataSocket)
-                   || (btStuff->p_connState != PBTST_L2C_CONNECTED) );
     }
 }
 
@@ -244,12 +238,6 @@ palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btUIStateP )
 {
     PalmBTStuff* btStuff = globals->btStuff;
     XP_Bool haveWork = !!btStuff && HASWORK(btStuff);
-    
-    XP_ASSERT( !btStuff || haveWork
-               || (btStuff->vol.out.lens[0] == 0 )
-               || btStuff->vol.sendInProgress 
-               || (SOCK_INVAL == btStuff->dataSocket)
-               || (btStuff->p_connState != PBTST_L2C_CONNECTED) );
 
     if ( haveWork ) {
         pbt_do_work( btStuff );
