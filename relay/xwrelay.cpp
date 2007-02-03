@@ -384,16 +384,16 @@ make_socket( unsigned long addr, unsigned short port )
 
     int result = bind( sock, (struct sockaddr*)&sockAddr, sizeof(sockAddr) );
     if ( result != 0 ) {
-        logf( XW_LOGERROR, "exiting: unable to bind port %d: %d, errno = %d\n", 
-              port, result, errno );
+        logf( XW_LOGERROR, "exiting: unable to bind port %d: %d, "
+              "errno = %s (%d)\n", port, result, strerror(errno), errno );
         return -1;
     }
     logf( XW_LOGINFO, "bound socket %d on port %d", sock, port );
 
     result = listen( sock, 5 );
     if ( result != 0 ) {
-        logf( XW_LOGERROR, "exiting: unable to listen: %d, errno = %d\n", 
-              result, errno );
+        logf( XW_LOGERROR, "exiting: unable to listen: %d, "
+              "errno = %s (%d)\n", result, strerror(errno), errno );
         return -1;
     }
     return sock;
@@ -589,7 +589,7 @@ int main( int argc, char** argv )
         int retval = select( highest, &rfds, NULL, NULL, NULL );
         if ( retval < 0 ) {
             if ( errno != 4 ) { /* 4's what we get when signal interrupts */
-                logf( XW_LOGINFO, "errno: %d", errno );
+                logf( XW_LOGINFO, "errno: %s (%d)", strerror(errno), errno );
             }
         } else {
             if ( FD_ISSET( g_listener, &rfds ) ) {

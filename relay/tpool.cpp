@@ -236,7 +236,7 @@ XWThreadPool::interrupt_poll()
     unsigned char byt = 0;
     int nSent = write( m_pipeWrite, &byt, 1 );
     if ( nSent != 1 ) {
-        logf( XW_LOGERROR, "errno = %d", errno );
+        logf( XW_LOGERROR, "errno = %s (%d)", strerror(errno), errno );
     }
 }
 
@@ -282,7 +282,7 @@ XWThreadPool::real_listener()
         if ( nEvents == 0 ) {
             tmgr->FireElapsedTimers();
         } else if ( nEvents < 0 ) {
-            logf( XW_LOGERROR, "errno: %d", errno );
+            logf( XW_LOGERROR, "errno: %s (%d)", strerror(errno), errno );
         } 
 
         if ( fds[0].revents != 0 ) {
