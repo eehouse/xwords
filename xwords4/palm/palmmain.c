@@ -518,6 +518,25 @@ saveGamePrefs( /*PalmAppGlobals* globals, */XWStreamCtxt* stream )
 } /* saveGamePrefs */
 
 static void
+keySafeCustomAlert( PalmAppGlobals* globals, const XP_UCHAR* buf )
+{
+    /* Another gross hack to get around the OS sending a spurious keyDown
+       event when a dialog is invoked while still processing a keyUp event.
+       We just pull all events off the queue until the keyDown is found.  In
+       practice that's always the first event, but let's leave logging on for
+       a while in case this causes problems. */
+    while ( globals->handlingKeyEvent ) {
+        EventType event;
+        EvtGetEvent( &event, 0 );
+        XP_LOGF( "%s: consumed %s", __func__, eType_2str(event.eType) );
+        if ( event.eType == keyDownEvent || event.eType == nilEvent ) {
+            break;
+        }
+    }
+    (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)buf, " ", " " );
+}
+
+static void
 reportMissingDict( PalmAppGlobals* globals, XP_UCHAR* name )
 {
     /* FrmCustomAlert crashes on some OS versions when there's no form under
@@ -526,7 +545,7 @@ reportMissingDict( PalmAppGlobals* globals, XP_UCHAR* name )
         XP_UCHAR buf[48];
         XP_UCHAR* str = getResString( globals, STRS_CANNOT_FIND_DICT );
         StrPrintF( buf, str, name );
-        (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)buf, " ", " " );
+        keySafeCustomAlert( globals, buf );
     }
 } /* reportMissingDict */
 
@@ -2174,7 +2193,7 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
        non-Treos will be broken!!! */
 
     XP_Bool draw = XP_FALSE;
-    XP_Key xpkey = XP_KEY_NONE;
+    XP_Key xpkey;
     XP_Bool handled = XP_FALSE;
     XP_Bool altOn = (event->data.keyUp.modifiers & shiftKeyMask) != 0;
     XP_Bool treatAsUp = !globals->generatesKeyUp
@@ -2212,6 +2231,8 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     }
 #endif
 
+    /* We're assuming the same layout for keyUp and keyDown event data.
+       Let's make sure they're the same.... */
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.modifiers)
                == OFFSET_OF(EventType, data.keyDown.modifiers) );
     XP_ASSERT( OFFSET_OF(EventType, data.keyUp.keyCode)
@@ -2235,6 +2256,9 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
         keyCode = event->data.keyDown.chr;
     }
 
+    /* Treo gets at least one of these wrong in the chr field, but puts the
+       right value in the keyCode.  So use that.  On other platforms must set
+       it first. */
     switch ( keyCode ) {
 #ifdef XWFEATURE_FIVEWAY
     case vchrRockerCenter:
@@ -2261,17 +2285,24 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
         break;
 #endif
     default:
+        /* Zodiac doesn't send keyUp events for printing chars, which somehow
+           includes backspace */
+        if ( globals->isZodiac ) {
+            handler = board_handleKey;
+        }
+
+        xpkey = XP_KEY_NONE;
         chr = event->data.keyUp.chr;
         /* I'm not interested in being dependent on a particular version
            of the OS, (can't manage to link against the intl library
            anyway) and so don't want to use the 3.5-only text tests.  So
            let's give the board two shots at each char, one lower case
            and another upper. */
-        if ( chr < 255 && chr > ' ' ) {
-            draw = !!handler && (*handler)( board, chr, &handled );
+        if ( !!handler && (chr < 255) && (chr > ' ') ) { /* space is first
+                                                            printing char */
+            draw = (*handler)( board, chr, &handled );
             if ( !handled && chr >= 'a' ) {
-                draw = !!handler && (*handler)( board, chr - ('a' - 'A'), 
-                                                &handled );
+                draw = (*handler)( board, chr - ('a' - 'A'), &handled );
             }
         } else {
             switch ( chr ) {
@@ -3489,7 +3520,7 @@ static void
 userErrorFromStrId( PalmAppGlobals* globals, XP_U16 strID )
 {
     XP_UCHAR* message = getResString( globals, strID );
-    (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)message, " ", " " );
+    keySafeCustomAlert( globals, message );
 } /* userErrorFromStrId */
 
 static XP_Bool
@@ -3802,7 +3833,7 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     formatBadWords( bwi, wordsBuf );
     StrPrintF( (char*)buf, (const char*)format, wordsBuf );
     if ( turnLost ) {
-        (void)FrmCustomAlert( XW_ERROR_ALERT_ID, (const char*)buf, " ", " " );
+        keySafeCustomAlert( globals, buf );
     } else {
         result = palmask( globals, buf, NULL, -1 );
     }
