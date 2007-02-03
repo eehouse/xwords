@@ -99,7 +99,7 @@ static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 static XP_Bool cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                              XP_Bool inclPending );
 static void makeMiniWindowForTrade( BoardCtxt* board );
-static void makeMiniWindowForText( BoardCtxt* board, XP_UCHAR* text, 
+static void makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                                    MiniWindowType winType );
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 static void invalSelTradeWindow( BoardCtxt* board );
@@ -577,7 +577,8 @@ board_commitTurn( BoardCtxt* board )
                                  util_getVTManager(board->util), NULL,
                                  CHANNEL_NONE, (MemStreamCloseCallback)NULL );
 
-            XP_UCHAR* str = util_getUserString(board->util, STR_COMMIT_CONFIRM);
+            const XP_UCHAR* str = util_getUserString(board->util, 
+                                                     STR_COMMIT_CONFIRM);
 
             stream_putBytes( stream, (void*)str, 
                              (XP_U16)XP_STRLEN((const char*)str) );
@@ -725,7 +726,7 @@ positionMiniWRect( BoardCtxt* board, XP_Rect* rect, XP_Bool center )
 static void
 timerFiredForPen( BoardCtxt* board ) 
 {
-    XP_UCHAR* text = (XP_UCHAR*)NULL;
+    const XP_UCHAR* text = (XP_UCHAR*)NULL;
     XP_UCHAR buf[80];
 
     if ( board->penDownObject == OBJ_BOARD 
@@ -753,7 +754,7 @@ timerFiredForPen( BoardCtxt* board )
            tell why, but might want to test and do nothing in this case.  */
         /* XP_ASSERT( player >= 0 ); */
         if ( player >= 0 ) {
-            XP_UCHAR* format;
+            const XP_UCHAR* format;
             XP_UCHAR scoreExpl[48];
             XP_U16 explLen;
 
@@ -1938,7 +1939,7 @@ moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
 } /* moveTileToArrowLoc */
 
 static void
-makeMiniWindowForText( BoardCtxt* board, XP_UCHAR* text, 
+makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                        MiniWindowType winType )
 {
     XP_Rect rect;
@@ -1955,7 +1956,7 @@ makeMiniWindowForText( BoardCtxt* board, XP_UCHAR* text,
 static void
 makeMiniWindowForTrade( BoardCtxt* board )
 {
-    XP_UCHAR* text;
+    const XP_UCHAR* text;
 
     text = draw_getMiniWText( board->draw, INTRADE_MW_TEXT );
 

@@ -55,8 +55,8 @@ enum { ONEBIT, /*  GREYSCALE,  */COLOR };
 typedef unsigned char GraphicsAbility; /* don't let above be 4 bytes */
 typedef struct PalmAppGlobals PalmAppGlobals;
 
-typedef XP_UCHAR* (*GetResStringFunc)( PalmAppGlobals* globals, 
-                                       XP_U16 strID );
+typedef const XP_UCHAR* (*GetResStringFunc)( PalmAppGlobals* globals, 
+                                             XP_U16 strID );
 
 typedef struct {
     XP_S16 topOffset;           /* how many pixels from the top of the
@@ -402,9 +402,9 @@ void freeSavedGamesData( MPFORMAL SavedGamesState* state );
 void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index, 
                             char* newName, XP_U16 len );
 
-XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
-Boolean palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* altButton, 
-                 XP_S16 titleID );
+const XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
+Boolean palmask( PalmAppGlobals* globals, const XP_UCHAR* str, 
+                 const XP_UCHAR* altButton, XP_S16 titleID );
 void checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr, 
                       XWStreamCtxt* instream );
 

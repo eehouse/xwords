@@ -95,7 +95,8 @@ XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                         XWStreamCtxt* stream );
 void game_dispose( XWGame* game );
-void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, XP_UCHAR* nameTemplate );
+void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, 
+                        const XP_UCHAR* nameTemplate );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );

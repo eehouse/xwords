@@ -395,7 +395,7 @@ curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
     eraseRect( dctx, &rect );
 } /* curses_draw_clearRect */
 
-static XP_UCHAR*
+static const XP_UCHAR*
 curses_draw_getMiniWText( DrawCtx* XP_UNUSED(p_dctx), 
                           XWMiniTextType XP_UNUSED(textHint) )
 {

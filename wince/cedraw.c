@@ -849,7 +849,7 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
     }
 } /* ce_draw_drawTimer */
 
-DLSTATIC XP_UCHAR*
+DLSTATIC const XP_UCHAR*
 DRAW_FUNC_NAME(getMiniWText)( DrawCtx* XP_UNUSED(p_dctx), 
                               XWMiniTextType whichText )
 {

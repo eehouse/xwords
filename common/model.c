@@ -1376,7 +1376,7 @@ notifyTrayListeners( ModelCtxt* model, XP_U16 turn, TileBit bits )
 } /* notifyTrayListeners */
 
 static void
-printString( XWStreamCtxt* stream, XP_UCHAR* str )
+printString( XWStreamCtxt* stream, const XP_UCHAR* str )
 {
     stream_putString( stream, str );
 } /* printString */
@@ -1411,7 +1411,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry,
               void* p_closure )
 {
     XWStreamCtxt* stream;
-    XP_UCHAR* format;
+    const XP_UCHAR* format;
     XP_UCHAR buf[32];
     XP_UCHAR traybuf[MAX_TRAY_TILES+1];
     MovePrintClosure* closure = (MovePrintClosure*)p_closure;
@@ -1485,7 +1485,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry,
     MovePrintClosure* closure = (MovePrintClosure*)p_closure;
     XWStreamCtxt* stream = closure->stream;
     DictionaryCtxt* dict = closure->dict;
-    XP_UCHAR* format;
+    const XP_UCHAR* format;
     XP_U16 nTiles;
     XP_S16 totalScore;
     XP_UCHAR buf[100];
@@ -1605,14 +1605,14 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 {
 
     if ( moveInfo->nTiles == 0 ) {
-        XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
+        const XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
         XP_U16 len = XP_STRLEN( str );
         *bufLen = len;
         XP_MEMCPY( buf, str, len+1 ); /* no XP_STRCPY yet */
     } else {
         XP_U16 score;
         XP_UCHAR wordBuf[MAX_ROWS+1];
-        XP_UCHAR* format;
+        const XP_UCHAR* format;
 
         ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
         XP_U16 turn;
@@ -1695,7 +1695,7 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
     }
 
     if ( found ) {	/* success? */
-        XP_UCHAR* format;
+        const XP_UCHAR* format;
         XP_U16 nTiles;
         switch ( entry.moveType ) {
         case MOVE_TYPE:

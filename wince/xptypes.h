@@ -109,7 +109,8 @@ extern "C" {
 void wince_assert(XP_UCHAR* s, int line, char* fileName );
 void wince_debugf(XP_UCHAR*, ...);
 void p_ignore(XP_UCHAR*, ...);
-XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, XP_UCHAR* format, ... );
+XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, 
+                       const XP_UCHAR* format, ... );
 
 #define XP_NTOHL(l) ntohl(l)
 #define XP_NTOHS(s) ntohs(s)

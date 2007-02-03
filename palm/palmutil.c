@@ -547,7 +547,7 @@ palm_realloc( XP_U8* in, XP_U16 size )
 
 XP_U16
 palm_snprintf( XP_UCHAR* buf, XP_U16 XP_UNUSED_DBG(len), 
-               XP_UCHAR* format, ... )
+               const XP_UCHAR* format, ... )
 {
     XP_U16 nChars;
     /* PENDING use len to avoid writing too many chars */

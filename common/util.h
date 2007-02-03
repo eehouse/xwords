@@ -137,7 +137,8 @@ typedef struct UtilVtable {
 
     DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc );
 
-    XP_UCHAR* (*m_util_getUserString)( XW_UtilCtxt* uc, XP_U16 stringCode );
+    const XP_UCHAR* (*m_util_getUserString)( XW_UtilCtxt* uc, 
+                                             XP_U16 stringCode );
 
     XP_Bool (*m_util_warnIllegalWord)( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                        XP_U16 turn, XP_Bool turnLost );

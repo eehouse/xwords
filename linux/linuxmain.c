@@ -591,7 +591,7 @@ linux_util_getCurSeconds( XW_UtilCtxt* XP_UNUSED(uc) )
     return (XP_U32)time(NULL);//tv.tv_sec;
 } /* gtk_util_getCurSeconds */
 
-static XP_UCHAR*
+static const XP_UCHAR*
 linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
 {
     switch( code ) {

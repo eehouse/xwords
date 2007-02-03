@@ -126,7 +126,7 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
         }
 
         if ( dle->location == DL_VFS ) {
-            XP_UCHAR* str = getResString( globals, STR_DICT_COPY_EXPL );
+            const XP_UCHAR* str = getResString( globals, STR_DICT_COPY_EXPL );
             WinDrawChars( str, XP_STRLEN(str), 5, 40 );
 
             err = VFSImportDatabaseFromFile( dle->u.vfsData.volNum, 

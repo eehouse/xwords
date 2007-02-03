@@ -513,8 +513,8 @@ figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
         score += EMPTIED_TRAY_BONUS;
 
         if ( !!stream ) {
-            XP_UCHAR* bstr = util_getUserString( model->vol.util, 
-                                                 STR_BONUS_ALL );
+            const XP_UCHAR* bstr = util_getUserString( model->vol.util, 
+                                                       STR_BONUS_ALL );
             stream_putString( stream, bstr );
         }
     }

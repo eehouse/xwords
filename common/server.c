@@ -631,7 +631,7 @@ makeRobotMove( ServerCtxt* server )
 #endif
                                 targetScore, &canMove, &newMove );
     if ( finished ) {
-        XP_UCHAR* str;
+        const XP_UCHAR* str;
         XWStreamCtxt* stream = NULL;
 
         XP_Bool trade = (newMove.nTiles == 0) && canMove &&
@@ -705,7 +705,7 @@ showPrevScore( ServerCtxt* server )
 {
     XW_UtilCtxt* util = server->vol.util;
     XWStreamCtxt* stream;
-    XP_UCHAR* str;
+    const XP_UCHAR* str;
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers = gi->nPlayers;
     XP_U16 prevTurn;
@@ -1755,8 +1755,8 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
         server->vol.showPrevMove = XP_TRUE;
         if ( server->nv.showRobotScores ) {
             XP_UCHAR tradeBuf[64];
-            XP_UCHAR* tradeStr = util_getUserString( server->vol.util,
-                                                     STRD_ROBOT_TRADED );
+            const XP_UCHAR* tradeStr = util_getUserString( server->vol.util,
+                                                           STRD_ROBOT_TRADED );
             XP_SNPRINTF( tradeBuf, sizeof(tradeBuf),
                          tradeStr, tradedTiles.nTiles );
             mvStream = mkServerStream( server );
@@ -2340,7 +2340,8 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
     Tile tile;
     XP_U16 nChars, nPrinted;
     XP_UCHAR buf[48];
-    XP_UCHAR* fmt = util_getUserString( server->vol.util, STRS_VALUES_HEADER );
+    const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+                                              STRS_VALUES_HEADER );
     const XP_UCHAR* dname;
 
     XP_ASSERT( !!server->vol.model );
@@ -2442,10 +2443,10 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
     XP_U16 place, nPlayers, i;
     XP_S16 curScore;
     ModelCtxt* model = server->vol.model;
-    XP_UCHAR* addString = util_getUserString( server->vol.util,
-                                              STRD_REMAINING_TILES_ADD );
-    XP_UCHAR* subString = util_getUserString( server->vol.util,
-                                              STRD_UNUSED_TILES_SUB );
+    const XP_UCHAR* addString = util_getUserString( server->vol.util,
+                                                    STRD_REMAINING_TILES_ADD );
+    const XP_UCHAR* subString = util_getUserString( server->vol.util,
+                                                    STRD_UNUSED_TILES_SUB );
     XP_UCHAR timeBuf[16];
     XP_UCHAR* timeStr;
     CurGameInfo* gi = server->vol.gi;

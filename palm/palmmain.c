@@ -125,7 +125,8 @@ static DictionaryCtxt* palm_util_makeEmptyDict( XW_UtilCtxt* uc );
 static XWStreamCtxt* palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, 
                                                    XP_U16 channelNo );
 #endif
-static XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode );
+static const XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc, 
+                                                XP_U16 stringCode );
 static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                           XP_U16 turn, XP_Bool turnLost );
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
@@ -543,7 +544,7 @@ reportMissingDict( PalmAppGlobals* globals, XP_UCHAR* name )
        it to "return" to. */
     if ( FrmGetActiveForm() != NULL ) {
         XP_UCHAR buf[48];
-        XP_UCHAR* str = getResString( globals, STRS_CANNOT_FIND_DICT );
+        const XP_UCHAR* str = getResString( globals, STRS_CANNOT_FIND_DICT );
         StrPrintF( buf, str, name );
         keySafeCustomAlert( globals, buf );
     }
@@ -843,7 +844,7 @@ uninitResources( PalmAppGlobals* globals )
 
 } /* uninitResources */
 
-XP_UCHAR*
+const XP_UCHAR*
 getResString( PalmAppGlobals* globals, XP_U16 strID )
 {
     XP_ASSERT( !!globals->stringsResPtr );
@@ -2219,10 +2220,10 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
             } else if ( (keyCode & (navBitLeft /* |navChangeLeft */ )) != 0 ) {
                 keyCode = vchrRockerLeft;
                 incr = -1;
-            } else if ( (keyCode & ( navBitRight /* | navChangeRight */ )) != 0 ) {
+            } else if ( (keyCode & ( navBitRight /*|navChangeRight*/ )) != 0 ) {
                 keyCode = vchrRockerRight;
                 incr = 1;
-            } else if ( (keyCode & (navBitSelect /* | navChangeSelect */ )) != 0 ) {
+            } else if ( (keyCode & (navBitSelect /*|navChangeSelect*/)) != 0 ) {
                 keyCode = vchrRockerCenter;
             }
         } else {
@@ -2948,7 +2949,7 @@ getWindowBounds( WinHandle wHand, RectangleType* r )
 } /* getWindowBounds */
 
 static void
-tryGrowAskToFit( FormPtr form, FieldPtr field, XP_UCHAR* str )
+tryGrowAskToFit( FormPtr form, FieldPtr field, const XP_UCHAR* str )
 {
     RectangleType fieldRect, dlgRect;
     UInt16 scrollPos;
@@ -3133,8 +3134,8 @@ moveLeftOf( UInt16 rightID, UInt16 leftID )
 Boolean
 palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID )
 {
-    XP_UCHAR* message;
-    XP_UCHAR* yes;
+    const XP_UCHAR* message;
+    const XP_UCHAR* yes;
     message = getResString( globals, strId );
     XP_ASSERT( !!message );
     yes = titleID < 0? NULL: getResString( globals, STR_OK );
@@ -3142,12 +3143,12 @@ palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID )
 } /* palmaskFromStrId */
 
 Boolean
-palmask( PalmAppGlobals* globals, XP_UCHAR* str, XP_UCHAR* yesButton, 
+palmask( PalmAppGlobals* globals, const XP_UCHAR* str, const XP_UCHAR* yesButton, 
          XP_S16 titleID )
 {
     FormPtr form, prevForm;
     FieldPtr field;
-    XP_UCHAR* title;
+    const XP_UCHAR* title;
     UInt16 buttonHit;
 
     if ( !!globals->game.board ) {
@@ -3348,7 +3349,7 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, const PickInfo* pi,
     XP_S16 chosen;
     XP_UCHAR labelBuf[96];
     XP_UCHAR* name;
-    XP_UCHAR* labelFmt;
+    const XP_UCHAR* labelFmt;
     FieldPtr fld;
     XP_U16 tapped;
 #ifdef FEATURE_TRAY_EDIT
@@ -3519,7 +3520,7 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 static void
 userErrorFromStrId( PalmAppGlobals* globals, XP_U16 strID )
 {
-    XP_UCHAR* message = getResString( globals, strID );
+    const XP_UCHAR* message = getResString( globals, strID );
     keySafeCustomAlert( globals, message );
 } /* userErrorFromStrId */
 
@@ -3796,11 +3797,11 @@ checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr,
     palm_util_requestTime( &globals->util );
 } /* checkAndDeliver */
 
-static XP_UCHAR* 
+static const XP_UCHAR* 
 palm_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;    
-    XP_UCHAR* str = getResString( globals, stringCode );
+    const XP_UCHAR* str = getResString( globals, stringCode );
     return str;
 } /* palm_util_getUserString */
 
@@ -3829,7 +3830,7 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     XP_UCHAR buf[200];
     char wordsBuf[150];
-    XP_UCHAR* format = getResString( globals, STR_ILLEGAL_WORD );
+    const XP_UCHAR* format = getResString( globals, STR_ILLEGAL_WORD );
     formatBadWords( bwi, wordsBuf );
     StrPrintF( (char*)buf, (const char*)format, wordsBuf );
     if ( turnLost ) {

@@ -527,7 +527,7 @@ static XP_Bool
 confirmDictConvert( PalmAppGlobals* globals, const XP_UCHAR* name )
 {
     XP_UCHAR buf[128];
-    XP_UCHAR *fmt = getResString( globals, STRS_CONFIRM_ONEDICT );
+    const XP_UCHAR *fmt = getResString( globals, STRS_CONFIRM_ONEDICT );
     XP_ASSERT( !!fmt );
     XP_SNPRINTF( buf, sizeof(buf), fmt, name );
     return palmask( globals, buf, NULL, -1 );
