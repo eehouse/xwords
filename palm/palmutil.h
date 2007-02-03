@@ -92,9 +92,6 @@ void fitButtonToString( XP_U16 id );
 
 #ifdef DEBUG
 void PalmClearLogs( void );
-void logEvent( eventsEnum eType );
-#else
-# define logEvent(e)
 #endif
 
 #endif

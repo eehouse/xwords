@@ -20,8 +20,10 @@
 #ifndef _PALMDBG_H_
 #define _PALMDBG_H_
 
-#include "board.h"
+#include "comtypes.h"
+#include <Event.h>
 
 const char* frmObjId_2str( XP_U16 id );
+const char* eType_2str( eventsEnum eType );
 
 #endif
