@@ -20,6 +20,7 @@
 #ifdef DEBUG
 
 #include "palmdbg.h"
+#include "palmmain.h"
 #include "xwords4defines.h"
 
 #define CASESTR(s) case s: return #s
@@ -215,6 +216,89 @@ frmObjId_2str( XP_U16 id )
     default: return FUNC(__FUNCTION__) " unknown";
     }
 }
+
+const char* 
+eType_2str( eventsEnum eType )
+{
+    switch( eType ) {
+        CASESTR(nilEvent);
+        CASESTR(penDownEvent);
+        CASESTR(penUpEvent);
+        CASESTR(penMoveEvent);
+        CASESTR(keyDownEvent);
+        CASESTR(winEnterEvent);
+        CASESTR(winExitEvent);
+        CASESTR(ctlEnterEvent);
+        CASESTR(ctlExitEvent);
+        CASESTR(ctlSelectEvent);
+        CASESTR(ctlRepeatEvent);
+        CASESTR(lstEnterEvent);
+        CASESTR(lstSelectEvent);
+        CASESTR(lstExitEvent);
+        CASESTR(popSelectEvent);
+        CASESTR(fldEnterEvent);
+        CASESTR(fldHeightChangedEvent);
+        CASESTR(fldChangedEvent);
+        CASESTR(tblEnterEvent);
+        CASESTR(tblSelectEvent);
+        CASESTR(daySelectEvent);
+        CASESTR(menuEvent);
+        CASESTR(appStopEvent);
+        CASESTR(frmLoadEvent);
+        CASESTR(frmOpenEvent);
+        CASESTR(frmGotoEvent);
+        CASESTR(frmUpdateEvent);
+        CASESTR(frmSaveEvent);
+        CASESTR(frmCloseEvent);
+        CASESTR(frmTitleEnterEvent);
+        CASESTR(frmTitleSelectEvent);
+        CASESTR(tblExitEvent);
+        CASESTR(sclEnterEvent);
+        CASESTR(sclExitEvent);
+        CASESTR(sclRepeatEvent);
+        CASESTR(tsmConfirmEvent);
+        CASESTR(tsmFepButtonEvent);
+        CASESTR(tsmFepModeEvent);
+        CASESTR(attnIndicatorEnterEvent);
+        CASESTR(attnIndicatorSelectEvent);
+        CASESTR(menuCmdBarOpenEvent);
+        CASESTR(menuOpenEvent);
+        CASESTR(menuCloseEvent);
+        CASESTR(frmGadgetEnterEvent);
+        CASESTR(frmGadgetMiscEvent);
+
+        CASESTR(firstINetLibEvent);
+        CASESTR(firstWebLibEvent);
+        CASESTR(telAsyncReplyEvent); 
+
+        CASESTR(keyUpEvent);
+        CASESTR(keyHoldEvent);
+        CASESTR(frmObjectFocusTakeEvent);
+        CASESTR(frmObjectFocusLostEvent);
+
+        CASESTR(firstLicenseeEvent);
+        CASESTR(lastLicenseeEvent);
+
+        CASESTR(lastUserEvent);
+
+        CASESTR( dictSelectedEvent );
+        CASESTR( newGameOkEvent );
+        CASESTR( newGameCancelEvent);
+        CASESTR( loadGameEvent);
+        CASESTR( prefsChangedEvent);
+        CASESTR( openSavedGameEvent);
+        CASESTR( updateAfterFocusEvent);
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+        CASESTR( connsSettingChgEvent);
+#endif
+#ifdef FEATURE_SILK
+        CASESTR( doResizeWinEvent );
+#endif
+    default: 
+        return "<unknown>";
+        break;
+    }
+} /* eType_2str */
 
 #undef CASESTR
 #undef FUNC
