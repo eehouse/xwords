@@ -49,7 +49,7 @@ typedef enum {
     , PBTST_L2C_CONNECTED       /* slave */
 } PBT_STATE;
 
-#define PBT_MAX_ACTS 4
+#define PBT_MAX_ACTS 6          /* four wasn't enough */
 #define HASWORK(s)  ((s)->queueCur != (s)->queueNext)
 #define MAX_PACKETS 4
 
@@ -424,10 +424,10 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     if ( !!btStuff ) {
         if ( !btStuff->dataCb ) {
             btStuff->dataCb = dataCb;
-            btStuff->connCb = connCb;
         } else {
             XP_ASSERT( dataCb == btStuff->dataCb );
         }
+        btStuff->connCb = connCb;
 
         if ( !addr ) {
             comms_getAddr( globals->game.comms, &remoteAddr );
@@ -604,6 +604,8 @@ pbt_do_work( PalmBTStuff* btStuff )
     case PBT_ACT_TELLCONN:
         if ( !!btStuff->connCb ) {
             (*btStuff->connCb)( btStuff->globals );
+        } else {
+            XP_LOGF( "no callback" );
         }
         break;
 

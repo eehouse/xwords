@@ -3864,7 +3864,9 @@ btDataHandler( PalmAppGlobals* globals, const CommsAddrRec* fromAddr,
 static void
 btConnHandler( PalmAppGlobals* globals )
 {
-    comms_resendAll( globals->game.comms );
+    if ( !!globals->game.comms ) {
+        comms_resendAll( globals->game.comms );
+    }
 } /* btConnHandler */
 #endif
 
