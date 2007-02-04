@@ -298,6 +298,7 @@ struct PalmAppGlobals {
     XP_Bool hasTreoFiveWay;
     XP_Bool generatesKeyUp;
     XP_Bool isZodiac;
+    XP_Bool keyDownReceived;
     /* PalmOS seems pretty broken w.r.t. key events.  If I put up a modal
        dialog while in the process of handling a keyUp, that form gets a
        keyDown (and not with the repeat bit set either.)  Hack around it. */
