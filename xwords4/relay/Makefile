@@ -41,3 +41,9 @@ clean:
 
 tags:
 	etags *.cpp *.h
+
+tarball:
+	tar cvfz RELAY_SRC.tgz \
+		../relay/*.{cpp,h} \
+		../relay/Makefile \
+		../relay/xwrelay.conf
