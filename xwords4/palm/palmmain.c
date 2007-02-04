@@ -953,6 +953,7 @@ initHighResGlobals( PalmAppGlobals* globals )
     XP_U32 vers;
 
     err = FtrGet( sysFtrCreator, sysFtrNumWinVersion, &vers );
+    XP_ASSERT( err == errNone );
     globals->hasHiRes = (err == errNone) && (vers >= 4) && !globals->isZodiac;
     XP_LOGF( "hasHiRes = %d", (XP_U16)globals->hasHiRes );
     globals->oneDotFiveAvail = globals->hasHiRes
@@ -2358,7 +2359,6 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
         /* remove this and break focus drilldown.  Why? */
         handled = draw;
     }
-    LOG_RETURNF( "%d", draw );
     *handledP = handled;
 
     globals->handlingKeyEvent = XP_FALSE;
@@ -2805,8 +2805,14 @@ mainViewHandleEvent( EventPtr event )
 
     case keyUpEvent:
         XP_ASSERT( globals->generatesKeyUp );
+        if ( globals->keyDownReceived ) {
+            globals->keyDownReceived = XP_FALSE;
+            draw = handleKeyEvent( globals, event, &handled );
+        }
+        break;
     case keyDownEvent:
         if ( !globals->menuIsDown ) {
+            globals->keyDownReceived = XP_TRUE;
             draw = handleKeyEvent( globals, event, &handled );
         }
         break;
@@ -3176,8 +3182,9 @@ palmask( PalmAppGlobals* globals, const XP_UCHAR* str, const XP_UCHAR* yesButton
         centerControl( form, XW_ASK_YES_BUTTON_ID );
     }
 
-    /* This is making me puke.... :-) */
-    if ( globals->handlingKeyEvent ) {
+    /* If we're running OS5 (oneDotFiveAvail), then eat the first keyDown.
+       If an earlier OS (Treo600) then we won't see that spurious event. */
+    if ( globals->handlingKeyEvent && globals->oneDotFiveAvail ) {
         globals->ignoreFirstKeyDown = XP_TRUE;
     }
 
