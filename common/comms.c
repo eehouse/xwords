@@ -1292,6 +1292,7 @@ relayConnect( CommsCtxt* comms )
 static void
 btConnect( CommsCtxt* comms )
 {
+    XP_ASSERT( !!comms );
     /* Ping the bt layer so it'll get sockets set up.  PENDING: if I'm server
        need to do this once per guest record with non-null address.  Might as
        well use real messages if we have 'em.  Otherwise a fake size-0 msg. */
