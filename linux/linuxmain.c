@@ -369,7 +369,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals )
         } else {
             close( sock );
             sock = -1;
-            XP_STATUSF( "connect failed: %d", errno );
+            XP_STATUSF( "%s: connect failed: %s (%d)", __func__, strerror(errno), errno );
         }
     }
    
