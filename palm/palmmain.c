@@ -2423,7 +2423,9 @@ mainViewHandleEvent( EventPtr event )
         break;
 
     case newGameOkEvent:
-
+#if defined XWFEATURE_BLUETOOTH
+        palm_bt_close( globals );
+#endif
         if ( globals->newGameIsNew ) {
             globals->gState.curGameIndex = countGameRecords( globals );
         }
@@ -3899,7 +3901,7 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
         }
 # endif
     }
-}
+} /* palm_util_addrChange */
 #endif /* #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY */
 
 #ifdef XWFEATURE_SEARCHLIMIT

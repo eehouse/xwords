@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2006-2007 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +34,7 @@ typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_PicoRole;
 
 typedef enum {
     PBT_ACT_NONE
+    , PBT_ACT_SETUP_LISTEN
     , PBT_ACT_CONNECT_ACL
     , PBT_ACT_CONNECT_L2C
     , PBT_ACT_GOTDATA
@@ -492,6 +494,11 @@ pbt_setup_master( PalmBTStuff* btStuff )
             /* Set state here to indicate I'm available, at least for
                debugging? */
             SET_STATE( btStuff, PBTST_LISTENING );
+        } else {
+            CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum,
+                      btStuff->u.master.listenSocket );
+            btStuff->u.master.listenSocket = SOCK_INVAL;
+            pbt_postpone( btStuff, PBT_ACT_SETUP_LISTEN );
         }
     }
 } /* pbt_setup_master */
@@ -545,6 +552,11 @@ pbt_do_work( PalmBTStuff* btStuff )
              stateToStr(GET_STATE(btStuff)) );
 
     switch( act ) {
+    case PBT_ACT_SETUP_LISTEN:
+        XP_ASSERT( btStuff->picoRole == PBT_MASTER );
+        pbt_setup_master( btStuff );
+        break;
+
     case PBT_ACT_CONNECT_ACL:
         if ( GET_STATE(btStuff) == PBTST_NONE ) {
             /* sends btLibManagementEventACLConnectOutbound */
@@ -993,6 +1005,7 @@ actToStr(PBT_ACTION act)
 {
     switch( act ) {
         CASESTR(PBT_ACT_NONE);
+        CASESTR(PBT_ACT_SETUP_LISTEN);
         CASESTR(PBT_ACT_CONNECT_ACL);
         CASESTR(PBT_ACT_CONNECT_L2C);
         CASESTR(PBT_ACT_GOTDATA);
