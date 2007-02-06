@@ -57,6 +57,7 @@ CRefMgr::CRefMgr()
 {
     /* should be using pthread_once() here */
     pthread_mutex_init( &m_guard, NULL );
+    pthread_mutex_init( &m_SocketStuffMutex, NULL );
     pthread_rwlock_init( &m_cookieMapRWLock, NULL );
 }
 

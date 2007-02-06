@@ -398,7 +398,7 @@ CookieRef::handleEvents()
         XW_RELAY_ACTION takeAction;
         if ( getFromTable( m_curState, evt.type, &takeAction, &m_nextState ) ) {
 
-            logf( XW_LOGINFO, "%s -> %s on evt %s, act=%s",
+            logf( XW_LOGINFO, "%s: %s -> %s on evt %s, act=%s", __func__,
                   stateString(m_curState), stateString(m_nextState),
                   eventString(evt.type), actString(takeAction) );
 

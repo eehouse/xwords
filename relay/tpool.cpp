@@ -232,7 +232,7 @@ XWThreadPool::real_tpool_main()
 void
 XWThreadPool::interrupt_poll()
 {
-    logf( XW_LOGINFO, "interrupt_poll" );
+    logf( XW_LOGINFO, __func__ );
     unsigned char byt = 0;
     int nSent = write( m_pipeWrite, &byt, 1 );
     if ( nSent != 1 ) {
