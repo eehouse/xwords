@@ -205,6 +205,7 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
              XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
              XP_U16 XP_UNUSED_RELAY(nPlayersTotal) )
 {
+    LOG_FUNC();
 #ifdef XWFEATURE_RELAY
     relayDisconnect( comms );
 #endif
@@ -223,6 +224,7 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
     comms->r.nPlayersTotal = nPlayersTotal;
     relayConnect( comms );
 #endif
+    LOG_RETURN_VOID();
 } /* comms_reset */
 
 void
@@ -643,55 +645,59 @@ printQueue( CommsCtxt* comms )
 
 /* We've received on some channel a message with a certain ID.  This means
  * that all messages sent on that channel with lower IDs have been received
- * and can be removed from our queue.
+ * and can be removed from our queue.  BUT: if this ID is higher than any
+ * we've sent, don't remove.  We may be starting a new game but have a server
+ * that's still on the old one.
  */
 static void
 removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 {
-    MsgQueueElem* elem;
-    MsgQueueElem* keep = NULL;
-    MsgQueueElem* tail = NULL;
-    MsgQueueElem* keepHead = NULL;
-    MsgQueueElem* next;
+    XP_STATUSF( "%s: remove msgs <= " XP_LD " for channel %d (queueLen: %d)",
+                __func__, msgID, channelNo, comms->queueLen );
 
-    XP_STATUSF( "looking to remove msgs prior or equal to " XP_LD 
-                " for channel %d (queue len now %d)",
-                msgID, channelNo, comms->queueLen );
+    if ( (channelNo == 0) || !!getRecordFor(comms, channelNo) ) {
+        MsgQueueElem* elem;
+        MsgQueueElem* next;
+        MsgQueueElem* keep = NULL;
+        MsgQueueElem* tail = NULL;
+        MsgQueueElem* keepHead = NULL;
 
-    for ( elem = comms->msgQueueHead; !!elem; elem = next ) {
-        next = elem->next;
+        for ( elem = comms->msgQueueHead; !!elem; elem = next ) {
+            next = elem->next;
 
-        /* remove the 0-channel message if we've established a channel number.
-           Only clients should have any 0-channel messages in the queue, and
-           receiving something from the server is an implicit ACK */
+            /* remove the 0-channel message if we've established a channel
+               number.  Only clients should have any 0-channel messages in the
+               queue, and receiving something from the server is an implicit
+               ACK -- IFF it isn't left over from the last game. */
 
-        if ( elem->channelNo == 0 && channelNo != 0 ) {
-            XP_ASSERT( !comms->isServer );      /* I've seen this fail once */
-            XP_ASSERT( elem->msgID == 0 );	/* will the check below pass? */
-        } else if ( elem->channelNo != channelNo ) {
-            continue;
-        }
-
-        if ( elem->msgID <= msgID ) {
-            XP_FREE( comms->mpool, elem->msg );
-            XP_FREE( comms->mpool, elem );
-            --comms->queueLen;
-        } else {
-            if ( !!keepHead ) {
-                XP_ASSERT( !!keep );
-                keep->next = elem;
-            } else {
-                keepHead = elem;
+            if ( (elem->channelNo == 0) && (channelNo != 0) ) {
+                XP_ASSERT( !comms->isServer );      /* I've seen this fail once */
+                XP_ASSERT( elem->msgID == 0 );	/* will the check below pass? */
+            } else if ( elem->channelNo != channelNo ) {
+                continue;
             }
-            keep = elem;
-            tail = elem;
+
+            /* here */
+            if ( elem->msgID <= msgID ) {
+                XP_FREE( comms->mpool, elem->msg );
+                XP_FREE( comms->mpool, elem );
+                --comms->queueLen;
+            } else {
+                if ( !!keepHead ) {
+                    XP_ASSERT( !!keep );
+                    keep->next = elem;
+                } else {
+                    keepHead = elem;
+                }
+                keep = elem;
+                tail = elem;
+            }
         }
+        comms->msgQueueHead = keepHead;
+        comms->msgQueueTail = tail;
     }
 
-    comms->msgQueueHead = keepHead;
-    comms->msgQueueTail = tail;
-
-    XP_STATUSF( "%s: queueLen now %d", __FUNCTION__, comms->queueLen );
+    XP_STATUSF( "%s: queueLen now %d", __func__, comms->queueLen );
 
     XP_ASSERT( comms->queueLen > 0 || comms->msgQueueHead == NULL );
 
@@ -717,7 +723,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
             result = send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
                                      elem->msg, elem->len );
         } else {
-            XP_LOGF( "skipping message: not connected" );
+            XP_LOGF( "%s: skipping message: not connected", __func__ );
         }
 #endif
     } else {
@@ -915,7 +921,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     if ( !done ) {
         if ( stream_getSize( stream ) >= sizeof(connID) ) {
             connID = stream_getU32( stream );
-            XP_STATUSF( "read connID of %lx", connID );
+            XP_STATUSF( "%s: read connID of %lx", __func__, connID );
 
             if ( comms->connID == connID || comms->connID == CONN_ID_NONE ) {
                 if ( stream_getSize( stream ) >= sizeof(channelNo) 
@@ -980,7 +986,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                                 validMessage = XP_FALSE;
                             }
                         } else if ( msgID > 1 ) {
-                            XP_ASSERT( 0 );
                             validMessage = XP_FALSE;
                         }
 #ifdef DEBUG
@@ -1141,18 +1146,16 @@ channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
 static AddressRecord* 
 getRecordFor( CommsCtxt* comms, XP_PlayerAddr channelNo )
 {
-    AddressRecord* recs;
+    AddressRecord* recs = NULL;
 
-    if ( channelNo == CHANNEL_NONE ) {
-        return (AddressRecord*)NULL;
-    }
-
-    for ( recs = comms->recs; !!recs; recs = recs->next ) {
-        if ( recs->channelNo == channelNo ) {
-            return recs;
+    if ( channelNo != CHANNEL_NONE ) {
+        for ( recs = comms->recs; !!recs; recs = recs->next ) {
+            if ( recs->channelNo == channelNo ) {
+                break;
+            }
         }
     }
-    return (AddressRecord*)NULL;
+    return recs;
 } /* getRecordFor */
 
 static XP_U16
@@ -1276,7 +1279,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 static void
 relayConnect( CommsCtxt* comms )
 {
-    XP_LOGF( "relayConnect called" );
+    LOG_FUNC();
     if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->r.connecting ) {
         comms->r.connecting = XP_TRUE;
         send_via_relay( comms, 
