@@ -238,6 +238,7 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( NG_ATTR_ROLE == attr ) { 
         changeRole( ngc, value.ng_role );
+        considerEnableJuggle( ngc );
 #endif
     } else {
         XP_ASSERT( 0 );
