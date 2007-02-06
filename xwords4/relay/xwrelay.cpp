@@ -448,10 +448,11 @@ shutdown()
 static void
 SIGINT_handler( int sig )
 {
-    logf( XW_LOGERROR, "sig handler called" );
+    logf( XW_LOGERROR, "%s", __func__ );
     shutdown();
 }
 
+#ifdef SPAWN_SELF
 static void
 printWhy( int status ) 
 {
@@ -465,6 +466,7 @@ printWhy( int status )
         logf( XW_LOGINFO, "why: traced" );
     }
 } /* printWhy */
+#endif
 
 int main( int argc, char** argv )
 {
@@ -540,6 +542,7 @@ int main( int argc, char** argv )
     PermID::SetServerName( serverName );
     PermID::SetIDFileName( idFileName );
 
+#ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
     for ( ; ; ) {
         pid_t pid = fork();
@@ -555,6 +558,7 @@ int main( int argc, char** argv )
             logf( XW_LOGERROR, "fork() => %s", strerror(errno) );
         }
     }
+#endif
 
     g_listener = make_socket( INADDR_ANY, port );
     if ( g_listener == -1 ) {
