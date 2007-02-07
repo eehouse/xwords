@@ -414,6 +414,7 @@ usage( char* arg0 )
              "\t-p <port>            (port to listen on)\\\n"
              "\t-t <nWorkerThreads>  (how many worker threads to use)\\\n"
              );
+    fprintf( stderr, "svn rev. %s\n", SVN_REV );
 }
 
 /* sockets that need to be closable from interrupt handler */
