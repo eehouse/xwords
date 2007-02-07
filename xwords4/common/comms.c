@@ -656,13 +656,13 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
                 __func__, msgID, channelNo, comms->queueLen );
 
     if ( (channelNo == 0) || !!getRecordFor(comms, channelNo) ) {
+        MsgQueueElem dummy;
+        MsgQueueElem* keep = &dummy;
         MsgQueueElem* elem;
         MsgQueueElem* next;
-        MsgQueueElem* keep = NULL;
-        MsgQueueElem* tail = NULL;
-        MsgQueueElem* keepHead = NULL;
 
         for ( elem = comms->msgQueueHead; !!elem; elem = next ) {
+            XP_Bool knownGood = XP_FALSE;
             next = elem->next;
 
             /* remove the 0-channel message if we've established a channel
@@ -671,30 +671,24 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
                ACK -- IFF it isn't left over from the last game. */
 
             if ( (elem->channelNo == 0) && (channelNo != 0) ) {
-                XP_ASSERT( !comms->isServer );      /* I've seen this fail once */
-                XP_ASSERT( elem->msgID == 0 );	/* will the check below pass? */
+                XP_ASSERT( !comms->isServer );
+                XP_ASSERT( elem->msgID == 0 );
             } else if ( elem->channelNo != channelNo ) {
-                continue;
+                knownGood = XP_TRUE;
             }
 
-            /* here */
-            if ( elem->msgID <= msgID ) {
+            if ( !knownGood && (elem->msgID <= msgID) ) {
                 XP_FREE( comms->mpool, elem->msg );
                 XP_FREE( comms->mpool, elem );
                 --comms->queueLen;
             } else {
-                if ( !!keepHead ) {
-                    XP_ASSERT( !!keep );
-                    keep->next = elem;
-                } else {
-                    keepHead = elem;
-                }
+                keep->next = elem;
                 keep = elem;
-                tail = elem;
             }
         }
-        comms->msgQueueHead = keepHead;
-        comms->msgQueueTail = tail;
+
+        keep->next = NULL;
+        comms->msgQueueHead = dummy.next;
     }
 
     XP_STATUSF( "%s: queueLen now %d", __func__, comms->queueLen );
