@@ -720,7 +720,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 {
     XP_S16 result = 0;
     XP_PlayerAddr channelNo;
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     CommsConnType conType = comms_getConType( comms );
+#endif
 
     channelNo = elem->channelNo;
 
