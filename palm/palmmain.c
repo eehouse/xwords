@@ -2423,9 +2423,6 @@ mainViewHandleEvent( EventPtr event )
         break;
 
     case newGameOkEvent:
-#if defined XWFEATURE_BLUETOOTH
-        palm_bt_close( globals );
-#endif
         if ( globals->newGameIsNew ) {
             globals->gState.curGameIndex = countGameRecords( globals );
         }
