@@ -116,6 +116,13 @@ struct CommsCtxt {
     MPSLOT
 };
 
+#ifdef XWFEATURE_BLUETOOTH
+typedef enum {
+    BTMSG_DATA = 0
+    ,BTMSG_RESET
+} BTMsgType;
+#endif
+
 /****************************************************************************
  *                               prototypes 
  ****************************************************************************/
@@ -124,7 +131,7 @@ static AddressRecord* rememberChannelAddress( CommsCtxt* comms,
                                               XWHostID id, 
                                               const CommsAddrRec* addr );
 static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
-                                 CommsAddrRec** addr );
+                                 const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, 
                                     XP_PlayerAddr channelNo );
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
@@ -139,6 +146,9 @@ static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 static void setHeartbeatTimer( CommsCtxt* comms );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
+static XP_S16 send_via_bt( CommsCtxt* comms, BTMsgType typ, 
+                           XP_PlayerAddr channelNo,
+                           void* data, int dlen );
 static void btConnect( CommsCtxt* comms );
 #endif
 
@@ -510,12 +520,17 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 #endif
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
+    if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     /* We should now have a cookie so we can connect??? */
-    if ( addr->conType == COMMS_CONN_RELAY ) {
+    } else if ( addr->conType == COMMS_CONN_RELAY ) {
         relayConnect( comms );
-    }
 #endif
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( addr->conType == COMMS_CONN_BT ) {
+        btConnect( comms );
+#endif
+    }
 } /* comms_setAddr */
 
 void
@@ -705,13 +720,13 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 {
     XP_S16 result = 0;
     XP_PlayerAddr channelNo;
-    CommsAddrRec* addr;
+    CommsConnType conType = comms_getConType( comms );
 
     channelNo = elem->channelNo;
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
-    } else if ( comms_getConType( comms ) == COMMS_CONN_RELAY ) {
+    } else if ( conType == COMMS_CONN_RELAY ) {
         if ( comms->r.relayState == COMMS_RELAYSTATE_ALLCONNECTED ) {
             XWHostID destID = getDestID( comms, channelNo );
             result = send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
@@ -720,11 +735,14 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
             XP_LOGF( "%s: skipping message: not connected", __func__ );
         }
 #endif
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( conType == COMMS_CONN_BT ) {
+        result = send_via_bt( comms, BTMSG_DATA, channelNo, 
+                              elem->msg, elem->len );
+#endif
     } else {
-
-        if ( !channelToAddress( comms, channelNo, &addr ) ) {
-            addr = NULL;
-        }
+        const CommsAddrRec* addr;
+        (void)channelToAddress( comms, channelNo, &addr );
 
         XP_ASSERT( !!comms->sendproc );
         result = (*comms->sendproc)( elem->msg, elem->len, addr,
@@ -757,84 +775,97 @@ comms_resendAll( CommsCtxt* comms )
 static XP_Bool
 relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 {
-    XP_Bool consumed;
+    XP_Bool consumed = XP_TRUE;
     XWHostID destID, srcID;
     CookieID cookieID;
     XP_U8 relayErr;
     XP_U8 hasName;
 
     /* nothing for us to do here if not using relay */
-    consumed = comms->addr.conType == COMMS_CONN_RELAY;
-    if ( consumed ) {
-        XWRELAY_Cmd cmd = stream_getU8( stream );
-        switch( cmd ) {
+    XWRELAY_Cmd cmd = stream_getU8( stream );
+    switch( cmd ) {
 
-        case XWRELAY_CONNECT_RESP:
-        case XWRELAY_RECONNECT_RESP:
-            comms->r.relayState = COMMS_RELAYSTATE_CONNECTED;
-            comms->r.heartbeat = stream_getU16( stream );
-            comms->r.cookieID = stream_getU16( stream );
-            comms->r.myHostID = (XWHostID)stream_getU8( stream );
-            XP_LOGF( "got XWRELAY_CONNECTRESP; set cookieID = %d; "
-                     "set hostid: %x",
-                     comms->r.cookieID, comms->r.myHostID );
-            setHeartbeatTimer( comms );
-            break;
+    case XWRELAY_CONNECT_RESP:
+    case XWRELAY_RECONNECT_RESP:
+        comms->r.relayState = COMMS_RELAYSTATE_CONNECTED;
+        comms->r.heartbeat = stream_getU16( stream );
+        comms->r.cookieID = stream_getU16( stream );
+        comms->r.myHostID = (XWHostID)stream_getU8( stream );
+        XP_LOGF( "got XWRELAY_CONNECTRESP; set cookieID = %d; "
+                 "set hostid: %x",
+                 comms->r.cookieID, comms->r.myHostID );
+        setHeartbeatTimer( comms );
+        break;
 
-        case XWRELAY_ALLHERE:
-            comms->r.relayState = COMMS_RELAYSTATE_ALLCONNECTED;
-            hasName = stream_getU8( stream );
-            if ( hasName ) {
-                stringFromStreamHere( stream, comms->r.connName, 
-                                      sizeof(comms->r.connName) );
-                XP_LOGF( "read connName: %s", comms->r.connName );
-            } else {
-                XP_ASSERT( comms->r.connName[0] != '\0' );
-            }
-
-            /* We're [re-]connected now.  Send any pending messages.  This may
-               need to be done later since we're inside the platform's socket
-               read proc now. */
-            comms_resendAll( comms );
-            break;
-        case XWRELAY_MSG_FROMRELAY:
-            cookieID = stream_getU16( stream );
-            srcID = stream_getU8( stream );
-            destID = stream_getU8( stream );
-            XP_LOGF( "cookieID: %d; srcID: %x; destID: %x",
-                     cookieID, srcID, destID );
-            /* If these values don't check out, drop it */
-            consumed = cookieID != comms->r.cookieID
-                || destID != comms->r.myHostID;
-            if ( consumed ) {
-                XP_LOGF( "rejecting data message" );
-            } else {
-                *senderID = srcID;
-            }
-            break;
-
-        case XWRELAY_DISCONNECT_OTHER:
-            relayErr = stream_getU8( stream );
-            srcID = stream_getU8( stream );
-            XP_LOGF( "host id %x disconnected", srcID );
-            /* we will eventually want to tell the user which player's gone */
-            util_userError( comms->util, ERR_RELAY_BASE + relayErr );
-            break;
-
-        case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
-        case XWRELAY_CONNECTDENIED:                 /* Close socket for this? */
-            XP_LOGF( "XWRELAY_DISCONNECT_YOU|XWRELAY_CONNECTDENIED" );
-            relayErr = stream_getU8( stream );
-            util_userError( comms->util, ERR_RELAY_BASE + relayErr );
-            comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
-            /* fallthru */
-        default:
-            XP_LOGF( "dropping relay msg with cmd %d", (XP_U16)cmd );
+    case XWRELAY_ALLHERE:
+        comms->r.relayState = COMMS_RELAYSTATE_ALLCONNECTED;
+        hasName = stream_getU8( stream );
+        if ( hasName ) {
+            stringFromStreamHere( stream, comms->r.connName, 
+                                  sizeof(comms->r.connName) );
+            XP_LOGF( "read connName: %s", comms->r.connName );
+        } else {
+            XP_ASSERT( comms->r.connName[0] != '\0' );
         }
-    
+
+        /* We're [re-]connected now.  Send any pending messages.  This may
+           need to be done later since we're inside the platform's socket
+           read proc now. */
+        comms_resendAll( comms );
+        break;
+    case XWRELAY_MSG_FROMRELAY:
+        cookieID = stream_getU16( stream );
+        srcID = stream_getU8( stream );
+        destID = stream_getU8( stream );
+        XP_LOGF( "cookieID: %d; srcID: %x; destID: %x",
+                 cookieID, srcID, destID );
+        /* If these values don't check out, drop it */
+        consumed = cookieID != comms->r.cookieID
+            || destID != comms->r.myHostID;
+        if ( consumed ) {
+            XP_LOGF( "rejecting data message" );
+        } else {
+            *senderID = srcID;
+        }
+        break;
+
+    case XWRELAY_DISCONNECT_OTHER:
+        relayErr = stream_getU8( stream );
+        srcID = stream_getU8( stream );
+        XP_LOGF( "host id %x disconnected", srcID );
+        /* we will eventually want to tell the user which player's gone */
+        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        break;
+
+    case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
+    case XWRELAY_CONNECTDENIED:                 /* Close socket for this? */
+        XP_LOGF( "XWRELAY_DISCONNECT_YOU|XWRELAY_CONNECTDENIED" );
+        relayErr = stream_getU8( stream );
+        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
+        /* fallthru */
+    default:
+        XP_LOGF( "dropping relay msg with cmd %d", (XP_U16)cmd );
     }
+    
     return consumed;
-} /* checkForRelay */
+} /* relayPreProcess */
+#endif
+
+#ifdef XWFEATURE_BLUETOOTH
+static XP_Bool
+btPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
+{
+    BTMsgType typ = (BTMsgType)stream_getU8( stream );
+    XP_Bool consumed = typ != BTMSG_DATA;
+
+    if ( consumed ) {
+        XP_ASSERT( typ == BTMSG_RESET );
+        (void)comms_resendAll( comms );
+    }
+
+    return consumed;
+} /* btPreProcess */
 #endif
 
 static XP_Bool
@@ -903,14 +934,21 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
     XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
 
+    if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     /* relayPreProcess returns true if consumes the message.  May just eat the
        header and leave a regular message to be processed below. */
-    done = relayPreProcess( comms, stream, &senderID );
-    if ( !done ) {
-        usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
-    }
+    } else if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+        done = relayPreProcess( comms, stream, &senderID );
+        if ( !done ) {
+            usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
+        }
 #endif
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( comms->addr.conType == COMMS_CONN_BT ) {
+        done = btPreProcess( comms, stream );
+#endif
+    }
 
     if ( !done ) {
         if ( stream_getSize( stream ) >= sizeof(connID) ) {
@@ -1125,16 +1163,12 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
 
 static XP_Bool
 channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
-                  CommsAddrRec** addr )
+                  const CommsAddrRec** addr )
 {
     AddressRecord* recs = getRecordFor( comms, channelNo );
-
-    if ( !!recs ) {
-        *addr = &recs->addr;
-        return XP_TRUE;
-    } else {
-        return XP_FALSE;
-    }
+    XP_Bool found = !!recs;
+    *addr = found? &recs->addr : NULL;
+    return found;
 } /* channelToAddress */
 
 static AddressRecord* 
@@ -1294,11 +1328,33 @@ btConnect( CommsCtxt* comms )
        need to do this once per guest record with non-null address.  Might as
        well use real messages if we have 'em.  Otherwise a fake size-0 msg. */
     if ( comms_resendAll( comms ) <= 0 ) {
-        /* any valid ptr will do */
-        (void)(*comms->sendproc)( (const void*)comms, 0, NULL, 
-                                  comms->sendClosure );
+        send_via_bt( comms, BTMSG_RESET, CHANNEL_NONE, NULL, 0 );
     }
 } /* btConnect */
+
+static XP_S16
+send_via_bt( CommsCtxt* comms, BTMsgType typ, XP_PlayerAddr channelNo,
+             void* data, int dlen )
+{
+    XP_U8* buf;
+    XP_S16 nSent = -1;
+
+    buf = XP_MALLOC( comms->mpool, dlen + 1 );
+    if ( !!buf ) {
+        const CommsAddrRec* addr;
+        (void)channelToAddress( comms, channelNo, &addr );
+
+        buf[0] = typ;
+        if ( dlen > 0 ) {
+            XP_MEMCPY( &buf[1], data, dlen );
+        }
+
+        nSent = (*comms->sendproc)( buf, dlen+1, addr, comms->sendClosure );
+        XP_FREE( comms->mpool, buf );
+    }
+    return nSent;
+} /* send_via_bt */
+
 #endif
 
 #ifdef XWFEATURE_RELAY
