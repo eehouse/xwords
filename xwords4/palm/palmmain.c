@@ -2327,15 +2327,13 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     if ( xpkey != XP_KEY_NONE ) {
         XP_ASSERT( !!handler );
         draw = (*handler)( board, xpkey, &handled );
-        /* If handled comes back false yet something changed (draw),
-           we'll be getting another event shortly.  Put the draw off
-           until then so we don't flash the tray focussed then not.  This
-           is a hack, but I can't think of a way to integrate it into
-           board.c logic without making too many palm-centric assumptions
-           there. */
+
         if ( 0 ) {
 #ifdef DO_TUNGSTEN_FIVEWAY
-        } else if ( !globals->hasTreoFiveWay && !treatAsUp
+            /* If it's a tungsten or zodiac, there's no built-in focus xfer
+               so we do it here.  Don't do it for Treo, and don't do it on
+               key-down for zodiac since it has keyUp too. */
+        } else if ( !globals->hasTreoFiveWay && treatAsUp
                     && !handled && (incr != 0) ) {
             /* order'll be different if scoreboard is vertical */
             BoardObjectType typs[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
@@ -2353,6 +2351,12 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
             draw = board_focusChanged( board, typs[indx], XP_TRUE ) || draw;
 #endif
         } else if ( draw && !handled ) {
+            /* If handled comes back false yet something changed (draw),
+               we'll be getting another event shortly.  Put the draw off
+               until then so we don't flash the tray focussed then not.  This
+               is a hack, but I can't think of a way to integrate it into
+               board.c logic without making too many palm-centric assumptions
+               there. */
             draw = XP_FALSE;
         }
     } else {
