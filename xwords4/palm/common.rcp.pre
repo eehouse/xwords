@@ -1,4 +1,4 @@
-/* -*-mode: c; fill-column: 78; -*- */
+/* -*-mode: c; fill-column: 78; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*- */
 
 /*****************************************************************************
  * Copyright 1999 - 2001 by Eric House.  All rights reserved.  
@@ -86,6 +86,32 @@ BEGIN
     BITMAP "bmps/valuebuttonhd.pbitm" BPP 1 DENSITY 144
 END
 
+#ifdef BTSTATUS_ICONS
+BITMAP ID BTSTATUS_NONE_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_off.bmp" BPP 8 DENSITY 144
+END
+
+BITMAP ID BTSTATUS_LISTENING_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_listen.bmp" BPP 8 DENSITY 144
+END
+
+BITMAP ID BTSTATUS_SEEKING_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_seek.bmp" BPP 8 DENSITY 144
+END
+
+BITMAP ID BTSTATUS_CONNECTED_RES_ID AUTOCOMPRESS
+BEGIN
+    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_conn.bmp" BPP 8 DENSITY 144
+END
+#endif
+
 #define TBH TRAY_BUTTON_HEIGHT_HR
 #define TBY TRAY_BUTTONS_Y_HR
 
@@ -114,6 +140,10 @@ BEGIN
 	     160-TRAY_HEIGHT_HR-PREVBOTTOM-IR_STATUS_HEIGHT-5)
 	USABLE VALUE SBAR_START_VALUE MIN SBAR_MIN MAX SBAR_MIN
 	PAGESIZE SBAR_PAGESIZE
+
+#ifdef BTSTATUS_ICONS
+    GADGET ID XW_BTSTATUS_GADGET_ID AT (PALM_FLIP_LEFT PREVBOTTOM+4 1 1) USABLE
+#endif
 
     BUTTON "" XW_MAIN_SHOWTRAY_BUTTON_ID 
         AT (PALM_FLIP_LEFT SHOWTRAY_BUTTON_Y
