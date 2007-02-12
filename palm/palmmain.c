@@ -1533,10 +1533,40 @@ static void
 showBTState( PalmAppGlobals* globals )
 {
     CommsCtxt* comms = globals->game.comms;
-    char ch[] = { ' ', ' ' };
     if ( comms != NULL ) {
-
         if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
+#ifdef BTSTATUS_ICONS
+            Int16 resID = 0;
+
+            switch( globals->btUIState ) {
+            case BTUI_NONE:
+                resID = BTSTATUS_NONE_RES_ID; break;
+            case BTUI_LISTENING:
+                resID = BTSTATUS_LISTENING_RES_ID; break;
+            case BTUI_CONNECTING:
+                resID = BTSTATUS_SEEKING_RES_ID; break;
+            case BTUI_CONNECTED:
+            case BTUI_SERVING:
+                resID = BTSTATUS_CONNECTED_RES_ID; break;
+            }
+
+            if ( globals->lastBTStatusRes != resID ) {
+                RectangleType bounds;
+                getObjectBounds( XW_BTSTATUS_GADGET_ID, &bounds );
+                if ( resID != 0 ) {
+                    XP_LOGF( "%s: resID = %d", __func__, resID );
+                    /*         XP_LOGF( "%s: bounds: %d,%d,%d,%d", __func__, bounds.topLeft.x, */
+                    /*                  bounds.topLeft.y, bounds.extent.x, bounds.extent.y ); */
+                    draw_drawBitmapAt( globals->draw, resID,
+                                       bounds.topLeft.x, bounds.topLeft.y );
+                } else {
+                    WinEraseRectangle( &bounds, 0 );
+                }
+                globals->lastBTStatusRes = resID;
+            }
+#else
+            XP_U16 yy = 160 - 27;
+            char ch[] = { ' ', ' ' };
             switch( globals->btUIState ) {
             case BTUI_NONE:
                 ch[0] = 'x'; break;
@@ -1549,11 +1579,10 @@ showBTState( PalmAppGlobals* globals )
             case BTUI_SERVING:
                 ch[0] = 'S'; break;
             }
+            WinDrawChars( ch, sizeof(ch), 160-7, yy );
+#endif
         }
     }
-    /* Looks ok on T650, bad on lowres.  Need to replace with gadget or icon
-       or something long before ship. */
-    WinDrawChars( ch, sizeof(ch), 160-7, 160-27 );
 } /* showBTState */
 #endif
 
@@ -1977,6 +2006,9 @@ updateForLefty( PalmAppGlobals* globals, FormPtr form )
         XW_MAIN_JUGGLE_BUTTON_ID, TRAY_BUTTON_WIDTH-1,
         XW_MAIN_TRADE_BUTTON_ID,  -1,
         XW_MAIN_DONE_BUTTON_ID,   TRAY_BUTTON_WIDTH-1,
+#endif
+#ifdef BTSTATUS_ICONS
+        XW_BTSTATUS_GADGET_ID,    0,
 #endif
         0,
     };
