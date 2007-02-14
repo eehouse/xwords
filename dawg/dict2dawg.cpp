@@ -755,13 +755,13 @@ writeOutStartNode( const char* startNodeOut, int firstRootChildOffset )
 static void
 makeTableHash( void )
 {
-    int i;
+    int ii;
     FILE* TABLEFILE = fopen( gTableFile, "r"  );
     if ( NULL == TABLEFILE ) {
         ERROR_EXIT( "unable to open %s\n", gTableFile );
     }
 
-    for ( i = 0; ; ++i ) {
+    for ( ii = 0; ; ++ii ) {
         int ch = getc(TABLEFILE);
         if ( ch == EOF ) {
             break;
@@ -777,17 +777,20 @@ makeTableHash( void )
         gRevMap.push_back(ch);
 
         if ( ch == 0 ) {	// blank
-            gBlankIndex = i;
+            gBlankIndex = ii;
             // we want to increment i when blank seen since it is a
             // tile value
             continue;
         }
         // die "$0: $gTableFile too large\n" 
-        assert( i < 64 );
+        assert( ii < 64 );
         // die "$0: only blank (0) can be 64th char\n" ;
-        assert( i < 64 || ch == 0 );
+        assert( ii < 64 || ch == 0 );
 
-        gTableHash[ch] = i;
+        // Add 1 to i so no tile-strings contain 0 and we can treat as
+        // null-terminated.  The 1 is subtracted again in
+        // outputNode().
+        gTableHash[ch] = ii + 1;
     }
 
     fclose( TABLEFILE );
@@ -958,7 +961,8 @@ outputNode( Node node, int nBytes, FILE* outfile )
         ERROR_EXIT( "fco not 1 or 0" );
     }
 
-    unsigned char chIn5 = TrieNodeGetLetter(node);
+    // - 1 below reverses + 1 in makeTableHash()
+    unsigned char chIn5 = TrieNodeGetLetter(node) - 1;
     unsigned char bits = chIn5;
     if ( bits > 0x1F && nBytes == 3 ) {
         ERROR_EXIT( "char %d too big", bits );
