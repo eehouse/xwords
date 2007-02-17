@@ -16,12 +16,11 @@
 
 LANGCODE:sv_SE
 
+LANGFILTER: tr -d '\r'
+LANGFILTER: | tr [a-zäåæöü] [A-ZÄÅÆÖÜ]
+LANGFILTER: | grep '^[A-ZÄÅÆÖÜ]*$'
 
-LANGFILTER_POSTCLIP: | tr [a-zäåæöü] [A-ZÄÅÆÖÜ]
-LANGFILTER_POSTCLIP: | grep '^[A-ZÄÅÆÖÜ]*$'
-LANGFILTER_POSTCLIP: | tr '\n' '\000'
-
-NEEDSSORT:true
+D2DARGS: -r -term 10
 
 LANGINFO: <p>From an English-speaker's perspective, Swedish drops Q
 LANGINFO: and W, and adds Ä, Å, Æ, Ö and Ü.</p>

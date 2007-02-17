@@ -1,5 +1,5 @@
-# -*-mode: Makefile; compile-command: "make -f Makefile.BasEnglish"; -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# -*- mode: makefile -*-
+# Copyright 2002-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,21 +15,27 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=BasEnglish
-LANGCODE=en_US
-DICT2DAWGARGS = -r -nosort
+XWLANG=Russian
+LANGCODE=ru_RU
+DICT2DAWGARGS = -r
 
-TARGET_TYPE ?= PALM
+TARGET_TYPE ?= WINCE
 
 include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(XWLANG)Main.dict.gz: BasEnglish.dict.gz
-	ln -s $< $@
+SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/RU5000.txt.gz
+
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
+	zcat $< | tr -d '\r' | \
+	tr [àáâãäåæçèéêëìíîïðñòóôõö÷øùÚûüýþÿ] [ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß] | \
+	gzip -c > $@
+
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
 
 clean: clean_common
 	rm -f $(XWLANG)Main.dict.gz *.bin $(XWLANG)*.pdb $(XWLANG)*.seb
+

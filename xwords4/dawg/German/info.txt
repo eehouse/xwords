@@ -16,26 +16,21 @@
 
 LANGCODE:de_DE
 
-
 # deal with DOS files
-LANGFILTER_PRECLIP: tr -d '\r' |
-
+LANGFILTER: tr -d '\r'
 # substitute for sharfes-s
-LANGFILTER_PRECLIP: sed -e 's/ß/SS/g' |
-
+LANGFILTER: | sed -e 's/ß/SS/g'
 # uppercase all
-LANGFILTER_POSTCLIP: | tr [a-zäöü] [A-ZÄÖÜ]
+LANGFILTER: | tr [a-zäöü] [A-ZÄÖÜ]
 # no words not containing a vowel
-LANGFILTER_POSTCLIP: | grep '[AEIOUÄÖÜ]' 
+LANGFILTER: | grep '[AEIOUÄÖÜ]' 
 # none with illegal chars
-LANGFILTER_POSTCLIP: | grep '^[A-ZÄÖÜ]\+$'
-LANGFILTER_POSTCLIP: | tr -s '\n' '\000'
+LANGFILTER: | grep '^[A-ZÄÖÜ]\+$'
 
 # Until I can figure out how to force sort to use a locale's collation
 # rules we can't trust sort in the filtering rules above and so must
 # leave the sorting work to dict2dawg.pl.
-
-NEEDSSORT:true
+D2DARGS: -r -term 10
 
 LANGINFO: <p>German has the 26 English letters plus the three umlaut
 LANGINFO: vowels.  Scharfes-s is not a legal tile, but if present in

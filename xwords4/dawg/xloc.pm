@@ -117,7 +117,7 @@ sub WriteMapFile($$$) {
         } elsif ( $str =~ /(\d+)/ ) {
             print $fhr pack( $packStr, $1 );
         } else {
-            die "WriteMapFile: unrecognized face format $str";
+            die "WriteMapFile: unrecognized face format $str, elem $i";
         }
     }
 } # WriteMapFile

@@ -197,7 +197,7 @@ frankspecials.bin: ../frank_mkspecials.pl  $(BMPFILES)
 # a binary file (one byte) giving the number of tiles in the dict
 charcount.bin: table.bin
 ifdef NEWDAWG
-	siz=$$(wc $< | awk '{print $$3}'); \
+	siz=$$(ls -l $< | awk '{print $$5}'); \
 	perl -e "print pack(\"c\",$$siz/2)" > $@
 else
 	siz=$$(wc -c $< | sed -e 's/$<//'); \
@@ -240,11 +240,10 @@ dawg$(XWLANG)%.stamp: $(XWLANG)Main.dict.gz $(DICT2DAWG) table.bin ../Makefile.l
 	start=$$(echo $@ | sed -e 's/dawg$(XWLANG)\([0-9]*\)to[0-9]*.stamp/\1/'); \
 	end=$$(echo $@ | sed -e 's/dawg$(XWLANG)[0-9]*to\([0-9]*\).stamp/\1/'); \
 	echo $${start} and $$end; \
-	zcat $< | grep "^.\{$${start},$${end}\}$$" | \
-		sort -u | $(DICT2DAWG) $(TABLE_ARG) table.bin -b 28000 \
+	zcat $< | $(DICT2DAWG) $(DICT2DAWGARGS) $(TABLE_ARG) table.bin -b 28000 \
 		-ob dawg$(XWLANG)$* \
-		-sn $(XWLANG)StartLoc.bin -k -term 10 -wc $(XWLANG)$*_wordcount.bin \
-		$(FORCE_4) -ns $(XWLANG)$*_nodesize.bin
+		-sn $(XWLANG)StartLoc.bin -min $$start -max $$end \
+		-wc $(XWLANG)$*_wordcount.bin $(FORCE_4) -ns $(XWLANG)$*_nodesize.bin
 	touch $@
 
 $(XWLANG)%_wordcount.bin: dawg$(XWLANG)%.stamp
