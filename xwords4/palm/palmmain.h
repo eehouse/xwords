@@ -331,9 +331,7 @@ struct PalmAppGlobals {
 
 #ifdef XWFEATURE_BLUETOOTH
     struct PalmBTStuff* btStuff;
-# ifdef BTSTATUS_ICONS
     XP_U16 lastBTStatusRes;
-# endif
     BtUIState btUIState;          /* For showing user what's up */
 #endif
 
