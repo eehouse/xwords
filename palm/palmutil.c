@@ -33,6 +33,7 @@
 #include "palmutil.h"
 #include "xwords4defines.h"
 #include "palmmain.h"
+#include "palmdbg.h"
 #include "comtypes.h"
 
 #define MEMO "MemoDB"
@@ -405,6 +406,12 @@ getFocusOwner( void )
 } /* getFocusOwner */
 
 void
+setFormFocus( FormPtr form, XP_U16 objectID )
+{
+    FrmSetFocus( form, FrmGetObjectIndex( form, objectID ) );
+} /* setFormFocus */
+
+void
 drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
 {
     FormPtr form;
@@ -452,7 +459,7 @@ considerGadgetFocus( const EventType* event, XP_U16 idLow, XP_U16 idHigh )
     if ( handled ) {
         if ( event->eType == frmObjectFocusTakeEvent ) {
             FormPtr form = FrmGetActiveForm();
-            FrmSetFocus( form, FrmGetObjectIndex(form, objectID) );
+            setFormFocus( form, objectID );
             drawFocusRingOnGadget( idLow, idHigh );
         }
     }

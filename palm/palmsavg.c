@@ -220,8 +220,7 @@ setFieldToSelText( SavedGamesState* state )
 
     FldInsert( field, name, XP_STRLEN(name) );
     FldSetSelection( field, 0, FldGetTextLength(field) );
-    FrmSetFocus( state->form, FrmGetObjectIndex(state->form, 
-                                                XW_SAVEDGAMES_NAME_FIELD) );
+    setFormFocus( state->form, XW_SAVEDGAMES_NAME_FIELD );
     FldDrawField( field );
 } /* setFieldToSelText */
 

@@ -160,6 +160,9 @@ static void palm_util_engineStopping( XW_UtilCtxt* uc );
 #endif
 
 static void initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame );
+#ifdef XWFEATURE_FIVEWAY
+static XP_Bool isBoardObject( XP_U16 id );
+#endif
 
 /*-------------------------------- Globals ---------------------------------*/
 /* NONE!!! */
@@ -1121,6 +1124,7 @@ startApplication( PalmAppGlobals** globalsP )
     if ( prefsFound ) {
         prefs.versionNum = XP_NTOHS( prefs.versionNum );
         prefs.curGameIndex = XP_NTOHS( prefs.curGameIndex );
+        prefs.focusItem = XP_NTOHS( prefs.focusItem );
 
         MemMove( &globals->gState, &prefs, sizeof(prefs) );
     }
@@ -1238,6 +1242,7 @@ static void
 stopApplication( PalmAppGlobals* globals )
 {
     if ( globals != NULL ) {
+        Int16 focusItem = getFocusOwner();
         MPSLOT;
 
         saveOpenGame( globals );
@@ -1259,6 +1264,8 @@ stopApplication( PalmAppGlobals* globals )
             XP_MEMCPY( &prefs, &globals->gState, sizeof(prefs) );
             prefs.versionNum = XP_HTONS( prefs.versionNum );
             prefs.curGameIndex = XP_HTONS( prefs.curGameIndex );
+
+            prefs.focusItem = XP_HTONS(focusItem);
 
             PrefSetAppPreferences( AppType, PrefID, VERSION_NUM, 
                                    &prefs, sizeof(prefs), true );
@@ -1762,6 +1769,7 @@ drawBitmapButton( PalmAppGlobals* globals, UInt16 ctrlID, UInt16 resID,
 static void
 drawFormButtons( PalmAppGlobals* globals )
 {
+    Int16 focusItem;
     XP_U16 pairs[] = {
         XW_MAIN_FLIP_BUTTON_ID, FLIP_BUTTON_BMP_RES_ID, XP_TRUE,
         XW_MAIN_VALUE_BUTTON_ID, VALUE_BUTTON_BMP_RES_ID, XP_TRUE,
@@ -1783,8 +1791,19 @@ drawFormButtons( PalmAppGlobals* globals )
 
 #ifdef XWFEATURE_FIVEWAY
     if ( globals->hasTreoFiveWay ) {
-        drawFocusRingOnGadget( XW_MAIN_DONE_BUTTON_ID,
-                               XW_MAIN_HIDE_BUTTON_ID );
+        focusItem = globals->gState.focusItem;
+        if ( focusItem > 0 ) {
+/*             XP_WARNF( "setting focus: %s", frmObjId_2str(focusItem) ); */
+            setFormFocus( globals->mainForm, focusItem );
+            if ( !isBoardObject( focusItem )
+                 && buttonIsUsable( getActiveObjectPtr(focusItem) ) ) {
+                drawFocusRingOnGadget( focusItem, focusItem );
+            }
+            globals->gState.focusItem = -1;
+        } else {
+            drawFocusRingOnGadget( XW_MAIN_DONE_BUTTON_ID,
+                                   XW_MAIN_HIDE_BUTTON_ID );
+        }
     }
 #endif
 } /* drawFormButtons */
@@ -2147,31 +2166,36 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
 /*     XP_LOGF( "%s(%s,%s)", __FUNCTION__, frmObjId_2str(objectID), */
 /*              (take? "take":"lost") ); */
 
-    /* Need to invalidate the neighborhood of buttons on which palm draws the
-       focus ring when they lose focus -- to redraw where the focus ring may
-       have been.  No need unless we have the focus now, however, since we'll
-       otherwise have drawn the object correctly (unfocussed). */
+    if ( take && !globals->initialTakeDropped && 
+         (objectID == XW_SCOREBOARD_GADGET_ID) ) {
+        /* Work around OS's insistence on sending initial take event. */
+        globals->initialTakeDropped = XP_TRUE;
+    } else {
+        /* Need to invalidate the neighborhood of buttons on which palm draws the
+           focus ring when they lose focus -- to redraw where the focus ring may
+           have been.  No need unless we have the focus now, however, since we'll
+           otherwise have drawn the object correctly (unfocussed). */
 
-    if ( (!take) && (!isBoardObj) && isBoardObject( getFocusOwner() ) ) {
-        EventType event;
-        event.eType = updateAfterFocusEvent;
-        event.data.generic.datum[0] = objectID;
-        EvtAddEventToQueue( &event );
+        if ( (!take) && (!isBoardObj) && isBoardObject( getFocusOwner() ) ) {
+            EventType event;
+            event.eType = updateAfterFocusEvent;
+            event.data.generic.datum[0] = objectID;
+            EvtAddEventToQueue( &event );
+        }
+
+        /* Board needs to know about any change involving it, including something
+           else taking the focus it may think it has.  Why?  Because takes
+           preceed losses, yet the board must draw itself without focus before
+           some button draws itself with focus and snags as part of the
+           background the board in focussed state. */
+
+        typ = isBoardObj? OBJ_BOARD + (objectID - XW_BOARD_GADGET_ID) : OBJ_NONE;
+        *drawP = board_focusChanged( globals->game.board, typ, take );
+        if ( isBoardObj && take ) {
+            setFormFocus( globals->mainForm, objectID );
+        }
     }
-
-    /* Board needs to know about any change involving it, including something
-       else taking the focus it may think it has.  Why?  Because takes
-       preceed losses, yet the board must draw itself without focus before
-       some button draws itself with focus and snags as part of the
-       background the board in focussed state. */
-
-    typ = isBoardObj? OBJ_BOARD + (objectID - XW_BOARD_GADGET_ID) : OBJ_NONE;
-    *drawP = board_focusChanged( globals->game.board, typ, take );
-    if ( isBoardObj && take ) {
-        FrmSetFocus( globals->mainForm, 
-                     FrmGetObjectIndex( globals->mainForm, objectID ) );
-    }
-
+    LOG_RETURNF( "%d", (int)isBoardObj );
     return isBoardObj;
 } /* handleFocusEvent */
 #endif
@@ -2402,6 +2426,8 @@ mainViewHandleEvent( EventPtr event )
     CALLBACK_PROLOGUE();
 
     globals = getFormRefcon();
+
+/*     XP_LOGF( "%s(%s)", __func__, eType_2str(event->eType) ); */
 
     switch ( event->eType ) {
 
@@ -3293,7 +3319,7 @@ askPassword( const XP_UCHAR* name, Boolean isNew, XP_UCHAR* retbuf,
         FldDrawField( field );
     }
 
-    FrmSetFocus( form, FrmGetObjectIndex( form, XW_PASSWORD_PASS_FIELD ) );
+    setFormFocus( form, XW_PASSWORD_PASS_FIELD );
     field = getActiveObjectPtr( XW_PASSWORD_PASS_FIELD );
 
     if ( FrmDoDialog( form ) == XW_PASSWORD_OK_BUTTON ) {
