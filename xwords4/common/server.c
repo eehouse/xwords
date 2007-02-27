@@ -123,6 +123,7 @@ static void endGameInternal( ServerCtxt* server, GameEndReason why );
 static void badWordMoveUndoAndTellUser( ServerCtxt* server, 
                                         BadWordInfo* bwi );
 static XP_Bool tileCountsOk( ServerCtxt* server );
+static void setTurn( ServerCtxt* server, XP_S16 turn );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool handleRegistrationMsg( ServerCtxt* server, 
@@ -187,7 +188,7 @@ initServer( ServerCtxt* server )
     LocalPlayer* lp;
     ServerPlayer* player;
 
-    server->nv.currentTurn = -1; /* game isn't under way yet */
+    setTurn( server, -1 ); /* game isn't under way yet */
 
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         SETSTATE( server, XWSTATE_NONE );
@@ -768,7 +769,7 @@ server_do( ServerCtxt* server )
         if ( server->nv.pendingRegistrations == 0 ) { /* all players on device */
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_INTURN );
-            server->nv.currentTurn = 0;
+            setTurn( server, 0 );
             moreToDo = XP_TRUE;
         }
         break;
@@ -788,7 +789,7 @@ server_do( ServerCtxt* server )
         server_sendInitialMessage( server ); 
         /* PENDING isn't INTURN_OFFDEVICE possible too?  Or just INTURN?  */
         SETSTATE( server, XWSTATE_INTURN );
-        server->nv.currentTurn = 0;
+        setTurn( server, 0 );
         moreToDo = XP_TRUE;
         break;
 
@@ -1031,11 +1032,10 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
     }
 
     SETSTATE( server, XWSTATE_INTURN );
-    server->nv.currentTurn = 0;
 
-    /* Give board a chance to redraw self with the full compliment of
-       known players */
-    callTurnChangeListener( server );
+    /* Give board a chance to redraw self with the full compliment of known
+       players */
+    setTurn( server, 0 );
 
     return XP_TRUE;
 } /* client_readInitialMessage */
@@ -1533,10 +1533,10 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     }
     SETSTATE( server, XWSTATE_INTURN ); /* unless game over */
 
-    if ( playerTilesLeft > 0 && tileCountsOk(server) && NPASSES_OK(server) ) {
+    if ( (playerTilesLeft > 0) && tileCountsOk(server) && NPASSES_OK(server) ){
 
         player = &server->players[nxtTurn];
-        server->nv.currentTurn = (XP_U8)nxtTurn;
+        setTurn( server, nxtTurn );
 
     } else {
         /* I discover that the game should end.  If I'm the client,
@@ -1564,11 +1564,8 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     /* It's safer, if perhaps not always necessary, to do this here. */
     resetEngines( server );
 
-    if ( server->nv.gameState != XWSTATE_GAMEOVER ) {
-        callTurnChangeListener( server );
-    } else {
-        XP_ASSERT(0);
-    }
+    XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
+    callTurnChangeListener( server );
 
     if ( robotMovePending(server) ) {
         moreToDo = XP_TRUE;
@@ -1930,16 +1927,15 @@ server_commitMove( ServerCtxt* server )
         freeBWI( MPPARM(server->mpool) &server->illegalWordInfo );
     }
 
+    if ( 0 ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
-        && nTilesMoved > 0 ) {
+    } else if (isClient && (gi->phoniesAction == PHONIES_DISALLOW)
+               && nTilesMoved > 0 ) {
         SETSTATE( server, XWSTATE_MOVE_CONFIRM_WAIT );
+#endif
     } else {
         nextTurn( server, PICK_NEXT );
     }
-#else
-    nextTurn( server, PICK_NEXT );
-#endif
     
     return XP_TRUE;
 } /* server_commitMove */
@@ -2007,7 +2003,7 @@ static void
 doEndGame( ServerCtxt* server )
 {
     SETSTATE( server, XWSTATE_GAMEOVER );
-    server->nv.currentTurn = -1;
+    setTurn( server, -1 );
 
     (*server->vol.gameOverListener)( server->vol.gameOverData );
 } /* doEndGame */
@@ -2091,6 +2087,15 @@ tellMoveWasLegal( ServerCtxt* server )
                                       XWPROTO_MOVE_CONFIRM );
     stream_destroy( stream );
 } /* tellMoveWasLegal */
+
+static void
+setTurn( ServerCtxt* server, XP_S16 turn )
+{
+    if ( server->nv.currentTurn != turn ) {
+        server->nv.currentTurn = turn;
+        callTurnChangeListener( server );
+    }
+}
 
 static XP_Bool
 handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incoming )
