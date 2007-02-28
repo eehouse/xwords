@@ -89,25 +89,25 @@ END
 #ifdef XWFEATURE_BLUETOOTH
 BITMAP ID BTSTATUS_NONE_RES_ID AUTOCOMPRESS
 BEGIN
-    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_off.pbitm"   BPP 1 DENSITY 72
     BITMAP "bmps/bts_off.bmp" BPP 8 DENSITY 144
 END
 
 BITMAP ID BTSTATUS_LISTENING_RES_ID AUTOCOMPRESS
 BEGIN
-    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_listen.pbitm"   BPP 1 DENSITY 72
     BITMAP "bmps/bts_listen.bmp" BPP 8 DENSITY 144
 END
 
 BITMAP ID BTSTATUS_SEEKING_RES_ID AUTOCOMPRESS
 BEGIN
-    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_seek.pbitm"   BPP 1 DENSITY 72
     BITMAP "bmps/bts_seek.bmp" BPP 8 DENSITY 144
 END
 
 BITMAP ID BTSTATUS_CONNECTED_RES_ID AUTOCOMPRESS
 BEGIN
-    BITMAP "bmps/downarrow.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_conn.pbitm"   BPP 1 DENSITY 72
     BITMAP "bmps/bts_conn.bmp" BPP 8 DENSITY 144
 END
 #endif /* XWFEATURE_BLUETOOTH */
