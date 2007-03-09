@@ -132,6 +132,7 @@ my %typeInfo = (
                 "UInt16*" => { "size" => 4, "a0" => 1, "autoSwap" => 2 },
                 "UInt32*" => { "size" => 4, "a0" => 1, "autoSwap" => 4 },
                 "UInt8" => { "size" => 1, "a0" => 0 },
+                "UInt8*" => { "size" => 4, "a0" => 1 },
                 "WinDirectionType" => { "size" => 1, "a0" => 0 }, # enum
                 "WinDrawOperation" => { "size" => 1, "a0" => 0 }, # enum
                 "WinHandle" => { "size" => 4, "a0" => 1 },
@@ -140,7 +141,8 @@ my %typeInfo = (
                 "char*" => { "size" => 4, "a0" => 1 },
                 "const Char*" => { "size" => 4, "a0" => 1 },
                 "const ControlType*" => { "size" => 4, "a0" => 1 },
-                "const CustomPatternType*" => { "size" => 4, "a0" => 1 }, # UInt8[8]; no need to translate
+                # CustomPatternType is UInt8[8]; no need to translate
+                "const CustomPatternType*" => { "size" => 4, "a0" => 1 },
                 "const EventType*" => { "size" => 4, "a0" => 1, 
                                         "autoSwap" => -1 },
                 "const FieldAttrType*" => { "size" => 4, "a0" => 1 },
@@ -164,7 +166,20 @@ my %typeInfo = (
                 "BitmapType*" => { "size" => 4, "a0" => 1 },
                 "ColorTableType*" => { "size" => 4, "a0" => 1 },
                 "UIColorTableEntries" => { "size" => 1, "a0" => 0 }, # enum
-                );
+
+                "BtLibClassOfDeviceType*" => { "size" => 4, "a0" => 1, 
+                                               "autoSwap" => 4}, # uint32
+                "BtLibDeviceAddressType*" => { "size" => 4, "a0" => 1 },
+                "BtLibDeviceAddressTypePtr" => { "size" => 4, "a0" => 1 },
+                "BtLibSocketRef" => { "size" => 2, "a0" => 0 },
+                "BtLibSocketRef*" => { "size" => 4, "a0" => 1, 
+                                       "autoSwap" => 2 },
+                "BtLibProtocolEnum" => { "size" => 1, "a0" => 0 }, # enum 
+                "BtLibSocketConnectInfoType*" => { "size" => 4, "a0" => 1, 
+                                                   "autoSwap" => -1 },
+                "BtLibSocketListenInfoType*"  => { "size" => 4, "a0" => 1, 
+                                                   "autoSwap" => -1 },
+    );
 
 sub name_compact($) {
     my ( $name ) = @_;
@@ -235,6 +250,7 @@ sub clean_type($) {
 
 sub searchOneFile($$) {
     my ( $file, $function ) = @_;
+#     print STDERR "searching $file for $function\n";
 
     my $base = basename($file);
     my $contents = $contents{$base};
@@ -266,9 +282,10 @@ sub searchOneFile($$) {
 
     if ( $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^V]*(VFSMGR_TRAP)\(([\w]+)\);/ 
         || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_TRAP)\s*\(([\w]+)\);/
-        || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_SEL_TRAP)\s*\(([\w]+)\s*,\s*([\w]+)\);/
-        || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^H]*(HIGH_DENSITY_TRAP)\(([\w]+)\);/
-        || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^G]*(GRF_TRAP)\(([\w]+)\);/ ) {
+    || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^B]*(BTLIB_TRAP)\s*\(([\w]+)\);/
+    || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^S]*(SYS_SEL_TRAP)\s*\(([\w]+)\s*,\s*([\w]+)\);/
+    || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^H]*(HIGH_DENSITY_TRAP)\(([\w]+)\);/
+    || $contents =~ m/([\w\s]+)([\s\*]+)$function\s*(\([^)]*\))[^G]*(GRF_TRAP)\(([\w]+)\);/ ) {
 
         # print STDERR "found something\n";
 
@@ -277,8 +294,9 @@ sub searchOneFile($$) {
 
             $type = clean_type($type);
 
-#            my $found = "$type<->$function<->$params<->$trapSel<->$trapType<->$trapSubSel";
-#            print STDERR "$found\n";
+#             my $found = "type: $type\nfunction: $function\nparams: $params\n"
+#                 . " trapSel: $trapSel\ntrapType: $trapType\ntrapSubSel: $trapSubSel\n";
+#             print STDERR "$found";
 
             $params = params_parse($params);
             $funcInfo{$function} = { 'type' => $type,
@@ -296,6 +314,7 @@ sub searchOneFile($$) {
 
 sub searchOneDir($$) {
     my ( $dir, $function ) = @_;
+    my $found = 0;
 
     opendir(DIR, $dir) || die "can't opendir $dir: $!";
     my @files = readdir(DIR);
@@ -305,13 +324,14 @@ sub searchOneDir($$) {
         if ( $file =~ m|^\.| ) {
             # skip if starts with .
         } elsif ( -d "$dir/$file" ) {
-            searchOneDir( "$dir/$file", $function );
+            $found = searchOneDir( "$dir/$file", $function );
+            last if $found;
         } elsif ( $file =~ m|\.h$| ) {
-            if ( searchOneFile( "$dir/$file", $function ) ) {
-                last;
-            }
+            $found = searchOneFile( "$dir/$file", $function );
+            last if $found;
         }
     }
+    return $found;
 } # searchOneDir
 
 sub print_params_list($) {
@@ -433,7 +453,8 @@ sub print_body($$$$$) {
     } elsif ( $trapType eq "HIGH_DENSITY_TRAP" ) {
         $result .= "    SET_SEL_REG($trapSel, sp);\n";
         $trapSel = "sysTrapHighDensityDispatch";
-    } elsif( $trapType eq "GRF_TRAP" || $trapType eq "SYS_TRAP"  ) {
+    } elsif( $trapType eq "GRF_TRAP" || $trapType eq "SYS_TRAP" 
+             || $trapType eq "BTLIB_TRAP" ) {
         # they're the same according to Graffiti.h
     } elsif ( $trapType eq "SYS_SEL_TRAP" ) {
         print( STDERR "name = $name\n" );
@@ -518,16 +539,17 @@ foreach my $func (@funcList) {
 #    print STDERR "looking for $func\n";
 
     my $found = 0;
+    my $path;
     foreach my $path (@pathList) {
         if ( -d $path ) {
-            searchOneDir( $path, $func );
+            $found = searchOneDir( $path, $func );
+            last if $found;
         } elsif ( -e $path ) {
             $found = searchOneFile( $path, $func );
-            if ( $found ) {
-                last;
-            }
+            last if $found;
         }
     }
+    die "unable to find declaration of $func\n" if ! $found;
     close PATHS;
 }
 
