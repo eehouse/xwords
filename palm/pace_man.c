@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make ARCH=ARM_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2004-2007 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,6 +22,11 @@
 #include <Menu.h>
 #include <DateTime.h>
 #include <VFSMgr.h>
+
+#ifdef XWFEATURE_BLUETOOTH
+#include <BtLib.h>
+#include <BtLibTypes.h>
+#endif
 
 #include "pace_man.h"
 
@@ -541,10 +547,10 @@ FrmSetEventHandler( FormType* formP, FormEventHandlerType* handler )
     FUNC_HEADER(FrmSetEventHandler);
     {
         PNOState* sp = GET_CALLBACK_STATE();
-        unsigned char* handlerStub = makeHandlerStub( handler );
+        unsigned char* stub = makeHandlerStub( handler );
         STACK_START(unsigned char, stack, 8);
         ADD_TO_STACK4(stack, formP, 0);
-        ADD_TO_STACK4(stack, handlerStub, 4);
+        ADD_TO_STACK4(stack, stub, 4);
         STACK_END(stack);
         (*sp->call68KFuncP)( sp->emulStateP, 
                              PceNativeTrapNo(sysTrapFrmSetEventHandler),
@@ -692,7 +698,7 @@ paramsArmtoParams68K( unsigned char* params68K,
     write_unaligned8( &params68K[16], armParams->handled );
 } /* paramsArmtoParams68K */
 
-unsigned long
+static unsigned long
 notifyEntryPoint( const void* XP_UNUSED_DBG(emulStateP), 
                   void* userData68KP, 
                   Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
@@ -777,13 +783,13 @@ SysNotifyRegister( UInt16 cardNo, LocalID dbID, UInt32 notifyType,
     /* swapIns */
     {
         PNOState* sp = GET_CALLBACK_STATE();
-        unsigned char* handlerStub = makeNotifyStub( callbackP );
+        unsigned char* stub = makeNotifyStub( callbackP );
         STACK_START(unsigned char, stack, 20);
         /* pushes */
         ADD_TO_STACK2(stack, cardNo, 0);
         ADD_TO_STACK4(stack, dbID, 2);
         ADD_TO_STACK4(stack, notifyType, 6);
-        ADD_TO_STACK4(stack, handlerStub, 10);
+        ADD_TO_STACK4(stack, stub, 10);
         ADD_TO_STACK1(stack, priority, 14);
         ADD_TO_STACK4(stack, userDataP, 16);
         STACK_END(stack);
@@ -934,7 +940,6 @@ NetLibGetHostByName( UInt16 libRefNum, const Char* nameP,
                                  stack, kPceNativeWantA0 | 18 );
         /* swapOuts */
     
-        XP_LOGF( "result = 0x%lx", result );
         if ( result != NULL ) {
             result->nameP = Byte_Swap32( result->nameP );
             result->nameAliasesP = Byte_Swap32( result->nameAliasesP );
@@ -944,9 +949,8 @@ NetLibGetHostByName( UInt16 libRefNum, const Char* nameP,
 
             /* we'll use only the first */
             result->addrListP[0] = Byte_Swap32( result->addrListP[0] );
-            XP_LOGF( "turning 0x%lx", result->addrListP[0] );
-            *(XP_U32*)result->addrListP[0] = Byte_Swap32( *(XP_U32*)result->addrListP[0] );
-            XP_LOGF( "into 0x%lx", result->addrListP[0] );
+            *(XP_U32*)result->addrListP[0] = 
+                Byte_Swap32( *(XP_U32*)result->addrListP[0] );
         }
     }
     FUNC_TAIL(NetLibGetHostByName);
@@ -1060,3 +1064,325 @@ ExgDBWrite( ExgDBWriteProcPtr writeProcP, void* userDataP,
     EMIT_NAME("ExgDBWrite","'E','x','g','D','B','W','r','i','t','e'");
     return result;
 } /* ExgDBWrite */
+
+static void*
+lookupStubFor( XP_U16 key )
+{
+    void* val;
+    Err err = FtrGet( APPID, key, (UInt32*)&val );
+    if ( err != errNone ) {
+        val = NULL;
+    }
+    LOG_RETURNF( "%lx", val );
+    return val;
+}
+
+static void
+registerStubFor( XP_U16 key, void* stub )
+{
+    Err err;
+    XP_ASSERT( NULL == lookupStubFor( key ) );
+    XP_LOGF( "%s: registering %lx", __func__, stub );
+    err = FtrSet( APPID, key, stub );
+    XP_ASSERT( err == errNone );
+}
+
+static void
+unregisterStubFor( XP_U16 key )
+{
+    Err err = FtrUnregister( APPID, key );
+    XP_ASSERT( err == errNone );
+}
+
+#ifdef XWFEATURE_BLUETOOTH
+static void
+btLibManagementEventType68K_TO_ARM( BtLibManagementEventType* out, const unsigned char* in )
+{
+    BtLibManagementEventEnum event
+        = (BtLibManagementEventEnum)read_unaligned8( &in[0] );
+    out->event = event;
+    out->status = read_unaligned16( &in[2] );
+    switch( event ) {
+    case btLibManagementEventACLConnectInbound:
+    case btLibManagementEventACLDisconnect:
+        memcpy( &out->eventData.bdAddr, &in[4], sizeof(out->eventData.bdAddr) );
+        break;
+    case btLibManagementEventAccessibilityChange:
+        out->eventData.accessible
+            = (BtLibAccessibleModeEnum)read_unaligned8( &in[4] );
+        break;
+    }
+}
+
+static unsigned long
+btLibManagementProcArmEntry( const void* XP_UNUSED_DBG(emulStateP), 
+                             void* userData68KP, 
+                             Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
+{
+    unsigned long* data;
+    BtLibManagementProcPtr procPtr;
+    PNOState* state;
+    unsigned long oldR10;
+    BtLibManagementEventType mEvent;
+    const BtLibManagementEventType* mEventP;
+    UInt32 refCon;
+
+    data = (unsigned long*)userData68KP;
+    state = getStorageLoc();
+
+    /* set up stack here too? */
+    asm( "mov %0, r10" : "=r" (oldR10) );
+    asm( "mov r10, %0" : : "r" (state->gotTable) );
+
+    XP_ASSERT( emulStateP == state->emulStateP );
+    XP_ASSERT( call68KFuncP == state->call68KFuncP );
+
+    procPtr = (BtLibManagementProcPtr)read_unaligned32( &data[0] );
+    mEventP = read_unaligned32( &data[1] );
+    btLibManagementEventType68K_TO_ARM( &mEvent, (unsigned char*)mEventP );
+    refCon = read_unaligned32( (unsigned char*)&data[2] );
+    (*procPtr)( &mEvent, refCon );
+
+    asm( "mov r10, %0" : : "r" (oldR10) );
+
+    return 0L;                  /* no result to return */
+} /* btLibManagementProcArmEntry */
+
+/* BtLibSocketProcPtr and BtLibManagementProc have the same signatures as far
+   as 68K code goes: */
+/* static void BtLibManagementProc( BtLibManagementEventType *mEvent, UInt32 refCon ) */
+/* { */
+/*     unsigned long data[] = { callbackP, mEvent, refCon }; */
+/*     (void)PceNativeCall( btLibManagementProcArmEntry, (void*)data ); */
+/* } */
+
+static unsigned char*
+findOrMakeBTProcStub( void* callbackP, XP_U16 key, NativeFuncType armFunc )
+{
+    unsigned char* stub = lookupStubFor( key );
+    if ( !stub ) {
+        unsigned char code_68k[] = {
+            /*  0 */ 0x4e, 0x56, 0xff, 0xf4,      	        // linkw %fp,#-12
+            /*  4 */ 0x20, 0x2e, 0x00, 0x08,      	        // movel %fp@(8),%d0
+            /*  8 */ 0x22, 0x2e, 0x00, 0x0c,      	        // movel %fp@(12),%d1
+            /*  C */ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, 	// movel #287454020,%fp@(-12)
+            /* 12 */ 0xff, 0xf4,
+            /* 14 */ 0x2d, 0x40, 0xff, 0xf8,      	        // movel %d0,%fp@(-8)
+            /* 18 */ 0x2d, 0x41, 0xff, 0xfc,      	        // movel %d1,%fp@(-4)
+            /* 1C */ 0x48, 0x6e, 0xff, 0xf4,      	        // pea %fp@(-12)
+            /* 20 */ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,     // movel #1432778632,%sp@-
+            /* 26 */ 0x4e, 0x4f,           	                // trap #15
+            /* 28 */ 0xa4, 0x5a,           	                // 0122132
+            /* 2A */ 0x50, 0x8f,           	                // addql #8,%sp
+            /* 2C */ 0x4e, 0x5e,           	                // unlk %fp
+            /* 2E */ 0x4e, 0x75           	                // rts
+        };
+        stub = MemPtrNew( sizeof(code_68k) );
+        memcpy( stub, code_68k, sizeof(code_68k) );
+
+        write_unaligned32( &stub[0x0E], 
+                           /* replace 0x11223344 */
+                           (unsigned long)callbackP );
+        write_unaligned32( &stub[0x22], 
+                           /* replace 0x55667788 */
+                           (unsigned long)armFunc );
+
+        registerStubFor( key, stub );
+    }
+    return stub;
+} /* findOrMakeBTProcStub */
+
+static void
+btLibSocketEventType68K_TO_ARM( BtLibSocketEventType* out, const unsigned char* in )
+{
+    BtLibSocketEventEnum event = read_unaligned8( &in[0] ); /* enum? */
+    out->event = event;
+    out->socket = read_unaligned16( &in[2] );
+    out->status = read_unaligned16( &in[4] );
+
+    switch( event ) {
+    case btLibSocketEventConnectedInbound:
+        out->eventData.newSocket = read_unaligned16( &in[6] );
+        break;
+    case btLibSocketEventData:
+        out->eventData.data.dataLen = read_unaligned16( &in[6] );
+        out->eventData.data.data = read_unaligned32( &in[8] );
+        break;
+    default:                    /* shut up, compiler */
+        break;
+    }
+}
+
+static unsigned long
+btSocketProcArmEntry( const void* XP_UNUSED_DBG(emulStateP), 
+                      void* userData68KP, 
+                      Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
+{
+    BtLibSocketEventType sEvent;
+    BtLibSocketEventType* sEventP;
+    UInt32 refCon;
+
+    unsigned long* data = (unsigned long*)userData68KP;
+    unsigned long oldR10;
+    BtLibSocketProcPtr procPtr
+        = (BtLibSocketProcPtr)read_unaligned32( (unsigned char*)&data[0] );
+    PNOState* state = getStorageLoc();
+
+    /* set up stack here too? */
+    asm( "mov %0, r10" : "=r" (oldR10) );
+    asm( "mov r10, %0" : : "r" (state->gotTable) );
+
+    LOG_FUNC();
+
+    XP_ASSERT( emulStateP == state->emulStateP );
+    XP_ASSERT( call68KFuncP == state->call68KFuncP );
+
+    sEventP = (BtLibSocketEventType*)
+        read_unaligned32( (unsigned char*)&data[1] );
+    btLibSocketEventType68K_TO_ARM( &sEvent, (unsigned char*)sEventP );
+    refCon = read_unaligned32( (unsigned char*)&data[2] );
+    (*procPtr)( &sEvent, refCon );
+
+    asm( "mov r10, %0" : : "r" (oldR10) );
+
+    return 0L;                  /* no result to return */
+} /* btSocketProcArmEntry */
+
+/* from file BtLib.h */
+Err
+BtLibRegisterManagementNotification( UInt16 btLibRefNum, 
+                                     BtLibManagementProcPtr callbackP, 
+                                     UInt32 refCon )
+{
+    Err result;
+    FUNC_HEADER(BtLibRegisterManagementNotification);
+    /* var decls */
+    /* swapIns */
+    {
+    PNOState* sp = GET_CALLBACK_STATE();
+
+    unsigned char* stub;
+    stub = findOrMakeBTProcStub( callbackP, PACE_SCREEN_LIBMNGMT_FEATURE,
+                                 btLibManagementProcArmEntry );
+    XP_LOGF( "%s: stub=%lx", __func__, stub );
+    STACK_START(unsigned char, stack, 10);
+    /* pushes */
+    ADD_TO_STACK2(stack, btLibRefNum, 0);
+    ADD_TO_STACK4(stack, stub, 2);
+    ADD_TO_STACK4(stack, refCon, 6);
+    STACK_END(stack);
+    result = (Err)(*sp->call68KFuncP)(
+                   sp->emulStateP, 
+                   PceNativeTrapNo(btLibTrapRegisterManagementNotification),
+                   stack, 10 );
+    /* swapOuts */
+    }
+    FUNC_TAIL(BtLibRegisterManagementNotification);
+    EMIT_NAME("BtLibRegisterManagementNotification","'B','t','L','i','b','R','e','g','i','s','t','e','r','M','a','n','a','g','e','m','e','n','t','N','o','t','i','f','i','c','a','t','i','o','n'");
+    return result;
+} /* BtLibRegisterManagementNotification */
+
+/* from file BtLib.h */
+Err
+BtLibUnregisterManagementNotification( 
+    UInt16 btLibRefNum, 
+    BtLibManagementProcPtr XP_UNUSED_DBG(callbackP) )
+{
+    Err result;
+    unsigned char* stub;
+    FUNC_HEADER(BtLibUnregisterManagementNotification);
+
+    stub = lookupStubFor( PACE_SCREEN_LIBMNGMT_FEATURE );
+    XP_ASSERT( stub );
+    XP_LOGF( "%s: stub=%lx", __func__, stub );
+
+    XP_ASSERT( 0 == XP_MEMCMP( &callbackP, &stub[0x0E], sizeof(callbackP) ) );
+    unregisterStubFor( PACE_SCREEN_LIBMNGMT_FEATURE );
+
+    /* var decls */
+    /* swapIns */
+    {
+    PNOState* sp = GET_CALLBACK_STATE();
+    STACK_START(unsigned char, stack, 6);
+    /* pushes */
+    ADD_TO_STACK2(stack, btLibRefNum, 0);
+    ADD_TO_STACK4(stack, stub, 2);
+    STACK_END(stack);
+    result = (Err)(*sp->call68KFuncP)( sp->emulStateP, 
+                   PceNativeTrapNo(btLibTrapUnregisterManagementNotification),
+                   stack, 6 );
+    /* swapOuts */
+    }
+    MemPtrFree( stub );
+    XP_LOGF( "%s: stub freed", __func__ );
+
+    FUNC_TAIL(BtLibUnregisterManagementNotification);
+    EMIT_NAME("BtLibUnregisterManagementNotification","'B','t','L','i','b','U','n','r','e','g','i','s','t','e','r','M','a','n','a','g','e','m','e','n','t','N','o','t','i','f','i','c','a','t','i','o','n'");
+    return result;
+} /* BtLibUnregisterManagementNotification */
+
+/* from file BtLib.h */
+Err
+BtLibSocketCreate( UInt16 btLibRefNum, BtLibSocketRef* socketRefP, 
+                   BtLibSocketProcPtr callbackP, UInt32 refCon, 
+                   BtLibProtocolEnum socketProtocol )
+{
+    Err result;
+    FUNC_HEADER(BtLibSocketCreate);
+    /* var decls */
+    /* swapIns */
+    /*     SWAP2_NON_NULL_IN(socketRefP); */
+    {
+        PNOState* sp = GET_CALLBACK_STATE();
+        unsigned char* stub;
+        stub = findOrMakeBTProcStub( callbackP, 
+                                     PACE_SCREEN_SOCKETPROC_FEATURE,
+                                     btSocketProcArmEntry );
+        STACK_START(unsigned char, stack, 16);
+        /* pushes */
+        ADD_TO_STACK2(stack, btLibRefNum, 0);
+        ADD_TO_STACK4(stack, socketRefP, 2);
+        ADD_TO_STACK4(stack, stub, 6);
+        ADD_TO_STACK4(stack, refCon, 10);
+        ADD_TO_STACK1(stack, socketProtocol, 14);
+        STACK_END(stack);
+        result = (Err)
+            (*sp->call68KFuncP)( sp->emulStateP, 
+                                 PceNativeTrapNo(btLibTrapSocketCreate),
+                                 stack, 16 );
+        /* swapOuts */
+        SWAP2_NON_NULL_OUT(socketRefP);
+    }
+    FUNC_TAIL(BtLibSocketCreate);
+    EMIT_NAME("BtLibSocketCreate","'B','t','L','i','b','S','o','c','k','e','t','C','r','e','a','t','e'");
+    return result;
+} /* BtLibSocketCreate */
+
+void
+flipBtConnInfoArm268K( unsigned char* out, const BtLibSocketConnectInfoType* in )
+{
+    write_unaligned32( out + 0, in->remoteDeviceP );
+    write_unaligned16( out + 4, in->data.L2Cap.remotePsm );
+    write_unaligned16( out + 6, in->data.L2Cap.minRemoteMtu );
+    write_unaligned16( out + 8, in->data.L2Cap.localMtu );
+}
+
+/* from file BtLib.h */
+
+void
+flipBtSocketListenInfoArm268K( unsigned char* out, 
+                               const BtLibSocketListenInfoType* in)
+{
+    /* Some moron didn't put a type field in BtLibSocketListenInfoType.  The
+       interpretation of the data depends on the protocol with which the
+       socket (param to BtLibSocketListen) was created.  We *could* pass the
+       socket into this function and pull the protocol out, using that to
+       decide which overlapping union field to swap, but let's just hard-code
+       btLibL2CapProtocol (field data.L2Cap) since that's what I'm using.*/
+
+    write_unaligned16( out + 0, in->data.L2Cap.localPsm );
+    write_unaligned16( out + 2, in->data.L2Cap.localMtu );
+    write_unaligned16( out + 4, in->data.L2Cap.minRemoteMtu );
+}
+
+#endif /* XWFEATURE_BLUETOOTH */

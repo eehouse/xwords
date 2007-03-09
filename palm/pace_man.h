@@ -28,10 +28,15 @@
 #include <VFSMgr.h>
 #include <NotifyMgr.h>
 #include <NetMgr.h>
+#ifdef XWFEATURE_BLUETOOTH
+# include <BtLib.h>
+# include <BtLibTypes.h>
+#endif
 
 #include "pnostate.h"
 #include "xptypes.h"
 
+void* memcpy( void* dest, const void* src, unsigned long n );
 extern Int16 StrPrintF( Char* s, const Char* formatStr, ... );
 extern Int16 StrVPrintF( Char* s, const Char* formatStr, _Palm_va_list arg );
 extern Boolean SysHandleEvent( EventPtr eventP );
@@ -104,6 +109,19 @@ void flipDateTimeToArm( DateTimeType* out, const unsigned char* in );
 NetHostInfoPtr NetLibGetHostByName( UInt16 libRefNum, 
                                     const Char* nameP, NetHostInfoBufPtr bufP, 
                                     Int32 timeout, Err* errP );
+
+#ifdef XWFEATURE_BLUETOOTH
+void flipBtConnInfoArm268K( unsigned char* out, const BtLibSocketConnectInfoType* in );
+void flipBtSocketListenInfoArm268K( unsigned char* out, 
+                                     const BtLibSocketListenInfoType* in);
+
+# define SWAP_BTLIBSOCKETCONNECTINFOTYPE_ARM_TO_68K( out, in ) \
+    flipBtConnInfoArm268K( out, in )
+# define SWAP_BTLIBSOCKETCONNECTINFOTYPE_68K_TO_ARM( out, in ) /* nothing for now */
+# define SWAP_BTLIBSOCKETLISTENINFOTYPE_ARM_TO_68K( out, in ) \
+    flipBtSocketListenInfoArm268K( out, in )
+# define SWAP_BTLIBSOCKETLISTENINFOTYPE_68K_TO_ARM( out, in ) /* nothing for now */
+#endif /* XWFEATURE_BLUETOOTH */
 
 PNOState* getStorageLoc();
 #define GET_CALLBACK_STATE() getStorageLoc()
