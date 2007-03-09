@@ -28,7 +28,7 @@
 # include <BtLibTypes.h>
 
 #define L2CAPSOCKETMTU 500
-#define SOCK_INVAL 0XFFFF
+#define SOCK_INVAL ((BtLibSocketRef)-1)
 
 typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_PicoRole;
 
@@ -216,6 +216,7 @@ palm_bt_close( PalmAppGlobals* globals )
             /* Need to unregister callbacks */
             CALL_ERR( err, BtLibUnregisterManagementNotification, btLibRefNum,
                       libMgmtCallback );
+            XP_ASSERT( errNone == err );
             CALL_ERR( err, BtLibClose, btLibRefNum );
             XP_ASSERT( errNone == err );
         }
@@ -398,9 +399,9 @@ pbt_send_pending( PalmBTStuff* btStuff )
         XP_U16 len = pbt_peekQueue( &btStuff->vol.out, &buf );
 
         if ( SOCK_INVAL == btStuff->dataSocket ) {
-/*             XP_LOGF( "abort: inval socket" ); */
+/*             XP_LOGF( "%s: abort: inval socket", __func__ ); */
         } else if ( len <= 0 ) {
-/*             XP_LOGF( "abort: len is %d", len ); */
+/*             XP_LOGF( "%s: abort: len is %d", __func__, len ); */
         } else {
             CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
                       btStuff->dataSocket, (char*)buf, len );
@@ -510,6 +511,7 @@ pbt_close_datasocket( PalmBTStuff* btStuff )
         Err err;
         CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum,
                   btStuff->dataSocket );
+        XP_ASSERT( err == errNone );
         btStuff->dataSocket = SOCK_INVAL;
     }
 }
@@ -531,6 +533,7 @@ pbt_takedown_master( PalmBTStuff* btStuff )
         CALL_ERR( err, BtLibSocketClose, btLibRefNum,  
                   btStuff->u.master.listenSocket );
         btStuff->u.master.listenSocket = SOCK_INVAL;
+        XP_ASSERT( err == errNone );
     }
 
     btStuff->picoRole = PBT_UNINIT;
@@ -630,7 +633,8 @@ pbt_do_work( PalmBTStuff* btStuff )
 static void
 pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
 {
-    EventType eventToPost = { .eType = nilEvent };
+    EventType eventToPost;
+    eventToPost.eType = nilEvent;
 
     XP_LOGF( "%s(%s)", __FUNCTION__, actToStr(act) );
     EvtAddEventToQueue( &eventToPost );
@@ -784,7 +788,6 @@ static void
 pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
 {
     Err err;
-    XP_U16 btLibRefNum = btStuff->btLibRefNum;
 
     XP_ASSERT( sock == btStuff->dataSocket );
     pbt_close_datasocket( btStuff );
@@ -793,7 +796,8 @@ pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
     if ( GET_STATE(btStuff) != PBTST_NONE ) {
         SET_STATE( btStuff, PBTST_NONE ); /* set first */
         /* sends btLibManagementEventACLDisconnect */
-        CALL_ERR( err, BtLibLinkDisconnect, btLibRefNum, &btStuff->otherAddr );
+        CALL_ERR( err, BtLibLinkDisconnect, btStuff->btLibRefNum,
+                  &btStuff->otherAddr );
     }
 } /* pbt_killL2C */
 
@@ -929,7 +933,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         btStuff->accState = mEvent->eventData.accessible;
         break;
     case btLibManagementEventRadioState:
-        XP_LOGF( "status: %s", btErrToStr(mEvent->status) );
+/*         XP_LOGF( "status: %s", btErrToStr(mEvent->status) ); */
         break;
     case btLibManagementEventACLConnectOutbound:
         if ( btLibErrNoError == mEvent->status ) {
@@ -959,8 +963,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
             /* This is getting called from inside the BtLibLinkDisconnect
                call!!!! */
             XP_ASSERT( 0 == XP_MEMCMP( &mEvent->eventData.bdAddr,
-                                       &btStuff->otherAddr,
-                                       sizeof(btStuff->otherAddr) ) );
+                                       &btStuff->otherAddr, 6 ) );
             if ( SOCK_INVAL != btStuff->dataSocket ) {
                 CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
                           btStuff->dataSocket );
