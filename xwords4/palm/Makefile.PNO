@@ -117,6 +117,7 @@ pace_gen.c pace_gen.h: ./gen_pace.pl funcfile.txt
 		-file $(PALMDIR)/Core/UI \
 		-file $(PALMDIR)/Core/System \
 		-file $(PALMDIR)/Extensions/ExpansionMgr \
+		-file $(PALMDIR)/Extensions/Bluetooth \
 		-file /usr/local/share/palmdev/Handspring5/68K/System \
 		-oc pace_gen.c -oh pace_gen.h
 	rm -f _dirList

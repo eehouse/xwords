@@ -66,7 +66,6 @@ FntCharsWidth
 FntGetFont
 FntLineHeight
 FntSetFont
-FntsWidth
 FrmCloseAllForms
 FrmCustomAlert
 FrmDeleteForm
@@ -184,7 +183,6 @@ WinSetDrawWindow
 WinSetForeColor
 WinSetPattern
 WinSetTextColor
-memcpy
 WinEraseLine
 SclDrawScrollBar
 DmNumRecordsInCategory
@@ -231,3 +229,20 @@ WinGetPixel
 #
 UIColorGetTableEntryIndex
 #HsNavDrawFocusRing
+# Bluetooth
+BtLibOpen
+BtLibAddrBtdToA
+BtLibSecurityFindTrustedDeviceRecord
+BtLibSocketSend
+BtLibSocketClose
+BtLibLinkConnect
+BtLibDiscoverSingleDevice
+BtLibLinkDisconnect
+BtLibSocketRespondToConnection
+BtLibClose
+BtLibSecurityGetTrustedDeviceRecordInfo
+BtLibSocketConnect
+BtLibSocketListen
+#BtLibRegisterManagementNotification
+#BtLibUnregisterManagementNotification
+#BtLibSocketCreate
