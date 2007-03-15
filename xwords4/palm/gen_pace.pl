@@ -80,6 +80,7 @@ my %typeInfo = (
                 "UInt32" => { "size" => 4, "a0" => 0 },
                 "UInt16" => { "size" => 2, "a0" => 0 },
                 "void*" => { "size" => 4, "a0" => 1 },
+                "void**" => { "size" => 4, "a0" => 1, "autoSwap" => 4 },
                 "void" => { "size" => 0, "a0" => 0 },
                 "BitmapPtr" => { "size" => 4, "a0" => 1 },
                 "Boolean" => { "size" => 1, "a0" => 0 },
@@ -334,16 +335,21 @@ sub searchOneDir($$) {
     return $found;
 } # searchOneDir
 
-sub print_params_list($) {
-    my ( $params ) = @_;
-    my $result = "( ";
+sub print_params_list($$) {
+    my ( $params, $startLen ) = @_;
+    my $result = "(";
 
     foreach my $param ( @$params ) {
-        $result .= $$param{"type"} . " ";
-        $result .= $$param{'name'} . ", ";
+        my $p = " " . $$param{"type"} . " " . $$param{'name'} . ",";
+        if ( length($p) + $startLen >= 80 ) {
+            $p = "\n   $p";
+            $startLen = length($p);
+        }
+        $result .= $p;
+        $startLen += length($p);
     }
 
-    $result =~ s/, $//;
+    $result =~ s/,$//;
     $result .= " )";
 
     return $result;
@@ -351,7 +357,9 @@ sub print_params_list($) {
 
 sub nameToBytes($) {
     my ( $nam ) = @_;
-    return "\"'" . join( "','", split( //, $nam ) ) . "'\"";
+    # Any way to insert a '\n' in this?
+    my $str = "\"'" . join( "','", split( //, $nam ) ) . "'\"";
+    return $str;
 }
 
 sub makeSwapStuff($$$$$) {
@@ -496,7 +504,9 @@ sub print_func_impl($$$$$$) {
     
     $result .= "\n/* from file $file */\n";
     $result .= "$returnType\n";
-    $result .= "$name" . print_params_list($params) . "\n";
+    my $lenToName = length( $result );
+    $result .= "$name";
+    $result .= print_params_list($params, length($result)-$lenToName) . "\n";
     $result .= print_body( $name, $returnType, $params, $trapSel, $trapType );
          
     return $result;
@@ -616,7 +626,7 @@ if ( $dot_h ) {
     foreach my $key (keys %funcInfo) {
         my $ref = $funcInfo{$key};
         print DOT $${ref}{"type"}, " "
-            . $key . print_params_list($$ref{'params'}) . ";\n"; 
+            . $key . print_params_list($$ref{'params'}, 0) . ";\n"; 
     }
 
     print DOT "\n#include \"pace_man.h\"\n"; 
