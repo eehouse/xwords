@@ -807,11 +807,13 @@ pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
     LOG_FUNC();
     XP_ASSERT( !!addr );
    
-    if ( 0 != XP_MEMCMP( &btStuff->otherAddr, &addr->u.bt.btAddr, 
-                         sizeof(btStuff->otherAddr) ) ) {
+    if ( 0 != XP_MEMCMP( &btStuff->otherAddr, &addr->u.bt.btAddr.bits, 
+                         sizeof(addr->u.bt.btAddr.bits) ) ) {
 
-        LOG_HEX( &btStuff->otherAddr, sizeof(btStuff->otherAddr), "cur" );
-        LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), "new" );
+        LOG_HEX( &btStuff->otherAddr, sizeof(addr->u.bt.btAddr.bits), 
+                 "cur" );
+        LOG_HEX( &addr->u.bt.btAddr.bits, sizeof(addr->u.bt.btAddr.bits), 
+                 "new" );
 
         pbt_killL2C( btStuff, btStuff->dataSocket );
 
