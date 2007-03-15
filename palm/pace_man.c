@@ -32,6 +32,7 @@
 
 #include "palmmain.h"           /* for custom event types */
 #include "palmsavg.h"
+#include "strutils.h"
 
 /* Looks like I still need this??? */
 void*
@@ -1065,38 +1066,10 @@ ExgDBWrite( ExgDBWriteProcPtr writeProcP, void* userDataP,
     return result;
 } /* ExgDBWrite */
 
-static void*
-lookupStubFor( XP_U16 key )
-{
-    void* val;
-    Err err = FtrGet( APPID, key, (UInt32*)&val );
-    if ( err != errNone ) {
-        val = NULL;
-    }
-    LOG_RETURNF( "%lx", val );
-    return val;
-}
-
-static void
-registerStubFor( XP_U16 key, void* stub )
-{
-    Err err;
-    XP_ASSERT( NULL == lookupStubFor( key ) );
-    XP_LOGF( "%s: registering %lx", __func__, stub );
-    err = FtrSet( APPID, key, stub );
-    XP_ASSERT( err == errNone );
-}
-
-static void
-unregisterStubFor( XP_U16 key )
-{
-    Err err = FtrUnregister( APPID, key );
-    XP_ASSERT( err == errNone );
-}
-
 #ifdef XWFEATURE_BLUETOOTH
 static void
-btLibManagementEventType68K_TO_ARM( BtLibManagementEventType* out, const unsigned char* in )
+btLibManagementEventType68K_TO_ARM( BtLibManagementEventType* out, 
+                                    const unsigned char* in )
 {
     BtLibManagementEventEnum event
         = (BtLibManagementEventEnum)read_unaligned8( &in[0] );
@@ -1157,38 +1130,36 @@ btLibManagementProcArmEntry( const void* XP_UNUSED_DBG(emulStateP),
 /* } */
 
 static unsigned char*
-findOrMakeBTProcStub( void* callbackP, XP_U16 key, NativeFuncType armFunc )
+make44stub( void* callbackP, NativeFuncType armFunc )
 {
-    unsigned char* stub = lookupStubFor( key );
-    if ( !stub ) {
-        unsigned char code_68k[] = {
-            /*  0 */ 0x4e, 0x56, 0xff, 0xf4,      	        // linkw %fp,#-12
-            /*  4 */ 0x20, 0x2e, 0x00, 0x08,      	        // movel %fp@(8),%d0
-            /*  8 */ 0x22, 0x2e, 0x00, 0x0c,      	        // movel %fp@(12),%d1
-            /*  C */ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, 	// movel #287454020,%fp@(-12)
-            /* 12 */ 0xff, 0xf4,
-            /* 14 */ 0x2d, 0x40, 0xff, 0xf8,      	        // movel %d0,%fp@(-8)
-            /* 18 */ 0x2d, 0x41, 0xff, 0xfc,      	        // movel %d1,%fp@(-4)
-            /* 1C */ 0x48, 0x6e, 0xff, 0xf4,      	        // pea %fp@(-12)
-            /* 20 */ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,     // movel #1432778632,%sp@-
-            /* 26 */ 0x4e, 0x4f,           	                // trap #15
-            /* 28 */ 0xa4, 0x5a,           	                // 0122132
-            /* 2A */ 0x50, 0x8f,           	                // addql #8,%sp
-            /* 2C */ 0x4e, 0x5e,           	                // unlk %fp
-            /* 2E */ 0x4e, 0x75           	                // rts
-        };
-        stub = MemPtrNew( sizeof(code_68k) );
-        memcpy( stub, code_68k, sizeof(code_68k) );
+    unsigned char* stub;
+    unsigned char code_68k[] = {
+        /*  0 */ 0x4e, 0x56, 0xff, 0xf4,      	        // linkw %fp,#-12
+        /*  4 */ 0x20, 0x2e, 0x00, 0x08,      	        // movel %fp@(8),%d0
+        /*  8 */ 0x22, 0x2e, 0x00, 0x0c,      	        // movel %fp@(12),%d1
+        /*  C */ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, 	// movel #287454020,%fp@(-12)
+        /* 12 */ 0xff, 0xf4,
+        /* 14 */ 0x2d, 0x40, 0xff, 0xf8,      	        // movel %d0,%fp@(-8)
+        /* 18 */ 0x2d, 0x41, 0xff, 0xfc,      	        // movel %d1,%fp@(-4)
+        /* 1C */ 0x48, 0x6e, 0xff, 0xf4,      	        // pea %fp@(-12)
+        /* 20 */ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,     // movel #1432778632,%sp@-
+        /* 26 */ 0x4e, 0x4f,           	                // trap #15
+        /* 28 */ 0xa4, 0x5a,           	                // 0122132
+        /* 2A */ 0x50, 0x8f,           	                // addql #8,%sp
+        /* 2C */ 0x4e, 0x5e,           	                // unlk %fp
+        /* 2E */ 0x4e, 0x75           	                // rts
+    };
 
-        write_unaligned32( &stub[0x0E], 
-                           /* replace 0x11223344 */
-                           (unsigned long)callbackP );
-        write_unaligned32( &stub[0x22], 
-                           /* replace 0x55667788 */
-                           (unsigned long)armFunc );
+    stub = MemPtrNew( sizeof(code_68k) );
+    memcpy( stub, code_68k, sizeof(code_68k) );
+    
+    write_unaligned32( &stub[0x0E],
+                       /* replace 0x11223344 */
+                       (unsigned long)callbackP );
+    write_unaligned32( &stub[0x22],
+                       /* replace 0x55667788 */
+                       (unsigned long)armFunc );
 
-        registerStubFor( key, stub );
-    }
     return stub;
 } /* findOrMakeBTProcStub */
 
@@ -1261,10 +1232,10 @@ BtLibRegisterManagementNotification( UInt16 btLibRefNum,
     {
     PNOState* sp = GET_CALLBACK_STATE();
 
-    unsigned char* stub;
-    stub = findOrMakeBTProcStub( callbackP, PACE_SCREEN_LIBMNGMT_FEATURE,
-                                 btLibManagementProcArmEntry );
+    unsigned char* stub = make44stub( callbackP, btLibManagementProcArmEntry );
+    result = FtrSet( APPID, PACE_BT_CBK_FEATURE, stub );
     XP_LOGF( "%s: stub=%lx", __func__, stub );
+
     STACK_START(unsigned char, stack, 10);
     /* pushes */
     ADD_TO_STACK2(stack, btLibRefNum, 0);
@@ -1289,16 +1260,21 @@ BtLibUnregisterManagementNotification(
     BtLibManagementProcPtr XP_UNUSED_DBG(callbackP) )
 {
     Err result;
-    unsigned char* stub;
+    unsigned char* stub = NULL;
+
     FUNC_HEADER(BtLibUnregisterManagementNotification);
 
-    stub = lookupStubFor( PACE_SCREEN_LIBMNGMT_FEATURE );
-    XP_ASSERT( stub );
+    result = FtrGet( APPID, PACE_BT_CBK_FEATURE, (UInt32*)&stub );
+    XP_ASSERT( !!stub && errNone == result );
     XP_LOGF( "%s: stub=%lx", __func__, stub );
 
-    XP_ASSERT( 0 == XP_MEMCMP( &callbackP, &stub[0x0E], sizeof(callbackP) ) );
-    unregisterStubFor( PACE_SCREEN_LIBMNGMT_FEATURE );
-
+#ifdef DEBUG
+    {
+        XP_U32 bkwrds;
+        write_unaligned32( &bkwrds, callbackP );
+        XP_ASSERT( 0 == XP_MEMCMP( &bkwrds, &stub[0x0E], sizeof(callbackP) ) );
+    }
+#endif
     /* var decls */
     /* swapIns */
     {
@@ -1334,10 +1310,8 @@ BtLibSocketCreate( UInt16 btLibRefNum, BtLibSocketRef* socketRefP,
     /*     SWAP2_NON_NULL_IN(socketRefP); */
     {
         PNOState* sp = GET_CALLBACK_STATE();
-        unsigned char* stub;
-        stub = findOrMakeBTProcStub( callbackP, 
-                                     PACE_SCREEN_SOCKETPROC_FEATURE,
-                                     btSocketProcArmEntry );
+        unsigned char* stub = make44stub( callbackP, btSocketProcArmEntry );
+
         STACK_START(unsigned char, stack, 16);
         /* pushes */
         ADD_TO_STACK2(stack, btLibRefNum, 0);
