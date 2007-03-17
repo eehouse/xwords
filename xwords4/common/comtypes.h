@@ -128,7 +128,14 @@ typedef struct CommonPrefs {
 
 #ifdef XWFEATURE_BLUETOOTH
 /* temporary debugging hack */
-# define XW_PSM     0x3131
+
+/* From BtLibTypes.h: Pre-assigned assigned PSM values are permitted; however,
+ * they must be odd, within the range of 0x1001 to 0xFFFF, and have the 9th
+ * bit (0x0100) set to zero. Passing in BT_L2CAP_RANDOM_PSM will automatically
+ * create a usable PSM for the channel. In this case the actual PSM value will
+ * be filled in by the call. */
+
+# define XW_PSM     0x3031
 #endif
 
 /* used for all vtables */
