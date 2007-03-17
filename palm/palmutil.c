@@ -454,7 +454,6 @@ considerGadgetFocus( const EventType* event, XP_U16 idLow, XP_U16 idHigh )
                == &event->data.frmObjectFocusLost.objectID );
 
     objectID = event->data.frmObjectFocusTake.objectID;
-    XP_LOGF( "%s: objectID=%d", __FUNCTION__, objectID );
     handled = (objectID >= idLow) && (objectID <= idHigh);
     if ( handled ) {
         if ( event->eType == frmObjectFocusTakeEvent ) {
@@ -464,7 +463,6 @@ considerGadgetFocus( const EventType* event, XP_U16 idLow, XP_U16 idHigh )
         }
     }
 
-    LOG_RETURNF( "%d", (XP_U16)handled );
     return handled;
 } /* considerGadgetFocus */
 
