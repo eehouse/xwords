@@ -628,7 +628,7 @@ pbt_do_work( PalmBTStuff* btStuff )
         break;
 
     case PBT_ACT_CONNECT_L2C:
-        XP_ASSERT( btStuff->picoRole == PBT_SLAVE );
+/*         XP_ASSERT( btStuff->picoRole == PBT_SLAVE ); */
         if ( GET_STATE(btStuff) == PBTST_ACL_CONNECTED ) {
             pbt_close_datasocket( btStuff );
             CALL_ERR( err, BtLibSocketCreate, btLibRefNum, 
