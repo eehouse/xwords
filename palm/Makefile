@@ -66,7 +66,7 @@ ifeq ($(ARCH),COMBINED)
 PLATFORM := $(PLATFORM)_combined
 BUILD_AS_PNOLET = 1
 FEATURE_PNOAND68K = -DFEATURE_PNOAND68K
-TARGET=$(PLATFORM)/xwords4_$(SVNREV).prc
+TARGET=$(PLATFORM)/xw4_COMB_$(SVNREV).prc
 endif
 endif
 endif
@@ -123,9 +123,11 @@ BLUETOOTH = -DXWFEATURE_BLUETOOTH
 MYDEFS_COMMON += $(BLUETOOTH)
 
 # Add menu allowing to choose to run 68K or ARM
-# ifdef DEBUG
-# MYDEFS_COMMON += -DFEATURE_DUALCHOOSE
-# endif
+ifeq ($(ARCH),COMBINED)
+ifdef DEBUG
+MYDEFS_COMMON += -DFEATURE_DUALCHOOSE
+endif
+endif
 
 # For Danish and perhaps other languages, custom-measure glyph height
 # so that overtall letters have a chance of fitting.
