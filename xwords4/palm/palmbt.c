@@ -30,6 +30,8 @@
 #define L2CAPSOCKETMTU 500
 #define SOCK_INVAL ((BtLibSocketRef)-1)
 
+// #define DO_SERVICE_RECORD 1
+
 typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_PicoRole;
 
 typedef enum {
@@ -91,6 +93,9 @@ typedef struct PalmBTStuff {
         } slave;
         struct {
             BtLibSocketRef listenSocket;
+#ifdef DO_SERVICE_RECORD
+            BtLibSdpRecordHandle sdpRecordH;
+#endif
         } master;
     } u;
 
@@ -462,6 +467,42 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     return nSent;
 } /* palm_bt_send */
 
+
+#ifdef DO_SERVICE_RECORD
+static XP_Bool
+setupServiceRecord( PalmBTStuff* btStuff )
+{
+    Err err;
+    /*    3. BtLibSdpServiceRecordCreate: allocate a memory chunk that
+          represents an SDP service record. */
+    CALL_ERR( err, BtLibSdpServiceRecordCreate,
+              btStuff->btLibRefNum, &btStuff->u.master.sdpRecordH );
+
+    /*    4. BtLibSdpServiceRecordSetAttributesForSocket: initialize an
+          SDP memory record so it can represent the newly-created L2CAP
+          listener socket as a service */
+    if ( errNone == err ) {
+        CALL_ERR( err, BtLibSdpServiceRecordSetAttributesForSocket,
+                  btStuff->btLibRefNum, btStuff->u.master.listenSocket, 
+                  (BtLibSdpUuidType*)&XWORDS_UUID, 1, APPNAME, 
+                  StrLen(APPNAME), btStuff->u.master.sdpRecordH );
+
+        /*    5. BtLibSdpServiceRecordStartAdvertising: make an SDP memory
+              record representing a local SDP service record visible to
+              remote devices.  */
+        if ( errNone == err ) {
+            CALL_ERR( err, BtLibSdpServiceRecordStartAdvertising, 
+                      btStuff->btLibRefNum, btStuff->u.master.sdpRecordH );
+        }
+    }
+    /* If this fails commonly, need to free the structure and try again */
+    XP_ASSERT( errNone == err );
+    return errNone == err;
+} /* setupServiceRecord */
+#else
+# define setupServiceRecord(b) XP_TRUE
+#endif
+
 static void
 pbt_setup_master( PalmBTStuff* btStuff )
 {
@@ -491,7 +532,7 @@ pbt_setup_master( PalmBTStuff* btStuff )
         /* Doesn't send events; returns errNone unless no resources avail. */
         CALL_ERR( err, BtLibSocketListen, btStuff->btLibRefNum, 
                   btStuff->u.master.listenSocket, &listenInfo );
-        if ( errNone == err ) {
+        if ( (errNone == err) && setupServiceRecord( btStuff ) ) {
             /* Set state here to indicate I'm available, at least for
                debugging? */
             SET_STATE( btStuff, PBTST_LISTENING );
@@ -528,6 +569,18 @@ pbt_takedown_master( PalmBTStuff* btStuff )
     btLibRefNum = btStuff->btLibRefNum;
 
     pbt_close_datasocket( btStuff );
+
+#ifdef DO_SERVICE_RECORD
+    if ( !!btStuff->u.master.sdpRecordH ) {
+        CALL_ERR( err, BtLibSdpServiceRecordStopAdvertising,
+                  btLibRefNum, btStuff->u.master.sdpRecordH );
+        XP_ASSERT( errNone == err ); /* no errors if it was being advertised */
+
+        CALL_ERR( err, BtLibSdpServiceRecordDestroy, btLibRefNum, 
+                  btStuff->u.master.sdpRecordH );
+        btStuff->u.master.sdpRecordH = NULL;
+    }
+#endif
 
     if ( SOCK_INVAL != btStuff->u.master.listenSocket ) {
         CALL_ERR( err, BtLibSocketClose, btLibRefNum,  
