@@ -385,7 +385,7 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
     int socket = globals->socket;
     
     if ( socket == -1 ) {
-        XP_STATUSF( "linux_tcp_send: socket uninitialized" );
+        XP_STATUSF( "%s: socket uninitialized", __func__ );
         socket = linux_init_relay_socket( globals );
         if ( socket != -1 ) {
             assert( globals->socket == socket );
