@@ -288,6 +288,23 @@ eType_2str( eventsEnum eType )
         CASESTR( prefsChangedEvent);
         CASESTR( openSavedGameEvent);
         CASESTR( updateAfterFocusEvent);
+
+        CASESTR( DOWN_ARROW_RESID );
+        CASESTR( RIGHT_ARROW_RESID );
+        CASESTR( FLIP_BUTTON_BMP_RES_ID );
+        CASESTR( VALUE_BUTTON_BMP_RES_ID );
+        CASESTR( HINT_BUTTON_BMP_RES_ID );
+        CASESTR( TRAY_BUTTONS_BMP_RES_ID );
+        CASESTR( SHOWTRAY_BUTTON_BMP_RES_ID );
+        CASESTR( STAR_BMP_RES_ID );
+
+#ifdef XWFEATURE_BLUETOOTH
+        CASESTR( BTSTATUS_NONE_RES_ID );
+        CASESTR( BTSTATUS_LISTENING_RES_ID );
+        CASESTR( BTSTATUS_SEEKING_RES_ID );
+        CASESTR( BTSTATUS_CONNECTED_RES_ID );
+#endif
+
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
         CASESTR( connsSettingChgEvent);
 #endif

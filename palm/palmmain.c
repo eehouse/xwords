@@ -176,11 +176,17 @@ PM2(PilotMain)( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
     PalmAppGlobals* globals;
     if ( cmd == sysAppLaunchCmdNormalLaunch ) {
-        if ( ((launchFlags & sysAppLaunchFlagNewGlobals) != 0)
-             && startApplication( &globals ) ) {
-            XP_ASSERT( (launchFlags & sysAppLaunchFlagNewGlobals) != 0 );
-            // Initialize the application's global variables and database.
-            eventLoop( globals );
+        if ( (launchFlags & sysAppLaunchFlagNewGlobals) != 0) {
+#ifdef XW_TARGET_PNO
+            XP_LOGF( "%s: arch=ARM", __func__ );
+#else
+            XP_LOGF( "%s: arch=68K", __func__ );
+#endif
+            if ( startApplication( &globals ) ) {
+                XP_ASSERT( (launchFlags & sysAppLaunchFlagNewGlobals) != 0 );
+                // Initialize the application's global variables and database.
+                eventLoop( globals );
+            }
         }
         stopApplication( globals );
 
@@ -1030,6 +1036,31 @@ canConvertPrefs( XWords4PreferenceType* prefs, UInt16 prefSize, XP_S16 vers )
     return success;
 } /* canConvertPrefs */
 
+#ifdef MEM_DEBUG
+# if 0
+# define LOG_OFFSET( s, f ) \
+    { s _s; \
+    XP_LOGF( "offset of " #f " in " #s \
+    ": %d (size: %ld)", OFFSET_OF( s, f ), \
+                   sizeof(_s.f) ); \
+    }
+static void
+printOffsets( void )
+{
+    LOG_OFFSET( XWords4PreferenceType, versionNum );
+    LOG_OFFSET( XWords4PreferenceType, curGameIndex );
+    LOG_OFFSET( XWords4PreferenceType, showProgress );
+    LOG_OFFSET( XWords4PreferenceType, showGrid );
+    LOG_OFFSET( XWords4PreferenceType, showColors );
+
+    LOG_OFFSET( XWords4PreferenceType, cp );
+
+    LOG_OFFSET( XWords4PreferenceType, focusItem );
+} /* printOffsets */
+# undef LOG_OFFSET
+# endif
+#endif
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -1136,9 +1167,9 @@ startApplication( PalmAppGlobals** globalsP )
                                         &globals->drawingPrefs );
 
 #ifdef XWFEATURE_BLUETOOTH
-    if ( !globals->gState.reserved1 ) {
+    if ( !globals->gState.oneTimeShown ) {
         palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE );
-        globals->gState.reserved1 = XP_TRUE;
+        globals->gState.oneTimeShown = XP_TRUE;
     }
 #endif
 
@@ -1744,10 +1775,12 @@ static void
 drawBitmapButton( PalmAppGlobals* globals, UInt16 ctrlID, UInt16 resID, 
                   XP_Bool eraseIfDisabled )
 {
-    FormPtr form = FrmGetActiveForm();
-    UInt16 index = FrmGetObjectIndex( form, ctrlID );
+    FormPtr form;
+    UInt16 index;
     RectangleType bounds;
 
+    form = FrmGetActiveForm();
+    index = FrmGetObjectIndex( form, ctrlID );
     FrmGetObjectBounds( form, index, &bounds );
 
     if ( buttonIsUsable( getActiveObjectPtr( ctrlID ) ) ) {
