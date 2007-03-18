@@ -24,6 +24,7 @@
 
 #include "dictnryp.h"
 #include "dawg.h"
+#include "strutils.h"
 #include "palmdict.h"
 #include "dictlist.h"
 #include "dictui.h"
@@ -67,7 +68,7 @@ static array_edge* palm_dict_edge_for_index_multi( const DictionaryCtxt* dict,
 
 DictionaryCtxt*
 palm_dictionary_make( MPFORMAL PalmAppGlobals* globals, 
-                      XP_UCHAR* dictName, PalmDictList* dl )
+                      const XP_UCHAR* dictName, PalmDictList* dl )
 {
     Boolean found;
     UInt16 cardNo;
@@ -116,7 +117,7 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
     if ( !!dictName ) {
         XP_ASSERT( XP_STRLEN((const char*)dictName) > 0 );
 
-        ctxt->super.name = dictName;
+        ctxt->super.name = copyString( mpool, dictName );
         ctxt->super.destructor = palm_dictionary_destroy;
 
         found = getDictWithName( dl, dictName, &dle );

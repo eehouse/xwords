@@ -25,7 +25,8 @@
 #include "dictui.h"
 
 DictionaryCtxt* palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
-                                      XP_UCHAR* dictName, PalmDictList* dl );
+                                      const XP_UCHAR* dictName, /* copied */
+                                      PalmDictList* dl );
 
 #ifdef NODE_CAN_4
 void offerConvertOldDicts( PalmAppGlobals* globals );
