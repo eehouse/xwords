@@ -1203,8 +1203,6 @@ btSocketProcArmEntry( const void* XP_UNUSED_DBG(emulStateP),
     asm( "mov %0, r10" : "=r" (oldR10) );
     asm( "mov r10, %0" : : "r" (state->gotTable) );
 
-    LOG_FUNC();
-
     XP_ASSERT( emulStateP == state->emulStateP );
     XP_ASSERT( call68KFuncP == state->call68KFuncP );
 

@@ -418,8 +418,6 @@ drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
     XP_S16 index;
     XP_U16 focusID;
 
-    LOG_FUNC();
-
     form = FrmGetActiveForm();
     index = FrmGetFocus( form );
     if ( index >= 0 ) {
@@ -438,7 +436,6 @@ drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
             XP_ASSERT( err == errNone );
         }
     }
-    LOG_RETURN_VOID();
 } /* drawFocusRingOnGadget */
 
 XP_Bool

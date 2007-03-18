@@ -44,9 +44,9 @@ PalmDictList* DictListMake( MPFORMAL_NOCOMMA );
 void DictListFree( MPFORMAL PalmDictList* dl );
 XP_U16 DictListCount( PalmDictList* dl );
 
-XP_Bool getDictWithName( const PalmDictList* dl, unsigned char* name, 
+XP_Bool getDictWithName( const PalmDictList* dl, const unsigned char* name, 
                          DictListEntry** dle );
-void cacheDictForName( PalmDictList* dl, XP_UCHAR* dictName, 
+void cacheDictForName( PalmDictList* dl, const XP_UCHAR* dictName, 
                        DictionaryCtxt* ctxt );
 void removeFromDictCache( PalmDictList* dl, XP_UCHAR* dictName );
 
