@@ -367,7 +367,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     XP_UCHAR* str;
     XP_U16 strVersion = stream_getVersion( stream );
 
-    str = stringFromStream( MPPARM(mpool) stream );
+    str = stringFromStream( mpool, stream );
     replaceStringIfDifferent( mpool, &gi->dictName, str );
     if ( !!str ) {
         XP_FREE( mpool, str );
@@ -395,13 +395,13 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     }
 
     for ( pl = gi->players, i = 0; i < gi->nPlayers; ++pl, ++i ) {
-        str = stringFromStream( MPPARM(mpool) stream );
+        str = stringFromStream( mpool, stream );
         replaceStringIfDifferent( mpool, &pl->name, str );
         if ( !!str ) {
             XP_FREE( mpool, str );
         }
 
-        str = stringFromStream( MPPARM(mpool) stream );
+        str = stringFromStream( mpool, stream );
         replaceStringIfDifferent( mpool, &pl->password, str );
         if ( !!str ) {
             XP_FREE( mpool, str );

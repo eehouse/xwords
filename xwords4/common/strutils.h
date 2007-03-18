@@ -37,7 +37,17 @@ void traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts );
 XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits );
 void signedToStream( XWStreamCtxt* stream, XP_U16 nBits, XP_S32 num );
 
-XP_UCHAR* stringFromStream( MPFORMAL XWStreamCtxt* stream );
+XP_UCHAR* p_stringFromStream( MPFORMAL XWStreamCtxt* stream
+#ifdef MEM_DEBUG
+                              , const char* file, XP_U32 lineNo 
+#endif
+                              );
+#ifdef MEM_DEBUG
+# define stringFromStream( p, in ) p_stringFromStream( (p), (in), __FILE__, __LINE__ )
+#else
+# define stringFromStream( p, in ) p_stringFromStream( in )
+#endif
+
 XP_U16 stringFromStreamHere( XWStreamCtxt* stream, XP_UCHAR* buf, XP_U16 len );
 void stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str );
 

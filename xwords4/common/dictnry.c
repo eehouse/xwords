@@ -333,7 +333,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     for ( nSpecials = i = 0; i < nFaces; ++i ) {
         XP_UCHAR face = dict_getTileChar( dict, (Tile)i );
         if ( IS_SPECIAL( face ) ) {
-            XP_UCHAR* txt = stringFromStream( MPPARM(dict->mpool) stream );
+            XP_UCHAR* txt = stringFromStream( dict->mpool, stream );
             XP_ASSERT( !!txt );
             localTexts[nSpecials] = txt;
 

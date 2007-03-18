@@ -1152,7 +1152,7 @@ bwiFromStream( MPFORMAL XWStreamCtxt* stream, BadWordInfo* bwi )
 
     bwi->nWords = nWords;
     for ( sp = bwi->words; nWords; ++sp, --nWords ) {
-        *sp = stringFromStream( MPPARM(mpool) stream );
+        *sp = stringFromStream( mpool, stream );
     }
 } /* bwiFromStream */
 
