@@ -354,6 +354,9 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
        ,connsSettingChgEvent
 #endif
+#if defined XWFEATURE_BLUETOOTH
+       ,closeBtLibEvent
+#endif
 #ifdef FEATURE_SILK
        ,doResizeWinEvent
 #endif
