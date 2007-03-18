@@ -392,7 +392,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 void
 comms_start( CommsCtxt* comms )
 {
-    LOG_FUNC();
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( comms->addr.conType == COMMS_CONN_RELAY ) {
@@ -404,7 +403,6 @@ comms_start( CommsCtxt* comms )
         btConnect( comms );
 #endif
     }
-    LOG_RETURN_VOID();
 } /* comms_start */
 
 static void
@@ -760,7 +758,7 @@ comms_resendAll( CommsCtxt* comms )
 {
     MsgQueueElem* msg;
     XP_S16 result = 0;
-    LOG_FUNC();
+
     XP_ASSERT( !!comms );
 
     for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
@@ -772,7 +770,6 @@ comms_resendAll( CommsCtxt* comms )
                     msg->msgID, oneResult );
     }
 
-    LOG_RETURNF( "%d", result );
     return result;
 } /* comms_resend */
 
@@ -937,8 +934,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_Bool channelWas0 = XP_FALSE;
     XP_Bool done = XP_FALSE;
 
-    /* Firing when switch from bt to solo in mid game and other device
-       sends.  BT should be shut down!!  */
     XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
 
     if ( 0 ) {
