@@ -124,9 +124,7 @@ MYDEFS_COMMON += $(BLUETOOTH)
 
 # Add menu allowing to choose to run 68K or ARM
 ifeq ($(ARCH),COMBINED)
-ifdef DEBUG
 MYDEFS_COMMON += -DFEATURE_DUALCHOOSE
-endif
 endif
 
 # For Danish and perhaps other languages, custom-measure glyph height
