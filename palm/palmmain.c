@@ -559,13 +559,13 @@ reportMissingDict( PalmAppGlobals* globals, XP_UCHAR* name )
     }
 } /* reportMissingDict */
 
-static Boolean
+static XP_Bool
 loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
                  XWGame* game, CurGameInfo* ginfo )
 {
     XP_Bool hasDict;
     XWStreamCtxt* recStream;
-    Boolean success = false;
+    XP_Bool success = XP_FALSE;
     DictionaryCtxt* dict;
 
     recStream = gameRecordToStream( globals, gIndex );
@@ -581,19 +581,19 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
 
         hasDict = stream_getU8( recStream );
         if ( hasDict ) {
-            XP_UCHAR* name = stringFromStream( globals->mpool, recStream );
+            XP_UCHAR name[33];
+            stringFromStreamHere( recStream, name, sizeof(name) );
             dict = palm_dictionary_make( MPPARM(globals->mpool) globals,
                                          name, globals->dictList );
             success = dict != NULL;
 
             if ( !success ) {
                 reportMissingDict( globals, name );
-                XP_FREE( globals->mpool, name );
                 beep();
             }
         } else {
             dict = NULL;
-            success = true;
+            success = XP_TRUE;
         }
 
         if ( success ) {
@@ -1567,38 +1567,41 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
 
 #ifdef XWFEATURE_BLUETOOTH
 static void
-showBTState( PalmAppGlobals* globals )
+showConnState( PalmAppGlobals* globals )
 {
     CommsCtxt* comms = globals->game.comms;
-    if ( (comms != NULL) 
-         && (COMMS_CONN_BT == comms_getConType( globals->game.comms )) ) {
-        Int16 resID = 0;
-
-        switch( globals->btUIState ) {
-        case BTUI_NONE:
-            resID = BTSTATUS_NONE_RES_ID; break;
-        case BTUI_LISTENING:
-            resID = BTSTATUS_LISTENING_RES_ID; break;
-        case BTUI_CONNECTING:
-            resID = BTSTATUS_SEEKING_RES_ID; break;
-        case BTUI_CONNECTED:
-        case BTUI_SERVING:
-            resID = BTSTATUS_CONNECTED_RES_ID; break;
-        }
-
-        if ( globals->lastBTStatusRes != resID ) {
-            RectangleType bounds;
-            getObjectBounds( XW_BTSTATUS_GADGET_ID, &bounds );
-            if ( resID != 0 ) {
-                draw_drawBitmapAt( globals->draw, resID,
-                                   bounds.topLeft.x, bounds.topLeft.y );
-            } else {
-                WinEraseRectangle( &bounds, 0 );
+    Int16 resID = 0;
+    if ( !!comms ) {
+        if ( (COMMS_CONN_BT == comms_getConType( comms )) ) {
+            switch( globals->btUIState ) {
+            case BTUI_NONE:
+                resID = BTSTATUS_NONE_RES_ID; break;
+            case BTUI_LISTENING:
+                resID = BTSTATUS_LISTENING_RES_ID; break;
+            case BTUI_CONNECTING:
+                resID = BTSTATUS_SEEKING_RES_ID; break;
+            case BTUI_CONNECTED:
+            case BTUI_SERVING:
+                resID = BTSTATUS_CONNECTED_RES_ID; break;
             }
-            globals->lastBTStatusRes = resID;
-        }
+        } /* else might want IP conn status too.... */
     }
-} /* showBTState */
+    if ( globals->lastBTStatusRes != resID ) {
+        RectangleType bounds;
+        getObjectBounds( XW_BTSTATUS_GADGET_ID, &bounds );
+        if ( resID != 0 ) {
+            draw_drawBitmapAt( globals->draw, resID,
+                               bounds.topLeft.x, bounds.topLeft.y );
+        } else {
+            if ( globals->useHiRes ) {
+                bounds.extent.x = (1 + bounds.extent.x) >> 1;
+                bounds.extent.y = (1 + bounds.extent.y) >> 1;
+            }
+            WinEraseRectangle( &bounds, 0 );
+        }
+        globals->lastBTStatusRes = resID;
+    }
+} /* showConnState */
 #endif
 
 static Boolean
@@ -1617,7 +1620,7 @@ handleNilEvent( PalmAppGlobals* globals )
         palmFireTimer( globals, why );
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( palm_bt_doWork( globals, &globals->btUIState ) ) {
-        showBTState( globals );
+        showConnState( globals );
 #endif
     } else if ( globals->timeRequested ) {
         globals->timeRequested = false;
@@ -1630,10 +1633,6 @@ handleNilEvent( PalmAppGlobals* globals )
     } else {
         handled = false;
     }
-
-#ifdef XWFEATURE_BLUETOOTH      /* don't check this in */
-    showBTState( globals );
-#endif
 
     return handled;
 } /* handleNilEvent */
@@ -1945,8 +1944,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     if ( !dict ) {
         XP_ASSERT( !!newDictName );
         dict = palm_dictionary_make( MPPARM(globals->mpool) globals,
-                                     copyString( globals->mpool, newDictName ),
-                                     globals->dictList );
+                                     newDictName, globals->dictList );
         XP_ASSERT( !!dict );	
         model_setDictionary( globals->game.model, dict );
     }
@@ -1971,7 +1969,6 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     (void)positionBoard( globals );
 
 #ifdef XWFEATURE_IR
-
     if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
         XWStreamCtxt* stream;
         XP_ASSERT( !!globals->game.comms );
@@ -1990,6 +1987,8 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
 
     board_invalAll( globals->game.board );
     board_draw( globals->game.board );
+
+    showConnState( globals );
 
     globals->isNewGame = false;
 } /* initAndStartBoard */
@@ -2114,16 +2113,15 @@ tryLoadSavedGame( PalmAppGlobals* globals, XP_U16 newIndex )
     XP_MEMSET( &tmpGInfo, 0, sizeof(tmpGInfo) );
 
     loaded = loadCurrentGame( globals, newIndex, &tmpGame, &tmpGInfo );
+
+    /* Nuke the one we don't want */
+    game_dispose( loaded? &globals->game : &tmpGame );
+    gi_disposePlayerInfo( MEMPOOL (loaded? &globals->gameInfo : &tmpGInfo) );
+
     if ( loaded ) {
-        game_dispose( &globals->game );
-        gi_disposePlayerInfo( MEMPOOL &globals->gameInfo );
-        globals->game = tmpGame;
-        /* we leaking dictName here? PENDING(ehouse) */
+        XP_MEMCPY( &globals->game, &tmpGame, sizeof(globals->game) );
         XP_MEMCPY( &globals->gameInfo, &tmpGInfo, sizeof(globals->gameInfo) );
         globals->gState.curGameIndex = newIndex;
-    } else {
-        game_dispose( &tmpGame );
-        gi_disposePlayerInfo( MEMPOOL &tmpGInfo );
     }
 
     return loaded;
@@ -2510,6 +2508,12 @@ mainViewHandleEvent( EventPtr event )
         draw = true;
         XP_ASSERT( !!globals->game.board );
         break;
+
+#ifdef XWFEATURE_BLUETOOTH
+    case closeBtLibEvent:
+        palm_bt_close( globals );
+        break;
+#endif
 
 #ifdef FEATURE_SILK
     case doResizeWinEvent:
@@ -3832,8 +3836,10 @@ palm_send( const XP_U8* buf, XP_U16 len,
            const CommsAddrRec* addr, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
-
     XP_S16 result = 0;
+
+    XP_ASSERT( !!globals->game.comms );
+
     switch( comms_getConType( globals->game.comms ) ) {
 #ifdef XWFEATURE_IR
     case COMMS_CONN_IR:
@@ -3924,12 +3930,22 @@ static void
 btDataHandler( PalmAppGlobals* globals, const CommsAddrRec* fromAddr, 
                const XP_U8* data, XP_U16 len )
 {
-    XWStreamCtxt* instream;
-    LOG_FUNC();
-    instream = makeSimpleStream( globals, NULL );
-    stream_putBytes( instream, data, len );
-    checkAndDeliver( globals, fromAddr, instream );
-    LOG_RETURN_VOID();
+    if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
+        XWStreamCtxt* instream;
+        instream = makeSimpleStream( globals, NULL );
+        stream_putBytes( instream, data, len );
+        checkAndDeliver( globals, fromAddr, instream );
+    } else {
+        /* If we're no longer using BT (meaning somebody loaded a new game
+           that doesn't use it), close it down.  We don't want to do it as
+           part of unloading the old game since it's expensive to stop/start
+           BT and the new game will probably use the same connection.  But if
+           we get here, a non-bt game's been loaded and we should shut
+           down.*/
+        EventType eventToPost;
+        eventToPost.eType = closeBtLibEvent;
+        EvtAddEventToQueue( &eventToPost );
+    }
 } /* btDataHandler */
 
 static void
@@ -3953,7 +3969,7 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
     if ( !isBT ) {
         XP_ASSERT( !!globals->mainForm );
         palm_bt_close( globals );
-        showBTState( globals );
+        showConnState( globals );
     }
 # endif
 
