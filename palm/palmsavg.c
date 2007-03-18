@@ -137,10 +137,7 @@ savedGamesHandleEvent( EventPtr event )
         case XW_SAVEDGAMES_USE_BUTTON: /* write the new name to the selected
                                           record */
             newName = FldGetTextPtr( state->nameField );
-            if ( !!newName &&
-                 (*newName != '\0') &&
-                 0 != StrCompare(newName, 
-                                 state->stringPtrs[state->displayGameIndex])){
+            if ( !!newName && (*newName != '\0') ) {
                 XP_U16 len = FldGetTextLength( state->nameField );
                 writeNameToGameRecord( globals, state->displayGameIndex,
                                        newName, len );
