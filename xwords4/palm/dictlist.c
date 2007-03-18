@@ -67,7 +67,7 @@ getNthDict( const PalmDictList* dl, short n, DictListEntry** dle )
 } /* getNthDict */
 
 XP_Bool
-getDictWithName( const PalmDictList* dl, XP_UCHAR* name, 
+getDictWithName( const PalmDictList* dl, const XP_UCHAR* name, 
                  DictListEntry** dlep )
 {
     XP_Bool result = XP_FALSE;
@@ -119,7 +119,7 @@ getDictWithName( const PalmDictList* dl, XP_UCHAR* name,
 } /* getDictWithName */
 
 void
-cacheDictForName( PalmDictList* dl, XP_UCHAR* dictName, 
+cacheDictForName( PalmDictList* dl, const XP_UCHAR* dictName, 
                   DictionaryCtxt* dict )
 {
     DictListEntry* dle;
