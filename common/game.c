@@ -182,7 +182,6 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
         if ( hasComms ) {
             game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
                                                 sendProc, closure );
-            comms_start( game->comms );
         } else {
             game->comms = NULL;
         }
