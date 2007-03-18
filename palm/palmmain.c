@@ -581,8 +581,7 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
 
         hasDict = stream_getU8( recStream );
         if ( hasDict ) {
-            XP_UCHAR* name = stringFromStream( MPPARM(globals->mpool)
-                                               recStream );
+            XP_UCHAR* name = stringFromStream( globals->mpool, recStream );
             dict = palm_dictionary_make( MPPARM(globals->mpool) globals,
                                          name, globals->dictList );
             success = dict != NULL;

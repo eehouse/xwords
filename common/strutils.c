@@ -98,14 +98,22 @@ signedFromStream( XWStreamCtxt* stream, XP_U16 nBits )
 #endif
 
 XP_UCHAR*
-stringFromStream( MPFORMAL XWStreamCtxt* stream )
+p_stringFromStream( MPFORMAL XWStreamCtxt* stream
+#ifdef MEM_DEBUG
+                    , const char* file, XP_U32 lineNo 
+#endif
+                    )
 {
     XP_UCHAR buf[0xFF];
     XP_UCHAR* str = (XP_UCHAR*)NULL;
     XP_U16 len = stringFromStreamHere( stream, buf, sizeof(buf) );
 
     if ( len > 0 ) {
-        str = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 );
+#ifdef MEM_DEBUG
+        str = mpool_alloc( mpool, len + 1, file, lineNo );
+#else
+        str = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 ); /* leaked */
+#endif
         XP_MEMCPY( str, buf, len + 1 );
     }
     return str;

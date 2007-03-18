@@ -955,8 +955,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
 #ifdef STUBBED_DICT
             XP_ASSERT(0);       /* just don't do this!!!! */
 #else
-            XP_UCHAR* name = stringFromStream( MPPARM(globals->mpool)
-                                               stream );
+            XP_UCHAR* name = stringFromStream( globals->mpool, stream );
             dict = ce_dictionary_make( globals, name );
             XP_FREE( globals->mpool, name );
             success = dict != NULL;
