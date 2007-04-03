@@ -2994,10 +2994,10 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey,
 #endif
                     break;
                 }
-                result = XP_TRUE;
                 *useWhat += incr;
                 if ( forceFirst
                      || !cellOccupied( board, *colP, *rowP, inclPending ) ) {
+                    result = XP_TRUE;
                     break;
                 }
             }
