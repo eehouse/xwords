@@ -1988,7 +1988,9 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     board_invalAll( globals->game.board );
     board_draw( globals->game.board );
 
+#ifdef XWFEATURE_BLUETOOTH
     showConnState( globals );
+#endif
 
     globals->isNewGame = false;
 } /* initAndStartBoard */
