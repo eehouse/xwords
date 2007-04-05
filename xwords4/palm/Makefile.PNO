@@ -37,6 +37,11 @@ INCLUDE += \
 ifneq (, $(findstring XWFEATURE_FIVEWAY,$(MYDEFS)))
 INCLUDE += -I/usr/local/share/palmdev/Handspring5
 INCLUDE += -I/usr/local/share/palmdev/Handspring5/68K
+GENDEFS += -DXWFEATURE_FIVEWAY
+endif
+
+ifneq (, $(findstring XWFEATURE_BLUETOOTH,$(MYDEFS)))
+GENDEFS += -DXWFEATURE_BLUETOOTH
 endif
 
 INCLUDE += \
@@ -119,7 +124,7 @@ pace_gen.c pace_gen.h: ./gen_pace.pl funcfile.txt
 		-file $(PALMDIR)/Extensions/ExpansionMgr \
 		-file $(PALMDIR)/Extensions/Bluetooth \
 		-file /usr/local/share/palmdev/Handspring5/68K/System \
-		-oc pace_gen.c -oh pace_gen.h
+		-oc pace_gen.c -oh pace_gen.h $(GENDEFS)
 	rm -f _dirList
 
 clean:
