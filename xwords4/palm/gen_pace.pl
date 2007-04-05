@@ -21,11 +21,15 @@ use File::Basename;
 my %funcInfo;
 my %fileNames;
 my %contents;
+my @ifdefs;
+my @minusDs;
 
 sub usage() {
     print STDERR "$0 \\\n" .
         "\t[-oh out.h] \\\n" .
         "\t[-oc out.c] \\\n" .
+        "\t[-os out.s] \\\n" .
+        "\t[-D<define0> ... -D<defineN>] \\\n" .
         "\t[-file palmheader.h|palm_header_dir] (can repeat) \\\n" .
         "\t[-func func_name_or_list_file] (can repeat)\n";
 
@@ -43,13 +47,37 @@ sub makeFuncList($) {
         while ( <LIST> ) {
             chomp;
 
+            # ifdef/endif pairs
+            if ( m/^\#\s*ifdef\s+(\w+)\s*$/ ) {
+                # print STDERR "looking for $1 in ", join( ",", @minusDs), "\n";
+                if ( 0 == grep( {$1 eq $_} @minusDs ) ) {
+                    # print STDERR "adding $1 to skippers\n";
+                    push( @ifdefs, $1 );
+                } else {
+                    # print STDERR "NOT adding $1 to skippers\n";
+                }
+                next;
+            } elsif ( m/^\#\s*endif\s+(\w+)\s*$/ ) {
+                if ( 0 == grep( {$1 eq $_} @minusDs ) ) {
+                    die "$1 not most recently defined" if $1 ne pop(@ifdefs);
+                }
+                next;
+            }
+            next if @ifdefs > 0;
+
             # comments?
             s/\#.*$//;
             # white space
-            s/\s*(\w+)\s*/$1/;
-            next if ! length;
+            s/^\s*//;
+            s/\s*$//;
 
-            push( @result, $_ );
+            if ( m,^(\w+)\s+(-?\d+)\s+(0x\w+)$, ) {
+                push( @result, [ $1, $2, $3 ] );
+            } elsif ( m,^(\w+)$, ) {
+                push( @result, [ $1 ] );
+            } else {
+                next;
+            }
         }
         close LIST;
     } else {
@@ -69,6 +97,7 @@ sub makeFileList($) {
 my @funcList;
 my @pathList;
 my $dot_c;
+my $dot_s;
 my $dot_h;
 
 # A list of types seen in the header files.  The idea is to use these
@@ -524,46 +553,85 @@ sub funcId($$) {
     return $id;
 } # funcId
 
+sub genStub($$$) {
+    my( $func, $r9off, $off ) = @_;
+    my $result;
+
+    if ( $func && $r9off && $off ) {
+        $result .= "\t\t.type	$func, %function\n";
+        $result .= "\t\t.globl	$func\n";
+        $result .= "$func:\n";
+        $result .= "\tldr ip, [r9, #$r9off]\n";
+        my $intoff = 4 * hex($off);
+        $result  .= "\tldr	pc, [ip, #$intoff]\n";
+    }
+    return $result;
+}
 
 ###########################################################################
 # Main
 ###########################################################################
 
-
+my @paths;
+my @funcs;
 while ( my $arg = shift(@ARGV) ) {
     if ( $arg eq "-oh" ) {
         $dot_h = shift(@ARGV);        
     } elsif ( $arg eq "-oc" ) {
         $dot_c = shift(@ARGV);
+    } elsif ( $arg eq "-os" ) {
+        $dot_s = shift(@ARGV);
     } elsif ( $arg eq "-file" ) {
-        push( @pathList, makeFileList(shift(@ARGV)) );
+        push( @paths, shift(@ARGV));
     } elsif ( $arg eq "-func" ) {
-        push( @funcList, makeFuncList(shift(@ARGV)) );
+        push( @funcs, shift(@ARGV));
+    } elsif ( $arg =~ m|^-D(\w+)$| ) {
+        push( @minusDs, $1 );
     } else {
         usage();
     }
 }
 
-foreach my $func (@funcList) {
+map { push( @pathList, makeFileList($_) ); } @paths;
+map { push( @funcList, makeFuncList($_) ); } @funcs;
 
-#    print STDERR "looking for $func\n";
-
-    my $found = 0;
-    my $path;
-    foreach my $path (@pathList) {
-        if ( -d $path ) {
-            $found = searchOneDir( $path, $func );
-            last if $found;
-        } elsif ( -e $path ) {
-            $found = searchOneFile( $path, $func );
-            last if $found;
-        }
+my $dot_s_out = "\t.text\n";
+foreach my $fref (@funcList) {
+    if ( $dot_s ) {
+        $dot_s_out .= genStub( $$fref[0], $$fref[1], $$fref[2] );
     }
-    die "unable to find declaration of $func\n" if ! $found;
-    close PATHS;
+    if ( $dot_c ) {
+        my $func = $$fref[0];
+        my $found = 0;
+        my $path;
+        foreach my $path (@pathList) {
+            if ( -d $path ) {
+                $found = searchOneDir( $path, $func );
+                last if $found;
+            } elsif ( -e $path ) {
+                $found = searchOneFile( $path, $func );
+                last if $found;
+            }
+        }
+        die "unable to find declaration of $func\n" if ! $found;
+    }
+#    close PATHS;
 }
 
 my $outRef;
+
+if ( $dot_s ) {
+    if ( $dot_s eq "-" ) {
+        $outRef = *STDOUT{IO};
+    } else {
+        open DOT, "> $dot_s";
+        $outRef = *DOT{IO};
+    }
+    print $outRef $dot_s_out;
+    if ( $dot_c ne "-" ) {
+        close DOT;
+    }
+}
 
 if ( $dot_c ) {
     if ( $dot_c eq "-" ) {
