@@ -229,7 +229,7 @@ WinGetPixel
 #
 UIColorGetTableEntryIndex
 #HsNavDrawFocusRing
-# Bluetooth
+#ifdef XWFEATURE_BLUETOOTH
 BtLibOpen
 BtLibAddrBtdToA
 BtLibSecurityFindTrustedDeviceRecord
@@ -246,3 +246,4 @@ BtLibSocketListen
 #BtLibRegisterManagementNotification
 #BtLibUnregisterManagementNotification
 #BtLibSocketCreate
+#endif
