@@ -1545,8 +1545,18 @@ board_flip( BoardCtxt* board )
 XP_Bool
 board_toggle_showValues( BoardCtxt* board )
 {
+    XP_Bool changed;
     board->showCellValues = !board->showCellValues;
-    return invalCellsWithTiles( board );
+
+    /* We show the tile values when showCellValues is set even if
+       hideValsInTray is set.  So inval the tray if there will be a change.
+       And set changed to true in case there are no tiles on the baord yet. 
+    */
+    changed = board->hideValsInTray && (board->trayVisState == TRAY_REVEALED);
+    if ( changed ) {
+        board_invalTrayTiles( board, ALLTILES );
+    }
+    return invalCellsWithTiles( board ) || changed;
 } /* board_toggle_showValues */
 
 XP_Bool

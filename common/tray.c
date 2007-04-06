@@ -172,7 +172,8 @@ drawTray( BoardCtxt* board )
                                 dict_tilesToString( dictionary, &tile, 1, 
                                                     textP, sizeof(buf) );
                             }
-                            if ( board->hideValsInTray ) {
+                            if ( board->hideValsInTray 
+                                 && !board->showCellValues ) {
                                 value = -1;
                             } else {
                                 value = dict_getTileValue( dictionary, tile );
