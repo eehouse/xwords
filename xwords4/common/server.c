@@ -1531,7 +1531,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
            "has" enough to be allowed to take the turn just undone. */
         playerTilesLeft = MAX_TRAY_TILES;
     }
-    SETSTATE( server, XWSTATE_INTURN ); /* unless game over */
+    SETSTATE( server, XWSTATE_INTURN ); /* even if game over, if undoing */
 
     if ( (playerTilesLeft > 0) && tileCountsOk(server) && NPASSES_OK(server) ){
 
