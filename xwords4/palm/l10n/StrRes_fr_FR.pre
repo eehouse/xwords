@@ -1,0 +1,161 @@
+/* -*- mode: c; -*- */
+/* 
+ * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org) and others.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+/* This table is where English user-visible strings come from (all
+ * strings meant to wind up in a str# resource, actually.  Each entry
+ * is a pair of strings, first the constant name and then the string
+ * itself.  The build system creats a str# resource with the latter
+ * and generates a .h file of #defines using the former.  */
+
+{ "STR_COMMIT_CONFIRM", "Commit the current move?\n" },
+{ "STR_NOT_YOUR_TURN", "You can't do that; it's not your turn!" },
+{ "STR_NO_PEEK_ROBOT_TILES", "No peeking at the robot's tiles!" },
+#ifndef XWFEATURE_STANDALONE_ONLY
+{ "STR_NO_PEEK_REMOTE_TILES", "No peeking at remote player's tiles!" },
+{ "STR_SERVER_DICT_WINS", 
+      "Conflict between Host and Guest dictionaries; Host wins." },
+{ "STR_REG_UNEXPECTED_USER",  "Attempt to register unexpected user refused" },
+{ "STR_RESEND_IR", "Unable to send message via IR; resend?" },
+#endif
+{ "STR_TOO_FEW_TILES", "Too few tiles left to trade." },
+{ "STR_CANT_UNDO_TILEASSIGN", "Nothing to undo.  (Initial tile picking cannot be undone.)" },
+{ "STR_VALUES_TITLE", "Counts and Values" },
+{ "STR_REMAINS_TITLE","Remaining tiles" },
+{ "STRS_VALUES_HEADER",		"%s counts/values:\n" },
+
+{ "STR_DOUBLE_LETTER",		"Double letter" },
+{ "STR_DOUBLE_WORD",		"Double word" },
+{ "STR_TRIPLE_LETTER",		"Triple letter" },
+{ "STR_TRIPLE_WORD",		"Triple word" },
+{ "STR_REMTILES",		"rem:%d" },
+{ "STR_CANT_TRADE_MIDTURN",	"Remove played tiles before trading."},
+{ "STR_ASK_REPLACE_GAME",	"Do you want to overwrite the current game?" },
+{ "STR_OK",			"Ok" },
+{ "STR_ABOUT_TITLE",		"About Crosswords" },
+{ "STR_DEFAULT_NAME",		"Player %d" },
+{ "STR_CONFIRM_END_GAME",	"Are you sure you want to end the game now?"},
+{ "STR_CONFIRM_TRADE",		"Are you sure you want to use your " \
+				"turn trading tiles?" },
+{ "STR_TRADING_REMINDER",	"Click D when done." },
+
+#ifndef NO_REG_REQUIRED
+{ "STR_NOT_UNREG_VERS",	  "Feature not available in unregistered version." },
+#endif
+
+{ "STR_LOCAL_NAME",             "%s" },
+{ "STR_NONLOCAL_NAME",          "%s (remote)" },
+{ "STRSD_SUMMARYSCORED",        "%s:%d" },
+{ "STRD_TRADED",                 "Traded %d" },
+{ "STR_PASSED",                 "Passed" },
+{ "STR_LOSTTURN",               "Lost turn" },
+
+{ "STR_HISTORY_TITLE",		"Game history" },
+{ "STRD_REMAINING_TILES_ADD",	"+ %d [all remaining tiles]" },
+{ "STRD_UNUSED_TILES_SUB",	"- %d [unused tiles]" },
+{ "STR_BONUS_ALL",		"Bonus for using all tiles: 50\n" },
+{ "STRD_TURN_SCORE",		"Score for turn: %d\n" },
+{ "STR_ALL_IN_LINE_ERR",	"All tiles played must be in a line." },
+{ "STR_NO_EMPTIES_ERR",	"Empty squares cannot separate pieces played." },
+{ "STR_FIRST_MOVE_ERR",	"Must play two or more pieces on " \
+				"the first move." },
+  /* phony comment to get diff back in sync */
+{ "STR_MUST_CONTACT_ERR",    	"New tiles must contact others already " \
+				"in place (or the middle square on the " \
+				"first move)." },
+{ "STR_PTS",			"Pts:" },
+{ "STR_CONFIRM_DEL_GAME",	"Really delete the selected game?" },
+
+{ "STRD_TIME_PENALTY_SUB",     " - %d [time]" },
+
+{ "STR_NO_DICT_INSTALLED",    "Crosswords 4 requires at least one dictionary." \
+                              "Download one or more from xwords.sf.net." },
+{ "STR_ILLEGAL_WORD",	      "Word[s] %s not found in dictionary.  Allow anyway?" },
+
+{ "STR_FINAL_SCORES_TITLE",   "Final scores"},
+
+  /* another phony comment to get diff back in sync */
+
+{ "STRD_CUMULATIVE_SCORE",    "Cumulative score: %d\n" },
+{ "STRS_TRAY_AT_START",       "Tray at start: %s\n" },
+{ "STRS_MOVE_ACROSS",         "move (from %s across)\n" },
+{ "STRS_MOVE_DOWN",           "move (from %s down)\n" },
+{ "STRS_NEW_TILES",           "New tiles: %s\n" },
+{ "STRSS_TRADED_FOR",         "Traded %s for %s." },
+{ "STR_PASS",                 "pass\n" },
+{ "STR_PHONY_REJECTED",       "Illegal word in move; turn lost!\n" },
+
+{ "STR_ROBOT_MOVED",           "The robot made this move:\n" },
+{ "STR_REMOTE_MOVED",          "Remote player made this move:\n" },
+{ "STRD_ROBOT_TRADED",         "%d tiles traded this turn." },
+{ "STR_ROBOT_TITLE",           "Robot score" },
+
+  /* The end of 4.0.5's strings */
+
+{ "STR_PICK_BLANK",            "Select the letter for your blank." },
+#ifdef FEATURE_TRAY_EDIT
+{ "STRS_PICK_TILE",            "Choose a new tile for %s." },
+#endif
+
+#ifdef NODE_CAN_4
+{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert any existing Crosswords " \
+                               "dictionaries to the new format? " \
+                               "The change is not reversible." }, 
+{ "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" },
+#endif
+{ "STRS_CANNOT_FIND_DICT",      "%s dictionary not found." },
+{ "STR_DICT_COPY_EXPL",        "Copying dictionary from card..." },
+
+{ "STR_LOCALPLAYERS",          "Local players" },
+{ "STR_TOTALPLAYERS",          "Total players" },
+
+#ifdef XWFEATURE_RELAY
+{ "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
+                               "connect." },
+{ "STR_RELAY_LOST_OTHER",      "Relay error: another device has lost its "
+                               "connection." },
+{ "STR_RELAY_GENERIC",         "Relay error: something's wrong." },
+#endif
+
+#ifdef XWFEATURE_BLUETOOTH
+{ "STR_BT_NOINIT",             "Unable to initialize Bluetooth. "
+                               "Is it enabled?" },
+#endif
+
+{ "STR_ABOUT_CONTENT", 
+#ifdef XWFEATURE_BLUETOOTH
+                               "THANKS FOR LOOKING at this alpha version of "
+                               "Crosswords.  Please see the notes and caveats at "
+                               "xwords.sf.net/bt_palm.php.  Please report bugs to "
+                               "ehouse@users.sf.net.  Enjoy!\n\n"
+#endif
+      "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
+      "Copyright 1998-2007 by Eric House.  "\
+      "Released under the GNU Public License.\n\n"\
+
+      "See the manual at xwords.sourceforge.net\n\n" \
+
+      "This program is postcardware. If you like it " \
+      "please mail a postcard to:\n" \
+      "The Houses\n" \
+      "1610 NW 14th Place\n" \
+      "Corvallis, OR 97330 USA\n\n"
+
+      "Developed on Debian GNU/Linux using the prc-tools "\
+      "suite." \
+      },
