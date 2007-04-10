@@ -1,6 +1,7 @@
 /* -*- mode: c; -*- */
 /* 
- * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org) and others.  All rights reserved.
+ * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org) and
+ * others.  All rights reserved. Traduction en français par Francis H.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,106 +24,106 @@
  * itself.  The build system creats a str# resource with the latter
  * and generates a .h file of #defines using the former.  */
 
-{ "STR_COMMIT_CONFIRM", "Commit the current move?\n" },
-{ "STR_NOT_YOUR_TURN", "You can't do that; it's not your turn!" },
+{ "STR_COMMIT_CONFIRM", "Confirmez-vous le coup en cours ?\n" },
+{ "STR_NOT_YOUR_TURN", "Impossible ; ce n'est pas votre tour !" },
 { "STR_NO_PEEK_ROBOT_TILES", "No peeking at the robot's tiles!" },
 #ifndef XWFEATURE_STANDALONE_ONLY
 { "STR_NO_PEEK_REMOTE_TILES", "No peeking at remote player's tiles!" },
 { "STR_SERVER_DICT_WINS", 
-      "Conflict between Host and Guest dictionaries; Host wins." },
+      "Conflit entre les dictionnaires Hôte et Invité ; L'hôte gagne." },
 { "STR_REG_UNEXPECTED_USER",  "Attempt to register unexpected user refused" },
-{ "STR_RESEND_IR", "Unable to send message via IR; resend?" },
+{ "STR_RESEND_IR", "Impossible envoyer message par IR; réessayer ?" },
 #endif
-{ "STR_TOO_FEW_TILES", "Too few tiles left to trade." },
-{ "STR_CANT_UNDO_TILEASSIGN", "Nothing to undo.  (Initial tile picking cannot be undone.)" },
-{ "STR_VALUES_TITLE", "Counts and Values" },
-{ "STR_REMAINS_TITLE","Remaining tiles" },
-{ "STRS_VALUES_HEADER",		"%s counts/values:\n" },
+{ "STR_TOO_FEW_TILES", "Pas assez de lettres pour échanger." },
+{ "STR_CANT_UNDO_TILEASSIGN", "Impossible d'annuler.  (Le tirage initial ne peut être annulé.)" },
+{ "STR_VALUES_TITLE", "Nombres et Valeurs" },
+{ "STR_REMAINS_TITLE","Lettres restantes" },
+{ "STRS_VALUES_HEADER",		"%s nombres/valeurs :\n" },
 
-{ "STR_DOUBLE_LETTER",		"Double letter" },
-{ "STR_DOUBLE_WORD",		"Double word" },
-{ "STR_TRIPLE_LETTER",		"Triple letter" },
-{ "STR_TRIPLE_WORD",		"Triple word" },
+{ "STR_DOUBLE_LETTER",		"Double lettre" },
+{ "STR_DOUBLE_WORD",		"Double mot" },
+{ "STR_TRIPLE_LETTER",		"Triple lettre" },
+{ "STR_TRIPLE_WORD",		"Triple mot" },
 { "STR_REMTILES",		"rem:%d" },
-{ "STR_CANT_TRADE_MIDTURN",	"Remove played tiles before trading."},
-{ "STR_ASK_REPLACE_GAME",	"Do you want to overwrite the current game?" },
+{ "STR_CANT_TRADE_MIDTURN",	"Znlevez les lettres jouées avant d'échanger."},
+{ "STR_ASK_REPLACE_GAME",	"Voulez-vous remplacer la partie en cours ?" },
 { "STR_OK",			"Ok" },
-{ "STR_ABOUT_TITLE",		"About Crosswords" },
-{ "STR_DEFAULT_NAME",		"Player %d" },
-{ "STR_CONFIRM_END_GAME",	"Are you sure you want to end the game now?"},
-{ "STR_CONFIRM_TRADE",		"Are you sure you want to use your " \
-				"turn trading tiles?" },
-{ "STR_TRADING_REMINDER",	"Click D when done." },
+{ "STR_ABOUT_TITLE",		"Au sujet de Crosswords" },
+{ "STR_DEFAULT_NAME",		"Joueur %d" },
+{ "STR_CONFIRM_END_GAME",	"Etes-vous sûr de vouloir arrêter la partie maintenant ?"},
+{ "STR_CONFIRM_TRADE",		"Etes-vous sûr de de vouloir échanger " \
+				"vos lettres ?" },
+{ "STR_TRADING_REMINDER",	"Cliquez D une fois fini." },
 
 #ifndef NO_REG_REQUIRED
-{ "STR_NOT_UNREG_VERS",	  "Feature not available in unregistered version." },
+{ "STR_NOT_UNREG_VERS",	  "Disposition non disponible dans la version non enregistrée." },
 #endif
 
 { "STR_LOCAL_NAME",             "%s" },
 { "STR_NONLOCAL_NAME",          "%s (remote)" },
 { "STRSD_SUMMARYSCORED",        "%s:%d" },
-{ "STRD_TRADED",                 "Traded %d" },
-{ "STR_PASSED",                 "Passed" },
-{ "STR_LOSTTURN",               "Lost turn" },
+{ "STRD_TRADED",                 "Echangé %d" },
+{ "STR_PASSED",                 "Passé" },
+{ "STR_LOSTTURN",               "Tour perdu" },
 
-{ "STR_HISTORY_TITLE",		"Game history" },
-{ "STRD_REMAINING_TILES_ADD",	"+ %d [all remaining tiles]" },
-{ "STRD_UNUSED_TILES_SUB",	"- %d [unused tiles]" },
-{ "STR_BONUS_ALL",		"Bonus for using all tiles: 50\n" },
-{ "STRD_TURN_SCORE",		"Score for turn: %d\n" },
-{ "STR_ALL_IN_LINE_ERR",	"All tiles played must be in a line." },
-{ "STR_NO_EMPTIES_ERR",	"Empty squares cannot separate pieces played." },
-{ "STR_FIRST_MOVE_ERR",	"Must play two or more pieces on " \
-				"the first move." },
+{ "STR_HISTORY_TITLE",		"Historique de la partie" },
+{ "STRD_REMAINING_TILES_ADD",	"+ %d [toutes lettres restantes]" },
+{ "STRD_UNUSED_TILES_SUB",	"- %d [lettres inutilisées]" },
+{ "STR_BONUS_ALL",		"Bonus pour placement toutes les lettres : 50\n" },
+{ "STRD_TURN_SCORE",		"Score après ce tour : %d\n" },
+{ "STR_ALL_IN_LINE_ERR",	"Toutes les lettres doivent être placées sur une même ligne." },
+{ "STR_NO_EMPTIES_ERR",	"Des cases vides ne peuvent séparer les lettres jouées." },
+{ "STR_FIRST_MOVE_ERR",	"Vous devez placer au moins 2 lettres " \
+				"lors du 1er coup." },
   /* phony comment to get diff back in sync */
-{ "STR_MUST_CONTACT_ERR",    	"New tiles must contact others already " \
-				"in place (or the middle square on the " \
-				"first move)." },
-{ "STR_PTS",			"Pts:" },
-{ "STR_CONFIRM_DEL_GAME",	"Really delete the selected game?" },
+{ "STR_MUST_CONTACT_ERR",    	"Les nouvelles lettres doivent être au contact de celles " \
+				"déjà en place (ou sur la case centrale lors du " \
+				"1er coup)." },
+{ "STR_PTS",			"Pts :" },
+{ "STR_CONFIRM_DEL_GAME",	"Supprimer vraiment la partie sélectionnée ?" },
 
 { "STRD_TIME_PENALTY_SUB",     " - %d [time]" },
 
-{ "STR_NO_DICT_INSTALLED",    "Crosswords 4 requires at least one dictionary." \
-                              "Download one or more from xwords.sf.net." },
-{ "STR_ILLEGAL_WORD",	      "Word[s] %s not found in dictionary.  Allow anyway?" },
+{ "STR_NO_DICT_INSTALLED",    "Crosswords 4 nécessite au minimum 1 dictionnaire." \
+                              "Téléchargez-en un ou plus sur xwords.sf.net." },
+{ "STR_ILLEGAL_WORD",	      "Mot[s] %s non trouvé dans le dictionnaire.  L'utiliser quand même ?" },
 
-{ "STR_FINAL_SCORES_TITLE",   "Final scores"},
+{ "STR_FINAL_SCORES_TITLE",   "Score final"},
 
   /* another phony comment to get diff back in sync */
 
-{ "STRD_CUMULATIVE_SCORE",    "Cumulative score: %d\n" },
-{ "STRS_TRAY_AT_START",       "Tray at start: %s\n" },
-{ "STRS_MOVE_ACROSS",         "move (from %s across)\n" },
-{ "STRS_MOVE_DOWN",           "move (from %s down)\n" },
-{ "STRS_NEW_TILES",           "New tiles: %s\n" },
-{ "STRSS_TRADED_FOR",         "Traded %s for %s." },
-{ "STR_PASS",                 "pass\n" },
-{ "STR_PHONY_REJECTED",       "Illegal word in move; turn lost!\n" },
+{ "STRD_CUMULATIVE_SCORE",    "Score cumulé : %d\n" },
+{ "STRS_TRAY_AT_START",       "tableau au départ : %s\n" },
+{ "STRS_MOVE_ACROSS",         "coup (depuis %s horizontal)\n" },
+{ "STRS_MOVE_DOWN",           "coup (depuis %s vertical)\n" },
+{ "STRS_NEW_TILES",           "Nouvelles lettres : %s\n" },
+{ "STRSS_TRADED_FOR",         "Echange %s pour %s." },
+{ "STR_PASS",                 "passé\n" },
+{ "STR_PHONY_REJECTED",       "Mot incorrect ; tour perdu !\n" },
 
-{ "STR_ROBOT_MOVED",           "The robot made this move:\n" },
-{ "STR_REMOTE_MOVED",          "Remote player made this move:\n" },
-{ "STRD_ROBOT_TRADED",         "%d tiles traded this turn." },
-{ "STR_ROBOT_TITLE",           "Robot score" },
+{ "STR_ROBOT_MOVED",           "Le robot a joué ce coup :\n" },
+{ "STR_REMOTE_MOVED",          "Le joueur Remote player a joué ce coup :\n" },
+{ "STRD_ROBOT_TRADED",         "%d lettres changées ce coup." },
+{ "STR_ROBOT_TITLE",           "Score du robot" },
 
   /* The end of 4.0.5's strings */
 
-{ "STR_PICK_BLANK",            "Select the letter for your blank." },
+{ "STR_PICK_BLANK",            "Choisir la lettre en échange de la case blanche." },
 #ifdef FEATURE_TRAY_EDIT
-{ "STRS_PICK_TILE",            "Choose a new tile for %s." },
+{ "STRS_PICK_TILE",            "Choisir une nouvelle lettre pour %s." },
 #endif
 
 #ifdef NODE_CAN_4
-{ "STR_CONFIRM_CONVERTDICT",   "Do you want to convert any existing Crosswords " \
-                               "dictionaries to the new format? " \
-                               "The change is not reversible." }, 
-{ "STRS_CONFIRM_ONEDICT",       "Convert dictionary %s?" },
+{ "STR_CONFIRM_CONVERTDICT",   "Voulez-vous convertir les dictionnaires Crosswords " \
+                               "existants au nouveau format? " \
+                               "Le changement est irréversible." }, 
+{ "STRS_CONFIRM_ONEDICT",       "Convertir dictionnaire %s?" },
 #endif
-{ "STRS_CANNOT_FIND_DICT",      "%s dictionary not found." },
-{ "STR_DICT_COPY_EXPL",        "Copying dictionary from card..." },
+{ "STRS_CANNOT_FIND_DICT",      "%s dictionnaire non trouvé." },
+{ "STR_DICT_COPY_EXPL",        "Copier dictionnaire depuis la carte..." },
 
-{ "STR_LOCALPLAYERS",          "Local players" },
-{ "STR_TOTALPLAYERS",          "Total players" },
+{ "STR_LOCALPLAYERS",          "Joueurs locaux" },
+{ "STR_TOTALPLAYERS",          "Total jouuers" },
 
 #ifdef XWFEATURE_RELAY
 { "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
@@ -133,29 +134,29 @@
 #endif
 
 #ifdef XWFEATURE_BLUETOOTH
-{ "STR_BT_NOINIT",             "Unable to initialize Bluetooth. "
-                               "Is it enabled?" },
+{ "STR_BT_NOINIT",             "Impossible initialiser Bluetooth. "
+                               "Est-il connecté ?" },
 #endif
 
 { "STR_ABOUT_CONTENT", 
 #ifdef XWFEATURE_BLUETOOTH
-                               "THANKS FOR LOOKING at this alpha version of "
-                               "Crosswords.  Please see the notes and caveats at "
-                               "xwords.sf.net/bt_palm.php.  Please report bugs to "
-                               "ehouse@users.sf.net.  Enjoy!\n\n"
+                               "MERCI DE VOTRE ATTENTION pour cette version alpha de "
+                               "Crosswords.  Svp, regardez les notes et avertissements sur "
+                               "xwords.sf.net/bt_palm.php.  Svp, signalez les bugs à "
+                               "ehouse@users.sf.net.  Ai plaisir !\n\n"
 #endif
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
-      "Copyright 1998-2007 by Eric House.  "\
-      "Released under the GNU Public License.\n\n"\
+      "Copyright 1998-2007 par Eric House.  "\
+      "Réalisé sous GNU Public License.\n\n"\
 
-      "See the manual at xwords.sourceforge.net\n\n" \
+      "Voir le manuel sur xwords.sourceforge.net\n\n" \
 
-      "This program is postcardware. If you like it " \
-      "please mail a postcard to:\n" \
+      "Ce programme est 'cartepostale'. Si vous l'appréciez, " \
+      "svp, envoyez une carte postale à :\n" \
       "The Houses\n" \
       "1610 NW 14th Place\n" \
       "Corvallis, OR 97330 USA\n\n"
 
-      "Developed on Debian GNU/Linux using the prc-tools "\
+      "Developpé sur Debian GNU/Linux avec the prc-tools "\
       "suite." \
       },
