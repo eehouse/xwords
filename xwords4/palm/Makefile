@@ -72,6 +72,9 @@ endif
 endif
 endif
 
+ifneq ($(LANG),en_US)
+PLATFORM := $(PLATFORM)_$(shell echo $(LANG) | tr [A-Z] [a-z])
+endif
 
 APPNAME = "$(NAME)"
 
