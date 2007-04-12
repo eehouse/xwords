@@ -287,8 +287,9 @@ eType_2str( eventsEnum eType )
         CASESTR( loadGameEvent);
         CASESTR( prefsChangedEvent);
         CASESTR( openSavedGameEvent);
+#ifdef XWFEATURE_FIVEWAY
         CASESTR( updateAfterFocusEvent);
-
+#endif
         CASESTR( DOWN_ARROW_RESID );
         CASESTR( RIGHT_ARROW_RESID );
         CASESTR( FLIP_BUTTON_BMP_RES_ID );

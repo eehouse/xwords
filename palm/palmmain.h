@@ -350,7 +350,9 @@ enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
        ,loadGameEvent
        ,prefsChangedEvent
        ,openSavedGameEvent
+#ifdef XWFEATURE_FIVEWAY
        ,updateAfterFocusEvent
+#endif
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
        ,connsSettingChgEvent
 #endif
