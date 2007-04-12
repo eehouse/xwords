@@ -967,11 +967,11 @@ initHighResGlobals( PalmAppGlobals* globals )
     globals->oneDotFiveAvail = globals->hasHiRes
         && (err == errNone) && (vers >= 5);
 
+#ifdef XWFEATURE_FIVEWAY
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
     globals->generatesKeyUp = ( (err == errNone) && 
                                 ((vers & sysFtrNumUIHardwareHasKbd) != 0) )
         || globals->isZodiac;
-#ifdef XWFEATURE_FIVEWAY
     globals->hasTreoFiveWay = (err == errNone)
         && ((vers & sysFtrNumUIHardwareHas5Way) != 0) && !globals->isZodiac;
 #endif
@@ -1272,7 +1272,9 @@ static void
 stopApplication( PalmAppGlobals* globals )
 {
     if ( globals != NULL ) {
+#ifdef XWFEATURE_FIVEWAY
         Int16 focusItem = getFocusOwner();
+#endif
         MPSLOT;
 
         saveOpenGame( globals );
@@ -1295,7 +1297,9 @@ stopApplication( PalmAppGlobals* globals )
             prefs.versionNum = XP_HTONS( prefs.versionNum );
             prefs.curGameIndex = XP_HTONS( prefs.curGameIndex );
 
+#ifdef XWFEATURE_FIVEWAY
             prefs.focusItem = XP_HTONS(focusItem);
+#endif
 
             PrefSetAppPreferences( AppType, PrefID, VERSION_NUM, 
                                    &prefs, sizeof(prefs), true );
@@ -1800,7 +1804,9 @@ drawBitmapButton( PalmAppGlobals* globals, UInt16 ctrlID, UInt16 resID,
 static void
 drawFormButtons( PalmAppGlobals* globals )
 {
+#ifdef XWFEATURE_FIVEWAY
     Int16 focusItem;
+#endif
     XP_U16 pairs[] = {
         XW_MAIN_FLIP_BUTTON_ID, FLIP_BUTTON_BMP_RES_ID, XP_TRUE,
         XW_MAIN_VALUE_BUTTON_ID, VALUE_BUTTON_BMP_RES_ID, XP_TRUE,
@@ -2203,10 +2209,11 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
         /* Work around OS's insistence on sending initial take event. */
         globals->initialTakeDropped = XP_TRUE;
     } else {
-        /* Need to invalidate the neighborhood of buttons on which palm draws the
-           focus ring when they lose focus -- to redraw where the focus ring may
-           have been.  No need unless we have the focus now, however, since we'll
-           otherwise have drawn the object correctly (unfocussed). */
+        /* Need to invalidate the neighborhood of buttons on which palm draws
+           the focus ring when they lose focus -- to redraw where the focus
+           ring may have been.  No need unless we have the focus now,
+           however, since we'll otherwise have drawn the object correctly
+           (unfocussed). */
 
         if ( (!take) && (!isBoardObj) && isBoardObject( getFocusOwner() ) ) {
             EventType event;
@@ -2215,11 +2222,11 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
             EvtAddEventToQueue( &event );
         }
 
-        /* Board needs to know about any change involving it, including something
-           else taking the focus it may think it has.  Why?  Because takes
-           preceed losses, yet the board must draw itself without focus before
-           some button draws itself with focus and snags as part of the
-           background the board in focussed state. */
+        /* Board needs to know about any change involving it, including
+           something else taking the focus it may think it has.  Why?
+           Because takes preceed losses, yet the board must draw itself
+           without focus before some button draws itself with focus and snags
+           as part of the background the board in focussed state. */
 
         typ = isBoardObj? OBJ_BOARD + (objectID - XW_BOARD_GADGET_ID) : OBJ_NONE;
         *drawP = board_focusChanged( globals->game.board, typ, take );
@@ -2539,10 +2546,12 @@ mainViewHandleEvent( EventPtr event )
         FrmUpdateForm( 0, frmRedrawUpdateCode ); /* <- why is this necessary? */
         break;
 
+#ifdef XWFEATURE_FIVEWAY
     case updateAfterFocusEvent:
         invalRectAroundButton( globals, event->data.generic.datum[0] );
         draw = XP_TRUE;
         break;
+#endif
 
     case winExitEvent:
 		if ( event->data.winExit.exitWindow == (WinHandle)FrmGetActiveForm() ){
@@ -3356,8 +3365,9 @@ askPassword( const XP_UCHAR* name, Boolean isNew, XP_UCHAR* retbuf,
         FldSetTextPtr( field, (char*)name );
         FldDrawField( field );
     }
-
+#ifdef XWFEATURE_FIVEWAY
     setFormFocus( form, XW_PASSWORD_PASS_FIELD );
+#endif
     field = getActiveObjectPtr( XW_PASSWORD_PASS_FIELD );
 
     if ( FrmDoDialog( form ) == XW_PASSWORD_OK_BUTTON ) {
