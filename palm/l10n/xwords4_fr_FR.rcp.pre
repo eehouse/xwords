@@ -1,15 +1,15 @@
 /* -*-mode: c; fill-column: 78; compile-command: "cd ../ && make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*- */
 /*****************************************************************************
- * Copyright 1999 - 2006 par Eric House (xwords@eehouse.org) et autres.  Tous 
- * droits réservés.
+ * Copyright 1999 - 2007 par Eric House (xwords@eehouse.org) et autres.  Tous 
+ * droits réservés. Tradtion en français par Francis H.
  *
- * Ce programm est libre de droits ; Vous pouvez le distribuert et/ou
+ * Ce programm est libre de droits ; Vous pouvez le distribuer et/ou
  * le modifier en respectant les termes de la licence GNU General Public
  * ainsi qu'elle est publiée par la Free Software Foundation ; que ce soit la version  2
  * de la Licence, ou (selon votre option), toute version ultérieure.
  *
  * Ce programme est distribué avec l'intention qu'il soit utilisé,
- * mais SANS AUCUNE GARANTIE; without even the implied warranty of
+ * mais SANS AUCUNE GARANTIE ; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  Voir la
  * Licence GNU General Public pour plus de détails.
  *
@@ -233,11 +233,11 @@ BEGIN
 
     GRAFFITISTATEINDICATOR 2 PREVBOTTOM+10
 
-    SELECTORTRIGGER "Dictionary..." XW_DICT_SELECTOR_ID \
+    SELECTORTRIGGER "Dictionnaire..." XW_DICT_SELECTOR_ID \
              AT (PREVRIGHT+8 PREVTOP AUTO AUTO) USABLE LEFTANCHOR
 
-    BUTTON "Ok" XW_OK_BUTTON_ID RIGHT@154 PREVTOP AUTO AUTO
-    BUTTON "Annuler" XW_CANCEL_BUTTON_ID RIGHT@PREVLEFT-5 PREVTOP 30 AUTO
+    BUTTON "Ok" XW_OK_BUTTON_ID RIGHT@154 PREVTOP 18 AUTO
+    BUTTON "Annuler" XW_CANCEL_BUTTON_ID RIGHT@PREVLEFT-5 PREVTOP 36 AUTO
 END				/* XW_NEWGAMES_FORM */
 
 #ifdef XWFEATURE_FIVEWAY
@@ -369,9 +369,9 @@ BEGIN
     TITLE "Préférences"
 
     GADGET ID XW_PREFS_ALLGAMES_GADGET_ID
-           AT (LEFTCOL+8 PREFS_MODE_TOP 60 SERVER_HEIGHT) USABLE
+           AT (LEFTCOL+8 PREFS_MODE_TOP 76 SERVER_HEIGHT) USABLE
     GADGET ID XW_PREFS_ONEGAME_GADGET_ID
-           AT (PREVRIGHT+1 PREVTOP 60 SERVER_HEIGHT) USABLE
+           AT (PREVRIGHT+1 PREVTOP 54 SERVER_HEIGHT) USABLE
     LIST "Toutes les parties" "Cette partie" XW_PREFS_TYPES_LIST_ID
            AT (0 0 1 1) VISIBLEITEMS 2 NONUSABLE
 
@@ -421,7 +421,7 @@ BEGIN
 
     CHECKBOX "Activer minuteur (minutes :)" ID XW_PREFS_TIMERON_CHECKBOX_ID \
         AT (LEFTCOL PREVTOP+PREFS_SPACING AUTO AUTO) NONUSABLE 
-    FIELD XW_PREFS_TIMER_FIELD_ID PREVRIGHT+5 PREVTOP 15 AUTO UNDERLINED \
+    FIELD XW_PREFS_TIMER_FIELD_ID PREVRIGHT+2 PREVTOP 12 AUTO UNDERLINED \
         EDITABLE SINGLELINE NUMERIC MAXCHARS 3
 
 #ifdef FEATURE_TRAY_EDIT
