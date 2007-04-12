@@ -3,23 +3,25 @@
  * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org) and
  * others.  All rights reserved. Traduction en français par Francis H.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * Ce programm est libre de droits ; Vous pouvez le distribuer et/ou
+ * le modifier en respectant les termes de la licence GNU General
+ * Public ainsi qu'elle est publiée par la Free Software Foundation;
+ * que ce soit la version 2 de la Licence, ou (selon votre option),
+ * toute version ultérieure.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Ce programme est distribué avec l'intention qu'il soit utilisé,
+ * mais SANS AUCUNE GARANTIE; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  Voir la
+ * Licence GNU General Public pour plus de détails.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * Vous devriez avoir reçu une copie de la Licence GNU General Public
+ * avec ce programme ; si ce n'est pas le cas, écrivez à "Free
+ * Software Foundation", Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
  */
 
-/* This table is where English user-visible strings come from (all
- * strings meant to wind up in a str# resource, actually.  Each entry
+/* This table is where French user-visible strings come from (all
+ * strings meant to wind up in a str# resource, actually.)  Each entry
  * is a pair of strings, first the constant name and then the string
  * itself.  The build system creats a str# resource with the latter
  * and generates a .h file of #defines using the former.  */
@@ -30,7 +32,7 @@
 #ifndef XWFEATURE_STANDALONE_ONLY
 { "STR_NO_PEEK_REMOTE_TILES", "No peeking at remote player's tiles!" },
 { "STR_SERVER_DICT_WINS", 
-      "Conflit entre les dictionnaires Hôte et Invité ; L'hôte gagne." },
+      "Conflit entre les dictionnaires Hôte et Invité ; l'hôte gagne." },
 { "STR_REG_UNEXPECTED_USER",  "Attempt to register unexpected user refused" },
 { "STR_RESEND_IR", "Impossible envoyer message par IR; réessayer ?" },
 #endif
@@ -45,7 +47,7 @@
 { "STR_TRIPLE_LETTER",		"Triple lettre" },
 { "STR_TRIPLE_WORD",		"Triple mot" },
 { "STR_REMTILES",		"rem:%d" },
-{ "STR_CANT_TRADE_MIDTURN",	"Znlevez les lettres jouées avant d'échanger."},
+{ "STR_CANT_TRADE_MIDTURN",	"Enlevez les lettres jouées avant d'échanger."},
 { "STR_ASK_REPLACE_GAME",	"Voulez-vous remplacer la partie en cours ?" },
 { "STR_OK",			"Ok" },
 { "STR_ABOUT_TITLE",		"Au sujet de Crosswords" },
@@ -73,20 +75,20 @@
 { "STRD_TURN_SCORE",		"Score après ce tour : %d\n" },
 { "STR_ALL_IN_LINE_ERR",	"Toutes les lettres doivent être placées sur une même ligne." },
 { "STR_NO_EMPTIES_ERR",	"Des cases vides ne peuvent séparer les lettres jouées." },
-{ "STR_FIRST_MOVE_ERR",	"Vous devez placer au moins 2 lettres " \
+{ "STR_FIRST_MOVE_ERR",	"Vous devez placer au moins deux lettres " \
 				"lors du 1er coup." },
   /* phony comment to get diff back in sync */
 { "STR_MUST_CONTACT_ERR",    	"Les nouvelles lettres doivent être au contact de celles " \
 				"déjà en place (ou sur la case centrale lors du " \
-				"1er coup)." },
+				"premier coup)." },
 { "STR_PTS",			"Pts :" },
 { "STR_CONFIRM_DEL_GAME",	"Supprimer vraiment la partie sélectionnée ?" },
 
 { "STRD_TIME_PENALTY_SUB",     " - %d [time]" },
 
-{ "STR_NO_DICT_INSTALLED",    "Crosswords 4 nécessite au minimum 1 dictionnaire." \
+{ "STR_NO_DICT_INSTALLED",    "Crosswords 4 nécessite au minimum un dictionnaire." \
                               "Téléchargez-en un ou plus sur xwords.sf.net." },
-{ "STR_ILLEGAL_WORD",	      "Mot[s] %s non trouvé dans le dictionnaire.  L'utiliser quand même ?" },
+{ "STR_ILLEGAL_WORD",	      "Mot[s] %s non trouvé(s) dans le dictionnaire.  L'utiliser quand même ?" },
 
 { "STR_FINAL_SCORES_TITLE",   "Score final"},
 
@@ -123,7 +125,7 @@
 { "STR_DICT_COPY_EXPL",        "Copier dictionnaire depuis la carte..." },
 
 { "STR_LOCALPLAYERS",          "Joueurs locaux" },
-{ "STR_TOTALPLAYERS",          "Total jouuers" },
+{ "STR_TOTALPLAYERS",          "Total joueurs" },
 
 #ifdef XWFEATURE_RELAY
 { "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
@@ -143,7 +145,7 @@
                                "MERCI DE VOTRE ATTENTION pour cette version alpha de "
                                "Crosswords.  Svp, regardez les notes et avertissements sur "
                                "xwords.sf.net/bt_palm.php.  Svp, signalez les bugs à "
-                               "ehouse@users.sf.net.  Ai plaisir !\n\n"
+                               "ehouse@users.sf.net.  Au plaisir !\n\n"
 #endif
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2007 par Eric House.  "\
