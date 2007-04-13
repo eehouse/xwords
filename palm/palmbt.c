@@ -816,22 +816,24 @@ pbt_checkInit( PalmAppGlobals* globals )
 
         CALL_ERR( err, SysLibFind, btLibName, &btLibRefNum );
         if ( errNone == err ) {
-            btStuff = XP_MALLOC( globals->mpool, sizeof(*btStuff) );
-            XP_ASSERT( !!btStuff );
-            globals->btStuff = btStuff;
-
-            XP_MEMSET( btStuff, 0, sizeof(*btStuff) );
-            btStuff->globals = globals;
-            btStuff->btLibRefNum = btLibRefNum;
-
-            btStuff->dataSocket = SOCK_INVAL;
-            btStuff->u.master.listenSocket = SOCK_INVAL;
-
             CALL_ERR( err, BtLibOpen, btLibRefNum, false );
-            XP_ASSERT( errNone == err );
 
-            CALL_ERR( err, BtLibRegisterManagementNotification, btLibRefNum, 
-                      libMgmtCallback, (UInt32)btStuff );
+            /* BT is probably off if this fails */
+            if ( errNone == err ) {
+                btStuff = XP_MALLOC( globals->mpool, sizeof(*btStuff) );
+                XP_ASSERT( !!btStuff );
+                globals->btStuff = btStuff;
+
+                XP_MEMSET( btStuff, 0, sizeof(*btStuff) );
+                btStuff->globals = globals;
+                btStuff->btLibRefNum = btLibRefNum;
+
+                btStuff->dataSocket = SOCK_INVAL;
+                btStuff->u.master.listenSocket = SOCK_INVAL;
+
+                CALL_ERR( err, BtLibRegisterManagementNotification, 
+                          btLibRefNum, libMgmtCallback, (UInt32)btStuff );
+            }
         }
     }
     return btStuff;
