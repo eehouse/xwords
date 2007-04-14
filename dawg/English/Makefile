@@ -17,6 +17,8 @@
 
 TARGET_TYPE ?= FRANK
 
+include ../Makefile.langcommon
+
 # This represents the default -- for now
 COMMAND = -f Makefile.BasEnglish TARGET_TYPE=FRANK
 
