@@ -30,7 +30,7 @@ extern "C" {
 
 typedef struct MemPoolCtx MemPoolCtx;
 
-MemPoolCtx* mpool_make();
+MemPoolCtx* mpool_make(void);
 void mpool_destroy( MemPoolCtx* mpool );
 
 void* mpool_alloc( MemPoolCtx* mpool, XP_U32 size, 

@@ -1192,7 +1192,7 @@ startApplication( PalmAppGlobals** globalsP )
         /* if we're here because dict missing, don't re-init all prefs! */
         if ( !prefsFound ) {
             palmInitPrefs( globals );
-        } else if ( checkUserName() ) {
+        } else {
             /* increment count so we get a new game rather than replace
                existing one.  We want it still there if somebody puts the
                missing dict back. */
@@ -1328,13 +1328,11 @@ stopApplication( PalmAppGlobals* globals )
             XP_FREE( globals->mpool, globals->prefsDlgState );
         }
 
-#if defined OWNER_HASH || defined NO_REG_REQUIRED
         if ( !!globals->savedGamesState && !globals->isFirstLaunch ) {
             freeSavedGamesData( MPPARM(globals->mpool)
                                 globals->savedGamesState );
             XP_FREE( globals->mpool, globals->savedGamesState );
         }
-#endif
 
         uninitHighResGlobals( globals );
 
@@ -1504,11 +1502,9 @@ applicationHandleEvent( EventPtr event )
             handler = ConnsFormHandleEvent;
             break;
 #endif
-#if defined OWNER_HASH || defined NO_REG_REQUIRED
         case XW_SAVEDGAMES_DIALOG_ID:
             handler = savedGamesHandleEvent;
             break;
-#endif
         }
         if ( !!handler ) {
             XP_ASSERT( !!frm );
@@ -2681,20 +2677,11 @@ mainViewHandleEvent( EventPtr event )
             break;
 
         case XW_SAVEDGAMES_PULLDOWN_ID:
-            if ( 0 ) {
-#if defined OWNER_HASH || defined NO_REG_REQUIRED
-            } else if ( checkUserName() ) { 
-                saveOpenGame( globals );/* so it can be accurately duped */
-                /* save game changes state; reflect on screen before
-                   popping up dialog */
-                drawChangedBoard( globals );
-                FrmPopupForm( XW_SAVEDGAMES_DIALOG_ID );
-#endif
-#ifndef NO_REG_REQUIRED
-            } else {
-                userErrorFromStrId( globals, STR_NOT_UNREG_VERS );
-#endif
-            }
+            saveOpenGame( globals );/* so it can be accurately duped */
+            /* save game changes state; reflect on screen before
+               popping up dialog */
+            drawChangedBoard( globals );
+            FrmPopupForm( XW_SAVEDGAMES_DIALOG_ID );
             break;
 
         case XW_FINISH_PULLDOWN_ID:
@@ -2968,14 +2955,12 @@ askStartNewGame( PalmAppGlobals* globals )
         /* do nothing; popping up the NEWGAMES dlg will do it -- if not
            cancelled */
         globals->newGameIsNew = XP_FALSE;
-    } else if ( checkUserName() ) {
+    } else {
         saveOpenGame( globals );
 
         drawChangedBoard( globals );
 
         globals->newGameIsNew = XP_TRUE;
-    } else {
-        return;
     }
     globals->isNewGame = true;
     globals->isFirstLaunch = false;

@@ -19,8 +19,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  ****************************************************************************/
 
-#if defined OWNER_HASH || defined NO_REG_REQUIRED
-
 #include <PalmTypes.h>
 #include <Form.h>
 #include <DLServer.h>
@@ -31,7 +29,6 @@
 #include "palmmain.h"
 #include "palmutil.h"
 #include "gameutil.h"
-#include "ownerhash.h"
 
 #include "xwords4defines.h"
 #include "LocalizedStrIncludes.h"
@@ -40,29 +37,6 @@
 static void populateGameList( SavedGamesState* state );
 static void setFieldToSelText( SavedGamesState* state );
 static void listDrawFunc(Int16 index, RectanglePtr bounds, char** itemsText);
-
-#ifndef NO_REG_REQUIRED
-Boolean
-checkUserName()
-{
-#ifdef FOR_GREMLINS
-    return true;
-#else
-    XP_UCHAR ownerName[dlkMaxUserNameLength + 1];
-    Boolean result;
-    Err err;
-
-    ownerName[0] = '\0';
-    /* Try and use the user's name */
-    err = DlkGetSyncInfo( NULL, NULL, NULL, ownerName, NULL, NULL );
-    XP_ASSERT( err == 0 );
-
-    result = HASH(ownerName)==((unsigned long)OWNER_HASH);
-
-    return result;
-#endif
-} /* checkUserName */
-#endif
 
 /*****************************************************************************
  * Handler for dictionary info form.
@@ -286,5 +260,3 @@ listDrawFunc( Int16 index, RectanglePtr bounds, char** itemsText )
 
     CALLBACK_EPILOGUE();
 } /* listDrawFunc */
-
-#endif /* OWNER_HASH */

@@ -144,10 +144,10 @@ realArmletEntryPoint( const void *emulStateP,
 
     asm( "mov r10, %0" : : "r" (oldR10) );
     return result;
-}
+} /* realArmletEntryPoint( */
 
 PNOState*
-getStorageLoc()
+getStorageLoc( void )
 {
     asm( "adr r0,data" );
     asm( "mov pc,lr" );

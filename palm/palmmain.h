@@ -233,9 +233,7 @@ typedef enum {
 struct PalmAppGlobals {
     FormPtr mainForm;
     PrefsDlgState* prefsDlgState;
-#if defined OWNER_HASH || defined NO_REG_REQUIRED
     SavedGamesState* savedGamesState;
-#endif
     XWGame game;
     DrawCtx* draw;
     XW_UtilCtxt util;

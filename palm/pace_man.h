@@ -123,7 +123,7 @@ void flipBtSocketListenInfoArm268K( unsigned char* out,
 # define SWAP_BTLIBSOCKETLISTENINFOTYPE_68K_TO_ARM( out, in ) /* nothing for now */
 #endif /* XWFEATURE_BLUETOOTH */
 
-PNOState* getStorageLoc();
+PNOState* getStorageLoc(void);
 #define GET_CALLBACK_STATE() getStorageLoc()
 
 #define crash()  *(int*)1L = 1
