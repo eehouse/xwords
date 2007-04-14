@@ -28,12 +28,4 @@ typedef struct OpenSavedGameData {
 
 Boolean savedGamesHandleEvent( EventPtr event );
 
-#if defined NO_REG_REQUIRED
-# define checkUserName() XP_TRUE
-#elif defined OWNER_HASH
- Boolean checkUserName();
-#else
-# define checkUserName() XP_FALSE
-#endif
-
 #endif

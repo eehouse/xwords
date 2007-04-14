@@ -42,7 +42,6 @@ countGameRecords( PalmAppGlobals* globals )
     return numRecs;
 }
 
-#if defined OWNER_HASH || defined NO_REG_REQUIRED
 void
 deleteGameRecord( PalmAppGlobals* globals, XP_S16 index )
 {
@@ -82,7 +81,6 @@ duplicateGameRecord( PalmAppGlobals* globals, XP_S16 fromIndex )
 
     return newIndex;
 } /* duplicateGameRecord */
-#endif
 
 void
 streamToGameRecord( PalmAppGlobals* globals, XWStreamCtxt* stream, 

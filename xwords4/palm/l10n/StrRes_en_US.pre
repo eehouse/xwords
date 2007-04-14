@@ -54,10 +54,6 @@
 				"turn trading tiles?" },
 { "STR_TRADING_REMINDER",	"Click D when done." },
 
-#ifndef NO_REG_REQUIRED
-{ "STR_NOT_UNREG_VERS",	  "Feature not available in unregistered version." },
-#endif
-
 { "STR_LOCAL_NAME",             "%s" },
 { "STR_NONLOCAL_NAME",          "%s (remote)" },
 { "STRSD_SUMMARYSCORED",        "%s:%d" },

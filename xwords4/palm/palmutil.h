@@ -87,7 +87,7 @@ XP_Bool tryRockerKey( XP_U16 key, XP_U16 selGadget,
 # endif
 
 void setFormRefcon( void* refcon );
-void* getFormRefcon();
+void* getFormRefcon(void);
 void fitButtonToString( XP_U16 id );
 
 

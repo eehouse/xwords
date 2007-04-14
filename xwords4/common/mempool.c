@@ -47,7 +47,7 @@ struct MemPoolCtx {
 /*--------------------------------------------------------------------------*/
 
 MemPoolCtx*
-mpool_make()
+mpool_make( void )
 {
     MemPoolCtx* result = (MemPoolCtx*)XP_PLATMALLOC( sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );

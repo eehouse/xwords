@@ -100,10 +100,6 @@ OBJ-RES = m68k-palmos-obj-res
 MULTILINK_OPTIONS = -basename $(ROOTNAME) -segmentsize 27k -g \
 	-deadstrip -verbose -gdb-script app.gdb
 
-ifneq (x$(OWNERNAME)x,xx)
-HASHDEF = -DOWNER_HASH=$$(./namehash $(OWNERNAME))
-endif
-
 MYDEFS_COMMON = $(PASSTHRU) -DXW_FEATURE_UTILS -DPOINTER_SUPPORT \
 	-DKEY_SUPPORT 	-DOVERRIDE_EDGE_FOR_INDEX -DCOLOR_SUPPORT \
 	-DSHOW_PROGRESS $(HASHDEF) -DNO_REG_REQUIRED -DPERIMETER_FOCUS
@@ -301,8 +297,6 @@ LocalizedStrIncludes.h StrL03e8.bin: \
 		-o mkstrsres
 	./mkstrsres StrL03e8.bin LocalizedStrIncludes.h
 	rm -f mkstrsres
-
-namehash: namehash.c ownerhash.h
 
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet

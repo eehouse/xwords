@@ -57,10 +57,6 @@
 				"vos lettres ?" },
 { "STR_TRADING_REMINDER",	"Cliquez D une fois fini." },
 
-#ifndef NO_REG_REQUIRED
-{ "STR_NOT_UNREG_VERS",	  "Disposition non disponible dans la version non enregistrée." },
-#endif
-
 { "STR_LOCAL_NAME",             "%s" },
 { "STR_NONLOCAL_NAME",          "%s (remote)" },
 { "STRSD_SUMMARYSCORED",        "%s:%d" },
