@@ -274,6 +274,9 @@ struct PalmAppGlobals {
     Boolean menuIsDown;
     XP_Bool newGameIsNew;
     XP_Bool runningOnPOSE;    /* Needed for NetLibSelect */
+#ifdef XWFEATURE_BLUETOOTH
+    XP_Bool userCancelledBT;
+#endif
 
     GraphicsAbility able;
     XP_U16 prevScroll;		/* for scrolling in 'ask' dialog */

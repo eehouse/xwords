@@ -53,7 +53,7 @@ typedef enum {
     , PBTST_L2C_CONNECTED       /* slave */
 } PBT_STATE;
 
-#define PBT_MAX_ACTS 6          /* four wasn't enough */
+#define PBT_MAX_ACTS 8          /* six wasn't enough */
 #define HASWORK(s)  ((s)->queueCur != (s)->queueNext)
 #define MAX_PACKETS 4
 
@@ -125,7 +125,8 @@ static const BtLibSdpUuidType XWORDS_UUID = {
     { 0x83, 0xe0, 0x87, 0xae, 0x4e, 0x18, 0x46, 0xbe, 
       0x83, 0xe0, 0x7b, 0x3d, 0xe6, 0xa1, 0xc3, 0x3b } };
 
-static PalmBTStuff* pbt_checkInit( PalmAppGlobals* globals );
+static PalmBTStuff* pbt_checkInit( PalmAppGlobals* globals, 
+                                   XP_Bool* userCancelled );
 static Err bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr );
 static void pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_takedown_slave( PalmBTStuff* btStuff );
@@ -168,7 +169,7 @@ static void libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon );
 static void l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 
 XP_Bool
-palm_bt_init( PalmAppGlobals* globals, DataCb dataCb )
+palm_bt_init( PalmAppGlobals* globals, DataCb dataCb, XP_Bool* userCancelled )
 {
     XP_Bool inited;
     PalmBTStuff* btStuff;
@@ -177,7 +178,7 @@ palm_bt_init( PalmAppGlobals* globals, DataCb dataCb )
 
     btStuff = globals->btStuff;
     if ( !btStuff ) {
-        btStuff = pbt_checkInit( globals );
+        btStuff = pbt_checkInit( globals, userCancelled );
         /* Should I start master/slave setup here?  If not, how? */
     } else {
         pbt_reset( btStuff );
@@ -277,7 +278,7 @@ void
 palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
                     XP_BtAddrStr* str )
 {
-    PalmBTStuff* btStuff = pbt_checkInit( globals );
+    PalmBTStuff* btStuff = pbt_checkInit( globals, NULL );
     str->chars[0] = '\0';
     if ( !!btStuff ) {
         Err err;
@@ -298,7 +299,7 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
 
     LOG_FUNC();
 
-    btStuff = pbt_checkInit( globals );
+    btStuff = pbt_checkInit( globals, NULL );
     if ( NULL != btStuff ) {
         BtLibDeviceAddressType addr;
         Err err = bpd_discover( btStuff, &addr );
@@ -420,7 +421,8 @@ pbt_send_pending( PalmBTStuff* btStuff )
 
 XP_S16
 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-              DataCb dataCb, OnConnCb connCb, PalmAppGlobals* globals )
+              DataCb dataCb, OnConnCb connCb, PalmAppGlobals* globals,
+              XP_Bool* userCancelled )
 {
     XP_S16 nSent = -1;
     PalmBTStuff* btStuff;
@@ -428,7 +430,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     PBT_PicoRole picoRole;
     XP_LOGF( "%s(len=%d)", __FUNCTION__, len);
 
-    btStuff = pbt_checkInit( globals );
+    btStuff = pbt_checkInit( globals, userCancelled );
     if ( !!btStuff ) {
         if ( !btStuff->dataCb ) {
             btStuff->dataCb = dataCb;
@@ -807,9 +809,10 @@ pbt_takedown_slave( PalmBTStuff* btStuff )
 }
 
 static PalmBTStuff*
-pbt_checkInit( PalmAppGlobals* globals )
+pbt_checkInit( PalmAppGlobals* globals, XP_Bool* userCancelledP )
 {
     PalmBTStuff* btStuff = globals->btStuff;
+    XP_Bool userCancelled = XP_FALSE;
     if ( !btStuff ) {
         Err err;
         XP_U16 btLibRefNum;
@@ -817,6 +820,8 @@ pbt_checkInit( PalmAppGlobals* globals )
         CALL_ERR( err, SysLibFind, btLibName, &btLibRefNum );
         if ( errNone == err ) {
             CALL_ERR( err, BtLibOpen, btLibRefNum, false );
+
+            userCancelled = err == btLibErrBluetoothOff;
 
             /* BT is probably off if this fails */
             if ( errNone == err ) {
@@ -836,6 +841,11 @@ pbt_checkInit( PalmAppGlobals* globals )
             }
         }
     }
+
+    if ( !!userCancelledP ) {
+        *userCancelledP = userCancelled;
+    }
+
     return btStuff;
 } /* pbt_checkInit */
 
@@ -1084,8 +1094,15 @@ connEnumToStr( BtLibAccessibleModeEnum mode )
         CASESTR(btLibNotAccessible);
         CASESTR(btLibConnectableOnly);
         CASESTR(btLibDiscoverableAndConnectable);
+    case 0x0006:
+        /* I've seen this on 68K even.  Seems to happen when the other
+           device changes roles (temporarily). */
+        return "undoc_06";
+    case 0x00F8:                /* seen on ARM only */
+        return "undoc_F8";
     default:
         XP_ASSERT(0);
+        XP_LOGF( "%s: got 0x%x", __func__, mode );
         return "";
     }
 }

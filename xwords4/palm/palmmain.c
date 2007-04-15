@@ -1619,8 +1619,9 @@ handleNilEvent( PalmAppGlobals* globals )
                 && (when <= TimGetTicks()) ) {
         palmFireTimer( globals, why );
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( palm_bt_doWork( globals, &globals->btUIState ) ) {
-        showConnState( globals );
+    } else if ( (handled = palm_bt_doWork( globals, &globals->btUIState ) ),
+                showConnState( globals ), handled ) {
+        /* nothing to do */
 #endif
     } else if ( globals->timeRequested ) {
         globals->timeRequested = false;
@@ -3828,6 +3829,16 @@ palm_send_on_close( XWStreamCtxt* stream, void* closure )
     comms_send( globals->game.comms, stream );
 } /* palm_send_on_close */
 
+#ifdef XWFEATURE_BLUETOOTH
+static void
+handleUserBTCancel( PalmAppGlobals* globals )
+{
+    XP_ASSERT( !globals->userCancelledBT );
+    globals->userCancelledBT = XP_TRUE;
+    userErrorFromStrId( globals, STR_BT_NOINIT );
+}
+#endif
+
 static XP_S16
 palm_send( const XP_U8* buf, XP_U16 len, 
            const CommsAddrRec* addr, void* closure )
@@ -3850,11 +3861,12 @@ palm_send( const XP_U8* buf, XP_U16 len,
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT:
-        if ( !!globals->mainForm ) {
+        if ( !!globals->mainForm && !globals->userCancelledBT ) {
+            XP_Bool userCancelled;
             result = palm_bt_send( buf, len, addr, btDataHandler, 
-                                   btConnHandler, globals );
-            if ( result < 0 ) {
-                userErrorFromStrId( globals, STR_BT_NOINIT );
+                                   btConnHandler, globals, &userCancelled );
+            if ( userCancelled ) {
+                handleUserBTCancel( globals );
             }
         }
         break;
@@ -3976,10 +3988,13 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
         ip_addr_change( globals, oldAddr, newAddr );
 # endif
 # ifdef XWFEATURE_BLUETOOTH
-    } else if ( isBT ) {
+    } else if ( isBT && !globals->userCancelledBT ) {
+        XP_Bool userCancelled;
         XP_ASSERT( !!globals->mainForm );
-        if ( !palm_bt_init( globals, btDataHandler ) ) {
-            userErrorFromStrId( globals, STR_BT_NOINIT );
+        if ( !palm_bt_init( globals, btDataHandler, &userCancelled ) ) {
+            if ( userCancelled ) {
+                handleUserBTCancel( globals );
+            }
         }
 # endif
     }

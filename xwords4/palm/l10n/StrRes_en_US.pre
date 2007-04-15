@@ -129,8 +129,8 @@
 #endif
 
 #ifdef XWFEATURE_BLUETOOTH
-{ "STR_BT_NOINIT",             "Unable to initialize Bluetooth. "
-                               "Is it enabled?" },
+{ "STR_BT_NOINIT",             "Bluetooth appears to be off.  Please turn it "
+                               "on if you want Crosswords to use it." },
 #endif
 
 { "STR_ABOUT_CONTENT", 

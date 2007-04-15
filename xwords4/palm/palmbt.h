@@ -50,14 +50,16 @@ typedef void (*DataCb)( PalmAppGlobals* globals,
 typedef void (*OnConnCb)( PalmAppGlobals* globals );
 
 
-XP_Bool palm_bt_init( PalmAppGlobals* globals, DataCb dataCb );
+XP_Bool palm_bt_init( PalmAppGlobals* globals, DataCb dataCb,
+                      XP_Bool* userCancelled );
 void palm_bt_close( PalmAppGlobals* globals );
 
 void palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
                          XP_BtAddrStr* str );
 
 XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-                     DataCb cb, OnConnCb connCb, PalmAppGlobals* globals );
+                     DataCb cb, OnConnCb connCb, PalmAppGlobals* globals,
+                     XP_Bool* userCancelled );
 
 XP_Bool palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
                                XP_UCHAR* out,XP_U16 len );
