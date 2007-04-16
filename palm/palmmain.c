@@ -1574,6 +1574,8 @@ showConnState( PalmAppGlobals* globals )
     if ( !!comms ) {
         if ( (COMMS_CONN_BT == comms_getConType( comms )) ) {
             switch( globals->btUIState ) {
+            case BTUI_NOBT:
+                break;
             case BTUI_NONE:
                 resID = BTSTATUS_NONE_RES_ID; break;
             case BTUI_LISTENING:
