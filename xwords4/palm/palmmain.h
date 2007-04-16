@@ -222,7 +222,8 @@ typedef struct NetLibStuff {
 
 #ifdef XWFEATURE_BLUETOOTH
 typedef enum {
-    BTUI_NONE
+    BTUI_NOBT
+    , BTUI_NONE
     , BTUI_LISTENING
     , BTUI_CONNECTING
     , BTUI_CONNECTED            /* slave */
