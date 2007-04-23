@@ -26,7 +26,7 @@
  * itself.  The build system creats a str# resource with the latter
  * and generates a .h file of #defines using the former.  */
 
-{ "STR_COMMIT_CONFIRM", "Confirmez-vous le coup en cours ?\n" },
+{ "STR_COMMIT_CONFIRM", "Confirmez-vous le coup actuel ?\n" },
 { "STR_NOT_YOUR_TURN", "Impossible ; ce n'est pas votre tour !" },
 { "STR_NO_PEEK_ROBOT_TILES", "No peeking at the robot's tiles!" },
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -149,12 +149,14 @@
 
       "Voir le manuel sur xwords.sourceforge.net\n\n" \
 
-      "Ce programme est 'cartepostale'. Si vous l'appréciez, " \
+      "Ce programme est 'postcardware'. Si vous l'appréciez, " \
       "svp, envoyez une carte postale à :\n" \
       "The Houses\n" \
       "1610 NW 14th Place\n" \
       "Corvallis, OR 97330 USA\n\n"
 
       "Developpé sur Debian GNU/Linux avec the prc-tools "\
-      "suite." \
+      "suite.\n\n"\
+
+      "Traduction par Francis H."
       },
