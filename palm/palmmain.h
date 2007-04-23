@@ -275,6 +275,9 @@ struct PalmAppGlobals {
     Boolean menuIsDown;
     XP_Bool newGameIsNew;
     XP_Bool runningOnPOSE;    /* Needed for NetLibSelect */
+#ifdef XWFEATURE_FIVEWAY
+    XP_Bool isTreo600;
+#endif
 #ifdef XWFEATURE_BLUETOOTH
     XP_Bool userCancelledBT;
 #endif
@@ -422,5 +425,7 @@ void checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr,
 #else
 # define READ_UNALIGNED16(n) *(n)
 #endif
+
+#define IS_T600(g) (g)->isTreo600
 
 #endif /* _PALMMAIN_H_ */

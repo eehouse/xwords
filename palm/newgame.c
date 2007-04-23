@@ -141,7 +141,7 @@ newGameHandleEvent( EventPtr event )
            object */
     case frmObjectFocusTakeEvent:
     case frmObjectFocusLostEvent:
-        result = considerGadgetFocus( event, XW_SOLO_GADGET_ID, 
+        result = considerGadgetFocus( globals, event, XW_SOLO_GADGET_ID, 
                                       XW_CLIENT_GADGET_ID );
         break;
 #endif
@@ -345,7 +345,7 @@ drawConnectGadgets( PalmAppGlobals* globals )
     drawGadgetsFromList( list, XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID,
                          hiliteItem );
 #ifdef XWFEATURE_FIVEWAY
-    drawFocusRingOnGadget( XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID );
+    drawFocusRingOnGadget( globals, XW_SOLO_GADGET_ID, XW_CLIENT_GADGET_ID );
 #endif
 } /* drawConnectGadgets */
 

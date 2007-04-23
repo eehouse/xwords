@@ -968,12 +968,20 @@ initHighResGlobals( PalmAppGlobals* globals )
         && (err == errNone) && (vers >= 5);
 
 #ifdef XWFEATURE_FIVEWAY
+# ifndef hsFtrIDNavigationSupported
+# define hsFtrIDNavigationSupported 14
+# endif
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
     globals->generatesKeyUp = ( (err == errNone) && 
                                 ((vers & sysFtrNumUIHardwareHasKbd) != 0) )
         || globals->isZodiac;
     globals->hasTreoFiveWay = (err == errNone)
         && ((vers & sysFtrNumUIHardwareHas5Way) != 0) && !globals->isZodiac;
+
+    err = FtrGet( hsFtrCreator, hsFtrIDNavigationSupported, &vers );
+    XP_ASSERT( errNone == err );
+    XP_ASSERT( vers == 1 || vers == 2 );
+    globals->isTreo600 = (err == errNone) && (vers == 1);
 #endif
 
 #ifdef FEATURE_SILK
@@ -1833,11 +1841,11 @@ drawFormButtons( PalmAppGlobals* globals )
             setFormFocus( globals->mainForm, focusItem );
             if ( !isBoardObject( focusItem )
                  && buttonIsUsable( getActiveObjectPtr(focusItem) ) ) {
-                drawFocusRingOnGadget( focusItem, focusItem );
+                drawFocusRingOnGadget( globals, focusItem, focusItem );
             }
             globals->gState.focusItem = -1;
         } else {
-            drawFocusRingOnGadget( XW_MAIN_DONE_BUTTON_ID,
+            drawFocusRingOnGadget( globals, XW_MAIN_DONE_BUTTON_ID,
                                    XW_MAIN_HIDE_BUTTON_ID );
         }
     }
