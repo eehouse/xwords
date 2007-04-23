@@ -101,7 +101,7 @@ PrefsFormHandleEvent( EventPtr event )
 
     case frmObjectFocusTakeEvent:
     case frmObjectFocusLostEvent:
-        result = considerGadgetFocus( event, XW_PREFS_ALLGAMES_GADGET_ID,
+        result = considerGadgetFocus( globals, event, XW_PREFS_ALLGAMES_GADGET_ID,
                                       XW_PREFS_ONEGAME_GADGET_ID );
         break;
 #endif
@@ -353,7 +353,7 @@ drawPrefsTypeGadgets( PalmAppGlobals* globals )
     drawGadgetsFromList( list, XW_PREFS_ALLGAMES_GADGET_ID,
                          XW_PREFS_ONEGAME_GADGET_ID, active );
 #ifdef XWFEATURE_FIVEWAY
-    drawFocusRingOnGadget( XW_PREFS_ALLGAMES_GADGET_ID,
+    drawFocusRingOnGadget( globals, XW_PREFS_ALLGAMES_GADGET_ID,
                            XW_PREFS_ONEGAME_GADGET_ID );
 #endif
     LOG_RETURN_VOID();

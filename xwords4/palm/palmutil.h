@@ -78,9 +78,10 @@ void drawOneGadget( UInt16 id, const char* text, Boolean hilite );
 # ifdef XWFEATURE_FIVEWAY
 XP_S16 getFocusOwner( void );
 void setFormFocus( FormPtr form, XP_U16 objectID );
-void drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh );
-XP_Bool considerGadgetFocus( const EventType* event, XP_U16 idLow, 
-                             XP_U16 idHigh );
+void drawFocusRingOnGadget( PalmAppGlobals* globals, XP_U16 idLow, 
+                            XP_U16 idHigh );
+XP_Bool considerGadgetFocus( PalmAppGlobals* globals, const EventType* event, 
+                             XP_U16 idLow, XP_U16 idHigh );
 
 XP_Bool tryRockerKey( XP_U16 key, XP_U16 selGadget, 
                       XP_U16 idLow, XP_U16 idHigh );

@@ -411,8 +411,23 @@ setFormFocus( FormPtr form, XP_U16 objectID )
     FrmSetFocus( form, FrmGetObjectIndex( form, objectID ) );
 } /* setFormFocus */
 
+#ifndef XW_TARGET_PNO
+/* Warning: gross hack.  HsNavDrawFocusRing doesn't work on newer Palms,
+   e.g. Tungsten T.  It's been replaced by FrmNavDrawFocusRing.  But that
+   requires the sdk-5r4 headers which require significant changes I don't want
+   to make right before shipping.  So here's a hack: define FrmNavDrawFocusRing
+   based on info in the r4 header info without actually including any headers.
+*/
+Err FrmNavDrawFocusRing( FormType* fp, UInt16 oid, Int16 ei,
+                         RectangleType* birp,
+                         HsNavFocusRingStyleEnum rs, Boolean fr )
+     _SYSTEM_API(_CALL_WITH_UNPOPPED_16BIT_SELECTOR)(_SYSTEM_TABLE, 
+                                                     sysTrapNavSelector, 
+                                                     0x07 );
+#endif
+
 void
-drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
+drawFocusRingOnGadget( PalmAppGlobals* globals, XP_U16 idLow, XP_U16 idHigh )
 {
     FormPtr form;
     XP_S16 index;
@@ -430,16 +445,24 @@ drawFocusRingOnGadget( XP_U16 idLow, XP_U16 idHigh )
             getObjectBounds( focusID, &rect );
 
             /* growing the rect didn't work to fix glitches in ring drawing. */
-            err = HsNavDrawFocusRing( form, focusID, 0, &rect,
-                                      hsNavFocusRingStyleObjectTypeDefault,
-                                      false );
+            if ( IS_T600(globals) ) {
+                XP_LOGF( "%s: calling HsNavDrawFocusRing", __func__ );
+                err = HsNavDrawFocusRing( form, focusID, 0, &rect,
+                                          hsNavFocusRingStyleObjectTypeDefault,
+                                          false );
+            } else {
+                XP_LOGF( "%s: calling FrmNavDrawFocusRing", __func__ );
+                err = FrmNavDrawFocusRing( form, focusID, 0, &rect,
+                                           hsNavFocusRingStyleObjectTypeDefault,
+                                           false );
+            }
             XP_ASSERT( err == errNone );
         }
     }
 } /* drawFocusRingOnGadget */
 
 XP_Bool
-considerGadgetFocus( const EventType* event, XP_U16 idLow, XP_U16 idHigh )
+considerGadgetFocus( PalmAppGlobals* globals, const EventType* event, XP_U16 idLow, XP_U16 idHigh )
 {
     XP_Bool handled;
     XP_U16 objectID;
@@ -456,7 +479,7 @@ considerGadgetFocus( const EventType* event, XP_U16 idLow, XP_U16 idHigh )
         if ( event->eType == frmObjectFocusTakeEvent ) {
             FormPtr form = FrmGetActiveForm();
             setFormFocus( form, objectID );
-            drawFocusRingOnGadget( idLow, idHigh );
+            drawFocusRingOnGadget( globals, idLow, idHigh );
         }
     }
 
