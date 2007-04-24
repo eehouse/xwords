@@ -3477,13 +3477,15 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, const PickInfo* pi,
 
 #ifdef FEATURE_TRAY_EDIT
     if ( !forBlank ) {
+        const char* cur = getResString( globals, STR_PICK_TILE_CUR );
         XP_U16 lenSoFar;
         XP_U16 i;
 
         lenSoFar = XP_STRLEN(labelBuf);
         lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, 
                                  sizeof(labelBuf) - lenSoFar,
-                                 " (%d/%d)\nCur", pi->thisPick+1, pi->nTotal );
+                                 " (%d/%d)\n%s", pi->thisPick+1, pi->nTotal, 
+                                 cur );
 
         for ( i = 0; i < pi->nCurTiles; ++i ) {
             lenSoFar += XP_SNPRINTF( labelBuf+lenSoFar, 

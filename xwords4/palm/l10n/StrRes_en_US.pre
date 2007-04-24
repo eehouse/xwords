@@ -106,6 +106,8 @@
 { "STR_PICK_BLANK",            "Select the letter for your blank." },
 #ifdef FEATURE_TRAY_EDIT
 { "STRS_PICK_TILE",            "Choose a new tile for %s." },
+{ "STR_PICK_TILE_CUR",         "Cur" },
+
 #endif
 
 #ifdef NODE_CAN_4

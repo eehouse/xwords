@@ -109,6 +109,7 @@
 { "STR_PICK_BLANK",            "Choisir la lettre en échange de la case blanche." },
 #ifdef FEATURE_TRAY_EDIT
 { "STRS_PICK_TILE",            "Choisir une nouvelle lettre pour %s." },
+{ "STR_PICK_TILE_CUR",         "En cours" },
 #endif
 
 #ifdef NODE_CAN_4
