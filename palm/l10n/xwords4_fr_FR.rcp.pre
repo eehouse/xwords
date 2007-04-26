@@ -75,8 +75,8 @@ BEGIN
 #ifdef FOR_GREMLINS
     PULLDOWN "Grem" 
     BEGIN
-        MENUITEM "diviseur droit" XW_GREMLIN_DIVIDER_RIGHT
-        MENUITEM "diviseur gauche" XW_GREMLIN_DIVIDER_LEFT
+        MENUITEM "divider right" XW_GREMLIN_DIVIDER_RIGHT
+        MENUITEM "divider left" XW_GREMLIN_DIVIDER_LEFT
     END
 #endif
 
@@ -99,14 +99,6 @@ BEGIN
 #endif
 #endif /* FOR_GREMLINS */
 
-// <EEH> NO NEED TO TRANSLATE GREMLINS or DEBUG stuff
-#ifdef FOR_GREMLINS
-/*     PULLDOWN "Gremlins"  */
-/*     BEGIN */
-/* 	MENUITEM "Diviseur gauche" GREMLIN_DIVIDER_LEFT */
-/* 	MENUITEM "Diviseur droit" GREMLIN_DIVIDER_RIGHT */
-/*     END */
-#endif
 END
 
 MENU XW_ASK_MENU_ID
@@ -292,7 +284,7 @@ END /* NAVIGATION ID XW_NEWGAMES_FORM */
 FORM ID XW_CONNS_FORM AT (2 66 156 93)
 USABLE MODAL SAVEBEHIND DEFAULTBTNID XW_CONNS_CANCEL_BUTTON_ID
 BEGIN
-    TITLE "Connections"
+    TITLE "Connections"         /* TRANSLATE */
 
     LABEL "Connecter via:" AUTOID LEFTCOL 15 FONT 1
 
