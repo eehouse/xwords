@@ -99,14 +99,6 @@ BEGIN
 #endif
 #endif /* FOR_GREMLINS */
 
-// <EEH> NO NEED TO TRANSLATE GREMLINS or DEBUG stuff
-#ifdef FOR_GREMLINS
-/*     PULLDOWN "Gremlins"  */
-/*     BEGIN */
-/* 	MENUITEM "Divider left" GREMLIN_DIVIDER_LEFT */
-/* 	MENUITEM "Divider right" GREMLIN_DIVIDER_RIGHT */
-/*     END */
-#endif
 END
 
 MENU XW_ASK_MENU_ID

@@ -28,12 +28,12 @@
 
 { "STR_COMMIT_CONFIRM", "Confirmez-vous le coup actuel ?\n" },
 { "STR_NOT_YOUR_TURN", "Impossible ; ce n'est pas votre tour !" },
-{ "STR_NO_PEEK_ROBOT_TILES", "No peeking at the robot's tiles!" },
+{ "STR_NO_PEEK_ROBOT_TILES", "Ne cherchez pas à voir les lettres du robot !" },
 #ifndef XWFEATURE_STANDALONE_ONLY
-{ "STR_NO_PEEK_REMOTE_TILES", "No peeking at remote player's tiles!" },
+{ "STR_NO_PEEK_REMOTE_TILES", "Ne cherchez pas à voir les lettres des autres !" },
 { "STR_SERVER_DICT_WINS", 
       "Conflit entre les dictionnaires Hôte et Invité ; l'hôte gagne." },
-{ "STR_REG_UNEXPECTED_USER",  "Attempt to register unexpected user refused" },
+{ "STR_REG_UNEXPECTED_USER",  "Attempt to register unexpected user refused" }, /* TRANSLATE */
 { "STR_RESEND_IR", "Impossible envoyer message par IR; réessayer ?" },
 #endif
 { "STR_TOO_FEW_TILES", "Pas assez de lettres pour échanger." },
@@ -46,7 +46,7 @@
 { "STR_DOUBLE_WORD",		"Double mot" },
 { "STR_TRIPLE_LETTER",		"Triple lettre" },
 { "STR_TRIPLE_WORD",		"Triple mot" },
-{ "STR_REMTILES",		"rem:%d" },
+{ "STR_REMTILES",		"rem:%d" }, /* TRANSLATE */
 { "STR_CANT_TRADE_MIDTURN",	"Enlevez les lettres jouées avant d'échanger."},
 { "STR_ASK_REPLACE_GAME",	"Voulez-vous remplacer la partie en cours ?" },
 { "STR_OK",			"Ok" },
@@ -58,7 +58,7 @@
 { "STR_TRADING_REMINDER",	"Cliquez D une fois fini." },
 
 { "STR_LOCAL_NAME",             "%s" },
-{ "STR_NONLOCAL_NAME",          "%s (remote)" },
+{ "STR_NONLOCAL_NAME",          "%s (remote)" }, /* TRANSLATE */
 { "STRSD_SUMMARYSCORED",        "%s:%d" },
 { "STRD_TRADED",                 "Echangé %d" },
 { "STR_PASSED",                 "Passé" },
@@ -80,7 +80,7 @@
 { "STR_PTS",			"Pts :" },
 { "STR_CONFIRM_DEL_GAME",	"Supprimer vraiment la partie sélectionnée ?" },
 
-{ "STRD_TIME_PENALTY_SUB",     " - %d [time]" },
+{ "STRD_TIME_PENALTY_SUB",     " - %d [time]" }, /* TRANSLATE */
 
 { "STR_NO_DICT_INSTALLED",    "Crosswords 4 nécessite au minimum un dictionnaire." \
                               "Téléchargez-en un ou plus sur xwords.sf.net." },
@@ -126,10 +126,10 @@
 
 #ifdef XWFEATURE_RELAY
 { "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
-                               "connect." },
+                               "connect." }, /* TRANSLATE */
 { "STR_RELAY_LOST_OTHER",      "Relay error: another device has lost its "
-                               "connection." },
-{ "STR_RELAY_GENERIC",         "Relay error: something's wrong." },
+                               "connection." }, /* TRANSLATE */
+{ "STR_RELAY_GENERIC",         "Relay error: something's wrong." },/*TRANSLATE*/
 #endif
 
 #ifdef XWFEATURE_BLUETOOTH
