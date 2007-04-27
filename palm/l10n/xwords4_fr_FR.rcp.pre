@@ -1,4 +1,4 @@
-/* -*-mode: c; fill-column: 78; compile-command: "cd ../ && make ARCH=68K_ONLY MEMDEBUG=TRUE"; -*- */
+/* -*-mode: c; fill-column: 78; compile-command: "cd ../ && make ARCH=68K_ONLY MEMDEBUG=TRUE LANG=fr_FR"; -*- */
 /*****************************************************************************
  * Copyright 1999 - 2007 par Eric House (xwords@eehouse.org) et autres.  Tous 
  * droits réservés. Tradtion en français par Francis H.
@@ -189,11 +189,11 @@ BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
     LABEL "En jeu :" AUTOID AT (LEFTCOL SERVER_TOP)
     GADGET ID XW_SOLO_GADGET_ID
-           AT (PREVRIGHT+2 SERVER_TOP 55 SERVER_HEIGHT) USABLE
+           AT (PREVRIGHT+5 SERVER_TOP 36 SERVER_HEIGHT) USABLE
     GADGET ID XW_SERVER_GADGET_ID 
-           AT (PREVRIGHT+1 SERVER_TOP 24 SERVER_HEIGHT) USABLE
+           AT (PREVRIGHT+1 SERVER_TOP 31 SERVER_HEIGHT) USABLE
     GADGET ID XW_CLIENT_GADGET_ID 
-           AT (PREVRIGHT+1 SERVER_TOP 30 SERVER_HEIGHT) USABLE
+           AT (PREVRIGHT+1 SERVER_TOP 36 SERVER_HEIGHT) USABLE
     LIST "Locale" "Hôte" "Invité" XW_SERVERTYPES_LIST_ID
            AT (0 0 1 1) VISIBLEITEMS 3 NONUSABLE
 #endif
@@ -278,13 +278,13 @@ END /* NAVIGATION ID XW_NEWGAMES_FORM */
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IR
 #define LEFTCOL 4
-#define CONNS_FIELD_LEFT 70
+#define CONNS_FIELD_LEFT 73
 #define LOCALIP_TOP 30
 
 FORM ID XW_CONNS_FORM AT (2 66 156 93)
 USABLE MODAL SAVEBEHIND DEFAULTBTNID XW_CONNS_CANCEL_BUTTON_ID
 BEGIN
-    TITLE "Connections"         /* TRANSLATE */
+    TITLE "Connexions"
 
     LABEL "Connecter via:" AUTOID LEFTCOL 15 FONT 1
 
@@ -302,7 +302,7 @@ BEGIN
         AT ( LEFTCOL+10 LOCALIP_TOP ) NONUSABLE
 #ifdef XWFEATURE_BLUETOOTH
     LABEL "Nom de l'hôte :" XW_CONNS_BT_HOSTNAME_LABEL_ID
-        AT ( PREVLEFT PREVTOP+3 ) NONUSABLE
+        AT ( PREVLEFT-6 PREVTOP+3 ) NONUSABLE
     SELECTORTRIGGER "Trouver l'hôte..." XW_CONNS_BT_HOSTTRIGGER_ID \
              AT (CONNS_FIELD_LEFT PREVTOP 70 AUTO) NONUSABLE LEFTANCHOR
 #endif
@@ -324,7 +324,7 @@ BEGIN
     FIELD XW_CONNS_COOKIE_FIELD_ID CONNS_FIELD_LEFT PREVTOP 70 AUTO \
         SINGLELINE EDITABLE UNDERLINED MAXCHARS 32
 #else
-    LABEL "Connection internet désactivée" XW_CONNS_RELAY_LABEL_ID 
+    LABEL "Connexion internet désactivée" XW_CONNS_RELAY_LABEL_ID 
         AT ( LEFTCOL+10 LOCALIP_TOP )
 #endif
 
