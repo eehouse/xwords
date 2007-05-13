@@ -72,9 +72,7 @@ endif
 endif
 endif
 
-ifneq ($(LANG),en_US)
 PLATFORM := $(PLATFORM)_$(shell echo $(LANG) | tr [A-Z] [a-z])
-endif
 
 APPNAME = "$(NAME)"
 
@@ -263,7 +261,7 @@ ship-all:
 $(BITMAPS)/%.pbitm: $(BITMAPS)/%.bmp
 	bmtoa $< > $@
 
-$(PLATFORM)/objs.prc: LocalizedStrIncludes.h $(OBJS) gdbload
+$(PLATFORM)/objs.prc: $(PLATFORM)/LocalizedStrIncludes.h $(OBJS) gdbload
 	@rm -f *.grc *.bin
 ifeq ($(ARCH),ARM_ONLY)
 	$(CC) $(OBJS) -o tmp.o
@@ -290,20 +288,21 @@ xwords4.rcp: l10n/xwords4_$(LANG).rcp.pre xwords4defines.h $(BITMAP_RSRCS)
 # up with offsets out of sync with the .h file.  Not sure what to do
 # about this....  Clean builds are probably a safe fallback.
 
-LocalizedStrIncludes.h StrL03e8.bin: \
+$(PLATFORM)/LocalizedStrIncludes.h StrL03e8.bin: \
 		./l10n/StrRes_$(LANG).pre ./l10n/mkstrsres.c
 	gcc $(CFLAGS) $(FORMATDEFINES) \
 		-DLANGSTRFILE=\"$<\" ./l10n/mkstrsres.c \
 		-o mkstrsres
-	./mkstrsres StrL03e8.bin LocalizedStrIncludes.h
+	mkdir -p $(PLATFORM)
+	./mkstrsres StrL03e8.bin $(PLATFORM)/LocalizedStrIncludes.h
 	rm -f mkstrsres
 
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
 .PHONY : pnolet
 
-pnolet: LocalizedStrIncludes.h
-	$(MAKE) -f Makefile.PNO MEMDEBUG=$(MEMDEBUG) MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\' \
-	-DAPPNAME=\\\"$(APPNAME)\\\""
+pnolet: $(PLATFORM)/LocalizedStrIncludes.h
+	$(MAKE) -f Makefile.PNO MEMDEBUG=$(MEMDEBUG) PLATFORM=$(PLATFORM) \
+		MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\' -DAPPNAME=\\\"$(APPNAME)\\\"" 
 endif
 
 # GDB seems confused by relative paths these days.  So generate the
@@ -317,9 +316,10 @@ gdbload:
 clean:
 	cd ../common && $(MAKE) PLATFORM=$(PLATFORM) $@
 	rm -rf $(PLATFORM)/*.[oa] xwords4 *.bin *.stamp *.[pg]rc \
-		xwords4.rcp *.btxt $(PLATFORM)/* LocalizedStrIncludes.h gdbload
+		xwords4.rcp *.btxt $(PLATFORM)/* $(PLATFORM)/LocalizedStrIncludes.h \
+			gdbload
 ifneq (x$(BUILD_AS_PNOLET)x, xx)
-	$(MAKE) -f Makefile.PNO clean
+	$(MAKE) -f Makefile.PNO PLATFORM=$(PLATFORM) clean
 endif
 
 #cmod03E8.bin: palmdraw.c Makefile

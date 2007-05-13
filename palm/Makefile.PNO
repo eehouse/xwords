@@ -1,6 +1,5 @@
 # -*- mode: Makefile; compile-command: "make ARCH=ARM_ONLY"; -*-
 
-PLATFORM = PALM_PNO
 PALMDIR = /usr/local/share/palmdev/sdk-5r3/include
 
 # Which arm suite to use?  Well, the suite in prc-tools-arm is broken
@@ -22,7 +21,7 @@ ifeq ($(MEMDEBUG),TRUE)
 DEBUG = -DMEM_DEBUG -DDEBUG
 endif
 
-INCLUDE += \
+INCLUDES += \
 	-I$(PALMDIR) \
 	-I$(PALMDIR)/Libraries \
 	-I$(PALMDIR)/Dynamic \
@@ -35,17 +34,14 @@ INCLUDE += \
 	-I$(PALMDIR)/Extensions/Bluetooth \
 
 ifneq (, $(findstring XWFEATURE_FIVEWAY,$(MYDEFS)))
-INCLUDE += -I/usr/local/share/palmdev/Handspring5
-INCLUDE += -I/usr/local/share/palmdev/Handspring5/68K
+INCLUDES += -I/usr/local/share/palmdev/Handspring5
+INCLUDES += -I/usr/local/share/palmdev/Handspring5/68K
 GENDEFS += -DXWFEATURE_FIVEWAY
 endif
 
 ifneq (, $(findstring XWFEATURE_BLUETOOTH,$(MYDEFS)))
 GENDEFS += -DXWFEATURE_BLUETOOTH
 endif
-
-INCLUDE += \
-	-I. -I../common -I../relay
 
 # NOTE!!!! Added the -w flag to supress all warnings since arm-elf-gcc
 # does so much bitching about the Palm headers.  Need to fix that, or
@@ -55,7 +51,7 @@ ARMCCFS = $(CCFLAGS) -DNATIVE $(DEBUG) \
 	-nostartfiles -mshort-load-bytes -nodefaultlibs -ffixed-r9 \
 	-mpic-register=r10 -msingle-pic-base -fpic \
 	-Wno-multichar \
-	$(INCLUDE)
+	$(INCLUDES)
 
 ARMLDFS = -Xlinker --script=./ldscript.arm -lgcc
 
