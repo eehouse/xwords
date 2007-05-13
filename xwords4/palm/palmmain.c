@@ -979,9 +979,10 @@ initHighResGlobals( PalmAppGlobals* globals )
         && ((vers & sysFtrNumUIHardwareHas5Way) != 0) && !globals->isZodiac;
 
     err = FtrGet( hsFtrCreator, hsFtrIDNavigationSupported, &vers );
-    XP_ASSERT( errNone == err );
-    XP_ASSERT( vers == 1 || vers == 2 );
-    globals->isTreo600 = (err == errNone) && (vers == 1);
+    if ( errNone == err ) {
+        XP_ASSERT( vers == 1 || vers == 2 );
+        globals->isTreo600 = (err == errNone) && (vers == 1);
+    }
 #endif
 
 #ifdef FEATURE_SILK
