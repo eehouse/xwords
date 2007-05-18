@@ -2486,9 +2486,10 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
     XP_U16 col, row;
     Tile tile;
     XP_Bool ignore, isPending;
+    XP_U16 modcol, modrow;
 
-    flipIf( board, pencol, penrow, &pencol, &penrow );
-    if ( model_getTile( board->model, pencol, penrow, XP_TRUE,
+    flipIf( board, pencol, penrow, &modcol, &modrow );
+    if ( model_getTile( board->model, modcol, modrow, XP_TRUE,
                         board->selPlayer, &tile, &ignore, &isPending, 
                         (XP_Bool*)NULL )
          && isPending ) {
@@ -2499,12 +2500,12 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
             index = count;
             model_getCurrentMoveTile( board->model, board->selPlayer, 
                                       &index, &tile, &col, &row, &ignore );
-            if ( col == pencol && row == penrow ) {
+            if ( col == modcol && row == modrow ) {
                 model_moveBoardToTray( board->model, board->selPlayer, 
                                        index );
                 /* the cursor should show up where the tile used to be so it's
                    easy to replace it. */
-                setArrow( board, col, row );
+                setArrow( board, pencol, penrow );
                 result = XP_TRUE;
                 break;
             }
