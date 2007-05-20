@@ -346,17 +346,19 @@ gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
 } /* gi_copy */
 
 XP_U16
-gi_countHumans( const CurGameInfo* gi )
+gi_countLocalHumans( const CurGameInfo* gi )
 {
     XP_U16 count = 0;
     XP_U16 nPlayers = gi->nPlayers;
+    const LocalPlayer* lp = gi->players;
     while ( nPlayers-- ) {
-        if ( !gi->players[nPlayers].isRobot ) {
+        if ( lp->isLocal && !lp->isRobot ) {
             ++count;
         }
+        ++lp;
     }
     return count;
-} /* gi_countHumans */
+} /* gi_countLocalHumans */
 
 void
 gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
