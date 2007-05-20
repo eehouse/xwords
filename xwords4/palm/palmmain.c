@@ -1246,7 +1246,7 @@ saveOpenGame( PalmAppGlobals* globals )
         const XP_UCHAR* dictName;
         char namebuf[MAX_GAMENAME_LENGTH];
 
-        if ( gi_countHumans( &globals->gameInfo ) > 1 ) {
+        if ( gi_countLocalHumans( &globals->gameInfo ) > 1 ) {
             board_hideTray( globals->game.board ); /* so won't be visible when
                                                       next opened */
         }
@@ -1456,7 +1456,7 @@ eventLoop( PalmAppGlobals* globals )
                         && !!globals->game.board ) {
                 if ( !globals->menuIsDown /* hi Marcus :-) */
                      && closeNonMainForms(globals)
-                     && gi_countHumans( &globals->gameInfo ) > 1
+                     && gi_countLocalHumans( &globals->gameInfo ) > 1
                      && board_hideTray( globals->game.board ) ) {
                     board_draw( globals->game.board );
                 }

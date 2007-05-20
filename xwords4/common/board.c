@@ -624,13 +624,15 @@ board_commitTurn( BoardCtxt* board )
  * cursor and tray traySelBits.  Others, such as the miniwindow stuff, are
  * singletons that may have to be hidden or shown.
  */
-void
-board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer )
+static void
+selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
 {
     if ( !board->gameOver && server_getCurrentTurn(board->server) < 0 ) {
         /* game not started yet; do nothing */
     } else if ( board->selPlayer == newPlayer ) {
-        checkRevealTray( board );
+        if ( reveal ) {
+            checkRevealTray( board );
+        }
     } else {
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
@@ -677,6 +679,12 @@ board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer )
     }
     board->scoreBoardInvalid = XP_TRUE;	/* if only one player, number of
                                            tiles remaining may have changed*/
+} /* selectPlayerImpl */
+
+void
+board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer )
+{
+    selectPlayerImpl( board, newPlayer, XP_TRUE );
 } /* board_selectPlayer */
 
 void
@@ -3349,7 +3357,8 @@ boardTurnChanged( void* p_board )
 
     nextPlayer = chooseBestSelPlayer( board );
     if ( nextPlayer >= 0 ) {
-        board_selectPlayer( board, nextPlayer );
+        XP_U16 nHumans = gi_countLocalHumans( board->gi );
+        selectPlayerImpl( board, nextPlayer, nHumans <= 1 );
     }
 
     setTimerIf( board );
