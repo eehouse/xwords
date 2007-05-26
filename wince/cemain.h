@@ -84,7 +84,7 @@ typedef struct CEAppGlobals {
     wchar_t* lastDefaultDir;
 
     XP_U32 timerIDs[NUM_TIMERS_PLUS_ONE];
-    TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
+    XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
 
     XP_U16 flags;               /* bits defined below */

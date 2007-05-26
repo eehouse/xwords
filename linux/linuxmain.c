@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -532,7 +533,7 @@ linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XP_U16 channelNo )
 void
 linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 {
-    TimerProc proc = cGlobals->timerProcs[why];
+    XWTimerProc proc = cGlobals->timerProcs[why];
     void* closure = cGlobals->timerClosures[why];
 
     cGlobals->timerProcs[why] = NULL;
