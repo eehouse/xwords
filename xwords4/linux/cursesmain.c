@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -231,7 +231,7 @@ curses_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 
 static void
 curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
-                      TimerProc proc, void* closure )
+                      XWTimerProc proc, void* closure )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
 

@@ -324,7 +324,7 @@ struct PalmAppGlobals {
 
     struct ConnsDlgState* connState;
 
-    TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
+    XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
     XP_U32 timerFireAt[NUM_TIMERS_PLUS_ONE];
 

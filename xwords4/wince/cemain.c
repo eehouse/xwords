@@ -109,7 +109,7 @@ static XP_Bool ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col,
                                    XP_U16 row );
 static XP_Bool ce_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
-                              TimerProc proc, void* closure);
+                              XWTimerProc proc, void* closure);
 static void ce_util_requestTime( XW_UtilCtxt* uc );
 static XP_U32 ce_util_getCurSeconds( XW_UtilCtxt* uc );
 static DictionaryCtxt* ce_util_makeEmptyDict( XW_UtilCtxt* uc );
@@ -1776,7 +1776,7 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
 static void
 ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
 {
-    TimerProc proc;
+    XWTimerProc proc;
     void* closure;
 
     proc = globals->timerProcs[why];
@@ -2727,7 +2727,7 @@ ce_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 static void
 ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
                   XP_U16 XP_UNUSED_RELAY(when),
-                  TimerProc proc, void* closure)
+                  XWTimerProc proc, void* closure)
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_U32 timerID;

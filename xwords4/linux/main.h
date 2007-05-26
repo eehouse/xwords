@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2007 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -114,7 +115,7 @@ struct CommonGlobals {
     /* Used only for bluetooth case */
     struct LinBtStuff* btStuff;
 
-    TimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
+    XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
 
     MPSLOT

@@ -1,6 +1,6 @@
  /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -88,7 +88,7 @@ typedef struct BadWordInfo {
     XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
 } BadWordInfo;
 
-typedef void (*TimerProc)( void* closure, XWTimerReason why );
+typedef void (*XWTimerProc)( void* closure, XWTimerReason why );
 
 /* Platform-specific utility functions that need to be
  */
@@ -129,7 +129,7 @@ typedef struct UtilVtable {
     XP_Bool (*m_util_engineProgressCallback)( XW_UtilCtxt* uc );
 
     void (*m_util_setTimer)( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
-                             TimerProc proc, void* closure );
+                             XWTimerProc proc, void* closure );
 
     void (*m_util_requestTime)( XW_UtilCtxt* uc );
 

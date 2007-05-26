@@ -116,7 +116,7 @@ static XP_Bool palm_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col,
                                      XP_U16 row );
 static XP_Bool palm_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
-                                TimerProc proc, void* closure );
+                                XWTimerProc proc, void* closure );
 static XP_U32 palm_util_getCurSeconds( XW_UtilCtxt* uc );
 static void palm_util_requestTime( XW_UtilCtxt* uc );
 static DictionaryCtxt* palm_util_makeEmptyDict( XW_UtilCtxt* uc );
@@ -1543,7 +1543,7 @@ destroy_on_close( XWStreamCtxt* p_stream )
 static void
 palmFireTimer( PalmAppGlobals* globals, XWTimerReason why )
 {
-    TimerProc proc = globals->timerProcs[why];
+    XWTimerProc proc = globals->timerProcs[why];
     void* closure = globals->timerClosures[why];
     XP_ASSERT( TimGetTicks() >= globals->timerFireAt[why] );
     globals->timerProcs[why] = NULL;
@@ -3769,8 +3769,8 @@ palm_util_engineProgressCallback( XW_UtilCtxt* uc )
 
 static void
 palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
-                    XP_U16 XP_UNUSED_IR(secsFromNow),
-                    TimerProc proc, void* closure )
+                    XP_U16 secsFromNow,
+                    XWTimerProc proc, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     XP_U32 now = TimGetTicks();
