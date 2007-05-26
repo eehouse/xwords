@@ -158,7 +158,7 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
         on = NULL;
     }
 
-    for ( i = 0; i < sizeof(allCtls)/sizeof(allCtls[0]); ++i ) {
+    for ( i = 0; i < VSIZE(allCtls); ++i ) {
         const XP_U16* cur = allCtls[i];
         if ( cur != on ) {
             disOrEnableSet( form, cur, XP_FALSE );

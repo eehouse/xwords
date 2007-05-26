@@ -350,7 +350,7 @@ static void
 cleanupServer( ServerCtxt* server )
 {
     XP_U16 i;
-    for ( i = 0; i < sizeof(server->players)/sizeof(server->players[0]); ++i ){
+    for ( i = 0; i < VSIZE(server->players); ++i ){
         ServerPlayer* player = &server->players[i];
         if ( player->engine != NULL ) {
             engine_destroy( player->engine );

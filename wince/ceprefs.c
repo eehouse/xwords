@@ -82,19 +82,11 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
     SendDlgItemMessage( hDlg, resID, BM_SETCHECK, BST_CHECKED, 0L );
 
     if ( doGlobalPrefs ) {
-        turnOnOff( hDlg, goesWithLocal, 
-                   sizeof(goesWithLocal)/sizeof(goesWithLocal[0]),
-                   XP_FALSE );
-        turnOnOff( hDlg, goesWithGlobal, 
-                   sizeof(goesWithGlobal)/sizeof(goesWithGlobal[0]),
-                   XP_TRUE);
+        turnOnOff( hDlg, goesWithLocal, VSIZE(goesWithLocal), XP_FALSE );
+        turnOnOff( hDlg, goesWithGlobal, VSIZE(goesWithGlobal), XP_TRUE);
     } else {
-        turnOnOff( hDlg, goesWithGlobal, 
-                   sizeof(goesWithGlobal)/sizeof(goesWithGlobal[0]),
-                   XP_FALSE );
-        turnOnOff( hDlg, goesWithLocal, 
-                   sizeof(goesWithLocal)/sizeof(goesWithLocal[0]),
-                   XP_TRUE);
+        turnOnOff( hDlg, goesWithGlobal, VSIZE(goesWithGlobal), XP_FALSE );
+        turnOnOff( hDlg, goesWithLocal, VSIZE(goesWithLocal), XP_TRUE);
     }
 
     if ( !doGlobalPrefs ) {
@@ -204,7 +196,7 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
 #endif
         };
         XP_U16 i;
-        for ( i = 0; i < sizeof(unavail)/sizeof(unavail[0]); ++i ) {
+        for ( i = 0; i < VSIZE(unavail); ++i ) {
             ceEnOrDisable( hDlg, unavail[i], XP_FALSE );
         }
     }

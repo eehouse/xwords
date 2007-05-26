@@ -179,7 +179,7 @@ main( int argc, char** argv )
   }
 
   write_fnav( &gamesHeader, gamesElemsShort, NULL, 
-              sizeof(gamesElemsShort)/sizeof(gamesElemsShort[0]) );
+              VSIZE(gamesElemsShort) );
 /*               sizeof(gamesElems)/sizeof(gamesElems[0]) ); */
 
 

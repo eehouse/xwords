@@ -69,7 +69,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     XP_DEBUGF( "looking for dict %s", dictName );
 
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, dictName, -1,
-                         nameBuf, sizeof(nameBuf)/sizeof(nameBuf[0]) );
+                         nameBuf, VSIZE(nameBuf) );
 
     ptr = openMappedFile( MPPARM(globals->mpool) nameBuf, &mappedFile, 
                           &hFile, &dictLength );
@@ -650,7 +650,7 @@ forEachDictDir( HINSTANCE hInstance, ForEachCB cb, void* ctxt )
     for ( id = IDS_DICTDIRS; ; ++id ) {
         wchar_t pathBuf[CE_MAX_PATH_LEN+1];
         if ( 0 >= LoadString( hInstance, id, pathBuf, 
-                              sizeof(pathBuf)/sizeof(pathBuf[0]) ) ) {
+                              VSIZE(pathBuf) ) ) {
             break;
         }
 
@@ -716,7 +716,7 @@ formatDirsCB( wchar_t* dir, void* ctxt )
     }
 
     len = WideCharToMultiByte( CP_ACP, 0, dir, -1,
-                               narrow, sizeof(narrow)/sizeof(narrow[0]), 
+                               narrow, VSIZE(narrow), 
                                NULL, NULL );
     stream_putString( datap->stream, narrow );
     return XP_FALSE;
@@ -744,7 +744,7 @@ ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought,
     for ( id = IDS_DICTDIRS; ; ++id ) {
         wchar_t pathBuf[CE_MAX_PATH_LEN+1];
         if ( 0 >= LoadString( hInstance, id, pathBuf, 
-                              sizeof(pathBuf)/sizeof(pathBuf[0]) ) ) {
+                              VSIZE(pathBuf) ) ) {
             break;
         }
 
@@ -769,7 +769,7 @@ ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
         XP_U16 len;
 
         if ( 0 >= LoadString( hInstance, id, wide, 
-                              sizeof(wide)/sizeof(wide[0]) ) ) {
+                              VSIZE(wide) ) ) {
             break;
         }
 
@@ -777,7 +777,7 @@ ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
             stream_putString( stream, ", " );
         }
         len = WideCharToMultiByte( CP_ACP, 0, wide, -1,
-                                   narrow, sizeof(narrow)/sizeof(narrow[0]), 
+                                   narrow, VSIZE(narrow), 
                                    NULL, NULL );
         stream_putString( stream, narrow );
     }

@@ -179,7 +179,7 @@ makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
     roleCombo = gtk_combo_box_new_text();
     state->roleCombo = roleCombo;
 
-    for ( i = 0; i < sizeof(roles)/sizeof(roles[0]); ++i ) {
+    for ( i = 0; i < VSIZE(roles); ++i ) {
         gtk_combo_box_append_text( GTK_COMBO_BOX(roleCombo), roles[i] );
     }
     g_signal_connect( GTK_OBJECT(roleCombo), "changed", 

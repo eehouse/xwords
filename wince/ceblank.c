@@ -34,8 +34,7 @@ loadLettersList( HWND hDlg, BlankDialogState* bState )
 
         len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, 
                                    texts[i], strlen(texts[i]),
-                                   widebuf, 
-                                   sizeof(widebuf)/sizeof(widebuf[0]) );
+                                   widebuf, VSIZE(widebuf) );
         widebuf[len] = 0;
 
         SendDlgItemMessage( hDlg, BLANKFACE_LIST, LB_ADDSTRING, 
@@ -72,8 +71,7 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
         (void)MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, 
                                    labelBuf, lenSoFar + 1,
                                    widebuf, 
-                                   (sizeof(widebuf)/sizeof(widebuf[0]))
-                                   + sizeof(widebuf[0]) );
+                                   VSIZE(widebuf) + sizeof(widebuf[0]) );
 
         SetDlgItemText( hDlg,IDC_PICKMSG, widebuf );
     }

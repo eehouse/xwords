@@ -131,7 +131,7 @@ measureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
         XP_ASSERT( nextStr != str );
 
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
-                             widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+                             widebuf, VSIZE(widebuf) );
         GetTextExtentPoint32( hdc, widebuf, len, &size );
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
@@ -167,7 +167,7 @@ drawLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
         }
 
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, text, len,
-                             widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+                             widebuf, VSIZE(widebuf) );
 
         textRt.bottom = textRt.top + dctx->miniLineHt;
 
@@ -329,12 +329,12 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         XP_MEMSET( widebuf, 0, sizeof(widebuf) );
     
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, cp, -1,
-                             widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+                             widebuf, VSIZE(widebuf) );
 	
         SetTextColor( hdc, foreColorRef );
 #ifdef TARGET_OS_WIN32
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
-                             widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+                             widebuf, VSIZE(widebuf) );
 #endif
         DrawText( hdc, widebuf, -1, &textRect, 
                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
@@ -442,7 +442,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                 HFONT oldFont = SelectObject( hdc, dctx->trayFont );
                 MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                                      widebuf, 
-                                     sizeof(widebuf)/sizeof(widebuf[0]) );
+                                     VSIZE(widebuf) );
                 DrawText( hdc, widebuf, -1, &rt, 
                           DT_SINGLELINE | DT_TOP | DT_LEFT );
                 SelectObject( hdc, oldFont );
@@ -800,7 +800,7 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, -1,
-                         widebuf, sizeof(widebuf)/sizeof(widebuf[0]) );
+                         widebuf, VSIZE(widebuf) );
     DrawText(hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_BOTTOM | DT_CENTER);	
     DrawText(hdc, L"Pts", -1, &rt, DT_SINGLELINE | DT_TOP | DT_CENTER);	
 

@@ -39,6 +39,8 @@
 # endif
 #endif
 
+#define VSIZE(arr) (sizeof(arr)/sizeof(arr[0]))
+
 typedef struct XP_Rect {
     XP_S16 left;
     XP_S16 top;
