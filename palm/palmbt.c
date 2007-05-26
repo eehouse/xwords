@@ -31,6 +31,7 @@
 #define SOCK_INVAL ((BtLibSocketRef)-1)
 
 // #define DO_SERVICE_RECORD 1
+#define ACL_WAIT_INTERVAL 8
 
 typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_PicoRole;
 
@@ -137,6 +138,7 @@ static void pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act );
 static XP_S16 pbt_enque( PBT_queue* queue, const XP_U8* data, XP_S16 len );
 static void pbt_processIncoming( PalmBTStuff* btStuff );
 
+static void waitACL( PalmBTStuff* btStuff );
 static void pbt_reset( PalmBTStuff* btStuff );
 static void pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock );
 static void pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
@@ -654,7 +656,7 @@ pbt_do_work( PalmBTStuff* btStuff )
                     SET_STATE( btStuff, PBTST_L2C_CONNECTING );
                 } else {
                     SET_STATE( btStuff, PBTST_NONE );
-                    pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+                    waitACL( btStuff );
                 }
             } else {
                 btStuff->dataSocket = SOCK_INVAL;
@@ -754,6 +756,22 @@ pbt_reset( PalmBTStuff* btStuff )
     XP_MEMSET( &btStuff->vol, 0, sizeof(btStuff->vol) );
 
     LOG_RETURN_VOID();
+}
+
+static void
+btTimerProc( void* closure, XWTimerReason why )
+{
+    PalmBTStuff* btStuff;
+    btStuff = (PalmBTStuff*)closure;
+    XP_ASSERT( why == TIMER_ACL_BACKOFF );
+    pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+}
+
+static void
+waitACL( PalmBTStuff* btStuff )
+{
+    util_setTimer( &btStuff->globals->util, TIMER_ACL_BACKOFF, 
+                   ACL_WAIT_INTERVAL, btTimerProc, btStuff );
 }
 
 static Err
@@ -959,7 +977,7 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
          */
         if ( PBT_SLAVE == btStuff->picoRole ) {
             pbt_killL2C( btStuff, sEvent->socket );
-            pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+            waitACL( btStuff );
         } else if ( PBT_MASTER == btStuff->picoRole ) {
             pbt_close_datasocket( btStuff );
             SET_STATE( btStuff, PBTST_LISTENING );
@@ -1009,7 +1027,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
             pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
         } else {
             SET_STATE( btStuff, PBTST_NONE );
-            pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+            waitACL( btStuff );
         }
         break;
 
@@ -1039,7 +1057,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
             SET_STATE( btStuff, PBTST_NONE );
             /* See comment at btLibSocketEventDisconnected */
             if ( PBT_SLAVE == btStuff->picoRole ) {
-                pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+                waitACL( btStuff );
             }
         }
         break;

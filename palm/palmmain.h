@@ -231,6 +231,13 @@ typedef enum {
 } BtUIState;
 #endif
 
+#ifdef XWFEATURE_BLUETOOTH
+# define TIMER_ACL_BACKOFF NUM_TIMERS_PLUS_ONE
+# define NUM_PALM_TIMERS (NUM_TIMERS_PLUS_ONE + 1)
+#else
+# define NUM_PALM_TIMERS NUM_TIMERS_PLUS_ONE
+#endif
+
 struct PalmAppGlobals {
     FormPtr mainForm;
     PrefsDlgState* prefsDlgState;
@@ -324,9 +331,9 @@ struct PalmAppGlobals {
 
     struct ConnsDlgState* connState;
 
-    XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
-    void* timerClosures[NUM_TIMERS_PLUS_ONE];
-    XP_U32 timerFireAt[NUM_TIMERS_PLUS_ONE];
+    XWTimerProc timerProcs[NUM_PALM_TIMERS];
+    void* timerClosures[NUM_PALM_TIMERS];
+    XP_U32 timerFireAt[NUM_PALM_TIMERS];
 
 #ifdef XWFEATURE_RELAY
     NetLibStuff nlStuff;
