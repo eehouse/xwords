@@ -72,7 +72,7 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
     getmaxyx(globals->boardWin, y, x);
     XP_DEBUGF( "getmaxyx=>x=%d,y=%d", x, y );
 
-    numCtlButtons = sizeof(ctlButtons) / sizeof(ctlButtons[0]);
+    numCtlButtons = VSIZE(ctlButtons);
 
     measureAskText( query, &fi );
 

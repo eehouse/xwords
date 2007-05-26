@@ -918,7 +918,7 @@ doCallbackReg( PalmAppGlobals* globals, XP_Bool reg )
         };
 
 
-        for ( i = 0; i < sizeof(notifyTypes) / sizeof(notifyTypes[0]); ++i ) {
+        for ( i = 0; i < VSIZE(notifyTypes); ++i ) {
             UInt32 notifyType = notifyTypes[i];        
 
             if ( reg ) {
@@ -2421,10 +2421,10 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
             BoardObjectType nxt = board_getFocusOwner( board );
             XP_U16 indx = 0;
             if ( nxt != OBJ_NONE ) {
-                for ( ; indx < sizeof(typs)/sizeof(typs[0]); ++indx ){
+                for ( ; indx < VSIZE(typs); ++indx ){
                     if ( nxt == typs[indx] ) {
-                        indx = (indx + (sizeof(typs)/sizeof(typs[0]) + incr));
-                        indx %= sizeof(typs)/sizeof(typs[0]);
+                        indx = (indx + (VSIZE(typs) + incr));
+                        indx %= VSIZE(typs);
                         break;
                     }
                 }
@@ -3787,6 +3787,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         XP_ASSERT( 0 );
     }
 
+    XP_ASSERT( why < VSIZE(globals->timerProcs) );
     globals->timerProcs[why] = proc;
     globals->timerClosures[why] = closure;
     globals->timerFireAt[why] = now;

@@ -689,7 +689,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
             tiles[0] = tile;
             if ( lookup( dict, in_edge, tiles, 0, tilesAfter ) ) {
                 XP_ASSERT( (tile >> 5)
-                           < (sizeof(check->bits)/sizeof(check->bits[0])) );
+                           < (VSIZE(check->bits)) );
                 check->bits[tile>>5] |= (1L << (tile & 0x1F));
             }
 

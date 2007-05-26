@@ -260,7 +260,7 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
         butHeight = 0;
         butWidth = 0;
         nButtons = 0;
-        for ( i = 0; i < sizeof(resIDs)/sizeof(resIDs[0]); ++i ) {
+        for ( i = 0; i < VSIZE(resIDs); ++i ) {
             HWND itemH = GetDlgItem( hDlg, resIDs[i] );
             if ( ceIsVisible( itemH ) ) {
                 RECT buttonRect;
@@ -296,7 +296,7 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
             top = spacing - (butHeight / 2) + VPADDING;
             left = crect.right + HPADDING_L;
 
-            for ( i = 0; i < sizeof(resIDs)/sizeof(resIDs[0]); ++i ) {
+            for ( i = 0; i < VSIZE(resIDs); ++i ) {
                 HWND itemH = GetDlgItem( hDlg, resIDs[i] );
                 if ( ceIsVisible( itemH ) ) { 
                     (void)MoveWindow( itemH, left, top, butWidth, butHeight, 

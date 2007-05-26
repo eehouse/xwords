@@ -174,7 +174,7 @@ doCmd( const char* cmd )
     };
     int i;
 
-    for ( i = 0; i < sizeof(params)/sizeof(params[0]); ++i ) {
+    for ( i = 0; i < VSIZE(params); ++i ) {
         char* p = params[i].p;
         int len = strlen(p);
         if ( 0 == strncmp( p, cmd, len ) ) {
@@ -187,7 +187,7 @@ doCmd( const char* cmd )
         }
     }
 
-    if ( i == sizeof(params)/sizeof(params[0]) ) {
+    if ( i == VSIZE(params) ) {
         XP_LOGF( "failed to match cmdline arg \"%s\"", cmd );
     }
 } /* doCmd */
@@ -324,7 +324,7 @@ addButtonsToCmdBar( CEAppGlobals* globals )
     int resIDs[] = { IDB_FLIPBUTTON, IDB_VALUESBUTTON,
                      IDB_HINTBUTTON, IDB_JUGGLEBUTTON };
 
-    for ( i = 0; i < sizeof(cmds)/sizeof(cmds[0]); ++i ) {
+    for ( i = 0; i < VSIZE(cmds); ++i ) {
         TBBUTTON buttData;
 
         index = CommandBar_AddBitmap(globals->hwndCB, globals->hInst,
@@ -1416,7 +1416,7 @@ ceChooseAndOpen( CEAppGlobals* globals )
         | OFN_PATHMUSTEXIST;
     
     openFileStruct.lpstrFile = path;
-    openFileStruct.nMaxFile = sizeof(path)/sizeof(path[0]);
+    openFileStruct.nMaxFile = VSIZE(path);
     
     if ( GetOpenFileName( &openFileStruct ) ) {
         XP_UCHAR* name;
@@ -1575,13 +1575,13 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             XP_MEMSET( &sfs, 0, sizeof(sfs) );
             XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
 
-            makeUniqueName( nameBuf, sizeof(nameBuf)/sizeof(nameBuf[0]) );
+            makeUniqueName( nameBuf, VSIZE(nameBuf) );
 
             sfs.lStructSize = sizeof(sfs);
             sfs.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
             sfs.hwndOwner = globals->hWnd;
             sfs.lpstrFile = nameBuf;
-            sfs.nMaxFile = sizeof(nameBuf)/sizeof(nameBuf[0]);
+            sfs.nMaxFile = VSIZE(nameBuf);
 
             sfs.lpstrDefExt = L"xwg";
 
@@ -2273,7 +2273,7 @@ queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg )
 
     XP_U16 len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, msg, strlen(msg),
                                       widebuf, 
-                                      sizeof(widebuf)/sizeof(widebuf[0]) );
+                                      VSIZE(widebuf) );
     widebuf[len] = 0;
 
     answer = MessageBox( globals->hWnd, widebuf, L"Question", MB_YESNO );

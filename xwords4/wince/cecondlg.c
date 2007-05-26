@@ -82,7 +82,7 @@ adjustForConnType( HWND hDlg, const CeConnDlgState* cState )
         btIds;             /* we want the "disabled" message */
     }
 
-    for ( i = 0; i < sizeof(allIDs)/sizeof(allIDs[0]); ++i ) {
+    for ( i = 0; i < VSIZE(allIDs); ++i ) {
         XP_U16* ids = allIDs[i];
         XP_Bool enable = ids == on;
         while ( *ids != 0 ) {
@@ -132,7 +132,7 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* cState )
         , L"WiFi/Cellular data"
     };
 
-    for ( i = 0; i < sizeof(strs)/sizeof(strs[0]); ++i ) {
+    for ( i = 0; i < VSIZE(strs); ++i ) {
         SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_ADDSTRING, 
                             0, (LPARAM)strs[i] );
     }

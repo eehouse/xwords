@@ -158,7 +158,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     wchar_t* roles[] = { L"Standalone", L"Host", L"Guest" };
-    for ( i = 0; i < (sizeof(roles)/sizeof(roles[0])); ++i ) {
+    for ( i = 0; i < VSIZE(roles); ++i ) {
         SendDlgItemMessage( hDlg, IDC_ROLECOMBO, CB_ADDSTRING, 0, 
                             (long)roles[i] );
     }
@@ -188,7 +188,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         wchar_t wPath[CE_MAX_PATH_LEN+1];
         XP_ASSERT( gi->dictName[0] != '\0' );
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, gi->dictName, -1,
-                             wPath, sizeof(wPath)/sizeof(wPath[0]) );
+                             wPath, VSIZE(wPath) );
         (void)addDictToState( wPath, 0, giState );
     }
     addDictsToMenu( giState );
