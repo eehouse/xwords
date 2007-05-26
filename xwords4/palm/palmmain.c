@@ -1558,7 +1558,7 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
     XP_U32 nextWhen = 0xFFFFFFFF;
     XP_Bool found;
 
-    for ( i = 1; i < NUM_TIMERS_PLUS_ONE; ++i ) {
+    for ( i = 1; i < NUM_PALM_TIMERS; ++i ) {
         if ( (globals->timerProcs[i] != NULL) && 
              (globals->timerFireAt[i] < nextWhen) ) {
             nextWhy = i;
@@ -3781,6 +3781,10 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         now += SysTicksPerSecond();
 #ifdef XWFEATURE_RELAY
     } else if ( why == TIMER_HEARTBEAT ) {
+        now += (secsFromNow * SysTicksPerSecond());
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( why == TIMER_ACL_BACKOFF ) {
         now += (secsFromNow * SysTicksPerSecond());
 #endif
     } else {
