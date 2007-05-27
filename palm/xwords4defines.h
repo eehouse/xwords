@@ -434,7 +434,7 @@
 
 /* versioning stuff */
 #ifdef XWFEATURE_BLUETOOTH
-# define XW_PALM_VERSION_STRING "4.3a9"
+# define XW_PALM_VERSION_STRING "4.3a10"
 #else
 # define XW_PALM_VERSION_STRING "4.2rc3"
 #endif
