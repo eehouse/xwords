@@ -256,7 +256,7 @@ figureScorePlayerTapped( BoardCtxt* board, XP_U16 x, XP_U16 y )
 /* If the pen also went down on the scoreboard, make the selected player the
  * one closest to the mouse up loc.
  */
-#ifdef POINTER_SUPPORT
+#if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool
 handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {

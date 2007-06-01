@@ -257,11 +257,13 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
                       CellFlags flags )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
-    XP_UCHAR loc[4];
+    XP_UCHAR loc[4] = { ' ', ' ', ' ', '\0' };
     XP_ASSERT( XP_STRLEN(letter) < sizeof(loc) );
-    XP_STRNCPY( loc, letter, sizeof(loc) );
+    XP_ASSERT( rect->width < sizeof(loc) );
+    XP_ASSERT( rect->height == 1 );
+    XP_MEMCPY( loc, letter, strlen(letter) );
 
-    if ( loc[0] == LETTER_NONE ) {
+    if ( letter[0] == LETTER_NONE ) {
         switch ( bonus ) {
         case BONUS_DOUBLE_LETTER:
             loc[0] = '+'; break;
@@ -280,8 +282,8 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         wstandout( dctx->boardWin );
     }
 
-    mvwaddnstr( dctx->boardWin, rect->top, rect->left, loc, 
-                strlen(loc) );
+    mvwaddnstr( dctx->boardWin, rect->top, rect->left, 
+                loc, rect->width );
 
     if ( (flags&CELL_HIGHLIGHT) != 0 ) {
         wstandend( dctx->boardWin );
