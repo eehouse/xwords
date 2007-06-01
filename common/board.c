@@ -509,7 +509,7 @@ invalSelTradeWindow( BoardCtxt* board )
                       board->trayVisState == TRAY_REVEALED );
 } /* invalSelTradeWindow */
 
-#ifdef POINTER_SUPPORT
+#if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 static void
 hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 {
@@ -1910,7 +1910,7 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
     board->needsDrawing = XP_TRUE;
 } /* invalCell */
 
-#ifdef POINTER_SUPPORT
+#if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 static XP_Bool
 pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, BoardObjectType* wp )
 {
@@ -1928,9 +1928,7 @@ pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, BoardObjectType* wp )
 
     return result;
 } /* pointOnSomething */
-#endif
 
-#if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 /* Move the given tile to the board.  If it's a blank, we need to ask the user
  * what to call it first.
  */
@@ -2007,7 +2005,7 @@ board_beginTrade( BoardCtxt* board )
     return result;
 } /* board_beginTrade */
 
-#ifdef POINTER_SUPPORT
+#if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 static XP_Bool
 ptOnTradeWindow( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
@@ -2542,7 +2540,7 @@ exitTradeMode( BoardCtxt* board )
     return XP_TRUE;
 } /* exitTradeMode */
 
-#ifdef POINTER_SUPPORT
+#if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool
 board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
@@ -2835,7 +2833,9 @@ board_handleKey( BoardCtxt* board, XP_Key key, XP_Bool* handled )
 
     draw = board_handleKeyDown( board, key, &handled1 );
     draw = board_handleKeyUp( board, key, &handled2 ) || draw;
-    *handled = handled1 || handled2;
+    if ( !!handled ) {
+        *handled = handled1 || handled2;
+    }
 
     return draw;
 } /* board_handleKey */

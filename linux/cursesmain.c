@@ -1008,6 +1008,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     int piperesult;
     DictionaryCtxt* dict;
     XP_U16 gameID;
+    XP_U16 colWidth, scoreLeft;
 
     memset( &globals, 0, sizeof(globals) );
 
@@ -1078,11 +1079,15 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 	model_setDictionary( globals.cGlobals.game.model, params->dict );
 
     board_setPos( globals.cGlobals.game.board, 1, 1, XP_FALSE );
-    board_setScale( globals.cGlobals.game.board, 1, 1 );
-    board_setScoreboardLoc( globals.cGlobals.game.board, 20, 1, 50, 
-                            5, /*4 players + rem*/ XP_FALSE );
+    colWidth = 2;
+    board_setScale( globals.cGlobals.game.board, colWidth, 1 );
+    scoreLeft = (colWidth * MAX_COLS) + 3;
+    board_setScoreboardLoc( globals.cGlobals.game.board, 
+                            scoreLeft, 1,
+                            45, 5, /*4 players + rem*/ XP_FALSE );
 
-    board_setTrayLoc( globals.cGlobals.game.board, 25, 8, (3*MAX_TRAY_TILES)+1, 
+    board_setTrayLoc( globals.cGlobals.game.board,
+                      scoreLeft, 8, (3*MAX_TRAY_TILES)+1, 
                       4, 1 );
     /* no divider -- yet */
     /*     board_setTrayVisible( globals.board, XP_TRUE, XP_FALSE ); */
