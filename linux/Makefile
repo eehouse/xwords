@@ -47,7 +47,11 @@ DEFINES += $(DO_CURSES) $(DO_GTK)
 
 TARGET=$(PLATFORM)/xwords
 
+ifdef BUILD_COMMAND
+CC = ${BUILD_COMMAND}
+else
 CC = gcc
+endif
 
 include ../common/config.mk
 
@@ -60,8 +64,9 @@ DEFINES += -DFEATURE_TRAY_EDIT
 #DEFINES += -DDRAW_WITH_PRIMITIVES
 
 # Bluetooth support
+BLUETOOTH = -DXWFEATURE_BLUETOOTH
 # DEFINES += -DXWFEATURE_IR
-DEFINES += -DXWFEATURE_BLUETOOTH
+DEFINES += ${BLUETOOTH}
 DEFINES += -DXWFEATURE_RELAY
 
 # Let users pick the tiles going into their trays
@@ -75,6 +80,7 @@ DEFINES += -DPERIMETER_FOCUS
 #GPROFFLAG = -pg
 
 # INCLUDES += -I/usr/lib/glib/include
+INCLUDES += ${EXTRAINCS}
 
 OBJ =   $(PLATFORM)/linuxmain.o \
 	$(PLATFORM)/linuxdict.o \
@@ -95,7 +101,10 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 
 #	$(PLATFORM)/linuxcommpipe.o \
 
-LIBS = -pthread -lm -lmcheck -lbluetooth -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
+LIBS = -pthread -lm -lmcheck -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
+ifdef BLUETOOTH
+LIBS += -lbluetooth
+endif
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-2.0`
