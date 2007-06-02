@@ -21,7 +21,9 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
-#include <bluetooth/bluetooth.h> /* for bdaddr_t, which should move */
+#ifdef XWFEATURE_BLUETOOTH
+# include <bluetooth/bluetooth.h> /* for bdaddr_t, which should move */
+#endif
 
 #include "comtypes.h"
 #include "util.h"
