@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=ARM_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -45,8 +45,21 @@ typedef struct ConnsDlgState {
     CommsAddrRec* addr;
     XP_BtAddr btAddr;           /* since there's no field, save it here */
     XP_BtAddrStr tmp;
-    char btName[32];
+    char btName[PALM_BT_NAME_LEN];
 } ConnsDlgState;
+
+static void
+strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
+{
+    FieldPtr field = getActiveObjectPtr( id );
+    XP_UCHAR* str = FldGetTextPtr( field );
+    XP_U16 len = FldGetTextLength( field );
+    if ( len > max-1 ) {
+        len = max - 1;
+    }
+    XP_MEMCPY( buf, str, len );
+    buf[len] = '\0';
+} /* strFromField */
 
 static void
 ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )

@@ -25,6 +25,8 @@
 #include "comms.h"
 #include "palmmain.h"
 
+#define PALM_BT_NAME_LEN 48
+
 /* Needed: feedback to main so status can be posted on the board.  Events we
  * might care about:
  *
