@@ -204,6 +204,19 @@ setFieldStr( XP_U16 id, const XP_UCHAR* buf )
     FldInsert( field, buf, XP_STRLEN(buf) );
 } /* setFieldStr */
 
+void
+getFieldStr( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
+{
+    FieldPtr field = getActiveObjectPtr( id );
+    XP_UCHAR* str = FldGetTextPtr( field );
+    XP_U16 len = FldGetTextLength( field );
+    if ( len >= max ) {
+        len = max - 1;
+    }
+    XP_MEMCPY( buf, str, len );
+    buf[len] = '\0';
+} /* strFromField */
+
 /*****************************************************************************
  * Set up to build the string and ptr-to-string lists needed for the
  * LstSetListChoices system call.
