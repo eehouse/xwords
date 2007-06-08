@@ -108,13 +108,13 @@ stateFromCtls( ConnsDlgState* state )
 #ifdef XWFEATURE_RELAY
     } else if ( addr->conType == COMMS_CONN_RELAY ) {
         XP_UCHAR buf[16];
-        strFromField( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName,
+        getFieldStr( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName,
                       sizeof(addr->u.ip_relay.hostName) );
 
-        strFromField( XW_CONNS_PORT_FIELD_ID, buf, sizeof(buf) );
+        getFieldStr( XW_CONNS_PORT_FIELD_ID, buf, sizeof(buf) );
         addr->u.ip_relay.port = StrAToI( buf );        
 
-        strFromField( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie,
+        getFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie,
                       sizeof(addr->u.ip_relay.cookie) );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
