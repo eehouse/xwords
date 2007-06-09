@@ -204,6 +204,7 @@ setFieldStr( XP_U16 id, const XP_UCHAR* buf )
     FldInsert( field, buf, XP_STRLEN(buf) );
 } /* setFieldStr */
 
+#ifdef XWFEATURE_RELAY
 void
 getFieldStr( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
 {
@@ -216,6 +217,7 @@ getFieldStr( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
     XP_MEMCPY( buf, str, len );
     buf[len] = '\0';
 } /* strFromField */
+#endif
 
 /*****************************************************************************
  * Set up to build the string and ptr-to-string lists needed for the

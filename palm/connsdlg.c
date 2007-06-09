@@ -49,19 +49,6 @@ typedef struct ConnsDlgState {
 } ConnsDlgState;
 
 static void
-strFromField( XP_U16 id, XP_UCHAR* buf, XP_U16 max )
-{
-    FieldPtr field = getActiveObjectPtr( id );
-    XP_UCHAR* str = FldGetTextPtr( field );
-    XP_U16 len = FldGetTextLength( field );
-    if ( len > max-1 ) {
-        len = max - 1;
-    }
-    XP_MEMCPY( buf, str, len );
-    buf[len] = '\0';
-} /* strFromField */
-
-static void
 ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
 {
     CommsAddrRec* addr = state->addr;
