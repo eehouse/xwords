@@ -2277,17 +2277,20 @@ askRevealTray( BoardCtxt* board )
 		revealed = !player_hasPasswd( lp );
 
 		if ( !revealed ) {
-			XP_UCHAR buf[16];
-			XP_U16 buflen = sizeof(buf);
-			XP_UCHAR* name = emptyStringIfNull(lp->name);
+			const XP_UCHAR* name = emptyStringIfNull(lp->name);
 
 			/* repeat until player gets passwd right or hits cancel */
-            while ( util_askPassword( board->util, name, buf, &buflen ) ) {
-				if ( buflen > 0 ) {
-					if ( player_passwordMatches( lp, (XP_U8*)buf, buflen ) ) {
-						revealed = XP_TRUE;
-						break;
-					}
+            for ( ; ; ) {
+                XP_UCHAR buf[16];
+                XP_U16 buflen = sizeof(buf);
+                if ( !util_askPassword( board->util, name, buf, &buflen ) ) {
+                    break;
+                }
+                if ( buflen > 0 ) {
+                    if ( player_passwordMatches( lp, (XP_U8*)buf, buflen ) ) {
+                        revealed = XP_TRUE;
+                        break;
+                    }
 				}
 			}
 		}
