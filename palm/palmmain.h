@@ -412,9 +412,9 @@ void palm_drawctxt_destroy( DrawCtx* dctx );
 
 void palm_warnf( char* format, ... );
 
-Boolean askPassword( const XP_UCHAR* name, Boolean isNew, XP_UCHAR* retbuf, 
-                     XP_U16* len );
-Boolean palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, 
+XP_Bool askPassword( PalmAppGlobals* globals, const XP_UCHAR* name, 
+                     XP_Bool isNew, XP_UCHAR* retbuf, XP_U16* len );
+XP_Bool palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, 
                           XP_S16 titleID );
 void freeSavedGamesData( MPFORMAL SavedGamesState* state );
 
@@ -422,7 +422,7 @@ void writeNameToGameRecord( PalmAppGlobals* globals, XP_S16 index,
                             char* newName, XP_U16 len );
 
 const XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
-Boolean palmask( PalmAppGlobals* globals, const XP_UCHAR* str, 
+XP_Bool palmask( PalmAppGlobals* globals, const XP_UCHAR* str, 
                  const XP_UCHAR* altButton, XP_S16 titleID );
 void checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr, 
                       XWStreamCtxt* instream );
