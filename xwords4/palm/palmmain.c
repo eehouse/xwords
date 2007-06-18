@@ -145,7 +145,7 @@ static XP_Bool palm_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min,
                                               XP_U16* max );
 #endif
 static void userErrorFromStrId( PalmAppGlobals* globals, XP_U16 strID );
-static Boolean askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, 
+static XP_Bool askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, 
                               XP_S16 titleID, Boolean closeAndDestroy );
 static void displayFinalScores( PalmAppGlobals* globals );
 static void updateScrollbar( PalmAppGlobals* globals, Int16 newValue );
@@ -2025,7 +2025,7 @@ askOnClose( XWStreamCtxt* stream, void* closure )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)closure;
 
-    askFromStream( globals, stream, -1, false );
+    (void)askFromStream( globals, stream, -1, false );
 } /* askOnClose */
 #endif
 
@@ -2655,7 +2655,7 @@ mainViewHandleEvent( EventPtr event )
                 server_formatDictCounts( globals->game.server, stream, 
                                          4 ); /* 4: ncols */
 
-                askFromStream( globals, stream, STR_VALUES_TITLE, true );
+                (void)askFromStream( globals, stream, STR_VALUES_TITLE, true );
             }
             break;
 
@@ -2663,7 +2663,7 @@ mainViewHandleEvent( EventPtr event )
             if ( !!globals->game.board ) {
                 stream = makeSimpleStream( globals, NULL );
                 board_formatRemainingTiles( globals->game.board, stream );
-                askFromStream( globals, stream, STR_REMAINS_TITLE, true );
+                (void)askFromStream( globals, stream, STR_REMAINS_TITLE, true );
             }
             break;
 
@@ -2675,8 +2675,8 @@ mainViewHandleEvent( EventPtr event )
                 model_writeGameHistory( globals->game.model, stream, 
                                         globals->game.server, gameOver );
                 if ( stream_getSize( stream ) > 0 ) {
-                    askFromStream( globals, stream, STR_HISTORY_TITLE, 
-                                   XP_FALSE );
+                    (void)askFromStream( globals, stream, STR_HISTORY_TITLE, 
+                                         XP_FALSE );
                 } else {
                     beep();
                 }
@@ -2988,7 +2988,7 @@ displayFinalScores( PalmAppGlobals* globals )
     server_writeFinalScores( globals->game.server, stream );
     stream_putU8( stream, '\0' );
 
-    askFromStream( globals, stream, STR_FINAL_SCORES_TITLE, true );
+    (void)askFromStream( globals, stream, STR_FINAL_SCORES_TITLE, true );
 } /* displayFinalScores */
 
 XP_S16
@@ -3220,7 +3220,7 @@ moveLeftOf( UInt16 rightID, UInt16 leftID )
 
 } /* moveLeftOf */
 
-Boolean
+XP_Bool
 palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID )
 {
     const XP_UCHAR* message;
@@ -3231,9 +3231,9 @@ palmaskFromStrId( PalmAppGlobals* globals, XP_U16 strId, XP_S16 titleID )
     return palmask( globals, message, yes, titleID );
 } /* palmaskFromStrId */
 
-Boolean
-palmask( PalmAppGlobals* globals, const XP_UCHAR* str, const XP_UCHAR* yesButton, 
-         XP_S16 titleID )
+XP_Bool
+palmask( PalmAppGlobals* globals, const XP_UCHAR* str, 
+         const XP_UCHAR* yesButton, XP_S16 titleID )
 {
     FormPtr form, prevForm;
     FieldPtr field;
@@ -3305,12 +3305,12 @@ palmask( PalmAppGlobals* globals, const XP_UCHAR* str, const XP_UCHAR* yesButton
     return buttonHit == XW_ASK_YES_BUTTON_ID;
 } /* palmask */
 
-static Boolean
+static XP_Bool
 askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, XP_S16 titleID,
                Boolean closeAndDestroy )
 {
     XP_U16 nBytes = stream_getSize( stream );
-    Boolean result;
+    XP_Bool result;
     XP_UCHAR* buffer;
 
     XP_ASSERT( nBytes < maxFieldTextLen );
@@ -3335,11 +3335,11 @@ askFromStream( PalmAppGlobals* globals, XWStreamCtxt* stream, XP_S16 titleID,
     return result;
 } /* askFromStream */
 
-Boolean
-askPassword( const XP_UCHAR* name, Boolean isNew, XP_UCHAR* retbuf, 
-             XP_U16* len )
+XP_Bool
+askPassword( PalmAppGlobals* globals, const XP_UCHAR* name, XP_Bool isNew, 
+             XP_UCHAR* retbuf, XP_U16* len )
 {
-    Boolean result = false;
+    XP_Bool result = XP_FALSE;
     FormPtr prevForm, form;
     FieldPtr field;
     UInt16 showMe;
@@ -3362,16 +3362,19 @@ askPassword( const XP_UCHAR* name, Boolean isNew, XP_UCHAR* retbuf,
         FldSetTextPtr( field, (char*)name );
         FldDrawField( field );
     }
-#ifdef XWFEATURE_FIVEWAY
-    setFormFocus( form, XW_PASSWORD_PASS_FIELD );
-#endif
-    field = getActiveObjectPtr( XW_PASSWORD_PASS_FIELD );
+
+    if ( !globals->hasTreoFiveWay ) {
+        FrmSetFocus( form, FrmGetObjectIndex( form, XW_PASSWORD_PASS_FIELD ) );
+    }
 
     if ( FrmDoDialog( form ) == XW_PASSWORD_OK_BUTTON ) {
-        char* enteredPass = FldGetTextPtr( field );
-        XP_U16 enteredLen = !enteredPass? 0: StrLen(enteredPass);
+        char* enteredPass;
+        XP_U16 enteredLen;
+        field = getActiveObjectPtr( XW_PASSWORD_PASS_FIELD );
+        enteredPass = FldGetTextPtr( field );
+        enteredLen = enteredPass? StrLen(enteredPass) : 0;
         if ( enteredLen < *len ) {
-            result = true;
+            result = XP_TRUE;
             if ( enteredLen > 0 ) {
                 XP_MEMCPY( retbuf, enteredPass, enteredLen );
             }
@@ -3684,10 +3687,11 @@ palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
 } /* palm_util_userPickTile */
 
 static XP_Bool 
-palm_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* name, XP_UCHAR* buf, 
-                       XP_U16* len )
+palm_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
+                       XP_UCHAR* buf, XP_U16* len )
 {
-    return askPassword( name, false, buf, len );
+    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
+    return askPassword( globals, name, false, buf, len );
 } /* palm_util_askPassword */
 
 static void 

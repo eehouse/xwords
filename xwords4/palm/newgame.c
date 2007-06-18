@@ -429,7 +429,7 @@ handlePasswordTrigger( PalmAppGlobals* globals, UInt16 controlID )
     name = (XP_UCHAR*)FldGetTextPtr( nameField );
 
     len = sizeof(state->passwds[playerNum]);
-    if ( askPassword( name, true, state->passwds[playerNum], &len )) {
+    if ( askPassword( globals, name, true, state->passwds[playerNum], &len )) {
         showMaskedPwd( controlID, len > 0 );
     }
 } /* handlePasswordTrigger */
