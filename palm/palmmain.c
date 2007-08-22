@@ -972,6 +972,7 @@ initHighResGlobals( PalmAppGlobals* globals )
 # define hsFtrIDNavigationSupported 14
 # endif
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
+    XP_ASSERT( errNone == err );
     globals->generatesKeyUp = ( (err == errNone) && 
                                 ((vers & sysFtrNumUIHardwareHasKbd) != 0) )
         || globals->isZodiac;
@@ -2890,7 +2891,12 @@ mainViewHandleEvent( EventPtr event )
 
     case keyUpEvent:
         XP_ASSERT( globals->generatesKeyUp );
-        if ( globals->keyDownReceived ) {
+        /* work around not yet being able to set generatesKeyUp accurately
+           using FtrGet */
+        if ( !globals->generatesKeyUp ) {
+            globals->generatesKeyUp = XP_TRUE;
+            globals->keyDownReceived = XP_FALSE; /* drop the event this once */
+        } else if ( globals->keyDownReceived ) {
             globals->keyDownReceived = XP_FALSE;
             draw = handleKeyEvent( globals, event, &handled );
         }
