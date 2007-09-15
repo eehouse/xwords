@@ -30,7 +30,7 @@
 #define L2CAPSOCKETMTU 500
 #define SOCK_INVAL ((BtLibSocketRef)-1)
 
-// #define DO_SERVICE_RECORD 1
+#define DO_SERVICE_RECORD 1
 #define ACL_WAIT_INTERVAL 8
 
 typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_PicoRole;
@@ -39,6 +39,7 @@ typedef enum {
     PBT_ACT_NONE
     , PBT_ACT_SETUP_LISTEN
     , PBT_ACT_CONNECT_ACL
+    , PBT_ACT_GETSDP            /* slave only */
     , PBT_ACT_CONNECT_L2C
     , PBT_ACT_GOTDATA
     , PBT_ACT_TRYSEND
@@ -50,6 +51,8 @@ typedef enum {
     , PBTST_LISTENING           /* master */
     , PBTST_ACL_CONNECTING      /* slave */
     , PBTST_ACL_CONNECTED       /* slave */
+    , PBTST_SDP_QUERYING        /* slave */
+    , PBTST_SDP_QUERIED         /* slave */
     , PBTST_L2C_CONNECTING      /* slave */
     , PBTST_L2C_CONNECTED       /* slave */
 } PBT_STATE;
@@ -89,8 +92,10 @@ typedef struct PalmBTStuff {
     XP_U16 queueNext;
     PBT_ACTION actQueue[PBT_MAX_ACTS];
 
-    union {
+    struct /*union*/ {
         struct {
+            BtLibL2CapPsmType remotePsm;
+            BtLibSocketRef sdpSocket;
         } slave;
         struct {
             BtLibSocketRef listenSocket;
@@ -168,7 +173,7 @@ static const char* proleToString( PBT_PicoRole r );
 
 /* callbacks */
 static void libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon );
-static void l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
+static void socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 
 XP_Bool
 palm_bt_init( PalmAppGlobals* globals, DataCb dataCb, XP_Bool* userCancelled )
@@ -263,6 +268,8 @@ palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btUIStateP )
             break;
         case PBTST_ACL_CONNECTING:
         case PBTST_ACL_CONNECTED:
+        case PBTST_SDP_QUERYING:
+        case PBTST_SDP_QUERIED:
         case PBTST_L2C_CONNECTING:
             btUIState = BTUI_CONNECTING; 
             break;
@@ -308,24 +315,25 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
 
         if ( errNone == err ) {
             UInt16 index;
+            UInt8 name[PALM_BT_NAME_LEN];
+            BtLibFriendlyNameType nameType = {
+                .name = name, 
+                .nameLength = sizeof(name) 
+            };
+
             CALL_ERR( err, BtLibSecurityFindTrustedDeviceRecord, 
                       btStuff->btLibRefNum, &addr, &index );
-            CALL_ERR( err, BtLibSecurityGetTrustedDeviceRecordInfo, 
-                      btStuff->btLibRefNum, index, NULL, out, len, 
-                      NULL, NULL, NULL );
             XP_ASSERT( sizeof(*btAddr) >= sizeof(addr) );
             XP_MEMCPY( btAddr, &addr, sizeof(addr) );
         
             LOG_HEX( &addr, sizeof(addr), __FUNCTION__ );
 
-/*             err = BtLibGetRemoteDeviceName( btStuff->btLibRefNum, */
-/*                                             BtLibDeviceAddressTypePtr  */
-/*                                             remoteDeviceP, */
-/*                                             BtLibFriendlyNameType* nameP, */
-/*                                             BtLibGetNameEnum retrievalMethod ); */
-/*             err = BtLibAddrBtdToA( btStuff->btLibRefNum,  */
-/*                                    &btStuff->u.slave.masterAddr, */
-/*                                    out, len ); */
+            CALL_ERR( err, BtLibGetRemoteDeviceName, btStuff->btLibRefNum,
+                      &addr, &nameType, btLibCachedThenRemote );
+            XP_LOGF( "%s: got name %s", __func__, nameType.name );
+
+            XP_ASSERT( len >= nameType.nameLength );
+            XP_MEMCPY( out, nameType.name, nameType.nameLength );
         }
         success = errNone == err;
     }
@@ -456,16 +464,14 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 
         pbt_checkAddress( btStuff, addr );
 
-        if ( !!btStuff ) {
-            if ( picoRole == PBT_MASTER ) {
-                pbt_setup_master( btStuff );
-            } else {
-                pbt_setup_slave( btStuff, addr );
-            }
-
-            nSent = pbt_enque( &btStuff->vol.out, buf, len );
-            pbt_send_pending( btStuff );
+        if ( picoRole == PBT_MASTER ) {
+            pbt_setup_master( btStuff );
+        } else {
+            pbt_setup_slave( btStuff, addr );
         }
+
+        nSent = pbt_enque( &btStuff->vol.out, buf, len );
+        pbt_send_pending( btStuff );
     }
     LOG_RETURNF( "%d", nSent );
     return nSent;
@@ -524,13 +530,13 @@ pbt_setup_master( PalmBTStuff* btStuff )
 
         /*    1. BtLibSocketCreate: create an L2CAP socket. */
         CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum, 
-                  &btStuff->u.master.listenSocket, l2SocketCallback,
+                  &btStuff->u.master.listenSocket, socketCallback,
                   (UInt32)btStuff, btLibL2CapProtocol );
         XP_ASSERT( errNone == err );
 
         /*    2. BtLibSocketListen: set up an L2CAP socket as a listener. */
         XP_MEMSET( &listenInfo, 0, sizeof(listenInfo) );
-        listenInfo.data.L2Cap.localPsm = XW_PSM; // BT_L2CAP_RANDOM_PSM;
+        listenInfo.data.L2Cap.localPsm = BT_L2CAP_RANDOM_PSM;
         listenInfo.data.L2Cap.localMtu = L2CAPSOCKETMTU; 
         listenInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
         /* Doesn't send events; returns errNone unless no resources avail. */
@@ -547,6 +553,7 @@ pbt_setup_master( PalmBTStuff* btStuff )
             pbt_postpone( btStuff, PBT_ACT_SETUP_LISTEN );
         }
     }
+    XP_ASSERT( NULL != btStuff->u.master.sdpRecordH );
 } /* pbt_setup_master */
 
 static void
@@ -626,23 +633,43 @@ pbt_do_work( PalmBTStuff* btStuff )
                 SET_STATE( btStuff, PBTST_ACL_CONNECTING );
             } else if ( btLibErrAlreadyConnected == err ) {
                 SET_STATE( btStuff, PBTST_ACL_CONNECTED );
+                pbt_postpone( btStuff, PBT_ACT_GETSDP );
+            }
+        }
+        break;
+
+    case PBT_ACT_GETSDP:
+        XP_ASSERT( PBTST_ACL_CONNECTED == GET_STATE(btStuff) ); /* still firing */
+        CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum,
+                  &btStuff->u.slave.sdpSocket, socketCallback, (UInt32)btStuff,
+                  btLibSdpProtocol );
+        if ( err == errNone ) {
+	    CALL_ERR( err, BtLibSdpGetPsmByUuid, btStuff->btLibRefNum, 
+                      btStuff->u.slave.sdpSocket, &btStuff->otherAddr,
+                      (BtLibSdpUuidType*)&XWORDS_UUID, 1 );
+            if ( err == errNone ) {
+                SET_STATE( btStuff, PBTST_SDP_QUERIED );
                 pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
+            } else if ( err == btLibErrPending ) {
+                SET_STATE( btStuff, PBTST_SDP_QUERYING );
+            } else {
+                XP_ASSERT(0);
             }
         }
         break;
 
     case PBT_ACT_CONNECT_L2C:
 /*         XP_ASSERT( btStuff->picoRole == PBT_SLAVE ); */
-        if ( GET_STATE(btStuff) == PBTST_ACL_CONNECTED ) {
+        if ( GET_STATE(btStuff) == PBTST_SDP_QUERIED ) {
             pbt_close_datasocket( btStuff );
             CALL_ERR( err, BtLibSocketCreate, btLibRefNum, 
                       &btStuff->dataSocket, 
-                      l2SocketCallback, (UInt32)btStuff, 
+                      socketCallback, (UInt32)btStuff, 
                       btLibL2CapProtocol );
 
             if ( btLibErrNoError == err ) {
                 BtLibSocketConnectInfoType connInfo;
-                connInfo.data.L2Cap.remotePsm = XW_PSM;
+                connInfo.data.L2Cap.remotePsm = btStuff->u.slave.remotePsm;
                 connInfo.data.L2Cap.localMtu = L2CAPSOCKETMTU; 
                 connInfo.data.L2Cap.minRemoteMtu = L2CAPSOCKETMTU;
                 connInfo.remoteDeviceP = &btStuff->otherAddr;
@@ -914,7 +941,7 @@ pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState, const char* whence )
 }
 
 static void
-l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
+socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
 {
     PalmBTStuff* btStuff = (PalmBTStuff*)refCon;
     BtLibSocketEventEnum event = sEvent->event;
@@ -984,6 +1011,31 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         }
         break;
 
+    case btLibSocketEventSdpGetPsmByUuid:
+        XP_ASSERT( sEvent->socket == btStuff->u.slave.sdpSocket );
+        CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, sEvent->socket );
+        XP_ASSERT( err == errNone );
+        btStuff->u.slave.sdpSocket = SOCK_INVAL;
+        if ( sEvent->status == errNone ) {
+            btStuff->u.slave.remotePsm = sEvent->eventData.sdpByUuid.param.psm;
+            SET_STATE( btStuff, PBTST_SDP_QUERIED );
+            pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
+	} else if ( sEvent->status == btLibErrSdpQueryDisconnect ) {
+	    /* Maybe we can just ignore this... */
+            XP_ASSERT( GET_STATE(btStuff) == PBTST_NONE );
+/*             waitACL( btStuff ); */
+        } else {
+            if ( sEvent->status == btLibErrSdpAttributeNotSet ) {
+                XP_LOGF( "**** Host not running!!! ****" );
+            }
+            /* try again???? */
+            SET_STATE( btStuff, PBTST_ACL_CONNECTED );
+            pbt_postpone( btStuff, PBT_ACT_GETSDP );
+        }
+        /* Do we want to try again in a few seconds?  Is this where the timer
+           belongs? */
+	break;
+
     case btLibL2DiscConnPsmUnsupported:
         /* Probably need to warn the user when this happens since not having
            established trust will be a common error.  Or: figure out if
@@ -998,7 +1050,7 @@ l2SocketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         break;
     }
     LOG_RETURN_VOID();
-} /* l2SocketCallback */
+} /* socketCallback */
 
 /***********************************************************************
  * Callbacks
@@ -1024,7 +1076,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         if ( btLibErrNoError == mEvent->status ) {
             SET_STATE( btStuff, PBTST_ACL_CONNECTED );
             XP_LOGF( "successful ACL connection to master!" );
-            pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
+            pbt_postpone( btStuff, PBT_ACT_GETSDP );
         } else {
             SET_STATE( btStuff, PBTST_NONE );
             waitACL( btStuff );
@@ -1079,6 +1131,8 @@ stateToStr(PBT_STATE st)
         CASESTR(PBTST_NONE);
         CASESTR(PBTST_LISTENING);
         CASESTR(PBTST_ACL_CONNECTING);
+        CASESTR(PBTST_SDP_QUERYING);
+        CASESTR(PBTST_SDP_QUERIED);
         CASESTR(PBTST_ACL_CONNECTED);
         CASESTR(PBTST_L2C_CONNECTING);
         CASESTR(PBTST_L2C_CONNECTED);
@@ -1095,6 +1149,7 @@ actToStr(PBT_ACTION act)
         CASESTR(PBT_ACT_NONE);
         CASESTR(PBT_ACT_SETUP_LISTEN);
         CASESTR(PBT_ACT_CONNECT_ACL);
+        CASESTR(PBT_ACT_GETSDP);
         CASESTR(PBT_ACT_CONNECT_L2C);
         CASESTR(PBT_ACT_GOTDATA);
         CASESTR(PBT_ACT_TRYSEND);
