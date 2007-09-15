@@ -563,6 +563,7 @@ comms_getConType( const CommsCtxt* comms )
 XP_Bool
 comms_getIsServer( const CommsCtxt* comms )
 {
+    XP_ASSERT( !!comms );
     return comms->isServer;
 }
 
@@ -1025,6 +1026,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 #ifdef DEBUG
                         if ( !!recs ) {
                             XP_ASSERT( lastMsgRcd <= recs->nextMsgID );
+                            if ( lastMsgRcd > recs->nextMsgID ) {
+                                XP_LOGF( "bad: got lastMsgRcd of %ld, "
+                                         "nextMsgID is %ld",
+                                         lastMsgRcd, recs->nextMsgID );
+                            }
                             XP_ASSERT( lastMsgRcd < 0x0000FFFF );
                             recs->lastACK = (XP_U16)lastMsgRcd;
                         }
