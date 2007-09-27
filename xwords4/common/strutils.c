@@ -249,8 +249,8 @@ log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
         for ( i = 0; i < NUM_PER_LINE && offset < len; ++i ) {
             XP_U8 byte = memp[offset];
             for ( j = 0; j < 2; ++j ) {
-                *valsp++ = hex[byte & 0x0F];
-                byte >>= 4;
+                *valsp++ = hex[(byte & 0xF0) >> 4];
+                byte <<= 4;
             }
             *valsp++ = ':';
 
