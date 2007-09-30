@@ -1045,31 +1045,6 @@ canConvertPrefs( XWords4PreferenceType* prefs, UInt16 prefSize, XP_S16 vers )
     return success;
 } /* canConvertPrefs */
 
-#ifdef MEM_DEBUG
-# if 0
-# define LOG_OFFSET( s, f ) \
-    { s _s; \
-    XP_LOGF( "offset of " #f " in " #s \
-    ": %d (size: %ld)", OFFSET_OF( s, f ), \
-                   sizeof(_s.f) ); \
-    }
-static void
-printOffsets( void )
-{
-    LOG_OFFSET( XWords4PreferenceType, versionNum );
-    LOG_OFFSET( XWords4PreferenceType, curGameIndex );
-    LOG_OFFSET( XWords4PreferenceType, showProgress );
-    LOG_OFFSET( XWords4PreferenceType, showGrid );
-    LOG_OFFSET( XWords4PreferenceType, showColors );
-
-    LOG_OFFSET( XWords4PreferenceType, cp );
-
-    LOG_OFFSET( XWords4PreferenceType, focusItem );
-} /* printOffsets */
-# undef LOG_OFFSET
-# endif
-#endif
-
 /*****************************************************************************
  *
  ****************************************************************************/

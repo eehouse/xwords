@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2006-2007 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,5 +26,13 @@
 
 const char* frmObjId_2str( XP_U16 id );
 const char* eType_2str( eventsEnum eType );
+
+/* Useful for writing pace_man functions. */
+#define LOG_OFFSET( s, f ) \
+    { s _s; \
+    XP_LOGF( "offset of " #f " in " #s \
+    ": %d (size: %ld)", OFFSET_OF( s, f ), \
+                   sizeof(_s.f) ); \
+    }
 
 #endif
