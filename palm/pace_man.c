@@ -139,8 +139,8 @@ read_unaligned32( const unsigned char* src )
 #include "pnostate.h"
 Err
 HsNavDrawFocusRing (FormType* formP, UInt16 objectID, Int16 extraInfo,
-				    RectangleType* rP,
-					HsNavFocusRingStyleEnum ringStyle, Boolean forceRestore)
+                    RectangleType* rP,
+                    HsNavFocusRingStyleEnum ringStyle, Boolean forceRestore)
 {
     Err result;
     FUNC_HEADER(HsNavDrawFocusRing);
@@ -1387,6 +1387,21 @@ flipBtSocketListenInfoArm268K( unsigned char* out,
     write_unaligned16( out + 0, in->data.L2Cap.localPsm );
     write_unaligned16( out + 2, in->data.L2Cap.localMtu );
     write_unaligned16( out + 4, in->data.L2Cap.minRemoteMtu );
+}
+
+void
+flipBtLibSdpUuidTypeArm268K( unsigned char* out, const BtLibSdpUuidType* in )
+{
+    write_unaligned8( out + 0, in->size ); /* size 1 on 68K, 4 on ARM */
+    memcpy( out + 1, &in->UUID, sizeof(in->UUID) ); /* offset 68K: 1; ARM: 4 */
+}
+
+void
+flipBtLibFriendlyNameTypeArm268K( unsigned char* out, 
+                                  const BtLibFriendlyNameType* in )
+{
+    write_unaligned32( out + 0, in->name );
+    write_unaligned8( out + 4, in->nameLength );
 }
 
 #endif /* XWFEATURE_BLUETOOTH */
