@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2004-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -117,10 +117,23 @@ void flipBtSocketListenInfoArm268K( unsigned char* out,
 
 # define SWAP_BTLIBSOCKETCONNECTINFOTYPE_ARM_TO_68K( out, in ) \
     flipBtConnInfoArm268K( out, in )
-# define SWAP_BTLIBSOCKETCONNECTINFOTYPE_68K_TO_ARM( out, in ) /* nothing for now */
+# define SWAP_BTLIBSOCKETCONNECTINFOTYPE_68K_TO_ARM( out, in ) /* nop */
 # define SWAP_BTLIBSOCKETLISTENINFOTYPE_ARM_TO_68K( out, in ) \
     flipBtSocketListenInfoArm268K( out, in )
-# define SWAP_BTLIBSOCKETLISTENINFOTYPE_68K_TO_ARM( out, in ) /* nothing for now */
+# define SWAP_BTLIBSOCKETLISTENINFOTYPE_68K_TO_ARM( out, in ) /* nop */
+
+void flipBtLibSdpUuidTypeArm268K( unsigned char* out, 
+                                  const BtLibSdpUuidType* in );
+void flipBtLibFriendlyNameTypeArm268K( unsigned char* out, 
+                                       const BtLibFriendlyNameType* in );
+
+# define SWAP_BTLIBSDPUUIDTYPE_ARM_TO_68K( out, in ) \
+     flipBtLibSdpUuidTypeArm268K( out, in )
+# define SWAP_BTLIBSDPUUIDTYPE_68K_TO_ARM( out, in ) /* nothing */
+# define SWAP_BTLIBFRIENDLYNAMETYPE_ARM_TO_68K( out, in ) \
+     flipBtLibFriendlyNameTypeArm268K( out, in )
+# define SWAP_BTLIBFRIENDLYNAMETYPE_68K_TO_ARM( out, in ) /* nothing? */
+
 #endif /* XWFEATURE_BLUETOOTH */
 
 PNOState* getStorageLoc(void);

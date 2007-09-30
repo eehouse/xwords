@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#  Copyright 2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+#  Copyright 2004-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
 # 
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -209,6 +209,15 @@ my %typeInfo = (
                                                    "autoSwap" => -1 },
                 "BtLibSocketListenInfoType*"  => { "size" => 4, "a0" => 1, 
                                                    "autoSwap" => -1 },
+                "BtLibSdpRecordHandle" => { "size" => 4, "a0" => 1 },
+                "BtLibSdpRecordHandle*"=> { "size" => 4, "a0" => 1,
+                                            "autoSwap" => 4 },
+                "BtLibSdpUuidType*"    => { "size" => 4, "a0" => 1,
+                                            "autoSwap" => -1 },
+                "BtLibFriendlyNameType*" => { "size" => 4, "a0" => 1, 
+                                              "autoSwap" => -1 },
+                "BtLibGetNameEnum" => { "size" => 1, "a0" => 0 }, # enum 
+
     );
 
 sub name_compact($) {
