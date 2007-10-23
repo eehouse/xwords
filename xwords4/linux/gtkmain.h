@@ -22,6 +22,7 @@
 #include <gtk/gtk.h>
 #include <sys/time.h>
 #include <pango/pango-font.h>
+#include <glib.h>
 
 #include "draw.h"
 #include "main.h"
@@ -53,8 +54,7 @@ typedef struct GtkDrawCtx {
 
     /* new for gtk 2.0 */
     PangoContext* pangoContext;
-    PangoFontDescription* fontdesc[LAYOUT_NLAYOUTS];
-    PangoLayout* layout[LAYOUT_NLAYOUTS]; 
+	GList* fontsPerSize;
     
     XP_U16 trayOwner;
     XP_Bool topFocus;
