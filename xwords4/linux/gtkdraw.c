@@ -147,17 +147,17 @@ compForHt( gconstpointer  a,
 static PangoLayout*
 layout_for_ht( GtkDrawCtx* dctx, XP_U16 ht )
 {
-	PangoLayout* result = NULL;
+	PangoLayout* layout = NULL;
 
 	/* Try to find a cached layout.  Otherwise create a new one. */
 	FontPerSize fps = { .ht = ht };
 	GList* gl = g_list_find_custom( dctx->fontsPerSize, &fps,
 									compForHt );
 	if ( NULL != gl ) {
-		result = ((FontPerSize*)gl->data)->layout;
+        layout = ((FontPerSize*)gl->data)->layout;
 	}
 
-	if ( NULL == result ) {
+	if ( NULL == layout ) {
 		FontPerSize* fps = g_malloc( sizeof(*fps) );
 		dctx->fontsPerSize = g_list_insert( dctx->fontsPerSize,
 											fps, 0 );
@@ -165,20 +165,18 @@ layout_for_ht( GtkDrawCtx* dctx, XP_U16 ht )
 		char font[32];
 		snprintf( font, sizeof(font), "helvetica normal %d", ht );
 
-        fps->layout = pango_layout_new( dctx->pangoContext );
+        layout = pango_layout_new( dctx->pangoContext );
         fps->fontdesc = pango_font_description_from_string( font );
-        pango_layout_set_font_description( fps->layout, fps->fontdesc );
+        pango_layout_set_font_description( layout, fps->fontdesc );
+        fps->layout = layout;
 
 		/* This only happens first time??? */
-		pango_layout_set_alignment( fps->layout, PANGO_ALIGN_CENTER );
+		pango_layout_set_alignment( layout, PANGO_ALIGN_CENTER );
 		fps->ht = ht;
-		result = fps->layout;
-		XP_LOGF( "There are %d fonts now", g_list_length( dctx->fontsPerSize ) );
 	}
 
-/* 	FontPerSize* fps = g_list_nth_data( dctx->fontsPerSize, 0 ); */
-	return result;
-}
+	return layout;
+} /* layout_for_ht */
 
 static void
 draw_string_at( GtkDrawCtx* dctx, const char* str, XP_U16 fontHt,
@@ -417,6 +415,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect rectInset = *rect;
     XP_Bool showGrid = dctx->globals->gridOn;
+    XP_Bool highlight = (flags & CELL_HIGHLIGHT) != 0;
 
     eraseRect( dctx, rect );
 
@@ -447,19 +446,17 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
         } else if ( *letter != LETTER_NONE ) {
             GdkColor* foreground;
 
-            gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+            if ( !highlight ) {
+                gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+            }
             gdk_draw_rectangle( DRAW_WHAT(dctx),
                                 dctx->drawGC,
                                 TRUE,
                                 rectInset.left, rectInset.top,
                                 rectInset.width+1, rectInset.height+1 );
-            if ( (flags & CELL_HIGHLIGHT) != 0 ) {
-                foreground = &dctx->red;
-            } else {
-                foreground = &dctx->playerColors[owner];
-            }
 
-            draw_string_at( dctx, letter, rectInset.height,
+            foreground = highlight? &dctx->white : &dctx->playerColors[owner];
+            draw_string_at( dctx, letter, rectInset.height-2,
 							&rectInset, XP_GTK_JUST_CENTER,
                             foreground, NULL );
 
@@ -690,7 +687,8 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     const char* curs = vertical? "|":"-";
 
-    draw_string_at( dctx, curs, rectP->height,
+    /* font needs to be small enough that "|" doesn't overwrite cell below */
+    draw_string_at( dctx, curs, (rectP->height*2)/3,
                     rectP, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
     drawHintBorders( dctx, rectP, hintAtts );

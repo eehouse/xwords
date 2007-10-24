@@ -388,7 +388,7 @@ static gboolean
 configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                  GtkAppGlobals* globals )
 {
-    short width, height, leftMargin, topMargin;
+    short bdWidth, bdHeight, leftMargin, topMargin;
     short timerLeft, timerTop;
     gint hscale, vscale;
     gint trayTop;
@@ -398,18 +398,18 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
         createOrLoadObjects( globals );
     }
 
-    width = widget->allocation.width - (RIGHT_MARGIN + BOARD_LEFT_MARGIN);
+    bdWidth = widget->allocation.width - (RIGHT_MARGIN + BOARD_LEFT_MARGIN);
     if ( globals->cGlobals.params->verticalScore ) {
-        width -= VERT_SCORE_WIDTH;
+        bdWidth -= VERT_SCORE_WIDTH;
     }
-    height = widget->allocation.height - (TOP_MARGIN + BOTTOM_MARGIN)
+    bdHeight = widget->allocation.height - (TOP_MARGIN + BOTTOM_MARGIN)
         - MIN_TRAY_SCALEV - BOTTOM_MARGIN;
 
-    hscale = width / NUM_COLS;
-    vscale = (height / (NUM_ROWS + 2)); /* makd tray height 2x cell height */
+    hscale = bdWidth / NUM_COLS;
+    vscale = (bdHeight / (NUM_ROWS + TRAY_HT_ROWS)); /* makd tray height 3x cell height */
 
-    leftMargin = (width - (hscale*NUM_COLS)) / 2;
-    topMargin = (height - (vscale*(NUM_ROWS*2))) / 2;
+    leftMargin = (bdWidth - (hscale*NUM_COLS)) / 2;
+    topMargin = (bdHeight - (vscale*(NUM_ROWS*2))) / 2;
 
     if ( !globals->cGlobals.params->verticalScore ) {
         boardTop += HOR_SCORE_HEIGHT;
