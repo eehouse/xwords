@@ -1211,7 +1211,19 @@ btLibSocketEventType68K_TO_ARM( BtLibSocketEventType* out, const unsigned char* 
         out->eventData.data.dataLen = read_unaligned16( &in[6] );
         out->eventData.data.data = read_unaligned32( &in[8] );
         break;
+    case btLibSocketEventSdpGetPsmByUuid:
+        out->eventData.sdpByUuid.param.psm = read_unaligned16( &in[10] );
+        break;
+
+        /* These use status and socket only (if anything) */
+    case btLibSocketEventConnectRequest: 
+    case btLibSocketEventConnectedOutbound:
+    case btLibSocketEventSendComplete:
+    case btLibSocketEventDisconnected:
+    case btLibL2DiscConnPsmUnsupported:
+        break;
     default:                    /* shut up, compiler */
+        XP_ASSERT(0);
         break;
     }
 }

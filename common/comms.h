@@ -42,6 +42,13 @@ typedef enum {
     LAST_____FOO
 } CommsConnType;
 
+/* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
+#define XW_BT_UUID \
+    { 0x83, 0xe0, 0x87, 0xae, 0x4e, 0x18, 0x46, 0xbe,  \
+      0x83, 0xe0, 0x7b, 0x3d, 0xe6, 0xa1, 0xc3, 0x3b } 
+
+#define XW_BT_NAME "Crosswords"
+
 /* on Palm BtLibDeviceAddressType is a 48-bit quantity.  Linux's typeis the
    same size.  Goal is something all platforms support */
 typedef struct XP_BtAddr { XP_U8 bits[6]; } XP_BtAddr;

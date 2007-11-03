@@ -125,11 +125,10 @@ static void palm_bt_log( const char* btfunc, const char* func, Err err );
 #define CALL_ERR(e,f,...)    e = f(__VA_ARGS__) 
 #endif
 
-/* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
 static const BtLibSdpUuidType XWORDS_UUID = {
     btLibUuidSize128, 
-    { 0x83, 0xe0, 0x87, 0xae, 0x4e, 0x18, 0x46, 0xbe, 
-      0x83, 0xe0, 0x7b, 0x3d, 0xe6, 0xa1, 0xc3, 0x3b } };
+    XW_BT_UUID
+};
 
 static PalmBTStuff* pbt_checkInit( PalmAppGlobals* globals, 
                                    XP_Bool* userCancelled );
@@ -494,8 +493,8 @@ setupServiceRecord( PalmBTStuff* btStuff )
     if ( errNone == err ) {
         CALL_ERR( err, BtLibSdpServiceRecordSetAttributesForSocket,
                   btStuff->btLibRefNum, btStuff->u.master.listenSocket, 
-                  (BtLibSdpUuidType*)&XWORDS_UUID, 1, APPNAME, 
-                  StrLen(APPNAME), btStuff->u.master.sdpRecordH );
+                  (BtLibSdpUuidType*)&XWORDS_UUID, 1, XW_BT_NAME, 
+                  StrLen(XW_BT_NAME), btStuff->u.master.sdpRecordH );
 
         /*    5. BtLibSdpServiceRecordStartAdvertising: make an SDP memory
               record representing a local SDP service record visible to
@@ -1020,7 +1019,7 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
             btStuff->u.slave.remotePsm = sEvent->eventData.sdpByUuid.param.psm;
             SET_STATE( btStuff, PBTST_SDP_QUERIED );
             pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
-	} else if ( sEvent->status == btLibErrSdpQueryDisconnect ) {
+        } else if ( sEvent->status == btLibErrSdpQueryDisconnect ) {
 	    /* Maybe we can just ignore this... */
             XP_ASSERT( GET_STATE(btStuff) == PBTST_NONE );
 /*             waitACL( btStuff ); */
