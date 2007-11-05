@@ -152,7 +152,7 @@ getL2Addr( const CommsAddrRec const* addrP, struct sockaddr_l2* const saddr )
             sdp_list_t *r;
         
             // go through each of the service records
-            for ( r = response_list;; r; r = r->next ) {
+            for ( r = response_list; r; r = r->next ) {
                 sdp_list_t *proto_list = NULL;
                 sdp_record_t *rec = (sdp_record_t*) r->data;
             
