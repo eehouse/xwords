@@ -101,7 +101,7 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 
 #	$(PLATFORM)/linuxcommpipe.o \
 
-LIBS = -pthread -lm -lmcheck -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
+LIBS = -lm -lmcheck -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
 ifdef BLUETOOTH
 LIBS += -lbluetooth
 endif
