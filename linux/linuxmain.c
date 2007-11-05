@@ -30,6 +30,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <syslog.h>
 
 #ifdef XWFEATURE_BLUETOOTH
 # include <bluetooth/bluetooth.h>
@@ -721,6 +722,9 @@ nameToBtAddr( const char* name, bdaddr_t* ba )
                     XP_MEMCPY( ba, &inqInfo[i].bdaddr, sizeof(*ba) );
                     success = XP_TRUE;
                     XP_LOGF( "%s: matched %s", __FUNCTION__, name );
+                    char addrStr[32];
+                    ba2str(ba, addrStr);
+                    XP_LOGF( "bt_addr is %s", addrStr );
                     break;
                 }
             }
@@ -749,6 +753,9 @@ main( int argc, char** argv )
 #endif
 
     XP_LOGF( "main started: pid = %d", getpid() );
+#ifdef DEBUG
+    syslog( LOG_DEBUG, "main started: pid = %d", getpid() );
+#endif
 
 #ifdef DEBUG
     {
