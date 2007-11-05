@@ -124,7 +124,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
 
         // set the connection parameters (who to connect to)
         saddr.l2_family = AF_BLUETOOTH;
-        saddr.l2_psm = htobs( XW_PSM );
+        saddr.l2_psm = htobs( XW_PSM );	/* need to get this psm via uuid lookup */
         XP_MEMCPY( &saddr.l2_bdaddr, &addrP->u.bt.btAddr, 
                    sizeof(saddr.l2_bdaddr) );
         // connect to server
@@ -181,7 +181,7 @@ lbt_listenerSetup( CommonGlobals* globals )
     XP_MEMSET( &saddr, 0, sizeof(saddr) );
     saddr.l2_family = AF_BLUETOOTH;
     saddr.l2_bdaddr = *BDADDR_ANY;
-    saddr.l2_psm = htobs( XW_PSM );
+    saddr.l2_psm = htobs( XW_PSM ); /* need to associate uuid with this before opening? */
     bind( listener, (struct sockaddr *)&saddr, sizeof(saddr) );
 
     listen( listener, MAX_CLIENTS );

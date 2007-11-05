@@ -37,7 +37,7 @@
 # include <bluetooth/hci_lib.h>
 #endif
 
-#include <pthread.h>
+/* #include <pthread.h> */
 
 #include "linuxmain.h"
 #include "linuxbt.h"
@@ -69,12 +69,12 @@ linux_debugf( char* format, ... )
     struct tm* timp;
     struct timeval tv;
     struct timezone tz;
-    pthread_t me = pthread_self();
+/*     pthread_t me = pthread_self(); */
 
     gettimeofday( &tv, &tz );
     timp = localtime( &tv.tv_sec );
 
-    sprintf( buf, "<%p>%d:%d:%d: ", (void*)me, 
+    sprintf( buf, /* "<%p>" */ "%d:%d:%d: ", /* (void*)me,  */
              timp->tm_hour, timp->tm_min, timp->tm_sec );
 
     va_start(ap, format);
