@@ -41,10 +41,12 @@ typedef enum {
     , PBT_ACT_CONNECT_ACL
     , PBT_ACT_GETSDP            /* slave only */
     , PBT_ACT_CONNECT_L2C
-    , PBT_ACT_GOTDATA
-    , PBT_ACT_TRYSEND
     , PBT_ACT_TELLCONN
+    , PBT_ACT_GOTDATA           /* can be duplicated */
+    , PBT_ACT_TRYSEND
 } PBT_ACTION;
+
+#define DUPLICATES_OK(a)  ((a) >= PBT_ACT_GOTDATA)
 
 typedef enum {
     PBTST_NONE
@@ -58,7 +60,7 @@ typedef enum {
 } PBT_STATE;
 
 #define PBT_MAX_ACTS 8          /* six wasn't enough */
-#define HASWORK(s)  ((s)->queueCur != (s)->queueNext)
+#define HASWORK(s)  ((s)->queueLen > 0)
 #define MAX_PACKETS 4
 
 typedef struct PBT_queue {
@@ -88,9 +90,8 @@ typedef struct PalmBTStuff {
     PBT_STATE p_connState;
     BtLibAccessibleModeEnum accState;
 
-    XP_U16 queueCur;
-    XP_U16 queueNext;
     PBT_ACTION actQueue[PBT_MAX_ACTS];
+    XP_U16 queueLen;
 
     struct /*union*/ {
         struct {
@@ -360,11 +361,9 @@ palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
         stream_putString( stream, buf );
 
         XP_SNPRINTF( buf, sizeof(buf), "%d actions queued:\n", 
-                     ((btStuff->queueNext + PBT_MAX_ACTS) 
-                      - btStuff->queueCur) % PBT_MAX_ACTS );
+                     btStuff->queueLen );
         stream_putString( stream, buf );
-        for ( cur = btStuff->queueCur; cur != btStuff->queueNext; 
-              cur = (cur + 1) % PBT_MAX_ACTS ) {
+        for ( cur = 0; cur < btStuff->queueLen; ++cur ) {
             XP_SNPRINTF( buf, sizeof(buf), " - %s\n",
                          actToStr( btStuff->actQueue[cur] ) );
             stream_putString( stream, buf );
@@ -604,6 +603,21 @@ pbt_takedown_master( PalmBTStuff* btStuff )
     LOG_RETURN_VOID();
 } /* pbt_takedown_master */
 
+#ifdef DEBUG
+static void
+debug_logQueue( const PalmBTStuff* const btStuff )
+{
+    XP_U16 i;
+    XP_U16 len = btStuff->queueLen;
+    XP_LOGF( "%s: queue len = %d", __func__, len );
+    for ( i = 0; i < len; ++i ) {
+        XP_LOGF( "\t%d: %s", i, actToStr( btStuff->actQueue[i] ) );
+    }
+}
+#else
+#define debug_logQueue( bts )
+#endif
+
 static void
 pbt_do_work( PalmBTStuff* btStuff )
 {
@@ -611,8 +625,12 @@ pbt_do_work( PalmBTStuff* btStuff )
     Err err;
     XP_U16 btLibRefNum = btStuff->btLibRefNum;
 
-    act = btStuff->actQueue[btStuff->queueCur++];
-    btStuff->queueCur %= PBT_MAX_ACTS;
+    debug_logQueue( btStuff );
+
+    act = btStuff->actQueue[0];
+    --btStuff->queueLen;
+    XP_MEMCPY( &btStuff->actQueue[0], &btStuff->actQueue[1], 
+               btStuff->queueLen * sizeof(btStuff->actQueue[0]) );
 
     XP_LOGF( "%s: evt=%s; state=%s", __FUNCTION__, actToStr(act),
              stateToStr(GET_STATE(btStuff)) );
@@ -722,9 +740,15 @@ pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
     XP_LOGF( "%s(%s)", __FUNCTION__, actToStr(act) );
     EvtAddEventToQueue( &eventToPost );
 
-    btStuff->actQueue[ btStuff->queueNext++ ] = act;
-    btStuff->queueNext %= PBT_MAX_ACTS;
-    XP_ASSERT( btStuff->queueNext != btStuff->queueCur );
+    if ( DUPLICATES_OK(act)
+         || (btStuff->queueLen == 0)
+         || (act != btStuff->actQueue[btStuff->queueLen-1]) ) {
+        btStuff->actQueue[ btStuff->queueLen++ ] = act;
+        XP_ASSERT( btStuff->queueLen < PBT_MAX_ACTS );
+    } else {
+        XP_LOGF( "%s already at tail of queue; not adding", actToStr(act) );
+    }
+    debug_logQueue( btStuff );
 }
 
 static XP_S16
