@@ -43,28 +43,36 @@
  * palm_bt_appendWaitTicks
  * reduce waitTicks if have work to do
  */
+
+
 void palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result );
-XP_Bool palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btState );
 
-typedef void (*DataCb)( PalmAppGlobals* globals, 
-                        const CommsAddrRec* fromAddr,
-                        const XP_U8* data, XP_U16 len );
-typedef void (*OnConnCb)( PalmAppGlobals* globals );
-
-
-XP_Bool palm_bt_init( PalmAppGlobals* globals, DataCb dataCb,
-                      XP_Bool* userCancelled );
+XP_Bool palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled );
 void palm_bt_close( PalmAppGlobals* globals );
+
+typedef enum { BTCBEVT_CONN, BTCBEVT_DATA, BTCBEVT_HOSTFAIL } BtCbEvt;
+typedef struct BtCbEvtInfo {
+    BtCbEvt evt;
+    union {
+        struct {
+            const void* data;
+            const CommsAddrRec* fromAddr;
+            XP_U8 len;
+        } data;
+    } u;
+} BtCbEvtInfo;
+
+typedef void (*BtCbEvtProc)( PalmAppGlobals* globals, const BtCbEvtInfo* evt );
+XP_Bool palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btState );
 
 void palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
                          XP_BtAddrStr* str );
 
 XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-                     DataCb cb, OnConnCb connCb, PalmAppGlobals* globals,
-                     XP_Bool* userCancelled );
+                     PalmAppGlobals* globals, XP_Bool* userCancelled );
 
 XP_Bool palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
-                               XP_UCHAR* out,XP_U16 len );
+                               XP_UCHAR* out, XP_U16 len );
 
 #ifdef DEBUG
 void palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream );

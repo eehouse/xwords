@@ -42,6 +42,7 @@ typedef enum {
     , PBT_ACT_GETSDP            /* slave only */
     , PBT_ACT_CONNECT_L2C
     , PBT_ACT_TELLCONN
+    , PBT_ACT_TELLNOHOST
     , PBT_ACT_GOTDATA           /* can be duplicated */
     , PBT_ACT_TRYSEND
 } PBT_ACTION;
@@ -69,8 +70,6 @@ typedef struct PBT_queue {
 } PBT_queue;
 
 typedef struct PalmBTStuff {
-    DataCb dataCb;
-    OnConnCb connCb;
     PalmAppGlobals* globals;
 
     XP_U16 btLibRefNum;
@@ -110,6 +109,7 @@ typedef struct PalmBTStuff {
     struct {
         XP_U32 totalSent;
         XP_U32 totalRcvd;
+        XP_U16 maxQueueLen;
     } stats;
 #endif
 } PalmBTStuff;
@@ -138,10 +138,10 @@ static void pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_takedown_slave( PalmBTStuff* btStuff );
 static void pbt_setup_master( PalmBTStuff* btStuff );
 static void pbt_takedown_master( PalmBTStuff* btStuff );
-static void pbt_do_work( PalmBTStuff* btStuff );
+static void pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc );
 static void pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act );
 static XP_S16 pbt_enque( PBT_queue* queue, const XP_U8* data, XP_S16 len );
-static void pbt_processIncoming( PalmBTStuff* btStuff );
+static void pbt_processIncoming( PalmBTStuff* btStuff, BtCbEvtProc proc );
 
 static void waitACL( PalmBTStuff* btStuff );
 static void pbt_reset( PalmBTStuff* btStuff );
@@ -176,7 +176,7 @@ static void libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon );
 static void socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon );
 
 XP_Bool
-palm_bt_init( PalmAppGlobals* globals, DataCb dataCb, XP_Bool* userCancelled )
+palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled )
 {
     XP_Bool inited;
     PalmBTStuff* btStuff;
@@ -203,8 +203,6 @@ palm_bt_init( PalmAppGlobals* globals, DataCb dataCb, XP_Bool* userCancelled )
         } else if ( btStuff->picoRole == PBT_MASTER ) {
             pbt_takedown_master( btStuff );
         }
-
-        btStuff->dataCb = dataCb;
     }
     LOG_RETURNF( "%d", (XP_U16)inited );
     return inited;
@@ -250,13 +248,13 @@ palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result )
 }
 
 XP_Bool
-palm_bt_doWork( PalmAppGlobals* globals, BtUIState* btUIStateP )
+palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btUIStateP )
 {
     PalmBTStuff* btStuff = globals->btStuff;
     XP_Bool haveWork = !!btStuff && HASWORK(btStuff);
 
     if ( haveWork ) {
-        pbt_do_work( btStuff );
+        pbt_do_work( btStuff, proc );
     }
     if ( !!btStuff && !!btUIStateP ) {
         BtUIState btUIState = BTUI_NONE; /* default */
@@ -375,6 +373,9 @@ palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
         XP_SNPRINTF( buf, sizeof(buf), "total rcvd: %ld\n",
                      btStuff->stats.totalRcvd );
         stream_putString( stream, buf );
+        XP_SNPRINTF( buf, sizeof(buf), "max act queue len seen: %d\n",
+                     btStuff->stats.maxQueueLen );
+        stream_putString( stream, buf );
     }
 }
 #endif
@@ -429,8 +430,7 @@ pbt_send_pending( PalmBTStuff* btStuff )
 
 XP_S16
 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-              DataCb dataCb, OnConnCb connCb, PalmAppGlobals* globals,
-              XP_Bool* userCancelled )
+              PalmAppGlobals* globals, XP_Bool* userCancelled )
 {
     XP_S16 nSent = -1;
     PalmBTStuff* btStuff;
@@ -440,13 +440,6 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 
     btStuff = pbt_checkInit( globals, userCancelled );
     if ( !!btStuff ) {
-        if ( !btStuff->dataCb ) {
-            btStuff->dataCb = dataCb;
-        } else {
-            XP_ASSERT( dataCb == btStuff->dataCb );
-        }
-        btStuff->connCb = connCb;
-
         if ( !addr ) {
             comms_getAddr( globals->game.comms, &remoteAddr );
             addr = &remoteAddr;
@@ -619,7 +612,7 @@ debug_logQueue( const PalmBTStuff* const btStuff )
 #endif
 
 static void
-pbt_do_work( PalmBTStuff* btStuff )
+pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
 {
     PBT_ACTION act;
     Err err;
@@ -656,23 +649,32 @@ pbt_do_work( PalmBTStuff* btStuff )
         break;
 
     case PBT_ACT_GETSDP:
-        XP_ASSERT( PBTST_ACL_CONNECTED == GET_STATE(btStuff) ); /* still firing */
-        CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum,
-                  &btStuff->u.slave.sdpSocket, socketCallback, (UInt32)btStuff,
-                  btLibSdpProtocol );
-        if ( err == errNone ) {
-	    CALL_ERR( err, BtLibSdpGetPsmByUuid, btStuff->btLibRefNum, 
-                      btStuff->u.slave.sdpSocket, &btStuff->otherAddr,
-                      (BtLibSdpUuidType*)&XWORDS_UUID, 1 );
+        if ( PBTST_ACL_CONNECTED == GET_STATE(btStuff) ) {
+            CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum,
+                      &btStuff->u.slave.sdpSocket, socketCallback, (UInt32)btStuff,
+                      btLibSdpProtocol );
             if ( err == errNone ) {
-                SET_STATE( btStuff, PBTST_SDP_QUERIED );
-                pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
-            } else if ( err == btLibErrPending ) {
-                SET_STATE( btStuff, PBTST_SDP_QUERYING );
-            } else {
-                XP_ASSERT(0);
+                CALL_ERR( err, BtLibSdpGetPsmByUuid, btStuff->btLibRefNum, 
+                          btStuff->u.slave.sdpSocket, &btStuff->otherAddr,
+                          (BtLibSdpUuidType*)&XWORDS_UUID, 1 );
+                if ( err == errNone ) {
+                    SET_STATE( btStuff, PBTST_SDP_QUERIED );
+                    pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
+                    break;
+                } else if ( err == btLibErrPending ) {
+                    SET_STATE( btStuff, PBTST_SDP_QUERYING );
+                    break;
+                } else if ( err == btLibErrNoAclLink ) {
+                    /* fall through to waitACL below */
+                } else {
+                    XP_ASSERT(0);
+                }
             }
         }
+        /* Presumably state's been reset since PBT_ACT_GETSDP issued */
+        XP_LOGF( "aborting b/c state wrong" );
+        SET_STATE( btStuff, PBTST_NONE );
+        waitACL( btStuff );
         break;
 
     case PBT_ACT_CONNECT_L2C:
@@ -710,7 +712,7 @@ pbt_do_work( PalmBTStuff* btStuff )
         break;
 
     case PBT_ACT_GOTDATA:
-        pbt_processIncoming( btStuff );
+        pbt_processIncoming( btStuff, proc );
         break;
 
     case PBT_ACT_TRYSEND:
@@ -718,11 +720,12 @@ pbt_do_work( PalmBTStuff* btStuff )
         break;
 
     case PBT_ACT_TELLCONN:
-        if ( !!btStuff->connCb ) {
-            (*btStuff->connCb)( btStuff->globals );
-        } else {
-            XP_LOGF( "no callback" );
-        }
+    case PBT_ACT_TELLNOHOST: {
+        BtCbEvtInfo info;
+        XP_ASSERT( !!proc );
+        info.evt = act == PBT_ACT_TELLCONN? BTCBEVT_CONN: BTCBEVT_HOSTFAIL;
+        (*proc)( btStuff->globals, &info );
+    }
         break;
 
     default:
@@ -745,6 +748,11 @@ pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
          || (act != btStuff->actQueue[btStuff->queueLen-1]) ) {
         btStuff->actQueue[ btStuff->queueLen++ ] = act;
         XP_ASSERT( btStuff->queueLen < PBT_MAX_ACTS );
+#ifdef DEBUG
+        if ( btStuff->queueLen > btStuff->stats.maxQueueLen ) {
+            btStuff->stats.maxQueueLen = btStuff->queueLen;
+        }
+#endif
     } else {
         XP_LOGF( "%s already at tail of queue; not adding", actToStr(act) );
     }
@@ -779,23 +787,29 @@ pbt_enque( PBT_queue* queue, const XP_U8* data, XP_S16 len )
 } /* pbt_enque */
 
 static void
-pbt_processIncoming( PalmBTStuff* btStuff )
+pbt_processIncoming( PalmBTStuff* btStuff, BtCbEvtProc proc )
 {
     const XP_U8* buf;
     
     XP_U16 len = pbt_peekQueue( &btStuff->vol.in, &buf );
 
     if ( len > 0 ) {
-        XP_ASSERT( !!btStuff->dataCb );
-        if ( !!btStuff->dataCb ) {
-            CommsAddrRec fromAddr;
-            fromAddr.conType = COMMS_CONN_BT;
-            XP_MEMCPY( &fromAddr.u.bt.btAddr, &btStuff->otherAddr,
-                       sizeof(fromAddr.u.bt.btAddr) );
+        BtCbEvtInfo info;
+        CommsAddrRec fromAddr;
 
-            (*btStuff->dataCb)( btStuff->globals, &fromAddr, buf, len );
-            pbt_shiftQueue( &btStuff->vol.in );
-        }
+        XP_ASSERT( !!proc );
+
+        fromAddr.conType = COMMS_CONN_BT;
+        XP_MEMCPY( &fromAddr.u.bt.btAddr, &btStuff->otherAddr,
+                   sizeof(fromAddr.u.bt.btAddr) );
+
+        info.evt = BTCBEVT_DATA;
+        info.u.data.fromAddr = &fromAddr;
+        info.u.data.len = len;
+        info.u.data.data = buf;
+        (*proc)( btStuff->globals, &info );
+
+        pbt_shiftQueue( &btStuff->vol.in );
     }
 } /* pbt_processIncoming */
 
@@ -1004,7 +1018,7 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
             pbt_postpone( btStuff, PBT_ACT_GOTDATA );
         }
 #ifdef DEBUG
-            btStuff->stats.totalRcvd += sEvent->eventData.data.dataLen;
+        btStuff->stats.totalRcvd += sEvent->eventData.data.dataLen;
 #endif        
         break;
 
@@ -1025,6 +1039,10 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
          * home.  But there should probably be UI warning users that it's
          * trying to connect.... 
          */
+        if ( sEvent->status == btLibL2DiscConnPsmUnsupported ) {
+            pbt_postpone( btStuff, PBT_ACT_TELLNOHOST );
+        }
+
         if ( PBT_SLAVE == btStuff->picoRole ) {
             pbt_killL2C( btStuff, sEvent->socket );
             waitACL( btStuff );
@@ -1044,11 +1062,12 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
             SET_STATE( btStuff, PBTST_SDP_QUERIED );
             pbt_postpone( btStuff, PBT_ACT_CONNECT_L2C );
         } else if ( sEvent->status == btLibErrSdpQueryDisconnect ) {
-	    /* Maybe we can just ignore this... */
+            /* Maybe we can just ignore this... */
             XP_ASSERT( GET_STATE(btStuff) == PBTST_NONE );
 /*             waitACL( btStuff ); */
         } else {
             if ( sEvent->status == btLibErrSdpAttributeNotSet ) {
+                pbt_postpone( btStuff, PBT_ACT_TELLNOHOST );
                 XP_LOGF( "**** Host not running!!! ****" );
             }
             /* try again???? */
@@ -1057,16 +1076,17 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         }
         /* Do we want to try again in a few seconds?  Is this where the timer
            belongs? */
-	break;
+        break;
 
     case btLibL2DiscConnPsmUnsupported:
+        XP_ASSERT( 0 );         /* is this getting called?  It's an event *and* status??? */
         /* Probably need to warn the user when this happens since not having
            established trust will be a common error.  Or: figure out if
            there's a way to fall back and establish trust programatically.
            For alpha just do the error message. :-) Also, no point in
            continuing to try to connect.  User will have to quit in order to
            establish trust.  So warn once per inited session. */
-        XP_LOGF( "Crosswords not running on host or host not trusted." );
+        pbt_postpone( btStuff, PBT_ACT_TELLNOHOST );
         break;
 
     default:
@@ -1177,6 +1197,7 @@ actToStr(PBT_ACTION act)
         CASESTR(PBT_ACT_GOTDATA);
         CASESTR(PBT_ACT_TRYSEND);
         CASESTR(PBT_ACT_TELLCONN);
+        CASESTR(PBT_ACT_TELLNOHOST);
     default:
         XP_ASSERT(0);
         return "";

@@ -344,6 +344,7 @@ struct PalmAppGlobals {
     struct PalmBTStuff* btStuff;
     XP_U16 lastBTStatusRes;
     BtUIState btUIState;          /* For showing user what's up */
+    XP_Bool suspendBT;
 #endif
 
 #ifdef DEBUG
