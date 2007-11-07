@@ -134,10 +134,7 @@ static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                   const CommsAddrRec* newAddr );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-static void btDataHandler( PalmAppGlobals* globals, 
-                           const CommsAddrRec* fromAddr, 
-                           const XP_U8* data, XP_U16 len );
-static void btConnHandler( PalmAppGlobals* globals );
+static void btEvtHandler( PalmAppGlobals* globals, const BtCbEvtInfo* evt );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -1589,6 +1586,53 @@ showConnState( PalmAppGlobals* globals )
         globals->lastBTStatusRes = resID;
     }
 } /* showConnState */
+
+static void
+btEvtHandler( PalmAppGlobals* globals, const BtCbEvtInfo* evt )
+{
+    switch ( evt->evt ) {
+    case BTCBEVT_CONN:
+        if ( !!globals->game.comms ) {
+            comms_resendAll( globals->game.comms );
+        }
+        break;
+    case BTCBEVT_DATA:
+        if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
+            XWStreamCtxt* instream;
+            instream = makeSimpleStream( globals, NULL );
+            stream_putBytes( instream, evt->u.data.data, evt->u.data.len );
+            checkAndDeliver( globals, evt->u.data.fromAddr, instream );
+        } else {
+            /* If we're no longer using BT (meaning somebody loaded a new game
+               that doesn't use it), close it down.  We don't want to do it as
+               part of unloading the old game since it's expensive to stop/start
+               BT and the new game will probably use the same connection.  But if
+               we get here, a non-bt game's been loaded and we should shut
+               down.*/
+            EventType eventToPost;
+            eventToPost.eType = closeBtLibEvent;
+            EvtAddEventToQueue( &eventToPost );
+        }
+        break;
+    case BTCBEVT_HOSTFAIL: {
+        const XP_UCHAR* str = getResString( globals, STRS_BT_NOHOST );
+        const XP_UCHAR* resend = getResString( globals, STR_BT_RESEND );
+        XP_UCHAR buf[256];
+
+        CommsAddrRec addr;
+        comms_getAddr( globals->game.comms, &addr );
+        XP_ASSERT( addr.conType == COMMS_CONN_BT );
+
+        XP_SNPRINTF( buf, sizeof(buf), str, addr.u.bt.hostName );
+        if ( !palmask( globals, buf, resend, -1 ) ) {
+            globals->suspendBT = XP_TRUE;
+        }
+    }
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+} /* btEvtHandler */
 #endif
 
 static Boolean
@@ -1606,7 +1650,9 @@ handleNilEvent( PalmAppGlobals* globals )
                 && (when <= TimGetTicks()) ) {
         palmFireTimer( globals, why );
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( (handled = palm_bt_doWork( globals, &globals->btUIState ) ),
+    } else if ( (handled = (!globals->suspendBT)
+                 && palm_bt_doWork( globals, btEvtHandler,
+                                    &globals->btUIState ) ),
                 showConnState( globals ), handled ) {
         /* nothing to do */
 #endif
@@ -1979,6 +2025,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     board_draw( globals->game.board );
 
 #ifdef XWFEATURE_BLUETOOTH
+    globals->suspendBT = XP_FALSE;
     showConnState( globals );
 #endif
 
@@ -2685,6 +2732,7 @@ mainViewHandleEvent( EventPtr event )
             /* Would be better to beep when no remote players.... */
         case XW_RESENDIR_PULLDOWN_ID:
             if ( !!globals->game.comms ) {
+                globals->suspendBT = XP_FALSE;
                 (void)comms_resendAll( globals->game.comms );
             }
             break;
@@ -3866,8 +3914,7 @@ palm_send( const XP_U8* buf, XP_U16 len,
     case COMMS_CONN_BT:
         if ( !!globals->mainForm && !globals->userCancelledBT ) {
             XP_Bool userCancelled;
-            result = palm_bt_send( buf, len, addr, btDataHandler, 
-                                   btConnHandler, globals, &userCancelled );
+            result = palm_bt_send( buf, len, addr, globals, &userCancelled );
             if ( userCancelled ) {
                 handleUserBTCancel( globals );
             }
@@ -3937,38 +3984,6 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     return result;
 } /* palm_util_warnIllegalWord */
 
-#ifdef XWFEATURE_BLUETOOTH
-static void
-btDataHandler( PalmAppGlobals* globals, const CommsAddrRec* fromAddr, 
-               const XP_U8* data, XP_U16 len )
-{
-    if ( COMMS_CONN_BT == comms_getConType( globals->game.comms ) ) {
-        XWStreamCtxt* instream;
-        instream = makeSimpleStream( globals, NULL );
-        stream_putBytes( instream, data, len );
-        checkAndDeliver( globals, fromAddr, instream );
-    } else {
-        /* If we're no longer using BT (meaning somebody loaded a new game
-           that doesn't use it), close it down.  We don't want to do it as
-           part of unloading the old game since it's expensive to stop/start
-           BT and the new game will probably use the same connection.  But if
-           we get here, a non-bt game's been loaded and we should shut
-           down.*/
-        EventType eventToPost;
-        eventToPost.eType = closeBtLibEvent;
-        EvtAddEventToQueue( &eventToPost );
-    }
-} /* btDataHandler */
-
-static void
-btConnHandler( PalmAppGlobals* globals )
-{
-    if ( !!globals->game.comms ) {
-        comms_resendAll( globals->game.comms );
-    }
-} /* btConnHandler */
-#endif
-
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void
 palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
@@ -3994,7 +4009,7 @@ palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
     } else if ( isBT && !globals->userCancelledBT ) {
         XP_Bool userCancelled;
         XP_ASSERT( !!globals->mainForm );
-        if ( !palm_bt_init( globals, btDataHandler, &userCancelled ) ) {
+        if ( !palm_bt_init( globals, &userCancelled ) ) {
             if ( userCancelled ) {
                 handleUserBTCancel( globals );
             }
