@@ -135,6 +135,12 @@
 #ifdef XWFEATURE_BLUETOOTH
 { "STR_BT_NOINIT",             "Impossible initialiser Bluetooth. "
                                "Est-il connecté ?" },
+  /* Needs translation */
+{ "STRS_BT_NOHOST",             "Bluetooth messages are not reaching Crosswords on %s. "
+                               "Do you want me to resend? (If you choose \"No\" I will not try "
+                                "again until you choose the \"Resend messages\" menu item.)" },
+  /* Needs translation */
+{ "STR_BT_RESEND",             "Resend" },
 #endif
 
 { "STR_ABOUT_CONTENT", 
