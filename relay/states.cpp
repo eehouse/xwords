@@ -81,6 +81,10 @@ StateTable g_stateTable[] = {
 { XWS_CONNECTING,     XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_CONNECTING },
 { XWS_MISSING,        XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_MISSING },
 
+    /* I'm seeing this but not sure how to handle.  Might disconnect be
+       needed now */
+{ XWS_MISSING,        XWE_FORWARDMSG,    XWA_DISCONNECT,   XWS_MISSING },
+
 { XWS_ANY,            XWE_NOMORESOCKETS, XWA_NONE,         XWS_DEAD },
 { XWS_ANY,            XWE_SHUTDOWN,      XWA_SHUTDOWN,     XWS_DEAD },
 
@@ -115,33 +119,36 @@ StateTable g_stateTable[] = {
     /* This is our bread-n-butter */
 { XWS_ALLCONNECTED,   XWE_FORWARDMSG,    XWA_FWD,           XWS_ALLCONNECTED },
 
-{ XWS_DEAD,           XWE_REMOVESOCKET,  XWA_REMOVESOCKET,  XWS_DEAD },
+{ XWS_DEAD,           XWE_REMOVESOCKET,  XWA_REMOVESOCKET,  XWS_DEAD }
 
-    /* Marks end of table */
-{ XWS_NONE,           XWE_NONE,          XWA_NONE,          XWS_NONE }
 };
 
 
-int
+bool
 getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
               XW_RELAY_ACTION* takeAction, XW_RELAY_STATE* nextState )
 {
+    bool found = false;
     StateTable* stp = g_stateTable;
-    while ( stp->stateStart != XWS_NONE ) {
+    const StateTable* end = stp + sizeof(g_stateTable)/sizeof(g_stateTable[0]);
+    while ( stp < end ) {
         if ( stp->stateStart == curState || stp->stateStart == XWS_ANY ) {
             if ( stp->stateEvent == curEvent || stp->stateEvent == XWE_ANY ) {
                 *takeAction = stp->stateAction;
                 *nextState = stp->stateEnd;
-                return 1;
+                found = true;
+                break;
             }
         }
         ++stp;
     }
 
-    logf( XW_LOGERROR, "==> ERROR :: unable to find transition from %s on event %s",
-          stateString(curState), eventString(curEvent) );
-
-    return 0;
+    if ( !found ) {
+        logf( XW_LOGERROR, "==> ERROR :: unable to find transition from %s "
+              "on event %s",
+              stateString(curState), eventString(curEvent) );
+    }
+    return found;
 } /* getFromTable */
 
 #define CASESTR(s) case s: return #s

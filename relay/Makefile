@@ -28,7 +28,7 @@ SRC = xwrelay.cpp \
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -pthread -g -lmcheck
-CPPFLAGS += -g -Wall -DSVN_REV=\"$(shell svnversion -n .)\"
+CPPFLAGS += -DSPAWN_SELF -g -Wall -DSVN_REV=\"$(shell svnversion -n .)\"
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
 

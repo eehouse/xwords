@@ -43,10 +43,12 @@
 #include "crefmgr.h"
 #include "mlock.h"
 #include "xwrelay_priv.h"
+#include "configs.h"
 
 /* this is *only* for testing.  Don't abuse!!!! */
 extern pthread_rwlock_t gCookieMapRWLock;
 
+/* Return of true means exit the ctrl thread */
 typedef bool (*CmdPtr)( int socket, const char** args );
 
 typedef struct FuncRec {
@@ -70,6 +72,7 @@ static bool cmd_set( int socket, const char** args );
 static bool cmd_shutdown( int socket, const char** args );
 static bool cmd_rev( int socket, const char** args );
 static bool cmd_uptime( int socket, const char** args );
+static bool cmd_crash( int socket, const char** args );
 
 static void
 print_to_sock( int sock, bool addCR, const char* what, ... )
@@ -102,6 +105,7 @@ static const FuncRec gFuncs[] = {
     { "set", cmd_set },
     { "rev", cmd_rev },
     { "uptime", cmd_uptime },
+    { "crash", cmd_crash },
 };
 
 static bool
@@ -110,9 +114,11 @@ cmd_quit( int socket, const char** args )
     if ( 0 == strcmp( "help", args[1] ) ) {
         print_to_sock( socket, true, "* %s (disconnect from ctrl port)", 
                        args[0] );
+        return false;
     } else {
+        print_to_sock( socket, true, "bye bye" );
+        return true;
     }
-    return 0;
 }
 
 static void
@@ -136,14 +142,14 @@ static bool
 cmd_start( int socket, const char** args )
 {
     print_to_sock( socket, true, "* %s (unimplemented)", args[0] );
-    return 1;
+    return false;
 }
 
 static bool
 cmd_stop( int socket, const char** args )
 {
     print_to_sock( socket, true, "* %s (unimplemented)", args[0] );
-    return 1;
+    return false;
 }
 
 static bool
@@ -185,24 +191,50 @@ cmd_kill_eject( int socket, const char** args )
             ;
         print_to_sock( socket, true, msg, args[0], expl, args[0], args[0] );
     }
-    return 1;
+    return false;
 } /* cmd_kill_eject */
 
 static bool
 cmd_get( int socket, const char** args )
 {
-    print_to_sock( socket, true,
-                   "* %s -- lists all attributes (unimplemented)\n"
-                   "* %s <attribute> (unimplemented)",
-                   args[0], args[0] );
-    return 1;
+    if ( 0 == strcmp( args[1], "help" ) ) {
+        print_to_sock( socket, true,
+                       "* %s -- lists all attributes (unimplemented)\n"
+                       "* %s loglevel",
+                       args[0], args[0] );
+    } else {
+        const char* attr = args[1];
+        if ( (NULL != attr) && (0 == strcmp( attr, "loglevel" )) ) {
+            RelayConfigs* rc = RelayConfigs::GetConfigs();
+            if ( NULL != rc ) {
+                print_to_sock( socket, true, "loglevel=%d\n", 
+                               rc->GetLogLevel() );
+            } else {
+                logf( XW_LOGERROR, "RelayConfigs::GetConfigs() => NULL" );
+            }
+        }
+    }
+    return false;
 }
 
 static bool
 cmd_set( int socket, const char** args )
 {
-    print_to_sock( socket, true, "* %s <attribute> (unimplemented)", args[0] );
-    return 1;
+    if ( 0 == strcmp( args[1], "help" ) ) {
+        print_to_sock( socket, true, "* %s loglevel <n>\n", args[0] );
+    } else {
+        const char* attr = args[1];
+        const char* val = args[2];
+        if ( (NULL != attr) 
+             && (0 == strcmp( attr, "loglevel" ))
+                 && (NULL != val) ) {
+            RelayConfigs* rc = RelayConfigs::GetConfigs();
+            if ( rc != NULL ) {
+                rc->SetLogLevel( atoi(val) );
+            }
+        }
+    }
+    return false;
 }
 
 static bool
@@ -215,7 +247,7 @@ cmd_rev( int socket, const char** args )
     } else {
         print_to_sock( socket, true, "svn rev: %s", SVN_REV );
     }
-    return 0;
+    return false;
 }
 
 static bool
@@ -241,7 +273,23 @@ cmd_uptime( int socket, const char** args )
                        "uptime: %d days, %d hours, %d minutes, %ld seconds",
                        days, hours, minutes, seconds );
     }
-    return 0;
+    return false;
+}
+
+static bool
+cmd_crash( int socket, const char** args )
+{
+    if ( 0 == strcmp( args[1], "help" ) ) {
+        print_to_sock( socket, true,
+                       "* %s -- fires an assert (debug case) or divides-by-zero",
+                       args[0] );
+    } else {
+        assert(0);
+        int i = 1;
+        while ( i > 0 ) --i;
+        return 6/i > 0;
+    }
+    return false;
 }
 
 static bool
@@ -250,7 +298,7 @@ cmd_shutdown( int socket, const char** args )
     print_to_sock( socket, true,
                    "* %s  -- shuts down relay (exiting main) (unimplemented)",
                    args[0] );
-    return 1;
+    return false;
 }
 
 static void

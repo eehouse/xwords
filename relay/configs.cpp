@@ -41,7 +41,6 @@ RelayConfigs* RelayConfigs::instance = NULL;
 /* static */ RelayConfigs* 
 RelayConfigs::GetConfigs()
 {
-    assert( instance != NULL );
     return instance;
 }
 
@@ -107,6 +106,8 @@ RelayConfigs::parse( const char* fname )
                     m_serverName = value;
                 } else if ( 0 == strcmp( line, "IDFILE" ) ) {
                     m_idFileName = value;
+                } else if ( 0 == strcmp( line, "LOGLEVEL" ) ) {
+                    m_logLevel = atoi(value);
                 } else {
                     logf( XW_LOGERROR, "unknown key %s with value %s\n",
                           line, value );
