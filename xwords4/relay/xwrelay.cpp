@@ -73,7 +73,8 @@
 void
 logf( XW_LogLevel level, const char* format, ... )
 {
-    if ( level <= XW_LOGINFO ) {
+    RelayConfigs* rc = RelayConfigs::GetConfigs();
+    if ( NULL == rc || level <= rc->GetLogLevel() ) {
         FILE* where = stderr;
         struct tm* timp;
         struct timeval tv;
@@ -376,6 +377,16 @@ static int
 make_socket( unsigned long addr, unsigned short port )
 {
     int sock = socket( AF_INET, SOCK_STREAM, 0 );
+    assert( sock );
+
+    /* We may be relaunching after crashing with sockets open.  SO_REUSEADDR
+       allows them to be immediately rebound. */
+    int t = true;
+    if ( 0 != setsockopt( sock, SOL_SOCKET, SO_REUSEADDR, &t, sizeof(t) ) ) {
+        logf( XW_LOGERROR, "setsockopt failed. errno = %s (%d)\n", 
+              strerror(errno), errno );
+        return -1;
+    }
 
     struct sockaddr_in sockAddr;
     sockAddr.sin_family = AF_INET;
@@ -543,6 +554,8 @@ int main( int argc, char** argv )
     PermID::SetServerName( serverName );
     PermID::SetIDFileName( idFileName );
 
+    /* add signal handling here */
+
 #ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
     for ( ; ; ) {
@@ -554,7 +567,6 @@ int main( int argc, char** argv )
             logf( XW_LOGINFO, "parent waiting on child pid=%d", pid );
             waitpid( pid, &status, 0 );
             printWhy( status );
-            sleep( 45 );        /* give time to close sockets? */
         } else {
             logf( XW_LOGERROR, "fork() => %s", strerror(errno) );
         }

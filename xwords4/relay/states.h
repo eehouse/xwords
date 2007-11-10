@@ -149,8 +149,8 @@ typedef enum {
 
 } XW_RELAY_ACTION;
 
-int getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
-                  XW_RELAY_ACTION* takeAction, XW_RELAY_STATE* nextState );
+bool getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
+                   XW_RELAY_ACTION* takeAction, XW_RELAY_STATE* nextState );
 
 
 char* stateString( XW_RELAY_STATE state );

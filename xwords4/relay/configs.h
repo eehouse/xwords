@@ -39,6 +39,8 @@ class RelayConfigs {
     time_t GetHeartbeatInterval() { return m_heartbeatInterval; }
     const char*  GetServerName() { return m_serverName.c_str(); }
     const char*  GetIdFileName() { return m_idFileName.c_str(); }
+    int GetLogLevel(void) { return m_logLevel; }
+    void SetLogLevel(int ll) { m_logLevel = ll; }
 
  private:
     RelayConfigs( const char* cfile );
@@ -48,6 +50,7 @@ class RelayConfigs {
     time_t m_heartbeatInterval;
     int m_ctrlport;
     int m_port;
+    int m_logLevel;
     int m_nWorkerThreads;
     std::string m_serverName;
     std::string m_idFileName;
