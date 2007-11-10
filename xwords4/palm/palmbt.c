@@ -31,7 +31,7 @@
 #define SOCK_INVAL ((BtLibSocketRef)-1)
 
 #define DO_SERVICE_RECORD 1
-#define ACL_WAIT_INTERVAL 8
+#define ACL_WAIT_INTERVAL 4
 
 typedef enum { PBT_UNINIT = 0, PBT_MASTER, PBT_SLAVE } PBT_PicoRole;
 
@@ -146,7 +146,7 @@ static void pbt_processIncoming( PalmBTStuff* btStuff, BtCbEvtProc proc );
 static void waitACL( PalmBTStuff* btStuff );
 static void pbt_reset( PalmBTStuff* btStuff );
 static void pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock );
-static void pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
+static XP_Bool pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
                           const char* whence );
 #define SET_STATE(b,s)  pbt_setstate((b),(s),__FUNCTION__)
@@ -453,7 +453,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
             picoRole = amMaster? PBT_MASTER : PBT_SLAVE;
         }
 
-        pbt_checkAddress( btStuff, addr );
+        (void)pbt_checkAddress( btStuff, addr );
 
         if ( picoRole == PBT_MASTER ) {
             pbt_setup_master( btStuff );
@@ -543,6 +543,10 @@ pbt_setup_master( PalmBTStuff* btStuff )
             btStuff->u.master.listenSocket = SOCK_INVAL;
             pbt_postpone( btStuff, PBT_ACT_SETUP_LISTEN );
         }
+    } else if ( PBTST_NONE == GET_STATE(btStuff) ) {
+        SET_STATE( btStuff, PBTST_LISTENING );
+    } else {
+        XP_LOGF( "listen socket is set" );
     }
     XP_ASSERT( NULL != btStuff->u.master.sdpRecordH );
 } /* pbt_setup_master */
@@ -948,15 +952,16 @@ pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
     }
 } /* pbt_killL2C */
 
-static void
+static XP_Bool
 pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 {
+    XP_Bool addrOk;
     LOG_FUNC();
     XP_ASSERT( !!addr );
    
-    if ( 0 != XP_MEMCMP( &btStuff->otherAddr, &addr->u.bt.btAddr.bits, 
-                         sizeof(addr->u.bt.btAddr.bits) ) ) {
-
+    addrOk = 0 == XP_MEMCMP( &btStuff->otherAddr, &addr->u.bt.btAddr.bits, 
+                             sizeof(addr->u.bt.btAddr.bits) );
+    if ( !addrOk ) {
         LOG_HEX( &btStuff->otherAddr, sizeof(addr->u.bt.btAddr.bits), 
                  "cur" );
         LOG_HEX( &addr->u.bt.btAddr.bits, sizeof(addr->u.bt.btAddr.bits), 
@@ -967,7 +972,8 @@ pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
         XP_MEMCPY( &btStuff->otherAddr, &addr->u.bt.btAddr, 
                    sizeof(btStuff->otherAddr) );
     }
-    LOG_RETURN_VOID();
+    LOG_RETURNF( "%d", (int)addrOk );
+    return addrOk;
 } /* pbt_checkAddress */
 
 static void
@@ -1217,6 +1223,8 @@ connEnumToStr( BtLibAccessibleModeEnum mode )
         return "undoc_06";
     case 0x00F8:                /* seen on ARM only */
         return "undoc_F8";
+    case 0x00E8:                /* seen on ARM */
+        return "undoc_E8";
     default:
         XP_ASSERT(0);
         XP_LOGF( "%s: got 0x%x", __func__, mode );
