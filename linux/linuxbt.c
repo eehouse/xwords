@@ -21,8 +21,8 @@
 #ifdef XWFEATURE_BLUETOOTH
 
 /*
-  http://www.btessentials.com/examples/ is good for some of this stuff.
-  Copyright allows free use.
+  http://www.btessentials.com/examples/examples.html is good for some of this
+  stuff.  Copyright allows free use.
 */
 
 #include <stdio.h>
@@ -30,7 +30,11 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <bluetooth/bluetooth.h>
-#include <bluetooth/l2cap.h>
+#if defined BT_USE_L2CAP
+# include <bluetooth/l2cap.h>
+#elif defined BT_USE_RFCOMM
+# include <bluetooth/rfcomm.h>
+#endif
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
 
@@ -38,6 +42,13 @@
 #include "comms.h"
 
 #define MAX_CLIENTS 3
+
+#if defined BT_USE_L2CAP
+# define L2_RF_ADDR struct sockaddr_l2
+#elif defined BT_USE_RFCOMM
+# define L2_RF_ADDR struct sockaddr_rc
+#endif
+
 
 typedef struct BtaddrSockMap {
     bdaddr_t btaddr;
@@ -117,11 +128,11 @@ lbt_make( MPFORMAL XP_Bool amMaster )
     return btStuff;
 } /* lbt_make */
 
-static struct sockaddr_l2* 
-getL2Addr( const CommsAddrRec const* addrP, struct sockaddr_l2* const saddr )
+static L2_RF_ADDR*
+getL2Addr( const CommsAddrRec const* addrP, L2_RF_ADDR* const saddr )
 {
     LOG_FUNC();
-    struct sockaddr_l2* result = NULL;
+    L2_RF_ADDR* result = NULL;
 
     uint8_t svc_uuid_int[] = XW_BT_UUID;
 
@@ -152,21 +163,35 @@ getL2Addr( const CommsAddrRec const* addrP, struct sockaddr_l2* const saddr )
             sdp_list_t *r;
         
             // go through each of the service records
-            for ( r = response_list; r; r = r->next ) {
+            for ( r = response_list; r && !result; r = r->next ) {
                 sdp_list_t *proto_list = NULL;
                 sdp_record_t *rec = (sdp_record_t*) r->data;
             
                 // get a list of the protocol sequences
                 if( sdp_get_access_protos( rec, &proto_list ) == 0 ) {
+#if defined BT_USE_L2CAP
                     unsigned short psm = sdp_get_proto_port( proto_list, 
                                                              L2CAP_UUID );
-                    sdp_list_free( proto_list, 0 );
-
-                    saddr->l2_family = AF_BLUETOOTH;
-                    saddr->l2_psm = htobs( psm );
-                    XP_MEMCPY( &saddr->l2_bdaddr, &addrP->u.bt.btAddr, 
-                               sizeof(saddr->l2_bdaddr) );
-                    result = saddr;
+                    if ( psm > 0 ) {
+                        sdp_list_free( proto_list, 0 );
+                        saddr->l2_family = AF_BLUETOOTH;
+                        saddr->l2_psm = htobs( psm );
+                        XP_MEMCPY( &saddr->l2_bdaddr, &addrP->u.bt.btAddr, 
+                                   sizeof(saddr->l2_bdaddr) );
+                        result = saddr;
+                    }
+#elif defined BT_USE_RFCOMM
+                    int channel = sdp_get_proto_port( proto_list,
+                                                      RFCOMM_UUID );
+                    if ( channel > 0 ) {
+                        XP_LOGF( "got channel: %d", channel );
+                        saddr->rc_channel = (uint8_t)channel;
+                        saddr->rc_family = AF_BLUETOOTH;
+                        XP_MEMCPY( &saddr->rc_bdaddr, &addrP->u.bt.btAddr, 
+                                   sizeof(saddr->rc_bdaddr) );
+                        result = saddr;
+                    }
+#endif
                 }
                 sdp_record_free( rec );
             }
@@ -186,16 +211,21 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
     int sock;
 
     // allocate a socket
-    sock = socket( AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP );
-
+    sock = socket( AF_BLUETOOTH, 
+#if defined BT_USE_L2CAP
+                   SOCK_SEQPACKET, BTPROTO_L2CAP
+#elif defined BT_USE_RFCOMM
+                   SOCK_STREAM, BTPROTO_RFCOMM
+#endif
+                   );
     if ( sock < 0 ) {
         XP_LOGF( "%s: socket->%s", __FUNCTION__, strerror(errno) );
     } else {
-        struct sockaddr_l2 saddr;
+        L2_RF_ADDR saddr;
         XP_MEMSET( &saddr, 0, sizeof(saddr) );
         if ( (NULL != getL2Addr( addrP, &saddr ) )
-        // set the connection parameters (who to connect to)
-        // connect to server
+             // set the connection parameters (who to connect to)
+             // connect to server
              && (0 == connect( sock, (struct sockaddr *)&saddr, sizeof(saddr) )) ) {
             CommonGlobals* globals = btStuff->globals;
             (*globals->socketChanged)( globals->socketChangedClosure, 
@@ -213,7 +243,7 @@ lbt_accept( int listener, void* ctxt )
     CommonGlobals* globals = (CommonGlobals*)ctxt;
     LinBtStuff* btStuff = globals->btStuff;
     int sock = -1;
-    struct sockaddr_l2 inaddr;
+    L2_RF_ADDR inaddr;
     socklen_t slen;
     XP_Bool success;
 
@@ -227,7 +257,11 @@ lbt_accept( int listener, void* ctxt )
     
     success = sock >= 0;
     if ( success ) {
+#if defined BT_USE_L2CAP
         lbt_addSock( btStuff, &inaddr.l2_bdaddr, sock );
+#elif defined BT_USE_RFCOMM
+        lbt_addSock( btStuff, &inaddr.rc_bdaddr, sock );
+#endif
         (*globals->socketChanged)( globals->socketChangedClosure, 
                                    -1, sock );
     } else {
@@ -237,38 +271,57 @@ lbt_accept( int listener, void* ctxt )
 } /* lbt_accept */
 
 static void
-lbt_register( LinBtStuff* btStuff, const struct sockaddr_l2* const saddr )
+lbt_register( LinBtStuff* btStuff, unsigned short l2_psm, uint8_t rc_channel )
 {
     LOG_FUNC();
     if ( NULL == btStuff->u.master.session ) {
         uint8_t svc_uuid_int[] = XW_BT_UUID;
         const char *service_name = XW_BT_NAME;
-        const char *svc_dsc = "An experimental plumbing router";
-        const char *service_prov = "Roto-Rooter";
+        const char *svc_dsc = "An open source word game";
+        const char *service_prov = "xwords.sf.net";
 
-        uuid_t l2cap_uuid, svc_uuid;
-        sdp_list_t *l2cap_list = 0, 
+        uuid_t svc_uuid;
+        sdp_list_t 
             *root_list = 0,
             *proto_list = 0, 
             *access_proto_list = 0,
             *svc_class_list = 0,
             *profile_list = 0;
-        sdp_data_t *psm = 0;
         sdp_record_t record = { 0 };
         sdp_session_t *session = NULL;
+
+        sdp_list_t *l2cap_list = 0;
+        sdp_data_t *psm = 0;
+#if defined BT_USE_L2CAP
+#elif defined BT_USE_RFCOMM
+        sdp_list_t *rfcomm_list = 0;
+        sdp_data_t *channel = 0;
+#endif
+
 
         // set the general service ID
         sdp_uuid128_create( &svc_uuid, &svc_uuid_int );
         sdp_set_service_id( &record, svc_uuid );
 
         // set l2cap information
+        uuid_t l2cap_uuid;
         sdp_uuid16_create( &l2cap_uuid, L2CAP_UUID );
         l2cap_list = sdp_list_append( 0, &l2cap_uuid );
         /* from pybluez source */
-        unsigned short l2cap_psm = saddr->l2_psm;
+        unsigned short l2cap_psm = l2_psm;
         psm = sdp_data_alloc( SDP_UINT16, &l2cap_psm );
         sdp_list_append( l2cap_list, psm );
         proto_list = sdp_list_append( 0, l2cap_list );
+
+#if defined BT_USE_RFCOMM
+        uuid_t rfcomm_uuid;
+        uint8_t rfcomm_channel = rc_channel;
+        sdp_uuid16_create( &rfcomm_uuid, RFCOMM_UUID );
+        channel = sdp_data_alloc( SDP_UINT8, &rfcomm_channel );
+        rfcomm_list = sdp_list_append( 0, &rfcomm_uuid );
+        sdp_list_append( rfcomm_list, channel );
+        sdp_list_append( proto_list, rfcomm_list );
+#endif
 
         access_proto_list = sdp_list_append( 0, proto_list );
         sdp_set_access_protos( &record, access_proto_list );
@@ -287,11 +340,16 @@ lbt_register( LinBtStuff* btStuff, const struct sockaddr_l2* const saddr )
 
         // cleanup
         sdp_data_free( psm );
-        sdp_list_free( l2cap_list, 0 );
         sdp_list_free( root_list, 0 );
         sdp_list_free( access_proto_list, 0 );
         sdp_list_free( svc_class_list, 0 );
         sdp_list_free( profile_list, 0 );
+#if defined BT_USE_L2CAP
+        sdp_list_free( l2cap_list, 0 );
+#elif defined BT_USE_RFCOMM
+        sdp_list_free( rfcomm_list, 0 );
+        sdp_data_free( channel );
+#endif
 
         btStuff->u.master.session = session;
     }
@@ -301,21 +359,42 @@ static void
 lbt_listenerSetup( CommonGlobals* globals )
 {
     LinBtStuff* btStuff = globals->btStuff;
-    struct sockaddr_l2 saddr;
+    L2_RF_ADDR saddr;
     int listener;
+    uint8_t rc_channel = 0;
 
-    listener = socket( AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP );
+    listener = socket( AF_BLUETOOTH, 
+#if defined BT_USE_L2CAP
+                   SOCK_SEQPACKET, BTPROTO_L2CAP
+#elif defined BT_USE_RFCOMM
+                   SOCK_STREAM, BTPROTO_RFCOMM
+#endif
+                   );
     btStuff->u.master.listener = listener;
 
     XP_MEMSET( &saddr, 0, sizeof(saddr) );
+#if defined BT_USE_L2CAP
     saddr.l2_family = AF_BLUETOOTH;
     saddr.l2_bdaddr = *BDADDR_ANY;
     saddr.l2_psm = htobs( XW_PSM ); /* need to associate uuid with this before opening? */
-    bind( listener, (struct sockaddr *)&saddr, sizeof(saddr) );
-
+    if ( 0 != bind( listener, (struct sockaddr *)&saddr, sizeof(saddr) ) ) {
+        XP_LOGF( "%s: bind->%s", __FUNCTION__, strerror(errno) ); 
+    }
+#elif defined BT_USE_RFCOMM
+    saddr.rc_family = AF_BLUETOOTH;
+    saddr.rc_bdaddr = *BDADDR_ANY;
+    for ( rc_channel = 1; rc_channel < 30; ++rc_channel ) {
+        saddr.rc_channel = rc_channel;
+        XP_LOGF( "setting channel: %d", saddr.rc_channel );
+        if ( 0 == bind( listener, (struct sockaddr *)&saddr, sizeof(saddr) ) ) {
+            break;
+        }
+    }
+#endif
+    
     listen( listener, MAX_CLIENTS );
 
-    lbt_register( btStuff, &saddr );
+    lbt_register( btStuff, htobs( XW_PSM ), rc_channel );
 
     (*globals->addAcceptor)( listener, lbt_accept, globals );
 } /* lbt_listenerSetup */
