@@ -52,7 +52,7 @@ extern pthread_rwlock_t gCookieMapRWLock;
 typedef bool (*CmdPtr)( int socket, const char** args );
 
 typedef struct FuncRec {
-    char* name;
+    const char* name;
     CmdPtr func;
 } FuncRec;
 
@@ -92,20 +92,20 @@ print_to_sock( int sock, bool addCR, const char* what, ... )
 
 static const FuncRec gFuncs[] = {
     { "?", cmd_help },
+    { "crash", cmd_crash },
+    { "eject", cmd_kill_eject },
+    { "get", cmd_get },
     { "help", cmd_help },
-    { "quit", cmd_quit },
-    { "print", cmd_print },
+    { "kill", cmd_kill_eject },
     { "lock", cmd_lock },
+    { "print", cmd_print },
+    { "quit", cmd_quit },
+    { "rev", cmd_rev },
+    { "set", cmd_set },
+    { "shutdown", cmd_shutdown },
     { "start", cmd_start },
     { "stop", cmd_stop },
-    { "kill", cmd_kill_eject },
-    { "eject", cmd_kill_eject },
-    { "shutdown", cmd_shutdown },
-    { "get", cmd_get },
-    { "set", cmd_set },
-    { "rev", cmd_rev },
     { "uptime", cmd_uptime },
-    { "crash", cmd_crash },
 };
 
 static bool
@@ -184,7 +184,7 @@ cmd_kill_eject( int socket, const char** args )
         "silently remove from game"
         : "remove from game with error to device";
     if ( !found ) {
-        char* msg =
+        const char* msg =
             "* %s socket <num>  -- %s\n"
             "  %s cref connName <connName>\n"
             "  %s cref id <id>"
@@ -221,7 +221,7 @@ static bool
 cmd_set( int socket, const char** args )
 {
     if ( 0 == strcmp( args[1], "help" ) ) {
-        print_to_sock( socket, true, "* %s loglevel <n>\n", args[0] );
+        print_to_sock( socket, true, "* %s loglevel <n>", args[0] );
     } else {
         const char* attr = args[1];
         const char* val = args[2];
@@ -374,7 +374,7 @@ cmd_print( int socket, const char** args )
     }
 
     if ( !found ) {
-        char* str =
+        const char* str =
             "* %s cref all\n"
             "  %s cref name <name>\n"
             "  %s cref connName <name>\n"

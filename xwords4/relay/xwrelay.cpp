@@ -47,7 +47,9 @@
 #include <assert.h>
 #include <sys/select.h>
 #include <stdarg.h>
+#include <syslog.h>
 #include <sys/wait.h>
+#include <sys/prctl.h>
 
 #if defined(__FreeBSD__)
 # if (OSVERSION > 500000)
@@ -70,15 +72,30 @@
 #include "timermgr.h"
 #include "permid.h"
 
+#define LOG_FILE_PATH "./xwrelay.log"
+
 void
 logf( XW_LogLevel level, const char* format, ... )
 {
     RelayConfigs* rc = RelayConfigs::GetConfigs();
     if ( NULL == rc || level <= rc->GetLogLevel() ) {
-        FILE* where = stderr;
+#ifdef USE_SYSLOG
+        char buf[256];
+        va_list ap;
+        va_start( ap, format );
+        vsnprintf( buf, sizeof(buf), format, ap );
+        syslog( LOG_LOCAL0 | LOG_INFO, buf );
+        va_end(ap);
+#else
+        static FILE* where = 0;
         struct tm* timp;
         struct timeval tv;
         struct timezone tz;
+
+        if ( !where ) {
+            where = fopen( LOG_FILE_PATH, "a" );
+        }
+
         gettimeofday( &tv, &tz );
         timp = localtime( &tv.tv_sec );
 
@@ -92,6 +109,7 @@ logf( XW_LogLevel level, const char* format, ... )
         vfprintf( where, format, ap );
         va_end(ap);
         fprintf( where, "\n" );
+#endif
     }
 } /* logf */
 
@@ -295,7 +313,7 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
 } /* processDisconnect */
 
 void
-killSocket( int socket, char* why )
+killSocket( int socket, const char* why )
 {
     logf( XW_LOGERROR, "killSocket(%d): %s", socket, why );
     CRefMgr::Get()->RemoveSocketRefs( socket );
@@ -418,6 +436,7 @@ usage( char* arg0 )
     fprintf( stderr,
              "\t-?                   (print this help)\\\n"
              "\t-c <cport>           (localhost port for control console)\\\n"
+             "\t-d                   (don't become daemon)\\\n"
              "\t-f <conffile>        (config file)\\\n"
              "\t-h                   (print this help)\\\n"
              "\t-i <idfile>          (file where next global id stored)\\\n"
@@ -480,6 +499,13 @@ printWhy( int status )
 } /* printWhy */
 #endif
 
+static void
+parentDied( int sig )
+{
+    logf( XW_LOGINFO, "%s", __func__ );
+    exit(0);
+}
+
 int main( int argc, char** argv )
 {
     int port = 0;
@@ -488,6 +514,7 @@ int main( int argc, char** argv )
     char* conffile = NULL;
     const char* serverName = NULL;
     const char* idFileName = NULL;
+    bool doDaemon = true;
 
     /* Verify sizes here... */
     assert( sizeof(CookieID) == 2 );
@@ -498,7 +525,7 @@ int main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:" );
+       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:d" );
 
        if ( opt == -1 ) {
            break;
@@ -510,6 +537,9 @@ int main( int argc, char** argv )
            exit( 0 );
        case 'c':
            ctrlport = atoi( optarg );
+           break;
+       case 'd':
+           doDaemon = false;
            break;
        case 'f':
            conffile = optarg;
@@ -556,6 +586,35 @@ int main( int argc, char** argv )
 
     /* add signal handling here */
 
+    /*
+      The daemon() function is for programs wishing to detach themselves from
+      the controlling terminal and run in the background as system daemons.
+ 
+      Unless the argument nochdir is non-zero, daemon() changes the current
+      working directory to the root ("/").
+ 
+      Unless the argument noclose is non-zero, daemon() will redirect standard
+      input, standard output and standard error to /dev/null.
+
+      (This function forks, and if the fork() succeeds, the parent does
+      _exit(0), so that further errors are seen by the child only.)  On
+      success zero will be returned.  If an error occurs, daemon() returns -1
+      and sets the global variable errno to any of the errors specified for
+      the library functions fork(2) and setsid(2).
+    */
+    if ( doDaemon ) {
+        if ( 0 != daemon( true, false ) ) {
+            logf( XW_LOGERROR, "dev() => %s", strerror(errno) );
+            exit( -1 );
+        }
+    }
+
+    pid_t pid = getpid();
+    FILE* f = fopen( "./xwrelay.pid", "w" );
+    assert( f );
+    fprintf( f, "%d", pid );
+    fclose( f );
+
 #ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
     for ( ; ; ) {
@@ -572,6 +631,9 @@ int main( int argc, char** argv )
         }
     }
 #endif
+
+    prctl( PR_SET_PDEATHSIG, SIGUSR1 );
+    (void)signal( SIGUSR1, parentDied );
 
     g_listener = make_socket( INADDR_ANY, port );
     if ( g_listener == -1 ) {

@@ -153,8 +153,8 @@ bool getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
                    XW_RELAY_ACTION* takeAction, XW_RELAY_STATE* nextState );
 
 
-char* stateString( XW_RELAY_STATE state );
-char* eventString( XW_RELAY_EVENT evt );
-char* actString( XW_RELAY_ACTION act );
+const char* stateString( XW_RELAY_STATE state );
+const char* eventString( XW_RELAY_EVENT evt );
+const char* actString( XW_RELAY_ACTION act );
 
 #endif

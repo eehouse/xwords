@@ -153,7 +153,7 @@ getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
 
 #define CASESTR(s) case s: return #s
 
-char*
+const char*
 stateString( XW_RELAY_STATE state )
 {
     switch( state ) {
@@ -178,7 +178,7 @@ stateString( XW_RELAY_STATE state )
     return "";
 }
 
-char* 
+const char* 
 eventString( XW_RELAY_EVENT evt )
 {
     switch( evt ) {
@@ -204,7 +204,7 @@ eventString( XW_RELAY_EVENT evt )
     return "";
 }
 
-char*
+const char*
 actString( XW_RELAY_ACTION act ) 
 {
     switch ( act ) {
