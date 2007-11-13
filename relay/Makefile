@@ -15,7 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-CC = g++
+CXX = g++-4.1
+CC=$(CXX)
 SRC = xwrelay.cpp \
 	cref.cpp \
 	ctrl.cpp \
@@ -26,8 +27,10 @@ SRC = xwrelay.cpp \
 	crefmgr.cpp \
 	permid.cpp \
 
+# STATIC ?= -static
+
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
-LDFLAGS += -pthread -g -lmcheck
+LDFLAGS += -pthread -g -lmcheck $(STATIC)
 CPPFLAGS += -DSPAWN_SELF -g -Wall -DSVN_REV=\"$(shell svnversion -n .)\"
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
@@ -47,3 +50,6 @@ tarball:
 		../relay/*.{cpp,h} \
 		../relay/Makefile \
 		../relay/xwrelay.conf
+
+help:
+	@echo $(MAKE) [STATIC=\"-static\"]
