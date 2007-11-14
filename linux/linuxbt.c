@@ -461,12 +461,19 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
         }
 
         if ( globals->socket >= 0 ) {
+#if defined BT_USE_RFCOMM
+            unsigned short len = htons(buflen);
+            nSent = write( globals->socket, &len, sizeof(len) );
+            assert( nSent == sizeof(len) );
+#endif
             nSent = write( globals->socket, buf, buflen );
             if ( nSent < 0 ) {
                 XP_LOGF( "%s: send->%s", __FUNCTION__, strerror(errno) );
             } else if ( nSent < buflen ) {
-                XP_LOGF( "%s: send only %d bytes of %d", __FUNCTION__, nSent, 
+                XP_LOGF( "%s: sent only %d bytes of %d", __FUNCTION__, nSent, 
                          buflen );
+                /* Need to loop until sent if this is happening */
+                XP_ASSERT( 0 );
             }
         } else {
             XP_LOGF( "%s: socket still not set", __FUNCTION__ );
@@ -483,10 +490,29 @@ linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen )
     LOG_FUNC();
     XP_ASSERT( sock >= 0 );
 
+#if defined BT_USE_RFCOMM
+    unsigned short len;
+    int totalRead = 0;
+    nRead = read( sock, &len, sizeof(len) );
+    assert( nRead == 2 );
+    len = ntohs(len);
+    XP_ASSERT( len < buflen );
+
+    while ( totalRead < len ) {
+        nRead = read( sock, buf+totalRead, len-totalRead );
+        if ( nRead < 0 ) {
+            XP_LOGF( "%s: read->%s", __FUNCTION__, strerror(errno) );
+            break;
+        }
+        totalRead += nRead;
+        XP_ASSERT( totalRead <= buflen );
+    }
+#else        
     nRead = read( sock, buf, buflen );
     if ( nRead < 0 ) {
         XP_LOGF( "%s: read->%s", __FUNCTION__, strerror(errno) );
     }
+#endif
 
     LOG_RETURNF( "%d", nRead );
     return nRead;
