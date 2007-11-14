@@ -59,7 +59,7 @@ insetRect( XP_Rect* r, short i )
 #define DRAW_WHAT(dc) ((dc)->drawing_area->window)
 #endif
 
-#define GTKMIN_W_HT 8
+#define GTKMIN_W_HT 12
 
 static void
 eraseRect( GtkDrawCtx* dctx, const XP_Rect* rect )
@@ -962,7 +962,7 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
     eraseRect( dctx, &localR );
     frameRect( dctx, &localR );
 
-    draw_string_at( dctx, text, localR.height-2,
+    draw_string_at( dctx, text, GTKMIN_W_HT,
                     &localR, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
 } /* gtk_draw_drawMiniWindow */
