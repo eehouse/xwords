@@ -115,8 +115,9 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 # experimental at this point!
 # MYDEFS_COMMON += -DXWFEATURE_RELAY
 
-# turn on bluetooth comms option for 68K and ARM -- which won't work yet
-BLUETOOTH = -DXWFEATURE_BLUETOOTH
+# turn on bluetooth comms option for 68K and ARM
+BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP
+#BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_RFCOMM
 MYDEFS_COMMON += $(BLUETOOTH)
 
 # Add menu allowing to choose to run 68K or ARM
