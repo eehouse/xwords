@@ -40,6 +40,7 @@
 
 #include "linuxbt.h"
 #include "comms.h"
+#include "strutils.h"
 
 #define MAX_CLIENTS 3
 
@@ -447,6 +448,7 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
     LinBtStuff* btStuff;
 
     XP_LOGF( "%s(len=%d)", __FUNCTION__, buflen );
+    LOG_HEX( buf, buflen, __func__ );
 
     btStuff = globals->btStuff;
     if ( !!btStuff ) {
@@ -483,6 +485,23 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
     return nSent;
 } /* linux_bt_send */
 
+#if defined BT_USE_RFCOMM
+static void
+read_all( int sock, unsigned char* buf, const int len )
+{
+    int totalRead = 0;
+    while ( totalRead < len ) {
+        int nRead = read( sock, buf+totalRead, len-totalRead );
+        if ( nRead < 0 ) {
+            XP_LOGF( "%s: read->%s", __FUNCTION__, strerror(errno) );
+            break;
+        }
+        totalRead += nRead;
+        XP_ASSERT( totalRead <= len );
+    }
+}
+#endif
+
 XP_S16
 linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen )
 {
@@ -491,22 +510,13 @@ linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen )
     XP_ASSERT( sock >= 0 );
 
 #if defined BT_USE_RFCOMM
-    unsigned short len;
-    int totalRead = 0;
-    nRead = read( sock, &len, sizeof(len) );
-    assert( nRead == 2 );
-    len = ntohs(len);
-    XP_ASSERT( len < buflen );
+    read_all( sock, (unsigned char*)&nRead, sizeof(nRead) );
+    nRead = ntohs(nRead);
+    XP_LOGF( "nRead=%d", nRead );
+    XP_ASSERT( nRead < buflen );
 
-    while ( totalRead < len ) {
-        nRead = read( sock, buf+totalRead, len-totalRead );
-        if ( nRead < 0 ) {
-            XP_LOGF( "%s: read->%s", __FUNCTION__, strerror(errno) );
-            break;
-        }
-        totalRead += nRead;
-        XP_ASSERT( totalRead <= buflen );
-    }
+    read_all( sock, buf, nRead );
+    LOG_HEX( buf, nRead, __func__ );
 #else        
     nRead = read( sock, buf, buflen );
     if ( nRead < 0 ) {
