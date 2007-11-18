@@ -91,6 +91,9 @@ static XP_Bool timeForTimer( PalmAppGlobals* globals, XWTimerReason* why,
                              XP_U32* when );
 static XP_S16 palm_send( const XP_U8* buf, XP_U16 len, 
                          const CommsAddrRec* addr, void* closure );
+#ifdef COMMS_HEARTBEAT
+static void palm_reset( void* closure );
+#endif
 static void palm_send_on_close( XWStreamCtxt* stream, void* closure );
 
 /* callbacks */
@@ -597,7 +600,7 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
             success = game_makeFromStream( MEMPOOL recStream, game, ginfo, 
                                            dict, &globals->util, 
                                            globals->draw, &globals->gState.cp, 
-                                           palm_send, globals );
+                                           palm_send, IF_CH(palm_reset) globals );
         }
 
         stream_destroy( recStream );
@@ -1190,7 +1193,7 @@ startApplication( PalmAppGlobals** globalsP )
         game_makeNewGame( MEMPOOL &globals->game, &globals->gameInfo,
                           &globals->util, globals->draw, gameID, 
                           &globals->gState.cp,
-                          palm_send, globals );
+                          palm_send, IF_CH(palm_reset) globals );
         FrmPopupForm( XW_NEWGAMES_FORM );
     }
 
@@ -1989,7 +1992,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         XP_U32 newGameID = TimGetSeconds();
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
                     &globals->util, newGameID, &globals->gState.cp, 
-                    palm_send, globals );
+                    palm_send, IF_CH(palm_reset) globals );
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY || defined XWFEATURE_IR
         if ( !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, 
@@ -3812,7 +3815,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         now += PALM_TIMER_DELAY;
     } else if ( why == TIMER_TIMERTICK ) {
         now += SysTicksPerSecond();
-#ifdef XWFEATURE_RELAY
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
     } else if ( why == TIMER_HEARTBEAT ) {
         now += (secsFromNow * SysTicksPerSecond());
 #endif
@@ -3926,6 +3929,26 @@ palm_send( const XP_U8* buf, XP_U16 len,
     }
     return result;
 } /* palm_send */
+
+#ifdef COMMS_HEARTBEAT
+static void
+palm_reset( void* closure )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
+    XP_ASSERT( !!globals->game.comms );
+
+    switch( comms_getConType( globals->game.comms ) ) {
+#ifdef XWFEATURE_BLUETOOTH
+    case COMMS_CONN_BT:
+        palm_bt_reset( globals );
+        break;
+#endif
+    default:
+        XP_ASSERT(0);
+        break;
+    }
+}
+#endif
 
 void
 checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr, 

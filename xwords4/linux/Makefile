@@ -64,11 +64,18 @@ DEFINES += -DFEATURE_TRAY_EDIT
 #DEFINES += -DDRAW_WITH_PRIMITIVES
 
 # Bluetooth support
-#BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP
-BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_RFCOMM
+BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP
+#BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_RFCOMM
 # DEFINES += -DXWFEATURE_IR
 DEFINES += ${BLUETOOTH}
 DEFINES += -DXWFEATURE_RELAY
+
+# Choose one of these.  RELAY_HEARTBEAT means relay (must be compiled
+# with same -D) works with comms on heartbeat.  Works only with relay.
+# COMMS_HEARTBEAT should work on any comms transport (even IR, but
+# user experience will be very bad!).  Is particularly useful with BT.
+# DEFINES += -DRELAY_HEARTBEAT
+DEFINES += -DCOMMS_HEARTBEAT
 
 # Let users pick the tiles going into their trays
 #DEFINES += -DFEATURE_TRAY_EDIT

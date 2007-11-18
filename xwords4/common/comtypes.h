@@ -103,7 +103,7 @@ typedef XP_U16 XP_PlayerAddr;
 typedef enum {
     TIMER_PENDOWN = 1, /* ARM doesn't like ids of 0... */
     TIMER_TIMERTICK,
-#ifdef XWFEATURE_RELAY
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
     TIMER_HEARTBEAT,
 #endif
 

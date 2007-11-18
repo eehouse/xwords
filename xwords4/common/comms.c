@@ -35,6 +35,17 @@
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 
+#if defined RELAY_HEARTBEAT && defined COMMS_HEARTBEAT
+compilation_error_here( "Choose one or the other or none." );
+#endif
+
+#ifdef COMMS_HEARTBEAT
+/* It might make sense for this to be a parameter or somehow tied to the
+   platform and transport.  But in that case it'd have to be passed across
+   since all devices must agree. */
+# define HB_INTERVAL 5
+#endif
+
 EXTERN_C_START
 
 typedef struct MsgQueueElem {
@@ -54,6 +65,8 @@ typedef struct AddressRecord {
 #endif
     MsgID nextMsgID;		    /* on a per-channel basis */
     MsgID lastMsgReceived;	    /* on a per-channel basis */
+    /* only used if COMMS_HEARTBEAT set except for serialization (to_stream) */
+    XP_U32 lastMsgRcvdTime;     /* when did we set lastMsgReceived? */
     XP_PlayerAddr channelNo;
     struct {
         XWHostID hostID;            /* used for relay case */
@@ -78,11 +91,18 @@ struct CommsCtxt {
     AddressRecord* recs;        /* return addresses */
 
     TransportSend sendproc;
+#ifdef COMMS_HEARTBEAT
+    TransportReset resetproc;
+#endif
     void* sendClosure;
 
     MsgQueueElem* msgQueueHead;
     MsgQueueElem* msgQueueTail;
     XP_U16 queueLen;
+
+#ifdef COMMS_HEARTBEAT
+    XP_Bool doHeartbeat;
+#endif
 
     /* The following fields, down to isServer, are only used if
        XWFEATURE_RELAY is defined, but I'm leaving them in here so apps built
@@ -143,6 +163,8 @@ static void relayDisconnect( CommsCtxt* comms );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
                                XWHostID destID, void* data, int dlen );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
+#endif
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
@@ -159,7 +181,8 @@ CommsCtxt*
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
             XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
             XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
-            TransportSend sendproc, void* closure )
+            TransportSend sendproc, IF_CH(TransportReset resetproc)
+            void* closure )
 {
     CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
@@ -168,6 +191,9 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 
     result->isServer = isServer;
     result->sendproc = sendproc;
+#ifdef COMMS_HEARTBEAT
+    result->resetproc = resetproc;
+#endif
     result->sendClosure = closure;
     result->util = util;
 
@@ -297,7 +323,8 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
-                      TransportSend sendproc, void* closure )
+                      TransportSend sendproc, 
+                      IF_CH(TransportReset resetproc ) void* closure )
 {
     CommsCtxt* comms;
     XP_Bool isServer;
@@ -325,7 +352,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     }
     comms = comms_make( MPPARM(mpool) util, isServer, 
                         nPlayersHere, nPlayersTotal,
-                        sendproc, closure );
+                        sendproc, IF_CH(resetproc) closure );
     XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
 
     comms->connID = stream_getU32( stream );
@@ -403,6 +430,10 @@ comms_start( CommsCtxt* comms )
         btConnect( comms );
 #endif
     }
+
+#ifdef COMMS_HEARTBEAT
+    comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
+#endif
 } /* comms_start */
 
 static void
@@ -531,6 +562,9 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
         btConnect( comms );
 #endif
     }
+#ifdef COMMS_HEARTBEAT
+    comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
+#endif
 } /* comms_setAddr */
 
 void
@@ -567,21 +601,15 @@ comms_getIsServer( const CommsCtxt* comms )
     return comms->isServer;
 }
 
-/* Send a message using the sequentially next MsgID.  Save the message so
- * resend can work. */
-XP_S16
-comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
+static XP_S16
+sendWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec, 
+            XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
-    XP_U16 streamSize = stream_getSize( stream );
     XP_U16 headerLen;
-    XP_PlayerAddr channelNo = stream_getAddress( stream );
-    AddressRecord* rec = getRecordFor( comms, channelNo );
-    MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
+    XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgRcd = (!!rec)? rec->lastMsgReceived : 0;
     MsgQueueElem* newMsgElem;
     XWStreamCtxt* msgStream;
-
-    XP_DEBUGF( "assigning msgID=" XP_LD " on chnl %d", msgID, channelNo );
 
 #ifdef DEBUG
     if ( !!rec ) {
@@ -614,11 +642,26 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
     stream_getBytes( msgStream, newMsgElem->msg, headerLen );
     stream_destroy( msgStream );
     
-    stream_getBytes( stream, newMsgElem->msg + headerLen, streamSize );
+    if ( 0 < streamSize ) {
+        stream_getBytes( stream, newMsgElem->msg + headerLen, streamSize );
+    }
 
     addToQueue( comms, newMsgElem );
 
     return sendMsg( comms, newMsgElem );
+} /* sendWithID */
+
+/* Send a message using the sequentially next MsgID.  Save the message so
+ * resend can work. */
+XP_S16
+comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
+{
+    XP_PlayerAddr channelNo = stream_getAddress( stream );
+    AddressRecord* rec = getRecordFor( comms, channelNo );
+    MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
+
+    XP_DEBUGF( "assigning msgID=" XP_LD " on chnl %d", msgID, channelNo );
+    return sendWithID( comms, msgID, rec, channelNo, stream );
 } /* comms_send */
 
 /* Add new message to the end of the list.  The list needs to be kept in order
@@ -1013,6 +1056,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                          * greater than the id most recently used for that
                          * channel. */
                         if ( !!recs ) {
+#ifdef COMMS_HEARTBEAT
+                            /* Good for heartbeat even if not "valid."  In
+                               fact, all HB messages are invalid by design. */
+                            recs->lastMsgRcvdTime = util_getCurSeconds( comms->util );
+#endif
                             if ( msgID != recs->lastMsgReceived + 1 ) {
                                 XP_DEBUGF( "on channel %d, msgID=" XP_LD 
                                            " (next should be " XP_LD ")", 
@@ -1047,9 +1095,9 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
                         if ( !!recs ) {
                             recs->lastMsgReceived = msgID;
+                            XP_STATUSF( "set channel %d's lastMsgReceived to " 
+                                        XP_LD, channelNo, msgID );
                         }
-                        XP_STATUSF( "set channel %d's lastMsgReceived to " 
-                                    XP_LD, channelNo, msgID );
                     }
                 } else {
                     XP_LOGF( "%s: message too small", __FUNCTION__ );
@@ -1066,25 +1114,103 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     return validMessage;
 } /* comms_checkIncomingStream */
 
-#ifdef XWFEATURE_RELAY
+#ifdef COMMS_HEARTBEAT
+/* Heartbeat.
+ *
+ * Goal is to allow all participants to detect when another is gone quickly.
+ * Assumption is that transport is cheap: sending extra packets doesn't cost
+ * much money or bother (meaning: don't do this over IR! :-).  
+ *
+ * Keep track of last time we heard from each channel and of when we last sent
+ * a packet.  Run a timer, and when it fires: 1) check if we haven't heard
+ * since 2x the timer interval.  If so, call alert function and reset the
+ * underlying (ip, bt) channel.  If not, check how long since we last sent a
+ * packet on each channel.  If it's been longer than since the last timer, and
+ * if there are not already packets in the queue on that channel, fire a HB
+ * packet.
+ *
+ * A HB packet is one whose msg ID is lower than the most recent ACK'd so that
+ * it's sure to be dropped on the other end and not to interfere with packets
+ * that might be resent.
+ */
+static void
+heartbeat_checks( CommsCtxt* comms )
+{
+    XP_U32 now, tooLongAgo;
+    XP_U16 pendingPacks[MAX_NUM_PLAYERS] = { 0 };
+    AddressRecord* rec;
+    const MsgQueueElem* elem;
+    XP_Bool resetTimer = XP_FALSE;
+
+    LOG_FUNC();
+
+    for ( elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
+        XP_ASSERT( elem->channelNo < MAX_NUM_PLAYERS );
+        ++pendingPacks[elem->channelNo];
+    }
+
+    now = util_getCurSeconds( comms->util );
+    tooLongAgo = now - (HB_INTERVAL * 2);
+    for ( rec = comms->recs; !!rec; rec = rec->next ) {
+        XP_U32 lastMsgRcvdTime = rec->lastMsgRcvdTime;
+        if ( lastMsgRcvdTime == 0 ) { /* nothing received yet */
+            /* do nothing; or should we send? */
+        } else if ( (lastMsgRcvdTime > 0) && (lastMsgRcvdTime < tooLongAgo) ) {
+            XP_LOGF( "calling reset proc" );
+            (*comms->resetproc)(comms->sendClosure);
+            resetTimer = XP_FALSE;
+            break;
+        } else if ( 0 == pendingPacks[rec->channelNo] ) {
+            XP_LOGF( "sending heartbeat on channel %d", rec->channelNo );
+            sendWithID( comms, rec->lastMsgReceived, rec, rec->channelNo, NULL );
+        } else {
+            XP_LOGF( "All's well" );
+            resetTimer = XP_TRUE;
+        }
+    }
+
+    if ( resetTimer ) {
+        setHeartbeatTimer( comms );
+    }
+} /* heartbeat_checks */
+#endif
+
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
 static void
 p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
     CommsCtxt* comms = (CommsCtxt*)closure;
     XP_ASSERT( why == TIMER_HEARTBEAT );
     XP_LOGF( "comms_timerFired" );
-    if ( comms->r.heartbeat != HEARTBEAT_NONE ) {
+    if (0 ) {
+#ifdef RELAY_HEARTBEAT
+    } else  if ( (comms->addr.conType == COMMS_CONN_RELAY ) 
+         && (comms->r.heartbeat != HEARTBEAT_NONE) ) {
         send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, NULL, 0 );
         /* No need to reset timer.  send_via_relay does that. */
+#elif defined COMMS_HEARTBEAT
+    } else {
+        XP_ASSERT( comms->doHeartbeat );
+        heartbeat_checks( comms );
+#endif
     }
-} /* comms_timerFired */
+} /* p_comms_timerFired */
 
 static void
 setHeartbeatTimer( CommsCtxt* comms )
 {
-    util_setTimer( comms->util, TIMER_HEARTBEAT, comms->r.heartbeat,
-                   p_comms_timerFired, comms );
-}
+#ifdef RELAY_HEARTBEAT
+    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+        util_setTimer( comms->util, TIMER_HEARTBEAT, comms->r.heartbeat,
+                       p_comms_timerFired, comms );
+    }
+#elif defined COMMS_HEARTBEAT
+    if ( comms->doHeartbeat ) {
+        util_setTimer( comms->util, TIMER_HEARTBEAT, HB_INTERVAL,
+                       p_comms_timerFired, comms );
+    }
+#endif
+} /* setHeartbeatTimer */
 #endif
 
 #ifdef DEBUG
@@ -1094,6 +1220,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
     XP_UCHAR buf[100];
     AddressRecord* rec;
     MsgQueueElem* elem;
+    XP_U32 now;
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                  (XP_UCHAR*)"msg queue len: %d\n", comms->queueLen );
@@ -1111,6 +1238,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
                  comms->nUniqueBytes );
     stream_putString( stream, buf );
 
+    now = util_getCurSeconds( comms->util );
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                      (XP_UCHAR*)"  Stats for channel: %d\n", 
@@ -1131,6 +1259,13 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
                      (XP_UCHAR*)"Last message acknowledged: %d\n", 
                      rec->lastACK);
         stream_putString( stream, buf );
+
+#ifdef COMMS_HEARTBEAT
+        XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
+                     (XP_UCHAR*)"Last ack'd %ld secs ago\n", 
+                     now - rec->lastMsgRcvdTime );
+        stream_putString( stream, buf );
+#endif
     }
 } /* comms_getStats */
 #endif
@@ -1277,13 +1412,14 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->r.myHostID );
             break;
 
+#ifdef RELAY_HEARTBEAT
         case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
             stream_putU16( tmpStream, comms->r.cookieID );
             stream_putU8( tmpStream, comms->r.myHostID );
             break;
-
+#endif
         default:
             XP_ASSERT(0); 
         }
@@ -1359,6 +1495,8 @@ send_via_bt( CommsCtxt* comms, BTMsgType typ, XP_PlayerAddr channelNo,
 
         nSent = (*comms->sendproc)( buf, dlen+1, addr, comms->sendClosure );
         XP_FREE( comms->mpool, buf );
+
+        setHeartbeatTimer( comms );
     }
     return nSent;
 } /* send_via_bt */

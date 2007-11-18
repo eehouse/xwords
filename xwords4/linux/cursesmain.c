@@ -1048,7 +1048,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     gameID = (XP_U16)util_getCurSeconds( globals.cGlobals.params->util );
     game_makeNewGame( MEMPOOL &globals.cGlobals.game, &params->gi,
                       params->util, (DrawCtx*)globals.draw,
-                      gameID, &globals.cp, linux_send, &globals );
+                      gameID, &globals.cp, linux_send, 
+                      IF_CH(linux_reset) &globals );
 
     if ( globals.cGlobals.game.comms ) {
         CommsAddrRec addr;
