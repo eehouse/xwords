@@ -33,6 +33,7 @@
 #elif defined BT_USE_RFCOMM
 # define SEL_PROTO btLibRfCommProtocol
 # define TRUE_IF_RFCOMM XP_TRUE
+# define INITIAL_CREDIT 50
 #endif
 
 #define L2CAPSOCKETMTU 500
@@ -427,7 +428,9 @@ pbt_send_pending( PalmBTStuff* btStuff )
         const XP_U8* buf;
         XP_U16 len = pbt_peekQueue( &btStuff->vol.out, &buf );
         if ( len > 0 ) {
-            LOG_HEX( buf, len, __func__ );
+#ifdef LOG_BTIO
+            LOG_HEX( buf, len, "to BtLibSocketSend" );
+#endif
             CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
                       btStuff->dataSocket, (char*)buf, len );
             if ( btLibErrPending == err ) {
@@ -437,24 +440,6 @@ pbt_send_pending( PalmBTStuff* btStuff )
     }
     LOG_RETURN_VOID();
 } /* pbt_send_pending */
-
-#ifdef DEBUG
-static void
-dump_queue( PBT_queue* queue, const char* caller )
-{
-    XP_U16 i, total = 0;
-    LOG_FUNC();
-    for ( i = 0; ; ++i ) {
-        XP_U16 len = queue->lens[i];
-        if ( 0 == len ) {
-            break;
-        }
-        XP_LOGF( "buffer %d (len %d):", i, len );
-        LOG_HEX( &queue->bufs[total], len, "" );
-        total += len;
-    }
-}
-#endif
 
 XP_S16
 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
@@ -562,7 +547,7 @@ pbt_setup_master( PalmBTStuff* btStuff )
 #elif defined BT_USE_RFCOMM
         // remoteService: assigned by rfcomm
         listenInfo.data.RfComm.maxFrameSize = BT_RF_DEFAULT_FRAMESIZE;
-        listenInfo.data.RfComm.advancedCredit = 10;
+        listenInfo.data.RfComm.advancedCredit = INITIAL_CREDIT;
 #endif
         /* Doesn't send events; returns errNone unless no resources avail. */
         CALL_ERR( err, BtLibSocketListen, btStuff->btLibRefNum, 
@@ -737,7 +722,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
                 connInfo.data.RfComm.remoteService
                     = btStuff->u.slave.remoteService;
                 connInfo.data.RfComm.maxFrameSize = BT_RF_DEFAULT_FRAMESIZE;
-                connInfo.data.RfComm.advancedCredit = 10;
+                connInfo.data.RfComm.advancedCredit = INITIAL_CREDIT;
 #else
                 XP_ASSERT(0);
 #endif
@@ -760,6 +745,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
         break;
 
     case PBT_ACT_GOTDATA:
+        CALL_ERR( err, BtLibSocketAdvanceCredit, btLibRefNum, btStuff->dataSocket, 1 );
         pbt_handoffIncoming( btStuff, proc );
         break;
 
@@ -844,11 +830,13 @@ pbt_enqueue( PBT_queue* queue, const XP_U8* data, const XP_S16 len,
     if ( append ) {
         XP_ASSERT( index > 0 );
         --index;
-    } else {
-        queue->lens[index] = 0;
     }
 
     if ( (index < MAX_PACKETS) && ((total + len + lensiz) < sizeof(queue->bufs)) ) {
+        if ( !append ) {
+            queue->lens[index] = 0;
+        }
+
         queue->lens[index] += len + lensiz;
         if ( addLen ) {
             XP_U16 plen = XP_HTONS(len);
@@ -865,7 +853,6 @@ pbt_enqueue( PBT_queue* queue, const XP_U8* data, const XP_S16 len,
         XP_LOGF( "%s: dropping packet of len %d", __FUNCTION__, len );
         result = -1;
     }
-    dump_queue( queue, __func__ );
     return result;
 } /* pbt_enqueue */
 
@@ -875,7 +862,6 @@ pbt_handoffIncoming( PalmBTStuff* btStuff, BtCbEvtProc proc )
     const XP_U8* buf;
     XP_U16 len;
 
-    dump_queue( &btStuff->vol.in, __func__ );
     len = pbt_peekQueue( &btStuff->vol.in, &buf );
 
     if ( len > 0 ) {
@@ -1040,7 +1026,7 @@ pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
     }
 } /* pbt_killL2C */
 
-static void
+static XP_Bool
 pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 {
     XP_Bool addrOk;
@@ -1139,7 +1125,6 @@ pbt_assemble( PalmBTStuff* btStuff, unsigned char* data, XP_U16 len )
             pbt_assemble( btStuff, data, len );
         }
     }
-    dump_queue( &btStuff->vol.in, __func__ );
 }
 #endif
 
@@ -1181,7 +1166,9 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         {
             XP_U8* data = sEvent->eventData.data.data;
             XP_U16 len = sEvent->eventData.data.dataLen;
+#ifdef LOG_BTIO
             LOG_HEX( data, len, "btLibSocketEventData" );
+#endif
 #if defined BT_USE_RFCOMM
             pbt_assemble( btStuff, data, len );
 #else
