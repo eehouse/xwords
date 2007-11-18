@@ -39,6 +39,9 @@ DictionaryCtxt* linux_dictionary_make( MPFORMAL const char* dictFileName );
 int initListenerSocket( int port );
 XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen, 
                    const CommsAddrRec* addrRec, void* closure );
+#ifdef COMMS_HEARTBEAT
+void linux_reset( void* closure );
+#endif
 int linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, 
                          int bufSize );
 

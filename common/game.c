@@ -73,7 +73,8 @@ void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
                   XP_U16 gameID, CommonPrefs* cp,
-                  TransportSend sendproc, void* closure )
+                  TransportSend sendproc, IF_CH( TransportReset resetproc ) 
+                  void* closure )
 {
     XP_U16 nPlayersHere, nPlayersTotal;
 
@@ -90,7 +91,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   nPlayersHere, nPlayersTotal, 
-                                  sendproc, closure );
+                                  sendproc, IF_CH(resetproc) closure );
     } else {
         game->comms = (CommsCtxt*)NULL;
     }
@@ -112,7 +113,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 void
 game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
             XP_U16 gameID, CommonPrefs* cp, TransportSend sendproc, 
-            void* closure )
+            IF_CH(TransportReset resetproc) void* closure )
 {
     XP_U16 i;
     XP_U16 nPlayersHere, nPlayersTotal;
@@ -136,7 +137,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util,
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   nPlayersHere, nPlayersTotal, 
-                                  sendproc, closure );
+                                  sendproc, IF_CH(resetproc) closure );
     }
 #endif
 
@@ -162,7 +163,8 @@ XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                      CurGameInfo* gi, DictionaryCtxt* dict, 
                      XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp, 
-                     TransportSend sendProc, void* closure )
+                     TransportSend sendProc, IF_CH(TransportReset resetProc) 
+                     void* closure )
 {
     XP_Bool success = XP_FALSE;
     XP_U8 strVersion;
@@ -181,7 +183,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
         hasComms = stream_getU8( stream );
         if ( hasComms ) {
             game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
-                                                sendProc, closure );
+                                                sendProc, IF_CH(resetProc) closure );
         } else {
             game->comms = NULL;
         }

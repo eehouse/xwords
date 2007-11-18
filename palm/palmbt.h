@@ -48,6 +48,7 @@
 void palm_bt_amendWaitTicks( PalmAppGlobals* globals, Int32* result );
 
 XP_Bool palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled );
+void palm_bt_reset( PalmAppGlobals* globals );
 void palm_bt_close( PalmAppGlobals* globals );
 
 typedef enum { BTCBEVT_CONN, BTCBEVT_DATA, BTCBEVT_HOSTFAIL } BtCbEvt;

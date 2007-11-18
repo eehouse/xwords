@@ -158,8 +158,8 @@ static XP_S16 pbt_enqueue( PBT_queue* queue, const XP_U8* data, XP_S16 len,
 static void pbt_handoffIncoming( PalmBTStuff* btStuff, BtCbEvtProc proc );
 
 static void waitACL( PalmBTStuff* btStuff );
-static void pbt_reset( PalmBTStuff* btStuff );
-static void pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock );
+static void pbt_reset_buffers( PalmBTStuff* btStuff );
+static void pbt_killLinks( PalmBTStuff* btStuff, BtLibSocketRef sock );
 static XP_Bool pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
                           const char* whence );
@@ -202,7 +202,7 @@ palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled )
         btStuff = pbt_checkInit( globals, userCancelled );
         /* Should I start master/slave setup here?  If not, how? */
     } else {
-        pbt_reset( btStuff );
+        pbt_reset_buffers( btStuff );
     }
 
     /* If we're the master, and a new game is starting without shutting down,
@@ -221,6 +221,28 @@ palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled )
     LOG_RETURNF( "%d", (XP_U16)inited );
     return inited;
 } /* palm_bt_init */
+
+void
+palm_bt_reset( PalmAppGlobals* globals )
+{
+    PalmBTStuff* btStuff = globals->btStuff;
+    if ( !!btStuff ) {
+        if ( btStuff->dataSocket != SOCK_INVAL ) {
+            pbt_killLinks( btStuff, btStuff->dataSocket );
+        }
+        /* nuke all pending messages */
+        pbt_reset_buffers( btStuff );
+        btStuff->queueLen = 0;
+
+        if ( btStuff->picoRole == PBT_MASTER ) {
+            pbt_setup_master( btStuff );
+        } else if ( btStuff->picoRole == PBT_SLAVE ) {
+            CommsAddrRec remoteAddr;
+            comms_getAddr( globals->game.comms, &remoteAddr );
+            pbt_setup_slave( btStuff, &remoteAddr );
+        }
+    }
+}
 
 void
 palm_bt_close( PalmAppGlobals* globals )
@@ -431,6 +453,7 @@ pbt_send_pending( PalmBTStuff* btStuff )
 #ifdef LOG_BTIO
             LOG_HEX( buf, len, "to BtLibSocketSend" );
 #endif
+            XP_LOGF( "sending on socket %d", btStuff->dataSocket );
             CALL_ERR( err, BtLibSocketSend, btStuff->btLibRefNum, 
                       btStuff->dataSocket, (char*)buf, len );
             if ( btLibErrPending == err ) {
@@ -579,6 +602,17 @@ pbt_close_datasocket( PalmBTStuff* btStuff )
 }
 
 static void
+pbt_close_sdpsocket( PalmBTStuff* btStuff )
+{
+    XP_ASSERT( PBT_SLAVE == btStuff->picoRole );
+    if ( SOCK_INVAL != btStuff->u.slave.sdpSocket ) {
+        Err err;
+        CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, btStuff->u.slave.sdpSocket );
+        btStuff->u.slave.sdpSocket = SOCK_INVAL;
+    }
+}
+
+static void
 pbt_takedown_master( PalmBTStuff* btStuff )
 {
     XP_U16 btLibRefNum;
@@ -669,11 +703,13 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
 
     case PBT_ACT_GETSDP:
         if ( PBTST_ACL_CONNECTED == GET_STATE(btStuff) ) {
+            XP_ASSERT( SOCK_INVAL == btStuff->u.slave.sdpSocket );
             CALL_ERR( err, BtLibSocketCreate, btStuff->btLibRefNum,
                       &btStuff->u.slave.sdpSocket, socketCallback, (UInt32)btStuff,
                       btLibSdpProtocol );
             if ( err == errNone ) {
 #if defined BT_USE_L2CAP
+                XP_LOGF( "sending on sdpSocket socket %d", btStuff->u.slave.sdpSocket );
                 CALL_ERR( err, BtLibSdpGetPsmByUuid, btStuff->btLibRefNum, 
                           btStuff->u.slave.sdpSocket, &btStuff->otherAddr,
                           (BtLibSdpUuidType*)&XWORDS_UUID, 1 );
@@ -699,6 +735,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
         }
         /* Presumably state's been reset since PBT_ACT_GETSDP issued */
         XP_LOGF( "aborting b/c state wrong" );
+        pbt_close_sdpsocket( btStuff );
         SET_STATE( btStuff, PBTST_NONE );
         waitACL( btStuff );
         break;
@@ -745,7 +782,9 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
         break;
 
     case PBT_ACT_GOTDATA:
-        CALL_ERR( err, BtLibSocketAdvanceCredit, btLibRefNum, btStuff->dataSocket, 1 );
+#ifdef BT_USE_RFCOMM
+        CALL_ERR( err, BtLibSocketAdvanceCredit, btLibRefNum, btStuff->dataSocket, 5 );
+#endif
         pbt_handoffIncoming( btStuff, proc );
         break;
 
@@ -892,7 +931,7 @@ pbt_handoffIncoming( PalmBTStuff* btStuff, BtCbEvtProc proc )
 } /* pbt_handoffIncoming */
 
 static void
-pbt_reset( PalmBTStuff* btStuff )
+pbt_reset_buffers( PalmBTStuff* btStuff )
 {
     LOG_FUNC();
     XP_MEMSET( &btStuff->vol, 0, sizeof(btStuff->vol) );
@@ -940,6 +979,7 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
         pbt_takedown_master( btStuff );
     }
     btStuff->picoRole = PBT_SLAVE;
+    btStuff->u.slave.sdpSocket = SOCK_INVAL;
 
     if ( !!addr ) {
         char buf[64];
@@ -964,7 +1004,7 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 static void
 pbt_takedown_slave( PalmBTStuff* btStuff )
 {
-    pbt_killL2C( btStuff, btStuff->dataSocket );
+    pbt_killLinks( btStuff, btStuff->dataSocket );
     btStuff->picoRole = PBT_UNINIT;
 }
 
@@ -995,6 +1035,7 @@ pbt_checkInit( PalmAppGlobals* globals, XP_Bool* userCancelledP )
 
                 btStuff->dataSocket = SOCK_INVAL;
                 btStuff->u.master.listenSocket = SOCK_INVAL;
+                btStuff->u.slave.sdpSocket = SOCK_INVAL;
 
                 CALL_ERR( err, BtLibRegisterManagementNotification, 
                           btLibRefNum, libMgmtCallback, (UInt32)btStuff );
@@ -1010,12 +1051,16 @@ pbt_checkInit( PalmAppGlobals* globals, XP_Bool* userCancelledP )
 } /* pbt_checkInit */
 
 static void
-pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
+pbt_killLinks( PalmBTStuff* btStuff, BtLibSocketRef sock )
 {
     Err err;
 
     XP_ASSERT( sock == btStuff->dataSocket );
     pbt_close_datasocket( btStuff );
+
+    if ( PBT_SLAVE == btStuff->picoRole ) {
+        pbt_close_sdpsocket( btStuff );
+    }
 
     /* Harm in calling this when not connected? */
     if ( GET_STATE(btStuff) != PBTST_NONE ) {
@@ -1024,7 +1069,7 @@ pbt_killL2C( PalmBTStuff* btStuff, BtLibSocketRef sock )
         CALL_ERR( err, BtLibLinkDisconnect, btStuff->btLibRefNum,
                   &btStuff->otherAddr );
     }
-} /* pbt_killL2C */
+} /* pbt_killLinks */
 
 static XP_Bool
 pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
@@ -1041,7 +1086,7 @@ pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
         LOG_HEX( &addr->u.bt.btAddr.bits, sizeof(addr->u.bt.btAddr.bits), 
                  "new" );
 
-        pbt_killL2C( btStuff, btStuff->dataSocket );
+        pbt_killLinks( btStuff, btStuff->dataSocket );
 
         XP_MEMCPY( &btStuff->otherAddr, &addr->u.bt.btAddr, 
                    sizeof(btStuff->otherAddr) );
@@ -1204,7 +1249,7 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         }
 
         if ( PBT_SLAVE == btStuff->picoRole ) {
-            pbt_killL2C( btStuff, sEvent->socket );
+            pbt_killLinks( btStuff, sEvent->socket );
             waitACL( btStuff );
         } else if ( PBT_MASTER == btStuff->picoRole ) {
             pbt_close_datasocket( btStuff );
@@ -1215,9 +1260,7 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
     case btLibSocketEventSdpGetPsmByUuid:
     case btLibSocketEventSdpGetServerChannelByUuid:
         XP_ASSERT( sEvent->socket == btStuff->u.slave.sdpSocket );
-        CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, sEvent->socket );
-        XP_ASSERT( err == errNone );
-        btStuff->u.slave.sdpSocket = SOCK_INVAL;
+        pbt_close_sdpsocket( btStuff );
         if ( sEvent->status == errNone ) {
 #if defined BT_USE_L2CAP
             btStuff->u.slave.remotePsm = sEvent->eventData.sdpByUuid.param.psm;
@@ -1269,7 +1312,6 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
 static void
 libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
 {
-    Err err;
     PalmBTStuff* btStuff = (PalmBTStuff*)refCon;
     BtLibManagementEventEnum event = mEvent->event;
     XP_LOGF( "%s(%s); status=%s", __FUNCTION__, mgmtEvtToStr(event),
@@ -1312,11 +1354,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
                call!!!! */
             XP_ASSERT( 0 == XP_MEMCMP( &mEvent->eventData.bdAddr,
                                        &btStuff->otherAddr, 6 ) );
-            if ( SOCK_INVAL != btStuff->dataSocket ) {
-                CALL_ERR( err, BtLibSocketClose, btStuff->btLibRefNum, 
-                          btStuff->dataSocket );
-                btStuff->dataSocket = SOCK_INVAL;
-            }
+            pbt_close_datasocket( btStuff );
             SET_STATE( btStuff, PBTST_NONE );
             /* See comment at btLibSocketEventDisconnected */
             if ( PBT_SLAVE == btStuff->picoRole ) {

@@ -76,17 +76,32 @@ static void
 lbt_addSock( LinBtStuff* btStuff, const bdaddr_t* btaddr, int sock )
 {
     XP_U16 i;
+    XP_Bool done = XP_FALSE;
 
     XP_ASSERT( btStuff->amMaster );
     XP_ASSERT( btStuff->u.master.nSocks < MAX_CLIENTS - 1 );
 
+    /* first look for an older entry for the same device.  If found, close the
+       socket and replace.  No change in nSocks. */
     for ( i = 0; i < MAX_CLIENTS; ++i ) {
         BtaddrSockMap* mp = &btStuff->u.master.socks[i];
-        if ( mp->sock == -1 ) {
-            XP_MEMCPY( &mp->btaddr, btaddr, sizeof(mp->btaddr) );
+        if ( (mp->sock != -1) && (0 == memcmp( btaddr, &mp->btaddr, sizeof(*btaddr) )) ) {
+            (void)close( mp->sock );
             mp->sock = sock;
-            ++btStuff->u.master.nSocks;
+            done = XP_TRUE;
             break;
+        }
+    }
+
+    if ( !done ) {
+        for ( i = 0; i < MAX_CLIENTS; ++i ) {
+            BtaddrSockMap* mp = &btStuff->u.master.socks[i];
+            if ( mp->sock == -1 ) {
+                XP_MEMCPY( &mp->btaddr, btaddr, sizeof(mp->btaddr) );
+                mp->sock = sock;
+                ++btStuff->u.master.nSocks;
+                break;
+            }
         }
     }
     XP_ASSERT( i < MAX_CLIENTS );
@@ -98,17 +113,16 @@ lbt_removeSock( LinBtStuff* btStuff, int sock )
     XP_U16 i;
 
     XP_ASSERT( btStuff->amMaster );
-    XP_ASSERT( btStuff->u.master.nSocks > 0 );
 
     for ( i = 0; i < MAX_CLIENTS; ++i ) {
         BtaddrSockMap* mp = &btStuff->u.master.socks[i];
         if ( mp->sock == sock ) {
             mp->sock = -1;
+            XP_ASSERT( btStuff->u.master.nSocks > 0 );
             --btStuff->u.master.nSocks;
             break;
         }
     }
-    XP_ASSERT( i < MAX_CLIENTS );
 } /* lbt_removeSock */
 
 static LinBtStuff*
@@ -232,7 +246,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
             (*globals->socketChanged)( globals->socketChangedClosure, 
                                        -1, sock );
         } else {
-            XP_LOGF( "%s: connect->%s", __FUNCTION__, strerror(errno) );
+            XP_LOGF( "%s: connect->%s; closing socket %d", __FUNCTION__, strerror(errno), sock );
             close( sock );
         }
     }
@@ -250,11 +264,11 @@ lbt_accept( int listener, void* ctxt )
 
     LOG_FUNC();
 
-    XP_LOGF( "%s: calling accept", __FUNCTION__ );
+    XP_LOGF( "%s: calling accept", __func__ );
     slen = sizeof( inaddr );
     XP_ASSERT( listener == btStuff->u.master.listener );
     sock = accept( listener, (struct sockaddr *)&inaddr, &slen );
-    XP_LOGF( "%s: accept returned; sock = %d", __FUNCTION__, sock );
+    XP_LOGF( "%s: accept returned; socket = %d", __func__, sock );
     
     success = sock >= 0;
     if ( success ) {
@@ -393,6 +407,7 @@ lbt_listenerSetup( CommonGlobals* globals )
     }
 #endif
     
+    XP_LOGF( "%s: calling listen on socket %d", __func__, listener );
     listen( listener, MAX_CLIENTS );
 
     lbt_register( btStuff, htobs( XW_PSM ), rc_channel );
@@ -423,13 +438,35 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
 } /* linux_bt_open */
 
 void
+linux_bt_reset( CommonGlobals* globals )
+{
+    XP_Bool amMaster = globals->btStuff->amMaster;
+    LOG_FUNC();
+    linux_bt_close( globals );
+    linux_bt_open( globals, amMaster );
+    LOG_RETURN_VOID();
+}
+
+void
 linux_bt_close( CommonGlobals* globals )
 {
     LinBtStuff* btStuff = globals->btStuff;
+    XP_U16 i;
 
     if ( !!btStuff ) {
         if ( btStuff->amMaster ) {
+            XP_LOGF( "%s: closing listener socket %d", __func__, btStuff->u.master.listener );
             close( btStuff->u.master.listener );
+            btStuff->u.master.listener = -1;
+
+            for ( i = 0; i < MAX_CLIENTS; ++i ) {
+                BtaddrSockMap* mp = &btStuff->u.master.socks[i];
+                if ( mp->sock != -1 ) {
+                    XP_LOGF( "%s: closing data socket %d", __func__, mp->sock );
+                    (void)close( mp->sock );
+                }
+            }
+
             sdp_close( btStuff->u.master.session );
             XP_LOGF( "sleeping for Palm's sake..." );
             sleep( 2 );         /* see if this gives palm a chance to not hang */

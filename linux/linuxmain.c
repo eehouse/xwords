@@ -422,6 +422,22 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
 } /* linux_tcp_send */
 #endif
 
+#ifdef COMMS_HEARTBEAT
+void
+linux_reset( void* closure )
+{
+    CommonGlobals* globals = (CommonGlobals*)closure;
+    CommsConnType conType = globals->params->conType;
+    if ( 0 ) {
+#ifdef XWFEATURE_BLUETOOTH
+    } else if ( conType == COMMS_CONN_BT ) {
+        linux_bt_reset( globals );
+#endif
+    }
+
+}
+#endif
+
 XP_S16
 linux_send( const XP_U8* buf, XP_U16 buflen, 
             const CommsAddrRec* addrRec, 

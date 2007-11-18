@@ -34,6 +34,7 @@
 #define LETTER_NONE '\0'
 
 typedef enum {
+    ERR_NONE,                   /* 0 is special case */
     ERR_TILES_NOT_IN_LINE,   /* scoring a move where tiles aren't in line */
     ERR_NO_EMPTIES_IN_TURN,
     ERR_TWO_TILES_FIRST_MOVE,

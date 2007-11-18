@@ -308,7 +308,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
                                       params->dict, params->util, 
                                       (DrawCtx*)globals->draw, 
                                       &globals->cp,
-                                      linux_send, globals );
+                                      linux_send, IF_CH(linux_reset) globals );
         
         stream_destroy( stream );
     }
@@ -334,7 +334,8 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          gameID, &globals->cp, linux_send, globals );
+                          gameID, &globals->cp, linux_send, 
+                          IF_CH(linux_reset) globals );
 
         addr.conType = params->conType;
         if ( 0 ) {
@@ -631,7 +632,8 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
         XP_STATUSF( "grabbed gameID: %ld\n", gameID );
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    gameID, &globals->cp, linux_send, globals );
+                    gameID, &globals->cp, linux_send, 
+                    IF_CH(linux_reset) globals );
 
         if ( isClient ) {
             XWStreamCtxt* stream =
@@ -1674,6 +1676,7 @@ acceptorInput( GIOChannel* source, GIOCondition condition, gpointer data )
 
     if ( (condition & G_IO_IN) != 0 ) {
         int listener = g_io_channel_unix_get_fd( source );
+        XP_LOGF( "%s: input on socket %d", __func__, listener );
         keepSource = (*globals->acceptor)( listener, data );
     } else {
         keepSource = FALSE;
@@ -1694,9 +1697,11 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals )
     globals->acceptor = func;
 
     channel = g_io_channel_unix_new( listener );
+    g_io_channel_set_close_on_unref( channel, TRUE );
     result = g_io_add_watch( channel,
                              G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
                              acceptorInput, globals );
+    g_io_channel_unref( channel ); /* only main loop holds it now */
     XP_LOGF( "%s: g_io_add_watch(%d) => %d", __FUNCTION__, listener, result );
 }
 

@@ -54,6 +54,12 @@ typedef enum {
 typedef struct XP_BtAddr { XP_U8 bits[6]; } XP_BtAddr;
 typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
 
+#ifdef COMMS_HEARTBEAT
+# define IF_CH(a) a,
+#else
+# define IF_CH(a)
+#endif
+
 #define MAX_HOSTNAME_LEN 63
 typedef struct CommsAddrRec {
     CommsConnType conType;
@@ -85,11 +91,13 @@ typedef struct CommsAddrRec {
 typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
                                  const CommsAddrRec* addr,
                                  void* closure );
+typedef void (*TransportReset)( void* closure );
 
 CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
                        XP_Bool isServer, 
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                       TransportSend sendproc, void* closure );
+                       TransportSend sendproc, IF_CH(TransportReset resetproc)
+                       void* closure );
 
 void comms_reset( CommsCtxt* comms, XP_Bool isServer, 
                   XP_U16 nPlayersHere, XP_U16 nPlayersTotal );
@@ -107,6 +115,7 @@ XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  XW_UtilCtxt* util, TransportSend sendproc, 
+                                 IF_CH(TransportReset resetproc)
                                  void* closure );
 void comms_start( CommsCtxt* comms );
 void comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream );
