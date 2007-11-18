@@ -1,7 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -165,6 +165,8 @@ class SafeCref {
             m_cref->_Remove( socket );
         }
     }
+
+#ifdef RELAY_HEARTBEAT
     int HandleHeartbeat( HostID id, int socket ) {
         if ( IsValid() ) {
             m_cref->_HandleHeartbeat( id, socket );
@@ -178,6 +180,8 @@ class SafeCref {
             m_cref->_CheckHeartbeats( now );
         }
     }
+#endif
+
     void PrintCookieInfo( string& out ) {
         if ( IsValid() ) {
             m_cref->_PrintCookieInfo( out );

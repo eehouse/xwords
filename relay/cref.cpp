@@ -262,6 +262,7 @@ CookieRef::HasSocket( int socket )
     return found;
 } /* HasSocket */
 
+#ifdef RELAY_HEARTBEAT
 void
 CookieRef::_HandleHeartbeat( HostID id, int socket )
 {
@@ -286,6 +287,7 @@ CookieRef::_CheckHeartbeats( time_t now )
 
     handleEvents();
 } /* CheckHeartbeats */
+#endif
 
 void
 CookieRef::_Forward( HostID src, HostID dest, unsigned char* buf, int buflen )
@@ -327,6 +329,7 @@ CookieRef::pushReconnectEvent( int socket, HostID srcID,
     m_eventQueue.push_back( evt );
 } /* pushReconnectEvent */
 
+#ifdef RELAY_HEARTBEAT
 void
 CookieRef::pushHeartbeatEvent( HostID id, int socket )
 {
@@ -345,6 +348,7 @@ CookieRef::pushHeartFailedEvent( int socket )
     evt.u.heart.socket = socket;
     m_eventQueue.push_back( evt );
 }
+#endif
 
 void
 CookieRef::pushForwardEvent( HostID src, HostID dest, 
@@ -649,7 +653,6 @@ CookieRef::forward( const CRefEvent* evt )
 {
     unsigned char* buf = evt->u.fwd.buf;
     int buflen = evt->u.fwd.buflen;
-    HostID src = evt->u.fwd.src;
     HostID dest = evt->u.fwd.dest;
 
     int destSocket = SocketForHost( dest );
@@ -660,7 +663,10 @@ CookieRef::forward( const CRefEvent* evt )
         send_with_length( destSocket, buf, buflen );
 
         /* also note that we've heard from src recently */
+#ifdef RELAY_HEARTBEAT
+        HostID src = evt->u.fwd.src;
         pushHeartbeatEvent( src, SocketForHost(src) );
+#endif
     } else {
         /* We're not really connected yet! */
     }

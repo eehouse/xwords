@@ -137,6 +137,7 @@ getNetByte( unsigned char** bufpp, unsigned char* end, unsigned char* out )
     return ok;
 } /* getNetByte */
 
+#ifdef RELAY_HEARTBEAT
 static int
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
 {
@@ -158,6 +159,7 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
     }
     return success;
 } /* processHeartbeat */
+#endif
 
 static int
 readStr( unsigned char** bufp, const unsigned char* end, 
@@ -370,10 +372,12 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     case XWRELAY_GAME_DISCONNECT:
         success = processDisconnect( buf+1, bufLen-1, socket );
         break;
+#ifdef RELAY_HEARTBEAT
     case XWRELAY_HEARTBEAT:
         logf( XW_LOGINFO, "processMessage got XWRELAY_HEARTBEAT" );
         success = processHeartbeat( buf + 1, bufLen - 1, socket );
         break;
+#endif
     case XWRELAY_MSG_TORELAY:
         logf( XW_LOGINFO, "processMessage got XWRELAY_MSG_TORELAY" );
         success = forwardMessage( buf, bufLen, socket );
