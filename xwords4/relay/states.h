@@ -87,21 +87,21 @@ typedef enum {
     ,XWE_SOMEMISSING         /* notify that some expected players are still missing */
 
     ,XWE_CONNECTMSG        /* A device is connecting using the cookie for
-                                   this object */
+                              this object */
 
     ,XWE_RECONNECTMSG      /* A device is re-connecting using the
-                                   connID for this object */
+                              connID for this object */
 
     ,XWE_DISCONNMSG     /* disconnect socket from this game/cref */
 
     ,XWE_FORWARDMSG        /* A message needs forwarding */
 
+#ifdef RELAY_HEARTBEAT
     ,XWE_HEARTRCVD         /* A heartbeat message arrived */
-
-    ,XWE_CONNTIMER         /* timer for did we get all players hooked
-                                   up  */
     ,XWE_HEARTFAILED
-
+#endif
+    ,XWE_CONNTIMER         /* timer for did we get all players hooked
+                              up  */
     ,XWE_REMOVESOCKET      /* Need to remove socket from this cref */
 
     ,XWE_NOTIFYDISCON      /* Send a discon */

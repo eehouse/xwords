@@ -392,12 +392,14 @@ CRefMgr::UnlockCref( CookieRef* cref )
     pthread_mutex_unlock( cref_mutex );
 }
 
+#ifdef RELAY_HEARTBEAT
 /* static */ void
 CRefMgr::heartbeatProc( void* closure )
 {
     CRefMgr* self = (CRefMgr*)closure;
     self->checkHeartbeats( now() );
 } /* heartbeatProc */
+#endif
 
 CookieRef*
 CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
@@ -412,12 +414,14 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
     logf( XW_LOGINFO, "paired cookie %s/connName %s with id %d", 
           (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
 
+#ifdef RELAY_HEARTBEAT
     if ( m_cookieMap.size() == 1 ) {
         RelayConfigs* cfg = RelayConfigs::GetConfigs();
         short heartbeat = cfg->GetHeartbeatInterval();
         TimerMgr::GetTimerMgr()->SetTimer( heartbeat, heartbeatProc, this,
                                            heartbeat );
     }
+#endif
 
     return ref;
 } /* AddNew */
@@ -452,9 +456,11 @@ CRefMgr::Delete( CookieRef* cref )
 
     delete cref;
 
+#ifdef RELAY_HEARTBEAT
     if ( m_cookieMap.size() == 0 ) {
         TimerMgr::GetTimerMgr()->ClearTimer( heartbeatProc, this );
     }
+#endif
 
     logf( XW_LOGINFO, "CRefMgr::Delete done" );
 }
@@ -493,6 +499,7 @@ CRefMgr::getCookieRef_impl( CookieID cookieID )
     return ref;
 }
 
+#ifdef RELAY_HEARTBEAT
 void
 CRefMgr::checkHeartbeats( time_t now )
 {
@@ -513,6 +520,7 @@ CRefMgr::checkHeartbeats( time_t now )
         scr.CheckHeartbeats( now );
     }
 } /* checkHeartbeats */
+#endif
 
 /* static */ CookieMapIterator
 CRefMgr::GetCookieIterator()

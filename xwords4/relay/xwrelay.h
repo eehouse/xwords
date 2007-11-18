@@ -74,9 +74,12 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
        , XWRELAY_CONNECTDENIED
        /* The relay says go away.  Format: reason code: 1 */
 
+#ifdef RELAY_HEARTBEAT
        , XWRELAY_HEARTBEAT
        /* Sent in either direction.  Format: cookieID: 2; srcID: 1 */
-
+#else
+       , _XWRELAY_HEARTBEAT     /* don't use this */
+#endif
        , XWRELAY_MSG_FROMRELAY
        /* Sent from relay to device.  Format: cookieID: 2; src_hostID: 1;
           dest_hostID: 1; data <len-headerLen> */
