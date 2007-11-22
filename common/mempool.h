@@ -35,8 +35,9 @@ void mpool_destroy( MemPoolCtx* mpool );
 
 void* mpool_alloc( MemPoolCtx* mpool, XP_U32 size, 
                    const char* file, XP_U32 lineNo );
-void* mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize );
-void mpool_free( MemPoolCtx* mpool, void* ptr );
+void* mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, 
+                     const char* file, XP_U32 lineNo );
+void mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo );
 void mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream );
 XP_U16 mpool_getNUsed( MemPoolCtx* mpool );
 

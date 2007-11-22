@@ -165,29 +165,38 @@ findEntryFor( MemPoolCtx* mpool, void* ptr, MemPoolEntry** prevP )
             return entry;
         }
     }
-    XP_ASSERT(0);
     return (MemPoolEntry*)NULL;
 } /* findEntryFor */
 
 void* 
-mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize )
+mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file, XP_U32 lineNo )
 {
     MemPoolEntry* entry = findEntryFor( mpool, ptr, (MemPoolEntry**)NULL );
 
-    entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
-    XP_ASSERT( !!entry->ptr );
+    if ( !entry ) {
+        XP_LOGF( "findEntryFor failed; called from %s, line %d",
+                 file, lineNo );
+    } else {
+        entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
+        XP_ASSERT( !!entry->ptr );
+        entry->fileName = file;
+        entry->lineNo = lineNo;
+    }
     return entry->ptr;
 } /* mpool_realloc */
 
 void
-mpool_free( MemPoolCtx* mpool, void* ptr )
+mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo )
 {
     MemPoolEntry* entry;
     MemPoolEntry* prev;
 
     entry = findEntryFor( mpool, ptr, &prev );
 
-    if ( !!entry ) {
+    if ( !entry ) {
+        XP_LOGF( "findEntryFor failed; called from %s, line %d",
+                 file, lineNo );
+    } else {
 
         if ( !!prev ) {
             prev->next = entry->next;
