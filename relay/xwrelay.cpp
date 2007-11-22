@@ -87,7 +87,7 @@ logf( XW_LogLevel level, const char* format, ... )
         syslog( LOG_LOCAL0 | LOG_INFO, buf );
         va_end(ap);
 #else
-        static FILE* where = 0;
+        static FILE* where = stderr;
         struct tm* timp;
         struct timeval tv;
         struct timezone tz;
@@ -566,6 +566,12 @@ int main( int argc, char** argv )
        }
     }
 
+    /* Did we consume all the options passed in? */
+    if ( optind != argc ) {
+        usage( argv[0] );
+        exit( 1 );
+    }
+
     RelayConfigs::InitConfigs( conffile );
     RelayConfigs* cfg = RelayConfigs::GetConfigs();
 
@@ -612,12 +618,6 @@ int main( int argc, char** argv )
             exit( -1 );
         }
     }
-
-    pid_t pid = getpid();
-    FILE* f = fopen( "./xwrelay.pid", "w" );
-    assert( f );
-    fprintf( f, "%d", pid );
-    fclose( f );
 
 #ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
