@@ -707,7 +707,7 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* gtk_draw_scoreBegin */
 
 static void
-gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_U16 nTilesLeft,
+gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_S16 nTilesLeft,
                     XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -764,7 +764,7 @@ scoreWidthAndText( GtkDrawCtx* XP_UNUSED(dctx), PangoLayout* layout, char* buf,
     }
 
     sprintf( buf, "%s%.3d", borders, score );
-    if ( nTilesLeft < MAX_TRAY_TILES ) {
+    if ( (nTilesLeft < MAX_TRAY_TILES) && (nTilesLeft > 0) ) {
         char nbuf[10];
         sprintf( nbuf, ":%d", nTilesLeft );
         (void)strcat( buf, nbuf );
@@ -794,7 +794,7 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* r,
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char buf[20];
-	PangoLayout* layout = layout_for_ht( dctx, r->height );
+	PangoLayout* layout = layout_for_ht( dctx, r->height-2 );
     scoreWidthAndText( dctx, layout, buf, dsi, width, height );
 } /* gtk_draw_measureScoreText */
 
