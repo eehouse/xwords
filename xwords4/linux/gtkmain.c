@@ -42,6 +42,7 @@
 #include "main.h"
 #include "linuxmain.h"
 #include "linuxbt.h"
+#include "linuxudp.h"
 /* #include "gtkmain.h" */
 
 #include "draw.h"
@@ -59,7 +60,6 @@
 /* static guint gtkSetupClientSocket( GtkAppGlobals* globals, int sock ); */
 static void sendOnClose( XWStreamCtxt* stream, void* closure );
 static XP_Bool file_exists( const char* fileName );
-static void gtkListenOnSocket( GtkAppGlobals* globals, int newSock );
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void printFinalScores( GtkAppGlobals* globals );
 
@@ -317,6 +317,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
         XP_U16 gameID;
         CommsAddrRec addr;
 
+        XP_MEMSET( &addr, 0, sizeof(addr) );
         addr.conType = params->conType;
 
         gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
@@ -355,6 +356,12 @@ createOrLoadObjects( GtkAppGlobals* globals )
             XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
                        sizeof(params->connInfo.bt.hostAddr) );
 #endif
+#ifdef XWFEATURE_IP_DIRECT
+        } else if ( addr.conType == COMMS_CONN_IP_DIRECT ) {
+            XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
+                        sizeof(addr.u.ip.hostName_ip) - 1 );
+            addr.u.ip.port_ip = params->connInfo.ip.port;
+#endif
         }
 
         /* This may trigger network activity */
@@ -376,6 +383,10 @@ createOrLoadObjects( GtkAppGlobals* globals )
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
         }
+    }
+
+    if ( !!globals->cGlobals.game.comms ) {
+        comms_start( globals->cGlobals.game.comms );
     }
 
     server_do( globals->cGlobals.game.server );
@@ -548,6 +559,9 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &globals->cGlobals );
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+    linux_udp_close( &globals->cGlobals );
 #endif
     vtmgr_destroy( MEMPOOL globals->cGlobals.params->vtMgr );
     
@@ -1201,7 +1215,7 @@ score_timer_func( gpointer data )
     return XP_FALSE;
 } /* score_timer_func */
 
-#ifdef XWFEATURE_RELAY
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
 static gint
 heartbeat_timer_func( gpointer data )
 {
@@ -1217,7 +1231,7 @@ heartbeat_timer_func( gpointer data )
 
 static void
 gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
-                   XP_U16 XP_UNUSED_RELAY(when),
+                   XP_U16 when,
                    XWTimerProc proc, void* closure )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
@@ -1236,7 +1250,7 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         (void)gettimeofday( &globals->scoreTv, NULL );
 
         newSrc = g_timeout_add( 1000, score_timer_func, globals );
-#ifdef XWFEATURE_RELAY
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
     } else if ( why == TIMER_HEARTBEAT ) {
         newSrc = g_timeout_add( 1000 * when, heartbeat_timer_func, globals );
 #endif
@@ -1570,17 +1584,26 @@ newConnectionInput( GIOChannel *source,
     if ( (condition & (G_IO_HUP | G_IO_ERR)) != 0 ) {
         XP_LOGF( "dropping socket %d", sock );
         close( sock );
+#ifdef XWFEATURE_RELAY
         globals->cGlobals.socket = -1;
-#ifdef XWFEATURE_BLUETOOTH
-        if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
-            linux_bt_socketclosed( &globals->cGlobals, sock );
-        }
 #endif
+        if ( 0 ) {
+#ifdef XWFEATURE_BLUETOOTH
+        } else if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
+            linux_bt_socketclosed( &globals->cGlobals, sock );
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+        } else if ( COMMS_CONN_IP_DIRECT == globals->cGlobals.params->conType ) {
+            linux_udp_socketclosed( &globals->cGlobals, sock );
+#endif
+        }
         keepSource = FALSE;           /* remove the event source */
 
     } else if ( (condition & G_IO_IN) != 0 ) {
         ssize_t nRead;
         unsigned char buf[512];
+        CommsAddrRec addr;
+        CommsAddrRec* addrp = NULL;
 
         if ( 0 ) {
 #ifdef XWFEATURE_RELAY
@@ -1591,6 +1614,11 @@ newConnectionInput( GIOChannel *source,
 #ifdef XWFEATURE_BLUETOOTH
         } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
             nRead = linux_bt_receive( sock, buf, sizeof(buf) );
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+        } else if ( globals->cGlobals.params->conType == COMMS_CONN_IP_DIRECT ) {
+            addrp = &addr;
+            nRead = linux_udp_receive( sock, buf, sizeof(buf), addrp, &globals->cGlobals );
 #endif
         } else {
             XP_ASSERT( 0 );
@@ -1603,7 +1631,7 @@ newConnectionInput( GIOChannel *source,
             inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nRead );
             if ( !!inboundS ) {
                 if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
-                                                inboundS, NULL ) ) {
+                                                inboundS, addrp ) ) {
                     redraw =
                         server_receiveMessage(globals->cGlobals.game.server,
                                               inboundS );
@@ -1631,40 +1659,50 @@ newConnectionInput( GIOChannel *source,
     return keepSource;                /* FALSE means to remove event source */
 } /* newConnectionInput */
 
-/* Make gtk listen for events on the socket that clients will use to
- * connect to us.
- */
-static void
-gtkListenOnSocket( GtkAppGlobals* globals, int newSock )
-{
-
-    GIOChannel* channel = g_io_channel_unix_new( newSock );
-    guint result = g_io_add_watch( channel,
-                                   G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
-                                   newConnectionInput,
-                                   globals );
-    XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
-} /* gtkListenOnSocket */
+typedef struct SockInfo {
+    GIOChannel* channel;
+    guint watch;
+    int socket;
+} SockInfo;
 
 static void
-gtk_socket_changed( void* closure, int oldSock, int newSock )
+gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+    SockInfo* info = (SockInfo*)*storage;
+    XP_LOGF( "%s(old:%d; new:%d)", __func__, oldSock, newSock );
 
     if ( oldSock != -1 ) {
-        g_source_remove( oldSock );
-        XP_LOGF( "Removed %d from gtk's list of listened-to sockets" );
+        XP_ASSERT( info != NULL );
+        g_source_remove( info->watch );
+        g_io_channel_unref( info->channel );
+        XP_FREE( globals->cGlobals.params->util->mpool, info );
+        *storage = NULL;
+        XP_LOGF( "Removed socket %d from gtk's list of listened-to sockets", oldSock );
     }
     if ( newSock != -1 ) {
-        gtkListenOnSocket( globals, newSock );
+        info = (SockInfo*)XP_MALLOC( globals->cGlobals.params->util->mpool,
+                                     sizeof(*info) );
+        GIOChannel* channel = g_io_channel_unix_new( newSock );
+        g_io_channel_set_close_on_unref( channel, TRUE );
+        guint result = g_io_add_watch( channel,
+                                       G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
+                                       newConnectionInput,
+                                       globals );
+        info->channel = channel;
+        info->watch = result;
+        *storage = info;
+        XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
     }
+#ifdef XWFEATURE_RELAY
     globals->cGlobals.socket = newSock;
-
+#endif
     /* A hack for the bluetooth case. */
     CommsCtxt* comms = globals->cGlobals.game.comms;
-    if ( comms != NULL ) {
+    if ( (comms != NULL) && (comms_getConType(comms) == COMMS_CONN_BT) ) {
         comms_resendAll( comms );
     }
+    LOG_RETURN_VOID();
 }
 
 static gboolean
@@ -1739,7 +1777,9 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 
     globals.cGlobals.params = params;
     globals.cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
+#ifdef XWFEATURE_RELAY
     globals.cGlobals.socket = -1;
+#endif
 
     globals.cGlobals.socketChanged = gtk_socket_changed;
     globals.cGlobals.socketChangedClosure = &globals;

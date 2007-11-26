@@ -53,14 +53,15 @@ typedef struct MsgQueueElem {
     XP_U8* msg;
     XP_U16 len;
     XP_U16 channelNo;
+    XP_U16 sendCount;           /* how many times sent? */
     MsgID msgID;                /* saved for ease of deletion */
 } MsgQueueElem;
 
 typedef struct AddressRecord {
     struct AddressRecord* next;
     CommsAddrRec addr;
-#ifdef DEBUG
     XP_U16 lastACK;
+#ifdef DEBUG
     XP_U16 nUniqueBytes;
 #endif
     MsgID nextMsgID;		    /* on a per-channel basis */
@@ -136,11 +137,12 @@ struct CommsCtxt {
     MPSLOT
 };
 
-#ifdef XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
 typedef enum {
-    BTMSG_DATA = 0
-    ,BTMSG_RESET
-} BTMsgType;
+    BTIPMSG_NONE = 0
+    ,BTIPMSG_DATA
+    ,BTIPMSG_RESET
+} BTIPMsgType;
 #endif
 
 /****************************************************************************
@@ -157,6 +159,8 @@ static AddressRecord* getRecordFor( CommsCtxt* comms,
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
 static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
+static void sendConnect( CommsCtxt* comms );
+
 #ifdef XWFEATURE_RELAY
 static void relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
@@ -166,12 +170,13 @@ static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 #endif
 #if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
+#else
+# define setHeartbeatTimer( comms )
 #endif
-#ifdef XWFEATURE_BLUETOOTH
-static XP_S16 send_via_bt( CommsCtxt* comms, BTMsgType typ, 
-                           XP_PlayerAddr channelNo,
-                           void* data, int dlen );
-static void btConnect( CommsCtxt* comms );
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, 
+                                 XP_PlayerAddr channelNo,
+                                 void* data, int dlen );
 #endif
 
 /****************************************************************************
@@ -299,7 +304,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     case COMMS_CONN_IR:
         /* nothing to save */
         break;
-    case COMMS_CONN_IP_NOUSE:
+    case COMMS_CONN_IP_DIRECT:
         stringFromStreamHere( stream, addr.u.ip.hostName_ip,
                               sizeof(addr.u.ip.hostName_ip) );
         addr.u.ip.ipAddr_ip = stream_getU32( stream );
@@ -398,7 +403,9 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
         msg->channelNo = stream_getU16( stream );
         msg->msgID = stream_getU32( stream );
-
+#ifdef COMMS_HEARTBEAT
+        msg->sendCount = 0;
+#endif
         msg->len = stream_getU16( stream );
         msg->msg = (XP_U8*)XP_MALLOC( mpool, msg->len );
         stream_getBytes( stream, msg->msg, msg->len );
@@ -419,21 +426,36 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 void
 comms_start( CommsCtxt* comms )
 {
-    if ( 0 ) {
-#ifdef XWFEATURE_RELAY
-    } else if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
-        relayConnect( comms );
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-    } else if ( comms->addr.conType == COMMS_CONN_BT ) {
-        btConnect( comms );
-#endif
-    }
-
 #ifdef COMMS_HEARTBEAT
     comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
 #endif
+
+    sendConnect( comms );
+} /* comms_start */
+
+static void
+sendConnect( CommsCtxt* comms )
+{
+    switch( comms->addr.conType ) {
+#ifdef XWFEATURE_RELAY
+    case COMMS_CONN_RELAY:
+        comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
+        relayConnect( comms );
+        break;
+#endif
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+    case COMMS_CONN_BT:
+    case COMMS_CONN_IP_DIRECT:
+        send_via_bt_or_ip( comms, BTIPMSG_RESET, 
+                           CHANNEL_NONE, NULL, 0 );
+        (void)comms_resendAll( comms );
+        break;
+#endif
+    default:
+        break;
+    }
+
+    setHeartbeatTimer( comms );
 } /* comms_start */
 
 static void
@@ -460,7 +482,7 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
     case COMMS_CONN_IR:
         /* nothing to save */
         break;
-    case COMMS_CONN_IP_NOUSE:
+    case COMMS_CONN_IP_DIRECT:
         stringToStream( stream, addr.u.ip.hostName_ip );
         stream_putU32( stream, addr.u.ip.ipAddr_ip );
         stream_putU16( stream, addr.u.ip.port_ip );
@@ -546,22 +568,16 @@ void
 comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
     XP_ASSERT( comms != NULL );
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
     util_addrChange( comms->util, &comms->addr, addr );
 #endif
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
-    if ( 0 ) {
-#ifdef XWFEATURE_RELAY
-    /* We should now have a cookie so we can connect??? */
-    } else if ( addr->conType == COMMS_CONN_RELAY ) {
-        relayConnect( comms );
+#ifdef COMMS_HEARTBEAT
+    comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
 #endif
-#ifdef XWFEATURE_BLUETOOTH
-    } else if ( addr->conType == COMMS_CONN_BT ) {
-        btConnect( comms );
-#endif
-    }
+    sendConnect( comms );
+
 #ifdef COMMS_HEARTBEAT
     comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
 #endif
@@ -601,9 +617,9 @@ comms_getIsServer( const CommsCtxt* comms )
     return comms->isServer;
 }
 
-static XP_S16
-sendWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec, 
-            XP_PlayerAddr channelNo, XWStreamCtxt* stream )
+static MsgQueueElem*
+makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec, 
+                XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
     XP_U16 headerLen;
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
@@ -623,6 +639,9 @@ sendWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 					   sizeof( *newMsgElem ) );
     newMsgElem->channelNo = channelNo;
     newMsgElem->msgID = msgID;
+#ifdef COMMS_HEARTBEAT
+    newMsgElem->sendCount = 0;
+#endif
 
     msgStream = mem_stream_make( MPPARM(comms->mpool) 
                                  util_getVTManager(comms->util),
@@ -646,10 +665,8 @@ sendWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
         stream_getBytes( stream, newMsgElem->msg + headerLen, streamSize );
     }
 
-    addToQueue( comms, newMsgElem );
-
-    return sendMsg( comms, newMsgElem );
-} /* sendWithID */
+    return newMsgElem;
+} /* makeElemWithID */
 
 /* Send a message using the sequentially next MsgID.  Save the message so
  * resend can work. */
@@ -659,9 +676,17 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
     XP_PlayerAddr channelNo = stream_getAddress( stream );
     AddressRecord* rec = getRecordFor( comms, channelNo );
     MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
+    MsgQueueElem* elem;
+    XP_S16 result = -1;
 
     XP_DEBUGF( "assigning msgID=" XP_LD " on chnl %d", msgID, channelNo );
-    return sendWithID( comms, msgID, rec, channelNo, stream );
+
+    elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
+    if ( NULL != elem ) {
+        addToQueue( comms, elem );
+        result = sendMsg( comms, elem );
+    }
+    return result;
 } /* comms_send */
 
 /* Add new message to the end of the list.  The list needs to be kept in order
@@ -702,6 +727,13 @@ printQueue( CommsCtxt* comms )
 }
 #endif
 
+static void
+freeElem( const CommsCtxt* comms, MsgQueueElem* elem )
+{
+    XP_FREE( comms->mpool, elem->msg );
+    XP_FREE( comms->mpool, elem );
+}
+
 /* We've received on some channel a message with a certain ID.  This means
  * that all messages sent on that channel with lower IDs have been received
  * and can be removed from our queue.  BUT: if this ID is higher than any
@@ -737,8 +769,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
             }
 
             if ( !knownGood && (elem->msgID <= msgID) ) {
-                XP_FREE( comms->mpool, elem->msg );
-                XP_FREE( comms->mpool, elem );
+                freeElem( comms, elem );
                 --comms->queueLen;
             } else {
                 keep->next = elem;
@@ -762,7 +793,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 static XP_S16
 sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 {
-    XP_S16 result = 0;
+    XP_S16 result = -1;
     XP_PlayerAddr channelNo;
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     CommsConnType conType = comms_getConType( comms );
@@ -781,10 +812,13 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
             XP_LOGF( "%s: skipping message: not connected", __func__ );
         }
 #endif
-#ifdef XWFEATURE_BLUETOOTH
-    } else if ( conType == COMMS_CONN_BT ) {
-        result = send_via_bt( comms, BTMSG_DATA, channelNo, 
-                              elem->msg, elem->len );
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+    } else if ( conType == COMMS_CONN_BT || conType == COMMS_CONN_IP_DIRECT ) {
+        result = send_via_bt_or_ip( comms, BTIPMSG_DATA, channelNo, 
+                                    elem->msg, elem->len );
+#ifdef COMMS_HEARTBEAT
+        setHeartbeatTimer( comms );
+#endif
 #endif
     } else {
         const CommsAddrRec* addr;
@@ -794,6 +828,12 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
         result = (*comms->sendproc)( elem->msg, elem->len, addr,
                                      comms->sendClosure );
     }
+    
+    if ( result == elem->len ) {
+        ++elem->sendCount;
+        XP_LOGF( "sendCount now %d", elem->sendCount );
+    }
+
     return result;
 } /* sendMsg */
 
@@ -898,21 +938,50 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 } /* relayPreProcess */
 #endif
 
-#ifdef XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
 static XP_Bool
-btPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
+btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    BTMsgType typ = (BTMsgType)stream_getU8( stream );
-    XP_Bool consumed = typ != BTMSG_DATA;
+    BTIPMsgType typ = (BTIPMsgType)stream_getU8( stream );
+    XP_Bool consumed = typ != BTIPMSG_DATA;
 
     if ( consumed ) {
-        XP_ASSERT( typ == BTMSG_RESET );
+        /* This  is all there is so far */
+        XP_ASSERT( typ == BTIPMSG_RESET );
         (void)comms_resendAll( comms );
     }
 
     return consumed;
-} /* btPreProcess */
+} /* btIpPreProcess */
 #endif
+
+static XP_Bool
+preProcess( CommsCtxt* comms, XWStreamCtxt* stream, 
+            XP_Bool* usingRelay, XWHostID* senderID )
+{
+    XP_Bool consumed = XP_FALSE;
+    switch ( comms->addr.conType ) {
+#ifdef XWFEATURE_RELAY
+    /* relayPreProcess returns true if consumes the message.  May just eat the
+       header and leave a regular message to be processed below. */
+    case COMMS_CONN_RELAY:
+        consumed = relayPreProcess( comms, stream, senderID );
+        if ( !consumed ) {
+            *usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
+        }
+        break;
+#endif
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
+    case COMMS_CONN_BT:
+    case COMMS_CONN_IP_DIRECT:
+        consumed = btIpPreProcess( comms, stream );
+        break;
+#endif
+    default:
+        break;
+    }
+    return consumed;
+} /* preProcess */
 
 static XP_Bool
 addressUnknown( CommsCtxt* comms, const CommsAddrRec* addr )
@@ -976,27 +1045,10 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
     XP_Bool channelWas0 = XP_FALSE;
-    XP_Bool done = XP_FALSE;
 
     XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
 
-    if ( 0 ) {
-#ifdef XWFEATURE_RELAY
-    /* relayPreProcess returns true if consumes the message.  May just eat the
-       header and leave a regular message to be processed below. */
-    } else if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        done = relayPreProcess( comms, stream, &senderID );
-        if ( !done ) {
-            usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
-        }
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-    } else if ( comms->addr.conType == COMMS_CONN_BT ) {
-        done = btPreProcess( comms, stream );
-#endif
-    }
-
-    if ( !done ) {
+    if ( !preProcess( comms, stream, &usingRelay, &senderID ) ) {
         if ( stream_getSize( stream ) >= sizeof(connID) ) {
             connID = stream_getU32( stream );
             XP_STATUSF( "%s: read connID of %lx", __func__, connID );
@@ -1073,14 +1125,16 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                         }
 #ifdef DEBUG
                         if ( !!recs ) {
-                            XP_ASSERT( lastMsgRcd <= recs->nextMsgID );
+/*                             XP_ASSERT( lastMsgRcd <= recs->nextMsgID ); */
                             if ( lastMsgRcd > recs->nextMsgID ) {
                                 XP_LOGF( "bad: got lastMsgRcd of %ld, "
                                          "nextMsgID is %ld",
                                          lastMsgRcd, recs->nextMsgID );
+                                validMessage = XP_FALSE;
+                            } else {
+                                XP_ASSERT( lastMsgRcd < 0x0000FFFF );
+                                recs->lastACK = (XP_U16)lastMsgRcd;
                             }
-                            XP_ASSERT( lastMsgRcd < 0x0000FFFF );
-                            recs->lastACK = (XP_U16)lastMsgRcd;
                         }
 #endif
                     }
@@ -1146,7 +1200,9 @@ heartbeat_checks( CommsCtxt* comms )
 
     for ( elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
         XP_ASSERT( elem->channelNo < MAX_NUM_PLAYERS );
-        ++pendingPacks[elem->channelNo];
+        if ( elem->sendCount == 0 ) { /* still waiting being sent? */
+            ++pendingPacks[elem->channelNo];
+        }
     }
 
     now = util_getCurSeconds( comms->util );
@@ -1154,17 +1210,27 @@ heartbeat_checks( CommsCtxt* comms )
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         XP_U32 lastMsgRcvdTime = rec->lastMsgRcvdTime;
         if ( lastMsgRcvdTime == 0 ) { /* nothing received yet */
+            XP_LOGF( "no last message" );
             /* do nothing; or should we send? */
         } else if ( (lastMsgRcvdTime > 0) && (lastMsgRcvdTime < tooLongAgo) ) {
-            XP_LOGF( "calling reset proc" );
+            XP_LOGF( "calling reset proc; last was %ld secs too long ago", 
+                     tooLongAgo-lastMsgRcvdTime );
             (*comms->resetproc)(comms->sendClosure);
             resetTimer = XP_FALSE;
             break;
         } else if ( 0 == pendingPacks[rec->channelNo] ) {
-            XP_LOGF( "sending heartbeat on channel %d", rec->channelNo );
-            sendWithID( comms, rec->lastMsgReceived, rec, rec->channelNo, NULL );
+            MsgQueueElem* hb;
+            XP_LOGF( "sending heartbeat on channel %d with msgID %d", 
+                     rec->channelNo, rec->lastMsgReceived );
+            hb = makeElemWithID( comms, rec->lastACK, rec, rec->channelNo, NULL );
+            if ( NULL != hb ) {
+                sendMsg( comms, hb );
+                freeElem( comms, hb );
+            } else {
+                XP_ASSERT( XP_FALSE );
+            }
         } else {
-            XP_LOGF( "All's well" );
+            XP_LOGF( "All's well (%d pending)", pendingPacks[rec->channelNo] );
             resetTimer = XP_TRUE;
         }
     }
@@ -1199,6 +1265,7 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 static void
 setHeartbeatTimer( CommsCtxt* comms )
 {
+    LOG_FUNC();
 #ifdef RELAY_HEARTBEAT
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         util_setTimer( comms->util, TIMER_HEARTBEAT, comms->r.heartbeat,
@@ -1463,22 +1530,10 @@ relayConnect( CommsCtxt* comms )
 } /* relayConnect */
 #endif
 
-#ifdef XWFEATURE_BLUETOOTH
-static void
-btConnect( CommsCtxt* comms )
-{
-    XP_ASSERT( !!comms );
-    /* Ping the bt layer so it'll get sockets set up.  PENDING: if I'm server
-       need to do this once per guest record with non-null address.  Might as
-       well use real messages if we have 'em.  Otherwise a fake size-0 msg. */
-
-    send_via_bt( comms, BTMSG_RESET, CHANNEL_NONE, NULL, 0 );
-    (void)( comms_resendAll( comms ) );
-} /* btConnect */
-
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
 static XP_S16
-send_via_bt( CommsCtxt* comms, BTMsgType typ, XP_PlayerAddr channelNo,
-             void* data, int dlen )
+send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, XP_PlayerAddr channelNo,
+                   void* data, int dlen )
 {
     XP_U8* buf;
     XP_S16 nSent = -1;
@@ -1499,7 +1554,7 @@ send_via_bt( CommsCtxt* comms, BTMsgType typ, XP_PlayerAddr channelNo,
         setHeartbeatTimer( comms );
     }
     return nSent;
-} /* send_via_bt */
+} /* send_via_bt_or_ip */
 
 #endif
 

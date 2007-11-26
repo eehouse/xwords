@@ -665,11 +665,12 @@ static void
 curses_stop_listening( CursesAppGlobals* globals, int sock )
 {
     int count = globals->fdCount;
-    int i, found = 0;
+    int i;
+    bool found = false;
 
     for ( i = 0; i < count; ++i ) {
         if ( globals->fdArray[i].fd == sock ) {
-            found = 1;
+            found = true;
         } else if ( found ) {
             globals->fdArray[i-1].fd = globals->fdArray[i].fd;
         }
@@ -680,7 +681,8 @@ curses_stop_listening( CursesAppGlobals* globals, int sock )
 } /* curses_stop_listening */
 
 static void
-curses_socket_changed( void* closure, int oldSock, int newSock )
+curses_socket_changed( void* closure, int oldSock, int newSock,
+                       void** XP_UNUSED(storage) )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     if ( oldSock != -1 ) {
@@ -1014,7 +1016,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     globals.amServer = isServer;
     globals.cGlobals.params = params;
+#ifdef XWFEATURE_RELAY
     globals.cGlobals.socket = -1;
+#endif
 
     globals.cGlobals.socketChanged = curses_socket_changed;
     globals.cGlobals.socketChangedClosure = &globals;

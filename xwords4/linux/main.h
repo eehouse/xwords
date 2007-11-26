@@ -65,19 +65,24 @@ typedef struct LaunchParams {
     DeviceRole serverRole;
 
     CommsConnType conType;
-    union {
+    struct {
 #ifdef XWFEATURE_RELAY
         struct {
             char* relayName;
             char* cookie;
             short defaultSendPort;
-            short defaultListenPort;
         } relay;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
         struct {
             bdaddr_t hostAddr;      /* unused if a host */
         } bt;
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+        struct {
+            const char* hostName;
+            int port;
+        } ip;
 #endif
     } connInfo;
 
@@ -90,7 +95,8 @@ typedef struct LaunchParams {
 
 typedef struct CommonGlobals CommonGlobals;
 
-typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock );
+typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock,
+                                  void** storage );
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals );
@@ -109,13 +115,18 @@ struct CommonGlobals {
     AddAcceptorFunc addAcceptor;
     Acceptor acceptor;
 
-    int socket;                 /* either relay or bt */
-
-    /* Used only for relay case */
+#ifdef XWFEATURE_RELAY
+    int socket;                 /* relay */
+    void* storage;
     char* defaultServerName;
+#endif
 
-    /* Used only for bluetooth case */
+#if defined XWFEATURE_BLUETOOTH
     struct LinBtStuff* btStuff;
+#endif
+#if defined XWFEATURE_IP_DIRECT
+    struct LinUDPStuff* udpStuff;
+#endif
 
     XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
