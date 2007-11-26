@@ -70,6 +70,10 @@ BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP
 DEFINES += ${BLUETOOTH}
 DEFINES += -DXWFEATURE_RELAY
 
+# Support device-to-device connection via UDP, e.g. using wifi on a
+# LAN or where the host/server isn't behind a firewall.
+DEFINES += -DXWFEATURE_IP_DIRECT
+
 # Choose one of these.  RELAY_HEARTBEAT means relay (must be compiled
 # with same -D) works with comms on heartbeat.  Works only with relay.
 # COMMS_HEARTBEAT should work on any comms transport (even IR, but
@@ -106,6 +110,7 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 	$(PLATFORM)/cursesletterask.o \
 	$(PLATFORM)/filestream.o \
 	$(PLATFORM)/linuxbt.o \
+	$(PLATFORM)/linuxudp.o \
 
 #	$(PLATFORM)/linuxcommpipe.o \
 

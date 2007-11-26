@@ -42,7 +42,7 @@
 #include "comms.h"
 #include "strutils.h"
 
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS 1
 
 #if defined BT_USE_L2CAP
 # define L2_RF_ADDR struct sockaddr_l2
@@ -50,80 +50,21 @@
 # define L2_RF_ADDR struct sockaddr_rc
 #endif
 
-
-typedef struct BtaddrSockMap {
-    bdaddr_t btaddr;
-    int sock;
-} BtaddrSockMap;
-
 typedef struct LinBtStuff {
     CommonGlobals* globals;
-
+    void* sockStorage;
     union {
         struct {
-            BtaddrSockMap socks[MAX_CLIENTS];
             int listener;               /* socket */
-            XP_U16 nSocks;
             XP_Bool threadDie;
             sdp_session_t* session;
         } master;
     } u;
 
+    /* A single socket's fine as long as there's only one client allowed. */
+    int socket;
     XP_Bool amMaster;
 } LinBtStuff;
-
-static void
-lbt_addSock( LinBtStuff* btStuff, const bdaddr_t* btaddr, int sock )
-{
-    XP_U16 i;
-    XP_Bool done = XP_FALSE;
-
-    XP_ASSERT( btStuff->amMaster );
-    XP_ASSERT( btStuff->u.master.nSocks < MAX_CLIENTS - 1 );
-
-    /* first look for an older entry for the same device.  If found, close the
-       socket and replace.  No change in nSocks. */
-    for ( i = 0; i < MAX_CLIENTS; ++i ) {
-        BtaddrSockMap* mp = &btStuff->u.master.socks[i];
-        if ( (mp->sock != -1) && (0 == memcmp( btaddr, &mp->btaddr, sizeof(*btaddr) )) ) {
-            (void)close( mp->sock );
-            mp->sock = sock;
-            done = XP_TRUE;
-            break;
-        }
-    }
-
-    if ( !done ) {
-        for ( i = 0; i < MAX_CLIENTS; ++i ) {
-            BtaddrSockMap* mp = &btStuff->u.master.socks[i];
-            if ( mp->sock == -1 ) {
-                XP_MEMCPY( &mp->btaddr, btaddr, sizeof(mp->btaddr) );
-                mp->sock = sock;
-                ++btStuff->u.master.nSocks;
-                break;
-            }
-        }
-    }
-    XP_ASSERT( i < MAX_CLIENTS );
-} /* lbt_addSock */
-
-static void
-lbt_removeSock( LinBtStuff* btStuff, int sock )
-{
-    XP_U16 i;
-
-    XP_ASSERT( btStuff->amMaster );
-
-    for ( i = 0; i < MAX_CLIENTS; ++i ) {
-        BtaddrSockMap* mp = &btStuff->u.master.socks[i];
-        if ( mp->sock == sock ) {
-            mp->sock = -1;
-            XP_ASSERT( btStuff->u.master.nSocks > 0 );
-            --btStuff->u.master.nSocks;
-            break;
-        }
-    }
-} /* lbt_removeSock */
 
 static LinBtStuff*
 lbt_make( MPFORMAL XP_Bool amMaster )
@@ -132,13 +73,7 @@ lbt_make( MPFORMAL XP_Bool amMaster )
     XP_MEMSET( btStuff, 0, sizeof(*btStuff) );
 
     btStuff->amMaster = amMaster;
-
-    if ( amMaster ) {
-        XP_U16 i;
-        for ( i = 0; i < MAX_CLIENTS; ++i ) {
-            btStuff->u.master.socks[i].sock = -1;
-        }
-    }
+    btStuff->socket = -1;
 
     return btStuff;
 } /* lbt_make */
@@ -217,6 +152,7 @@ getL2Addr( const CommsAddrRec const* addrP, L2_RF_ADDR* const saddr )
         sdp_close( session );
     }
 
+    LOG_RETURNF( "%p", result );
     return result;
 } /* getL2Addr */
 
@@ -224,6 +160,7 @@ static void
 lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
 {
     int sock;
+    LOG_FUNC();
 
     // allocate a socket
     sock = socket( AF_BLUETOOTH, 
@@ -244,7 +181,8 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
              && (0 == connect( sock, (struct sockaddr *)&saddr, sizeof(saddr) )) ) {
             CommonGlobals* globals = btStuff->globals;
             (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       -1, sock );
+                                       -1, sock, &btStuff->sockStorage );
+            btStuff->socket = sock;
         } else {
             XP_LOGF( "%s: connect->%s; closing socket %d", __FUNCTION__, strerror(errno), sock );
             close( sock );
@@ -272,13 +210,10 @@ lbt_accept( int listener, void* ctxt )
     
     success = sock >= 0;
     if ( success ) {
-#if defined BT_USE_L2CAP
-        lbt_addSock( btStuff, &inaddr.l2_bdaddr, sock );
-#elif defined BT_USE_RFCOMM
-        lbt_addSock( btStuff, &inaddr.rc_bdaddr, sock );
-#endif
         (*globals->socketChanged)( globals->socketChangedClosure, 
-                                   -1, sock );
+                                   -1, sock, &btStuff->sockStorage );
+        XP_ASSERT( btStuff->socket == -1 );
+        btStuff->socket = sock;
     } else {
         XP_LOGF( "%s: accept->%s", __FUNCTION__, strerror(errno) );
     }
@@ -423,12 +358,14 @@ linux_bt_open( CommonGlobals* globals, XP_Bool amMaster )
         btStuff = globals->btStuff
             = lbt_make( MPPARM(globals->params->util->mpool) amMaster );
         btStuff->globals = globals;
+        btStuff->socket = -1;
+
         globals->btStuff = btStuff;
 
         if ( amMaster ) {
             lbt_listenerSetup( globals );
         } else {
-            if ( globals->socket < 0 ) {
+            if ( btStuff->socket < 0 ) {
                 CommsAddrRec addr;
                 comms_getAddr( globals->game.comms, &addr );
                 lbt_connectSocket( btStuff, &addr );
@@ -451,7 +388,6 @@ void
 linux_bt_close( CommonGlobals* globals )
 {
     LinBtStuff* btStuff = globals->btStuff;
-    XP_U16 i;
 
     if ( !!btStuff ) {
         if ( btStuff->amMaster ) {
@@ -459,18 +395,17 @@ linux_bt_close( CommonGlobals* globals )
             close( btStuff->u.master.listener );
             btStuff->u.master.listener = -1;
 
-            for ( i = 0; i < MAX_CLIENTS; ++i ) {
-                BtaddrSockMap* mp = &btStuff->u.master.socks[i];
-                if ( mp->sock != -1 ) {
-                    XP_LOGF( "%s: closing data socket %d", __func__, mp->sock );
-                    (void)close( mp->sock );
-                }
-            }
-
             sdp_close( btStuff->u.master.session );
             XP_LOGF( "sleeping for Palm's sake..." );
             sleep( 2 );         /* see if this gives palm a chance to not hang */
         }
+
+        if ( btStuff->socket != -1 ) {
+            (*globals->socketChanged)( globals->socketChangedClosure, 
+                                       btStuff->socket, -1, &btStuff->sockStorage );
+            (void)close( btStuff->socket );
+        }
+
         XP_FREE( globals->params->util->mpool, btStuff );
         globals->btStuff = NULL;
     }
@@ -495,17 +430,17 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
             addrP = &addr;
         }
 
-        if ( globals->socket < 0  && !btStuff->amMaster ) {
+        if ( btStuff->socket < 0  && !btStuff->amMaster ) {
             lbt_connectSocket( btStuff, addrP );
         }
 
-        if ( globals->socket >= 0 ) {
+        if ( btStuff->socket >= 0 ) {
 #if defined BT_USE_RFCOMM
             unsigned short len = htons(buflen);
-            nSent = write( globals->socket, &len, sizeof(len) );
+            nSent = write( btStuff->socket, &len, sizeof(len) );
             assert( nSent == sizeof(len) );
 #endif
-            nSent = write( globals->socket, buf, buflen );
+            nSent = write( btStuff->socket, buf, buflen );
             if ( nSent < 0 ) {
                 XP_LOGF( "%s: send->%s", __FUNCTION__, strerror(errno) );
             } else if ( nSent < buflen ) {
@@ -569,10 +504,9 @@ void
 linux_bt_socketclosed( CommonGlobals* globals, int sock )
 {
     LinBtStuff* btStuff = globals->btStuff;
-    if ( btStuff->amMaster ) {
-        lbt_removeSock( btStuff, sock );
-    }
+    LOG_FUNC();
+    XP_ASSERT( sock == btStuff->socket );
+    btStuff->socket = -1;
 }
 
 #endif /* XWFEATURE_BLUETOOTH */
-

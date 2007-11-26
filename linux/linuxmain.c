@@ -42,6 +42,7 @@
 
 #include "linuxmain.h"
 #include "linuxbt.h"
+#include "linuxudp.h"
 #include "main.h"
 #ifdef PLATFORM_NCURSES
 # include "cursesmain.h"
@@ -57,7 +58,7 @@
 #include "memstream.h"
 #include "LocalizedStrIncludes.h"
 
-#define DEFAULT_SEND_PORT 10999
+#define DEFAULT_PORT 10999
 #define DEFAULT_LISTEN_PORT 4998
 
 #ifdef DEBUG
@@ -266,24 +267,30 @@ usage( char* appName, char* msg )
 	     "\t [-B n:name|a:00:11:22:33:44:55]\n"
              "\t\t\t# connect via bluetooth [param ignored if -s]\n"
 #endif
+#ifdef XWFEATURE_IP_DIRECT
+         "\t [-D host_addr]\t\t\tConnect directly to host [param ignored if -s]\n"
+	     "\t [-p host_port]  # put/look for host on this port\n"
+#endif
+
 /* 	     "# --------------- OR client-only ----------\n" */
 /* 	     "\t [-p client_port] # must != server's port if on same device" */
-         "\nexample: \n"
-             "\tserver: ./xwords -d dict.xwd -s -r Eric -N" 
 #ifdef XWFEATURE_RELAY
-             " -a localhost -p 10999"
+         "\nrelay example: \n"
+             "\t host: ./xwords -d dict.xwd -r Eric -s -N -a localhost -p 10999 -C COOKIE\n"
+             "\tguest: ./xwords -d dict.xwd -r Kati -a localhost -p 10999 -C COOKIE"
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-             " -B ignored "
+         "\nBluetooth example: \n"
+             "\t host: ./xwords -d dict.xwd -r Eric -s -N -B ignored\n"
+             "\tguest: ./xwords -d dict.xwd -r Kati -B n:treo_bt_name (OR b:11:22:33:44:55:66)"
 #endif
-             "\n"
-             "\tclient: ./xwords -d dict.xwd -r Kati"
-#ifdef XWFEATURE_RELAY
-             " -a localhost -p 10999"
+#ifdef XWFEATURE_IP_DIRECT
+         "\nDirect example: \n"
+             "\t host: ./xwords -d dict.xwd -r Eric -s -N -N -D localhost -p 10999\n"
+             "\tguest: ./xwords -d dict.xwd -r Kati -D localhost -p 10999\n"
+             "\tguest: ./xwords -d dict.xwd -r Ariynn -D localhost -p 10999"
 #endif
-#ifdef XWFEATURE_BLUETOOTH
-             " -B a:11:22:33:44:55:66 | n:my_treo "
-#endif
+
              "\n"
 	     , appName );
     fprintf( stderr, "\n(revision: %s)\n", SVN_REV);
@@ -394,7 +401,8 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
         if ( socket != -1 ) {
             assert( globals->socket == socket );
             (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       -1, socket );
+                                       -1, socket,
+                                       &globals->storage );
         }
     }
 
@@ -410,7 +418,7 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
             XP_STATUSF( "closing non-functional socket" );
             close( socket );
             (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       socket, -1 );
+                                       socket, -1, &globals->storage );
             globals->socket = -1;
         }
 
@@ -420,7 +428,17 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
  
     return result;
 } /* linux_tcp_send */
-#endif
+
+static void
+linux_tcp_reset( CommonGlobals* globals )
+{
+    LOG_FUNC();
+    if ( globals->socket != -1 ) {
+        (void)close( globals->socket );
+        globals->socket = -1;
+    }
+}
+#endif  /* XWFEATURE_RELAY */
 
 #ifdef COMMS_HEARTBEAT
 void
@@ -432,6 +450,14 @@ linux_reset( void* closure )
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {
         linux_bt_reset( globals );
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+    } else if ( conType == COMMS_CONN_IP_DIRECT ) {
+        linux_udp_reset( globals );
+#endif
+#ifdef XWFEATURE_RELAY
+    } else if ( conType == COMMS_CONN_RELAY ) {
+        linux_tcp_reset( globals );
 #endif
     }
 
@@ -458,11 +484,18 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
     } else if ( conType == COMMS_CONN_RELAY ) {
         nSent = linux_tcp_send( buf, buflen, addrRec, globals );
 #endif
-#ifdef XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {
         XP_Bool isServer = comms_getIsServer( globals->game.comms );
         linux_bt_open( globals, isServer );
         nSent = linux_bt_send( buf, buflen, addrRec, globals );
+#endif
+#if defined XWFEATURE_IP_DIRECT
+    } else if ( conType == COMMS_CONN_IP_DIRECT ) {
+        CommsAddrRec addr;
+        comms_getAddr( globals->game.comms, &addr );
+        linux_udp_open( globals, &addr );
+        nSent = linux_udp_send( buf, buflen, addrRec, globals );
 #endif
     } else {
         XP_ASSERT(0);
@@ -470,6 +503,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
     return nSent;
 } /* linux_send */
 
+#ifdef XWFEATURE_RELAY
 static void
 linux_close_socket( CommonGlobals* cGlobals )
 {
@@ -502,6 +536,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     }
     return nRead;
 } /* linuxReceive */
+#endif
 
 /* Create a stream for the incoming message buffer, and read in any
    information specific to our platform's comms layer (return address, say)
@@ -684,9 +719,9 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
 
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void
-linux_util_addrChange( XW_UtilCtxt* XP_UNUSED_BT(uc), 
+linux_util_addrChange( XW_UtilCtxt* uc, 
                        const CommsAddrRec* XP_UNUSED(oldAddr),
-                       const CommsAddrRec* XP_UNUSED_BT(newAddr) )
+                       const CommsAddrRec* newAddr )
 {
     if ( 0 ) {
 #ifdef XWFEATURE_BLUETOOTH
@@ -694,6 +729,11 @@ linux_util_addrChange( XW_UtilCtxt* XP_UNUSED_BT(uc),
         CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
         XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
         linux_bt_open( cGlobals, isServer );
+#endif
+#if defined XWFEATURE_IP_DIRECT
+    } else if ( newAddr->conType == COMMS_CONN_IP_DIRECT ) {
+        CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
+        linux_udp_open( cGlobals, newAddr );
 #endif
     }
 }
@@ -757,8 +797,8 @@ main( int argc, char** argv )
     int opt;
     int totalPlayerCount = 0;
     XP_Bool isServer = XP_FALSE;
-    char* sendPortNumString = NULL;
-    char* relayName = "localhost";
+    char* portNum = "10999";
+    char* hostName = "localhost";
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 robotCount = 0;
@@ -798,9 +838,12 @@ main( int argc, char** argv )
 
     /* defaults */
 #ifdef XWFEATURE_RELAY
-    mainParams.connInfo.relay.defaultListenPort = DEFAULT_LISTEN_PORT;
-    mainParams.connInfo.relay.defaultSendPort = DEFAULT_SEND_PORT;
+    mainParams.connInfo.relay.defaultSendPort = DEFAULT_PORT;
     mainParams.connInfo.relay.cookie = "COOKIE";
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+    mainParams.connInfo.ip.port = DEFAULT_PORT;
+    mainParams.connInfo.ip.hostName = "localhost";
 #endif
     mainParams.gi.boardSize = 15;
     mainParams.quitAfter = XP_FALSE;
@@ -837,8 +880,14 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_RELAY
                       "a:p:C:H"
 #endif
+#if defined XWFEATURE_RELAY || defined XWFEATURE_IP_DIRECT
+                      "p:"
+#endif
 #ifdef XWFEATURE_BLUETOOTH
                       "B:" 
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+                      "D:" 
 #endif
                       );
         switch( opt ) {
@@ -856,6 +905,12 @@ main( int argc, char** argv )
             conType = COMMS_CONN_RELAY;
             break;
 #endif
+        case 'D':
+            XP_ASSERT( conType == COMMS_CONN_UNUSED ||
+                       conType == COMMS_CONN_IP_DIRECT );
+            hostName = optarg;
+            conType = COMMS_CONN_IP_DIRECT;
+            break;
         case 'd':
             mainParams.gi.dictName = copyString( mainParams.util->mpool,
                                                  (XP_UCHAR*)optarg );
@@ -893,10 +948,8 @@ main( int argc, char** argv )
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
         case 'p':
-            sendPortNumString = optarg;
-            XP_ASSERT( conType == COMMS_CONN_UNUSED ||
-                       conType == COMMS_CONN_RELAY );
-            conType = COMMS_CONN_RELAY;
+            /* could be RELAY or IP_DIRECT */
+            portNum = optarg;
             break;
         case 'r':
             ++robotCount;
@@ -928,7 +981,7 @@ main( int argc, char** argv )
             XP_ASSERT( conType == COMMS_CONN_UNUSED ||
                        conType == COMMS_CONN_RELAY );
             conType = COMMS_CONN_RELAY;
-            relayName = optarg;
+            hostName = optarg;
             break;
         case 'q':
             mainParams.quitAfter = XP_TRUE;
@@ -1015,12 +1068,19 @@ main( int argc, char** argv )
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
-        mainParams.connInfo.relay.relayName = relayName;
+        mainParams.connInfo.relay.relayName = hostName;
 
         /* convert strings to whatever */
-        if ( sendPortNumString != NULL ) {
+        if ( portNum != NULL ) {
             mainParams.connInfo.relay.defaultSendPort = 
-                atoi( sendPortNumString );
+                atoi( portNum );
+        }
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+    } else if ( conType == COMMS_CONN_IP_DIRECT ) {
+        mainParams.connInfo.ip.hostName = hostName;
+        if ( portNum != NULL ) {
+            mainParams.connInfo.ip.port = atoi( portNum );
         }
 #endif
 #ifdef XWFEATURE_BLUETOOTH

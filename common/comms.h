@@ -35,7 +35,7 @@ typedef XP_U8  XWHostID;
 typedef enum {
     COMMS_CONN_UNUSED,          /* I want errors on uninited case */
     COMMS_CONN_IR,
-    COMMS_CONN_IP_NOUSE,
+    COMMS_CONN_IP_DIRECT,
     COMMS_CONN_RELAY,
     COMMS_CONN_BT,
 
