@@ -1721,27 +1721,48 @@ acceptorInput( GIOChannel* source, GIOCondition condition, gpointer data )
     }
 
     return keepSource;
-}
+} /* acceptorInput */
 
 static void
-gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals )
+gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
+                     void** storage )
 {
+    SockInfo* info = (SockInfo*)*storage;
     GIOChannel* channel;
-    guint result;
+    guint watch;
 
     LOG_FUNC();
 
-    XP_ASSERT( !globals->acceptor || (func == globals->acceptor) );
-    globals->acceptor = func;
+    if ( listener == -1 ) {
+        XP_ASSERT( !!globals->acceptor );
+        globals->acceptor = NULL;
+        XP_ASSERT( !!info );
+        int oldSock = info->socket;
+        g_source_remove( info->watch );
+        g_io_channel_unref( info->channel );
+        XP_FREE( globals->params->util->mpool, info );
+        *storage = NULL;
+        XP_LOGF( "Removed listener %d from gtk's list of listened-to sockets", oldSock );
+    } else {
+        XP_ASSERT( !globals->acceptor || (func == globals->acceptor) );
+        globals->acceptor = func;
 
-    channel = g_io_channel_unix_new( listener );
-    g_io_channel_set_close_on_unref( channel, TRUE );
-    result = g_io_add_watch( channel,
-                             G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
-                             acceptorInput, globals );
-    g_io_channel_unref( channel ); /* only main loop holds it now */
-    XP_LOGF( "%s: g_io_add_watch(%d) => %d", __FUNCTION__, listener, result );
-}
+        channel = g_io_channel_unix_new( listener );
+        g_io_channel_set_close_on_unref( channel, TRUE );
+        watch = g_io_add_watch( channel,
+                                G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
+                                acceptorInput, globals );
+        g_io_channel_unref( channel ); /* only main loop holds it now */
+        XP_LOGF( "%s: g_io_add_watch(%d) => %d", __FUNCTION__, listener, watch );
+
+        XP_ASSERT( NULL == info );
+        info = XP_MALLOC( globals->params->util->mpool, sizeof(*info) );
+        info->channel = channel;
+        info->watch = watch;
+        info->socket = listener;
+        *storage = info;
+    }
+} /* gtk_socket_acceptor */
 
 static void
 sendOnClose( XWStreamCtxt* stream, void* closure )

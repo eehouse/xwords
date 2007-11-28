@@ -99,7 +99,7 @@ typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock,
                                   void** storage );
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
-                                CommonGlobals* globals );
+                                CommonGlobals* globals, void** storage );
 
 struct CommonGlobals {
     LaunchParams* params;

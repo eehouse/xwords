@@ -694,7 +694,8 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
 } /* curses_socket_changed */
 
 static void
-curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals )
+curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
+                        void** storage )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)cGlobals;
     XP_ASSERT( !cGlobals->acceptor || (func == cGlobals->acceptor) );
