@@ -56,6 +56,7 @@ typedef struct LinBtStuff {
     union {
         struct {
             int listener;               /* socket */
+            void* listenerStorage;
             XP_Bool threadDie;
             sdp_session_t* session;
         } master;
@@ -347,7 +348,8 @@ lbt_listenerSetup( CommonGlobals* globals )
 
     lbt_register( btStuff, htobs( XW_PSM ), rc_channel );
 
-    (*globals->addAcceptor)( listener, lbt_accept, globals );
+    (*globals->addAcceptor)( listener, lbt_accept, globals, 
+                             &btStuff->u.master.listenerStorage );
 } /* lbt_listenerSetup */
 
 void
@@ -392,6 +394,9 @@ linux_bt_close( CommonGlobals* globals )
     if ( !!btStuff ) {
         if ( btStuff->amMaster ) {
             XP_LOGF( "%s: closing listener socket %d", __func__, btStuff->u.master.listener );
+            /* Remove from main event loop */
+            (*globals->addAcceptor)( -1, NULL, globals,
+                                     &btStuff->u.master.listenerStorage );
             close( btStuff->u.master.listener );
             btStuff->u.master.listener = -1;
 
