@@ -64,6 +64,13 @@ RelayConfigs::RelayConfigs( const char* cfile )
 } /* RelayConfigs::RelayConfigs */
 
 void
+RelayConfigs::GetPorts( std::vector<int>::const_iterator* iter, std::vector<int>::const_iterator* end)
+{
+    *iter = m_ports.begin();
+    *end = m_ports.end();
+}
+
+void
 RelayConfigs::parse( const char* fname )
 {
     if ( fname != NULL ) {
@@ -99,7 +106,7 @@ RelayConfigs::parse( const char* fname )
                 } else if ( 0 == strcmp( line, "CTLPORT" ) ) {
                     m_ctrlport = atoi( value );
                 } else if ( 0 == strcmp( line, "PORT" ) ) {
-                    m_port = atoi( value );
+                    m_ports.push_back( atoi( value ) );
                 } else if ( 0 == strcmp( line, "NTHREADS" ) ) {
                     m_nWorkerThreads = atoi( value );
                 } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
