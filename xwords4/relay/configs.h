@@ -22,7 +22,10 @@
 #define _CONFIGS_H_
 
 #include <string>
+#include <vector>
 #include "xwrelay_priv.h"
+
+using namespace std;
 
 class RelayConfigs {
 
@@ -32,7 +35,7 @@ class RelayConfigs {
 
     ~RelayConfigs() {}
 
-    int    GetPort() { return m_port; }
+    void GetPorts( vector<int>::const_iterator* iter, vector<int>::const_iterator* end);
     int    GetCtrlPort() { return m_ctrlport; }
     int    GetNWorkerThreads()  { return m_nWorkerThreads; }
     time_t GetAllConnectedInterval() { return m_allConnInterval; }
@@ -49,11 +52,11 @@ class RelayConfigs {
     time_t m_allConnInterval;
     time_t m_heartbeatInterval;
     int m_ctrlport;
-    int m_port;
+    vector<int> m_ports;
     int m_logLevel;
     int m_nWorkerThreads;
-    std::string m_serverName;
-    std::string m_idFileName;
+    string m_serverName;
+    string m_idFileName;
 
     static RelayConfigs* instance;
 };

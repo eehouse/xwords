@@ -71,6 +71,7 @@
 #include "configs.h"
 #include "timermgr.h"
 #include "permid.h"
+#include "lstnrmgr.h"
 
 #define LOG_FILE_PATH "./xwrelay.log"
 
@@ -395,7 +396,7 @@ processMessage( unsigned char* buf, int bufLen, int socket )
     return success;        /* caller defines non-0 as failure */
 } /* processMessage */
 
-static int 
+int 
 make_socket( unsigned long addr, unsigned short port )
 {
     int sock = socket( AF_INET, SOCK_STREAM, 0 );
@@ -440,7 +441,8 @@ usage( char* arg0 )
     fprintf( stderr,
              "\t-?                   (print this help)\\\n"
              "\t-c <cport>           (localhost port for control console)\\\n"
-             "\t-d                   (don't become daemon)\\\n"
+             "\t-D                   (don't become daemon)\\\n"
+             "\t-F                   (don't fork and wait to respawn child)\\\n"
              "\t-f <conffile>        (config file)\\\n"
              "\t-h                   (print this help)\\\n"
              "\t-i <idfile>          (file where next global id stored)\\\n"
@@ -452,7 +454,7 @@ usage( char* arg0 )
 }
 
 /* sockets that need to be closable from interrupt handler */
-int g_listener;
+ListenerMgr g_listeners;
 int g_control;
 
 void
@@ -473,7 +475,7 @@ shutdown()
 
     stop_ctrl_threads();
 
-    close( g_listener );
+    g_listeners.RemoveAll();
     close( g_control );
 
     exit( 0 );
@@ -519,6 +521,7 @@ int main( int argc, char** argv )
     const char* serverName = NULL;
     const char* idFileName = NULL;
     bool doDaemon = true;
+    bool doFork = true;
 
     /* Verify sizes here... */
     assert( sizeof(CookieID) == 2 );
@@ -529,7 +532,7 @@ int main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:d" );
+       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:DF" );
 
        if ( opt == -1 ) {
            break;
@@ -542,8 +545,11 @@ int main( int argc, char** argv )
        case 'c':
            ctrlport = atoi( optarg );
            break;
-       case 'd':
+       case 'D':
            doDaemon = false;
+           break;
+       case 'F':
+           doFork = false;
            break;
        case 'f':
            conffile = optarg;
@@ -575,9 +581,6 @@ int main( int argc, char** argv )
     RelayConfigs::InitConfigs( conffile );
     RelayConfigs* cfg = RelayConfigs::GetConfigs();
 
-    if ( port == 0 ) {
-        port = cfg->GetPort();
-    }
     if ( ctrlport == 0 ) {
         ctrlport = cfg->GetCtrlPort();
     }
@@ -621,7 +624,7 @@ int main( int argc, char** argv )
 
 #ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
-    for ( ; ; ) {
+    while ( doFork ) {
         pid_t pid = fork();
         if ( pid == 0 ) {       /* child */
             break;
@@ -639,10 +642,21 @@ int main( int argc, char** argv )
     prctl( PR_SET_PDEATHSIG, SIGUSR1 );
     (void)signal( SIGUSR1, parentDied );
 
-    g_listener = make_socket( INADDR_ANY, port );
-    if ( g_listener == -1 ) {
-        exit( 1 );
+    if ( port != 0 ) {
+        g_listeners.AddListener( port );
     }
+    vector<int>::const_iterator iter, end;
+    cfg->GetPorts( &iter, &end );
+    while ( iter != end ) {
+        int port = *iter;
+        if ( !g_listeners.PortInUse( port ) ) {
+            g_listeners.AddListener( port );
+        } else {
+            logf( XW_LOGERROR, "port %d was in use", port );
+        }
+        ++iter;
+    }
+
     g_control = make_socket( INADDR_LOOPBACK, ctrlport );
     if ( g_control == -1 ) {
         exit( 1 );
@@ -661,10 +675,10 @@ int main( int argc, char** argv )
     fd_set rfds;
     for ( ; ; ) {
         FD_ZERO(&rfds);
-        FD_SET( g_listener, &rfds );
+        g_listeners.AddToFDSet( &rfds );
         FD_SET( g_control, &rfds );
-        int highest = g_listener;
-        if ( g_control > g_listener ) {
+        int highest = g_listeners.GetHighest();
+        if ( g_control > highest ) {
             highest = g_control;
         }
         ++highest;
@@ -675,16 +689,25 @@ int main( int argc, char** argv )
                 logf( XW_LOGINFO, "errno: %s (%d)", strerror(errno), errno );
             }
         } else {
-            if ( FD_ISSET( g_listener, &rfds ) ) {
-                struct sockaddr_in newaddr;
-                socklen_t siz = sizeof(newaddr);
-                int newSock = accept( g_listener, (sockaddr*)&newaddr, &siz );
+            logf( XW_LOGINFO, "creating ListenersIter" );
+            ListenersIter iter(&g_listeners, true);
+            while ( retval > 0 ) {
+                int listener = iter.next();
+                if ( listener < 0 ) {
+                    break;
+                }
 
-                logf( XW_LOGINFO, "accepting connection from %s", 
-                      inet_ntoa(newaddr.sin_addr) );
+                if ( FD_ISSET( listener, &rfds ) ) {
+                    struct sockaddr_in newaddr;
+                    socklen_t siz = sizeof(newaddr);
+                    int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
 
-                tPool->AddSocket( newSock );
-                --retval;
+                    logf( XW_LOGINFO, "accepting connection from %s", 
+                          inet_ntoa(newaddr.sin_addr) );
+
+                    tPool->AddSocket( newSock );
+                    --retval;
+                }
             }
             if ( FD_ISSET( g_control, &rfds ) ) {
                 run_ctrl_thread( g_control );
@@ -694,7 +717,7 @@ int main( int argc, char** argv )
         }
     }
 
-    close( g_listener );
+    g_listeners.RemoveAll();
     close( g_control );
 
     delete cfg;

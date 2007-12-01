@@ -127,7 +127,6 @@ class CookieRef {
             } heart;
             struct {
                 time_t now;
-                vector<int>* victims;
             } htime;
             struct {
                 int socket;

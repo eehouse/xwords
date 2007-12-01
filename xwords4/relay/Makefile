@@ -26,6 +26,7 @@ SRC = xwrelay.cpp \
 	configs.cpp \
 	crefmgr.cpp \
 	permid.cpp \
+	lstnrmgr.cpp \
 
 # STATIC ?= -static
 

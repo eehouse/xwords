@@ -4,6 +4,7 @@
 #define _XWRELAY_PRIV_H_
 
 #include <time.h>
+#include "lstnrmgr.h"
 
 typedef unsigned char HostID;
 
@@ -21,5 +22,9 @@ void killSocket( int socket, const char* why );
 int send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
 
 time_t now();
+
+int make_socket( unsigned long addr, unsigned short port );
+
+extern class ListenerMgr g_listeners;
 
 #endif

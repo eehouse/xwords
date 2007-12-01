@@ -44,6 +44,7 @@
 #include "mlock.h"
 #include "xwrelay_priv.h"
 #include "configs.h"
+#include "lstnrmgr.h"
 
 /* this is *only* for testing.  Don't abuse!!!! */
 extern pthread_rwlock_t gCookieMapRWLock;
@@ -73,6 +74,32 @@ static bool cmd_shutdown( int socket, const char** args );
 static bool cmd_rev( int socket, const char** args );
 static bool cmd_uptime( int socket, const char** args );
 static bool cmd_crash( int socket, const char** args );
+
+static int
+match( string* cmd, char * const* first, int incr, int count )
+{
+    int cmdlen = cmd->length();
+    int nFound = 0;
+    const char* cmdFound = NULL;
+    int which = -1;
+    int i;
+    for ( i = 0; i < count; ++i ) {
+        logf( XW_LOGINFO, "comparing %s,%s", *first, cmd );
+        if ( 0 == strncmp( cmd->c_str(), *first, cmdlen ) ) {
+            ++nFound;
+            which = i;
+            cmdFound = *first;
+        }
+        first = (char* const*)(((char*)first) + incr);
+    }
+
+    if ( nFound == 1 ) {
+        cmd->assign(cmdFound);
+    } else {
+        which = -1;
+    }
+    return which;
+}
 
 static void
 print_to_sock( int sock, bool addCR, const char* what, ... )
@@ -197,42 +224,88 @@ cmd_kill_eject( int socket, const char** args )
 static bool
 cmd_get( int socket, const char** args )
 {
-    if ( 0 == strcmp( args[1], "help" ) ) {
-        print_to_sock( socket, true,
-                       "* %s -- lists all attributes (unimplemented)\n"
-                       "* %s loglevel",
-                       args[0], args[0] );
-    } else {
-        const char* attr = args[1];
-        if ( (NULL != attr) && (0 == strcmp( attr, "loglevel" )) ) {
-            RelayConfigs* rc = RelayConfigs::GetConfigs();
-            if ( NULL != rc ) {
-                print_to_sock( socket, true, "loglevel=%d\n", 
-                               rc->GetLogLevel() );
-            } else {
-                logf( XW_LOGERROR, "RelayConfigs::GetConfigs() => NULL" );
+    bool needsHelp = true;
+
+    string attr(args[1]);
+    char* const attrs[] = { "help", "listeners", "loglevel" };
+    int index = match( &attr, attrs, sizeof(attrs[0]), 
+                       sizeof(attrs)/sizeof(attrs[0]));
+
+    switch( index ) {
+    case 0:
+        break;
+    case 1: {
+        char buf[128];
+        int len = 0;
+        ListenersIter iter(&g_listeners, false);
+        for ( ; ; ) {
+            int listener = iter.next();
+            if ( listener == -1 ) {
+                break;
             }
+            len += snprintf( &buf[len], sizeof(buf)-len, "%d,", listener );
+        }
+        print_to_sock( socket, true, "%s", buf );
+        needsHelp = false;
+    }
+        break;
+    case 2: {
+        RelayConfigs* rc = RelayConfigs::GetConfigs();
+        if ( NULL != rc ) {
+            print_to_sock( socket, true, "loglevel=%d\n", 
+                           rc->GetLogLevel() );
+            needsHelp = false;
+        } else {
+            logf( XW_LOGERROR, "RelayConfigs::GetConfigs() => NULL" );
         }
     }
+        break;
+
+    default:
+        print_to_sock( socket, true, "unknown or ambiguous attribute: %s", attr.c_str() );
+    }
+
+    if ( needsHelp ) {
+        /* includes help */
+        print_to_sock( socket, false,
+                       "* %s -- lists all attributes (unimplemented)\n"
+                       "* %s listener\n"
+                       "* %s loglevel\n"
+                       , args[0], args[0], args[0] );
+    }
+
     return false;
-}
+} /* cmd_get */
 
 static bool
 cmd_set( int socket, const char** args )
 {
-    if ( 0 == strcmp( args[1], "help" ) ) {
-        print_to_sock( socket, true, "* %s loglevel <n>", args[0] );
-    } else {
+    bool needsHelp = true;
+    if ( 0 == strcmp( args[1], "loglevel" ) ) {
         const char* attr = args[1];
         const char* val = args[2];
-        if ( (NULL != attr) 
-             && (0 == strcmp( attr, "loglevel" ))
-                 && (NULL != val) ) {
+        if ( (NULL != attr) && (NULL != val) ) {
             RelayConfigs* rc = RelayConfigs::GetConfigs();
             if ( rc != NULL ) {
                 rc->SetLogLevel( atoi(val) );
+                needsHelp = false;
             }
         }
+    } else if ( 0 == strcmp( args[1], "listeners" ) ) {
+        istringstream str( args[2] );
+        vector<int> sv;
+        while ( !str.eof() ) {
+            int sock;
+            char comma;
+            str >> sock >> comma;
+            logf( XW_LOGERROR, "%s: read %d", __func__, sock );
+            sv.push_back( sock );
+        }
+        g_listeners.SetAll( &sv );
+    }
+
+    if ( needsHelp ) {
+        print_to_sock( socket, true, "* %s loglevel <n>", args[0] );
     }
     return false;
 }
@@ -428,72 +501,53 @@ print_prompt( int socket )
     print_to_sock( socket, false, "=> " );
 }
 
-static bool
-dispatch_command( int sock, const char** args )
-{
-    bool result = false;
-    const char* cmd = args[0];
-    const FuncRec* fp = gFuncs;
-    const FuncRec* last = fp + (sizeof(gFuncs) / sizeof(gFuncs[0]));
-    while (  fp < last ) {
-        if ( 0 == strcmp( cmd, fp->name ) ) {
-            result = (*fp->func)( sock, args );
-            break;
-        }
-        ++fp;
-    }
-    
-    if ( fp == last ) {
-        print_to_sock( sock, 1, "unknown command: \"%s\"", cmd );
-        result = cmd_help( sock, args );
-    }
-
-    return result;
-}
-
 static void*
 ctrl_thread_main( void* arg )
 {
-    int socket = (int)arg;
+    int sock = (int)arg;
 
     {
         MutexLock ml( &g_ctrlSocksMutex );
-        g_ctrlSocks.push_back( socket );
+        g_ctrlSocks.push_back( sock );
     }
 
     for ( ; ; ) {
-        string arg0, arg1, arg2, arg3;
-        print_prompt( socket );
+        string cmd, arg1, arg2, arg3;
+        print_prompt( sock );
 
         char buf[512];
-        ssize_t nGot = recv( socket, buf, sizeof(buf)-1, 0 );
+        ssize_t nGot = recv( sock, buf, sizeof(buf)-1, 0 );
         if ( nGot <= 1 ) {      /* break when just \n comes in */
             break;
         } else if ( nGot > 2 ) {
             /* if nGot is 2, reuse prev string */
             buf[nGot] = '\0';
-            istringstream cmd( buf );
-            cmd >> arg0 >> arg1 >> arg2 >> arg3;
+            istringstream s( buf );
+            s >> cmd >> arg1 >> arg2 >> arg3;
         }
 
+        int index = match( &cmd,  (char*const*)&gFuncs[0].name, sizeof(gFuncs[0]), 
+                           sizeof(gFuncs)/sizeof(gFuncs[0]) );
         const char* args[] = {
-            arg0.c_str(), 
+            cmd.c_str(), 
             arg1.c_str(), 
             arg2.c_str(), 
             arg3.c_str()
         };
-
-        if ( dispatch_command( socket, args ) ) {
+        if ( index == -1 ) {
+            print_to_sock( sock, 1, "unknown or ambiguous command: \"%s\"", cmd.c_str() );
+            (void)cmd_help( sock, args );
+        } else if ( (*gFuncs[index].func)( sock, args ) ) {
             break;
         }
     }
 
-    close ( socket );
+    close ( sock );
 
     MutexLock ml( &g_ctrlSocksMutex );
     vector<int>::iterator iter = g_ctrlSocks.begin();
     while ( iter != g_ctrlSocks.end() ) {
-        if ( *iter == socket ) {
+        if ( *iter == sock ) {
             g_ctrlSocks.erase(iter);
             break;
         }
