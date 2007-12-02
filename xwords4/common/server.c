@@ -146,7 +146,6 @@ getStateStr( XW_State st )
     switch( st ) {
         CASESTR(XWSTATE_NONE);
         CASESTR(XWSTATE_BEGIN);
-/*         CASESTR(XWSTATE_POOL_INITED); */
         CASESTR(XWSTATE_NEED_SHOWSCORE);
         CASESTR(XWSTATE_WAITING_ALL_REG);
         CASESTR(XWSTATE_RECEIVED_ALL_REG);
@@ -1712,6 +1711,35 @@ sendMoveToClientsExcept( ServerCtxt* server, XP_U16 whoMoved, XP_Bool legal,
     }
 } /* sendMoveToClientsExcept */
 
+static XWStreamCtxt*
+makeTradeReportIf( ServerCtxt* server, const TrayTileSet* tradedTiles )
+{
+    XWStreamCtxt* stream = NULL;
+    if ( server->nv.showRobotScores ) {
+        XP_UCHAR tradeBuf[64];
+        const XP_UCHAR* tradeStr = util_getUserString( server->vol.util,
+                                                       STRD_ROBOT_TRADED );
+        XP_SNPRINTF( tradeBuf, sizeof(tradeBuf), tradeStr, 
+                     tradedTiles->nTiles );
+        stream = mkServerStream( server );
+        stream_putString( stream, tradeBuf );
+    }
+    return stream;
+} /* makeTradeReportIf */
+
+static XWStreamCtxt*
+makeMoveReportIf( ServerCtxt* server )
+{
+    XWStreamCtxt* stream = NULL;
+    if ( server->nv.showRobotScores ) {
+        stream = mkServerStream( server );
+        (void)model_checkMoveLegal( server->vol.model, 
+                                    server->nv.currentTurn, stream,
+                                    NULL );
+    }
+    return stream;
+} /* makeMoveReportIf */
+
 /* Client is reporting a move made, complete with new tiles and time taken by
  * the player.  Update the model with that information as a tentative move,
  * then sent info about it to all the clients, and finally commit the move
@@ -1736,7 +1764,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
     XP_ASSERT( gi->serverRole == SERVER_ISSERVER );
 
     readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
-                  &tradedTiles, &isLegalMove );
+                  &tradedTiles, &isLegalMove ); /* modifies model */
     XP_ASSERT( isLegalMove );	/* client should always report as true */
     isLegalMove = XP_TRUE;
 
@@ -1750,15 +1778,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
         pool_replaceTiles( server->pool, &tradedTiles );
 
         server->vol.showPrevMove = XP_TRUE;
-        if ( server->nv.showRobotScores ) {
-            XP_UCHAR tradeBuf[64];
-            const XP_UCHAR* tradeStr = util_getUserString( server->vol.util,
-                                                           STRD_ROBOT_TRADED );
-            XP_SNPRINTF( tradeBuf, sizeof(tradeBuf),
-                         tradeStr, tradedTiles.nTiles );
-            mvStream = mkServerStream( server );
-            stream_putString( mvStream, tradeBuf );
-        }
+        mvStream = makeTradeReportIf( server, &tradedTiles );
 
     } else {
         nTilesMoved = model_getCurrentMoveCount( model, whoMoved );
@@ -1772,12 +1792,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
                                  (TrayTileSet*)NULL, sourceClientIndex );
 
         server->vol.showPrevMove = XP_TRUE;
-        if ( server->nv.showRobotScores ) {
-            mvStream = mkServerStream( server );
-            (void)model_checkMoveLegal( server->vol.model, 
-                                        server->nv.currentTurn, mvStream,
-                                        NULL );
-        }
+        mvStream = makeMoveReportIf( server );
 
         model_commitTurn( model, whoMoved, &newTiles );
         resetEngines( server );
@@ -1829,21 +1844,28 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
     TrayTileSet newTiles;
     TrayTileSet tradedTiles;
     ModelCtxt* model = server->vol.model;
+    XWStreamCtxt* mvStream = NULL;
 
     moveOk = XWSTATE_INTURN == server->nv.gameState;
     if ( moveOk ) {
         readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles, 
-                      &tradedTiles, &isLegal );
+                      &tradedTiles, &isLegal ); /* modifies model */
 
         if ( isTrade ) {
-
             model_makeTileTrade( model, whoMoved, &tradedTiles, &newTiles );
             pool_replaceTiles( server->pool, &tradedTiles );
-            /* 	pool_removeTiles( server->pool, &newTiles ); */
+
             server->vol.showPrevMove = XP_TRUE;
+            mvStream = makeTradeReportIf( server, &tradedTiles );
         } else {
             server->vol.showPrevMove = XP_TRUE;
+            mvStream = makeMoveReportIf( server );
             model_commitTurn( model, whoMoved, &newTiles );
+        }
+
+        if ( !!mvStream ) {
+            XP_ASSERT( !server->vol.prevMoveStream );
+            server->vol.prevMoveStream = mvStream;
         }
 
         resetEngines( server );
