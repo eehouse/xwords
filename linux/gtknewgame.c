@@ -454,7 +454,7 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
     GtkNewGameState* state = (GtkNewGameState*)closure;
     if ( attr == NG_ATTR_NPLAYERS ) {
         XP_U16 i = value.ng_u16;
-        XP_LOGF( "%s: setting menu %d", __FUNCTION__, i-1 );
+        XP_LOGF( "%s: setting menu %d", __func__, i-1 );
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), i-1 );
     } else if ( attr == NG_ATTR_ROLE ) {
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->roleCombo), 

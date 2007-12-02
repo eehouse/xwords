@@ -661,7 +661,7 @@ handleRemoteChanged( PalmNewGameState* state, XP_U16 controlID, XP_Bool on )
     XP_U16 player;
     NGValue value;
 
-    XP_LOGF( "%s: controlID=%d", __FUNCTION__, controlID );
+    XP_LOGF( "%s: controlID=%d", __func__, controlID );
 
     player = palmPlayerFromID( controlID, XW_REMOTE_1_CHECKBOX_ID );
     value.ng_bool = on;

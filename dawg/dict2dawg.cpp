@@ -323,7 +323,7 @@ addNodes( NodeList& newedgesR )
     }
 #ifdef DEBUG
     if ( gDebug ) {
-        fprintf( stderr, "%s => %d\n", __FUNCTION__, found );
+        fprintf( stderr, "%s => %d\n", __func__, found );
     }
 #endif
     return found;
@@ -544,7 +544,7 @@ readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
 
 //     if ( NULL != result ) {
 //         char buf[MAX_WORD_LEN+1];
-//         fprintf( stderr, "%s returning %s\n", __FUNCTION__,
+//         fprintf( stderr, "%s returning %s\n", __func__,
 //                  tileToAscii( buf, sizeof(buf), result ) );
 //     }
     return result;

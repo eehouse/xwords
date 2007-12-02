@@ -82,7 +82,7 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #define XP_ABS(a)   ((a)>=0?(a):-(a))
 
 #ifdef DEBUG
-#define XP_ASSERT(b) palm_assert(b, __LINE__, __FUNCTION__, __FILE__)
+#define XP_ASSERT(b) palm_assert(b, __LINE__, __func__, __FILE__)
 #else
 #define XP_ASSERT(b)
 #endif

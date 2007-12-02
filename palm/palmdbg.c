@@ -213,7 +213,7 @@ frmObjId_2str( XP_U16 id )
         CASESTR( XW_HINTCONFIG_MINSELECTOR_ID );
         CASESTR( XW_HINTCONFIG_OK_ID );
         CASESTR( XW_HINTCONFIG_CANCEL_ID );
-    default: return FUNC(__FUNCTION__) " unknown";
+    default: return FUNC(__func__) " unknown";
     }
 }
 

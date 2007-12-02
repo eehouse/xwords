@@ -306,7 +306,7 @@ wrapChooseColor( ColorsDlgState* cState, HWND owner, XP_U16 button )
         DeleteObject( cState->brushes[index] );
         cState->brushes[index] = CreateSolidBrush( clrref );
         XP_LOGF( "%s: may need to invalidate the button since color's changed", 
-                 __FUNCTION__ );
+                 __func__ );
     }
 #else
     CHOOSECOLOR ccs;

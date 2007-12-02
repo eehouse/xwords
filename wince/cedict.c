@@ -94,7 +94,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         XP_U8 nodeSize;
 
         flags = n_ptr_tohs( &ptr );
-        XP_DEBUGF( "%s: flags=0x%x", __FUNCTION__, flags );
+        XP_DEBUGF( "%s: flags=0x%x", __func__, flags );
 
 #ifdef NODE_CAN_4
         if ( flags == 0x0002 ) {

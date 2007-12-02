@@ -112,7 +112,7 @@ stateFromCtls( ConnsDlgState* state )
                    sizeof(addr->u.bt.hostName) );
         XP_MEMCPY( &addr->u.bt.btAddr, &state->btAddr, 
                    sizeof(addr->u.bt.btAddr) );
-        LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __FUNCTION__ );
+        LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __func__ );
 #endif
     }
 } /* stateFromCtls */
@@ -215,7 +215,7 @@ browseForDeviceName( PalmAppGlobals* globals, ConnsDlgState* state )
         CtlSetLabel( getActiveObjectPtr( XW_CONNS_BT_HOSTTRIGGER_ID ),
                      state->btName );
         XP_MEMCPY( &state->btAddr, &btAddr, sizeof(state->btAddr) );
-        LOG_HEX( &state->btAddr, sizeof(state->btAddr), __FUNCTION__ );
+        LOG_HEX( &state->btAddr, sizeof(state->btAddr), __func__ );
     }
 } /* browseForDeviceName */
 #endif

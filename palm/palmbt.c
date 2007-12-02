@@ -129,9 +129,9 @@ typedef struct PalmBTStuff {
 
 #ifdef DEBUG
 static void palm_bt_log( const char* btfunc, const char* func, Err err );
-#define LOG_ERR(f,e) palm_bt_log( #f, __FUNCTION__, e )
+#define LOG_ERR(f,e) palm_bt_log( #f, __func__, e )
 #define CALL_ERR(e,f,...) \
-    XP_LOGF( "%s: calling %s", __FUNCTION__, #f ); \
+    XP_LOGF( "%s: calling %s", __func__, #f ); \
     e = f(__VA_ARGS__); \
     LOG_ERR(f,e); \
     if ( e == btLibErrFailed ) { XP_WARNF( "%s=>btLibErrFailed", #f ); }
@@ -163,7 +163,7 @@ static void pbt_killLinks( PalmBTStuff* btStuff, BtLibSocketRef sock );
 static XP_Bool pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
                           const char* whence );
-#define SET_STATE(b,s)  pbt_setstate((b),(s),__FUNCTION__)
+#define SET_STATE(b,s)  pbt_setstate((b),(s),__func__)
 #define GET_STATE(b)    ((b)->p_connState)
 
 #ifdef DEBUG
@@ -270,7 +270,7 @@ palm_bt_close( PalmAppGlobals* globals )
         XP_FREE( globals->mpool, btStuff );
         globals->btStuff = NULL;
     } else {
-        XP_LOGF( "%s: btStuff null", __FUNCTION__ );
+        XP_LOGF( "%s: btStuff null", __func__ );
     }
 } /* palm_bt_close */
 
@@ -360,7 +360,7 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
             XP_ASSERT( sizeof(*btAddr) >= sizeof(addr) );
             XP_MEMCPY( btAddr, &addr, sizeof(addr) );
         
-            LOG_HEX( &addr, sizeof(addr), __FUNCTION__ );
+            LOG_HEX( &addr, sizeof(addr), __func__ );
 
             CALL_ERR( err, BtLibGetRemoteDeviceName, btStuff->btLibRefNum,
                       &addr, &nameType, btLibCachedThenRemote );
@@ -472,7 +472,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     PalmBTStuff* btStuff;
     CommsAddrRec remoteAddr;
     PBT_PicoRole picoRole;
-    XP_LOGF( "%s(len=%d)", __FUNCTION__, len);
+    XP_LOGF( "%s(len=%d)", __func__, len);
 
     btStuff = pbt_checkInit( globals, userCancelled );
     if ( !!btStuff ) {
@@ -483,7 +483,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
         XP_ASSERT( !!addr );
 
         picoRole = btStuff->picoRole;
-        XP_LOGF( "%s: role=%s", __FUNCTION__, proleToString(picoRole) );
+        XP_LOGF( "%s: role=%s", __func__, proleToString(picoRole) );
         if ( picoRole == PBT_UNINIT ) {
             XP_Bool amMaster = comms_getIsServer( globals->game.comms );
             picoRole = amMaster? PBT_MASTER : PBT_SLAVE;
@@ -678,7 +678,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
     XP_MEMCPY( &btStuff->actQueue[0], &btStuff->actQueue[1], 
                btStuff->queueLen * sizeof(btStuff->actQueue[0]) );
 
-    XP_LOGF( "%s: evt=%s; state=%s", __FUNCTION__, actToStr(act),
+    XP_LOGF( "%s: evt=%s; state=%s", __func__, actToStr(act),
              stateToStr(GET_STATE(btStuff)) );
 
     switch( act ) {
@@ -813,7 +813,7 @@ pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
     EventType eventToPost;
     eventToPost.eType = nilEvent;
 
-    XP_LOGF( "%s(%s)", __FUNCTION__, actToStr(act) );
+    XP_LOGF( "%s(%s)", __func__, actToStr(act) );
     EvtAddEventToQueue( &eventToPost );
 
     if ( DUPLICATES_OK(act)
@@ -885,11 +885,11 @@ pbt_enqueue( PBT_queue* queue, const XP_U8* data, const XP_S16 len,
         }
         XP_MEMCPY( &queue->bufs[total], data, len );
 /*         XP_LOGF( "%s: adding %d; total now %d (%d packets)",
-           __FUNCTION__,  */
+           __func__,  */
 /*                  len, len+total, i+1 ); */
         result = len;
     } else {
-        XP_LOGF( "%s: dropping packet of len %d", __FUNCTION__, len );
+        XP_LOGF( "%s: dropping packet of len %d", __func__, len );
         result = -1;
     }
     return result;
@@ -973,7 +973,7 @@ bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr )
 static void
 pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
 {
-    XP_LOGF( "%s; state=%s", __FUNCTION__, stateToStr(GET_STATE(btStuff)));
+    XP_LOGF( "%s; state=%s", __func__, stateToStr(GET_STATE(btStuff)));
 
     if ( btStuff->picoRole == PBT_MASTER ) {
         pbt_takedown_master( btStuff );
@@ -987,7 +987,7 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
              BtLibAddrBtdToA( btStuff->btLibRefNum, 
                               (BtLibDeviceAddressType*)&addr->u.bt.btAddr,
                               buf, sizeof(buf) ) ) {
-            XP_LOGF( "%s(%s)", __FUNCTION__, buf );
+            XP_LOGF( "%s(%s)", __func__, buf );
         }
     } else {
         XP_LOGF( "null addr" );
@@ -996,7 +996,7 @@ pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )
     if ( GET_STATE(btStuff) == PBTST_NONE ) {
         pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
     } else {
-        XP_LOGF( "%s: doing nothing", __FUNCTION__ );
+        XP_LOGF( "%s: doing nothing", __func__ );
     }
     LOG_RETURN_VOID();
 } /* pbt_setup_slave */
@@ -1180,7 +1180,7 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
     BtLibSocketEventEnum event = sEvent->event;
     Err err;
 
-    XP_LOGF( "%s(%s); status:%s", __FUNCTION__, btEvtToStr(event),
+    XP_LOGF( "%s(%s); status:%s", __func__, btEvtToStr(event),
              btErrToStr(sEvent->status) );
 
     switch( event ) {
@@ -1314,7 +1314,7 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
 {
     PalmBTStuff* btStuff = (PalmBTStuff*)refCon;
     BtLibManagementEventEnum event = mEvent->event;
-    XP_LOGF( "%s(%s); status=%s", __FUNCTION__, mgmtEvtToStr(event),
+    XP_LOGF( "%s(%s); status=%s", __func__, mgmtEvtToStr(event),
              btErrToStr(mEvent->status) );
 
     switch( event ) {

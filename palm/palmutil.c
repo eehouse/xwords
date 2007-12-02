@@ -148,7 +148,7 @@ disOrEnableTri( FormPtr form, UInt16 id, XP_TriEnable enable )
         case frmLabelObj:            /* what to do? */
             break;
         default:
-            XP_WARNF( "%s: %d not handled", __FUNCTION__, (XP_U16)typ );
+            XP_WARNF( "%s: %d not handled", __func__, (XP_U16)typ );
             XP_ASSERT(0);
         }
     }
@@ -750,7 +750,7 @@ deleteDB( const char* dbName )
 		Err err = DmDeleteDatabase( CARD_0, dbID );
         XP_ASSERT( errNone == err );
     } else {
-        XP_WARNF( "%s(%s): got back 0", __FUNCTION__, dbName );
+        XP_WARNF( "%s(%s): got back 0", __func__, dbName );
     }
 } /* deleteDB */
 

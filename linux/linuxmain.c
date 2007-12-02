@@ -777,7 +777,7 @@ nameToBtAddr( const char* name, bdaddr_t* ba )
                 if ( 0 == strcmp( buf, name ) ) {
                     XP_MEMCPY( ba, &inqInfo[i].bdaddr, sizeof(*ba) );
                     success = XP_TRUE;
-                    XP_LOGF( "%s: matched %s", __FUNCTION__, name );
+                    XP_LOGF( "%s: matched %s", __func__, name );
                     char addrStr[32];
                     ba2str(ba, addrStr);
                     XP_LOGF( "bt_addr is %s", addrStr );

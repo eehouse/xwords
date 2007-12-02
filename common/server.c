@@ -1853,7 +1853,7 @@ reflectMove( ServerCtxt* server, XWStreamCtxt* stream )
             handleIllegalWord( server, stream );
         }
     } else {
-        XP_LOGF( "%s: dropping move: state=%s", __FUNCTION__,
+        XP_LOGF( "%s: dropping move: state=%s", __func__,
                  getStateStr(server->nv.gameState ) );
     }
     return moveOk;
