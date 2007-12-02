@@ -2235,7 +2235,7 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
                == &event->data.frmObjectFocusLost.objectID );
     take = event->eType == frmObjectFocusTakeEvent;
 
-/*     XP_LOGF( "%s(%s,%s)", __FUNCTION__, frmObjId_2str(objectID), */
+/*     XP_LOGF( "%s(%s,%s)", __func__, frmObjId_2str(objectID), */
 /*              (take? "take":"lost") ); */
 
     if ( take && !globals->initialTakeDropped && 
@@ -3638,7 +3638,7 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
-    XP_LOGF( "%s(%d)", __FUNCTION__, strID );
+    XP_LOGF( "%s(%d)", __func__, strID );
 
     XP_ASSERT( strID < STR_LAST_STRING );
     globals = (PalmAppGlobals*)uc->closure;

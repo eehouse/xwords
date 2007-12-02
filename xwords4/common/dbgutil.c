@@ -38,7 +38,7 @@ XP_Key_2str( XP_Key key )
         CASESTR(XP_RAISEFOCUS_KEY);
         CASESTR(XP_RETURN_KEY);
         CASESTR(XP_KEY_LAST );
-    default: return FUNC(__FUNCTION__) " unknown";
+    default: return FUNC(__func__) " unknown";
     }
 }
 
@@ -49,7 +49,7 @@ DrawFocusState_2str( DrawFocusState dfs )
         CASESTR(DFS_NONE);
         CASESTR(DFS_TOP);
         CASESTR(DFS_DIVED);
-    default: return FUNC(__FUNCTION__) " unknown";
+    default: return FUNC(__func__) " unknown";
     }
 }
 
@@ -61,7 +61,7 @@ BoardObjectType_2str( BoardObjectType obj )
         CASESTR(OBJ_BOARD);
         CASESTR(OBJ_SCORE);
         CASESTR(OBJ_TRAY);
-    default: return FUNC(__FUNCTION__) " unknown";
+    default: return FUNC(__func__) " unknown";
     }
 }
 

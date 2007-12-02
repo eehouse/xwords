@@ -1228,9 +1228,9 @@ ceSetDictName( const wchar_t* XP_UNUSED(wPath), XP_U16 XP_UNUSED_DBG(index),
 /*     WideCharToMultiByte( CP_ACP, 0, wPath, -1, */
 /*                          buf, sizeof(buf)-1, NULL, NULL ); */
 
-/*     XP_LOGF( "%s: got path \"%s\"", __FUNCTION__, buf ); */
+/*     XP_LOGF( "%s: got path \"%s\"", __func__, buf ); */
 /*     str = copyString( MPPARM(globals->mpool) buf ); */
-/*     XP_LOGF( "%s: got %p", __FUNCTION__, str ); /\* this is leaking *\/ */
+/*     XP_LOGF( "%s: got %p", __func__, str ); /\* this is leaking *\/ */
 /*     XP_ASSERT( NULL == globals->gameInfo.dictName ); */
 /*     globals->gameInfo.dictName = str; */
     return XP_FALSE;
@@ -1327,7 +1327,7 @@ drawInsidePaint( CEAppGlobals* globals )
 
     hdc = GetDC( globals->hWnd );
     if ( !hdc ) {
-        logLastError( __FUNCTION__ );
+        logLastError( __func__ );
     } else {
         HDC prevHDC = globals->hdc;
         globals->hdc = hdc;
@@ -1823,7 +1823,7 @@ ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, XP_Bool* handledP )
     XP_Key key;
     XP_S16 incr = 0;
 
-    XP_LOGF( "%s: 0x%x", __FUNCTION__, wParam );
+    XP_LOGF( "%s: 0x%x", __func__, wParam );
 
     switch ( wParam ) {
         /* get constants for these!!! */
@@ -2553,7 +2553,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 #endif
 
     default:
-        XP_LOGF( "%s(%d)", __FUNCTION__, id );
+        XP_LOGF( "%s(%d)", __func__, id );
         message = "unknown errorcode ID!!!";
         break;
     }

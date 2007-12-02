@@ -1081,7 +1081,7 @@ setCtrlsForTray( GtkAppGlobals* globals )
         }
         globals->adjustment->page_size = pageSize;
 
-        XP_LOGF( "%s: set pageSize = %d", __FUNCTION__,
+        XP_LOGF( "%s: set pageSize = %d", __func__,
                  pageSize );
 
         globals->adjustment->value = 
@@ -1362,7 +1362,7 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     XP_Bool silent;
     XP_UCHAR* message = linux_getErrString( id, &silent );
 
-    XP_LOGF( "%s(%d)", __FUNCTION__, id );
+    XP_LOGF( "%s(%d)", __func__, id );
 
     if ( silent ) {
         XP_LOGF( message );
@@ -1577,7 +1577,7 @@ newConnectionInput( GIOChannel *source,
     int sock = g_io_channel_unix_get_fd( source );
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    XP_LOGF( "%s:condition = 0x%x", __FUNCTION__, (int)condition );
+    XP_LOGF( "%s:condition = 0x%x", __func__, (int)condition );
 
 /*     XP_ASSERT( sock == globals->cGlobals.socket ); */
 
@@ -1753,7 +1753,7 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
                                 G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
                                 acceptorInput, globals );
         g_io_channel_unref( channel ); /* only main loop holds it now */
-        XP_LOGF( "%s: g_io_add_watch(%d) => %d", __FUNCTION__, listener, watch );
+        XP_LOGF( "%s: g_io_add_watch(%d) => %d", __func__, listener, watch );
 
         XP_ASSERT( NULL == info );
         info = XP_MALLOC( globals->params->util->mpool, sizeof(*info) );

@@ -747,7 +747,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
         /* stdin first */
         if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) {
             int evtCh = fgetc(stdin);
-            XP_LOGF( "%s: got key: %x", __FUNCTION__, evtCh );
+            XP_LOGF( "%s: got key: %x", __func__, evtCh );
             *ch = evtCh;
             result = XP_TRUE;
             --numEvents;

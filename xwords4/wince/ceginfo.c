@@ -177,7 +177,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 #ifndef STUBBED_DICT
     if ( !!gi->dictName ) { 
         XP_LOGF( "%s: copying %s to giState->newDictName",
-                 __FUNCTION__, gi->dictName );
+                 __func__, gi->dictName );
         XP_MEMCPY( giState->newDictName, gi->dictName,
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
     }
@@ -445,7 +445,7 @@ playerFromID( XP_U16 id, XP_U16 base )
 {
     XP_U16 player;
     player = (id - base) / NUM_COLS;
-/*     XP_LOGF( "%s: looks like row %d", __FUNCTION__, player ); */
+/*     XP_LOGF( "%s: looks like row %d", __func__, player ); */
     return player;
 }
 
@@ -489,7 +489,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 /*     { */
 /*         char buf[64]; */
 /*         messageToBuf( message, buf, sizeof(buf) ); */
-/*         XP_LOGF( "%s: %s", __FUNCTION__, buf ); */
+/*         XP_LOGF( "%s: %s", __func__, buf ); */
 /*     } */
 /* #endif */
 

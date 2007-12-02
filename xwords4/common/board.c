@@ -2913,7 +2913,7 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
             draw = invalFocusOwner( board ) || draw;
         }
         board->focussed = typ;
-        XP_LOGF( "%s: set focussed to %s", __FUNCTION__, 
+        XP_LOGF( "%s: set focussed to %s", __func__, 
                  BoardObjectType_2str(typ) );
         board->focusHasDived = XP_FALSE;
         draw = invalFocusOwner( board ) || draw;
@@ -3003,7 +3003,7 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey,
             end = max;
             break;
         default:
-            XP_LOGF( "%s: odd cursor key: %d", __FUNCTION__, cursorKey ); 
+            XP_LOGF( "%s: odd cursor key: %d", __func__, cursorKey ); 
         }
 
         if ( incr != 0 ) {

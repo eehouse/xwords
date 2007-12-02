@@ -206,7 +206,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
         board_prefsChanged( game->board, cp );
         success = XP_TRUE;
     } else {
-        XP_LOGF( "%s: aborting; stream version too new!", __FUNCTION__ );
+        XP_LOGF( "%s: aborting; stream version too new!", __func__ );
     }
     return success;
 } /* game_makeFromStream */

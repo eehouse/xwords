@@ -416,7 +416,7 @@ checkPrefsHiliteGadget( PalmAppGlobals* globals, UInt16 selGadget )
     Boolean result = false;
 
     XP_Bool globalChosen = selGadget == XW_PREFS_ALLGAMES_GADGET_ID;
-    XP_LOGF( "%s: selGadget=%d", __FUNCTION__, selGadget );
+    XP_LOGF( "%s: selGadget=%d", __func__, selGadget );
 
     result = globalChosen != globals->prefsDlgState->stateTypeIsGlobal;
 	    

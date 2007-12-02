@@ -99,7 +99,7 @@ getL2Addr( const CommsAddrRec const* addrP, L2_RF_ADDR* const saddr )
     // connect to the SDP server running on the remote machine
     session = sdp_connect( BDADDR_ANY, &target, 0 );
     if ( NULL == session ) {
-        XP_LOGF( "%s: sdp_connect->%s", __FUNCTION__, strerror(errno) );
+        XP_LOGF( "%s: sdp_connect->%s", __func__, strerror(errno) );
     } else {
         sdp_uuid128_create( &svc_uuid, &svc_uuid_int );
         search_list = sdp_list_append( 0, &svc_uuid );
@@ -172,7 +172,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
 #endif
                    );
     if ( sock < 0 ) {
-        XP_LOGF( "%s: socket->%s", __FUNCTION__, strerror(errno) );
+        XP_LOGF( "%s: socket->%s", __func__, strerror(errno) );
     } else {
         L2_RF_ADDR saddr;
         XP_MEMSET( &saddr, 0, sizeof(saddr) );
@@ -185,7 +185,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
                                        -1, sock, &btStuff->sockStorage );
             btStuff->socket = sock;
         } else {
-            XP_LOGF( "%s: connect->%s; closing socket %d", __FUNCTION__, strerror(errno), sock );
+            XP_LOGF( "%s: connect->%s; closing socket %d", __func__, strerror(errno), sock );
             close( sock );
         }
     }
@@ -216,7 +216,7 @@ lbt_accept( int listener, void* ctxt )
         XP_ASSERT( btStuff->socket == -1 );
         btStuff->socket = sock;
     } else {
-        XP_LOGF( "%s: accept->%s", __FUNCTION__, strerror(errno) );
+        XP_LOGF( "%s: accept->%s", __func__, strerror(errno) );
     }
     return success;
 } /* lbt_accept */
@@ -284,7 +284,7 @@ lbt_register( LinBtStuff* btStuff, unsigned short l2_psm, uint8_t rc_channel )
         // and disconnect
         session = sdp_connect( BDADDR_ANY, BDADDR_LOCAL, SDP_RETRY_IF_BUSY );
         if ( NULL == session ) {
-            XP_LOGF( "%s: sdp_connect->%s", __FUNCTION__, strerror(errno) );
+            XP_LOGF( "%s: sdp_connect->%s", __func__, strerror(errno) );
         }
         XP_ASSERT( NULL != session );
         sdp_record_register( session, &record, 0 );
@@ -329,7 +329,7 @@ lbt_listenerSetup( CommonGlobals* globals )
     saddr.l2_bdaddr = *BDADDR_ANY;
     saddr.l2_psm = htobs( XW_PSM ); /* need to associate uuid with this before opening? */
     if ( 0 != bind( listener, (struct sockaddr *)&saddr, sizeof(saddr) ) ) {
-        XP_LOGF( "%s: bind->%s", __FUNCTION__, strerror(errno) ); 
+        XP_LOGF( "%s: bind->%s", __func__, strerror(errno) ); 
     }
 #elif defined BT_USE_RFCOMM
     saddr.rc_family = AF_BLUETOOTH;
@@ -424,7 +424,7 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
     XP_S16 nSent = -1;
     LinBtStuff* btStuff;
 
-    XP_LOGF( "%s(len=%d)", __FUNCTION__, buflen );
+    XP_LOGF( "%s(len=%d)", __func__, buflen );
     LOG_HEX( buf, buflen, __func__ );
 
     btStuff = globals->btStuff;
@@ -447,15 +447,15 @@ linux_bt_send( const XP_U8* buf, XP_U16 buflen,
 #endif
             nSent = write( btStuff->socket, buf, buflen );
             if ( nSent < 0 ) {
-                XP_LOGF( "%s: send->%s", __FUNCTION__, strerror(errno) );
+                XP_LOGF( "%s: send->%s", __func__, strerror(errno) );
             } else if ( nSent < buflen ) {
-                XP_LOGF( "%s: sent only %d bytes of %d", __FUNCTION__, nSent, 
+                XP_LOGF( "%s: sent only %d bytes of %d", __func__, nSent, 
                          buflen );
                 /* Need to loop until sent if this is happening */
                 XP_ASSERT( 0 );
             }
         } else {
-            XP_LOGF( "%s: socket still not set", __FUNCTION__ );
+            XP_LOGF( "%s: socket still not set", __func__ );
         }
     }
     LOG_RETURNF( "%d", nSent );
@@ -470,7 +470,7 @@ read_all( int sock, unsigned char* buf, const int len )
     while ( totalRead < len ) {
         int nRead = read( sock, buf+totalRead, len-totalRead );
         if ( nRead < 0 ) {
-            XP_LOGF( "%s: read->%s", __FUNCTION__, strerror(errno) );
+            XP_LOGF( "%s: read->%s", __func__, strerror(errno) );
             break;
         }
         totalRead += nRead;
@@ -497,7 +497,7 @@ linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen )
 #else        
     nRead = read( sock, buf, buflen );
     if ( nRead < 0 ) {
-        XP_LOGF( "%s: read->%s", __FUNCTION__, strerror(errno) );
+        XP_LOGF( "%s: read->%s", __func__, strerror(errno) );
     }
 #endif
 

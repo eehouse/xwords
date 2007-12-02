@@ -1094,7 +1094,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                                    with an existing channel. */
                                 channelNo = ++comms->nextChannelNo;
                                 XP_LOGF( "%s: incrementled nextChannelNo "
-                                         "to %d", __FUNCTION__, 
+                                         "to %d", __func__, 
                                          comms->nextChannelNo );
                                 channelWas0 = XP_TRUE;
                             }
@@ -1154,14 +1154,14 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                         }
                     }
                 } else {
-                    XP_LOGF( "%s: message too small", __FUNCTION__ );
+                    XP_LOGF( "%s: message too small", __func__ );
                 }
             } else {
                 XP_STATUSF( "refusing non-matching connID; got %lx, "
                             "wanted %lx", connID, comms->connID );
             }
         } else {
-            XP_LOGF( "%s: message too small", __FUNCTION__ );
+            XP_LOGF( "%s: message too small", __func__ );
         }
     }
     LOG_RETURNF( "%d", (XP_U16)validMessage );

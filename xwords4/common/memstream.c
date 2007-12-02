@@ -285,7 +285,7 @@ mem_stream_putBits( XWStreamCtxt* p_sctx, XP_U16 nBits, XP_U32 data
     XP_ASSERT( data == 0 );     /* otherwise nBits was too small */
 #ifdef DEBUG
     if ( data != 0 ) {
-        XP_LOGF( "%s: nBits was %d from line %d, %s", __FUNCTION__, 
+        XP_LOGF( "%s: nBits was %d from line %d, %s", __func__, 
                  origBits, lin, fil );
     }
 #endif
