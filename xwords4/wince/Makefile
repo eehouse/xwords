@@ -28,8 +28,8 @@ MINGW_INC_PATH ?= /usr/i586-mingw32msvc/include
 HAVE_COMMCTRL = 1
 
 ifeq ($(TARGET_OS),wince)
-BLUETOOTH = -DXWFEATURE_BLUETOOTH
-RELAY = -DXWFEATURE_RELAY
+# BLUETOOTH = -DXWFEATURE_BLUETOOTH
+RELAY = -DXWFEATURE_RELAY -DCOMMS_HEARTBEAT
 CC = arm-wince-pe-gcc
 WINDRES = arm-wince-pe-windres
 STRIP = arm-wince-pe-strip
