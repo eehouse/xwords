@@ -43,7 +43,7 @@ compilation_error_here( "Choose one or the other or none." );
 /* It might make sense for this to be a parameter or somehow tied to the
    platform and transport.  But in that case it'd have to be passed across
    since all devices must agree. */
-# define HB_INTERVAL 5
+# define HB_INTERVAL 3
 #endif
 
 EXTERN_C_START
@@ -94,6 +94,7 @@ struct CommsCtxt {
     TransportSend sendproc;
 #ifdef COMMS_HEARTBEAT
     TransportReset resetproc;
+    XP_U32 hbStartTime;
 #endif
     void* sendClosure;
 
@@ -428,6 +429,7 @@ comms_start( CommsCtxt* comms )
 {
 #ifdef COMMS_HEARTBEAT
     comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
+    comms->hbStartTime = util_getCurSeconds( comms->util );
 #endif
 
     sendConnect( comms );
@@ -575,12 +577,10 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 
 #ifdef COMMS_HEARTBEAT
     comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
+    comms->hbStartTime = util_getCurSeconds( comms->util );
 #endif
     sendConnect( comms );
 
-#ifdef COMMS_HEARTBEAT
-    comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
-#endif
 } /* comms_setAddr */
 
 void
@@ -957,7 +957,7 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 
 static XP_Bool
 preProcess( CommsCtxt* comms, XWStreamCtxt* stream, 
-            XP_Bool* usingRelay, XWHostID* senderID )
+            XP_Bool* usingRelay, XWHostID* XP_UNUSED_RELAY(senderID) )
 {
     XP_Bool consumed = XP_FALSE;
     switch ( comms->addr.conType ) {
@@ -1211,8 +1211,10 @@ heartbeat_checks( CommsCtxt* comms )
         XP_U32 lastMsgRcvdTime = rec->lastMsgRcvdTime;
         if ( lastMsgRcvdTime == 0 ) { /* nothing received yet */
             XP_LOGF( "no last message" );
-            /* do nothing; or should we send? */
-        } else if ( (lastMsgRcvdTime > 0) && (lastMsgRcvdTime < tooLongAgo) ) {
+            lastMsgRcvdTime = comms->hbStartTime;
+        }
+        XP_ASSERT( lastMsgRcvdTime > 0 );
+        if ( lastMsgRcvdTime < tooLongAgo ) {
             XP_LOGF( "calling reset proc; last was %ld secs too long ago", 
                      tooLongAgo-lastMsgRcvdTime );
             (*comms->resetproc)(comms->sendClosure);
