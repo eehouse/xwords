@@ -99,7 +99,7 @@
 { "STR_ROBOT_MOVED",           "The robot made this move:\n" },
 { "STR_REMOTE_MOVED",          "Remote player made this move:\n" },
 { "STRD_ROBOT_TRADED",         "%d tiles traded this turn." },
-{ "STR_ROBOT_TITLE",           "Robot score" },
+{ "STR_ROBOT_TITLE",           "Remote/robot score" },
 
   /* The end of 4.0.5's strings */
 
@@ -141,7 +141,7 @@
 
 { "STR_ABOUT_CONTENT", 
 #ifdef XWFEATURE_BLUETOOTH
-                               "THANKS FOR LOOKING at this alpha version of "
+                               "THANKS FOR DOWNLOADING this beta version of "
                                "Crosswords.  Please see the notes and caveats at "
                                "xwords.sf.net/bt_palm.php.  Please report bugs to "
                                "ehouse@users.sf.net.  Enjoy!\n\n"
