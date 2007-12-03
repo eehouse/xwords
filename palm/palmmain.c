@@ -35,7 +35,9 @@
 #ifdef FEATURE_SILK
 # include <SonyCLIE.h>
 #endif
-
+#ifdef XWFEATURE_BLUETOOTH
+# include <BtLibTypes.h>
+#endif
 #include "comtypes.h"
 #include "comms.h"
 
@@ -216,10 +218,21 @@ static UInt16
 romVersion( void )
 {
     UInt32 dwOSVer;
+    UInt16 result;
 
     FtrGet(sysFtrCreator, sysFtrNumROMVersion, &dwOSVer );
     /* should turn 3 and 5 into 35 */
-    return (sysGetROMVerMajor(dwOSVer)*10) + sysGetROMVerMinor(dwOSVer);
+    result = (sysGetROMVerMajor(dwOSVer)*10) + sysGetROMVerMinor(dwOSVer);
+
+    /* Sprint Treo650 is returning 0036 */
+#if defined XWFEATURE_BLUETOOTH && defined MEM_DEBUG
+    XP_ASSERT( errNone == FtrGet( sysFileCBtLib, btLibFeatureVersion, &dwOSVer ) );
+    XP_LOGF( "sysFileCBtLib version: %lx", dwOSVer );
+    /* Treo 700 on VWZ: sysFileCBtLib version: 00000003 */
+    /* Treo 650 on Sprint: sysFileCBtLib version: 00000001 */
+#endif
+
+    return result;
 } /* romVersion */
 
 #ifdef COLOR_SUPPORT
