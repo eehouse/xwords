@@ -83,8 +83,7 @@ match( string* cmd, char * const* first, int incr, int count )
     const char* cmdFound = NULL;
     int which = -1;
     int i;
-    for ( i = 0; i < count; ++i ) {
-        logf( XW_LOGINFO, "comparing %s,%s", *first, cmd );
+    for ( i = 0; (i < count) && (nFound <= 1); ++i ) {
         if ( 0 == strncmp( cmd->c_str(), *first, cmdlen ) ) {
             ++nFound;
             which = i;
@@ -280,32 +279,47 @@ cmd_get( int socket, const char** args )
 static bool
 cmd_set( int socket, const char** args )
 {
+    const char* val = args[2];
+    char* const attrs[] = { "help", "listeners", "loglevel" };
+    string attr(args[1]);
+    int index = match( &attr, attrs, sizeof(attrs[0]), 
+                       sizeof(attrs)/sizeof(attrs[0]));
+
     bool needsHelp = true;
-    if ( 0 == strcmp( args[1], "loglevel" ) ) {
-        const char* attr = args[1];
-        const char* val = args[2];
-        if ( (NULL != attr) && (NULL != val) ) {
+    switch( index ) {
+    case 1:
+        if ( NULL != val && val[0] != '\0' ) {
+            istringstream str( val );
+            vector<int> sv;
+            while ( !str.eof() ) {
+                int sock;
+                char comma;
+                str >> sock >> comma;
+                logf( XW_LOGERROR, "%s: read %d", __func__, sock );
+                sv.push_back( sock );
+            }
+            g_listeners.SetAll( &sv );
+            needsHelp = false;
+        }
+        break;
+    case 2:
+        if ( NULL != val && val[0] != '\0' ) {
             RelayConfigs* rc = RelayConfigs::GetConfigs();
             if ( rc != NULL ) {
                 rc->SetLogLevel( atoi(val) );
                 needsHelp = false;
             }
         }
-    } else if ( 0 == strcmp( args[1], "listeners" ) ) {
-        istringstream str( args[2] );
-        vector<int> sv;
-        while ( !str.eof() ) {
-            int sock;
-            char comma;
-            str >> sock >> comma;
-            logf( XW_LOGERROR, "%s: read %d", __func__, sock );
-            sv.push_back( sock );
-        }
-        g_listeners.SetAll( &sv );
+        break;
+    default:
+        break;
     }
 
     if ( needsHelp ) {
-        print_to_sock( socket, true, "* %s loglevel <n>", args[0] );
+        print_to_sock( socket, true, 
+                       "* %s listeners <n>,[<n>,..<n>,]\n"
+                       "* %s loglevel <n>"
+                       ,args[0], args[0] );
     }
     return false;
 }
