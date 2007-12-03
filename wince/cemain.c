@@ -82,9 +82,17 @@ typedef struct FileWriteState {
 static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len, 
                             const CommsAddrRec* addr, 
                             void* closure );
+
 #define CE_SEND_PROC ce_send_proc
 #else
 #define CE_SEND_PROC NULL
+#endif
+
+#ifdef COMMS_HEARTBEAT
+static void ce_reset_proc( void* closure );
+# define CE_RESET_PROC ce_send_proc,
+#else
+# define CE_RESET_PROC 
 #endif
 
 static VTableMgr* ce_util_getVTManager( XW_UtilCtxt* uc );
@@ -729,7 +737,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
         XP_U16 newGameID = 0;
         game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
                     newGameID, &globals->appPrefs.cp, CE_SEND_PROC, 
-                    globals );
+                    CE_RESET_PROC globals );
 
         if ( !!gp ) {
             globals->gameInfo.hintsNotAllowed = gp->hintsNotAllowed;
@@ -969,7 +977,8 @@ ceLoadSavedGame( CEAppGlobals* globals )
             game_makeFromStream( MEMPOOL stream, &globals->game, 
                                  &globals->gameInfo,
                                  dict, &globals->util, globals->draw,
-                                 &globals->appPrefs.cp, CE_SEND_PROC, globals );
+                                 &globals->appPrefs.cp, CE_SEND_PROC, 
+                                 CE_RESET_PROC globals );
         }
 
         stream_destroy( stream );
@@ -1194,7 +1203,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
                           &globals->util, globals->draw, gameID,
                           &globals->appPrefs.cp, 
-                          CE_SEND_PROC, globals );
+                          CE_SEND_PROC, CE_RESET_PROC globals );
 
         newDone = ceDoNewGame( globals ); /* calls ceInitAndStartBoard */
         if ( !newDone ) {
@@ -2124,7 +2133,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_TIMER:
             why = (XWTimerReason)wParam;
             if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK
-#ifdef XWFEATURE_RELAY
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
                  || why == TIMER_HEARTBEAT
 #endif
                  ) {
@@ -2447,7 +2456,7 @@ wince_snprintf( XP_UCHAR* buf, XP_U16 len, const XP_UCHAR* format, ... )
     return strlen(buf);
 } /* wince_snprintf */
 
-#ifdef XWFEATURE_RELAY
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 static void
 got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 {
@@ -2464,6 +2473,14 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
                           0, (DWORD)stream );
     XP_ASSERT( posted );
 } /* got_data_proc */
+#endif
+
+#ifdef COMMS_HEARTBEAT
+static void
+ce_reset_proc( void* closure )
+{
+    LOG_FUNC();
+}
 #endif
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
@@ -2744,7 +2761,7 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     case TIMER_TIMERTICK:
         howLong = 1000;          /* 1 second */
         break;
-#ifdef XWFEATURE_RELAY
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
     case TIMER_HEARTBEAT:
         howLong = when * 1000;
         break;
