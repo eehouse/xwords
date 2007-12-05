@@ -631,8 +631,14 @@ int main( int argc, char** argv )
         } else if ( pid > 0 ) {
             int status;
             logf( XW_LOGINFO, "parent waiting on child pid=%d", pid );
+            time_t time_before = time( NULL );
             waitpid( pid, &status, 0 );
             printWhy( status );
+            time_t time_after = time( NULL );
+            doFork = time_after > time_before;
+            if ( !doFork ) {
+                logf( XW_LOGERROR, "exiting b/c respawned too quickly" );
+            }
         } else {
             logf( XW_LOGERROR, "fork() => %s", strerror(errno) );
         }
