@@ -695,7 +695,7 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
 
 static void
 curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
-                        void** storage )
+                        void** XP_UNUSED(storage) )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)cGlobals;
     XP_ASSERT( !cGlobals->acceptor || (func == cGlobals->acceptor) );
@@ -705,10 +705,10 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
 }
 
 static int
-figureTimeout( CursesAppGlobals* XP_UNUSED_RELAY(globals) )
+figureTimeout( CursesAppGlobals* globals )
 {
     int result = INFINITE_TIMEOUT;
-#ifdef XWFEATURE_RELAY
+#ifdef RELAY_HEARTBEAT
     if ( globals->cGlobals.timerProcs[TIMER_HEARTBEAT] != 0 ) {
         XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util );
         XP_U32 then = globals->nextTimer;
@@ -737,7 +737,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
     numEvents = poll( globals->fdArray, globals->fdCount, timeout );
 
     if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) {
-#ifdef XWFEATURE_RELAY
+#ifdef RELAY_HEARTBEAT
         if ( !globals->cGlobals.params->noHeartbeat ) {
             linuxFireTimer( &globals->cGlobals, TIMER_HEARTBEAT );
         }

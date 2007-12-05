@@ -98,7 +98,7 @@ typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
 
-typedef XP_U16 XP_PlayerAddr;
+typedef XP_S16 XP_PlayerAddr;
 
 typedef enum {
     TIMER_PENDOWN = 1, /* ARM doesn't like ids of 0... */
@@ -211,6 +211,12 @@ typedef struct CommonPrefs {
 #  define XP_UNUSED_BT(x) x
 #else
 #  define XP_UNUSED_BT(x) UNUSED__ ## x __attribute__((unused))
+#endif
+
+#if BT_USE_RFCOMM
+# define XP_UNUSED_RFCOMM(x) x
+#else
+# define XP_UNUSED_RFCOMM(x) UNUSED__ ## x __attribute__((unused))
 #endif
 
 #ifdef KEYBOARD_NAV

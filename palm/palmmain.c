@@ -128,7 +128,7 @@ static DictionaryCtxt* palm_util_makeEmptyDict( XW_UtilCtxt* uc );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, 
-                                                   XP_U16 channelNo );
+                                                   XP_PlayerAddr channelNo );
 #endif
 static const XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc, 
                                                 XP_U16 stringCode );
@@ -2748,7 +2748,9 @@ mainViewHandleEvent( EventPtr event )
             /* Would be better to beep when no remote players.... */
         case XW_RESENDIR_PULLDOWN_ID:
             if ( !!globals->game.comms ) {
+#ifdef XWFEATURE_BLUETOOTH
                 globals->suspendBT = XP_FALSE;
+#endif
                 (void)comms_resendAll( globals->game.comms );
             }
             break;
@@ -3871,7 +3873,7 @@ palm_util_makeEmptyDict( XW_UtilCtxt* uc )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* 
-palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
+palm_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
     XWStreamCtxt* stream;
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
