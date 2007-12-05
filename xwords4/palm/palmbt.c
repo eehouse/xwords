@@ -288,7 +288,7 @@ palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btUIStateP
     if ( haveWork ) {
         pbt_do_work( btStuff, proc );
     }
-    if ( haveWork && !!btStuff && !!btUIStateP ) {
+    if ( !!btStuff && !!btUIStateP ) {
         BtUIState btUIState = BTUI_NONE; /* default */
         switch( GET_STATE(btStuff) ) {
         case PBTST_NONE: 
@@ -308,7 +308,7 @@ palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btUIStateP
                 BTUI_SERVING : BTUI_CONNECTED; 
             break;
         default:
-            XP_ASSERT(0);       /* Don't add new stated without handling here */
+            XP_ASSERT(0);       /* Don't add new states without handling here */
             break;
         }
         *btUIStateP = btUIState;
