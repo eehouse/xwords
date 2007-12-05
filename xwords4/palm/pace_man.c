@@ -1139,7 +1139,10 @@ btLibManagementProcArmEntry( const void* XP_UNUSED_DBG(emulStateP),
     asm( "mov %0, r10" : "=r" (oldR10) );
     asm( "mov r10, %0" : : "r" (state->gotTable) );
 
-    XP_ASSERT( emulStateP == state->emulStateP );
+    XP_ASSERT( emulStateP == state->emulStateP ); /* seems to fire when call's
+                                                     incoming (or maybe: a
+                                                     system alert is up).
+                                                     What to do? */
     XP_ASSERT( call68KFuncP == state->call68KFuncP );
 
     procPtr = (BtLibManagementProcPtr)read_unaligned32( &data[0] );

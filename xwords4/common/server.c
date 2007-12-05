@@ -1110,6 +1110,8 @@ server_sendInitialMessage( ServerCtxt* server )
         stream_destroy( stream );
     }
 
+    /* Set after messages are built so their connID will be 0, but all
+       non-initial messages will have a non-0 connID. */
     comms_setConnID( server->vol.comms, gameID );
 } /* server_sendInitialMessage */
 #endif
