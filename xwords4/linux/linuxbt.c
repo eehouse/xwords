@@ -222,7 +222,8 @@ lbt_accept( int listener, void* ctxt )
 } /* lbt_accept */
 
 static void
-lbt_register( LinBtStuff* btStuff, unsigned short l2_psm, uint8_t rc_channel )
+lbt_register( LinBtStuff* btStuff, unsigned short l2_psm, 
+              uint8_t XP_UNUSED_RFCOMM(rc_channel) )
 {
     LOG_FUNC();
     if ( NULL == btStuff->u.master.session ) {

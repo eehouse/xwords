@@ -109,7 +109,7 @@ linux_udp_reset( CommonGlobals* globals )
         XP_MEMCPY( &addr, &stuff->addr, sizeof(addr) );
         linux_udp_close( globals );
     }
-    sleep( 3 );
+    sleep( 1 );
     linux_udp_open( globals, &addr );
     LOG_RETURN_VOID();
 }

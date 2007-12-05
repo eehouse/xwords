@@ -99,7 +99,7 @@ typedef struct UtilVtable {
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     XWStreamCtxt* (*m_util_makeStreamFromAddr )(XW_UtilCtxt* uc,
-                                                XP_U16 channelNo );
+                                                XP_PlayerAddr channelNo );
 #endif
     
     XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, ModelCtxt* model,
