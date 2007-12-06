@@ -648,7 +648,7 @@ pbt_takedown_master( PalmBTStuff* btStuff )
     LOG_RETURN_VOID();
 } /* pbt_takedown_master */
 
-#ifdef DEBUG
+#if 0
 static void
 debug_logQueue( const PalmBTStuff* const btStuff )
 {
@@ -816,10 +816,10 @@ static void
 pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
 {
     EventType eventToPost;
-    eventToPost.eType = nilEvent;
+    eventToPost.eType = noopEvent;
+    EvtAddEventToQueue( &eventToPost );
 
     XP_LOGF( "%s(%s)", __func__, actToStr(act) );
-    EvtAddEventToQueue( &eventToPost );
 
     if ( DUPLICATES_OK(act)
          || (btStuff->queueLen == 0)

@@ -2281,7 +2281,6 @@ handleFocusEvent( PalmAppGlobals* globals, const EventType* event,
             setFormFocus( globals->mainForm, objectID );
         }
     }
-    LOG_RETURNF( "%d", (int)isBoardObj );
     return isBoardObj;
 } /* handleFocusEvent */
 #endif
@@ -2519,6 +2518,12 @@ mainViewHandleEvent( EventPtr event )
 
     case nilEvent:
         draw = handled = handleNilEvent( globals );
+        break;
+
+
+    case noopEvent:
+        /* do nothing! Exists just to force EvtGetEvent to return */
+        XP_ASSERT( handled );
         break;
 
     case newGameCancelEvent:
@@ -3825,6 +3830,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     XP_U32 now = TimGetTicks();
+    EventType eventToPost;
 
     if ( why == TIMER_PENDOWN ) {
         now += PALM_TIMER_DELAY;
@@ -3846,6 +3852,11 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     globals->timerProcs[why] = proc;
     globals->timerClosures[why] = closure;
     globals->timerFireAt[why] = now;
+
+    /* Post an event to force us back out of EvtGetEvent.  Required if this
+     * is called from inside some BT callback. */
+    eventToPost.eType = noopEvent;
+    EvtAddEventToQueue( &eventToPost );
 } /* palm_util_setTimer */
 
 static void 

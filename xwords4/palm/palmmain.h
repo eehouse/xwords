@@ -357,7 +357,8 @@ struct PalmAppGlobals {
 }; /* PalmAppGlobals */
 
 /* custom events */
-enum { dictSelectedEvent = firstUserEvent /* 0x6000 */
+enum { noopEvent = firstUserEvent /* 0x6000 */
+       ,dictSelectedEvent
        ,newGameOkEvent
        ,newGameCancelEvent
        ,loadGameEvent

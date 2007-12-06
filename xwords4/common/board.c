@@ -2887,7 +2887,6 @@ XP_Bool
 board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
 {
     XP_Bool draw = XP_FALSE;
-    LOG_FUNC();
     /* Called when there's been a decision to advance the focus to a new
        object, or when an object will lose it.  Need to update internal data
        structures, but also to communicate to client draw code in a way that
@@ -2926,7 +2925,6 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
         }
     }
 
-    LOG_RETURNF( "%d", (int)draw );
     return draw;
 } /* board_focusChanged */
 
