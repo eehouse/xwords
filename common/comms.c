@@ -281,6 +281,10 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
 void
 comms_destroy( CommsCtxt* comms )
 {
+    CommsAddrRec aNew;
+    aNew.conType = COMMS_CONN_NONE;
+    util_addrChange( comms->util, &comms->addr, &aNew );
+
     cleanupInternal( comms );
     cleanupAddrRecs( comms );
 
@@ -302,7 +306,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
     addr.conType = stream_getU8( stream );
 
     switch( addr.conType ) {
-    case COMMS_CONN_UNUSED:
+    case COMMS_CONN_NONE:
 /*         XP_ASSERT( 0 ); */
         break;
     case COMMS_CONN_BT:
@@ -478,7 +482,7 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 
     switch( addr.conType ) {
 #ifdef DEBUG
-    case COMMS_CONN_UNUSED:
+    case COMMS_CONN_NONE:
     case LAST_____FOO:
 /*         XP_ASSERT( 0 ); */
         break;

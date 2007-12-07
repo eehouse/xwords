@@ -285,6 +285,8 @@ palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btUIStateP
     PalmBTStuff* btStuff = globals->btStuff;
     XP_Bool haveWork = !!btStuff && HASWORK(btStuff);
 
+    XP_ASSERT( !!globals->game.comms );
+
     if ( haveWork ) {
         pbt_do_work( btStuff, proc );
     }
@@ -472,6 +474,8 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     CommsAddrRec remoteAddr;
     PBT_PicoRole picoRole;
     XP_LOGF( "%s(len=%d)", __func__, len);
+
+    XP_ASSERT( !!globals->game.comms );
 
     btStuff = pbt_checkInit( globals, userCancelled );
     if ( !!btStuff ) {
