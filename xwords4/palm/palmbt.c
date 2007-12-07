@@ -202,23 +202,16 @@ palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled )
     btStuff = globals->btStuff;
     if ( !btStuff ) {
         btStuff = pbt_checkInit( globals, userCancelled );
-        /* Should I start master/slave setup here?  If not, how? */
     } else {
         pbt_reset_buffers( btStuff );
     }
 
-    /* If we're the master, and a new game is starting without shutting down,
-       and the client has already sent its initial reg message, we'll have
-       dropped it.  Best way to force it to resend is to kill the connection
-       and force it to connect again.  */
+    /* Don't try starting master or slave: we don't know which we are yet.
+       Wait for the first send attempt.*/
 
     inited = !!btStuff;
     if ( inited ) {
-        if ( comms_getIsServer( globals->game.comms ) ) {
-            pbt_setup_master( btStuff );
-        } else if ( btStuff->picoRole == PBT_MASTER ) {
-            pbt_takedown_master( btStuff );
-        }
+        btStuff->picoRole = PBT_UNINIT;
     }
     LOG_RETURNF( "%d", (XP_U16)inited );
     return inited;
@@ -285,8 +278,6 @@ palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btUIStateP
     PalmBTStuff* btStuff = globals->btStuff;
     XP_Bool haveWork = !!btStuff && HASWORK(btStuff);
 
-    XP_ASSERT( !!globals->game.comms );
-
     if ( haveWork ) {
         pbt_do_work( btStuff, proc );
     }
@@ -349,20 +340,15 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
         Err err = bpd_discover( btStuff, &addr );
 
         if ( errNone == err ) {
-            UInt16 index;
             UInt8 name[PALM_BT_NAME_LEN];
             BtLibFriendlyNameType nameType = {
                 .name = name, 
                 .nameLength = sizeof(name) 
             };
 
-            CALL_ERR( err, BtLibSecurityFindTrustedDeviceRecord, 
-                      btStuff->btLibRefNum, &addr, &index );
-            XP_ASSERT( sizeof(*btAddr) >= sizeof(addr) );
             XP_MEMCPY( btAddr, &addr, sizeof(addr) );
+            LOG_HEX( &btAddr, sizeof(btAddr), __func__ );
         
-            LOG_HEX( &addr, sizeof(addr), __func__ );
-
             CALL_ERR( err, BtLibGetRemoteDeviceName, btStuff->btLibRefNum,
                       &addr, &nameType, btLibCachedThenRemote );
             XP_LOGF( "%s: got name %s", __func__, nameType.name );

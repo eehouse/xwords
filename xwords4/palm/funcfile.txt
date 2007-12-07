@@ -232,7 +232,6 @@ UIColorGetTableEntryIndex
 #ifdef XWFEATURE_BLUETOOTH
 BtLibOpen
 BtLibAddrBtdToA
-BtLibSecurityFindTrustedDeviceRecord
 BtLibSocketSend
 BtLibSocketClose
 BtLibLinkConnect
@@ -240,7 +239,6 @@ BtLibDiscoverSingleDevice
 BtLibLinkDisconnect
 BtLibSocketRespondToConnection
 BtLibClose
-BtLibSecurityGetTrustedDeviceRecordInfo
 BtLibSocketConnect
 BtLibSocketListen
 #BtLibRegisterManagementNotification
