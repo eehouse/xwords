@@ -219,18 +219,12 @@ romVersion( void )
 {
     UInt32 dwOSVer;
     UInt16 result;
+    Err err;
 
-    FtrGet(sysFtrCreator, sysFtrNumROMVersion, &dwOSVer );
+    err = FtrGet(sysFtrCreator, sysFtrNumROMVersion, &dwOSVer );
+    XP_ASSERT( errNone == err );
     /* should turn 3 and 5 into 35 */
     result = (sysGetROMVerMajor(dwOSVer)*10) + sysGetROMVerMinor(dwOSVer);
-
-    /* Sprint Treo650 is returning 0036 */
-#if defined XWFEATURE_BLUETOOTH && defined MEM_DEBUG
-    XP_ASSERT( errNone == FtrGet( sysFileCBtLib, btLibFeatureVersion, &dwOSVer ) );
-    XP_LOGF( "sysFileCBtLib version: %lx", dwOSVer );
-    /* Treo 700 on VWZ: sysFileCBtLib version: 00000003 */
-    /* Treo 650 on Sprint: sysFileCBtLib version: 00000001 */
-#endif
 
     return result;
 } /* romVersion */
@@ -984,8 +978,8 @@ initHighResGlobals( PalmAppGlobals* globals )
 # ifndef hsFtrIDNavigationSupported
 # define hsFtrIDNavigationSupported 14
 # endif
+    /* sysFtrNumUIHardwareFlags unavailable on PalmOS 4 */
     err = FtrGet( sysFtrCreator, sysFtrNumUIHardwareFlags, &vers );
-    XP_ASSERT( errNone == err );
     globals->generatesKeyUp = ( (err == errNone) && 
                                 ((vers & sysFtrNumUIHardwareHasKbd) != 0) )
         || globals->isZodiac;
@@ -1071,6 +1065,7 @@ startApplication( PalmAppGlobals** globalsP )
     Boolean leftyFlag;
     Int16 vers;
     UInt32 ignore;
+    Err err;
     MPSLOT;
 
 #if defined FOR_GREMLINS
@@ -1095,6 +1090,22 @@ startApplication( PalmAppGlobals** globalsP )
     getSizes( globals );
 
     globals->runningOnPOSE = FtrGet( 'pose', 0, &ignore) != ftrErrNoSuchFeature;
+
+#if defined XWFEATURE_BLUETOOTH
+    err = FtrGet( btLibFeatureCreator, btLibFeatureVersion, &ignore );
+    /* could expand the test to skip version 1 and the Treo650 :-) */
+    globals->hasBTLib = ftrErrNoSuchFeature != err;
+# ifdef MEM_DEBUG 
+    if ( errNone == err ) {
+        /* Sprint Treo650 is returning 0036 */
+        /* Treo 700 on VWZ: sysFileCBtLib version: 00000003 */
+        /* Treo 650 on Sprint: sysFileCBtLib version: 00000001 */
+        XP_LOGF( "sysFileCBtLib version: %lx", ignore );
+    } else {
+        XP_LOGF( "no sysFileCBtLib via FtrGet: OS too old?" );
+    }
+# endif
+#endif
 
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(globals->mpool) );
 
@@ -3836,7 +3847,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         now += PALM_TIMER_DELAY;
     } else if ( why == TIMER_TIMERTICK ) {
         now += SysTicksPerSecond();
-#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
     } else if ( why == TIMER_HEARTBEAT ) {
         now += (secsFromNow * SysTicksPerSecond());
 #endif

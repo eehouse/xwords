@@ -195,6 +195,7 @@ typedef struct PalmNewGameState {
     FormPtr form;
     ListPtr playerNumList;
     NewGameCtx* ngc;
+    XP_U16 nXPorts;
     XP_UCHAR passwds[MAX_PASSWORD_LENGTH+1][MAX_NUM_PLAYERS];
     XP_UCHAR* dictName;
     XP_UCHAR shortDictName[32]; /* as long as a dict name can be */
@@ -203,7 +204,6 @@ typedef struct PalmNewGameState {
     DeviceRole curServerHilite;
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IR
     CommsAddrRec addr;
-    XP_Bool connsSettingChanged;
 #endif
 } PalmNewGameState;
 
@@ -287,6 +287,7 @@ struct PalmAppGlobals {
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     XP_Bool userCancelledBT;
+    XP_Bool hasBTLib;
 #endif
 
     GraphicsAbility able;

@@ -129,13 +129,6 @@ newGameHandleEvent( EventPtr event )
         result = true;
         break;
 
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
-    case connsSettingChgEvent:
-        XP_ASSERT( globals->isNewGame );
-        state->connsSettingChanged = XP_TRUE;
-        break;
-#endif
-
 #ifdef XWFEATURE_FIVEWAY
         /* docs say to return HANDLED for both take and lost if the right
            object */
@@ -280,6 +273,10 @@ newGameHandleEvent( EventPtr event )
         setNameThatFits( state );
         break;
 
+    case appStopEvent:      /* I get these on older palms */
+        unloadNewGameState( globals );
+        result = false;
+
     default:
         break;
     }
@@ -375,8 +372,8 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
     /* Even if it didn't change, pop the connections form.  It's only
        informational in the non-new-game case; nothing can be changed. */
-    if ( hiliteID != SERVER_STANDALONE ) {
-        if ( isNewGame || hiliteID==globals->newGameState.curServerHilite ) {
+    if ( (hiliteID != SERVER_STANDALONE) && (state->nXPorts > 1) ) {
+        if ( isNewGame || (hiliteID==globals->newGameState.curServerHilite) ) {
             PopupConnsForm( globals, hiliteID, &state->addr );
         }
     }
@@ -669,6 +666,24 @@ handleRemoteChanged( PalmNewGameState* state, XP_U16 controlID, XP_Bool on )
 }
 #endif
 
+XP_U16
+countXPorts( const PalmAppGlobals* globals )
+{
+    XP_U16 xports = 0;
+#ifdef XWFEATURE_IR
+    ++xports;
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+    if ( globals->hasBTLib ) {
+        ++xports;
+    }
+#endif
+#ifdef XWFEATURE_RELAY
+    ++xports;
+#endif
+    return xports;
+}
+
 static void
 loadNewGameState( PalmAppGlobals* globals )
 {
@@ -677,7 +692,9 @@ loadNewGameState( PalmAppGlobals* globals )
 
     state->dictName = copyString( globals->mpool, gi->dictName );
     state->playerNumList = getActiveObjectPtr( XW_NPLAYERS_LIST_ID );
+    state->nXPorts = countXPorts( globals );
 
+    XP_ASSERT( !state->ngc );
     state->ngc = newg_make( MPPARM(globals->mpool)
                             globals->isNewGame, 
                             &globals->util,

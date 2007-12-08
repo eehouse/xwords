@@ -29,6 +29,7 @@
 #include "palmutil.h"
 #include "palmir.h"
 #include "palmbt.h"
+#include "LocalizedStrIncludes.h"
 
 /* When user pops up via Host gadget, we want to get the port to listen on.
  * When pops up via the Guest gadget, we want to get the port and IP address
@@ -37,8 +38,18 @@
  * expect state to live as long as the parent dialog isn't exited.
  */
 
+typedef struct XportEntry {
+    XP_U16 resID;
+    CommsConnType conType;
+} XportEntry;
+
+#define MAX_XPORTS 3
+
 typedef struct ConnsDlgState {
     ListPtr connTypesList;
+    ListData sLd;
+    XportEntry xports[MAX_XPORTS];
+    XP_U16 nXports;
     XP_U16 serverRole;
     XP_Bool isNewGame;
     CommsConnType conType;
@@ -121,8 +132,8 @@ static void
 updateFormCtls( FormPtr form, ConnsDlgState* state )
 {
     const XP_U16 relayCtls[] = {
-        XW_CONNS_RELAY_LABEL_ID ,
 #ifdef XWFEATURE_RELAY
+        XW_CONNS_RELAY_LABEL_ID ,
         XW_CONNS_RELAY_FIELD_ID,
         XW_CONNS_PORT_LABEL_ID,
         XW_CONNS_PORT_FIELD_ID,
@@ -173,36 +184,17 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
 static void
 cleanupExit( PalmAppGlobals* globals )
 {
+    freeListData( MPPARM(globals->mpool) &globals->connState->sLd );
     XP_FREE( globals->mpool, globals->connState );
     globals->connState = NULL;
     FrmReturnToForm( 0 );
 } /* cleanupExit */
 
-static XP_U16
-conTypeToSel( CommsConnType conType )
-{
-    XP_U16 result = 0;
-    switch ( conType ) {
-    case COMMS_CONN_BT: /* result = 0;  */break;
-    case COMMS_CONN_IR: result = 1; break;
-    case COMMS_CONN_RELAY: result = 2; break;
-    default:
-        XP_ASSERT(0);
-    }
-    return result;
-} /* conTypeToSel */
-
 static CommsConnType
-selToConType( XP_U16 sel )
+selToConType( const ConnsDlgState* state, XP_U16 sel )
 {
-    CommsConnType conType = COMMS_CONN_BT;
-    switch( sel ) {
-    case 0: /* conType = COMMS_CONN_BT;  */break;
-    case 1: conType = COMMS_CONN_IR; break;
-    case 2: conType = COMMS_CONN_RELAY; break;
-    default: XP_ASSERT(0);
-    }
-    return conType;
+    XP_ASSERT( sel < state->nXports );
+    return state->xports[sel].conType;
 } /* selToConType */
 
 #ifdef XWFEATURE_BLUETOOTH
@@ -219,6 +211,58 @@ browseForDeviceName( PalmAppGlobals* globals, ConnsDlgState* state )
     }
 } /* browseForDeviceName */
 #endif
+
+static void
+setupXportList( PalmAppGlobals* globals, ConnsDlgState* state )
+{
+    ListData* sLd = &state->sLd;
+    XP_U16 i;
+    XP_S16 selSel = -1;
+    const XP_UCHAR* selName = NULL;
+
+    if ( state->nXports >= 2 ) {
+        state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
+
+        initListData( MPPARM(globals->mpool) sLd, state->nXports );
+        for ( i = 0; i < state->nXports; ++i ) {
+            const XP_UCHAR* xname = getResString( globals, 
+                                                  state->xports[i].resID );
+            addListTextItem( MPPARM(globals->mpool) sLd, xname );
+            if ( state->conType == state->xports[i].conType ) {
+                selName = xname;
+                selSel = i;
+            }
+        }
+
+        XP_ASSERT( !!selName );
+        setListSelection( sLd, selName );
+        setListChoices( sLd, state->connTypesList, NULL );
+
+        setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
+                             selSel );
+    }
+} /* setupXportList */
+
+static void
+buildXportData( ConnsDlgState* state )
+{
+#ifdef XWFEATURE_IR
+    state->xports[state->nXports].conType = COMMS_CONN_IR;
+    state->xports[state->nXports].resID = STR_IR_XPORTNAME;
+    ++state->nXports;
+#endif
+#ifdef XWFEATURE_BLUETOOTH
+    state->xports[state->nXports].conType = COMMS_CONN_BT;
+    state->xports[state->nXports].resID = STR_BT_XPORTNAME;
+    ++state->nXports;
+#endif
+#ifdef XWFEATURE_RELAY
+    state->xports[state->nXports].conType = COMMS_CONN_RELAY;
+    state->xports[state->nXports].resID = STR_RELAY_XPORTNAME;
+    ++state->nXports;
+#endif
+    XP_ASSERT( state->nXports >= 2 ); /* no need for dropdown otherwise!! */
+}
 
 Boolean
 ConnsFormHandleEvent( EventPtr event )
@@ -254,12 +298,8 @@ ConnsFormHandleEvent( EventPtr event )
         ctlsFromState( globals, state );
 
         /* setup connection popup */
-        state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
-        XP_ASSERT( state->conType == COMMS_CONN_IR
-                   || state->conType == COMMS_CONN_RELAY
-                   || state->conType == COMMS_CONN_BT );
-        setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
-                             conTypeToSel(state->conType) );
+        buildXportData( state );
+        setupXportList( globals, state );
 
         updateFormCtls( form, state );
 
@@ -286,7 +326,7 @@ ConnsFormHandleEvent( EventPtr event )
                 if ( chosen >= 0 ) {
                     setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, 
                                          state->connTypesList, chosen );
-                    state->conType = selToConType( chosen );
+                    state->conType = selToConType( state, chosen );
                     updateFormCtls( form, state );
                 }
             }

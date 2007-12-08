@@ -55,13 +55,16 @@ void setBooleanCtrl( UInt16 objectID, Boolean isSet );
 Boolean getBooleanCtrl( UInt16 objectID );
 
 void setFieldStr( XP_U16 id, const XP_UCHAR* buf );
+#ifdef XWFEATURE_RELAY
+void getFieldStr( XP_U16 id, XP_UCHAR* buf, XP_U16 max );
+#endif
 void setFieldEditable( UInt16 objectID, Boolean editable );
 
 /* list item stuff */
 void initListData( MPFORMAL ListData* ld, XP_U16 nItems );
-void addListTextItem( MPFORMAL ListData* ld, XP_UCHAR* txt );
+void addListTextItem( MPFORMAL ListData* ld, const XP_UCHAR* txt );
 void setListChoices( ListData* ld, ListPtr list, void* closure );
-void setListSelection( ListData* ld, char* selName );
+void setListSelection( ListData* ld, const char* selName );
 void sortList( ListData* ld );
 void freeListData( MPFORMAL ListData* ld  );
 
