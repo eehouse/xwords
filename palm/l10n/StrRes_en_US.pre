@@ -123,6 +123,7 @@
 { "STR_TOTALPLAYERS",          "Total players" },
 
 #ifdef XWFEATURE_RELAY
+{ "STR_RELAY_XPORTNAME",       "Internet" },
 { "STR_RELAY_TIMEOUT",         "Relay error: Other devices failed to "
                                "connect." },
 { "STR_RELAY_LOST_OTHER",      "Relay error: another device has lost its "
@@ -130,7 +131,12 @@
 { "STR_RELAY_GENERIC",         "Relay error: something's wrong." },
 #endif
 
+#ifdef XWFEATURE_IR
+{ "STR_IR_XPORTNAME",          "Beaming" },
+#endif
+
 #ifdef XWFEATURE_BLUETOOTH
+{ "STR_BT_XPORTNAME",          "Bluetooth" },
 { "STR_BT_NOINIT",             "Bluetooth appears to be off.  Please turn it "
                                "on if you want Crosswords to use it." },
 { "STRS_BT_NOHOST",             "Bluetooth messages are not reaching Crosswords on %s. "
@@ -158,6 +164,6 @@
       "1610 NW 14th Place\n" \
       "Corvallis, OR 97330 USA\n\n"
 
-      "Developed on Debian GNU/Linux using the prc-tools "\
-      "suite." \
+      "Thanks to Debian GNU/Linux for the development "\
+      "tools and to KT for the time." \
       },

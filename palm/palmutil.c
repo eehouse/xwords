@@ -242,7 +242,7 @@ initListData( MPFORMAL ListData* ld, XP_U16 nItems )
 } /* initListData */
 
 void 
-addListTextItem( MPFORMAL ListData* ld, XP_UCHAR* txt ) 
+addListTextItem( MPFORMAL ListData* ld, const XP_UCHAR* txt ) 
 {
     XP_U16 curLen = ld->storageLen;
     XP_U16 strLen = XP_STRLEN( txt ) + 1; /* null byte */
@@ -289,7 +289,7 @@ setListChoices( ListData* ld, ListPtr list, void* closure )
  * no harm in calling it again.
  ****************************************************************************/
 void 
-setListSelection( ListData* ld, char* selName )
+setListSelection( ListData* ld, const char* selName )
 {
     ld->selIndex = 0;
     XP_ASSERT( !ld->choicesSet );
@@ -520,7 +520,6 @@ drawGadgetsFromList( ListPtr list, XP_U16 idLow, XP_U16 idHigh,
                      XP_U16 hiliteItem )
 {
     XP_U16 i;
-    LOG_FUNC();
     XP_ASSERT( idLow <= idHigh );
 
     for ( i = 0; idLow <= idHigh; ++i, ++idLow ) {
@@ -528,7 +527,6 @@ drawGadgetsFromList( ListPtr list, XP_U16 idLow, XP_U16 idHigh,
         Boolean hilite = idLow == hiliteItem;
         drawOneGadget( idLow, text, hilite );
     }
-    LOG_RETURN_VOID();
 } /* drawGadgetsFromList */
 
 void
