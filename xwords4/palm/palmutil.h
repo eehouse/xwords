@@ -81,6 +81,7 @@ void drawOneGadget( UInt16 id, const char* text, Boolean hilite );
 # ifdef XWFEATURE_FIVEWAY
 XP_S16 getFocusOwner( void );
 void setFormFocus( FormPtr form, XP_U16 objectID );
+XP_Bool isFormObject( FormPtr form, XP_U16 objectID );
 void drawFocusRingOnGadget( PalmAppGlobals* globals, XP_U16 idLow, 
                             XP_U16 idHigh );
 XP_Bool considerGadgetFocus( PalmAppGlobals* globals, const EventType* event, 

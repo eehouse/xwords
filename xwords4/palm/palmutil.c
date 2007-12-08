@@ -55,9 +55,10 @@ MemPtr
 getActiveObjectPtr( UInt16 objectID )
 {
     FormPtr form = FrmGetActiveForm();
-    XP_ASSERT( FrmGetObjectPtr( 
-	form, FrmGetObjectIndex( form, objectID ) )!= NULL );
-    return FrmGetObjectPtr( form, FrmGetObjectIndex( form, objectID ) );
+    Int16 index = FrmGetObjectIndex( form, objectID );
+    XP_ASSERT( index >= 0 );
+    XP_ASSERT( FrmGetObjectPtr( form, index )!= NULL );
+    return FrmGetObjectPtr( form, index );
 } /* getActiveObjectPtr */
 
 /*****************************************************************************
@@ -66,8 +67,10 @@ getActiveObjectPtr( UInt16 objectID )
 void
 getObjectBounds( UInt16 objectID, RectangleType* rectP ) 
 {
-   FormPtr form = FrmGetActiveForm();
-   FrmGetObjectBounds( form, FrmGetObjectIndex( form, objectID ), rectP );
+    FormPtr form = FrmGetActiveForm();
+    Int16 index = FrmGetObjectIndex( form, objectID );
+    XP_ASSERT( index >= 0 );
+    FrmGetObjectBounds( form, index, rectP );
 } /* getObjectBounds */
 
 #if defined XW_FEATURE_UTILS
@@ -77,8 +80,10 @@ getObjectBounds( UInt16 objectID, RectangleType* rectP )
 void
 setObjectBounds( UInt16 objectID, RectangleType* rectP ) 
 {
-   FormPtr form = FrmGetActiveForm();
-   FrmSetObjectBounds( form, FrmGetObjectIndex( form, objectID ), rectP );
+    FormPtr form = FrmGetActiveForm();
+    Int16 index = FrmGetObjectIndex( form, objectID );
+    XP_ASSERT( index >= 0 );
+    FrmSetObjectBounds( form, index, rectP );
 } /* getObjectBounds */
 
 /*****************************************************************************
@@ -172,7 +177,8 @@ void
 centerControl( FormPtr form, UInt16 id )
 {
     RectangleType cBounds, fBounds;
-    UInt16 index = FrmGetObjectIndex( form, id );
+    Int16 index = FrmGetObjectIndex( form, id );
+    XP_ASSERT( index >= 0 );
 
     FrmGetObjectBounds( form, index, &cBounds );
     FrmGetFormBounds( form, &fBounds );
@@ -423,8 +429,17 @@ getFocusOwner( void )
 void
 setFormFocus( FormPtr form, XP_U16 objectID )
 {
-    FrmSetFocus( form, FrmGetObjectIndex( form, objectID ) );
+    Int16 index = FrmGetObjectIndex( form, objectID );
+    XP_ASSERT( index >= 0 );
+    FrmSetFocus( form, index );
 } /* setFormFocus */
+
+XP_Bool
+isFormObject( FormPtr form, XP_U16 objectID )
+{
+    Int16 index = FrmGetObjectIndex( form, objectID );
+    return index >= 0;
+}
 
 #ifndef XW_TARGET_PNO
 /* Warning: gross hack.  HsNavDrawFocusRing doesn't work on newer Palms,

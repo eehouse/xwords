@@ -466,7 +466,8 @@ positionBoard( PalmAppGlobals* globals )
             PALM_GRIDLESS_SCORE_LEFT+2) * doubler;
 
         bounds.extent.x = (RECOMMENDED_SBAR_WIDTH + 2) * doubler;
-        bounds.extent.y = (PALM_GRIDLESS_SCORE_TOP - bounds.topLeft.y - 2) * doubler;
+        bounds.extent.y = (PALM_GRIDLESS_SCORE_TOP - bounds.topLeft.y - 2) 
+            * doubler;
     }
     globals->progress.boundsRect = bounds;
 #endif
@@ -1887,11 +1888,13 @@ drawFormButtons( PalmAppGlobals* globals )
     if ( globals->hasTreoFiveWay ) {
         focusItem = globals->gState.focusItem;
         if ( focusItem > 0 ) {
-/*             XP_WARNF( "setting focus: %s", frmObjId_2str(focusItem) ); */
-            setFormFocus( globals->mainForm, focusItem );
-            if ( !isBoardObject( focusItem )
-                 && buttonIsUsable( getActiveObjectPtr(focusItem) ) ) {
-                drawFocusRingOnGadget( globals, focusItem, focusItem );
+            if ( isFormObject( globals->mainForm, focusItem ) ) {
+/*                 XP_WARNF( "setting focus: %s", frmObjId_2str(focusItem) ); */
+                setFormFocus( globals->mainForm, focusItem );
+                if ( !isBoardObject( focusItem )
+                     && buttonIsUsable( getActiveObjectPtr(focusItem) ) ) {
+                    drawFocusRingOnGadget( globals, focusItem, focusItem );
+                }
             }
             globals->gState.focusItem = -1;
         } else {
