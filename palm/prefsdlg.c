@@ -42,7 +42,6 @@ PrefsFormHandleEvent( EventPtr event )
     PalmAppGlobals* globals;
     PrefsDlgState* state;
     FormPtr form;
-    EventType eventToPost;
     Int16 chosen;
     XP_S16 selGadget;
 
@@ -145,8 +144,7 @@ PrefsFormHandleEvent( EventPtr event )
 
         case XW_PREFS_OK_BUTTON_ID:
             controlsToLocalPrefs( state );
-            eventToPost.eType = prefsChangedEvent;
-            EvtAddEventToQueue( &eventToPost );
+            postEmptyEvent( connsSettingChgEvent );
             globals->postponeDraw = true;
 
         case XW_PREFS_CANCEL_BUTTON_ID:

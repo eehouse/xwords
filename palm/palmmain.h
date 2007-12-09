@@ -428,7 +428,7 @@ const XP_UCHAR* getResString( PalmAppGlobals* globals, XP_U16 strID );
 XP_Bool palmask( PalmAppGlobals* globals, const XP_UCHAR* str, 
                  const XP_UCHAR* altButton, XP_S16 titleID );
 void checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr, 
-                      XWStreamCtxt* instream );
+                      XWStreamCtxt* instream, CommsConnType conType );
 
 #ifdef XW_TARGET_PNO
 # define READ_UNALIGNED16(n) read_unaligned16((unsigned char*)(n))

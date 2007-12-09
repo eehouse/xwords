@@ -371,7 +371,7 @@ checkHandleNetEvents( PalmAppGlobals* globals )
 
             XWStreamCtxt* instream = packetToStream( globals );
             if ( !!instream ) {
-                checkAndDeliver( globals, NULL, instream );
+                checkAndDeliver( globals, NULL, instream, COMMS_CONN_RELAY );
             }
         }
     }

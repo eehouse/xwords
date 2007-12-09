@@ -93,7 +93,7 @@ palm_ir_receiveMove( PalmAppGlobals* globals, ExgSocketPtr socket )
         (void)ExgDisconnect( socket, err );
 
         if ( nBytesReceived == 0 ) { /* successful loop exit */
-            checkAndDeliver( globals, NULL, instream );
+            checkAndDeliver( globals, NULL, instream, COMMS_CONN_IR );
         }
     }
 } /* palm_ir_receiveMove */

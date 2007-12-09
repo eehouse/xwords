@@ -83,7 +83,6 @@ Boolean
 newGameHandleEvent( EventPtr event )
 {
     Boolean result = false;
-    EventType eventToPost;	/* used only with OK button */
     PalmAppGlobals* globals;
     FormPtr form;
     CurGameInfo* gi;
@@ -219,15 +218,13 @@ newGameHandleEvent( EventPtr event )
                needs to arrive before the newGame event so any changes will
                be incorporated. */
             if ( state->forwardChange ) {
-                eventToPost.eType = prefsChangedEvent;
-                EvtAddEventToQueue( &eventToPost );
+                postEmptyEvent( prefsChangedEvent );
                 state->forwardChange = false;
             }
 
             updatePlayerInfo( globals );
             if ( globals->isNewGame ) {
-                eventToPost.eType = newGameOkEvent;
-                EvtAddEventToQueue( &eventToPost );
+                postEmptyEvent( newGameOkEvent );
                 globals->postponeDraw = true;
             }
 
@@ -238,8 +235,7 @@ newGameHandleEvent( EventPtr event )
 
         case XW_CANCEL_BUTTON_ID:
             unloadNewGameState( globals );
-            eventToPost.eType = newGameCancelEvent;
-            EvtAddEventToQueue( &eventToPost );
+            postEmptyEvent( newGameCancelEvent );
             FrmReturnToForm( 0 );
             break;
 
