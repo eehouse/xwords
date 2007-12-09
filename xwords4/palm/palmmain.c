@@ -873,10 +873,6 @@ getResString( PalmAppGlobals* globals, XP_U16 strID )
 static Err
 volChangeEventProc( SysNotifyParamType* XP_UNUSED_SILK(notifyParamsP) )
 {
-#ifndef REALLY_HANDLE_MEDIA
-    EventType eventToPost;
-#endif
-
 #if 0    
     if ( notifyParamsP->notifyType == sysNotifyVolumeUnmountedEvent ) {
 
@@ -894,8 +890,7 @@ volChangeEventProc( SysNotifyParamType* XP_UNUSED_SILK(notifyParamsP) )
 
 #ifdef FEATURE_SILK
     if ( notifyParamsP->notifyType == sysNotifyDisplayChangeEvent ) {
-        eventToPost.eType = doResizeWinEvent;
-        EvtAddEventToQueue( &eventToPost );
+        postEmptyEvent( doResizeWinEvent );
         return errNone;
     }
 #endif
@@ -903,8 +898,7 @@ volChangeEventProc( SysNotifyParamType* XP_UNUSED_SILK(notifyParamsP) )
        datastructures when it's relaunched.  This is a hack but I like
        it. :-) */
 #ifndef REALLY_HANDLE_MEDIA
-    eventToPost.eType = appStopEvent;
-    EvtAddEventToQueue( &eventToPost );
+    postEmptyEvent( appStopEvent );
 #endif
 
     return errNone;
@@ -1105,6 +1099,10 @@ startApplication( PalmAppGlobals** globalsP )
     } else {
         XP_LOGF( "no sysFileCBtLib via FtrGet: OS too old?" );
     }
+    /* Make the UI elements easier to test */
+    if ( globals->runningOnPOSE ) {
+        globals->hasBTLib = XP_TRUE;
+    }
 # endif
 #endif
 
@@ -1190,10 +1188,7 @@ startApplication( PalmAppGlobals** globalsP )
 
     if ( prefsFound && loadCurrentGame( globals, globals->gState.curGameIndex,
                                         &globals->game, &globals->gameInfo) ) {
-        EventType eventToPost;
-        eventToPost.eType = loadGameEvent;
-        EvtAddEventToQueue( &eventToPost );
-
+        postEmptyEvent( loadGameEvent );
         globals->isFirstLaunch = false;
     } else {
         DictListEntry* dlep;
@@ -1629,7 +1624,8 @@ btEvtHandler( PalmAppGlobals* globals, const BtCbEvtInfo* evt )
             XWStreamCtxt* instream;
             instream = makeSimpleStream( globals, NULL );
             stream_putBytes( instream, evt->u.data.data, evt->u.data.len );
-            checkAndDeliver( globals, evt->u.data.fromAddr, instream );
+            checkAndDeliver( globals, evt->u.data.fromAddr, 
+                             instream, COMMS_CONN_BT );
         } else {
             /* If we're no longer using BT (meaning somebody loaded a new game
                that doesn't use it), close it down.  We don't want to do it as
@@ -1637,9 +1633,7 @@ btEvtHandler( PalmAppGlobals* globals, const BtCbEvtInfo* evt )
                BT and the new game will probably use the same connection.  But if
                we get here, a non-bt game's been loaded and we should shut
                down.*/
-            EventType eventToPost;
-            eventToPost.eType = closeBtLibEvent;
-            EvtAddEventToQueue( &eventToPost );
+            postEmptyEvent( closeBtLibEvent  );
         }
         break;
     case BTCBEVT_HOSTFAIL: {
@@ -1670,20 +1664,22 @@ handleNilEvent( PalmAppGlobals* globals )
     XP_U32 when;
     XWTimerReason why;
 
-    if ( globals->menuIsDown ) {
-        /* do nothing */
-    } else if ( globals->hintPending ) {
-        handled = handleHintRequest( globals );
-    } else if ( timeForTimer( globals, &why, &when ) 
-                && (when <= TimGetTicks()) ) {
-        palmFireTimer( globals, why );
+    if ( 0 ) {
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( (handled = (!globals->suspendBT)
                  && palm_bt_doWork( globals, btEvtHandler,
-                                    &globals->btUIState ) ),
-                showConnState( globals ), handled ) {
+                                    &globals->btUIState ) )
+                ,showConnState( globals )
+                ,handled ) {
         /* nothing to do */
 #endif
+    } else if ( timeForTimer( globals, &why, &when ) 
+                && (when <= TimGetTicks()) ) {
+        palmFireTimer( globals, why );
+    } else if ( globals->menuIsDown ) {
+        /* do nothing */
+    } else if ( globals->hintPending ) {
+        handled = handleHintRequest( globals );
     } else if ( globals->timeRequested ) {
         globals->timeRequested = false;
         if ( globals->msgReceivedDraw ) {
@@ -2047,9 +2043,11 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         comms_start( globals->game.comms );
     }
 
-    /* do this before drawing the board.  If it assigns tiles, for example,
-       that'll make a difference on the screen. */
-    (void)server_do( globals->game.server );
+    /* Used to call server_do here, but if it's a robot's turn it'll run
+       without drawing the board first.  This allows work to get done almost
+       as quickly.  If the board starts flashing on launch this is why;
+       server_do might need to take a bool param skip-robot */
+    palm_util_requestTime( &globals->util );
 
     board_invalAll( globals->game.board );
     board_draw( globals->game.board );
@@ -2546,9 +2544,7 @@ mainViewHandleEvent( EventPtr event )
            quit.  It's easier than dealing with everything that can go wrong
            in this state. */
         if ( globals->isFirstLaunch ) {
-            EventType eventToPost;
-            eventToPost.eType = appStopEvent;
-            EvtAddEventToQueue( &eventToPost );
+            postEmptyEvent( appStopEvent );
         }
         globals->isNewGame = false;
         break;
@@ -2900,9 +2896,7 @@ mainViewHandleEvent( EventPtr event )
             break;
 # if 0
         case XW_RESET_PULLDOWN_ID: {
-            EventType eventToPost;
-            eventToPost.eType = appStopEvent;
-            EvtAddEventToQueue( &eventToPost );
+            postEmptyEvent( appStopEvent );
         }
 
             globals->resetGame = true;
@@ -3844,7 +3838,6 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
     XP_U32 now = TimGetTicks();
-    EventType eventToPost;
 
     if ( why == TIMER_PENDOWN ) {
         now += PALM_TIMER_DELAY;
@@ -3869,8 +3862,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
 
     /* Post an event to force us back out of EvtGetEvent.  Required if this
      * is called from inside some BT callback. */
-    eventToPost.eType = noopEvent;
-    EvtAddEventToQueue( &eventToPost );
+    postEmptyEvent( noopEvent );
 } /* palm_util_setTimer */
 
 static void 
@@ -3992,15 +3984,21 @@ palm_reset( void* closure )
 
 void
 checkAndDeliver( PalmAppGlobals* globals, const CommsAddrRec* addr, 
-                 XWStreamCtxt* instream )
+                 XWStreamCtxt* instream, CommsConnType conType )
 {
-    if ( comms_checkIncomingStream( globals->game.comms, 
-                                     instream, addr ) ) {
-        (void)server_receiveMessage( globals->game.server, instream );
-        globals->msgReceivedDraw = true;
+    /* For now we'll just drop incoming packets on transports not the same as
+       the current game's.  We *could* however alert the user, or even
+       volunteer to switch e.g. from BT to IR as two passengers board a
+       plane.  That'd require significant changes. */
+    CommsCtxt* comms = globals->game.comms;
+    if ( !!comms && (conType == comms_getConType( comms )) ) {
+        if ( comms_checkIncomingStream( comms, instream, addr ) ) {
+            (void)server_receiveMessage( globals->game.server, instream );
+            globals->msgReceivedDraw = true;
+        }
+        palm_util_requestTime( &globals->util );
     }
     stream_destroy( instream );
-    palm_util_requestTime( &globals->util );
 } /* checkAndDeliver */
 
 static const XP_UCHAR* 

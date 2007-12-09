@@ -336,9 +336,8 @@ ConnsFormHandleEvent( EventPtr event )
             if ( !state->isNewGame ) {
                 /* do nothing; same as cancel */
             } else {
-                EventType eventToPost = { .eType = connsSettingChgEvent };
                 stateFromCtls( state );
-                EvtAddEventToQueue( &eventToPost );
+                postEmptyEvent( connsSettingChgEvent );
             }
             /* FALLTHRU */
         case XW_CONNS_CANCEL_BUTTON_ID:

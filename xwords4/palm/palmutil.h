@@ -60,6 +60,8 @@ void getFieldStr( XP_U16 id, XP_UCHAR* buf, XP_U16 max );
 #endif
 void setFieldEditable( UInt16 objectID, Boolean editable );
 
+void postEmptyEvent( eventsEnum typ );
+
 /* list item stuff */
 void initListData( MPFORMAL ListData* ld, XP_U16 nItems );
 void addListTextItem( MPFORMAL ListData* ld, const XP_UCHAR* txt );

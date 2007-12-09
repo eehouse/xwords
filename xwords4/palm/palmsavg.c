@@ -48,7 +48,6 @@ savedGamesHandleEvent( EventPtr event )
     Boolean result;
     PalmAppGlobals* globals;
     SavedGamesState* state;
-    EventType eventToPost;
     XP_S16 newGameIndex;
     Int16* curGameIndexP;
     char* newName;
@@ -153,7 +152,7 @@ savedGamesHandleEvent( EventPtr event )
         case XW_SAVEDGAMES_OPEN_BUTTON:	/* open the selected db if not already
                                            open. */
             if ( *curGameIndexP != state->displayGameIndex ) {
-                eventToPost.eType = openSavedGameEvent;
+                EventType eventToPost = { .eType = openSavedGameEvent };
                 ((OpenSavedGameData*)&eventToPost.data.generic)->newGameIndex
                     = state->displayGameIndex;
                 EvtAddEventToQueue( &eventToPost );

@@ -307,7 +307,6 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
     switch( addr.conType ) {
     case COMMS_CONN_NONE:
-/*         XP_ASSERT( 0 ); */
         break;
     case COMMS_CONN_BT:
         stringFromStreamHere( stream, addr.u.bt.hostName,
@@ -481,12 +480,9 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
     stream_putU8( stream, addr.conType );
 
     switch( addr.conType ) {
-#ifdef DEBUG
     case COMMS_CONN_NONE:
-    case LAST_____FOO:
-/*         XP_ASSERT( 0 ); */
+        /* nothing to write */
         break;
-#endif
     case COMMS_CONN_BT:
         stringToStream( stream, addr.u.bt.hostName );
         /* sizeof(.bits) below defeats ARM's padding. */
@@ -618,6 +614,7 @@ comms_getInitialAddr( CommsAddrRec* addr )
 CommsConnType 
 comms_getConType( const CommsCtxt* comms )
 {
+    XP_ASSERT( !!comms );       /* or: return COMMS_CONN_NONE */
     return comms->addr.conType;
 } /* comms_getConType */
 

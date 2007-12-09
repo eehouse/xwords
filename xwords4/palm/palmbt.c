@@ -23,6 +23,7 @@
 #include "xptypes.h"
 #include "palmbt.h"
 #include "strutils.h"
+#include "palmutil.h"
 
 # include <BtLib.h>
 # include <BtLibTypes.h>
@@ -148,7 +149,7 @@ static const BtLibSdpUuidType XWORDS_UUID = {
 
 static PalmBTStuff* pbt_checkInit( PalmAppGlobals* globals, 
                                    XP_Bool* userCancelled );
-static Err bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr );
+static Err pbd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr );
 static void pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_takedown_slave( PalmBTStuff* btStuff );
 static void pbt_setup_master( PalmBTStuff* btStuff );
@@ -337,7 +338,7 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
     btStuff = pbt_checkInit( globals, NULL );
     if ( NULL != btStuff ) {
         BtLibDeviceAddressType addr;
-        Err err = bpd_discover( btStuff, &addr );
+        Err err = pbd_discover( btStuff, &addr );
 
         if ( errNone == err ) {
             UInt8 name[PALM_BT_NAME_LEN];
@@ -351,6 +352,7 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
         
             CALL_ERR( err, BtLibGetRemoteDeviceName, btStuff->btLibRefNum,
                       &addr, &nameType, btLibCachedThenRemote );
+            XP_ASSERT( errNone == err ); /* deal with btLibErrPending */
             XP_LOGF( "%s: got name %s", __func__, nameType.name );
 
             XP_ASSERT( len >= nameType.nameLength );
@@ -736,7 +738,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
         break;
 
     case PBT_ACT_CONNECT_DATA:
-/*         XP_ASSERT( btStuff->picoRole == PBT_SLAVE ); */
+        XP_ASSERT( btStuff->picoRole == PBT_SLAVE );
         if ( GET_STATE(btStuff) == PBTST_SDP_QUERIED ) {
             pbt_close_datasocket( btStuff );
             CALL_ERR( err, BtLibSocketCreate, btLibRefNum, 
@@ -805,9 +807,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
 static void
 pbt_postpone( PalmBTStuff* btStuff, PBT_ACTION act )
 {
-    EventType eventToPost;
-    eventToPost.eType = noopEvent;
-    EvtAddEventToQueue( &eventToPost );
+    postEmptyEvent( noopEvent );
 
     XP_LOGF( "%s(%s)", __func__, actToStr(act) );
 
@@ -951,7 +951,7 @@ waitACL( PalmBTStuff* btStuff )
 }
 
 static Err
-bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr )
+pbd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr )
 {
     Err err;
     const BtLibClassOfDeviceType deviceFilter
@@ -963,7 +963,7 @@ bpd_discover( PalmBTStuff* btStuff, BtLibDeviceAddressType* addr )
               "Crosswords host", (BtLibClassOfDeviceType*)&deviceFilter, 1,
               addr, false, false );
     return err;
-} /* bpd_discover */
+} /* pbd_discover */
 
 static void
 pbt_setup_slave( PalmBTStuff* btStuff, const CommsAddrRec* addr )

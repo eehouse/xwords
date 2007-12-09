@@ -109,6 +109,14 @@ setFieldEditable( UInt16 objectID, Boolean editable )
 } /* setFieldEditable */
 
 void
+postEmptyEvent( eventsEnum typ )
+{
+    EventType eventToPost;
+    eventToPost.eType = typ;
+    EvtAddEventToQueue( &eventToPost );
+} /* postEmptyEvent */
+
+void
 disOrEnable( FormPtr form, UInt16 id, Boolean enable )
 {
     UInt16 index = FrmGetObjectIndex( form, id );
