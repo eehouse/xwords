@@ -1,4 +1,4 @@
-/* -*- mode: c; -*- */
+/* -*- mode: c; compile-command: "cd .. && make ARCH=68K_ONLY MEMDEBUG=TRUE LANG=fr_FR"; -*- */
 /* 
  * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org) and
  * others.  All rights reserved. Traduction en français par Francis H.
@@ -125,6 +125,8 @@
 { "STR_TOTALPLAYERS",          "Total joueurs" },
 
 #ifdef XWFEATURE_RELAY
+  /* Needs translation (or confirmation) */
+{ "STR_RELAY_XPORTNAME",       "Internet" },
 { "STR_RELAY_TIMEOUT",         "Erreur réseau : les autres joueurs n'ont pu "
                                "se connecter." },
 { "STR_RELAY_LOST_OTHER",      "Erreur réseau : la connexion d'un autre joueur "
@@ -133,6 +135,8 @@
 #endif
 
 #ifdef XWFEATURE_BLUETOOTH
+  /* Needs translation (or confirmation) */
+{ "STR_BT_XPORTNAME",          "Bluetooth" },
 { "STR_BT_NOINIT",             "Impossible initialiser Bluetooth. "
                                "Est-il connecté ?" },
   /* Needs translation */
@@ -143,12 +147,17 @@
 { "STR_BT_RESEND",             "Resend" },
 #endif
 
+#ifdef XWFEATURE_IR
+  /* Needs translation (or confirmation) */
+{ "STR_IR_XPORTNAME",          "Transmission" },
+#endif
+
 { "STR_ABOUT_CONTENT", 
 #ifdef XWFEATURE_BLUETOOTH
-                               "MERCI DE VOTRE ATTENTION pour cette version alpha de "
-                               "Crosswords.  Svp, regardez les notes et avertissements sur "
-                               "xwords.sf.net/bt_palm.php.  Svp, signalez les bugs à "
-                               "ehouse@users.sf.net.  Au plaisir !\n\n"
+      "MERCI DE VOTRE ATTENTION pour cette version beta de "
+      "Crosswords.  Svp, regardez les notes et avertissements sur "
+      "xwords.sf.net/bt_palm.php.  Svp, signalez les bugs à "
+      "ehouse@users.sf.net.  Au plaisir !\n\n"
 #endif
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2007 par Eric House.  "\
