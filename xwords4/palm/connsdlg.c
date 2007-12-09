@@ -84,6 +84,7 @@ ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
         ControlPtr ctrl = getActiveObjectPtr( XW_CONNS_BT_HOSTTRIGGER_ID );
+        /* Settle for the colon-separated "name" if hostname not known */
         if ( '\0' == addr->u.bt.hostName[0] ) {
             palm_bt_addrString( globals, &addr->u.bt.btAddr, &state->tmp );
             CtlSetLabel( ctrl, state->tmp.chars );

@@ -311,7 +311,7 @@ palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btUIStateP
 } /* palm_bt_doWork */
 
 void
-palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
+palm_bt_addrString( PalmAppGlobals* globals, const XP_BtAddr* btAddr, 
                     XP_BtAddrStr* str )
 {
     PalmBTStuff* btStuff = pbt_checkInit( globals, NULL );
