@@ -157,13 +157,13 @@
       "MERCI DE VOTRE ATTENTION pour cette version beta de "
       "Crosswords.  Svp, regardez les notes et avertissements sur "
       "xwords.sf.net/bt_palm.php.  Svp, signalez les bugs à "
-      "ehouse@users.sf.net.  Au plaisir !\n\n"
+      "xwords@eehouse.org.  Au plaisir !\n\n"
 #endif
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2007 par Eric House.  "\
       "Réalisé sous GNU Public License.\n\n"\
 
-      "Voir le manuel sur xwords.sourceforge.net\n\n" \
+      "Voir le manuel sur xwords.sf.net ou eehouse.org/xwords/.\n\n" \
 
       "Ce programme est 'postcardware'. Si vous l'appréciez, " \
       "svp, envoyez une carte postale à :\n" \

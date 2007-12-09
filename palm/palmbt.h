@@ -66,7 +66,7 @@ typedef struct BtCbEvtInfo {
 typedef void (*BtCbEvtProc)( PalmAppGlobals* globals, const BtCbEvtInfo* evt );
 XP_Bool palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btState );
 
-void palm_bt_addrString( PalmAppGlobals* globals, XP_BtAddr* btAddr, 
+void palm_bt_addrString( PalmAppGlobals* globals, const XP_BtAddr* btAddr, 
                          XP_BtAddrStr* str );
 
 XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
