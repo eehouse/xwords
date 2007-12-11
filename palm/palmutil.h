@@ -49,7 +49,7 @@ void disOrEnableSet( FormPtr form, const UInt16* id, Boolean enable );
 
 void disOrEnableTri( FormPtr form, UInt16 id, XP_TriEnable enable );
 
-void centerControl( FormPtr form, UInt16 id );
+void centerControls( FormPtr form, const UInt16* id, XP_U16 nIds );
 
 void setBooleanCtrl( UInt16 objectID, Boolean isSet );
 Boolean getBooleanCtrl( UInt16 objectID );

@@ -3299,6 +3299,8 @@ palmask( PalmAppGlobals* globals, const XP_UCHAR* str,
     FieldPtr field;
     const XP_UCHAR* title;
     UInt16 buttonHit;
+    XP_U16 buttons[] = { XW_ASK_YES_BUTTON_ID, XW_ASK_NO_BUTTON_ID };
+    XP_U16 nButtons;
 
     if ( !!globals->game.board ) {
         board_pushTimerSave( globals->game.board );
@@ -3317,13 +3319,17 @@ palmask( PalmAppGlobals* globals, const XP_UCHAR* str,
         fitButtonToString( XW_ASK_YES_BUTTON_ID );
     }
 
-    if ( title != NULL ) {
+    /* Hack: take advantage of fact that for now only non-queries should not
+       have a cancel button. */
+    if ( title == NULL ) {
+        nButtons = 2;
+    } else {
         FrmSetTitle( form, (char*)title );
-        /* Hack: take advantage of fact that for now only non-queries should
-           not have a cancel button. */
         disOrEnable( form, XW_ASK_NO_BUTTON_ID, false );
-        centerControl( form, XW_ASK_YES_BUTTON_ID );
+        nButtons = 1;
     }
+    /* always center: some localized buttons are bigger */
+    centerControls( form, buttons, nButtons );
 
     /* If we're running OS5 (oneDotFiveAvail), then eat the first keyDown.
        If an earlier OS (Treo600) then we won't see that spurious event. */

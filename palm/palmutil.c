@@ -179,21 +179,40 @@ disOrEnableSet( FormPtr form, const UInt16* ids, Boolean enable )
     }
 } /* disOrEnableSet */
 
-/* Position a control at the horizontal center of its container.
+/* Space a row of controls evenly across their container.  This will center a
+ * single control or space several regardless of their size.  Assumption,
+ * enforced by an assertion, is that they fit without overlapping.  Another, not
+ * enforced, is that all have the same y coordinates. This was originally
+ * written for localized dialogs with different-length button text.
  */
 void
-centerControl( FormPtr form, UInt16 id )
+centerControls( FormPtr form, const UInt16* id, XP_U16 nIds )
 {
-    RectangleType cBounds, fBounds;
-    Int16 index = FrmGetObjectIndex( form, id );
-    XP_ASSERT( index >= 0 );
+    XP_U16 i, width, prev;
+    RectangleType bounds;
 
-    FrmGetObjectBounds( form, index, &cBounds );
-    FrmGetFormBounds( form, &fBounds );
 
-    cBounds.topLeft.x = (fBounds.extent.x - cBounds.extent.x) / 2;
-    FrmSetObjectBounds( form, index, &cBounds );
-} /* centerButton */
+    /* Two passes.  First, figure total width outside controls. */
+    FrmGetFormBounds( form, &bounds );
+    width = bounds.extent.x;
+    for ( i = 0; i < nIds; ++i ) {
+        UInt16 index = FrmGetObjectIndex( form, id[i] );
+        FrmGetObjectBounds( form, index, &bounds );
+        XP_ASSERT( width >= bounds.extent.x );
+        width -= bounds.extent.x;
+    }
+
+    /* Then layout */
+    width /= nIds + 1;          /* space between controls */
+    prev = width;
+    for ( i = 0; i < nIds; ++i ) {
+        UInt16 index = FrmGetObjectIndex( form, id[i] );
+        FrmGetObjectBounds( form, index, &bounds );
+        bounds.topLeft.x = prev;
+        FrmSetObjectBounds( form, index, &bounds );
+        prev += bounds.extent.x + width;
+    }
+} /* centerControls */
 
 /*****************************************************************************
  *
