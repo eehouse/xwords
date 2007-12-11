@@ -125,7 +125,6 @@
 { "STR_TOTALPLAYERS",          "Total joueurs" },
 
 #ifdef XWFEATURE_RELAY
-  /* Needs translation (or confirmation) */
 { "STR_RELAY_XPORTNAME",       "Internet" },
 { "STR_RELAY_TIMEOUT",         "Erreur réseau : les autres joueurs n'ont pu "
                                "se connecter." },
@@ -135,20 +134,19 @@
 #endif
 
 #ifdef XWFEATURE_BLUETOOTH
-  /* Needs translation (or confirmation) */
 { "STR_BT_XPORTNAME",          "Bluetooth" },
 { "STR_BT_NOINIT",             "Impossible initialiser Bluetooth. "
                                "Est-il connecté ?" },
-  /* Needs translation */
-{ "STRS_BT_NOHOST",             "Bluetooth messages are not reaching Crosswords on %s. "
-                               "Do you want me to resend? (If you choose \"No\" I will not try "
-                                "again until you choose the \"Resend messages\" menu item.)" },
-  /* Needs translation */
-{ "STR_BT_RESEND",             "Resend" },
+{ "STRS_BT_NOHOST",            "Les messages Bluetooth n'arrivent pas à "
+                               "Crosswords sur %s. Pourriez-vous me le "
+                               "renvoyer ? (Si vous choisissez \"Non\" je "
+                               "ne réessayerai pas jusqu'à ce que vous "
+                               "choisissiez \"Renvoyer messages\" dans "
+                               "le menu.)" },
+{ "STR_BT_RESEND",             "Envoyer à nouveau" },
 #endif
 
 #ifdef XWFEATURE_IR
-  /* Needs translation (or confirmation) */
 { "STR_IR_XPORTNAME",          "Transmission" },
 #endif
 
