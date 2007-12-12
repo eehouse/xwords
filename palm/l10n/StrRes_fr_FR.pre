@@ -34,7 +34,9 @@
 { "STR_SERVER_DICT_WINS", 
       "Conflit entre les dictionnaires Hôte et Invité ; l'hôte gagne." },
 { "STR_REG_UNEXPECTED_USER",  "Essai refusé de l'enregistrement de l'utilisateur" },
-{ "STR_RESEND_IR", "Impossible envoyer message par IR; réessayer ?" },
+/* Needs translation */
+{ "STR_RESEND_STANDALONE", "This is a standalone game. There is nothing "
+                           "to resend." },
 #endif
 { "STR_TOO_FEW_TILES", "Pas assez de lettres pour échanger." },
 { "STR_CANT_UNDO_TILEASSIGN", "Impossible d'annuler.  (Le tirage initial ne peut être annulé.)" },
@@ -141,8 +143,7 @@
                                "Crosswords sur %s. Pourriez-vous me le "
                                "renvoyer ? (Si vous choisissez \"Non\" je "
                                "ne réessayerai pas jusqu'à ce que vous "
-                               "choisissiez \"Renvoyer messages\" dans "
-                               "le menu.)" },
+                               "choisissiez \"Renvoyer\" dans le menu.)" },
 { "STR_BT_RESEND",             "Envoyer à nouveau" },
 #endif
 

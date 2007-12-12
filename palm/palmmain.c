@@ -2767,6 +2767,8 @@ mainViewHandleEvent( EventPtr event )
                 globals->suspendBT = XP_FALSE;
 #endif
                 (void)comms_resendAll( globals->game.comms );
+            } else {
+                userErrorFromStrId( globals, STR_RESEND_STANDALONE );
             }
             break;
 #endif
