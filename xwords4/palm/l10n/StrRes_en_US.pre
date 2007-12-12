@@ -31,10 +31,12 @@
 { "STR_SERVER_DICT_WINS", 
       "Conflict between Host and Guest dictionaries; Host wins." },
 { "STR_REG_UNEXPECTED_USER",  "Attempt to register unexpected user refused" },
-{ "STR_RESEND_IR", "Unable to send message via IR; resend?" },
+{ "STR_RESEND_STANDALONE", "This is a standalone game. There is nothing "
+                           "to resend." },
 #endif
 { "STR_TOO_FEW_TILES", "Too few tiles left to trade." },
-{ "STR_CANT_UNDO_TILEASSIGN", "Nothing to undo.  (Initial tile picking cannot be undone.)" },
+{ "STR_CANT_UNDO_TILEASSIGN", "Nothing to undo.  (Initial tile picking "
+                              "cannot be undone.)" },
 { "STR_VALUES_TITLE", "Counts and Values" },
 { "STR_REMAINS_TITLE","Remaining tiles" },
 { "STRS_VALUES_HEADER",		"%s counts/values:\n" },
@@ -139,9 +141,10 @@
 { "STR_BT_XPORTNAME",          "Bluetooth" },
 { "STR_BT_NOINIT",             "Bluetooth appears to be off.  Please turn it "
                                "on if you want Crosswords to use it." },
-{ "STRS_BT_NOHOST",             "Bluetooth messages are not reaching Crosswords on %s. "
-                               "Do you want me to resend? (If you choose \"No\" I will not try "
-                                "again until you choose the \"Resend messages\" menu item.)" },
+{ "STRS_BT_NOHOST",            "Bluetooth messages are not reaching Crosswords "
+                               "on %s. Do you want me to resend? (If you "
+                               "choose \"No\" I will not try again until you "
+                               "choose the \"Resend\" menu item.)" },
 { "STR_BT_RESEND",             "Resend" },
 #endif
 
