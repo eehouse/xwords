@@ -144,7 +144,7 @@ PrefsFormHandleEvent( EventPtr event )
 
         case XW_PREFS_OK_BUTTON_ID:
             controlsToLocalPrefs( state );
-            postEmptyEvent( connsSettingChgEvent );
+            postEmptyEvent( prefsChangedEvent );
             globals->postponeDraw = true;
 
         case XW_PREFS_CANCEL_BUTTON_ID:
