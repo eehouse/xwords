@@ -4040,16 +4040,19 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 {
     XP_Bool result = XP_TRUE;
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
-    XP_UCHAR buf[200];
-    char wordsBuf[150];
-    const XP_UCHAR* format = getResString( globals, STR_ILLEGAL_WORD );
-    formatBadWords( bwi, wordsBuf );
-    StrPrintF( (char*)buf, (const char*)format, wordsBuf );
+
+    const XP_UCHAR* resStr = getResString( globals, 
+                                        turnLost? STR_PHONY_REJECTED : STR_ILLEGAL_WORD );
     if ( turnLost ) {
-        keySafeCustomAlert( globals, buf );
+        keySafeCustomAlert( globals, resStr );
     } else {
+        char wordsBuf[150];
+        XP_UCHAR buf[200];
+        formatBadWords( bwi, wordsBuf );
+        StrPrintF( (char*)buf, (const char*)resStr, wordsBuf );
         result = palmask( globals, buf, NULL, -1 );
     }
+
     return result;
 } /* palm_util_warnIllegalWord */
 
