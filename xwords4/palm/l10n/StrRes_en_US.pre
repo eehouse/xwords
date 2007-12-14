@@ -96,7 +96,7 @@
 { "STRS_NEW_TILES",           "New tiles: %s\n" },
 { "STRSS_TRADED_FOR",         "Traded %s for %s." },
 { "STR_PASS",                 "pass\n" },
-{ "STR_PHONY_REJECTED",       "Illegal word in move; turn lost!\n" },
+{ "STR_PHONY_REJECTED",       "Turn lost: illegal word in move." },
 
 { "STR_ROBOT_MOVED",           "The robot made this move:\n" },
 { "STR_REMOTE_MOVED",          "Remote player made this move:\n" },
