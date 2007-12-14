@@ -2090,7 +2090,7 @@ tileCountsOk( ServerCtxt* server )
         XP_Bool zeroFound = XP_FALSE;
 
         while ( nPlayers-- ) {
-            XP_U16 count = model_getNumTilesInTray( model, nPlayers );
+            XP_U16 count = model_getNumTilesTotal( model, nPlayers );
             if ( count == 0 ) {
                 zeroFound = XP_TRUE;
                 break;
