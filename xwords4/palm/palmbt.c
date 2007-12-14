@@ -54,7 +54,6 @@ typedef enum {
     , PBT_ACT_GETSDP            /* slave only */
     , PBT_ACT_CONNECT_DATA      /* l2cap or rfcomm */
     , PBT_ACT_TELLCONN
-    , PBT_ACT_TELLNOHOST
     , PBT_ACT_GOTDATA           /* can be duplicated */
     , PBT_ACT_TRYSEND
 } PBT_ACTION;
@@ -467,6 +466,7 @@ palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 
     btStuff = pbt_checkInit( globals, userCancelled );
     if ( !!btStuff ) {
+        /* addr is NULL when client has not established connection to host */
         if ( !addr ) {
             comms_getAddr( globals->game.comms, &remoteAddr );
             addr = &remoteAddr;
@@ -661,6 +661,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
     PBT_ACTION act;
     Err err;
     XP_U16 btLibRefNum = btStuff->btLibRefNum;
+    BtCbEvtInfo info;
 
     debug_logQueue( btStuff );
 
@@ -685,6 +686,13 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
 
     case PBT_ACT_CONNECT_ACL:
         if ( GET_STATE(btStuff) == PBTST_NONE ) {
+            info.evt = BTCBEVT_CONFIRM;
+            info.u.confirm.confirmed = XP_TRUE;
+            (*proc)( btStuff->globals, &info );
+            if ( !info.u.confirm.confirmed ) {
+                break;
+            }
+
             /* sends btLibManagementEventACLConnectOutbound */
             CALL_ERR( err, BtLibLinkConnect, btLibRefNum, 
                       &btStuff->otherAddr );
@@ -790,12 +798,9 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
         break;
 
     case PBT_ACT_TELLCONN:
-    case PBT_ACT_TELLNOHOST: {
-        BtCbEvtInfo info;
         XP_ASSERT( !!proc );
-        info.evt = act == PBT_ACT_TELLCONN? BTCBEVT_CONN: BTCBEVT_HOSTFAIL;
+        info.evt = BTCBEVT_CONN;
         (*proc)( btStuff->globals, &info );
-    }
         break;
 
     default:
@@ -1231,17 +1236,6 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         break;
 
     case btLibSocketEventDisconnected:
-        /* We'll see this as client if the host quits.  What to do?  I think
-         * we need to start trying to reconnect hoping the host got
-         * restarted.  Presumably users will not sit there forever running
-         * the app once one of the players has taken his device and gone
-         * home.  But there should probably be UI warning users that it's
-         * trying to connect.... 
-         */
-        if ( sEvent->status == btLibL2DiscConnPsmUnsupported ) {
-            pbt_postpone( btStuff, PBT_ACT_TELLNOHOST );
-        }
-
         if ( PBT_SLAVE == btStuff->picoRole ) {
             pbt_killLinks( btStuff );
             waitACL( btStuff );
@@ -1273,7 +1267,6 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
             waitACL( btStuff );
         } else {
             if ( sEvent->status == btLibErrSdpAttributeNotSet ) {
-                pbt_postpone( btStuff, PBT_ACT_TELLNOHOST );
                 XP_LOGF( "**** Host not running!!! ****" );
             }
             /* try again???? */
@@ -1292,7 +1285,6 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
            For alpha just do the error message. :-) Also, no point in
            continuing to try to connect.  User will have to quit in order to
            establish trust.  So warn once per inited session. */
-        pbt_postpone( btStuff, PBT_ACT_TELLNOHOST );
         break;
 
     default:
@@ -1400,7 +1392,6 @@ actToStr(PBT_ACTION act)
         CASESTR(PBT_ACT_GOTDATA);
         CASESTR(PBT_ACT_TRYSEND);
         CASESTR(PBT_ACT_TELLCONN);
-        CASESTR(PBT_ACT_TELLNOHOST);
     default:
         XP_ASSERT(0);
         return "";

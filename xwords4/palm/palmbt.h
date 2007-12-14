@@ -51,10 +51,15 @@ XP_Bool palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled );
 void palm_bt_reset( PalmAppGlobals* globals );
 void palm_bt_close( PalmAppGlobals* globals );
 
-typedef enum { BTCBEVT_CONN, BTCBEVT_DATA, BTCBEVT_HOSTFAIL } BtCbEvt;
+typedef enum {
+    BTCBEVT_CONFIRM, BTCBEVT_CONN, BTCBEVT_DATA
+} BtCbEvt;
 typedef struct BtCbEvtInfo {
     BtCbEvt evt;
     union {
+        struct {
+            XP_Bool confirmed;
+        } confirm;
         struct {
             const void* data;
             const CommsAddrRec* fromAddr;
@@ -63,7 +68,7 @@ typedef struct BtCbEvtInfo {
     } u;
 } BtCbEvtInfo;
 
-typedef void (*BtCbEvtProc)( PalmAppGlobals* globals, const BtCbEvtInfo* evt );
+typedef void (*BtCbEvtProc)( PalmAppGlobals* globals, BtCbEvtInfo* evt );
 XP_Bool palm_bt_doWork( PalmAppGlobals* globals, BtCbEvtProc proc, BtUIState* btState );
 
 void palm_bt_addrString( PalmAppGlobals* globals, const XP_BtAddr* btAddr, 

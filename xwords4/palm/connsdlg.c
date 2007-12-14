@@ -60,8 +60,9 @@ typedef struct ConnsDlgState {
 } ConnsDlgState;
 
 static void
-ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
+ctlsFromState( PalmAppGlobals* globals )
 {
+    ConnsDlgState* state = globals->connState;
     CommsAddrRec* addr = state->addr;
     XP_Bool isNewGame = state->isNewGame;
     state->conType = addr->conType;
@@ -92,14 +93,20 @@ ctlsFromState( PalmAppGlobals* XP_UNUSED_BT(globals), ConnsDlgState* state )
             CtlSetLabel( ctrl, addr->u.bt.hostName );
         }
         CtlSetEnabled( ctrl, isNewGame );
+
+        XP_ASSERT( !!globals->prefsDlgState );
+        setBooleanCtrl( XW_CONNS_BTCONFIRM_CHECKBOX_ID,
+                        globals->prefsDlgState->confirmBTConnect );
 #endif
     }
 } /* ctlsFromState */
 
-static void
-stateFromCtls( ConnsDlgState* state )
+static XP_Bool
+stateFromCtls( PalmAppGlobals* globals )
 {
+    ConnsDlgState* state = globals->connState;
     CommsAddrRec* addr = state->addr;
+    XP_Bool prefsChanged = XP_FALSE;
 
     addr->conType = state->conType;
 
@@ -119,14 +126,25 @@ stateFromCtls( ConnsDlgState* state )
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
+        XP_Bool confirmBTConnect;
         /* Not exactly from a control... */
+        /* POSE is flagging this as reading from a bad address, but it
+           looks ok inside the debugger */
         XP_MEMCPY( addr->u.bt.hostName, state->btName, 
                    sizeof(addr->u.bt.hostName) );
         XP_MEMCPY( &addr->u.bt.btAddr, &state->btAddr, 
                    sizeof(addr->u.bt.btAddr) );
         LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __func__ );
+
+        confirmBTConnect = getBooleanCtrl( XW_CONNS_BTCONFIRM_CHECKBOX_ID );
+        XP_ASSERT( !!globals->prefsDlgState );
+        if ( confirmBTConnect != globals->prefsDlgState->confirmBTConnect ) {
+            globals->prefsDlgState->confirmBTConnect = confirmBTConnect;
+            prefsChanged = XP_TRUE;
+        }
 #endif
     }
+    return prefsChanged;
 } /* stateFromCtls */
 
 static void
@@ -134,7 +152,7 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
 {
     const XP_U16 relayCtls[] = {
 #ifdef XWFEATURE_RELAY
-        XW_CONNS_RELAY_LABEL_ID ,
+        XW_CONNS_RELAY_LABEL_ID,
         XW_CONNS_RELAY_FIELD_ID,
         XW_CONNS_PORT_LABEL_ID,
         XW_CONNS_PORT_FIELD_ID,
@@ -147,8 +165,7 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
 #ifdef XWFEATURE_BLUETOOTH
         XW_CONNS_BT_HOSTNAME_LABEL_ID,
         XW_CONNS_BT_HOSTTRIGGER_ID,
-#else
-        XW_CONNS_BT_NOTSUPPORT_LABEL_ID,
+        XW_CONNS_BTCONFIRM_CHECKBOX_ID,
 #endif
         0
     };
@@ -200,8 +217,9 @@ selToConType( const ConnsDlgState* state, XP_U16 sel )
 
 #ifdef XWFEATURE_BLUETOOTH
 static void
-browseForDeviceName( PalmAppGlobals* globals, ConnsDlgState* state )
+browseForDeviceName( PalmAppGlobals* globals )
 {
+    ConnsDlgState* state = globals->connState;
     XP_BtAddr btAddr;
     if ( palm_bt_browse_device( globals, &btAddr, 
                                 state->btName, sizeof( state->btName ) ) ) {
@@ -214,8 +232,9 @@ browseForDeviceName( PalmAppGlobals* globals, ConnsDlgState* state )
 #endif
 
 static void
-setupXportList( PalmAppGlobals* globals, ConnsDlgState* state )
+setupXportList( PalmAppGlobals* globals )
 {
+    ConnsDlgState* state = globals->connState;
     ListData* sLd = &state->sLd;
     XP_U16 i;
     XP_S16 selSel = -1;
@@ -296,11 +315,11 @@ ConnsFormHandleEvent( EventPtr event )
         XP_MEMCPY( &state->btAddr, &state->addr->u.bt.btAddr, 
                    sizeof(state->btAddr) );
 
-        ctlsFromState( globals, state );
+        ctlsFromState( globals );
 
         /* setup connection popup */
         buildXportData( state );
-        setupXportList( globals, state );
+        setupXportList( globals );
 
         updateFormCtls( form, state );
 
@@ -316,7 +335,7 @@ ConnsFormHandleEvent( EventPtr event )
 #ifdef XWFEATURE_BLUETOOTH
         case XW_CONNS_BT_HOSTTRIGGER_ID:
             if ( state->isNewGame ) {
-                browseForDeviceName( globals, state );
+                browseForDeviceName( globals );
             }
             break;
 #endif
@@ -337,7 +356,9 @@ ConnsFormHandleEvent( EventPtr event )
             if ( !state->isNewGame ) {
                 /* do nothing; same as cancel */
             } else {
-                stateFromCtls( state );
+                if ( stateFromCtls( globals ) ) {
+                    postEmptyEvent( prefsChangedEvent );
+                }
                 postEmptyEvent( connsSettingChgEvent );
             }
             /* FALLTHRU */

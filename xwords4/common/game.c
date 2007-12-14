@@ -392,6 +392,12 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         gi->allowHintRect = XP_FALSE;
     }
 
+    if ( strVersion >= STREAM_VERS_BLUETOOTH ) {
+        gi->confirmBTConnect = stream_getBits( stream, 1 );
+    } else {
+        gi->confirmBTConnect = XP_TRUE; /* safe given all the 650s out there. */
+    }
+
     gi->gameID = stream_getU16( stream );
     if ( gi->timerEnabled ) {
         gi->gameSeconds = stream_getU16( stream );
@@ -433,6 +439,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->timerEnabled );
     stream_putBits( stream, 1, gi->allowPickTiles );
     stream_putBits( stream, 1, gi->allowHintRect );
+    stream_putBits( stream, 1, gi->confirmBTConnect );
 
     stream_putU16( stream, gi->gameID );
     if ( gi->timerEnabled) {

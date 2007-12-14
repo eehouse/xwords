@@ -139,7 +139,7 @@ static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                   const CommsAddrRec* newAddr );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-static void btEvtHandler( PalmAppGlobals* globals, const BtCbEvtInfo* evt );
+static void btEvtHandler( PalmAppGlobals* globals, BtCbEvtInfo* evt );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -1611,9 +1611,23 @@ showConnState( PalmAppGlobals* globals )
 } /* showConnState */
 
 static void
-btEvtHandler( PalmAppGlobals* globals, const BtCbEvtInfo* evt )
+btEvtHandler( PalmAppGlobals* globals, BtCbEvtInfo* evt )
 {
     switch ( evt->evt ) {
+    case BTCBEVT_CONFIRM:
+        if ( globals->suspendBT ) {
+            evt->u.confirm.confirmed = XP_FALSE;
+        } else if ( globals->gameInfo.confirmBTConnect ) {
+            const XP_UCHAR* str;
+            XP_ASSERT( !!globals->game.comms &&
+                       !comms_getIsServer(globals->game.comms) );
+            str = getResString( globals, STRS_BT_CONFIRM );
+            evt->u.confirm.confirmed = palmask( globals, str, NULL, -1 );
+            globals->suspendBT = !evt->u.confirm.confirmed;
+        } else {
+            evt->u.confirm.confirmed = XP_TRUE;
+        }
+        break;
     case BTCBEVT_CONN:
         if ( !!globals->game.comms ) {
             comms_resendAll( globals->game.comms );
@@ -1635,21 +1649,6 @@ btEvtHandler( PalmAppGlobals* globals, const BtCbEvtInfo* evt )
                down.*/
             postEmptyEvent( closeBtLibEvent  );
         }
-        break;
-    case BTCBEVT_HOSTFAIL: {
-        const XP_UCHAR* str = getResString( globals, STRS_BT_NOHOST );
-        const XP_UCHAR* resend = getResString( globals, STR_BT_RESEND );
-        XP_UCHAR buf[256];
-
-        CommsAddrRec addr;
-        comms_getAddr( globals->game.comms, &addr );
-        XP_ASSERT( addr.conType == COMMS_CONN_BT );
-
-        XP_SNPRINTF( buf, sizeof(buf), str, addr.u.bt.hostName );
-        if ( !palmask( globals, buf, resend, -1 ) ) {
-            globals->suspendBT = XP_TRUE;
-        }
-    }
         break;
     default:
         XP_ASSERT(0);
