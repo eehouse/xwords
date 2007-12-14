@@ -210,6 +210,10 @@ GlobalPrefsToLocal( PalmAppGlobals* globals )
     state->allowPickTiles = globals->util.gameInfo->allowPickTiles;
 #endif
 
+#ifdef XWFEATURE_BLUETOOTH
+    state->confirmBTConnect = globals->util.gameInfo->confirmBTConnect;
+#endif
+
     state->stateTypeIsGlobal = globals->stateTypeIsGlobal;
 } /* GlobalPrefsToLocal */
 
@@ -244,6 +248,10 @@ LocalPrefsToGlobal( PalmAppGlobals* globals )
 
 #ifdef FEATURE_TRAY_EDIT
     globals->util.gameInfo->allowPickTiles = state->allowPickTiles;
+#endif
+
+#ifdef XWFEATURE_BLUETOOTH
+    globals->util.gameInfo->confirmBTConnect = state->confirmBTConnect;
 #endif
 
     return erase;
@@ -290,6 +298,10 @@ localPrefsToControls( PrefsDlgState* state )
     setBooleanCtrl( XW_PREFS_PICKTILES_CHECKBOX_ID, state->allowPickTiles );
 #endif
 
+#ifdef XWFEATURE_BLUETOOTH
+    setBooleanCtrl( XW_PREFS_BTCONFIRM_CHECKBOX_ID, state->confirmBTConnect );
+#endif
+
     numToField( XW_PREFS_TIMER_FIELD_ID, state->gameSeconds/60 );
 } /* localPrefsToControls */
 
@@ -333,6 +345,11 @@ controlsToLocalPrefs( PrefsDlgState* state )
     state->allowPickTiles = 
         getBooleanCtrl( XW_PREFS_PICKTILES_CHECKBOX_ID );
 #endif
+
+#ifdef XWFEATURE_BLUETOOTH
+    state->confirmBTConnect = getBooleanCtrl( XW_PREFS_BTCONFIRM_CHECKBOX_ID );
+#endif
+
 } /* controlsToLocalPrefs */
 
 static void

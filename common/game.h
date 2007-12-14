@@ -30,16 +30,13 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_BLUETOOTH 0x05
 #define STREAM_VERS_KEYNAV 0x04
 #define STREAM_VERS_RELAY 0x03
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#ifdef KEYBOARD_NAV
-# define CUR_STREAM_VERS  STREAM_VERS_KEYNAV
-#else
-# define CUR_STREAM_VERS  STREAM_VERS_RELAY
-#endif
+# define CUR_STREAM_VERS  STREAM_VERS_BLUETOOTH
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
@@ -67,7 +64,7 @@ typedef struct CurGameInfo {
     XP_Bool allowHintRect;
     XP_U8 robotSmartness;
     XWPhoniesChoice phoniesAction;
-
+    XP_Bool confirmBTConnect;   /* only used for BT */
 } CurGameInfo;
 
 typedef struct XWGame {

@@ -181,6 +181,9 @@ typedef struct PrefsDlgState {
     XP_Bool timerEnabled;
     XP_Bool allowPickTiles;
     XP_Bool allowHintRect;
+#ifdef XWFEATURE_BLUETOOTH
+    XP_Bool confirmBTConnect;
+#endif
 } PrefsDlgState;
 
 typedef struct DictState {
@@ -188,8 +191,6 @@ typedef struct DictState {
     ListData sLd;
     XP_U16 nDicts;
 } DictState;
-
-#define MAX_DISABLED 24         /* I've seen 19.... */
 
 typedef struct PalmNewGameState {
     FormPtr form;
