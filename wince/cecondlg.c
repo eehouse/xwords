@@ -111,7 +111,7 @@ conTypeToIndex( CommsConnType conType )
 static CommsConnType
 indexToConType( XP_U16 index )
 {
-    CommsConnType conType = COMMS_CONN_UNUSED;
+    CommsConnType conType = COMMS_CONN_NONE;
     switch( index ) {
     case 0:
         conType = COMMS_CONN_BT; break;

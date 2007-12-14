@@ -805,7 +805,7 @@ main( int argc, char** argv )
     LaunchParams mainParams;
     XP_U16 robotCount = 0;
     
-    CommsConnType conType = COMMS_CONN_UNUSED;
+    CommsConnType conType = COMMS_CONN_NONE;
 #ifdef XWFEATURE_BLUETOOTH
     const char* btaddr = NULL;
 #endif
@@ -901,14 +901,14 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_RELAY
         case 'C':
-            XP_ASSERT( conType == COMMS_CONN_UNUSED ||
+            XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_RELAY );
             mainParams.connInfo.relay.cookie = optarg;
             conType = COMMS_CONN_RELAY;
             break;
 #endif
         case 'D':
-            XP_ASSERT( conType == COMMS_CONN_UNUSED ||
+            XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_IP_DIRECT );
             hostName = optarg;
             conType = COMMS_CONN_IP_DIRECT;
@@ -980,7 +980,7 @@ main( int argc, char** argv )
             break;
         case 'a':
             /* mainParams.info.clientInfo.serverName =  */
-            XP_ASSERT( conType == COMMS_CONN_UNUSED ||
+            XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_RELAY );
             conType = COMMS_CONN_RELAY;
             hostName = optarg;
@@ -993,7 +993,7 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_BLUETOOTH
         case 'B':
-            XP_ASSERT( conType == COMMS_CONN_UNUSED ||
+            XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_BT );
             conType = COMMS_CONN_BT;
             btaddr = optarg;
