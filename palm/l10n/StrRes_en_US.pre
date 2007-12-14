@@ -143,7 +143,8 @@
                                "on if you want Crosswords to use it." },
 { "STRS_BT_CONFIRM",           "Is Crosswords running on the host device and "
                                "ready to accept a connection?  (If you "
-                               "choose \"No\" Crosswords will not try to connect until you restart it "
+                               "choose \"No\" Crosswords will not try to "
+                               "connect until you restart it "
                                "or choose the \"Resend\" menu item.)" },
 
 #endif
