@@ -141,7 +141,7 @@
 { "STR_BT_XPORTNAME",          "Bluetooth" },
 { "STR_BT_NOINIT",             "Bluetooth appears to be off.  Please turn it "
                                "on if you want Crosswords to use it." },
-{ "STRS_BT_CONFIRM",           "Is Crosswords running on the host device and "
+{ "STRS_BT_CONFIRM",           "Is Crosswords running on %s and "
                                "ready to accept a connection?  (If you "
                                "choose \"No\" Crosswords will not try to "
                                "connect until you restart it "

@@ -1618,11 +1618,13 @@ btEvtHandler( PalmAppGlobals* globals, BtCbEvtInfo* evt )
         if ( globals->suspendBT ) {
             evt->u.confirm.confirmed = XP_FALSE;
         } else if ( globals->gameInfo.confirmBTConnect ) {
-            const XP_UCHAR* str;
+            const XP_UCHAR* fmt;
+            char buf[256];      /* fmt is 182+ bytes in English */
             XP_ASSERT( !!globals->game.comms &&
                        !comms_getIsServer(globals->game.comms) );
-            str = getResString( globals, STRS_BT_CONFIRM );
-            evt->u.confirm.confirmed = palmask( globals, str, NULL, -1 );
+            fmt = getResString( globals, STRS_BT_CONFIRM );
+            XP_SNPRINTF( buf, sizeof(buf), fmt, evt->u.confirm.hostName );
+            evt->u.confirm.confirmed = palmask( globals, buf, NULL, -1 );
             globals->suspendBT = !evt->u.confirm.confirmed;
         } else {
             evt->u.confirm.confirmed = XP_TRUE;
