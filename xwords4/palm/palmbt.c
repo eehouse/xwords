@@ -165,6 +165,10 @@ static void pbt_killLinks( PalmBTStuff* btStuff );
 static XP_Bool pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
 static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
                           const char* whence );
+static Err pbt_nameForAddr( PalmBTStuff* btStuff, 
+                            const BtLibDeviceAddressType* addr,
+                            char* const out, XP_U16 outlen );
+
 #define SET_STATE(b,s)  pbt_setstate((b),(s),__func__)
 #define GET_STATE(b)    ((b)->p_connState)
 
@@ -340,22 +344,10 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
         Err err = pbd_discover( btStuff, &addr );
 
         if ( errNone == err ) {
-            UInt8 name[PALM_BT_NAME_LEN];
-            BtLibFriendlyNameType nameType = {
-                .name = name, 
-                .nameLength = sizeof(name) 
-            };
-
             XP_MEMCPY( btAddr, &addr, sizeof(addr) );
             LOG_HEX( &btAddr, sizeof(btAddr), __func__ );
-        
-            CALL_ERR( err, BtLibGetRemoteDeviceName, btStuff->btLibRefNum,
-                      &addr, &nameType, btLibCachedThenRemote );
-            XP_ASSERT( errNone == err ); /* deal with btLibErrPending */
-            XP_LOGF( "%s: got name %s", __func__, nameType.name );
 
-            XP_ASSERT( len >= nameType.nameLength );
-            XP_MEMCPY( out, nameType.name, nameType.nameLength );
+            err = pbt_nameForAddr( btStuff, &addr, out, len );
         }
         success = errNone == err;
     }
@@ -403,6 +395,28 @@ palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
     }
 }
 #endif
+
+static Err
+pbt_nameForAddr( PalmBTStuff* btStuff, const BtLibDeviceAddressType* addr,
+                 char* const out, XP_U16 outlen )
+{
+    Err err;
+    UInt8 name[PALM_BT_NAME_LEN];
+    BtLibFriendlyNameType nameType = {
+        .name = name, 
+        .nameLength = sizeof(name) 
+    };
+
+    CALL_ERR( err, BtLibGetRemoteDeviceName, btStuff->btLibRefNum,
+              (BtLibDeviceAddressType*)addr, &nameType,
+              btLibCachedThenRemote );
+    XP_ASSERT( errNone == err ); /* deal with btLibErrPending */
+    XP_LOGF( "%s: got name %s", __func__, nameType.name );
+    
+    XP_ASSERT( outlen >= nameType.nameLength );
+    XP_MEMCPY( out, nameType.name, nameType.nameLength );
+    return err;
+}
 
 static XP_U16
 pbt_peekQueue( const PBT_queue* queue, const XP_U8** bufp )
@@ -686,7 +700,11 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
 
     case PBT_ACT_CONNECT_ACL:
         if ( GET_STATE(btStuff) == PBTST_NONE ) {
+            UInt8 name[PALM_BT_NAME_LEN];
+            (void)pbt_nameForAddr( btStuff, &btStuff->otherAddr, 
+                                   name, sizeof(name) );
             info.evt = BTCBEVT_CONFIRM;
+            info.u.confirm.hostName = name;
             info.u.confirm.confirmed = XP_TRUE;
             (*proc)( btStuff->globals, &info );
             if ( !info.u.confirm.confirmed ) {

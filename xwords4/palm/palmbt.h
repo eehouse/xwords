@@ -58,6 +58,7 @@ typedef struct BtCbEvtInfo {
     BtCbEvt evt;
     union {
         struct {
+            const char* hostName;
             XP_Bool confirmed;
         } confirm;
         struct {
