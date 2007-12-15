@@ -266,6 +266,8 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
     gi->boardSize = 15;
     gi->robotSmartness = SMART_ROBOT;
     gi->gameSeconds = 25 * 60;	/* 25 minute game is common? */
+    
+    gi->confirmBTConnect = XP_TRUE;
 
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
         XP_UCHAR buf[20];
