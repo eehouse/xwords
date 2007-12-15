@@ -694,6 +694,7 @@ palmInitPrefs( PalmAppGlobals* globals )
     globals->gState.showGrid = true;
     globals->gState.versionNum = CUR_PREFS_VERS;
     globals->gState.cp.showBoardArrow = XP_TRUE;
+    globals->gState.cp.showRobotScores = XP_TRUE;
 
 #ifdef SHOW_PROGRESS
     globals->gState.showProgress = true;

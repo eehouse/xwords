@@ -1263,8 +1263,11 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
         }
         break;
 
+#if defined BT_USE_L2CAP
     case btLibSocketEventSdpGetPsmByUuid:
+#elif defined BT_USE_RFCOMM
     case btLibSocketEventSdpGetServerChannelByUuid:
+#endif
         XP_ASSERT( sEvent->socket == btStuff->u.slave.sdpSocket );
         pbt_close_sdpsocket( btStuff );
         if ( sEvent->status == errNone ) {
