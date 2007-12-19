@@ -398,34 +398,47 @@ palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     WinPopDrawState();
 } /* palm_clr_draw_score_drawPlayer */
-
-#endif
+#endif  /* #ifdef COLOR_SUPPORT */
 
 static void
-palmDrawHintBorders( const XP_Rect* rect, HintAtts hintAtts )
+palmDrawHintBorders( PalmDrawCtx* dctx, const XP_Rect* rect, 
+                     HintAtts hintAtts )
 {
-    if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
+    if ( 0 != (HINT_BORDER_EDGE & hintAtts) ) {
         XP_Rect frame = *rect;
-        insetRect( &frame, 1 );
+        XP_U16 width = dctx->doHiRes ? 4 : 2;
+        XP_Bool showGrid = dctx->globals->gState.showGrid;
+        if ( showGrid ) {
+            ++width;
+        }
 
         if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
-            WinDrawLine( frame.left, frame.top,
-                         frame.left, frame.top + frame.height );
+            XP_Rect r = frame;
+            r.width = width;
+            WinDrawRectangle( (RectangleType*)&r, 0 );
         }
         if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
-            WinDrawLine( frame.left, frame.top,
-                         frame.left + frame.width, frame.top );
+            XP_Rect r = frame;
+            r.height = width;
+            WinDrawRectangle( (RectangleType*)&r, 0 );
         }
         if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
-            WinDrawLine( frame.left + frame.width, frame.top,
-                         frame.left + frame.width, 
-                         frame.top  + frame.height );
-        
+            XP_Rect r = frame;
+            r.left += r.width - width;
+            if ( showGrid ) {
+                ++r.left;
+            }
+            r.width = width;
+            WinDrawRectangle( (RectangleType*)&r, 0 );
         }
         if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
-            WinDrawLine( frame.left, frame.top + frame.height,
-                         frame.left + frame.width, 
-                         frame.top  + frame.height );
+            XP_Rect r = frame;
+            r.top += r.height - width;
+            if ( showGrid ) {
+                ++r.top;
+            }
+            r.height = width;
+            WinDrawRectangle( (RectangleType*)&r, 0 );
         }
     }
 } /* palmDrawHintBorders */
@@ -570,7 +583,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         WinEraseRectangleFrame( roundFrame, (RectangleType*)&localR );
     }
 
-    palmDrawHintBorders( rect, hintAtts );
+    palmDrawHintBorders( dctx, rect, hintAtts );
 
     WinSetClip( &saveClip );
     return complete;
@@ -807,7 +820,7 @@ palm_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
     WinSetClip( (RectangleType*)rectP );
 
     bitmapInRect( dctx, resID, rectP );
-    palmDrawHintBorders( rectP, hintAtts );
+    palmDrawHintBorders( dctx, rectP, hintAtts );
 
     WinSetClip( &oldClip );
 } /* palm_draw_drawBoardArrow */
