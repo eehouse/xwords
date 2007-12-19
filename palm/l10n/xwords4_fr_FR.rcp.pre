@@ -278,8 +278,7 @@ END /* NAVIGATION ID XW_NEWGAMES_FORM */
 
 #ifdef XWFEATURE_BLUETOOTH
 /* Let's define this in one place so it stays the same */
-/* needs translation */
-# define BT_CONF_STRING "Ask before connecting Bluetooth" 
+# define BT_CONF_STRING "Demander avant Bluetooth"
 #endif
 
 
