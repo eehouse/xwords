@@ -34,9 +34,8 @@
 { "STR_SERVER_DICT_WINS", 
       "Conflit entre les dictionnaires Hôte et Invité ; l'hôte gagne." },
 { "STR_REG_UNEXPECTED_USER",  "Essai refusé de l'enregistrement de l'utilisateur" },
-/* Needs translation */
-{ "STR_RESEND_STANDALONE", "This is a standalone game. There is nothing "
-                           "to resend." },
+{ "STR_RESEND_STANDALONE", "C'est une partie en solo. Il n'y a rien "
+                           "à renvoyer." },
 #endif
 { "STR_TOO_FEW_TILES", "Pas assez de lettres pour échanger." },
 { "STR_CANT_UNDO_TILEASSIGN", "Impossible d'annuler.  (Le tirage initial ne peut être annulé.)" },
@@ -139,12 +138,12 @@
 { "STR_BT_XPORTNAME",          "Bluetooth" },
 { "STR_BT_NOINIT",             "Impossible initialiser Bluetooth. "
                                "Est-il connecté ?" },
-/* needs translation */
-{ "STRS_BT_CONFIRM",           "Is Crosswords running on the host device and "
-                               "ready to accept a connection?  (If you "
-                               "choose \"No\" Crosswords will not try to "
-                               "connect until you restart it "
-                               "or choose the \"Resend\" menu item.)" },
+{ "STRS_BT_CONFIRM",           "Crosswords est-il en marche sur %s "
+                               "et est-il prêt à recevoir une connexion ? "
+                               "(Si vous choisissez \"Non\", Crosswords "
+                               "n'essayera pas de se connecter jusqu'à ce "
+                               "que vous le redémarriez ou choisissiez "
+                               "\"Renvoyer\" dans le menu.)" },
 #endif
 
 #ifdef XWFEATURE_IR
@@ -152,12 +151,12 @@
 #endif
 
 { "STR_ABOUT_CONTENT", 
-#ifdef XWFEATURE_BLUETOOTH
-      "MERCI DE VOTRE ATTENTION pour cette version beta de "
-      "Crosswords.  Svp, regardez les notes et avertissements sur "
-      "xwords.sf.net/bt_palm.php.  Svp, signalez les bugs à "
-      "xwords@eehouse.org.  Au plaisir !\n\n"
-#endif
+/* #ifdef XWFEATURE_BLUETOOTH */
+/*       "MERCI DE VOTRE ATTENTION pour cette version beta de " */
+/*       "Crosswords.  Svp, regardez les notes et avertissements sur " */
+/*       "xwords.sf.net/bt_palm.php.  Svp, signalez les bugs à " */
+/*       "xwords@eehouse.org.  Au plaisir !\n\n" */
+/* #endif */
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2007 par Eric House.  "\
       "Réalisé sous GNU Public License.\n\n"\

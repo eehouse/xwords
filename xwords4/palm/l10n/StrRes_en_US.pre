@@ -150,12 +150,12 @@
 #endif
 
 { "STR_ABOUT_CONTENT", 
-#ifdef XWFEATURE_BLUETOOTH
-       "THANKS FOR DOWNLOADING this beta version of "
-       "Crosswords.  Please see the notes and caveats at "
-       "xwords.sf.net/bt_palm.php.  Please report bugs to "
-       "xwords@eehouse.org.  Enjoy!\n\n"
-#endif
+/* #ifdef XWFEATURE_BLUETOOTH */
+/*        "THANKS FOR DOWNLOADING this beta version of " */
+/*        "Crosswords.  Please see the notes and caveats at " */
+/*        "xwords.sf.net/bt_palm.php.  Please report bugs to " */
+/*        "xwords@eehouse.org.  Enjoy!\n\n" */
+/* #endif */
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
       "Copyright 1998-2007 by Eric House.  "\
       "Released under the GNU Public License.\n\n"\
