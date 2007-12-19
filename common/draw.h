@@ -62,6 +62,9 @@ enum HINT_ATTS { HINT_BORDER_NONE = 0,
                  HINT_BORDER_CENTER = 0x10
 };
 typedef XP_UCHAR HintAtts;
+#define HINT_BORDER_EDGE \
+    (HINT_BORDER_LEFT|HINT_BORDER_RIGHT|HINT_BORDER_TOP|HINT_BORDER_BOTTOM)
+
 
 /* Platform-supplied draw functions are either staticly linked, or called via
  * a vtable.  If you want static linking, define DRAW_LINK_DIRECT via a -D
