@@ -315,10 +315,10 @@ gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi )
 } /* gi_disposePlayerInfo */
 
 void
-gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGI )
+gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 {
     XP_U16 nPlayers, i;
-    LocalPlayer* srcPl;
+    const LocalPlayer* srcPl;
     LocalPlayer* destPl;
 
     replaceStringIfDifferent( mpool, &destGI->dictName, 

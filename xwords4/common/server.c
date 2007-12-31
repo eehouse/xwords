@@ -940,103 +940,108 @@ clearLocalRobots( ServerCtxt* server )
 static XP_Bool
 client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 {
-    DictionaryCtxt* newDict;
-    DictionaryCtxt* curDict;
-    XP_U16 nPlayers, nCols;
-    XP_PlayerAddr channelNo;
-    short i;
-    ModelCtxt* model = server->vol.model;
-    CurGameInfo* gi = server->vol.gi;
-    CurGameInfo localGI;
-    XP_U32 gameID;
-    PoolContext* pool;
+    XP_Bool accepted = 0 == server->nv.addresses[0].channelNo;
 
-    /* version */
-    XP_U8 streamVersion = stream_getU8( stream );
-    XP_ASSERT( streamVersion == STREAM_VERS_41B4 );
-    if ( streamVersion != STREAM_VERS_41B4 ) {
-        return XP_FALSE;
+    /* We should never get this message a second time, but very rarely we do.
+       Drop it in that case. */
+    XP_ASSERT( accepted );
+    if ( accepted ) {
+        DictionaryCtxt* newDict;
+        DictionaryCtxt* curDict;
+        XP_U16 nPlayers, nCols;
+        XP_PlayerAddr channelNo;
+        short i;
+        ModelCtxt* model = server->vol.model;
+        CurGameInfo* gi = server->vol.gi;
+        CurGameInfo localGI;
+        XP_U32 gameID;
+        PoolContext* pool;
+
+        /* version */
+        XP_U8 streamVersion = stream_getU8( stream );
+        XP_ASSERT( streamVersion == STREAM_VERS_41B4 );
+        if ( streamVersion != STREAM_VERS_41B4 ) {
+            return XP_FALSE;
+        }
+        stream_setVersion( stream, streamVersion );
+
+        gameID = stream_getU32( stream );
+        XP_STATUSF( "read gameID of %lx; calling comms_setConnID", gameID );
+        server->vol.gi->gameID = gameID;
+        comms_setConnID( server->vol.comms, gameID );
+
+        XP_MEMSET( &localGI, 0, sizeof(localGI) );
+        gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
+        localGI.serverRole = SERVER_ISCLIENT;
+
+        /* so it's not lost (HACK!).  Without this, a client won't have a default
+           dict name when a new game is started. */
+        localGI.dictName = copyString( server->mpool, gi->dictName );
+        gi_copy( MPPARM(server->mpool) gi, &localGI );
+
+        nCols = localGI.boardSize;
+
+        newDict = util_makeEmptyDict( server->vol.util );
+        dict_loadFromStream( newDict, stream );
+
+        channelNo = stream_getAddress( stream );
+        XP_ASSERT( channelNo != 0 );
+        server->nv.addresses[0].channelNo = channelNo;
+
+        /* PENDING init's a bit harsh for setting the size */
+        model_init( model, nCols, nCols );
+
+        nPlayers = localGI.nPlayers;
+        XP_STATUSF( "reading in %d players", localGI.nPlayers );
+
+        gi_disposePlayerInfo( MPPARM(server->mpool) &localGI );
+
+        gi->nPlayers = nPlayers;
+        model_setNPlayers( model, nPlayers );
+
+        curDict = model_getDictionary( model );
+
+        XP_ASSERT( !!newDict );
+
+        if ( curDict == NULL ) {
+            model_setDictionary( model, newDict );
+        } else if ( dict_tilesAreSame( newDict, curDict ) ) {
+            /* keep the dict the local user installed */
+            dict_destroy( newDict );
+        } else {
+            dict_destroy( curDict );
+            model_setDictionary( model, newDict );	
+            util_userError( server->vol.util, ERR_SERVER_DICT_WINS );
+            clearLocalRobots( server );
+        }
+
+        XP_ASSERT( !server->pool );
+        pool = server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
+        pool_initFromDict( server->pool, model_getDictionary(model));
+
+        /* now read the assigned tiles for each player from the stream, and remove
+           them from the newly-created local pool. */
+        for ( i = 0; i < nPlayers; ++i ) {
+            TrayTileSet tiles;
+
+            traySetFromStream( stream, &tiles );
+            XP_ASSERT( tiles.nTiles <= MAX_TRAY_TILES );
+
+            XP_STATUSF( "got %d tiles for player %d", tiles.nTiles, i );
+
+            model_assignPlayerTiles( model, i, &tiles );
+
+            /* remove what the server's assigned so we won't conflict later. */
+            pool_removeTiles( pool, &tiles );
+        }
+
+        SETSTATE( server, XWSTATE_INTURN );
+
+        /* Give board a chance to redraw self with the full compliment of known
+           players */
+        setTurn( server, 0 );
     }
-    stream_setVersion( stream, streamVersion );
-
-    gameID = stream_getU32( stream );
-    XP_STATUSF( "read gameID of %lx; calling comms_setConnID", gameID );
-    server->vol.gi->gameID = gameID;
-    comms_setConnID( server->vol.comms, gameID );
-
-    XP_MEMSET( &localGI, 0, sizeof(localGI) );
-    gi_readFromStream( MPPARM(server->mpool) stream, &localGI );
-    localGI.serverRole = SERVER_ISCLIENT;
-
-    /* so it's not lost (HACK!).  Without this, a client won't have a default
-       dict name when a new game is started. */
-    localGI.dictName = copyString( server->mpool, gi->dictName );
-    gi_copy( MPPARM(server->mpool) gi, &localGI );
-
-    nCols = localGI.boardSize;
-
-    newDict = util_makeEmptyDict( server->vol.util );
-    dict_loadFromStream( newDict, stream );
-
-    channelNo = stream_getAddress( stream );
-    XP_ASSERT( channelNo != 0 );
-    XP_ASSERT( server->nv.addresses[0].channelNo == 0 );
-    server->nv.addresses[0].channelNo = channelNo;
-
-    /* PENDING init's a bit harsh for setting the size */
-    model_init( model, nCols, nCols );
-
-    nPlayers = localGI.nPlayers;
-    XP_STATUSF( "reading in %d players", localGI.nPlayers );
-
-    gi_disposePlayerInfo( MPPARM(server->mpool) &localGI );
-
-    gi->nPlayers = nPlayers;
-    model_setNPlayers( model, nPlayers );
-
-    curDict = model_getDictionary( model );
-
-    XP_ASSERT( !!newDict );
-
-    if ( curDict == NULL ) {
-        model_setDictionary( model, newDict );
-    } else if ( dict_tilesAreSame( newDict, curDict ) ) {
-        /* keep the dict the local user installed */
-        dict_destroy( newDict );
-    } else {
-        dict_destroy( curDict );
-        model_setDictionary( model, newDict );	
-        util_userError( server->vol.util, ERR_SERVER_DICT_WINS );
-        clearLocalRobots( server );
-    }
-
-    XP_ASSERT( !server->pool );
-    pool = server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
-    pool_initFromDict( server->pool, model_getDictionary(model));
-
-    /* now read the assigned tiles for each player from the stream, and remove
-       them from the newly-created local pool. */
-    for ( i = 0; i < nPlayers; ++i ) {
-        TrayTileSet tiles;
-
-        traySetFromStream( stream, &tiles );
-        XP_ASSERT( tiles.nTiles <= MAX_TRAY_TILES );
-
-        XP_STATUSF( "got %d tiles for player %d", tiles.nTiles, i );
-
-        model_assignPlayerTiles( model, i, &tiles );
-
-        /* remove what the server's assigned so we won't conflict later. */
-        pool_removeTiles( pool, &tiles );
-    }
-
-    SETSTATE( server, XWSTATE_INTURN );
-
-    /* Give board a chance to redraw self with the full compliment of known
-       players */
-    setTurn( server, 0 );
-
-    return XP_TRUE;
+    return accepted;
 } /* client_readInitialMessage */
 #endif
 
