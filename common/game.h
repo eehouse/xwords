@@ -99,7 +99,7 @@ void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi,
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
-void gi_copy( MPFORMAL CurGameInfo* destGI, CurGameInfo* srcGi );
+void gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGi );
 XP_U16 gi_countLocalHumans( const CurGameInfo* gi );
 
 XP_Bool player_hasPasswd( LocalPlayer* player );

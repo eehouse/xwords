@@ -1014,9 +1014,13 @@ preProcess( CommsCtxt* comms, XWStreamCtxt* stream,
 static AddressRecord* 
 addrToRecord( CommsCtxt* comms, const CommsAddrRec* addr )
 {
-    CommsConnType conType = addr->conType;
+    CommsConnType conType;
     AddressRecord* rec;
     XP_Bool matched = XP_FALSE;
+
+    XP_ASSERT( !!addr );
+
+    conType = addr->conType;
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         XP_ASSERT( conType == rec->addr.conType );
         switch( conType ) {
@@ -1039,7 +1043,9 @@ addrToRecord( CommsCtxt* comms, const CommsAddrRec* addr )
             }
             break;
         case COMMS_CONN_IR:              /* no way to test */
+            break;
         default:
+            XP_ASSERT(0);
             break;
         }
         if ( matched ) {
