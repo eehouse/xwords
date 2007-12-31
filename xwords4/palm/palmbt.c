@@ -208,6 +208,7 @@ palm_bt_init( PalmAppGlobals* globals, XP_Bool* userCancelled )
         btStuff = pbt_checkInit( globals, userCancelled );
     } else {
         pbt_reset_buffers( btStuff );
+        pbt_killLinks( btStuff );
     }
 
     /* Don't try starting master or slave: we don't know which we are yet.
@@ -699,6 +700,7 @@ pbt_do_work( PalmBTStuff* btStuff, BtCbEvtProc proc )
         break;
 
     case PBT_ACT_CONNECT_ACL:
+        XP_ASSERT( PBT_SLAVE == btStuff->picoRole );
         if ( GET_STATE(btStuff) == PBTST_NONE ) {
             UInt8 name[PALM_BT_NAME_LEN];
             (void)pbt_nameForAddr( btStuff, &btStuff->otherAddr, 
@@ -961,9 +963,15 @@ static void
 btTimerProc( void* closure, XWTimerReason why )
 {
     PalmBTStuff* btStuff;
-    btStuff = (PalmBTStuff*)closure;
     XP_ASSERT( why == TIMER_ACL_BACKOFF );
-    pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+    btStuff = (PalmBTStuff*)closure;
+    if ( GET_STATE(btStuff) != PBTST_NONE ) {
+        XP_LOGF( "%s ignoring; have changed states", __func__ );
+    } else if ( PBT_SLAVE != btStuff->picoRole ) {
+        XP_LOGF( "%s ignoring; have changed roles", __func__ );
+    } else {
+        pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
+    }
 }
 
 static void
@@ -1202,10 +1210,13 @@ socketCallback( BtLibSocketEventType* sEvent, UInt32 refCon )
 
     switch( event ) {
     case btLibSocketEventConnectRequest: 
-        XP_ASSERT( btStuff->picoRole == PBT_MASTER );
-        /* sends btLibSocketEventConnectedInbound */
-        CALL_ERR( err, BtLibSocketRespondToConnection, btStuff->btLibRefNum,  
-                  sEvent->socket, true );
+        if ( btStuff->picoRole == PBT_MASTER ) {
+            /* sends btLibSocketEventConnectedInbound */
+            CALL_ERR( err, BtLibSocketRespondToConnection, btStuff->btLibRefNum,  
+                      sEvent->socket, true );
+        } else {
+            XP_LOGF( "ignoring b/c not master" );
+        }
         break;
     case btLibSocketEventConnectedInbound:
         XP_ASSERT( btStuff->picoRole == PBT_MASTER );
@@ -1371,8 +1382,10 @@ libMgmtCallback( BtLibManagementEventType* mEvent, UInt32 refCon )
         }
         break;
     default:
+        XP_LOGF( "%s: %s not handled", __func__, mgmtEvtToStr(event));
         break;
     }
+    LOG_RETURN_VOID();
 } /* libMgmtCallback */
 
 /***********************************************************************
