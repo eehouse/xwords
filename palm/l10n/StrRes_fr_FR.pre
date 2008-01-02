@@ -1,6 +1,6 @@
 /* -*- mode: c; compile-command: "cd .. && make ARCH=68K_ONLY MEMDEBUG=TRUE LANG=fr_FR"; -*- */
 /* 
- * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org) and
+ * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org) and
  * others.  All rights reserved. Traduction en français par Francis H.
  *
  * Ce programm est libre de droits ; Vous pouvez le distribuer et/ou
@@ -158,7 +158,7 @@
 /*       "xwords@eehouse.org.  Au plaisir !\n\n" */
 /* #endif */
       "Crosswords " XW_PALM_VERSION_STRING " (rev. " SVN_REV ").\n" \
-      "Copyright 1998-2007 par Eric House.  "\
+      "Copyright 1998-2008 par Eric House.  "\
       "Réalisé sous GNU Public License.\n\n"\
 
       "Voir le manuel sur xwords.sf.net ou eehouse.org/xwords/.\n\n" \

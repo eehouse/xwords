@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999 - 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999 - 2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -439,7 +439,7 @@
 
 /* versioning stuff */
 #ifdef XWFEATURE_BLUETOOTH
-# define XW_PALM_VERSION_STRING "4.3b4"
+# define XW_PALM_VERSION_STRING "4.3b5"
 #else
 /* There's a separate branch for 2.4 releases now. */
 # define XW_PALM_VERSION_STRING "4.2.1"
