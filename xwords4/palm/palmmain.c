@@ -180,9 +180,17 @@ PM2(PilotMain)( UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     if ( cmd == sysAppLaunchCmdNormalLaunch ) {
         if ( (launchFlags & sysAppLaunchFlagNewGlobals) != 0) {
 #ifdef XW_TARGET_PNO
+            /* SVN_REV isn't a string in ARM.  Fix that */
             XP_LOGF( "%s: arch=ARM", __func__ );
 #else
-            XP_LOGF( "%s: arch=68K", __func__ );
+            XP_LOGF( "%s: arch=68K, rev=%s", __func__, SVN_REV );
+#endif
+#ifdef MEM_DEBUG
+            {
+                char date[MAX_GAMENAME_LENGTH];
+                makeDefaultGameName( date );
+                XP_LOGF( "date: %s", date );
+            }
 #endif
             if ( startApplication( &globals ) ) {
                 XP_ASSERT( (launchFlags & sysAppLaunchFlagNewGlobals) != 0 );
@@ -1173,13 +1181,6 @@ startApplication( PalmAppGlobals** globalsP )
                                         globals, 
                                         getResString,
                                         &globals->drawingPrefs );
-
-#ifdef XWFEATURE_BLUETOOTH
-    if ( !globals->gState.oneTimeShown ) {
-        palmaskFromStrId( globals, STR_ABOUT_CONTENT, STR_ABOUT_TITLE );
-        globals->gState.oneTimeShown = XP_TRUE;
-    }
-#endif
 
     FrmGotoForm( XW_MAIN_FORM );
 
@@ -4060,7 +4061,8 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void
-palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
+palm_util_addrChange( XW_UtilCtxt* uc, 
+                      const CommsAddrRec* XP_UNUSED_RELAY(oldAddr),
                       const CommsAddrRec* newAddr )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;

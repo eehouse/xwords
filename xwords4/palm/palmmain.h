@@ -126,7 +126,7 @@ typedef struct XWords4PreferenceType {
     Boolean showProgress;
     Boolean showGrid;
     Boolean showColors;
-    Boolean oneTimeShown;
+    Boolean reserved; /* was oneTimeShown */
     Boolean reserved1[4];       /* pad out to 12 for ARM */
 
     /* New for 0x0405 */
