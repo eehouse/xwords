@@ -704,11 +704,11 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
     cursesListenOnSocket( globals, listener );
 }
 
+#ifdef RELAY_HEARTBEAT
 static int
 figureTimeout( CursesAppGlobals* globals )
 {
     int result = INFINITE_TIMEOUT;
-#ifdef RELAY_HEARTBEAT
     if ( globals->cGlobals.timerProcs[TIMER_HEARTBEAT] != 0 ) {
         XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util );
         XP_U32 then = globals->nextTimer;
@@ -718,9 +718,11 @@ figureTimeout( CursesAppGlobals* globals )
             result = (then - now) * 1000;
         }
     }
-#endif
     return result;
 } /* figureTimeout */
+#else 
+# define figureTimeout(g) INFINITE_TIMEOUT
+#endif
 
 /* 
  * Ok, so this doesn't block yet.... 
