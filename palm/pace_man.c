@@ -1135,23 +1135,26 @@ btLibManagementProcArmEntry( const void* XP_UNUSED_DBG(emulStateP),
     data = (unsigned long*)userData68KP;
     state = getStorageLoc();
 
-    /* set up stack here too? */
-    asm( "mov %0, r10" : "=r" (oldR10) );
-    asm( "mov r10, %0" : : "r" (state->gotTable) );
+    /* This won't be true if we're called in somebody else's context */
+    if ( emulStateP == state->emulStateP ) {
+        /* set up stack here too? */
+        asm( "mov %0, r10" : "=r" (oldR10) );
+        asm( "mov r10, %0" : : "r" (state->gotTable) );
 
-    XP_ASSERT( emulStateP == state->emulStateP ); /* seems to fire when call's
-                                                     incoming (or maybe: a
-                                                     system alert is up).
-                                                     What to do? */
-    XP_ASSERT( call68KFuncP == state->call68KFuncP );
+        XP_ASSERT( emulStateP == state->emulStateP ); /* seems to fire when call's
+                                                         incoming (or maybe: a
+                                                         system alert is up).
+                                                         What to do? */
+        XP_ASSERT( call68KFuncP == state->call68KFuncP );
 
-    procPtr = (BtLibManagementProcPtr)read_unaligned32( &data[0] );
-    mEventP = read_unaligned32( &data[1] );
-    btLibManagementEventType68K_TO_ARM( &mEvent, (unsigned char*)mEventP );
-    refCon = read_unaligned32( (unsigned char*)&data[2] );
-    (*procPtr)( &mEvent, refCon );
+        procPtr = (BtLibManagementProcPtr)read_unaligned32( &data[0] );
+        mEventP = read_unaligned32( &data[1] );
+        btLibManagementEventType68K_TO_ARM( &mEvent, (unsigned char*)mEventP );
+        refCon = read_unaligned32( (unsigned char*)&data[2] );
+        (*procPtr)( &mEvent, refCon );
 
-    asm( "mov r10, %0" : : "r" (oldR10) );
+        asm( "mov r10, %0" : : "r" (oldR10) );
+    }
 
     return 0L;                  /* no result to return */
 } /* btLibManagementProcArmEntry */
@@ -1232,8 +1235,7 @@ btLibSocketEventType68K_TO_ARM( BtLibSocketEventType* out, const unsigned char* 
 }
 
 static unsigned long
-btSocketProcArmEntry( const void* XP_UNUSED_DBG(emulStateP), 
-                      void* userData68KP, 
+btSocketProcArmEntry( const void* emulStateP, void* userData68KP, 
                       Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
 {
     BtLibSocketEventType sEvent;
@@ -1246,21 +1248,23 @@ btSocketProcArmEntry( const void* XP_UNUSED_DBG(emulStateP),
         = (BtLibSocketProcPtr)read_unaligned32( (unsigned char*)&data[0] );
     PNOState* state = getStorageLoc();
 
-    /* set up stack here too? */
-    asm( "mov %0, r10" : "=r" (oldR10) );
-    asm( "mov r10, %0" : : "r" (state->gotTable) );
+    /* This won't be true if we're called in somebody else's context */
+    if ( emulStateP == state->emulStateP ) {
 
-    XP_ASSERT( emulStateP == state->emulStateP );
-    XP_ASSERT( call68KFuncP == state->call68KFuncP );
+        /* set up stack here too? */
+        asm( "mov %0, r10" : "=r" (oldR10) );
+        asm( "mov r10, %0" : : "r" (state->gotTable) );
 
-    sEventP = (BtLibSocketEventType*)
-        read_unaligned32( (unsigned char*)&data[1] );
-    btLibSocketEventType68K_TO_ARM( &sEvent, (unsigned char*)sEventP );
-    refCon = read_unaligned32( (unsigned char*)&data[2] );
-    (*procPtr)( &sEvent, refCon );
+        XP_ASSERT( call68KFuncP == state->call68KFuncP );
 
-    asm( "mov r10, %0" : : "r" (oldR10) );
+        sEventP = (BtLibSocketEventType*)
+            read_unaligned32( (unsigned char*)&data[1] );
+        btLibSocketEventType68K_TO_ARM( &sEvent, (unsigned char*)sEventP );
+        refCon = read_unaligned32( (unsigned char*)&data[2] );
+        (*procPtr)( &sEvent, refCon );
 
+        asm( "mov r10, %0" : : "r" (oldR10) );
+    }
     return 0L;                  /* no result to return */
 } /* btSocketProcArmEntry */
 
