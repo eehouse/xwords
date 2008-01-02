@@ -503,12 +503,10 @@ drawFocusRingOnGadget( PalmAppGlobals* globals, XP_U16 idLow, XP_U16 idHigh )
 
             /* growing the rect didn't work to fix glitches in ring drawing. */
             if ( IS_T600(globals) ) {
-                XP_LOGF( "%s: calling HsNavDrawFocusRing", __func__ );
                 err = HsNavDrawFocusRing( form, focusID, 0, &rect,
                                           hsNavFocusRingStyleObjectTypeDefault,
                                           false );
             } else {
-                XP_LOGF( "%s: calling FrmNavDrawFocusRing", __func__ );
                 err = FrmNavDrawFocusRing( form, focusID, 0, &rect,
                                            hsNavFocusRingStyleObjectTypeDefault,
                                            false );
