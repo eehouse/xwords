@@ -33,4 +33,7 @@ byodfiles.tar:
 	done
 
 clean:
-	rm -f byodfiles.tgz byodfiles.tar
+	rm -f byodfiles.tgz byodfiles.tar dict2dawg
+
+dict2dawg: dict2dawg.cpp
+	$(CXX) $< -o $@
