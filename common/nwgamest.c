@@ -43,7 +43,7 @@ struct NewGameCtx {
     XP_TriEnable enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
     XP_U16 nPlayersShown;       /* real nPlayers lives in gi */
     XP_U16 nPlayersTotal;       /* used only until changedNPlayers set */
-    XP_U16 nLocalPlayers;
+    XP_U16 nLocalPlayers;       /* not changed except in ngc_load */
     DeviceRole role;
     XP_Bool isNewGame;
     XP_Bool changedNPlayers;
@@ -62,6 +62,7 @@ static void considerEnableJuggle( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
                         const LocalPlayer* lp );
+static XP_Bool checkConsistent( NewGameCtx* ngc, XP_Bool warnUser );
 
 NewGameCtx*
 newg_make( MPFORMAL XP_Bool isNewGame, 
@@ -201,19 +202,23 @@ cpToLP( NGValue value, const void* cbClosure )
     }
 } /* cpToLP */
 
-void
-newg_store( NewGameCtx* ngc, CurGameInfo* gi )
+XP_Bool
+newg_store( NewGameCtx* ngc, CurGameInfo* gi, XP_Bool warn )
 {
     XP_U16 player;
+    XP_Bool consistent = checkConsistent( ngc, warn );
 
-    gi->nPlayers = ngc->nPlayersShown;
+    if ( consistent ) {
+        gi->nPlayers = ngc->nPlayersShown;
 #ifndef XWFEATURE_STANDALONE_ONLY
-    gi->serverRole = ngc->role;
+        gi->serverRole = ngc->role;
 #endif
 
-    for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
-        storePlayer( ngc, player, &gi->players[player] );
+        for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
+            storePlayer( ngc, player, &gi->players[player] );
+        }
     }
+    return consistent;
 } /* newg_store */
 
 void
@@ -319,6 +324,32 @@ newg_juggle( NewGameCtx* ngc )
     }
     return changed;
 } /* newg_juggle */
+
+static XP_Bool
+checkConsistent( NewGameCtx* ngc, XP_Bool warnUser )
+{
+    XP_Bool consistent;
+    XP_U16 i;
+
+    /* If ISSERVER, make sure there's at least one non-local player. */
+    consistent = ngc->role != SERVER_ISSERVER;
+    for ( i = 0; !consistent && i < ngc->nPlayersShown; ++i ) {
+        DeepValue dValue;
+        dValue.col = NG_COL_REMOTE;
+        (*ngc->getColProc)( ngc->closure, i, NG_COL_REMOTE,
+                            deepCopy, &dValue );
+        if ( dValue.value.ng_bool ) {
+            consistent = XP_TRUE;
+        }
+    }
+    if ( !consistent && warnUser ) {
+        util_userError( ngc->util, ERR_REG_SERVER_SANS_REMOTE );
+    }
+
+    /* Add other consistency checks, and error messages, here. */
+
+    return consistent;
+} /* checkConsistent */
 
 static void
 enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 

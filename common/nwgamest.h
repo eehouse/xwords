@@ -98,7 +98,7 @@ NewGameCtx* newg_make( MPFORMAL XP_Bool isNewGame,
 void newg_destroy( NewGameCtx* ngc );
 
 void newg_load( NewGameCtx* ngc, const CurGameInfo* gi );
-void newg_store( NewGameCtx* ngc, CurGameInfo* gi );
+XP_Bool newg_store( NewGameCtx* ngc, CurGameInfo* gi, XP_Bool warn );
 
 void newg_colChanged( NewGameCtx* ngc, XP_U16 player );
 void newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, 

@@ -166,6 +166,8 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
     case ERR_NO_PEEK_ROBOT_TILES:
         message = "No peeking at the robot's tiles!";
         break;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
     case ERR_NO_PEEK_REMOTE_TILES:
         message = "No peeking at remote players' tiles!";
         break;
@@ -176,6 +178,12 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "Conflict between Host and Guest dictionaries; Host wins.";
         XP_WARNF( "GTK may have problems here." );
         break;
+    case ERR_REG_SERVER_SANS_REMOTE:
+        message = "At least one player must be marked remote for a game "
+            "started as Host.";
+        break;
+#endif
+
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
         break;

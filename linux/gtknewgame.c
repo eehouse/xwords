@@ -498,8 +498,13 @@ newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame )
 
         gtk_main();
         if ( !state.cancelled && !state.revert ) {
-            newg_store( state.newGameCtxt, &globals->cGlobals.params->gi );
-            globals->cGlobals.params->gi.boardSize = state.nCols;
+            if ( newg_store( state.newGameCtxt, &globals->cGlobals.params->gi,
+                             XP_TRUE ) ) {
+                globals->cGlobals.params->gi.boardSize = state.nCols;
+            } else {
+                /* Do it again if we warned user of inconsistency. */
+                state.revert = XP_TRUE;
+            }
         }
 
         gtk_widget_destroy( dialog );
