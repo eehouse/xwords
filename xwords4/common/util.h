@@ -48,6 +48,7 @@ typedef enum {
     ERR_NO_PEEK_REMOTE_TILES,
     ERR_REG_UNEXPECTED_USER,	/* server asked to register too many remote
 				   users */
+    ERR_REG_SERVER_SANS_REMOTE,
 #endif
     ERR_CANT_TRADE_MID_MOVE,
 /*     ERR_CANT_ENGINE_MID_MOVE, */
