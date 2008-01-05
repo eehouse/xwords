@@ -34,6 +34,9 @@
 { "STR_SERVER_DICT_WINS", 
       "Conflit entre les dictionnaires Hôte et Invité ; l'hôte gagne." },
 { "STR_REG_UNEXPECTED_USER",  "Essai refusé de l'enregistrement de l'utilisateur" },
+/* Needs translation */
+{ "STR_REG_NEED_REMOTE",      "Please make one or more players Remote when "
+                              "playing as Host." },
 { "STR_RESEND_STANDALONE", "C'est une partie en solo. Il n'y a rien "
                            "à renvoyer." },
 #endif

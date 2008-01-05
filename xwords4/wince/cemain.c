@@ -123,7 +123,7 @@ static XP_U32 ce_util_getCurSeconds( XW_UtilCtxt* uc );
 static DictionaryCtxt* ce_util_makeEmptyDict( XW_UtilCtxt* uc );
 #ifdef XWFEATURE_RELAY
 static XWStreamCtxt* ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, 
-                                                 XP_U16 channelNo );
+                                                 XP_PlayerAddr channelNo );
 #endif
 static const XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc, 
                                               XP_U16 stringCode );
@@ -2554,6 +2554,23 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         message = "Tile assignment can't be undone.";
         break;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    case ERR_NO_PEEK_REMOTE_TILES:
+        message = "No peeking at remote players' tiles!";
+        break;
+    case ERR_REG_UNEXPECTED_USER:
+        message = "Refused attempt to register unexpected user[s].";
+        break;
+    case ERR_SERVER_DICT_WINS:
+        message = "Conflict between Host and Guest dictionaries; Host wins.";
+        XP_WARNF( "GTK may have problems here." );
+        break;
+    case ERR_REG_SERVER_SANS_REMOTE:
+        message = "At least one player must be marked remote for a game "
+            "started as Host.";
+        break;
+#endif
+
 #ifdef XWFEATURE_RELAY
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
         message = "The relay timed you out; usually that means "
@@ -2743,8 +2760,7 @@ ce_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 
 static void
 ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
-                  XP_U16 XP_UNUSED_RELAY(when),
-                  XWTimerProc proc, void* closure)
+                  XP_U16 when, XWTimerProc proc, void* closure )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_U32 timerID;
@@ -2802,7 +2818,7 @@ ce_util_makeEmptyDict( XW_UtilCtxt* uc )
 
 #ifdef XWFEATURE_RELAY
 static XWStreamCtxt*
-ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_U16 channelNo )
+ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
     XWStreamCtxt* stream;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;

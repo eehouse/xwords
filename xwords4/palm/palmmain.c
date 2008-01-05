@@ -3645,6 +3645,9 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_REG_UNEXPECTED_USER:
         strID = STR_REG_UNEXPECTED_USER;
         break;	
+    case ERR_REG_SERVER_SANS_REMOTE:
+        strID = STR_REG_NEED_REMOTE;
+        break;	
 #endif
 
     case ERR_CANT_TRADE_MID_MOVE:
