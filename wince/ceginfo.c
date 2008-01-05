@@ -199,46 +199,50 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
     }
 } /* loadFromGameInfo */
 
-static void
+static XP_Bool
 stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 {
     CurGameInfo* gi = &globals->gameInfo;
     XP_Bool timerOn;
+    XP_Bool success = newg_store( giState->newGameCtx, gi, XP_TRUE );
 
-    newg_store( giState->newGameCtx, gi );
+    if ( success ) {
 
-    /* dictionary */ {
-        int sel;
-        sel = SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETCURSEL, 0, 0L );
-        if ( sel >= 0 ) {
-            WideCharToMultiByte( CP_ACP, 0, giState->menuDicts[sel], -1,
-                                 giState->newDictName, 
-                                 sizeof(giState->newDictName), NULL, NULL );
+        /* dictionary */ {
+            int sel;
+            sel = SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETCURSEL, 
+                                      0, 0L );
+            if ( sel >= 0 ) {
+                WideCharToMultiByte( CP_ACP, 0, giState->menuDicts[sel], -1,
+                                     giState->newDictName, 
+                                     sizeof(giState->newDictName), NULL, NULL );
+            }
+            replaceStringIfDifferent( globals->mpool, &gi->dictName,
+                                      giState->newDictName );
         }
-        replaceStringIfDifferent( globals->mpool, &gi->dictName,
-                                  giState->newDictName );
-    }
 
-    /* timer */
-    timerOn = ceGetChecked( hDlg, TIMER_CHECK );
-    gi->timerEnabled = timerOn;
-    if ( timerOn ) {
-        XP_UCHAR numBuf[10];
-        XP_U16 len = sizeof(numBuf);
-        ceGetDlgItemText( hDlg, TIMER_EDIT, numBuf, &len );
-        if ( len > 0 ) {
-            XP_U16 num = atoi( numBuf );
-            gi->gameSeconds = num * 60;
+        /* timer */
+        timerOn = ceGetChecked( hDlg, TIMER_CHECK );
+        gi->timerEnabled = timerOn;
+        if ( timerOn ) {
+            XP_UCHAR numBuf[10];
+            XP_U16 len = sizeof(numBuf);
+            ceGetDlgItemText( hDlg, TIMER_EDIT, numBuf, &len );
+            if ( len > 0 ) {
+                XP_U16 num = atoi( numBuf );
+                gi->gameSeconds = num * 60;
+            }
         }
-    }
     
-    /* preferences */
-    if ( giState->prefsChanged ) {
-        loadCurPrefsFromState( globals, &globals->appPrefs, gi, 
-                               &giState->prefsPrefs );
+        /* preferences */
+        if ( giState->prefsChanged ) {
+            loadCurPrefsFromState( globals, &globals->appPrefs, gi, 
+                                   &giState->prefsPrefs );
+        } 
     }
 
-    LOG_RETURN_VOID();
+    LOG_RETURNF( "%d", (int)success );
+    return success;
 } /* stateToGameInfo */
 
 static void
@@ -612,7 +616,9 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     break;
 
                 case IDOK:
-                    stateToGameInfo( hDlg, globals, giState );
+                    if ( !stateToGameInfo( hDlg, globals, giState ) ) {
+                        break;
+                    }
                 case IDCANCEL:
                     EndDialog(hDlg, id);
                     giState->userCancelled = id == IDCANCEL;

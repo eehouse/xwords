@@ -41,10 +41,11 @@
 #include "palmir.h"
 #include "prefsdlg.h"
 #include "connsdlg.h"
+#include "LocalizedStrIncludes.h"
 
 static void handlePasswordTrigger( PalmAppGlobals* globals, 
                                    UInt16 controlID );
-static void updatePlayerInfo( PalmAppGlobals* globals );
+static XP_Bool updatePlayerInfo( PalmAppGlobals* globals );
 static void loadNewGameState( PalmAppGlobals* globals );
 static void unloadNewGameState( PalmAppGlobals* globals );
 static void setNameThatFits( PalmNewGameState* state );
@@ -211,26 +212,26 @@ newGameHandleEvent( EventPtr event )
             break;
 
         case XW_OK_BUTTON_ID:
+            if ( updatePlayerInfo( globals ) ) {
+                /* if we put up the prefs form from within this one and the user
+                   clicked ok, we need to make sure the main form gets the
+                   notification so it can make use of any changes.  This event
+                   needs to arrive before the newGame event so any changes will
+                   be incorporated. */
+                if ( state->forwardChange ) {
+                    postEmptyEvent( prefsChangedEvent );
+                    state->forwardChange = false;
+                }
 
-            /* if we put up the prefs form from within this one and the user
-               clicked ok, we need to make sure the main form gets the
-               notification so it can make use of any changes.  This event
-               needs to arrive before the newGame event so any changes will
-               be incorporated. */
-            if ( state->forwardChange ) {
-                postEmptyEvent( prefsChangedEvent );
-                state->forwardChange = false;
+                if ( globals->isNewGame ) {
+                    postEmptyEvent( newGameOkEvent );
+                    globals->postponeDraw = true;
+                }
+
+                unloadNewGameState( globals );
+
+                FrmReturnToForm( 0 );
             }
-
-            updatePlayerInfo( globals );
-            if ( globals->isNewGame ) {
-                postEmptyEvent( newGameOkEvent );
-                globals->postponeDraw = true;
-            }
-
-            unloadNewGameState( globals );
-
-            FrmReturnToForm( 0 );
             break;
 
         case XW_CANCEL_BUTTON_ID:
@@ -308,19 +309,22 @@ setNameThatFits( PalmNewGameState* state )
 /* 
  * Copy the local state into global state.
  */
-static void
+static XP_Bool
 updatePlayerInfo( PalmAppGlobals* globals )
 {
     CurGameInfo* gi;
     PalmNewGameState* state = &globals->newGameState;
+    XP_Bool success;
 
     gi = &globals->gameInfo;
-    newg_store( state->ngc, gi );
+    success = newg_store( state->ngc, gi, XP_TRUE );
+    if ( success ) {
+        gi->boardSize = globals->prefsDlgState->curBdSize;
 
-    gi->boardSize = globals->prefsDlgState->curBdSize;
-
-    replaceStringIfDifferent( globals->mpool, &gi->dictName, 
-                              globals->newGameState.dictName );
+        replaceStringIfDifferent( globals->mpool, &gi->dictName, 
+                                  globals->newGameState.dictName );
+    }
+    return success;
 } /* updatePlayerInfo */
 
 /* Frame 'em, draw their text, and highlight the one that's selected
