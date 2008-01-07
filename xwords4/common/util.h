@@ -49,6 +49,7 @@ typedef enum {
     ERR_REG_UNEXPECTED_USER,	/* server asked to register too many remote
 				   users */
     ERR_REG_SERVER_SANS_REMOTE,
+    STR_NEED_BT_HOST_ADDR,
 #endif
     ERR_CANT_TRADE_MID_MOVE,
 /*     ERR_CANT_ENGINE_MID_MOVE, */
