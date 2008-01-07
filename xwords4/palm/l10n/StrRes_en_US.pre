@@ -33,7 +33,8 @@
 { "STR_REG_UNEXPECTED_USER",  "Attempt to register unexpected user refused" },
 { "STR_REG_NEED_REMOTE",      "Please make one or more players Remote when "
                               "playing as Host." },
-{ "STR_REG_BT_NEED_HOST",     "Please provide the Host's Bluetooth name."  },
+{ "STR_REG_BT_NEED_HOST",     "Please locate the device where Crosswords is "
+                              "running as Host."  },
 { "STR_RESEND_STANDALONE", "This is a standalone game. There is nothing "
                            "to resend." },
 #endif
