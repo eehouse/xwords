@@ -305,9 +305,6 @@ eType_2str( eventsEnum eType )
         CASESTR( BTSTATUS_CONNECTED_RES_ID );
 #endif
 
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
-        CASESTR( connsSettingChgEvent);
-#endif
 #ifdef FEATURE_SILK
         CASESTR( doResizeWinEvent );
 #endif
