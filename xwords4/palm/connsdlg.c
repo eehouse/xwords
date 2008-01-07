@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=ARM_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2003-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,8 +55,7 @@ typedef struct ConnsDlgState {
     CommsConnType conType;
     CommsAddrRec* addr;
     XP_BtAddr btAddr;           /* since there's no field, save it here */
-    XP_BtAddrStr tmp;
-    char btName[PALM_BT_NAME_LEN];
+    char hostName[PALM_BT_NAME_LEN];
 } ConnsDlgState;
 
 static void
@@ -85,66 +84,92 @@ ctlsFromState( PalmAppGlobals* globals )
     } else if ( addr->conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
         ControlPtr ctrl = getActiveObjectPtr( XW_CONNS_BT_HOSTTRIGGER_ID );
-        /* Settle for the colon-separated "name" if hostname not known */
-        if ( '\0' == addr->u.bt.hostName[0] ) {
-            palm_bt_addrString( globals, &addr->u.bt.btAddr, &state->tmp );
-            CtlSetLabel( ctrl, state->tmp.chars );
-        } else {
-            CtlSetLabel( ctrl, addr->u.bt.hostName );
+
+        XP_MEMCPY( &state->btAddr, &state->addr->u.bt.btAddr,
+                   sizeof(state->btAddr) );
+        XP_MEMCPY( &state->hostName, &state->addr->u.bt.hostName,
+                   sizeof(state->hostName) );
+
+        /* Try forcing a name here!  But BtLib may not be initialized.  So
+           just reset the addr so it'll force user to browse */ 
+        if ( '\0' == state->hostName[0] ) {
+            (void)palm_bt_nameForAddr( globals, &state->btAddr,
+                                       state->hostName, sizeof(state->hostName) );
+        }
+        if ( '\0' != addr->u.bt.hostName[0] ) {
+            CtlSetLabel( ctrl, state->hostName );
         }
         CtlSetEnabled( ctrl, isNewGame );
 
-        XP_ASSERT( !!globals->prefsDlgState );
-        setBooleanCtrl( XW_CONNS_BTCONFIRM_CHECKBOX_ID,
-                        globals->prefsDlgState->confirmBTConnect );
 #endif
     }
+
+#ifdef XWFEATURE_BLUETOOTH
+    /* Set up any controls that are not based on union fields regardless of
+       conType, as user may change and we want the defaults to be right.
+       This is a case where using a union breaks down: it'd be better to have
+       access to all the defaults, but they may be corrupt if conType is
+       wrong. */
+    XP_ASSERT( !!globals->prefsDlgState );
+    setBooleanCtrl( XW_CONNS_BTCONFIRM_CHECKBOX_ID,
+                    globals->prefsDlgState->confirmBTConnect );
+#endif
+
 } /* ctlsFromState */
 
 static XP_Bool
-stateFromCtls( PalmAppGlobals* globals )
+stateFromCtls( PalmAppGlobals* globals, XP_Bool* prefsChanged )
 {
     ConnsDlgState* state = globals->connState;
-    CommsAddrRec* addr = state->addr;
-    XP_Bool prefsChanged = XP_FALSE;
+    CommsAddrRec addr;
+    XP_Bool addrOk;
 
-    addr->conType = state->conType;
+    *prefsChanged = XP_FALSE;
+
+    XP_MEMCPY( &addr, state->addr, sizeof(addr) );
+    addr.conType = state->conType;
 
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
-    } else if ( addr->conType == COMMS_CONN_RELAY ) {
+    } else if ( addr.conType == COMMS_CONN_RELAY ) {
         XP_UCHAR buf[16];
-        getFieldStr( XW_CONNS_RELAY_FIELD_ID, addr->u.ip_relay.hostName,
-                      sizeof(addr->u.ip_relay.hostName) );
+        getFieldStr( XW_CONNS_RELAY_FIELD_ID, addr.u.ip_relay.hostName,
+                      sizeof(addr.u.ip_relay.hostName) );
 
         getFieldStr( XW_CONNS_PORT_FIELD_ID, buf, sizeof(buf) );
-        addr->u.ip_relay.port = StrAToI( buf );        
+        addr.u.ip_relay.port = StrAToI( buf );        
 
-        getFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie,
-                      sizeof(addr->u.ip_relay.cookie) );
+        getFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr.u.ip_relay.cookie,
+                      sizeof(addr.u.ip_relay.cookie) );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( addr->conType == COMMS_CONN_BT 
+    } else if ( addr.conType == COMMS_CONN_BT 
                 && state->serverRole == SERVER_ISCLIENT ) {
         XP_Bool confirmBTConnect;
         /* Not exactly from a control... */
         /* POSE is flagging this as reading from a bad address, but it
            looks ok inside the debugger */
-        XP_MEMCPY( addr->u.bt.hostName, state->btName, 
-                   sizeof(addr->u.bt.hostName) );
-        XP_MEMCPY( &addr->u.bt.btAddr, &state->btAddr, 
-                   sizeof(addr->u.bt.btAddr) );
-        LOG_HEX( &addr->u.bt.btAddr, sizeof(addr->u.bt.btAddr), __func__ );
+        XP_MEMCPY( addr.u.bt.hostName, state->hostName, 
+                   sizeof(addr.u.bt.hostName) );
+        XP_MEMCPY( &addr.u.bt.btAddr, &state->btAddr, 
+                   sizeof(addr.u.bt.btAddr) );
+        LOG_HEX( &addr.u.bt.btAddr, sizeof(addr.u.bt.btAddr), __func__ );
 
         confirmBTConnect = getBooleanCtrl( XW_CONNS_BTCONFIRM_CHECKBOX_ID );
         XP_ASSERT( !!globals->prefsDlgState );
         if ( confirmBTConnect != globals->prefsDlgState->confirmBTConnect ) {
             globals->prefsDlgState->confirmBTConnect = confirmBTConnect;
-            prefsChanged = XP_TRUE;
+            *prefsChanged = XP_TRUE;
         }
 #endif
     }
-    return prefsChanged;
+
+    addrOk = comms_checkAddr( state->serverRole, &addr, &globals->util );
+    if ( addrOk ) {
+        XP_MEMCPY( state->addr, &addr, sizeof( *state->addr) );
+    }
+
+    return addrOk;
 } /* stateFromCtls */
 
 static void
@@ -199,15 +224,6 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
 
 } /* updateFormCtls */
 
-static void
-cleanupExit( PalmAppGlobals* globals )
-{
-    freeListData( MPPARM(globals->mpool) &globals->connState->sLd );
-    XP_FREE( globals->mpool, globals->connState );
-    globals->connState = NULL;
-    FrmReturnToForm( 0 );
-} /* cleanupExit */
-
 static CommsConnType
 selToConType( const ConnsDlgState* state, XP_U16 sel )
 {
@@ -222,9 +238,9 @@ browseForDeviceName( PalmAppGlobals* globals )
     ConnsDlgState* state = globals->connState;
     XP_BtAddr btAddr;
     if ( palm_bt_browse_device( globals, &btAddr, 
-                                state->btName, sizeof( state->btName ) ) ) {
+                                state->hostName, sizeof(state->hostName) ) ) {
         CtlSetLabel( getActiveObjectPtr( XW_CONNS_BT_HOSTTRIGGER_ID ),
-                     state->btName );
+                     state->hostName );
         XP_MEMCPY( &state->btAddr, &btAddr, sizeof(state->btAddr) );
         LOG_HEX( &state->btAddr, sizeof(state->btAddr), __func__ );
     }
@@ -245,10 +261,10 @@ setupXportList( PalmAppGlobals* globals )
 
         initListData( MPPARM(globals->mpool) sLd, state->nXports );
         for ( i = 0; i < state->nXports; ++i ) {
-            const XP_UCHAR* xname = getResString( globals, 
-                                                  state->xports[i].resID );
+            XportEntry* xports = &state->xports[i];
+            const XP_UCHAR* xname = getResString( globals, xports->resID );
             addListTextItem( MPPARM(globals->mpool) sLd, xname );
-            if ( state->conType == state->xports[i].conType ) {
+            if ( state->conType == xports->conType ) {
                 selName = xname;
                 selSel = i;
             }
@@ -266,23 +282,27 @@ setupXportList( PalmAppGlobals* globals )
 static void
 buildXportData( ConnsDlgState* state )
 {
+    XportEntry* xports = state->xports;
+    XP_ASSERT( 0 == state->nXports );
+
 #ifdef XWFEATURE_IR
-    state->xports[state->nXports].conType = COMMS_CONN_IR;
-    state->xports[state->nXports].resID = STR_IR_XPORTNAME;
-    ++state->nXports;
+    xports->conType = COMMS_CONN_IR;
+    xports->resID = STR_IR_XPORTNAME;
+    ++xports;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-    state->xports[state->nXports].conType = COMMS_CONN_BT;
-    state->xports[state->nXports].resID = STR_BT_XPORTNAME;
-    ++state->nXports;
+    xports->conType = COMMS_CONN_BT;
+    xports->resID = STR_BT_XPORTNAME;
+    ++xports;
 #endif
 #ifdef XWFEATURE_RELAY
-    state->xports[state->nXports].conType = COMMS_CONN_RELAY;
-    state->xports[state->nXports].resID = STR_RELAY_XPORTNAME;
-    ++state->nXports;
+    xports->conType = COMMS_CONN_RELAY;
+    xports->resID = STR_RELAY_XPORTNAME;
+    ++xports;
 #endif
+    state->nXports = xports - state->xports;
     XP_ASSERT( state->nXports >= 2 ); /* no need for dropdown otherwise!! */
-}
+} /* buildXportData */
 
 Boolean
 ConnsFormHandleEvent( EventPtr event )
@@ -312,8 +332,6 @@ ConnsFormHandleEvent( EventPtr event )
         state->addr = 
             (CommsAddrRec*)globals->dlgParams[CONNS_PARAM_ADDR_INDEX];
         state->isNewGame = globals->isNewGame;
-        XP_MEMCPY( &state->btAddr, &state->addr->u.bt.btAddr, 
-                   sizeof(state->btAddr) );
 
         ctlsFromState( globals );
 
@@ -356,14 +374,20 @@ ConnsFormHandleEvent( EventPtr event )
             if ( !state->isNewGame ) {
                 /* do nothing; same as cancel */
             } else {
-                if ( stateFromCtls( globals ) ) {
+                XP_Bool prefsChanged;
+                if ( !stateFromCtls( globals, &prefsChanged ) ) {
+                    break;      /* refuse to exit */
+                }
+                if ( prefsChanged ) {
                     postEmptyEvent( prefsChangedEvent );
                 }
-                postEmptyEvent( connsSettingChgEvent );
             }
             /* FALLTHRU */
         case XW_CONNS_CANCEL_BUTTON_ID:
-            cleanupExit( globals );
+            freeListData( MPPARM(globals->mpool) &globals->connState->sLd );
+            XP_FREE( globals->mpool, globals->connState );
+            globals->connState = NULL;
+            FrmReturnToForm( 0 );
             break;
         }
         break;
