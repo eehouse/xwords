@@ -82,7 +82,8 @@ ctlsFromState( PalmAppGlobals* globals )
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
-                && state->serverRole == SERVER_ISCLIENT ) {
+                /* It's ok to load the controls even if we won't use them */
+                /* && state->serverRole == SERVER_ISCLIENT */ ) {
         ControlPtr ctrl = getActiveObjectPtr( XW_CONNS_BT_HOSTTRIGGER_ID );
 
         XP_MEMCPY( &state->btAddr, &state->addr->u.bt.btAddr,
@@ -90,12 +91,6 @@ ctlsFromState( PalmAppGlobals* globals )
         XP_MEMCPY( &state->hostName, &state->addr->u.bt.hostName,
                    sizeof(state->hostName) );
 
-        /* Try forcing a name here!  But BtLib may not be initialized.  So
-           just reset the addr so it'll force user to browse */ 
-        if ( '\0' == state->hostName[0] ) {
-            (void)palm_bt_nameForAddr( globals, &state->btAddr,
-                                       state->hostName, sizeof(state->hostName) );
-        }
         if ( '\0' != addr->u.bt.hostName[0] ) {
             CtlSetLabel( ctrl, state->hostName );
         }
