@@ -1120,7 +1120,7 @@ btLibManagementEventType68K_TO_ARM( BtLibManagementEventType* out,
 }
 
 static unsigned long
-btLibManagementProcArmEntry( const void* XP_UNUSED_DBG(emulStateP), 
+btLibManagementProcArmEntry( const void* emulStateP, 
                              void* userData68KP, 
                              Call68KFuncType* XP_UNUSED_DBG(call68KFuncP) )
 {
