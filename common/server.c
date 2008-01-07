@@ -1040,6 +1040,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         /* Give board a chance to redraw self with the full compliment of known
            players */
         setTurn( server, 0 );
+    } else {
+        XP_LOGF( "wanted 0; got %d", server->nv.addresses[0].channelNo );
     }
     return accepted;
 } /* client_readInitialMessage */
