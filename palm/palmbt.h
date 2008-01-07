@@ -81,6 +81,11 @@ XP_S16 palm_bt_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 XP_Bool palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
                                XP_UCHAR* out, XP_U16 len );
 
+/* It's ok to call palm_bt_nameForAddr when BT is not initialized.  It will
+   simply fail. */
+Err palm_bt_nameForAddr( PalmAppGlobals* globals, const XP_BtAddr* addr,
+                         char* const out, XP_U16 outlen );
+
 #ifdef DEBUG
 void palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream );
 #endif

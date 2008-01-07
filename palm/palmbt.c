@@ -163,13 +163,17 @@ static void waitACL( PalmBTStuff* btStuff );
 static void pbt_reset_buffers( PalmBTStuff* btStuff );
 static void pbt_killLinks( PalmBTStuff* btStuff );
 static XP_Bool pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr );
-static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
-                          const char* whence );
 static Err pbt_nameForAddr( PalmBTStuff* btStuff, 
                             const BtLibDeviceAddressType* addr,
                             char* const out, XP_U16 outlen );
 
-#define SET_STATE(b,s)  pbt_setstate((b),(s),__func__)
+#ifdef DEBUG
+static void pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState,
+                          const char* whence );
+# define SET_STATE(b,s)  pbt_setstate((b),(s),__func__)
+#else
+# define SET_STATE(b,s)  (b)->p_connState = (s)
+#endif
 #define GET_STATE(b)    ((b)->p_connState)
 
 #ifdef DEBUG
@@ -356,6 +360,19 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
     return success;
 } /* palm_bt_browse_device */
 
+Err
+palm_bt_nameForAddr( PalmAppGlobals* globals, const XP_BtAddr* addr,
+                     char* const out, XP_U16 outlen )
+{
+    PalmBTStuff* btStuff = globals->btStuff;
+    Err err = 1;                /* whatever */
+    if ( !!btStuff ) {
+        err = pbt_nameForAddr( btStuff, (BtLibDeviceAddressType*)addr->bits,
+                               out, outlen );
+    }
+    return err;
+}
+
 #ifdef DEBUG
 void
 palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
@@ -411,11 +428,12 @@ pbt_nameForAddr( PalmBTStuff* btStuff, const BtLibDeviceAddressType* addr,
     CALL_ERR( err, BtLibGetRemoteDeviceName, btStuff->btLibRefNum,
               (BtLibDeviceAddressType*)addr, &nameType,
               btLibCachedThenRemote );
-    XP_ASSERT( errNone == err ); /* deal with btLibErrPending */
-    XP_LOGF( "%s: got name %s", __func__, nameType.name );
+    if ( errNone == err ) {
+        XP_LOGF( "%s: got name %s", __func__, nameType.name );
     
-    XP_ASSERT( outlen >= nameType.nameLength );
-    XP_MEMCPY( out, nameType.name, nameType.nameLength );
+        XP_ASSERT( outlen >= nameType.nameLength );
+        XP_MEMCPY( out, nameType.name, nameType.nameLength );
+    }
     return err;
 }
 
@@ -1120,12 +1138,14 @@ pbt_checkAddress( PalmBTStuff* btStuff, const CommsAddrRec* addr )
     return addrOk;
 } /* pbt_checkAddress */
 
+#ifdef DEBUG
 static void
 pbt_setstate( PalmBTStuff* btStuff, PBT_STATE newState, const char* whence )
 {
     btStuff->p_connState = newState;
     XP_LOGF( "setting state to %s, from %s", stateToStr(newState), whence );
 }
+#endif
 
 #ifdef BT_USE_RFCOMM
 
