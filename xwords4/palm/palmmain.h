@@ -203,7 +203,7 @@ typedef struct PalmNewGameState {
 
     XP_Bool forwardChange;
     DeviceRole curServerHilite;
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IR
+#ifndef XWFEATURE_STANDALONE_ONLY
     CommsAddrRec addr;
 #endif
 } PalmNewGameState;
@@ -368,9 +368,6 @@ enum { noopEvent = firstUserEvent /* 0x6000 */
        ,openSavedGameEvent
 #ifdef XWFEATURE_FIVEWAY
        ,updateAfterFocusEvent
-#endif
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
-       ,connsSettingChgEvent
 #endif
 #if defined XWFEATURE_BLUETOOTH
        ,closeBtLibEvent
