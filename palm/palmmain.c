@@ -3648,6 +3648,9 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_REG_SERVER_SANS_REMOTE:
         strID = STR_REG_NEED_REMOTE;
         break;	
+    case STR_NEED_BT_HOST_ADDR:
+        strID = STR_REG_BT_NEED_HOST;
+        break;	
 #endif
 
     case ERR_CANT_TRADE_MID_MOVE:
