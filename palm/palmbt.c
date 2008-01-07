@@ -360,19 +360,6 @@ palm_bt_browse_device( PalmAppGlobals* globals, XP_BtAddr* btAddr,
     return success;
 } /* palm_bt_browse_device */
 
-Err
-palm_bt_nameForAddr( PalmAppGlobals* globals, const XP_BtAddr* addr,
-                     char* const out, XP_U16 outlen )
-{
-    PalmBTStuff* btStuff = globals->btStuff;
-    Err err = 1;                /* whatever */
-    if ( !!btStuff ) {
-        err = pbt_nameForAddr( btStuff, (BtLibDeviceAddressType*)addr->bits,
-                               out, outlen );
-    }
-    return err;
-}
-
 #ifdef DEBUG
 void
 palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
