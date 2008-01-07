@@ -812,11 +812,15 @@ logToMemo( const char* buf )
 static void
 logToFile( const char* buf )
 {
+#if 0
+    logToDB( buf, LOGFILE, 'XWLG', 'TEXT' );
+#else
     UInt32 val = 0L;
     Err err = FtrGet( APPID, LOG_FILE_FEATURE, (UInt32*)&val );
     if ( errNone == err && val != 0 ) {
         logToDB( buf, LOGFILE, 'XWLG', 'TEXT' );
     }
+#endif
 }
 
 void
