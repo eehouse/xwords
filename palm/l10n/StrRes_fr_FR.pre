@@ -37,6 +37,8 @@
 /* Needs translation */
 { "STR_REG_NEED_REMOTE",      "Please make one or more players Remote when "
                               "playing as Host." },
+/* Needs translation */
+{ "STR_REG_BT_NEED_HOST",     "Please provide the Host's Bluetooth name."  },
 { "STR_RESEND_STANDALONE", "C'est une partie en solo. Il n'y a rien "
                            "à renvoyer." },
 #endif
