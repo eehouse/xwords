@@ -23,6 +23,7 @@
 #include "comtypes.h"
 #include "mempool.h"
 #include "xwrelay.h"
+#include "server.h"
 
 EXTERN_C_START
 
@@ -103,8 +104,11 @@ void comms_destroy( CommsCtxt* comms );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 
-/* "static" method provides default when no comms present */
+/* "static" methods work when no comms present */
 void comms_getInitialAddr( CommsAddrRec* addr );
+XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,
+                         XW_UtilCtxt* util );
+
 void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 
