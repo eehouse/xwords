@@ -149,12 +149,12 @@ CAPTION "About Crosswords"
 FONT 8, "System"
 BEGIN
     ICON            IDI_XWORDS4,IDC_STATIC,8,17,20,20
-    LTEXT           "Crosswords 4.1 (rev " SVN_REV ") "\
-                    "for PocketPC. Copyright 1998-2006 by "\
+    LTEXT           "Crosswords 4.2a1 (rev " SVN_REV ") "\
+                    "for PocketPC. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
                     "For dictionaries, a manual, or source code go to "\
-                    "http://xwords.sf.net.",
+                    "http://xwords.sf.net or http://eehouse.org/xwords/.",
                     IDC_STATIC,32,4,86,101,SS_NOPREFIX
 END
 
