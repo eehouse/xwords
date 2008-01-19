@@ -43,7 +43,7 @@ typedef signed short XP_S16;
 typedef unsigned long XP_U32;
 typedef signed long XP_S32;
 
-typedef unsigned char XP_UCHAR;
+typedef char XP_UCHAR;
 
 typedef signed short XP_FontCode; /* not sure how I'm using this yet */
 typedef BOOL XP_Bool;
