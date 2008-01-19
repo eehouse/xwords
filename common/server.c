@@ -2108,6 +2108,15 @@ tileCountsOk( ServerCtxt* server )
     return !maybeOver;
 } /* tileCountsOk */
 
+static void
+setTurn( ServerCtxt* server, XP_S16 turn )
+{
+    if ( server->nv.currentTurn != turn ) {
+        server->nv.currentTurn = turn;
+        callTurnChangeListener( server );
+    }
+}
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 tellMoveWasLegal( ServerCtxt* server )
@@ -2118,15 +2127,6 @@ tellMoveWasLegal( ServerCtxt* server )
                                       XWPROTO_MOVE_CONFIRM );
     stream_destroy( stream );
 } /* tellMoveWasLegal */
-
-static void
-setTurn( ServerCtxt* server, XP_S16 turn )
-{
-    if ( server->nv.currentTurn != turn ) {
-        server->nv.currentTurn = turn;
-        callTurnChangeListener( server );
-    }
-}
 
 static XP_Bool
 handleIllegalWord( ServerCtxt* server, XWStreamCtxt* incoming )
