@@ -62,7 +62,11 @@ static void considerEnableJuggle( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
                         const LocalPlayer* lp );
+#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool checkConsistent( NewGameCtx* ngc, XP_Bool warnUser );
+#else
+# define checkConsistent( ngc, warnUser ) XP_TRUE
+#endif
 
 NewGameCtx*
 newg_make( MPFORMAL XP_Bool isNewGame, 
@@ -325,6 +329,7 @@ newg_juggle( NewGameCtx* ngc )
     return changed;
 } /* newg_juggle */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
 checkConsistent( NewGameCtx* ngc, XP_Bool warnUser )
 {
@@ -350,6 +355,7 @@ checkConsistent( NewGameCtx* ngc, XP_Bool warnUser )
 
     return consistent;
 } /* checkConsistent */
+#endif
 
 static void
 enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col, 
