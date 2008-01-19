@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -349,6 +349,7 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
 } /* linShiftFocus */
 #endif
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 #ifdef XWFEATURE_RELAY
 static int
 linux_init_relay_socket( CommonGlobals* cGlobals )
@@ -546,7 +547,8 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     }
     return nRead;
 } /* linuxReceive */
-#endif
+#endif  /* XWFEATURE_RELAY */
+#endif  /* XWFEATURE_STANDALONE_ONLY */
 
 /* Create a stream for the incoming message buffer, and read in any
    information specific to our platform's comms layer (return address, say)

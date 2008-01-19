@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make -k";-*- */ 
 /* 
- * Copyright 1997-2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,6 +39,12 @@ DictionaryCtxt* linux_dictionary_make( MPFORMAL const char* dictFileName );
 int initListenerSocket( int port );
 XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen, 
                    const CommsAddrRec* addrRec, void* closure );
+#ifndef XWFEATURE_STANDALONE_ONLY
+# define LINUX_SEND linux_send
+#else
+# define LINUX_SEND NULL
+#endif
+
 #ifdef COMMS_HEARTBEAT
 void linux_reset( void* closure );
 #endif
