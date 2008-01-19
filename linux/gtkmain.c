@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -58,7 +58,9 @@
 #include "filestream.h"
 
 /* static guint gtkSetupClientSocket( GtkAppGlobals* globals, int sock ); */
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void sendOnClose( XWStreamCtxt* stream, void* closure );
+#endif
 static XP_Bool file_exists( const char* fileName );
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void printFinalScores( GtkAppGlobals* globals );
@@ -292,8 +294,10 @@ createOrLoadObjects( GtkAppGlobals* globals )
     XWStreamCtxt* stream = NULL;
     XP_Bool opened = XP_FALSE;
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     DeviceRole serverRole = globals->cGlobals.params->serverRole;
     XP_Bool isServer = serverRole != SERVER_ISCLIENT;
+#endif
     LaunchParams* params = globals->cGlobals.params;
 
     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area,
@@ -308,7 +312,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
                                       params->dict, params->util, 
                                       (DrawCtx*)globals->draw, 
                                       &globals->cp,
-                                      linux_send, IF_CH(linux_reset) globals );
+                                      LINUX_SEND, IF_CH(linux_reset) globals );
         
         stream_destroy( stream );
     }
@@ -335,7 +339,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          gameID, &globals->cp, linux_send, 
+                          gameID, &globals->cp, LINUX_SEND, 
                           IF_CH(linux_reset) globals );
 
         addr.conType = params->conType;
@@ -364,11 +368,12 @@ createOrLoadObjects( GtkAppGlobals* globals )
 #endif
         }
 
+#ifndef XWFEATURE_STANDALONE_ONLY
         /* This may trigger network activity */
         if ( !!globals->cGlobals.game.comms ) {
             comms_setAddr( globals->cGlobals.game.comms, &addr );
         }
-
+#endif
         model_setDictionary( globals->cGlobals.game.model, params->dict );
 
         /*         params->gi.phoniesAction = PHONIES_DISALLOW; */
@@ -376,6 +381,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
         params->gi.allowHintRect = XP_TRUE;
 #endif
 
+#ifndef XWFEATURE_STANDALONE_ONLY
         if ( !isServer ) {
             XWStreamCtxt* stream = 
                 mem_stream_make( MEMPOOL params->vtMgr, globals, CHANNEL_NONE,
@@ -383,12 +389,14 @@ createOrLoadObjects( GtkAppGlobals* globals )
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
         }
+#endif
     }
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!globals->cGlobals.game.comms ) {
         comms_start( globals->cGlobals.game.comms );
     }
-
+#endif
     server_do( globals->cGlobals.game.server );
 
 } /* createOrLoadObjects */
@@ -640,15 +648,18 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     confirmed = newGameDialog( globals, XP_TRUE );
     if ( confirmed ) {
         CurGameInfo* gi = &globals->cGlobals.params->gi;
+#ifndef XWFEATURE_STANDALONE_ONLY
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
+#endif
         XP_U32 gameID = util_getCurSeconds( globals->cGlobals.params->util );
 
         XP_STATUSF( "grabbed gameID: %ld\n", gameID );
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    gameID, &globals->cp, linux_send, 
+                    gameID, &globals->cp, LINUX_SEND, 
                     IF_CH(linux_reset) globals );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
         if ( isClient ) {
             XWStreamCtxt* stream =
                 mem_stream_make( MEMPOOL 
@@ -659,7 +670,7 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
         }
-
+#endif
         (void)server_do( globals->cGlobals.game.server ); /* assign tiles, etc. */
         board_invalAll( globals->cGlobals.game.board );
         board_draw( globals->cGlobals.game.board );
@@ -726,6 +737,7 @@ handle_trayEditToggle_off( GtkWidget* widget, GtkAppGlobals* globals )
 }
 #endif
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 handle_resend( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
@@ -751,6 +763,7 @@ handle_commstats( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
         stream_destroy( stream );
     }
 } /* handle_commstats */
+#endif
 #endif
 
 #ifdef MEM_DEBUG
@@ -831,11 +844,13 @@ makeMenus( GtkAppGlobals* globals, int XP_UNUSED(argc),
 
     fileMenu = makeAddSubmenu( menubar, "Network" );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     (void)createAddItem( fileMenu, "Resend", 
                          GTK_SIGNAL_FUNC(handle_resend), globals );
-#ifdef DEBUG
+# ifdef DEBUG
     (void)createAddItem( fileMenu, "Stats", 
                          GTK_SIGNAL_FUNC(handle_commstats), globals );
+# endif
 #endif
 #ifdef MEM_DEBUG
     (void)createAddItem( fileMenu, "Mem stats", 
@@ -1332,6 +1347,7 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
     return result;
 } /* gtk_util_warnIllegalWord */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* 
 gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
@@ -1343,6 +1359,7 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
                                             sendOnClose );
     return stream;
 } /* gtk_util_makeStreamFromAddr */
+#endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
 static XP_Bool 
@@ -1558,9 +1575,9 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_setTimer = gtk_util_setTimer;
     util->vtable->m_util_requestTime = gtk_util_requestTime;
     util->vtable->m_util_warnIllegalWord = gtk_util_warnIllegalWord;
-
+#ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = gtk_util_makeStreamFromAddr;
-
+#endif
 #ifdef XWFEATURE_SEARCHLIMIT
     util->vtable->m_util_getTraySearchLimits = gtk_util_getTraySearchLimits;
 #endif
@@ -1568,6 +1585,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->closure = globals;
 } /* setupGtkUtilCallbacks */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static gboolean
 newConnectionInput( GIOChannel *source,
                     GIOCondition condition,
@@ -1780,6 +1798,7 @@ drop_msg_toggle( GtkWidget* toggle, GtkAppGlobals* globals )
     globals->dropIncommingMsgs = gtk_toggle_button_get_active( 
         GTK_TOGGLE_BUTTON(toggle) );
 } /* drop_msg_toggle */
+#endif
 
 int
 gtkmain( LaunchParams* params, int argc, char *argv[] )
@@ -1792,19 +1811,23 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     GtkWidget* vbox;
     GtkWidget* hbox;
     GtkAppGlobals globals;
+#ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* dropCheck;
+#endif
 
     memset( &globals, 0, sizeof(globals) );
 
     globals.cGlobals.params = params;
     globals.cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
-#ifdef XWFEATURE_RELAY
+#ifndef XWFEATURE_STANDALONE_ONLY
+# ifdef XWFEATURE_RELAY
     globals.cGlobals.socket = -1;
-#endif
+# endif
 
     globals.cGlobals.socketChanged = gtk_socket_changed;
     globals.cGlobals.socketChangedClosure = &globals;
     globals.cGlobals.addAcceptor = gtk_socket_acceptor;
+#endif
 
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.showRobotScores = params->showRobotScores;
@@ -1840,11 +1863,13 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     menubar = makeMenus( &globals, argc, argv );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     dropCheck = gtk_check_button_new_with_label( "drop incoming messages" );
     g_signal_connect( GTK_OBJECT(dropCheck),
                       "toggled", G_CALLBACK(drop_msg_toggle), &globals );
     gtk_box_pack_start( GTK_BOX(vbox), dropCheck, FALSE, TRUE, 0);
     gtk_widget_show( dropCheck );
+#endif
 
     buttonbar = makeButtons( &globals, argc, argv );
     gtk_box_pack_start( GTK_BOX(vbox), buttonbar, FALSE, TRUE, 0);

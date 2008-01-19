@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -768,9 +768,6 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
         if ( numEvents > 0 && 
              (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
-            int nBytes;
-            unsigned char buf[256];
-            struct sockaddr_in addr_sock;
 
             --numEvents;
 
@@ -781,6 +778,9 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                 (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd, 
                                                globals );
             } else {
+#ifndef XWFEATURE_STANDALONE_ONLY
+                unsigned char buf[256];
+                int nBytes;
                 /* It's a normal data socket */
                 if ( 0 ) {
 #ifdef XWFEATURE_RELAY
@@ -801,6 +801,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
                 if ( nBytes != -1 ) {
                     XWStreamCtxt* inboundS;
+                    struct sockaddr_in addr_sock;
                     redraw = XP_FALSE;
 
                     XP_STATUSF( "linuxReceive=>%d", nBytes );
@@ -836,7 +837,9 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
                         curses_util_requestTime(globals->cGlobals.params->util);
                     }
                 }
-
+#else
+                XP_ASSERT(0);   /* no socket activity in standalone game! */
+#endif                          /* #ifndef XWFEATURE_STANDALONE_ONLY */
             }
             ++fdIndex;
         }
@@ -924,6 +927,7 @@ curses_util_warnIllegalWord( XW_UtilCtxt* XP_UNUSED(uc),
     return XP_FALSE;
 } /* curses_util_warnIllegalWord */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 cursesSendOnClose( XWStreamCtxt* stream, void* closure )
 {
@@ -946,6 +950,7 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
                                             cursesSendOnClose );
     return stream;
 } /* curses_util_makeStreamFromAddr */
+#endif
 
 static void
 setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
@@ -956,8 +961,9 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_askPassword = curses_util_askPassword;
     util->vtable->m_util_yOffsetChange = curses_util_yOffsetChange;
     util->vtable->m_util_warnIllegalWord = curses_util_warnIllegalWord;
+#ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;
-
+#endif
     util->vtable->m_util_userQuery = curses_util_userQuery;
     util->vtable->m_util_userPickTile = curses_util_userPickTile;
     util->vtable->m_util_trayHiddenChange = curses_util_trayHiddenChange;
@@ -972,6 +978,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->closure = globals;
 } /* setupCursesUtilCallbacks */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 sendOnClose( XWStreamCtxt* stream, void* closure )
 {
@@ -980,6 +987,7 @@ sendOnClose( XWStreamCtxt* stream, void* closure )
     XP_ASSERT( !!globals->cGlobals.game.comms );
     comms_send( globals->cGlobals.game.comms, stream );
 } /* sendOnClose */
+#endif
 
 static XP_Bool
 handleKeyEvent( CursesAppGlobals* globals, MenuList* list, char ch )
@@ -1055,14 +1063,15 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     gameID = (XP_U16)util_getCurSeconds( globals.cGlobals.params->util );
     game_makeNewGame( MEMPOOL &globals.cGlobals.game, &params->gi,
                       params->util, (DrawCtx*)globals.draw,
-                      gameID, &globals.cp, linux_send, 
+                      gameID, &globals.cp, LINUX_SEND, 
                       IF_CH(linux_reset) &globals );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     if ( globals.cGlobals.game.comms ) {
         CommsAddrRec addr;
 
         if ( 0 ) {
-#ifdef XWFEATURE_RELAY
+# ifdef XWFEATURE_RELAY
         } else if ( params->conType == COMMS_CONN_RELAY ) {
             addr.conType = COMMS_CONN_RELAY;
             addr.u.ip_relay.ipAddr = 0;       /* ??? */
@@ -1071,18 +1080,19 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                         sizeof(addr.u.ip_relay.hostName) - 1 );
             XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
                         sizeof(addr.u.ip_relay.cookie) - 1 );
-#endif
-#ifdef XWFEATURE_BLUETOOTH
+# endif
+# ifdef XWFEATURE_BLUETOOTH
         } else if ( params->conType == COMMS_CONN_BT ) {
             addr.conType = COMMS_CONN_BT;
             XP_ASSERT( sizeof(addr.u.bt.btAddr) 
                        >= sizeof(params->connInfo.bt.hostAddr));
             XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
                        sizeof(params->connInfo.bt.hostAddr) );
-#endif
+# endif
         }
         comms_setAddr( globals.cGlobals.game.comms, &addr );
     }
+#endif
 
 	model_setDictionary( globals.cGlobals.game.model, params->dict );
 
@@ -1102,6 +1112,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     board_invalAll( globals.cGlobals.game.board );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     /* send any events that need to get off before the event loop begins */
     if ( !isServer ) {
         if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
@@ -1116,6 +1127,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             exit( 0 );
         }
     }
+#endif
 
     server_do( globals.cGlobals.game.server );
 

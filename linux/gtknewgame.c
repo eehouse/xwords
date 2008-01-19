@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001-2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@ typedef struct GtkNewGameState {
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* remoteChecks[MAX_NUM_PLAYERS];
+    GtkWidget* roleCombo;
 #endif
     GtkWidget* robotChecks[MAX_NUM_PLAYERS];
     GtkWidget* nameLabels[MAX_NUM_PLAYERS];
@@ -44,7 +45,6 @@ typedef struct GtkNewGameState {
     GtkWidget* passwdLabels[MAX_NUM_PLAYERS];
     GtkWidget* passwdFields[MAX_NUM_PLAYERS];
     GtkWidget* nPlayersCombo;
-    GtkWidget* roleCombo;
     GtkWidget* nPlayersLabel;
     GtkWidget* juggleButton;
 } GtkNewGameState;
@@ -59,6 +59,7 @@ nplayers_menu_changed( GtkComboBox* combo, GtkNewGameState* state )
     }
 } /* nplayers_menu_changed */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 role_combo_changed( GtkComboBox* combo, gpointer gp )
 {
@@ -70,6 +71,7 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
         newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
     }
 } /* role_combo_changed */
+#endif
 
 static void
 callChangedWithIndex( GtkNewGameState* state, GtkWidget* item, 
@@ -161,18 +163,21 @@ makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
     GtkWidget* dialog;
     GtkWidget* vbox;
     GtkWidget* hbox;
+#ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* roleCombo;
+    char* roles[] = { "Standalone", "Host", "Guest" };
+#endif
     GtkWidget* nPlayersCombo;
     GtkWidget* boardSizeCombo;
     CurGameInfo* gi;
     short i;
-    char* roles[] = { "Standalone", "Host", "Guest" };
 
     dialog = gtk_dialog_new();
     gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
 
     vbox = gtk_vbox_new( FALSE, 0 );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
                         FALSE, TRUE, 0 );
@@ -187,6 +192,7 @@ makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
 
     gtk_box_pack_start( GTK_BOX(hbox), roleCombo, FALSE, TRUE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+#endif
 
     /* NPlayers menu */
     hbox = gtk_hbox_new( FALSE, 0 );
@@ -388,8 +394,10 @@ gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_TriEnable enable )
     GtkWidget* widget = NULL;
     if ( attr == NG_ATTR_NPLAYERS ) {
         widget = state->nPlayersCombo;
+#ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( attr == NG_ATTR_ROLE ) {
         widget = state->roleCombo;
+#endif
     } else if ( attr == NG_ATTR_CANJUGGLE ) {
         widget = state->juggleButton;
     }
@@ -456,11 +464,13 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
         XP_U16 i = value.ng_u16;
         XP_LOGF( "%s: setting menu %d", __func__, i-1 );
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), i-1 );
+#ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( attr == NG_ATTR_ROLE ) {
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->roleCombo), 
                                   value.ng_role );
     } else if ( attr == NG_ATTR_REMHEADER ) {
         /* ignored on GTK: no headers at all */
+#endif
     } else if ( attr == NG_ATTR_NPLAYHEADER ) {
         gtk_label_set_text( GTK_LABEL(state->nPlayersLabel), value.ng_cp );
     }
