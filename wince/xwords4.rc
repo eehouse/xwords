@@ -66,68 +66,57 @@ END
 // Menubar
 //
 
-#ifdef _WIN32_WCE
-IDM_MENU RCDATA
-BEGIN
-    IDM_MENU, 3,
-    
-	I_IMAGENONE, 65001, TBSTATE_ENABLED,
-	TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE,
-	IDS_FILE, 0, 0,
-
-	I_IMAGENONE, 65002, TBSTATE_ENABLED,
-	TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE,
-	IDS_GAME, 0, 1,
-
-	I_IMAGENONE, 65003, TBSTATE_ENABLED,
-	TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE,
-	IDS_MOVE, 0, 2
-
-END
-#endif
-
 IDM_MENU MENU DISCARDABLE 
 BEGIN
-    POPUP "&File"
+    POPUP "Menu"
     BEGIN
-        MENUITEM "&New game",                   ID_FILE_NEWGAME
-        MENUITEM "Open &saved game",            ID_FILE_SAVEDGAMES
-        MENUITEM "&Preferences",                ID_FILE_PREFERENCES
-        MENUITEM SEPARATOR
-        MENUITEM "&About",                      ID_FILE_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       IDM_FILE_EXIT
-    END
-    POPUP "&Game"
-    BEGIN
-        MENUITEM "Tile counts and values",      ID_GAME_TILECOUNTSANDVALUES
-        MENUITEM "Tiles left",                  ID_GAME_TILESLEFT
-        MENUITEM SEPARATOR
-        MENUITEM "Game info",                   ID_GAME_GAMEINFO
-        MENUITEM "History",                     ID_GAME_HISTORY
-        MENUITEM "Final scores",                ID_GAME_FINALSCORES
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-        MENUITEM SEPARATOR
-        MENUITEM "Resend messages",             ID_GAME_RESENDMSGS
-#endif
-    END
-    POPUP "&Move"
-    BEGIN
-        MENUITEM "H&int",                       ID_MOVE_HINT
-#ifdef XWFEATURE_SEARCHLIMIT
-        MENUITEM "Limited hint (&c)",           ID_MOVE_LIMITEDHINT
-	    MENUITEM SEPARATOR
-#endif
-        MENUITEM "Next hint (&m)",              ID_MOVE_NEXTHINT
-        MENUITEM SEPARATOR
-        MENUITEM "&Undo current",               ID_MOVE_UNDOCURRENT
-        MENUITEM "Undo last (&z)",              ID_MOVE_UNDOLAST
-        MENUITEM SEPARATOR
         MENUITEM "Turn &done",                  ID_MOVE_TURNDONE
         MENUITEM "&Juggle",                     ID_MOVE_JUGGLE
-        MENUITEM "&Flip",                       ID_MOVE_FLIP
+        MENUITEM "Fli&p",                       ID_MOVE_FLIP
         MENUITEM "&Trade",                      ID_MOVE_TRADE
         MENUITEM "(un)&Hide tray",              ID_MOVE_HIDETRAY
+        MENUITEM "Tile &values",                ID_MOVE_VALUES
+
+        POPUP "&Undo"
+        BEGIN
+            MENUITEM "Undo current",            ID_MOVE_UNDOCURRENT
+            MENUITEM "Undo last (&z)",          ID_MOVE_UNDOLAST
+        END
+
+        POPUP "Hint"
+        BEGIN
+            MENUITEM "H&int",                   ID_MOVE_HINT
+#ifdef XWFEATURE_SEARCHLIMIT
+            MENUITEM "Limited hint (&c)",       ID_MOVE_LIMITEDHINT
+#endif
+            MENUITEM "Next hint (&m)",          ID_MOVE_NEXTHINT
+        END
+
+        POPUP "&File"
+        BEGIN
+            MENUITEM "Fu&ll screen",            ID_FILE_FULLSCREEN
+            MENUITEM SEPARATOR
+            MENUITEM "&New game",               ID_FILE_NEWGAME
+            MENUITEM "Open &saved game",        ID_FILE_SAVEDGAMES
+            MENUITEM "P&references",            ID_FILE_PREFERENCES
+            MENUITEM SEPARATOR
+            MENUITEM "&About",                  ID_FILE_ABOUT
+            MENUITEM SEPARATOR
+            MENUITEM "E&xit",                   IDM_FILE_EXIT
+        END
+
+        POPUP "&Game"
+        BEGIN
+            MENUITEM "Tile counts and values",  ID_GAME_TILECOUNTSANDVALUES
+            MENUITEM "Tiles left",              ID_GAME_TILESLEFT
+            MENUITEM SEPARATOR
+            MENUITEM "Game info",               ID_GAME_GAMEINFO
+            MENUITEM "History",                 ID_GAME_HISTORY
+            MENUITEM "Final sc&ores",           ID_GAME_FINALSCORES
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+            MENUITEM "Resend messages",         ID_GAME_RESENDMSGS
+#endif
+        END
     END
 END
 
@@ -676,10 +665,6 @@ END
 
 IDB_RIGHTARROW          BITMAP  DISCARDABLE     "bmps/rightarrow.bmp"
 IDB_DOWNARROW           BITMAP  DISCARDABLE     "bmps/downarro.bmp"
-IDB_FLIPBUTTON          BITMAP  DISCARDABLE     "bmps/flip.bmp"
-IDB_VALUESBUTTON        BITMAP  DISCARDABLE     "bmps/values.bmp"
-IDB_HINTBUTTON          BITMAP  DISCARDABLE     "bmps/hint.bmp"
-IDB_JUGGLEBUTTON        BITMAP  DISCARDABLE     "bmps/juggle.bmp"
 IDB_ORIGIN              BITMAP  DISCARDABLE     "bmps/origin.bmp"
 
 /////////////////////////////////////////////////////////////////////////////

@@ -320,36 +320,6 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
     return RegisterClass(&wc);
 }
 
-#ifdef _WIN32_WCE
-static void
-addButtonsToCmdBar( CEAppGlobals* globals )
-{
-    XP_Bool success;
-    XP_U16 i;
-    int index;
-    int cmds[] = { FLIP_BUTTON_ID, VALUE_BUTTON_ID, 
-                   HINT_BUTTON_ID, JUGGLE_BUTTON_ID };
-    int resIDs[] = { IDB_FLIPBUTTON, IDB_VALUESBUTTON,
-                     IDB_HINTBUTTON, IDB_JUGGLEBUTTON };
-
-    for ( i = 0; i < VSIZE(cmds); ++i ) {
-        TBBUTTON buttData;
-
-        index = CommandBar_AddBitmap(globals->hwndCB, globals->hInst,
-                                     resIDs[i], 1, 16, 16 );
-
-        XP_MEMSET( &buttData, 0, sizeof(buttData) );
-        buttData.fsState = TBSTATE_ENABLED; 
-        buttData.fsStyle = TBSTYLE_BUTTON;
-        buttData.iBitmap = index;
-        buttData.idCommand = cmds[i];
-
-        success = CommandBar_InsertButton( globals->hwndCB, -1, 
-                                           (LPARAM)&buttData );
-    }
-} /* addButtonsToCmdBar */
-#endif
-
 static void
 ceInitUtilFuncs( CEAppGlobals* globals )
 {
@@ -517,11 +487,11 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 
     GetClientRect( globals->hWnd, &rc );
 #ifndef _WIN32_WCE
-#if defined FORCE_HEIGHT && defined FORCE_WIDTH
+# if defined FORCE_HEIGHT && defined FORCE_WIDTH
     rc.right = rc.left + FORCE_WIDTH;
     rc.bottom = rc.top + FORCE_HEIGHT;
-#else
-#if defined DEBUG
+# else
+#  if defined DEBUG
 
     if ( g_dbWidth != 0 ) {
         rc.right = rc.left + g_dbWidth;
@@ -529,9 +499,9 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     if ( g_dbHeight != 0 ) {
         rc.bottom = rc.top + g_dbHeight;
     }
-#endif
-#endif
-#endif
+#  endif
+# endif
+#endif  /* #ifndef _WIN32_WCE */
 
     scrnWidth = (XP_U16)(rc.right - rc.left);
     scrnHeight = (XP_U16)(rc.bottom - rc.top);
@@ -1724,9 +1694,12 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
     mbi.hwndParent = hwnd;
     mbi.nToolBarId = IDM_MENU;
     mbi.hInstRes   = hInst;
+    mbi.dwFlags    = SHCMBF_HMENU;
+
     //mbi.dwFlags = SHCMBF_HIDESIPBUTTON; /* eeh added.  Why??? */
 
     if (!SHCreateMenuBar(&mbi)) {
+        /* will want to use this to change menubar: SHEnableSoftkey? */
         XP_LOGF( "SHCreateMenuBar failed" );
         return NULL;
     }
@@ -1826,36 +1799,42 @@ checkPenDown( CEAppGlobals* globals )
 #ifdef KEYBOARD_NAV
 
 static XP_Bool
-ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, XP_Bool* handledP )
+ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, 
+                  XP_Bool isDown, XP_Bool* handledP )
 {
     XP_Bool draw = XP_FALSE;
     XP_Key key;
     XP_S16 incr = 0;
 
-    XP_LOGF( "%s: 0x%x", __func__, wParam );
+    XP_LOGF( "%s(%s): 0x%x", __func__, 
+             isDown?"down":"up", 
+             wParam );
 
     switch ( wParam ) {
-        /* get constants for these!!! */
-    case 0x26: 
+    case VK_UP:
         key = XP_CURSOR_KEY_UP;
         incr = -1;
         break;
-    case 0x27:
+    case VK_RIGHT:
         key = XP_CURSOR_KEY_RIGHT;
         incr = 1;
         break;
-    case 0x28:
+    case VK_DOWN:
         key = XP_CURSOR_KEY_DOWN;
         incr = 1;
         break;
-    case 0x25:
+    case VK_LEFT:
         key = XP_CURSOR_KEY_LEFT;
         incr = -1;
         break;
     case 0x0d:
-        key = XP_RETURN_KEY;
-        XP_LOGF( "XP_RETURN_KEY" );
-        break;
+    case 0x5d:                  /* center key on WinMo5 Treo (at least) */
+    case VK_HOME:
+/*         if ( !isRepeat ) { */
+            key = XP_RETURN_KEY;
+            XP_LOGF( "%s: XP_RETURN_KEY", __func__ );
+            break;
+/*         } */
 
 /*     XP_CURSOR_KEY_ALTRIGHT, */
 /*     XP_CURSOR_KEY_ALTUP, */
@@ -1869,8 +1848,10 @@ ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, XP_Bool* handledP )
 
     if ( key != XP_KEY_NONE ) {
         BoardCtxt* board = globals->game.board;
-        draw = board_handleKey( board, key, handledP );
-        if ( !*handledP && incr != 0 ) {
+        draw = isDown?
+            board_handleKeyDown( board, key, handledP ) :
+            board_handleKeyUp( board, key, handledP ) ;
+        if ( !*handledP && incr != 0 && !isDown ) {
             BoardObjectType order[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
             BoardObjectType cur = board_getFocusOwner( board );
             XP_U16 index = 0;
@@ -1885,7 +1866,7 @@ ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, XP_Bool* handledP )
                 }
                 index = (index + 3 + incr) % 3;
             }
-            XP_LOGF( "calling board_focusChanged" );
+            XP_LOGF( "%s: calling board_focusChanged", __func__ );
             draw = board_focusChanged( board, order[index], XP_TRUE );
         }
     }
@@ -1893,6 +1874,43 @@ ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, XP_Bool* handledP )
     return draw;
 } /* ceHandleFocusKey */
 #endif /* KEYBOARD_NAV */
+
+#ifdef _WIN32_WCE
+static void
+ceToggleFullScreen( CEAppGlobals* globals )
+{
+    RECT rect;
+    XP_U16 cbHeight = 0;
+
+    if ( !!globals->hwndCB ) {
+        GetWindowRect( globals->hwndCB, &rect );
+        cbHeight = rect.bottom - rect.top;
+    }
+
+    /* I'm leaving the SIP/cmdbar in place until I can figure out how to get
+       menu events with it hidden -- and also the UI for making sure users
+       don't get stuck in fullscreen mode not knowing how to reach menus to
+       get out.  Later, add SHFS_SHOWSIPBUTTON and SHFS_HIDESIPBUTTON to the
+       sets shown and hidden below.*/
+    if ( globals->fullScreen ) {
+        SHFullScreen( globals->hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
+
+        SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
+    } else {
+        SHFullScreen( globals->hWnd, SHFS_HIDETASKBAR | SHFS_HIDESTARTICON );
+
+        SetRect( &rect, 0, 0, GetSystemMetrics(SM_CXSCREEN),
+                 GetSystemMetrics(SM_CYSCREEN) );
+    }
+
+    rect.bottom -= cbHeight;
+    MoveWindow( globals->hWnd, rect.left, rect.top, rect.right - rect.left, 
+                rect.bottom - rect.top, TRUE );
+
+    globals->fullScreen = !globals->fullScreen;
+    (void)cePositionBoard( globals );
+} /* ceToggleFullScreen */
+#endif
 
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -1909,7 +1927,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SetWindowLong( hWnd, GWL_USERDATA, (long)globals );
 #ifdef _WIN32_WCE
         globals->hwndCB = makeCommandBar( hWnd, globals->hInst );
-        addButtonsToCmdBar( globals );
 #endif
 
 #ifdef _WIN32_WCE
@@ -1925,18 +1942,16 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Notify shell of our activate message
             SHHandleWMActivate( hWnd, wParam, lParam, &globals->sai, FALSE );
             break;
-#endif
 
         case WM_SETTINGCHANGE:
-#ifdef _WIN32_WCE
             SHHandleWMSettingChange( hWnd, wParam, lParam, &globals->sai );
-#endif
             if ( !!globals && !!globals->game.model ) {
                 cePositionBoard( globals );
                 board_invalAll( globals->game.board );
                 draw = XP_TRUE;
             }
             break;
+#endif
 
 #ifdef CEFEATURE_CANSCROLL
         case WM_VSCROLL:
@@ -1991,7 +2006,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_FILE_PREFERENCES:
                 ceDoPrefsDlg( globals );
                 break;
-
+#ifdef _WIN32_WCE
+            case ID_FILE_FULLSCREEN:
+                ceToggleFullScreen( globals );
+                break;
+#endif
             case ID_GAME_FINALSCORES:
                 if ( server_getGameIsOver( globals->game.server ) ) {
                     ceDisplayFinalScores( globals );
@@ -2019,7 +2038,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = handleTradeCmd( globals );
                 break;
             case ID_MOVE_JUGGLE:
-            case JUGGLE_BUTTON_ID:
                 draw = handleJuggleCmd( globals );
                 break;
 
@@ -2031,10 +2049,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
 
             case ID_MOVE_FLIP:
-            case FLIP_BUTTON_ID:
                 draw = board_flip( globals->game.board );
                 break;
-            case VALUE_BUTTON_ID:
+            case ID_MOVE_VALUES:
                 draw = board_toggle_showValues( globals->game.board );
                 break;
 
@@ -2046,7 +2063,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 board_resetEngine( globals->game.board );
                 /* fallthru */
             case ID_MOVE_NEXTHINT:
-            case HINT_BUTTON_ID:
                 draw = ceHandleHintRequest( globals );
                 break;
 
@@ -2112,9 +2128,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;	
 
 #ifdef KEYBOARD_NAV
-/*         case WM_KEYDOWN: */
+        case WM_KEYDOWN:
+            draw = ceHandleFocusKey( globals, wParam, XP_TRUE, &handled );
+            break;
         case WM_KEYUP:
-            draw = ceHandleFocusKey( globals, wParam, &handled );
+            draw = ceHandleFocusKey( globals, wParam, XP_FALSE, &handled );
             break;
 #endif
         case WM_CHAR:

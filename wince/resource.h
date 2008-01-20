@@ -17,10 +17,6 @@
 #define IDD_OPTIONSDLG                  117
 #define IDD_COLORSDLG                   118
 #define IDD_COLOREDITDLG                119
-#define IDB_FLIPBUTTON                  120
-#define IDB_VALUESBUTTON                121
-#define IDB_HINTBUTTON                  122
-#define IDB_JUGGLEBUTTON                123
 #define IDB_ORIGIN                      124
 #ifdef XWFEATURE_SEARCHLIMIT
 # define IDD_ASKHINTLIMTS               125
@@ -28,11 +24,6 @@
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define IDD_CONNSSDLG                  126
 #endif
-
-#define FLIP_BUTTON_ID                  1001
-#define VALUE_BUTTON_ID                 1002
-#define HINT_BUTTON_ID                  1003
-#define JUGGLE_BUTTON_ID                1004
 
 #define REMOTE_CHECK1                   1005
 #define NAME_EDIT1                      1006
@@ -178,12 +169,14 @@
 #define ID_MOVE_JUGGLE                  40016
 #define ID_MOVE_HIDETRAY                40017
 #define ID_MOVE_TURNDONE                40018
-#define ID_MOVE_FLIP                   40019
+#define ID_MOVE_FLIP                    40019
+#define ID_MOVE_VALUES                  40027
 #define ID_FILE_NEWGAME                 40020
 #define ID_FILE_SAVEDGAMES              40021
 #define ID_EDITTEXT                     40022
 #define ID_FILE_PREFERENCES             40023
 #define ID_GAME_RESENDMSGS              40025
+#define ID_FILE_FULLSCREEN              40026
 
 #define ID_COLORS_RES                   9999
 #define ID_BONUS_RES                    9998
@@ -192,6 +185,7 @@
 #define IDS_FILE                        40002
 #define IDS_GAME                        40003
 #define IDS_MOVE                        40004
+#define IDS_MENU                        40006
 // Don't use the numbers after 4005: one string needs not to be there
 // to stop the progression in cedict.c 
 #define IDS_DICTDIRS                    40005
@@ -201,7 +195,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40026
+#define _APS_NEXT_COMMAND_VALUE         40028
 #define _APS_NEXT_CONTROL_VALUE         1087
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
