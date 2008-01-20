@@ -49,4 +49,18 @@ BOOL DH(ResetEvent)(HANDLE);
 
 #endif
 
+/* these are apparently defined in aygshell.h.  I got the values by googling
+   for 'define SHFS_SHOWTASKBAR' etc.  They should eventually move into the
+   mingw project's headers .*/
+
+#define SHFS_SHOWTASKBAR            0x0001
+#define SHFS_HIDETASKBAR            0x0002
+#define SHFS_SHOWSIPBUTTON          0x0004
+#define SHFS_HIDESIPBUTTON          0x0008
+#define SHFS_SHOWSTARTICON          0x0010
+#define SHFS_HIDESTARTICON          0x0020
+
+/* got this somewhere else via google */
+#define SHCMBF_HMENU 0x0010
+
 #endif

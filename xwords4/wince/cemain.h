@@ -72,6 +72,8 @@ typedef struct CEAppGlobals {
 
 #ifdef _WIN32_WCE
     SHACTIVATEINFO sai;
+    XP_Bool fullScreen;         /* this probably wants to be a preference,
+                                   i.e. preserved */
 #endif
 
     DrawCtx* draw;
