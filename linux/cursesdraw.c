@@ -306,6 +306,9 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_ASSERT( rect->width < sizeof(loc) );
     XP_MEMCPY( loc, letter, strlen(letter) );
 
+    /* in case it's not 1x1 */
+    eraseRect( dctx, rect );
+
     if ( letter[0] == LETTER_NONE ) {
         switch ( bonus ) {
         case BONUS_DOUBLE_LETTER:
