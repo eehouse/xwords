@@ -28,10 +28,13 @@ CFLAGS += -Os
 endif
 
 DO_CURSES = -DPLATFORM_NCURSES
+ifdef CURSES_SMALL_SCREEN
+DO_CURSES += -DCURSES_SMALL_SCREEN
+endif
 DO_GTK = -DPLATFORM_GTK
 
-SVNDEF = -D'SVN_REV="$(shell svnversion -n .)"'
-CFLAGS += $(SVNDEF)
+SVN_REV ?= "$(shell svnversion -n .)"
+SVNDEF = -D'SVN_REV=$(SVN_REV)'
 
 ifdef CURSES_ONLY
 DO_GTK =
@@ -43,28 +46,31 @@ DO_CURSES =
 PLATFORM := $(PLATFORM)_gtk
 endif
 
-DEFINES += $(DO_CURSES) $(DO_GTK)
+DEFINES += $(DO_CURSES) $(DO_GTK) $(SVNDEF)
 
 TARGET=$(PLATFORM)/xwords
-
-ifdef BUILD_COMMAND
-CC = ${BUILD_COMMAND}
-else
-CC = gcc
-endif
 
 include ../common/config.mk
 
 DEFINES += -DPLATFORM_LINUX -DKEY_SUPPORT -DKEYBOARD_NAV -DNODE_CAN_4
-DEFINES += -DSTUBBED_DICT
+# DEFINES += -DSTUBBED_DICT
 ifdef DO_GTK
 DEFINES += -DXWFEATURE_SEARCHLIMIT
 endif
 DEFINES += -DFEATURE_TRAY_EDIT
 #DEFINES += -DDRAW_WITH_PRIMITIVES
 
+ifdef CURSES_CELL_HT
+DEFINES += -DCURSES_CELL_HT=$(CURSES_CELL_HT)
+endif
+ifdef CURSES_CELL_WIDTH
+DEFINES += -DCURSES_CELL_WIDTH=$(CURSES_CELL_WIDTH)
+endif
+
 # Bluetooth support
+ifndef NO_BLUETOOTH
 BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP
+endif
 #BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_RFCOMM
 # DEFINES += -DXWFEATURE_IR
 DEFINES += ${BLUETOOTH}
@@ -114,7 +120,7 @@ OBJ =   $(PLATFORM)/linuxmain.o \
 
 #	$(PLATFORM)/linuxcommpipe.o \
 
-LIBS = -lm -lmcheck -L $(HOME)/usr/local/pilot/lib $(GPROFFLAG)
+LIBS = -lm -lmcheck $(GPROFFLAG)
 ifdef BLUETOOTH
 LIBS += -lbluetooth
 endif
@@ -126,7 +132,7 @@ ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 endif
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
-	LIBS += -lncurses
+	LIBS += $(OE_LIBDIR) -lncurses 
 endif
 
 # provides an all: target

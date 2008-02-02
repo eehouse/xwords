@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2008 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,6 +37,7 @@ typedef struct CursesDrawCtx {
 } CursesDrawCtx;
 
 static void curses_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP );
+static void getTops( const XP_Rect* rect, int* toptop, int* topbot );
 
 static void
 drawRect( WINDOW* win, const XP_Rect* rect, char vert, char hor )
@@ -64,7 +66,6 @@ static void
 cursesHiliteRect( WINDOW* window, const XP_Rect* rect )
 {
     int right, width, x, y;
-    LOG_FUNC();
     width = rect->width;
     right = width + rect->left;
     wstandout( window );
@@ -112,26 +113,22 @@ curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_scoreBegin */
 
 static void
-formatRemText( char* buf, XP_S16 nTilesLeft )
+formatRemText( char* buf, int bufLen, XP_S16 nTilesLeft, int width )
 {
-    strcpy( buf, "Tiles left in pool: " );
-    buf += strlen( buf );
-    if ( nTilesLeft < 0 ) {
-        strcpy( buf, "***" );
-    } else {
-        sprintf( buf, "%.3d", nTilesLeft );
+    snprintf( buf, bufLen, "Tiles left in pool: %.3d", nTilesLeft );
+    if ( strlen(buf)+1 >= width ) {
+        snprintf( buf, bufLen, "Rem: %.3d", nTilesLeft );
     }
 } /* formatRemText */
 
 static void
 curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx), 
-                            const XP_Rect* XP_UNUSED(r), 
+                            const XP_Rect* r, 
                             XP_S16 nTilesLeft, 
                             XP_U16* width, XP_U16* height )
 {
     char buf[32];
-
-    formatRemText( buf, nTilesLeft );
+    formatRemText( buf, sizeof(buf), nTilesLeft, r->width );
     
     *width = strlen(buf);
     *height = 1;
@@ -144,60 +141,104 @@ curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[32];
 
-    formatRemText( buf, nTilesLeft );
+    formatRemText( buf, sizeof(buf), nTilesLeft, rInner->width );
     mvwprintw( dctx->boardWin, rInner->top, rInner->left, buf );
 } /* curses_draw_drawRemText */
 
-#define SCORE_COL 25
-#define RECENT_COL 31
+static int
+fitIn( char* buf, int len, int* rem, char* str )
+{
+    int slen = strlen(str);
+    if ( !!rem && (*rem != 0) ) {
+        ++len;
+        --*rem;
+    }
+    if ( slen > len ) {
+        slen = len;
+    }
+
+    memcpy( buf, str, slen );
+    return len;
+} /* fitIn */
 
 static void
-formatScoreText( XP_UCHAR* buf, const DrawScoreInfo* dsi )
+formatScoreText( XP_UCHAR* out, int outLen, const DrawScoreInfo* dsi,
+                 int width )
 {
-    XP_S16 nTilesLeft = dsi->nTilesLeft;
-    XP_Bool isRobot = dsi->isRobot;
-    char label = isRobot? 'r':'n';
-    int len;
-    char recbuf[32];
-    XP_U16 recBufLen = sizeof(recbuf);
+    /* Long and short formats.  We'll try long first.  If it fits, cool.
+       Otherwise we use short.  Either way, we fill the whole rect so it can
+       overwrite anything that was there before.*/
+    char tmp[width+1];
+    char buf[width+1];
+    int scoreWidth = 4;
 
-    if ( nTilesLeft < 0 ) {
-        nTilesLeft = MAX_TRAY_TILES;
+    XP_ASSERT( width < outLen );
+
+    XP_MEMSET( buf, ' ', width );
+    buf[width] = '\0';
+
+    /* Status/role chars at start */
+    if ( dsi->isTurn ) {
+        buf[0] = 'T';
     }
-    if ( dsi->isRemote ) {
-        label = toupper(label);
+    if ( dsi->selected ) {
+        buf[1] = 'S';
+    }
+    if ( dsi->isRobot) {
+        buf[2] = 'r';
     }
 
-    len = sprintf( buf, "%c:%c [%c] %s (%d)", 
-                   (dsi->isTurn? 'T' : ' '), 
-                   (dsi->selected? 'S' : ' '), 
-                   label, dsi->name, nTilesLeft );
-    while ( len < SCORE_COL ) {
-        ++len;
-        strcat( buf, " " );
-    }
-    len += sprintf( buf + len, "%.3d", dsi->totalScore );
+    /* Score always goes at end.  Will overwrite status if width is really small */
+    snprintf( tmp, scoreWidth, "%.3d", dsi->totalScore );
+    memcpy( &buf[width-scoreWidth+1], tmp, scoreWidth-1 );
 
-    if ( (*dsi->lsc)( dsi->lscClosure, dsi->playerNum, recbuf, &recBufLen ) ) {
-        while ( len < RECENT_COL ) {
-            ++len;
-            strcat( buf, " " );
+    /* Now we want to fit name, rem tiles, last score, and last move, if
+       there's space.  Allocate to each so they're in columns. */
+
+    width -= 8;                 /* status chars plus space; score plus space */
+    if ( width > 0 ) {
+        int pos = 4;
+        int nCols = 2;
+        int perCol = (width - ( nCols - 1)) / nCols; /* not counting spaces */
+        if ( perCol > 0 ) {
+            int rem = (width - ( nCols - 1)) % nCols;
+
+            pos += 1 + fitIn( &buf[pos], perCol, &rem, dsi->name );
+
+            XP_U16 len = sizeof(tmp);
+            if ( (*dsi->lsc)( dsi->lscClosure, dsi->playerNum, tmp, &len ) ) {
+                char* s = tmp;
+                if ( len > perCol ) {
+                    /* We want to preserve the score first, then the first part of
+                       word.  That is, WORD:20 prints as W0:20, not WORD: or
+                       RD:20 */
+                    char* colon = strstr( tmp, ":" );
+                    if ( colon ) {
+                        s += len - perCol;
+                        memmove( s, tmp, colon - tmp - (len - perCol) );
+                    }
+                }
+                pos += 1 + fitIn( &buf[pos], perCol, NULL, s );
+            }
+        } else {
+            fitIn( &buf[pos], width, NULL, dsi->name );
         }
-        strcat( buf, recbuf );
-    }
+    }        
 
+    snprintf( out, outLen, "%s", buf );
 } /* formatScoreText */
 
 static void
 curses_draw_measureScoreText( DrawCtx* XP_UNUSED(p_dctx), 
-                              const XP_Rect* XP_UNUSED(r), 
+                              const XP_Rect* r, 
                               const DrawScoreInfo* dsi,
                               XP_U16* width, XP_U16* height )
 {
     XP_UCHAR buf[100];
-    formatScoreText( buf, dsi );
+    formatScoreText( buf, sizeof(buf), dsi, r->width );
 
     *width = strlen( buf );
+    XP_ASSERT( *width <= r->width );
     *height = 1;		/* one line per player */
 } /* curses_draw_measureScoreText */
 
@@ -215,8 +256,11 @@ curses_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
         strcpy( buf, "???" );
     }
 
-    mvwprintw( dctx->boardWin, rect->top+1, rect->left, "pt:" );
-    mvwprintw( dctx->boardWin, rect->top+2, rect->left, "%s", buf );
+    int toptop, topbot;
+    getTops( rect, &toptop, &topbot );
+
+    mvwprintw( dctx->boardWin, toptop, rect->left, "pt:" );
+    mvwprintw( dctx->boardWin, topbot, rect->left, "%s", buf );
 } /* curses_draw_score_pendingScore */
 
 static void
@@ -241,7 +285,7 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     curses_draw_clearRect( p_dctx, rOuter );
 
     /* print the name and turn/remoteness indicator */
-    formatScoreText( buf, dsi );
+    formatScoreText( buf, sizeof(buf), dsi, rInner->width );
     mvwprintw( dctx->boardWin, y, rOuter->left, buf );
 
     if ( (dsi->flags&CELL_ISCURSOR) != 0 ) {
@@ -260,7 +304,6 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_UCHAR loc[4] = { ' ', ' ', ' ', '\0' };
     XP_ASSERT( XP_STRLEN(letter) < sizeof(loc) );
     XP_ASSERT( rect->width < sizeof(loc) );
-    XP_ASSERT( rect->height == 1 );
     XP_MEMCPY( loc, letter, strlen(letter) );
 
     if ( letter[0] == LETTER_NONE ) {
@@ -297,20 +340,39 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* curses_draw_drawCell */
 
 static void
+getTops( const XP_Rect* rect, int* toptop, int* topbot )
+{
+    int top = rect->top;
+    if ( rect->height >= 4 ) {
+        ++top;
+    }
+    *toptop = top;
+
+    top = rect->top + rect->height - 1;
+    if ( rect->height >= 3 ) {
+        --top;
+    }
+    *topbot = top;
+} /* getTops */
+
+static void
 curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect, 
                      XP_UCHAR* letter, XP_UCHAR* val )
 {
     eraseRect( dctx, rect );
 
+    int toptop, topbot;
+    getTops( rect, &toptop, &topbot );
+
     if ( !!letter ) {
-        mvwaddnstr( dctx->boardWin, rect->top+1, rect->left+(rect->width/2),
+        mvwaddnstr( dctx->boardWin, toptop, rect->left+(rect->width/2),
                     letter, strlen(letter) );
     }
 
     if ( !!val ) {
         int len = strlen( val );
-        mvwaddnstr( dctx->boardWin, rect->top+rect->height-2, 
-                    rect->left + rect->width - len, val, len );
+        mvwaddnstr( dctx->boardWin, topbot, rect->left + rect->width - len, 
+                    val, len );
     }
 } /* curses_stringInTile */
 

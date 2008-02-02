@@ -56,10 +56,128 @@
 #include "util.h"
 #include "dbgutil.h"
 
-#define MENU_WINDOW_HEIGHT 5	/* three lines plus borders */
-#define INFINITE_TIMEOUT -1
+#ifdef CURSES_SMALL_SCREEN
+# define MENU_WINDOW_HEIGHT 1
+# define BOARD_OFFSET 0
+#else
+# define MENU_WINDOW_HEIGHT 5	/* three lines plus borders */
+# define BOARD_OFFSET 1
+#endif
 
-CursesAppGlobals globals;	/* must be global b/c of SIGWINCH_handler */
+#ifndef CURSES_CELL_HT
+# define CURSES_CELL_HT 1
+#endif
+#ifndef CURSES_CELL_WIDTH
+# define CURSES_CELL_WIDTH 2
+#endif
+
+#ifndef CURSES_MAX_HEIGHT
+# define CURSES_MAX_HEIGHT 40
+#endif
+#ifndef CURSES_MAX_WIDTH
+//# define CURSES_MAX_WIDTH 50
+# define CURSES_MAX_WIDTH 70
+#endif
+
+#define INFINITE_TIMEOUT -1
+#define BOARD_SCORE_PADDING 3
+
+
+typedef XP_Bool (*CursesMenuHandler)(CursesAppGlobals* globals);
+typedef struct MenuList {
+    CursesMenuHandler handler;
+    char* desc;
+    char* keyDesc;
+    char key;
+} MenuList;
+
+static XP_Bool handleQuit( CursesAppGlobals* globals );
+static XP_Bool handleRight( CursesAppGlobals* globals );
+static XP_Bool handleSpace( CursesAppGlobals* globals );
+static XP_Bool handleRet( CursesAppGlobals* globals );
+static XP_Bool handleHint( CursesAppGlobals* globals );
+static XP_Bool handleLeft( CursesAppGlobals* globals );
+static XP_Bool handleRight( CursesAppGlobals* globals );
+static XP_Bool handleUp( CursesAppGlobals* globals );
+static XP_Bool handleDown( CursesAppGlobals* globals );
+static XP_Bool handleCommit( CursesAppGlobals* globals );
+static XP_Bool handleFlip( CursesAppGlobals* globals );
+static XP_Bool handleToggleValues( CursesAppGlobals* globals );
+static XP_Bool handleBackspace( CursesAppGlobals* globals );
+static XP_Bool handleUndo( CursesAppGlobals* globals );
+static XP_Bool handleReplace( CursesAppGlobals* globals );
+static XP_Bool handleRootKeyShow( CursesAppGlobals* globals );
+static XP_Bool handleRootKeyHide( CursesAppGlobals* globals );
+static XP_Bool handleJuggle( CursesAppGlobals* globals );
+static XP_Bool handleHide( CursesAppGlobals* globals );
+static XP_Bool handleAltLeft( CursesAppGlobals* globals );
+static XP_Bool handleAltRight( CursesAppGlobals* globals );
+static XP_Bool handleAltUp( CursesAppGlobals* globals );
+static XP_Bool handleAltDown( CursesAppGlobals* globals );
+
+
+MenuList g_sharedMenuList[] = {
+    { handleQuit, "Quit", "Q", 'Q' },
+    { handleRight, "Tab right", "<tab>", '\t' },
+    { handleSpace, "Raise focus", "<spc>", ' ' },
+    { handleRet, "Click/tap", "<ret>", '\r' },
+    { handleHint, "Hint", "?", '?' },
+
+#ifdef KEYBOARD_NAV
+    { handleLeft, "Left", "H", 'H' },
+    { handleRight, "Right", "L", 'L' },
+    { handleUp, "Up", "J", 'J' },
+    { handleDown, "Down", "K", 'K' },
+#endif
+
+    { handleCommit, "Commit move", "C", 'C' },
+    { handleFlip, "Flip", "F", 'F' },
+    { handleToggleValues, "Show values", "V", 'V' },
+
+    { handleBackspace, "Remove from board", "<del>", 8 },
+    { handleUndo, "Undo prev", "U", 'U' },
+    { handleReplace, "uNdo cur", "N", 'N' },
+
+    { NULL, NULL, NULL, '\0'}
+};
+
+MenuList g_boardMenuList[] = {
+    { handleAltLeft,  "Force left", "{", '{' },
+    { handleAltRight, "Force right", "}", '}' },
+    { handleAltUp,    "Force up", "_", '_' },
+    { handleAltDown,  "Force down", "+", '+' },
+    { NULL, NULL, NULL, '\0'}
+};
+
+MenuList g_scoreMenuList[] = {
+#ifdef KEYBOARD_NAV
+#endif
+    { NULL, NULL, NULL, '\0'}
+};
+
+MenuList g_trayMenuList[] = {
+    { handleJuggle, "Juggle", "G", 'G' },
+    { handleHide, "[un]hIde", "I", 'I' },
+    { handleAltLeft, "Divider left", "{", '{' },
+    { handleAltRight, "Divider right", "}", '}' },
+
+    { NULL, NULL, NULL, '\0'}
+};
+
+#ifdef CURSES_SMALL_SCREEN
+MenuList g_rootMenuListShow[] = {
+    { handleRootKeyShow,  "Press . for menu", "", '.' },
+    { NULL, NULL, NULL, '\0'}
+};
+
+MenuList g_rootMenuListHide[] = {
+    { handleRootKeyHide,  "Clear menu", ".", '.' },
+    { NULL, NULL, NULL, '\0'}
+};
+#endif
+
+
+static CursesAppGlobals g_globals;	/* must be global b/c of SIGWINCH_handler */
 
 static void changeMenuForFocus( CursesAppGlobals* globals, 
                                 BoardObjectType obj );
@@ -68,6 +186,11 @@ static XP_Bool handleRight( CursesAppGlobals* globals );
 static XP_Bool handleUp( CursesAppGlobals* globals );
 static XP_Bool handleDown( CursesAppGlobals* globals );
 static XP_Bool handleFocusKey( CursesAppGlobals* globals, XP_Key key );
+static void countMenuLines( MenuList** menuLists, int maxX, int padding,
+                            int* nLinesP, int* nColsP );
+static void drawMenuFromList( WINDOW* win, MenuList** menuLists,
+                              int nLines, int padding );
+static CursesMenuHandler getHandlerForKey( MenuList* list, char ch );
 
 
 #ifdef MEM_DEBUG
@@ -257,7 +380,7 @@ initCurses( CursesAppGlobals* globals )
     WINDOW* menuWin;
     WINDOW* boardWin;
 
-    int x, y;
+    int width, height;
 
     /* ncurses man page says most apps want this sequence  */
     mainWin = initscr(); 
@@ -265,16 +388,22 @@ initCurses( CursesAppGlobals* globals )
     noecho();
     nonl();
     intrflush(stdscr, FALSE);
-    keypad(stdscr, TRUE);
+    keypad(stdscr, TRUE);       /* effects wgetch only? */
 
-    getmaxyx(mainWin, y, x);
-    globals->statusLine = y - MENU_WINDOW_HEIGHT - 1;
-    menuWin = newwin( MENU_WINDOW_HEIGHT, x, y-MENU_WINDOW_HEIGHT, 0 );
+    getmaxyx(mainWin, height, width );
+    XP_LOGF( "getmaxyx->w:%d; h:%d", width, height );
+    if ( height > CURSES_MAX_HEIGHT ) {
+        height = CURSES_MAX_HEIGHT;
+    }
+    if ( width > CURSES_MAX_WIDTH ) {
+        width = CURSES_MAX_WIDTH;
+    }
+
+    globals->statusLine = height - MENU_WINDOW_HEIGHT - 1;
+    menuWin = newwin( MENU_WINDOW_HEIGHT, width, 
+                      height-MENU_WINDOW_HEIGHT, 0 );
     nodelay(menuWin, 1);		/* don't block on getch */
-    boardWin = newwin( MAX_ROWS+1, x, 0, 0 );
-
-/*     leaveok( boardWin, 1 ); */
-/*     leaveok( menuWin, 1 ); */
+    boardWin = newwin( height-MENU_WINDOW_HEIGHT, width, 0, 0 );
 
     globals->menuWin = menuWin;
     globals->boardWin = boardWin;
@@ -308,13 +437,6 @@ showStatus( CursesAppGlobals* globals )
 } /* showStatus */
 #endif
 
-typedef XP_Bool (*CursesMenuHandler)(CursesAppGlobals* globals);
-typedef struct MenuList {
-    CursesMenuHandler handler;
-    char* desc;
-    char* keyDesc;
-    char key;
-} MenuList;
 static XP_Bool
 handleQuit( CursesAppGlobals* globals )
 {
@@ -391,6 +513,70 @@ handleHide( CursesAppGlobals* globals )
     return XP_TRUE;
 } /* handleJuggle */
 
+#ifdef CURSES_SMALL_SCREEN
+static XP_Bool
+handleRootKeyShow( CursesAppGlobals* globals )
+{
+    WINDOW* win;
+    MenuList* lists[] = { g_sharedMenuList, globals->menuList, 
+                          g_rootMenuListHide, NULL };
+    int winMaxY, winMaxX;
+    
+    wclear( globals->menuWin );
+    wrefresh( globals->menuWin ); 
+
+    getmaxyx( globals->boardWin, winMaxY, winMaxX );
+
+    int border = 2;
+    int width = winMaxX - (border * 2);
+    int padding = 1;            /* for the box */
+    int nLines, nCols;
+    countMenuLines( lists, width, padding, &nLines, &nCols );
+
+    if ( width > nCols ) {
+        width = nCols;
+    }
+
+    win = newwin( nLines+(padding*2), width+(padding*2), 
+                  ((winMaxY-nLines-padding-padding)/2), (winMaxX-width)/2 );
+    wclear( win );
+    box( win, '|', '-');
+
+    drawMenuFromList( win, lists, nLines, padding );
+    wrefresh( win );
+
+    CursesMenuHandler handler = NULL;
+    while ( !handler ) {
+        int ch = fgetc( stdin );
+
+        int i;
+        for ( i = 0; !!lists[i]; ++i ) {
+            handler = getHandlerForKey( lists[i], ch );
+            if ( !!handler ) {
+                break;
+            }
+        }
+    }
+
+    delwin( win );
+
+    touchwin( globals->boardWin );
+    wrefresh( globals->boardWin );
+    MenuList* ml[] = { g_rootMenuListShow, NULL };
+    drawMenuFromList( globals->menuWin, ml, 1, 0 );
+    wrefresh( globals->menuWin ); 
+
+    return handler != NULL && (*handler)(globals);
+} /* handleRootKeyShow */
+
+static XP_Bool
+handleRootKeyHide( CursesAppGlobals* globals )
+{
+    globals->doDraw = XP_TRUE;
+    return XP_TRUE;
+}
+#endif
+
 static XP_Bool
 handleAltLeft( CursesAppGlobals* globals )
 {
@@ -452,31 +638,6 @@ handleReplace( CursesAppGlobals* globals )
     return XP_TRUE;
 } /* handleReplace */
 
-MenuList sharedMenuList[] = {
-    { handleQuit, "Quit", "Q", 'Q' },
-    { handleRight, "Tab right", "<tab>", '\t' },
-    { handleSpace, "Raise focus", "<spc>", ' ' },
-    { handleRet, "Click/tap", "<ret>", '\r' },
-    { handleHint, "Hint", "?", '?' },
-
-#ifdef KEYBOARD_NAV
-    { handleLeft, "Left", "H", 'H' },
-    { handleRight, "Right", "L", 'L' },
-    { handleUp, "Up", "J", 'J' },
-    { handleDown, "Down", "K", 'K' },
-#endif
-
-    { handleCommit, "Commit move", "C", 'C' },
-    { handleFlip, "Flip", "F", 'F' },
-    { handleToggleValues, "Show values", "V", 'V' },
-
-    { handleBackspace, "Remove from board", "<del>", 8 },
-    { handleUndo, "Undo prev", "U", 'U' },
-    { handleReplace, "uNdo cur", "N", 'N' },
-
-    { NULL, NULL, NULL, '\0'}
-};
-
 #ifdef KEYBOARD_NAV
 static XP_Bool
 handleFocusKey( CursesAppGlobals* globals, XP_Key key )
@@ -525,109 +686,112 @@ handleDown( CursesAppGlobals* globals )
 } /* handleDown */
 #endif
 
-MenuList boardMenuList[] = {
-    { handleAltLeft,  "Force left", "{", '{' },
-    { handleAltRight, "Force right", "}", '}' },
-    { handleAltUp,    "Force up", "_", '_' },
-    { handleAltDown,  "Force down", "+", '+' },
-    { NULL, NULL, NULL, '\0'}
-};
+static void
+fmtMenuItem( const MenuList* item, char* buf, int maxLen )
+{
+    snprintf( buf, maxLen, "%s %s", item->keyDesc, item->desc );
+}
 
-MenuList scoreMenuList[] = {
-#ifdef KEYBOARD_NAV
-#endif
-    { NULL, NULL, NULL, '\0'}
-};
-
-MenuList trayMenuList[] = {
-    { handleJuggle, "Juggle", "G", 'G' },
-    { handleHide, "[un]hIde", "I", 'I' },
-    { handleAltLeft, "Divider left", "{", '{' },
-    { handleAltRight, "Divider right", "}", '}' },
-
-    { NULL, NULL, NULL, '\0'}
-};
 
 static void
-figureMaxes( MenuList* mList, short maxLines, short* maxKeyP, short* maxCmdP )
+countMenuLines( MenuList** menuLists, int maxX, int padding,
+                int* nLinesP, int* nColsP )
 {
-    short i;
+    int nCols = 0;
+    /* The menu space should be wider rather than taller, but line up by
+       column.  So we want to use as many columns as possible to minimize the
+       number of lines.  So start with one line and lay out.  If that doesn't
+       fit, try two.  Given the number of lines, get the max width of each
+       column.
+    */
 
-    *maxKeyP = *maxCmdP = 0;
+    maxX -= padding * 2;        /* on left and right side */
 
-    for ( i = 0; i < maxLines && mList->handler != NULL; ++i ) {
-        short keyLen = strlen(mList->keyDesc);
-        short cmdLen = strlen(mList->desc);
-        *maxKeyP = XP_MAX( *maxKeyP, keyLen );
-        *maxCmdP= XP_MAX( *maxCmdP, cmdLen );
-        ++mList;
+    int nLines;
+    for ( nLines = 1; ; ++nLines ) {
+        short line = 0;
+        XP_Bool tooFewLines = XP_FALSE;
+        int maxThisCol = 0;
+        int i;
+        nCols = 0;
+
+        for ( i = 0; !tooFewLines && (NULL != menuLists[i]); ++i ) {
+            MenuList* entry;
+            for ( entry = menuLists[i]; !tooFewLines && !!entry->handler; 
+                  ++entry ) {
+                int width;
+                char buf[32];
+
+                /* time to switch to new column? */
+                if ( line == nLines ) {
+                    nCols += maxThisCol;
+                    if ( nCols > maxX ) {
+                        tooFewLines = XP_TRUE;
+                        break;
+                    }
+                    maxThisCol = 0;
+                    line = 0;
+                }
+
+                fmtMenuItem( entry, buf, sizeof(buf) );
+                width = strlen(buf) + 2; /* padding */
+
+                if ( maxThisCol < width ) {
+                    maxThisCol = width;
+                }
+
+                ++line;
+            }
+        }
+        /* If we get here without running out of space, we're done */
+        nCols += maxThisCol;
+        if ( !tooFewLines && (nCols < maxX) ) {
+            break;
+        }
     }
-} /* figureMaxes */
+    
+    *nColsP = nCols;
+    *nLinesP = nLines;
+} /* countMenuLines */
 
 static void
-drawMenuFromList( CursesAppGlobals* globals, MenuList* menuList )
+drawMenuFromList( WINDOW* win, MenuList** menuLists,
+                  int nLines, int padding )
 {
-    short i;
-    short maxKey = 0, maxCmd = 0;
-    short line = 0, col;
-    short nLines;
+    short line = 0, col, i;
     int winMaxY, winMaxX;
-    WINDOW* win = globals->menuWin;
-    XP_Bool done = XP_FALSE;
 
     getmaxyx( win, winMaxY, winMaxX );
 
-    nLines = globals->nLinesMenu;
-    if ( nLines == 0 ) {
-        nLines = 1;
+    int maxColWidth = 0;
+    if ( 0 == nLines ) {
+        int ignore;
+        countMenuLines( menuLists, winMaxX, padding, &nLines, &ignore );
     }
+    col = 0;
 
-    for ( ; !done; ++nLines ) {
-        MenuList* entry = sharedMenuList;
-        XP_Bool isShared = XP_TRUE;
+    for ( i = 0; NULL != menuLists[i]; ++i ) {
+        MenuList* entry;
+        for ( entry = menuLists[i]; !!entry->handler; ++entry ) {
+            char buf[32];
 
-        wclear( win );
+            fmtMenuItem( entry, buf, sizeof(buf) );
 
-        maxKey = maxCmd = 0;
-        for ( line = 0, col = -2, i = 0; ; ++entry, ++line ) {
-            char* key;
+            mvwaddstr( win, line+padding, col+padding, buf );
 
-            if ( entry->handler == NULL ) {
-                if ( !isShared ) {
-                    done = XP_TRUE;
-                    break;
-                } else if ( menuList->handler == NULL )  {
-                    done = XP_TRUE;
-                    break;
-                } else {
-                    isShared = XP_FALSE;
-                    entry = menuList;
-                    XP_ASSERT( !!entry->handler );
-                }
+            int width = strlen(buf) + 2;
+            if ( width > maxColWidth ) {
+                maxColWidth = width;
             }
 
-            XP_ASSERT( nLines > 0 );
-            if ( line % nLines == 0 ) {
+            if ( ++line == nLines ) {
                 line = 0;
-                col += maxKey + maxCmd + 2;
-                figureMaxes( entry, nLines, &maxKey, &maxCmd );
-                if ( (col + maxCmd + strlen(entry->keyDesc)) >= winMaxX ) {
-                    break;
-                }
+                col += maxColWidth;
+                maxColWidth = 0;
             }
 
-            key = entry->keyDesc;
-
-            wstandout( win );
-            mvwaddstr( win, line, col+maxKey-strlen(key), key );
-            wstandend( win );
-            mvwaddstr( win, line, col+maxKey+1, entry->desc );
         }
     }
-
-    globals->nLinesMenu = nLines - 1;
-
-    wrefresh( win );
 } /* drawMenuFromList */
 
 static void 
@@ -642,9 +806,9 @@ SIGWINCH_handler( int signal )
 /*     (*globals.drawMenu)( &globals );  */
 
     getmaxyx( stdscr, y, x );
-    wresize( globals.mainWin, y-MENU_WINDOW_HEIGHT, x );
+    wresize( g_globals.mainWin, y-MENU_WINDOW_HEIGHT, x );
 
-    board_draw( globals.cGlobals.game.board );
+    board_draw( g_globals.cGlobals.game.board );
 } /* SIGWINCH_handler */
 
 static void
@@ -748,7 +912,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 	
         /* stdin first */
         if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) {
-            int evtCh = fgetc(stdin);
+            int evtCh = wgetch(globals->mainWin);
             XP_LOGF( "%s: got key: %x", __func__, evtCh );
             *ch = evtCh;
             result = XP_TRUE;
@@ -855,21 +1019,67 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 } /* blocking_gotEvent */
 
 static void
+remapKey( int* kp )
+{
+    /* There's what the manual says I should get, and what I actually do from
+     * a funky M$ keyboard....
+     */
+    int key = *kp;
+    switch( key ) {
+    case KEY_B2:                /* "center of keypad" */
+        key = '\r';
+        break;
+    case KEY_DOWN:
+    case 526:
+        key = 'K';
+        break;
+    case KEY_UP:
+    case 523:
+        key = 'J';
+        break;
+    case KEY_LEFT:
+    case 524:
+        key = 'H';
+        break;
+    case KEY_RIGHT:
+    case 525:
+        key = 'L';
+        break;
+    default:
+        if ( key > 0xFF ) {
+            XP_LOGF( "%s(%d): no mapping", __func__, key );
+        }
+        break;
+    }
+    *kp = key;
+}
+
+static void
+drawMenuLargeOrSmall( CursesAppGlobals* globals, const MenuList* menuList )
+{
+#ifdef CURSES_SMALL_SCREEN
+    MenuList* lists[] = { g_rootMenuListShow, NULL };
+#else
+    MenuList* lists[] = { g_sharedMenuList, menuList, NULL };
+#endif
+    drawMenuFromList( globals->menuWin, lists, 0, 0 );
+    wrefresh( globals->menuWin );
+}
+
+static void
 changeMenuForFocus( CursesAppGlobals* globals, BoardObjectType focussed )
 {
 #ifdef KEYBOARD_NAV
     if ( focussed == OBJ_TRAY ) {
-        globals->menuList = trayMenuList;
-        drawMenuFromList( globals, trayMenuList );
+        globals->menuList = g_trayMenuList;
     } else if ( focussed == OBJ_BOARD ) {
-        globals->menuList = boardMenuList;
-        drawMenuFromList( globals, boardMenuList );
+        globals->menuList = g_boardMenuList;
     } else if ( focussed == OBJ_SCORE ) {
-        globals->menuList = scoreMenuList;
-        drawMenuFromList( globals, scoreMenuList );
+        globals->menuList = g_scoreMenuList;
     } else {
         XP_ASSERT(0);
     }
+    drawMenuLargeOrSmall( globals, globals->menuList );
 #endif
 } /* changeMenuForFocus */
 
@@ -989,18 +1199,29 @@ sendOnClose( XWStreamCtxt* stream, void* closure )
 } /* sendOnClose */
 #endif
 
-static XP_Bool
-handleKeyEvent( CursesAppGlobals* globals, MenuList* list, char ch )
+static CursesMenuHandler
+getHandlerForKey( MenuList* list, char ch )
 {
+    CursesMenuHandler handler = NULL;
     while ( list->handler != NULL ) {
         if ( list->key == ch ) {
-            if ( (*list->handler)(globals) ) {
-                return XP_TRUE;
-            }
+            handler = list->handler;
+            break;
         }
         ++list;
     }
-    return XP_FALSE;
+    return handler;
+}
+
+static XP_Bool
+handleKeyEvent( CursesAppGlobals* globals, MenuList* list, char ch )
+{
+    CursesMenuHandler handler = getHandlerForKey( list, ch );
+    XP_Bool result = XP_FALSE;
+    if ( !!handler ) {
+        result = (*handler)(globals);
+    }
+    return result;
 } /* handleKeyEvent */
 
 static XP_Bool
@@ -1015,59 +1236,110 @@ passKeyToBoard( CursesAppGlobals* globals, char ch )
     return handled;
 } /* passKeyToBoard */
 
+static void
+positionSizeStuff( CursesAppGlobals* globals, int width, int height )
+{
+    XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
+    BoardCtxt* board = globals->cGlobals.game.board;
+    int remWidth = width;
+
+    board_setPos( board, BOARD_OFFSET, BOARD_OFFSET, XP_FALSE );
+    cellWidth = CURSES_CELL_HT;
+    cellHt = CURSES_CELL_WIDTH;
+    board_setScale( board, cellWidth, cellHt );
+    scoreLeft = (cellWidth * MAX_COLS);// + BOARD_SCORE_PADDING;
+    remWidth -= cellWidth * MAX_COLS;
+
+    /* If the scoreboard will right of the board, put it there.  Otherwise try
+       to fit it below the boards. */
+    int tileWidth = 3;
+    int trayWidth = (tileWidth*MAX_TRAY_TILES);
+    int trayLeft = scoreLeft;
+    int trayTop;
+    int trayHt = 4;
+    if ( trayWidth < remWidth ) {
+        trayLeft += XP_MIN(remWidth - trayWidth, BOARD_SCORE_PADDING );
+        trayTop = 8;
+    } else {
+        trayLeft = BOARD_OFFSET;
+        trayTop = BOARD_OFFSET + (cellHt * MAX_ROWS);
+        if ( trayTop + trayHt > height ) {
+            trayHt = height - trayTop;
+        }
+    }
+    board_setTrayLoc( board, trayLeft, trayTop, (3*MAX_TRAY_TILES)+1, 
+                      trayHt, 1 );
+
+    scoreWidth = remWidth;
+    if ( scoreWidth > 45 ) {
+        scoreWidth = 45;
+        scoreLeft += (remWidth - scoreWidth) / 2;
+    }
+    board_setScoreboardLoc( board, scoreLeft, 1,
+                            scoreWidth, 5, /*4 players + rem*/ XP_FALSE );
+
+    /* no divider -- yet */
+    /*     board_setTrayVisible( globals.board, XP_TRUE, XP_FALSE ); */
+
+    board_invalAll( board );
+} /* positionSizeStuff */
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int piperesult;
     DictionaryCtxt* dict;
     XP_U16 gameID;
-    XP_U16 colWidth, scoreLeft;
+    int width, height;
 
-    memset( &globals, 0, sizeof(globals) );
+    memset( &g_globals, 0, sizeof(g_globals) );
 
-    globals.amServer = isServer;
-    globals.cGlobals.params = params;
+    g_globals.amServer = isServer;
+    g_globals.cGlobals.params = params;
 #ifdef XWFEATURE_RELAY
-    globals.cGlobals.socket = -1;
+    g_globals.cGlobals.socket = -1;
 #endif
 
-    globals.cGlobals.socketChanged = curses_socket_changed;
-    globals.cGlobals.socketChangedClosure = &globals;
-    globals.cGlobals.addAcceptor = curses_socket_acceptor;
+    g_globals.cGlobals.socketChanged = curses_socket_changed;
+    g_globals.cGlobals.socketChangedClosure = &g_globals;
+    g_globals.cGlobals.addAcceptor = curses_socket_acceptor;
 
-    globals.cp.showBoardArrow = XP_TRUE;
-    globals.cp.showRobotScores = params->showRobotScores;
+    g_globals.cp.showBoardArrow = XP_TRUE;
+    g_globals.cp.showRobotScores = params->showRobotScores;
 
     dict = params->dict;
 
-    setupCursesUtilCallbacks( &globals, params->util );
+    setupCursesUtilCallbacks( &g_globals, params->util );
 
 #ifdef XWFEATURE_RELAY
     if ( params->conType == COMMS_CONN_RELAY ) {
-        globals.cGlobals.defaultServerName
+        g_globals.cGlobals.defaultServerName
             = params->connInfo.relay.relayName;
     }
 #endif
-    cursesListenOnSocket( &globals, 0 ); /* stdin */
+    cursesListenOnSocket( &g_globals, 0 ); /* stdin */
 
-    piperesult = pipe( globals.timepipe );
+    piperesult = pipe( g_globals.timepipe );
     XP_ASSERT( piperesult == 0 );
 
     /* reader pipe */
-    cursesListenOnSocket( &globals, globals.timepipe[0] );
+    cursesListenOnSocket( &g_globals, g_globals.timepipe[0] );
     signal( SIGWINCH, SIGWINCH_handler );
-    initCurses( &globals );
 
-    globals.draw = (struct CursesDrawCtx*)cursesDrawCtxtMake( globals.boardWin );
+    initCurses( &g_globals );
+    getmaxyx( g_globals.boardWin, height, width );
+
+    g_globals.draw = (struct CursesDrawCtx*)
+        cursesDrawCtxtMake( g_globals.boardWin );
     
-    gameID = (XP_U16)util_getCurSeconds( globals.cGlobals.params->util );
-    game_makeNewGame( MEMPOOL &globals.cGlobals.game, &params->gi,
-                      params->util, (DrawCtx*)globals.draw,
-                      gameID, &globals.cp, LINUX_SEND, 
-                      IF_CH(linux_reset) &globals );
+    gameID = (XP_U16)util_getCurSeconds( g_globals.cGlobals.params->util );
+    game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
+                      params->util, (DrawCtx*)g_globals.draw,
+                      gameID, &g_globals.cp, LINUX_SEND, 
+                      IF_CH(linux_reset) &g_globals );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( globals.cGlobals.game.comms ) {
+    if ( g_globals.cGlobals.game.comms ) {
         CommsAddrRec addr;
 
         if ( 0 ) {
@@ -1090,60 +1362,52 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                        sizeof(params->connInfo.bt.hostAddr) );
 # endif
         }
-        comms_setAddr( globals.cGlobals.game.comms, &addr );
+        comms_setAddr( g_globals.cGlobals.game.comms, &addr );
     }
 #endif
 
-	model_setDictionary( globals.cGlobals.game.model, params->dict );
+	model_setDictionary( g_globals.cGlobals.game.model, params->dict );
 
-    board_setPos( globals.cGlobals.game.board, 1, 1, XP_FALSE );
-    colWidth = 2;
-    board_setScale( globals.cGlobals.game.board, colWidth, 1 );
-    scoreLeft = (colWidth * MAX_COLS) + 3;
-    board_setScoreboardLoc( globals.cGlobals.game.board, 
-                            scoreLeft, 1,
-                            45, 5, /*4 players + rem*/ XP_FALSE );
-
-    board_setTrayLoc( globals.cGlobals.game.board,
-                      scoreLeft, 8, (3*MAX_TRAY_TILES)+1, 
-                      4, 1 );
-    /* no divider -- yet */
-    /*     board_setTrayVisible( globals.board, XP_TRUE, XP_FALSE ); */
-
-    board_invalAll( globals.cGlobals.game.board );
+    positionSizeStuff( &g_globals, width, height );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     /* send any events that need to get off before the event loop begins */
     if ( !isServer ) {
         if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
-            server_initClientConnection( globals.cGlobals.game.server, 
+            server_initClientConnection( g_globals.cGlobals.game.server, 
                                          mem_stream_make( MEMPOOL
                                                           params->vtMgr,
-                                                          &globals,
+                                                          &g_globals,
                                                           (XP_PlayerAddr)0,
                                                           sendOnClose ) );
         } else {
-            cursesUserError( &globals, "Unable to open connection to server");
+            cursesUserError( &g_globals, "Unable to open connection to server");
             exit( 0 );
         }
     }
 #endif
 
-    server_do( globals.cGlobals.game.server );
+    server_do( g_globals.cGlobals.game.server );
 
-    globals.menuList = boardMenuList;
-    drawMenuFromList( &globals, boardMenuList );
-    board_draw( globals.cGlobals.game.board );
+    g_globals.menuList = g_boardMenuList;
+    drawMenuLargeOrSmall( &g_globals, g_boardMenuList ); 
+    board_draw( g_globals.cGlobals.game.board );
 
-    while ( !globals.timeToExit ) {
+    while ( !g_globals.timeToExit ) {
         int ch;
-        if ( blocking_gotEvent( &globals, &ch )
-             && (handleKeyEvent( &globals, globals.menuList, ch )
-                 || handleKeyEvent( &globals, sharedMenuList, ch )
-                 || passKeyToBoard( &globals, ch ) ) ) {
-            if ( globals.doDraw ) {
-                board_draw( globals.cGlobals.game.board );
-                globals.doDraw = XP_FALSE;
+        if ( blocking_gotEvent( &g_globals, &ch ) ) {
+            remapKey( &ch );
+            if (
+#ifdef CURSES_SMALL_SCREEN
+                 handleKeyEvent( &g_globals, g_rootMenuListShow, ch ) ||
+#endif
+                 handleKeyEvent( &g_globals, g_globals.menuList, ch )
+                 || handleKeyEvent( &g_globals, g_sharedMenuList, ch )
+                 || passKeyToBoard( &g_globals, ch ) ) {
+                if ( g_globals.doDraw ) {
+                    board_draw( g_globals.cGlobals.game.board );
+                    g_globals.doDraw = XP_FALSE;
+                }
             }
         }
     }
