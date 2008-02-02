@@ -26,14 +26,16 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/socket.h>
-#include <bluetooth/bluetooth.h>
-#if defined BT_USE_L2CAP
-# include <bluetooth/l2cap.h>
-#elif defined BT_USE_RFCOMM
-# include <bluetooth/rfcomm.h>
+#ifdef XWFEATURE_BLUETOOTH
+# include <bluetooth/bluetooth.h>
+# if defined BT_USE_L2CAP
+#  include <bluetooth/l2cap.h>
+# elif defined BT_USE_RFCOMM
+#  include <bluetooth/rfcomm.h>
+# endif
+# include <bluetooth/sdp.h>
+# include <bluetooth/sdp_lib.h>
 #endif
-#include <bluetooth/sdp.h>
-#include <bluetooth/sdp_lib.h>
 
 #include "linuxudp.h"
 #include "comms.h"
