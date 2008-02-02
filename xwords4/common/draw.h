@@ -45,7 +45,7 @@ typedef struct DrawScoreInfo {
     void* lscClosure;
     XP_UCHAR* name;
     XP_U16 playerNum;
-    XP_S16 score;
+    XP_S16 totalScore;
     XP_S16 nTilesLeft;		   /* < 0 means don't use */
     CellFlags flags;
     XP_Bool isTurn;

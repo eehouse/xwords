@@ -119,7 +119,7 @@ drawScoreBoard( BoardCtxt* board )
                 }
 #endif
                 dp->dsi.playerNum = i;
-                dp->dsi.score = scores[i];
+                dp->dsi.totalScore = scores[i];
                 dp->dsi.isTurn = (i == curTurn);
                 dp->dsi.name = emptyStringIfNull(lp->name);
                 dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
