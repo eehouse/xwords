@@ -41,7 +41,7 @@ typedef struct FormatInfo {
 } FormatInfo;
 
 
-void measureAskText( XP_UCHAR* question, FormatInfo* fip );
+void measureAskText( const XP_UCHAR* question, int maxWidth, FormatInfo* fip );
 
 void drawButtons( WINDOW* confWin, XP_U16 line, short spacePerButton, 
                   short numButtons, short curSelButton, char** button1 );

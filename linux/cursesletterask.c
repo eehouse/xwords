@@ -1,4 +1,5 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+
 /* 
  * Copyright 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -26,9 +27,8 @@
 #define MAX_TILE_BUTTON_WIDTH (sizeof(XP_UCHAR4) + 2)
 
 static void
-sizeTextsAsButtons( const XP_UCHAR4* XP_UNUSED(texts), XP_U16 maxLen, 
-                    XP_U16 nTiles, XP_U16* textsCols, XP_U16* textsRows, 
-                    XP_U16* textsOffsets )
+sizeTextsAsButtons( XP_U16 maxLen, XP_U16 nTiles, XP_U16* textsCols, 
+                    XP_U16* textsRows, XP_U16* textsOffsets )
 {
     XP_U16 nCols = maxLen / MAX_TILE_BUTTON_WIDTH;
     XP_U16 nRows = (nTiles + nCols - 1) / nCols;
@@ -69,16 +69,14 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
         textPtrs[i] = (char*)&texts[i];
     }
 
-    getmaxyx(globals->boardWin, y, x);
-    XP_DEBUGF( "getmaxyx=>x=%d,y=%d", x, y );
+    getmaxyx( globals->boardWin, y, x );
 
     numCtlButtons = VSIZE(ctlButtons);
 
-    measureAskText( query, &fi );
+    maxWidth = x - (PAD*2) - 2; /* 2 for two borders */
+    measureAskText( query, maxWidth, &fi );
 
-    sizeTextsAsButtons( texts, x, nTiles, 
-                        &textsCols, &textsRows, textsOffsets );
-
+    sizeTextsAsButtons( x, nTiles, &textsCols, &textsRows, textsOffsets );
 
     len = XP_MAX( fi.maxLen, textsCols * MAX_TILE_BUTTON_WIDTH );
     if ( len < MIN_WIDTH ) {
@@ -86,7 +84,6 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
     }
 
     rows = fi.nLines + textsRows + 1;
-    maxWidth = x - (PAD*2) - 2; /* 2 for two borders */
     XP_DEBUGF( "set maxWidth=%d", maxWidth );
 
 
@@ -103,6 +100,7 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
     XP_ASSERT( y >= nLines );
     confWin = newwin( nLines, len,//+(PAD*2), 
                       (y/2) - (nLines/2), (x-len-2)/2 );
+    keypad( confWin, TRUE );
     XP_ASSERT( !!confWin );
 
     wclear( confWin );
@@ -150,18 +148,35 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
             curSelButton = newSelButton;
         }
 
-        ch = fgetc( stdin );
+        ch = wgetch( confWin );
+        int incr = 0;
         switch ( ch ) {
         case '\t':
-            newSelButton = (curSelButton+1) % (numCtlButtons + nTiles);
-            if ( newSelButton < nTiles ) {
-                result = newSelButton;
-            }
+        case 'R':
+        case KEY_RIGHT:
+        case 525:
+            incr = 1;
             break;
+        case 'L':
+        case KEY_LEFT:
+        case 524:
+            incr = -1;
+            break;
+
+        case KEY_DOWN:
+        case 526:
+            incr = textsCols;
+            break;
+        case KEY_UP:
+        case 523:
+            incr = -textsCols;
+            break;
+
         case EOF:
         case 4:			/* C-d */
         case 27:		/* ESC */
             curSelButton = 0;	/* should be the cancel case */
+        case KEY_B2:                /* "center of keypad" */
         case '\r':
         case '\n':
             dismissed = XP_TRUE;
@@ -178,11 +193,17 @@ curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
                     break;
                 }
             }
+        }
 
+        if ( incr != 0 ) {
+            newSelButton = curSelButton + incr;
+            if ( newSelButton < 0 ) {
+                newSelButton = 0;
+            } else if ( newSelButton >= numCtlButtons + nTiles ) {
+                newSelButton = numCtlButtons + nTiles - 1;
+            }
 
         }
-        XP_DEBUGF( "newSelButton=%d", newSelButton );
-
     }
     delwin( confWin );
 

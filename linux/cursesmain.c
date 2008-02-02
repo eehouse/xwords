@@ -106,14 +106,16 @@ static XP_Bool handleToggleValues( CursesAppGlobals* globals );
 static XP_Bool handleBackspace( CursesAppGlobals* globals );
 static XP_Bool handleUndo( CursesAppGlobals* globals );
 static XP_Bool handleReplace( CursesAppGlobals* globals );
-static XP_Bool handleRootKeyShow( CursesAppGlobals* globals );
-static XP_Bool handleRootKeyHide( CursesAppGlobals* globals );
 static XP_Bool handleJuggle( CursesAppGlobals* globals );
 static XP_Bool handleHide( CursesAppGlobals* globals );
 static XP_Bool handleAltLeft( CursesAppGlobals* globals );
 static XP_Bool handleAltRight( CursesAppGlobals* globals );
 static XP_Bool handleAltUp( CursesAppGlobals* globals );
 static XP_Bool handleAltDown( CursesAppGlobals* globals );
+#ifdef CURSES_SMALL_SCREEN
+static XP_Bool handleRootKeyShow( CursesAppGlobals* globals );
+static XP_Bool handleRootKeyHide( CursesAppGlobals* globals );
+#endif
 
 
 MenuList g_sharedMenuList[] = {
@@ -226,8 +228,9 @@ curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi),
     XP_S16 index;
     char* playerName = globals->cGlobals.params->gi.players[playerNum].name;
 
-    sprintf( query, "Pick tile for %s! (Tab or type letter to select\n"
-             "then hit <cr>.)", playerName );
+    snprintf( query, sizeof(query), 
+              "Pick tile for %s! (Tab or type letter to select "
+              "then hit <cr>.)", playerName );
 
     index = curses_askLetter( globals, query, texts, nTiles );
     return index;

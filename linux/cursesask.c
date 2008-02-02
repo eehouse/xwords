@@ -45,13 +45,13 @@ cursesask( CursesAppGlobals* globals, char* question, short numButtons,
     FormatInfo fi;
     int len;
 
-    measureAskText( question, &fi );
+    getmaxyx(globals->boardWin, y, x);
+
+    measureAskText( question, x-2, &fi );
     len = fi.maxLen;
     if ( len < MIN_WIDTH ) {
         len = MIN_WIDTH;
     }
-
-    getmaxyx(globals->boardWin, y, x);
 
     rows = fi.nLines;
     maxWidth = x - (PAD*2) - 2; /* 2 for two borders */
@@ -64,7 +64,7 @@ cursesask( CursesAppGlobals* globals, char* question, short numButtons,
     nLines = ASK_HEIGHT + rows - 1;
     confWin = newwin( nLines, len+(PAD*2), 
                       (y/2) - (nLines/2), (x-len-2)/2 );
-
+    keypad( confWin, TRUE );
     wclear( confWin );
     box( confWin, '|', '-');
 
@@ -82,19 +82,24 @@ cursesask( CursesAppGlobals* globals, char* question, short numButtons,
                          curSelButton=newSelButton, &button1 );
         }
 
-        ch = fgetc( stdin );
+        ch = wgetch( confWin );
         switch ( ch ) {
-        case '\t':
         case 'L':
+        case KEY_RIGHT:
+        case 525:
             newSelButton = (curSelButton+1) % numButtons;
             break;
         case 'H':
+        case '\t':
+        case KEY_LEFT:
+        case 524:
             newSelButton = (numButtons+curSelButton-1) % numButtons;
             break;
         case EOF:
         case 4:			/* C-d */
         case 27:		/* ESC */
             curSelButton = 0;	/* should be the cancel case */
+        case KEY_B2:                /* "center of keypad" */
         case '\r':
         case '\n':
             dismissed = XP_TRUE;
