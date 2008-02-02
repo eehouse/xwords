@@ -22,39 +22,54 @@
 #include "cursesdlgutil.h"
 
 void
-measureAskText( XP_UCHAR* question, FormatInfo* fip )
+measureAskText( const XP_UCHAR* question, int width, FormatInfo* fip )
 {
-    XP_U16 i;
-    XP_U16 maxWidth = 0;
+    int i;
+    XP_U16 maxLen = 0;
     XP_Bool done = XP_FALSE;
 
+    int len = strlen(question);
+    const char* end = question + len;
+    const char* cur = question;
     for ( i = 0; i < MAX_LINES && !done; ++i ) {
-        XP_UCHAR* next = strstr( question, XP_CR );
-        XP_U16 thisWidth;
+        len = strlen(cur);
 
-        fip->line[i].substr = question;
-
-        if ( !!next ) {
-            thisWidth = next - question;
-        } else {
-            thisWidth = strlen(question);
-            done = XP_TRUE;
+        if ( len == 0 ) {
+            assert( i > 0 );
+            fip->nLines = i;
+            fip->maxLen = maxLen;
+            break;
         }
-        fip->line[i].len = thisWidth;
 
-        if ( thisWidth > maxWidth ) {
-            maxWidth = thisWidth;
+        fip->line[i].substr = cur;
+
+        /* Now we need to break the line if 1) there's a <cr>; or 2) it's too
+           long. */
+        const char* cr = strstr( cur, "\n" );
+        if ( NULL != cr && (cr - cur) < width ) {
+            len = cr - cur;
+        } else if ( len > width ) {
+            char* s = cur + width;
+            while ( *s != ' ' && s > cur ) {
+                --s;
+            }
+            assert( s > cur );  /* deal with this!! */
+            len = s - cur;
         }
-        
-        question = next + strlen(XP_CR);
+        fip->line[i].len = len;
+        if ( maxLen < len ) {
+            maxLen = len;
+        }
+
+        cur += len + 1;         /* skip the <cr>/space */
+        if ( cur > end ) {
+            cur = end;
+        }
     }
-
-    fip->nLines = i;
-    fip->maxLen = maxWidth;
 } /* measureAskText */
 
 void
-drawButtons( WINDOW* confWin, XP_U16 line, short spacePerButton, 
+drawButtons( WINDOW* win, XP_U16 line, short spacePerButton, 
              short numButtons, short curSelButton, char** button1 )
 {
     short i;
@@ -62,16 +77,16 @@ drawButtons( WINDOW* confWin, XP_U16 line, short spacePerButton,
         short len = strlen( *button1 );
 
         if ( i == curSelButton ) {
-            wstandout( confWin );
+            wstandout( win );
         }
-        mvwprintw( confWin, line, ((i+1) * spacePerButton) - (len/2),
+        mvwprintw( win, line, ((i+1) * spacePerButton) - (len/2),
                    "[%s]", *button1 );
         if ( i == curSelButton ) {
-            wstandend( confWin );
+            wstandend( win );
         }
         ++button1;
     }
-    wrefresh( confWin );
+    wrefresh( win );
 } /* drawButtons */
 
 #endif
