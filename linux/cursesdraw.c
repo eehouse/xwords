@@ -176,7 +176,7 @@ formatScoreText( XP_UCHAR* buf, const DrawScoreInfo* dsi )
         ++len;
         strcat( buf, " " );
     }
-    len += sprintf( buf + len, "%.3d", dsi->score );
+    len += sprintf( buf + len, "%.3d", dsi->totalScore );
 
     if ( (*dsi->lsc)( dsi->lscClosure, dsi->playerNum, recbuf, &recBufLen ) ) {
         while ( len < RECENT_COL ) {

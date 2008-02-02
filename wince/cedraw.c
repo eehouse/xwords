@@ -671,7 +671,7 @@ ceWidthAndText( CEDrawCtx* dctx, const DrawScoreInfo* dsi,
 
     strcpy( buf, bullet );
 
-    sprintf( tmp, "%d", dsi->score );
+    sprintf( tmp, "%d", dsi->totalScore );
     strcat( buf, tmp );
 
     if ( dsi->nTilesLeft >= 0 ) {

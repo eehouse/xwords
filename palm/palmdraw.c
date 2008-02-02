@@ -1068,7 +1068,8 @@ palmFormatScore( char* buf, const DrawScoreInfo* dsi, XP_Bool vertical )
         *remPart = '\0';
     }
 
-    (void)StrPrintF( buf, "%s%d%s%s", borders, dsi->score, remPart, borders );
+    (void)StrPrintF( buf, "%s%d%s%s", borders, dsi->totalScore, 
+                     remPart, borders );
 } /* palmFormatScore */
 
 static void

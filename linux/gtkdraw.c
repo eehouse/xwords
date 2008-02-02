@@ -755,7 +755,7 @@ static void
 scoreWidthAndText( GtkDrawCtx* XP_UNUSED(dctx), PangoLayout* layout, char* buf,
                    const DrawScoreInfo* dsi, XP_U16* widthP, XP_U16* heightP )
 {
-    XP_S16 score = dsi->score;
+    XP_S16 score = dsi->totalScore;
     XP_U16 nTilesLeft = dsi->nTilesLeft;
     XP_Bool isTurn = dsi->isTurn;
     char* borders = "";
