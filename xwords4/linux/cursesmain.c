@@ -1062,6 +1062,7 @@ drawMenuLargeOrSmall( CursesAppGlobals* globals, const MenuList* menuList )
 #else
     MenuList* lists[] = { g_sharedMenuList, menuList, NULL };
 #endif
+    wclear( globals->menuWin );
     drawMenuFromList( globals->menuWin, lists, 0, 0 );
     wrefresh( globals->menuWin );
 }
@@ -1244,8 +1245,8 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     int remWidth = width;
 
     board_setPos( board, BOARD_OFFSET, BOARD_OFFSET, XP_FALSE );
-    cellWidth = CURSES_CELL_HT;
-    cellHt = CURSES_CELL_WIDTH;
+    cellWidth = CURSES_CELL_WIDTH;
+    cellHt = CURSES_CELL_HT;
     board_setScale( board, cellWidth, cellHt );
     scoreLeft = (cellWidth * MAX_COLS);// + BOARD_SCORE_PADDING;
     remWidth -= cellWidth * MAX_COLS;
