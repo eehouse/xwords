@@ -1713,9 +1713,9 @@ board_requestHint( BoardCtxt* board,
 static XP_Bool
 drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
 {
+    XP_Bool success = XP_TRUE;
     XP_Rect cellRect;
     Tile tile;
-    XP_UCHAR ch[4];
     XP_Bool isBlank, isEmpty, recent, pending = XP_FALSE;
     XWBonusType bonus;
     ModelCtxt* model = board->model;
@@ -1738,6 +1738,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
         /* This 'while' is only here so I can 'break' below */
         while ( board->trayVisState == TRAY_HIDDEN ||
                 !rectContainsRect( &board->trayBounds, &cellRect ) ) {
+            XP_UCHAR ch[4] = {'\0'};
             XP_S16 owner = -1;
             XP_Bool invert = XP_FALSE;
             XP_Bitmap bitmap = NULL;
@@ -1749,7 +1750,6 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                                       selPlayer, &tile, &isBlank,
                                       &pending, &recent );
 
-            *(unsigned long*)&ch[0] = 0L;
             if ( isEmpty ) {
                 isBlank = XP_FALSE;
             } else if ( isBlank && skipBlanks ) {
@@ -1771,7 +1771,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                     XP_ASSERT( !!bitmap );
                     textP = (XP_UCHAR*)NULL;
                 } else {
-                    dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
+                    (void)dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
                 }
             }
             bonus = util_getSquareBonus( board->util, model, col, row );
@@ -1793,12 +1793,12 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             }
 #endif
 
-            return draw_drawCell( board->draw, &cellRect, textP, bitmap, 
-                                  tile, owner, bonus, hintAtts, flags );
+            success = draw_drawCell( board->draw, &cellRect, textP, bitmap, 
+                                     tile, owner, bonus, hintAtts, flags );
+            break;
         }
     }
-
-    return XP_TRUE;
+    return success;
 } /* drawCell */
 
 static void
