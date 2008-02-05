@@ -85,11 +85,11 @@ BEGIN
 
         POPUP "Hint"
         BEGIN
+            MENUITEM "Next hint (&m)",          ID_MOVE_NEXTHINT
             MENUITEM "H&int",                   ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
             MENUITEM "Limited hint (&c)",       ID_MOVE_LIMITEDHINT
 #endif
-            MENUITEM "Next hint (&m)",          ID_MOVE_NEXTHINT
         END
 
         POPUP "&File"
