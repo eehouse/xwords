@@ -27,13 +27,17 @@ MINGW_INC_PATH ?= /usr/i586-mingw32msvc/include
 # This requires custom Debian pocketpc-sdk package at the moment
 HAVE_COMMCTRL = 1
 
+# arm-wince-mingw32ce for cegcc, arm-wince-pe for pocketpc-gcc
+#ARCH = arm-wince-pe
+ARCH = arm-wince-mingw32ce
 ifeq ($(TARGET_OS),wince)
 # BLUETOOTH = -DXWFEATURE_BLUETOOTH
 # RELAY = -DXWFEATURE_RELAY -DCOMMS_HEARTBEAT
-CC = arm-wince-pe-gcc
-WINDRES = arm-wince-pe-windres
-STRIP = arm-wince-pe-strip
-CELIBS = -L/usr/arm-wince-pe/lib
+CC = ${ARCH}-gcc
+WINDRES = ${ARCH}-windres
+STRIP = ${ARCH}-strip
+#CELIBS = -L/usr/arm-wince-pe/lib
+CELIBS = -L${CEOPT_ROOT}/opt/${ARCH}/lib/ -lws2
 TARGET_OS_DEF = -DTARGET_OS_WINCE
 STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 CFLAGS += -D_WIN32_WCE=400 -DUNDER_CE -DMY_COLOR_SEL \
