@@ -1692,9 +1692,10 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
     mbi.cbSize = sizeof(mbi);
     mbi.hwndParent = hwnd;
-    mbi.nToolBarId = IDM_MENU;
+    mbi.nToolBarId = IDM_MAIN_MENUBAR;
     mbi.hInstRes   = hInst;
-    mbi.dwFlags    = SHCMBF_HMENU;
+    /* Don't set dwFlags if you want the Wince5 two-button softkey menu. */
+/*     mbi.dwFlags    = SHCMBF_HMENU; */
 
     //mbi.dwFlags = SHCMBF_HIDESIPBUTTON; /* eeh added.  Why??? */
 
@@ -2066,7 +2067,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = ceHandleHintRequest( globals );
                 break;
 
-            case IDM_FILE_EXIT:
+            case ID_FILE_EXIT:
                 if ( ceConfirmAndSave( globals ) ) { /* user may cancel... */
                     DestroyWindow(hWnd);
                 }

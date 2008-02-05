@@ -17,6 +17,7 @@
 #define IDD_OPTIONSDLG                  117
 #define IDD_COLORSDLG                   118
 #define IDD_COLOREDITDLG                119
+#define IDM_MAIN_MENUBAR                120
 #define IDB_ORIGIN                      124
 #ifdef XWFEATURE_SEARCHLIMIT
 # define IDD_ASKHINTLIMTS               125
@@ -150,7 +151,7 @@
 
 
 
-#define IDM_FILE_EXIT                   40002
+#define ID_FILE_EXIT                    40002
 #define IDM_HELP_ABOUT                  40003
 #define ID_FILE_ABOUT                   40004
 #define ID_GAME_GAMEINFO                40005
@@ -185,10 +186,11 @@
 #define IDS_FILE                        40002
 #define IDS_GAME                        40003
 #define IDS_MOVE                        40004
-#define IDS_MENU                        40006
+#define IDS_MENU                        40005
+#define IDS_DONE                        40006
 // Don't use the numbers after 4005: one string needs not to be there
 // to stop the progression in cedict.c 
-#define IDS_DICTDIRS                    40005
+#define IDS_DICTDIRS                    40007
 
 // Next default values for new objects
 // 

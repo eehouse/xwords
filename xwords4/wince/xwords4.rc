@@ -70,7 +70,9 @@ IDM_MENU MENU DISCARDABLE
 BEGIN
     POPUP "Menu"
     BEGIN
+#ifndef _WIN32_WCE
         MENUITEM "Turn &done",                  ID_MOVE_TURNDONE
+#endif
         MENUITEM "&Juggle",                     ID_MOVE_JUGGLE
         MENUITEM "Fli&p",                       ID_MOVE_FLIP
         MENUITEM "&Trade",                      ID_MOVE_TRADE
@@ -102,7 +104,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&About",                  ID_FILE_ABOUT
             MENUITEM SEPARATOR
-            MENUITEM "E&xit",                   IDM_FILE_EXIT
+            MENUITEM "E&xit",                   ID_FILE_EXIT
         END
 
         POPUP "&Game"
@@ -120,6 +122,18 @@ BEGIN
     END
 END
 
+// soft key bar described at
+// http://msdn2.microsoft.com/en-us/library/aa457781.aspx
+IDM_MAIN_MENUBAR RCDATA
+BEGIN
+    IDM_MENU, 2,
+    I_IMAGENONE, ID_MOVE_TURNDONE, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_DONE, 0, 
+        NOMENU,
+    I_IMAGENONE, IDM_MENU, TBSTATE_ENABLED, 
+        TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE, IDS_MENU, 0, 
+        0                       // Use the 0th popup above -- the only one
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -651,11 +665,11 @@ END
 // Accelerator
 //
 
-IDC_XWORDS4 ACCELERATORS DISCARDABLE 
-BEGIN
-    "/",            IDM_HELP_ABOUT,         ASCII,  ALT, NOINVERT
-    VK_F4,          IDM_FILE_EXIT,          VIRTKEY, ALT, NOINVERT
-END
+/* IDC_XWORDS4 ACCELERATORS DISCARDABLE  */
+/* BEGIN */
+/*     "/",            IDM_HELP_ABOUT,         ASCII,  ALT, NOINVERT */
+/*     VK_F4,          ID_FILE_EXIT,          VIRTKEY, ALT, NOINVERT */
+/* END */
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -724,6 +738,8 @@ BEGIN
     IDS_FILE                "File"
     IDS_GAME                "Game"
     IDS_MOVE                "Move"
+    IDS_MENU                "Menu"
+    IDS_DONE                "Done"
 #ifdef _WIN32_WCE
     IDS_DICTDIRS            "\\Program Files\\Crosswords"
     IDS_DICTDIRS+1          "\\SD Card\\Crosswords"
