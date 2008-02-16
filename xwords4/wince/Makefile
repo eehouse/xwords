@@ -22,26 +22,42 @@ PLATFORM = wince
 TARGET_OS ?= win32
 #TARGET_OS = wince
 
-MINGW_INC_PATH ?= /usr/i586-mingw32msvc/include
+# The preferred build environment for wince is now cegcc.  Debian's
+# pocketpc-sdk works in combination with the mingw projects headers,
+# but not without effort.  cegcc has its own version of those headers
+# that it refers to without need for a -I flag.  They work well.  But
+# I'd like to retain the ability to build using pocketpc-sdk if
+# possible.
+
+# USE_RAW_MINGW = -DUSE_RAW_MINGW
+# arm-wince-mingw32ce for cegcc, arm-wince-pe for pocketpc-gcc
+ifdef USE_RAW_MINGW
+MINGW_INC_PATH ?= -I/usr/i586-mingw32msvc/include
+CE_ARCH = arm-wince-pe
+else
+MINGW_INC_PATH = 				#in case it's in env
+CE_ARCH = arm-wince-mingw32ce
+endif
+CEOPT_ROOT ?= /opt
 
 # This requires custom Debian pocketpc-sdk package at the moment
 HAVE_COMMCTRL = 1
 
-# arm-wince-mingw32ce for cegcc, arm-wince-pe for pocketpc-gcc
-#ARCH = arm-wince-pe
-ARCH = arm-wince-mingw32ce
 ifeq ($(TARGET_OS),wince)
 # BLUETOOTH = -DXWFEATURE_BLUETOOTH
 # RELAY = -DXWFEATURE_RELAY -DCOMMS_HEARTBEAT
-CC = ${ARCH}-gcc
-WINDRES = ${ARCH}-windres
-STRIP = ${ARCH}-strip
-#CELIBS = -L/usr/arm-wince-pe/lib
-CELIBS = -L${CEOPT_ROOT}/opt/${ARCH}/lib/ -lws2
+CC = ${CE_ARCH}-gcc
+WINDRES = ${CE_ARCH}-windres
+STRIP = ${CE_ARCH}-strip
+ifdef USE_RAW_MINGW
+CELIBS = -L/usr/arm-wince-pe/lib
+else
+CELIBS = -L${CEOPT_ROOT}/${CE_ARCH}/lib/ -lws2
+endif
 TARGET_OS_DEF = -DTARGET_OS_WINCE
 STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 CFLAGS += -D_WIN32_WCE=400 -DUNDER_CE -DMY_COLOR_SEL \
-	$(STANDALONE) -DDRAW_LINK_DIRECT \
+	$(STANDALONE) $(USE_RAW_MINGW) -DDRAW_LINK_DIRECT \
 	-fdollars-in-identifiers -D__W32API_USE_DLLIMPORT__
 RESFLAGS += -DMY_COLOR_SEL -D_WIN32_WCE=400 
 LFLAGS += -Wl,--major-subsystem-version,4,--minor-subsystem-version,20
@@ -65,7 +81,7 @@ CFLAGS += -DCANT_DO_CMDBAR -DDRAW_LINK_DIRECT
 endif
 endif
 
-CFLAGS += -DARM -I$(MINGW_INC_PATH) -I./ -I../common -I../relay
+CFLAGS += -DARM -I./ -I../common -I../relay
 
 CFLAGS += -Wall -Wunused-parameter
 
@@ -110,6 +126,7 @@ WINCESRC = \
 	cestrbx.c \
 	cedraw.c \
 	debhacks.c \
+	cedebug.c \
 
 WINCEOBJS = $(patsubst %.c,%.o,$(addprefix $(OBJDIR)/,$(WINCESRC)))
 
@@ -159,7 +176,7 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
-	$(WINDRES) -v -I$(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
+	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
 
 CAB: $(TARGET)
 	$(STRIP) $<

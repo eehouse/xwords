@@ -24,6 +24,8 @@
 #ifndef _DEBHACKS_H_
 #define _DEBHACKS_H_
 
+#if defined USE_RAW_MINGW
+
 #ifdef USE_DEB_HACKS
 
 #define DH(func) debhack_##func
@@ -62,5 +64,7 @@ BOOL DH(ResetEvent)(HANDLE);
 
 /* got this somewhere else via google */
 #define SHCMBF_HMENU 0x0010
+
+#endif /* USE_RAW_MINGW */
 
 #endif
