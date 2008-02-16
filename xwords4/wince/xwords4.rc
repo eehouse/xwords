@@ -122,6 +122,7 @@ BEGIN
     END
 END
 
+#ifdef _WIN32_WCE
 // soft key bar described at
 // http://msdn2.microsoft.com/en-us/library/aa457781.aspx
 IDM_MAIN_MENUBAR RCDATA
@@ -134,6 +135,18 @@ BEGIN
         TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE, IDS_MENU, 0, 
         0                       // Use the 0th popup above -- the only one
 END
+
+IDM_OKCANCEL_MENUBAR RCDATA
+BEGIN
+    0, 2,
+    I_IMAGENONE, IDCANCEL, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_CANCEL, 0, 
+        NOMENU,
+    I_IMAGENONE, IDOK, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_OK, 0, 
+        NOMENU
+END
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -735,9 +748,6 @@ BEGIN
     IDS_APP_TITLE           "Crosswords"
     IDC_XWORDS4             "XWORDS4"
 #endif
-    IDS_FILE                "File"
-    IDS_GAME                "Game"
-    IDS_MOVE                "Move"
     IDS_MENU                "Menu"
     IDS_DONE                "Done"
 #ifdef _WIN32_WCE
