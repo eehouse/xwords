@@ -18,13 +18,13 @@
 
 ifeq ($(MEMDEBUG),TRUE)
 DEFINES = -DMEM_DEBUG -DDEBUG 
-CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter
+CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror
 CFLAGS += -DDEBUG_TS
 PLATFORM = obj_linux_memdbg
 else
 DEFINES =
 PLATFORM = obj_linux_rel
-CFLAGS += -Os
+CFLAGS += -Os -Werror
 endif
 
 DO_CURSES = -DPLATFORM_NCURSES
