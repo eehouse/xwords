@@ -597,7 +597,9 @@ board_commitTurn( BoardCtxt* board )
                 /* Hide the tray so no peeking.  Leave it hidden even if user
                    cancels as otherwise another player could get around
                    passwords and peek at tiles. */
-                result = board_hideTray( board );
+                if ( gi_countLocalHumans( board->gi ) > 1 ) {
+                    result = board_hideTray( board );
+                }
 
                 if ( util_userQuery( board->util, QUERY_COMMIT_TURN,
                                      stream ) ) {
