@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include "cehntlim.h"
+#include "ceutil.h"
 
 static void
 initComboBox( HWND hDlg, XP_U16 id, XP_U16 startVal )
@@ -61,6 +62,9 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         hState = (HintLimitsState*)lParam;
         globals = hState->globals;
+
+        ceStackButtonsRight( globals, hDlg );
+
         return TRUE;
     } else {
         hState = (HintLimitsState*)GetWindowLong( hDlg, GWL_USERDATA );

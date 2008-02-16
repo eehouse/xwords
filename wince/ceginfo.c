@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*- */
 /* 
- * Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -489,19 +489,13 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
     GameInfoState* giState;
 
-/* #ifdef DEBUG */
-/*     { */
-/*         char buf[64]; */
-/*         messageToBuf( message, buf, sizeof(buf) ); */
-/*         XP_LOGF( "%s: %s", __func__, buf ); */
-/*     } */
-/* #endif */
-
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         giState = (GameInfoState*)lParam;
         giState->hDlg = hDlg;
         globals = giState->globals;
+
+        ceStackButtonsRight( globals, hDlg );
 
         giState->newGameCtx = newg_make( MPPARM(globals->mpool)
                                          giState->isNewGame,
@@ -520,7 +514,6 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( giState->isNewGame ) {
             (void)SetWindowText( hDlg, L"New game" );
         }
-        ceStackButtonsRight( globals, hDlg );
         return TRUE;
 
     } else {
