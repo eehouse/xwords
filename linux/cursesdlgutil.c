@@ -49,7 +49,7 @@ measureAskText( const XP_UCHAR* question, int width, FormatInfo* fip )
         if ( NULL != cr && (cr - cur) < width ) {
             len = cr - cur;
         } else if ( len > width ) {
-            char* s = cur + width;
+            const char* s = cur + width;
             while ( *s != ' ' && s > cur ) {
                 --s;
             }

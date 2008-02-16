@@ -118,7 +118,7 @@ static XP_Bool handleRootKeyHide( CursesAppGlobals* globals );
 #endif
 
 
-MenuList g_sharedMenuList[] = {
+const MenuList g_sharedMenuList[] = {
     { handleQuit, "Quit", "Q", 'Q' },
     { handleRight, "Tab right", "<tab>", '\t' },
     { handleSpace, "Raise focus", "<spc>", ' ' },
@@ -143,7 +143,7 @@ MenuList g_sharedMenuList[] = {
     { NULL, NULL, NULL, '\0'}
 };
 
-MenuList g_boardMenuList[] = {
+const MenuList g_boardMenuList[] = {
     { handleAltLeft,  "Force left", "{", '{' },
     { handleAltRight, "Force right", "}", '}' },
     { handleAltUp,    "Force up", "_", '_' },
@@ -151,13 +151,13 @@ MenuList g_boardMenuList[] = {
     { NULL, NULL, NULL, '\0'}
 };
 
-MenuList g_scoreMenuList[] = {
+const MenuList g_scoreMenuList[] = {
 #ifdef KEYBOARD_NAV
 #endif
     { NULL, NULL, NULL, '\0'}
 };
 
-MenuList g_trayMenuList[] = {
+const MenuList g_trayMenuList[] = {
     { handleJuggle, "Juggle", "G", 'G' },
     { handleHide, "[un]hIde", "I", 'I' },
     { handleAltLeft, "Divider left", "{", '{' },
@@ -167,12 +167,12 @@ MenuList g_trayMenuList[] = {
 };
 
 #ifdef CURSES_SMALL_SCREEN
-MenuList g_rootMenuListShow[] = {
+const MenuList g_rootMenuListShow[] = {
     { handleRootKeyShow,  "Press . for menu", "", '.' },
     { NULL, NULL, NULL, '\0'}
 };
 
-MenuList g_rootMenuListHide[] = {
+const MenuList g_rootMenuListHide[] = {
     { handleRootKeyHide,  "Clear menu", ".", '.' },
     { NULL, NULL, NULL, '\0'}
 };
@@ -188,11 +188,11 @@ static XP_Bool handleRight( CursesAppGlobals* globals );
 static XP_Bool handleUp( CursesAppGlobals* globals );
 static XP_Bool handleDown( CursesAppGlobals* globals );
 static XP_Bool handleFocusKey( CursesAppGlobals* globals, XP_Key key );
-static void countMenuLines( MenuList** menuLists, int maxX, int padding,
+static void countMenuLines( const MenuList** menuLists, int maxX, int padding,
                             int* nLinesP, int* nColsP );
-static void drawMenuFromList( WINDOW* win, MenuList** menuLists,
+static void drawMenuFromList( WINDOW* win, const MenuList** menuLists,
                               int nLines, int padding );
-static CursesMenuHandler getHandlerForKey( MenuList* list, char ch );
+static CursesMenuHandler getHandlerForKey( const MenuList* list, char ch );
 
 
 #ifdef MEM_DEBUG
@@ -697,7 +697,7 @@ fmtMenuItem( const MenuList* item, char* buf, int maxLen )
 
 
 static void
-countMenuLines( MenuList** menuLists, int maxX, int padding,
+countMenuLines( const MenuList** menuLists, int maxX, int padding,
                 int* nLinesP, int* nColsP )
 {
     int nCols = 0;
@@ -719,7 +719,7 @@ countMenuLines( MenuList** menuLists, int maxX, int padding,
         nCols = 0;
 
         for ( i = 0; !tooFewLines && (NULL != menuLists[i]); ++i ) {
-            MenuList* entry;
+            const MenuList* entry;
             for ( entry = menuLists[i]; !tooFewLines && !!entry->handler; 
                   ++entry ) {
                 int width;
@@ -758,7 +758,7 @@ countMenuLines( MenuList** menuLists, int maxX, int padding,
 } /* countMenuLines */
 
 static void
-drawMenuFromList( WINDOW* win, MenuList** menuLists,
+drawMenuFromList( WINDOW* win, const MenuList** menuLists,
                   int nLines, int padding )
 {
     short line = 0, col, i;
@@ -774,7 +774,7 @@ drawMenuFromList( WINDOW* win, MenuList** menuLists,
     col = 0;
 
     for ( i = 0; NULL != menuLists[i]; ++i ) {
-        MenuList* entry;
+        const MenuList* entry;
         for ( entry = menuLists[i]; !!entry->handler; ++entry ) {
             char buf[32];
 
@@ -1049,21 +1049,21 @@ remapKey( int* kp )
         key = 'L';
         break;
     default:
-        if ( key > 0xFF ) {
+        if ( key > 0x7F ) {
             XP_LOGF( "%s(%d): no mapping", __func__, key );
         }
         break;
     }
     *kp = key;
-}
+} /* remapKey */
 
 static void
 drawMenuLargeOrSmall( CursesAppGlobals* globals, const MenuList* menuList )
 {
 #ifdef CURSES_SMALL_SCREEN
-    MenuList* lists[] = { g_rootMenuListShow, NULL };
+    const MenuList* lists[] = { g_rootMenuListShow, NULL };
 #else
-    MenuList* lists[] = { g_sharedMenuList, menuList, NULL };
+    const MenuList* lists[] = { g_sharedMenuList, menuList, NULL };
 #endif
     wclear( globals->menuWin );
     drawMenuFromList( globals->menuWin, lists, 0, 0 );
@@ -1204,7 +1204,7 @@ sendOnClose( XWStreamCtxt* stream, void* closure )
 #endif
 
 static CursesMenuHandler
-getHandlerForKey( MenuList* list, char ch )
+getHandlerForKey( const MenuList* list, char ch )
 {
     CursesMenuHandler handler = NULL;
     while ( list->handler != NULL ) {
@@ -1218,7 +1218,7 @@ getHandlerForKey( MenuList* list, char ch )
 }
 
 static XP_Bool
-handleKeyEvent( CursesAppGlobals* globals, MenuList* list, char ch )
+handleKeyEvent( CursesAppGlobals* globals, const MenuList* list, char ch )
 {
     CursesMenuHandler handler = getHandlerForKey( list, ch );
     XP_Bool result = XP_FALSE;
