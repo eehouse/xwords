@@ -46,6 +46,7 @@
 #include "ceir.h"
 #include "ceclrsel.h"
 #include "cehntlim.h"
+#include "cedebug.h"
 #include "LocalizedStrIncludes.h"
 #include "debhacks.h"
 
@@ -162,6 +163,10 @@ static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static void messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                               wchar_t* title );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
+#ifdef _WIN32_WCE
+static void sizeIfFullscreen( CEAppGlobals* globals );
+#endif
+
 
 #if defined DEBUG && ! defined _WIN32_WCE
 /* Very basic cmdline args meant at first to let me vary the size of the
@@ -230,13 +235,13 @@ parseCmdLine( const char* cmdline )
 ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
 BOOL				InitInstance	(HINSTANCE, int);
 LRESULT CALLBACK	WndProc			(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK	About			(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	ceAbout			(HWND, UINT, WPARAM, LPARAM);
 
 int WINAPI
 WinMain(	HINSTANCE hInstance,
             HINSTANCE XP_UNUSED(hPrevInstance),
 #if defined TARGET_OS_WINCE
-            LPWSTR    lpCmdLine,
+            LPWSTR    XP_UNUSED_CE(lpCmdLine),
 #elif defined TARGET_OS_WIN32
             LPSTR    XP_UNUSED_DBG(lpCmdLine),
 #endif
@@ -718,6 +723,9 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 
     XP_ASSERT( !!globals->game.board );
+#ifdef _WIN32_WCE
+    sizeIfFullscreen( globals );
+#endif
     (void)cePositionBoard( globals );
 
     board_invalAll( globals->game.board );
@@ -982,6 +990,7 @@ ceInitPrefs( CEAppGlobals* globals )
 {
     globals->appPrefs.versionFlags = CUR_CE_PREFS_FLAGS;
     globals->appPrefs.showColors = XP_TRUE;
+    globals->appPrefs.fullScreen = XP_FALSE;
 
     globals->appPrefs.cp.showBoardArrow = XP_TRUE;
     globals->appPrefs.cp.showRobotScores = XP_FALSE;
@@ -1022,6 +1031,41 @@ doDictsMovedAlert( CEAppGlobals* globals )
     }
 }
 #endif
+
+#ifdef _WIN32_WCE
+static void
+getOSInfo( CEAppGlobals* globals )
+{
+    LOG_FUNC();
+    TCHAR buf[128];
+
+    globals->winceVersion = WINCE_UNKNOWN;
+    // Check we are running on a Pocket PC
+
+    if ( SystemParametersInfo( SPI_GETPLATFORMTYPE, sizeof(buf), buf, FALSE ) ) {
+            OSVERSIONINFO ver = {0};
+            if (GetVersionEx( &ver )) {
+                XP_LOGF( "version = %d.%d", ver.dwMajorVersion, ver.dwMinorVersion );
+            }
+
+        if ( lstrcmp( buf, L"PocketPC") == 0 ) {
+            // We are on a Pocket PC, so check the OS version,
+            // Pocket PC 2003 used WinCE 4.2
+
+            if ( ver.dwMajorVersion <= 4 ) {
+                globals->winceVersion = WINCE_PPC_2003;
+            } else if ( ver.dwMajorVersion > 4 ) {
+                globals->winceVersion = WINCE_PPC_2005;
+            }
+        } else {
+            XP_LOGW( "unknown OS type", buf );
+        }
+    }
+    LOG_RETURN_VOID();
+}
+#else
+#define getOSInfo( g )
+#endif 
 
 //
 //  FUNCTION: InitInstance(HANDLE, int)
@@ -1084,6 +1128,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_DEBUGF( "globals created: 0x%lx", globals );
     XP_MEMSET( globals, 0, sizeof(*globals) );
     MPASSIGN( globals->mpool, mpool );
+
+    getOSInfo( globals );
 
 #if defined DEBUG && !defined _WIN32_WCE
     globals->dbWidth = g_dbWidth;
@@ -1762,9 +1808,46 @@ ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
     void* closure;
 
     proc = globals->timerProcs[why];
-    closure = globals->timerClosures[why];
-    (*proc)( closure, why );
+    if ( !!proc ) {
+        globals->timerProcs[why] = NULL;
+        closure = globals->timerClosures[why];
+        (*proc)( closure, why );
+    } else {
+        XP_LOGF( "skipped timer; alread fired?" );
+    }
 } /* ceFireTimer */
+
+/* WM_TIMER messages are low-priority.  Hold a key down and key events will
+ * crowd it out of the queue so that the app doesn't see it until the key is
+ * released.  There are more reliable timers, but they seem to require
+ * advanced techniques like semaphores.  At least one article recommends
+ * polling over going to those lengths.  This is better that polling.  I hope
+ * it's enough.
+ */
+static XP_Bool
+checkFireLateKeyTimer( CEAppGlobals* globals )
+{
+    XP_Bool drop = XP_FALSE;
+    XWTimerReason whys[] = { TIMER_PENDOWN, TIMER_TIMERTICK
+#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+                             , TIMER_HEARTBEAT
+#endif
+    };
+    XP_U32 now = GetCurrentTime();
+    XP_U16 i;
+
+    for ( i = 0; i < sizeof(whys)/sizeof(whys[0]); ++i ) {
+        XWTimerReason why = whys[i];
+        if ( !!globals->timerProcs[why] ) {
+            if ( now >= globals->timerWhens[why] ) {
+                ceFireTimer( globals, why );
+                drop = XP_TRUE;
+            }
+        }
+    }
+
+    return drop;
+} /* checkFireLateKeyTimer */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XP_Bool
@@ -1799,16 +1882,13 @@ checkPenDown( CEAppGlobals* globals )
 #ifdef KEYBOARD_NAV
 
 static XP_Bool
-ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, 
-                  XP_Bool isDown, XP_Bool* handledP )
+ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam, 
+                       XP_Bool keyDown, XP_Bool* handledP )
 {
-    XP_Bool draw = XP_FALSE;
+    XP_Bool isRepeat = keyDown && ((HIWORD(lParam) & KF_REPEAT) != 0);
     XP_Key key;
     XP_S16 incr = 0;
-
-    XP_LOGF( "%s(%s): 0x%x", __func__, 
-             isDown?"down":"up", 
-             wParam );
+    XP_Bool draw = XP_FALSE;
 
     switch ( wParam ) {
     case VK_UP:
@@ -1828,14 +1908,16 @@ ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam,
         incr = -1;
         break;
     case 0x0d:
-    case 0x5d:                  /* center key on WinMo5 Treo (at least) */
+    case 0x5d:                  /* center key on WinMo5 Treo (at least) -- but also ']'*/
     case VK_HOME:
-/*         if ( !isRepeat ) { */
             key = XP_RETURN_KEY;
+            if ( isRepeat ) {
+                (void)checkFireLateKeyTimer( globals );
+            }
             XP_LOGF( "%s: XP_RETURN_KEY", __func__ );
             break;
-/*         } */
 
+            /* Still need to produce these somehow */
 /*     XP_CURSOR_KEY_ALTRIGHT, */
 /*     XP_CURSOR_KEY_ALTUP, */
 /*     XP_CURSOR_KEY_ALTLEFT, */
@@ -1848,10 +1930,16 @@ ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam,
 
     if ( key != XP_KEY_NONE ) {
         BoardCtxt* board = globals->game.board;
-        draw = isDown?
-            board_handleKeyDown( board, key, handledP ) :
-            board_handleKeyUp( board, key, handledP ) ;
-        if ( !*handledP && incr != 0 && !isDown ) {
+
+        if ( isRepeat ) {
+            draw = board_handleKeyRepeat( board, key, handledP );
+        } else if ( keyDown ) {
+            draw = board_handleKeyDown( board, key, handledP );
+        } else {
+            draw = board_handleKeyUp( board, key, handledP );
+        }
+
+        if ( !*handledP && incr != 0 && !keyDown ) {
             BoardObjectType order[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
             BoardObjectType cur = board_getFocusOwner( board );
             XP_U16 index = 0;
@@ -1870,18 +1958,16 @@ ceHandleFocusKey( CEAppGlobals* globals, WPARAM wParam,
             draw = board_focusChanged( board, order[index], XP_TRUE );
         }
     }
-
     return draw;
-} /* ceHandleFocusKey */
+} /* ceCheckHandleFocusKey */
 #endif /* KEYBOARD_NAV */
 
 #ifdef _WIN32_WCE
 static void
-ceToggleFullScreen( CEAppGlobals* globals )
+sizeIfFullscreen( CEAppGlobals* globals )
 {
     RECT rect;
     XP_U16 cbHeight = 0;
-
     if ( !!globals->hwndCB ) {
         GetWindowRect( globals->hwndCB, &rect );
         cbHeight = rect.bottom - rect.top;
@@ -1892,7 +1978,7 @@ ceToggleFullScreen( CEAppGlobals* globals )
        don't get stuck in fullscreen mode not knowing how to reach menus to
        get out.  Later, add SHFS_SHOWSIPBUTTON and SHFS_HIDESIPBUTTON to the
        sets shown and hidden below.*/
-    if ( globals->fullScreen ) {
+    if ( globals->appPrefs.fullScreen ) {
         SHFullScreen( globals->hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
 
         SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
@@ -1906,8 +1992,15 @@ ceToggleFullScreen( CEAppGlobals* globals )
     rect.bottom -= cbHeight;
     MoveWindow( globals->hWnd, rect.left, rect.top, rect.right - rect.left, 
                 rect.bottom - rect.top, TRUE );
+} /* sizeIfFullscreen */
 
-    globals->fullScreen = !globals->fullScreen;
+static void
+ceToggleFullScreen( CEAppGlobals* globals )
+{
+    globals->appPrefs.fullScreen = !globals->appPrefs.fullScreen;
+
+    sizeIfFullscreen( globals );
+
     (void)cePositionBoard( globals );
 } /* ceToggleFullScreen */
 #endif
@@ -1915,12 +2008,14 @@ ceToggleFullScreen( CEAppGlobals* globals )
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    LRESULT result = 0;
     int wmId;
     RECT rt;
     XP_Bool draw = XP_FALSE;
     XWTimerReason why;
     CEAppGlobals* globals;
     XP_Bool handled;
+    XP_Bool callDefault = XP_FALSE;
 
     if ( message == WM_CREATE ) {
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
@@ -1933,6 +2028,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         globals->sai.cbSize = sizeof(globals->sai);
 #endif
     } else {
+/*         XP_LOGF( "%s: event=%s (%d)", __func__, messageToStr(message), message ); */
         globals = (CEAppGlobals*)GetWindowLong( hWnd, GWL_USERDATA );
 
         switch (message) {
@@ -1970,7 +2066,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (wmId) {
             case ID_FILE_ABOUT:
                 DialogBoxParam(globals->hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, 
-                               (DLGPROC)About, 0L );
+                               (DLGPROC)ceAbout, 0L );
                 break;
             case ID_GAME_GAMEINFO: {
                 GameInfoState state;
@@ -2081,7 +2177,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
 
             default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
+                callDefault = XP_TRUE;
             }
             break;
         case WM_PAINT:
@@ -2129,10 +2225,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 #ifdef KEYBOARD_NAV
         case WM_KEYDOWN:
-            draw = ceHandleFocusKey( globals, wParam, XP_TRUE, &handled );
-            break;
         case WM_KEYUP:
-            draw = ceHandleFocusKey( globals, wParam, XP_FALSE, &handled );
+            draw = ceCheckHandleFocusKey( globals, wParam, lParam, 
+                                          message==WM_KEYDOWN, &handled );
             break;
 #endif
         case WM_CHAR:
@@ -2184,11 +2279,13 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
         default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
+            callDefault = XP_TRUE;
         }
     }
 
-    if ( draw ) {
+    if ( callDefault ) {
+        result = DefWindowProc(hWnd, message, wParam, lParam );
+    } else if ( draw ) {
         /* This is stupid.  We can't just say "draw" because windoze clips
            drawing to the inval rect, and the board isn't set up to tell us
            what its inval rect is.  So we inval everything, and then when the
@@ -2204,27 +2301,26 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         InvalidateRect( globals->hWnd, &r, FALSE /* erase */ );
     }
 
-    return 0;
+    return result;
 } /* WndProc */
 
 // Mesage handler for the About box.
 LRESULT CALLBACK
-About(HWND hDlg, UINT message, WPARAM wParam, LPARAM XP_UNUSED(lParam))
+ceAbout(HWND hDlg, UINT message, WPARAM wParam, LPARAM XP_UNUSED(lParam))
 {
     switch (message) {
     case WM_INITDIALOG:
         return TRUE;
 
     case WM_COMMAND:
-        if ((LOWORD(wParam) == IDOK) || (LOWORD(wParam) == IDCANCEL))
-            {
-                EndDialog(hDlg, LOWORD(wParam));
-                return TRUE;
-            }
+        if ((LOWORD(wParam) == IDOK) || (LOWORD(wParam) == IDCANCEL)) {
+            EndDialog(hDlg, LOWORD(wParam));
+            return TRUE;
+        }
         break;
     }
     return FALSE;
-} /* About */
+} /* ceAbout */
 
 static XP_Bool
 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
@@ -2805,6 +2901,9 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         XP_ASSERT(0);
         return;
     }
+
+    globals->timerWhens[why] = GetCurrentTime() + howLong;
+
     timerID = SetTimer( globals->hWnd, why, howLong, NULL);
 
     globals->timerIDs[why] = timerID;
@@ -2821,7 +2920,12 @@ ce_util_requestTime( XW_UtilCtxt* uc )
 static XP_U32
 ce_util_getCurSeconds( XW_UtilCtxt* XP_UNUSED(uc) )
 {
-    return 0L;
+    /* This function is never called! */
+    XP_U32 ticks = GetCurrentTime();
+    ticks /= 1000;
+    LOG_RETURNF( "%ld", ticks );
+    return ticks;
+/*     return 0L; */
 } /* ce_util_getCurSeconds */
 
 static DictionaryCtxt*
