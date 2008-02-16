@@ -68,7 +68,7 @@ struct CursesAppGlobals {
 
     XP_Bool timeToExit;
     XP_Bool doDraw;
-    struct MenuList* menuList;
+    const struct MenuList* menuList;
     XP_U16 nLinesMenu;
 
     union {

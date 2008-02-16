@@ -35,7 +35,7 @@ typedef struct FormatInfo {
     XP_U16 nLines;
     XP_U16 maxLen;
     struct {
-        XP_UCHAR* substr;
+        const XP_UCHAR* substr;
         XP_U16 len;
     } line[MAX_LINES];
 } FormatInfo;
