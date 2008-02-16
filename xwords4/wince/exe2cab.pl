@@ -49,18 +49,20 @@ sub main() {
     print FILE "../dawg/English/BasEnglish2to8.xwd ";
     print FILE '%CE1%\\Crosswords', "\n";
 
+    print FILE "$ENV{'CEOPT_ROOT'}/opt/mingw32ce/arm-wince-mingw32ce/bin/mingwm10.dll ";
+    print FILE '%CE2%\\mingwm10.dll', "\n";
+
     print FILE "$linkName ";
     print FILE '%CE14%', "\n";
 
     close FILE;
 
     my $appname = $cabname;
-    $cabname .= "_exe.cab";
+    $cabname .= ".cab";
 
-    print( STDERR "pocketpc-cab -p $provider " ,
-           "-a $appname $fname $cabname", "\n");
-    my $cmd = "pocketpc-cab  -p $provider -a $appname "
+    my $cmd = "pocketpc-cab -p $provider -a $appname "
         . "$fname $cabname";
+    print( STDERR $cmd, "\n");
     `$cmd`;
 
     unlink $linkName, $tmpfile;
