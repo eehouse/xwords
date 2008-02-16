@@ -114,6 +114,15 @@ makeAndDrawBitmap( CEDrawCtx* XP_UNUSED(dctx), HDC hdc, const RECT* bnds, XP_Boo
 #endif
 } /* makeAndDrawBitmap */
 
+#if defined _WIN32_WCE && ! defined USE_RAW_MINGW
+/* This is part of the win32 libs but not of ce apparently */
+static BOOL
+GetTextExtentPoint32W( HDC hdc, LPCWSTR str, int i, LPSIZE siz )
+{
+    return GetTextExtentExPointW(hdc, str, i, 0, NULL, NULL, siz );
+}
+#endif
+
 static void
 measureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
              XP_U16* widthP, XP_U16* heightP )
