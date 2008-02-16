@@ -73,8 +73,9 @@ void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
                   XP_U16 gameID, CommonPrefs* cp,
-                  TransportSend sendproc, IF_CH( TransportReset resetproc ) 
-                  void* closure )
+                  TransportSend XP_UNUSED_STANDALONE(sendproc),
+                  IF_CH( TransportReset resetproc ) 
+                  void* XP_UNUSED_STANDALONE(closure) )
 {
     XP_U16 nPlayersHere, nPlayersTotal;
 
@@ -111,9 +112,12 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 } /* game_makeNewGame */
 
 void
-game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
-            XP_U16 gameID, CommonPrefs* cp, TransportSend sendproc, 
-            IF_CH(TransportReset resetproc) void* closure )
+game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, 
+            XW_UtilCtxt* XP_UNUSED_STANDALONE(util), 
+            XP_U16 gameID, CommonPrefs* cp, 
+            TransportSend XP_UNUSED_STANDALONE(sendproc), 
+            IF_CH(TransportReset resetproc) 
+            void* XP_UNUSED_STANDALONE(closure) )
 {
     XP_U16 i;
     XP_U16 nPlayersHere, nPlayersTotal;
@@ -163,8 +167,9 @@ XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                      CurGameInfo* gi, DictionaryCtxt* dict, 
                      XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp, 
-                     TransportSend sendProc, IF_CH(TransportReset resetProc) 
-                     void* closure )
+                     TransportSend XP_UNUSED_STANDALONE(sendProc), 
+                     IF_CH(TransportReset resetProc) 
+                     void* XP_UNUSED_STANDALONE(closure) )
 {
     XP_Bool success = XP_FALSE;
     XP_U8 strVersion;

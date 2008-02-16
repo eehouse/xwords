@@ -666,8 +666,8 @@ ceSetTitleFromName( CEAppGlobals* globals )
 } /* ceSetTitleFromName */
 
 static void
-ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
-                     const CommsAddrRec* addr )
+ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, 
+                     const CommsAddrRec* XP_UNUSED_STANDALONE(addr) )
 {
     DictionaryCtxt* dict;
     XP_UCHAR* newDictName = globals->gameInfo.dictName;
@@ -708,11 +708,6 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, CeGamePrefs* gp,
         game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
                     newGameID, &globals->appPrefs.cp, CE_SEND_PROC, 
                     CE_RESET_PROC globals );
-
-        if ( !!gp ) {
-            globals->gameInfo.hintsNotAllowed = gp->hintsNotAllowed;
-            globals->gameInfo.robotSmartness = gp->robotSmartness;
-        }
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
         if ( !!addr ) {
@@ -1074,7 +1069,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 	hWnd = FindWindow( szWindowClass, szTitle);	
 	if ( hWnd ) {
 		SetForegroundWindow( (HWND)((ULONG) hWnd | 0x00000001) );
-		return FALSE;
+        result = FALSE;
+        goto exit;
 	} 
 
     (void)CreateDirectory( DEFAULT_DIR_NAME, 0 );
@@ -1110,8 +1106,9 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                         CW_USEDEFAULT, NULL, NULL, hInstance, globals);
     globals->hWnd = hWnd;
 
-    if (!hWnd) {	
-        return FALSE;
+    if (!hWnd) {
+        result = FALSE;
+        goto exit;
     }
 
 #ifdef _WIN32_WCE
@@ -1148,7 +1145,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
                           "http://xwords.sf.net." );
         messageBoxStream( globals, stream, L"Dictionary Not Found" );
         stream_destroy( stream );
-        return FALSE;
+        result = FALSE;
+        goto exit;
     }
 #endif
 
@@ -1189,9 +1187,10 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     }
 #endif
     if ( result && !newDone ) {
-        ceInitAndStartBoard( globals, !oldGameLoaded, NULL, NULL );
+        ceInitAndStartBoard( globals, !oldGameLoaded, NULL );
     }
 
+ exit:
     return result;
 } /* InitInstance */
 
@@ -1370,7 +1369,7 @@ ceDoNewGame( CEAppGlobals* globals )
         }
 #endif
 
-        ceInitAndStartBoard( globals, XP_TRUE, NULL, addr );
+        ceInitAndStartBoard( globals, XP_TRUE, addr );
         changed = XP_TRUE;
     }
     
@@ -1420,7 +1419,7 @@ ceChooseAndOpen( CEAppGlobals* globals )
 
             globals->curGameName = name;
             if ( ceLoadSavedGame( globals ) ) {
-                ceInitAndStartBoard( globals, XP_FALSE, NULL, NULL );
+                ceInitAndStartBoard( globals, XP_FALSE, NULL );
                 ceSetTitleFromName( globals );
             } else {
                 XP_LOGF( "failed to open chosen game" );
@@ -2779,7 +2778,8 @@ ce_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
 
 static void
 ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
-                  XP_U16 when, XWTimerProc proc, void* closure )
+                  XP_U16 XP_UNUSED_STANDALONE(when), XWTimerProc proc, 
+                  void* closure )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_U32 timerID;

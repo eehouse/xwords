@@ -207,7 +207,8 @@ cpToLP( NGValue value, const void* cbClosure )
 } /* cpToLP */
 
 XP_Bool
-newg_store( NewGameCtx* ngc, CurGameInfo* gi, XP_Bool warn )
+newg_store( NewGameCtx* ngc, CurGameInfo* gi, 
+            XP_Bool XP_UNUSED_STANDALONE(warn) )
 {
     XP_U16 player;
     XP_Bool consistent = checkConsistent( ngc, warn );
@@ -467,6 +468,7 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
  * the most common case, which is playing again with the same players.  In
  * that case changing role then back again should not lose/change data.
  */
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 changeRole( NewGameCtx* ngc, DeviceRole newRole )
 {
@@ -488,6 +490,7 @@ changeRole( NewGameCtx* ngc, DeviceRole newRole )
         setRoleStrings( ngc );
     }
 }
+#endif
 
 static void
 setRoleStrings( NewGameCtx* ngc )
