@@ -57,12 +57,12 @@ static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
 static void setRoleStrings( NewGameCtx* ngc );
-static void changeRole( NewGameCtx* ngc, DeviceRole role );
 static void considerEnableJuggle( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
                         const LocalPlayer* lp );
 #ifndef XWFEATURE_STANDALONE_ONLY
+static void changeRole( NewGameCtx* ngc, DeviceRole role );
 static XP_Bool checkConsistent( NewGameCtx* ngc, XP_Bool warnUser );
 #else
 # define checkConsistent( ngc, warnUser ) XP_TRUE
