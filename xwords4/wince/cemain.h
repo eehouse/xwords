@@ -29,6 +29,15 @@
 #include "mempool.h"
 #include "cesockwr.h"
 
+#ifdef _WIN32_WCE
+typedef enum {
+    WINCE_UNKNOWN
+    , WINCE_PPC_2003
+    , WINCE_PPC_2005
+    , WINCE_SMARTPHONE
+} XW_WinceVersion;
+#endif
+
 enum { CE_BONUS1_COLOR,
        CE_BONUS2_COLOR,
        CE_BONUS3_COLOR,
@@ -56,6 +65,7 @@ typedef struct CEAppPrefs {
     CommonPrefs cp;
     COLORREF colors[CE_NUM_COLORS];
     XP_Bool showColors;
+    XP_Bool fullScreen;
 } CEAppPrefs;
 
 #define NUM_BUTTONS 4
@@ -72,8 +82,7 @@ typedef struct CEAppGlobals {
 
 #ifdef _WIN32_WCE
     SHACTIVATEINFO sai;
-    XP_Bool fullScreen;         /* this probably wants to be a preference,
-                                   i.e. preserved */
+    XW_WinceVersion winceVersion;
 #endif
 
     DrawCtx* draw;
@@ -88,6 +97,7 @@ typedef struct CEAppGlobals {
     XP_U32 timerIDs[NUM_TIMERS_PLUS_ONE];
     XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
+    XP_U32 timerWhens[NUM_TIMERS_PLUS_ONE];
 
     XP_U16 flags;               /* bits defined below */
 
