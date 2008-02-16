@@ -102,7 +102,8 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
  * committing should user cancel.
  */
 void
-loadStateFromCurPrefs( CEAppGlobals* globals, const CEAppPrefs* appPrefs, 
+loadStateFromCurPrefs( CEAppGlobals* XP_UNUSED_STANDALONE(globals), 
+                       const CEAppPrefs* appPrefs, 
                        const CurGameInfo* gi, CePrefsPrefs* prefsPrefs )
 {
     prefsPrefs->gp.hintsNotAllowed = gi->hintsNotAllowed;
@@ -132,7 +133,8 @@ loadStateFromCurPrefs( CEAppGlobals* globals, const CEAppPrefs* appPrefs,
 } /* loadStateFromCurPrefs */
 
 void
-loadCurPrefsFromState( CEAppGlobals* globals, CEAppPrefs* appPrefs, 
+loadCurPrefsFromState( CEAppGlobals* XP_UNUSED_STANDALONE(globals), 
+                       CEAppPrefs* appPrefs, 
                        CurGameInfo* gi, const CePrefsPrefs* prefsPrefs )
 {
     gi->hintsNotAllowed = prefsPrefs->gp.hintsNotAllowed;
