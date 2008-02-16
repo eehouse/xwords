@@ -66,7 +66,7 @@ makeAndDrawBitmap( CEDrawCtx* XP_UNUSED(dctx), HDC hdc, const RECT* bnds, XP_Boo
     HGDIOBJ forePen;
     XP_U16 nCols, nRows, row, col, rowBytes;
     XP_S32 x, y;
-    XP_UCHAR* bits = info->bits;
+    XP_U8* bits = info->bits;
     HGDIOBJ oldObj;
     forePen = CreatePen( PS_SOLID, 1, foreRef );
     oldObj = SelectObject( hdc, forePen );
@@ -88,7 +88,7 @@ makeAndDrawBitmap( CEDrawCtx* XP_UNUSED(dctx), HDC hdc, const RECT* bnds, XP_Boo
 
     for ( row = 0; row < nRows; ++row ) {
         for ( col = 0; col < nCols; ++col ) {
-            XP_UCHAR byt = bits[col / 8];
+            XP_U8 byt = bits[col / 8];
             XP_Bool set = (byt & (0x80 >> (col % 8))) != 0;
             if ( set ) {
                 points[0].x = x + col;
