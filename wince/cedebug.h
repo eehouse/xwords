@@ -24,4 +24,10 @@
 
 const char* messageToStr( UINT message );
 
+#ifdef DEBUG
+void XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg );
+#else
+# define XP_LOGW( prefix, arg )
+#endif
+
 #endif  /* _CEDEBUG_H_ */

@@ -50,10 +50,4 @@ void ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg );
 /* Are we drawing things in landscape mode? */
 XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
-#ifdef DEBUG
-void XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg );
-#else
-# define XP_LOGW( prefix, arg )
-#endif
-
 #endif

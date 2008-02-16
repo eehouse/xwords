@@ -226,7 +226,7 @@ ceIsLandscape( CEAppGlobals* globals )
 /* Can't figure out how to do this on CE.  IsWindowVisible doesn't work, and
    GetWindowInfo isn't even there. */
 static XP_Bool
-ceIsVisible( HWND hwnd )
+ceIsVisible( HWND XP_UNUSED_CE(hwnd) )
 {
 #ifdef _WIN32_WCE              /* GetWindowInfo isn't on CE */
     return XP_TRUE;
@@ -243,12 +243,54 @@ ceIsVisible( HWND hwnd )
 #endif
 } /* ceIsVisible */
 
+#ifdef _WIN32_WCE
+static XP_Bool
+mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
+{
+/*     XP_Bool fullScreen = XP_FALSE; /\* probably want this TRUE for */
+/*                                       small-screened smartphones only. *\/ */
+/*     if ( fullScreen ) { */
+/*         SHINITDLGINFO info; */
+
+/*         info.dwMask = SHIDIM_FLAGS; */
+/*         info.dwFlags = SHIDIF_SIZEDLG */
+/* /\*             | SHIDIF_DONEBUTTON  *\/ */
+/*             | SHIDIF_WANTSCROLLBAR; */
+/*         info.hDlg = hDlg; */
+
+/*         BOOL b = SHInitDialog( &info ); */
+/*         XP_LOGF( "SHInitDialog=>%d", (int)b ); */
+/*     } */
+
+    XP_Bool success = XP_FALSE;
+    SHMENUBARINFO mbi;
+
+    XP_MEMSET( &mbi, 0, sizeof(mbi) );
+    mbi.cbSize = sizeof(mbi);
+    mbi.hwndParent = hDlg;
+    mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
+    mbi.hInstRes = globals->hInst;
+    success = SHCreateMenuBar( &mbi );
+    if ( !success ) {
+        XP_LOGF( "SHCreateMenuBar failed" );
+    }
+    return success;
+} /* mkFullscreenWithSoftkeys */
+#endif
+
 void
 ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
 {
+    XP_Bool justRemove = XP_FALSE;
     XP_ASSERT( !!globals );
 
-    if ( ceIsLandscape( globals ) ) {
+#ifdef _WIN32_WCE
+    if ( mkFullscreenWithSoftkeys( globals, hDlg ) ) {
+        justRemove = XP_TRUE;
+    }
+#endif
+
+    if ( justRemove || ceIsLandscape( globals ) ) {
         XP_U16 resIDs[] = { IDOK, IDCANCEL };
         RECT wrect, crect;
         XP_U16 left, top;
@@ -282,10 +324,10 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
         /* Make sure we're not proposing to make the dialog wider than the
            screen */
         GetWindowRect( hDlg, &wrect );
-        newWidth = wrect.right - wrect.left + butWidth 
-            + HPADDING_L + HPADDING_R;
+        newWidth = wrect.right - wrect.left +
+            butWidth + HPADDING_L + HPADDING_R;
 
-        if ( newWidth <= mainWidth ) {
+        if ( justRemove || (newWidth <= mainWidth) ) {
 
             GetClientRect( hDlg, &crect ); 
             barHt = wrect.bottom - wrect.top - crect.bottom;
@@ -305,21 +347,16 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
                 }
             }
 
-            butWidth += HPADDING_L + HPADDING_R;
-            MoveWindow( hDlg, wrect.left - (butWidth/2), wrect.top,
-                        newWidth, wrect.bottom - wrect.top - butHeight - 2, 
-                        FALSE );
+            if ( justRemove ) {
+                MoveWindow( hDlg, wrect.left, wrect.top,
+                            wrect.right - wrect.left, wrect.bottom - wrect.top - butHeight - 2, 
+                            FALSE );
+            } else {
+                butWidth += HPADDING_L + HPADDING_R;
+                MoveWindow( hDlg, wrect.left - (butWidth/2), wrect.top,
+                            newWidth, wrect.bottom - wrect.top - butHeight - 2, 
+                            FALSE );
+            }
         }
     }
 } /* ceStackButtonsRight */
-
-#ifdef DEBUG
-void
-XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg )
-{
-    XP_UCHAR buf[512];
-    (void)WideCharToMultiByte( CP_ACP, 0, arg, -1,
-                               buf, sizeof(buf), NULL, NULL );
-    XP_LOGF( "%s: %s", prefix, buf );
-}
-#endif
