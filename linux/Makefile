@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 ifeq ($(MEMDEBUG),TRUE)
-DEFINES = -DMEM_DEBUG -DDEBUG 
+DEFINES = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING
 CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror
 CFLAGS += -DDEBUG_TS
 PLATFORM = obj_linux_memdbg

@@ -2420,15 +2420,15 @@ RECTtoXPR( XP_Rect* dest, RECT* src )
 } /* RECTtoXPR */
 
 void
-wince_assert( XP_UCHAR* XP_UNUSED_DBG(s), int XP_UNUSED_DBG(line), 
-              char* XP_UNUSED_DBG(fileName) )
+wince_assert( XP_UCHAR* XP_UNUSED_LOG(s), int XP_UNUSED_LOG(line), 
+              char* XP_UNUSED_LOG(fileName) )
 {
     XP_WARNF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
 } /* wince_assert */
 
-#ifdef DEBUG
+#ifdef ENABLE_LOGGING
 static void
-makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 size )
+makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 XP_UNUSED_DBG(size) )
 {
     SYSTEMTIME st;
     DWORD tid;
@@ -2546,7 +2546,7 @@ messageToBuf( UINT message, char* buf, int bufSize )
         snprintf( buf, bufSize, "%s", str );
     }
 } /* messageToBuf */
-#endif
+#endif  /* ENABLE_LOGGING */
 
 XP_U16
 wince_snprintf( XP_UCHAR* buf, XP_U16 len, const XP_UCHAR* format, ... )

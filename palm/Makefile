@@ -20,7 +20,7 @@ PLATFORM=obj_palm
 SVNREV = $(shell svnversion -n .. | tr ':' '_')
 
 ifeq ($(MEMDEBUG),TRUE)
-DEBUG = -DMEM_DEBUG -DDEBUG
+DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING
 PLATFORM := $(PLATFORM)_memdebug
 CFLAGS += $(DEBUG) -g -O0
 CSFLAGS += -O0 -g

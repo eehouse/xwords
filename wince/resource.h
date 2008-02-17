@@ -109,7 +109,7 @@
 #define TPLWRD_LABEL                   1076
 #define EMPTYCELL_LABEL                1077
 #define TILEBACK_LABEL                 1078
-#define FOCURCLR_LABEL                 1079
+#define FOCUSCLR_LABEL                 1079
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */

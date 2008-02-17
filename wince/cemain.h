@@ -59,7 +59,8 @@ enum { CE_BONUS1_COLOR,
        CE_NUM_COLORS		/* last */
 };
 
-#define CUR_CE_PREFS_FLAGS 0x0003
+#define CUR_CE_PREFS_FLAGS 0x0003 /* adds CE_FOCUS_COLOR */
+
 typedef struct CEAppPrefs {
     XP_U16 versionFlags;
     CommonPrefs cp;
