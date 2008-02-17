@@ -94,7 +94,7 @@ typedef XP_U32 XP_Time;
 #define XP_STATUSF XP_DEBUGF 
 #define XP_WARNF XP_DEBUGF
 
-#ifdef DEBUG
+#ifdef ENABLE_LOGGING
 #define XP_DEBUGF(...) wince_debugf(__VA_ARGS__)
 #define XP_LOGF(...) wince_debugf(__VA_ARGS__)
 #else

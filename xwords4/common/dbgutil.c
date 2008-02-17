@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifdef DEBUG
+#ifdef ENABLE_LOGGING
 
 #include "dbgutil.h"
 
@@ -67,5 +67,5 @@ BoardObjectType_2str( BoardObjectType obj )
 
 #undef CASESTR
 
-#endif /* DEBUG */
+#endif /* ENABLE_LOGGING */
 

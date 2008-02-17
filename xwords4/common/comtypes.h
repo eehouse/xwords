@@ -201,6 +201,12 @@ typedef struct CommonPrefs {
 # define XP_UNUSED_DBG(x) XP_UNUSED(x)
 #endif
 
+#ifdef ENABLE_LOGGING
+# define XP_UNUSED_LOG(x) x
+#else
+# define XP_UNUSED_LOG(x) XP_UNUSED(x)
+#endif
+
 #ifdef XWFEATURE_RELAY
 #  define XP_UNUSED_RELAY(x) x
 #else
