@@ -239,10 +239,10 @@ endif
 dawg$(XWLANG)%.stamp: $(XWLANG)Main.dict.gz $(DICT2DAWG) table.bin ../Makefile.langcommon
 	start=$$(echo $@ | sed -e 's/dawg$(XWLANG)\([0-9]*\)to[0-9]*.stamp/\1/'); \
 	end=$$(echo $@ | sed -e 's/dawg$(XWLANG)[0-9]*to\([0-9]*\).stamp/\1/'); \
-	echo $${start} and $$end; \
+	echo $${start} and $${end}; \
 	zcat $< | $(DICT2DAWG) $(DICT2DAWGARGS) $(TABLE_ARG) table.bin -b 28000 \
 		-ob dawg$(XWLANG)$* \
-		-sn $(XWLANG)StartLoc.bin -min $$start -max $$end \
+		-sn $(XWLANG)StartLoc.bin -min $${start} -max $${end} \
 		-wc $(XWLANG)$*_wordcount.bin $(FORCE_4) -ns $(XWLANG)$*_nodesize.bin
 	touch $@
 
