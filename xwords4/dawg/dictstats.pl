@@ -53,12 +53,14 @@ for ( my $i = 1 ; $i <= 99; ++$i ) {
 
 print "\n\n**** Letter counts ****\n";
 print "ASCII ORD  HEX     PCT (of $letterCount)\n";
+my $lineNo = 1;
 for ( my $i = 0; $i < 255; ++$i ) {
     my $count = $letterCounts[$i];
     if ( $count > 0 ) {
         my $pct = (100.00 * $count) / $letterCount;
-        printf( "%3s   %3d  %x    %5.2f (%d)\n", 
-                chr($i), $i, $i, $pct, $count );
+        printf( "%2d: %3s   %3d  %x    %5.2f (%d)\n",
+                $lineNo, chr($i), $i, $i, $pct, $count );
+        ++$lineNo;
     }
 }
 
