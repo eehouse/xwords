@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2004-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2004-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@
 
 #include "ceclrsel.h" 
 #include "ceutil.h" 
+#include "cedebug.h"
 #include "debhacks.h"
 
 #ifdef MY_COLOR_SEL
@@ -338,12 +339,29 @@ wrapChooseColor( ColorsDlgState* cState, HWND owner, XP_U16 button )
 #endif
 } /* wrapChooseColor */
 
+/* I'd prefer to use normal buttons, letting the OS draw them except for
+ * their background color, but MS docs don't seem to allow any way to do
+ * that.  I'm either totally on my own drawing the button or they're all in
+ * the same color and so useless.  So they're just rects with a black outer
+ * rect to show focus.
+ */
 static void
 ceDrawColorButton( ColorsDlgState* cState, DRAWITEMSTRUCT* dis )
 {
     HBRUSH brush = brushForButton( cState, dis->hwndItem );
     XP_ASSERT( !!brush );
-    FillRect( dis->hDC, &dis->rcItem, brush );
+    
+    RECT r = dis->rcItem;
+    XP_Bool hasFocus = ((dis->itemAction & ODA_FOCUS) != 0)
+        && ((dis->itemState & ODS_FOCUS) != 0);
+
+    Rectangle( dis->hDC, r.left, r.top, r.right, r.bottom );
+    InsetRect( &r, 1, 1 );
+    if ( hasFocus ) {
+        Rectangle( dis->hDC, r.left, r.top, r.right, r.bottom );
+    }
+    InsetRect( &r, 1, 1 );
+    FillRect( dis->hDC, &r, brush );
 } /* ceDrawColorButton */
 
 LRESULT CALLBACK
@@ -371,6 +389,9 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 initColorData( cState, hDlg );
                 cState->inited = XP_TRUE;
             }
+
+/*             XP_LOGF( "%s: event=%s (%d); wParam=0x%x; lParam=0x%lx", __func__, */
+/*                      messageToStr(message), message, wParam, lParam ); */
 
             switch (message) {
 
