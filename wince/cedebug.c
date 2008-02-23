@@ -52,6 +52,16 @@ messageToStr( UINT message )
         CASE_STR( WM_DESTROY );
         CASE_STR( XWWM_TIME_RQST );
         CASE_STR( XWWM_PACKET_ARRIVED );
+        CASE_STR( WM_DRAWITEM );
+        CASE_STR( WM_NEXTDLGCTL );
+        CASE_STR( WM_CTLCOLORSTATIC );
+        CASE_STR( WM_CTLCOLORBTN );
+        CASE_STR( WM_SETFONT );
+        CASE_STR( WM_INITDIALOG );
+        CASE_STR( WM_SHOWWINDOW );
+        CASE_STR( WM_WINDOWPOSCHANGING );
+        CASE_STR( WM_SETFOCUS );
+        CASE_STR( WM_NCPAINT );
     default:
         str = "<unknown>";
     }
