@@ -15,18 +15,23 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANGCODE:cs_CS
+LANGCODE:cs_CZ
+CHARSET:windows-1250
 
 # deal with DOS files
 LANGFILTER: tr -d '\r'
+# tr seems to work on systems that don't know the Czech locale, but
+# grep does not.  So don't use grep, e.g. to eliminate words
+# containing letters not in our alphabet.  Instead, pass the -r flag
+# via D2DARGS so they're dropped.
 LANGFILTER: | tr [aábcèdïeéìfghiíjklmnòoóprøsštuúùvxyız] [AÁBCÈDÏEÉÌFGHIÍJKLMNÒOÓPRØSŠTUÚÙVXYİZ]
-LANGFILTER: | grep '^[AÁBCÈDÏEÉÌFGHIÍJKLMNÒOÓPRØSŠTUÚÙVXYİZ]*$'
 LANGFILTER: | sort -u
 
 # presence of high-ascii means we must not pass -nosort
-D2DARGS: -term 10
+D2DARGS: -term 10 -r
 
-LANGINFO: <p>Czech blah blah blah.</p>
+LANGINFO: <p>Czech has been tested so far with windows-1250 text
+LANGINFO: producing dictionaries that run on PalmOS.</p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Czech==0x10.  Low byte is padding.
