@@ -52,7 +52,7 @@ for ( my $i = 1 ; $i <= 99; ++$i ) {
 
 
 print "\n\n**** Letter counts ****\n";
-print "ASCII ORD  HEX     PCT (of $letterCount)\n";
+print "     ASCII ORD  HEX     PCT (of $letterCount)\n";
 my $lineNo = 1;
 for ( my $i = 0; $i < 255; ++$i ) {
     my $count = $letterCounts[$i];
