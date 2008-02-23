@@ -94,6 +94,19 @@ BEGIN
 #endif
         END
 
+        POPUP "&Game"
+        BEGIN
+            MENUITEM "Tile counts and values",  ID_GAME_TILECOUNTSANDVALUES
+            MENUITEM "Tiles left",              ID_GAME_TILESLEFT
+            MENUITEM SEPARATOR
+            MENUITEM "Game info",               ID_GAME_GAMEINFO
+            MENUITEM "History",                 ID_GAME_HISTORY
+            MENUITEM "Final sc&ores",           ID_GAME_FINALSCORES
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+            MENUITEM "Resend messages",         ID_GAME_RESENDMSGS
+#endif
+        END
+
         POPUP "&File"
         BEGIN
 #ifdef _WIN32_WCE
@@ -107,19 +120,6 @@ BEGIN
             MENUITEM "&About",                  ID_FILE_ABOUT
             MENUITEM SEPARATOR
             MENUITEM "E&xit",                   ID_FILE_EXIT
-        END
-
-        POPUP "&Game"
-        BEGIN
-            MENUITEM "Tile counts and values",  ID_GAME_TILECOUNTSANDVALUES
-            MENUITEM "Tiles left",              ID_GAME_TILESLEFT
-            MENUITEM SEPARATOR
-            MENUITEM "Game info",               ID_GAME_GAMEINFO
-            MENUITEM "History",                 ID_GAME_HISTORY
-            MENUITEM "Final sc&ores",           ID_GAME_FINALSCORES
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-            MENUITEM "Resend messages",         ID_GAME_RESENDMSGS
-#endif
         END
     END
 END
