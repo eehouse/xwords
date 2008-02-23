@@ -154,6 +154,7 @@ static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
 static XP_Bool ceDoNewGame( CEAppGlobals* globals );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
+static void ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
 #ifdef XWFEATURE_RELAY
@@ -821,6 +822,52 @@ ceSavePrefs( CEAppGlobals* globals )
 } /* ceSavePrefs */
 
 static XP_Bool
+peekVersion( HANDLE fileH, XP_U16* version )
+{
+    XP_Bool success = XP_FALSE;
+    XP_U32 nRead;
+    success = ReadFile( fileH, version, sizeof(*version), &nRead, NULL );
+    if ( success ) {
+        SetFilePointer( fileH, -nRead, 0, FILE_CURRENT );
+    }
+    return success;
+} /* peekVersion */
+
+static XP_Bool
+canUpdatePrefs( CEAppGlobals* globals, HANDLE fileH, XP_U16 curVersion, 
+                CEAppPrefs* prefs )
+{
+    XP_Bool success = XP_FALSE;
+    LOG_FUNC();
+    if ( (curVersion == 0x0002) && (CUR_CE_PREFS_FLAGS == 0x0003) ) {
+        CEAppPrefs0002 oldPrefs;
+        XP_U32 nRead;
+        if ( ReadFile( fileH, &oldPrefs, sizeof(oldPrefs), &nRead, NULL ) ) {
+            ceInitPrefs( globals, prefs );
+            
+            XP_MEMCPY( &prefs->cp, &oldPrefs.cp, sizeof(prefs->cp) );
+            prefs->showColors = oldPrefs.showColors;
+
+            XP_MEMCPY( &prefs->colors[0], &oldPrefs.colors[0], 
+                       CE_FOCUS_COLOR*sizeof(prefs->colors[0]));
+            XP_ASSERT( CE_USER_COLOR1 - 1 == CE_FOCUS_COLOR );
+            XP_MEMCPY( &prefs->colors[CE_USER_COLOR1], 
+                       &oldPrefs.colors[CE_FOCUS_COLOR],
+                       (CE_NUM_COLORS-CE_USER_COLOR1) 
+                       * sizeof(prefs->colors[0]));
+            success = XP_TRUE;
+        } else {
+            XP_LOGF( "%s: ReadFile bad", __func__ );
+        }
+    } else {
+        XP_LOGF( "%s: can't convert from %d to %d", __func__, 
+                 curVersion, CUR_CE_PREFS_FLAGS );
+    }
+    LOG_RETURNF( "%d", (int)success );
+    return success;
+} /* canUpdatePrefs */
+
+static XP_Bool
 ceLoadPrefs( CEAppGlobals* globals )
 {
     XP_Bool result = XP_FALSE;
@@ -830,40 +877,50 @@ ceLoadPrefs( CEAppGlobals* globals )
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
     if ( fileH != INVALID_HANDLE_VALUE ) {
         XP_U32 fileSize = GetFileSize( fileH, NULL );
-        XP_DEBUGF( "ceLoadPrefs: prefs file found" );
-        if ( fileSize >= sizeof( CEAppPrefs ) ) {
+        XP_U16 curVersion;
+        if ( fileSize >= sizeof(curVersion) && peekVersion( fileH, &curVersion ) ) {
             CEAppPrefs tmpPrefs;
-            XP_U32 bytesRead;
-            XP_U16 nameLen;
-            XP_UCHAR* name;
+            if ( curVersion == CUR_CE_PREFS_FLAGS ) {
+                if ( fileSize >= sizeof( CEAppPrefs ) ) {
+                    XP_U32 bytesRead;
+                    if ( ReadFile( fileH, &tmpPrefs, sizeof(tmpPrefs), 
+                                   &bytesRead, NULL ) ) {
 
-            if ( ReadFile( fileH, &tmpPrefs, sizeof(tmpPrefs), 
-                           &bytesRead, NULL ) ) {
+                        XP_ASSERT( tmpPrefs.versionFlags == CUR_CE_PREFS_FLAGS ) {
 
-                if ( tmpPrefs.versionFlags == CUR_CE_PREFS_FLAGS ) {
-                    XP_U16 flags;
-
-                    XP_MEMCPY( &globals->appPrefs, &tmpPrefs, 
-                           sizeof(globals->appPrefs) );
-                    result = XP_TRUE;
-
-                    ReadFile( fileH, &nameLen, sizeof(nameLen), &bytesRead, 
-                              NULL );
-                    name = XP_MALLOC( globals->mpool, nameLen + 1 );
-                    ReadFile( fileH, name, nameLen, &bytesRead, NULL );
-                    name[nameLen] = '\0';
-                    globals->curGameName = name;
-
-                    if ( ReadFile( fileH, &flags, sizeof(flags), &bytesRead, 
-                                   NULL )
-                         && bytesRead == sizeof(flags) ) {
-                    } else {
-                        flags = 0;
+                            result = XP_TRUE;
+                        }
                     }
-                    globals->flags = flags;
-
-                    XP_DEBUGF( "loaded saved name: %s", name );
                 }
+            } else if ( canUpdatePrefs( globals, fileH, curVersion, &tmpPrefs ) ) {
+                result = XP_TRUE;
+            } else {
+                XP_LOGF( "%s: old prefs; cannot read.", __func__ );
+            }
+
+            if ( result ) {
+                XP_U16 flags;
+                XP_U16 nameLen;
+                XP_UCHAR* name;
+                XP_U32 nRead;
+
+                XP_MEMCPY( &globals->appPrefs, &tmpPrefs, 
+                           sizeof(globals->appPrefs) );
+
+                ReadFile( fileH, &nameLen, sizeof(nameLen), &nRead, 
+                          NULL );
+                name = XP_MALLOC( globals->mpool, nameLen + 1 );
+                ReadFile( fileH, name, nameLen, &nRead, NULL );
+                name[nameLen] = '\0';
+                globals->curGameName = name;
+
+                if ( ReadFile( fileH, &flags, sizeof(flags), &nRead, 
+                               NULL )
+                     && nRead == sizeof(flags) ) {
+                } else {
+                    flags = 0;
+                }
+                globals->flags = flags;
             }
         }
         CloseHandle( fileH );
@@ -961,7 +1018,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
 } /* ceLoadSavedGame */
 
 static void
-colorsFromRsrc( CEAppGlobals* globals )
+colorsFromRsrc( const CEAppGlobals* globals, CEAppPrefs* prefs )
 {
     XP_U16 i;
     HGLOBAL globH;
@@ -973,29 +1030,27 @@ colorsFromRsrc( CEAppGlobals* globals )
     globH = LoadResource( globals->hInst, rsrcH );
     ptr = (XP_U16*)globH;
 
-    XP_LOGF( "setting colors in globals" );
-
     for ( i = 0; i < CE_NUM_COLORS; ++i ) {
         XP_U8 r = (XP_U8)*ptr++;
         XP_U8 g = (XP_U8)*ptr++;
         XP_U8 b = (XP_U8)*ptr++;
-        globals->appPrefs.colors[i] = RGB( r, g, b );
+        prefs->colors[i] = RGB( r, g, b );
     }
 
     DeleteObject( globH );
 } /* colorsFromRsrc */
 
 static void
-ceInitPrefs( CEAppGlobals* globals )
+ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs )
 {
-    globals->appPrefs.versionFlags = CUR_CE_PREFS_FLAGS;
-    globals->appPrefs.showColors = XP_TRUE;
-    globals->appPrefs.fullScreen = XP_FALSE;
+    prefs->versionFlags = CUR_CE_PREFS_FLAGS;
+    prefs->showColors = XP_TRUE;
+    prefs->fullScreen = XP_FALSE;
 
-    globals->appPrefs.cp.showBoardArrow = XP_TRUE;
-    globals->appPrefs.cp.showRobotScores = XP_FALSE;
+    prefs->cp.showBoardArrow = XP_TRUE;
+    prefs->cp.showRobotScores = XP_FALSE;
 
-    colorsFromRsrc( globals );
+    colorsFromRsrc( globals, prefs );
 
 #ifdef DICTS_MOVED_ALERT
     /* The assumption is that if you didn't have prefs already you don't need
@@ -1200,7 +1255,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
        But that's a long ways off. */
     prevStateExists = ceLoadPrefs( globals );
     if ( !prevStateExists ) {
-        ceInitPrefs( globals );
+        ceInitPrefs( globals, &globals->appPrefs );
 #ifdef DICTS_MOVED_ALERT
     } else if ( (globals->flags & FLAGS_BIT_SHOWN_NEWDICTLOC) == 0 ) {
         doDictsMovedAlert( globals );
