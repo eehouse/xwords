@@ -70,9 +70,7 @@ IDM_MENU MENU DISCARDABLE
 BEGIN
     POPUP "Menu"
     BEGIN
-#ifndef _WIN32_WCE
         MENUITEM "Turn &done",                  ID_MOVE_TURNDONE
-#endif
         MENUITEM "&Juggle",                     ID_MOVE_JUGGLE
         MENUITEM "Fli&p",                       ID_MOVE_FLIP
         MENUITEM "&Trade",                      ID_MOVE_TRADE

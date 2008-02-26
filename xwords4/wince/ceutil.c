@@ -17,6 +17,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "stdafx.h" 
+#include <commctrl.h>
+
 #include "ceutil.h"
 #include "cedefines.h"
 
@@ -75,7 +78,8 @@ ceGetDlgItemText( HWND hDlg, XP_U16 id, XP_UCHAR* buf, XP_U16* bLen )
 
     XP_ASSERT( len <= BUF_SIZE );
 
-    gotLen = (XP_U16)SendDlgItemMessage( hDlg, id, WM_GETTEXT, len, (long)wbuf );
+    gotLen = (XP_U16)SendDlgItemMessage( hDlg, id, WM_GETTEXT, len, 
+                                         (long)wbuf );
     if ( gotLen > 0 ) {
         XP_ASSERT( gotLen < len );
         if ( gotLen >= len ) {
@@ -360,3 +364,56 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
         }
     }
 } /* ceStackButtonsRight */
+
+#ifdef _WIN32_WCE
+void
+ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id )
+{
+    HMENU menu;
+    XP_U16 curItem = globals->softkey.curItem;
+    /* temporary!! */
+    if ( curItem == 0 ) {
+        curItem = ID_MOVE_TURNDONE;
+    }
+
+    TBBUTTONINFO info;
+    XP_MEMSET( &info, 0, sizeof(info) );
+    info.cbSize = sizeof(info);
+
+    /* Also temporary!! */
+    const wchar_t* txt = L"Mine";
+    switch( id ) {
+    case ID_MOVE_TURNDONE:
+        txt = L"Turn done";
+        break;
+    case ID_FILE_NEWGAME:
+        txt = L"New game";
+        break;
+    case ID_MOVE_NEXTHINT:
+        txt = L"Next hint";
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+
+    info.dwMask = TBIF_LPARAM;
+    SendMessage( globals->hwndCB, TB_GETBUTTONINFO, IDM_MENU, (LPARAM)&info );
+    menu = (HMENU)info.lParam;  /* Use to remove item being installed in
+                                   left button */
+
+ 
+    /* First put any existing menu item back in the main menu! */
+
+    /* Then find, remember and remove the new */
+
+    /* Make it the button */
+
+    info.dwMask = TBIF_TEXT | TBIF_COMMAND;
+    info.idCommand = id;
+    info.pszText = txt;
+    SendMessage( globals->hwndCB, TB_SETBUTTONINFO, curItem, (LPARAM)&info );
+
+    /* Save for next time */
+    globals->softkey.curItem = id;
+} /* ceSetLeftSoftkey */
+#endif

@@ -92,6 +92,10 @@ typedef struct CEAppGlobals {
 #ifdef _WIN32_WCE
     SHACTIVATEINFO sai;
     XW_WinceVersion winceVersion;
+
+    struct {
+        XP_U16 curItem;
+    } softkey;
 #endif
 
     DrawCtx* draw;
