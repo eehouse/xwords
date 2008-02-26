@@ -3367,6 +3367,8 @@ boardTurnChanged( void* p_board )
     setTimerIf( board );
 
     board->scoreBoardInvalid = XP_TRUE;
+
+    util_turnChanged( board->util );
 } /* boardTurnChanged */
 
 static void
