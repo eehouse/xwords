@@ -88,28 +88,33 @@
 # define IDC_CHECKHINTSLIMITS           1057
 #endif
 
+/* buttons and lables must be parallel arrays so CLRSEL_LABEL_OFFSET
+   works. */
 #define DLBLTR_BUTTON                  1058
 #define DBLWRD_BUTTON                  1059
 #define TPLLTR_BUTTON                  1060
 #define TPLWRD_BUTTON                  1061
 #define EMPCELL_BUTTON                 1062
 #define TBACK_BUTTON                   1063
-#define FOCUS_BUTTON                   1064
+#define FOCUSCLR_BUTTON                1064
 #define PLAYER1_BUTTON                 1065
 #define PLAYER2_BUTTON                 1066
 #define PLAYER3_BUTTON                 1067
 #define PLAYER4_BUTTON                 1068
-#define PLAYER1_LABEL                  1069
-#define PLAYER2_LABEL                  1070
-#define PLAYER3_LABEL                  1071
-#define PLAYER4_LABEL                  1072
-#define DLBLTR_LABEL                   1073
-#define DBLWRD_LABEL                   1074
-#define TPLLTR_LABEL                   1075
-#define TPLWRD_LABEL                   1076
-#define EMPTYCELL_LABEL                1077
-#define TILEBACK_LABEL                 1078
-#define FOCUSCLR_LABEL                 1079
+
+#define DLBLTR_LABEL                   1069
+#define DBLWRD_LABEL                   1070
+#define TPLLTR_LABEL                   1071
+#define TPLWRD_LABEL                   1072
+#define EMPCELL_LABEL                  1073
+#define TBACK_LABEL                    1074
+#define FOCUSCLR_LABEL                 1075
+#define PLAYER1_LABEL                  1076
+#define PLAYER2_LABEL                  1077
+#define PLAYER3_LABEL                  1078
+#define PLAYER4_LABEL                  1079
+
+#define CLRSEL_LABEL_OFFSET (DLBLTR_LABEL-DLBLTR_BUTTON)
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */

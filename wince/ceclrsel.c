@@ -32,6 +32,8 @@ typedef struct ClrEditDlgState {
     CEAppGlobals* globals;
 
     RECT clrRect;
+    HWND parent;
+    XP_U16 labelID;
 
     XP_U8 r;
     XP_U8 b;
@@ -150,6 +152,17 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         ceStackButtonsRight( eState->globals, hDlg );
 
+        wchar_t label[32];
+        XP_U16 len = SendDlgItemMessage( eState->parent, eState->labelID, 
+                                         WM_GETTEXT, VSIZE(label), 
+                                         (long)label );
+        if ( len > 0 ) {
+            label[len-1] = 0;       /* hack: overwrite ':' */
+        }
+        wchar_t buf[64];
+        swprintf( buf, L"Edit color for %s", label );
+        SendMessage( hDlg, WM_SETTEXT, 0, buf );
+
         return TRUE;
     } else {
         eState = (ClrEditDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
@@ -215,7 +228,8 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 } /* EditColorsDlg */
 
 static XP_Bool
-myChooseColor( CEAppGlobals* globals, HWND hwnd, COLORREF* cref )
+myChooseColor( CEAppGlobals* globals, HWND parent, XP_U16 labelID, 
+               COLORREF* cref )
 {
     ClrEditDlgState state;
     int result;
@@ -225,11 +239,13 @@ myChooseColor( CEAppGlobals* globals, HWND hwnd, COLORREF* cref )
     state.r = GetRValue(*cref);
     state.g = GetGValue(*cref);
     state.b = GetBValue(*cref);
+    state.labelID = labelID;
+    state.parent = parent;
 
     XP_LOGF( "setting up IDD_COLOREDITDLG" );
 
-    result = DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, hwnd,
-                             (DLGPROC)EditColorsDlg, (long)&state );
+    result = DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, 
+                             parent, (DLGPROC)EditColorsDlg, (long)&state );
 
     XP_LOGF( "DialogBoxParam=>%d", result );
 
@@ -295,14 +311,15 @@ deleteButtonBrushes( ColorsDlgState* cState )
 } /* deleteButtonBrushes */
 
 static void
-wrapChooseColor( ColorsDlgState* cState, HWND owner, XP_U16 button )
+wrapChooseColor( ColorsDlgState* cState, HWND parent, XP_U16 button )
 {
     XP_U16 index = button-FIRST_BUTTON;
+    XP_U16 labelID = button + CLRSEL_LABEL_OFFSET;
 
 #ifdef MY_COLOR_SEL
     COLORREF clrref = cState->colors[index];
 
-    if ( myChooseColor( cState->globals, owner, &clrref ) ) {
+    if ( myChooseColor( cState->globals, parent, labelID, &clrref ) ) {
         cState->colors[index] = clrref;
         DeleteObject( cState->brushes[index] );
         cState->brushes[index] = CreateSolidBrush( clrref );
@@ -323,7 +340,7 @@ wrapChooseColor( ColorsDlgState* cState, HWND owner, XP_U16 button )
     }
 
     ccs.lStructSize = sizeof(ccs);
-    ccs.hwndOwner = owner;
+    ccs.hwndOwner = parent;
     ccs.rgbResult = cState->colors[index];
     ccs.lpCustColors = arr;
 
