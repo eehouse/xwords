@@ -531,19 +531,19 @@ BEGIN
     PUSHBUTTON      "",TPLWRD_BUTTON,CLR_COL_4,CLR_ROW_2,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
-    LTEXT           "Empty cell:",EMPTYCELL_LABEL,CLR_COL_1,CLR_ROW_3,
+    LTEXT           "Empty cell:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_3,
                      CLR_LAB_WIDTH,CLR_LAB_HT
     PUSHBUTTON      "",EMPCELL_BUTTON,CLR_COL_2,CLR_ROW_3,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
-    LTEXT           "Tile bkgnd:",TILEBACK_LABEL,CLR_COL_3,CLR_ROW_3,
+    LTEXT           "Tile bkgnd:",TBACK_LABEL,CLR_COL_3,CLR_ROW_3,
                      CLR_LAB_WIDTH,CLR_LAB_HT
     PUSHBUTTON      "",TBACK_BUTTON,CLR_COL_4,CLR_ROW_3,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
     LTEXT           "Focus color:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_4,
                      CLR_LAB_WIDTH,CLR_LAB_HT
-    PUSHBUTTON      "",FOCUS_BUTTON,CLR_COL_2,CLR_ROW_4,CLR_BUT_WIDTH,
+    PUSHBUTTON      "",FOCUSCLR_BUTTON,CLR_COL_2,CLR_ROW_4,CLR_BUT_WIDTH,
                     CLR_BUT_HT,BS_OWNERDRAW
 
     LTEXT           "Player 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_5,
@@ -592,14 +592,14 @@ END
 
 IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 0, CLRE_WIDTH, 72
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Edit color"
+CAPTION ""                      /* set by code */
 FONT 8, "System"
 BEGIN
     LTEXT           "Red:",RED_LABEL,CLRELABEL_COL,CLREDIT_ROW_1,
                     CLRE_LAB_WIDTH,CLRE_LAB_HT
     EDITTEXT        RED_EDIT,CLREEDIT_COL,CLREDIT_ROW_1,18,12,
                     ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "foo",CLREDT_SLIDER1,"msctls_trackbar32",
+    CONTROL         "",CLREDT_SLIDER1,"msctls_trackbar32",
                     TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
                     CLRESLIDER_COL,CLREDIT_ROW_1,SLIDER_WIDTH,15
 
@@ -607,7 +607,7 @@ BEGIN
                     CLRE_LAB_WIDTH,CLRE_LAB_HT
     EDITTEXT        GREEN_EDIT,CLREEDIT_COL,CLREDIT_ROW_2,18,12,
                     ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "foo",CLREDT_SLIDER2,"msctls_trackbar32",
+    CONTROL         "",CLREDT_SLIDER2,"msctls_trackbar32",
                     TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
                     CLRESLIDER_COL,CLREDIT_ROW_2,SLIDER_WIDTH,15
 
@@ -615,7 +615,7 @@ BEGIN
                     CLRE_LAB_WIDTH,CLRE_LAB_HT
     EDITTEXT        BLUE_EDIT,CLREEDIT_COL,CLREDIT_ROW_3,18,12,
                     ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "foo",CLREDT_SLIDER3,"msctls_trackbar32",
+    CONTROL         "",CLREDT_SLIDER3,"msctls_trackbar32",
                     TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
                     CLRESLIDER_COL,CLREDIT_ROW_3,SLIDER_WIDTH,15
 
