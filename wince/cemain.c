@@ -113,6 +113,7 @@ static void ce_util_trayHiddenChange( XW_UtilCtxt* uc,
                                       XP_U16 nVisibleRows );
 static void ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
                                    XP_U16 newOffset );
+static void ce_util_turnChanged( XW_UtilCtxt* uc );
 static void ce_util_notifyGameOver( XW_UtilCtxt* uc );
 static XP_Bool ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, 
                                    XP_U16 row );
@@ -344,6 +345,7 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_askPassword = ce_util_askPassword;
     vtable->m_util_trayHiddenChange = ce_util_trayHiddenChange;
     vtable->m_util_yOffsetChange = ce_util_yOffsetChange;
+    vtable->m_util_turnChanged = ce_util_turnChanged;
     vtable->m_util_notifyGameOver = ce_util_notifyGameOver;
     vtable->m_util_hiliteCell = ce_util_hiliteCell;
     vtable->m_util_engineProgressCallback = ce_util_engineProgressCallback;
@@ -1328,6 +1330,9 @@ ceHandleHintRequest( CEAppGlobals* globals )
 #endif
                               &notDone );
     globals->hintPending = notDone;
+    if ( draw ) {               /* don't turn on if disallowed */
+        ceSetLeftSoftkey( globals, ID_MOVE_NEXTHINT );
+    }
     return draw;
 } /* ceHandleHintRequest */
 
@@ -1471,6 +1476,7 @@ ceDoNewGame( CEAppGlobals* globals )
 #endif
 
         ceInitAndStartBoard( globals, XP_TRUE, addr );
+        ceSetLeftSoftkey( globals, ID_MOVE_TURNDONE );
         changed = XP_TRUE;
     }
     
@@ -2907,11 +2913,20 @@ ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset),
 } /* ce_util_yOffsetChange */
 
 static void
+ce_util_turnChanged( XW_UtilCtxt* uc )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    ceSetLeftSoftkey( globals, ID_MOVE_TURNDONE );
+}
+
+static void
 ce_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     drawInsidePaint( globals );
     ceDisplayFinalScores( globals );
+
+    ceSetLeftSoftkey( globals, ID_FILE_NEWGAME );
 } /* ce_util_notifyGameOver */
 
 static XP_Bool
