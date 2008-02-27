@@ -124,8 +124,9 @@ typedef struct UtilVtable {
                                     XP_U16 nVisibleRows );
     void (*m_util_yOffsetChange)(XW_UtilCtxt* uc, XP_U16 oldOffset,
                                  XP_U16 newOffset );
+#ifdef XWFEATURE_TURNCHANGENOTIFY
     void (*m_util_turnChanged)(XW_UtilCtxt* uc);
-
+#endif
     void (*m_util_notifyGameOver)( XW_UtilCtxt* uc );
 
     XP_Bool (*m_util_hiliteCell)( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row );
@@ -199,8 +200,12 @@ struct XW_UtilCtxt {
 #define util_yOffsetChange( uc, o, n ) \
          (uc)->vtable->m_util_yOffsetChange((uc), (o), (n) )
 
-#define util_turnChanged( uc ) \
+#ifdef XWFEATURE_TURNCHANGENOTIFY
+# define util_turnChanged( uc ) \
          (uc)->vtable->m_util_turnChanged((uc) )
+#else
+# define util_turnChanged( uc )
+#endif
 
 #define util_notifyGameOver( uc ) \
          (uc)->vtable->m_util_notifyGameOver((uc))
