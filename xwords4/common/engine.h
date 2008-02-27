@@ -38,12 +38,6 @@ typedef struct BdHintLimits {
 
 XP_U16 engine_getScoreCache( EngineCtxt* engine, XP_U16 row );
 
-#if 0
-#define engine_reset(e)		/* nothing for now */
-#else
-
-typedef XP_Bool (*Continue_Callback)(void* state);
-
 EngineCtxt* engine_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isRobot );
 
 void engine_writeToStream( EngineCtxt* ctxt, XWStreamCtxt* stream );
@@ -65,8 +59,6 @@ XP_Bool engine_findMove( EngineCtxt* ctxt, ModelCtxt* model,
                          XP_U16 targetScore, XP_Bool* canMove,
                          MoveInfo* result );
 XP_Bool engine_check( DictionaryCtxt* dict, Tile* buf, XP_U16 buflen );
-
-#endif /* 0 */
 
 #ifdef CPLUS
 }
