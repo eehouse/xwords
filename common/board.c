@@ -62,6 +62,7 @@
 #include "LocalizedStrIncludes.h"
 
 #include "boardp.h"
+#include "dragdrpp.h"
 #include "dbgutil.h"
 
 #define bEND 0x62454e44
@@ -73,8 +74,6 @@ extern "C" {
 /****************************** prototypes ******************************/
 static XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                             XP_Rect* rect);
-static XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, 
-                            XP_U16* colP, XP_U16* rowP );
 static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                          XP_Bool skipBlanks );
 static void figureBoardRect( BoardCtxt* board );
@@ -82,13 +81,11 @@ static void figureBoardRect( BoardCtxt* board );
 static void drawBoard( BoardCtxt* board );
 static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
 static void invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect );
-
-static XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                                XP_U16 tileIndex, Tile blankFace );
 static XP_Bool rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 );
 static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col, 
                               XP_U16 row, XP_Bool added );
-static void boardTileChanged( void* board, XP_U16 turn, TileBit bits );
+static void boardTilesChanged( void* board, XP_U16 turn, XP_S16 index1, 
+                               XP_S16 index2 );
 static void boardTurnChanged( void* board );
 static void boardGameOver( void* board );
 static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col );
@@ -96,8 +93,6 @@ static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col,
                          XP_U16 row );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
-static XP_Bool cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                             XP_Bool inclPending );
 static void makeMiniWindowForTrade( BoardCtxt* board );
 static void makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                                    MiniWindowType winType );
@@ -115,8 +110,11 @@ static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
-static void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                    XP_U16* fCol, XP_U16* fRow );
+#ifdef POINTER_SUPPORT
+static void drawDragTileIf( BoardCtxt* board );
+#endif
+static XP_Bool holdsPendingTile( BoardCtxt* board, 
+                                 XP_U16 pencol, XP_U16 penrow );
 
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
@@ -170,7 +168,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 
         /* could just pass in invalCell.... PENDING(eeh) */
         model_setBoardListener( model, boardCellChanged, result );
-        model_setTrayListener( model, boardTileChanged, result );
+        model_setTrayListener( model, boardTilesChanged, result );
         server_setTurnChangeListener( server, boardTurnChanged, result );
         server_setGameOverListener( server, boardGameOver, result );
 
@@ -739,7 +737,7 @@ timerFiredForPen( BoardCtxt* board )
     const XP_UCHAR* text = (XP_UCHAR*)NULL;
     XP_UCHAR buf[80];
 
-    if ( board->penDownObject == OBJ_BOARD 
+    if ( (board->penDownObject == OBJ_BOARD) && !dragDropInProgress(board)
 #ifdef XWFEATURE_SEARCHLIMIT
          && !board->hintDragInProgress 
 #endif
@@ -958,7 +956,7 @@ board_invalAll( BoardCtxt* board )
     board->scoreBoardInvalid = XP_TRUE;
 } /* board_invalAll */
 
-static void
+void
 flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
         XP_U16* fCol, XP_U16* fRow )
 {
@@ -1261,8 +1259,11 @@ drawBoard( BoardCtxt* board )
             }
         }
 
+        /* I doubt the two of these can happen at the same time */
         drawTradeWindowIf( board );
-
+#ifdef POINTER_SUPPORT
+        drawDragTileIf( board );
+#endif
         draw_objFinished( board->draw, OBJ_BOARD, &board->boardBounds, 
                           dfsFor( board, OBJ_BOARD ) );
 
@@ -1747,10 +1748,20 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_UCHAR* textP = (XP_UCHAR*)ch;
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
+            XP_Bool isOrigin;
 
             isEmpty = !model_getTile( model, modelCol, modelRow, showPending,
-                                      selPlayer, &tile, &isBlank,
-                                      &pending, &recent );
+                                        selPlayer, &tile, &isBlank,
+                                        &pending, &recent );
+            if ( dragDropIsBeingDragged( board, col, row, &isOrigin ) ) {
+                flags |= isOrigin? CELL_DRAGSRC : CELL_DRAGCUR;
+                if ( isEmpty && !isOrigin ) {
+                    dragDropTileInfo( board, &tile, &isBlank );
+                    pending = XP_TRUE;
+                    recent = XP_FALSE;
+                    isEmpty = XP_FALSE;
+                }
+            }
 
             if ( isEmpty ) {
                 isBlank = XP_FALSE;
@@ -1779,8 +1790,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             bonus = util_getSquareBonus( board->util, model, col, row );
             hintAtts = figureHintAtts( board, col, row );
 
-            if ( isEmpty && (col==board->star_row)
-                 && (row==board->star_row ) ) {
+            if ( (col==board->star_row) && (row==board->star_row) ) {
                 flags |= CELL_ISSTAR;
             }
             if ( invert ) {
@@ -1835,7 +1845,7 @@ figureBoardRect( BoardCtxt* board )
     }
 } /* figureBoardRect */
 
-static XP_Bool
+XP_Bool
 coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, XP_U16* rowP )
 {
     XP_U16 col, row, max;
@@ -1913,7 +1923,7 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 } /* invalCell */
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
-static XP_Bool
+XP_Bool
 pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, BoardObjectType* wp )
 {
     XP_Bool result = XP_TRUE;
@@ -2231,14 +2241,25 @@ static XP_Bool
 handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     XP_Bool result = XP_FALSE;
+    XP_U16 col, row;
     /* Start a timer no matter what.  After it fires we'll decide whether it's
        appropriate to handle it.   No.  That's too expensive */
     if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, x, y ) ) {
         return XP_FALSE;
     }
     util_setTimer( board->util, TIMER_PENDOWN, 0, p_board_timerFired, board );
+
+    /* As a first cut, you start a hint-region drag unless the cell is
+       occupied by a non-committed cell. */
+
+    coordToCell( board, x, y, &col, &row );
+    if ( (board->trayVisState == TRAY_REVEALED)
+         && !board->tradeInProgress[board->selPlayer]
+         && holdsPendingTile( board, col, row ) ) {
+        result = dragDropStart( board, OBJ_BOARD, col, row );
 #ifdef XWFEATURE_SEARCHLIMIT
-    if ( board->gi->allowHintRect && board->trayVisState == TRAY_REVEALED ) {
+    } else if ( board->gi->allowHintRect
+                && (board->trayVisState == TRAY_REVEALED) ) {
         result = startHintRegionDrag( board, x, y );
     }
 #endif
@@ -2329,8 +2350,9 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
     case OBJ_TRAY:
         XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
 
-        if ( board->trayVisState != TRAY_REVERSED ) {
-            result = handlePenDownInTray( board, x, y ) || result;
+        if ( board->trayVisState != TRAY_REVERSED 
+             && !board->tradeInProgress[board->selPlayer] ) {
+            result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
         }
         break;
 
@@ -2385,10 +2407,8 @@ board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
     XP_Bool result = XP_FALSE;
 
-    if ( board->tileDragState.dragInProgress ) {
-        result = continueTileDrag( board, x, y ) != 0;
-    } else if ( board->divDragState.dragInProgress ) {
-        result = continueDividerDrag( board, x, y ) != 0;
+    if ( dragDropInProgress(board) ) {
+        result = dragDropContinue( board, x, y ) != 0;
 #ifdef XWFEATURE_SEARCHLIMIT
     } else if ( board->gi->allowHintRect 
                 && board->trayVisState == TRAY_REVEALED ) {
@@ -2434,7 +2454,7 @@ moveSelTileToBoardXY( BoardCtxt* board, XP_U16 col, XP_U16 row )
     return result;
 } /* moveSelTileToBoardXY */
 
-static XP_Bool
+XP_Bool
 cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool inclPending )
 {
     Tile tile;
@@ -2486,41 +2506,37 @@ tryMoveArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
     return result;
 } /* tryMoveArrow */
 
-/* Did I tap on a tile on the board that I have not yet committed?  If so,
- * return it to the tray.
- */
 static XP_Bool
-tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
+holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 {
-    XP_Bool result = XP_FALSE;
-    XP_S16 index;
-    XP_U16 col, row;
     Tile tile;
     XP_Bool ignore, isPending;
     XP_U16 modcol, modrow;
-
     flipIf( board, pencol, penrow, &modcol, &modrow );
-    if ( model_getTile( board->model, modcol, modrow, XP_TRUE,
-                        board->selPlayer, &tile, &ignore, &isPending, 
-                        (XP_Bool*)NULL )
-         && isPending ) {
 
-        XP_S16 count = model_getCurrentMoveCount( board->model, 
-                                                  board->selPlayer );
-        while ( count-- ) {
-            index = count;
-            model_getCurrentMoveTile( board->model, board->selPlayer, 
-                                      &index, &tile, &col, &row, &ignore );
-            if ( col == modcol && row == modrow ) {
-                model_moveBoardToTray( board->model, board->selPlayer, 
-                                       index );
-                /* the cursor should show up where the tile used to be so it's
-                   easy to replace it. */
-                setArrow( board, pencol, penrow );
-                result = XP_TRUE;
-                break;
-            }
-        }
+    return model_getTile( board->model, modcol, modrow, XP_TRUE,
+                          board->selPlayer, &tile, &ignore, &isPending, 
+                          (XP_Bool*)NULL )
+        && isPending;
+} /* holdsPendingTile */
+
+/* Did I tap on a tile on the board that I have not yet committed?  If so,
+ * return it to the tray.
+ */
+XP_Bool
+tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
+{
+    XP_Bool result = XP_FALSE;
+
+    if ( holdsPendingTile( board, pencol, penrow ) ) {
+        XP_U16 modcol, modrow;
+        flipIf( board, pencol, penrow, &modcol, &modrow );
+
+        model_moveBoardToTray( board->model, board->selPlayer, 
+                               modcol, modrow, -1 );
+        setArrow( board, pencol, penrow );
+        result = XP_TRUE;
+
     }
     return result;
 } /* tryReplaceTile */
@@ -2549,7 +2565,8 @@ exitTradeMode( BoardCtxt* board )
 XP_Bool
 board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
-    XP_Bool result = XP_FALSE;
+    XP_Bool draw = XP_FALSE;
+    XP_Bool dragged = XP_FALSE;
     BoardObjectType prevObj = board->penDownObject;
 
     /* prevent timer from firing after pen lifted.  Set now rather than later
@@ -2557,19 +2574,19 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
        exiting this function (which might give timer time to fire. */
     board->penDownObject = OBJ_NONE;
 
-    if ( board->tileDragState.dragInProgress ) {
-        result = endTileDrag( board, x, y );
-    } else if ( board->divDragState.dragInProgress ) {
-        result = endDividerDrag( board, x, y );
+    if ( dragDropInProgress(board) ) {
+        draw = dragDropEnd( board, x, y, &dragged );
+    }
+    if ( dragged ) {
 #ifdef XWFEATURE_SEARCHLIMIT
     } else if ( board->hintDragInProgress ) {
         XP_ASSERT( board->gi->allowHintRect );
-        result = finishHintRegionDrag( board, x, y );
+        draw = finishHintRegionDrag( board, x, y ) || draw;
 #endif
     } else if ( board->penTimerFired ) {
         if ( valHintMiniWindowActive( board ) ) {
             hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
-            result = XP_TRUE;
+            draw = XP_TRUE;
         }
         /* Need to clean up if there's been any dragging happening */
         board->penTimerFired = XP_FALSE;
@@ -2580,7 +2597,7 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
             switch( onWhich ) {
             case OBJ_SCORE:
                 if ( prevObj == OBJ_SCORE ) {
-                    result = handlePenUpScore( board, x, y );
+                    draw = handlePenUpScore( board, x, y ) || draw;
                 }
                 break;
             case OBJ_BOARD:
@@ -2589,21 +2606,21 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
                     if ( TRADE_IN_PROGRESS(board) ) {
                         if ( ptOnTradeWindow( board, x, y )) {
-                            result = exitTradeMode( board );
+                            draw = exitTradeMode( board ) || draw;
                         }
                     } else {
                         XP_U16 col, row;
                         coordToCell( board, board->penDownX, board->penDownY,
                                      &col, &row );
-                        result = handleActionInCell( board, col, row );
+                        draw = handleActionInCell( board, col, row ) || draw;
                     }
                 }
                 break;
             case OBJ_TRAY:
                 if ( board->trayVisState == TRAY_REVERSED ) {
-                    result = askRevealTray( board );
+                    draw = askRevealTray( board ) || draw;
                 } else {
-                    result = handlePenUpTray( board, x, y );
+                    draw = handlePenUpTray( board, x, y ) || draw;
                 }
                 break;
             default:
@@ -2615,7 +2632,7 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 #ifdef XWFEATURE_SEARCHLIMIT
     board->hintDragInProgress = XP_FALSE;
 #endif
-    return result;
+    return draw;
 } /* board_handlePenUp */
 #endif /* #ifdef POINTER_SUPPORT */
 
@@ -2914,8 +2931,6 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
             draw = invalFocusOwner( board ) || draw;
         }
         board->focussed = typ;
-        XP_LOGF( "%s: set focussed to %s", __func__, 
-                 BoardObjectType_2str(typ) );
         board->focusHasDived = XP_FALSE;
         draw = invalFocusOwner( board ) || draw;
     } else {
@@ -3148,8 +3163,7 @@ replaceLastTile( BoardCtxt* board )
         index = -1;
         model_getCurrentMoveTile( board->model, board->selPlayer, &index,
                                   &tile, &col, &row, &isBlank );
-
-        model_moveBoardToTray( board->model, board->selPlayer, index );
+        model_moveBoardToTray( board->model, board->selPlayer, col, row, -1 );
 
         flipIf( board, col, row, &col, &row );
         setArrow( board, col, row );
@@ -3160,9 +3174,9 @@ replaceLastTile( BoardCtxt* board )
     return result;
 } /* replaceLastTile */
 
-static XP_Bool
+XP_Bool
 moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_U16 tileIndex,
-		 Tile blankFace )
+                 Tile blankFace )
 {
     if ( cellOccupied( board, col, row, XP_TRUE ) ) {
         return XP_FALSE;
@@ -3340,13 +3354,13 @@ boardCellChanged( void* p_board, XP_U16 turn, XP_U16 modelCol, XP_U16 modelRow,
 } /* boardCellChanged */
 
 static void
-boardTileChanged( void* p_board, XP_U16 turn, TileBit bits )
+boardTilesChanged( void* p_board, XP_U16 turn, XP_S16 index1, XP_S16 index2 )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     if ( turn == board->selPlayer ) {
-        board_invalTrayTiles( board, bits );
+        invalTrayTilesBetween( board, index1, index2 );
     }
-} /* boardTileChanged */
+} /* boardTilesChanged */
 
 static void
 boardTurnChanged( void* p_board )
@@ -3379,6 +3393,109 @@ boardGameOver( void* closure )
     board->gameOver = XP_TRUE;
     util_notifyGameOver( board->util );
 } /* boardGameOver */
+
+static void
+forceRectToBoard( const BoardCtxt* board, XP_Rect* rect )
+{
+    XP_Rect bounds = board->boardBounds;
+    if ( rect->left < bounds.left ) {
+        rect->left = bounds.left;
+    }
+    if ( rect->top < bounds.top ) {
+        rect->top = bounds.top;
+    }
+    if ( (rect->left + rect->width) > (bounds.left + bounds.width) ) {
+        rect->left -= (rect->left+rect->width) - (bounds.left+bounds.width);
+    }
+    if ( rect->top + rect->height > bounds.top + bounds.height ) {
+        rect->top -= (rect->top+rect->height) - (bounds.top+bounds.height);
+    }
+} /* forceRectToBoard */
+
+static void
+getDragCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rectP )
+{
+    XP_Rect rect;
+    XP_U16 tmp;
+
+    getCellRect( board, col, row, &rect );
+
+    tmp = rect.width;
+    rect.width = board->trayScaleH;
+    rect.left -= (rect.width - tmp) / 2;
+
+    tmp = rect.height;
+    rect.height = board->trayScaleV;
+    rect.top -= (rect.height - tmp) / 2;
+
+    *rectP = rect;
+    forceRectToBoard( board, rectP );
+}
+
+#ifdef POINTER_SUPPORT
+static void
+drawDragTileIf( BoardCtxt* board )
+{
+    if ( dragDropInProgress( board ) ) {
+        XP_U16 col, row;
+        if ( dragDropGetBoardTile( board, &col, &row ) ) {
+            XP_Rect rect;
+            Tile tile;
+            XP_Bool isBlank;
+            XP_UCHAR buf[4];
+            XP_UCHAR* face;
+            XP_Bitmap bitmap = NULL;
+            XP_S16 value;
+            CellFlags flags;
+
+            getDragCellRect( board, col, row, &rect );
+
+            dragDropTileInfo( board, &tile, &isBlank );
+
+            face = getTileDrawInfo( board, tile, isBlank, &bitmap, 
+                                              &value, buf, sizeof(buf) );
+
+            flags = CELL_DRAGCUR;
+            if ( isBlank ) {
+                flags |= CELL_ISBLANK;
+            }
+            draw_drawTileMidDrag( board->draw, &rect, face, bitmap, value, 
+                                  flags );
+        }
+    }
+} /* drawDragTileIf */
+#endif
+
+void
+invalDragObj( BoardCtxt* board, const DragObjInfo* di )
+{
+    if ( OBJ_BOARD == di->obj ) {
+        XP_Rect rect;
+        getDragCellRect( board, di->u.board.col, di->u.board.row, &rect );
+        invalCellsUnderRect( board, &rect );
+    } else if ( OBJ_TRAY == di->obj ) {
+        board_invalTrayTiles( board, 1 << di->u.tray.index );
+    }
+} /* invalCurObj */
+
+void
+invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
+                   const DragObjInfo* to )
+{
+    invalDragObj( board, from );
+    if ( NULL != to ) {
+        invalDragObj( board, to );
+
+        if ( (OBJ_TRAY == from->obj) && (OBJ_TRAY == to->obj) ) {
+            invalTrayTilesBetween( board, from->u.tray.index, 
+                                   to->u.tray.index );
+        } else if ( OBJ_TRAY == from->obj ) {
+            invalTrayTilesAbove( board, from->u.tray.index );
+        } else if ( OBJ_TRAY == to->obj ) {
+            invalTrayTilesAbove( board, to->u.tray.index );
+        }
+    }
+}
 
 #ifdef CPLUS
 }

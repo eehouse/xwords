@@ -37,6 +37,8 @@ typedef enum {
     , CELL_ISSTAR = 0x04
     , CELL_ISCURSOR = 0x08
     , CELL_ISEMPTY = 0x10       /* of a tray tile slot */
+    , CELL_DRAGSRC = 0x20       /* where drag originated */
+    , CELL_DRAGCUR = 0x40       /* where drag is now */
     , CELL_ALL = 0xFF
 } CellFlags;
 
@@ -166,6 +168,12 @@ typedef struct DrawCtxVTable {
                                       /* at least 1 of these two will be null*/
                                       const XP_UCHAR* text, const XP_Bitmap bitmap,
                                       XP_S16 val, CellFlags flags );
+#ifdef POINTER_SUPPORT
+    void DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, const XP_Rect* rect, 
+                                      /* at least 1 of these two will be null*/
+                                      const XP_UCHAR* text, const XP_Bitmap bitmap,
+                                      XP_S16 val, CellFlags flags );
+#endif
     void DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
                                           CellFlags flags );
     void DRAW_VTABLE_NAME(drawTrayDivider) ( DrawCtx* dctx, const XP_Rect* rect, 
@@ -254,6 +262,10 @@ struct DrawCtx {
 #define draw_invertCell( dc, rect ) CALL_DRAW_NAME1(invertCell,(dc),(rect))
 #define draw_drawTile( dc, rect, text, bmp, val, hil ) \
     CALL_DRAW_NAME5(drawTile,(dc),(rect),(text),(bmp),(val),(hil))
+#ifdef POINTER_SUPPORT
+#define draw_drawTileMidDrag( dc, rect, text, bmp, val, hil ) \
+    CALL_DRAW_NAME5(drawTileMidDrag,(dc),(rect),(text),(bmp),(val),(hil))
+#endif  /* POINTER_SUPPORT */
 #define draw_drawTileBack( dc, rect, f ) \
     CALL_DRAW_NAME2(drawTileBack, (dc), (rect), (f) )
 #define draw_drawTrayDivider( dc, rect, s ) \
