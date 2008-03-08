@@ -108,12 +108,13 @@ button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
 {
     XP_Bool redraw, handled;
 
-    globals->mouseDown = XP_TRUE;
-
-    redraw = board_handlePenDown( globals->cGlobals.game.board, 
+    if ( !globals->mouseDown ) {
+        globals->mouseDown = XP_TRUE;
+        redraw = board_handlePenDown( globals->cGlobals.game.board, 
                                   event->x, event->y, &handled );
-    if ( redraw ) {
-        board_draw( globals->cGlobals.game.board );
+        if ( redraw ) {
+            board_draw( globals->cGlobals.game.board );
+        }
     }
     return 1;
 } /* button_press_event */

@@ -48,7 +48,8 @@ static void decrPendingTileCountAt( ModelCtxt* model, XP_U16 col,
                                     XP_U16 row );
 static void notifyBoardListeners( ModelCtxt* model, XP_U16 turn, 
                                   XP_U16 col, XP_U16 row, XP_Bool added );
-static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, TileBit bits);
+static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, 
+                                 XP_S16 index1, XP_S16 index2 );
 static CellTile getModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row );
 static void setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                              CellTile tile );
@@ -874,30 +875,35 @@ model_getCurrentMoveTile( ModelCtxt* model, XP_S16 turn, XP_S16* index,
     *tile = pt->tile & TILE_VALUE_MASK;
 } /* model_getCurrentMoveTile */
 
-Tile
-model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
+static Tile
+removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 {
     PlayerCtxt* player = &model->players[turn];
     Tile tile;
     short i;
-    TileBit bits = 0;
 
-    if ( index < 0 ) {
-        index = player->trayTiles.nTiles - 1;
-    } else {
-        XP_ASSERT( index < player->trayTiles.nTiles );
-    }
+    XP_ASSERT( index < player->trayTiles.nTiles );
 
     tile = player->trayTiles.tiles[index];
-    bits = 1 << index;
 
     --player->trayTiles.nTiles;
     for ( i = index; i < player->trayTiles.nTiles; ++i ) {
         player->trayTiles.tiles[i] = player->trayTiles.tiles[i+1];
-        bits |= 3 << i;
     }
 
-    notifyTrayListeners( model, turn, bits );
+    return tile;
+} /* removePlayerTile */
+
+Tile
+model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
+{
+    Tile tile;
+    PlayerCtxt* player = &model->players[turn];
+    if ( index < 0 ) {
+        index = player->trayTiles.nTiles - 1;
+    }
+    tile = removePlayerTile( model, turn, index );
+    notifyTrayListeners( model, turn, index, player->trayTiles.nTiles );
     return tile;
 } /* model_removePlayerTile */
 
@@ -1003,28 +1009,36 @@ model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, XP_U16 row,
 } /* model_moveTrayToBoard */
 
 void
-model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, XP_S16 index )
+model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, 
+                       XP_U16 col, XP_U16 row, XP_U16 trayOffset )
 {
+    XP_S16 index;
     PlayerCtxt* player;
     short i;
     PendingTile* pt;
     Tile tile;
 
     player = &model->players[turn];
-    if ( index < 0 ) {
-        index = player->nPending - 1;
-    }
+    for ( pt = player->pendingTiles, index = 0; 
+          index < player->nPending;
+          ++index, ++pt ) {
+        if ( pt->col == col && pt->row == row ) {
+            break;
+        }
+    }    
 
-    pt = &player->pendingTiles[index];
-    decrPendingTileCountAt( model, pt->col, pt->row );
-    notifyBoardListeners( model, turn, pt->col, pt->row, XP_FALSE );
+    /* may be legal to fail to find, but we'd better return now! */
+    XP_ASSERT( index < player->nPending );
+
+    decrPendingTileCountAt( model, col, row );
+    notifyBoardListeners( model, turn, col, row, XP_FALSE );
+
     tile = pt->tile;
-
     if ( (tile & TILE_BLANK_BIT) != 0 ) {
         tile = dict_getBlankTile( model->vol.dict );
     }
 
-    model_addPlayerTile( model, turn, -1, tile );
+    model_addPlayerTile( model, turn, trayOffset, tile );
 
     --player->nPending;
     for ( i = index; i < player->nPending; ++i ) {
@@ -1039,6 +1053,36 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 } /* model_moveBoardToTray */
 
 void
+model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
+                       XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew )
+{
+    PlayerCtxt* player = &model->players[turn];
+    XP_S16 index = player->nPending;
+
+    while ( index-- ) {
+        Tile tile;
+        XP_U16 tcol, trow;
+        XP_Bool isBlank;
+        model_getCurrentMoveTile( model, turn, &index, &tile, &tcol, &trow, 
+                                  &isBlank );
+        if ( colCur == tcol && rowCur == trow ) {
+            PendingTile* pt = &player->pendingTiles[index];
+            pt->col = colNew;
+            pt->row = rowNew;
+            if ( isBlank ) {
+                pt->tile = TILE_BLANK_BIT | askBlankTile( model, turn );
+            }
+
+            decrPendingTileCountAt( model, colCur, rowCur );
+            incrPendingTileCountAt( model, colNew, rowNew );
+
+            invalidateScore( model, turn );
+            break;
+        }
+    }
+}
+
+void
 model_resetCurrentTurn( ModelCtxt* model, XP_S16 whose )
 {
     PlayerCtxt* player;
@@ -1047,7 +1091,10 @@ model_resetCurrentTurn( ModelCtxt* model, XP_S16 whose )
     player = &model->players[whose];
 
     while ( player->nPending > 0 ) {
-        model_moveBoardToTray( model, whose, -1 );
+        model_moveBoardToTray( model, whose, 
+                               player->pendingTiles[0].col,
+                               player->pendingTiles[0].row,
+                               -1 );
     }
 } /* model_resetCurrentTurn */
 
@@ -1104,27 +1151,13 @@ static void
 putBackOtherPlayersTiles( ModelCtxt* model, XP_U16 notMyTurn, 
                           XP_U16 col, XP_U16 row )
 {
-    XP_S16 turn, j;
+    XP_S16 turn;
 
     for ( turn = 0; turn < model->nPlayers; ++turn ) {
-        PlayerCtxt* player;
-
         if ( turn == notMyTurn ) {
             continue;
         }
-
-        player = &model->players[turn];
-        for ( j = player->nPending-1; j >= 0; --j ) {	/* backwards in case
-                                                           removed */
-            PendingTile* pt = &player->pendingTiles[j];
-            if ( pt->col == col && pt->row == row ) {
-                /* this one needs to be put back */
-
-                model_moveBoardToTray( model, turn, j );
-
-                break;	/* a player can have only one tile on a square */
-            }
-        }
+        model_moveBoardToTray( model, turn, col, row, -1 );
     }
 } /* putBackOtherPlayersTiles */
 
@@ -1271,30 +1304,43 @@ model_getPlayerTiles( ModelCtxt* model, XP_S16 turn )
     return (const TrayTileSet*)&player->trayTiles;
 } /* model_getPlayerTile */
 
-void
-model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
+static void
+addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
 {
     PlayerCtxt* player = &model->players[turn];
     short i;
-    TileBit bits = 0;
 
     XP_ASSERT( player->trayTiles.nTiles < MAX_TRAY_TILES );
-
-    if ( index < 0 ) {
-        index = player->trayTiles.nTiles;
-    }
+    XP_ASSERT( index >= 0 );
 
     /* move tiles up to make room */
     for ( i = player->trayTiles.nTiles; i > index; --i ) {
         player->trayTiles.tiles[i] = player->trayTiles.tiles[i-1];
-        bits |= (3 << (i-2));
     }
     ++player->trayTiles.nTiles;
     player->trayTiles.tiles[index] = tile;
+} /* addPlayerTile */
 
-    bits |= (1 << index);
-    notifyTrayListeners( model, turn, bits );
+void
+model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index, Tile tile )
+{
+    PlayerCtxt* player = &model->players[turn];
+    if ( index < 0 ) {
+        index = player->trayTiles.nTiles;
+    }
+    addPlayerTile( model, turn, index, tile );
+
+    notifyTrayListeners( model, turn, index, player->trayTiles.nTiles );
 } /* model_addPlayerTile */
+
+void
+model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur, 
+                      XP_S16 indexNew )
+{
+    Tile tile = removePlayerTile( model, turn, indexCur );
+    addPlayerTile( model, turn, indexNew, tile );
+    notifyTrayListeners( model, turn, indexCur, indexNew );
+} /* model_moveTileOnTray */
 
 static void
 assignPlayerTiles( ModelCtxt* model, XP_S16 turn, TrayTileSet* tiles )
@@ -1367,11 +1413,12 @@ notifyBoardListeners( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
 } /* notifyBoardListeners */
 
 static void
-notifyTrayListeners( ModelCtxt* model, XP_U16 turn, TileBit bits )
+notifyTrayListeners( ModelCtxt* model, XP_U16 turn, XP_S16 index1, 
+                     XP_S16 index2 )
 {
     if ( model->vol.trayListenerFunc != NULL ) {
         (*model->vol.trayListenerFunc)( model->vol.trayListenerData, turn, 
-                                        bits );
+                                        index1, index2 );
     }
 } /* notifyTrayListeners */
 

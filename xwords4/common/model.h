@@ -127,6 +127,8 @@ Tile model_getPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 Tile model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index );
 void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
                           Tile tile );
+void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
+                           XP_S16 indexNew );
 
 /* As an optimization, return a pointer to the model's array of tiles for a
    player.  Don't even think about modifying the array!!!! */
@@ -134,9 +136,13 @@ const TrayTileSet* model_getPlayerTiles( ModelCtxt* model, XP_S16 turn );
 
 XP_U16 model_getNumTilesInTray( ModelCtxt* model, XP_S16 turn );
 XP_U16 model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn );
-void model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, XP_S16 index );
+void model_moveBoardToTray( ModelCtxt* model, XP_S16 turn, 
+                            XP_U16 col, XP_U16 row, XP_U16 trayOffset );
 void model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, 
                             XP_U16 row, XP_S16 tileIndex, Tile blankFace );
+void model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
+                            XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew );
+ 
 XP_S16 model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile );
 
 
@@ -184,7 +190,8 @@ typedef void (*BoardListener)(void* data, XP_U16 turn, XP_U16 col,
                               XP_U16 row, XP_Bool added );
 void model_setBoardListener( ModelCtxt* model, BoardListener bl, 
                              void* data );
-typedef void (*TrayListener)(void* data, XP_U16 turn, TileBit bits );
+typedef void (*TrayListener)( void* data, XP_U16 turn, 
+                              XP_S16 index1, XP_S16 index2 );
 void model_setTrayListener( ModelCtxt* model, TrayListener bl, 
                             void* data );
 void model_foreachPendingCell( ModelCtxt* model, XP_S16 turn,

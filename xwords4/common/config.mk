@@ -24,6 +24,7 @@ COMMONOBJDIR = ../common/$(PLATFORM)
 
 COMMONSRC = \
 	$(COMMONDIR)/board.c \
+	$(COMMONDIR)/dragdrpp.c \
 	$(COMMONDIR)/scorebdp.c \
 	$(COMMONDIR)/tray.c \
 	$(COMMONDIR)/draw.c \
@@ -47,6 +48,7 @@ COMMONSRC = \
 
 COMMON1 = \
 	$(COMMONOBJDIR)/board.o \
+	$(COMMONOBJDIR)/dragdrpp.o \
 	$(COMMONOBJDIR)/tray.o \
 	$(COMMONOBJDIR)/scorebdp.o \
 	$(COMMONOBJDIR)/draw.o \

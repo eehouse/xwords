@@ -30,18 +30,29 @@
 extern "C" {
 #endif
 
-typedef struct TileDragState {
-    XP_Bool dragInProgress;
+typedef struct _DragObjInfo {
+    BoardObjectType obj;
+    union {
+        struct {
+            XP_U16 col;
+            XP_U16 row;
+        } board;
+        struct {
+            XP_U16 index;
+        } tray;
+    } u;
+} DragObjInfo;
 
-    XP_Bool wasHilited;
-    TileBit selectionAtStart;
-    XP_Bool movePending;
-    TileBit prevIndex;
-} TileDragState;
-
-typedef struct DividerDragState {
+typedef struct DragState {
     XP_Bool dragInProgress;
-} DividerDragState;
+    XP_Bool dividerOnly;        /* special case; most other stuff ignored */
+    XP_Bool didMove;            /* there was change during the drag; not a
+                                   tap */
+    XP_Bool isBlank;            /* cache rather than lookup in model */
+    Tile tile;                  /* cache rather than lookup in model */
+    DragObjInfo start;
+    DragObjInfo cur;
+} DragState;
 
 typedef struct BoardArrow { /* gets flipped along with board */
 	XP_U8 col;
@@ -146,8 +157,7 @@ struct BoardCtxt {
     XP_Bool dividerInvalid;
 
     XP_Bool scoreBoardInvalid;
-    TileDragState tileDragState;
-    DividerDragState divDragState;
+    DragState dragState;
 
     MiniWindowStuff miniWindowStuff[2];
     XP_Bool tradingMiniWindowInvalid;
@@ -182,22 +192,41 @@ struct BoardCtxt {
 #define TRADE_IN_PROGRESS(b) ((b)->tradeInProgress[(b)->selPlayer]==XP_TRUE)
 
 /* tray-related functions */
-XP_Bool handlePenDownInTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y );
 void drawTray( BoardCtxt* board );
-TileBit continueTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
-XP_Bool endTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
-XP_Bool continueDividerDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
-XP_Bool endDividerDrag( BoardCtxt* board, XP_U16 x, XP_U16 y );
 XP_Bool moveTileToArrowLoc( BoardCtxt* board, XP_U8 index );
 XP_U16 indexForBits( XP_U8 bits );
 XP_Bool rectContainsPt( XP_Rect* rect1, XP_S16 x, XP_S16 y );
 XP_Bool checkRevealTray( BoardCtxt* board );
-void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
 void figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect );
 XP_Bool rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 );
-
+XP_S16 pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, 
+                         XP_Bool* onDividerP );
 void board_selectPlayer( BoardCtxt* board, XP_U16 newPlayer );
+void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
+             XP_U16* fCol, XP_U16* fRow );
+XP_Bool pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, 
+                          BoardObjectType* wp );
+XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, 
+                     XP_U16* rowP );
+XP_Bool cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+                      XP_Bool inclPending );
+XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+                         XP_U16 tileIndex, Tile blankFace );
+
+void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
+void invalDragObj( BoardCtxt* board, const DragObjInfo* di );
+void invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
+                        const DragObjInfo* to );
+void invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex );
+void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
+                            XP_U16 tileIndex2 );
+XP_Bool tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow );
+void moveTileInTray( BoardCtxt* board, XP_U16 moveTo, XP_U16 moveFrom );
+XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
+                           XP_Bitmap* bitmap, XP_S16* value, 
+                           XP_UCHAR* buf, XP_U16 len );
+XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 

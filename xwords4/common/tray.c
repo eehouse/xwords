@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,6 +18,7 @@
  */
 
 #include "boardp.h"
+#include "dragdrpp.h"
 #include "engine.h"
 #include "draw.h"
 #include "strutils.h"
@@ -27,13 +28,9 @@ extern "C" {
 #endif
 
 /****************************** prototypes ******************************/
-static XP_Bool startDividerDrag( BoardCtxt* board );
-static XP_Bool startTileDrag( BoardCtxt* board, XP_U8 startIndex );
 static void figureDividerRect( BoardCtxt* board, XP_Rect* rect );
 static void drawPendingScore( BoardCtxt* board, XP_Bool hasCursor );
-static void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
-                                   XP_U16 tileIndex2 );
-static XP_Bool endTileDragIndex( BoardCtxt* board, TileBit last );
+static XP_U16 countTilesToShow( BoardCtxt* board );
 
 static XP_S16
 trayLocToIndex( BoardCtxt* board, XP_U16 loc )
@@ -48,7 +45,7 @@ trayLocToIndex( BoardCtxt* board, XP_U16 loc )
     return loc;
 } /* trayLocToIndex */
 
-static XP_S16
+XP_S16
 pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* onDividerP )
 {
     XP_S16 result = -1;		/* not on a tile */
@@ -99,11 +96,32 @@ figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect )
     }
 } /* figureTileRect */
 
+/* When drawing tray mid-drag:
+ *
+ * Rule is not to touch the model.  
+ *
+ * Cases: Tile's been dragged into tray (but not yet dropped.); tile's been
+ * dragged out of tray (but not yet dropped); and tile's been dragged within
+ * tray.  More's the point, there's an added tile and a removed one.  We draw
+ * the added tile extra, and skip the removed one.
+ *
+ * We're walking two arrays at once, backwards.  The first is the tile rects
+ * themselves.  If the dirty bit is set, something must get drawn.  The second
+ * is the model's view of tiles augmented by drag-and-drop.  D-n-d may have
+ * removed a tile from the tray (for drawing purposes only), have added one,
+ * or both (drag-within-tray case).  Since a drag lasts only until pen-up,
+ * there's never more than one tile involved.  Adjustment is never by more
+ * than one.
+ *
+ * So while one counter (i) walks the array of rects, we can't use it
+ * unmodified to fetch from the model.  Instead we increment or decrement it
+ * based on the drag state.
+ */
+
 void 
 drawTray( BoardCtxt* board )
 {
     XP_Rect tileRect;
-    short i;
 
     if ( (board->trayInvalBits != 0) || board->dividerInvalid ) {
         XP_S16 turn = board->selPlayer;
@@ -122,23 +140,23 @@ drawTray( BoardCtxt* board )
             }
 #endif
 
-/*             if ( board->eraseTray ) { */
-/*                 draw_clearRect( board->draw, &board->trayBounds ); */
-/*                 board->eraseTray = XP_FALSE; */
-/*             } */
-
             if ( (board->trayVisState != TRAY_HIDDEN) && dictionary != NULL ) {
                 XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
                 Tile blank = dict_getBlankTile( dictionary );
 
                 if ( turn >= 0 ) {
-                    XP_U16 numInTray = showFaces?
-                        model_getNumTilesInTray( board->model, turn ):
-                        model_getNumTilesTotal( board->model, turn );
+                    XP_S16 i; /* which tile slot are we drawing in */
+                    XP_U16 ddAddedIndx, ddRmvdIndx;
+                    XP_U16 numInTray = countTilesToShow( board );
+                    XP_Bool isBlank;
+                    XP_Bool isADrag = dragDropInProgress( board );
+                    
+                    dragDropGetTrayChanges( board, &ddRmvdIndx, &ddAddedIndx );
 
                     /* draw in reverse order so drawing happens after
                        erasing */
-                    for ( i = MAX_TRAY_TILES - 1; i >= 0; --i ) {
+                    for ( i = MAX_TRAY_TILES - 1; 
+                          i >= 0; --i ) {
                         CellFlags flags = CELL_NONE;
                         XP_U16 mask = 1 << i;
 
@@ -161,28 +179,41 @@ drawTray( BoardCtxt* board )
                             XP_UCHAR* textP = (XP_UCHAR*)NULL;
                             XP_U8 traySelBits = board->traySelBits[turn];
                             XP_S16 value;
-                            Tile tile = model_getPlayerTile( board->model, 
-                                                             turn, i );
+                            Tile tile;
 
-                            if ( dict_faceIsBitmap( dictionary, tile ) ) {
-                                bitmap = dict_getFaceBitmap( dictionary, tile, 
-                                                             XP_TRUE );
+                            if ( ddAddedIndx == i ) {
+                                dragDropTileInfo( board, &tile, &isBlank );
                             } else {
-                                textP = buf;
-                                dict_tilesToString( dictionary, &tile, 1, 
-                                                    textP, sizeof(buf) );
+                                XP_U16 modIndex = i;
+                                if ( ddAddedIndx < i ) {
+                                    --modIndex;
+                                }
+                                /* while we're right of the removal area,
+                                   draw the one from the right to cover. */
+                                if ( ddRmvdIndx <= modIndex /*slotIndx*/ ) {
+                                    ++modIndex;
+                                }
+                                tile = model_getPlayerTile( board->model, 
+                                                            turn, modIndex );
+                                isBlank = tile == blank;
                             }
+
+                            textP = getTileDrawInfo( board, tile, isBlank,
+                                                     &bitmap, &value,
+                                                     buf, sizeof(buf) );
                             if ( board->hideValsInTray 
                                  && !board->showCellValues ) {
                                 value = -1;
-                            } else {
-                                value = dict_getTileValue( dictionary, tile );
                             }
 
-                            if ( (traySelBits & (1<<i)) != 0 ) {
+                            if ( isADrag ) {
+                                if ( ddAddedIndx == i ) {
+                                    flags |= CELL_HIGHLIGHT;
+                                }
+                            } else if ( (traySelBits & (1<<i)) != 0 ) {
                                 flags |= CELL_HIGHLIGHT;
                             }
-                            if ( tile == blank ) {
+                            if ( isBlank ) {
                                 flags |= CELL_ISBLANK;
                             }
 
@@ -199,7 +230,7 @@ drawTray( BoardCtxt* board )
                     XP_Rect divider;
                     figureDividerRect( board, &divider );
                     draw_drawTrayDivider( board->draw, &divider, 
-                                          board->divDragState.dragInProgress );
+                                          dragDropIsDividerDrag(board) );
                     board->dividerInvalid = XP_FALSE;
                 }
 
@@ -216,41 +247,68 @@ drawTray( BoardCtxt* board )
 
 } /* drawTray */
 
+XP_UCHAR*
+getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
+                 XP_Bitmap* bitmap, XP_S16* value, XP_UCHAR* buf, XP_U16 len )
+{
+    XP_UCHAR* face = NULL;
+    DictionaryCtxt* dict = model_getDictionary( board->model );
+    if ( isBlank ) {
+        tile = dict_getBlankTile( dict );
+    }
+    *value = dict_getTileValue( dict, tile );
+    if ( dict_faceIsBitmap( dict, tile ) ) {
+        *bitmap = dict_getFaceBitmap( dict, tile, XP_TRUE );
+    } else {
+        dict_tilesToString( dict, &tile, 1, buf, len );
+        face = buf;
+    }
+    return face;
+}
+
+static XP_U16
+countTilesToShow( BoardCtxt* board )
+{
+    XP_U16 numToShow;
+    XP_S16 selPlayer = board->selPlayer;
+    XP_U16 ddAddedIndx, ddRemovedIndx;
+
+    XP_ASSERT( selPlayer >= 0 );
+    if ( board->trayVisState == TRAY_REVEALED ) {
+        numToShow = model_getNumTilesInTray( board->model, selPlayer );
+    } else {
+        numToShow = model_getNumTilesTotal( board->model, selPlayer );
+    }
+
+    dragDropGetTrayChanges( board, &ddRemovedIndx, &ddAddedIndx );
+    if ( ddAddedIndx < MAX_TRAY_TILES ) {
+        ++numToShow;
+    }
+    if ( ddRemovedIndx < MAX_TRAY_TILES ) {
+        --numToShow;
+    }
+
+    XP_ASSERT( numToShow <= MAX_TRAY_TILES );
+    return numToShow;
+} /* countTilesToShow */
+
 static void
 drawPendingScore( BoardCtxt* board, XP_Bool hasCursor )
 {
     /* Draw the pending score down in the last tray's rect */
-    if ( board->trayVisState == TRAY_REVEALED ) {
+    if ( countTilesToShow( board ) < MAX_TRAY_TILES ) {
         XP_U16 selPlayer = board->selPlayer;
-        XP_U16 tilesInTray = model_getNumTilesInTray( board->model, selPlayer);
-        if ( tilesInTray < MAX_TRAY_TILES ) {
+        XP_S16 turnScore = 0;
+        XP_Rect lastTileR;
 
-            XP_S16 turnScore = 0;
-            XP_Rect lastTileR;
-
-            (void)getCurrentMoveScoreIfLegal( board->model, selPlayer,
-                                              (XWStreamCtxt*)NULL, &turnScore );
-            figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
-            draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
-                                     selPlayer, 
-                                     hasCursor?CELL_ISCURSOR:CELL_NONE );
-        }
+        (void)getCurrentMoveScoreIfLegal( board->model, selPlayer,
+                                          (XWStreamCtxt*)NULL, &turnScore );
+        figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
+        draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
+                                 selPlayer, 
+                                 hasCursor?CELL_ISCURSOR:CELL_NONE );
     }
 } /* drawPendingScore */
-
-#ifdef DEBUG
-static XP_U16
-countSelectedTiles( XP_U8 ti )
-{
-    XP_U16 result = 0;
-
-    while ( ti != 0 ) {
-        ++result;
-        ti &= ti-1;
-    }
-    return result;
-} /* countSelectedTiles */
-#endif
 
 static void
 figureDividerRect( BoardCtxt* board, XP_Rect* rect )
@@ -293,66 +351,38 @@ handleTrayDuringTrade( BoardCtxt* board, XP_S16 index )
 } /* handleTrayDuringTrade */
 
 static XP_Bool
-handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider,
-                    XP_Bool waitPenUp )
+handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
 {
     XP_Bool result = XP_FALSE;
     XP_U16 selPlayer = board->selPlayer;
 
     if ( onDivider ) {
-        result = startDividerDrag( board );
-    } else if ( board->tradeInProgress[selPlayer]
-                /*  && MY_TURN(board) */ ) {
+        /* do nothing */
+    } else if ( board->tradeInProgress[selPlayer] ) {
         if ( index >= 0 ) {
             result = handleTrayDuringTrade( board, index );
         }
     } else if ( index >= 0 ) {
-        TileBit newIndex = 1 << index;
-        BoardArrow* arrow = &board->boardArrow[selPlayer];
-	    
-        if ( !arrow->visible ) {
-            XP_U8 selFlags = board->traySelBits[selPlayer];
+        result = moveTileToArrowLoc( board, (XP_U8)index );
+        if ( !result ) {
+            TileBit newBits = 1 << index;
+            XP_U8 selBits = board->traySelBits[selPlayer];
             /* Tap on selected tile unselects.  If we don't do this,
                then there's no way to unselect and so no way to turn
                off the placement arrow */
-            if ( !waitPenUp && newIndex == selFlags ) {
-                board_invalTrayTiles( board, selFlags );
-                selFlags = NO_TILES;
-                board->traySelBits[selPlayer] = selFlags;
-                result = XP_TRUE;
+            if ( newBits == selBits ) {
+                board_invalTrayTiles( board, selBits );
+                board->traySelBits[selPlayer] = NO_TILES;
+            } else if ( selBits != 0 ) {
+                XP_U16 selIndex = indexForBits( selBits );
+                model_moveTileOnTray( board->model, board->selPlayer,
+                                      selIndex, index );
+                board->traySelBits[selPlayer] = NO_TILES;
             } else {
-                result = startTileDrag( board, newIndex );
-                if ( !waitPenUp ) {
-                    /* key interface means pen up and down happen in the same
-                       event.  No dragging. */
-                    result = endTileDragIndex( board, newIndex ) || result;
-                }
+                 board_invalTrayTiles( board, newBits );
+                 board->traySelBits[selPlayer] = newBits;
             }
-        }
-    }
-    return result;
-} /* handleActionInTray */
-
-XP_Bool
-handlePenDownInTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    XP_Bool onDivider = XP_FALSE;
-    XP_S16 index = pointToTileIndex( board, x, y, &onDivider );
-   
-    return handleActionInTray( board, index, onDivider, XP_TRUE );
-} /* handlePenDownInTray */
-
-static XP_Bool
-handlePenUpTrayInt( BoardCtxt* board, XP_S16 index )
-{
-    XP_Bool result = XP_FALSE;
-
-    if ( index >= 0 ) {
-        XP_U16 selPlayer = board->selPlayer;
-        BoardArrow* arrow = &board->boardArrow[selPlayer];
-	    
-        if ( arrow->visible ) {
-            result = moveTileToArrowLoc( board, (XP_U8)index );
+            result = XP_TRUE;
         }
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
         result = board_commitTurn( board );
@@ -361,84 +391,16 @@ handlePenUpTrayInt( BoardCtxt* board, XP_S16 index )
         (void)board_replaceTiles( board );
         result = XP_TRUE;
     }
-
     return result;
-} /* handlePenUpTray */
+} /* handleActionInTray */
 
 XP_Bool
 handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
 {
-    XP_Bool ignore;
-    XP_S16 index = pointToTileIndex( board, x, y, &ignore );
-    return handlePenUpTrayInt( board, index );
+    XP_Bool onDivider;
+    XP_S16 index = pointToTileIndex( board, x, y, &onDivider );
+    return handleActionInTray( board, index, onDivider );
 } /* handlePenUpTray */
-
-static XP_Bool
-startTileDrag( BoardCtxt* board, TileBit startBit/* , XP_U16 x, XP_U16 y */ )
-{
-    XP_Bool result = XP_FALSE;
-    XP_U16 turn = board->selPlayer;
-    XP_U8 startSel = board->traySelBits[turn];
-    TileDragState* state = &board->tileDragState;
-
-    XP_ASSERT( countSelectedTiles( startBit ) == 1 );
-    XP_ASSERT( !state->dragInProgress );
-
-    state->wasHilited = startSel == startBit;
-    state->selectionAtStart = startSel;
-    state->movePending = XP_TRUE;
-
-    state->dragInProgress = XP_TRUE;
-    state->prevIndex = board->traySelBits[turn] = startBit;
-
-    if ( !state->wasHilited ) {
-        board_invalTrayTiles( board, (TileBit)(startBit | startSel) );
-        result = XP_TRUE;
-    }
-    return result;
-} /* startTileDrag */
-
-static void
-moveTileInTray( BoardCtxt* board, TileBit prevTile, TileBit newTile )
-{
-    XP_S16 selPlayer = board->selPlayer;
-    ModelCtxt* model = board->model;
-    XP_U16 moveTo = indexForBits( prevTile );
-    XP_U16 moveFrom = indexForBits( newTile );
-    Tile tile;
-    XP_U16 dividerLoc;
-
-    tile = model_removePlayerTile( model, selPlayer, moveFrom );
-    model_addPlayerTile( model, selPlayer, moveTo, tile );
-    
-    dividerLoc = board->dividerLoc[selPlayer];
-    if ( moveTo < dividerLoc || moveFrom < dividerLoc ) {
-        server_resetEngine( board->server, selPlayer );
-    }
-} /* moveTileInTray */
-
-TileBit
-continueTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    TileDragState* state = &board->tileDragState;
-    TileBit overTile = 0;
-    XP_S16 index = pointToTileIndex( board, x, y, (XP_Bool*)NULL );
-
-    if ( index >= 0 ) {
-
-        overTile = 1 << index;
-
-        if ( overTile != state->prevIndex ) {
-
-            moveTileInTray( board, overTile, state->prevIndex );
-
-            state->movePending = XP_FALSE;
-            state->wasHilited = XP_FALSE; // so we won't deselect
-            state->prevIndex = board->traySelBits[board->selPlayer] = overTile;
-        }
-    }
-    return overTile;
-} /* continueTileDrag */
 
 XP_U16 
 indexForBits( XP_U8 bits )
@@ -455,115 +417,30 @@ indexForBits( XP_U8 bits )
     return result;
 } /* indexForBits */
 
-static XP_Bool
-endTileDragIndex( BoardCtxt* board, TileBit last )
-{
-    XP_Bool result = XP_FALSE;
-    XP_U16 selPlayer = board->selPlayer;
-
-    TileDragState* state = &board->tileDragState;
-
-    if ( state->movePending ) { /* no drag took place */
-	
-        if ( state->wasHilited ) {  /* if the user just clicked; deselect */
-            board_invalTrayTiles( board, state->selectionAtStart );
-            board->traySelBits[selPlayer] = NO_TILES;
-            result = XP_TRUE;
-        } else if ( (last > 0)
-                    && !board->boardArrow[selPlayer].visible
-                    && (state->selectionAtStart != NO_TILES ) ) {
-
-            if ( model_getCurrentMoveCount( board->model, selPlayer) == 0 ) {
-                moveTileInTray( board, last, state->selectionAtStart );
-                board->traySelBits[selPlayer] = NO_TILES;
-            } else {
-                board_invalTrayTiles( 
-                     board, 
-                     (TileBit)(state->selectionAtStart|last) );
-                board->traySelBits[selPlayer] = last;
-            }
-            result = XP_TRUE;
-        }
-    } else {
-        board_invalTrayTiles( board, state->prevIndex );
-        board->traySelBits[selPlayer] = NO_TILES;
-        result = XP_TRUE;
-    }
-
-    state->dragInProgress = XP_FALSE;
-    return result;
-} /* endTileDragIndex */
-
 XP_Bool
-endTileDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    TileBit newTile = continueTileDrag( board, x, y );
-    return endTileDragIndex( board, newTile );
-} /* endTileDrag */
-
-static XP_Bool
-startDividerDrag( BoardCtxt* board )
-{
-    board->divDragState.dragInProgress = XP_TRUE;
-    board->dividerInvalid = XP_TRUE;
-    return XP_TRUE;
-} /* startDividerDrag */
-
-static void
 dividerMoved( BoardCtxt* board, XP_U8 newLoc )
 {
     XP_U8 oldLoc = board->dividerLoc[board->selPlayer];
-    board->dividerLoc[board->selPlayer] = newLoc;
+    XP_Bool moved = oldLoc != newLoc;
+    if ( moved ) {
+        board->dividerLoc[board->selPlayer] = newLoc;
 
-    /* This divider's index corresponds to the tile it's to the left of, and
-       there's no need to invalidate any tiles to the left of the uppermore
-       divider position. */
-    if ( oldLoc > newLoc ) {
-        --oldLoc;
-    } else {
-        --newLoc;
+        /* This divider's index corresponds to the tile it's to the left of, and
+           there's no need to invalidate any tiles to the left of the uppermore
+           divider position. */
+        if ( oldLoc > newLoc ) {
+            --oldLoc;
+        } else {
+            --newLoc;
+        }
+        invalTrayTilesBetween( board, newLoc, oldLoc );
+
+        board->dividerInvalid = XP_TRUE;
+        /* changed number of available tiles */
+        board_resetEngine( board );
     }
-    invalTrayTilesBetween( board, newLoc, oldLoc );
-
-    board->dividerInvalid = XP_TRUE;
-    /* changed number of available tiles */
-    board_resetEngine( board );
+    return moved;
 } /* dividerMoved */
-
-XP_Bool
-continueDividerDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    XP_U8 newOffset;
-    XP_U16 trayScale = board->trayScaleH;
-    XP_Bool result = XP_FALSE;
-
-    XP_ASSERT( board->divDragState.dragInProgress );
-
-    /* Pen might have been dragged out of the tray */
-    if ( rectContainsPt( &board->trayBounds, x, y ) ) {
-        x -= board->trayBounds.left;
-        newOffset = x / trayScale;
-        if ( (x % trayScale) > (trayScale/2) ) {
-            ++newOffset;
-        }
-
-        result = newOffset != board->dividerLoc[board->selPlayer];
-        if ( result ) {
-            dividerMoved( board, newOffset );
-        }
-    }
-    return result;
-} /* continueDividerDrag */
-
-XP_Bool
-endDividerDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    XP_Bool result = XP_TRUE;	/* b/c hilited state looks different */
-    (void)continueDividerDrag( board, x, y );
-    board->dividerInvalid = XP_TRUE;
-    board->divDragState.dragInProgress = XP_FALSE;
-    return result;
-} /* endDividerDrag */
 
 void
 board_invalTrayTiles( BoardCtxt* board, TileBit what )
@@ -571,7 +448,17 @@ board_invalTrayTiles( BoardCtxt* board, TileBit what )
     board->trayInvalBits |= what;
 } /* invalTrayTiles */
 
-static void
+void
+invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex )
+{
+    TileBit bits = 0;
+    while ( tileIndex < MAX_TRAY_TILES ) {
+        bits |= 1 << tileIndex++;
+    }
+    board_invalTrayTiles( board, bits );
+}
+
+void
 invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                        XP_U16 tileIndex2 )
 {
@@ -710,7 +597,7 @@ board_moveDivider( BoardCtxt* board, XP_Bool right )
         loc += right? 1:-1;
         loc %= MAX_TRAY_TILES + 1;
 
-        dividerMoved( board, loc );
+        (void)dividerMoved( board, loc );
     }
     return result;
 } /* board_moveDivider */

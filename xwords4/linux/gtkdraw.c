@@ -1,6 +1,7 @@
 /* -*- mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */ 
 /* 
- * Copyright 1997-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2008 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -71,7 +72,7 @@ eraseRect( GtkDrawCtx* dctx, const XP_Rect* rect )
 } /* eraseRect */
 
 static void
-frameRect( GtkDrawCtx* dctx, XP_Rect* rect )
+frameRect( GtkDrawCtx* dctx, const XP_Rect* rect )
 {
     gdk_draw_rectangle( DRAW_WHAT(dctx),
                         dctx->drawGC, FALSE, rect->left, rect->top, 
@@ -431,53 +432,44 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                             rect->height );
     }
 
-    /* draw the bonus colors only if we're not putting a "tile" there */
-    if ( !!letter ) {
-        if ( *letter == LETTER_NONE && bonus != BONUS_NONE ) {
-            XP_ASSERT( bonus <= 4 );
-
+    /* We draw just an empty, potentially colored, square IFF there's nothing
+       in the cell or if CELL_DRAGSRC is set */
+    if ( (flags & CELL_DRAGSRC) != 0 || ( !!letter && *letter == LETTER_NONE ) ) {
+        if ( bonus != BONUS_NONE ) {
             gdk_gc_set_foreground( dctx->drawGC, &dctx->bonusColors[bonus-1] );
-            gdk_draw_rectangle( DRAW_WHAT(dctx),
-                                dctx->drawGC,
-                                TRUE,
+            gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC, TRUE,
                                 rectInset.left, rectInset.top,
                                 rectInset.width+1, rectInset.height+1 );
+        }
+        if ( (flags & CELL_ISSTAR) != 0 ) {
+            draw_string_at( dctx, "*", rect->height, rect, XP_GTK_JUST_CENTER,
+                            &dctx->black, NULL );
+        }
+    } else if ( !!letter ) {
+        GdkColor* foreground;
 
-        } else if ( *letter != LETTER_NONE ) {
-            GdkColor* foreground;
+        if ( !highlight ) {
+            gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+        }
+        gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC, TRUE,
+                            rectInset.left, rectInset.top,
+                            rectInset.width+1, rectInset.height+1 );
 
-            if ( !highlight ) {
-                gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
-            }
-            gdk_draw_rectangle( DRAW_WHAT(dctx),
-                                dctx->drawGC,
-                                TRUE,
-                                rectInset.left, rectInset.top,
-                                rectInset.width+1, rectInset.height+1 );
+        foreground = highlight? &dctx->white : &dctx->playerColors[owner];
+        draw_string_at( dctx, letter, rectInset.height-2, &rectInset, 
+                        XP_GTK_JUST_CENTER, foreground, NULL );
 
-            foreground = highlight? &dctx->white : &dctx->playerColors[owner];
-            draw_string_at( dctx, letter, rectInset.height-2,
-							&rectInset, XP_GTK_JUST_CENTER,
-                            foreground, NULL );
-
-            if ( (flags & CELL_ISBLANK) != 0 ) {
-                gdk_draw_arc( DRAW_WHAT(dctx), dctx->drawGC,
-                              0,	/* filled */
-                              rect->left, /* x */
-                              rect->top, /* y */
-                              rect->width,/*width, */
-                              rect->height,/*width, */
-                              0, 360*64 );
-            }
+        if ( (flags & CELL_ISBLANK) != 0 ) {
+            gdk_draw_arc( DRAW_WHAT(dctx), dctx->drawGC,
+                          0,	/* filled */
+                          rect->left, /* x */
+                          rect->top, /* y */
+                          rect->width,/*width, */
+                          rect->height,/*width, */
+                          0, 360*64 );
         }
     } else if ( !!bitmap ) {
         drawBitmapFromLBS( dctx, bitmap, rect );
-    }
-
-    if ( (flags & CELL_ISSTAR) != 0 ) {
-        draw_string_at( dctx, "*", rect->height,
-                        rect, XP_GTK_JUST_CENTER,
-                        &dctx->black, NULL );
     }
 
     drawHintBorders( dctx, rect, hintAtts );
@@ -525,15 +517,18 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner,
 } /* gtk_draw_trayBegin */
 
 static void
-gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
-                   XP_Bitmap bitmap, XP_S16 val, CellFlags flags )
+gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
+                 XP_Bitmap bitmap, XP_S16 val, CellFlags flags, 
+                 XP_Bool clearBack )
 {
     XP_UCHAR numbuf[3];
     gint len; 
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect insetR = *rect;
 
-    eraseRect( dctx, &insetR );
+    if ( clearBack ) {
+        eraseRect( dctx, &insetR );
+    }
 
     if ( val >= 0 ) {
         GdkColor* foreground = &dctx->playerColors[dctx->trayOwner];
@@ -541,16 +536,17 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 
         insetRect( &insetR, 1 );
 
+        if ( clearBack ) {
+            gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+            gdk_draw_rectangle( DRAW_WHAT(dctx),
+                                dctx->drawGC,
+                                XP_TRUE,
+                                insetR.left, insetR.top, insetR.width,
+                                insetR.height );
+        }
+
         formatRect.left += 3;
         formatRect.width -= 6;
-
-        gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
-        gdk_draw_rectangle( DRAW_WHAT(dctx),
-                            dctx->drawGC,
-                            TRUE,
-                            insetR.left, insetR.top, insetR.width, 
-                            insetR.height );
-        
 
         if ( !!textP ) {
             if ( *textP != LETTER_NONE ) { /* blank */
@@ -594,6 +590,25 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 } /* gtk_draw_drawTile */
 
 static void
+gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
+                   XP_Bitmap bitmap, XP_S16 val, CellFlags flags )
+{
+    gtkDrawTileImpl( p_dctx, rect, textP, bitmap, val, flags, XP_TRUE );
+}
+
+#ifdef POINTER_SUPPORT
+static void
+gtk_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
+                          const XP_UCHAR* textP, XP_Bitmap bitmap, 
+                          XP_S16 val, CellFlags flags )
+{
+    gtkDrawTileImpl( p_dctx, rect, textP, bitmap, val, 
+                     flags | CELL_HIGHLIGHT,
+                     XP_FALSE );
+}
+#endif
+
+static void
 gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
                        CellFlags flags )
 {
@@ -635,7 +650,7 @@ gtk_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
     ++r.left;
     r.width -= selected? 2:1;
     if ( selected ) {
-	--r.height;
+        --r.height;
     }
 
     gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
@@ -1030,6 +1045,9 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, gtk );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, gtk );
+#ifdef POINTER_SUPPORT
+    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileMidDrag, gtk );
+#endif
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, gtk );
