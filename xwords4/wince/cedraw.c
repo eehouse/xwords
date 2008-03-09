@@ -276,6 +276,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     COLORREF foreColorRef;
     XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
     XP_Bool isFocussed = (flags & CELL_ISCURSOR) != 0;
+    XP_Bool isDragSrc = (flags & CELL_DRAGSRC) != 0;
 
     XP_ASSERT( !!hdc );
 
@@ -292,7 +293,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     /* always init to silence compiler warning */
     foreColorRef = dctx->globals->appPrefs.colors[getPlayerColor(owner)];
 
-    if ( (!!letters && letters[0] != '\0' ) || !!bitmap ) {
+    if ( !isDragSrc && ((!!letters && letters[0] != '\0' ) || !!bitmap )) {
         if ( isPending ) {
             bkIndex = CE_BLACK_COLOR;
             foreColorRef = dctx->globals->appPrefs.colors[CE_WHITE_COLOR];
@@ -331,7 +332,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
 
-    if ( !!letters && (letters[0] != '\0') ) {
+    if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
         cp = letters;
 
@@ -348,7 +349,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         DrawText( hdc, widebuf, -1, &textRect, 
                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
 
-    } else if ( !!bitmap ) {
+    } else if ( !isDragSrc && !!bitmap ) {
         makeAndDrawBitmap( dctx, hdc, &rt, XP_TRUE,
                            foreColorRef, (CEBitmapInfo*)bitmap );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
@@ -481,6 +482,16 @@ DRAW_FUNC_NAME(drawTile)( DrawCtx* p_dctx, const XP_Rect* xprect,
 {
     drawDrawTileGuts( p_dctx, xprect, letters, bitmap, val, flags );
 } /* ce_draw_drawTile */
+
+#ifdef POINTER_SUPPORT
+DLSTATIC void
+DRAW_FUNC_NAME(drawTileMidDrag)( DrawCtx* p_dctx, const XP_Rect* xprect, 
+                                 const XP_UCHAR* letters, XP_Bitmap bitmap, 
+                                 XP_S16 val, CellFlags flags )
+{
+    drawDrawTileGuts( p_dctx, xprect, letters, bitmap, val, flags );
+} /* ce_draw_drawTile */
+#endif
 
 DLSTATIC void
 DRAW_FUNC_NAME(drawTileBack)( DrawCtx* p_dctx, const XP_Rect* xprect,
@@ -1101,10 +1112,8 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
 
     dctx->rightArrow = LoadBitmap( globals->hInst, 
                                    MAKEINTRESOURCE(IDB_RIGHTARROW) );
-    XP_DEBUGF( "loaded bitmap: 0x%lx", (unsigned long)dctx->rightArrow );
     dctx->downArrow = LoadBitmap( globals->hInst, 
                                   MAKEINTRESOURCE(IDB_DOWNARROW) );
-
     dctx->origin = LoadBitmap( globals->hInst, 
                                MAKEINTRESOURCE(IDB_ORIGIN) );
 
