@@ -248,8 +248,8 @@ linux_udp_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrp,
         }
 
         if ( haveAddress ) {
-            XP_LOGF( "calling sendto: sock=%d; port=%d; ipaddr=%lx", stuff->socket,
-                     ntohs(to.sin_port), to.sin_addr.s_addr );
+            XP_LOGF( "calling sendto: sock=%d; port=%d; ipaddr=%x", 
+                     stuff->socket, ntohs(to.sin_port), to.sin_addr.s_addr );
             nSent = sendto( stuff->socket, buf, buflen, 0, 
                             (struct sockaddr*)&to, sizeof(to) );
             if ( nSent != buflen ) {
