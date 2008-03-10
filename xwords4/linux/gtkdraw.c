@@ -743,8 +743,8 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_S16 nTilesLeft,
         int width, height;
         pango_layout_get_pixel_size( layout, &width, &height );
 
-        if ( height > HOR_SCORE_HEIGHT ) {
-            height = HOR_SCORE_HEIGHT;
+        if ( height > GTK_HOR_SCORE_HEIGHT ) {
+            height = GTK_HOR_SCORE_HEIGHT;
         }
 
         *widthP = width;
@@ -794,8 +794,8 @@ scoreWidthAndText( GtkDrawCtx* XP_UNUSED(dctx), PangoLayout* layout, char* buf,
             *widthP = width;
         }
         if ( !!heightP ) {
-            if ( height > HOR_SCORE_HEIGHT ) {
-                height = HOR_SCORE_HEIGHT;
+            if ( height > GTK_HOR_SCORE_HEIGHT ) {
+                height = GTK_HOR_SCORE_HEIGHT;
             }
             *heightP = height;
         }
