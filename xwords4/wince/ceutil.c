@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2004 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,7 @@
 
 #include "ceutil.h"
 #include "cedefines.h"
+#include "cedebug.h"
 
 #define BUF_SIZE 128
 #define VPADDING 4
@@ -365,55 +366,135 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
     }
 } /* ceStackButtonsRight */
 
-#ifdef _WIN32_WCE
-void
-ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id )
+static XP_Bool
+ceFindMenu( HMENU menu, XP_U16 id, HMENU* foundMenu, XP_U16* foundPos,
+            wchar_t* foundBuf, XP_U16 bufLen )
 {
-    HMENU menu;
-    XP_U16 curItem = globals->softkey.curItem;
-    /* temporary!! */
-    if ( curItem == 0 ) {
-        curItem = ID_MOVE_TURNDONE;
+    XP_Bool found = XP_FALSE;
+    XP_U16 pos;
+    MENUITEMINFO minfo;
+
+    XP_MEMSET( &minfo, 0, sizeof(minfo) );
+    minfo.cbSize = sizeof(minfo);
+
+    for ( pos = 0; !found; ++pos ) {
+        /* Set these each time through loop.  GetMenuItemInfo can change
+           some of 'em. */
+        minfo.fMask = MIIM_SUBMENU | MFT_STRING | MIIM_ID | MIIM_TYPE;
+        minfo.dwTypeData = foundBuf;
+        minfo.fType = MFT_STRING;
+        minfo.cch = bufLen;
+
+        if ( !GetMenuItemInfo( menu, pos, TRUE, &minfo ) ) {
+            break;              /* pos is too big */
+        } else if ( NULL != minfo.hSubMenu ) {
+            found = ceFindMenu( minfo.hSubMenu, id, foundMenu, foundPos,
+                                foundBuf, bufLen );
+        } else if ( MFT_SEPARATOR == minfo.fType ) {
+            continue;
+        } else if ( minfo.wID == id ) {
+            found = XP_TRUE;
+            *foundPos = pos;
+            *foundMenu = menu;
+        }
+    }
+    return found;
+} /* ceFindMenu */
+
+#ifndef _WIN32_WCE
+static void
+setW32DummyMenu( CEAppGlobals* globals, HMENU menu, XP_U16 id, wchar_t* oldNm )
+{
+    XP_LOGW( __func__, oldNm );
+    if ( globals->dummyMenu == NULL ) {
+        HMENU tmenu;
+        XP_U16 tpos;
+        wchar_t ignore[32];
+        if ( ceFindMenu( menu, W32_DUMMY_ID, &tmenu, &tpos, ignore, 
+                         VSIZE(ignore) ) ) {
+            globals->dummyMenu = tmenu;
+            globals->dummyPos = tpos;
+        }
     }
 
-    TBBUTTONINFO info;
-    XP_MEMSET( &info, 0, sizeof(info) );
-    info.cbSize = sizeof(info);
+    if ( globals->dummyMenu != NULL ) {
+        MENUITEMINFO minfo;
+        XP_MEMSET( &minfo, 0, sizeof(minfo) );
+        minfo.cbSize = sizeof(minfo);
+        minfo.fMask = MFT_STRING | MIIM_TYPE | MIIM_ID;
+        minfo.fType = MFT_STRING;
+        minfo.dwTypeData = oldNm;
+        minfo.cch = wcslen( oldNm );
+        minfo.wID = id;
 
-    /* Also temporary!! */
-    const wchar_t* txt = L"Mine";
-    switch( id ) {
-    case ID_MOVE_TURNDONE:
-        txt = L"Turn done";
-        break;
-    case ID_FILE_NEWGAME:
-        txt = L"New game";
-        break;
-    case ID_MOVE_NEXTHINT:
-        txt = L"Next hint";
-        break;
-    default:
-        XP_ASSERT(0);
+        if ( !SetMenuItemInfo( globals->dummyMenu, globals->dummyPos, 
+                               TRUE, &minfo ) ) {
+            XP_LOGF( "SetMenuItemInfo failed" );
+        }
     }
-
-    info.dwMask = TBIF_LPARAM;
-    SendMessage( globals->hwndCB, TB_GETBUTTONINFO, IDM_MENU, (LPARAM)&info );
-    menu = (HMENU)info.lParam;  /* Use to remove item being installed in
-                                   left button */
-
- 
-    /* First put any existing menu item back in the main menu! */
-
-    /* Then find, remember and remove the new */
-
-    /* Make it the button */
-
-    info.dwMask = TBIF_TEXT | TBIF_COMMAND;
-    info.idCommand = id;
-    info.pszText = txt;
-    SendMessage( globals->hwndCB, TB_SETBUTTONINFO, curItem, (LPARAM)&info );
-
-    /* Save for next time */
-    globals->softkey.curItem = id;
-} /* ceSetLeftSoftkey */
+}
 #endif
+
+void
+ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
+{
+    if ( newId != globals->softkey.oldId ) {
+        HMENU menu;
+        HMENU prevMenu;
+        XP_U16 prevPos;
+        XP_U16 oldId = globals->softkey.oldId;
+        if ( 0 == oldId ) {
+            oldId = ID_INITIAL_SOFTID;
+        }
+
+#ifdef _WIN32_WCE
+        TBBUTTONINFO info;
+        XP_MEMSET( &info, 0, sizeof(info) );
+        info.cbSize = sizeof(info);
+#endif
+
+#ifdef _WIN32_WCE
+        info.dwMask = TBIF_LPARAM;
+        SendMessage( globals->hwndCB, TB_GETBUTTONINFO, IDM_MENU, 
+                     (LPARAM)&info );
+        menu = (HMENU)info.lParam;  /* Use to remove item being installed in
+                                       left button */
+#else
+        menu = GetMenu( globals->hWnd );
+#endif
+
+        /* First put any existing menu item back in the main menu! */
+        if ( globals->softkey.oldMenu != 0 ) {
+            if ( ! InsertMenu( globals->softkey.oldMenu, 
+                               globals->softkey.oldPos, MF_BYPOSITION, 
+                               globals->softkey.oldId,
+                               globals->softkey.oldName ) ) {
+                XP_LOGF( "%s: InsertMenu failed", __func__ );
+            }
+        }
+
+        /* Then find, remember and remove the new */
+        if ( ceFindMenu( menu, newId, &prevMenu, &prevPos,
+                         globals->softkey.oldName,
+                         VSIZE(globals->softkey.oldName) ) ) {
+            if ( !DeleteMenu( prevMenu, prevPos, MF_BYPOSITION ) ) {
+                XP_LOGF( "%s: DeleteMenu failed", __func__ );
+            }
+            globals->softkey.oldMenu = prevMenu;
+            globals->softkey.oldPos = prevPos;
+            globals->softkey.oldId = newId;
+        } else {
+            XP_LOGF( "%s: ceFindMenu failed", __func__ );
+        }
+
+        /* Make it the button */
+#ifdef _WIN32_WCE
+        info.dwMask = TBIF_TEXT | TBIF_COMMAND;
+        info.idCommand = newId;
+        info.pszText = globals->softkey.oldName;
+        SendMessage( globals->hwndCB, TB_SETBUTTONINFO, oldId, (LPARAM)&info );
+#else
+        setW32DummyMenu( globals, menu, newId, globals->softkey.oldName );
+#endif
+    }
+} /* ceSetLeftSoftkey */

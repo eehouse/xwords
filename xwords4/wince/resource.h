@@ -185,12 +185,18 @@
 #define ID_GAME_RESENDMSGS              40025
 #define ID_FILE_FULLSCREEN              40026
 
+#define ID_INITIAL_SOFTID               ID_MOVE_TURNDONE
+
+#ifndef _WIN32_WCE
+# define W32_DUMMY_ID                   40028
+#endif
+
 #define ID_COLORS_RES                   9999
 #define ID_BONUS_RES                    9998
 
 #define IDM_MAIN_COMMAND1				40001
 #define IDS_MENU                        40002
-#define IDS_DONE                        40003
+#define IDS_DUMMY                       40003
 #define IDS_CANCEL                      40004
 #define IDS_OK                          40005
 
@@ -203,7 +209,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40028
+#define _APS_NEXT_COMMAND_VALUE         40029
 #define _APS_NEXT_CONTROL_VALUE         1087
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
