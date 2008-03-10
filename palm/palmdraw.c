@@ -750,6 +750,16 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     WinPopDrawState();
 } /* palm_draw_drawTile */
 
+#ifdef POINTER_SUPPORT
+static void
+palm_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
+                           const XP_UCHAR* letters, XP_Bitmap bitmap,
+                           XP_S16 val, CellFlags flags )
+{
+    palm_draw_drawTile( p_dctx, rect, letters, bitmap, val, flags );
+}
+#endif
+
 static void
 palm_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, CellFlags flags )
 {
@@ -1447,6 +1457,9 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, palm );
+#ifdef POINTER_SUPPORT
+    SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileMidDrag, palm );
+#endif
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTrayDivider, palm );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawBoardArrow, palm );
