@@ -744,6 +744,8 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 #endif
 
+    ceSetLeftSoftkey( globals, ID_MOVE_TURNDONE );
+
     server_do( globals->game.server );
 
     globals->isNewGame = FALSE;
@@ -1345,6 +1347,7 @@ handleTradeCmd( CEAppGlobals* globals )
 static XP_Bool
 handleJuggleCmd( CEAppGlobals* globals )
 {
+    ceSetLeftSoftkey( globals, ID_MOVE_JUGGLE );
     return board_juggleTray( globals->game.board );
 } /* handleJuggleCmd */
 
@@ -1476,7 +1479,6 @@ ceDoNewGame( CEAppGlobals* globals )
 #endif
 
         ceInitAndStartBoard( globals, XP_TRUE, addr );
-        ceSetLeftSoftkey( globals, ID_MOVE_TURNDONE );
         changed = XP_TRUE;
     }
     
@@ -1532,6 +1534,8 @@ ceChooseAndOpen( CEAppGlobals* globals )
                 XP_LOGF( "failed to open chosen game" );
             }
         }
+    } else {
+        XP_LOGF( "GetOpenFileName() failed" );
     }
 } /* ceChooseAndOpen */
 

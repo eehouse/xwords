@@ -92,11 +92,18 @@ typedef struct CEAppGlobals {
 #ifdef _WIN32_WCE
     SHACTIVATEINFO sai;
     XW_WinceVersion winceVersion;
+#else
+    /* Store location of dummy button */
+    HMENU dummyMenu;
+    XP_U16 dummyPos;
+#endif
 
     struct {
-        XP_U16 curItem;
+        HMENU oldMenu;          /* menu whose item is now on left button */
+        XP_U16 oldId;           /* id of item now on left button */
+        XP_U16 oldPos;          /* position of prev item within oldMenu */
+        wchar_t oldName[32];    /* name of previous item */
     } softkey;
-#endif
 
     DrawCtx* draw;
     XWGame game;

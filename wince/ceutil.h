@@ -50,10 +50,6 @@ void ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg );
 /* Are we drawing things in landscape mode? */
 XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
-#ifdef _WIN32_WCE
 void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
-#else
-# define ceSetLeftSoftkey( globals, id )
-#endif
 
 #endif

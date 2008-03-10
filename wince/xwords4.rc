@@ -68,56 +68,62 @@ END
 
 IDM_MENU MENU DISCARDABLE 
 BEGIN
+#ifndef _WIN32_WCE
+    POPUP "Button"
+    BEGIN
+        MENUITEM "--",                          W32_DUMMY_ID
+    END
+#endif
     POPUP "Menu"
     BEGIN
-        MENUITEM "Turn &done",                  ID_MOVE_TURNDONE
-        MENUITEM "&Juggle",                     ID_MOVE_JUGGLE
-        MENUITEM "Fli&p",                       ID_MOVE_FLIP
-        MENUITEM "&Trade",                      ID_MOVE_TRADE
-        MENUITEM "(un)&Hide tray",              ID_MOVE_HIDETRAY
-        MENUITEM "Tile &values",                ID_MOVE_VALUES
+        MENUITEM "Turn done",                  ID_MOVE_TURNDONE
+        MENUITEM "Juggle",                     ID_MOVE_JUGGLE
+        MENUITEM "Flip",                       ID_MOVE_FLIP
+        MENUITEM "Trade",                      ID_MOVE_TRADE
+        MENUITEM "(un)Hide tray",              ID_MOVE_HIDETRAY
+        MENUITEM "Tile values",                ID_MOVE_VALUES
 
-        POPUP "&Undo"
+        POPUP "Undo"
         BEGIN
             MENUITEM "Undo current",            ID_MOVE_UNDOCURRENT
-            MENUITEM "Undo last (&z)",          ID_MOVE_UNDOLAST
+            MENUITEM "Undo last",               ID_MOVE_UNDOLAST
         END
 
         POPUP "Hint"
         BEGIN
-            MENUITEM "Next hint (&m)",          ID_MOVE_NEXTHINT
-            MENUITEM "H&int",                   ID_MOVE_HINT
+            MENUITEM "Next hint",              ID_MOVE_NEXTHINT
+            MENUITEM "Hint",                   ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
-            MENUITEM "Limited hint (&c)",       ID_MOVE_LIMITEDHINT
+            MENUITEM "Limited hint",           ID_MOVE_LIMITEDHINT
 #endif
         END
 
-        POPUP "&Game"
+        POPUP "Game"
         BEGIN
             MENUITEM "Tile counts and values",  ID_GAME_TILECOUNTSANDVALUES
             MENUITEM "Tiles left",              ID_GAME_TILESLEFT
             MENUITEM SEPARATOR
             MENUITEM "Game info",               ID_GAME_GAMEINFO
             MENUITEM "History",                 ID_GAME_HISTORY
-            MENUITEM "Final sc&ores",           ID_GAME_FINALSCORES
+            MENUITEM "Final scores",           ID_GAME_FINALSCORES
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
             MENUITEM "Resend messages",         ID_GAME_RESENDMSGS
 #endif
         END
 
-        POPUP "&File"
+        POPUP "File"
         BEGIN
 #ifdef _WIN32_WCE
-            MENUITEM "Fu&ll screen",            ID_FILE_FULLSCREEN
+            MENUITEM "Full screen",            ID_FILE_FULLSCREEN
             MENUITEM SEPARATOR
 #endif
-            MENUITEM "&New game",               ID_FILE_NEWGAME
-            MENUITEM "Open &saved game",        ID_FILE_SAVEDGAMES
-            MENUITEM "P&references",            ID_FILE_PREFERENCES
+            MENUITEM "New game",               ID_FILE_NEWGAME
+            MENUITEM "Open saved game",        ID_FILE_SAVEDGAMES
+            MENUITEM "Preferences",            ID_FILE_PREFERENCES
             MENUITEM SEPARATOR
-            MENUITEM "&About",                  ID_FILE_ABOUT
+            MENUITEM "About",                  ID_FILE_ABOUT
             MENUITEM SEPARATOR
-            MENUITEM "E&xit",                   ID_FILE_EXIT
+            MENUITEM "Exit",                   ID_FILE_EXIT
         END
     END
 END
@@ -128,8 +134,8 @@ END
 IDM_MAIN_MENUBAR RCDATA
 BEGIN
     IDM_MENU, 2,
-    I_IMAGENONE, ID_MOVE_TURNDONE, TBSTATE_ENABLED, 
-        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_DONE, 0, 
+    I_IMAGENONE, ID_INITIAL_SOFTID, TBSTATE_ENABLED,
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_DUMMY, 0, 
         NOMENU,
     I_IMAGENONE, IDM_MENU, TBSTATE_ENABLED, 
         TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE, IDS_MENU, 0, 
@@ -139,11 +145,11 @@ END
 IDM_OKCANCEL_MENUBAR RCDATA
 BEGIN
     0, 2,
-    I_IMAGENONE, IDCANCEL, TBSTATE_ENABLED, 
-        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_CANCEL, 0, 
-        NOMENU,
     I_IMAGENONE, IDOK, TBSTATE_ENABLED, 
         TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_OK, 0, 
+        NOMENU,
+    I_IMAGENONE, IDCANCEL, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_CANCEL, 0, 
         NOMENU
 END
 #endif
@@ -687,7 +693,7 @@ BEGIN
     IDC_XWORDS4             "XWORDS4"
 #endif
     IDS_MENU                "Menu"
-    IDS_DONE                "Done"
+    IDS_DUMMY               "--"
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
 #ifdef _WIN32_WCE
