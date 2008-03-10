@@ -61,7 +61,8 @@ typedef unsigned long XP_Time;
 #define XP_LOGF XP_DEBUGF
 
 #ifdef DEBUG
-extern void linux_debugf(char*, ...);
+extern void linux_debugf(const char*, ...)
+    __attribute__ ((format (printf, 1, 2)));
 #define XP_DEBUGF(...) linux_debugf(__VA_ARGS__)
 
 #else
