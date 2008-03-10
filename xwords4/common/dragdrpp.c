@@ -68,6 +68,7 @@ ddStartTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
         XP_S16 selPlayer = board->selPlayer;
         if ( onDivider ) {
             ds->dividerOnly = XP_TRUE;
+            board->dividerInvalid = XP_TRUE;
             ds->start.u.tray.index = board->dividerLoc[selPlayer];
         } else {
             Tile tile;
@@ -293,7 +294,7 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     *onWhichP = newInfo.obj;
 
     if ( ds->dividerOnly ) {
-        if ( OBJ_NONE != newInfo.obj ) {
+        if ( OBJ_TRAY == newInfo.obj ) {
             XP_U16 newloc;
             XP_U16 scale = board->trayScaleH;
             xx -= board->trayBounds.left;
