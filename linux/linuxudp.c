@@ -25,7 +25,6 @@
 #include <errno.h>       
 #include <netdb.h>
 #include <sys/socket.h>
-#include <sys/socket.h>
 #ifdef XWFEATURE_BLUETOOTH
 # include <bluetooth/bluetooth.h>
 # if defined BT_USE_L2CAP

@@ -336,7 +336,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 #endif
 
         params->gi.gameID = util_getCurSeconds(globals->cGlobals.params->util);
-        XP_STATUSF( "grabbed gameID: %ld\n", params->gi.gameID );
+        XP_STATUSF( "grabbed gameID: %d\n", params->gi.gameID );
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,

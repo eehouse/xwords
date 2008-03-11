@@ -63,7 +63,7 @@
 
 #ifdef DEBUG
 void 
-linux_debugf( char* format, ... )
+linux_debugf( const char* format, ... )
 {
     char buf[1000];
     va_list ap;

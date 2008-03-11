@@ -120,6 +120,7 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #endif
 
 #define XP_LD "%ld"
+#define XP_P "%lx"
 
 #ifdef FEATURE_SILK
 # define XP_UNUSED_SILK(x) x
