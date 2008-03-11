@@ -2520,8 +2520,10 @@ holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
         && isPending;
 } /* holdsPendingTile */
 
+#ifndef POINTER_SUPPORT
 /* Did I tap on a tile on the board that I have not yet committed?  If so,
- * return it to the tray.
+ * return it to the tray.  But don't do this in drag-and-drop case since it's
+ * too easy to accidentally tap and there are better ways.
  */
 XP_Bool
 tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
@@ -2540,13 +2542,17 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
     }
     return result;
 } /* tryReplaceTile */
+#endif
 
 static XP_Bool
 handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     return moveSelTileToBoardXY( board, col, row )
         || tryMoveArrow( board, col, row )
-        || tryReplaceTile( board, col, row );
+#ifndef POINTER_SUPPORT
+        || tryReplaceTile( board, col, row )
+#endif
+        ;
 } /* handleActionInCell */
 #endif /* POINTER_SUPPORT || KEYBOARD_NAV */
 
@@ -3477,25 +3483,6 @@ invalDragObj( BoardCtxt* board, const DragObjInfo* di )
         board_invalTrayTiles( board, 1 << di->u.tray.index );
     }
 } /* invalCurObj */
-
-void
-invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
-                   const DragObjInfo* to )
-{
-    invalDragObj( board, from );
-    if ( NULL != to ) {
-        invalDragObj( board, to );
-
-        if ( (OBJ_TRAY == from->obj) && (OBJ_TRAY == to->obj) ) {
-            invalTrayTilesBetween( board, from->u.tray.index, 
-                                   to->u.tray.index );
-        } else if ( OBJ_TRAY == from->obj ) {
-            invalTrayTilesAbove( board, from->u.tray.index );
-        } else if ( OBJ_TRAY == to->obj ) {
-            invalTrayTilesAbove( board, to->u.tray.index );
-        }
-    }
-}
 
 #ifdef CPLUS
 }

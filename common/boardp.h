@@ -216,8 +216,6 @@ XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row,
 
 void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
 void invalDragObj( BoardCtxt* board, const DragObjInfo* di );
-void invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
-                        const DragObjInfo* to );
 void invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex );
 void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                             XP_U16 tileIndex2 );
