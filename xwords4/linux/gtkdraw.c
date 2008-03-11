@@ -503,16 +503,12 @@ gtk_draw_invertCell( DrawCtx* XP_UNUSED(p_dctx),
 } /* gtk_draw_invertCell */
 
 static XP_Bool
-gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* rect, XP_U16 owner, 
-                    DrawFocusState dfs )
+gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
+                    XP_U16 owner, DrawFocusState dfs )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    XP_Rect clip = *rect;
-    insetRect( &clip, -1 );
     dctx->trayOwner = owner;
     dctx->topFocus = dfs == DFS_TOP;
-
-/*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)&clip ); */
     return XP_TRUE;
 } /* gtk_draw_trayBegin */
 
@@ -600,8 +596,9 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 static void
 gtk_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
                           const XP_UCHAR* textP, XP_Bitmap bitmap, 
-                          XP_S16 val, CellFlags flags )
+                          XP_S16 val, XP_U16 owner, CellFlags flags )
 {
+    gtk_draw_trayBegin( p_dctx, rect, owner, DFS_NONE );
     gtkDrawTileImpl( p_dctx, rect, textP, bitmap, val, 
                      flags | CELL_HIGHLIGHT,
                      XP_FALSE );
