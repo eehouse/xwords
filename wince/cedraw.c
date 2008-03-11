@@ -487,8 +487,9 @@ DRAW_FUNC_NAME(drawTile)( DrawCtx* p_dctx, const XP_Rect* xprect,
 DLSTATIC void
 DRAW_FUNC_NAME(drawTileMidDrag)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                                  const XP_UCHAR* letters, XP_Bitmap bitmap, 
-                                 XP_S16 val, CellFlags flags )
+                                 XP_S16 val, XP_U16 owner, CellFlags flags )
 {
+    draw_trayBegin( p_dctx, xprect, owner, DFS_NONE );
     drawDrawTileGuts( p_dctx, xprect, letters, bitmap, val, flags );
 } /* ce_draw_drawTile */
 #endif

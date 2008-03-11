@@ -166,13 +166,16 @@ typedef struct DrawCtxVTable {
 
     void DRAW_VTABLE_NAME(drawTile) ( DrawCtx* dctx, const XP_Rect* rect, 
                                       /* at least 1 of these two will be null*/
-                                      const XP_UCHAR* text, const XP_Bitmap bitmap,
+                                      const XP_UCHAR* text, 
+                                      const XP_Bitmap bitmap,
                                       XP_S16 val, CellFlags flags );
 #ifdef POINTER_SUPPORT
     void DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, const XP_Rect* rect, 
                                       /* at least 1 of these two will be null*/
-                                      const XP_UCHAR* text, const XP_Bitmap bitmap,
-                                      XP_S16 val, CellFlags flags );
+                                             const XP_UCHAR* text, 
+                                             const XP_Bitmap bitmap,
+                                             XP_S16 val, XP_U16 owner, 
+                                             CellFlags flags );
 #endif
     void DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
                                           CellFlags flags );
@@ -212,6 +215,8 @@ struct DrawCtx {
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4))
 # define CALL_DRAW_NAME5(name,dc,p1,p2,p3,p4,p5) \
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5))
+# define CALL_DRAW_NAME6(name,dc,p1,p2,p3,p4,p5,p6) \
+   linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6))
 # define CALL_DRAW_NAME8(name,dc,p1,p2,p3,p4,p5,p6,p7,p8) \
    linked##_draw_##name(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),(p8))
 # define CALL_DRAW_NAME10(name,dc,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10) \
@@ -228,6 +233,8 @@ struct DrawCtx {
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4))
 # define CALL_DRAW_NAME5(name,dc,p1,p2,p3,p4,p5) \
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5))
+# define CALL_DRAW_NAME6(name,dc,p1,p2,p3,p4,p5,p6) \
+   ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6))
 # define CALL_DRAW_NAME8(name,dc,p1,p2,p3,p4,p5,p6,p7,p8) \
    ((dc)->vtable->m_draw_##name)(dc,(p1),(p2),(p3),(p4),(p5),(p6),(p7),\
    (p8))
@@ -263,8 +270,8 @@ struct DrawCtx {
 #define draw_drawTile( dc, rect, text, bmp, val, hil ) \
     CALL_DRAW_NAME5(drawTile,(dc),(rect),(text),(bmp),(val),(hil))
 #ifdef POINTER_SUPPORT
-#define draw_drawTileMidDrag( dc, rect, text, bmp, val, hil ) \
-    CALL_DRAW_NAME5(drawTileMidDrag,(dc),(rect),(text),(bmp),(val),(hil))
+#define draw_drawTileMidDrag( dc, rect, text, bmp, val, ownr, hil )      \
+    CALL_DRAW_NAME6(drawTileMidDrag,(dc),(rect),(text),(bmp),(val),(ownr),(hil))
 #endif  /* POINTER_SUPPORT */
 #define draw_drawTileBack( dc, rect, f ) \
     CALL_DRAW_NAME2(drawTileBack, (dc), (rect), (f) )

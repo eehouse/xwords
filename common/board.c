@@ -3460,7 +3460,7 @@ drawDragTileIf( BoardCtxt* board )
                 flags |= CELL_ISBLANK;
             }
             draw_drawTileMidDrag( board->draw, &rect, face, bitmap, value, 
-                                  flags );
+                                  board->selPlayer, flags );
         }
     }
 } /* drawDragTileIf */

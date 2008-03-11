@@ -754,9 +754,12 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 static void
 palm_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
                            const XP_UCHAR* letters, XP_Bitmap bitmap,
-                           XP_S16 val, CellFlags flags )
+                           XP_S16 val, XP_U16 owner, CellFlags flags )
 {
+    /* let trayBegin code take care of pushing color env changes. */
+    draw_trayBegin( p_dctx, rect, owner, DFS_NONE );
     palm_draw_drawTile( p_dctx, rect, letters, bitmap, val, flags );
+    draw_objFinished( p_dctx, OBJ_TRAY, rect, DFS_NONE );
 }
 #endif
 
@@ -768,7 +771,8 @@ palm_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, CellFlags flags )
 } /* palm_draw_drawTileBack */
 
 static void
-palm_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, XP_Bool selected )
+palm_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
+                           XP_Bool selected )
 {
     XP_Rect lRect = *rect;
 
