@@ -26,6 +26,8 @@ extern "C" {
 
 static XP_Bool dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
                                      BoardObjectType* onWhichP );
+static void invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
+                               const DragObjInfo* to );
 
 XP_Bool
 dragDropInProgress( const BoardCtxt* board )
@@ -343,6 +345,25 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
 
     return moving;
 } /* dragDropContinueImpl */
+
+static void
+invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
+                   const DragObjInfo* to )
+{
+    invalDragObj( board, from );
+    if ( NULL != to ) {
+        invalDragObj( board, to );
+
+        if ( (OBJ_TRAY == from->obj) && (OBJ_TRAY == to->obj) ) {
+            invalTrayTilesBetween( board, from->u.tray.index, 
+                                   to->u.tray.index );
+        } else if ( OBJ_TRAY == from->obj ) {
+            invalTrayTilesAbove( board, from->u.tray.index );
+        } else if ( OBJ_TRAY == to->obj ) {
+            invalTrayTilesAbove( board, to->u.tray.index );
+        }
+    }
+}
 
 #ifdef CPLUS
 }
