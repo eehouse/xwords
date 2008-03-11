@@ -118,6 +118,7 @@ XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len,
 #define XP_HTONS(s) htons(s)
 
 #define XP_LD "%ld"
+#define XP_P "%p"
 
 /* The pocketpc sdk on linux renames certain functions to avoid conflicts
    with same-named posix symbols. */

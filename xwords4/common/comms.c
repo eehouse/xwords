@@ -1131,7 +1131,7 @@ validateInitialMessage( CommsCtxt* comms, XP_Bool hasPayload,
             rec = NULL;
         }
     }
-    LOG_RETURNF( "%lx", rec );
+    LOG_RETURNF( XP_P, rec );
     return rec;
 #else
     AddressRecord* rec = getRecordFor( comms, addr, *channelNo );
@@ -1171,7 +1171,7 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
             rec->lastACK = (XP_U16)lastMsgRcd;
 #endif
         } else {
-            XP_LOGF( "%s: expected %d, got %d", __func__, 
+            XP_LOGF( "%s: expected %ld, got %ld", __func__, 
                      rec->lastMsgRcd + 1, msgID );
             rec = NULL;
         }
@@ -1179,7 +1179,7 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
         XP_LOGF( "%s: no rec for addr", __func__ );
     }
 
-    LOG_RETURNF( "%lx", rec );
+    LOG_RETURNF( XP_P, rec );
     return rec;
 } /* validateChannelMessage */
 

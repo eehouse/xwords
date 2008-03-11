@@ -96,7 +96,7 @@ mpool_destroy( MemPoolCtx* mpool )
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS		/* I don't want to hear about this right now */
-            XP_WARNF( "0x%lx from ln %ld of %s\n", 
+            XP_WARNF( "0x" XP_P " from ln %ld of %s\n", 
                       entry->ptr, entry->lineNo, entry->fileName );
 #ifdef DEBUG	    
             {
@@ -174,7 +174,7 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file, X
     MemPoolEntry* entry = findEntryFor( mpool, ptr, (MemPoolEntry**)NULL );
 
     if ( !entry ) {
-        XP_LOGF( "findEntryFor failed; called from %s, line %d",
+        XP_LOGF( "findEntryFor failed; called from %s, line %ld",
                  file, lineNo );
     } else {
         entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
@@ -194,7 +194,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo )
     entry = findEntryFor( mpool, ptr, &prev );
 
     if ( !entry ) {
-        XP_LOGF( "findEntryFor failed; called from %s, line %d",
+        XP_LOGF( "findEntryFor failed; called from %s, line %ld",
                  file, lineNo );
     } else {
 

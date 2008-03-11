@@ -114,6 +114,7 @@ extern void linux_debugf(const char*, ...)
 #define XP_HTONS(s) htons(s)
 
 #define XP_LD "%ld"
+#define XP_P "%p"
 
 #endif
 
