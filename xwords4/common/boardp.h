@@ -219,7 +219,6 @@ void invalDragObj( BoardCtxt* board, const DragObjInfo* di );
 void invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex );
 void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                             XP_U16 tileIndex2 );
-XP_Bool tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow );
 void moveTileInTray( BoardCtxt* board, XP_U16 moveTo, XP_U16 moveFrom );
 XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
                            XP_Bitmap* bitmap, XP_S16* value, 

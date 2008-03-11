@@ -2525,7 +2525,7 @@ holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
  * return it to the tray.  But don't do this in drag-and-drop case since it's
  * too easy to accidentally tap and there are better ways.
  */
-XP_Bool
+static XP_Bool
 tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 {
     XP_Bool result = XP_FALSE;
