@@ -1027,29 +1027,30 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
         }
     }    
 
-    /* may be legal to fail to find, but we'd better return now! */
-    XP_ASSERT( index < player->nPending );
+    /* if we're called from putBackOtherPlayersTiles there may be nothing
+       here */
+    if ( index < player->nPending ) {
+        decrPendingTileCountAt( model, col, row );
+        notifyBoardListeners( model, turn, col, row, XP_FALSE );
 
-    decrPendingTileCountAt( model, col, row );
-    notifyBoardListeners( model, turn, col, row, XP_FALSE );
+        tile = pt->tile;
+        if ( (tile & TILE_BLANK_BIT) != 0 ) {
+            tile = dict_getBlankTile( model->vol.dict );
+        }
 
-    tile = pt->tile;
-    if ( (tile & TILE_BLANK_BIT) != 0 ) {
-        tile = dict_getBlankTile( model->vol.dict );
+        model_addPlayerTile( model, turn, trayOffset, tile );
+
+        --player->nPending;
+        for ( i = index; i < player->nPending; ++i ) {
+            player->pendingTiles[i] = player->pendingTiles[i+1];
+        }
+
+        if ( player->nPending == 0 ) {
+            invalLastMove( model );
+        }
+
+        invalidateScore( model, turn );
     }
-
-    model_addPlayerTile( model, turn, trayOffset, tile );
-
-    --player->nPending;
-    for ( i = index; i < player->nPending; ++i ) {
-        player->pendingTiles[i] = player->pendingTiles[i+1];
-    }
-
-    if ( player->nPending == 0 ) {
-        invalLastMove( model );
-    }
-
-    invalidateScore( model, turn );
 } /* model_moveBoardToTray */
 
 void
