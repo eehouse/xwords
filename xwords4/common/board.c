@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -113,8 +113,6 @@ static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
 #ifdef POINTER_SUPPORT
 static void drawDragTileIf( BoardCtxt* board );
 #endif
-static XP_Bool holdsPendingTile( BoardCtxt* board, 
-                                 XP_U16 pencol, XP_U16 penrow );
 
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
@@ -128,7 +126,6 @@ static XP_Bool invalFocusOwner( BoardCtxt* board );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
-static void invalCurHintRect( BoardCtxt* board, XP_U16 player );
 static void clearCurHintRect( BoardCtxt* board );
 
 #else
@@ -508,7 +505,7 @@ invalSelTradeWindow( BoardCtxt* board )
 } /* invalSelTradeWindow */
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
-static void
+void
 hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 {
     MiniWindowStuff* stuff = &board->miniWindowStuff[winType];
@@ -737,22 +734,19 @@ timerFiredForPen( BoardCtxt* board )
     const XP_UCHAR* text = (XP_UCHAR*)NULL;
     XP_UCHAR buf[80];
 
-    if ( (board->penDownObject == OBJ_BOARD) && !dragDropInProgress(board)
-#ifdef XWFEATURE_SEARCHLIMIT
-         && !board->hintDragInProgress 
-#endif
-         ) {
-        XP_U16 col, row;
-        XWBonusType bonus;
+    if ( board->penDownObject == OBJ_BOARD ) {
+        if ( !dragDropInProgress( board ) || !dragDropHasMoved( board ) ) {
+            XP_U16 col, row;
+            XWBonusType bonus;
 
-        coordToCell( board, board->penDownX, board->penDownY, &col, 
-                     &row );
-        bonus = util_getSquareBonus(board->util, board->model, col, row);
-        if ( bonus != BONUS_NONE ) {
-            text = draw_getMiniWText( board->draw, (XWMiniTextType)bonus );
+            coordToCell( board, board->penDownX, board->penDownY, &col, 
+                         &row );
+            bonus = util_getSquareBonus(board->util, board->model, col, row);
+            if ( bonus != BONUS_NONE ) {
+                text = draw_getMiniWText( board->draw, (XWMiniTextType)bonus );
+            }
+            board->penTimerFired = XP_TRUE;
         }
-        board->penTimerFired = XP_TRUE;
-
     } else if ( board->penDownObject == OBJ_SCORE ) {
         XP_S16 player;
         LocalPlayer* lp;
@@ -1027,7 +1021,7 @@ invalCellsWithTiles( BoardCtxt* board )
     return board->needsDrawing;
 } /* invalCellsWithTiles */
 
-static void
+void
 checkScrollCell( void* p_board, XP_U16 col, XP_U16 row )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
@@ -1965,6 +1959,7 @@ moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
     }
     return result;
 } /* moveTileToArrowLoc */
+#endif
 
 static void
 makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
@@ -2031,55 +2026,46 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     HintAtts result = HINT_BORDER_NONE;
 
-    if ( board->trayVisState == TRAY_REVEALED && board->gi->allowHintRect ) {
-        BdHintLimits limits = board->limits[board->selPlayer];
-
-        /* while lets us break to exit... */
-        while ( board->hasHintRect[board->selPlayer]
-                || board->hintDragInProgress ) {
-            if ( col < limits.left ) break;
-            if ( row < limits.top ) break;
-            if ( col > limits.right ) break;
-            if ( row > limits.bottom ) break;
-
-            if ( col == limits.left ) {
-                result |= HINT_BORDER_LEFT;
-            }
-            if ( col == limits.right ) {
-                result |= HINT_BORDER_RIGHT;
-            }
-            if ( row == limits.top) {
-                result |= HINT_BORDER_TOP;
-            }
-            if ( row == limits.bottom ) {
-                result |= HINT_BORDER_BOTTOM;
-            }
-#ifndef XWFEATURE_SEARCHLIMIT_DOCENTERS
-            if ( result == HINT_BORDER_NONE ) {
-                result = HINT_BORDER_CENTER;
-            }
-#endif
+    /* while lets us break to exit... */
+    while ( board->trayVisState == TRAY_REVEALED && board->gi->allowHintRect ) {
+        BdHintLimits limits;
+        if ( dragDropGetHintLimits( board, &limits ) ) {
+            /* do nothing */
+        } else if ( board->hasHintRect[board->selPlayer] ) {
+            limits = board->limits[board->selPlayer];
+        } else {
             break;
         }
+
+        if ( col < limits.left ) break;
+        if ( row < limits.top ) break;
+        if ( col > limits.right ) break;
+        if ( row > limits.bottom ) break;
+
+        if ( col == limits.left ) {
+            result |= HINT_BORDER_LEFT;
+        }
+        if ( col == limits.right ) {
+            result |= HINT_BORDER_RIGHT;
+        }
+        if ( row == limits.top) {
+            result |= HINT_BORDER_TOP;
+        }
+        if ( row == limits.bottom ) {
+            result |= HINT_BORDER_BOTTOM;
+        }
+#ifndef XWFEATURE_SEARCHLIMIT_DOCENTERS
+        if ( result == HINT_BORDER_NONE ) {
+            result = HINT_BORDER_CENTER;
+        }
+#endif
+        break;
     }
 
     return result;
 } /* figureHintAtts */
 
-static XP_Bool
-startHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    XP_Bool needsRedraw = XP_FALSE;
-    XP_U16 col, row;
-
-    coordToCell( board, x, y, &col, &row );
-    board->hintDragStartCol = board->hintDragCurCol = col;
-    board->hintDragStartRow = board->hintDragCurRow = row;
-
-    return needsRedraw;
-} /* startHintRegionDrag */
-
-static void
+void
 invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
                  XP_U16 rowB )
 {
@@ -2114,7 +2100,7 @@ invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB,
         }
 } /* invalCellRegion */
 
-static void
+void
 invalCurHintRect( BoardCtxt* board, XP_U16 player )
 {
     BdHintLimits* limits = &board->limits[player];    
@@ -2129,122 +2115,14 @@ clearCurHintRect( BoardCtxt* board )
     board->hasHintRect[board->selPlayer] = XP_FALSE;
 } /* clearCurHintRect */
 
-static void
-setHintRect( BoardCtxt* board )
-{
-    BdHintLimits limits;
-    if ( board->hintDragStartRow < board->hintDragCurRow ) {
-        limits.top = board->hintDragStartRow;
-        limits.bottom = board->hintDragCurRow;
-    } else {
-        limits.top =  board->hintDragCurRow;
-        limits.bottom = board->hintDragStartRow;
-    }
-    if ( board->hintDragStartCol < board->hintDragCurCol ) {
-        limits.left = board->hintDragStartCol;
-        limits.right = board->hintDragCurCol;
-    } else {
-        limits.left =  board->hintDragCurCol;
-        limits.right = board->hintDragStartCol;
-    }
-
-    board->limits[board->selPlayer] = limits;
-    board->hasHintRect[board->selPlayer] = XP_TRUE;
-} /* setHintRect */
-
-static void
-invalHintRectDiffs( BoardCtxt* board, BdHintLimits* newLim, 
-                    BdHintLimits* oldLim )
-{
-    /* These two regions will generally have close to 50% of their borders in
-       common.  Try not to inval what needn't be inval'd.  But at the moment
-       performance seems good enough without adding the complexity and new
-       bugs... */
-    invalCellRegion( board, newLim->left, newLim->top, 
-                     newLim->right, newLim->bottom );
-    invalCellRegion( board, oldLim->left, oldLim->top, 
-                     oldLim->right, oldLim->bottom );
-
-    /* The challenge in doing a smarter diff is that some squares need to be
-       invalidated even if they're part of the borders of both limits rects,
-       in particular if one is a corner of one and just a side of another.
-       One simple but expensive way of accounting for this would be to call
-       figureHintAtts() on each square in the borders of both rects and
-       invalidate when the hintAttributes aren't the same for both.  That
-       misses an opportunity to avoid doing any calculations on those border
-       squares that clearly haven't changed at all.
-    */
-} /* invalHintRectDiffs */
-
 static XP_Bool
-continueHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    XP_Bool needsRedraw = XP_FALSE;
-
-    XP_U16 col, row;
-    if ( coordToCell( board, x, y, &col, &row ) ) {
-        XP_U16 selPlayer = board->selPlayer;
-
-        checkScrollCell( board, col, row );
-
-        if ( col != board->hintDragCurCol || row != board->hintDragCurRow ) {
-            BdHintLimits oldHL;
-
-            needsRedraw = XP_TRUE;
-
-            board->hintDragInProgress = XP_TRUE;
-
-            /* Now that we've moved, this isn't a timer thing.  Clean up any
-               artifacts. */
-            board->penTimerFired = XP_FALSE;
-            if ( valHintMiniWindowActive( board ) ) {
-                hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
-            }
-
-            board->hintDragCurCol = col;
-            board->hintDragCurRow = row;
-
-            oldHL = board->limits[selPlayer];
-            setHintRect( board );
-            invalHintRectDiffs( board, &board->limits[selPlayer], &oldHL );
-        }
-    }
-
-    return needsRedraw;
-} /* continueHintRegionDrag */
-
-static XP_Bool
-finishHintRegionDrag( BoardCtxt* board, XP_U16 x, XP_U16 y )
-{
-    XP_Bool needsRedraw = XP_FALSE;
-    XP_Bool makeActive;
-
-    XP_ASSERT( board->hintDragInProgress );
-    needsRedraw = continueHintRegionDrag( board, x, y );
-
-    /* Now check if the whole drag ended above where it started.  If yes, it
-       means erase! */
-    makeActive = board->hintDragStartRow <= board->hintDragCurRow;
-
-    board->hasHintRect[board->selPlayer] = makeActive;
-    if ( !makeActive ) {
-        invalCurHintRect( board, board->selPlayer );
-        needsRedraw = XP_TRUE;
-    }    
-    board_resetEngine( board );
-
-    return needsRedraw;
-} /* finishHintRegionDrag */
-#endif
-
-static XP_Bool
-handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
+handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
     XP_Bool result = XP_FALSE;
     XP_U16 col, row;
     /* Start a timer no matter what.  After it fires we'll decide whether it's
        appropriate to handle it.   No.  That's too expensive */
-    if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, x, y ) ) {
+    if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, xx, yy ) ) {
         return XP_FALSE;
     }
     util_setTimer( board->util, TIMER_PENDOWN, 0, p_board_timerFired, board );
@@ -2252,17 +2130,11 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 x, XP_U16 y )
     /* As a first cut, you start a hint-region drag unless the cell is
        occupied by a non-committed cell. */
 
-    coordToCell( board, x, y, &col, &row );
+    coordToCell( board, xx, yy, &col, &row );
     if ( (board->trayVisState == TRAY_REVEALED)
-         && !board->tradeInProgress[board->selPlayer]
-         && holdsPendingTile( board, col, row ) ) {
-        result = dragDropStart( board, OBJ_BOARD, col, row );
-#ifdef XWFEATURE_SEARCHLIMIT
-    } else if ( board->gi->allowHintRect
-                && (board->trayVisState == TRAY_REVEALED) ) {
-        result = startHintRegionDrag( board, x, y );
+         && !board->tradeInProgress[board->selPlayer] ) {
+        result = dragDropStart( board, OBJ_BOARD, xx, yy );
     }
-#endif
 
     return result;
 } /* handlePenDownOnBoard */
@@ -2403,19 +2275,10 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
 #endif
 
 XP_Bool
-board_handlePenMove( BoardCtxt* board, XP_U16 x, XP_U16 y )
+board_handlePenMove( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
-    XP_Bool result = XP_FALSE;
-
-    if ( dragDropInProgress(board) ) {
-        result = dragDropContinue( board, x, y ) != 0;
-#ifdef XWFEATURE_SEARCHLIMIT
-    } else if ( board->gi->allowHintRect 
-                && board->trayVisState == TRAY_REVEALED ) {
-        result = continueHintRegionDrag( board, x, y );
-#endif
-    }
-
+    XP_Bool result = dragDropInProgress(board)
+        && dragDropContinue( board, xx, yy );
     return result;
 } /* board_handlePenMove */
 
@@ -2506,7 +2369,7 @@ tryMoveArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
     return result;
 } /* tryMoveArrow */
 
-static XP_Bool
+XP_Bool
 holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
 {
     Tile tile;
@@ -2584,16 +2447,12 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
         draw = dragDropEnd( board, x, y, &dragged );
     }
     if ( dragged ) {
-#ifdef XWFEATURE_SEARCHLIMIT
-    } else if ( board->hintDragInProgress ) {
-        XP_ASSERT( board->gi->allowHintRect );
-        draw = finishHintRegionDrag( board, x, y ) || draw;
-#endif
+        /* do nothing further */
     } else if ( board->penTimerFired ) {
         if ( valHintMiniWindowActive( board ) ) {
             hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
-            draw = XP_TRUE;
         }
+        draw = XP_TRUE;         /* might have cancelled a drag */
         /* Need to clean up if there's been any dragging happening */
         board->penTimerFired = XP_FALSE;
     } else {
@@ -2635,9 +2494,6 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
         }
     }
 
-#ifdef XWFEATURE_SEARCHLIMIT
-    board->hintDragInProgress = XP_FALSE;
-#endif
     return draw;
 } /* board_handlePenUp */
 #endif /* #ifdef POINTER_SUPPORT */

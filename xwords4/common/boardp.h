@@ -43,12 +43,24 @@ typedef struct _DragObjInfo {
     } u;
 } DragObjInfo;
 
+typedef enum {
+    DT_NONE
+    ,DT_DIVIDER
+    ,DT_TILE
+#ifdef XWFEATURE_SEARCHLIMIT
+    ,DT_HINTRGN
+#endif
+} DragType;
+
+
 typedef struct DragState {
-    XP_Bool dragInProgress;
-    XP_Bool dividerOnly;        /* special case; most other stuff ignored */
+    DragType dtype;
     XP_Bool didMove;            /* there was change during the drag; not a
                                    tap */
     XP_Bool isBlank;            /* cache rather than lookup in model */
+#ifdef XWFEATURE_SEARCHLIMIT
+/*     XP_Bool hintRectInvalidated; /\* only inval cur rect once after start drag *\/ */
+#endif
     Tile tile;                  /* cache rather than lookup in model */
     DragObjInfo start;
     DragObjInfo cur;
@@ -175,10 +187,6 @@ struct BoardCtxt {
     XP_Bool showColors;
 
 #ifdef XWFEATURE_SEARCHLIMIT
-    XP_U16 hintDragStartCol, hintDragStartRow;
-    XP_U16 hintDragCurCol, hintDragCurRow;
-    XP_Bool hintDragInProgress;
-
     XP_Bool hasHintRect[MAX_NUM_PLAYERS];
     BdHintLimits limits[MAX_NUM_PLAYERS];
 #endif
@@ -211,19 +219,32 @@ XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP,
                      XP_U16* rowP );
 XP_Bool cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                       XP_Bool inclPending );
+XP_Bool holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow );
+
 XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                          XP_U16 tileIndex, Tile blankFace );
 
 void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
+void invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
+                      XP_U16 rowB );
 void invalDragObj( BoardCtxt* board, const DragObjInfo* di );
 void invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex );
 void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                             XP_U16 tileIndex2 );
+#ifdef XWFEATURE_SEARCHLIMIT
+void invalCurHintRect( BoardCtxt* board, XP_U16 player );
+#endif
+
+void hideMiniWindow( BoardCtxt* board, XP_Bool destroy,
+                     MiniWindowType winType );
+
 void moveTileInTray( BoardCtxt* board, XP_U16 moveTo, XP_U16 moveFrom );
 XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
                            XP_Bitmap* bitmap, XP_S16* value, 
                            XP_UCHAR* buf, XP_U16 len );
 XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
+
+void checkScrollCell( void* p_board, XP_U16 col, XP_U16 row );
 
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
