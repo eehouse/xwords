@@ -29,14 +29,13 @@ extern "C" {
 #endif
 
 XP_Bool dragDropInProgress( const BoardCtxt* board );
+XP_Bool dragDropHasMoved( const BoardCtxt* board );
 
-/* dragDropStart
- * Pass col,row for board, but raw x,y for tray.  Yeah, sucks.
- */
 XP_Bool dragDropStart( BoardCtxt* board, BoardObjectType obj,
-                       XP_U16 x, XP_U16 y );
-XP_Bool dragDropContinue( BoardCtxt* board, XP_U16 x, XP_U16 y );
-XP_Bool dragDropEnd( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* dragged );
+                       XP_U16 xx, XP_U16 yy );
+XP_Bool dragDropContinue( BoardCtxt* board, XP_U16 xx, XP_U16 yy );
+XP_Bool dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged );
+
 XP_Bool dragDropGetBoardTile( const BoardCtxt* board, XP_U16* col, XP_U16* row );
 XP_Bool dragDropIsBeingDragged( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
                                 XP_Bool* isOrigin );
@@ -47,6 +46,7 @@ XP_Bool dragDropIsBeingDragged( const BoardCtxt* board, XP_U16 col, XP_U16 row,
  */
 void dragDropGetTrayChanges( const BoardCtxt* board, XP_U16* rmvdIndx, 
                              XP_U16* addedIndx );
+XP_Bool dragDropGetHintLimits( const BoardCtxt* board, BdHintLimits* limits );
 XP_Bool dragDropIsDividerDrag( const BoardCtxt* board );
 
 void dragDropTileInfo( const BoardCtxt* board, Tile* tile, XP_Bool* isBlank );
