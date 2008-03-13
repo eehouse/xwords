@@ -58,9 +58,6 @@ typedef struct DragState {
     XP_Bool didMove;            /* there was change during the drag; not a
                                    tap */
     XP_Bool isBlank;            /* cache rather than lookup in model */
-#ifdef XWFEATURE_SEARCHLIMIT
-/*     XP_Bool hintRectInvalidated; /\* only inval cur rect once after start drag *\/ */
-#endif
     Tile tile;                  /* cache rather than lookup in model */
     DragObjInfo start;
     DragObjInfo cur;
