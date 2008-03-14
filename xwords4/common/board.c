@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -80,7 +80,8 @@ static void figureBoardRect( BoardCtxt* board );
 
 static void drawBoard( BoardCtxt* board );
 static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
-static void invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect );
+static void invalCellsUnderRect( BoardCtxt* board, 
+                                 const XP_Rect* rect );
 static XP_Bool rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 );
 static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col, 
                               XP_U16 row, XP_Bool added );
@@ -510,7 +511,7 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 {
     MiniWindowStuff* stuff = &board->miniWindowStuff[winType];
 
-    board_invalRect( board, &stuff->rect );
+    invalCellsUnderRect( board, &stuff->rect );
 
     if ( destroy ) {
         stuff->text = (XP_UCHAR*)NULL;
@@ -1336,20 +1337,23 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
 } /* board_setTrayLoc */
 
 static void
-invalCellsUnderRect( BoardCtxt* board, XP_Rect* rect )
+invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
 {
-    XP_U16 lastCol, lastRow;
+    XP_Rect lr = *rect;
+    XP_U16 left, top, right, bottom;
+    XP_U16 col, row;
 
-    lastRow = model_numRows( board->model );
-    while ( lastRow-- ) {
-        lastCol = model_numCols( board->model );
-        while ( lastCol-- ) {
-            XP_Rect cell;
+    if ( !coordToCell( board, lr.left, lr.top, &left, &top ) ) {
+        left = top = 0;
+    }
+    if ( !coordToCell( board, lr.left+lr.width, lr.top+lr.height, 
+                       &right, &bottom ) ) {
+        right = bottom = model_numCols( board->model );
+    }
 
-            if ( getCellRect( board, lastCol, lastRow, &cell ) &&
-                 rectsIntersect( rect, &cell ) ) {
-                invalCell( board, lastCol, lastRow );
-            }
+    for ( row = top; row <= bottom; ++row ) {
+        for ( col = left; col <= right; ++col ) {
+            invalCell( board, col, row );
         }
     }
 } /* invalCellsUnderRect */
