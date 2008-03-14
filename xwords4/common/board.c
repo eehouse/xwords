@@ -1743,7 +1743,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_S16 owner = -1;
             XP_Bool invert = XP_FALSE;
             XP_Bitmap bitmap = NULL;
-            XP_UCHAR* textP = (XP_UCHAR*)ch;
+            XP_UCHAR* textP = NULL;
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
             XP_Bool isOrigin;
@@ -1763,6 +1763,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
 
             if ( isEmpty ) {
                 isBlank = XP_FALSE;
+                flags |= CELL_ISEMPTY;
             } else if ( isBlank && skipBlanks ) {
                 break;
             } else {
@@ -1777,12 +1778,14 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                     Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
                     XP_U16 val = dict_getTileValue( dict, valTile );
                     XP_SNPRINTF( ch, sizeof(ch), (XP_UCHAR*)"%d", val );
+                    textP = ch;
                 } else if ( dict_faceIsBitmap( dict, tile ) ) {
                     bitmap = dict_getFaceBitmap( dict, tile, XP_FALSE );
                     XP_ASSERT( !!bitmap );
                     textP = (XP_UCHAR*)NULL;
                 } else {
                     (void)dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
+                    textP = ch;
                 }
             }
             bonus = util_getSquareBonus( board->util, model, col, row );
