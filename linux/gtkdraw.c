@@ -434,7 +434,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
 
     /* We draw just an empty, potentially colored, square IFF there's nothing
        in the cell or if CELL_DRAGSRC is set */
-    if ( (flags & CELL_DRAGSRC) != 0 || ( !!letter && *letter == LETTER_NONE ) ) {
+    if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
         if ( bonus != BONUS_NONE ) {
             gdk_gc_set_foreground( dctx->drawGC, &dctx->bonusColors[bonus-1] );
             gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC, TRUE,

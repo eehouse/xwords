@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=68K_ONLY MEMDEBUG=TRUE";-*- */
 /* 
- * Copyright 1999 - 2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1999 - 2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -496,6 +496,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 
     if ( !!letters ) {
         len = XP_STRLEN( (const char*)letters );
+        XP_ASSERT( len > 0 );
         if ( len > 0 ) {
             XP_S16 strWidth = FntCharsWidth( (const char*)letters, len );
             XP_U16 x, y;
@@ -539,7 +540,8 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         empty = XP_FALSE;
     }
 
-    if ( (flags & CELL_ISSTAR) != 0 ) {
+    if ( ((flags & CELL_ISSTAR) != 0) 
+         && ((flags & (CELL_DRAGSRC | CELL_ISEMPTY)) != 0 ) ) {
         bitmapInRect( dctx, STAR_BMP_RES_ID, rect );
     } else if ( showBonus && (able == ONEBIT) ) {
         /* this is my one refusal to totally factor bandw and color
