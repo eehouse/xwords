@@ -319,8 +319,14 @@ figureDividerRect( BoardCtxt* board, XP_Rect* rect )
 } /* figureDividerRect */
 
 void
-invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect )
+invalTilesUnderRect( BoardCtxt* board, const XP_Rect* rect )
 {
+    /* This is an expensive way to do this -- calculating all the rects rather
+       than starting with the bounds of the rect passed in -- but this
+       function is called so infrequently and there are only 7 tiles, so leave
+       it for now.  If it needs to be faster, invalCellsUnderRect is the model
+       to use. */
+
     XP_U16 i;
     XP_Rect locRect;
 

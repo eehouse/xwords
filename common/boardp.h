@@ -221,7 +221,7 @@ XP_Bool holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow );
 XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                          XP_U16 tileIndex, Tile blankFace );
 
-void invalTilesUnderRect( BoardCtxt* board, XP_Rect* rect );
+void invalTilesUnderRect( BoardCtxt* board, const XP_Rect* rect );
 void invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
                       XP_U16 rowB );
 void invalDragObj( BoardCtxt* board, const DragObjInfo* di );
