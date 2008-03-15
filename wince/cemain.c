@@ -2049,6 +2049,15 @@ ceToggleFullScreen( CEAppGlobals* globals )
 } /* ceToggleFullScreen */
 #endif
 
+static void
+doAbout( CEAppGlobals* globals )
+{
+    wchar_t* buf[1024];
+    LPTSTR lpBuffer = (LPTSTR)buf;
+    (void)LoadString( globals->hInst, (UINT)IDS_ABOUT, lpBuffer, VSIZE(buf) );
+    MessageBox( globals->hWnd, lpBuffer, L"About", MB_OK );
+}
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -2109,8 +2118,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Parse the menu selections:
             switch (wmId) {
             case ID_FILE_ABOUT:
-                DialogBoxParam(globals->hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, 
-                               (DLGPROC)ceAbout, 0L );
+                doAbout( globals );
                 break;
             case ID_GAME_GAMEINFO: {
                 GameInfoState state;
