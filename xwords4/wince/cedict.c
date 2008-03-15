@@ -117,7 +117,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         ctxt->super.destructor = ce_dict_destroy;
         ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
-        XP_DEBUGF( "ptr starting at 0x%lx", ptr );
+        XP_DEBUGF( "ptr starting at 0x%p", ptr );
 		
         numFaces = (XP_U16)(*ptr++);
         ctxt->super.nFaces = (XP_U8)numFaces;
@@ -142,12 +142,12 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             (XP_U8*)XP_MALLOC(globals->mpool, numFaces*2);
 
         ptr += 2;		/* skip xloc header */
-        XP_DEBUGF( "pre values: ptr now 0x%lx", ptr );
+        XP_DEBUGF( "pre values: ptr now 0x%p", ptr );
         for ( i = 0; i < numFaces*2; i += 2 ) {
             ctxt->super.countsAndValues[i] = *ptr++;
             ctxt->super.countsAndValues[i+1] = *ptr++;
         }
-        XP_DEBUGF( "post values: ptr now 0x%lx", ptr );
+        XP_DEBUGF( "post values: ptr now 0x%p", ptr );
 
         ceLoadSpecialData( ctxt, &ptr );
 
@@ -487,7 +487,7 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
     if ( hFile != INVALID_HANDLE_VALUE ) {
 
         DWORD size = GetFileSize( hFile, NULL );
-        XP_LOGF( "file size: %d", size );
+        XP_LOGF( "file size: %ld", size );
 
         ptr = XP_MALLOC( mpool, size );
         if ( ptr != NULL ) {

@@ -161,7 +161,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         }
         wchar_t buf[64];
         swprintf( buf, L"Edit color for %s", label );
-        SendMessage( hDlg, WM_SETTEXT, 0, buf );
+        SendMessage( hDlg, WM_SETTEXT, 0, (LPARAM)buf );
 
         return TRUE;
     } else {
@@ -314,9 +314,9 @@ static void
 wrapChooseColor( ColorsDlgState* cState, HWND parent, XP_U16 button )
 {
     XP_U16 index = button-FIRST_BUTTON;
-    XP_U16 labelID = button + CLRSEL_LABEL_OFFSET;
 
 #ifdef MY_COLOR_SEL
+    XP_U16 labelID = button + CLRSEL_LABEL_OFFSET;
     COLORREF clrref = cState->colors[index];
 
     if ( myChooseColor( cState->globals, parent, labelID, &clrref ) ) {
