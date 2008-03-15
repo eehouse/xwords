@@ -43,11 +43,14 @@ include ../Makefile.langcommon
 #$(LANG)Main.dict.gz: SpanishMain.dict.gz
 #	ln -s $< $@
 
-$(XWLANG)Main.dict.gz: $(XWDICTPATH)/$(XWLANG)/XavSpanish.dict.gz Makefile
+SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/XavSpanish.dict.gz
+
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< \
+	| tr -d '\r' \
 	| tr '\207\216\222\227\234\237\226' 'aeiouu\321' \
-	| tr [a-zñ] [A-ZÑ] \
-	| grep '^[[A-JL-VX-ZÑ]*$$' \
+	| tr [a-zÃ±] [A-ZÃ‘] \
+	| grep '^[[A-JL-VX-ZÃ‘]*$$' \
 	| sed 's/CH/1/g' \
 	| sed 's/LL/2/g' \
 	| sed 's/RR/3/g' \

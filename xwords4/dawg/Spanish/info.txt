@@ -1,3 +1,4 @@
+# -*- mode: conf; -*-
 # Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
