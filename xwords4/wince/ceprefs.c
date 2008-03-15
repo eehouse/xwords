@@ -38,7 +38,7 @@ stuffPhoniesList( HWND hDlg )
     };
 
     for ( i = 0; i < 3; ++i ) {
-        SendDlgItemMessage( hDlg, PHONIES_COMBO, CB_ADDSTRING, 
+        SendDlgItemMessage( hDlg, PHONIES_COMBO, ADDSTRING, 
                             0, (long)strings[i] );
     }
 } /* stuffPhoniesList */
@@ -70,7 +70,7 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
                                IDC_PREFCOLORS };
     XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT, IDC_CHECKNOHINTS,
                               TIMER_CHECK, TIMER_EDIT, PHONIES_LABEL,
-                              PHONIES_COMBO, IDC_PICKTILES
+                              PHONIES_COMBO, IDC_PHONIESUPDOWN, IDC_PICKTILES
 #ifdef XWFEATURE_SEARCHLIMIT
                               ,IDC_CHECKHINTSLIMITS
 #endif
@@ -188,7 +188,7 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
     /* timer */
     ceSetDlgItemNum( hDlg, TIMER_EDIT, prefsPrefs->gp.gameSeconds / 60 );
 
-    SendDlgItemMessage( hDlg, PHONIES_COMBO, CB_SETCURSEL, 
+    SendDlgItemMessage( hDlg, PHONIES_COMBO, SETCURSEL, 
                         prefsPrefs->gp.phoniesAction, 0L );
 
     if ( !pState->isNewGame ) {
@@ -217,7 +217,7 @@ ceControlsToPrefs( HWND hDlg, CePrefsPrefs* prefsPrefs )
         = ceGetChecked( hDlg, IDC_CHECKSMARTROBOT ) ? 1 : 0;
     prefsPrefs->gp.hintsNotAllowed = ceGetChecked( hDlg, IDC_CHECKNOHINTS );
 
-    selIndex = (XP_U16)SendDlgItemMessage( hDlg, PHONIES_COMBO, CB_GETCURSEL, 
+    selIndex = (XP_U16)SendDlgItemMessage( hDlg, PHONIES_COMBO, GETCURSEL, 
                                            0, 0 );
     if ( selIndex != LB_ERR ) {
         prefsPrefs->gp.phoniesAction = (XWPhoniesChoice)selIndex;

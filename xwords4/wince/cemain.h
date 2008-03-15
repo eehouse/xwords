@@ -32,9 +32,13 @@
 #ifdef _WIN32_WCE
 typedef enum {
     WINCE_UNKNOWN
+    , WINCE_PPC_V1
     , WINCE_PPC_2003
     , WINCE_PPC_2005
-    , WINCE_SMARTPHONE
+    , _LAST_PPC                 /* so can test for PPC */
+    , WINCE_SMARTPHONE_V1
+    , WINCE_SMARTPHONE_2003
+    , WINCE_SMARTPHONE_2005
 } XW_WinceVersion;
 #endif
 
@@ -196,5 +200,15 @@ void messageToBuf( UINT message, char* buf, int bufSize );
 # define logLastError(c)
 #endif
 
+/* These allow LISTBOX and COMBOBOX to be used by the same code */
+#ifdef _WIN32_WCE
+# define SETCURSEL LB_SETCURSEL
+# define GETCURSEL LB_GETCURSEL
+# define ADDSTRING LB_ADDSTRING
+#else
+# define SETCURSEL CB_SETCURSEL
+# define GETCURSEL CB_GETCURSEL
+# define ADDSTRING CB_ADDSTRING
+#endif
 
 #endif /* _CEMAIN_H_ */

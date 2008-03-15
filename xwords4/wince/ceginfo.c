@@ -25,6 +25,7 @@
 #include "cedict.h"
 #include "cecondlg.h"
 #include "strutils.h"
+#include "cedebug.h"
 
 #define NUM_COLS 4
 #define MENUDICTS_INCR 16
@@ -120,7 +121,7 @@ addDictsToMenu( GameInfoState* giState )
     for ( i = 0; i < nMenuDicts; ++i ) {
         wchar_t* wPath = giState->menuDicts[i];
         shortname = wbname( shortPath, sizeof(shortPath), wPath );
-        SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_ADDSTRING, 0, 
+        SendDlgItemMessage( giState->hDlg, IDC_DICTLIST, ADDSTRING, 0, 
                             (long)shortname );
 
         if ( giState->newDictName[0] != 0 && sel == 0 ) {
@@ -133,7 +134,7 @@ addDictsToMenu( GameInfoState* giState )
         }
     }
 
-    SendDlgItemMessage( giState->hDlg, IDC_DICTCOMBO, CB_SETCURSEL, sel, 0L );
+    SendDlgItemMessage( giState->hDlg, IDC_DICTLIST, SETCURSEL, sel, 0L );
 } /* addDictsToMenu */
 
 static void
@@ -168,7 +169,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         wchar_t widebuf[8];
         /* put a string in the moronic combobox */
         swprintf( widebuf, L"%d", i + 1 );
-        SendDlgItemMessage( hDlg, IDC_NPLAYERSCOMBO, CB_ADDSTRING, 0, 
+        SendDlgItemMessage( hDlg, IDC_NPLAYERSCOMBO, ADDSTRING, 0, 
                             (long)widebuf );
     }
 
@@ -195,7 +196,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 #endif
 
     if ( !giState->isNewGame ) {
-        ceEnOrDisable( hDlg, IDC_DICTCOMBO, XP_FALSE );
+        ceEnOrDisable( hDlg, IDC_DICTLIST, XP_FALSE );
     }
 } /* loadFromGameInfo */
 
@@ -210,8 +211,7 @@ stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 
         /* dictionary */ {
             int sel;
-            sel = SendDlgItemMessage( hDlg, IDC_DICTCOMBO, CB_GETCURSEL, 
-                                      0, 0L );
+            sel = SendDlgItemMessage( hDlg, IDC_DICTLIST, GETCURSEL, 0, 0L );
             if ( sel >= 0 ) {
                 WideCharToMultiByte( CP_ACP, 0, giState->menuDicts[sel], -1,
                                      giState->newDictName, 
@@ -427,12 +427,12 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
 
     switch ( attr ) {
     case NG_ATTR_NPLAYERS:
-        SendDlgItemMessage( giState->hDlg, resID, CB_SETCURSEL, 
+        SendDlgItemMessage( giState->hDlg, resID, SETCURSEL, 
                             value.ng_u16 - 1, 0L );
         break;
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
-        SendDlgItemMessage( giState->hDlg, resID, CB_SETCURSEL, 
+        SendDlgItemMessage( giState->hDlg, resID, SETCURSEL, 
                             value.ng_role, 0L );
         break;
 #endif
@@ -557,7 +557,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             value.ng_u16 = 1 + (XP_U16)
                                 SendDlgItemMessage( hDlg, 
                                                     IDC_NPLAYERSCOMBO,
-                                                    CB_GETCURSEL, 0, 0L);
+                                                    GETCURSEL, 0, 0L);
                             newg_attrChanged( giState->newGameCtx, 
                                               NG_ATTR_NPLAYERS, value );
                         }

@@ -197,7 +197,7 @@ ceCenterCtl( HWND hDlg, XP_U16 resID )
     if ( !MoveWindow( itemH, newX, buttonR.top,
                       buttonWidth, 
                       buttonR.bottom - buttonR.top, TRUE ) ) {
-        XP_LOGF( "MoveWindow=>%d", GetLastError() );
+        XP_LOGF( "MoveWindow=>%ld", GetLastError() );
     }
 } /* ceCenterCtl */
 
@@ -249,26 +249,47 @@ ceIsVisible( HWND XP_UNUSED_CE(hwnd) )
 } /* ceIsVisible */
 
 #ifdef _WIN32_WCE
+void
+ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd )
+{
+    RECT rect;
+    XP_U16 cbHeight = 0;
+    if ( !!globals->hwndCB && hWnd == globals->hWnd ) {
+        GetWindowRect( globals->hwndCB, &rect );
+        cbHeight = rect.bottom - rect.top;
+    }
+
+    /* I'm leaving the SIP/cmdbar in place until I can figure out how to get
+       menu events with it hidden -- and also the UI for making sure users
+       don't get stuck in fullscreen mode not knowing how to reach menus to
+       get out.  Later, add SHFS_SHOWSIPBUTTON and SHFS_HIDESIPBUTTON to the
+       sets shown and hidden below.*/
+    if ( globals->appPrefs.fullScreen ) {
+        SHFullScreen( hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
+
+        SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
+    } else {
+        SHFullScreen( hWnd, SHFS_HIDETASKBAR | SHFS_HIDESTARTICON );
+
+        SetRect( &rect, 0, 0, GetSystemMetrics(SM_CXSCREEN),
+                 GetSystemMetrics(SM_CYSCREEN) );
+    }
+
+    rect.bottom -= cbHeight;
+    MoveWindow( hWnd, rect.left, rect.top, rect.right - rect.left, 
+                rect.bottom - rect.top, TRUE );
+} /* ceSizeIfFullscreen */
+
 static XP_Bool
 mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
 {
-/*     XP_Bool fullScreen = XP_FALSE; /\* probably want this TRUE for */
-/*                                       small-screened smartphones only. *\/ */
-/*     if ( fullScreen ) { */
-/*         SHINITDLGINFO info; */
-
-/*         info.dwMask = SHIDIM_FLAGS; */
-/*         info.dwFlags = SHIDIF_SIZEDLG */
-/* /\*             | SHIDIF_DONEBUTTON  *\/ */
-/*             | SHIDIF_WANTSCROLLBAR; */
-/*         info.hDlg = hDlg; */
-
-/*         BOOL b = SHInitDialog( &info ); */
-/*         XP_LOGF( "SHInitDialog=>%d", (int)b ); */
-/*     } */
-
     XP_Bool success = XP_FALSE;
     SHMENUBARINFO mbi;
+    XP_Bool fullScreen = XP_TRUE; /* probably want this TRUE for
+                                      small-screened smartphones only. */
+    if ( fullScreen ) {
+        ceSizeIfFullscreen( globals, hDlg );
+    }
 
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
     mbi.cbSize = sizeof(mbi);
@@ -354,7 +375,8 @@ ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
 
             if ( justRemove ) {
                 MoveWindow( hDlg, wrect.left, wrect.top,
-                            wrect.right - wrect.left, wrect.bottom - wrect.top - butHeight - 2, 
+                            wrect.right - wrect.left, 
+                            wrect.bottom - wrect.top - butHeight - 2, 
                             FALSE );
             } else {
                 butWidth += HPADDING_L + HPADDING_R;

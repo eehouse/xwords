@@ -53,8 +53,8 @@
 #define TIMER_CHECK                     1024
 #define NAME_EDIT5                      1025
 #define TIMER_EDIT                      1026
-#define IDC_DICTCOMBO                   1027
-#define IDC_COMBO3                      1028
+#define IDC_DICTLIST                    1027
+#define IDC_DICTUPDOWN                  1028
 #define BLANKFACE_COMBO                 1029
 #define PHONIES_COMBO                   1030
 #define IDC_PWDLABEL                    1031
@@ -154,7 +154,9 @@
 # define IDC_BLUET_ADDR_EDIT             1101
 # define IDC_BLUET_ADDR_BROWSE           1102
 #endif
-
+#define IDS_UPDOWN                       1103
+#define IDC_NPLAYERSUPDOWN               1104
+#define IDC_PHONIESUPDOWN                1105
 
 
 #define ID_FILE_EXIT                    40002

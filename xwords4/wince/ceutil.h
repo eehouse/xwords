@@ -52,4 +52,10 @@ XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
 void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
 
+#ifdef _WIN32_WCE
+void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
+#else
+# define ceSizeIfFullscreen( globals, hWnd )
+#endif
+
 #endif

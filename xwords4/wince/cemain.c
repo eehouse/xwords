@@ -165,9 +165,6 @@ static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static void messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                               wchar_t* title );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
-#ifdef _WIN32_WCE
-static void sizeIfFullscreen( CEAppGlobals* globals );
-#endif
 
 
 #if defined DEBUG && ! defined _WIN32_WCE
@@ -282,7 +279,6 @@ WinMain(	HINSTANCE hInstance,
 int
 main()
 {
-    XP_LOGF( "" );
     LOG_FUNC();
     
     return WinMain( GetModuleHandle(NULL), 0, 
@@ -726,9 +722,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 
     XP_ASSERT( !!globals->game.board );
-#ifdef _WIN32_WCE
-    sizeIfFullscreen( globals );
-#endif
+    ceSizeIfFullscreen( globals, globals->hWnd );
     (void)cePositionBoard( globals );
 
     board_invalAll( globals->game.board );
@@ -808,7 +802,7 @@ ceSavePrefs( CEAppGlobals* globals )
         /* write prefs, including version num */
         WriteFile( fileH, &globals->appPrefs, sizeof(globals->appPrefs), 
                    &nWritten, NULL );
-        XP_DEBUGF( "sizeof(appPrefs) => %ld", sizeof( globals->appPrefs ) );
+        XP_DEBUGF( "sizeof(appPrefs) => %d", sizeof( globals->appPrefs ) );
 
         WriteFile( fileH, &nameLen, sizeof(nameLen), &nWritten, NULL );
         WriteFile( fileH, name, nameLen, &nWritten, NULL );
@@ -1095,33 +1089,50 @@ doDictsMovedAlert( CEAppGlobals* globals )
 static void
 getOSInfo( CEAppGlobals* globals )
 {
-    LOG_FUNC();
+    OSVERSIONINFO ver = {0};
     TCHAR buf[128];
+    XW_WinceVersion winceVersion = WINCE_UNKNOWN;
 
-    globals->winceVersion = WINCE_UNKNOWN;
-    // Check we are running on a Pocket PC
+    if ( GetVersionEx( &ver )) {
+        XP_LOGF( "version = %ld.%ld", ver.dwMajorVersion, ver.dwMinorVersion );
+    } else {
+        XP_WARNF( "GetVersionEx failed" );
+    }
 
     if ( SystemParametersInfo( SPI_GETPLATFORMTYPE, sizeof(buf), buf, FALSE ) ) {
-            OSVERSIONINFO ver = {0};
-            if (GetVersionEx( &ver )) {
-                XP_LOGF( "version = %d.%d", ver.dwMajorVersion, ver.dwMinorVersion );
-            }
-
-        if ( lstrcmp( buf, L"PocketPC") == 0 ) {
+        if ( 0 == lstrcmp( buf, L"PocketPC") ) {
             // We are on a Pocket PC, so check the OS version,
             // Pocket PC 2003 used WinCE 4.2
-
-            if ( ver.dwMajorVersion <= 4 ) {
-                globals->winceVersion = WINCE_PPC_2003;
+            if ( ver.dwMajorVersion < 4 ) {
+                winceVersion = WINCE_PPC_V1;
+            } else if ( ver.dwMajorVersion == 4 ) {
+                winceVersion = WINCE_PPC_2003;
             } else if ( ver.dwMajorVersion > 4 ) {
-                globals->winceVersion = WINCE_PPC_2005;
+                winceVersion = WINCE_PPC_2005;
+            }
+        } else if ( 0 == lstrcmp( buf, L"SmartPhone") ) {
+            if ( ver.dwMajorVersion < 4 ) {
+                winceVersion = WINCE_SMARTPHONE_V1;
+            } else if ( ver.dwMajorVersion == 4 ) {
+                winceVersion = WINCE_SMARTPHONE_2003;
+            } else if ( ver.dwMajorVersion > 4 ) {
+                winceVersion = WINCE_SMARTPHONE_2005;
             }
         } else {
             XP_LOGW( "unknown OS type", buf );
         }
+    } else if ( GetLastError() == ERROR_ACCESS_DENIED ) {
+        if ( ver.dwMajorVersion < 4 ) {
+            winceVersion = WINCE_SMARTPHONE_V1;
+        } else {
+            winceVersion = WINCE_SMARTPHONE_2003;
+        }
     }
-    LOG_RETURN_VOID();
-}
+
+    XP_ASSERT( winceVersion != WINCE_UNKNOWN );
+    globals->winceVersion = winceVersion;
+    XP_LOGF( "%s: set version to %d", __func__, winceVersion );
+} /* getOSInfo */
 #else
 #define getOSInfo( g )
 #endif 
@@ -1183,8 +1194,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 #endif
 
     globals = (CEAppGlobals*)XP_MALLOC( mpool, sizeof(*globals) );
-    XP_DEBUGF( "" );
-    XP_DEBUGF( "globals created: 0x%lx", globals );
+    XP_DEBUGF( "globals created: 0x%p", globals );
     XP_MEMSET( globals, 0, sizeof(*globals) );
     MPASSIGN( globals->mpool, mpool );
 
@@ -2029,42 +2039,11 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
 
 #ifdef _WIN32_WCE
 static void
-sizeIfFullscreen( CEAppGlobals* globals )
-{
-    RECT rect;
-    XP_U16 cbHeight = 0;
-    if ( !!globals->hwndCB ) {
-        GetWindowRect( globals->hwndCB, &rect );
-        cbHeight = rect.bottom - rect.top;
-    }
-
-    /* I'm leaving the SIP/cmdbar in place until I can figure out how to get
-       menu events with it hidden -- and also the UI for making sure users
-       don't get stuck in fullscreen mode not knowing how to reach menus to
-       get out.  Later, add SHFS_SHOWSIPBUTTON and SHFS_HIDESIPBUTTON to the
-       sets shown and hidden below.*/
-    if ( globals->appPrefs.fullScreen ) {
-        SHFullScreen( globals->hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
-
-        SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
-    } else {
-        SHFullScreen( globals->hWnd, SHFS_HIDETASKBAR | SHFS_HIDESTARTICON );
-
-        SetRect( &rect, 0, 0, GetSystemMetrics(SM_CXSCREEN),
-                 GetSystemMetrics(SM_CYSCREEN) );
-    }
-
-    rect.bottom -= cbHeight;
-    MoveWindow( globals->hWnd, rect.left, rect.top, rect.right - rect.left, 
-                rect.bottom - rect.top, TRUE );
-} /* sizeIfFullscreen */
-
-static void
 ceToggleFullScreen( CEAppGlobals* globals )
 {
     globals->appPrefs.fullScreen = !globals->appPrefs.fullScreen;
 
-    sizeIfFullscreen( globals );
+    ceSizeIfFullscreen( globals, globals->hWnd );
 
     (void)cePositionBoard( globals );
 } /* ceToggleFullScreen */
@@ -2507,7 +2486,7 @@ makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 XP_UNUSED_DBG(size) )
 } /* makeTimeStamp */
 
 void
-wince_debugf(XP_UCHAR* format, ...)
+wince_debugf(const XP_UCHAR* format, ...)
 {
 #ifdef XWFEATURE_RELAY
     static HANDLE s_logMutex = NULL;
