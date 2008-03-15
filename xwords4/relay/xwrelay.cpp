@@ -645,8 +645,13 @@ int main( int argc, char** argv )
     }
 #endif
 
+    /* Arrange to be sent SIGUSR1 on death of parent. */
     prctl( PR_SET_PDEATHSIG, SIGUSR1 );
-    (void)signal( SIGUSR1, parentDied );
+
+    struct sigaction sact;
+    memset( &sact, 0, sizeof(sact) );
+    sact.sa_handler = parentDied;
+    (void)sigaction( SIGUSR1, &sact, NULL );
 
     if ( port != 0 ) {
         g_listeners.AddListener( port );
