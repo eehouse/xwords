@@ -6,7 +6,6 @@
 #define IDC_XWORDS4                     3
 #define IDI_XWORDS4                     101
 #define IDM_MENU                        102
-#define IDD_ABOUTBOX                    103
 #define IDD_DIALOG1                     104
 #define IDD_GAMEINFO                    104
 #define IDD_STRBOX                      106
@@ -201,6 +200,7 @@
 #define IDS_DUMMY                       40003
 #define IDS_CANCEL                      40004
 #define IDS_OK                          40005
+#define IDS_ABOUT                       40006
 
 // Don't use the numbers after 4009: one string needs not to be there
 // to stop the progression in cedict.c 
