@@ -145,12 +145,12 @@ static void ce_util_engineStarting( XW_UtilCtxt* uc );
 static void ce_util_engineStopping( XW_UtilCtxt* uc );
 #endif
 
-static void messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str,
-                            wchar_t* title );
+static int messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str,
+                            wchar_t* title, XP_U16 buttons );
 static XP_Bool queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg );
 
 static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                                wchar_t* title, XP_Bool isQuery, 
+                                wchar_t* title, XP_U16 buttons, 
                                 XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, RECT* src );
 static XP_Bool ceDoNewGame( CEAppGlobals* globals );
@@ -162,8 +162,8 @@ static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
 static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 #endif
 static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
-static void messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                              wchar_t* title );
+static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
+                              wchar_t* title, XP_U16 buttons );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
 
 
@@ -447,8 +447,7 @@ typedef struct CEBoardParms {
 
 static XP_U16
 sizeBoard( XP_U16* bdHeightP,  /* INOUT */
-           XP_U16* nRowsP,     /* INOUT: on OUT, gives nRowsVisible */ 
-           XP_U16* scrollWidthP )
+           XP_U16* nRowsP )    /* INOUT: on OUT, gives nRowsVisible */ 
 {
     /* given the initial max board height, figure how many rows are visible
        and the adjusted heights of the board and tray. */
@@ -456,8 +455,6 @@ sizeBoard( XP_U16* bdHeightP,  /* INOUT */
     XP_U16 nVisibleRows = *nRowsP;
     XP_U16 vScale;
     XP_U16 boardHtLimit;
-
-    *scrollWidthP = 0;
 
     vScale = bdHeight / nVisibleRows;
     if ( vScale < MIN_CELL_HEIGHT ) {
@@ -469,7 +466,6 @@ sizeBoard( XP_U16* bdHeightP,  /* INOUT */
     while ( boardHtLimit > bdHeight ) {
         boardHtLimit -= vScale;
         --nVisibleRows;
-        *scrollWidthP = SCROLLBAR_WIDTH;
     }
 
     *bdHeightP = boardHtLimit;
@@ -519,7 +515,10 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     /* Try to make it fit without scrolling.  But if necessary, reduce the
        width for a scrollbar. */
     boardHt = scrnHeight - scoreHeight - MIN_TRAY_HEIGHT;
-    vScale = sizeBoard( &boardHt, &nVisibleRows, &scrollWidth );
+    vScale = sizeBoard( &boardHt, &nVisibleRows );
+    if ( nVisibleRows < nRows && !IS_SMARTPHONE(globals) ) {
+        scrollWidth = SCROLLBAR_WIDTH;
+    }
 
     boardWidth = scrnWidth - scrollWidth;
     if ( horiz ) {
@@ -577,7 +576,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 #ifdef CEFEATURE_CANSCROLL
     globals->nHiddenRows = nRows - nVisibleRows;
     bparms->needsScroller = nVisibleRows < nRows;
-    if ( bparms->needsScroller ) {
+    if ( bparms->needsScroller && !IS_SMARTPHONE(globals) ) {
         XP_U16 boardRight = boardLeft + (nRows * hScale);
         showScroller( globals, globals->nHiddenRows,
                       boardRight, boardTop,
@@ -1077,7 +1076,7 @@ doDictsMovedAlert( CEAppGlobals* globals )
                       XP_CR
                       "Do you want to disable this warning?" );
 
-    hide = ceMsgFromStream( globals, stream, L"Warning", XP_TRUE, XP_TRUE );
+    hide = ceMsgFromStream( globals, stream, L"Warning", MB_YESNO, XP_TRUE );
 
     if ( hide ) {
         globals->flags |= FLAGS_BIT_SHOWN_NEWDICTLOC;
@@ -1258,7 +1257,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
         ceFormatDictDirs( stream, hInstance );
         stream_putString( stream, ". Download dictionaries from "
                           "http://xwords.sf.net." );
-        messageBoxStream( globals, stream, L"Dictionary Not Found" );
+        messageBoxStream( globals, stream, L"Dictionary Not Found", MB_OK );
         stream_destroy( stream );
         result = FALSE;
         goto exit;
@@ -1387,7 +1386,7 @@ ceCountsAndValues( CEAppGlobals* globals )
         server_formatDictCounts( globals->game.server, stream, 3 );
 
         (void)ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
-                               XP_FALSE, XP_TRUE );
+                               MB_OK, XP_TRUE );
     }
 } /* ceCountsAndValues */
 
@@ -1399,7 +1398,7 @@ ceTilesLeft( CEAppGlobals* globals )
         board_formatRemainingTiles( globals->game.board, stream );
 
         (void)ceMsgFromStream( globals, stream, L"Remaining tiles", 
-                               XP_FALSE, XP_TRUE );
+                               MB_OK, XP_TRUE );
     }
 } /* ceTilesLeft */
 
@@ -1414,7 +1413,7 @@ ceDoHistory( CEAppGlobals* globals )
     model_writeGameHistory( globals->game.model, stream, 
                             globals->game.server, gameOver );
     (void)ceMsgFromStream( globals, stream, L"Game history", 
-                           XP_FALSE, XP_TRUE );
+                           MB_OK, XP_TRUE );
 } /* ceDoHistory */
 
 static void
@@ -1445,7 +1444,7 @@ ceDisplayFinalScores( CEAppGlobals* globals )
     stream_putU8( stream, '\0' );
 
     (void)ceMsgFromStream( globals, stream, L"Final scores", 
-                           XP_FALSE, XP_TRUE );
+                           MB_OK, XP_TRUE );
 } /* ceDisplayFinalScores */
 
 static XP_Bool
@@ -2376,32 +2375,51 @@ ceAbout(HWND hDlg, UINT message, WPARAM wParam, LPARAM XP_UNUSED(lParam))
 
 static XP_Bool
 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                 wchar_t* title, XP_Bool isQuery, XP_Bool destroy )
+                 wchar_t* title, XP_U16 buttons, XP_Bool destroy )
 {
-    StrBoxInit init;
+    /* It seems we want to use messagebox for everything on smartphone and
+       Windows, but not on PPC since it doesn't scroll and doesn't use
+       softkeys.  Well, on Windows since there's no scrolling limit by
+       size */
+    XP_Bool saidYes;
+    XP_Bool useMB;
+#ifdef _WIN32_WCE
+    useMB = IS_SMARTPHONE(globals);
+#else
+    useMB = stream_getSize(stream) <= 256; /* arbitrary... */
+#endif
+    if ( useMB ) {
+        int result = messageBoxStream( globals, stream, title, buttons );
+        saidYes = (IDOK == result) | (IDRETRY == result) | (IDYES == result);
+    } else {
+        StrBoxInit init;
 
-    XP_MEMSET( &init, 0, sizeof(init) );
+        XP_MEMSET( &init, 0, sizeof(init) );
 
-    init.title = title;
-    init.stream = stream;
-    init.isQuery = isQuery;
-    init.globals = globals;
+        init.title = title;
+        init.stream = stream;
+        init.isQuery = buttons != MB_OK;
+        init.globals = globals;
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
-                    (DLGPROC)StrBox, (long)&init );
+        DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
+                        (DLGPROC)StrBox, (long)&init );
+        saidYes = init.result == IDOK;
+    }
 
     if ( destroy ) {
         stream_destroy( stream );
     }
 
-    return init.result == IDOK;
+    return saidYes;
 } /* ceMsgFromStream */
 
-static void
-messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title )
+static int
+messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title, 
+                XP_U16 buttons )
 {
     wchar_t* widebuf;
     XP_U32 len, wsize;
+    int result;
 
     /* first get the length required, then alloc and go */
     len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, strlen(str),
@@ -2414,9 +2432,10 @@ messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title )
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, strlen(str),
                          widebuf, len );
 
-    MessageBox( globals->hWnd, widebuf, title, MB_OK );
+    result = MessageBox( globals->hWnd, widebuf, title, buttons );
 
     XP_FREE( globals->mpool, widebuf );
+    return result;
 } /* messageBoxChar */
 
 static XP_UCHAR*
@@ -2430,14 +2449,16 @@ ceStreamToStrBuf( MPFORMAL XWStreamCtxt* stream )
     return buf;
 } /* ceStreamToStrBuf */
 
-static void
-messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title )
+static int
+messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
+                  XP_U16 buttons )
 {
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
 
-    messageBoxChar( globals, buf, title );
+    int result = messageBoxChar( globals, buf, title, buttons );
 
     XP_FREE( globals->mpool, buf );
+    return result;
 } /* messageBoxStream */
 
 static XP_Bool
@@ -2758,7 +2779,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
-    messageBoxChar( globals, message, L"Oops!" );
+    messageBoxChar( globals, message, L"Oops!", MB_OK );
     
 } /* ce_util_userError */
 
@@ -2781,7 +2802,7 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
                                 XP_FALSE );
 
     case QUERY_ROBOT_TRADE:
-        messageBoxStream( globals, stream, L"FYI" );
+        messageBoxStream( globals, stream, L"FYI", MB_OK );
         break;
 
     default:
@@ -2899,7 +2920,9 @@ ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset),
 {
 #ifdef CEFEATURE_CANSCROLL
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-    (void)SetScrollPos( globals->scrollHandle, SB_CTL, newOffset, XP_TRUE ); 
+    if ( !!globals->scrollHandle ) {
+        (void)SetScrollPos( globals->scrollHandle, SB_CTL, newOffset, XP_TRUE ); 
+    }
 #endif
 } /* ce_util_yOffsetChange */
 
@@ -3118,7 +3141,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     sprintf( msgBuf, "Word[s] %s not found in dictionary.", wordsBuf );
 
     if ( turnLost ) {
-        messageBoxChar( globals, msgBuf, L"Illegal word" );
+        messageBoxChar( globals, msgBuf, L"Illegal word", MB_OK );
         isOk = XP_TRUE;
     } else {
         strcat( msgBuf, " Use it anyway?" );
