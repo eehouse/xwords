@@ -1227,7 +1227,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     }
 
 #ifdef _WIN32_WCE
-    if ( globals->hwndCB ) {
+    if ( globals->hwndCB && !IS_SMARTPHONE(globals) ) {
         RECT rc, rcmb;
 
         GetWindowRect( hWnd, &rc );

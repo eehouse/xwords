@@ -249,35 +249,65 @@ ceIsVisible( HWND XP_UNUSED_CE(hwnd) )
 } /* ceIsVisible */
 
 #ifdef _WIN32_WCE
+static XP_Bool
+ceIsFullScreen( CEAppGlobals* globals, HWND hWnd )
+{
+    XP_S16 screenHt;
+    XP_U16 winHt;
+    RECT rect;
+
+    GetClientRect( hWnd, &rect );
+    winHt = rect.bottom - rect.top; /* top should always be 0 */
+
+    screenHt = GetSystemMetrics( SM_CYSCREEN );
+    XP_ASSERT( screenHt >= winHt );
+
+    screenHt -= winHt;
+    
+    if ( !!globals->hwndCB ) {
+        RECT rect;
+        GetWindowRect( globals->hwndCB, &rect );
+        screenHt -= rect.bottom - rect.top;
+    }
+
+    XP_ASSERT( screenHt >= 0 );
+    return screenHt == 0;
+} /* ceIsFullScreen */
+
 void
 ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd )
 {
-    RECT rect;
-    XP_U16 cbHeight = 0;
-    if ( !!globals->hwndCB && hWnd == globals->hWnd ) {
-        GetWindowRect( globals->hwndCB, &rect );
-        cbHeight = rect.bottom - rect.top;
+    if ( globals->appPrefs.fullScreen != ceIsFullScreen(globals, hWnd) ) {
+        RECT rect;
+        XP_U16 cbHeight = 0;
+        if ( !!globals->hwndCB && hWnd == globals->hWnd ) {
+            GetWindowRect( globals->hwndCB, &rect );
+            cbHeight = rect.bottom - rect.top;
+        }
+
+        /* I'm leaving the SIP/cmdbar in place until I can figure out how to
+           get menu events with it hidden -- and also the UI for making sure
+           users don't get stuck in fullscreen mode not knowing how to reach
+           menus to get out.  Later, add SHFS_SHOWSIPBUTTON and
+           SHFS_HIDESIPBUTTON to the sets shown and hidden below.*/
+        if ( globals->appPrefs.fullScreen ) {
+            SHFullScreen( hWnd, SHFS_HIDETASKBAR | SHFS_HIDESTARTICON );
+
+            SetRect( &rect, 0, 0, GetSystemMetrics(SM_CXSCREEN),
+                     GetSystemMetrics(SM_CYSCREEN) );
+
+        } else {
+            SHFullScreen( hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
+            SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
+            if ( IS_SMARTPHONE(globals) ) {
+                cbHeight = 0;
+            }
+        }
+
+        rect.bottom -= cbHeight;
+        MoveWindow( hWnd, rect.left, rect.top, rect.right - rect.left, 
+                    rect.bottom - rect.top, TRUE );
     }
-
-    /* I'm leaving the SIP/cmdbar in place until I can figure out how to get
-       menu events with it hidden -- and also the UI for making sure users
-       don't get stuck in fullscreen mode not knowing how to reach menus to
-       get out.  Later, add SHFS_SHOWSIPBUTTON and SHFS_HIDESIPBUTTON to the
-       sets shown and hidden below.*/
-    if ( globals->appPrefs.fullScreen ) {
-        SHFullScreen( hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
-
-        SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
-    } else {
-        SHFullScreen( hWnd, SHFS_HIDETASKBAR | SHFS_HIDESTARTICON );
-
-        SetRect( &rect, 0, 0, GetSystemMetrics(SM_CXSCREEN),
-                 GetSystemMetrics(SM_CYSCREEN) );
-    }
-
-    rect.bottom -= cbHeight;
-    MoveWindow( hWnd, rect.left, rect.top, rect.right - rect.left, 
-                rect.bottom - rect.top, TRUE );
 } /* ceSizeIfFullscreen */
 
 static XP_Bool
@@ -298,7 +328,7 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
     mbi.hInstRes = globals->hInst;
     success = SHCreateMenuBar( &mbi );
     if ( !success ) {
-        XP_LOGF( "SHCreateMenuBar failed" );
+        XP_LOGF( "SHCreateMenuBar failed: %ld", GetLastError() );
     }
     return success;
 } /* mkFullscreenWithSoftkeys */

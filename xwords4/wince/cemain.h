@@ -40,6 +40,8 @@ typedef enum {
     , WINCE_SMARTPHONE_2003
     , WINCE_SMARTPHONE_2005
 } XW_WinceVersion;
+
+# define IS_SMARTPHONE(g) ((g)->winceVersion > _LAST_PPC)
 #endif
 
 enum { CE_BONUS1_COLOR,
