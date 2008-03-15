@@ -107,7 +107,8 @@ extern "C" {
 #endif
 
 void wince_assert(XP_UCHAR* s, int line, char* fileName );
-void wince_debugf(XP_UCHAR*, ...);
+void wince_debugf(const XP_UCHAR*, ...)
+    __attribute__ ((format (printf, 1, 2)));
 void p_ignore(XP_UCHAR*, ...);
 XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, 
                        const XP_UCHAR* format, ... );

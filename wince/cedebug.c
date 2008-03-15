@@ -62,6 +62,15 @@ messageToStr( UINT message )
         CASE_STR( WM_WINDOWPOSCHANGING );
         CASE_STR( WM_SETFOCUS );
         CASE_STR( WM_NCPAINT );
+        CASE_STR( WM_NCCALCSIZE );
+        CASE_STR( WM_SETTEXT );
+        CASE_STR( WM_CTLCOLORDLG );
+        CASE_STR( WM_MOUSEACTIVATE );
+        CASE_STR( WM_SETCURSOR );
+        CASE_STR( WM_CTLCOLORLISTBOX );
+        CASE_STR( WM_CTLCOLOREDIT );
+        CASE_STR( WM_NCDESTROY );
+        CASE_STR( WM_NOTIFY );
     default:
         str = "<unknown>";
     }
