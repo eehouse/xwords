@@ -124,6 +124,34 @@ GetTextExtentPoint32W( HDC hdc, LPCWSTR str, int i, LPSIZE siz )
 #endif
 
 static void
+ceClipToRect( CEDrawCtx* dctx, HDC hdc, const RECT* rt )
+{
+    /*
+NULLREGION 	Region is empty.
+SIMPLEREGION 	Region is a single rectangle.
+COMPLEXREGION 	Region is more than one rectangle.
+ERROR
+    */
+#if 0
+    /* Docs suggest I should be able to reuse the region but it doesn't
+       work.  At least under WINE... */
+    HRGN clipRgn = dctx->clipRgn;
+    int ret;
+    if ( !clipRgn ) {
+        clipRgn = CreateRectRgn( rt->left, rt->top, rt->right, rt->bottom );
+        dctx->clipRgn = clipRgn;
+    } else {
+        (void)SetRectRgn( clipRgn, rt->left, rt->top, rt->right, rt->bottom );
+    }
+    (void)SelectClipRgn( hdc, clipRgn ); /* returns SIMPLEREGION */
+#else
+    HRGN clipRgn = CreateRectRgn( rt->left, rt->top, rt->right, rt->bottom );
+    SelectClipRgn( hdc, clipRgn );
+    DeleteObject( clipRgn );
+#endif
+} /* ceClipToRect */
+
+static void
 measureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
              XP_U16* widthP, XP_U16* heightP )
 {
@@ -259,6 +287,7 @@ ceDrawHintBorders( HDC hdc, const XP_Rect* xprect, HintAtts hintAtts )
     }
 } /* ceDrawHintBorders */
 
+
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                           const XP_UCHAR* letters, const XP_Bitmap bitmap, 
@@ -283,12 +312,14 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XPRtoRECT( &rt, xprect );
     ++rt.bottom;
     ++rt.right;
+    ceClipToRect( dctx, hdc, &rt );
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     textRect = rt;
     InsetRect( &textRect, 1, 1 );
 
     InsetRect( &rt, 1, 1 );
+    ceClipToRect( dctx, hdc, &rt );
 
     /* always init to silence compiler warning */
     foreColorRef = dctx->globals->appPrefs.colors[getPlayerColor(owner)];
@@ -414,6 +445,8 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     XP_Bool isFocussed = (flags & CELL_ISCURSOR) != 0;
     XP_Bool isEmpty = (flags & CELL_ISEMPTY) != 0;
 
+    XPRtoRECT( &rt, xprect );
+    ceClipToRect( dctx, hdc, &rt );
     ceClearToBkground( dctx, xprect );
 
     if ( !isEmpty || isFocussed ) {
@@ -421,11 +454,10 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         SetBkColor( hdc, dctx->globals->appPrefs.colors[backIndex] );
 
-        XPRtoRECT( &rt, xprect );
-
         InsetRect( &rt, 1, 1 );
         Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom);
         InsetRect( &rt, 1, 1 );
+        ceClipToRect( dctx, hdc, &rt );
 
         if ( !isEmpty ) {
             index = getPlayerColor(dctx->trayOwner);
@@ -511,6 +543,7 @@ DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect,
     RECT rt;
 
     XPRtoRECT( &rt, rect );
+    ceClipToRect( dctx, hdc, &rt );
     if ( selected ) {
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     } else {
@@ -529,12 +562,6 @@ ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect )
 
     FillRect( hdc, &rt, dctx->brushes[CE_BKG_COLOR] );
 } /* ceClearToBkground */
-
-/* DLSTATIC void  */
-/* DRAW_FUNC_NAME(clearRect)( DrawCtx* p_dctx, const XP_Rect* rectP ) */
-/* { */
-/*     ceClearToBkground( (CEDrawCtx*)p_dctx, rectP ); */
-/* } /\* ce_draw_clearRect *\/ */
 
 static void
 ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
@@ -665,6 +692,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
 
     XPRtoRECT( &rt, rInner );
+    ceClipToRect( dctx, hdc, &rt );
     ++rt.left;                  /* 1: don't write up against edge */
     drawLines( dctx, hdc, buf, CE_REM_PADDING, &rt, 
                DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_CENTER );
@@ -763,8 +791,9 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
                   appPrefs.colors[getPlayerColor(dsi->playerNum)] );
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
         
+    XPRtoRECT( &rt, rOuter );
+    ceClipToRect( dctx, hdc, &rt );
     if ( isFocussed ) {
-        XPRtoRECT( &rt, rOuter );
         FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
     }
 
@@ -811,6 +840,7 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
 
     XPRtoRECT( &rt, rect );
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
+    ceClipToRect( dctx, hdc, &rt );
 
     if ( score < 0 ) {
         buf[0] = '?';
