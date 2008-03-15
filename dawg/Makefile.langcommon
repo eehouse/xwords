@@ -32,8 +32,10 @@ LANGUAGE = $(shell basename $$(pwd))
 
 # prefer the compiled version if available.  But don't compile it
 # automatically until it's a bit better tested.
-DICT2DAWG = $(if $(shell test -x ../dict2dawg && echo foo),\
-		../dict2dawg,../dict2dawg.pl)
+# DICT2DAWG = $(if $(shell test -x ../dict2dawg && echo foo),\
+# 		../dict2dawg,../dict2dawg.pl)
+
+DICT2DAWG = ../dict2dawg
 
 #all: target_all
 
@@ -267,6 +269,10 @@ values.bin:  ../xloc.pl
 
 %.dict: %.dict.gz
 	zcat $< > $@
+
+# clean this up....
+../dict2dawg: ../dict2dawg.cpp
+	cd ../ && g++ -DDEBUG -O -o dict2dawg dict2dawg.cpp
 
 clean_common:
 	rm -f $(XWLANG)Main.dict *.bin *.pdb *.seb dawg*.stamp *.$(FRANK_EXT) \

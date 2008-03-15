@@ -399,7 +399,7 @@ readFromSortedArray( void )
     }
 
     for ( ; ; ) {
-        char* word = "";
+        char* word = (char*)"";
 
         if ( !gDone ) {
             gDone = gNextWordIndex == sInputStrings->size();
@@ -570,7 +570,7 @@ readFromFile( void )
             gDone = NULL == word;
         }
         if ( gDone ) {
-            word = "";
+            word = (char*)"";
             len = 0;
         }
 
