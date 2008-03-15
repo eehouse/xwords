@@ -411,18 +411,15 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
                 (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
                                    &newInfo.u.board.row );
                 moving = (newInfo.u.board.col != ds->cur.u.board.col)
-                    || (newInfo.u.board.row != ds->cur.u.board.row);
-                if ( moving ) {
-                    checkScrollCell( board, newInfo.u.board.col, newInfo.u.board.row );
-                }
-                moving = moving || (OBJ_TRAY == ds->cur.obj);
+                    || (newInfo.u.board.row != ds->cur.u.board.row)
+                    || (OBJ_TRAY == ds->cur.obj);
 
             } else if ( newInfo.obj == OBJ_TRAY ) {
                 XP_Bool onDivider;
                 XP_S16 index = pointToTileIndex( board, xx, yy, &onDivider );
                 if ( !onDivider ) {
-                    if ( index < 0 ) { /* negative means onto empty part of tray.
-                                          Force left. */
+                    if ( index < 0 ) { /* negative means onto empty part of
+                                          tray.  Force left. */
                         index = model_getNumTilesInTray( board->model, 
                                                          board->selPlayer );
                         if ( OBJ_TRAY == ds->start.obj ) {
@@ -438,16 +435,28 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
             }
 
             if ( moving ) {
-                if ( ds->dtype == DT_TILE ) {
-                    invalDragObjRange( board, &ds->cur, &newInfo );
+
+                /* This little hack lets us inval twice using the same code but
+                   only in the case where scrolling moves tiles.  At a minimum
+                   it's necessary to inval the old position before a scroll and
+                   the new after.  Otherwise if the platform scrolls by
+                   bit-blitting the dragged object will be scrolled before it's
+                   invalidated. */
+                do {
+                    if ( ds->dtype == DT_TILE ) {
+                        invalDragObjRange( board, &ds->cur, &newInfo );
 #ifdef XWFEATURE_SEARCHLIMIT
-                } else if ( ds->dtype == DT_HINTRGN ) {
-                    invalHintRectDiffs( board, &ds->cur, &newInfo );
-                    if ( !ds->didMove ) { /* first time through */
-                        invalCurHintRect( board, board->selPlayer );
-                    }
+                    } else if ( ds->dtype == DT_HINTRGN ) {
+                        invalHintRectDiffs( board, &ds->cur, &newInfo );
+                        if ( !ds->didMove ) { /* first time through */
+                            invalCurHintRect( board, board->selPlayer );
+                        }
 #endif
-                }
+                    }
+                } while ( (newInfo.obj == OBJ_BOARD)
+                         && checkScrollCell( board, newInfo.u.board.col, 
+                                             newInfo.u.board.row ) );
+                
                 XP_MEMCPY( &ds->cur, &newInfo, sizeof(ds->cur) );
             }
         }

@@ -1022,14 +1022,15 @@ invalCellsWithTiles( BoardCtxt* board )
     return board->needsDrawing;
 } /* invalCellsWithTiles */
 
-void
+XP_Bool
 checkScrollCell( void* p_board, XP_U16 col, XP_U16 row )
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     XP_Rect rect;
+    XP_Bool moved = XP_FALSE;
 
     if ( board->boardObscuresTray && board->trayVisState != TRAY_HIDDEN ) {
-
+        /* call getCellRect until the cell's on the board. */
         while ( !getCellRect( board, col, row, &rect ) ) {
             XP_U16 oldOffset = board_getYOffset( board );
             if ( rect.top < board->boardBounds.top ) {
@@ -1041,8 +1042,10 @@ checkScrollCell( void* p_board, XP_U16 col, XP_U16 row )
                 XP_ASSERT( 0 );
             }
             board_setYOffset( board, oldOffset );
+            moved = XP_TRUE;
         }
     }    
+    return moved;
 } /* checkScrollCell */
 
 /* if any of a blank's neighbors is invalid, so must the blank become (since
@@ -1111,8 +1114,8 @@ scrollIfCan( BoardCtxt* board )
 
         if ( scrolled ) {
             /* inval the rows that have been scrolled into view.  I'm cheating
-               making the client figure the inval rect, but Palm's the only
-               client now and it does it so well.... */
+               making the client figure the inval rect, but Palm's the first
+               client and it does it so well.... */
             invalCellsUnderRect( board, &scrollR );
         } else {
             board_invalAll( board );
@@ -1782,7 +1785,6 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                 } else if ( dict_faceIsBitmap( dict, tile ) ) {
                     bitmap = dict_getFaceBitmap( dict, tile, XP_FALSE );
                     XP_ASSERT( !!bitmap );
-                    textP = (XP_UCHAR*)NULL;
                 } else {
                     (void)dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
                     textP = ch;

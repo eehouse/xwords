@@ -241,7 +241,7 @@ XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
                            XP_UCHAR* buf, XP_U16 len );
 XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
-void checkScrollCell( void* p_board, XP_U16 col, XP_U16 row );
+XP_Bool checkScrollCell( void* p_board, XP_U16 col, XP_U16 row );
 
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
