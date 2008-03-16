@@ -151,6 +151,27 @@ ERROR
 #endif
 } /* ceClipToRect */
 
+static HFONT
+ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index )
+{
+    if ( dctx->setFontHt[index] != height ) {
+        HFONT font;
+        LOGFONT fontInfo;
+
+        XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
+        fontInfo.lfHeight = height;
+        font = CreateFontIndirect( &fontInfo );
+
+        if ( !!dctx->setFont[index] ) {
+            DeleteObject( dctx->setFont[index] );
+        }
+
+        dctx->setFont[index] = font;
+        dctx->setFontHt[index] = height;
+    }
+    return dctx->setFont[index];
+}
+
 static void
 measureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
              XP_U16* widthP, XP_U16* heightP )
@@ -287,7 +308,6 @@ ceDrawHintBorders( HDC hdc, const XP_Rect* xprect, HintAtts hintAtts )
     }
 } /* ceDrawHintBorders */
 
-
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                           const XP_UCHAR* letters, const XP_Bitmap bitmap, 
@@ -306,8 +326,12 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
     XP_Bool isFocussed = (flags & CELL_ISCURSOR) != 0;
     XP_Bool isDragSrc = (flags & CELL_DRAGSRC) != 0;
+    HFONT oldFont;
 
     XP_ASSERT( !!hdc );
+
+    oldFont = SelectObject( hdc, ceGetSizedFont( dctx, xprect->height,
+                                                 RFONTS_CELL) );
 
     XPRtoRECT( &rt, xprect );
     ++rt.bottom;
@@ -388,6 +412,8 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     }
 
     ceDrawHintBorders( hdc, xprect, hintAtts );
+
+    SelectObject( hdc, oldFont );
 
     return XP_TRUE;
 } /* ce_draw_drawCell */
@@ -476,12 +502,15 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         FillRect( hdc, &rt, dctx->brushes[backIndex] );
 
         if ( !isEmpty ) {
+            XP_U16 thirdHt = xprect->height / 3;
             if ( !highlighted ) {
                 InsetRect( &rt, 1, 1 );
             }
 
             if ( !!letters ) {
-                HFONT oldFont = SelectObject( hdc, dctx->trayFont );
+                HFONT font = ceGetSizedFont( dctx, thirdHt*2, 
+                                             RFONTS_TRAY );
+                HFONT oldFont = SelectObject( hdc, font );
                 MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                                      widebuf, 
                                      VSIZE(widebuf) );
@@ -499,9 +528,13 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             }
 
             if ( val >= 0 ) {
+                HFONT font = ceGetSizedFont( dctx, thirdHt, 
+                                             RFONTS_TRAYVAL );
+                HFONT oldFont = SelectObject( hdc, font );
                 swprintf( widebuf, L"%d", val );
                 DrawText(hdc, widebuf, -1, &rt, 
                          DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);	
+                SelectObject( hdc, oldFont );
             }
         }
     }
@@ -991,9 +1024,13 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
         DeleteObject( dctx->brushes[i] );
     }
 
-    DeleteObject( dctx->trayFont );
     DeleteObject( dctx->playerFont );
     DeleteObject( dctx->selPlayerFont );
+    for ( i = 0; i < N_RESIZE_FONTS; ++i ) {
+        if ( !!dctx->setFont[i] ) {
+            DeleteObject( dctx->setFont[i] );
+        }
+    }
 
     DeleteObject( dctx->rightArrow );
     DeleteObject( dctx->downArrow );
@@ -1061,10 +1098,7 @@ ceFontsSetup( CEDrawCtx* dctx )
     LOGFONT font;
 
     XP_MEMSET( &font, 0, sizeof(font) );
-    font.lfHeight = (CE_TRAY_SCALEV*2)/3;
-    font.lfWeight = 600;     /* FW_DEMIBOLD */
     wcscpy( font.lfFaceName, L"Arial" );
-    dctx->trayFont = CreateFontIndirect( &font );
 
     font.lfWeight = FW_LIGHT;
     font.lfHeight = CE_SCORE_HEIGHT - 2;
@@ -1073,7 +1107,6 @@ ceFontsSetup( CEDrawCtx* dctx )
     font.lfWeight = FW_BOLD;
     font.lfHeight = CE_SCORE_HEIGHT;
     dctx->selPlayerFont = CreateFontIndirect( &font );
-
 } /* ceFontsSetup */
 
 void
