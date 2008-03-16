@@ -168,6 +168,14 @@ enum {
 
 #define CE_NUM_EDITABLE_COLORS CE_BLACK_COLOR
 
+typedef enum { 
+    RFONTS_TRAY
+    ,RFONTS_TRAYVAL
+    ,RFONTS_CELL
+
+    ,N_RESIZE_FONTS
+} RFIndex;
+
 typedef struct CEDrawCtx {
     DrawCtxVTable* vtable;
     
@@ -178,9 +186,10 @@ typedef struct CEDrawCtx {
 
     HBRUSH brushes[CE_NUM_COLORS];
 
-    HFONT trayFont;
     HFONT selPlayerFont;
     HFONT playerFont;
+    HFONT setFont[N_RESIZE_FONTS];
+    XP_U16 setFontHt[N_RESIZE_FONTS];
 
     HBITMAP rightArrow;
     HBITMAP downArrow;

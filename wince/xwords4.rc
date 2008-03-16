@@ -81,7 +81,6 @@ BEGIN
         MENUITEM "Flip",                       ID_MOVE_FLIP
         MENUITEM "Trade",                      ID_MOVE_TRADE
         MENUITEM "(un)Hide tray",              ID_MOVE_HIDETRAY
-        MENUITEM "Tile values",                ID_MOVE_VALUES
 
         POPUP "Undo"
         BEGIN
@@ -96,6 +95,8 @@ BEGIN
 #ifdef XWFEATURE_SEARCHLIMIT
             MENUITEM "Limited hint",           ID_MOVE_LIMITEDHINT
 #endif
+            MENUITEM SEPARATOR
+            MENUITEM "Tile values",            ID_MOVE_VALUES
         END
 
         POPUP "Game"
