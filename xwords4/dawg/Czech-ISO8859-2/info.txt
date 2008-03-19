@@ -1,0 +1,84 @@
+# -*- coding: iso-8859-2; mode: conf; -*-
+# Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+LANGCODE:cs_CZ
+CHARSET:iso-8859-2
+
+# deal with DOS files
+LANGFILTER: tr -d '\r'
+# tr seems to work on systems that don't know the Czech locale, but
+# grep does not.  So don't use grep, e.g. to eliminate words
+# containing letters not in our alphabet.  Instead, pass the -r flag
+# via D2DARGS so they're dropped.
+LANGFILTER: | tr [aábcèdïeéìfghiíjklmnòoóprøs¹t»uúùvxyýz¾] [AÁBCÈDÏEÉÌFGHIÍJKLMNÒOÓPRØS©T«UÚÙVXYÝZ®]
+LANGFILTER: | sort -u
+
+# presence of high-ascii means we must not pass -nosort
+D2DARGS: -term 10 -r
+
+LANGINFO: <p>This BYOD language works on Czech wordlists encoded in
+LANGINFO: iso-8859-2 and produces dictionaries that should work on
+LANGINFO: iso-8859-2-localized systems.  If your Czech wordlist is
+LANGINFO: windows-1250-encoded, go back and choose Czech-CP1250. </p>
+
+# High bit means "official".  Next 7 bits are an enum where
+# Czech-ISO8859-2==0x11.  Low byte is padding.
+XLOC_HEADER:0x9100
+
+#COUNT     VAL     FACE
+<BEGIN_TILES>
+2			0		{"_"}
+5			1		'A'
+2			2		'Á'
+2			3		'B'
+3			2		'C'
+1           4       'È'
+3			1		'D'
+1           8       'Ï'
+5			1		'E'
+2           3       'É'
+2           3       'Ì'
+1			5		'F'
+1			5		'G'
+3			2		'H'
+4			1		'I'
+3           2       'Í'
+2			2		'J'
+3			1		'K'
+3			1		'L'
+3			2		'M'
+5			1		'N'
+1           6       'Ò'
+6			1		'O'
+1			7		'Ó'
+3			1		'P'
+3			1		'R'
+2			4		'Ø'
+4			1		'S'
+2           4       '©'
+4			1		'T'
+1           7       '«'
+3			2		'U'
+1			5		'Ú'
+1           4       'Ù'
+4			1		'V'
+1			10		'X'
+2			2		'Y'
+2			4		'Ý'
+2			2		'Z'
+1			4		'®'
+<END_TILES>

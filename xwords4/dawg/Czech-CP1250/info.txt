@@ -30,11 +30,13 @@ LANGFILTER: | sort -u
 # presence of high-ascii means we must not pass -nosort
 D2DARGS: -term 10 -r
 
-LANGINFO: <p>Czech has been tested so far with windows-1250 text
-LANGINFO: producing dictionaries that run on PalmOS.</p>
+LANGINFO: <p>This BYOD language works on Czech wordlists encoded in
+LANGINFO: windows-1250 and produces dictionaries that should work on
+LANGINFO: windows-1250-localized systems.  If your Czech wordlist is
+LANGINFO: iso-8859-2-encoded, go back and choose Czech-ISO8859-2. </p>
 
 # High bit means "official".  Next 7 bits are an enum where
-# Czech==0x10.  Low byte is padding.
+# Czech-CP1250==0x10.  Low byte is padding.
 XLOC_HEADER:0x9000
 
 #COUNT     VAL     FACE
