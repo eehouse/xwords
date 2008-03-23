@@ -83,6 +83,8 @@ drawScoreBoard( BoardCtxt* board )
                clickable to drop a menu, so will probably leave it.  */
             draw_measureRemText( board->draw, &board->scoreBdBounds, 
                                  nTilesInPool, &remWidth, &remHeight );
+            XP_ASSERT( remWidth <= board->scoreBdBounds.width );
+            XP_ASSERT( remHeight <= board->scoreBdBounds.height );
             remDim = isVertical? remHeight : remWidth;
 
             if ( isVertical ) {
@@ -130,6 +132,8 @@ drawScoreBoard( BoardCtxt* board )
                     model_getNumTilesTotal( model, i );
                 draw_measureScoreText( board->draw, &scoreRect,
                                        &dp->dsi, &dp->width, &dp->height );
+                XP_ASSERT( dp->width <= scoreRect.width );
+                XP_ASSERT( dp->height <= scoreRect.height );
                 totalDim += isVertical ? dp->height : dp->width;
             }
 
