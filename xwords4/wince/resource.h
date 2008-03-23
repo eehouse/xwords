@@ -6,7 +6,8 @@
 #define IDC_XWORDS4                     3
 #define IDI_XWORDS4                     101
 #define IDM_MENU                        102
-#define IDD_DIALOG1                     104
+#define IDD_SAVEDGAMESDLG               103
+#define IDD_SAVENAMEDLG                 107
 #define IDD_GAMEINFO                    104
 #define IDD_STRBOX                      106
 #define IDB_RIGHTARROW                  111
@@ -156,6 +157,20 @@
 #define IDS_UPDOWN                       1103
 #define IDC_NPLAYERSUPDOWN               1104
 #define IDC_PHONIESUPDOWN                1105
+#define IDC_SVGM_UPDOWN                  1106
+
+
+#define IDC_SVGM_SELLAB                  1109
+#define IDC_SVGM_GAMELIST                1110
+#define IDC_SVGM_EDITLAB                 1111
+#define IDC_SVGM_CHANGE                  1112
+#define IDC_SVGM_EDIT                    1113
+#define IDC_SVGM_DUP                     1114
+#define IDC_SVGM_DEL                     1115
+#define IDC_SVGM_OPEN                    1116
+
+#define IDC_SVGN_SELLAB                  1117
+#define IDC_SVGN_EDIT                    1118
 
 
 #define ID_FILE_EXIT                    40002
