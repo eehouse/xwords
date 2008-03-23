@@ -128,6 +128,7 @@ WINCESRC = \
 	ceutil.c \
 	ceblank.c \
 	cecondlg.c \
+	cesvdgms.c \
 	cehntlim.c \
 	ceprefs.c \
 	cestrbx.c \
