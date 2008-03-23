@@ -228,26 +228,6 @@ ceIsLandscape( CEAppGlobals* globals )
     return landscape;
 } /* ceIsLandscape */
 
-/* Can't figure out how to do this on CE.  IsWindowVisible doesn't work, and
-   GetWindowInfo isn't even there. */
-static XP_Bool
-ceIsVisible( HWND XP_UNUSED_CE(hwnd) )
-{
-#ifdef _WIN32_WCE              /* GetWindowInfo isn't on CE */
-    return XP_TRUE;
-#else
-    XP_Bool visible = XP_FALSE;
-    WINDOWINFO wi;
-    wi.cbSize = sizeof(wi);
-
-    if ( !!hwnd && GetWindowInfo( hwnd, &wi ) ) {
-        visible = (wi.dwStyle & WS_VISIBLE) != 0;
-    }
-
-    return visible;
-#endif
-} /* ceIsVisible */
-
 #ifdef _WIN32_WCE
 static XP_Bool
 ceIsFullScreen( CEAppGlobals* globals, HWND hWnd )
@@ -334,89 +314,210 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
 } /* mkFullscreenWithSoftkeys */
 #endif
 
+#define TITLE_HT 20            /* Need to get this from the OS */
 void
-ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg )
+ceDlgSetup( CEAppGlobals* globals, HWND hDlg, XP_Bool doScroll )
 {
-    XP_Bool justRemove = XP_FALSE;
     XP_ASSERT( !!globals );
+    RECT r;
+    XP_U16 vHeight;
+
+    GetClientRect( hDlg, &r );
+    vHeight = r.bottom;         /* This is before we've resized it */
 
 #ifdef _WIN32_WCE
-    if ( mkFullscreenWithSoftkeys( globals, hDlg ) ) {
-        justRemove = XP_TRUE;
+    (void)mkFullscreenWithSoftkeys( globals, hDlg );
+#elif defined DEBUG
+    /* Force it to be small so we can test scrolling etc. */
+    if ( globals->dbWidth > 0 && globals->dbHeight > 0) {
+        MoveWindow( hDlg, 0, 0, globals->dbWidth, globals->dbHeight, TRUE );
+        r.bottom = globals->dbHeight;
     }
 #endif
 
-    if ( justRemove || ceIsLandscape( globals ) ) {
-        XP_U16 resIDs[] = { IDOK, IDCANCEL };
-        RECT wrect, crect;
-        XP_U16 left, top;
-        XP_U16 butWidth, butHeight;
-        XP_U16 barHt, i, nButtons, spacing;
-        XP_U16 newWidth, mainWidth;
+    /* Measure again post-resize */
+    GetClientRect( hDlg, &r );
 
-        /* First, figure height and width to use */
-        butHeight = 0;
-        butWidth = 0;
-        nButtons = 0;
-        for ( i = 0; i < VSIZE(resIDs); ++i ) {
-            HWND itemH = GetDlgItem( hDlg, resIDs[i] );
-            if ( ceIsVisible( itemH ) ) {
-                RECT buttonRect;
-                GetClientRect( itemH, &buttonRect );
+    /* Set up the scrollbar if we're on PPC */
+    if ( doScroll && !IS_SMARTPHONE(globals) ) {
+        SCROLLINFO sinfo;
+     
+        XP_LOGF( "%s: vHeight: %d; r.bottom: %ld", __func__, vHeight, 
+                 r.bottom );
 
-                if ( butWidth < buttonRect.right ) {
-                    butWidth = buttonRect.right;
-                }
-                if ( butHeight < buttonRect.bottom ) {
-                    butHeight = buttonRect.bottom;
-                }
-                ++nButtons;
-            }
+        XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
+        sinfo.cbSize = sizeof(sinfo);
+
+        sinfo.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
+        sinfo.nPos = 0;
+        sinfo.nMin = 0;
+        sinfo.nMax = vHeight - r.bottom;
+        if ( sinfo.nMax < 0 ) {
+            sinfo.nMax = 0;     /* or disable the thing! */
         }
+        XP_LOGF( "%s: set max to %d", __func__, sinfo.nMax );
+        sinfo.nPage = 10;
+        
+        (void)SetScrollInfo( hDlg, SB_VERT, &sinfo, FALSE );
+    }
 
-        GetWindowRect( globals->hWnd, &wrect );
-        mainWidth = wrect.right - wrect.left;
+} /* ceDlgSetup */
 
-        /* Make sure we're not proposing to make the dialog wider than the
-           screen */
-        GetWindowRect( hDlg, &wrect );
-        newWidth = wrect.right - wrect.left +
-            butWidth + HPADDING_L + HPADDING_R;
+static void
+setScrollPos( HWND hDlg, XP_S16 newPos )
+{
+    SCROLLINFO sinfo;
+    XP_S16 vertChange;
 
-        if ( justRemove || (newWidth <= mainWidth) ) {
+    XP_LOGF( "%s(%d)", __func__, newPos );
 
-            GetClientRect( hDlg, &crect ); 
-            barHt = wrect.bottom - wrect.top - crect.bottom;
+    XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
+    sinfo.cbSize = sizeof(sinfo);
+    sinfo.fMask = SIF_POS;
+    GetScrollInfo( hDlg, SB_VERT, &sinfo );
 
-            spacing = crect.bottom - (nButtons * (butHeight + (VPADDING*2)));
-            spacing /= nButtons + 1;
+    if ( sinfo.nPos != newPos ) {
+        XP_U16 oldPos = sinfo.nPos;
+        sinfo.nPos = newPos;
+        SetScrollInfo( hDlg, SB_VERT, &sinfo, XP_TRUE );
 
-            top = spacing - (butHeight / 2) + VPADDING;
-            left = crect.right + HPADDING_L;
-
-            for ( i = 0; i < VSIZE(resIDs); ++i ) {
-                HWND itemH = GetDlgItem( hDlg, resIDs[i] );
-                if ( ceIsVisible( itemH ) ) { 
-                    (void)MoveWindow( itemH, left, top, butWidth, butHeight, 
-                                      TRUE );
-                    top += butHeight + spacing + (VPADDING * 2);
-                }
-            }
-
-            if ( justRemove ) {
-                MoveWindow( hDlg, wrect.left, wrect.top,
-                            wrect.right - wrect.left, 
-                            wrect.bottom - wrect.top - butHeight - 2, 
-                            FALSE );
-            } else {
-                butWidth += HPADDING_L + HPADDING_R;
-                MoveWindow( hDlg, wrect.left - (butWidth/2), wrect.top,
-                            newWidth, wrect.bottom - wrect.top - butHeight - 2, 
-                            FALSE );
-            }
+        GetScrollInfo( hDlg, SB_VERT, &sinfo );
+        vertChange = oldPos - sinfo.nPos;
+        if ( 0 != vertChange ) {
+            RECT updateR;
+            ScrollWindowEx( hDlg, 0, vertChange, NULL, NULL, NULL,
+                            &updateR, SW_SCROLLCHILDREN|SW_ERASE);
+            InvalidateRect( hDlg, &updateR, TRUE );
+            (void)UpdateWindow( hDlg );
+        } else {
+            XP_LOGF( "%s: change dropped",  __func__ );
         }
     }
-} /* ceStackButtonsRight */
+    LOG_RETURN_VOID();
+} /* setScrollPos */
+
+static void
+adjustScrollPos( HWND hDlg, XP_S16 vertChange )
+{
+    XP_LOGF( "%s(%d)", __func__, vertChange );
+    if ( vertChange != 0 ) {
+        SCROLLINFO sinfo;
+
+        XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
+        sinfo.cbSize = sizeof(sinfo);
+        sinfo.fMask = SIF_POS;
+        GetScrollInfo( hDlg, SB_VERT, &sinfo );
+
+        setScrollPos( hDlg, sinfo.nPos + vertChange );
+    }
+    LOG_RETURN_VOID();
+} /* adjustScrollPos */
+
+void
+ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam )
+{
+    XP_S16 vertChange = 0;
+    
+    switch ( LOWORD(wParam) ) {
+
+    case SB_LINEUP: // Scrolls one line up 
+        vertChange = -1;
+        break;
+    case SB_PAGEUP: // 
+        vertChange = -10;
+        break;
+
+    case SB_LINEDOWN: // Scrolls one line down 
+        vertChange = 1;
+        break;
+    case SB_PAGEDOWN: // Scrolls one page down 
+        vertChange = 10;
+        break;
+
+    case SB_THUMBTRACK:     /* still dragging; don't redraw */
+    case SB_THUMBPOSITION:
+        setScrollPos( hDlg, HIWORD(wParam) );
+        break;
+    }
+
+    if ( 0 != vertChange ) {
+        adjustScrollPos( hDlg, vertChange );
+    }
+} /* ceDoDlgScroll */
+
+
+/*     wParam */
+/*         If lParam is TRUE, this parameter identifies the control that
+           receives the focus. If lParam is FALSE, this parameter indicates
+           whether the next or previous control with the WS_TABSTOP style
+           receives the focus. If wParam is zero, the next control receives
+           the focus; otherwise, the previous control with the WS_TABSTOP
+           style receives the focus.  */
+/*     lParam */
+/*         The low-order word indicates how the system uses wParam. If the
+           low-order word is TRUE, wParam is a handle associated with the
+           control that receives the focus; otherwise, wParam is a flag that
+           indicates whether the next or previous control with the WS_TABSTOP
+           style receives the focus.  */
+
+void
+ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg )
+{
+    /* Scroll the current focus owner into view.
+     *
+     * There's nothing passed in to tell us who it is, so look it up.
+     *
+     * What's in view?  First, a window has a scroll position, nPos, that
+     * tells how many pixels are scrolled out of view above the window.  Then
+     * a control has an offset within the containing rect (which shifts as
+     * it's scrolled.)  Finally, all rects are relative to the screen, so we
+     * need to get the containing rect to figure out what the control's
+     * position is.  
+     *
+     * The first question, which can be answered without reference to
+     * scrolling, is "Are we in view?"  If we're not, then we need to look at
+     * scrolling to see how to fix it.
+     */
+
+    HWND ctrl = GetFocus();
+    if ( !!ctrl ) {
+        RECT rect;
+        XP_U16 dlgHeight, ctrlHeight, dlgTop;
+        XP_S16 ctrlPos;
+
+#ifdef DEBUG
+        wchar_t txt[64];
+        XP_U16 len = SendMessage( ctrl, WM_GETTEXT, VSIZE(txt), (LPARAM)txt );
+        if ( len ) {
+            XP_LOGW( "", txt );
+        } else {
+            XP_LOGF( "no txt..." );
+        }
+#endif
+
+        GetClientRect( hDlg, &rect );
+        dlgHeight = rect.bottom - rect.top;
+        XP_LOGF( "dlgHeight: %d", dlgHeight );
+
+        GetWindowRect( hDlg, &rect );
+        dlgTop = rect.top;
+
+        GetWindowRect( ctrl, &rect );
+        ctrlPos = rect.top - dlgTop - TITLE_HT;
+        ctrlHeight = rect.bottom - rect.top;
+
+        XP_LOGF( "%p: ctrlPos is %d; height is %d", 
+                 ctrl, ctrlPos, ctrlHeight );
+
+        if ( ctrlPos < 0 ) {
+            XP_LOGF( "need to scroll it DOWN into view" );
+            adjustScrollPos( hDlg, ctrlPos );
+        } else if ( (ctrlPos + ctrlHeight) > dlgHeight ) {
+            XP_LOGF( "need to scroll it UP into view" );
+            setScrollPos( hDlg, ctrlPos - ctrlHeight );
+        }
+    }
+} /* ceDoDlgFocusScroll */
 
 static XP_Bool
 ceFindMenu( HMENU menu, XP_U16 id, HMENU* foundMenu, XP_U16* foundPos,

@@ -43,14 +43,15 @@ void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
 
-/* If app's in portrait mode, resize with some buttons at right rather than
-   bottom */
-void ceStackButtonsRight( CEAppGlobals* globals, HWND hDlg );
+/* set vHeight to 0 to turn off scrolling */
+void ceDlgSetup( CEAppGlobals* globals, HWND hDlg, XP_Bool doScroll );
 
 /* Are we drawing things in landscape mode? */
 XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
 void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
+void ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam );
+void ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg );
 
 #ifdef _WIN32_WCE
 void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
