@@ -63,7 +63,7 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         hState = (HintLimitsState*)lParam;
         globals = hState->globals;
 
-        ceStackButtonsRight( globals, hDlg );
+        ceDlgSetup( globals, hDlg, XP_FALSE );
 
         return TRUE;
     } else {

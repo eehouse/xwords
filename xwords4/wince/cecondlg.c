@@ -178,7 +178,7 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         ceControlsFromAddrRec( hDlg, cState );
 
-        ceStackButtonsRight( globals, hDlg );
+        ceDlgSetup( globals, hDlg, XP_FALSE );
 
         result = TRUE;
     } else {
@@ -208,6 +208,10 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     EndDialog(hDlg, id);
                     cState->userCancelled = id == IDCANCEL;
                     result = TRUE;
+                }
+            } else if ( message == WM_VSCROLL ) {
+                if ( !IS_SMARTPHONE(globals) ) {
+                    ceDoDlgScroll( globals, hDlg, wParam );
                 }
             }
         }

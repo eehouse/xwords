@@ -120,7 +120,6 @@ typedef struct CEAppGlobals {
     XW_UtilCtxt util;
     VTableMgr* vtMgr;
     XP_U16* bonusInfo;
-    wchar_t* lastDefaultDir;
 
     XP_U32 timerIDs[NUM_TIMERS_PLUS_ONE];
     XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
@@ -205,6 +204,8 @@ typedef struct CEDrawCtx {
 DrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );
 void ce_drawctxt_update( DrawCtx* dctx );
 
+int messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title, 
+                    XP_U16 buttons );
 
 #ifdef DEBUG
 void logLastError( const char* comment );
@@ -218,10 +219,14 @@ void messageToBuf( UINT message, char* buf, int bufSize );
 # define SETCURSEL LB_SETCURSEL
 # define GETCURSEL LB_GETCURSEL
 # define ADDSTRING LB_ADDSTRING
+# define GETLBTEXTLEN LB_GETTEXTLEN
+# define GETLBTEXT LB_GETTEXT
 #else
 # define SETCURSEL CB_SETCURSEL
 # define GETCURSEL CB_GETCURSEL
 # define ADDSTRING CB_ADDSTRING
+# define GETLBTEXTLEN CB_GETLBTEXTLEN
+# define GETLBTEXT CB_GETLBTEXT
 #endif
 
 #endif /* _CEMAIN_H_ */
