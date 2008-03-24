@@ -49,20 +49,11 @@
 #include "cedebug.h"
 #include "LocalizedStrIncludes.h"
 #include "debhacks.h"
+#include "cesvdgms.h"
 
 #include "dbgutil.h"
 
 #define MAX_LOADSTRING 100
-
-#ifdef _WIN32_WCE
-# define DEFAULT_DIR_NAME L"\\My Documents\\Crosswords"
-# define PREFSFILENAME L"\\My Documents\\Crosswords\\xwprefs"
-# define UNSAVEDGAMEFILENAME "\\My Documents\\Crosswords\\_newgame"
-#else
-# define DEFAULT_DIR_NAME L"."
-# define PREFSFILENAME L".\\xwprefs"
-# define UNSAVEDGAMEFILENAME ".\\_newgame"
-#endif
 
 #define SCROLLBAR_WIDTH 12
 #define SCROLLBARID 0x4321      /* needs to be unique! */
@@ -145,8 +136,6 @@ static void ce_util_engineStarting( XW_UtilCtxt* uc );
 static void ce_util_engineStopping( XW_UtilCtxt* uc );
 #endif
 
-static int messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str,
-                            wchar_t* title, XP_U16 buttons );
 static XP_Bool queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg );
 
 static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
@@ -882,14 +871,12 @@ ceLoadPrefs( CEAppGlobals* globals )
                     XP_U32 bytesRead;
                     if ( ReadFile( fileH, &tmpPrefs, sizeof(tmpPrefs), 
                                    &bytesRead, NULL ) ) {
-
-                        XP_ASSERT( tmpPrefs.versionFlags == CUR_CE_PREFS_FLAGS ) {
-
-                            result = XP_TRUE;
-                        }
+                        XP_ASSERT( tmpPrefs.versionFlags == CUR_CE_PREFS_FLAGS );
+                        result = XP_TRUE;
                     }
                 }
-            } else if ( canUpdatePrefs( globals, fileH, curVersion, &tmpPrefs ) ) {
+            } else if ( canUpdatePrefs( globals, fileH, curVersion, 
+                                        &tmpPrefs ) ) {
                 result = XP_TRUE;
             } else {
                 XP_LOGF( "%s: old prefs; cannot read.", __func__ );
@@ -1157,7 +1144,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_Bool oldGameLoaded;
     XP_Bool prevStateExists;
     XP_Bool newDone = XP_FALSE;
-    XP_U16 len;
     MPSLOT;
 
 #ifdef XWFEATURE_RELAY
@@ -1205,11 +1191,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 #endif
 
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
-
-    len = wcslen( DEFAULT_DIR_NAME );
-    len = (len + 1) * sizeof(globals->lastDefaultDir[0]);
-    globals->lastDefaultDir = XP_MALLOC( mpool, len );
-    XP_MEMCPY( globals->lastDefaultDir, DEFAULT_DIR_NAME, len );
 
     globals->hInst = hInstance;
     // Initialize global strings
@@ -1498,23 +1479,8 @@ static void
 ceChooseAndOpen( CEAppGlobals* globals )
 {
     wchar_t path[256];
-    OPENFILENAME openFileStruct;
-
-    XP_MEMSET( &openFileStruct, 0, sizeof(openFileStruct) );
-    XP_MEMSET( path, 0, sizeof(path) );
-
-    openFileStruct.lStructSize = sizeof(openFileStruct);
-    openFileStruct.hwndOwner = globals->hWnd;
-    openFileStruct.lpstrFilter = L"Crosswords games" L"\0"
-        L"*.xwg" L"\0\0";
-    openFileStruct.Flags = OFN_FILEMUSTEXIST
-        | OFN_HIDEREADONLY
-        | OFN_PATHMUSTEXIST;
-    
-    openFileStruct.lpstrFile = path;
-    openFileStruct.nMaxFile = VSIZE(path);
-    
-    if ( GetOpenFileName( &openFileStruct ) ) {
+    path[0] = 0;
+    if ( ceSavedGamesDlg( globals, globals->curGameName, path, VSIZE(path) ) ) {
         XP_UCHAR* name;
         XP_U16 len;
 
@@ -1627,25 +1593,6 @@ isDefaultName( XP_UCHAR* name )
     return 0 == XP_STRCMP( UNSAVEDGAMEFILENAME, name );
 } /* isDefaultName */
 
-static void
-makeUniqueName( wchar_t* buf, XP_U16 XP_UNUSED_DBG(bufLen) )
-{
-    XP_U16 i;
-    DWORD attributes;
-
-    for ( i = 1; i < 100; ++i ) {
-        swprintf( buf, DEFAULT_DIR_NAME L"\\Untitled%d.xwg", i );
-        XP_ASSERT( wcslen(buf) < bufLen );
-
-        attributes = GetFileAttributes( buf );
-        if ( attributes == 0xFFFFFFFF ) {
-            break;
-        }
-    }
-    /* If we fall out of the loop, the user will be asked to confirm delete
-       of Untitled99 or somesuch.  That's ok.... */
-} /* makeUniqueName */
-
 static XP_Bool
 ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 {
@@ -1657,7 +1604,6 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
        involved. */
     XP_UCHAR* name = globals->curGameName;
     if ( name == NULL || isDefaultName(name) ) {
-        wchar_t nameBuf[256];
         XP_UCHAR* newName = NULL;
 
         if ( autoSave ) {
@@ -1667,45 +1613,15 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 
             confirmed = XP_TRUE;
         } else {
+            wchar_t nameBuf[256];
 
-            OPENFILENAME sfs;
-
-            XP_MEMSET( &sfs, 0, sizeof(sfs) );
-            XP_MEMSET( nameBuf, 0, sizeof(nameBuf) );
-
-            makeUniqueName( nameBuf, VSIZE(nameBuf) );
-
-            sfs.lStructSize = sizeof(sfs);
-            sfs.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
-            sfs.hwndOwner = globals->hWnd;
-            sfs.lpstrFile = nameBuf;
-            sfs.nMaxFile = VSIZE(nameBuf);
-
-            sfs.lpstrDefExt = L"xwg";
-
-            // sfs.lpstrTitle didn't work in earlier PPC OSes, but does now
-            sfs.lpstrTitle = L"Save current game as";
-            // sfs.lpstrInitialDir: doesn't either
-
-            confirmed = GetSaveFileName( &sfs );
-
+            confirmed = ceConfirmUniqueName( globals, nameBuf, VSIZE(nameBuf) );
             if ( confirmed ) {
                 XP_U16 len = wcslen(nameBuf);
                 XP_DEBUGF( "len(nameBuf) = %d", len );
                 newName = XP_MALLOC( globals->mpool, len + 1 );
                 WideCharToMultiByte( CP_ACP, 0, nameBuf, len + 1,
                                      newName, len + 1, NULL, NULL );
-
-                    /* If user picked from a different directory, remember it
-                       as the new starting point. */
-                nameBuf[sfs.nFileOffset] = 0;
-                if ( wcscmp( nameBuf, globals->lastDefaultDir ) != 0 ) {
-                    XP_FREE( globals->mpool, globals->lastDefaultDir );
-                    globals->lastDefaultDir = 
-                        XP_MALLOC( globals->mpool,
-                                   (sfs.nFileOffset + 1) * 2 );
-                    wcscpy( globals->lastDefaultDir, nameBuf );
-                }
             }
         }
 
@@ -1716,7 +1632,6 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             }
             globals->curGameName = newName;
         }
-
     } else {
         confirmed = XP_TRUE;
     }
@@ -1790,10 +1705,6 @@ freeGlobals( CEAppGlobals* globals )
     }
     if ( !!globals->util.vtable ) {
         XP_FREE( mpool, globals->util.vtable );
-    }
-
-    if ( !!globals->lastDefaultDir ) {
-        XP_FREE( mpool, globals->lastDefaultDir );
     }
 
     XP_FREE( globals->mpool, globals );
@@ -2413,7 +2324,7 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
     return saidYes;
 } /* ceMsgFromStream */
 
-static int
+int
 messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title, 
                 XP_U16 buttons )
 {
@@ -2780,7 +2691,6 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     }
 
     messageBoxChar( globals, message, L"Oops!", MB_OK );
-    
 } /* ce_util_userError */
 
 static XP_Bool

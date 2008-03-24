@@ -24,6 +24,7 @@
 #include "ceclrsel.h"
 #include "ceutil.h"
 #include "debhacks.h"
+#include "cedebug.h"
 
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
  */
@@ -259,7 +260,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         loadControlsFromState( hDlg, pState );
         adjustForChoice( hDlg, pState );
 
-        ceStackButtonsRight( globals, hDlg );
+        ceDlgSetup( globals, hDlg, XP_TRUE );
 
         return TRUE;
 
@@ -270,7 +271,15 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             globals = pState->globals;
 
             switch (message) {
+            case WM_VSCROLL:
+                if ( !IS_SMARTPHONE(globals) ) {
+                    ceDoDlgScroll( globals, hDlg, wParam );
+                }
+                break;
             case WM_COMMAND:
+                if ( !IS_SMARTPHONE(globals) ) {
+                    ceDoDlgFocusScroll( globals, hDlg );
+                }
                 id = LOWORD(wParam);
                 switch( id ) {
 

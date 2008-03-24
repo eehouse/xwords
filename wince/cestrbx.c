@@ -79,7 +79,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        ceStackButtonsRight( globals, hDlg );
+        ceDlgSetup( globals, hDlg, XP_TRUE );
 
         handled = TRUE;
     } else {
@@ -88,6 +88,13 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( !!init ) {
 
             switch (message) {
+
+            case WM_VSCROLL:
+                if ( !IS_SMARTPHONE(globals) ) {
+                    ceDoDlgScroll( globals, hDlg, wParam );
+                }
+                break;
+
             case WM_COMMAND:                
 
                 /* If I add the text above in the WM_INITDIALOG section it

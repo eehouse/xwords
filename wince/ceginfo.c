@@ -489,13 +489,15 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
     GameInfoState* giState;
 
+/*     XP_LOGF( "%s: %s(%d)", __func__, messageToStr( message ), message ); */
+
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         giState = (GameInfoState*)lParam;
         giState->hDlg = hDlg;
         globals = giState->globals;
 
-        ceStackButtonsRight( globals, hDlg );
+        ceDlgSetup( globals, hDlg, XP_TRUE );
 
         giState->newGameCtx = newg_make( MPPARM(globals->mpool)
                                          giState->isNewGame,
@@ -523,6 +525,19 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
             switch (message) {
 
+            case WM_VSCROLL:
+                if ( !IS_SMARTPHONE(globals) ) {
+                    ceDoDlgScroll( globals, hDlg, wParam );
+                }
+                break;
+
+                /* WM_NEXTDLGCTL is worthless; prev obj still has focus */
+/*             case WM_NEXTDLGCTL: */
+/*                 if ( !IS_SMARTPHONE(globals) ) { */
+/*                     ceDoDlgFocusScroll( globals, hDlg, wParam, lParam ); */
+/*                 } */
+/*                 break; */
+
 #ifdef OWNERDRAW_JUGGLE
             case WM_DRAWITEM:   /* for BS_OWNERDRAW style */
                 ceDrawIconButton( globals, (DRAWITEMSTRUCT*)lParam );
@@ -530,6 +545,9 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
             case WM_COMMAND:
+                if ( !IS_SMARTPHONE(globals) ) {
+                    ceDoDlgFocusScroll( globals, hDlg );
+                }
                 id = LOWORD(wParam);
                 switch( id ) {
 

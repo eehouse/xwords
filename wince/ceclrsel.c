@@ -150,7 +150,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         eState->cancelled = XP_TRUE;
         eState->inited = XP_FALSE;
 
-        ceStackButtonsRight( eState->globals, hDlg );
+        ceDlgSetup( eState->globals, hDlg, XP_FALSE );
 
         wchar_t label[32];
         XP_U16 len = SendDlgItemMessage( eState->parent, eState->labelID, 
@@ -179,6 +179,12 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         }
 
         switch (message) {
+
+        case WM_VSCROLL:
+            if ( !IS_SMARTPHONE(eState->globals) ) {
+                ceDoDlgScroll( eState->globals, hDlg, wParam );
+            }
+            break;
 
         case WM_PAINT: {
             PAINTSTRUCT ps;
@@ -395,7 +401,7 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         cState->cancelled = XP_TRUE;
         cState->inited = XP_FALSE;
 
-        ceStackButtonsRight( cState->globals, hDlg );
+        ceDlgSetup( cState->globals, hDlg, XP_TRUE );
 
         result = TRUE;
     } else {
@@ -412,12 +418,24 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
             switch (message) {
 
+            case WM_VSCROLL:
+                if ( !IS_SMARTPHONE(cState->globals) ) {
+                    ceDoDlgScroll( cState->globals, hDlg, wParam );
+                }
+                break;
+
             case WM_DRAWITEM:   /* passed when button has BS_OWNERDRAW style */
+                if ( !IS_SMARTPHONE(cState->globals) ) {
+                    ceDoDlgFocusScroll( cState->globals, hDlg );
+                }
                 ceDrawColorButton( cState, (DRAWITEMSTRUCT*)lParam );
                 result = TRUE;
                 break;
 
             case WM_COMMAND:
+                if ( !IS_SMARTPHONE(cState->globals) ) {
+                    ceDoDlgFocusScroll( cState->globals, hDlg );
+                }
                 wid = LOWORD(wParam);
                 switch( wid ) {
 

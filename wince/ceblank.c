@@ -103,6 +103,8 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                       && bState->pi->thisPick > 0 );
 #endif
 
+        ceDlgSetup( bState->globals, hDlg, XP_TRUE );
+
         loadLettersList( hDlg, bState );
     } else {
         bState = (BlankDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
