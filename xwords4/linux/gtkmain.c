@@ -1117,10 +1117,13 @@ gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(state),
 } /* gtk_util_trayHiddenChange */
 
 static void
-gtk_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), 
-                        XP_U16 XP_UNUSED(oldOffset), 
-                        XP_U16 XP_UNUSED(newOffset) )
+gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
+                        XP_U16 newOffset )
 {
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    XP_ASSERT( globals->cGlobals.params->nHidden > 0 );
+    globals->adjustment->value = newOffset;
+    gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
 } /* gtk_util_yOffsetChange */
 
 static void
@@ -1258,11 +1261,13 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     cancelTimer( globals, why );
 
     if ( why == TIMER_PENDOWN ) {
-        globals->penTimerInterval = 35 * 10000;
+        /* half a second */
+        globals->penTimerInterval = 50 * 10000;
 
         (void)gettimeofday( &globals->penTv, NULL );
         newSrc = g_idle_add( pentimer_idle_func, globals );
     } else if ( why == TIMER_TIMERTICK ) {
+        /* one second */
         globals->scoreTimerInterval = 100 * 10000;
 
         (void)gettimeofday( &globals->scoreTv, NULL );
