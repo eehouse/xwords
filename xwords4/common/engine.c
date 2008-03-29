@@ -286,6 +286,14 @@ findFirstMoves( EngineCtxt* engine )
     /* middle square is the only legal anchor */
     engine->searchHorizontal = XP_TRUE;
     findMovesForAnchor( engine, &prevAnchor, star_row, star_row );
+
+#ifdef XWFEATURE_SEARCHLIMIT
+    /* If there's a hint region try vertical also since results could differ. */
+    if ( !!engine->searchLimits && !engine->returnNOW ) {
+        engine->searchHorizontal = XP_FALSE;
+        findMovesForAnchor( engine, &prevAnchor, star_row, star_row );
+    }
+#endif
     HILITE_CELL( engine, star_row, star_row );
 } /* findFirstMoves */
 
