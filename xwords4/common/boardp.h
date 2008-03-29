@@ -57,6 +57,7 @@ typedef struct DragState {
     DragType dtype;
     XP_Bool didMove;            /* there was change during the drag; not a
                                    tap */
+    XP_Bool scrollTimerSet;
     XP_Bool isBlank;            /* cache rather than lookup in model */
     Tile tile;                  /* cache rather than lookup in model */
     DragObjInfo start;
@@ -241,7 +242,8 @@ XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
                            XP_UCHAR* buf, XP_U16 len );
 XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
-XP_Bool checkScrollCell( void* p_board, XP_U16 col, XP_U16 row );
+XP_Bool checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
+XP_Bool onBorderCanScroll( const BoardCtxt* board, XP_U16 row, XP_S16* change );
 
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 

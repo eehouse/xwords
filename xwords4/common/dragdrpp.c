@@ -33,6 +33,8 @@ static void invalHintRectDiffs( BoardCtxt* board, const DragObjInfo* cur,
                                 const DragObjInfo* nxt );
 static void setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits );
 
+static void startScrollTimerIf( BoardCtxt* board );
+
 XP_Bool
 dragDropInProgress( const BoardCtxt* board )
 {
@@ -140,6 +142,7 @@ dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
     if ( result ) {
         ds->cur = ds->start;
         invalDragObj( board, &ds->start );
+        startScrollTimerIf( board );
     }
 
     return result;
@@ -219,24 +222,23 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
                                       ds->start.u.tray.index,
                                       ds->cur.u.tray.index );
             }
-        } else if ( newObj == OBJ_BOARD ) {
-            if ( !cellOccupied( board, ds->cur.u.board.col, 
-                                ds->cur.u.board.row, XP_TRUE ) ) {
-                if ( ds->start.obj == OBJ_TRAY ) {
-                    /* moveTileToBoard flips its inputs */
-                    (void)moveTileToBoard( board, ds->cur.u.board.col, 
-                                           ds->cur.u.board.row,
-                                           ds->start.u.tray.index, EMPTY_TILE );
-                } else if ( ds->start.obj == OBJ_BOARD ) {
-                    XP_U16 mod_curc, mod_curr;
-                    flipIf( board, ds->cur.u.board.col, ds->cur.u.board.row,
-                            &mod_curc, &mod_curr );
-                    model_moveTileOnBoard( board->model, board->selPlayer, 
-                                           mod_startc, mod_startr, mod_curc, 
-                                           mod_curr );
-                    /* inval points tile in case score changed */
-                    board_invalTrayTiles( board, 1 << (MAX_TRAY_TILES-1) );
-                }
+        } else if ( (newObj == OBJ_BOARD) &&
+                    !cellOccupied( board, ds->cur.u.board.col, 
+                                   ds->cur.u.board.row, XP_TRUE ) ) {
+            if ( ds->start.obj == OBJ_TRAY ) {
+                /* moveTileToBoard flips its inputs */
+                (void)moveTileToBoard( board, ds->cur.u.board.col, 
+                                       ds->cur.u.board.row,
+                                       ds->start.u.tray.index, EMPTY_TILE );
+            } else if ( ds->start.obj == OBJ_BOARD ) {
+                XP_U16 mod_curc, mod_curr;
+                flipIf( board, ds->cur.u.board.col, ds->cur.u.board.row,
+                        &mod_curc, &mod_curr );
+                model_moveTileOnBoard( board->model, board->selPlayer, 
+                                       mod_startc, mod_startr, mod_curc, 
+                                       mod_curr );
+                /* inval points tile in case score changed */
+                board_invalTrayTiles( board, 1 << (MAX_TRAY_TILES-1) );
             }
         } else {
             /* We're returning it to start, so will be re-inserted in tray */
@@ -371,7 +373,6 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     XP_Bool moving = XP_FALSE;
     DragObjInfo newInfo;
     DragState* ds = &board->dragState;
-    XP_Bool doMore = XP_FALSE;
 
     if ( !pointOnSomething( board, xx, yy, &newInfo.obj ) ) {
         newInfo.obj = OBJ_NONE;
@@ -389,76 +390,51 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
             }
             moving = dividerMoved( board, newloc );
         }
-    } else {
-        /* If scrolling is possible, we can't trust pointOnSomething.  So
-           check coordToCell. */
-        if( coordToCell( board, xx, yy, &newInfo.u.board.col, 
-                         &newInfo.u.board.row ) ) {
-            newInfo.obj = OBJ_BOARD;
-            doMore = XP_TRUE;
-        } else {
-            doMore = OBJ_TRAY == newInfo.obj;
-        }
-    }
-
-    if ( doMore ) {
 #ifdef XWFEATURE_SEARCHLIMIT
-        if ( ds->dtype == DT_HINTRGN && newInfo.obj != OBJ_BOARD ) {
+    } else if ( ds->dtype == DT_HINTRGN && newInfo.obj != OBJ_BOARD ) {
             /* do nothing */
 #endif
-        } else {
-            if ( newInfo.obj == OBJ_BOARD ) {
-                (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
-                                   &newInfo.u.board.row );
-                moving = (newInfo.u.board.col != ds->cur.u.board.col)
-                    || (newInfo.u.board.row != ds->cur.u.board.row)
-                    || (OBJ_TRAY == ds->cur.obj);
-
-            } else if ( newInfo.obj == OBJ_TRAY ) {
-                XP_Bool onDivider;
-                XP_S16 index = pointToTileIndex( board, xx, yy, &onDivider );
-                if ( !onDivider ) {
-                    if ( index < 0 ) { /* negative means onto empty part of
-                                          tray.  Force left. */
-                        index = model_getNumTilesInTray( board->model, 
-                                                         board->selPlayer );
-                        if ( OBJ_TRAY == ds->start.obj ) {
-                            --index; /* dragging right into space */
-                        }
-                    }
-                    moving = (OBJ_BOARD == ds->cur.obj)
-                        || (index != ds->cur.u.tray.index);
-                    if ( moving ) {
-                        newInfo.u.tray.index = index;
+    } else {
+        if ( newInfo.obj == OBJ_BOARD ) {
+            (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
+                               &newInfo.u.board.row );
+            moving = (newInfo.u.board.col != ds->cur.u.board.col)
+                || (newInfo.u.board.row != ds->cur.u.board.row)
+                || (OBJ_TRAY == ds->cur.obj);
+        } else if ( newInfo.obj == OBJ_TRAY ) {
+            XP_Bool onDivider;
+            XP_S16 index = pointToTileIndex( board, xx, yy, &onDivider );
+            if ( !onDivider ) {
+                if ( index < 0 ) { /* negative means onto empty part of
+                                      tray.  Force left. */
+                    index = model_getNumTilesInTray( board->model, 
+                                                     board->selPlayer );
+                    if ( OBJ_TRAY == ds->start.obj ) {
+                        --index; /* dragging right into space */
                     }
                 }
+                moving = (OBJ_BOARD == ds->cur.obj)
+                    || (index != ds->cur.u.tray.index);
+                if ( moving ) {
+                    newInfo.u.tray.index = index;
+                }
             }
+        }
 
-            if ( moving ) {
-
-                /* This little hack lets us inval twice using the same code but
-                   only in the case where scrolling moves tiles.  At a minimum
-                   it's necessary to inval the old position before a scroll and
-                   the new after.  Otherwise if the platform scrolls by
-                   bit-blitting the dragged object will be scrolled before it's
-                   invalidated. */
-                do {
-                    if ( ds->dtype == DT_TILE ) {
-                        invalDragObjRange( board, &ds->cur, &newInfo );
+        if ( moving ) {
+            if ( ds->dtype == DT_TILE ) {
+                invalDragObjRange( board, &ds->cur, &newInfo );
 #ifdef XWFEATURE_SEARCHLIMIT
-                    } else if ( ds->dtype == DT_HINTRGN ) {
-                        invalHintRectDiffs( board, &ds->cur, &newInfo );
-                        if ( !ds->didMove ) { /* first time through */
-                            invalCurHintRect( board, board->selPlayer );
-                        }
+            } else if ( ds->dtype == DT_HINTRGN ) {
+                invalHintRectDiffs( board, &ds->cur, &newInfo );
+                if ( !ds->didMove ) { /* first time through */
+                    invalCurHintRect( board, board->selPlayer );
+                }
 #endif
-                    }
-                } while ( (newInfo.obj == OBJ_BOARD)
-                         && checkScrollCell( board, newInfo.u.board.col, 
-                                             newInfo.u.board.row ) );
-                
-                XP_MEMCPY( &ds->cur, &newInfo, sizeof(ds->cur) );
             }
+                
+            XP_MEMCPY( &ds->cur, &newInfo, sizeof(ds->cur) );
+            startScrollTimerIf( board );
         }
     }
 
@@ -505,6 +481,46 @@ setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits )
     limits->top = XP_MIN( ds->start.u.board.row, ds->cur.u.board.row );
     limits->bottom = XP_MAX( ds->start.u.board.row, ds->cur.u.board.row );
 }
+
+static void
+scrollTimerProc( void* closure, XWTimerReason why )
+{
+    BoardCtxt* board = (BoardCtxt*)closure;
+    DragState* ds = &board->dragState;
+    XP_ASSERT( why == TIMER_PENDOWN );
+
+    if ( ds->scrollTimerSet ) {
+        XP_S16 change;
+        ds->scrollTimerSet = XP_FALSE;
+        if ( onBorderCanScroll( board, ds->cur.u.board.row, &change ) ) {
+            invalDragObj( board, &ds->cur );
+            ds->cur.u.board.row += (change >0 ? 1 : -1);
+            if ( checkScrollCell( board, ds->cur.u.board.col, 
+                                  ds->cur.u.board.row ) ) {
+                board_draw( board ); /* may fail, e.g. on wince */
+                startScrollTimerIf( board );
+            }
+        }
+    }
+} /* scrollTimerProc */
+
+static void
+startScrollTimerIf( BoardCtxt* board )
+{
+    DragState* ds = &board->dragState;
+
+    if ( ds->cur.obj == OBJ_BOARD ) {
+        XP_S16 ignore;
+        if ( onBorderCanScroll( board, ds->cur.u.board.row, &ignore ) ) {
+            util_setTimer( board->util, TIMER_PENDOWN, 0,
+                           scrollTimerProc, (void*) board );
+            ds->scrollTimerSet = XP_TRUE;
+        } else {
+            /* ignore if we've moved off */
+            ds->scrollTimerSet = XP_FALSE;
+        }
+    }
+} /* startScrollTimerIf */
 
 #ifdef CPLUS
 }

@@ -444,7 +444,7 @@ board_setYOffset( BoardCtxt* board, XP_U16 offset )
 } /* board_setYOffset */
 
 XP_U16
-board_getYOffset( BoardCtxt* board )
+board_getYOffset( const BoardCtxt* board )
 {
     return board->yOffset;
 } /* board_getYOffset */
@@ -911,7 +911,7 @@ invalOldPerimeter( BoardCtxt* board )
         firstRow = board->yOffset + 1;
         lastRow = board->prevYScrollOffset;
     } else {
-        XP_U16 nVisible = board->lastVisibleRow - board->yOffset;
+        XP_U16 nVisible = board->lastVisibleRow - board->yOffset + 1;
         lastRow = board->prevYScrollOffset + nVisible - 1;
         firstRow = lastRow - diff + 1;
     }
@@ -928,7 +928,7 @@ invalPerimeter( BoardCtxt* board )
     XP_U16 lastCol = model_numCols( board->model ) - 1;
     XP_U16 firstAndLast = (1 << lastCol) | 1;
     XP_U16 firstRow = board->yOffset;
-    XP_U16 lastRow = board->lastVisibleRow - 1;
+    XP_U16 lastRow = board->lastVisibleRow;
 
     /* top and bottom rows */
     board->redrawFlags[firstRow] = ~0;
@@ -1023,9 +1023,8 @@ invalCellsWithTiles( BoardCtxt* board )
 } /* invalCellsWithTiles */
 
 XP_Bool
-checkScrollCell( void* p_board, XP_U16 col, XP_U16 row )
+checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
-    BoardCtxt* board = (BoardCtxt*)p_board;
     XP_Rect rect;
     XP_Bool moved = XP_FALSE;
 
@@ -1047,6 +1046,27 @@ checkScrollCell( void* p_board, XP_U16 col, XP_U16 row )
     }    
     return moved;
 } /* checkScrollCell */
+
+XP_Bool
+onBorderCanScroll( const BoardCtxt* board, XP_U16 row, XP_S16* changeP )
+{
+    XP_Bool result;
+    XP_S16 change = 0;
+    XP_U16 yOffset = board_getYOffset( board );
+
+    if ( yOffset > 0 && row == yOffset  ) {
+        change = -yOffset;
+    } else if ( row == board->lastVisibleRow ) {
+        XP_U16 lastRow = model_numRows(board->model) - 1;
+        change = lastRow - row;
+    }
+
+    result = change != 0;
+    if ( result ) {
+        *changeP = change;
+    }
+    return result;
+}
 
 /* if any of a blank's neighbors is invalid, so must the blank become (since
  * they share a border and drawing the neighbor will redraw the blank's border
@@ -1172,7 +1192,7 @@ cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
             focussed = (col == 0)
                 || (col == model_numCols(board->model) - 1)
                 || (row == board->yOffset)
-                || (row == board->lastVisibleRow - 1);
+                || (row == board->lastVisibleRow);
 #else
             focussed = XP_TRUE;
 #endif
@@ -1208,7 +1228,7 @@ drawBoard( BoardCtxt* board )
                                 board->trayVisState == TRAY_REVEALED, &bq );
         invalBlanksWithNeighbors( board, &bq );
 
-        for ( row = board->yOffset; row < board->lastVisibleRow; ++row ) {
+        for ( row = board->yOffset; row <= board->lastVisibleRow; ++row ) {
             XP_U16 rowFlags = board->redrawFlags[row];
             if ( rowFlags != 0 ) {
                 XP_U16 colMask;
@@ -1501,7 +1521,7 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
         invalCurHintRect( board, selPlayer );
 #endif
 
-        nVisible = board->lastVisibleRow - board->yOffset;
+        nVisible = board->lastVisibleRow - board->yOffset + 1;
         util_trayHiddenChange( board->util, board->trayVisState, nVisible );
     }
     return changed;
@@ -1842,7 +1862,7 @@ figureBoardRect( BoardCtxt* board )
         /* round down */
         nVisible = boardBounds.height / boardVScale;
         boardBounds.height = nVisible * boardVScale;
-        board->lastVisibleRow = nVisible + board->yOffset;
+        board->lastVisibleRow = nVisible + board->yOffset - 1;
 
         board->boardBounds = boardBounds;
     }

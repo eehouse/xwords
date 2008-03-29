@@ -75,7 +75,7 @@ void board_reset( BoardCtxt* board );
 
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
-XP_U16 board_getYOffset( BoardCtxt* board );
+XP_U16 board_getYOffset( const BoardCtxt* board );
 
 void board_setScoreboardLoc( BoardCtxt* board, 
                              XP_U16 scoreLeft, XP_U16 scoreTop,
