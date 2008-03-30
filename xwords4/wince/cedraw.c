@@ -173,7 +173,7 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index )
 }
 
 static void
-measureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
+ceMeasureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
              XP_U16* widthP, XP_U16* heightP )
 {
     HDC hdc = GetDC(dctx->mainWin);//globals->hdc;
@@ -205,7 +205,7 @@ measureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
 
     *widthP = maxWidth + 8;
     *heightP = height;
-} /* measureText */
+} /* ceMeasureText */
 
 static void
 drawLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
@@ -701,11 +701,11 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(r),
                                 XP_U16* width, XP_U16* height )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-    XP_UCHAR buf[16];
 
     if ( nTilesLeft > 0 ) {
+        XP_UCHAR buf[16];
         formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
-        measureText( dctx, buf, CE_REM_PADDING, width, height );
+        ceMeasureText( dctx, buf, CE_REM_PADDING, width, height );
     } else {
         *width = *height = 0;
     }
@@ -765,7 +765,7 @@ ceWidthAndText( CEDrawCtx* dctx, const DrawScoreInfo* dsi,
 
     strcat( buf, bullet );
 
-    measureText( dctx, buf, CE_SCORE_PADDING, widthP, heightP );
+    ceMeasureText( dctx, buf, CE_SCORE_PADDING, widthP, heightP );
     if ( dsi->isTurn && dctx->scoreIsVertical ) {
         *heightP += IS_TURN_VPAD * 2;
     }
@@ -969,7 +969,7 @@ DRAW_FUNC_NAME(measureMiniWText)( DrawCtx* p_dctx, const XP_UCHAR* str,
                                   XP_U16* widthP, XP_U16* heightP )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-    measureText( dctx, str, CE_MINIW_PADDING, widthP, heightP );
+    ceMeasureText( dctx, str, CE_MINIW_PADDING, widthP, heightP );
     *heightP += CE_MINI_V_PADDING;
 } /* ce_draw_measureMiniWText */
 
@@ -993,7 +993,7 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
         hdc = BeginPaint( dctx->mainWin, &ps );
     }
 
-    ceClearToBkground( (CEDrawCtx*)p_dctx, rect );
+    ceClearToBkground( dctx, rect );
 
     SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
     SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
