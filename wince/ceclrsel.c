@@ -150,7 +150,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         eState->cancelled = XP_TRUE;
         eState->inited = XP_FALSE;
 
-        ceDlgSetup( eState->globals, hDlg, XP_FALSE );
+        ceDlgSetup( eState->globals, hDlg );
 
         wchar_t label[32];
         XP_U16 len = SendDlgItemMessage( eState->parent, eState->labelID, 
@@ -182,7 +182,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         case WM_VSCROLL:
             if ( !IS_SMARTPHONE(eState->globals) ) {
-                ceDoDlgScroll( eState->globals, hDlg, wParam );
+                ceDoDlgScroll( hDlg, wParam );
             }
             break;
 
@@ -265,7 +265,7 @@ myChooseColor( CEAppGlobals* globals, HWND parent, XP_U16 labelID,
 #endif /* MY_COLOR_SEL */
 
 typedef struct ColorsDlgState {
-
+    HWND hDlg;
     CEAppGlobals* globals;
     COLORREF* inColors;
 
@@ -281,7 +281,7 @@ typedef struct ColorsDlgState {
 #define LAST_BUTTON PLAYER4_BUTTON
 
 static void
-initColorData( ColorsDlgState* cState, HWND hDlg )
+initColorData( ColorsDlgState* cState )
 {
     XP_U16 i;
 
@@ -291,7 +291,7 @@ initColorData( ColorsDlgState* cState, HWND hDlg )
         COLORREF ref = cState->inColors[i];
         cState->colors[i] = ref;
         cState->brushes[i] = CreateSolidBrush( ref );
-        cState->buttons[i] = GetDlgItem( hDlg, FIRST_BUTTON + i );
+        cState->buttons[i] = GetDlgItem( cState->hDlg, FIRST_BUTTON + i );
     }
 } /* initColorData */
 
@@ -317,49 +317,51 @@ deleteButtonBrushes( ColorsDlgState* cState )
 } /* deleteButtonBrushes */
 
 static void
-wrapChooseColor( ColorsDlgState* cState, HWND parent, XP_U16 button )
+wrapChooseColor( ColorsDlgState* cState, XP_U16 button )
 {
-    XP_U16 index = button-FIRST_BUTTON;
+    if ( button >= DLBLTR_BUTTON && button <= PLAYER4_BUTTON ) {
+        XP_U16 index = button-DLBLTR_BUTTON;
 
 #ifdef MY_COLOR_SEL
-    XP_U16 labelID = button + CLRSEL_LABEL_OFFSET;
-    COLORREF clrref = cState->colors[index];
+        XP_U16 labelID = button + CLRSEL_LABEL_OFFSET;
+        COLORREF clrref = cState->colors[index];
 
-    if ( myChooseColor( cState->globals, parent, labelID, &clrref ) ) {
-        cState->colors[index] = clrref;
-        DeleteObject( cState->brushes[index] );
-        cState->brushes[index] = CreateSolidBrush( clrref );
-        XP_LOGF( "%s: may need to invalidate the button since color's changed", 
-                 __func__ );
-    }
+        if ( myChooseColor( cState->globals, cState->hDlg, labelID, &clrref ) ) {
+            cState->colors[index] = clrref;
+            DeleteObject( cState->brushes[index] );
+            cState->brushes[index] = CreateSolidBrush( clrref );
+            XP_LOGF( "%s: may need to invalidate the button since "
+                     "color's changed", __func__ );
+        }
 #else
-    CHOOSECOLOR ccs;
-    BOOL hitOk;
-    COLORREF arr[16];
-    XP_U16 i;
+        CHOOSECOLOR ccs;
+        BOOL hitOk;
+        COLORREF arr[16];
+        XP_U16 i;
 
-    XP_MEMSET( &ccs, 0, sizeof(ccs) );
-    XP_MEMSET( &arr, 0, sizeof(arr) );
+        XP_MEMSET( &ccs, 0, sizeof(ccs) );
+        XP_MEMSET( &arr, 0, sizeof(arr) );
 
-    for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
-        arr[i] = cState->colors[i];
-    }
+        for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
+            arr[i] = cState->colors[i];
+        }
 
-    ccs.lStructSize = sizeof(ccs);
-    ccs.hwndOwner = parent;
-    ccs.rgbResult = cState->colors[index];
-    ccs.lpCustColors = arr;
+        ccs.lStructSize = sizeof(ccs);
+        ccs.hwndOwner = cState->hDlg;
+        ccs.rgbResult = cState->colors[index];
+        ccs.lpCustColors = arr;
 
-    ccs.Flags = CC_ANYCOLOR | CC_RGBINIT | CC_FULLOPEN;
+        ccs.Flags = CC_ANYCOLOR | CC_RGBINIT | CC_FULLOPEN;
 
-    hitOk = ChooseColor( &ccs );
+        hitOk = ChooseColor( &ccs );
 
-    if ( hitOk ) {
-        cState->colors[index] = ccs.rgbResult;
-        DeleteObject( cState->brushes[index] );
-        cState->brushes[index] = CreateSolidBrush( ccs.rgbResult );
-    }
+        if ( hitOk ) {
+            cState->colors[index] = ccs.rgbResult;
+            DeleteObject( cState->brushes[index] );
+            cState->brushes[index] = CreateSolidBrush( ccs.rgbResult );
+        }
 #endif
+    }
 } /* wrapChooseColor */
 
 /* I'd prefer to use normal buttons, letting the OS draw them except for
@@ -374,88 +376,89 @@ ceDrawColorButton( ColorsDlgState* cState, DRAWITEMSTRUCT* dis )
     HBRUSH brush = brushForButton( cState, dis->hwndItem );
     XP_ASSERT( !!brush );
     
-    RECT r = dis->rcItem;
+    RECT rect = dis->rcItem;
     XP_Bool hasFocus = ((dis->itemAction & ODA_FOCUS) != 0)
         && ((dis->itemState & ODS_FOCUS) != 0);
 
-    Rectangle( dis->hDC, r.left, r.top, r.right, r.bottom );
-    InsetRect( &r, 1, 1 );
+    Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
+    InsetRect( &rect, 1, 1 );
     if ( hasFocus ) {
-        Rectangle( dis->hDC, r.left, r.top, r.right, r.bottom );
+        Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
+        (void)SendMessage( cState->hDlg, DM_SETDEFID, dis->CtlID, 0 );
     }
-    InsetRect( &r, 1, 1 );
-    FillRect( dis->hDC, &r, brush );
+    InsetRect( &rect, 1, 1 );
+    FillRect( dis->hDC, &rect, brush );
 } /* ceDrawColorButton */
 
 LRESULT CALLBACK
 ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
-    ColorsDlgState* cState;
-    XP_U16 wid;
+    ColorsDlgState* state;
     BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
 
-        cState = (ColorsDlgState*)lParam;
-        cState->cancelled = XP_TRUE;
-        cState->inited = XP_FALSE;
+        state = (ColorsDlgState*)lParam;
+        state->cancelled = XP_TRUE;
+        state->inited = XP_FALSE;
+        state->hDlg = hDlg;
 
-        ceDlgSetup( cState->globals, hDlg, XP_TRUE );
+        ceDlgSetup( state->globals, hDlg );
 
         result = TRUE;
     } else {
-        cState = (ColorsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
-        if ( !!cState ) {
+        state = (ColorsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+        if ( !!state ) {
+            XP_U16 wid;
 
-            if ( !cState->inited ) {
-                initColorData( cState, hDlg );
-                cState->inited = XP_TRUE;
+            if ( !state->inited ) {
+                initColorData( state );
+                state->inited = XP_TRUE;
             }
 
-/*             XP_LOGF( "%s: event=%s (%d); wParam=0x%x; lParam=0x%lx", __func__, */
-/*                      messageToStr(message), message, wParam, lParam ); */
+/*             XP_LOGF( "%s: event=%s (%d); wParam=0x%x; lParam=0x%lx",  */
+/*                      __func__, messageToStr(message), message,  */
+/*                      wParam, lParam ); */
 
             switch (message) {
 
             case WM_VSCROLL:
-                if ( !IS_SMARTPHONE(cState->globals) ) {
-                    ceDoDlgScroll( cState->globals, hDlg, wParam );
+                if ( !IS_SMARTPHONE(state->globals) ) {
+                    ceDoDlgScroll( hDlg, wParam );
                 }
                 break;
 
             case WM_DRAWITEM:   /* passed when button has BS_OWNERDRAW style */
-                if ( !IS_SMARTPHONE(cState->globals) ) {
-                    ceDoDlgFocusScroll( cState->globals, hDlg );
-                }
-                ceDrawColorButton( cState, (DRAWITEMSTRUCT*)lParam );
+                ceDoDlgFocusScroll( hDlg, 
+                      /* Fake out ceDoDlgFocusScroll, passing ctrl itself */
+                      (WPARAM)((DRAWITEMSTRUCT*)lParam)->hwndItem, 
+                      (LPARAM)TRUE );
+                ceDrawColorButton( state, (DRAWITEMSTRUCT*)lParam );
                 result = TRUE;
                 break;
 
             case WM_COMMAND:
-                if ( !IS_SMARTPHONE(cState->globals) ) {
-                    ceDoDlgFocusScroll( cState->globals, hDlg );
-                }
                 wid = LOWORD(wParam);
                 switch( wid ) {
 
                 case IDOK:
-                    cState->cancelled = XP_FALSE;
+                    state->cancelled = XP_FALSE;
                     /* fallthrough */
 
                 case IDCANCEL:
-                    deleteButtonBrushes( cState );
+                    deleteButtonBrushes( state );
                     EndDialog(hDlg, wid);
                     result = TRUE;
                     break;
+
                 default:
                     /* it's one of the color buttons.  Set up with the
                        appropriate color and launch ChooseColor */
-                    wrapChooseColor( cState, hDlg, wid );
+                    wrapChooseColor( state, wid );
                     result = TRUE;
                     break;
                 }
-
             }
         }
     }
