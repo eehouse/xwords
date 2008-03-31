@@ -79,7 +79,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        ceDlgSetup( globals, hDlg, XP_TRUE );
+        ceDlgSetup( globals, hDlg );
 
         handled = TRUE;
     } else {
@@ -91,7 +91,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
             case WM_VSCROLL:
                 if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( globals, hDlg, wParam );
+                    ceDoDlgScroll( hDlg, wParam );
                 }
                 break;
 

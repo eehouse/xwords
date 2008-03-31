@@ -488,6 +488,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     CEAppGlobals* globals;
     XP_U16 id;
     GameInfoState* giState;
+    LRESULT result = FALSE;
 
 /*     XP_LOGF( "%s: %s(%d)", __func__, messageToStr( message ), message ); */
 
@@ -497,7 +498,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         giState->hDlg = hDlg;
         globals = giState->globals;
 
-        ceDlgSetup( globals, hDlg, XP_TRUE );
+        ceDlgSetup( globals, hDlg );
 
         giState->newGameCtx = newg_make( MPPARM(globals->mpool)
                                          giState->isNewGame,
@@ -516,7 +517,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( giState->isNewGame ) {
             (void)SetWindowText( hDlg, L"New game" );
         }
-        return TRUE;
+        result = TRUE;
 
     } else {
         giState = (GameInfoState*)GetWindowLong( hDlg, GWL_USERDATA );
@@ -527,27 +528,27 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
             case WM_VSCROLL:
                 if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( globals, hDlg, wParam );
+                    ceDoDlgScroll( hDlg, wParam );
+                    result = TRUE;
                 }
                 break;
 
                 /* WM_NEXTDLGCTL is worthless; prev obj still has focus */
-/*             case WM_NEXTDLGCTL: */
-/*                 if ( !IS_SMARTPHONE(globals) ) { */
-/*                     ceDoDlgFocusScroll( globals, hDlg, wParam, lParam ); */
-/*                 } */
-/*                 break; */
+            case WM_NEXTDLGCTL:
+                if ( !IS_SMARTPHONE(globals) ) {
+                    ceDoDlgFocusScroll( hDlg, wParam, lParam );
+                }
+                break;
 
 #ifdef OWNERDRAW_JUGGLE
             case WM_DRAWITEM:   /* for BS_OWNERDRAW style */
                 ceDrawIconButton( globals, (DRAWITEMSTRUCT*)lParam );
-                return TRUE;
+                result = TRUE;
+                break;
 #endif
 
             case WM_COMMAND:
-                if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgFocusScroll( globals, hDlg );
-                }
+                result = TRUE;
                 id = LOWORD(wParam);
                 switch( id ) {
 
@@ -635,9 +636,10 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     giState->userCancelled = id == IDCANCEL;
                     cleanupGameInfoState( giState );
                     newg_destroy( giState->newGameCtx );
-                    return TRUE;
                 }
                 break;
+            default:
+                result = FALSE;
                 /*     case WM_CLOSE: */
                 /* 	EndDialog(hDlg, id); */
                 /* 	return TRUE; */
@@ -646,5 +648,6 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
     }
-    return FALSE;
+
+    return result;
 } /* GameInfo */
