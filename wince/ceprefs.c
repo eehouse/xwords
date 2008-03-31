@@ -260,7 +260,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         loadControlsFromState( hDlg, pState );
         adjustForChoice( hDlg, pState );
 
-        ceDlgSetup( globals, hDlg, XP_TRUE );
+        ceDlgSetup( globals, hDlg );
 
         return TRUE;
 
@@ -273,13 +273,17 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             switch (message) {
             case WM_VSCROLL:
                 if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( globals, hDlg, wParam );
+                    ceDoDlgScroll( hDlg, wParam );
                 }
                 break;
-            case WM_COMMAND:
+
+            case WM_NEXTDLGCTL:
                 if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgFocusScroll( globals, hDlg );
+                    ceDoDlgFocusScroll( hDlg, wParam, lParam );
                 }
+                break;
+
+            case WM_COMMAND:
                 id = LOWORD(wParam);
                 switch( id ) {
 

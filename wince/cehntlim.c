@@ -63,7 +63,7 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         hState = (HintLimitsState*)lParam;
         globals = hState->globals;
 
-        ceDlgSetup( globals, hDlg, XP_FALSE );
+        ceDlgSetup( globals, hDlg );
 
         return TRUE;
     } else {

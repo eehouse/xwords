@@ -178,7 +178,7 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         ceControlsFromAddrRec( hDlg, cState );
 
-        ceDlgSetup( globals, hDlg, XP_FALSE );
+        ceDlgSetup( globals, hDlg );
 
         result = TRUE;
     } else {
@@ -211,7 +211,7 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 }
             } else if ( message == WM_VSCROLL ) {
                 if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( globals, hDlg, wParam );
+                    ceDoDlgScroll( hDlg, wParam );
                 }
             }
         }

@@ -103,7 +103,7 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                       && bState->pi->thisPick > 0 );
 #endif
 
-        ceDlgSetup( bState->globals, hDlg, XP_TRUE );
+        ceDlgSetup( bState->globals, hDlg );
 
         loadLettersList( hDlg, bState );
     } else {
