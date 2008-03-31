@@ -56,9 +56,9 @@ ceFileExists( const wchar_t* name )
 static void
 makeUniqueName( wchar_t* buf, XP_U16 bufLen )
 {
-    XP_U16 i;
-    for ( i = 1; i < 100; ++i ) {
-        swprintf( buf, L"Untitled%d", i );
+    XP_U16 ii;
+    for ( ii = 1; ii < 100; ++ii ) {
+        swprintf( buf, L"Untitled%d", ii );
         if ( !ceFileExists( buf ) ) {
             break;
         }
@@ -81,7 +81,7 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->cancelled = XP_TRUE;
         state->inited = XP_FALSE;
 
-        ceDlgSetup( state->globals, hDlg, XP_FALSE );
+        ceDlgSetup( state->globals, hDlg );
 
         result = TRUE;
     } else {
@@ -236,7 +236,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->cancelled = XP_TRUE;
         state->inited = XP_FALSE;
 
-        ceDlgSetup( state->globals, hDlg, XP_TRUE );
+        ceDlgSetup( state->globals, hDlg );
 
         result = TRUE;
     } else {
@@ -252,14 +252,17 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
             case WM_VSCROLL:
                 if ( !IS_SMARTPHONE(state->globals) ) {
-                    ceDoDlgScroll( state->globals, hDlg, wParam );
+                    ceDoDlgScroll( hDlg, wParam );
+                }
+                break;
+
+            case WM_NEXTDLGCTL:
+                if ( !IS_SMARTPHONE(state->globals) ) {
+                    ceDoDlgFocusScroll( hDlg, wParam, lParam );
                 }
                 break;
 
             case WM_COMMAND:
-                if ( !IS_SMARTPHONE(state->globals) ) {
-                    ceDoDlgFocusScroll( state->globals, hDlg );
-                }
                 wid = LOWORD(wParam);
                 switch( wid ) {
 
@@ -267,7 +270,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                         XP_S16 sel = SendDlgItemMessage( state->hDlg, 
                                                          IDC_SVGM_GAMELIST, 
-                                                         CB_GETCURSEL, 0, 0L);
+                                                         GETCURSEL, 0, 0L);
                         if ( sel >= 0 ) {
                             state->sel = sel;
                             setEditFromSel( state );
