@@ -296,7 +296,7 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
     XP_Bool success = XP_FALSE;
     SHMENUBARINFO mbi;
     XP_Bool fullScreen = XP_TRUE; /* probably want this TRUE for
-                                      small-screened smartphones only. */
+                                     small-screened smartphones only. */
     if ( fullScreen ) {
         ceSizeIfFullscreen( globals, hDlg );
     }
@@ -316,14 +316,15 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
 
 #define TITLE_HT 20            /* Need to get this from the OS */
 void
-ceDlgSetup( CEAppGlobals* globals, HWND hDlg, XP_Bool doScroll )
+ceDlgSetup( CEAppGlobals* globals, HWND hDlg )
 {
     XP_ASSERT( !!globals );
-    RECT r;
+    RECT rect;
     XP_U16 vHeight;
 
-    GetClientRect( hDlg, &r );
-    vHeight = r.bottom;         /* This is before we've resized it */
+    GetClientRect( hDlg, &rect );
+    XP_ASSERT( rect.top == 0 );
+    vHeight = rect.bottom;         /* This is before we've resized it */
 
 #ifdef _WIN32_WCE
     (void)mkFullscreenWithSoftkeys( globals, hDlg );
@@ -331,19 +332,19 @@ ceDlgSetup( CEAppGlobals* globals, HWND hDlg, XP_Bool doScroll )
     /* Force it to be small so we can test scrolling etc. */
     if ( globals->dbWidth > 0 && globals->dbHeight > 0) {
         MoveWindow( hDlg, 0, 0, globals->dbWidth, globals->dbHeight, TRUE );
-        r.bottom = globals->dbHeight;
+        rect.bottom = globals->dbHeight;
     }
 #endif
 
     /* Measure again post-resize */
-    GetClientRect( hDlg, &r );
+    GetClientRect( hDlg, &rect );
 
     /* Set up the scrollbar if we're on PPC */
-    if ( doScroll && !IS_SMARTPHONE(globals) ) {
+    if ( !IS_SMARTPHONE(globals) ) {
         SCROLLINFO sinfo;
      
         XP_LOGF( "%s: vHeight: %d; r.bottom: %ld", __func__, vHeight, 
-                 r.bottom );
+                 rect.bottom );
 
         XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
         sinfo.cbSize = sizeof(sinfo);
@@ -351,9 +352,9 @@ ceDlgSetup( CEAppGlobals* globals, HWND hDlg, XP_Bool doScroll )
         sinfo.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
         sinfo.nPos = 0;
         sinfo.nMin = 0;
-        sinfo.nMax = vHeight - r.bottom;
+        sinfo.nMax = vHeight - rect.bottom;
         if ( sinfo.nMax < 0 ) {
-            sinfo.nMax = 0;     /* or disable the thing! */
+            sinfo.nMax = 0;     /* disables the thing! */
         }
         XP_LOGF( "%s: set max to %d", __func__, sinfo.nMax );
         sinfo.nPage = 10;
@@ -414,7 +415,7 @@ adjustScrollPos( HWND hDlg, XP_S16 vertChange )
 } /* adjustScrollPos */
 
 void
-ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam )
+ceDoDlgScroll( HWND hDlg, WPARAM wParam )
 {
     XP_S16 vertChange = 0;
     
@@ -461,7 +462,7 @@ ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam )
            style receives the focus.  */
 
 void
-ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg )
+ceDoDlgFocusScroll( HWND hDlg, WPARAM wParam, LPARAM lParam )
 {
     /* Scroll the current focus owner into view.
      *
@@ -479,21 +480,18 @@ ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg )
      * scrolling to see how to fix it.
      */
 
-    HWND ctrl = GetFocus();
-    if ( !!ctrl ) {
+    HWND nextCtrl;
+    if ( LOWORD(lParam) ) {
+        nextCtrl = (HWND)wParam;
+    } else {
+        BOOL previous = wParam != 0;
+        nextCtrl = GetNextDlgTabItem( hDlg, GetFocus(), previous );
+    }
+
+    if ( !!nextCtrl ) {
         RECT rect;
         XP_U16 dlgHeight, ctrlHeight, dlgTop;
         XP_S16 ctrlPos;
-
-#ifdef DEBUG
-        wchar_t txt[64];
-        XP_U16 len = SendMessage( ctrl, WM_GETTEXT, VSIZE(txt), (LPARAM)txt );
-        if ( len ) {
-            XP_LOGW( "", txt );
-        } else {
-            XP_LOGF( "no txt..." );
-        }
-#endif
 
         GetClientRect( hDlg, &rect );
         dlgHeight = rect.bottom - rect.top;
@@ -502,12 +500,12 @@ ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg )
         GetWindowRect( hDlg, &rect );
         dlgTop = rect.top;
 
-        GetWindowRect( ctrl, &rect );
+        GetWindowRect( nextCtrl, &rect );
         ctrlPos = rect.top - dlgTop - TITLE_HT;
         ctrlHeight = rect.bottom - rect.top;
 
         XP_LOGF( "%p: ctrlPos is %d; height is %d", 
-                 ctrl, ctrlPos, ctrlHeight );
+                 nextCtrl, ctrlPos, ctrlHeight );
 
         if ( ctrlPos < 0 ) {
             XP_LOGF( "need to scroll it DOWN into view" );
