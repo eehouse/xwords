@@ -1786,9 +1786,10 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
 } /* handleScroll */
 #endif
 
-static void
+static XP_Bool
 ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
 {
+    XP_Bool draw = XP_FALSE;
     XWTimerProc proc;
     void* closure;
 
@@ -1797,9 +1798,15 @@ ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
         globals->timerProcs[why] = NULL;
         closure = globals->timerClosures[why];
         (*proc)( closure, why );
+        /* Setting draw after firing timer allows scrolling to happen
+           while pen is held down.  This is a hack.  Perhaps having
+           the timer proc return whether drawing is needed would be
+           more consistent. */
+        draw = XP_TRUE;
     } else {
         XP_LOGF( "skipped timer; alread fired?" );
     }
+    return draw;
 } /* ceFireTimer */
 
 /* WM_TIMER messages are low-priority.  Hold a key down and key events will
@@ -1825,7 +1832,7 @@ checkFireLateKeyTimer( CEAppGlobals* globals )
         XWTimerReason why = whys[i];
         if ( !!globals->timerProcs[why] ) {
             if ( now >= globals->timerWhens[why] ) {
-                ceFireTimer( globals, why );
+                (void)ceFireTimer( globals, why );
                 drop = XP_TRUE;
             }
         }
@@ -2218,7 +2225,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                    as fired proc may set another. */
                 (void)KillTimer( hWnd, globals->timerIDs[why] );
 
-                ceFireTimer( globals, why );
+                draw = ceFireTimer( globals, why );
             }
             break;
 
