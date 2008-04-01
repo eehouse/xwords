@@ -331,13 +331,15 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     IndexedColorType color;
     XP_U16 index;
     XP_Bool isCursor = TREAT_AS_CURSOR( dctx, flags );
-    XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
+    XP_Bool isPending = ((flags & CELL_HIGHLIGHT) != 0);
+    XP_Bool dragSrc = ((flags & CELL_DRAGSRC) != 0);
+
     if ( isCursor ) {
         index = COLOR_CURSOR;
-    } else if ( isPending ) { 
+    } else if ( isPending && !dragSrc ) { 
         /* don't color background if will invert */
         index = COLOR_WHITE;
-    } else if ( !!bitmap || (!!letters && XP_STRLEN((const char*)letters) > 0)){
+    } else if ( (!!bitmap || !!letters) && !dragSrc ) {
         index = COLOR_TILE;
     } else if ( bonus == BONUS_NONE ) { 
         index = COLOR_EMPTY;
@@ -458,7 +460,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     Boolean showGrid = globals->gState.showGrid;
     Boolean showBonus = bonus != BONUS_NONE;
     Boolean complete;
-    XP_Bool empty = XP_TRUE;
+    XP_Bool showEmpty = 0 != (flags & (CELL_ISEMPTY|CELL_DRAGSRC));
 
     if ( showGrid ) {
         ++localR.width;
@@ -494,7 +496,9 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 
     eraseRect( &localR );
 
-    if ( !!letters ) {
+    if ( showEmpty ) {
+        /* do nothing */
+    } else if ( !!letters ) {
         len = XP_STRLEN( (const char*)letters );
         XP_ASSERT( len > 0 );
         if ( len > 0 ) {
@@ -513,7 +517,6 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
             WinDrawChars( (const char*)letters, len, x, y );
 
             showBonus = XP_FALSE;
-            empty = XP_FALSE;
         }
     } else if ( !!bitmap ) {
         XP_Bool doColor = (able == COLOR) && (owner >= 0);
@@ -537,11 +540,9 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
             WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
         }
         showBonus = doColor;	/* skip bonus in B&W case; can't draw both! */
-        empty = XP_FALSE;
     }
 
-    if ( ((flags & CELL_ISSTAR) != 0) 
-         && ((flags & (CELL_DRAGSRC | CELL_ISEMPTY)) != 0 ) ) {
+    if ( ((flags & CELL_ISSTAR) != 0) && showEmpty ) {
         bitmapInRect( dctx, STAR_BMP_RES_ID, rect );
     } else if ( showBonus && (able == ONEBIT) ) {
         /* this is my one refusal to totally factor bandw and color
@@ -549,7 +550,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         WinSetPattern( (const CustomPatternType*)
                        &dctx->u.bnw.valuePatterns[bonus-1] );
         WinFillRectangle( (RectangleType*)&localR, 0 );
-    } else if ( !showBonus && empty && !showGrid ) {
+    } else if ( !showBonus && showEmpty && !showGrid ) {
         /* should this be in the v-table so I don't have to test each
            time? */
         RectangleType r;
@@ -569,7 +570,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         }
     }
 
-    if ( (flags & CELL_HIGHLIGHT) != 0 ) {
+    if ( !showEmpty && (flags & CELL_HIGHLIGHT) != 0 ) {
         if ( !TREAT_AS_CURSOR( dctx, flags ) ) {
             XP_ASSERT( !!bitmap ||
                        (!!letters && XP_STRLEN((const char*)letters)>0));
@@ -581,7 +582,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         WinDrawRectangleFrame(rectangleFrame, (RectangleType*)&localR);
     }
 
-    if ( (flags & CELL_ISBLANK) != 0 ) {
+    if ( ((flags & CELL_ISBLANK) != 0) && !showEmpty ) {
         WinEraseRectangleFrame( roundFrame, (RectangleType*)&localR );
     }
 
