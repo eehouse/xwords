@@ -66,7 +66,6 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
     XP_UCHAR buf[CE_MAX_PATH_LEN+1]; /* in case we have to look */
 
     XP_ASSERT( !!dictName );
-    XP_DEBUGF( "looking for dict %s", dictName );
 
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, dictName, -1,
                          nameBuf, VSIZE(nameBuf) );
@@ -94,7 +93,6 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         XP_U8 nodeSize;
 
         flags = n_ptr_tohs( &ptr );
-        XP_DEBUGF( "%s: flags=0x%x", __func__, flags );
 
 #ifdef NODE_CAN_4
         if ( flags == 0x0002 ) {
@@ -117,11 +115,8 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         ctxt->super.destructor = ce_dict_destroy;
         ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
-        XP_DEBUGF( "ptr starting at 0x%p", ptr );
-		
         numFaces = (XP_U16)(*ptr++);
         ctxt->super.nFaces = (XP_U8)numFaces;
-        XP_DEBUGF( "read %d faces from dict", (short)numFaces );
         ctxt->super.faces16 = 
             XP_MALLOC( globals->mpool, 
                        numFaces * sizeof(ctxt->super.faces16[0]) );
@@ -171,7 +166,6 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         }
 
         if ( dictLength > 0 ) {
-            XP_DEBUGF( "setting topEdge; offset = %ld", offset );
             ctxt->super.base = (array_edge*)ptr;
 #ifdef NODE_CAN_4
             ctxt->super.topEdge = ctxt->super.base 
@@ -234,7 +228,6 @@ ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
             XP_ASSERT( face < nSpecials );
             texts[face] = text;
 
-            XP_DEBUGF( "making bitmaps for %s", texts[face] );
             bitmaps[face].largeBM = ceMakeBitmap( ctxt, &ptr );
             bitmaps[face].smallBM = ceMakeBitmap( ctxt, &ptr );
         }
@@ -273,8 +266,6 @@ printBitmapData1( XP_U16 nCols, XP_U16 nRows, XP_U8* data )
         ++rowBytes;
     }
 
-    XP_DEBUGF( "   printBitmapData (%dx%d):", nCols, nRows );
-
     for ( row = 0; row < nRows; ++row ) {
         for ( col = 0; col < nCols; ++col ) {
             XP_UCHAR byt = data[col / 8];
@@ -287,13 +278,11 @@ printBitmapData1( XP_U16 nCols, XP_U16 nRows, XP_U8* data )
         strs[nCols] = '\0';
         XP_DEBUGF( strs );
     }
-    XP_DEBUGF( "   printBitmapData done" );
 } /* printBitmapData1 */
 
 static void
 printBitmapData2( XP_U16 nCols, XP_U16 nRows, XP_U8* data )
 {
-    XP_DEBUGF( "   printBitmapData (%dx%d):", nCols, nRows );
     while ( nRows-- ) {
         XP_UCHAR buf[100];
         XP_UCHAR* ptr = buf;
@@ -307,7 +296,6 @@ printBitmapData2( XP_U16 nCols, XP_U16 nRows, XP_U8* data )
         }
         XP_DEBUGF( buf );
     }
-    XP_DEBUGF( "   printBitmapData done" );
 } /* printBitmapData2 */
 
 #if 0
@@ -454,7 +442,6 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
         XP_DEBUGF( "open file failed: %ld", GetLastError() );
     } else {
         HANDLE mappedFile;
-        XP_DEBUGF( "open file succeeded!!!!" );
 
         mappedFile = CreateFileMapping( hFile,
                                         NULL,
@@ -487,7 +474,6 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
     if ( hFile != INVALID_HANDLE_VALUE ) {
 
         DWORD size = GetFileSize( hFile, NULL );
-        XP_LOGF( "file size: %ld", size );
 
         ptr = XP_MALLOC( mpool, size );
         if ( ptr != NULL ) {
@@ -550,7 +536,6 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
             int len = wcslen( pathBuf );
             len = WideCharToMultiByte( CP_ACP, 0, pathBuf, len + 1,
                                        narrowName, len + 1, NULL, NULL );
-            XP_LOGF( "%s ends in .xwd", narrowName );
         }
 #endif
 
@@ -560,7 +545,6 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
             XP_U8* ptr = base;
         
             flags = n_ptr_tohs( &ptr );
-            XP_LOGF( "checkIfDictAndLegal: flags=0x%x", flags );
             closeMappedFile( MPPARM(mpool) base, mappedFile );
 #ifdef NODE_CAN_4
             /* are the flags what we expect */
