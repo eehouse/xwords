@@ -177,8 +177,6 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 
 #ifndef STUBBED_DICT
     if ( !!gi->dictName ) { 
-        XP_LOGF( "%s: copying %s to giState->newDictName",
-                 __func__, gi->dictName );
         XP_MEMCPY( giState->newDictName, gi->dictName,
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
     }
@@ -422,8 +420,6 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
 {
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForAttr( attr );
-
-    LOG_FUNC();
 
     switch ( attr ) {
     case NG_ATTR_NPLAYERS:

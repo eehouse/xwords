@@ -790,7 +790,6 @@ ceSavePrefs( CEAppGlobals* globals )
         /* write prefs, including version num */
         WriteFile( fileH, &globals->appPrefs, sizeof(globals->appPrefs), 
                    &nWritten, NULL );
-        XP_DEBUGF( "sizeof(appPrefs) => %d", sizeof( globals->appPrefs ) );
 
         WriteFile( fileH, &nameLen, sizeof(nameLen), &nWritten, NULL );
         WriteFile( fileH, name, nameLen, &nWritten, NULL );
@@ -1776,10 +1775,8 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
         }
 
         if ( newOffset >= 0 && newOffset <= globals->nHiddenRows ) {
-            result = curYOffset != newOffset;
-            if ( result ) {
-                result = board_setYOffset( globals->game.board, newOffset );
-            }
+            result = curYOffset != newOffset
+                && board_setYOffset( globals->game.board, newOffset );
         }
     }
     return result;
