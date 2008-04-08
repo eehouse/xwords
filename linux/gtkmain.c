@@ -102,11 +102,20 @@ rememberClient( GtkAppGlobals* globals, guint key, int sock,
 } /* rememberClient */
 #endif
 
+static void
+gtkSetAltState( GtkAppGlobals* globals, guint state )
+{
+    globals->altKeyDown
+        = (state & (GDK_MOD1_MASK|GDK_SHIFT_MASK|GDK_CONTROL_MASK)) != 0;
+}
+
 static gint
 button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
                     GtkAppGlobals* globals )
 {
     XP_Bool redraw, handled;
+
+    gtkSetAltState( globals, event->state );
 
     if ( !globals->mouseDown ) {
         globals->mouseDown = XP_TRUE;
@@ -124,6 +133,8 @@ motion_notify_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                      GtkAppGlobals* globals )
 {
     XP_Bool handled;
+
+    gtkSetAltState( globals, event->state );
 
     if ( globals->mouseDown ) {
         handled = board_handlePenMove( globals->cGlobals.game.board, event->x, 
@@ -143,6 +154,8 @@ button_release_event( GtkWidget* XP_UNUSED(widget), GdkEventMotion *event,
                       GtkAppGlobals* globals )
 {
     XP_Bool redraw;
+
+    gtkSetAltState( globals, event->state );
 
     if ( globals->mouseDown ) {
         redraw = board_handlePenUp( globals->cGlobals.game.board, 
@@ -214,6 +227,8 @@ key_press_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
     XP_Bool movesCursor;
     XP_Key xpkey = evtToXPKey( event, &movesCursor );
 
+    gtkSetAltState( globals, event->state );
+
     if ( xpkey != XP_KEY_NONE ) {
         XP_Bool draw = globals->keyDown ?
             board_handleKeyRepeat( globals->cGlobals.game.board, xpkey, 
@@ -236,6 +251,8 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
     XP_Bool handled = XP_FALSE;
     XP_Bool movesCursor;
     XP_Key xpkey = evtToXPKey( event, &movesCursor );
+
+    gtkSetAltState( globals, event->state );
 
     if ( xpkey != XP_KEY_NONE ) {
         XP_Bool draw;
@@ -379,7 +396,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         /*         params->gi.phoniesAction = PHONIES_DISALLOW; */
 #ifdef XWFEATURE_SEARCHLIMIT
-        params->gi.allowHintRect = XP_TRUE;
+        params->gi.allowHintRect = params->allowHintRect;
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -969,16 +986,14 @@ handle_done_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 static void
 scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
 {
-    XP_U16 curYOffset, newValue;
+    XP_U16 newValue;
     gfloat newValueF = adj->value;
 
     XP_ASSERT( newValueF >= 0.0
                && newValueF <= globals->cGlobals.params->nHidden );
-    curYOffset = board_getYOffset( globals->cGlobals.game.board );
     newValue = (XP_U16)newValueF;
 
-    if ( newValue != curYOffset ) {
-        board_setYOffset( globals->cGlobals.game.board, newValue );
+    if ( board_setYOffset( globals->cGlobals.game.board, newValue ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* scroll_value_changed */
@@ -1184,6 +1199,13 @@ gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
     return !pending;
 #endif
 } /* gtk_util_hiliteCell */
+
+static XP_Bool
+gtk_util_altKeyDown( XW_UtilCtxt* uc )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    return globals->altKeyDown;
+}
 
 static XP_Bool
 gtk_util_engineProgressCallback( XW_UtilCtxt* XP_UNUSED(uc) )
@@ -1578,6 +1600,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_yOffsetChange = gtk_util_yOffsetChange;
     util->vtable->m_util_notifyGameOver = gtk_util_notifyGameOver;
     util->vtable->m_util_hiliteCell = gtk_util_hiliteCell;
+    util->vtable->m_util_altKeyDown = gtk_util_altKeyDown;
     util->vtable->m_util_engineProgressCallback = 
         gtk_util_engineProgressCallback;
     util->vtable->m_util_setTimer = gtk_util_setTimer;

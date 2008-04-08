@@ -241,6 +241,9 @@ usage( char* appName, char* msg )
 #if defined PLATFORM_GTK
 	     "\t [-k]             # ask for parameters via \"new games\" dlg\n"
 	     "\t [-h numRowsHidded] \n"
+# ifdef XWFEATURE_SEARCHLIMIT
+	     "\t [-I]             # don't support hint rect dragging\n"
+# endif
 #endif
 	     "\t [-f file]        # use this file to save/load game\n"
 	     "\t [-q]             # quit when game over (useful for robot-only)\n"
@@ -866,6 +869,9 @@ main( int argc, char** argv )
     mainParams.gi.robotSmartness = SMART_ROBOT;
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
+#ifdef XWFEATURE_SEARCHLIMIT
+    mainParams.allowHintRect = XP_TRUE;
+#endif
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
@@ -886,7 +892,7 @@ main( int argc, char** argv )
                       "gu"
 #endif
 #if defined PLATFORM_GTK
-                      "h:"
+                      "h:I"
 #endif
                       "kKf:l:n:Nsd:e:r:b:qw:Sit:Umvc"
 #ifdef XWFEATURE_RELAY
@@ -936,6 +942,11 @@ main( int argc, char** argv )
         case 'i':
             mainParams.printHistory = 1;
             break;
+#ifdef XWFEATURE_SEARCHLIMIT
+        case 'I':
+            mainParams.allowHintRect = XP_FALSE;
+            break;
+#endif
         case 'K':
             mainParams.skipWarnings = 1;
             break;
