@@ -94,6 +94,7 @@ typedef struct GtkAppGlobals {
     XP_Bool gridOn;
     XP_Bool dropIncommingMsgs;
     XP_Bool mouseDown;
+    XP_Bool altKeyDown;
 #ifdef KEYBOARD_NAV
     XP_Bool keyDown;
 #endif

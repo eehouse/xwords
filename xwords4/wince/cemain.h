@@ -129,7 +129,6 @@ typedef struct CEAppGlobals {
     XP_U16 flags;               /* bits defined below */
 
 #ifdef CEFEATURE_CANSCROLL
-    XP_U16 nHiddenRows;
     HWND scrollHandle;
 #endif
 

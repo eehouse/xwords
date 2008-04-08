@@ -50,6 +50,7 @@ typedef enum {
 #ifdef XWFEATURE_SEARCHLIMIT
     ,DT_HINTRGN
 #endif
+    ,DT_BOARD
 } DragType;
 
 
@@ -244,6 +245,7 @@ XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
 XP_Bool checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
 XP_Bool onBorderCanScroll( const BoardCtxt* board, XP_U16 row, XP_S16* change );
+XP_Bool adjustYOffset( BoardCtxt* board, XP_S16 moveBy );
 
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 

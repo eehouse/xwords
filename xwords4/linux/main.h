@@ -61,6 +61,9 @@ typedef struct LaunchParams {
     XP_Bool skipWarnings;
     XP_Bool showRobotScores;
     XP_Bool noHeartbeat;
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool allowHintRect;
+#endif
 
     DeviceRole serverRole;
 

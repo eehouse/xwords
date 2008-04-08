@@ -418,25 +418,47 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
 } /* board_prefsChanged */
 
 XP_Bool
+adjustYOffset( BoardCtxt* board, XP_S16 moveBy )
+{
+    XP_U16 nVisible = board->lastVisibleRow - board->yOffset + 1;
+    XP_U16 nRows = model_numRows(board->model);
+    XP_S16 newOffset = board->yOffset - moveBy;
+
+    if ( newOffset < 0 ) {
+        newOffset = 0;
+    } else if ( newOffset + nVisible > nRows ) {
+        newOffset = nRows - nVisible;
+    }
+
+    return board_setYOffset( board, newOffset );
+} /* adjustYOffset */
+
+XP_Bool
 board_setYOffset( BoardCtxt* board, XP_U16 offset )
 {
     XP_U16 oldOffset = board->yOffset;
     XP_Bool result = oldOffset != offset;
 
     if ( result ) {
-        /* check if scrolling makes sense for this board in its current
-           state. */
-        XP_U16 visibleHeight = board->boardBounds.height;
-        XP_U16 fullHeight = model_numRows(board->model) * board->boardVScale;
-        result = visibleHeight < fullHeight;
+        XP_U16 nVisible = board->lastVisibleRow - board->yOffset + 1;
+        XP_U16 nRows = model_numRows(board->model);
 
+        result = offset <= nRows - nVisible;
         if ( result ) {
-            invalSelTradeWindow( board );
-            board->yOffset = offset;
-            figureBoardRect( board );
-            util_yOffsetChange( board->util, oldOffset, offset );
-            invalSelTradeWindow( board );
-            board->needsDrawing = XP_TRUE;
+            /* check if scrolling makes sense for this board in its current
+               state. */
+            XP_U16 visibleHeight = board->boardBounds.height;
+            XP_U16 fullHeight = nRows * board->boardVScale;
+            result = visibleHeight < fullHeight;
+
+            if ( result ) {
+                invalSelTradeWindow( board );
+                board->yOffset = offset;
+                figureBoardRect( board );
+                util_yOffsetChange( board->util, oldOffset, offset );
+                invalSelTradeWindow( board );
+                board->needsDrawing = XP_TRUE;
+            }
         }
     }
 
@@ -1031,17 +1053,17 @@ checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
     if ( board->boardObscuresTray && board->trayVisState != TRAY_HIDDEN ) {
         /* call getCellRect until the cell's on the board. */
         while ( !getCellRect( board, col, row, &rect ) ) {
-            XP_U16 oldOffset = board_getYOffset( board );
+            XP_S16 moveBy;
             if ( rect.top < board->boardBounds.top ) {
-                --oldOffset;
+                moveBy = 1;
             } else if ( rect.top + rect.height > 
                         board->boardBounds.top + board->boardBounds.height ) {
-                ++oldOffset;
+                moveBy = -1;
             } else {
                 XP_ASSERT( 0 );
             }
-            board_setYOffset( board, oldOffset );
-            moved = XP_TRUE;
+            moved = adjustYOffset( board, moveBy );
+            XP_ASSERT( moved );
         }
     }    
     return moved;
@@ -2148,7 +2170,6 @@ static XP_Bool
 handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
     XP_Bool result = XP_FALSE;
-    XP_U16 col, row;
     /* Start a timer no matter what.  After it fires we'll decide whether it's
        appropriate to handle it.   No.  That's too expensive */
     if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, xx, yy ) ) {
@@ -2159,9 +2180,7 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
     /* As a first cut, you start a hint-region drag unless the cell is
        occupied by a non-committed cell. */
 
-    coordToCell( board, xx, yy, &col, &row );
-    if ( (board->trayVisState == TRAY_REVEALED)
-         && !board->tradeInProgress[board->selPlayer] ) {
+    if ( !board->tradeInProgress[board->selPlayer] ) {
         result = dragDropStart( board, OBJ_BOARD, xx, yy );
     }
 

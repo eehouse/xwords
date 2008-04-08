@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -111,6 +111,7 @@ static XP_Bool ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col,
 static XP_Bool ce_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                               XWTimerProc proc, void* closure);
+static XP_Bool ce_util_altKeyDown( XW_UtilCtxt* uc );
 static void ce_util_requestTime( XW_UtilCtxt* uc );
 static XP_U32 ce_util_getCurSeconds( XW_UtilCtxt* uc );
 static DictionaryCtxt* ce_util_makeEmptyDict( XW_UtilCtxt* uc );
@@ -335,6 +336,7 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_hiliteCell = ce_util_hiliteCell;
     vtable->m_util_engineProgressCallback = ce_util_engineProgressCallback;
     vtable->m_util_setTimer = ce_util_setTimer;
+    vtable->m_util_altKeyDown = ce_util_altKeyDown;
     vtable->m_util_requestTime = ce_util_requestTime;
     vtable->m_util_getCurSeconds = ce_util_getCurSeconds;
     vtable->m_util_makeEmptyDict = ce_util_makeEmptyDict;
@@ -563,15 +565,14 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     bparms->horiz = horiz;
 
 #ifdef CEFEATURE_CANSCROLL
-    globals->nHiddenRows = nRows - nVisibleRows;
     bparms->needsScroller = nVisibleRows < nRows;
     if ( bparms->needsScroller && !IS_SMARTPHONE(globals) ) {
         XP_U16 boardRight = boardLeft + (nRows * hScale);
-        showScroller( globals, globals->nHiddenRows,
+        showScroller( globals, nRows - nVisibleRows,
                       boardRight, boardTop,
                       scrollWidth, boardHt );
         XP_LOGF( "NEEDING SCROLLBAR!!!!" );
-        XP_LOGF( "%d rows hidden", globals->nHiddenRows );
+        XP_LOGF( "%d rows hidden", nRows - nVisibleRows );
     } else {
         hideScroller( globals );
     }
@@ -1343,12 +1344,17 @@ handleJuggleCmd( CEAppGlobals* globals )
 static XP_Bool
 handleHidetrayCmd( CEAppGlobals* globals )
 {
+    XP_Bool result;
     XW_TrayVisState curState = board_getTrayVisState( globals->game.board );
+
     if ( curState == TRAY_REVEALED ) {
-        return board_hideTray( globals->game.board );
+        result = board_hideTray( globals->game.board );
     } else {
-        return board_showTray( globals->game.board );
+        result = board_showTray( globals->game.board );
     }
+
+    ceSetLeftSoftkey( globals, ID_MOVE_HIDETRAY );
+    return result;
 } /* handleHidetrayCmd */
 
 static XP_Bool
@@ -1774,10 +1780,8 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
             /* do nothing */
         }
 
-        if ( newOffset >= 0 && newOffset <= globals->nHiddenRows ) {
-            result = curYOffset != newOffset
-                && board_setYOffset( globals->game.board, newOffset );
-        }
+        result = curYOffset != newOffset
+            && board_setYOffset( globals->game.board, newOffset );
     }
     return result;
 } /* handleScroll */
@@ -2821,7 +2825,6 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(newState),
     if ( !!globals->scrollHandle ) {
         nHiddenRows = model_numRows( globals->game.model ) - nVisibleRows;
         updateScrollInfo( globals->scrollHandle, nHiddenRows );
-        globals->nHiddenRows = nHiddenRows;
     }
 #endif
 
@@ -2906,6 +2909,13 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
 
     globals->timerIDs[why] = timerID;
 } /* ce_util_setTimer */
+
+static XP_Bool
+ce_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc) )
+{
+    return GetKeyState(VK_LSHIFT) < 0
+        || GetKeyState(VK_RSHIFT) < 0;
+}
 
 static void 
 ce_util_requestTime( XW_UtilCtxt* uc )

@@ -25,6 +25,9 @@ extern "C" {
 #include "dragdrpp.h"
 #include "game.h"
 
+/* How many squares must scroll gesture take in to be recognized. */
+#define SCROLL_DRAG_THRESHHOLD 3
+
 static XP_Bool dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
                                      BoardObjectType* onWhichP );
 static void invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
@@ -54,12 +57,14 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
     DragState* ds = &board->dragState;
     XP_Bool found;
+    XP_Bool trayVisible;
     XP_U16 col, row;
 
     found = coordToCell( board, xx, yy, &col, &row );
     XP_ASSERT( found );
 
-    if ( holdsPendingTile( board, col, row ) ) {
+    trayVisible = board->trayVisState == TRAY_REVEALED;
+    if ( trayVisible && holdsPendingTile( board, col, row ) ) {
         XP_U16 modelc, modelr;
         XP_Bool ignore;
 
@@ -69,11 +74,27 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
         found = model_getTile( board->model, modelc, modelr, XP_TRUE, 
                                board->selPlayer, &ds->tile, &ds->isBlank, 
                                &ignore, &ignore );
-    XP_ASSERT( found );
+        XP_ASSERT( found );
+    } else {
+        /* If we're not dragging a tile, we can either drag the board (scroll)
+           or work on hint regions.  Sometimes scrolling isn't possible.
+           Sometimes hint dragging is disabled.  But if both are possible,
+           then the alt key determines it.  I figure scrolling will be more
+           common than hint dragging when both are possible, but you can turn
+           hint dragging off, so if it's on that's probably what you want. */
+        XP_Bool canScroll = board->lastVisibleRow < model_numRows(board->model);
+        if ( 0 ) {
 #ifdef XWFEATURE_SEARCHLIMIT
-    } else if ( board->gi->allowHintRect ) {
-        ds->dtype = DT_HINTRGN;
+        } else if ( board->gi->allowHintRect && trayVisible ) {
+            if ( !util_altKeyDown(board->util) ) {
+                ds->dtype = DT_HINTRGN;
+            } else if ( canScroll ) {
+                ds->dtype = DT_BOARD;
+            }
 #endif
+        } else if ( canScroll ) {
+            ds->dtype = DT_BOARD;
+        }
     }
     ds->start.u.board.col = col;
     ds->start.u.board.row = row;
@@ -379,13 +400,18 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     }
     *onWhichP = newInfo.obj;
 
+    if ( newInfo.obj == OBJ_BOARD ) {
+        (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
+                           &newInfo.u.board.row );
+    }
+
     if ( ds->dtype == DT_DIVIDER ) {
         if ( OBJ_TRAY == newInfo.obj ) {
             XP_U16 newloc;
             XP_U16 scale = board->trayScaleH;
             xx -= board->trayBounds.left;
             newloc = xx / scale;
-            if ( (xx % scale) > (scale/2)) {
+            if ( (xx % scale) > ((scale+board->dividerWidth)/2)) {
                 ++newloc;
             }
             moving = dividerMoved( board, newloc );
@@ -394,11 +420,15 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     } else if ( ds->dtype == DT_HINTRGN && newInfo.obj != OBJ_BOARD ) {
             /* do nothing */
 #endif
+    } else if ( ds->dtype == DT_BOARD ) {
+        if ( newInfo.obj == OBJ_BOARD ) {
+            XP_S16 diff = newInfo.u.board.row - ds->cur.u.board.row;
+            diff /= SCROLL_DRAG_THRESHHOLD;
+            moving = adjustYOffset( board, diff );
+        }
     } else {
         if ( newInfo.obj == OBJ_BOARD ) {
-            (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
-                               &newInfo.u.board.row );
-            moving = (newInfo.u.board.col != ds->cur.u.board.col)
+                 moving = (newInfo.u.board.col != ds->cur.u.board.col)
                 || (newInfo.u.board.row != ds->cur.u.board.row)
                 || (OBJ_TRAY == ds->cur.obj);
         } else if ( newInfo.obj == OBJ_TRAY ) {
@@ -509,7 +539,7 @@ startScrollTimerIf( BoardCtxt* board )
 {
     DragState* ds = &board->dragState;
 
-    if ( ds->cur.obj == OBJ_BOARD ) {
+    if ( (ds->dtype == DT_TILE) && (ds->cur.obj == OBJ_BOARD) ) {
         XP_S16 ignore;
         if ( onBorderCanScroll( board, ds->cur.u.board.row, &ignore ) ) {
             util_setTimer( board->util, TIMER_PENDOWN, 0,

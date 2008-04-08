@@ -122,6 +122,7 @@ static XP_Bool palm_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col,
 static XP_Bool palm_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                                 XWTimerProc proc, void* closure );
+static XP_Bool palm_util_altKeyDown( XW_UtilCtxt* uc );
 static XP_U32 palm_util_getCurSeconds( XW_UtilCtxt* uc );
 static void palm_util_requestTime( XW_UtilCtxt* uc );
 static DictionaryCtxt* palm_util_makeEmptyDict( XW_UtilCtxt* uc );
@@ -648,6 +649,7 @@ initUtilFuncs( PalmAppGlobals* globals )
     vtable->m_util_engineProgressCallback = palm_util_engineProgressCallback;
     vtable->m_util_setTimer = palm_util_setTimer;
     vtable->m_util_requestTime = palm_util_requestTime;
+    vtable->m_util_altKeyDown = palm_util_altKeyDown;
     vtable->m_util_getCurSeconds = palm_util_getCurSeconds;
     vtable->m_util_makeEmptyDict = palm_util_makeEmptyDict;
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -1965,12 +1967,8 @@ scrollBoard( PalmAppGlobals* globals, Int16 newValue, Boolean fromBar )
     XP_U16 curYOffset;
 
     XP_ASSERT( !!globals->game.board );
-    curYOffset = board_getYOffset( globals->game.board );
 
-    result = curYOffset != newValue;
-    if ( result ) {
-        result = board_setYOffset( globals->game.board, newValue );
-    }
+    result = board_setYOffset( globals->game.board, newValue );
 
     if ( !fromBar ) {
         updateScrollbar( globals, newValue );
@@ -3881,6 +3879,13 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
      * is called from inside some BT callback. */
     postEmptyEvent( noopEvent );
 } /* palm_util_setTimer */
+
+static XP_Bool
+palm_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc) )
+{
+    XP_LOGF( "%s unimplemented", __func__ );
+    return XP_FALSE;
+}
 
 static void 
 palm_util_requestTime( XW_UtilCtxt* uc )

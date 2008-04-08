@@ -138,6 +138,8 @@ typedef struct UtilVtable {
 
     void (*m_util_requestTime)( XW_UtilCtxt* uc );
 
+    XP_Bool (*m_util_altKeyDown)( XW_UtilCtxt* uc );
+
     XP_U32 (*m_util_getCurSeconds)( XW_UtilCtxt* uc );
 
     DictionaryCtxt* (*m_util_makeEmptyDict)( XW_UtilCtxt* uc );
@@ -221,6 +223,9 @@ struct XW_UtilCtxt {
 
 #define util_requestTime( uc ) \
          (uc)->vtable->m_util_requestTime((uc))
+
+#define util_altKeyDown( uc ) \
+         (uc)->vtable->m_util_altKeyDown((uc))
 
 #define util_getCurSeconds(uc) \
          (uc)->vtable->m_util_getCurSeconds((uc))
