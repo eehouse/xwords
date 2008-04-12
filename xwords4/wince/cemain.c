@@ -1798,12 +1798,11 @@ ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
     if ( !!proc ) {
         globals->timerProcs[why] = NULL;
         closure = globals->timerClosures[why];
-        (*proc)( closure, why );
+        draw = (*proc)( closure, why );
         /* Setting draw after firing timer allows scrolling to happen
            while pen is held down.  This is a hack.  Perhaps having
            the timer proc return whether drawing is needed would be
            more consistent. */
-        draw = XP_TRUE;
     } else {
         XP_LOGF( "skipped timer; alread fired?" );
     }

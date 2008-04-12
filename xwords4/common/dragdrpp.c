@@ -512,9 +512,10 @@ setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits )
     limits->bottom = XP_MAX( ds->start.u.board.row, ds->cur.u.board.row );
 }
 
-static void
+static XP_Bool
 scrollTimerProc( void* closure, XWTimerReason why )
 {
+    XP_Bool draw = XP_FALSE;
     BoardCtxt* board = (BoardCtxt*)closure;
     DragState* ds = &board->dragState;
     XP_ASSERT( why == TIMER_PENDOWN );
@@ -529,9 +530,11 @@ scrollTimerProc( void* closure, XWTimerReason why )
                                   ds->cur.u.board.row ) ) {
                 board_draw( board ); /* may fail, e.g. on wince */
                 startScrollTimerIf( board );
+                draw = XP_TRUE;
             }
         }
     }
+    return draw;
 } /* scrollTimerProc */
 
 static void

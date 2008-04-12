@@ -91,7 +91,8 @@ typedef struct BadWordInfo {
     XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
 } BadWordInfo;
 
-typedef void (*XWTimerProc)( void* closure, XWTimerReason why );
+/* XWTimerProc returns true if redraw was necessitated by what the proc did */
+typedef XP_Bool (*XWTimerProc)( void* closure, XWTimerReason why );
 
 /* Platform-specific utility functions that need to be
  */

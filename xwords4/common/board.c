@@ -77,6 +77,7 @@ static XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row,
 static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                          XP_Bool skipBlanks );
 static void figureBoardRect( BoardCtxt* board );
+static void forceRectToBoard( const BoardCtxt* board, XP_Rect* rect );
 
 static void drawBoard( BoardCtxt* board );
 static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
@@ -100,7 +101,7 @@ static void makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text,
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 static void invalSelTradeWindow( BoardCtxt* board );
 static void setTimerIf( BoardCtxt* board );
-static void p_board_timerFired( void* closure, XWTimerReason why );
+static XP_Bool p_board_timerFired( void* closure, XWTimerReason why );
 
 static XP_Bool replaceLastTile( BoardCtxt* board );
 static XP_Bool setTrayVisState( BoardCtxt* board, XW_TrayVisState newState );
@@ -749,7 +750,8 @@ positionMiniWRect( BoardCtxt* board, XP_Rect* rect, XP_Bool center )
         rect->left = XP_MAX( board->boardBounds.left + 1, rect->left );
         rect->top = XP_MAX( board->boardBounds.top + 1, y - rect->height );
     }
-} /* positionBonusRect */
+    forceRectToBoard( board, rect );
+} /*positionMiniWRect */
 
 static void
 timerFiredForPen( BoardCtxt* board ) 
@@ -841,7 +843,7 @@ timerFiredForTimer( BoardCtxt* board )
     setTimerIf( board );
 } /* timerFiredForTimer */
 
-static void
+static XP_Bool
 p_board_timerFired( void* closure, XWTimerReason why )
 {
     BoardCtxt* board = (BoardCtxt*)closure;
@@ -851,6 +853,7 @@ p_board_timerFired( void* closure, XWTimerReason why )
         XP_ASSERT( why == TIMER_TIMERTICK );
         timerFiredForTimer( board );
     }
+    return XP_FALSE;
 } /* board_timerFired */
 
 void
