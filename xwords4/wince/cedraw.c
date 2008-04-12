@@ -641,6 +641,8 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ++rt.bottom;
     ++rt.right;
 
+    ceClipToRect( dctx, hdc, &rt );
+
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
 
