@@ -124,7 +124,7 @@ GetTextExtentPoint32W( HDC hdc, LPCWSTR str, int i, LPSIZE siz )
 #endif
 
 static void
-ceClipToRect( CEDrawCtx* dctx, HDC hdc, const RECT* rt )
+ceClipToRect( /* CEDrawCtx* dctx,  */HDC hdc, const RECT* rt )
 {
     /*
 NULLREGION 	Region is empty.
@@ -336,14 +336,14 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XPRtoRECT( &rt, xprect );
     ++rt.bottom;
     ++rt.right;
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     textRect = rt;
     InsetRect( &textRect, 1, 1 );
 
     InsetRect( &rt, 1, 1 );
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
 
     /* always init to silence compiler warning */
     foreColorRef = dctx->globals->appPrefs.colors[getPlayerColor(owner)];
@@ -472,7 +472,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     XP_Bool isEmpty = (flags & CELL_ISEMPTY) != 0;
 
     XPRtoRECT( &rt, xprect );
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
     ceClearToBkground( dctx, xprect );
 
     if ( !isEmpty || isFocussed ) {
@@ -483,7 +483,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         InsetRect( &rt, 1, 1 );
         Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom);
         InsetRect( &rt, 1, 1 );
-        ceClipToRect( dctx, hdc, &rt );
+        ceClipToRect( hdc, &rt );
 
         if ( !isEmpty ) {
             index = getPlayerColor(dctx->trayOwner);
@@ -576,7 +576,7 @@ DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect,
     RECT rt;
 
     XPRtoRECT( &rt, rect );
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
     if ( selected ) {
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     } else {
@@ -641,7 +641,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ++rt.bottom;
     ++rt.right;
 
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
@@ -727,7 +727,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
 
     XPRtoRECT( &rt, rInner );
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
     ++rt.left;                  /* 1: don't write up against edge */
     drawLines( dctx, hdc, buf, CE_REM_PADDING, &rt, 
                DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_CENTER );
@@ -827,7 +827,7 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
         
     XPRtoRECT( &rt, rOuter );
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
     if ( isFocussed ) {
         FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
     }
@@ -875,7 +875,7 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
 
     XPRtoRECT( &rt, rect );
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
-    ceClipToRect( dctx, hdc, &rt );
+    ceClipToRect( hdc, &rt );
 
     if ( score < 0 ) {
         buf[0] = '?';
@@ -1058,7 +1058,11 @@ DRAW_FUNC_NAME(vertScrollBoard)( DrawCtx* p_dctx, XP_Rect* rect,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     int destY, srcY;
+    RECT rt;
     XP_Bool down = dist <= 0;
+
+    XPRtoRECT( &rt, rect );
+    ceClipToRect( globals->hdc, &rt );
 
     if ( down ) {
         srcY = rect->top;
