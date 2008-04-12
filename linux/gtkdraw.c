@@ -351,17 +351,36 @@ gtk_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx),
 
 
 static XP_Bool
-gtk_draw_vertScrollBoard( DrawCtx* XP_UNUSED(p_dctx), XP_Rect* XP_UNUSED(rect),
-                          XP_S16 XP_UNUSED(dist), 
-                          DrawFocusState XP_UNUSED(dfs) )
+gtk_draw_vertScrollBoard( DrawCtx* p_dctx, XP_Rect* rect,
+                          XP_S16 dist, DrawFocusState XP_UNUSED(dfs) )
 {
     /* Turn this on to mimic what palm does, but need to figure out some gtk
        analog to copybits for it to actually work. */
-#if 0
-    XP_Bool up = dist < 0;
-    if ( up ) {
-        dist *= -1;
+#if 1
+    GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    XP_Bool down = dist <= 0;
+    gint ysrc, ydest;
+
+    if ( down ) {
+        ysrc = rect->top;
+        dist = -dist;           /* make it positive */
+        ydest = ysrc + dist;
     } else {
+        ydest = rect->top;
+        ysrc = ydest + dist;
+    }
+
+    gdk_draw_drawable( DRAW_WHAT(dctx),
+                       dctx->drawGC,
+                       DRAW_WHAT(dctx),
+                       rect->left,
+                       ysrc,
+                       rect->left,
+                       ydest,
+                       rect->width,
+                       rect->height - dist );
+
+    if ( !down ) {
         rect->top += rect->height - dist;
     }
     rect->height = dist;
