@@ -1309,7 +1309,7 @@ heartbeat_checks( CommsCtxt* comms )
 #endif
 
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
-static void
+static XP_Bool
 p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
     CommsCtxt* comms = (CommsCtxt*)closure;
@@ -1328,6 +1328,7 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
         heartbeat_checks( comms );
 #endif
     }
+    return XP_FALSE;            /* no need for redraw */
 } /* p_comms_timerFired */
 
 static void
