@@ -155,6 +155,7 @@ static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                               wchar_t* title, XP_U16 buttons );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
+static XP_Bool isDefaultName( const XP_UCHAR* name );
 
 
 #if defined DEBUG && ! defined _WIN32_WCE
@@ -629,30 +630,36 @@ ceSetTitleFromName( CEAppGlobals* globals )
     wchar_t widebuf[256];
     wchar_t* colonPos;
     XP_UCHAR* baseStart;
-    XP_UCHAR* gameName;
+    const XP_UCHAR* gameName = globals->curGameName;
 
     XP_U16 len = (XP_U16)SendMessage( globals->hWnd, WM_GETTEXT, 
                                       sizeof(widebuf), (long)widebuf );
     colonPos = wcsstr( widebuf, L":" );
 
-    if ( colonPos == NULL ) {
-        wcscat( widebuf, L":" );
-        colonPos = widebuf + len; /* we'll write at the end */
-    }
-    ++colonPos;          /* skip the colon */
+    /* if default name, remove any current name */
+    if ( !gameName || isDefaultName( gameName ) ) {
+        if ( NULL != colonPos ) {
+            *colonPos = 0;
+        }
+    } else {
+        if ( colonPos == NULL ) {
+            wcscat( widebuf, L":" );
+            colonPos = widebuf + len; /* we'll write at the end */
+        }
+        ++colonPos;          /* skip the colon */
 
-    gameName = globals->curGameName;
-    baseStart = strrchr( gameName, '\\' );
-    ++baseStart;
-    len = (XP_U16)XP_STRLEN( baseStart );
+        baseStart = strrchr( gameName, '\\' );
+        ++baseStart;
+        len = (XP_U16)XP_STRLEN( baseStart );
 
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, baseStart, len + 1,
-                         colonPos, len + 1 );
+        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, baseStart, len + 1,
+                             colonPos, len + 1 );
 
-    /* now get rid of the ".xwg" */
-    colonPos = wcsrchr( widebuf, '.' );
-    if ( colonPos != NULL ) {
-        *colonPos = 0;
+        /* now get rid of the ".xwg" */
+        colonPos = wcsrchr( widebuf, '.' );
+        if ( colonPos != NULL ) {
+            *colonPos = 0;
+        }
     }
 
     SendMessage( globals->hWnd, WM_SETTEXT, 0, (long)widebuf );
@@ -996,6 +1003,8 @@ ceLoadSavedGame( CEAppGlobals* globals )
         }
 
         stream_destroy( stream );
+
+        ceSetTitleFromName( globals );
     }
 
     return success;
@@ -1474,6 +1483,7 @@ ceDoNewGame( CEAppGlobals* globals )
 #endif
 
         ceInitAndStartBoard( globals, XP_TRUE, addr );
+        ceSetTitleFromName( globals );
         changed = XP_TRUE;
     }
     
@@ -1509,7 +1519,6 @@ ceChooseAndOpen( CEAppGlobals* globals )
             globals->curGameName = name;
             if ( ceLoadSavedGame( globals ) ) {
                 ceInitAndStartBoard( globals, XP_FALSE, NULL );
-                ceSetTitleFromName( globals );
             } else {
                 XP_LOGF( "failed to open chosen game" );
             }
@@ -1593,7 +1602,7 @@ ceWriteToFile( XWStreamCtxt* stream, void* closure )
 } /* ceWriteToFile */
 
 static XP_Bool 
-isDefaultName( XP_UCHAR* name ) 
+isDefaultName( const XP_UCHAR* name ) 
 {
     return 0 == XP_STRCMP( UNSAVEDGAMEFILENAME, name );
 } /* isDefaultName */
