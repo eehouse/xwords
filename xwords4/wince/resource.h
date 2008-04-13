@@ -162,11 +162,12 @@
 
 #define IDC_SVGM_SELLAB                  1109
 #define IDC_SVGM_GAMELIST                1110
-#define IDC_SVGM_EDITLAB                 1111
-#define IDC_SVGM_CHANGE                  1112
-#define IDC_SVGM_EDIT                    1113
-#define IDC_SVGM_DUP                     1114
-#define IDC_SVGM_DEL                     1115
+/* Let's remove these until they're implemented */
+/* #define IDC_SVGM_EDITLAB                 1111 */
+/* #define IDC_SVGM_CHANGE                  1112 */
+/* #define IDC_SVGM_EDIT                    1113 */
+/* #define IDC_SVGM_DUP                     1114 */
+/* #define IDC_SVGM_DEL                     1115 */
 #define IDC_SVGM_OPEN                    1116
 
 #define IDC_SVGN_SELLAB                  1117

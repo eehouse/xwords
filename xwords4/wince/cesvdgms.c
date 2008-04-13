@@ -26,21 +26,20 @@
 #include "ceutil.h" 
 #include "cedebug.h" 
 
-typedef struct SaveGameNameState {
+typedef struct CeSaveGameNameState {
     CEAppGlobals* globals;
-/*     HWND hDlg; */
     wchar_t* buf; 
     XP_U16 buflen;
     XP_Bool cancelled;
     XP_Bool inited;
-} SaveGameNameState;
+} CeSaveGameNameState;
 
-static void
-notImpl( CEAppGlobals* globals )
-{
-    messageBoxChar( globals, "To be implemented soon....",
-                    L"Notice", MB_OK );
-}
+/* static void */
+/* notImpl( CEAppGlobals* globals ) */
+/* { */
+/*     messageBoxChar( globals, "To be implemented soon....", */
+/*                     L"Notice", MB_OK ); */
+/* } */
 
 static XP_Bool
 ceFileExists( const wchar_t* name )
@@ -58,7 +57,8 @@ makeUniqueName( wchar_t* buf, XP_U16 bufLen )
 {
     XP_U16 ii;
     for ( ii = 1; ii < 100; ++ii ) {
-        swprintf( buf, L"Untitled%d", ii );
+        int len = swprintf( buf, L"Untitled%d", ii );
+        XP_ASSERT( len < bufLen );
         if ( !ceFileExists( buf ) ) {
             break;
         }
@@ -70,14 +70,14 @@ makeUniqueName( wchar_t* buf, XP_U16 bufLen )
 static LRESULT CALLBACK
 SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
-    SaveGameNameState* state;
+    CeSaveGameNameState* state;
     XP_U16 wid;
     BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
 
-        state = (SaveGameNameState*)lParam;
+        state = (CeSaveGameNameState*)lParam;
         state->cancelled = XP_TRUE;
         state->inited = XP_FALSE;
 
@@ -85,11 +85,11 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         result = TRUE;
     } else {
-        state = (SaveGameNameState*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (CeSaveGameNameState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!state ) {
             if ( !state->inited ) {
-                (void)SetDlgItemText( hDlg, IDC_SVGN_EDIT, state->buf );
                 state->inited = XP_TRUE;
+                (void)SetDlgItemText( hDlg, IDC_SVGN_EDIT, state->buf );
             }
 
             switch (message) {
@@ -119,12 +119,12 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         }
     }
     return result;
-}
+} /* SaveNameDlg */
 
 XP_Bool
 ceConfirmUniqueName( CEAppGlobals* globals, wchar_t* buf, XP_U16 buflen )
 {
-    SaveGameNameState state;
+    CeSaveGameNameState state;
 
     LOG_FUNC();
 
@@ -141,21 +141,22 @@ ceConfirmUniqueName( CEAppGlobals* globals, wchar_t* buf, XP_U16 buflen )
     return !state.cancelled;
 } /* ceConfirmUniqueName */
 
-typedef struct SavedGamesState {
+typedef struct CeSavedGamesState {
     CEAppGlobals* globals;
     HWND hDlg;
     wchar_t* buf; 
     XP_U16 buflen;
     XP_S16 sel;
     wchar_t curName[128];
+    XP_U16 nItems;
 
 /*     wchar_t** names; */
 /*     XP_U16 nNamesUsed; */
 /*     XP_U16 nNamesAllocd; */
 
-    XP_Bool cancelled;
+    XP_Bool opened;
     XP_Bool inited;
-} SavedGamesState;
+} CeSavedGamesState;
 
 /* Probably belongs as a utility */
 static void
@@ -171,18 +172,26 @@ getCBText( HWND hDlg, XP_U16 id, XP_U16 sel, wchar_t* buf, XP_U16* lenp )
 } /* getCBText */
 
 static void
-setEditFromSel( SavedGamesState* state )
+setEditFromSel( CeSavedGamesState* XP_UNUSED(state) )
 {
-    wchar_t buf[64];
-    XP_U16 len = VSIZE(buf);
-    getCBText( state->hDlg, IDC_SVGM_GAMELIST, state->sel, buf, &len );
-    if ( len <= VSIZE(buf) ) {
-        (void)SetDlgItemText( state->hDlg, IDC_SVGM_EDIT, buf );
-    }
+/*     wchar_t buf[64]; */
+/*     XP_U16 len = VSIZE(buf); */
+/*     getCBText( state->hDlg, IDC_SVGM_GAMELIST, state->sel, buf, &len ); */
+/*     if ( len <= VSIZE(buf) ) { */
+/*         (void)SetDlgItemText( state->hDlg, IDC_SVGM_EDIT, buf ); */
+/*     } */
 } /*  */
 
 static void
-initSavedGamesData( SavedGamesState* state )
+setButtons( CeSavedGamesState* state ) 
+{
+    /* Open button disabled by default in case no games */
+    ceEnOrDisable( state->hDlg, IDC_SVGM_OPEN, state->nItems > 0 );
+/*     ceEnOrDisable( state->hDlg, IDC_SVGM_DEL, state->nItems > 0 ); */
+}
+
+static void
+initSavedGamesData( CeSavedGamesState* state )
 {
     HANDLE fileH;
     WIN32_FIND_DATA data;
@@ -208,6 +217,8 @@ initSavedGamesData( SavedGamesState* state )
         SendDlgItemMessage( state->hDlg, IDC_SVGM_GAMELIST, ADDSTRING,
                             0, (LPARAM)data.cFileName );
 
+        ++state->nItems;
+
         if ( !FindNextFile( fileH, &data ) ) {
             XP_ASSERT( GetLastError() == ERROR_NO_MORE_FILES );
             break;
@@ -218,29 +229,51 @@ initSavedGamesData( SavedGamesState* state )
     state->sel = curSel;
     setEditFromSel( state );
 
+    setButtons( state );
+
     LOG_RETURN_VOID();
 } /* initSavedGamesData */
+
+/* static void */
+/* deleteSelected( CeSavedGamesState* state ) */
+/* { */
+/*     wchar_t buf[128]; */
+/*     wchar_t path[128]; */
+/*     XP_U16 len = VSIZE(buf); */
+
+/*     /\* confirm first!!!! *\/ */
+
+/*     getCBText( state->hDlg, IDC_SVGM_GAMELIST, state->sel, buf, &len ); */
+/*     swprintf( path, DEFAULT_DIR_NAME L"\\%s.xwg", buf ); */
+/*     DeleteFile( path ); */
+
+/*     SendDlgItemMessage( state->hDlg, IDC_SVGM_GAMELIST, DELETESTRING, */
+/*                         state->sel, 0L ); */
+
+/*     --state->nItems; */
+
+/*     setButtons( state ); */
+/* } */
 
 static LRESULT CALLBACK
 SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
-    SavedGamesState* state;
+    CeSavedGamesState* state;
     XP_U16 wid;
     BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
 
-        state = (SavedGamesState*)lParam;
+        state = (CeSavedGamesState*)lParam;
         state->hDlg = hDlg;
-        state->cancelled = XP_TRUE;
         state->inited = XP_FALSE;
 
         ceDlgSetup( state->globals, hDlg );
 
         result = TRUE;
     } else {
-        state = (SavedGamesState*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (CeSavedGamesState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!state ) {
 
             if ( !state->inited ) {
@@ -278,25 +311,26 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     }
                     break;
 
-                case IDC_SVGM_DUP:
-                case IDC_SVGM_DEL:
-                case IDC_SVGM_CHANGE:
-                    notImpl( state->globals );
-                    break;
+/*                 case IDC_SVGM_DUP: */
+/*                 case IDC_SVGM_CHANGE: */
+/*                     notImpl( state->globals ); */
+/*                     break; */
+/*                 case IDC_SVGM_DEL: */
+/*                     deleteSelected( state ); */
+/*                     break; */
 
                 case IDC_SVGM_OPEN: {
                     wchar_t buf[128];
-                    XP_U16 len = sizeof(buf);
+                    XP_U16 len = VSIZE(buf);
                     getCBText( state->hDlg, IDC_SVGM_GAMELIST, state->sel, 
                                buf, &len );
                     swprintf( state->buf, DEFAULT_DIR_NAME L"\\%s.xwg", buf );
                     XP_LOGW( "returning", state->buf );
+                    state->opened = XP_TRUE;
                 }
                     /* fallthrough */
                 case IDOK:
-                    state->cancelled = XP_FALSE;
                     /* fallthrough */
-
                 case IDCANCEL:
                     EndDialog(hDlg, wid);
                     result = TRUE;
@@ -313,7 +347,7 @@ XP_Bool
 ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
                  wchar_t* buf, XP_U16 buflen )
 {
-    SavedGamesState state;
+    CeSavedGamesState state;
 
     LOG_FUNC();
 
@@ -341,5 +375,5 @@ ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
 
     XP_LOGW( __func__, buf );
 
-    return !state.cancelled;
+    return state.opened;
 } /*ceSavedGamesDlg  */
