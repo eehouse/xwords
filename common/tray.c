@@ -140,7 +140,7 @@ drawTray( BoardCtxt* board )
             }
 #endif
 
-            if ( (board->trayVisState != TRAY_HIDDEN) && dictionary != NULL ) {
+            if ( dictionary != NULL ) {
                 XP_Bool showFaces = board->trayVisState == TRAY_REVEALED;
                 Tile blank = dict_getBlankTile( dictionary );
 
