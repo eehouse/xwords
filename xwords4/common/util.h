@@ -105,7 +105,8 @@ typedef struct UtilVtable {
                                                 XP_PlayerAddr channelNo );
 #endif
     
-    XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, ModelCtxt* model,
+    XWBonusType (*m_util_getSquareBonus)( XW_UtilCtxt* uc, 
+                                          const ModelCtxt* model,
                                           XP_U16 col, XP_U16 row );
     void (*m_util_userError)( XW_UtilCtxt* uc, UtilErrID id );
 

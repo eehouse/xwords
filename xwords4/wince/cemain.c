@@ -92,7 +92,7 @@ static void ce_util_userError( XW_UtilCtxt* uc, UtilErrID id );
 static XP_Bool ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
                                   XWStreamCtxt* stream );
 static XWBonusType ce_util_getSquareBonus( XW_UtilCtxt* uc, 
-                                           ModelCtxt* model,
+                                           const ModelCtxt* model,
                                            XP_U16 col, XP_U16 row );
 static XP_S16 ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                                     XP_U16 playerNum,
@@ -2739,7 +2739,7 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 } /* ce_util_userQuery */
 
 static XWBonusType
-ce_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* XP_UNUSED(model),
+ce_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* XP_UNUSED(model),
                         XP_U16 col, XP_U16 row )
 {
     XP_U16 index;

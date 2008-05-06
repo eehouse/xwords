@@ -60,8 +60,8 @@ typedef XP_U32 CrossBits;
 typedef struct Crosscheck { CrossBits bits[2]; } Crosscheck;
 
 struct EngineCtxt {
-    ModelCtxt* model;
-    DictionaryCtxt* dict;
+    const ModelCtxt* model;
+    const DictionaryCtxt* dict;
     XW_UtilCtxt* util;
 
     Engine_rack rack;
@@ -99,7 +99,8 @@ struct EngineCtxt {
 static void findMovesOneRow( EngineCtxt* engine );
 static Tile localGetBoardTile( EngineCtxt* engine, XP_U16 col, 
                                XP_U16 row, XP_Bool substBlank );
-static array_edge* edge_with_tile( DictionaryCtxt* dict, array_edge* from, Tile tile );
+static array_edge* edge_with_tile( const DictionaryCtxt* dict, 
+                                   array_edge* from, Tile tile );
 static XP_Bool scoreQualifies( EngineCtxt* engine, XP_U16 score );
 static void findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor, 
                                 XP_U16 col, XP_U16 row ) ;
@@ -107,9 +108,9 @@ static void figureCrosschecks( EngineCtxt* engine, XP_U16 col,
                                XP_U16 row, XP_U16* scoreP,
                                Crosscheck* check );
 static XP_Bool isAnchorSquare( EngineCtxt* engine, XP_U16 col, XP_U16 row );
-static array_edge* follow( DictionaryCtxt* dict, array_edge* in );
-static array_edge* edge_from_tile( DictionaryCtxt* dict, array_edge* from, 
-                                   Tile tile );
+static array_edge* follow( const DictionaryCtxt* dict, array_edge* in );
+static array_edge* edge_from_tile( const DictionaryCtxt* dict, 
+                                   array_edge* from, Tile tile );
 static void leftPart( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength, 
                       array_edge* edge, XP_U16 limit, XP_U16 firstCol,
                       XP_U16 anchorCol, XP_U16 row );
@@ -379,8 +380,8 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
  * filled in in *newMove.
  */
 XP_Bool
-engine_findMove( EngineCtxt* engine, ModelCtxt* model, 
-                 DictionaryCtxt* dict, const Tile* tiles,
+engine_findMove( EngineCtxt* engine, const ModelCtxt* model, 
+                 const DictionaryCtxt* dict, const Tile* tiles,
                  XP_U16 nTiles, 
 #ifdef XWFEATURE_SEARCHLIMIT
                  BdHintLimits* searchLimits,
@@ -579,8 +580,8 @@ findMovesOneRow( EngineCtxt* engine )
 } /* findMovesOneRow */
 
 static XP_Bool
-lookup( DictionaryCtxt* dict, array_edge* edge, Tile* buf, XP_U16 tileIndex, 
-        XP_U16 length ) 
+lookup( const DictionaryCtxt* dict, array_edge* edge, Tile* buf, 
+        XP_U16 tileIndex, XP_U16 length ) 
 {
     while ( edge != NULL ) {
         Tile targetTile = buf[tileIndex];
@@ -611,7 +612,7 @@ figureCrosschecks( EngineCtxt* engine, XP_U16 x, XP_U16 y, XP_U16* scoreP,
     Tile tiles[MAX_COLS];
     XP_U16 tilesAfter;
     XP_U16 checkScore = 0;
-    DictionaryCtxt* dict = engine->dict;
+    const DictionaryCtxt* dict = engine->dict;
 
     if ( localGetBoardTile( engine, x, y, XP_FALSE ) == EMPTY_TILE ) {
 
@@ -802,7 +803,6 @@ findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor,
     array_edge* edge;
     array_edge* topEdge;
     Tile tiles[MAX_ROWS];
-    XP_S16 tileLength = 0;
 
     hiliteForAnchor( engine, col, row );
 
@@ -826,7 +826,7 @@ findMovesForAnchor( EngineCtxt* engine, XP_S16* prevAnchor,
             edge = consumeFromLeft( engine, topEdge, col, row );
         }
         DEBUG_ASSIGN(engine->curLimit, 0);
-        extendRight( engine, tiles, tileLength, edge,
+        extendRight( engine, tiles, 0, edge,
                      XP_FALSE, // can't accept without the anchor square
                      col-limit, col, row );
 
@@ -914,7 +914,7 @@ extendRight( EngineCtxt* engine, Tile* tiles, XP_U16 tileLength,
              XP_U16 firstCol, XP_U16 col, XP_U16 row )
 {
     Tile tile;
-    DictionaryCtxt* dict = engine->dict;
+    const DictionaryCtxt* dict = engine->dict;
 
     if ( col == engine->numCols ) { /* we're off the board */
         goto check_exit;
@@ -1208,7 +1208,7 @@ scoreQualifies( EngineCtxt* engine, XP_U16 score )
 } /* scoreQualifies */
 
 static array_edge*
-edge_with_tile( DictionaryCtxt* dict, array_edge* from, Tile tile ) 
+edge_with_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile ) 
 {
     for ( ; ; ) {
         Tile candidate = EDGETILE(dict,from);
@@ -1232,7 +1232,7 @@ edge_with_tile( DictionaryCtxt* dict, array_edge* from, Tile tile )
 } /* edge_with_tile */
 
 static unsigned long
-index_from( DictionaryCtxt* dict, array_edge* p_edge ) 
+index_from( const DictionaryCtxt* dict, array_edge* p_edge ) 
 {
     unsigned long result;
 
@@ -1260,7 +1260,7 @@ index_from( DictionaryCtxt* dict, array_edge* p_edge )
 } /* index_from */
 
 static array_edge*
-follow( DictionaryCtxt* dict, array_edge* in ) 
+follow( const DictionaryCtxt* dict, array_edge* in ) 
 {
     XP_U32 index = index_from( dict, in );
     array_edge* result = index > 0? 
@@ -1269,7 +1269,7 @@ follow( DictionaryCtxt* dict, array_edge* in )
 } /* follow */
 
 static array_edge*
-edge_from_tile( DictionaryCtxt* dict, array_edge* from, Tile tile ) 
+edge_from_tile( const DictionaryCtxt* dict, array_edge* from, Tile tile ) 
 {
     array_edge* edge = edge_with_tile( dict, from, tile );
     if ( edge != NULL ) {

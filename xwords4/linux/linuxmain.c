@@ -625,7 +625,7 @@ linux_util_makeEmptyDict( XW_UtilCtxt* uctx )
 
 static XWBonusType
 linux_util_getSquareBonus( XW_UtilCtxt* XP_UNUSED(uc), 
-                           ModelCtxt* XP_UNUSED(model),
+                           const ModelCtxt* XP_UNUSED(model),
                            XP_U16 col, XP_U16 row )
 {
     XP_U16 index;
