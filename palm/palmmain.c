@@ -104,7 +104,7 @@ static void palm_util_userError( XW_UtilCtxt* uc, UtilErrID id );
 static XP_Bool palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
                                     XWStreamCtxt* stream );
 static XWBonusType palm_util_getSquareBonus( XW_UtilCtxt* uc, 
-                                             ModelCtxt* model,
+                                             const ModelCtxt* model,
                                              XP_U16 col, XP_U16 row );
 static XP_S16 palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
                                       XP_U16 playerNum, const XP_UCHAR4* texts, 
@@ -3721,7 +3721,7 @@ palm_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 } /* palm_util_userQuery */
 
 static XWBonusType
-palm_util_getSquareBonus( XW_UtilCtxt* uc, ModelCtxt* model,
+palm_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
                           XP_U16 col, XP_U16 row )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;

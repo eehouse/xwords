@@ -49,8 +49,8 @@ void engine_reset( EngineCtxt* ctxt );
 void engine_destroy( EngineCtxt* ctxt );
 
 #define NO_SCORE_LIMIT 10000	/* for targetScore */
-XP_Bool engine_findMove( EngineCtxt* ctxt, ModelCtxt* model, 
-                         DictionaryCtxt* dict, const Tile* tiles, 
+XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, 
+                         const DictionaryCtxt* dict, const Tile* tiles, 
                          XP_U16 nTiles, 
 #ifdef XWFEATURE_SEARCHLIMIT
                          BdHintLimits* boardLimits,

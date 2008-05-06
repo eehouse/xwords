@@ -110,7 +110,7 @@ void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 void model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict );
 DictionaryCtxt* model_getDictionary( ModelCtxt* model );
 
-XP_Bool model_getTile( ModelCtxt* model, XP_U16 col, XP_U16 row,
+XP_Bool model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
                        XP_Bool getPending, XP_S16 turn,
                        Tile* tile, XP_Bool* isBlank, 
                        XP_Bool* isPending, XP_Bool* isRecent );
@@ -148,8 +148,8 @@ XP_S16 model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile );
 
 /* void model_setTile( ModelCtxt* model, XP_U16 col, XP_U16 row,  */
 /* 		    Tile tile, XP_Bool isBlank ); */
-XP_U16 model_numRows( ModelCtxt* model );
-XP_U16 model_numCols( ModelCtxt* model );
+XP_U16 model_numRows( const ModelCtxt* model );
+XP_U16 model_numCols( const ModelCtxt* model );
 
 /* XP_U16 model_numTilesCurrentTray( ModelCtxt* model ); */
 /* Tile model_currentTrayTile( ModelCtxt* model, XP_U16 index ); */
@@ -233,7 +233,7 @@ void model_figureFinalScores( ModelCtxt* model, XP_S16* scores,
                               XP_S16* tilePenalties );
 
 /* figureMoveScore is meant only for the engine's use */
-XP_U16 figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, 
+XP_U16 figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo, 
                         EngineCtxt* engine, XWStreamCtxt* stream, 
                         WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord );
 

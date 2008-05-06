@@ -50,7 +50,8 @@ static void notifyBoardListeners( ModelCtxt* model, XP_U16 turn,
                                   XP_U16 col, XP_U16 row, XP_Bool added );
 static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, 
                                  XP_S16 index1, XP_S16 index2 );
-static CellTile getModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row );
+static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col, 
+                                 XP_U16 row );
 static void setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                              CellTile tile );
 static void assignPlayerTiles( ModelCtxt* model, XP_S16 turn, 
@@ -280,12 +281,12 @@ model_getDictionary( ModelCtxt* model )
 } /* model_getDictionary */
 
 static XP_Bool
-getPendingTileFor( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
+getPendingTileFor( const ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
                    CellTile* cellTile )
 {
     XP_Bool found = XP_FALSE;
-    PlayerCtxt* player;
-    PendingTile* pendings;
+    const PlayerCtxt* player;
+    const PendingTile* pendings;
     XP_U16 i;
 
     player = &model->players[turn];
@@ -305,8 +306,8 @@ getPendingTileFor( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
 } /* getPendingTileFor */
 
 XP_Bool
-model_getTile( ModelCtxt* model, XP_U16 col, XP_U16 row, XP_Bool getPending,
-               XP_S16 turn, Tile* tileP, XP_Bool* isBlank, 
+model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
+               XP_Bool getPending, XP_S16 turn, Tile* tileP, XP_Bool* isBlank, 
                XP_Bool* pendingP, XP_Bool* recentP )
 {
     CellTile cellTile = getModelTileRaw( model, col, row );
@@ -456,7 +457,7 @@ setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, CellTile tile )
 } /* model_setTile */
 
 static CellTile 
-getModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row )
+getModelTileRaw( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
     XP_ASSERT( col < MAX_COLS );
     XP_ASSERT( row < MAX_ROWS );
@@ -1378,13 +1379,13 @@ model_getNumTilesTotal( ModelCtxt* model, XP_S16 turn )
 } /* model_getNumTilesTotal */
 
 XP_U16
-model_numRows( ModelCtxt* model )
+model_numRows( const ModelCtxt* model )
 {
     return model->nRows;
 } /* model_numRows */
 
 XP_U16
-model_numCols( ModelCtxt* model )
+model_numCols( const ModelCtxt* model )
 {
     return model->nCols;
 } /* model_numCols */

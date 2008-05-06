@@ -31,10 +31,11 @@ extern "C" {
 
 /****************************** prototypes ******************************/
 static XP_Bool isLegalMove( ModelCtxt* model, MoveInfo* moves, XP_Bool silent );
-static XP_U16 word_multiplier( ModelCtxt* model, XP_U16 col, XP_U16 row );
-static XP_U16 find_end( ModelCtxt* model, XP_U16 col, XP_U16 row, 
+static XP_U16 word_multiplier( const ModelCtxt* model, 
+                               XP_U16 col, XP_U16 row );
+static XP_U16 find_end( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
                         XP_Bool isHorizontal );
-static XP_U16 find_start( ModelCtxt* model, XP_U16 col, XP_U16 row, 
+static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
                           XP_Bool isHorizontal );
 static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn, 
                               EngineCtxt* engine, XWStreamCtxt* stream, 
@@ -43,7 +44,7 @@ static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn,
 /* 			       EngineCtxt* engine, */
 /* 			       XP_Bool silent, short moveMultiplier, */
 /* 			       WordNotifierInfo* notifyInfo ); */
-static XP_U16 scoreWord( ModelCtxt* model, MoveInfo* movei,
+static XP_U16 scoreWord( const ModelCtxt* model, MoveInfo* movei,
                          EngineCtxt* engine, XWStreamCtxt* stream, 
                          WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord );
 
@@ -69,7 +70,7 @@ static void wordScoreFormatterFinish( WordScoreFormatter* fmtr, Tile* word,
                                       XWStreamCtxt* stream, XP_UCHAR* mainWord );
 static void formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore, 
                              XP_U16 moveMultiplier );
-static void formatSummary( XWStreamCtxt* stream, ModelCtxt* model, 
+static void formatSummary( XWStreamCtxt* stream, const ModelCtxt* model, 
                            XP_U16 score );
 
 
@@ -313,7 +314,7 @@ normalizeMoves( ModelCtxt* model, XP_S16 turn, XP_Bool isHorizontal,
 } /* normalizeMoves */
 
 static XP_Bool
-modelIsEmptyAt( ModelCtxt* model, XP_U16 col, XP_U16 row )
+modelIsEmptyAt( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
     Tile tile;
     XP_Bool ignore;
@@ -443,9 +444,9 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
 } /* isLegalMove */
 
 XP_U16
-figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
-                 XWStreamCtxt* stream, WordNotifierInfo* notifyInfo,
-                 XP_UCHAR* mainWord )
+figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo, 
+                 EngineCtxt* engine, XWStreamCtxt* stream, 
+                 WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord )
 {
     XP_U16 col, row;
     XP_U16* incr;
@@ -527,7 +528,7 @@ figureMoveScore( ModelCtxt* model, MoveInfo* moveInfo, EngineCtxt* engine,
 } /* figureMoveScore */
 
 static XP_U16
-word_multiplier( ModelCtxt* model, XP_U16 col, XP_U16 row )
+word_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
     XWBonusType bonus = util_getSquareBonus( model->vol.util, model, col, row );
     switch ( bonus ) {
@@ -541,7 +542,7 @@ word_multiplier( ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* word_multiplier */
 
 static XP_U16
-tile_multiplier( ModelCtxt* model, XP_U16 col, XP_U16 row )
+tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
     XWBonusType bonus = util_getSquareBonus( model->vol.util, model,
                                              col, row );
@@ -556,7 +557,7 @@ tile_multiplier( ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* tile_multiplier */
 
 static XP_U16
-scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
+scoreWord( const ModelCtxt* model, MoveInfo* movei,	/* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
            WordNotifierInfo* notifyInfo,
@@ -703,7 +704,8 @@ scoreWord( ModelCtxt* model, MoveInfo* movei,	/* new tiles */
 } /* scoreWord */
 
 static XP_U16
-find_start( ModelCtxt* model, XP_U16 col, XP_U16 row, XP_Bool isHorizontal )
+find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
+            XP_Bool isHorizontal )
 {
     XP_U16* incr = isHorizontal? &col: &row;
 
@@ -720,7 +722,8 @@ find_start( ModelCtxt* model, XP_U16 col, XP_U16 row, XP_Bool isHorizontal )
 } /* find_start */
 
 static XP_U16
-find_end( ModelCtxt* model, XP_U16 col, XP_U16 row, XP_Bool isHorizontal ) 
+find_end( const ModelCtxt* model, XP_U16 col, XP_U16 row, 
+          XP_Bool isHorizontal ) 
 {
     XP_U16* incr = isHorizontal? &col: &row;
     XP_U16 limit = isHorizontal? MAX_COLS-1:MAX_ROWS-1;
@@ -835,7 +838,7 @@ formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore,
 } /* formatWordScore */
 
 static void
-formatSummary( XWStreamCtxt* stream, ModelCtxt* model, XP_U16 score )
+formatSummary( XWStreamCtxt* stream, const ModelCtxt* model, XP_U16 score )
 {
     XP_UCHAR buf[60];
     XP_SNPRINTF(buf, sizeof(buf),
