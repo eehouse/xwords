@@ -294,22 +294,37 @@ static XP_Bool
 mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
 {
     XP_Bool success = XP_FALSE;
-    SHMENUBARINFO mbi;
     XP_Bool fullScreen = XP_TRUE; /* probably want this TRUE for
                                      small-screened smartphones only. */
-    if ( fullScreen ) {
+
+    if ( IS_SMARTPHONE(globals) ) {
+        SHINITDLGINFO info;
+        XP_MEMSET( &info, 0, sizeof(info) );
+        info.dwMask = SHIDIM_FLAGS;
+        info.dwFlags = SHIDIF_SIZEDLGFULLSCREEN;
+        info.hDlg = hDlg;
+        success = SHInitDialog( &info );
+        if ( !success ) {
+            XP_LOGF( "SHInitDialog failed: %ld", GetLastError() );
+        }
+    } else if ( fullScreen ) {
         ceSizeIfFullscreen( globals, hDlg );
+        success = XP_TRUE;
     }
 
-    XP_MEMSET( &mbi, 0, sizeof(mbi) );
-    mbi.cbSize = sizeof(mbi);
-    mbi.hwndParent = hDlg;
-    mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
-    mbi.hInstRes = globals->hInst;
-    success = SHCreateMenuBar( &mbi );
-    if ( !success ) {
-        XP_LOGF( "SHCreateMenuBar failed: %ld", GetLastError() );
+    if ( success ) {
+        SHMENUBARINFO mbi;
+        XP_MEMSET( &mbi, 0, sizeof(mbi) );
+        mbi.cbSize = sizeof(mbi);
+        mbi.hwndParent = hDlg;
+        mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
+        mbi.hInstRes = globals->hInst;
+        success = SHCreateMenuBar( &mbi );
+        if ( !success ) {
+            XP_LOGF( "SHCreateMenuBar failed: %ld", GetLastError() );
+        }
     }
+
     return success;
 } /* mkFullscreenWithSoftkeys */
 #endif
@@ -414,36 +429,40 @@ adjustScrollPos( HWND hDlg, XP_S16 vertChange )
     LOG_RETURN_VOID();
 } /* adjustScrollPos */
 
-void
-ceDoDlgScroll( HWND hDlg, WPARAM wParam )
+XP_Bool
+ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam )
 {
-    XP_S16 vertChange = 0;
+    XP_Bool handled = !IS_SMARTPHONE(globals);
+    if ( handled ) {
+        XP_S16 vertChange = 0;
     
-    switch ( LOWORD(wParam) ) {
+        switch ( LOWORD(wParam) ) {
 
-    case SB_LINEUP: // Scrolls one line up 
-        vertChange = -1;
-        break;
-    case SB_PAGEUP: // 
-        vertChange = -10;
-        break;
+        case SB_LINEUP: // Scrolls one line up 
+            vertChange = -1;
+            break;
+        case SB_PAGEUP: // 
+            vertChange = -10;
+            break;
 
-    case SB_LINEDOWN: // Scrolls one line down 
-        vertChange = 1;
-        break;
-    case SB_PAGEDOWN: // Scrolls one page down 
-        vertChange = 10;
-        break;
+        case SB_LINEDOWN: // Scrolls one line down 
+            vertChange = 1;
+            break;
+        case SB_PAGEDOWN: // Scrolls one page down 
+            vertChange = 10;
+            break;
 
-    case SB_THUMBTRACK:     /* still dragging; don't redraw */
-    case SB_THUMBPOSITION:
-        setScrollPos( hDlg, HIWORD(wParam) );
-        break;
+        case SB_THUMBTRACK:     /* still dragging; don't redraw */
+        case SB_THUMBPOSITION:
+            setScrollPos( hDlg, HIWORD(wParam) );
+            break;
+        }
+
+        if ( 0 != vertChange ) {
+            adjustScrollPos( hDlg, vertChange );
+        }
     }
-
-    if ( 0 != vertChange ) {
-        adjustScrollPos( hDlg, vertChange );
-    }
+    return handled;
 } /* ceDoDlgScroll */
 
 
@@ -462,7 +481,7 @@ ceDoDlgScroll( HWND hDlg, WPARAM wParam )
            style receives the focus.  */
 
 void
-ceDoDlgFocusScroll( HWND hDlg, WPARAM wParam, LPARAM lParam )
+ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam, LPARAM lParam )
 {
     /* Scroll the current focus owner into view.
      *
@@ -480,39 +499,41 @@ ceDoDlgFocusScroll( HWND hDlg, WPARAM wParam, LPARAM lParam )
      * scrolling to see how to fix it.
      */
 
-    HWND nextCtrl;
-    if ( LOWORD(lParam) ) {
-        nextCtrl = (HWND)wParam;
-    } else {
-        BOOL previous = wParam != 0;
-        nextCtrl = GetNextDlgTabItem( hDlg, GetFocus(), previous );
-    }
+    if ( !IS_SMARTPHONE(globals) ) {
+        HWND nextCtrl;
+        if ( LOWORD(lParam) ) {
+            nextCtrl = (HWND)wParam;
+        } else {
+            BOOL previous = wParam != 0;
+            nextCtrl = GetNextDlgTabItem( hDlg, GetFocus(), previous );
+        }
 
-    if ( !!nextCtrl ) {
-        RECT rect;
-        XP_U16 dlgHeight, ctrlHeight, dlgTop;
-        XP_S16 ctrlPos;
+        if ( !!nextCtrl ) {
+            RECT rect;
+            XP_U16 dlgHeight, ctrlHeight, dlgTop;
+            XP_S16 ctrlPos;
 
-        GetClientRect( hDlg, &rect );
-        dlgHeight = rect.bottom - rect.top;
-        XP_LOGF( "dlgHeight: %d", dlgHeight );
+            GetClientRect( hDlg, &rect );
+            dlgHeight = rect.bottom - rect.top;
+            XP_LOGF( "dlgHeight: %d", dlgHeight );
 
-        GetWindowRect( hDlg, &rect );
-        dlgTop = rect.top;
+            GetWindowRect( hDlg, &rect );
+            dlgTop = rect.top;
 
-        GetWindowRect( nextCtrl, &rect );
-        ctrlPos = rect.top - dlgTop - TITLE_HT;
-        ctrlHeight = rect.bottom - rect.top;
+            GetWindowRect( nextCtrl, &rect );
+            ctrlPos = rect.top - dlgTop - TITLE_HT;
+            ctrlHeight = rect.bottom - rect.top;
 
-        XP_LOGF( "%p: ctrlPos is %d; height is %d", 
-                 nextCtrl, ctrlPos, ctrlHeight );
+            XP_LOGF( "%p: ctrlPos is %d; height is %d", 
+                     nextCtrl, ctrlPos, ctrlHeight );
 
-        if ( ctrlPos < 0 ) {
-            XP_LOGF( "need to scroll it DOWN into view" );
-            adjustScrollPos( hDlg, ctrlPos );
-        } else if ( (ctrlPos + ctrlHeight) > dlgHeight ) {
-            XP_LOGF( "need to scroll it UP into view" );
-            setScrollPos( hDlg, ctrlPos - ctrlHeight );
+            if ( ctrlPos < 0 ) {
+                XP_LOGF( "need to scroll it DOWN into view" );
+                adjustScrollPos( hDlg, ctrlPos );
+            } else if ( (ctrlPos + ctrlHeight) > dlgHeight ) {
+                XP_LOGF( "need to scroll it UP into view" );
+                setScrollPos( hDlg, ctrlPos - ctrlHeight );
+            }
         }
     }
 } /* ceDoDlgFocusScroll */

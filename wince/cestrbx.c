@@ -90,9 +90,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             switch (message) {
 
             case WM_VSCROLL:
-                if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( hDlg, wParam );
-                }
+                ceDoDlgScroll( globals, hDlg, wParam );
                 break;
 
             case WM_COMMAND:                
