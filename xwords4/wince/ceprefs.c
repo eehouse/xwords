@@ -272,15 +272,11 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
             switch (message) {
             case WM_VSCROLL:
-                if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( hDlg, wParam );
-                }
+                ceDoDlgScroll( globals, hDlg, wParam );
                 break;
 
             case WM_NEXTDLGCTL:
-                if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgFocusScroll( hDlg, wParam, lParam );
-                }
+                ceDoDlgFocusScroll( globals, hDlg, wParam, lParam );
                 break;
 
             case WM_COMMAND:

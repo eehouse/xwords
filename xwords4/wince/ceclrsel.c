@@ -181,9 +181,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         switch (message) {
 
         case WM_VSCROLL:
-            if ( !IS_SMARTPHONE(eState->globals) ) {
-                ceDoDlgScroll( hDlg, wParam );
-            }
+            ceDoDlgScroll( eState->globals, hDlg, wParam );
             break;
 
         case WM_PAINT: {
@@ -424,13 +422,11 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             switch (message) {
 
             case WM_VSCROLL:
-                if ( !IS_SMARTPHONE(state->globals) ) {
-                    ceDoDlgScroll( hDlg, wParam );
-                }
+                ceDoDlgScroll( state->globals, hDlg, wParam );
                 break;
 
             case WM_DRAWITEM:   /* passed when button has BS_OWNERDRAW style */
-                ceDoDlgFocusScroll( hDlg, 
+                ceDoDlgFocusScroll( state->globals, hDlg, 
                       /* Fake out ceDoDlgFocusScroll, passing ctrl itself */
                       (WPARAM)((DRAWITEMSTRUCT*)lParam)->hwndItem, 
                       (LPARAM)TRUE );

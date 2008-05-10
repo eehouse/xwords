@@ -284,15 +284,11 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             switch (message) {
 
             case WM_VSCROLL:
-                if ( !IS_SMARTPHONE(state->globals) ) {
-                    ceDoDlgScroll( hDlg, wParam );
-                }
+                ceDoDlgScroll( state->globals, hDlg, wParam );
                 break;
 
             case WM_NEXTDLGCTL:
-                if ( !IS_SMARTPHONE(state->globals) ) {
-                    ceDoDlgFocusScroll( hDlg, wParam, lParam );
-                }
+                ceDoDlgFocusScroll( state->globals, hDlg, wParam, lParam );
                 break;
 
             case WM_COMMAND:

@@ -50,8 +50,9 @@ void ceDlgSetup( CEAppGlobals* globals, HWND hDlg );
 XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
 void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
-void ceDoDlgScroll( HWND hDlg, WPARAM wParam );
-void ceDoDlgFocusScroll( HWND hDlg, WPARAM wParam, LPARAM lParam );
+XP_Bool ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam );
+void ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, 
+                         WPARAM wParam, LPARAM lParam );
 #ifdef _WIN32_WCE
 void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
 #else

@@ -523,17 +523,12 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             switch (message) {
 
             case WM_VSCROLL:
-                if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( hDlg, wParam );
-                    result = TRUE;
-                }
+                result = ceDoDlgScroll( globals, hDlg, wParam );
                 break;
 
                 /* WM_NEXTDLGCTL is worthless; prev obj still has focus */
             case WM_NEXTDLGCTL:
-                if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgFocusScroll( hDlg, wParam, lParam );
-                }
+                ceDoDlgFocusScroll( globals, hDlg, wParam, lParam );
                 break;
 
 #ifdef OWNERDRAW_JUGGLE
