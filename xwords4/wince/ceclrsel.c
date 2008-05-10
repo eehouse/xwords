@@ -31,26 +31,27 @@
 typedef struct ClrEditDlgState {
     CEAppGlobals* globals;
 
-    RECT clrRect;
     HWND parent;
+    HWND sampleButton;
     XP_U16 labelID;
 
-    XP_U8 r;
-    XP_U8 b;
-    XP_U8 g;
+    XP_U8 red;
+    XP_U8 green;
+    XP_U8 blue;
 
     XP_Bool inited;
     XP_Bool cancelled;
 } ClrEditDlgState;
 
 static void
-drawColorRect( ClrEditDlgState* eState, HDC hdc )
+colorButton( DRAWITEMSTRUCT* dis, HBRUSH brush )
 {
-    COLORREF ref = RGB( eState->r, eState->g, eState->b );
-    HBRUSH brush = CreateSolidBrush( ref );
-    FillRect( hdc, &eState->clrRect, brush );
-    DeleteObject( brush );
-} /* drawColorRect */
+    RECT rect = dis->rcItem;
+
+    Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
+    InsetRect( &rect, 1, 1 );
+    FillRect( dis->hDC, &rect, brush );
+}
 
 static void
 initEditAndSlider( HWND hDlg, XP_U16 sliderID, XP_U8 val )
@@ -65,16 +66,9 @@ initEditAndSlider( HWND hDlg, XP_U16 sliderID, XP_U8 val )
 static void
 initChooseColor( ClrEditDlgState* eState, HWND hDlg )
 {
-    eState->clrRect.left = 162;
-    eState->clrRect.top = 5;
-    eState->clrRect.right = 193;
-    eState->clrRect.bottom = 90;
-
-    InvalidateRect( hDlg, &eState->clrRect, FALSE );
-
-    initEditAndSlider( hDlg, CLREDT_SLIDER1, eState->r );
-    initEditAndSlider( hDlg, CLREDT_SLIDER2, eState->g );
-    initEditAndSlider( hDlg, CLREDT_SLIDER3, eState->b );
+    initEditAndSlider( hDlg, CLREDT_SLIDER1, eState->red );
+    initEditAndSlider( hDlg, CLREDT_SLIDER2, eState->green );
+    initEditAndSlider( hDlg, CLREDT_SLIDER3, eState->blue );
 } /* initChooseColor */
 
 static XP_U8*
@@ -82,11 +76,11 @@ colorForSlider( ClrEditDlgState* eState, XP_U16 sliderID )
 {
     switch( sliderID ) {
     case CLREDT_SLIDER1:
-        return &eState->r;
+        return &eState->red;
     case CLREDT_SLIDER2:
-        return &eState->g;
+        return &eState->green;
     case CLREDT_SLIDER3:
-        return &eState->b;
+        return &eState->blue;
     default:
         XP_LOGF( "huh???" );
         return NULL;
@@ -104,7 +98,7 @@ updateForSlider( HWND hDlg, ClrEditDlgState* eState, XP_U16 sliderID )
 
         ceSetDlgItemNum( hDlg, sliderID+1, (XP_S32)newColor );
 
-        InvalidateRect( hDlg, &eState->clrRect, FALSE );
+        InvalidateRect( eState->sampleButton, NULL, TRUE /* erase */ );
     }
 } /* updateForSlider */
 
@@ -131,9 +125,18 @@ updateForField( HWND hDlg, ClrEditDlgState* eState, XP_U16 fieldID )
 
         SendDlgItemMessage( hDlg, fieldID-1, TBM_SETPOS, TRUE, 
                             (long)newColor );
-        InvalidateRect( hDlg, &eState->clrRect, FALSE );
+        InvalidateRect( eState->sampleButton, NULL, FALSE );
     }
 } /* updateForField */
+
+static void
+colorButtonFromState( ClrEditDlgState* eState, DRAWITEMSTRUCT* dis )
+{
+    COLORREF ref = RGB( eState->red, eState->green, eState->blue );
+    HBRUSH brush = CreateSolidBrush( ref );
+    colorButton( dis, brush );
+    DeleteObject( brush );
+}
 
 LRESULT CALLBACK
 EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
@@ -163,6 +166,9 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         swprintf( buf, L"Edit color for %s", label );
         SendMessage( hDlg, WM_SETTEXT, 0, (LPARAM)buf );
 
+        eState->sampleButton = GetDlgItem( hDlg, CLSAMPLE_BUTTON_ID );
+        EnableWindow( eState->sampleButton, FALSE );
+
         return TRUE;
     } else {
         eState = (ClrEditDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
@@ -175,7 +181,6 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                initChooseColor call below */
             eState->inited = XP_TRUE;
             initChooseColor( eState, hDlg );
-            XP_LOGF( "initChooseColor done" );
         }
 
         switch (message) {
@@ -184,12 +189,9 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             ceDoDlgScroll( eState->globals, hDlg, wParam );
             break;
 
-        case WM_PAINT: {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint( hDlg, &ps );
-            drawColorRect( eState, hdc );
-            EndPaint( hDlg, &ps );
-        }
+        case WM_DRAWITEM:
+            colorButtonFromState( eState, (DRAWITEMSTRUCT*)lParam );
+            return TRUE;
             break;
 
         case WM_NOTIFY:
@@ -240,9 +242,9 @@ myChooseColor( CEAppGlobals* globals, HWND parent, XP_U16 labelID,
 
     XP_MEMSET( &state, 0, sizeof(state) );
     state.globals = globals;
-    state.r = GetRValue(*cref);
-    state.g = GetGValue(*cref);
-    state.b = GetBValue(*cref);
+    state.red = GetRValue(*cref);
+    state.green = GetGValue(*cref);
+    state.blue = GetBValue(*cref);
     state.labelID = labelID;
     state.parent = parent;
 
@@ -254,7 +256,7 @@ myChooseColor( CEAppGlobals* globals, HWND parent, XP_U16 labelID,
     XP_LOGF( "DialogBoxParam=>%d", result );
 
     if ( !state.cancelled ) {
-        *cref = RGB( state.r, state.g, state.b );
+        *cref = RGB( state.red, state.green, state.blue );
     }
         
     return !state.cancelled;
@@ -364,23 +366,13 @@ wrapChooseColor( ColorsDlgState* cState, XP_U16 button )
     }
 } /* wrapChooseColor */
 
-/* I'd prefer to use normal buttons, letting the OS draw them except for
- * their background color, but MS docs don't seem to allow any way to do
- * that.  I'm either totally on my own drawing the button or they're all in
- * the same color and so useless.  So they're just rects with a black outer
- * rect to show focus.
- */
 static void
 ceDrawColorButton( ColorsDlgState* cState, DRAWITEMSTRUCT* dis )
 {
     HBRUSH brush = brushForButton( cState, dis->hwndItem );
     XP_ASSERT( !!brush );
     
-    RECT rect = dis->rcItem;
-
-    Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
-    InsetRect( &rect, 1, 1 );
-    FillRect( dis->hDC, &rect, brush );
+    colorButton( dis, brush );
 } /* ceDrawColorButton */
 
 LRESULT CALLBACK

@@ -711,58 +711,57 @@ END
 //
 #ifdef MY_COLOR_SEL
 
-# define CLRELABEL_COL 3
-# define CLREEDIT_COL  28
-# define CLRESLIDER_COL 45
 # define CLRE_LAB_WIDTH 22
+# define CLEDIT_WIDTH 18
+# define CLSLIDER_WIDTH 30
+# define CLSAMPLE_WIDTH 15
+
+# define CLRELABEL_COL 3
+# define CLREEDIT_COL  (CLRELABEL_COL+CLRE_LAB_WIDTH+2)
+# define CLRESLIDER_COL (CLREEDIT_COL+CLEDIT_WIDTH+3)
+# define CLSAMPLE_COL (CLRESLIDER_COL+CLSLIDER_WIDTH+5)
 # define CLRE_LAB_HT    12
 # define CLREDIT_ROW_1 5
 # define CLREDIT_ROW_2 21
 # define CLREDIT_ROW_3 37
-# define SLIDER_WIDTH 46
-#define CLRE_WIDTH 112
-#define CLRE_OK_LEFT    ((CLRE_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
-#define CLRE_CANCEL_LEFT   ((CLRE_WIDTH/2)+10)
-#ifdef _WIN32_WCE
-# define COLOREDITDLG_HT 56
-#else
-# define COLOREDITDLG_HT 72
-#endif
+# define CLRE_WIDTH (CLSAMPLE_COL+CLSAMPLE_WIDTH+5)
+# define CLRE_OK_LEFT    ((CLRE_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
+# define CLRE_CANCEL_LEFT   ((CLRE_WIDTH/2)+10)
+# ifdef _WIN32_WCE
+#  define COLOREDITDLG_HT 56
+# else
+#  define COLOREDITDLG_HT 72
+# endif
 
-IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 0, CLRE_WIDTH, 72
+# define COLOR_EDIT_LINE(txt,row,labelId,editId,sliderId)    \
+    LTEXT           txt,labelId,CLRELABEL_COL,row,           \
+                    CLRE_LAB_WIDTH,CLRE_LAB_HT               \
+    EDITTEXT        editId,CLREEDIT_COL,row,CLEDIT_WIDTH,12, \
+                    ES_AUTOHSCROLL | ES_NUMBER               \
+    CONTROL         "",sliderId,"msctls_trackbar32",         \
+                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,         \
+                    CLRESLIDER_COL,row,CLSLIDER_WIDTH,12
+
+IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 0, CLRE_WIDTH, COLOREDITDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION ""                      /* set by code */
 FONT 8, "System"
 BEGIN
-    LTEXT           "Red:",RED_LABEL,CLRELABEL_COL,CLREDIT_ROW_1,
-                    CLRE_LAB_WIDTH,CLRE_LAB_HT
-    EDITTEXT        RED_EDIT,CLREEDIT_COL,CLREDIT_ROW_1,18,12,
-                    ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",CLREDT_SLIDER1,"msctls_trackbar32",
-                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
-                    CLRESLIDER_COL,CLREDIT_ROW_1,SLIDER_WIDTH,15
+    COLOR_EDIT_LINE("Red:", CLREDIT_ROW_1, RED_LABEL, RED_EDIT, CLREDT_SLIDER1 )
+    COLOR_EDIT_LINE("Green:", CLREDIT_ROW_2, GREEN_LABEL, GREEN_EDIT, CLREDT_SLIDER2 )
+    COLOR_EDIT_LINE("Blue:", CLREDIT_ROW_3, BLUE_LABEL, BLUE_EDIT, CLREDT_SLIDER3 )
 
-    LTEXT           "Green:",GREEN_LABEL,CLRELABEL_COL,CLREDIT_ROW_2,
-                    CLRE_LAB_WIDTH,CLRE_LAB_HT
-    EDITTEXT        GREEN_EDIT,CLREEDIT_COL,CLREDIT_ROW_2,18,12,
-                    ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",CLREDT_SLIDER2,"msctls_trackbar32",
-                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
-                    CLRESLIDER_COL,CLREDIT_ROW_2,SLIDER_WIDTH,15
+    /* See hack alert above.  Bogus owner-draw button seems the only way to get a sample
+       color rect into the dialog. */
+    PUSHBUTTON       "",CLSAMPLE_BUTTON_ID,CLSAMPLE_COL,CLREDIT_ROW_1,
+                     CLSAMPLE_WIDTH,CLREDIT_ROW_3-CLREDIT_ROW_1+CLRE_LAB_HT,BS_OWNERDRAW
 
-    LTEXT           "Blue:",BLUE_LABEL,CLRELABEL_COL,CLREDIT_ROW_3,
-                    CLRE_LAB_WIDTH,CLRE_LAB_HT
-    EDITTEXT        BLUE_EDIT,CLREEDIT_COL,CLREDIT_ROW_3,18,12,
-                    ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",CLREDT_SLIDER3,"msctls_trackbar32",
-                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,
-                    CLRESLIDER_COL,CLREDIT_ROW_3,SLIDER_WIDTH,15
-#ifndef _WIN32_WCE
+# ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,CLRE_OK_LEFT,56,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
     PUSHBUTTON      "Cancel",IDCANCEL,CLRE_CANCEL_LEFT,56,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
-#endif
+# endif
 END
 
 #endif

@@ -141,6 +141,7 @@
 # define RED_LABEL                      1097
 # define GREEN_LABEL                    1098
 # define BLUE_LABEL                     1099
+# define CLSAMPLE_BUTTON_ID             1123
 #endif // MY_COLOR_SEL
 
 #define HC_MIN_COMBO                    1100
@@ -240,7 +241,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40029
-#define _APS_NEXT_CONTROL_VALUE         1123
+#define _APS_NEXT_CONTROL_VALUE         1124
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
