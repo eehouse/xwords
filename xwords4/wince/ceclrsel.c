@@ -26,6 +26,8 @@
 #include "cedebug.h"
 #include "debhacks.h"
 
+static void colorButton( DRAWITEMSTRUCT* dis, HBRUSH brush );
+
 #ifdef MY_COLOR_SEL
 
 typedef struct ClrEditDlgState {
@@ -42,16 +44,6 @@ typedef struct ClrEditDlgState {
     XP_Bool inited;
     XP_Bool cancelled;
 } ClrEditDlgState;
-
-static void
-colorButton( DRAWITEMSTRUCT* dis, HBRUSH brush )
-{
-    RECT rect = dis->rcItem;
-
-    Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
-    InsetRect( &rect, 1, 1 );
-    FillRect( dis->hDC, &rect, brush );
-}
 
 static void
 initEditAndSlider( HWND hDlg, XP_U16 sliderID, XP_U8 val )
@@ -263,6 +255,16 @@ myChooseColor( CEAppGlobals* globals, HWND parent, XP_U16 labelID,
 } /* myChooseColor */
 
 #endif /* MY_COLOR_SEL */
+
+static void
+colorButton( DRAWITEMSTRUCT* dis, HBRUSH brush )
+{
+    RECT rect = dis->rcItem;
+
+    Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
+    InsetRect( &rect, 1, 1 );
+    FillRect( dis->hDC, &rect, brush );
+}
 
 typedef struct ColorsDlgState {
     HWND hDlg;
