@@ -275,8 +275,8 @@ typedef struct ColorsDlgState {
     XP_Bool inited;
 } ColorsDlgState;
 
-#define FIRST_BUTTON DLBLTR_BUTTON
-#define LAST_BUTTON PLAYER4_BUTTON
+#define FIRST_BUTTON DLBLTR_SAMPLE
+#define LAST_BUTTON PLAYER4_SAMPLE
 
 static void
 initColorData( ColorsDlgState* cState )
@@ -287,9 +287,11 @@ initColorData( ColorsDlgState* cState )
 
     for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
         COLORREF ref = cState->inColors[i];
+        HWND button = GetDlgItem( cState->hDlg, FIRST_BUTTON + i );
         cState->colors[i] = ref;
         cState->brushes[i] = CreateSolidBrush( ref );
-        cState->buttons[i] = GetDlgItem( cState->hDlg, FIRST_BUTTON + i );
+        cState->buttons[i] = button;
+        EnableWindow( button, FALSE );
     }
 } /* initColorData */
 
@@ -375,15 +377,8 @@ ceDrawColorButton( ColorsDlgState* cState, DRAWITEMSTRUCT* dis )
     XP_ASSERT( !!brush );
     
     RECT rect = dis->rcItem;
-    XP_Bool hasFocus = ((dis->itemAction & ODA_FOCUS) != 0)
-        && ((dis->itemState & ODS_FOCUS) != 0);
 
     Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
-    InsetRect( &rect, 1, 1 );
-    if ( hasFocus ) {
-        Rectangle( dis->hDC, rect.left, rect.top, rect.right, rect.bottom );
-        (void)SendMessage( cState->hDlg, DM_SETDEFID, dis->CtlID, 0 );
-    }
     InsetRect( &rect, 1, 1 );
     FillRect( dis->hDC, &rect, brush );
 } /* ceDrawColorButton */
@@ -415,8 +410,8 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 state->inited = XP_TRUE;
             }
 
-/*             XP_LOGF( "%s: event=%s (%d); wParam=0x%x; lParam=0x%lx",  */
-/*                      __func__, messageToStr(message), message,  */
+/*             XP_LOGF( "%s: event=%s (%d); wParam=0x%x; lParam=0x%lx", */
+/*                      __func__, messageToStr(message), message, */
 /*                      wParam, lParam ); */
 
             switch (message) {
@@ -425,11 +420,7 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 ceDoDlgScroll( state->globals, hDlg, wParam );
                 break;
 
-            case WM_DRAWITEM:   /* passed when button has BS_OWNERDRAW style */
-                ceDoDlgFocusScroll( state->globals, hDlg, 
-                      /* Fake out ceDoDlgFocusScroll, passing ctrl itself */
-                      (WPARAM)((DRAWITEMSTRUCT*)lParam)->hwndItem, 
-                      (LPARAM)TRUE );
+            case WM_DRAWITEM:
                 ceDrawColorButton( state, (DRAWITEMSTRUCT*)lParam );
                 result = TRUE;
                 break;

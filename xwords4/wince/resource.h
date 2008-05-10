@@ -114,64 +114,76 @@
 #define PLAYER3_LABEL                  1078
 #define PLAYER4_LABEL                  1079
 
+#define DLBLTR_SAMPLE                  1080
+#define DBLWRD_SAMPLE                  1081
+#define TPLLTR_SAMPLE                  1082
+#define TPLWRD_SAMPLE                  1083
+#define EMPCELL_SAMPLE                 1084
+#define TBACK_SAMPLE                   1085
+#define FOCUSCLR_SAMPLE                1086
+#define PLAYER1_SAMPLE                 1087
+#define PLAYER2_SAMPLE                 1088
+#define PLAYER3_SAMPLE                 1089
+#define PLAYER4_SAMPLE                 1090
+
 #define CLRSEL_LABEL_OFFSET (DLBLTR_LABEL-DLBLTR_BUTTON)
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */
 #ifdef MY_COLOR_SEL
-# define CLREDT_SLIDER1                 1080
-# define RED_EDIT                       1081
-# define CLREDT_SLIDER2                 1082
-# define GREEN_EDIT                     1083
-# define CLREDT_SLIDER3                 1084
-# define BLUE_EDIT                      1085
+# define CLREDT_SLIDER1                 1091
+# define RED_EDIT                       1092
+# define CLREDT_SLIDER2                 1093
+# define GREEN_EDIT                     1094
+# define CLREDT_SLIDER3                 1095
+# define BLUE_EDIT                      1096
 
-# define RED_LABEL                      1086
-# define GREEN_LABEL                    1087
-# define BLUE_LABEL                     1088
+# define RED_LABEL                      1097
+# define GREEN_LABEL                    1098
+# define BLUE_LABEL                     1099
 #endif // MY_COLOR_SEL
 
-#define HC_MIN_COMBO                    1089
-#define HC_MAX_COMBO                    1090
+#define HC_MIN_COMBO                    1100
+#define HC_MAX_COMBO                    1101
 
-#define IDC_CCONVIA_LAB                 1091
+#define IDC_CCONVIA_LAB                 1102
 
-#define IDC_COOKIE_LAB                   1092
+#define IDC_COOKIE_LAB                   1103
 #ifdef XWFEATURE_RELAY
-# define IDC_CRELAYNAME_LAB              1093
-# define IDC_CRELAYPORT_LAB              1094
-# define IDC_CRELAYHINT_LAB              1095
+# define IDC_CRELAYNAME_LAB              1104
+# define IDC_CRELAYPORT_LAB              1105
+# define IDC_CRELAYHINT_LAB              1106
 
-# define IDC_CONNECTCOMBO                1096
-# define RELAYNAME_EDIT                  1097
-# define RELAYPORT_EDIT                  1098
-# define COOKIE_EDIT                     1099
+# define IDC_CONNECTCOMBO                1107
+# define RELAYNAME_EDIT                  1108
+# define RELAYPORT_EDIT                  1109
+# define COOKIE_EDIT                     1110
 
 #endif
 
-#define IDC_BLUET_ADDR_LAB               1100
+#define IDC_BLUET_ADDR_LAB               1111
 #ifdef XWFEATURE_BLUETOOTH
-# define IDC_BLUET_ADDR_EDIT             1101
-# define IDC_BLUET_ADDR_BROWSE           1102
+# define IDC_BLUET_ADDR_EDIT             1112
+# define IDC_BLUET_ADDR_BROWSE           1113
 #endif
-#define IDS_UPDOWN                       1103
-#define IDC_NPLAYERSUPDOWN               1104
-#define IDC_PHONIESUPDOWN                1105
-#define IDC_SVGM_UPDOWN                  1106
+#define IDS_UPDOWN                       1114
+#define IDC_NPLAYERSUPDOWN               1115
+#define IDC_PHONIESUPDOWN                1116
+#define IDC_SVGM_UPDOWN                  1117
 
 
-#define IDC_SVGM_SELLAB                  1109
-#define IDC_SVGM_GAMELIST                1110
+#define IDC_SVGM_SELLAB                  1118
+#define IDC_SVGM_GAMELIST                1119
 /* Let's remove these until they're implemented */
 /* #define IDC_SVGM_EDITLAB                 1111 */
 /* #define IDC_SVGM_CHANGE                  1112 */
 /* #define IDC_SVGM_EDIT                    1113 */
 /* #define IDC_SVGM_DUP                     1114 */
 /* #define IDC_SVGM_DEL                     1115 */
-#define IDC_SVGM_OPEN                    1116
+#define IDC_SVGM_OPEN                    1120
 
-#define IDC_SVGN_SELLAB                  1117
-#define IDC_SVGN_EDIT                    1118
+#define IDC_SVGN_SELLAB                  1121
+#define IDC_SVGN_EDIT                    1122
 
 
 #define ID_FILE_EXIT                    40002
@@ -228,7 +240,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40029
-#define _APS_NEXT_CONTROL_VALUE         1087
+#define _APS_NEXT_CONTROL_VALUE         1123
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
