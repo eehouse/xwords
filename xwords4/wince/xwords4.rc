@@ -530,14 +530,14 @@ BEGIN
     CONTROL         "All games",IDC_RADIOGLOBAL,"Button",
                     BS_AUTORADIOBUTTON,50,PR_ROW1,53,10
     CONTROL         "Color played tiles",IDC_CHECKCOLORPLAYED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW2,90,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,90,PREFS_ROW_HT
     CONTROL         "Enable cursor",IDC_CHECKSHOWCURSOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,90,PREFS_ROW_HT
     CONTROL         "Explain robot scores",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW4,90,PREFS_ROW_HT
     PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,PR_ROW5,60,12
     CONTROL         "Smart robot",IDC_CHECKSMARTROBOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW2,90,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,90,PREFS_ROW_HT
     CONTROL         "Disallow hints",IDC_CHECKNOHINTS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,60,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT

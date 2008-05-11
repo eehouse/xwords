@@ -81,6 +81,8 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
 
     resID = doGlobalPrefs? IDC_RADIOGLOBAL:IDC_RADIOLOCAL;
     SendDlgItemMessage( hDlg, resID, BM_SETCHECK, BST_CHECKED, 0L );
+    resID = doGlobalPrefs? IDC_RADIOLOCAL:IDC_RADIOGLOBAL;
+    SendDlgItemMessage( hDlg, resID, BM_SETCHECK, BST_UNCHECKED, 0L );
 
     if ( doGlobalPrefs ) {
         turnOnOff( hDlg, goesWithLocal, VSIZE(goesWithLocal), XP_FALSE );
