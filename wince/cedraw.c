@@ -680,6 +680,8 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* rect,
 
     dctx->scoreIsVertical = rect->height > rect->width;
 
+    /* I don't think the clip rect's set at this point but drawing seems fine
+       anyway.... ceClearToBkground() is definitely needed here. */
     ceClearToBkground( (CEDrawCtx*)p_dctx, rect );
 } /* ce_draw_scoreBegin */
 
@@ -920,10 +922,12 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
              dctx->scoreIsVertical? "%s%.1dm" XP_CR "%.2ds" : "%s%.1d:%.2d", 
              isNegative? "-": "", mins, secs );
    
-    if ( !globals->hdc ) {
+    if ( !hdc ) {
         InvalidateRect( dctx->mainWin, &rt, FALSE );
         hdc = BeginPaint( dctx->mainWin, &ps );
     }
+
+    ceClipToRect( hdc, &rt );
 
     SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(player)] );
     ceClearToBkground( dctx, rInner );
@@ -955,7 +959,7 @@ DRAW_FUNC_NAME(getMiniWText)( DrawCtx* XP_UNUSED(p_dctx),
         str = "Triple word"; 
         break;
     case INTRADE_MW_TEXT:
-        str = "Trading tiles;" XP_CR "select 'Turn done' when ready"; 
+        str = "Trading tiles." XP_CR "Select 'Turn done' when ready"; 
         break;
     default:
         XP_ASSERT( XP_FALSE );
@@ -994,6 +998,7 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
         InvalidateRect( dctx->mainWin, &rt, FALSE );
         hdc = BeginPaint( dctx->mainWin, &ps );
     }
+    ceClipToRect( hdc, &rt );
 
     ceClearToBkground( dctx, rect );
 
