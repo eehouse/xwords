@@ -29,6 +29,7 @@
 #ifdef _WIN32_WCE
 # include <aygshell.h>
 #endif
+/* #include <imm.h> */
 #include "strutils.h"
 
 #include "memstream.h"
@@ -2239,6 +2240,39 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = ceFireTimer( globals, why );
             }
             break;
+
+#ifdef _WIN32_WCE
+/*         case WM_SETFOCUS: */
+/* 			hC = ImmGetContext( hWnd ); */
+/* 			globals->imeWasOpen = ImmGetOpenStatus( hC ); */
+/* 			ImmSetOpenStatus( hC, TRUE ); */
+/* 			ImmEscape( NULL, hC, IME_ESC_SET_MODE, (LPVOID)IM_SPELL ); */
+/* 			break; */
+/* 		case WM_KILLFOCUS: */
+/*             ImmSetOpenStatus( hC, globals->imeWasOpen ); */
+/*             break; */
+
+            /* The code above this point works to turn 12-key->text
+               translation on, but not to turn it off, so other apps wind up
+               with it on after Crosswords quits.  The recommended code is
+               below, but includes constants on in the version of cegcc I'm
+               using.  Need to look into upgrading, but that requires a lot
+               of changes.  Post B2.... */
+
+/* 			DWORD dwRes = SendMessage((HWND)wParam, WM_IME_REQUEST, IMR_ISIMEAWARE, 0); */
+/* 			hC = ImmGetContext( hWnd ); */
+/* 			if ( (dwRes & IMEAF_AWARE) == IMEAF_AWARE ) { */
+/* 				ImmEscape( NULL, hC, IME_ESC_RETAIN_MODE_ICON, (LPVOID)TRUE); */
+/*             } */
+/* 			ImmSetOpenStatus( hC, FALSE); */
+/*         } */
+/*         break; */
+/* 		case WM_IME_REQUEST: */
+/* 			if ( wParam == IMR_ISIMEAWARE ) { */
+/* 				return IMEAF_AWARE; */
+/*             } */
+/* 		break; */
+#endif
 
         case WM_DESTROY:
 #ifdef _WIN32_WCE
