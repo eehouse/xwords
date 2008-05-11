@@ -212,6 +212,11 @@ evtToXPKey( GdkEventKey* event, XP_Bool* movesCursorP )
         if ( isalpha( keyval ) ) {
             xpkey = toupper(keyval);
             break;
+#ifdef NUMBER_KEY_AS_INDEX
+        } else if ( isdigit( keyval ) ) {
+            xpkey = keyval;
+            break;
+#endif
         }
     }
     *movesCursorP = movesCursor;

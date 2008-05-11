@@ -67,4 +67,21 @@ BOOL DH(ResetEvent)(HANDLE);
 
 #endif /* USE_RAW_MINGW */
 
+#if 0
+ /* http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1591512&SiteID=1 */
+#define IM_SPELL 0
+#define IME_ESC_SET_MODE            0x0800
+/* http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1476620&SiteID=1 */
+#define EIM_SPELL IM_SPELL
+/* http://wolfpack.twu.net/docs/gtkwin32/gdkprivate-win32.h */
+#define WM_IME_REQUEST 0x0288
+
+/* http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1476620&SiteID=1 */
+#define EM_SETINPUTMODE 0x00DE 
+
+/* #define IMR_ISIMEAWARE              0 */
+/* #define IMEAF_AWARE                 0 */
+/* #define IME_ESC_RETAIN_MODE_ICON    0 */
+#endif
+
 #endif

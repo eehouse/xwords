@@ -3109,8 +3109,9 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
     /* keep compiler happy: assign defaults */
     Tile tile, blankFace = EMPTY_TILE; /* make compiler happy */
     XP_U16 col, row;
-    DictionaryCtxt* dict = model_getDictionary( board->model );
-    XP_S16 turn = board->selPlayer;
+    ModelCtxt* model = board->model;
+    DictionaryCtxt* dict = model_getDictionary( model );
+    const XP_S16 turn = board->selPlayer;
     XP_S16 tileIndex;
     XP_UCHAR buf[2];
     XP_Bool success;
@@ -3139,12 +3140,12 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
     }
 
     if ( success ) {
-        tileIndex = model_trayContains( board->model, turn, tile );
+        tileIndex = model_trayContains( model, turn, tile );
         if ( tileIndex >= 0 ) {
             // blankFace = EMPTY_TILE;	/* already set (and will be ignored) */
         } else {
             Tile blankTile = dict_getBlankTile( dict );
-            tileIndex = model_trayContains( board->model, turn, blankTile );
+            tileIndex = model_trayContains( model, turn, blankTile );
             if ( tileIndex >= 0 ) {	/* there's a blank for it */
                 blankFace = tile;
             } else {
@@ -3152,6 +3153,18 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
             }
         }
     }
+
+#ifdef NUMBER_KEY_AS_INDEX
+    /* Map numbers 1-7 to tiles in tray.  This is a hack to workaround
+       temporary lack of key input on smartphone.  */
+    if ( !success ) {
+        tileIndex = cursorKey - '0' - 1; /* user's model is 1-based, ours is 0-based */
+        if ( (tileIndex >= 0) && 
+             (tileIndex < model_getNumTilesInTray( model, turn ) ) ) {
+            success = XP_TRUE;
+        }
+    }
+#endif
 
     if ( success ) {
         success = moveTileToBoard( board, col, row, tileIndex, blankFace );
