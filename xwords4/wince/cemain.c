@@ -1543,8 +1543,6 @@ ceDoPrefsDlg( CEAppGlobals* globals )
     CePrefsDlgState state;
     CePrefsPrefs prefsPrefs;
 
-    XP_MEMSET( &state, 0, sizeof(state) );
-
     loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo, 
                            &prefsPrefs );
 
