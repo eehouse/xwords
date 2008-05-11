@@ -2432,7 +2432,6 @@ holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
         && isPending;
 } /* holdsPendingTile */
 
-#ifndef POINTER_SUPPORT
 /* Did I tap on a tile on the board that I have not yet committed?  If so,
  * return it to the tray.  But don't do this in drag-and-drop case since it's
  * too easy to accidentally tap and there are better ways.
@@ -2454,16 +2453,13 @@ tryReplaceTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow )
     }
     return result;
 } /* tryReplaceTile */
-#endif
 
 static XP_Bool
-handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
+handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool isPen )
 {
     return moveSelTileToBoardXY( board, col, row )
         || tryMoveArrow( board, col, row )
-#ifndef POINTER_SUPPORT
-        || tryReplaceTile( board, col, row )
-#endif
+        || (!isPen && tryReplaceTile( board, col, row ))
         ;
 } /* handleActionInCell */
 #endif /* POINTER_SUPPORT || KEYBOARD_NAV */
@@ -2480,8 +2476,8 @@ exitTradeMode( BoardCtxt* board )
 } /* exitTradeMode */
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
-XP_Bool
-board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
+static XP_Bool
+handlePenUpInternal( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool isPen )
 {
     XP_Bool draw = XP_FALSE;
     XP_Bool dragged = XP_FALSE;
@@ -2526,7 +2522,7 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
                         XP_U16 col, row;
                         coordToCell( board, board->penDownX, board->penDownY,
                                      &col, &row );
-                        draw = handleActionInCell( board, col, row ) || draw;
+                        draw = handleActionInCell( board, col, row, isPen ) || draw;
                     }
                 }
                 break;
@@ -2544,7 +2540,13 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
     }
 
     return draw;
-} /* board_handlePenUp */
+} /* handlePenUpInternal */
+
+XP_Bool
+board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
+{
+    return handlePenUpInternal( board, x, y, XP_TRUE );
+}
 #endif /* #ifdef POINTER_SUPPORT */
 
 #ifdef KEYBOARD_NAV
@@ -2728,7 +2730,7 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
         if ( board->focusHasDived ) {
             XP_U16 x, y;
             if ( focusToCoords( board, &x, &y ) ) {
-                redraw = board_handlePenUp( board, x, y );
+                redraw = handlePenUpInternal( board, x, y, XP_FALSE );
                 handled = XP_TRUE;
             }
         } else if ( board->focussed != OBJ_NONE ) {
