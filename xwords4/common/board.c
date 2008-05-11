@@ -2051,16 +2051,14 @@ board_beginTrade( BoardCtxt* board )
            trade */
         if ( 0 != model_getCurrentMoveCount( board->model, board->selPlayer )){
             util_userError( board->util, ERR_CANT_TRADE_MID_MOVE );
+        } else if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
+            util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
         } else {
-            if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
-                util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
-            } else {
-                board->tradingMiniWindowInvalid = XP_TRUE;
-                board->needsDrawing = XP_TRUE;
-                board->tradeInProgress[board->selPlayer] = XP_TRUE;
-                setArrowVisible( board, XP_FALSE );
-                result = XP_TRUE;
-            }
+            board->tradingMiniWindowInvalid = XP_TRUE;
+            board->needsDrawing = XP_TRUE;
+            board->tradeInProgress[board->selPlayer] = XP_TRUE;
+            setArrowVisible( board, XP_FALSE );
+            result = XP_TRUE;
         }
     }
     return result;
