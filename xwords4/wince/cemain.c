@@ -1340,7 +1340,11 @@ ceHandleHintRequest( CEAppGlobals* globals )
 static XP_Bool
 handleTradeCmd( CEAppGlobals* globals )
 {
-    return board_beginTrade( globals->game.board );
+    XP_Bool success = board_beginTrade( globals->game.board );
+    if ( success ) {
+        ceSetLeftSoftkey( globals, ID_MOVE_TURNDONE );
+    }
+    return success;
 } /* handleTradeCmd */
 
 static XP_Bool
@@ -2718,7 +2722,7 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         return ceQueryFromStream( globals, stream );
 
     case QUERY_COMMIT_TRADE:
-        query = "Are you sure you want to spend this move trading tiles?";
+        query = "Are you sure you want to trade the selected tiles?";
         return queryBoxChar( globals, query );
 
     case QUERY_ROBOT_MOVE:
