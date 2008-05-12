@@ -49,8 +49,8 @@ sub main() {
     print FILE "../dawg/English/BasEnglish2to8.xwd ";
     print FILE '%CE1%\\Crosswords', "\n";
 
-    print FILE "$ENV{'CEOPT_ROOT'}/opt/mingw32ce/arm-wince-mingw32ce/bin/mingwm10.dll ";
-    print FILE '%CE2%\\mingwm10.dll', "\n";
+#     print FILE "$ENV{'CEOPT_ROOT'}/opt/mingw32ce/arm-wince-mingw32ce/bin/mingwm10.dll ";
+#     print FILE '%CE2%\\mingwm10.dll', "\n";
 
     print FILE "$linkName ";
     print FILE '%CE14%', "\n";
