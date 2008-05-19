@@ -119,6 +119,7 @@ static void drawDragTileIf( BoardCtxt* board );
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
                                    XP_Bool* gotArrow );
+static XP_S16 keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace );
 #endif
 
 #ifdef KEYBOARD_NAV
@@ -2694,7 +2695,6 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     XP_Bool redraw = XP_FALSE;
     XP_Bool handled = XP_FALSE;
     XP_Bool trayVisible = board->trayVisState == TRAY_REVEALED;
-    XP_Bool gotArrow;
 
     switch( key ) {
 #ifdef KEYBOARD_NAV
@@ -2745,12 +2745,20 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     default:
         XP_ASSERT( key >= XP_KEY_LAST );
 
-        handled = redraw = trayVisible
-            && moveKeyTileToBoard( board, key, &gotArrow );
-
-        if ( handled && gotArrow && !advanceArrow( board ) ) {
-            setArrowVisible( board, XP_FALSE );
+        if ( trayVisible ) {
+            if ( TRADE_IN_PROGRESS( board ) ) {
+                XP_S16 tileIndex = keyToIndex( board, key, NULL );
+                handled = (tileIndex >= 0)
+                    && handleTrayDuringTrade( board, tileIndex );
+            } else {
+                XP_Bool gotArrow;
+                handled = moveKeyTileToBoard( board, key, &gotArrow );
+                if ( handled && gotArrow && !advanceArrow( board ) ) {
+                    setArrowVisible( board, XP_FALSE );
+                }
+            }
         }
+        redraw = handled;
     } /* switch */
 
     if ( !!pHandled ) {
@@ -3103,74 +3111,74 @@ moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_U16 tileIndex,
 } /* moveTileToBoard */
 
 #ifdef KEY_SUPPORT
-static XP_Bool
-moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
+/* Return number between 0 and MAX_TRAY_TILES-1 for valid index, < 0 otherwise */
+static XP_S16
+keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
 {
-    /* keep compiler happy: assign defaults */
-    Tile tile, blankFace = EMPTY_TILE; /* make compiler happy */
-    XP_U16 col, row;
+    /* Map numbers 1-7 to tiles in tray.  This is a hack to workaround
+       temporary lack of key input on smartphone.  */
     ModelCtxt* model = board->model;
-    DictionaryCtxt* dict = model_getDictionary( model );
-    const XP_S16 turn = board->selPlayer;
-    XP_S16 tileIndex;
-    XP_UCHAR buf[2];
-    XP_Bool success;
-
-    /* Is there a cursor at all? */
-    *gotArrow = success = getArrow( board, &col, &row );
-#ifdef KEYBOARD_NAV
-    if ( !success && (board->focussed == OBJ_BOARD) && board->focusHasDived ) {
-        BdCursorLoc loc = board->bdCursor[turn];
-        col = loc.col;
-        row = loc.row;
-        success = XP_TRUE;
+    XP_S16 tileIndex = -1;
+# ifdef NUMBER_KEY_AS_INDEX
+    tileIndex = key - '0' - 1; /* user's model is 1-based; ours is 0-based */
+    if (tileIndex >= model_getNumTilesInTray( model, board->selPlayer ) ) {
+        tileIndex = -1;         /* error */
     }
-#endif
+# endif
 
-    if ( success ) {
-        XP_ASSERT( !TRADE_IN_PROGRESS(board) );
+    if ( tileIndex < 0 ) {
+        DictionaryCtxt* dict = model_getDictionary( model );
+        Tile tile;
+        XP_UCHAR buf[2] = { key, '\0' };
 
         /* Figure out if we have the tile in the tray  */
-        buf[0] = cursorKey;
-        buf[1] = '\0';
         tile = dict_tileForString( dict, buf );
-        if ( tile == EMPTY_TILE ) { /* not found in dict */
-            success = XP_FALSE;
-        }
-    }
-
-    if ( success ) {
-        tileIndex = model_trayContains( model, turn, tile );
-        if ( tileIndex >= 0 ) {
-            // blankFace = EMPTY_TILE;	/* already set (and will be ignored) */
-        } else {
-            Tile blankTile = dict_getBlankTile( dict );
-            tileIndex = model_trayContains( model, turn, blankTile );
-            if ( tileIndex >= 0 ) {	/* there's a blank for it */
-                blankFace = tile;
-            } else {
-                success = XP_FALSE;
+        if ( tile != EMPTY_TILE ) { /* in dict? */
+            XP_S16 turn = board->selPlayer;
+            tileIndex = model_trayContains( model, turn, tile );
+            if ( tileIndex < 0 ) {
+                Tile blankTile = dict_getBlankTile( dict );
+                tileIndex = model_trayContains( model, turn, blankTile );
+                if ( tileIndex >= 0 && !!blankFace ) {	/* there's a blank for it */
+                    *blankFace = tile;
+                }
             }
         }
     }
 
-#ifdef NUMBER_KEY_AS_INDEX
-    /* Map numbers 1-7 to tiles in tray.  This is a hack to workaround
-       temporary lack of key input on smartphone.  */
-    if ( !success ) {
-        tileIndex = cursorKey - '0' - 1; /* user's model is 1-based, ours is 0-based */
-        if ( (tileIndex >= 0) && 
-             (tileIndex < model_getNumTilesInTray( model, turn ) ) ) {
-            success = XP_TRUE;
-        }
+    return tileIndex;
+} /* keyToIndex */
+
+static XP_Bool
+moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
+{
+    XP_U16 col, row;
+    XP_Bool haveDest;
+
+    XP_ASSERT( !TRADE_IN_PROGRESS( board ) );
+
+    /* Is there a cursor at all? */
+    haveDest = getArrow( board, &col, &row );
+    *gotArrow = haveDest;
+#ifdef KEYBOARD_NAV
+    if ( !haveDest && (board->focussed == OBJ_BOARD) && board->focusHasDived ) {
+        BdCursorLoc loc = board->bdCursor[board->selPlayer];
+        col = loc.col;
+        row = loc.row;
+        haveDest = XP_TRUE;
     }
 #endif
 
-    if ( success ) {
-        success = moveTileToBoard( board, col, row, tileIndex, blankFace );
+    if ( haveDest ) {
+        Tile blankFace = EMPTY_TILE;
+        XP_S16 tileIndex = keyToIndex( board, cursorKey, &blankFace );
+
+        if ( tileIndex >= 0 ) {
+            haveDest = moveTileToBoard( board, col, row, tileIndex, blankFace );
+        }
     }
 
-    return success;
+    return haveDest;
 } /* moveKeyTileToBoard */
 #endif
 
