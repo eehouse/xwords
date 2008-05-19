@@ -343,7 +343,7 @@ invalTilesUnderRect( BoardCtxt* board, const XP_Rect* rect )
     }
 } /* invalTilesUnderRect */
 
-static XP_Bool
+XP_Bool
 handleTrayDuringTrade( BoardCtxt* board, XP_S16 index )
 {
     TileBit bits;
