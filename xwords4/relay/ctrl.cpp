@@ -76,7 +76,7 @@ static bool cmd_uptime( int socket, const char** args );
 static bool cmd_crash( int socket, const char** args );
 
 static int
-match( string* cmd, char * const* first, int incr, int count )
+match( string* cmd, const char * const* first, int incr, int count )
 {
     int cmdlen = cmd->length();
     int nFound = 0;
@@ -226,7 +226,7 @@ cmd_get( int socket, const char** args )
     bool needsHelp = true;
 
     string attr(args[1]);
-    char* const attrs[] = { "help", "listeners", "loglevel" };
+    const char* const attrs[] = { "help", "listeners", "loglevel" };
     int index = match( &attr, attrs, sizeof(attrs[0]), 
                        sizeof(attrs)/sizeof(attrs[0]));
 
@@ -280,7 +280,7 @@ static bool
 cmd_set( int socket, const char** args )
 {
     const char* val = args[2];
-    char* const attrs[] = { "help", "listeners", "loglevel" };
+    const char* const attrs[] = { "help", "listeners", "loglevel" };
     string attr(args[1]);
     int index = match( &attr, attrs, sizeof(attrs[0]), 
                        sizeof(attrs)/sizeof(attrs[0]));
