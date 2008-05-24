@@ -135,11 +135,12 @@ strFromStream( XWStreamCtxt* stream )
     return buf;
 } /* strFromStream */
 
-XP_UCHAR*
+
+const XP_UCHAR*
 linux_getErrString( UtilErrID id, XP_Bool* silent )
 {
     *silent = XP_FALSE;
-    char* message = NULL;
+    const char* message = NULL;
 
     switch( id ) {
     case ERR_TILES_NOT_IN_LINE:
@@ -183,6 +184,10 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
             "started as Host.";
         break;
 #endif
+
+    case ERR_CANT_TRADE_MID_MOVE:
+        message = "Remove played tiles before trading.";
+        break;
 
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
