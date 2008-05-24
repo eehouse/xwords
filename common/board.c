@@ -3173,14 +3173,13 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
         Tile blankFace = EMPTY_TILE;
         XP_S16 tileIndex = keyToIndex( board, cursorKey, &blankFace );
 
-        if ( tileIndex >= 0 ) {
-            haveDest = moveTileToBoard( board, col, row, tileIndex, blankFace );
-        }
+        haveDest = (tileIndex >= 0)
+            && moveTileToBoard( board, col, row, tileIndex, blankFace );
     }
 
     return haveDest;
 } /* moveKeyTileToBoard */
-#endif
+#endif  /* #ifdef KEY_SUPPORT */
 
 static void
 setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, XP_U16 row )
