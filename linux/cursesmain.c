@@ -204,7 +204,7 @@ static CursesMenuHandler getHandlerForKey( const MenuList* list, char ch );
 /* extern int errno; */
 
 static void
-cursesUserError( CursesAppGlobals* globals, char* format, ... )
+cursesUserError( CursesAppGlobals* globals, const char* format, ... )
 {
     char buf[512];
     va_list ap;
@@ -241,7 +241,7 @@ curses_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     XP_Bool silent;
-    XP_UCHAR* message = linux_getErrString( id, &silent );
+    const XP_UCHAR* message = linux_getErrString( id, &silent );
 
     if ( silent ) {
         XP_LOGF( "silent userError: %s", message );

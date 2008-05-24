@@ -1059,7 +1059,7 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 } /* handle_commit_button */
 
 static void
-gtkUserError( GtkAppGlobals* XP_UNUSED(globals), char* format, ... )
+gtkUserError( GtkAppGlobals* XP_UNUSED(globals), const char* format, ... )
 {
     char buf[512];
     va_list ap;
@@ -1412,7 +1412,7 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
     XP_Bool silent;
-    XP_UCHAR* message = linux_getErrString( id, &silent );
+    const XP_UCHAR* message = linux_getErrString( id, &silent );
 
     XP_LOGF( "%s(%d)", __func__, id );
 
