@@ -62,6 +62,7 @@ messageToStr( UINT message )
         CASE_STR( WM_WINDOWPOSCHANGING );
         CASE_STR( WM_SETFOCUS );
         CASE_STR( WM_NCPAINT );
+        CASE_STR( WM_ERASEBKGND );
         CASE_STR( WM_NCCALCSIZE );
         CASE_STR( WM_SETTEXT );
         CASE_STR( WM_CTLCOLORDLG );
