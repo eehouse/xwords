@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"-*- */
 /* 
- * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -172,9 +172,39 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index )
     return dctx->setFont[index];
 }
 
+#if 0
+/* I'm trying to measure individual chars, but GetGlyphOutline and
+   GetTextExtentExPointW both return the full font height for any char, even
+   '.'.  GetGlyphOutline fails altogether on XP.  Work in progress...
+ */
+static void
+logAllChars( HDC hdc, wchar_t* widebuf, XP_U16 len )
+{
+    wchar_t tmp[2] = { 0, 0 };
+    int i;
+
+    for ( i = 0; i < len; ++i ) {
+        GLYPHMETRICS gm;
+        DWORD dw;
+        XP_MEMSET( &gm, 0, sizeof(gm) );
+        dw = GetGlyphOutline( hdc,
+                              widebuf[i], GGO_METRICS,
+                              &gm,
+                              0,      // size of data buffer
+                              NULL,    // data buffer
+                              NULL );
+/*         GetTextExtentPoint32( hdc, &widebuf[i], 1, &size ); */
+        tmp[0] = widebuf[i];
+        XP_LOGW( "letter: ", tmp );
+        XP_LOGF( "width: %d; height: %d (pt: %ld,%ld)", gm.gmBlackBoxX, 
+                 gm.gmBlackBoxY, gm.gmptGlyphOrigin.x, gm.gmptGlyphOrigin.y );
+    }
+}
+#endif
+
 static void
 ceMeasureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
-             XP_U16* widthP, XP_U16* heightP )
+               XP_U16* widthP, XP_U16* heightP )
 {
     HDC hdc = GetDC(dctx->mainWin);//globals->hdc;
     XP_U16 height = 0;
@@ -191,6 +221,8 @@ ceMeasureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
                              widebuf, VSIZE(widebuf) );
         GetTextExtentPoint32( hdc, widebuf, len, &size );
+
+/*         logAllChars( hdc, widebuf, len ); */
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         height += size.cy;
@@ -872,12 +904,17 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_U16 bkIndex = (flags & CELL_ISCURSOR) == 0? 
         CE_BKG_COLOR : CE_FOCUS_COLOR;
 
+    HFONT font = ceGetSizedFont( dctx, rect->height/2, RFONTS_PTS );    
+    HFONT oldFont = SelectObject( hdc, font );
+
     SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
 
     XPRtoRECT( &rt, rect );
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
     ceClipToRect( hdc, &rt );
+
+    DrawText(hdc, L"Pts", -1, &rt, DT_SINGLELINE | DT_TOP | DT_CENTER);	
 
     if ( score < 0 ) {
         buf[0] = '?';
@@ -890,8 +927,7 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, -1,
                          widebuf, VSIZE(widebuf) );
     DrawText(hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_BOTTOM | DT_CENTER);	
-    DrawText(hdc, L"Pts", -1, &rt, DT_SINGLELINE | DT_TOP | DT_CENTER);	
-
+    SelectObject( hdc, oldFont );
 } /* ce_draw_score_pendingScore */
 
 DLSTATIC void

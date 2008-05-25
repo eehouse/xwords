@@ -170,6 +170,7 @@ typedef enum {
     RFONTS_TRAY
     ,RFONTS_TRAYVAL
     ,RFONTS_CELL
+    ,RFONTS_PTS
 
     ,N_RESIZE_FONTS
 } RFIndex;
