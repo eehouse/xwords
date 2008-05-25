@@ -966,6 +966,7 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
     ceClipToRect( hdc, &rt );
 
     SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(player)] );
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
     ceClearToBkground( dctx, rInner );
     drawLines( dctx, hdc, buf, CE_TIMER_PADDING, &rt, 
                DT_SINGLELINE | DT_VCENTER | DT_CENTER);
