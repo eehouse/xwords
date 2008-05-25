@@ -672,11 +672,11 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XPRtoRECT( &rt, xprect );
     ++rt.bottom;
     ++rt.right;
-
     ceClipToRect( hdc, &rt );
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
+    ceClipToRect( hdc, &rt );
 
     if ( vertical ) {
         cursor = dctx->downArrow;
