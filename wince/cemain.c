@@ -143,7 +143,7 @@ static XP_Bool queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg );
 static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                                 wchar_t* title, XP_U16 buttons, 
                                 XP_Bool destroy );
-static void RECTtoXPR( XP_Rect* dest, RECT* src );
+static void RECTtoXPR( XP_Rect* dest, const RECT* src );
 static XP_Bool ceDoNewGame( CEAppGlobals* globals );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs );
@@ -1992,7 +1992,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
     int wmId;
-    RECT rt;
     XP_Bool draw = XP_FALSE;
     XWTimerReason why;
     CEAppGlobals* globals;
@@ -2162,20 +2161,23 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             break;
         case WM_PAINT:
-            if ( !!globals && GetUpdateRect( hWnd, &rt, FALSE ) ) {
-                XP_Rect rect;
+            if ( !!globals ) {
+                RECT winrect;
+                if ( GetUpdateRect( hWnd, &winrect, FALSE ) ) {
+                    if ( !!globals->game.board ) {
+                        XP_Rect rect;
+                        /* When an obscuring window goes away, the update region
+                           needs to be redrawn.  This allows invalidating it. */
 
-                if ( !!globals->game.board ) {
-                    /* When an obscuring window goes away, the update region
-                       needs to be redrawn.  This allows invalidating it. */
-                    RECTtoXPR( &rect, &rt );
-                    board_invalRect( globals->game.board, &rect );
+                        RECTtoXPR( &rect, &winrect );
+                        board_invalRect( globals->game.board, &rect );
 
-                    XP_ASSERT( globals->hWnd == hWnd );
-                    drawInsidePaint( globals );
-                }
-                if ( !ValidateRect( hWnd, &rt ) ) {
-                    logLastError( "WM_PAINT:ValidateRect" );
+                        XP_ASSERT( globals->hWnd == hWnd );
+                        drawInsidePaint( globals );
+                    }
+                    if ( !ValidateRect( hWnd, &winrect ) ) {
+                        logLastError( "WM_PAINT:ValidateRect" );
+                    }
                 }
             }
             break;
@@ -2447,7 +2449,7 @@ ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream )
 } /* ceQueryFromStream */
 
 static void
-RECTtoXPR( XP_Rect* dest, RECT* src )
+RECTtoXPR( XP_Rect* dest, const RECT* src )
 {
     dest->top = (short)src->top;
     dest->left = (short)src->left;
@@ -2533,55 +2535,6 @@ wince_debugf(const XP_UCHAR* format, ...)
     }
 #endif
 } /* wince_debugf */
-
-void
-messageToBuf( UINT message, char* buf, int bufSize )
-{
-    char* str = NULL;
-#define STRCASE(s)   case s : str = #s; break
-    switch( message ) {
-        STRCASE(WM_TIMER);
-        STRCASE(WM_SETCURSOR);
-        STRCASE(WM_NCHITTEST);
-        STRCASE(WM_MOUSEMOVE);
-        STRCASE(WM_SYSKEYDOWN);
-        STRCASE(WM_SYSKEYUP);
-        STRCASE(WM_SYSCHAR);
-        STRCASE(WM_SYSCOMMAND);
-        STRCASE(WM_ENTERMENULOOP);
-        STRCASE(WM_INITMENU);
-        STRCASE(WM_MENUSELECT);
-        STRCASE(WM_COMMAND);
-        STRCASE(WM_SETTEXT);
-        STRCASE(WM_QUERYNEWPALETTE);
-        STRCASE(WM_NCACTIVATE);
-        STRCASE(WM_ACTIVATE);
-        STRCASE(WM_SHOWWINDOW);
-        STRCASE(WM_CTLCOLOREDIT);
-        STRCASE(WM_MOUSEACTIVATE);
-        STRCASE(WM_CTLCOLORBTN);
-        STRCASE(WM_PASTE);
-        STRCASE(WM_WINDOWPOSCHANGING);
-        STRCASE(WM_SETFOCUS);
-        STRCASE(WM_WINDOWPOSCHANGED);
-        STRCASE(WM_PAINT);
-        STRCASE(WM_VSCROLL);
-        STRCASE(WM_LBUTTONDOWN);
-        STRCASE(WM_LBUTTONUP);
-        STRCASE(WM_INITMENUPOPUP);
-        STRCASE(WM_CANCELMODE);
-        STRCASE(WM_EXITMENULOOP);
-        STRCASE(WM_KILLFOCUS);
-        STRCASE(WM_ERASEBKGND);
-    default:
-        snprintf( buf, bufSize, "%d", message );
-        return;
-    }
-#undef STRCASE
-    if ( !!str ) {
-        snprintf( buf, bufSize, "%s", str );
-    }
-} /* messageToBuf */
 #endif  /* ENABLE_LOGGING */
 
 XP_U16
