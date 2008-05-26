@@ -302,14 +302,15 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_UCHAR loc[4] = { ' ', ' ', ' ', '\0' };
-    XP_ASSERT( XP_STRLEN(letter) < sizeof(loc) );
     XP_ASSERT( rect->width < sizeof(loc) );
-    XP_MEMCPY( loc, letter, strlen(letter) );
+    if ( !!letter ) {
+        XP_MEMCPY( loc, letter, strlen(letter) );
+    }
 
     /* in case it's not 1x1 */
     eraseRect( dctx, rect );
 
-    if ( letter[0] == LETTER_NONE ) {
+    if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
         switch ( bonus ) {
         case BONUS_DOUBLE_LETTER:
             loc[0] = '+'; break;

@@ -46,8 +46,11 @@ XP_Bool dragDropIsBeingDragged( const BoardCtxt* board, XP_U16 col, XP_U16 row,
  */
 void dragDropGetTrayChanges( const BoardCtxt* board, XP_U16* rmvdIndx, 
                              XP_U16* addedIndx );
-XP_Bool dragDropGetHintLimits( const BoardCtxt* board, BdHintLimits* limits );
 XP_Bool dragDropIsDividerDrag( const BoardCtxt* board );
+#ifdef XWFEATURE_SEARCHLIMIT
+XP_Bool dragDropGetHintLimits( const BoardCtxt* board, BdHintLimits* limits );
+#endif
+
 
 void dragDropTileInfo( const BoardCtxt* board, Tile* tile, XP_Bool* isBlank );
 
