@@ -36,7 +36,8 @@ MINGW_INC_PATH ?= -I/usr/i586-mingw32msvc/include
 CE_ARCH = arm-wince-pe
 else
 MINGW_INC_PATH = 				#in case it's in env
-CE_ARCH = arm-wince-mingw32ce
+#CE_ARCH = arm-wince-mingw32ce
+CE_ARCH = arm-mingw32ce
 endif
 CEOPT_ROOT ?= /opt
 
