@@ -32,9 +32,11 @@ static XP_Bool dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
                                      BoardObjectType* onWhichP );
 static void invalDragObjRange( BoardCtxt* board, const DragObjInfo* from, 
                                const DragObjInfo* to );
+#ifdef XWFEATURE_SEARCHLIMIT
 static void invalHintRectDiffs( BoardCtxt* board, const DragObjInfo* cur, 
                                 const DragObjInfo* nxt );
 static void setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits );
+#endif
 
 static void startScrollTimerIf( BoardCtxt* board );
 
@@ -328,6 +330,7 @@ dragDropGetTrayChanges( const BoardCtxt* board, XP_U16* rmvdIndx,
     }
 }
 
+#ifdef XWFEATURE_SEARCHLIMIT
 XP_Bool
 dragDropGetHintLimits( const BoardCtxt* board, BdHintLimits* limits )
 {
@@ -337,6 +340,7 @@ dragDropGetHintLimits( const BoardCtxt* board, BdHintLimits* limits )
     }
     return result;
 }
+#endif
 
 XP_Bool
 dragDropIsDividerDrag( const BoardCtxt* board )
@@ -355,6 +359,7 @@ dragDropTileInfo( const BoardCtxt* board, Tile* tile, XP_Bool* isBlank )
     *isBlank = ds->isBlank;
 }
 
+#ifdef XWFEATURE_SEARCHLIMIT
 static void
 invalHintRectDiffs( BoardCtxt* board, const DragObjInfo* cur, 
                     const DragObjInfo* nxt )
@@ -385,7 +390,8 @@ invalHintRectDiffs( BoardCtxt* board, const DragObjInfo* cur,
         invalCellRegion( board, startCol, startRow, nxt->u.board.col, 
                          nxt->u.board.row );
     }
-}
+} /* invalHintRectDiffs */
+#endif
 
 static XP_Bool
 dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
@@ -502,6 +508,7 @@ invalDragObjRange( BoardCtxt* board, const DragObjInfo* from,
     }
 }
 
+#ifdef XWFEATURE_SEARCHLIMIT
 static void
 setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits )
 {
@@ -511,6 +518,7 @@ setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits )
     limits->top = XP_MIN( ds->start.u.board.row, ds->cur.u.board.row );
     limits->bottom = XP_MAX( ds->start.u.board.row, ds->cur.u.board.row );
 }
+#endif
 
 static XP_Bool
 scrollTimerProc( void* closure, XWTimerReason why )

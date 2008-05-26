@@ -2167,6 +2167,7 @@ clearCurHintRect( BoardCtxt* board )
     invalCurHintRect( board, board->selPlayer );
     board->hasHintRect[board->selPlayer] = XP_FALSE;
 } /* clearCurHintRect */
+#endif /* XWFEATURE_SEARCHLIMIT */
 
 static XP_Bool
 handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
@@ -2188,7 +2189,6 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 
     return result;
 } /* handlePenDownOnBoard */
-#endif /* POINTER_SUPPORT */
 
 /* If there's a password, ask it; if they match, change the state of the tray
  * to TRAY_REVEALED (unless we're not supposed to show the tiles).  Return
