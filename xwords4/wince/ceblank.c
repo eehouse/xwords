@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002,2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@
 #include "ceblank.h"
 #include "cemain.h"
 #include "ceutil.h"
+#include "debhacks.h"
 
 static void
 loadLettersList( HWND hDlg, BlankDialogState* bState )
@@ -37,7 +38,7 @@ loadLettersList( HWND hDlg, BlankDialogState* bState )
                                    widebuf, VSIZE(widebuf) );
         widebuf[len] = 0;
 
-        SendDlgItemMessage( hDlg, BLANKFACE_LIST, LB_ADDSTRING, 
+        SendDlgItemMessage( hDlg, BLANKFACE_LIST, ADDSTRING, 
                             0, (long)widebuf );
     }
     ce_selectAndShow( hDlg, BLANKFACE_LIST, 0 );
@@ -95,15 +96,15 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         } else {
             XP_ASSERT( bState->pi->why == PICK_FOR_BLANK );
             ceShowOrHide( hDlg, IDC_CPICK, XP_FALSE );
-            ceShowOrHide( hDlg, IDC_PICKALL, XP_FALSE );
             ceShowOrHide( hDlg, IDC_PICKMSG, XP_FALSE );
         }
-        ceShowOrHide( hDlg, IDC_BACKUP, 
-                      bState->pi->why == PICK_FOR_CHEAT
-                      && bState->pi->thisPick > 0 );
+        bState->canBackup = (bState->pi->why == PICK_FOR_CHEAT)
+            && (bState->pi->thisPick > 0);
+        ceShowOrHide( hDlg, IDC_BACKUP, bState->canBackup );
 #endif
 
         ceDlgSetup( bState->globals, hDlg );
+        trapBackspaceKey( hDlg );
 
         loadLettersList( hDlg, bState );
     } else {
@@ -111,14 +112,25 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( !!bState ) {
 
             switch ( message ) {
-            case WM_KEYDOWN:           /* key down.  Select a list item? */
-                XP_LOGF( "got WM_KEYDOWN" );
+/*             case WM_KEYDOWN:           /\* key down.  Select a list item? *\/ */
+/*                 XP_LOGF( "got WM_KEYDOWN" ); */
+/*                 break; */
+#ifdef _WIN32_WCE
+            case WM_HOTKEY:
+                if ( VK_TBACK == HIWORD(lParam) ) {
+                    if ( bState->canBackup ) {
+                        bState->result = PICKER_BACKUP;
+                        EndDialog( hDlg, IDC_BACKUP );
+                        return TRUE;
+                    }
+                }
                 break;
+#endif
             case WM_COMMAND:
                 id = LOWORD(wParam);
                 if ( 0 ) {
 #ifdef FEATURE_TRAY_EDIT
-                } else if ( id == IDC_PICKALL ) {
+                } else if ( id == IDCANCEL ) {
                     bState->result = PICKER_PICKALL;
                 } else if ( id == IDC_BACKUP ) {
                     bState->result = PICKER_BACKUP;
@@ -126,7 +138,7 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 } else if ( id == IDOK ) {
                     bState->result = 
                         (XP_S16)SendDlgItemMessage( hDlg, BLANKFACE_LIST, 
-                                                    LB_GETCURSEL, 0, 0 );
+                                                    GETCURSEL, 0, 0 );
                 } else {
                     break;
                 }

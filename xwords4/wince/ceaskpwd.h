@@ -24,6 +24,7 @@
 #include "cemain.h"
 
 typedef struct PasswdDialogState {
+    CEAppGlobals* globals;
     const XP_UCHAR* name;
     XP_UCHAR* buf;
     XP_U16* lenp;

@@ -23,6 +23,7 @@
 #include "ceutil.h"
 #include "cedefines.h"
 #include "cedebug.h"
+#include "debhacks.h"
 
 #define BUF_SIZE 128
 #define VPADDING 4
@@ -119,8 +120,10 @@ ceGetDlgItemNum( HWND hDlg, XP_U16 id )
 void
 ce_selectAndShow( HWND hDlg, XP_U16 resID, XP_U16 index )
 {
-    SendDlgItemMessage( hDlg, resID, LB_SETCURSEL, index, 0 );
+    SendDlgItemMessage( hDlg, resID, SETCURSEL, index, 0 );
+#ifdef _WIN32_WCE
     SendDlgItemMessage( hDlg, resID, LB_SETANCHORINDEX, index, 0 );
+#endif
 } /* ce_selectAndShow */
 
 void
@@ -670,3 +673,14 @@ ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
 #endif
     }
 } /* ceSetLeftSoftkey */
+
+#ifdef _WIN32_WCE
+void
+trapBackspaceKey( HWND hDlg )
+{
+        /* Override back key so we can pass it to edit controls */
+        SendMessage( SHFindMenuBar(hDlg), SHCMBM_OVERRIDEKEY, VK_TBACK, 
+                     MAKELPARAM (SHMBOF_NODEFAULT | SHMBOF_NOTIFY, 
+                                 SHMBOF_NODEFAULT | SHMBOF_NOTIFY));
+}
+#endif

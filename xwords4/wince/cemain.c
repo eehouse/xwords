@@ -1064,7 +1064,7 @@ doDictsMovedAlert( CEAppGlobals* globals )
     stream_putString( stream, 
                       "Please be aware that starting with this version "
                       "Crosswords will not find dictionaries unless they "
-                      "are located in one of these directories: " );
+                      "are located in " );
     ceFormatDictDirs( stream, globals->hInst );
     stream_putString( stream, ". From now on, dictionaries will be "
                       "available as .cab files which will put them in the "
@@ -1239,15 +1239,15 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT
-    result = 1 == ceLocateNDicts( MPPARM(mpool) hInstance, 1, ceSetDictName, 
+    result = 1 == ceLocateNDicts( MPPARM(mpool) 1, ceSetDictName, 
                                   globals );
     if ( !result ) {
         XWStreamCtxt* stream = make_generic_stream( globals );
         stream_putString( stream, "Please install a Crosswords dictionary "
-                          "in one of these directories: " );
+                          "in " );
         ceFormatDictDirs( stream, hInstance );
         stream_putString( stream, ". Download dictionaries from "
-                          "http://xwords.sf.net." );
+                          "http://xwords.sf.net or http://eehouse.org/xwords." );
         messageBoxStream( globals, stream, L"Dictionary Not Found", MB_OK );
         stream_destroy( stream );
         result = FALSE;
@@ -1283,6 +1283,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
             result = FALSE;
         }
     }
+
+    trapBackspaceKey( hWnd );
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
@@ -1995,7 +1997,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     XP_Bool draw = XP_FALSE;
     XWTimerReason why;
     CEAppGlobals* globals;
-    XP_Bool handled;
+    XP_Bool handled = XP_FALSE;
     XP_Bool callDefault = XP_FALSE;
 
     if ( message == WM_CREATE ) {
@@ -2204,7 +2206,24 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                                           HIWORD(lParam) );
                 globals->penDown = XP_FALSE;
             }
-            break;	
+            break;
+
+#ifdef _WIN32_WCE
+            /* Make the back key mean raise focus, but only if dived.
+               Otherwise allow the OS to do what it wants.  Which means
+               exit? */
+        case WM_HOTKEY:
+            if ( VK_TBACK == HIWORD(lParam) ) {
+                if ( !!globals->game.board ) {
+                    draw = board_handleKey( globals->game.board, 
+                                            XP_RAISEFOCUS_KEY, &handled );
+                }
+            }
+            if ( !draw || !handled ) {
+                callDefault = XP_TRUE;
+            }
+            break;
+#endif
 
 #ifdef KEYBOARD_NAV
         case WM_KEYDOWN:
@@ -2798,6 +2817,7 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_MEMSET( &state, 0, sizeof(state) );
 
+    state.globals = globals;
     state.name = name;
     state.buf = buf;
     state.lenp = len;

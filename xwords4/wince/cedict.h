@@ -41,8 +41,7 @@ typedef XP_Bool (*OnePathCB)( const wchar_t* wPath, XP_U16 index, void* ctxt );
  * dict files.  Return the number actually found.  Caller is responsible for
  * making sure bufs contains nSought slots.
  */
-XP_U16 ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
-                       OnePathCB cb, void* ctxt );
+XP_U16 ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt );
 void ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance );
 
 /* return just the name, no extension, of dict, written to buf, pointed to by

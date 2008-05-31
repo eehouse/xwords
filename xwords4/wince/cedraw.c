@@ -900,7 +900,7 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
 
     wchar_t widebuf[5];
     XP_UCHAR buf[5];
-    RECT rt;
+    RECT rt, clip;
     XP_U16 bkIndex = (flags & CELL_ISCURSOR) == 0? 
         CE_BKG_COLOR : CE_FOCUS_COLOR;
 
@@ -912,9 +912,13 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
 
     XPRtoRECT( &rt, rect );
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
-    ceClipToRect( hdc, &rt );
+    /* Use a separate rect for clipping since shrinking puts text to close
+       together on smartphone's small screen. */
+    clip = rt;
+    InsetRect( &clip, 2, 2 );
+    ceClipToRect( hdc, &clip );
 
-    DrawText(hdc, L"Pts", -1, &rt, DT_SINGLELINE | DT_TOP | DT_CENTER);	
+    DrawText(hdc, L"Pts", -1, &rt, DT_SINGLELINE | DT_TOP | DT_CENTER);
 
     if ( score < 0 ) {
         buf[0] = '?';

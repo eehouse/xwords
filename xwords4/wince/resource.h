@@ -81,7 +81,6 @@
 #define IDC_PICKMSG                     1053
 #ifdef FEATURE_TRAY_EDIT
 # define IDC_CPICK                      1054
-# define IDC_PICKALL                    1055
 # define IDC_BACKUP                     1056
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -171,6 +170,7 @@
 #define IDC_NPLAYERSUPDOWN               1115
 #define IDC_PHONIESUPDOWN                1116
 #define IDC_SVGM_UPDOWN                  1117
+#define IDC_ASKBLANK_UPDOWN              1124
 
 
 #define IDC_SVGM_SELLAB                  1118
@@ -231,17 +231,13 @@
 #define IDS_OK                          40005
 #define IDS_ABOUT                       40006
 
-// Don't use the numbers after 4009: one string needs not to be there
-// to stop the progression in cedict.c 
-#define IDS_DICTDIRS                    40009
-
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40029
-#define _APS_NEXT_CONTROL_VALUE         1124
+#define _APS_NEXT_CONTROL_VALUE         1125
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

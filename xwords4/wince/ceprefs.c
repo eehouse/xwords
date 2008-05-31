@@ -263,6 +263,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         adjustForChoice( hDlg, pState );
 
         ceDlgSetup( globals, hDlg );
+        trapBackspaceKey( hDlg );
 
         return TRUE;
 
@@ -276,7 +277,14 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             case WM_VSCROLL:
                 ceDoDlgScroll( globals, hDlg, wParam );
                 break;
-
+#ifdef _WIN32_WCE
+            case WM_HOTKEY:
+                if ( VK_TBACK == HIWORD(lParam) ) {
+                    SHSendBackToFocusWindow( message, wParam, lParam );
+                    return TRUE;
+                }
+                break;
+#endif
             case WM_NEXTDLGCTL:
                 ceDoDlgFocusScroll( globals, hDlg, wParam, lParam );
                 break;

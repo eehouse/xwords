@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002, 2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,6 +30,7 @@ typedef struct BlankDialogState {
     const XP_UCHAR4* texts;
     XP_U16 nTiles;
     XP_S16 result;
+    XP_Bool canBackup;
 } BlankDialogState; 
 
 LRESULT CALLBACK BlankDlg(HWND, UINT, WPARAM, LPARAM);
