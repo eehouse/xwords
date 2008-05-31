@@ -159,7 +159,7 @@ drawScoreBoard( BoardCtxt* board )
                 *adjustPt += remDim;
             }
 
-            board->remDim = remDim;	/* save now so register can be reused */
+            board->remDim = remDim; /* save now so register can be reused */
 
             for ( dp = datum, i = 0; i < nPlayers; ++dp, ++i ) {
                 XP_Rect innerRect;
@@ -192,7 +192,7 @@ drawScoreBoard( BoardCtxt* board )
 
         board->scoreBoardInvalid = XP_FALSE;
     }
-	    
+
     drawTimer( board );
 } /* drawScoreBoard */
 

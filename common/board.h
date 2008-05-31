@@ -53,7 +53,7 @@ typedef enum {
     XP_KEY_LAST
 } XP_Key;
 
-#define BONUS_HINT_INTERVAL 15	/* stolen from xwords.c */
+#define BONUS_HINT_INTERVAL 15 /* stolen from xwords.c */
 
 /* typedef struct BoardCtxt BoardCtxt; */
 

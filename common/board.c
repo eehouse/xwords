@@ -51,12 +51,12 @@
 #include "scorebdp.h"
 #include "game.h"
 #include "server.h"
-#include "comms.h"		/* for CHANNEL_NONE */
+#include "comms.h" /* for CHANNEL_NONE */
 #include "dictnry.h"
 #include "draw.h"
 #include "engine.h"
 #include "util.h"
-#include "mempool.h"		/* debug only */
+#include "mempool.h" /* debug only */
 #include "memstream.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"
@@ -149,7 +149,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
     XP_ASSERT( !!model );
 
     if ( result != NULL ) {
-	
+
         XP_MEMSET( result, 0, sizeof( *result ) );
 
         MPASSIGN(result->mpool, mpool);
@@ -359,8 +359,8 @@ board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top,
 
 void
 board_setTimerLoc( BoardCtxt* board, 
-		   XP_U16 timerLeft, XP_U16 timerTop,
-		   XP_U16 timerWidth, XP_U16 timerHeight )
+                   XP_U16 timerLeft, XP_U16 timerTop,
+                   XP_U16 timerWidth, XP_U16 timerHeight )
 {
     board->timerBounds.left = timerLeft;
     board->timerBounds.top = timerTop;
@@ -576,8 +576,8 @@ board_commitTurn( BoardCtxt* board )
         }
     } else if ( checkRevealTray( board ) ) {
         if ( board->tradeInProgress[turn] ) {
-            result = XP_TRUE;	/* there's at least the window to clean up
-                                   after */
+            result = XP_TRUE; /* there's at least the window to clean up
+                                 after */
 
             invalSelTradeWindow( board );
             board->tradeInProgress[turn] = XP_FALSE;
@@ -586,7 +586,7 @@ board_commitTurn( BoardCtxt* board )
                                  (XWStreamCtxt*)NULL ) ) {
                 result = server_commitTrade( board->server, 
                                              board->traySelBits[turn] );
-                /* 		XP_DEBUGF( "server_commitTrade returned %d\n", result ); */
+                /* XP_DEBUGF( "server_commitTrade returned %d\n", result ); */
             }
             board->traySelBits[turn] = 0x00;
         } else {
@@ -699,7 +699,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
 
         setTrayVisState( board, TRAY_REVERSED );
     }
-    board->scoreBoardInvalid = XP_TRUE;	/* if only one player, number of
+    board->scoreBoardInvalid = XP_TRUE; /* if only one player, number of
                                            tiles remaining may have changed*/
 } /* selectPlayerImpl */
 
@@ -1244,8 +1244,8 @@ drawBoard( BoardCtxt* board )
         BlankQueue bq;
         XP_Rect arrowRect;
 
-        scrollIfCan( board );	/* this must happen before we count blanks
-                                   since it invalidates squares */
+        scrollIfCan( board ); /* this must happen before we count blanks
+                                 since it invalidates squares */
 
         /* This is freaking expensive!!!! PENDING FIXME Can't we start from
            what's invalid rather than scanning the entire model every time
@@ -1466,7 +1466,7 @@ chooseBestSelPlayer( BoardCtxt* board )
 
             for ( i = 0; i < nPlayers; ++i ) {
                 LocalPlayer* lp = &board->gi->players[curTurn];
-		
+
                 if ( !lp->isRobot && lp->isLocal ) {
                     return curTurn;
                 }
@@ -1670,7 +1670,7 @@ board_requestHint( BoardCtxt* board,
     XP_Bool searchComplete = XP_TRUE;
     XP_Bool redraw = XP_FALSE;
     
-    *workRemainsP = XP_FALSE;	/* in case we exit without calling engine */
+    *workRemainsP = XP_FALSE; /* in case we exit without calling engine */
 
     selPlayer = board->selPlayer;
     engine = server_getEngineFor( board->server, selPlayer );
@@ -2219,12 +2219,12 @@ askRevealTray( BoardCtxt* board )
             justReverse = XP_TRUE;
         }
     } else {
-		revealed = !player_hasPasswd( lp );
+        revealed = !player_hasPasswd( lp );
 
-		if ( !revealed ) {
-			const XP_UCHAR* name = emptyStringIfNull(lp->name);
+        if ( !revealed ) {
+            const XP_UCHAR* name = emptyStringIfNull(lp->name);
 
-			/* repeat until player gets passwd right or hits cancel */
+            /* repeat until player gets passwd right or hits cancel */
             for ( ; ; ) {
                 XP_UCHAR buf[16];
                 XP_U16 buflen = sizeof(buf);
@@ -2236,10 +2236,10 @@ askRevealTray( BoardCtxt* board )
                         revealed = XP_TRUE;
                         break;
                     }
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 
     if ( revealed ) {
         setTrayVisState( board, TRAY_REVEALED );
@@ -2320,7 +2320,7 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
     }
     *handled = penDidSomething;
 
-    return result;		/* no redraw needed */
+    return result; /* no redraw needed */
 } /* board_handlePenDown */
 #endif
 
@@ -2393,7 +2393,7 @@ tryMoveArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
                         board->trayVisState == TRAY_REVEALED ) ) {
 
         BoardArrow* arrow = &board->boardArrow[board->selPlayer];
-	
+
         if ( arrow->visible && arrow->col == col && arrow->row == row ) {
             /* change it; if vertical, hide; else if horizontal make
                vertical */
@@ -2886,7 +2886,7 @@ advanceArrow( BoardCtxt* board )
 {
     XP_Key key = board->boardArrow[board->selPlayer].vert ?
         XP_CURSOR_KEY_DOWN :  XP_CURSOR_KEY_RIGHT;
-	    
+
     XP_ASSERT( board->trayVisState == TRAY_REVEALED );
 
     return board_moveArrow( board, key );
@@ -2913,7 +2913,7 @@ figureNextLoc( BoardCtxt* board, XP_Key cursorKey,
         numCols = model_numCols( board->model );
 
         switch ( cursorKey ) {
-	     
+
         case XP_CURSOR_KEY_DOWN:
             incr = 1;
             useWhat = (XP_S16*)rowP;
@@ -3139,7 +3139,7 @@ keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace )
             if ( tileIndex < 0 ) {
                 Tile blankTile = dict_getBlankTile( dict );
                 tileIndex = model_trayContains( model, turn, blankTile );
-                if ( tileIndex >= 0 && !!blankFace ) {	/* there's a blank for it */
+                if ( tileIndex >= 0 && !!blankFace ) { /* there's a blank for it */
                     *blankFace = tile;
                 }
             }
@@ -3322,7 +3322,7 @@ static void
 boardGameOver( void* closure )
 {
     BoardCtxt* board = (BoardCtxt*)closure;    
-    board->scoreBoardInvalid = XP_TRUE;	/* not sure if this will do it. */
+    board->scoreBoardInvalid = XP_TRUE; /* not sure if this will do it. */
     board->gameOver = XP_TRUE;
     util_notifyGameOver( board->util );
 } /* boardGameOver */

@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-#define TILE_NBITS 6		/* 32 tiles plus the blank */
+#define TILE_NBITS 6 /* 32 tiles plus the blank */
 
 XP_U16 bitsForMax( XP_U32 n );
 

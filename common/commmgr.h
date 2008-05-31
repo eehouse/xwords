@@ -38,7 +38,7 @@
 #ifndef _COMMMGR_H_
 #define _COMMMGR_H_
 
-#include "comtypes.h"		/* that's *common* types */
+#include "comtypes.h" /* that's *common* types */
 #include "xwstream.h"
 #include "server.h"
 

@@ -70,7 +70,7 @@ typedef enum {
 } DrawFocusState;
 
 typedef enum {
-    TRAY_HIDDEN,	/* doesn't happen unless tray overlaps board */
+    TRAY_HIDDEN, /* doesn't happen unless tray overlaps board */
     TRAY_REVERSED,
     TRAY_REVEALED
 } XW_TrayVisState;

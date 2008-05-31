@@ -21,7 +21,7 @@
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
-#include "comtypes.h"		/* that's *common* types */
+#include "comtypes.h" /* that's *common* types */
 
 #include "commmgr.h"
 #include "model.h"
@@ -49,7 +49,7 @@ typedef XP_U8 DeviceRole;
 /* typedef struct ServerVtable { */
 
 /*   void (*m_registerPlayer)( ServerCtxt* server, XP_U16 playerNum, */
-/* 			    XP_PlayerSocket socket ); */
+/*   XP_PlayerSocket socket ); */
 
 /*   void (*m_getTileValueInfo)( ServerCtxt* server, void* valueBuf ); */
 

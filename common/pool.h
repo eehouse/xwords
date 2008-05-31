@@ -25,7 +25,7 @@
 #include "model.h"
 
 void pool_requestTiles( PoolContext* pool, Tile* tiles, 
-			/*in out*/ XP_U8* maxNum );
+                        /*in out*/ XP_U8* maxNum );
 void pool_replaceTiles( PoolContext* pool, TrayTileSet* tiles );
 void pool_removeTiles( PoolContext* pool, TrayTileSet* tiles );
 

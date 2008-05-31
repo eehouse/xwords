@@ -46,8 +46,8 @@ typedef enum {
 #ifndef XWFEATURE_STANDALONE_ONLY
     ERR_SERVER_DICT_WINS,
     ERR_NO_PEEK_REMOTE_TILES,
-    ERR_REG_UNEXPECTED_USER,	/* server asked to register too many remote
-				   users */
+    ERR_REG_UNEXPECTED_USER, /* server asked to register too many remote
+                                users */
     ERR_REG_SERVER_SANS_REMOTE,
     STR_NEED_BT_HOST_ADDR,
 #endif
@@ -62,7 +62,7 @@ typedef enum {
 } UtilErrID;
 
 typedef enum {
-    QUERY_COMMIT_TURN,		/* 0 means cancel; 1 means commit */
+    QUERY_COMMIT_TURN, /* 0 means cancel; 1 means commit */
     QUERY_COMMIT_TRADE,
     QUERY_ROBOT_MOVE,
     QUERY_ROBOT_TRADE,

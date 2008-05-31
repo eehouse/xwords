@@ -272,14 +272,14 @@ stack_addPhony( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo )
     move.moveType = PHONY_TYPE;
 
     XP_MEMCPY( &move.u.phony.moveInfo, moveInfo, 
-	       sizeof(move.u.phony.moveInfo));
+               sizeof(move.u.phony.moveInfo));
 
     pushEntry( stack, &move );
 } /* stack_addPhony */
 
 void
 stack_addTrade( StackCtxt* stack, XP_U16 turn, 
-		TrayTileSet* oldTiles, TrayTileSet* newTiles )
+                TrayTileSet* oldTiles, TrayTileSet* newTiles )
 {
     StackEntry move;
 

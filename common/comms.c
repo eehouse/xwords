@@ -66,8 +66,8 @@ typedef struct AddressRecord {
     XP_U16 lastACK;
     XP_U16 nUniqueBytes;
 #endif
-    MsgID nextMsgID;		    /* on a per-channel basis */
-    MsgID lastMsgRcd;	        /* on a per-channel basis */
+    MsgID nextMsgID;        /* on a per-channel basis */
+    MsgID lastMsgRcd;        /* on a per-channel basis */
     /* only used if COMMS_HEARTBEAT set except for serialization (to_stream) */
     XP_PlayerAddr channelNo;
     struct {
@@ -90,7 +90,7 @@ typedef enum {
 struct CommsCtxt {
     XW_UtilCtxt* util;
 
-    XP_U32 connID;		        /* 0 means ignore; otherwise must match */
+    XP_U32 connID;             /* 0 means ignore; otherwise must match */
     XP_PlayerAddr nextChannelNo;
 
     AddressRecord* recs;        /* return addresses */
@@ -591,7 +591,7 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 
 void
 comms_getInitialAddr( CommsAddrRec* addr )
-{ 	 
+{
 #if defined  XWFEATURE_RELAY
     addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
@@ -662,7 +662,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 #endif
 
     newMsgElem = (MsgQueueElem*)XP_MALLOC( comms->mpool, 
-					   sizeof( *newMsgElem ) );
+                                           sizeof( *newMsgElem ) );
     newMsgElem->channelNo = channelNo;
     newMsgElem->msgID = msgID;
 #ifdef COMMS_HEARTBEAT

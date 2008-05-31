@@ -35,7 +35,7 @@ extern "C" {
 
 #define mEND 0x6d454e44
 
-#define MAX_PASSES 2		/* how many times can all players pass? */
+#define MAX_PASSES 2 /* how many times can all players pass? */
 
 /****************************** prototypes ******************************/
 typedef void (*MovePrintFuncPre)(ModelCtxt*, XP_U16, StackEntry*, void*);
@@ -212,7 +212,7 @@ buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
 {
     StackEntry entry;
     XP_U16 i;
-    XP_S16 moveScore = 0;	/* keep compiler happy */
+    XP_S16 moveScore = 0; /* keep compiler happy */
 
     for ( i = 0; stack_getNthEntry( stack, i, &entry ); ++i ) {
 
@@ -222,7 +222,7 @@ buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
 
         switch ( entry.moveType ) {
         case MOVE_TYPE:
-	    
+
             model_makeTurnFromMoveInfo( model, entry.playerNum,
                                         &entry.u.move.moveInfo);
             moveScore = commitTurn( model, entry.playerNum, 
@@ -236,7 +236,7 @@ buildModelFromStack( ModelCtxt* model, StackCtxt* stack,
             assignPlayerTiles( model, entry.playerNum, 
                                &entry.u.assign.tiles );
             break;
-        case PHONY_TYPE:	/* nothing to add */
+        case PHONY_TYPE: /* nothing to add */
             model_makeTurnFromMoveInfo( model, entry.playerNum,
                                         &entry.u.phony.moveInfo);
             /* do something here to cause it to print */
@@ -580,7 +580,7 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                 /* get the tiles out of player's tray and back into the
                    pool */
                 replaceNewTiles( model, pool, turn, &entry.u.move.newTiles);
-		    
+
                 undoFromMoveInfo( model, turn, blankTile, 
                                   &entry.u.move.moveInfo );
             } else if ( entry.moveType == TRADE_TYPE ) {
@@ -1214,7 +1214,7 @@ commitTurn( ModelCtxt* model, XP_S16 turn, TrayTileSet* newTiles,
         XP_ASSERT( (tile & TILE_PENDING_BIT) != 0 );
 
         val = tile & TILE_VALUE_MASK;
-        if ( val > 1 ) {	/* somebody else is using this square too! */
+        if ( val > 1 ) { /* somebody else is using this square too! */
             putBackOtherPlayersTiles( model, turn, col, row );
         }
 
@@ -1563,7 +1563,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry,
 
     case PHONY_TYPE:
         format = util_getUserString( model->vol.util, STR_PHONY_REJECTED );
-        printString( stream, format );	
+        printString( stream, format );
     case MOVE_TYPE:
         format = util_getUserString( model->vol.util, STRD_CUMULATIVE_SCORE );
         XP_SNPRINTF( buf, sizeof(buf), format, totalScore );
@@ -1578,7 +1578,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry,
         if ( nTiles > 0 ) {
 
             if ( entry->moveType == PHONY_TYPE ) {
-                /* 		printString( stream, (XP_UCHAR*)"phony rejected " ); */
+                /* printString( stream, (XP_UCHAR*)"phony rejected " ); */
             } else if ( !closure->keepHidden ) {
                 format = util_getUserString(model->vol.util, STRS_NEW_TILES);
                 XP_SNPRINTF( buf, sizeof(buf), format,
@@ -1588,7 +1588,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry,
                 printString( stream, buf );
             }
         }
-	
+
         break;
     }
 
@@ -1743,7 +1743,7 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
         }
     }
 
-    if ( found ) {	/* success? */
+    if ( found ) { /* success? */
         const XP_UCHAR* format;
         XP_U16 nTiles;
         switch ( entry.moveType ) {

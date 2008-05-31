@@ -94,7 +94,7 @@ static Tile
 getNthPoolTile( PoolContext* pool, short index ) 
 {
     Tile result;
-	
+
     /* given an array of counts of remaining letters, subtract each in turn
        from the total we seek until that total is at or below zero.  The count
        that put it (or would put it) under 0 is the one to pick. */
@@ -164,7 +164,7 @@ pool_replaceTiles( PoolContext* pool, TrayTileSet* tiles )
     Tile* tilesP = tiles->tiles;
 
     while ( nTiles-- ) {
-        Tile tile = *tilesP++;	/* do I need to filter off high bits? */
+        Tile tile = *tilesP++; /* do I need to filter off high bits? */
 
         XP_ASSERT( nTiles < MAX_TRAY_TILES );
         XP_ASSERT( tile < pool->numFaces );
@@ -183,7 +183,7 @@ pool_removeTiles( PoolContext* pool, TrayTileSet* tiles )
     XP_ASSERT( nTiles <= MAX_TRAY_TILES );
 
     while ( nTiles-- ) {
-        Tile tile = *tilesP++;	/* do I need to filter off high bits? */
+        Tile tile = *tilesP++; /* do I need to filter off high bits? */
 
         XP_ASSERT( tile < pool->numFaces );
         XP_ASSERT( pool->lettersLeft[tile] > 0 );

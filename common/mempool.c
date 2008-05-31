@@ -95,10 +95,10 @@ mpool_destroy( MemPoolCtx* mpool )
     if ( !!mpool->usedList ) {
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
-#ifndef FOR_GREMLINS		/* I don't want to hear about this right now */
+#ifndef FOR_GREMLINS /* I don't want to hear about this right now */
             XP_WARNF( "0x" XP_P " from ln %ld of %s\n", 
                       entry->ptr, entry->lineNo, entry->fileName );
-#ifdef DEBUG	    
+#ifdef DEBUG
             {
                 char* tryTxt;
                 tryTxt = checkIsText( entry );

@@ -55,8 +55,8 @@ enum {
 typedef XP_U8 GameEndReason;
 
 typedef struct ServerPlayer {
-    EngineCtxt* engine;	/* each needs his own so don't interfere each other */
-    XP_S8 deviceIndex;		/* 0 means local, -1 means unknown */
+    EngineCtxt* engine; /* each needs his own so don't interfere each other */
+    XP_S8 deviceIndex;  /* 0 means local, -1 means unknown */
 } ServerPlayer;
 
 #define UNKNOWN_DEVICE -1
@@ -87,7 +87,7 @@ typedef struct ServerVolatiles {
 typedef struct ServerNonvolatiles {
     XP_U8 nDevices;
     XW_State gameState;
-    XP_S8 currentTurn;		/* invalid when game is over */
+    XP_S8 currentTurn; /* invalid when game is over */
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
 
@@ -201,12 +201,12 @@ initServer( ServerCtxt* server )
         if ( !lp->isLocal/*  && !lp->name */ ) {
             ++server->nv.pendingRegistrations;
         }
-	
+
         player->deviceIndex = lp->isLocal? SERVER_DEVICE : UNKNOWN_DEVICE;
-	
+
     }
 
-    server->nv.nDevices = 1;	/* local device (0) is always there */
+    server->nv.nDevices = 1; /* local device (0) is always there */
 } /* initServer */
 
 ServerCtxt* 
@@ -249,7 +249,8 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     nv->pendingRegistrations = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
 
     for ( i = 0; i < nPlayers; ++i ) {
-        nv->addresses[i].channelNo = (XP_PlayerAddr)stream_getBits( stream, 16 );
+        nv->addresses[i].channelNo = (XP_PlayerAddr)stream_getBits( stream,
+                                                                    16 );
     }
 } /* getNV */
 
@@ -517,7 +518,7 @@ robotTradeTiles( ServerCtxt* server, MoveInfo* newMove )
     XP_U16 numInTray = model_getNumPlayerTiles( server->model, turn );
     XP_MEMCPY( tradeTiles, curTiles, numInTray );
 
-    for ( i = 0; i < numInTray; ++i ) {	/* for each tile in tray */
+    for ( i = 0; i < numInTray; ++i ) { /* for each tile in tray */
         XP_Bool keep = XP_FALSE;
         for ( j = 0; j < newMove->numTiles; ++j ) { /* for each in move */
             Tile movedTile = newMove->tiles[j].tile;
@@ -599,7 +600,7 @@ makeRobotMove( ServerCtxt* server )
     CurGameInfo* gi = server->vol.gi;
     XP_Bool timerEnabled = gi->timerEnabled;
     XP_Bool canMove;
-    XP_U32 time = 0L;		/* stupid compiler.... */
+    XP_U32 time = 0L; /* stupid compiler.... */
     XP_U16 targetScore = NO_SCORE_LIMIT;
     XW_UtilCtxt* util = server->vol.util;
     
@@ -685,7 +686,7 @@ makeRobotMove( ServerCtxt* server )
         XP_ASSERT( gi->players[turn].secondsUsed == 0 );
     }
 
-    return result;		/* always return TRUE after robot move? */
+    return result; /* always return TRUE after robot move? */
 } /* makeRobotMove */
 
 static XP_Bool
@@ -764,7 +765,7 @@ server_do( ServerCtxt* server )
     server->serverDoing = XP_TRUE;
 
     switch( server->nv.gameState ) {
-    case XWSTATE_BEGIN:	
+    case XWSTATE_BEGIN:
         if ( server->nv.pendingRegistrations == 0 ) { /* all players on device */
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_INTURN );
@@ -1010,7 +1011,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             dict_destroy( newDict );
         } else {
             dict_destroy( curDict );
-            model_setDictionary( model, newDict );	
+            model_setDictionary( model, newDict );
             util_userError( server->vol.util, ERR_SERVER_DICT_WINS );
             clearLocalRobots( server );
         }
@@ -1759,7 +1760,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 {
     ModelCtxt* model = server->vol.model;
     XP_U16 whoMoved;
-    XP_U16 nTilesMoved = 0;	/* trade case */
+    XP_U16 nTilesMoved = 0; /* trade case */
     XP_Bool isTrade;
     XP_Bool isLegalMove;
     XP_Bool doRequest = XP_FALSE;
@@ -1774,7 +1775,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
 
     readMoveInfo( server, stream, &whoMoved, &isTrade, &newTiles,
                   &tradedTiles, &isLegalMove ); /* modifies model */
-    XP_ASSERT( isLegalMove );	/* client should always report as true */
+    XP_ASSERT( isLegalMove ); /* client should always report as true */
     isLegalMove = XP_TRUE;
 
     if ( isTrade ) {
@@ -1825,7 +1826,7 @@ reflectMoveAndInform( ServerCtxt* server, XWStreamCtxt* stream )
             XP_ASSERT( !server->vol.prevMoveStream );
             server->vol.prevMoveStream = mvStream;
         }
-	
+
     } else {
         /* The client from which the move came still needs to be told.  But we
            can't send a message now since we're burried in a message handler.
@@ -2209,7 +2210,7 @@ reflectUndos( ServerCtxt* server, XWStreamCtxt* stream, XW_Proto code )
         if ( code == XWPROTO_UNDO_INFO_CLIENT ) { /* need to inform */
             XP_U16 sourceClientIndex = 
                 getIndexForDevice( server, stream_getAddress( stream ) );
-	
+
             sendUndoToClientsExcept( server, sourceClientIndex, nUndone, 
                                      lastUndone );
 
@@ -2225,7 +2226,7 @@ XP_Bool
 server_handleUndo( ServerCtxt* server )
 {
     XP_Bool result = XP_FALSE;
-    XP_U16 lastTurnUndone = 0;	/* quiet compiler good */
+    XP_U16 lastTurnUndone = 0; /* quiet compiler good */
     XP_U16 nUndone = 0;
     ModelCtxt* model;
     CurGameInfo* gi;
@@ -2240,7 +2241,7 @@ server_handleUndo( ServerCtxt* server )
        The exception is that if the first move was a robot move we'll stop
        there, and it will immediately move again. */
     for ( ; ; ) {
-        XP_S16 moveNum = -1;		/* don't need it checked */
+        XP_S16 moveNum = -1; /* don't need it checked */
         if ( !model_undoLatestMoves( model, server->pool, 1, &lastTurnUndone, 
                                      &moveNum ) ) {
             break;
@@ -2297,28 +2298,28 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
         XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
         accepted = client_readInitialMessage( server, incoming );
-	
+
     } else if ( readStreamHeader( server, incoming ) ) {
 
         switch( code ) {
-            /* 	case XWPROTO_MOVEMADE_INFO: */
-            /* 	    accepted = client_reflectMoveMade( server, incoming ); */
-            /* 	    if ( accepted ) { */
-            /* 		nextTurn( server ); */
-            /* 	    } */
-            /* 	    break; */
-            /* 	case XWPROTO_TRADEMADE_INFO: */
-            /* 	    accepted = client_reflectTradeMade( server, incoming ); */
-            /* 	    if ( accepted ) { */
-            /* 		nextTurn( server ); */
-            /* 	    } */
-            /* 	    break; */
-            /* 	case XWPROTO_CLIENT_MOVE_INFO: */
-            /* 	    accepted = handleClientMoved( server, incoming ); */
-            /* 	    break; */
-            /* 	case XWPROTO_CLIENT_TRADE_INFO: */
-            /* 	    accepted = handleClientTraded( server, incoming ); */
-            /* 	    break; */
+/*         case XWPROTO_MOVEMADE_INFO: */
+/*             accepted = client_reflectMoveMade( server, incoming ); */
+/*             if ( accepted ) { */
+/*                 nextTurn( server ); */
+/*             } */
+/*             break; */
+/*         case XWPROTO_TRADEMADE_INFO: */
+/*             accepted = client_reflectTradeMade( server, incoming ); */
+/*             if ( accepted ) { */
+/*                 nextTurn( server ); */
+/*             } */
+/*             break; */
+/*         case XWPROTO_CLIENT_MOVE_INFO: */
+/*             accepted = handleClientMoved( server, incoming ); */
+/*             break; */
+/*         case XWPROTO_CLIENT_TRADE_INFO: */
+/*             accepted = handleClientTraded( server, incoming ); */
+/*             break; */
 
         case XWPROTO_MOVEMADE_INFO_CLIENT: /* client is reporting a move */
             accepted = (XWSTATE_INTURN == server->nv.gameState)
@@ -2432,7 +2433,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
     PoolContext* pool = server->pool;
 
     if ( !pool ) {
-        return;  	/* might want to print an explanation in the stream */
+        return;  /* might want to print an explanation in the stream */
     }
 
     XP_ASSERT( !!server->vol.model );
@@ -2509,7 +2510,7 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         }
 
         if ( highestIndex == -1 ) {
-            break;		/* we're done */
+            break; /* we're done */
         } else if ( place > 1 ) {
             stream_putString( stream, XP_CR );
         }

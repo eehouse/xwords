@@ -40,10 +40,6 @@ static XP_U16 find_start( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 static XP_S16 checkScoreMove( ModelCtxt* model, XP_S16 turn, 
                               EngineCtxt* engine, XWStreamCtxt* stream, 
                               XP_Bool silent, WordNotifierInfo* notifyInfo );
-/* static XP_U16 figureWordScore( ModelCtxt* model, MoveInfo* moveInfo,  */
-/* 			       EngineCtxt* engine, */
-/* 			       XP_Bool silent, short moveMultiplier, */
-/* 			       WordNotifierInfo* notifyInfo ); */
 static XP_U16 scoreWord( const ModelCtxt* model, MoveInfo* movei,
                          EngineCtxt* engine, XWStreamCtxt* stream, 
                          WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord );
@@ -243,7 +239,7 @@ checkScoreMove( ModelCtxt* model, XP_S16 turn, EngineCtxt* engine,
             score = figureMoveScore( model, &moveInfo, engine, stream, 
                                      notifyInfo, NULL );
         }
-    } else if ( !silent ) {		/* tiles out of line */
+    } else if ( !silent ) { /* tiles out of line */
         util_userError( model->vol.util, ERR_TILES_NOT_IN_LINE );
     }
     return score;
@@ -401,13 +397,13 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
         }
         /* now the neighbors above... */
         if ( commonCoord != 0 ) {
-            --*commonP;		/* decrement whatever's not being looped over */
+            --*commonP; /* decrement whatever's not being looped over */
             for ( *incr = low; *incr <= high; ++*incr ) {
                 if ( !modelIsEmptyAt( model, col, row ) ) {
                     return XP_TRUE;
                 }
             }
-            ++*commonP;		/* undo the decrement */
+            ++*commonP;/* undo the decrement */
         }
         /* ...and below */
         if ( commonCoord <= MAX_ROWS - 1 ) {
@@ -419,7 +415,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
             }
             --*commonP;
         }
-		
+
         /* if we got here, it's illegal unless this is the first move -- i.e.
            unless one of the tiles is on the STAR */
         if ( ( commonCoord == star_row) && 
@@ -440,7 +436,7 @@ isLegalMove( ModelCtxt* model, MoveInfo* mInfo, XP_Bool silent )
         }
     }
     XP_ASSERT( XP_FALSE );
-    return XP_FALSE;		/* keep compiler happy */
+    return XP_FALSE; /* keep compiler happy */
 } /* isLegalMove */
 
 XP_U16
@@ -557,7 +553,7 @@ tile_multiplier( const ModelCtxt* model, XP_U16 col, XP_U16 row )
 } /* tile_multiplier */
 
 static XP_U16
-scoreWord( const ModelCtxt* model, MoveInfo* movei,	/* new tiles */
+scoreWord( const ModelCtxt* model, MoveInfo* movei, /* new tiles */
            EngineCtxt* engine,/* for crosswise caching */
            XWStreamCtxt* stream, 
            WordNotifierInfo* notifyInfo,
@@ -611,12 +607,13 @@ scoreWord( const ModelCtxt* model, MoveInfo* movei,	/* new tiles */
 
         if ( engine != NULL ) {
             XP_ASSERT( nTiles==1 );
-            scoreFromCache = engine_getScoreCache( engine, movei->commonCoord );
+            scoreFromCache = engine_getScoreCache( engine, 
+                                                   movei->commonCoord );
         }
 
         /* for a while, at least, calculate and use the cached crosscheck score
          * each time through in the debug case */
-        if ( 0 ) {			/* makes keeping parens balanced easier */
+        if ( 0 ) { /* makes keeping parens balanced easier */
 #ifdef DEBUG
         } else if ( 1 ) {
 #else
@@ -650,13 +647,13 @@ scoreWord( const ModelCtxt* model, MoveInfo* movei,	/* new tiles */
                     XP_ASSERT( (tile & TILE_VALUE_MASK) == tile );
                 }
 
-                *curTile++ = tile;	/* save in case we're checking phonies */
+                *curTile++ = tile; /* save in case we're checking phonies */
 
                 if ( !!stream || !!mainWord ) {
                     wordScoreFormatterAddTile( &fmtr, tile, tileMultiplier, 
                                                isBlank );
                 }
-	    
+
                 if ( isBlank ) {
                     tile = dict_getBlankTile( dict );
                 }
@@ -689,7 +686,7 @@ scoreWord( const ModelCtxt* model, MoveInfo* movei,	/* new tiles */
 
         } else if ( engine != NULL ) {
 #else
-        } else {			/* non-debug case we know it's non-null */
+        } else { /* non-debug case we know it's non-null */
 #endif
             XP_ASSERT( nTiles==1 );
             XP_ASSERT( engine_getScoreCache( engine, movei->commonCoord ) 
