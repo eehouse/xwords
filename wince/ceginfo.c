@@ -26,6 +26,7 @@
 #include "cecondlg.h"
 #include "strutils.h"
 #include "cedebug.h"
+#include "debhacks.h"
 
 #define NUM_COLS 4
 #define MENUDICTS_INCR 16
@@ -181,7 +182,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
     }
     if ( giState->isNewGame ) {
-        (void)ceLocateNDicts( MPPARM(globals->mpool) globals->hInst, 
+        (void)ceLocateNDicts( MPPARM(globals->mpool) 
                               CE_MAXDICTS, addDictToState, giState );
     } else {
         wchar_t wPath[CE_MAX_PATH_LEN+1];
@@ -495,6 +496,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         globals = giState->globals;
 
         ceDlgSetup( globals, hDlg );
+        trapBackspaceKey( hDlg );
 
         giState->newGameCtx = newg_make( MPPARM(globals->mpool)
                                          giState->isNewGame,
@@ -513,6 +515,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( giState->isNewGame ) {
             (void)SetWindowText( hDlg, L"New game" );
         }
+
         result = TRUE;
 
     } else {
@@ -521,7 +524,14 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             globals = giState->globals;
 
             switch (message) {
-
+#ifdef _WIN32_WCE
+            case WM_HOTKEY:
+                if ( VK_TBACK == HIWORD(lParam) ) {
+                    SHSendBackToFocusWindow( message, wParam, lParam );
+                    result = TRUE;
+                }
+                break;
+#endif
             case WM_VSCROLL:
                 result = ceDoDlgScroll( globals, hDlg, wParam );
                 break;

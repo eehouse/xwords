@@ -67,6 +67,18 @@ BOOL DH(ResetEvent)(HANDLE);
 
 #endif /* USE_RAW_MINGW */
 
+
+#ifdef _WIN32_WCE
+/* from http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1733046&SiteID=1 */
+# define SHMBOF_NODEFAULT    0x00000001 // do not do default handling of this key
+# define SHMBOF_NOTIFY       0x00000002 // send us the WM_* messages for this key
+# define SHCMBM_OVERRIDEKEY  (WM_USER + 403)
+
+
+# define VK_TBACK VK_ESCAPE
+#endif
+
+
 #if 0
  /* http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1591512&SiteID=1 */
 #define IM_SPELL 0

@@ -343,23 +343,33 @@ BEGIN
 #endif
 END
 
-IDD_ASKBLANK DIALOG DISCARDABLE  0, 0, 131, 90
+IDD_ASKBLANK DIALOG DISCARDABLE  0, 0, 80, 90
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Tile picker"
 FONT 8, "System"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,70,70,20,14
-    LTEXT           "Enter a letter for this blank tile.",IDC_BPICK,8,8,63,18
+    LTEXT           "Enter a letter for this blank tile.",IDC_BPICK,8,8,50,18
 #ifdef FEATURE_TRAY_EDIT
-    PUSHBUTTON      "Pick all!",IDC_PICKALL,8,70,39,14
-    PUSHBUTTON      "Del",IDC_BACKUP,48,70,18,14
-    LTEXT           "Pick a tile for your tray.",IDC_CPICK,8,8,63,18
+    LTEXT           "Pick a tile for your tray.",IDC_CPICK,8,8,50,18
+    PUSHBUTTON      "Put back",IDC_BACKUP,8,70,28,14
 
     EDITTEXT        IDC_PICKMSG,8,28,80,30,ES_MULTILINE | ES_READONLY
-
 #endif
-    LISTBOX         BLANKFACE_LIST,100,5,25,83,LBS_NOINTEGRALHEIGHT | 
-                    WS_VSCROLL | WS_TABSTOP
+
+#ifdef _WIN32_WCE
+    LISTBOX         BLANKFACE_LIST,65,8,25,12,WS_TABSTOP
+    CONTROL "",     IDC_ASKBLANK_UPDOWN, UPDOWN_CLASS,  
+                    UDS_AUTOBUDDY | UDS_HORZ | UDS_ALIGNRIGHT | UDS_WRAP | 
+                    UDS_SETBUDDYINT | UDS_EXPANDABLE | UDS_NOSCROLL,
+                    0, 0, 0, 0 
+#else
+    COMBOBOX        BLANKFACE_LIST,60,5,25,12,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    DEFPUSHBUTTON   "OK",IDOK,70,70,REPOS_BUTTON_WIDTH, BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,20,70,REPOS_BUTTON_WIDTH, BUTTON_HT
+#endif
+
 END
 
 #define SVGN_LEFT_COL 2
@@ -843,19 +853,12 @@ BEGIN
     IDS_DUMMY               "--"
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
-    IDS_ABOUT       "Crosswords 4.2b2 (rev " SVN_REV ") "\
+    IDS_ABOUT       "Crosswords 4.2b3 (rev " SVN_REV ") "\
                     "for PocketPC. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
                     "For dictionaries, a manual, or source code go to "\
                     "http://xwords.sf.net or http://eehouse.org/xwords/."
-#ifdef _WIN32_WCE
-    IDS_DICTDIRS            "\\Program Files\\Crosswords"
-    IDS_DICTDIRS+1          "\\SD Card\\Crosswords"
-    IDS_DICTDIRS+2          "\\Storage Card\\Crosswords"
-#else
-    IDS_DICTDIRS            "."
-#endif
 END
 
 #endif    // English (U.S.) resources

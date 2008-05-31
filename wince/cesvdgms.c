@@ -20,11 +20,13 @@
 #include <windowsx.h>
 #include "stdafx.h" 
 #include <commdlg.h>
+#include <aygshell.h>
 
 #include "cemain.h" 
 #include "cesvdgms.h" 
 #include "ceutil.h" 
 #include "cedebug.h" 
+#include "debhacks.h"
 
 typedef struct CeSaveGameNameState {
     CEAppGlobals* globals;
@@ -82,6 +84,7 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->inited = XP_FALSE;
 
         ceDlgSetup( state->globals, hDlg );
+        trapBackspaceKey( hDlg );
 
         result = TRUE;
     } else {
@@ -93,6 +96,14 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             }
 
             switch (message) {
+#ifdef _WIN32_WCE
+            case WM_HOTKEY:
+                if ( VK_TBACK == HIWORD(lParam) ) {
+                    SHSendBackToFocusWindow( message, wParam, lParam );
+                    result = TRUE;
+                }
+                break;
+#endif
             case WM_COMMAND:
                 wid = LOWORD(wParam);
                 switch( wid ) {

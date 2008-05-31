@@ -55,8 +55,11 @@ void ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg,
                          WPARAM wParam, LPARAM lParam );
 #ifdef _WIN32_WCE
 void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
+void trapBackspaceKey( HWND hDlg );
 #else
 # define ceSizeIfFullscreen( globals, hWnd )
+# define trapBackspaceKey( hDlg )
 #endif
+
 
 #endif

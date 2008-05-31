@@ -23,11 +23,13 @@
 #include <string.h>              /* _snwprintf */
 
 #include "stdafx.h" 
+/* #include <accctrl.h> */
 #include <commdlg.h>
 #include "dictnryp.h"
 #include "strutils.h"
 #include "cedict.h"
 #include "debhacks.h"
+#include "cedebug.h"
 
 typedef struct CEDictionaryCtxt {
     DictionaryCtxt super;
@@ -621,121 +623,47 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
     return done;
 } /* locateOneDir */
 
-#define USE_FOREACH  /* FOREACH avoids code duplication, but may not be worth
-                        the extra complexity.  Size is the same. */
-#ifdef USE_FOREACH
-/* return true when done */
-typedef XP_Bool (*ForEachCB)( wchar_t* dir, void* ctxt );
-
-static void
-forEachDictDir( HINSTANCE hInstance, ForEachCB cb, void* ctxt )
-{
-    UINT id;
-    for ( id = IDS_DICTDIRS; ; ++id ) {
-        wchar_t pathBuf[CE_MAX_PATH_LEN+1];
-        if ( 0 >= LoadString( hInstance, id, pathBuf, 
-                              VSIZE(pathBuf) ) ) {
-            break;
-        }
-
-        if ( (*cb)( pathBuf, ctxt ) ) {
-            break;
-        }
-    }
-} /* forEachDictDir */
-
-typedef struct LocateOneData {
-    XP_U16 nFound;
-    XP_U16 nSought;
-    OnePathCB cb;
-    void* ctxt;
-
-    MPSLOT
-} LocateOneData;
-
 static XP_Bool
-locateOneDirCB( wchar_t* dir, void* ctxt )
+getDictDir( wchar_t* buf )
 {
-    LocateOneData* datap = (LocateOneData*)ctxt;
-
-    return locateOneDir( MPPARM(datap->mpool) dir, datap->cb, 
-                         datap->ctxt, datap->nSought, &datap->nFound )
-        || datap->nFound >= datap->nSought;
-} /* locateOneDirCB */
-
-XP_U16
-ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
-                OnePathCB cb, void* ctxt )
-{
-    LocateOneData data;
-
-    data.nFound = 0;
-    data.nSought = nSought;
-    data.cb = cb;
-    data.ctxt = ctxt;
-#ifdef MEM_DEBUG
-    data.mpool = mpool;
-#endif
-
-    forEachDictDir( hInstance, locateOneDirCB, &data );
-    return data.nFound;
+/*     BOOL found = SHGetKnownFolderPath(HWND,LPWSTR,int,BOOL); */
+    // temporary hack until I figure SHGetKnownFolderPath out
+    wsprintf( buf, L"\\Program Files\\Crosswords" );
+    return XP_TRUE;
 }
 
-typedef struct FormatDirsData {
-    XWStreamCtxt* stream;
-    XP_Bool firstPassDone;
-} FormatDirsData;
-
-static XP_Bool 
-formatDirsCB( wchar_t* dir, void* ctxt )
-{
-    FormatDirsData* datap = (FormatDirsData*)ctxt;
-    XP_UCHAR narrow[CE_MAX_PATH_LEN+1];
-    int len;
-
-    if ( datap->firstPassDone ) {
-        stream_putString( datap->stream, ", " );
-    } else {
-        datap->firstPassDone = XP_TRUE;
-    }
-
-    len = WideCharToMultiByte( CP_ACP, 0, dir, -1,
-                               narrow, VSIZE(narrow), 
-                               NULL, NULL );
-    stream_putString( datap->stream, narrow );
-    return XP_FALSE;
-} /* formatDirsCB */
-
-void
-ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
-{
-    FormatDirsData data;
-    data.stream = stream;
-    data.firstPassDone = XP_FALSE;
-
-    forEachDictDir( hInstance, formatDirsCB, &data );
-}
-
-#else
-
 XP_U16
-ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought, 
-                OnePathCB cb, void* ctxt )
+ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
 {
     XP_U16 nFound = 0;
-    UINT id;
+    wchar_t path[CE_MAX_PATH_LEN+1];
 
-    for ( id = IDS_DICTDIRS; ; ++id ) {
-        wchar_t pathBuf[CE_MAX_PATH_LEN+1];
-        if ( 0 >= LoadString( hInstance, id, pathBuf, 
-                              VSIZE(pathBuf) ) ) {
-            break;
-        }
+    if ( getDictDir( path ) ) {
+        locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, &nFound );
+    }
 
-        locateOneDir( MPPARM(mpool) pathBuf, cb, ctxt, nSought, &nFound );
+    if ( nFound < nSought ) {
+        WIN32_FIND_DATA data;
+        HANDLE fileH;
 
-        if ( nFound >= nSought ) {
-            break;
+        XP_MEMSET( &data, 0, sizeof(data) );
+
+        fileH = FindFirstFile( L"\\*", &data );
+        while ( fileH != INVALID_HANDLE_VALUE ) {
+            if ( ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+                 && (((data.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY) != 0) ) ) { 
+                wsprintf( path, L"\\%s\\Crosswords", data.cFileName );
+
+                XP_LOGW( "looking in:", path );
+                locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, &nFound );
+            }
+            if ( nFound >= nSought ) {
+                break;
+            }
+
+            if ( !FindNextFile( fileH, &data ) ) {
+                break;
+            }
         }
     }
 
@@ -745,28 +673,19 @@ ceLocateNDicts( MPFORMAL HINSTANCE hInstance, XP_U16 nSought,
 void
 ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
 {
-    UINT id;
-
-    for ( id = IDS_DICTDIRS; ; ++id ) {
-        wchar_t wide[CE_MAX_PATH_LEN+1];
-        XP_UCHAR narrow[CE_MAX_PATH_LEN+1];
-        XP_U16 len;
-
-        if ( 0 >= LoadString( hInstance, id, wide, 
-                              VSIZE(wide) ) ) {
-            break;
-        }
-
-        if ( id != IDS_DICTDIRS ) {
-            stream_putString( stream, ", " );
-        }
-        len = WideCharToMultiByte( CP_ACP, 0, wide, -1,
-                                   narrow, VSIZE(narrow), 
-                                   NULL, NULL );
-        stream_putString( stream, narrow );
+    wchar_t path[CE_MAX_PATH_LEN+1];
+    if ( getDictDir( path ) ) {
+        char narrowName[CE_MAX_PATH_LEN+1];
+        int len = wcslen( path );
+        len = WideCharToMultiByte( CP_ACP, 0, path, len + 1,
+                                   narrowName, len + 1, NULL, NULL );
+        stream_putString( stream, narrowName );
+        stream_putString( stream, " or" );
     }
+
+    const char* rest = " on an external card, e.g. in \\Storage Card\\Crosswords";
+    stream_putString( stream, rest );
 }
-#endif /* USE_FOREACH */
 
 typedef struct FindOneData {
     wchar_t* result;
@@ -807,8 +726,7 @@ findAlternateDict( CEAppGlobals* globals, wchar_t* path )
     data.sought = wbname( shortPath, sizeof(shortPath), path );
     data.result = path;
 
-    (void)ceLocateNDicts( MPPARM(globals->mpool) globals->hInst, CE_MAXDICTS, 
-                          matchShortName, &data );
+    (void)ceLocateNDicts( MPPARM(globals->mpool) CE_MAXDICTS, matchShortName, &data );
     return data.found;
 } /* findAlternateDict */
 

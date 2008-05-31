@@ -146,6 +146,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         eState->inited = XP_FALSE;
 
         ceDlgSetup( eState->globals, hDlg );
+        trapBackspaceKey( hDlg );
 
         wchar_t label[32];
         XP_U16 len = SendDlgItemMessage( eState->parent, eState->labelID, 
@@ -197,7 +198,14 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 break;
             }
             break;
-
+#ifdef _WIN32_WCE
+        case WM_HOTKEY:
+            if ( VK_TBACK == HIWORD(lParam) ) {
+                SHSendBackToFocusWindow( message, wParam, lParam );
+                return TRUE;
+            }
+            break;
+#endif
         case WM_COMMAND:
             wid = LOWORD(wParam);
             switch( wid ) {

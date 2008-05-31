@@ -20,6 +20,7 @@
 #include "ceaskpwd.h"
 #include "cemain.h"
 #include "ceutil.h"
+#include "debhacks.h"
 #include <stdio.h>              /* swprintf */
 
 static void
@@ -48,6 +49,9 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         pState = (PasswdDialogState*)lParam;
 
+        ceDlgSetup( pState->globals, hDlg );
+        trapBackspaceKey( hDlg );
+
         nameToLabel( hDlg, pState->name, IDC_PWDLABEL );
 
         return TRUE;
@@ -56,6 +60,14 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( !!pState ) {
 
             switch ( message ) {
+#ifdef _WIN32_WCE
+            case WM_HOTKEY:
+                if ( VK_TBACK == HIWORD(lParam) ) {
+                    SHSendBackToFocusWindow( message, wParam, lParam );
+                    return TRUE;
+                }
+                break;
+#endif
             case WM_COMMAND:
                 id = LOWORD(wParam);
                 switch( id ) {
