@@ -53,19 +53,19 @@ extern "C" {
 #define CELL_OWNER_OFFSET 10
 #define CELL_OWNER(t) (((t)&CELL_OWNER_MASK) >> CELL_OWNER_OFFSET)
 
-#define MAX_UNIQUE_TILES 64	/* max tile non-blank faces */
+#define MAX_UNIQUE_TILES 64 /* max tile non-blank faces */
 #define MAX_NUM_BLANKS 4
 
 /* Used by scoring code and engine as fast representation of moves. */
 typedef struct MoveInfoTile {
-    XP_U8 varCoord;		/* 5 bits ok (0-16 for 17x17 board) */
-    Tile tile;			/* 6 bits will do */
+    XP_U8 varCoord; /* 5 bits ok (0-16 for 17x17 board) */
+    Tile tile;      /* 6 bits will do */
 } MoveInfoTile;
 
 typedef struct MoveInfo {
-    XP_U8 nTiles;		/* 4 bits: 0-7 */
-    XP_U8 commonCoord;		/* 5 bits: 0-16 if 17x17 possible */
-    XP_Bool isHorizontal;	/* 1 bit */
+    XP_U8 nTiles;         /* 4 bits: 0-7 */
+    XP_U8 commonCoord;    /* 5 bits: 0-16 if 17x17 possible */
+    XP_Bool isHorizontal; /* 1 bit */
     /* If this is to go on an undo stack, we need player num here, or the code
        has to keep track of it *and* there must be exactly one entry per
        player per turn. */
@@ -84,7 +84,7 @@ typedef struct BlankQueue {
     XP_U8 row[MAX_NUM_BLANKS];
 } BlankQueue;
 
-typedef XP_U8 TileBit;	    /* bits indicating selection of tiles in tray */
+typedef XP_U8 TileBit;    /* bits indicating selection of tiles in tray */
 #define ALLTILES ((TileBit)~(0xFF<<(MAX_TRAY_TILES)))
 
 #define ILLEGAL_MOVE_SCORE (-1)
@@ -92,7 +92,7 @@ typedef XP_U8 TileBit;	    /* bits indicating selection of tiles in tray */
 #define EMPTY_TILE TILE_EMPTY_BIT
 #define TILE_IS_EMPTY(t) (((t)&TILE_EMPTY_BIT)!=0)
 #define REVERSED_TILE TILE_PENDING_BIT /* reuse that bit for tile drawing
-					  only */
+                                          only */
 
 
 ModelCtxt* model_make( MPFORMAL DictionaryCtxt* dict, XW_UtilCtxt* util,
@@ -146,8 +146,6 @@ void model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur,
 XP_S16 model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile );
 
 
-/* void model_setTile( ModelCtxt* model, XP_U16 col, XP_U16 row,  */
-/* 		    Tile tile, XP_Bool isBlank ); */
 XP_U16 model_numRows( const ModelCtxt* model );
 XP_U16 model_numCols( const ModelCtxt* model );
 

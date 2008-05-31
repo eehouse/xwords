@@ -39,7 +39,7 @@ setBlankTile( DictionaryCtxt* dctx )
 {
     XP_U16 i;
 
-    dctx->blankTile = -1;	/* no known blank */
+    dctx->blankTile = -1; /* no known blank */
 
     for ( i = 0; i < dctx->nFaces; ++i ) {
         if ( dctx->faces16[i] == 0 ) {
@@ -395,33 +395,33 @@ dict_getLangCode( const DictionaryCtxt* dict )
 
 static XP_U8 stub_english_data[] = {
     /* count            value           face */
-    9,			1,		'A',
-    2,			3,		'B',
-    2,			3,		'C',
-    4,			2,		'D',
-    12,			1,		'E',
-    2,			4,		'F',
-    3,			2,		'G',
-    2,			4,		'H',
-    9,			1,		'I',
-    1,			8,		'J',
-    1,			5,		'K',
-    4,			1,		'L',
-    2,			3,		'M',
-    6,			1,		'N',
-    8,			1,		'O',
-    2,			3,		'P',
-    1,			10,		'Q',
-    6,			1,		'R',
-    4,			1,		'S',
-    6,			1,		'T',
-    4,			1,		'U',
-    2,			4,		'V',
-    2,			4,		'W',
-    1,			8,		'X',
-    2,			4,		'Y',
-    1,			10,		'Z',
-    2,			0,		BLANK_FACE, /* BLANK1 */
+    9,   1,  'A',
+    2,   3,  'B',
+    2,   3,  'C',
+    4,   2,  'D',
+    12,  1,  'E',
+    2,   4,  'F',
+    3,   2,  'G',
+    2,   4,  'H',
+    9,   1,  'I',
+    1,   8,  'J',
+    1,   5,  'K',
+    4,   1,  'L',
+    2,   3,  'M',
+    6,   1,  'N',
+    8,   1,  'O',
+    2,   3,  'P',
+    1,   10, 'Q',
+    6,   1,  'R',
+    4,   1,  'S',
+    6,   1,  'T',
+    4,   1,  'U',
+    2,   4,  'V',
+    2,   4,  'W',
+    1,   8,  'X',
+    2,   4,  'Y',
+    1,   10, 'Z',
+    2,   0,   BLANK_FACE, /* BLANK1 */
 };
 
 void

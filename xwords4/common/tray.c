@@ -48,7 +48,7 @@ trayLocToIndex( BoardCtxt* board, XP_U16 loc )
 XP_S16
 pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* onDividerP )
 {
-    XP_S16 result = -1;		/* not on a tile */
+    XP_S16 result = -1; /* not on a tile */
     XP_Rect divider;
     XP_Rect biggerRect;
     XP_Bool onDivider;
@@ -392,7 +392,7 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
         }
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
         result = board_commitTurn( board );
-    } else if ( index < 0 ) {		/* other empty area */
+    } else if ( index < 0 ) { /* other empty area */
         /* it better be true */
         (void)board_replaceTiles( board );
         result = XP_TRUE;
@@ -414,7 +414,7 @@ indexForBits( XP_U8 bits )
     XP_U16 result = 0;
     XP_U16 mask = 1;
 
-    XP_ASSERT( bits != 0 );	/* otherwise loops forever */
+    XP_ASSERT( bits != 0 ); /* otherwise loops forever */
     
     while ( (mask & bits) == 0 ) {
         ++result;

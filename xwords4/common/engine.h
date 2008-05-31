@@ -48,7 +48,7 @@ void engine_init( EngineCtxt* ctxt );
 void engine_reset( EngineCtxt* ctxt );
 void engine_destroy( EngineCtxt* ctxt );
 
-#define NO_SCORE_LIMIT 10000	/* for targetScore */
+#define NO_SCORE_LIMIT 10000 /* for targetScore */
 XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model, 
                          const DictionaryCtxt* dict, const Tile* tiles, 
                          XP_U16 nTiles, 

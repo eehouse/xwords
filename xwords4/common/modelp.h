@@ -30,15 +30,15 @@ extern "C" {
 typedef struct PendingTile {
     XP_U8 col;
     XP_U8 row;
-    Tile tile;			/* includes face and blank bit */
+    Tile tile; /* includes face and blank bit */
 } PendingTile;
 
 typedef struct PlayerCtxt {
     XP_S16 score;
-    XP_S16 curMoveScore;	/* negative means illegal */
+    XP_S16 curMoveScore; /* negative means illegal */
     XP_Bool curMoveValid;
     TrayTileSet trayTiles;
-    XP_U8 nPending;	/* still in tray but "on board" */
+    XP_U8 nPending;      /* still in tray but "on board" */
     PendingTile pendingTiles[MAX_TRAY_TILES];
 } PlayerCtxt;
 
@@ -69,7 +69,7 @@ struct ModelCtxt {
 void invalidateScore( ModelCtxt* model, XP_S16 player );
 XP_Bool tilesInLine( ModelCtxt* model, XP_S16 turn, XP_Bool* isHorizontal );
 void normalizeMoves( ModelCtxt* model, XP_S16 turn, 
-		     XP_Bool isHorizontal, MoveInfo* moveInfo );
+                     XP_Bool isHorizontal, MoveInfo* moveInfo );
 void adjustScoreForUndone( ModelCtxt* model, MoveInfo* mi, XP_U16 turn );
 #ifdef CPLUS
 }

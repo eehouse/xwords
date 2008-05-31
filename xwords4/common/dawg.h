@@ -74,9 +74,9 @@ typedef struct dawg_header {
 /* Part of xwords3 dictionaries on PalmOS */
 typedef struct Xloc_header {
     unsigned char langCodeFlags; /* can't do bitfields; gcc for pilot and x86
-				    seem to generate different code */
+                                    seem to generate different code */
     unsigned char padding;       /* ptrs to the shorts in Xloc_specialEntry
-				    will otherwise be odd */
+                                    will otherwise be odd */
 } Xloc_header;
 
 typedef struct Xloc_specialEntry {

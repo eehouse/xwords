@@ -270,7 +270,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
     gi->nPlayers = 2;
     gi->boardSize = 15;
     gi->robotSmartness = SMART_ROBOT;
-    gi->gameSeconds = 25 * 60;	/* 25 minute game is common? */
+    gi->gameSeconds = 25 * 60; /* 25 minute game is common? */
     
     gi->confirmBTConnect = XP_TRUE;
 
@@ -284,7 +284,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
             fp->name = copyString( mpool, buf );
         }
 
-        fp->isRobot = (i == 0);	/* one robot */
+        fp->isRobot = (i == 0); /* one robot */
         fp->isLocal = XP_TRUE;
         fp->secondsUsed = 0;
     }

@@ -71,7 +71,7 @@ typedef struct StreamCtxVTable {
     XP_U16 (*m_stream_getSize)( XWStreamCtxt* dctx );
 
 /*     void (*m_stream_makeReturnAddr)( XWStreamCtxt* dctx, XP_PlayerAddr* addr, */
-/* 				     XP_U16* addrLen ); */
+/*                                      XP_U16* addrLen ); */
 
     XP_PlayerAddr (*m_stream_getAddress)( XWStreamCtxt* dctx );
     void (*m_stream_setAddress)( XWStreamCtxt* dctx, XP_PlayerAddr channelNo );

@@ -65,8 +65,8 @@ struct DictionaryCtxt {
     const XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
 
     array_edge* topEdge;
-    array_edge* base;		/* the physical beginning of the dictionary; not
-                               necessarily the entry point for search!! */
+    array_edge* base; /* the physical beginning of the dictionary; not
+                         necessarily the entry point for search!! */
     XP_UCHAR* name;
     XP_CHAR16* faces16;          /* 16 for unicode */
     XP_U8* countsAndValues;
@@ -84,7 +84,7 @@ struct DictionaryCtxt {
     XP_Bool is_4_byte;
 #endif
 
-    XP_S8 blankTile;		/* negative means there's no known blank */
+    XP_S8 blankTile; /* negative means there's no known blank */
 #ifdef DEBUG
     XP_U32 numEdges;
 #endif
@@ -97,7 +97,7 @@ struct DictionaryCtxt {
 /* typedef struct DictionaryVtable { */
 /*     XP_U16 (*m_getTileValue)( DictionaryCtxt* ctxt, CellTile tile ); */
 /*     unsigned char (*m_getTileChar)( DictionaryCtxt* ctxt, CellTile tile, */
-/* 				   XP_FontCode* fontCode ); */
+/*    XP_FontCode* fontCode ); */
 /*     XP_U16 (*m_numTiles)( DictionaryCtxt* ctxt, Tile tile ); */
 /*     XP_U16 (*m_numTileFaces)( DictionaryCtxt* ctxt ); */
 /* } DictionaryVtable; */

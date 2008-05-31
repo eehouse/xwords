@@ -24,7 +24,7 @@
 #include "model.h"
 #include "board.h"
 #include "engine.h"
-#include "mempool.h"		/* debug only */
+#include "mempool.h" /* debug only */
 
 #ifdef CPLUS
 extern "C" {
@@ -66,10 +66,10 @@ typedef struct DragState {
 } DragState;
 
 typedef struct BoardArrow { /* gets flipped along with board */
-	XP_U8 col;
-	XP_U8 row;
-	XP_Bool vert;
-	XP_Bool visible;
+    XP_U8 col;
+    XP_U8 row;
+    XP_Bool vert;
+    XP_Bool visible;
 } BoardArrow;
 
 #ifdef KEYBOARD_NAV
@@ -90,7 +90,7 @@ typedef struct MiniWindowStuff {
 } MiniWindowStuff;
 
 enum { MINIWINDOW_VALHINT, MINIWINDOW_TRADING };
-typedef XP_U16 MiniWindowType;	/* one of the two above */
+typedef XP_U16 MiniWindowType; /* one of the two above */
 
 struct BoardCtxt {
 /*     BoardVTable* vtable; */
@@ -106,8 +106,8 @@ struct BoardCtxt {
     XP_U16 yOffset;
     XP_U16 lastVisibleRow;
     XP_U16 preHideYOffset;
-    XP_U16 prevYScrollOffset;	/* represents where the last draw took place;
-				   used to see if bit scrolling can be used */
+    XP_U16 prevYScrollOffset; /* represents where the last draw took place;
+                                 used to see if bit scrolling can be used */
     XP_U16 penDownX;
     XP_U16 penDownY;
 
@@ -137,7 +137,7 @@ struct BoardCtxt {
     XP_Bool eraseTray;
     XP_Bool boardObscuresTray;
     XP_Bool boardHidesTray;
-    XP_Bool scoreSplitHor;	/* how to divide the scoreboard? */
+    XP_Bool scoreSplitHor;/* how to divide the scoreboard? */
 
     XP_U16 star_row;
 
@@ -150,21 +150,21 @@ struct BoardCtxt {
     BdCursorLoc bdCursor[MAX_NUM_PLAYERS];
     XP_Bool focusHasDived;
 #endif
-    XP_U8 dividerLoc[MAX_NUM_PLAYERS];	/* 0 means left of 0th tile, etc. */
+    XP_U8 dividerLoc[MAX_NUM_PLAYERS]; /* 0 means left of 0th tile, etc. */
 
     XP_U16 scoreDims[MAX_NUM_PLAYERS];
 
     /* scoreboard state */
     XP_Rect scoreBdBounds;
     XP_Rect timerBounds;
-    XP_U8 selPlayer;	/* which player is selected (!= turn) */
+    XP_U8 selPlayer; /* which player is selected (!= turn) */
 
     /* tray state */
     XP_U8 trayScaleH;
     XP_U8 trayScaleV;
     XP_Rect trayBounds;
-    XP_U16 remDim;	/* width (or ht) of the "rem:" string in scoreboard */
-    XP_U8 dividerWidth;		/* 0 would mean invisible */
+    XP_U16 remDim;      /* width (or ht) of the "rem:" string in scoreboard */
+    XP_U8 dividerWidth; /* 0 would mean invisible */
     XP_Bool dividerInvalid;
 
     XP_Bool scoreBoardInvalid;

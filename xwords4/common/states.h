@@ -28,11 +28,11 @@ typedef enum {
     XWSTATE_NONE,
     XWSTATE_BEGIN,
     __UNUSED1,              /*XWSTATE_POOL_INITED,*/
-    XWSTATE_NEED_SHOWSCORE,	/* client-only */
-    XWSTATE_WAITING_ALL_REG,	/* includes waiting for dict from server */
-    XWSTATE_RECEIVED_ALL_REG,	/* includes waiting for dict from server */
+    XWSTATE_NEED_SHOWSCORE,       /* client-only */
+    XWSTATE_WAITING_ALL_REG,      /* includes waiting for dict from server */
+    XWSTATE_RECEIVED_ALL_REG,     /* includes waiting for dict from server */
     XWSTATE_NEEDSEND_BADWORD_INFO,
-    XWSTATE_MOVE_CONFIRM_WAIT,  /* client's waiting to hear back */
+    XWSTATE_MOVE_CONFIRM_WAIT,    /* client's waiting to hear back */
     XWSTATE_MOVE_CONFIRM_MUSTSEND, /* server should tell client asap */
     XWSTATE_NEEDSEND_ENDGAME,
     XWSTATE_INTURN,

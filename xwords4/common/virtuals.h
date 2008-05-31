@@ -26,7 +26,7 @@ enum {
     VIRTUAL_UTIL,
     VIRTUAL_DRAW,
     VIRTUAL_STREAM,
-    VIRTUAL_NUM_VIRTUALS	/* must be last */
+    VIRTUAL_NUM_VIRTUALS /* must be last */
 } XW_VIRTUALS;
 
 

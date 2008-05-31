@@ -75,10 +75,10 @@ void stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream );
 void stack_writeToStream( StackCtxt* stack, XWStreamCtxt* stream );
 
 void stack_addMove( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo, 
-		    TrayTileSet* newTiles );
+                    TrayTileSet* newTiles );
 void stack_addPhony( StackCtxt* stack, XP_U16 turn, MoveInfo* moveInfo );
 void stack_addTrade( StackCtxt* stack, XP_U16 turn, 
-		     TrayTileSet* oldTiles, TrayTileSet* newTiles );
+                     TrayTileSet* oldTiles, TrayTileSet* newTiles );
 void stack_addAssign( StackCtxt* stack, XP_U16 turn, TrayTileSet* tiles );
 
 XP_U16 stack_getNEntries( StackCtxt* stack );

@@ -305,7 +305,7 @@ default_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
         str = "Triple letter"; break;
     case BONUS_TRIPLE_WORD:
         str = "Triple word"; break;
-    case INTRADE_MW_TEXT:	
+    case INTRADE_MW_TEXT:
         str = "Trading tiles;\nclick D when done"; break;
     default:
         XP_ASSERT( XP_FALSE );

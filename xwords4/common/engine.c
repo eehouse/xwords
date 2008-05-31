@@ -39,11 +39,11 @@ typedef struct BlankTuple {
 } BlankTuple;
 
 typedef struct PossibleMove {
-    XP_U16 score;		/* Because I'm doing a memcmp to sort these things,
-                           the comparison must be done differently on
+    XP_U16 score; /* Because I'm doing a memcmp to sort these things,
+                     the comparison must be done differently on
                            little-endian platforms. */
     MoveInfo moveInfo;
-    //XP_U16 whichBlanks;		/* flags */
+    //XP_U16 whichBlanks; /* flags */
     Tile blankVals[MAX_COLS]; /* the faces for which we've substituted
                                  blanks */
 } PossibleMove;
@@ -357,7 +357,7 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
         chosen = &engine->miData.savedMoves[--engine->miData.leftInMoveCache];
     }
 
-    *move = chosen;		/* set either way */
+    *move = chosen; /* set either way */
 
     if ( chosen->score > 0 ) {
 
@@ -565,9 +565,6 @@ findMovesOneRow( EngineCtxt* engine )
                                &engine->scoreCache[col],
                                &engine->rowChecks[col]);
         }
-
-        /* 	XP_DEBUGF( "row %d: set scoreCache[%d] to %d\n", row, col,  */
-        /* 		 engine->scoreCache[col] ); */
     }
 
     prevAnchor = firstSearchCol - 1;
@@ -1056,7 +1053,8 @@ considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
                  == EMPTY_TILE ) { 
                 posmove.moveInfo.tiles[posmove.moveInfo.nTiles].tile = 
                     tiles[posmove.moveInfo.nTiles];
-                posmove.moveInfo.tiles[posmove.moveInfo.nTiles].varCoord = (XP_U8)col;
+                posmove.moveInfo.tiles[posmove.moveInfo.nTiles].varCoord 
+                    = (XP_U8)col;
                 ++posmove.moveInfo.nTiles;
             }
         }
@@ -1094,11 +1092,9 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
             for ( i = 0; i < usedBlanksCount; ++i ) {
                 short col = usedBlanks[i].col;
                 posmove->blankVals[col] = usedBlanks[i].tile;
-                /* 		posmove->whichBlanks |= (1 << col); */
             }
             XP_ASSERT( posmove->moveInfo.isHorizontal==
                        engine->searchHorizontal );
-            /* 	    posmove->moveInfo.isHorizontal = engine->searchHorizontal; */
             posmove->moveInfo.commonCoord = (XP_U8)lastRow;
             saveMoveIfQualifies( engine, posmove );
         }
@@ -1134,7 +1130,7 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
 {
     XP_S16 lowest = 0;
 
-    if ( !engine->isRobot ) {	/* robot doesn't ask for next hint.... */
+    if ( !engine->isRobot ) { /* robot doesn't ask for next hint.... */
 
         /* we're not interested if we've seen this */
         if ( CMPMOVES( posmove, &engine->miData.lastSeenMove ) >= 0 ) {
@@ -1154,9 +1150,9 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
                 /* 1/20/2001  I don't see that this assertion is valid.  I
                    simply don't understand why it isn't tripped all the time
                    in the old crosswords. */
-                /* 		XP_ASSERT( (engine->miData.lastSeenMove.score == 0x7fff) */
-                /* 			   || (engine->miData.savedMoves[i].score */
-                /* 			       <= posmove->score) ); */
+                /* XP_ASSERT( (engine->miData.lastSeenMove.score == 0x7fff) */
+                /*    || (engine->miData.savedMoves[i].score */
+                /*        <= posmove->score) ); */
 
                 if ( CMPMOVES( &engine->miData.savedMoves[lowest], 
                                &engine->miData.savedMoves[i] ) > 0 ) {
@@ -1170,13 +1166,13 @@ saveMoveIfQualifies( EngineCtxt* engine, PossibleMove* posmove )
            lower than this for the rest of this round. */
         engine->miData.lowestSavedScore = 
             engine->miData.savedMoves[lowest].score;
-        /* 	XP_DEBUGF( "lowestSavedScore now %d\n",  */
-        /* 		 engine->miData.lowestSavedScore ); */
+        /* XP_DEBUGF( "lowestSavedScore now %d\n",  */
+        /* engine->miData.lowestSavedScore ); */
         if ( CMPMOVES( posmove, &engine->miData.savedMoves[lowest]) > 0 ) {
             XP_MEMCPY( &engine->miData.savedMoves[lowest], posmove,
                        sizeof(engine->miData.savedMoves[lowest]) );
-            /* 	    XP_DEBUGF( "just saved move with score %d\n",  */
-            /* 		     engine->miData.savedMoves[lowest].score ); */
+            /*     XP_DEBUGF( "just saved move with score %d\n",  */
+            /*      engine->miData.savedMoves[lowest].score ); */
         }
     }
 } /* saveMoveIfQualifies */

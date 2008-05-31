@@ -24,26 +24,26 @@
 
 
 typedef enum {
-    XWPROTO_ERROR = 0,		/* illegal value */
-    XWPROTO_CHAT,		/* reserved... */
+    XWPROTO_ERROR = 0, /* illegal value */
+    XWPROTO_CHAT,      /* reserved... */
     XWPROTO_DEVICE_REGISTRATION, /* client's first message to server */
-    XWPROTO_CLIENT_SETUP,	 /* server's first message to client */
+    XWPROTO_CLIENT_SETUP, /* server's first message to client */
     XWPROTO_MOVEMADE_INFO_CLIENT, /* client reports a move it made */
     XWPROTO_MOVEMADE_INFO_SERVER, /* server tells all clients about a move
-				     made by it or another client */
-    XWPROTO_UNDO_INFO_CLIENT,	/* client reports undo[s] on the device */
-    XWPROTO_UNDO_INFO_SERVER,	/* server reports undos[s] happening
-				   elsewhere*/
-    //XWPROTO_CLIENT_MOVE_INFO,	 /* client says "I made this move" */
-    //XWPROTO_SERVER_MOVE_INFO,	 /* server says "Player X made this move" */
+                                     made by it or another client */
+    XWPROTO_UNDO_INFO_CLIENT,    /* client reports undo[s] on the device */
+    XWPROTO_UNDO_INFO_SERVER,    /* server reports undos[s] happening
+                                  elsewhere*/
+    //XWPROTO_CLIENT_MOVE_INFO,  /* client says "I made this move" */
+    //XWPROTO_SERVER_MOVE_INFO,  /* server says "Player X made this move" */
 /*     XWPROTO_CLIENT_TRADE_INFO, */
 /*     XWPROTO_TRADEMADE_INFO, */
     XWPROTO_BADWORD_INFO,
-    XWPROTO_MOVE_CONFIRM,	/* server tells move sender that move was
-				   legal */
+    XWPROTO_MOVE_CONFIRM,  /* server tells move sender that move was
+                              legal */
     //XWPROTO_MOVEMADE_INFO,       /* info about tiles placed and received */
-    XWPROTO_CLIENT_REQ_END_GAME, /* non-server wants to end the game */
-    XWPROTO_END_GAME		 /* server says to end game */
+    XWPROTO_CLIENT_REQ_END_GAME,   /* non-server wants to end the game */
+    XWPROTO_END_GAME               /* server says to end game */
 
     
 } XW_Proto;
