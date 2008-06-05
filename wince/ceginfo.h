@@ -24,11 +24,11 @@
 #include "cemain.h"
 #include "ceprefs.h"
 #include "cedict.h"
+#include "ceutil.h"
 #include "nwgamest.h"
 
 typedef struct GameInfoState {
-    CEAppGlobals* globals;
-    HWND hDlg;
+    CeDlgHdr dlgHdr;
     NewGameCtx* newGameCtx;
     XP_UCHAR newDictName[CE_MAX_PATH_LEN+1];
 

@@ -77,7 +77,7 @@ addDictToState( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
     if ( loc >= 0 ) {
         /* make a copy of the long name */
         len = wcslen( wPath ) + 1;
-        wstr = (wchar_t*)XP_MALLOC( giState->globals->mpool, 
+        wstr = (wchar_t*)XP_MALLOC( giState->dlgHdr.globals->mpool, 
                                     len * sizeof(wstr[0]) );
 
         XP_MEMCPY( wstr, wPath, len*sizeof(wstr[0]) );
@@ -86,13 +86,13 @@ addDictToState( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
             XP_ASSERT( giState->capMenuDicts == 0 );
             giState->capMenuDicts = MENUDICTS_INCR;
             giState->menuDicts
-                = (wchar_t**)XP_MALLOC( giState->globals->mpool, 
+                = (wchar_t**)XP_MALLOC( giState->dlgHdr.globals->mpool, 
                                         giState->capMenuDicts 
                                         * sizeof(giState->menuDicts[0]) );
         } else if ( giState->nMenuDicts == giState->capMenuDicts ) {
             giState->capMenuDicts += MENUDICTS_INCR;
             giState->menuDicts
-                = (wchar_t**)XP_REALLOC( giState->globals->mpool, 
+                = (wchar_t**)XP_REALLOC( giState->dlgHdr.globals->mpool, 
                                          giState->menuDicts, 
                                          giState->capMenuDicts 
                                          * sizeof(giState->menuDicts[0]) );
@@ -122,7 +122,7 @@ addDictsToMenu( GameInfoState* giState )
     for ( i = 0; i < nMenuDicts; ++i ) {
         wchar_t* wPath = giState->menuDicts[i];
         shortname = wbname( shortPath, sizeof(shortPath), wPath );
-        SendDlgItemMessage( giState->hDlg, IDC_DICTLIST, ADDSTRING, 0, 
+        SendDlgItemMessage( giState->dlgHdr.hDlg, IDC_DICTLIST, ADDSTRING, 0, 
                             (long)shortname );
 
         if ( giState->newDictName[0] != 0 && sel == 0 ) {
@@ -135,7 +135,7 @@ addDictsToMenu( GameInfoState* giState )
         }
     }
 
-    SendDlgItemMessage( giState->hDlg, IDC_DICTLIST, SETCURSEL, sel, 0L );
+    SendDlgItemMessage( giState->dlgHdr.hDlg, IDC_DICTLIST, SETCURSEL, sel, 0L );
 } /* addDictsToMenu */
 
 static void
@@ -145,18 +145,18 @@ cleanupGameInfoState( GameInfoState* giState )
         XP_U16 nMenuDicts = giState->nMenuDicts;
         XP_U16 i;
         for ( i = 0; i < nMenuDicts; ++i ) {
-            XP_FREE( giState->globals->mpool, giState->menuDicts[i] );
+            XP_FREE( giState->dlgHdr.globals->mpool, giState->menuDicts[i] );
         }
-        XP_FREE( giState->globals->mpool, giState->menuDicts );
+        XP_FREE( giState->dlgHdr.globals->mpool, giState->menuDicts );
         giState->menuDicts = NULL;
     }
 } /* cleanupGameInfoState */
 
 static void
-loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
+loadFromGameInfo( GameInfoState* giState )
 {
     XP_U16 i;
-    CurGameInfo* gi = &globals->gameInfo;
+    CurGameInfo* gi = &giState->dlgHdr.globals->gameInfo;
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     wchar_t* roles[] = { L"Standalone", L"Host", L"Guest" };
@@ -170,7 +170,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
         wchar_t widebuf[8];
         /* put a string in the moronic combobox */
         swprintf( widebuf, L"%d", i + 1 );
-        SendDlgItemMessage( hDlg, IDC_NPLAYERSCOMBO, ADDSTRING, 0, 
+        SendDlgItemMessage( giState->dlgHdr.hDlg, IDC_NPLAYERSCOMBO, ADDSTRING, 0, 
                             (long)widebuf );
     }
 
@@ -182,7 +182,7 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
     }
     if ( giState->isNewGame ) {
-        (void)ceLocateNDicts( MPPARM(globals->mpool) 
+        (void)ceLocateNDicts( MPPARM(giState->dlgHdr.globals->mpool) 
                               CE_MAXDICTS, addDictToState, giState );
     } else {
         wchar_t wPath[CE_MAX_PATH_LEN+1];
@@ -195,14 +195,16 @@ loadFromGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
 #endif
 
     if ( !giState->isNewGame ) {
-        ceEnOrDisable( hDlg, IDC_DICTLIST, XP_FALSE );
+        ceEnOrDisable( giState->dlgHdr.hDlg, IDC_DICTLIST, XP_FALSE );
     }
 } /* loadFromGameInfo */
 
 static XP_Bool
-stateToGameInfo( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
+stateToGameInfo( GameInfoState* giState )
 {
+    CEAppGlobals* globals = giState->dlgHdr.globals;
     CurGameInfo* gi = &globals->gameInfo;
+    HWND hDlg = giState->dlgHdr.hDlg;
     XP_Bool timerOn;
     XP_Bool success = newg_store( giState->newGameCtx, gi, XP_TRUE );
 
@@ -346,7 +348,7 @@ ceEnableColProc( void* closure, XP_U16 player, NewGameColumn col,
 {
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForCol( player, col );
-    doForNWEnable( giState->hDlg, resID, enable );
+    doForNWEnable( giState->dlgHdr.hDlg, resID, enable );
 }
 
 static void
@@ -354,7 +356,7 @@ ceEnableAttrProc( void* closure, NewGameAttr attr, XP_TriEnable enable )
 {
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForAttr( attr );
-    doForNWEnable( giState->hDlg, resID, enable );
+    doForNWEnable( giState->dlgHdr.hDlg, resID, enable );
 } /* ceEnableAttrProc */
 
 static void 
@@ -372,12 +374,12 @@ ceGetColProc( void* closure, XP_U16 player, NewGameColumn col,
     case NG_COL_REMOTE:
 #endif
     case NG_COL_ROBOT:
-        value.ng_bool = ceGetChecked( giState->hDlg, resID );
+        value.ng_bool = ceGetChecked( giState->dlgHdr.hDlg, resID );
         break;
     case NG_COL_NAME:
     case NG_COL_PASSWD:
         len = sizeof(txt);
-        ceGetDlgItemText( giState->hDlg, resID, txt, &len );
+        ceGetDlgItemText( giState->dlgHdr.hDlg, resID, txt, &len );
         value.ng_cp = &txt[0];
         break;
     default:
@@ -403,13 +405,13 @@ ceSetColProc( void* closure, XP_U16 player, NewGameColumn col,
         } else {
             cp = value.ng_cp;
         }
-        ceSetDlgItemText( giState->hDlg, resID, cp );
+        ceSetDlgItemText( giState->dlgHdr.hDlg, resID, cp );
         break;
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
 #endif
     case NG_COL_ROBOT:
-        ceSetChecked( giState->hDlg, resID, value.ng_bool );
+        ceSetChecked( giState->dlgHdr.hDlg, resID, value.ng_bool );
         break;
     default:
         XP_ASSERT(0);
@@ -424,17 +426,17 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
 
     switch ( attr ) {
     case NG_ATTR_NPLAYERS:
-        SendDlgItemMessage( giState->hDlg, resID, SETCURSEL, 
+        SendDlgItemMessage( giState->dlgHdr.hDlg, resID, SETCURSEL, 
                             value.ng_u16 - 1, 0L );
         break;
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
-        SendDlgItemMessage( giState->hDlg, resID, SETCURSEL, 
+        SendDlgItemMessage( giState->dlgHdr.hDlg, resID, SETCURSEL, 
                             value.ng_role, 0L );
         break;
 #endif
     case NG_ATTR_NPLAYHEADER:
-        ceSetDlgItemText( giState->hDlg, resID, value.ng_cp );
+        ceSetDlgItemText( giState->dlgHdr.hDlg, resID, value.ng_cp );
         break;
     default:
         break;
@@ -456,7 +458,7 @@ handleColChecked( GameInfoState* giState, XP_U16 id, XP_U16 base )
     NGValue value;
     XP_U16 player = playerFromID( id, base );
 
-    value.ng_bool = ceGetChecked( giState->hDlg, id );
+    value.ng_bool = ceGetChecked( giState->dlgHdr.hDlg, id );
 
     newg_colChanged( giState->newGameCtx, player );
 }
@@ -492,11 +494,9 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         giState = (GameInfoState*)lParam;
-        giState->hDlg = hDlg;
-        globals = giState->globals;
+        globals = giState->dlgHdr.globals;
 
-        ceDlgSetup( globals, hDlg );
-        trapBackspaceKey( hDlg );
+        ceDlgSetup( &giState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
 
         giState->newGameCtx = newg_make( MPPARM(globals->mpool)
                                          giState->isNewGame,
@@ -508,7 +508,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                          ceSetAttrProc,
                                          giState );
 
-        loadFromGameInfo( hDlg, globals, giState );
+        loadFromGameInfo( giState );
         loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo,
                                &giState->prefsPrefs );
 
@@ -521,131 +521,119 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     } else {
         giState = (GameInfoState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!giState ) {
-            globals = giState->globals;
+            globals = giState->dlgHdr.globals;
 
-            switch (message) {
-#ifdef _WIN32_WCE
-            case WM_HOTKEY:
-                if ( VK_TBACK == HIWORD(lParam) ) {
-                    SHSendBackToFocusWindow( message, wParam, lParam );
-                    result = TRUE;
-                }
-                break;
-#endif
-            case WM_VSCROLL:
-                result = ceDoDlgScroll( globals, hDlg, wParam );
-                break;
-
-                /* WM_NEXTDLGCTL is worthless; prev obj still has focus */
-            case WM_NEXTDLGCTL:
-                ceDoDlgFocusScroll( globals, hDlg, wParam, lParam );
-                break;
+            XP_ASSERT( hDlg == giState->dlgHdr.hDlg );
+            result = ceDoDlgHandle( &giState->dlgHdr, message, wParam, lParam );
+            if ( !result ) {
+                switch (message) {
 
 #ifdef OWNERDRAW_JUGGLE
-            case WM_DRAWITEM:   /* for BS_OWNERDRAW style */
-                ceDrawIconButton( globals, (DRAWITEMSTRUCT*)lParam );
-                result = TRUE;
-                break;
+                case WM_DRAWITEM:   /* for BS_OWNERDRAW style */
+                    ceDrawIconButton( globals, (DRAWITEMSTRUCT*)lParam );
+                    result = TRUE;
+                    break;
 #endif
 
-            case WM_COMMAND:
-                result = TRUE;
-                id = LOWORD(wParam);
-                switch( id ) {
+                case WM_COMMAND:
+                    result = TRUE;
+                    id = LOWORD(wParam);
+                    switch( id ) {
 
-                case ROBOT_CHECK1:
-                case ROBOT_CHECK2:
-                case ROBOT_CHECK3:
-                case ROBOT_CHECK4:
-                    handleColChecked( giState, id, ROBOT_CHECK1 );
-                    break;
+                    case ROBOT_CHECK1:
+                    case ROBOT_CHECK2:
+                    case ROBOT_CHECK3:
+                    case ROBOT_CHECK4:
+                        handleColChecked( giState, id, ROBOT_CHECK1 );
+                        break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-                case REMOTE_CHECK1:
-                case REMOTE_CHECK2:
-                case REMOTE_CHECK3:
-                case REMOTE_CHECK4:
-                    handleColChecked( giState, id, REMOTE_CHECK1 );
-                    break;
+                    case REMOTE_CHECK1:
+                    case REMOTE_CHECK2:
+                    case REMOTE_CHECK3:
+                    case REMOTE_CHECK4:
+                        handleColChecked( giState, id, REMOTE_CHECK1 );
+                        break;
 #endif
 
-                case IDC_NPLAYERSCOMBO:
-                    if ( HIWORD(wParam) == CBN_SELCHANGE ) {
-                        if ( giState->isNewGame ) {   /* ignore if in info
-                                                         mode */
-                            NGValue value;
-                            value.ng_u16 = 1 + (XP_U16)
-                                SendDlgItemMessage( hDlg, 
-                                                    IDC_NPLAYERSCOMBO,
-                                                    GETCURSEL, 0, 0L);
-                            newg_attrChanged( giState->newGameCtx, 
-                                              NG_ATTR_NPLAYERS, value );
-                        }
-                    }
-                    break;
-
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-                case IDC_ROLECOMBO:
-                    if ( HIWORD(wParam) == CBN_SELCHANGE ) {
-                        if ( giState->isNewGame ) {  /* ignore if in info
-                                                        mode */
-                            NGValue value;
-                            value.ng_role = 
-                                (DeviceRole)SendDlgItemMessage( hDlg, 
-                                                            IDC_ROLECOMBO,
-                                                            CB_GETCURSEL, 0, 
-                                                            0L);
-                            newg_attrChanged( giState->newGameCtx, 
-                                              NG_ATTR_ROLE, value );
-                            /* If we've switched to a state where we'll be
-                               connecting */
-                            if ( value.ng_role != SERVER_STANDALONE ) {
-                                handleConnOptionsButton( hDlg, globals, 
-                                                         value.ng_role, 
-                                                         giState );
+                    case IDC_NPLAYERSCOMBO:
+                        if ( HIWORD(wParam) == CBN_SELCHANGE ) {
+                            if ( giState->isNewGame ) {   /* ignore if in info
+                                                             mode */
+                                NGValue value;
+                                value.ng_u16 = 1 + (XP_U16)
+                                    SendDlgItemMessage( hDlg, 
+                                                        IDC_NPLAYERSCOMBO,
+                                                        GETCURSEL, 0, 0L);
+                                newg_attrChanged( giState->newGameCtx, 
+                                                  NG_ATTR_NPLAYERS, value );
                             }
                         }
-                    }
-                    break;
-#endif
-                case GIJUGGLE_BUTTON:
-                    XP_ASSERT( giState->isNewGame );
-                    /* Juggle vs switch.  On Win32, updates are coalesced so
-                       you don't see anything on screen if you change a field
-                       then change it back.  In terms of messages, all we see
-                       here is a WM_CTLCOLOREDIT for each field being
-                       changed.  If I post a custom event here, it comes in
-                       *before* the WM_CTLCOLOREDIT events.  Short of a
-                       timer, which starts a race with the user, I see no way
-                       to get notified after the drawing's done.  So for now,
-                       we switch rather than juggle: call juggle until
-                       something actually happens. */
-                    while ( !newg_juggle( giState->newGameCtx ) ) {
-                    }
-                    break;
-
-                case OPTIONS_BUTTON:
-                    handlePrefsButton( hDlg, globals, giState );
-                    break;
-
-                case IDOK:
-                    if ( !stateToGameInfo( hDlg, globals, giState ) ) {
                         break;
+
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+                    case IDC_ROLECOMBO:
+                        if ( HIWORD(wParam) == CBN_SELCHANGE ) {
+                            if ( giState->isNewGame ) {  /* ignore if in info
+                                                            mode */
+                                NGValue value;
+                                value.ng_role = 
+                                    (DeviceRole)SendDlgItemMessage( hDlg, 
+                                                                    IDC_ROLECOMBO,
+                                                                    CB_GETCURSEL, 0, 
+                                                                    0L);
+                                newg_attrChanged( giState->newGameCtx, 
+                                                  NG_ATTR_ROLE, value );
+                                /* If we've switched to a state where we'll be
+                                   connecting */
+                                if ( value.ng_role != SERVER_STANDALONE ) {
+                                    handleConnOptionsButton( hDlg, globals, 
+                                                             value.ng_role, 
+                                                             giState );
+                                }
+                            }
+                        }
+                        break;
+#endif
+                    case GIJUGGLE_BUTTON:
+                        XP_ASSERT( giState->isNewGame );
+                        /* Juggle vs switch.  On Win32, updates are coalesced so
+                           you don't see anything on screen if you change a field
+                           then change it back.  In terms of messages, all we see
+                           here is a WM_CTLCOLOREDIT for each field being
+                           changed.  If I post a custom event here, it comes in
+                           *before* the WM_CTLCOLOREDIT events.  Short of a
+                           timer, which starts a race with the user, I see no way
+                           to get notified after the drawing's done.  So for now,
+                           we switch rather than juggle: call juggle until
+                           something actually happens. */
+                        while ( !newg_juggle( giState->newGameCtx ) ) {
+                        }
+                        break;
+
+                    case OPTIONS_BUTTON:
+                        handlePrefsButton( hDlg, globals, giState );
+                        break;
+
+                    case IDOK:
+                        if ( !stateToGameInfo( giState ) ) {
+                            break;
+                        }
+                    case IDCANCEL:
+                        EndDialog(hDlg, id);
+                        giState->userCancelled = id == IDCANCEL;
+                        cleanupGameInfoState( giState );
+                        newg_destroy( giState->newGameCtx );
                     }
-                case IDCANCEL:
-                    EndDialog(hDlg, id);
-                    giState->userCancelled = id == IDCANCEL;
-                    cleanupGameInfoState( giState );
-                    newg_destroy( giState->newGameCtx );
+                    break;
+                default:
+                    result = FALSE;
+                    /*     case WM_CLOSE: */
+                    /* 	EndDialog(hDlg, id); */
+                    /* 	return TRUE; */
+                    /*     default: */
+                    /* 	return DefWindowProc(hDlg, message, wParam, lParam); */
                 }
-                break;
-            default:
-                result = FALSE;
-                /*     case WM_CLOSE: */
-                /* 	EndDialog(hDlg, id); */
-                /* 	return TRUE; */
-                /*     default: */
-                /* 	return DefWindowProc(hDlg, message, wParam, lParam); */
             }
         }
     }

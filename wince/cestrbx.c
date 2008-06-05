@@ -22,18 +22,18 @@
 #include "ceutil.h"
 
 static void
-stuffTextInField( HWND hDlg, StrBoxInit* init )
+stuffTextInField( HWND hDlg, StrBoxState* state )
 {
-    XP_U16 nBytes = stream_getSize(init->stream);
+    XP_U16 nBytes = stream_getSize(state->stream);
     XP_U16 len, crlen;
     XP_UCHAR* sbuf;
     wchar_t* wbuf;
 #ifdef MEM_DEBUG
-    CEAppGlobals* globals = init->globals;
+    CEAppGlobals* globals = state->dlgHdr.globals;
 #endif
 
     sbuf = XP_MALLOC( globals->mpool, nBytes + 1 );
-    stream_getBytes( init->stream, sbuf, nBytes );
+    stream_getBytes( state->stream, sbuf, nBytes );
 
     crlen = strlen(XP_CR);
     if ( 0 == strncmp( XP_CR, &sbuf[nBytes-crlen], crlen ) ) {
@@ -58,60 +58,57 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT handled = FALSE;
     CEAppGlobals* globals = NULL;
-    StrBoxInit* init;
+    StrBoxState* state;
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, (long)lParam );
-        init = (StrBoxInit*)lParam;
+        state = (StrBoxState*)lParam;
 
-        globals = init->globals;
-
-        if  ( !!init->title ) {
-            SendMessage( hDlg, WM_SETTEXT, 0, (long)init->title );
+        if  ( !!state->title ) {
+            SendMessage( hDlg, WM_SETTEXT, 0, (long)state->title );
         }
 
-        if ( !init->isQuery ) {
+        if ( !state->isQuery ) {
             ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
             /* also want to expand the text box to the bottom */
-            if ( !ceIsLandscape( globals ) ) {
+            if ( !ceIsLandscape( state->dlgHdr.globals ) ) {
                 ceCenterCtl( hDlg, IDOK );
             }
         }
 
-        ceDlgSetup( globals, hDlg );
+        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE );
 
         handled = TRUE;
     } else {
-        init = (StrBoxInit*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (StrBoxState*)GetWindowLong( hDlg, GWL_USERDATA );
 
-        if ( !!init ) {
+        if ( !!state ) {
+            if ( ceDoDlgHandle( &state->dlgHdr, message, wParam, lParam) ) {
+                handled = TRUE;
+            } else {
+                switch (message) {
 
-            switch (message) {
+                case WM_COMMAND:                
 
-            case WM_VSCROLL:
-                ceDoDlgScroll( globals, hDlg, wParam );
-                break;
+                    /* If I add the text above in the WM_INITDIALOG section it
+                       shows up selected though selStart and selEnd are 0. */
+                    if ( !state->textIsSet ) { 	 
+                        state->textIsSet = XP_TRUE; 	 
+                        stuffTextInField( hDlg, state ); 	 
+                    } 	 
 
-            case WM_COMMAND:                
+                    id = LOWORD(wParam);
+                    switch( id ) {
 
-                /* If I add the text above in the WM_INITDIALOG section it
-                   shows up selected though selStart and selEnd are 0. */
-                if ( !init->textIsSet ) { 	 
-                    init->textIsSet = XP_TRUE; 	 
-                    stuffTextInField( hDlg, init ); 	 
-                } 	 
-
-                id = LOWORD(wParam);
-                switch( id ) {
-
-                case IDOK:
-                case IDCANCEL:
-                    init->result = id;
-                    EndDialog(hDlg, id);
-                    handled = TRUE;
+                    case IDOK:
+                    case IDCANCEL:
+                        state->result = id;
+                        EndDialog(hDlg, id);
+                        handled = TRUE;
+                    }
+                    break;
                 }
-                break;
             }
         }
     }

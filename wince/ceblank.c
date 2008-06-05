@@ -56,7 +56,7 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
         wchar_t widebuf[48];
         XP_UCHAR* name;
 
-        name = bState->globals->gameInfo.players[bState->playerNum].name;
+        name = bState->dlgHdr.globals->gameInfo.players[bState->playerNum].name;
 
         lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, 
                                  sizeof(labelBuf) - lenSoFar,
@@ -103,29 +103,18 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         ceShowOrHide( hDlg, IDC_BACKUP, bState->canBackup );
 #endif
 
-        ceDlgSetup( bState->globals, hDlg );
-        trapBackspaceKey( hDlg );
+        ceDlgSetup( &bState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
 
         loadLettersList( hDlg, bState );
     } else {
         bState = (BlankDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!bState ) {
 
+            if ( ceDoDlgHandle( &bState->dlgHdr, message, wParam, lParam) ) {
+                return TRUE;
+            }
+
             switch ( message ) {
-/*             case WM_KEYDOWN:           /\* key down.  Select a list item? *\/ */
-/*                 XP_LOGF( "got WM_KEYDOWN" ); */
-/*                 break; */
-#ifdef _WIN32_WCE
-            case WM_HOTKEY:
-                if ( VK_TBACK == HIWORD(lParam) ) {
-                    if ( bState->canBackup ) {
-                        bState->result = PICKER_BACKUP;
-                        EndDialog( hDlg, IDC_BACKUP );
-                        return TRUE;
-                    }
-                }
-                break;
-#endif
             case WM_COMMAND:
                 id = LOWORD(wParam);
                 if ( 0 ) {

@@ -22,9 +22,10 @@
 
 #include "stdafx.h" 
 #include "cemain.h"
+#include "ceutil.h"
 
 typedef struct BlankDialogState {
-    CEAppGlobals* globals;
+    CeDlgHdr dlgHdr;
     const PickInfo* pi;
     XP_U16 playerNum;
     const XP_UCHAR4* texts;

@@ -23,9 +23,10 @@
 #ifdef XWFEATURE_SEARCHLIMIT
 
 #include "cemain.h"
+#include "ceutil.h"
 
 typedef struct HintLimitsState {
-    CEAppGlobals* globals;
+    CeDlgHdr dlgHdr;
     XP_U16 min, max;
     XP_Bool inited;
     XP_Bool cancelled;

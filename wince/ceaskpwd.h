@@ -22,9 +22,10 @@
 
 #include "stdafx.h" 
 #include "cemain.h"
+#include "ceutil.h"
 
 typedef struct PasswdDialogState {
-    CEAppGlobals* globals;
+    CeDlgHdr dlgHdr;
     const XP_UCHAR* name;
     XP_UCHAR* buf;
     XP_U16* lenp;

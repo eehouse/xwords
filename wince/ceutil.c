@@ -30,6 +30,11 @@
 #define HPADDING_L 2
 #define HPADDING_R 3
 
+static XP_Bool ceDoDlgScroll( CeDlgHdr* dlgHdr, WPARAM wParam );
+static void ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, 
+                                WPARAM wParam, LPARAM lParam );
+
+
 void
 ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* buf )
 {
@@ -334,11 +339,16 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
 
 #define TITLE_HT 20            /* Need to get this from the OS */
 void
-ceDlgSetup( CEAppGlobals* globals, HWND hDlg )
+ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 {
-    XP_ASSERT( !!globals );
     RECT rect;
     XP_U16 vHeight;
+    CEAppGlobals* globals = dlgHdr->globals;
+
+    dlgHdr->hDlg = hDlg;
+
+    XP_ASSERT( !!globals );
+    XP_ASSERT( !!hDlg );
 
     GetClientRect( hDlg, &rect );
     XP_ASSERT( rect.top == 0 );
@@ -380,7 +390,38 @@ ceDlgSetup( CEAppGlobals* globals, HWND hDlg )
         (void)SetScrollInfo( hDlg, SB_VERT, &sinfo, FALSE );
     }
 
+    if ( IS_SMARTPHONE(globals) && ((doWhat & DLG_STATE_TRAPBACK) != 0) ) {
+        trapBackspaceKey( hDlg );
+    }
+
+    dlgHdr->doWhat = doWhat;
 } /* ceDlgSetup */
+
+XP_Bool
+ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    XP_Bool handled = XP_FALSE;
+    switch( message ) {
+#ifdef _WIN32_WCE
+    case WM_HOTKEY:
+        XP_ASSERT( (dlgHdr->doWhat && DLG_STATE_TRAPBACK) != 0 );
+        if ( VK_TBACK == HIWORD(lParam) ) {
+            SHSendBackToFocusWindow( message, wParam, lParam );
+            handled = TRUE;
+        }
+        break;
+#endif
+    case WM_VSCROLL:
+        handled = ceDoDlgScroll( dlgHdr, wParam );
+        break;
+
+    case WM_NEXTDLGCTL:
+        ceDoDlgFocusScroll( dlgHdr->globals, dlgHdr->hDlg, wParam, lParam );
+        handled = TRUE;
+        break;
+    }
+    return handled;
+}
 
 static void
 setScrollPos( HWND hDlg, XP_S16 newPos )
@@ -432,10 +473,10 @@ adjustScrollPos( HWND hDlg, XP_S16 vertChange )
     LOG_RETURN_VOID();
 } /* adjustScrollPos */
 
-XP_Bool
-ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam )
+static XP_Bool
+ceDoDlgScroll( CeDlgHdr* dlgHdr, WPARAM wParam )
 {
-    XP_Bool handled = !IS_SMARTPHONE(globals);
+    XP_Bool handled = !IS_SMARTPHONE(dlgHdr->globals);
     if ( handled ) {
         XP_S16 vertChange = 0;
     
@@ -457,12 +498,12 @@ ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam )
 
         case SB_THUMBTRACK:     /* still dragging; don't redraw */
         case SB_THUMBPOSITION:
-            setScrollPos( hDlg, HIWORD(wParam) );
+            setScrollPos( dlgHdr->hDlg, HIWORD(wParam) );
             break;
         }
 
         if ( 0 != vertChange ) {
-            adjustScrollPos( hDlg, vertChange );
+            adjustScrollPos( dlgHdr->hDlg, vertChange );
         }
     }
     return handled;
@@ -483,7 +524,7 @@ ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam )
            indicates whether the next or previous control with the WS_TABSTOP
            style receives the focus.  */
 
-void
+static void
 ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam, LPARAM lParam )
 {
     /* Scroll the current focus owner into view.

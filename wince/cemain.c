@@ -1464,7 +1464,7 @@ ceDoNewGame( CEAppGlobals* globals )
     }
 
     XP_MEMSET( &giState, 0, sizeof(giState) );
-    giState.globals = globals;
+    giState.dlgHdr.globals = globals;
     giState.isNewGame = XP_TRUE;
 
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
@@ -2054,7 +2054,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 GameInfoState state;
 
                 XP_MEMSET( &state, 0, sizeof(state) );
-                state.globals = globals;
+                state.dlgHdr.globals = globals;
 
                 DialogBoxParam(globals->hInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
                                (DLGPROC)GameInfo, (long)&state );
@@ -2376,18 +2376,18 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
         int result = messageBoxStream( globals, stream, title, buttons );
         saidYes = (IDOK == result) | (IDRETRY == result) | (IDYES == result);
     } else {
-        StrBoxInit init;
+        StrBoxState state;
 
-        XP_MEMSET( &init, 0, sizeof(init) );
+        XP_MEMSET( &state, 0, sizeof(state) );
 
-        init.title = title;
-        init.stream = stream;
-        init.isQuery = buttons != MB_OK;
-        init.globals = globals;
+        state.title = title;
+        state.stream = stream;
+        state.isQuery = buttons != MB_OK;
+        state.dlgHdr.globals = globals;
 
         DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
-                        (DLGPROC)StrBox, (long)&init );
-        saidYes = init.result == IDOK;
+                        (DLGPROC)StrBox, (long)&state );
+        saidYes = state.result == IDOK;
     }
 
     if ( destroy ) {
@@ -2798,7 +2798,7 @@ ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_MEMSET( &state, 0, sizeof(state) );
 
-    state.globals = globals;
+    state.dlgHdr.globals = globals;
     state.texts = texts;
     state.nTiles = nTiles;
     state.playerNum = playerNum;
@@ -2817,7 +2817,7 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_MEMSET( &state, 0, sizeof(state) );
 
-    state.globals = globals;
+    state.dlgHdr.globals = globals;
     state.name = name;
     state.buf = buf;
     state.lenp = len;
@@ -3111,7 +3111,7 @@ ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
 
     XP_MEMSET( &hls, 0, sizeof(hls) );
 
-    hls.globals = globals;
+    hls.dlgHdr.globals = globals;
     hls.min = *min;
     hls.max = *max;
 
