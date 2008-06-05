@@ -44,15 +44,22 @@ void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
 
 /* set vHeight to 0 to turn off scrolling */
-void ceDlgSetup( CEAppGlobals* globals, HWND hDlg );
+typedef enum { DLG_STATE_NONE = 0, DLG_STATE_TRAPBACK = 1 } DlgStateTask;
+typedef struct CeDlgHdr {
+    CEAppGlobals* globals;
+    HWND hDlg;
+
+    /* Below this line is private to ceutil.c */
+    DlgStateTask doWhat;
+} CeDlgHdr;
+void ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat );
+XP_Bool ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam);
 
 /* Are we drawing things in landscape mode? */
 XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
 void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
-XP_Bool ceDoDlgScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam );
-void ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, 
-                         WPARAM wParam, LPARAM lParam );
+
 #ifdef _WIN32_WCE
 void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
 void trapBackspaceKey( HWND hDlg );

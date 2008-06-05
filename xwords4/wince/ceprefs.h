@@ -22,6 +22,7 @@
 
 #include "stdafx.h" 
 #include "cemain.h"
+#include "ceutil.h"
 
 typedef struct CeGamePrefs {
     XP_U16 gameSeconds;
@@ -55,7 +56,7 @@ typedef struct CePrefsPrefs {
 } CePrefsPrefs;
 
 typedef struct CePrefsDlgState {
-    CEAppGlobals* globals;
+    CeDlgHdr dlgHdr;
     CePrefsPrefs prefsPrefs;
 
     XP_Bool userCancelled;

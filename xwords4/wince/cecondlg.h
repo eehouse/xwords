@@ -24,9 +24,9 @@
 #include "cemain.h"
 
 typedef struct CeConnDlgState {
+    CeDlgHdr dlgHdr;
     CommsAddrRec addrRec;
     DeviceRole role;
-    CEAppGlobals* globals;
     XP_Bool userCancelled;
 } CeConnDlgState;
 

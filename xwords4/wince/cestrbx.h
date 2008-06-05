@@ -21,16 +21,17 @@
 
 #include "xwstream.h"
 #include "cemain.h"
+#include "ceutil.h"
 
 LRESULT CALLBACK StrBox(HWND hDlg, UINT message, WPARAM wParam, 
 			LPARAM lParam);
 
 
-typedef struct StrBoxInit {
-    CEAppGlobals* globals;
+typedef struct StrBoxState {
+    CeDlgHdr dlgHdr;
     wchar_t* title;
     XWStreamCtxt* stream;
     XP_U16 result;
     XP_Bool isQuery;
     XP_Bool textIsSet;
-} StrBoxInit;
+} StrBoxState;

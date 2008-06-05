@@ -21,7 +21,6 @@
 
 #include <stdio.h>
 #include "cehntlim.h"
-#include "ceutil.h"
 
 static void
 initComboBox( HWND hDlg, XP_U16 id, XP_U16 startVal )
@@ -55,15 +54,13 @@ LRESULT CALLBACK
 HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
     HintLimitsState* hState;
-    CEAppGlobals* globals;
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         hState = (HintLimitsState*)lParam;
-        globals = hState->globals;
 
-        ceDlgSetup( globals, hDlg );
+        ceDlgSetup( &hState->dlgHdr, hDlg, DLG_STATE_NONE );
 
         return TRUE;
     } else {
@@ -74,6 +71,10 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 initComboBox( hDlg, HC_MIN_COMBO, hState->min );
                 initComboBox( hDlg, HC_MAX_COMBO, hState->max );
                 hState->inited = XP_TRUE;
+            }
+
+            if ( ceDoDlgHandle( &hState->dlgHdr, message, wParam, lParam) ) {
+                return TRUE;
             }
 
             switch ( message ) {

@@ -49,8 +49,7 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         pState = (PasswdDialogState*)lParam;
 
-        ceDlgSetup( pState->globals, hDlg );
-        trapBackspaceKey( hDlg );
+        ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
 
         nameToLabel( hDlg, pState->name, IDC_PWDLABEL );
 
@@ -59,15 +58,11 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         pState = (PasswdDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!pState ) {
 
+            if ( ceDoDlgHandle( &pState->dlgHdr, message, wParam, lParam ) ) {
+                return TRUE;
+            }
+
             switch ( message ) {
-#ifdef _WIN32_WCE
-            case WM_HOTKEY:
-                if ( VK_TBACK == HIWORD(lParam) ) {
-                    SHSendBackToFocusWindow( message, wParam, lParam );
-                    return TRUE;
-                }
-                break;
-#endif
             case WM_COMMAND:
                 id = LOWORD(wParam);
                 switch( id ) {

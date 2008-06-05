@@ -167,24 +167,22 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     LRESULT result = FALSE;
 
     CeConnDlgState* cState;
-    CEAppGlobals* globals;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         cState = (CeConnDlgState*)lParam;
-        globals = cState->globals;
 
         adjustForConnType( hDlg, cState );
 
         ceControlsFromAddrRec( hDlg, cState );
 
-        ceDlgSetup( globals, hDlg );
+        ceDlgSetup( &cState->dlgState, hDlg, DLG_STATE_NONE );
 
         result = TRUE;
     } else {
         cState = (CeConnDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!cState ) {
-            globals = cState->globals;
+            CEAppGlobals* globals = cState->dlgHdr.globals; 
 
             if ( message == WM_COMMAND ) {
                 XP_U16 id = LOWORD(wParam);

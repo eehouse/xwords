@@ -77,7 +77,7 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
 #endif
     };
     XP_U16 resID;
-    XP_Bool doGlobalPrefs = state->globals->doGlobalPrefs;
+    XP_Bool doGlobalPrefs = state->dlgHdr.globals->doGlobalPrefs;
 
     resID = doGlobalPrefs? IDC_RADIOGLOBAL:IDC_RADIOLOCAL;
     SendDlgItemMessage( hDlg, resID, BM_SETCHECK, BST_CHECKED, 0L );
@@ -248,81 +248,64 @@ ceControlsToPrefs( HWND hDlg, CePrefsPrefs* prefsPrefs )
 LRESULT CALLBACK
 PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    CEAppGlobals* globals;
     XP_U16 id;
     CePrefsDlgState* pState;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         pState = (CePrefsDlgState*)lParam;
-        globals = pState->globals;
 
         stuffPhoniesList( hDlg );
 
         loadControlsFromState( hDlg, pState );
         adjustForChoice( hDlg, pState );
 
-        ceDlgSetup( globals, hDlg );
-        trapBackspaceKey( hDlg );
-
+        ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
         return TRUE;
 
     } else {
-        XP_Bool timerOn;
         pState = (CePrefsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!pState ) {
-            globals = pState->globals;
+            if ( !ceDoDlgHandle( &pState->dlgHdr, message, wParam, lParam ) ) {
+                CEAppGlobals* globals = pState->dlgHdr.globals;
+                XP_Bool timerOn;
 
-            switch (message) {
-            case WM_VSCROLL:
-                ceDoDlgScroll( globals, hDlg, wParam );
-                break;
-#ifdef _WIN32_WCE
-            case WM_HOTKEY:
-                if ( VK_TBACK == HIWORD(lParam) ) {
-                    SHSendBackToFocusWindow( message, wParam, lParam );
-                    return TRUE;
-                }
-                break;
-#endif
-            case WM_NEXTDLGCTL:
-                ceDoDlgFocusScroll( globals, hDlg, wParam, lParam );
-                break;
+                switch (message) {
+                case WM_COMMAND:
+                    id = LOWORD(wParam);
+                    switch( id ) {
 
-            case WM_COMMAND:
-                id = LOWORD(wParam);
-                switch( id ) {
+                    case IDC_RADIOGLOBAL:
+                    case IDC_RADIOLOCAL:
+                        globals->doGlobalPrefs = id == IDC_RADIOGLOBAL;
+                        adjustForChoice( hDlg, pState );
+                        break;
 
-                case IDC_RADIOGLOBAL:
-                case IDC_RADIOLOCAL:
-                    pState->globals->doGlobalPrefs = id == IDC_RADIOGLOBAL;
-                    adjustForChoice( hDlg, pState );
-                    break;
-
-                case TIMER_CHECK:
-                    timerOn = SendDlgItemMessage( hDlg, TIMER_CHECK, BM_GETCHECK,
-                                                  0, 0 );
-                    setTimerCtls( hDlg, timerOn );
-                    break;
-                case IDC_PREFCOLORS:
-                    pState->colorsChanged = 
-                        ceDoColorsEdit( hDlg, pState->globals, 
-                                        pState->prefsPrefs.colors );
-                    break;
+                    case TIMER_CHECK:
+                        timerOn = SendDlgItemMessage( hDlg, TIMER_CHECK, 
+                                                      BM_GETCHECK, 0, 0 );
+                        setTimerCtls( hDlg, timerOn );
+                        break;
+                    case IDC_PREFCOLORS:
+                        pState->colorsChanged = 
+                            ceDoColorsEdit( hDlg, globals, 
+                                            pState->prefsPrefs.colors );
+                        break;
 #ifdef XWFEATURE_SEARCHLIMIT
-                case IDC_CHECKNOHINTS:
-                    timerOn = SendDlgItemMessage( hDlg, IDC_CHECKNOHINTS, 
-                                                  BM_GETCHECK, 0, 0 );
-                    ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, !timerOn );
-                    break;
+                    case IDC_CHECKNOHINTS:
+                        timerOn = SendDlgItemMessage( hDlg, IDC_CHECKNOHINTS, 
+                                                      BM_GETCHECK, 0, 0 );
+                        ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, !timerOn );
+                        break;
 #endif
 
-                case IDOK:
-                    ceControlsToPrefs( hDlg, &pState->prefsPrefs );
-                case IDCANCEL:
-                    EndDialog(hDlg, id);
-                    pState->userCancelled = id == IDCANCEL;
-                    return TRUE;
+                    case IDOK:
+                        ceControlsToPrefs( hDlg, &pState->prefsPrefs );
+                    case IDCANCEL:
+                        EndDialog(hDlg, id);
+                        pState->userCancelled = id == IDCANCEL;
+                        return TRUE;
+                    }
                 }
             }        
         }
@@ -341,7 +324,7 @@ WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsDlgState* state,
     XP_Bool result;
     XP_MEMSET( state, 0, sizeof(*state) );
 
-    state->globals = globals;
+    state->dlgHdr.globals = globals;
     state->isNewGame = isNewGame;
     XP_MEMCPY( &state->prefsPrefs, prefsPrefs, sizeof( state->prefsPrefs ) );
 

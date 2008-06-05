@@ -31,8 +31,7 @@ static void colorButton( DRAWITEMSTRUCT* dis, HBRUSH brush );
 #ifdef MY_COLOR_SEL
 
 typedef struct ClrEditDlgState {
-    CEAppGlobals* globals;
-
+    CeDlgHdr dlgHdr; 
     HWND parent;
     HWND sampleButton;
     XP_U16 labelID;
@@ -145,8 +144,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         eState->cancelled = XP_TRUE;
         eState->inited = XP_FALSE;
 
-        ceDlgSetup( eState->globals, hDlg );
-        trapBackspaceKey( hDlg );
+        ceDlgSetup( &eState->dlgHdr, hDlg, DLG_STATE_TRAPBACK ); 
 
         wchar_t label[32];
         XP_U16 len = SendDlgItemMessage( eState->parent, eState->labelID, 
@@ -176,11 +174,11 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             initChooseColor( eState, hDlg );
         }
 
-        switch (message) {
+        if ( ceDoDlgHandle( &eState->dlgHdr, message, wParam, lParam) ) {
+            return TRUE;
+        }
 
-        case WM_VSCROLL:
-            ceDoDlgScroll( eState->globals, hDlg, wParam );
-            break;
+        switch (message) {
 
         case WM_DRAWITEM:
             colorButtonFromState( eState, (DRAWITEMSTRUCT*)lParam );
@@ -198,14 +196,6 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 break;
             }
             break;
-#ifdef _WIN32_WCE
-        case WM_HOTKEY:
-            if ( VK_TBACK == HIWORD(lParam) ) {
-                SHSendBackToFocusWindow( message, wParam, lParam );
-                return TRUE;
-            }
-            break;
-#endif
         case WM_COMMAND:
             wid = LOWORD(wParam);
             switch( wid ) {
@@ -234,24 +224,23 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 } /* EditColorsDlg */
 
 static XP_Bool
-myChooseColor( CEAppGlobals* globals, HWND parent, XP_U16 labelID, 
-               COLORREF* cref )
+myChooseColor( CeDlgHdr* dlgHdr, XP_U16 labelID, COLORREF* cref )
 {
     ClrEditDlgState state;
     int result;
 
     XP_MEMSET( &state, 0, sizeof(state) );
-    state.globals = globals;
+    state.dlgHdr.globals = dlgHdr->globals;
     state.red = GetRValue(*cref);
     state.green = GetGValue(*cref);
     state.blue = GetBValue(*cref);
     state.labelID = labelID;
-    state.parent = parent;
+    state.parent = dlgHdr->hDlg;
 
     XP_LOGF( "setting up IDD_COLOREDITDLG" );
 
-    result = DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, 
-                             parent, (DLGPROC)EditColorsDlg, (long)&state );
+    result = DialogBoxParam( dlgHdr->globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, 
+                             dlgHdr->hDlg, (DLGPROC)EditColorsDlg, (long)&state );
 
     XP_LOGF( "DialogBoxParam=>%d", result );
 
@@ -275,8 +264,7 @@ colorButton( DRAWITEMSTRUCT* dis, HBRUSH brush )
 }
 
 typedef struct ColorsDlgState {
-    HWND hDlg;
-    CEAppGlobals* globals;
+    CeDlgHdr dlgHdr;
     COLORREF* inColors;
 
     COLORREF colors[CE_NUM_EDITABLE_COLORS];
@@ -299,7 +287,7 @@ initColorData( ColorsDlgState* cState )
 
     for ( i = 0; i < CE_NUM_EDITABLE_COLORS; ++i ) {
         COLORREF ref = cState->inColors[i];
-        HWND button = GetDlgItem( cState->hDlg, FIRST_BUTTON + i );
+        HWND button = GetDlgItem( cState->dlgHdr.hDlg, FIRST_BUTTON + i );
         cState->colors[i] = ref;
         cState->brushes[i] = CreateSolidBrush( ref );
         cState->buttons[i] = button;
@@ -338,7 +326,7 @@ wrapChooseColor( ColorsDlgState* cState, XP_U16 button )
         XP_U16 labelID = button + CLRSEL_LABEL_OFFSET;
         COLORREF clrref = cState->colors[index];
 
-        if ( myChooseColor( cState->globals, cState->hDlg, labelID, &clrref ) ) {
+        if ( myChooseColor( &cState->dlgHdr, labelID, &clrref ) ) {
             cState->colors[index] = clrref;
             DeleteObject( cState->brushes[index] );
             cState->brushes[index] = CreateSolidBrush( clrref );
@@ -359,7 +347,7 @@ wrapChooseColor( ColorsDlgState* cState, XP_U16 button )
         }
 
         ccs.lStructSize = sizeof(ccs);
-        ccs.hwndOwner = cState->hDlg;
+        ccs.hwndOwner = cState->dlgHdr.hDlg;
         ccs.rgbResult = cState->colors[index];
         ccs.lpCustColors = arr;
 
@@ -397,9 +385,8 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state = (ColorsDlgState*)lParam;
         state->cancelled = XP_TRUE;
         state->inited = XP_FALSE;
-        state->hDlg = hDlg;
 
-        ceDlgSetup( state->globals, hDlg );
+        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE );
 
         result = TRUE;
     } else {
@@ -416,37 +403,37 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 /*                      __func__, messageToStr(message), message, */
 /*                      wParam, lParam ); */
 
-            switch (message) {
-
-            case WM_VSCROLL:
-                ceDoDlgScroll( state->globals, hDlg, wParam );
-                break;
-
-            case WM_DRAWITEM:
-                ceDrawColorButton( state, (DRAWITEMSTRUCT*)lParam );
+            if ( ceDoDlgHandle( &state->dlgHdr, message, wParam, lParam) ) {
                 result = TRUE;
-                break;
+            } else {
+                switch (message) {
 
-            case WM_COMMAND:
-                wid = LOWORD(wParam);
-                switch( wid ) {
-
-                case IDOK:
-                    state->cancelled = XP_FALSE;
-                    /* fallthrough */
-
-                case IDCANCEL:
-                    deleteButtonBrushes( state );
-                    EndDialog(hDlg, wid);
+                case WM_DRAWITEM:
+                    ceDrawColorButton( state, (DRAWITEMSTRUCT*)lParam );
                     result = TRUE;
                     break;
 
-                default:
-                    /* it's one of the color buttons.  Set up with the
-                       appropriate color and launch ChooseColor */
-                    wrapChooseColor( state, wid );
-                    result = TRUE;
-                    break;
+                case WM_COMMAND:
+                    wid = LOWORD(wParam);
+                    switch( wid ) {
+
+                    case IDOK:
+                        state->cancelled = XP_FALSE;
+                        /* fallthrough */
+
+                    case IDCANCEL:
+                        deleteButtonBrushes( state );
+                        EndDialog(hDlg, wid);
+                        result = TRUE;
+                        break;
+
+                    default:
+                        /* it's one of the color buttons.  Set up with the
+                           appropriate color and launch ChooseColor */
+                        wrapChooseColor( state, wid );
+                        result = TRUE;
+                        break;
+                    }
                 }
             }
         }
@@ -461,7 +448,7 @@ ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
     ColorsDlgState state;
 
     XP_MEMSET( &state, 0, sizeof(state) );
-    state.globals = globals;
+    state.dlgHdr.globals = globals;
     state.inColors = colors;
 
     (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
