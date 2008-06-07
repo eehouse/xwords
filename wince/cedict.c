@@ -628,7 +628,11 @@ getDictDir( wchar_t* buf )
 {
 /*     BOOL found = SHGetKnownFolderPath(HWND,LPWSTR,int,BOOL); */
     // temporary hack until I figure SHGetKnownFolderPath out
+#ifdef _WIN32_WCE
     wsprintf( buf, L"\\Program Files\\Crosswords" );
+#else
+    wsprintf( buf, L"." );
+#endif
     return XP_TRUE;
 }
 
