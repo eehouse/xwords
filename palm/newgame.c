@@ -21,7 +21,7 @@
 #include <PalmTypes.h>
 #include <Form.h>
 #include <List.h>
-#include <Chars.h>	    /* for nextFieldChr */
+#include <Chars.h>      /* for nextFieldChr */
 #include <Graffiti.h>   /* for GrfSetState */
 #include <Event.h>
 #ifdef XWFEATURE_FIVEWAY
@@ -254,7 +254,7 @@ newGameHandleEvent( EventPtr event )
             handlePasswordTrigger( globals, itemId );
             break;
 
-        default:		/* one of the password selectors? */
+        default:      /* one of the password selectors? */
             result = false;
         }
         break;

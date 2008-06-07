@@ -159,7 +159,7 @@ nameFromRecord( PalmAppGlobals* globals, XP_S16 index, char* buf )
     DmOpenRef dbP;
     MemHandle handle;
 
-    buf[0] = '\0';		/* init to empty string */
+    buf[0] = '\0';     /* init to empty string */
 
     if ( index < countGameRecords(globals) ) {
 
