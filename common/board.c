@@ -126,6 +126,8 @@ static XP_S16 keyToIndex( BoardCtxt* board, XP_Key key, Tile* blankFace );
 static XP_Bool board_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
                                  XP_Bool preflightOnly, XP_Bool* up );
 static XP_Bool invalFocusOwner( BoardCtxt* board );
+#else
+# define invalFocusOwner(board)
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
 static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
@@ -1487,6 +1489,16 @@ board_showTray( BoardCtxt* board )
     return checkRevealTray( board );
 } /* board_showTray */
 
+static XP_Bool
+trayOnTop( const BoardCtxt* board )
+{
+    /* The tray should be drawn on top of the board IFF it's not HIDDEN or if
+       it has non-dived focus. */
+    return (board->trayVisState != TRAY_HIDDEN)
+        || ( (board->focussed == OBJ_TRAY)
+             && (board->focusHasDived == XP_FALSE));
+} /* trayOnTop */
+
 XW_TrayVisState
 board_getTrayVisState( BoardCtxt* board )
 {
@@ -1521,12 +1533,17 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
         board->trayVisState = newState;
 
         invalSelTradeWindow( board );
-
+        invalFocusOwner( board ); /* must be done before and after rect
+                                     recalculated */
         figureBoardRect( board ); /* comes before setYOffset since that
                                      uses rects to calc scroll */
+        if ( (board->focussed == OBJ_TRAY) && board->focusHasDived ) {
+            board->focusHasDived = XP_FALSE;
+        }
+        invalFocusOwner( board );
 
         if ( board->boardObscuresTray ) {
-            if ( nowHidden ) {
+            if ( nowHidden && !trayOnTop(board) ) { 
                 board->preHideYOffset = board_getYOffset( board );
                 board_setYOffset( board, 0 );
             } else {
@@ -1875,7 +1892,7 @@ figureBoardRect( BoardCtxt* board )
             * board->boardVScale;
 
         if ( board->boardObscuresTray ) {
-            if ( board->trayVisState != TRAY_HIDDEN ) {
+            if ( trayOnTop( board ) ) {
                 boardBounds.height = board->trayBounds.top - boardBounds.top;
             } else {
                 XP_U16 trayBottom;
@@ -2173,18 +2190,16 @@ static XP_Bool
 handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
     XP_Bool result = XP_FALSE;
-    /* Start a timer no matter what.  After it fires we'll decide whether it's
-       appropriate to handle it.   No.  That's too expensive */
+
     if ( TRADE_IN_PROGRESS(board) && ptOnTradeWindow( board, xx, yy ) ) {
-        return XP_FALSE;
-    }
-    util_setTimer( board->util, TIMER_PENDOWN, 0, p_board_timerFired, board );
+        /* do nothing */
+    } else {
+        util_setTimer( board->util, TIMER_PENDOWN, 0, 
+                       p_board_timerFired, board );
 
-    /* As a first cut, you start a hint-region drag unless the cell is
-       occupied by a non-committed cell. */
-
-    if ( !board->tradeInProgress[board->selPlayer] ) {
-        result = dragDropStart( board, OBJ_BOARD, xx, yy );
+        if ( !board->tradeInProgress[board->selPlayer] ) {
+            result = dragDropStart( board, OBJ_BOARD, xx, yy );
+        }
     }
 
     return result;
@@ -2270,9 +2285,7 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
         break;
 
     case OBJ_TRAY:
-        XP_ASSERT( board->trayVisState != TRAY_HIDDEN );
-
-        if ( board->trayVisState != TRAY_REVERSED 
+        if ( checkRevealTray(board)
              && !board->tradeInProgress[board->selPlayer] ) {
             result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
         }
@@ -2314,13 +2327,16 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
         result = invalFocusOwner( board );
         board->focussed = OBJ_NONE;
         board->focusHasDived = XP_FALSE;
+        if ( board->boardObscuresTray ) {
+            figureBoardRect( board );
+        }
 #endif
 
-        result = handleLikeDown( board, onWhich, x, y );
+        result = handleLikeDown( board, onWhich, x, y ) || result;
     }
     *handled = penDidSomething;
 
-    return result; /* no redraw needed */
+    return result;
 } /* board_handlePenDown */
 #endif
 
@@ -2512,8 +2528,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool isPen )
                 }
                 break;
             case OBJ_BOARD:
-                if ( prevObj == OBJ_BOARD
-                     && board->trayVisState == TRAY_REVEALED ) {
+                if ( prevObj == OBJ_BOARD && checkRevealTray(board) ) {
 
                     if ( TRADE_IN_PROGRESS(board) ) {
                         if ( ptOnTradeWindow( board, x, y )) {
@@ -2523,7 +2538,8 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool isPen )
                         XP_U16 col, row;
                         coordToCell( board, board->penDownX, board->penDownY,
                                      &col, &row );
-                        draw = handleActionInCell( board, col, row, isPen ) || draw;
+                        draw = handleActionInCell( board, col, row, 
+                                                   isPen ) || draw;
                     }
                 }
                 break;
@@ -2626,7 +2642,7 @@ handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
             redraw = board_moveCursor( board, key, preflightOnly, &up );
         } else if ( board->focussed == OBJ_SCORE ) {
             redraw = moveScoreCursor( board, key, preflightOnly, &up );
-        } else if ( board->focussed == OBJ_TRAY ) {
+        } else if ( board->focussed == OBJ_TRAY && checkRevealTray(board) ) {
             redraw = tray_moveCursor( board, key, preflightOnly, &up );
         }
         if ( up ) {
@@ -2812,6 +2828,7 @@ invalFocusOwner( BoardCtxt* board )
             board_invalTrayTiles( board, 1 << loc );
         } else {
             board_invalTrayTiles( board, ALLTILES );
+            invalCellsUnderRect( board, &board->trayBounds );
             board->dividerInvalid = XP_TRUE;
         }
         break;
@@ -2861,6 +2878,10 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
             draw = invalFocusOwner( board ) || draw;
             board->focussed = OBJ_NONE;
         }
+    }
+
+    if ( draw ) {
+        figureBoardRect( board );
     }
 
     return draw;
