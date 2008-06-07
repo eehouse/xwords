@@ -149,7 +149,9 @@ dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
 {
     XP_Bool result = XP_FALSE;
     DragState* ds = &board->dragState;
-    XP_ASSERT( !dragDropInProgress(board) );
+    if ( dragDropInProgress(board) ) {
+        XP_LOGF( "warning: starting drag while dragDropInProgress() true" );
+    }
     XP_MEMSET( ds, 0, sizeof(*ds) );
 
     ds->start.obj = obj;
@@ -229,6 +231,8 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
             invalCurHintRect( board, board->selPlayer );
         }
 #endif
+    } else if ( ds->dtype == DT_BOARD ) {
+        /* do nothing */
     } else {
         XP_U16 mod_startc, mod_startr;
 
@@ -257,11 +261,12 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
                 XP_U16 mod_curc, mod_curr;
                 flipIf( board, ds->cur.u.board.col, ds->cur.u.board.row,
                         &mod_curc, &mod_curr );
-                model_moveTileOnBoard( board->model, board->selPlayer, 
-                                       mod_startc, mod_startr, mod_curc, 
-                                       mod_curr );
-                /* inval points tile in case score changed */
-                board_invalTrayTiles( board, 1 << (MAX_TRAY_TILES-1) );
+                if ( model_moveTileOnBoard( board->model, board->selPlayer, 
+                                            mod_startc, mod_startr, mod_curc, 
+                                            mod_curr ) ) {
+                    /* inval points tile in case score changed */
+                    board_invalTrayTiles( board, 1 << (MAX_TRAY_TILES-1) );
+                }
             }
         } else {
             /* We're returning it to start, so will be re-inserted in tray */
