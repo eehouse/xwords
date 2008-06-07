@@ -545,18 +545,18 @@ makeHandlerStub( FormEventHandlerType* handlerArm )
 {
     unsigned char* stub;
     unsigned char code_68k[] = {
-        /* 0:*/	0x4e, 0x56, 0xff, 0xf8,             // linkw %fp,#-8
-        /* 4:*/	0x20, 0x2e, 0x00, 0x08,         	// movel %fp@(8),%d0
-        /* 8:*/	0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, // movel #287454020,%fp@(-8)
+        /* 0:*/ 0x4e, 0x56, 0xff, 0xf8,             // linkw %fp,#-8
+        /* 4:*/ 0x20, 0x2e, 0x00, 0x08,             // movel %fp@(8),%d0
+        /* 8:*/ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, // movel #287454020,%fp@(-8)
         /*14:*/ 0xff, 0xf8,                         // ????? REQUIRED!!!!
-        /*16:*/	0x2d, 0x40, 0xff, 0xfc,      	    // movel %d0,%fp@(-4)
-        /*20:*/	0x48, 0x6e, 0xff, 0xf8,      	    // pea %fp@(-8)
-        /*24:*/	0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88, // movel #1432778632,%sp@-
-        /*30:*/	0x4e, 0x4f,           	            // trap #15
-        /*32:*/	0xa4, 0x5a,                         // 0122132
-        /*34:*/	0x02, 0x40, 0x00, 0xff,      	    // andiw #255,%d0
-        /*38:*/	0x4e, 0x5e,           	            // unlk %fp
-        /*40:*/	0x4e, 0x75                          // rts
+        /*16:*/ 0x2d, 0x40, 0xff, 0xfc,             // movel %d0,%fp@(-4)
+        /*20:*/ 0x48, 0x6e, 0xff, 0xf8,             // pea %fp@(-8)
+        /*24:*/ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88, // movel #1432778632,%sp@-
+        /*30:*/ 0x4e, 0x4f,                         // trap #15
+        /*32:*/ 0xa4, 0x5a,                         // 0122132
+        /*34:*/ 0x02, 0x40, 0x00, 0xff,             // andiw #255,%d0
+        /*38:*/ 0x4e, 0x5e,                         // unlk %fp
+        /*40:*/ 0x4e, 0x75                          // rts
     };
 
     stub = MemPtrNew( sizeof(code_68k) );
@@ -604,53 +604,53 @@ flipRect( RectangleType* rout, const RectangleType* rin )
 void
 flipEngSocketFromArm( unsigned char* sout, const ExgSocketType* sin )
 {
-	write_unaligned16( &sout[0],  sin->libraryRef ); // UInt16 libraryRef;
-	write_unaligned32( &sout[2],  sin->socketRef );  // UInt32 	socketRef;
-	write_unaligned32( &sout[6],  sin->target );     // UInt32 	target;
-	write_unaligned32( &sout[10], sin->count ); // UInt32	count;
+    write_unaligned16( &sout[0],  sin->libraryRef ); // UInt16 libraryRef;
+    write_unaligned32( &sout[2],  sin->socketRef );  // UInt32 socketRef;
+    write_unaligned32( &sout[6],  sin->target );     // UInt32 target;
+    write_unaligned32( &sout[10], sin->count );      // UInt32 count;
 
-    write_unaligned32( &sout[14], sin->length );// UInt32	length;
+    write_unaligned32( &sout[14], sin->length );     // UInt32 length;
 
-	write_unaligned32( &sout[18], sin->time );// UInt32	time;
-    write_unaligned32( &sout[22], sin->appData );	// UInt32	appData;
-    write_unaligned32( &sout[26], sin->goToCreator );	// UInt32 	goToCreator;
-	write_unaligned16( &sout[30], sin->goToParams.dbCardNo );	// UInt16	goToParams.dbCardNo;
-	write_unaligned32( &sout[32], sin->goToParams.dbID );	// LocalID	goToParams.dbID;
-	write_unaligned16( &sout[36], sin->goToParams.recordNum );	// UInt16 	goToParams.recordNum;
-	write_unaligned32( &sout[38], sin->goToParams.uniqueID );	// UInt32	goToParams.uniqueID;
-	write_unaligned32( &sout[42], sin->goToParams.matchCustom );	// UInt32	goToParams.matchCustom;
+    write_unaligned32( &sout[18], sin->time );           // UInt32 time;
+    write_unaligned32( &sout[22], sin->appData );        // UInt32 appData;
+    write_unaligned32( &sout[26], sin->goToCreator );    // UInt32 goToCreator;
+    write_unaligned16( &sout[30], sin->goToParams.dbCardNo ); // UInt16 goToParams.dbCardNo;
+    write_unaligned32( &sout[32], sin->goToParams.dbID );         // LocalID goToParams.dbID;
+    write_unaligned16( &sout[36], sin->goToParams.recordNum );    // UInt16 goToParams.recordNum;
+    write_unaligned32( &sout[38], sin->goToParams.uniqueID );     // UInt32 goToParams.uniqueID;
+    write_unaligned32( &sout[42], sin->goToParams.matchCustom );  // UInt32 goToParams.matchCustom;
     /* bitfield.  All we can do is copy the whole thing, assuming it's 16
        bits, and pray that no arm code wants to to use it. */
-	write_unaligned16( &sout[46], *(UInt16*)((unsigned char*)&sin->goToParams.matchCustom) 
+    write_unaligned16( &sout[46], *(UInt16*)((unsigned char*)&sin->goToParams.matchCustom) 
                        + sizeof(sin->goToParams.matchCustom) );
-	write_unaligned32( &sout[48], (unsigned long)sin->description );	// Char *description;
-	write_unaligned32( &sout[52], (unsigned long)sin->type );	// Char *type;
-	write_unaligned32( &sout[56], (unsigned long)sin->name );	// Char *name;
+    write_unaligned32( &sout[48], (unsigned long)sin->description ); // Char *description;
+    write_unaligned32( &sout[52], (unsigned long)sin->type );        // Char *type;
+    write_unaligned32( &sout[56], (unsigned long)sin->name );        // Char *name;
 } /* flipEngSocketFromArm */
 
 void
 flipEngSocketToArm( ExgSocketType* sout, const unsigned char* sin )
 {
     sout->libraryRef = read_unaligned16( &sin[0] );
-	sout->socketRef = read_unaligned32( &sin[2] );
-	sout->target = read_unaligned32( &sin[6] );
-	sout->count = read_unaligned32( &sin[10] );
+    sout->socketRef = read_unaligned32( &sin[2] );
+    sout->target = read_unaligned32( &sin[6] );
+    sout->count = read_unaligned32( &sin[10] );
     sout->length = read_unaligned32( &sin[14] );
-	sout->time = read_unaligned32( &sin[18] );
+    sout->time = read_unaligned32( &sin[18] );
     sout->appData = read_unaligned32( &sin[22] );
     sout->goToCreator = read_unaligned32( &sin[26] );
-	sout->goToParams.dbCardNo =  read_unaligned16( &sin[30] );
-	sout->goToParams.dbID =  read_unaligned32( &sin[32] );
-	sout->goToParams.recordNum = read_unaligned16( &sin[36] );
-	sout->goToParams.uniqueID = read_unaligned32( &sin[38] );
-	sout->goToParams.matchCustom =  read_unaligned32( &sin[42] );
+    sout->goToParams.dbCardNo =  read_unaligned16( &sin[30] );
+    sout->goToParams.dbID =  read_unaligned32( &sin[32] );
+    sout->goToParams.recordNum = read_unaligned16( &sin[36] );
+    sout->goToParams.uniqueID = read_unaligned32( &sin[38] );
+    sout->goToParams.matchCustom =  read_unaligned32( &sin[42] );
     /* bitfield.  All we can do is copy the whole thing, assuming it's 16
        bits, and pray that no arm code wants to to use it. */
     *(UInt16*)(((unsigned char*)&sout->goToParams.matchCustom) 
                + sizeof(sout->goToParams.matchCustom)) = read_unaligned16( &sin[46] );
-	sout->description =  (Char*)read_unaligned32( &sin[48] );
-	sout->type = (Char*)read_unaligned32( &sin[52] );
-	sout->name = (Char*)read_unaligned32( &sin[56] );
+    sout->description =  (Char*)read_unaligned32( &sin[48] );
+    sout->type = (Char*)read_unaligned32( &sin[52] );
+    sout->name = (Char*)read_unaligned32( &sin[56] );
 } /* flipEngSocketToArm */
 
 void
@@ -777,17 +777,17 @@ makeNotifyStub( SysNotifyProcPtr callback )
 {
     unsigned char* stub;
     unsigned char code_68k[] = {
-        /* 0:*/	0x4e, 0x56, 0xff, 0xf8,             // linkw %fp,#-8
-        /* 4:*/	0x20, 0x2e, 0x00, 0x08,         	// movel %fp@(8),%d0
-        /* 8:*/	0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, // movel #287454020,%fp@(-8)
+        /* 0:*/ 0x4e, 0x56, 0xff, 0xf8,             // linkw %fp,#-8
+        /* 4:*/ 0x20, 0x2e, 0x00, 0x08,             // movel %fp@(8),%d0
+        /* 8:*/ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, // movel #287454020,%fp@(-8)
         /*14:*/ 0xff, 0xf8,                         // ????? REQUIRED!!!!
-        /*16:*/	0x2d, 0x40, 0xff, 0xfc,      	    // movel %d0,%fp@(-4)
-        /*20:*/	0x48, 0x6e, 0xff, 0xf8,      	    // pea %fp@(-8)
-        /*24:*/	0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88, // movel #1432778632,%sp@-
-        /*30:*/	0x4e, 0x4f,           	            // trap #15
-        /*32:*/	0xa4, 0x5a,                         // 0122132
-        /*34:*/	0x4e, 0x5e,           	            // unlk %fp
-        /*36:*/	0x4e, 0x75                          // rts
+        /*16:*/ 0x2d, 0x40, 0xff, 0xfc,             // movel %d0,%fp@(-4)
+        /*20:*/ 0x48, 0x6e, 0xff, 0xf8,             // pea %fp@(-8)
+        /*24:*/ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88, // movel #1432778632,%sp@-
+        /*30:*/ 0x4e, 0x4f,                         // trap #15
+        /*32:*/ 0xa4, 0x5a,                         // 0122132
+        /*34:*/ 0x4e, 0x5e,                         // unlk %fp
+        /*36:*/ 0x4e, 0x75                          // rts
     };
 
     stub = MemPtrNew( sizeof(code_68k) );
@@ -881,22 +881,22 @@ makeListDrawStub( ListDrawDataFuncPtr func )
  */
     unsigned char* stub;
     unsigned char code_68k[] = {
-        /* 0:*/	0x4e, 0x56, 0xff, 0xf0,      	// linkw %fp,#-16
-        /* 4:*/	0x30, 0x2e, 0x00, 0x08,      	// movew %fp@(8),%d0
-        /* 8:*/	0x22, 0x2e, 0x00, 0x0a,      	// movel %fp@(10),%d1
-        /* c:*/	0x24, 0x2e, 0x00, 0x0e,      	// movel %fp@(14),%d2
-        /*10:*/	0x2d, 0x7c, 0x11, 0x22,0x33,0x44,// movel #287454020,%fp@(-16)
-        /*16:*/	0xff, 0xf0,
-        /*18:*/	0x30, 0x40,           	// moveaw %d0,%a0
-        /*1a:*/	0x2d, 0x48, 0xff, 0xf4,      	// movel %a0,%fp@(-12)
-        /*1e:*/	0x2d, 0x41, 0xff, 0xf8,      	// movel %d1,%fp@(-8)
-        /*22:*/	0x2d, 0x42, 0xff, 0xfc,      // movel %d2,%fp@(-4)
-        /*26:*/	0x48, 0x6e, 0xff, 0xf0,      	// pea %fp@(-16)
-        /*2a:*/	0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,	// movel #1432778632,%sp@-
-        /*30:*/	0x4e, 0x4f,           	// trap #15
-        /*32:*/	0xa4, 0x5a,           	// 0122132
-        /*34:*/	0x4e, 0x5e,           	// unlk %fp
-        /*36:*/	0x4e, 0x75           	// rts
+        /* 0:*/ 0x4e, 0x56, 0xff, 0xf0,         // linkw %fp,#-16
+        /* 4:*/ 0x30, 0x2e, 0x00, 0x08,         // movew %fp@(8),%d0
+        /* 8:*/ 0x22, 0x2e, 0x00, 0x0a,         // movel %fp@(10),%d1
+        /* c:*/ 0x24, 0x2e, 0x00, 0x0e,         // movel %fp@(14),%d2
+        /*10:*/ 0x2d, 0x7c, 0x11, 0x22,0x33,0x44,// movel #287454020,%fp@(-16)
+        /*16:*/ 0xff, 0xf0,
+        /*18:*/ 0x30, 0x40,                     // moveaw %d0,%a0
+        /*1a:*/ 0x2d, 0x48, 0xff, 0xf4,         // movel %a0,%fp@(-12)
+        /*1e:*/ 0x2d, 0x41, 0xff, 0xf8,         // movel %d1,%fp@(-8)
+        /*22:*/ 0x2d, 0x42, 0xff, 0xfc,         // movel %d2,%fp@(-4)
+        /*26:*/ 0x48, 0x6e, 0xff, 0xf0,         // pea %fp@(-16)
+        /*2a:*/ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88, // movel #1432778632,%sp@-
+        /*30:*/ 0x4e, 0x4f,                     // trap #15
+        /*32:*/ 0xa4, 0x5a,                     // 0122132
+        /*34:*/ 0x4e, 0x5e,                     // unlk %fp
+        /*36:*/ 0x4e, 0x75                      // rts
     };
     stub = MemPtrNew( sizeof(code_68k) );
     memcpy( stub, code_68k, sizeof(code_68k) );
@@ -1028,7 +1028,7 @@ static void
 makeExgWriteStub( ExgDBWriteProcPtr proc, unsigned char* stub, 
                   XP_U16 XP_UNUSED_DBG(stubSize) )
 {
-/* Err	ExgDBWriteProc( const void *dataP, UInt32 *sizeP, void *userDataP)  */
+/* Err ExgDBWriteProc( const void *dataP, UInt32 *sizeP, void *userDataP)  */
 /* { */
 /*   unsigned long data[] = { */
 /*     (unsigned long)0x11223344,  */
@@ -1039,21 +1039,21 @@ makeExgWriteStub( ExgDBWriteProcPtr proc, unsigned char* stub,
 /*   return (Err)PceNativeCall( (void*)0x55667788, (void*)data ); */
 /* } */
     unsigned char code_68k[] = {
-        /* 0:*/	0x4e, 0x56, 0xff, 0xf0,      	/* linkw %fp,#-16 */
-        /* 4:*/	0x20, 0x2e, 0x00, 0x08,      	/* movel %fp@(8),%d0 */
-        /* 8:*/	0x22, 0x2e, 0x00, 0x0c,      	/* movel %fp@(12),%d1 */
-        /* c:*/	0x24, 0x2e, 0x00, 0x10,      	/* movel %fp@(16),%d2 */
-        /*10:*/	0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44,/*movel #287454020,%fp@(-16)*/
-        /*16:*/	0xff, 0xf0,
-        /*18:*/	0x2d, 0x40, 0xff, 0xf4,      	/* movel %d0,%fp@(-12) */
-        /*1c:*/	0x2d, 0x41, 0xff, 0xf8,      	/* movel %d1,%fp@(-8) */
-        /*20:*/	0x2d, 0x42, 0xff, 0xfc,      	/* movel %d2,%fp@(-4) */
-        /*24:*/	0x48, 0x6e, 0xff, 0xf0,      	/* pea %fp@(-16) */
-        /*28:*/	0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,	/* movel #1432778632,%sp@- */
-        /*2e:*/	0x4e, 0x4f,           	/* trap #15 */
-        /*30:*/	0xa4, 0x5a,           	/* 0122132 */
-        /*32:*/	0x4e, 0x5e,           	/* unlk %fp */
-        /*34:*/	0x4e, 0x75           	/* rts */
+        /* 0:*/ 0x4e, 0x56, 0xff, 0xf0,         /* linkw %fp,#-16 */
+        /* 4:*/ 0x20, 0x2e, 0x00, 0x08,         /* movel %fp@(8),%d0 */
+        /* 8:*/ 0x22, 0x2e, 0x00, 0x0c,         /* movel %fp@(12),%d1 */
+        /* c:*/ 0x24, 0x2e, 0x00, 0x10,         /* movel %fp@(16),%d2 */
+        /*10:*/ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44,/*movel #287454020,%fp@(-16)*/
+        /*16:*/ 0xff, 0xf0,
+        /*18:*/ 0x2d, 0x40, 0xff, 0xf4,         /* movel %d0,%fp@(-12) */
+        /*1c:*/ 0x2d, 0x41, 0xff, 0xf8,         /* movel %d1,%fp@(-8) */
+        /*20:*/ 0x2d, 0x42, 0xff, 0xfc,         /* movel %d2,%fp@(-4) */
+        /*24:*/ 0x48, 0x6e, 0xff, 0xf0,         /* pea %fp@(-16) */
+        /*28:*/ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88, /* movel #1432778632,%sp@- */
+        /*2e:*/ 0x4e, 0x4f,             /* trap #15 */
+        /*30:*/ 0xa4, 0x5a,             /* 0122132 */
+        /*32:*/ 0x4e, 0x5e,             /* unlk %fp */
+        /*34:*/ 0x4e, 0x75              /* rts */
     };
     XP_ASSERT( sizeof(code_68k) <= stubSize );
     memcpy( stub, code_68k, sizeof(code_68k) );
@@ -1172,16 +1172,16 @@ make44stub( void* callbackP, NativeFuncType armFunc )
 {
     unsigned char* stub;
     unsigned char code_68k[] = {
-        /*  0 */ 0x4e, 0x56, 0xff, 0xf4,      	        // linkw %fp,#-12
-        /*  4 */ 0x20, 0x2e, 0x00, 0x08,      	        // movel %fp@(8),%d0
-        /*  8 */ 0x22, 0x2e, 0x00, 0x0c,      	        // movel %fp@(12),%d1
-        /*  C */ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44, 	// movel #287454020,%fp@(-12)
+        /*  0 */ 0x4e, 0x56, 0xff, 0xf4,                // linkw %fp,#-12
+        /*  4 */ 0x20, 0x2e, 0x00, 0x08,                // movel %fp@(8),%d0
+        /*  8 */ 0x22, 0x2e, 0x00, 0x0c,                // movel %fp@(12),%d1
+        /*  C */ 0x2d, 0x7c, 0x11, 0x22, 0x33, 0x44,    // movel #287454020,%fp@(-12)
         /* 12 */ 0xff, 0xf4,
-        /* 14 */ 0x2d, 0x40, 0xff, 0xf8,      	        // movel %d0,%fp@(-8)
-        /* 18 */ 0x2d, 0x41, 0xff, 0xfc,      	        // movel %d1,%fp@(-4)
+        /* 14 */ 0x2d, 0x40, 0xff, 0xf8,                // movel %d0,%fp@(-8)
+        /* 18 */ 0x2d, 0x41, 0xff, 0xfc,                // movel %d1,%fp@(-4)
         /* 1C */ 0x48, 0x6e, 0xff, 0xf4,      	        // pea %fp@(-12)
-        /* 20 */ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,     // movel #1432778632,%sp@-
-        /* 26 */ 0x4e, 0x4f,           	                // trap #15
+        /* 20 */ 0x2f, 0x3c, 0x55, 0x66, 0x77, 0x88,    // movel #1432778632,%sp@-
+        /* 26 */ 0x4e, 0x4f,                            // trap #15
         /* 28 */ 0xa4, 0x5a,           	                // 0122132
         /* 2A */ 0x50, 0x8f,           	                // addql #8,%sp
         /* 2C */ 0x4e, 0x5e,           	                // unlk %fp

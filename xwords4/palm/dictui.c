@@ -1,7 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /****************************************************************************
- *									    *
- *	Copyright 1999 - 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
+ *
+ * Copyright 1999 - 2003 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *									    *
+ *
  ****************************************************************************/
 
 #include <PalmTypes.h>
@@ -117,14 +117,14 @@ dictFormHandleEvent( EventPtr event )
             }
             result = true;
             break;
-            /* 	case XW_PHONIES_TRIGGER_ID: */
-            /* 	    chosen = LstPopupList( sPhoniesList ); */
-            /* 	    if ( chosen >= 0 ) { */
-            /* 		setTriggerFromList( XW_PHONIES_TRIGGER_ID, sPhoniesList, */
-            /* 				    chosen ); */
-            /* 	    } */
-            /* 	    result = true; */
-            /* 	    break; */
+/*         case XW_PHONIES_TRIGGER_ID: */
+/*             chosen = LstPopupList( sPhoniesList ); */
+/*             if ( chosen >= 0 ) { */
+/*                 setTriggerFromList( XW_PHONIES_TRIGGER_ID, sPhoniesList, */
+/*                                     chosen ); */
+/*             } */
+/*             result = true; */
+/*             break; */
 
         case XW_DICTINFO_DONE_BUTTON_ID: 
         case XW_DICTINFO_BEAM_BUTTON_ID:
@@ -134,7 +134,7 @@ dictFormHandleEvent( EventPtr event )
 
             if ( globals->dictuiForBeaming ) {
                 if ( !beamDict( globals->dictList, dictName ) ) {
-                    break;	/* don't cancel dialog yet */
+                    break; /* don't cancel dialog yet */
                 }
             } else {
                 EventType eventToPost;
