@@ -120,7 +120,7 @@ button_press_event( GtkWidget* XP_UNUSED(widget), GdkEventButton *event,
     if ( !globals->mouseDown ) {
         globals->mouseDown = XP_TRUE;
         redraw = board_handlePenDown( globals->cGlobals.game.board, 
-                                  event->x, event->y, &handled );
+                                      event->x, event->y, &handled );
         if ( redraw ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -493,7 +493,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                        GTK_TIMER_WIDTH, GTK_HOR_SCORE_HEIGHT );
 
     board_setTrayLoc( globals->cGlobals.game.board, GTK_TRAY_LEFT, trayTop, 
-                      hscale * GTK_NUM_COLS, vscale * GTK_TRAY_HT_ROWS, 
+                      hscale * GTK_NUM_COLS, vscale * GTK_TRAY_HT_ROWS + 10, 
                       GTK_DIVIDER_WIDTH );
 
     setCtrlsForTray( globals );
@@ -1118,9 +1118,6 @@ setCtrlsForTray( GtkAppGlobals* globals )
             pageSize -= nHidden;
         }
         globals->adjustment->page_size = pageSize;
-
-        XP_LOGF( "%s: set pageSize = %d", __func__,
-                 pageSize );
 
         globals->adjustment->value = 
             board_getYOffset( globals->cGlobals.game.board );

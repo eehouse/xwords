@@ -602,7 +602,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
         drawFocusFrame( dctx, rect );
     }
 
-} /* gtk_draw_drawTile */
+} /* gtkDrawTileImpl */
 
 static void
 gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
