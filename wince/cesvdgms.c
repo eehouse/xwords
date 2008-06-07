@@ -20,7 +20,9 @@
 #include <windowsx.h>
 #include "stdafx.h" 
 #include <commdlg.h>
+#ifdef _win32_wce
 #include <aygshell.h>
+#endif
 
 #include "cemain.h" 
 #include "cesvdgms.h" 

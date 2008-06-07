@@ -72,6 +72,7 @@ messageToStr( UINT message )
         CASE_STR( WM_CTLCOLOREDIT );
         CASE_STR( WM_NCDESTROY );
         CASE_STR( WM_NOTIFY );
+        CASE_STR( WM_NCHITTEST );
     default:
         str = "<unknown>";
     }
