@@ -536,9 +536,9 @@ CAPTION "Preferences"
 FONT 8, "System"
 BEGIN
     CONTROL         "This game",IDC_RADIOLOCAL,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,45,10
+                    BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
     CONTROL         "All games",IDC_RADIOGLOBAL,"Button",
-                    BS_AUTORADIOBUTTON,50,PR_ROW1,53,10
+                    BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
     CONTROL         "Color played tiles",IDC_CHECKCOLORPLAYED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,90,PREFS_ROW_HT
     CONTROL         "Enable cursor",IDC_CHECKSHOWCURSOR,"Button",
@@ -686,7 +686,7 @@ END
      and have a separate button to trigger the edit dialog. */
 #define COLOR_SAMPLE(id1,id2,xx,yy)                        \
     PUSHBUTTON       "",id2,xx,yy,CLR_BUT_WIDTH,CLR_BUT_HT,BS_OWNERDRAW \
-    PUSHBUTTON       "Edit",id1,xx+CLR_SAMPLE_WIDTH+4,yy,20,CLR_BUT_HT
+    PUSHBUTTON       "Edit",id1,xx+CLR_SAMPLE_WIDTH+4,yy,20,CLR_BUT_HT,BS_NOTIFY
 
 IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, CLR_WIDTH, COLORSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
@@ -720,9 +720,9 @@ BEGIN
 
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,CLR_OK_LEFT,CLR_BUTTON_ROW,
-                    REPOS_BUTTON_WIDTH,BUTTON_HT
+                    REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
     PUSHBUTTON      "Cancel",IDCANCEL,CLR_CANCEL_LEFT,CLR_BUTTON_ROW,
-                    REPOS_BUTTON_WIDTH,BUTTON_HT
+                    REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
 #endif
 END
 

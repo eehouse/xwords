@@ -31,9 +31,7 @@
 #define HPADDING_R 3
 
 static XP_Bool ceDoDlgScroll( CeDlgHdr* dlgHdr, WPARAM wParam );
-static void ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, 
-                                WPARAM wParam, LPARAM lParam );
-
+static void ceDoDlgFocusScroll( CeDlgHdr* dlgHdr, HWND nextCtrl );
 
 void
 ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* buf )
@@ -262,74 +260,82 @@ ceIsFullScreen( CEAppGlobals* globals, HWND hWnd )
     return screenHt == 0;
 } /* ceIsFullScreen */
 
+static void
+ceSize( CEAppGlobals* globals, HWND hWnd, XP_Bool fullScreen )
+{
+    RECT rect;
+    XP_U16 cbHeight = 0;
+    if ( !!globals->hwndCB ) {
+        GetWindowRect( globals->hwndCB, &rect );
+        cbHeight = rect.bottom - rect.top;
+    }
+
+    /* I'm leaving the SIP/cmdbar in place until I can figure out how to
+       get menu events with it hidden -- and also the UI for making sure
+       users don't get stuck in fullscreen mode not knowing how to reach
+       menus to get out.  Later, add SHFS_SHOWSIPBUTTON and
+       SHFS_HIDESIPBUTTON to the sets shown and hidden below.*/
+    if ( fullScreen ) {
+        SHFullScreen( hWnd, SHFS_HIDETASKBAR | SHFS_HIDESTARTICON );
+
+        SetRect( &rect, 0, 0, GetSystemMetrics(SM_CXSCREEN),
+                 GetSystemMetrics(SM_CYSCREEN) );
+
+    } else {
+        SHFullScreen( hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
+        SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
+        if ( IS_SMARTPHONE(globals) ) {
+            cbHeight = 0;
+        }
+    }
+
+    rect.bottom -= cbHeight;
+    MoveWindow( hWnd, rect.left, rect.top, rect.right - rect.left, 
+                rect.bottom - rect.top, TRUE );
+} /* ceSize */
+
 void
 ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd )
 {
     if ( globals->appPrefs.fullScreen != ceIsFullScreen(globals, hWnd) ) {
-        RECT rect;
-        XP_U16 cbHeight = 0;
-        if ( !!globals->hwndCB && hWnd == globals->hWnd ) {
-            GetWindowRect( globals->hwndCB, &rect );
-            cbHeight = rect.bottom - rect.top;
-        }
-
-        /* I'm leaving the SIP/cmdbar in place until I can figure out how to
-           get menu events with it hidden -- and also the UI for making sure
-           users don't get stuck in fullscreen mode not knowing how to reach
-           menus to get out.  Later, add SHFS_SHOWSIPBUTTON and
-           SHFS_HIDESIPBUTTON to the sets shown and hidden below.*/
-        if ( globals->appPrefs.fullScreen ) {
-            SHFullScreen( hWnd, SHFS_HIDETASKBAR | SHFS_HIDESTARTICON );
-
-            SetRect( &rect, 0, 0, GetSystemMetrics(SM_CXSCREEN),
-                     GetSystemMetrics(SM_CYSCREEN) );
-
-        } else {
-            SHFullScreen( hWnd, SHFS_SHOWTASKBAR | SHFS_SHOWSTARTICON );
-            SystemParametersInfo( SPI_GETWORKAREA, 0, &rect, FALSE );
-            if ( IS_SMARTPHONE(globals) ) {
-                cbHeight = 0;
-            }
-        }
-
-        rect.bottom -= cbHeight;
-        MoveWindow( hWnd, rect.left, rect.top, rect.right - rect.left, 
-                    rect.bottom - rect.top, TRUE );
+        ceSize( globals, hWnd, globals->appPrefs.fullScreen );
     }
-} /* ceSizeIfFullscreen */
+}
 
 static XP_Bool
-mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg )
+mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt )
 {
     XP_Bool success = XP_FALSE;
-    XP_Bool fullScreen = XP_TRUE; /* probably want this TRUE for
-                                     small-screened smartphones only. */
 
-    if ( IS_SMARTPHONE(globals) ) {
-        SHINITDLGINFO info;
-        XP_MEMSET( &info, 0, sizeof(info) );
-        info.dwMask = SHIDIM_FLAGS;
-        info.dwFlags = SHIDIF_SIZEDLGFULLSCREEN;
-        info.hDlg = hDlg;
-        success = SHInitDialog( &info );
-        if ( !success ) {
-            XP_LOGF( "SHInitDialog failed: %ld", GetLastError() );
-        }
-    } else if ( fullScreen ) {
-        ceSizeIfFullscreen( globals, hDlg );
-        success = XP_TRUE;
-    }
+    SHMENUBARINFO mbi;
+    XP_MEMSET( &mbi, 0, sizeof(mbi) );
+    mbi.cbSize = sizeof(mbi);
+    mbi.hwndParent = hDlg;
+    mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
+    mbi.hInstRes = globals->hInst;
+    success = SHCreateMenuBar( &mbi );
+    if ( !success ) {
+        XP_LOGF( "SHCreateMenuBar failed: %ld", GetLastError() );
+    } else {
 
-    if ( success ) {
-        SHMENUBARINFO mbi;
-        XP_MEMSET( &mbi, 0, sizeof(mbi) );
-        mbi.cbSize = sizeof(mbi);
-        mbi.hwndParent = hDlg;
-        mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
-        mbi.hInstRes = globals->hInst;
-        success = SHCreateMenuBar( &mbi );
-        if ( !success ) {
-            XP_LOGF( "SHCreateMenuBar failed: %ld", GetLastError() );
+        if ( IS_SMARTPHONE(globals) ) {
+            SHINITDLGINFO info;
+            XP_MEMSET( &info, 0, sizeof(info) );
+            info.dwMask = SHIDIM_FLAGS;
+            info.dwFlags = SHIDIF_SIZEDLGFULLSCREEN;
+            info.hDlg = hDlg;
+            success = SHInitDialog( &info );
+            if ( !success ) {
+                XP_LOGF( "SHInitDialog failed: %ld", GetLastError() );
+            }
+        } else {
+            XP_U16 screenHt = GetSystemMetrics(SM_CYFULLSCREEN);
+            RECT rect;
+            GetWindowRect( mbi.hwndMB, &rect );
+            screenHt -= (rect.bottom - rect.top);
+            if ( screenHt < curHt ) {
+                ceSize( globals, hDlg, XP_TRUE );
+            }
         }
     }
 
@@ -355,7 +361,7 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
     vHeight = rect.bottom;         /* This is before we've resized it */
 
 #ifdef _WIN32_WCE
-    (void)mkFullscreenWithSoftkeys( globals, hDlg );
+    (void)mkFullscreenWithSoftkeys( globals, hDlg, vHeight );
 #elif defined DEBUG
     /* Force it to be small so we can test scrolling etc. */
     if ( globals->dbWidth > 0 && globals->dbHeight > 0) {
@@ -389,11 +395,11 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
         
         (void)SetScrollInfo( hDlg, SB_VERT, &sinfo, FALSE );
     }
-
+#ifdef _WIN32_WCE
     if ( IS_SMARTPHONE(globals) && ((doWhat & DLG_STATE_TRAPBACK) != 0) ) {
         trapBackspaceKey( hDlg );
     }
-
+#endif
     dlgHdr->doWhat = doWhat;
 } /* ceDlgSetup */
 
@@ -415,9 +421,13 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
         handled = ceDoDlgScroll( dlgHdr, wParam );
         break;
 
-    case WM_NEXTDLGCTL:
-        ceDoDlgFocusScroll( dlgHdr->globals, dlgHdr->hDlg, wParam, lParam );
-        handled = TRUE;
+    case WM_COMMAND:
+        if ( BN_SETFOCUS == HIWORD(wParam) ) {
+            ceDoDlgFocusScroll( dlgHdr, (HWND)lParam );
+            handled = TRUE;
+        } else if ( BN_KILLFOCUS == HIWORD(wParam) ) { /* dialogs shouldn't have to handle this */
+            handled = TRUE;
+        }
         break;
     }
     return handled;
@@ -428,8 +438,6 @@ setScrollPos( HWND hDlg, XP_S16 newPos )
 {
     SCROLLINFO sinfo;
     XP_S16 vertChange;
-
-    XP_LOGF( "%s(%d)", __func__, newPos );
 
     XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
     sinfo.cbSize = sizeof(sinfo);
@@ -453,13 +461,11 @@ setScrollPos( HWND hDlg, XP_S16 newPos )
             XP_LOGF( "%s: change dropped",  __func__ );
         }
     }
-    LOG_RETURN_VOID();
 } /* setScrollPos */
 
 static void
 adjustScrollPos( HWND hDlg, XP_S16 vertChange )
 {
-    XP_LOGF( "%s(%d)", __func__, vertChange );
     if ( vertChange != 0 ) {
         SCROLLINFO sinfo;
 
@@ -525,7 +531,7 @@ ceDoDlgScroll( CeDlgHdr* dlgHdr, WPARAM wParam )
            style receives the focus.  */
 
 static void
-ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam, LPARAM lParam )
+ceDoDlgFocusScroll( CeDlgHdr* dlgHdr, HWND nextCtrl )
 {
     /* Scroll the current focus owner into view.
      *
@@ -543,14 +549,8 @@ ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam, LPARAM lPar
      * scrolling to see how to fix it.
      */
 
-    if ( !IS_SMARTPHONE(globals) ) {
-        HWND nextCtrl;
-        if ( LOWORD(lParam) ) {
-            nextCtrl = (HWND)wParam;
-        } else {
-            BOOL previous = wParam != 0;
-            nextCtrl = GetNextDlgTabItem( hDlg, GetFocus(), previous );
-        }
+    if ( !IS_SMARTPHONE(dlgHdr->globals) ) {
+        HWND hDlg = dlgHdr->hDlg;
 
         if ( !!nextCtrl ) {
             RECT rect;
@@ -567,9 +567,6 @@ ceDoDlgFocusScroll( CEAppGlobals* globals, HWND hDlg, WPARAM wParam, LPARAM lPar
             GetWindowRect( nextCtrl, &rect );
             ctrlPos = rect.top - dlgTop - TITLE_HT;
             ctrlHeight = rect.bottom - rect.top;
-
-            XP_LOGF( "%p: ctrlPos is %d; height is %d", 
-                     nextCtrl, ctrlPos, ctrlHeight );
 
             if ( ctrlPos < 0 ) {
                 XP_LOGF( "need to scroll it DOWN into view" );

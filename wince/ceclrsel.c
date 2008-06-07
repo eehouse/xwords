@@ -316,11 +316,12 @@ deleteButtonBrushes( ColorsDlgState* cState )
     }
 } /* deleteButtonBrushes */
 
-static void
+static XP_Bool
 wrapChooseColor( ColorsDlgState* cState, XP_U16 button )
 {
+    XP_Bool handled = XP_FALSE;
     if ( button >= DLBLTR_BUTTON && button <= PLAYER4_BUTTON ) {
-        XP_U16 index = button-DLBLTR_BUTTON;
+        XP_U16 index = button - DLBLTR_BUTTON;
 
 #ifdef MY_COLOR_SEL
         XP_U16 labelID = button + CLRSEL_LABEL_OFFSET;
@@ -361,7 +362,9 @@ wrapChooseColor( ColorsDlgState* cState, XP_U16 button )
             cState->brushes[index] = CreateSolidBrush( ccs.rgbResult );
         }
 #endif
+        handled = XP_TRUE;
     }
+    return handled;
 } /* wrapChooseColor */
 
 static void
@@ -414,25 +417,25 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     break;
 
                 case WM_COMMAND:
-                    wid = LOWORD(wParam);
-                    switch( wid ) {
+                    if ( BN_CLICKED == HIWORD(wParam) ) {
+                        wid = LOWORD(wParam);
+                        switch( wid ) {
+                        case IDOK:
+                            state->cancelled = XP_FALSE;
+                            /* fallthrough */
 
-                    case IDOK:
-                        state->cancelled = XP_FALSE;
-                        /* fallthrough */
+                        case IDCANCEL:
+                            deleteButtonBrushes( state );
+                            EndDialog(hDlg, wid);
+                            result = TRUE;
+                            break;
 
-                    case IDCANCEL:
-                        deleteButtonBrushes( state );
-                        EndDialog(hDlg, wid);
-                        result = TRUE;
-                        break;
-
-                    default:
-                        /* it's one of the color buttons.  Set up with the
-                           appropriate color and launch ChooseColor */
-                        wrapChooseColor( state, wid );
-                        result = TRUE;
-                        break;
+                        default:
+                            /* it's one of the color buttons.  Set up with the
+                               appropriate color and launch ChooseColor */
+                            result = wrapChooseColor( state, wid );
+                            break;
+                        }
                     }
                 }
             }
