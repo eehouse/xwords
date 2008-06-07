@@ -1054,10 +1054,11 @@ model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
     }
 } /* model_moveBoardToTray */
 
-void
+XP_Bool
 model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
                        XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew )
 {
+    XP_Bool found = XP_FALSE;
     PlayerCtxt* player = &model->players[turn];
     XP_S16 index = player->nPending;
 
@@ -1079,10 +1080,12 @@ model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur,
             incrPendingTileCountAt( model, colNew, rowNew );
 
             invalidateScore( model, turn );
+            found = XP_TRUE;
             break;
         }
     }
-}
+    return found;
+} /* model_moveTileOnBoard */
 
 void
 model_resetCurrentTurn( ModelCtxt* model, XP_S16 whose )

@@ -140,8 +140,8 @@ void model_moveBoardToTray( ModelCtxt* model, XP_S16 turn,
                             XP_U16 col, XP_U16 row, XP_U16 trayOffset );
 void model_moveTrayToBoard( ModelCtxt* model, XP_S16 turn, XP_U16 col, 
                             XP_U16 row, XP_S16 tileIndex, Tile blankFace );
-void model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
-                            XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew );
+XP_Bool model_moveTileOnBoard( ModelCtxt* model, XP_S16 turn, XP_U16 colCur, 
+                               XP_U16 rowCur, XP_U16 colNew, XP_U16 rowNew );
  
 XP_S16 model_trayContains( ModelCtxt* model, XP_S16 turn, Tile tile );
 
