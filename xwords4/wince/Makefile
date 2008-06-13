@@ -96,7 +96,6 @@ CFLAGS += $(SVNDEF)
 RESFLAGS += $(SVNDEF)
 
 # warn upgrading users of new dict location
-CFLAGS += -DDICTS_MOVED_ALERT
 CFLAGS += -DKEYBOARD_NAV
 CFLAGS += -DPERIMETER_FOCUS
 

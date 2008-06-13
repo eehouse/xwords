@@ -1045,41 +1045,7 @@ ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs )
     prefs->cp.showRobotScores = XP_FALSE;
 
     colorsFromRsrc( globals, prefs );
-
-#ifdef DICTS_MOVED_ALERT
-    /* The assumption is that if you didn't have prefs already you don't need
-       to be told to move dicts. */
-    globals->flags = FLAGS_BIT_SHOWN_NEWDICTLOC;
-#endif
 } /* ceInitPrefs */
-
-#ifdef DICTS_MOVED_ALERT
-static void
-doDictsMovedAlert( CEAppGlobals* globals )
-{
-    XP_Bool hide;
-
-    XWStreamCtxt* stream = make_generic_stream( globals );
-
-    stream_putString( stream, 
-                      "Please be aware that starting with this version "
-                      "Crosswords will not find dictionaries unless they "
-                      "are located in " );
-    ceFormatDictDirs( stream, globals->hInst );
-    stream_putString( stream, ". From now on, dictionaries will be "
-                      "available as .cab files which will put them in the "
-                      "right place."
-                      XP_CR
-                      XP_CR
-                      "Do you want to disable this warning?" );
-
-    hide = ceMsgFromStream( globals, stream, L"Warning", MB_YESNO, XP_TRUE );
-
-    if ( hide ) {
-        globals->flags |= FLAGS_BIT_SHOWN_NEWDICTLOC;
-    }
-}
-#endif
 
 #ifdef _WIN32_WCE
 static void
@@ -1242,14 +1208,9 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     result = 1 == ceLocateNDicts( MPPARM(mpool) 1, ceSetDictName, 
                                   globals );
     if ( !result ) {
-        XWStreamCtxt* stream = make_generic_stream( globals );
-        stream_putString( stream, "Please install a Crosswords dictionary "
-                          "in " );
-        ceFormatDictDirs( stream, hInstance );
-        stream_putString( stream, ". Download dictionaries from "
-                          "http://xwords.sf.net or http://eehouse.org/xwords." );
-        messageBoxStream( globals, stream, L"Dictionary Not Found", MB_OK );
-        stream_destroy( stream );
+        wchar_t buf[512];
+        (void)LoadString( globals->hInst, (UINT)IDS_DICTLOC, buf, VSIZE(buf) );
+        MessageBox( globals->hWnd, buf, L"Dictionary Not Found", MB_OK );
         result = FALSE;
         goto exit;
     }
@@ -1260,10 +1221,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     prevStateExists = ceLoadPrefs( globals );
     if ( !prevStateExists ) {
         ceInitPrefs( globals, &globals->appPrefs );
-#ifdef DICTS_MOVED_ALERT
-    } else if ( (globals->flags & FLAGS_BIT_SHOWN_NEWDICTLOC) == 0 ) {
-        doDictsMovedAlert( globals );
-#endif
     }
     /* must load prefs before creating draw ctxt */
     globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
@@ -1983,10 +1940,9 @@ ceToggleFullScreen( CEAppGlobals* globals )
 static void
 doAbout( CEAppGlobals* globals )
 {
-    wchar_t* buf[1024];
-    LPTSTR lpBuffer = (LPTSTR)buf;
-    (void)LoadString( globals->hInst, (UINT)IDS_ABOUT, lpBuffer, VSIZE(buf) );
-    MessageBox( globals->hWnd, lpBuffer, L"About", MB_OK );
+    wchar_t buf[1024];
+    (void)LoadString( globals->hInst, (UINT)IDS_ABOUT, buf, VSIZE(buf) );
+    MessageBox( globals->hWnd, buf, L"About", MB_OK );
 }
 
 LRESULT CALLBACK

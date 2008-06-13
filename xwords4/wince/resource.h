@@ -230,13 +230,14 @@
 #define IDS_CANCEL                      40004
 #define IDS_OK                          40005
 #define IDS_ABOUT                       40006
+#define IDS_DICTLOC                     40029
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40029
+#define _APS_NEXT_COMMAND_VALUE         40030
 #define _APS_NEXT_CONTROL_VALUE         1125
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
