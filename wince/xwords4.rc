@@ -859,6 +859,13 @@ BEGIN
                     "Public License.\r\r"\
                     "For dictionaries, a manual, or source code go to "\
                     "http://xwords.sf.net or http://eehouse.org/xwords/."
+    IDS_DICTLOC     "Please install a Crosswords dictionary (.xwd file) "\
+                    "in the same directory as the Crosswords .exe file, or "\
+                    "in a directory called Crosswords on an external card, "\
+                    "e.g. in \\Storage Card\\Crosswords.  "\
+                    "Download dictionaries from http://xwords.sf.net or "\
+                    "http://eehouse.org/xwords."
+
 END
 
 #endif    // English (U.S.) resources

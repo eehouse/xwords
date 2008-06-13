@@ -441,7 +441,7 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
                                   NULL );
 
     if ( hFile == INVALID_HANDLE_VALUE ) {
-        XP_DEBUGF( "open file failed: %ld", GetLastError() );
+        logLastError( "CreateFileForMapping" );
     } else {
         HANDLE mappedFile;
 
@@ -624,17 +624,28 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
 } /* locateOneDir */
 
 static XP_Bool
-getDictDir( wchar_t* buf )
+getDictDir( wchar_t* buf, XP_U16 bufLen )
 {
-/*     BOOL found = SHGetKnownFolderPath(HWND,LPWSTR,int,BOOL); */
-    // temporary hack until I figure SHGetKnownFolderPath out
-#ifdef _WIN32_WCE
-    wsprintf( buf, L"\\Program Files\\Crosswords" );
-#else
-    wsprintf( buf, L"." );
-#endif
-    return XP_TRUE;
-}
+    /* I wanted to use SHGetKnownFolderPath to search in \\Program
+       Files\\Crosswords, but perhaps it's better to search in the directory
+       in which the app is located.  If I get CAB files working for
+       Smartphone, then that directory will be \\Program Files\\Crosswords.
+       But if users have to install files using the File Explorer it'll be
+       easier for them if all that's required is that the app and dictionaries
+       be in the same place.  GetModuleFileName() supports both.
+    */
+
+    DWORD nChars = GetModuleFileName( NULL, buf, bufLen );
+    XP_Bool success = nChars < bufLen;
+    if ( success ) {
+        wchar_t* lastSlash = wcsrchr( buf, '\\' );
+        if ( !!lastSlash ) {
+            *lastSlash = 0;
+        }
+    }
+
+    return success;
+} /* getDictDir */
 
 XP_U16
 ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
@@ -642,7 +653,7 @@ ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
     XP_U16 nFound = 0;
     wchar_t path[CE_MAX_PATH_LEN+1];
 
-    if ( getDictDir( path ) ) {
+    if ( getDictDir( path, VSIZE(path) ) ) {
         locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, &nFound );
     }
 
@@ -673,23 +684,6 @@ ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
 
     return nFound;
 } /* ceLocateNDicts */
-
-void
-ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance )
-{
-    wchar_t path[CE_MAX_PATH_LEN+1];
-    if ( getDictDir( path ) ) {
-        char narrowName[CE_MAX_PATH_LEN+1];
-        int len = wcslen( path );
-        len = WideCharToMultiByte( CP_ACP, 0, path, len + 1,
-                                   narrowName, len + 1, NULL, NULL );
-        stream_putString( stream, narrowName );
-        stream_putString( stream, " or" );
-    }
-
-    const char* rest = " on an external card, e.g. in \\Storage Card\\Crosswords";
-    stream_putString( stream, rest );
-}
 
 typedef struct FindOneData {
     wchar_t* result;

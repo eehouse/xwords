@@ -42,7 +42,6 @@ typedef XP_Bool (*OnePathCB)( const wchar_t* wPath, XP_U16 index, void* ctxt );
  * making sure bufs contains nSought slots.
  */
 XP_U16 ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt );
-void ceFormatDictDirs( XWStreamCtxt* stream, HINSTANCE hInstance );
 
 /* return just the name, no extension, of dict, written to buf, pointed to by
    return value (which is into buf, but not necessarily the first char.) */

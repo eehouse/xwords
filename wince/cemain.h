@@ -152,9 +152,8 @@ typedef struct CEAppGlobals {
 
 } CEAppGlobals;
 
-#ifdef DICTS_MOVED_ALERT
+/* No longer used, but may need to keep set for backwards compatibility */
 # define FLAGS_BIT_SHOWN_NEWDICTLOC 0x0001
-#endif
 
 #define GAME_IN_PROGRESS(g) ((g)->gameInfo.dictName != 0)
 
