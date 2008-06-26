@@ -303,7 +303,8 @@ ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd )
 }
 
 static XP_Bool
-mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt )
+mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
+                          XP_Bool doneOnly )
 {
     XP_Bool success = XP_FALSE;
 
@@ -311,7 +312,7 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt )
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
     mbi.cbSize = sizeof(mbi);
     mbi.hwndParent = hDlg;
-    mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
+    mbi.nToolBarId = doneOnly? IDM_DONE_MENUBAR:IDM_OKCANCEL_MENUBAR;
     mbi.hInstRes = globals->hInst;
     success = SHCreateMenuBar( &mbi );
     if ( !success ) {
@@ -361,7 +362,8 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
     vHeight = rect.bottom;         /* This is before we've resized it */
 
 #ifdef _WIN32_WCE
-    (void)mkFullscreenWithSoftkeys( globals, hDlg, vHeight );
+    (void)mkFullscreenWithSoftkeys( globals, hDlg, vHeight,
+                                    (doWhat & DLG_STATE_DONEONLY) != 0);
 #elif defined DEBUG
     /* Force it to be small so we can test scrolling etc. */
     if ( globals->dbWidth > 0 && globals->dbHeight > 0) {

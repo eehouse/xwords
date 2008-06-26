@@ -19,6 +19,7 @@
 #define IDD_COLOREDITDLG                119
 #define IDM_MAIN_MENUBAR                120
 #define IDM_OKCANCEL_MENUBAR            121
+#define IDM_DONE_MENUBAR                122
 #define IDB_ORIGIN                      124
 #ifdef XWFEATURE_SEARCHLIMIT
 # define IDD_ASKHINTLIMTS               125
@@ -176,11 +177,10 @@
 #define IDC_SVGM_SELLAB                  1118
 #define IDC_SVGM_GAMELIST                1119
 /* Let's remove these until they're implemented */
-/* #define IDC_SVGM_EDITLAB                 1111 */
-/* #define IDC_SVGM_CHANGE                  1112 */
-/* #define IDC_SVGM_EDIT                    1113 */
-/* #define IDC_SVGM_DUP                     1114 */
-/* #define IDC_SVGM_DEL                     1115 */
+#define IDC_SVGM_EDITLAB                 1111
+#define IDC_SVGM_CHANGE                  1112
+#define IDC_SVGM_DUP                     1114
+#define IDC_SVGM_DEL                     1115
 #define IDC_SVGM_OPEN                    1120
 
 #define IDC_SVGN_SELLAB                  1121
@@ -230,14 +230,19 @@
 #define IDS_CANCEL                      40004
 #define IDS_OK                          40005
 #define IDS_ABOUT                       40006
+#define IDS_DONE                        40007
 #define IDS_DICTLOC                     40029
+#define IDS_SAVENAME                    40030
+#define IDS_DUPENAME                    40031
+#define IDS_RENAME                      40032
+
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40030
+#define _APS_NEXT_COMMAND_VALUE         40033
 #define _APS_NEXT_CONTROL_VALUE         1125
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

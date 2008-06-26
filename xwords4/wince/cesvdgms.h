@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -45,6 +45,6 @@
 
 XP_Bool ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
                          wchar_t* buf, XP_U16 buflen );
-XP_Bool ceConfirmUniqueName( CEAppGlobals* globals, wchar_t* buf, 
+XP_Bool ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf, 
                              XP_U16 buflen );
 #endif

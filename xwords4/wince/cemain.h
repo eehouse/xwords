@@ -205,6 +205,7 @@ void ce_drawctxt_update( DrawCtx* dctx );
 
 int messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title, 
                     XP_U16 buttons );
+XP_Bool queryBoxChar( CEAppGlobals* globals, const XP_UCHAR* msg );
 
 #ifdef DEBUG
 void logLastError( const char* comment );

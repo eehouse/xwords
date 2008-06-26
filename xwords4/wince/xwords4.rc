@@ -153,6 +153,14 @@ BEGIN
         TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_CANCEL, 0, 
         NOMENU
 END
+
+IDM_DONE_MENUBAR RCDATA
+BEGIN
+    0, 1,
+    I_IMAGENONE, IDOK, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_DONE, 0,
+        NOMENU
+END
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -387,7 +395,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Game name"
 FONT 8, "System"
 BEGIN
-    LTEXT           "To save this game, give it a name.  (You can change the name later using the Saved games dialog.)",
+    LTEXT           "",
                     IDC_SVGN_SELLAB,SVGN_LEFT_COL,SVGN_ROW_1,86,40
     EDITTEXT        IDC_SVGN_EDIT,SVGN_LEFT_COL,SVGN_ROW_2,86,12,
                     ES_AUTOHSCROLL
@@ -401,16 +409,16 @@ END
 
 #define SVGM_LEFT_COL 2
 #define SVGM_ROW_1 2
-#define SVGM_ROW_2 (SVGM_ROW_1+22)
-#define SVGM_ROW_3 (SVGM_ROW_2+23)
-/* #define SVGM_ROW_4 (SVGM_ROW_3+30) */
+#define SVGM_ROW_2 (SVGM_ROW_1+35)
+#define SVGM_ROW_3 (SVGM_ROW_2+16)
+#define SVGM_ROW_4 (SVGM_ROW_3+20)
 #ifdef _WIN32_WCE
-# define SVGM_DLG_HT (SVGM_ROW_3)
-/* # define SVGM_DLG_HT (SVGM_ROW_4) */
+/* # define SVGM_DLG_HT (SVGM_ROW_3) */
+# define SVGM_DLG_HT (SVGM_ROW_4+16)
+
 #else
-# define SVGM_ROW_OK (SVGM_ROW_2 + 18)
-# define SVGM_DLG_HT (SVGM_ROW_OK + 18)
-/* # define SVGM_DLG_HT (SVGM_ROW_4 + 18) */
+# define SVGM_ROW_OK (SVGM_ROW_4 + 21)
+# define SVGM_DLG_HT (SVGM_ROW_OK + 16)
 #endif
 
 
@@ -419,35 +427,35 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Saved Games"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Select a saved game",IDC_SVGM_SELLAB,SVGM_LEFT_COL,
-                    SVGM_ROW_1,90,12
+  LTEXT           /* wince windres can't handle split lines....*/
+                    "Select a saved game.  (Some buttons will be disabled when the current game is selected.)",
+                    IDC_SVGM_SELLAB,SVGM_LEFT_COL,
+                    SVGM_ROW_1,90,35
 #ifdef _WIN32_WCE
-    LISTBOX         IDC_SVGM_GAMELIST, SVGM_LEFT_COL+5,SVGM_ROW_1+12,70,12,
+    LISTBOX         IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,12,
                     WS_TABSTOP
     CONTROL "",     IDC_SVGM_UPDOWN, UPDOWN_CLASS,  
                     UDS_AUTOBUDDY | UDS_HORZ | UDS_ALIGNRIGHT | UDS_WRAP | 
                     UDS_SETBUDDYINT | UDS_EXPANDABLE | UDS_NOSCROLL,
                     0, 0, 0, 0 
 #else
-    COMBOBOX        IDC_SVGM_GAMELIST,SVGM_LEFT_COL+5,SVGM_ROW_1+12,70,58,
+    COMBOBOX        IDC_SVGM_GAMELIST,SVGM_LEFT_COL,SVGM_ROW_2,70,58,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 #endif
 
-/*     PUSHBUTTON      "Dup.",IDC_SVGM_DUP,SVGM_LEFT_COL,SVGM_ROW_2,20,14,WS_DISABLED */
-/*     PUSHBUTTON      "Delete",IDC_SVGM_DEL,SVGM_LEFT_COL+22,SVGM_ROW_2,25,14,WS_DISABLED */
-    PUSHBUTTON      "Open",IDC_SVGM_OPEN,SVGM_LEFT_COL+54,SVGM_ROW_2,25,14,WS_DISABLED
+    PUSHBUTTON      "Open",IDC_SVGM_OPEN,
+                    SVGM_LEFT_COL,SVGM_ROW_3,40,14,WS_DISABLED
 
-/*     LTEXT           "Edit its name",IDC_SVGM_EDITLAB,SVGM_LEFT_COL,SVGM_ROW_3, */
-/*                     45,12 */
-/*     PUSHBUTTON      "Rename",IDC_SVGM_CHANGE,SVGM_LEFT_COL+46,SVGM_ROW_3,32,12,WS_DISABLED */
-/*     EDITTEXT        IDC_SVGM_EDIT,SVGM_LEFT_COL+5,SVGM_ROW_3+15,70,12, */
-/*                     ES_AUTOHSCROLL */
+    PUSHBUTTON      "Dup.",IDC_SVGM_DUP,
+                    SVGM_LEFT_COL,SVGM_ROW_4,20,14,WS_DISABLED
+    PUSHBUTTON      "Delete",IDC_SVGM_DEL,
+                    SVGM_LEFT_COL+22,SVGM_ROW_4,28,14,WS_DISABLED
+    PUSHBUTTON      "Rename",IDC_SVGM_CHANGE,
+                    SVGM_LEFT_COL+52,SVGM_ROW_4,32,14,WS_DISABLED
 
 #ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "OK",IDOK,SVGM_LEFT_COL+10,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "Done",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,
                     BUTTON_HT
-    PUSHBUTTON      "Cancel",IDCANCEL,SVGM_LEFT_COL+10+REPOS_BUTTON_WIDTH+10,
-                    SVGM_ROW_OK,REPOS_BUTTON_WIDTH, BUTTON_HT
 #endif
 END
 
@@ -853,6 +861,7 @@ BEGIN
     IDS_DUMMY               "--"
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
+    IDS_DONE                "Done"
     IDS_ABOUT       "Crosswords 4.2b3 (rev " SVN_REV ") "\
                     "for PocketPC. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
@@ -865,6 +874,10 @@ BEGIN
                     "e.g. in \\Storage Card\\Crosswords.  "\
                     "Download dictionaries from http://xwords.sf.net or "\
                     "http://eehouse.org/xwords."
+    IDS_SAVENAME    "Enter a name for the current game.  (You can change the "\
+                    "name later using the Saved games dialog.)"
+    IDS_DUPENAME    "Enter a name for a copy of this game."
+    IDS_RENAME      "Enter a new name for this game."
 
 END
 

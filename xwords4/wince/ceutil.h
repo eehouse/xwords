@@ -44,7 +44,10 @@ void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
 
 /* set vHeight to 0 to turn off scrolling */
-typedef enum { DLG_STATE_NONE = 0, DLG_STATE_TRAPBACK = 1 } DlgStateTask;
+typedef enum { DLG_STATE_NONE = 0
+               , DLG_STATE_TRAPBACK = 1 
+               , DLG_STATE_DONEONLY = 2 
+} DlgStateTask;
 typedef struct CeDlgHdr {
     CEAppGlobals* globals;
     HWND hDlg;
