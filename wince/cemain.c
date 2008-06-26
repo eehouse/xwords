@@ -138,8 +138,6 @@ static void ce_util_engineStarting( XW_UtilCtxt* uc );
 static void ce_util_engineStopping( XW_UtilCtxt* uc );
 #endif
 
-static XP_Bool queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg );
-
 static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                                 wchar_t* title, XP_U16 buttons, 
                                 XP_Bool destroy );
@@ -166,8 +164,8 @@ static XP_Bool isDefaultName( const XP_UCHAR* name );
  * "wine obj_win32_dbg/xwords4.exe height=240 width=320"
  */
 
-static int g_dbWidth = 0;
-static  int g_dbHeight = 0;
+static int g_dbWidth = 240;
+static  int g_dbHeight = 240;
 
 static void
 doCmd( const char* cmd )
@@ -1457,38 +1455,44 @@ ceDoNewGame( CEAppGlobals* globals )
 static void
 ceChooseAndOpen( CEAppGlobals* globals )
 {
-    wchar_t path[256];
-    path[0] = 0;
-    if ( ceSavedGamesDlg( globals, globals->curGameName, path, VSIZE(path) ) ) {
-        XP_UCHAR* name;
-        XP_U16 len;
+    // Save in case we'll be duplicating it
+    if ( ceSaveCurGame( globals, XP_FALSE ) ) {
+        wchar_t path[256];
+        path[0] = 0;
 
-        len = wcslen(path);
-        name = XP_MALLOC( globals->mpool, len + 1 );
+        ceSetTitleFromName( globals ); /* in case we named it above */
 
-        WideCharToMultiByte( CP_ACP, 0, path, len + 1,
-                             name, len + 1, NULL, NULL );
+        if ( ceSavedGamesDlg( globals, globals->curGameName, path, VSIZE(path) )) {
+            XP_UCHAR* name;
+            XP_U16 len;
+
+            len = wcslen(path);
+            name = XP_MALLOC( globals->mpool, len + 1 );
+
+            WideCharToMultiByte( CP_ACP, 0, path, len + 1,
+                                 name, len + 1, NULL, NULL );
         
-        if ( globals->curGameName != NULL
-             && 0 == XP_STRCMP( name, globals->curGameName ) ){ /*already open*/
-            XP_FREE( globals->mpool, name );
-        } else if ( ceSaveCurGame( globals, XP_FALSE )
-                    || queryBoxChar( globals, "Do you really want to "
-                                     "overwrite the current game?" ) ) {
+            if ( globals->curGameName != NULL
+                 && 0 == XP_STRCMP( name, globals->curGameName ) ){ /*already open*/
+                XP_FREE( globals->mpool, name );
+            } else if ( ceSaveCurGame( globals, XP_FALSE )
+                        || queryBoxChar( globals, "Do you really want to "
+                                         "overwrite the current game?" ) ) {
 
-            if ( globals->curGameName != NULL ) {
-                XP_FREE( globals->mpool, globals->curGameName );
-            }
+                if ( globals->curGameName != NULL ) {
+                    XP_FREE( globals->mpool, globals->curGameName );
+                }
 
-            globals->curGameName = name;
-            if ( ceLoadSavedGame( globals ) ) {
-                ceInitAndStartBoard( globals, XP_FALSE, NULL );
-            } else {
-                XP_LOGF( "failed to open chosen game" );
+                globals->curGameName = name;
+                if ( ceLoadSavedGame( globals ) ) {
+                    ceInitAndStartBoard( globals, XP_FALSE, NULL );
+                } else {
+                    XP_LOGF( "failed to open chosen game" );
+                }
             }
+        } else {
+            XP_LOGF( "GetOpenFileName() failed" );
         }
-    } else {
-        XP_LOGF( "GetOpenFileName() failed" );
     }
 } /* ceChooseAndOpen */
 
@@ -1589,9 +1593,10 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 
             confirmed = XP_TRUE;
         } else {
-            wchar_t nameBuf[256];
+            wchar_t nameBuf[MAX_PATH];
 
-            confirmed = ceConfirmUniqueName( globals, nameBuf, VSIZE(nameBuf) );
+            confirmed = ceConfirmUniqueName( globals, IDS_SAVENAME, 
+                                             nameBuf, VSIZE(nameBuf) );
             if ( confirmed ) {
                 XP_U16 len = wcslen(nameBuf);
                 XP_DEBUGF( "len(nameBuf) = %d", len );
@@ -2401,8 +2406,8 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
     return result;
 } /* messageBoxStream */
 
-static XP_Bool
-queryBoxChar( CEAppGlobals* globals, XP_UCHAR* msg )
+XP_Bool
+queryBoxChar( CEAppGlobals* globals, const XP_UCHAR* msg )
 {
     wchar_t widebuf[128];
     XP_U16 answer;
