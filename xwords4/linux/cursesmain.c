@@ -39,6 +39,7 @@
 #include <netinet/in.h>
 
 #include "linuxmain.h"
+#include "linuxutl.h"
 #include "cursesmain.h"
 #include "cursesask.h"
 #include "cursesletterask.h"
@@ -255,7 +256,7 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
     CursesAppGlobals* globals;
     char* question;
-    char* answers[3];
+    char* answers[3] = {NULL};
     short numAnswers = 0;
     XP_Bool freeMe = XP_FALSE;
     XP_Bool result;
@@ -968,7 +969,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
                 if ( nBytes != -1 ) {
                     XWStreamCtxt* inboundS;
-                    struct sockaddr_in addr_sock;
+                    struct sockaddr_in addr_sock = {0};
                     redraw = XP_FALSE;
 
                     XP_STATUSF( "linuxReceive=>%d", nBytes );
@@ -1152,15 +1153,15 @@ cursesSendOnClose( XWStreamCtxt* stream, void* closure )
     result = comms_send( globals->cGlobals.game.comms, stream );
 } /* cursesSendOnClose */
 
-static XWStreamCtxt* 
+static XWStreamCtxt*
 curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     LaunchParams* params = globals->cGlobals.params;
 
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool) 
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(uc->mpool)
                                             params->vtMgr,
-                                            uc->closure, channelNo, 
+                                            uc->closure, channelNo,
                                             cursesSendOnClose );
     return stream;
 } /* curses_util_makeStreamFromAddr */
@@ -1398,7 +1399,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     board_draw( g_globals.cGlobals.game.board );
 
     while ( !g_globals.timeToExit ) {
-        int ch;
+        int ch = 0;
         if ( blocking_gotEvent( &g_globals, &ch ) ) {
             remapKey( &ch );
             if (

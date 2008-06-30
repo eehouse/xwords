@@ -21,6 +21,7 @@
 
 #include <stdarg.h>
 
+#include "linuxutl.h"
 #include "gtknewgame.h"
 #include "strutils.h"
 #include "nwgamest.h"

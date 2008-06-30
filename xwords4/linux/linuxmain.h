@@ -34,8 +34,6 @@ typedef struct LinuxBMStruct {
     XP_U8 nBytes;
 } LinuxBMStruct;
 
-DictionaryCtxt* linux_dictionary_make( MPFORMAL const char* dictFileName );
-
 int initListenerSocket( int port );
 XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen, 
                    const CommsAddrRec* addrRec, void* closure );
@@ -56,7 +54,6 @@ void linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
 
 XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals, 
                                   unsigned char* bufPtr, XP_U16 nBytes );
-const XP_UCHAR* linux_getErrString( UtilErrID id, XP_Bool* silent );
 XP_UCHAR* strFromStream( XWStreamCtxt* stream );
 
 void catGameHistory( CommonGlobals* cGlobals );
