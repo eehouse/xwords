@@ -20,6 +20,7 @@
 
 #ifdef PLATFORM_NCURSES
 
+#include "linuxutl.h"
 #include "cursesletterask.h"
 #include "cursesdlgutil.h"
 

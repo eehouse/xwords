@@ -45,10 +45,18 @@ ifdef GTK_ONLY
 DO_CURSES =
 PLATFORM := $(PLATFORM)_gtk
 endif
+ifdef LIB_NO_UI
+DO_CURSES =
+DO_GTK =
+endif
 
 DEFINES += $(DO_CURSES) $(DO_GTK) $(SVNDEF)
 
+ifdef LIB_NO_UI
+TARGET=$(PLATFORM)/libxwords.so.0
+else
 TARGET=$(PLATFORM)/xwords
+endif
 
 include ../common/config.mk
 
@@ -100,25 +108,36 @@ DEFINES += -DPERIMETER_FOCUS
 # INCLUDES += -I/usr/lib/glib/include
 INCLUDES += ${EXTRAINCS}
 
-OBJ =   $(PLATFORM)/linuxmain.o \
-	$(PLATFORM)/linuxdict.o \
+ifdef DO_GTK
+GTK_OBJS = \
 	$(PLATFORM)/gtkmain.o \
 	$(PLATFORM)/gtkdraw.o \
 	$(PLATFORM)/gtkask.o \
 	$(PLATFORM)/gtkletterask.o \
 	$(PLATFORM)/gtkpasswdask.o \
 	$(PLATFORM)/gtknewgame.o \
-	$(PLATFORM)/gtkntilesask.o \
+	$(PLATFORM)/gtkntilesask.o
+endif
+ifdef DO_CURSES
+CURSES_OBJS = \
 	$(PLATFORM)/cursesmain.o \
 	$(PLATFORM)/cursesdraw.o \
 	$(PLATFORM)/cursesask.o \
 	$(PLATFORM)/cursesdlgutil.o \
-	$(PLATFORM)/cursesletterask.o \
+	$(PLATFORM)/cursesletterask.o
+endif
+ifndef LIB_NO_UI
+MAIN_OBJS = $(PLATFORM)/linuxmain.o
+endif
+
+
+OBJ = \
 	$(PLATFORM)/filestream.o \
 	$(PLATFORM)/linuxbt.o \
 	$(PLATFORM)/linuxudp.o \
-
-#	$(PLATFORM)/linuxcommpipe.o \
+	$(PLATFORM)/linuxdict.o \
+	$(PLATFORM)/linuxutl.o \
+	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)
 
 LIBS = -lm -lmcheck $(GPROFFLAG)
 ifdef BLUETOOTH
@@ -137,6 +156,8 @@ endif
 
 # provides an all: target
 include ../common/rules.mk
+
+all: $(TARGET)
 
 help:
 	@echo "make [MEMDEBUG=TRUE] [CURSES_ONLY=TRUE] [GTK_ONLY=TRUE]"
@@ -161,9 +182,13 @@ gprof:
 	$(MAKE) GPROFFLAG=-pg MEMDEBUG=TRUE
 
 
-$(TARGET): $(COMMONOBJ) $(OBJ) *.h Makefile
+$(PLATFORM)/xwords: $(COMMONOBJ) $(OBJ) *.h Makefile
 	mkdir -p $(PLATFORM)
 	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) $(LIBS) -o $@
+
+$(PLATFORM)/libxwords.so.0: $(COMMONOBJ) $(OBJ) *.h Makefile
+	mkdir -p $(PLATFORM)
+	$(CC) $(CFLAGS) $(DEFINES) $(COMMONOBJ) $(OBJ) -shared -o $@  -Wl,-soname,libxwords.so.0
 
 $(PLATFORM)/%.o: %.c
 	mkdir -p $(PLATFORM)
@@ -175,3 +200,10 @@ clean:
 
 install: $(TARGET)
 	cp $< $(DESTDIR)/usr/local/bin
+
+tarball:
+	tar cvfz xwords_$(shell svnversion ..).tgz \
+		../linux/Makefile ../linux/*.c ../linux/*.h \
+		../relay/*.h \
+		../common/*.c ../common/*.h ../common/rules.mk ../common/config.mk
+	md5sum xwords_$(shell svnversion ..).tgz > xwords_$(shell svnversion ..).tgz.md5

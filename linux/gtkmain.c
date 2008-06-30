@@ -41,6 +41,7 @@
 
 #include "main.h"
 #include "linuxmain.h"
+#include "linuxutl.h"
 #include "linuxbt.h"
 #include "linuxudp.h"
 /* #include "gtkmain.h" */
@@ -341,13 +342,10 @@ createOrLoadObjects( GtkAppGlobals* globals )
     }
 
     if ( !opened ) {
-        XP_U16 gameID;
         CommsAddrRec addr;
 
         XP_MEMSET( &addr, 0, sizeof(addr) );
         addr.conType = params->conType;
-
-        gameID = (XP_U16)util_getCurSeconds( globals->cGlobals.params->util );
 
 #ifdef XWFEATURE_RELAY
         if ( addr.conType == COMMS_CONN_RELAY ) {
@@ -362,7 +360,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          gameID, &globals->cp, LINUX_SEND, 
+                          params->gi.gameID, &globals->cp, LINUX_SEND, 
                           IF_CH(linux_reset) globals );
 
         addr.conType = params->conType;
@@ -938,7 +936,7 @@ handle_nhint_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
                             &redo ) ) {
         board_draw( globals->cGlobals.game.board );
     }
-} /* handle_hint_button */
+} /* handle_nhint_button */
 
 static void
 handle_colors_button( GtkWidget* XP_UNUSED(widget), 
