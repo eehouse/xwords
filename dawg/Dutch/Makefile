@@ -28,7 +28,7 @@ SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/Dutch__unofficial_alphabetical.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | tr [a-zäöü] [A-ZÄÖÜ] | \
-		grep '[AEIOU]' | grep '^[A-Z]\+$$' | sort -u | \
+		grep '^[A-Z]\+$$' | sort -u | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
