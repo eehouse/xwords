@@ -22,8 +22,6 @@ LANGCODE:nl_NL
 LANGFILTER: tr -d '\r'
 # uppercase all
 LANGFILTER: | tr [a-z] [A-Z]
-# no words not containing a vowel
-LANGFILTER: | grep '[AEIOU]' 
 # none with illegal chars
 LANGFILTER: | grep '^[A-Z]\+$'
 LANGFILTER: | sort -u
@@ -35,8 +33,7 @@ D2DARGS: -r -term 10
 
 LANGINFO: <p>Dutch has the same 26 letters as English, though of
 LANGINFO: course the counts and values are different.  Filtering rules
-LANGINFO: eliminate all words that don't contain at least one vowel
-LANGINFO: and any that contain letters not found on tiles.</p>
+LANGINFO: eliminate all words that contain letters not found on tiles.</p>
 
 # High bit means "official".  Next 7 bits are an enum where
 # Dutch==B.  Low byte is padding
