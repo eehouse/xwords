@@ -317,31 +317,6 @@ gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict),
 } /* draw_finish */
 
 static void
-drawFocusFrame( GtkDrawCtx* dctx, const XP_Rect* r )
-{
-    XP_Rect rectInset = *r;
-    XP_U16 i;
-    XP_U16 targetDim;
-
-    targetDim = XP_MIN( rectInset.width, rectInset.height );
-    targetDim >>= 1;
-
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-
-    for ( i = 0; i < 5; ++i ) {
-        insetRect( &rectInset, 1 );
-        if ( rectInset.width < targetDim || rectInset.height < targetDim ) {
-            break;
-        }
-        gdk_draw_rectangle( DRAW_WHAT(dctx),
-                            dctx->drawGC,
-                            FALSE,
-                            rectInset.left, rectInset.top,
-                            rectInset.width+1, rectInset.height+1 );
-    }
-}
-
-static void
 gtk_draw_objFinished( DrawCtx* XP_UNUSED(p_dctx), 
                       BoardObjectType XP_UNUSED(typ),
                       const XP_Rect* XP_UNUSED(rect), 
@@ -436,14 +411,15 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
     XP_Rect rectInset = *rect;
     XP_Bool showGrid = dctx->globals->gridOn;
     XP_Bool highlight = (flags & CELL_HIGHLIGHT) != 0;
+    GdkColor* cursor = 
+        ((flags & CELL_ISCURSOR) != 0) ? &dctx->cursor : NULL;
 
     gtkEraseRect( dctx, rect );
 
     insetRect( &rectInset, 1 );
 
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-
     if ( showGrid ) {
+        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
         gdk_draw_rectangle( DRAW_WHAT(dctx),
                             dctx->drawGC,
                             FALSE,
@@ -454,27 +430,40 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
     /* We draw just an empty, potentially colored, square IFF there's nothing
        in the cell or if CELL_DRAGSRC is set */
     if ( (flags & (CELL_DRAGSRC|CELL_ISEMPTY)) != 0 ) {
-        if ( bonus != BONUS_NONE ) {
-            gdk_gc_set_foreground( dctx->drawGC, &dctx->bonusColors[bonus-1] );
-            gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC, TRUE,
-                                rectInset.left, rectInset.top,
-                                rectInset.width+1, rectInset.height+1 );
+        if ( !!cursor || bonus != BONUS_NONE ) {
+            GdkColor* foreground;
+            if ( !!cursor ) {
+                foreground = cursor;
+            } else if ( bonus != BONUS_NONE ) {
+                foreground = &dctx->bonusColors[bonus-1];
+            } else {
+                foreground = NULL;
+            }
+            if ( !!foreground ) {
+                gdk_gc_set_foreground( dctx->drawGC, foreground );
+                gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC, TRUE,
+                                    rectInset.left, rectInset.top,
+                                    rectInset.width+1, rectInset.height+1 );
+            }
         }
         if ( (flags & CELL_ISSTAR) != 0 ) {
             draw_string_at( dctx, "*", rect->height, rect, XP_GTK_JUST_CENTER,
                             &dctx->black, NULL );
         }
     } else if ( !!letter ) {
-        GdkColor* foreground;
-
-        if ( !highlight ) {
+        GdkColor* foreground = cursor;
+        if ( cursor ) {
+            gdk_gc_set_foreground( dctx->drawGC, cursor );
+        } else if ( !highlight ) {
             gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
         }
         gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC, TRUE,
                             rectInset.left, rectInset.top,
                             rectInset.width+1, rectInset.height+1 );
 
-        foreground = highlight? &dctx->white : &dctx->playerColors[owner];
+        if ( !foreground ) {
+            foreground = highlight? &dctx->white : &dctx->playerColors[owner];
+        }
         draw_string_at( dctx, letter, rectInset.height-2, &rectInset, 
                         XP_GTK_JUST_CENTER, foreground, NULL );
 
@@ -492,10 +481,6 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
     }
 
     drawHintBorders( dctx, rect, hintAtts );
-
-    if ( (flags & CELL_ISCURSOR) != 0 ) {
-        drawFocusFrame( dctx, rect );
-    }
 
     return XP_TRUE;
 } /* gtk_draw_drawCell */
@@ -540,19 +525,21 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
     gint len; 
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect insetR = *rect;
+    XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0;
 
     if ( clearBack ) {
         gtkEraseRect( dctx, &insetR );
     }
 
-    if ( val >= 0 ) {
+    if ( isCursor || (val >= 0) ) {
         GdkColor* foreground = &dctx->playerColors[dctx->trayOwner];
         XP_Rect formatRect = insetR;
 
         insetRect( &insetR, 1 );
 
         if ( clearBack ) {
-            gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+            gdk_gc_set_foreground( dctx->drawGC, 
+                                   isCursor? &dctx->cursor:&dctx->tileBack );
             gdk_draw_rectangle( DRAW_WHAT(dctx),
                                 dctx->drawGC,
                                 XP_TRUE,
@@ -560,48 +547,45 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                                 insetR.height );
         }
 
-        formatRect.left += 3;
-        formatRect.width -= 6;
+        if ( val >= 0 ) {
+            formatRect.left += 3;
+            formatRect.width -= 6;
 
-        if ( !!textP ) {
-            if ( *textP != LETTER_NONE ) { /* blank */
-                draw_string_at( dctx, textP, formatRect.height>>1,
-                                &formatRect, XP_GTK_JUST_TOPLEFT,
-                                foreground, NULL );
+            if ( !!textP ) {
+                if ( *textP != LETTER_NONE ) { /* blank */
+                    draw_string_at( dctx, textP, formatRect.height>>1,
+                                    &formatRect, XP_GTK_JUST_TOPLEFT,
+                                    foreground, NULL );
 
+                }
+            } else if ( !!bitmap ) {
+                drawBitmapFromLBS( dctx, bitmap, &insetR );
             }
-        } else if ( !!bitmap ) {
-            drawBitmapFromLBS( dctx, bitmap, &insetR );
-        }
     
-        sprintf( numbuf, "%d", val );
-        len = strlen( numbuf );
+            sprintf( numbuf, "%d", val );
+            len = strlen( numbuf );
 
-        draw_string_at( dctx, numbuf, formatRect.height>>2,
-                        &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
-                        foreground, NULL );
+            draw_string_at( dctx, numbuf, formatRect.height>>2,
+                            &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
+                            foreground, NULL );
     
-        /* frame the tile */
-        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
-        gdk_draw_rectangle( DRAW_WHAT(dctx),
-                            dctx->drawGC,
-                            FALSE,
-                            insetR.left, insetR.top, insetR.width, 
-                            insetR.height );
-
-        if ( (flags & CELL_HIGHLIGHT) != 0 ) {
-            insetRect( &insetR, 1 );
+            /* frame the tile */
+            gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
             gdk_draw_rectangle( DRAW_WHAT(dctx),
                                 dctx->drawGC,
-                                FALSE, insetR.left, insetR.top, 
-                                insetR.width, insetR.height);
+                                FALSE,
+                                insetR.left, insetR.top, insetR.width, 
+                                insetR.height );
+
+            if ( (flags & CELL_HIGHLIGHT) != 0 ) {
+                insetRect( &insetR, 1 );
+                gdk_draw_rectangle( DRAW_WHAT(dctx),
+                                    dctx->drawGC,
+                                    FALSE, insetR.left, insetR.top, 
+                                    insetR.width, insetR.height);
+            }
         }
     }
-
-    if ((flags & CELL_ISCURSOR) != 0 ) {
-        drawFocusFrame( dctx, rect );
-    }
-
 } /* gtkDrawTileImpl */
 
 static void
@@ -629,42 +613,49 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
                        CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    XP_Bool hasCursor = (flags & CELL_ISCURSOR) != 0;
     XP_Rect r = *rect;
 
     insetRect( &r, 1 );
 
-    gdk_gc_set_foreground( dctx->drawGC, 
+    gdk_gc_set_foreground( dctx->drawGC,
                            &dctx->playerColors[dctx->trayOwner] );
     gdk_draw_rectangle( DRAW_WHAT(dctx),
-                        dctx->drawGC, TRUE, 
+                        dctx->drawGC, TRUE,
                         r.left, r.top, r.width, r.height );
 
     insetRect( &r, 1 );
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->tileBack );
+    gdk_gc_set_foreground( dctx->drawGC, 
+                           hasCursor? &dctx->cursor : &dctx->tileBack );
     gdk_draw_rectangle( DRAW_WHAT(dctx),
-                        dctx->drawGC, TRUE, 
+                        dctx->drawGC, TRUE,
                         r.left, r.top, r.width, r.height );
 
     draw_string_at( dctx, "?", r.height,
                     &r, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dctx->trayOwner], NULL );
 
-    if ( (flags & CELL_ISCURSOR) != 0 ) {
-        drawFocusFrame( dctx, rect );
-    }
 } /* gtk_draw_drawTileBack */
 
 static void
 gtk_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
-                          XP_Bool selected )
+                          CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect r = *rect;
+    XP_Bool selected = 0 != (flags & CELL_HIGHLIGHT);
+    XP_Bool isCursor = 0 != (flags & CELL_ISCURSOR);
 
     gtkEraseRect( dctx, &r );
 
-    ++r.left;
-    r.width -= selected? 2:1;
+    gdk_gc_set_foreground( dctx->drawGC, 
+                           isCursor? &dctx->cursor:&dctx->white );
+    gdk_draw_rectangle( DRAW_WHAT(dctx),
+                        dctx->drawGC, XP_TRUE,
+                        r.left, r.top, r.width, r.height );
+
+    r.left += 2;
+    r.width -= 4;
     if ( selected ) {
         --r.height;
     }
@@ -852,8 +843,18 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char scoreBuf[20];
+    XP_Bool hasCursor = (dsi->flags & CELL_ISCURSOR) != 0;
+    GdkColor* cursor = NULL;
 
     formatScoreText( scoreBuf, sizeof(scoreBuf), dsi );
+
+    if ( hasCursor ) {
+        cursor = &dctx->cursor;
+        gdk_gc_set_foreground( dctx->drawGC, cursor );
+        gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC,
+                            TRUE, rOuter->left, rOuter->top, 
+                            rOuter->width, rOuter->height );
+    }
 
     gdk_gc_set_foreground( dctx->drawGC, &dctx->playerColors[dsi->playerNum] );
 
@@ -866,11 +867,8 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     draw_string_at( dctx, scoreBuf, rInner->height - 1,
                     rInner, XP_GTK_JUST_CENTER,
-                    &dctx->playerColors[dsi->playerNum], NULL );
+                    &dctx->playerColors[dsi->playerNum], cursor );
 
-    if ( ((dsi->flags & CELL_ISCURSOR) != 0) ) {
-        drawFocusFrame( dctx, rOuter );
-    }
 } /* gtk_draw_score_drawPlayer */
 
 static void
@@ -882,6 +880,8 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     char buf[5];
     XP_U16 ht;
     XP_Rect localR;
+    GdkColor* cursor = ((flags & CELL_ISCURSOR) != 0) 
+        ? &dctx->cursor : NULL;
 
     if ( score >= 0 ) {
 		sprintf( buf, "%.3d", score );
@@ -898,14 +898,11 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 	ht = localR.height >> 2;
     draw_string_at( dctx, "Pts:", ht,
                     &localR, XP_GTK_JUST_TOPLEFT,
-                    &dctx->black, NULL );
+                    &dctx->black, cursor );
     draw_string_at( dctx, buf, ht,
                     &localR, XP_GTK_JUST_BOTTOMRIGHT,
-                    &dctx->black, NULL );
+                    &dctx->black, cursor );
 
-    if ( !dctx->topFocus && (flags & CELL_ISCURSOR) != 0 ) {
-        drawFocusFrame( dctx, rect );
-    }
 } /* gtk_draw_score_pendingScore */
 
 static void
@@ -1137,6 +1134,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     allocAndSet( map, &dctx->playerColors[3], 0xAFFF, 0x0000, 0xAFFF );
 
     allocAndSet( map, &dctx->tileBack, 0xFFFF, 0xFFFF, 0x9999 );
+    allocAndSet( map, &dctx->cursor, 0x7FFF, 0x7FFF, 0xFFFF );
     allocAndSet( map, &dctx->red, 0xFFFF, 0x0000, 0x0000 );
 
     return (DrawCtx*)dctx;
