@@ -964,7 +964,7 @@ pbt_reset_buffers( PalmBTStuff* btStuff )
     LOG_RETURN_VOID();
 }
 
-static void
+static XP_Bool
 btTimerProc( void* closure, XWTimerReason why )
 {
     PalmBTStuff* btStuff;
@@ -977,6 +977,7 @@ btTimerProc( void* closure, XWTimerReason why )
     } else {
         pbt_postpone( btStuff, PBT_ACT_CONNECT_ACL );
     }
+    return XP_TRUE;
 }
 
 static void
