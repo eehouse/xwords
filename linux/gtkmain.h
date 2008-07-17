@@ -49,6 +49,7 @@ typedef struct GtkDrawCtx {
     GdkColor white;
     GdkColor red;		/* for pending tiles */
     GdkColor tileBack;	/* for pending tiles */
+    GdkColor cursor;
     GdkColor bonusColors[4];
     GdkColor playerColors[MAX_NUM_PLAYERS];
 

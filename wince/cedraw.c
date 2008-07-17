@@ -591,15 +591,22 @@ DRAW_FUNC_NAME(drawTileBack)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
 DLSTATIC void
 DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect, 
-                                 XP_Bool selected )
+                                 CellFlags flags )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
     RECT rt;
+    XP_Bool selected = (flags & CELL_HIGHLIGHT) != 0;
 
     XPRtoRECT( &rt, rect );
     ceClipToRect( hdc, &rt );
+
+    if ( (flags & CELL_ISCURSOR) != 0 ) {
+        FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
+        InsetRect( &rt, 2, 0 );
+    }
+
     if ( selected ) {
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     } else {

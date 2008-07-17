@@ -180,7 +180,7 @@ typedef struct DrawCtxVTable {
     void DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
                                           CellFlags flags );
     void DRAW_VTABLE_NAME(drawTrayDivider) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                             XP_Bool selected );
+                                             CellFlags flags );
 
     void DRAW_VTABLE_NAME(clearRect) ( DrawCtx* dctx, const XP_Rect* rect );
 

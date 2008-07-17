@@ -96,10 +96,10 @@ static void doDrawPlayer( PalmDrawCtx* dctx, const DrawScoreInfo* dsi,
     } 
 
 static void
-eraseRect( /* PalmDrawCtx* dctx,  */const XP_Rect* rect )
+pmEraseRect( /* PalmDrawCtx* dctx,  */const XP_Rect* rect )
 {
     WinEraseRectangle( (const RectangleType*)rect, 0 );
-} /* eraseRect */
+} /* pmEraseRect */
 
 static void
 insetRect2( XP_Rect* rect, XP_S16 byX, XP_S16 byY )
@@ -378,7 +378,7 @@ palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     if ( dsi->flags && CELL_ISCURSOR ) {
         WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
-        eraseRect( rOuter );
+        pmEraseRect( rOuter );
     }
 
     if ( dsi->selected ) {
@@ -386,7 +386,7 @@ palm_clr_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
         insetRect2( &r, (r.width - rOuter->width) >> 2, 
                     (r.height - rOuter->height) >> 2 );
         WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
-        eraseRect( &r );
+        pmEraseRect( &r );
         txtIndex = COLOR_WHITE;
     } else {
         txtIndex = COLOR_PLAYER1+playerNum;
@@ -494,7 +494,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         insetRect( &localR, 1 );
     }
 
-    eraseRect( &localR );
+    pmEraseRect( &localR );
 
     if ( showEmpty ) {
         /* do nothing */
@@ -690,13 +690,8 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     localR.width -= 3 * doubler;
     localR.left += 2 * doubler;
 
-    if ( cursor && !dctx->topFocus ) {
+    if ( (cursor && !dctx->topFocus) || (!empty && !cursor) ) {
         /* this will fill it with the tile background color */
-        WinEraseRectangle( (const RectangleType*)&localR, 0 );
-    }
-
-    /* this will fill it with the tile background color */
-    if ( !empty && !cursor ) {
         WinEraseRectangle( (const RectangleType*)&localR, 0 );
     }
 
@@ -775,11 +770,17 @@ palm_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, CellFlags flags )
 
 static void
 palm_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
-                           XP_Bool selected )
+                           CellFlags flags )
 {
+    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_Rect lRect = *rect;
+    XP_Bool selected = (flags & CELL_HIGHLIGHT) != 0;
+    XP_Bool cursor = (flags & CELL_ISCURSOR) != 0;
 
-    draw_clearRect( p_dctx, &lRect );
+    if ( cursor ) {
+        (void)WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+    }
+    WinEraseRectangle( (const RectangleType*)&lRect, 0 );
 
     ++lRect.left;
     --lRect.width;
@@ -798,7 +799,7 @@ palm_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
 static void 
 palm_bnw_draw_clearRect( DrawCtx* XP_UNUSED(p_dctx), const XP_Rect* rectP )
 {
-    eraseRect( rectP );
+    pmEraseRect( rectP );
 } /* palm_draw_clearRect */
 
 static void 
@@ -808,7 +809,7 @@ palm_clr_draw_clearRect( DrawCtx* p_dctx, const XP_Rect* rectP )
     IndexedColorType oldColor;
 
     oldColor = WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_WHITE] );
-    eraseRect( rectP );
+    pmEraseRect( rectP );
     WinSetBackColor( oldColor );
 } /* palm_clr_draw_clearRect */
 
@@ -877,7 +878,7 @@ palm_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
     WinGetClip( &dctx->oldScoreClip );
     WinSetClip( (RectangleType*)rect );
 
-    eraseRect( rect );
+    pmEraseRect( rect );
 } /* palm_draw_scoreBegin */
 
 /* rectContainsRect: Dup of something in board.c.  They could share if I were
@@ -1176,7 +1177,7 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 
     HIGHRES_PUSH_LOC(dctx);
 
-    if ( flags != 0 ) {
+    if ( flags != CELL_NONE ) {
         oclr = WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
     }
 
@@ -1184,7 +1185,7 @@ palm_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     RctGetIntersection( &oldClip, (RectangleType*)rect, &newClip );
     if ( newClip.extent.y > 0 ) {
         WinSetClip( &newClip );
-        eraseRect( rect );
+        pmEraseRect( rect );
 
         if ( score >= 0 ) {
             XP_UCHAR tbuf[4];
@@ -1269,7 +1270,7 @@ palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     width = FntCharsWidth( (const char*)buf, len );
 
-    eraseRect( &localR );
+    pmEraseRect( &localR );
 
     if ( width < localR.width ) {
         localR.left += localR.width - width;

@@ -428,7 +428,7 @@ curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
 
 static void
 curses_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect, 
-                             XP_Bool XP_UNUSED(selected) )
+                             CellFlags XP_UNUSED(flags) )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     wmove( dctx->boardWin, rect->top, rect->left );
