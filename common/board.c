@@ -72,18 +72,9 @@ extern "C" {
 #endif
 
 /****************************** prototypes ******************************/
-static XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                            XP_Rect* rect);
-static XP_Bool drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, 
-                         XP_Bool skipBlanks );
 static void figureBoardRect( BoardCtxt* board );
 static void forceRectToBoard( const BoardCtxt* board, XP_Rect* rect );
 
-static void drawBoard( BoardCtxt* board );
-static void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
-static void invalCellsUnderRect( BoardCtxt* board, 
-                                 const XP_Rect* rect );
-static XP_Bool rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 );
 static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col, 
                               XP_U16 row, XP_Bool added );
 static void boardTilesChanged( void* board, XP_U16 turn, XP_S16 index1, 
@@ -95,11 +86,7 @@ static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col,
                          XP_U16 row );
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
-static void makeMiniWindowForTrade( BoardCtxt* board );
-static void makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
-                                   MiniWindowType winType );
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
-static void invalSelTradeWindow( BoardCtxt* board );
 static void setTimerIf( BoardCtxt* board );
 static XP_Bool p_board_timerFired( void* closure, XWTimerReason why );
 
@@ -112,9 +99,6 @@ static XP_Bool getArrow( BoardCtxt* board, XP_U16* col, XP_U16* row );
 static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player, 
                                    XP_Bool visible );
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
-#ifdef POINTER_SUPPORT
-static void drawDragTileIf( BoardCtxt* board );
-#endif
 
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
@@ -130,7 +114,6 @@ static XP_Bool invalFocusOwner( BoardCtxt* board );
 # define invalFocusOwner(board)
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
-static HintAtts figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row );
 static void clearCurHintRect( BoardCtxt* board );
 
 #else
@@ -524,7 +507,7 @@ invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw )
     }
 } /* invalTradeWindow */
 
-static void
+void
 invalSelTradeWindow( BoardCtxt* board )
 {
     invalTradeWindow( board, board->selPlayer, 
@@ -927,30 +910,6 @@ board_invalAllTiles( BoardCtxt* board )
 #ifdef KEYBOARD_NAV
 #ifdef PERIMETER_FOCUS
 static void
-invalOldPerimeter( BoardCtxt* board )
-{
-    /* We need to inval the center of the row that's moving into the center
-       from a border (at which point it got borders drawn on it.) */
-    XP_S16 diff = board->yOffset - board->prevYScrollOffset;
-    XP_U16 firstRow, lastRow;
-    XP_ASSERT( diff != 0 );
-    if ( diff < 0 ) {
-        /* moving up; inval row previously on bottom */
-        firstRow = board->yOffset + 1;
-        lastRow = board->prevYScrollOffset;
-    } else {
-        XP_U16 nVisible = board->lastVisibleRow - board->yOffset + 1;
-        lastRow = board->prevYScrollOffset + nVisible - 1;
-        firstRow = lastRow - diff + 1;
-    }
-    XP_ASSERT( firstRow <= lastRow );
-    while ( firstRow <= lastRow ) {
-        board->redrawFlags[firstRow] |= ~0;
-        ++firstRow;
-    }
-} /* invalOldPerimeter */
-
-static void
 invalPerimeter( BoardCtxt* board )
 {
     XP_U16 lastCol = model_numCols( board->model ) - 1;
@@ -1059,9 +1018,9 @@ checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
     if ( board->boardObscuresTray && board->trayVisState != TRAY_HIDDEN ) {
         /* call getCellRect until the cell's on the board. */
         while ( !getCellRect( board, col, row, &rect ) ) {
-            XP_S16 moveBy;
+            XP_S16 moveBy = 1;
             if ( rect.top < board->boardBounds.top ) {
-                moveBy = 1;
+                /* do nothing; set to 1 above to prevent warning */
             } else if ( rect.top + rect.height > 
                         board->boardBounds.top + board->boardBounds.height ) {
                 moveBy = -1;
@@ -1095,245 +1054,6 @@ onBorderCanScroll( const BoardCtxt* board, XP_U16 row, XP_S16* changeP )
     }
     return result;
 }
-
-/* if any of a blank's neighbors is invalid, so must the blank become (since
- * they share a border and drawing the neighbor will redraw the blank's border
- * too) We'll want to redraw only those blanks that are themselves already
- * invalid *OR* that become invalid this way, and so we'll build a new
- * BlankQueue of them and replace the old.
- *
- * I'm not sure what happens if two blanks are neighbors.
- */
-#define INVAL_BIT_SET(b,c,r) (((b)->redrawFlags[(r)] & (1 <<(c))) != 0)
-static void
-invalBlanksWithNeighbors( BoardCtxt* board, BlankQueue* bqp ) 
-{
-    XP_U16 i;
-    XP_U16 lastCol, lastRow;
-    BlankQueue invalBlanks;
-    XP_U16 nInvalBlanks = 0;
-
-    lastCol = model_numCols(board->model) - 1;
-    lastRow = model_numRows(board->model) - 1;
-
-    for ( i = 0; i < bqp->nBlanks; ++i ) {
-        XP_U16 modelCol = bqp->col[i];
-        XP_U16 modelRow = bqp->row[i];
-        XP_U16 col, row;
-
-        flipIf( board, modelCol, modelRow, &col, &row );
-
-        if ( INVAL_BIT_SET( board, col, row )
-             || (col > 0 && INVAL_BIT_SET( board, col-1, row ))
-             || (col < lastCol && INVAL_BIT_SET( board, col+1, row ))
-             || (row > 0 && INVAL_BIT_SET( board, col, row-1 ))
-             || (row < lastRow && INVAL_BIT_SET( board, col, row+1 )) ) {
-
-            invalCell( board, col, row );
-
-            invalBlanks.col[nInvalBlanks] = (XP_U8)col;
-            invalBlanks.row[nInvalBlanks] = (XP_U8)row;
-            ++nInvalBlanks;
-        }
-    }
-    invalBlanks.nBlanks = nInvalBlanks;
-    XP_MEMCPY( bqp, &invalBlanks, sizeof(*bqp) );
-} /* invalBlanksWithNeighbors */
-
-static void
-scrollIfCan( BoardCtxt* board )
-{
-    if ( board->yOffset != board->prevYScrollOffset ) {
-        XP_Rect scrollR = board->boardBounds;
-        XP_Bool scrolled;
-        XP_S16 dist;
-
-#ifdef PERIMETER_FOCUS
-        if ( (board->focussed == OBJ_BOARD) && !board->focusHasDived ) {
-            invalOldPerimeter( board );
-        }
-#endif
-        invalSelTradeWindow( board );
-        dist = (board->yOffset - board->prevYScrollOffset)
-            * board->boardVScale;
-
-        scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist, 
-                                         dfsFor( board, OBJ_BOARD ) );
-
-        if ( scrolled ) {
-            /* inval the rows that have been scrolled into view.  I'm cheating
-               making the client figure the inval rect, but Palm's the first
-               client and it does it so well.... */
-            invalCellsUnderRect( board, &scrollR );
-        } else {
-            board_invalAll( board );
-        }
-        board->prevYScrollOffset = board->yOffset;
-    }
-} /* scrollIfCan */
-
-static void
-drawTradeWindowIf( BoardCtxt* board )
-{
-    if ( board->tradingMiniWindowInvalid &&
-         TRADE_IN_PROGRESS(board) && board->trayVisState == TRAY_REVEALED ) {
-        MiniWindowStuff* stuff;
-
-        makeMiniWindowForTrade( board );
-
-        stuff = &board->miniWindowStuff[MINIWINDOW_TRADING];
-        draw_drawMiniWindow( board->draw, stuff->text,
-                             &stuff->rect, (void**)NULL );
-
-        board->tradingMiniWindowInvalid = XP_FALSE;
-    }
-} /* drawTradeWindowIf */
-
-XP_Bool
-board_draw( BoardCtxt* board )
-{
-    if ( board->boardBounds.width > 0 ) {
-
-        drawScoreBoard( board );
-
-        drawTray( board );
-
-        drawBoard( board );
-    }
-    return !board->needsDrawing;
-} /* board_draw */
-
-#ifdef KEYBOARD_NAV
-static XP_Bool
-cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
-{
-    XP_Bool focussed = XP_FALSE;
-
-    if ( board->focussed == OBJ_BOARD ) {
-        if ( board->focusHasDived ) {
-            if ( (col == board->bdCursor[board->selPlayer].col)
-                 && (row == board->bdCursor[board->selPlayer].row) ) {
-                focussed = XP_TRUE;
-            }
-        } else {
-#ifdef PERIMETER_FOCUS
-            focussed = (col == 0)
-                || (col == model_numCols(board->model) - 1)
-                || (row == board->yOffset)
-                || (row == board->lastVisibleRow);
-#else
-            focussed = XP_TRUE;
-#endif
-        }
-    }
-    return focussed;
-} /* cellFocused */
-#endif
-
-static void
-drawBoard( BoardCtxt* board )
-{
-    if ( board->needsDrawing 
-         && draw_boardBegin( board->draw, 
-                             model_getDictionary( board->model ),
-                             &board->boardBounds, 
-                             dfsFor( board, OBJ_BOARD ) ) ) {
-
-        XP_Bool allDrawn = XP_TRUE;
-        XP_S16 lastCol, i;
-        XP_S16 row;
-        ModelCtxt* model = board->model;
-        BlankQueue bq;
-        XP_Rect arrowRect;
-
-        scrollIfCan( board ); /* this must happen before we count blanks
-                                 since it invalidates squares */
-
-        /* This is freaking expensive!!!! PENDING FIXME Can't we start from
-           what's invalid rather than scanning the entire model every time
-           somebody dirties a single cell? */
-        model_listPlacedBlanks( model, board->selPlayer, 
-                                board->trayVisState == TRAY_REVEALED, &bq );
-        invalBlanksWithNeighbors( board, &bq );
-
-        for ( row = board->yOffset; row <= board->lastVisibleRow; ++row ) {
-            XP_U16 rowFlags = board->redrawFlags[row];
-            if ( rowFlags != 0 ) {
-                XP_U16 colMask;
-                XP_U16 failedBits = 0;
-                lastCol = model_numCols( model );
-                for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
-                    if ( (rowFlags & colMask) != 0 ) {
-                        if ( !drawCell( board, lastCol, row, XP_TRUE )) {
-                            failedBits |= colMask;
-                            allDrawn = XP_FALSE;
-                        }
-                    }
-                }
-                board->redrawFlags[row] = failedBits;
-            }
-        }
-
-        /* draw the blanks we skipped before */
-        for ( i = 0; i < bq.nBlanks; ++i ) {
-            if ( !drawCell( board, bq.col[i], bq.row[i], XP_FALSE ) ) {
-                allDrawn = XP_FALSE;
-            }
-        }
-
-        if ( board->trayVisState == TRAY_REVEALED ) {
-            BoardArrow* arrow = &board->boardArrow[board->selPlayer];
-
-            if ( arrow->visible ) {
-                XP_U16 col = arrow->col;
-                XP_U16 row = arrow->row;
-                if ( getCellRect( board, col, row, &arrowRect ) ) {
-                    XWBonusType bonus;
-                    HintAtts hintAtts;
-                    CellFlags flags = CELL_NONE;
-                    bonus = util_getSquareBonus( board->util, model, 
-                                                 col, row );
-                    hintAtts = figureHintAtts( board, col, row );
-#ifdef KEYBOARD_NAV
-                    if ( cellFocused( board, col, row ) ) {
-                        flags |= CELL_ISCURSOR;
-                    }
-#endif
-                    draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
-                                         arrow->vert, hintAtts, flags );
-                }
-            }
-        }
-
-        /* I doubt the two of these can happen at the same time */
-        drawTradeWindowIf( board );
-#ifdef POINTER_SUPPORT
-        drawDragTileIf( board );
-#endif
-        draw_objFinished( board->draw, OBJ_BOARD, &board->boardBounds, 
-                          dfsFor( board, OBJ_BOARD ) );
-
-        board->needsDrawing = !allDrawn;
-    }
-} /* drawBoard */
-
-#ifdef KEYBOARD_NAV
-DrawFocusState
-dfsFor( BoardCtxt* board, BoardObjectType obj )
-{
-    DrawFocusState dfs;
-    if ( board->focussed == obj ) {
-        if ( board->focusHasDived ) {
-            dfs = DFS_DIVED;
-        } else {
-            dfs = DFS_TOP;
-        }
-    } else {
-        dfs = DFS_NONE;
-    }
-    return dfs;
-} /* dfsFor */
-#endif
 
 void
 board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
@@ -1387,7 +1107,7 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
     figureBoardRect( board );
 } /* board_setTrayLoc */
 
-static void
+void
 invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
 {
     XP_Rect lr = *rect;
@@ -1777,108 +1497,6 @@ board_requestHint( BoardCtxt* board,
     return result || redraw;
 } /* board_requestHint */
 
-static XP_Bool
-drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
-{
-    XP_Bool success = XP_TRUE;
-    XP_Rect cellRect;
-    Tile tile;
-    XP_Bool isBlank, isEmpty, recent, pending = XP_FALSE;
-    XWBonusType bonus;
-    ModelCtxt* model = board->model;
-    DictionaryCtxt* dict = model_getDictionary( model );
-    XP_U16 modelCol, modelRow;
-
-    if ( dict != NULL && getCellRect( board, col, row, &cellRect ) ) {
-
-        /* We want to invert EITHER the current pending tiles OR the most recent
-         * move.  So if the tray is visible AND there are tiles missing from it,
-         * show them.  Otherwise show the most recent move.
-         */
-        XP_U16 selPlayer = board->selPlayer;
-        XP_U16 curCount = model_getCurrentMoveCount( model, selPlayer );
-        XP_Bool showPending = board->trayVisState == TRAY_REVEALED
-            && curCount > 0;
-
-        flipIf( board, col, row, &modelCol, &modelRow );
-
-        /* This 'while' is only here so I can 'break' below */
-        while ( board->trayVisState == TRAY_HIDDEN ||
-                !rectContainsRect( &board->trayBounds, &cellRect ) ) {
-            XP_UCHAR ch[4] = {'\0'};
-            XP_S16 owner = -1;
-            XP_Bool invert = XP_FALSE;
-            XP_Bitmap bitmap = NULL;
-            XP_UCHAR* textP = NULL;
-            HintAtts hintAtts;
-            CellFlags flags = CELL_NONE;
-            XP_Bool isOrigin;
-
-            isEmpty = !model_getTile( model, modelCol, modelRow, showPending,
-                                        selPlayer, &tile, &isBlank,
-                                        &pending, &recent );
-            if ( dragDropIsBeingDragged( board, col, row, &isOrigin ) ) {
-                flags |= isOrigin? CELL_DRAGSRC : CELL_DRAGCUR;
-                if ( isEmpty && !isOrigin ) {
-                    dragDropTileInfo( board, &tile, &isBlank );
-                    pending = XP_TRUE;
-                    recent = XP_FALSE;
-                    isEmpty = XP_FALSE;
-                }
-            }
-
-            if ( isEmpty ) {
-                isBlank = XP_FALSE;
-                flags |= CELL_ISEMPTY;
-            } else if ( isBlank && skipBlanks ) {
-                break;
-            } else {
-                if ( board->showColors ) {
-                    owner = (XP_S16)model_getCellOwner( model, modelCol, 
-                                                        modelRow );
-                }
-
-                invert = showPending? pending : recent;
-
-                if ( board->showCellValues ) {
-                    Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
-                    XP_U16 val = dict_getTileValue( dict, valTile );
-                    XP_SNPRINTF( ch, sizeof(ch), (XP_UCHAR*)"%d", val );
-                    textP = ch;
-                } else if ( dict_faceIsBitmap( dict, tile ) ) {
-                    bitmap = dict_getFaceBitmap( dict, tile, XP_FALSE );
-                    XP_ASSERT( !!bitmap );
-                } else {
-                    (void)dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
-                    textP = ch;
-                }
-            }
-            bonus = util_getSquareBonus( board->util, model, col, row );
-            hintAtts = figureHintAtts( board, col, row );
-
-            if ( (col==board->star_row) && (row==board->star_row) ) {
-                flags |= CELL_ISSTAR;
-            }
-            if ( invert ) {
-                flags |= CELL_HIGHLIGHT;
-            }
-            if ( isBlank ) {
-                flags |= CELL_ISBLANK;
-            }
-#ifdef KEYBOARD_NAV
-            if ( cellFocused( board, col, row ) ) {
-                flags |= CELL_ISCURSOR;
-            }
-#endif
-
-            success = draw_drawCell( board->draw, &cellRect, textP, bitmap, 
-                                     tile, owner, bonus, hintAtts, flags );
-            break;
-        }
-    }
-    return success;
-} /* drawCell */
-
 static void
 figureBoardRect( BoardCtxt* board )
 {
@@ -1942,7 +1560,7 @@ coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, XP_U16* rowP )
     return onBoard;
 } /* coordToCell */
 
-static XP_Bool
+XP_Bool
 getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
 {
     XP_S16 top;
@@ -1965,7 +1583,7 @@ getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
     return onBoard;
 } /* getCellRect */
 
-static void
+void
 invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     board->redrawFlags[row] |= 1 << col;
@@ -2033,7 +1651,7 @@ moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
 } /* moveTileToArrowLoc */
 #endif
 
-static void
+void
 makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                        MiniWindowType winType )
 {
@@ -2047,16 +1665,6 @@ makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text,
     stuff->rect = rect;
     stuff->text = text;
 } /* makeMiniWindowForText */
-
-static void
-makeMiniWindowForTrade( BoardCtxt* board )
-{
-    const XP_UCHAR* text;
-
-    text = draw_getMiniWText( board->draw, INTRADE_MW_TEXT );
-
-    makeMiniWindowForText( board, text, MINIWINDOW_TRADING );
-} /* makeMiniWindowForTrade */
 
 XP_Bool
 board_beginTrade( BoardCtxt* board )
@@ -2091,49 +1699,6 @@ ptOnTradeWindow( BoardCtxt* board, XP_U16 x, XP_U16 y )
 } /* ptOnTradeWindow */
 
 #ifdef XWFEATURE_SEARCHLIMIT
-static HintAtts
-figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
-{
-    HintAtts result = HINT_BORDER_NONE;
-
-    /* while lets us break to exit... */
-    while ( board->trayVisState == TRAY_REVEALED && board->gi->allowHintRect ) {
-        BdHintLimits limits;
-        if ( dragDropGetHintLimits( board, &limits ) ) {
-            /* do nothing */
-        } else if ( board->hasHintRect[board->selPlayer] ) {
-            limits = board->limits[board->selPlayer];
-        } else {
-            break;
-        }
-
-        if ( col < limits.left ) break;
-        if ( row < limits.top ) break;
-        if ( col > limits.right ) break;
-        if ( row > limits.bottom ) break;
-
-        if ( col == limits.left ) {
-            result |= HINT_BORDER_LEFT;
-        }
-        if ( col == limits.right ) {
-            result |= HINT_BORDER_RIGHT;
-        }
-        if ( row == limits.top) {
-            result |= HINT_BORDER_TOP;
-        }
-        if ( row == limits.bottom ) {
-            result |= HINT_BORDER_BOTTOM;
-        }
-#ifndef XWFEATURE_SEARCHLIMIT_DOCENTERS
-        if ( result == HINT_BORDER_NONE ) {
-            result = HINT_BORDER_CENTER;
-        }
-#endif
-        break;
-    }
-
-    return result;
-} /* figureHintAtts */
 
 void
 invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
@@ -2494,7 +2059,7 @@ exitTradeMode( BoardCtxt* board )
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 static XP_Bool
-handlePenUpInternal( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool isPen )
+handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
 {
     XP_Bool draw = XP_FALSE;
     XP_Bool dragged = XP_FALSE;
@@ -2506,7 +2071,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool isPen )
     board->penDownObject = OBJ_NONE;
 
     if ( dragDropInProgress(board) ) {
-        draw = dragDropEnd( board, x, y, &dragged );
+        draw = dragDropEnd( board, xx, yy, &dragged );
     }
     if ( dragged ) {
         /* do nothing further */
@@ -2519,19 +2084,19 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool isPen )
         board->penTimerFired = XP_FALSE;
     } else {
         BoardObjectType onWhich;
-        if ( pointOnSomething( board, x, y, &onWhich ) ) {
+        if ( pointOnSomething( board, xx, yy, &onWhich ) ) {
 
             switch( onWhich ) {
             case OBJ_SCORE:
                 if ( prevObj == OBJ_SCORE ) {
-                    draw = handlePenUpScore( board, x, y ) || draw;
+                    draw = handlePenUpScore( board, xx, yy ) || draw;
                 }
                 break;
             case OBJ_BOARD:
                 if ( prevObj == OBJ_BOARD && checkRevealTray(board) ) {
 
                     if ( TRADE_IN_PROGRESS(board) ) {
-                        if ( ptOnTradeWindow( board, x, y )) {
+                        if ( ptOnTradeWindow( board, xx, yy )) {
                             draw = exitTradeMode( board ) || draw;
                         }
                     } else {
@@ -2547,7 +2112,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool isPen )
                 if ( board->trayVisState == TRAY_REVERSED ) {
                     draw = askRevealTray( board ) || draw;
                 } else {
-                    draw = handlePenUpTray( board, x, y ) || draw;
+                    draw = handlePenUpTray( board, xx, yy ) || draw;
                 }
                 break;
             default:
@@ -2567,7 +2132,7 @@ board_handlePenUp( BoardCtxt* board, XP_U16 x, XP_U16 y )
 #endif /* #ifdef POINTER_SUPPORT */
 
 #ifdef KEYBOARD_NAV
-static void
+void
 getRectCenter( const XP_Rect* rect, XP_U16* xp, XP_U16* yp )
 {
     *xp = rect->left + ( rect->width >> 1 );
@@ -2582,15 +2147,6 @@ getFocussedCellCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
     BdCursorLoc* cursorLoc = &board->bdCursor[selPlayer];
 
     getCellRect( board, cursorLoc->col, cursorLoc->row, &rect );
-    getRectCenter( &rect, xp, yp );
-}
-
-static void
-getFocussedTileCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
-{
-    XP_Rect rect;
-    XP_U16 indx = board->trayCursorLoc[board->selPlayer];
-    figureTrayTileRect( board, indx, &rect );
     getRectCenter( &rect, xp, yp );
 }
 
@@ -2642,7 +2198,7 @@ handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
             redraw = board_moveCursor( board, key, preflightOnly, &up );
         } else if ( board->focussed == OBJ_SCORE ) {
             redraw = moveScoreCursor( board, key, preflightOnly, &up );
-        } else if ( board->focussed == OBJ_TRAY && checkRevealTray(board) ) {
+        } else if ( board->focussed == OBJ_TRAY/* && checkRevealTray(board)*/ ) {
             redraw = tray_moveCursor( board, key, preflightOnly, &up );
         }
         if ( up ) {
@@ -3050,15 +2606,6 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
 } /* board_moveCursor */
 #endif
 
-static XP_Bool
-rectContainsRect( XP_Rect* rect1, XP_Rect* rect2 )
-{
-    return ( rect1->top <= rect2->top
-             && rect1->left <= rect2->left
-             && rect1->top + rect1->height >= rect2->top + rect2->height
-             && rect1->left + rect1->width >= rect2->left + rect2->width );
-} /* rectContainsRect */
-
 XP_Bool
 rectContainsPt( XP_Rect* rect, XP_S16 x, XP_S16 y )
 {
@@ -3366,7 +2913,7 @@ forceRectToBoard( const BoardCtxt* board, XP_Rect* rect )
     }
 } /* forceRectToBoard */
 
-static void
+void
 getDragCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rectP )
 {
     XP_Rect rect;
@@ -3385,40 +2932,6 @@ getDragCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rectP )
     *rectP = rect;
     forceRectToBoard( board, rectP );
 }
-
-#ifdef POINTER_SUPPORT
-static void
-drawDragTileIf( BoardCtxt* board )
-{
-    if ( dragDropInProgress( board ) ) {
-        XP_U16 col, row;
-        if ( dragDropGetBoardTile( board, &col, &row ) ) {
-            XP_Rect rect;
-            Tile tile;
-            XP_Bool isBlank;
-            XP_UCHAR buf[4];
-            XP_UCHAR* face;
-            XP_Bitmap bitmap = NULL;
-            XP_S16 value;
-            CellFlags flags;
-
-            getDragCellRect( board, col, row, &rect );
-
-            dragDropTileInfo( board, &tile, &isBlank );
-
-            face = getTileDrawInfo( board, tile, isBlank, &bitmap, 
-                                              &value, buf, sizeof(buf) );
-
-            flags = CELL_DRAGCUR;
-            if ( isBlank ) {
-                flags |= CELL_ISBLANK;
-            }
-            draw_drawTileMidDrag( board->draw, &rect, face, bitmap, value, 
-                                  board->selPlayer, flags );
-        }
-    }
-} /* drawDragTileIf */
-#endif
 
 void
 invalDragObj( BoardCtxt* board, const DragObjInfo* di )
