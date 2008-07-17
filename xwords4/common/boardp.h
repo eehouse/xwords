@@ -151,6 +151,7 @@ struct BoardCtxt {
     XP_Bool focusHasDived;
 #endif
     XP_U8 dividerLoc[MAX_NUM_PLAYERS]; /* 0 means left of 0th tile, etc. */
+    XP_Bool dividerSelected[MAX_NUM_PLAYERS]; /* probably need to save this */
 
     XP_U16 scoreDims[MAX_NUM_PLAYERS];
 
@@ -176,7 +177,7 @@ struct BoardCtxt {
     TileBit trayInvalBits;
     TileBit traySelBits[MAX_NUM_PLAYERS];
 #ifdef KEYBOARD_NAV
-    XP_U8   trayCursorLoc[MAX_NUM_PLAYERS];
+    XP_U8   trayCursorLoc[MAX_NUM_PLAYERS]; /* includes divider!!! */
     XP_U8   scoreCursorLoc;
 #endif
 
@@ -226,10 +227,20 @@ XP_Bool moveTileToBoard( BoardCtxt* board, XP_U16 col, XP_U16 row,
 void invalTilesUnderRect( BoardCtxt* board, const XP_Rect* rect );
 void invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB, 
                       XP_U16 rowB );
+void invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
 void invalDragObj( BoardCtxt* board, const DragObjInfo* di );
 void invalTrayTilesAbove( BoardCtxt* board, XP_U16 tileIndex );
 void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1, 
                             XP_U16 tileIndex2 );
+void makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
+                            MiniWindowType winType );
+XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+                     XP_Rect* rect);
+void getDragCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+                      XP_Rect* rectP );
+void invalSelTradeWindow( BoardCtxt* board );
+void invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect );
+
 #ifdef XWFEATURE_SEARCHLIMIT
 void invalCurHintRect( BoardCtxt* board, XP_U16 player );
 #endif
@@ -249,12 +260,16 @@ XP_Bool checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
 XP_Bool onBorderCanScroll( const BoardCtxt* board, XP_U16 row, XP_S16* change );
 XP_Bool adjustYOffset( BoardCtxt* board, XP_S16 moveBy );
 
+
+
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
                          XP_Bool preflightOnly, XP_Bool* up );
 XP_Bool tray_keyAction( BoardCtxt* board );
 DrawFocusState dfsFor( BoardCtxt* board, BoardObjectType obj );
 void shiftFocusUp( BoardCtxt* board, XP_Key key );
+void getFocussedTileCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp );
+void getRectCenter( const XP_Rect* rect, XP_U16* xp, XP_U16* yp );
 #else
 # define dfsFor( board, obj ) DFS_NONE
 #endif

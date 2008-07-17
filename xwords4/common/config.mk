@@ -24,6 +24,7 @@ COMMONOBJDIR = ../common/$(PLATFORM)
 
 COMMONSRC = \
 	$(COMMONDIR)/board.c \
+	$(COMMONDIR)/boarddrw.c \
 	$(COMMONDIR)/dragdrpp.c \
 	$(COMMONDIR)/scorebdp.c \
 	$(COMMONDIR)/tray.c \
@@ -48,7 +49,7 @@ COMMONSRC = \
 
 COMMON1 = \
 	$(COMMONOBJDIR)/board.o \
-	$(COMMONOBJDIR)/dragdrpp.o \
+	$(COMMONOBJDIR)/boarddrw.o \
 	$(COMMONOBJDIR)/tray.o \
 	$(COMMONOBJDIR)/scorebdp.o \
 	$(COMMONOBJDIR)/draw.o \
@@ -66,6 +67,7 @@ COMMON3 = \
 	$(COMMONOBJDIR)/engine.o \
 
 COMMON4 = \
+	$(COMMONOBJDIR)/dragdrpp.o \
 	$(COMMONOBJDIR)/memstream.o \
 	$(COMMONOBJDIR)/comms.o \
 	$(COMMONOBJDIR)/mempool.o \
