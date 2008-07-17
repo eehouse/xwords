@@ -1964,7 +1964,6 @@ static Boolean
 scrollBoard( PalmAppGlobals* globals, Int16 newValue, Boolean fromBar )
 {
     XP_Bool result = XP_FALSE;
-    XP_U16 curYOffset;
 
     XP_ASSERT( !!globals->game.board );
 
