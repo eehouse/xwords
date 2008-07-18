@@ -565,8 +565,8 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
 
     if ( cursorKey == XP_CURSOR_KEY_UP || cursorKey == XP_CURSOR_KEY_DOWN ) {
         up = XP_TRUE;
-    } else if ( cursorKey == XP_CURSOR_KEY_RIGHT
-                || cursorKey == XP_CURSOR_KEY_LEFT ) {
+    } else if ( (cursorKey == XP_CURSOR_KEY_RIGHT)
+                || (cursorKey == XP_CURSOR_KEY_LEFT) ) {
         XP_S16 delta = cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
         const XP_U16 selPlayer = board->selPlayer;
         PerTurnInfo* pti = board->selInfo;
@@ -618,11 +618,8 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
             /* fix this!!! */
             board->dividerInvalid = XP_TRUE;
             board_invalTrayTiles( board, ALLTILES );
-
-            draw = XP_TRUE;
         }
-    } else {
-        draw = XP_FALSE;
+        draw = XP_TRUE;
     }
 
     *pUp = up;
@@ -635,7 +632,8 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
 {
     XP_Bool draw = XP_FALSE;
     XP_Bool up = XP_FALSE;
-    XP_U16 selPlayer = board->selPlayer;
+    const XP_U16 selPlayer = board->selPlayer;
+    PerTurnInfo* pti = board->selInfo;
     XP_S16 pos;
     TileBit what = 0;
 
@@ -656,8 +654,8 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         break;
     case XP_CURSOR_KEY_RIGHT:
     case XP_CURSOR_KEY_LEFT:
-        what = what | (1 << board->trayCursorLoc[selPlayer]);
-        pos = board->trayCursorLoc[selPlayer];
+        what = what | (1 << pti->trayCursorLoc);
+        pos = pti->trayCursorLoc;
         /* Loop in order to skip all empty tile slots but one */
         for ( ; ; ) {
             pos += (cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1);
@@ -675,14 +673,14 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
                     }
                 }
                 if ( !preflightOnly ) {
-                    board->trayCursorLoc[selPlayer] = pos;
+                    pti->trayCursorLoc = pos;
                     what = what | (1 << pos);
                 }
             }
             break;
         }
         if ( !preflightOnly ) {
-            what = what | (1 << board->trayCursorLoc[selPlayer]);
+            what = what | (1 << pti->trayCursorLoc);
             board_invalTrayTiles( board, what );
         }
         draw = XP_TRUE;
