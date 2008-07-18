@@ -775,7 +775,7 @@ palm_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_Rect lRect = *rect;
     XP_Bool selected = (flags & CELL_HIGHLIGHT) != 0;
-    XP_Bool cursor = (flags & CELL_ISCURSOR) != 0;
+    XP_Bool cursor = TREAT_AS_CURSOR(dctx, flags);
 
     if ( cursor ) {
         (void)WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
@@ -784,6 +784,9 @@ palm_draw_drawTrayDivider( DrawCtx* p_dctx, const XP_Rect* rect,
 
     ++lRect.left;
     --lRect.width;
+    if ( cursor ) {
+        insetRect( &lRect, 2 );
+    }
 
     if ( selected ) {
         short pattern[] = { 0xFF00, 0xFF00, 0xFF00, 0xFF00 };
