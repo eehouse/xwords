@@ -160,6 +160,9 @@ getStateStr( XW_State st )
     }
 #   undef CASESTR
 }
+#endif
+
+#if 0
 static void
 logNewState( XW_State old, XW_State newst )
 {
