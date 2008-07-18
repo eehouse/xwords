@@ -136,6 +136,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
     if ( result != NULL ) {
 
         XP_MEMSET( result, 0, sizeof( *result ) );
+        result->selInfo = result->pti; /* equates to selPlayer == 0 */
 
         MPASSIGN(result->mpool, mpool);
 
