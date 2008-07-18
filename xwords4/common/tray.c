@@ -95,7 +95,7 @@ figureTrayTileRect( BoardCtxt* board, XP_U16 index, XP_Rect* rect )
     rect->width = board->trayScaleH;
     rect->height = board->trayScaleV;
 
-    if ( board->dividerLoc[board->selPlayer] <= index ) {
+    if ( board->selInfo->dividerLoc <= index ) {
         rect->left += board->dividerWidth;
     }
 } /* figureTileRect */
@@ -128,7 +128,8 @@ drawTray( BoardCtxt* board )
     XP_Rect tileRect;
 
     if ( (board->trayInvalBits != 0) || board->dividerInvalid ) {
-        XP_S16 turn = board->selPlayer;
+        const XP_S16 turn = board->selPlayer;
+        PerTurnInfo* pti = board->selInfo;
 
         if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
                              dfsFor( board, OBJ_TRAY ) ) ) {
@@ -136,9 +137,9 @@ drawTray( BoardCtxt* board )
             XP_S16 cursorBits = 0;
             XP_Bool cursorOnDivider = XP_FALSE;
 #ifdef KEYBOARD_NAV
-            XP_S16 cursorTile = board->trayCursorLoc[turn];
+            XP_S16 cursorTile = pti->trayCursorLoc;
             if ( board->focussed == OBJ_TRAY ) {
-                cursorOnDivider = board->dividerLoc[turn] == cursorTile;
+                cursorOnDivider = pti->dividerLoc == cursorTile;
                 if ( board->focusHasDived ) {
                     if ( !cursorOnDivider ) {
                         adjustForDivider( board, &cursorTile );
@@ -187,7 +188,7 @@ drawTray( BoardCtxt* board )
                             XP_UCHAR buf[4];
                             XP_Bitmap bitmap = NULL;
                             XP_UCHAR* textP = (XP_UCHAR*)NULL;
-                            XP_U8 traySelBits = board->traySelBits[turn];
+                            XP_U8 traySelBits = pti->traySelBits;
                             XP_S16 value;
                             Tile tile;
 
@@ -240,7 +241,7 @@ drawTray( BoardCtxt* board )
                     CellFlags flags = cursorOnDivider? CELL_ISCURSOR : CELL_NONE;
                     XP_Rect divider;
                     figureDividerRect( board, &divider );
-                    if ( board->dividerSelected[turn] 
+                    if ( pti->dividerSelected 
                          || dragDropIsDividerDrag(board) ) {
                         flags |= CELL_HIGHLIGHT;
                     }
@@ -327,7 +328,7 @@ drawPendingScore( BoardCtxt* board, XP_Bool hasCursor )
 static void
 figureDividerRect( BoardCtxt* board, XP_Rect* rect )
 {
-    figureTrayTileRect( board, board->dividerLoc[board->selPlayer], rect );
+    figureTrayTileRect( board, board->selInfo->dividerLoc, rect );
     rect->left -= board->dividerWidth;
     rect->width = board->dividerWidth;
 } /* figureDividerRect */
@@ -365,7 +366,7 @@ handleTrayDuringTrade( BoardCtxt* board, XP_S16 index )
     XP_ASSERT( index >= 0 );
 
     bits = 1 << index;
-    board->traySelBits[board->selPlayer] ^= bits;
+    board->selInfo->traySelBits ^= bits;
     board_invalTrayTiles( board, bits );
     return XP_TRUE;
 } /* handleTrayDuringTrade */
@@ -374,15 +375,16 @@ static XP_Bool
 handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
 {
     XP_Bool result = XP_FALSE;
-    XP_U16 selPlayer = board->selPlayer;
+    const XP_U16 selPlayer = board->selPlayer;
+    PerTurnInfo* pti = board->selInfo;
 
     if ( onDivider ) {
         /* toggle divider sel state */
-        board->dividerSelected[selPlayer] = !board->dividerSelected[selPlayer];
+        pti->dividerSelected = !pti->dividerSelected;
         board->dividerInvalid = XP_TRUE;
-        board->traySelBits[selPlayer] = NO_TILES;
+        pti->traySelBits = NO_TILES;
         result = XP_TRUE;
-    } else if ( board->tradeInProgress[selPlayer] ) {
+    } else if ( pti->tradeInProgress ) {
         if ( index >= 0 ) {
             result = handleTrayDuringTrade( board, index );
         }
@@ -390,25 +392,25 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
         result = moveTileToArrowLoc( board, (XP_U8)index );
         if ( !result ) {
             TileBit newBits = 1 << index;
-            XP_U8 selBits = board->traySelBits[selPlayer];
+            XP_U8 selBits = pti->traySelBits;
             /* Tap on selected tile unselects.  If we don't do this,
                then there's no way to unselect and so no way to turn
                off the placement arrow */
             if ( newBits == selBits ) {
                 board_invalTrayTiles( board, selBits );
-                board->traySelBits[selPlayer] = NO_TILES;
+                pti->traySelBits = NO_TILES;
             } else if ( selBits != 0 ) {
                 XP_U16 selIndex = indexForBits( selBits );
-                model_moveTileOnTray( board->model, board->selPlayer,
+                model_moveTileOnTray( board->model, selPlayer,
                                       selIndex, index );
-                board->traySelBits[selPlayer] = NO_TILES;
+                pti->traySelBits = NO_TILES;
             } else {
                  board_invalTrayTiles( board, newBits );
-                 board->traySelBits[selPlayer] = newBits;
+                 pti->traySelBits = newBits;
             }
             board->dividerInvalid = 
-                board->dividerInvalid || board->dividerSelected[selPlayer];
-            board->dividerSelected[selPlayer] = XP_FALSE;
+                board->dividerInvalid || pti->dividerSelected;
+            pti->dividerSelected = XP_FALSE;
             result = XP_TRUE;
         }
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
@@ -447,10 +449,10 @@ indexForBits( XP_U8 bits )
 XP_Bool
 dividerMoved( BoardCtxt* board, XP_U8 newLoc )
 {
-    XP_U8 oldLoc = board->dividerLoc[board->selPlayer];
+    XP_U8 oldLoc = board->selInfo->dividerLoc;
     XP_Bool moved = oldLoc != newLoc;
     if ( moved ) {
-        board->dividerLoc[board->selPlayer] = newLoc;
+        board->selInfo->dividerLoc = newLoc;
 
         /* This divider's index corresponds to the tile it's to the left of, and
            there's no need to invalidate any tiles to the left of the uppermore
@@ -508,11 +510,11 @@ XP_Bool
 board_juggleTray( BoardCtxt* board )
 {
     XP_Bool result = XP_FALSE;
-    XP_S16 turn = board->selPlayer;
+    const XP_S16 turn = board->selPlayer;
     
     if ( checkRevealTray( board ) ) {
         XP_S16 nTiles;
-        XP_U16 dividerLoc = board->dividerLoc[board->selPlayer];
+        XP_U16 dividerLoc = board->selInfo->dividerLoc;
         ModelCtxt* model = board->model;
 
         nTiles = model_getNumTilesInTray( model, turn ) - dividerLoc;
@@ -536,7 +538,7 @@ board_juggleTray( BoardCtxt* board )
                 (void)model_removePlayerTile( model, turn, -1 );
                 model_addPlayerTile( model, turn, dividerLoc, tmpT[i] );
             }
-            board->traySelBits[turn] = 0;
+            board->selInfo->traySelBits = 0;
             result = XP_TRUE;
         }
     }
@@ -547,7 +549,7 @@ board_juggleTray( BoardCtxt* board )
 static void
 adjustForDivider( const BoardCtxt* board, XP_S16* index )
 {
-    XP_U16 dividerLoc = board->dividerLoc[board->selPlayer];
+    XP_U16 dividerLoc = board->selInfo->dividerLoc;
     if ( dividerLoc <= *index ) {
         --*index;
     }
@@ -566,8 +568,9 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
     } else if ( cursorKey == XP_CURSOR_KEY_RIGHT
                 || cursorKey == XP_CURSOR_KEY_LEFT ) {
         XP_S16 delta = cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
-        XP_U16 selPlayer = board->selPlayer;
-        XP_S16 trayCursorLoc = board->trayCursorLoc[selPlayer];
+        const XP_U16 selPlayer = board->selPlayer;
+        PerTurnInfo* pti = board->selInfo;
+        XP_S16 trayCursorLoc = pti->trayCursorLoc;
         XP_S16 newLoc = trayCursorLoc + delta;
         if ( newLoc < 0 || newLoc > MAX_TRAY_TILES ) {
             XP_LOGF( "moving up: newLoc: %d", newLoc );
@@ -575,27 +578,25 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         } else if ( !preflightOnly ) {
             XP_S16 tileLoc = trayCursorLoc;
             XP_U16 nTiles = model_getNumTilesInTray( board->model, selPlayer );
-            XP_Bool cursorOnDivider
-                = trayCursorLoc == board->dividerLoc[selPlayer];
+            XP_Bool cursorOnDivider = trayCursorLoc == pti->dividerLoc;
             XP_Bool cursorObjSelected;
 
             adjustForDivider( board, &tileLoc );
             cursorObjSelected = cursorOnDivider?
-                board->dividerSelected[selPlayer]
-                : board->traySelBits[selPlayer] == (1 << tileLoc);
+                pti->dividerSelected : pti->traySelBits == (1 << tileLoc);
 
             if ( !cursorObjSelected ) {
                 /* nothing to do */
             } else if ( cursorOnDivider ) {
                 /* just drag the divider */
-                board->dividerLoc[selPlayer] = newLoc;
-            } else if ( board->tradeInProgress[selPlayer] ) {
+                pti->dividerLoc = newLoc;
+            } else if ( pti->tradeInProgress ) {
                 /* nothing to do */
             } else {
                 XP_S16 newTileLoc;
 
                 /* drag the tile, skipping over the divider if needed */
-                if ( (newLoc == board->dividerLoc[selPlayer]) && (newLoc > 0) ) {
+                if ( (newLoc == pti->dividerLoc) && (newLoc > 0) ) {
                     newLoc += delta;
                 }
                 newTileLoc = newLoc;
@@ -606,13 +607,13 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
                     if ( newTileLoc < nTiles ) {
                         model_moveTileOnTray( board->model, selPlayer, 
                                               tileLoc, newTileLoc );
-                        board->traySelBits[selPlayer] = (1 << newTileLoc);
+                        pti->traySelBits = (1 << newTileLoc);
                     } else {
-                        board->traySelBits[selPlayer] = 0; /* clear selection */
+                        pti->traySelBits = 0; /* clear selection */
                     }
                 }
             }
-            board->trayCursorLoc[selPlayer] = newLoc;
+            pti->trayCursorLoc = newLoc;
 
             /* fix this!!! */
             board->dividerInvalid = XP_TRUE;
@@ -700,14 +701,14 @@ void
 getFocussedTileCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
 {
     XP_Rect rect;
-    XP_S16 selPlayer = board->selPlayer;
-    XP_S16 cursorTile = board->trayCursorLoc[selPlayer];
-    XP_Bool cursorOnDivider = board->dividerLoc[selPlayer] == cursorTile;
+    PerTurnInfo* pti = board->selInfo;
+    XP_S16 cursorTile = pti->trayCursorLoc;
+    XP_Bool cursorOnDivider = pti->dividerLoc == cursorTile;
 
     if ( cursorOnDivider ) {
         figureDividerRect( board, &rect );
     } else {
-        XP_S16 indx = board->trayCursorLoc[selPlayer];
+        XP_S16 indx = pti->trayCursorLoc;
         adjustForDivider( board, &indx );
         XP_ASSERT( indx >= 0 );
         figureTrayTileRect( board, indx, &rect );
@@ -723,7 +724,7 @@ board_moveDivider( BoardCtxt* board, XP_Bool right )
 {
     XP_Bool result = board->trayVisState == TRAY_REVEALED;
     if ( result ) {
-        XP_U8 loc = board->dividerLoc[board->selPlayer];
+        XP_U8 loc = board->selInfo->dividerLoc;
         loc += MAX_TRAY_TILES + 1;
         loc += right? 1:-1;
         loc %= MAX_TRAY_TILES + 1;

@@ -172,8 +172,8 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
         BdHintLimits limits;
         if ( dragDropGetHintLimits( board, &limits ) ) {
             /* do nothing */
-        } else if ( board->hasHintRect[board->selPlayer] ) {
-            limits = board->limits[board->selPlayer];
+        } else if ( board->selInfo->hasHintRect ) {
+            limits = board->selInfo->limits;
         } else {
             break;
         }
@@ -278,7 +278,7 @@ drawBoard( BoardCtxt* board )
         }
 
         if ( board->trayVisState == TRAY_REVEALED ) {
-            BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+            BoardArrow* arrow = &board->selInfo->boardArrow;
 
             if ( arrow->visible ) {
                 XP_U16 col = arrow->col;
@@ -440,8 +440,8 @@ cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
 
     if ( board->focussed == OBJ_BOARD ) {
         if ( board->focusHasDived ) {
-            if ( (col == board->bdCursor[board->selPlayer].col)
-                 && (row == board->bdCursor[board->selPlayer].row) ) {
+            if ( (col == board->selInfo->bdCursor.col)
+                 && (row == board->selInfo->bdCursor.row) ) {
                 focussed = XP_TRUE;
             }
         } else {

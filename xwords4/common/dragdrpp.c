@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -114,15 +114,14 @@ ddStartTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
     XP_S16 index = pointToTileIndex( board, x, y, &onDivider );
     canDrag = onDivider || index >= 0;
     if ( canDrag ) {
-        XP_S16 selPlayer = board->selPlayer;
         if ( onDivider ) {
             board->dividerInvalid = XP_TRUE;
-            ds->start.u.tray.index = board->dividerLoc[selPlayer];
+            ds->start.u.tray.index = board->selInfo->dividerLoc;
 
             ds->dtype = DT_DIVIDER;
         } else {
             Tile tile;
-            tile = model_getPlayerTile( board->model, selPlayer, index ); 
+            tile = model_getPlayerTile( board->model, board->selPlayer, index ); 
             ds->isBlank = 
                 tile == dict_getBlankTile( model_getDictionary(board->model) );
             ds->tile = tile;
@@ -131,7 +130,7 @@ ddStartTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
 
             /* during drag the moving tile is drawn as selected, so inval
                currently selected tile. */
-            board_invalTrayTiles( board, board->traySelBits[selPlayer] );
+            board_invalTrayTiles( board, board->selInfo->traySelBits );
 
             ds->dtype = DT_TILE;
         }
@@ -218,9 +217,9 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
     } else if ( ds->dtype == DT_HINTRGN ) {
         if ( OBJ_BOARD == newObj && ds->didMove ) {
             XP_Bool makeActive = ds->start.u.board.row <= ds->cur.u.board.row;
-            board->hasHintRect[board->selPlayer] = makeActive;
+            board->selInfo->hasHintRect = makeActive;
             if ( makeActive ) {
-                setLimitsFrom( board, &board->limits[board->selPlayer] );
+                setLimitsFrom( board, &board->selInfo->limits );
             } else {
                 invalHintRectDiffs( board, &ds->cur, NULL );
             }

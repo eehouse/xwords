@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; -*- */
 /* 
  * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -54,7 +54,7 @@ typedef enum {
 } DragType;
 
 
-typedef struct DragState {
+typedef struct _DragState {
     DragType dtype;
     XP_Bool didMove;            /* there was change during the drag; not a
                                    tap */
@@ -65,7 +65,7 @@ typedef struct DragState {
     DragObjInfo cur;
 } DragState;
 
-typedef struct BoardArrow { /* gets flipped along with board */
+typedef struct _BoardArrow { /* gets flipped along with board */
     XP_U8 col;
     XP_U8 row;
     XP_Bool vert;
@@ -73,7 +73,7 @@ typedef struct BoardArrow { /* gets flipped along with board */
 } BoardArrow;
 
 #ifdef KEYBOARD_NAV
-typedef struct BdCursorLoc {
+typedef struct _BdCursorLoc {
     XP_U8 col;
     XP_U8 row;
 } BdCursorLoc;
@@ -83,7 +83,7 @@ typedef struct BdCursorLoc {
    trading window.  There's never more than of the former since it lives only
    as long as the pen is down.  There are, in theory, as many trading windows
    as there are (local) players, but they can all use the same window. */
-typedef struct MiniWindowStuff {
+typedef struct _MiniWindowStuff {
     void* closure;
     const XP_UCHAR* text;
     XP_Rect rect;
@@ -91,6 +91,29 @@ typedef struct MiniWindowStuff {
 
 enum { MINIWINDOW_VALHINT, MINIWINDOW_TRADING };
 typedef XP_U16 MiniWindowType; /* one of the two above */
+
+typedef struct _PerTurnInfo {
+#ifdef KEYBOARD_NAV
+    XP_Rect scoreRects;
+    BdCursorLoc bdCursor;
+#endif
+    BoardArrow boardArrow;
+    XP_U16 scoreDims;
+    XP_U8 dividerLoc; /* 0 means left of 0th tile, etc. */
+    TileBit traySelBits;
+#ifdef XWFEATURE_SEARCHLIMIT
+    BdHintLimits limits;
+#endif
+#ifdef KEYBOARD_NAV
+    XP_U8   trayCursorLoc; /* includes divider!!! */
+#endif
+    XP_Bool dividerSelected; /* probably need to save this */
+    XP_Bool tradeInProgress;
+#ifdef XWFEATURE_SEARCHLIMIT
+    XP_Bool hasHintRect;
+#endif
+} PerTurnInfo;
+
 
 struct BoardCtxt {
 /*     BoardVTable* vtable; */
@@ -133,7 +156,6 @@ struct BoardCtxt {
     XP_Bool disableArrow;
     XP_Bool hideValsInTray;
 
-    XP_Bool tradeInProgress[MAX_NUM_PLAYERS];
     XP_Bool eraseTray;
     XP_Bool boardObscuresTray;
     XP_Bool boardHidesTray;
@@ -144,21 +166,17 @@ struct BoardCtxt {
     /* Unless KEYBOARD_NAV is defined, this does not change */
     BoardObjectType focussed;
 
-    BoardArrow boardArrow[MAX_NUM_PLAYERS];
 #ifdef KEYBOARD_NAV
-    XP_Rect scoreRects[MAX_NUM_PLAYERS];
-    BdCursorLoc bdCursor[MAX_NUM_PLAYERS];
     XP_Bool focusHasDived;
 #endif
-    XP_U8 dividerLoc[MAX_NUM_PLAYERS]; /* 0 means left of 0th tile, etc. */
-    XP_Bool dividerSelected[MAX_NUM_PLAYERS]; /* probably need to save this */
-
-    XP_U16 scoreDims[MAX_NUM_PLAYERS];
 
     /* scoreboard state */
     XP_Rect scoreBdBounds;
     XP_Rect timerBounds;
     XP_U8 selPlayer; /* which player is selected (!= turn) */
+
+    PerTurnInfo pti[MAX_NUM_PLAYERS];
+    PerTurnInfo* selInfo;
 
     /* tray state */
     XP_U8 trayScaleH;
@@ -175,9 +193,7 @@ struct BoardCtxt {
     XP_Bool tradingMiniWindowInvalid;
 
     TileBit trayInvalBits;
-    TileBit traySelBits[MAX_NUM_PLAYERS];
 #ifdef KEYBOARD_NAV
-    XP_U8   trayCursorLoc[MAX_NUM_PLAYERS]; /* includes divider!!! */
     XP_U8   scoreCursorLoc;
 #endif
 
@@ -186,10 +202,6 @@ struct BoardCtxt {
     XP_Bool showCellValues;
     XP_Bool showColors;
 
-#ifdef XWFEATURE_SEARCHLIMIT
-    XP_Bool hasHintRect[MAX_NUM_PLAYERS];
-    BdHintLimits limits[MAX_NUM_PLAYERS];
-#endif
 
     MPSLOT
 };
@@ -197,7 +209,7 @@ struct BoardCtxt {
 #define valHintMiniWindowActive( board ) \
      ((XP_Bool)((board)->miniWindowStuff[MINIWINDOW_VALHINT].text != NULL))
 #define MY_TURN(b) ((b)->selPlayer == server_getCurrentTurn( (b)->server ))
-#define TRADE_IN_PROGRESS(b) ((b)->tradeInProgress[(b)->selPlayer]==XP_TRUE)
+#define TRADE_IN_PROGRESS(b) ((b)->selInfo->tradeInProgress==XP_TRUE)
 
 /* tray-related functions */
 XP_Bool handlePenUpTray( BoardCtxt* board, XP_U16 x, XP_U16 y );

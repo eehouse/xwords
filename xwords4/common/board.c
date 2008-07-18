@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -164,9 +164,10 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
             /* set up some useful initial values */
             XP_U16 i;
             for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-                result->trayCursorLoc[i] = 1;
-                result->bdCursor[i].col = 5;
-                result->bdCursor[i].row = 7;
+                PerTurnInfo* pti = result->pti + i;
+                pti->trayCursorLoc = 1;
+                pti->bdCursor.col = 5;
+                pti->bdCursor.row = 7;
             }
         }
 #endif
@@ -209,41 +210,43 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     XP_ASSERT( !!server );
 
     for ( i = 0; i < nPlayers; ++i ) {
-        BoardArrow* arrow = &board->boardArrow[i];
+        PerTurnInfo* pti = &board->pti[i];
+        BoardArrow* arrow = &pti->boardArrow;
         arrow->col = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
         arrow->row = (XP_U8)stream_getBits( stream, NUMCOLS_NBITS );
         arrow->vert = (XP_Bool)stream_getBits( stream, 1 );
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
-        board->dividerLoc[i] = (XP_U8)stream_getBits( stream, NTILES_NBITS );
-        board->traySelBits[i] = (TileBit)stream_getBits( stream, 
-                                                         MAX_TRAY_TILES );
-        board->tradeInProgress[i] = (XP_Bool)stream_getBits( stream, 1 );
+        pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+        pti->traySelBits = (TileBit)stream_getBits( stream, 
+                                                    MAX_TRAY_TILES );
+        pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
 #ifdef KEYBOARD_NAV 
         if ( version >= STREAM_VERS_KEYNAV ) {
-            board->bdCursor[i].col = stream_getBits( stream, 4 );
-            board->bdCursor[i].row = stream_getBits( stream, 4 );
-            board->trayCursorLoc[i] = stream_getBits( stream, 3 );
+            pti->bdCursor.col = stream_getBits( stream, 4 );
+            pti->bdCursor.row = stream_getBits( stream, 4 );
+            pti->trayCursorLoc = stream_getBits( stream, 3 );
         }
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
         if ( version >= STREAM_VERS_41B4 ) {
-            board->hasHintRect[i] = stream_getBits( stream, 1 );
+            pti->hasHintRect = stream_getBits( stream, 1 );
         } else {
-            board->hasHintRect[i] = XP_FALSE;
+            pti->hasHintRect = XP_FALSE;
         }
-        if ( board->hasHintRect[i] ) {
-            board->limits[i].left = stream_getBits( stream, 4 );
-            board->limits[i].top = stream_getBits( stream, 4 );
-            board->limits[i].right = stream_getBits( stream, 4 );
-            board->limits[i].bottom =  stream_getBits( stream, 4 );
+        if ( pti->hasHintRect ) {
+            pti->limits.left = stream_getBits( stream, 4 );
+            pti->limits.top = stream_getBits( stream, 4 );
+            pti->limits.right = stream_getBits( stream, 4 );
+            pti->limits.bottom =  stream_getBits( stream, 4 );
         }
 #endif
 
     }
 
     board->selPlayer = (XP_U8)stream_getBits( stream, PLAYERNUM_NBITS );
+    board->selInfo = &board->pti[board->selPlayer];
     board->trayVisState = (XW_TrayVisState)stream_getBits( stream, 2 );
 
     XP_ASSERT( stream_getU32( stream ) == bEND );
@@ -270,28 +273,29 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
     nPlayers = board->gi->nPlayers;
 
     for ( i = 0; i < nPlayers; ++i ) {
-        BoardArrow* arrow = &board->boardArrow[i];
+        PerTurnInfo* pti = &board->pti[i];
+        BoardArrow* arrow = &pti->boardArrow;
         stream_putBits( stream, NUMCOLS_NBITS, arrow->col );
         stream_putBits( stream, NUMCOLS_NBITS, arrow->row );
         stream_putBits( stream, 1, arrow->vert );
         stream_putBits( stream, 1, arrow->visible );
 
-        stream_putBits( stream, NTILES_NBITS, board->dividerLoc[i] );
-        stream_putBits( stream, MAX_TRAY_TILES, board->traySelBits[i] );
-        stream_putBits( stream, 1, board->tradeInProgress[i] );
+        stream_putBits( stream, NTILES_NBITS, pti->dividerLoc );
+        stream_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
+        stream_putBits( stream, 1, pti->tradeInProgress );
 #ifdef KEYBOARD_NAV 
-        stream_putBits( stream, 4, board->bdCursor[i].col );
-        stream_putBits( stream, 4, board->bdCursor[i].row );
-        stream_putBits( stream, 3, board->trayCursorLoc[i] );
+        stream_putBits( stream, 4, pti->bdCursor.col );
+        stream_putBits( stream, 4, pti->bdCursor.row );
+        stream_putBits( stream, 3, pti->trayCursorLoc );
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        stream_putBits( stream, 1, board->hasHintRect[i] );
-        if ( board->hasHintRect[i] ) {
-            stream_putBits( stream, 4, board->limits[i].left );
-            stream_putBits( stream, 4, board->limits[i].top );
-            stream_putBits( stream, 4, board->limits[i].right );
-            stream_putBits( stream, 4, board->limits[i].bottom );
+        stream_putBits( stream, 1, pti->hasHintRect );
+        if ( pti->hasHintRect ) {
+            stream_putBits( stream, 4, pti->limits.left );
+            stream_putBits( stream, 4, pti->limits.top );
+            stream_putBits( stream, 4, pti->limits.right );
+            stream_putBits( stream, 4, pti->limits.bottom );
         }
 #endif
     }
@@ -314,13 +318,15 @@ board_reset( BoardCtxt* board )
 
     /* This is appropriate for a new game *ONLY*.  reset */
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-        board->traySelBits[i] = 0;
-        board->tradeInProgress[i] = XP_FALSE;
-        board->dividerLoc[i] = 0;
+        PerTurnInfo* pti = &board->pti[i];
+        pti->traySelBits = 0;
+        pti->tradeInProgress = XP_FALSE;
+        pti->dividerLoc = 0;
+        XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
-    XP_MEMSET( &board->boardArrow, 0, sizeof(board->boardArrow) );
     board->gameOver = XP_FALSE;
     board->selPlayer = 0;
+    board->selInfo = board->pti;
     board->star_row = (XP_U16)(model_numRows(board->model) / 2);
 
     newState = board->boardObscuresTray? TRAY_HIDDEN:TRAY_REVERSED;
@@ -388,8 +394,7 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     }
 
 #ifdef XWFEATURE_SEARCHLIMIT
-    if ( !board->gi->allowHintRect
-         && board->hasHintRect[board->selPlayer] ) {
+    if ( !board->gi->allowHintRect && board->selInfo->hasHintRect ) {
 
         EngineCtxt* engine = server_getEngineFor( board->server, 
                                                   board->selPlayer );
@@ -470,14 +475,14 @@ board_getFocusOwner( BoardCtxt* board )
 static void
 invalArrowCell( BoardCtxt* board )
 {
-    BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+    BoardArrow* arrow = &board->selInfo->boardArrow;
     invalCell( board, arrow->col, arrow->row );
 } /* invalArrowCell */
 
 static void
 flipArrow( BoardCtxt* board )
 {
-    BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+    BoardArrow* arrow = &board->selInfo->boardArrow;
     XP_U16 tmp = arrow->col;
     arrow->col = arrow->row;
     arrow->row = tmp;
@@ -488,7 +493,7 @@ flipArrow( BoardCtxt* board )
 static void
 invalCursorCell( BoardCtxt* board )
 {
-    BdCursorLoc loc = board->bdCursor[board->selPlayer];
+    BdCursorLoc loc = board->selInfo->bdCursor;
     invalCell( board, loc.col, loc.row );
 } /* invalCursorCell */
 #endif
@@ -498,7 +503,7 @@ invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw )
 {
     XP_ASSERT( turn >= 0 );
 
-    if ( board->tradeInProgress[turn] ) {
+    if ( board->pti[turn].tradeInProgress ) {
         MiniWindowStuff* stuff = &board->miniWindowStuff[MINIWINDOW_TRADING];
         invalCellsUnderRect( board, &stuff->rect );
         if ( redraw ) {
@@ -549,31 +554,32 @@ XP_Bool
 board_commitTurn( BoardCtxt* board ) 
 {
     XP_Bool result = XP_FALSE;
-    XP_S16 turn = server_getCurrentTurn( board->server );
+    const XP_S16 turn = server_getCurrentTurn( board->server );
+    PerTurnInfo* pti = board->pti + turn;
 
     if ( board->gameOver || turn < 0 ) {
         /* do nothing */
     } else if ( turn != board->selPlayer ) {
-        if ( board->tradeInProgress[board->selPlayer] ) {
+        if ( board->selInfo->tradeInProgress ) {
             result = exitTradeMode( board );
         } else {
             util_userError( board->util, ERR_NOT_YOUR_TURN );
         }
     } else if ( checkRevealTray( board ) ) {
-        if ( board->tradeInProgress[turn] ) {
+        if ( pti->tradeInProgress ) {
             result = XP_TRUE; /* there's at least the window to clean up
                                  after */
 
             invalSelTradeWindow( board );
-            board->tradeInProgress[turn] = XP_FALSE;
+            pti->tradeInProgress = XP_FALSE;
 
             if ( util_userQuery( board->util, QUERY_COMMIT_TRADE,
                                  (XWStreamCtxt*)NULL ) ) {
                 result = server_commitTrade( board->server, 
-                                             board->traySelBits[turn] );
+                                             pti->traySelBits );
                 /* XP_DEBUGF( "server_commitTrade returned %d\n", result ); */
             }
-            board->traySelBits[turn] = 0x00;
+            pti->traySelBits = 0x00;
         } else {
             XP_Bool warn, legal;
             WordNotifierInfo info;
@@ -612,8 +618,8 @@ board_commitTurn( BoardCtxt* board )
                     /* invalidate any selected tiles in case we'll be drawing
                        this tray again rather than some other -- as is the
                        case in a two-player game where one's a robot. */
-                    board_invalTrayTiles( board, board->traySelBits[turn] );
-                    board->traySelBits[turn] = 0x00;
+                    board_invalTrayTiles( board, pti->traySelBits );
+                    pti->traySelBits = 0x00;
                 }
             }
             stream_destroy( stream );
@@ -641,6 +647,7 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
             checkRevealTray( board );
         }
     } else {
+        PerTurnInfo* newInfo = &board->pti[newPlayer];
         XP_U16 oldPlayer = board->selPlayer;
         model_foreachPendingCell( board->model, newPlayer,
                                   boardCellChanged, board );
@@ -657,26 +664,26 @@ selectPlayerImpl( BoardCtxt* board, XP_U16 newPlayer, XP_Bool reveal )
 
         /* Just in case somebody started a trade when it wasn't his turn and
            there were plenty of tiles but now there aren't. */
-        if ( board->tradeInProgress[newPlayer] && 
+        if ( newInfo->tradeInProgress && 
              server_countTilesInPool(board->server) < MIN_TRADE_TILES ) {
-            board->tradeInProgress[newPlayer] = XP_FALSE;
-            board->traySelBits[newPlayer] = 0x00; /* clear any selected */
+            newInfo->tradeInProgress = XP_FALSE;
+            newInfo->traySelBits = 0x00; /* clear any selected */
         }
 
-        invalTradeWindow( board, oldPlayer, 
-                          board->tradeInProgress[newPlayer] );
+        invalTradeWindow( board, oldPlayer, newInfo->tradeInProgress );
 
 #ifdef XWFEATURE_SEARCHLIMIT
-        if ( board->hasHintRect[oldPlayer] ) {
+        if ( board->pti[oldPlayer].hasHintRect ) {
             invalCurHintRect( board, oldPlayer );
         }
-        if ( board->hasHintRect[newPlayer] ) {
+        if ( newInfo->hasHintRect ) {
             invalCurHintRect( board, newPlayer );
         }
 #endif
 
         invalArrowCell( board );
         board->selPlayer = (XP_U8)newPlayer;
+        board->selInfo = newInfo;
         invalArrowCell( board );
 
         board_invalTrayTiles( board, ALLTILES );
@@ -970,7 +977,7 @@ flipAllLimits( BoardCtxt* board )
     XP_U16 nPlayers = board->gi->nPlayers;
     XP_U16 i;
     for ( i = 0; i < nPlayers; ++i ) {
-        flipLimits( &board->limits[i] );
+        flipLimits( &board->pti[i].limits );
     }
 }
 #endif
@@ -1402,14 +1409,15 @@ board_requestHint( BoardCtxt* board,
     XP_Bool result = XP_FALSE;
     XP_S16 nTiles;
     const Tile* tiles;
-    XP_U16 selPlayer;
+    const XP_U16 selPlayer = board->selPlayer;
+    PerTurnInfo* pti;
     EngineCtxt* engine;
     XP_Bool searchComplete = XP_TRUE;
     XP_Bool redraw = XP_FALSE;
     
     *workRemainsP = XP_FALSE; /* in case we exit without calling engine */
 
-    selPlayer = board->selPlayer;
+    pti = board->pti + selPlayer;
     engine = server_getEngineFor( board->server, selPlayer );
     /* engine may be null, if e.g. hint menu's chosen for a remote player */
     result = !!engine && !board->gi->hintsNotAllowed && preflight( board );
@@ -1436,7 +1444,7 @@ board_requestHint( BoardCtxt* board,
         }
 
         tileSet = model_getPlayerTiles( model, selPlayer );
-        nTiles = tileSet->nTiles - board->dividerLoc[selPlayer];
+        nTiles = tileSet->nTiles - pti->dividerLoc;
         result = nTiles > 0;
         if ( result ) {
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -1450,15 +1458,14 @@ board_requestHint( BoardCtxt* board,
 
             (void)board_replaceTiles( board );
 
-            tiles = tileSet->tiles + board->dividerLoc[selPlayer];
+            tiles = tileSet->tiles + pti->dividerLoc;
 
             board_pushTimerSave( board );
 
 #ifdef XWFEATURE_SEARCHLIMIT
-            XP_ASSERT( board->gi->allowHintRect
-                       || !board->hasHintRect[selPlayer] );
-            if ( board->gi->allowHintRect && board->hasHintRect[selPlayer] ) {
-                limits = board->limits[selPlayer];
+            XP_ASSERT( board->gi->allowHintRect || !pti->hasHintRect );
+            if ( board->gi->allowHintRect && pti->hasHintRect ) {
+                limits = pti->limits;
                 lp = &limits;
                 if ( board->isFlipped ) {
                     flipLimits( lp );
@@ -1632,7 +1639,7 @@ XP_Bool
 moveTileToArrowLoc( BoardCtxt* board, XP_U8 index )
 {
     XP_Bool result;
-    BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+    BoardArrow* arrow = &board->selInfo->boardArrow;
     if ( arrow->visible ) {
         result = moveTileToBoard( board, arrow->col, arrow->row,
                                   (XP_U16)index, EMPTY_TILE );
@@ -1682,7 +1689,7 @@ board_beginTrade( BoardCtxt* board )
         } else {
             board->tradingMiniWindowInvalid = XP_TRUE;
             board->needsDrawing = XP_TRUE;
-            board->tradeInProgress[board->selPlayer] = XP_TRUE;
+            board->selInfo->tradeInProgress = XP_TRUE;
             setArrowVisible( board, XP_FALSE );
             result = XP_TRUE;
         }
@@ -1738,7 +1745,7 @@ invalCellRegion( BoardCtxt* board, XP_U16 colA, XP_U16 rowA, XP_U16 colB,
 void
 invalCurHintRect( BoardCtxt* board, XP_U16 player )
 {
-    BdHintLimits* limits = &board->limits[player];    
+    BdHintLimits* limits = &board->pti[player].limits;    
     invalCellRegion( board, limits->left, limits->top, 
                      limits->right, limits->bottom );
 } /* invalCurHintRect */
@@ -1747,7 +1754,7 @@ static void
 clearCurHintRect( BoardCtxt* board )
 {
     invalCurHintRect( board, board->selPlayer );
-    board->hasHintRect[board->selPlayer] = XP_FALSE;
+    board->selInfo->hasHintRect = XP_FALSE;
 } /* clearCurHintRect */
 #endif /* XWFEATURE_SEARCHLIMIT */
 
@@ -1762,7 +1769,7 @@ handlePenDownOnBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
         util_setTimer( board->util, TIMER_PENDOWN, 0, 
                        p_board_timerFired, board );
 
-        if ( !board->tradeInProgress[board->selPlayer] ) {
+        if ( !board->selInfo->tradeInProgress ) {
             result = dragDropStart( board, OBJ_BOARD, xx, yy );
         }
     }
@@ -1851,7 +1858,7 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
 
     case OBJ_TRAY:
         if ( checkRevealTray(board)
-             && !board->tradeInProgress[board->selPlayer] ) {
+             && !board->selInfo->tradeInProgress ) {
             result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
         }
         break;
@@ -1920,7 +1927,7 @@ moveSelTileToBoardXY( BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     XP_Bool result;
     XP_U16 selPlayer = board->selPlayer;
-    TileBit bits = board->traySelBits[selPlayer];
+    TileBit bits = board->selInfo->traySelBits;
     XP_U16 tileIndex;
 
     if ( bits == NO_TILES ) {
@@ -1942,7 +1949,7 @@ moveSelTileToBoardXY( BoardCtxt* board, XP_U16 col, XP_U16 row )
             bits = 1 << (tileIndex-1);
             board_invalTrayTiles( board, bits );
         }
-        board->traySelBits[selPlayer] = bits;
+        board->selInfo->traySelBits = bits;
     }
 
     return result;
@@ -1973,7 +1980,7 @@ tryMoveArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
     if ( !cellOccupied( board, col, row, 
                         board->trayVisState == TRAY_REVEALED ) ) {
 
-        BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+        BoardArrow* arrow = &board->selInfo->boardArrow;
 
         if ( arrow->visible && arrow->col == col && arrow->row == row ) {
             /* change it; if vertical, hide; else if horizontal make
@@ -2049,11 +2056,11 @@ handleActionInCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool isPen )
 static XP_Bool
 exitTradeMode( BoardCtxt* board )
 {
-    XP_U16 selPlayer = board->selPlayer;
+    PerTurnInfo* pti = board->selInfo;
     invalSelTradeWindow( board );
-    board->tradeInProgress[selPlayer] = XP_FALSE;
-    board_invalTrayTiles( board, board->traySelBits[selPlayer] );
-    board->traySelBits[selPlayer] = 0x00;
+    pti->tradeInProgress = XP_FALSE;
+    board_invalTrayTiles( board, pti->traySelBits );
+    pti->traySelBits = 0x00;
     return XP_TRUE;
 } /* exitTradeMode */
 
@@ -2143,8 +2150,7 @@ static void
 getFocussedCellCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
 {
     XP_Rect rect;
-    XP_U16 selPlayer = board->selPlayer;
-    BdCursorLoc* cursorLoc = &board->bdCursor[selPlayer];
+    BdCursorLoc* cursorLoc = &board->selInfo->bdCursor;
 
     getCellRect( board, cursorLoc->col, cursorLoc->row, &rect );
     getRectCenter( &rect, xp, yp );
@@ -2153,7 +2159,7 @@ getFocussedCellCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
 static void
 getFocussedScoreCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
 {
-    getRectCenter( &board->scoreRects[board->scoreCursorLoc], xp, yp );
+    getRectCenter( &board->pti[board->scoreCursorLoc].scoreRects, xp, yp );
 }
 
 static XP_Bool
@@ -2361,14 +2367,14 @@ static XP_Bool
 invalFocusOwner( BoardCtxt* board )
 {
     XP_Bool draw = XP_TRUE;
-    XP_S16 selPlayer = board->selPlayer;
+    PerTurnInfo* pti = board->selInfo;
     switch( board->focussed ) {
     case OBJ_SCORE:
         board->scoreBoardInvalid = XP_TRUE;
         break;
     case OBJ_BOARD:
         if ( board->focusHasDived ) {
-            BdCursorLoc loc = board->bdCursor[selPlayer];
+            BdCursorLoc loc = pti->bdCursor;
             invalCell( board, loc.col, loc.row );
         } else {
 #ifdef PERIMETER_FOCUS
@@ -2380,7 +2386,7 @@ invalFocusOwner( BoardCtxt* board )
         break;
     case OBJ_TRAY:
         if ( board->focusHasDived ) {
-            XP_U16 loc = board->trayCursorLoc[selPlayer];
+            XP_U16 loc = pti->trayCursorLoc;
             board_invalTrayTiles( board, 1 << loc );
         } else {
             board_invalTrayTiles( board, ALLTILES );
@@ -2446,7 +2452,7 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
 XP_Bool
 board_toggle_arrowDir( BoardCtxt* board )
 {
-    BoardArrow* arrow = &board->boardArrow[board->selPlayer];
+    BoardArrow* arrow = &board->selInfo->boardArrow;
     if ( arrow->visible ) {
         arrow->vert = !arrow->vert;
         invalArrowCell( board );
@@ -2461,7 +2467,7 @@ board_toggle_arrowDir( BoardCtxt* board )
 static XP_Bool
 advanceArrow( BoardCtxt* board )
 {
-    XP_Key key = board->boardArrow[board->selPlayer].vert ?
+    XP_Key key = board->selInfo->boardArrow.vert ?
         XP_CURSOR_KEY_DOWN :  XP_CURSOR_KEY_RIGHT;
 
     XP_ASSERT( board->trayVisState == TRAY_REVEALED );
@@ -2584,7 +2590,8 @@ static XP_Bool
 board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
                   XP_Bool* up )
 {
-    BdCursorLoc loc = board->bdCursor[board->selPlayer];
+    PerTurnInfo* pti = board->selInfo;
+    BdCursorLoc loc = pti->bdCursor;
     XP_U16 col = loc.col;
     XP_U16 row = loc.row;
     XP_Bool changed;
@@ -2599,7 +2606,7 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         invalCell( board, col, row );
         loc.col = col;
         loc.row = row;
-        board->bdCursor[board->selPlayer] = loc;
+        pti->bdCursor = loc;
         checkScrollCell( board, col, row );
     }
     return changed;
@@ -2730,7 +2737,7 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
     *gotArrow = haveDest;
 #ifdef KEYBOARD_NAV
     if ( !haveDest && (board->focussed == OBJ_BOARD) && board->focusHasDived ) {
-        BdCursorLoc loc = board->bdCursor[board->selPlayer];
+        BdCursorLoc loc = board->selInfo->bdCursor;
         col = loc.col;
         row = loc.row;
         haveDest = XP_TRUE;
@@ -2752,7 +2759,7 @@ moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey, XP_Bool* gotArrow )
 static void
 setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col, XP_U16 row )
 {
-    BoardArrow* arrow = &board->boardArrow[player];
+    BoardArrow* arrow = &board->pti[player].boardArrow;
     invalCell( board, arrow->col, arrow->row );
     invalCell( board, col, row );
 
@@ -2771,7 +2778,7 @@ setArrow( BoardCtxt* board, XP_U16 col, XP_U16 row )
 static XP_Bool
 getArrowFor( BoardCtxt* board, XP_U16 player, XP_U16* col, XP_U16* row )
 {
-    BoardArrow* arrow = &board->boardArrow[player];
+    BoardArrow* arrow = &board->pti[player].boardArrow;
     *col = arrow->col;
     *row = arrow->row;
     return arrow->visible;
@@ -2792,7 +2799,7 @@ setArrowVisible( BoardCtxt* board, XP_Bool visible )
 static XP_Bool
 setArrowVisibleFor( BoardCtxt* board, XP_U16 player, XP_Bool visible )
 {
-    BoardArrow* arrow = &board->boardArrow[player];
+    BoardArrow* arrow = &board->pti[player].boardArrow;
     XP_Bool result = arrow->visible;
     if ( arrow->visible != visible ) {
         arrow->visible = visible;

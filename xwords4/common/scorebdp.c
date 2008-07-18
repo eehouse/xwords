@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -164,7 +164,7 @@ drawScoreBoard( BoardCtxt* board )
             for ( dp = datum, i = 0; i < nPlayers; ++dp, ++i ) {
                 XP_Rect innerRect;
                 XP_U16 dim = isVertical? dp->height:dp->width;
-                *adjustDim = board->scoreDims[i] = dim + extra;
+                *adjustDim = board->pti[i].scoreDims = dim + extra;
 
                 innerRect.width = dp->width;
                 innerRect.height = dp->height;
@@ -176,7 +176,7 @@ drawScoreBoard( BoardCtxt* board )
                 draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
                                        &dp->dsi );
 #ifdef KEYBOARD_NAV
-                XP_MEMCPY( &board->scoreRects[i], &scoreRect, 
+                XP_MEMCPY( &board->pti[i].scoreRects, &scoreRect, 
                            sizeof(scoreRect) );
                 if ( i == cursorIndex ) {
                     cursorRect = scoreRect;
@@ -245,10 +245,11 @@ figureScorePlayerTapped( BoardCtxt* board, XP_U16 x, XP_U16 y )
     left -= board->remDim;
     if ( left >= 0 ) {
         for ( result = 0; result < nPlayers; ++result ) {
-            if ( left < board->scoreDims[result] ) {
+            PerTurnInfo* pti = board->pti + result;
+            if ( left < pti->scoreDims ) {
                 break;
             }
-            left -= board->scoreDims[result];
+            left -= pti->scoreDims;
         }
     }
     if ( result >= nPlayers ) {
