@@ -183,6 +183,7 @@ typedef struct CEDrawCtx {
     COLORREF prevBkColor;
 
     HBRUSH brushes[CE_NUM_COLORS];
+    HGDIOBJ pens[CE_NUM_COLORS];
 
     HFONT selPlayerFont;
     HFONT playerFont;
@@ -196,6 +197,7 @@ typedef struct CEDrawCtx {
     XP_U16 trayOwner;
     XP_U16 miniLineHt;
     XP_Bool scoreIsVertical;
+    XP_Bool topFocus;
 
     MPSLOT
 } CEDrawCtx;

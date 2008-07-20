@@ -1,4 +1,4 @@
-/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"-*- */
+/* -*- fill-column: 77; 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -44,6 +44,16 @@
 #define CE_TIMER_PADDING -2
 #define IS_TURN_VPAD 2
 
+#define DRAW_FOCUS_FRAME 1
+#ifdef DRAW_FOCUS_FRAME
+# define CE_FOCUS_BORDER_WIDTH 6
+# define TREAT_AS_CURSOR(d,f) ((((f) & CELL_ISCURSOR) != 0) && !(d)->topFocus )
+#else
+# define TREAT_AS_CURSOR(d,f) (((f) & CELL_ISCURSOR) != 0)
+#endif
+
+
+
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
 
@@ -57,18 +67,29 @@ XPRtoRECT( RECT* rt, const XP_Rect* xprect )
     rt->bottom = rt->top + xprect->height;
 } /* XPRtoRECT */
 
+static HGDIOBJ
+ceGetPen( CEDrawCtx* dctx, XP_U16 colorIndx, XP_U16 width )
+{
+    HGDIOBJ pen = dctx->pens[colorIndx];
+    if ( !pen ) {
+        COLORREF ref = dctx->globals->appPrefs.colors[colorIndx];
+        pen = CreatePen( PS_SOLID, width, ref );
+        dctx->pens[colorIndx] = pen;
+    }
+    return pen;
+}
+
 static void
-makeAndDrawBitmap( CEDrawCtx* XP_UNUSED(dctx), HDC hdc, const RECT* bnds, XP_Bool center,
-                   COLORREF foreRef, CEBitmapInfo* info )
+makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, XP_Bool center,
+                   XP_U16 colorIndx, CEBitmapInfo* info )
 {
 #if 1
+    HGDIOBJ forePen = ceGetPen( dctx, colorIndx, 1 );
     POINT points[2];
-    HGDIOBJ forePen;
     XP_U16 nCols, nRows, row, col, rowBytes;
     XP_S32 x, y;
     XP_U8* bits = info->bits;
     HGDIOBJ oldObj;
-    forePen = CreatePen( PS_SOLID, 1, foreRef );
     oldObj = SelectObject( hdc, forePen );
 
     nRows = info->nRows;
@@ -102,7 +123,6 @@ makeAndDrawBitmap( CEDrawCtx* XP_UNUSED(dctx), HDC hdc, const RECT* bnds, XP_Boo
     }
 
     SelectObject( hdc, oldObj );
-    DeleteObject( forePen );
 #else
     /* I can't get this to work.  Hence the above hack.... */
     HBITMAP bm;
@@ -113,6 +133,28 @@ makeAndDrawBitmap( CEDrawCtx* XP_UNUSED(dctx), HDC hdc, const RECT* bnds, XP_Boo
     DeleteObject( bm );
 #endif
 } /* makeAndDrawBitmap */
+
+/* CE doesn't have FrameRect, so we'll roll our own */
+static int
+ceDrawFocusRect( HDC hdc, CEDrawCtx* dctx, LPCRECT rect )
+{
+    RECT lr = *rect;
+    HGDIOBJ oldObj;
+    HGDIOBJ pen = ceGetPen( dctx, CE_FOCUS_COLOR, CE_FOCUS_BORDER_WIDTH );
+
+    InsetRect( &lr, CE_FOCUS_BORDER_WIDTH/2, CE_FOCUS_BORDER_WIDTH/2 );
+
+    oldObj = SelectObject( hdc, pen );
+
+    MoveToEx( hdc, lr.left, lr.top, NULL );
+    LineTo( hdc, lr.right, lr.top );
+    LineTo( hdc, lr.right, lr.bottom );
+    LineTo( hdc, lr.left, lr.bottom );
+    LineTo( hdc, lr.left, lr.top );
+
+    SelectObject( hdc, oldObj );
+    return 0;
+}
 
 static void
 ceClipToRect( /* CEDrawCtx* dctx,  */HDC hdc, const RECT* rt )
@@ -231,8 +273,8 @@ ceMeasureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
 } /* ceMeasureText */
 
 static void
-drawLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
-           const RECT* rp, int flags )
+drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
+               const RECT* rp, int flags )
 {
     wchar_t widebuf[128];
     RECT textRt = *rp;
@@ -260,13 +302,13 @@ drawLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
         textRt.top = textRt.bottom + padding;
         text = nextStr + XP_STRLEN(XP_CR);
     }
-} /* drawLines */
+} /* drawTextLines */
 
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx, 
                             const DictionaryCtxt* XP_UNUSED(dict), 
                             const XP_Rect* XP_UNUSED(rect), 
-                            DrawFocusState XP_UNUSED(dfs) )
+                            DrawFocusState dfs )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -274,16 +316,28 @@ DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx,
     XP_Bool canDraw = !!hdc;
     if ( canDraw ) {
         dctx->prevBkColor = GetBkColor( hdc );
+        dctx->topFocus = dfs == DFS_TOP;
     }
     return canDraw;
 } /* draw_boardBegin */
 
 DLSTATIC void
-DRAW_FUNC_NAME(objFinished)( DrawCtx* XP_UNUSED(dctx), 
-                             BoardObjectType XP_UNUSED(typ), 
-                             const XP_Rect* XP_UNUSED(rect), 
-                             DrawFocusState XP_UNUSED(dfs) )
+DRAW_FUNC_NAME(objFinished)( DrawCtx* p_dctx, BoardObjectType typ, 
+                             const XP_Rect* rect, DrawFocusState dfs )
 {
+#ifdef DRAW_FOCUS_FRAME
+    if ( (dfs == DFS_TOP) && (typ == OBJ_BOARD || typ == OBJ_TRAY) ) {
+        CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
+        CEAppGlobals* globals = dctx->globals;
+        HDC hdc = globals->hdc;
+        RECT rt;
+
+        XPRtoRECT( &rt, rect );
+        ceClipToRect( hdc, &rt );
+        
+        ceDrawFocusRect( hdc, dctx, &rt );
+    }
+#endif
 }
 
 static XP_U16
@@ -299,13 +353,8 @@ getPlayerColor( XP_S16 player )
 static void
 ceDrawLine( HDC hdc, XP_S32 x1, XP_S32 y1, XP_S32 x2, XP_S32 y2 )
 {
-    POINT points[2];
-
-    points[0].x = x1;
-    points[0].y = y1;
-    points[1].x = x2;
-    points[1].y = y2;
-    Polyline( hdc, points, 2 );
+    MoveToEx( hdc, x1, y1, NULL );
+    LineTo( hdc, x2, y2);
 } /* ceDrawLine */
 
 static void
@@ -345,9 +394,9 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     RECT textRect;
     XP_U16 bkIndex;
     const XP_UCHAR* cp = NULL;
-    COLORREF foreColorRef;
+    XP_U16 foreColorIndx;
     XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
-    XP_Bool isFocussed = (flags & CELL_ISCURSOR) != 0;
+    XP_Bool isFocussed = TREAT_AS_CURSOR( dctx, flags );
     XP_Bool isDragSrc = (flags & CELL_DRAGSRC) != 0;
     HFONT oldFont;
 
@@ -369,15 +418,15 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ceClipToRect( hdc, &rt );
 
     /* always init to silence compiler warning */
-    foreColorRef = dctx->globals->appPrefs.colors[getPlayerColor(owner)];
+    foreColorIndx = getPlayerColor(owner);
 
     if ( !isDragSrc && ((!!letters && letters[0] != '\0' ) || !!bitmap )) {
         if ( isPending ) {
             bkIndex = CE_BLACK_COLOR;
-            foreColorRef = dctx->globals->appPrefs.colors[CE_WHITE_COLOR];
+            foreColorIndx = CE_WHITE_COLOR;
         } else {
             bkIndex = CE_TILEBACK_COLOR;
-            // foreColorRef already has right val
+            // foreColorIndx already has right val
         }
     } else if ( bonus == BONUS_NONE ) {
         bkIndex = CE_BKG_COLOR;
@@ -419,7 +468,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, cp, -1,
                              widebuf, VSIZE(widebuf) );
 	
-        SetTextColor( hdc, foreColorRef );
+        SetTextColor( hdc, dctx->globals->appPrefs.colors[foreColorIndx] );
 #ifdef TARGET_OS_WIN32
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, VSIZE(widebuf) );
@@ -429,7 +478,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     } else if ( !isDragSrc && !!bitmap ) {
         makeAndDrawBitmap( dctx, hdc, &rt, XP_TRUE,
-                           foreColorRef, (CEBitmapInfo*)bitmap );
+                           foreColorIndx, (CEBitmapInfo*)bitmap );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
         ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
     }
@@ -467,7 +516,7 @@ logClipResult( int icrResult )
 
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(trayBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
-                           XP_U16 owner, DrawFocusState XP_UNUSED(dfs) )
+                           XP_U16 owner, DrawFocusState dfs )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -475,6 +524,7 @@ DRAW_FUNC_NAME(trayBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
     XP_Bool canDraw = !!hdc;
     if ( canDraw ) {
         dctx->trayOwner = owner;
+        dctx->topFocus = dfs == DFS_TOP;
     }
     return canDraw;
 } /* ce_draw_trayBegin */
@@ -491,7 +541,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     RECT rt;
     XP_U16 index;
     XP_Bool highlighted;
-    XP_Bool isFocussed = (flags & CELL_ISCURSOR) != 0;
+    XP_Bool isFocussed = TREAT_AS_CURSOR(dctx,flags);
     XP_Bool isEmpty = (flags & CELL_ISEMPTY) != 0;
 
     XPRtoRECT( &rt, xprect );
@@ -598,11 +648,12 @@ DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect,
     HDC hdc = globals->hdc;
     RECT rt;
     XP_Bool selected = (flags & CELL_HIGHLIGHT) != 0;
+    XP_Bool isFocussed = TREAT_AS_CURSOR(dctx,flags);
 
     XPRtoRECT( &rt, rect );
     ceClipToRect( hdc, &rt );
 
-    if ( (flags & CELL_ISCURSOR) != 0 ) {
+    if ( isFocussed ) {
         FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
         InsetRect( &rt, 2, 0 );
     }
@@ -682,7 +733,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
         cursor = dctx->rightArrow;
     }
 
-    if ( (flags & CELL_ISCURSOR) != 0 ) {
+    if ( TREAT_AS_CURSOR( dctx, flags ) ) {
         bkIndex = CE_FOCUS_COLOR;
     } else if ( cursorBonus == BONUS_NONE ) {
         bkIndex = CE_BKG_COLOR;
@@ -761,8 +812,8 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     XPRtoRECT( &rt, rInner );
     ceClipToRect( hdc, &rt );
     ++rt.left;                  /* 1: don't write up against edge */
-    drawLines( dctx, hdc, buf, CE_REM_PADDING, &rt, 
-               DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_CENTER );
+    drawTextLines( dctx, hdc, buf, CE_REM_PADDING, &rt, 
+                   DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_CENTER );
 } /* ce_draw_drawRemText */
 
 static void
@@ -875,8 +926,8 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
         rt.bottom -= IS_TURN_VPAD;
     }
 
-    drawLines( dctx, hdc, scoreBuf, CE_SCORE_PADDING, &rt, 
-               DT_SINGLELINE | DT_VCENTER | DT_CENTER );
+    drawTextLines( dctx, hdc, scoreBuf, CE_SCORE_PADDING, &rt, 
+                   DT_SINGLELINE | DT_VCENTER | DT_CENTER );
 
     if ( frameScore ) {
         Rectangle( hdc, rt.left, rt.top-IS_TURN_VPAD, rt.right, rt.top );
@@ -970,8 +1021,8 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
     SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(player)] );
     SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
     ceClearToBkground( dctx, rInner );
-    drawLines( dctx, hdc, buf, CE_TIMER_PADDING, &rt, 
-               DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+    drawTextLines( dctx, hdc, buf, CE_TIMER_PADDING, &rt, 
+                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
 
     if ( !globals->hdc ) {
         EndPaint( dctx->mainWin, &ps );
@@ -1052,8 +1103,8 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
     textRt.top += 2;
     InsetRect( &textRt, 3, 0 );
 
-    drawLines( dctx, hdc, text, CE_MINIW_PADDING, &textRt, 
-               DT_CENTER | DT_VCENTER );
+    drawTextLines( dctx, hdc, text, CE_MINIW_PADDING, &textRt, 
+                   DT_CENTER | DT_VCENTER );
 
     if ( !globals->hdc ) {
         EndPaint( dctx->mainWin, &ps );
@@ -1068,6 +1119,9 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 
     for ( i = 0; i < CE_NUM_COLORS; ++i ) {
         DeleteObject( dctx->brushes[i] );
+        if ( !!dctx->pens[i] ) {
+            DeleteObject( dctx->pens[i] );
+        }
     }
 
     DeleteObject( dctx->playerFont );
@@ -1178,6 +1232,7 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)XP_MALLOC( mpool,
                                              sizeof(*dctx) );
+    XP_MEMSET( dctx, 0, sizeof(*dctx) );
     MPASSIGN(dctx->mpool, mpool);
 
 #ifndef DRAW_LINK_DIRECT
