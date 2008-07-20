@@ -57,7 +57,6 @@ LRESULT CALLBACK
 StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT handled = FALSE;
-    CEAppGlobals* globals = NULL;
     StrBoxState* state;
     XP_U16 id;
 
