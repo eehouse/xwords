@@ -1,4 +1,4 @@
-// -*- mode: c; -*-
+// -*- mode: c; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*-
 // 
 // Microsoft Developer Studio generated resource script.  But now I'm
 // editing it. :-)
@@ -814,7 +814,7 @@ BEGIN
     0x00, 0xAF, 0xAF,
     0xAF, 0x00, 0xAF,
     0xAF, 0xAF, 0xAF,
-    0xFF, 0xFF, 0xFF,		/* empty cells */
+    0xFF, 0xFF, 0xFF,		/* empty cells/CE_BKG_COLOR */
     0xFF, 0xFF, 0x99,		/* tile background */
     0x70, 0x70, 0xFF,		/* focus */
     0x00, 0x00, 0x00,		/* player 1 */
@@ -862,7 +862,7 @@ BEGIN
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
     IDS_DONE                "Done"
-    IDS_ABOUT       "Crosswords 4.2b3 (rev " SVN_REV ") "\
+    IDS_ABOUT       "Crosswords 4.2b4 (rev " SVN_REV ") "\
                     "for PocketPC. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
@@ -875,7 +875,7 @@ BEGIN
                     "Download dictionaries from http://xwords.sf.net or "\
                     "http://eehouse.org/xwords."
     IDS_SAVENAME    "Enter a name for the current game.  (You can change the "\
-                    "name later using the Saved games dialog.)"
+                    "name later using the Saved Games dialog.)"
     IDS_DUPENAME    "Enter a name for a copy of this game."
     IDS_RENAME      "Enter a new name for this game."
 
