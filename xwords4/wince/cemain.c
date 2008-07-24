@@ -2441,7 +2441,7 @@ void
 wince_assert( XP_UCHAR* XP_UNUSED_LOG(s), int XP_UNUSED_LOG(line), 
               char* XP_UNUSED_LOG(fileName) )
 {
-    XP_WARNF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
+    XP_DEBUGF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
 } /* wince_assert */
 
 #ifdef ENABLE_LOGGING
@@ -2458,6 +2458,30 @@ makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 XP_UNUSED_DBG(size) )
              st.wSecond );
     XP_ASSERT( size > strlen(timeStamp) );
 } /* makeTimeStamp */
+
+void
+wince_warnf(const XP_UCHAR* format, ...)
+{
+#if 1
+    XP_UCHAR buf[256];
+    va_list ap;
+    XP_U16 slen;
+
+    va_start( ap, format );
+    vsnprintf( buf, sizeof(buf), format, ap );
+    va_end(ap);
+
+    slen = strlen(buf)+1;
+    wchar_t widebuf[slen];
+
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, slen,
+                         widebuf, slen );
+
+    MessageBox( NULL, widebuf, L"WARNF", MB_OK );
+#else
+    MessageBox( NULL, L"warnf", L"WARNF", MB_OK );
+#endif
+} /* wince_warnf */
 
 void
 wince_debugf(const XP_UCHAR* format, ...)
@@ -2635,6 +2659,11 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
+        break;
+
+    case ERR_CANT_HINT_WHILE_DISABLED:
+        message = "The hint feature is disabled for this game.  Enable "
+            "it for a new game using the Preferences diaog.";
         break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -3089,6 +3118,7 @@ ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
 #endif
 
 #ifdef SHOW_PROGRESS
+blah blah -- these are not in use
 static void
 ce_util_engineStarting( XW_UtilCtxt* uc )
 {
