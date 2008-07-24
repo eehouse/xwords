@@ -1406,24 +1406,23 @@ board_requestHint( BoardCtxt* board,
 #endif
                    XP_Bool* workRemainsP )
 {
-    MoveInfo newMove;
     XP_Bool result = XP_FALSE;
-    XP_S16 nTiles;
-    const Tile* tiles;
-    const XP_U16 selPlayer = board->selPlayer;
-    PerTurnInfo* pti;
-    EngineCtxt* engine;
-    XP_Bool searchComplete = XP_TRUE;
     XP_Bool redraw = XP_FALSE;
-    
+
     *workRemainsP = XP_FALSE; /* in case we exit without calling engine */
 
-    pti = board->pti + selPlayer;
-    engine = server_getEngineFor( board->server, selPlayer );
-    /* engine may be null, if e.g. hint menu's chosen for a remote player */
-    result = !!engine && !board->gi->hintsNotAllowed && preflight( board );
+    if ( board->gi->hintsNotAllowed ) {
+        util_userError( board->util, ERR_CANT_HINT_WHILE_DISABLED );
+    } else {
+        MoveInfo newMove;
+        XP_S16 nTiles;
+        const Tile* tiles;
+        XP_Bool searchComplete = XP_TRUE;
+        const XP_U16 selPlayer = board->selPlayer;
+        PerTurnInfo* pti = board->selInfo;
+        EngineCtxt* engine = server_getEngineFor( board->server, selPlayer );
 
-    if ( result ) {
+        result = !!engine && preflight( board );
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;
 
