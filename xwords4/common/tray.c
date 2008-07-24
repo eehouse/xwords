@@ -555,7 +555,6 @@ adjustForDivider( const BoardCtxt* board, XP_S16* index )
     }
 }
 
-#if 1
 XP_Bool
 tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
                  XP_Bool* pUp )
@@ -570,130 +569,76 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         XP_S16 delta = cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
         const XP_U16 selPlayer = board->selPlayer;
         PerTurnInfo* pti = board->selInfo;
-        XP_S16 trayCursorLoc = pti->trayCursorLoc;
-        XP_S16 newLoc = trayCursorLoc + delta;
-        if ( newLoc < 0 || newLoc > MAX_TRAY_TILES ) {
-            XP_LOGF( "moving up: newLoc: %d", newLoc );
-            up = XP_TRUE;
-        } else if ( !preflightOnly ) {
-            XP_S16 tileLoc = trayCursorLoc;
-            XP_U16 nTiles = model_getNumTilesInTray( board->model, selPlayer );
-            XP_Bool cursorOnDivider = trayCursorLoc == pti->dividerLoc;
-            XP_Bool cursorObjSelected;
-
-            adjustForDivider( board, &tileLoc );
-            cursorObjSelected = cursorOnDivider?
-                pti->dividerSelected : pti->traySelBits == (1 << tileLoc);
-
-            if ( !cursorObjSelected ) {
-                /* nothing to do */
-            } else if ( cursorOnDivider ) {
-                /* just drag the divider */
-                pti->dividerLoc = newLoc;
-            } else if ( pti->tradeInProgress ) {
-                /* nothing to do */
-            } else {
+        XP_S16 trayCursorLoc;
+        XP_S16 newLoc;
+        for ( ; ; ) {
+            trayCursorLoc = pti->trayCursorLoc;
+            newLoc = trayCursorLoc + delta;
+            if ( newLoc < 0 || newLoc > MAX_TRAY_TILES ) {
+                up = XP_TRUE;
+            } else if ( !preflightOnly ) {
+                XP_S16 tileLoc = trayCursorLoc;
+                XP_U16 nTiles = model_getNumTilesInTray( board->model, selPlayer );
+                XP_Bool cursorOnDivider = trayCursorLoc == pti->dividerLoc;
+                XP_Bool cursorObjSelected;
                 XP_S16 newTileLoc;
 
-                /* drag the tile, skipping over the divider if needed */
-                if ( (newLoc == pti->dividerLoc) && (newLoc > 0) ) {
-                    newLoc += delta;
+                adjustForDivider( board, &tileLoc );
+                cursorObjSelected = cursorOnDivider?
+                    pti->dividerSelected : pti->traySelBits == (1 << tileLoc);
+
+                if ( !cursorObjSelected ) {
+                    /* nothing to do */
+                } else if ( cursorOnDivider ) {
+                    /* just drag the divider */
+                    pti->dividerLoc = newLoc;
+                } else if ( pti->tradeInProgress ) {
+                    /* nothing to do */
+                } else {
+                    /* drag the tile, skipping over the divider if needed */
+                    if ( (newLoc == pti->dividerLoc) && (newLoc > 0) ) {
+                        newLoc += delta;
+                    }
+                    newTileLoc = newLoc;
+                    adjustForDivider( board, &newTileLoc );
+
+                    if ( newTileLoc >= 0 ) {
+                        XP_ASSERT( tileLoc < nTiles );
+                        if ( newTileLoc < nTiles ) {
+                            model_moveTileOnTray( board->model, selPlayer, 
+                                                  tileLoc, newTileLoc );
+                            pti->traySelBits = (1 << newTileLoc);
+                        } else {
+                            pti->traySelBits = 0; /* clear selection */
+                        }
+                    }
                 }
+                pti->trayCursorLoc = newLoc;
+
+                /* Check if we're settling on an empty tile location other
+                   than the rightmost one.  If so, loop back and move
+                   further. */
                 newTileLoc = newLoc;
                 adjustForDivider( board, &newTileLoc );
 
-                if ( newTileLoc >= 0 ) {
-                    XP_ASSERT( tileLoc < nTiles );
-                    if ( newTileLoc < nTiles ) {
-                        model_moveTileOnTray( board->model, selPlayer, 
-                                              tileLoc, newTileLoc );
-                        pti->traySelBits = (1 << newTileLoc);
-                    } else {
-                        pti->traySelBits = 0; /* clear selection */
-                    }
+                if ( (newTileLoc > nTiles)
+                     && (newLoc != pti->dividerLoc)
+                     && (newTileLoc < MAX_TRAY_TILES-1) ) {
+                    continue;
                 }
             }
-            pti->trayCursorLoc = newLoc;
-
-            /* fix this!!! */
-            board->dividerInvalid = XP_TRUE;
-            board_invalTrayTiles( board, ALLTILES );
+            break;              /* always exit loop if we get here */
         }
-        draw = XP_TRUE;
+            
+        /* fix this!!! */
+        board->dividerInvalid = XP_TRUE;
+        board_invalTrayTiles( board, ALLTILES );
     }
+    draw = XP_TRUE;
 
     *pUp = up;
     return draw;
 } /* tray_moveCursor */
-#else
-XP_Bool
-tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
-                 XP_Bool* pUp )
-{
-    XP_Bool draw = XP_FALSE;
-    XP_Bool up = XP_FALSE;
-    const XP_U16 selPlayer = board->selPlayer;
-    PerTurnInfo* pti = board->selInfo;
-    XP_S16 pos;
-    TileBit what = 0;
-
-    switch ( cursorKey ) {
-    case XP_CURSOR_KEY_UP:
-    case XP_CURSOR_KEY_DOWN:
-        up = XP_TRUE;
-        break;
-        /* moving the divider needs to be hard to do accidentally since it
-           confuses users when juggle and hint stop working.  But all things
-           must be possible via keyboard on devices that don't have
-           touchscreens.  Probably need a new keytype XP_CURSOR_KEY_ALTDOWN
-           etc. */
-    case XP_CURSOR_KEY_ALTRIGHT:
-    case XP_CURSOR_KEY_ALTLEFT:
-        draw = preflightOnly
-            || board_moveDivider( board, cursorKey == XP_CURSOR_KEY_ALTRIGHT );
-        break;
-    case XP_CURSOR_KEY_RIGHT:
-    case XP_CURSOR_KEY_LEFT:
-        what = what | (1 << pti->trayCursorLoc);
-        pos = pti->trayCursorLoc;
-        /* Loop in order to skip all empty tile slots but one */
-        for ( ; ; ) {
-            pos += (cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1);
-            if ( pos < 0 || pos >= MAX_TRAY_TILES ) {
-                up = XP_TRUE;
-            } else {
-                /* Revisit this when able to never draw the cursor in a place
-                   this won't allow it, e.g. when the tiles move after a
-                   hint */
-                if ( board->trayVisState == TRAY_REVEALED ) {
-                    XP_U16 count = model_getNumTilesInTray( board->model,
-                                                            selPlayer );
-                    if ( (pos > count) && (pos < MAX_TRAY_TILES-1) ) {
-                        continue;
-                    }
-                }
-                if ( !preflightOnly ) {
-                    pti->trayCursorLoc = pos;
-                    what = what | (1 << pos);
-                }
-            }
-            break;
-        }
-        if ( !preflightOnly ) {
-            what = what | (1 << pti->trayCursorLoc);
-            board_invalTrayTiles( board, what );
-        }
-        draw = XP_TRUE;
-        break;
-    default:
-        draw = XP_FALSE;
-        break;
-    }
-
-    *pUp = up;
-    return draw;
-} /* tray_moveCursor */
-#endif
 
 void
 getFocussedTileCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
