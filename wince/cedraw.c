@@ -655,7 +655,7 @@ DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect,
 
     if ( isFocussed ) {
         FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
-        InsetRect( &rt, 2, 0 );
+        InsetRect( &rt, 0, (rt.bottom - rt.top) >> 2 );
     }
 
     if ( selected ) {
@@ -950,8 +950,8 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
     wchar_t widebuf[5];
     XP_UCHAR buf[5];
     RECT rt, clip;
-    XP_U16 bkIndex = (flags & CELL_ISCURSOR) == 0? 
-        CE_BKG_COLOR : CE_FOCUS_COLOR;
+    XP_Bool focussed = TREAT_AS_CURSOR(dctx,flags);
+    XP_U16 bkIndex = focussed ?  CE_FOCUS_COLOR : CE_BKG_COLOR;
 
     HFONT font = ceGetSizedFont( dctx, rect->height/2, RFONTS_PTS );    
     HFONT oldFont = SelectObject( hdc, font );

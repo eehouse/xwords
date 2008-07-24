@@ -92,14 +92,15 @@ typedef XP_U32 XP_Time;
 
 //#define XP_STATUSF if(0)p_ignore
 #define XP_STATUSF XP_DEBUGF 
-#define XP_WARNF XP_DEBUGF
 
 #ifdef ENABLE_LOGGING
 #define XP_DEBUGF(...) wince_debugf(__VA_ARGS__)
 #define XP_LOGF(...) wince_debugf(__VA_ARGS__)
+#define XP_WARNF(...) wince_warnf(__VA_ARGS__)
 #else
 #define XP_DEBUGF(...)
 #define XP_LOGF(...)
+#define XP_WARNF(...)
 #endif
 
 #ifdef CPLUS
@@ -108,6 +109,8 @@ extern "C" {
 
 void wince_assert(XP_UCHAR* s, int line, char* fileName );
 void wince_debugf(const XP_UCHAR*, ...)
+    __attribute__ ((format (printf, 1, 2)));
+void wince_warnf(const XP_UCHAR*, ...)
     __attribute__ ((format (printf, 1, 2)));
 void p_ignore(XP_UCHAR*, ...);
 XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len, 
