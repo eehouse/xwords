@@ -43,6 +43,11 @@
 #endif
 { "STR_TOO_FEW_TILES", "Pas assez de lettres pour échanger." },
 { "STR_CANT_UNDO_TILEASSIGN", "Impossible d'annuler.  (Le tirage initial ne peut être annulé.)" },
+/* translate me */
+{ "STR_CANT_HINT_WHILE_DISABLED", "The hint feature is disabled for this "
+                              "game.  Enable it for a new game using the "
+                              "Preferences dialog." },
+
 { "STR_VALUES_TITLE", "Nombres et Valeurs" },
 { "STR_REMAINS_TITLE","Lettres restantes" },
 { "STRS_VALUES_HEADER",		"%s nombres/valeurs :\n" },
