@@ -147,6 +147,7 @@ drawTray( BoardCtxt* board )
                     }
                 } else {
                     cursorBits = ALLTILES;
+                    cursorOnDivider = XP_TRUE;
                 }
             }
 #endif
