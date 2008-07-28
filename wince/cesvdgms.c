@@ -130,7 +130,8 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 } /* SaveNameDlg */
 
 XP_Bool
-ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf, XP_U16 buflen )
+ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf, 
+                     XP_U16 buflen )
 {
     CeSaveGameNameState state;
 
@@ -184,7 +185,8 @@ getFullSelPath( CeSavedGamesState* state, wchar_t* buf, XP_U16 buflen )
     lstrcpy( buf, DEFAULT_DIR_NAME L"\\" );
     len = lstrlen( buf );
     buflen -= len;
-    getCBText( state->dlgHdr.hDlg, IDC_SVGM_GAMELIST, state->sel, &buf[len], &buflen );
+    getCBText( state->dlgHdr.hDlg, IDC_SVGM_GAMELIST, state->sel, &buf[len], 
+               &buflen );
     lstrcat( buf, L".xwg" );
 }
 
@@ -205,10 +207,12 @@ static void
 initSavedGamesData( CeSavedGamesState* state )
 {
     HANDLE fileH;
+    HWND hDlg = state->dlgHdr.hDlg;
     WIN32_FIND_DATA data;
     wchar_t path[256];
-    XP_S16 curSel = state->sel;
+    XP_S16 curSel = -1;
     XP_U16 ii;
+    XP_U16 nItems = 0;
 
     XP_MEMSET( &data, 0, sizeof(data) );
     lstrcpy( path, DEFAULT_DIR_NAME L"\\" );
@@ -217,22 +221,37 @@ initSavedGamesData( CeSavedGamesState* state )
     fileH = FindFirstFile( path, &data );
     for ( ii = 0; fileH != INVALID_HANDLE_VALUE; ++ii ) {
         XP_U16 len = wcslen( data.cFileName );
-        XP_Bool isCurGame;
-
-        isCurGame = 0 == wcscmp( state->curName, data.cFileName );
-        if ( isCurGame ) {
-            state->openGameIndex = ii;
-            if ( curSel == -1 ) {
-                curSel = ii;
-            }
-        }
+        XP_U16 item;
+        XP_Bool isCurGame = 0 == wcscmp( state->curName, data.cFileName );
 
         XP_ASSERT( data.cFileName[len-4] == '.');
         data.cFileName[len-4] = 0;
-        SendDlgItemMessage( state->dlgHdr.hDlg, IDC_SVGM_GAMELIST, ADDSTRING,
-                            0, (LPARAM)data.cFileName );
 
-        ++state->nItems;
+        /* Insert in sorted order.  This should be fast enough for reasonable
+           numbers of saved games. */
+        for ( item = 0; item < nItems; ++item ) {
+            wchar_t buf[256];
+            (void)SendDlgItemMessage( hDlg, IDC_SVGM_GAMELIST, GETLBTEXT, item,
+                                      (LPARAM)buf );
+            /* Does the current item belong above the one we're inserting? */
+            if ( 0 <= wcscmp( buf, data.cFileName ) ) {
+                break;
+            }
+        }
+        (void)SendDlgItemMessage( hDlg, IDC_SVGM_GAMELIST, INSERTSTRING,
+                                  item, (LPARAM)data.cFileName );
+
+        /* Remember which entry matches the currently opened game, and adjust
+           if it's changed.  We may be incrementing an uninitialized curSel,
+           but that's ok as isCurGame is guaranteed to be true exactly once
+           through. */
+        if ( isCurGame ) {
+            curSel = item;
+        } else if ( curSel >= item ) {
+            ++curSel;           /* since we've moved it up */
+        }
+
+        ++nItems;
 
         if ( !FindNextFile( fileH, &data ) ) {
             XP_ASSERT( GetLastError() == ERROR_NO_MORE_FILES );
@@ -240,7 +259,10 @@ initSavedGamesData( CeSavedGamesState* state )
         }
     }
 
-    SendDlgItemMessage( state->dlgHdr.hDlg, IDC_SVGM_GAMELIST, SETCURSEL, curSel, 0 );
+    state->nItems = nItems;
+    state->openGameIndex = curSel;
+
+    SendDlgItemMessage( hDlg, IDC_SVGM_GAMELIST, SETCURSEL, curSel, 0 );
     state->sel = curSel;
 
     setButtons( state );
