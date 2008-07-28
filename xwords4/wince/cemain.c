@@ -928,7 +928,7 @@ make_generic_stream( CEAppGlobals* globals )
 } /* make_generic_stream */
 
 static XWStreamCtxt*
-fileToStream( CEAppGlobals* globals, XP_UCHAR* path )
+fileToStream( CEAppGlobals* globals, const XP_UCHAR* path )
 {
     XWStreamCtxt* stream = NULL;
     HANDLE fileH;
@@ -2663,7 +2663,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 
     case ERR_CANT_HINT_WHILE_DISABLED:
         message = "The hint feature is disabled for this game.  Enable "
-            "it for a new game using the Preferences diaog.";
+            "it for a new game using the Preferences dialog.";
         break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
