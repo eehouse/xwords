@@ -3661,6 +3661,10 @@ palm_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_CANT_UNDO_TILEASSIGN:
         strID = STR_CANT_UNDO_TILEASSIGN;
         break;
+        
+    case ERR_CANT_HINT_WHILE_DISABLED:
+        strID = STR_CANT_HINT_WHILE_DISABLED;
+        break;
 
 #ifdef XWFEATURE_RELAY
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:

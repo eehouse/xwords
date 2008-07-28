@@ -41,6 +41,10 @@
 { "STR_TOO_FEW_TILES", "Too few tiles left to trade." },
 { "STR_CANT_UNDO_TILEASSIGN", "Nothing to undo.  (Initial tile picking "
                               "cannot be undone.)" },
+{ "STR_CANT_HINT_WHILE_DISABLED", "The hint feature is disabled for this "
+                              "game.  Enable it for a new game using the "
+                              "Preferences dialog." },
+
 { "STR_VALUES_TITLE", "Counts and Values" },
 { "STR_REMAINS_TITLE","Remaining tiles" },
 { "STRS_VALUES_HEADER",		"%s counts/values:\n" },
