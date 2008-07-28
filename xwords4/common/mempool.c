@@ -23,6 +23,8 @@
 #include "comtypes.h"
 #include "xwstream.h"
 
+/* #define MPOOL_DEBUG */
+
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -92,12 +94,15 @@ checkIsText( MemPoolEntry* entry )
 void
 mpool_destroy( MemPoolCtx* mpool )
 {
+    if ( mpool->nUsed > 0 ) {
+        XP_WARNF( "leaking %d blocks", mpool->nUsed );
+    }
     if ( !!mpool->usedList ) {
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_WARNF( "0x" XP_P " from ln %ld of %s\n", 
-                      entry->ptr, entry->lineNo, entry->fileName );
+            XP_LOGF( XP_P " from ln %ld of %s\n", 
+                     entry->ptr, entry->lineNo, entry->fileName );
 #ifdef DEBUG
             {
                 char* tryTxt;
@@ -143,6 +148,11 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file, XP_U32 lineNo )
 
     ++mpool->nUsed;
     ++mpool->nAllocs;
+
+#ifdef MPOOL_DEBUG
+    XP_LOGF( "%s(size=%ld,file=%s,lineNo=%ld)=>%p",
+             __func__, size, file, lineNo, entry->ptr );
+#endif
 
     return entry->ptr;
 } /* mpool_alloc */
@@ -198,6 +208,11 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo )
                  file, lineNo );
     } else {
 
+#ifdef MPOOL_DEBUG
+    XP_LOGF( "%s(ptr=%p):size=%ld,file=%s,lineNo=%ld)", __func__, 
+             entry->ptr, entry->size, entry->fileName, entry->lineNo );
+#endif
+
         if ( !!prev ) {
             prev->next = entry->next;
         } else {
@@ -230,13 +245,21 @@ mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream )
                  "Number of free blocks: %d\n"
                  "Total number of blocks allocated: %d\n",
                  mpool->nUsed, mpool->nFree, mpool->nAllocs );
-    stream_putString( stream, buf );
+    if ( !!stream ) {
+        stream_putString( stream, buf );
+    } else {
+        XP_LOGF( buf );
+    }
 
     for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
-                     (XP_UCHAR*)"%ld byte block allocated %s: line %ld\n", 
-                     entry->size, entry->fileName, entry->lineNo );
-        stream_putString( stream, buf );
+                     (XP_UCHAR*)"%ld byte block allocated at %p, %s: line %ld\n", 
+                     entry->size, entry->ptr, entry->fileName, entry->lineNo );
+        if ( !!stream ) {
+            stream_putString( stream, buf );
+        } else {
+            XP_LOGF( buf );
+        }
     }
 } /* mpool_stats */
 
