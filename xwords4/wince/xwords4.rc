@@ -881,6 +881,12 @@ BEGIN
 
 END
 
+#ifdef _WIN32_WCE
+// from http://msdn.microsoft.com/en-us/library/ms838191.aspx: don't
+// let WinMo draw 320x320 as 240x240
+HI_RES_AWARE CEUX {1}
+#endif
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
