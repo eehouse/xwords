@@ -349,7 +349,7 @@ void
 ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 {
     RECT rect;
-    XP_U16 vHeight;
+    XP_U16 fullHeight;
     CEAppGlobals* globals = dlgHdr->globals;
 
     dlgHdr->hDlg = hDlg;
@@ -359,10 +359,10 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 
     GetClientRect( hDlg, &rect );
     XP_ASSERT( rect.top == 0 );
-    vHeight = rect.bottom;         /* This is before we've resized it */
+    fullHeight = rect.bottom;         /* This is before we've resized it */
 
 #ifdef _WIN32_WCE
-    (void)mkFullscreenWithSoftkeys( globals, hDlg, vHeight,
+    (void)mkFullscreenWithSoftkeys( globals, hDlg, fullHeight,
                                     (doWhat & DLG_STATE_DONEONLY) != 0);
 #elif defined DEBUG
     /* Force it to be small so we can test scrolling etc. */
@@ -379,21 +379,14 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
     if ( !IS_SMARTPHONE(globals) ) {
         SCROLLINFO sinfo;
      
-        XP_LOGF( "%s: vHeight: %d; r.bottom: %ld", __func__, vHeight, 
-                 rect.bottom );
-
         XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
         sinfo.cbSize = sizeof(sinfo);
 
         sinfo.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
-        sinfo.nPos = 0;
-        sinfo.nMin = 0;
-        sinfo.nMax = vHeight - rect.bottom;
-        if ( sinfo.nMax < 0 ) {
-            sinfo.nMax = 0;     /* disables the thing! */
+        if ( rect.bottom < fullHeight ) {
+            sinfo.nMax = fullHeight;
+            dlgHdr->nPage = sinfo.nPage = rect.bottom - 1;
         }
-        XP_LOGF( "%s: set max to %d", __func__, sinfo.nMax );
-        sinfo.nPage = 10;
         
         (void)SetScrollInfo( hDlg, SB_VERT, &sinfo, FALSE );
     }
@@ -494,14 +487,14 @@ ceDoDlgScroll( CeDlgHdr* dlgHdr, WPARAM wParam )
             vertChange = -1;
             break;
         case SB_PAGEUP: // 
-            vertChange = -10;
+            vertChange = -dlgHdr->nPage;
             break;
 
         case SB_LINEDOWN: // Scrolls one line down 
             vertChange = 1;
             break;
         case SB_PAGEDOWN: // Scrolls one page down 
-            vertChange = 10;
+            vertChange = dlgHdr->nPage;
             break;
 
         case SB_THUMBTRACK:     /* still dragging; don't redraw */

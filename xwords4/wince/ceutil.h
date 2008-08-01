@@ -54,6 +54,7 @@ typedef struct CeDlgHdr {
 
     /* Below this line is private to ceutil.c */
     DlgStateTask doWhat;
+    XP_U16 nPage;
 } CeDlgHdr;
 void ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat );
 XP_Bool ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam);
