@@ -172,6 +172,8 @@
 #define IDC_PHONIESUPDOWN                1116
 #define IDC_SVGM_UPDOWN                  1117
 #define IDC_ASKBLANK_UPDOWN              1124
+#define HC_MIN_UPDOWN                    1125
+#define HC_MAX_UPDOWN                    1126
 
 
 #define IDC_SVGM_SELLAB                  1118
@@ -243,7 +245,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40033
-#define _APS_NEXT_CONTROL_VALUE         1125
+#define _APS_NEXT_CONTROL_VALUE         1127
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
