@@ -144,6 +144,7 @@ static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
 static void RECTtoXPR( XP_Rect* dest, const RECT* src );
 static XP_Bool ceDoNewGame( CEAppGlobals* globals );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
+static void closeGame( CEAppGlobals* globals );
 static void ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
@@ -1475,10 +1476,7 @@ ceChooseAndOpen( CEAppGlobals* globals )
             } else if ( ceSaveCurGame( globals, XP_FALSE )
                         || queryBoxChar( globals, "Do you really want to "
                                          "overwrite the current game?" ) ) {
-
-                if ( globals->curGameName != NULL ) {
-                    XP_FREE( globals->mpool, globals->curGameName );
-                }
+                closeGame( globals );
 
                 globals->curGameName = name;
                 if ( ceLoadSavedGame( globals ) ) {
@@ -1663,6 +1661,17 @@ ceConfirmAndSave( CEAppGlobals* globals )
 } /* ceConfirmAndSave */
 
 static void
+closeGame( CEAppGlobals* globals )
+{
+    game_dispose( &globals->game );
+    gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gameInfo );
+
+    if ( globals->curGameName ) {
+        XP_FREE( globals->mpool, globals->curGameName );
+    }
+}
+
+static void
 freeGlobals( CEAppGlobals* globals )
 {
     MPSLOT;
@@ -1671,12 +1680,7 @@ freeGlobals( CEAppGlobals* globals )
 
     draw_destroyCtxt( globals->draw );
 
-    game_dispose( &globals->game );
-    gi_disposePlayerInfo( MPPARM(mpool) &globals->gameInfo );
-
-    if ( globals->curGameName ) {
-        XP_FREE( mpool, globals->curGameName );
-    }
+    closeGame( globals );
 
     if ( !!globals->vtMgr ) {
         vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
@@ -2459,7 +2463,6 @@ makeTimeStamp( XP_UCHAR* timeStamp, XP_U16 XP_UNUSED_DBG(size) )
 void
 wince_warnf(const XP_UCHAR* format, ...)
 {
-#if 1
     XP_UCHAR buf[256];
     va_list ap;
     XP_U16 slen;
@@ -2475,9 +2478,6 @@ wince_warnf(const XP_UCHAR* format, ...)
                          widebuf, slen );
 
     MessageBox( NULL, widebuf, L"WARNF", MB_OK );
-#else
-    MessageBox( NULL, L"warnf", L"WARNF", MB_OK );
-#endif
 } /* wince_warnf */
 
 void
