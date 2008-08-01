@@ -30,10 +30,10 @@ initComboBox( HWND hDlg, XP_U16 id, XP_U16 startVal )
         wchar_t str[4];
         swprintf( str, L"%d", i );
 
-        SendDlgItemMessage( hDlg, id, CB_ADDSTRING, 0, (long)str );
+        SendDlgItemMessage( hDlg, id, ADDSTRING, 0, (long)str );
 
         if ( i == startVal ) {
-            SendDlgItemMessage( hDlg, id, CB_SETCURSEL, i-1, 0L );
+            SendDlgItemMessage( hDlg, id, SETCURSEL, i-1, 0L );
         }
     }
     
@@ -43,7 +43,7 @@ static XP_U16
 getComboValue( HWND hDlg, XP_U16 id )
 {
     LONG result;
-    result = SendDlgItemMessage( hDlg, id, CB_GETCURSEL, 0, 0L );
+    result = SendDlgItemMessage( hDlg, id, GETCURSEL, 0, 0L );
     if ( result == CB_ERR ) {
         result = 1;
     }
