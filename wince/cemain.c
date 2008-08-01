@@ -360,19 +360,17 @@ ceInitUtilFuncs( CEAppGlobals* globals )
 # define SCROLL_SHRINK 1
 
 static void
-updateScrollInfo( HWND hwnd, XP_U16 nHidden )
+updateScrollInfo( CEAppGlobals* globals, XP_U16 nHidden )
 {
     SCROLLINFO sinfo;
 
     XP_MEMSET( &sinfo, 0, sizeof(sinfo) );
     sinfo.cbSize = sizeof(sinfo);
     sinfo.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
-    sinfo.nPos = 0;
-    sinfo.nMin = 0;
-    sinfo.nMax = nHidden;
-    sinfo.nPage = 1;
+    sinfo.nMax = model_numRows( globals->game.model );
+    sinfo.nPage = sinfo.nMax - nHidden + 1;
 
-    (void)SetScrollInfo( hwnd, SB_CTL, &sinfo, TRUE );
+    (void)SetScrollInfo( globals->scrollHandle, SB_CTL, &sinfo, TRUE );
 }
 
 static void
@@ -398,11 +396,10 @@ showScroller( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 x, XP_U16 y,
                                globals->hInst,     // The instance handle
                                NULL );             // s'pposed to be NULL
 
-        updateScrollInfo( hwndSB, nHidden );
+        globals->scrollHandle = hwndSB;
+        updateScrollInfo( globals, nHidden );
 
         EnableWindow( hwndSB, nHidden > 0 );
-
-        globals->scrollHandle = hwndSB;
     }
 
     ShowWindow( globals->scrollHandle, SW_SHOW );
@@ -2831,7 +2828,7 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(newState),
 
     if ( !!globals->scrollHandle ) {
         nHiddenRows = model_numRows( globals->game.model ) - nVisibleRows;
-        updateScrollInfo( globals->scrollHandle, nHiddenRows );
+        updateScrollInfo( globals, nHiddenRows );
     }
 #endif
 
