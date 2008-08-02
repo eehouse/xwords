@@ -174,6 +174,11 @@ typedef enum {
     ,N_RESIZE_FONTS
 } RFIndex;
 
+typedef struct _PenColorPair {
+    COLORREF ref;
+    HGDIOBJ pen;
+} PenColorPair;
+
 typedef struct CEDrawCtx {
     DrawCtxVTable* vtable;
     
@@ -183,7 +188,7 @@ typedef struct CEDrawCtx {
     COLORREF prevBkColor;
 
     HBRUSH brushes[CE_NUM_COLORS];
-    HGDIOBJ pens[CE_NUM_COLORS];
+    PenColorPair pens[CE_NUM_COLORS];
 
     HFONT selPlayerFont;
     HFONT playerFont;

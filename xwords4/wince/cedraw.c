@@ -1,4 +1,4 @@
-/* -*- fill-column: 77; 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*- */
+/* -*- fill-column: 77; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*- */
 /* 
  * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -70,11 +70,20 @@ XPRtoRECT( RECT* rt, const XP_Rect* xprect )
 static HGDIOBJ
 ceGetPen( CEDrawCtx* dctx, XP_U16 colorIndx, XP_U16 width )
 {
-    HGDIOBJ pen = dctx->pens[colorIndx];
+    PenColorPair* pair = &dctx->pens[colorIndx];
+    HGDIOBJ pen = pair->pen;
+    COLORREF ref = dctx->globals->appPrefs.colors[colorIndx];
+
+    /* Make sure cached value is still good */
+    if ( !!pen && (ref != pair->ref) ) {
+        DeleteObject( pen );
+        pen = NULL;
+    }
+
     if ( !pen ) {
-        COLORREF ref = dctx->globals->appPrefs.colors[colorIndx];
         pen = CreatePen( PS_SOLID, width, ref );
-        dctx->pens[colorIndx] = pen;
+        pair->pen = pen;
+        pair->ref = ref;
     }
     return pen;
 }
@@ -1119,8 +1128,8 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 
     for ( i = 0; i < CE_NUM_COLORS; ++i ) {
         DeleteObject( dctx->brushes[i] );
-        if ( !!dctx->pens[i] ) {
-            DeleteObject( dctx->pens[i] );
+        if ( !!dctx->pens[i].pen ) {
+            DeleteObject( dctx->pens[i].pen );
         }
     }
 
