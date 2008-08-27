@@ -267,6 +267,7 @@ gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, const XP_UCHAR* nameTemplate )
     XP_U16 i;
 
     XP_MEMSET( gi, 0, sizeof(*gi) );
+    gi->serverRole = SERVER_STANDALONE;
     gi->nPlayers = 2;
     gi->boardSize = 15;
     gi->robotSmartness = SMART_ROBOT;
