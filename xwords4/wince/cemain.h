@@ -43,7 +43,7 @@ typedef enum {
 
 # define IS_SMARTPHONE(g) ((g)->winceVersion > _LAST_PPC)
 #else
-# define IS_SMARTPHONE(g) XP_FALSE
+# define IS_SMARTPHONE(g) ((g) != (g)) /* make compiler warnings go away  */
 #endif
 
 enum { CE_BONUS1_COLOR,
@@ -222,20 +222,14 @@ void messageToBuf( UINT message, char* buf, int bufSize );
 #endif
 
 /* These allow LISTBOX and COMBOBOX to be used by the same code */
-#ifdef _WIN32_WCE
-# define SETCURSEL LB_SETCURSEL
-# define GETCURSEL LB_GETCURSEL
-# define ADDSTRING LB_ADDSTRING
-# define INSERTSTRING LB_INSERTSTRING
-# define GETLBTEXTLEN LB_GETTEXTLEN
-# define GETLBTEXT LB_GETTEXT
-#else
-# define SETCURSEL CB_SETCURSEL
-# define GETCURSEL CB_GETCURSEL
-# define ADDSTRING CB_ADDSTRING
-# define INSERTSTRING CB_INSERTSTRING
-# define GETLBTEXTLEN CB_GETLBTEXTLEN
-# define GETLBTEXT CB_GETLBTEXT
-#endif
+
+#define INSERTSTRING(g) (IS_SMARTPHONE(g)?LB_INSERTSTRING:CB_INSERTSTRING)
+#define SETCURSEL(g) (IS_SMARTPHONE(g)?LB_SETCURSEL:CB_SETCURSEL)
+#define GETCURSEL(g) (IS_SMARTPHONE(g)?LB_GETCURSEL:CB_GETCURSEL)
+#define ADDSTRING(g)  (IS_SMARTPHONE(g)?LB_ADDSTRING:CB_ADDSTRING)
+#define GETLBTEXT(g)  (IS_SMARTPHONE(g)?LB_GETTEXT:CB_GETLBTEXT)
+#define GETLBTEXTLEN(g)  (IS_SMARTPHONE(g)?LB_GETTEXTLEN:CB_GETLBTEXTLEN)
+
+#define LB_IF_PPC(g,id)  (IS_SMARTPHONE(g)?id:(id+2))
 
 #endif /* _CEMAIN_H_ */

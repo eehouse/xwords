@@ -23,27 +23,29 @@
 #include "cehntlim.h"
 
 static void
-initComboBox( HWND hDlg, XP_U16 id, XP_U16 startVal )
+initComboBox( HintLimitsState* state, XP_U16 id, XP_U16 startVal )
 {
-    XP_U16 i;
-    for ( i = 1; i <= MAX_TRAY_TILES; ++i ) {
+    HWND hDlg = state->dlgHdr.hDlg;
+    XP_U16 ii;
+    for ( ii = 0; ii < MAX_TRAY_TILES; ++ii ) {
         wchar_t str[4];
-        swprintf( str, L"%d", i );
+        swprintf( str, L"%d", ii+1 );
 
-        SendDlgItemMessage( hDlg, id, ADDSTRING, 0, (long)str );
+        SendDlgItemMessage( hDlg, id, INSERTSTRING(state->dlgHdr.globals), ii, (long)str );
 
-        if ( i == startVal ) {
-            SendDlgItemMessage( hDlg, id, SETCURSEL, i-1, 0L );
+        if ( (ii+1) == startVal ) {
+            SendDlgItemMessage( hDlg, id, SETCURSEL(state->dlgHdr.globals), ii, 0L );
         }
     }
     
 } /* initComboBox */
 
 static XP_U16
-getComboValue( HWND hDlg, XP_U16 id )
+getComboValue( HintLimitsState* state, XP_U16 id )
 {
+    HWND hDlg = state->dlgHdr.hDlg;
     LONG result;
-    result = SendDlgItemMessage( hDlg, id, GETCURSEL, 0, 0L );
+    result = SendDlgItemMessage( hDlg, id, GETCURSEL(state->dlgHdr.globals), 0, 0L );
     if ( result == CB_ERR ) {
         result = 1;
     }
@@ -54,13 +56,14 @@ LRESULT CALLBACK
 HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
     HintLimitsState* hState;
-    XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         hState = (HintLimitsState*)lParam;
 
         ceDlgSetup( &hState->dlgHdr, hDlg, DLG_STATE_NONE );
+        ceDlgComboShowHide( &hState->dlgHdr, HC_MIN_COMBO );
+        ceDlgComboShowHide( &hState->dlgHdr, HC_MAX_COMBO );
 
         return TRUE;
     } else {
@@ -68,8 +71,12 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         if ( !!hState ) {
 
             if ( !hState->inited ) {
-                initComboBox( hDlg, HC_MIN_COMBO, hState->min );
-                initComboBox( hDlg, HC_MAX_COMBO, hState->max );
+                initComboBox( hState, 
+                              LB_IF_PPC(hState->dlgHdr.globals, HC_MIN_COMBO), 
+                              hState->min );
+                initComboBox( hState, 
+                              LB_IF_PPC(hState->dlgHdr.globals,HC_MAX_COMBO), 
+                              hState->max );
                 hState->inited = XP_TRUE;
             }
 
@@ -77,16 +84,17 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                 return TRUE;
             }
 
-            switch ( message ) {
-            case WM_COMMAND:
-                id = LOWORD(wParam);
+            if ( (message == WM_COMMAND) && (BN_CLICKED == HIWORD(wParam) ) ) {
+                XP_U16 id = LOWORD(wParam);
                 switch( id ) {
                 case IDOK: 
-                    hState->min = getComboValue( hDlg, HC_MIN_COMBO );
-                    hState->max = getComboValue( hDlg, HC_MAX_COMBO );
+                    hState->min = getComboValue( hState, 
+                                                 LB_IF_PPC(hState->dlgHdr.globals,HC_MIN_COMBO) );
+                    hState->max = getComboValue( hState, 
+                                                 LB_IF_PPC(hState->dlgHdr.globals,HC_MAX_COMBO) );
                 case IDCANCEL:
                     hState->cancelled = id == IDCANCEL;
-
+                    
                     EndDialog( hDlg, id );
                     return TRUE;
                 }

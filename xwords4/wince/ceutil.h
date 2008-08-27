@@ -57,6 +57,7 @@ typedef struct CeDlgHdr {
     XP_U16 nPage;
 } CeDlgHdr;
 void ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat );
+void ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId );
 XP_Bool ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam);
 
 /* Are we drawing things in landscape mode? */
