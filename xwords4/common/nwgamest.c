@@ -43,7 +43,7 @@ struct NewGameCtx {
     XP_TriEnable enabled[NG_NUM_COLS][MAX_NUM_PLAYERS];
     XP_U16 nPlayersShown;       /* real nPlayers lives in gi */
     XP_U16 nPlayersTotal;       /* used only until changedNPlayers set */
-    XP_U16 nLocalPlayers;       /* not changed except in ngc_load */
+    XP_U16 nLocalPlayers;       /* not changed except in newg_load */
     DeviceRole role;
     XP_Bool isNewGame;
     XP_Bool changedNPlayers;
@@ -62,7 +62,7 @@ static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
                         const LocalPlayer* lp );
 #ifndef XWFEATURE_STANDALONE_ONLY
-static void changeRole( NewGameCtx* ngc, DeviceRole role );
+static XP_Bool changeRole( NewGameCtx* ngc, DeviceRole role );
 static XP_Bool checkConsistent( NewGameCtx* ngc, XP_Bool warnUser );
 #else
 # define checkConsistent( ngc, warnUser ) XP_TRUE
@@ -239,21 +239,25 @@ newg_colChanged( NewGameCtx* ngc, XP_U16 player )
 void
 newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
 {
+    XP_Bool changed = XP_FALSE;
     if ( attr == NG_ATTR_NPLAYERS ) {
         if ( ngc->nPlayersShown != value.ng_u16 ) {
             ngc->nPlayersShown = value.ng_u16;
             ngc->changedNPlayers = XP_TRUE;
-            considerEnableJuggle( ngc );
+            changed = XP_TRUE;
         }
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( NG_ATTR_ROLE == attr ) { 
-        changeRole( ngc, value.ng_role );
-        considerEnableJuggle( ngc );
+        changed = changeRole( ngc, value.ng_role );
 #endif
     } else {
         XP_ASSERT( 0 );
     }
-    adjustAllRows( ngc, XP_FALSE );
+
+    if ( changed ) {
+        considerEnableJuggle( ngc );
+        adjustAllRows( ngc, XP_FALSE );
+    }
 }
 
 typedef struct DeepValue {
@@ -469,11 +473,12 @@ adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force )
  * that case changing role then back again should not lose/change data.
  */
 #ifndef XWFEATURE_STANDALONE_ONLY
-static void
+static XP_Bool
 changeRole( NewGameCtx* ngc, DeviceRole newRole )
 {
     DeviceRole oldRole = ngc->role;
-    if ( oldRole != newRole ) {
+    XP_Bool changing = oldRole != newRole;
+    if ( changing ) {
         if ( !ngc->changedNPlayers ) {
             NGValue value;
             if ( newRole == SERVER_ISCLIENT ) {
@@ -489,6 +494,7 @@ changeRole( NewGameCtx* ngc, DeviceRole newRole )
         ngc->role = newRole;
         setRoleStrings( ngc );
     }
+    return changing;
 }
 #endif
 
