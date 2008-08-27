@@ -579,7 +579,10 @@ ceDoDlgFocusScroll( CeDlgHdr* dlgHdr, HWND nextCtrl )
 } /* ceDoDlgFocusScroll */
 
 static XP_Bool
-ceFindMenu( HMENU menu, XP_U16 id, HMENU* foundMenu, XP_U16* foundPos,
+ceFindMenu( HMENU menu, XP_U16 id, 
+#ifndef _WIN32_WCE
+            HMENU* foundMenu, XP_U16* foundPos,
+#endif
             wchar_t* foundBuf, XP_U16 bufLen )
 {
     XP_Bool found = XP_FALSE;
@@ -600,14 +603,19 @@ ceFindMenu( HMENU menu, XP_U16 id, HMENU* foundMenu, XP_U16* foundPos,
         if ( !GetMenuItemInfo( menu, pos, TRUE, &minfo ) ) {
             break;              /* pos is too big */
         } else if ( NULL != minfo.hSubMenu ) {
-            found = ceFindMenu( minfo.hSubMenu, id, foundMenu, foundPos,
+            found = ceFindMenu( minfo.hSubMenu, id, 
+#ifndef _WIN32_WCE
+                                foundMenu, foundPos,
+#endif
                                 foundBuf, bufLen );
         } else if ( MFT_SEPARATOR == minfo.fType ) {
             continue;
         } else if ( minfo.wID == id ) {
             found = XP_TRUE;
+#ifndef _WIN32_WCE
             *foundPos = pos;
             *foundMenu = menu;
+#endif
         }
     }
     return found;
@@ -650,11 +658,14 @@ setW32DummyMenu( CEAppGlobals* globals, HMENU menu, XP_U16 id, wchar_t* oldNm )
 void
 ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
 {
-    if ( newId != globals->softkey.oldId ) {
+    if ( newId != globals->softKeyId ) {
+        wchar_t menuTxt[32];    /* text of newId menu */
         HMENU menu;
+#ifndef _WIN32_WCE
         HMENU prevMenu;
         XP_U16 prevPos;
-        XP_U16 oldId = globals->softkey.oldId;
+#endif
+        XP_U16 oldId = globals->softKeyId;
         if ( 0 == oldId ) {
             oldId = ID_INITIAL_SOFTID;
         }
@@ -675,26 +686,13 @@ ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
         menu = GetMenu( globals->hWnd );
 #endif
 
-        /* First put any existing menu item back in the main menu! */
-        if ( globals->softkey.oldMenu != 0 ) {
-            if ( ! InsertMenu( globals->softkey.oldMenu, 
-                               globals->softkey.oldPos, MF_BYPOSITION, 
-                               globals->softkey.oldId,
-                               globals->softkey.oldName ) ) {
-                XP_LOGF( "%s: InsertMenu failed", __func__ );
-            }
-        }
-
-        /* Then find, remember and remove the new */
-        if ( ceFindMenu( menu, newId, &prevMenu, &prevPos,
-                         globals->softkey.oldName,
-                         VSIZE(globals->softkey.oldName) ) ) {
-            if ( !DeleteMenu( prevMenu, prevPos, MF_BYPOSITION ) ) {
-                XP_LOGF( "%s: DeleteMenu failed", __func__ );
-            }
-            globals->softkey.oldMenu = prevMenu;
-            globals->softkey.oldPos = prevPos;
-            globals->softkey.oldId = newId;
+        /* Look up the text... */
+        if ( ceFindMenu( menu, newId, 
+#ifndef _WIN32_WCE
+                          &prevMenu, &prevPos,
+#endif
+                          menuTxt, VSIZE(menuTxt) ) ) {
+            globals->softKeyId = newId;
         } else {
             XP_LOGF( "%s: ceFindMenu failed", __func__ );
         }
@@ -703,10 +701,10 @@ ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
 #ifdef _WIN32_WCE
         info.dwMask = TBIF_TEXT | TBIF_COMMAND;
         info.idCommand = newId;
-        info.pszText = globals->softkey.oldName;
+        info.pszText = menuTxt;
         SendMessage( globals->hwndCB, TB_SETBUTTONINFO, oldId, (LPARAM)&info );
 #else
-        setW32DummyMenu( globals, menu, newId, globals->softkey.oldName );
+        setW32DummyMenu( globals, menu, newId, menuTxt );
 #endif
     }
 } /* ceSetLeftSoftkey */
