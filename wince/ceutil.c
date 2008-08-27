@@ -121,15 +121,6 @@ ceGetDlgItemNum( HWND hDlg, XP_U16 id )
 } /* ceGetDlgItemNum */
 
 void
-ce_selectAndShow( HWND hDlg, XP_U16 resID, XP_U16 index )
-{
-    SendDlgItemMessage( hDlg, resID, SETCURSEL, index, 0 );
-#ifdef _WIN32_WCE
-    SendDlgItemMessage( hDlg, resID, LB_SETANCHORINDEX, index, 0 );
-#endif
-} /* ce_selectAndShow */
-
-void
 ceShowOrHide( HWND hDlg, XP_U16 resID, XP_Bool visible )
 {
     HWND itemH = GetDlgItem( hDlg, resID );
@@ -397,6 +388,19 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 #endif
     dlgHdr->doWhat = doWhat;
 } /* ceDlgSetup */
+
+void
+ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId )
+{
+    HWND hDlg = dlgHdr->hDlg;
+
+    if ( IS_SMARTPHONE(dlgHdr->globals) ) {
+        ceShowOrHide( hDlg, baseId+2, XP_FALSE );
+    } else {
+        ceShowOrHide( hDlg, baseId, XP_FALSE );
+        ceShowOrHide( hDlg, baseId+1, XP_FALSE );
+    } 
+}
 
 XP_Bool
 ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )

@@ -1,6 +1,7 @@
-/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
+/* -*- fill-column: 77; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2004-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2004-2008 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -108,11 +109,12 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                         (void)GetDlgItemText( hDlg, IDC_SVGN_EDIT, buf, 
                                               VSIZE(buf) );
                         if ( ceFileExists( buf ) ) {
-                            messageBoxChar( state->dlgHdr.globals, "File exists", 
-                                            L"Oops!", MB_OK );
+                            messageBoxChar( state->dlgHdr.globals, 
+                                            "File exists", L"Oops!", MB_OK );
                             break;
                         }
-                        swprintf( state->buf, DEFAULT_DIR_NAME L"\\%s.xwg", buf );
+                        swprintf( state->buf, DEFAULT_DIR_NAME L"\\%s.xwg",
+                                  buf );
                         XP_LOGW( __func__, state->buf );
                         /* fallthru */
                         state->cancelled = XP_FALSE;
@@ -160,6 +162,7 @@ typedef struct CeSavedGamesState {
     wchar_t curName[128];
     XP_U16 nItems;
 
+    XP_U16 gameListId;
     XP_Bool opened;
     XP_Bool inited;
     XP_Bool relaunch;
@@ -167,11 +170,18 @@ typedef struct CeSavedGamesState {
 
 /* Probably belongs as a utility */
 static void
-getCBText( HWND hDlg, XP_U16 id, XP_U16 sel, wchar_t* buf, XP_U16* lenp )
+getCBText( CeSavedGamesState* state, XP_U16 id, XP_U16 sel, wchar_t* buf, 
+           XP_U16* lenp )
 {
-    XP_U16 len = SendDlgItemMessage( hDlg, id, GETLBTEXTLEN, sel, 0L );
+    HWND hDlg = state->dlgHdr.hDlg;
+    CEAppGlobals* globals = state->dlgHdr.globals;
+    XP_U16 len;
+
+    len = SendDlgItemMessage( hDlg, id, GETLBTEXTLEN(globals), sel, 0L );
+
     if ( len < *lenp ) {
-        (void)SendDlgItemMessage( hDlg, id, GETLBTEXT, sel, (LPARAM)buf );
+        (void)SendDlgItemMessage( hDlg, id, GETLBTEXT(globals), sel,
+                                  (LPARAM)buf );
     } else {
         XP_ASSERT( 0 );
     }
@@ -185,8 +195,7 @@ getFullSelPath( CeSavedGamesState* state, wchar_t* buf, XP_U16 buflen )
     lstrcpy( buf, DEFAULT_DIR_NAME L"\\" );
     len = lstrlen( buf );
     buflen -= len;
-    getCBText( state->dlgHdr.hDlg, IDC_SVGM_GAMELIST, state->sel, &buf[len], 
-               &buflen );
+    getCBText( state, state->gameListId, state->sel, &buf[len], &buflen );
     lstrcat( buf, L".xwg" );
 }
 
@@ -208,6 +217,7 @@ initSavedGamesData( CeSavedGamesState* state )
 {
     HANDLE fileH;
     HWND hDlg = state->dlgHdr.hDlg;
+    CEAppGlobals* globals = state->dlgHdr.globals;
     WIN32_FIND_DATA data;
     wchar_t path[256];
     XP_S16 curSel = -1;
@@ -231,14 +241,16 @@ initSavedGamesData( CeSavedGamesState* state )
            numbers of saved games. */
         for ( item = 0; item < nItems; ++item ) {
             wchar_t buf[256];
-            (void)SendDlgItemMessage( hDlg, IDC_SVGM_GAMELIST, GETLBTEXT, item,
+            (void)SendDlgItemMessage( hDlg, state->gameListId, 
+                                      GETLBTEXT(globals), item,
                                       (LPARAM)buf );
             /* Does the current item belong above the one we're inserting? */
             if ( 0 <= wcscmp( buf, data.cFileName ) ) {
                 break;
             }
         }
-        (void)SendDlgItemMessage( hDlg, IDC_SVGM_GAMELIST, INSERTSTRING,
+        (void)SendDlgItemMessage( hDlg, state->gameListId, 
+                                  INSERTSTRING(globals),
                                   item, (LPARAM)data.cFileName );
 
         /* Remember which entry matches the currently opened game, and adjust
@@ -262,7 +274,8 @@ initSavedGamesData( CeSavedGamesState* state )
     state->nItems = nItems;
     state->openGameIndex = curSel;
 
-    SendDlgItemMessage( hDlg, IDC_SVGM_GAMELIST, SETCURSEL, curSel, 0 );
+    SendDlgItemMessage( hDlg, state->gameListId, 
+                        SETCURSEL(globals), curSel, 0 );
     state->sel = curSel;
 
     setButtons( state );
@@ -313,7 +326,8 @@ deleteSelected( CeSavedGamesState* state )
                                       "selected game?  This action cannot be "
                                       "undone.");
     if ( confirmed ) {
-        getCBText( state->dlgHdr.hDlg, IDC_SVGM_GAMELIST, state->sel, buf, &len );
+        getCBText( state, state->gameListId,
+                   state->sel, buf, &len );
         swprintf( path, DEFAULT_DIR_NAME L"\\%s.xwg", buf );
         confirmed = DeleteFile( path );
         if ( confirmed ) {
@@ -322,6 +336,19 @@ deleteSelected( CeSavedGamesState* state )
     }
     return confirmed;
 } /* deleteSelected */
+
+static XP_Bool
+tryGameChanged( CeSavedGamesState* state )
+{
+    XP_S16 sel = SendDlgItemMessage( state->dlgHdr.hDlg, state->gameListId,
+                                     GETCURSEL(state->dlgHdr.globals), 0, 0L);
+    XP_Bool changing = sel >= 0 && state->sel != sel;
+    if ( changing ) {
+        state->sel = sel;
+        setButtons( state );
+    }
+    return changing;
+} /* tryGameChanged */
 
 static LRESULT CALLBACK
 SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
@@ -334,8 +361,10 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         state = (CeSavedGamesState*)lParam;
         state->inited = XP_FALSE;
+        state->gameListId = LB_IF_PPC(state->dlgHdr.globals,IDC_SVGM_GAMELIST);
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE|DLG_STATE_DONEONLY );
+        ceDlgComboShowHide( &state->dlgHdr, IDC_SVGM_GAMELIST );
 
         result = TRUE;
     } else {
@@ -349,17 +378,15 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
             if ( ceDoDlgHandle( &state->dlgHdr, message, wParam, lParam) ) {
                 result = TRUE;
+            } else if ( WM_NOTIFY == message ) {
+                result = tryGameChanged( state );
             } else if ( message == WM_COMMAND ) {
                 XP_U16 wid = LOWORD(wParam);
-                if ( (IDC_SVGM_GAMELIST == wid)
-                     && (CBN_SELCHANGE == HIWORD(wParam)) ) {
-                    XP_S16 sel = SendDlgItemMessage( hDlg, IDC_SVGM_GAMELIST, 
-                                                     GETCURSEL, 0, 0L);
-                    if ( sel >= 0 ) {
-                        state->sel = sel;
-                        setButtons( state );
+
+                if ( CBN_SELCHANGE == HIWORD(wParam) ) {
+                    if (state->gameListId == wid ) {
+                        result = tryGameChanged( state );
                     }
-                    result = TRUE;
                 } else if ( BN_CLICKED == HIWORD(wParam) ) {
                     switch( wid ) {
                     case IDC_SVGM_DUP:
@@ -375,9 +402,10 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     case IDC_SVGM_OPEN: {
                         wchar_t buf[128];
                         XP_U16 len = VSIZE(buf);
-                        getCBText( hDlg, IDC_SVGM_GAMELIST, state->sel, 
+                        getCBText( state, state->gameListId, state->sel, 
                                    buf, &len );
-                        swprintf( state->buf, DEFAULT_DIR_NAME L"\\%s.xwg", buf );
+                        swprintf( state->buf, DEFAULT_DIR_NAME L"\\%s.xwg", 
+                                  buf );
                         XP_LOGW( "returning", state->buf );
                         state->opened = XP_TRUE;
                     }

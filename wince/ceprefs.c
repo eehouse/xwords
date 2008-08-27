@@ -29,8 +29,10 @@
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
  */
 static void
-stuffPhoniesList( HWND hDlg )
+stuffPhoniesList( CePrefsDlgState* state )
 {
+    HWND hDlg = state->dlgHdr.hDlg;
+    CEAppGlobals* globals = state->dlgHdr.globals;
     XP_U16 i;
     wchar_t* strings[] = {
         L"Ignore",
@@ -39,8 +41,8 @@ stuffPhoniesList( HWND hDlg )
     };
 
     for ( i = 0; i < 3; ++i ) {
-        SendDlgItemMessage( hDlg, PHONIES_COMBO, ADDSTRING, 
-                            0, (long)strings[i] );
+        SendDlgItemMessage( hDlg, state->phonComboId, 
+                            ADDSTRING(globals), 0, (long)strings[i] );
     }
 } /* stuffPhoniesList */
 
@@ -64,14 +66,16 @@ setTimerCtls( HWND hDlg, XP_Bool checked )
 } /* setTimerCtls */
 
 static void
-adjustForChoice( HWND hDlg, CePrefsDlgState* state )
+adjustForChoice( CePrefsDlgState* state )
 {
+    HWND hDlg = state->dlgHdr.hDlg;
     XP_U16 goesWithGlobal[] = {IDC_CHECKCOLORPLAYED, IDC_LEFTYCHECK,
                                IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES,
                                IDC_PREFCOLORS };
     XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT, IDC_CHECKNOHINTS,
                               TIMER_CHECK, TIMER_EDIT, PHONIES_LABEL,
-                              PHONIES_COMBO, IDC_PHONIESUPDOWN, IDC_PICKTILES
+                              PHONIES_COMBO, IDC_PHONIESUPDOWN, PHONIES_COMBO_PPC,
+                              IDC_PHONIESUPDOWN, IDC_PICKTILES
 #ifdef XWFEATURE_SEARCHLIMIT
                               ,IDC_CHECKHINTSLIMITS
 #endif
@@ -98,6 +102,7 @@ adjustForChoice( HWND hDlg, CePrefsDlgState* state )
         ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, 
                       !ceGetChecked( hDlg, IDC_CHECKNOHINTS) );
 #endif
+        ceDlgComboShowHide( &state->dlgHdr, PHONIES_COMBO );
     }
 } /* adjustForChoice */
 
@@ -170,8 +175,10 @@ loadCurPrefsFromState( CEAppGlobals* XP_UNUSED_STANDALONE(globals),
 /* Reflect local state into the controls user will see.
  */
 static void
-loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
+loadControlsFromState( CePrefsDlgState* pState )
 {
+    HWND hDlg = pState->dlgHdr.hDlg;
+    CEAppGlobals* globals = pState->dlgHdr.globals;
     CePrefsPrefs* prefsPrefs = &pState->prefsPrefs;
 
     ceSetChecked( hDlg, IDC_CHECKCOLORPLAYED, prefsPrefs->showColors );
@@ -191,7 +198,7 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
     /* timer */
     ceSetDlgItemNum( hDlg, TIMER_EDIT, prefsPrefs->gp.gameSeconds / 60 );
 
-    SendDlgItemMessage( hDlg, PHONIES_COMBO, SETCURSEL, 
+    SendDlgItemMessage( hDlg, pState->phonComboId, SETCURSEL(globals), 
                         prefsPrefs->gp.phoniesAction, 0L );
 
     if ( !pState->isNewGame ) {
@@ -211,16 +218,19 @@ loadControlsFromState( HWND hDlg, CePrefsDlgState* pState )
  * the values.
  */
 static void
-ceControlsToPrefs( HWND hDlg, CePrefsPrefs* prefsPrefs )
+ceControlsToPrefs( CePrefsDlgState* state )
 {
     XP_S16 selIndex;
+    CePrefsPrefs* prefsPrefs = &state->prefsPrefs;
+    HWND hDlg = state->dlgHdr.hDlg;
 
     prefsPrefs->showColors = ceGetChecked( hDlg, IDC_CHECKCOLORPLAYED );
     prefsPrefs->gp.robotSmartness
         = ceGetChecked( hDlg, IDC_CHECKSMARTROBOT ) ? 1 : 0;
     prefsPrefs->gp.hintsNotAllowed = ceGetChecked( hDlg, IDC_CHECKNOHINTS );
 
-    selIndex = (XP_U16)SendDlgItemMessage( hDlg, PHONIES_COMBO, GETCURSEL, 
+    selIndex = (XP_U16)SendDlgItemMessage( hDlg, state->phonComboId,
+                                           GETCURSEL(state->dlgHdr.globals), 
                                            0, 0 );
     if ( selIndex != LB_ERR ) {
         prefsPrefs->gp.phoniesAction = (XWPhoniesChoice)selIndex;
@@ -254,13 +264,17 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     if ( message == WM_INITDIALOG ) {
         SetWindowLong( hDlg, GWL_USERDATA, lParam );
         pState = (CePrefsDlgState*)lParam;
-
-        stuffPhoniesList( hDlg );
-
-        loadControlsFromState( hDlg, pState );
-        adjustForChoice( hDlg, pState );
+        
+        pState->phonComboId = LB_IF_PPC(pState->dlgHdr.globals,PHONIES_COMBO);
 
         ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
+        ceDlgComboShowHide( &pState->dlgHdr, PHONIES_COMBO ); 
+
+        stuffPhoniesList( pState );
+
+        loadControlsFromState( pState );
+
+        adjustForChoice( pState );
         return TRUE;
 
     } else {
@@ -278,7 +292,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     case IDC_RADIOGLOBAL:
                     case IDC_RADIOLOCAL:
                         globals->doGlobalPrefs = id == IDC_RADIOGLOBAL;
-                        adjustForChoice( hDlg, pState );
+                        adjustForChoice( pState );
                         break;
 
                     case TIMER_CHECK:
@@ -300,7 +314,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
                     case IDOK:
-                        ceControlsToPrefs( hDlg, &pState->prefsPrefs );
+                        ceControlsToPrefs( pState );
                     case IDCANCEL:
                         EndDialog(hDlg, id);
                         pState->userCancelled = id == IDCANCEL;

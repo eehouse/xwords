@@ -35,6 +35,8 @@ typedef struct GameInfoState {
     XP_U16 capMenuDicts;
     XP_U16 nMenuDicts;
     wchar_t** menuDicts;
+    XP_U16 comboId;
+    XP_U16 dictListId;
 
     XP_Bool isNewGame;              /* newGame or GameInfo */
     XP_Bool userCancelled;          /* OUT param */

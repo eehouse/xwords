@@ -50,17 +50,12 @@
 
 #define IDC_COMBO1                      1021
 #define PLAYERNUM_COMBO                 1022
-#define IDC_NPLAYERSCOMBO               1023
 #define TIMER_CHECK                     1024
 #define NAME_EDIT5                      1025
 #define TIMER_EDIT                      1026
-#define IDC_DICTLIST                    1027
-#define IDC_DICTUPDOWN                  1028
 #define BLANKFACE_COMBO                 1029
-#define PHONIES_COMBO                   1030
 #define IDC_PWDLABEL                    1031
 #define PASS_EDIT                       1032
-#define BLANKFACE_LIST                  1033
 #define IDC_NPLAYERSLIST                1034
 #define OPTIONS_BUTTON                  1035
 #define IDC_RADIOGLOBAL                 1036
@@ -144,48 +139,38 @@
 # define CLSAMPLE_BUTTON_ID             1123
 #endif // MY_COLOR_SEL
 
-#define HC_MIN_COMBO                    1100
-#define HC_MAX_COMBO                    1101
+#define IDC_CCONVIA_LAB                 1106
 
-#define IDC_CCONVIA_LAB                 1102
-
-#define IDC_COOKIE_LAB                   1103
+#define IDC_COOKIE_LAB                   1107
 #ifdef XWFEATURE_RELAY
-# define IDC_CRELAYNAME_LAB              1104
-# define IDC_CRELAYPORT_LAB              1105
-# define IDC_CRELAYHINT_LAB              1106
+# define IDC_CRELAYNAME_LAB              1108
+# define IDC_CRELAYPORT_LAB              1109
+# define IDC_CRELAYHINT_LAB              1110
 
-# define IDC_CONNECTCOMBO                1107
-# define RELAYNAME_EDIT                  1108
-# define RELAYPORT_EDIT                  1109
-# define COOKIE_EDIT                     1110
+# define IDC_CONNECTCOMBO                1111
+# define RELAYNAME_EDIT                  1112
+# define RELAYPORT_EDIT                  1113
+# define COOKIE_EDIT                     1114
 
 #endif
 
-#define IDC_BLUET_ADDR_LAB               1111
+#define IDC_BLUET_ADDR_LAB               1115
 #ifdef XWFEATURE_BLUETOOTH
-# define IDC_BLUET_ADDR_EDIT             1112
-# define IDC_BLUET_ADDR_BROWSE           1113
+# define IDC_BLUET_ADDR_EDIT             1116
+# define IDC_BLUET_ADDR_BROWSE           1117
 #endif
-#define IDS_UPDOWN                       1114
-#define IDC_NPLAYERSUPDOWN               1115
-#define IDC_PHONIESUPDOWN                1116
-#define IDC_SVGM_UPDOWN                  1117
-#define IDC_ASKBLANK_UPDOWN              1124
-#define HC_MIN_UPDOWN                    1125
-#define HC_MAX_UPDOWN                    1126
+/* #define IDS_UPDOWN                       1118 */
 
 
-#define IDC_SVGM_SELLAB                  1118
-#define IDC_SVGM_GAMELIST                1119
+#define IDC_SVGM_SELLAB                  1127
 /* Let's remove these until they're implemented */
-#define IDC_SVGM_EDITLAB                 1111
-#define IDC_SVGM_CHANGE                  1112
-#define IDC_SVGM_DUP                     1114
-#define IDC_SVGM_DEL                     1115
+#define IDC_SVGM_EDITLAB                 1131
+#define IDC_SVGM_CHANGE                  1130
+#define IDC_SVGM_DUP                     1129
+#define IDC_SVGM_DEL                     1128
 #define IDC_SVGM_OPEN                    1120
 
-#define IDC_SVGN_SELLAB                  1121
+#define IDC_SVGN_SELLAB                  1125
 #define IDC_SVGN_EDIT                    1122
 
 
@@ -238,6 +223,34 @@
 #define IDS_DUPENAME                    40031
 #define IDS_RENAME                      40032
 
+// These are in sets of three, and must be consecutive and in the right order within each set
+#define PHONIES_COMBO                   1200
+#define IDC_PHONIESUPDOWN               1201 
+#define PHONIES_COMBO_PPC               1202
+
+#define HC_MIN_COMBO                    1203
+#define HC_MIN_UPDOWN                   1204
+#define HC_MIN_COMBO_PPC                1205
+
+#define HC_MAX_COMBO                    1206
+#define HC_MAX_UPDOWN                   1207
+#define HC_MAX_COMBO_PPC                1208
+
+#define IDC_SVGM_GAMELIST               1209
+#define IDC_SVGM_UPDOWN                 1210
+#define IDC_SVGM_GAMELIST_PPC           1211
+
+#define BLANKFACE_LIST                  1212
+#define IDC_ASKBLANK_UPDOWN             1213
+#define BLANKFACE_LIST_PPC              1214
+
+#define IDC_DICTLIST                    1215
+#define IDC_DICTUPDOWN                  1216
+#define IDC_DICTLIST_PPC                1217
+
+#define IDC_NPLAYERSCOMBO               1218
+#define IDC_NPLAYERSUPDOWN              1219
+#define IDC_NPLAYERSCOMBO_PPC           1220
 
 // Next default values for new objects
 // 
@@ -245,7 +258,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40033
-#define _APS_NEXT_CONTROL_VALUE         1127
+#define _APS_NEXT_CONTROL_VALUE         1128
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -73,6 +73,10 @@ messageToStr( UINT message )
         CASE_STR( WM_NCDESTROY );
         CASE_STR( WM_NOTIFY );
         CASE_STR( WM_NCHITTEST );
+        CASE_STR( WM_HSCROLL );
+        CASE_STR( WM_STYLECHANGED );
+        CASE_STR( WM_NOTIFYFORMAT );
+        CASE_STR( WM_KILLFOCUS );
     default:
         str = "<unknown>";
     }

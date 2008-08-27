@@ -59,6 +59,8 @@ typedef struct CePrefsDlgState {
     CeDlgHdr dlgHdr;
     CePrefsPrefs prefsPrefs;
 
+    XP_U16 phonComboId;
+
     XP_Bool userCancelled;
     //XP_Bool doGlobalPrefs;      /* state of the radio */
     XP_Bool isNewGame;

@@ -505,7 +505,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
        width for a scrollbar. */
     boardHt = scrnHeight - scoreHeight - MIN_TRAY_HEIGHT;
     vScale = sizeBoard( &boardHt, &nVisibleRows );
-    if ( nVisibleRows < nRows && !IS_SMARTPHONE(globals) ) {
+    if ( (nVisibleRows < nRows) && !IS_SMARTPHONE(globals) ) {
         scrollWidth = SCROLLBAR_WIDTH;
     }
 

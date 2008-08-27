@@ -23,10 +23,12 @@
 #include "debhacks.h"
 
 static void
-loadLettersList( HWND hDlg, BlankDialogState* bState )
+loadLettersList( BlankDialogState* bState )
 {
     XP_U16 i;
     XP_U16 nTiles = bState->nTiles;
+    HWND hDlg = bState->dlgHdr.hDlg;
+    CEAppGlobals* globals = bState->dlgHdr.globals;
     const XP_UCHAR4* texts = bState->texts;
     
     for ( i = 0; i < nTiles; ++i ) {	
@@ -38,10 +40,15 @@ loadLettersList( HWND hDlg, BlankDialogState* bState )
                                    widebuf, VSIZE(widebuf) );
         widebuf[len] = 0;
 
-        SendDlgItemMessage( hDlg, BLANKFACE_LIST, ADDSTRING, 
-                            0, (long)widebuf );
+        SendDlgItemMessage( hDlg, LB_IF_PPC(globals,BLANKFACE_LIST), 
+                            ADDSTRING(globals), 0, (long)widebuf );
     }
-    ce_selectAndShow( hDlg, BLANKFACE_LIST, 0 );
+
+    SendDlgItemMessage( hDlg, LB_IF_PPC(globals,BLANKFACE_LIST), 
+                        SETCURSEL(globals), 0, 0 );
+#ifdef _WIN32_WCE
+    SendDlgItemMessage( hDlg, BLANKFACE_LIST_PPC, LB_SETANCHORINDEX, 0, 0 );
+#endif
 } /* loadLettersList */
 
 #ifdef FEATURE_TRAY_EDIT
@@ -104,8 +111,9 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
         ceDlgSetup( &bState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
+        ceDlgComboShowHide( &bState->dlgHdr, BLANKFACE_LIST ); 
 
-        loadLettersList( hDlg, bState );
+        loadLettersList( bState );
     } else {
         bState = (BlankDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
         if ( !!bState ) {
@@ -125,9 +133,11 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     bState->result = PICKER_BACKUP;
 #endif
                 } else if ( id == IDOK ) {
-                    bState->result = 
-                        (XP_S16)SendDlgItemMessage( hDlg, BLANKFACE_LIST, 
-                                                    GETCURSEL, 0, 0 );
+                    CEAppGlobals* globals = bState->dlgHdr.globals;
+                    bState->result = (XP_S16)
+                        SendDlgItemMessage( hDlg, 
+                                            LB_IF_PPC(globals,BLANKFACE_LIST), 
+                                            GETCURSEL(globals), 0, 0 );
                 } else {
                     break;
                 }
