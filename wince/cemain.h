@@ -174,6 +174,13 @@ typedef struct _PenColorPair {
     HGDIOBJ pen;
 } PenColorPair;
 
+typedef struct _FontCacheEntry {
+    HFONT setFont;
+    XP_U16 setFontHt;
+    XP_U16 offset;
+    XP_U16 actualHt;
+} FontCacheEntry;
+
 typedef struct CEDrawCtx {
     DrawCtxVTable* vtable;
     
@@ -187,8 +194,8 @@ typedef struct CEDrawCtx {
 
     HFONT selPlayerFont;
     HFONT playerFont;
-    HFONT setFont[N_RESIZE_FONTS];
-    XP_U16 setFontHt[N_RESIZE_FONTS];
+
+    FontCacheEntry fcEntry[N_RESIZE_FONTS];
 
     HBITMAP rightArrow;
     HBITMAP downArrow;

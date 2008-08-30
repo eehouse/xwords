@@ -56,7 +56,7 @@
 
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
-
+static void ceClipToRect( HDC hdc, const RECT* rt );
 
 static void
 XPRtoRECT( RECT* rt, const XP_Rect* xprect )
@@ -143,6 +143,27 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, XP_Bool center,
 #endif
 } /* makeAndDrawBitmap */
 
+static void
+ceDrawTextClipped( HDC hdc, wchar_t* buf, XP_S16 len, XP_Bool clip,
+                   XP_U16 left, XP_U16 top, XP_U16 width, XP_U16 height,
+                   XP_U16 offset, XP_U16 hJust )
+{
+    RECT rect; 
+
+    rect.left = left;
+    rect.top = top;
+    rect.bottom = top + height;
+    rect.right = left + width;
+
+    if ( clip ) {
+      ceClipToRect( hdc, &rect );
+    }
+    rect.top -= offset;
+/*     XP_LOGF( "%s: drawing left: %ld, top: %ld, right: %ld, bottom: %ld", */
+/*              __func__, rect.left, rect.top, rect.right, rect.bottom ); */
+    DrawText( hdc, buf, len, &rect, DT_SINGLELINE | DT_TOP | hJust );
+} /* ceDrawTextClipped */
+
 /* CE doesn't have FrameRect, so we'll roll our own */
 static int
 ceDrawFocusRect( HDC hdc, CEDrawCtx* dctx, LPCRECT rect )
@@ -193,25 +214,172 @@ ERROR
 #endif
 } /* ceClipToRect */
 
-static HFONT
-ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index )
+static void
+ceMeasureTextHt( HFONT font, const char* str, XP_U16* ht, XP_U16* offset )
 {
-    if ( dctx->setFontHt[index] != height ) {
+    XP_U16 len = strlen(str);
+    wchar_t widebuf[len+1];
+    HDC memDC; 
+    HBITMAP memBM;
+    int xx, yy;
+    SIZE size;
+    int firstLine = 0, lastLine = -1;
+
+    memDC = CreateCompatibleDC( NULL );
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
+                         widebuf, VSIZE(widebuf) );
+
+    SelectObject( memDC, font );
+    GetTextExtentPoint32( memDC, widebuf, len, &size );
+
+    memBM = CreateCompatibleBitmap( memDC, size.cx, size.cy );
+    SelectObject( memDC, memBM );
+
+    RECT r = { 0, 0, size.cx, size.cy };
+    DrawText( memDC, widebuf, len, &r, DT_TOP | DT_LEFT );
+
+
+/* int GetDIBits( */
+/*   HDC hdc,           // handle to DC */
+/*   HBITMAP hbmp,      // handle to bitmap */
+/*   UINT uStartScan,   // first scan line to set */
+/*   UINT cScanLines,   // number of scan lines to copy */
+/*   LPVOID lpvBits,    // array for bitmap bits */
+/*   LPBITMAPINFO lpbi, // bitmap data buffer */
+/*   UINT uUsage        // RGB or palette index */
+/* ); */
+
+/*     for ( yy = 0; yy < size.cy; ++yy ) { */
+/*         char tbuf[121] = { '\0' }; */
+/*         for ( xx = 0; xx < size.cx; ++xx ) { */
+/*             COLORREF ref = GetPixel( memDC, xx, yy ); */
+/*             if ( ref != CLR_INVALID ) { */
+/*                 strcat( tbuf, ref==0? " " : "x" ); */
+/*             } */
+/*         } */
+/*         XP_LOGF( "line[%.2d] = %s", yy, tbuf ); */
+/*     } */
+
+    /* Try replacing GetPixel with something that loads in scan lines.
+       Should be faster... */
+
+    /* Get offset first: iterate down from top */
+    for ( yy = 0; yy < size.cy && firstLine == 0; ++yy ) {
+        for ( xx = 0; xx < size.cx; ++xx ) {
+            COLORREF ref = GetPixel( memDC, xx, yy );
+            if ( ref == CLR_INVALID ) {
+                break;
+            } else if ( ref == 0 ) { /* a pixel set! */
+                firstLine = yy;
+                break;
+            }
+        }
+    }
+
+    /* Get height: iterate up from bottom */
+    for ( yy = size.cy - 1; yy >= 0 && lastLine < 0; --yy ) {
+        for ( xx = 0; xx < size.cx; ++xx ) {
+            COLORREF ref = GetPixel( memDC, xx, yy );
+            if ( ref == CLR_INVALID ) {
+                break;
+            } else if ( ref == 0 ) { /* a pixel set! */
+                lastLine = yy;
+                break;
+            }
+        }
+    }
+
+    DeleteObject( memBM );
+    DeleteDC( memDC );
+
+    *offset = firstLine;
+    *ht = lastLine - firstLine + 1;
+/*     XP_LOGF( "%s(%s)=>ht: %d; offset: %d", __func__, str, *ht, *offset ); */
+} /* ceMeasureTextHt */
+
+static void
+makeTestBuf( CEDrawCtx* XP_UNUSED(dctx), XP_UCHAR* buf, 
+             XP_UCHAR XP_UNUSED(bufLen), RFIndex index )
+{
+    switch( index ) {
+    case RFONTS_TRAY:
+    case RFONTS_CELL:
+        /* build this from dictioanary */
+        strcpy( buf, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" );
+        break;
+    case RFONTS_TRAYVAL:
+        strcpy( buf, "0" );     /* all numbers the same :-) */
+        break;
+    case RFONTS_PTS:
+        strcpy( buf, "Pts:0?" );
+        break;
+    case N_RESIZE_FONTS:
+        XP_ASSERT(0);
+    }
+}
+
+static HFONT
+ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index,
+                XP_U16* offsetP, XP_U16* actualHtP )
+{
+    FontCacheEntry* fce = &dctx->fcEntry[index];
+    if ( (0 != height)            /* 0 means use what we have */
+         && fce->setFontHt != height ) {
         HFONT font;
         LOGFONT fontInfo;
+        char buf[65];
+        XP_U16 offset;
+        XP_U16 actualHt;
+        XP_U16 trialHt;
 
-        XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
-        fontInfo.lfHeight = height;
-        font = CreateFontIndirect( &fontInfo );
+        XP_LOGF( "%s: calculating for index: %d; height: %d",
+                 __func__, index, height );
 
-        if ( !!dctx->setFont[index] ) {
-            DeleteObject( dctx->setFont[index] );
+        makeTestBuf( dctx, buf, VSIZE(buf), index );
+
+        for ( trialHt = height; ; /*++trialHt*/ ) {
+            XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
+            fontInfo.lfHeight = trialHt;
+            HFONT testFont = CreateFontIndirect( &fontInfo );
+            XP_U16 testOffset, testHt;
+
+/*             XP_LOGF( "%s: looking for ht %d with testht %d", __func__, height, trialHt ); */
+            ceMeasureTextHt( testFont, buf, &testHt, &testOffset );
+            if ( testHt > height ) {
+                /* we've gone too far, so choose last that fit!!! */
+                XP_ASSERT( !!font );
+                DeleteObject( testFont );
+                break;
+            } else if ( trialHt == height /* first time through */
+                        && testOffset > 0 ) { /* for safety */
+                trialHt += testOffset;
+            } else {
+                ++trialHt;
+            }
+            DeleteObject( font );
+            font = testFont;
+            offset = testOffset;
+            actualHt = testHt;
         }
 
-        dctx->setFont[index] = font;
-        dctx->setFontHt[index] = height;
+        if ( !!fce->setFont ) {
+            DeleteObject( fce->setFont );
+        }
+
+        fce->setFont = font;
+        fce->setFontHt = height;
+        fce->offset = offset;
+        fce->actualHt = actualHt;
     }
-    return dctx->setFont[index];
+
+    if ( !!offsetP ) {
+        *offsetP = fce->offset;
+    }
+    if ( !!actualHtP ) {
+        *actualHtP = fce->actualHt;
+    }
+    XP_ASSERT( !!fce->setFont );
+    return fce->setFont;
 }
 
 #if 0
@@ -263,8 +431,6 @@ ceMeasureText( CEDrawCtx* dctx, const XP_UCHAR* str, XP_S16 padding,
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
                              widebuf, VSIZE(widebuf) );
         GetTextExtentPoint32( hdc, widebuf, len, &size );
-
-/*         logAllChars( hdc, widebuf, len ); */
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         height += size.cy;
@@ -402,17 +568,14 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     RECT rt;
     RECT textRect;
     XP_U16 bkIndex;
-    const XP_UCHAR* cp = NULL;
     XP_U16 foreColorIndx;
     XP_Bool isPending = (flags & CELL_HIGHLIGHT) != 0;
     XP_Bool isFocussed = TREAT_AS_CURSOR( dctx, flags );
     XP_Bool isDragSrc = (flags & CELL_DRAGSRC) != 0;
     HFONT oldFont;
+    XP_U16 offset, actualHt;
 
     XP_ASSERT( !!hdc );
-
-    oldFont = SelectObject( hdc, ceGetSizedFont( dctx, xprect->height,
-                                                 RFONTS_CELL) );
 
     XPRtoRECT( &rt, xprect );
     ++rt.bottom;
@@ -421,10 +584,13 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     textRect = rt;
-    InsetRect( &textRect, 1, 1 );
 
     InsetRect( &rt, 1, 1 );
     ceClipToRect( hdc, &rt );
+
+    oldFont = SelectObject( hdc, ceGetSizedFont( dctx, xprect->height - 3,
+                                                 RFONTS_CELL, &offset,
+                                                 &actualHt ) );
 
     /* always init to silence compiler warning */
     foreColorIndx = getPlayerColor(owner);
@@ -470,11 +636,8 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
-        cp = letters;
 
-        XP_MEMSET( widebuf, 0, sizeof(widebuf) );
-    
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, cp, -1,
+        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, VSIZE(widebuf) );
 	
         SetTextColor( hdc, dctx->globals->appPrefs.colors[foreColorIndx] );
@@ -482,13 +645,14 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, VSIZE(widebuf) );
 #endif
-        DrawText( hdc, widebuf, -1, &textRect, 
-                  DT_SINGLELINE | DT_VCENTER | DT_CENTER);
-
+        ceDrawTextClipped( hdc, widebuf, -1, XP_FALSE, xprect->left+1, 
+                           xprect->top+2, xprect->width, actualHt, offset, 
+                           DT_CENTER );
     } else if ( !isDragSrc && !!bitmap ) {
         makeAndDrawBitmap( dctx, hdc, &rt, XP_TRUE,
                            foreColorIndx, (CEBitmapInfo*)bitmap );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
+        InsetRect( &textRect, 1, 1 );
         ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
     }
 
@@ -549,7 +713,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     wchar_t widebuf[4];
     RECT rt;
     XP_U16 index;
-    XP_Bool highlighted;
+    XP_Bool highlighted = XP_FALSE;
     XP_Bool isFocussed = TREAT_AS_CURSOR(dctx,flags);
     XP_Bool isEmpty = (flags & CELL_ISEMPTY) != 0;
 
@@ -563,7 +727,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         SetBkColor( hdc, dctx->globals->appPrefs.colors[backIndex] );
 
         InsetRect( &rt, 1, 1 );
-        Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom);
+        Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom); /* draw frame */
         InsetRect( &rt, 1, 1 );
         ceClipToRect( hdc, &rt );
 
@@ -576,6 +740,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                call InsetRect either way to put chars in the right place. */
             highlighted = (flags & CELL_HIGHLIGHT) != 0;
             if ( highlighted ) {
+                /* draw thicker hilight frame */
                 Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
                 InsetRect( &rt, 1, 1 );
             }
@@ -584,20 +749,27 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         FillRect( hdc, &rt, dctx->brushes[backIndex] );
 
         if ( !isEmpty ) {
-            XP_U16 thirdHt = xprect->height / 3;
+            /* Dumb to calc these when only needed once.... */
+            XP_U16 visHt = xprect->height - 5;
+            XP_U16 valHt = visHt / 3;
+            XP_U16 charHt = visHt - valHt;
+
             if ( !highlighted ) {
                 InsetRect( &rt, 1, 1 );
             }
 
             if ( !!letters ) {
-                HFONT font = ceGetSizedFont( dctx, thirdHt*2, 
-                                             RFONTS_TRAY );
+                XP_U16 offset, actualHt;
+                HFONT font = ceGetSizedFont( dctx, charHt,
+                                             RFONTS_TRAY, &offset, &actualHt );
                 HFONT oldFont = SelectObject( hdc, font );
                 MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                                      widebuf, 
                                      VSIZE(widebuf) );
-                DrawText( hdc, widebuf, -1, &rt, 
-                          DT_SINGLELINE | DT_TOP | DT_LEFT );
+
+                ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, xprect->left + 4,
+                                   xprect->top + 4, xprect->width, actualHt,
+                                   offset,  DT_LEFT );
                 SelectObject( hdc, oldFont );
             } else if ( !!bitmap  ) {
                 RECT lrt = rt;
@@ -610,12 +782,17 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             }
 
             if ( val >= 0 ) {
-                HFONT font = ceGetSizedFont( dctx, thirdHt, 
-                                             RFONTS_TRAYVAL );
+                XP_U16 offset, actualHt;
+                HFONT font = ceGetSizedFont( dctx, valHt, RFONTS_TRAYVAL, 
+                                             &offset, &actualHt );
                 HFONT oldFont = SelectObject( hdc, font );
                 swprintf( widebuf, L"%d", val );
-                DrawText(hdc, widebuf, -1, &rt, 
-                         DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);	
+
+                ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, 
+                                   xprect->left + 4,
+                                   xprect->top + xprect->height - 4 - actualHt,
+                                   xprect->width - 8, actualHt,
+                                   offset,  DT_RIGHT );
                 SelectObject( hdc, oldFont );
             }
         }
@@ -790,7 +967,7 @@ formatRemText( XP_S16 nTilesLeft, XP_Bool isVertical, XP_UCHAR* buf )
 } /* formatRemText */
 
 DLSTATIC void
-DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(r), 
+DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                                 XP_S16 nTilesLeft, 
                                 XP_U16* width, XP_U16* height )
 {
@@ -800,6 +977,9 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(r),
         XP_UCHAR buf[16];
         formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
         ceMeasureText( dctx, buf, CE_REM_PADDING, width, height );
+        if ( *width > xprect->width ) {
+            *width = xprect->width;
+        }
     } else {
         *width = *height = 0;
     }
@@ -821,8 +1001,9 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     XPRtoRECT( &rt, rInner );
     ceClipToRect( hdc, &rt );
     ++rt.left;                  /* 1: don't write up against edge */
+    rt.top -= 2;
     drawTextLines( dctx, hdc, buf, CE_REM_PADDING, &rt, 
-                   DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_CENTER );
+                   DT_SINGLELINE | DT_LEFT | DT_VCENTER/* | DT_CENTER*/ );
 } /* ce_draw_drawRemText */
 
 static void
@@ -948,35 +1129,39 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
 } /* ce_draw_score_drawPlayer */
 
 DLSTATIC void
-DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect, 
-                                    XP_S16 score, XP_U16 XP_UNUSED(playerNum),
+DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* xprect, 
+                                    XP_S16 score, XP_U16 playerNum,
                                     CellFlags flags )
 {
+#   define PTS_OFFSET 2
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
+    XP_U16 offset, actualHt;
 
     wchar_t widebuf[5];
     XP_UCHAR buf[5];
-    RECT rt, clip;
+    RECT rt;
     XP_Bool focussed = TREAT_AS_CURSOR(dctx,flags);
     XP_U16 bkIndex = focussed ?  CE_FOCUS_COLOR : CE_BKG_COLOR;
 
-    HFONT font = ceGetSizedFont( dctx, rect->height/2, RFONTS_PTS );    
+    HFONT font = ceGetSizedFont( dctx, 
+                                 (xprect->height-(2*PTS_OFFSET))/2, 
+                                 RFONTS_PTS, &offset, &actualHt );
     HFONT oldFont = SelectObject( hdc, font );
 
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
+    SetTextColor( hdc, 
+                  dctx->globals->appPrefs.colors[getPlayerColor(playerNum)] );
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
 
-    XPRtoRECT( &rt, rect );
+    XPRtoRECT( &rt, xprect );
+    ceClipToRect( hdc, &rt );
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
-    /* Use a separate rect for clipping since shrinking puts text to close
-       together on smartphone's small screen. */
-    clip = rt;
-    InsetRect( &clip, 2, 2 );
-    ceClipToRect( hdc, &clip );
 
-    DrawText(hdc, L"Pts", -1, &rt, DT_SINGLELINE | DT_TOP | DT_CENTER);
+    ceDrawTextClipped( hdc, L"Pts", -1, XP_FALSE,
+                       xprect->left + PTS_OFFSET, xprect->top + PTS_OFFSET,
+                       xprect->width - (PTS_OFFSET*2), actualHt, offset, 
+                       DT_CENTER );
 
     if ( score < 0 ) {
         buf[0] = '?';
@@ -988,8 +1173,12 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* rect,
 
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, -1,
                          widebuf, VSIZE(widebuf) );
-    DrawText(hdc, widebuf, -1, &rt, DT_SINGLELINE | DT_BOTTOM | DT_CENTER);	
+    ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, xprect->left + PTS_OFFSET, 
+                       xprect->top + xprect->height - PTS_OFFSET - actualHt,
+                       xprect->width - (PTS_OFFSET*2), actualHt, offset,
+                       DT_CENTER );
     SelectObject( hdc, oldFont );
+#   undef PTS_OFFSET
 } /* ce_draw_score_pendingScore */
 
 DLSTATIC void
@@ -1136,8 +1325,8 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     DeleteObject( dctx->playerFont );
     DeleteObject( dctx->selPlayerFont );
     for ( i = 0; i < N_RESIZE_FONTS; ++i ) {
-        if ( !!dctx->setFont[i] ) {
-            DeleteObject( dctx->setFont[i] );
+        if ( !!dctx->fcEntry[i].setFont ) {
+            DeleteObject( dctx->fcEntry[i].setFont );
         }
     }
 
@@ -1214,11 +1403,11 @@ ceFontsSetup( CEDrawCtx* dctx )
     wcscpy( font.lfFaceName, L"Arial" );
 
     font.lfWeight = FW_LIGHT;
-    font.lfHeight = CE_SCORE_HEIGHT - 2;
+    font.lfHeight = CE_SCORE_HEIGHT;
     dctx->playerFont = CreateFontIndirect( &font );
 
     font.lfWeight = FW_BOLD;
-    font.lfHeight = CE_SCORE_HEIGHT;
+    font.lfHeight = CE_SCORE_HEIGHT+2;
     dctx->selPlayerFont = CreateFontIndirect( &font );
 } /* ceFontsSetup */
 
