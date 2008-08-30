@@ -43,7 +43,7 @@ getRemText( XP_UCHAR* buf, XP_U16 bufSize, XP_S16 nTilesLeft )
 } /* getRemText */
 
 static void
-default_draw_measureRemText( DrawCtx* dctx, XP_Rect* r, 
+default_draw_measureRemText( DrawCtx* dctx, const XP_Rect* XP_UNUSED(r),
                              XP_S16 nTilesLeft, 
                              XP_U16* widthP, XP_U16* heightP )
 {
@@ -62,8 +62,8 @@ default_draw_measureRemText( DrawCtx* dctx, XP_Rect* r,
 } /* default_draw_measureRemText */
 
 static void 
-default_draw_drawRemText( DrawCtx* dctx, XP_Rect* rInner, 
-                          XP_Rect* rOuter, XP_S16 nTilesLeft )
+default_draw_drawRemText( DrawCtx* dctx, const XP_Rect* XP_UNUSED(rInner), 
+                          const XP_Rect* rOuter, XP_S16 nTilesLeft )
 {
     XP_Rect oldClip;
     XP_UCHAR buf[10];
@@ -76,7 +76,7 @@ default_draw_drawRemText( DrawCtx* dctx, XP_Rect* rInner,
 } /* default_draw_drawRemText */
 
 static void
-formatScore( XP_UCHAR* buf, XP_U16 bufSize, DrawScoreInfo* dsi )
+formatScore( XP_UCHAR* buf, XP_U16 bufSize, const DrawScoreInfo* dsi )
 {
     XP_UCHAR remBuf[10];
     XP_UCHAR* selStr;
@@ -93,13 +93,13 @@ formatScore( XP_UCHAR* buf, XP_U16 bufSize, DrawScoreInfo* dsi )
         remBuf[0] = '\0';
     }
     
-    XP_SNPRINTF( buf, bufSize, "%s%d%s%s", selStr, dsi->score, 
+    XP_SNPRINTF( buf, bufSize, "%s%d%s%s", selStr, dsi->totalScore, 
                  remBuf, selStr );
 } /* formatScore */
 
 static void
-default_draw_measureScoreText( DrawCtx* dctx, XP_Rect* r, 
-                               DrawScoreInfo* dsi,
+default_draw_measureScoreText( DrawCtx* dctx, const XP_Rect* XP_UNUSED(r), 
+                               const DrawScoreInfo* dsi,
                                XP_U16* widthP, XP_U16* heightP )
 {
     XP_UCHAR buf[20];
@@ -109,9 +109,8 @@ default_draw_measureScoreText( DrawCtx* dctx, XP_Rect* r,
 
 static void
 default_draw_score_drawPlayer( DrawCtx* dctx, 
-                               XP_S16 playerNum, /* -1: don't use */
-                               XP_Rect* rInner, XP_Rect* rOuter, 
-                               DrawScoreInfo* dsi )
+                               const XP_Rect* rInner, const XP_Rect* rOuter, 
+                               const DrawScoreInfo* dsi )
 {
     XP_Rect oldClip;
     XP_UCHAR buf[20];
@@ -126,12 +125,12 @@ default_draw_score_drawPlayer( DrawCtx* dctx,
 } /* default_draw_score_drawPlayer */
 
 static XP_Bool
-default_draw_drawCell( DrawCtx* dctx, XP_Rect* rect, 
-                       /* at least one of these two will be null */
-                       XP_UCHAR* text, XP_Bitmap bitmap,
-                       XP_S16 owner, /* -1 means don't use */
-                       XWBonusType bonus, XP_Bool isBlank, 
-                       XP_Bool highlight, XP_Bool isStar)
+default_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, 
+                       const XP_UCHAR* text, 
+                       const XP_Bitmap bitmap,
+                       Tile XP_UNUSED(tile), XP_S16 XP_UNUSED(owner),
+                       XWBonusType bonus, HintAtts XP_UNUSED(hintAtts),
+                       CellFlags flags )
 {
     XP_Rect oldClip;
     XP_Rect inset = *rect;
@@ -167,7 +166,7 @@ default_draw_drawCell( DrawCtx* dctx, XP_Rect* rect,
         draw_drawString( dctx, bstr, inset.left, inset.top );
     }
     
-    if ( highlight ) {
+    if ( 0 != (flags & CELL_HIGHLIGHT) ) {
         draw_invertRect( dctx, &inset );
     }        
     
@@ -178,8 +177,10 @@ default_draw_drawCell( DrawCtx* dctx, XP_Rect* rect,
 } /* default_draw_drawCell */
 
 static void
-default_draw_drawBoardArrow( DrawCtx* dctx, XP_Rect* rect, 
-                             XWBonusType bonus, XP_Bool vert )
+default_draw_drawBoardArrow( DrawCtx* dctx, const XP_Rect* rect, 
+                             XWBonusType XP_UNUSED(bonus), XP_Bool vert,
+                             HintAtts XP_UNUSED(hintAtts),
+                             CellFlags XP_UNUSED(flags) )
 {
     XP_Rect oldClip;
     XP_UCHAR* arrow;
@@ -198,10 +199,10 @@ default_draw_drawBoardArrow( DrawCtx* dctx, XP_Rect* rect,
 } /* default_draw_drawBoardArrow */
 
 static void
-default_draw_drawTile( DrawCtx* dctx, XP_Rect* rect, 
-                       /* at least 1 of these two will be null*/
-                       XP_UCHAR* text, XP_Bitmap bitmap,
-                       XP_S16 val, XP_Bool highlighted )
+default_draw_drawTile( DrawCtx* dctx, const XP_Rect* rect, 
+                       const XP_UCHAR* text, 
+                       const XP_Bitmap bitmap,
+                       XP_S16 val, CellFlags flags )
 {
     XP_Rect oldClip;
     XP_Rect inset = *rect;
@@ -211,7 +212,7 @@ default_draw_drawTile( DrawCtx* dctx, XP_Rect* rect,
 
     draw_frameRect( dctx, rect );
 
-    if ( highlighted ) {
+    if ( 0 != (flags & CELL_HIGHLIGHT) ) {
         insetRect( &inset, 1 );
         draw_frameRect( dctx, &inset );
         insetRect( &inset, 1 );
@@ -242,14 +243,15 @@ default_draw_drawTile( DrawCtx* dctx, XP_Rect* rect,
 } /* default_draw_drawTile */
 
 static void
-default_draw_drawTileBack( DrawCtx* dctx, XP_Rect* rect )
+default_draw_drawTileBack( DrawCtx* dctx, const XP_Rect* rect,
+                           CellFlags XP_UNUSED(flags) )
 {
     default_draw_drawTile( dctx, rect, "?", NULL, -1, XP_FALSE );
 } /* default_draw_drawTileBack */
 
 static void
-default_draw_drawTrayDivider( DrawCtx* dctx, XP_Rect* rect, 
-                              XP_Bool selected)
+default_draw_drawTrayDivider( DrawCtx* dctx, const XP_Rect* rect, 
+                              CellFlags XP_UNUSED(flags))
 {
     XP_Rect r = *rect;
     draw_clearRect( dctx, rect );
@@ -261,8 +263,11 @@ default_draw_drawTrayDivider( DrawCtx* dctx, XP_Rect* rect,
 } /* default_draw_drawTrayDivider */
 
 static void
-default_draw_score_pendingScore( DrawCtx* dctx, XP_Rect* rect, 
-                                 XP_S16 score, XP_U16 playerNum )
+default_draw_score_pendingScore( DrawCtx* dctx, 
+                                 const XP_Rect* rect, 
+                                 XP_S16 score, 
+                                 XP_U16 XP_UNUSED(playerNum),
+                                 CellFlags XP_UNUSED(flags) )
 {
     XP_UCHAR buf[5];
     XP_Rect oldClip;
@@ -291,10 +296,10 @@ default_draw_score_pendingScore( DrawCtx* dctx, XP_Rect* rect,
     draw_setClip( dctx, &oldClip, NULL );
 } /* default_draw_score_pendingScore */
 
-static XP_UCHAR*
-default_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
+static const XP_UCHAR*
+default_draw_getMiniWText( DrawCtx* XP_UNUSED(dctx), XWMiniTextType textHint )
 {
-    unsigned char* str;
+    char* str;
 
     switch( textHint ) {
     case BONUS_DOUBLE_LETTER:
@@ -314,7 +319,7 @@ default_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
 } /* default_draw_getMiniWText */
 
 static void
-default_draw_measureMiniWText( DrawCtx* dctx, XP_UCHAR* textP, 
+default_draw_measureMiniWText( DrawCtx* dctx, const XP_UCHAR* textP, 
                                XP_U16* widthP, XP_U16* heightP )
 {
     draw_measureText( dctx, textP, widthP, heightP );
@@ -325,8 +330,8 @@ default_draw_measureMiniWText( DrawCtx* dctx, XP_UCHAR* textP,
 } /* default_draw_measureMiniWText */
 
 static void
-default_draw_drawMiniWindow( DrawCtx* dctx, XP_UCHAR* text,
-                             XP_Rect* rect, void** closure )
+default_draw_drawMiniWindow( DrawCtx* dctx, const XP_UCHAR* text,
+                             const XP_Rect* rect, void** XP_UNUSED(closure) )
 {
     XP_Rect oldClip;
 
@@ -338,14 +343,6 @@ default_draw_drawMiniWindow( DrawCtx* dctx, XP_UCHAR* text,
 
     draw_setClip( dctx, &oldClip, NULL );
 } /* default_draw_drawMiniWindow */
-
-static void
-default_draw_eraseMiniWindow( DrawCtx* dctx, XP_Rect* rect,
-                              XP_Bool lastTime, void** closure,
-                              XP_Bool* invalUnder )
-{
-    *invalUnder = XP_TRUE;      /* let board.c do the work */
-} /* default_draw_eraseMiniWindow */
 
 void
 InitDrawDefaults( DrawCtxVTable* vtable )
@@ -364,7 +361,6 @@ InitDrawDefaults( DrawCtxVTable* vtable )
     SET_VTABLE_ENTRY( vtable, draw_getMiniWText, default );
     SET_VTABLE_ENTRY( vtable, draw_measureMiniWText, default );
     SET_VTABLE_ENTRY( vtable, draw_drawMiniWindow, default );
-    SET_VTABLE_ENTRY( vtable, draw_eraseMiniWindow, default );
 } /* InitDrawDefaults */
 
 #endif
