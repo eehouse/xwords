@@ -54,6 +54,7 @@ DEFINES += $(DO_CURSES) $(DO_GTK) $(SVNDEF)
 
 ifdef LIB_NO_UI
 TARGET=$(PLATFORM)/libxwords.so.0
+POINTER_SUPPORT = -DPOINTER_SUPPORT
 else
 TARGET=$(PLATFORM)/xwords
 endif
@@ -146,9 +147,12 @@ endif
 
 ifneq (,$(findstring DPLATFORM_GTK,$(DEFINES)))
 	LIBS += `pkg-config --libs gtk+-2.0`
-	CFLAGS += `pkg-config --cflags gtk+-2.0` -DPOINTER_SUPPORT \
+	CFLAGS += `pkg-config --cflags gtk+-2.0` \
 		-DGDK_DISABLE_DEPRECATED
+	POINTER_SUPPORT = -DPOINTER_SUPPORT
 endif
+
+CFLAGS += $(POINTER_SUPPORT)
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
 	LIBS += $(OE_LIBDIR) -lncurses 
