@@ -140,6 +140,7 @@ usage( char* appName, char* msg )
 	     "\t [-w pwd]*        # passwd for matching local player\n"
 	     "\t [-v]             # put scoreboard in vertical mode\n"
 	     "\t [-m]             # make the robot duMb (smart is default)\n"
+	     "\t [-l]             # disallow hints\n"
 	     "\t [-c]             # explain robot scores after each move\n"
 	     "\t [-C COOKIE]      # cookie used to groups games on relay\n"
 	     "\t\t # (max of four players total, local and remote)\n"
@@ -654,7 +655,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "kKf:l:n:Nsd:e:r:b:qw:Sit:Umvc"
+                      "kKf:ln:Nsd:e:r:b:qw:Sit:Umvc"
 #ifdef XWFEATURE_RELAY
                       "a:p:C:H"
 #endif
@@ -716,6 +717,9 @@ main( int argc, char** argv )
             break;
         case 'm':		/* dumb robot */
             mainParams.gi.robotSmartness = DUMB_ROBOT;
+            break;
+        case 'l':
+            mainParams.gi.hintsNotAllowed = XP_TRUE;
             break;
         case 'n':
             index = mainParams.gi.nPlayers++;
@@ -938,7 +942,7 @@ main( int argc, char** argv )
     }
 
     dict_destroy( mainParams.dict );
-
+    linux_util_vt_destroy( mainParams.util );
     return 0;
 } /* main */
 
