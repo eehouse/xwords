@@ -190,6 +190,12 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 
 }
 
+void
+linux_util_vt_destroy( XW_UtilCtxt* util )
+{
+    XP_FREE( util->mpool, util->vtable );
+}
+
 const XP_UCHAR*
 linux_getErrString( UtilErrID id, XP_Bool* silent )
 {
@@ -245,6 +251,11 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
+        break;
+
+    case ERR_CANT_HINT_WHILE_DISABLED:
+        message = "The hint feature is disabled for this game.  Enable "
+            "it for a new game using the Preferences dialog.";
         break;
 
 /*     case INFO_REMOTE_CONNECTED: */

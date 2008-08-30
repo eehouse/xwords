@@ -34,6 +34,7 @@ void linux_debugf(const char*, ...)
 DictionaryCtxt* linux_dictionary_make( MPFORMAL const char* dictFileName );
 
 void linux_util_vt_init( MPFORMAL XW_UtilCtxt* util );
+void linux_util_vt_destroy( XW_UtilCtxt* util );
 
 const XP_UCHAR* linux_getErrString( UtilErrID id, XP_Bool* silent );
 
