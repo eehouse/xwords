@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */ 
 /* 
- * Copyright 2000-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -108,7 +108,7 @@ typedef struct CEAppGlobals {
 
     XP_U16 softKeyId;           /* id of item now on left button */
 
-    DrawCtx* draw;
+    struct CEDrawCtx* draw;
     XWGame game;
     CurGameInfo gameInfo;
     XP_UCHAR* curGameName;      /* path to storage for current game */
@@ -180,37 +180,6 @@ typedef struct _FontCacheEntry {
     XP_U16 offset;
     XP_U16 actualHt;
 } FontCacheEntry;
-
-typedef struct CEDrawCtx {
-    DrawCtxVTable* vtable;
-    
-    HWND mainWin;
-    CEAppGlobals* globals;
-
-    COLORREF prevBkColor;
-
-    HBRUSH brushes[CE_NUM_COLORS];
-    PenColorPair pens[CE_NUM_COLORS];
-
-    HFONT selPlayerFont;
-    HFONT playerFont;
-
-    FontCacheEntry fcEntry[N_RESIZE_FONTS];
-
-    HBITMAP rightArrow;
-    HBITMAP downArrow;
-    HBITMAP origin;
-
-    XP_U16 trayOwner;
-    XP_U16 miniLineHt;
-    XP_Bool scoreIsVertical;
-    XP_Bool topFocus;
-
-    MPSLOT
-} CEDrawCtx;
-
-DrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );
-void ce_drawctxt_update( DrawCtx* dctx );
 
 int messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title, 
                     XP_U16 buttons );

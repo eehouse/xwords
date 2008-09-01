@@ -24,6 +24,7 @@
 #include <stdio.h>              /* for sprintf, etc. */
 
 #include "xptypes.h"
+#include "cedraw.h"
 #include "board.h"
 #include "draw.h"
 #include "mempool.h"
@@ -52,7 +53,34 @@
 # define TREAT_AS_CURSOR(d,f) (((f) & CELL_ISCURSOR) != 0)
 #endif
 
+struct CEDrawCtx {
+    DrawCtxVTable* vtable;
+    
+    HWND mainWin;
+    CEAppGlobals* globals;
 
+    COLORREF prevBkColor;
+
+    HBRUSH brushes[CE_NUM_COLORS];
+    PenColorPair pens[CE_NUM_COLORS];
+
+    HFONT selPlayerFont;
+    HFONT playerFont;
+
+    FontCacheEntry fcEntry[N_RESIZE_FONTS];
+
+    HBITMAP rightArrow;
+    HBITMAP downArrow;
+    HBITMAP origin;
+
+    XP_U16 trayOwner;
+    XP_U16 miniLineHt;
+    XP_Bool scoreIsVertical;
+    XP_Bool topFocus;
+    XP_Bool beenCleared;
+
+    MPSLOT
+};
 
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
@@ -350,9 +378,9 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index,
                 XP_ASSERT( !!font );
                 DeleteObject( testFont );
                 break;
-            } else if ( trialHt == height /* first time through */
-                        && testOffset > 0 ) { /* for safety */
-                trialHt += testOffset;
+/*             } else if ( trialHt == height /\* first time through *\/ */
+/*                         && testOffset > 0 ) { /\* for safety *\/ */
+/*                 trialHt += testOffset; */
             } else {
                 ++trialHt;
             }
@@ -729,7 +757,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         InsetRect( &rt, 1, 1 );
         Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom); /* draw frame */
         InsetRect( &rt, 1, 1 );
-        ceClipToRect( hdc, &rt );
+/*         ceClipToRect( hdc, &rt ); */
 
         if ( !isEmpty ) {
             index = getPlayerColor(dctx->trayOwner);
@@ -942,8 +970,8 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* rect,
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
-    HDC hdc = globals->hdc;
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
+    XP_ASSERT( !!globals->hdc );
+    SetBkColor( globals->hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
 
     dctx->scoreIsVertical = rect->height > rect->width;
 
@@ -1412,9 +1440,8 @@ ceFontsSetup( CEDrawCtx* dctx )
 } /* ceFontsSetup */
 
 void
-ce_drawctxt_update( DrawCtx* p_dctx )
+ce_draw_update( CEDrawCtx* dctx )
 {
-    CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     XP_U16 i;
 
     for ( i = 0; i < CE_NUM_COLORS; ++i ) {
@@ -1425,7 +1452,14 @@ ce_drawctxt_update( DrawCtx* p_dctx )
     }
 } /* ce_drawctxt_update */
 
-DrawCtx* 
+void
+ce_draw_erase( CEDrawCtx* dctx, const RECT* invalR )
+{
+    CEAppGlobals* globals = dctx->globals;
+    FillRect( globals->hdc, invalR, dctx->brushes[CE_BKG_COLOR] );
+}
+
+CEDrawCtx* 
 ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)XP_MALLOC( mpool,
@@ -1473,7 +1507,7 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     dctx->mainWin = mainWin;
     dctx->globals = globals;
 
-    ce_drawctxt_update( (DrawCtx*)dctx );
+    ce_draw_update( dctx );
 
     ceFontsSetup( dctx );
 
@@ -1484,5 +1518,5 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     dctx->origin = LoadBitmap( globals->hInst, 
                                MAKEINTRESOURCE(IDB_ORIGIN) );
 
-    return (DrawCtx*)dctx;
+    return dctx;
 } /* ce_drawctxt_make */
