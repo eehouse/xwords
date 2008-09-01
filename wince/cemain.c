@@ -51,6 +51,7 @@
 #include "LocalizedStrIncludes.h"
 #include "debhacks.h"
 #include "cesvdgms.h"
+#include "cedraw.h"
 
 #include "dbgutil.h"
 
@@ -994,7 +995,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
             XP_DEBUGF( "calling game_makeFromStream" ); 
             game_makeFromStream( MEMPOOL stream, &globals->game, 
                                  &globals->gameInfo,
-                                 dict, &globals->util, globals->draw,
+                                 dict, &globals->util, (DrawCtx*)globals->draw,
                                  &globals->appPrefs.cp, CE_SEND_PROC, 
                                  CE_RESET_PROC globals );
         }
@@ -1227,7 +1228,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     if ( !oldGameLoaded ) {
         XP_U16 gameID = 0;      /* good enough until I get networking going */
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
-                          &globals->util, globals->draw, gameID,
+                          &globals->util, (DrawCtx*)globals->draw, gameID,
                           &globals->appPrefs.cp, 
                           CE_SEND_PROC, CE_RESET_PROC globals );
 
@@ -1372,7 +1373,7 @@ ceDoHistory( CEAppGlobals* globals )
 } /* ceDoHistory */
 
 static void
-drawInsidePaint( CEAppGlobals* globals )
+drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
 {
     HDC hdc;
 
@@ -1382,6 +1383,10 @@ drawInsidePaint( CEAppGlobals* globals )
     } else {
         HDC prevHDC = globals->hdc;
         globals->hdc = hdc;
+
+        if ( !!invalR ) {
+            ce_draw_erase( globals->draw, invalR );
+        }
 
         board_draw( globals->game.board );
 
@@ -1494,7 +1499,7 @@ ceChooseAndOpen( CEAppGlobals* globals )
 static void
 updateForColors( CEAppGlobals* globals )
 {
-    ce_drawctxt_update( globals->draw );
+    ce_draw_update( globals->draw );
     if ( !!globals->game.board ) {
         board_invalAll( globals->game.board );
     }
@@ -1678,7 +1683,7 @@ freeGlobals( CEAppGlobals* globals )
 
     MPASSIGN( mpool, globals->mpool );
 
-    draw_destroyCtxt( globals->draw );
+    draw_destroyCtxt( (DrawCtx*)globals->draw );
 
     closeGame( globals );
 
@@ -2137,7 +2142,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         board_invalRect( globals->game.board, &rect );
 
                         XP_ASSERT( globals->hWnd == hWnd );
-                        drawInsidePaint( globals );
+                        drawInsidePaint( globals, &winrect );
                     }
                     if ( !ValidateRect( hWnd, &winrect ) ) {
                         logLastError( "WM_PAINT:ValidateRect" );
@@ -2832,7 +2837,7 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(newState),
     }
 #endif
 
-    drawInsidePaint( globals );
+    drawInsidePaint( globals, NULL );
 } /* ce_util_trayHiddenChange */
 
 static void
@@ -2858,7 +2863,7 @@ static void
 ce_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-    drawInsidePaint( globals );
+    drawInsidePaint( globals, NULL );
     ceDisplayFinalScores( globals );
 
     ceSetLeftSoftkey( globals, ID_FILE_NEWGAME );
