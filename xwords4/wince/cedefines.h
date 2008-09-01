@@ -36,7 +36,7 @@
 #define CE_TIMER_HT_VERT CE_SCORE_WIDTH
 
 #define CE_SCORE_TOP 0
-#define CE_SCORE_HEIGHT 15
+#define CE_SCORE_HEIGHT 12
 #define CE_BOARD_TOP (CE_SCORE_TOP + CE_SCORE_HEIGHT)
 #define CE_SCORE_LEFT CE_BOARD_LEFT_RH
 #define CE_TRAY_TOP (CE_BOARD_TOP + (CE_MAX_ROWS*CE_BOARD_SCALEV))
@@ -58,14 +58,9 @@
 #define CE_TIMER_HEIGHT CE_SCORE_HEIGHT
 
 
-#define MIN_CELL_WIDTH 12
-#define MIN_CELL_HEIGHT 12
-#if defined _WIN32_WCE
-# define MIN_TRAY_HEIGHT 28
-# define CE_MIN_SCORE_WIDTH 24    /* for vertical score case */
-#else
-# define MIN_TRAY_HEIGHT 40
-# define CE_MIN_SCORE_WIDTH 36
-#endif
+#define MIN_CELL_WIDTH 10
+#define MIN_CELL_HEIGHT 10
+#define MIN_TRAY_HEIGHT 28
+#define CE_MIN_SCORE_WIDTH 24    /* for vertical score case */
 
 #endif
