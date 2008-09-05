@@ -85,9 +85,14 @@ curses_draw_destroyCtxt( DrawCtx* XP_UNUSED(p_dctx) )
     // CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
 } /* draw_setup */
 
+static void
+curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), 
+                         const DictionaryCtxt* XP_UNUSED(dict) )
+{
+}
+
 static XP_Bool
 curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), 
-                        const DictionaryCtxt* XP_UNUSED(dict),
                         const XP_Rect* XP_UNUSED(rect), 
                         DrawFocusState XP_UNUSED(dfs) )
 {
@@ -526,6 +531,7 @@ cursesDrawCtxtMake( WINDOW* boardWin )
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, curses );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_objFinished, curses );
     SET_VTABLE_ENTRY( dctx->vtable, draw_trayBegin, curses );

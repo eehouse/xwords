@@ -109,8 +109,10 @@ typedef struct DrawCtxVTable {
 
     void DRAW_VTABLE_NAME(destroyCtxt) ( DrawCtx* dctx );
 
+    void DRAW_VTABLE_NAME(dictChanged)( DrawCtx* dctx,
+                                        const DictionaryCtxt* dict );
+
     XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, 
-                                           const DictionaryCtxt* dict,
                                            const XP_Rect* rect, 
                                            DrawFocusState dfs );
     void DRAW_VTABLE_NAME(objFinished)( DrawCtx* dctx, BoardObjectType typ, 
@@ -244,7 +246,8 @@ struct DrawCtx {
 #endif
 
 #define draw_destroyCtxt(dc) CALL_DRAW_NAME0(destroyCtxt, dc)
-#define draw_boardBegin( dc,d,r,f ) CALL_DRAW_NAME3(boardBegin, dc, d,r,f)
+#define draw_dictChanged( dc, d ) CALL_DRAW_NAME1(dictChanged, (dc), (d))
+#define draw_boardBegin( dc,r,f ) CALL_DRAW_NAME2(boardBegin, dc, r,f)
 #define draw_objFinished( dc, t, r, d ) CALL_DRAW_NAME3(objFinished, (dc), (t), (r), (d))
 #define draw_trayBegin( dc, r, o, f ) CALL_DRAW_NAME3(trayBegin,dc, r, o, f)
 #define draw_vertScrollBoard( dc, r, d, f ) \

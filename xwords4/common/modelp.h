@@ -51,6 +51,8 @@ typedef struct ModelVolatiles {
     void* boardListenerData;
     TrayListener trayListenerFunc;
     void* trayListenerData;
+    DictListener dictListenerFunc;
+    void* dictListenerData;
     MPSLOT
 } ModelVolatiles;
 

@@ -309,9 +309,15 @@ gtk_draw_destroyCtxt( DrawCtx* p_dctx )
 } /* gtk_draw_destroyCtxt */
 
 
+static void
+gtk_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx), 
+                      const DictionaryCtxt* XP_UNUSED(dict) )
+{
+}
+
 static XP_Bool
-gtk_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* XP_UNUSED(dict), 
-                     const XP_Rect* rect, DrawFocusState XP_UNUSED(dfs) )
+gtk_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                     DrawFocusState XP_UNUSED(dfs) )
 {
     GdkRectangle gdkrect;
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
@@ -1069,10 +1075,8 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawMiniWindow, gtk );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, gtk );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, gtk );
 #endif
-
-/*     SET_VTABLE_ENTRY( dctx, draw_frameBoard, gtk_ ); */
-/*     SET_VTABLE_ENTRY( dctx, draw_frameTray, gtk_ ); */
 
 	dctx->pangoContext = gtk_widget_get_pango_context( drawing_area );
     dctx->drawing_area = drawing_area;

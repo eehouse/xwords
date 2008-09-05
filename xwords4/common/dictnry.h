@@ -146,7 +146,7 @@ XP_Bitmap dict_getFaceBitmap( const DictionaryCtxt* dict, Tile tile,
 XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );
 #endif
 
-void dict_writeToStream( DictionaryCtxt* ctxt, XWStreamCtxt* stream );
+void dict_writeToStream( const DictionaryCtxt* ctxt, XWStreamCtxt* stream );
 void dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream );
 
 

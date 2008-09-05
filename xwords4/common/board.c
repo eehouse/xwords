@@ -79,6 +79,9 @@ static void boardCellChanged( void* board, XP_U16 turn, XP_U16 col,
                               XP_U16 row, XP_Bool added );
 static void boardTilesChanged( void* board, XP_U16 turn, XP_S16 index1, 
                                XP_S16 index2 );
+static void dictChanged( void* p_board, const DictionaryCtxt* oldDict, 
+                         const DictionaryCtxt* newDict );
+
 static void boardTurnChanged( void* board );
 static void boardGameOver( void* board );
 static void setArrow( BoardCtxt* board, XP_U16 row, XP_U16 col );
@@ -155,6 +158,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
         /* could just pass in invalCell.... PENDING(eeh) */
         model_setBoardListener( model, boardCellChanged, result );
         model_setTrayListener( model, boardTilesChanged, result );
+        model_setDictListener( model, dictChanged, result );
         server_setTurnChangeListener( server, boardTurnChanged, result );
         server_setGameOverListener( server, boardGameOver, result );
 
@@ -1421,10 +1425,10 @@ board_requestHint( BoardCtxt* board,
         const XP_U16 selPlayer = board->selPlayer;
         PerTurnInfo* pti = board->selInfo;
         EngineCtxt* engine = server_getEngineFor( board->server, selPlayer );
-
-        result = !!engine && preflight( board );
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;
+
+        result = !!engine && preflight( board );
 
         /* undo any current move.  otherwise we won't pass the full tray to
            the engine.  Would it be better, though, to pass the whole tray
@@ -1568,7 +1572,7 @@ coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, XP_U16* rowP )
 } /* coordToCell */
 
 XP_Bool
-getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
+getCellRect( const BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
 {
     XP_S16 top;
     XP_Bool onBoard = XP_TRUE;
@@ -2869,6 +2873,17 @@ boardTilesChanged( void* p_board, XP_U16 turn, XP_S16 index1, XP_S16 index2 )
         invalTrayTilesBetween( board, index1, index2 );
     }
 } /* boardTilesChanged */
+
+static void
+dictChanged( void* p_board, const DictionaryCtxt* oldDict, 
+             const DictionaryCtxt* newDict )
+{
+    BoardCtxt* board = (BoardCtxt*)p_board;
+    XP_ASSERT( !!board->draw );
+    if ( NULL == oldDict || !dict_tilesAreSame( oldDict, newDict ) ) {
+        draw_dictChanged( board->draw, newDict );
+    }
+}
 
 static void
 boardTurnChanged( void* p_board )
