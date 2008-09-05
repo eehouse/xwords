@@ -245,16 +245,14 @@ checkFontOffsets( PalmDrawCtx* dctx, const DictionaryCtxt* dict )
 }
 
 static XP_Bool
-palm_common_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
-                             const XP_Rect* rect, DrawFocusState dfs )
+palm_common_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                             DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
     if ( !globals->gState.showGrid ) {
         WinDrawRectangleFrame(rectangleFrame, (RectangleType*)rect);
     }
-
-    checkFontOffsets( dctx, dict );
 
 #ifdef DRAW_FOCUS_FRAME
     dctx->topFocus = dfs == DFS_TOP;
@@ -264,8 +262,8 @@ palm_common_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 
 #ifdef COLOR_SUPPORT
 static XP_Bool
-palm_clr_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
-                          const XP_Rect* rect, DrawFocusState dfs )
+palm_clr_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                          DrawFocusState dfs )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
 
@@ -277,7 +275,7 @@ palm_clr_draw_boardBegin( DrawCtx* p_dctx, const DictionaryCtxt* dict,
 
     HIGHRES_PUSH_NOPOP(dctx);
 
-    palm_common_draw_boardBegin( p_dctx, dict, rect, dfs );
+    palm_common_draw_boardBegin( p_dctx, rect, dfs );
 
     return XP_TRUE;
 } /* palm_clr_draw_boardBegin */
@@ -591,6 +589,25 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     WinSetClip( &saveClip );
     return complete;
 } /* palm_common_draw_drawCell */
+
+void
+palm_draw_destroyCtxt( DrawCtx* p_dctx )
+{
+    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
+
+    XP_FREE( dctx->mpool, p_dctx->vtable );
+    if ( !!dctx->fontHtInfo ) {
+        XP_FREE( dctx->mpool, dctx->fontHtInfo );
+    }
+    XP_FREE( dctx->mpool, dctx );
+} /* palm_draw_destroyCtxt */
+
+
+static void
+palm_draw_dictChanged( DrawCtx* p_dctx, const DictionaryCtxt* dict )
+{
+    checkFontOffsets( (PalmDrawCtx*)p_dctx, dict );
+}
 
 static void
 palm_draw_invertCell( DrawCtx* p_dctx, const XP_Rect* rect )
@@ -1464,8 +1481,10 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
        vtable call.  so....*/
     dctx->drawBitmapFunc = drawBitmapAt;
 
-    SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, palm );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, palm );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, palm );
 
+    SET_VTABLE_ENTRY( dctx->vtable, draw_invertCell, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTile, palm );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawTileBack, palm );
 #ifdef POINTER_SUPPORT
@@ -1533,14 +1552,3 @@ palm_drawctxt_make( MPFORMAL GraphicsAbility able,
     return (DrawCtx*)dctx;
 } /* palm_drawctxt_make */
 
-void
-palm_drawctxt_destroy( DrawCtx* p_dctx )
-{
-    PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
-
-    XP_FREE( dctx->mpool, p_dctx->vtable );
-    if ( !!dctx->fontHtInfo ) {
-        XP_FREE( dctx->mpool, dctx->fontHtInfo );
-    }
-    XP_FREE( dctx->mpool, dctx );
-} /* palm_drawctxt_destroy */

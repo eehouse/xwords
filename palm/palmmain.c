@@ -1315,7 +1315,7 @@ stopApplication( PalmAppGlobals* globals )
         }
 
         if ( !!globals->draw ) {
-            palm_drawctxt_destroy( globals->draw );
+            draw_destroyCtxt( globals->draw );
         }
 
         game_dispose( &globals->game );

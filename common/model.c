@@ -50,6 +50,9 @@ static void notifyBoardListeners( ModelCtxt* model, XP_U16 turn,
                                   XP_U16 col, XP_U16 row, XP_Bool added );
 static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn, 
                                  XP_S16 index1, XP_S16 index2 );
+static void notifyDictListeners( ModelCtxt* model, DictionaryCtxt* oldDict, 
+                                 DictionaryCtxt* newDict );
+
 static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col, 
                                  XP_U16 row );
 static void setModelTileRaw( ModelCtxt* model, XP_U16 col, XP_U16 row, 
@@ -265,13 +268,16 @@ model_setNPlayers( ModelCtxt* model, XP_U16 nPlayers )
 void
 model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 {
-     model->vol.dict = dict;
+    DictionaryCtxt* oldDict = model->vol.dict;
+    model->vol.dict = dict;
 
-     if ( !!dict ) {
-         XP_U16 nFaces = dict_numTileFaces( dict );
-         XP_ASSERT( !!model->vol.stack );
-         stack_setBitsPerTile( model->vol.stack, nFaces <= 32? 5 : 6 );
-     }
+    if ( !!dict ) {
+        XP_U16 nFaces = dict_numTileFaces( dict );
+        XP_ASSERT( !!model->vol.stack );
+        stack_setBitsPerTile( model->vol.stack, nFaces <= 32? 5 : 6 );
+
+        notifyDictListeners( model, oldDict, dict );
+    }
 } /* model_setDictionary */
 
 DictionaryCtxt*
@@ -1407,6 +1413,13 @@ model_setTrayListener( ModelCtxt* model, TrayListener tl, void* data )
     model->vol.trayListenerData = data;
 } /* model_setBoardListener */
 
+void
+model_setDictListener( ModelCtxt* model, DictListener dl, void* data )
+{
+    model->vol.dictListenerFunc = dl;
+    model->vol.dictListenerData = data;
+} /* model_setBoardListener */
+
 static void
 notifyBoardListeners( ModelCtxt* model, XP_U16 turn, XP_U16 col, XP_U16 row,
                       XP_Bool added )
@@ -1426,6 +1439,17 @@ notifyTrayListeners( ModelCtxt* model, XP_U16 turn, XP_S16 index1,
                                         index1, index2 );
     }
 } /* notifyTrayListeners */
+
+static void
+notifyDictListeners( ModelCtxt* model, DictionaryCtxt* oldDict, 
+                     DictionaryCtxt* newDict )
+{
+    XP_ASSERT( !!newDict );
+    if ( model->vol.dictListenerFunc != NULL ) {
+        (*model->vol.dictListenerFunc)( model->vol.dictListenerData, oldDict,
+                                        newDict );
+    }
+} /* notifyDictListeners */
 
 static void
 printString( XWStreamCtxt* stream, const XP_UCHAR* str )

@@ -58,6 +58,7 @@ struct CEDrawCtx {
     
     HWND mainWin;
     CEAppGlobals* globals;
+    const DictionaryCtxt* dict;
 
     COLORREF prevBkColor;
 
@@ -509,7 +510,6 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
 
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx, 
-                            const DictionaryCtxt* XP_UNUSED(dict), 
                             const XP_Rect* XP_UNUSED(rect), 
                             DrawFocusState dfs )
 {
@@ -1369,6 +1369,13 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     XP_FREE( dctx->mpool, dctx );
 } /* ce_draw_destroyCtxt */
 
+DLSTATIC void
+DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, const DictionaryCtxt* dict )
+{
+    CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
+    dctx->dict = dict;
+}
+
 #ifdef DRAW_LINK_DIRECT
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(vertScrollBoard)( DrawCtx* p_dctx, XP_Rect* rect, 
@@ -1475,6 +1482,7 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, ce );
+    SET_VTABLE_ENTRY( dctx->vtable, draw_dictChanged, ce );
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_boardBegin, ce );
     SET_VTABLE_ENTRY( dctx->vtable, draw_drawCell, ce );

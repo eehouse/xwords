@@ -231,7 +231,6 @@ drawBoard( BoardCtxt* board )
 {
     if ( board->needsDrawing 
          && draw_boardBegin( board->draw, 
-                             model_getDictionary( board->model ),
                              &board->boardBounds, 
                              dfsFor( board, OBJ_BOARD ) ) ) {
 

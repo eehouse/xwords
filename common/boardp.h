@@ -246,7 +246,7 @@ void invalTrayTilesBetween( BoardCtxt* board, XP_U16 tileIndex1,
                             XP_U16 tileIndex2 );
 void makeMiniWindowForText( BoardCtxt* board, const XP_UCHAR* text, 
                             MiniWindowType winType );
-XP_Bool getCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+XP_Bool getCellRect( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
                      XP_Rect* rect);
 void getDragCellRect( BoardCtxt* board, XP_U16 col, XP_U16 row, 
                       XP_Rect* rectP );

@@ -208,7 +208,7 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
 } /* dict_tilesAreSame */
 
 void
-dict_writeToStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
+dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
 {
     XP_U16 maxCount = 0;
     XP_U16 maxValue = 0;
