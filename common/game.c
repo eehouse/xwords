@@ -193,6 +193,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
             game->comms = NULL;
         }
 #endif
+        XP_ASSERT( !!dict );
         game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
 
         game->server = server_makeFromStream( MPPARM(mpool) stream, 
@@ -209,6 +210,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                                             gi->nPlayers );
         server_prefsChanged( game->server, cp );
         board_prefsChanged( game->board, cp );
+        draw_dictChanged( draw, dict );
         success = XP_TRUE;
     } else {
         XP_LOGF( "%s: aborting; stream version too new!", __func__ );
