@@ -105,30 +105,28 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
                       XW_UtilCtxt* util )
 {
     ModelCtxt* model;
-    DictionaryCtxt* savedDict = (DictionaryCtxt*)NULL;
     XP_U16 nCols, nRows;
     short i;
     XP_Bool hasDict;
     XP_U16 nPlayers;
+    XP_U16 version = stream_getVersion( stream );
+
+    XP_ASSERT( !!dict );
 
     nCols = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
     nRows = (XP_U16)stream_getBits( stream, NUMCOLS_NBITS );
 
-    hasDict = stream_getBits( stream, 1 );
+    hasDict = (version >= STREAM_VERS_MODEL_NO_DICT)
+        ? XP_FALSE : stream_getBits( stream, 1 );
     nPlayers = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
 
     if ( hasDict ) {
-        savedDict = util_makeEmptyDict( util );
+        DictionaryCtxt* savedDict = util_makeEmptyDict( util );
         dict_loadFromStream( savedDict, stream );
-
-        if ( !!dict ) {
-            XP_ASSERT( dict_tilesAreSame( savedDict, dict ) );
-            dict_destroy( savedDict );
-            savedDict = dict;
-        }
+        dict_destroy( savedDict );
     }
 
-    model = model_make( MPPARM(mpool) savedDict, util, nCols, nRows );
+    model = model_make( MPPARM(mpool) dict, util, nCols, nRows );
     model->nPlayers = nPlayers;
 
     stack_loadFromStream( model->vol.stack, stream );
@@ -152,19 +150,12 @@ void
 model_writeToStream( ModelCtxt* model, XWStreamCtxt* stream )
 {
     short i;
-    DictionaryCtxt* dict;
 
     stream_putBits( stream, NUMCOLS_NBITS, model->nCols );
     stream_putBits( stream, NUMCOLS_NBITS, model->nRows );
 
-    dict = model_getDictionary( model );
-    stream_putBits( stream, 1, dict != NULL );
     /* we have two bits for nPlayers, so range must be 0..3, not 1..4 */
     stream_putBits( stream, NPLAYERS_NBITS, model->nPlayers );
-
-    if ( dict != NULL ) {
-        dict_writeToStream( model_getDictionary( model ), stream );
-    }
 
     stack_writeToStream( model->vol.stack, stream );
 
@@ -283,6 +274,7 @@ model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 DictionaryCtxt*
 model_getDictionary( ModelCtxt* model )
 {
+    XP_ASSERT( !!model->vol.dict );
     return model->vol.dict;
 } /* model_getDictionary */
 

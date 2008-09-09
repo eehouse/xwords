@@ -30,13 +30,14 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_MODEL_NO_DICT 0x06
 #define STREAM_VERS_BLUETOOTH 0x05
 #define STREAM_VERS_KEYNAV 0x04
 #define STREAM_VERS_RELAY 0x03
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-# define CUR_STREAM_VERS  STREAM_VERS_BLUETOOTH
+#define CUR_STREAM_VERS STREAM_VERS_MODEL_NO_DICT
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
