@@ -92,6 +92,13 @@ XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg )
     XP_LOGF( "%s: %s", prefix, buf );
 }
 
+void
+logRect( const char* comment, const RECT* rect )
+{
+    XP_LOGF( "%s: %s: left=%ld,top=%ld,right=%ld,bottom=%ld", __func__,
+             comment, rect->left, rect->top, rect->right, rect->bottom );
+}
+
 #undef CASE_STR
 
 #endif  /* DEBUG */

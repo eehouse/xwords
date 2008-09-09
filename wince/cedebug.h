@@ -23,6 +23,7 @@
 #include "cemain.h"
 
 const char* messageToStr( UINT message );
+void logRect( const char* comment, const RECT* rect );
 
 #ifdef DEBUG
 void XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg );
