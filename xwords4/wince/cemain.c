@@ -418,6 +418,8 @@ hideScroller( CEAppGlobals* globals )
 #endif
 
 typedef struct CEBoardParms {
+    XP_U16  scrnWidth;
+
     XP_U16  boardHScale;
     XP_U16  boardVScale;
     XP_U16  boardTop;
@@ -468,7 +470,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 {
     RECT rc;
     XP_U16 scrnWidth, scrnHeight;
-    XP_U16 trayVScale, boardLeft, scoreWidth, scoreHeight;
+    XP_U16 trayVScale, boardLeft, trayLeft, scoreWidth, scoreHeight;
     XP_U16 boardHt, boardWidth, hScale, vScale, nVisibleRows;
     XP_U16 trayTop, boardTop;
     XP_Bool horiz;
@@ -511,6 +513,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     }
 
     boardWidth = scrnWidth - scrollWidth;
+    trayWidth = scrnWidth;
     if ( horiz ) {
         scoreWidth = scrnWidth;
         hScale = boardWidth / nRows;
@@ -518,14 +521,16 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
         /* center the board */
         boardWidth += scrollWidth;
         boardLeft = (scrnWidth - boardWidth) / 2; /* center it all */
+        trayLeft = 0;
     } else {
         /* move extra pixels into scoreboard */
         hScale = (boardWidth - CE_MIN_SCORE_WIDTH) / nRows;
         boardWidth = hScale * nRows;
         scoreWidth = scrnWidth - boardWidth - scrollWidth;
         boardLeft = scoreWidth;
+        trayLeft = scoreWidth;
+        trayWidth -= scoreWidth;
     }
-    trayWidth = boardWidth + scrollWidth;
 
     trayTop = boardHt + scoreHeight + 1;
     trayVScale = scrnHeight - trayTop;
@@ -551,6 +556,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
         }
     }
 
+    bparms->scrnWidth = scrnWidth;
     bparms->boardHScale = hScale;
     bparms->boardVScale = vScale;
     bparms->boardTop = boardTop;
@@ -558,7 +564,7 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     bparms->trayHeight = trayVScale;
     bparms->trayWidth = trayWidth;
     bparms->boardLeft = boardLeft;
-    bparms->trayLeft = boardLeft;
+    bparms->trayLeft = trayLeft;
     bparms->scoreWidth = scoreWidth;
     bparms->scoreHeight = scoreHeight;
     bparms->horiz = horiz;
@@ -578,6 +584,30 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 #endif
 } /* figureBoardParms */
 
+static void
+setOwnedRects( CEAppGlobals* globals, XP_U16 nRows, 
+               const CEBoardParms* bparms )
+{
+    if ( bparms->horiz ) {
+        RECT tmp;
+
+        tmp.top = bparms->scoreHeight;        /* Same for both */
+        tmp.bottom = bparms->trayTop;         /* Same for both */
+
+        tmp.left = 0;
+        tmp.right = bparms->boardLeft;
+        XP_MEMCPY( &globals->ownedRects[OWNED_RECT_LEFT], &tmp, 
+                   sizeof(globals->ownedRects[OWNED_RECT_LEFT]) );
+
+        tmp.left = tmp.right + (bparms->boardHScale * nRows);
+        tmp.right = bparms->scrnWidth;
+        XP_MEMCPY( &globals->ownedRects[OWNED_RECT_RIGHT], &tmp, 
+                   sizeof(globals->ownedRects[OWNED_RECT_RIGHT]) );
+    } else {
+        XP_MEMSET( &globals->ownedRects, 0, sizeof(globals->ownedRects) );
+    }
+} /* setOwnedRects */
+
 static XP_Bool
 cePositionBoard( CEAppGlobals* globals )
 {
@@ -590,6 +620,7 @@ cePositionBoard( CEAppGlobals* globals )
     XP_ASSERT( nCols <= CE_MAX_ROWS );
 
     figureBoardParms( globals, nCols, &bparms );
+    setOwnedRects( globals, nCols, &bparms );
 
     if ( globals->gameInfo.timerEnabled ) {
         board_setTimerLoc( globals->game.board, bparms.timerLeft, 
@@ -668,6 +699,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
                      const CommsAddrRec* XP_UNUSED_STANDALONE(addr) )
 {
     DictionaryCtxt* dict;
+    DictionaryCtxt* toBeDestroyed = NULL;
     XP_UCHAR* newDictName = globals->gameInfo.dictName;
 
     /* This needs to happen even when !newGame because it's how the dict
@@ -680,7 +712,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
         const XP_UCHAR* curDictName = dict_getName( dict );
         if ( !!newDictName &&
             ( !curDictName || 0 != strcmp( curDictName, newDictName ) ) ) {
-            dict_destroy( dict );
+            toBeDestroyed = dict;
             dict = NULL;
         } else {
             replaceStringIfDifferent( globals->mpool,
@@ -737,6 +769,10 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     server_do( globals->game.server );
 
     globals->isNewGame = FALSE;
+
+    if ( !!toBeDestroyed ) {
+        dict_destroy( toBeDestroyed );
+    }
 } /* ceInitAndStartBoard */
 
 #ifdef DEBUG
@@ -1385,7 +1421,14 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
         globals->hdc = hdc;
 
         if ( !!invalR ) {
-            ce_draw_erase( globals->draw, invalR );
+            XP_U16 ii;
+            for ( ii = 0; ii < N_OWNED_RECTS; ++ii ) {
+                RECT interR;
+                if ( IntersectRect( &interR, invalR, 
+                                    &globals->ownedRects[ii] ) ) {
+                    ce_draw_erase( globals->draw, &interR );
+                }
+            }
         }
 
         board_draw( globals->game.board );

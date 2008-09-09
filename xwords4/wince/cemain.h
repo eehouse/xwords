@@ -85,7 +85,10 @@ typedef struct CEAppPrefs {
     XP_Bool fullScreen;
 } CEAppPrefs;
 
-#define NUM_BUTTONS 4
+enum { OWNED_RECT_LEFT
+       ,OWNED_RECT_RIGHT
+       ,N_OWNED_RECTS
+};
 
 typedef struct CEAppGlobals {
     HINSTANCE hInst;
@@ -94,8 +97,6 @@ typedef struct CEAppGlobals {
 #if defined TARGET_OS_WINCE
     HWND hwndCB;
 #endif
-
-    HWND buttons[NUM_BUTTONS];
 
 #ifdef _WIN32_WCE
     SHACTIVATEINFO sai;
@@ -120,6 +121,8 @@ typedef struct CEAppGlobals {
     XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
     XP_U32 timerWhens[NUM_TIMERS_PLUS_ONE];
+
+    RECT ownedRects[N_OWNED_RECTS];
 
     XP_U16 flags;               /* bits defined below */
 
@@ -160,26 +163,6 @@ enum {
 
 #define CE_NUM_EDITABLE_COLORS CE_BLACK_COLOR
 
-typedef enum { 
-    RFONTS_TRAY
-    ,RFONTS_TRAYVAL
-    ,RFONTS_CELL
-    ,RFONTS_PTS
-
-    ,N_RESIZE_FONTS
-} RFIndex;
-
-typedef struct _PenColorPair {
-    COLORREF ref;
-    HGDIOBJ pen;
-} PenColorPair;
-
-typedef struct _FontCacheEntry {
-    HFONT setFont;
-    XP_U16 setFontHt;
-    XP_U16 offset;
-    XP_U16 actualHt;
-} FontCacheEntry;
 
 int messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title, 
                     XP_U16 buttons );

@@ -38,6 +38,8 @@
 #define DRAW_FUNC_NAME(nam) ce_draw_ ## nam
 #endif
 
+//#define MEASURE_OLD_WAY
+
 #define CE_MINI_V_PADDING 6
 #define CE_MINIW_PADDING 0
 #define CE_SCORE_PADDING -3
@@ -52,6 +54,28 @@
 #else
 # define TREAT_AS_CURSOR(d,f) (((f) & CELL_ISCURSOR) != 0)
 #endif
+
+
+typedef enum { 
+    RFONTS_TRAY
+    ,RFONTS_TRAYVAL
+    ,RFONTS_CELL
+    ,RFONTS_PTS
+
+    ,N_RESIZE_FONTS
+} RFIndex;
+
+typedef struct _PenColorPair {
+    COLORREF ref;
+    HGDIOBJ pen;
+} PenColorPair;
+
+typedef struct _FontCacheEntry {
+    HFONT setFont;
+    XP_U16 setFontHt;
+    XP_U16 offset;
+    XP_U16 actualHt;
+} FontCacheEntry;
 
 struct CEDrawCtx {
     DrawCtxVTable* vtable;
@@ -86,6 +110,7 @@ struct CEDrawCtx {
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
 static void ceClipToRect( HDC hdc, const RECT* rt );
+static void ceClearFontCache( CEDrawCtx* dctx );
 
 static void
 XPRtoRECT( RECT* rt, const XP_Rect* xprect )
@@ -244,6 +269,147 @@ ERROR
 } /* ceClipToRect */
 
 static void
+makeTestBuf( CEDrawCtx* dctx, XP_UCHAR* buf, XP_UCHAR bufLen, RFIndex index )
+{
+    switch( index ) {
+    case RFONTS_TRAY:
+    case RFONTS_CELL: {
+        Tile tile;
+        Tile blank = (Tile)-1;
+        const DictionaryCtxt* dict = dctx->dict;
+        XP_U16 nFaces = dict_numTileFaces( dict );
+        Tile tiles[nFaces];
+        XP_U16 nOut = 0;
+        XP_ASSERT( !!dict && nFaces < bufLen );
+        if ( dict_hasBlankTile(dict) ) {
+            blank = dict_getBlankTile( dict );
+        }
+        for ( tile = 0; tile < nFaces; ++tile ) {
+            if ( tile != blank ) {
+                tiles[nOut++] = tile;
+            }
+        }
+        (void)dict_tilesToString( dict, tiles, nOut, buf, bufLen );
+    }
+        break;
+    case RFONTS_TRAYVAL:
+        strcpy( buf, "0" );     /* all numbers the same :-) */
+        break;
+    case RFONTS_PTS:
+        strcpy( buf, "Pts:0?" );
+        break;
+    case N_RESIZE_FONTS:
+        XP_ASSERT(0);
+    }
+    XP_LOGF( "%s=>%s", __func__, buf );
+} /* makeTestBuf */
+
+#ifndef MEASURE_OLD_WAY
+static void
+ceMeasureGlyph( HDC hdc, HBRUSH white, wchar_t glyph,
+                XP_U16 minTopSeen, XP_U16 maxBottomSeen,
+                XP_U16* top, XP_U16* bottom )
+{
+    SIZE size;
+    XP_U16 xx, yy;
+    XP_Bool done;
+
+    GetTextExtentPoint32( hdc, &glyph, 1, &size );
+    RECT rect = { 0, 0, size.cx, size.cy };
+    FillRect( hdc, &rect, white );
+    DrawText( hdc, &glyph, 1, &rect, DT_TOP | DT_LEFT );
+
+/*     char tbuf[size.cx+1]; */
+/*     for ( yy = 0; yy < size.cy; ++yy ) { */
+/*         XP_MEMSET( tbuf, 0, size.cx+1 ); */
+/*         for ( xx = 0; xx < size.cx; ++xx ) { */
+/*             COLORREF ref = GetPixel( hdc, xx, yy ); */
+/*             XP_ASSERT( ref != CLR_INVALID ); */
+/*             strcat( tbuf, ref==0? " " : "x" ); */
+/*         } */
+/*         XP_LOGF( "line[%.2d] = %s", yy, tbuf ); */
+/*     } */
+
+    /* Find out if this guy's taller than what we have */
+    for ( done = XP_FALSE, yy = 0; yy < minTopSeen && !done; ++yy ) {
+        for ( xx = 0; xx < size.cx; ++xx ) {
+            COLORREF ref = GetPixel( hdc, xx, yy );
+            if ( ref == CLR_INVALID ) {
+                break;               /* done this line */
+            } else if ( ref == 0 ) { /* a pixel set! */
+                *top = yy;
+                done = XP_TRUE;
+                break;
+            }
+        }
+    }
+
+    /* Extends lower than seen */
+    for ( done = XP_FALSE, yy = size.cy - 1; yy > maxBottomSeen && !done; --yy ) {
+        for ( xx = 0; xx < size.cx; ++xx ) {
+            COLORREF ref = GetPixel( hdc, xx, yy );
+            if ( ref == CLR_INVALID ) {
+                break;
+            } else if ( ref == 0 ) { /* a pixel set! */
+                *bottom = yy;
+                done = XP_TRUE;
+                break;
+            }
+        }
+    }
+/*     XP_LOGF( "%s: top: %d; bottom: %d", __func__, *top, *bottom ); */
+} /* ceMeasureGlyph */
+
+static void
+ceMeasureGlyphs( CEDrawCtx* dctx, HDC hdc, /* HFONT font,  */wchar_t* str,
+                 XP_U16* hasMinTop, XP_U16* hasMaxBottom )
+{
+    HBRUSH white = dctx->brushes[CE_WHITE_COLOR];
+    XP_U16 ii;
+    XP_U16 len = wcslen(str);
+    XP_U16 minTopSeen, maxBottomSeen;
+    XP_U16 maxBottomIndex = 0;
+    XP_U16 minTopIndex = 0;
+
+    minTopSeen = 1000;          /* really large... */
+    maxBottomSeen = 0;
+    for ( ii = 0; ii < len; ++ii ) {
+        XP_U16 thisTop, thisBottom;
+
+        ceMeasureGlyph( hdc, white, str[ii],
+                        minTopSeen, maxBottomSeen,
+                        &thisTop, &thisBottom );
+        if ( thisBottom > maxBottomSeen ) {
+            maxBottomSeen = thisBottom;
+            maxBottomIndex = ii;
+        }
+        if ( thisTop < minTopSeen ) {
+            minTopSeen = thisTop;
+            minTopIndex = ii;
+        }
+    }
+
+/*     XP_LOGF( "offset: %d; height: %d", minTopSeen, maxBottomSeen - minTopSeen + 1 ); */
+/*     XP_LOGF( "offset came from %d; height from %d", minTopIndex, maxBottomIndex ); */
+    *hasMinTop = minTopIndex;
+    *hasMaxBottom = maxBottomIndex;
+} /* ceMeasureGlyphs */
+#endif
+
+static void
+ceClearFontCache( CEDrawCtx* dctx )
+{
+    XP_U16 ii;
+    for ( ii = 0; ii < N_RESIZE_FONTS; ++ii ) {
+        if ( !!dctx->fcEntry[ii].setFont ) {
+            DeleteObject( dctx->fcEntry[ii].setFont );
+        }
+    }
+    XP_MEMSET( &dctx->fcEntry, 0, sizeof(dctx->fcEntry) );
+}
+
+#ifdef MEASURE_OLD_WAY
+static void
 ceMeasureTextHt( HFONT font, const char* str, XP_U16* ht, XP_U16* offset )
 {
     XP_U16 len = strlen(str);
@@ -325,27 +491,121 @@ ceMeasureTextHt( HFONT font, const char* str, XP_U16* ht, XP_U16* offset )
     *ht = lastLine - firstLine + 1;
 /*     XP_LOGF( "%s(%s)=>ht: %d; offset: %d", __func__, str, *ht, *offset ); */
 } /* ceMeasureTextHt */
+#endif
 
 static void
-makeTestBuf( CEDrawCtx* XP_UNUSED(dctx), XP_UCHAR* buf, 
-             XP_UCHAR XP_UNUSED(bufLen), RFIndex index )
+ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index, 
+               FontCacheEntry* fce )
 {
-    switch( index ) {
-    case RFONTS_TRAY:
-    case RFONTS_CELL:
-        /* build this from dictioanary */
-        strcpy( buf, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" );
-        break;
-    case RFONTS_TRAYVAL:
-        strcpy( buf, "0" );     /* all numbers the same :-) */
-        break;
-    case RFONTS_PTS:
-        strcpy( buf, "Pts:0?" );
-        break;
-    case N_RESIZE_FONTS:
-        XP_ASSERT(0);
+#ifdef MEASURE_OLD_WAY
+    HFONT font;
+    LOGFONT fontInfo;
+    char buf[65];
+    XP_U16 offset;
+    XP_U16 actualHt;
+    XP_U16 trialHt;
+
+/*     XP_LOGF( "%s: calculating for index: %d; height: %d", */
+/*              __func__, index, height ); */
+
+    makeTestBuf( dctx, buf, VSIZE(buf), index );
+
+    for ( trialHt = soughtHeight; ; /*++trialHt*/ ) {
+        XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
+        fontInfo.lfHeight = trialHt;
+        HFONT testFont = CreateFontIndirect( &fontInfo );
+        XP_U16 testOffset, testHt;
+
+        /*             XP_LOGF( "%s: looking for ht %d with testht %d", __func__, height, trialHt ); */
+        ceMeasureTextHt( testFont, buf, &testHt, &testOffset );
+        if ( testHt > soughtHeight ) {
+            /* we've gone too far, so choose last that fit!!! */
+            XP_ASSERT( !!font );
+            DeleteObject( testFont );
+            break;
+            /*             } else if ( trialHt == height /\* first time through *\/ */
+            /*                         && testOffset > 0 ) { /\* for safety *\/ */
+            /*                 trialHt += testOffset; */
+        } else {
+            ++trialHt;
+        }
+        DeleteObject( font );
+        font = testFont;
+        offset = testOffset;
+        actualHt = testHt;
     }
-}
+
+    if ( !!fce->setFont ) {
+        DeleteObject( fce->setFont );
+    }
+
+    fce->setFont = font;
+    fce->setFontHt = soughtHeight;
+    fce->offset = offset;
+    fce->actualHt = actualHt;
+#else
+    wchar_t widebuf[65];
+    XP_U16 len;
+    XP_U16 hasMinTop, hasMaxBottom;
+    XP_Bool firstPass;
+    HBRUSH white = dctx->brushes[CE_WHITE_COLOR];
+    HDC memDC = CreateCompatibleDC( NULL );
+    HBITMAP memBM;
+    XP_U16 testSize;
+
+    XP_LOGF( "%s(index=%d)", __func__, index );
+
+    char sample[65];
+    makeTestBuf( dctx, sample, VSIZE(sample), index );
+    len = strlen(sample);
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sample, len,
+                         widebuf, len );
+
+    memBM = CreateCompatibleBitmap( memDC, 64, 64 );
+    SelectObject( memDC, memBM );
+
+    for ( firstPass = XP_TRUE, testSize = soughtHeight*2; ; --testSize ) {
+        LOGFONT fontInfo;
+        XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
+        fontInfo.lfHeight = testSize;
+        HFONT testFont = CreateFontIndirect( &fontInfo );
+        if ( !!testFont ) {
+            XP_U16 thisHeight, top, bottom;
+
+            SelectObject( memDC, testFont );
+
+            /* first time, measure all of them to determine which chars have
+               high and low points */
+            if ( firstPass ) {
+                ceMeasureGlyphs( dctx, memDC, widebuf, &hasMinTop,
+                                 &hasMaxBottom );
+                firstPass = XP_FALSE;
+            } 
+            /* Thereafter, just measure the two we know about */
+            ceMeasureGlyph( memDC, white, sample[hasMinTop], 1000, 0, 
+                            &top, &bottom );
+            ceMeasureGlyph( memDC, white, sample[hasMaxBottom],
+                            top, bottom, &top, &bottom );
+            thisHeight = bottom - top + 1;
+
+            if ( thisHeight <= soughtHeight ) { /* got it!!! */
+                fce->setFont = testFont;
+                fce->setFontHt = soughtHeight;
+                fce->offset = top;
+                fce->actualHt = thisHeight;
+                XP_LOGF( "Looking for %d; PICKED %d", 
+                         soughtHeight, thisHeight );
+                break;
+            }
+            DeleteObject( testFont );
+            XP_LOGF( "Looking for %d; rejected %d", soughtHeight, thisHeight );
+        }
+    }
+
+    DeleteObject( memBM );
+    DeleteDC( memDC );
+#endif
+} /* ceBestFitFont */
 
 static HFONT
 ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index,
@@ -354,51 +614,7 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index,
     FontCacheEntry* fce = &dctx->fcEntry[index];
     if ( (0 != height)            /* 0 means use what we have */
          && fce->setFontHt != height ) {
-        HFONT font;
-        LOGFONT fontInfo;
-        char buf[65];
-        XP_U16 offset;
-        XP_U16 actualHt;
-        XP_U16 trialHt;
-
-        XP_LOGF( "%s: calculating for index: %d; height: %d",
-                 __func__, index, height );
-
-        makeTestBuf( dctx, buf, VSIZE(buf), index );
-
-        for ( trialHt = height; ; /*++trialHt*/ ) {
-            XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
-            fontInfo.lfHeight = trialHt;
-            HFONT testFont = CreateFontIndirect( &fontInfo );
-            XP_U16 testOffset, testHt;
-
-/*             XP_LOGF( "%s: looking for ht %d with testht %d", __func__, height, trialHt ); */
-            ceMeasureTextHt( testFont, buf, &testHt, &testOffset );
-            if ( testHt > height ) {
-                /* we've gone too far, so choose last that fit!!! */
-                XP_ASSERT( !!font );
-                DeleteObject( testFont );
-                break;
-/*             } else if ( trialHt == height /\* first time through *\/ */
-/*                         && testOffset > 0 ) { /\* for safety *\/ */
-/*                 trialHt += testOffset; */
-            } else {
-                ++trialHt;
-            }
-            DeleteObject( font );
-            font = testFont;
-            offset = testOffset;
-            actualHt = testHt;
-        }
-
-        if ( !!fce->setFont ) {
-            DeleteObject( fce->setFont );
-        }
-
-        fce->setFont = font;
-        fce->setFontHt = height;
-        fce->offset = offset;
-        fce->actualHt = actualHt;
+        ceBestFitFont( dctx, height, index, fce );
     }
 
     if ( !!offsetP ) {
@@ -407,9 +623,9 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index,
     if ( !!actualHtP ) {
         *actualHtP = fce->actualHt;
     }
-    XP_ASSERT( !!fce->setFont );
+    XP_ASSERT( !!fce->setFont ); /* failing... */
     return fce->setFont;
-}
+} /* ceGetSizedFont */
 
 #if 0
 /* I'm trying to measure individual chars, but GetGlyphOutline and
@@ -516,7 +732,7 @@ DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    XP_Bool canDraw = !!hdc;
+    XP_Bool canDraw = !!hdc && !!dctx->dict;
     if ( canDraw ) {
         dctx->prevBkColor = GetBkColor( hdc );
         dctx->topFocus = dfs == DFS_TOP;
@@ -722,7 +938,7 @@ DRAW_FUNC_NAME(trayBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    XP_Bool canDraw = !!hdc;
+    XP_Bool canDraw = !!hdc && !!dctx->dict;
     if ( canDraw ) {
         dctx->trayOwner = owner;
         dctx->topFocus = dfs == DFS_TOP;
@@ -1352,11 +1568,7 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 
     DeleteObject( dctx->playerFont );
     DeleteObject( dctx->selPlayerFont );
-    for ( i = 0; i < N_RESIZE_FONTS; ++i ) {
-        if ( !!dctx->fcEntry[i].setFont ) {
-            DeleteObject( dctx->fcEntry[i].setFont );
-        }
-    }
+    ceClearFontCache( dctx );
 
     DeleteObject( dctx->rightArrow );
     DeleteObject( dctx->downArrow );
