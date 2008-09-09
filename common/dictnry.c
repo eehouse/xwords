@@ -43,19 +43,22 @@ setBlankTile( DictionaryCtxt* dctx )
 
     for ( i = 0; i < dctx->nFaces; ++i ) {
         if ( dctx->faces16[i] == 0 ) {
+            XP_ASSERT( dctx->blankTile == -1 ); /* only one passes test? */
             dctx->blankTile = (XP_S8)i;
+#ifndef DEBUG
             break;
+#endif
         }
     }    
 } /* setBlankTile */
 
-#if defined BLANKS_FIRST || defined DEBUG
+/* #if defined BLANKS_FIRST || defined DEBUG */
 XP_Bool
 dict_hasBlankTile( const DictionaryCtxt* dict )
 {
     return dict->blankTile >= 0;
 } /* dict_hasBlankTile */
-#endif
+/* #endif */
 
 Tile
 dict_getBlankTile( const DictionaryCtxt* dict )
