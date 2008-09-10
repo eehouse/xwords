@@ -29,6 +29,8 @@
 #include "mempool.h"
 #include "cesockwr.h"
 
+#define CE_GAMEFILE_VERSION 0x01 /* means draw gets to save/restore */
+
 #ifdef _WIN32_WCE
 typedef enum {
     WINCE_UNKNOWN
