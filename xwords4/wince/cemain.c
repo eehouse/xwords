@@ -1011,9 +1011,10 @@ ceLoadSavedGame( CEAppGlobals* globals )
     success = stream != NULL;
     if ( success ) {
         DictionaryCtxt* dict;
-        XP_Bool hasDict;
+        XP_U8 flags = stream_getU8( stream );
+        XP_Bool hasDict = (flags & 0x01) != 0;
+        flags >>= 1;
 
-        hasDict = stream_getU8( stream );
         if ( hasDict ) {
 #ifdef STUBBED_DICT
             XP_ASSERT(0);       /* just don't do this!!!! */
@@ -1025,6 +1026,10 @@ ceLoadSavedGame( CEAppGlobals* globals )
 #endif
         } else {
             dict = NULL;
+        }
+
+        if ( flags >= CE_GAMEFILE_VERSION ) {
+            ce_draw_fromStream( globals->draw, stream );
         }
 
         if ( success ) {
@@ -1666,6 +1671,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
             DictionaryCtxt* dict;
             FileWriteState fwState;
             const char* dictName;
+            XP_U8 flags;
 
             fwState.path = globals->curGameName;
             fwState.globals = globals;
@@ -1682,10 +1688,15 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 #else
             dictName = !!dict? dict_getName( dict ) : NULL;
 #endif
-            stream_putU8( memStream, (XP_U8)!!dictName );
+            flags = !!dictName? 0x01 : 0x00;
+            flags |= CE_GAMEFILE_VERSION << 1;
+            stream_putU8( memStream, flags );
+
             if ( !!dictName ) {
                 stringToStream( memStream, dictName );
             }
+
+            ce_draw_toStream( globals->draw, memStream );
 
             game_saveToStream( &globals->game, &globals->gameInfo, memStream );
 

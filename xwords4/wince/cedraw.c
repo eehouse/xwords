@@ -72,9 +72,10 @@ typedef struct _PenColorPair {
 
 typedef struct _FontCacheEntry {
     HFONT setFont;
-    XP_U16 setFontHt;
+    XP_U16 boundingHt;          /* what we fit within */
+    XP_U16 nominalHt;           /* the "size" of the font we choose */
+    XP_U16 actualHt;            /* the height of the tallest glyph we use */
     XP_U16 offset;
-    XP_U16 actualHt;
 } FontCacheEntry;
 
 struct CEDrawCtx {
@@ -590,7 +591,8 @@ ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index,
 
             if ( thisHeight <= soughtHeight ) { /* got it!!! */
                 fce->setFont = testFont;
-                fce->setFontHt = soughtHeight;
+                fce->boundingHt = soughtHeight;
+                fce->nominalHt = testSize;
                 fce->offset = top;
                 fce->actualHt = thisHeight;
                 XP_LOGF( "Looking for %d; PICKED %d", 
@@ -612,7 +614,7 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index )
 {
     FontCacheEntry* fce = &dctx->fcEntry[index];
     if ( (0 != height)            /* 0 means use what we have */
-         && fce->setFontHt != height ) {
+         && fce->boundingHt != height ) {
         ceBestFitFont( dctx, height, index, fce );
     }
 
@@ -1723,3 +1725,50 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
 
     return dctx;
 } /* ce_drawctxt_make */
+
+void
+ce_draw_toStream( const CEDrawCtx* dctx, XWStreamCtxt* stream )
+{
+    XP_U16 ii;
+
+    stream_putU8( stream, N_RESIZE_FONTS );
+    for ( ii = 0; ii < N_RESIZE_FONTS; ++ii ) {
+        const FontCacheEntry* fce = &dctx->fcEntry[ii];
+        stream_putU8( stream, fce->boundingHt );
+        stream_putU8( stream, fce->nominalHt );
+        stream_putU8( stream, fce->offset );
+        stream_putU8( stream, fce->actualHt );
+    }
+}
+
+void
+ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream )
+{
+    XP_U16 ii;
+    XP_U16 nEntries;
+
+    ceClearFontCache( dctx );   /* no leaking! */
+
+    nEntries = (XP_U16)stream_getU8( stream );
+
+    for ( ii = 0; ii < nEntries; ++ii ) {
+        FontCacheEntry fce;
+
+        fce.boundingHt = (XP_U16)stream_getU8( stream );
+        fce.nominalHt = (XP_U16)stream_getU8( stream );
+        fce.offset = (XP_U16)stream_getU8( stream );
+        fce.actualHt = (XP_U16)stream_getU8( stream );
+
+        /* We need to read from the file no matter how many entries, but only
+           populate what we have room for */
+        if ( ii < N_RESIZE_FONTS ) {
+            LOGFONT fontInfo;
+            XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
+            fontInfo.lfHeight = fce.nominalHt;
+            fce.setFont = CreateFontIndirect( &fontInfo );
+            XP_ASSERT( !!fce.setFont );
+
+            XP_MEMCPY( &dctx->fcEntry[ii], &fce, sizeof(dctx->fcEntry[ii]) );
+        }
+    }
+}
