@@ -256,6 +256,7 @@ ceCountSpecials( CEDictionaryCtxt* ctxt )
     return result;
 } /* ceCountSpecials */
 
+#if 0
 static void
 printBitmapData1( XP_U16 nCols, XP_U16 nRows, XP_U8* data )
 {
@@ -300,7 +301,6 @@ printBitmapData2( XP_U16 nCols, XP_U16 nRows, XP_U8* data )
     }
 } /* printBitmapData2 */
 
-#if 0
 static void
 longSwapData( XP_U8* destBase, XP_U16 nRows, XP_U16 rowBytes )
 {
@@ -370,13 +370,23 @@ ceMakeBitmap( CEDictionaryCtxt* XP_UNUSED_DBG(ctxt), XP_U8** ptrp )
             }
         }
 
-        printBitmapData1( nCols, nRows, savedDest );
-        printBitmapData2( nCols, nRows, savedDest );
+/*         printBitmapData1( nCols, nRows, savedDest ); */
+/*         printBitmapData2( nCols, nRows, savedDest ); */
     }
 
     *ptrp = ptr;
     return (XP_Bitmap*)bitmap;
 } /* ceMakeBitmap */
+
+static void
+ceDeleteBitmap( const CEDictionaryCtxt* ctxt, XP_Bitmap* bitmap )
+{
+    if ( !!bitmap ) {
+        CEBitmapInfo* bmi = (CEBitmapInfo*)bitmap;
+        XP_FREE( ctxt->super.mpool, bmi->bits );
+        XP_FREE( ctxt->super.mpool, bmi );
+    }
+}
 
 static void
 ce_dict_destroy( DictionaryCtxt* dict )
@@ -396,14 +406,8 @@ ce_dict_destroy( DictionaryCtxt* dict )
     }
     if ( !!ctxt->super.bitmaps ) {
         for ( i = 0; i < nSpecials; ++i ) {
-            HBITMAP bitmap = (HBITMAP)ctxt->super.bitmaps[i].largeBM;
-            if ( !!bitmap ) {
-                DeleteObject( bitmap );
-            }
-            bitmap = (HBITMAP)ctxt->super.bitmaps[i].smallBM;
-            if ( !!bitmap ) {
-                DeleteObject( bitmap );
-            }
+            ceDeleteBitmap( ctxt, ctxt->super.bitmaps[i].largeBM );
+            ceDeleteBitmap( ctxt, ctxt->super.bitmaps[i].smallBM );
         }
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
