@@ -170,13 +170,6 @@ int messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title,
                     XP_U16 buttons );
 XP_Bool queryBoxChar( CEAppGlobals* globals, const XP_UCHAR* msg );
 
-#ifdef DEBUG
-void logLastError( const char* comment );
-void messageToBuf( UINT message, char* buf, int bufSize );
-#else
-# define logLastError(c)
-#endif
-
 /* These allow LISTBOX and COMBOBOX to be used by the same code */
 
 #define INSERTSTRING(g) (IS_SMARTPHONE(g)?LB_INSERTSTRING:CB_INSERTSTRING)
