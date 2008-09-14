@@ -377,7 +377,8 @@ END
 
 #define SVGN_LEFT_COL 2
 #define SVGN_ROW_1 2
-#define SVGN_ROW_2 (SVGN_ROW_1+46)
+#define SVGN_LTEXT_HT 46
+#define SVGN_ROW_2 (SVGN_ROW_1+SVGN_LTEXT_HT)
 #define SVGN_ROW_3 (SVGN_ROW_2+18)
 #ifdef _WIN32_WCE
 # define SVGN_DLG_HT SVGN_ROW_3
@@ -391,7 +392,7 @@ CAPTION "Game name"
 FONT 8, "System"
 BEGIN
     LTEXT           "",
-                    IDC_SVGN_SELLAB,SVGN_LEFT_COL,SVGN_ROW_1,86,40
+                    IDC_SVGN_SELLAB,SVGN_LEFT_COL,SVGN_ROW_1,86,SVGN_LTEXT_HT
     EDITTEXT        IDC_SVGN_EDIT,SVGN_LEFT_COL,SVGN_ROW_2,86,12,
                     ES_AUTOHSCROLL
 #ifndef _WIN32_WCE
@@ -862,7 +863,7 @@ BEGIN
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
     IDS_DONE                "Done"
-    IDS_ABOUT       "Crosswords 4.2b4 (rev " SVN_REV ") "\
+    IDS_ABOUT       "Crosswords 4.2b5 (rev " SVN_REV ") "\
                     "for PocketPC. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
