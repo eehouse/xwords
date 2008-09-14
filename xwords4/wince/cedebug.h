@@ -27,8 +27,11 @@ void logRect( const char* comment, const RECT* rect );
 
 #ifdef DEBUG
 void XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg );
+void logLastError( const char* comment );
+void messageToBuf( UINT message, char* buf, int bufSize );
 #else
 # define XP_LOGW( prefix, arg )
+# define logLastError(c)
 #endif
 
 #endif  /* _CEDEBUG_H_ */

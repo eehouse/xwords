@@ -775,43 +775,6 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 } /* ceInitAndStartBoard */
 
-#ifdef DEBUG
-void
-logLastError( const char* comment )
-{
-    LPVOID lpMsgBuf;
-    DWORD lastErr = GetLastError();
-    XP_UCHAR msg[256];
-    XP_U16 len;
-    XP_U16 lenSoFar;
-
-    sprintf( msg, "%s (err: %ld): ", comment, lastErr );
-    lenSoFar = strlen( msg );
-
-    FormatMessage( 
-                  FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-                  FORMAT_MESSAGE_FROM_SYSTEM | 
-                  FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL,
-                  lastErr,
-                  0, // Default language
-                  (LPTSTR) &lpMsgBuf,
-                  0,
-                  NULL 
-                  );
-
-    len = wcslen( lpMsgBuf );
-    if ( len >= sizeof(msg)-lenSoFar ) {
-        len = sizeof(msg) - lenSoFar - 1;
-    }
-    WideCharToMultiByte( CP_ACP, 0, lpMsgBuf, len + 1,
-                         msg + lenSoFar, len + 1, NULL, NULL );
-    LocalFree( lpMsgBuf );
-
-    XP_LOGF( "system error: %s", msg );
-} /* logLastError */
-#endif
-
 static void
 ceSavePrefs( CEAppGlobals* globals )
 {
