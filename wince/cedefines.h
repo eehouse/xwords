@@ -20,8 +20,6 @@
 #ifndef _CEDEFINES_H_
 #define _CEDEFINES_H_
 
-#define CE_BOARD_SCALEH 16
-#define CE_BOARD_SCALEV 15
 #define CE_MAX_ROWS 15
 #define CE_BOARD_LEFT_LH 8
 #define CE_BOARD_LEFT_RH 0
