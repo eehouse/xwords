@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */
+/* -*- fill-column: 77; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 1997-2001 by Eric House (xwords@eehouse.org).   All rights reserved.
+ * Copyright 1997-2008 by Eric House (xwords@eehouse.org).   All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -643,6 +643,8 @@ getDictDir( wchar_t* buf, XP_U16 bufLen )
             *lastSlash = 0;
         }
     }
+
+/*     SHGetSpecialFolderPath(NULL,NULL,0,FALSE); */
 
     return success;
 } /* getDictDir */
