@@ -27,6 +27,9 @@
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define IDD_CONNSSDLG                  126
 #endif
+#ifdef ALLOW_CHOOSE_FONTS
+# define IDD_FONTSSDLG                  127
+#endif
 
 #define REMOTE_CHECK1                   1005
 #define NAME_EDIT1                      1006
@@ -67,6 +70,7 @@
 #define IDC_CHECKSHOWCURSOR             1042
 #define IDC_CHECKROBOTSCORES            1043
 #define IDC_PREFCOLORS                  1044
+#define IDC_PREFFONTS                   1100
 #define PHONIES_LABEL                   1045
 #define IDC_ROLECOMBO                   1046
 #define GIJUGGLE_BUTTON                 1048
@@ -138,6 +142,17 @@
 # define BLUE_LABEL                     1099
 # define CLSAMPLE_BUTTON_ID             1123
 #endif // MY_COLOR_SEL
+
+#ifdef ALLOW_CHOOSE_FONTS
+# define FONTS_LABEL                    1123
+# define FONTS_COMBO                    1124
+# define IDC_FONTSUPDOWN                1125
+# define FONTS_COMBO_PPC                1126
+# define FONTSIZE_LABEL                 1127
+# define FONTSIZE_COMBO                 1128
+# define IDC_FONTSIZEUPDOWN             1129
+# define FONTSIZE_COMBO_PPC             1130
+#endif
 
 #define IDC_CCONVIA_LAB                 1106
 

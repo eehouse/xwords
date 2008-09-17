@@ -43,6 +43,8 @@ CEOPT_ROOT ?= /opt
 
 # This requires custom Debian pocketpc-sdk package at the moment
 HAVE_COMMCTRL = 1
+# Dialog to browse fonts on device.  I doubt I want to ship with this.
+# CHOOSE_FONTS = -DALLOW_CHOOSE_FONTS
 
 ifeq ($(TARGET_OS),wince)
 # BLUETOOTH = -DXWFEATURE_BLUETOOTH
@@ -89,7 +91,7 @@ CFLAGS += -DARM -I./ -I../common -I../relay
 
 CFLAGS += -Wall -Wunused-parameter
 
-CFLAGS += $(BLUETOOTH) $(RELAY) $(STANDALONE) $(COLOR_SEL)
+CFLAGS += $(BLUETOOTH) $(RELAY) $(STANDALONE) $(COLOR_SEL) $(CHOOSE_FONTS)
 
 SVNDEF = -DSVN_REV='\"$(SVNREV)\"'
 CFLAGS += $(SVNDEF)
@@ -138,6 +140,7 @@ WINCESRC = \
 	ceprefs.c \
 	cestrbx.c \
 	cedraw.c \
+	cefonts.c \
 	debhacks.c \
 	cedebug.c \
 
@@ -165,7 +168,7 @@ XW_BOTH_DEFINES = \
 
 CFLAGS += $(XW_BOTH_DEFINES) -DARM
 RESFLAGS += $(XW_BOTH_DEFINES) $(STANDALONE) $(BLUETOOTH) $(RELAY) \
-	-D_WIN32 -D_WIN32_IE=0x0400 $(COLOR_SEL)
+	-D_WIN32 -D_WIN32_IE=0x0400 $(COLOR_SEL) $(CHOOSE_FONTS)
 
 ####################################################################
 # Rules start here

@@ -32,6 +32,7 @@
 #include "cemain.h"
 #include "cedict.h"
 #include "cedefines.h"
+#include "cedebug.h"
 #include "debhacks.h"
 
 #ifndef DRAW_FUNC_NAME
@@ -102,7 +103,6 @@ struct CEDrawCtx {
     XP_U16 miniLineHt;
     XP_Bool scoreIsVertical;
     XP_Bool topFocus;
-    XP_Bool beenCleared;
 
     MPSLOT
 };
@@ -1115,10 +1115,8 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
         fce = ceGetSizedFont( dctx, height, RFONTS_REM );
         oldFont = SelectObject( hdc, fce->setFont );
         ceMeasureText( dctx, fce, buf, 0/*CE_REM_PADDING*/, widthP, heightP );
-        (void)SelectObject( hdc, oldFont );
 
         (void)SelectObject( hdc, oldFont );
-
     } else {
         *widthP = *heightP = 0;
     }
