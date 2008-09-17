@@ -71,11 +71,17 @@ adjustForChoice( CePrefsDlgState* state )
     HWND hDlg = state->dlgHdr.hDlg;
     XP_U16 goesWithGlobal[] = {IDC_CHECKCOLORPLAYED, IDC_LEFTYCHECK,
                                IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES,
-                               IDC_PREFCOLORS };
+                               IDC_PREFCOLORS
+#ifdef ALLOW_CHOOSE_FONTS
+                               ,IDC_PREFFONTS
+#endif
+
+ };
     XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT, IDC_CHECKNOHINTS,
                               TIMER_CHECK, TIMER_EDIT, PHONIES_LABEL,
-                              PHONIES_COMBO, IDC_PHONIESUPDOWN, PHONIES_COMBO_PPC,
-                              IDC_PHONIESUPDOWN, IDC_PICKTILES
+                              PHONIES_COMBO, IDC_PHONIESUPDOWN, 
+                              PHONIES_COMBO_PPC,
+                              IDC_PICKTILES
 #ifdef XWFEATURE_SEARCHLIMIT
                               ,IDC_CHECKHINTSLIMITS
 #endif
@@ -305,6 +311,12 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             ceDoColorsEdit( hDlg, globals, 
                                             pState->prefsPrefs.colors );
                         break;
+#ifdef ALLOW_CHOOSE_FONTS
+                    case IDC_PREFFONTS:
+                        ceShowFonts( hDlg, globals );
+                        break;
+#endif
+
 #ifdef XWFEATURE_SEARCHLIMIT
                     case IDC_CHECKNOHINTS:
                         timerOn = SendDlgItemMessage( hDlg, IDC_CHECKNOHINTS, 

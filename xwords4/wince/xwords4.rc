@@ -549,15 +549,24 @@ BEGIN
                     BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
     CONTROL         "All games",IDC_RADIOGLOBAL,"Button",
                     BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
+
+    /* Global */
     CONTROL         "Color played tiles",IDC_CHECKCOLORPLAYED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,90,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,90,
+                    PREFS_ROW_HT
     CONTROL         "Enable cursor",IDC_CHECKSHOWCURSOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,90,PREFS_ROW_HT
     CONTROL         "Explain robot scores",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW4,90,PREFS_ROW_HT
     PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,PR_ROW5,60,12
+#ifdef ALLOW_CHOOSE_FONTS
+    PUSHBUTTON      "Choose font...",IDC_PREFFONTS,8,PR_ROW6,60,12
+#endif
+
+    /* Per game */
     CONTROL         "Smart robot",IDC_CHECKSMARTROBOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,90,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,90,
+                    PREFS_ROW_HT
     CONTROL         "Disallow hints",IDC_CHECKNOHINTS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,60,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -793,6 +802,40 @@ BEGIN
 # endif
 END
 
+#endif
+
+#ifdef ALLOW_CHOOSE_FONTS
+IDD_FONTSSDLG DIALOG DISCARDABLE  0, 0, 120, 115
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION ""                      /* set by code */
+FONT 8, "System"
+BEGIN
+
+    LTEXT           "Fonts:",FONTS_LABEL,5,2,25,12
+#ifdef _WIN32_WCE
+    LISTBOX         FONTS_COMBO, 30,2,70,12, LISTBOX_CONTROL_FLAGS
+    CONTROL "",     IDC_FONTSUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
+                    0, 0, 0, 0 
+#endif
+    COMBOBOX        FONTS_COMBO_PPC,30,2,70,58,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    LTEXT           "Size:",FONTSIZE_LABEL,5,16,25,12
+#ifdef _WIN32_WCE
+    LISTBOX         FONTSIZE_COMBO, 30,16,25,12, LISTBOX_CONTROL_FLAGS
+    CONTROL "",     IDC_FONTSIZEUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
+                    0, 0, 0, 0 
+#endif
+    COMBOBOX        FONTSIZE_COMBO_PPC,30,16,25,58,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+# ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,20,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,100,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+# endif
+END
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
