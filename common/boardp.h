@@ -160,6 +160,7 @@ struct BoardCtxt {
     XP_Bool boardObscuresTray;
     XP_Bool boardHidesTray;
     XP_Bool scoreSplitHor;/* how to divide the scoreboard? */
+    XP_Bool srcIsPen;      /* We're processing a pen event, not a key event */
 
     XP_U16 star_row;
 
