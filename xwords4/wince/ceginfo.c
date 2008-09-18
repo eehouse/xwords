@@ -173,7 +173,7 @@ loadFromGameInfo( GameInfoState* giState )
         wchar_t widebuf[8];
         /* put a string in the moronic combobox */
         swprintf( widebuf, L"%d", i + 1 );
-        SendDlgItemMessage( giState->dlgHdr.hDlg, giState->comboId,
+        SendDlgItemMessage( giState->dlgHdr.hDlg, giState->nPlayersId,
                             ADDSTRING(globals), 0, 
                             (long)widebuf );
     }
@@ -313,7 +313,7 @@ resIDForAttr( GameInfoState* state, NewGameAttr attr )
     XP_U16 resID = 0;
     switch( attr ) {
     case NG_ATTR_NPLAYERS:
-        resID = state->comboId;
+        resID = state->nPlayersId;
         break;
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     case NG_ATTR_ROLE:
@@ -489,7 +489,8 @@ ceDrawIconButton( CEAppGlobals* globals, DRAWITEMSTRUCT* dis )
 static void
 checkUpdateCombo( GameInfoState* giState, XP_U16 id )
 {
-    if ( giState->isNewGame ) {  /* ignore if in info mode */
+    if ( (id == giState->nPlayersId)
+         && giState->isNewGame ) {  /* ignore if in info mode */
         NGValue value;
         value.ng_u16 = 1 + (XP_U16)
             SendDlgItemMessage( giState->dlgHdr.hDlg, id,
@@ -515,7 +516,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         giState = (GameInfoState*)lParam;
         globals = giState->dlgHdr.globals;
 
-        giState->comboId = LB_IF_PPC(globals,IDC_NPLAYERSCOMBO);
+        giState->nPlayersId = LB_IF_PPC(globals,IDC_NPLAYERSCOMBO);
         giState->dictListId = LB_IF_PPC(globals,IDC_DICTLIST);
 
         ceDlgSetup( &giState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
@@ -568,7 +569,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 case WM_COMMAND:
                     result = TRUE;
                     id = LOWORD(wParam);
-                    if ( id == giState->comboId ) {
+                    if ( id == giState->nPlayersId ) {
                         if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                             checkUpdateCombo( giState, id );
                         }
