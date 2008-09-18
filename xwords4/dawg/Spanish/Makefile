@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=Spanish
+XWLANG=Spanish_FAA_4_1
 LANGCODE=es_ES
 TARGET_TYPE ?= PALM
 
@@ -43,7 +43,7 @@ include ../Makefile.langcommon
 #$(LANG)Main.dict.gz: SpanishMain.dict.gz
 #	ln -s $< $@
 
-SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/XavSpanish.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/Spanish/FAA_4.1.txt.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< \

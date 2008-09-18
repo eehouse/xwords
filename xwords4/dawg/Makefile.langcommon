@@ -16,6 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
+XWLANG := $(XWLANG)_
+
 FRANK_EXT = xwd
 
 # This is now on for all dicts and languages. dict2dawg.pl can't
@@ -69,7 +71,7 @@ else
 PDBTYPE = Xwr3
 endif
 
-all: $(XWLANG)2to8.pdb
+all: $(XWLANG)2to8.pdb $(XWLANG)2to9.pdb $(XWLANG)2to15.pdb
 
 empty: $(XWLANG)0to0.pdb
 
@@ -142,7 +144,7 @@ ifeq ($(TARGET_TYPE),FRANK)
 # platforms is a by-product).  But if the EBM tools aren't there, just
 # build the .xwd file.
 ifeq (x$(shell echo -n $$EBOOKMAN_SDK)x,xx)
-all: $(XWLANG)2to8.xwd
+all: $(XWLANG)2to8.xwd $(XWLANG)2to9.xwd $(XWLANG)2to15.xwd
 empty: $(XWLANG)0to0.xwd
 else
 all: checkARCH $(XWLANG)2to8.seb
@@ -174,7 +176,7 @@ else
 ifeq ($(TARGET_TYPE),WINCE)
 
 ### WINCE section here ###
-all: $(XWLANG)2to8.xwd
+all: $(XWLANG)2to8.xwd $(XWLANG)2to9.xwd $(XWLANG)2to15.xwd
 	../mkxwdcab.pl -f $<
 
 else
