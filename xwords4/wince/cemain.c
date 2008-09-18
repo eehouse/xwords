@@ -2151,12 +2151,12 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 RECT winrect;
                 if ( GetUpdateRect( hWnd, &winrect, FALSE ) ) {
                     if ( !!globals->game.board ) {
-                        XP_Rect rect;
+                        XP_Rect xprect;
                         /* When an obscuring window goes away, the update region
                            needs to be redrawn.  This allows invalidating it. */
 
-                        RECTtoXPR( &rect, &winrect );
-                        board_invalRect( globals->game.board, &rect );
+                        RECTtoXPR( &xprect, &winrect );
+                        board_invalRect( globals->game.board, &xprect );
 
                         XP_ASSERT( globals->hWnd == hWnd );
                         drawInsidePaint( globals, &winrect );

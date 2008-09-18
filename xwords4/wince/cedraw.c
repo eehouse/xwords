@@ -202,12 +202,12 @@ ceDrawTextClipped( HDC hdc, wchar_t* buf, XP_S16 len, XP_Bool clip,
                    const FontCacheEntry* fce, XP_U16 left, XP_U16 top, 
                    XP_U16 width, XP_U16 hJust )
 {
-    RECT rect; 
-
-    rect.left = left;
-    rect.top = top;
-    rect.bottom = top + fce->glyphHt;
-    rect.right = left + width;
+    RECT rect = {
+      .left = left,
+      .top = top,
+      .bottom = top + fce->glyphHt,
+      .right = left + width
+    };
 
     if ( clip ) {
       ceClipToRect( hdc, &rect );
@@ -391,7 +391,7 @@ ceMeasureGlyph( HDC hdc, HBRUSH white, wchar_t glyph,
 } /* ceMeasureGlyph */
 
 static void
-ceMeasureGlyphs( CEDrawCtx* dctx, HDC hdc, /* HFONT font,  */wchar_t* str,
+ceMeasureGlyphs( CEDrawCtx* dctx, HDC hdc, wchar_t* str,
                  XP_U16* hasMinTop, XP_U16* hasMaxBottom )
 {
     HBRUSH white = dctx->brushes[CE_WHITE_COLOR];
@@ -405,6 +405,11 @@ ceMeasureGlyphs( CEDrawCtx* dctx, HDC hdc, /* HFONT font,  */wchar_t* str,
     maxBottomSeen = 0;
     for ( ii = 0; ii < len; ++ii ) {
         XP_U16 thisTop, thisBottom;
+
+        /* TODO: Find a way to to keep minTopIndex && maxBottomIndex the same
+           IFF there's a character, like Q, that has the lowest point but 
+           as high a top as anybody else.  Maybe for > until both are set,
+           then >= ? */
 
         ceMeasureGlyph( hdc, white, str[ii],
                         minTopSeen, maxBottomSeen,
@@ -485,7 +490,7 @@ ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index,
             SelectObject( memDC, testFont );
 
             /* first time, measure all of them to determine which chars have
-               high and low points */
+               the set's high and low points */
             if ( firstPass ) {
                 ceMeasureGlyphs( dctx, memDC, widebuf, &hasMinTop,
                                  &hasMaxBottom );
@@ -494,8 +499,10 @@ ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index,
             /* Thereafter, just measure the two we know about */
             ceMeasureGlyph( memDC, white, widebuf[hasMinTop], 1000, 0, 
                             &top, &bottom );
-            ceMeasureGlyph( memDC, white, widebuf[hasMaxBottom],
-                            top, bottom, &top, &bottom );
+            if ( hasMaxBottom != hasMinTop ) {
+              ceMeasureGlyph( memDC, white, widebuf[hasMaxBottom],
+                              top, bottom, &top, &bottom );
+            }
             thisHeight = bottom - top + 1;
 
             if ( thisHeight <= soughtHeight ) { /* got it!!! */
