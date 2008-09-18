@@ -42,8 +42,11 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <assert.h>
+#include <algorithm>
 
 #include <string>
 #include <map>
@@ -99,7 +102,7 @@ int gLimHigh = MAX_WORD_LEN;
 
 
 // OWL is 1.7M
-#define MAX_POOL_SIZE (5 * 0x100000)
+#define MAX_POOL_SIZE (10 * 0x100000)
 #define ERROR_EXIT(...) error_exit( __LINE__, __VA_ARGS__ );
 
 static char* parseARGV( int argc, char** argv, const char** inFileName );
