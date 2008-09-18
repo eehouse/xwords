@@ -62,8 +62,10 @@ pointToTileIndex( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* onDividerP )
     /* The divider rect is narrower and kinda hard to tap on.  Let's expand
        it just for this test */
     biggerRect = divider;
-    biggerRect.left -= 2;
-    biggerRect.width += 4;
+    if ( board->srcIsPen ) {
+        biggerRect.left -= 2;   /* should be in proportion to tile dims */
+        biggerRect.width += 4;
+    }
     onDivider = rectContainsPt( &biggerRect, x, y );
 
     if ( !onDivider ) {
@@ -157,7 +159,7 @@ drawTray( BoardCtxt* board )
                 Tile blank = dict_getBlankTile( dictionary );
 
                 if ( turn >= 0 ) {
-                    XP_S16 i; /* which tile slot are we drawing in */
+                    XP_S16 ii; /* which tile slot are we drawing in */
                     XP_U16 ddAddedIndx, ddRmvdIndx;
                     XP_U16 numInTray = countTilesToShow( board );
                     XP_Bool isBlank;
@@ -167,10 +169,9 @@ drawTray( BoardCtxt* board )
 
                     /* draw in reverse order so drawing happens after
                        erasing */
-                    for ( i = MAX_TRAY_TILES - 1; 
-                          i >= 0; --i ) {
+                    for ( ii = MAX_TRAY_TILES - 1; ii >= 0; --ii ) {
                         CellFlags flags = CELL_NONE;
-                        XP_U16 mask = 1 << i;
+                        XP_U16 mask = 1 << ii;
 
                         if ( (board->trayInvalBits & mask) == 0 ) {
                             continue;
@@ -180,9 +181,9 @@ drawTray( BoardCtxt* board )
                             flags |= CELL_ISCURSOR;
                         }
 #endif
-                        figureTrayTileRect( board, i, &tileRect );
+                        figureTrayTileRect( board, ii, &tileRect );
 
-                        if ( i >= numInTray ) {
+                        if ( ii >= numInTray ) {
                             draw_drawTile( board->draw, &tileRect, NULL,
                                            NULL, -1, flags | CELL_ISEMPTY );
                         } else if ( showFaces ) {
@@ -193,11 +194,11 @@ drawTray( BoardCtxt* board )
                             XP_S16 value;
                             Tile tile;
 
-                            if ( ddAddedIndx == i ) {
+                            if ( ddAddedIndx == ii ) {
                                 dragDropTileInfo( board, &tile, &isBlank );
                             } else {
-                                XP_U16 modIndex = i;
-                                if ( ddAddedIndx < i ) {
+                                XP_U16 modIndex = ii;
+                                if ( ddAddedIndx < ii ) {
                                     --modIndex;
                                 }
                                 /* while we're right of the removal area,
@@ -219,10 +220,10 @@ drawTray( BoardCtxt* board )
                             }
 
                             if ( isADrag ) {
-                                if ( ddAddedIndx == i ) {
+                                if ( ddAddedIndx == ii ) {
                                     flags |= CELL_HIGHLIGHT;
                                 }
-                            } else if ( (traySelBits & (1<<i)) != 0 ) {
+                            } else if ( (traySelBits & (1<<ii)) != 0 ) {
                                 flags |= CELL_HIGHLIGHT;
                             }
                             if ( isBlank ) {

@@ -1269,9 +1269,12 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
                                      recalculated */
         figureBoardRect( board ); /* comes before setYOffset since that
                                      uses rects to calc scroll */
-        if ( (board->focussed == OBJ_TRAY) && board->focusHasDived ) {
-            board->focusHasDived = XP_FALSE;
-        }
+
+        /* This is sometimes the wrong thing to do, and seems not to be
+           needed at all. */
+/*         if ( (board->focussed == OBJ_TRAY) && board->focusHasDived ) { */
+/*             board->focusHasDived = XP_FALSE; */
+/*         } */
         invalFocusOwner( board );
 
         if ( board->boardObscuresTray ) {
@@ -1861,8 +1864,8 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
         break;
 
     case OBJ_TRAY:
-        if ( checkRevealTray(board)
-             && !board->selInfo->tradeInProgress ) {
+      if ( (board->trayVisState == TRAY_REVEALED)
+           && !board->selInfo->tradeInProgress ) {
             result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
         }
         break;
@@ -1891,6 +1894,8 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
     XP_Bool result = XP_FALSE;
     XP_Bool penDidSomething;
     BoardObjectType onWhich;
+
+    board->srcIsPen = XP_TRUE; 
 
     penDidSomething = pointOnSomething( board, x, y, &onWhich );
 
@@ -2252,6 +2257,8 @@ board_handleKeyDown( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     XP_Bool draw = XP_FALSE;
 #ifdef KEYBOARD_NAV
     XP_U16 x, y;
+
+    board->srcIsPen = XP_FALSE;
 
     *pHandled = XP_FALSE;
 
