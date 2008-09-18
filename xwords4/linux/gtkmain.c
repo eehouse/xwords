@@ -29,7 +29,6 @@
 #include <arpa/inet.h>
 
 #include <unistd.h>
-#include <sys/stat.h>
 #include <ctype.h>
 #include <gdk/gdkkeysyms.h>
 #include <errno.h>
@@ -62,7 +61,6 @@
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void sendOnClose( XWStreamCtxt* stream, void* closure );
 #endif
-static XP_Bool file_exists( const char* fileName );
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void printFinalScores( GtkAppGlobals* globals );
 
@@ -289,29 +287,6 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
 # define MEMPOOL
 #endif
 
-static XWStreamCtxt*
-streamFromFile( GtkAppGlobals* globals, char* name )
-{
-    XP_U8* buf;
-    struct stat statBuf;
-    FILE* f;
-    XWStreamCtxt* stream;
-
-    (void)stat( name, &statBuf );
-    buf = malloc( statBuf.st_size );
-    f = fopen( name, "r" );
-    fread( buf, statBuf.st_size, 1, f );
-    fclose( f );
-
-    stream = mem_stream_make( MEMPOOL 
-                              globals->cGlobals.params->vtMgr, 
-                              globals, CHANNEL_NONE, NULL );
-    stream_putBytes( stream, buf, statBuf.st_size );
-    free( buf );
-
-    return stream;
-} /* streamFromFile */
-
 static void
 createOrLoadObjects( GtkAppGlobals* globals )
 {
@@ -329,7 +304,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
 
-        stream = streamFromFile( globals, params->fileName );
+        stream = streamFromFile( &globals->cGlobals, params->fileName, globals );
 
         opened = game_makeFromStream( MEMPOOL stream, &globals->cGlobals.game, 
                                       &globals->cGlobals.params->gi, 
@@ -548,25 +523,6 @@ handle_client_event( GtkWidget *widget, GdkEventClient *event,
     }
 } /* handle_client_event */
 #endif
-
-static void
-writeToFile( XWStreamCtxt* stream, void* closure )
-{
-    void* buf;
-    FILE* file;
-    XP_U16 len;
-    GtkAppGlobals* globals = (GtkAppGlobals*)closure;
-
-    len = stream_getSize( stream );
-    buf = malloc( len );
-    stream_getBytes( stream, buf, len );
-
-    file = fopen( globals->cGlobals.params->fileName, "w" );
-    fwrite( buf, 1, len, file );
-    fclose( file );
-
-    free( buf );
-} /* writeToFile */
 
 static void
 quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
@@ -1468,15 +1424,6 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
 
     return result;
 } /* gtk_util_userQuery */
-
-static XP_Bool
-file_exists( const char* fileName ) 
-{
-    struct stat statBuf;
-
-    int statResult = stat( fileName, &statBuf );
-    return statResult == 0;
-} /* file_exists */
 
 static GtkWidget*
 makeShowButtonFromBitmap( void* closure, const gchar* filename, 

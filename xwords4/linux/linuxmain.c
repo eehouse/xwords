@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
@@ -62,6 +63,57 @@
 
 #define DEFAULT_PORT 10999
 #define DEFAULT_LISTEN_PORT 4998
+
+XP_Bool
+file_exists( const char* fileName ) 
+{
+    struct stat statBuf;
+
+    int statResult = stat( fileName, &statBuf );
+    return statResult == 0;
+} /* file_exists */
+
+XWStreamCtxt*
+streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
+{
+    XP_U8* buf;
+    struct stat statBuf;
+    FILE* f;
+    XWStreamCtxt* stream;
+
+    (void)stat( name, &statBuf );
+    buf = malloc( statBuf.st_size );
+    f = fopen( name, "r" );
+    fread( buf, statBuf.st_size, 1, f );
+    fclose( f );
+
+    stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+                              cGlobals->params->vtMgr, 
+                              closure, CHANNEL_NONE, NULL );
+    stream_putBytes( stream, buf, statBuf.st_size );
+    free( buf );
+
+    return stream;
+} /* streamFromFile */
+
+void
+writeToFile( XWStreamCtxt* stream, void* closure )
+{
+    void* buf;
+    FILE* file;
+    XP_U16 len;
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;
+
+    len = stream_getSize( stream );
+    buf = malloc( len );
+    stream_getBytes( stream, buf, len );
+
+    file = fopen( cGlobals->params->fileName, "w" );
+    fwrite( buf, 1, len, file );
+    fclose( file );
+
+    free( buf );
+} /* writeToFile */
 
 void
 catOnClose( XWStreamCtxt* stream, void* XP_UNUSED(closure) )

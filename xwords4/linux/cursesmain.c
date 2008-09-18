@@ -444,6 +444,22 @@ showStatus( CursesAppGlobals* globals )
 static XP_Bool
 handleQuit( CursesAppGlobals* globals )
 {
+    if ( !!globals->cGlobals.params->fileName ) {
+        XWStreamCtxt* outStream;
+
+        outStream = mem_stream_make( 
+               MPPARM(globals->cGlobals.params->util->mpool)
+               globals->cGlobals.params->vtMgr, 
+               &globals->cGlobals, 0, writeToFile );
+        stream_open( outStream );
+
+        game_saveToStream( &globals->cGlobals.game, 
+                           &globals->cGlobals.params->gi, 
+                           outStream );
+
+        stream_destroy( outStream );
+    }
+
     globals->timeToExit = XP_TRUE;
     return XP_TRUE;
 } /* handleQuit */
@@ -1336,12 +1352,25 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     g_globals.draw = (struct CursesDrawCtx*)
         cursesDrawCtxtMake( g_globals.boardWin );
-    
-    gameID = (XP_U16)util_getCurSeconds( g_globals.cGlobals.params->util );
-    game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
-                      params->util, (DrawCtx*)g_globals.draw,
-                      gameID, &g_globals.cp, LINUX_SEND, 
-                      IF_CH(linux_reset) &g_globals );
+
+    if ( !!params->fileName && file_exists( params->fileName ) ) {
+        XWStreamCtxt* stream;
+        stream = streamFromFile( &g_globals.cGlobals, params->fileName, &g_globals );
+
+        (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
+                                   &params->gi, dict, params->util, 
+                                   (DrawCtx*)g_globals.draw, 
+                                   &g_globals.cp,
+                                   LINUX_SEND, IF_CH(linux_reset) &g_globals );
+
+        stream_destroy( stream );
+    } else {
+        gameID = (XP_U16)util_getCurSeconds( g_globals.cGlobals.params->util );
+        game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
+                          params->util, (DrawCtx*)g_globals.draw,
+                          gameID, &g_globals.cp, LINUX_SEND, 
+                          IF_CH(linux_reset) &g_globals );
+    }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     if ( g_globals.cGlobals.game.comms ) {
