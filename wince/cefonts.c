@@ -153,6 +153,14 @@ ceDrawWithFont( FontsDlgState* state, HDC hdc )
         wchar_t fontName[33];
         HFONT oldFont, newFont;
         RECT rect;
+        wchar_t buf[16];
+        wchar_t* lines[] = {
+            buf
+            ,L"ABCDEFGHIJKL"
+            ,L"MNOPQRSTUV"
+            ,L"WXYZ0123456789"
+        };
+        XP_U16 ii;
 
         (void)SendDlgItemMessage( hDlg, state->fontsComboId, 
                                   GETLBTEXT(globals), selFont,
@@ -161,19 +169,17 @@ ceDrawWithFont( FontsDlgState* state, HDC hdc )
         XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
         wcscpy( fontInfo.lfFaceName, fontName );
         fontInfo.lfHeight = selSize + MIN_FONT_SHOWN;
+        swprintf( buf, L"Size: %d", fontInfo.lfHeight );
 
         newFont = CreateFontIndirect( &fontInfo );
         oldFont = SelectObject( hdc, newFont );
 
         rect = state->textRect;
-        DrawText( hdc, L"ABCDEFGHIJKL", -1, &rect,
-                  DT_SINGLELINE | DT_TOP | DT_LEFT );
-        rect.top += fontInfo.lfHeight;
-        DrawText( hdc, L"MNOPQRSTUV", -1, &rect,
-                  DT_SINGLELINE | DT_TOP | DT_LEFT );
-        rect.top += fontInfo.lfHeight;
-        DrawText( hdc, L"WXYZ0123456789", -1, &rect,
-                  DT_SINGLELINE | DT_TOP | DT_LEFT );
+        for ( ii = 0; ii < sizeof(lines)/sizeof(lines[0]); ++ii ) {
+            DrawText( hdc, lines[ii], -1, &rect,
+                      DT_SINGLELINE | DT_TOP | DT_LEFT );
+            rect.top += MAX_FONT_SHOWN - 4;
+        }
 
         SelectObject( hdc, oldFont );
     }
@@ -186,7 +192,7 @@ FontsDlgProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
 
         state = (FontsDlgState*)lParam;
         state->inited = XP_FALSE;
@@ -200,7 +206,7 @@ FontsDlgProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         result = TRUE;
     } else {
-        state = (FontsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (FontsDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!state ) {
             if ( !state->inited ) {
                 state->inited = XP_TRUE;
@@ -250,7 +256,7 @@ ceShowFonts( HWND hDlg, CEAppGlobals* globals )
     state.textRect.left = 5;
     state.textRect.top = 60;
     state.textRect.right = 300;
-    state.textRect.bottom = state.textRect.top + (3*MAX_FONT_SHOWN);
+    state.textRect.bottom = state.textRect.top + (4*MAX_FONT_SHOWN);
 
     (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_FONTSSDLG, hDlg,
                           (DLGPROC)FontsDlgProc, (long)&state );
