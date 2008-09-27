@@ -46,7 +46,7 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
         pState = (PasswdDialogState*)lParam;
 
         ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
@@ -55,7 +55,7 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         return TRUE;
     } else {
-        pState = (PasswdDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
+        pState = (PasswdDialogState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!pState ) {
 
             if ( ceDoDlgHandle( &pState->dlgHdr, message, wParam, lParam ) ) {

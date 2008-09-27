@@ -138,7 +138,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     NMTOOLBAR* nmToolP; 
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
 
         eState = (ClrEditDlgState*)lParam;
         eState->cancelled = XP_TRUE;
@@ -162,7 +162,7 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         return TRUE;
     } else {
-        eState = (ClrEditDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+        eState = (ClrEditDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !eState ) {
             return FALSE;
         }
@@ -383,7 +383,7 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
 
         state = (ColorsDlgState*)lParam;
         state->cancelled = XP_TRUE;
@@ -393,7 +393,7 @@ ColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         result = TRUE;
     } else {
-        state = (ColorsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (ColorsDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!state ) {
             XP_U16 wid;
 
