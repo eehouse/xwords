@@ -1622,15 +1622,17 @@ invalCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool
-pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, BoardObjectType* wp )
+pointOnSomething( BoardCtxt* board, XP_U16 xx, XP_U16 yy, BoardObjectType* wp )
 {
     XP_Bool result = XP_TRUE;
-    if ( board->trayVisState != TRAY_HIDDEN
-         && rectContainsPt( &board->trayBounds, x, y ) ) {
-        *wp = OBJ_TRAY;
-    } else if ( rectContainsPt( &board->boardBounds, x, y ) ) {
+
+    /* Test the board first in case it overlaps.  When tray is visible
+       boardBounds is shortened so it does not overlap. */
+    if ( rectContainsPt( &board->boardBounds, xx, yy ) ) {
         *wp = OBJ_BOARD;
-    } else if ( rectContainsPt( &board->scoreBdBounds, x, y ) ) {
+    } else if ( rectContainsPt( &board->trayBounds, xx, yy ) ) {
+        *wp = OBJ_TRAY;
+    } else if ( rectContainsPt( &board->scoreBdBounds, xx, yy ) ) {
         *wp = OBJ_SCORE;
     } else {
         result = XP_FALSE;
@@ -2126,7 +2128,7 @@ handlePenUpInternal( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool isPen )
                 }
                 break;
             case OBJ_TRAY:
-                if ( board->trayVisState == TRAY_REVERSED ) {
+                if ( board->trayVisState != TRAY_REVEALED ) {
                     draw = askRevealTray( board ) || draw;
                 } else {
                     draw = handlePenUpTray( board, xx, yy ) || draw;
@@ -2430,6 +2432,9 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
        space.  No interdependencies.  So handling updating of focus indication
        within the tray drawing process, for example, is ok.
 
+       Hidden tray: there's no such thing as a hidden, focussed tray.  It's 
+       made TRAY_REVERSED when it gets focus.
+
        Problem: on palm at least take and lost are inverted: you get a take on
        the new object before a lose on the previous one.  So we want to ignore
        lost events *except* when it's a loss of something we have currently --
@@ -2444,6 +2449,9 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
         }
         board->focussed = typ;
         board->focusHasDived = XP_FALSE;
+        if ( (OBJ_TRAY == typ) && (board->trayVisState == TRAY_HIDDEN) ) {
+            setTrayVisState( board, TRAY_REVERSED );
+        }
         draw = invalFocusOwner( board ) || draw;
     } else {
         /* we're losing it; inval and clear IFF we currently have same focus,
@@ -2662,7 +2670,7 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
 #endif
 
 XP_Bool
-rectContainsPt( XP_Rect* rect, XP_S16 x, XP_S16 y )
+rectContainsPt( const XP_Rect* rect, XP_S16 x, XP_S16 y )
 {
     /* 7/4 Made <= into <, etc., because a tap on the right boundary of the
        board was still mapped onto the board but dividing by scale put it in
