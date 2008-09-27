@@ -169,7 +169,7 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     CeConnDlgState* cState;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
         cState = (CeConnDlgState*)lParam;
 
         adjustForConnType( hDlg, cState );
@@ -180,7 +180,7 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         result = TRUE;
     } else {
-        cState = (CeConnDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+        cState = (CeConnDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!cState ) {
             CEAppGlobals* globals = cState->dlgHdr.globals; 
 

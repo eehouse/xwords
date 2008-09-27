@@ -512,7 +512,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 /*     XP_LOGF( "%s: %s(%d)", __func__, messageToStr( message ), message ); */
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
         giState = (GameInfoState*)lParam;
         globals = giState->dlgHdr.globals;
 
@@ -544,7 +544,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         result = TRUE;
 
     } else {
-        giState = (GameInfoState*)GetWindowLong( hDlg, GWL_USERDATA );
+        giState = (GameInfoState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!giState ) {
             globals = giState->dlgHdr.globals;
 

@@ -58,7 +58,7 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     HintLimitsState* hState;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
         hState = (HintLimitsState*)lParam;
 
         ceDlgSetup( &hState->dlgHdr, hDlg, DLG_STATE_NONE );
@@ -67,7 +67,7 @@ HintLimitsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         return TRUE;
     } else {
-        hState = (HintLimitsState*)GetWindowLong( hDlg, GWL_USERDATA );
+        hState = (HintLimitsState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!hState ) {
 
             if ( !hState->inited ) {

@@ -25,6 +25,7 @@
 #include "ceutil.h"
 #include "debhacks.h"
 #include "cedebug.h"
+#include "cefonts.h"
 
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
  */
@@ -268,7 +269,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     CePrefsDlgState* pState;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
         pState = (CePrefsDlgState*)lParam;
         
         pState->phonComboId = LB_IF_PPC(pState->dlgHdr.globals,PHONIES_COMBO);
@@ -284,7 +285,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         return TRUE;
 
     } else {
-        pState = (CePrefsDlgState*)GetWindowLong( hDlg, GWL_USERDATA );
+        pState = (CePrefsDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!pState ) {
             if ( !ceDoDlgHandle( &pState->dlgHdr, message, wParam, lParam ) ) {
                 CEAppGlobals* globals = pState->dlgHdr.globals;

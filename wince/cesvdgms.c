@@ -74,7 +74,7 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
 
         state = (CeSaveGameNameState*)lParam;
         state->cancelled = XP_TRUE;
@@ -89,7 +89,7 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         result = TRUE;
     } else {
-        state = (CeSaveGameNameState*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (CeSaveGameNameState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!state ) {
             if ( !state->inited ) {
                 state->inited = XP_TRUE;
@@ -357,7 +357,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     BOOL result = FALSE;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
 
         state = (CeSavedGamesState*)lParam;
         state->inited = XP_FALSE;
@@ -368,7 +368,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         result = TRUE;
     } else {
-        state = (CeSavedGamesState*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (CeSavedGamesState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!state ) {
 
             if ( !state->inited ) {

@@ -93,7 +93,7 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
         bState = (BlankDialogState*)lParam;
 
 #ifdef FEATURE_TRAY_EDIT
@@ -115,7 +115,7 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         loadLettersList( bState );
     } else {
-        bState = (BlankDialogState*)GetWindowLong( hDlg, GWL_USERDATA );
+        bState = (BlankDialogState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!bState ) {
 
             if ( ceDoDlgHandle( &bState->dlgHdr, message, wParam, lParam) ) {

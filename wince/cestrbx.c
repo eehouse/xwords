@@ -61,7 +61,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     XP_U16 id;
 
     if ( message == WM_INITDIALOG ) {
-        SetWindowLong( hDlg, GWL_USERDATA, (long)lParam );
+        SetWindowLongPtr( hDlg, GWL_USERDATA, (long)lParam );
         state = (StrBoxState*)lParam;
 
         if  ( !!state->title ) {
@@ -71,16 +71,17 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if ( !state->isQuery ) {
             ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
             /* also want to expand the text box to the bottom */
-            if ( !ceIsLandscape( state->dlgHdr.globals ) ) {
-                ceCenterCtl( hDlg, IDOK );
-            }
+            /* ceIsLandscape() is going away.... */
+/*             if ( !ceIsLandscape( state->dlgHdr.globals ) ) { */
+/*                 ceCenterCtl( hDlg, IDOK ); */
+/*             } */
         }
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE );
 
         handled = TRUE;
     } else {
-        state = (StrBoxState*)GetWindowLong( hDlg, GWL_USERDATA );
+        state = (StrBoxState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
 
         if ( !!state ) {
             if ( ceDoDlgHandle( &state->dlgHdr, message, wParam, lParam) ) {
