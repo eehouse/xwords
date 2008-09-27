@@ -230,7 +230,7 @@ XP_Bool pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y,
                           BoardObjectType* wp );
 XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, 
                      XP_U16* rowP );
-XP_Bool cellOccupied( BoardCtxt* board, XP_U16 col, XP_U16 row, 
+XP_Bool cellOccupied( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
                       XP_Bool inclPending );
 XP_Bool holdsPendingTile( BoardCtxt* board, XP_U16 pencol, XP_U16 penrow );
 
