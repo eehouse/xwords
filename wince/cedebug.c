@@ -77,6 +77,9 @@ messageToStr( UINT message )
         CASE_STR( WM_STYLECHANGED );
         CASE_STR( WM_NOTIFYFORMAT );
         CASE_STR( WM_KILLFOCUS );
+        CASE_STR( WM_CTLCOLORSCROLLBAR );
+        CASE_STR( WM_NCMOUSEMOVE );
+        CASE_STR( SBM_SETSCROLLINFO );
     default:
         str = "<unknown>";
     }
