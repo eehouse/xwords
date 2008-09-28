@@ -148,7 +148,7 @@ static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void closeGame( CEAppGlobals* globals );
 static void ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs );
 static void updateForColors( CEAppGlobals* globals );
-static XWStreamCtxt* make_generic_stream( CEAppGlobals* globals );
+static XWStreamCtxt* make_generic_stream( const CEAppGlobals* globals );
 #ifdef XWFEATURE_RELAY
 static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 #endif
@@ -919,14 +919,14 @@ ceLoadPrefs( CEAppGlobals* globals )
 } /* ceLoadPrefs */
 
 static XWStreamCtxt*
-make_generic_stream( CEAppGlobals* globals )
+make_generic_stream( const CEAppGlobals* globals )
 {
     return mem_stream_make( MPPARM(globals->mpool) globals->vtMgr,
-                            globals, 0, NULL );
+                            (void*)globals, 0, NULL );
 } /* make_generic_stream */
 
 static XWStreamCtxt*
-fileToStream( CEAppGlobals* globals, const XP_UCHAR* path )
+fileToStream( const CEAppGlobals* globals, const XP_UCHAR* path )
 {
     XWStreamCtxt* stream = NULL;
     HANDLE fileH;
@@ -982,31 +982,42 @@ ceLoadSavedGame( CEAppGlobals* globals )
 #ifdef STUBBED_DICT
             XP_ASSERT(0);       /* just don't do this!!!! */
 #else
-            XP_UCHAR* name = stringFromStream( globals->mpool, stream );
-            dict = ce_dictionary_make( globals, name );
-            XP_FREE( globals->mpool, name );
+            XP_UCHAR* dictName = stringFromStream( globals->mpool, stream );
+            dict = ce_dictionary_make( globals, dictName );
             success = dict != NULL;
+            if ( !success ) {
+                XP_UCHAR buf[128];
+                snprintf( buf, VSIZE(buf), "Unable to open dictionary: %s",
+                          dictName );
+                buf[VSIZE(buf)-1] = '\0';
+                messageBoxChar( globals, buf, L"Oops!", MB_OK );
+            }
+            XP_FREE( globals->mpool, dictName );
 #endif
         } else {
             dict = NULL;
         }
 
-        if ( flags >= CE_GAMEFILE_VERSION ) {
-            ce_draw_fromStream( globals->draw, stream );
-        }
-
         if ( success ) {
+            if ( flags >= CE_GAMEFILE_VERSION ) {
+                ce_draw_fromStream( globals->draw, stream );
+            }
+
             XP_DEBUGF( "calling game_makeFromStream" ); 
-            game_makeFromStream( MEMPOOL stream, &globals->game, 
-                                 &globals->gameInfo,
-                                 dict, &globals->util, (DrawCtx*)globals->draw,
-                                 &globals->appPrefs.cp, CE_SEND_PROC, 
-                                 CE_RESET_PROC globals );
+            success = game_makeFromStream( MEMPOOL stream, &globals->game, 
+                                           &globals->gameInfo, dict, 
+                                           &globals->util,
+                                           (DrawCtx*)globals->draw,
+                                           &globals->appPrefs.cp, CE_SEND_PROC, 
+                                           CE_RESET_PROC globals );
+            if ( success ) {
+                ceSetTitleFromName( globals );
+            } else if ( !!dict ) {
+                dict_destroy( dict );
+            }
         }
 
         stream_destroy( stream );
-
-        ceSetTitleFromName( globals );
     }
 
     return success;
@@ -1470,13 +1481,16 @@ static void
 ceChooseAndOpen( CEAppGlobals* globals )
 {
     // Save in case we'll be duplicating it
-    if ( ceSaveCurGame( globals, XP_FALSE ) ) {
+    if ( ceSaveCurGame( globals, XP_FALSE )
+         || queryBoxChar( globals, "Do you really want to "
+                          "overwrite the current game?" ) ) {
         wchar_t path[256];
         path[0] = 0;
 
         ceSetTitleFromName( globals ); /* in case we named it above */
 
-        if ( ceSavedGamesDlg( globals, globals->curGameName, path, VSIZE(path) )) {
+        if ( ceSavedGamesDlg( globals, globals->curGameName, 
+                              path, VSIZE(path) )) {
             XP_UCHAR* name;
             XP_U16 len;
 
@@ -1487,19 +1501,35 @@ ceChooseAndOpen( CEAppGlobals* globals )
                                  name, len + 1, NULL, NULL );
         
             if ( globals->curGameName != NULL
-                 && 0 == XP_STRCMP( name, globals->curGameName ) ){ /*already open*/
+                 && 0 == XP_STRCMP( name, globals->curGameName ) ){
+                /* User chose already-open game; no-op */
                 XP_FREE( globals->mpool, name );
-            } else if ( ceSaveCurGame( globals, XP_FALSE )
-                        || queryBoxChar( globals, "Do you really want to "
-                                         "overwrite the current game?" ) ) {
+            } else {
+                /* Save old name in case fail to open new, e.g. because dict
+                   not there */
+                XP_UCHAR* oldName;
+
+                /* Need to save a second time, with auto-save, in case user
+                   wants to overwrite yet chooses a game whose dict is
+                   missing -- since then we'll be re-opening this game! */
+                ceSaveCurGame( globals, XP_TRUE ); /* may change curGameName */
+
+                oldName = globals->curGameName;
+                globals->curGameName = NULL; /* prevent being destroyed */
                 closeGame( globals );
 
                 globals->curGameName = name;
                 if ( ceLoadSavedGame( globals ) ) {
-                    ceInitAndStartBoard( globals, XP_FALSE, NULL );
+                    XP_FREE( globals->mpool, oldName );
                 } else {
                     XP_LOGF( "failed to open chosen game" );
+                    XP_FREE( globals->mpool, globals->curGameName );
+                    globals->curGameName = oldName;
+                    if ( !ceLoadSavedGame( globals ) ) {
+                        XP_LOGF( "failed to open old game too!!!" );
+                    }
                 }
+                ceInitAndStartBoard( globals, XP_FALSE, NULL );
             }
         } else {
             XP_LOGF( "GetOpenFileName() failed" );
@@ -1688,7 +1718,7 @@ closeGame( CEAppGlobals* globals )
     game_dispose( &globals->game );
     gi_disposePlayerInfo( MPPARM(globals->mpool) &globals->gameInfo );
 
-    if ( globals->curGameName ) {
+    if ( !!globals->curGameName ) {
         XP_FREE( globals->mpool, globals->curGameName );
     }
 }
