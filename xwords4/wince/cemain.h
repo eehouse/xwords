@@ -127,9 +127,11 @@ typedef struct CEAppGlobals {
     RECT ownedRects[N_OWNED_RECTS];
 
     XP_U16 flags;               /* bits defined below */
+    XP_U16 cellHt;              /* how tall is a cell given current layout */
 
 #ifdef CEFEATURE_CANSCROLL
     HWND scrollHandle;
+    WNDPROC oldScrollProc;
 #endif
 
     CeSocketWrapper* socketWrap;

@@ -198,32 +198,32 @@ ceCenterCtl( HWND hDlg, XP_U16 resID )
     }
 } /* ceCenterCtl */
 
-XP_Bool
-ceIsLandscape( CEAppGlobals* globals )
-{
-    XP_U16 width, height;
-    XP_Bool landscape;
+/* XP_Bool */
+/* ceIsLandscape( CEAppGlobals* globals ) */
+/* { */
+/*     XP_U16 width, height; */
+/*     XP_Bool landscape; */
 
-    XP_ASSERT( !!globals );
-    XP_ASSERT( !!globals->hWnd );
+/*     XP_ASSERT( !!globals ); */
+/*     XP_ASSERT( !!globals->hWnd ); */
 
-    if ( 0 ) {
-#if defined DEBUG && !defined _WIN32_WCE
-    } else if ( globals->dbWidth != 0 ) {
-        width = globals->dbWidth;
-        height = globals->dbHeight;
-#endif
-    } else {
-        RECT rect;
-        GetClientRect( globals->hWnd, &rect );
-        width = (XP_U16)(rect.right - rect.left);
-        height = (XP_U16)(rect.bottom - rect.top);
-    }
+/*     if ( 0 ) { */
+/* #if defined DEBUG && !defined _WIN32_WCE */
+/*     } else if ( globals->dbWidth != 0 ) { */
+/*         width = globals->dbWidth; */
+/*         height = globals->dbHeight; */
+/* #endif */
+/*     } else { */
+/*         RECT rect; */
+/*         GetClientRect( globals->hWnd, &rect ); */
+/*         width = (XP_U16)(rect.right - rect.left); */
+/*         height = (XP_U16)(rect.bottom - rect.top); */
+/*     } */
 
-    landscape = (height - CE_SCORE_HEIGHT) 
-        < (width - CE_MIN_SCORE_WIDTH);
-    return landscape;
-} /* ceIsLandscape */
+/*     landscape = (height - CE_SCORE_HEIGHT)  */
+/*         < (width - CE_MIN_SCORE_WIDTH); */
+/*     return landscape; */
+/* } /\* ceIsLandscape *\/ */
 
 #ifdef _WIN32_WCE
 static XP_Bool
