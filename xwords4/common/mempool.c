@@ -101,7 +101,7 @@ mpool_destroy( MemPoolCtx* mpool )
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_LOGF( XP_P " from ln %ld of %s\n", 
+            XP_LOGF( "%s: " XP_P " from ln %ld of %s\n", __func__, 
                      entry->ptr, entry->lineNo, entry->fileName );
 #ifdef DEBUG
             {
