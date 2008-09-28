@@ -2932,7 +2932,7 @@ dictChanged( void* p_board, const DictionaryCtxt* oldDict,
 {
     BoardCtxt* board = (BoardCtxt*)p_board;
     XP_ASSERT( !!board->draw );
-    if ( NULL == oldDict || !dict_tilesAreSame( oldDict, newDict ) ) {
+    if ( (NULL == oldDict) || (oldDict != newDict) ) {
         draw_dictChanged( board->draw, newDict );
     }
 }
