@@ -305,7 +305,8 @@ makeTestBuf( CEDrawCtx* dctx, XP_UCHAR* buf, XP_UCHAR bufLen, RFIndex index )
         XP_U16 nFaces = dict_numTileFaces( dict );
         Tile tiles[nFaces];
         XP_U16 nOut = 0;
-        XP_ASSERT( !!dict && nFaces < bufLen );
+        XP_ASSERT( !!dict );
+        XP_ASSERT( nFaces < bufLen );
         if ( dict_hasBlankTile(dict) ) {
             blank = dict_getBlankTile( dict );
         }
@@ -1489,6 +1490,8 @@ DLSTATIC void
 DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, const DictionaryCtxt* dict )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
+    /* May want to inval font cache if new dict has different tiles from
+       old.  Use dict_tilesAreSame(). */
     dctx->dict = dict;
 }
 
