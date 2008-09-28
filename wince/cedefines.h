@@ -21,44 +21,17 @@
 #define _CEDEFINES_H_
 
 #define CE_MAX_ROWS 15
-#define CE_BOARD_LEFT_LH 8
-#define CE_BOARD_LEFT_RH 0
-#define CE_BOARD_WIDTH (CE_MAX_ROWS*CE_BOARD_SCALEH)
-#define CE_TRAY_LEFT_RH 0
-#define CE_TRAY_LEFT_LH 0
-#define CE_DIVIDER_WIDTH 3
-#define CE_TIMER_WIDTH 35
-#define CE_SCORE_WIDTH (4 * 51)
 
-#define CE_TIMER_HT_HORIZ CE_SCORE_HEIGHT
-#define CE_TIMER_HT_VERT CE_SCORE_WIDTH
+#define TRAY_BORDER 7
+#define CELL_BORDER 3
 
-#define CE_SCORE_TOP 0
-#define CE_SCORE_HEIGHT 12
-#define CE_BOARD_TOP (CE_SCORE_TOP + CE_SCORE_HEIGHT)
-#define CE_SCORE_LEFT CE_BOARD_LEFT_RH
-#define CE_TRAY_TOP (CE_BOARD_TOP + (CE_MAX_ROWS*CE_BOARD_SCALEV))
-#define CE_TRAY_TOP_MAX CE_TRAY_TOP
+#define MIN_CELL_WIDTH 12
+#define MIN_CELL_HEIGHT 13
+/* 1 below for what's subtracted from bparms->trayHeight */
+#define MIN_TILE_HEIGHT (((MIN_CELL_HEIGHT) + (TRAY_BORDER - CELL_BORDER)) + 1)
 
-#if defined TARGET_OS_WINCE
-# define CE_TRAY_SCALEH 34
-# define CE_TRAY_SCALEV 27
-#elif defined TARGET_OS_WIN32
-# define CE_TRAY_SCALEH 68
-# define CE_TRAY_SCALEV 54
-#endif
+/* Favor the tray over the scoreboard. */
+#define SCORE_TWEAK 2
 
-#define BUTTON_WIDTH 20
-#define BUTTON_HEIGHT BUTTON_WIDTH
-
-#define CE_TIMER_LEFT (CE_SCORE_WIDTH + CE_SCORE_LEFT)
-#define CE_TIMER_TOP CE_SCORE_TOP
-#define CE_TIMER_HEIGHT CE_SCORE_HEIGHT
-
-
-#define MIN_CELL_WIDTH 10
-#define MIN_CELL_HEIGHT 10
-#define MIN_TRAY_HEIGHT 28
-#define CE_MIN_SCORE_WIDTH 24    /* for vertical score case */
 
 #endif

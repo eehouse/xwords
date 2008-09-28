@@ -57,7 +57,8 @@
 
 #define MAX_LOADSTRING 100
 
-#define SCROLLBAR_WIDTH 12
+#define PPC_SCROLLBAR_WIDTH 12
+#define MIN_SCROLLBAR_WIDTH 6
 #define SCROLLBARID 0x4321      /* needs to be unique! */
 
 #ifdef MEM_DEBUG
@@ -157,6 +158,7 @@ static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream,
                               wchar_t* title, XP_U16 buttons );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
 static XP_Bool isDefaultName( const XP_UCHAR* name );
+static void ceSetTitleFromName( CEAppGlobals* globals );
 
 
 #if defined DEBUG && ! defined _WIN32_WCE
@@ -199,7 +201,8 @@ doCmd( const char* cmd )
 static void
 parseCmdLine( const char* cmdline )
 {
-    for ( ; ; ) {
+    XP_U16 ii;
+    for ( ii = 0; ; ++ii ) {
         const char* cmd;
         char ch;
         char buf[64];
@@ -213,7 +216,9 @@ parseCmdLine( const char* cmdline )
         len = cmd - cmdline;
         memcpy( buf, cmdline, cmd - cmdline );
         buf[len] = '\0';
-        doCmd( buf );
+        if ( ii > 0 ) {         /* skip argv[0] */
+            doCmd( buf );
+        }
         if ( ch == '\0' ) {
             break;
         }
@@ -375,46 +380,97 @@ updateScrollInfo( CEAppGlobals* globals, XP_U16 nHidden )
     (void)SetScrollInfo( globals->scrollHandle, SB_CTL, &sinfo, TRUE );
 }
 
+LRESULT CALLBACK
+scrollWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)GetWindowLongPtr( hWnd, GWL_USERDATA );
+    LRESULT result = 1;
+
+/*     XP_LOGF( "%s: event=%s (%d)", __func__, messageToStr(message), message ); */
+    
+    /* Trap key events.  Left and right always shift the focus off.  Up and
+       down shift focus off IFF they're going to be no-ops on the theory that
+       the user needs to get some visual feedback and on some devices the
+       scrollbar isn't even drawn differently when focussed.  */
+    if ( WM_KEYDOWN == message ) {
+        XP_Bool setFocus = XP_FALSE;
+
+        if ( (VK_RIGHT == wParam) ||
+             (VK_LEFT == wParam) ||
+             (VK_TAB == wParam) ) {
+            setFocus = XP_TRUE;
+        } else if ( (VK_UP == wParam) || (VK_DOWN == wParam) ) {
+            SCROLLINFO sinfo;
+            sinfo.cbSize = sizeof(sinfo);
+            sinfo.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
+            GetScrollInfo( globals->scrollHandle, SB_CTL, &sinfo );
+
+            if ( (VK_UP == wParam) && (sinfo.nPos <= sinfo.nMin) ) {
+                setFocus = XP_TRUE;
+            } else if ( (VK_DOWN == wParam)
+                        && (sinfo.nPos > (sinfo.nMax - sinfo.nPage)) ) {
+                setFocus = XP_TRUE;
+            }
+        }
+
+        if ( setFocus ) {
+            SetFocus( globals->hWnd );
+            result = 0;
+        }
+    } 
+    if ( 0 != result ) {
+        result = CallWindowProc( globals->oldScrollProc, hWnd, message, 
+                                 wParam, lParam );
+    }
+    return result;
+} /* scrollWindowProc */
+
 static void
-showScroller( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 x, XP_U16 y,
+makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
               XP_U16 width, XP_U16 height )
 {
+    HWND hwndSB;
+
+    /* Need to destroy it, or resize it, because board size may be changing
+       in case where portrait display's been flipped. */
     if ( !!globals->scrollHandle ) {
         DestroyWindow( globals->scrollHandle );
         globals->scrollHandle = NULL;
     }
 
-    if ( !globals->scrollHandle ) {
-        HWND hwndSB;
+    hwndSB = CreateWindow( TEXT("SCROLLBAR"),  // Class name
+                           NULL,           // Window text
+                           // Window style
+                           SBS_VERT|WS_VISIBLE|WS_CHILD,
+                           xx + SCROLL_SHRINK, yy + 2, 
+                           width - SCROLL_SHRINK, height - 4,
+                           globals->hWnd,
+                           (HMENU)SCROLLBARID,// The control identifier
+                           globals->hInst,     // The instance handle
+                           NULL );             // s'pposed to be NULL
 
-        hwndSB = CreateWindow( TEXT("SCROLLBAR"),  // Class name
-                               NULL,           // Window text
-                               // Window style
-                               SBS_VERT|WS_VISIBLE|WS_CHILD,
-                               x + SCROLL_SHRINK, y, 
-                               width - SCROLL_SHRINK, height + 1,
-                               globals->hWnd,
-                               (HMENU)SCROLLBARID,// The control identifier
-                               globals->hInst,     // The instance handle
-                               NULL );             // s'pposed to be NULL
+    globals->scrollHandle = hwndSB;
 
-        globals->scrollHandle = hwndSB;
-        updateScrollInfo( globals, nHidden );
+    globals->oldScrollProc = (WNDPROC) GetWindowLongPtr( hwndSB, 
+                                                         GWL_WNDPROC );
+    XP_ASSERT( 0 == GetWindowLongPtr( hwndSB, GWL_USERDATA ) );
+    SetWindowLongPtr( hwndSB, GWL_WNDPROC, (LPARAM)scrollWindowProc );
+    SetWindowLongPtr( hwndSB, GWL_USERDATA, (LPARAM)globals );
 
-        EnableWindow( hwndSB, nHidden > 0 );
-    }
+    updateScrollInfo( globals, nHidden );
+    EnableWindow( hwndSB, nHidden > 0 );
 
     ShowWindow( globals->scrollHandle, SW_SHOW );
-} /* showScroller */
+} /* makeScrollbar */
 
 static void
-hideScroller( CEAppGlobals* globals )
+removeScrollbar( CEAppGlobals* globals )
 {
     if ( !!globals->scrollHandle ) {
-        ShowWindow( globals->scrollHandle, SW_HIDE );
+        DestroyWindow( globals->scrollHandle );
+        globals->scrollHandle = NULL;
     }
-    /* else there's nothing to do */
-}
+} /* removeScrollbar */
 #endif
 
 typedef struct CEBoardParms {
@@ -433,49 +489,25 @@ typedef struct CEBoardParms {
     XP_U16  boardLeft, trayLeft;
     XP_U16  scoreWidth;
     XP_U16  scoreHeight;
-    XP_Bool needsScroller;
+    XP_U16  scrollWidth;
     XP_Bool horiz;
+#ifdef CEFEATURE_CANSCROLL
+    XP_Bool needsScroller;
+#endif
 } CEBoardParms;
-
-static XP_U16
-sizeBoard( XP_U16* bdHeightP,  /* INOUT */
-           XP_U16* nRowsP )    /* INOUT: on OUT, gives nRowsVisible */ 
-{
-    /* given the initial max board height, figure how many rows are visible
-       and the adjusted heights of the board and tray. */
-    XP_U16 bdHeight = *bdHeightP;
-    XP_U16 nVisibleRows = *nRowsP;
-    XP_U16 vScale;
-    XP_U16 boardHtLimit;
-
-    vScale = bdHeight / nVisibleRows;
-    if ( vScale < MIN_CELL_HEIGHT ) {
-        vScale = MIN_CELL_HEIGHT;
-    }
-
-    /* Now adjust tray height to make board height a multiple  */
-    boardHtLimit = nVisibleRows * vScale;
-    while ( boardHtLimit > bdHeight ) {
-        boardHtLimit -= vScale;
-        --nVisibleRows;
-    }
-
-    *bdHeightP = boardHtLimit;
-    *nRowsP = nVisibleRows;
-    return vScale;
-} /* sizeBoard */
 
 static void
 figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 {
     RECT rc;
     XP_U16 scrnWidth, scrnHeight;
-    XP_U16 trayVScale, boardLeft, trayLeft, scoreWidth, scoreHeight;
-    XP_U16 boardHt, boardWidth, hScale, vScale, nVisibleRows;
-    XP_U16 trayTop, boardTop;
+    XP_U16 trayVScale, scoreWidth, boardLeft, scoreHeight;
+    XP_U16 hScale, vScale, nVisibleRows;
+    XP_U16 trayTop;
     XP_Bool horiz;
-    XP_U16 trayWidth;
     XP_U16 scrollWidth = 0;
+    XP_U16 numUnits;
+    XP_S16 num2Scroll;
 
     GetClientRect( globals->hWnd, &rc );
 #ifndef _WIN32_WCE
@@ -497,58 +529,98 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 
     scrnWidth = (XP_U16)(rc.right - rc.left);
     scrnHeight = (XP_U16)(rc.bottom - rc.top);
+    XP_LOGF( "%s: scrnWidth: %d, scrnHeight: %d", __func__, 
+             scrnWidth, scrnHeight );
 
-    horiz = (scrnHeight - CE_SCORE_HEIGHT) >= (scrnWidth - CE_MIN_SCORE_WIDTH);
+    horiz = (scrnHeight/* - CE_SCORE_HEIGHT*/)
+        >= (scrnWidth/* - CE_MIN_SCORE_WIDTH*/);
     nVisibleRows = nRows;
 
-    scoreHeight = horiz? CE_SCORE_HEIGHT : 0;
-    boardTop = scoreHeight;
-
-    /* Try to make it fit without scrolling.  But if necessary, reduce the
-       width for a scrollbar. */
-    boardHt = scrnHeight - scoreHeight - MIN_TRAY_HEIGHT;
-    vScale = sizeBoard( &boardHt, &nVisibleRows );
-    if ( (nVisibleRows < nRows) && !IS_SMARTPHONE(globals) ) {
-        scrollWidth = SCROLLBAR_WIDTH;
+    /* Scoreboard is same height as cells (less SCORE_TWEAK) */
+    numUnits = (scrnHeight-MIN_TILE_HEIGHT) / MIN_CELL_HEIGHT;
+    num2Scroll = (nRows + 1) - numUnits; /* 1: scoreboard */
+    if ( num2Scroll < 0 ) {
+        num2Scroll = 0;
     }
 
-    boardWidth = scrnWidth - scrollWidth;
-    trayWidth = scrnWidth;
+#ifdef FORCE_SCROLL
+    if ( num2Scroll < FORCE_SCROLL ) {
+        num2Scroll = FORCE_SCROLL;
+    }
+#endif
+
+    nVisibleRows -= num2Scroll;
+
+    /* apportion the extra pixels */
+    vScale = (scrnHeight-MIN_TILE_HEIGHT) / (nVisibleRows + (horiz? 1:0));
+    XP_LOGF( "%s: vScale: %d", __func__, vScale );
+
+    trayTop = (vScale * (nVisibleRows+(horiz? 1:0)));    /* 1 for scoreboard */
     if ( horiz ) {
-        scoreWidth = scrnWidth;
-        hScale = boardWidth / nRows;
-        boardWidth = nRows * hScale;
-        /* center the board */
-        boardWidth += scrollWidth;
-        boardLeft = (scrnWidth - boardWidth) / 2; /* center it all */
-        trayLeft = 0;
-    } else {
-        /* move extra pixels into scoreboard */
-        hScale = (boardWidth - CE_MIN_SCORE_WIDTH) / nRows;
-        boardWidth = hScale * nRows;
-        scoreWidth = scrnWidth - boardWidth - scrollWidth;
-        boardLeft = scoreWidth;
-        trayLeft = scoreWidth;
-        trayWidth -= scoreWidth;
+        trayTop -= SCORE_TWEAK;
+    }
+    trayVScale = scrnHeight - trayTop;
+
+    /* If we have the space, make tiles 2* the size of cells  */
+    if ( nVisibleRows == nRows ) {
+        XP_U16 nRowsIncSbrd = nRows + (horiz?1:0);
+        while ( (vScale > MIN_CELL_HEIGHT) && (trayVScale < (2 * vScale)) ) {
+            trayVScale += nRowsIncSbrd;
+            trayTop -= nRowsIncSbrd;
+            --vScale;
+        }
     }
 
-    trayTop = boardHt + scoreHeight + 1;
-    trayVScale = scrnHeight - trayTop;
-    
-    if ( !horiz ) {
-        scoreHeight = scrnHeight;
+    globals->cellHt = vScale;
+
+    XP_LOGF( "vScale: %d; target: %d", vScale, MIN_CELL_HEIGHT );
+    XP_LOGF( "trayVScale: %d; target: %d", trayVScale, MIN_TILE_HEIGHT );
+
+#ifdef CEFEATURE_CANSCROLL
+    if ( nVisibleRows < nRows ) {
+        scrollWidth = PPC_SCROLLBAR_WIDTH;
     }
+#endif
+
+    if ( horiz ) {
+        /* don't let scrollbar be wide out of proportion  */
+        for ( ; ; ) {
+            hScale = (scrnWidth - scrollWidth) / nRows;
+            XP_LOGF( "1: scrollWidth: %d; hScale:%d", scrollWidth, hScale );
+            if ( scrollWidth > 0 ) {
+                boardLeft = 0;
+                scrollWidth = scrnWidth - (nRows * hScale);
+            } else {
+                boardLeft = (scrnWidth - scrollWidth - (hScale*nRows)) / 2;
+            }
+            XP_LOGF( "NOW: scrollWidth: %d; hScale:%d", scrollWidth, hScale );
+            if ( (hScale < scrollWidth)
+                 && (scrollWidth-nRows > MIN_SCROLLBAR_WIDTH) ) {
+                scrollWidth -= nRows;
+            } else {
+                break;
+            }
+        }
+        scoreWidth = scrnWidth;
+
+    } else {
+        hScale = (scrnWidth - scrollWidth) / (nRows + 2); /* double width? */
+        boardLeft = scrnWidth - scrollWidth - (hScale * nRows);
+        scoreWidth = boardLeft/* + scrollWidth*/;
+    }
+
+    scoreHeight = horiz? vScale - SCORE_TWEAK : scrnHeight;
 
     if ( globals->gameInfo.timerEnabled ) {
         if ( horiz ) {
-            scoreWidth -= CE_TIMER_WIDTH;
+            bparms->timerWidth = scoreWidth / 6; /* arbitrarily, one sixth */
+            scoreWidth -= bparms->timerWidth;
             bparms->timerLeft = scoreWidth;
             bparms->timerTop = 0;
-            bparms->timerWidth = CE_TIMER_WIDTH; 
-            bparms->timerHeight = CE_SCORE_HEIGHT;
+            bparms->timerHeight = scoreHeight;
         } else {
             bparms->timerLeft = 0;
-            bparms->timerHeight = CE_SCORE_HEIGHT * 2;
+            bparms->timerHeight = vScale * 2;
             bparms->timerTop = scrnHeight - bparms->timerHeight;
             bparms->timerWidth = scoreWidth;
 
@@ -559,27 +631,28 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
     bparms->scrnWidth = scrnWidth;
     bparms->boardHScale = hScale;
     bparms->boardVScale = vScale;
-    bparms->boardTop = boardTop;
+    bparms->boardTop = horiz? scoreHeight : 0;
     bparms->trayTop = trayTop;
     bparms->trayHeight = trayVScale;
-    bparms->trayWidth = trayWidth;
+    bparms->trayWidth = horiz? scrnWidth: scrnWidth - scoreWidth;
     bparms->boardLeft = boardLeft;
-    bparms->trayLeft = trayLeft;
+    bparms->trayLeft = horiz? 0 : scoreWidth;
     bparms->scoreWidth = scoreWidth;
     bparms->scoreHeight = scoreHeight;
+    bparms->scrollWidth = scrollWidth;
     bparms->horiz = horiz;
-
+    
 #ifdef CEFEATURE_CANSCROLL
     bparms->needsScroller = nVisibleRows < nRows;
-    if ( bparms->needsScroller && !IS_SMARTPHONE(globals) ) {
-        XP_U16 boardRight = boardLeft + (nRows * hScale);
-        showScroller( globals, nRows - nVisibleRows,
-                      boardRight, boardTop,
-                      scrollWidth, boardHt );
-        XP_LOGF( "NEEDING SCROLLBAR!!!!" );
-        XP_LOGF( "%d rows hidden", nRows - nVisibleRows );
+    if ( bparms->needsScroller ) {
+        XP_U16 boardRight;
+        boardRight = bparms->boardLeft + (nRows * hScale);
+        makeScrollbar( globals, nRows - nVisibleRows,
+                       boardRight, bparms->boardTop,
+                       scrollWidth, 
+                       vScale * nVisibleRows );
     } else {
-        hideScroller( globals );
+        removeScrollbar( globals );
     }
 #endif
 } /* figureBoardParms */
@@ -590,6 +663,7 @@ setOwnedRects( CEAppGlobals* globals, XP_U16 nRows,
 {
     if ( bparms->horiz ) {
         RECT tmp;
+        XP_U16 scrollWidth = bparms->scrollWidth;
 
         tmp.top = bparms->scoreHeight;        /* Same for both */
         tmp.bottom = bparms->trayTop;         /* Same for both */
@@ -599,7 +673,7 @@ setOwnedRects( CEAppGlobals* globals, XP_U16 nRows,
         XP_MEMCPY( &globals->ownedRects[OWNED_RECT_LEFT], &tmp, 
                    sizeof(globals->ownedRects[OWNED_RECT_LEFT]) );
 
-        tmp.left = tmp.right + (bparms->boardHScale * nRows);
+        tmp.left = tmp.right + (bparms->boardHScale * nRows) + scrollWidth;
         tmp.right = bparms->scrnWidth;
         XP_MEMCPY( &globals->ownedRects[OWNED_RECT_RIGHT], &tmp, 
                    sizeof(globals->ownedRects[OWNED_RECT_RIGHT]) );
@@ -608,6 +682,11 @@ setOwnedRects( CEAppGlobals* globals, XP_U16 nRows,
     }
 } /* setOwnedRects */
 
+
+/* PENDING cePositionBoard gets called a lot when the screen size hasn't
+   changed.  It'd be better to cache the size used to do layout and not
+   repeat those steps (including possibly nuking and rebuilding a
+   scrollbar). */
 static XP_Bool
 cePositionBoard( CEAppGlobals* globals )
 {
@@ -633,8 +712,7 @@ cePositionBoard( CEAppGlobals* globals )
     board_setScale( globals->game.board, bparms.boardHScale, 
                     bparms.boardVScale );
 
-    board_setScoreboardLoc( globals->game.board, CE_SCORE_LEFT, 
-                            CE_SCORE_TOP, bparms.scoreWidth,
+    board_setScoreboardLoc( globals->game.board, 0, 0, bparms.scoreWidth, 
                             bparms.scoreHeight, bparms.horiz );
     board_setShowColors( globals->game.board, globals->appPrefs.showColors );
     board_setYOffset( globals->game.board, 0 );
@@ -642,10 +720,14 @@ cePositionBoard( CEAppGlobals* globals )
     board_prefsChanged( globals->game.board, &globals->appPrefs.cp );
 
     board_setTrayLoc( globals->game.board, bparms.trayLeft, bparms.trayTop,
-                      bparms.trayWidth, bparms.trayHeight, CE_DIVIDER_WIDTH );
+                      bparms.trayWidth, bparms.trayHeight, 
+                      bparms.trayWidth/40 ); /* 1/8 of a tile width, roughly */
 
     server_prefsChanged( globals->game.server, &globals->appPrefs.cp );
     
+#if ! defined _WIN32_WCE && defined DEBUG
+    ceSetTitleFromName( globals );
+#endif
     return erase;
 } /* cePositionBoard */
 
@@ -689,6 +771,11 @@ ceSetTitleFromName( CEAppGlobals* globals )
         if ( colonPos != NULL ) {
             *colonPos = 0;
         }
+
+#if ! defined _WIN32_WCE && defined DEBUG
+        swprintf( &widebuf[wcslen(widebuf)], L" %dx%d", 
+                  globals->dbWidth, globals->dbHeight );
+#endif
     }
 
     SendMessage( globals->hWnd, WM_SETTEXT, 0, (long)widebuf );
@@ -868,7 +955,8 @@ ceLoadPrefs( CEAppGlobals* globals )
     if ( fileH != INVALID_HANDLE_VALUE ) {
         XP_U32 fileSize = GetFileSize( fileH, NULL );
         XP_U16 curVersion;
-        if ( fileSize >= sizeof(curVersion) && peekVersion( fileH, &curVersion ) ) {
+        if ( fileSize >= sizeof(curVersion) && peekVersion( fileH,
+                                                            &curVersion ) ) {
             CEAppPrefs tmpPrefs;
             if ( curVersion == CUR_CE_PREFS_FLAGS ) {
                 if ( fileSize >= sizeof( CEAppPrefs ) ) {
@@ -1781,8 +1869,8 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
     XP_Bool result = XP_FALSE;
 
     if ( wnd == globals->scrollHandle ) {
-        XP_S16 newOffset;
         XP_U16 curYOffset = board_getYOffset( globals->game.board );
+        XP_S16 newOffset = curYOffset;
  
         XP_ASSERT( !!globals->game.board );
 
@@ -1792,21 +1880,20 @@ handleScroll( CEAppGlobals* globals, XP_S16 pos, /* only valid for THUMB* */
 
         case SB_LINEUP: // Scrolls one line up 
         case SB_PAGEUP: // 
-            newOffset = curYOffset - 1;
+            --newOffset;
             break;
 
         case SB_LINEDOWN: // Scrolls one line down 
         case SB_PAGEDOWN: // Scrolls one page down 
-            newOffset = curYOffset + 1;
+            ++newOffset;
             break;
 
         case SB_THUMBTRACK:     /* still dragging; don't redraw */
         case SB_THUMBPOSITION:
             newOffset = pos;
-            break;
         default:
-            newOffset = -1;
-            /* do nothing */
+            break;
+            /* do nothing: leave newOffset == curYOffset */
         }
 
         result = curYOffset != newOffset
@@ -1961,22 +2048,43 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
         }
 
         if ( !*handledP && incr != 0 && !keyDown ) {
-            BoardObjectType order[] = { OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
+            BoardObjectType orderScroll[] = { 
+                OBJ_SCORE, OBJ_BOARD, OBJ_NONE, OBJ_TRAY };
+            BoardObjectType orderNoScroll[] = { 
+                OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
+            BoardObjectType* order;
+            XP_U16 orderLen;
             BoardObjectType cur = board_getFocusOwner( board );
             XP_U16 index = 0;
-            XP_LOGF( "here" );
-            if ( cur != OBJ_NONE ) {
+
+            if ( !!globals->scrollHandle ) {
+                order = orderScroll;
+                orderLen = VSIZE(orderScroll);
+            } else {
+                order = orderNoScroll;
+                orderLen = VSIZE(orderNoScroll);
+            }
+
+            if ( !!globals->scrollHandle || (cur != OBJ_NONE) ) {
                 for ( ; ; ) {
                     if ( order[index] == cur ) {
                         break;
                     }
                     ++index;
-                    XP_ASSERT( index < 3 );
+                    XP_ASSERT( index < orderLen );
                 }
-                index = (index + 3 + incr) % 3;
+                index = (index + orderLen + incr) % orderLen;
             }
             XP_LOGF( "%s: calling board_focusChanged", __func__ );
             draw = board_focusChanged( board, order[index], XP_TRUE );
+
+            if ( !!globals->scrollHandle ) {
+                if ( order[index] == OBJ_NONE ) {
+                    SetFocus( globals->scrollHandle );
+                } else {
+                    SetFocus( globals->hWnd );
+                }
+            }
         }
     }
     return draw;
@@ -2016,7 +2124,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     if ( message == WM_CREATE ) {
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
-        SetWindowLong( hWnd, GWL_USERDATA, (long)globals );
+        SetWindowLongPtr( hWnd, GWL_USERDATA, (long)globals );
 #ifdef _WIN32_WCE
         globals->hwndCB = makeCommandBar( hWnd, globals->hInst );
 #endif
@@ -2026,7 +2134,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
     } else {
 /*         XP_LOGF( "%s: event=%s (%d)", __func__, messageToStr(message), message ); */
-        globals = (CEAppGlobals*)GetWindowLong( hWnd, GWL_USERDATA );
+        globals = (CEAppGlobals*)GetWindowLongPtr( hWnd, GWL_USERDATA );
 
         switch (message) {
 

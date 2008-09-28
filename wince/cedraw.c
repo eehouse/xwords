@@ -294,7 +294,7 @@ ERROR
 } /* ceClipToRect */
 
 static void
-makeTestBuf( CEDrawCtx* dctx, XP_UCHAR* buf, XP_UCHAR bufLen, RFIndex index )
+makeTestBuf( CEDrawCtx* dctx, XP_UCHAR* buf, XP_U16 bufLen, RFIndex index )
 {
     switch( index ) {
     case RFONTS_TRAY:
@@ -442,7 +442,8 @@ ceClearFontCache( CEDrawCtx* dctx )
 }
 
 static void
-ceFillFontInfo( LOGFONT* fontInfo, XP_U16 height/* , XP_Bool bold */ )
+ceFillFontInfo( const CEDrawCtx* dctx, LOGFONT* fontInfo, 
+                XP_U16 height/* , XP_Bool bold */ )
 {
     XP_MEMSET( fontInfo, 0, sizeof(*fontInfo) );
     fontInfo->lfHeight = height;
@@ -453,7 +454,8 @@ ceFillFontInfo( LOGFONT* fontInfo, XP_U16 height/* , XP_Bool bold */ )
 /*         fontInfo->lfWeight = FW_LIGHT; */
 /*     } */
 
-    wcscpy( fontInfo->lfFaceName, L"Arial" );
+    wcscpy( fontInfo->lfFaceName, IS_SMARTPHONE(dctx->globals)?
+            L"Segoe Condensed" : L"Tahoma" );
 }
 
 static void
@@ -482,7 +484,7 @@ ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index,
         LOGFONT fontInfo;
         HFONT testFont;
 
-        ceFillFontInfo( &fontInfo, testSize/* , index == RFONTS_SCORE_BOLD */ );
+        ceFillFontInfo( dctx, &fontInfo, testSize );
         testFont = CreateFontIndirect( &fontInfo );
 
         if ( !!testFont ) {
@@ -541,11 +543,10 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index )
 } /* ceGetSizedFont */
 
 static void
-ceMeasureText( CEDrawCtx* dctx, const FontCacheEntry* fce, 
+ceMeasureText( CEDrawCtx* dctx, HDC hdc, const FontCacheEntry* fce, 
                const XP_UCHAR* str, XP_S16 padding,
                XP_U16* widthP, XP_U16* heightP )
 {
-    HDC hdc = GetDC(dctx->mainWin);//globals->hdc;
     XP_U16 height = 0;
     XP_U16 maxWidth = 0;
 
@@ -615,9 +616,19 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
 static void
 ceGetCharValHts( const XP_Rect* xprect, XP_U16* charHt, XP_U16* valHt )
 {
-    XP_U16 visHt = xprect->height - 5;
-    *valHt = visHt / 3;
-    *charHt = visHt - *valHt;
+    XP_U16 visHt = xprect->height - TRAY_BORDER;
+    /* if tiles are wider than tall we can let them overlap vertically */
+    if ( xprect->width > xprect->height ) {
+        *valHt = visHt / 2;
+        if ( xprect->width > (xprect->height*2) ) {
+            *charHt = visHt;
+        } else {
+          *charHt = (visHt * 4) / 5;
+        }
+    } else {
+        *valHt = visHt / 3;
+        *charHt = visHt - *valHt;
+    }
 }
 
 DLSTATIC XP_Bool
@@ -728,7 +739,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     InsetRect( &rt, 1, 1 );
     ceClipToRect( hdc, &rt );
 
-    fce = ceGetSizedFont( dctx, XP_MIN(xprect->height,xprect->width) - 3, 
+    fce = ceGetSizedFont( dctx, XP_MIN(xprect->height-CELL_BORDER,xprect->width), 
                           RFONTS_CELL );
     oldFont = SelectObject( hdc, fce->setFont );
 
@@ -1069,7 +1080,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
 } /* ce_draw_drawBoardArrow */
 
 DLSTATIC void
-DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* rect, 
+DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                             XP_U16 XP_UNUSED(numPlayers), 
                             DrawFocusState XP_UNUSED(dfs) )
 {
@@ -1078,11 +1089,11 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_ASSERT( !!globals->hdc );
     SetBkColor( globals->hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
 
-    dctx->scoreIsVertical = rect->height > rect->width;
+    dctx->scoreIsVertical = xprect->height > xprect->width;
 
     /* I don't think the clip rect's set at this point but drawing seems fine
        anyway.... ceClearToBkground() is definitely needed here. */
-    ceClearToBkground( (CEDrawCtx*)p_dctx, rect );
+    ceClearToBkground( (CEDrawCtx*)p_dctx, xprect );
 } /* ce_draw_scoreBegin */
 
 static void
@@ -1106,7 +1117,8 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
 {
     if ( nTilesLeft > 0 ) {
         CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-        HDC hdc = dctx->globals->hdc;
+        CEAppGlobals* globals = dctx->globals;
+        HDC hdc = globals->hdc;
         XP_UCHAR buf[16];
         const FontCacheEntry* fce;
         XP_U16 height;
@@ -1117,12 +1129,12 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
         formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
 
         height = xprect->height-2;
-        if ( height > CE_SCORE_HEIGHT ) {
-            height = CE_SCORE_HEIGHT;
+        if ( height > globals->cellHt ) {
+            height = globals->cellHt;
         }
         fce = ceGetSizedFont( dctx, height, RFONTS_REM );
         oldFont = SelectObject( hdc, fce->setFont );
-        ceMeasureText( dctx, fce, buf, 0/*CE_REM_PADDING*/, widthP, heightP );
+        ceMeasureText( dctx, hdc, fce, buf, 0, widthP, heightP );
 
         (void)SelectObject( hdc, oldFont );
     } else {
@@ -1197,22 +1209,28 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XP_UCHAR buf[32];
     HFONT oldFont;
     const FontCacheEntry* fce;
-    XP_U16 height;
+    XP_U16 fontHt, cellHt;
 
-    height = xprect->height-2;
-    if ( height > CE_SCORE_HEIGHT ) {
-        height = CE_SCORE_HEIGHT;
+    cellHt = globals->cellHt;
+    if ( !dctx->scoreIsVertical ) {
+        cellHt -= SCORE_TWEAK;
     }
+    fontHt = xprect->height;
+    if ( fontHt > cellHt ) {
+        fontHt = cellHt;
+    }
+    fontHt -= 2;                /* for whitespace top and bottom  */
     if ( !dsi->selected ) {
-        height -= 2;
+        fontHt -= 2;            /* use smaller font for non-selected */
     }
-    fce = ceGetSizedFont( dctx, height, 
-                          dsi->selected ? RFONTS_SCORE_BOLD:RFONTS_SCORE );
-
-    oldFont = SelectObject( hdc, fce->setFont );
 
     ceFormatScoreText( dctx, dsi, buf, sizeof(buf) );
-    ceMeasureText( dctx, fce, buf, 0, widthP, heightP );
+
+    fce = ceGetSizedFont( dctx, fontHt,
+                          dsi->selected ? RFONTS_SCORE_BOLD:RFONTS_SCORE );
+    oldFont = SelectObject( hdc, fce->setFont );
+
+    ceMeasureText( dctx, hdc, fce, buf, 0, widthP, heightP );
 
     SelectObject( hdc, oldFont );
 
@@ -1344,6 +1362,10 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
     RECT rt;
     PAINTSTRUCT ps;
     XP_Bool isNegative;
+    HFONT oldFont;
+    const FontCacheEntry* fce;
+
+    fce = ceGetSizedFont( dctx, 0, RFONTS_SCORE );
 
     XPRtoRECT( &rt, rInner );
 
@@ -1369,8 +1391,11 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
     SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(player)] );
     SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
     ceClearToBkground( dctx, rInner );
-    drawTextLines( dctx, hdc, buf, CE_TIMER_PADDING, &rt, 
-                   DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+
+    oldFont = SelectObject( hdc, fce->setFont );
+    ++rt.top;
+    ceDrawLinesClipped( hdc, fce, buf, XP_TRUE, &rt );
+    SelectObject( hdc, oldFont );
 
     if ( !globals->hdc ) {
         EndPaint( dctx->mainWin, &ps );
@@ -1413,7 +1438,8 @@ DRAW_FUNC_NAME(measureMiniWText)( DrawCtx* p_dctx, const XP_UCHAR* str,
                                   XP_U16* widthP, XP_U16* heightP )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-    ceMeasureText( dctx, NULL, str, CE_MINIW_PADDING, widthP, heightP );
+    HDC hdc = GetDC(dctx->mainWin);
+    ceMeasureText( dctx, hdc, NULL, str, CE_MINIW_PADDING, widthP, heightP );
     *heightP += CE_MINI_V_PADDING;
     *widthP += CE_MINI_H_PADDING;
 } /* ce_draw_measureMiniWText */
@@ -1664,11 +1690,13 @@ ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream )
         fce.glyphHt = (XP_U16)stream_getU8( stream );
 
         /* We need to read from the file no matter how many entries, but only
-           populate what we have room for */
+           populate what we have room for -- in case N_RESIZE_FONTS was
+           different when file written. */
 #ifndef DROP_CACHE
-        if ( ii < N_RESIZE_FONTS && ii != RFONTS_CELL ) {
+        if ( ii < N_RESIZE_FONTS ) {
             LOGFONT fontInfo;
-            ceFillFontInfo( &fontInfo, fce.lfHeight );
+/*             XP_LOGF( "using height %d for index %d", fce.lfHeight, ii ); */
+            ceFillFontInfo( dctx, &fontInfo, fce.lfHeight );
             fce.setFont = CreateFontIndirect( &fontInfo );
             XP_ASSERT( !!fce.setFont );
 
@@ -1676,4 +1704,4 @@ ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream )
         }
 #endif
     }
-}
+} /* ce_draw_fromStream */

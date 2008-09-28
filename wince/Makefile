@@ -87,6 +87,7 @@ CFLAGS += -DCANT_DO_CMDBAR -DDRAW_LINK_DIRECT -DXWFEATURE_TURNCHANGENOTIFY
 endif
 endif
 
+# CFLAGS += -DFORCE_SCROLL=3
 CFLAGS += -DARM -I./ -I../common -I../relay
 
 CFLAGS += -Wall -Wunused-parameter
