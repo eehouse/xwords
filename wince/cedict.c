@@ -704,8 +704,6 @@ matchShortName( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
     wchar_t buf[CE_MAX_PATH_LEN+1];
     wchar_t* name;
 
-    LOG_FUNC();
-
     XP_ASSERT( !datap->found );
 
     name = wbname( buf, sizeof(buf), wPath );
