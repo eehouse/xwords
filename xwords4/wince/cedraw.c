@@ -991,7 +991,7 @@ DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect,
     if ( selected ) {
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     } else {
-        FillRect( hdc, &rt, dctx->brushes[CE_BLACK_COLOR] );
+        FillRect( hdc, &rt, dctx->brushes[dctx->trayOwner+CE_USER_COLOR1] );
     }
 } /* ce_draw_drawTrayDivider */
 
