@@ -1,0 +1,44 @@
+#!/bin/bash
+
+PLAT=win32
+DBG=dbg
+
+SIZES=( 
+    176x200                     # 6.1 standard
+    200x176                     # flipped
+
+    400x240
+    240x400
+    440x240
+    240x440
+
+    320x186                     # WM 6.1 Standard landscape
+    186x320
+
+    240x266                     # WM 6.1 Standard QVGA
+    266x240                     # flipped
+
+    266x320                     # WM 6.1 Standard square w/title bar
+    320x266                     # flipped
+    320x320                     # full-screen mode
+
+    320x250                     # WM 6 Pro 320x320 short for some reason
+    320x285                     # with tile bar
+    # 320x320                     # full-screen mode
+)
+
+cd $(dirname $0)
+EXES=$(ls -c ../obj_${PLAT}_${DBG}/xwords4_*.exe)
+
+for SIZE in ${SIZES[*]}; do
+    WIDTH=${SIZE%x*}
+    HEIGHT=${SIZE#*x}
+
+    for EXE in $EXES; do        # 
+        CMD="wine $EXE width=$WIDTH height=$HEIGHT"
+        echo $CMD
+        eval "$CMD"
+        break                   # -c sorts by date, so quit after running newest
+    done
+
+done
