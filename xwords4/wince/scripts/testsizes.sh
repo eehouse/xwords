@@ -30,6 +30,14 @@ SIZES=(
 cd $(dirname $0)
 EXES=$(ls -c ../obj_${PLAT}_${DBG}/xwords4_*.exe)
 
+if ls ../obj_${PLAT}_${DBG}/*.xwd >/dev/null 2>&1;  then
+    : # nothing to do
+elif [ -s "$XWDICT" ]; then
+   cp $XWDICT ../obj_${PLAT}_${DBG}
+else
+    cp ../../dawg/English/BasEnglish2to8.xwd ../obj_${PLAT}_${DBG}
+fi
+
 for SIZE in ${SIZES[*]}; do
     WIDTH=${SIZE%x*}
     HEIGHT=${SIZE#*x}
