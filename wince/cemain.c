@@ -771,13 +771,12 @@ ceSetTitleFromName( CEAppGlobals* globals )
         if ( colonPos != NULL ) {
             *colonPos = 0;
         }
-
-#if ! defined _WIN32_WCE && defined DEBUG
-        swprintf( &widebuf[wcslen(widebuf)], L" %dx%d", 
-                  globals->dbWidth, globals->dbHeight );
-#endif
     }
 
+#if ! defined _WIN32_WCE && defined DEBUG
+    swprintf( &widebuf[wcslen(widebuf)], L":%dx%d", 
+              globals->dbWidth, globals->dbHeight );
+#endif
     SendMessage( globals->hWnd, WM_SETTEXT, 0, (long)widebuf );
 } /* ceSetTitleFromName */
 
