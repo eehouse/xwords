@@ -1587,11 +1587,23 @@ ce_draw_update( CEDrawCtx* dctx )
     }
 } /* ce_drawctxt_update */
 
+static void
+drawColoredRect( CEDrawCtx* dctx, const RECT* invalR, XP_U16 index )
+{
+    CEAppGlobals* globals = dctx->globals;
+    FillRect( globals->hdc, invalR, dctx->brushes[index] );
+}
+
 void
 ce_draw_erase( CEDrawCtx* dctx, const RECT* invalR )
 {
-    CEAppGlobals* globals = dctx->globals;
-    FillRect( globals->hdc, invalR, dctx->brushes[CE_BKG_COLOR] );
+    drawColoredRect( dctx, invalR, CE_BKG_COLOR );
+}
+
+void
+ce_draw_focus( CEDrawCtx* dctx, const RECT* invalR )
+{
+    drawColoredRect( dctx, invalR, CE_FOCUS_COLOR );
 }
 
 CEDrawCtx* 
