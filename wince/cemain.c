@@ -430,6 +430,19 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
               XP_U16 width, XP_U16 height )
 {
     HWND hwndSB;
+    RECT tmp = { .left = xx, .right = xx + width };
+    XP_U16 rectHt = height / 10; /* each focus rect to be 1/10th height */
+    
+    tmp.top = yy;
+    tmp.bottom = yy + rectHt;
+    XP_MEMCPY( &globals->scrollRects[0], &tmp, sizeof(globals->scrollRects[0]) );
+
+    tmp.bottom = yy + height;
+    tmp.top = tmp.bottom - rectHt;
+    XP_MEMCPY( &globals->scrollRects[1], &tmp, sizeof(globals->scrollRects[1]) );
+
+    yy += rectHt;
+    height -= rectHt * 2;       /* above and below */
 
     /* Need to destroy it, or resize it, because board size may be changing
        in case where portrait display's been flipped. */
@@ -442,10 +455,8 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
                            NULL,           // Window text
                            // Window style
                            SBS_VERT|WS_VISIBLE|WS_CHILD,
-                           xx + SCROLL_SHRINK, yy + 2, 
-                           width - SCROLL_SHRINK, height - 4,
-                           globals->hWnd,
-                           (HMENU)SCROLLBARID,// The control identifier
+                           xx, yy, width, height, globals->hWnd,
+                           (HMENU)SCROLLBARID, // The control identifier
                            globals->hInst,     // The instance handle
                            NULL );             // s'pposed to be NULL
 
@@ -1488,11 +1499,21 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
 
         if ( !!invalR ) {
             XP_U16 ii;
+            RECT interR;
             for ( ii = 0; ii < N_OWNED_RECTS; ++ii ) {
-                RECT interR;
                 if ( IntersectRect( &interR, invalR, 
                                     &globals->ownedRects[ii] ) ) {
                     ce_draw_erase( globals->draw, &interR );
+                }
+            }
+            for ( ii = 0; ii < VSIZE(globals->scrollRects); ++ii ) {
+                if ( IntersectRect( &interR, invalR, 
+                                    &globals->scrollRects[ii] ) ) {
+                    if ( globals->scrollerHasFocus ) {
+                        ce_draw_focus( globals->draw, &interR );
+                    } else {
+                        ce_draw_erase( globals->draw, &interR );
+                    }
                 }
             }
         }
@@ -2078,10 +2099,14 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
             draw = board_focusChanged( board, order[index], XP_TRUE );
 
             if ( !!globals->scrollHandle ) {
+                InvalidateRect( globals->hWnd, &globals->scrollRects[0], TRUE );
+                InvalidateRect( globals->hWnd, &globals->scrollRects[1], TRUE );
                 if ( order[index] == OBJ_NONE ) {
                     SetFocus( globals->scrollHandle );
+                    globals->scrollerHasFocus = XP_TRUE; 
                 } else {
                     SetFocus( globals->hWnd );
+                    globals->scrollerHasFocus = XP_FALSE;
                 }
             }
         }
