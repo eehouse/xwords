@@ -430,6 +430,7 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
               XP_U16 width, XP_U16 height )
 {
     HWND hwndSB;
+#ifdef _WIN32_WCE
     RECT tmp = { .left = xx, .right = xx + width };
     XP_U16 rectHt = height / 10; /* each focus rect to be 1/10th height */
     
@@ -443,7 +444,7 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
 
     yy += rectHt;
     height -= rectHt * 2;       /* above and below */
-
+#endif
     /* Need to destroy it, or resize it, because board size may be changing
        in case where portrait display's been flipped. */
     if ( !!globals->scrollHandle ) {
@@ -1506,6 +1507,7 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
                     ce_draw_erase( globals->draw, &interR );
                 }
             }
+#ifdef _WIN32_WCE
             for ( ii = 0; ii < VSIZE(globals->scrollRects); ++ii ) {
                 if ( IntersectRect( &interR, invalR, 
                                     &globals->scrollRects[ii] ) ) {
@@ -1516,6 +1518,7 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
                     }
                 }
             }
+#endif
         }
 
         board_draw( globals->game.board );
@@ -2099,8 +2102,6 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
             draw = board_focusChanged( board, order[index], XP_TRUE );
 
             if ( !!globals->scrollHandle ) {
-                InvalidateRect( globals->hWnd, &globals->scrollRects[0], TRUE );
-                InvalidateRect( globals->hWnd, &globals->scrollRects[1], TRUE );
                 if ( order[index] == OBJ_NONE ) {
                     SetFocus( globals->scrollHandle );
                     globals->scrollerHasFocus = XP_TRUE; 
@@ -2108,6 +2109,12 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
                     SetFocus( globals->hWnd );
                     globals->scrollerHasFocus = XP_FALSE;
                 }
+#ifdef _WIN32_WCE
+                InvalidateRect( globals->hWnd, &globals->scrollRects[0], TRUE );
+                InvalidateRect( globals->hWnd, &globals->scrollRects[1], TRUE );
+#else
+                InvalidateRect( globals->scrollHandle, NULL, TRUE );
+#endif
             }
         }
     }
@@ -2179,6 +2186,19 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
 #ifdef CEFEATURE_CANSCROLL
+# ifndef _WIN32_WCE
+            /* WM_CTLCOLORSCROLLBAR aren't delivered on CE.  Some say can
+             * work around using WM_PAINT or WM_ERASEBKGND but no luck
+             * yet. */
+        case WM_CTLCOLORSCROLLBAR:
+            XP_LOGF( "got WM_CTLCOLORSCROLLBAR" );
+            if ( (HWND)lParam == globals->scrollHandle ) {
+                if ( globals->scrollerHasFocus ) {
+                    return (LRESULT)ce_draw_getFocusBrush( globals->draw );
+                }
+            }
+            break;
+# endif
         case WM_VSCROLL:
             draw = checkPenDown( globals );
             draw = handleScroll( globals, (short int)HIWORD(wParam),

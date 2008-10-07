@@ -132,7 +132,9 @@ typedef struct CEAppGlobals {
 #ifdef CEFEATURE_CANSCROLL
     HWND scrollHandle;
     WNDPROC oldScrollProc;
+#ifdef _WIN32_WCE
     RECT scrollRects[2];        /* above and below the scroller */
+#endif
     XP_Bool scrollerHasFocus;
 #endif
 

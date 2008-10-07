@@ -28,6 +28,9 @@ CEDrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );
 void ce_draw_update( CEDrawCtx* dctx );
 void ce_draw_erase( CEDrawCtx* dctx, const RECT* invalR );
 void ce_draw_focus( CEDrawCtx* dctx, const RECT* invalR );
+#ifndef _WIN32_WCE
+HBRUSH ce_draw_getFocusBrush( const CEDrawCtx* dctx );
+#endif
 
 void ce_draw_toStream( const CEDrawCtx* dctx, XWStreamCtxt* stream );
 void ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream );
