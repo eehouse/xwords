@@ -1577,13 +1577,13 @@ ce_draw_doNothing( DrawCtx* dctx, ... )
 void
 ce_draw_update( CEDrawCtx* dctx )
 {
-    XP_U16 i;
+    XP_U16 ii;
 
-    for ( i = 0; i < CE_NUM_COLORS; ++i ) {
-        if ( !!dctx->brushes[i] ) {
-            DeleteObject( dctx->brushes[i] );
+    for ( ii = 0; ii < CE_NUM_COLORS; ++ii ) {
+        if ( !!dctx->brushes[ii] ) {
+            DeleteObject( dctx->brushes[ii] );
         }
-        dctx->brushes[i] = CreateSolidBrush(dctx->globals->appPrefs.colors[i]);
+        dctx->brushes[ii] = CreateSolidBrush(dctx->globals->appPrefs.colors[ii]);
     }
 } /* ce_drawctxt_update */
 
@@ -1605,6 +1605,14 @@ ce_draw_focus( CEDrawCtx* dctx, const RECT* invalR )
 {
     drawColoredRect( dctx, invalR, CE_FOCUS_COLOR );
 }
+
+#ifndef _WIN32_WCE
+HBRUSH
+ce_draw_getFocusBrush( const CEDrawCtx* dctx )
+{
+    return dctx->brushes[CE_FOCUS_COLOR];
+}
+#endif
 
 CEDrawCtx* 
 ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
