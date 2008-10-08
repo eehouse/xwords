@@ -57,7 +57,7 @@
 
 #define MAX_LOADSTRING 100
 
-#define PPC_SCROLLBAR_WIDTH 12
+#define MAX_SCROLLBAR_WIDTH 12
 #define MIN_SCROLLBAR_WIDTH 6
 #define SCROLLBARID 0x4321      /* needs to be unique! */
 
@@ -443,7 +443,10 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
     XP_MEMCPY( &globals->scrollRects[1], &tmp, sizeof(globals->scrollRects[1]) );
 
     yy += rectHt;
-    height -= rectHt * 2;       /* above and below */
+    height -= rectHt * 2;     /* above and below */
+
+    width -= 2;               /* make narrower: on CE will erase cell border */
+    ++xx;
 #endif
     /* Need to destroy it, or resize it, because board size may be changing
        in case where portrait display's been flipped. */
@@ -487,6 +490,9 @@ removeScrollbar( CEAppGlobals* globals )
 
 typedef struct CEBoardParms {
     XP_U16  scrnWidth;
+    XP_U16  scrnHeight;
+    XP_U16  adjLeft;
+    XP_U16  adjTop;
 
     XP_U16  boardHScale;
     XP_U16  boardVScale;
@@ -509,17 +515,18 @@ typedef struct CEBoardParms {
 } CEBoardParms;
 
 static void
-figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
+figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows, 
+                  CEBoardParms* bparms )
 {
     RECT rc;
     XP_U16 scrnWidth, scrnHeight;
-    XP_U16 trayVScale, scoreWidth, boardLeft, scoreHeight;
+    XP_U16 trayHeight, scoreWidth, scoreHeight;
     XP_U16 hScale, vScale, nVisibleRows;
-    XP_U16 trayTop;
+    XP_U16 tmp, rowsToUse, nRowsPossible;
     XP_Bool horiz;
     XP_U16 scrollWidth = 0;
-    XP_U16 numUnits;
     XP_S16 num2Scroll;
+    XP_U16 adjLeft, adjTop;
 
     GetClientRect( globals->hWnd, &rc );
 #ifndef _WIN32_WCE
@@ -541,87 +548,67 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
 
     scrnWidth = (XP_U16)(rc.right - rc.left);
     scrnHeight = (XP_U16)(rc.bottom - rc.top);
+
     XP_LOGF( "%s: scrnWidth: %d, scrnHeight: %d", __func__, 
              scrnWidth, scrnHeight );
 
-    horiz = (scrnHeight/* - CE_SCORE_HEIGHT*/)
-        >= (scrnWidth/* - CE_MIN_SCORE_WIDTH*/);
-    nVisibleRows = nRows;
+    /* Figure layout style based on proportion UNLESS there's just no room
+       for anything but 15 columns on the board -- because vertically is the
+       only dimension in which we can scroll.  */
+    if ( scrnWidth <= (MIN_CELL_WIDTH * (nRows+2)) ) {
+        horiz = XP_TRUE;
+    } else {
+        horiz = scrnHeight >= scrnWidth;
+    }
 
     /* Scoreboard is same height as cells (less SCORE_TWEAK) */
-    numUnits = (scrnHeight-MIN_TILE_HEIGHT) / MIN_CELL_HEIGHT;
-    num2Scroll = (nRows + 1) - numUnits; /* 1: scoreboard */
+    nRowsPossible = (scrnHeight-MIN_TRAY_HEIGHT) / MIN_CELL_HEIGHT;
+    num2Scroll = (nRows + (horiz?1:0)) - nRowsPossible; /* 1: scoreboard */
     if ( num2Scroll < 0 ) {
         num2Scroll = 0;
     }
-
 #ifdef FORCE_SCROLL
-    if ( num2Scroll < FORCE_SCROLL ) {
-        num2Scroll = FORCE_SCROLL;
-    }
+    if ( num2Scroll < FORCE_SCROLL ) { num2Scroll = FORCE_SCROLL; }
 #endif
+    nVisibleRows = nRows - num2Scroll;
+    rowsToUse = nVisibleRows + (horiz? 1:0);          /* 1: scoreboard */
+    vScale = (scrnHeight-MIN_TRAY_HEIGHT) / rowsToUse;
 
-    nVisibleRows -= num2Scroll;
+    tmp = nRows + (horiz ? 0 : 2);
+    hScale = scrnWidth / tmp;
 
-    /* apportion the extra pixels */
-    vScale = (scrnHeight-MIN_TILE_HEIGHT) / (nVisibleRows + (horiz? 1:0));
-    XP_LOGF( "%s: vScale: %d", __func__, vScale );
-
-    trayTop = (vScale * (nVisibleRows+(horiz? 1:0)));    /* 1 for scoreboard */
-    if ( horiz ) {
-        trayTop -= SCORE_TWEAK;
-    }
-    trayVScale = scrnHeight - trayTop;
-
-    /* If we have the space, make tiles 2* the size of cells  */
-    if ( nVisibleRows == nRows ) {
-        XP_U16 nRowsIncSbrd = nRows + (horiz?1:0);
-        while ( (vScale > MIN_CELL_HEIGHT) && (trayVScale < (2 * vScale)) ) {
-            trayVScale += nRowsIncSbrd;
-            trayTop -= nRowsIncSbrd;
-            --vScale;
-        }
+    if ( vScale > hScale ) {
+        vScale = XP_MAX( MIN_CELL_HEIGHT, hScale );
+    } else if ( hScale > vScale ) {
+        hScale = XP_MAX( MIN_CELL_WIDTH, vScale );
     }
 
-    globals->cellHt = vScale;
-
-    XP_LOGF( "vScale: %d; target: %d", vScale, MIN_CELL_HEIGHT );
-    XP_LOGF( "trayVScale: %d; target: %d", trayVScale, MIN_TILE_HEIGHT );
+    /* Figure out tray size */
+    tmp = vScale * rowsToUse;
+    trayHeight = XP_MIN( vScale * 2, scrnHeight - tmp );
 
 #ifdef CEFEATURE_CANSCROLL
-    if ( nVisibleRows < nRows ) {
-        scrollWidth = PPC_SCROLLBAR_WIDTH;
+    /* Does this need to be in a loop? */
+    while ( nVisibleRows < nRows && hScale > MIN_CELL_WIDTH ) { /* need scroller? (while allows break) */
+        scrollWidth = scrnWidth - (tmp * hScale);
+        if ( scrollWidth >= MIN_SCROLLBAR_WIDTH  ) {
+            break;
+        }
+        --hScale;
+    }
+    if ( scrollWidth > MAX_SCROLLBAR_WIDTH ) {
+        scrollWidth = MAX_SCROLLBAR_WIDTH;
     }
 #endif
 
     if ( horiz ) {
-        /* don't let scrollbar be wide out of proportion  */
-        for ( ; ; ) {
-            hScale = (scrnWidth - scrollWidth) / nRows;
-            XP_LOGF( "1: scrollWidth: %d; hScale:%d", scrollWidth, hScale );
-            if ( scrollWidth > 0 ) {
-                boardLeft = 0;
-                scrollWidth = scrnWidth - (nRows * hScale);
-            } else {
-                boardLeft = (scrnWidth - scrollWidth - (hScale*nRows)) / 2;
-            }
-            XP_LOGF( "NOW: scrollWidth: %d; hScale:%d", scrollWidth, hScale );
-            if ( (hScale < scrollWidth)
-                 && (scrollWidth-nRows > MIN_SCROLLBAR_WIDTH) ) {
-                scrollWidth -= nRows;
-            } else {
-                break;
-            }
-        }
-        scoreWidth = scrnWidth;
-
+        scoreWidth = scrollWidth + (hScale * nRows);
+        scoreHeight = vScale - SCORE_TWEAK;
+        trayHeight += SCORE_TWEAK;
     } else {
-        hScale = (scrnWidth - scrollWidth) / (nRows + 2); /* double width? */
-        boardLeft = scrnWidth - scrollWidth - (hScale * nRows);
-        scoreWidth = boardLeft/* + scrollWidth*/;
+        scoreWidth = XP_MIN( 2*hScale, scrnWidth - (hScale * nRows) );
+        scoreHeight = (nVisibleRows * vScale) + trayHeight;
     }
-
-    scoreHeight = horiz? vScale - SCORE_TWEAK : scrnHeight;
 
     if ( globals->gameInfo.timerEnabled ) {
         if ( horiz ) {
@@ -640,22 +627,33 @@ figureBoardParms( CEAppGlobals* globals, XP_U16 nRows, CEBoardParms* bparms )
         }
     }
 
+    globals->cellHt = vScale;
+
+    /* figure actual width and height */
+    tmp = scrollWidth + (hScale * nRows) + (horiz ? 0 : scoreWidth);
+    adjLeft = (scrnWidth - tmp)/2;
+    tmp = trayHeight + (vScale * nVisibleRows) + (horiz?scoreHeight:0);
+    adjTop = (scrnHeight - tmp)/2;
+
     bparms->scrnWidth = scrnWidth;
+    bparms->scrnHeight = scrnHeight;
+    bparms->adjLeft = adjLeft;
+    bparms->adjTop = adjTop;
     bparms->boardHScale = hScale;
     bparms->boardVScale = vScale;
-    bparms->boardTop = horiz? scoreHeight : 0;
-    bparms->trayTop = trayTop;
-    bparms->trayHeight = trayVScale;
-    bparms->trayWidth = horiz? scrnWidth: scrnWidth - scoreWidth;
-    bparms->boardLeft = boardLeft;
-    bparms->trayLeft = horiz? 0 : scoreWidth;
+    bparms->boardTop = adjTop + (horiz? scoreHeight : 0);
+    bparms->trayTop = bparms->boardTop + (nVisibleRows * vScale);
+    bparms->trayHeight = trayHeight;
+    bparms->trayWidth = (hScale * nRows) + scrollWidth;
+    bparms->boardLeft = adjLeft + (horiz ? 0 : scoreWidth);
+    bparms->trayLeft = bparms->boardLeft;//horiz? 0 : scoreWidth;
     bparms->scoreWidth = scoreWidth;
     bparms->scoreHeight = scoreHeight;
     bparms->scrollWidth = scrollWidth;
     bparms->horiz = horiz;
     
 #ifdef CEFEATURE_CANSCROLL
-    bparms->needsScroller = nVisibleRows < nRows;
+    bparms->needsScroller = scrollWidth > 0;
     if ( bparms->needsScroller ) {
         XP_U16 boardRight;
         boardRight = bparms->boardLeft + (nRows * hScale);
@@ -673,25 +671,35 @@ static void
 setOwnedRects( CEAppGlobals* globals, XP_U16 nRows, 
                const CEBoardParms* bparms )
 {
-    if ( bparms->horiz ) {
-        RECT tmp;
-        XP_U16 scrollWidth = bparms->scrollWidth;
+    RECT tmp;
+    XP_U16 scrollWidth = bparms->scrollWidth;
 
-        tmp.top = bparms->scoreHeight;        /* Same for both */
-        tmp.bottom = bparms->trayTop;         /* Same for both */
+    XP_MEMSET( &globals->ownedRects, 0, sizeof(globals->ownedRects) );
 
-        tmp.left = 0;
-        tmp.right = bparms->boardLeft;
-        XP_MEMCPY( &globals->ownedRects[OWNED_RECT_LEFT], &tmp, 
-                   sizeof(globals->ownedRects[OWNED_RECT_LEFT]) );
+    tmp.top = bparms->adjTop;                          /* Same for both */
+    tmp.bottom = bparms->trayTop + bparms->trayHeight; /* Same for both */
 
-        tmp.left = tmp.right + (bparms->boardHScale * nRows) + scrollWidth;
-        tmp.right = bparms->scrnWidth;
-        XP_MEMCPY( &globals->ownedRects[OWNED_RECT_RIGHT], &tmp, 
-                   sizeof(globals->ownedRects[OWNED_RECT_RIGHT]) );
-    } else {
-        XP_MEMSET( &globals->ownedRects, 0, sizeof(globals->ownedRects) );
-    }
+    tmp.left = 0;
+    tmp.right = bparms->adjLeft;
+    XP_MEMCPY( &globals->ownedRects[OWNED_RECT_LEFT], &tmp, 
+               sizeof(globals->ownedRects[OWNED_RECT_LEFT]) );
+
+    tmp.left = tmp.right + (bparms->boardHScale * nRows) + scrollWidth;
+    tmp.right = bparms->scrnWidth;
+    XP_MEMCPY( &globals->ownedRects[OWNED_RECT_RIGHT], &tmp, 
+               sizeof(globals->ownedRects[OWNED_RECT_RIGHT]) );
+
+    tmp.left = 0;
+    tmp.top = 0;
+    tmp.right = bparms->scrnWidth;
+    tmp.bottom = bparms->adjTop;
+    XP_MEMCPY( &globals->ownedRects[OWNED_RECT_TOP], &tmp, 
+               sizeof(globals->ownedRects[OWNED_RECT_TOP]) );
+
+    tmp.top = bparms->trayTop + bparms->trayHeight;
+    tmp.bottom = bparms->scrnHeight;
+    XP_MEMCPY( &globals->ownedRects[OWNED_RECT_BOTTOM], &tmp, 
+               sizeof(globals->ownedRects[OWNED_RECT_BOTTOM]) );
 } /* setOwnedRects */
 
 
@@ -724,7 +732,8 @@ cePositionBoard( CEAppGlobals* globals )
     board_setScale( globals->game.board, bparms.boardHScale, 
                     bparms.boardVScale );
 
-    board_setScoreboardLoc( globals->game.board, 0, 0, bparms.scoreWidth, 
+    board_setScoreboardLoc( globals->game.board, bparms.adjLeft, bparms.adjTop,
+                            bparms.scoreWidth, 
                             bparms.scoreHeight, bparms.horiz );
     board_setShowColors( globals->game.board, globals->appPrefs.showColors );
     board_setYOffset( globals->game.board, 0 );

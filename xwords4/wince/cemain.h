@@ -89,6 +89,8 @@ typedef struct CEAppPrefs {
 
 enum { OWNED_RECT_LEFT
        ,OWNED_RECT_RIGHT
+       ,OWNED_RECT_TOP
+       ,OWNED_RECT_BOTTOM
        ,N_OWNED_RECTS
 };
 
