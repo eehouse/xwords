@@ -485,7 +485,7 @@ readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             bool isEOF = byt == EOF;
             *gotEOF = isEOF;
 
-            assert( isEOF || count < bufLen );
+            assert( isEOF || count < bufLen || dropWord );
             if ( !dropWord && (count >= gLimLow) && (count <= gLimHigh) ) {
                 assert( count < bufLen );
                 wordBuf[count] = '\0';
@@ -501,7 +501,7 @@ readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             if ( gDebug ) {
                 char buf[T2ABUFLEN(count)];
                 wordBuf[count] = '\0';
-                fprintf( stderr, "%s: dropping word (len=%d): %s\n", __func__,
+                fprintf( stderr, "%s: dropping word (len>=%d): %s\n", __func__,
                          count, tileToAscii( buf, sizeof(buf), wordBuf ) );
             }
 #endif
@@ -517,10 +517,7 @@ readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             assert( count < bufLen );
             wordBuf[count++] = (char)gTableHash[byt];
             if ( count >= bufLen ) {
-                char buf[T2ABUFLEN(count)];
-                ERROR_EXIT( "no space for word %d (starting \"%s\")", 
-                            gWordCount, 
-                            tileToAscii( buf, sizeof(buf), wordBuf ));
+                dropWord = true;
             }
         } else if ( gKillIfMissing || !dropWord ) {
             char buf[T2ABUFLEN(count)];
