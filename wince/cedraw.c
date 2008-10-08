@@ -1129,8 +1129,8 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
         formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
 
         height = xprect->height-2;
-        if ( height > globals->cellHt ) {
-            height = globals->cellHt;
+        if ( height > globals->cellHt - CELL_BORDER ) {
+            height = globals->cellHt - CELL_BORDER;
         }
         fce = ceGetSizedFont( dctx, height, RFONTS_REM );
         oldFont = SelectObject( hdc, fce->setFont );

@@ -25,10 +25,10 @@
 #define TRAY_BORDER 7
 #define CELL_BORDER 3
 
-#define MIN_CELL_WIDTH 12
+#define MIN_CELL_WIDTH 10
 #define MIN_CELL_HEIGHT 13
 /* 1 below for what's subtracted from bparms->trayHeight */
-#define MIN_TILE_HEIGHT (((MIN_CELL_HEIGHT) + (TRAY_BORDER - CELL_BORDER)) + 1)
+#define MIN_TRAY_HEIGHT (((MIN_CELL_HEIGHT) + (TRAY_BORDER - CELL_BORDER)) + 1)
 
 /* Favor the tray over the scoreboard. */
 #define SCORE_TWEAK 2
