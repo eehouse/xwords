@@ -617,18 +617,23 @@ static void
 ceGetCharValHts( const XP_Rect* xprect, XP_U16* charHt, XP_U16* valHt )
 {
     XP_U16 visHt = xprect->height - TRAY_BORDER;
+    XP_U16 visWidth = xprect->width - 5; /* ??? */
+
     /* if tiles are wider than tall we can let them overlap vertically */
-    if ( xprect->width > xprect->height ) {
-        *valHt = visHt / 2;
-        if ( xprect->width > (xprect->height*2) ) {
+    if ( visWidth > visHt ) {
+        if ( visWidth > (visHt*2) ) {
             *charHt = visHt;
+            *valHt = (3*visHt) / 4;
         } else {
-          *charHt = (visHt * 4) / 5;
+            *charHt = (visHt * 4) / 5;
+            *valHt = visHt / 2;
         }
     } else {
         *valHt = visHt / 3;
         *charHt = visHt - *valHt;
     }
+/*     XP_LOGF( "%s(width:%d, height:%d)=>char: %d, val:%d", __func__,  */
+/*              xprect->width, xprect->height, *charHt, *valHt ); */
 }
 
 DLSTATIC XP_Bool
