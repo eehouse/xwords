@@ -186,6 +186,7 @@ typedef struct CommonPrefs {
 #define LOG_FUNC()  XP_LOGF( "IN: %s", __func__ )
 #define LOG_RETURNF(fmt, ...)  XP_LOGF( "%s => " fmt, __func__, __VA_ARGS__ )
 #define LOG_RETURN_VOID() LOG_RETURNF("%s","void")
+#define XP_LOGLOC() XP_LOGF( "%s(), line %d", __func__, __LINE__ )
 
 #ifndef XP_UNUSED
 # if defined __GNUC__
