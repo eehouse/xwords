@@ -430,9 +430,16 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
               XP_U16 width, XP_U16 height )
 {
     HWND hwndSB;
+    RECT tmp;
+    XP_U16 rectHt;
+
+    ++xx;
+    width -= 2;               /* make narrower: on CE will erase cell border */
+
 #ifdef _WIN32_WCE
-    RECT tmp = { .left = xx, .right = xx + width };
-    XP_U16 rectHt = height / 10; /* each focus rect to be 1/10th height */
+    tmp.left = xx;
+    tmp.right = xx + width;
+    rectHt = height / 10; /* each focus rect to be 1/10th height */
     
     tmp.top = yy;
     tmp.bottom = yy + rectHt;
@@ -444,10 +451,8 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
 
     yy += rectHt;
     height -= rectHt * 2;     /* above and below */
-
-    width -= 2;               /* make narrower: on CE will erase cell border */
-    ++xx;
 #endif
+
     /* Need to destroy it, or resize it, because board size may be changing
        in case where portrait display's been flipped. */
     if ( !!globals->scrollHandle ) {
@@ -2111,19 +2116,24 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
             draw = board_focusChanged( board, order[index], XP_TRUE );
 
             if ( !!globals->scrollHandle ) {
+                XP_Bool scrollerHasFocus = globals->scrollerHasFocus;
                 if ( order[index] == OBJ_NONE ) {
+                    XP_ASSERT( !scrollerHasFocus );
                     SetFocus( globals->scrollHandle );
-                    globals->scrollerHasFocus = XP_TRUE; 
-                } else {
+                    scrollerHasFocus = XP_TRUE; 
+                } else if ( scrollerHasFocus ) {
                     SetFocus( globals->hWnd );
-                    globals->scrollerHasFocus = XP_FALSE;
+                    scrollerHasFocus = XP_FALSE;
                 }
+                if ( scrollerHasFocus != globals->scrollerHasFocus ) {
+                    globals->scrollerHasFocus = scrollerHasFocus;
 #ifdef _WIN32_WCE
-                InvalidateRect( globals->hWnd, &globals->scrollRects[0], TRUE );
-                InvalidateRect( globals->hWnd, &globals->scrollRects[1], TRUE );
+                    InvalidateRect( globals->hWnd, &globals->scrollRects[0], FALSE );
+                    InvalidateRect( globals->hWnd, &globals->scrollRects[1], FALSE );
 #else
-                InvalidateRect( globals->scrollHandle, NULL, TRUE );
+                    InvalidateRect( globals->scrollHandle, NULL, FALSE );
 #endif
+                }
             }
         }
     }
