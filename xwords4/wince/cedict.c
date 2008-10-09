@@ -139,12 +139,10 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             (XP_U8*)XP_MALLOC(globals->mpool, numFaces*2);
 
         ptr += 2;		/* skip xloc header */
-        XP_DEBUGF( "pre values: ptr now 0x%p", ptr );
         for ( i = 0; i < numFaces*2; i += 2 ) {
             ctxt->super.countsAndValues[i] = *ptr++;
             ctxt->super.countsAndValues[i+1] = *ptr++;
         }
-        XP_DEBUGF( "post values: ptr now 0x%p", ptr );
 
         ceLoadSpecialData( ctxt, &ptr );
 
@@ -208,8 +206,6 @@ ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
     Tile i;
     XP_UCHAR** texts;
     SpecialBitmaps* bitmaps;
-
-    XP_DEBUGF( "loadSpecialData: there are %d specials", nSpecials );
 
     texts = (XP_UCHAR**)XP_MALLOC( ctxt->super.mpool, 
                                    nSpecials * sizeof(*texts) );
