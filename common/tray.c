@@ -568,6 +568,7 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         up = XP_TRUE;
     } else if ( (cursorKey == XP_CURSOR_KEY_RIGHT)
                 || (cursorKey == XP_CURSOR_KEY_LEFT) ) {
+        XP_Bool resetEngine = XP_FALSE;
         XP_S16 delta = cursorKey == XP_CURSOR_KEY_RIGHT ? 1 : -1;
         const XP_U16 selPlayer = board->selPlayer;
         PerTurnInfo* pti = board->selInfo;
@@ -594,12 +595,14 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
                 } else if ( cursorOnDivider ) {
                     /* just drag the divider */
                     pti->dividerLoc = newLoc;
+                    resetEngine = XP_TRUE;
                 } else if ( pti->tradeInProgress ) {
                     /* nothing to do */
                 } else {
                     /* drag the tile, skipping over the divider if needed */
                     if ( (newLoc == pti->dividerLoc) && (newLoc > 0) ) {
                         newLoc += delta;
+                        resetEngine = XP_TRUE;
                     }
                     newTileLoc = newLoc;
                     adjustForDivider( board, &newTileLoc );
@@ -635,6 +638,9 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
         /* fix this!!! */
         board->dividerInvalid = XP_TRUE;
         board_invalTrayTiles( board, ALLTILES );
+        if ( resetEngine ) {
+            board_resetEngine( board );
+        }
     }
     draw = XP_TRUE;
 
