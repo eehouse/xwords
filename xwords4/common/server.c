@@ -185,29 +185,31 @@ logNewState( XW_State old, XW_State newst )
 static void
 initServer( ServerCtxt* server )
 {
-    XP_U16 i;
-    CurGameInfo* gi = server->vol.gi;
-    LocalPlayer* lp;
-    ServerPlayer* player;
-
     setTurn( server, -1 ); /* game isn't under way yet */
 
-    if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
+    if ( 0 ) {
+#ifndef XWFEATURE_STANDALONE_ONLY
+    } else if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
         SETSTATE( server, XWSTATE_NONE );
+#endif
     } else {
         SETSTATE( server, XWSTATE_BEGIN );
     }
 
-    lp = gi->players;
-    player = server->players;
-    for ( i = 0; i < gi->nPlayers; ++i, ++lp, ++player ) {
-        if ( !lp->isLocal/*  && !lp->name */ ) {
-            ++server->nv.pendingRegistrations;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    {
+        XP_U16 ii;
+        CurGameInfo* gi = server->vol.gi;
+        LocalPlayer* lp = gi->players;
+        ServerPlayer* player = server->players;
+        for ( ii = 0; ii < gi->nPlayers; ++ii, ++lp, ++player ) {
+            if ( !lp->isLocal/*  && !lp->name */ ) {
+                ++server->nv.pendingRegistrations;
+            }
+            player->deviceIndex = lp->isLocal? SERVER_DEVICE : UNKNOWN_DEVICE;
         }
-
-        player->deviceIndex = lp->isLocal? SERVER_DEVICE : UNKNOWN_DEVICE;
-
     }
+#endif
 
     server->nv.nDevices = 1; /* local device (0) is always there */
 } /* initServer */

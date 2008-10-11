@@ -1003,7 +1003,7 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 
 static XP_Bool
 preProcess( CommsCtxt* comms, XWStreamCtxt* stream, 
-            XP_Bool* usingRelay, XWHostID* XP_UNUSED_RELAY(senderID) )
+            XP_Bool* XP_UNUSED_RELAY(usingRelay), XWHostID* XP_UNUSED_RELAY(senderID) )
 {
     XP_Bool consumed = XP_FALSE;
     switch ( comms->addr.conType ) {
