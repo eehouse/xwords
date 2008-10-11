@@ -112,6 +112,29 @@ static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
 static void ceClipToRect( HDC hdc, const RECT* rt );
 static void ceClearFontCache( CEDrawCtx* dctx );
 
+#ifdef DEBUG
+const char*
+RFI2Str( RFIndex rfi )
+{
+    const char* str;
+# define CASE_STR(c)  case c: str = #c; break
+    switch( rfi ) {
+        CASE_STR( RFONTS_TRAY );
+        CASE_STR( RFONTS_TRAYVAL );
+        CASE_STR( RFONTS_CELL );
+        CASE_STR( RFONTS_REM );
+        CASE_STR( RFONTS_SCORE );
+        CASE_STR( RFONTS_SCORE_BOLD );
+    default:
+        str = "<unknown>";
+    }
+# undef CASE_STR
+    return str;
+}
+#else
+# define RFI2Str( rfi ) ""
+#endif
+
 static void
 XPRtoRECT( RECT* rt, const XP_Rect* xprect )
 {
@@ -453,9 +476,13 @@ ceFillFontInfo( const CEDrawCtx* dctx, LOGFONT* fontInfo,
 /*     } else { */
 /*         fontInfo->lfWeight = FW_LIGHT; */
 /*     } */
-
-    wcscpy( fontInfo->lfFaceName, IS_SMARTPHONE(dctx->globals)?
-            L"Segoe Condensed" : L"Tahoma" );
+    wcscpy( fontInfo->lfFaceName, 
+#ifdef FORCE_FONT
+            FORCE_FONT
+#else
+            IS_SMARTPHONE(dctx->globals)? L"Segoe Condensed" : L"Tahoma"
+#endif
+            );
 }
 
 static void
@@ -514,8 +541,9 @@ ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index,
                 fce->lfHeight = testSize;
                 fce->offset = top;
                 fce->glyphHt = thisHeight;
-                XP_LOGF( "Found for %d: indexHt: %d; lfHeight: %d; glyphHt: %d",
-                         index, fce->indexHt, fce->lfHeight, fce->glyphHt );
+                XP_LOGF( "Found for %s: indexHt: %d; lfHeight: %d; glyphHt: %d",
+                         RFI2Str(index), fce->indexHt, fce->lfHeight, 
+                         fce->glyphHt );
 
                 XP_ASSERT( fce->lfHeight >= fce->indexHt );
                 XP_ASSERT( fce->indexHt >= fce->glyphHt );
@@ -535,6 +563,8 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, RFIndex index )
     FontCacheEntry* fce = &dctx->fcEntry[index];
     if ( (0 != height)            /* 0 means use what we have */
          && fce->indexHt != height ) {
+        XP_LOGF( "%s: no match for %s (have %d, want %d) so recalculating", 
+                 __func__, RFI2Str(index), fce->indexHt, height );
         ceBestFitFont( dctx, height, index, fce );
     }
 
@@ -614,10 +644,12 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
 } /* drawTextLines */
 
 static void
-ceGetCharValHts( const XP_Rect* xprect, XP_U16* charHt, XP_U16* valHt )
+ceGetCharValHts( const CEDrawCtx* dctx, const XP_Rect* xprect, 
+                 XP_U16* charHt, XP_U16* valHt )
 {
     XP_U16 visHt = xprect->height - TRAY_BORDER;
     XP_U16 visWidth = xprect->width - 5; /* ??? */
+    XP_U16 minHt;
 
     /* if tiles are wider than tall we can let them overlap vertically */
     if ( visWidth > visHt ) {
@@ -628,13 +660,19 @@ ceGetCharValHts( const XP_Rect* xprect, XP_U16* charHt, XP_U16* valHt )
             *charHt = (visHt * 4) / 5;
             *valHt = visHt / 2;
         }
+
     } else {
         *valHt = visHt / 3;
         *charHt = visHt - *valHt;
     }
-/*     XP_LOGF( "%s(width:%d, height:%d)=>char: %d, val:%d", __func__,  */
+
+    minHt = dctx->globals->cellHt - CELL_BORDER;
+    if ( *charHt < minHt ) {
+        *charHt = minHt;
+    }
+/*     XP_LOGF( "%s(width:%d, height:%d)=>char: %d, val:%d", __func__, */
 /*              xprect->width, xprect->height, *charHt, *valHt ); */
-}
+} /* ceGetCharValHts */
 
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx, 
@@ -744,8 +782,8 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     InsetRect( &rt, 1, 1 );
     ceClipToRect( hdc, &rt );
 
-    fce = ceGetSizedFont( dctx, XP_MIN(xprect->height-CELL_BORDER,xprect->width), 
-                          RFONTS_CELL );
+    XP_ASSERT( xprect->height == globals->cellHt );
+    fce = ceGetSizedFont( dctx, xprect->height - CELL_BORDER, RFONTS_CELL );
     oldFont = SelectObject( hdc, fce->setFont );
 
     /* always init to silence compiler warning */
@@ -907,7 +945,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             const FontCacheEntry* fce;
             /* Dumb to calc these when only needed once.... */
             XP_U16 valHt, charHt;
-            ceGetCharValHts( xprect, &charHt, &valHt );
+            ceGetCharValHts( dctx, xprect, &charHt, &valHt );
 
             if ( !highlighted ) {
                 InsetRect( &rt, 1, 1 );
@@ -1313,7 +1351,7 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XP_U16 valHt;
     XP_U16 charHt;
 
-    ceGetCharValHts( xprect, &charHt, &valHt );
+    ceGetCharValHts( dctx, xprect, &charHt, &valHt );
 
     /* Little Pts first up top */
     fce = ceGetSizedFont( dctx, valHt, RFONTS_TRAYVAL );
@@ -1521,8 +1559,14 @@ DLSTATIC void
 DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, const DictionaryCtxt* dict )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-    /* May want to inval font cache if new dict has different tiles from
-       old.  Use dict_tilesAreSame(). */
+    XP_ASSERT( !!dict );
+
+    /* If we don't yet have a dict, stick with the cache we have, which is
+       either empty or came from the saved game and likely belong with the
+       dict we're getting now. */
+    if ( !!dctx->dict && !dict_tilesAreSame( dctx->dict, dict ) ) {
+        ceClearFontCache( dctx );
+    }
     dctx->dict = dict;
 }
 
@@ -1688,10 +1732,15 @@ ce_draw_toStream( const CEDrawCtx* dctx, XWStreamCtxt* stream )
     stream_putU8( stream, N_RESIZE_FONTS );
     for ( ii = 0; ii < N_RESIZE_FONTS; ++ii ) {
         const FontCacheEntry* fce = &dctx->fcEntry[ii];
+        XP_LOGF( "saving indexHt: %d, lfHeight: %d, offset: %d, glyphHt: %d "
+                 "for %s", fce->indexHt, fce->lfHeight, fce->offset, 
+                 fce->glyphHt, RFI2Str(ii) );
         stream_putU8( stream, fce->indexHt );
-        stream_putU8( stream, fce->lfHeight );
-        stream_putU8( stream, fce->offset );
-        stream_putU8( stream, fce->glyphHt );
+        if ( fce->indexHt > 0 ) {
+            stream_putU8( stream, fce->lfHeight );
+            stream_putU8( stream, fce->offset );
+            stream_putU8( stream, fce->glyphHt );
+        }
     }
 }
 
@@ -1710,23 +1759,28 @@ ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream )
         FontCacheEntry fce;
 
         fce.indexHt = (XP_U16)stream_getU8( stream );
-        fce.lfHeight = (XP_U16)stream_getU8( stream );
-        fce.offset = (XP_U16)stream_getU8( stream );
-        fce.glyphHt = (XP_U16)stream_getU8( stream );
+        if ( fce.indexHt > 0 ) {
+            fce.lfHeight = (XP_U16)stream_getU8( stream );
+            fce.offset = (XP_U16)stream_getU8( stream );
+            fce.glyphHt = (XP_U16)stream_getU8( stream );
 
-        /* We need to read from the file no matter how many entries, but only
-           populate what we have room for -- in case N_RESIZE_FONTS was
-           different when file written. */
+            /* We need to read from the file no matter how many entries, but
+               only populate what we have room for -- in case N_RESIZE_FONTS
+               was different when file written. */
 #ifndef DROP_CACHE
-        if ( ii < N_RESIZE_FONTS ) {
-            LOGFONT fontInfo;
-/*             XP_LOGF( "using height %d for index %d", fce.lfHeight, ii ); */
-            ceFillFontInfo( dctx, &fontInfo, fce.lfHeight );
-            fce.setFont = CreateFontIndirect( &fontInfo );
-            XP_ASSERT( !!fce.setFont );
+            if ( ii < N_RESIZE_FONTS ) {
+                LOGFONT fontInfo;
 
-            XP_MEMCPY( &dctx->fcEntry[ii], &fce, sizeof(dctx->fcEntry[ii]) );
-        }
+                XP_LOGF( "read indexHt: %d, lfHeight: %d, offset: %d, "
+                         "glyphHt: %d for %s", fce.indexHt, fce.lfHeight, 
+                         fce.offset, fce.glyphHt, RFI2Str(ii) );
+                ceFillFontInfo( dctx, &fontInfo, fce.lfHeight );
+                fce.setFont = CreateFontIndirect( &fontInfo );
+                XP_ASSERT( !!fce.setFont );
+
+                XP_MEMCPY( &dctx->fcEntry[ii], &fce, sizeof(dctx->fcEntry[ii]) );
+            }
 #endif
+        }
     }
 } /* ce_draw_fromStream */

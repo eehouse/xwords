@@ -2059,7 +2059,6 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
             if ( isRepeat ) {
                 (void)checkFireLateKeyTimer( globals );
             }
-            XP_LOGF( "%s: XP_RETURN_KEY", __func__ );
             break;
 
             /* Still need to produce these somehow */
@@ -2112,7 +2111,6 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
                 }
                 index = (index + orderLen + incr) % orderLen;
             }
-            XP_LOGF( "%s: calling board_focusChanged", __func__ );
             draw = board_focusChanged( board, order[index], XP_TRUE );
 
             if ( !!globals->scrollHandle ) {
@@ -2210,7 +2208,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
              * work around using WM_PAINT or WM_ERASEBKGND but no luck
              * yet. */
         case WM_CTLCOLORSCROLLBAR:
-            XP_LOGF( "got WM_CTLCOLORSCROLLBAR" );
             if ( (HWND)lParam == globals->scrollHandle ) {
                 if ( globals->scrollerHasFocus ) {
                     return (LRESULT)ce_draw_getFocusBrush( globals->draw );
