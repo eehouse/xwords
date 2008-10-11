@@ -52,11 +52,14 @@ ceFileExists( const wchar_t* name )
 }
 
 static void
-makeUniqueName( wchar_t* buf, XP_U16 bufLen )
+makeUniqueName( wchar_t* buf, XP_U16 XP_UNUSED_DBG(bufLen) )
 {
     XP_U16 ii;
     for ( ii = 1; ii < 100; ++ii ) {
-        int len = swprintf( buf, L"Untitled%d", ii );
+#ifdef DEBUG
+        int len = 
+#endif
+            swprintf( buf, L"Untitled%d", ii );
         XP_ASSERT( len < bufLen );
         if ( !ceFileExists( buf ) ) {
             break;
