@@ -430,8 +430,10 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
               XP_U16 width, XP_U16 height )
 {
     HWND hwndSB;
+#ifdef _WIN32_WCE
     RECT tmp;
     XP_U16 rectHt;
+#endif
 
     ++xx;
     width -= 2;               /* make narrower: on CE will erase cell border */
@@ -1561,13 +1563,6 @@ ceDoNewGame( CEAppGlobals* globals )
     CommsAddrRec* addr = NULL;
     XP_Bool changed = XP_FALSE;
 
-    /* What happens if user cancels below?  I'm hosed without a name, no?
-       PENDING */
-    if ( globals->curGameName != NULL ) {
-        XP_FREE( globals->mpool, globals->curGameName );
-        globals->curGameName = NULL;
-    }
-
     XP_MEMSET( &giState, 0, sizeof(giState) );
     giState.dlgHdr.globals = globals;
     giState.isNewGame = XP_TRUE;
@@ -1580,6 +1575,11 @@ ceDoNewGame( CEAppGlobals* globals )
          && ( giState.newDictName[0] != '\0' )
 #endif
          ) {
+
+        if ( globals->curGameName != NULL ) {
+            XP_FREE( globals->mpool, globals->curGameName );
+            globals->curGameName = NULL;
+        }
 
         if ( giState.prefsChanged ) {
             loadCurPrefsFromState( globals, &globals->appPrefs, 
@@ -1706,23 +1706,21 @@ ceWriteToFile( XWStreamCtxt* stream, void* closure )
     CEAppGlobals* globals = fwState->globals;
 #endif
     XP_UCHAR* path = fwState->path;
-    wchar_t widebuf[257];
-    XP_U16 len = (XP_U16)XP_STRLEN( path );
+    XP_U16 len = (XP_U16)XP_STRLEN( path ) + 1; /* 1: null byte */
+    wchar_t widebuf[len];
     HANDLE fileH;
 
-    len = (XP_U16)XP_STRLEN( path );
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, path, len + 1, 
-                         widebuf, len + 1 );
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, path, len, widebuf, len );
 
     fileH = CreateFile( widebuf, GENERIC_WRITE, 0, NULL, 
                         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 
     if ( fileH != INVALID_HANDLE_VALUE ) {
-
-        XP_U16 len = stream_getSize( stream );
-        XP_UCHAR* buf = XP_MALLOC( globals->mpool, len );
+        XP_UCHAR* buf;
         XP_U32 nWritten;
-        
+
+        len = stream_getSize( stream );
+        buf = XP_MALLOC( globals->mpool, len );
         stream_getBytes( stream, buf, len );
 
         WriteFile( fileH, buf, len, &nWritten, NULL );
@@ -1765,7 +1763,6 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
                                              nameBuf, VSIZE(nameBuf) );
             if ( confirmed ) {
                 XP_U16 len = wcslen(nameBuf);
-                XP_DEBUGF( "len(nameBuf) = %d", len );
                 newName = XP_MALLOC( globals->mpool, len + 1 );
                 WideCharToMultiByte( CP_ACP, 0, nameBuf, len + 1,
                                      newName, len + 1, NULL, NULL );
