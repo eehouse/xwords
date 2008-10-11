@@ -22,6 +22,7 @@
 #include "model.h"
 #include "game.h"
 #include "strutils.h"
+#include "dbgutil.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -302,6 +303,7 @@ flipKey( XP_Key key, XP_Bool flip )
         case XP_CURSOR_KEY_ALTRIGHT:
             result = XP_CURSOR_KEY_ALTDOWN; break;
         default:
+            XP_LOGF( "unexpected key: %s", XP_Key_2str(key) );
             XP_ASSERT(0);
         }
     }

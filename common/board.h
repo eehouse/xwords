@@ -153,7 +153,7 @@ void board_invalTrayTiles( BoardCtxt* board, TileBit what );
 XP_Bool board_juggleTray( BoardCtxt* board );
 XP_Bool board_beginTrade( BoardCtxt* board );
 
-#if defined FOR_GREMLINS || defined KEYBOARD_NAV
+#if defined FOR_GREMLINS
 XP_Bool board_moveDivider( BoardCtxt* board, XP_Bool right );
 #endif
 
