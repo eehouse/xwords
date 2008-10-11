@@ -635,7 +635,7 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
             break;              /* always exit loop if we get here */
         }
             
-        /* fix this!!! */
+        /* PENDING: don't just inval everything */
         board->dividerInvalid = XP_TRUE;
         board_invalTrayTiles( board, ALLTILES );
         if ( resetEngine ) {
@@ -669,7 +669,7 @@ getFocussedTileCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
 
 #endif /* KEYBOARD_NAV */
 
-#if defined FOR_GREMLINS || defined KEYBOARD_NAV
+#if defined FOR_GREMLINS
 XP_Bool
 board_moveDivider( BoardCtxt* board, XP_Bool right )
 {
