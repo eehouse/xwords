@@ -377,7 +377,7 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
 } /* linux_tcp_send */
 #endif  /* XWFEATURE_RELAY */
 
-#ifdef COMMS_HEARTBEAT
+#ifdef XWFEATURE_RELAY
 static void
 linux_tcp_reset( CommonGlobals* globals )
 {
