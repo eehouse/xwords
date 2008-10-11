@@ -138,7 +138,7 @@ static void tellMoveWasLegal( ServerCtxt* server );
 
 #define PICK_NEXT -1
 
-#ifdef DEBUG
+#if defined DEBUG && ! defined XWFEATURE_STANDALONE_ONLY
 static char*
 getStateStr( XW_State st )
 {

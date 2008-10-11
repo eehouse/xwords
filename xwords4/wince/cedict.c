@@ -375,7 +375,8 @@ ceMakeBitmap( CEDictionaryCtxt* XP_UNUSED_DBG(ctxt), XP_U8** ptrp )
 } /* ceMakeBitmap */
 
 static void
-ceDeleteBitmap( const CEDictionaryCtxt* ctxt, XP_Bitmap* bitmap )
+ceDeleteBitmap( const CEDictionaryCtxt* XP_UNUSED_DBG(ctxt),
+                XP_Bitmap* bitmap )
 {
     if ( !!bitmap ) {
         CEBitmapInfo* bmi = (CEBitmapInfo*)bitmap;
@@ -715,7 +716,7 @@ matchShortName( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
  * look.
  */
 static XP_Bool
-findAlternateDict( CEAppGlobals* globals, wchar_t* path )
+findAlternateDict( CEAppGlobals* XP_UNUSED_DBG(globals), wchar_t* path )
 {
     wchar_t shortPath[CE_MAX_PATH_LEN+1];
     FindOneData data;
@@ -724,7 +725,8 @@ findAlternateDict( CEAppGlobals* globals, wchar_t* path )
     data.sought = wbname( shortPath, sizeof(shortPath), path );
     data.result = path;
 
-    (void)ceLocateNDicts( MPPARM(globals->mpool) CE_MAXDICTS, matchShortName, &data );
+    (void)ceLocateNDicts( MPPARM(globals->mpool) CE_MAXDICTS, matchShortName, 
+                          &data );
     return data.found;
 } /* findAlternateDict */
 
