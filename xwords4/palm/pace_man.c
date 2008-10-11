@@ -1385,9 +1385,15 @@ void
 flipBtConnInfoArm268K( unsigned char* out, const BtLibSocketConnectInfoType* in )
 {
     write_unaligned32( out + 0, in->remoteDeviceP );
+#if defined BT_USE_L2CAP
     write_unaligned16( out + 4, in->data.L2Cap.remotePsm );
     write_unaligned16( out + 6, in->data.L2Cap.minRemoteMtu );
     write_unaligned16( out + 8, in->data.L2Cap.localMtu );
+#elif defined BT_USE_RFCOMM
+    write_unaligned8( out + 4, in->data.RfComm.remoteService );
+    write_unaligned16( out + 6, in->data.RfComm.maxFrameSize );
+    write_unaligned8( out + 7, in->data.RfComm.advancedCredit );
+#endif
 }
 
 /* from file BtLib.h */
