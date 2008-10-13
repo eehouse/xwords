@@ -64,6 +64,8 @@ CFLAGS += -D_WIN32_WCE=0x0400 -D_WIN32_IE=0x0400 -DUNDER_CE \
 	$(STANDALONE) $(USE_RAW_MINGW) -DDRAW_LINK_DIRECT \
     -DXWFEATURE_TURNCHANGENOTIFY \
 	-fdollars-in-identifiers -D__W32API_USE_DLLIMPORT__
+# back key should raise focus on main board and backspace in edit controls
+CFLAGS += -DOVERRIDE_BACKKEY	
 RESFLAGS += -D_WIN32_WCE=400 
 LFLAGS += -Wl,--major-subsystem-version,4,--minor-subsystem-version,20
 ifdef HAVE_COMMCTRL

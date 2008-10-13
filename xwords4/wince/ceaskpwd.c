@@ -21,7 +21,8 @@
 #include "cemain.h"
 #include "ceutil.h"
 #include "debhacks.h"
-#include <stdio.h>              /* swprintf */
+//##include <stdio.h>              /* swprintf */
+#include <wchar.h>
 
 static void
 nameToLabel( HWND hDlg, const XP_UCHAR* name, XP_U16 labelID )
@@ -50,6 +51,7 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         pState = (PasswdDialogState*)lParam;
 
         ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
+        ceDlgSetEdits( &pState->dlgHdr, PASS_EDIT, 0 );
 
         nameToLabel( hDlg, pState->name, IDC_PWDLABEL );
 

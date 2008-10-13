@@ -382,12 +382,30 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
         (void)SetScrollInfo( hDlg, SB_VERT, &sinfo, FALSE );
     }
 #ifdef _WIN32_WCE
-    if ( IS_SMARTPHONE(globals) && ((doWhat & DLG_STATE_TRAPBACK) != 0) ) {
+    /* Need to trap this for all dialogs, even if they don't have edit
+       controls.  The need goes away if the main window stops trapping it,
+       but I don't understand why: trapping here is still required. */
+    if ( IS_SMARTPHONE(globals) ) {
         trapBackspaceKey( hDlg );
     }
 #endif
     dlgHdr->doWhat = doWhat;
 } /* ceDlgSetup */
+
+void
+ceDlgSetEdits( CeDlgHdr* dlgHdr, XP_U16 firstEdit, ... )
+{
+    XP_U16 ii;
+    va_list ap;
+    va_start( ap, firstEdit );
+    XP_ASSERT( (dlgHdr->doWhat & DLG_STATE_TRAPBACK) != 0 );
+
+    for ( ii = 0; firstEdit != 0 && ii < MAX_EDITS; ++ii ) {
+        dlgHdr->edits[ii] = firstEdit;
+        firstEdit = va_arg( ap, int );
+    }
+    va_end(ap);
+}
 
 void
 ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId )
@@ -402,17 +420,40 @@ ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId )
     } 
 }
 
+static XP_Bool
+editHasFocus( const CeDlgHdr* dlgHdr )
+{
+    XP_Bool found = XP_FALSE;
+    XP_U16 focusId = GetDlgCtrlID( GetFocus() );
+    XP_U16 ii;
+    for ( ii = 0; ii < MAX_EDITS && !found; ++ii ) {
+        XP_U16 id = dlgHdr->edits[ii];
+        if ( 0 == id ) {
+            break;
+        } else if ( id == focusId ) {
+            found = XP_TRUE;
+        }
+    }
+    return found;
+} /* editHasFocus */
+
 XP_Bool
 ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
 {
     XP_Bool handled = XP_FALSE;
+
     switch( message ) {
-#ifdef _WIN32_WCE
+#ifdef OVERRIDE_BACKKEY
     case WM_HOTKEY:
-        XP_ASSERT( (dlgHdr->doWhat && DLG_STATE_TRAPBACK) != 0 );
         if ( VK_TBACK == HIWORD(lParam) ) {
-            SHSendBackToFocusWindow( message, wParam, lParam );
-            handled = TRUE;
+            if ( editHasFocus( dlgHdr ) ) {
+                SHSendBackToFocusWindow( message, wParam, lParam );
+                handled = TRUE;
+            } else {
+                WPARAM cmd = (0 != (dlgHdr->doWhat & DLG_STATE_DONEONLY)) ?
+                    IDOK : IDCANCEL;
+                SendMessage( dlgHdr->hDlg, WM_COMMAND, cmd, 0L );
+            }
         }
         break;
 #endif
@@ -709,13 +750,18 @@ ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
     }
 } /* ceSetLeftSoftkey */
 
-#ifdef _WIN32_WCE
+#ifdef OVERRIDE_BACKKEY
 void
 trapBackspaceKey( HWND hDlg )
 {
-        /* Override back key so we can pass it to edit controls */
-        SendMessage( SHFindMenuBar(hDlg), SHCMBM_OVERRIDEKEY, VK_TBACK, 
-                     MAKELPARAM (SHMBOF_NODEFAULT | SHMBOF_NOTIFY, 
-                                 SHMBOF_NODEFAULT | SHMBOF_NOTIFY));
+    /* Override back key so we can pass it to edit controls */
+    SendMessage( SHFindMenuBar(hDlg), SHCMBM_OVERRIDEKEY, VK_TBACK, 
+                 MAKELPARAM (SHMBOF_NODEFAULT | SHMBOF_NOTIFY, 
+                             SHMBOF_NODEFAULT | SHMBOF_NOTIFY));
+    /* To undo the above
+    SendMessage( SHFindMenuBar(hDlg), SHCMBM_OVERRIDEKEY, VK_TBACK, 
+                 MAKELPARAM( SHMBOF_NODEFAULT | SHMBOF_NOTIFY, 
+                             0 ) );
+    */
 }
 #endif

@@ -89,6 +89,7 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         (void)SetDlgItemText( hDlg, IDC_SVGN_SELLAB, buf );
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
+        ceDlgSetEdits( &state->dlgHdr, IDC_SVGN_EDIT, 0 );
 
         result = TRUE;
     } else {
@@ -366,7 +367,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->inited = XP_FALSE;
         state->gameListId = LB_IF_PPC(state->dlgHdr.globals,IDC_SVGM_GAMELIST);
 
-        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE|DLG_STATE_DONEONLY );
+        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_DONEONLY );
         ceDlgComboShowHide( &state->dlgHdr, IDC_SVGM_GAMELIST );
 
         result = TRUE;

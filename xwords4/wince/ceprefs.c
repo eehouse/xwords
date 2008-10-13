@@ -275,6 +275,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         pState->phonComboId = LB_IF_PPC(pState->dlgHdr.globals,PHONIES_COMBO);
 
         ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
+        ceDlgSetEdits( &pState->dlgHdr, TIMER_EDIT, 0 );
         ceDlgComboShowHide( &pState->dlgHdr, PHONIES_COMBO ); 
 
         stuffPhoniesList( pState );
