@@ -48,6 +48,7 @@ typedef enum { DLG_STATE_NONE = 0
                , DLG_STATE_TRAPBACK = 1 
                , DLG_STATE_DONEONLY = 2 
 } DlgStateTask;
+#define MAX_EDITS 8             /* the most any control has */
 typedef struct CeDlgHdr {
     CEAppGlobals* globals;
     HWND hDlg;
@@ -55,8 +56,10 @@ typedef struct CeDlgHdr {
     /* Below this line is private to ceutil.c */
     DlgStateTask doWhat;
     XP_U16 nPage;
+    XP_U16 edits[MAX_EDITS];
 } CeDlgHdr;
 void ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat );
+void ceDlgSetEdits( CeDlgHdr* dlgHdr, XP_U16 firstEdit, ... );
 void ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId );
 XP_Bool ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -65,11 +68,15 @@ XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
 void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
 
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE
 void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
-void trapBackspaceKey( HWND hDlg );
 #else
 # define ceSizeIfFullscreen( globals, hWnd )
+#endif
+
+#ifdef OVERRIDE_BACKKEY
+void trapBackspaceKey( HWND hDlg );
+#else
 # define trapBackspaceKey( hDlg )
 #endif
 
