@@ -89,7 +89,6 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         (void)SetDlgItemText( hDlg, IDC_SVGN_SELLAB, buf );
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
-        ceDlgSetEdits( &state->dlgHdr, IDC_SVGN_EDIT, 0 );
 
         result = TRUE;
     } else {

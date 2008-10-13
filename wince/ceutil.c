@@ -333,6 +333,26 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
 
     return success;
 } /* mkFullscreenWithSoftkeys */
+
+static void
+findEditCtrls( CeDlgHdr* dlgHdr )
+{
+    HWND ctrl;
+    XP_U16 nEdits = 0;
+
+    for ( ctrl = GetWindow( dlgHdr->hDlg, GW_CHILD );
+          !!ctrl && nEdits < MAX_EDITS;
+          ctrl = GetWindow( ctrl, GW_HWNDNEXT ) ) {
+        wchar_t buf[32];
+        if ( 0 != GetClassName( ctrl, buf, VSIZE(buf) )
+             && !wcscmp( L"Edit", buf ) ) {
+            XP_ASSERT( nEdits < MAX_EDITS );
+            dlgHdr->edits[nEdits++] = ctrl;
+        }
+    }
+    /* Sanity check: there are no Edits OR we're trapping them */
+    XP_ASSERT( (nEdits == 0) || ((dlgHdr->doWhat & DLG_STATE_TRAPBACK) != 0) );
+} /* findEditCtrls */
 #endif
 
 #define TITLE_HT 20            /* Need to get this from the OS */
@@ -381,31 +401,18 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
         
         (void)SetScrollInfo( hDlg, SB_VERT, &sinfo, FALSE );
     }
+    dlgHdr->doWhat = doWhat;
+
 #ifdef _WIN32_WCE
     /* Need to trap this for all dialogs, even if they don't have edit
        controls.  The need goes away if the main window stops trapping it,
        but I don't understand why: trapping here is still required. */
     if ( IS_SMARTPHONE(globals) ) {
         trapBackspaceKey( hDlg );
+        findEditCtrls( dlgHdr );
     }
 #endif
-    dlgHdr->doWhat = doWhat;
 } /* ceDlgSetup */
-
-void
-ceDlgSetEdits( CeDlgHdr* dlgHdr, XP_U16 firstEdit, ... )
-{
-    XP_U16 ii;
-    va_list ap;
-    va_start( ap, firstEdit );
-    XP_ASSERT( (dlgHdr->doWhat & DLG_STATE_TRAPBACK) != 0 );
-
-    for ( ii = 0; firstEdit != 0 && ii < MAX_EDITS; ++ii ) {
-        dlgHdr->edits[ii] = firstEdit;
-        firstEdit = va_arg( ap, int );
-    }
-    va_end(ap);
-}
 
 void
 ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId )
@@ -424,13 +431,13 @@ static XP_Bool
 editHasFocus( const CeDlgHdr* dlgHdr )
 {
     XP_Bool found = XP_FALSE;
-    XP_U16 focusId = GetDlgCtrlID( GetFocus() );
+    HWND focus = GetFocus();
     XP_U16 ii;
     for ( ii = 0; ii < MAX_EDITS && !found; ++ii ) {
-        XP_U16 id = dlgHdr->edits[ii];
-        if ( 0 == id ) {
+        HWND ctrl = dlgHdr->edits[ii];
+        if ( NULL == ctrl ) {
             break;
-        } else if ( id == focusId ) {
+        } else if ( ctrl == focus ) {
             found = XP_TRUE;
         }
     }

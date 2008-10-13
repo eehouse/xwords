@@ -520,9 +520,6 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         giState->dictListId = LB_IF_PPC(globals,IDC_DICTLIST);
 
         ceDlgSetup( &giState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
-        ceDlgSetEdits( &giState->dlgHdr, NAME_EDIT1, PASS_EDIT1, NAME_EDIT2,
-                       PASS_EDIT2, NAME_EDIT3, PASS_EDIT3, NAME_EDIT4, 
-                       PASS_EDIT4, 0 );
         ceDlgComboShowHide( &giState->dlgHdr, IDC_NPLAYERSCOMBO ); 
         ceDlgComboShowHide( &giState->dlgHdr, IDC_DICTLIST );
 

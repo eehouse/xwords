@@ -56,10 +56,9 @@ typedef struct CeDlgHdr {
     /* Below this line is private to ceutil.c */
     DlgStateTask doWhat;
     XP_U16 nPage;
-    XP_U16 edits[MAX_EDITS];
+    HWND edits[MAX_EDITS];
 } CeDlgHdr;
 void ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat );
-void ceDlgSetEdits( CeDlgHdr* dlgHdr, XP_U16 firstEdit, ... );
 void ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId );
 XP_Bool ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam);
 

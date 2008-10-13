@@ -145,7 +145,6 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         eState->inited = XP_FALSE;
 
         ceDlgSetup( &eState->dlgHdr, hDlg, DLG_STATE_TRAPBACK ); 
-        ceDlgSetEdits( &eState->dlgHdr, RED_EDIT, GREEN_EDIT, BLUE_EDIT, 0 );
 
         wchar_t label[32];
         XP_U16 len = SendDlgItemMessage( eState->parent, eState->labelID, 
