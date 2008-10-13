@@ -51,7 +51,6 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         pState = (PasswdDialogState*)lParam;
 
         ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
-        ceDlgSetEdits( &pState->dlgHdr, PASS_EDIT, 0 );
 
         nameToLabel( hDlg, pState->name, IDC_PWDLABEL );
 

@@ -111,7 +111,6 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
         ceDlgSetup( &bState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
-        ceDlgSetEdits( &bState->dlgHdr, IDC_PICKMSG, 0 );
         ceDlgComboShowHide( &bState->dlgHdr, BLANKFACE_LIST ); 
 
         loadLettersList( bState );
