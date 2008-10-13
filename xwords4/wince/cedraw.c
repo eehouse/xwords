@@ -1732,9 +1732,6 @@ ce_draw_toStream( const CEDrawCtx* dctx, XWStreamCtxt* stream )
     stream_putU8( stream, N_RESIZE_FONTS );
     for ( ii = 0; ii < N_RESIZE_FONTS; ++ii ) {
         const FontCacheEntry* fce = &dctx->fcEntry[ii];
-        XP_LOGF( "saving indexHt: %d, lfHeight: %d, offset: %d, glyphHt: %d "
-                 "for %s", fce->indexHt, fce->lfHeight, fce->offset, 
-                 fce->glyphHt, RFI2Str(ii) );
         stream_putU8( stream, fce->indexHt );
         if ( fce->indexHt > 0 ) {
             stream_putU8( stream, fce->lfHeight );
@@ -1771,9 +1768,6 @@ ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream )
             if ( ii < N_RESIZE_FONTS ) {
                 LOGFONT fontInfo;
 
-                XP_LOGF( "read indexHt: %d, lfHeight: %d, offset: %d, "
-                         "glyphHt: %d for %s", fce.indexHt, fce.lfHeight, 
-                         fce.offset, fce.glyphHt, RFI2Str(ii) );
                 ceFillFontInfo( dctx, &fontInfo, fce.lfHeight );
                 fce.setFont = CreateFontIndirect( &fontInfo );
                 XP_ASSERT( !!fce.setFont );

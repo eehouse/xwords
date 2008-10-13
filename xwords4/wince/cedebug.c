@@ -80,6 +80,9 @@ messageToStr( UINT message )
         CASE_STR( WM_CTLCOLORSCROLLBAR );
         CASE_STR( WM_NCMOUSEMOVE );
         CASE_STR( SBM_SETSCROLLINFO );
+        CASE_STR( WM_HOTKEY );
+        CASE_STR( WM_CLOSE );
+        CASE_STR( WM_ACTIVATEAPP );
     default:
         str = "<unknown>";
     }
