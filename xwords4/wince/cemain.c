@@ -1822,17 +1822,13 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
     return confirmed;
 } /* ceSaveCurGame */
 
-static XP_Bool
-ceConfirmAndSave( CEAppGlobals* globals )
+static void
+ceSaveAndExit( CEAppGlobals* globals )
 {
-    XP_Bool confirmed = ceSaveCurGame( globals, XP_TRUE );
-
-    if ( confirmed ) {
-        ceSavePrefs( globals );
-    }
-
-    return confirmed;
-} /* ceConfirmAndSave */
+    (void)ceSaveCurGame( globals, XP_TRUE );
+    ceSavePrefs( globals );
+    DestroyWindow(globals->hWnd);
+} /* ceSaveAndExit */
 
 static void
 closeGame( CEAppGlobals* globals )
@@ -2324,9 +2320,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
 
             case ID_FILE_EXIT:
-                if ( ceConfirmAndSave( globals ) ) { /* user may cancel... */
-                    DestroyWindow(hWnd);
-                }
+                ceSaveAndExit( globals ); /* autosaves; no user interaction */
                 break;
 
             case ID_MOVE_UNDOCURRENT:
@@ -2387,19 +2381,39 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             break;
 
-#ifdef _WIN32_WCE
+#ifdef OVERRIDE_BACKKEY
             /* Make the back key mean raise focus, but only if dived.
                Otherwise allow the OS to do what it wants.  Which means
                exit? */
         case WM_HOTKEY:
-            if ( VK_TBACK == HIWORD(lParam) ) {
-                if ( !!globals->game.board ) {
-                    draw = board_handleKey( globals->game.board, 
-                                            XP_RAISEFOCUS_KEY, &handled );
+            if ( (VK_TBACK == HIWORD(lParam)) && !!globals->game.board ) {
+                draw = board_handleKey( globals->game.board, 
+                                        XP_RAISEFOCUS_KEY, &handled );
+                if ( !draw && !handled
+                     /* Hack alert.  Winders sends two WM_HOTKEY events per
+                        press of the key.  (lParam isn't well documented for
+                        this event, but likely they're down and up.)
+                        Unfiltered, the first raises focus and the second
+                        exits the app.  Bad.  So we'll only raise if the
+                        first was not handled.  Note that this may well break
+                        on devices I haven't tested on, later, whenever.  */
+                     && (0 == (0x1000 & LOWORD(lParam))) ) {
+                    XP_LOGF( "calling ceSaveAndExit for VK_TBACK" );
+                    /* I'm actually exiting the app rather than minimize.  As
+                       it stands, minimizing means that even if I relaunch
+                       the app and quit properly I can't delete the .exe,
+                       suggesting that the minimized guy isn't getting
+                       reassociated when I relaunch.  Until I fix that
+                       exiting is best. 
+                    */
+                    ceSaveAndExit( globals );
+                    /* SHNavigateBack() is the right way to handle this, but
+                       isn't available via cegcc yet.  Others have suggested
+                       this as well as ShowWindow( hWnd, SW_MINIMIZE ); 
+                       or SetWindowPos( hWnd, &CWnd::wndBottom, 0, 0, 0, 0,
+                       SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
+                    */
                 }
-            }
-            if ( !draw || !handled ) {
-                callDefault = XP_TRUE;
             }
             break;
 #endif
