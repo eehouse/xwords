@@ -333,26 +333,6 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
 
     return success;
 } /* mkFullscreenWithSoftkeys */
-
-static void
-findEditCtrls( CeDlgHdr* dlgHdr )
-{
-    HWND ctrl;
-    XP_U16 nEdits = 0;
-
-    for ( ctrl = GetWindow( dlgHdr->hDlg, GW_CHILD );
-          !!ctrl && nEdits < MAX_EDITS;
-          ctrl = GetWindow( ctrl, GW_HWNDNEXT ) ) {
-        wchar_t buf[32];
-        if ( 0 != GetClassName( ctrl, buf, VSIZE(buf) )
-             && !wcscmp( L"Edit", buf ) ) {
-            XP_ASSERT( nEdits < MAX_EDITS );
-            dlgHdr->edits[nEdits++] = ctrl;
-        }
-    }
-    /* Sanity check: there are no Edits OR we're trapping them */
-    XP_ASSERT( (nEdits == 0) || ((dlgHdr->doWhat & DLG_STATE_TRAPBACK) != 0) );
-} /* findEditCtrls */
 #endif
 
 #define TITLE_HT 20            /* Need to get this from the OS */
@@ -409,7 +389,6 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
        but I don't understand why: trapping here is still required. */
     if ( IS_SMARTPHONE(globals) ) {
         trapBackspaceKey( hDlg );
-        findEditCtrls( dlgHdr );
     }
 #endif
 } /* ceDlgSetup */
@@ -430,18 +409,12 @@ ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId )
 static XP_Bool
 editHasFocus( const CeDlgHdr* dlgHdr )
 {
-    XP_Bool found = XP_FALSE;
     HWND focus = GetFocus();
-    XP_U16 ii;
-    for ( ii = 0; ii < MAX_EDITS && !found; ++ii ) {
-        HWND ctrl = dlgHdr->edits[ii];
-        if ( NULL == ctrl ) {
-            break;
-        } else if ( ctrl == focus ) {
-            found = XP_TRUE;
-        }
-    }
-    return found;
+    wchar_t buf[32];
+    XP_Bool isEdit = !!focus
+        && ( 0 != GetClassName( focus, buf, VSIZE(buf) ) )
+        && !wcscmp( L"Edit", buf );
+    return isEdit;
 } /* editHasFocus */
 
 XP_Bool

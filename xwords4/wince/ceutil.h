@@ -48,7 +48,6 @@ typedef enum { DLG_STATE_NONE = 0
                , DLG_STATE_TRAPBACK = 1 
                , DLG_STATE_DONEONLY = 2 
 } DlgStateTask;
-#define MAX_EDITS 8             /* the most any control has */
 typedef struct CeDlgHdr {
     CEAppGlobals* globals;
     HWND hDlg;
@@ -56,7 +55,6 @@ typedef struct CeDlgHdr {
     /* Below this line is private to ceutil.c */
     DlgStateTask doWhat;
     XP_U16 nPage;
-    HWND edits[MAX_EDITS];
 } CeDlgHdr;
 void ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat );
 void ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId );
