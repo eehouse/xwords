@@ -2397,7 +2397,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         exits the app.  Bad.  So we'll only raise if the
                         first was not handled.  Note that this may well break
                         on devices I haven't tested on, later, whenever.  */
-                     && (0 == (0x1000 & LOWORD(lParam))) ) {
+                     && (0 == (BACK_KEY_UP_MAYBE & LOWORD(lParam))) ) {
                     XP_LOGF( "calling ceSaveAndExit for VK_TBACK" );
                     /* I'm actually exiting the app rather than minimize.  As
                        it stands, minimizing means that even if I relaunch

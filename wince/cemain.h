@@ -190,4 +190,6 @@ XP_Bool queryBoxChar( CEAppGlobals* globals, const XP_UCHAR* msg );
     (IS_SMARTPHONE(g)?LB_FINDSTRINGEXACT:CB_FINDSTRINGEXACT)
 #define LB_IF_PPC(g,id)  (IS_SMARTPHONE(g)?id:(id+2))
 
+
+#define BACK_KEY_UP_MAYBE 0x1000
 #endif /* _CEMAIN_H_ */

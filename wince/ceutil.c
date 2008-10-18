@@ -407,7 +407,7 @@ ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId )
 }
 
 static XP_Bool
-editHasFocus( const CeDlgHdr* dlgHdr )
+editHasFocus( void )
 {
     HWND focus = GetFocus();
     wchar_t buf[32];
@@ -426,14 +426,14 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
 #ifdef OVERRIDE_BACKKEY
     case WM_HOTKEY:
         if ( VK_TBACK == HIWORD(lParam) ) {
-            if ( editHasFocus( dlgHdr ) ) {
+            if ( editHasFocus() ) {
                 SHSendBackToFocusWindow( message, wParam, lParam );
-                handled = TRUE;
-            } else {
+            } else if ( 0 != (BACK_KEY_UP_MAYBE & LOWORD(lParam) ) ) {
                 WPARAM cmd = (0 != (dlgHdr->doWhat & DLG_STATE_DONEONLY)) ?
                     IDOK : IDCANCEL;
                 SendMessage( dlgHdr->hDlg, WM_COMMAND, cmd, 0L );
             }
+            handled = TRUE;
         }
         break;
 #endif
