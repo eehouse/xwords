@@ -6,7 +6,10 @@ DBG=dbg
 SIZES=( 
     176x200                     # 6.1 standard
     200x176                     # flipped
-
+    
+    480x536                     # VGA, non full-screen
+    536x480
+    
     400x240
     240x400
     440x240
