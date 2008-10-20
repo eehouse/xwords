@@ -2390,6 +2390,7 @@ invalFocusOwner( BoardCtxt* board )
         if ( board->focusHasDived ) {
             BdCursorLoc loc = pti->bdCursor;
             invalCell( board, loc.col, loc.row );
+            checkScrollCell( board, loc.col, loc.row );
         } else {
 #ifdef PERIMETER_FOCUS
             invalPerimeter( board );
@@ -2607,63 +2608,27 @@ stripAlt( XP_Key key, XP_Bool* wasAlt )
 } /* stripAlt */
 
 static XP_Bool
-scrollTrumpsMove( const BoardCtxt* board, XP_Key cursorKey, XP_S16* moveBy )
-{
-    XP_Bool scroll = XP_FALSE;
-    if ( XP_CURSOR_KEY_DOWN == cursorKey ) {
-        scroll = (board->lastVisibleRow+1) < model_numRows( board->model );
-        if ( scroll ) {
-            *moveBy = -1;
-        }
-    } else if ( XP_CURSOR_KEY_UP == cursorKey ) {
-        scroll = board->yOffset > 0;
-        if ( scroll ) {
-            *moveBy = 1;
-        }
-    }
-    return scroll;
-}
-
-static XP_Bool
 board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
                   XP_Bool* up )
 {
     PerTurnInfo* pti = board->selInfo;
-    BdCursorLoc loc;
-    XP_S16 moveBy;
+    BdCursorLoc loc = pti->bdCursor;
+    XP_U16 col = loc.col;
+    XP_U16 row = loc.row;
     XP_Bool changed;
-    XP_Bool needMove = XP_FALSE;
 
     XP_Bool altSet;
     cursorKey = stripAlt( cursorKey, &altSet );
 
-    changed = !preflightOnly 
-        && scrollTrumpsMove( board, cursorKey, &moveBy );
-    if ( changed ) {
-        if ( adjustYOffset( board, moveBy ) ) {
-            /* need to move the cursor too? */
-            XP_Rect ignore;
-            loc = pti->bdCursor;
-            needMove = !getCellRect( board, loc.col, loc.row, &ignore );
-        }
-    }
-
-    /* PENDING: Is it a problem that needMove will only get set if
-       preflightOnly is false? */
-    if ( !changed || needMove ) {
-        XP_U16 col, row;
-        loc = pti->bdCursor;
-        col = loc.col;
-        row = loc.row;
-        changed = figureNextLoc( board, cursorKey, XP_FALSE, altSet,
-                                 &col, &row, up );
-        if ( changed && !preflightOnly ) {
-            invalCell( board, loc.col, loc.row );
-            invalCell( board, col, row );
-            loc.col = col;
-            loc.row = row;
-            pti->bdCursor = loc;
-        }
+    changed = figureNextLoc( board, cursorKey, XP_FALSE, altSet,
+                             &col, &row, up );
+    if ( changed && !preflightOnly ) {
+        invalCell( board, loc.col, loc.row );
+        invalCell( board, col, row );
+        loc.col = col;
+        loc.row = row;
+        pti->bdCursor = loc;
+        checkScrollCell( board, col, row );
     }
     return changed;
 } /* board_moveCursor */
