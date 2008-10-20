@@ -529,10 +529,9 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     XP_U16 scrnWidth, scrnHeight;
     XP_U16 trayHeight, scoreWidth, scoreHeight;
     XP_U16 hScale, vScale, nVisibleRows;
-    XP_U16 tmp, rowsToUse, nRowsPossible;
+    XP_U16 tmp;
     XP_Bool horiz;
     XP_U16 scrollWidth = 0;
-    XP_S16 num2Scroll;
     XP_U16 adjLeft, adjTop;
 
     GetClientRect( globals->hWnd, &rc );
@@ -569,17 +568,18 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     }
 
     /* Scoreboard is same height as cells (less SCORE_TWEAK) */
-    nRowsPossible = (scrnHeight-MIN_TRAY_HEIGHT) / MIN_CELL_HEIGHT;
-    num2Scroll = (nRows + (horiz?1:0)) - nRowsPossible; /* 1: scoreboard */
-    if ( num2Scroll < 0 ) {
-        num2Scroll = 0;
+    vScale = scrnHeight / (nRows + (horiz?2:1));
+    if ( vScale >= MIN_CELL_HEIGHT ) {
+        nVisibleRows = nRows; 
+    } else {
+        XP_U16 nRowsPossible = (scrnHeight-MIN_TRAY_HEIGHT) / MIN_CELL_HEIGHT;
+        XP_S16 num2Scroll = (nRows + (horiz?1:0)) - nRowsPossible; /* 1: scoreboard */
+        if ( num2Scroll < 0 ) {
+            num2Scroll = 0;
+        }
+        nVisibleRows = nRows - num2Scroll;
+        vScale = (scrnHeight-MIN_TRAY_HEIGHT) / (nVisibleRows + (horiz? 1:0));
     }
-#ifdef FORCE_SCROLL
-    if ( num2Scroll < FORCE_SCROLL ) { num2Scroll = FORCE_SCROLL; }
-#endif
-    nVisibleRows = nRows - num2Scroll;
-    rowsToUse = nVisibleRows + (horiz? 1:0);          /* 1: scoreboard */
-    vScale = (scrnHeight-MIN_TRAY_HEIGHT) / rowsToUse;
 
     tmp = nRows + (horiz ? 0 : 2);
     hScale = scrnWidth / tmp;
@@ -591,7 +591,7 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     }
 
     /* Figure out tray size */
-    tmp = vScale * rowsToUse;
+    tmp = vScale * (nVisibleRows + (horiz? 1:0));
     trayHeight = XP_MIN( vScale * 2, scrnHeight - tmp );
 
 #ifdef CEFEATURE_CANSCROLL
@@ -616,6 +616,7 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
         scoreWidth = XP_MIN( 2*hScale, scrnWidth - (hScale * nRows) );
         scoreHeight = (nVisibleRows * vScale) + trayHeight;
     }
+/*     XP_LOGF( "hScale=%d; vScale=%d; trayHeight=%d", hScale, vScale, trayHeight ); */
 
     if ( globals->gameInfo.timerEnabled ) {
         if ( horiz ) {
@@ -649,8 +650,8 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     bparms->boardHScale = hScale;
     bparms->boardVScale = vScale;
     bparms->boardTop = adjTop + (horiz? scoreHeight : 0);
-    bparms->trayTop = bparms->boardTop + (nVisibleRows * vScale);
-    bparms->trayHeight = trayHeight;
+    bparms->trayTop = bparms->boardTop + (nVisibleRows * vScale) + 1;
+    bparms->trayHeight = trayHeight - 1;
     bparms->trayWidth = (hScale * nRows) + scrollWidth;
     bparms->boardLeft = adjLeft + (horiz ? 0 : scoreWidth);
     bparms->trayLeft = bparms->boardLeft;//horiz? 0 : scoreWidth;
