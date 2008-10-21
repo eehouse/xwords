@@ -208,7 +208,8 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
     if ( version >= STREAM_VERS_KEYNAV ) {
         board->focussed = (BoardObjectType)stream_getBits( stream, 2 );
         board->focusHasDived = (BoardObjectType)stream_getBits( stream, 1 );
-        board->scoreCursorLoc = (BoardObjectType)stream_getBits( stream, 2 );
+        board->scoreCursorLoc = (XP_U8)
+            stream_getBits( stream, (version < STREAM_VERS_MODEL_NO_DICT? 2:3));
     }
 #endif
 
@@ -271,7 +272,7 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
 #ifdef KEYBOARD_NAV
     stream_putBits( stream, 2, board->focussed );
     stream_putBits( stream, 1, board->focusHasDived );
-    stream_putBits( stream, 2, board->scoreCursorLoc );
+    stream_putBits( stream, 3, board->scoreCursorLoc );
 #endif
 
     XP_ASSERT( !!board->server );
