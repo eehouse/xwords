@@ -174,6 +174,7 @@ typedef struct CEAppGlobals {
 
 enum {
     XWWM_TIME_RQST = WM_APP
+    ,XWWM_REM_SEL
     ,XWWM_PACKET_ARRIVED
 
 };

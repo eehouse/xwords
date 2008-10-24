@@ -126,6 +126,7 @@ static const XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc,
                                               XP_U16 stringCode );
 static XP_Bool ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                         XP_U16 turn, XP_Bool turnLost );
+static void ce_util_remSelected( XW_UtilCtxt* uc );
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void ce_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                 const CommsAddrRec* newAddr );
@@ -349,6 +350,7 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_makeEmptyDict = ce_util_makeEmptyDict;
     vtable->m_util_getUserString = ce_util_getUserString;
     vtable->m_util_warnIllegalWord = ce_util_warnIllegalWord;
+    vtable->m_util_remSelected = ce_util_remSelected;
 #ifdef XWFEATURE_RELAY
     vtable->m_util_addrChange = ce_util_addrChange;
     vtable->m_util_makeStreamFromAddr = ce_util_makeStreamFromAddr;
@@ -2501,6 +2503,10 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             draw = server_do( globals->game.server ); 
             break;
 
+        case XWWM_REM_SEL:
+            ceTilesLeft( globals );
+            break;
+
 #ifndef XWFEATURE_STANDALONE_ONLY
         case XWWM_PACKET_ARRIVED:
             draw = processPacket( globals, (XWStreamCtxt*)lParam );
@@ -3310,6 +3316,13 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
     return isOk;
 } /* ce_util_warnIllegalWord */
+
+static void
+ce_util_remSelected( XW_UtilCtxt* uc )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    PostMessage( globals->hWnd, XWWM_REM_SEL, 0, 0 );
+}
 
 #if defined XWFEATURE_RELAY || defined  XWFEATURE_BLUETOOTH
 static void
