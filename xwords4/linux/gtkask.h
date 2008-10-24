@@ -25,7 +25,9 @@
 
 #include "gtkmain.h"
 
-gint gtkask( gchar *message, gint numButtons, char* button1, ... );
+/* Returns true for "yes" or "ok" answer, false otherwise.
+ */
+XP_Bool gtkask( const gchar *message, GtkButtonsType buttons );
 
 #endif
 #endif /* PLATFORM_GTK */

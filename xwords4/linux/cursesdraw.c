@@ -141,13 +141,17 @@ curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx),
 
 static void
 curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                         const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft )
+                         const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft,
+                         XP_Bool focussed )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[32];
 
     formatRemText( buf, sizeof(buf), nTilesLeft, rInner->width );
     mvwprintw( dctx->boardWin, rInner->top, rInner->left, buf );
+    if ( focussed ) {
+        cursesHiliteRect( dctx->boardWin, rInner );
+    }
 } /* curses_draw_drawRemText */
 
 static int

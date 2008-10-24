@@ -63,7 +63,7 @@ gtkInsetRect( XP_Rect* r, short i )
 #define GTKMIN_W_HT 12
 
 static void
-gtkFillRect( GtkDrawCtx* dctx, const XP_Rect* rect, GdkColor* color )
+gtkFillRect( GtkDrawCtx* dctx, const XP_Rect* rect, const GdkColor* color )
 {
     gdk_gc_set_foreground( dctx->drawGC, color );
     gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC,
@@ -190,15 +190,17 @@ layout_for_ht( GtkDrawCtx* dctx, XP_U16 ht )
 } /* layout_for_ht */
 
 static void
-draw_string_at( GtkDrawCtx* dctx, const char* str, XP_U16 fontHt,
+draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
+                const char* str, XP_U16 fontHt,
                 const XP_Rect* where, XP_GTK_JUST just,
                 const GdkColor* frground, const GdkColor* bkgrnd )
 {
-	PangoLayout* layout;
     gint xx = where->left;
     gint yy = where->top;
 
-	layout = layout_for_ht( dctx, fontHt );
+    if ( !layout ) {
+        layout = layout_for_ht( dctx, fontHt );
+    }
 
     pango_layout_set_text( layout, str, strlen(str) );
 
@@ -463,8 +465,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
             }
         }
         if ( (flags & CELL_ISSTAR) != 0 ) {
-            draw_string_at( dctx, "*", rect->height, rect, XP_GTK_JUST_CENTER,
-                            &dctx->black, NULL );
+            draw_string_at( dctx, NULL, "*", rect->height, rect, 
+                            XP_GTK_JUST_CENTER, &dctx->black, NULL );
         }
     } else if ( !!letter ) {
         GdkColor* foreground;
@@ -478,7 +480,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                             rectInset.width+1, rectInset.height+1 );
 
         foreground = highlight? &dctx->white : &dctx->playerColors[owner];
-        draw_string_at( dctx, letter, rectInset.height-2, &rectInset, 
+        draw_string_at( dctx, NULL, letter, rectInset.height-2, &rectInset, 
                         XP_GTK_JUST_CENTER, foreground, cursor );
 
         if ( (flags & CELL_ISBLANK) != 0 ) {
@@ -561,7 +563,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 
             if ( !!textP ) {
                 if ( *textP != LETTER_NONE ) { /* blank */
-                    draw_string_at( dctx, textP, formatRect.height>>1,
+                    draw_string_at( dctx, NULL, textP, formatRect.height>>1,
                                     &formatRect, XP_GTK_JUST_TOPLEFT,
                                     foreground, NULL );
 
@@ -573,7 +575,7 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
             sprintf( numbuf, "%d", val );
             len = strlen( numbuf );
 
-            draw_string_at( dctx, numbuf, formatRect.height>>2,
+            draw_string_at( dctx, NULL, numbuf, formatRect.height>>2,
                             &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
                             foreground, NULL );
     
@@ -631,7 +633,7 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
     gtkInsetRect( &r, 1 );
     gtkFillRect( dctx, &r, hasCursor? &dctx->cursor : &dctx->tileBack );
 
-    draw_string_at( dctx, "?", r.height,
+    draw_string_at( dctx, NULL, "?", r.height,
                     &r, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dctx->trayOwner], NULL );
 
@@ -686,7 +688,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
     const char* curs = vertical? "|":"-";
 
     /* font needs to be small enough that "|" doesn't overwrite cell below */
-    draw_string_at( dctx, curs, (rectP->height*2)/3,
+    draw_string_at( dctx, NULL, curs, (rectP->height*2)/3,
                     rectP, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
     drawHintBorders( dctx, rectP, hintAtts );
@@ -733,16 +735,17 @@ getLayoutToFitRect( GtkDrawCtx* dctx, const char* str, const XP_Rect* rect )
 
 static void
 gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
-                    XP_U16* widthP, XP_U16* heightP )
+                    XP_U16* widthP, XP_U16* heightP, XP_Bool focussed )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     char buf[10];
+    PangoLayout* layout;
 
     snprintf( buf, sizeof(buf), "rem:%d", nTilesLeft );
+    layout = getLayoutToFitRect( dctx, buf, rect );
 
     if ( !!widthP ) {
         int width, height;
-        PangoLayout* layout = getLayoutToFitRect( dctx, buf, rect );
         pango_layout_get_pixel_size( layout, &width, &height );
         if ( width > rect->width ) {
             width = rect->width;
@@ -753,24 +756,34 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
         *widthP = width;
         *heightP = height;
     } else {
-        draw_string_at( dctx, buf, rect->height,
+        const GdkColor* cursor = NULL;
+        if ( focussed ) {
+            cursor = &dctx->cursor;
+            gtkFillRect( dctx, rect, cursor );
+        }
+        draw_string_at( dctx, layout, buf, rect->height,
                         rect, XP_GTK_JUST_TOPLEFT,
-                        &dctx->black, NULL );
+                        &dctx->black, cursor );
     }
 } /* gtkDrawDrawRemText */
 
 static void
-gtk_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* r, XP_S16 nTilesLeft,
+gtk_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
                          XP_U16* width, XP_U16* height )
 {
-    gtkDrawDrawRemText( p_dctx, r, nTilesLeft, width, height );
+    if ( nTilesLeft <= 0 ) {
+        *width = *height = 0;
+    } else {
+        gtkDrawDrawRemText( p_dctx, rect, nTilesLeft, width, height, XP_FALSE );
+    }
 } /* gtk_draw_measureRemText */
 
 static void
 gtk_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                      const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft )
+                      const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft,
+                      XP_Bool focussed )
 {
-    gtkDrawDrawRemText( p_dctx, rInner, nTilesLeft, NULL, NULL );
+    gtkDrawDrawRemText( p_dctx, rInner, nTilesLeft, NULL, NULL, focussed );
 } /* gtk_draw_drawRemText */
 
 static void
@@ -844,7 +857,7 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
         gtkEraseRect( dctx, rInner );
     }
 
-    draw_string_at( dctx, scoreBuf, rInner->height - 1,
+    draw_string_at( dctx, NULL, scoreBuf, rInner->height - 1,
                     rInner, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dsi->playerNum], cursor );
 
@@ -880,10 +893,10 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
     }
 
 	ht = localR.height >> 2;
-    draw_string_at( dctx, "Pts:", ht,
+    draw_string_at( dctx, NULL, "Pts:", ht,
                     &localR, XP_GTK_JUST_TOPLEFT,
                     &dctx->black, cursor );
-    draw_string_at( dctx, buf, ht,
+    draw_string_at( dctx, NULL, buf, ht,
                     &localR, XP_GTK_JUST_BOTTOMRIGHT,
                     &dctx->black, cursor );
 
@@ -916,7 +929,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rInner ); */
     gtkEraseRect( dctx, rInner );
-    draw_string_at( dctx, buf, rInner->height-1,
+    draw_string_at( dctx, NULL, buf, rInner->height-1,
                     rInner, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
 } /* gtk_draw_drawTimer */
@@ -986,7 +999,7 @@ gtk_draw_drawMiniWindow( DrawCtx* p_dctx, const XP_UCHAR* text,
     gtkEraseRect( dctx, &localR );
     frameRect( dctx, &localR );
 
-    draw_string_at( dctx, text, GTKMIN_W_HT,
+    draw_string_at( dctx, NULL, text, GTKMIN_W_HT,
                     &localR, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
 } /* gtk_draw_drawMiniWindow */

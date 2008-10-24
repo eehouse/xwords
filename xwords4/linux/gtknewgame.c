@@ -383,7 +383,7 @@ gtk_newgame_col_enable( void* closure, XP_U16 player, NewGameColumn col,
         gtk_widget_set_sensitive( widget, enable == TRI_ENAB_ENABLED );
         if ( !!label ) {
             gtk_widget_show( label );
-        gtk_widget_set_sensitive( label, enable == TRI_ENAB_ENABLED );
+            gtk_widget_set_sensitive( label, enable == TRI_ENAB_ENABLED );
         }
     }
 } /* gtk_newgame_col_enable */

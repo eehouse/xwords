@@ -1,4 +1,5 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; fill-column: 78; compile-command: "make MEMDEBUG=TRUE"; -*- */
+
 /* 
  * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -22,61 +23,16 @@
 
 #include "gtkask.h"
 
-static void
-button_event( GtkWidget* XP_UNUSED(widget), void* closure )
+XP_Bool
+gtkask( const gchar *message, GtkButtonsType buttons )
 {
-    gboolean* whichSet = (gboolean*)closure;
-    *whichSet = 1;
-
-    gtk_main_quit();
-}
-
-gint
-gtkask( gchar *message, gint numButtons, char* button1, ... )
-{
-    GtkWidget* dialog;
-    GtkWidget* label;
-    GtkWidget* button;
-    short i;
-    gboolean* results = g_malloc( numButtons * sizeof(results[0]) );
-    char** butList = &button1;
-
-    /* Create the widgets */
-    dialog = gtk_dialog_new();
-    gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
-
-    label = gtk_label_new( message );
-
-    for ( i = 0; i < numButtons; ++i ) {
-        button = gtk_button_new_with_label( *butList );
-
-        results[i] = 0;
-        g_signal_connect( GTK_OBJECT( button ), "clicked", 
-                          G_CALLBACK(button_event), &results[i] );
-
-        gtk_container_add( GTK_CONTAINER( GTK_DIALOG(dialog)->action_area),
-                           button );
-
-        ++butList;
-    }
-    
-    /* Add the label, and show everything we've added to the dialog. */
-    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox),
-                       label);
-    gtk_widget_show_all (dialog);
-
-    /* returns when button handler calls gtk_main_quit */
-    gtk_main();
-
-    gtk_widget_destroy( dialog );
-
-    for ( i = 0; i < numButtons; ++i ) {
-        if ( results[i] ) {
-            break;
-        }
-    }
-    g_free( results );
-    return i;
+    GtkWidget* dlg = gtk_message_dialog_new( NULL, /* parent */
+                                             GTK_MESSAGE_QUESTION,
+                                             GTK_DIALOG_MODAL,
+                                             buttons, message );
+    gint response = gtk_dialog_run( GTK_DIALOG(dlg) );
+    gtk_widget_destroy( dlg );
+    return response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES;
 } /* gtkask */
 
 #endif
