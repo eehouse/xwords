@@ -2742,7 +2742,7 @@ wince_debugf(const XP_UCHAR* format, ...)
         makeTimeStamp(timeStamp, sizeof(timeStamp));
 
 #if defined TARGET_OS_WINCE
-        logFileName = L"\\My Documents\\Crosswords\\xwDbgLog.txt";
+        logFileName = L"\\My Documents\\" LCROSSWORDS_DIR L"\\xwDbgLog.txt";
 #elif defined TARGET_OS_WIN32
         logFileName = L"xwDbgLog.txt";
 #endif
