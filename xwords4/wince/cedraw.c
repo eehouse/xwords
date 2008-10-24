@@ -1188,7 +1188,7 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
 DLSTATIC void
 DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner, 
                              const XP_Rect* XP_UNUSED(rOuter), 
-                             XP_S16 nTilesLeft )
+                             XP_S16 nTilesLeft, XP_Bool focussed )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -1200,11 +1200,16 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
 
+    XPRtoRECT( &rt, rInner );
+    if ( focussed ) {
+        SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_FOCUS_COLOR] );
+        FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
+    }
+
+    InsetRect( &rt, 1, 1 );
     fce = ceGetSizedFont( dctx, 0, RFONTS_REM );
     oldFont = SelectObject( hdc, fce->setFont );
     
-    XPRtoRECT( &rt, rInner );
-    InsetRect( &rt, 1, 1 );
     ceDrawLinesClipped( hdc, fce, buf, XP_TRUE, &rt );
 
     (void)SelectObject( hdc, oldFont );
