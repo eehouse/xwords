@@ -152,6 +152,9 @@ typedef struct UtilVtable {
 
     XP_Bool (*m_util_warnIllegalWord)( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                        XP_U16 turn, XP_Bool turnLost );
+
+    void (*m_util_remSelected)(XW_UtilCtxt* uc);
+
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
@@ -241,6 +244,9 @@ struct XW_UtilCtxt {
 
 #define util_warnIllegalWord( uc, w, p, b ) \
          (uc)->vtable->m_util_warnIllegalWord((uc),(w),(p),(b))
+
+#define util_remSelected( uc )              \
+         (uc)->vtable->m_util_remSelected((uc))
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
 #define util_addrChange( uc, addro, addrn ) \

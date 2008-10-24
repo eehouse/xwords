@@ -169,6 +169,7 @@ struct BoardCtxt {
 
 #ifdef KEYBOARD_NAV
     XP_Bool focusHasDived;
+    XP_Rect remRect;            /* on scoreboard */
 #endif
 
     /* scoreboard state */
@@ -206,6 +207,8 @@ struct BoardCtxt {
 
     MPSLOT
 };
+
+#define CURSOR_LOC_REM 0
 
 #define valHintMiniWindowActive( board ) \
      ((XP_Bool)((board)->miniWindowStuff[MINIWINDOW_VALHINT].text != NULL))

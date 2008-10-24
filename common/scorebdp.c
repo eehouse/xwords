@@ -68,11 +68,15 @@ drawScoreBoard( BoardCtxt* board )
             XP_Rect cursorRect;
             XP_Rect* cursorRectP = NULL;
             XP_Bool focusAll = XP_FALSE;
+            XP_Bool remFocussed = XP_FALSE;
             XP_S16 cursorIndex = -1;
+
             if ( board->focussed == OBJ_SCORE ) {
                 focusAll = !board->focusHasDived;
                 if ( !focusAll ) {
                     cursorIndex = board->scoreCursorLoc;
+                    remFocussed = CURSOR_LOC_REM == cursorIndex;                
+                    --cursorIndex;                                              
                 }
             }
 #endif
@@ -155,12 +159,17 @@ drawScoreBoard( BoardCtxt* board )
                 *adjustDim = remDim;
 
                 draw_drawRemText( board->draw, &scoreRect, &scoreRect, 
-                                  nTilesInPool );
-
+                                  nTilesInPool, focusAll || remFocussed );
+                board->remRect = scoreRect;
                 *adjustPt += remDim;
+#ifdef KEYBOARD_NAV
+                /* Hack: don't let the cursor disappear if Rem: goes away */
+            } else if ( board->scoreCursorLoc == CURSOR_LOC_REM ) {
+                board->scoreCursorLoc = selPlayer + 1;
+#endif
             }
 
-            board->remDim = remDim; /* save now so register can be reused */
+            board->remDim = remDim;
 
             for ( dp = datum, i = 0; i < nPlayers; ++dp, ++i ) {
                 XP_Rect innerRect;
@@ -231,49 +240,53 @@ board_setScoreboardLoc( BoardCtxt* board, XP_U16 scoreLeft, XP_U16 scoreTop,
 } /* board_setScoreboardLoc */
 
 XP_S16
-figureScorePlayerTapped( BoardCtxt* board, XP_U16 x, XP_U16 y )
+figureScoreRectTapped( const BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
     XP_S16 result = -1;
     XP_S16 left;
     XP_U16 nPlayers = board->gi->nPlayers;
 
     if ( board->scoreSplitHor ) {
-        left = x - board->scoreBdBounds.left;
+        left = xx - board->scoreBdBounds.left;
     } else {
-        left = y - board->scoreBdBounds.top;
+        left = yy - board->scoreBdBounds.top;
     }
 
     left -= board->remDim;
-    if ( left >= 0 ) {
-        for ( result = 0; result < nPlayers; ++result ) {
-            PerTurnInfo* pti = board->pti + result;
-            if ( left < pti->scoreDims ) {
-                break;
+    if ( left < 0 ) {
+        result = CURSOR_LOC_REM;
+    } else {
+        for ( result = 0; result < nPlayers; ) {
+            left -= board->pti[result].scoreDims;
+            ++result;           /* increment before test to skip REM */
+            if ( left < 0 ) { 
+                break;          /* found it! */
             }
-            left -= pti->scoreDims;
+        }
+        if ( result > nPlayers ) {
+            result = -1;
         }
     }
-    if ( result >= nPlayers ) {
-        result = -1;
-    }
     return result;
-} /* figureScorePlayerTapped */
+} /* figureScoreRectTapped */
 
 /* If the pen also went down on the scoreboard, make the selected player the
  * one closest to the mouse up loc.
  */
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool
-handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y )
+handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
-    XP_Bool result = XP_FALSE;
+    XP_Bool result = XP_TRUE;
 
-    XP_S16 playerNum = figureScorePlayerTapped( board, x, y );
+    XP_S16 rectNum = figureScoreRectTapped( board, xx, yy );
 
-    if ( playerNum >= 0 ) {
-        board_selectPlayer( board, playerNum );
-
-        result = XP_TRUE;
+    if ( rectNum == CURSOR_LOC_REM ) {
+        util_remSelected( board->util );
+    } else if ( --rectNum >= 0 ) {
+        board_selectPlayer( board, rectNum );
+    } else {
+        result = XP_FALSE;
     }
     return result;
 } /* handlePenUpScore */
@@ -315,34 +328,34 @@ moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
                  XP_Bool* pUp )
 {
     XP_Bool result = XP_TRUE;
-    XP_U16 nPlayers = board->gi->nPlayers;
     XP_S16 scoreCursorLoc = board->scoreCursorLoc;
+    XP_U16 top = board->gi->nPlayers;
+    /* Don't let cursor be 0 if rem square's not shown */
+    XP_U16 bottom = (board->remDim > 0) ? 0 : 1;
     XP_Bool up = XP_FALSE;
 
     /* Depending on scoreboard layout, keys move cursor or leave. */
     key = flipKey( key, board->scoreSplitHor );
 
     switch ( key ) {
+    case XP_CURSOR_KEY_RIGHT:
+    case XP_CURSOR_KEY_LEFT:
+        up = XP_TRUE;
+        break;
     case XP_CURSOR_KEY_DOWN:
         ++scoreCursorLoc;
-        break;
-    case XP_CURSOR_KEY_RIGHT:
-        up = XP_TRUE;
         break;
     case XP_CURSOR_KEY_UP:
         --scoreCursorLoc;
         break;
-    case XP_CURSOR_KEY_LEFT:
-        up = XP_TRUE;
-        break;
     default:
         result = XP_FALSE;
     }
-    if ( !up && ((scoreCursorLoc < 0) || (scoreCursorLoc >= nPlayers)) ) {
+    if ( !up && ((scoreCursorLoc < bottom) || (scoreCursorLoc > top)) ) {
         up = XP_TRUE;
     } else if ( !preflightOnly ) {
         board->scoreCursorLoc = scoreCursorLoc;
-        board->scoreBoardInvalid = XP_TRUE;
+        board->scoreBoardInvalid = result;
     }
 
     *pUp = up;
