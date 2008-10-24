@@ -928,7 +928,7 @@ BEGIN
     IDS_OK                  "Ok"
     IDS_DONE                "Done"
     IDS_ABOUT       "Crosswords 4.2b5 (rev " SVN_REV ") "\
-                    "for PocketPC. Copyright 1998-2008 by "\
+                    "for Windows Mobile. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
                     "For dictionaries, a manual, or source code go to "\
