@@ -772,14 +772,14 @@ timerFiredForPen( BoardCtxt* board )
             board->penTimerFired = XP_TRUE;
         }
     } else if ( board->penDownObject == OBJ_SCORE ) {
-        XP_S16 player;
         LocalPlayer* lp;
-        player = figureScorePlayerTapped( board, board->penDownX, 
-                                          board->penDownY );
+        XP_S16 scoreIndex = figureScoreRectTapped( board, board->penDownX, 
+                                                   board->penDownY );
         /* I've seen this assert fire on simulator.  No log is kept so I can't
            tell why, but might want to test and do nothing in this case.  */
         /* XP_ASSERT( player >= 0 ); */
-        if ( player >= 0 ) {
+        if ( scoreIndex > CURSOR_LOC_REM ) {
+            XP_U16 player = scoreIndex - 1;
             const XP_UCHAR* format;
             XP_UCHAR scoreExpl[48];
             XP_U16 explLen;
@@ -1874,7 +1874,7 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
         break;
 
     case OBJ_SCORE:
-        if ( figureScorePlayerTapped( board, x, y ) >= 0 ) {
+        if ( figureScoreRectTapped( board, x, y ) > CURSOR_LOC_REM ) {
             util_setTimer( board->util, TIMER_PENDOWN, 0, 
                            p_board_timerFired, board );
         }
@@ -2172,7 +2172,14 @@ getFocussedCellCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
 static void
 getFocussedScoreCenter( BoardCtxt* board, XP_U16* xp, XP_U16* yp )
 {
-    getRectCenter( &board->pti[board->scoreCursorLoc].scoreRects, xp, yp );
+    XP_Rect* rectPtr;
+    XP_S16 scoreCursorLoc = board->scoreCursorLoc;
+    if ( CURSOR_LOC_REM == scoreCursorLoc ) {
+        rectPtr = &board->remRect;
+    } else {
+        rectPtr = &board->pti[scoreCursorLoc-1].scoreRects;
+    }
+    getRectCenter( rectPtr, xp, yp );
 }
 
 static XP_Bool
