@@ -30,6 +30,13 @@
 #include "cesockwr.h"
 
 #define CE_GAMEFILE_VERSION 0x01 /* means draw gets to save/restore */
+#ifdef DEBUG
+# define CROSSWORDS_DIR "Cross_dbg"
+# define LCROSSWORDS_DIR L"Cross_dbg"
+#else
+# define CROSSWORDS_DIR "Crosswords"
+# define LCROSSWORDS_DIR L"Crosswords"
+#endif
 
 #ifdef _WIN32_WCE
 typedef enum {
