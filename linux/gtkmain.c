@@ -32,6 +32,8 @@
 #include <ctype.h>
 #include <gdk/gdkkeysyms.h>
 #include <errno.h>
+#include <signal.h>
+
 #ifndef CLIENT_ONLY
 /*  # include <prc.h> */
 #endif
@@ -605,12 +607,8 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     if ( gameOver ) {
         printFinalScores( globals );
     } else {
-        XP_Bool confirmed;
-        confirmed = 
-            gtkask( "Are you sure everybody wants to end the game now?",
-                    2, "Yes", "No" ) == 0;
-
-        if ( confirmed ) {
+        if ( gtkask( "Are you sure everybody wants to end the game now?", 
+                     GTK_BUTTONS_YES_NO ) ) {
             server_endGame( globals->cGlobals.game.server );
             gameOver = TRUE;
         }
@@ -1022,7 +1020,7 @@ gtkUserError( GtkAppGlobals* XP_UNUSED(globals), const char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    (void)gtkask( buf, 1, "OK" );
+    (void)gtkask( buf, GTK_BUTTONS_OK );
 
     va_end(ap);
 } /* gtkUserError */
@@ -1327,11 +1325,29 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         XP_ASSERT( bwi->nWords == 1 );
         sprintf( buf, "Word \"%s\" not in the current dictionary. "
                  "Use it anyway?", bwi->words[0] );
-        result = 0 == gtkask( buf, 2, "Ok", "Cancel" );
+        result = gtkask( buf, GTK_BUTTONS_YES_NO );
     }
 
     return result;
 } /* gtk_util_warnIllegalWord */
+
+static void
+gtk_util_remSelected( XW_UtilCtxt* uc )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    XWStreamCtxt* stream;
+    XP_UCHAR* text;
+
+    stream = mem_stream_make( MEMPOOL 
+                              globals->cGlobals.params->vtMgr,
+                              globals, CHANNEL_NONE, NULL );
+    board_formatRemainingTiles( globals->cGlobals.game.board, stream );
+    text = strFromStream( stream );
+    stream_destroy( stream );
+
+    (void)gtkask( text, GTK_BUTTONS_OK );
+    free( text );
+}
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static XWStreamCtxt* 
@@ -1380,34 +1396,23 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
 {
     XP_Bool result;
     char* question;
-    char* answers[3];
-    gint numAnswers = 0;
-    XP_U16 okIndex = 1;
     XP_Bool freeMe = XP_FALSE;
+    GtkButtonsType buttons = GTK_BUTTONS_YES_NO;
 
     switch( id ) {
 	
     case QUERY_COMMIT_TURN:
         question = strFromStream( stream );
         freeMe = XP_TRUE;
-/*         len = stream_getSize( stream ); */
-/*         question = malloc( len + 1 ); */
-/*         stream_getBytes( stream, question, len ); */
-/*         question[len] = '\0'; */
-        answers[numAnswers++] = "Cancel";
-        answers[numAnswers++] = "Ok";
         break;
     case QUERY_COMMIT_TRADE:
         question = "Are you sure you want to trade the selected tiles?";
-        answers[numAnswers++] = "Cancel";
-        answers[numAnswers++] = "Ok";
         break;
     case QUERY_ROBOT_MOVE:
     case QUERY_ROBOT_TRADE:
         question = strFromStream( stream );
         freeMe = XP_TRUE;
-        answers[numAnswers++] = "Ok";
-        okIndex = 0;
+        buttons = GTK_BUTTONS_OK;
         break;
 
     default:
@@ -1415,8 +1420,7 @@ gtk_util_userQuery( XW_UtilCtxt* XP_UNUSED(uc), UtilQueryID id,
         return XP_FALSE;
     }
 
-    result = gtkask( question, numAnswers, 
-                     answers[0], answers[1], answers[2] ) == okIndex;
+    result = gtkask( question, buttons );
 
     if ( freeMe > 0 ) {
         free( question );
@@ -1553,6 +1557,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_setTimer = gtk_util_setTimer;
     util->vtable->m_util_requestTime = gtk_util_requestTime;
     util->vtable->m_util_warnIllegalWord = gtk_util_warnIllegalWord;
+    util->vtable->m_util_remSelected = gtk_util_remSelected;
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = gtk_util_makeStreamFromAddr;
 #endif
@@ -1778,6 +1783,13 @@ drop_msg_toggle( GtkWidget* toggle, GtkAppGlobals* globals )
 } /* drop_msg_toggle */
 #endif
 
+static GtkAppGlobals* g_globals_for_signal;
+static void
+handle_sigint( int XP_UNUSED(sig) )
+{
+    quit( NULL, g_globals_for_signal );
+}
+
 int
 gtkmain( LaunchParams* params, int argc, char *argv[] )
 {
@@ -1792,6 +1804,10 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 #ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* dropCheck;
 #endif
+
+    g_globals_for_signal = &globals;
+    struct sigaction act = { .sa_handler = handle_sigint };
+    sigaction( SIGINT, &act, NULL );
 
     memset( &globals, 0, sizeof(globals) );
 
@@ -1811,16 +1827,6 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cp.showRobotScores = params->showRobotScores;
 
     setupGtkUtilCallbacks( &globals, params->util );
-
-/*     globals.dictionary = params->dict; */
-/*     globals.trayOverlaps = params->trayOverlaps; */
-/*     globals.askNewGame = params->askNewGame; */
-/*     globals.quitWhenDone = params->quitAfter; */
-/*     globals.sleepOnAnchor = params->sleepOnAnchor; */
-/*     globals.util = params->util; */
-/*     globals.fileName = params->fileName; */
-
-/*     globals.listenPort = params->listenPort; */
 
     /* Now set up the gtk stuff.  This is necessary before we make the
        draw ctxt */

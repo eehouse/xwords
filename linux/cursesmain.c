@@ -1158,6 +1158,25 @@ curses_util_warnIllegalWord( XW_UtilCtxt* XP_UNUSED(uc),
     return XP_FALSE;
 } /* curses_util_warnIllegalWord */
 
+static void
+curses_util_remSelected( XW_UtilCtxt* uc )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    XWStreamCtxt* stream;
+    XP_UCHAR* text;
+
+    stream = mem_stream_make( MPPARM(globals->cGlobals.params->util->mpool)
+                              globals->cGlobals.params->vtMgr,
+                              globals, CHANNEL_NONE, NULL );
+    board_formatRemainingTiles( globals->cGlobals.game.board, stream );
+
+    text = strFromStream( stream );
+
+    (void)cursesask( globals, text, 1, "Ok" );
+
+    free( text );
+}
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 cursesSendOnClose( XWStreamCtxt* stream, void* closure )
@@ -1192,6 +1211,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_askPassword = curses_util_askPassword;
     util->vtable->m_util_yOffsetChange = curses_util_yOffsetChange;
     util->vtable->m_util_warnIllegalWord = curses_util_warnIllegalWord;
+    util->vtable->m_util_remSelected = curses_util_remSelected;
 #ifndef XWFEATURE_STANDALONE_ONLY
     util->vtable->m_util_makeStreamFromAddr = curses_util_makeStreamFromAddr;
 #endif
