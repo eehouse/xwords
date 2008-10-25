@@ -150,6 +150,10 @@ WINCESRC = \
 
 WINCEOBJS = $(patsubst %.c,%.o,$(addprefix $(OBJDIR)/,$(WINCESRC)))
 
+WINCEICONS = bmps/xwords4_ico_16x16.png \
+			 bmps/xwords4_ico_22x22.png \
+			 bmps/xwords4_ico_32x32.png \
+
 include ../common/config.mk
 
 COMMONOBJ = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(notdir $(COMMONSRC))))
@@ -195,8 +199,11 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES)
+$(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
 	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
+
+xwords4.ico: $(WINCEICONS)
+	icotool -c -o $@ $^
 
 CAB: $(TARGET)
 	$(STRIP) $<
@@ -214,7 +221,7 @@ test:
 	echo $(COMMONOBJ)
 
 clean :
-	rm -rf $(OBJDIR) $(TARGET)
+	rm -rf $(OBJDIR) $(TARGET) xwords4.ico
 
 help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
