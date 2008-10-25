@@ -23,27 +23,6 @@
 #include "xptypes.h"
 #include "cemain.h"
 
-#ifdef _WIN32_WCE
-# define DEFAULT_DIR_NAME L"\\My Documents\\" LCROSSWORDS_DIR
-# define PREFSFILENAME L"\\My Documents\\" LCROSSWORDS_DIR L"\\xwprefs"
-# define UNSAVEDGAMEFILENAME "\\My Documents\\" CROSSWORDS_DIR "\\_newgame"
-#else
-# define DEFAULT_DIR_NAME "\\tmp" CROSSWORDS_DIR
-# define LDEFAULT_DIR_NAME L"\\tmp" LCROSSWORDS_DIR
-# define PREFSFILENAME LDEFAULT_DIR_NAME L"\\xwprefs"
-# define UNSAVEDGAMEFILENAME DEFAULT_DIR_NAME "\\_newgame"
-#endif
-
-
-#ifdef _WIN32_WCE
-# define DEFAULT_DIR_NAME L"\\My Documents\\" LCROSSWORDS_DIR
-/* # define PREFSFILENAME L"\\My Documents\\Crosswords\\xwprefs" */
-/* # define UNSAVEDGAMEFILENAME "\\My Documents\\Crosswords\\_newgame" */
-#else
-/* # define DEFAULT_DIR_NAME L"." */
-# define DEFAULT_DIR_NAME L"\\tmp"
-#endif
-
 XP_Bool ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
                          wchar_t* buf, XP_U16 buflen );
 XP_Bool ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf, 

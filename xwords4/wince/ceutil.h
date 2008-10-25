@@ -43,6 +43,14 @@ void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
 
+typedef enum {
+    PREFS_FILE_PATH_L
+    ,DEFAULT_DIR_PATH_L
+    ,DEFAULT_GAME_PATH
+} CePathType;
+XP_U16 ceGetPath( CEAppGlobals* globals, CePathType typ, 
+                  void* buf, XP_U16 bufLen );
+
 /* set vHeight to 0 to turn off scrolling */
 typedef enum { DLG_STATE_NONE = 0
                , DLG_STATE_TRAPBACK = 1 

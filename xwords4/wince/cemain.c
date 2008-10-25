@@ -158,7 +158,7 @@ static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                               wchar_t* title, XP_U16 buttons );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
-static XP_Bool isDefaultName( const XP_UCHAR* name );
+static XP_Bool isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name );
 static void ceSetTitleFromName( CEAppGlobals* globals );
 
 
@@ -779,7 +779,7 @@ ceSetTitleFromName( CEAppGlobals* globals )
     colonPos = wcsstr( widebuf, L":" );
 
     /* if default name, remove any current name */
-    if ( !gameName || isDefaultName( gameName ) ) {
+    if ( !gameName || isDefaultName( globals, gameName ) ) {
         if ( NULL != colonPos ) {
             *colonPos = 0;
         }
@@ -896,8 +896,10 @@ static void
 ceSavePrefs( CEAppGlobals* globals )
 {
     HANDLE fileH;
+    wchar_t path[CE_MAX_PATH_LEN];
 
-    fileH = CreateFile( PREFSFILENAME, GENERIC_WRITE, 0, NULL, 
+    (void)ceGetPath( globals, PREFS_FILE_PATH_L, path, VSIZE(path) );
+    fileH = CreateFile( path, GENERIC_WRITE, 0, NULL, 
                         OPEN_ALWAYS, FILE_ATTRIBUTE_HIDDEN, NULL );
     if ( fileH != INVALID_HANDLE_VALUE ) {
         XP_U32 nWritten;
@@ -979,8 +981,10 @@ ceLoadPrefs( CEAppGlobals* globals )
 {
     XP_Bool result = XP_FALSE;
     HANDLE fileH;
+    wchar_t path[CE_MAX_PATH_LEN];
 
-    fileH = CreateFile( PREFSFILENAME, GENERIC_READ, 0, NULL, 
+    (void)ceGetPath( globals, PREFS_FILE_PATH_L, path, VSIZE(path) );
+    fileH = CreateFile( path, GENERIC_READ, 0, NULL, 
                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
     if ( fileH != INVALID_HANDLE_VALUE ) {
         XP_U32 fileSize = GetFileSize( fileH, NULL );
@@ -1250,6 +1254,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_Bool oldGameLoaded;
     XP_Bool prevStateExists;
     XP_Bool newDone = XP_FALSE;
+    wchar_t path[CE_MAX_PATH_LEN];
     MPSLOT;
 
 #ifdef XWFEATURE_RELAY
@@ -1270,15 +1275,14 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadString(hInstance, IDC_XWORDS4, szWindowClass, MAX_LOADSTRING);
 
-	//If it is already running, then focus on the window
-	hWnd = FindWindow( szWindowClass, szTitle);	
+	// If it is already running, then focus on the window.  Skip title in
+    // search as we change title to include game name
+	hWnd = FindWindow( szWindowClass, NULL );	
 	if ( hWnd ) {
 		SetForegroundWindow( (HWND)((ULONG) hWnd | 0x00000001) );
         result = FALSE;
         goto exit;
 	} 
-
-    (void)CreateDirectory( DEFAULT_DIR_NAME, 0 );
 
 #ifdef MEM_DEBUG
     mpool = mpool_make();
@@ -1288,6 +1292,9 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_DEBUGF( "globals created: 0x%p", globals );
     XP_MEMSET( globals, 0, sizeof(*globals) );
     MPASSIGN( globals->mpool, mpool );
+
+    (void)ceGetPath( globals, DEFAULT_DIR_PATH_L, path, VSIZE(path) );
+    (void)CreateDirectory( path, 0 );
 
     getOSInfo( globals );
 
@@ -1735,9 +1742,11 @@ ceWriteToFile( XWStreamCtxt* stream, void* closure )
 } /* ceWriteToFile */
 
 static XP_Bool 
-isDefaultName( const XP_UCHAR* name ) 
+isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name ) 
 {
-    return 0 == XP_STRCMP( UNSAVEDGAMEFILENAME, name );
+    wchar_t path[CE_MAX_PATH_LEN];
+    (void)ceGetPath( globals, DEFAULT_GAME_PATH, path, VSIZE(path) );
+    return 0 == XP_STRCMP( path, name );
 } /* isDefaultName */
 
 static XP_Bool
@@ -1750,13 +1759,16 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
        harm in making 'em restart.  Not sure how this changes when IR's
        involved. */
     XP_UCHAR* name = globals->curGameName;
-    if ( name == NULL || isDefaultName(name) ) {
+    if ( name == NULL || isDefaultName( globals, name ) ) {
         XP_UCHAR* newName = NULL;
 
         if ( autoSave ) {
-            XP_U16 len = XP_STRLEN(UNSAVEDGAMEFILENAME) + 1;
+            XP_U16 len;
+            wchar_t path[CE_MAX_PATH_LEN];
+            len = 1 + ceGetPath( globals, DEFAULT_GAME_PATH, 
+                                 path, VSIZE(path) );
             newName = XP_MALLOC( globals->mpool, len );
-            XP_MEMCPY( newName, UNSAVEDGAMEFILENAME, len );
+            XP_MEMCPY( newName, path, len );
 
             confirmed = XP_TRUE;
         } else {
@@ -1861,11 +1873,12 @@ freeGlobals( CEAppGlobals* globals )
     if ( !!globals->util.vtable ) {
         XP_FREE( mpool, globals->util.vtable );
     }
+    if ( !!globals->specialDir ) {
+        XP_FREE( mpool, globals->specialDir );
+    }
 
     XP_FREE( globals->mpool, globals );
     mpool_destroy( mpool );
-
-    LOG_RETURN_VOID();
 } /* freeGlobals */
 
 #ifdef _WIN32_WCE

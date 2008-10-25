@@ -41,18 +41,22 @@ typedef struct CeSaveGameNameState {
 } CeSaveGameNameState;
 
 static XP_Bool
-ceFileExists( const wchar_t* name )
+ceFileExists( CEAppGlobals* globals, const wchar_t* name )
 {
-    wchar_t buf[128];
+    wchar_t buf[CE_MAX_PATH_LEN];
     DWORD attributes;
-    swprintf( buf, DEFAULT_DIR_NAME L"\\%s.xwg", name );
+    XP_U16 len;
+
+    len = ceGetPath( globals, DEFAULT_DIR_PATH_L, buf, VSIZE(buf) );
+    swprintf( &buf[len], L"%s.xwg", name );
 
     attributes = GetFileAttributes( buf );
     return attributes != 0xFFFFFFFF;
 }
 
 static void
-makeUniqueName( wchar_t* buf, XP_U16 XP_UNUSED_DBG(bufLen) )
+makeUniqueName( CEAppGlobals* globals, wchar_t* buf, 
+                XP_U16 XP_UNUSED_DBG(bufLen) )
 {
     XP_U16 ii;
     for ( ii = 1; ii < 100; ++ii ) {
@@ -61,7 +65,7 @@ makeUniqueName( wchar_t* buf, XP_U16 XP_UNUSED_DBG(bufLen) )
 #endif
             swprintf( buf, L"Untitled%d", ii );
         XP_ASSERT( len < bufLen );
-        if ( !ceFileExists( buf ) ) {
+        if ( !ceFileExists( globals, buf ) ) {
             break;
         }
     }
@@ -94,6 +98,7 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     } else {
         state = (CeSaveGameNameState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!state ) {
+            CEAppGlobals* globals = state->dlgHdr.globals;
             if ( !state->inited ) {
                 state->inited = XP_TRUE;
                 (void)SetDlgItemText( hDlg, IDC_SVGN_EDIT, state->buf );
@@ -109,15 +114,17 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     switch( wid ) {
                     case IDOK: {
                         wchar_t buf[128];
+                        XP_U16 len;
                         (void)GetDlgItemText( hDlg, IDC_SVGN_EDIT, buf, 
                                               VSIZE(buf) );
-                        if ( ceFileExists( buf ) ) {
-                            messageBoxChar( state->dlgHdr.globals, 
+                        if ( ceFileExists( globals, buf ) ) {
+                            messageBoxChar( globals, 
                                             "File exists", L"Oops!", MB_OK );
                             break;
                         }
-                        swprintf( state->buf, DEFAULT_DIR_NAME L"\\%s.xwg",
-                                  buf );
+                        len = ceGetPath( globals, DEFAULT_DIR_PATH_L, 
+                                         state->buf, state->buflen );
+                        swprintf( &state->buf[len], L"%s.xwg", buf );
                         XP_LOGW( __func__, state->buf );
                         /* fallthru */
                         state->cancelled = XP_FALSE;
@@ -142,7 +149,7 @@ ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf,
 
     LOG_FUNC();
 
-    makeUniqueName( buf, buflen );
+    makeUniqueName( globals, buf, buflen );
 
     XP_MEMSET( &state, 0, sizeof(state) );
     state.dlgHdr.globals = globals;
@@ -162,7 +169,7 @@ typedef struct CeSavedGamesState {
     XP_U16 buflen;
     XP_S16 sel;
     XP_U16 openGameIndex;
-    wchar_t curName[128];
+    wchar_t curNameW[128];
     XP_U16 nItems;
 
     XP_U16 gameListId;
@@ -173,11 +180,12 @@ typedef struct CeSavedGamesState {
 
 /* Probably belongs as a utility */
 static void
-getCBText( CeSavedGamesState* state, XP_U16 id, XP_U16 sel, wchar_t* buf, 
-           XP_U16* lenp )
+getComboText( CeSavedGamesState* state, wchar_t* buf, XP_U16* lenp )
 {
     HWND hDlg = state->dlgHdr.hDlg;
     CEAppGlobals* globals = state->dlgHdr.globals;
+    XP_U16 id = state->gameListId;
+    XP_U16 sel = state->sel;
     XP_U16 len;
 
     len = SendDlgItemMessage( hDlg, id, GETLBTEXTLEN(globals), sel, 0L );
@@ -189,16 +197,15 @@ getCBText( CeSavedGamesState* state, XP_U16 id, XP_U16 sel, wchar_t* buf,
         XP_ASSERT( 0 );
     }
     *lenp = len;
-} /* getCBText */
+} /* getComboText */
 
 static void
 getFullSelPath( CeSavedGamesState* state, wchar_t* buf, XP_U16 buflen )
 {
-    XP_U16 len;
-    lstrcpy( buf, DEFAULT_DIR_NAME L"\\" );
-    len = lstrlen( buf );
+    XP_U16 len = ceGetPath( state->dlgHdr.globals, 
+                            DEFAULT_DIR_PATH_L, buf, buflen );
     buflen -= len;
-    getCBText( state, state->gameListId, state->sel, &buf[len], &buflen );
+    getComboText( state, &buf[len], &buflen );
     lstrcat( buf, L".xwg" );
 }
 
@@ -222,26 +229,28 @@ initSavedGamesData( CeSavedGamesState* state )
     HWND hDlg = state->dlgHdr.hDlg;
     CEAppGlobals* globals = state->dlgHdr.globals;
     WIN32_FIND_DATA data;
-    wchar_t path[256];
+    wchar_t path[CE_MAX_PATH_LEN];
     XP_S16 curSel = -1;
     XP_U16 ii;
     XP_U16 nItems = 0;
 
     XP_MEMSET( &data, 0, sizeof(data) );
-    lstrcpy( path, DEFAULT_DIR_NAME L"\\" );
+    ceGetPath( globals, DEFAULT_DIR_PATH_L, path, VSIZE(path) );
     lstrcat( path, L"*.xwg" );
 
     fileH = FindFirstFile( path, &data );
     for ( ii = 0; fileH != INVALID_HANDLE_VALUE; ++ii ) {
         XP_U16 len = wcslen( data.cFileName );
         XP_U16 item;
-        XP_Bool isCurGame = 0 == wcscmp( state->curName, data.cFileName );
+        XP_Bool isCurGame = 0 == wcscmp( state->curNameW, data.cFileName );
 
         XP_ASSERT( data.cFileName[len-4] == '.');
         data.cFileName[len-4] = 0;
 
         /* Insert in sorted order.  This should be fast enough for reasonable
            numbers of saved games. */
+        /* PENDING: there's supposed to be a field attribute that make sorted
+           order automatic */
         for ( item = 0; item < nItems; ++item ) {
             wchar_t buf[256];
             (void)SendDlgItemMessage( hDlg, state->gameListId, 
@@ -319,20 +328,19 @@ duplicateSelected( CeSavedGamesState* state )
 static XP_Bool
 deleteSelected( CeSavedGamesState* state )
 {
-    wchar_t buf[128];
-    wchar_t path[128];
-    XP_U16 len = VSIZE(buf);
-
     /* confirm first!!!! */
     XP_Bool confirmed = queryBoxChar( state->dlgHdr.globals, 
                                       "Are you certain you want to delete the "
                                       "selected game?  This action cannot be "
                                       "undone.");
     if ( confirmed ) {
-        getCBText( state, state->gameListId,
-                   state->sel, buf, &len );
-        swprintf( path, DEFAULT_DIR_NAME L"\\%s.xwg", buf );
-        confirmed = DeleteFile( path );
+        wchar_t pathW[CE_MAX_PATH_LEN];
+        XP_U16 len = ceGetPath( state->dlgHdr.globals, 
+                                DEFAULT_DIR_PATH_L, pathW, VSIZE(pathW) );
+        XP_U16 remLen = VSIZE(pathW) - len;
+        getComboText( state, &pathW[len], &remLen );
+        wcscat( pathW, L".xwg" );
+        confirmed = DeleteFile( pathW );
         if ( confirmed ) {
             state->sel = -1;
         }
@@ -405,10 +413,10 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     case IDC_SVGM_OPEN: {
                         wchar_t buf[128];
                         XP_U16 len = VSIZE(buf);
-                        getCBText( state, state->gameListId, state->sel, 
-                                   buf, &len );
-                        swprintf( state->buf, DEFAULT_DIR_NAME L"\\%s.xwg", 
-                                  buf );
+                        getComboText( state, buf, &len );
+                        len = ceGetPath( state->dlgHdr.globals, DEFAULT_DIR_PATH_L, 
+                                         state->buf, state->buflen );
+                        swprintf( &state->buf[len], L"%s.xwg", buf );
                         XP_LOGW( "returning", state->buf );
                         state->opened = XP_TRUE;
                     }
@@ -448,14 +456,15 @@ ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
     if ( !!curPath ) {
         wchar_t shortName[128];
         XP_U16 len;
-        XP_LOGF( curPath );
+        XP_U16 dirLen;
+
+        dirLen = ceGetPath( globals, DEFAULT_DIR_PATH_L, shortName, 
+                            VSIZE(shortName) );
 
         len = (XP_U16)XP_STRLEN( curPath );
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curPath, len + 1, 
                              shortName, len + 1 );
-        len = wcslen( DEFAULT_DIR_NAME L"\\" );
-        lstrcpy( state.curName, shortName+len );
-        XP_LOGW( "shortName", state.curName );
+        lstrcpy( state.curNameW, shortName+dirLen );
     }
 
     for ( ; ; ) {

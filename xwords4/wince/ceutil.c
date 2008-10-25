@@ -19,6 +19,7 @@
 
 #include "stdafx.h" 
 #include <commctrl.h>
+#include <shlobj.h>
 
 #include "ceutil.h"
 #include "cedefines.h"
@@ -745,3 +746,90 @@ trapBackspaceKey( HWND hDlg )
     */
 }
 #endif
+
+/* cegcc headers define this to SHGetSpecialFolderPathW, but that's not
+ * what's in the library...  */
+#ifdef SHGetSpecialFolderPath
+# undef SHGetSpecialFolderPath
+#endif
+BOOL SHGetSpecialFolderPath( HWND hwndOwner,
+                             LPTSTR lpszPath,
+                             int nFolder,
+                             BOOL fCreate );
+
+static void
+lookupSpecialDir( wchar_t* bufW )
+{
+    bufW[0] = 0;
+#ifdef _WIN32_WCE
+#if 0
+    BOOL (*mySHGetSpecialFolderPath)( HWND hwndOwner,
+                                      LPTSTR lpszPath,
+                                      int nFolder,
+                                      BOOL fCreate );
+    HMODULE module;
+
+    module = LoadLibrary( L"coredll" );
+    if ( !!module ) {
+        mySHGetSpecialFolderPath = GetProcAddress( module,
+                                                   L"SHGetSpecialFolderPath" );
+        if ( !!mySHGetSpecialFolderPath ) {
+            HRESULT res = (*mySHGetSpecialFolderPath)( NULL, bufW, 
+                                                       CSIDL_PERSONAL, TRUE );
+        }
+        FreeLibrary( module );
+    }
+#else
+    SHGetSpecialFolderPath( NULL, bufW, CSIDL_PERSONAL, TRUE );
+#endif
+    if ( 0 == bufW[0] ) {
+        XP_WARNF( "SHGetSpecialFolderPath hack failed" );
+        wcscpy( bufW, L"\\My Documents" );
+    }
+#endif
+    wcscat( bufW, L"\\" LCROSSWORDS_DIR L"\\" );
+}
+
+XP_U16
+ceGetPath( CEAppGlobals* globals, CePathType typ, 
+           void* bufOut, XP_U16 bufLen )
+{
+    XP_U16 len;
+    wchar_t bufW[CE_MAX_PATH_LEN];
+    wchar_t* specialDir = globals->specialDir;
+    XP_Bool asAscii = XP_FALSE;
+
+    if ( !specialDir ) {
+        wchar_t buf[128];
+        XP_U16 len;
+        lookupSpecialDir( buf );
+        len = 1 + wcslen( buf );
+        specialDir = XP_MALLOC( globals->mpool, len * sizeof(specialDir[0]) );
+        wcscpy( specialDir, buf );
+        globals->specialDir = specialDir;
+    }
+
+    wcscpy( bufW, specialDir );
+
+    switch( typ ) {
+    case PREFS_FILE_PATH_L:
+        wcscat( bufW, L"xwprefs" );
+        break;
+    case DEFAULT_DIR_PATH_L:
+        /* nothing to do */
+        break;
+    case DEFAULT_GAME_PATH:
+        asAscii = XP_TRUE;
+        wcscat( bufW, L"_newgame" );
+        break;
+    }
+
+    len = wcslen( bufW );
+    if ( asAscii ) {
+        (void)WideCharToMultiByte( CP_ACP, 0, bufW, len,
+                                   (char*)bufOut, bufLen, NULL, NULL );
+    } else {
+        wcscpy( (wchar_t*)bufOut, bufW );
+    }
+    return len;
+} /* ceGetPath */
