@@ -160,6 +160,8 @@ typedef struct CEAppGlobals {
     int dbWidth, dbHeight;
 #endif
 
+    wchar_t* specialDir;         /* reserved for ceGetPath() */
+
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool askTrayLimits;
 #endif
@@ -200,4 +202,5 @@ XP_Bool queryBoxChar( CEAppGlobals* globals, const XP_UCHAR* msg );
 
 
 #define BACK_KEY_UP_MAYBE 0x1000
+#define CE_MAX_PATH_LEN 256
 #endif /* _CEMAIN_H_ */
