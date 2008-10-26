@@ -569,14 +569,21 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
         horiz = scrnHeight >= scrnWidth;
     }
 
-    /* Scoreboard is same height as cells (less SCORE_TWEAK) */
-    vScale = scrnHeight / (nRows + (horiz?2:1));
+    /* vScale.  Tray must be a few pixels taller than cells to use same
+       sized, minimum-sized font.  Subtract out that difference here and it's
+       guaranteed that tray will wind up at least that much taller later
+       though for the rest of the calculation we reserve only a cell's height
+       for it. */
+    vScale = (scrnHeight - (MIN_TRAY_HEIGHT-MIN_CELL_HEIGHT)) 
+        / (nRows + (horiz?2:1)); /* horiz means scoreboard *and* tray */
     if ( vScale >= MIN_CELL_HEIGHT ) {
-        nVisibleRows = nRows; 
+        nVisibleRows = nRows;   /* no scrolling needed */
     } else {
         XP_U16 nRowsPossible = (scrnHeight-MIN_TRAY_HEIGHT) / MIN_CELL_HEIGHT;
-        XP_S16 num2Scroll = (nRows + (horiz?1:0)) - nRowsPossible; /* 1: scoreboard */
-        if ( num2Scroll < 0 ) {
+        XP_S16 num2Scroll;
+        num2Scroll = (nRows + (horiz?1:0)) - nRowsPossible; /* 1: scoreboard */
+        XP_ASSERT( num2Scroll > 0 );
+        if ( num2Scroll < 0 ) { /* no-scroll case should be caught above */
             num2Scroll = 0;
         }
         nVisibleRows = nRows - num2Scroll;
