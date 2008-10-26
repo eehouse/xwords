@@ -66,7 +66,7 @@ CFLAGS += -D_WIN32_WCE=0x0400 -D_WIN32_IE=0x0400 -DUNDER_CE \
 	-fdollars-in-identifiers -D__W32API_USE_DLLIMPORT__
 # back key should raise focus on main board and backspace in edit controls
 CFLAGS += -DOVERRIDE_BACKKEY	
-RESFLAGS += -D_WIN32_WCE=400 
+RESFLAGS += -D_WIN32_WCE=0x0400
 LFLAGS += -Wl,--major-subsystem-version,4,--minor-subsystem-version,20
 ifdef HAVE_COMMCTRL
 CELIBS += -lcommctrl -laygshell
@@ -202,8 +202,11 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
 	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
 
-xwords4.ico: $(WINCEICONS)
-	icotool -c -o $@ $^
+# Checking in xwords4.ico for now.  Hand-built using GIMP and layers
+# it's 1/4 the size (because it has only two colors).  Should figure
+# out how to script GIMP and replace the below.
+# xwords4.ico:
+# 	$(WINCEICONS) icotool -c -o $@ $^
 
 CAB: $(TARGET)
 	$(STRIP) $<
@@ -221,7 +224,7 @@ test:
 	echo $(COMMONOBJ)
 
 clean :
-	rm -rf $(OBJDIR) $(TARGET) xwords4.ico
+	rm -rf $(OBJDIR) $(TARGET) 
 
 help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
