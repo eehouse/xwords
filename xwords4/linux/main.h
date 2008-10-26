@@ -52,7 +52,7 @@ typedef struct LaunchParams {
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
     XP_Bool askNewGame;
-    XP_Bool quitAfter;
+    XP_S16 quitAfter;
     XP_Bool sleepOnAnchor;
     XP_Bool printHistory;
     XP_Bool undoWhenDone;
