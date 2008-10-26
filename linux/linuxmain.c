@@ -180,7 +180,7 @@ usage( char* appName, char* msg )
 # endif
 #endif
 	     "\t [-f file]        # use this file to save/load game\n"
-	     "\t [-q]             # quit when game over (useful for robot-only)\n"
+	     "\t [-q nSecs]       # quit with pause when game over (useful for robot-only)\n"
 	     "\t [-S]             # slow robot down \n"
 	     "\t [-i]             # print game history when game over\n"
 	     "\t [-U]             # call 'Undo' after game ends\n"
@@ -674,7 +674,7 @@ main( int argc, char** argv )
     mainParams.connInfo.ip.hostName = "localhost";
 #endif
     mainParams.gi.boardSize = 15;
-    mainParams.quitAfter = XP_FALSE;
+    mainParams.quitAfter = -1;
     mainParams.sleepOnAnchor = XP_FALSE;
     mainParams.printHistory = XP_FALSE;
     mainParams.undoWhenDone = XP_FALSE;
@@ -707,7 +707,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "kKf:ln:Nsd:e:r:b:qw:Sit:Umvc"
+                      "kKf:ln:Nsd:e:r:b:q:w:Sit:Umvc"
 #ifdef XWFEATURE_RELAY
                       "a:p:C:H"
 #endif
@@ -823,7 +823,7 @@ main( int argc, char** argv )
             hostName = optarg;
             break;
         case 'q':
-            mainParams.quitAfter = XP_TRUE;
+            mainParams.quitAfter = atoi(optarg);
             break;
         case 'b':
             mainParams.gi.boardSize = atoi(optarg);

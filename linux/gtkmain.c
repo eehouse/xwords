@@ -1119,7 +1119,8 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
 
     printFinalScores( globals );
 
-    if ( globals->cGlobals.params->quitAfter ) {
+    if ( globals->cGlobals.params->quitAfter >= 0 ) {
+        sleep( globals->cGlobals.params->quitAfter );
         quit( NULL, globals );
     } else if ( globals->cGlobals.params->undoWhenDone ) {
         server_handleUndo( globals->cGlobals.game.server );

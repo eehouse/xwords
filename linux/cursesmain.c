@@ -334,11 +334,13 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
         catGameHistory( &globals->cGlobals );
     }
 
-    if ( globals->cGlobals.params->quitAfter ) {
+    if ( globals->cGlobals.params->quitAfter >= 0 ) {
+        sleep( globals->cGlobals.params->quitAfter );
         globals->timeToExit = XP_TRUE;
     } else if ( globals->cGlobals.params->undoWhenDone ) {
         server_handleUndo( globals->cGlobals.game.server );
     } else {
+        /* This is modal.  Don't show if quitting */
         cursesShowFinalScores( globals );
     }
 } /* curses_util_notifyGameOver */
