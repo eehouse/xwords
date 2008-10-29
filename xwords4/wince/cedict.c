@@ -30,6 +30,7 @@
 #include "cedict.h"
 #include "debhacks.h"
 #include "cedebug.h"
+#include "ceutil.h"
 
 typedef struct CEDictionaryCtxt {
     DictionaryCtxt super;
@@ -651,13 +652,19 @@ getDictDir( wchar_t* buf, XP_U16 bufLen )
 } /* getDictDir */
 
 XP_U16
-ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
+ceLocateNDicts( CEAppGlobals* globals,  XP_U16 nSought, OnePathCB cb, 
+                void* ctxt )
 {
     XP_U16 nFound = 0;
     wchar_t path[CE_MAX_PATH_LEN+1];
 
     if ( getDictDir( path, VSIZE(path) ) ) {
-        locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, &nFound );
+        locateOneDir( MPPARM(globals->mpool) path, cb, ctxt, nSought, &nFound );
+    }
+
+    if ( nFound < nSought ) {
+        ceGetPath( globals, PROGFILES_PATH, path, VSIZE(path) );
+        locateOneDir( MPPARM(globals->mpool) path, cb, ctxt, nSought, &nFound );
     }
 
     if ( nFound < nSought ) {
@@ -673,7 +680,8 @@ ceLocateNDicts( MPFORMAL XP_U16 nSought, OnePathCB cb, void* ctxt )
                 wsprintf( path, L"\\%s\\Crosswords", data.cFileName );
 
                 XP_LOGW( "looking in:", path );
-                locateOneDir( MPPARM(mpool) path, cb, ctxt, nSought, &nFound );
+                locateOneDir( MPPARM(globals->mpool) path, cb, ctxt, 
+                              nSought, &nFound );
             }
             if ( nFound >= nSought ) {
                 break;
@@ -725,7 +733,7 @@ findAlternateDict( CEAppGlobals* XP_UNUSED_DBG(globals), wchar_t* path )
     data.sought = wbname( shortPath, sizeof(shortPath), path );
     data.result = path;
 
-    (void)ceLocateNDicts( MPPARM(globals->mpool) CE_MAXDICTS, matchShortName, 
+    (void)ceLocateNDicts( globals, CE_MAXDICTS, matchShortName, 
                           &data );
     return data.found;
 } /* findAlternateDict */

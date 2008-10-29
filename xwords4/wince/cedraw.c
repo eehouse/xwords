@@ -226,14 +226,14 @@ ceDrawTextClipped( HDC hdc, wchar_t* buf, XP_S16 len, XP_Bool clip,
                    XP_U16 width, XP_U16 hJust )
 {
     RECT rect = {
-      .left = left,
-      .top = top,
-      .bottom = top + fce->glyphHt,
-      .right = left + width
+        .left = left,
+        .top = top,
+        .bottom = top + fce->glyphHt,
+        .right = left + width
     };
 
     if ( clip ) {
-      ceClipToRect( hdc, &rect );
+        ceClipToRect( hdc, &rect );
     }
     rect.top -= fce->offset;
 /*     XP_LOGF( "%s: drawing left: %ld, top: %ld, right: %ld, bottom: %ld", */
@@ -1171,7 +1171,7 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
 
-        height = xprect->height-2;
+        height = xprect->height - 2; /* space for border */
         if ( height > globals->cellHt - CELL_BORDER ) {
             height = globals->cellHt - CELL_BORDER;
         }
@@ -1180,6 +1180,10 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
         ceMeasureText( dctx, hdc, fce, buf, 0, widthP, heightP );
 
         (void)SelectObject( hdc, oldFont );
+
+        /* Put back the 2 we took above */
+        *heightP += 2;
+        *widthP += 2;
     } else {
         *widthP = *heightP = 0;
     }
