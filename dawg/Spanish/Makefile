@@ -1,4 +1,4 @@
-# -*-mode: Makefile -*-
+# -*-mode: Makefile; compile-command: "make all"; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=Spanish_FAA_4_1
+XWLANG=SpanishFAA41
 LANGCODE=es_ES
 TARGET_TYPE ?= PALM
 
