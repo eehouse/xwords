@@ -29,13 +29,14 @@
 #include "mempool.h"
 #include "cesockwr.h"
 
+#define LCROSSWORDS_DIR_NODBG L"Crosswords"
 #define CE_GAMEFILE_VERSION 0x01 /* means draw gets to save/restore */
 #ifdef DEBUG
 # define CROSSWORDS_DIR "Cross_dbg"
 # define LCROSSWORDS_DIR L"Cross_dbg"
 #else
 # define CROSSWORDS_DIR "Crosswords"
-# define LCROSSWORDS_DIR L"Crosswords"
+# define LCROSSWORDS_DIR LCROSSWORDS_DIR_NODBG
 #endif
 
 #ifdef _WIN32_WCE
@@ -101,6 +102,12 @@ enum { OWNED_RECT_LEFT
        ,N_OWNED_RECTS
 };
 
+enum {
+    MY_DOCS_CACHE,
+    PROGFILES_CACHE,
+    N_CACHED_PATHS
+};
+
 typedef struct CEAppGlobals {
     HINSTANCE hInst;
     HDC hdc;			/* to pass drawing ctxt to draw code */
@@ -160,7 +167,7 @@ typedef struct CEAppGlobals {
     int dbWidth, dbHeight;
 #endif
 
-    wchar_t* specialDir;         /* reserved for ceGetPath() */
+    wchar_t* specialDirs[N_CACHED_PATHS];     /* reserved for ceGetPath() */
 
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool askTrayLimits;

@@ -1349,7 +1349,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT
-    result = 1 == ceLocateNDicts( MPPARM(mpool) 1, ceSetDictName, 
+    result = 1 == ceLocateNDicts( globals, 1, ceSetDictName, 
                                   globals );
     if ( !result ) {
         wchar_t buf[512];
@@ -1866,6 +1866,7 @@ closeGame( CEAppGlobals* globals )
 static void
 freeGlobals( CEAppGlobals* globals )
 {
+    XP_U16 ii;
     MPSLOT;
 
     MPASSIGN( mpool, globals->mpool );
@@ -1880,8 +1881,10 @@ freeGlobals( CEAppGlobals* globals )
     if ( !!globals->util.vtable ) {
         XP_FREE( mpool, globals->util.vtable );
     }
-    if ( !!globals->specialDir ) {
-        XP_FREE( mpool, globals->specialDir );
+    for ( ii = 0; ii < N_CACHED_PATHS; ++ii ) {
+        if ( !!globals->specialDirs[ii] ) {
+            XP_FREE( mpool, globals->specialDirs[ii] );
+        }
     }
 
     XP_FREE( globals->mpool, globals );

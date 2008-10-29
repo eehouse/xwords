@@ -747,47 +747,38 @@ trapBackspaceKey( HWND hDlg )
 }
 #endif
 
-/* cegcc headers define this to SHGetSpecialFolderPathW, but that's not
- * what's in the library...  */
-#ifdef SHGetSpecialFolderPath
-# undef SHGetSpecialFolderPath
-#endif
+/* Bugs in mingw32ce headers force defining _WIN32_IE, which causes
+ * SHGetSpecialFolderPath to be defined as SHGetSpecialFolderPathW which
+ * is not on Wince.  Once I turn off _WIN32_IE this can go away. */
+#ifdef  _WIN32_IE
+# ifdef SHGetSpecialFolderPath
+#  undef SHGetSpecialFolderPath
+# endif
 BOOL SHGetSpecialFolderPath( HWND hwndOwner,
                              LPTSTR lpszPath,
                              int nFolder,
                              BOOL fCreate );
+#endif
 
 static void
-lookupSpecialDir( wchar_t* bufW )
+lookupSpecialDir( wchar_t* bufW, XP_U16 indx )
 {
     bufW[0] = 0;
 #ifdef _WIN32_WCE
-#if 0
-    BOOL (*mySHGetSpecialFolderPath)( HWND hwndOwner,
-                                      LPTSTR lpszPath,
-                                      int nFolder,
-                                      BOOL fCreate );
-    HMODULE module;
-
-    module = LoadLibrary( L"coredll" );
-    if ( !!module ) {
-        mySHGetSpecialFolderPath = GetProcAddress( module,
-                                                   L"SHGetSpecialFolderPath" );
-        if ( !!mySHGetSpecialFolderPath ) {
-            HRESULT res = (*mySHGetSpecialFolderPath)( NULL, bufW, 
-                                                       CSIDL_PERSONAL, TRUE );
-        }
-        FreeLibrary( module );
-    }
-#else
-    SHGetSpecialFolderPath( NULL, bufW, CSIDL_PERSONAL, TRUE );
-#endif
+    SHGetSpecialFolderPath( NULL, bufW, 
+                            (indx == MY_DOCS_CACHE)? 
+                            CSIDL_PERSONAL : CSIDL_PROGRAM_FILES,
+                            TRUE );
     if ( 0 == bufW[0] ) {
-        XP_WARNF( "SHGetSpecialFolderPath hack failed" );
+        XP_WARNF( "SHGetSpecialFolderPath failed" );
         wcscpy( bufW, L"\\My Documents" );
     }
 #endif
-    wcscat( bufW, L"\\" LCROSSWORDS_DIR L"\\" );
+    if ( indx == PROGFILES_CACHE ) {
+        wcscat( bufW, L"\\" LCROSSWORDS_DIR_NODBG );
+    } else {
+        wcscat( bufW, L"\\" LCROSSWORDS_DIR L"\\" );
+    }
 }
 
 XP_U16
@@ -796,17 +787,18 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
 {
     XP_U16 len;
     wchar_t bufW[CE_MAX_PATH_LEN];
-    wchar_t* specialDir = globals->specialDir;
+    XP_U16 cacheIndx = typ == PROGFILES_PATH ? PROGFILES_CACHE : MY_DOCS_CACHE;
+    wchar_t* specialDir = globals->specialDirs[cacheIndx];
     XP_Bool asAscii = XP_FALSE;
 
     if ( !specialDir ) {
         wchar_t buf[128];
         XP_U16 len;
-        lookupSpecialDir( buf );
+        lookupSpecialDir( buf, cacheIndx );
         len = 1 + wcslen( buf );
         specialDir = XP_MALLOC( globals->mpool, len * sizeof(specialDir[0]) );
         wcscpy( specialDir, buf );
-        globals->specialDir = specialDir;
+        globals->specialDirs[cacheIndx] = specialDir;
     }
 
     wcscpy( bufW, specialDir );
@@ -822,11 +814,15 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
         asAscii = XP_TRUE;
         wcscat( bufW, L"_newgame" );
         break;
+
+    case PROGFILES_PATH:
+        /* nothing to do */
+        break;
     }
 
     len = wcslen( bufW );
     if ( asAscii ) {
-        (void)WideCharToMultiByte( CP_ACP, 0, bufW, len,
+        (void)WideCharToMultiByte( CP_ACP, 0, bufW, len + 1,
                                    (char*)bufOut, bufLen, NULL, NULL );
     } else {
         wcscpy( (wchar_t*)bufOut, bufW );

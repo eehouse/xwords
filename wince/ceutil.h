@@ -47,6 +47,7 @@ typedef enum {
     PREFS_FILE_PATH_L
     ,DEFAULT_DIR_PATH_L
     ,DEFAULT_GAME_PATH
+    ,PROGFILES_PATH
 } CePathType;
 XP_U16 ceGetPath( CEAppGlobals* globals, CePathType typ, 
                   void* buf, XP_U16 bufLen );

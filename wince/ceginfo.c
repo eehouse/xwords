@@ -186,8 +186,7 @@ loadFromGameInfo( GameInfoState* giState )
                    (XP_U16)XP_STRLEN(gi->dictName)+1 );
     }
     if ( giState->isNewGame ) {
-        (void)ceLocateNDicts( MPPARM(giState->dlgHdr.globals->mpool) 
-                              CE_MAXDICTS, addDictToState, giState );
+        (void)ceLocateNDicts( globals, CE_MAXDICTS, addDictToState, giState );
     } else {
         wchar_t wPath[CE_MAX_PATH_LEN+1];
         XP_ASSERT( gi->dictName[0] != '\0' );
