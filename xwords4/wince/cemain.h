@@ -153,7 +153,9 @@ typedef struct CEAppGlobals {
 #endif
     XP_Bool scrollerHasFocus;
 #endif
-
+#ifdef KEYBOARD_NAV
+    XP_Bool keyDown;
+#endif
     CeSocketWrapper* socketWrap;
 
     CEAppPrefs appPrefs;
