@@ -581,7 +581,9 @@ tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
                 up = XP_TRUE;
             } else if ( !preflightOnly ) {
                 XP_S16 tileLoc = trayCursorLoc;
-                XP_U16 nTiles = model_getNumTilesInTray( board->model, selPlayer );
+                XP_U16 nTiles = board->trayVisState == TRAY_REVEALED
+                    ? model_getNumTilesInTray( board->model, selPlayer ) 
+                    : MAX_TRAY_TILES;
                 XP_Bool cursorOnDivider = trayCursorLoc == pti->dividerLoc;
                 XP_Bool cursorObjSelected;
                 XP_S16 newTileLoc;
