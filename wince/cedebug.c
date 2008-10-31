@@ -83,6 +83,10 @@ messageToStr( UINT message )
         CASE_STR( WM_HOTKEY );
         CASE_STR( WM_CLOSE );
         CASE_STR( WM_ACTIVATEAPP );
+        CASE_STR( WM_ENTERMENULOOP );
+        CASE_STR( WM_EXITMENULOOP );
+        CASE_STR( WM_INITMENUPOPUP );
+        CASE_STR( WM_CANCELMODE );
     default:
         str = "<unknown>";
     }
