@@ -46,7 +46,7 @@
 #define CE_TIMER_PADDING -2
 #define IS_TURN_VPAD 2
 
-#define DRAW_FOCUS_FRAME 1
+//#define DRAW_FOCUS_FRAME 1
 #ifdef DRAW_FOCUS_FRAME
 # define CE_FOCUS_BORDER_WIDTH 6
 # define TREAT_AS_CURSOR(d,f) ((((f) & CELL_ISCURSOR) != 0) && !(d)->topFocus )
@@ -54,6 +54,8 @@
 # define TREAT_AS_CURSOR(d,f) (((f) & CELL_ISCURSOR) != 0)
 #endif
 
+
+typedef enum { NO_FOCUS, SINGLE_FOCUS, TOP_FOCUS } CeFocusLevel;
 
 typedef enum { 
     RFONTS_TRAY
@@ -267,6 +269,7 @@ ceDrawLinesClipped( HDC hdc, const FontCacheEntry* fce, XP_UCHAR* buf,
 } /* ceDrawLinesClipped */
 
 /* CE doesn't have FrameRect, so we'll roll our own */
+#ifdef DRAW_FOCUS_FRAME
 static int
 ceDrawFocusRect( HDC hdc, CEDrawCtx* dctx, LPCRECT rect )
 {
@@ -287,6 +290,7 @@ ceDrawFocusRect( HDC hdc, CEDrawCtx* dctx, LPCRECT rect )
     SelectObject( hdc, oldObj );
     return 0;
 }
+#endif
 
 static void
 ceClipToRect( /* CEDrawCtx* dctx,  */HDC hdc, const RECT* rt )
@@ -907,20 +911,30 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     RECT rt;
     XP_U16 index;
     XP_Bool highlighted = XP_FALSE;
-    XP_Bool isFocussed = TREAT_AS_CURSOR(dctx,flags);
+    CeFocusLevel focLevel;
     XP_Bool isEmpty = (flags & CELL_ISEMPTY) != 0;
+
+    if ( 0 != (flags & CELL_ISCURSOR) ) {
+        if ( dctx->topFocus ) {
+            focLevel = TOP_FOCUS;
+        } else {
+            focLevel = SINGLE_FOCUS;
+        }
+    } else {
+        focLevel = NO_FOCUS;
+    }
 
     XPRtoRECT( &rt, xprect );
     ceClipToRect( hdc, &rt );
-    ceClearToBkground( dctx, xprect );
+    FillRect( hdc, &rt, dctx->brushes[focLevel == TOP_FOCUS?CE_FOCUS_COLOR:CE_BKG_COLOR] );
 
-    if ( !isEmpty || isFocussed ) {
-        XP_U16 backIndex = isFocussed? CE_FOCUS_COLOR : CE_TILEBACK_COLOR;
+    if ( !isEmpty || focLevel == SINGLE_FOCUS ) { /* don't draw anything unless SINGLE_FOCUS */
+        XP_U16 backIndex = focLevel == NO_FOCUS? CE_TILEBACK_COLOR : CE_FOCUS_COLOR;
 
         SetBkColor( hdc, dctx->globals->appPrefs.colors[backIndex] );
 
         InsetRect( &rt, 1, 1 );
-        Rectangle(hdc, rt.left, rt.top, rt.right, rt.bottom); /* draw frame */
+        Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom); /* draw frame */
         InsetRect( &rt, 1, 1 );
 /*         ceClipToRect( hdc, &rt ); */
 
