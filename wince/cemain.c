@@ -418,6 +418,7 @@ scrollWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
         if ( setFocus ) {
             SetFocus( globals->hWnd );
             result = 0;
+            globals->keyDown = XP_TRUE;
         }
     } 
     if ( 0 != result ) {
@@ -2049,31 +2050,37 @@ static XP_Bool
 ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam, 
                        XP_Bool keyDown, XP_Bool* handledP )
 {
-    XP_Bool isRepeat = keyDown && ((HIWORD(lParam) & KF_REPEAT) != 0);
-    XP_Key key;
-    XP_S16 incr = 0;
     XP_Bool draw = XP_FALSE;
 
-    switch ( wParam ) {
-    case VK_UP:
-        key = XP_CURSOR_KEY_UP;
-        incr = -1;
-        break;
-    case VK_RIGHT:
-        key = XP_CURSOR_KEY_RIGHT;
-        incr = 1;
-        break;
-    case VK_DOWN:
-        key = XP_CURSOR_KEY_DOWN;
-        incr = 1;
-        break;
-    case VK_LEFT:
-        key = XP_CURSOR_KEY_LEFT;
-        incr = -1;
-        break;
-    case 0x0d:
-    case 0x5d:                  /* center key on WinMo5 Treo (at least) -- but also ']'*/
-    case VK_HOME:
+    /* Sometimes, e.g. after a menu is released, we get KEY_UP not preceeded
+       by KEY_DOWN.  Just drop those. */
+    if ( !keyDown && !globals->keyDown ) {
+        XP_LOGF( "%s: keyUp not preceeded by keyDown: dropping", __func__ );
+    } else {
+        XP_Bool isRepeat = keyDown && ((HIWORD(lParam) & KF_REPEAT) != 0);
+        XP_Key key;
+        XP_S16 incr = 0;
+
+        switch ( wParam ) {
+        case VK_UP:
+            key = XP_CURSOR_KEY_UP;
+            incr = -1;
+            break;
+        case VK_RIGHT:
+            key = XP_CURSOR_KEY_RIGHT;
+            incr = 1;
+            break;
+        case VK_DOWN:
+            key = XP_CURSOR_KEY_DOWN;
+            incr = 1;
+            break;
+        case VK_LEFT:
+            key = XP_CURSOR_KEY_LEFT;
+            incr = -1;
+            break;
+        case 0x0d:
+        case 0x5d:                  /* center key on WinMo5 Treo (at least) -- but also ']'*/
+        case VK_HOME:
             key = XP_RETURN_KEY;
             if ( isRepeat ) {
                 (void)checkFireLateKeyTimer( globals );
@@ -2081,79 +2088,81 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
             break;
 
             /* Still need to produce these somehow */
-/*     XP_CURSOR_KEY_ALTRIGHT, */
-/*     XP_CURSOR_KEY_ALTUP, */
-/*     XP_CURSOR_KEY_ALTLEFT, */
-/*     XP_CURSOR_KEY_ALTDOWN, */
+            /*     XP_CURSOR_KEY_ALTRIGHT, */
+            /*     XP_CURSOR_KEY_ALTUP, */
+            /*     XP_CURSOR_KEY_ALTLEFT, */
+            /*     XP_CURSOR_KEY_ALTDOWN, */
 
-    default:
-        key = XP_KEY_NONE;
-        break;
-    }
-
-    if ( key != XP_KEY_NONE ) {
-        BoardCtxt* board = globals->game.board;
-
-        if ( isRepeat ) {
-            draw = board_handleKeyRepeat( board, key, handledP );
-        } else if ( keyDown ) {
-            draw = board_handleKeyDown( board, key, handledP );
-        } else {
-            draw = board_handleKeyUp( board, key, handledP );
+        default:
+            key = XP_KEY_NONE;
+            break;
         }
 
-        if ( !*handledP && incr != 0 && !keyDown ) {
-            BoardObjectType orderScroll[] = { 
-                OBJ_SCORE, OBJ_BOARD, OBJ_NONE, OBJ_TRAY };
-            BoardObjectType orderNoScroll[] = { 
-                OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
-            BoardObjectType* order;
-            XP_U16 orderLen;
-            BoardObjectType cur = board_getFocusOwner( board );
-            XP_U16 index = 0;
+        if ( key != XP_KEY_NONE ) {
+            BoardCtxt* board = globals->game.board;
 
-            if ( !!globals->scrollHandle ) {
-                order = orderScroll;
-                orderLen = VSIZE(orderScroll);
+            if ( isRepeat ) {
+                draw = board_handleKeyRepeat( board, key, handledP );
+            } else if ( keyDown ) {
+                draw = board_handleKeyDown( board, key, handledP );
             } else {
-                order = orderNoScroll;
-                orderLen = VSIZE(orderNoScroll);
+                draw = board_handleKeyUp( board, key, handledP );
             }
 
-            if ( !!globals->scrollHandle || (cur != OBJ_NONE) ) {
-                for ( ; ; ) {
-                    if ( order[index] == cur ) {
-                        break;
+            if ( !*handledP && incr != 0 && !keyDown ) {
+                BoardObjectType orderScroll[] = { 
+                    OBJ_SCORE, OBJ_BOARD, OBJ_NONE, OBJ_TRAY };
+                BoardObjectType orderNoScroll[] = { 
+                    OBJ_SCORE, OBJ_BOARD, OBJ_TRAY };
+                BoardObjectType* order;
+                XP_U16 orderLen;
+                BoardObjectType cur = board_getFocusOwner( board );
+                XP_U16 index = 0;
+
+                if ( !!globals->scrollHandle ) {
+                    order = orderScroll;
+                    orderLen = VSIZE(orderScroll);
+                } else {
+                    order = orderNoScroll;
+                    orderLen = VSIZE(orderNoScroll);
+                }
+
+                if ( !!globals->scrollHandle || (cur != OBJ_NONE) ) {
+                    for ( ; ; ) {
+                        if ( order[index] == cur ) {
+                            break;
+                        }
+                        ++index;
+                        XP_ASSERT( index < orderLen );
                     }
-                    ++index;
-                    XP_ASSERT( index < orderLen );
+                    index = (index + orderLen + incr) % orderLen;
                 }
-                index = (index + orderLen + incr) % orderLen;
-            }
-            draw = board_focusChanged( board, order[index], XP_TRUE );
+                draw = board_focusChanged( board, order[index], XP_TRUE );
 
-            if ( !!globals->scrollHandle ) {
-                XP_Bool scrollerHasFocus = globals->scrollerHasFocus;
-                if ( order[index] == OBJ_NONE ) {
-                    XP_ASSERT( !scrollerHasFocus );
-                    SetFocus( globals->scrollHandle );
-                    scrollerHasFocus = XP_TRUE; 
-                } else if ( scrollerHasFocus ) {
-                    SetFocus( globals->hWnd );
-                    scrollerHasFocus = XP_FALSE;
-                }
-                if ( scrollerHasFocus != globals->scrollerHasFocus ) {
-                    globals->scrollerHasFocus = scrollerHasFocus;
+                if ( !!globals->scrollHandle ) {
+                    XP_Bool scrollerHasFocus = globals->scrollerHasFocus;
+                    if ( order[index] == OBJ_NONE ) {
+                        XP_ASSERT( !scrollerHasFocus );
+                        SetFocus( globals->scrollHandle );
+                        scrollerHasFocus = XP_TRUE; 
+                    } else if ( scrollerHasFocus ) {
+                        SetFocus( globals->hWnd );
+                        scrollerHasFocus = XP_FALSE;
+                    }
+                    if ( scrollerHasFocus != globals->scrollerHasFocus ) {
+                        globals->scrollerHasFocus = scrollerHasFocus;
 #ifdef _WIN32_WCE
-                    InvalidateRect( globals->hWnd, &globals->scrollRects[0], FALSE );
-                    InvalidateRect( globals->hWnd, &globals->scrollRects[1], FALSE );
+                        InvalidateRect( globals->hWnd, &globals->scrollRects[0], FALSE );
+                        InvalidateRect( globals->hWnd, &globals->scrollRects[1], FALSE );
 #else
-                    InvalidateRect( globals->scrollHandle, NULL, FALSE );
+                        InvalidateRect( globals->scrollHandle, NULL, FALSE );
 #endif
+                    }
                 }
             }
         }
     }
+    globals->keyDown = keyDown;
     return draw;
 } /* ceCheckHandleFocusKey */
 #endif /* KEYBOARD_NAV */
