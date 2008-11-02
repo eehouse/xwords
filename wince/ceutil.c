@@ -407,6 +407,7 @@ ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId )
     } 
 }
 
+#ifdef OVERRIDE_BACKKEY
 static XP_Bool
 editHasFocus( void )
 {
@@ -417,6 +418,7 @@ editHasFocus( void )
         && !wcscmp( L"Edit", buf );
     return isEdit;
 } /* editHasFocus */
+#endif
 
 XP_Bool
 ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
@@ -773,6 +775,8 @@ lookupSpecialDir( wchar_t* bufW, XP_U16 indx )
         XP_WARNF( "SHGetSpecialFolderPath failed" );
         wcscpy( bufW, L"\\My Documents" );
     }
+#else
+    wcscat( bufW, L"." );
 #endif
     if ( indx == PROGFILES_CACHE ) {
         wcscat( bufW, L"\\" LCROSSWORDS_DIR_NODBG );
