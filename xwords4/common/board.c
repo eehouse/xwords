@@ -2628,7 +2628,7 @@ board_moveCursor( BoardCtxt* board, XP_Key cursorKey, XP_Bool preflightOnly,
     XP_Bool altSet;
     cursorKey = stripAlt( cursorKey, &altSet );
 
-    changed = figureNextLoc( board, cursorKey, XP_FALSE, altSet,
+    changed = figureNextLoc( board, cursorKey, XP_FALSE, !altSet,
                              &col, &row, up );
     if ( changed && !preflightOnly ) {
         invalCell( board, loc.col, loc.row );
