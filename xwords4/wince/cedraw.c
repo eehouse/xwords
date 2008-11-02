@@ -474,6 +474,7 @@ ceFillFontInfo( const CEDrawCtx* dctx, LOGFONT* fontInfo,
 {
     XP_MEMSET( fontInfo, 0, sizeof(*fontInfo) );
     fontInfo->lfHeight = height;
+    fontInfo->lfQuality = PROOF_QUALITY;
 
 /*     if ( bold ) { */
 /*         fontInfo->lfWeight = FW_BOLD; */
@@ -504,14 +505,15 @@ ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index,
 
     char sample[65];
     makeTestBuf( dctx, sample, VSIZE(sample), index );
-    len = strlen(sample);
+    len = 1 + strlen(sample);
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sample, len,
                          widebuf, len );
 
     memBM = CreateCompatibleBitmap( memDC, soughtHeight*2, soughtHeight*2 );
     SelectObject( memDC, memBM );
 
-    for ( firstPass = XP_TRUE, testSize = soughtHeight*2; ; --testSize ) {
+    for ( firstPass = XP_TRUE, testSize = soughtHeight*2; ;  ) {
+        XP_U16 prevSize;
         LOGFONT fontInfo;
         HFONT testFont;
 
@@ -554,6 +556,13 @@ ceBestFitFont( CEDrawCtx* dctx, XP_U16 soughtHeight, RFIndex index,
                 break;
             }
             DeleteObject( testFont );
+
+            prevSize = testSize;
+            testSize = (testSize * soughtHeight) / thisHeight;
+            if ( testSize >= prevSize ) {
+                /* guarantee progress regardless of rounding errors */
+                testSize = prevSize - 1;
+            }
         }
     }
 
@@ -695,8 +704,10 @@ DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx,
 } /* draw_boardBegin */
 
 DLSTATIC void
-DRAW_FUNC_NAME(objFinished)( DrawCtx* p_dctx, BoardObjectType typ, 
-                             const XP_Rect* rect, DrawFocusState dfs )
+DRAW_FUNC_NAME(objFinished)( DrawCtx* XP_UNUSED(p_dctx), 
+                             BoardObjectType XP_UNUSED(typ), 
+                             const XP_Rect* XP_UNUSED(rect), 
+                             DrawFocusState XP_UNUSED(dfs) )
 {
 #ifdef DRAW_FOCUS_FRAME
     if ( (dfs == DFS_TOP) && (typ == OBJ_BOARD || typ == OBJ_TRAY) ) {
