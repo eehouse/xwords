@@ -29,7 +29,7 @@ gtkask( const gchar *message, GtkButtonsType buttons )
     GtkWidget* dlg = gtk_message_dialog_new( NULL, /* parent */
                                              GTK_MESSAGE_QUESTION,
                                              GTK_DIALOG_MODAL,
-                                             buttons, message );
+                                             buttons, "%s", message );
     gint response = gtk_dialog_run( GTK_DIALOG(dlg) );
     gtk_widget_destroy( dlg );
     return response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES;

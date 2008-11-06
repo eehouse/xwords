@@ -1513,7 +1513,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry,
 
         if ( isPass ) { 
             format = util_getUserString( model->vol.util, STR_PASS );
-            XP_SNPRINTF( buf, sizeof(buf), format );
+            XP_SNPRINTF( buf, sizeof(buf), "%s", format );
         } else {
             if ( isHorizontal ) {
                 format = util_getUserString( model->vol.util, STRS_MOVE_ACROSS );

@@ -51,8 +51,7 @@ linux_debugf( const char* format, ... )
 
     va_end(ap);
     
-    fprintf( stderr, buf );
-    fprintf( stderr, "\n" );
+    fprintf( stderr, "%s\n", buf );
 }
 #endif
 
