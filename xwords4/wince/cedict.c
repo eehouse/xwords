@@ -724,7 +724,7 @@ matchShortName( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
  * look.
  */
 static XP_Bool
-findAlternateDict( CEAppGlobals* XP_UNUSED_DBG(globals), wchar_t* path )
+findAlternateDict( CEAppGlobals* globals, wchar_t* path )
 {
     wchar_t shortPath[CE_MAX_PATH_LEN+1];
     FindOneData data;
