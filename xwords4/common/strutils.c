@@ -273,7 +273,7 @@ log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
         }
         XP_SNPRINTF( buf, sizeof(buf), "%s[%d]: %s %s", tag, oldOffset, 
                      vals, chars );
-        XP_LOGF( buf );
+        XP_LOGF( "%s", buf );
     }
 }
 #endif

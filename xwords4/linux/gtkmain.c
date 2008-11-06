@@ -1385,7 +1385,7 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     XP_LOGF( "%s(%d)", __func__, id );
 
     if ( silent ) {
-        XP_LOGF( message );
+        XP_LOGF( "%s", message );
     } else {
         gtkUserError( globals, message );
     }

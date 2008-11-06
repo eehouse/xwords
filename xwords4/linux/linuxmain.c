@@ -128,7 +128,7 @@ catOnClose( XWStreamCtxt* stream, void* XP_UNUSED(closure) )
     stream_getBytes( stream, buffer, nBytes );
     buffer[nBytes] = '\0';
 
-    fprintf( stderr, buffer );
+    fprintf( stderr, "%s", buffer );
 
     free( buffer );
 } /* catOnClose */
@@ -645,7 +645,7 @@ main( int argc, char** argv )
     {
         int i;
         for ( i = 0; i < argc; ++i ) {
-            XP_LOGF( argv[i] );
+            XP_LOGF( "%s", argv[i] );
         }
     }
 #endif
@@ -995,6 +995,7 @@ main( int argc, char** argv )
 
     dict_destroy( mainParams.dict );
     linux_util_vt_destroy( mainParams.util );
+    XP_LOGF( "exiting main" );
     return 0;
 } /* main */
 

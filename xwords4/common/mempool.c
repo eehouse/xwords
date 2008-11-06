@@ -248,7 +248,7 @@ mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream )
     if ( !!stream ) {
         stream_putString( stream, buf );
     } else {
-        XP_LOGF( buf );
+        XP_LOGF( "%s", buf );
     }
 
     for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
@@ -258,7 +258,7 @@ mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream )
         if ( !!stream ) {
             stream_putString( stream, buf );
         } else {
-            XP_LOGF( buf );
+            XP_LOGF( "%s", buf );
         }
     }
 } /* mpool_stats */
