@@ -33,6 +33,6 @@ HBRUSH ce_draw_getFocusBrush( const CEDrawCtx* dctx );
 #endif
 
 void ce_draw_toStream( const CEDrawCtx* dctx, XWStreamCtxt* stream );
-void ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream );
+void ce_draw_fromStream( CEDrawCtx* dctx, XWStreamCtxt* stream, XP_U8 flags );
 #endif
 
