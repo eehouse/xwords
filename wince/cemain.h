@@ -30,7 +30,9 @@
 #include "cesockwr.h"
 
 #define LCROSSWORDS_DIR_NODBG L"Crosswords"
-#define CE_GAMEFILE_VERSION 0x01 /* means draw gets to save/restore */
+#define CE_GAMEFILE_VERSION1 0x01  /* means draw gets to save/restore */
+#define CE_GAMEFILE_VERSION2 0x02 /* save/restore includes width */
+#define CE_GAMEFILE_VERSION CE_GAMEFILE_VERSION2
 #ifdef DEBUG
 # define CROSSWORDS_DIR "Cross_dbg"
 # define LCROSSWORDS_DIR L"Cross_dbg"

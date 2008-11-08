@@ -1129,8 +1129,8 @@ ceLoadSavedGame( CEAppGlobals* globals )
         }
 
         if ( success ) {
-            if ( flags >= CE_GAMEFILE_VERSION ) {
-                ce_draw_fromStream( globals->draw, stream );
+            if ( flags >= CE_GAMEFILE_VERSION1 ) {
+                ce_draw_fromStream( globals->draw, stream, flags );
             }
 
             XP_DEBUGF( "calling game_makeFromStream" ); 
