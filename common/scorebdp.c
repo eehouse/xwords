@@ -316,8 +316,8 @@ flipKey( XP_Key key, XP_Bool flip )
         case XP_CURSOR_KEY_ALTRIGHT:
             result = XP_CURSOR_KEY_ALTDOWN; break;
         default:
-            XP_LOGF( "unexpected key: %s", XP_Key_2str(key) );
-            XP_ASSERT(0);
+            /* not en error -- but we don't modify the key */
+            break;
         }
     }
     return result;
