@@ -679,13 +679,31 @@ setW32DummyMenu( CEAppGlobals* globals, HMENU menu, XP_U16 id, wchar_t* oldNm )
 }
 #endif
 
+static HMENU
+ceGetMenu( const CEAppGlobals* globals )
+{
+#ifdef _WIN32_WCE
+    TBBUTTONINFO info;
+    XP_MEMSET( &info, 0, sizeof(info) );
+    info.cbSize = sizeof(info);
+    info.dwMask = TBIF_LPARAM;
+    SendMessage( globals->hwndCB, TB_GETBUTTONINFO, IDM_MENU, 
+                 (LPARAM)&info );
+    return (HMENU)info.lParam;
+#else
+    return GetMenu( globals->hWnd );
+#endif
+}
+
 void
 ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
 {
     if ( newId != globals->softKeyId ) {
         wchar_t menuTxt[32];    /* text of newId menu */
-        HMENU menu;
-#ifndef _WIN32_WCE
+        HMENU menu = ceGetMenu( globals );
+#ifdef _WIN32_WCE
+        TBBUTTONINFO info;
+#else
         HMENU prevMenu;
         XP_U16 prevPos;
 #endif
@@ -694,22 +712,6 @@ ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
             oldId = ID_INITIAL_SOFTID;
         }
 
-#ifdef _WIN32_WCE
-        TBBUTTONINFO info;
-        XP_MEMSET( &info, 0, sizeof(info) );
-        info.cbSize = sizeof(info);
-#endif
-
-#ifdef _WIN32_WCE
-        info.dwMask = TBIF_LPARAM;
-        SendMessage( globals->hwndCB, TB_GETBUTTONINFO, IDM_MENU, 
-                     (LPARAM)&info );
-        menu = (HMENU)info.lParam;  /* Use to remove item being installed in
-                                       left button */
-#else
-        menu = GetMenu( globals->hWnd );
-#endif
-
         /* Look up the text... */
         if ( ceFindMenu( menu, newId, 
 #ifndef _WIN32_WCE
@@ -717,12 +719,17 @@ ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
 #endif
                           menuTxt, VSIZE(menuTxt) ) ) {
             globals->softKeyId = newId;
+#ifndef _WIN32_WCE
+            globals->softKeyMenu = prevMenu;
+#endif
         } else {
             XP_LOGF( "%s: ceFindMenu failed", __func__ );
         }
 
         /* Make it the button */
 #ifdef _WIN32_WCE
+        XP_MEMSET( &info, 0, sizeof(info) );
+        info.cbSize = sizeof(info);
         info.dwMask = TBIF_TEXT | TBIF_COMMAND;
         info.idCommand = newId;
         info.pszText = menuTxt;
@@ -731,7 +738,34 @@ ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 newId )
         setW32DummyMenu( globals, menu, newId, menuTxt );
 #endif
     }
+    ceCheckMenus( globals );  /* in case left key was or should be checked */
 } /* ceSetLeftSoftkey */
+
+static void
+checkOneItem( const CEAppGlobals* globals, XP_U16 id, XP_Bool check )
+{
+    UINT uCheck = check ? MF_CHECKED : MF_UNCHECKED;
+    HMENU menu = ceGetMenu( globals );
+
+    (void)CheckMenuItem( menu, id, uCheck );
+#ifndef _WIN32_WCE
+    if ( id == globals->softKeyId ) {
+        (void)CheckMenuItem( globals->softKeyMenu, id, uCheck );
+    }
+#endif
+}
+
+void
+ceCheckMenus( const CEAppGlobals* globals )
+{
+    const BoardCtxt* board = globals->game.board;
+
+    checkOneItem( globals, ID_MOVE_VALUES, board_get_showValues( board ));
+    checkOneItem( globals, ID_MOVE_FLIP, board_get_flipped( board ) );
+    checkOneItem( globals, ID_FILE_FULLSCREEN, globals->appPrefs.fullScreen );
+    checkOneItem( globals, ID_MOVE_HIDETRAY,
+                  TRAY_REVEALED != board_getTrayVisState( board ) );
+} /* ceCheckMenus */
 
 #ifdef OVERRIDE_BACKKEY
 void

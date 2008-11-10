@@ -162,45 +162,25 @@ static XP_Bool isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name );
 static void ceSetTitleFromName( CEAppGlobals* globals );
 
 
-#if defined DEBUG && ! defined _WIN32_WCE
+#ifndef _WIN32_WCE
 /* Very basic cmdline args meant at first to let me vary the size of the
  * screen.  Form is of arg=digits, with no spaces and digits having to be an
  * integer.  Right now only width and height work: e.g. 
  * "wine obj_win32_dbg/xwords4.exe height=240 width=320"
  */
-
-static int g_dbWidth = 240;
-static  int g_dbHeight = 240;
-
-static void
-doCmd( const char* cmd )
+static XP_Bool
+tryIntParam( const char* buf, const char* param, XP_U16* value )
 {
-    struct { char* p; int* v; } params[] = {
-        { "width", &g_dbWidth },
-        { "height", &g_dbHeight }
-    };
-    int i;
-
-    for ( i = 0; i < VSIZE(params); ++i ) {
-        char* p = params[i].p;
-        int len = strlen(p);
-        if ( 0 == strncmp( p, cmd, len ) ) {
-            cmd += len;
-            if ( *cmd == '=' ) {
-                ++cmd;
-                *(params[i].v) = atoi(cmd);
-                break;
-            }
-        }
+    XP_U16 len = strlen( param );
+    XP_Bool found = 0 == strncmp( buf, param, len );
+    if ( found ) {
+        *value = atoi( &buf[len] );
     }
-
-    if ( i == VSIZE(params) ) {
-        XP_LOGF( "failed to match cmdline arg \"%s\"", cmd );
-    }
-} /* doCmd */
+    return found;
+}
 
 static void
-parseCmdLine( const char* cmdline )
+parseCmdLine( const char* cmdline, XP_U16* width, XP_U16* height )
 {
     XP_U16 ii;
     for ( ii = 0; ; ++ii ) {
@@ -215,10 +195,16 @@ parseCmdLine( const char* cmdline )
             }
         }
         len = cmd - cmdline;
-        memcpy( buf, cmdline, cmd - cmdline );
-        buf[len] = '\0';
-        if ( ii > 0 ) {         /* skip argv[0] */
-            doCmd( buf );
+        if ( len < sizeof(buf) ) {
+            memcpy( buf, cmdline, cmd - cmdline );
+            buf[len] = '\0';
+            if ( ii > 0 ) {         /* skip argv[0] */
+                if ( tryIntParam( buf, "width=", width ) ) {
+                } else if ( tryIntParam( buf, "height=", height ) ) {
+                } else {
+                    XP_LOGF( "failed to match cmdline arg \"%s\"", buf );
+                }
+            }
         }
         if ( ch == '\0' ) {
             break;
@@ -230,7 +216,11 @@ parseCmdLine( const char* cmdline )
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
-BOOL				InitInstance	(HINSTANCE, int);
+BOOL				InitInstance	(HINSTANCE, int
+#ifndef _WIN32_WCE
+                                     , XP_U16, XP_U16
+#endif
+                                     );
 LRESULT CALLBACK	WndProc			(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	ceAbout			(HWND, UINT, WPARAM, LPARAM);
 
@@ -247,12 +237,17 @@ WinMain(	HINSTANCE hInstance,
     MSG msg;
     HACCEL hAccelTable;
 
-#if defined DEBUG && ! defined _WIN32_WCE
-    parseCmdLine( lpCmdLine );
+#ifndef _WIN32_WCE
+    XP_U16 width, height;
+    parseCmdLine( lpCmdLine, &width, &height );
 #endif
 
     // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow)) {
+    if (!InitInstance (hInstance, nCmdShow
+#ifndef _WIN32_WCE
+                       , width, height
+#endif
+                       )) {
         return FALSE;
     }
 
@@ -543,15 +538,14 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     rc.right = rc.left + FORCE_WIDTH;
     rc.bottom = rc.top + FORCE_HEIGHT;
 # else
-#  if defined DEBUG
-
-    if ( g_dbWidth != 0 ) {
-        rc.right = rc.left + g_dbWidth;
+    if ( !globals->appPrefs.fullScreen ) {
+        if ( globals->dbWidth != 0 ) {
+            rc.right = rc.left + globals->dbWidth;
+        }
+        if ( globals->dbHeight != 0 ) {
+            rc.bottom = rc.top + globals->dbHeight;
+        }
     }
-    if ( g_dbHeight != 0 ) {
-        rc.bottom = rc.top + g_dbHeight;
-    }
-#  endif
 # endif
 #endif  /* #ifndef _WIN32_WCE */
 
@@ -767,6 +761,7 @@ cePositionBoard( CEAppGlobals* globals )
 #if ! defined _WIN32_WCE && defined DEBUG
     ceSetTitleFromName( globals );
 #endif
+    ceCheckMenus( globals );
     return erase;
 } /* cePositionBoard */
 
@@ -1252,7 +1247,11 @@ getOSInfo( CEAppGlobals* globals )
 //    create and display the main program window.
 //
 BOOL
-InitInstance(HINSTANCE hInstance, int nCmdShow)
+InitInstance(HINSTANCE hInstance, int nCmdShow
+#ifndef _WIN32_WCE
+             ,XP_U16 width, XP_U16 height
+#endif
+             )
 {
     HWND	hWnd;
     TCHAR	szTitle[MAX_LOADSTRING];	// The title bar text
@@ -1301,15 +1300,15 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
     XP_MEMSET( globals, 0, sizeof(*globals) );
     MPASSIGN( globals->mpool, mpool );
 
+#ifndef _WIN32_WCE
+    globals->dbWidth = width;
+    globals->dbHeight = height;
+#endif
+
     (void)ceGetPath( globals, DEFAULT_DIR_PATH_L, path, VSIZE(path) );
     (void)CreateDirectory( path, 0 );
 
     getOSInfo( globals );
-
-#if defined DEBUG && !defined _WIN32_WCE
-    globals->dbWidth = g_dbWidth;
-    globals->dbHeight = g_dbHeight;
-#endif
 
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
 
@@ -2167,7 +2166,6 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
 } /* ceCheckHandleFocusKey */
 #endif /* KEYBOARD_NAV */
 
-#ifdef _WIN32_WCE
 static void
 ceToggleFullScreen( CEAppGlobals* globals )
 {
@@ -2177,7 +2175,6 @@ ceToggleFullScreen( CEAppGlobals* globals )
 
     (void)cePositionBoard( globals );
 } /* ceToggleFullScreen */
-#endif
 
 static void
 doAbout( CEAppGlobals* globals )
@@ -2294,11 +2291,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_FILE_PREFERENCES:
                 ceDoPrefsDlg( globals );
                 break;
-#ifdef _WIN32_WCE
             case ID_FILE_FULLSCREEN:
                 ceToggleFullScreen( globals );
                 break;
-#endif
             case ID_GAME_FINALSCORES:
                 if ( server_getGameIsOver( globals->game.server ) ) {
                     ceDisplayFinalScores( globals );
@@ -2338,9 +2333,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             case ID_MOVE_FLIP:
                 draw = board_flip( globals->game.board );
+                ceCheckMenus( globals );
                 break;
             case ID_MOVE_VALUES:
                 draw = board_toggle_showValues( globals->game.board );
+                ceCheckMenus( globals );
                 break;
 
             case ID_MOVE_HINT:
@@ -3101,7 +3098,7 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(newState),
         updateScrollInfo( globals, nHiddenRows );
     }
 #endif
-
+    ceCheckMenus( globals );
     drawInsidePaint( globals, NULL );
 } /* ce_util_trayHiddenChange */
 
