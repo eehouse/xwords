@@ -128,6 +128,9 @@ typedef struct CEAppGlobals {
 #endif
 
     XP_U16 softKeyId;           /* id of item now on left button */
+#ifndef _WIN32_WCE
+    HMENU softKeyMenu;          /* so can check/uncheck duplicated items */
+#endif
 
     struct CEDrawCtx* draw;
     XWGame game;
@@ -167,8 +170,8 @@ typedef struct CEAppGlobals {
     XP_Bool hintPending;
     XP_Bool doGlobalPrefs;
 
-#if defined DEBUG && !defined _WIN32_WCE
-    int dbWidth, dbHeight;
+#ifndef _WIN32_WCE
+    XP_U16 dbWidth, dbHeight;
 #endif
 
     wchar_t* specialDirs[N_CACHED_PATHS];     /* reserved for ceGetPath() */

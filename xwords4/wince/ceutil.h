@@ -42,6 +42,7 @@ XP_Bool ceGetChecked( HWND hDlg, XP_U16 resID );
 void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
+void ceCheckMenus( const CEAppGlobals* globals );
 
 typedef enum {
     PREFS_FILE_PATH_L

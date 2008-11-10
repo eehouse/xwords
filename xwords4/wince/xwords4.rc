@@ -80,7 +80,7 @@ BEGIN
         MENUITEM "Juggle",                     ID_MOVE_JUGGLE
         MENUITEM "Flip",                       ID_MOVE_FLIP
         MENUITEM "Trade",                      ID_MOVE_TRADE
-        MENUITEM "(un)Hide tray",              ID_MOVE_HIDETRAY
+        MENUITEM "Hide tray",                  ID_MOVE_HIDETRAY
 
         POPUP "Undo"
         BEGIN
@@ -96,7 +96,7 @@ BEGIN
             MENUITEM "Limited hint",           ID_MOVE_LIMITEDHINT
 #endif
             MENUITEM SEPARATOR
-            MENUITEM "Toggle values",            ID_MOVE_VALUES
+            MENUITEM "Show values",             ID_MOVE_VALUES
         END
 
         POPUP "Game"
@@ -114,10 +114,8 @@ BEGIN
 
         POPUP "File"
         BEGIN
-#ifdef _WIN32_WCE
             MENUITEM "Full screen",            ID_FILE_FULLSCREEN
             MENUITEM SEPARATOR
-#endif
             MENUITEM "New game...",            ID_FILE_NEWGAME
             MENUITEM "Saved games...",         ID_FILE_SAVEDGAMES
             MENUITEM "Preferences...",         ID_FILE_PREFERENCES
