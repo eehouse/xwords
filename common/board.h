@@ -89,7 +89,9 @@ void board_invalRect( BoardCtxt* board, XP_Rect* rect );
 
 XP_Bool board_draw( BoardCtxt* board );
 
+XP_Bool board_get_flipped( const BoardCtxt* board );
 XP_Bool board_flip( BoardCtxt* board );
+XP_Bool board_get_showValues( const BoardCtxt* board );
 XP_Bool board_toggle_showValues( BoardCtxt* board );
 XP_Bool board_getShowColors( BoardCtxt* board );
 XP_Bool board_setShowColors( BoardCtxt* board, XP_Bool showColors );
@@ -147,7 +149,7 @@ void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
                        XP_U16 minDividerWidth );
 XP_Bool board_hideTray( BoardCtxt* board );
 XP_Bool board_showTray( BoardCtxt* board );
-XW_TrayVisState board_getTrayVisState( BoardCtxt* board );
+XW_TrayVisState board_getTrayVisState( const BoardCtxt* board );
 
 void board_invalTrayTiles( BoardCtxt* board, TileBit what );
 XP_Bool board_juggleTray( BoardCtxt* board );
