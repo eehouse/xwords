@@ -1233,7 +1233,7 @@ trayOnTop( const BoardCtxt* board )
 } /* trayOnTop */
 
 XW_TrayVisState
-board_getTrayVisState( BoardCtxt* board )
+board_getTrayVisState( const BoardCtxt* board )
 {
     return board->trayVisState;
 } /* board_getTrayVisible */
@@ -1328,6 +1328,12 @@ invalReflection( BoardCtxt* board )
 } /* invalReflection */
 
 XP_Bool
+board_get_flipped( const BoardCtxt* board )
+{
+    return board->isFlipped;
+}
+
+XP_Bool
 board_flip( BoardCtxt* board )
 {
     invalArrowCell( board );
@@ -1352,6 +1358,12 @@ board_flip( BoardCtxt* board )
     
     return board->needsDrawing;
 } /* board_flip */
+
+XP_Bool
+board_get_showValues( const BoardCtxt* board )
+{
+    return board->showCellValues;
+}
 
 XP_Bool
 board_toggle_showValues( BoardCtxt* board )
