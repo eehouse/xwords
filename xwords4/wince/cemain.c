@@ -1,4 +1,4 @@
-/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
+/* -*- fill-column: 77; compile-command: "make -j TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -238,7 +238,7 @@ WinMain(	HINSTANCE hInstance,
     HACCEL hAccelTable;
 
 #ifndef _WIN32_WCE
-    XP_U16 width, height;
+    XP_U16 width = 320, height = 320;
     parseCmdLine( lpCmdLine, &width, &height );
 #endif
 
@@ -632,7 +632,7 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
         } else {
             bparms->timerLeft = 0;
             bparms->timerHeight = vScale * 2;
-            bparms->timerTop = scrnHeight - bparms->timerHeight;
+            bparms->timerTop = scoreHeight - bparms->timerHeight;
             bparms->timerWidth = scoreWidth;
 
             scoreHeight -= bparms->timerHeight;
@@ -734,8 +734,9 @@ cePositionBoard( CEAppGlobals* globals )
     setOwnedRects( globals, nCols, &bparms );
 
     if ( globals->gameInfo.timerEnabled ) {
-        board_setTimerLoc( globals->game.board, bparms.timerLeft, 
-                           bparms.timerTop, bparms.timerWidth, 
+        board_setTimerLoc( globals->game.board, 
+                           bparms.adjLeft + bparms.timerLeft, 
+                           bparms.adjTop + bparms.timerTop, bparms.timerWidth, 
                            bparms.timerHeight );
     }
 
@@ -2709,7 +2710,7 @@ void
 wince_assert( XP_UCHAR* XP_UNUSED_LOG(s), int XP_UNUSED_LOG(line), 
               char* XP_UNUSED_LOG(fileName) )
 {
-    XP_DEBUGF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
+    XP_WARNF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
 } /* wince_assert */
 
 #ifdef ENABLE_LOGGING
