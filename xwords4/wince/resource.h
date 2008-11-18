@@ -267,6 +267,8 @@
 #define IDC_NPLAYERSUPDOWN              1219
 #define IDC_NPLAYERSCOMBO_PPC           1220
 
+#define IDC_DICTLABEL                   1221
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

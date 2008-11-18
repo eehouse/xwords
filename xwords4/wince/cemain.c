@@ -1335,8 +1335,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
         GetWindowRect( globals->hwndCB, &rcmb );
         rc.bottom -= (rcmb.bottom - rcmb.top);
 
-        MoveWindow(hWnd, rc.left, rc.top, rc.right-rc.left, 
-                   rc.bottom-rc.top, FALSE);
+        MoveWindow( hWnd, rc.left, rc.top, rc.right-rc.left, 
+                    rc.bottom-rc.top, FALSE );
     }
 #endif
 
