@@ -44,6 +44,9 @@ void ceSetChecked( HWND hDlg, XP_U16 resID, XP_Bool check );
 void ceCenterCtl( HWND hDlg, XP_U16 resID );
 void ceCheckMenus( const CEAppGlobals* globals );
 
+void ceGetItemRect( HWND hDlg, XP_U16 resID, RECT* rect );
+void ceMoveItem( HWND hDlg, XP_U16 resID, XP_S16 byX, XP_S16 byY );
+
 typedef enum {
     PREFS_FILE_PATH_L
     ,DEFAULT_DIR_PATH_L

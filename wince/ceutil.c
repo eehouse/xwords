@@ -156,48 +156,51 @@ ceGetChecked( HWND hDlg, XP_U16 resID )
 
 /* Return dlg-relative rect. 
  */
-static void
-GetItemRect( HWND hDlg, XP_U16 resID, RECT* rect )
+void
+ceGetItemRect( HWND hDlg, XP_U16 resID, RECT* rect )
 {
-    RECT dlgRect;
-    HWND itemH = GetDlgItem( hDlg, resID );
-    XP_U16 clientHt, winHt;
+    HWND itemH;
+    POINT pt = { .x = 0, .y = 0 };
+    ScreenToClient( hDlg, &pt );
 
-    GetClientRect( hDlg, &dlgRect );
-    clientHt = dlgRect.bottom;
-    GetWindowRect( hDlg, &dlgRect );
-    winHt = dlgRect.bottom - dlgRect.top;
+    itemH = GetDlgItem( hDlg, resID );
     GetWindowRect( itemH, rect );
+    (void)OffsetRect( rect, pt.x, pt.y );
+} /* ceGetItemRect */
 
-    /* GetWindowRect includes the title bar, but functions like MoveWindow
-       set relative to the client area below it.  So subtract out the
-       difference between window ht and client rect ht -- the title bar --
-       when returning the item's rect. */
-    (void)OffsetRect( rect, -dlgRect.left, 
-                      -(dlgRect.top + winHt - clientHt) );
-} /* GetItemRect */
+void
+ceMoveItem( HWND hDlg, XP_U16 resID, XP_S16 byX, XP_S16 byY )
+{
+    RECT rect;
+    HWND itemH = GetDlgItem( hDlg, resID );
+    ceGetItemRect( hDlg, resID, &rect );
+    if ( !MoveWindow( itemH, rect.left + byX, rect.top + byY,
+                      rect.right - rect.left, rect.bottom - rect.top,
+                      TRUE ) ) {
+        XP_LOGF( "MoveWindow=>%ld", GetLastError() );
+    }
+} /* ceMoveItem */
 
+#if 0
+/* This has not been tested with ceMoveItem... */
 void
 ceCenterCtl( HWND hDlg, XP_U16 resID )
 {
     RECT buttonR, dlgR;
-    HWND itemH = GetDlgItem( hDlg, resID );
-    XP_U16 newX, buttonWidth;
+    XP_U16 buttonWidth;
+    XP_S16 byX;
     
     GetClientRect( hDlg, &dlgR );
     XP_ASSERT( dlgR.left == 0 && dlgR.top == 0 );
 
-    GetItemRect( hDlg, resID, &buttonR );
+    ceGetItemRect( hDlg, resID, &buttonR );
 
     buttonWidth = buttonR.right - buttonR.left;
-    newX = ( dlgR.right - buttonWidth ) / 2;
+    byX = buttonR.left - ((dlgR.right - buttonWidth) / 2);
 
-    if ( !MoveWindow( itemH, newX, buttonR.top,
-                      buttonWidth, 
-                      buttonR.bottom - buttonR.top, TRUE ) ) {
-        XP_LOGF( "MoveWindow=>%ld", GetLastError() );
-    }
+    ceMoveItem( hDlg, resID, byX, 0 );
 } /* ceCenterCtl */
+#endif
 
 /* XP_Bool */
 /* ceIsLandscape( CEAppGlobals* globals ) */

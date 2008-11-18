@@ -152,6 +152,11 @@ cleanupGameInfoState( GameInfoState* giState )
         XP_FREE( giState->dlgHdr.globals->mpool, giState->menuDicts );
         giState->menuDicts = NULL;
     }
+
+    if ( !!giState->moveIds ) {
+        XP_FREE( giState->dlgHdr.globals->mpool, giState->moveIds );
+        giState->moveIds = NULL;
+    }
 } /* cleanupGameInfoState */
 
 static void
@@ -248,6 +253,64 @@ stateToGameInfo( GameInfoState* giState )
 
     return success;
 } /* stateToGameInfo */
+
+#ifndef DM_RESETSCROLL
+//http://www.nah6.com/~itsme/cvs-xdadevtools/itsutils/src/its_windows_message_list.txt
+# define DM_RESETSCROLL 0x0402
+#endif
+
+static void
+raiseForHiddenPlayers( GameInfoState* giState, XP_U16 nPlayers )
+{
+    HWND hDlg = giState->dlgHdr.hDlg;
+    XP_U16 ii;
+    XP_S16 moveY;
+
+    if ( nPlayers != giState->prevNPlayers ) {
+        if ( !giState->moveIds ) {
+            XP_S16 ids[32];
+            HWND child;
+            RECT rect;
+            XP_U16 playersBottom;
+
+            ceGetItemRect( hDlg, NAME_EDIT4, &rect );
+            playersBottom = rect.bottom;
+            ceGetItemRect( hDlg, NAME_EDIT3, &rect );
+            giState->playersSpacing = playersBottom - rect.bottom;
+
+            for ( child = GetWindow( hDlg, GW_CHILD ), ii = 0;
+                  !!child;
+                  child = GetWindow( child, GW_HWNDNEXT ) ) {
+                XP_S16 resID = GetDlgCtrlID( child );
+                if ( resID > 0 ) {
+                    ceGetItemRect( hDlg, resID, &rect );
+                    if ( rect.top > playersBottom ) {
+                        XP_ASSERT( ii < VSIZE(ids)-1 );
+                        ids[ii] = resID;
+                        ++ii;
+                    }
+                }
+            }
+            giState->moveIds = XP_MALLOC( giState->dlgHdr.globals->mpool, 
+                                          sizeof(giState->moveIds[0]) * ii );
+            XP_MEMCPY( giState->moveIds, ids, 
+                       sizeof(giState->moveIds[0]) * ii );
+            giState->nMoveIds = ii;
+        }
+
+        moveY = giState->playersSpacing * (nPlayers - giState->prevNPlayers);
+        for ( ii = 0; ii < giState->nMoveIds; ++ii ) {
+            ceMoveItem( hDlg, giState->moveIds[ii], 0, moveY );
+        }
+        giState->prevNPlayers = nPlayers;
+
+#ifdef _WIN32_WCE
+        if ( IS_SMARTPHONE(giState->dlgHdr.globals) ) {
+            SendMessage( hDlg, DM_RESETSCROLL, (WPARAM)FALSE, (LPARAM)TRUE );
+        }
+#endif
+    }
+}
 
 static void
 handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* giState )
@@ -433,6 +496,7 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
         SendDlgItemMessage( giState->dlgHdr.hDlg, resID, 
                             SETCURSEL(globals), 
                             value.ng_u16 - 1, 0L );
+        raiseForHiddenPlayers( giState, value.ng_u16 );
         break;
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
@@ -491,12 +555,15 @@ checkUpdateCombo( GameInfoState* giState, XP_U16 id )
     if ( (id == giState->nPlayersId)
          && giState->isNewGame ) {  /* ignore if in info mode */
         NGValue value;
-        value.ng_u16 = 1 + (XP_U16)
+        XP_U16 nPlayers =  1 + (XP_U16)
             SendDlgItemMessage( giState->dlgHdr.hDlg, id,
                                 GETCURSEL(giState->dlgHdr.globals), 0, 0L);
+        value.ng_u16 = nPlayers;
         XP_ASSERT( !!giState->newGameCtx );
         newg_attrChanged( giState->newGameCtx, 
                           NG_ATTR_NPLAYERS, value );
+
+        raiseForHiddenPlayers( giState, nPlayers );
     }
 } /* checkUpdateCombo */
 
@@ -517,6 +584,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         giState->nPlayersId = LB_IF_PPC(globals,IDC_NPLAYERSCOMBO);
         giState->dictListId = LB_IF_PPC(globals,IDC_DICTLIST);
+        giState->prevNPlayers = MAX_NUM_PLAYERS;
 
         ceDlgSetup( &giState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
         ceDlgComboShowHide( &giState->dlgHdr, IDC_NPLAYERSCOMBO ); 
