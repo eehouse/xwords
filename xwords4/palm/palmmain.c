@@ -135,6 +135,8 @@ static const XP_UCHAR* palm_util_getUserString( XW_UtilCtxt* uc,
                                                 XP_U16 stringCode );
 static XP_Bool palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                           XP_U16 turn, XP_Bool turnLost );
+static void palm_util_remSelected(XW_UtilCtxt* uc);
+
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void palm_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                   const CommsAddrRec* newAddr );
@@ -657,6 +659,7 @@ initUtilFuncs( PalmAppGlobals* globals )
 #endif
     vtable->m_util_getUserString = palm_util_getUserString;
     vtable->m_util_warnIllegalWord = palm_util_warnIllegalWord;
+    vtable->m_util_remSelected = palm_util_remSelected;
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
     vtable->m_util_addrChange = palm_util_addrChange;
 #endif
@@ -2501,6 +2504,16 @@ handleKeyEvent( PalmAppGlobals* globals, const EventType* event,
     return draw;
 } /* handleKeyEvent */
 
+static void
+showRemaining( PalmAppGlobals* globals )
+{
+    if ( !!globals->game.board ) {
+        XWStreamCtxt* stream = makeSimpleStream( globals, NULL );
+        board_formatRemainingTiles( globals->game.board, stream );
+        (void)askFromStream( globals, stream, STR_REMAINS_TITLE, true );
+    }
+}
+
 /*****************************************************************************
  *
  ****************************************************************************/
@@ -2714,11 +2727,7 @@ mainViewHandleEvent( EventPtr event )
             break;
 
         case XW_TILESLEFT_PULLDOWN_ID:
-            if ( !!globals->game.board ) {
-                stream = makeSimpleStream( globals, NULL );
-                board_formatRemainingTiles( globals->game.board, stream );
-                (void)askFromStream( globals, stream, STR_REMAINS_TITLE, true );
-            }
+            showRemaining( globals );
             break;
 
         case XW_HISTORY_PULLDOWN_ID:
@@ -4072,6 +4081,13 @@ palm_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
     return result;
 } /* palm_util_warnIllegalWord */
+
+static void
+palm_util_remSelected(XW_UtilCtxt* uc)
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
+    showRemaining( globals );
+}
 
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void
