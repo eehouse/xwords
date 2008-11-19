@@ -1043,7 +1043,8 @@ palmMeasureDrawText( PalmDrawCtx* dctx, XP_Rect* bounds, XP_UCHAR* txt,
 static void
 palmFormatRemText( PalmDrawCtx* dctx, XP_UCHAR* buf, XP_S16 nTilesLeft )
 {
-    const XP_UCHAR* remStr = (*dctx->getResStrFunc)(dctx->globals, STR_REMTILES);
+    const XP_UCHAR* remStr = (*dctx->getResStrFunc)(dctx->globals, 
+                                                    STR_REMTILES);
     if ( nTilesLeft < 0 ) {
         nTilesLeft = 0;
     }
@@ -1051,8 +1052,8 @@ palmFormatRemText( PalmDrawCtx* dctx, XP_UCHAR* buf, XP_S16 nTilesLeft )
 } /* palmFormatRemText */
 
 static void
-palm_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
-                          XP_U16* widthP, XP_U16* heightP )
+palm_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, 
+                          XP_S16 nTilesLeft, XP_U16* widthP, XP_U16* heightP )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
@@ -1072,7 +1073,8 @@ palm_draw_measureRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLef
 
 static void
 palm_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                       const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft )
+                       const XP_Rect* rOuter, XP_S16 nTilesLeft,
+                       XP_Bool focussed )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     PalmAppGlobals* globals = dctx->globals;
@@ -1080,10 +1082,20 @@ palm_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     XP_Bool isVertical = !globals->gState.showGrid;
 
+    if ( focussed ) {
+        WinPushDrawState();
+        WinSetBackColor( dctx->drawingPrefs->drawColors[COLOR_CURSOR] );
+        pmEraseRect( rOuter );
+    }
+
     palmFormatRemText( dctx, buf, nTilesLeft );
 
     palmMeasureDrawText( dctx, (XP_Rect*)rInner, buf, isVertical, XP_FALSE,
                          ':', XP_TRUE );
+
+    if ( focussed ) {
+        WinPopDrawState();
+    }
 } /* palm_draw_drawRemText */
 
 /* Measure text that'll be drawn for player.  If vertical, it'll often get
@@ -1151,7 +1163,7 @@ doDrawPlayer( PalmDrawCtx* dctx, const DrawScoreInfo* dsi,
     XP_UCHAR scoreBuf[20];
 
     palmFormatScore( (char*)scoreBuf, dsi, vertical );
-    palmMeasureDrawText( dctx, (XP_Rect*)rInner, (XP_UCHAR*)scoreBuf, vertical, 
+    palmMeasureDrawText( dctx, (XP_Rect*)rInner, (XP_UCHAR*)scoreBuf, vertical,
                          dsi->isTurn, SCORE_SEP, XP_TRUE );
 
     if ( vertical && dsi->isTurn ) {
