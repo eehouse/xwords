@@ -1,4 +1,4 @@
-# -*- mode: makefile; compile-command: "make MEMDEBUG=TRUE"; -*-
+# -*- mode: makefile; compile-command: "make -j MEMDEBUG=TRUE"; -*-
 # Copyright 2002-2007 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
@@ -24,7 +24,7 @@ PLATFORM = obj_linux_memdbg
 else
 DEFINES =
 PLATFORM = obj_linux_rel
-CFLAGS += -Os -Werror
+CFLAGS += -Os -Werror -Wunused
 endif
 
 DO_CURSES = -DPLATFORM_NCURSES

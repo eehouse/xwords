@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*- fill-column: 78; compile-command: "cd ../linux && make -j MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -2421,8 +2421,13 @@ invalFocusOwner( BoardCtxt* board )
         break;
     case OBJ_TRAY:
         if ( board->focusHasDived ) {
-            XP_U16 loc = pti->trayCursorLoc;
-            board_invalTrayTiles( board, 1 << loc );
+            XP_S16 loc = pti->trayCursorLoc;
+            if ( loc == pti->dividerLoc ) {
+                board->dividerInvalid = XP_TRUE;
+            } else {
+                adjustForDivider( board, &loc );
+                board_invalTrayTiles( board, 1 << loc );
+            }
         } else {
             board_invalTrayTiles( board, ALLTILES );
             invalCellsUnderRect( board, &board->trayBounds );

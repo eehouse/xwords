@@ -281,6 +281,7 @@ XP_Bool adjustYOffset( BoardCtxt* board, XP_S16 moveBy );
 #ifdef KEYBOARD_NAV
 XP_Bool tray_moveCursor( BoardCtxt* board, XP_Key cursorKey, 
                          XP_Bool preflightOnly, XP_Bool* up );
+void adjustForDivider( const BoardCtxt* board, XP_S16* index );
 XP_Bool tray_keyAction( BoardCtxt* board );
 DrawFocusState dfsFor( BoardCtxt* board, BoardObjectType obj );
 void shiftFocusUp( BoardCtxt* board, XP_Key key );

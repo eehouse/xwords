@@ -31,10 +31,6 @@ extern "C" {
 static void drawPendingScore( BoardCtxt* board, XP_Bool hasCursor );
 static XP_U16 countTilesToShow( BoardCtxt* board );
 static void figureDividerRect( BoardCtxt* board, XP_Rect* rect );
-#ifdef KEYBOARD_NAV
-static void adjustForDivider( const BoardCtxt* board, XP_S16* index );
-#endif
-
 
 static XP_S16
 trayLocToIndex( BoardCtxt* board, XP_U16 loc )
@@ -548,7 +544,7 @@ board_juggleTray( BoardCtxt* board )
 } /* board_juggleTray */
 
 #ifdef KEYBOARD_NAV
-static void
+void
 adjustForDivider( const BoardCtxt* board, XP_S16* index )
 {
     XP_U16 dividerLoc = board->selInfo->dividerLoc;
