@@ -136,7 +136,7 @@ drawTray( BoardCtxt* board )
             XP_Bool cursorOnDivider = XP_FALSE;
 #ifdef KEYBOARD_NAV
             XP_S16 cursorTile = pti->trayCursorLoc;
-            if ( board->focussed == OBJ_TRAY ) {
+            if ( (board->focussed == OBJ_TRAY) && !board->hideFocus ) {
                 cursorOnDivider = pti->dividerLoc == cursorTile;
                 if ( board->focusHasDived ) {
                     if ( !cursorOnDivider ) {
