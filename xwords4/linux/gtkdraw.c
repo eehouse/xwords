@@ -1129,7 +1129,7 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
     allocAndSet( map, &dctx->playerColors[3], 0xAFFF, 0x0000, 0xAFFF );
 
     allocAndSet( map, &dctx->tileBack, 0xFFFF, 0xFFFF, 0x9999 );
-    allocAndSet( map, &dctx->cursor, 0x7FFF, 0x7FFF, 0xFFFF );
+    allocAndSet( map, &dctx->cursor, 253<<8, 12<<8, 222<<8 ); 
     allocAndSet( map, &dctx->red, 0xFFFF, 0x0000, 0x0000 );
 
     return (DrawCtx*)dctx;
