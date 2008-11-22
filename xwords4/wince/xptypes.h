@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999-2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,13 +27,6 @@
 #include <winuser.h>
 #include <winsock.h>
 
-/* #include <stddef.h> */
-/* #include <stdio.h> */
-/* #include <Heaps.h> */
-/* #include <string.h> */
-/* #include <stdlib.h> */
-/* #include <assert.h> */
-
 typedef unsigned char XP_U8;
 typedef signed char XP_S8;
 
@@ -54,9 +47,9 @@ typedef XP_U32 XP_Time;
 
 #define XP_CR "\015\012" /* 'Doze expects a carraige return followed by a linefeed */
 
-#if defined TARGET_OS_WINCE
+#ifdef _WIN32_WCE
 # define XP_RANDOM() Random()
-#elif defined TARGET_OS_WIN32
+#else
 # define XP_RANDOM() rand()
 #endif
 

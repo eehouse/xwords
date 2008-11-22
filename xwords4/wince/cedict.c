@@ -467,7 +467,7 @@ openMappedFile( MPFORMAL const wchar_t* name, HANDLE* mappedFileP,
             }
         }
     }
-#elif defined TARGET_OS_WIN32
+#else
     hFile = CreateFile( name, 
                         GENERIC_READ, 
                         FILE_SHARE_READ,

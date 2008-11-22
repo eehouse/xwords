@@ -902,7 +902,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
                              widebuf, VSIZE(widebuf) );
 	
         SetTextColor( hdc, dctx->globals->appPrefs.colors[foreColorIndx] );
-#ifdef TARGET_OS_WIN32
+#ifndef _WIN32_WCE
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, VSIZE(widebuf) );
 #endif
