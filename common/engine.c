@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- fill-column: 78; compile-command: "cd ../linux && make -j MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2006 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -69,6 +69,7 @@ struct EngineCtxt {
     XP_Bool searchInProgress;
     XP_Bool searchHorizontal;
     XP_Bool isRobot;
+    XP_Bool isFirstMove;
     XP_U16 numRows, numCols;
     XP_U16 curRow;
     XP_U16 blankCount;
@@ -86,9 +87,9 @@ struct EngineCtxt {
     XP_U16 nTilesMin;
     XP_U16 nTilesMinUser, nTilesMaxUser;
     XP_Bool tileLimitsKnown;
-    BdHintLimits* searchLimits;
+    const BdHintLimits* searchLimits;
 #endif
-    XP_U16 numRowsToFill;
+    XP_U16 lastRowToFill;
 
 #ifdef DEBUG
     XP_U16 curLimit;
@@ -257,47 +258,6 @@ initTray( EngineCtxt* engine, const Tile* tiles, XP_U16 numTiles )
     return result;
 } /* initTray */
 
-static void
-findFirstMoves( EngineCtxt* engine ) 
-{
-    XP_S16 prevAnchor = -1;
-    XP_U16 star_row = engine->star_row;
-
-    if ( 0 ) {
-#ifdef XWFEATURE_SEARCHLIMIT
-    } else if ( !!engine->searchLimits ) {
-        if ( engine->searchLimits->top > star_row
-             || engine->searchLimits->bottom < star_row ) {
-            return;
-        } else {
-            XP_U16 left = engine->searchLimits->left;
-            XP_U16 nHintCols = engine->searchLimits->right - left + 1;
-            XP_MEMSET( engine->rowChecks, 0x00, sizeof(engine->rowChecks) );
-            XP_MEMSET( &engine->rowChecks[left], 0xFF, 
-                       sizeof(engine->rowChecks[0]) * nHintCols );
-
-            prevAnchor += left;
-        }
-#endif
-    } else {
-        /* all have trivial crosschecks */
-        XP_MEMSET( engine->rowChecks, 0xFF, sizeof(engine->rowChecks) );
-    }
-
-    /* middle square is the only legal anchor */
-    engine->searchHorizontal = XP_TRUE;
-    findMovesForAnchor( engine, &prevAnchor, star_row, star_row );
-
-#ifdef XWFEATURE_SEARCHLIMIT
-    /* If there's a hint region try vertical also since results could differ. */
-    if ( !!engine->searchLimits && !engine->returnNOW ) {
-        engine->searchHorizontal = XP_FALSE;
-        findMovesForAnchor( engine, &prevAnchor, star_row, star_row );
-    }
-#endif
-    HILITE_CELL( engine, star_row, star_row );
-} /* findFirstMoves */
-
 #if defined __LITTLE_ENDIAN
 static XP_S16
 cmpMoves( PossibleMove* m1, PossibleMove* m2 )
@@ -384,14 +344,13 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                  const DictionaryCtxt* dict, const Tile* tiles,
                  XP_U16 nTiles, 
 #ifdef XWFEATURE_SEARCHLIMIT
-                 BdHintLimits* searchLimits,
+                 const BdHintLimits* searchLimits,
                  XP_Bool useTileLimits,
 #endif
                  XP_U16 targetScore, XP_Bool* canMoveP, 
                  MoveInfo* newMove )
 {
     XP_Bool result = XP_TRUE;
-    XP_Bool firstMove;
     XP_U16 star_row;
 
     engine->nTilesMax = MAX_TRAY_TILES;
@@ -432,8 +391,9 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
 #endif
 
     engine->star_row = star_row = model_numRows(model) / 2;
-    firstMove = EMPTY_TILE == localGetBoardTile( engine, star_row, star_row, 
-                                                 XP_FALSE );
+    engine->isFirstMove = 
+        EMPTY_TILE == localGetBoardTile( engine, star_row, 
+                                         star_row, XP_FALSE );
 
     /* If we've been asked to generate a move but can't because the
        dictionary's emtpy or there are no tiles, still return TRUE so we don't
@@ -453,60 +413,60 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
             XP_MEMSET( engine->miData.savedMoves, 0,
                        sizeof(engine->miData.savedMoves) );
 
-            if ( firstMove ) {
-                findFirstMoves( engine );
+            if ( engine->searchInProgress ) {
+                goto resumePoint;
             } else {
-                if ( engine->searchInProgress ) {
-                    goto resumePoint;
-                } else {
-                    engine->searchHorizontal = XP_TRUE;
-                    engine->searchInProgress = XP_TRUE;
+                engine->searchHorizontal = XP_TRUE;
+                engine->searchInProgress = XP_TRUE;
+            }
+            for ( ; ; ) {
+                XP_U16 firstRowToFill = 0;
+                engine->numRows = model_numRows(engine->model);
+                engine->numCols = model_numCols(engine->model);
+                if ( !engine->searchHorizontal ) {
+                    XP_U16 tmp = engine->numRows;
+                    engine->numRows = engine->numCols;
+                    engine->numCols = tmp;
                 }
-                for ( ; ; ) {
-                    XP_U16 firstRowToFill = 0;
-                    engine->numRows = model_numRows(engine->model);
-                    engine->numCols = model_numCols(engine->model);
-                    if ( !engine->searchHorizontal ) {
-                        XP_U16 tmp = engine->numRows;
-                        engine->numRows = engine->numCols;
-                        engine->numCols = tmp;
-                    }
 
-                    if ( 0 ) {
+                if ( 0 ) {
 #ifdef XWFEATURE_SEARCHLIMIT
-                    } else if ( !!engine->searchLimits ) {
-                        if ( engine->searchHorizontal ) {
-                            firstRowToFill = searchLimits->top;
-                            engine->numRowsToFill = searchLimits->bottom;
-                        } else {
-                            firstRowToFill = searchLimits->left;
-                            engine->numRowsToFill = searchLimits->right;
-                        }
-#endif
-                    } else {
-                        engine->numRowsToFill = engine->numRows - 1;
-                    }
-
-                    for ( engine->curRow = firstRowToFill;
-                          engine->curRow <= engine->numRowsToFill;
-                          ++engine->curRow ) {
-                    resumePoint:
-                        findMovesOneRow( engine );
-                        if ( engine->returnNOW ) {
-                            goto outer;
-                        }
-                    }
-
+                } else if ( !!engine->searchLimits ) {
                     if ( engine->searchHorizontal ) {
-                        engine->searchHorizontal = XP_FALSE;
+                        firstRowToFill = searchLimits->top;
+                        engine->lastRowToFill = searchLimits->bottom;
                     } else {
-                        engine->searchInProgress = XP_FALSE;
-                        break;
+                        firstRowToFill = searchLimits->left;
+                        engine->lastRowToFill = searchLimits->right;
                     }
-                } /* forever */
-            outer:
-                result = result; /* c++ wants a statement after the label */
-            } /* if not firstMove */
+#endif
+                } else {
+                    engine->lastRowToFill = engine->numRows - 1;
+                }
+
+                for ( engine->curRow = firstRowToFill;
+                      engine->curRow <= engine->lastRowToFill;
+                      ++engine->curRow ) {
+                resumePoint:
+                    if ( engine->isFirstMove && (engine->curRow != star_row)) {
+                        continue;
+                    }
+                    findMovesOneRow( engine );
+                    if ( engine->returnNOW ) {
+                        goto outer;
+                    }
+                }
+
+                if ( !engine->searchHorizontal ||
+                     (engine->isFirstMove && !engine->searchLimits) ) {
+                    engine->searchInProgress = XP_FALSE;
+                    break;
+                } else {
+                    engine->searchHorizontal = XP_FALSE;
+                }
+            } /* forever */
+        outer:
+            result = result; /* c++ wants a statement after the label */
         }
         /* Search is finished.  Choose (or just return) the best move found. */
         if ( engine->returnNOW ) {
@@ -750,13 +710,17 @@ localGetBoardTile( EngineCtxt* engine, XP_U16 col, XP_U16 row,
 
 /*****************************************************************************
  * Return true if the tile is empty and has a filled-in square on any of the
- * four sides.
+ * four sides.  First move is a special case: empty and 7,7
  ****************************************************************************/
 static XP_Bool
 isAnchorSquare( EngineCtxt* engine, XP_U16 col, XP_U16 row ) 
 {
     if ( localGetBoardTile( engine, col, row, XP_FALSE ) != EMPTY_TILE ) {
         return XP_FALSE;
+    }
+
+    if ( engine->isFirstMove ) {
+        return col == engine->star_row && row == engine->star_row;
     }
 
     if ( (col != 0) && 
