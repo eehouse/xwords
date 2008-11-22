@@ -227,10 +227,10 @@ LRESULT CALLBACK	ceAbout			(HWND, UINT, WPARAM, LPARAM);
 int WINAPI
 WinMain(	HINSTANCE hInstance,
             HINSTANCE XP_UNUSED(hPrevInstance),
-#if defined TARGET_OS_WINCE
-            LPWSTR    XP_UNUSED_CE(lpCmdLine),
-#elif defined TARGET_OS_WIN32
-            LPSTR    XP_UNUSED_DBG(lpCmdLine),
+#ifdef _WIN32_WCE
+            LPWSTR   XP_UNUSED_CE(lpCmdLine),
+#else
+            LPSTR    lpCmdLine,
 #endif
             int       nCmdShow)
 {
@@ -275,9 +275,9 @@ main()
     LOG_FUNC();
     
     return WinMain( GetModuleHandle(NULL), 0, 
-#if defined TARGET_OS_WINCE
+#ifdef _WIN32_WCE
                     GetCommandLineW(), 
-#elif defined TARGET_OS_WIN32
+#else
                     GetCommandLineA(), 
 #endif
                     SW_SHOWDEFAULT );
@@ -308,7 +308,7 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
     wc.hInstance		= hInstance;
     wc.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_XWORDS4));
     wc.hbrBackground	= (HBRUSH) GetStockObject(WHITE_BRUSH);
-#if defined TARGET_OS_WIN32
+#ifndef _WIN32_WCE
     wc.lpszMenuName		= (LPCTSTR)IDM_MENU;
 #endif
     wc.lpszClassName	= szWindowClass;
@@ -1340,7 +1340,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     }
 #endif
 
-#ifdef TARGET_OS_WIN32
+#ifndef _WIN32_WCE
     srand( time(NULL) );
 #endif
 
@@ -2777,9 +2777,9 @@ wince_debugf(const XP_UCHAR* format, ...)
 #endif
         makeTimeStamp(timeStamp, sizeof(timeStamp));
 
-#if defined TARGET_OS_WINCE
+#ifdef _WIN32_WCE
         logFileName = L"\\My Documents\\" LCROSSWORDS_DIR L"\\xwDbgLog.txt";
-#elif defined TARGET_OS_WIN32
+#else
         logFileName = L"xwDbgLog.txt";
 #endif
         fileH = CreateFile( logFileName,

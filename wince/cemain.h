@@ -114,11 +114,8 @@ typedef struct CEAppGlobals {
     HINSTANCE hInst;
     HDC hdc;			/* to pass drawing ctxt to draw code */
     HWND hWnd;
-#if defined TARGET_OS_WINCE
-    HWND hwndCB;
-#endif
-
 #ifdef _WIN32_WCE
+    HWND hwndCB;
     SHACTIVATEINFO sai;
     XW_WinceVersion winceVersion;
 #else
