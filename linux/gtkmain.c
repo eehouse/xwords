@@ -1739,7 +1739,9 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
         XP_ASSERT( !!globals->acceptor );
         globals->acceptor = NULL;
         XP_ASSERT( !!info );
+#ifdef DEBUG
         int oldSock = info->socket;
+#endif
         g_source_remove( info->watch );
         g_io_channel_unref( info->channel );
         XP_FREE( globals->params->util->mpool, info );
