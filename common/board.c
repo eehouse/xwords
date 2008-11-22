@@ -167,9 +167,9 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 #ifdef KEYBOARD_NAV     
         {
             /* set up some useful initial values */
-            XP_U16 i;
-            for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
-                PerTurnInfo* pti = result->pti + i;
+            XP_U16 ii;
+            for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+                PerTurnInfo* pti = result->pti + ii;
                 pti->trayCursorLoc = 1;
                 pti->bdCursor.col = 5;
                 pti->bdCursor.row = 7;
@@ -1266,17 +1266,11 @@ setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
         board->trayVisState = newState;
 
         invalSelTradeWindow( board );
-        invalFocusOwner( board ); /* must be done before and after rect
-                                     recalculated */
+        (void)invalFocusOwner( board ); /* must be done before and after rect
+                                           recalculated */
         figureBoardRect( board ); /* comes before setYOffset since that
                                      uses rects to calc scroll */
-
-        /* This is sometimes the wrong thing to do, and seems not to be
-           needed at all. */
-/*         if ( (board->focussed == OBJ_TRAY) && board->focusHasDived ) { */
-/*             board->focusHasDived = XP_FALSE; */
-/*         } */
-        invalFocusOwner( board );
+        (void)invalFocusOwner( board );
 
         if ( board->boardObscuresTray ) {
             if ( nowHidden && !trayOnTop(board) ) { 
@@ -1921,8 +1915,7 @@ board_handlePenDown( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_Bool* handled )
 #ifdef KEYBOARD_NAV
         /* clear focus as soon as pen touches board */
         result = invalFocusOwner( board );
-        board->focussed = OBJ_NONE;
-        board->focusHasDived = XP_FALSE;
+        board->hideFocus = XP_TRUE;
         if ( board->boardObscuresTray ) {
             figureBoardRect( board );
         }
@@ -2241,9 +2234,9 @@ handleFocusKeyUp( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,
         }
         if ( up ) {
             if ( !preflightOnly ) {
-                invalFocusOwner( board );
+                (void)invalFocusOwner( board );
                 board->focusHasDived = XP_FALSE;
-                invalFocusOwner( board );
+                (void)invalFocusOwner( board );
             }
         } else {
             *pHandled = redraw;
@@ -2270,6 +2263,17 @@ board_handleKeyRepeat( BoardCtxt* board, XP_Key key, XP_Bool* handled )
         *handled = upHandled || downHandled;
     }
     return draw;
+}
+
+static XP_Bool
+unhideFocus( BoardCtxt* board )
+{
+    XP_Bool changing = board->hideFocus;
+    if ( changing ) {
+        board->hideFocus = XP_FALSE;
+        (void)invalFocusOwner( board );
+    }
+    return changing;
 }
 #endif /* KEYBOARD_NAV */
 
@@ -2318,7 +2322,12 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
     case XP_CURSOR_KEY_ALTLEFT:
     case XP_CURSOR_KEY_RIGHT:
     case XP_CURSOR_KEY_ALTRIGHT:
-        redraw = handleFocusKeyUp( board, key, XP_FALSE, &handled );
+        /* If focus is hidden, all we do is show it */
+        if ( unhideFocus( board ) ) {
+            redraw = handled = XP_TRUE;
+        } else {
+            redraw = handleFocusKeyUp( board, key, XP_FALSE, &handled );
+        }
         break;
 #endif
 
@@ -2330,26 +2339,34 @@ board_handleKeyUp( BoardCtxt* board, XP_Key key, XP_Bool* pHandled )
 
 #ifdef KEYBOARD_NAV
     case XP_RAISEFOCUS_KEY:
-        if ( board->focussed != OBJ_NONE && board->focusHasDived ) {
-            invalFocusOwner( board );
+        if ( unhideFocus( board ) ) {
+            /* do nothing */
+        } else if ( board->focussed != OBJ_NONE && board->focusHasDived ) {
+            (void)invalFocusOwner( board );
             board->focusHasDived = XP_FALSE;
-            invalFocusOwner( board );
-            handled = redraw = XP_TRUE;
+            (void)invalFocusOwner( board );
+        } else {
+            break;              /* skip setting handled */
         }
+        handled = redraw = XP_TRUE;
         break;
 
     case XP_RETURN_KEY:
-        if ( board->focusHasDived ) {
-            XP_U16 x, y;
-            if ( focusToCoords( board, &x, &y ) ) {
-                redraw = handlePenUpInternal( board, x, y, XP_FALSE );
+        if ( unhideFocus( board ) ) {
+            handled = XP_TRUE;
+        } else if ( board->focussed != OBJ_NONE ) {
+            if ( board->focusHasDived ) {
+                XP_U16 xx, yy;
+                if ( focusToCoords( board, &xx, &yy ) ) {
+                    redraw = handlePenUpInternal( board, xx, yy, XP_FALSE );
+                    handled = XP_TRUE;
+                }
+            } else {
+                (void)invalFocusOwner( board );
+                board->focusHasDived = XP_TRUE;
+                redraw = invalFocusOwner( board );
                 handled = XP_TRUE;
             }
-        } else if ( board->focussed != OBJ_NONE ) {
-            redraw = invalFocusOwner( board );
-            board->focusHasDived = XP_TRUE;
-            redraw = invalFocusOwner( board );
-            handled = XP_TRUE;
         }
         break;
 #endif

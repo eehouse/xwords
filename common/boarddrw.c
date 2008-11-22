@@ -420,7 +420,7 @@ DrawFocusState
 dfsFor( BoardCtxt* board, BoardObjectType obj )
 {
     DrawFocusState dfs;
-    if ( board->focussed == obj ) {
+    if ( (board->focussed == obj) && !board->hideFocus ) {
         if ( board->focusHasDived ) {
             dfs = DFS_DIVED;
         } else {
@@ -437,7 +437,7 @@ cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     XP_Bool focussed = XP_FALSE;
 
-    if ( board->focussed == OBJ_BOARD ) {
+    if ( (board->focussed == OBJ_BOARD) && !board->hideFocus ) {
         if ( board->focusHasDived ) {
             if ( (col == board->selInfo->bdCursor.col)
                  && (row == board->selInfo->bdCursor.row) ) {
@@ -501,7 +501,9 @@ scrollIfCan( BoardCtxt* board )
         XP_S16 dist;
 
 #ifdef PERIMETER_FOCUS
-        if ( (board->focussed == OBJ_BOARD) && !board->focusHasDived ) {
+        if ( (board->focussed == OBJ_BOARD)
+             && !board->focusHasDived 
+             && !board->hideFocus ) {
             invalOldPerimeter( board );
         }
 #endif

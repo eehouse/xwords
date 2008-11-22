@@ -71,7 +71,7 @@ drawScoreBoard( BoardCtxt* board )
             XP_Bool remFocussed = XP_FALSE;
             XP_S16 cursorIndex = -1;
 
-            if ( board->focussed == OBJ_SCORE ) {
+            if ( (board->focussed == OBJ_SCORE) && !board->hideFocus ) {
                 focusAll = !board->focusHasDived;
                 if ( !focusAll ) {
                     cursorIndex = board->scoreCursorLoc;

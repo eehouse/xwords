@@ -169,6 +169,7 @@ struct BoardCtxt {
 
 #ifdef KEYBOARD_NAV
     XP_Bool focusHasDived;
+    XP_Bool hideFocus;          /* not saved */
     XP_Rect remRect;            /* on scoreboard */
 #endif
 
