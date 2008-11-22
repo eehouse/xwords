@@ -53,7 +53,7 @@ XP_Bool engine_findMove( EngineCtxt* ctxt, const ModelCtxt* model,
                          const DictionaryCtxt* dict, const Tile* tiles, 
                          XP_U16 nTiles, 
 #ifdef XWFEATURE_SEARCHLIMIT
-                         BdHintLimits* boardLimits,
+                         const BdHintLimits* boardLimits,
                          XP_Bool useTileLimits,
 #endif
                          XP_U16 targetScore, XP_Bool* canMove,
