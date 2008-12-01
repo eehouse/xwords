@@ -87,7 +87,8 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
         XP_Bool canScroll = board->lastVisibleRow < model_numRows(board->model);
         if ( 0 ) {
 #ifdef XWFEATURE_SEARCHLIMIT
-        } else if ( board->gi->allowHintRect && trayVisible ) {
+        } else if ( !board->gi->hintsNotAllowed && board->gi->allowHintRect
+                    && trayVisible ) {
             if ( !util_altKeyDown(board->util) ) {
                 ds->dtype = DT_HINTRGN;
             } else if ( canScroll ) {
