@@ -160,6 +160,7 @@ static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream,
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
 static XP_Bool isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name );
 static void ceSetTitleFromName( CEAppGlobals* globals );
+static void removeScrollbar( CEAppGlobals* globals );
 
 
 #ifndef _WIN32_WCE
@@ -455,10 +456,7 @@ makeScrollbar( CEAppGlobals* globals, XP_U16 nHidden, XP_U16 xx, XP_U16 yy,
 
     /* Need to destroy it, or resize it, because board size may be changing
        in case where portrait display's been flipped. */
-    if ( !!globals->scrollHandle ) {
-        DestroyWindow( globals->scrollHandle );
-        globals->scrollHandle = NULL;
-    }
+    removeScrollbar( globals );
 
     hwndSB = CreateWindow( TEXT("SCROLLBAR"),  // Class name
                            NULL,           // Window text
@@ -489,6 +487,7 @@ removeScrollbar( CEAppGlobals* globals )
     if ( !!globals->scrollHandle ) {
         DestroyWindow( globals->scrollHandle );
         globals->scrollHandle = NULL;
+        globals->scrollerHasFocus = XP_FALSE;
     }
 } /* removeScrollbar */
 #endif
@@ -2502,7 +2501,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             /* The code above this point works to turn 12-key->text
                translation on, but not to turn it off, so other apps wind up
                with it on after Crosswords quits.  The recommended code is
-               below, but includes constants on in the version of cegcc I'm
+               below, but includes constants not in the version of cegcc I'm
                using.  Need to look into upgrading, but that requires a lot
                of changes.  Post B2.... */
 
