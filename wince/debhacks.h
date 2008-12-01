@@ -67,6 +67,13 @@ BOOL DH(ResetEvent)(HANDLE);
 
 #endif /* USE_RAW_MINGW */
 
+#ifndef IME_ESC_SET_MODE
+# define IME_ESC_SET_MODE            0x0800
+#endif
+#ifndef IM_SPELL
+# define IM_SPELL 0
+#endif
+
 #if 0
  /* http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1591512&SiteID=1 */
 #define IM_SPELL 0
