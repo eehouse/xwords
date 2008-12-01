@@ -2486,14 +2486,23 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
     */
 
     if ( gained ) {
+        /* prefer to get !gained followed by gained.  If caller doesn't do
+           that, do it for 'em. */
+        if ( board->focussed != OBJ_NONE ) {
+            draw = board_focusChanged( board, board->focussed, XP_FALSE );
+        }
+
         /* Are we losing focus we currently have elsewhere? */
         if ( typ != board->focussed ) {
             draw = invalFocusOwner( board ) || draw;
         }
         board->focussed = typ;
         board->focusHasDived = XP_FALSE;
-        if ( (OBJ_TRAY == typ) && (board->trayVisState == TRAY_HIDDEN) ) {
-            setTrayVisState( board, TRAY_REVERSED );
+        if ( OBJ_TRAY == typ) {
+            board->trayHiddenPreFocus = board->trayVisState == TRAY_HIDDEN;
+            if ( board->trayHiddenPreFocus ) {
+                setTrayVisState( board, TRAY_REVERSED );
+            }
         }
         draw = invalFocusOwner( board ) || draw;
     } else {
@@ -2502,6 +2511,11 @@ board_focusChanged( BoardCtxt* board, BoardObjectType typ, XP_Bool gained )
         if ( typ == board->focussed ) {
             draw = invalFocusOwner( board ) || draw;
             board->focussed = OBJ_NONE;
+
+            if ( (OBJ_TRAY == typ) && (board->trayVisState == TRAY_REVERSED)
+                 && board->trayHiddenPreFocus ) {
+                setTrayVisState( board, TRAY_HIDDEN );
+            }
         }
     }
 
