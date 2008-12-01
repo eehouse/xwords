@@ -168,7 +168,9 @@ figureHintAtts( BoardCtxt* board, XP_U16 col, XP_U16 row )
     HintAtts result = HINT_BORDER_NONE;
 
     /* while lets us break to exit... */
-    while ( board->trayVisState == TRAY_REVEALED && board->gi->allowHintRect ) {
+    while ( board->trayVisState == TRAY_REVEALED
+            && !board->gi->hintsNotAllowed
+            && board->gi->allowHintRect ) {
         BdHintLimits limits;
         if ( dragDropGetHintLimits( board, &limits ) ) {
             /* do nothing */
