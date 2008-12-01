@@ -34,16 +34,16 @@ stuffPhoniesList( CePrefsDlgState* state )
 {
     HWND hDlg = state->dlgHdr.hDlg;
     CEAppGlobals* globals = state->dlgHdr.globals;
-    XP_U16 i;
+    XP_U16 ii;
     wchar_t* strings[] = {
         L"Ignore",
         L"Warn",
         L"Disallow"
     };
 
-    for ( i = 0; i < 3; ++i ) {
+    for ( ii = 0; ii < 3; ++ii ) {
         SendDlgItemMessage( hDlg, state->phonComboId, 
-                            ADDSTRING(globals), 0, (long)strings[i] );
+                            ADDSTRING(globals), ii, (long)strings[ii] );
     }
 } /* stuffPhoniesList */
 
@@ -78,7 +78,7 @@ adjustForChoice( CePrefsDlgState* state )
 #endif
 
  };
-    XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT, IDC_CHECKNOHINTS,
+    XP_U16 goesWithLocal[] = {IDC_CHECKSMARTROBOT, IDC_CHECKHINTSOK,
                               TIMER_CHECK, TIMER_EDIT, PHONIES_LABEL,
                               PHONIES_COMBO, IDC_PHONIESUPDOWN, 
                               PHONIES_COMBO_PPC,
@@ -107,7 +107,7 @@ adjustForChoice( CePrefsDlgState* state )
         setTimerCtls( hDlg, ceGetChecked( hDlg, TIMER_CHECK ) );
 #ifdef XWFEATURE_SEARCHLIMIT
         ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, 
-                      !ceGetChecked( hDlg, IDC_CHECKNOHINTS) );
+                      ceGetChecked( hDlg, IDC_CHECKHINTSOK) );
 #endif
         ceDlgComboShowHide( &state->dlgHdr, PHONIES_COMBO );
     }
@@ -191,7 +191,7 @@ loadControlsFromState( CePrefsDlgState* pState )
     ceSetChecked( hDlg, IDC_CHECKCOLORPLAYED, prefsPrefs->showColors );
     ceSetChecked( hDlg, IDC_CHECKSMARTROBOT, 
                   prefsPrefs->gp.robotSmartness > 0 );
-    ceSetChecked( hDlg, IDC_CHECKNOHINTS, prefsPrefs->gp.hintsNotAllowed );
+    ceSetChecked( hDlg, IDC_CHECKHINTSOK, !prefsPrefs->gp.hintsNotAllowed );
 
     ceSetChecked( hDlg, IDC_CHECKSHOWCURSOR, prefsPrefs->cp.showBoardArrow );
     ceSetChecked( hDlg, IDC_CHECKROBOTSCORES, prefsPrefs->cp.showRobotScores );
@@ -209,7 +209,7 @@ loadControlsFromState( CePrefsDlgState* pState )
                         prefsPrefs->gp.phoniesAction, 0L );
 
     if ( !pState->isNewGame ) {
-        XP_U16 unavail[] = { TIMER_CHECK, TIMER_EDIT, IDC_CHECKNOHINTS
+        XP_U16 unavail[] = { TIMER_CHECK, TIMER_EDIT, IDC_CHECKHINTSOK
 #ifdef FEATURE_TRAY_EDIT
                              ,IDC_PICKTILES
 #endif
@@ -234,7 +234,7 @@ ceControlsToPrefs( CePrefsDlgState* state )
     prefsPrefs->showColors = ceGetChecked( hDlg, IDC_CHECKCOLORPLAYED );
     prefsPrefs->gp.robotSmartness
         = ceGetChecked( hDlg, IDC_CHECKSMARTROBOT ) ? 1 : 0;
-    prefsPrefs->gp.hintsNotAllowed = ceGetChecked( hDlg, IDC_CHECKNOHINTS );
+    prefsPrefs->gp.hintsNotAllowed = !ceGetChecked( hDlg, IDC_CHECKHINTSOK );
 
     selIndex = (XP_U16)SendDlgItemMessage( hDlg, state->phonComboId,
                                            GETCURSEL(state->dlgHdr.globals), 
@@ -319,10 +319,10 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
-                    case IDC_CHECKNOHINTS:
-                        timerOn = SendDlgItemMessage( hDlg, IDC_CHECKNOHINTS, 
+                    case IDC_CHECKHINTSOK:
+                        timerOn = SendDlgItemMessage( hDlg, IDC_CHECKHINTSOK, 
                                                       BM_GETCHECK, 0, 0 );
-                        ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, !timerOn );
+                        ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, timerOn );
                         break;
 #endif
 

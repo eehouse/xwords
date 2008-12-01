@@ -66,7 +66,7 @@
 #define IDC_LEFTYCHECK                  1038
 #define IDC_CHECKCOLORPLAYED            1039
 #define IDC_CHECKSMARTROBOT             1040
-#define IDC_CHECKNOHINTS                1041
+#define IDC_CHECKHINTSOK                1041
 #define IDC_CHECKSHOWCURSOR             1042
 #define IDC_CHECKROBOTSCORES            1043
 #define IDC_PREFCOLORS                  1044
