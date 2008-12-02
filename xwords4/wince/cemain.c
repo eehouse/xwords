@@ -962,10 +962,10 @@ canUpdatePrefs( CEAppGlobals* globals, HANDLE fileH, XP_U16 curVersion,
 
             XP_MEMCPY( &prefs->colors[0], &oldPrefs.colors[0], 
                        CE_FOCUS_COLOR*sizeof(prefs->colors[0]));
-            XP_ASSERT( CE_USER_COLOR1 - 1 == CE_FOCUS_COLOR );
-            XP_MEMCPY( &prefs->colors[CE_USER_COLOR1], 
+            XP_ASSERT( CE_PLAYER0_COLOR - 1 == CE_FOCUS_COLOR );
+            XP_MEMCPY( &prefs->colors[CE_PLAYER0_COLOR], 
                        &oldPrefs.colors[CE_FOCUS_COLOR],
-                       (CE_NUM_COLORS-CE_USER_COLOR1) 
+                       (CE_NUM_COLORS-CE_PLAYER0_COLOR) 
                        * sizeof(prefs->colors[0]));
             success = XP_TRUE;
         } else {

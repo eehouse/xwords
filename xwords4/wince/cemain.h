@@ -58,20 +58,20 @@ typedef enum {
 # define IS_SMARTPHONE(g) ((g) != (g)) /* make compiler warnings go away  */
 #endif
 
-enum { CE_BONUS1_COLOR,
+enum { CE_BONUS0_COLOR,
+       CE_BONUS1_COLOR,
        CE_BONUS2_COLOR,
        CE_BONUS3_COLOR,
-       CE_BONUS4_COLOR,
        
        CE_BKG_COLOR, 
        CE_TILEBACK_COLOR,
 
        CE_FOCUS_COLOR,
 
-       CE_USER_COLOR1,
-       CE_USER_COLOR2,
-       CE_USER_COLOR3,
-       CE_USER_COLOR4,
+       CE_PLAYER0_COLOR,
+       CE_PLAYER1_COLOR,
+       CE_PLAYER2_COLOR,
+       CE_PLAYER3_COLOR,
 
        CE_BLACK_COLOR,     /* not editable by users */
        CE_WHITE_COLOR,

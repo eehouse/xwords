@@ -96,6 +96,7 @@ struct CEDrawCtx {
 
     HBRUSH brushes[CE_NUM_COLORS];
     PenColorPair pens[CE_NUM_COLORS];
+    HGDIOBJ hintPens[MAX_NUM_PLAYERS];
 
     FontCacheEntry fcEntry[N_RESIZE_FONTS];
 
@@ -781,7 +782,7 @@ getPlayerColor( XP_S16 player )
     if ( player < 0 ) {
         return CE_BLACK_COLOR;
     } else {
-        return CE_USER_COLOR1 + player;
+        return CE_PLAYER0_COLOR + player;
     }
 } /* getPlayerColor */
 
@@ -793,25 +794,40 @@ ceDrawLine( HDC hdc, XP_S32 x1, XP_S32 y1, XP_S32 x2, XP_S32 y2 )
 } /* ceDrawLine */
 
 static void
-ceDrawHintBorders( HDC hdc, const XP_Rect* xprect, HintAtts hintAtts )
+ceDrawHintBorders( CEDrawCtx* dctx, const XP_Rect* xprect, HintAtts hintAtts )
 {
     if ( hintAtts != HINT_BORDER_NONE && hintAtts != HINT_BORDER_CENTER ) {
         RECT rt;
+        HDC hdc = dctx->globals->hdc;
+        HGDIOBJ pen, oldPen;
+
+        pen = dctx->hintPens[dctx->trayOwner];
+        if ( !pen ) {
+            COLORREF ref = dctx->globals->appPrefs.colors[CE_PLAYER0_COLOR
+                                                          + dctx->trayOwner];
+            pen = CreatePen( PS_SOLID, 4, ref ); /* 4 must be an even number
+                                                    thx to clipping */
+            dctx->hintPens[dctx->trayOwner] = pen;
+        }
+
         XPRtoRECT( &rt, xprect );
         InsetRect( &rt, 1, 1 );
 
+        oldPen = SelectObject( hdc, pen );
+
         if ( (hintAtts & HINT_BORDER_LEFT) != 0 ) {
-            ceDrawLine( hdc, rt.left, rt.top, rt.left, rt.bottom+1 );
+            ceDrawLine( hdc, rt.left+1, rt.top, rt.left+1, rt.bottom+1 );
         }
         if ( (hintAtts & HINT_BORDER_RIGHT) != 0 ) {
             ceDrawLine( hdc, rt.right, rt.top, rt.right, rt.bottom+1 );
         }
         if ( (hintAtts & HINT_BORDER_TOP) != 0 ) {
-            ceDrawLine( hdc, rt.left, rt.top, rt.right+1, rt.top );
+            ceDrawLine( hdc, rt.left, rt.top+1, rt.right+1, rt.top+1 );
         }
         if ( (hintAtts & HINT_BORDER_BOTTOM) != 0 ) {
             ceDrawLine( hdc, rt.left, rt.bottom, rt.right+1, rt.bottom );
         }
+        (void)SelectObject( hdc, oldPen );
     }
 } /* ceDrawHintBorders */
 
@@ -867,7 +883,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     } else if ( bonus == BONUS_NONE ) {
         bkIndex = CE_BKG_COLOR;
     } else {
-        bkIndex = (bonus - BONUS_DOUBLE_LETTER) + CE_BONUS1_COLOR;
+        bkIndex = (bonus - BONUS_DOUBLE_LETTER) + CE_BONUS0_COLOR;
     }
 
     if ( isFocussed ) {
@@ -912,11 +928,10 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         makeAndDrawBitmap( dctx, hdc, &rt, XP_TRUE,
                            foreColorIndx, (CEBitmapInfo*)bitmap );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
-        InsetRect( &textRect, 1, 1 );
         ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
     }
 
-    ceDrawHintBorders( hdc, xprect, hintAtts );
+    ceDrawHintBorders( dctx, xprect, hintAtts );
 
     SelectObject( hdc, oldFont );
 
@@ -1040,7 +1055,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                 SelectObject( hdc, oldFont );
             } else if ( !!bitmap  ) {
                 RECT lrt = rt;
-                XP_U16 tmp = CE_USER_COLOR1+dctx->trayOwner;
+                XP_U16 tmp = CE_PLAYER0_COLOR+dctx->trayOwner;
                 ++lrt.left;
                 lrt.top += 4;
                 makeAndDrawBitmap( dctx, hdc, &lrt, XP_FALSE,
@@ -1111,7 +1126,7 @@ DRAW_FUNC_NAME(drawTrayDivider)( DrawCtx* p_dctx, const XP_Rect* rect,
     if ( selected ) {
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     } else {
-        FillRect( hdc, &rt, dctx->brushes[dctx->trayOwner+CE_USER_COLOR1] );
+        FillRect( hdc, &rt, dctx->brushes[dctx->trayOwner+CE_PLAYER0_COLOR] );
     }
 } /* ce_draw_drawTrayDivider */
 
@@ -1127,19 +1142,19 @@ ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect )
     FillRect( hdc, &rt, dctx->brushes[CE_BKG_COLOR] );
 } /* ceClearToBkground */
 
+/* Draw bitmap in rect.  Use StretchBlt to fit it to the rect, but don't
+ * change the proportions.
+ */
 static void
 ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
 {
     BITMAP bmp;
-    HDC tmpDC;
     int nBytes;
-    int x = rect->left;
-    int y = rect->top;
-
-    tmpDC = CreateCompatibleDC( hdc );
-    SelectObject( tmpDC, bitmap );
-
-    (void)IntersectClipRect( tmpDC, x, y, rect->right, rect->bottom );
+    int left = rect->left;
+    int top = rect->top;
+    XP_U16 width = rect->right - left;
+    XP_U16 height = rect->bottom - top;
+    XP_U16 ii;
 
     nBytes = GetObject( bitmap, sizeof(bmp), &bmp );
     XP_ASSERT( nBytes > 0 );
@@ -1147,18 +1162,34 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
         logLastError( "ceDrawBitmapInRect:GetObject" );
     }
 
-    x += ((rect->right - x) - bmp.bmWidth) / 2;
-    y += ((rect->bottom - y) - bmp.bmHeight) / 2;
+    for ( ii = 1;
+          ((bmp.bmWidth * ii) <= width) && ((bmp.bmHeight * ii) <= height);
+          ++ii ) {
+        /* do nothing */
+    }
 
-    BitBlt( hdc, x, y, bmp.bmWidth, bmp.bmHeight, 
-            tmpDC, 0, 0, SRCCOPY );	/* BLACKNESS */
+    XP_ASSERT( ii > 1 );
+    if ( --ii > 0 ) {
+        HDC tmpDC = CreateCompatibleDC( hdc );
+        SelectObject( tmpDC, bitmap );
 
-    DeleteDC( tmpDC );
+        (void)IntersectClipRect( tmpDC, left, top, rect->right, rect->bottom );
+
+        width = bmp.bmWidth * ii;
+        height = bmp.bmHeight * ii;
+
+        left += ((rect->right - left) - width) / 2;
+        top += ((rect->bottom - top) - height) / 2;
+
+        StretchBlt( hdc, left, top, width, height, 
+                    tmpDC, 0, 0, bmp.bmHeight, bmp.bmWidth, SRCCOPY );
+        DeleteDC( tmpDC );
+    }
 } /* ceDrawBitmapInRect */
 
 DLSTATIC void
 DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                                XWBonusType cursorBonus, XP_Bool vertical,
+                                XWBonusType cursorBonus, XP_Bool vertical, 
                                 HintAtts hintAtts, CellFlags flags )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -1188,7 +1219,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     } else if ( cursorBonus == BONUS_NONE ) {
         bkIndex = CE_BKG_COLOR;
     } else {
-        bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + CE_BONUS1_COLOR;
+        bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + CE_BONUS0_COLOR;
     }
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
     SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
@@ -1196,7 +1227,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     ceDrawBitmapInRect( hdc, &rt, cursor );
 
-    ceDrawHintBorders( hdc, xprect, hintAtts );
+    ceDrawHintBorders( dctx, xprect, hintAtts );
 } /* ce_draw_drawBoardArrow */
 
 DLSTATIC void
@@ -1599,13 +1630,19 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
 DLSTATIC void
 DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 {
-    XP_U16 i;
+    XP_U16 ii;
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
 
-    for ( i = 0; i < CE_NUM_COLORS; ++i ) {
-        DeleteObject( dctx->brushes[i] );
-        if ( !!dctx->pens[i].pen ) {
-            DeleteObject( dctx->pens[i].pen );
+    for ( ii = 0; ii < CE_NUM_COLORS; ++ii ) {
+        DeleteObject( dctx->brushes[ii] );
+        if ( !!dctx->pens[ii].pen ) {
+            DeleteObject( dctx->pens[ii].pen );
+        }
+    }
+
+    for ( ii = 0; ii < VSIZE(dctx->hintPens); ++ii ) {
+        if ( !!dctx->hintPens[ii] ) {
+            DeleteObject( dctx->hintPens[ii] );
         }
     }
 
