@@ -564,9 +564,11 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,80,PREFS_ROW_HT
     CONTROL         "Explain robot scores",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW4,80,PREFS_ROW_HT
-    PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,PR_ROW5,60,12
+    CONTROL         "Hide tile values",IDC_HIDETILEVALUES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,80,PREFS_ROW_HT
+    PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,PR_ROW6,60,12
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "Choose font...",IDC_PREFFONTS,8,PR_ROW6,60,12
+    PUSHBUTTON      "Choose font...",IDC_PREFFONTS,8,PR_ROW7,60,12
 #endif
 
     /* Per game */
