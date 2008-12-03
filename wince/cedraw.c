@@ -710,31 +710,38 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
 
 static void
 ceGetCharValHts( const CEDrawCtx* dctx, const XP_Rect* xprect, 
-                 XP_U16* charHt, XP_U16* valHt )
+                 XP_U16* charHtP, XP_U16* valHtP )
 {
     XP_U16 visHt = xprect->height - TRAY_BORDER;
     XP_U16 visWidth = xprect->width - 5; /* ??? */
     XP_U16 minHt;
+    XP_U16 charHt, valHt;
 
     /* if tiles are wider than tall we can let them overlap vertically */
     if ( visWidth > visHt ) {
         if ( visWidth > (visHt*2) ) {
-            *charHt = visHt;
-            *valHt = (3*visHt) / 4;
+            charHt = visHt;
+            valHt = (3*visHt) / 4;
         } else {
-            *charHt = (visHt * 4) / 5;
-            *valHt = visHt / 2;
+            charHt = (visHt * 4) / 5;
+            valHt = visHt / 2;
         }
 
     } else {
-        *valHt = visHt / 3;
-        *charHt = visHt - *valHt;
+        valHt = visHt / 3;
+        charHt = visHt - valHt;
     }
 
     minHt = dctx->globals->cellHt - CELL_BORDER;
-    if ( *charHt < minHt ) {
-        *charHt = minHt;
+    if ( charHt < minHt ) {
+        charHt = minHt;
     }
+
+    if ( valHt < MIN_CELL_HEIGHT - CELL_BORDER - 2 ) {
+        valHt = MIN_CELL_HEIGHT - CELL_BORDER - 2;
+    }
+    *valHtP = valHt;
+    *charHtP = charHt;
 /*     XP_LOGF( "%s(width:%d, height:%d)=>char: %d, val:%d", __func__, */
 /*              xprect->width, xprect->height, *charHt, *valHt ); */
 } /* ceGetCharValHts */
@@ -1155,6 +1162,7 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
     XP_U16 width = rect->right - left;
     XP_U16 height = rect->bottom - top;
     XP_U16 ii;
+    HDC tmpDC;
 
     nBytes = GetObject( bitmap, sizeof(bmp), &bmp );
     XP_ASSERT( nBytes > 0 );
@@ -1168,23 +1176,25 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
         /* do nothing */
     }
 
-    XP_ASSERT( ii > 1 );
-    if ( --ii > 0 ) {
-        HDC tmpDC = CreateCompatibleDC( hdc );
-        SelectObject( tmpDC, bitmap );
-
-        (void)IntersectClipRect( tmpDC, left, top, rect->right, rect->bottom );
-
-        width = bmp.bmWidth * ii;
-        height = bmp.bmHeight * ii;
-
-        left += ((rect->right - left) - width) / 2;
-        top += ((rect->bottom - top) - height) / 2;
-
-        StretchBlt( hdc, left, top, width, height, 
-                    tmpDC, 0, 0, bmp.bmHeight, bmp.bmWidth, SRCCOPY );
-        DeleteDC( tmpDC );
+    if ( --ii == 0 ) {
+        XP_LOGF( "%s: cell too small for bitmap", __func__ );
+        ii = 1;
     }
+
+    tmpDC = CreateCompatibleDC( hdc );
+    SelectObject( tmpDC, bitmap );
+
+    (void)IntersectClipRect( tmpDC, left, top, rect->right, rect->bottom );
+
+    width = bmp.bmWidth * ii;
+    height = bmp.bmHeight * ii;
+
+    left += ((rect->right - left) - width) / 2;
+    top += ((rect->bottom - top) - height) / 2;
+
+    StretchBlt( hdc, left, top, width, height, 
+                tmpDC, 0, 0, bmp.bmHeight, bmp.bmWidth, SRCCOPY );
+    DeleteDC( tmpDC );
 } /* ceDrawBitmapInRect */
 
 DLSTATIC void
