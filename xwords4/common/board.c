@@ -398,6 +398,9 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     if ( showArrowChanged ) {
         showArrowChanged = setArrowVisible( board, XP_FALSE );
     }
+    if ( hideValChanged ) {
+        board_invalTrayTiles( board, ALLTILES );
+    }
 
 #ifdef XWFEATURE_SEARCHLIMIT
     if ( !board->gi->allowHintRect && board->selInfo->hasHintRect ) {
