@@ -2337,6 +2337,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
             case ID_MOVE_VALUES:
                 draw = board_toggle_showValues( globals->game.board );
+                ceSetLeftSoftkey( globals, ID_MOVE_VALUES );
                 ceCheckMenus( globals );
                 break;
 
