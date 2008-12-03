@@ -69,18 +69,19 @@
 #define IDC_CHECKHINTSOK                1041
 #define IDC_CHECKSHOWCURSOR             1042
 #define IDC_CHECKROBOTSCORES            1043
-#define IDC_PREFCOLORS                  1044
-#define IDC_PREFFONTS                   1100
-#define PHONIES_LABEL                   1045
-#define IDC_ROLECOMBO                   1046
-#define GIJUGGLE_BUTTON                 1048
-#define IDC_TOTAL_LABEL                 1049
-#define IDC_REMOTE_LABEL                1050
-#define IDC_PICKTILES                   1051
-#define IDC_BPICK                       1052
-#define IDC_PICKMSG                     1053
+#define IDC_HIDETILEVALUES              1044
+#define IDC_PREFCOLORS                  1045
+#define IDC_PREFFONTS                   1046
+#define PHONIES_LABEL                   1048
+#define IDC_ROLECOMBO                   1049
+#define GIJUGGLE_BUTTON                 1050
+#define IDC_TOTAL_LABEL                 1051
+#define IDC_REMOTE_LABEL                1052
+#define IDC_PICKTILES                   1053
+#define IDC_BPICK                       1054
+#define IDC_PICKMSG                     1055
 #ifdef FEATURE_TRAY_EDIT
-# define IDC_CPICK                      1054
+# define IDC_CPICK                      1100 
 # define IDC_BACKUP                     1056
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
