@@ -95,7 +95,9 @@ struct CEDrawCtx {
     COLORREF prevBkColor;
 
     HBRUSH brushes[CE_NUM_COLORS];
+#ifdef DRAW_FOCUS_FRAME
     PenColorPair pens[CE_NUM_COLORS];
+#endif
     HGDIOBJ hintPens[MAX_NUM_PLAYERS];
 
     FontCacheEntry fcEntry[N_RESIZE_FONTS];
@@ -149,6 +151,7 @@ XPRtoRECT( RECT* rt, const XP_Rect* xprect )
     rt->bottom = rt->top + xprect->height;
 } /* XPRtoRECT */
 
+#ifdef DRAW_FOCUS_FRAME
 static HGDIOBJ
 ceGetPen( CEDrawCtx* dctx, XP_U16 colorIndx, XP_U16 width )
 {
@@ -169,61 +172,7 @@ ceGetPen( CEDrawCtx* dctx, XP_U16 colorIndx, XP_U16 width )
     }
     return pen;
 }
-
-static void
-makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, XP_Bool center,
-                   XP_U16 colorIndx, CEBitmapInfo* info )
-{
-#if 1
-    HGDIOBJ forePen = ceGetPen( dctx, colorIndx, 1 );
-    POINT points[2];
-    XP_U16 nCols, nRows, row, col, rowBytes;
-    XP_S32 x, y;
-    XP_U8* bits = info->bits;
-    HGDIOBJ oldObj;
-    oldObj = SelectObject( hdc, forePen );
-
-    nRows = info->nRows;
-    nCols = info->nCols;
-    rowBytes = (nCols + 7) / 8;
-    while ( (rowBytes % 2) != 0 ) {
-        ++rowBytes;
-    }
-
-    x = bnds->left;
-    y = bnds->top;
-    if ( center ) {
-        /* the + 1 is to round up */
-        x += ((bnds->right - bnds->left) - nCols + 1) / 2;
-        y += ((bnds->bottom - bnds->top) - nRows + 1) / 2;
-    }
-
-    for ( row = 0; row < nRows; ++row ) {
-        for ( col = 0; col < nCols; ++col ) {
-            XP_U8 byt = bits[col / 8];
-            XP_Bool set = (byt & (0x80 >> (col % 8))) != 0;
-            if ( set ) {
-                points[0].x = x + col;
-                points[0].y = y + row;
-                points[1].x = x + col + 1;
-                points[1].y = y + row + 1;
-                Polyline( hdc, points, 2 );
-            }
-        }
-        bits += rowBytes;
-    }
-
-    SelectObject( hdc, oldObj );
-#else
-    /* I can't get this to work.  Hence the above hack.... */
-    HBITMAP bm;
-    bm = CreateBitmap( info->nCols, info->nRows, 1, 1,
-                       info->bits );
-    ceDrawBitmapInRect( hdc, rt->left+2, rt->top+2, bm );
-
-    DeleteObject( bm );
 #endif
-} /* makeAndDrawBitmap */
 
 static void
 ceDrawTextClipped( HDC hdc, wchar_t* buf, XP_S16 len, XP_Bool clip,
@@ -840,7 +789,8 @@ ceDrawHintBorders( CEDrawCtx* dctx, const XP_Rect* xprect, HintAtts hintAtts )
 
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                          const XP_UCHAR* letters, const XP_Bitmap bitmap, 
+                          const XP_UCHAR* letters, 
+                          const XP_Bitmap XP_UNUSED(bitmap), 
                           Tile XP_UNUSED(tile), XP_S16 owner, 
                           XWBonusType bonus, HintAtts hintAtts,
                           CellFlags flags )
@@ -879,7 +829,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     /* always init to silence compiler warning */
     foreColorIndx = getPlayerColor(owner);
 
-    if ( !isDragSrc && ((!!letters && letters[0] != '\0' ) || !!bitmap )) {
+    if ( !isDragSrc && !!letters ) {
         if ( isPending ) {
             bkIndex = CE_BLACK_COLOR;
             foreColorIndx = CE_WHITE_COLOR;
@@ -931,9 +881,6 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
 #endif
         ceDrawTextClipped( hdc, widebuf, -1, XP_FALSE, fce, xprect->left+1, 
                            xprect->top+2, xprect->width, DT_CENTER );
-    } else if ( !isDragSrc && !!bitmap ) {
-        makeAndDrawBitmap( dctx, hdc, &rt, XP_TRUE,
-                           foreColorIndx, (CEBitmapInfo*)bitmap );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
         ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
     }
@@ -986,8 +933,7 @@ DRAW_FUNC_NAME(trayBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
 
 static void
 drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                  const XP_UCHAR* letters,
-                  XP_Bitmap bitmap, XP_S16 val, CellFlags flags )
+                  const XP_UCHAR* letters, XP_S16 val, CellFlags flags )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -1021,7 +967,6 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
         InsetRect( &rt, 1, 1 );
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom); /* draw frame */
         InsetRect( &rt, 1, 1 );
-/*         ceClipToRect( hdc, &rt ); */
 
         if ( !isEmpty ) {
             index = getPlayerColor(dctx->trayOwner);
@@ -1060,14 +1005,6 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                                    xprect->left + 4, xprect->top + 4, 
                                    xprect->width, DT_LEFT );
                 SelectObject( hdc, oldFont );
-            } else if ( !!bitmap  ) {
-                RECT lrt = rt;
-                XP_U16 tmp = CE_PLAYER0_COLOR+dctx->trayOwner;
-                ++lrt.left;
-                lrt.top += 4;
-                makeAndDrawBitmap( dctx, hdc, &lrt, XP_FALSE,
-                                   dctx->globals->appPrefs.colors[tmp],
-                                   (CEBitmapInfo*)bitmap );
             }
 
             if ( val >= 0 ) {
@@ -1087,20 +1024,21 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
 DLSTATIC void
 DRAW_FUNC_NAME(drawTile)( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                          const XP_UCHAR* letters, XP_Bitmap bitmap, 
+                          const XP_UCHAR* letters, XP_Bitmap XP_UNUSED(bitmap),
                           XP_S16 val, CellFlags flags )
 {
-    drawDrawTileGuts( p_dctx, xprect, letters, bitmap, val, flags );
+    drawDrawTileGuts( p_dctx, xprect, letters, val, flags );
 } /* ce_draw_drawTile */
 
 #ifdef POINTER_SUPPORT
 DLSTATIC void
 DRAW_FUNC_NAME(drawTileMidDrag)( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                                 const XP_UCHAR* letters, XP_Bitmap bitmap, 
+                                 const XP_UCHAR* letters, 
+                                 XP_Bitmap XP_UNUSED(bitmap),
                                  XP_S16 val, XP_U16 owner, CellFlags flags )
 {
     draw_trayBegin( p_dctx, xprect, owner, DFS_NONE );
-    drawDrawTileGuts( p_dctx, xprect, letters, bitmap, val, flags );
+    drawDrawTileGuts( p_dctx, xprect, letters, val, flags );
 } /* ce_draw_drawTile */
 #endif
 
@@ -1108,7 +1046,7 @@ DLSTATIC void
 DRAW_FUNC_NAME(drawTileBack)( DrawCtx* p_dctx, const XP_Rect* xprect,
                               CellFlags flags )
 {
-    drawDrawTileGuts( p_dctx, xprect, "?", NULL, -1, flags );
+    drawDrawTileGuts( p_dctx, xprect, "?", -1, flags );
 } /* ce_draw_drawTileBack */
 
 DLSTATIC void
@@ -1645,9 +1583,11 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
 
     for ( ii = 0; ii < CE_NUM_COLORS; ++ii ) {
         DeleteObject( dctx->brushes[ii] );
+#ifdef DRAW_FOCUS_FRAME
         if ( !!dctx->pens[ii].pen ) {
             DeleteObject( dctx->pens[ii].pen );
         }
+#endif
     }
 
     for ( ii = 0; ii < VSIZE(dctx->hintPens); ++ii ) {
