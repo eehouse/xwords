@@ -4,6 +4,9 @@ PLAT=win32
 DBG=dbg
 
 SIZES=( 
+    240x214                     # Treo in full-screen mode
+    240x188                     # Treo in normal mode
+
     176x200                     # 6.1 standard
     200x176                     # flipped
     
