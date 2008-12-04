@@ -268,14 +268,16 @@ getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
     DictionaryCtxt* dict = model_getDictionary( board->model );
     if ( isBlank ) {
         tile = dict_getBlankTile( dict );
-    }
-    *value = dict_getTileValue( dict, tile );
-    if ( dict_faceIsBitmap( dict, tile ) ) {
-        *bitmap = dict_getFaceBitmap( dict, tile, XP_TRUE );
     } else {
         dict_tilesToString( dict, &tile, 1, buf, len );
         face = buf;
     }
+
+    *value = dict_getTileValue( dict, tile );
+    if ( dict_faceIsBitmap( dict, tile ) ) {
+        *bitmap = dict_getFaceBitmap( dict, tile, XP_TRUE );
+    } 
+
     return face;
 }
 
