@@ -21,6 +21,7 @@
 #include <windowsx.h>
 #include "stdafx.h" 
 #include <commdlg.h>
+#include <wchar.h>
 #ifdef _win32_wce
 #include <aygshell.h>
 #endif
