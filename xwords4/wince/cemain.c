@@ -1528,6 +1528,7 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
     if ( !hdc ) {
         logLastError( __func__ );
     } else {
+        int oldMode = SetBkMode( hdc, TRANSPARENT );
         HDC prevHDC = globals->hdc;
         globals->hdc = hdc;
 
@@ -1556,6 +1557,7 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
 
         board_draw( globals->game.board );
 
+        (void)SetBkMode( hdc, oldMode );
         globals->hdc = prevHDC;
     }
 } /* drawInsidePaint */
