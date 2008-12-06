@@ -787,6 +787,18 @@ ceDrawHintBorders( CEDrawCtx* dctx, const XP_Rect* xprect, HintAtts hintAtts )
     }
 } /* ceDrawHintBorders */
 
+static void
+ceSetTextColor( HDC hdc, const CEDrawCtx* dctx, XP_U16 index )
+{
+    SetTextColor( hdc, dctx->globals->appPrefs.colors[index] );
+}
+
+static void
+ceSetBkColor( HDC hdc, const CEDrawCtx* dctx, XP_U16 index )
+{
+    SetBkColor( hdc, dctx->globals->appPrefs.colors[index] );
+}
+
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                           const XP_UCHAR* letters, 
@@ -866,7 +878,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         FillRect( hdc, &tmpRT, dctx->brushes[bkIndex] );
     }
 
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
+    ceSetBkColor( hdc, dctx, bkIndex );
 
     if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
@@ -874,7 +886,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, VSIZE(widebuf) );
 	
-        SetTextColor( hdc, dctx->globals->appPrefs.colors[foreColorIndx] );
+        ceSetTextColor( hdc, dctx, foreColorIndx );
 #ifndef _WIN32_WCE
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, VSIZE(widebuf) );
@@ -882,6 +894,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
         ceDrawTextClipped( hdc, widebuf, -1, XP_FALSE, fce, xprect->left+1, 
                            xprect->top+2, xprect->width, DT_CENTER );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
+        ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
         ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
     }
 
@@ -962,7 +975,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     if ( !isEmpty || focLevel == SINGLE_FOCUS ) { /* don't draw anything unless SINGLE_FOCUS */
         XP_U16 backIndex = focLevel == NO_FOCUS? CE_TILEBACK_COLOR : CE_FOCUS_COLOR;
 
-        SetBkColor( hdc, dctx->globals->appPrefs.colors[backIndex] );
+        ceSetBkColor( hdc, dctx, backIndex );
 
         InsetRect( &rt, 1, 1 );
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom); /* draw frame */
@@ -970,7 +983,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         if ( !isEmpty ) {
             index = getPlayerColor(dctx->trayOwner);
-            SetTextColor( hdc, dctx->globals->appPrefs.colors[index] );
+            ceSetTextColor( hdc, dctx, index );
 
             /* For some reason Rectangle isn't using the background brush to
                fill, so FillRect has to get called after Rectangle.  Need to
@@ -1170,8 +1183,8 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
         bkIndex = cursorBonus - BONUS_DOUBLE_LETTER + CE_BONUS0_COLOR;
     }
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
+    ceSetBkColor( hdc, dctx, bkIndex );
+    ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
 
     ceDrawBitmapInRect( hdc, &rt, cursor );
 
@@ -1186,7 +1199,7 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* xprect,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     XP_ASSERT( !!globals->hdc );
-    SetBkColor( globals->hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
+    ceSetBkColor( globals->hdc, dctx, CE_BKG_COLOR );
 
     dctx->scoreIsVertical = xprect->height > xprect->width;
 
@@ -1259,7 +1272,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     XPRtoRECT( &rt, rInner );
     if ( focussed ) {
-        SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_FOCUS_COLOR] );
+        ceSetBkColor( hdc, dctx, CE_FOCUS_COLOR );
         FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
     }
 
@@ -1365,9 +1378,8 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
 
     oldFont = SelectObject( hdc, fce->setFont );
 
-    SetTextColor( hdc, dctx->globals->
-                  appPrefs.colors[getPlayerColor(dsi->playerNum)] );
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
+    ceSetTextColor( hdc, dctx, getPlayerColor(dsi->playerNum) );
+    ceSetBkColor( hdc, dctx, bkIndex );
         
     XPRtoRECT( &rt, rOuter );
     ceClipToRect( hdc, &rt );
@@ -1415,9 +1427,8 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
     oldFont = SelectObject( hdc, fce->setFont );
 
-    SetTextColor( hdc, 
-                  dctx->globals->appPrefs.colors[getPlayerColor(playerNum)] );
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[bkIndex] );
+    ceSetTextColor( hdc, dctx, getPlayerColor(playerNum) );
+    ceSetBkColor( hdc, dctx, bkIndex );
 
     XPRtoRECT( &rt, xprect );
     ceClipToRect( hdc, &rt );
@@ -1477,8 +1488,8 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     ceClipToRect( hdc, &rt );
 
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[getPlayerColor(player)] );
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
+    ceSetTextColor( hdc, dctx, getPlayerColor(player) );
+    ceSetBkColor( hdc, dctx, CE_BKG_COLOR );
     ceClearToBkground( dctx, rInner );
 
     oldFont = SelectObject( hdc, fce->setFont );
@@ -1556,8 +1567,8 @@ DRAW_FUNC_NAME(drawMiniWindow)( DrawCtx* p_dctx, const XP_UCHAR* text,
 
     ceClearToBkground( dctx, rect );
 
-    SetBkColor( hdc, dctx->globals->appPrefs.colors[CE_BKG_COLOR] );
-    SetTextColor( hdc, dctx->globals->appPrefs.colors[CE_BLACK_COLOR] );
+    ceSetBkColor( hdc, dctx, CE_BKG_COLOR );
+    ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
 
     Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom );
     InsetRect( &rt, 1, 1 );
