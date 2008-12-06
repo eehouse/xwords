@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <stdio.h>
 #include "cedebug.h"
 
 #ifdef DEBUG
@@ -120,7 +121,7 @@ logLastError( const char* comment )
     XP_U16 len;
     XP_U16 lenSoFar;
 
-    sprintf( msg, "%s (err: %ld): ", comment, lastErr );
+    snprintf( msg, sizeof(msg), "%s (err: %ld): ", comment, lastErr );
     lenSoFar = strlen( msg );
 
     FormatMessage( 

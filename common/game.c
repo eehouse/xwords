@@ -143,6 +143,10 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
                                   nPlayersHere, nPlayersTotal, 
                                   sendproc, IF_CH(resetproc) closure );
     }
+#else
+# ifdef DEBUG
+    mpool = mpool;              /* quash unused formal warning */
+# endif
 #endif
 
     model_init( game->model, gi->boardSize, gi->boardSize );
