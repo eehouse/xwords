@@ -914,7 +914,7 @@ BEGIN
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
     IDS_DONE                "Done"
-    IDS_ABOUT       "Crosswords 4.2b6 (rev " SVN_REV ") "\
+    IDS_ABOUT       "Crosswords 4.2b7 (rev " SVN_REV ") "\
                     "for Windows Mobile. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
