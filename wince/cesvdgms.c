@@ -168,16 +168,38 @@ typedef struct CeSavedGamesState {
     CeDlgHdr dlgHdr;
     wchar_t* buf; 
     XP_U16 buflen;
-    XP_S16 sel;
-    XP_U16 openGameIndex;
-    wchar_t curNameW[128];
+    XP_S16 sel;                     /* index of game name currently selected */
+    XP_U16 openGameIndex;           /* index of game that's open */
+    wchar_t openNameW[128];
+    wchar_t newNameW[MAX_PATH];
     XP_U16 nItems;
 
     XP_U16 gameListId;
-    XP_Bool opened;
     XP_Bool inited;
     XP_Bool relaunch;
+    SavedGamesResult result;
 } CeSavedGamesState;
+
+static void
+ceBasename( wchar_t* buf, const wchar_t* path )
+{
+    const wchar_t* ptr = path + wcslen(path);
+    const wchar_t* dot = NULL;
+
+    for ( ; ; ) {
+        if ( ptr == path ) {
+            break;
+        } else if ( *ptr == L'\\' ) {
+            ++ptr;
+            break;
+        } else if ( !dot && *ptr == L'.' ) {
+            dot = ptr;
+        }
+        --ptr;
+    }
+    lstrcpy( buf, ptr );
+    buf[dot-ptr] = 0;           /* nuke extension */
+} /* ceBasename */
 
 /* Probably belongs as a utility */
 static void
@@ -220,7 +242,7 @@ setButtons( CeSavedGamesState* state )
     ceEnOrDisable( hDlg, IDC_SVGM_OPEN, haveItem && !curSelected );
     ceEnOrDisable( hDlg, IDC_SVGM_DUP, haveItem );
     ceEnOrDisable( hDlg, IDC_SVGM_DEL, haveItem && !curSelected );
-    ceEnOrDisable( hDlg, IDC_SVGM_CHANGE, haveItem && !curSelected );
+    ceEnOrDisable( hDlg, IDC_SVGM_CHANGE, haveItem );
 }
 
 static void
@@ -231,7 +253,7 @@ initSavedGamesData( CeSavedGamesState* state )
     CEAppGlobals* globals = state->dlgHdr.globals;
     WIN32_FIND_DATA data;
     wchar_t path[CE_MAX_PATH_LEN];
-    XP_S16 curSel = -1;
+    XP_S16 sel;
     XP_U16 ii;
     XP_U16 nItems = 0;
 
@@ -242,40 +264,13 @@ initSavedGamesData( CeSavedGamesState* state )
     fileH = FindFirstFile( path, &data );
     for ( ii = 0; fileH != INVALID_HANDLE_VALUE; ++ii ) {
         XP_U16 len = wcslen( data.cFileName );
-        XP_U16 item;
-        XP_Bool isCurGame = 0 == wcscmp( state->curNameW, data.cFileName );
 
-        XP_ASSERT( data.cFileName[len-4] == '.');
+        XP_ASSERT( data.cFileName[len-4] == L'.');
         data.cFileName[len-4] = 0;
 
-        /* Insert in sorted order.  This should be fast enough for reasonable
-           numbers of saved games. */
-        /* PENDING: there's supposed to be a field attribute that make sorted
-           order automatic */
-        for ( item = 0; item < nItems; ++item ) {
-            wchar_t buf[256];
-            (void)SendDlgItemMessage( hDlg, state->gameListId, 
-                                      GETLBTEXT(globals), item,
-                                      (LPARAM)buf );
-            /* Does the current item belong above the one we're inserting? */
-            if ( 0 <= wcscmp( buf, data.cFileName ) ) {
-                break;
-            }
-        }
         (void)SendDlgItemMessage( hDlg, state->gameListId, 
-                                  INSERTSTRING(globals),
-                                  item, (LPARAM)data.cFileName );
-
-        /* Remember which entry matches the currently opened game, and adjust
-           if it's changed.  We may be incrementing an uninitialized curSel,
-           but that's ok as isCurGame is guaranteed to be true exactly once
-           through. */
-        if ( isCurGame ) {
-            curSel = item;
-        } else if ( curSel >= item ) {
-            ++curSel;           /* since we've moved it up */
-        }
-
+                                  ADDSTRING(globals),
+                                  0, (LPARAM)data.cFileName );
         ++nItems;
 
         if ( !FindNextFile( fileH, &data ) ) {
@@ -283,29 +278,51 @@ initSavedGamesData( CeSavedGamesState* state )
             break;
         }
     }
-
     state->nItems = nItems;
-    state->openGameIndex = curSel;
 
-    SendDlgItemMessage( hDlg, state->gameListId, 
-                        SETCURSEL(globals), curSel, 0 );
-    state->sel = curSel;
+    /* Now locate the open game and game we should select (which may
+       differ) */
+    sel = SendDlgItemMessage( hDlg, state->gameListId, FINDSTRINGEXACT(globals),
+                              -1, (LPARAM)state->openNameW );
+    XP_ASSERT( sel >= 0 );      /* should always have this */
+    state->openGameIndex = sel;
+
+    sel = SendDlgItemMessage( hDlg,state->gameListId, FINDSTRINGEXACT(globals),
+                              -1, (LPARAM)state->newNameW );
+    if ( sel < 0 ) {
+        sel = state->openGameIndex;
+    }
+
+    SendDlgItemMessage( hDlg, state->gameListId, SETCURSEL(globals), sel, 0 );
+    state->sel = sel;
 
     setButtons( state );
-
-    LOG_RETURN_VOID();
 } /* initSavedGamesData */
 
 static XP_Bool
 renameSelected( CeSavedGamesState* state )
 {
-    wchar_t path[MAX_PATH];
+    wchar_t newPath[MAX_PATH];
     XP_Bool confirmed = ceConfirmUniqueName( state->dlgHdr.globals, IDS_RENAME, 
-                                             path, VSIZE(path) );
+                                             newPath, VSIZE(newPath) );
     if ( confirmed ) {
-        wchar_t curPath[MAX_PATH];
-        getFullSelPath( state, curPath, VSIZE(curPath) );
-        confirmed = MoveFile( curPath, path );
+        /* If we're renaming the current game, we have to exit and let
+           calling code handle it.  If we're renaming any other game, we can
+           do it here. */
+        if ( state->openGameIndex == state->sel ) {
+            swprintf( state->buf, L"%s", newPath );
+            state->result = CE_SVGAME_RENAME;
+        } else {
+            wchar_t curPath[MAX_PATH];
+            getFullSelPath( state, curPath, VSIZE(curPath) );
+            confirmed = MoveFile( curPath, newPath );
+        }
+    }
+
+    if ( confirmed ) {
+        ceBasename( state->newNameW, newPath );
+    } else {
+        state->newNameW[0] = 0;
     }
     return confirmed;
 } /* renameSelected */
@@ -323,6 +340,13 @@ duplicateSelected( CeSavedGamesState* state )
         getFullSelPath( state, curPath, VSIZE(curPath) );
         confirmed = CopyFile( curPath, newPath, TRUE ); /* TRUE is what??? */
     }
+
+    if ( confirmed ) {
+        ceBasename( state->newNameW, newPath );
+    } else {
+        state->newNameW[0] = 0;
+    }
+
     return confirmed;
 } /* duplicateSelected */
 
@@ -415,11 +439,12 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                         wchar_t buf[128];
                         XP_U16 len = VSIZE(buf);
                         getComboText( state, buf, &len );
-                        len = ceGetPath( state->dlgHdr.globals, DEFAULT_DIR_PATH_L, 
-                                         state->buf, state->buflen );
+                        len = ceGetPath( state->dlgHdr.globals, 
+                                         DEFAULT_DIR_PATH_L, state->buf,
+                                         state->buflen );
                         swprintf( &state->buf[len], L"%s.xwg", buf );
                         XP_LOGW( "returning", state->buf );
-                        state->opened = XP_TRUE;
+                        state->result = CE_SVGAME_OPEN;
                     }
                         /* fallthrough */
                     case IDOK:  /* Done button */
@@ -440,7 +465,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     return result;
 } /* SavedGamesDlg */
 
-XP_Bool
+SavedGamesResult
 ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
                  wchar_t* buf, XP_U16 buflen )
 {
@@ -455,30 +480,27 @@ ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
     state.sel = -1;
 
     if ( !!curPath ) {
-        wchar_t shortName[128];
+        wchar_t widebuf[MAX_PATH];
         XP_U16 len;
-        XP_U16 dirLen;
-
-        dirLen = ceGetPath( globals, DEFAULT_DIR_PATH_L, shortName, 
-                            VSIZE(shortName) );
-
         len = (XP_U16)XP_STRLEN( curPath );
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curPath, len + 1, 
-                             shortName, len + 1 );
-        lstrcpy( state.curNameW, shortName+dirLen );
+                             widebuf, len + 1 );
+        ceBasename( state.openNameW, widebuf );
     }
 
     for ( ; ; ) {
+        state.relaunch = XP_FALSE;
+        state.result = CE_SVGAME_CANCEL;
+
         (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_SAVEDGAMESDLG, 
                               globals->hWnd, 
                               (DLGPROC)SavedGamesDlg, (long)&state );
 
-        if ( !state.relaunch ) {
+        if ( !state.relaunch || (state.result == CE_SVGAME_RENAME) ) {
             break;
         }
-        state.relaunch = XP_FALSE;
     }
     XP_LOGW( __func__, buf );
 
-    return state.opened;
+    return state.result;
 } /* ceSavedGamesDlg  */

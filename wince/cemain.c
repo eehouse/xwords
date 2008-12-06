@@ -1623,23 +1623,26 @@ static void
 ceChooseAndOpen( CEAppGlobals* globals )
 {
     // Save in case we'll be duplicating it
+ again:
     if ( ceSaveCurGame( globals, XP_FALSE )
          || queryBoxChar( globals, "Do you really want to "
                           "overwrite the current game?" ) ) {
-        wchar_t path[256];
-        path[0] = 0;
+        SavedGamesResult choice;
+        wchar_t newName[256];
+        newName[0] = 0;
 
         ceSetTitleFromName( globals ); /* in case we named it above */
 
-        if ( ceSavedGamesDlg( globals, globals->curGameName, 
-                              path, VSIZE(path) )) {
+        choice = ceSavedGamesDlg( globals, globals->curGameName, newName, 
+                                  VSIZE(newName) );
+        if ( CE_SVGAME_CANCEL != choice ) {
             XP_UCHAR* name;
             XP_U16 len;
 
-            len = wcslen(path);
+            len = wcslen(newName);
             name = XP_MALLOC( globals->mpool, len + 1 );
 
-            WideCharToMultiByte( CP_ACP, 0, path, len + 1,
+            WideCharToMultiByte( CP_ACP, 0, newName, len + 1,
                                  name, len + 1, NULL, NULL );
         
             if ( globals->curGameName != NULL
@@ -1660,10 +1663,19 @@ ceChooseAndOpen( CEAppGlobals* globals )
                 globals->curGameName = NULL; /* prevent being destroyed */
                 closeGame( globals );
 
+                if ( CE_SVGAME_RENAME == choice ) {
+                    XP_U16 len = 1 + XP_STRLEN( oldName );
+                    wchar_t widebuf[len];
+                    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, oldName, len, 
+                                         widebuf, len );
+                    (void)MoveFile( widebuf, newName );
+                }
+
                 globals->curGameName = name;
                 if ( ceLoadSavedGame( globals ) ) {
                     XP_FREE( globals->mpool, oldName );
                 } else {
+                    XP_ASSERT( CE_SVGAME_RENAME != choice );
                     XP_LOGF( "failed to open chosen game" );
                     XP_FREE( globals->mpool, globals->curGameName );
                     globals->curGameName = oldName;
@@ -1672,6 +1684,9 @@ ceChooseAndOpen( CEAppGlobals* globals )
                     }
                 }
                 ceInitAndStartBoard( globals, XP_FALSE, NULL );
+                if ( CE_SVGAME_RENAME == choice ) {
+                    goto again;
+                }
             }
         } else {
             XP_LOGF( "GetOpenFileName() failed" );

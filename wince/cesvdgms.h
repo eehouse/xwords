@@ -23,8 +23,15 @@
 #include "xptypes.h"
 #include "cemain.h"
 
-XP_Bool ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
-                         wchar_t* buf, XP_U16 buflen );
+typedef enum {
+    CE_SVGAME_CANCEL
+    ,CE_SVGAME_RENAME
+    ,CE_SVGAME_OPEN
+} SavedGamesResult;
+
+SavedGamesResult ceSavedGamesDlg( CEAppGlobals* globals, 
+                                  const XP_UCHAR* curPath,
+                                  wchar_t* buf, XP_U16 buflen );
 XP_Bool ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf, 
                              XP_U16 buflen );
 #endif
