@@ -439,7 +439,7 @@ BEGIN
                     0, 0, 0, 0 
 #endif
     COMBOBOX        IDC_SVGM_GAMELIST_PPC,SVGM_LEFT_COL,SVGM_ROW_2,70,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP | CBS_SORT
 
     PUSHBUTTON      "Open",IDC_SVGM_OPEN,
                     SVGM_LEFT_COL,SVGM_ROW_3,40,14,WS_DISABLED
