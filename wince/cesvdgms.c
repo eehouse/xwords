@@ -146,8 +146,8 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 } /* SaveNameDlg */
 
 XP_Bool
-ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf, 
-                     XP_U16 buflen )
+ceConfirmUniqueName( CEAppGlobals* globals, HWND hWnd, XP_U16 strId, 
+                     wchar_t* buf, XP_U16 buflen )
 {
     CeSaveGameNameState state;
 
@@ -161,8 +161,7 @@ ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf,
     state.buflen = buflen;
     state.lableTextId = strId;
     (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_SAVENAMEDLG, 
-                          globals->hWnd, 
-                          (DLGPROC)SaveNameDlg, (long)&state );
+                          hWnd, (DLGPROC)SaveNameDlg, (long)&state );
     XP_LOGW( __func__, buf );
     return !state.cancelled;
 } /* ceConfirmUniqueName */
@@ -306,8 +305,8 @@ static XP_Bool
 renameSelected( CeSavedGamesState* state )
 {
     wchar_t newPath[MAX_PATH];
-    XP_Bool confirmed = ceConfirmUniqueName( state->dlgHdr.globals, IDS_RENAME, 
-                                             newPath, VSIZE(newPath) );
+    XP_Bool confirmed = ceConfirmUniqueName( state->dlgHdr.globals, state->dlgHdr.hDlg,
+                                             IDS_RENAME, newPath, VSIZE(newPath) );
     if ( confirmed ) {
         /* If we're renaming the current game, we have to exit and let
            calling code handle it.  If we're renaming any other game, we can
@@ -336,8 +335,8 @@ duplicateSelected( CeSavedGamesState* state )
     wchar_t newPath[MAX_PATH];
     XP_Bool confirmed;
 
-    confirmed = ceConfirmUniqueName( state->dlgHdr.globals, IDS_DUPENAME, 
-                                     newPath, VSIZE(newPath) );
+    confirmed = ceConfirmUniqueName( state->dlgHdr.globals, state->dlgHdr.hDlg,
+                                     IDS_DUPENAME, newPath, VSIZE(newPath) );
     if ( confirmed ) {
         wchar_t curPath[MAX_PATH];
         getFullSelPath( state, curPath, VSIZE(curPath) );
@@ -357,7 +356,7 @@ static XP_Bool
 deleteSelected( CeSavedGamesState* state )
 {
     /* confirm first!!!! */
-    XP_Bool confirmed = queryBoxChar( state->dlgHdr.globals, 
+    XP_Bool confirmed = queryBoxChar( state->dlgHdr.hDlg,
                                       "Are you certain you want to delete the "
                                       "selected game?  This action cannot be "
                                       "undone.");
@@ -495,6 +494,7 @@ ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
         state.relaunch = XP_FALSE;
         state.result = CE_SVGAME_CANCEL;
 
+        assertOnTop( globals->hWnd );
         (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_SAVEDGAMESDLG, 
                               globals->hWnd, 
                               (DLGPROC)SavedGamesDlg, (long)&state );

@@ -195,7 +195,7 @@ enum {
 #define CE_NUM_EDITABLE_COLORS CE_BLACK_COLOR
 
 
-XP_Bool queryBoxChar( CEAppGlobals* globals, const XP_UCHAR* msg );
+XP_Bool queryBoxChar( HWND hWnd, const XP_UCHAR* msg );
 
 /* These allow LISTBOX and COMBOBOX to be used by the same code */
 
