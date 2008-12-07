@@ -32,6 +32,6 @@ typedef enum {
 SavedGamesResult ceSavedGamesDlg( CEAppGlobals* globals, 
                                   const XP_UCHAR* curPath,
                                   wchar_t* buf, XP_U16 buflen );
-XP_Bool ceConfirmUniqueName( CEAppGlobals* globals, XP_U16 strId, wchar_t* buf, 
-                             XP_U16 buflen );
+XP_Bool ceConfirmUniqueName( CEAppGlobals* globals, HWND hWnd, XP_U16 strId, 
+                             wchar_t* buf, XP_U16 buflen );
 #endif

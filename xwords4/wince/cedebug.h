@@ -34,4 +34,12 @@ void messageToBuf( UINT message, char* buf, int bufSize );
 # define logLastError(c)
 #endif
 
+#ifdef DEBUG
+# define assertOnTop( hWnd ) { \
+        XP_ASSERT( (hWnd) == GetForegroundWindow() ); \
+    }
+#else
+# define assertOnTop( w )
+#endif
+
 #endif  /* _CEDEBUG_H_ */

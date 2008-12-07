@@ -1354,6 +1354,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     if ( !result ) {
         wchar_t buf[512];
         (void)LoadString( globals->hInst, (UINT)IDS_DICTLOC, buf, VSIZE(buf) );
+        assertOnTop( globals->hWnd );
         MessageBox( globals->hWnd, buf, L"Dictionary Not Found", MB_OK );
         result = FALSE;
         goto exit;
@@ -1586,6 +1587,7 @@ ceDoNewGame( CEAppGlobals* globals )
     giState.dlgHdr.globals = globals;
     giState.isNewGame = XP_TRUE;
 
+    assertOnTop( globals->hWnd );
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
                     (DLGPROC)GameInfo, (long)&giState );
 
@@ -1624,10 +1626,11 @@ ceDoNewGame( CEAppGlobals* globals )
 static void
 ceChooseAndOpen( CEAppGlobals* globals )
 {
+    assertOnTop( globals->hWnd );
     // Save in case we'll be duplicating it
  again:
     if ( ceSaveCurGame( globals, XP_FALSE )
-         || queryBoxChar( globals, "Do you really want to "
+         || queryBoxChar( globals->hWnd, "Do you really want to "
                           "overwrite the current game?" ) ) {
         SavedGamesResult choice;
         wchar_t newName[256];
@@ -1714,6 +1717,7 @@ ceDoPrefsDlg( CEAppGlobals* globals )
     loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo, 
                            &prefsPrefs );
 
+    assertOnTop( globals->hWnd );
     (void)WrapPrefsDialog( globals->hWnd, globals, &state, &prefsPrefs,
                            XP_FALSE );
 
@@ -1798,7 +1802,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
         } else {
             wchar_t nameBuf[MAX_PATH];
 
-            confirmed = ceConfirmUniqueName( globals, IDS_SAVENAME, 
+            confirmed = ceConfirmUniqueName( globals, globals->hWnd, IDS_SAVENAME, 
                                              nameBuf, VSIZE(nameBuf) );
             if ( confirmed ) {
                 XP_U16 len = wcslen(nameBuf);
@@ -2198,6 +2202,7 @@ doAbout( CEAppGlobals* globals )
 {
     wchar_t buf[1024];
     (void)LoadString( globals->hInst, (UINT)IDS_ABOUT, buf, VSIZE(buf) );
+    assertOnTop( globals->hWnd );
     MessageBox( globals->hWnd, buf, L"About", MB_OK );
 }
 
@@ -2295,7 +2300,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_FILE_NEWGAME:
                 XP_LOGF( "ID_FILE_NEWGAME" );
                 if ( ceSaveCurGame( globals, XP_FALSE )
-                     || queryBoxChar( globals, "Do you really want to "
+                     || queryBoxChar( hWnd, "Do you really want to "
                                       "overwrite the current game?" ) ) {
                     draw = ceDoNewGame( globals );
                 }
@@ -2314,8 +2319,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_GAME_FINALSCORES:
                 if ( server_getGameIsOver( globals->game.server ) ) {
                     ceDisplayFinalScores( globals );
-                } else if ( queryBoxChar( globals, 
-                                          "Are you sure you want to end "
+                } else if ( queryBoxChar( hWnd, "Are you sure you want to end "
                                           "the game now?" ) ) {
                     server_endGame( globals->game.server );
                     draw = TRUE;	    
@@ -2632,6 +2636,7 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
         state.isQuery = buttons != MB_OK;
         state.dlgHdr.globals = globals;
 
+        assertOnTop( globals->hWnd );
         DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
                         (DLGPROC)StrBox, (long)&state );
         saidYes = state.result == IDOK;
@@ -2660,25 +2665,26 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
                   XP_U16 buttons )
 {
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
+    int result;
 
-    int result = ceMessageBoxChar( globals, NULL, buf, title, buttons );
+    assertOnTop( globals->hWnd );
+    result = ceMessageBoxChar( globals, NULL, buf, title, buttons );
 
     XP_FREE( globals->mpool, buf );
     return result;
 } /* messageBoxStream */
 
 XP_Bool
-queryBoxChar( CEAppGlobals* globals, const XP_UCHAR* msg )
+queryBoxChar( HWND hWnd, const XP_UCHAR* msg )
 {
     wchar_t widebuf[128];
     XP_U16 answer;
 
-    XP_U16 len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, msg, strlen(msg),
-                                      widebuf, 
-                                      VSIZE(widebuf) );
+    XP_U16 len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, msg, -1,
+                                      widebuf, VSIZE(widebuf) );
     widebuf[len] = 0;
 
-    answer = MessageBox( globals->hWnd, widebuf, L"Question", MB_YESNO );
+    answer = MessageBox( hWnd, widebuf, L"Question", MB_YESNO );
     return answer == IDOK || answer == IDYES;
 } /* queryBoxChar */
 
@@ -2833,6 +2839,7 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
     stream = make_generic_stream( globals );
     stream_putBytes( stream, data, len );
 
+    assertOnTop( globals->hWnd );
     posted = PostMessage( globals->hWnd, XWWM_PACKET_ARRIVED, 
                           0, (DWORD)stream );
     XP_ASSERT( posted );
@@ -2976,7 +2983,8 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 
     case QUERY_COMMIT_TRADE:
         query = "Are you sure you want to trade the selected tiles?";
-        return queryBoxChar( globals, query );
+        assertOnTop( globals->hWnd );
+        return queryBoxChar( globals->hWnd, query );
 
     case QUERY_ROBOT_MOVE:
         return ceMsgFromStream( globals, stream, L"FYI", XP_FALSE,
@@ -3051,6 +3059,7 @@ ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
     state.playerNum = playerNum;
     state.pi = pi;
 
+    assertOnTop( globals->hWnd );
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
                     (DLGPROC)BlankDlg, (long)&state );
     return state.result;
@@ -3069,6 +3078,7 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     state.buf = buf;
     state.lenp = len;
 
+    assertOnTop( globals->hWnd );
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKPASS, globals->hWnd, 
                     (DLGPROC)PasswdDlg, (long)&state );
 
@@ -3333,7 +3343,8 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
         isOk = XP_TRUE;
     } else {
         strcat( msgBuf, " Use it anyway?" );
-        isOk = queryBoxChar( globals, msgBuf );
+        assertOnTop( globals->hWnd );
+        isOk = queryBoxChar( globals->hWnd, msgBuf );
     }
 
     return isOk;
@@ -3369,6 +3380,7 @@ ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
     hls.min = *min;
     hls.max = *max;
 
+    assertOnTop( globals->hWnd );
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
                     (DLGPROC)HintLimitsDlg, (long)&hls );
 
