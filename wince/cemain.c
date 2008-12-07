@@ -1115,7 +1115,8 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 snprintf( buf, VSIZE(buf), "Unable to open dictionary: %s",
                           dictName );
                 buf[VSIZE(buf)-1] = '\0';
-                ceMessageBoxChar( globals, NULL, buf, L"Oops!", MB_OK );
+                ceMessageBoxChar( globals, NULL, buf, L"Oops!", 
+                                  MB_OK | MB_ICONHAND );
             }
             XP_FREE( globals->mpool, dictName );
 #endif
@@ -1355,7 +1356,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
         wchar_t buf[512];
         (void)LoadString( globals->hInst, (UINT)IDS_DICTLOC, buf, VSIZE(buf) );
         assertOnTop( globals->hWnd );
-        MessageBox( globals->hWnd, buf, L"Dictionary Not Found", MB_OK );
+        MessageBox( globals->hWnd, buf, L"Dictionary Not Found", 
+                    MB_OK | MB_ICONHAND );
         result = FALSE;
         goto exit;
     }
@@ -1490,7 +1492,7 @@ ceCountsAndValues( CEAppGlobals* globals )
         server_formatDictCounts( globals->game.server, stream, 3 );
 
         (void)ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
-                               MB_OK, XP_TRUE );
+                               MB_OK | MB_ICONINFORMATION, XP_TRUE );
     }
 } /* ceCountsAndValues */
 
@@ -1502,7 +1504,7 @@ ceTilesLeft( CEAppGlobals* globals )
         board_formatRemainingTiles( globals->game.board, stream );
 
         (void)ceMsgFromStream( globals, stream, L"Remaining tiles", 
-                               MB_OK, XP_TRUE );
+                               MB_OK | MB_ICONINFORMATION, XP_TRUE );
     }
 } /* ceTilesLeft */
 
@@ -1517,7 +1519,7 @@ ceDoHistory( CEAppGlobals* globals )
     model_writeGameHistory( globals->game.model, stream, 
                             globals->game.server, gameOver );
     (void)ceMsgFromStream( globals, stream, L"Game history", 
-                           MB_OK, XP_TRUE );
+                           MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDoHistory */
 
 static void
@@ -1573,7 +1575,7 @@ ceDisplayFinalScores( CEAppGlobals* globals )
     stream_putU8( stream, '\0' );
 
     (void)ceMsgFromStream( globals, stream, L"Final scores", 
-                           MB_OK, XP_TRUE );
+                           MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDisplayFinalScores */
 
 static XP_Bool
@@ -2203,7 +2205,8 @@ doAbout( CEAppGlobals* globals )
     wchar_t buf[1024];
     (void)LoadString( globals->hInst, (UINT)IDS_ABOUT, buf, VSIZE(buf) );
     assertOnTop( globals->hWnd );
-    MessageBox( globals->hWnd, buf, L"About", MB_OK );
+    MessageBox( globals->hWnd, buf, L"About " LCROSSWORDS_DIR, 
+                MB_OK | MB_ICONINFORMATION );
 }
 
 LRESULT CALLBACK
@@ -2633,7 +2636,7 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
 
         state.title = title;
         state.stream = stream;
-        state.isQuery = buttons != MB_OK;
+        state.isQuery = (buttons & ~MB_ICONMASK) != MB_OK;
         state.dlgHdr.globals = globals;
 
         assertOnTop( globals->hWnd );
@@ -2684,15 +2687,16 @@ queryBoxChar( HWND hWnd, const XP_UCHAR* msg )
                                       widebuf, VSIZE(widebuf) );
     widebuf[len] = 0;
 
-    answer = MessageBox( hWnd, widebuf, L"Question", MB_YESNO );
+    answer = MessageBox( hWnd, widebuf, L"Question", 
+                         MB_YESNO | MB_ICONQUESTION );
     return answer == IDOK || answer == IDYES;
 } /* queryBoxChar */
 
 static XP_Bool
 ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream )
 {
-    return ceMsgFromStream( globals, stream, L"Question", XP_TRUE, 
-                            XP_FALSE );
+    return ceMsgFromStream( globals, stream, L"Question", 
+                            MB_OKCANCEL | MB_ICONQUESTION, XP_FALSE );
 } /* ceQueryFromStream */
 
 static void
@@ -2743,7 +2747,7 @@ wince_warnf(const XP_UCHAR* format, ...)
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, slen,
                          widebuf, slen );
 
-    MessageBox( NULL, widebuf, L"WARNF", MB_OK );
+    MessageBox( NULL, widebuf, L"WARNF", MB_OK | MB_ICONHAND );
 } /* wince_warnf */
 
 void
@@ -2968,7 +2972,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
-    ceMessageBoxChar( globals, NULL, message, L"Oops!", MB_OK );
+    ceMessageBoxChar( globals, NULL, message, L"Oops!", MB_OK | MB_ICONHAND );
 } /* ce_util_userError */
 
 static XP_Bool
@@ -2987,11 +2991,11 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         return queryBoxChar( globals->hWnd, query );
 
     case QUERY_ROBOT_MOVE:
-        return ceMsgFromStream( globals, stream, L"FYI", XP_FALSE,
-                                XP_FALSE );
+        return ceMsgFromStream( globals, stream, L"FYI", 
+                                MB_OK | MB_ICONINFORMATION, XP_FALSE );
 
     case QUERY_ROBOT_TRADE:
-        messageBoxStream( globals, stream, L"FYI", MB_OK );
+        messageBoxStream( globals, stream, L"FYI", MB_OK | MB_ICONINFORMATION);
         break;
 
     default:
@@ -3339,7 +3343,8 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     sprintf( msgBuf, "Word[s] %s not found in dictionary.", wordsBuf );
 
     if ( turnLost ) {
-        ceMessageBoxChar( globals, NULL, msgBuf, L"Illegal word", MB_OK );
+        ceMessageBoxChar( globals, NULL, msgBuf, L"Illegal word", 
+                          MB_OK | MB_ICONHAND );
         isOk = XP_TRUE;
     } else {
         strcat( msgBuf, " Use it anyway?" );

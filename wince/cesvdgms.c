@@ -122,7 +122,8 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                             wchar_t widebuf[128];
                             snwprintf( widebuf, VSIZE(widebuf), 
                                        L"File \"%s\" already exists.", buf );
-                            result = MessageBox( hDlg, widebuf, L"Oops!", MB_OK );
+                            result = MessageBox( hDlg, widebuf, L"Oops!", 
+                                                 MB_OK | MB_ICONHAND );
                             (void)SetDlgItemText( hDlg, IDC_SVGN_EDIT, state->buf );
                             break;
                         }
@@ -401,7 +402,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->inited = XP_FALSE;
         state->gameListId = LB_IF_PPC(state->dlgHdr.globals,IDC_SVGM_GAMELIST);
 
-        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_DONEONLY );
+        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_OKONLY );
         ceDlgComboShowHide( &state->dlgHdr, IDC_SVGM_GAMELIST );
 
         result = TRUE;

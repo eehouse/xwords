@@ -62,7 +62,7 @@ XP_U16 ceGetPath( CEAppGlobals* globals, CePathType typ,
 /* set vHeight to 0 to turn off scrolling */
 typedef enum { DLG_STATE_NONE = 0
                , DLG_STATE_TRAPBACK = 1 
-               , DLG_STATE_DONEONLY = 2 
+               , DLG_STATE_OKONLY = 2 
 } DlgStateTask;
 typedef struct CeDlgHdr {
     CEAppGlobals* globals;
