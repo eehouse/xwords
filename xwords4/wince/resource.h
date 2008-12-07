@@ -19,7 +19,7 @@
 #define IDD_COLOREDITDLG                119
 #define IDM_MAIN_MENUBAR                120
 #define IDM_OKCANCEL_MENUBAR            121
-#define IDM_DONE_MENUBAR                122
+#define IDM_OK_MENUBAR                  122
 #define IDB_ORIGIN                      124
 #ifdef XWFEATURE_SEARCHLIMIT
 # define IDD_ASKHINTLIMTS               125
@@ -233,7 +233,6 @@
 #define IDS_CANCEL                      40004
 #define IDS_OK                          40005
 #define IDS_ABOUT                       40006
-#define IDS_DONE                        40007
 #define IDS_DICTLOC                     40029
 #define IDS_SAVENAME                    40030
 #define IDS_DUPENAME                    40031
