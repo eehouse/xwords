@@ -201,7 +201,9 @@ loadControlsFromState( CePrefsDlgState* pState )
     ceSetChecked( hDlg, IDC_PICKTILES, prefsPrefs->gp.allowPickTiles );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
-    ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS, prefsPrefs->gp.allowHintRect );
+    if ( !IS_SMARTPHONE(globals) ) {
+        ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS,  prefsPrefs->gp.allowHintRect );
+    }
 #endif
     /* timer */
     ceSetDlgItemNum( hDlg, TIMER_EDIT, prefsPrefs->gp.gameSeconds / 60 );
@@ -231,6 +233,7 @@ ceControlsToPrefs( CePrefsDlgState* state )
     XP_S16 selIndex;
     CePrefsPrefs* prefsPrefs = &state->prefsPrefs;
     HWND hDlg = state->dlgHdr.hDlg;
+    CEAppGlobals* globals = state->dlgHdr.globals;
 
     prefsPrefs->showColors = ceGetChecked( hDlg, IDC_CHECKCOLORPLAYED );
     prefsPrefs->gp.robotSmartness
@@ -238,7 +241,7 @@ ceControlsToPrefs( CePrefsDlgState* state )
     prefsPrefs->gp.hintsNotAllowed = !ceGetChecked( hDlg, IDC_CHECKHINTSOK );
 
     selIndex = (XP_U16)SendDlgItemMessage( hDlg, state->phonComboId,
-                                           GETCURSEL(state->dlgHdr.globals), 
+                                           GETCURSEL(globals), 
                                            0, 0 );
     if ( selIndex != LB_ERR ) {
         prefsPrefs->gp.phoniesAction = (XWPhoniesChoice)selIndex;
@@ -260,7 +263,9 @@ ceControlsToPrefs( CePrefsDlgState* state )
     prefsPrefs->gp.allowPickTiles = ceGetChecked( hDlg, IDC_PICKTILES );
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
-    prefsPrefs->gp.allowHintRect = ceGetChecked( hDlg, IDC_CHECKHINTSLIMITS );
+    if ( !IS_SMARTPHONE(globals) ) {
+        prefsPrefs->gp.allowHintRect = ceGetChecked( hDlg, IDC_CHECKHINTSLIMITS );
+    }
 #endif
 } /* ceControlsToPrefs */
 
@@ -325,6 +330,13 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         timerOn = SendDlgItemMessage( hDlg, IDC_CHECKHINTSOK, 
                                                       BM_GETCHECK, 0, 0 );
                         ceShowOrHide( hDlg, IDC_CHECKHINTSLIMITS, timerOn );
+                        break;
+                    case IDC_CHECKHINTSLIMITS:
+                        if ( IS_SMARTPHONE(globals) ) {
+                            ceMessageBoxChar( globals, hDlg, "This feature requires a "
+                                            "touch screen.", L"Sorry", MB_OK );
+                            ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS, XP_FALSE );
+                        }
                         break;
 #endif
 

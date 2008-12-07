@@ -1115,7 +1115,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 snprintf( buf, VSIZE(buf), "Unable to open dictionary: %s",
                           dictName );
                 buf[VSIZE(buf)-1] = '\0';
-                messageBoxChar( globals, buf, L"Oops!", MB_OK );
+                ceMessageBoxChar( globals, NULL, buf, L"Oops!", MB_OK );
             }
             XP_FREE( globals->mpool, dictName );
 #endif
@@ -2644,31 +2644,6 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
     return saidYes;
 } /* ceMsgFromStream */
 
-int
-messageBoxChar( CEAppGlobals* globals, XP_UCHAR* str, wchar_t* title, 
-                XP_U16 buttons )
-{
-    wchar_t* widebuf;
-    XP_U32 len, wsize;
-    int result;
-
-    /* first get the length required, then alloc and go */
-    len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, strlen(str),
-                               NULL, 0 );
-    wsize = (len+1) * sizeof( wchar_t );
-
-    widebuf = XP_MALLOC( globals->mpool, wsize );
-
-    XP_MEMSET( widebuf, 0, wsize );
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, strlen(str),
-                         widebuf, len );
-
-    result = MessageBox( globals->hWnd, widebuf, title, buttons );
-
-    XP_FREE( globals->mpool, widebuf );
-    return result;
-} /* messageBoxChar */
-
 static XP_UCHAR*
 ceStreamToStrBuf( MPFORMAL XWStreamCtxt* stream )
 {
@@ -2686,7 +2661,7 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
 {
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
 
-    int result = messageBoxChar( globals, buf, title, buttons );
+    int result = ceMessageBoxChar( globals, NULL, buf, title, buttons );
 
     XP_FREE( globals->mpool, buf );
     return result;
@@ -2986,7 +2961,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
-    messageBoxChar( globals, message, L"Oops!", MB_OK );
+    ceMessageBoxChar( globals, NULL, message, L"Oops!", MB_OK );
 } /* ce_util_userError */
 
 static XP_Bool
@@ -3354,7 +3329,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     sprintf( msgBuf, "Word[s] %s not found in dictionary.", wordsBuf );
 
     if ( turnLost ) {
-        messageBoxChar( globals, msgBuf, L"Illegal word", MB_OK );
+        ceMessageBoxChar( globals, NULL, msgBuf, L"Illegal word", MB_OK );
         isOk = XP_TRUE;
     } else {
         strcat( msgBuf, " Use it anyway?" );

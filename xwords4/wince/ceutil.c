@@ -870,3 +870,22 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
     }
     return len;
 } /* ceGetPath */
+
+int
+ceMessageBoxChar( CEAppGlobals* globals, HWND parent, XP_UCHAR* str, 
+                  wchar_t* title, XP_U16 buttons )
+{
+    /* Get the length required, then alloc and go.  This is technically
+       correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
+    XP_U16 clen = 1 + strlen(str);
+    XP_U32 wlen = 1 + MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, 
+                                           clen, NULL, 0 );
+    wchar_t widebuf[wlen];
+    
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, clen, widebuf, wlen );
+
+    if ( !parent ) {
+        parent = globals->hWnd;
+    }
+    return MessageBox( parent, widebuf, title, buttons );
+} /* ceMessageBoxChar */
