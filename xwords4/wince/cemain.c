@@ -1631,9 +1631,7 @@ ceChooseAndOpen( CEAppGlobals* globals )
     assertOnTop( globals->hWnd );
     // Save in case we'll be duplicating it
  again:
-    if ( ceSaveCurGame( globals, XP_FALSE )
-         || queryBoxChar( globals->hWnd, "Do you really want to "
-                          "overwrite the current game?" ) ) {
+    if ( ceSaveCurGame( globals, XP_FALSE ) ) {
         SavedGamesResult choice;
         wchar_t newName[256];
         newName[0] = 0;
