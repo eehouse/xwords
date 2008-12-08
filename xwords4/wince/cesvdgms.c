@@ -201,7 +201,9 @@ ceBasename( wchar_t* buf, const wchar_t* path )
         --ptr;
     }
     lstrcpy( buf, ptr );
-    buf[dot-ptr] = 0;           /* nuke extension */
+    if ( !!dot ) {
+        buf[dot-ptr] = 0;           /* nuke extension */
+    }
 } /* ceBasename */
 
 /* Probably belongs as a utility */
