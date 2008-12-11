@@ -1115,8 +1115,8 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 snprintf( buf, VSIZE(buf), "Unable to open dictionary: %s",
                           dictName );
                 buf[VSIZE(buf)-1] = '\0';
-                ceMessageBoxChar( globals, NULL, buf, L"Oops!", 
-                                  MB_OK | MB_ICONHAND );
+                ceOops( globals, NULL, buf );
+
             }
             XP_FREE( globals->mpool, dictName );
 #endif
@@ -1138,8 +1138,11 @@ ceLoadSavedGame( CEAppGlobals* globals )
                                            CE_RESET_PROC globals );
             if ( success ) {
                 ceSetTitleFromName( globals );
-            } else if ( !!dict ) {
-                dict_destroy( dict );
+            } else {
+                if ( !!dict ) {
+                    dict_destroy( dict );
+                }
+                ceOops( globals, NULL, "Saved game cannot be opened." );
             }
         }
 
@@ -2970,7 +2973,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
-    ceMessageBoxChar( globals, NULL, message, L"Oops!", MB_OK | MB_ICONHAND );
+    ceOops( globals, NULL, message );
 } /* ce_util_userError */
 
 static XP_Bool

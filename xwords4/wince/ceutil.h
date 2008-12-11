@@ -47,8 +47,9 @@ void ceCheckMenus( const CEAppGlobals* globals );
 void ceGetItemRect( HWND hDlg, XP_U16 resID, RECT* rect );
 void ceMoveItem( HWND hDlg, XP_U16 resID, XP_S16 byX, XP_S16 byY );
 
-int ceMessageBoxChar( CEAppGlobals* globals, HWND parent, XP_UCHAR* str, 
-                      wchar_t* title, XP_U16 buttons );
+int ceMessageBoxChar( CEAppGlobals* globals, HWND parent, const XP_UCHAR* str, 
+                      const wchar_t* title, XP_U16 buttons );
+int ceOops( CEAppGlobals* globals, HWND parent, const XP_UCHAR* str );
 
 typedef enum {
     PREFS_FILE_PATH_L
