@@ -872,8 +872,8 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
 } /* ceGetPath */
 
 int
-ceMessageBoxChar( CEAppGlobals* globals, HWND parent, XP_UCHAR* str, 
-                  wchar_t* title, XP_U16 buttons )
+ceMessageBoxChar( CEAppGlobals* globals, HWND parent, const XP_UCHAR* str, 
+                  const wchar_t* title, XP_U16 buttons )
 {
     /* Get the length required, then alloc and go.  This is technically
        correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
@@ -889,3 +889,10 @@ ceMessageBoxChar( CEAppGlobals* globals, HWND parent, XP_UCHAR* str,
     }
     return MessageBox( parent, widebuf, title, buttons );
 } /* ceMessageBoxChar */
+
+int
+ceOops( CEAppGlobals* globals, HWND parent, const XP_UCHAR* str )
+{
+    return ceMessageBoxChar( globals, parent, str, L"Oops!", 
+                             MB_OK | MB_ICONHAND );
+}
