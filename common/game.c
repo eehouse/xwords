@@ -248,11 +248,13 @@ game_dispose( XWGame* game )
     /* The board should be reused!!! PENDING(ehouse) */
     if ( !!game->board ) { 
         board_destroy( game->board ); 
+        game->board = NULL;
     }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( !!game->comms ) { 
-        comms_destroy( game->comms ); 
+    if ( !!game->comms ) {
+        comms_destroy( game->comms );
+        game->comms = NULL;
     }
 #endif
     if ( !!game->model ) { 
@@ -261,9 +263,11 @@ game_dispose( XWGame* game )
             dict_destroy( dict );
         }
         model_destroy( game->model );
+        game->model = NULL;
     }
     if ( !!game->server ) {
         server_destroy( game->server ); 
+        game->server = NULL;
     }
 } /* game_dispose */
 
