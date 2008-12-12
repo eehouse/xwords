@@ -1349,7 +1349,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 
     ceInitUtilFuncs( globals );
 
-    gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, "Player %d" );
+    gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, NULL );
 
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT

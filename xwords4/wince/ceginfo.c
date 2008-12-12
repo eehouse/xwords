@@ -462,14 +462,18 @@ ceSetColProc( void* closure, XP_U16 player, NewGameColumn col,
     GameInfoState* giState = (GameInfoState*)closure;
     XP_U16 resID = resIDForCol( player, col );
     const XP_UCHAR* cp;
+    XP_UCHAR buf[16];
 
     switch( col ) {
     case NG_COL_PASSWD:
     case NG_COL_NAME:
-        if ( NULL == value.ng_cp ) {
-            cp = "";
-        } else {
+        if ( NULL != value.ng_cp ) {
             cp = value.ng_cp;
+        } else if ( col == NG_COL_NAME ) {
+            cp = buf;
+            snprintf( cp, sizeof(buf), "Player %d", player + 1 );
+        } else {
+            cp = "";
         }
         ceSetDlgItemText( giState->dlgHdr.hDlg, resID, cp );
         break;
