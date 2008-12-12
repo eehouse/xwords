@@ -78,7 +78,7 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         ceDlgSetup( &state->dlgHdr, hDlg, 
-                    state->isQuery? DLG_STATE_NONE : DLG_STATE_OKONLY );
+                    state->isQuery? DLG_STATE_NONE : DLG_STATE_DONEONLY );
 
         handled = TRUE;
     } else {

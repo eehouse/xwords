@@ -404,7 +404,7 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->inited = XP_FALSE;
         state->gameListId = LB_IF_PPC(state->dlgHdr.globals,IDC_SVGM_GAMELIST);
 
-        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_OKONLY );
+        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_DONEONLY );
         ceDlgComboShowHide( &state->dlgHdr, IDC_SVGM_GAMELIST );
 
         result = TRUE;
