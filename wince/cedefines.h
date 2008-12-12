@@ -22,7 +22,7 @@
 
 #define CE_MAX_ROWS 15
 
-#define TRAY_BORDER 7
+#define TRAY_BORDER 6
 #define CELL_BORDER 3
 
 #define MIN_CELL_WIDTH 10

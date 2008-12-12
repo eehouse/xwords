@@ -977,7 +977,8 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         ceSetBkColor( hdc, dctx, backIndex );
 
-        InsetRect( &rt, 1, 1 );
+        InsetRect( &rt, 1, 0 );
+        ++rt.top;                                              /* inset top but not bottom */
         Rectangle( hdc, rt.left, rt.top, rt.right, rt.bottom); /* draw frame */
         InsetRect( &rt, 1, 1 );
 
