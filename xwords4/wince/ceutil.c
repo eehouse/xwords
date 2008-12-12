@@ -307,7 +307,7 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
     mbi.cbSize = sizeof(mbi);
     mbi.hwndParent = hDlg;
-    mbi.nToolBarId = doneOnly? IDM_OK_MENUBAR:IDM_OKCANCEL_MENUBAR;
+    mbi.nToolBarId = doneOnly? IDM_DONE_MENUBAR:IDM_OKCANCEL_MENUBAR;
     mbi.hInstRes = globals->hInst;
     success = SHCreateMenuBar( &mbi );
     if ( !success ) {
@@ -358,7 +358,7 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 
 #ifdef _WIN32_WCE
     (void)mkFullscreenWithSoftkeys( globals, hDlg, fullHeight,
-                                    (doWhat & DLG_STATE_OKONLY) != 0);
+                                    (doWhat & DLG_STATE_DONEONLY) != 0);
 #elif defined DEBUG
     /* Force it to be small so we can test scrolling etc. */
     if ( globals->dbWidth > 0 && globals->dbHeight > 0) {
@@ -435,7 +435,7 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
             if ( editHasFocus() ) {
                 SHSendBackToFocusWindow( message, wParam, lParam );
             } else if ( 0 != (BACK_KEY_UP_MAYBE & LOWORD(lParam) ) ) {
-                WPARAM cmd = (0 != (dlgHdr->doWhat & DLG_STATE_OKONLY)) ?
+                WPARAM cmd = (0 != (dlgHdr->doWhat & DLG_STATE_DONEONLY)) ?
                     IDOK : IDCANCEL;
                 SendMessage( dlgHdr->hDlg, WM_COMMAND, cmd, 0L );
             }
