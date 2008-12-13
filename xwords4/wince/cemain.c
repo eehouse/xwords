@@ -765,45 +765,31 @@ cePositionBoard( CEAppGlobals* globals )
     return erase;
 } /* cePositionBoard */
 
-/* Set the title to be app-name COLON file-name.  If there's no colon there
- * now append colon and game name.  Else if there is a color replace what
- * follows it with the new name.
+/* Set the title.  If there's a game name, replace the window title with that
+ * in case both won't fit.  If there's no name yet, install the app name as
+ * title.
  */
 static void
 ceSetTitleFromName( CEAppGlobals* globals )
 {
-    wchar_t widebuf[256];
-    wchar_t* colonPos;
-    XP_UCHAR* baseStart;
+    wchar_t widebuf[64];
     const XP_UCHAR* gameName = globals->curGameName;
-
-    XP_U16 len = (XP_U16)SendMessage( globals->hWnd, WM_GETTEXT, 
-                                      sizeof(widebuf), (long)widebuf );
-    colonPos = wcsstr( widebuf, L":" );
 
     /* if default name, remove any current name */
     if ( !gameName || isDefaultName( globals, gameName ) ) {
-        if ( NULL != colonPos ) {
-            *colonPos = 0;
-        }
+        LoadString( globals->hInst, IDS_APP_TITLE, widebuf, VSIZE(widebuf) );
     } else {
-        if ( colonPos == NULL ) {
-            wcscat( widebuf, L":" );
-            colonPos = widebuf + len; /* we'll write at the end */
-        }
-        ++colonPos;          /* skip the colon */
-
-        baseStart = strrchr( gameName, '\\' );
-        ++baseStart;
-        len = (XP_U16)XP_STRLEN( baseStart );
+        wchar_t* dotPos;
+        XP_UCHAR* baseStart = 1 + strrchr( gameName, '\\' );
+        XP_U16 len = (XP_U16)XP_STRLEN( baseStart );
 
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, baseStart, len + 1,
-                             colonPos, len + 1 );
+                             widebuf, len + 1 );
 
         /* now get rid of the ".xwg" */
-        colonPos = wcsrchr( widebuf, '.' );
-        if ( colonPos != NULL ) {
-            *colonPos = 0;
+        dotPos = wcsrchr( widebuf, '.' );
+        if ( dotPos != NULL ) {
+            *dotPos = 0;
         }
     }
 
