@@ -58,7 +58,8 @@ if [ ! -z "$NAME" ]; then
 fi
 
 cat > $README <<EOF
-Thanks for downloading Crosswords 4.2 beta 7 for Smartphone and PocketPC.
+
+Thanks for downloading Crosswords 4.2 Release Candidate 1 for Smartphone and PocketPC.
 
 To install, copy the enclosed executable file ($(basename $EXE)) and dictionary file ($(basename $DICT)) into the same directory on your device using File Explorer, then double-click on the executable to launch it.
 
