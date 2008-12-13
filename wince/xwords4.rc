@@ -152,6 +152,14 @@ BEGIN
         NOMENU
 END
 
+IDM_OK_MENUBAR RCDATA
+BEGIN
+    0, 1,
+    I_IMAGENONE, IDOK, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_OK, 0,
+        NOMENU
+END
+
 IDM_DONE_MENUBAR RCDATA
 BEGIN
     0, 1,
@@ -914,7 +922,7 @@ BEGIN
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
     IDS_DONE                "Done"
-    IDS_ABOUT       "Crosswords 4.2b7 (rev " SVN_REV ") "\
+    IDS_ABOUT       "Crosswords 4.2rc1 (rev " SVN_REV ") "\
                     "for Windows Mobile. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\

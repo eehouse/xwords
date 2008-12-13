@@ -299,7 +299,7 @@ ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd )
 
 static XP_Bool
 mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
-                          XP_Bool doneOnly )
+                          DlgStateTask doWhat )
 {
     XP_Bool success = XP_FALSE;
 
@@ -307,7 +307,13 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
     mbi.cbSize = sizeof(mbi);
     mbi.hwndParent = hDlg;
-    mbi.nToolBarId = doneOnly? IDM_DONE_MENUBAR:IDM_OKCANCEL_MENUBAR;
+    if ( 0 != (doWhat & DLG_STATE_DONEONLY) ) {
+        mbi.nToolBarId = IDM_DONE_MENUBAR;
+    } else if ( 0 != (doWhat & DLG_STATE_OKONLY) ) {
+        mbi.nToolBarId = IDM_OK_MENUBAR;
+    } else {
+        mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
+    }
     mbi.hInstRes = globals->hInst;
     success = SHCreateMenuBar( &mbi );
     if ( !success ) {
@@ -351,14 +357,16 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 
     XP_ASSERT( !!globals );
     XP_ASSERT( !!hDlg );
+    /* at most one of these two should be set */
+    XP_ASSERT( (doWhat & (DLG_STATE_OKONLY|DLG_STATE_DONEONLY)) 
+               != (DLG_STATE_OKONLY|DLG_STATE_DONEONLY));
 
     GetClientRect( hDlg, &rect );
     XP_ASSERT( rect.top == 0 );
     fullHeight = rect.bottom;         /* This is before we've resized it */
 
 #ifdef _WIN32_WCE
-    (void)mkFullscreenWithSoftkeys( globals, hDlg, fullHeight,
-                                    (doWhat & DLG_STATE_DONEONLY) != 0);
+    (void)mkFullscreenWithSoftkeys( globals, hDlg, fullHeight, doWhat);
 #elif defined DEBUG
     /* Force it to be small so we can test scrolling etc. */
     if ( globals->dbWidth > 0 && globals->dbHeight > 0) {
@@ -435,7 +443,8 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
             if ( editHasFocus() ) {
                 SHSendBackToFocusWindow( message, wParam, lParam );
             } else if ( 0 != (BACK_KEY_UP_MAYBE & LOWORD(lParam) ) ) {
-                WPARAM cmd = (0 != (dlgHdr->doWhat & DLG_STATE_DONEONLY)) ?
+                WPARAM cmd = (0 != (dlgHdr->doWhat
+                                    & (DLG_STATE_DONEONLY|DLG_STATE_OKONLY))) ?
                     IDOK : IDCANCEL;
                 SendMessage( dlgHdr->hDlg, WM_COMMAND, cmd, 0L );
             }
