@@ -582,7 +582,7 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, XP_U16 width, RFIndex index )
         ceBestFitFont( dctx, height, width, index, fce );
     }
 
-    XP_ASSERT( !!fce->setFont ); /* failing... */
+    XP_ASSERT( !!fce->setFont );
     return fce;
 } /* ceGetSizedFont */
 
@@ -659,7 +659,7 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
 
 static void
 ceGetCharValHts( const CEDrawCtx* dctx, const XP_Rect* xprect, 
-                 XP_U16* charHtP, XP_U16* valHtP )
+                 XP_Bool valHidden, XP_U16* charHtP, XP_U16* valHtP )
 {
     XP_U16 visHt = xprect->height - TRAY_BORDER;
     XP_U16 visWidth = xprect->width - 5; /* ??? */
@@ -667,7 +667,10 @@ ceGetCharValHts( const CEDrawCtx* dctx, const XP_Rect* xprect,
     XP_U16 charHt, valHt;
 
     /* if tiles are wider than tall we can let them overlap vertically */
-    if ( visWidth > visHt ) {
+    if ( valHidden ) {
+        valHt = 0;
+        charHt = visHt;
+    } else if ( visWidth > visHt ) {
         if ( visWidth > (visHt*2) ) {
             charHt = visHt;
             valHt = (3*visHt) / 4;
@@ -675,7 +678,6 @@ ceGetCharValHts( const CEDrawCtx* dctx, const XP_Rect* xprect,
             charHt = (visHt * 4) / 5;
             valHt = visHt / 2;
         }
-
     } else {
         valHt = visHt / 3;
         charHt = visHt - valHt;
@@ -686,7 +688,7 @@ ceGetCharValHts( const CEDrawCtx* dctx, const XP_Rect* xprect,
         charHt = minHt;
     }
 
-    if ( valHt < MIN_CELL_HEIGHT - CELL_BORDER - 2 ) {
+    if ( !valHidden && (valHt < MIN_CELL_HEIGHT - CELL_BORDER - 2) ) {
         valHt = MIN_CELL_HEIGHT - CELL_BORDER - 2;
     }
     *valHtP = valHt;
@@ -1003,7 +1005,8 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             const FontCacheEntry* fce;
             /* Dumb to calc these when only needed once.... */
             XP_U16 valHt, charHt;
-            ceGetCharValHts( dctx, xprect, &charHt, &valHt );
+            XP_Bool valHidden = 0 != (flags & CELL_VALHIDDEN);
+            ceGetCharValHts( dctx, xprect, valHidden, &charHt, &valHt );
 
             if ( !highlighted ) {
                 InsetRect( &rt, 1, 1 );
@@ -1017,11 +1020,12 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
                 ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, fce, 
                                    xprect->left + 4, xprect->top + 4, 
-                                   xprect->width, DT_LEFT );
+                                   xprect->width - 8, 
+                                   valHidden?DT_CENTER:DT_LEFT );
                 SelectObject( hdc, oldFont );
             }
 
-            if ( val >= 0 ) {
+            if ( val >= 0 && !valHidden ) {
                 fce = ceGetSizedFont( dctx, valHt, 0, RFONTS_TRAYVAL );
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
                 swprintf( widebuf, L"%d", val );
