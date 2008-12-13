@@ -37,8 +37,9 @@ typedef enum {
     , CELL_ISSTAR = 0x04
     , CELL_ISCURSOR = 0x08
     , CELL_ISEMPTY = 0x10       /* of a tray tile slot */
-    , CELL_DRAGSRC = 0x20       /* where drag originated */
-    , CELL_DRAGCUR = 0x40       /* where drag is now */
+    , CELL_VALHIDDEN = 0x20     /* show letter only, not value */
+    , CELL_DRAGSRC = 0x40       /* where drag originated */
+    , CELL_DRAGCUR = 0x80       /* where drag is now */
     , CELL_ALL = 0xFF
 } CellFlags;
 

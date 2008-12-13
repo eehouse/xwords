@@ -482,11 +482,14 @@ drawDragTileIf( BoardCtxt* board )
             dragDropTileInfo( board, &tile, &isBlank );
 
             face = getTileDrawInfo( board, tile, isBlank, &bitmap, 
-                                              &value, buf, sizeof(buf) );
+                                    &value, buf, sizeof(buf) );
 
             flags = CELL_DRAGCUR;
             if ( isBlank ) {
                 flags |= CELL_ISBLANK;
+            }
+            if ( board->hideValsInTray && !board->showCellValues ) {
+                flags |= CELL_VALHIDDEN;
             }
             draw_drawTileMidDrag( board->draw, &rect, face, bitmap, value, 
                                   board->selPlayer, flags );
