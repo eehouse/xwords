@@ -160,13 +160,15 @@ drawTray( BoardCtxt* board )
                     XP_U16 numInTray = countTilesToShow( board );
                     XP_Bool isBlank;
                     XP_Bool isADrag = dragDropInProgress( board );
+                    CellFlags baseFlags = board->hideValsInTray && !board->showCellValues
+                        ? CELL_VALHIDDEN : CELL_NONE;
                     
                     dragDropGetTrayChanges( board, &ddRmvdIndx, &ddAddedIndx );
 
                     /* draw in reverse order so drawing happens after
                        erasing */
                     for ( ii = MAX_TRAY_TILES - 1; ii >= 0; --ii ) {
-                        CellFlags flags = CELL_NONE;
+                        CellFlags flags = baseFlags;
                         XP_U16 mask = 1 << ii;
 
                         if ( (board->trayInvalBits & mask) == 0 ) {
@@ -210,11 +212,6 @@ drawTray( BoardCtxt* board )
                             textP = getTileDrawInfo( board, tile, isBlank,
                                                      &bitmap, &value,
                                                      buf, sizeof(buf) );
-                            if ( board->hideValsInTray 
-                                 && !board->showCellValues ) {
-                                value = -1;
-                            }
-
                             if ( isADrag ) {
                                 if ( ddAddedIndx == ii ) {
                                     flags |= CELL_HIGHLIGHT;
@@ -229,8 +226,7 @@ drawTray( BoardCtxt* board )
                             draw_drawTile( board->draw, &tileRect, textP, 
                                            bitmap, value, flags );
                         } else {
-                            draw_drawTileBack( board->draw, &tileRect, 
-                                               flags );
+                            draw_drawTileBack( board->draw, &tileRect, flags );
                         }
                     }
                 }
