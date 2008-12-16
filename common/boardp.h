@@ -233,7 +233,7 @@ void flipIf( const BoardCtxt* board, XP_U16 col, XP_U16 row,
              XP_U16* fCol, XP_U16* fRow );
 XP_Bool pointOnSomething( BoardCtxt* board, XP_U16 x, XP_U16 y, 
                           BoardObjectType* wp );
-XP_Bool coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, 
+XP_Bool coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP, 
                      XP_U16* rowP );
 XP_Bool cellOccupied( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
                       XP_Bool inclPending );

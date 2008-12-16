@@ -1126,21 +1126,23 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
 void
 invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
 {
-    XP_Rect lr = *rect;
-    XP_U16 left, top, right, bottom;
-    XP_U16 col, row;
+    if ( rectsIntersect( rect, &board->boardBounds ) ) {
+        XP_Rect lr = *rect;
+        XP_U16 left, top, right, bottom;
+        XP_U16 col, row;
 
-    if ( !coordToCell( board, lr.left, lr.top, &left, &top ) ) {
-        left = top = 0;
-    }
-    if ( !coordToCell( board, lr.left+lr.width, lr.top+lr.height, 
-                       &right, &bottom ) ) {
-        right = bottom = model_numCols( board->model );
-    }
+        if ( !coordToCell( board, lr.left, lr.top, &left, &top ) ) {
+            left = top = 0;
+        }
+        if ( !coordToCell( board, lr.left+lr.width, lr.top+lr.height, 
+                           &right, &bottom ) ) {
+            right = bottom = model_numCols( board->model );
+        }
 
-    for ( row = top; row <= bottom; ++row ) {
-        for ( col = left; col <= right; ++col ) {
-            invalCell( board, col, row );
+        for ( row = top; row <= bottom; ++row ) {
+            for ( col = left; col <= right; ++col ) {
+                invalCell( board, col, row );
+            }
         }
     }
 } /* invalCellsUnderRect */
@@ -1554,18 +1556,19 @@ figureBoardRect( BoardCtxt* board )
 } /* figureBoardRect */
 
 XP_Bool
-coordToCell( BoardCtxt* board, XP_U16 x, XP_U16 y, XP_U16* colP, XP_U16* rowP )
+coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP, 
+             XP_U16* rowP )
 {
     XP_U16 col, row, max;
     XP_Bool onBoard = XP_TRUE;
 
-    x -= board->boardBounds.left;
+    xx -= board->boardBounds.left;
 
-    y -= board->boardBounds.top;
-    y += board->boardVScale * board->yOffset;
+    yy -= board->boardBounds.top;
+    yy += board->boardVScale * board->yOffset;
 
-    col = x / board->boardHScale;
-    row = y / board->boardVScale;
+    col = xx / board->boardHScale;
+    row = yy / board->boardVScale;
 
     max = model_numCols( board->model ) - 1;
     /* I don't deal with non-square boards yet. */
@@ -2710,17 +2713,17 @@ rectContainsPt( const XP_Rect* rect, XP_S16 x, XP_S16 y )
 XP_Bool
 rectsIntersect( const XP_Rect* rect1, const XP_Rect* rect2 )
 {
+    XP_Bool intersect = XP_TRUE;
     if ( rect1->top >= rect2->top + rect2->height ) {
-        return XP_FALSE;
+        intersect = XP_FALSE;
     } else if ( rect1->left >= rect2->left + rect2->width ) {
-        return XP_FALSE;
+        intersect = XP_FALSE;
     } else if ( rect2->top >= rect1->top + rect1->height ) {
-        return XP_FALSE;
+        intersect = XP_FALSE;
     } else if ( rect2->left >= rect1->left + rect1->width ) {
-        return XP_FALSE;
-    } else {
-        return XP_TRUE;
+        intersect = XP_FALSE;
     }
+    return intersect;
 } /* rectsIntersect */
 
 static XP_Bool
