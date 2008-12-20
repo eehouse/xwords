@@ -24,27 +24,27 @@
 #include "debhacks.h"
 
 static void
-ceControlsToAddrRec( HWND hDlg, CeConnDlgState* cState )
+ceControlsToAddrRec( HWND hDlg, CeConnDlgState* state )
 {
     XP_U16 len;
 
-    if ( cState->addrRec.conType == COMMS_CONN_RELAY ) {
+    if ( state->addrRec.conType == COMMS_CONN_RELAY ) {
 #ifdef XWFEATURE_RELAY
-        len = sizeof(cState->addrRec.u.ip_relay.hostName);
+        len = sizeof(state->addrRec.u.ip_relay.hostName);
         ceGetDlgItemText( hDlg, RELAYNAME_EDIT, 
-                          cState->addrRec.u.ip_relay.hostName, &len );
-        cState->addrRec.u.ip_relay.port = 
+                          state->addrRec.u.ip_relay.hostName, &len );
+        state->addrRec.u.ip_relay.port = 
             (XP_U16)ceGetDlgItemNum( hDlg, RELAYPORT_EDIT );
-        len = sizeof(cState->addrRec.u.ip_relay.cookie);
-        ceGetDlgItemText( hDlg, COOKIE_EDIT, cState->addrRec.u.ip_relay.cookie, 
+        len = sizeof(state->addrRec.u.ip_relay.cookie);
+        ceGetDlgItemText( hDlg, COOKIE_EDIT, state->addrRec.u.ip_relay.cookie, 
                           &len );
 #endif
-    } else if ( cState->addrRec.conType == COMMS_CONN_BT ) {
+    } else if ( state->addrRec.conType == COMMS_CONN_BT ) {
 #ifdef XWFEATURE_BLUETOOTH
-        if ( cState->role == SERVER_ISCLIENT ) {
-            len = sizeof(cState->addrRec.u.bt.hostName);
+        if ( state->role == SERVER_ISCLIENT ) {
+            len = sizeof(state->addrRec.u.bt.hostName);
             ceGetDlgItemText( hDlg, IDC_BLUET_ADDR_EDIT, 
-                              cState->addrRec.u.bt.hostName, &len );
+                              state->addrRec.u.bt.hostName, &len );
         }
 #endif
     } else {
@@ -53,7 +53,7 @@ ceControlsToAddrRec( HWND hDlg, CeConnDlgState* cState )
 } /* ceControlsToAddrRec */
 
 static void
-adjustForConnType( HWND hDlg, const CeConnDlgState* cState )
+adjustForConnType( HWND hDlg, const CeConnDlgState* state )
 {
     XP_U16 relayIds[] = { 
         IDC_COOKIE_LAB,
@@ -72,12 +72,12 @@ adjustForConnType( HWND hDlg, const CeConnDlgState* cState )
     XP_U16* on = NULL;
     XP_U16 i;
 
-    if ( cState->addrRec.conType == COMMS_CONN_RELAY ) {
+    if ( state->addrRec.conType == COMMS_CONN_RELAY ) {
         on = relayIds;
-    } else if ( cState->addrRec.conType == COMMS_CONN_BT ) {
+    } else if ( state->addrRec.conType == COMMS_CONN_BT ) {
         on = 
 #ifdef XWFEATURE_BLUETOOTH
-            cState->role != SERVER_ISCLIENT ? NULL:
+            state->role != SERVER_ISCLIENT ? NULL:
 #endif
         btIds;             /* we want the "disabled" message */
     }
@@ -124,7 +124,7 @@ indexToConType( XP_U16 index )
 }
 
 static void
-ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* cState )
+ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
 {
     XP_U16 i;
     wchar_t* strs[] = { 
@@ -138,22 +138,22 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* cState )
     }
 
     SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO, CB_SETCURSEL, 
-                        conTypeToIndex(cState->addrRec.conType), 0L );
+                        conTypeToIndex(state->addrRec.conType), 0L );
 
-    if ( cState->addrRec.conType == COMMS_CONN_RELAY ) {
+    if ( state->addrRec.conType == COMMS_CONN_RELAY ) {
 #ifdef XWFEATURE_RELAY
         ceSetDlgItemText( hDlg, RELAYNAME_EDIT, 
-                          cState->addrRec.u.ip_relay.hostName );
+                          state->addrRec.u.ip_relay.hostName );
         ceSetDlgItemNum( hDlg, RELAYPORT_EDIT, 
-                         cState->addrRec.u.ip_relay.port );
+                         state->addrRec.u.ip_relay.port );
         ceSetDlgItemText( hDlg, COOKIE_EDIT, 
-                          cState->addrRec.u.ip_relay.cookie );
+                          state->addrRec.u.ip_relay.cookie );
 #endif
-    } else if ( cState->addrRec.conType == COMMS_CONN_BT ) {
+    } else if ( state->addrRec.conType == COMMS_CONN_BT ) {
 #ifdef XWFEATURE_BLUETOOTH
-        if ( cState->role == SERVER_ISCLIENT ) {
+        if ( state->role == SERVER_ISCLIENT ) {
             ceSetDlgItemText( hDlg, IDC_BLUET_ADDR_EDIT, 
-                              cState->addrRec.u.bt.hostName );
+                              state->addrRec.u.bt.hostName );
         }
 #endif
     } else {
@@ -166,23 +166,23 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
     LRESULT result = FALSE;
 
-    CeConnDlgState* cState;
+    CeConnDlgState* state;
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
-        cState = (CeConnDlgState*)lParam;
+        state = (CeConnDlgState*)lParam;
 
-        adjustForConnType( hDlg, cState );
+        adjustForConnType( hDlg, state );
 
-        ceControlsFromAddrRec( hDlg, cState );
+        ceControlsFromAddrRec( hDlg, state );
 
-        ceDlgSetup( &cState->dlgState, hDlg, DLG_STATE_NONE );
+        ceDlgSetup( &state->dlgState, hDlg, DLG_STATE_NONE );
 
         result = TRUE;
     } else {
-        cState = (CeConnDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
-        if ( !!cState ) {
-            CEAppGlobals* globals = cState->dlgHdr.globals; 
+        state = (CeConnDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
+        if ( !!state ) {
+            CEAppGlobals* globals = state->dlgHdr.globals; 
 
             if ( message == WM_COMMAND ) {
                 XP_U16 id = LOWORD(wParam);
@@ -194,17 +194,17 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                         XP_S16 sel;
                         sel = SendDlgItemMessage( hDlg, IDC_CONNECTCOMBO,
                                                   CB_GETCURSEL, 0, 0L );
-                        cState->addrRec.conType = indexToConType( sel );
-                        adjustForConnType( hDlg, cState );
+                        state->addrRec.conType = indexToConType( sel );
+                        adjustForConnType( hDlg, state );
                         result = TRUE;
                     }
                     break;
 
                 case IDOK:
-                    ceControlsToAddrRec( hDlg, cState );
+                    ceControlsToAddrRec( hDlg, state );
                 case IDCANCEL:
                     EndDialog(hDlg, id);
-                    cState->userCancelled = id == IDCANCEL;
+                    state->userCancelled = id == IDCANCEL;
                     result = TRUE;
                 }
             } else if ( message == WM_VSCROLL ) {
