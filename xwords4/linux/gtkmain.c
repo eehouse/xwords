@@ -1844,6 +1844,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 #endif
 
     globals.cp.showBoardArrow = XP_TRUE;
+    globals.cp.hideTileValues = params->hideValues;
     globals.cp.showRobotScores = params->showRobotScores;
 
     setupGtkUtilCallbacks( &globals, params->util );

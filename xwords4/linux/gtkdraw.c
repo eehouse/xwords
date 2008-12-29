@@ -534,7 +534,7 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
 
 static void
 gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
-                 XP_Bitmap bitmap, XP_S16 val, CellFlags flags, 
+                 XP_Bitmap bitmap, XP_U16 val, CellFlags flags, 
                  XP_Bool clearBack )
 {
     XP_UCHAR numbuf[3];
@@ -542,25 +542,28 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect insetR = *rect;
     XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0;
+    XP_Bool valHidden = (flags & CELL_VALHIDDEN) != 0;
+    XP_Bool notEmpty = (flags & CELL_ISEMPTY) == 0;
 
     if ( clearBack ) {
         gtkEraseRect( dctx, &insetR );
     }
 
-    if ( isCursor || (val >= 0) ) {
+    if ( isCursor || notEmpty ) {
         GdkColor* foreground = &dctx->playerColors[dctx->trayOwner];
         XP_Rect formatRect = insetR;
 
         gtkInsetRect( &insetR, 1 );
 
         if ( clearBack ) {
-            gtkFillRect( dctx, &insetR, isCursor? &dctx->cursor:&dctx->tileBack );
+            gtkFillRect( dctx, &insetR, 
+                         isCursor ? &dctx->cursor : &dctx->tileBack );
         }
 
-        if ( val >= 0 ) {
-            formatRect.left += 3;
-            formatRect.width -= 6;
+        formatRect.left += 3;
+        formatRect.width -= 6;
 
+        if ( notEmpty ) {
             if ( !!textP ) {
                 if ( *textP != LETTER_NONE ) { /* blank */
                     draw_string_at( dctx, NULL, textP, formatRect.height>>1,
@@ -572,35 +575,37 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                 drawBitmapFromLBS( dctx, bitmap, &insetR );
             }
     
-            sprintf( numbuf, "%d", val );
-            len = strlen( numbuf );
+            if ( !valHidden ) {
+                sprintf( numbuf, "%d", val );
+                len = strlen( numbuf );
 
-            draw_string_at( dctx, NULL, numbuf, formatRect.height>>2,
-                            &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
-                            foreground, NULL );
-    
-            /* frame the tile */
-            gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
+                draw_string_at( dctx, NULL, numbuf, formatRect.height>>2,
+                                &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
+                                foreground, NULL );
+            }
+        }
+
+        /* frame the tile */
+        gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
+        gdk_draw_rectangle( DRAW_WHAT(dctx),
+                            dctx->drawGC,
+                            FALSE,
+                            insetR.left, insetR.top, insetR.width, 
+                            insetR.height );
+
+        if ( (flags & CELL_HIGHLIGHT) != 0 ) {
+            gtkInsetRect( &insetR, 1 );
             gdk_draw_rectangle( DRAW_WHAT(dctx),
                                 dctx->drawGC,
-                                FALSE,
-                                insetR.left, insetR.top, insetR.width, 
-                                insetR.height );
-
-            if ( (flags & CELL_HIGHLIGHT) != 0 ) {
-                gtkInsetRect( &insetR, 1 );
-                gdk_draw_rectangle( DRAW_WHAT(dctx),
-                                    dctx->drawGC,
-                                    FALSE, insetR.left, insetR.top, 
-                                    insetR.width, insetR.height);
-            }
+                                FALSE, insetR.left, insetR.top, 
+                                insetR.width, insetR.height);
         }
     }
 } /* gtkDrawTileImpl */
 
 static void
 gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
-                   XP_Bitmap bitmap, XP_S16 val, CellFlags flags )
+                   XP_Bitmap bitmap, XP_U16 val, CellFlags flags )
 {
     gtkDrawTileImpl( p_dctx, rect, textP, bitmap, val, flags, XP_TRUE );
 }
@@ -609,7 +614,7 @@ gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 static void
 gtk_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
                           const XP_UCHAR* textP, XP_Bitmap bitmap, 
-                          XP_S16 val, XP_U16 owner, CellFlags flags )
+                          XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     gtk_draw_trayBegin( p_dctx, rect, owner, DFS_NONE );
     gtkDrawTileImpl( p_dctx, rect, textP, bitmap, val, 

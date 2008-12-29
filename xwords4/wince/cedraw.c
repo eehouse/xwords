@@ -59,6 +59,7 @@ typedef enum { NO_FOCUS, SINGLE_FOCUS, TOP_FOCUS } CeFocusLevel;
 
 typedef enum { 
     RFONTS_TRAY
+    ,RFONTS_TRAYNOVAL
     ,RFONTS_TRAYVAL
     ,RFONTS_CELL
     ,RFONTS_REM
@@ -127,6 +128,7 @@ RFI2Str( RFIndex rfi )
 # define CASE_STR(c)  case c: str = #c; break
     switch( rfi ) {
         CASE_STR( RFONTS_TRAY );
+        CASE_STR( RFONTS_TRAYNOVAL );
         CASE_STR( RFONTS_TRAYVAL );
         CASE_STR( RFONTS_CELL );
         CASE_STR( RFONTS_REM );
@@ -277,6 +279,7 @@ makeTestBuf( CEDrawCtx* dctx, XP_UCHAR* buf, XP_U16 bufLen, RFIndex index )
 {
     switch( index ) {
     case RFONTS_TRAY:
+    case RFONTS_TRAYNOVAL:
     case RFONTS_CELL: {
         Tile tile;
         Tile blank = (Tile)-1;
@@ -948,7 +951,7 @@ DRAW_FUNC_NAME(trayBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
 
 static void
 drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                  const XP_UCHAR* letters, XP_S16 val, CellFlags flags )
+                  const XP_UCHAR* letters, XP_U16 val, CellFlags flags )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -1013,7 +1016,8 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             }
 
             if ( !!letters ) {
-                fce = ceGetSizedFont( dctx, charHt, 0, RFONTS_TRAY );
+                fce = ceGetSizedFont( dctx, charHt, 0, 
+                                      valHidden ? RFONTS_TRAYNOVAL:RFONTS_TRAY );
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
                 MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                                      widebuf, VSIZE(widebuf) );
@@ -1025,7 +1029,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                 SelectObject( hdc, oldFont );
             }
 
-            if ( val >= 0 && !valHidden ) {
+            if ( !valHidden ) {
                 fce = ceGetSizedFont( dctx, valHt, 0, RFONTS_TRAYVAL );
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
                 swprintf( widebuf, L"%d", val );
@@ -1043,7 +1047,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 DLSTATIC void
 DRAW_FUNC_NAME(drawTile)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                           const XP_UCHAR* letters, XP_Bitmap XP_UNUSED(bitmap),
-                          XP_S16 val, CellFlags flags )
+                          XP_U16 val, CellFlags flags )
 {
     drawDrawTileGuts( p_dctx, xprect, letters, val, flags );
 } /* ce_draw_drawTile */
@@ -1053,7 +1057,7 @@ DLSTATIC void
 DRAW_FUNC_NAME(drawTileMidDrag)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                                  const XP_UCHAR* letters, 
                                  XP_Bitmap XP_UNUSED(bitmap),
-                                 XP_S16 val, XP_U16 owner, CellFlags flags )
+                                 XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     draw_trayBegin( p_dctx, xprect, owner, DFS_NONE );
     drawDrawTileGuts( p_dctx, xprect, letters, val, flags );
@@ -1064,7 +1068,7 @@ DLSTATIC void
 DRAW_FUNC_NAME(drawTileBack)( DrawCtx* p_dctx, const XP_Rect* xprect,
                               CellFlags flags )
 {
-    drawDrawTileGuts( p_dctx, xprect, "?", -1, flags );
+    drawDrawTileGuts( p_dctx, xprect, "?", 0, flags | CELL_VALHIDDEN );
 } /* ce_draw_drawTileBack */
 
 DLSTATIC void

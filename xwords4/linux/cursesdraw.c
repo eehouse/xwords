@@ -392,7 +392,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 static void
 curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                       const XP_UCHAR* textP, XP_Bitmap XP_UNUSED(bitmap),
-                      XP_S16 val, CellFlags flags )
+                      XP_U16 val, CellFlags flags )
 {
     char numbuf[5];
     char letterbuf[5];
@@ -403,7 +403,7 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     if ( (flags&CELL_ISEMPTY) == 0 ) {
         letterbuf[0] = !!textP? *textP: '_'; /* BLANK or bitmap */
         letterbuf[1] = '\0';
-        if ( val >= 0 ) {
+        if ( (flags&CELL_VALHIDDEN) == 0  ) {
             sprintf( numbuf, "%.2d", val );
             if ( numbuf[0] == '0' ) {
                 numbuf[0] = ' ';
