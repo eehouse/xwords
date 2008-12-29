@@ -39,6 +39,7 @@ typedef enum {
     ,COMMS_CONN_IP_DIRECT
     ,COMMS_CONN_RELAY
     ,COMMS_CONN_BT
+    ,COMMS_CONN_SMS
 } CommsConnType;
 
 /* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
@@ -60,6 +61,8 @@ typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
 #endif
 
 #define MAX_HOSTNAME_LEN 63
+#define MAX_PHONE_LEN    31
+
 typedef struct CommsAddrRec {
     CommsConnType conType;
 
@@ -84,6 +87,10 @@ typedef struct CommsAddrRec {
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
             XP_BtAddr btAddr;
         } bt;
+        struct {
+            XP_UCHAR phone[MAX_PHONE_LEN + 1];
+            XP_U16   port;
+        } sms;
     } u;
 } CommsAddrRec;
 

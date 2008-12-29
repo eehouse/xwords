@@ -84,6 +84,7 @@ endif
 # DEFINES += -DXWFEATURE_IR
 DEFINES += ${BLUETOOTH}
 DEFINES += -DXWFEATURE_RELAY
+DEFINES += -DXWFEATURE_SMS
 
 # Support device-to-device connection via UDP, e.g. using wifi on a
 # LAN or where the host/server isn't behind a firewall.
@@ -136,6 +137,7 @@ OBJ = \
 	$(PLATFORM)/filestream.o \
 	$(PLATFORM)/linuxbt.o \
 	$(PLATFORM)/linuxudp.o \
+	$(PLATFORM)/linuxsms.o \
 	$(PLATFORM)/linuxdict.o \
 	$(PLATFORM)/linuxutl.o \
 	$(CURSES_OBJS) $(GTK_OBJS) $(MAIN_OBJS)

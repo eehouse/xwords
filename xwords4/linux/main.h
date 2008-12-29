@@ -87,6 +87,12 @@ typedef struct LaunchParams {
             int port;
         } ip;
 #endif
+#ifdef XWFEATURE_SMS
+        struct {
+            const char* serverPhone;
+            int port;
+        } sms;
+#endif
     } connInfo;
 
     union {
@@ -103,6 +109,10 @@ typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock,
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals, void** storage );
+
+#ifdef XWFEATURE_SMS
+typedef struct LinSMSData LinSMSData;
+#endif
 
 struct CommonGlobals {
     LaunchParams* params;
@@ -130,11 +140,12 @@ struct CommonGlobals {
 #if defined XWFEATURE_IP_DIRECT
     struct LinUDPStuff* udpStuff;
 #endif
+#ifdef XWFEATURE_SMS
+    LinSMSData* smsData;
+#endif
 
     XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
     void* timerClosures[NUM_TIMERS_PLUS_ONE];
-
-    MPSLOT
 };
 
 #endif

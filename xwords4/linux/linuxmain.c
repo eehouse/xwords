@@ -45,6 +45,7 @@
 #include "linuxmain.h"
 #include "linuxutl.h"
 #include "linuxbt.h"
+#include "linuxsms.h"
 #include "linuxudp.h"
 #include "main.h"
 #ifdef PLATFORM_NCURSES
@@ -186,6 +187,9 @@ usage( char* appName, char* msg )
 	     "\t [-U]             # call 'Undo' after game ends\n"
 #ifdef XWFEATURE_RELAY
 	     "\t [-H]             # Don't send heartbeats to relay\n"
+#endif
+#ifdef XWFEATURE_SMS
+	     "\t [-M phone]       # Server phone number for SMS\n"
 #endif
 	     "\t [-r name]*       # same-process robot\n"
 	     "\t [-n name]*       # same-process player (no network used)\n"
@@ -446,6 +450,16 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
         linux_udp_open( globals, &addr );
         nSent = linux_udp_send( buf, buflen, addrRec, globals );
 #endif
+#if defined XWFEATURE_SMS
+    } else if ( COMMS_CONN_SMS == conType ) {
+        CommsAddrRec addr;
+        if ( !addrRec ) {
+            comms_getAddr( globals->game.comms, &addr );
+            addrRec = &addr;
+        }
+        nSent = linux_sms_send( globals, buf, buflen, 
+                                addrRec->u.sms.phone, addrRec->u.sms.port );
+#endif
     } else {
         XP_ASSERT(0);
     }
@@ -545,23 +559,26 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
     (*proc)( closure, why );
 } /* fireTimer */
 
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 linux_util_addrChange( XW_UtilCtxt* uc, 
                        const CommsAddrRec* XP_UNUSED(oldAddr),
                        const CommsAddrRec* newAddr )
 {
+    CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
     if ( 0 ) {
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( newAddr->conType == COMMS_CONN_BT ) {
-        CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
         XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
         linux_bt_open( cGlobals, isServer );
 #endif
 #if defined XWFEATURE_IP_DIRECT
     } else if ( newAddr->conType == COMMS_CONN_IP_DIRECT ) {
-        CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
         linux_udp_open( cGlobals, newAddr );
+#endif
+#if defined XWFEATURE_SMS
+    } else if ( COMMS_CONN_SMS == newAddr->conType ) {
+        linux_sms_init( cGlobals, newAddr );
 #endif
     }
 }
@@ -625,8 +642,9 @@ main( int argc, char** argv )
     int opt;
     int totalPlayerCount = 0;
     XP_Bool isServer = XP_FALSE;
-    char* portNum = "10999";
+    char* portNum = NULL;
     char* hostName = "localhost";
+    char* serverPhone = NULL;         /* sms */
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 robotCount = 0;
@@ -708,6 +726,9 @@ main( int argc, char** argv )
                       "h:I"
 #endif
                       "kKf:ln:Nsd:e:r:b:q:w:Sit:Umvc"
+#ifdef XWFEATURE_SMS
+                      "M:"
+#endif
 #ifdef XWFEATURE_RELAY
                       "a:p:C:H"
 #endif
@@ -767,6 +788,13 @@ main( int argc, char** argv )
             mainParams.gi.players[mainParams.nLocalPlayers-1].password
                 = (XP_UCHAR*)optarg;
             break;
+#ifdef XWFEATURE_SMS
+        case 'M':		/* SMS phone number */
+            XP_ASSERT( COMMS_CONN_NONE == conType );
+            serverPhone = optarg;
+            conType = COMMS_CONN_SMS;
+            break;
+#endif
         case 'm':		/* dumb robot */
             mainParams.gi.robotSmartness = DUMB_ROBOT;
             break;
@@ -787,7 +815,7 @@ main( int argc, char** argv )
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
         case 'p':
-            /* could be RELAY or IP_DIRECT */
+            /* could be RELAY or IP_DIRECT or SMS */
             portNum = optarg;
             break;
         case 'r':
@@ -908,19 +936,26 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
         mainParams.connInfo.relay.relayName = hostName;
-
-        /* convert strings to whatever */
-        if ( portNum != NULL ) {
-            mainParams.connInfo.relay.defaultSendPort = 
-                atoi( portNum );
+        if ( NULL == portNum ) {
+            portNum = "10999";
         }
+        mainParams.connInfo.relay.defaultSendPort = atoi( portNum );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
     } else if ( conType == COMMS_CONN_IP_DIRECT ) {
         mainParams.connInfo.ip.hostName = hostName;
-        if ( portNum != NULL ) {
-            mainParams.connInfo.ip.port = atoi( portNum );
+        if ( NULL == portNum ) {
+            portNum = "10999";
         }
+        mainParams.connInfo.ip.port = atoi( portNum );
+#endif
+#ifdef XWFEATURE_SMS
+    } else if ( conType == COMMS_CONN_SMS ) {
+        mainParams.connInfo.sms.serverPhone = serverPhone;
+        if ( !portNum ) {
+            portNum = "1";
+        }
+        mainParams.connInfo.sms.port = atoi(portNum);
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {

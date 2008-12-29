@@ -45,6 +45,7 @@
 #include "linuxutl.h"
 #include "linuxbt.h"
 #include "linuxudp.h"
+#include "linuxsms.h"
 /* #include "gtkmain.h" */
 
 #include "draw.h"
@@ -364,6 +365,12 @@ createOrLoadObjects( GtkAppGlobals* globals )
                         sizeof(addr.u.ip.hostName_ip) - 1 );
             addr.u.ip.port_ip = params->connInfo.ip.port;
 #endif
+#ifdef XWFEATURE_SMS
+        } else if ( addr.conType == COMMS_CONN_SMS ) {
+            XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.serverPhone,
+                        sizeof(addr.u.sms.phone) - 1 );
+            addr.u.sms.port = params->connInfo.sms.port;
+#endif
         }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -548,6 +555,9 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &globals->cGlobals );
+#endif
+#ifdef XWFEATURE_SMS
+    linux_sms_close( &globals->cGlobals );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
     linux_udp_close( &globals->cGlobals );
@@ -1617,6 +1627,12 @@ newConnectionInput( GIOChannel *source,
         } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
             nRead = linux_bt_receive( sock, buf, sizeof(buf) );
 #endif
+#ifdef XWFEATURE_SMS
+        } else if ( globals->cGlobals.params->conType == COMMS_CONN_SMS ) {
+            addrp = &addr;
+            nRead = linux_sms_receive( &globals->cGlobals, sock, 
+                                       buf, sizeof(buf), addrp );
+#endif
 #ifdef XWFEATURE_IP_DIRECT
         } else if ( globals->cGlobals.params->conType == COMMS_CONN_IP_DIRECT ) {
             addrp = &addr;
@@ -1680,7 +1696,8 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
         g_io_channel_unref( info->channel );
         XP_FREE( globals->cGlobals.params->util->mpool, info );
         *storage = NULL;
-        XP_LOGF( "Removed socket %d from gtk's list of listened-to sockets", oldSock );
+        XP_LOGF( "Removed socket %d from gtk's list of listened-to sockets", 
+                 oldSock );
     }
     if ( newSock != -1 ) {
         info = (SockInfo*)XP_MALLOC( globals->cGlobals.params->util->mpool,
