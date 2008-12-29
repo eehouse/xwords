@@ -677,7 +677,7 @@ smallBoldStringAt( const char* str, XP_U16 len, XP_S16 x, XP_U16 y )
 static void
 palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                     const XP_UCHAR* letters, XP_Bitmap bitmap,
-                    XP_S16 val, CellFlags flags )
+                    XP_U16 val, CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     char valBuf[3];
@@ -716,7 +716,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
         /* Draw the number before the letter.  Some PalmOS version don't
            honor the winOverlay flag and erase.  Better to erase the value
            than the letter. */
-        if ( val >= 0 ) {
+        if ( (flags & CELL_VALHIDDEN) == 0 ) {
             (void)StrPrintF( valBuf, "%d", val );
             len = XP_STRLEN((const char*)valBuf);
 
@@ -769,7 +769,7 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 static void
 palm_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
                            const XP_UCHAR* letters, XP_Bitmap bitmap,
-                           XP_S16 val, XP_U16 owner, CellFlags flags )
+                           XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     /* let trayBegin code take care of pushing color env changes. */
     draw_trayBegin( p_dctx, rect, owner, DFS_NONE );
@@ -781,8 +781,8 @@ palm_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect,
 static void
 palm_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, CellFlags flags )
 {
-    palm_draw_drawTile( p_dctx, rect, (unsigned char*)"?", (XP_Bitmap)NULL, 
-                        -1, flags & CELL_ISCURSOR );
+    palm_draw_drawTile( p_dctx, rect, "?", (XP_Bitmap)NULL, 
+                        0, (flags & CELL_ISCURSOR) | CELL_VALHIDDEN );
 } /* palm_draw_drawTileBack */
 
 static void

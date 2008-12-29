@@ -195,6 +195,7 @@ usage( char* appName, char* msg )
 	     "\t [-n name]*       # same-process player (no network used)\n"
 	     "\t [-w pwd]*        # passwd for matching local player\n"
 	     "\t [-v]             # put scoreboard in vertical mode\n"
+	     "\t [-V]             # hide values in tray\n"
 	     "\t [-m]             # make the robot duMb (smart is default)\n"
 	     "\t [-l]             # disallow hints\n"
 	     "\t [-c]             # explain robot scores after each move\n"
@@ -725,7 +726,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "kKf:ln:Nsd:e:r:b:q:w:Sit:Umvc"
+                      "kKf:ln:Nsd:e:r:b:q:w:Sit:UmvcV"
 #ifdef XWFEATURE_SMS
                       "M:"
 #endif
@@ -864,6 +865,9 @@ main( int argc, char** argv )
             btaddr = optarg;
             break;
 #endif
+        case 'V':
+            mainParams.hideValues = XP_TRUE;
+            break;
         case 'v':
             mainParams.verticalScore = XP_TRUE;
             break;

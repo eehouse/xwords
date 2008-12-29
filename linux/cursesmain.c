@@ -1349,6 +1349,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     g_globals.cp.showBoardArrow = XP_TRUE;
     g_globals.cp.showRobotScores = params->showRobotScores;
+    g_globals.cp.hideTileValues = params->hideValues;
 
     dict = params->dict;
 

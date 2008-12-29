@@ -171,13 +171,13 @@ typedef struct DrawCtxVTable {
                                       /* at least 1 of these two will be null*/
                                       const XP_UCHAR* text, 
                                       const XP_Bitmap bitmap,
-                                      XP_S16 val, CellFlags flags );
+                                      XP_U16 val, CellFlags flags );
 #ifdef POINTER_SUPPORT
     void DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, const XP_Rect* rect, 
                                       /* at least 1 of these two will be null*/
                                              const XP_UCHAR* text, 
                                              const XP_Bitmap bitmap,
-                                             XP_S16 val, XP_U16 owner, 
+                                             XP_U16 val, XP_U16 owner, 
                                              CellFlags flags );
 #endif
     void DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
