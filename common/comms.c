@@ -330,6 +330,11 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
         addr.u.ip_relay.ipAddr = stream_getU32( stream );
         addr.u.ip_relay.port = stream_getU16( stream );
         break;
+    case COMMS_CONN_SMS:
+        stringFromStreamHere( stream, addr.u.sms.phone, 
+                              sizeof(addr.u.sms.phone) );
+        addr.u.sms.port = stream_getU16( stream );
+        break;
     default:
         /* shut up, compiler */
         break;
@@ -435,13 +440,24 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     return comms;
 } /* comms_makeFromStream */
 
+#ifdef COMMS_HEARTBEAT
+static void
+setDoHeartbeat( CommsCtxt* comms )
+{
+    CommsConnType conType = comms->addr.conType;
+    comms->doHeartbeat = XP_FALSE
+        || COMMS_CONN_IP_DIRECT == conType
+        || COMMS_CONN_BT == conType
+        ;
+}
+#else
+# define setDoHeartbeat(c)
+#endif
+
 void
 comms_start( CommsCtxt* comms )
 {
-#ifdef COMMS_HEARTBEAT
-    comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
-#endif
-
+    setDoHeartbeat( comms );
     sendConnect( comms );
 } /* comms_start */
 
@@ -501,6 +517,10 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
         stringToStream( stream, addr.u.ip_relay.hostName );
         stream_putU32( stream, addr.u.ip_relay.ipAddr );
         stream_putU16( stream, addr.u.ip_relay.port );
+        break;
+    case COMMS_CONN_SMS:
+        stringToStream( stream, addr.u.sms.phone );
+        stream_putU16( stream, addr.u.sms.port );
         break;
     }
 } /* addrToStream */
@@ -583,7 +603,7 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
 #ifdef COMMS_HEARTBEAT
-    comms->doHeartbeat = comms->addr.conType != COMMS_CONN_IR;
+    setDoHeartbeat( comms );
 #endif
     sendConnect( comms );
 
@@ -1063,6 +1083,13 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
             break;
         case COMMS_CONN_IR:              /* no way to test */
             break;
+        case COMMS_CONN_SMS:              /* no way to test */
+            if ( ( 0 == XP_MEMCMP( &addr->u.sms.phone, &rec->addr.u.sms.phone,
+                                   sizeof(addr->u.sms.phone) ) )
+                 && addr->u.sms.port == rec->addr.u.sms.port ) {
+                matched = XP_TRUE;
+            }
+            break;
         case COMMS_CONN_NONE:
             matched = channelNo == rec->channelNo;
             break;
@@ -1218,8 +1245,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             payloadSize = stream_getSize( stream ) > 0; /* anything left? */
             if ( connID == CONN_ID_NONE ) {
                 /* special case: initial message from client */
-                rec = validateInitialMessage( comms, payloadSize > 0, addr, senderID, 
-                                              &channelNo );
+                rec = validateInitialMessage( comms, payloadSize > 0, addr, 
+                                              senderID, &channelNo );
             } else if ( comms->connID == connID ) {
                 rec = validateChannelMessage( comms, addr, channelNo, msgID,
                                               lastMsgRcd );
