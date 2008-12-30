@@ -21,6 +21,7 @@
 #include "permid.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include "mlock.h"
 

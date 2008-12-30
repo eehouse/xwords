@@ -78,15 +78,15 @@ class CRefMgr {
 
  private:
     friend class SafeCref;
-    CookieRef* getMakeCookieRef_locked( const char* cORn, int isCookie, 
+    CookieRef* getMakeCookieRef_locked( const char* cORn, bool isCookie, 
                                         HostID hid, 
                                         int nPlayersH, int nPlayersT );
     CookieRef* getCookieRef_locked( CookieID cookieID );
     CookieRef* getCookieRef_locked( int socket );
-    int checkCookieRef_locked( CookieRef* cref );
+    bool checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
-    CookieRef* FindOpenGameFor( const char* cORn, int isCookie,
+    CookieRef* FindOpenGameFor( const char* cORn, bool isCookie,
                                 HostID hid, int nPlayersH, int nPlayersT );
 
     CookieID cookieIDForConnName( const char* connName );
@@ -97,7 +97,7 @@ class CRefMgr {
 
     CookieID m_nextCID;
 
-    int LockCref( CookieRef* cref );
+    bool LockCref( CookieRef* cref );
     void UnlockCref( CookieRef* cref );
 
     pthread_mutex_t m_guard;
@@ -119,35 +119,35 @@ class SafeCref {
        CookieRef instance at a time. */
 
  public:
-    SafeCref( const char* cookieOrConnName, int cookie, HostID hid, 
+    SafeCref( const char* cookieOrConnName, bool cookie, HostID hid, 
               int nPlayersH, int nPlayersT );
     SafeCref( CookieID cid );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
     ~SafeCref();
 
-    int Forward( HostID src, HostID dest, unsigned char* buf, int buflen ) {
+    bool Forward( HostID src, HostID dest, unsigned char* buf, int buflen ) {
         if ( IsValid() ) {
             m_cref->_Forward( src, dest, buf, buflen );
-            return 1;
+            return true;
         } else {
-            return 0;
+            return false;
         }
     }
-    int Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
+    bool Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
         if ( IsValid() ) {
             m_cref->_Connect( socket, srcID, nPlayersH, nPlayersT );
-            return 1;
+            return true;
         } else {
-            return 0;
+            return false;
         }
     }
-    int Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
+    bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
         if ( IsValid() ) {
             m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersT );
-            return 1;
+            return true;
         } else {
-            return 0;
+            return false;
         }
     }
     void Disconnect(int socket, HostID hostID ) {
@@ -167,12 +167,12 @@ class SafeCref {
     }
 
 #ifdef RELAY_HEARTBEAT
-    int HandleHeartbeat( HostID id, int socket ) {
+    bool HandleHeartbeat( HostID id, int socket ) {
         if ( IsValid() ) {
             m_cref->_HandleHeartbeat( id, socket );
-            return 1;
+            return true
         } else {
-            return 0;
+            return false;
         }
     }
     void CheckHeartbeats( time_t now ) {
@@ -209,7 +209,7 @@ class SafeCref {
     
 
  private:
-    int IsValid()        { return m_cref != NULL; }
+    bool IsValid()        { return m_cref != NULL; }
 
     CookieRef* m_cref;
     CRefMgr* m_mgr;

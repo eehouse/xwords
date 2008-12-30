@@ -23,6 +23,8 @@
 #include <netinet/in.h>
 #include <assert.h>
 
+#include <algorithm>
+
 #include "lstnrmgr.h"
 #include "mlock.h"
 

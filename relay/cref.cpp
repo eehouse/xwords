@@ -25,6 +25,7 @@
 #include <netinet/in.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "cref.h"
 #include "xwrelay.h"
@@ -174,17 +175,17 @@ CookieRef::SocketForHost( HostID dest )
    recovery back to XW_ST_ALLCONNECTED is possible.  This is used to decide
    whether to admit a connection based on its cookie -- whether that cookie
    should join an existing cref or get a new one? */
-int
+bool
 CookieRef::NeverFullyConnected()
 {
     return m_curState != XWS_ALLCONNECTED
         && m_curState != XWS_MISSING;
 }
 
-int
+bool
 CookieRef::AcceptingReconnections( HostID hid, int nPlayersH, int nPlayersT )
 {
-    int accept = 0;
+    bool accept = false;
     /* First, do we have room.  Second, are we missing this guy? */
 
     if ( m_curState != XWS_INITED
@@ -197,9 +198,9 @@ CookieRef::AcceptingReconnections( HostID hid, int nPlayersH, int nPlayersT )
         /* do nothing: reject */
     } else {
         if ( m_nPlayersTotal == 0 ) {
-            accept = 1;
+            accept = true;
         } else if ( nPlayersH + m_nPlayersHere <= m_nPlayersTotal ) {
-            accept = 1;
+            accept = true;
         } else {
             logf( XW_LOGINFO, "reject: m_nPlayersTotal=%d, m_nPlayersHere=%d",
                   m_nPlayersTotal, m_nPlayersHere );
@@ -246,15 +247,15 @@ CookieRef::removeSocket( int socket )
     }
 } /* removeSocket */
 
-int
+bool
 CookieRef::HasSocket( int socket )
 {
-    int found = 0;
+    bool found = false;
 
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) {
         if ( iter->second.m_socket == socket ) {
-            found = 1;
+            found = true;
             break;
         }
         ++iter;
@@ -577,7 +578,7 @@ CookieRef::checkCounts( const CRefEvent* evt )
     int nPlayersH = evt->u.con.nPlayersH;
 /*     int nPlayersT = evt->u.con.nPlayersT; */
     HostID hid = evt->u.con.srcID;
-    int success;
+    bool success;
 
     logf( XW_LOGVERBOSE1, "checkCounts: hid=%d, nPlayers=%d, m_nPlayersTotal = %d, "
           "m_nPlayersHere = %d",
@@ -617,7 +618,7 @@ CookieRef::cancelAllConnectedTimer()
 }
 
 void
-CookieRef::sendResponse( const CRefEvent* evt, int initial )
+CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 {
     int socket = evt->u.con.socket;
     HostID id = evt->u.con.srcID;
@@ -713,7 +714,7 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 } /* notifyOthers */
 
 void
-CookieRef::sendAllHere( int includeName )
+CookieRef::sendAllHere( bool includeName )
 {
     unsigned char buf[1 + 1 + MAX_CONNNAME_LEN];
     unsigned char* bufp = buf;

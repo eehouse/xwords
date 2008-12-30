@@ -27,6 +27,8 @@
 #include <netinet/in.h>
 #include <sys/poll.h>
 #include <errno.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "tpool.h"
 #include "xwrelay_priv.h"
@@ -80,8 +82,8 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc )
 
     pthread_t thread;
 
-    int i;
-    for ( i = 0; i < nThreads; ++i ) {
+    int ii;
+    for ( ii = 0; ii < nThreads; ++ii ) {
         int result = pthread_create( &thread, NULL, tpool_main, this );
         assert( result == 0 );
         pthread_detach( thread );
@@ -96,8 +98,8 @@ XWThreadPool::Stop()
 {
     m_timeToDie = 1;
 
-    int i;
-    for ( i = 0; i < m_nThreads; ++i ) {
+    int ii;
+    for ( ii = 0; ii < m_nThreads; ++ii ) {
         enqueue( 0 );
     }
 
@@ -115,10 +117,10 @@ XWThreadPool::AddSocket( int socket )
     interrupt_poll();
 }
 
-int
+bool
 XWThreadPool::RemoveSocket( int socket )
 {
-    int found = 0;
+    bool found = false;
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
 
@@ -126,7 +128,7 @@ XWThreadPool::RemoveSocket( int socket )
         while ( iter != m_activeSockets.end() ) {
             if ( *iter == socket ) {
                 m_activeSockets.erase( iter );
-                found = 1;
+                found = true;
                 break;
             }
             ++iter;
@@ -138,14 +140,14 @@ XWThreadPool::RemoveSocket( int socket )
 void
 XWThreadPool::CloseSocket( int socket )
 {
-    int do_interrupt = 0;
+/*     bool do_interrupt = false; */
     if ( !RemoveSocket( socket ) ) {
         RWWriteLock rwl( &m_activeSocketsRWLock );
         deque<int>::iterator iter = m_queue.begin();
         while ( iter != m_queue.end() ) {
             if ( *iter == socket ) {
                 m_queue.erase( iter );
-                do_interrupt = 1;
+/*                 do_interrupt = true; */
                 break;
             }
             ++iter;
@@ -161,7 +163,7 @@ XWThreadPool::CloseSocket( int socket )
 /*     } */
 }
 
-int
+bool
 XWThreadPool::get_process_packet( int socket )
 {
     short packetSize;
@@ -171,25 +173,25 @@ XWThreadPool::get_process_packet( int socket )
                           sizeof(packetSize), MSG_WAITALL );
     if ( nRead != 2 ) {
         killSocket( socket, "nRead != 2" );
-        return 0;
+        return false;
     }
 
     packetSize = ntohs( packetSize );
     if ( packetSize < 0 || packetSize > MAX_MSG_LEN ) {
         killSocket( socket, "packetSize wrong" );
-        return 0;
+        return false;
     }
 
     unsigned char buf[MAX_MSG_LEN];
     nRead = recv( socket, buf, packetSize, MSG_WAITALL );
     if ( nRead != packetSize ) {
         killSocket( socket, "nRead != packetSize" ); 
-        return 0;
+        return false;
     }
     logf( XW_LOGINFO, "read %d bytes\n", nRead );
 
     logf( XW_LOGINFO, "calling m_pFunc" );
-    int success = (*m_pFunc)( buf, packetSize, socket );
+    bool success = (*m_pFunc)( buf, packetSize, socket );
 
     return success;
 } /* get_process_packet */
@@ -297,8 +299,8 @@ XWThreadPool::real_listener()
             --nSockets;
             curfd = &fds[1];
 
-            int i;
-            for ( i = 0; i < nSockets && nEvents > 0; ++i ) {
+            int ii;
+            for ( ii = 0; ii < nSockets && nEvents > 0; ++ii ) {
 
                 if ( curfd->revents != 0 ) {
                     int socket = curfd->fd;

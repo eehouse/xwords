@@ -66,17 +66,17 @@ class CookieRef {
        If the hostID is HOST_ID_SERVER, it's the server. */
     CookieID GetCookieID() { return m_cookieID; }
 
-    int HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
+    bool HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_sockets.size(); }
-    int HasSocket( int socket );
+    bool HasSocket( int socket );
     const char* Cookie() { return m_cookie.c_str(); }
     const char* ConnName() { return m_connName.c_str(); }
 
     short GetHeartbeat() { return m_heatbeat; }
     int SocketForHost( HostID dest );
 
-    int NeverFullyConnected();
-    int AcceptingReconnections( HostID hid, int nPlayersH, int nPlayersT );
+    bool NeverFullyConnected();
+    bool AcceptingReconnections( HostID hid, int nPlayersH, int nPlayersT );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -98,7 +98,7 @@ class CookieRef {
     void _Remove( int socket );
     void _CheckAllConnected();
 
-    int ShouldDie() { return m_curState == XWS_DEAD; }
+    bool ShouldDie() { return m_curState == XWS_DEAD; }
 
     void logf( XW_LogLevel level, const char* format, ... );
 
@@ -161,7 +161,7 @@ class CookieRef {
 
     void handleEvents();
 
-    void sendResponse( const CRefEvent* evt, int initial );
+    void sendResponse( const CRefEvent* evt, bool initial );
     void increasePlayerCounts( const CRefEvent* evt );
     void reducePlayerCounts( int socket );
     void checkCounts( const CRefEvent* evt );
@@ -177,7 +177,7 @@ class CookieRef {
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
-    void sendAllHere( int includeName );
+    void sendAllHere( bool includeName );
     
     HostID nextHostID() { return ++m_nextHostID; }
     /* timer callback */

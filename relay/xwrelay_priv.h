@@ -19,7 +19,7 @@ void logf( XW_LogLevel level, const char* format, ... );
 
 void killSocket( int socket, const char* why );
 
-int send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
+bool send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
 
 time_t now();
 

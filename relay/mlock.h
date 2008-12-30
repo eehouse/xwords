@@ -76,7 +76,7 @@ class SocketWriteLock {
         }
     }
 
-    int socketFound() { return (int)(m_mutex != NULL); }
+    bool socketFound() { return (m_mutex != NULL); }
 
  private:
     int m_socket;
