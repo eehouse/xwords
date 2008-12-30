@@ -29,10 +29,14 @@ SRC = xwrelay.cpp \
 	lstnrmgr.cpp \
 
 # STATIC ?= -static
+SVNINFO = svninfo.txt
+
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -pthread -g -lmcheck $(STATIC)
-CPPFLAGS += -DSPAWN_SELF -g -Wall -DSVN_REV=\"$(shell svnversion -n .)\"
+CPPFLAGS += -DSPAWN_SELF -g -Wall \
+	-DSVN_REV=\"$(shell cat $(SVNINFO) 2>/dev/null || svnversion -n ..)\"
+
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
 
@@ -47,10 +51,14 @@ tags:
 	etags *.cpp *.h
 
 tarball:
+	@svnversion -n ../ > $(SVNINFO)
 	tar cvfz RELAY_SRC.tgz \
 		../relay/*.{cpp,h} \
 		../relay/Makefile \
-		../relay/xwrelay.conf
+		../relay/xwrelay.conf \
+		../relay/$(SVNINFO)
+	@rm -f $(SVNINFO)
+	@echo "RELAY_SRC.tgz done"
 
 help:
 	@echo $(MAKE) [STATIC=\"-static\"]
