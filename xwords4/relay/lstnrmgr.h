@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sys/select.h>
+
 #include "xwrelay_priv.h"
 
 using namespace std;

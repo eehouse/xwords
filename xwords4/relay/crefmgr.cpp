@@ -20,6 +20,8 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <pthread.h>
 
 #include "crefmgr.h"
@@ -90,7 +92,7 @@ CRefMgr::CloseAll()
 } /* CloseAll */
 
 CookieRef*
-CRefMgr::FindOpenGameFor( const char* cORn, int isCookie,
+CRefMgr::FindOpenGameFor( const char* cORn, bool isCookie,
                           HostID hid, int nPlayersH, int nPlayersT )
 {
     logf( XW_LOGINFO, "FindOpenGameFor with %s", cORn );
@@ -151,7 +153,7 @@ CRefMgr::cookieIDForConnName( const char* connName )
 } /* cookieIDForConnName */
 
 CookieRef*
-CRefMgr::getMakeCookieRef_locked( const char* cORn, int isCookie, HostID hid,
+CRefMgr::getMakeCookieRef_locked( const char* cORn, bool isCookie, HostID hid,
                                   int nPlayersH, int nPlayersT )
 {
     CookieRef* cref;
@@ -328,10 +330,10 @@ CRefMgr::getCookieRef_locked( int socket )
     return cref;
 } /* getCookieRef_locked */
 
-int
+bool
 CRefMgr::checkCookieRef_locked( CookieRef* cref )
 {
-    int exists = 1;
+    bool exists = true;
     assert( cref != NULL );
 
 #ifdef DEBUG_LOCKS
@@ -350,13 +352,13 @@ CRefMgr::checkCookieRef_locked( CookieRef* cref )
         logf( XW_LOGINFO, "ULM %p", &m_guard );
 #endif
         pthread_mutex_unlock( &m_guard );
-        exists = 0;
+        exists = false;
     }
 
     return exists;
 } /* checkCookieRef_locked */
 
-int
+bool
 CRefMgr::LockCref( CookieRef* cref )
 {
     /* assertion: m_guard is locked */
@@ -379,7 +381,7 @@ CRefMgr::LockCref( CookieRef* cref )
     logf( XW_LOGINFO, "ULM %p", &m_guard );
 #endif
     pthread_mutex_unlock( &m_guard );
-    return 1;
+    return true;
 } /* LockCref */
 
 void
@@ -514,9 +516,9 @@ CRefMgr::checkHeartbeats( time_t now )
         }
     }
 
-    unsigned int i;
-    for ( i = 0; i < crefs.size(); ++i ) {
-        SafeCref scr( crefs[i] );
+    unsigned int ii;
+    for ( ii = 0; ii < crefs.size(); ++ii ) {
+        SafeCref scr( crefs[ii] );
         scr.CheckHeartbeats( now );
     }
 } /* checkHeartbeats */
@@ -551,7 +553,7 @@ CookieMapIterator::Next()
 // SafeCref
 //////////////////////////////////////////////////////////////////////////////
 
-SafeCref::SafeCref( const char* cORn, int isCookie, HostID hid, 
+SafeCref::SafeCref( const char* cORn, bool isCookie, HostID hid, 
                     int nPlayersH, int nPlayersT )
      : m_cref( NULL )
      , m_mgr( CRefMgr::Get() )

@@ -84,18 +84,18 @@ TimerMgr::GetPollTimeout()
     return tout;
 } /* GetPollTimeout */
 
-int
+bool
 TimerMgr::getTimer( TimerProc proc, void* closure )
 {
     list<TimerInfo>::iterator iter;
     for ( iter = m_timers.begin(); iter != m_timers.end(); ++iter ) {
         if ( (*iter).proc == proc
              && (*iter).closure == closure ) {
-            return 1;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 } /* getTimer */
 
 void

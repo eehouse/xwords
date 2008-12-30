@@ -82,11 +82,11 @@ match( string* cmd, const char * const* first, int incr, int count )
     int nFound = 0;
     const char* cmdFound = NULL;
     int which = -1;
-    int i;
-    for ( i = 0; (i < count) && (nFound <= 1); ++i ) {
+    int ii;
+    for ( ii = 0; (ii < count) && (nFound <= 1); ++ii ) {
         if ( 0 == strncmp( cmd->c_str(), *first, cmdlen ) ) {
             ++nFound;
-            which = i;
+            which = ii;
             cmdFound = *first;
         }
         first = (char* const*)(((char*)first) + incr);
@@ -181,14 +181,14 @@ cmd_stop( int socket, const char** args )
 static bool
 cmd_kill_eject( int socket, const char** args )
 {
-    int found = 0;
+    bool found = false;
     int isKill = 0 == strcmp( args[0], "kill" );
 
     if ( 0 == strcmp( args[1], "socket" ) ) {
         int victim = atoi( args[2] );
         if ( victim != 0 ) {
             killSocket( victim, "ctrl command" );
-            found = 1;
+            found = true;
         }
     } else if ( 0 == strcmp( args[1], "cref" ) ) {
         const char* idhow = args[2];
@@ -196,10 +196,10 @@ cmd_kill_eject( int socket, const char** args )
         if ( idhow != NULL && id != NULL ) {
             if ( 0 == strcmp( idhow, "name" ) ) {
                 CRefMgr::Get()->Delete( id );
-                found = 1;
+                found = true;
             } else if ( 0 == strcmp( idhow, "id" ) ) {
                 CRefMgr::Get()->Delete( atoi( id ) );
-                found = 1;
+                found = true;
             }
         }
     } else if ( 0 == strcmp( args[1], "relay" ) ) {
@@ -372,9 +372,9 @@ cmd_crash( int socket, const char** args )
                        args[0] );
     } else {
         assert(0);
-        int i = 1;
-        while ( i > 0 ) --i;
-        return 6/i > 0;
+        int ii = 1;
+        while ( ii > 0 ) --ii;
+        return 6/ii > 0;
     }
     return false;
 }
@@ -435,28 +435,28 @@ static bool
 cmd_print( int socket, const char** args )
 {
     logf( XW_LOGINFO, "cmd_print called" );
-    int found = 0;
+    bool found = false;
     if ( 0 == strcmp( "cref", args[1] ) ) {
         if ( 0 == strcmp( "all", args[2] ) ) {
             print_cookies( socket, (CookieID)0 );
-            found = 1;
+            found = true;
         } else if ( 0 == strcmp( "cookie", args[2] ) ) {
             print_cookies( socket, args[3], NULL );
-            found = 1;
+            found = true;
         } else if ( 0 == strcmp( "connName", args[2] ) ) {
             print_cookies( socket, NULL, args[3] );
-            found = 1;
+            found = true;
         } else if ( 0 == strcmp( "id", args[2] ) ) {
             print_cookies( socket, atoi(args[3]) );
-            found = 1;
+            found = true;
         }
     } else if ( 0 == strcmp( "socket", args[1] ) ) {
         if ( 0 == strcmp( "all", args[2] ) ) {
             print_sockets( socket, 0 );
-            found = 1;
+            found = true;
         } else if ( 0 == strcmp( "id", args[2] ) ) {
             print_sockets( socket, atoi(args[3]) );
-            found = 1;
+            found = true;
         }
     }
 
@@ -471,7 +471,7 @@ cmd_print( int socket, const char** args )
         print_to_sock( socket, true, str, 
                        args[0], args[0], args[0], args[0], args[0], args[0] );
     }
-    return 0;
+    return false;
 } /* cmd_print */
 
 static bool
@@ -540,7 +540,8 @@ ctrl_thread_main( void* arg )
             s >> cmd >> arg1 >> arg2 >> arg3;
         }
 
-        int index = match( &cmd,  (char*const*)&gFuncs[0].name, sizeof(gFuncs[0]), 
+        int index = match( &cmd, (char*const*)&gFuncs[0].name, 
+                           sizeof(gFuncs[0]), 
                            sizeof(gFuncs)/sizeof(gFuncs[0]) );
         const char* args[] = {
             cmd.c_str(), 
@@ -549,7 +550,8 @@ ctrl_thread_main( void* arg )
             arg3.c_str()
         };
         if ( index == -1 ) {
-            print_to_sock( sock, 1, "unknown or ambiguous command: \"%s\"", cmd.c_str() );
+            print_to_sock( sock, 1, "unknown or ambiguous command: \"%s\"", 
+                           cmd.c_str() );
             (void)cmd_help( sock, args );
         } else if ( (*gFuncs[index].func)( sock, args ) ) {
             break;

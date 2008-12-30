@@ -59,7 +59,7 @@ class TimerMgr {
 
     /* run once we have the mutex */
     void clearTimerImpl( TimerProc proc, void* closure );
-    int getTimer( TimerProc proc, void* closure );
+    bool getTimer( TimerProc proc, void* closure );
     void figureNextFire();
   
     pthread_mutex_t m_timersMutex;

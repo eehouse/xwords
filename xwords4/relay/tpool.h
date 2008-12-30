@@ -35,7 +35,7 @@ class XWThreadPool {
 
  public:
     static XWThreadPool* GetTPool();
-    typedef int (*packet_func)( unsigned char* buf, int bufLen, int socket );
+    typedef bool (*packet_func)( unsigned char* buf, int bufLen, int socket );
 
     XWThreadPool();
     ~XWThreadPool();
@@ -52,10 +52,10 @@ class XWThreadPool {
 
  private:
     /* Remove from set being listened on */
-    int RemoveSocket( int socket );
+    bool RemoveSocket( int socket );
 
     void enqueue( int socket );
-    int get_process_packet( int socket );
+    bool get_process_packet( int socket );
     void interrupt_poll();
 
     void* real_tpool_main();

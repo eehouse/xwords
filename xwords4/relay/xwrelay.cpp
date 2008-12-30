@@ -114,10 +114,10 @@ logf( XW_LogLevel level, const char* format, ... )
     }
 } /* logf */
 
-static int
+static bool
 getNetShort( unsigned char** bufpp, unsigned char* end, unsigned short* out )
 {
-    int ok = *bufpp + 2 <= end;
+    bool ok = *bufpp + 2 <= end;
     if ( ok ) {
         unsigned short tmp;
         memcpy( &tmp, *bufpp, 2 );
@@ -127,10 +127,10 @@ getNetShort( unsigned char** bufpp, unsigned char* end, unsigned short* out )
     return ok;
 } /* getNetShort */
 
-static int
+static bool
 getNetByte( unsigned char** bufpp, unsigned char* end, unsigned char* out )
 {
-    int ok = *bufpp < end;
+    bool ok = *bufpp < end;
     if ( ok ) {
         *out = **bufpp;
         ++*bufpp;
@@ -139,13 +139,13 @@ getNetByte( unsigned char** bufpp, unsigned char* end, unsigned char* out )
 } /* getNetByte */
 
 #ifdef RELAY_HEARTBEAT
-static int
+static bool
 processHeartbeat( unsigned char* buf, int bufLen, int socket )
 {
     unsigned char* end = buf + bufLen;
     CookieID cookieID; 
     HostID hostID;
-    int success = 0;
+    bool success = false;
 
     if ( getNetShort( &buf, end, &cookieID )
          && getNetByte( &buf, end, &hostID ) ) {
@@ -162,7 +162,7 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
 } /* processHeartbeat */
 #endif
 
-static int
+static bool
 readStr( unsigned char** bufp, const unsigned char* end, 
          char* outBuf, int bufLen )
 {
@@ -172,9 +172,9 @@ readStr( unsigned char** bufp, const unsigned char* end,
         memcpy( outBuf, *bufp, clen );
         outBuf[clen] = '\0';
         *bufp += clen;
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 } /* readStr */
 
 static XWREASON
@@ -197,17 +197,17 @@ denyConnection( int socket, XWREASON err )
 
 /* No mutex here.  Caller better be ensuring no other thread can access this
  * socket. */
-int
+bool
 send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
 {
-    int ok = 0;
+    bool ok = false;
     unsigned short len = htons( bufLen );
     ssize_t nSent = send( socket, &len, 2, 0 );
     if ( nSent == 2 ) {
         nSent = send( socket, buf, bufLen, 0 );
         if ( nSent == bufLen ) {
             logf( XW_LOGINFO, "sent %d bytes on socket %d", nSent, socket );
-            ok = 1;
+            ok = true;
         }
     }
     return ok;
@@ -225,12 +225,12 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
  * outstanding.  Otherwise close down the socket.  And maybe the others in the
  * game?
  */
-static int
+static bool
 processConnect( unsigned char* bufp, int bufLen, int socket )
 {
     char cookie[MAX_COOKIE_LEN+1];
     unsigned char* end = bufp + bufLen;
-    int success = 0;
+    bool success = false;
 
     logf( XW_LOGINFO, "processConnect" );
 
@@ -260,11 +260,11 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
     return success;
 } /* processConnect */
 
-static int
+static bool
 processReconnect( unsigned char* bufp, int bufLen, int socket )
 {
     unsigned char* end = bufp + bufLen;
-    int success = 0;
+    bool success = false;
 
     logf( XW_LOGINFO, "processReconnect" );
 
@@ -295,20 +295,20 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
     return success;
 } /* processReconnect */
 
-static int
+static bool
 processDisconnect( unsigned char* bufp, int bufLen, int socket )
 {
     unsigned char* end = bufp + bufLen;
     CookieID cookieID;
     HostID hostID;
-    int success = 0;
+    bool success = false;
 
     if ( getNetShort( &bufp, end, &cookieID ) 
          && getNetByte( &bufp, end, &hostID ) ) {
 
         SafeCref scr( cookieID );
         scr.Disconnect( socket, hostID );
-        success = 1;
+        success = true;
     } else {
         logf( XW_LOGERROR, "dropping XWRELAY_GAME_DISCONNECT; wrong length" );
     }
@@ -335,10 +335,10 @@ now()
 
 /* forward the message.  Need only change the command after looking up the
  * socket and it's ready to go. */
-static int
+static bool
 forwardMessage( unsigned char* buf, int buflen, int srcSocket )
 {
-    int success = 0;
+    bool success = false;
     unsigned char* bufp = buf + 1; /* skip cmd */
     unsigned char* end = buf + buflen;
     CookieID cookieID;
@@ -356,10 +356,10 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
     return success;
 } /* forwardMessage */
 
-static int
+static bool
 processMessage( unsigned char* buf, int bufLen, int socket )
 {
-    int success = 0;            /* default is failure */
+    bool success = false;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
     switch( cmd ) {
     case XWRELAY_GAME_CONNECT: 
@@ -512,7 +512,8 @@ parentDied( int sig )
     exit(0);
 }
 
-int main( int argc, char** argv )
+int
+main( int argc, char** argv )
 {
     int port = 0;
     int ctrlport = 0;
@@ -711,7 +712,8 @@ int main( int argc, char** argv )
                 if ( FD_ISSET( listener, &rfds ) ) {
                     struct sockaddr_in newaddr;
                     socklen_t siz = sizeof(newaddr);
-                    int newSock = accept( listener, (sockaddr*)&newaddr, &siz );
+                    int newSock = accept( listener, (sockaddr*)&newaddr,
+                                          &siz );
 
                     logf( XW_LOGINFO, "accepting connection from %s", 
                           inet_ntoa(newaddr.sin_addr) );
