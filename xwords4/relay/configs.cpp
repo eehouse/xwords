@@ -58,9 +58,9 @@ RelayConfigs::RelayConfigs( const char* cfile )
     /* There's an order here.  Open multiple files, if present.  File in /etc
        is first, but overridden by local file which is in turn overridden by
        file passed in. */
-    parse( "/etc/xwrelay/xwrelay.conf" );
-    parse( "./xwrelay.conf" );
-    parse( cfile );
+    ino_t prev = parse( "/etc/xwrelay/xwrelay.conf", 0 );
+    prev = parse( "./xwrelay.conf", prev );
+    (void)parse( cfile, prev );
 } /* RelayConfigs::RelayConfigs */
 
 void
@@ -70,58 +70,65 @@ RelayConfigs::GetPorts( std::vector<int>::const_iterator* iter, std::vector<int>
     *end = m_ports.end();
 }
 
-void
-RelayConfigs::parse( const char* fname )
+ino_t
+RelayConfigs::parse( const char* fname, ino_t prev )
 {
+    ino_t inode = 0;
     if ( fname != NULL ) {
-        FILE* f = fopen( fname, "r" );
-        if ( f != NULL ) {
-            logf( XW_LOGINFO, "config: reading from %s", fname );
-            char line[MAX_LINE];
+        struct stat sbuf;
+        stat( fname, &sbuf );
+        inode = sbuf.st_ino;
+        if ( inode != prev ) {
+            FILE* f = fopen( fname, "r" );
+            if ( f != NULL ) {
+                logf( XW_LOGINFO, "config: reading from %s", fname );
+                char line[MAX_LINE];
 
-            for ( ; ; ) {
-                if ( !fgets( line, sizeof(line), f ) ) {
-                    break;
-                }
+                for ( ; ; ) {
+                    if ( !fgets( line, sizeof(line), f ) ) {
+                        break;
+                    }
 
-                int len = strlen( line );
-                if ( line[len-1] == '\n' ) {
-                    line[--len] = '\0';
-                }
+                    int len = strlen( line );
+                    if ( line[len-1] == '\n' ) {
+                        line[--len] = '\0';
+                    }
 
-                if ( len == 0 || line[0] == '#' ) {
-                    continue;
-                }
+                    if ( len == 0 || line[0] == '#' ) {
+                        continue;
+                    }
 
-                char* value = strchr( line, '=' );
-                if ( value == NULL ) {
-                    continue;
-                }
+                    char* value = strchr( line, '=' );
+                    if ( value == NULL ) {
+                        continue;
+                    }
 
-                *value++ = '\0';    /* terminate "key" substring */
-                if ( 0 == strcmp( line, "HEARTBEAT" ) ) {
-                    m_heartbeatInterval = atoi( value );
-                } else if ( 0 == strcmp( line, "ALLCONN" ) ) {
-                    m_allConnInterval = atoi( value );
-                } else if ( 0 == strcmp( line, "CTLPORT" ) ) {
-                    m_ctrlport = atoi( value );
-                } else if ( 0 == strcmp( line, "PORT" ) ) {
-                    m_ports.push_back( atoi( value ) );
-                } else if ( 0 == strcmp( line, "NTHREADS" ) ) {
-                    m_nWorkerThreads = atoi( value );
-                } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
-                    m_serverName = value;
-                } else if ( 0 == strcmp( line, "IDFILE" ) ) {
-                    m_idFileName = value;
-                } else if ( 0 == strcmp( line, "LOGLEVEL" ) ) {
-                    m_logLevel = atoi(value);
-                } else {
-                    logf( XW_LOGERROR, "unknown key %s with value %s\n",
-                          line, value );
-                    assert( 0 );
+                    *value++ = '\0';    /* terminate "key" substring */
+                    if ( 0 == strcmp( line, "HEARTBEAT" ) ) {
+                        m_heartbeatInterval = atoi( value );
+                    } else if ( 0 == strcmp( line, "ALLCONN" ) ) {
+                        m_allConnInterval = atoi( value );
+                    } else if ( 0 == strcmp( line, "CTLPORT" ) ) {
+                        m_ctrlport = atoi( value );
+                    } else if ( 0 == strcmp( line, "PORT" ) ) {
+                        m_ports.push_back( atoi( value ) );
+                    } else if ( 0 == strcmp( line, "NTHREADS" ) ) {
+                        m_nWorkerThreads = atoi( value );
+                    } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
+                        m_serverName = value;
+                    } else if ( 0 == strcmp( line, "IDFILE" ) ) {
+                        m_idFileName = value;
+                    } else if ( 0 == strcmp( line, "LOGLEVEL" ) ) {
+                        m_logLevel = atoi(value);
+                    } else {
+                        logf( XW_LOGERROR, "unknown key %s with value %s\n",
+                              line, value );
+                        assert( 0 );
+                    }
                 }
+                fclose( f );
             }
-            fclose( f );
         }
     }
+    return inode;
 } /* parse */

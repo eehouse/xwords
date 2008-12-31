@@ -21,8 +21,13 @@
 #ifndef _CONFIGS_H_
 #define _CONFIGS_H_
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <string>
 #include <vector>
+
 #include "xwrelay_priv.h"
 
 using namespace std;
@@ -47,7 +52,7 @@ class RelayConfigs {
 
  private:
     RelayConfigs( const char* cfile );
-    void parse( const char* fname );
+    ino_t parse( const char* fname, ino_t prev );
 
     time_t m_allConnInterval;
     time_t m_heartbeatInterval;
