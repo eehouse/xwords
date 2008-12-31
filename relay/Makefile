@@ -29,7 +29,7 @@ SRC = xwrelay.cpp \
 	lstnrmgr.cpp \
 
 # STATIC ?= -static
-SVNINFO = svninfo.txt
+SVNINFO = svnversion.txt
 
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
@@ -53,9 +53,11 @@ tags:
 tarball:
 	@svnversion -n ../ > $(SVNINFO)
 	tar cvfz RELAY_SRC.tgz \
-		../relay/*.{cpp,h} \
+		../relay/*.cpp \
+		../relay/*.h \
 		../relay/Makefile \
 		../relay/xwrelay.conf \
+		../relay/xwrelay.sh \
 		../relay/$(SVNINFO)
 	@rm -f $(SVNINFO)
 	@echo "RELAY_SRC.tgz done"
