@@ -327,7 +327,7 @@ killSocket( int socket, const char* why )
 }
 
 time_t
-now() 
+now( void ) 
 {
     static time_t startTime = time(NULL);
     return time(NULL) - startTime;
@@ -523,6 +523,8 @@ main( int argc, char** argv )
     const char* idFileName = NULL;
     bool doDaemon = true;
     bool doFork = true;
+
+    (void)now();                      /* force capture of start time */
 
     /* Verify sizes here... */
     assert( sizeof(CookieID) == 2 );
