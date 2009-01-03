@@ -85,7 +85,9 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
     (void)stat( name, &statBuf );
     buf = malloc( statBuf.st_size );
     f = fopen( name, "r" );
-    fread( buf, statBuf.st_size, 1, f );
+    if ( 1 != fread( buf, statBuf.st_size, 1, f ) ) {
+        XP_ASSERT( 0 );
+    }
     fclose( f );
 
     stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
@@ -110,7 +112,9 @@ writeToFile( XWStreamCtxt* stream, void* closure )
     stream_getBytes( stream, buf, len );
 
     file = fopen( cGlobals->params->fileName, "w" );
-    fwrite( buf, 1, len, file );
+    if ( 1 != fwrite( buf, 1, len, file ) ) {
+        XP_ASSERT( 0 );
+    }
     fclose( file );
 
     free( buf );
@@ -592,7 +596,9 @@ defaultRandomSeed()
        without getting the same results. */
     unsigned int rs;
     FILE* rfile = fopen( "/dev/urandom", "ro" );
-    fread( &rs, sizeof(rs), 1, rfile );
+    if ( 1 != fread( &rs, sizeof(rs), 1, rfile ) ) {
+        XP_ASSERT( 0 );
+    }
     fclose( rfile );
     return rs;
 } /* defaultRandomSeed */

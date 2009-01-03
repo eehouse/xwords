@@ -376,7 +376,9 @@ curses_util_requestTime( XW_UtilCtxt* uc )
        fds that my event loop polls so that I can write to it to simulate
        post-event on a more familiar system.  It works, so no complaints! */
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
-    (void)write( globals->timepipe[1], "!", 1 );
+    if ( 1 != write( globals->timepipe[1], "!", 1 ) ) {
+        XP_ASSERT(0);
+    }
 } /* curses_util_requestTime */
 
 static void
@@ -947,7 +949,9 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
         if ( (globals->fdArray[FD_TIMEEVT].revents & POLLIN) != 0 ) {
             char ch;
             /* 	    XP_DEBUGF( "curses got a USER EVENT\n" ); */
-            (void)read(globals->fdArray[FD_TIMEEVT].fd, &ch, 1 );
+            if ( 1 != read(globals->fdArray[FD_TIMEEVT].fd, &ch, 1 ) ) {
+                XP_ASSERT(0);
+            }
         }
 
         fdIndex = FD_FIRSTSOCKET;
