@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;  compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1239,7 +1239,7 @@ heartbeat_timer_func( gpointer data )
 
 static void
 gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
-                   XP_U16 when,
+                   XP_U16 XP_UNUSED_STANDALONE(when),
                    XWTimerProc proc, void* closure )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
