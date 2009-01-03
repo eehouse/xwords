@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -103,7 +104,7 @@ typedef XP_S16 XP_PlayerAddr;
 typedef enum {
     TIMER_PENDOWN = 1, /* ARM doesn't like ids of 0... */
     TIMER_TIMERTICK,
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
     TIMER_HEARTBEAT,
 #endif
 

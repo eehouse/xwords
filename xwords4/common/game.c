@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -188,25 +189,33 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 
         gi_readFromStream( MPPARM(mpool) stream, gi );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-        hasComms = stream_getU8( stream );
+        /* Previous stream versions didn't save anything if built
+         * standalone.  Now we always save something.  But we need to know
+         * if the previous version didn't save. PREV_WAS_STANDALONE_ONLY
+         * tells us that.
+         */
+        hasComms = XP_FALSE;
+        if ( STREAM_VERS_ALWAYS_MULTI <= strVersion  /* new stream */
+#ifndef PREV_WAS_STANDALONE_ONLY
+             || XP_TRUE                        /* old, but saved this anyway */
+#endif
+             ) {
+            hasComms = stream_getU8( stream );
+        }
+
         if ( hasComms ) {
             game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
-                                                sendProc, IF_CH(resetProc) closure );
+                                                sendProc, IF_CH(resetProc) 
+                                                closure );
         } else {
             game->comms = NULL;
         }
-#endif
+
         XP_ASSERT( !!dict );
         game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
 
         game->server = server_makeFromStream( MPPARM(mpool) stream, 
-                                              game->model, 
-#ifndef XWFEATURE_STANDALONE_ONLY
-                                              game->comms, 
-#else
-                                              (CommsCtxt*)NULL,
-#endif
+                                              game->model, game->comms, 
                                               util, gi->nPlayers );
 
         game->board = board_makeFromStream( MPPARM(mpool) stream, game->model, 
@@ -230,12 +239,13 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
 
     gi_writeToStream( stream, gi );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
     stream_putU8( stream, (XP_U8)!!game->comms );
+#ifdef XWFEATURE_STANDALONE_ONLY
+    XP_ASSERT( !game->comms );
+#endif
     if ( !!game->comms ) {
         comms_writeToStream( game->comms, stream );
     }
-#endif
 
     model_writeToStream( game->model, stream );
     server_writeToStream( game->server, stream );
