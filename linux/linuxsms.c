@@ -177,7 +177,10 @@ decodeAndDelete( LinSMSData* data, const gchar* name,
 
     gchar* contents;
     gsize length;
-    gboolean success = g_file_get_contents( path, &contents, &length, NULL );
+#ifdef DEBUG
+    gboolean success = 
+#endif
+        g_file_get_contents( path, &contents, &length, NULL );
     XP_ASSERT( success );
     unlink( path );
 
@@ -216,29 +219,29 @@ linux_sms_receive( CommonGlobals* globals, int sock,
 
     /* read required or we'll just get the event again */
     XP_U8 buffer[sizeof(struct inotify_event) + 16];
-    (void)read( sock, buffer, sizeof(buffer) );
-
-    char shortest[256] = { '\0' };
-    GDir* dir = g_dir_open( data->myQueue, 0, NULL );
-    for ( ; ; ) {
-        const gchar* name = g_dir_read_name( dir );
-        if ( NULL == name ) {
-            break;
-        } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
-            continue;
+    nRead = read( sock, buffer, sizeof(buffer) );
+    if ( nRead > 0 ) {
+        char shortest[256] = { '\0' };
+        GDir* dir = g_dir_open( data->myQueue, 0, NULL );
+        for ( ; ; ) {
+            const gchar* name = g_dir_read_name( dir );
+            if ( NULL == name ) {
+                break;
+            } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
+                continue;
+            }
+            if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
+                snprintf( shortest, sizeof(shortest), "%s", name );
+            }
         }
-        if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
-            snprintf( shortest, sizeof(shortest), "%s", name );
+        g_dir_close( dir );
+
+        if ( !!shortest[0] ) {
+            nRead = decodeAndDelete( data, shortest, buf, buflen, addr );
         }
+
+        unlock_queue( data );
     }
-    g_dir_close( dir );
-
-    if ( !!shortest[0] ) {
-        nRead = decodeAndDelete( data, shortest, buf, buflen, addr );
-    }
-
-    unlock_queue( data );
-
     return nRead;
 } /* linux_sms_receive */
 

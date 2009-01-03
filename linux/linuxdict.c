@@ -97,9 +97,9 @@ skipBitmap( LinuxDictionaryCtxt* ctxt, FILE* dictF )
     XP_U8 nCols, nRows, nBytes;
     LinuxBMStruct* lbs = NULL;
     
-    (void)fread( &nCols, sizeof(nCols), 1, dictF );
-    if ( nCols > 0 ) {
-        (void)fread( &nRows, sizeof(nRows), 1, dictF );
+    if ( 1 == fread( &nCols, sizeof(nCols), 1, dictF )
+         && nCols > 0 
+         && 1 == fread( &nRows, sizeof(nRows), 1, dictF ) ) {
 
         nBytes = ((nRows * nCols) + 7) / 8;
 
@@ -108,7 +108,10 @@ skipBitmap( LinuxDictionaryCtxt* ctxt, FILE* dictF )
         lbs->nCols = nCols;
         lbs->nBytes = nBytes;
 
-        (void)fread( lbs + 1, nBytes, 1, dictF );        
+        if ( 1 != fread( lbs + 1, nBytes, 1, dictF ) ) {
+            XP_FREE( ctxt->super.mpool, lbs );
+            lbs = NULL;
+        }
     }
 
     return lbs;
@@ -138,16 +141,18 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
             XP_ASSERT( face < nSpecials );
 
             /* get the string */
-            (void)fread( &txtlen, sizeof(txtlen), 1, dictF );
-            text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
-            (void)fread( text, txtlen, 1, dictF );
-            text[txtlen] = '\0';
-            texts[face] = text;
+            if ( 1 == fread( &txtlen, sizeof(txtlen), 1, dictF ) ) {
+                text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
+                if ( 1 == fread( text, txtlen, 1, dictF ) ) {
+                    text[txtlen] = '\0';
+                    texts[face] = text;
 
-            XP_DEBUGF( "skipping bitmaps for %s", texts[face] );
+                    XP_DEBUGF( "skipping bitmaps for %s", texts[face] );
 
-            bitmaps[face].largeBM = skipBitmap( ctxt, dictF );
-            bitmaps[face].smallBM = skipBitmap( ctxt, dictF );
+                    bitmaps[face].largeBM = skipBitmap( ctxt, dictF );
+                    bitmaps[face].smallBM = skipBitmap( ctxt, dictF );
+                }
+            }
         }
     }
 
@@ -158,7 +163,7 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
 static XP_Bool
 initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 {
-    XP_Bool formatOk = XP_TRUE;
+    XP_Bool formatOk = XP_FALSE;
     XP_U8 numFaces;
     long curPos, dictLength;
     XP_U32 topOffset;
@@ -169,25 +174,30 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     XP_U16 charSize;
 
     XP_ASSERT( dictF );
-    (void)fread( &flags, sizeof(flags), 1, dictF );
-    flags = ntohs(flags);
-    XP_DEBUGF( "flags=0x%x", flags );
+    if ( 1 == fread( &flags, sizeof(flags), 1, dictF ) ) {
+        flags = ntohs(flags);
+        XP_DEBUGF( "flags=0x%x", flags );
 #ifdef NODE_CAN_4
-    if ( flags == 0x0001 ) {
-        dctx->super.nodeSize = 3;
-        charSize = 1;
-        dctx->super.is_4_byte = XP_FALSE;
-    } else if ( flags == 0x0002 ) {
-        dctx->super.nodeSize = 3;
-        charSize = 2;
-        dctx->super.is_4_byte = XP_FALSE;
-    } else if ( flags == 0x0003 ) {
-        dctx->super.nodeSize = 4;
-        charSize = 2;
-        dctx->super.is_4_byte = XP_TRUE;
+        if ( flags == 0x0001 ) {
+            dctx->super.nodeSize = 3;
+            charSize = 1;
+            dctx->super.is_4_byte = XP_FALSE;
+            formatOk = XP_TRUE;
+        } else if ( flags == 0x0002 ) {
+            dctx->super.nodeSize = 3;
+            charSize = 2;
+            dctx->super.is_4_byte = XP_FALSE;
+            formatOk = XP_TRUE;
+        } else if ( flags == 0x0003 ) {
+            dctx->super.nodeSize = 4;
+            charSize = 2;
+            dctx->super.is_4_byte = XP_TRUE;
+            formatOk = XP_TRUE;
+        } else {
+            /* case I don't know how to deal with */
+            XP_ASSERT(0);
+        }
     } else {
-        /* case I don't know how to deal with */
-        formatOk = XP_FALSE;
         XP_ASSERT(0);
     }
 #else
@@ -195,7 +205,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 #endif
 
     if ( formatOk ) {
-        (void)fread( &numFaces, sizeof(numFaces), 1, dictF );
+        if ( 1 != fread( &numFaces, sizeof(numFaces), 1, dictF ) ) {
+            goto closeAndExit;
+        }
 
         dctx->super.nFaces = numFaces;
 
@@ -205,8 +217,11 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         dctx->super.faces16 = XP_MALLOC( dctx->super.mpool, facesSize );
         XP_MEMSET( dctx->super.faces16, 0, facesSize );
 
-        fread( dctx->super.faces16, numFaces * charSize, 
-               1, dictF );
+        if ( 1 != fread( dctx->super.faces16, numFaces * charSize, 1, 
+                         dictF ) ) {
+            goto closeAndExit;
+        }
+
         if ( charSize == sizeof(dctx->super.faces16[0]) ) {
             /* fix endianness */
             XP_U16 i;
@@ -222,10 +237,15 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             }
         }
 
-        fread( &xloc, 2, 1, dictF ); /* read in (dump) the xloc header for
-                                        now */
-        fread( dctx->super.countsAndValues, numFaces*2, 1, dictF );
+        if ( (1 != fread( &xloc, 2, 1, dictF ) )/* read in (dump) the xloc
+                                                 header for now */
+             || (1 != fread( dctx->super.countsAndValues, numFaces*2, 1, 
+                             dictF ) ) ) {
+            goto closeAndExit;
+        }
+    }
 
+    if ( formatOk ) {
         skipBitmaps( dctx, dictF );
 
         curPos = ftell( dictF );
@@ -234,7 +254,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
         fseek( dictF, curPos, SEEK_SET );
 
         if ( dictLength > 0 ) {
-            fread( &topOffset, sizeof(topOffset), 1, dictF );
+            if ( 1 != fread( &topOffset, sizeof(topOffset), 1, dictF ) ) {
+                goto closeAndExit;
+            }
             /* it's in big-endian order */
             topOffset = ntohl(topOffset);
             dictLength -= sizeof(topOffset); /* first four bytes are offset */
@@ -254,7 +276,9 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             dctx->super.base = (array_edge*)XP_MALLOC( dctx->super.mpool, 
                                                    dictLength );
             XP_ASSERT( !!dctx->super.base );
-            fread( dctx->super.base, dictLength, 1, dictF );
+            if ( 1 != fread( dctx->super.base, dictLength, 1, dictF ) ) {
+                goto closeAndExit;
+            }
 
             dctx->super.topEdge = dctx->super.base + topOffset;
         } else {
@@ -262,9 +286,13 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             dctx->super.topEdge = NULL;
         }
 
-        dctx->super.name = copyString( dctx->super.mpool, fileName);
+        dctx->super.name = copyString( dctx->super.mpool, fileName );
     }
+    goto ok;
 
+ closeAndExit:
+    formatOk = XP_FALSE;
+ ok:
     fclose( dictF );
     return formatOk;
 } /* initFromDictFile */
