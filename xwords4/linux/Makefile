@@ -1,5 +1,5 @@
 # -*- mode: makefile; compile-command: "make -j MEMDEBUG=TRUE"; -*-
-# Copyright 2002-2007 by Eric House (xwords@eehouse.org).  All rights
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -32,6 +32,9 @@ ifdef CURSES_SMALL_SCREEN
 DO_CURSES += -DCURSES_SMALL_SCREEN
 endif
 DO_GTK = -DPLATFORM_GTK
+
+# uncomment for standalone build
+# STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 
 SVN_REV ?= "$(shell svnversion -n .)"
 SVNDEF = -D'SVN_REV=$(SVN_REV)'
@@ -76,6 +79,9 @@ ifdef CURSES_CELL_WIDTH
 DEFINES += -DCURSES_CELL_WIDTH=$(CURSES_CELL_WIDTH)
 endif
 
+# Networking-related features.  Only set these if STANDALONE is not set
+ifeq ($(STANDALONE),)
+
 # Bluetooth support
 ifndef NO_BLUETOOTH
 BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP
@@ -96,6 +102,8 @@ DEFINES += -DXWFEATURE_IP_DIRECT
 # user experience will be very bad!).  Is particularly useful with BT.
 # DEFINES += -DRELAY_HEARTBEAT
 DEFINES += -DCOMMS_HEARTBEAT
+endif
+DEFINES += $(STANDALONE)
 
 # Let users pick the tiles going into their trays
 #DEFINES += -DFEATURE_TRAY_EDIT

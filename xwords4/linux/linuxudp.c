@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE";-*- */ 
 /* 
- * Copyright 2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2007-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -239,9 +239,11 @@ linux_udp_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrp,
         } else {
             if ( stuff->socket == -1 ) {
                 stuff->socket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-                XP_LOGF( "%s: client made socket = %d", __func__, stuff->socket );
-                (*stuff->globals->socketChanged)( stuff->globals->socketChangedClosure,
-                                                  -1, stuff->socket, &stuff->storage );
+                XP_LOGF( "%s: client made socket = %d", __func__,
+                         stuff->socket );
+                (*stuff->globals->socketChanged)
+                    ( stuff->globals->socketChangedClosure,
+                      -1, stuff->socket, &stuff->storage );
             }
             addressToServer( &to, addrp );
         }

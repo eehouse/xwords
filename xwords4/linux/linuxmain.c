@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -651,12 +651,14 @@ main( int argc, char** argv )
     XP_Bool isServer = XP_FALSE;
     char* portNum = NULL;
     char* hostName = "localhost";
-    char* serverPhone = NULL;         /* sms */
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 robotCount = 0;
     
     CommsConnType conType = COMMS_CONN_NONE;
+#ifdef XWFEATURE_SMS
+    char* serverPhone = NULL;
+#endif
 #ifdef XWFEATURE_BLUETOOTH
     const char* btaddr = NULL;
 #endif
@@ -1007,7 +1009,7 @@ main( int argc, char** argv )
 
     linux_util_vt_init( MPPARM(mainParams.util->mpool) mainParams.util );
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
     mainParams.util->vtable->m_util_addrChange = linux_util_addrChange;
 #endif
 
