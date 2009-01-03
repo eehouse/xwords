@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -308,9 +309,13 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         }
     }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-    server->lastMoveSource = (XP_U16)stream_getBits( stream, 2 );
+    if ( STREAM_VERS_ALWAYS_MULTI <= stream_getVersion(stream)
+#ifndef PREV_WAS_STANDALONE_ONLY
+         || XP_TRUE
 #endif
+         ) { 
+        server->lastMoveSource = (XP_U16)stream_getBits( stream, 2 );
+    }
 
     XP_ASSERT( stream_getU32( stream ) == sEND );
 
@@ -343,6 +348,8 @@ server_writeToStream( ServerCtxt* server, XWStreamCtxt* stream )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     stream_putBits( stream, 2, server->lastMoveSource );
+#else
+    stream_putBits( stream, 2, 0 );
 #endif
 
 #ifdef DEBUG

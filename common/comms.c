@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001-2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1023,7 +1024,8 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 
 static XP_Bool
 preProcess( CommsCtxt* comms, XWStreamCtxt* stream, 
-            XP_Bool* XP_UNUSED_RELAY(usingRelay), XWHostID* XP_UNUSED_RELAY(senderID) )
+            XP_Bool* XP_UNUSED_RELAY(usingRelay), 
+            XWHostID* XP_UNUSED_RELAY(senderID) )
 {
     XP_Bool consumed = XP_FALSE;
     switch ( comms->addr.conType ) {

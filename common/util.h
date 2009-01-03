@@ -1,6 +1,6 @@
  /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -155,7 +155,7 @@ typedef struct UtilVtable {
 
     void (*m_util_remSelected)(XW_UtilCtxt* uc);
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
 #endif
@@ -248,8 +248,8 @@ struct XW_UtilCtxt {
 #define util_remSelected( uc )              \
          (uc)->vtable->m_util_remSelected((uc))
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-#define util_addrChange( uc, addro, addrn ) \
+#ifndef XWFEATURE_STANDALONE_ONLY
+# define util_addrChange( uc, addro, addrn ) \
          (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))
 #endif
 

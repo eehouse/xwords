@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,6 +31,8 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_ALWAYS_MULTI 0x07 /* stream format same for multi and
+                                         one-device game builds */
 #define STREAM_VERS_MODEL_NO_DICT 0x06
 #define STREAM_VERS_BLUETOOTH 0x05
 #define STREAM_VERS_KEYNAV 0x04
@@ -37,7 +40,7 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_MODEL_NO_DICT
+#define CUR_STREAM_VERS STREAM_VERS_ALWAYS_MULTI
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
