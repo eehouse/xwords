@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +23,7 @@
 
 #include "comms.h"
 #include "cemain.h"
+#include "ceutil.h"
 
 typedef struct CeConnDlgState {
     CeDlgHdr dlgHdr;

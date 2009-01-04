@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,6 +21,7 @@
 
 #include "cesockwr.h"
 #include "cemain.h"
+#include "cedebug.h"
 #include "debhacks.h"
 
 #include <winsock.h>
@@ -90,10 +92,11 @@ queue_packet( CeSocketWrapper* self, XP_U8* packet, XP_U16 len )
             self->packets[self->nPackets] = packet;
             self->lens[self->nPackets] = len;
             ++self->nPackets;
-            XP_LOGF( "there are now %d packets on send queue", self->nPackets );
+            XP_LOGF( "there are now %d packets on send queue", 
+                     self->nPackets );
 
             /* signal the writer thread */
-            DH(SetEvent)( self->queueAddEvent );
+            SetEvent( self->queueAddEvent );
             success = XP_TRUE;
         }
 
@@ -152,7 +155,7 @@ static XP_Bool
 sendAll( CeSocketWrapper* self, XP_U8* buf, XP_U16 len )
 {
     for ( ; ; ) {
-        int nSent = MS(send)( self->socket, buf, len, 0 ); /* flags? */
+        int nSent = send( self->socket, (char*)buf, len, 0 ); /* flags? */
         if ( nSent == SOCKET_ERROR ) {
             return XP_FALSE;
         } else if ( nSent == len ) {
@@ -216,8 +219,9 @@ connectSocket( CeSocketWrapper* self )
                 self->connState = CE_IP_CONNECTED;
                 self->socket = sock;
 
-                /* Let the reader thread know there's now a socket to listen on */
-                DH(SetEvent)( self->socketConnEvent );
+                /* Let the reader thread know there's now a socket to listen
+                   on */
+                SetEvent( self->socketConnEvent );
 
             } else {
                 logLastError( "connect" );
@@ -280,7 +284,7 @@ WriterThreadProc( LPVOID lpParameter )
 
         /* Should this happen sooner?  What if other thread signals in the
            meantime? */
-        DH(ResetEvent)( self->queueAddEvent );
+        ResetEvent( self->queueAddEvent );
     }
 
     ExitThread(0);              /* docs say to exit this way */
@@ -307,7 +311,7 @@ read_bytes_blocking( CeSocketWrapper* self, XP_U8* buf, XP_U16 len )
         if ( sres == 0 ) {
             break;
         } else if ( sres == 1 && FD_ISSET( self->socket, &readSet ) ) {
-            int nRead = MS(recv)( self->socket, buf, len, 0 );
+            int nRead = MS(recv)( self->socket, (char*)buf, len, 0 );
             if ( nRead > 0 ) {
                 XP_LOGF( "read %d bytes", nRead );
                 XP_ASSERT( nRead <= len );
@@ -361,8 +365,7 @@ ReaderThreadProc( LPVOID lpParameter )
 
 
 CeSocketWrapper* 
-ce_sockwrap_new( MPFORMAL CommsConnType conType, DataRecvProc proc, 
-                 void* closure )
+ce_sockwrap_new( MPFORMAL DataRecvProc proc, void* closure )
 {
     CeSocketWrapper* self = XP_MALLOC( mpool, sizeof(*self) );
     XP_MEMSET( self, 0, sizeof(*self) );

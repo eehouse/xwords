@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*- */
 /* 
- * Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -165,6 +165,9 @@ loadFromGameInfo( GameInfoState* state )
     XP_U16 i;
     CEAppGlobals* globals = state->dlgHdr.globals;
     CurGameInfo* gi = &globals->gameInfo;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    HWND hDlg = state->dlgHdr.hDlg;
+#endif
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     wchar_t* roles[] = { L"Standalone", L"Host", L"Guest" };
@@ -334,11 +337,11 @@ static void
 handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals,
                          DeviceRole role, GameInfoState* state )
 {
-    CeConnDlgState state;
+    CeConnDlgState dlgState;
 
     if ( WrapConnsDlg( hDlg, globals, &state->prefsPrefs.addrRec, 
-                       role, &state ) ) {
-        XP_MEMCPY( &state->prefsPrefs.addrRec, &state.addrRec,
+                       role, &dlgState ) ) {
+        XP_MEMCPY( &state->prefsPrefs.addrRec, &dlgState.addrRec,
                    sizeof(state->prefsPrefs.addrRec) );
         state->addrChanged = XP_TRUE;
     }
