@@ -1,4 +1,6 @@
 # -*- compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 
 # This Makefile is meant to allow building Crosswords for PocketPC and
 # Windows using Linux.  As of March 2006, it compiles and runs on
@@ -48,7 +50,7 @@ HAVE_COMMCTRL = 1
 
 ifeq ($(TARGET_OS),wince)
 # BLUETOOTH = -DXWFEATURE_BLUETOOTH
-# RELAY = -DXWFEATURE_RELAY -DCOMMS_HEARTBEAT
+RELAY = -DXWFEATURE_RELAY
 CC = ${CE_ARCH}-gcc
 WINDRES = ${CE_ARCH}-windres
 STRIP = ${CE_ARCH}-strip
@@ -57,7 +59,8 @@ CELIBS = -L/usr/arm-wince-pe/lib
 else
 CELIBS = -L${CEOPT_ROOT}/${CE_ARCH}/lib/ -lws2
 endif
-STANDALONE = -DXWFEATURE_STANDALONE_ONLY
+#STANDALONE = -DXWFEATURE_STANDALONE_ONLY
+STANDALONE = -DPREV_WAS_STANDALONE_ONLY
 COLOR_SEL = -DMY_COLOR_SEL
 CFLAGS += -D_WIN32_WCE=0x0400 -D_WIN32_IE=0x0400 -DUNDER_CE \
 	$(STANDALONE) $(USE_RAW_MINGW) -DDRAW_LINK_DIRECT \
@@ -74,9 +77,10 @@ CFLAGS += -DCANT_DO_CMDBAR
 endif
 else							# ifeq ($(TARGET_OS),wince)
 ifeq ($(TARGET_OS),win32)
-STANDALONE = -DXWFEATURE_STANDALONE_ONLY
+#STANDALONE = -DXWFEATURE_STANDALONE_ONLY
+STANDALONE = -DPREV_WAS_STANDALONE_ONLY
 #BLUETOOTH = -DXWFEATURE_BLUETOOTH
-#RELAY = -DXWFEATURE_RELAY
+RELAY = -DXWFEATURE_RELAY
 CC = i586-mingw32msvc-gcc
 WINDRES = i586-mingw32msvc-windres
 STRIP = i586-mingw32msvc-strip

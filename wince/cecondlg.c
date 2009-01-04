@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -176,13 +177,12 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
         ceControlsFromAddrRec( hDlg, state );
 
-        ceDlgSetup( &state->dlgState, hDlg, DLG_STATE_NONE );
+        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE );
 
         result = TRUE;
     } else {
         state = (CeConnDlgState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!state ) {
-            CEAppGlobals* globals = state->dlgHdr.globals; 
 
             if ( message == WM_COMMAND ) {
                 XP_U16 id = LOWORD(wParam);
@@ -207,10 +207,10 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     state->userCancelled = id == IDCANCEL;
                     result = TRUE;
                 }
-            } else if ( message == WM_VSCROLL ) {
-                if ( !IS_SMARTPHONE(globals) ) {
-                    ceDoDlgScroll( hDlg, wParam );
-                }
+/*             } else if ( message == WM_VSCROLL ) { */
+/*                 if ( !IS_SMARTPHONE(globals) ) { */
+/*                     ceDoDlgScroll( hDlg, wParam ); */
+/*                 } */
             }
         }
     }
@@ -225,7 +225,7 @@ WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRec,
     XP_Bool result;
     XP_MEMSET( state, 0, sizeof( *state ) );
 
-    state->globals = globals;
+    state->dlgHdr.globals = globals;
     state->role = role;
     XP_MEMCPY( &state->addrRec, addrRec, sizeof(state->addrRec) );
 

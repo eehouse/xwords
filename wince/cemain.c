@@ -1,6 +1,7 @@
 /* -*- fill-column: 77; compile-command: "make -j TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -2855,7 +2856,6 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 
     if ( !globals->socketWrap ) {
         globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
-                                               addr->conType,
                                                got_data_proc, globals );
     }
 
@@ -3158,7 +3158,7 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     case TIMER_TIMERTICK:
         howLong = 1000;          /* 1 second */
         break;
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
     case TIMER_HEARTBEAT:
         howLong = when * 1000;
         break;
