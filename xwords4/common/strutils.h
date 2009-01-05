@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -82,6 +83,10 @@ XP_UCHAR* emptyStringIfNull( XP_UCHAR* str );
 /* Produce an array of ints 0..count-1, juggled */
 XP_Bool randIntArray( XP_U16* rnums, XP_U16 count );
 
+#ifdef XWFEATURE_SMS
+void binToSms( XP_UCHAR* out, XP_U16* outlen, const XP_U8* in, XP_U16 inlen );
+XP_Bool smsToBin( XP_U8* out, XP_U16* outlen, const XP_UCHAR* in, XP_U16 inlen );
+#endif
 
 #ifdef DEBUG
 void log_hex(  const XP_U8*memp, XP_U16 len, const char* tag );
