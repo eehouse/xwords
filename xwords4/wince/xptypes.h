@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -119,11 +119,11 @@ XP_U16 wince_snprintf( XP_UCHAR* buf, XP_U16 len,
 
 /* The pocketpc sdk on linux renames certain functions to avoid conflicts
    with same-named posix symbols. */
-#if defined  __GNUC__ && defined _WIN32_WCE
-# define MS(func) M$_##func
-#else
+/* #if defined  __GNUC__ && defined _WIN32_WCE */
+/* # define MS(func) M$_##func */
+/* #else */
 # define MS(func) func
-#endif
+/* #endif */
 
 #ifdef _WIN32_WCE
 # undef CALLBACK

@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -138,7 +138,7 @@ loadStateFromCurPrefs( CEAppGlobals* XP_UNUSED_STANDALONE(globals),
     XP_MEMCPY( &prefsPrefs->colors, &appPrefs->colors,
                sizeof(prefsPrefs->colors) );
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
     if ( globals->game.comms != NULL ) {
         comms_getAddr( globals->game.comms, &prefsPrefs->addrRec );
     } else {

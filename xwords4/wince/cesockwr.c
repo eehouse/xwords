@@ -92,8 +92,8 @@ queue_packet( CeSocketWrapper* self, XP_U8* packet, XP_U16 len )
             self->packets[self->nPackets] = packet;
             self->lens[self->nPackets] = len;
             ++self->nPackets;
-            XP_LOGF( "there are now %d packets on send queue", 
-                     self->nPackets );
+            XP_LOGF( "%s: there are now %d packets on send queue", 
+                     __func__, self->nPackets );
 
             /* signal the writer thread */
             SetEvent( self->queueAddEvent );
@@ -130,6 +130,7 @@ get_packet( CeSocketWrapper* self, XP_U8** packet, XP_U16* len )
     return success;
 } /* get_packet */
 
+/* called by WriterThreadProc */
 static void
 remove_packet( CeSocketWrapper* self )
 {
@@ -173,14 +174,13 @@ sendAll( CeSocketWrapper* self, XP_U8* buf, XP_U16 len )
 static XP_Bool
 sendLenAndData( CeSocketWrapper* self, XP_U8* packet, XP_U16 len )
 {
-    XP_Bool success = XP_FALSE;
+    XP_Bool success;
     XP_U16 lenData;
     XP_ASSERT( self->socket != -1 );
 
     lenData = XP_HTONS( len );
-    if ( sendAll( self, (XP_U8*)&lenData, sizeof(lenData) ) ) {
-        success = sendAll( self, packet, len );
-    }
+    success = sendAll( self, (XP_U8*)&lenData, sizeof(lenData) )
+        && sendAll( self, packet, len );
     return success;
 } /* sendLenAndData */
 

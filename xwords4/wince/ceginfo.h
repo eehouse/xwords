@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,6 +37,10 @@ typedef struct GameInfoState {
     wchar_t** menuDicts;
     XP_U16 nPlayersId;
     XP_U16 dictListId;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    XP_U16 roleComboId;
+    DeviceRole lastRole;        /* to prevent multiple dialog raises */
+#endif
 
     XP_Bool isNewGame;              /* newGame or GameInfo */
     XP_Bool userCancelled;          /* OUT param */

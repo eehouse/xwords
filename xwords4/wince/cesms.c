@@ -1,7 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,15 +17,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _CECONDLG_H_
-#define _CECONDLG_H_
+#include "cesms.h"
 
-#include "comms.h"
-#include "cemain.h"
-#include "ceutil.h" 
+XP_S16
+ce_sms_send( CEAppGlobals* XP_UNUSED(globals), const XP_U8* XP_UNUSED(buf), 
+             XP_U16 len, const CommsAddrRec* addrp )
+{
+    XP_LOGF( "%s: got %d bytes to send to port %d at %s but don't know how.",
+             __func__, len, addrp->u.sms.port, addrp->u.sms.phone );
+    return -1;
+}
 
-XP_Bool WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, 
-                      const CommsAddrRec* addrRecIn, 
-                      CommsAddrRec* addrRecOut, DeviceRole role );
-
-#endif
