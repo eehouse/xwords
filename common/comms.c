@@ -598,9 +598,7 @@ void
 comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 {
     XP_ASSERT( comms != NULL );
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
     util_addrChange( comms->util, &comms->addr, addr );
-#endif
     XP_MEMCPY( &comms->addr, addr, sizeof(comms->addr) );
 
 #ifdef COMMS_HEARTBEAT
@@ -627,7 +625,7 @@ comms_getInitialAddr( CommsAddrRec* addr )
        Palm... */
     addr->conType = COMMS_CONN_IR;
 #else
-    addr->conType = COMMS_CONN_BT;
+    addr->conType = COMMS_CONN_SMS;
 #endif
 } /* comms_getInitialAddr */
 
@@ -1104,7 +1102,7 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
         }
     }
     return rec;
-} /* addrToRecord */
+} /* getRecordFor */
 
 /* An initial message comes only from a client to a server, and from the
  * server in response to that initial message.  Once the inital messages are
@@ -1214,14 +1212,14 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
 
 XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
-                           const CommsAddrRec* addr )
+                           const CommsAddrRec* retAddr )
 {
     XP_Bool validMessage = XP_FALSE;
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
     AddressRecord* rec = NULL;
 
-    XP_ASSERT( addr == NULL || comms->addr.conType == addr->conType );
+    XP_ASSERT( retAddr == NULL || comms->addr.conType == retAddr->conType );
 
     if ( !preProcess( comms, stream, &usingRelay, &senderID ) ) {
         XP_U32 connID;
@@ -1247,10 +1245,10 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             payloadSize = stream_getSize( stream ) > 0; /* anything left? */
             if ( connID == CONN_ID_NONE ) {
                 /* special case: initial message from client */
-                rec = validateInitialMessage( comms, payloadSize > 0, addr, 
+                rec = validateInitialMessage( comms, payloadSize > 0, retAddr, 
                                               senderID, &channelNo );
             } else if ( comms->connID == connID ) {
-                rec = validateChannelMessage( comms, addr, channelNo, msgID,
+                rec = validateChannelMessage( comms, retAddr, channelNo, msgID,
                                               lastMsgRcd );
             }
 
@@ -1364,6 +1362,7 @@ static void
 setHeartbeatTimer( CommsCtxt* comms )
 {
     LOG_FUNC();
+    XP_ASSERT( !!comms );
     if ( !comms->hbTimerPending ) {
         XP_U16 when = 0;
 #ifdef RELAY_HEARTBEAT

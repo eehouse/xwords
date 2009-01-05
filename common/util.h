@@ -251,6 +251,8 @@ struct XW_UtilCtxt {
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define util_addrChange( uc, addro, addrn ) \
          (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))
+# else
+# define util_addrChange( uc, addro, addrn )
 #endif
 
 #ifdef XWFEATURE_SEARCHLIMIT
