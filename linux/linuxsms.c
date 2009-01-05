@@ -1,6 +1,6 @@
 /* -*-mode: C; compile-command: "make -j MEMDEBUG=TRUE";-*- */ 
 /* 
- * Copyright 2006-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2006-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@
 #include <sys/inotify.h>
 
 #include "linuxsms.h"
+#include "strutils.h"
 
 #define SMS_DIR "/tmp/xw_sms"
 #define LOCK_FILE ".lock"
@@ -90,8 +91,6 @@ unlock_queue( LinSMSData* data )
 void
 linux_sms_init( CommonGlobals* globals, const CommsAddrRec* addr )
 {
-    LOG_FUNC();
-    
     LinSMSData* data = globals->smsData;
     if ( !data ) {
         data = XP_MALLOC( globals->params->util->mpool, sizeof(*data) );
@@ -112,7 +111,6 @@ linux_sms_init( CommonGlobals* globals, const CommsAddrRec* addr )
                        data->myQueue, sizeof(data->myQueue) );
         data->port = addr->u.sms.port;
 
-        XP_LOGF( "creating %s", data->myQueue );
         (void)g_mkdir_with_parents( data->myQueue, 0777 );
 
         int fd = inotify_init();
@@ -144,26 +142,42 @@ linux_sms_send( CommonGlobals* globals,
 
     lock_queue( data );
 
+#ifdef DEBUG
+    gchar* str64 = g_base64_encode( buf, buflen );
+#endif
+
     makeQueuePath( phone, port, path, sizeof(path) );
     g_mkdir_with_parents( path, 0777 ); /* just in case */
     int len = strlen( path );
     snprintf( &path[len], sizeof(path)-len, "/%d", ++data->count );
 
-    gchar* str = g_base64_encode( buf, buflen );
-    XP_LOGF( "%s: base64 size of message: %d", __func__, strlen(str ) );
+    XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
+    XP_U16 smslen = sizeof(sms);
+    binToSms( sms, &smslen, buf, buflen );
+    XP_ASSERT( smslen == strlen(sms) );
+
+#ifdef DEBUG
+    XP_ASSERT( !strcmp( str64, sms ) );
+    g_free( str64 );
+
+    XP_U8 testout[buflen];
+    XP_U16 lenout = sizeof( testout );
+    XP_ASSERT( smsToBin( testout, &lenout, sms, smslen ) );
+    XP_ASSERT( lenout == buflen );
+    XP_ASSERT( XP_MEMCMP( testout, buf, smslen ) );
+#endif
 
     FILE* fp = fopen( path, "w" );
     XP_ASSERT( !!fp );
     (void)fprintf( fp, "from: %s\n", data->myPhone );
-    (void)fprintf( fp, "%s\n", str );
+    (void)fprintf( fp, "%s\n", sms );
     fclose( fp );
+    sync();
 
     unlock_queue( data );
 
-    g_free( str );
     nSent = buflen;
 
-    LOG_RETURNF( "%d", nSent );
     return nSent;
 } /* linux_sms_send */
 
@@ -188,17 +202,21 @@ decodeAndDelete( LinSMSData* data, const gchar* name,
         gchar* eol = strstr( contents, "\n" );
         *eol = '\0';
         XP_STRNCPY( addr->u.sms.phone, &contents[6], sizeof(addr->u.sms.phone) );
+        XP_ASSERT( !*eol );
         ++eol;         /* skip NULL */
+        *strstr(eol, "\n" ) = '\0';
 
-        gsize out_len;
-        guchar* out = g_base64_decode( eol, &out_len );
-        if ( out_len <= buflen ) {
-            XP_MEMCPY( buf, out, out_len );
-            nRead = out_len;
+        XP_U16 inlen = strlen(eol);      /* skip \n */
+        XP_U8 out[inlen];
+        XP_U16 outlen = sizeof(out);
+        XP_Bool valid = smsToBin( out, &outlen, eol, inlen );
+
+        if ( valid && outlen <= buflen ) {
+            XP_MEMCPY( buf, out, outlen );
+            nRead = outlen;
             addr->conType = COMMS_CONN_SMS;
             addr->u.sms.port = data->port;
         }
-        g_free( out );
     }
 
     g_free( contents );
@@ -217,31 +235,32 @@ linux_sms_receive( CommonGlobals* globals, int sock,
 
     lock_queue( data );
 
-    /* read required or we'll just get the event again */
+    /* read required or we'll just get the event again.  But we don't care
+       about the result or the buffer contents. */
     XP_U8 buffer[sizeof(struct inotify_event) + 16];
-    nRead = read( sock, buffer, sizeof(buffer) );
-    if ( nRead > 0 ) {
-        char shortest[256] = { '\0' };
-        GDir* dir = g_dir_open( data->myQueue, 0, NULL );
-        for ( ; ; ) {
-            const gchar* name = g_dir_read_name( dir );
-            if ( NULL == name ) {
-                break;
-            } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
-                continue;
-            }
-            if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
-                snprintf( shortest, sizeof(shortest), "%s", name );
-            }
-        }
-        g_dir_close( dir );
-
-        if ( !!shortest[0] ) {
-            nRead = decodeAndDelete( data, shortest, buf, buflen, addr );
-        }
-
-        unlock_queue( data );
+    if ( 0 > read( sock, buffer, sizeof(buffer) ) ) {
     }
+    char shortest[256] = { '\0' };
+    GDir* dir = g_dir_open( data->myQueue, 0, NULL );
+    for ( ; ; ) {
+        const gchar* name = g_dir_read_name( dir );
+        if ( NULL == name ) {
+            break;
+        } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
+            continue;
+        }
+        if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
+            snprintf( shortest, sizeof(shortest), "%s", name );
+        }
+    }
+    g_dir_close( dir );
+
+    if ( !!shortest[0] ) {
+        nRead = decodeAndDelete( data, shortest, buf, buflen, addr );
+    }
+
+    unlock_queue( data );
+
     return nRead;
 } /* linux_sms_receive */
 
