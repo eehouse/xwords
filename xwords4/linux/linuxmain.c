@@ -234,6 +234,11 @@ usage( char* appName, char* msg )
              "\t host: ./xwords -d dict.xwd -r Eric -s -N -a localhost -p 10999 -C COOKIE\n"
              "\tguest: ./xwords -d dict.xwd -r Kati -a localhost -p 10999 -C COOKIE"
 #endif
+#ifdef XWFEATURE_SMS
+         "\nsms example: \n"
+             "\t host: ./xwords -d dict.xwd -r Eric -s -N -M 123-456-7890\n"
+             "\tguest: ./xwords -d dict.xwd -r Kati -M 123-456-7890"
+#endif
 #ifdef XWFEATURE_BLUETOOTH
          "\nBluetooth example: \n"
              "\t host: ./xwords -d dict.xwd -r Eric -s -N -B ignored\n"
