@@ -1617,28 +1617,32 @@ newConnectionInput( GIOChannel *source,
         CommsAddrRec addr;
         CommsAddrRec* addrp = NULL;
 
-        if ( 0 ) {
+        switch ( globals->cGlobals.params->conType ) {
 #ifdef XWFEATURE_RELAY
-        } else if ( globals->cGlobals.params->conType == COMMS_CONN_RELAY ) {
+        case COMMS_CONN_RELAY:
             nRead = linux_relay_receive( &globals->cGlobals, 
                                          buf, sizeof(buf) );
+            break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-        } else if ( globals->cGlobals.params->conType == COMMS_CONN_BT ) {
+        case COMMS_CONN_BT:
             nRead = linux_bt_receive( sock, buf, sizeof(buf) );
+            break;
 #endif
 #ifdef XWFEATURE_SMS
-        } else if ( globals->cGlobals.params->conType == COMMS_CONN_SMS ) {
+        case COMMS_CONN_SMS:
             addrp = &addr;
             nRead = linux_sms_receive( &globals->cGlobals, sock, 
                                        buf, sizeof(buf), addrp );
+            break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-        } else if ( globals->cGlobals.params->conType == COMMS_CONN_IP_DIRECT ) {
+        case COMMS_CONN_IP_DIRECT:
             addrp = &addr;
             nRead = linux_udp_receive( sock, buf, sizeof(buf), addrp, &globals->cGlobals );
+            break;
 #endif
-        } else {
+        default:
             XP_ASSERT( 0 );
         }
 
