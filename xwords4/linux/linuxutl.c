@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -58,7 +58,7 @@ linux_debugf( const char* format, ... )
 static DictionaryCtxt*
 linux_util_makeEmptyDict( XW_UtilCtxt* uctx )
 {
-    XP_DEBUGF( "linux_util_makeEmptyDict called\n" );
+    XP_DEBUGF( "linux_util_makeEmptyDict called" );
     return linux_dictionary_make( MPPARM(uctx->mpool) NULL );
 } /* linux_util_makeEmptyDict */
 
