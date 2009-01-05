@@ -1,7 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,15 +17,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _CECONDLG_H_
-#define _CECONDLG_H_
+#ifndef _CESMS_H_
+#define _CESMS_H_
 
-#include "comms.h"
 #include "cemain.h"
-#include "ceutil.h" 
 
-XP_Bool WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, 
-                      const CommsAddrRec* addrRecIn, 
-                      CommsAddrRec* addrRecOut, DeviceRole role );
+XP_S16 ce_sms_send( CEAppGlobals* globals, const XP_U8* buf, XP_U16 len, 
+                    const CommsAddrRec* addrp );
 
 #endif

@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */ 
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -212,4 +212,10 @@ XP_Bool queryBoxChar( HWND hWnd, const XP_UCHAR* msg );
 
 #define BACK_KEY_UP_MAYBE 0x1000
 #define CE_MAX_PATH_LEN 256
+
+#ifndef DM_RESETSCROLL
+//http://www.nah6.com/~itsme/cvs-xdadevtools/itsutils/src/its_windows_message_list.txt
+# define DM_RESETSCROLL 0x0402
+#endif
+
 #endif /* _CEMAIN_H_ */

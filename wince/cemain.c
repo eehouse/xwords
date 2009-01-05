@@ -53,6 +53,7 @@
 #include "debhacks.h"
 #include "cesvdgms.h"
 #include "cedraw.h"
+#include "cesms.h"
 
 #include "dbgutil.h"
 
@@ -74,7 +75,7 @@ typedef struct FileWriteState {
 } FileWriteState;
 
 /* forward util function decls */
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len, 
                             const CommsAddrRec* addr, 
                             void* closure );
@@ -2846,20 +2847,46 @@ ce_reset_proc( void* closure )
 }
 #endif
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
 static XP_S16
-ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr, 
+ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp, 
               void* closure )
 {
+    XP_S16 nSent = -1;
     CEAppGlobals* globals = (CEAppGlobals*)closure;
-    XP_LOGF( "ce_send_proc called" );
+    CommsAddrRec addr;
+    LOG_FUNC();
 
-    if ( !globals->socketWrap ) {
-        globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
-                                               got_data_proc, globals );
+    if ( !addrp ) {
+        comms_getAddr( globals->game.comms, &addr );
+        addrp = &addr;
     }
 
-    return ce_sockwrap_send( globals->socketWrap, buf, len, addr );
+    XP_ASSERT( !!addrp );        /* firing */
+    switch( addrp->conType ) {
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+    case COMMS_CONN_IP_DIRECT:
+        break;
+    case COMMS_CONN_RELAY:
+        if ( !globals->socketWrap ) {
+            globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
+                                                   got_data_proc, globals );
+        }
+
+        nSent = ce_sockwrap_send( globals->socketWrap, buf, len, addrp );
+        break;
+#endif
+#ifdef XWFEATURE_SMS
+    case COMMS_CONN_SMS:
+        nSent = ce_sms_send( globals, buf, len, addrp );
+        break;
+#endif
+    default:
+        XP_LOGF( "unexpected conType %d", addrp->conType );
+        XP_ASSERT( 0 );
+    }
+
+    return nSent;
 } /* ce_send_proc */
 
 static void
@@ -3349,7 +3376,7 @@ ce_util_remSelected( XW_UtilCtxt* uc )
     PostMessage( globals->hWnd, XWWM_REM_SEL, 0, 0 );
 }
 
-#if defined XWFEATURE_RELAY || defined  XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 ce_util_addrChange( XW_UtilCtxt* XP_UNUSED(uc), 
                     const CommsAddrRec* XP_UNUSED(oldAddr),

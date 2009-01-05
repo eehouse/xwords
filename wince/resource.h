@@ -74,7 +74,7 @@
 #define IDC_PREFCOLORS                  1045
 #define IDC_PREFFONTS                   1046
 #define PHONIES_LABEL                   1048
-#define IDC_ROLECOMBO                   1049
+/* #define IDC_ROLECOMBO                   1049 */
 #define GIJUGGLE_BUTTON                 1050
 #define IDC_TOTAL_LABEL                 1051
 #define IDC_REMOTE_LABEL                1052
@@ -164,20 +164,28 @@
 # define IDC_CRELAYPORT_LAB              1109
 # define IDC_CRELAYHINT_LAB              1110
 
-# define IDC_CONNECTCOMBO                1111
+/* # define IDC_CONNECTCOMBO                1111 */
 # define RELAYNAME_EDIT                  1112
 # define RELAYPORT_EDIT                  1113
 # define COOKIE_EDIT                     1114
 
 #endif
 
-#define IDC_BLUET_ADDR_LAB               1115
+#define IDC_BLUET_ADDR_LAB               1300
 #ifdef XWFEATURE_BLUETOOTH
-# define IDC_BLUET_ADDR_EDIT             1116
-# define IDC_BLUET_ADDR_BROWSE           1117
+# define IDC_BLUET_ADDR_EDIT             1301
+# define IDC_BLUET_ADDR_BROWSE           1302
 #endif
 /* #define IDS_UPDOWN                       1118 */
 
+/* Direct IP connection */
+# define IDC_IPNAME_LAB                  1303
+# define IPNAME_EDIT                     1304
+/* SMS connection */
+# define IDC_SMS_PHONE_LAB               1305
+# define IDC_SMS_PHONE_EDIT              1306
+# define IDC_SMS_PORT_LAB                1307
+# define IDC_SMS_PORT_EDIT               1308
 
 #define IDC_SVGM_SELLAB                  1127
 /* Let's remove these until they're implemented */
@@ -269,7 +277,17 @@
 #define IDC_NPLAYERSUPDOWN              1219
 #define IDC_NPLAYERSCOMBO_PPC           1220
 
-#define IDC_DICTLABEL                   1221
+#ifndef XWFEATURE_STANDALONE_ONLY
+# define IDC_CONNECT_COMBO               1221
+# define IDC_CONNECTUPDOWN               1222
+# define IDC_CONNECT_COMBO_PPC           1223
+
+# define IDC_ROLECOMBO                   1224
+# define IDC_ROLEUPDOWN                  1225
+# define IDC_ROLECOMBO_PPC               1226
+#endif  /* XWFEATURE_STANDALONE_ONLY */
+
+#define IDC_DICTLABEL                    1227
 
 // Next default values for new objects
 // 
@@ -277,7 +295,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        125
 #define _APS_NEXT_COMMAND_VALUE         40033
-#define _APS_NEXT_CONTROL_VALUE         1128
+/* #define _APS_NEXT_CONTROL_VALUE         1128 */
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

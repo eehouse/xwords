@@ -162,28 +162,24 @@ cleanupGameInfoState( GameInfoState* state )
 static void
 loadFromGameInfo( GameInfoState* state )
 {
-    XP_U16 i;
+    XP_U16 ii;
     CEAppGlobals* globals = state->dlgHdr.globals;
     CurGameInfo* gi = &globals->gameInfo;
-#ifndef XWFEATURE_STANDALONE_ONLY
-    HWND hDlg = state->dlgHdr.hDlg;
-#endif
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
     wchar_t* roles[] = { L"Standalone", L"Host", L"Guest" };
-    for ( i = 0; i < VSIZE(roles); ++i ) {
-        SendDlgItemMessage( hDlg, IDC_ROLECOMBO, CB_ADDSTRING, 0, 
-                            (long)roles[i] );
+    for ( ii = 0; ii < VSIZE(roles); ++ii ) {
+        SendDlgItemMessage( state->dlgHdr.hDlg, state->roleComboId, 
+                            ADDSTRING(globals), 0, (long)roles[ii] );
     }
 #endif
 
-    for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
         wchar_t widebuf[8];
         /* put a string in the moronic combobox */
-        swprintf( widebuf, L"%d", i + 1 );
+        swprintf( widebuf, L"%d", ii + 1 );
         SendDlgItemMessage( state->dlgHdr.hDlg, state->nPlayersId,
-                            ADDSTRING(globals), 0, 
-                            (long)widebuf );
+                            ADDSTRING(globals), 0, (long)widebuf );
     }
 
     newg_load( state->newGameCtx, gi );
@@ -257,11 +253,6 @@ stateToGameInfo( GameInfoState* state )
     return success;
 } /* stateToGameInfo */
 
-#ifndef DM_RESETSCROLL
-//http://www.nah6.com/~itsme/cvs-xdadevtools/itsutils/src/its_windows_message_list.txt
-# define DM_RESETSCROLL 0x0402
-#endif
-
 static void
 raiseForHiddenPlayers( GameInfoState* state, XP_U16 nPlayers )
 {
@@ -332,18 +323,30 @@ handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
     }
 } /* handlePrefsButton */
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void
 handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals,
                          DeviceRole role, GameInfoState* state )
 {
-    CeConnDlgState dlgState;
+    if ( role == SERVER_STANDALONE ) {
+        NGValue value;
+        role = (DeviceRole)SendDlgItemMessage( hDlg, 
+                                               state->roleComboId,
+                                               GETCURSEL(globals), 0, 
+                                               0L);
+        value.ng_role = role;
+        newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
+    }
 
-    if ( WrapConnsDlg( hDlg, globals, &state->prefsPrefs.addrRec, 
-                       role, &dlgState ) ) {
-        XP_MEMCPY( &state->prefsPrefs.addrRec, &dlgState.addrRec,
-                   sizeof(state->prefsPrefs.addrRec) );
-        state->addrChanged = XP_TRUE;
+    if ( role != state->lastRole ) {
+        state->lastRole = role;
+
+        if ( role != SERVER_STANDALONE) {
+            if ( WrapConnsDlg( hDlg, globals, &state->prefsPrefs.addrRec, 
+                               &state->prefsPrefs.addrRec, role ) ) {
+                state->addrChanged = XP_TRUE;
+            }
+        }
     }
 }
 #endif
@@ -380,9 +383,9 @@ resIDForAttr( GameInfoState* state, NewGameAttr attr )
     case NG_ATTR_NPLAYERS:
         resID = state->nPlayersId;
         break;
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+#ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
-        resID = IDC_ROLECOMBO;
+        resID = state->roleComboId;
         break;
     case NG_ATTR_REMHEADER:
         resID = IDC_REMOTE_LABEL;
@@ -559,18 +562,28 @@ ceDrawIconButton( CEAppGlobals* globals, DRAWITEMSTRUCT* dis )
 static void
 checkUpdateCombo( GameInfoState* state, XP_U16 id )
 {
-    if ( (id == state->nPlayersId)
-         && state->isNewGame ) {  /* ignore if in info mode */
-        NGValue value;
-        XP_U16 nPlayers =  1 + (XP_U16)
-            SendDlgItemMessage( state->dlgHdr.hDlg, id,
-                                GETCURSEL(state->dlgHdr.globals), 0, 0L);
-        value.ng_u16 = nPlayers;
-        XP_ASSERT( !!state->newGameCtx );
-        newg_attrChanged( state->newGameCtx, 
-                          NG_ATTR_NPLAYERS, value );
+    HWND hDlg = state->dlgHdr.hDlg;
 
-        raiseForHiddenPlayers( state, nPlayers );
+    if ( id == state->nPlayersId ) {
+        if ( state->isNewGame ) {  /* ignore if in info mode */
+            XP_S16 sel;
+            XP_U16 nPlayers;
+            NGValue value;
+
+            sel = SendDlgItemMessage( hDlg, id, 
+                                      GETCURSEL(state->dlgHdr.globals), 0, 0L);
+            nPlayers =  1 + sel;
+            value.ng_u16 = nPlayers;
+            XP_ASSERT( !!state->newGameCtx );
+            newg_attrChanged( state->newGameCtx, 
+                              NG_ATTR_NPLAYERS, value );
+
+            raiseForHiddenPlayers( state, nPlayers );
+         }
+    } else if ( id == state->roleComboId ) {
+        XP_ASSERT( SERVER_STANDALONE == 0 );
+        handleConnOptionsButton( hDlg, state->dlgHdr.globals, 
+                                 SERVER_STANDALONE, state );
     }
 } /* checkUpdateCombo */
 
@@ -590,10 +603,16 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         globals = state->dlgHdr.globals;
 
         state->nPlayersId = LB_IF_PPC(globals,IDC_NPLAYERSCOMBO);
+#ifndef XWFEATURE_STANDALONE_ONLY
+        state->roleComboId = LB_IF_PPC(globals, IDC_ROLECOMBO);
+#endif
         state->dictListId = LB_IF_PPC(globals,IDC_DICTLIST);
         state->prevNPlayers = MAX_NUM_PLAYERS;
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
+#ifndef XWFEATURE_STANDALONE_ONLY
+        ceDlgComboShowHide( &state->dlgHdr, IDC_ROLECOMBO );
+#endif
         ceDlgComboShowHide( &state->dlgHdr, IDC_NPLAYERSCOMBO ); 
         ceDlgComboShowHide( &state->dlgHdr, IDC_DICTLIST );
 
@@ -643,7 +662,11 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 case WM_COMMAND:
                     result = TRUE;
                     id = LOWORD(wParam);
-                    if ( id == state->nPlayersId ) {
+                    if ( id == state->nPlayersId
+#ifndef XWFEATURE_STANDALONE_ONLY
+                         || id == state->roleComboId
+#endif
+                         ) {
                         if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                             checkUpdateCombo( state, id );
                         }
@@ -663,28 +686,17 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         case REMOTE_CHECK4:
                             handleColChecked( state, id, REMOTE_CHECK1 );
                             break;
-#endif
 
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
                         case IDC_ROLECOMBO:
+                        case IDC_ROLECOMBO_PPC:
                             if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                                 if ( state->isNewGame ) {  /* ignore if in info
                                                                 mode */
-                                    NGValue value;
-                                    value.ng_role = 
-                                        (DeviceRole)SendDlgItemMessage( hDlg, 
-                                                                        IDC_ROLECOMBO,
-                                                                        CB_GETCURSEL, 0, 
-                                                                        0L);
-                                    newg_attrChanged( state->newGameCtx, 
-                                                      NG_ATTR_ROLE, value );
                                     /* If we've switched to a state where we'll be
                                        connecting */
-                                    if ( value.ng_role != SERVER_STANDALONE ) {
-                                        handleConnOptionsButton( hDlg, globals, 
-                                                                 value.ng_role, 
-                                                                 state );
-                                    }
+                                    handleConnOptionsButton( hDlg, globals, 
+                                                             SERVER_STANDALONE,
+                                                             state );
                                 }
                             }
                             break;
