@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*-mode: C; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -228,6 +229,140 @@ randIntArray( XP_U16* rnums, XP_U16 count )
 
     return changed;
 } /* randIntArray */
+
+#ifdef XWFEATURE_SMS
+/* base-64 encode binary data as a message legal for SMS.  See
+ * http://www.ietf.org/rfc/rfc2045.txt for the algorithm.  glib uses this and
+ * so it's not needed on linux, but unless all platforms provided identical
+ * implementations it's needed for messages to be cross-platform.
+*/
+
+static const XP_UCHAR* 
+getSMSTable( void )
+{
+    return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+}
+#define PADCHAR '='
+
+static void
+bitsToChars( const XP_U8* bytesIn, XP_U16 nValidBytes, XP_UCHAR* out, 
+             XP_U16* outlen )
+{
+    XP_U16 nValidSextets = ((nValidBytes * 8) + 5) / 6; /* +5: round up */
+    XP_U8 local[4] = { 0, 0, 0, 0 };
+    XP_U16 bits[4];
+    XP_MEMCPY( local, bytesIn, nValidBytes );
+    /* top 6 bits of first byte */
+    bits[0] = local[0] >> 2;
+    /* bottom 2 bits of first byte, top four of second */ 
+    bits[1] = ((local[0] << 4) & 0x30 ) | (local[1] >> 4);
+    /* bottom four bits of second byte, top two of third */ 
+    bits[2] = ((local[1] << 2) & 0x3C) | (local[2] >> 6);
+    /* bottom six bits of third */
+    bits[3] = local[2] & 0x3F;
+
+    const XP_UCHAR* table = getSMSTable();
+
+    XP_U16 ii;
+    for ( ii = 0; ii < 4; ++ii ) {
+        XP_UCHAR ch;
+        if ( ii < nValidSextets ) {
+            XP_U16 index = bits[ii];
+            ch = table[index];
+        } else {
+            ch = PADCHAR;
+        }
+        out[(*outlen)++] = ch;
+    }
+} /* bitsToChars */
+
+void
+binToSms( XP_UCHAR* out, XP_U16* outlenp, const XP_U8* in, const XP_U16 inlen )
+{
+    XP_U16 inConsumed;
+    XP_U16 outlen = 0;
+
+    for ( inConsumed = 0; ; /*inConsumed += 3*/ ) {
+        XP_U16 validBytes = XP_MIN( 3, inlen - inConsumed );
+        bitsToChars( &in[inConsumed], validBytes, out, &outlen );
+        XP_ASSERT( outlen <= *outlenp );
+
+        inConsumed += 3;
+        if ( inConsumed >= inlen ) {
+            break;
+        }
+    }
+    XP_ASSERT( outlen < *outlenp );
+    out[outlen] = '\0';
+    *outlenp = outlen;
+    XP_ASSERT( *outlenp >= inlen );
+} /* binToSms */
+
+/* Return false if illegal, e.g. contains bad characters.
+ */
+
+static XP_U8
+findRank( XP_UCHAR ch )
+{
+    XP_U8 rank;
+    if ( ch == PADCHAR ) {
+        rank = 0;
+    } else {
+        const XP_UCHAR* table = getSMSTable();
+        for ( rank = 0; rank < 64; ++rank ) {
+            if ( table[rank] == ch ) {
+                break;
+            }
+        }
+        XP_ASSERT( rank < 64 );
+    }
+    return rank;
+}
+
+/* This function stolen from glib file glib/gbase64.c.  It's also GPL'd, so
+ * that may not matter.  But does my copyright need to change?  PENDING
+ *
+ * Also, need to check there's space before writing!  PENDING
+ */
+XP_Bool
+smsToBin( XP_U8* out, XP_U16* outlenp, const XP_UCHAR* sms, XP_U16 smslen )
+{
+    const XP_UCHAR* inptr;
+    XP_U8* outptr = out;
+    const XP_UCHAR* smsend = sms + smslen;
+    XP_U8 ch, rank;
+    XP_U8 last[2];
+    unsigned int vv = 0;
+    int ii = 0;
+
+    inptr = sms;
+    last[0] = last[1] = 0;
+    while ( inptr < smsend ) {
+        ch = *inptr++;
+        rank = findRank( ch );
+
+        last[1] = last[0];
+        last[0] = ch;
+        vv = (vv<<6) | rank;
+        if ( ++ii == 4 ) {
+            *outptr++ = vv >> 16;
+            if (last[1] != PADCHAR ) {
+                *outptr++ = vv >> 8;
+            }
+            if (last[0] != PADCHAR ) {
+                *outptr++ = vv;
+            }
+            ii = 0;
+	    }
+    }
+
+    XP_ASSERT( *outlenp >= (outptr - out) );
+    *outlenp = outptr - out;
+
+    return XP_TRUE;
+} /* smsToBin */
+
+#endif
 
 #ifdef DEBUG
 #define NUM_PER_LINE 8
