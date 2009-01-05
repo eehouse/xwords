@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -881,8 +881,8 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
 } /* ceGetPath */
 
 int
-ceMessageBoxChar( CEAppGlobals* globals, HWND parent, const XP_UCHAR* str, 
-                  const wchar_t* title, XP_U16 buttons )
+ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), HWND parent, 
+                  const XP_UCHAR* str, const wchar_t* title, XP_U16 buttons )
 {
     /* Get the length required, then alloc and go.  This is technically
        correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
@@ -893,9 +893,10 @@ ceMessageBoxChar( CEAppGlobals* globals, HWND parent, const XP_UCHAR* str,
     
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, clen, widebuf, wlen );
 
-    if ( !parent ) {
-        parent = globals->hWnd;
-    }
+/*     if ( !parent ) { */
+/*         parent = globals->hWnd; */
+/*     } */
+    parent = GetForegroundWindow();
     return MessageBox( parent, widebuf, title, buttons );
 } /* ceMessageBoxChar */
 
