@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -710,7 +710,7 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 
     numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
 
-    XP_STATUSF( "model_makeTurnFromStream: numTiles=%d\n", numTiles );
+    XP_STATUSF( "model_makeTurnFromStream: numTiles=%d", numTiles );
 
     while ( numTiles-- ) {
         XP_S16 foundAt;
