@@ -113,7 +113,7 @@ MYDEFS_COMMON += -DXWFEATURE_SEARCHLIMIT
 
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
-# MYDEFS_COMMON += -DXWFEATURE_RELAY
+MYDEFS_COMMON += -DXWFEATURE_RELAY
 
 # turn on bluetooth comms option for 68K and ARM
 BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP 
