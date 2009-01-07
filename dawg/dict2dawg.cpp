@@ -53,9 +53,10 @@
 #include <vector>
 #include <list>
 
+typedef unsigned char Letter;   // range 1..26 for English, always < 64
 typedef unsigned int Node;
 typedef std::vector<Node> NodeList;
-typedef std::vector<char*> WordList;
+typedef std::vector<Letter*> WordList;
 
 #define VERSION_STR "$Rev$"
 
@@ -64,12 +65,12 @@ typedef std::vector<char*> WordList;
 
 int gFirstDiff;
 
-static char gCurrentWordBuf[MAX_WORD_LEN+1] = { '\0' };
+static Letter gCurrentWordBuf[MAX_WORD_LEN+1] = { '\0' };
  // this will never change for non-sort case
-static char* gCurrentWord = gCurrentWordBuf;
+static Letter* gCurrentWord = gCurrentWordBuf;
 static int gCurrentWordLen;
 
-char* gCurWord = NULL;                   // save so can check for sortedness
+Letter* gCurWord = NULL;                   // save so can check for sortedness
 bool gDone = false;
 static unsigned int gNextWordIndex;
 static void (*gReadWordProc)(void) = NULL;
@@ -111,8 +112,8 @@ static void error_exit( int line, const char* fmt, ... );
 static void makeTableHash( void );
 static WordList* parseAndSort( FILE* file );
 static void printWords( WordList* strings );
-static bool firstBeforeSecond( const char* lhs, const char* rhs );
-static char* tileToAscii( char* out, int outSize, const char* in );
+static bool firstBeforeSecond( const Letter* lhs, const Letter* rhs );
+static char* tileToAscii( char* out, int outSize, const Letter* in );
 static int buildNode( int depth );
 static void TrieNodeSetIsLastSibling( Node* nodeR, bool isLastSibling );
 static int addNodes( NodeList& newedgesR );
@@ -385,6 +386,13 @@ registerSubArray( NodeList& edgesR, int nodeLoc )
     gSubsHash[edgesR] = nodeLoc;
 } // registerSubArray
 
+static int
+wordlen( const Letter* word )
+{
+    const char* str = (const char*)word;
+    return strlen( str );
+}
+
 static void
 readFromSortedArray( void )
 {
@@ -403,7 +411,7 @@ readFromSortedArray( void )
     }
 
     for ( ; ; ) {
-        char* word = (char*)"";
+        Letter* word = (Letter*)"";
 
         if ( !gDone ) {
             gDone = gNextWordIndex == sInputStrings->size();
@@ -423,7 +431,7 @@ readFromSortedArray( void )
 #endif
         }
         int numCommonLetters = 0;
-        int len = strlen( word );
+        int len = wordlen( word );
         if ( gCurrentWordLen < len ) {
             len = gCurrentWordLen;
         }
@@ -434,7 +442,7 @@ readFromSortedArray( void )
         }
 
         gFirstDiff = numCommonLetters;
-        if ( (gCurrentWordLen > 0) && (strlen(word) > 0)
+        if ( (gCurrentWordLen > 0) && (wordlen(word) > 0)
              && !firstBeforeSecond( gCurrentWord, word ) ) {
 #ifdef DEBUG
             if ( gDebug ) {
@@ -451,7 +459,7 @@ readFromSortedArray( void )
         }
     
         gCurrentWord = word;
-        gCurrentWordLen = strlen(word);
+        gCurrentWordLen = wordlen(word);
         break;
     }
 
@@ -464,10 +472,10 @@ readFromSortedArray( void )
 #endif
 } // readFromSortedArray
 
-static char*
-readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
+static Letter*
+readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
 {
-    char* result = NULL;
+    Letter* result = NULL;
     int count = 0;
     bool dropWord = false;
 
@@ -553,9 +561,9 @@ readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
 static void
 readFromFile( void )
 {
-    char wordBuf[MAX_WORD_LEN+1];
+    Letter wordBuf[MAX_WORD_LEN+1];
     static bool s_eof = false;
-    char* word;
+    Letter* word;
     int len;
 
     gDone = s_eof;
@@ -570,7 +578,7 @@ readFromFile( void )
             gDone = NULL == word;
         }
         if ( gDone ) {
-            word = (char*)"";
+            word = (Letter*)"";
             len = 0;
         }
 
@@ -585,7 +593,7 @@ readFromFile( void )
         }
 
         gFirstDiff = numCommonLetters;
-        if ( (gCurrentWordLen > 0) && (strlen(word) > 0)
+        if ( (gCurrentWordLen > 0) && (wordlen(word) > 0)
              && !firstBeforeSecond( gCurrentWord, word ) ) {
 #ifdef DEBUG
             if ( gDebug ) {
@@ -602,8 +610,8 @@ readFromFile( void )
         }
         break;
     }
-    gCurrentWordLen = strlen(word);
-    strncpy( gCurrentWordBuf, word, sizeof(gCurrentWordBuf) );
+    gCurrentWordLen = wordlen(word);
+    strncpy( (char*)gCurrentWordBuf, (char*)word, sizeof(gCurrentWordBuf) );
 
 #ifdef DEBUG
     if ( gDebug ) {
@@ -615,14 +623,14 @@ readFromFile( void )
 } // readFromFile
 
 static bool
-firstBeforeSecond( const char* lhs, const char* rhs )
+firstBeforeSecond( const Letter* lhs, const Letter* rhs )
 {
-    bool gt = 0 > strcmp( lhs, rhs );
+    bool gt = 0 > strcmp( (char*)lhs, (char*)rhs );
     return gt;
 }
 
 static char*
-tileToAscii( char* out, int outSize, const char* in )
+tileToAscii( char* out, int outSize, const Letter* in )
 {
     char tiles[outSize];
     int tilesLen = 1;
@@ -659,7 +667,7 @@ parseAndSort( FILE* infile )
     if ( memleft == 0 ) {
         memleft = MAX_POOL_SIZE;
     }
-    char* str = (char*)malloc( memleft );
+    Letter* str = (Letter*)malloc( memleft );
     if ( NULL == str ) {
         ERROR_EXIT( "can't allocate main string storage" );
     }
@@ -667,7 +675,7 @@ parseAndSort( FILE* infile )
     bool eof = false;
     for ( ; ; ) {
         int len;
-        char* word = readOneWord( str, memleft, &len, &eof );
+        Letter* word = readOneWord( str, memleft, &len, &eof );
 
         if ( NULL == word ) {
             break;
@@ -703,9 +711,9 @@ parseAndSort( FILE* infile )
 } // parseAndSort
 
 static void
-printWords( std::vector<char*>* strings )
+printWords( WordList* strings )
 {
-    std::vector<char*>::iterator iter = strings->begin();
+    std::vector<Letter*>::iterator iter = strings->begin();
     while ( iter != strings->end() ) {
         char buf[T2ABUFLEN(MAX_WORD_LEN)];
         tileToAscii( buf, sizeof(buf), *iter );
