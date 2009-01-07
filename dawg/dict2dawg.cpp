@@ -1,4 +1,4 @@
-/* -*- compile-command: "g++ -DDEBUG -O -o dict2dawg dict2dawg.cpp"; -*- */
+/* -*- compile-command: "g++ -DDEBUG -O -Wall -o dict2dawg dict2dawg.cpp"; -*- */
 /*************************************************************************
  * adapted from perl code that was itself adapted from C++ code
  * Copyright (C) 2000 Falk Hueffner
@@ -71,7 +71,7 @@ static int gCurrentWordLen;
 
 char* gCurWord = NULL;                   // save so can check for sortedness
 bool gDone = false;
-static int gNextWordIndex;
+static unsigned int gNextWordIndex;
 static void (*gReadWordProc)(void) = NULL;
 NodeList gNodes;       // final array of nodes
 unsigned int gNBytesPerOutfile = 0xFFFFFFFF;
@@ -108,7 +108,6 @@ int gLimHigh = MAX_WORD_LEN;
 static char* parseARGV( int argc, char** argv, const char** inFileName );
 static void usage( const char* name );
 static void error_exit( int line, const char* fmt, ... );
-static char parsechar( const char* in );
 static void makeTableHash( void );
 static WordList* parseAndSort( FILE* file );
 static void printWords( WordList* strings );
@@ -122,7 +121,7 @@ static bool TrieNodeGetIsTerminal( Node node );
 static void TrieNodeSetIsLastSibling( Node* nodeR, bool isLastSibling );
 static bool TrieNodeGetIsLastSibling( Node node );
 static void TrieNodeSetLetter( Node* nodeR, int letter );
-static int TrieNodeGetLetter( Node node );
+static unsigned int TrieNodeGetLetter( Node node );
 static void TrieNodeSetFirstChildOffset( Node* nodeR, int fco );
 static int TrieNodeGetFirstChildOffset( Node node );
 static int findSubArray( NodeList& newedgesR );
@@ -261,10 +260,11 @@ moveTopToFront( int* firstRef )
     // We add diff to everything. There's no subtracting because
     // nobody had any refs to the top list.
 
-    for ( int i = 0; i < gNodes.size(); ++i ) {
-        int fco = TrieNodeGetFirstChildOffset( gNodes[i] );
+    unsigned int ii;
+    for ( ii = 0; ii < gNodes.size(); ++ii ) {
+        int fco = TrieNodeGetFirstChildOffset( gNodes[ii] );
         if ( fco != 0 ) {      // 0 means NONE, not 0th!!
-            TrieNodeSetFirstChildOffset( &gNodes[i], fco + diff );
+            TrieNodeSetFirstChildOffset( &gNodes[ii], fco + diff );
         }
     }
 } // moveTopToFront
@@ -335,7 +335,7 @@ addNodes( NodeList& newedgesR )
 static void
 printNode( int index, Node node )
 {
-    int letter = TrieNodeGetLetter(node);
+    unsigned int letter = TrieNodeGetLetter(node);
     assert( letter < gRevMap.size() );
     fprintf( stderr,
              "[%d] letter=%d(%c); isTerminal=%s; isLastSib=%s; fco=%d;\n", 
@@ -348,9 +348,10 @@ printNode( int index, Node node )
 static void
 printNodes( NodeList& nodesR )
 {
-    for ( int i = 0; i < nodesR.size(); ++i ) {
-        Node node = nodesR[i];
-        printNode( i, node );
+    unsigned int ii;
+    for ( ii = 0; ii < nodesR.size(); ++ii ) {
+        Node node = nodesR[ii];
+        printNode( ii, node );
     }
 }
 
@@ -469,7 +470,6 @@ readOneWord( char* wordBuf, int bufLen, int* lenp, bool* gotEOF )
     char* result = NULL;
     int count = 0;
     bool dropWord = false;
-    bool done = false;
 
     // for each byte, append to an internal buffer up to size limit.
     // On reaching an end-of-word or EOF, check if the word formed is
@@ -634,7 +634,7 @@ tileToAscii( char* out, int outSize, const char* in )
         if ( '\0' == ch ) {
             break;
         }
-        assert( ch < gRevMap.size() );
+        assert( (unsigned int)ch < gRevMap.size() );
         *out++ = gRevMap[ch];
         tilesLen += sprintf( &tiles[tilesLen], "%d,", ch );
         assert( (out - orig) < outSize );
@@ -667,7 +667,6 @@ parseAndSort( FILE* infile )
     bool eof = false;
     for ( ; ; ) {
         int len;
-        char buf[MAX_WORD_LEN+1];
         char* word = readOneWord( str, memleft, &len, &eof );
 
         if ( NULL == word ) {
@@ -769,7 +768,7 @@ TrieNodeSetLetter( Node* nodeR, int letter )
     *nodeR |= (letter << 24);          // set new ones
 }
 
-static int
+static unsigned int
 TrieNodeGetLetter( Node node )
 {
     node >>= 24;
@@ -899,7 +898,7 @@ emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase )
         }
     }
 
-    int nextIndex = 0;
+    unsigned int nextIndex = 0;
     int nextFileNum;
 
     for ( nextFileNum = 0; ; ++nextFileNum ) {
@@ -917,26 +916,26 @@ emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase )
                   outFileBase, nextFileNum);
         FILE* OUTFILE = fopen( outName, "w" );
         assert( OUTFILE );
-        int curSize = 0;
+        unsigned int curSize = 0;
 
         while ( nextIndex < gNodes.size() ) {
             // scan to find the next terminal
-            int i;
-            for ( i = nextIndex; !TrieNodeGetIsLastSibling(gNodes[i]); ++i ) {
+            unsigned int ii;
+            for ( ii = nextIndex; !TrieNodeGetIsLastSibling(gNodes[ii]); ++ii ) {
 
                 // do nothing but a sanity check
-                if ( i >= gNodes.size() ) {
+                if ( ii >= gNodes.size() ) {
                     ERROR_EXIT( "bad trie format: last node not last sibling" );
                 }
 
             }
-            ++i;	// move beyond the terminal
-            int nextSize = (i - nextIndex) * gNBytesPerNode;
+            ++ii;	// move beyond the terminal
+            int nextSize = (ii - nextIndex) * gNBytesPerNode;
             if (curSize + nextSize > nBytesPerOutfile ) {
                 break;
             } else {
                 // emit the subarray
-                while ( nextIndex < i ) {
+                while ( nextIndex < ii ) {
                     outputNode( gNodes[nextIndex], gNBytesPerNode, OUTFILE );
                     ++nextIndex;
                 }
