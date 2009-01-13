@@ -56,6 +56,10 @@ typedef struct SpecialBitmaps {
     XP_Bitmap smallBM;
 } SpecialBitmaps;
 
+typedef struct _XP_Bitmaps {
+    XP_U16 nBitmaps;
+    XP_Bitmap bmps[2];      /* 2 is private, may change */
+} XP_Bitmaps;
 
 struct DictionaryCtxt {
     void (*destructor)( DictionaryCtxt* dict );
@@ -139,8 +143,8 @@ const XP_UCHAR* dict_getName( const DictionaryCtxt* ctxt );
 Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
 
 XP_Bool dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile );
-XP_Bitmap dict_getFaceBitmap( const DictionaryCtxt* dict, Tile tile, 
-                              XP_Bool isLarge );
+void dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, 
+                          XP_Bitmaps* bmps );
 
 #ifdef TALL_FONTS
 XP_LangCode dict_getLangCode( const DictionaryCtxt* dict );

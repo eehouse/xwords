@@ -346,7 +346,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_UCHAR ch[4] = {'\0'};
             XP_S16 owner = -1;
             XP_Bool invert = XP_FALSE;
-            XP_Bitmap bitmap = NULL;
+            XP_Bitmaps bitmaps;
             XP_UCHAR* textP = NULL;
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
@@ -385,8 +385,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                     textP = ch;
                 } else {
                     if ( dict_faceIsBitmap( dict, tile ) ) {
-                        bitmap = dict_getFaceBitmap( dict, tile, XP_FALSE );
-                        XP_ASSERT( !!bitmap );
+                        dict_getFaceBitmaps( dict, tile, &bitmaps );
                     }
                     (void)dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
                     textP = ch;
@@ -410,7 +409,8 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             }
 #endif
 
-            success = draw_drawCell( board->draw, &cellRect, textP, bitmap, 
+            success = draw_drawCell( board->draw, &cellRect, textP, 
+                                     bitmaps.nBitmaps > 0? &bitmaps : NULL, 
                                      tile, owner, bonus, hintAtts, flags );
             break;
         }
@@ -473,7 +473,7 @@ drawDragTileIf( BoardCtxt* board )
             XP_Bool isBlank;
             XP_UCHAR buf[4];
             XP_UCHAR* face;
-            XP_Bitmap bitmap = NULL;
+            XP_Bitmaps bitmaps;
             XP_S16 value;
             CellFlags flags;
 
@@ -481,7 +481,7 @@ drawDragTileIf( BoardCtxt* board )
 
             dragDropTileInfo( board, &tile, &isBlank );
 
-            face = getTileDrawInfo( board, tile, isBlank, &bitmap, 
+            face = getTileDrawInfo( board, tile, isBlank, &bitmaps, 
                                     &value, buf, sizeof(buf) );
 
             flags = CELL_DRAGCUR;
@@ -491,8 +491,9 @@ drawDragTileIf( BoardCtxt* board )
             if ( board->hideValsInTray && !board->showCellValues ) {
                 flags |= CELL_VALHIDDEN;
             }
-            draw_drawTileMidDrag( board->draw, &rect, face, bitmap, value, 
-                                  board->selPlayer, flags );
+            draw_drawTileMidDrag( board->draw, &rect, face, 
+                                  bitmaps.nBitmaps > 0 ? &bitmaps : NULL, 
+                                  value, board->selPlayer, flags );
         }
     }
 } /* drawDragTileIf */

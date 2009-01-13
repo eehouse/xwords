@@ -368,11 +368,11 @@ XP_Bool
 dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile )
 {
     XP_UCHAR face = dict_getTileChar( dict, tile );
-    return /* face != 0 &&  */IS_SPECIAL(face);
+    return IS_SPECIAL(face);
 } /* dict_faceIsBitmap */
 
-XP_Bitmap
-dict_getFaceBitmap( const DictionaryCtxt* dict, Tile tile, XP_Bool isLarge )
+void
+dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, XP_Bitmaps* bmps )
 {
     SpecialBitmaps* bitmaps;
     XP_UCHAR face = dict_getTileChar( dict, tile );
@@ -381,7 +381,9 @@ dict_getFaceBitmap( const DictionaryCtxt* dict, Tile tile, XP_Bool isLarge )
     XP_ASSERT( !!dict->bitmaps );
 
     bitmaps = &dict->bitmaps[(XP_U16)face];
-    return isLarge? bitmaps->largeBM:bitmaps->smallBM;
+    bmps->nBitmaps = 2;
+    bmps->bmps[0] = bitmaps->smallBM;
+    bmps->bmps[1] = bitmaps->largeBM;
 } /* dict_getFaceBitmap */
 
 #ifdef TALL_FONTS
