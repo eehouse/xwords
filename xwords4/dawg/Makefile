@@ -37,3 +37,16 @@ clean:
 
 dict2dawg: dict2dawg.cpp
 	$(CXX) $< -o $@
+
+PHONY: test
+
+test:
+	for f in $$(ls); do \
+		test -d $$f || continue; \
+		test -e $$f/Makefile || continue; \
+		(cd $$f && make clean && make); \
+	done \
+
+help:
+	@echo make \# makes byod tarball
+	@echo make test \# builds dicts in a bunch of subdirectories
