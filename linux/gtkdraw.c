@@ -230,7 +230,7 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
 } /* draw_string_at */
 
 static void
-drawBitmapFromLBS( GtkDrawCtx* dctx, XP_Bitmap bm, const XP_Rect* rect )
+drawBitmapFromLBS( GtkDrawCtx* dctx, const XP_Bitmap bm, const XP_Rect* rect )
 {
     GdkPixmap* pm;
     LinuxBMStruct* lbs = (LinuxBMStruct*)bm;
@@ -422,8 +422,9 @@ drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
 
 static XP_Bool
 gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
-                   XP_Bitmap bitmap, Tile XP_UNUSED(tile), XP_S16 owner, 
-                   XWBonusType bonus, HintAtts hintAtts, CellFlags flags )
+                   const XP_Bitmaps* bitmaps, Tile XP_UNUSED(tile), 
+                   XP_S16 owner, XWBonusType bonus, HintAtts hintAtts, 
+                   CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Rect rectInset = *rect;
@@ -468,6 +469,8 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
             draw_string_at( dctx, NULL, "*", rect->height, rect, 
                             XP_GTK_JUST_CENTER, &dctx->black, NULL );
         }
+    } else if ( !!bitmaps ) {
+        drawBitmapFromLBS( dctx, bitmaps->bmps[0], rect );
     } else if ( !!letter ) {
         GdkColor* foreground;
         if ( cursor ) {
@@ -492,8 +495,6 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                           rect->height,/*width, */
                           0, 360*64 );
         }
-    } else if ( !!bitmap ) {
-        drawBitmapFromLBS( dctx, bitmap, rect );
     }
 
     drawHintBorders( dctx, rect, hintAtts );
@@ -534,7 +535,7 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
 
 static void
 gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
-                 XP_Bitmap bitmap, XP_U16 val, CellFlags flags, 
+                 const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags, 
                  XP_Bool clearBack )
 {
     XP_UCHAR numbuf[3];
@@ -564,15 +565,15 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
         formatRect.width -= 6;
 
         if ( notEmpty ) {
-            if ( !!textP ) {
+            if ( !!bitmaps ) {
+                drawBitmapFromLBS( dctx, bitmaps->bmps[1], &insetR );
+            } else if ( !!textP ) {
                 if ( *textP != LETTER_NONE ) { /* blank */
                     draw_string_at( dctx, NULL, textP, formatRect.height>>1,
                                     &formatRect, XP_GTK_JUST_TOPLEFT,
                                     foreground, NULL );
 
                 }
-            } else if ( !!bitmap ) {
-                drawBitmapFromLBS( dctx, bitmap, &insetR );
             }
     
             if ( !valHidden ) {
@@ -605,21 +606,20 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
 
 static void
 gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
-                   XP_Bitmap bitmap, XP_U16 val, CellFlags flags )
+                   const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags )
 {
-    gtkDrawTileImpl( p_dctx, rect, textP, bitmap, val, flags, XP_TRUE );
+    gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, flags, XP_TRUE );
 }
 
 #ifdef POINTER_SUPPORT
 static void
 gtk_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
-                          const XP_UCHAR* textP, XP_Bitmap bitmap, 
+                          const XP_UCHAR* textP, const XP_Bitmaps* bitmaps, 
                           XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     gtk_draw_trayBegin( p_dctx, rect, owner, DFS_NONE );
-    gtkDrawTileImpl( p_dctx, rect, textP, bitmap, val, 
-                     flags | CELL_HIGHLIGHT,
-                     XP_FALSE );
+    gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, 
+                     flags | CELL_HIGHLIGHT, XP_FALSE );
 }
 #endif
 

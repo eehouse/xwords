@@ -304,7 +304,8 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 
 static XP_Bool
 curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
-                      const XP_UCHAR* letter, XP_Bitmap XP_UNUSED(bitmap),
+                      const XP_UCHAR* letter, 
+                      const XP_Bitmaps* XP_UNUSED(bitmaps),
                       Tile XP_UNUSED(tile), XP_S16 XP_UNUSED(owner), 
                       XWBonusType bonus, HintAtts XP_UNUSED(hintAtts), 
                       CellFlags flags )
@@ -391,7 +392,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
 
 static void
 curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
-                      const XP_UCHAR* textP, XP_Bitmap XP_UNUSED(bitmap),
+                      const XP_UCHAR* textP, const XP_Bitmaps* XP_UNUSED(bitmaps),
                       XP_U16 val, CellFlags flags )
 {
     char numbuf[5];
