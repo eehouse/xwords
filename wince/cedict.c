@@ -42,7 +42,7 @@ static void ce_dict_destroy( DictionaryCtxt* dict );
 static const XP_UCHAR* ce_dict_getShortName( const DictionaryCtxt* dict );
 static void ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 static XP_U16 ceCountSpecials( CEDictionaryCtxt* ctxt );
-static XP_Bitmap* ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
+static XP_Bitmap ceMakeBitmap( CEDictionaryCtxt* ctxt, XP_U8** ptrp );
 
 static XP_U32 n_ptr_tohl( XP_U8** in );
 static XP_U16 n_ptr_tohs( XP_U8** in );
@@ -321,7 +321,7 @@ longSwapData( XP_U8* destBase, XP_U16 nRows, XP_U16 rowBytes )
 } /* longSwapData */
 #endif
 
-static XP_Bitmap*
+static XP_Bitmap
 ceMakeBitmap( CEDictionaryCtxt* XP_UNUSED_DBG(ctxt), XP_U8** ptrp )
 {
     XP_U8* ptr = *ptrp;
@@ -372,7 +372,7 @@ ceMakeBitmap( CEDictionaryCtxt* XP_UNUSED_DBG(ctxt), XP_U8** ptrp )
     }
 
     *ptrp = ptr;
-    return (XP_Bitmap*)bitmap;
+    return (XP_Bitmap)bitmap;
 } /* ceMakeBitmap */
 
 static void
