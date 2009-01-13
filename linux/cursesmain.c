@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -56,6 +56,8 @@
 #include "memstream.h"
 #include "util.h"
 #include "dbgutil.h"
+#include "linuxsms.h"
+#include "linuxudp.h"
 
 #ifdef CURSES_SMALL_SCREEN
 # define MENU_WINDOW_HEIGHT 1
@@ -840,13 +842,13 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock )
 {
     XP_ASSERT( globals->fdCount+1 < FD_MAX );
 
-    XP_WARNF( "setting fd[%d] to %d", globals->fdCount, newSock );
+    XP_WARNF( "%s: setting fd[%d] to %d", __func__, globals->fdCount, newSock );
     globals->fdArray[globals->fdCount].fd = newSock;
     globals->fdArray[globals->fdCount].events = POLLIN;
 
     ++globals->fdCount;
-    XP_LOGF( "listenOnSocket: there are now %d sources to poll",
-             globals->fdCount );
+    XP_LOGF( "%s: there are now %d sources to poll",
+             __func__, globals->fdCount );
 } /* cursesListenOnSocket */
 
 static void
@@ -971,48 +973,54 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 #ifndef XWFEATURE_STANDALONE_ONLY
                 unsigned char buf[256];
                 int nBytes;
+                CommsAddrRec addrRec;
+                CommsAddrRec* addrp = NULL;
+
                 /* It's a normal data socket */
-                if ( 0 ) {
+                switch ( globals->cGlobals.params->conType ) {
 #ifdef XWFEATURE_RELAY
-                } else if ( globals->cGlobals.params->conType
-                            == COMMS_CONN_RELAY ) {
+                case COMMS_CONN_RELAY:
                     nBytes = linux_relay_receive( &globals->cGlobals, buf, 
                                                   sizeof(buf) );
+                    break;
+#endif
+#ifdef XWFEATURE_SMS
+                case COMMS_CONN_SMS:
+                    addrp = &addrRec;
+                    nBytes = linux_sms_receive( &globals->cGlobals, 
+                                                globals->fdArray[fdIndex].fd,
+                                                buf, sizeof(buf), addrp );
+                    break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-                } else if ( globals->cGlobals.params->conType
-                            == COMMS_CONN_BT ) {
+                case COMMS_CONN_BT:
                     nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd, 
                                                buf, sizeof(buf) );
+                    break;
 #endif
-                } else {
-                    XP_ASSERT( 0 );
+                default:
+                    XP_ASSERT( 0 ); /* fired */
                 }
 
                 if ( nBytes != -1 ) {
                     XWStreamCtxt* inboundS;
-                    struct sockaddr_in addr_sock = {0};
+/*                     struct sockaddr_in addr_sock = {0}; */
                     redraw = XP_FALSE;
 
                     XP_STATUSF( "linuxReceive=>%d", nBytes );
                     inboundS = stream_from_msgbuf( &globals->cGlobals, 
                                                    buf, nBytes );
                     if ( !!inboundS ) {
-                        CommsAddrRec addrRec;
-                
-                        XP_MEMSET( &addrRec, 0, sizeof(addrRec) );
-                        addrRec.conType = COMMS_CONN_RELAY;
-            
-                        addrRec.u.ip_relay.ipAddr = 
-                            ntohl(addr_sock.sin_addr.s_addr);
-                        XP_LOGF( "captured incoming ip address: 0x%lx",
-                                 addrRec.u.ip_relay.ipAddr );
+/*                         addrRec.u.ip_relay.ipAddr =  */
+/*                             ntohl(addr_sock.sin_addr.s_addr); */
+/*                         XP_LOGF( "captured incoming ip address: 0x%lx", */
+/*                                  addrRec.u.ip_relay.ipAddr ); */
 
                         if ( comms_checkIncomingStream(
                                 globals->cGlobals.game.comms,
-                                inboundS, &addrRec ) ) {
-                            XP_LOGF( "comms read port: %d", 
-                                     addrRec.u.ip_relay.port );
+                                inboundS, addrp ) ) {
+/*                             XP_LOGF( "comms read port: %d",  */
+/*                                      addrRec.u.ip_relay.port ); */
                             redraw = server_receiveMessage( 
                                   globals->cGlobals.game.server, inboundS );
                         }
@@ -1414,6 +1422,13 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
                         sizeof(addr.u.ip_relay.cookie) - 1 );
 # endif
+# ifdef XWFEATURE_SMS
+        } else if ( params->conType == COMMS_CONN_SMS ) {
+            addr.conType = COMMS_CONN_SMS;
+            XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.serverPhone,
+                        sizeof(addr.u.sms.phone) - 1 );
+            addr.u.sms.port = params->connInfo.sms.port;
+# endif
 # ifdef XWFEATURE_BLUETOOTH
         } else if ( params->conType == COMMS_CONN_BT ) {
             addr.conType = COMMS_CONN_BT;
@@ -1473,6 +1488,16 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
     }
     
+#ifdef XWFEATURE_BLUETOOTH
+    linux_bt_close( &g_globals.cGlobals );
+#endif
+#ifdef XWFEATURE_SMS
+    linux_sms_close( &g_globals.cGlobals );
+#endif
+#ifdef XWFEATURE_IP_DIRECT
+    linux_udp_close( &g_globals.cGlobals );
+#endif
+
     endwin();
 } /* cursesmain */
 #endif /* PLATFORM_NCURSES */
