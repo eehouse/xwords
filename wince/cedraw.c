@@ -34,6 +34,7 @@
 #include "cedefines.h"
 #include "cedebug.h"
 #include "debhacks.h"
+#include "strutils.h"
 
 #ifndef DRAW_FUNC_NAME
 #define DRAW_FUNC_NAME(nam) ce_draw_ ## nam
@@ -86,6 +87,11 @@ typedef struct _FontCacheEntry {
     XP_U16 offset;
 } FontCacheEntry;
 
+typedef struct _CeBMCacheEntry {
+    XP_UCHAR letters[4];        /* currently the max */
+    HBITMAP bms[2];
+} CeBMCacheEntry;
+
 struct CEDrawCtx {
     DrawCtxVTable* vtable;
     
@@ -102,6 +108,7 @@ struct CEDrawCtx {
     HGDIOBJ hintPens[MAX_NUM_PLAYERS];
 
     FontCacheEntry fcEntry[N_RESIZE_FONTS];
+    CeBMCacheEntry bmCache[3];  /* 3: max specials in current use */
 
     HBITMAP rightArrow;
     HBITMAP downArrow;
@@ -152,6 +159,14 @@ XPRtoRECT( RECT* rt, const XP_Rect* xprect )
     rt->right = rt->left + xprect->width;
     rt->bottom = rt->top + xprect->height;
 } /* XPRtoRECT */
+
+static void
+ceDeleteObjectNotNull( HGDIOBJ obj )
+{
+    if ( !!obj ) {
+        DeleteObject( obj );
+    }
+}
 
 #ifdef DRAW_FOCUS_FRAME
 static HGDIOBJ
@@ -425,12 +440,26 @@ ceClearFontCache( CEDrawCtx* dctx )
 {
     XP_U16 ii;
     for ( ii = 0; ii < N_RESIZE_FONTS; ++ii ) {
-        if ( !!dctx->fcEntry[ii].setFont ) {
-            DeleteObject( dctx->fcEntry[ii].setFont );
-        }
+        ceDeleteObjectNotNull( dctx->fcEntry[ii].setFont );
     }
     XP_MEMSET( &dctx->fcEntry, 0, sizeof(dctx->fcEntry) );
 }
+
+static void
+ceClearBmCache( CEDrawCtx* dctx )
+{
+    XP_U16 ii;
+    CeBMCacheEntry* entry;
+
+    for ( entry = dctx->bmCache, ii = 0; 
+          ii < VSIZE(dctx->bmCache); ++ii, ++entry ) {
+        ceDeleteObjectNotNull( entry->bms[0] );
+        ceDeleteObjectNotNull( entry->bms[1] );
+    }
+
+    /* clear letters in case we're changing not deleting */
+    XP_MEMSET( &dctx->bmCache[0], 0, sizeof(dctx->bmCache) );
+} /* ceClearBmCache */
 
 static void
 ceFillFontInfo( const CEDrawCtx* dctx, LOGFONT* fontInfo, 
@@ -485,9 +514,7 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
         XP_U16 prevHeight = testHeight;
         LOGFONT fontInfo;
 
-        if ( !!testFont ) {
-            DeleteObject( testFont );
-        }
+        ceDeleteObjectNotNull( testFont );
 
         ceFillFontInfo( dctx, &fontInfo, testHeight );
         testFont = CreateFontIndirect( &fontInfo );
@@ -588,6 +615,103 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, XP_U16 width, RFIndex index )
     XP_ASSERT( !!fce->setFont );
     return fce;
 } /* ceGetSizedFont */
+
+static HBITMAP
+checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters, XP_U16 index, 
+              const XP_Bitmaps* bitmaps, XP_Bool* cached )
+{
+    HBITMAP bm = NULL;
+    CeBMCacheEntry* entry = NULL;
+    XP_U16 len = 1 + XP_STRLEN( letters );
+    XP_Bool canCache = XP_FALSE;
+
+    XP_ASSERT( index < 2 );
+
+    if ( len < sizeof( entry->letters ) ) {
+        XP_U16 ii;
+        for ( ii = 0, entry = dctx->bmCache; ii < VSIZE(dctx->bmCache); 
+              ++ii, ++entry ) {
+            if ( 0 == entry->letters[0] ) { /* available */
+                XP_MEMCPY( entry->letters, letters, len );
+                canCache = XP_TRUE;
+                break;
+            } else if ( !XP_STRNCMP( entry->letters, letters, len ) ) {
+                canCache = XP_TRUE;
+                bm = entry->bms[index]; /* may be null */
+                break;
+            }
+        }
+    }
+
+#ifdef DEBUG
+    if ( !canCache ) {
+        XP_WARNF( "%s: unable to cache bitmap for %s", __func__, letters );
+    }
+#endif
+
+    if ( !bm ) {
+        const CEBitmapInfo* info = (const CEBitmapInfo*)bitmaps->bmps[index];
+        XP_U16 nCols, nRows, row, col, rowBytes;
+        COLORREF black = dctx->globals->appPrefs.colors[CE_BLACK_COLOR];
+        COLORREF white = dctx->globals->appPrefs.colors[CE_WHITE_COLOR];
+        HDC tmpDC;
+        XP_U8* bits = info->bits;
+
+        nCols = info->nCols;
+        nRows = info->nRows;
+        rowBytes = (info->nCols + 7) / 8;
+        while ( (rowBytes % 2) != 0 ) {
+            ++rowBytes;
+        }
+
+        bm = CreateBitmap( info->nCols, info->nRows, 1, 1, NULL );
+        tmpDC = CreateCompatibleDC( hdc );
+        SelectObject( tmpDC, bm );
+        for ( row = 0; row < nRows; ++row ) {
+            for ( col = 0; col < nCols; ++col ) {
+                /* Optimize me... */
+                XP_U8 byt = bits[col / 8];
+                XP_Bool set = (byt & (0x80 >> (col % 8))) != 0;
+                (void)SetPixel( tmpDC, col, row, set ? black:white );
+            }
+            bits += rowBytes;
+        }
+        DeleteDC( tmpDC );
+
+#ifdef DEBUG
+        {
+            BITMAP bmp;
+            int nBytes = GetObject( bm, sizeof(bmp), &bmp );
+            XP_ASSERT( nBytes > 0 );
+            XP_ASSERT( bmp.bmWidth == nCols );
+            XP_ASSERT( bmp.bmHeight == nRows );
+        }
+#endif
+        if ( canCache && entry->bms[index] != bm ) {
+            XP_ASSERT( !entry->bms[index] || (entry->bms[index] == bm) );
+            entry->bms[index] = bm;
+            XP_LOGF( "%s: storing %p", __func__, bm );
+        }
+    }
+
+    *cached = canCache;
+    return bm;
+} /* checkBMCache */
+
+static void
+makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, 
+                   const XP_UCHAR* letters, XP_U16 index,
+                   const XP_Bitmaps* bitmaps )
+{
+    XP_Bool cached;
+    HBITMAP bm = checkBMCache( dctx, hdc, letters, index, bitmaps, &cached );
+    
+    ceDrawBitmapInRect( hdc, bnds, bm );
+
+    if ( !cached ) {
+        DeleteObject( bm );
+    }
+} /* makeAndDrawBitmap */
 
 static void
 ceMeasureText( CEDrawCtx* dctx, HDC hdc, const FontCacheEntry* fce, 
@@ -807,7 +931,7 @@ ceSetBkColor( HDC hdc, const CEDrawCtx* dctx, XP_U16 index )
 DLSTATIC XP_Bool
 DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                           const XP_UCHAR* letters, 
-                          const XP_Bitmap XP_UNUSED(bitmap), 
+                          const XP_Bitmaps* bitmaps, 
                           Tile XP_UNUSED(tile), XP_S16 owner, 
                           XWBonusType bonus, HintAtts hintAtts,
                           CellFlags flags )
@@ -884,18 +1008,15 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     }
 
     ceSetBkColor( hdc, dctx, bkIndex );
+    ceSetTextColor( hdc, dctx, foreColorIndx );
 
-    if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
+    if ( !isDragSrc && !!bitmaps ) {
+        makeAndDrawBitmap( dctx, hdc, &rt, letters, 0, bitmaps );
+    } else if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
 
         MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                              widebuf, VSIZE(widebuf) );
-	
-        ceSetTextColor( hdc, dctx, foreColorIndx );
-#ifndef _WIN32_WCE
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
-                             widebuf, VSIZE(widebuf) );
-#endif
         ceDrawTextClipped( hdc, widebuf, -1, XP_FALSE, fce, xprect->left+1, 
                            xprect->top+2, xprect->width, DT_CENTER );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
@@ -951,7 +1072,8 @@ DRAW_FUNC_NAME(trayBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
 
 static void
 drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                  const XP_UCHAR* letters, XP_U16 val, CellFlags flags )
+                  const XP_UCHAR* letters, const XP_Bitmaps* bitmaps,
+                  XP_U16 val, CellFlags flags )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
@@ -1015,9 +1137,17 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                 InsetRect( &rt, 1, 1 );
             }
 
-            if ( !!letters ) {
-                fce = ceGetSizedFont( dctx, charHt, 0, 
-                                      valHidden ? RFONTS_TRAYNOVAL:RFONTS_TRAY );
+            fce = ceGetSizedFont( dctx, charHt, 0, 
+                                  valHidden ? RFONTS_TRAYNOVAL:RFONTS_TRAY );
+
+            if ( !!bitmaps ) {
+                RECT lrt = { .left = xprect->left,
+                             .top = xprect->top,
+                             .right = xprect->left + xprect->width - 8, 
+                             .bottom = xprect->top + fce->glyphHt
+                };
+                makeAndDrawBitmap( dctx, hdc, &lrt, letters, 1, bitmaps );
+            } else if ( !!letters ) {
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
                 MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
                                      widebuf, VSIZE(widebuf) );
@@ -1046,21 +1176,22 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
 DLSTATIC void
 DRAW_FUNC_NAME(drawTile)( DrawCtx* p_dctx, const XP_Rect* xprect, 
-                          const XP_UCHAR* letters, XP_Bitmap XP_UNUSED(bitmap),
+                          const XP_UCHAR* letters, const XP_Bitmaps* bitmaps,
                           XP_U16 val, CellFlags flags )
 {
-    drawDrawTileGuts( p_dctx, xprect, letters, val, flags );
+    drawDrawTileGuts( p_dctx, xprect, letters, bitmaps, val, flags );
 } /* ce_draw_drawTile */
 
 #ifdef POINTER_SUPPORT
 DLSTATIC void
 DRAW_FUNC_NAME(drawTileMidDrag)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                                  const XP_UCHAR* letters, 
-                                 XP_Bitmap XP_UNUSED(bitmap),
-                                 XP_U16 val, XP_U16 owner, CellFlags flags )
+                                 const XP_Bitmaps* bitmaps, XP_U16 val, 
+                                 XP_U16 owner, CellFlags flags )
 {
-    draw_trayBegin( p_dctx, xprect, owner, DFS_NONE );
-    drawDrawTileGuts( p_dctx, xprect, letters, val, flags );
+    if ( draw_trayBegin( p_dctx, xprect, owner, DFS_NONE ) ) {
+        drawDrawTileGuts( p_dctx, xprect, letters, bitmaps, val, flags );
+    }
 } /* ce_draw_drawTile */
 #endif
 
@@ -1068,7 +1199,7 @@ DLSTATIC void
 DRAW_FUNC_NAME(drawTileBack)( DrawCtx* p_dctx, const XP_Rect* xprect,
                               CellFlags flags )
 {
-    drawDrawTileGuts( p_dctx, xprect, "?", 0, flags | CELL_VALHIDDEN );
+    drawDrawTileGuts( p_dctx, xprect, "?", NULL, 0, flags | CELL_VALHIDDEN );
 } /* ce_draw_drawTileBack */
 
 DLSTATIC void
@@ -1117,44 +1248,47 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
 {
     BITMAP bmp;
     int nBytes;
-    int left = rect->left;
-    int top = rect->top;
-    XP_U16 width = rect->right - left;
-    XP_U16 height = rect->bottom - top;
-    XP_U16 ii;
-    HDC tmpDC;
 
+    XP_ASSERT( !!bitmap );
     nBytes = GetObject( bitmap, sizeof(bmp), &bmp );
     XP_ASSERT( nBytes > 0 );
     if ( nBytes == 0 ) {
         logLastError( "ceDrawBitmapInRect:GetObject" );
+    } else {
+        int left = rect->left;
+        int top = rect->top;
+        XP_U16 width = rect->right - left;
+        XP_U16 height = rect->bottom - top;
+        XP_U16 ii;
+        HDC tmpDC;
+
+        for ( ii = 1;
+              ((bmp.bmWidth * ii) <= width) && ((bmp.bmHeight * ii) <= height);
+              ++ii ) {
+            /* do nothing */
+        }
+
+        if ( --ii == 0 ) {
+            XP_LOGF( "%s: cell at %dx%d too small for bitmap at %ldx%ld",
+                     __func__, width, height, bmp.bmWidth, bmp.bmHeight );
+            ii = 1;
+        }
+
+        tmpDC = CreateCompatibleDC( hdc );
+        SelectObject( tmpDC, bitmap );
+
+        (void)IntersectClipRect( tmpDC, left, top, rect->right, rect->bottom );
+
+        width = bmp.bmWidth * ii;
+        height = bmp.bmHeight * ii;
+
+        left += ((rect->right - left) - width) / 2;
+        top += ((rect->bottom - top) - height) / 2;
+
+        StretchBlt( hdc, left, top, width, height, 
+                    tmpDC, 0, 0, bmp.bmHeight, bmp.bmWidth, SRCCOPY );
+        DeleteDC( tmpDC );
     }
-
-    for ( ii = 1;
-          ((bmp.bmWidth * ii) <= width) && ((bmp.bmHeight * ii) <= height);
-          ++ii ) {
-        /* do nothing */
-    }
-
-    if ( --ii == 0 ) {
-        XP_LOGF( "%s: cell too small for bitmap", __func__ );
-        ii = 1;
-    }
-
-    tmpDC = CreateCompatibleDC( hdc );
-    SelectObject( tmpDC, bitmap );
-
-    (void)IntersectClipRect( tmpDC, left, top, rect->right, rect->bottom );
-
-    width = bmp.bmWidth * ii;
-    height = bmp.bmHeight * ii;
-
-    left += ((rect->right - left) - width) / 2;
-    top += ((rect->bottom - top) - height) / 2;
-
-    StretchBlt( hdc, left, top, width, height, 
-                tmpDC, 0, 0, bmp.bmHeight, bmp.bmWidth, SRCCOPY );
-    DeleteDC( tmpDC );
 } /* ceDrawBitmapInRect */
 
 DLSTATIC void
@@ -1604,18 +1738,15 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     for ( ii = 0; ii < CE_NUM_COLORS; ++ii ) {
         DeleteObject( dctx->brushes[ii] );
 #ifdef DRAW_FOCUS_FRAME
-        if ( !!dctx->pens[ii].pen ) {
-            DeleteObject( dctx->pens[ii].pen );
-        }
+        ceDeleteObjectNotNull( dctx->pens[ii].pen );
 #endif
     }
 
     for ( ii = 0; ii < VSIZE(dctx->hintPens); ++ii ) {
-        if ( !!dctx->hintPens[ii] ) {
-            DeleteObject( dctx->hintPens[ii] );
-        }
+        ceDeleteObjectNotNull( dctx->hintPens[ii] );
     }
 
+    ceClearBmCache( dctx );
     ceClearFontCache( dctx );
 
     DeleteObject( dctx->rightArrow );
@@ -1634,6 +1765,8 @@ DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, const DictionaryCtxt* dict )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     XP_ASSERT( !!dict );
+
+    ceClearBmCache( dctx );
 
     /* If we don't yet have a dict, stick with the cache we have, which is
        either empty or came from the saved game and likely belong with the
@@ -1703,9 +1836,7 @@ ce_draw_update( CEDrawCtx* dctx )
     XP_U16 ii;
 
     for ( ii = 0; ii < CE_NUM_COLORS; ++ii ) {
-        if ( !!dctx->brushes[ii] ) {
-            DeleteObject( dctx->brushes[ii] );
-        }
+        ceDeleteObjectNotNull( dctx->brushes[ii] );
         dctx->brushes[ii] = CreateSolidBrush(dctx->globals->appPrefs.colors[ii]);
     }
 } /* ce_drawctxt_update */
