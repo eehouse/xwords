@@ -53,7 +53,7 @@
 
 static XP_Bool palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
                                           const XP_UCHAR* letters, 
-                                          XP_Bitmap bitmap, Tile tile,
+                                          const XP_Bitmaps* bitmaps, Tile tile,
                                           XP_S16 owner, XWBonusType bonus, 
                                           HintAtts hintAtts, CellFlags flags );
 static void palm_bnw_draw_score_drawPlayer( DrawCtx* p_dctx, 
@@ -321,7 +321,7 @@ palm_draw_objFinished( DrawCtx* p_dctx, BoardObjectType typ,
 
 static XP_Bool
 palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
-                        const XP_UCHAR* letters, XP_Bitmap bitmap,
+                        const XP_UCHAR* letters, const XP_Bitmaps* bitmaps,
                         Tile tile, XP_S16 owner, XWBonusType bonus, 
                         HintAtts hintAtts, CellFlags flags )
 {
@@ -337,7 +337,7 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     } else if ( isPending && !dragSrc ) { 
         /* don't color background if will invert */
         index = COLOR_WHITE;
-    } else if ( (!!bitmap || !!letters) && !dragSrc ) {
+    } else if ( (!!bitmaps || !!letters) && !dragSrc ) {
         index = COLOR_TILE;
     } else if ( bonus == BONUS_NONE ) { 
         index = COLOR_EMPTY;
@@ -358,7 +358,7 @@ palm_clr_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
         WinSetTextColor( color );
     }
 
-    return palm_common_draw_drawCell( p_dctx, rect, letters, bitmap, 
+    return palm_common_draw_drawCell( p_dctx, rect, letters, bitmaps, 
                                       tile, owner, bonus, hintAtts, flags );
 } /* palm_clr_draw_drawCell */
 
@@ -445,7 +445,7 @@ palmDrawHintBorders( PalmDrawCtx* dctx, const XP_Rect* rect,
 
 static XP_Bool
 palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, 
-                           const XP_UCHAR* letters, XP_Bitmap bitmap,
+                           const XP_UCHAR* letters, const XP_Bitmaps* bitmaps,
                            Tile tile, XP_S16 owner, XWBonusType bonus, 
                            HintAtts hintAtts, CellFlags flags )
 {
@@ -496,6 +496,28 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 
     if ( showEmpty ) {
         /* do nothing */
+    } else if ( !!bitmaps ) {
+        XP_Bool doColor = (able == COLOR) && (owner >= 0);
+        XP_U16 x = localR.left+1;
+        XP_U16 y = localR.top+1;
+        /* cheating again; this belongs in a palm_clr method.  But the
+           special bitmaps are rare enough that we shouldn't change the palm
+           draw state every time. */
+        if ( doColor ) {
+            WinSetForeColor( 
+                dctx->drawingPrefs->drawColors[COLOR_PLAYER1+owner] );
+        }
+
+        if ( dctx->doHiRes ) {
+            ++x;
+            ++y;
+        }
+        XP_ASSERT( bitmaps->nBitmaps > 0 );
+        WinDrawBitmap( bitmaps->bmps[0], x, y );
+        if ( doColor ) {
+            WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
+        }
+        showBonus = doColor;	/* skip bonus in B&W case; can't draw both! */
     } else if ( !!letters ) {
         len = XP_STRLEN( (const char*)letters );
         XP_ASSERT( len > 0 );
@@ -516,28 +538,6 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 
             showBonus = XP_FALSE;
         }
-    } else if ( !!bitmap ) {
-        XP_Bool doColor = (able == COLOR) && (owner >= 0);
-        XP_U16 x = localR.left+1;
-        XP_U16 y = localR.top+1;
-        /* cheating again; this belongs in a palm_clr method.  But the
-           special bitmaps are rare enough that we shouldn't change the palm
-           draw state every time. */
-        if ( doColor ) {
-            WinSetForeColor( 
-                dctx->drawingPrefs->drawColors[COLOR_PLAYER1+owner] );
-        }
-
-        if ( dctx->doHiRes ) {
-            ++x;
-            ++y;
-        }
-
-        WinDrawBitmap( (BitmapPtr)bitmap, x, y );
-        if ( doColor ) {
-            WinSetForeColor( dctx->drawingPrefs->drawColors[COLOR_BLACK] );
-        }
-        showBonus = doColor;	/* skip bonus in B&W case; can't draw both! */
     }
 
     if ( ((flags & CELL_ISSTAR) != 0) && showEmpty ) {
@@ -570,7 +570,7 @@ palm_common_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 
     if ( !showEmpty && (flags & CELL_HIGHLIGHT) != 0 ) {
         if ( !TREAT_AS_CURSOR( dctx, flags ) ) {
-            XP_ASSERT( !!bitmap ||
+            XP_ASSERT( !!bitmaps ||
                        (!!letters && XP_STRLEN((const char*)letters)>0));
             WinInvertRectangle( (RectangleType*)&localR, 0 );
         }
@@ -676,7 +676,7 @@ smallBoldStringAt( const char* str, XP_U16 len, XP_S16 x, XP_U16 y )
 
 static void
 palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
-                    const XP_UCHAR* letters, XP_Bitmap bitmap,
+                    const XP_UCHAR* letters, const XP_Bitmaps* bitmaps,
                     XP_U16 val, CellFlags flags )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
@@ -732,7 +732,12 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
             }
         }
 
-        if ( !!letters ) {
+        if ( !!bitmaps ) {
+            XP_ASSERT( bitmaps->nBitmaps > 1 );
+            WinDrawBitmap( (BitmapPtr)(bitmaps->bmps[1]), 
+                           localR.left+(2*doubler), 
+                           localR.top+(2*doubler) );
+        } else if ( !!letters ) {
             if ( *letters != LETTER_NONE ) { /* blank */
                 FontID curFont = FntSetFont( largeFont );
 
@@ -746,9 +751,6 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 
                 FntSetFont( curFont );
             }
-        } else if ( !!bitmap ) {
-            WinDrawBitmap( (BitmapPtr)bitmap, localR.left+(2*doubler), 
-                           localR.top+(2*doubler) );
         }
 
         WinDrawRectangleFrame( rectangleFrame, (RectangleType*)&localR );
@@ -768,12 +770,12 @@ palm_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
 #ifdef POINTER_SUPPORT
 static void
 palm_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
-                           const XP_UCHAR* letters, XP_Bitmap bitmap,
+                           const XP_UCHAR* letters, const XP_Bitmaps* bitmaps,
                            XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     /* let trayBegin code take care of pushing color env changes. */
     draw_trayBegin( p_dctx, rect, owner, DFS_NONE );
-    palm_draw_drawTile( p_dctx, rect, letters, bitmap, val, flags );
+    palm_draw_drawTile( p_dctx, rect, letters, bitmaps, val, flags );
     draw_objFinished( p_dctx, OBJ_TRAY, rect, DFS_NONE );
 }
 #endif
