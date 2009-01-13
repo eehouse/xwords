@@ -1,9 +1,10 @@
-/* -*- compile-command: "g++ -DDEBUG -O -Wall -o dict2dawg dict2dawg.cpp"; -*- */
+/* -*- compile-command: "g++ -DDEBUG -O0 -Wall -g -o dict2dawg dict2dawg.cpp"; -*- */
 /*************************************************************************
  * adapted from perl code that was itself adapted from C++ code
  * Copyright (C) 2000 Falk Hueffner
 
- * This version Copyright (C) 2002,2006-2007 Eric House (xwords@eehouse.org)
+ * This version Copyright (C) 2002,2006-2009 Eric House
+ * (xwords@eehouse.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +78,7 @@ static void (*gReadWordProc)(void) = NULL;
 NodeList gNodes;       // final array of nodes
 unsigned int gNBytesPerOutfile = 0xFFFFFFFF;
 char* gTableFile = NULL;
+static bool gIsMultibyte = false;
 char* gOutFileBase = NULL;
 char* gStartNodeOut = NULL;
 static FILE* gInFile = NULL;
@@ -87,7 +89,7 @@ char* gCountFile = NULL;
 char* gBytesPerNodeFile = NULL;        // where to write whether node
                                        // size 3 or 4
 int gWordCount = 0;
-std::map<char,int> gTableHash;
+std::map<Letter,wchar_t> gTableHash;
 int gBlankIndex;
 std::vector<char> gRevMap;
 #ifdef DEBUG
@@ -121,14 +123,14 @@ static void TrieNodeSetIsTerminal( Node* nodeR, bool isTerminal );
 static bool TrieNodeGetIsTerminal( Node node );
 static void TrieNodeSetIsLastSibling( Node* nodeR, bool isLastSibling );
 static bool TrieNodeGetIsLastSibling( Node node );
-static void TrieNodeSetLetter( Node* nodeR, int letter );
-static unsigned int TrieNodeGetLetter( Node node );
+static void TrieNodeSetLetter( Node* nodeR, Letter letter );
+static Letter TrieNodeGetLetter( Node node );
 static void TrieNodeSetFirstChildOffset( Node* nodeR, int fco );
 static int TrieNodeGetFirstChildOffset( Node node );
 static int findSubArray( NodeList& newedgesR );
 static void registerSubArray( NodeList& edgesR, int nodeLoc );
-static Node MakeTrieNode( int letter, bool isTerminal, int firstChildOffset, 
-                          bool isLastSibling );
+static Node MakeTrieNode( Letter letter, bool isTerminal,
+                          int firstChildOffset, bool isLastSibling );
 static void printNodes( NodeList& nodesR );
 static void printNode( int index, Node node );
 static void moveTopToFront( int* firstRef );
@@ -142,6 +144,8 @@ static void readFromSortedArray( void );
 int 
 main( int argc, char** argv ) 
 { 
+    setlocale(LC_CTYPE, "");
+    
     gReadWordProc = readFromSortedArray;
 
     const char* inFileName;
@@ -287,7 +291,7 @@ buildNode( int depth )
 
     bool wordEnd;
     do {
-        char letter = gCurrentWord[depth];
+        Letter letter = gCurrentWord[depth];
         bool isTerminal = (gCurrentWordLen - 1) == depth;
 
         int nodeOffset = buildNode( depth + 1 );
@@ -336,7 +340,7 @@ addNodes( NodeList& newedgesR )
 static void
 printNode( int index, Node node )
 {
-    unsigned int letter = TrieNodeGetLetter(node);
+    Letter letter = TrieNodeGetLetter(node);
     assert( letter < gRevMap.size() );
     fprintf( stderr,
              "[%d] letter=%d(%c); isTerminal=%s; isLastSib=%s; fco=%d;\n", 
@@ -472,6 +476,38 @@ readFromSortedArray( void )
 #endif
 } // readFromSortedArray
 
+static wchar_t
+getWideChar( FILE* file )
+{
+    wchar_t dest;
+    char src[4] = { '\0' };
+    const char* srcp = src;
+    int ii;
+    mbstate_t ps = {0};
+
+    for ( ii = 0; ; ++ii ) {
+        int byt = getc( file );
+        size_t siz;
+
+        if ( byt == EOF || byt == gTermChar ) {
+            dest = byt;
+            break;
+        }
+
+        assert( ii < 4 );
+        src[ii] = byt;
+        siz = mbsrtowcs( &dest, &srcp, 1, &ps );
+
+        if ( siz == (size_t)-1 ) {
+            continue;
+        } else if ( siz == 1 ) {
+            break;
+        }
+    }
+//     fprintf( stderr, "%s=>%lc\n", __func__, dest );
+    return dest;
+} // getWideChar
+
 static Letter*
 readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
 {
@@ -485,7 +521,7 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
     // return it.  If no, start over ONLY IF the terminator was not
     // EOF.
     for ( ; ; ) {
-        int byt = getc( gInFile );
+        wchar_t byt = gIsMultibyte? getWideChar( gInFile ) : getc( gInFile );
 
         // EOF is special: we don't try for another word even if
         // dropWord is true; we must leave now.
@@ -523,7 +559,7 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             // Don't call into the hashtable twice here!!
         } else if ( gTableHash.find(byt) != gTableHash.end() ) {
             assert( count < bufLen );
-            wordBuf[count++] = (char)gTableHash[byt];
+            wordBuf[count++] = gTableHash[byt];
             if ( count >= bufLen ) {
                 dropWord = true;
             }
@@ -534,9 +570,9 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             tileToAscii( buf, sizeof(buf), wordBuf );
 
             if ( gKillIfMissing ) {
-                ERROR_EXIT( "chr %c (%d) not in map file %s\n"
+                ERROR_EXIT( "chr %lc (%d/0x%x) not in map file %s\n"
                             "last word was %s\n",
-                            (char)byt, (int)byt, gTableFile, buf );
+                            byt, (int)byt, (int)byt, gTableFile, buf );
             } else if ( !dropWord ) {
 #ifdef DEBUG
                 if ( gDebug ) {
@@ -551,7 +587,7 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
     }
 
 //     if ( NULL != result ) {
-//         char buf[MAX_WORD_LEN+1];
+//         char buf[T2ABUFLEN(MAX_WORD_LEN)];
 //         fprintf( stderr, "%s returning %s\n", __func__,
 //                  tileToAscii( buf, sizeof(buf), result ) );
 //     }
@@ -638,16 +674,17 @@ tileToAscii( char* out, int outSize, const Letter* in )
 
     char* orig = out;
     for ( ; ; ) {
-        char ch = *in++;
+        Letter ch = *in++;
         if ( '\0' == ch ) {
             break;
         }
-        assert( (unsigned int)ch < gRevMap.size() );
+        assert( ch < gRevMap.size() );
         *out++ = gRevMap[ch];
         tilesLen += sprintf( &tiles[tilesLen], "%d,", ch );
         assert( (out - orig) < outSize );
     }
 
+    assert( tilesLen+1 < outSize );
     tiles[tilesLen] = ']';
     tiles[tilesLen+1] = '\0';
     strcpy( out, tiles );
@@ -765,9 +802,9 @@ TrieNodeGetIsLastSibling( Node node )
 }
 
 static void
-TrieNodeSetLetter( Node* nodeR, int letter )
+TrieNodeSetLetter( Node* nodeR, Letter letter )
 {
-    if( letter >= 64 ) {
+    if ( letter >= 64 ) {
         ERROR_EXIT( "letter %d too big", letter );
     }
 
@@ -776,7 +813,7 @@ TrieNodeSetLetter( Node* nodeR, int letter )
     *nodeR |= (letter << 24);          // set new ones
 }
 
-static unsigned int
+static Letter
 TrieNodeGetLetter( Node node )
 {
     node >>= 24;
@@ -804,7 +841,7 @@ TrieNodeGetFirstChildOffset( Node node )
 }
 
 static Node
-MakeTrieNode( int letter, bool isTerminal, int firstChildOffset, 
+MakeTrieNode( Letter letter, bool isTerminal, int firstChildOffset, 
               bool isLastSibling )
 {
     Node result = 0;
@@ -1001,7 +1038,7 @@ static void
 outputNode( Node node, int nBytes, FILE* outfile )
 {
     unsigned int fco = TrieNodeGetFirstChildOffset(node);
-    unsigned int fourthByte;
+    unsigned int fourthByte = 0;
 
     if ( nBytes == 4 ) {
         fourthByte = fco >> 16;
@@ -1115,6 +1152,7 @@ parseARGV( int argc, char** argv, const char** inFileName )
 {
     *inFileName = NULL;
     int index = 1;
+    const char* enc = NULL;
     while ( index < argc ) {
 
         char* arg = argv[index++];
@@ -1139,6 +1177,8 @@ parseARGV( int argc, char** argv, const char** inFileName )
             gTableFile = argv[index++];
         } else if ( 0 == strcmp( arg, "-ob" ) ) {
             gOutFileBase = argv[index++];
+        } else if ( 0 == strcmp( arg, "-enc" ) ) {
+            enc = argv[index++];
         } else if ( 0 == strcmp( arg, "-sn" ) ) {
             gStartNodeOut = argv[index++];
         } else if ( 0 == strcmp( arg, "-if" ) ) {
@@ -1173,6 +1213,14 @@ parseARGV( int argc, char** argv, const char** inFileName )
     if ( gLimHigh > MAX_WORD_LEN || gLimLow > MAX_WORD_LEN ) {
         usage( argv[0] );
         exit(1);
+    }
+
+    if ( !!enc ) {
+        if ( !strcasecmp( enc, "UTF-8" ) ) {
+            gIsMultibyte = true;
+        } else {
+            ERROR_EXIT( "%s: unknown encoding %s", __func__, enc );
+        }
     }
 
 #ifdef DEBUG

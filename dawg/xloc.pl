@@ -21,26 +21,44 @@
 use strict;
 use xloc;
 
-my $arg = shift(@ARGV);
-my $outfile = shift(@ARGV);
-my $lang = shift(@ARGV);
-my $path = "./$lang";
-my $infoFile = "$path/info.txt";
+my $unicode = -1;
+my $doval = 0;
+my $enc;
+my $outfile;
+
+my $arg;
+while ( $arg = $ARGV[0] ) {
+    if ( $arg eq '-enc' ) {
+        $enc = $ARGV[1];
+        shift @ARGV;
+    } elsif ( $arg eq "-tn" ) {
+        $unicode = 1;
+    } elsif ( $arg eq "-t" ) {
+        $unicode = 0;
+    } elsif ( $arg eq "-v" ) {
+        $doval = 1;
+    } elsif ( $arg eq '-out' ) {
+        $outfile = $ARGV[1];
+        shift @ARGV;
+    } else {
+        die "unknown arg $arg\n";
+    }
+    shift @ARGV;
+}
+
+my $infoFile = "info.txt";
 
 die "info file $infoFile not found\n" if ! -s $infoFile;
 
-
-my $xlocToken = xloc::ParseTileInfo($infoFile);
+my $xlocToken = xloc::ParseTileInfo($infoFile, $enc);
 
 open OUTFILE, "> $outfile";
 # For f*cking windoze linefeeds
 binmode( OUTFILE );
 
-if ( $arg eq "-t" ) {
-    xloc::WriteMapFile( $xlocToken, 0, \*OUTFILE );
-} elsif ( $arg eq "-tn" ) {
-    xloc::WriteMapFile( $xlocToken, 1, \*OUTFILE );
-} elsif ( $arg eq "-v" ) {
+if ( $unicode ne -1 ) {
+    xloc::WriteMapFile( $xlocToken, $unicode, \*OUTFILE );
+} elsif ( $doval ) {
     xloc::WriteValuesFile( $xlocToken, \*OUTFILE );
 }
 

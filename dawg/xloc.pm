@@ -43,11 +43,17 @@ BEGIN {
 # for queries.  It's a hash with name-value pairs and an _INFO entry
 # containing a list of tile info lists.
 
-sub ParseTileInfo($) {
-    my ( $filePath ) = @_;
+sub ParseTileInfo($$) {
+    my ( $filePath, $enc ) = @_;
     my %result;
 
-    open INPUT, "<$filePath" or die "couldn't open $filePath";
+    if ( $enc ) {
+        open( INPUT, "<:encoding($enc)", "$filePath" ) 
+            or die "couldn't open $filePath";
+    } else {
+        open( INPUT, "<$filePath" ) 
+            or die "couldn't open $filePath";
+    }
 
     my $inTiles = 0;
     my @tiles;

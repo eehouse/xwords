@@ -1,6 +1,6 @@
 # -*-mode: Makefile -*-
 
-# Copyright 2000-2002 by Eric House (xwords@eehouse.org)
+# Copyright 2000-2009 by Eric House (xwords@eehouse.org)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -32,10 +32,16 @@ PAR = ../par.pl
 
 LANGUAGE = $(shell basename $$(pwd))
 
+ifdef ENC
+	ENCP = -enc $(ENC)
+endif
+
 # prefer the compiled version if available.  But don't compile it
 # automatically until it's a bit better tested.
 # DICT2DAWG = $(if $(shell test -x ../dict2dawg && echo foo),\
 # 		../dict2dawg,../dict2dawg.pl)
+#
+# No.  The perl version no longer works.  Don't use without fixing.
 
 DICT2DAWG = ../dict2dawg
 
@@ -245,7 +251,7 @@ dawg$(XWLANG)%.stamp: $(XWLANG)Main.dict.gz $(DICT2DAWG) table.bin ../Makefile.l
 	end=$$(echo $@ | sed -e 's/dawg$(XWLANG)[0-9]*to\([0-9]*\).stamp/\1/'); \
 	echo $${start} and $${end}; \
 	zcat $< | $(DICT2DAWG) $(DICT2DAWGARGS) $(TABLE_ARG) table.bin -b 28000 \
-		-ob dawg$(XWLANG)$* \
+		-ob dawg$(XWLANG)$* $(ENCP) \
 		-sn $(XWLANG)StartLoc.bin -min $${start} -max $${end} \
 		-wc $(XWLANG)$*_wordcount.bin $(FORCE_4) -ns $(XWLANG)$*_nodesize.bin
 	touch $@
@@ -261,20 +267,20 @@ allbins:
 
 table.bin:  ../xloc.pl 
 ifdef NEWDAWG
-	perl -I../ ../xloc.pl -tn $@
+	perl -I../ ../xloc.pl $(ENCP) -tn -out $@
 else
-	perl -I../ ../xloc.pl -t $@
+	perl -I../ ../xloc.pl -t -out $@
 endif
 
 values.bin:  ../xloc.pl 
-	perl -I../ ../xloc.pl -v $@
+	perl -I../ ../xloc.pl -v -out $@ $(ENCP)
 
 %.dict: %.dict.gz
 	zcat $< > $@
 
 # clean this up....
 ../dict2dawg: ../dict2dawg.cpp
-	cd ../ && g++ -DDEBUG -O -o dict2dawg dict2dawg.cpp
+	cd ../ && g++ -DDEBUG -O -Wall -o dict2dawg dict2dawg.cpp
 
 clean_common:
 	rm -f $(XWLANG)Main.dict *.bin *.pdb *.seb dawg*.stamp *.$(FRANK_EXT) \

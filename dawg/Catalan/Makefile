@@ -18,6 +18,7 @@
 XWLANG=DISCbeta
 LANGCODE=ca_ES
 TARGET_TYPE ?= PALM
+ENC = UTF-8
 
 ifeq ($(TARGET_TYPE),PALM)
 PBITMS = ./bmps/palm
