@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -186,7 +187,7 @@ drawTray( BoardCtxt* board )
                                            NULL, -1, flags | CELL_ISEMPTY );
                         } else if ( showFaces ) {
                             XP_UCHAR buf[4];
-                            XP_Bitmap bitmap = NULL;
+                            XP_Bitmaps bitmaps;
                             XP_UCHAR* textP = (XP_UCHAR*)NULL;
                             XP_U8 traySelBits = pti->traySelBits;
                             XP_S16 value;
@@ -210,7 +211,7 @@ drawTray( BoardCtxt* board )
                             }
 
                             textP = getTileDrawInfo( board, tile, isBlank,
-                                                     &bitmap, &value,
+                                                     &bitmaps, &value,
                                                      buf, sizeof(buf) );
                             if ( isADrag ) {
                                 if ( ddAddedIndx == ii ) {
@@ -224,7 +225,8 @@ drawTray( BoardCtxt* board )
                             }
 
                             draw_drawTile( board->draw, &tileRect, textP, 
-                                           bitmap, value, flags );
+                                           bitmaps.nBitmaps > 0? &bitmaps:NULL,
+                                           value, flags );
                         } else {
                             draw_drawTileBack( board->draw, &tileRect, flags );
                         }
@@ -232,7 +234,7 @@ drawTray( BoardCtxt* board )
                 }
 
                 if ( (board->dividerWidth > 0) && board->dividerInvalid ) {
-                    CellFlags flags = cursorOnDivider? CELL_ISCURSOR : CELL_NONE;
+                    CellFlags flags = cursorOnDivider? CELL_ISCURSOR:CELL_NONE;
                     XP_Rect divider;
                     figureDividerRect( board, &divider );
                     if ( pti->dividerSelected 
@@ -258,7 +260,7 @@ drawTray( BoardCtxt* board )
 
 XP_UCHAR*
 getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
-                 XP_Bitmap* bitmap, XP_S16* value, XP_UCHAR* buf, XP_U16 len )
+                 XP_Bitmaps* bitmaps, XP_S16* value, XP_UCHAR* buf, XP_U16 len )
 {
     XP_UCHAR* face = NULL;
     DictionaryCtxt* dict = model_getDictionary( board->model );
@@ -271,8 +273,10 @@ getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
 
     *value = dict_getTileValue( dict, tile );
     if ( dict_faceIsBitmap( dict, tile ) ) {
-        *bitmap = dict_getFaceBitmap( dict, tile, XP_TRUE );
-    } 
+        dict_getFaceBitmaps( dict, tile, bitmaps );
+    } else {
+        bitmaps->nBitmaps = 0;
+    }
 
     return face;
 }

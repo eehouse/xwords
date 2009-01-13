@@ -159,7 +159,7 @@ typedef struct DrawCtxVTable {
                                          /* at least one of these two will be
                                             null */
                                          const XP_UCHAR* text, 
-                                         const XP_Bitmap bitmap,
+                                         const XP_Bitmaps* bitmaps,
                                          Tile tile,
                                          XP_S16 owner, /* -1 means don't use */
                                          XWBonusType bonus, HintAtts hintAtts,
@@ -170,13 +170,13 @@ typedef struct DrawCtxVTable {
     void DRAW_VTABLE_NAME(drawTile) ( DrawCtx* dctx, const XP_Rect* rect, 
                                       /* at least 1 of these two will be null*/
                                       const XP_UCHAR* text, 
-                                      const XP_Bitmap bitmap,
+                                      const XP_Bitmaps* bitmaps,
                                       XP_U16 val, CellFlags flags );
 #ifdef POINTER_SUPPORT
     void DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, const XP_Rect* rect, 
                                       /* at least 1 of these two will be null*/
                                              const XP_UCHAR* text, 
-                                             const XP_Bitmap bitmap,
+                                             const XP_Bitmaps* bitmaps,
                                              XP_U16 val, XP_U16 owner, 
                                              CellFlags flags );
 #endif
