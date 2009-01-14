@@ -881,9 +881,10 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
 } /* ceGetPath */
 
 int
-ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), HWND parent, 
-                  const XP_UCHAR* str, const wchar_t* title, XP_U16 buttons )
+ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), const XP_UCHAR* str, 
+                  const wchar_t* title, XP_U16 buttons )
 {
+    HWND parent;
     /* Get the length required, then alloc and go.  This is technically
        correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
     XP_U16 clen = 1 + strlen(str);
@@ -893,16 +894,13 @@ ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), HWND parent,
     
     MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, clen, widebuf, wlen );
 
-/*     if ( !parent ) { */
-/*         parent = globals->hWnd; */
-/*     } */
     parent = GetForegroundWindow();
     return MessageBox( parent, widebuf, title, buttons );
 } /* ceMessageBoxChar */
 
 int
-ceOops( CEAppGlobals* globals, HWND parent, const XP_UCHAR* str )
+ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
 {
-    return ceMessageBoxChar( globals, parent, str, L"Oops!", 
+    return ceMessageBoxChar( globals, str, L"Oops!", 
                              MB_OK | MB_ICONHAND );
 }

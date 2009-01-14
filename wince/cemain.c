@@ -1103,7 +1103,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 snprintf( buf, VSIZE(buf), "Unable to open dictionary: %s",
                           dictName );
                 buf[VSIZE(buf)-1] = '\0';
-                ceOops( globals, NULL, buf );
+                ceOops( globals, buf );
 
             }
             XP_FREE( globals->mpool, dictName );
@@ -1130,7 +1130,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 if ( !!dict ) {
                     dict_destroy( dict );
                 }
-                ceOops( globals, NULL, "Saved game cannot be opened." );
+                ceOops( globals, "Saved game cannot be opened." );
             }
         }
 
@@ -2660,7 +2660,7 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
     int result;
 
     assertOnTop( globals->hWnd );
-    result = ceMessageBoxChar( globals, NULL, buf, title, buttons );
+    result = ceMessageBoxChar( globals, buf, title, buttons );
 
     XP_FREE( globals->mpool, buf );
     return result;
@@ -2986,7 +2986,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     }
 
-    ceOops( globals, NULL, message );
+    ceOops( globals, message );
 } /* ce_util_userError */
 
 static XP_Bool
@@ -3357,7 +3357,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     sprintf( msgBuf, "Word[s] %s not found in dictionary.", wordsBuf );
 
     if ( turnLost ) {
-        ceMessageBoxChar( globals, NULL, msgBuf, L"Illegal word", 
+        ceMessageBoxChar( globals, msgBuf, L"Illegal word", 
                           MB_OK | MB_ICONHAND );
         isOk = XP_TRUE;
     } else {
