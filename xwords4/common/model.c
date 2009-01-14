@@ -274,7 +274,7 @@ model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 DictionaryCtxt*
 model_getDictionary( ModelCtxt* model )
 {
-    XP_ASSERT( !!model->vol.dict );
+/*     XP_ASSERT( !!model->vol.dict ); */
     return model->vol.dict;
 } /* model_getDictionary */
 
