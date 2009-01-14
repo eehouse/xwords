@@ -347,6 +347,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_S16 owner = -1;
             XP_Bool invert = XP_FALSE;
             XP_Bitmaps bitmaps;
+            XP_Bitmaps* bptr = NULL;
             XP_UCHAR* textP = NULL;
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
@@ -386,6 +387,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                 } else {
                     if ( dict_faceIsBitmap( dict, tile ) ) {
                         dict_getFaceBitmaps( dict, tile, &bitmaps );
+                        bptr = &bitmaps;
                     }
                     (void)dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
                     textP = ch;
@@ -409,8 +411,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             }
 #endif
 
-            success = draw_drawCell( board->draw, &cellRect, textP, 
-                                     bitmaps.nBitmaps > 0? &bitmaps : NULL, 
+            success = draw_drawCell( board->draw, &cellRect, textP, bptr,
                                      tile, owner, bonus, hintAtts, flags );
             break;
         }
