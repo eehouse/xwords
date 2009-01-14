@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -627,7 +627,7 @@ checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters, XP_U16 index,
 
     XP_ASSERT( index < 2 );
 
-    if ( len < sizeof( entry->letters ) ) {
+    if ( len <= sizeof( entry->letters ) ) {
         XP_U16 ii;
         for ( ii = 0, entry = dctx->bmCache; ii < VSIZE(dctx->bmCache); 
               ++ii, ++entry ) {
@@ -970,7 +970,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     /* always init to silence compiler warning */
     foreColorIndx = getPlayerColor(owner);
 
-    if ( !isDragSrc && !!letters ) {
+    if ( !isDragSrc && (!!letters || !!bitmaps) ) {
         if ( isPending ) {
             bkIndex = CE_BLACK_COLOR;
             foreColorIndx = CE_WHITE_COLOR;
