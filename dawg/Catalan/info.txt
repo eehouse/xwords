@@ -1,4 +1,5 @@
-# Copyright 2002,2006 by Eric House (fixin@peak.org).  All rights
+# -*- mode: conf; -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -27,7 +28,7 @@ LANGINFO: dictionary. </p>
 
 LANGINFO: <p>"L" is legal by itself, as are words in which two "L"s
 LANGINFO: appear side-by-side.  If you want your dictionary to include
-LANGINFO: the "L.L" tile you'll need to make sure that the exact
+LANGINFO: the "L.L" tile you will need to make sure that the exact
 LANGINFO: string "L.L" (or "l.l") appears in the wordlist you
 LANGINFO: upload.</p>
 
