@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2002,2008 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -91,6 +92,7 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     BlankDialogState* bState;
     XP_U16 id;
+    LRESULT result = FALSE;     /* default */
 
     if ( message == WM_INITDIALOG ) {
         SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
@@ -114,12 +116,14 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         ceDlgComboShowHide( &bState->dlgHdr, BLANKFACE_LIST ); 
 
         loadLettersList( bState );
+        result = TRUE;
     } else {
         bState = (BlankDialogState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
         if ( !!bState ) {
 
             if ( ceDoDlgHandle( &bState->dlgHdr, message, wParam, lParam) ) {
-                return TRUE;
+                result = TRUE;
+                goto exit;
             }
 
             switch ( message ) {
@@ -142,10 +146,11 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     break;
                 }
                 EndDialog( hDlg, id );
-                return TRUE;
+                result = TRUE;
             }
         }
     }
 
-    return FALSE;
+ exit:
+    return result;
 } /* BlankDlg */
