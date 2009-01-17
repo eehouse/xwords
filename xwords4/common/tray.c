@@ -260,7 +260,8 @@ drawTray( BoardCtxt* board )
 
 XP_UCHAR*
 getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
-                 XP_Bitmaps* bitmaps, XP_S16* value, XP_UCHAR* buf, XP_U16 len )
+                 XP_Bitmaps* bitmaps, XP_S16* value, XP_UCHAR* buf,
+                 XP_U16 len )
 {
     XP_UCHAR* face = NULL;
     DictionaryCtxt* dict = model_getDictionary( board->model );
@@ -272,7 +273,7 @@ getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
     }
 
     *value = dict_getTileValue( dict, tile );
-    if ( dict_faceIsBitmap( dict, tile ) ) {
+    if ( !isBlank && dict_faceIsBitmap( dict, tile ) ) {
         dict_getFaceBitmaps( dict, tile, bitmaps );
     } else {
         bitmaps->nBitmaps = 0;
