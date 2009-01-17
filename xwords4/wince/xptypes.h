@@ -78,7 +78,7 @@ typedef XP_U32 XP_Time;
 
 #ifdef DEBUG
 
-#define XP_ASSERT(b) if(!(b)) { wince_assert(#b, __LINE__, __FILE__); }
+#define XP_ASSERT(b) if(!(b)) { wince_assert(#b, __LINE__, __FILE__, __func__); }
 #else
 # define XP_ASSERT(b)
 #endif
@@ -100,7 +100,7 @@ typedef XP_U32 XP_Time;
 extern "C" {
 #endif
 
-void wince_assert(XP_UCHAR* s, int line, char* fileName );
+void wince_assert(XP_UCHAR* s, int line, const char* fileName, const char* func );
 void wince_debugf(const XP_UCHAR*, ...)
     __attribute__ ((format (printf, 1, 2)));
 void wince_warnf(const XP_UCHAR*, ...)

@@ -2699,9 +2699,11 @@ RECTtoXPR( XP_Rect* dest, const RECT* src )
 
 void
 wince_assert( XP_UCHAR* XP_UNUSED_LOG(s), int XP_UNUSED_LOG(line), 
-              char* XP_UNUSED_LOG(fileName) )
+              const char* XP_UNUSED_LOG(fileName), 
+              const char* XP_UNUSED_LOG(func) )
 {
-    XP_WARNF( "ASSERTION FAILED %s: file %s, line %d\n", s, fileName, line );
+    XP_WARNF( "ASSERTION FAILED %s: %s in file %s, line %d\n", s, 
+              func, fileName, line );
 } /* wince_assert */
 
 #ifdef ENABLE_LOGGING
@@ -2729,6 +2731,8 @@ wince_warnf(const XP_UCHAR* format, ...)
     va_start( ap, format );
     vsnprintf( buf, sizeof(buf), format, ap );
     va_end(ap);
+
+    wince_debugf( "%s", buf );
 
     slen = strlen(buf)+1;
     wchar_t widebuf[slen];
