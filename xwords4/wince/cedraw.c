@@ -1,6 +1,7 @@
 /* -*- fill-column: 77; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1080,7 +1081,6 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    wchar_t widebuf[4];
     RECT rt;
     XP_U16 index;
     XP_Bool highlighted = XP_FALSE;
@@ -1130,32 +1130,39 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         if ( !isEmpty ) {
             const FontCacheEntry* fce;
+            wchar_t widebuf[4];
             /* Dumb to calc these when only needed once.... */
             XP_U16 valHt, charHt;
             XP_Bool valHidden = 0 != (flags & CELL_VALHIDDEN);
-            ceGetCharValHts( dctx, xprect, valHidden, &charHt, &valHt );
 
             if ( !highlighted ) {
                 InsetRect( &rt, 1, 1 );
             }
 
+            ceGetCharValHts( dctx, xprect, valHidden, &charHt, &valHt );
             fce = ceGetSizedFont( dctx, charHt, 0, 
                                   valHidden ? RFONTS_TRAYNOVAL:RFONTS_TRAY );
 
             if ( !!bitmaps || !!letters ) {
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
-                if ( !!bitmaps ) {
-                    RECT lrt = { .left = xprect->left + (TRAY_BORDER/2),
-                                 .top = xprect->top + (TRAY_BORDER/2),
-                                 .right = xprect->left + charHt,
-                                 .bottom = xprect->top + fce->glyphHt
-                    };
-                    makeAndDrawBitmap( dctx, hdc, &lrt, letters, bitmaps, 1,
-                                       XP_FALSE );
-                } else if ( !!letters ) {
-                    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
-                                         widebuf, VSIZE(widebuf) );
+                XP_U16 len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, 
+                                                  letters, -1, 
+                                                  widebuf, VSIZE(widebuf) );
 
+                /* see if there's room to use text instead of bitmap */
+                if ( !!bitmaps && valHidden ) {
+                    SIZE size;
+                    GetTextExtentPoint32( hdc, widebuf, len - 1, /* drop null */
+                                          &size );
+                    if ( size.cx < (rt.right - rt.left) ) {
+                        bitmaps = NULL; /* use the letters instead */
+                    }
+                }
+
+                if ( !!bitmaps ) {
+                    makeAndDrawBitmap( dctx, hdc, &rt, letters, bitmaps, 1,
+                                       valHidden );
+                } else if ( !!letters ) {
                     ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, fce, 
                                        xprect->left + 4, xprect->top + 4, 
                                        xprect->width - 8, 
@@ -1171,7 +1178,8 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
                 ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, fce, 
                                    xprect->left + 4,
-                                   xprect->top + xprect->height - 4 - fce->glyphHt,
+                                   xprect->top + xprect->height - 4 
+                                   - fce->glyphHt,
                                    xprect->width - 8, DT_RIGHT );
                 SelectObject( hdc, oldFont );
             }
