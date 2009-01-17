@@ -123,7 +123,8 @@ struct CEDrawCtx {
 };
 
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
-static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap );
+static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap,
+                                XP_Bool center, XP_Bool stretch );
 static void ceClipToRect( HDC hdc, const RECT* rt );
 static void ceClearFontCache( CEDrawCtx* dctx );
 
@@ -617,14 +618,15 @@ ceGetSizedFont( CEDrawCtx* dctx, XP_U16 height, XP_U16 width, RFIndex index )
 } /* ceGetSizedFont */
 
 static HBITMAP
-checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters, XP_U16 index, 
-              const XP_Bitmaps* bitmaps, XP_Bool* cached )
+checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters, 
+              const XP_U16 index, const XP_Bitmaps* bitmaps, XP_Bool* cached )
 {
     HBITMAP bm = NULL;
     CeBMCacheEntry* entry = NULL;
     XP_U16 len = 1 + XP_STRLEN( letters );
     XP_Bool canCache = XP_FALSE;
 
+    XP_ASSERT( !!letters );
     XP_ASSERT( index < 2 );
 
     if ( len <= sizeof( entry->letters ) ) {
@@ -650,7 +652,7 @@ checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters, XP_U16 index,
 #endif
 
     if ( !bm ) {
-        const CEBitmapInfo* info = (const CEBitmapInfo*)bitmaps->bmps[index];
+        const CEBitmapInfo* info = (const CEBitmapInfo*)(bitmaps->bmps[index]);
         XP_U16 nCols, nRows, row, col, rowBytes;
         COLORREF black = dctx->globals->appPrefs.colors[CE_BLACK_COLOR];
         COLORREF white = dctx->globals->appPrefs.colors[CE_WHITE_COLOR];
@@ -700,13 +702,13 @@ checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters, XP_U16 index,
 
 static void
 makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, 
-                   const XP_UCHAR* letters, XP_U16 index,
-                   const XP_Bitmaps* bitmaps )
+                   const XP_UCHAR* letters, const XP_Bitmaps* bitmaps, 
+                   XP_U16 index, XP_Bool center )
 {
     XP_Bool cached;
     HBITMAP bm = checkBMCache( dctx, hdc, letters, index, bitmaps, &cached );
-    
-    ceDrawBitmapInRect( hdc, bnds, bm );
+
+    ceDrawBitmapInRect( hdc, bnds, bm, center, XP_TRUE );
 
     if ( !cached ) {
         DeleteObject( bm );
@@ -1011,7 +1013,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ceSetTextColor( hdc, dctx, foreColorIndx );
 
     if ( !isDragSrc && !!bitmaps ) {
-        makeAndDrawBitmap( dctx, hdc, &rt, letters, 0, bitmaps );
+        makeAndDrawBitmap( dctx, hdc, &rt, letters, bitmaps, 0, XP_TRUE );
     } else if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
 
@@ -1021,7 +1023,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
                            xprect->top+2, xprect->width, DT_CENTER );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
         ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
-        ceDrawBitmapInRect( hdc, &textRect, dctx->origin );
+        ceDrawBitmapInRect( hdc, &textRect, dctx->origin, XP_TRUE, XP_FALSE );
     }
 
     ceDrawHintBorders( dctx, xprect, hintAtts );
@@ -1140,22 +1142,25 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             fce = ceGetSizedFont( dctx, charHt, 0, 
                                   valHidden ? RFONTS_TRAYNOVAL:RFONTS_TRAY );
 
-            if ( !!bitmaps ) {
-                RECT lrt = { .left = xprect->left,
-                             .top = xprect->top,
-                             .right = xprect->left + xprect->width - 8, 
-                             .bottom = xprect->top + fce->glyphHt
-                };
-                makeAndDrawBitmap( dctx, hdc, &lrt, letters, 1, bitmaps );
-            } else if ( !!letters ) {
+            if ( !!bitmaps || !!letters ) {
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
-                MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
-                                     widebuf, VSIZE(widebuf) );
+                if ( !!bitmaps ) {
+                    RECT lrt = { .left = xprect->left + (TRAY_BORDER/2),
+                                 .top = xprect->top + (TRAY_BORDER/2),
+                                 .right = xprect->left + charHt,
+                                 .bottom = xprect->top + fce->glyphHt
+                    };
+                    makeAndDrawBitmap( dctx, hdc, &lrt, letters, bitmaps, 1,
+                                       XP_FALSE );
+                } else if ( !!letters ) {
+                    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
+                                         widebuf, VSIZE(widebuf) );
 
-                ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, fce, 
-                                   xprect->left + 4, xprect->top + 4, 
-                                   xprect->width - 8, 
-                                   valHidden?DT_CENTER:DT_LEFT );
+                    ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, fce, 
+                                       xprect->left + 4, xprect->top + 4, 
+                                       xprect->width - 8, 
+                                       valHidden?DT_CENTER:DT_LEFT );
+                }
                 SelectObject( hdc, oldFont );
             }
 
@@ -1244,7 +1249,8 @@ ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect )
  * change the proportions.
  */
 static void
-ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
+ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap, 
+                    XP_Bool center, XP_Bool stretch )
 {
     BITMAP bmp;
     int nBytes;
@@ -1259,19 +1265,25 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
         int top = rect->top;
         XP_U16 width = rect->right - left;
         XP_U16 height = rect->bottom - top;
-        XP_U16 ii;
         HDC tmpDC;
 
-        for ( ii = 1;
-              ((bmp.bmWidth * ii) <= width) && ((bmp.bmHeight * ii) <= height);
-              ++ii ) {
-            /* do nothing */
-        }
+        if ( stretch ) {
+            /* Target rect size is based on width of M in the current font */
+            SIZE size;
+            GetTextExtentPoint32( hdc, L"M", 1, &size );
+            width = height = size.cx;             /* make it square */
+        } else {
+            /* Find dimensions that'll fit multiplying an integral number of
+               times */
+            XP_U16 factor = XP_MIN( width/bmp.bmWidth, height/bmp.bmHeight );
+            if ( factor == 0 ) {
+                XP_LOGF( "%s: cell at %dx%d too small for bitmap at %ldx%ld",
+                         __func__, width, height, bmp.bmWidth, bmp.bmHeight );
+                factor = 1;
+            }
 
-        if ( --ii == 0 ) {
-            XP_LOGF( "%s: cell at %dx%d too small for bitmap at %ldx%ld",
-                     __func__, width, height, bmp.bmWidth, bmp.bmHeight );
-            ii = 1;
+            width = bmp.bmWidth * factor;
+            height = bmp.bmHeight * factor;
         }
 
         tmpDC = CreateCompatibleDC( hdc );
@@ -1279,11 +1291,10 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
 
         (void)IntersectClipRect( tmpDC, left, top, rect->right, rect->bottom );
 
-        width = bmp.bmWidth * ii;
-        height = bmp.bmHeight * ii;
-
-        left += ((rect->right - left) - width) / 2;
-        top += ((rect->bottom - top) - height) / 2;
+        if ( center ) {
+            left += ((rect->right - left) - width) / 2;
+            top += ((rect->bottom - top) - height) / 2;
+        }
 
         StretchBlt( hdc, left, top, width, height, 
                     tmpDC, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY );
@@ -1329,7 +1340,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ceSetBkColor( hdc, dctx, bkIndex );
     ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
 
-    ceDrawBitmapInRect( hdc, &rt, cursor );
+    ceDrawBitmapInRect( hdc, &rt, cursor, XP_TRUE, XP_FALSE );
 
     ceDrawHintBorders( dctx, xprect, hintAtts );
 } /* ce_draw_drawBoardArrow */
