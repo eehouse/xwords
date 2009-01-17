@@ -1286,7 +1286,7 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap )
         top += ((rect->bottom - top) - height) / 2;
 
         StretchBlt( hdc, left, top, width, height, 
-                    tmpDC, 0, 0, bmp.bmHeight, bmp.bmWidth, SRCCOPY );
+                    tmpDC, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY );
         DeleteDC( tmpDC );
     }
 } /* ceDrawBitmapInRect */
