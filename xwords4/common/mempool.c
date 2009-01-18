@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,6 +33,7 @@ extern "C" {
 typedef struct MemPoolEntry {
     struct MemPoolEntry* next;
     const char* fileName;
+    const char* func;
     XP_U32 lineNo;
     XP_U32 size;
     void* ptr;
@@ -101,8 +103,8 @@ mpool_destroy( MemPoolCtx* mpool )
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_LOGF( "%s: " XP_P " from ln %ld of %s\n", __func__, 
-                     entry->ptr, entry->lineNo, entry->fileName );
+            XP_LOGF( "%s: " XP_P " in %s, ln %ld of %s\n", __func__, 
+                     entry->ptr, entry->func, entry->lineNo, entry->fileName );
 #ifdef DEBUG
             {
                 char* tryTxt;
@@ -125,7 +127,8 @@ mpool_destroy( MemPoolCtx* mpool )
 } /* mpool_destroy */
 
 void*
-mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file, XP_U32 lineNo )
+mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file, 
+             const char* func, XP_U32 lineNo )
 {
     MemPoolEntry* entry;
 
@@ -141,6 +144,7 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file, XP_U32 lineNo )
     mpool->usedList = entry;
 
     entry->fileName = file;
+    entry->func = func;
     entry->lineNo = lineNo;
     entry->size = size;
     entry->ptr = XP_PLATMALLOC( size );
@@ -179,7 +183,8 @@ findEntryFor( MemPoolCtx* mpool, void* ptr, MemPoolEntry** prevP )
 } /* findEntryFor */
 
 void* 
-mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file, XP_U32 lineNo )
+mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file, 
+               const char* func, XP_U32 lineNo )
 {
     MemPoolEntry* entry = findEntryFor( mpool, ptr, (MemPoolEntry**)NULL );
 
@@ -190,13 +195,15 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file, X
         entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
         XP_ASSERT( !!entry->ptr );
         entry->fileName = file;
+        entry->func = func;
         entry->lineNo = lineNo;
     }
     return entry->ptr;
 } /* mpool_realloc */
 
 void
-mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo )
+mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, 
+            const char* func, XP_U32 lineNo )
 {
     MemPoolEntry* entry;
     MemPoolEntry* prev;
@@ -204,13 +211,14 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo )
     entry = findEntryFor( mpool, ptr, &prev );
 
     if ( !entry ) {
-        XP_LOGF( "findEntryFor failed; called from %s, line %ld",
-                 file, lineNo );
+        XP_LOGF( "findEntryFor failed; called from %s, line %ld in %s",
+                 func, lineNo, file );
     } else {
 
 #ifdef MPOOL_DEBUG
-    XP_LOGF( "%s(ptr=%p):size=%ld,file=%s,lineNo=%ld)", __func__, 
-             entry->ptr, entry->size, entry->fileName, entry->lineNo );
+    XP_LOGF( "%s(ptr=%p):size=%ld,func=%s,file=%s,lineNo=%ld)", __func__, 
+             entry->ptr, entry->size, entry->func, entry->fileName, 
+             entry->lineNo );
 #endif
 
         if ( !!prev ) {
@@ -235,32 +243,38 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo )
     XP_ASSERT( 0 );
 } /* mpool_free */
 
+#define STREAM_OR_LOG(stream,buf) \
+    if ( !!stream ) { \
+        stream_putString( stream, buf ); \
+    } else { \
+        XP_LOGF( "%s", buf ); \
+    } \
+
 void
 mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream )
 {
     XP_UCHAR buf[128];
     MemPoolEntry* entry;
+    XP_U32 total = 0;
     
     XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"Number of blocks in use: %d\n"
                  "Number of free blocks: %d\n"
                  "Total number of blocks allocated: %d\n",
                  mpool->nUsed, mpool->nFree, mpool->nAllocs );
-    if ( !!stream ) {
-        stream_putString( stream, buf );
-    } else {
-        XP_LOGF( "%s", buf );
-    }
+    STREAM_OR_LOG( stream, buf );
 
     for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
-                     (XP_UCHAR*)"%ld byte block allocated at %p, %s: line %ld\n", 
-                     entry->size, entry->ptr, entry->fileName, entry->lineNo );
-        if ( !!stream ) {
-            stream_putString( stream, buf );
-        } else {
-            XP_LOGF( "%s", buf );
-        }
+                     (XP_UCHAR*)"%ld byte block allocated at %p, at line %ld "
+                     "in %s, %s\n", entry->size, entry->ptr, entry->lineNo, 
+                     entry->func, entry->fileName );
+        STREAM_OR_LOG( stream, buf );
+        total += entry->size;
     }
+
+    XP_SNPRINTF( buf, sizeof(buf), "total bytes allocated: %ld\n", total );
+    STREAM_OR_LOG( stream, buf );
+
 } /* mpool_stats */
 
 XP_U16
