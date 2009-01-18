@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,10 +35,11 @@ MemPoolCtx* mpool_make(void);
 void mpool_destroy( MemPoolCtx* mpool );
 
 void* mpool_alloc( MemPoolCtx* mpool, XP_U32 size, 
-                   const char* file, XP_U32 lineNo );
+                   const char* file, const char* func, XP_U32 lineNo );
 void* mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, 
-                     const char* file, XP_U32 lineNo );
-void mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, XP_U32 lineNo );
+                     const char* file, const char* func, XP_U32 lineNo );
+void mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, 
+                 const char* func, XP_U32 lineNo );
 void mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream );
 XP_U16 mpool_getNUsed( MemPoolCtx* mpool );
 

@@ -101,7 +101,7 @@ signedFromStream( XWStreamCtxt* stream, XP_U16 nBits )
 XP_UCHAR*
 p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 #ifdef MEM_DEBUG
-                    , const char* file, XP_U32 lineNo 
+                    , const char* file, const char* func, XP_U32 lineNo 
 #endif
                     )
 {
@@ -111,7 +111,7 @@ p_stringFromStream( MPFORMAL XWStreamCtxt* stream
 
     if ( len > 0 ) {
 #ifdef MEM_DEBUG
-        str = mpool_alloc( mpool, len + 1, file, lineNo );
+        str = mpool_alloc( mpool, len + 1, file, func, lineNo );
 #else
         str = (XP_UCHAR*)XP_MALLOC( mpool, len + 1 ); /* leaked */
 #endif
@@ -151,7 +151,7 @@ stringToStream( XWStreamCtxt* stream, const XP_UCHAR* str )
 XP_UCHAR* 
 p_copyString( MPFORMAL const XP_UCHAR* instr
 #ifdef MEM_DEBUG
-            , const char* file, XP_U32 lineNo 
+            , const char* file, const char* func, XP_U32 lineNo 
 #endif
             )
 {
@@ -159,7 +159,7 @@ p_copyString( MPFORMAL const XP_UCHAR* instr
     if ( !!instr ) {
         XP_U16 len = 1 + XP_STRLEN( (const char*)instr );
 #ifdef MEM_DEBUG
-        result = mpool_alloc( mpool, len, file, lineNo );
+        result = mpool_alloc( mpool, len, file, func, lineNo );
 #else
         result = XP_MALLOC( ignore, len );
 #endif
@@ -173,7 +173,7 @@ p_copyString( MPFORMAL const XP_UCHAR* instr
 void
 p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
 #ifdef MEM_DEBUG
-            , const char* file, XP_U32 lineNo 
+            , const char* file, const char* func, XP_U32 lineNo 
 #endif
                           )
 {
@@ -187,7 +187,7 @@ p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
             XP_FREE( mpool, curStr );
         }
 #ifdef MEM_DEBUG
-        curStr = p_copyString( mpool, newStr, file, lineNo );
+        curStr = p_copyString( mpool, newStr, file, func, lineNo );
 #else
         curStr = p_copyString( newStr );
 #endif
