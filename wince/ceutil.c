@@ -511,7 +511,6 @@ adjustScrollPos( HWND hDlg, XP_S16 vertChange )
 
         setScrollPos( hDlg, sinfo.nPos + vertChange );
     }
-    LOG_RETURN_VOID();
 } /* adjustScrollPos */
 
 static XP_Bool
