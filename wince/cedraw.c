@@ -125,7 +125,7 @@ struct CEDrawCtx {
 
 static void ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect );
 static void ceDrawBitmapInRect( HDC hdc, const RECT* r, HBITMAP bitmap,
-                                XP_Bool center, XP_Bool stretch );
+                                XP_Bool stretch );
 static void ceClipToRect( HDC hdc, const RECT* rt );
 static void ceClearFontCache( CEDrawCtx* dctx );
 
@@ -654,18 +654,14 @@ checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters,
 
     if ( !bm ) {
         const CEBitmapInfo* info = (const CEBitmapInfo*)(bitmaps->bmps[index]);
-        XP_U16 nCols, nRows, row, col, rowBytes;
+        XP_U16 row, col;
         COLORREF black = dctx->globals->appPrefs.colors[CE_BLACK_COLOR];
         COLORREF white = dctx->globals->appPrefs.colors[CE_WHITE_COLOR];
         HDC tmpDC;
         XP_U8* bits = info->bits;
-
-        nCols = info->nCols;
-        nRows = info->nRows;
-        rowBytes = (info->nCols + 7) / 8;
-        while ( (rowBytes % 2) != 0 ) {
-            ++rowBytes;
-        }
+        XP_U16 nCols = info->nCols;
+        XP_U16 nRows = info->nRows;
+        XP_U16 rowBytes = (info->nCols + 7) / 8; /* rows are 8-bit padded */
 
         bm = CreateBitmap( info->nCols, info->nRows, 1, 1, NULL );
         tmpDC = CreateCompatibleDC( hdc );
@@ -704,12 +700,34 @@ checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters,
 static void
 makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds, 
                    const XP_UCHAR* letters, const XP_Bitmaps* bitmaps, 
-                   XP_U16 index, XP_Bool center )
+                   XP_Bool center )
 {
     XP_Bool cached;
+    XP_U16 index;
+    RECT lrt = *bnds;
+
+    SIZE size;
+    GetTextExtentPoint32( hdc, L"M", 1, &size );
+
+    if ( center ) {
+        lrt.left += ((lrt.right - lrt.left) - size.cx) / 2;
+        lrt.top += ((lrt.bottom - lrt.top) - size.cx) / 2;
+    }
+    lrt.right = lrt.left + size.cx;
+    lrt.bottom = lrt.top + size.cx;
+
+    for ( index = bitmaps->nBitmaps - 1; ; --index ) {
+        const CEBitmapInfo* info = (const CEBitmapInfo*)(bitmaps->bmps[index]);
+        if ( index == 0 ) {
+            break;
+        } else if ( info->nCols <= size.cx && info->nRows <= size.cx ) {
+            break;
+        }
+    }
+
     HBITMAP bm = checkBMCache( dctx, hdc, letters, index, bitmaps, &cached );
 
-    ceDrawBitmapInRect( hdc, bnds, bm, center, XP_TRUE );
+    ceDrawBitmapInRect( hdc, &lrt, bm, XP_TRUE );
 
     if ( !cached ) {
         DeleteObject( bm );
@@ -1014,7 +1032,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ceSetTextColor( hdc, dctx, foreColorIndx );
 
     if ( !isDragSrc && !!bitmaps ) {
-        makeAndDrawBitmap( dctx, hdc, &rt, letters, bitmaps, 0, XP_TRUE );
+        makeAndDrawBitmap( dctx, hdc, &rt, letters, bitmaps, XP_TRUE );
     } else if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
 
@@ -1024,7 +1042,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
                            xprect->top+2, xprect->width, DT_CENTER );
     } else if ( (flags&CELL_ISSTAR) != 0 ) {
         ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
-        ceDrawBitmapInRect( hdc, &textRect, dctx->origin, XP_TRUE, XP_FALSE );
+        ceDrawBitmapInRect( hdc, &textRect, dctx->origin, XP_FALSE );
     }
 
     ceDrawHintBorders( dctx, xprect, hintAtts );
@@ -1160,7 +1178,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                 }
 
                 if ( !!bitmaps ) {
-                    makeAndDrawBitmap( dctx, hdc, &rt, letters, bitmaps, 1,
+                    makeAndDrawBitmap( dctx, hdc, &rt, letters, bitmaps,
                                        valHidden );
                 } else if ( !!letters ) {
                     ceDrawTextClipped( hdc, widebuf, -1, XP_TRUE, fce, 
@@ -1258,7 +1276,7 @@ ceClearToBkground( CEDrawCtx* dctx, const XP_Rect* rect )
  */
 static void
 ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap, 
-                    XP_Bool center, XP_Bool stretch )
+                    XP_Bool stretch )
 {
     BITMAP bmp;
     int nBytes;
@@ -1275,12 +1293,7 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap,
         XP_U16 height = rect->bottom - top;
         HDC tmpDC;
 
-        if ( stretch ) {
-            /* Target rect size is based on width of M in the current font */
-            SIZE size;
-            GetTextExtentPoint32( hdc, L"M", 1, &size );
-            width = height = size.cx;             /* make it square */
-        } else {
+        if ( !stretch ) {
             /* Find dimensions that'll fit multiplying an integral number of
                times */
             XP_U16 factor = XP_MIN( width/bmp.bmWidth, height/bmp.bmHeight );
@@ -1299,10 +1312,8 @@ ceDrawBitmapInRect( HDC hdc, const RECT* rect, HBITMAP bitmap,
 
         (void)IntersectClipRect( tmpDC, left, top, rect->right, rect->bottom );
 
-        if ( center ) {
-            left += ((rect->right - left) - width) / 2;
-            top += ((rect->bottom - top) - height) / 2;
-        }
+        left += ((rect->right - left) - width) / 2;
+        top += ((rect->bottom - top) - height) / 2;
 
         StretchBlt( hdc, left, top, width, height, 
                     tmpDC, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY );
@@ -1348,7 +1359,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ceSetBkColor( hdc, dctx, bkIndex );
     ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
 
-    ceDrawBitmapInRect( hdc, &rt, cursor, XP_TRUE, XP_FALSE );
+    ceDrawBitmapInRect( hdc, &rt, cursor, XP_FALSE );
 
     ceDrawHintBorders( dctx, xprect, hintAtts );
 } /* ce_draw_drawBoardArrow */
