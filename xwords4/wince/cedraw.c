@@ -705,25 +705,29 @@ makeAndDrawBitmap( CEDrawCtx* dctx, HDC hdc, const RECT* bnds,
     XP_Bool cached;
     XP_U16 index;
     RECT lrt = *bnds;
+    XP_U16 useSize;
 
     SIZE size;
     GetTextExtentPoint32( hdc, L"M", 1, &size );
-
-    if ( center ) {
-        lrt.left += ((lrt.right - lrt.left) - size.cx) / 2;
-        lrt.top += ((lrt.bottom - lrt.top) - size.cx) / 2;
-    }
-    lrt.right = lrt.left + size.cx;
-    lrt.bottom = lrt.top + size.cx;
+    useSize = size.cx;
 
     for ( index = bitmaps->nBitmaps - 1; ; --index ) {
         const CEBitmapInfo* info = (const CEBitmapInfo*)(bitmaps->bmps[index]);
-        if ( index == 0 ) {
+        if ( info->nCols <= useSize && info->nRows <= useSize ) {
             break;
-        } else if ( info->nCols <= size.cx && info->nRows <= size.cx ) {
+        } else if ( index == 0 ) {
+            /* none fits */
+            useSize = XP_MAX( info->nCols, info->nRows );
             break;
         }
     }
+
+    if ( center ) {
+        lrt.left += ((lrt.right - lrt.left) - useSize) / 2;
+        lrt.top += ((lrt.bottom - lrt.top) - useSize) / 2;
+    }
+    lrt.right = lrt.left + useSize;
+    lrt.bottom = lrt.top + useSize;
 
     HBITMAP bm = checkBMCache( dctx, hdc, letters, index, bitmaps, &cached );
 
