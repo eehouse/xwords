@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=DISCbeta
+XWLANG=DANOSC
 LANGCODE=ca_ES
 TARGET_TYPE ?= WINCE
 ENC = UTF-8
@@ -41,7 +41,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Catalan/DISCbeta.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Catalan/DANOSC.txt.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< \
