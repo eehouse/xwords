@@ -48,7 +48,7 @@ $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	| tr -d '\r' \
 	| tr [a-zç] [A-ZÇ] \
 	| sed 's/L·L/1/g' \
-	| sed 's/L.L/1/g' \
+	| sed 's/L\.L/1/g' \
 	| sed 's/L-L/1/g' \
 	| sed 's/NY/2/g' \
 	| sed 's/QU/3/g' \
