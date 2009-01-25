@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <locale.h>
 
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
@@ -667,6 +668,8 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_BLUETOOTH
     const char* btaddr = NULL;
 #endif
+
+    setlocale(LC_ALL, "");
 
     XP_LOGF( "main started: pid = %d", getpid() );
 #ifdef DEBUG

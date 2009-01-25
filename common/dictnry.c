@@ -384,7 +384,7 @@ dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, XP_Bitmaps* bmps )
     bmps->nBitmaps = 2;
     bmps->bmps[0] = bitmaps->smallBM;
     bmps->bmps[1] = bitmaps->largeBM;
-} /* dict_getFaceBitmap */
+} /* dict_getFaceBitmaps */
 
 #ifdef TALL_FONTS
 XP_LangCode

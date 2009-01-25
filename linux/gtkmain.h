@@ -1,5 +1,7 @@
 /* -*- mode: C; fill-column: 78; c-basic-offset: 4; -*- */ 
-/* Copyright 1997 - 2005 by Eric House (xwords@eehouse.org) (fixin@peak.org).  All rights reserved.
+/* Copyright 1997 - 2005 by Eric House (xwords@eehouse.org) All rights
+ * reserved.
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
