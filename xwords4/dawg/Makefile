@@ -22,15 +22,18 @@ byodfiles.tgz: byodfiles.tar
 	gzip -c $< > $@
 
 byodfiles.tar:
-	rm -f $@
+	rm -f $@ langinfo
 	tar cvf $@ ./dict2dawg.cpp ./par.pl ./xloc.pl ./xloc.pm
 	for dir in $$(ls .); do \
 		if [ -f $$dir/info.txt ] && [ -f $$dir/Makefile ]; then \
+			mkdir -p langinfo/$$dir; \
 			(cd $$dir; make TARGET_TYPE=PALM table.bin values.bin palmvalues.bin); \
 			(cd $$dir; make TARGET_TYPE=FRANK frankspecials.bin); \
-			tar rvf $@ $$dir/table.bin $$dir/values.bin $$dir/palmvalues.bin $$dir/frankspecials.bin $$dir/info.txt; \
+			cp $$dir/table.bin $$dir/values.bin $$dir/palmvalues.bin $$dir/frankspecials.bin $$dir/info.txt langinfo/$$dir; \
+			tar rvf $@ langinfo/$$dir/table.bin langinfo/$$dir/values.bin langinfo/$$dir/palmvalues.bin langinfo/$$dir/frankspecials.bin langinfo/$$dir/info.txt; \
 		fi \
 	done
+	rm -rf langinfo
 
 clean:
 	rm -f byodfiles.tgz byodfiles.tar dict2dawg
