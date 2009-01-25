@@ -24,7 +24,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(XWLANG)Main.dict.gz: $(XWDICTPATH)/$(XWLANG)/ITALIANO.txt.gz
+$(XWLANG)Main.dict.gz: $(XWDICTPATH)/Italian/ITALIANO.txt.gz
 	zcat $< | tr a-z A-Z | grep '^[A-IL-VZ]*$$' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the

@@ -1,4 +1,4 @@
-# -*- mode: conf; -*-
+# -*- mode: conf; coding: iso-8859-1; -*-
 # Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #

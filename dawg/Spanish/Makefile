@@ -1,4 +1,4 @@
-# -*-mode: Makefile; compile-command: "make all"; -*-
+# -*-mode: Makefile; compile-command: "make all"; coding: iso-8859-1; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -15,9 +15,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=SpanishFAA41
-LANGCODE=es_ES
-TARGET_TYPE ?= PALM
+XWLANG = SpanishFAA41
+LANGCODE = es_ES
+TARGET_TYPE ?= WINCE
+ENC = ISO-8859-1
 
 ifeq ($(TARGET_TYPE),PALM)
 PBITMS = ./bmps/palm
@@ -49,8 +50,8 @@ $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< \
 	| tr -d '\r' \
 	| tr '\207\216\222\227\234\237\226' 'aeiouu\321' \
-	| tr [a-zÃ±] [A-ZÃ‘] \
-	| grep '^[[A-JL-VX-ZÃ‘]*$$' \
+	| tr [a-zñ] [A-ZÑ] \
+	| LANG=$(LANGCODE):$(ENC) grep '^[A-JL-VX-ZÑ]*$$' \
 	| sed 's/CH/1/g' \
 	| sed 's/LL/2/g' \
 	| sed 's/RR/3/g' \

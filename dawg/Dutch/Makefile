@@ -1,5 +1,5 @@
-# -*- mode: makefile -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# -*- mode: makefile; coding: iso-8859-1 -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,18 +17,25 @@
 
 XWLANG=Dutch
 LANGCODE=nl_NL
+ENC = ISO-8859-1 
 
-TARGET_TYPE ?= PALM
+TARGET_TYPE ?= WINCE
 
 include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/Dutch__unofficial_alphabetical.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/Dutch/Dutch__unofficial_alphabetical.dict.gz
+
+# This is weird.  We're keeping umlaut letters even though they're not
+# on tiles.  Do they get translated to non-umlaut equivalents or are
+# they allowed to drop this way.  Need to confirm the tile set and conversion.
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | tr -d '\r' | tr [a-zäöü] [A-ZÄÖÜ] | \
-		grep '^[A-Z]\+$$' | sort -u | \
+	zcat $< | tr -d '\r' | \
+		tr [a-zäöü] [A-ZÄÖÜ] | \
+		LANG=$(LANGCODE):$(ENC) grep '^[A-Z]\+$$' | \
+		LANG=$(LANGCODE):$(ENC) sort -u | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the

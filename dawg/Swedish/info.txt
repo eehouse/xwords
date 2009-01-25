@@ -1,3 +1,4 @@
+# -*- mode: conf; coding: iso-8859-1; -*-
 # Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -22,7 +23,7 @@ LANGFILTER: | grep '^[A-ZÄÅÆÖÜ]*$'
 
 D2DARGS: -r -term 10
 
-LANGINFO: <p>From an English-speaker's perspective, Swedish drops Q
+LANGINFO: <p>From an English-speaker&apos;s perspective, Swedish drops Q
 LANGINFO: and W, and adds Ä, Å, Æ, Ö and Ü.</p>
 
 # High bit means "official".  Next 7 bits are an enum where

@@ -24,7 +24,7 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(XWLANG)Main.dict.gz: $(XWDICTPATH)/$(XWLANG)/ods4c.txt.gz
+$(XWLANG)Main.dict.gz: $(XWDICTPATH)/French/ods4c.txt.gz
 	zcat $< | tr a-z A-Z | tr -d '\r' | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the

@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: Makefile; coding: iso-8859-1; -*-
 # Copyright 2002-2005 by Eric House (xwords@eehouse.org).  All rights reserved.
 #
 # This program is free software; you can redistribute it and/or
@@ -15,8 +15,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-XWLANG=Danish
-LANGCODE=da_DK
+XWLANG = Danish
+LANGCODE = da_DK
+ENC = ISO-8859-1
 
 TARGET_TYPE ?= PALM
 
@@ -24,12 +25,14 @@ include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/$(XWLANG)/LarsDanish.dict.gz
+SOURCEDICT ?= $(XWDICTPATH)/Danish/LarsDanish.dict.gz
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
-	zcat $< | tr -d '\r' | tr [a-zåæø] [A-ZÅÆØ] | \
-		grep '[AEIOUÅÆØ]' | \
-		grep '^[A-PR-VX-ZÅÆØ]\+$$' | sort -u | \
+	zcat $< | tr -d '\r' | \
+		LANG=$(LANGCODE):$(ENC) tr [a-zåæø] [A-ZÅÆØ] | \
+		LANG=$(LANGCODE):$(ENC) grep '[AEIOUÅÆØ]' | \
+		LANG=$(LANGCODE):$(ENC) grep '^[A-PR-VX-ZÅÆØ]\+$$' | \
+		LANG=$(LANGCODE):$(ENC) sort -u | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
