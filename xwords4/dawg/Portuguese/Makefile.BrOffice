@@ -1,4 +1,4 @@
-# -*- mode: makefile -*-
+# -*- mode: makefile; coding: iso-8859-1 -*-
 # Copyright 2002, 2006 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
@@ -16,10 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-LANG=PortugueseBR
-LANGCODE=pt_PT
+XWLANG = PortugueseBR
+LANGCODE = pt_PT
+ENC = ISO-8859-1
 
-TARGET_TYPE ?= PALM
+TARGET_TYPE ?= WINCE
 
 include ../Makefile.2to8
 
@@ -27,9 +28,9 @@ include ../Makefile.langcommon
 
 SOURCEDICT ?= $(XWDICTPATH)/Portuguese/portugueseBR.txt.gz
 
-$(LANG)Main.dict.gz: $(SOURCEDICT) Makefile.BrOffice
+$(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile.BrOffice
 	zcat $< | tr [a-zç] [A-ZÇ] | \
-		grep '^[A-JL-VXZÇ]\+$$' | \
+		LANG=$(LANGCODE):$(ENC) grep '^[A-JL-VXZÇ]\+$$' | \
 		gzip -c > $@
 
 # Everything but creating of the Main.dict file is inherited from the
