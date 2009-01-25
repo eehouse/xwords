@@ -47,6 +47,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <assert.h>
+#include <errno.h>
 #include <algorithm>
 
 #include <string>
@@ -71,22 +72,23 @@ static Letter gCurrentWordBuf[MAX_WORD_LEN+1] = { '\0' };
 static Letter* gCurrentWord = gCurrentWordBuf;
 static int gCurrentWordLen;
 
-Letter* gCurWord = NULL;                   // save so can check for sortedness
-bool gDone = false;
+static bool gDone = false;
 static unsigned int gNextWordIndex;
 static void (*gReadWordProc)(void) = NULL;
-NodeList gNodes;       // final array of nodes
-unsigned int gNBytesPerOutfile = 0xFFFFFFFF;
-char* gTableFile = NULL;
+static NodeList gNodes;       // final array of nodes
+static unsigned int gNBytesPerOutfile = 0xFFFFFFFF;
+static char* gTableFile = NULL;
 static bool gIsMultibyte = false;
-char* gOutFileBase = NULL;
-char* gStartNodeOut = NULL;
+static const char* gEncoding = NULL;
+static char* gOutFileBase = NULL;
+static char* gStartNodeOut = NULL;
 static FILE* gInFile = NULL;
-bool gKillIfMissing = true;
-char gTermChar = '\n';
-bool gDumpText = false;                // dump the dict as text after?
-char* gCountFile = NULL;
-char* gBytesPerNodeFile = NULL;        // where to write whether node
+static bool gKillIfMissing = true;
+static char gTermChar = '\n';
+static bool gDumpText = false;                // dump the dict as text after?
+static char* gCountFile = NULL;
+static const char* gLang = NULL;
+static char* gBytesPerNodeFile = NULL;        // where to write whether node
                                        // size 3 or 4
 int gWordCount = 0;
 std::map<Letter,wchar_t> gTableHash;
@@ -144,8 +146,6 @@ static void readFromSortedArray( void );
 int 
 main( int argc, char** argv ) 
 { 
-    setlocale(LC_CTYPE, "");
-    
     gReadWordProc = readFromSortedArray;
 
     const char* inFileName;
@@ -154,6 +154,20 @@ main( int argc, char** argv )
         exit(1);
     }
 
+    char buf[32];
+    const char* locale = "";
+    if ( !!gLang && !!gEncoding ) {
+        snprintf( buf, sizeof(buf), "%s.%s", gLang, gEncoding );
+        locale = buf;
+    }
+    char* oldloc = setlocale( LC_ALL, locale );
+    if ( !oldloc ) {
+        ERROR_EXIT( "setlocale(%s) failed, error: %s", locale, 
+                    strerror(errno) );
+    } else {
+        fprintf( stderr, "old locale: %s\n", oldloc );
+    }
+    
     makeTableHash();
 
     // Do I need this stupid thing?  Better to move the first row to
@@ -545,8 +559,9 @@ readOneWord( Letter* wordBuf, int bufLen, int* lenp, bool* gotEOF )
             if ( gDebug ) {
                 char buf[T2ABUFLEN(count)];
                 wordBuf[count] = '\0';
-                fprintf( stderr, "%s: dropping word (len>=%d): %s\n", __func__,
-                         count, tileToAscii( buf, sizeof(buf), wordBuf ) );
+                fprintf( stderr, "%s: dropping word (len %d>=%d): %s\n", 
+                         __func__, count, gLimHigh, 
+                         tileToAscii( buf, sizeof(buf), wordBuf ) );
             }
 #endif
             count = 0;  // we'll start over
@@ -1111,27 +1126,30 @@ static void
 usage( const char* name )
 {
     fprintf( stderr, "usage: %s \n"
-             "\t[-v]                 (print version and exit)\n"
-             "\t[-poolsize]          (print hardcoded size of pool and exit)\n"
-             "\t[-b    bytesPerFile] (default = 0xFFFFFFFF)\n"
-             "\t[-min   <num in 0..15>]\n"
-             "\t[-max   <num in 0..15>]\n"
-             "\t-m     mapFile\n"
-             "\t-mn    mapFile (unicode)\n"
-             "\t-ob    outFileBase\n"
-             "\t-sn    start node out file\n"
-             "\t[-if   input file name]  -- default = stdin\n"
-             "\t[-term ch] (word terminator -- default = '\\0'\n"
-             "\t[-nosort] (input already sorted in accord with -m; " 
-             " default=sort'\n"
-             "\t[-dump]  (write dictionary as text to STDERR for testing)\n"
+             "\t[-v]                # print version and exit\n"
+             "\t[-poolsize]         # print hardcoded size of pool and exit\n"
+             "\t[-b    bytesPerFile]# for Palm only (default = 0xFFFFFFFF)\n"
+             "\t[-min   <0<=num<=15># min length word to keep\n"
+             "\t[-max   <0<=num<=15># max length word to keep\n"
+             "\t-m      mapFile\n"
+             "\t-mn     mapFile     # 16 bits per entry\n"
+             "\t-ob     outFileBase\n"
+             "\t-sn                 # start node out file\n"
+             "\t[-if    input_file] # default = stdin\n"
+             "\t[-term  ch]         # word terminator; default = '\\0'\n"
+             "\t[-nosort]           # input already sorted in accord with -m\n"
+             "\t                    #     default=sort'\n"
+             "\t[-dump]             # write dictionary as text to STDERR \n"
+             "\t                    #     for testing\n"
 #ifdef DEBUG
-             "\t[-debug] (turn on verbose output)\n"
+             "\t[-debug]            # turn on verbose output\n"
 #endif
-             "\t[-force4](use 4 bytes per node regardless of need)\n"
-             "\t[-r]     (reject words with letters not in mapfile)\n"
-             "\t[-k]     (kill if any letters not in mapfile -- default)\n",
-             name
+             "\t[-force4]           # always use 4 bytes per node\n"
+             "\t[-lang  lang]       # e.g. en_US\n"
+             "\t[-fsize nBytes]     # max buffer [default %d]\n"
+             "\t[-r]                # drop words with letters not in mapfile\n"
+             "\t[-k]                # (default) exit on any letter not in mapfile \n",
+             name, MAX_POOL_SIZE
              );
 } // usage
 
@@ -1201,6 +1219,8 @@ parseARGV( int argc, char** argv, const char** inFileName )
             gForceFour = true;
         } else if ( 0 == strcmp( arg, "-fsize" ) ) {
             gFileSize = atoi(argv[index++]);
+        } else if ( 0 == strcmp( arg, "-lang" ) ) {
+            gLang = argv[index++];
 #ifdef DEBUG
         } else if ( 0 == strcmp( arg, "-debug" ) ) {
             gDebug = true;
@@ -1218,9 +1238,14 @@ parseARGV( int argc, char** argv, const char** inFileName )
     if ( !!enc ) {
         if ( !strcasecmp( enc, "UTF-8" ) ) {
             gIsMultibyte = true;
+        } else if ( !strcasecmp( enc, "iso-8859-1" ) ) {
+            gIsMultibyte = false;
+        } else if ( !strcasecmp( enc, "iso-latin-1" ) ) {
+            gIsMultibyte = false;
         } else {
             ERROR_EXIT( "%s: unknown encoding %s", __func__, enc );
         }
+        gEncoding = enc;
     }
 
 #ifdef DEBUG
