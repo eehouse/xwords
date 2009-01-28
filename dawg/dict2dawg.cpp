@@ -154,6 +154,7 @@ main( int argc, char** argv )
         exit(1);
     }
 
+ try_english:
     char buf[32];
     const char* locale = "";
     if ( !!gLang && !!gEncoding ) {
@@ -162,6 +163,14 @@ main( int argc, char** argv )
     }
     char* oldloc = setlocale( LC_ALL, locale );
     if ( !oldloc ) {
+        // special case for spiritone.net, where non-US locale files aren't
+        // available.  Since utf-8 is the same for all locales, we can get by
+        // with en_US instead
+        if ( gIsMultibyte && 0 != strcmp( gLang, "en_US" )) {
+            gLang = "en_US";
+            goto try_english;
+        }
+
         ERROR_EXIT( "setlocale(%s) failed, error: %s", locale, 
                     strerror(errno) );
     } else {
