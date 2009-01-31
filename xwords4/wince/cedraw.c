@@ -961,6 +961,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
                           XWBonusType bonus, HintAtts hintAtts,
                           CellFlags flags )
 {
+#ifndef NO_DRAW
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
@@ -1052,7 +1053,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ceDrawHintBorders( dctx, xprect, hintAtts );
 
     SelectObject( hdc, oldFont );
-
+#endif
     return XP_TRUE;
 } /* ce_draw_drawCell */
 
