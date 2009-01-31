@@ -54,6 +54,7 @@
 #include "cesvdgms.h"
 #include "cedraw.h"
 #include "cesms.h"
+#include "cesockwr.h"
 
 #include "dbgutil.h"
 
@@ -862,15 +863,19 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     board_invalAll( globals->game.board );
     InvalidateRect( globals->hWnd, NULL, TRUE /* erase */ );
     
-#ifdef XWFEATURE_RELAY
-    if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
-        XWStreamCtxt* stream;
-        XP_ASSERT( !!globals->game.comms );
-        stream = make_generic_stream( globals );
-        stream_setOnCloseProc( stream, ce_send_on_close );
-        server_initClientConnection( globals->game.server, stream );
+/* #ifdef XWFEATURE_RELAY */
+/*     if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) { */
+/*         XWStreamCtxt* stream; */
+/*         XP_ASSERT( !!globals->game.comms ); */
+/*         stream = make_generic_stream( globals ); */
+/*         stream_setOnCloseProc( stream, ce_send_on_close ); */
+/*         server_initClientConnection( globals->game.server, stream ); */
+/*     } */
+/* #endif */
+
+    if ( !!globals->game.comms ) {
+        comms_start( globals->game.comms );
     }
-#endif
 
     ceSetLeftSoftkey( globals, ID_MOVE_TURNDONE );
 
@@ -1861,6 +1866,9 @@ ceSaveAndExit( CEAppGlobals* globals )
 {
     (void)ceSaveCurGame( globals, XP_TRUE );
     ceSavePrefs( globals );
+    if ( !!globals->socketWrap ) {
+        ce_sockwrap_delete( globals->socketWrap );
+    }
     DestroyWindow(globals->hWnd);
 } /* ceSaveAndExit */
 
@@ -2024,25 +2032,6 @@ checkFireLateKeyTimer( CEAppGlobals* globals )
 
     return drop;
 } /* checkFireLateKeyTimer */
-
-#ifndef XWFEATURE_STANDALONE_ONLY
-static XP_Bool
-processPacket( CEAppGlobals* globals, XWStreamCtxt* instream )
-{
-    XP_Bool draw = XP_FALSE;
-
-    XP_ASSERT( globals->game.comms != NULL );
-
-    if ( comms_checkIncomingStream( globals->game.comms, 
-                                    instream, NULL ) ) {
-        draw = server_receiveMessage( globals->game.server, instream );
-    }
-    stream_destroy( instream );
-    ce_util_requestTime( &globals->util );
-
-    return draw;
-} /* processPacket */
-#endif
 
 static XP_Bool
 checkPenDown( CEAppGlobals* globals )
@@ -2551,8 +2540,12 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        case XWWM_PACKET_ARRIVED:
-            draw = processPacket( globals, (XWStreamCtxt*)lParam );
+        case XWWM_HOSTNAME_ARRIVED:
+            ce_sockwrap_hostname( globals->socketWrap, wParam, lParam );
+            break;
+
+        case XWWM_SOCKET_EVT:
+            draw = ce_sockwrap_event( globals->socketWrap, wParam, lParam );
             break;
 #endif
 
@@ -2824,22 +2817,24 @@ wince_snprintf( XP_UCHAR* buf, XP_U16 len, const XP_UCHAR* format, ... )
 } /* wince_snprintf */
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-static void
+static XP_Bool
 got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 {
-    /* Remember that this gets called by the reader thread, not by the one
-       running the window loop. */
     CEAppGlobals* globals = (CEAppGlobals*)closure;
-    BOOL posted;
     XWStreamCtxt* stream;
+    XP_Bool draw;
 
     stream = make_generic_stream( globals );
     stream_putBytes( stream, data, len );
 
-    assertOnTop( globals->hWnd );
-    posted = PostMessage( globals->hWnd, XWWM_PACKET_ARRIVED, 
-                          0, (DWORD)stream );
-    XP_ASSERT( posted );
+    XP_ASSERT( !!globals->game.comms );
+    if ( comms_checkIncomingStream( globals->game.comms, stream, NULL ) ) {
+        draw = server_receiveMessage( globals->game.server, stream );
+    }
+    stream_destroy( stream );
+    ce_util_requestTime( &globals->util );
+
+    return draw;
 } /* got_data_proc */
 #endif
 

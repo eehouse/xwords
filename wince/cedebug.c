@@ -52,7 +52,8 @@ messageToStr( UINT message )
         CASE_STR( WM_TIMER );
         CASE_STR( WM_DESTROY );
         CASE_STR( XWWM_TIME_RQST );
-        CASE_STR( XWWM_PACKET_ARRIVED );
+        CASE_STR( XWWM_HOSTNAME_ARRIVED );
+        CASE_STR( XWWM_SOCKET_EVT );
         CASE_STR( WM_DRAWITEM );
         CASE_STR( WM_NEXTDLGCTL );
         CASE_STR( WM_CTLCOLORSTATIC );
