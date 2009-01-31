@@ -23,13 +23,18 @@
 
 #include "comms.h"
 #include "mempool.h"
+#include "cemain.h"
 
 typedef struct CeSocketWrapper CeSocketWrapper;      /* forward */
-typedef void (*DataRecvProc)( XP_U8* data, XP_U16 len, void* closure );
+typedef XP_Bool (*DataRecvProc)( XP_U8* data, XP_U16 len, void* closure );
 
 
-CeSocketWrapper* ce_sockwrap_new( MPFORMAL DataRecvProc proc, void* closure );
+CeSocketWrapper* ce_sockwrap_new( MPFORMAL DataRecvProc proc, 
+                                  CEAppGlobals* globals );
 void ce_sockwrap_delete( CeSocketWrapper* self );
+
+void ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );
+XP_Bool ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );
 
 XP_U16 ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
                          const CommsAddrRec* addr );

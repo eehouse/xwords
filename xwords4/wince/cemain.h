@@ -27,7 +27,6 @@
 #include "game.h"
 #include "util.h"
 #include "mempool.h"
-#include "cesockwr.h"
 
 #define LCROSSWORDS_DIR_NODBG L"Crosswords"
 #define CE_GAMEFILE_VERSION1 0x01  /* means draw gets to save/restore */
@@ -110,7 +109,7 @@ enum {
     N_CACHED_PATHS
 };
 
-typedef struct CEAppGlobals {
+typedef struct _CEAppGlobals {
     HINSTANCE hInst;
     HDC hdc;			/* to pass drawing ctxt to draw code */
     HWND hWnd;
@@ -158,7 +157,7 @@ typedef struct CEAppGlobals {
 #ifdef KEYBOARD_NAV
     XP_Bool keyDown;
 #endif
-    CeSocketWrapper* socketWrap;
+    struct CeSocketWrapper* socketWrap;
 
     CEAppPrefs appPrefs;
 
@@ -188,8 +187,8 @@ typedef struct CEAppGlobals {
 enum {
     XWWM_TIME_RQST = WM_APP
     ,XWWM_REM_SEL
-    ,XWWM_PACKET_ARRIVED
-
+    ,XWWM_HOSTNAME_ARRIVED
+    ,XWWM_SOCKET_EVT
 };
 
 #define CE_NUM_EDITABLE_COLORS CE_BLACK_COLOR
