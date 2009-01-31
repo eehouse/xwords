@@ -25,6 +25,14 @@ ce_sms_send( CEAppGlobals* XP_UNUSED(globals), const XP_U8* XP_UNUSED(buf),
 {
     XP_LOGF( "%s: got %d bytes to send to port %d at %s but don't know how.",
              __func__, len, addrp->u.sms.port, addrp->u.sms.phone );
+
+    /* Will use SmsOpen, SmsSend, etc, and WaitForSingleObject.  But it
+       appears that SMS APIs are only usable by signed apps and that users
+       can't override that restriction in some cases, so SMS is not a
+       priority until I can confirm otherwise or find a way for open-source
+       apps to be signed.
+    */
+
     return -1;
 }
 
