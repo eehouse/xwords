@@ -114,6 +114,30 @@ logf( XW_LogLevel level, const char* format, ... )
     }
 } /* logf */
 
+static const char*
+cmdToStr( XWRELAY_Cmd cmd )
+{
+# define CASESTR(s)  case s: return #s
+    switch( cmd ) {
+        CASESTR(XWRELAY_NONE);
+        CASESTR(XWRELAY_GAME_CONNECT);
+        CASESTR(XWRELAY_GAME_RECONNECT);
+        CASESTR(XWRELAY_GAME_DISCONNECT);
+        CASESTR(XWRELAY_CONNECT_RESP);
+        CASESTR(XWRELAY_RECONNECT_RESP);
+        CASESTR(XWRELAY_ALLHERE);
+        CASESTR(XWRELAY_DISCONNECT_YOU);
+        CASESTR(XWRELAY_DISCONNECT_OTHER);
+        CASESTR(XWRELAY_CONNECTDENIED);
+        CASESTR(XWRELAY_HEARTBEAT);
+        CASESTR(XWRELAY_MSG_FROMRELAY);
+        CASESTR(XWRELAY_MSG_TORELAY);
+    default:
+        logf( XW_LOGERROR, "%s: unknown command %d", __func__, cmd );
+        return "<unknown>";
+    }
+}
+
 static bool
 getNetShort( unsigned char** bufpp, unsigned char* end, unsigned short* out )
 {
@@ -232,7 +256,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
     unsigned char* end = bufp + bufLen;
     bool success = false;
 
-    logf( XW_LOGINFO, "processConnect" );
+    logf( XW_LOGINFO, "%s()", __func__ );
 
     cookie[0] = '\0';
 
@@ -361,30 +385,27 @@ processMessage( unsigned char* buf, int bufLen, int socket )
 {
     bool success = false;            /* default is failure */
     XWRELAY_Cmd cmd = *buf;
+
+    logf( XW_LOGINFO, "%s got %s", __func__, cmdToStr(cmd) );
+
     switch( cmd ) {
     case XWRELAY_GAME_CONNECT: 
-        logf( XW_LOGINFO, "processMessage got XWRELAY_CONNECT" );
         success = processConnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_RECONNECT: 
-        logf( XW_LOGINFO, "processMessage got XWRELAY_RECONNECT" );
         success = processReconnect( buf+1, bufLen-1, socket );
         break;
     case XWRELAY_GAME_DISCONNECT:
         success = processDisconnect( buf+1, bufLen-1, socket );
         break;
-#ifdef RELAY_HEARTBEAT
     case XWRELAY_HEARTBEAT:
-        logf( XW_LOGINFO, "processMessage got XWRELAY_HEARTBEAT" );
         success = processHeartbeat( buf + 1, bufLen - 1, socket );
         break;
-#endif
     case XWRELAY_MSG_TORELAY:
-        logf( XW_LOGINFO, "processMessage got XWRELAY_MSG_TORELAY" );
         success = forwardMessage( buf, bufLen, socket );
         break;
     default:
-        logf( XW_LOGINFO, "processMessage bad: %d", cmd );
+        logf( XW_LOGERROR, "%s bad: %d", __func__, cmd );
         break;
         /* just drop it */
     }
