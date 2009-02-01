@@ -94,13 +94,13 @@ DEFINES += -DXWFEATURE_SMS
 
 # Support device-to-device connection via UDP, e.g. using wifi on a
 # LAN or where the host/server isn't behind a firewall.
-DEFINES += -DXWFEATURE_IP_DIRECT
+# DEFINES += -DXWFEATURE_IP_DIRECT
 
-# Choose one of these.  RELAY_HEARTBEAT means relay (must be compiled
-# with same -D) works with comms on heartbeat.  Works only with relay.
-# COMMS_HEARTBEAT should work on any comms transport (even IR, but
-# user experience will be very bad!).  Is particularly useful with BT.
-# DEFINES += -DRELAY_HEARTBEAT
+# RELAY_HEARTBEAT means relay (must be compiled with same -D) works
+# with comms on heartbeat.  Works only with relay.  COMMS_HEARTBEAT
+# should work on any comms transport (even IR, but user experience
+# will be very bad!).  Is particularly useful with BT.  Is not used
+# for relay.
 DEFINES += -DCOMMS_HEARTBEAT
 endif
 DEFINES += $(STANDALONE)

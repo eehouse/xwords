@@ -894,12 +894,12 @@ curses_socket_acceptor( int listener, Acceptor func, CommonGlobals* cGlobals,
     cursesListenOnSocket( globals, listener );
 }
 
-#ifdef RELAY_HEARTBEAT
+#ifdef XWFEATURE_RELAY
 static int
 figureTimeout( CursesAppGlobals* globals )
 {
     int result = INFINITE_TIMEOUT;
-    if ( globals->cGlobals.timerProcs[TIMER_HEARTBEAT] != 0 ) {
+    if ( globals->cGlobals.timerProcs[TIMER_COMMS] != 0 ) {
         XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util );
         XP_U32 then = globals->nextTimer;
         if ( now >= then ) {
@@ -929,10 +929,8 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
     numEvents = poll( globals->fdArray, globals->fdCount, timeout );
 
     if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) {
-#ifdef RELAY_HEARTBEAT
-        if ( !globals->cGlobals.params->noHeartbeat ) {
-            linuxFireTimer( &globals->cGlobals, TIMER_HEARTBEAT );
-        }
+#ifdef XWFEATURE_RELAY
+        linuxFireTimer( &globals->cGlobals, TIMER_COMMS );
 #endif
     } else if ( numEvents > 0 ) {
 	

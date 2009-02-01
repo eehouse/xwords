@@ -3870,7 +3870,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         now += PALM_TIMER_DELAY;
     } else if ( why == TIMER_TIMERTICK ) {
         now += SysTicksPerSecond();
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
     } else if ( why == TIMER_HEARTBEAT ) {
         now += (secsFromNow * SysTicksPerSecond());
 #endif
