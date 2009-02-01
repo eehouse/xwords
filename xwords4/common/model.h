@@ -40,7 +40,11 @@ extern "C" {
 #define NTILES_NBITS 3
 #endif
 
+/* Try making this 0, as some local rules, e.g. Spanish, allow.  Will need to
+ * add UI to limit the number of tiles selected to that remaining in the pool.
+ */
 #define MIN_TRADE_TILES MAX_TRAY_TILES
+
 /* apply to CellTile */
 #define TILE_VALUE_MASK 0x003F 
 #define TILE_BLANK_BIT 0x0040
