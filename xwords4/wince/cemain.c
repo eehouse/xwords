@@ -863,19 +863,18 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     board_invalAll( globals->game.board );
     InvalidateRect( globals->hWnd, NULL, TRUE /* erase */ );
     
-/* #ifdef XWFEATURE_RELAY */
-/*     if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) { */
-/*         XWStreamCtxt* stream; */
-/*         XP_ASSERT( !!globals->game.comms ); */
-/*         stream = make_generic_stream( globals ); */
-/*         stream_setOnCloseProc( stream, ce_send_on_close ); */
-/*         server_initClientConnection( globals->game.server, stream ); */
-/*     } */
-/* #endif */
-
+#ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!globals->game.comms ) {
         comms_start( globals->game.comms );
     }
+    if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
+        XWStreamCtxt* stream;
+        XP_ASSERT( !!globals->game.comms );
+        stream = make_generic_stream( globals );
+        stream_setOnCloseProc( stream, ce_send_on_close );
+        server_initClientConnection( globals->game.server, stream );
+    }
+#endif
 
     ceSetLeftSoftkey( globals, ID_MOVE_TURNDONE );
 
