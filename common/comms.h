@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -107,6 +108,8 @@ CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
 
 void comms_reset( CommsCtxt* comms, XP_Bool isServer, 
                   XP_U16 nPlayersHere, XP_U16 nPlayersTotal );
+void comms_transportFailed( CommsCtxt* comms );
+
 void comms_destroy( CommsCtxt* comms );
 
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );

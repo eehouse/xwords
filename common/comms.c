@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -35,10 +35,6 @@
 #define HEARTBEAT_NONE 0
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-
-#if defined RELAY_HEARTBEAT && defined COMMS_HEARTBEAT
-compilation_error_here( "Choose one or the other or none." );
-#endif
 
 #ifdef COMMS_HEARTBEAT
 /* It might make sense for this to be a parameter or somehow tied to the
@@ -109,8 +105,11 @@ struct CommsCtxt {
 
 #ifdef COMMS_HEARTBEAT
     XP_Bool doHeartbeat;
-    XP_Bool hbTimerPending;
     XP_U32 lastMsgRcvdTime;
+#endif
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
+    XP_Bool hbTimerPending;
+    XP_Bool reconTimerPending;
 #endif
 
     /* The following fields, down to isServer, are only used if
@@ -172,14 +171,16 @@ static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms );
 
 #ifdef XWFEATURE_RELAY
-static void relayConnect( CommsCtxt* comms );
+static XP_Bool relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
                                XWHostID destID, void* data, int dlen );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
+static void set_reset_timer( CommsCtxt* comms );
 #endif
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
+
 #else
 # define setHeartbeatTimer( comms )
 #endif
@@ -273,10 +274,56 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
     comms->r.cookieID = COOKIE_ID_NONE;
     comms->r.nPlayersHere = nPlayersHere;
     comms->r.nPlayersTotal = nPlayersTotal;
-    relayConnect( comms );
+    (void)relayConnect( comms );
 #endif
     LOG_RETURN_VOID();
 } /* comms_reset */
+
+#ifdef XWFEATURE_RELAY
+
+static XP_Bool
+p_comms_resetTimer( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
+{
+    CommsCtxt* comms = (CommsCtxt*)closure;
+    XP_Bool success;
+    LOG_FUNC();
+    XP_ASSERT( why == TIMER_COMMS );
+    success = relayConnect( comms );
+
+    if ( success ) {
+        comms->reconTimerPending = XP_FALSE;
+        setHeartbeatTimer( comms );  /* in case we killed it with this
+                                        one.... */
+    } else {
+        set_reset_timer( comms );
+    }
+
+    return XP_FALSE;
+} /* p_comms_resetTimer */
+
+static void
+set_reset_timer( CommsCtxt* comms )
+{
+    /* This timer is allowed to overwrite a heartbeat timer, but not
+       vice-versa.  Make sure we can restart it. */
+    comms->hbTimerPending = XP_FALSE;
+    util_setTimer( comms->util, TIMER_COMMS, 15, /* five seconds */
+                   p_comms_resetTimer, comms );
+    comms->reconTimerPending = XP_TRUE;
+}
+
+void
+comms_transportFailed( CommsCtxt* comms  )
+{
+    LOG_FUNC();
+    if ( COMMS_CONN_RELAY == comms->addr.conType ) {
+        relayDisconnect( comms );
+
+        set_reset_timer( comms );
+    }
+    LOG_RETURN_VOID();
+}
+#endif  /* XWFEATURE_RELAY */
 
 void
 comms_destroy( CommsCtxt* comms )
@@ -693,7 +740,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                                  NULL, 0, 
                                  (MemStreamCloseCallback)NULL );
     stream_open( msgStream );
-    XP_LOGF( "%s: putting connID %ld", __func__, comms->connID );
+    XP_LOGF( "%s: putting connID %lx", __func__, comms->connID );
     stream_putU32( msgStream, comms->connID );
 
     stream_putU16( msgStream, channelNo );
@@ -1122,7 +1169,8 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
  * it invalid
  */
 static AddressRecord*
-validateInitialMessage( CommsCtxt* comms, XP_Bool hasPayload, 
+validateInitialMessage( CommsCtxt* comms, 
+                        XP_Bool XP_UNUSED_HEARTBEAT(hasPayload),
                         const CommsAddrRec* addr, XWHostID senderID, 
                         XP_PlayerAddr* channelNo )
 {
@@ -1335,21 +1383,22 @@ heartbeat_checks( CommsCtxt* comms )
 } /* heartbeat_checks */
 #endif
 
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
 static XP_Bool
 p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
     CommsCtxt* comms = (CommsCtxt*)closure;
-    XP_ASSERT( why == TIMER_HEARTBEAT );
+    XP_ASSERT( why == TIMER_COMMS );
     LOG_FUNC();
     comms->hbTimerPending = XP_FALSE;
     if (0 ) {
-#ifdef RELAY_HEARTBEAT
+#ifdef XWFEATURE_RELAY
     } else  if ( (comms->addr.conType == COMMS_CONN_RELAY ) 
          && (comms->r.heartbeat != HEARTBEAT_NONE) ) {
         send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, NULL, 0 );
         /* No need to reset timer.  send_via_relay does that. */
-#elif defined COMMS_HEARTBEAT
+#endif
+#ifdef COMMS_HEARTBEAT
     } else {
         XP_ASSERT( comms->doHeartbeat );
         heartbeat_checks( comms );
@@ -1363,27 +1412,29 @@ setHeartbeatTimer( CommsCtxt* comms )
 {
     LOG_FUNC();
     XP_ASSERT( !!comms );
-    if ( !comms->hbTimerPending ) {
+
+    if ( comms->hbTimerPending ) {
+        XP_LOGF( "%s: skipping b/c hbTimerPending", __func__ );
+    } else if ( comms->reconTimerPending ) {
+        XP_LOGF( "%s: skipping b/c reconTimerPending", __func__ );
+    } else {
         XP_U16 when = 0;
-#ifdef RELAY_HEARTBEAT
+#ifdef XWFEATURE_RELAY
         if ( comms->addr.conType == COMMS_CONN_RELAY ) {
             when = comms->r.heartbeat;
         }
-#elif defined COMMS_HEARTBEAT
+#endif
+#ifdef COMMS_HEARTBEAT
         if ( comms->doHeartbeat ) {
             XP_LOGF( "%s: calling util_setTimer", __func__ );
             when = HB_INTERVAL;
-        } else {
-            XP_LOGF( "%s: doHeartbeat not set", __func__ );
         }
 #endif
         if ( when != 0 ) {
-            util_setTimer( comms->util, TIMER_HEARTBEAT, when,
+            util_setTimer( comms->util, TIMER_COMMS, when,
                            p_comms_timerFired, comms );
             comms->hbTimerPending = XP_TRUE;
         }
-    } else {
-        XP_LOGF( "%s: skipping b/c pending", __func__ );
     }
 } /* setHeartbeatTimer */
 #endif
@@ -1474,7 +1525,9 @@ static void
 updateChannelAddress( AddressRecord* rec, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!rec );
-    XP_MEMCPY( &rec->addr, addr, sizeof(rec->addr) );
+    if ( !!addr ) {
+        XP_MEMCPY( &rec->addr, addr, sizeof(rec->addr) );
+    }
 } /* updateChannelAddress */
 
 static XP_Bool
@@ -1570,7 +1623,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( tmpStream, comms->r.myHostID );
             break;
 
-#ifdef RELAY_HEARTBEAT
+#ifdef XWFEATURE_RELAY
         case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
@@ -1606,18 +1659,20 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
  * relay, and tells it our hostID and cookie so that it can associatate it
  * with a socket.  In the CONNECT_RESP we should get back what?
  */
-static void
+static XP_Bool
 relayConnect( CommsCtxt* comms )
 {
+    XP_Bool success = XP_TRUE;
     LOG_FUNC();
     if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->r.connecting ) {
         comms->r.connecting = XP_TRUE;
-        send_via_relay( comms, 
-                        comms->r.connName[0] == '\0' ?
-                        XWRELAY_GAME_CONNECT:XWRELAY_GAME_RECONNECT,
-                        comms->r.myHostID, NULL, 0 );
+        success = send_via_relay( comms, 
+                                  comms->r.connName[0] == '\0' ?
+                                  XWRELAY_GAME_CONNECT:XWRELAY_GAME_RECONNECT,
+                                  comms->r.myHostID, NULL, 0 );
         comms->r.connecting = XP_FALSE;
     }
+    return success;
 } /* relayConnect */
 #endif
 

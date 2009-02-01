@@ -302,7 +302,6 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
 } /* linShiftFocus */
 #endif
 
-#ifndef XWFEATURE_STANDALONE_ONLY
 #ifdef XWFEATURE_RELAY
 static int
 linux_init_relay_socket( CommonGlobals* cGlobals )
@@ -351,7 +350,6 @@ linux_init_relay_socket( CommonGlobals* cGlobals )
 
 static XP_S16
 linux_tcp_send( const XP_U8* buf, XP_U16 buflen, 
-                const CommsAddrRec* XP_UNUSED(addrRec), 
                 CommonGlobals* globals )
 {
     XP_S16 result = 0;
@@ -384,15 +382,16 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
             globals->socket = -1;
         }
 
-        XP_STATUSF( "linux_tcp_send: send returned %d of %d (err=%d)", 
-                    result, buflen, errno );
+        XP_STATUSF( "%s: send(sock=%d) returned %d of %d (err=%d)", 
+                    __func__, socket, result, buflen, errno );
     }
  
     return result;
 } /* linux_tcp_send */
 #endif  /* XWFEATURE_RELAY */
 
-#ifdef XWFEATURE_RELAY
+#ifdef COMMS_HEARTBEAT
+# ifdef XWFEATURE_RELAY
 static void
 linux_tcp_reset( CommonGlobals* globals )
 {
@@ -402,9 +401,8 @@ linux_tcp_reset( CommonGlobals* globals )
         globals->socket = -1;
     }
 }
-#endif
+# endif
 
-#ifdef COMMS_HEARTBEAT
 void
 linux_reset( void* closure )
 {
@@ -446,7 +444,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
-        nSent = linux_tcp_send( buf, buflen, addrRec, globals );
+        nSent = linux_tcp_send( buf, buflen, globals );
 #endif
 #if defined XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {
@@ -482,7 +480,11 @@ static void
 linux_close_socket( CommonGlobals* cGlobals )
 {
     int socket = cGlobals->socket;
-    cGlobals->socket = -1;
+
+    (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
+                                socket, -1, &cGlobals->storage );
+
+    XP_ASSERT(  -1 == cGlobals->socket );
 
     XP_LOGF( "linux_close_socket" );
     close( socket );
@@ -498,6 +500,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     if ( nRead != 2 ) {
         XP_LOGF( "recv => %d, errno=%d", nRead, errno );
         linux_close_socket( cGlobals );
+        comms_transportFailed( cGlobals->game.comms );
         nRead = -1;
     } else {
 
@@ -511,7 +514,6 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     return nRead;
 } /* linuxReceive */
 #endif  /* XWFEATURE_RELAY */
-#endif  /* XWFEATURE_STANDALONE_ONLY */
 
 /* Create a stream for the incoming message buffer, and read in any
    information specific to our platform's comms layer (return address, say)
@@ -859,6 +861,7 @@ main( int argc, char** argv )
             break;
         case 'H':
             mainParams.noHeartbeat = XP_TRUE;
+            XP_ASSERT(0);    /* not implemented!!!  Needs to talk to comms... */
             break;
         case 'a':
             /* mainParams.info.clientInfo.serverName =  */

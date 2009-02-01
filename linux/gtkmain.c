@@ -562,6 +562,7 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 #ifdef XWFEATURE_IP_DIRECT
     linux_udp_close( &globals->cGlobals );
 #endif
+
     vtmgr_destroy( MEMPOOL globals->cGlobals.params->vtMgr );
     
     mpool_destroy( globals->cGlobals.params->util->mpool );
@@ -1223,15 +1224,13 @@ score_timer_func( gpointer data )
     return XP_FALSE;
 } /* score_timer_func */
 
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#ifndef XWFEATURE_STANDALONE_ONLY
 static gint
-heartbeat_timer_func( gpointer data )
+comms_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    if ( !globals->cGlobals.params->noHeartbeat ) {
-        linuxFireTimer( &globals->cGlobals, TIMER_HEARTBEAT );
-    }
+    linuxFireTimer( &globals->cGlobals, TIMER_COMMS );
 
     return (gint)0;
 }
@@ -1260,9 +1259,9 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         (void)gettimeofday( &globals->scoreTv, NULL );
 
         newSrc = g_timeout_add( 1000, score_timer_func, globals );
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
-    } else if ( why == TIMER_HEARTBEAT ) {
-        newSrc = g_timeout_add( 1000 * when, heartbeat_timer_func, globals );
+#ifndef XWFEATURE_STANDALONE_ONLY
+    } else if ( why == TIMER_COMMS ) {
+        newSrc = g_timeout_add( 1000 * when, comms_timer_func, globals );
 #endif
     } else {
         XP_ASSERT( 0 );
@@ -1589,7 +1588,7 @@ newConnectionInput( GIOChannel *source,
     int sock = g_io_channel_unix_get_fd( source );
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    XP_LOGF( "%s:condition = 0x%x", __func__, (int)condition );
+    XP_LOGF( "%s(%p):condition = 0x%x", __func__, source, (int)condition );
 
 /*     XP_ASSERT( sock == globals->cGlobals.socket ); */
 
@@ -1614,14 +1613,16 @@ newConnectionInput( GIOChannel *source,
     } else if ( (condition & G_IO_IN) != 0 ) {
         ssize_t nRead;
         unsigned char buf[512];
-        CommsAddrRec addr;
         CommsAddrRec* addrp = NULL;
+#if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_SMS
+        CommsAddrRec addr;
+#endif
 
         switch ( globals->cGlobals.params->conType ) {
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
-            nRead = linux_relay_receive( &globals->cGlobals, 
-                                         buf, sizeof(buf) );
+            XP_ASSERT( globals->cGlobals.socket == sock );
+            nRead = linux_relay_receive( &globals->cGlobals, buf, sizeof(buf) );
             break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
@@ -1726,7 +1727,7 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
         comms_resendAll( comms );
     }
     LOG_RETURN_VOID();
-}
+} /* gtk_socket_changed */
 
 static gboolean
 acceptorInput( GIOChannel* source, GIOCondition condition, gpointer data )
@@ -1792,11 +1793,10 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
 static void
 sendOnClose( XWStreamCtxt* stream, void* closure )
 {
-    XP_S16 result;
     GtkAppGlobals* globals = closure;
 
     XP_LOGF( "sendOnClose called" );
-    result = comms_send( globals->cGlobals.game.comms, stream );
+    (void)comms_send( globals->cGlobals.game.comms, stream );
 } /* sendOnClose */
 
 static void 

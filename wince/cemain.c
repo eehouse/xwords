@@ -2013,7 +2013,7 @@ checkFireLateKeyTimer( CEAppGlobals* globals )
 {
     XP_Bool drop = XP_FALSE;
     XWTimerReason whys[] = { TIMER_PENDOWN, TIMER_TIMERTICK
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
                              , TIMER_HEARTBEAT
 #endif
     };
@@ -2476,7 +2476,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_TIMER:
             why = (XWTimerReason)wParam;
             if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK
-#if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
+#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
                  || why == TIMER_HEARTBEAT
 #endif
                  ) {
