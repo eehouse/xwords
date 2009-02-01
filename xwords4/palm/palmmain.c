@@ -3871,7 +3871,7 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     } else if ( why == TIMER_TIMERTICK ) {
         now += SysTicksPerSecond();
 #if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
-    } else if ( why == TIMER_HEARTBEAT ) {
+    } else if ( why == TIMER_COMMS ) {
         now += (secsFromNow * SysTicksPerSecond());
 #endif
 #ifdef XWFEATURE_BLUETOOTH

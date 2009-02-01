@@ -2014,7 +2014,7 @@ checkFireLateKeyTimer( CEAppGlobals* globals )
     XP_Bool drop = XP_FALSE;
     XWTimerReason whys[] = { TIMER_PENDOWN, TIMER_TIMERTICK
 #if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
-                             , TIMER_HEARTBEAT
+                             , TIMER_COMMS
 #endif
     };
     XP_U32 now = GetCurrentTime();
@@ -2477,7 +2477,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             why = (XWTimerReason)wParam;
             if ( why == TIMER_PENDOWN || why == TIMER_TIMERTICK
 #if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
-                 || why == TIMER_HEARTBEAT
+                 || why == TIMER_COMMS
 #endif
                  ) {
                 XP_ASSERT( why < NUM_TIMERS_PLUS_ONE );
@@ -3185,7 +3185,7 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         howLong = 1000;          /* 1 second */
         break;
 #if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
-    case TIMER_HEARTBEAT:
+    case TIMER_COMMS:
         howLong = when * 1000;
         break;
 #endif
