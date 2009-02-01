@@ -51,7 +51,6 @@ typedef enum {
 #define MAX_QUEUE_SIZE 3
 
 struct CeSocketWrapper {
-    WSADATA wsaData;
     DataRecvProc dataProc;
     CEAppGlobals* globals;
 
@@ -75,7 +74,7 @@ struct CeSocketWrapper {
     SOCKET socket;
     CeConnState connState;
 
-    HANDLE queueMutex;
+    HANDLE queueMutex;          /* there's only one thread; get rid of this! */
 
 #ifdef DEBUG
     XP_U16 nSent;
@@ -129,10 +128,7 @@ queue_packet( CeSocketWrapper* self, XP_U8* packet, XP_U16 len )
             XP_LOGF( "%s: there are now %d packets on send queue", 
                      __func__, self->nPackets );
 
-            /* signal the writer thread */
-/*             XP_LOGF( "%s: calling SetEvent(%p)", __func__, self->queueAddEvent ); */
-/*             SetEvent( self->queueAddEvent ); */
-/*             success = XP_TRUE; */
+            success = XP_TRUE;
         }
 
         if ( !ReleaseMutex( self->queueMutex ) ) {
@@ -143,25 +139,27 @@ queue_packet( CeSocketWrapper* self, XP_U8* packet, XP_U16 len )
     }
 
     return success;
-}
+} /* queue_packet */
 
 static XP_Bool
 get_packet( CeSocketWrapper* self, XP_U8** packet, XP_U16* len )
 {
-    DWORD wres = WaitForSingleObject( self->queueMutex, INFINITE );
-    XP_Bool success = wres == WAIT_OBJECT_0;
-    
+    XP_Bool success = CE_IPST_CONNECTED == self->connState;
     if ( success ) {
-        success = self->nPackets > 0;
+        DWORD wres = WaitForSingleObject( self->queueMutex, INFINITE );
+        success = wres == WAIT_OBJECT_0;
+    
         if ( success ) {
-            *packet = self->packets[0];
-            *len = self->lens[0];
-        }
-        if ( !ReleaseMutex( self->queueMutex ) ) {
-            logLastError( "ReleaseMutex" );
+            success = self->nPackets > 0;
+            if ( success ) {
+                *packet = self->packets[0];
+                *len = self->lens[0];
+            }
+            if ( !ReleaseMutex( self->queueMutex ) ) {
+                logLastError( "ReleaseMutex" );
+            }
         }
     }
-
     return success;
 } /* get_packet */
 
@@ -321,12 +319,12 @@ static void
 closeConnection( CeSocketWrapper* self )
 {
     if ( self->connState >= CE_IPST_CONNECTED ) {
-
+        XP_ASSERT( self->socket != -1 );
         if ( self->socket != -1 ) {
-            MS(closesocket)( self->socket );
+            closesocket( self->socket );
+            self->socket = -1;
         }
 
-        self->socket = -1;
         stateChanged( self, CE_IPST_START );
     }
 } /* closeConnection */
@@ -467,27 +465,18 @@ ce_sockwrap_new( MPFORMAL DataRecvProc proc, CEAppGlobals* globals )
 {
     CeSocketWrapper* self = NULL;
 
-    WSADATA wsaData;
-    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != NO_ERROR) {
-        XP_WARNF("Error at WSAStartup()\n");
-    } else {
+    self = XP_MALLOC( mpool, sizeof(*self) );
+    XP_MEMSET( self, 0, sizeof(*self) );
 
-        self = XP_MALLOC( mpool, sizeof(*self) );
-        XP_MEMSET( self, 0, sizeof(*self) );
+    self->dataProc = proc;
+    self->globals = globals;
+    MPASSIGN(self->mpool, mpool );
+    self->socket = -1;
 
-        self->wsaData = wsaData;
+    self->queueMutex = CreateMutex( NULL, FALSE, NULL );
+    XP_ASSERT( self->queueMutex != NULL );
 
-        self->dataProc = proc;
-        self->globals = globals;
-        MPASSIGN(self->mpool, mpool );
-        self->socket = -1;
-
-        self->queueMutex = CreateMutex( NULL, FALSE, NULL );
-        XP_ASSERT( self->queueMutex != NULL );
-
-        getHostAddr( self );
-    }
+    getHostAddr( self );
     return self;
 } /* ce_sockwrap_new */
 
@@ -543,53 +532,55 @@ ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
     LOG_RETURN_VOID();
 } /* ce_sockwrap_hostname */
 
-/* MSDN: When one of the nominated network events occurs on the specified
-   socket s, the application window hWnd receives message wMsg. The wParam
-   parameter identifies the socket on which a network event has occurred. The
-   low word of lParam specifies the network event that has occurred. The high
-   word of lParam contains any error code. The error code be any error as
-   defined in Winsock2.h.
- */
-
 static XP_Bool
-dispatch_if_complete( CeSocketWrapper* self, XP_U16 nBytesRecvd )
+dispatch_msgs( CeSocketWrapper* self )
 {
-    XP_U16 lenInBuffer = nBytesRecvd + self->in_offset;
-    XP_U16 msgLen;
     XP_Bool draw = XP_FALSE;
-    if ( lenInBuffer >= sizeof(msgLen) ) {
+
+    /* Repeat until we don't have a complete message in the buffer */
+    for ( ; ; ) {
+        XP_U16 lenInBuffer = self->in_offset;
+        XP_U16 msgLen;
+        XP_U16 lenUsed, lenLeft;
+
+        XP_LOGF( "%s: have %d bytes", __func__, lenInBuffer );
+
+        /* Do we even have the length header? */
+        if ( lenInBuffer < sizeof(msgLen) ) {
+            break;
+        }
+
         XP_MEMCPY( &msgLen, self->in_buf, sizeof(msgLen) );
         msgLen = XP_NTOHS( msgLen );
 
         XP_LOGF( "%s: at least we have len: %d", __func__, msgLen );
 
         /* We know the length of the full buffer.  Do we have it? */
-        if ( lenInBuffer >= (msgLen + sizeof(msgLen)) ) {
-            XP_U16 lenLeft, lenUsed;
-
-            /* first send */
-            XP_LOGF( "%s: sending %d bytes to dataProc", __func__, msgLen );
-            draw = (*self->dataProc)( (XP_U8*)&self->in_buf[sizeof(msgLen)], 
-                                      msgLen, self->globals );
-
-            /* then move down any additional bytes */
-            lenUsed = msgLen + sizeof(msgLen);
-            XP_ASSERT( lenInBuffer >= lenUsed );
-            lenLeft = lenInBuffer - lenUsed;
-            if ( lenLeft > 0 ) {
-                XP_MEMCPY( self->in_buf, &self->in_buf[lenUsed], lenLeft );
-            }
-
-            self->in_offset = 0;
-            nBytesRecvd = lenLeft; /* will set below */
+        if ( lenInBuffer < (msgLen + sizeof(msgLen)) ) {
+            break;
         }
+
+        /* first send */
+        XP_LOGF( "%s: sending %d bytes to dataProc", __func__, msgLen );
+        draw = (*self->dataProc)( (XP_U8*)&self->in_buf[sizeof(msgLen)], 
+                                  msgLen, self->globals )
+            || draw;
+
+        /* then move down any additional bytes */
+        lenUsed = msgLen + sizeof(msgLen);
+        XP_ASSERT( lenInBuffer >= lenUsed );
+        lenLeft = lenInBuffer - lenUsed;
+        if ( lenLeft > 0 ) {
+            XP_MEMCPY( self->in_buf, &self->in_buf[lenUsed], lenLeft );
+        }
+
+        self->in_offset = lenLeft;
     }
 
-    self->in_offset += nBytesRecvd;
     return draw;
-} /* dispatch_if_complete */
+} /* dispatch_msgs */
 
-static XP_U16
+static XP_Bool
 read_from_socket( CeSocketWrapper* self )
 {
     WSABUF wsabuf;
@@ -601,18 +592,27 @@ read_from_socket( CeSocketWrapper* self )
 
     int err = WSARecv( self->socket, &wsabuf, 1, &nBytesRecvd, 
                        &flags, NULL, NULL );
+    XP_ASSERT( nBytesRecvd < 0xFFFF );
+
     if ( 0 == err ) {
         XP_LOGF( "%s: got %ld bytes", __func__, nBytesRecvd );
+        self->in_offset += nBytesRecvd;
     } else {
         XP_ASSERT( err == SOCKET_ERROR );
         err = WSAGetLastError();
         XP_LOGF( "%s: WSARecv=>%d", __func__, err );
     }
 
-    XP_ASSERT( nBytesRecvd < 0xFFFF );
-    return (XP_U16)nBytesRecvd;
+    return nBytesRecvd > 0;
 } /* read_from_socket */
 
+/* MSDN: When one of the nominated network events occurs on the specified
+   socket s, the application window hWnd receives message wMsg. The wParam
+   parameter identifies the socket on which a network event has occurred. The
+   low word of lParam specifies the network event that has occurred. The high
+   word of lParam contains any error code. The error code be any error as
+   defined in Winsock2.h.
+ */
 XP_Bool
 ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
 {
@@ -620,19 +620,20 @@ ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
     long event = (long)LOWORD(lParam);
     XP_Bool draw = XP_FALSE;
 
-    if ( 0 != (FD_READ & event) ) {
-        XP_U16 nReceived;
-        XP_LOGF( "%s: got FD_READ", __func__ );
-        nReceived = read_from_socket( self );
-        if ( nReceived > 0 ) {
-            draw = dispatch_if_complete( self, nReceived );
-        }
-        event &= ~FD_READ;
-    }
     if ( 0 != (FD_WRITE & event) ) {
+        send_packet_if( self );
         event &= ~FD_WRITE;
         XP_LOGF( "%s: got FD_WRITE", __func__ );
     }
+
+    if ( 0 != (FD_READ & event) ) {
+        XP_LOGF( "%s: got FD_READ", __func__ );
+        if ( read_from_socket( self ) ) {
+            draw = dispatch_msgs( self );
+        }
+        event &= ~FD_READ;
+    }
+
     if ( 0 != (FD_CONNECT & event) ) {
         XP_LOGF( "%s: got FD_CONNECT", __func__ );
         event &= ~FD_CONNECT;
@@ -668,7 +669,9 @@ ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len,
 
     packet = XP_MALLOC( self->mpool, len );
     XP_MEMCPY( packet, buf, len );
-    if ( !queue_packet( self, packet, len ) ) {
+    if ( queue_packet( self, packet, len ) ) {
+        send_packet_if( self );
+    } else {
         len = 0;                /* error */
     }
 
