@@ -34,7 +34,7 @@ SVNINFO = svnversion.txt
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -pthread -g -lmcheck $(STATIC)
-CPPFLAGS += -DSPAWN_SELF -g -Wall \
+CPPFLAGS += -DSPAWN_SELF -DRELAY_HEARTBEAT -g -Wall \
 	-DSVN_REV=\"$(shell cat $(SVNINFO) 2>/dev/null || svnversion -n ..)\"
 
 # turn on semaphore debugging

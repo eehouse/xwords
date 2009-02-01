@@ -114,19 +114,24 @@ CookieRef::~CookieRef()
 void
 CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT )
 {
-    CRefMgr::Get()->Associate( socket, this );
-    if ( hid == HOST_ID_NONE ) {
-        hid = nextHostID();
-        logf( XW_LOGINFO, "assigned host id: %x", hid );
+    if ( CRefMgr::Get()->Associate( socket, this ) ) {
+        if ( hid == HOST_ID_NONE ) {
+            hid = nextHostID();
+            logf( XW_LOGINFO, "assigned host id: %x", hid );
+        } else {
+            logf( XW_LOGINFO, "NOT assigned host id; why?" );
+        }
+        pushConnectEvent( socket, hid, nPlayersH, nPlayersT );
+        handleEvents();
+    } else {
+        logf( XW_LOGINFO, "dropping connect event; already connected" );
     }
-    pushConnectEvent( socket, hid, nPlayersH, nPlayersT );
-    handleEvents();
 }
 
 void
 CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersT )
 {
-    CRefMgr::Get()->Associate( socket, this );
+    (void)CRefMgr::Get()->Associate( socket, this );
 /*     MutexLock ml( &m_EventsMutex ); */
     pushReconnectEvent( socket, hid, nPlayersH, nPlayersT );
     handleEvents();
@@ -135,6 +140,7 @@ CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersT )
 void
 CookieRef::_Disconnect( int socket, HostID hostID )
 {
+    logf( XW_LOGINFO, "%s(socket=%d, hostID=%d)", __func__, socket, hostID );
     CRefMgr::Get()->Disassociate( socket, this );
 
     CRefEvent evt;
@@ -225,6 +231,7 @@ CookieRef::notifyDisconn( const CRefEvent* evt )
 void
 CookieRef::removeSocket( int socket )
 {
+    logf( XW_LOGINFO, "%s(%d)", __func__, socket );
     int count;
     {
 /*         RWWriteLock rwl( &m_sockets_rwlock ); */

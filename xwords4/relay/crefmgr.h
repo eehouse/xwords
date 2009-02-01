@@ -69,7 +69,7 @@ class CRefMgr {
     void UnlockAll() { pthread_rwlock_unlock( &m_cookieMapRWLock ); }
 
     /* Track sockets independent of cookie refs */
-    void Associate( int socket, CookieRef* cref );
+    bool Associate( int socket, CookieRef* cref );
     void Disassociate( int socket, CookieRef* cref );
     pthread_mutex_t* GetWriteMutexForSocket( int socket );
     void RemoveSocketRefs( int socket );
@@ -170,7 +170,7 @@ class SafeCref {
     bool HandleHeartbeat( HostID id, int socket ) {
         if ( IsValid() ) {
             m_cref->_HandleHeartbeat( id, socket );
-            return true
+            return true;
         } else {
             return false;
         }

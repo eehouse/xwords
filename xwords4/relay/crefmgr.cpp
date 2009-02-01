@@ -95,7 +95,7 @@ CookieRef*
 CRefMgr::FindOpenGameFor( const char* cORn, bool isCookie,
                           HostID hid, int nPlayersH, int nPlayersT )
 {
-    logf( XW_LOGINFO, "FindOpenGameFor with %s", cORn );
+    logf( XW_LOGINFO, "%s(%s)", __func__, cORn );
     CookieRef* cref = NULL;
     RWReadLock rwl( &m_cookieMapRWLock );
 
@@ -202,17 +202,26 @@ CRefMgr::getMakeCookieRef_locked( const char* cORn, bool isCookie, HostID hid,
     return cref;
 } /* getMakeCookieRef_locked */
 
-void
+bool
 CRefMgr::Associate( int socket, CookieRef* cref )
 {
+    bool isNew = false;
     MutexLock ml( &m_SocketStuffMutex );
     SocketMap::iterator iter = m_SocketStuff.find( socket );
-    if ( iter != m_SocketStuff.end() ) {
-        logf( XW_LOGINFO, "replacing existing cref/threadID pair for socket %d", socket );
+    /* This isn't enough.  Must provide a way to reuse sockets should a
+       genuinely different connection appear.  Now maybe we already remove
+       this reference when a socket is closed.  Test this!  Or assert
+       something here.  Bottom line: need to swallow repeated/duplicate
+       connect messages from same host. */
+    if ( iter == m_SocketStuff.end() ) {
+        SocketStuff* stuff = new SocketStuff( cref );
+        m_SocketStuff.insert( pair< int, SocketStuff* >( socket, stuff ) );
+        isNew = true;
+    } else {
+        logf( XW_LOGERROR, "Already have cref/threadID pair for socket %d; "
+              "error???", socket );
     }
-    
-    SocketStuff* stuff = new SocketStuff( cref );
-    m_SocketStuff.insert( pair< int, SocketStuff* >( socket, stuff ) );
+    return isNew;
 }
 
 void 
