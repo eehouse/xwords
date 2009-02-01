@@ -109,7 +109,7 @@ XWThreadPool::Stop()
 void
 XWThreadPool::AddSocket( int socket )
 {
-    logf( XW_LOGINFO, "AddSocket(%d)", socket );
+    logf( XW_LOGINFO, "%s(%d)", __func__, socket );
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
         m_activeSockets.push_back( socket );
@@ -166,6 +166,7 @@ XWThreadPool::CloseSocket( int socket )
 bool
 XWThreadPool::get_process_packet( int socket )
 {
+    bool success = false;
     short packetSize;
     assert( sizeof(packetSize) == 2 );
 
@@ -173,26 +174,25 @@ XWThreadPool::get_process_packet( int socket )
                           sizeof(packetSize), MSG_WAITALL );
     if ( nRead != 2 ) {
         killSocket( socket, "nRead != 2" );
-        return false;
+    } else {
+        packetSize = ntohs( packetSize );
+
+        if ( packetSize < 0 || packetSize > MAX_MSG_LEN ) {
+            killSocket( socket, "packetSize wrong" );
+        } else {
+            unsigned char buf[MAX_MSG_LEN];
+            nRead = recv( socket, buf, packetSize, MSG_WAITALL );
+
+            if ( nRead != packetSize ) {
+                killSocket( socket, "nRead != packetSize" ); 
+            } else {
+                logf( XW_LOGINFO, "read %d bytes", nRead );
+
+                logf( XW_LOGINFO, "calling m_pFunc" );
+                success = (*m_pFunc)( buf, packetSize, socket );
+            }
+        }
     }
-
-    packetSize = ntohs( packetSize );
-    if ( packetSize < 0 || packetSize > MAX_MSG_LEN ) {
-        killSocket( socket, "packetSize wrong" );
-        return false;
-    }
-
-    unsigned char buf[MAX_MSG_LEN];
-    nRead = recv( socket, buf, packetSize, MSG_WAITALL );
-    if ( nRead != packetSize ) {
-        killSocket( socket, "nRead != packetSize" ); 
-        return false;
-    }
-    logf( XW_LOGINFO, "read %d bytes\n", nRead );
-
-    logf( XW_LOGINFO, "calling m_pFunc" );
-    bool success = (*m_pFunc)( buf, packetSize, socket );
-
     return success;
 } /* get_process_packet */
 
