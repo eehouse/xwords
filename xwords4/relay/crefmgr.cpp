@@ -93,7 +93,7 @@ CRefMgr::CloseAll()
 
 CookieRef*
 CRefMgr::FindOpenGameFor( const char* cORn, bool isCookie,
-                          HostID hid, int nPlayersH, int nPlayersT )
+                          HostID hid, int socket, int nPlayersH, int nPlayersT )
 {
     logf( XW_LOGINFO, "%s(%s)", __func__, cORn );
     CookieRef* cref = NULL;
@@ -105,6 +105,9 @@ CRefMgr::FindOpenGameFor( const char* cORn, bool isCookie,
         if ( isCookie ) {
             if ( 0 == strcmp( cref->Cookie(), cORn ) ) {
                 if ( cref->NeverFullyConnected() ) {
+                    break;
+                } else if ( cref->HasSocket(socket) ) {
+                    logf( XW_LOGINFO, "%s: HasSocket case", __func__ );
                     break;
                 }
             }
@@ -154,7 +157,7 @@ CRefMgr::cookieIDForConnName( const char* connName )
 
 CookieRef*
 CRefMgr::getMakeCookieRef_locked( const char* cORn, bool isCookie, HostID hid,
-                                  int nPlayersH, int nPlayersT )
+                                  int socket, int nPlayersH, int nPlayersT )
 {
     CookieRef* cref;
 
@@ -168,10 +171,11 @@ CRefMgr::getMakeCookieRef_locked( const char* cORn, bool isCookie, HostID hid,
 
     /* We have a cookie from a new connection.  This may be the first time
        it's been seen, or there may be a game currently in the
-       XW_ST_CONNECTING state.  So we need to look up the cookie first, then
-       generate new connName and cookieIDs if it's not found. */
+       XW_ST_CONNECTING state, or it may be a dupe of a connect packet.  So we
+       need to look up the cookie first, then generate new connName and
+       cookieIDs if it's not found. */
 
-    cref = FindOpenGameFor( cORn, isCookie, hid, nPlayersH, nPlayersT );
+    cref = FindOpenGameFor( cORn, isCookie, hid, socket, nPlayersH, nPlayersT );
     if ( cref == NULL ) {
         string s;
         const char* connName;
@@ -562,14 +566,14 @@ CookieMapIterator::Next()
 // SafeCref
 //////////////////////////////////////////////////////////////////////////////
 
-SafeCref::SafeCref( const char* cORn, bool isCookie, HostID hid, 
+SafeCref::SafeCref( const char* cORn, bool isCookie, HostID hid, int socket,
                     int nPlayersH, int nPlayersT )
      : m_cref( NULL )
      , m_mgr( CRefMgr::Get() )
 {
     CookieRef* cref;
 
-    cref = m_mgr->getMakeCookieRef_locked( cORn, isCookie, hid, 
+    cref = m_mgr->getMakeCookieRef_locked( cORn, isCookie, hid, socket,
                                            nPlayersH, nPlayersT );
     if ( cref != NULL ) {
         if ( m_mgr->LockCref( cref ) ) {

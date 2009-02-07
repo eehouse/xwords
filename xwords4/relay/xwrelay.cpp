@@ -273,7 +273,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT ) ) {
 
-            SafeCref scr( cookie, 1, srcID, nPlayersH, nPlayersT );
+            SafeCref scr( cookie, 1, srcID, socket, nPlayersH, nPlayersT );
             success = scr.Connect( socket, srcID, nPlayersH, nPlayersT );
         }
 
@@ -308,7 +308,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &nPlayersT )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
-            SafeCref scr( connName, 0, srcID, nPlayersH, nPlayersT );
+            SafeCref scr( connName, 0, srcID, socket, nPlayersH, nPlayersT );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT );
         }
 
