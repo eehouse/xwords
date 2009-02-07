@@ -127,6 +127,9 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
     XP_ASSERT( !!gi );
 
     checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
+    while ( 0 == gameID ) {
+        gameID = util_getCurSeconds( util );
+    }
     gi->gameID = gameID;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
