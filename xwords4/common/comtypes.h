@@ -158,6 +158,9 @@ typedef struct CommonPrefs {
 
 #define OFFSET_OF(typ,var)  ((XP_U16)&(((typ*) 0)->var))
 
+#ifndef RELAY_NAME_DEFAULT
+# define RELAY_NAME_DEFAULT "eehouse.org"
+#endif
 
 #ifdef MEM_DEBUG
 # define XP_MALLOC(pool,nbytes) \
