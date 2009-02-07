@@ -79,7 +79,7 @@ class CRefMgr {
  private:
     friend class SafeCref;
     CookieRef* getMakeCookieRef_locked( const char* cORn, bool isCookie, 
-                                        HostID hid, 
+                                        HostID hid, int socket,
                                         int nPlayersH, int nPlayersT );
     CookieRef* getCookieRef_locked( CookieID cookieID );
     CookieRef* getCookieRef_locked( int socket );
@@ -87,7 +87,7 @@ class CRefMgr {
     CookieRef* getCookieRef_impl( CookieID cookieID );
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
     CookieRef* FindOpenGameFor( const char* cORn, bool isCookie,
-                                HostID hid, int nPlayersH, int nPlayersT );
+                                HostID hid, int socket, int nPlayersH, int nPlayersT );
 
     CookieID cookieIDForConnName( const char* connName );
     CookieID nextCID( const char* connName );
@@ -120,7 +120,7 @@ class SafeCref {
 
  public:
     SafeCref( const char* cookieOrConnName, bool cookie, HostID hid, 
-              int nPlayersH, int nPlayersT );
+              int socket, int nPlayersH, int nPlayersT );
     SafeCref( CookieID cid );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
