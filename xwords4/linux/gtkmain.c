@@ -1653,6 +1653,7 @@ newConnectionInput( GIOChannel *source,
 
             inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nRead );
             if ( !!inboundS ) {
+                XP_LOGF( "%s: got %d bytes", __func__, nRead );
                 if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
                                                 inboundS, addrp ) ) {
                     redraw =
