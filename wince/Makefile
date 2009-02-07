@@ -116,6 +116,8 @@ CFLAGS += -DPERIMETER_FOCUS
 # Hack until figure out how to turn off IME (12-key-to-text) on CE.
 CFLAGS += -DNUMBER_KEY_AS_INDEX
 
+#CFLAGS += -DRELAY_NAME_DEFAULT=\"localhost\"
+
 # This is normally part of MEM_DEBUG, but sometimes we want logging in
 # a release build, e.g. to figure out why opening a saved game isn't
 # working.  So normally it's commented out here.
