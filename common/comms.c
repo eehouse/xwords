@@ -341,6 +341,7 @@ comms_destroy( CommsCtxt* comms )
 void
 comms_setConnID( CommsCtxt* comms, XP_U32 connID )
 {
+    XP_ASSERT( CONN_ID_NONE != connID );
     comms->connID = connID;
     XP_STATUSF( "%s: set connID to %lx", __func__, connID );
 } /* comms_setConnID */
@@ -663,7 +664,7 @@ comms_getInitialAddr( CommsAddrRec* addr )
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
     addr->u.ip_relay.port = 10999;
     {
-        char* name = "eehouse.org";
+        char* name = RELAY_NAME_DEFAULT;
         XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
     }
     addr->u.ip_relay.cookie[0] = '\0';
@@ -954,6 +955,33 @@ comms_resendAll( CommsCtxt* comms )
 } /* comms_resend */
 
 #ifdef XWFEATURE_RELAY
+# ifdef DEBUG
+static const char*
+relayCmdToStr( XWRELAY_Cmd cmd )
+{
+#  define CASESTR(s) case s: return #s
+    switch( cmd ) {
+        CASESTR( XWRELAY_NONE );
+        CASESTR( XWRELAY_GAME_CONNECT );
+        CASESTR( XWRELAY_GAME_RECONNECT );
+        CASESTR( XWRELAY_GAME_DISCONNECT );
+        CASESTR( XWRELAY_CONNECT_RESP );
+        CASESTR( XWRELAY_RECONNECT_RESP );
+        CASESTR( XWRELAY_ALLHERE );
+        CASESTR( XWRELAY_DISCONNECT_YOU );
+        CASESTR( XWRELAY_DISCONNECT_OTHER );
+        CASESTR( XWRELAY_CONNECTDENIED );
+        CASESTR( XWRELAY_HEARTBEAT );
+        CASESTR( XWRELAY_MSG_FROMRELAY );
+        CASESTR( XWRELAY_MSG_TORELAY );
+    default: return "<unknown>";
+    }
+} 
+# else
+# define relayCmdToStr( cmd )
+# endif
+
+
 static XP_Bool
 relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 {
@@ -965,6 +993,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
+    XP_LOGF( "%s(%s)", __func__, relayCmdToStr( cmd ) );
     switch( cmd ) {
 
     case XWRELAY_CONNECT_RESP:
@@ -973,8 +1002,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         comms->r.heartbeat = stream_getU16( stream );
         comms->r.cookieID = stream_getU16( stream );
         comms->r.myHostID = (XWHostID)stream_getU8( stream );
-        XP_LOGF( "got XWRELAY_CONNECTRESP; set cookieID = %d; "
-                 "set hostid: %x",
+        XP_LOGF( "set cookieID = %d; set hostid: %x",
                  comms->r.cookieID, comms->r.myHostID );
         setHeartbeatTimer( comms );
         break;
@@ -1021,7 +1049,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
     case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
     case XWRELAY_CONNECTDENIED:                 /* Close socket for this? */
-        XP_LOGF( "XWRELAY_DISCONNECT_YOU|XWRELAY_CONNECTDENIED" );
         relayErr = stream_getU8( stream );
         util_userError( comms->util, ERR_RELAY_BASE + relayErr );
         comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
@@ -1174,53 +1201,56 @@ validateInitialMessage( CommsCtxt* comms,
                         const CommsAddrRec* addr, XWHostID senderID, 
                         XP_PlayerAddr* channelNo )
 {
-#ifdef COMMS_HEARTBEAT
-    XP_Bool addRec = XP_FALSE;
-    AddressRecord* rec = getRecordFor( comms, addr, *channelNo );
+    AddressRecord* rec = NULL;
     LOG_FUNC();
+    if ( 0 ) {
+#ifdef COMMS_HEARTBEAT
+    } else if ( comms->doHeartbeat ) {
+        XP_Bool addRec = XP_FALSE;
+        rec = getRecordFor( comms, addr, *channelNo );
 
-    if ( hasPayload ) {
-        if ( rec ) {
-            if ( rec->initialSeen ) {
-                rec = NULL;     /* reject it! */
+        if ( hasPayload ) {
+            if ( rec ) {
+                if ( rec->initialSeen ) {
+                    rec = NULL;     /* reject it! */
+                }
+            } else {
+                addRec = XP_TRUE;
             }
         } else {
-            addRec = XP_TRUE;
+            /* This is a heartbeat */
+            if ( !rec && comms->isServer ) {
+                addRec = XP_TRUE;
+            }
         }
-    } else {
-        /* This is a heartbeat */
-        if ( !rec && comms->isServer ) {
-            addRec = XP_TRUE;
-        }
-    }
 
-    if ( addRec ) {
-        if ( comms->isServer ) {
-            XP_ASSERT( *channelNo == 0 );
-            *channelNo = ++comms->nextChannelNo;
+        if ( addRec ) {
+            if ( comms->isServer ) {
+                XP_ASSERT( *channelNo == 0 );
+                *channelNo = ++comms->nextChannelNo;
+            }
+            rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
+            if ( hasPayload ) {
+                rec->initialSeen = XP_TRUE;
+            } else {
+                rec = NULL;
+            }
         }
-        rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
-        if ( hasPayload ) {
-            rec->initialSeen = XP_TRUE;
+#endif
+    } else {
+        rec = getRecordFor( comms, addr, *channelNo );
+        if ( !!rec ) {
+            rec = NULL;     /* reject: we've already seen init message on channel */
         } else {
-            rec = NULL;
+            if ( comms->isServer ) {
+                XP_ASSERT( *channelNo == 0 );
+                *channelNo = ++comms->nextChannelNo;
+            }
+            rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
         }
     }
     LOG_RETURNF( XP_P, rec );
     return rec;
-#else
-    AddressRecord* rec = getRecordFor( comms, addr, *channelNo );
-    if ( !!rec ) {
-        rec = NULL;     /* reject: we've already seen init message on channel */
-    } else {
-        if ( comms->isServer ) {
-            XP_ASSERT( *channelNo == 0 );
-            *channelNo = ++comms->nextChannelNo;
-        }
-        rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
-    }
-    return rec;
-#endif
 } /* validateInitialMessage */
 
 /* Messages with established connIDs are valid only if they have the msgID
