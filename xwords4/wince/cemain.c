@@ -843,9 +843,8 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 
     if ( newGame ) {
-        XP_U16 newGameID = 0;
         game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
-                    newGameID, &globals->appPrefs.cp, CE_SEND_PROC, 
+                    0, &globals->appPrefs.cp, CE_SEND_PROC, 
                     CE_RESET_PROC globals );
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
@@ -1371,9 +1370,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     oldGameLoaded = prevStateExists && ceLoadSavedGame( globals );
 
     if ( !oldGameLoaded ) {
-        XP_U16 gameID = 0;      /* good enough until I get networking going */
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
-                          &globals->util, (DrawCtx*)globals->draw, gameID,
+                          &globals->util, (DrawCtx*)globals->draw, 0,
                           &globals->appPrefs.cp, 
                           CE_SEND_PROC, CE_RESET_PROC globals );
 
@@ -1865,9 +1863,6 @@ ceSaveAndExit( CEAppGlobals* globals )
 {
     (void)ceSaveCurGame( globals, XP_TRUE );
     ceSavePrefs( globals );
-    if ( !!globals->socketWrap ) {
-        ce_sockwrap_delete( globals->socketWrap );
-    }
     DestroyWindow(globals->hWnd);
 } /* ceSaveAndExit */
 
@@ -1893,6 +1888,11 @@ freeGlobals( CEAppGlobals* globals )
     draw_destroyCtxt( (DrawCtx*)globals->draw );
 
     closeGame( globals );
+
+    if ( !!globals->socketWrap ) {
+        ce_sockwrap_delete( globals->socketWrap );
+        globals->socketWrap = NULL;
+    }
 
     if ( !!globals->vtMgr ) {
         vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
@@ -2651,7 +2651,6 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
     int result;
 
-    assertOnTop( globals->hWnd );
     result = ceMessageBoxChar( globals, buf, title, buttons );
 
     XP_FREE( globals->mpool, buf );

@@ -36,7 +36,7 @@ void ce_sockwrap_delete( CeSocketWrapper* self );
 void ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );
 XP_Bool ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );
 
-XP_U16 ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
+XP_S16 ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
                          const CommsAddrRec* addr );
 
 #endif
