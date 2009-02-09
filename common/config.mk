@@ -42,6 +42,7 @@ COMMONSRC = \
 	$(COMMONDIR)/mempool.c \
 	$(COMMONDIR)/movestak.c \
 	$(COMMONDIR)/strutils.c \
+	$(COMMONDIR)/bufqueue.c \
 	$(COMMONDIR)/vtabmgr.c \
 	$(COMMONDIR)/dbgutil.c \
 
@@ -75,6 +76,7 @@ COMMON4 = \
 COMMON5 = \
 	$(COMMONOBJDIR)/movestak.o \
 	$(COMMONOBJDIR)/strutils.o \
+	$(COMMONOBJDIR)/bufqueue.o \
 	$(COMMONOBJDIR)/vtabmgr.o \
 	$(COMMONOBJDIR)/dbgutil.o \
 
