@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -240,8 +240,8 @@ drawBoard( BoardCtxt* board )
         XP_S16 lastCol, i;
         XP_S16 row;
         ModelCtxt* model = board->model;
+        BoardArrow const* arrow = NULL;
         BlankQueue bq;
-        XP_Rect arrowRect;
 
         scrollIfCan( board ); /* this must happen before we count blanks
                                  since it invalidates squares */
@@ -252,6 +252,20 @@ drawBoard( BoardCtxt* board )
         model_listPlacedBlanks( model, board->selPlayer, 
                                 board->trayVisState == TRAY_REVEALED, &bq );
         invalBlanksWithNeighbors( board, &bq );
+
+        /* figure out now, before clearing inval bits, if we'll need to draw
+           the arrow later */
+        if ( board->trayVisState == TRAY_REVEALED ) {
+            BoardArrow const* tmpArrow = &board->selInfo->boardArrow;
+            if ( tmpArrow->visible ) {
+                XP_U16 col = tmpArrow->col;
+                XP_U16 row = tmpArrow->row;
+                if ( INVAL_BIT_SET( board, col, row )
+                     && !cellOccupied( board, col, row, XP_TRUE ) ) {
+                    arrow = tmpArrow;
+                }
+            }
+        }
 
         for ( row = board->yOffset; row <= board->lastVisibleRow; ++row ) {
             XP_U16 rowFlags = board->redrawFlags[row];
@@ -278,27 +292,23 @@ drawBoard( BoardCtxt* board )
             }
         }
 
-        if ( board->trayVisState == TRAY_REVEALED ) {
-            BoardArrow* arrow = &board->selInfo->boardArrow;
-
-            if ( arrow->visible ) {
-                XP_U16 col = arrow->col;
-                XP_U16 row = arrow->row;
-                if ( getCellRect( board, col, row, &arrowRect ) ) {
-                    XWBonusType bonus;
-                    HintAtts hintAtts;
-                    CellFlags flags = CELL_NONE;
-                    bonus = util_getSquareBonus( board->util, model, 
-                                                 col, row );
-                    hintAtts = figureHintAtts( board, col, row );
+        if ( !!arrow ) {
+            XP_U16 col = arrow->col;
+            XP_U16 row = arrow->row;
+            XP_Rect arrowRect;
+            if ( getCellRect( board, col, row, &arrowRect ) ) {
+                XWBonusType bonus;
+                HintAtts hintAtts;
+                CellFlags flags = CELL_NONE;
+                bonus = util_getSquareBonus( board->util, model, col, row );
+                hintAtts = figureHintAtts( board, col, row );
 #ifdef KEYBOARD_NAV
-                    if ( cellFocused( board, col, row ) ) {
-                        flags |= CELL_ISCURSOR;
-                    }
-#endif
-                    draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
-                                         arrow->vert, hintAtts, flags );
+                if ( cellFocused( board, col, row ) ) {
+                    flags |= CELL_ISCURSOR;
                 }
+#endif
+                draw_drawBoardArrow( board->draw, &arrowRect, bonus, 
+                                     arrow->vert, hintAtts, flags );
             }
         }
 
