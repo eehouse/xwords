@@ -141,10 +141,12 @@ RFI2Str( RFIndex rfi )
         CASE_STR( RFONTS_TRAYVAL );
         CASE_STR( RFONTS_CELL );
         CASE_STR( RFONTS_REM );
+        CASE_STR( RFONTS_PTS );
         CASE_STR( RFONTS_SCORE );
         CASE_STR( RFONTS_SCORE_BOLD );
-    default:
-        str = "<unknown>";
+    case N_RESIZE_FONTS:
+        XP_ASSERT(0);
+        return "<unknown>";
     }
 # undef CASE_STR
     return str;
