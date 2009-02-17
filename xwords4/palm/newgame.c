@@ -372,7 +372,7 @@ changeGadgetHilite( PalmAppGlobals* globals, UInt16 hiliteID )
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
     /* Even if it didn't change, pop the connections form.  It's only
        informational in the non-new-game case; nothing can be changed. */
-    if ( (hiliteID != SERVER_STANDALONE) && (state->nXPorts > 1) ) {
+    if ( hiliteID != SERVER_STANDALONE ) {
         if ( isNewGame || (hiliteID==globals->newGameState.curServerHilite) ) {
             PopupConnsForm( globals, hiliteID, &state->addr );
         }

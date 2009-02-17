@@ -55,7 +55,9 @@ typedef struct ConnsDlgState {
     CommsConnType conType;
     CommsAddrRec* addr;
     XP_BtAddr btAddr;           /* since there's no field, save it here */
+#ifdef XWFEATURE_BLUETOOTH
     char hostName[PALM_BT_NAME_LEN];
+#endif
 } ConnsDlgState;
 
 static void
@@ -247,31 +249,30 @@ setupXportList( PalmAppGlobals* globals )
 {
     ConnsDlgState* state = globals->connState;
     ListData* sLd = &state->sLd;
-    XP_U16 i;
+    XP_U16 ii;
     XP_S16 selSel = -1;
     const XP_UCHAR* selName = NULL;
 
-    if ( state->nXports >= 2 ) {
-        state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
+    XP_ASSERT( state->nXports >= 1 );
+    state->connTypesList = getActiveObjectPtr( XW_CONNS_TYPE_LIST_ID );
 
-        initListData( MPPARM(globals->mpool) sLd, state->nXports );
-        for ( i = 0; i < state->nXports; ++i ) {
-            XportEntry* xports = &state->xports[i];
-            const XP_UCHAR* xname = getResString( globals, xports->resID );
-            addListTextItem( MPPARM(globals->mpool) sLd, xname );
-            if ( state->conType == xports->conType ) {
-                selName = xname;
-                selSel = i;
-            }
+    initListData( MPPARM(globals->mpool) sLd, state->nXports );
+    for ( ii = 0; ii < state->nXports; ++ii ) {
+        XportEntry* xports = &state->xports[ii];
+        const XP_UCHAR* xname = getResString( globals, xports->resID );
+        addListTextItem( MPPARM(globals->mpool) sLd, xname );
+        if ( state->conType == xports->conType ) {
+            selName = xname;
+            selSel = ii;
         }
-
-        XP_ASSERT( !!selName );
-        setListSelection( sLd, selName );
-        setListChoices( sLd, state->connTypesList, NULL );
-
-        setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
-                             selSel );
     }
+
+    XP_ASSERT( !!selName );
+    setListSelection( sLd, selName );
+    setListChoices( sLd, state->connTypesList, NULL );
+
+    setSelectorFromList( XW_CONNS_TYPE_TRIGGER_ID, state->connTypesList,
+                         selSel );
 } /* setupXportList */
 
 static void
@@ -296,7 +297,6 @@ buildXportData( ConnsDlgState* state )
     ++xports;
 #endif
     state->nXports = xports - state->xports;
-    XP_ASSERT( state->nXports >= 2 ); /* no need for dropdown otherwise!! */
 } /* buildXportData */
 
 Boolean

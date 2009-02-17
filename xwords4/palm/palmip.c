@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001-2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -219,10 +219,10 @@ sendLoop( PalmAppGlobals* globals, const XP_U8* buf, XP_U16 len )
 
         if ( thisSent == 0 ) {
             globals->nlStuff.socket = -1;  /* mark socket closed */
-            return XP_FALSE;
+            break;
         } else if ( thisSent < 0 ) {
             XP_LOGF( "NetLibSend => %d", err );
-            return XP_FALSE;
+            break;
         } else {
             totalSent += thisSent;
             if ( totalSent < len ) {
@@ -232,8 +232,7 @@ sendLoop( PalmAppGlobals* globals, const XP_U8* buf, XP_U16 len )
         }
     } while ( totalSent < len );
 
-    XP_LOGF( "sendLoop sent %d bytes", len );
-    return XP_TRUE;
+    return totalSent == len;
 } /* sendLoop */
 
 XP_S16
@@ -242,10 +241,9 @@ palm_ip_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
 {
     CommsAddrRec localRec;
     CommsAddrRec* addr = &localRec;
-    XP_S16 nSent = 0;
-    XP_Bool resolved = XP_FALSE;
+    XP_S16 nSent = -1;
 
-    XP_LOGF( "palm_ip_send: len=%d", len );
+    XP_LOGF( "%s: len=%d", __func__, len );
     XP_ASSERT( len < MAX_MSG_LEN );
 
     if ( !!addrp ) {
@@ -255,6 +253,7 @@ palm_ip_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
     }
 
     if ( openNetLibIfNot( globals ) ) {
+        XP_Bool resolved = XP_FALSE;
         if ( resolveAddressIfNot( globals, addr, &resolved ) ) {
             if ( resolved ) {
                 comms_setAddr( globals->game.comms, addr );
@@ -270,8 +269,11 @@ palm_ip_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
                     nSent = len;
                 }
             }
+        } else {
+            XP_LOGF( "%s: dropping because resolveAddressIfNot failed", __func__ );
         }
     }
+    LOG_RETURNF( "%d", nSent );
     return nSent;
 } /* palm_ip_send */
 
@@ -282,34 +284,30 @@ recvLoop( PalmAppGlobals* globals, XP_U8* buf, XP_U16 lenSought )
 {
     XP_U32 timeout = TimGetSeconds() + 5;
     XP_U16 totalRead = 0;
-    NetSocketAddrINType fromAddr;
-    void* fromAddrP;
-    UInt16 fromLen;
+/*     NetSocketAddrINType fromAddr; */
+/*     void* fromAddrP; */
+/*     UInt16 fromLen; */
 
-    if ( globals->romVersion >= 50 ) {
-        fromAddrP = NULL;
-        fromLen = 0;
-    } else {
-        fromAddrP = (void*)&fromAddr;
-        fromLen = sizeof( fromAddr );
-    }
+/*         fromAddrP = NULL; */
+/*         fromLen = 0; */
 
     /* Be sure there's a way to timeout quickly here!!! */
-    while ( totalRead < lenSought && TimGetSeconds() < timeout ) {
+    while ( (totalRead < lenSought) && (TimGetSeconds() < timeout) ) {
         Err err;
         Int16 nRead = NetLibReceive( globals->nlStuff.netLibRef,
                                      globals->nlStuff.socket,
-                                     buf, lenSought, 0, /* flags */
-                                     fromAddrP, &fromLen, 
+                                     buf+totalRead, lenSought-totalRead, 
+                                     0, /* flags */
+                                     NULL, NULL,//&fromLen, 
                                      NETLIB_TIMEOUT, &err );
 
         if ( (nRead < 0) && (err != netErrTimeout) ) {
-            XP_LOGF( "NetLibReceive => %d", err );
-            return XP_FALSE;
+            XP_LOGF( "NetLibReceive => %x", err );
+            break;
         } else if ( nRead == 0 ) {
             XP_LOGF( "NetLibReceive; socket close" );
             globals->nlStuff.socket = -1;
-            return XP_FALSE;
+            break;
         } else {
             totalRead += nRead;
         }
@@ -332,7 +330,7 @@ packetToStream( PalmAppGlobals* globals )
         if ( recvLoop( globals, buf, netlen ) ) {
 
             result = mem_stream_make( MEMPOOL globals->vtMgr, 
-                                      globals, 0, NULL);
+                                      globals, 0, NULL );
             stream_open( result );
             stream_putBytes( result, buf, netlen );
         }
