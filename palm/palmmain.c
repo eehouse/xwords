@@ -1074,7 +1074,9 @@ startApplication( PalmAppGlobals** globalsP )
     Boolean leftyFlag;
     Int16 vers;
     UInt32 ignore;
+#if defined XWFEATURE_BLUETOOTH
     Err err;
+#endif
     MPSLOT;
 
 #if defined FOR_GREMLINS
@@ -2019,7 +2021,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
                     &globals->util, newGameID, &globals->gState.cp, 
                     palm_send, IF_CH(palm_reset) globals );
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY || defined XWFEATURE_IR
+#ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, 
                            &globals->newGameState.addr );
@@ -2033,7 +2035,11 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     getSizes( globals );
     (void)positionBoard( globals );
 
-#ifdef XWFEATURE_IR
+#ifndef XWFEATURE_STANDALONE_ONLY
+    if ( !!globals->game.comms ) {
+        comms_start( globals->game.comms );
+    }
+
     if ( newGame && globals->gameInfo.serverRole == SERVER_ISCLIENT ) {
         XWStreamCtxt* stream;
         XP_ASSERT( !!globals->game.comms );
@@ -2041,11 +2047,6 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         server_initClientConnection( globals->game.server, stream );
     }
 #endif
-
-    if ( !!globals->game.comms ) {
-        comms_start( globals->game.comms );
-    }
-
     /* Used to call server_do here, but if it's a robot's turn it'll run
        without drawing the board first.  This allows work to get done almost
        as quickly.  If the board starts flashing on launch this is why;
