@@ -89,6 +89,7 @@ messageToStr( UINT message )
         CASE_STR( WM_EXITMENULOOP );
         CASE_STR( WM_INITMENUPOPUP );
         CASE_STR( WM_CANCELMODE );
+        CASE_STR( WM_ENTERIDLE );
     default:
         str = "<unknown>";
     }
