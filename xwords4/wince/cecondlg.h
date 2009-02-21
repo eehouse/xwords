@@ -26,7 +26,7 @@
 #include "ceutil.h" 
 
 XP_Bool WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, 
-                      const CommsAddrRec* addrRecIn, 
-                      CommsAddrRec* addrRecOut, DeviceRole role );
+                      const CommsAddrRec* addrRecIn, CommsAddrRec* addrRecOut,
+                      DeviceRole role, XP_Bool isNewGame );
 
 #endif

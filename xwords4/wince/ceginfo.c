@@ -325,9 +325,11 @@ handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals,
-                         DeviceRole role, GameInfoState* state )
+handleConnOptionsButton( GameInfoState* state, DeviceRole role )
 {
+    HWND hDlg = state->dlgHdr.hDlg;
+    CEAppGlobals* globals = state->dlgHdr.globals;
+
     if ( role == SERVER_STANDALONE ) {
         NGValue value;
         role = (DeviceRole)SendDlgItemMessage( hDlg, 
@@ -338,17 +340,15 @@ handleConnOptionsButton( HWND hDlg, CEAppGlobals* globals,
         newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
     }
 
-    if ( role != state->lastRole ) {
-        state->lastRole = role;
-
-        if ( role != SERVER_STANDALONE) {
-            if ( WrapConnsDlg( hDlg, globals, &state->prefsPrefs.addrRec, 
-                               &state->prefsPrefs.addrRec, role ) ) {
-                state->addrChanged = XP_TRUE;
-            }
+    state->lastRole = role;
+    if ( role != SERVER_STANDALONE) {
+        if ( WrapConnsDlg( hDlg, globals, &state->prefsPrefs.addrRec, 
+                           &state->prefsPrefs.addrRec, role, 
+                           state->isNewGame ) ) {
+            state->addrChanged = XP_TRUE;
         }
     }
-}
+} /* handleConnOptionsButton */
 #endif
 
 static XP_U16 
@@ -582,10 +582,25 @@ checkUpdateCombo( GameInfoState* state, XP_U16 id )
          }
     } else if ( id == state->roleComboId ) {
         XP_ASSERT( SERVER_STANDALONE == 0 );
-        handleConnOptionsButton( hDlg, state->dlgHdr.globals, 
-                                 SERVER_STANDALONE, state );
+        handleConnOptionsButton( state, SERVER_STANDALONE );
     }
 } /* checkUpdateCombo */
+
+/* If we're mid-game and can't change role, click on role dropdown should
+ * still bring up conns dialog in read-only mode.
+ */
+static void
+checkRoleClick( GameInfoState* state, XP_U16 xx, XP_U16 yy )
+{
+    RECT rect;
+    ceGetItemRect( state->dlgHdr.hDlg, state->roleComboId, &rect );
+    
+    /* Isn't there API for PtInRect? */
+    if ( xx > rect.left && xx < rect.right
+         && yy > rect.top && yy < rect.bottom ) {
+        handleConnOptionsButton( state, state->lastRole );
+    }
+} /* checkRoleClick */
 
 LRESULT CALLBACK
 GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -659,6 +674,12 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
+                case WM_LBUTTONUP:
+                    if ( !state->isNewGame ) {
+                        checkRoleClick( state, LOWORD(lParam), HIWORD(lParam) );
+                    }
+                    break;
+
                 case WM_COMMAND:
                     result = TRUE;
                     id = LOWORD(wParam);
@@ -690,14 +711,9 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         case IDC_ROLECOMBO:
                         case IDC_ROLECOMBO_PPC:
                             if ( HIWORD(wParam) == CBN_SELCHANGE ) {
-                                if ( state->isNewGame ) {  /* ignore if in info
-                                                                mode */
-                                    /* If we've switched to a state where we'll be
-                                       connecting */
-                                    handleConnOptionsButton( hDlg, globals, 
-                                                             SERVER_STANDALONE,
-                                                             state );
-                                }
+                                /* If we've switched to a state where we'll be
+                                   connecting */
+                                handleConnOptionsButton( state, SERVER_STANDALONE );
                             }
                             break;
 #endif

@@ -23,6 +23,7 @@ PLATFORM = wince
 
 TARGET_OS ?= win32
 #TARGET_OS = wince
+#NO_DRAW = -DNO_DRAW
 
 # The preferred build environment for wince is now cegcc.  Debian's
 # pocketpc-sdk works in combination with the mingw projects headers,
@@ -81,7 +82,6 @@ else							# ifeq ($(TARGET_OS),wince)
 ifeq ($(TARGET_OS),win32)
 #STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 STANDALONE = -DPREV_WAS_STANDALONE_ONLY
-# NO_DRAW = -DNO_DRAW
 #BLUETOOTH = -DXWFEATURE_BLUETOOTH
 #SMS = -DXWFEATURE_SMS
 RELAY = -DXWFEATURE_RELAY -DUSE_BUFQUEUE

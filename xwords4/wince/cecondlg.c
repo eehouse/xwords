@@ -36,6 +36,7 @@ typedef struct _CeConnDlgState {
     XP_U16 connComboId;
     ConnDlgPair* types;
     XP_Bool userCancelled;
+    XP_Bool forShowOnly;
 } CeConnDlgState;
 
 static CommsConnType indexToConType( const CeConnDlgState* state, 
@@ -180,6 +181,8 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
     XP_U16 ii;
     CEAppGlobals* globals = state->dlgHdr.globals;
     CommsConnType conType;
+    XP_U16 ids[32];
+    XP_S16 nIds = 0;
 
     for ( ii = 0; ; ++ii ) {
         ConnDlgPair* type = &state->types[ii];
@@ -194,37 +197,53 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
 
     SendDlgItemMessage( hDlg, state->connComboId, SETCURSEL(globals), 
                         conTypeToIndex(state, state->addrRec.conType), 0L );
+    ids[nIds++] = state->connComboId;
 
     conType = state->addrRec.conType;
     if ( state->addrRec.conType == COMMS_CONN_RELAY ) {
 #ifdef XWFEATURE_RELAY
         ceSetDlgItemText( hDlg, RELAYNAME_EDIT, 
                           state->addrRec.u.ip_relay.hostName );
+        ids[nIds++] = RELAYNAME_EDIT;
         ceSetDlgItemNum( hDlg, RELAYPORT_EDIT, 
                          state->addrRec.u.ip_relay.port );
+        ids[nIds++] = RELAYPORT_EDIT;
         ceSetDlgItemText( hDlg, COOKIE_EDIT, 
                           state->addrRec.u.ip_relay.cookie );
+        ids[nIds++] = COOKIE_EDIT;
 #endif
     } else if ( state->addrRec.conType == COMMS_CONN_IP_DIRECT ) {
 #ifdef XWFEATURE_IP_DIRECT
         ceSetDlgItemText( hDlg, IPNAME_EDIT, state->addrRec.u.ip.hostName_ip );
+        ids[nIds++] = IPNAME_EDIT;
 #endif
     } else if ( state->addrRec.conType == COMMS_CONN_BT ) {
 #ifdef XWFEATURE_BLUETOOTH
         if ( state->role == SERVER_ISCLIENT ) {
             ceSetDlgItemText( hDlg, IDC_BLUET_ADDR_EDIT, 
                               state->addrRec.u.bt.hostName );
+            ids[nIds++] = IDC_BLUET_ADDR_EDIT;
         }
 #endif
     } else if ( state->addrRec.conType == COMMS_CONN_SMS ) {
 #ifdef XWFEATURE_SMS
         ceSetDlgItemText( hDlg, IDC_SMS_PHONE_EDIT, state->addrRec.u.sms.phone );
+        ids[nIds++] = IDC_SMS_PHONE_EDIT;
         ceSetDlgItemNum( hDlg, IDC_SMS_PORT_EDIT, state->addrRec.u.sms.port );
+        ids[nIds++] = IDC_SMS_PORT_EDIT;
 #endif
     } else {
         XP_ASSERT(0);
     }
-}
+
+    XP_ASSERT( nIds < VSIZE(ids) );
+    if ( state->forShowOnly ) {
+        while ( nIds-- > 0 ) {
+            ceEnOrDisable( hDlg, ids[nIds], XP_FALSE );
+        }
+    }
+
+} /* ceControlsFromAddrRec */
 
 static LRESULT CALLBACK
 ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
@@ -283,7 +302,7 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
 XP_Bool
 WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRecIn, 
-              CommsAddrRec* addrRecOut, DeviceRole role )
+              CommsAddrRec* addrRecOut, DeviceRole role, XP_Bool isNewGame )
 {
     XP_Bool result;
     CeConnDlgState state;
@@ -305,12 +324,13 @@ WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRecIn,
     state.dlgHdr.globals = globals;
     state.types = types;
     state.role = role;
+    state.forShowOnly = !isNewGame;
     XP_MEMCPY( &state.addrRec, addrRecIn, sizeof(state.addrRec) );
 
     DialogBoxParam( globals->hInst, (LPCTSTR)IDD_CONNSSDLG, hDlg,
                     (DLGPROC)ConnsDlg, (long)&state );
 
-    result = !state.userCancelled;
+    result = isNewGame && !state.userCancelled;
 
     if ( result ) {
         XP_MEMCPY( addrRecOut, &state.addrRec, sizeof(*addrRecOut) );
