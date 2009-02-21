@@ -64,3 +64,4 @@ tarball:
 
 help:
 	@echo $(MAKE) [STATIC=\"-static\"]
+	@echo $(MAKE) tarball
