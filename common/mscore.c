@@ -149,10 +149,10 @@ model_getPlayerScore( ModelCtxt* model, XP_S16 player )
  * player.
  */
 void
-model_figureFinalScores( ModelCtxt* model, XP_S16* finalScoresP,
-                         XP_S16* tilePenalties )
+model_figureFinalScores( ModelCtxt* model, ScoresArray* finalScoresP,
+                         ScoresArray* tilePenaltiesP )
 {
-    XP_S16 i, j;
+    XP_S16 ii, jj;
     XP_S16 penalties[MAX_NUM_PLAYERS];
     XP_S16 totalPenalty;
     XP_U16 nPlayers = model->nPlayers;
@@ -162,49 +162,51 @@ model_figureFinalScores( ModelCtxt* model, XP_S16* finalScoresP,
     DictionaryCtxt* dict = model_getDictionary( model );
     CurGameInfo* gi = model->vol.gi;
 
-    XP_MEMSET( finalScoresP, 0, sizeof(*finalScoresP) * MAX_NUM_PLAYERS );
+    if ( !!finalScoresP ) {
+        XP_MEMSET( finalScoresP, 0, sizeof(*finalScoresP) );
+    }
 
     totalPenalty = 0;
-    for ( player = model->players, i = 0; i < nPlayers; ++player, ++i ) {
-        tray = model_getPlayerTiles( model, i );
+    for ( player = model->players, ii = 0; ii < nPlayers; ++player, ++ii ) {
+        tray = model_getPlayerTiles( model, ii );
 
-        penalties[i] = 0;
+        penalties[ii] = 0;
 
         /* if there are no tiles left and this guy's the first done, make a
            note of it in case he's to get a bonus.  Note that this assumes
            only one player can be out of tiles. */
         if ( (tray->nTiles == 0) && (firstDoneIndex == -1) ) {
-            firstDoneIndex = i;
+            firstDoneIndex = ii;
         } else {
-            for ( j = tray->nTiles-1; j >= 0; --j ) {
-                penalties[i] += dict_getTileValue( dict, tray->tiles[j] );
+            for ( jj = tray->nTiles-1; jj >= 0; --jj ) {
+                penalties[ii] += dict_getTileValue( dict, tray->tiles[jj] );
             }
         }
 
         /* include tiles in pending move too for the player whose turn it
            is. */
-        for ( j = player->nPending - 1; j >= 0; --j ) {
-            Tile tile = player->pendingTiles[j].tile;
-            penalties[i] += dict_getTileValue(dict, (Tile)(tile & TILE_VALUE_MASK));
+        for ( jj = player->nPending - 1; jj >= 0; --jj ) {
+            Tile tile = player->pendingTiles[jj].tile;
+            penalties[ii] += dict_getTileValue(dict, 
+                                               (Tile)(tile & TILE_VALUE_MASK));
         }
-        totalPenalty += penalties[i];
+        totalPenalty += penalties[ii];
     }
 
     /* now total everybody's scores */
-    for ( i = 0; i < nPlayers; ++i ) {
-        XP_S16 score = model_getPlayerScore( model, i );
-        XP_S16 penalty;
+    for ( ii = 0; ii < nPlayers; ++ii ) {
+        XP_S16 penalty = (ii == firstDoneIndex)? totalPenalty: -penalties[ii];
 
-        penalty = (i == firstDoneIndex)? totalPenalty: -penalties[i];
-        finalScoresP[i] = score + penalty;
-
-        if ( !!tilePenalties ) {
-            tilePenalties[i] = penalty;
+        if ( !!finalScoresP ) {
+            XP_S16 score = model_getPlayerScore( model, ii );
+            if ( gi->timerEnabled ) {
+                score -= player_timePenalty( gi, ii );
+            }
+            finalScoresP->arr[ii] = score + penalty;
         }
 
-        if ( gi->timerEnabled ) {
-            penalty = player_timePenalty( gi, i );
-            finalScoresP[i] -= penalty;
+        if ( !!tilePenaltiesP ) {
+            tilePenaltiesP->arr[ii] = penalty;
         }
     }
 } /* model_figureFinalScores */

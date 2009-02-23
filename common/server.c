@@ -2485,11 +2485,11 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 void
 server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 {
-    XP_S16 scores[MAX_NUM_PLAYERS];
-    XP_S16 tilePenalties[MAX_NUM_PLAYERS];
+    ScoresArray scores;
+    ScoresArray tilePenalties;
     XP_S16 highestIndex;
     XP_S16 highestScore;
-    XP_U16 place, nPlayers, i;
+    XP_U16 place, nPlayers, ii;
     XP_S16 curScore;
     ModelCtxt* model = server->vol.model;
     const XP_UCHAR* addString = util_getUserString( server->vol.util,
@@ -2502,7 +2502,7 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
 
     XP_ASSERT( server->nv.gameState == XWSTATE_GAMEOVER );
 
-    model_figureFinalScores( model, scores, tilePenalties );
+    model_figureFinalScores( model, &scores, &tilePenalties );
 
     nPlayers = gi->nPlayers;
 
@@ -2514,10 +2514,10 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         highestScore = IMPOSSIBLY_LOW_SCORE;
         highestIndex = -1;
 
-        for ( i = 0; i < nPlayers; ++i ) {
-            if ( scores[i] > highestScore ) {
-                highestIndex = i;
-                highestScore = scores[i];
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            if ( scores.arr[ii] > highestScore ) {
+                highestIndex = ii;
+                highestScore = scores.arr[ii];
             }
         }
 
@@ -2526,7 +2526,7 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         } else if ( place > 1 ) {
             stream_putString( stream, XP_CR );
         }
-        scores[highestIndex] = IMPOSSIBLY_LOW_SCORE;
+        scores.arr[highestIndex] = IMPOSSIBLY_LOW_SCORE;
 
         curScore = model_getPlayerScore( model, highestIndex );
 
@@ -2547,8 +2547,8 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         XP_SNPRINTF( tmpbuf, sizeof(tmpbuf), 
                      (firstDone? addString:subString),
                      firstDone? 
-                     tilePenalties[highestIndex]:
-                     -tilePenalties[highestIndex] );
+                     tilePenalties.arr[highestIndex]:
+                     -tilePenalties.arr[highestIndex] );
 
         XP_SNPRINTF( buf, sizeof(buf), 
                      (XP_UCHAR*)"[%d] %s: %d" XP_CR "  (%d %s%s)",

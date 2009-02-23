@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- fill-column: 78; compile-command: "cd ../linux && make -j MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -235,8 +235,9 @@ XP_Bool model_checkMoveLegal( ModelCtxt* model, XP_S16 player,
                               XWStreamCtxt* stream,
                               WordNotifierInfo* notifyInfo );
 
-void model_figureFinalScores( ModelCtxt* model, XP_S16* scores,
-                              XP_S16* tilePenalties );
+typedef struct _ScoresArray { XP_S16 arr[MAX_NUM_PLAYERS]; } ScoresArray;
+void model_figureFinalScores( ModelCtxt* model, ScoresArray* scores,
+                              ScoresArray* tilePenalties );
 
 /* figureMoveScore is meant only for the engine's use */
 XP_U16 figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo, 

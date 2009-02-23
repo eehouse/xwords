@@ -47,7 +47,7 @@ void
 drawScoreBoard( BoardCtxt* board )
 {
     if ( board->scoreBoardInvalid ) {
-        short i;
+        short ii;
 
         XP_U16 nPlayers = board->gi->nPlayers;
 
@@ -62,7 +62,7 @@ drawScoreBoard( BoardCtxt* board )
             XP_U16 totalDim, extra, nShares, remWidth, remHeight, remDim;
             DrawScoreData* dp;
             DrawScoreData datum[MAX_NUM_PLAYERS];
-            XP_S16 scores[MAX_NUM_PLAYERS];
+            ScoresArray scores;
             XP_Bool isVertical = !board->scoreSplitHor;
 #ifdef KEYBOARD_NAV
             XP_Rect cursorRect;
@@ -103,10 +103,10 @@ drawScoreBoard( BoardCtxt* board )
             /* Get the scores from the model or by calculating them based on
                the end-of-game state. */
             if ( board->gameOver ) {
-                model_figureFinalScores( model, scores, (XP_S16*)NULL );
+                model_figureFinalScores( model, &scores, NULL );
             } else {
-                for ( i = 0; i < nPlayers; ++i ) {
-                    scores[i] = model_getPlayerScore( model, i );
+                for ( ii = 0; ii < nPlayers; ++ii ) {
+                    scores.arr[ii] = model_getPlayerScore( model, ii );
                 }
             }
 
@@ -114,27 +114,27 @@ drawScoreBoard( BoardCtxt* board )
 
             /* figure spacing for each scoreboard entry */
             XP_MEMSET( &datum, 0, sizeof(datum) );
-            for ( dp = datum, i = 0; i < nPlayers; ++i, ++dp ) {
-                LocalPlayer* lp = &board->gi->players[i];
+            for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
+                LocalPlayer* lp = &board->gi->players[ii];
 
                 /* This is a hack! */
                 dp->dsi.lsc = board_ScoreCallback;
                 dp->dsi.lscClosure = model;
 #ifdef KEYBOARD_NAV
-                if ( (i == cursorIndex) || focusAll ) {
+                if ( (ii == cursorIndex) || focusAll ) {
                     dp->dsi.flags |= CELL_ISCURSOR;
                 }
 #endif
-                dp->dsi.playerNum = i;
-                dp->dsi.totalScore = scores[i];
-                dp->dsi.isTurn = (i == curTurn);
+                dp->dsi.playerNum = ii;
+                dp->dsi.totalScore = scores.arr[ii];
+                dp->dsi.isTurn = (ii == curTurn);
                 dp->dsi.name = emptyStringIfNull(lp->name);
                 dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
-                    && i==selPlayer;
+                    && ii==selPlayer;
                 dp->dsi.isRobot = lp->isRobot;
                 dp->dsi.isRemote = !lp->isLocal;
                 dp->dsi.nTilesLeft = (nTilesInPool > 0)? -1:
-                    model_getNumTilesTotal( model, i );
+                    model_getNumTilesTotal( model, ii );
                 draw_measureScoreText( board->draw, &scoreRect,
                                        &dp->dsi, &dp->width, &dp->height );
                 XP_ASSERT( dp->width <= scoreRect.width );
@@ -171,10 +171,10 @@ drawScoreBoard( BoardCtxt* board )
 
             board->remDim = remDim;
 
-            for ( dp = datum, i = 0; i < nPlayers; ++dp, ++i ) {
+            for ( dp = datum, ii = 0; ii < nPlayers; ++dp, ++ii ) {
                 XP_Rect innerRect;
                 XP_U16 dim = isVertical? dp->height:dp->width;
-                *adjustDim = board->pti[i].scoreDims = dim + extra;
+                *adjustDim = board->pti[ii].scoreDims = dim + extra;
 
                 innerRect.width = dp->width;
                 innerRect.height = dp->height;
@@ -186,9 +186,9 @@ drawScoreBoard( BoardCtxt* board )
                 draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
                                        &dp->dsi );
 #ifdef KEYBOARD_NAV
-                XP_MEMCPY( &board->pti[i].scoreRects, &scoreRect, 
+                XP_MEMCPY( &board->pti[ii].scoreRects, &scoreRect, 
                            sizeof(scoreRect) );
-                if ( i == cursorIndex ) {
+                if ( ii == cursorIndex ) {
                     cursorRect = scoreRect;
                     cursorRectP = &cursorRect;
                 }
