@@ -25,6 +25,8 @@
 #include "gtknewgame.h"
 #include "strutils.h"
 #include "nwgamest.h"
+#include "gtkconnsdlg.h"
+#include "gtkutils.h"
 
 #define MAX_SIZE_CHOICES 10
 
@@ -32,8 +34,13 @@ typedef struct GtkNewGameState {
     GtkAppGlobals* globals;
     NewGameCtx* newGameCtxt;
 
+    CommsAddrRec addr;
+
+    DeviceRole role;
     gboolean revert;
     gboolean cancelled;
+    XP_Bool loaded;
+    gboolean isNewGame;
     short nCols;                /* for board size */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -64,12 +71,26 @@ nplayers_menu_changed( GtkComboBox* combo, GtkNewGameState* state )
 static void
 role_combo_changed( GtkComboBox* combo, gpointer gp )
 {
-    NGValue value;
     GtkNewGameState* state = (GtkNewGameState*)gp;
+    NGValue value;
     gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
-    if ( index >= 0 ) {    
-        value.ng_role = (DeviceRole)index;
-        newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
+
+    if ( index >= 0 ) {
+        DeviceRole role = (DeviceRole)index;
+        value.ng_role = role;
+
+        if ( state->isNewGame ) {
+            newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
+        } else if ( state->loaded ) {
+            /* put it back */
+            gtk_combo_box_set_active( GTK_COMBO_BOX(combo), state->role );
+        }
+
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+        if ( state->loaded && SERVER_STANDALONE != role  ) {
+            gtkConnsDlg( state->globals, &state->addr, !state->isNewGame );
+        }
+#endif
     }
 } /* role_combo_changed */
 #endif
@@ -149,17 +170,7 @@ handle_revert( GtkWidget* XP_UNUSED(widget), void* closure )
 } /* handle_revert */
 
 static GtkWidget*
-makeButton( char* text, GCallback func, gpointer data )
-{
-    GtkWidget* button = gtk_button_new_with_label( text );
-    g_signal_connect( GTK_OBJECT(button), "clicked", func, data );
-    gtk_widget_show( button );
-
-    return button;
-} /* makeButton */
-
-static GtkWidget*
-makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
+makeNewGameDialog( GtkNewGameState* state )
 {
     GtkWidget* dialog;
     GtkWidget* vbox;
@@ -278,7 +289,7 @@ makeNewGameDialog( GtkNewGameState* state, XP_Bool isNewGame )
                         FALSE, TRUE, 0 );
 
     boardSizeCombo = gtk_combo_box_new_text();
-    if ( !isNewGame ) {
+    if ( !state->isNewGame ) {
         gtk_widget_set_sensitive( boardSizeCombo, FALSE );
     }
 
@@ -363,7 +374,7 @@ labelForCol( const GtkNewGameState* state, XP_U16 player, NewGameColumn col )
         widget = state->passwdLabels[player];
     } 
     return widget;
-} /* widgetForCol */
+} /* labelForCol */
 
 static void
 gtk_newgame_col_enable( void* closure, XP_U16 player, NewGameColumn col, 
@@ -397,7 +408,8 @@ gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_TriEnable enable )
         widget = state->nPlayersCombo;
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( attr == NG_ATTR_ROLE ) {
-        widget = state->roleCombo;
+        /* NG_ATTR_ROLE always enabled */
+/*         widget = state->roleCombo; */
 #endif
     } else if ( attr == NG_ATTR_CANJUGGLE ) {
         widget = state->juggleButton;
@@ -462,9 +474,10 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
 {
     GtkNewGameState* state = (GtkNewGameState*)closure;
     if ( attr == NG_ATTR_NPLAYERS ) {
-        XP_U16 i = value.ng_u16;
-        XP_LOGF( "%s: setting menu %d", __func__, i-1 );
-        gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), i-1 );
+        XP_U16 ii = value.ng_u16;
+        XP_LOGF( "%s: setting menu %d", __func__, ii-1 );
+        gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), ii-1 );
+        state->role = ii - 1;
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( attr == NG_ATTR_ROLE ) {
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->roleCombo), 
@@ -494,18 +507,25 @@ newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame )
                                    gtk_newgame_col_set,
                                    gtk_newgame_attr_set,
                                    &state );
+    state.isNewGame = isNewGame;
 
     /* returns when button handler calls gtk_main_quit */
     do {
         GtkWidget* dialog;
 
         state.revert = FALSE;
+        state.loaded = XP_FALSE;
         state.nCols = globals->cGlobals.params->gi.boardSize;
 
-        dialog = makeNewGameDialog( &state, isNewGame );
+        if ( !!globals->cGlobals.game.comms ) {
+            comms_getAddr( globals->cGlobals.game.comms, &state.addr );
+        }
+
+        dialog = makeNewGameDialog( &state );
 
         newg_load( state.newGameCtxt, 
                    &globals->cGlobals.params->gi );
+        state.loaded = XP_TRUE;
 
         gtk_main();
         if ( !state.cancelled && !state.revert ) {

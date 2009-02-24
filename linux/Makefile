@@ -126,6 +126,8 @@ GTK_OBJS = \
 	$(PLATFORM)/gtkletterask.o \
 	$(PLATFORM)/gtkpasswdask.o \
 	$(PLATFORM)/gtknewgame.o \
+	$(PLATFORM)/gtkconnsdlg.o \
+	$(PLATFORM)/gtkutils.o \
 	$(PLATFORM)/gtkntilesask.o
 endif
 ifdef DO_CURSES
