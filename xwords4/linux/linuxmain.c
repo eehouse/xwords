@@ -304,7 +304,7 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
 
 #ifdef XWFEATURE_RELAY
 static int
-linux_init_relay_socket( CommonGlobals* cGlobals )
+linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
 {
     struct sockaddr_in to_sock;
     struct hostent* host;
@@ -315,20 +315,17 @@ linux_init_relay_socket( CommonGlobals* cGlobals )
         sock = socket( AF_INET, SOCK_STREAM, 0 );
         if ( sock == -1 ) {
             XP_DEBUGF( "socket returned -1\n" );
-            return -1;
+            goto done;
         }
 
-        to_sock.sin_port = htons(cGlobals->params->
-                                 connInfo.relay.defaultSendPort );
-        XP_STATUSF( "1: sending to port %d", 
-                    cGlobals->params->connInfo.relay.defaultSendPort );
-        host = gethostbyname( cGlobals->params->connInfo.relay.relayName );
+        to_sock.sin_port = htons( addrRec->u.ip_relay.port );
+        XP_STATUSF( "1: sending to port %d", addrRec->u.ip_relay.port );
+        host = gethostbyname( addrRec->u.ip_relay.hostName );
         if ( NULL == host ) {
-            XP_WARNF( "gethostbyname returned -1\n" );
-            return -1;
-        } else {
-            XP_WARNF( "gethostbyname for %s worked", 
-                      cGlobals->defaultServerName );
+            XP_WARNF( "gethostbyname(%s) returned -1",  
+                      addrRec->u.ip_relay.hostName );
+            sock = -1;
+            goto done;
         }
         memcpy( &(to_sock.sin_addr.s_addr), host->h_addr_list[0],  
                 sizeof(struct in_addr));
@@ -341,23 +338,24 @@ linux_init_relay_socket( CommonGlobals* cGlobals )
         } else {
             close( sock );
             sock = -1;
-            XP_STATUSF( "%s: connect failed: %s (%d)", __func__, strerror(errno), errno );
+            XP_STATUSF( "%s: connect failed: %s (%d)", __func__, 
+                        strerror(errno), errno );
         }
     }
-   
+ done:
     return sock;
 } /* linux_init_relay_socket */
 
 static XP_S16
 linux_tcp_send( const XP_U8* buf, XP_U16 buflen, 
-                CommonGlobals* globals )
+                CommonGlobals* globals, const CommsAddrRec* addrRec )
 {
     XP_S16 result = 0;
     int socket = globals->socket;
     
     if ( socket == -1 ) {
         XP_STATUSF( "%s: socket uninitialized", __func__ );
-        socket = linux_init_relay_socket( globals );
+        socket = linux_init_relay_socket( globals, addrRec );
         if ( socket != -1 ) {
             assert( globals->socket == socket );
             (*globals->socketChanged)( globals->socketChangedClosure, 
@@ -444,7 +442,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
-        nSent = linux_tcp_send( buf, buflen, globals );
+        nSent = linux_tcp_send( buf, buflen, globals, addrRec );
 #endif
 #if defined XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {
@@ -653,7 +651,7 @@ nameToBtAddr( const char* name, bdaddr_t* ba )
 int
 main( int argc, char** argv )
 {
-    XP_Bool useGTK, useCurses;
+    XP_Bool useCurses;
     int opt;
     int totalPlayerCount = 0;
     XP_Bool isServer = XP_FALSE;
@@ -719,6 +717,7 @@ main( int argc, char** argv )
     mainParams.gi.robotSmartness = SMART_ROBOT;
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
+    mainParams.needsNewGame = XP_FALSE;
 #ifdef XWFEATURE_SEARCHLIMIT
     mainParams.allowHintRect = XP_TRUE;
 #endif
@@ -726,11 +725,9 @@ main( int argc, char** argv )
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
 #if defined PLATFORM_GTK
-    useGTK = 1;
-    useCurses = 0;
+    useCurses = XP_FALSE;
 #else  /* curses is the default if GTK isn't available */
-    useGTK = 0;
-    useCurses = 1;
+    useCurses = XP_TRUE;
 #endif
 
 
@@ -892,11 +889,10 @@ main( int argc, char** argv )
             break;
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
         case 'g':
-            useGTK = 1;
+            useCurses = XP_FALSE;
             break;
         case 'u':
-            useCurses = 1;
-            useGTK = 0;
+            useCurses = XP_TRUE;
             break;
 #endif
 #if defined PLATFORM_GTK
@@ -929,7 +925,7 @@ main( int argc, char** argv )
     if ( !mainParams.fileName ) {
         if ( (totalPlayerCount < 1) || 
              (totalPlayerCount > MAX_NUM_PLAYERS) ) {
-            usage( argv[0], "Need between 1 and 4 players" );
+            mainParams.needsNewGame = XP_TRUE;
         }
     }
 
@@ -943,15 +939,15 @@ main( int argc, char** argv )
             MPPARM_NOCOMMA(mainParams.util->mpool) );
         XP_WARNF( "no dictionary provided: using English stub dict\n" );
 #else
-        usage( argv[0], "Server needs a dictionary" );
+        mainParams.needsNewGame = XP_TRUE;
 #endif
     } else if ( robotCount > 0 ) {
-        usage( argv[0], "Client can't have robots without a dictionary" );
+        mainParams.needsNewGame = XP_TRUE;
     }
 
     if ( !isServer ) {
         if ( mainParams.info.serverInfo.nRemotePlayers > 0 ) {
-            usage( argv[0], "Client can't have remote players" );
+            mainParams.needsNewGame = XP_TRUE;
         }	    
     }
 
@@ -1037,18 +1033,17 @@ main( int argc, char** argv )
         mainParams.serverRole = SERVER_ISCLIENT;
     }
 
-    if ( mainParams.nLocalPlayers > 0 || !!mainParams.fileName) {
-        if ( useCurses ) {
+    /* curses doesn't have newgame dialog */
+    if ( useCurses && !mainParams.needsNewGame ) {
 #if defined PLATFORM_NCURSES
-            cursesmain( isServer, &mainParams );
+        cursesmain( isServer, &mainParams );
 #endif
-        } else {
+    } else if ( !useCurses ) {
 #if defined PLATFORM_GTK
-            gtkmain( &mainParams, argc, argv );
+        gtkmain( &mainParams, argc, argv );
 #endif
-        }
     } else {
-        /* run server as faceless process? */
+        usage( argv[0], "rtfm" );
     }
 
     linux_util_vt_destroy( mainParams.util );

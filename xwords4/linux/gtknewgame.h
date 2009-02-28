@@ -1,6 +1,7 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,7 +26,8 @@
 
 #include "gtkmain.h"
 
-gboolean newGameDialog( GtkAppGlobals* globals, XP_Bool isNewGame );
+gboolean newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr,
+                        XP_Bool isNewGame );
 
 #endif /* _GTKNEWGAME_H_ */
 #endif /* PLATFORM_GTK */

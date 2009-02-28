@@ -66,6 +66,7 @@ static void sendOnClose( XWStreamCtxt* stream, void* closure );
 #endif
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void printFinalScores( GtkAppGlobals* globals );
+static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -386,15 +387,17 @@ createOrLoadObjects( GtkAppGlobals* globals )
         params->gi.allowHintRect = params->allowHintRect;
 #endif
 
+        if ( params->needsNewGame ) {
+            new_game( NULL, globals );
 #ifndef XWFEATURE_STANDALONE_ONLY
-        if ( !isServer ) {
+        } else if ( !isServer ) {
             XWStreamCtxt* stream = 
                 mem_stream_make( MEMPOOL params->vtMgr, globals, CHANNEL_NONE,
                                  sendOnClose );
             server_initClientConnection( globals->cGlobals.game.server, 
                                          stream );
-        }
 #endif
+        }
     }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -629,23 +632,31 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 static void
 new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    gboolean confirmed;
+    CommsAddrRec addr;
 
-    confirmed = newGameDialog( globals, XP_TRUE );
-    if ( confirmed ) {
+    if ( !!globals->cGlobals.game.comms ) {
+        comms_getAddr( globals->cGlobals.game.comms, &addr );
+    } else {
+        comms_getInitialAddr( &addr );
+    }
+
+    if ( newGameDialog( globals, &addr, XP_TRUE ) ) {
         CurGameInfo* gi = &globals->cGlobals.params->gi;
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
 #endif
-        XP_U32 gameID = util_getCurSeconds( globals->cGlobals.params->util );
-
-        XP_STATUSF( "grabbed gameID: %ld\n", gameID );
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    gameID, &globals->cp, LINUX_SEND, 
+                    0, &globals->cp, LINUX_SEND, 
                     IF_CH(linux_reset) globals );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+        if ( !!globals->cGlobals.game.comms ) {
+            comms_setAddr( globals->cGlobals.game.comms, &addr );
+        } else if ( gi->serverRole != SERVER_STANDALONE ) {
+            XP_ASSERT(0);
+        }
+
         if ( isClient ) {
             XWStreamCtxt* stream =
                 mem_stream_make( MEMPOOL 
@@ -667,9 +678,12 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 static void
 game_info( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
+    CommsAddrRec addr;
+    comms_getAddr( globals->cGlobals.game.comms, &addr );
+
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
-    if ( newGameDialog( globals, XP_FALSE ) ) {
+    if ( newGameDialog( globals, &addr, XP_FALSE ) ) {
         if ( server_do( globals->cGlobals.game.server ) ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -1445,7 +1459,7 @@ makeShowButtonFromBitmap( void* closure, const gchar* filename,
     GtkWidget* button;
 
     if ( file_exists( filename ) ) {
-        widget = gtk_image_new_from_file (filename);
+        widget = gtk_image_new_from_file( filename );
     } else {
        widget = gtk_label_new( alt );
     }
@@ -1616,7 +1630,7 @@ newConnectionInput( GIOChannel *source,
         CommsAddrRec addr;
 #endif
 
-        switch ( globals->cGlobals.params->conType ) {
+        switch ( comms_getConType( globals->cGlobals.game.comms ) ) {
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
             XP_ASSERT( globals->cGlobals.socket == sock );

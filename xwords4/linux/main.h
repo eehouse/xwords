@@ -58,6 +58,7 @@ typedef struct LaunchParams {
     XP_Bool undoWhenDone;
     XP_Bool verticalScore;
     XP_Bool hideValues;
+    XP_Bool needsNewGame;
     //    XP_Bool mainParams;
     XP_Bool skipWarnings;
     XP_Bool showRobotScores;
