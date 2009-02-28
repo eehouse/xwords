@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -45,24 +45,24 @@ static void
 checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
 {
     if ( !!gi ) {
-        XP_Bool standAlone = gi->serverRole == SERVER_STANDALONE;
-        XP_U16 i, remoteCount = 0;
+        XP_U16 ii, remoteCount = 0;
 
-        for ( i = 0; i < gi->nPlayers; ++i ) {
-            LocalPlayer* player = &gi->players[i];
-            if ( !player->isLocal ) {
-                ++remoteCount;
-                if ( standAlone ) {
-                    player->isLocal = XP_TRUE;
+        if ( SERVER_ISSERVER == gi->serverRole ) {
+            for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+                if ( !gi->players[ii].isLocal ) {
+                    ++remoteCount;
                 }
             }
-        }
-        if ( remoteCount == 0 && gi->serverRole != SERVER_ISCLIENT ) {
-            gi->serverRole = SERVER_STANDALONE;
+
+            /* I think this error is caught in nwgamest.c now */
+            XP_ASSERT( remoteCount > 0 );
+            if ( remoteCount == 0 ) {
+                gi->serverRole = SERVER_STANDALONE;
+            }
         }
 
         *nPlayersHere = gi->nPlayers - remoteCount;
-        if ( gi->serverRole == SERVER_ISCLIENT ) {
+        if ( SERVER_ISCLIENT == gi->serverRole ) {
             *nPlayersTotal = 0;
         } else {
             *nPlayersTotal = gi->nPlayers;
