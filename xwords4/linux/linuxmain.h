@@ -63,6 +63,7 @@ XWStreamCtxt* streamFromFile( CommonGlobals* cGlobals, char* name,
                               void* closure );
 void writeToFile( XWStreamCtxt* stream, void* closure );
 
+void linux_close_socket( CommonGlobals* cGlobals );
 
 #ifdef KEYBOARD_NAV
 XP_Bool linShiftFocus( CommonGlobals* cGlobals, XP_Key key,
