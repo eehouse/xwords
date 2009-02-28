@@ -1051,8 +1051,10 @@ main( int argc, char** argv )
         /* run server as faceless process? */
     }
 
-    dict_destroy( mainParams.dict );
     linux_util_vt_destroy( mainParams.util );
+
+    mpool_destroy( mainParams.util->mpool );
+
     XP_LOGF( "exiting main" );
     return 0;
 } /* main */
