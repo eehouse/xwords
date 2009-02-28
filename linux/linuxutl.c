@@ -33,16 +33,14 @@ linux_debugf( const char* format, ... )
 {
     char buf[1000];
     va_list ap;
-    //    time_t tim;
     struct tm* timp;
     struct timeval tv;
     struct timezone tz;
-/*     pthread_t me = pthread_self(); */
 
     gettimeofday( &tv, &tz );
     timp = localtime( &tv.tv_sec );
 
-    sprintf( buf, /* "<%p>" */ "%d:%d:%d: ", /* (void*)me,  */
+    sprintf( buf, "<%d>%d:%d:%d: ", getpid(), 
              timp->tm_hour, timp->tm_min, timp->tm_sec );
 
     va_start(ap, format);
