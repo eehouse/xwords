@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -214,13 +214,18 @@ newg_store( NewGameCtx* ngc, CurGameInfo* gi,
     XP_Bool consistent = checkConsistent( ngc, warn );
 
     if ( consistent ) {
+        XP_Bool makeLocal = XP_FALSE;
         gi->nPlayers = ngc->nPlayersShown;
 #ifndef XWFEATURE_STANDALONE_ONLY
         gi->serverRole = ngc->role;
+        makeLocal = ngc->role != SERVER_ISSERVER;
 #endif
 
         for ( player = 0; player < MAX_NUM_PLAYERS; ++player ) {
             storePlayer( ngc, player, &gi->players[player] );
+            if ( makeLocal ) {
+                gi->players[player].isLocal = XP_TRUE;
+            }
         }
     }
     return consistent;
