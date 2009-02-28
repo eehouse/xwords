@@ -1,7 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005 - 2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -530,8 +530,8 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
     int nPlayersT = evt->u.con.nPlayersT;
     HostID hid = evt->u.con.srcID;
  
-    logf( XW_LOGVERBOSE1, "increasePlayerCounts: hid=%d, nPlayersH=%d, nPlayersT=%d",
-          hid, nPlayersH, nPlayersT );
+    logf( XW_LOGVERBOSE1, "increasePlayerCounts: hid=%d, nPlayersH=%d, "
+          "nPlayersT=%d", hid, nPlayersH, nPlayersT );
 
     if ( hid == HOST_ID_SERVER ) {
         assert( m_nPlayersTotal == 0 );
@@ -813,7 +813,7 @@ CookieRef::logf( XW_LogLevel level, const char* format, ... )
     char buf[256];
     int len;
 
-      len = snprintf( buf, sizeof(buf), "cid:%d ", m_cookieID );
+    len = snprintf( buf, sizeof(buf), "cid:%d ", m_cookieID );
 
     va_list ap;
     va_start( ap, format );
@@ -868,3 +868,15 @@ CookieRef::_PrintCookieInfo( string& out )
     }
 
 } /* PrintCookieInfo */
+
+void
+CookieRef::_FormatSockets( string& out )
+{
+    map<HostID,HostRec>::iterator iter = m_sockets.begin();
+    while ( iter != m_sockets.end() ) {
+        char buf[8];
+        snprintf( buf, sizeof(buf), "%d ", iter->first );
+        out += buf;
+        ++iter;
+    }
+}

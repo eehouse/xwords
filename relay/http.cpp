@@ -120,7 +120,7 @@ printCrefs( FILE* fil )
              "<th>Players</th>"
              "<th>Players Here</th>"
              "<th>State</th>"
-             "<th>Hosts in game</th>"
+             "<th>Host IDs</th>"
              );
     fprintf( fil, "</tr>\n" );
 
@@ -128,6 +128,7 @@ printCrefs( FILE* fil )
     CookieMapIterator iter = cmgr->GetCookieIterator();
     CookieID id;
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
+        string tmp;
         SafeCref scr( id );
         fprintf( fil, "<tr>"
                  "<td>%s</td>"  /* name */
@@ -137,11 +138,11 @@ printCrefs( FILE* fil )
                  "<td>%d</td>"  /* players */
                  "<td>%d</td>"  /* players here */
                  "<td>%s</td>"  /* State */
-                 "<td>%d</td>"   /* Hosts */
+                 "<td>%s</td>"   /* Hosts */
                  "</tr>",
                  scr.Cookie(), scr.ConnName(), scr.GetCookieID(),
                  scr.GetTotalSent(), scr.GetPlayersTotal(),scr.GetPlayersHere(),
-                 scr.StateString(), scr.GetHostsConnected()
+                 scr.StateString(), scr.GetHostsConnected(tmp)
         );
     }
     fprintf( fil, "</table>\n" );
@@ -173,9 +174,9 @@ http_thread_main( void* arg )
         send_meta( fil );
         fprintf( fil, "<body><div class=\"main\">" );
 
-        printUptime( fil );
-
         printCrefs( fil );
+
+        printUptime( fil );
 
         printTail( fil );
 

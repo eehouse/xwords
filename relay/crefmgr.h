@@ -246,11 +246,12 @@ class SafeCref {
         }
     }
 
-    const int GetHostsConnected() {
+    const char* GetHostsConnected( string& str ) {
         if ( IsValid() ) {
-            return m_cref->CountSockets();
+            m_cref->_FormatSockets( str );
+            return str.c_str();
         } else {
-            return -1;
+            return "";
         }
     }
 
