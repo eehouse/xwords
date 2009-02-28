@@ -207,6 +207,52 @@ class SafeCref {
         }
     }
     
+    CookieID GetCookieID() { 
+        if ( IsValid() ) {
+            return m_cref->GetCookieID();
+        } else {
+            return 0;          /* so don't crash.... */
+        }
+    }
+
+    int GetTotalSent() { 
+        if ( IsValid() ) {
+            return m_cref->GetTotalSent();
+        } else {
+            return -1;          /* so don't crash.... */
+        }
+    }
+
+    int GetPlayersTotal() { 
+        if ( IsValid() ) {
+            return m_cref->GetPlayersTotal();
+        } else {
+            return -1;          /* so don't crash.... */
+        }
+    }
+    int GetPlayersHere() { 
+        if ( IsValid() ) {
+            return m_cref->GetPlayersHere();
+        } else {
+            return -1;          /* so don't crash.... */
+        }
+    }
+
+    const char* StateString() {
+        if ( IsValid() ) {
+            return stateString( m_cref->CurState() );
+        } else {
+            return "";
+        }
+    }
+
+    const int GetHostsConnected() {
+        if ( IsValid() ) {
+            return m_cref->CountSockets();
+        } else {
+            return -1;
+        }
+    }
 
  private:
     bool IsValid()        { return m_cref != NULL; }

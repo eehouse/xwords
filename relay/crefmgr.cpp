@@ -95,7 +95,8 @@ CookieRef*
 CRefMgr::FindOpenGameFor( const char* cORn, bool isCookie,
                           HostID hid, int socket, int nPlayersH, int nPlayersT )
 {
-    logf( XW_LOGINFO, "%s(%s)", __func__, cORn );
+    logf( XW_LOGINFO, "%s(cORn=%s,hid=%d,socket=%d)", __func__, cORn, hid, 
+          socket );
     CookieRef* cref = NULL;
     RWReadLock rwl( &m_cookieMapRWLock );
 
@@ -419,6 +420,8 @@ CRefMgr::heartbeatProc( void* closure )
 CookieRef*
 CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 {
+    logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, id=%d", __func__,
+          cookie, connName, id );
     CookieRef* exists = getCookieRef_impl( id );
     assert( exists == NULL );
 
@@ -504,9 +507,9 @@ CRefMgr::getCookieRef_impl( CookieID cookieID )
 
     CookieMap::iterator iter = m_cookieMap.find( cookieID );
     while ( iter != m_cookieMap.end() ) {
-        CookieRef* sec = iter->second;
-        if ( sec->GetCookieID() == cookieID ) {
-            ref = sec;
+        CookieRef* second = iter->second;
+        if ( second->GetCookieID() == cookieID ) {
+            ref = second;
             break;
         }
         ++iter;

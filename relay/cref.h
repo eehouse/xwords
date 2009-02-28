@@ -65,6 +65,10 @@ class CookieRef {
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
     CookieID GetCookieID() { return m_cookieID; }
+    int GetTotalSent() { return m_totalSent; }
+    int GetPlayersTotal() { return m_nPlayersTotal; }
+    int GetPlayersHere() { return m_nPlayersHere; }
+
 
     bool HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_sockets.size(); }
@@ -99,6 +103,7 @@ class CookieRef {
     void _CheckAllConnected();
 
     bool ShouldDie() { return m_curState == XWS_DEAD; }
+    XW_RELAY_STATE CurState() { return m_curState; }
 
     void logf( XW_LogLevel level, const char* format, ... );
 

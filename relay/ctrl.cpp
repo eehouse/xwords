@@ -324,6 +324,12 @@ cmd_set( int socket, const char** args )
     return false;
 }
 
+void
+format_rev( char* buf, int len )
+{
+    snprintf( buf, len, "svn rev: %s", SVN_REV );
+}
+
 static bool
 cmd_rev( int socket, const char** args )
 {
@@ -332,9 +338,30 @@ cmd_rev( int socket, const char** args )
                        "* %s -- prints svn rev number of build",
                        args[0] );
     } else {
-        print_to_sock( socket, true, "svn rev: %s", SVN_REV );
+        char buf[128];
+        format_rev( buf, sizeof(buf) );
+        print_to_sock( socket, true, "%s", buf );
     }
     return false;
+}
+
+void
+format_uptime( char* buf, int len )
+{
+    time_t seconds = now();
+
+    int days = seconds / (24*60*60);
+    seconds %= (24*60*60);
+
+    int hours = seconds / (60*60);
+    seconds %= (60*60);
+
+    int minutes = seconds / 60;
+    seconds %= 60;
+
+    snprintf( buf, len,
+              "uptime: %d days, %d hours, %d minutes, %ld seconds",
+              days, hours, minutes, seconds );
 }
 
 static bool
@@ -345,20 +372,9 @@ cmd_uptime( int socket, const char** args )
                        "* %s -- prints how long the relay's been running",
                        args[0] );
     } else {
-        time_t seconds = now();
-
-        int days = seconds / (24*60*60);
-        seconds %= (24*60*60);
-
-        int hours = seconds / (60*60);
-        seconds %= (60*60);
-
-        int minutes = seconds / 60;
-        seconds %= 60;
-        
-        print_to_sock( socket, true, 
-                       "uptime: %d days, %d hours, %d minutes, %ld seconds",
-                       days, hours, minutes, seconds );
+        char buf[128];
+        format_uptime( buf, sizeof(buf) );
+        print_to_sock( socket, true, "%s", buf );
     }
     return false;
 }
