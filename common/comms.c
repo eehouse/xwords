@@ -119,8 +119,9 @@ struct CommsCtxt {
 
     /* Stuff for relays */
     struct {
-        XWHostID myHostID;          /* 0 if unset, 1 if acting as server,
-                                       random for client */
+        XWHostID myHostID;          /* 0 if unset, 1 if acting as server.
+                                       Client's 0 replaced by id assigned by
+                                       relay. Relay calls this "srcID". */
         CommsRelayState relayState; /* not saved: starts at UNCONNECTED */
         CookieID cookieID;          /* not saved; temp standin for cookie; set
                                        by relay */
@@ -168,7 +169,7 @@ static AddressRecord* getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
 static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
-static void sendConnect( CommsCtxt* comms );
+static void sendConnect( CommsCtxt* comms, XP_Bool breakExisting );
 
 #ifdef XWFEATURE_RELAY
 static XP_Bool relayConnect( CommsCtxt* comms );
@@ -193,6 +194,20 @@ static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ,
 /****************************************************************************
  *                               implementation 
  ****************************************************************************/
+#ifdef XWFEATURE_RELAY
+static void
+init_relay( CommsCtxt* comms, XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
+{
+    comms->r.myHostID = comms->isServer? HOST_ID_SERVER: HOST_ID_NONE;
+    XP_LOGF( "set myHostID to %d", comms->r.myHostID );
+    comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
+    comms->r.nPlayersHere = nPlayersHere;
+    comms->r.nPlayersTotal = nPlayersTotal;
+    comms->r.cookieID = COOKIE_ID_NONE;
+    comms->r.connName[0] = '\0';
+}
+#endif
+
 CommsCtxt* 
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
             XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
@@ -214,12 +229,7 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
     result->util = util;
 
 #ifdef XWFEATURE_RELAY
-    result->r.myHostID = isServer? HOST_ID_SERVER: HOST_ID_NONE;
-    XP_LOGF( "set myHostID to %d", result->r.myHostID );
-
-    result->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
-    result->r.nPlayersHere = nPlayersHere;
-    result->r.nPlayersTotal = nPlayersTotal;
+    init_relay( result, nPlayersHere, nPlayersTotal );
 #endif
     return result;
 } /* comms_make */
@@ -271,10 +281,7 @@ comms_reset( CommsCtxt* comms, XP_Bool isServer,
 
     comms->connID = CONN_ID_NONE;
 #ifdef XWFEATURE_RELAY
-    comms->r.cookieID = COOKIE_ID_NONE;
-    comms->r.nPlayersHere = nPlayersHere;
-    comms->r.nPlayersTotal = nPlayersTotal;
-    (void)relayConnect( comms );
+    init_relay( comms, nPlayersHere, nPlayersTotal );
 #endif
     LOG_RETURN_VOID();
 } /* comms_reset */
@@ -503,21 +510,27 @@ setDoHeartbeat( CommsCtxt* comms )
 # define setDoHeartbeat(c)
 #endif
 
+/* 
+ * Currently this disconnects an open connection.  Don't do that.
+ */
 void
 comms_start( CommsCtxt* comms )
 {
     setDoHeartbeat( comms );
-    sendConnect( comms );
+    sendConnect( comms, XP_FALSE );
 } /* comms_start */
 
 static void
-sendConnect( CommsCtxt* comms )
+sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
 {
     switch( comms->addr.conType ) {
 #ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
-        comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
-        relayConnect( comms );
+        if ( breakExisting
+             || COMMS_RELAYSTATE_UNCONNECTED == comms->r.relayState ) {
+            comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
+            relayConnect( comms );
+        }
         break;
 #endif
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_IP_DIRECT
@@ -570,6 +583,9 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
     case COMMS_CONN_SMS:
         stringToStream( stream, addr.u.sms.phone );
         stream_putU16( stream, addr.u.sms.port );
+        break;
+    default:
+        XP_ASSERT(0);
         break;
     }
 } /* addrToStream */
@@ -652,7 +668,7 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 #ifdef COMMS_HEARTBEAT
     setDoHeartbeat( comms );
 #endif
-    sendConnect( comms );
+    sendConnect( comms, XP_TRUE );
 
 } /* comms_setAddr */
 
@@ -893,8 +909,6 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
     }
 
     XP_STATUSF( "%s: queueLen now %d", __func__, comms->queueLen );
-
-    XP_ASSERT( comms->queueLen > 0 || comms->msgQueueHead == NULL );
 
 #ifdef DEBUG
     assertQueueOk( comms );
