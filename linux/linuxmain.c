@@ -474,7 +474,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
 } /* linux_send */
 
 #ifdef XWFEATURE_RELAY
-static void
+void
 linux_close_socket( CommonGlobals* cGlobals )
 {
     int socket = cGlobals->socket;

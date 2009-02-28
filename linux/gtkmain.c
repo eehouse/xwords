@@ -565,6 +565,9 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 #ifdef XWFEATURE_IP_DIRECT
     linux_udp_close( &globals->cGlobals );
 #endif
+#ifdef XWFEATURE_RELAY
+    linux_close_socket( &globals->cGlobals );
+#endif
 
     vtmgr_destroy( MEMPOOL globals->cGlobals.params->vtMgr );
     
