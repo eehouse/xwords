@@ -41,6 +41,8 @@ typedef enum {
     ,COMMS_CONN_RELAY
     ,COMMS_CONN_BT
     ,COMMS_CONN_SMS
+
+    ,COMMS_CONN_NTYPES
 } CommsConnType;
 
 /* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
