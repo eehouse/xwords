@@ -861,12 +861,14 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 
     if ( (channelNo == 0) || !!getRecordFor(comms, NULL, channelNo) ) {
 
-        MsgQueueElem* newHead = NULL;
-        MsgQueueElem* newTail = NULL;
-        MsgQueueElem* elem;
+        MsgQueueElem* elem = comms->msgQueueHead;
         MsgQueueElem* next;
 
-        for ( elem = comms->msgQueueHead; !!elem; elem = next ) {
+        /* empty the queue so we can add all back again */
+        comms->msgQueueHead = comms->msgQueueTail = NULL;
+        comms->queueLen = 0;
+
+        for ( ; !!elem; elem = next ) {
             XP_Bool knownGood = XP_FALSE;
             next = elem->next;
 
@@ -884,17 +886,10 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
 
             if ( !knownGood && (elem->msgID <= msgID) ) {
                 freeElem( comms, elem );
-                --comms->queueLen;
-            } else if ( NULL == newHead ) {
-                newHead = newTail = elem;
             } else {
-                newTail->next = elem;
-                newTail = elem;
+                addToQueue( comms, elem );
             }
         }
-
-        comms->msgQueueHead = newHead;
-        comms->msgQueueTail = newTail;
     }
 
     XP_STATUSF( "%s: queueLen now %d", __func__, comms->queueLen );
