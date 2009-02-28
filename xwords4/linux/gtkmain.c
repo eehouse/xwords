@@ -565,9 +565,7 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
 
     vtmgr_destroy( MEMPOOL globals->cGlobals.params->vtMgr );
     
-    mpool_destroy( globals->cGlobals.params->util->mpool );
-
-    gtk_exit( 0 );
+    gtk_main_quit();
 } /* quit */
 
 GtkWidget*
