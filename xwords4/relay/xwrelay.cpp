@@ -66,6 +66,7 @@
 #include "xwrelay.h"
 #include "crefmgr.h"
 #include "ctrl.h"
+#include "http.h"
 #include "mlock.h"
 #include "tpool.h"
 #include "configs.h"
@@ -462,6 +463,7 @@ usage( char* arg0 )
     fprintf( stderr,
              "\t-?                   (print this help)\\\n"
              "\t-c <cport>           (localhost port for control console)\\\n"
+             "\t-w <cport>           (localhost port for web interface)\\\n"
              "\t-D                   (don't become daemon)\\\n"
              "\t-F                   (don't fork and wait to respawn child)\\\n"
              "\t-f <conffile>        (config file)\\\n"
@@ -477,6 +479,9 @@ usage( char* arg0 )
 /* sockets that need to be closable from interrupt handler */
 ListenerMgr g_listeners;
 int g_control;
+#ifdef DO_HTTP
+static int g_http;
+#endif
 
 void
 shutdown()
@@ -498,7 +503,9 @@ shutdown()
 
     g_listeners.RemoveAll();
     close( g_control );
-
+#ifdef DO_HTTP
+    close( g_http );
+#endif
     exit( 0 );
     logf( XW_LOGINFO, "exit done" );
 }
@@ -538,6 +545,9 @@ main( int argc, char** argv )
 {
     int port = 0;
     int ctrlport = 0;
+#ifdef DO_HTTP
+    int httpport = 0;
+#endif
     int nWorkerThreads = 0;
     char* conffile = NULL;
     const char* serverName = NULL;
@@ -556,7 +566,11 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:DF" );
+       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:"
+#ifdef DO_HTTP
+                        "w:"
+#endif
+                        "DF" );
 
        if ( opt == -1 ) {
            break;
@@ -569,6 +583,11 @@ main( int argc, char** argv )
        case 'c':
            ctrlport = atoi( optarg );
            break;
+#ifdef DO_HTTP
+       case 'w':
+           httpport = atoi( optarg );
+           break;
+#endif
        case 'D':
            doDaemon = false;
            break;
@@ -608,6 +627,11 @@ main( int argc, char** argv )
     if ( ctrlport == 0 ) {
         ctrlport = cfg->GetCtrlPort();
     }
+#ifdef DO_HTTP
+    if ( httpport == 0 ) {
+        httpport = cfg->GetHttpPort();
+    }
+#endif
     if ( nWorkerThreads == 0 ) {
         nWorkerThreads = cfg->GetNWorkerThreads();
     }
@@ -696,6 +720,12 @@ main( int argc, char** argv )
     if ( g_control == -1 ) {
         exit( 1 );
     }
+#ifdef DO_HTTP
+    g_http = make_socket( INADDR_LOOPBACK, httpport );
+    if ( g_http == -1 ) {
+        exit( 1 );
+    }
+#endif
 
     struct sigaction act;
     memset( &act, 0, sizeof(act) );
@@ -712,10 +742,18 @@ main( int argc, char** argv )
         FD_ZERO(&rfds);
         g_listeners.AddToFDSet( &rfds );
         FD_SET( g_control, &rfds );
+#ifdef DO_HTTP
+        FD_SET( g_http, &rfds );
+#endif
         int highest = g_listeners.GetHighest();
         if ( g_control > highest ) {
             highest = g_control;
         }
+#ifdef DO_HTTP
+        if ( g_http > highest ) {
+            highest = g_http;
+        }
+#endif
         ++highest;
 
         int retval = select( highest, &rfds, NULL, NULL, NULL );
@@ -749,6 +787,12 @@ main( int argc, char** argv )
                 run_ctrl_thread( g_control );
                 --retval;
             }
+#ifdef DO_HTTP
+            if ( FD_ISSET( g_http, &rfds ) ) {
+                run_http_thread( g_http );
+                --retval;
+            }
+#endif
             assert( retval == 0 );
         }
     }

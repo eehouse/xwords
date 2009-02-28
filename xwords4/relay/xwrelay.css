@@ -1,0 +1,22 @@
+<style type="text/css">
+.main {
+#   background-color: green;
+    width: 760px; 
+    margin: 0 auto;
+    text-align: center;
+}
+
+.header {
+    background-color: green;
+}
+
+th,td {
+	border-width: 1px 1px 1px 1px;
+#	padding: 1px 1px 1px 1px;
+	border-style: inset inset inset inset;
+	border-color: gray gray gray gray;
+	background-color: white;
+    text-align: center;
+}
+
+</style>

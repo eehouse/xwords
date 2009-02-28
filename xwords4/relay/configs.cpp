@@ -110,6 +110,8 @@ RelayConfigs::parse( const char* fname, ino_t prev )
                         m_allConnInterval = atoi( value );
                     } else if ( 0 == strcmp( line, "CTLPORT" ) ) {
                         m_ctrlport = atoi( value );
+                    } else if ( 0 == strcmp( line, "WWWPORT" ) ) {
+                        m_httpport = atoi( value );
                     } else if ( 0 == strcmp( line, "PORT" ) ) {
                         m_ports.push_back( atoi( value ) );
                     } else if ( 0 == strcmp( line, "NTHREADS" ) ) {

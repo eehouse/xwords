@@ -1,5 +1,6 @@
 # -*- mode: Makefile; -*-
-# Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,6 +21,7 @@ CC=$(CXX)
 SRC = xwrelay.cpp \
 	cref.cpp \
 	ctrl.cpp \
+	http.cpp \
 	tpool.cpp \
 	states.cpp \
 	timermgr.cpp \
@@ -34,7 +36,7 @@ SVNINFO = svnversion.txt
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 LDFLAGS += -pthread -g -lmcheck $(STATIC)
-CPPFLAGS += -DSPAWN_SELF -DRELAY_HEARTBEAT -g -Wall \
+CPPFLAGS += -DSPAWN_SELF -DRELAY_HEARTBEAT -DDO_HTTP -g -Wall \
 	-DSVN_REV=\"$(shell cat $(SVNINFO) 2>/dev/null || svnversion -n ..)\"
 
 # turn on semaphore debugging
@@ -58,6 +60,7 @@ tarball:
 		../relay/Makefile \
 		../relay/xwrelay.conf \
 		../relay/xwrelay.sh \
+		../relay/xwrelay.css \
 		../relay/$(SVNINFO)
 	@rm -f $(SVNINFO)
 	@echo "RELAY_SRC.tgz done"

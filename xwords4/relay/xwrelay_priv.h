@@ -6,7 +6,7 @@
 #include <time.h>
 #include "lstnrmgr.h"
 
-typedef unsigned char HostID;
+typedef unsigned char HostID;   /* see HOST_ID_SERVER */
 
 typedef enum {
     XW_LOGERROR

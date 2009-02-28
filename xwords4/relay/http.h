@@ -1,7 +1,8 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,14 +20,10 @@
  */
 
 
-#ifndef _CTRL_H_
-#define _CTRL_H_
+#ifndef _HTTP_H_
+#define _HTTP_H_
 
-void run_ctrl_thread( int ctrl_sock );
-void stop_ctrl_threads();
-
-/* utility functions used from http.cpp as well as ctrl.cpp */
-void format_uptime( char* buf, int len );
-void format_rev( char* buf, int len );
+void run_http_thread( int ctrl_sock );
+/* void stop_http_threads(); */
 
 #endif

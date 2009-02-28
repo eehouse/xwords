@@ -42,6 +42,7 @@ class RelayConfigs {
 
     void GetPorts( vector<int>::const_iterator* iter, vector<int>::const_iterator* end);
     int    GetCtrlPort() { return m_ctrlport; }
+    int    GetHttpPort() { return m_httpport; }
     int    GetNWorkerThreads()  { return m_nWorkerThreads; }
     time_t GetAllConnectedInterval() { return m_allConnInterval; }
     time_t GetHeartbeatInterval() { return m_heartbeatInterval; }
@@ -57,6 +58,7 @@ class RelayConfigs {
     time_t m_allConnInterval;
     time_t m_heartbeatInterval;
     int m_ctrlport;
+    int m_httpport;
     vector<int> m_ports;
     int m_logLevel;
     int m_nWorkerThreads;
