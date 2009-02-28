@@ -811,7 +811,7 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
 
 #ifdef DEBUG
 static void
-printQueue( CommsCtxt* comms )
+printQueue( const CommsCtxt* comms )
 {
     MsgQueueElem* elem;
     short i;
@@ -821,6 +821,22 @@ printQueue( CommsCtxt* comms )
         XP_STATUSF( "\t%d: channel: %d; msgID=" XP_LD,
                     i+1, elem->channelNo, elem->msgID );
     }
+}
+
+static void
+assertQueueOk( const CommsCtxt* comms )
+{
+    XP_U16 count = 0;
+    MsgQueueElem* elem;
+
+    for ( elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
+        ++count;
+        if ( elem == comms->msgQueueTail ) {
+            XP_ASSERT( !elem->next );
+            break;
+        }
+    }
+    XP_ASSERT( count == comms->queueLen );
 }
 #endif
 
@@ -886,6 +902,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
     XP_ASSERT( comms->queueLen > 0 || comms->msgQueueHead == NULL );
 
 #ifdef DEBUG
+    assertQueueOk( comms );
     printQueue( comms );
 #endif
 } /* removeFromQueue */
