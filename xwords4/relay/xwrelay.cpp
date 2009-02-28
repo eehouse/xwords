@@ -1,7 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005 - 2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -273,8 +273,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &srcID )
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT ) ) {
-
-            SafeCref scr( cookie, 1, srcID, socket, nPlayersH, nPlayersT );
+            SafeCref scr( cookie, true, srcID, socket, nPlayersH, nPlayersT );
             success = scr.Connect( socket, srcID, nPlayersH, nPlayersT );
         }
 
@@ -762,7 +761,6 @@ main( int argc, char** argv )
                 logf( XW_LOGINFO, "errno: %s (%d)", strerror(errno), errno );
             }
         } else {
-            logf( XW_LOGINFO, "creating ListenersIter" );
             ListenersIter iter(&g_listeners, true);
             while ( retval > 0 ) {
                 int listener = iter.next();
