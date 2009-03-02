@@ -1,6 +1,6 @@
 #!/bin/sh
 
-COOKIE=${RANDOM}
+COOKIE=$$
 
 ./obj_linux_memdbg/xwords -d dict.xwd -r Brynn -a localhost \
     -p 10999 -C $COOKIE &
