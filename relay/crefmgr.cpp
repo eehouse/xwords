@@ -435,7 +435,8 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 #ifdef RELAY_HEARTBEAT
     if ( m_cookieMap.size() == 1 ) {
         RelayConfigs* cfg = RelayConfigs::GetConfigs();
-        short heartbeat = cfg->GetHeartbeatInterval();
+        int heartbeat;
+        cfg->GetValueFor( "HEARTBEAT", &heartbeat );
         TimerMgr::GetTimerMgr()->SetTimer( heartbeat, heartbeatProc, this,
                                            heartbeat );
     }

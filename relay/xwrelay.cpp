@@ -624,21 +624,29 @@ main( int argc, char** argv )
     RelayConfigs* cfg = RelayConfigs::GetConfigs();
 
     if ( ctrlport == 0 ) {
-        ctrlport = cfg->GetCtrlPort();
+        (void)cfg->GetValueFor( "CTLPORT", &ctrlport );
     }
 #ifdef DO_HTTP
     if ( httpport == 0 ) {
-        httpport = cfg->GetHttpPort();
+        (void)cfg->GetValueFor( "WWWPORT", &httpport );
     }
 #endif
     if ( nWorkerThreads == 0 ) {
-        nWorkerThreads = cfg->GetNWorkerThreads();
+        (void)cfg->GetValueFor( "NTHREADS", &nWorkerThreads );
     }
+    char serverNameBuf[128];
     if ( serverName == NULL ) {
-        serverName = cfg->GetServerName();
+        if ( cfg->GetValueFor( "SERVERNAME", serverNameBuf, 
+                               sizeof(serverNameBuf) ) ) {
+            serverName = serverNameBuf;
+        }
     }
+
+    char idFileNameBuf[128];
     if ( idFileName == NULL ) {
-        idFileName = cfg->GetIdFileName();
+        if ( cfg->GetValueFor( "IDFILE", idFileNameBuf, sizeof(idFileName) ) ) {
+            idFileName = idFileNameBuf;
+        }
     }
 
     PermID::SetServerName( serverName );
@@ -720,9 +728,12 @@ main( int argc, char** argv )
         exit( 1 );
     }
 #ifdef DO_HTTP
-    g_http = make_socket( INADDR_LOOPBACK, httpport );
-    if ( g_http == -1 ) {
-        exit( 1 );
+    int addr;
+    if ( cfg->GetValueFor( "WWW_LISTEN_ADDR", &addr ) ) {
+        g_http = make_socket( addr, httpport );
+        if ( g_http == -1 ) {
+            exit( 1 );
+        }
     }
 #endif
 

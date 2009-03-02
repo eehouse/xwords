@@ -27,14 +27,6 @@
 
 #define MAX_LINE 128
 
-#ifndef _HEARTBEAT
-# define _HEARTBEAT 60
-#endif
-
-#ifndef _ALLCONN
-# define _ALLCONN 120
-#endif
-
 RelayConfigs* RelayConfigs::instance = NULL;
 
 
@@ -52,8 +44,6 @@ RelayConfigs::InitConfigs( const char* cfile )
 }
 
 RelayConfigs::RelayConfigs( const char* cfile )
-    : m_allConnInterval(_ALLCONN)
-    , m_heartbeatInterval(_HEARTBEAT)
 {
     /* There's an order here.  Open multiple files, if present.  File in /etc
        is first, but overridden by local file which is in turn overridden by
@@ -64,10 +54,44 @@ RelayConfigs::RelayConfigs( const char* cfile )
 } /* RelayConfigs::RelayConfigs */
 
 void
-RelayConfigs::GetPorts( std::vector<int>::const_iterator* iter, std::vector<int>::const_iterator* end)
+RelayConfigs::GetPorts( std::vector<int>::const_iterator* iter, 
+                        std::vector<int>::const_iterator* end)
 {
     *iter = m_ports.begin();
     *end = m_ports.end();
+}
+
+bool
+RelayConfigs::GetValueFor( const char* key, int* value )
+{
+    map<string,string>::const_iterator iter = m_values.find(key);
+    bool found = iter != m_values.end();
+    if ( found ) {
+        *value = atoi( iter->second.c_str() );
+    }
+    return found;
+}
+
+bool
+RelayConfigs::GetValueFor( const char* key, time_t* value )
+{
+    int val;
+    bool success = GetValueFor( key, &val );
+    if ( success ) {
+        *value = val;
+    }
+    return success;
+}
+
+bool
+RelayConfigs::GetValueFor( const char* key, char* buf, int len )
+{
+    map<string,string>::const_iterator iter = m_values.find(key);
+    bool found = iter != m_values.end();
+    if ( found ) {
+        snprintf( buf, len, "%s", iter->second.c_str() );
+    }
+    return found;
 }
 
 ino_t
@@ -104,28 +128,12 @@ RelayConfigs::parse( const char* fname, ino_t prev )
                     }
 
                     *value++ = '\0';    /* terminate "key" substring */
-                    if ( 0 == strcmp( line, "HEARTBEAT" ) ) {
-                        m_heartbeatInterval = atoi( value );
-                    } else if ( 0 == strcmp( line, "ALLCONN" ) ) {
-                        m_allConnInterval = atoi( value );
-                    } else if ( 0 == strcmp( line, "CTLPORT" ) ) {
-                        m_ctrlport = atoi( value );
-                    } else if ( 0 == strcmp( line, "WWWPORT" ) ) {
-                        m_httpport = atoi( value );
-                    } else if ( 0 == strcmp( line, "PORT" ) ) {
+
+                    m_values.insert( pair<string,string>
+                                     (string(line),string(value) ) );
+
+                    if ( 0 == strcmp( line, "PORT" ) ) {
                         m_ports.push_back( atoi( value ) );
-                    } else if ( 0 == strcmp( line, "NTHREADS" ) ) {
-                        m_nWorkerThreads = atoi( value );
-                    } else if ( 0 == strcmp( line, "SERVERNAME" ) ) {
-                        m_serverName = value;
-                    } else if ( 0 == strcmp( line, "IDFILE" ) ) {
-                        m_idFileName = value;
-                    } else if ( 0 == strcmp( line, "LOGLEVEL" ) ) {
-                        m_logLevel = atoi(value);
-                    } else {
-                        logf( XW_LOGERROR, "unknown key %s with value %s\n",
-                              line, value );
-                        assert( 0 );
                     }
                 }
                 fclose( f );
@@ -134,3 +142,4 @@ RelayConfigs::parse( const char* fname, ino_t prev )
     }
     return inode;
 } /* parse */
+
