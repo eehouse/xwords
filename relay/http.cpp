@@ -67,8 +67,17 @@ static void
 send_meta( FILE* fil ) 
 {
     FILE* css;
+    RelayConfigs* cfg = RelayConfigs::GetConfigs();
+
     fprintf( fil, "<head>" );
-    fprintf( fil, "<meta http-equiv=\"refresh\" content=\"5\" />" );
+
+    if ( !!cfg ) {
+        int refreshSecs;
+        if (  cfg->GetValueFor( "WWW_REFRESH_SECS", &refreshSecs ) ) {
+            fprintf( fil, "<meta http-equiv=\"refresh\" content=\"%d\" />",
+                     refreshSecs );
+        }
+    }
 
     css = fopen( "./xwrelay.css", "r" );
     if ( NULL != css ) {
