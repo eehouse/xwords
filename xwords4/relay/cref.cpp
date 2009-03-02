@@ -72,8 +72,7 @@ SocketsIterator::Next()
  *****************************************************************************/
 
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
-    : m_heatbeat(RelayConfigs::GetConfigs()->GetHeartbeatInterval())
-    , m_cookie(cookie==NULL?"":cookie)
+    : m_cookie(cookie==NULL?"":cookie)
     , m_connName(connName)
     , m_cookieID(id)
     , m_totalSent(0)
@@ -84,6 +83,7 @@ CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
     , m_nPlayersTotal(0)
     , m_nPlayersHere(0)
 {
+    RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
     logf( XW_LOGINFO, "creating cref for cookie %s, connName %s",
           m_cookie.c_str(), m_connName.c_str() );
 }
@@ -613,7 +613,7 @@ void
 CookieRef::setAllConnectedTimer()
 {
     time_t inHowLong;
-    inHowLong = RelayConfigs::GetConfigs()->GetAllConnectedInterval();
+    RelayConfigs::GetConfigs()->GetValueFor( "ALLCONN", &inHowLong );
     TimerMgr::GetTimerMgr()->SetTimer( inHowLong,
                                        s_checkAllConnected, this, 0 );
 }

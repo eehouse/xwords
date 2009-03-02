@@ -1,7 +1,8 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,29 +42,24 @@ class RelayConfigs {
     ~RelayConfigs() {}
 
     void GetPorts( vector<int>::const_iterator* iter, vector<int>::const_iterator* end);
-    int    GetCtrlPort() { return m_ctrlport; }
-    int    GetHttpPort() { return m_httpport; }
-    int    GetNWorkerThreads()  { return m_nWorkerThreads; }
-    time_t GetAllConnectedInterval() { return m_allConnInterval; }
-    time_t GetHeartbeatInterval() { return m_heartbeatInterval; }
-    const char*  GetServerName() { return m_serverName.c_str(); }
-    const char*  GetIdFileName() { return m_idFileName.c_str(); }
     int GetLogLevel(void) { return m_logLevel; }
     void SetLogLevel(int ll) { m_logLevel = ll; }
+
+    bool GetValueFor( const char* key, int* intValue );
+    bool GetValueFor( const char* key, time_t* timeValue );
+    bool GetValueFor( const char* key, vector<int>::const_iterator* iter, 
+                      vector<int>::const_iterator* end );
+    bool GetValueFor( const char* key, char* buf, int len );
 
  private:
     RelayConfigs( const char* cfile );
     ino_t parse( const char* fname, ino_t prev );
 
     time_t m_allConnInterval;
-    time_t m_heartbeatInterval;
-    int m_ctrlport;
-    int m_httpport;
     vector<int> m_ports;
     int m_logLevel;
-    int m_nWorkerThreads;
-    string m_serverName;
-    string m_idFileName;
+
+    map<string,string> m_values;
 
     static RelayConfigs* instance;
 };

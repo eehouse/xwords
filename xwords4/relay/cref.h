@@ -76,7 +76,7 @@ class CookieRef {
     const char* Cookie() { return m_cookie.c_str(); }
     const char* ConnName() { return m_connName.c_str(); }
 
-    short GetHeartbeat() { return m_heatbeat; }
+    int GetHeartbeat() { return m_heatbeat; }
     int SocketForHost( HostID dest );
 
     bool NeverFullyConnected();
@@ -192,7 +192,7 @@ class CookieRef {
     map<HostID,HostRec> m_sockets;
 /*     pthread_rwlock_t m_sockets_rwlock; */
 
-    short m_heatbeat;           /* might change per carrier or something. */
+    int m_heatbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */
     CookieID m_cookieID;        /* Unique among current games on this server */
