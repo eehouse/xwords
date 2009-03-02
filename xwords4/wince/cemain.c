@@ -88,7 +88,7 @@ static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len,
 
 #ifdef COMMS_HEARTBEAT
 static void ce_reset_proc( void* closure );
-# define CE_RESET_PROC ce_send_proc,
+# define CE_RESET_PROC ce_reset_proc,
 #else
 # define CE_RESET_PROC 
 #endif
