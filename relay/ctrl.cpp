@@ -250,9 +250,9 @@ cmd_get( int socket, const char** args )
         break;
     case 2: {
         RelayConfigs* rc = RelayConfigs::GetConfigs();
-        if ( NULL != rc ) {
-            print_to_sock( socket, true, "loglevel=%d\n", 
-                           rc->GetLogLevel() );
+        int level;
+        if ( NULL != rc && rc->GetValueFor( "LOGLEVEL", &level ) ) {
+            print_to_sock( socket, true, "loglevel=%d\n",  level );
             needsHelp = false;
         } else {
             logf( XW_LOGERROR, "RelayConfigs::GetConfigs() => NULL" );
@@ -306,7 +306,7 @@ cmd_set( int socket, const char** args )
         if ( NULL != val && val[0] != '\0' ) {
             RelayConfigs* rc = RelayConfigs::GetConfigs();
             if ( rc != NULL ) {
-                rc->SetLogLevel( atoi(val) );
+                rc->SetValueFor( "LOGLEVEL", val );
                 needsHelp = false;
             }
         }

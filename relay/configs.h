@@ -41,23 +41,18 @@ class RelayConfigs {
 
     ~RelayConfigs() {}
 
-    void GetPorts( vector<int>::const_iterator* iter, vector<int>::const_iterator* end);
-    int GetLogLevel(void) { return m_logLevel; }
-    void SetLogLevel(int ll) { m_logLevel = ll; }
-
     bool GetValueFor( const char* key, int* intValue );
     bool GetValueFor( const char* key, time_t* timeValue );
-    bool GetValueFor( const char* key, vector<int>::const_iterator* iter, 
-                      vector<int>::const_iterator* end );
+    bool GetValueFor( const char* key, vector<int>& ints );
     bool GetValueFor( const char* key, char* buf, int len );
+
+    void SetValueFor( const char* key, const char* value );
 
  private:
     RelayConfigs( const char* cfile );
     ino_t parse( const char* fname, ino_t prev );
 
     time_t m_allConnInterval;
-    vector<int> m_ports;
-    int m_logLevel;
 
     map<string,string> m_values;
 
