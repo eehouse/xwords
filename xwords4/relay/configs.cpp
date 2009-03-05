@@ -1,7 +1,8 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -53,14 +54,6 @@ RelayConfigs::RelayConfigs( const char* cfile )
     (void)parse( cfile, prev );
 } /* RelayConfigs::RelayConfigs */
 
-void
-RelayConfigs::GetPorts( std::vector<int>::const_iterator* iter, 
-                        std::vector<int>::const_iterator* end)
-{
-    *iter = m_ports.begin();
-    *end = m_ports.end();
-}
-
 bool
 RelayConfigs::GetValueFor( const char* key, int* value )
 {
@@ -92,6 +85,43 @@ RelayConfigs::GetValueFor( const char* key, char* buf, int len )
         snprintf( buf, len, "%s", iter->second.c_str() );
     }
     return found;
+}
+
+bool
+RelayConfigs::GetValueFor( const char* key, vector<int>& ints )
+{
+    map<string,string>::const_iterator iter = m_values.find(key);
+    bool found = iter != m_values.end();
+    const char* str = iter->second.c_str();
+    int len = strlen(str);
+    char buf[len+1];
+    strcpy( buf, str );
+    char* port = buf;
+
+    for ( ; ; ) {
+        char* end = strstr( port, "," );
+        if ( !!end ) {
+            *end = '\0';
+        }
+
+        logf( XW_LOGINFO, "adding %s to ports", port );
+        ints.push_back( atoi(port) );
+
+        if ( !end ) {
+            break;
+        }
+        port = end + 1;
+    }
+
+
+    return found;
+}
+
+void 
+RelayConfigs::SetValueFor( const char* key, const char* value )
+{
+    /* Does this leak in the case where we're replacing a value? */
+    m_values.insert( pair<string,string>(string(key),string(value) ) );
 }
 
 ino_t
@@ -131,10 +161,6 @@ RelayConfigs::parse( const char* fname, ino_t prev )
 
                     m_values.insert( pair<string,string>
                                      (string(line),string(value) ) );
-
-                    if ( 0 == strcmp( line, "PORT" ) ) {
-                        m_ports.push_back( atoi( value ) );
-                    }
                 }
                 fclose( f );
             }

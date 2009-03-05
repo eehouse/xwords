@@ -80,7 +80,16 @@ void
 logf( XW_LogLevel level, const char* format, ... )
 {
     RelayConfigs* rc = RelayConfigs::GetConfigs();
-    if ( NULL == rc || level <= rc->GetLogLevel() ) {
+    int configLevel = level;
+
+    if ( NULL != rc ) {
+
+        if ( ! rc->GetValueFor( "LOGLEVEL", &configLevel ) ) {
+            configLevel = level - 1; /* drop it */
+        }
+    }
+
+    if ( level <= configLevel ) {
 #ifdef USE_SYSLOG
         char buf[256];
         va_list ap;
@@ -628,7 +637,7 @@ main( int argc, char** argv )
     }
 #ifdef DO_HTTP
     if ( httpport == 0 ) {
-        (void)cfg->GetValueFor( "WWWPORT", &httpport );
+        (void)cfg->GetValueFor( "WWW_PORT", &httpport );
     }
 #endif
     if ( nWorkerThreads == 0 ) {
@@ -711,16 +720,19 @@ main( int argc, char** argv )
     if ( port != 0 ) {
         g_listeners.AddListener( port );
     }
-    vector<int>::const_iterator iter, end;
-    cfg->GetPorts( &iter, &end );
-    while ( iter != end ) {
+    vector<int> ints;
+    if ( !cfg->GetValueFor( "PORTS", ints ) ) {
+        exit( 1 );
+    }
+
+    vector<int>::const_iterator iter;
+    for ( iter = ints.begin(); iter != ints.end(); ++iter ) {
         int port = *iter;
         if ( !g_listeners.PortInUse( port ) ) {
             g_listeners.AddListener( port );
         } else {
             logf( XW_LOGERROR, "port %d was in use", port );
         }
-        ++iter;
     }
 
     g_control = make_socket( INADDR_LOOPBACK, ctrlport );
