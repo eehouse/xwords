@@ -49,22 +49,21 @@ ceFileExists( CEAppGlobals* globals, const wchar_t* name )
     XP_U16 len;
 
     len = ceGetPath( globals, DEFAULT_DIR_PATH_L, buf, VSIZE(buf) );
-    swprintf( &buf[len], L"%s.xwg", name );
+    _snwprintf( &buf[len], VSIZE(buf)-len, L"%s.xwg", name );
 
     attributes = GetFileAttributes( buf );
     return attributes != 0xFFFFFFFF;
 }
 
 static void
-makeUniqueName( CEAppGlobals* globals, wchar_t* buf, 
-                XP_U16 XP_UNUSED_DBG(bufLen) )
+makeUniqueName( CEAppGlobals* globals, wchar_t* buf, XP_U16 bufLen )
 {
     XP_U16 ii;
     for ( ii = 1; ii < 100; ++ii ) {
 #ifdef DEBUG
         int len = 
 #endif
-            swprintf( buf, L"Untitled%d", ii );
+            _snwprintf( buf, bufLen, L"Untitled%d", ii );
         XP_ASSERT( len < bufLen );
         if ( !ceFileExists( globals, buf ) ) {
             break;
@@ -120,16 +119,18 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                                               VSIZE(buf) );
                         if ( ceFileExists( globals, buf ) ) {
                             wchar_t widebuf[128];
-                            snwprintf( widebuf, VSIZE(widebuf), 
+                            _snwprintf( widebuf, VSIZE(widebuf), 
                                        L"File \"%s\" already exists.", buf );
                             result = MessageBox( hDlg, widebuf, L"Oops!", 
                                                  MB_OK | MB_ICONHAND );
-                            (void)SetDlgItemText( hDlg, IDC_SVGN_EDIT, state->buf );
+                            (void)SetDlgItemText( hDlg, IDC_SVGN_EDIT, 
+                                                  state->buf );
                             break;
                         }
                         len = ceGetPath( globals, DEFAULT_DIR_PATH_L, 
                                          state->buf, state->buflen );
-                        swprintf( &state->buf[len], L"%s.xwg", buf );
+                        _snwprintf( &state->buf[len], state->buflen - len,
+                                    L"%s.xwg", buf );
                         XP_LOGW( __func__, state->buf );
                         /* fallthru */
                         state->cancelled = XP_FALSE;
@@ -315,7 +316,7 @@ renameSelected( CeSavedGamesState* state )
            calling code handle it.  If we're renaming any other game, we can
            do it here. */
         if ( state->openGameIndex == state->sel ) {
-            swprintf( state->buf, L"%s", newPath );
+            _snwprintf( state->buf, state->buflen, L"%s", newPath );
             state->result = CE_SVGAME_RENAME;
         } else {
             wchar_t curPath[MAX_PATH];
@@ -447,7 +448,8 @@ SavedGamesDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                         len = ceGetPath( state->dlgHdr.globals, 
                                          DEFAULT_DIR_PATH_L, state->buf,
                                          state->buflen );
-                        swprintf( &state->buf[len], L"%s.xwg", buf );
+                        _snwprintf( &state->buf[len], state->buflen - len,
+                                    L"%s.xwg", buf );
                         XP_LOGW( "returning", state->buf );
                         state->result = CE_SVGAME_OPEN;
                     }
