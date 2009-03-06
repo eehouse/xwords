@@ -3375,10 +3375,24 @@ ce_util_remSelected( XW_UtilCtxt* uc )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-ce_util_addrChange( XW_UtilCtxt* XP_UNUSED(uc), 
-                    const CommsAddrRec* XP_UNUSED(oldAddr),
-                    const CommsAddrRec* XP_UNUSED(newAddr) )
+ce_util_addrChange( XW_UtilCtxt* uc, 
+                    const CommsAddrRec* oldAddr,
+                    const CommsAddrRec* newAddr )
 {
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+
+    XP_LOGF( "%s: old: %s -> new: %s", __func__,
+             ConnType2Str( oldAddr->conType ), 
+             ConnType2Str( newAddr->conType ) );
+
+    /* A lot more needs to be tested for and done here... */
+    if ( COMMS_CONN_NONE == newAddr->conType ) {
+        if ( !!globals->socketWrap ) {
+            ce_sockwrap_delete( globals->socketWrap );
+            globals->socketWrap = NULL;
+        }
+    }
+
     XP_LOGF( "ce_util_addrChange called; DO SOMETHING." );
 } /* ce_util_addrChange */
 #endif

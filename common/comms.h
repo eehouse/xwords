@@ -143,6 +143,7 @@ XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
+const char* ConnType2Str( CommsConnType typ );
 # endif
 
 EXTERN_C_END
