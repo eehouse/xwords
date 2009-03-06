@@ -1006,6 +1006,22 @@ relayCmdToStr( XWRELAY_Cmd cmd )
     default: return "<unknown>";
     }
 } 
+
+const char*
+ConnType2Str( CommsConnType typ )
+{
+    switch( typ ) {
+        CASESTR(COMMS_CONN_NONE);
+        CASESTR( COMMS_CONN_IR );
+        CASESTR( COMMS_CONN_IP_DIRECT );
+        CASESTR( COMMS_CONN_RELAY );
+        CASESTR( COMMS_CONN_BT );
+        CASESTR( COMMS_CONN_SMS );
+    default:
+        XP_ASSERT(0);
+    }
+    return "<unknown>";
+}
 # else
 # define relayCmdToStr( cmd )
 # endif
