@@ -25,7 +25,7 @@
 #include "xwords4.h"
 #include <commctrl.h>
 #include <winuser.h>
-#include <winsock.h>
+#include <winsock2.h>
 
 typedef unsigned char XP_U8;
 typedef signed char XP_S8;

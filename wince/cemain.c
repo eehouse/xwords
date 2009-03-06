@@ -2838,7 +2838,7 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 
 #ifdef COMMS_HEARTBEAT
 static void
-ce_reset_proc( void* closure )
+ce_reset_proc( void* XP_UNUSED_STANDALONE(closure) )
 {
     LOG_FUNC();
 }
