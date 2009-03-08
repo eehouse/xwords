@@ -1,4 +1,4 @@
-# -*- compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*-
+# -*- compile-command: "make TARGET_OS=wince DEBUG=TRUE RELAY_NAME_DEFAULT=localhost"; -*-
 # Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 
@@ -22,6 +22,7 @@ SVNREV = $(shell svnversion -n .. | tr ':' '_')
 PLATFORM = wince
 
 TARGET_OS ?= win32
+RELAY_NAME_DEFAULT ?= eehouse.org
 #TARGET_OS = wince
 #NO_DRAW = -DNO_DRAW
 
@@ -116,9 +117,9 @@ CFLAGS += -DPERIMETER_FOCUS
 
 # Hack until figure out how to turn off IME (12-key-to-text) on CE.
 CFLAGS += -DNUMBER_KEY_AS_INDEX
-
-#CFLAGS += -DRELAY_NAME_DEFAULT=\"localhost\"
-
+ifdef RELAY_NAME_DEFAULT
+	CFLAGS += -DRELAY_NAME_DEFAULT=\"$(RELAY_NAME_DEFAULT)\"
+endif
 # This is normally part of MEM_DEBUG, but sometimes we want logging in
 # a release build, e.g. to figure out why opening a saved game isn't
 # working.  So normally it's commented out here.
