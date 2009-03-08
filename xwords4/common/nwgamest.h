@@ -53,6 +53,7 @@ typedef enum {
 typedef enum {
 #ifndef XWFEATURE_STANDALONE_ONLY
     NG_ATTR_ROLE,
+    NG_ATTR_CANCONFIG,
     NG_ATTR_REMHEADER,
 #endif
     NG_ATTR_NPLAYERS

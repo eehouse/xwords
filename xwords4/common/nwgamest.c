@@ -48,6 +48,9 @@ struct NewGameCtx {
     XP_Bool isNewGame;
     XP_Bool changedNPlayers;
     XP_TriEnable juggleEnabled;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    XP_TriEnable settingsEnabled;
+#endif
 
     MPSLOT
 };
@@ -57,7 +60,7 @@ static void enableOne( NewGameCtx* ngc, XP_U16 player, NewGameColumn col,
 static void adjustAllRows( NewGameCtx* ngc, XP_Bool force );
 static void adjustOneRow( NewGameCtx* ngc, XP_U16 player, XP_Bool force );
 static void setRoleStrings( NewGameCtx* ngc );
-static void considerEnableJuggle( NewGameCtx* ngc );
+static void considerEnable( NewGameCtx* ngc );
 static void storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp );
 static void loadPlayer( NewGameCtx* ngc, XP_U16 player, 
                         const LocalPlayer* lp );
@@ -110,6 +113,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     XP_Bool shown[MAX_NUM_PLAYERS] = { XP_FALSE, XP_FALSE, XP_FALSE, XP_FALSE};
 
     ngc->juggleEnabled = TRI_ENAB_NONE;
+    ngc->settingsEnabled = TRI_ENAB_NONE;
     for ( ii = 0; ii < NG_NUM_COLS; ++ii ) {
         for ( jj = 0; jj < MAX_NUM_PLAYERS; ++jj ) {
             ngc->enabled[ii][jj] = TRI_ENAB_NONE;
@@ -145,7 +149,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
                             TRI_ENAB_ENABLED : TRI_ENAB_DISABLED );
 
     setRoleStrings( ngc );
-    considerEnableJuggle( ngc );   
+    considerEnable( ngc );   
 
     /* Load local players first */
     nLoaded = 0;
@@ -260,7 +264,7 @@ newg_attrChanged( NewGameCtx* ngc, NewGameAttr attr, NGValue value )
     }
 
     if ( changed ) {
-        considerEnableJuggle( ngc );
+        considerEnable( ngc );
         adjustAllRows( ngc, XP_FALSE );
     }
 }
@@ -534,7 +538,7 @@ setRoleStrings( NewGameCtx* ngc )
 } /* setRoleStrings */
 
 static void
-considerEnableJuggle( NewGameCtx* ngc )
+considerEnable( NewGameCtx* ngc )
 {
     XP_TriEnable newEnable;
     newEnable = (ngc->isNewGame && ngc->nPlayersShown > 1)?
@@ -544,7 +548,17 @@ considerEnableJuggle( NewGameCtx* ngc )
         (*ngc->enableAttrProc)( ngc->closure, NG_ATTR_CANJUGGLE, newEnable );
         ngc->juggleEnabled = newEnable;
     }
-} /* considerEnableJuggle */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    newEnable = (ngc->role == SERVER_STANDALONE)?
+        TRI_ENAB_HIDDEN : TRI_ENAB_ENABLED;
+
+    if ( newEnable != ngc->settingsEnabled ) {
+        ngc->settingsEnabled = newEnable;
+        (*ngc->enableAttrProc)( ngc->closure, NG_ATTR_CANCONFIG, newEnable );
+    }
+#endif
+} /* considerEnable */
 
 static void
 storePlayer( NewGameCtx* ngc, XP_U16 player, LocalPlayer* lp )
