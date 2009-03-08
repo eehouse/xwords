@@ -199,7 +199,7 @@ static void
 init_relay( CommsCtxt* comms, XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
 {
     comms->r.myHostID = comms->isServer? HOST_ID_SERVER: HOST_ID_NONE;
-    XP_LOGF( "set myHostID to %d", comms->r.myHostID );
+    XP_LOGF( "%s: set myHostID to %d", __func__, comms->r.myHostID );
     comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
     comms->r.nPlayersHere = nPlayersHere;
     comms->r.nPlayersTotal = nPlayersTotal;
@@ -957,7 +957,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     
     if ( result == elem->len ) {
         ++elem->sendCount;
-        XP_LOGF( "sendCount now %d", elem->sendCount );
+        XP_LOGF( "%s: sendCount now %d", __func__, elem->sendCount );
     }
 
     return result;
@@ -1078,7 +1078,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         consumed = cookieID != comms->r.cookieID
             || destID != comms->r.myHostID;
         if ( consumed ) {
-            XP_LOGF( "rejecting data message" );
+            XP_LOGF( "%s: rejecting data message", __func__ );
         } else {
             *senderID = srcID;
         }
@@ -1087,7 +1087,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     case XWRELAY_DISCONNECT_OTHER:
         relayErr = stream_getU8( stream );
         srcID = stream_getU8( stream );
-        XP_LOGF( "host id %x disconnected", srcID );
+        XP_LOGF( "%s: host id %x disconnected", __func__, srcID );
         /* we will eventually want to tell the user which player's gone */
         util_userError( comms->util, ERR_RELAY_BASE + relayErr );
         break;
@@ -1099,7 +1099,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
         /* fallthru */
     default:
-        XP_LOGF( "dropping relay msg with cmd %d", (XP_U16)cmd );
+        XP_LOGF( "%s: dropping relay msg with cmd %d", __func__, (XP_U16)cmd );
     }
     
     return consumed;
@@ -1435,8 +1435,8 @@ heartbeat_checks( CommsCtxt* comms )
             XP_U32 now = util_getCurSeconds( comms->util );
             XP_U32 tooLongAgo = now - (HB_INTERVAL * 2);
             if ( comms->lastMsgRcvdTime < tooLongAgo ) {
-                XP_LOGF( "calling reset proc; last was %ld secs too long ago", 
-                         tooLongAgo - comms->lastMsgRcvdTime );
+                XP_LOGF( "%s: calling reset proc; last was %ld secs too long "
+                         "ago", __func__, tooLongAgo - comms->lastMsgRcvdTime );
                 (*comms->resetproc)(comms->sendClosure);
                 comms->lastMsgRcvdTime = 0;
                 break;          /* outta here */
@@ -1641,7 +1641,7 @@ getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
             }
         }
     }
-    XP_LOGF( "getDestID(%d) => %x", channelNo, id );
+    XP_LOGF( "%s(%d) => %x", __func__, channelNo, id );
     return id;
 } /* getDestID */
 
@@ -1718,7 +1718,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         stream_destroy( tmpStream );
         if ( buf != NULL ) {
             XP_U16 result;
-            XP_LOGF( "passing %d bytes to sendproc", len );
+            XP_LOGF( "%s: passing %d bytes to sendproc", __func__, len );
             result = (*comms->sendproc)( buf, len, &addr, comms->sendClosure );
             success = result == len;
             if ( success ) {
@@ -1785,7 +1785,7 @@ send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, XP_PlayerAddr channelNo,
 static void
 relayDisconnect( CommsCtxt* comms )
 {
-    XP_LOGF( "relayDisconnect called" );
+    LOG_FUNC();
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         if ( comms->r.relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
             comms->r.relayState = COMMS_RELAYSTATE_UNCONNECTED;
