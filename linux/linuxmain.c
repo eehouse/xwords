@@ -1033,6 +1033,11 @@ main( int argc, char** argv )
         mainParams.serverRole = SERVER_ISCLIENT;
     }
 
+    if ( mainParams.needsNewGame ) {
+        gi_initPlayerInfo( MPPARM(mainParams.util->mpool) 
+                           &mainParams.gi, NULL );
+    }
+
     /* curses doesn't have newgame dialog */
     if ( useCurses && !mainParams.needsNewGame ) {
 #if defined PLATFORM_NCURSES
