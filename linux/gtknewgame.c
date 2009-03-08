@@ -45,7 +45,8 @@ typedef struct GtkNewGameState {
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     GtkWidget* remoteChecks[MAX_NUM_PLAYERS];
-    GtkWidget* radios[3];
+    GtkWidget* roleCombo;
+    GtkWidget* settingsButton;
 #endif
     GtkWidget* robotChecks[MAX_NUM_PLAYERS];
     GtkWidget* nameLabels[MAX_NUM_PLAYERS];
@@ -69,30 +70,37 @@ nplayers_menu_changed( GtkComboBox* combo, GtkNewGameState* state )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-radio_clicked( GtkRadioButton* radio, gpointer gp )
+role_combo_changed( GtkComboBox* combo, gpointer gp )
 {
     GtkNewGameState* state = (GtkNewGameState*)gp;
-    gint index = -1, ii;
-
-    for ( ii = 0; ii < VSIZE(state->radios); ++ii ) {
-        if (GTK_RADIO_BUTTON(state->radios[ii]) == radio ) {
-            index = ii;
-            break;
-        }
-    }
-
-    if ( index >= 0 && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio)) ) {
+    NGValue value;
+    gint index = gtk_combo_box_get_active( GTK_COMBO_BOX(combo) );
+ 
+    if ( index >= 0 ) {
         DeviceRole role = (DeviceRole)index;
-        NGValue value = { .ng_role = role };
-        newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
+        value.ng_role = role;
+ 
+        if ( state->isNewGame ) {
+            newg_attrChanged( state->newGameCtxt, NG_ATTR_ROLE, value );
+        } else if ( state->loaded ) {
+            /* put it back */
+            gtk_combo_box_set_active( GTK_COMBO_BOX(combo), state->role );
+        }
 
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+#ifndef XWFEATURE_STANDALONE_ONLY
         if ( state->loaded && SERVER_STANDALONE != role  ) {
-            gtkConnsDlg( state->globals, &state->addr, FALSE );
+            gtkConnsDlg( state->globals, &state->addr, !state->isNewGame );
         }
 #endif
     }
-} /* role_combo_changed */
+}
+
+static void
+handle_settings( GtkWidget* XP_UNUSED(item), GtkNewGameState* state )
+{
+    gtkConnsDlg( state->globals, &state->addr, !state->isNewGame );
+}
+
 #endif
 
 static void
@@ -176,6 +184,7 @@ makeNewGameDialog( GtkNewGameState* state )
     GtkWidget* vbox;
     GtkWidget* hbox;
 #ifndef XWFEATURE_STANDALONE_ONLY
+    GtkWidget* roleCombo;
     char* roles[] = { "Standalone", "Host", "Guest" };
 #endif
     GtkWidget* nPlayersCombo;
@@ -192,23 +201,20 @@ makeNewGameDialog( GtkNewGameState* state )
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), gtk_label_new("Role:"),
                         FALSE, TRUE, 0 );
+    roleCombo = gtk_combo_box_new_text();
+    state->roleCombo = roleCombo;
 
-    GtkWidget* radio = NULL;
     for ( ii = 0; ii < VSIZE(roles); ++ii ) {
-        if ( NULL == radio ) {
-            radio = gtk_radio_button_new_with_label( NULL, roles[ii] );
-        } else {   
-            radio = gtk_radio_button_new_with_label_from_widget( 
-                GTK_RADIO_BUTTON(radio), roles[ii] );
-        }
-        state->radios[ii] = radio;
-        g_signal_connect( GTK_OBJECT(radio), "clicked", 
-                          G_CALLBACK(radio_clicked), state );
-        gtk_box_pack_start( GTK_BOX(hbox), radio, FALSE, TRUE, 0 );
-        if ( !state->isNewGame && ii != state->role ) {
-            gtk_widget_set_sensitive( radio, FALSE );
-        }
+        gtk_combo_box_append_text( GTK_COMBO_BOX(roleCombo), roles[ii] );
     }
+    gtk_box_pack_start( GTK_BOX(hbox), roleCombo, FALSE, TRUE, 0 );
+    g_signal_connect( GTK_OBJECT(roleCombo), "changed", 
+                      G_CALLBACK(role_combo_changed), state );
+
+    state->settingsButton = makeButton( "Settings...", 
+                                        GTK_SIGNAL_FUNC(handle_settings),
+                                        state );
+    gtk_box_pack_start( GTK_BOX(hbox), state->settingsButton, FALSE, TRUE, 0 );
 
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 #endif
@@ -411,6 +417,8 @@ gtk_newgame_attr_enable( void* closure, NewGameAttr attr, XP_TriEnable enable )
     if ( attr == NG_ATTR_NPLAYERS ) {
         widget = state->nPlayersCombo;
 #ifndef XWFEATURE_STANDALONE_ONLY
+    } else if ( attr == NG_ATTR_CANCONFIG ) {
+        widget = state->settingsButton;
     } else if ( attr == NG_ATTR_ROLE ) {
         /* NG_ATTR_ROLE always enabled */
 /*         widget = state->roleCombo; */
@@ -483,8 +491,8 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
         gtk_combo_box_set_active( GTK_COMBO_BOX(state->nPlayersCombo), ii-1 );
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( attr == NG_ATTR_ROLE ) {
-        gtk_toggle_button_set_active( 
-            GTK_TOGGLE_BUTTON(state->radios[value.ng_role]), TRUE );
+        gtk_combo_box_set_active( GTK_COMBO_BOX(state->roleCombo), 
+                                  value.ng_role );
     } else if ( attr == NG_ATTR_REMHEADER ) {
         /* ignored on GTK: no headers at all */
 #endif
