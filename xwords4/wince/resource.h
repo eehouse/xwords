@@ -74,7 +74,7 @@
 #define IDC_PREFCOLORS                  1045
 #define IDC_PREFFONTS                   1046
 #define PHONIES_LABEL                   1048
-/* #define IDC_ROLECOMBO                   1049 */
+#define GIROLECONF_BUTTON               1049
 #define GIJUGGLE_BUTTON                 1050
 #define IDC_TOTAL_LABEL                 1051
 #define IDC_REMOTE_LABEL                1052

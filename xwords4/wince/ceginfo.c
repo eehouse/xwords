@@ -325,27 +325,34 @@ handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-handleConnOptionsButton( GameInfoState* state, DeviceRole role )
+callConnsDlg( GameInfoState* state )
+{
+    if ( WrapConnsDlg( state->dlgHdr.hDlg, state->dlgHdr.globals, 
+                       &state->prefsPrefs.addrRec, 
+                       &state->prefsPrefs.addrRec, state->lastRole, 
+                       state->isNewGame ) ) {
+        state->addrChanged = XP_TRUE;
+    }
+}
+
+
+static void
+handleConnOptionsButton( GameInfoState* state )
 {
     HWND hDlg = state->dlgHdr.hDlg;
     CEAppGlobals* globals = state->dlgHdr.globals;
+    DeviceRole role;
+    NGValue value;
 
-    if ( role == SERVER_STANDALONE ) {
-        NGValue value;
-        role = (DeviceRole)SendDlgItemMessage( hDlg, 
-                                               state->roleComboId,
-                                               GETCURSEL(globals), 0, 
-                                               0L);
-        value.ng_role = role;
-        newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
-    }
+    role = (DeviceRole)SendDlgItemMessage( hDlg, state->roleComboId,
+                                           GETCURSEL(globals), 0, 0L);
+    value.ng_role = role;
+    newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
 
-    state->lastRole = role;
-    if ( role != SERVER_STANDALONE) {
-        if ( WrapConnsDlg( hDlg, globals, &state->prefsPrefs.addrRec, 
-                           &state->prefsPrefs.addrRec, role, 
-                           state->isNewGame ) ) {
-            state->addrChanged = XP_TRUE;
+    if ( state->lastRole != role ) {
+        state->lastRole = role;
+        if ( role != SERVER_STANDALONE ) {
+            callConnsDlg( state );
         }
     }
 } /* handleConnOptionsButton */
@@ -386,6 +393,9 @@ resIDForAttr( GameInfoState* state, NewGameAttr attr )
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_ATTR_ROLE:
         resID = state->roleComboId;
+        break;
+    case NG_ATTR_CANCONFIG:
+        resID = GIROLECONF_BUTTON;
         break;
     case NG_ATTR_REMHEADER:
         resID = IDC_REMOTE_LABEL;
@@ -582,25 +592,9 @@ checkUpdateCombo( GameInfoState* state, XP_U16 id )
          }
     } else if ( id == state->roleComboId ) {
         XP_ASSERT( SERVER_STANDALONE == 0 );
-        handleConnOptionsButton( state, SERVER_STANDALONE );
+        handleConnOptionsButton( state );
     }
 } /* checkUpdateCombo */
-
-/* If we're mid-game and can't change role, click on role dropdown should
- * still bring up conns dialog in read-only mode.
- */
-static void
-checkRoleClick( GameInfoState* state, XP_U16 xx, XP_U16 yy )
-{
-    RECT rect;
-    ceGetItemRect( state->dlgHdr.hDlg, state->roleComboId, &rect );
-    
-    /* Isn't there API for PtInRect? */
-    if ( xx > rect.left && xx < rect.right
-         && yy > rect.top && yy < rect.bottom ) {
-        handleConnOptionsButton( state, state->lastRole );
-    }
-} /* checkRoleClick */
 
 LRESULT CALLBACK
 GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -674,12 +668,6 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                     break;
 
-                case WM_LBUTTONUP:
-                    if ( !state->isNewGame ) {
-                        checkRoleClick( state, LOWORD(lParam), HIWORD(lParam) );
-                    }
-                    break;
-
                 case WM_COMMAND:
                     result = TRUE;
                     id = LOWORD(wParam);
@@ -713,8 +701,11 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                                 /* If we've switched to a state where we'll be
                                    connecting */
-                                handleConnOptionsButton( state, SERVER_STANDALONE );
+                                handleConnOptionsButton( state );
                             }
+                            break;
+                        case GIROLECONF_BUTTON:
+                            callConnsDlg( state );
                             break;
 #endif
                         case GIJUGGLE_BUTTON:
