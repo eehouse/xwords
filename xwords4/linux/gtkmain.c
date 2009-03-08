@@ -1691,7 +1691,7 @@ newConnectionInput( GIOChannel *source,
                 board_draw( globals->cGlobals.game.board );
             }
         } else {
-            XP_LOGF( "errno from read: %d", errno );
+            XP_LOGF( "errno from read: %d/%s", errno, strerror(errno) );
         }
         keepSource = TRUE;
     }
