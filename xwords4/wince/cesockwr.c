@@ -294,8 +294,6 @@ ce_sockwrap_delete( CeSocketWrapper* self )
        some other way */
     closeConnection( self );
 
-    WSACleanup();
-
     XP_FREE( self->mpool, self );
 } /* ce_sockwrap_delete */
 

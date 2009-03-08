@@ -130,7 +130,7 @@ static const XP_UCHAR* ce_util_getUserString( XW_UtilCtxt* uc,
 static XP_Bool ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                         XP_U16 turn, XP_Bool turnLost );
 static void ce_util_remSelected( XW_UtilCtxt* uc );
-#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void ce_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                 const CommsAddrRec* newAddr );
 #endif
@@ -1259,7 +1259,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     wchar_t path[CE_MAX_PATH_LEN];
     MPSLOT;
 
-#ifdef XWFEATURE_RELAY
+#ifndef XWFEATURE_STANDALONE_ONLY
     {
         WORD wVersionRequested;
         WSADATA wsaData;
@@ -1889,10 +1889,13 @@ freeGlobals( CEAppGlobals* globals )
 
     closeGame( globals );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
     if ( !!globals->socketWrap ) {
         ce_sockwrap_delete( globals->socketWrap );
         globals->socketWrap = NULL;
     }
+    WSACleanup();
+#endif
 
     if ( !!globals->vtMgr ) {
         vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
