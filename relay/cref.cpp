@@ -780,8 +780,8 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
         assert( iter->second.m_socket == socket );
 
         logf( XW_LOGVERBOSE1, "upping m_lastHeartbeat from %d to %d",
-              iter->second.m_lastHeartbeat, now() );
-        iter->second.m_lastHeartbeat = now();
+              iter->second.m_lastHeartbeat, uptime() );
+        iter->second.m_lastHeartbeat = uptime();
     }
 } /* noteHeartbeat */
 
@@ -856,7 +856,7 @@ CookieRef::_PrintCookieInfo( string& out )
     /* open since when */
 
     snprintf( buf, sizeof(buf), "Hosts connected=%d; cur time = %ld\n", 
-              m_sockets.size(), now() );
+              m_sockets.size(), uptime() );
     out += buf;
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) {

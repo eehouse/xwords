@@ -348,7 +348,7 @@ cmd_rev( int socket, const char** args )
 void
 format_uptime( char* buf, int len )
 {
-    time_t seconds = now();
+    time_t seconds = uptime();
 
     int days = seconds / (24*60*60);
     seconds %= (24*60*60);

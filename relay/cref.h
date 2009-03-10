@@ -41,7 +41,7 @@ class HostRec {
         : m_socket(socket)
         , m_nPlayersH(nPlayersH) 
         , m_nPlayersT(nPlayersT) 
-        , m_lastHeartbeat(now()) 
+        , m_lastHeartbeat(uptime()) 
         {}
     ~HostRec() {}
     int m_socket;

@@ -47,11 +47,11 @@ void
 TimerMgr::SetTimer( time_t inMillis, TimerProc proc, void* closure,
                     int interval )
 {
-    logf( XW_LOGINFO, "setTimer: now = %d", now() );
+    logf( XW_LOGINFO, "setTimer: uptime = %ld", uptime() );
     TimerInfo ti;
     ti.proc = proc;
     ti.closure = closure;
-    ti.when = now() + inMillis;
+    ti.when = uptime() + inMillis;
     ti.interval = interval;
 
     MutexLock ml( &m_timersMutex );
@@ -75,7 +75,7 @@ TimerMgr::GetPollTimeout()
     if ( tout == 0 ) {
         tout = -1;
     } else {
-        tout -= now();
+        tout -= uptime();
         if ( tout < 0 ) {
             tout = 0;
         }
@@ -103,7 +103,7 @@ TimerMgr::figureNextFire()
 {
     /* Don't call this unless have the lock!!! */
     time_t t = 0x7FFFFFFF;
-    time_t cur = now();
+    time_t cur = uptime();
 
     list<TimerInfo>::iterator iter = m_timers.begin();
 
@@ -141,7 +141,7 @@ TimerMgr::FireElapsedTimers()
 {
     pthread_mutex_lock( &m_timersMutex );
 
-    time_t curTime = now();
+    time_t curTime = uptime();
 
     vector<TimerProc> procs;
     vector<void*> closures;

@@ -34,7 +34,7 @@
 class PermID {
  public:
     static void SetServerName( const char* name );
-    static void SetIDFileName( const char* name );
+    static void SetStartTime( time_t startTime );
     static std::string GetNextUniqueID();
 
  private:
@@ -44,7 +44,8 @@ class PermID {
                                                  this, which is supposed to be
                                                  unique to this relay
                                                  instance. */
-    static std::string        s_idFileName;   /* The incremented part of the
-                                                 name is stored where? */
-};
+    static int                s_nextId;       /* numeric part of ID */
+    static std::string        s_startTime;    /* allows multiple servers per 
+                                                 host to have uniquie names */
+}; 
 #endif
