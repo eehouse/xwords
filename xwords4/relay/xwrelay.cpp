@@ -360,7 +360,7 @@ killSocket( int socket, const char* why )
 }
 
 time_t
-now( void ) 
+uptime( void ) 
 {
     static time_t startTime = time(NULL);
     return time(NULL) - startTime;
@@ -563,7 +563,7 @@ main( int argc, char** argv )
     bool doDaemon = true;
     bool doFork = true;
 
-    (void)now();                      /* force capture of start time */
+    (void)uptime();                /* force capture of start time */
 
     /* Verify sizes here... */
     assert( sizeof(CookieID) == 2 );
@@ -651,15 +651,8 @@ main( int argc, char** argv )
         }
     }
 
-    char idFileNameBuf[128];
-    if ( idFileName == NULL ) {
-        if ( cfg->GetValueFor( "IDFILE", idFileNameBuf, sizeof(idFileName) ) ) {
-            idFileName = idFileNameBuf;
-        }
-    }
-
     PermID::SetServerName( serverName );
-    PermID::SetIDFileName( idFileName );
+    PermID::SetStartTime( time(NULL) );
 
     /* add signal handling here */
 

@@ -413,7 +413,7 @@ CRefMgr::UnlockCref( CookieRef* cref )
 CRefMgr::heartbeatProc( void* closure )
 {
     CRefMgr* self = (CRefMgr*)closure;
-    self->checkHeartbeats( now() );
+    self->checkHeartbeats( uptime() );
 } /* heartbeatProc */
 #endif
 

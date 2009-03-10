@@ -21,7 +21,7 @@ void killSocket( int socket, const char* why );
 
 bool send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
 
-time_t now(void);
+time_t uptime(void);
 
 int make_socket( unsigned long addr, unsigned short port );
 

@@ -29,38 +29,18 @@ using namespace std;
 
 pthread_mutex_t PermID::s_guard = PTHREAD_MUTEX_INITIALIZER;
 string          PermID::s_serverName;
-string          PermID::s_idFileName;
+int             PermID::s_nextId = 0;
+string          PermID::s_startTime;
 
 string
 PermID::GetNextUniqueID()
 {
-    const char* fileName = s_idFileName.c_str();
     MutexLock ml( &s_guard );
 
-    string s = s_serverName;
-    assert( s.length() > 0 );
-    s += ":";
-    
-    char buf[32];               /* should last for a while :-) */
-
-    FILE* f = fopen( fileName, "r+" );
-    if ( f ) {
-        fscanf( f, "%s\n", buf );
-        rewind( f );
-    } else {
-        f = fopen( fileName, "w" );
-        assert ( f != NULL );
-        buf[0] = '0';
-        buf[1] = '\0';
-    }
-
-    int n = atoi(buf) + 1;
-    sprintf( buf, "%d", n );
-
-    fprintf( f, "%s\n", buf );
-    fclose( f );
-    
-    s += buf;
+    char buf[64];
+    snprintf( buf, sizeof(buf), "%s:%s:%d", s_serverName.c_str(), 
+              s_startTime.c_str(), ++s_nextId );
+    string s(buf);
 
     return s;
 }
@@ -72,7 +52,10 @@ PermID::SetServerName( const char* name )
 }
 
 /* static */ void
-PermID::SetIDFileName( const char* name )
+PermID::SetStartTime( time_t startTime )
 {
-    s_idFileName = name;
+    char buf[16];
+    snprintf( buf, sizeof(buf), "%ld", startTime );
+    s_startTime = buf;
+    logf( XW_LOGINFO, "assigned startTime: %s", s_startTime.c_str() );
 }
