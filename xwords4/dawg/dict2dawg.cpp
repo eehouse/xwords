@@ -114,7 +114,7 @@ static char* parseARGV( int argc, char** argv, const char** inFileName );
 static void usage( const char* name );
 static void error_exit( int line, const char* fmt, ... );
 static void makeTableHash( void );
-static WordList* parseAndSort( FILE* file );
+static WordList* parseAndSort( void );
 static void printWords( WordList* strings );
 static bool firstBeforeSecond( const Letter* lhs, const Letter* rhs );
 static char* tileToAscii( char* out, int outSize, const Letter* in );
@@ -427,7 +427,7 @@ readFromSortedArray( void )
     static WordList* sInputStrings = NULL; // we'll just let this leak
 
     if ( sInputStrings == NULL ) {
-        sInputStrings = parseAndSort( gInFile );
+        sInputStrings = parseAndSort();
         gNextWordIndex = 0;
 
 #ifdef DEBUG
@@ -513,6 +513,7 @@ getWideChar( FILE* file )
         size_t siz;
 
         if ( byt == EOF || byt == gTermChar ) {
+            assert( 0 == ii );
             dest = byt;
             break;
         }
@@ -717,7 +718,7 @@ tileToAscii( char* out, int outSize, const Letter* in )
 }
 
 static WordList*
-parseAndSort( FILE* infile )
+parseAndSort( void )
 {
     WordList* wordlist = new WordList;
 
@@ -1250,6 +1251,8 @@ parseARGV( int argc, char** argv, const char** inFileName )
         } else if ( !strcasecmp( enc, "iso-8859-1" ) ) {
             gIsMultibyte = false;
         } else if ( !strcasecmp( enc, "iso-latin-1" ) ) {
+            gIsMultibyte = false;
+        } else if ( !strcasecmp( enc, "ISO-8859-2" ) ) {
             gIsMultibyte = false;
         } else {
             ERROR_EXIT( "%s: unknown encoding %s", __func__, enc );
