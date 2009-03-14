@@ -1,5 +1,6 @@
-# -*-mode: Makefile -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# -*- coding: iso-8859-2; mode: Makefile; -*-
+# Copyright 2002 - 2009 by Eric House (xwords@eehouse.org).  All
+# rights reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,16 +18,24 @@
 
 XWLANG=Polish
 LANGCODE=pl_PL
+ENC = ISO-8859-2
 
-TARGET_TYPE ?= FRANK
+# DICT2DAWGARGS = -lang $(LANGCODE)
+# DICT2DAWGARGS = -debug
+
+TARGET_TYPE ?= WINCE
 
 include ../Makefile.2to8
 
 include ../Makefile.langcommon
 
-$(XWLANG)Main.dict.gz: slowa.txt.gz
-	zcat $< | tr -d '\r' | tr [a-z±æê³ñó¶¼¿] [A-Z¡ÆÊ£ÑÓ¦¬¯] | \
-		grep '^[A-PR-UWYZ¡ÆÊ£ÑÓ¦¬¯]*$$' | gzip >$@
+SOURCEDICT ?= $(XWDICTPATH)/Polish/iso-8859-2/slowa.txt.gz
+
+$(XWLANG)Main.dict.gz: $(SOURCEDICT)
+	zcat $< | tr -d '\r' \
+	| LANG=$(LANGCODE):$(ENC) tr [a±bcædeêfghijkl³mnñoóprs¶tuwyz¼¿] [A¡BCÆDEÊFGHIJKL£MNÑOÓPRS¦TUWYZ¬¯] \
+    | LANG=$(LANGCODE):$(ENC) grep '^[A¡BCÆDEÊFGHIJKL£MNÑOÓPRS¦TUWYZ¬¯]*$$' \
+    | gzip > $@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
