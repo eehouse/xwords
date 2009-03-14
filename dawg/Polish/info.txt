@@ -17,15 +17,15 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 LANGCODE:pl_PL
-
 CHARSET:iso-8859-2
 
 # deal with DOS files
-LANGFILTER_PRECLIP: tr -d '\r' |
+LANGFILTER: tr -d '\r'
+LANGFILTER: | tr [a-pr-uwyz±æê³ñó¶¼¿] [A-PR-UWYZ¡ÆÊ£ÑÓ¦¬¯]
+LANGFILTER: | grep '^[A-PR-UWYZ¡ÆÊ£ÑÓ¦¬¯]*$'
+LANGFILTER: | tr '\n' '\000'
 
-LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
-LANGFILTER_POSTCLIP: | grep '^[A-Z]*$'
-LANGFILTER_POSTCLIP: | tr '\n' '\000'
+D2DARGS: -r -term 0
 
 NEEDSSORT:true
 
