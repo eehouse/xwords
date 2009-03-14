@@ -1,5 +1,6 @@
-# -*- mode: conf; -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# -*- coding: iso-8859-2; mode: conf; -*-
+# Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,8 +23,8 @@ CHARSET:iso-8859-2
 # deal with DOS files
 LANGFILTER_PRECLIP: tr -d '\r' |
 
-LANGFILTER_POSTCLIP: | tr [a-z±æê³ñó¶¼¿] [A-Z¡ÆÊ£ÑÓ¦¬¯]
-LANGFILTER_POSTCLIP: | grep '^[A-PR-UWYZ¡ÆÊ£ÑÓ¦¬¯]*$'
+LANGFILTER_POSTCLIP: | tr [a-z] [A-Z]
+LANGFILTER_POSTCLIP: | grep '^[A-Z]*$'
 LANGFILTER_POSTCLIP: | tr '\n' '\000'
 
 NEEDSSORT:true
@@ -39,7 +40,7 @@ LANGINFO: href="mailto:xwords@eehouse.org">me</a> know so that I can get
 LANGINFO: this working.</p>
 
 LANGINFO: <p>Note that the blank is the last tile here, while with all
-LANGINFO: other languages it's the first.</p>
+LANGINFO: other languages it&apos;s the first.</p>
 
 LANGINFO: <p>Also, please note that we currently require the files you
 LANGINFO: upload to use the iso-8859-2 character encoding.</p>
@@ -48,40 +49,40 @@ LANGINFO: upload to use the iso-8859-2 character encoding.</p>
 # Polish==8.  Low byte is padding
 XLOC_HEADER:0x8800
 
-
 <BEGIN_TILES>
-9			1		'A'
-1			5		'¡'
-2			3		'B'
-3			2		'C'
-1			6		'Æ'
-3			2		'D'
-7			1		'E'
-1			5		'Ê'
-1			5		'F'
-2			3		'G'
-2			3		'H'
-8			1		'I'
-2			3		'J'
-3			2		'K'
-3			2		'L'
-2			3		'£'
-3			2		'M'
-5			1		'N'
-1			7		'Ñ'
-6			1		'O'
-1			5		'Ó'
-3			2		'P'
-4			1		'R'
-4			1		'S'
-1			5		'¦'
-3			2		'T'
-2			3		'U'
-4			1		'W'
-4			2		'Y'
-5			1		'Z'
-1			9		'¬'
-1			5		'¯'
+9           1       'A'
+1           5       161 # '¡'
+2           3       'B'
+3           2       'C'
+1           6       198 # 'Æ'
+3           2       'D'
+7           1       'E'
+1           5       202 # 'Ê'
+1           5       'F'
+2           3       'G'
+2           3       'H'
+8           1       'I'
+2           3       'J'
+3           3  	    'K'
+3           2       'L'
+2           3       163 # '£'
+3           2       'M'
+5           1       'N'
+1           7       209 # 'Ñ'
+6           1       'O'
+1           5       211 # 'Ó'
+3           2       'P'
+4           1       'R'
+4           1       'S'
+1           5       166 # '¦'
+3           2       'T'
+2           3       'U'
+4           1       'W'
+4           2  	    'Y'
+5           1       'Z'
+1           9       172 # '¬'
+1           5       175 # '¯'
+
 # the blank *must* be last here!!!
 2           0       {"_"}
 <END_TILES>
