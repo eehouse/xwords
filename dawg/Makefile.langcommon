@@ -280,7 +280,7 @@ values.bin:  ../xloc.pl
 
 # clean this up....
 ../dict2dawg: ../dict2dawg.cpp
-	cd ../ && g++ -DDEBUG -O -Wall -o dict2dawg dict2dawg.cpp
+	cd ../ && g++ -DDEBUG -O0 -g -Wall -o dict2dawg dict2dawg.cpp
 
 clean_common:
 	rm -f $(XWLANG)Main.dict *.bin *.pdb *.seb dawg*.stamp *.$(FRANK_EXT) \
