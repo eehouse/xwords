@@ -245,7 +245,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
 
 #define STREAM_OR_LOG(stream,buf) \
     if ( !!stream ) { \
-        stream_putString( stream, buf ); \
+        stream_catString( stream, buf ); \
     } else { \
         XP_LOGF( "%s", buf ); \
     } \

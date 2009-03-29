@@ -514,7 +514,7 @@ figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo,
         if ( !!stream ) {
             const XP_UCHAR* bstr = util_getUserString( model->vol.util, 
                                                        STR_BONUS_ALL );
-            stream_putString( stream, bstr );
+            stream_catString( stream, bstr );
         }
     }
 
@@ -832,7 +832,7 @@ formatWordScore( XWStreamCtxt* stream, XP_U16 wordScore,
         }
         XP_ASSERT( XP_STRLEN(tmpBuf) < sizeof(tmpBuf) );
 
-        stream_putString( stream, tmpBuf );
+        stream_catString( stream, tmpBuf );
     }
 } /* formatWordScore */
 
@@ -844,7 +844,7 @@ formatSummary( XWStreamCtxt* stream, const ModelCtxt* model, XP_U16 score )
                 util_getUserString(model->vol.util, STRD_TURN_SCORE), 
                 score);
     XP_ASSERT( XP_STRLEN(buf) < sizeof(buf) );
-    stream_putString( stream, buf );
+    stream_catString( stream, buf );
 } /* formatSummary */
 
 #ifdef CPLUS

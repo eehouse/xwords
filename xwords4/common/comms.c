@@ -1525,41 +1525,41 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                  (XP_UCHAR*)"msg queue len: %d\n", comms->queueLen );
-    stream_putString( stream, buf );
+    stream_catString( stream, buf );
 
     for ( elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
                      " - channelNo=%d; msgID=" XP_LD "; len=%d\n", 
                      elem->channelNo, elem->msgID, elem->len );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
     }
 
     XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                  (XP_UCHAR*)"channel-less bytes sent: %d\n", 
                  comms->nUniqueBytes );
-    stream_putString( stream, buf );
+    stream_catString( stream, buf );
 
     now = util_getCurSeconds( comms->util );
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                      (XP_UCHAR*)"  Stats for channel: %d\n", 
                      rec->channelNo );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                      (XP_UCHAR*)"Last msg sent: " XP_LD "\n", 
                      rec->nextMsgID );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                      (XP_UCHAR*)"Unique bytes sent: %d\n", 
                      rec->nUniqueBytes );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
                      (XP_UCHAR*)"Last message acknowledged: %d\n", 
                      rec->lastACK);
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
 
     }
 } /* comms_getStats */

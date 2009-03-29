@@ -1446,7 +1446,7 @@ notifyDictListeners( ModelCtxt* model, DictionaryCtxt* oldDict,
 static void
 printString( XWStreamCtxt* stream, const XP_UCHAR* str )
 {
-    stream_putString( stream, str );
+    stream_catString( stream, str );
 } /* printString */
 
 static XP_UCHAR*
