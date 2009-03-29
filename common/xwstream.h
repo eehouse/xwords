@@ -52,7 +52,7 @@ typedef struct StreamCtxVTable {
     void (*m_stream_putU8)( XWStreamCtxt* dctx, XP_U8 byt );
     void (*m_stream_putBytes)( XWStreamCtxt* dctx, const void* whence, 
                                XP_U16 count );
-    void (*m_stream_putString)( XWStreamCtxt* dctx, const char* whence );
+    void (*m_stream_catString)( XWStreamCtxt* dctx, const char* whence );
     void (*m_stream_putU16)( XWStreamCtxt* dctx, XP_U16 data );
     void (*m_stream_putU32)( XWStreamCtxt* dctx, XP_U32 data );
     void (*m_stream_putBits)( XWStreamCtxt* dctx, XP_U16 nBits, XP_U32 bits
@@ -113,8 +113,8 @@ struct XWStreamCtxt {
 #define stream_putBytes( sc, w, c ) \
          (sc)->vtable->m_stream_putBytes((sc), (w), (c))
 
-#define stream_putString( sc, w ) \
-         (sc)->vtable->m_stream_putString((sc), (w))
+#define stream_catString( sc, w ) \
+         (sc)->vtable->m_stream_catString((sc), (w))
 
 #define stream_putU16(sc, d) \
          (sc)->vtable->m_stream_putU16((sc), (d))
