@@ -28,6 +28,9 @@ my $gDoRaw = 0;
 my $gFileType;
 my $gNodeSize;
 
+use Fcntl 'SEEK_CUR';
+sub systell { sysseek($_[0], 0, SEEK_CUR) }
+
 sub usage() {
     print STDERR "USAGE: $0 "
         . "[-raw] "
@@ -177,8 +180,10 @@ sub prepXWD($$$$) {
     getSpecials( $fh, $nSpecials, \@specials );
     mergeSpecials( $facRef, \@specials );
 
+#    printf STDERR "at 0x%x before offset read\n", systell($fh);
     sysread( $fh, $buf, 4 );
     $$startRef = unpack( 'N', $buf );
+#    print STDERR "startRef=$$startRef\n";
 
     my @nodes = readNodesToEnd( $fh );
 
