@@ -89,27 +89,37 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 
     while( !!ptr ) {           /* lets us break.... */
         XP_U32 offset;
-        XP_U16 numFaces;
+        XP_U16 numFaces, numFaceBytes;
         XP_U16 i;
         XP_U16 flags;
         void* mappedBase = (void*)ptr;
         XP_U8 nodeSize;
+        XP_Bool isUTF8 = XP_FALSE;
 
         flags = n_ptr_tohs( &ptr );
 
-#ifdef NODE_CAN_4
         if ( flags == 0x0002 ) {
             nodeSize = 3;
         } else if ( flags == 0x0003 ) {
             nodeSize = 4;
+        } else if ( flags == 0x0004 ) {
+            isUTF8 = XP_TRUE;
+            nodeSize = 3;
+        } else if ( flags == 0x0005 ) {
+            isUTF8 = XP_TRUE;
+            nodeSize = 4;
         } else {
             break;          /* we want to return NULL */
         }
-#else
-        if( flags != 0x0001 ) {
+
+        if ( isUTF8 ) {
+            numFaceBytes = (XP_U16)(*ptr++);
+        }
+        numFaces = (XP_U16)(*ptr++);
+        if ( numFaces > 64 ) {
             break;
         }
-#endif
+
         ctxt = (CEDictionaryCtxt*)ce_dictionary_make_empty( globals );
 
         ctxt->mappedFile = mappedFile;
@@ -118,23 +128,24 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         ctxt->super.destructor = ce_dict_destroy;
         ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
-        numFaces = (XP_U16)(*ptr++);
         ctxt->super.nFaces = (XP_U8)numFaces;
-        ctxt->super.faces16 = 
-            XP_MALLOC( globals->mpool, 
-                       numFaces * sizeof(ctxt->super.faces16[0]) );
+        ctxt->super.isUTF8 = isUTF8;
 
-#ifdef NODE_CAN_4
+        if ( isUTF8 ) {
+            dict_splitFaces( &ctxt->super, ptr, numFaceBytes, numFaces );
+            ptr += numFaceBytes;
+        } else {
+            XP_U8 buf[numFaces * 2];
+            XP_U16 ii;
+            XP_MEMCPY( buf, ptr, sizeof(buf) );
+            ptr += sizeof(buf);
+            for ( ii = 0; ii < numFaces; ++ii ) {
+                buf[ii] = buf[1+(ii*2)];
+            }
+            dict_splitFaces( &ctxt->super, buf, numFaces, numFaces );
+        }
+
         ctxt->super.is_4_byte = (ctxt->super.nodeSize == 4);
-
-        for ( i = 0; i < numFaces; ++i ) {
-            ctxt->super.faces16[i] = n_ptr_tohs(&ptr);
-        }
-#else
-        for ( i = 0; i < numFaces; ++i ) {
-            ctxt->super.faces16[i] = (XP_CHAR16)*ptr++;
-        }
-#endif
 
         ctxt->super.countsAndValues = 
             (XP_U8*)XP_MALLOC(globals->mpool, numFaces*2);
@@ -179,7 +190,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             ctxt->super.base = (array_edge*)NULL;
         }
 
-        setBlankTile( (DictionaryCtxt*)ctxt );
+        setBlankTile( &ctxt->super );
 
         ctxt->super.name = copyString(globals->mpool, dictName);
         break;              /* exit phony while loop */
@@ -199,12 +210,43 @@ ce_dictionary_make_empty( CEAppGlobals* XP_UNUSED_DBG(globals) )
     return (DictionaryCtxt*)ctxt;
 } /* ce_dictionary_make_empty */
 
+void
+dict_splitFaces( DictionaryCtxt* dict, const XP_U8* inBuf, 
+                 XP_U16 nBytes, XP_U16 nFaces )
+{
+    XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
+    XP_UCHAR** starts = XP_MALLOC( dict->mpool, nFaces * sizeof(starts[0]));
+    XP_U16 ii;
+    XP_UCHAR* next = faces;
+    wchar_t widebuf[nFaces];
+    UINT codePage = dict->isUTF8? CP_UTF8 : CP_ACP;
+
+    int nRead = MultiByteToWideChar( codePage, 0, (char*)inBuf, nBytes,
+                                     widebuf, VSIZE(widebuf) );
+    XP_ASSERT( nRead == nFaces );
+
+    /* now split */
+    for ( ii = 0; ii < nFaces; ++ii ) {
+        starts[ii] = next;
+        int nWritten = WideCharToMultiByte( codePage, 0, &widebuf[ii], 1,
+                                            next, 100, NULL, NULL );
+        next += nWritten;
+        *next++ = 0;
+    }
+
+    XP_ASSERT( next == faces + nFaces + nBytes );
+    XP_ASSERT( !dict->faces );
+    dict->faces = faces;
+    XP_ASSERT( !dict->faceStarts );
+    dict->faceStarts = starts;
+} /* dict_splitFaces */
+
 static void
 ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
 {
     XP_U16 nSpecials = ceCountSpecials( ctxt );
     XP_U8* ptr = *ptrp;
-    Tile i;
+    Tile ii;
     XP_UCHAR** texts;
     SpecialBitmaps* bitmaps;
 
@@ -213,22 +255,21 @@ ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
     bitmaps = (SpecialBitmaps*)
         XP_MALLOC( ctxt->super.mpool, nSpecials * sizeof(*bitmaps) );
 
-    for ( i = 0; i < ctxt->super.nFaces; ++i ) {
+    for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
 	
-        XP_CHAR16 face = ctxt->super.faces16[(short)i];
-        if ( IS_SPECIAL(face) ) {
-
+        XP_UCHAR* facep = ctxt->super.faceStarts[(int)ii];
+        if ( IS_SPECIAL(*facep) ) {
             /* get the string */
             XP_U8 txtlen = *ptr++;
             XP_UCHAR* text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
             XP_MEMCPY( text, ptr, txtlen );
             ptr += txtlen;
             text[txtlen] = '\0';
-            XP_ASSERT( face < nSpecials );
-            texts[face] = text;
+            XP_ASSERT( *facep < nSpecials );
+            texts[(int)*facep] = text;
 
-            bitmaps[face].largeBM = ceMakeBitmap( ctxt, &ptr );
-            bitmaps[face].smallBM = ceMakeBitmap( ctxt, &ptr );
+            bitmaps[(int)*facep].largeBM = ceMakeBitmap( ctxt, &ptr );
+            bitmaps[(int)*facep].smallBM = ceMakeBitmap( ctxt, &ptr );
         }
     }
 
@@ -242,10 +283,10 @@ static XP_U16
 ceCountSpecials( CEDictionaryCtxt* ctxt )
 {
     XP_U16 result = 0;
-    XP_U16 i;
+    XP_U16 ii;
 
-    for ( i = 0; i < ctxt->super.nFaces; ++i ) {
-        if ( IS_SPECIAL(ctxt->super.faces16[i] ) ) {
+    for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
+        if ( IS_SPECIAL( ctxt->super.faceStarts[ii][0] ) ) {
             ++result;
         }
     }
@@ -410,7 +451,8 @@ ce_dict_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
 
-    XP_FREE( ctxt->super.mpool, ctxt->super.faces16 );
+    XP_FREE( ctxt->super.mpool, ctxt->super.faces );
+    XP_FREE( ctxt->super.mpool, ctxt->super.faceStarts );
     XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
     XP_FREE( ctxt->super.mpool, ctxt->super.name );
 
@@ -550,12 +592,8 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
         
             flags = n_ptr_tohs( &ptr );
             closeMappedFile( MPPARM(mpool) base, mappedFile );
-#ifdef NODE_CAN_4
             /* are the flags what we expect */
-            result = flags == 0x0002 || flags == 0x0003;
-#else
-            result = flags == 0x0001;
-#endif
+            result = flags >= 0x0002 && flags <= 0x0005;
         }
     }
 
@@ -711,7 +749,7 @@ matchShortName( const wchar_t* wPath, XP_U16 XP_UNUSED(index), void* ctxt )
 
     XP_ASSERT( !datap->found );
 
-    name = wbname( buf, sizeof(buf), wPath );
+    name = wbname( buf, VSIZE(buf), wPath );
     if ( 0 == wcscmp( name, datap->sought ) ) {
         wcscpy( datap->result, wPath );
         datap->found = XP_TRUE;
@@ -730,7 +768,7 @@ findAlternateDict( CEAppGlobals* globals, wchar_t* path )
     FindOneData data;
 
     XP_MEMSET( &data, 0, sizeof(data) );
-    data.sought = wbname( shortPath, sizeof(shortPath), path );
+    data.sought = wbname( shortPath, VSIZE(shortPath), path );
     data.result = path;
 
     (void)ceLocateNDicts( globals, CE_MAXDICTS, matchShortName, 
@@ -781,13 +819,13 @@ wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in )
     result = buf + wcslen( buf ) - 1;
 
     /* wipe out extension */
-    while ( *result != '.' ) {
+    while ( *result != L'.' ) {
         --result;
         XP_ASSERT( result > buf );
     }
     *result = 0;
 
-    while ( result >= buf && *result != '\\' ) {
+    while ( result >= buf && *result != L'\\' ) {
         --result;
     }
 
