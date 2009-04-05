@@ -46,6 +46,7 @@ typedef XP_U32 XP_Time;
 #define XP_FALSE ((XP_Bool)(1==0))
 
 #define XP_CR "\015\012" /* 'Doze expects a carraige return followed by a linefeed */
+#define XP_S "%s"
 
 #ifdef _WIN32_WCE
 # define XP_RANDOM() Random()
@@ -67,10 +68,11 @@ typedef XP_U32 XP_Time;
 #define XP_MEMCPY(d,s,l) memcpy((d),(s),(l))
 #define XP_MEMMOVE(d,s,l) memmove((d),(s),(l))
 #define XP_MEMCMP( a1, a2, l )  memcmp((a1),(a2),(l))
-#define XP_STRLEN(s) strlen((char*)(s))
+#define XP_STRLEN(s) strlen((s))
 #define XP_STRCAT(d,s) strcat((d),(s))
 #define XP_STRCMP(s1,s2)        strcmp((char*)(s1),(char*)(s2))
 #define XP_STRNCMP(s1,s2,l)     strncmp((char*)(s1),(char*)(s2),(l))
+#define XP_STRNCPY(s,d,l) strncpy((s),(d),(l))
 #define XP_SNPRINTF wince_snprintf
 
 #define XP_MIN(a,b) ((a)<(b)?(a):(b))
