@@ -56,6 +56,7 @@ typedef unsigned long XP_Time;
 #endif
 
 #define XP_CR "\n"
+#define XP_S "%s"
 
 #define XP_STATUSF XP_DEBUGF
 #define XP_LOGF XP_DEBUGF
