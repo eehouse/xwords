@@ -48,8 +48,9 @@ void ceGetItemRect( HWND hDlg, XP_U16 resID, RECT* rect );
 void ceMoveItem( HWND hDlg, XP_U16 resID, XP_S16 byX, XP_S16 byY );
 
 int ceMessageBoxChar( CEAppGlobals* globals, const XP_UCHAR* str, 
-                      const wchar_t* title, XP_U16 buttons );
+                      XP_Bool isUTF8, const wchar_t* title, XP_U16 buttons );
 int ceOops( CEAppGlobals* globals, const XP_UCHAR* str );
+XP_Bool ceCurDictIsUTF8( CEAppGlobals* globals );
 
 typedef enum {
     PREFS_FILE_PATH_L

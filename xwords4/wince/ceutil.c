@@ -881,17 +881,17 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
 
 int
 ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), const XP_UCHAR* str, 
-                  const wchar_t* title, XP_U16 buttons )
+                  XP_Bool isUTF8, const wchar_t* title, XP_U16 buttons )
 {
     HWND parent;
     /* Get the length required, then alloc and go.  This is technically
        correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
     XP_U16 clen = 1 + strlen(str);
-    XP_U32 wlen = 1 + MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, 
-                                           clen, NULL, 0 );
+    UINT codePage = isUTF8? CP_UTF8:CP_ACP;
+    XP_U32 wlen = 1 + MultiByteToWideChar( codePage, 0, str, clen, NULL, 0 );
     wchar_t widebuf[wlen];
     
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, clen, widebuf, wlen );
+    MultiByteToWideChar( codePage, 0, str, clen, widebuf, wlen );
 
     parent = GetForegroundWindow();
     return MessageBox( parent, widebuf, title, buttons );
@@ -900,6 +900,21 @@ ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), const XP_UCHAR* str,
 int
 ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
 {
-    return ceMessageBoxChar( globals, str, L"Oops!", 
+    XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
+    return ceMessageBoxChar( globals, str, isUTF8, L"Oops!", 
                              MB_OK | MB_ICONHAND );
 }
+
+XP_Bool
+ceCurDictIsUTF8( CEAppGlobals* globals )
+{
+    XP_Bool result = XP_FALSE;
+    const ModelCtxt* model = globals->game.model;
+    if ( !!model ) {
+        const DictionaryCtxt* dict = model_getDictionary( model );
+        if ( !!dict ) {
+            result = dict_isUTF8( dict );
+        }
+    }
+    return result;
+} /* ceCurDictIsUTF8 */
