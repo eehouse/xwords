@@ -1,4 +1,4 @@
-# -*- mode: makefile; compile-command: "make -j MEMDEBUG=TRUE"; -*-
+# -*- mode: makefile; compile-command: "make -j3 MEMDEBUG=TRUE"; -*-
 # Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 #
@@ -167,7 +167,7 @@ endif
 CFLAGS += $(POINTER_SUPPORT)
 
 ifneq (,$(findstring DPLATFORM_NCURSES,$(DEFINES)))
-	LIBS += $(OE_LIBDIR) -lncurses 
+	LIBS += $(OE_LIBDIR) -lncursesw
 endif
 
 # provides an all: target
