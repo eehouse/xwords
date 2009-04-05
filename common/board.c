@@ -599,10 +599,8 @@ board_commitTurn( BoardCtxt* board )
 
             const XP_UCHAR* str = util_getUserString(board->util, 
                                                      STR_COMMIT_CONFIRM);
-
-            stream_putBytes( stream, (void*)str, 
-                             (XP_U16)XP_STRLEN((const char*)str) );
-
+            stream_catString( stream, str );
+            
             warn = board->util->gameInfo->phoniesAction == PHONIES_WARN;
 
             board->badWordRejected = XP_FALSE;
