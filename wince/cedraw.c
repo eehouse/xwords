@@ -89,7 +89,7 @@ typedef struct _FontCacheEntry {
 } FontCacheEntry;
 
 typedef struct _CeBMCacheEntry {
-    XP_UCHAR letters[4];        /* currently the max */
+    const XP_UCHAR* letters;          /* pointer into dict; don't free!!! */
     HBITMAP bms[2];
 } CeBMCacheEntry;
 
@@ -99,6 +99,7 @@ struct CEDrawCtx {
     HWND mainWin;
     CEAppGlobals* globals;
     const DictionaryCtxt* dict;
+    UINT codePage;
 
     COLORREF prevBkColor;
 
@@ -218,7 +219,7 @@ ceDrawTextClipped( HDC hdc, wchar_t* buf, XP_S16 len, XP_Bool clip,
 
 static void
 ceDrawLinesClipped( HDC hdc, const FontCacheEntry* fce, XP_UCHAR* buf, 
-                    XP_Bool clip, const RECT* bounds )
+                    UINT codePage, XP_Bool clip, const RECT* bounds )
 {
     XP_U16 top = bounds->top;
     XP_U16 width = bounds->right - bounds->left;
@@ -228,8 +229,7 @@ ceDrawLinesClipped( HDC hdc, const FontCacheEntry* fce, XP_UCHAR* buf,
         XP_U16 len = newline==NULL? strlen(buf): newline - buf;
         wchar_t widebuf[len];
 
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, len,
-                             widebuf, len );
+        MultiByteToWideChar( codePage, 0, buf, len, widebuf, len );
 
         ceDrawTextClipped( hdc, widebuf, len, clip, fce, bounds->left, top, 
                            width, DT_CENTER );
@@ -509,7 +509,7 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
 
     makeTestBuf( dctx, sample, VSIZE(sample), index );
     len = 1 + strlen(sample);
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sample, len, widebuf, len );
+    MultiByteToWideChar( dctx->codePage, 0, sample, len, widebuf, len );
 
     memBM = CreateCompatibleBitmap( memDC, testHeight, testHeight );
     SelectObject( memDC, memBM );
@@ -626,25 +626,22 @@ checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters,
 {
     HBITMAP bm = NULL;
     CeBMCacheEntry* entry = NULL;
-    XP_U16 len = 1 + XP_STRLEN( letters );
     XP_Bool canCache = XP_FALSE;
 
     XP_ASSERT( !!letters );
     XP_ASSERT( index < 2 );
 
-    if ( len <= sizeof( entry->letters ) ) {
-        XP_U16 ii;
-        for ( ii = 0, entry = dctx->bmCache; ii < VSIZE(dctx->bmCache); 
-              ++ii, ++entry ) {
-            if ( 0 == entry->letters[0] ) { /* available */
-                XP_MEMCPY( entry->letters, letters, len );
-                canCache = XP_TRUE;
-                break;
-            } else if ( !XP_STRNCMP( entry->letters, letters, len ) ) {
-                canCache = XP_TRUE;
-                bm = entry->bms[index]; /* may be null */
-                break;
-            }
+    XP_U16 ii;
+    for ( ii = 0, entry = dctx->bmCache; ii < VSIZE(dctx->bmCache); 
+          ++ii, ++entry ) {
+        if ( !entry->letters ) { /* available */
+            entry->letters = letters;
+            canCache = XP_TRUE;
+            break;
+        } else if ( entry->letters == letters ) {
+            canCache = XP_TRUE;
+            bm = entry->bms[index]; /* may be null */
+            break;
         }
     }
 
@@ -756,7 +753,7 @@ ceMeasureText( CEDrawCtx* dctx, HDC hdc, const FontCacheEntry* fce,
 
         XP_ASSERT( nextStr != str );
 
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len,
+        MultiByteToWideChar( dctx->codePage, 0, str, len,
                              widebuf, VSIZE(widebuf) );
         GetTextExtentPoint32( hdc, widebuf, len, &size );
 
@@ -796,7 +793,7 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
             len = nextStr - text;
         }
 
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, text, len,
+        MultiByteToWideChar( dctx->codePage, 0, text, len,
                              widebuf, VSIZE(widebuf) );
 
         textRt.bottom = textRt.top + dctx->miniLineHt;
@@ -1043,7 +1040,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     } else if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
 
-        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, letters, -1,
+        MultiByteToWideChar( dctx->codePage, 0, letters, -1,
                              widebuf, VSIZE(widebuf) );
         ceDrawTextClipped( hdc, widebuf, -1, XP_FALSE, fce, xprect->left+1, 
                            xprect->top+2, xprect->width, DT_CENTER );
@@ -1170,8 +1167,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
             if ( !!bitmaps || !!letters ) {
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
-                XP_U16 len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, 
-                                                  letters, -1, 
+                XP_U16 len = MultiByteToWideChar( dctx->codePage, 0, letters, -1, 
                                                   widebuf, VSIZE(widebuf) );
 
                 /* see if there's room to use text instead of bitmap */
@@ -1460,7 +1456,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     fce = ceGetSizedFont( dctx, 0, 0, RFONTS_REM );
     oldFont = SelectObject( hdc, fce->setFont );
     
-    ceDrawLinesClipped( hdc, fce, buf, XP_TRUE, &rt );
+    ceDrawLinesClipped( hdc, fce, buf, CP_ACP, XP_TRUE, &rt );
 
     (void)SelectObject( hdc, oldFont );
 } /* ce_draw_drawRemText */
@@ -1580,7 +1576,7 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
         rt.bottom -= IS_TURN_VPAD;
     }
 
-    ceDrawLinesClipped( hdc, fce, buf, XP_TRUE, &rt );
+    ceDrawLinesClipped( hdc, fce, buf, CP_ACP, XP_TRUE, &rt );
 
     SelectObject( hdc, oldFont );
 } /* ce_draw_score_drawPlayer */
@@ -1674,7 +1670,7 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     oldFont = SelectObject( hdc, fce->setFont );
     ++rt.top;
-    ceDrawLinesClipped( hdc, fce, buf, XP_TRUE, &rt );
+    ceDrawLinesClipped( hdc, fce, buf, CP_ACP, XP_TRUE, &rt );
     SelectObject( hdc, oldFont );
 
     if ( !globals->hdc ) {
@@ -1812,6 +1808,7 @@ DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, const DictionaryCtxt* dict )
         ceClearFontCache( dctx );
     }
     dctx->dict = dict;
+    dctx->codePage = dict_isUTF8(dict)? CP_UTF8 : CP_ACP;
 }
 
 #ifdef DRAW_LINK_DIRECT

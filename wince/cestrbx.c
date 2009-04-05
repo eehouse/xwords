@@ -28,9 +28,8 @@ stuffTextInField( HWND hDlg, StrBoxState* state )
     XP_U16 len, crlen;
     XP_UCHAR* sbuf;
     wchar_t* wbuf;
-#ifdef MEM_DEBUG
     CEAppGlobals* globals = state->dlgHdr.globals;
-#endif
+    UINT codePage = ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP;
 
     sbuf = XP_MALLOC( globals->mpool, nBytes + 1 );
     stream_getBytes( state->stream, sbuf, nBytes );
@@ -41,11 +40,9 @@ stuffTextInField( HWND hDlg, StrBoxState* state )
     }
     sbuf[nBytes] = '\0';
 
-    len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sbuf, nBytes,
-                               NULL, 0 );
+    len = MultiByteToWideChar( codePage, 0, sbuf, nBytes, NULL, 0 );
     wbuf = XP_MALLOC( globals->mpool, (len+1) * sizeof(*wbuf) );
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, sbuf, nBytes,
-                         wbuf, len );
+    MultiByteToWideChar( codePage, 0, sbuf, nBytes, wbuf, len );
     XP_FREE( globals->mpool, sbuf );
     wbuf[len] = 0;
 

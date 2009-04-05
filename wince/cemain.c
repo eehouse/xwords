@@ -1,4 +1,4 @@
-/* -*- fill-column: 77; compile-command: "make -j TARGET_OS=wince DEBUG=TRUE" -*- */
+/* -*- fill-column: 77; compile-command: "make -j2 TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -2654,7 +2654,8 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
     int result;
 
-    result = ceMessageBoxChar( globals, buf, title, buttons );
+    result = ceMessageBoxChar( globals, buf, ceCurDictIsUTF8(globals),
+                               title, buttons );
 
     XP_FREE( globals->mpool, buf );
     return result;
@@ -3259,69 +3260,69 @@ ce_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 stringCode )
 {
     switch( stringCode ) {
     case STRD_REMAINING_TILES_ADD:
-        return (XP_UCHAR*)"+ %d [all remaining tiles]";
+        return "+ %d [all remaining tiles]";
     case STRD_UNUSED_TILES_SUB:
-        return (XP_UCHAR*)"- %d [unused tiles]";
+        return "- %d [unused tiles]";
     case STR_BONUS_ALL:
-        return (XP_UCHAR*)"Bonus for using all tiles: 50" XP_CR;
+        return "Bonus for using all tiles: 50" XP_CR;
     case STRD_TURN_SCORE:
-        return (XP_UCHAR*)"Score for turn: %d" XP_CR;
+        return "Score for turn: %d" XP_CR;
     case STR_COMMIT_CONFIRM:
-        return (XP_UCHAR*)"Commit the current move?" XP_CR;
+        return "Commit the current move?" XP_CR;
     case STR_LOCAL_NAME:
-        return (XP_UCHAR*)"%s";
+        return "%s";
     case STR_NONLOCAL_NAME:
-        return (XP_UCHAR*)"%s (remote)";
+        return "%s (remote)";
     case STRD_TIME_PENALTY_SUB:
-        return (XP_UCHAR*)" - %d [time]";
+        return " - %d [time]";
 
     case STRD_CUMULATIVE_SCORE:
-        return (XP_UCHAR*)"Cumulative score: %d" XP_CR;
+        return "Cumulative score: %d" XP_CR;
     case STRS_MOVE_ACROSS:
-        return (XP_UCHAR*)"move (from %s across)" XP_CR;
+        return "move (from %s across)" XP_CR;
     case STRS_MOVE_DOWN:
-        return (XP_UCHAR*)"move (from %s down)" XP_CR;
+        return "move (from %s down)" XP_CR;
     case STRS_TRAY_AT_START:
-        return (XP_UCHAR*)"Tray at start: %s" XP_CR;
+        return "Tray at start: %s" XP_CR;
 
     case STRS_NEW_TILES:
-        return (XP_UCHAR*)"New tiles: %s" XP_CR;
+        return "New tiles: %s" XP_CR;
     case STRSS_TRADED_FOR:
-        return (XP_UCHAR*)"Traded %s for %s.";
+        return "Traded %s for %s.";
     case STR_PASS:
-        return (XP_UCHAR*)"pass" XP_CR;
+        return "pass" XP_CR;
     case STR_PHONY_REJECTED:
-        return (XP_UCHAR*)"Illegal word in move; turn lost!" XP_CR;
+        return "Illegal word in move; turn lost!" XP_CR;
 
     case STRD_ROBOT_TRADED:
-        return (XP_UCHAR*)"Robot traded tiles %d this turn.";
+        return "Robot traded tiles %d this turn.";
     case STR_ROBOT_MOVED:
-        return (XP_UCHAR*)"The robot made this move:" XP_CR;
+        return "The robot made this move:" XP_CR;
     case STR_REMOTE_MOVED:
-        return (XP_UCHAR*)"Remote player made this move:" XP_CR;
+        return "Remote player made this move:" XP_CR;
 
     case STR_PASSED: 
-        return (XP_UCHAR*)"Passed";
+        return "Passed";
     case STRSD_SUMMARYSCORED: 
-        return (XP_UCHAR*)"%s:%d";
+        return "%s:%d";
     case STRD_TRADED: 
-        return (XP_UCHAR*)"Traded %d";
+        return "Traded %d";
     case STR_LOSTTURN:
-        return (XP_UCHAR*)"Lost turn";
+        return "Lost turn";
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
-        return (XP_UCHAR*)"Locl playrs:";
+        return "Locl playrs:";
 #endif
     case STR_TOTALPLAYERS:
-        return (XP_UCHAR*)"Player count:";
+        return "Player count:";
 
     case STRS_VALUES_HEADER:
-        return (XP_UCHAR*)"%s counts/values:" XP_CR;
+        return "%s counts/values:" XP_CR;
 
     default:
         XP_LOGF( "stringCode=%d", stringCode );
-        return (XP_UCHAR*)"unknown code";
+        return "unknown code";
     }
 } /* ce_util_getUserString */
 
@@ -3357,7 +3358,8 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     sprintf( msgBuf, "Word[s] %s not found in dictionary.", wordsBuf );
 
     if ( turnLost ) {
-        ceMessageBoxChar( globals, msgBuf, L"Illegal word", 
+        XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
+        ceMessageBoxChar( globals, msgBuf, isUTF8, L"Illegal word",
                           MB_OK | MB_ICONHAND );
         isOk = XP_TRUE;
     } else {

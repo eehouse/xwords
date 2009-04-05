@@ -31,13 +31,13 @@ loadLettersList( BlankDialogState* bState )
     HWND hDlg = bState->dlgHdr.hDlg;
     CEAppGlobals* globals = bState->dlgHdr.globals;
     const XP_UCHAR4* texts = bState->texts;
+    UINT codePage = ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP;
     
     for ( i = 0; i < nTiles; ++i ) {	
         XP_U16 len;
         wchar_t widebuf[4];
 
-        len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, 
-                                   texts[i], strlen(texts[i]),
+        len = MultiByteToWideChar( codePage, 0, texts[i], strlen(texts[i]),
                                    widebuf, VSIZE(widebuf) );
         widebuf[len] = 0;
 
@@ -63,8 +63,9 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
         XP_UCHAR labelBuf[48];
         wchar_t widebuf[48];
         XP_UCHAR* name;
+        CEAppGlobals* globals = bState->dlgHdr.globals;
 
-        name = bState->dlgHdr.globals->gameInfo.players[bState->playerNum].name;
+        name = globals->gameInfo.players[bState->playerNum].name;
 
         lenSoFar += XP_SNPRINTF( labelBuf + lenSoFar, 
                                  sizeof(labelBuf) - lenSoFar,
@@ -77,9 +78,8 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
                                      i==0?": ":", ", pi->curTiles[i] );
         }
 
-        (void)MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, 
-                                   labelBuf, lenSoFar + 1,
-                                   widebuf, 
+        (void)MultiByteToWideChar( ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP,
+                                   0, labelBuf, lenSoFar + 1, widebuf, 
                                    VSIZE(widebuf) + sizeof(widebuf[0]) );
 
         SetDlgItemText( hDlg,IDC_PICKMSG, widebuf );
