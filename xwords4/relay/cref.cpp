@@ -700,7 +700,8 @@ CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why )
         assert(0);
     }
 
-    send_with_length( socket, buf, sizeof(buf) );
+    assert( len <= sizeof(buf) );
+    send_with_length( socket, buf, len );
 } /* send_msg */
 
 void
