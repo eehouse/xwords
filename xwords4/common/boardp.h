@@ -269,9 +269,9 @@ void hideMiniWindow( BoardCtxt* board, XP_Bool destroy,
 void moveTileInTray( BoardCtxt* board, XP_U16 moveTo, XP_U16 moveFrom );
 XP_Bool handleTrayDuringTrade( BoardCtxt* board, XP_S16 index );
 
-XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
-                           XP_Bitmaps* bitmaps, XP_S16* value, 
-                           XP_UCHAR* buf, XP_U16 len );
+const XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile, 
+                                 XP_Bool isBlank, XP_Bitmaps* bitmaps, 
+                                 XP_S16* value );
 XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
 XP_Bool checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row );

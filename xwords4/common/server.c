@@ -972,8 +972,10 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
         /* version */
         XP_U8 streamVersion = stream_getU8( stream );
-        XP_ASSERT( streamVersion == STREAM_VERS_41B4 );
-        if ( streamVersion != STREAM_VERS_41B4 ) {
+        XP_ASSERT( streamVersion == STREAM_VERS_41B4
+                   || streamVersion == STREAM_VERS_UTF8);
+        if ( (streamVersion != STREAM_VERS_41B4)
+            && (streamVersion != STREAM_VERS_UTF8) ) {
             return XP_FALSE;
         }
         stream_setVersion( stream, streamVersion );
@@ -1106,13 +1108,15 @@ server_sendInitialMessage( ServerCtxt* server )
         RemoteAddress* addr = &server->nv.addresses[deviceIndex];
         XWStreamCtxt* stream = util_makeStreamFromAddr( server->vol.util, 
                                                         addr->channelNo );
+        DictionaryCtxt* dict = model_getDictionary(model);
         XP_ASSERT( !!stream );
         stream_open( stream );
         stream_putBits( stream, XWPROTO_NBITS, XWPROTO_CLIENT_SETUP );
 
         /* write version for server's benefit; use old version until format
            changes */
-        stream_putU8( stream, STREAM_VERS_41B4 );
+        stream_putU8( stream, dict_isUTF8(dict)? 
+                      STREAM_VERS_UTF8:STREAM_VERS_41B4 );
 
         XP_STATUSF( "putting gameID %lx into msg", gameID );
         stream_putU32( stream, gameID );
@@ -1120,7 +1124,7 @@ server_sendInitialMessage( ServerCtxt* server )
         makeSendableGICopy( server, &localGI, deviceIndex );
         gi_writeToStream( stream, &localGI );
 
-        dict_writeToStream( model_getDictionary(model), stream );
+        dict_writeToStream( dict, stream );
 
         /* send tiles currently in tray */
         for ( i = 0; i < nPlayers; ++i ) {
@@ -2404,13 +2408,12 @@ server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,
 
     for ( tile = 0, nPrinted = 0; ; ) {
         XP_UCHAR buf[24];
-        XP_UCHAR face[4];
         XP_U16 count, value;
 
         count = dict_numTiles( dict, tile );
 
         if ( count > 0 ) {
-            dict_tilesToString( dict, &tile, 1, face, sizeof(face) );
+            const XP_UCHAR* face = dict_getTileString( dict, tile );
             value = dict_getTileValue( dict, tile );
 
             XP_SNPRINTF( buf, sizeof(buf), (XP_UCHAR*)"%s: %d/%d", 
@@ -2461,8 +2464,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
         XP_Bool hasCount = count > 0;
 
         if ( hasCount ) {
-            XP_UCHAR face[4];
-            dict_tilesToString( dict, &tile, 1, face, sizeof(face) );
+            const XP_UCHAR* face = dict_getTileString( dict, tile );
 
             for ( ; ; ) {
                 stream_catString( stream, face );

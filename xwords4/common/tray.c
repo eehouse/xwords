@@ -186,9 +186,8 @@ drawTray( BoardCtxt* board )
                             draw_drawTile( board->draw, &tileRect, NULL,
                                            NULL, -1, flags | CELL_ISEMPTY );
                         } else if ( showFaces ) {
-                            XP_UCHAR buf[4];
                             XP_Bitmaps bitmaps;
-                            XP_UCHAR* textP = (XP_UCHAR*)NULL;
+                            const XP_UCHAR* textP = (XP_UCHAR*)NULL;
                             XP_U8 traySelBits = pti->traySelBits;
                             XP_S16 value;
                             Tile tile;
@@ -211,8 +210,7 @@ drawTray( BoardCtxt* board )
                             }
 
                             textP = getTileDrawInfo( board, tile, isBlank,
-                                                     &bitmaps, &value,
-                                                     buf, sizeof(buf) );
+                                                     &bitmaps, &value );
                             if ( isADrag ) {
                                 if ( ddAddedIndx == ii ) {
                                     flags |= CELL_HIGHLIGHT;
@@ -258,18 +256,16 @@ drawTray( BoardCtxt* board )
 
 } /* drawTray */
 
-XP_UCHAR*
+const XP_UCHAR*
 getTileDrawInfo( const BoardCtxt* board, Tile tile, XP_Bool isBlank,
-                 XP_Bitmaps* bitmaps, XP_S16* value, XP_UCHAR* buf,
-                 XP_U16 len )
+                 XP_Bitmaps* bitmaps, XP_S16* value )
 {
-    XP_UCHAR* face = NULL;
+    const XP_UCHAR* face = NULL;
     DictionaryCtxt* dict = model_getDictionary( board->model );
     if ( isBlank ) {
         tile = dict_getBlankTile( dict );
     } else {
-        dict_tilesToString( dict, &tile, 1, buf, len );
-        face = buf;
+        face = dict_getTileString( dict, tile );
     }
 
     *value = dict_getTileValue( dict, tile );
