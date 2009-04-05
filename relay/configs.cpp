@@ -130,39 +130,40 @@ RelayConfigs::parse( const char* fname, ino_t prev )
     ino_t inode = 0;
     if ( fname != NULL ) {
         struct stat sbuf;
-        stat( fname, &sbuf );
-        inode = sbuf.st_ino;
-        if ( inode != prev ) {
-            FILE* f = fopen( fname, "r" );
-            if ( f != NULL ) {
-                logf( XW_LOGINFO, "config: reading from %s", fname );
-                char line[MAX_LINE];
+        if ( 0 == stat( fname, &sbuf ) ) {
+            inode = sbuf.st_ino;
+            if ( inode != prev ) {
+                FILE* f = fopen( fname, "r" );
+                if ( f != NULL ) {
+                    logf( XW_LOGINFO, "config: reading from %s", fname );
+                    char line[MAX_LINE];
 
-                for ( ; ; ) {
-                    if ( !fgets( line, sizeof(line), f ) ) {
-                        break;
+                    for ( ; ; ) {
+                        if ( !fgets( line, sizeof(line), f ) ) {
+                            break;
+                        }
+
+                        int len = strlen( line );
+                        if ( line[len-1] == '\n' ) {
+                            line[--len] = '\0';
+                        }
+
+                        if ( len == 0 || line[0] == '#' ) {
+                            continue;
+                        }
+
+                        char* value = strchr( line, '=' );
+                        if ( value == NULL ) {
+                            continue;
+                        }
+
+                        *value++ = '\0';    /* terminate "key" substring */
+
+                        m_values.insert( pair<string,string>
+                                         (string(line),string(value) ) );
                     }
-
-                    int len = strlen( line );
-                    if ( line[len-1] == '\n' ) {
-                        line[--len] = '\0';
-                    }
-
-                    if ( len == 0 || line[0] == '#' ) {
-                        continue;
-                    }
-
-                    char* value = strchr( line, '=' );
-                    if ( value == NULL ) {
-                        continue;
-                    }
-
-                    *value++ = '\0';    /* terminate "key" substring */
-
-                    m_values.insert( pair<string,string>
-                                     (string(line),string(value) ) );
+                    fclose( f );
                 }
-                fclose( f );
             }
         }
     }

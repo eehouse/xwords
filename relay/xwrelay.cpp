@@ -101,13 +101,12 @@ logf( XW_LogLevel level, const char* format, ... )
         static FILE* where = stderr;
         struct tm* timp;
         struct timeval tv;
-        struct timezone tz;
 
         if ( !where ) {
             where = fopen( LOG_FILE_PATH, "a" );
         }
 
-        gettimeofday( &tv, &tz );
+        gettimeofday( &tv, NULL );
         timp = localtime( &tv.tv_sec );
 
         pthread_t me = pthread_self();
@@ -532,7 +531,7 @@ printWhy( int status )
     if ( WIFEXITED(status) ) {
         logf( XW_LOGINFO, "why: exited" );
     } else if ( WIFSIGNALED(status) ) {
-        logf( XW_LOGINFO, "why: signaled" );
+        logf( XW_LOGINFO, "why: signaled; signal: %d", WTERMSIG(status) );
     } else if ( WCOREDUMP(status) ) {
         logf( XW_LOGINFO, "why: core" );
     } else if ( WIFSTOPPED(status) ) {
