@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_UTF8 0x08
 #define STREAM_VERS_ALWAYS_MULTI 0x07 /* stream format same for multi and
                                          one-device game builds */
 #define STREAM_VERS_MODEL_NO_DICT 0x06
@@ -40,7 +41,7 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_ALWAYS_MULTI
+#define CUR_STREAM_VERS STREAM_VERS_UTF8
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
