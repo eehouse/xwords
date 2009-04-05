@@ -1150,9 +1150,8 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc )
         quit( NULL, globals );
     } else if ( globals->cGlobals.params->undoWhenDone ) {
         server_handleUndo( globals->cGlobals.game.server );
+        board_draw( globals->cGlobals.game.board );
     }
-
-    board_draw( globals->cGlobals.game.board );
 } /* gtk_util_notifyGameOver */
 
 /* define this to prevent user events during debugging from stopping the engine */
@@ -1300,8 +1299,9 @@ idle_func( gpointer data )
     gtk_idle_remove( globals->idleID );
 
     if ( server_do( globals->cGlobals.game.server ) ) {
-        XP_ASSERT( globals->cGlobals.game.board != NULL );
-        board_draw( globals->cGlobals.game.board );
+        if ( !!globals->cGlobals.game.board ) {
+            board_draw( globals->cGlobals.game.board );
+        }
     }
     return 0; /* 0 will stop it from being called again */
 } /* idle_func */
