@@ -112,7 +112,7 @@ void model_destroy( ModelCtxt* model );
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 
 void model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict );
-DictionaryCtxt* model_getDictionary( ModelCtxt* model );
+DictionaryCtxt* model_getDictionary( const ModelCtxt* model );
 
 XP_Bool model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
                        XP_Bool getPending, XP_S16 turn,
@@ -242,7 +242,8 @@ void model_figureFinalScores( ModelCtxt* model, ScoresArray* scores,
 /* figureMoveScore is meant only for the engine's use */
 XP_U16 figureMoveScore( const ModelCtxt* model, MoveInfo* moveInfo, 
                         EngineCtxt* engine, XWStreamCtxt* stream, 
-                        WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord );
+                        WordNotifierInfo* notifyInfo, XP_UCHAR* mainWord,
+                        XP_U16 mainWordLen );
 
 /********************* persistence ********************/
 #ifdef INCLUDE_IO_SUPPORT

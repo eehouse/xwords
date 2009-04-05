@@ -272,7 +272,7 @@ model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 } /* model_setDictionary */
 
 DictionaryCtxt*
-model_getDictionary( ModelCtxt* model )
+model_getDictionary( const ModelCtxt* model )
 {
 /*     XP_ASSERT( !!model->vol.dict ); */
     return model->vol.dict;
@@ -1513,7 +1513,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), StackEntry* entry,
 
         if ( isPass ) { 
             format = util_getUserString( model->vol.util, STR_PASS );
-            XP_SNPRINTF( buf, sizeof(buf), "%s", format );
+            XP_SNPRINTF( buf, VSIZE(buf), "%s", format );
         } else {
             if ( isHorizontal ) {
                 format = util_getUserString( model->vol.util, STRS_MOVE_ACROSS );
@@ -1676,7 +1676,7 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
         const XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
         XP_U16 len = XP_STRLEN( str );
         *bufLen = len;
-        XP_MEMCPY( buf, str, len+1 ); /* no XP_STRCPY yet */
+        XP_STRNCPY( buf, str, len + 1 );
     } else {
         XP_U16 score;
         XP_UCHAR wordBuf[MAX_ROWS+1];
@@ -1695,7 +1695,7 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 
         score = figureMoveScore( tmpModel, moveInfo, (EngineCtxt*)NULL, 
                                  (XWStreamCtxt*)NULL, (WordNotifierInfo*)NULL, 
-                                 wordBuf );
+                                 wordBuf, VSIZE(wordBuf) );
 
         model_destroy( tmpModel );
 

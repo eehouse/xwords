@@ -1046,7 +1046,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
         score = figureMoveScore( engine->model,
                                  &posmove->moveInfo,
                                  engine, (XWStreamCtxt*)NULL,
-                                 (WordNotifierInfo*)NULL, NULL );
+                                 (WordNotifierInfo*)NULL, NULL, 0 );
 
         /* First, check that the score is even what we're interested in.  If
            it is, then go to the expense of filling in a PossibleMove to be

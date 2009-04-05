@@ -358,7 +358,7 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
             XP_Bool invert = XP_FALSE;
             XP_Bitmaps bitmaps;
             XP_Bitmaps* bptr = NULL;
-            XP_UCHAR* textP = NULL;
+            const XP_UCHAR* textP = NULL;
             HintAtts hintAtts;
             CellFlags flags = CELL_NONE;
             XP_Bool isOrigin;
@@ -392,15 +392,14 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                 if ( board->showCellValues ) {
                     Tile valTile = isBlank? dict_getBlankTile( dict ) : tile;
                     XP_U16 val = dict_getTileValue( dict, valTile );
-                    XP_SNPRINTF( ch, sizeof(ch), (XP_UCHAR*)"%d", val );
+                    XP_SNPRINTF( ch, VSIZE(ch), "%d", val );
                     textP = ch;
                 } else {
                     if ( dict_faceIsBitmap( dict, tile ) ) {
                         dict_getFaceBitmaps( dict, tile, &bitmaps );
                         bptr = &bitmaps;
                     }
-                    (void)dict_tilesToString( dict, &tile, 1, ch, sizeof(ch) );
-                    textP = ch;
+                    textP = dict_getTileString( dict, tile );
                 }
             }
             bonus = util_getSquareBonus( board->util, model, col, row );
@@ -482,8 +481,7 @@ drawDragTileIf( BoardCtxt* board )
             XP_Rect rect;
             Tile tile;
             XP_Bool isBlank;
-            XP_UCHAR buf[4];
-            XP_UCHAR* face;
+            const XP_UCHAR* face;
             XP_Bitmaps bitmaps;
             XP_S16 value;
             CellFlags flags;
@@ -493,7 +491,7 @@ drawDragTileIf( BoardCtxt* board )
             dragDropTileInfo( board, &tile, &isBlank );
 
             face = getTileDrawInfo( board, tile, isBlank, &bitmaps, 
-                                    &value, buf, sizeof(buf) );
+                                    &value );
 
             flags = CELL_DRAGCUR;
             if ( isBlank ) {
