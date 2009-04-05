@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,11 +32,10 @@ extern "C" {
 #endif
 
 #define LETTER_NONE '\0'
-#define IS_SPECIAL(face) (((XP_CHAR16)(face)) < 0x0020)
+/* cast to unsigned in case XP_UCHAR is signed */
+#define IS_SPECIAL(face) ((XP_U16)(face) < 0x0020)
 
 typedef XP_U8 XP_LangCode;
-
-typedef XP_U16 XP_CHAR16;
 
 typedef enum {
     BONUS_NONE,
@@ -72,7 +72,8 @@ struct DictionaryCtxt {
     array_edge* base; /* the physical beginning of the dictionary; not
                          necessarily the entry point for search!! */
     XP_UCHAR* name;
-    XP_CHAR16* faces16;          /* 16 for unicode */
+    XP_UCHAR* faces;
+    XP_UCHAR** faceStarts;
     XP_U8* countsAndValues;
 
     SpecialBitmaps* bitmaps;
@@ -89,6 +90,7 @@ struct DictionaryCtxt {
 #endif
 
     XP_S8 blankTile; /* negative means there's no known blank */
+    XP_Bool isUTF8;
 #ifdef DEBUG
     XP_U32 numEdges;
 #endif
@@ -138,7 +140,9 @@ XP_U16 dict_numTileFaces( const DictionaryCtxt* ctxt );
 
 XP_U16 dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
                            XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize );
+const XP_UCHAR* dict_getTileString( const DictionaryCtxt* ctxt, Tile tile );
 const XP_UCHAR* dict_getName( const DictionaryCtxt* ctxt );
+XP_Bool dict_isUTF8( const DictionaryCtxt* ctxt );
 
 Tile dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key );
 
@@ -163,7 +167,9 @@ DictionaryCtxt* make_stubbed_dict( MPFORMAL_NOCOMMA );
 
 /* To be called only by subclasses!!! */
 void dict_super_init( DictionaryCtxt* ctxt );
-
+/* Must be implemented by subclass */
+void dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes, 
+                      XP_U16 nBytes, XP_U16 nFaces );
 
 #ifdef CPLUS
 }

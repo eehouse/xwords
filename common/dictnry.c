@@ -26,6 +26,7 @@
 #include "dictnryp.h"
 #include "xwstream.h"
 #include "strutils.h"
+#include "game.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -37,14 +38,15 @@ extern "C" {
 void
 setBlankTile( DictionaryCtxt* dctx ) 
 {
-    XP_U16 i;
+    XP_U16 ii;
 
     dctx->blankTile = -1; /* no known blank */
 
-    for ( i = 0; i < dctx->nFaces; ++i ) {
-        if ( dctx->faces16[i] == 0 ) {
+    for ( ii = 0; ii < dctx->nFaces; ++ii ) {
+        const XP_UCHAR* facep = dctx->faceStarts[ii];
+        if ( *facep == 0 ) {
             XP_ASSERT( dctx->blankTile == -1 ); /* only one passes test? */
-            dctx->blankTile = (XP_S8)i;
+            dctx->blankTile = (XP_S8)ii;
 #ifndef DEBUG
             break;
 #endif
@@ -79,13 +81,16 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
     return dict->countsAndValues[tile+1];    
 } /* dict_getTileValue */
 
-static XP_UCHAR
-dict_getTileChar( const DictionaryCtxt* dict, Tile tile )
+const XP_UCHAR* 
+dict_getTileString( const DictionaryCtxt* dict, Tile tile )
 {
     XP_ASSERT( tile < dict->nFaces );
-    XP_ASSERT( (dict->faces16[tile] & 0xFF00) == 0 ); /* no unicode yet */
-    return (XP_UCHAR)dict->faces16[tile];
-} /* dict_getTileValue */
+    const XP_UCHAR* start = dict->faceStarts[tile];
+    if ( IS_SPECIAL(*start) ) {
+        start = dict->chars[(int)*start];
+    }
+    return start;
+}
 
 XP_U16
 dict_numTiles( const DictionaryCtxt* dict, Tile tile )
@@ -105,60 +110,44 @@ dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles,
                     XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize )
 {
     XP_UCHAR* bufp = buf;
-    XP_UCHAR* end = bufp + bufSize;
     XP_U16 result = 0;
 
-    while ( nTiles-- ) {
-        Tile tile = *tiles++;
-        XP_UCHAR face = dict_getTileChar(ctxt, tile);
-
-        if ( IS_SPECIAL(face) ) {
-            XP_UCHAR* chars = ctxt->chars[(XP_U16)face];
-            XP_U16 len = XP_STRLEN( chars );
-            if ( bufp + len >= end ) {
-                bufp = NULL;
-                break;
-            }
-            XP_MEMCPY( bufp, chars, len );
-            bufp += len;
-        } else {
-            XP_ASSERT ( tile != ctxt->blankTile ); /* printing blank should be
-                                                      handled by specials
-                                                      mechanism */
-            if ( bufp + 1 >= end ) {
-                bufp = NULL;
-                break;
-            }
-            *bufp++ = face;
+    if ( bufp != NULL ) {
+        XP_UCHAR* end = bufp + bufSize;
+        while ( nTiles-- ) {
+            Tile tile = *tiles++;
+            const XP_UCHAR* facep = dict_getTileString( ctxt, tile );
+            bufp += XP_SNPRINTF( bufp, end - bufp, XP_S, facep );
         }
-    }
     
-    if ( bufp != NULL && bufp < end ) {
-        *bufp = '\0';
-        result = bufp - buf;
+        if ( bufp < end ) {
+            *bufp = '\0';
+            result = bufp - buf;
+        }
     }
     return result;
 } /* dict_tilesToString */
 
+/* dict_tileForString: used to map user keys to tiles in the tray.  Returns
+ * EMPTY_TILE if no match found.
+ */
 Tile
 dict_tileForString( const DictionaryCtxt* dict, const XP_UCHAR* key )
 {
     XP_U16 nFaces = dict_numTileFaces( dict );
-    Tile tile;
-    XP_Bool keyNotSpecial = XP_STRLEN((char*)key) == 1;
+    Tile tile = EMPTY_TILE;
+    XP_U16 ii;
 
-    for ( tile = 0; tile < nFaces; ++tile ) {
-        XP_UCHAR face = dict_getTileChar( dict, tile );
-        if ( IS_SPECIAL(face) ) {
-            XP_UCHAR* chars = dict->chars[(XP_U16)face];
-            if ( 0 == XP_STRNCMP( chars, key, XP_STRLEN(chars) ) ) {
-                return tile;
+    for ( ii = 0; ii < nFaces; ++ii ) {
+        if ( ii != dict->blankTile ) {
+            const XP_UCHAR* facep = dict_getTileString( dict, ii );
+            if ( 0 == XP_STRCMP( facep, key ) ) {
+                tile = (Tile)ii;
+                break;
             }
-        } else if ( keyNotSpecial && (face == *key) ) {
-            return tile;
         }
     }
-    return EMPTY_TILE;
+    return tile;
 } /* dict_tileForChar */
 
 XP_Bool
@@ -166,69 +155,93 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
 {
     XP_Bool result = XP_FALSE;
 
-    Tile i;
+    Tile ii;
     XP_U16 nTileFaces = dict_numTileFaces( dict1 );
 
     if ( nTileFaces == dict_numTileFaces( dict2 ) ) {
-        for ( i = 0; i < nTileFaces; ++i ) {
+        for ( ii = 0; ii < nTileFaces; ++ii ) {
 
-            XP_UCHAR face1, face2;
+            const XP_UCHAR* face1;
+            const XP_UCHAR* face2;
 
-            if ( dict_getTileValue( dict1, i )
-                 != dict_getTileValue( dict2, i ) ){
+            if ( dict_getTileValue( dict1, ii )
+                 != dict_getTileValue( dict2, ii ) ){
                 break;
             }
-#if 1
-            face1 = dict_getTileChar( dict1, i );
-            face2 = dict_getTileChar( dict2, i );
-            if ( face1 != face2 ) {
+#if 0
+            face1 = dict_getTileString( dict1, ii );
+            face2 = dict_getTileString( dict2, ii );
+            if ( 0 != XP_STRCMP( face1, face2 ) ) {
                 break;
             }
 #else
-            face1 = dict_getTileChar( dict1, i );
-            face2 = dict_getTileChar( dict2, i );
-            if ( IS_SPECIAL(face1) != IS_SPECIAL(face2) ) {
+            face1 = dict1->faceStarts[ii];
+            face2 = dict2->faceStarts[ii];
+            if ( IS_SPECIAL(*face1) != IS_SPECIAL(*face2) ) {
                 break;
             }
-            if ( IS_SPECIAL(face1) ) {
-                XP_UCHAR* chars1 = dict1->chars[face1];
-                XP_UCHAR* chars2 = dict2->chars[face2];
+            if ( IS_SPECIAL(*face1) ) {
+                XP_UCHAR* chars1 = dict1->chars[(int)*face1];
+                XP_UCHAR* chars2 = dict2->chars[(int)*face2];
                 XP_U16 len = XP_STRLEN(chars1);
                 if ( 0 != XP_STRNCMP( chars1, chars2, len ) ) {
                     break;
                 }
-            } else if ( face1 != face2 ) {
+            } else if ( 0 != XP_STRCMP( face1, face2 ) ) {
                 break;
             }
 #endif
-            if ( dict_numTiles( dict1, i ) != dict_numTiles( dict2, i ) ) {
+            if ( dict_numTiles( dict1, ii ) != dict_numTiles( dict2, ii ) ) {
                 break;
             }
         }
-        result = i == nTileFaces; /* did we get that far */
+        result = ii == nTileFaces; /* did we get that far */
     }
     return result;
 } /* dict_tilesAreSame */
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void
+unsplitFaces( const DictionaryCtxt* dict, XP_UCHAR* buf, XP_U16* bufsizep )
+{
+    XP_U16 ii;
+    XP_U16 nUsed = 0;
+    XP_U16 bufsize = *bufsizep;
+    for ( ii = 0; ii < dict->nFaces; ++ii ) {
+        const XP_UCHAR* facep = dict->faceStarts[ii];
+        if ( IS_SPECIAL(*facep) ) {
+            buf[nUsed++] = *facep;
+        } else {
+            nUsed += XP_SNPRINTF( &buf[nUsed], bufsize - nUsed, "%s", facep );
+        }
+        XP_ASSERT( nUsed < bufsize );
+    }
+    *bufsizep = nUsed;
+} /* unsplitFaces */
 
 void
 dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
 {
     XP_U16 maxCount = 0;
     XP_U16 maxValue = 0;
-    XP_U16 i, nSpecials;
+    XP_U16 ii, nSpecials;
     XP_U16 maxCountBits, maxValueBits;
 
+    /* Need to keep format identical for non-utf so new versions can play
+       against old using not UTF8 dicts.  The old ones won't even recognize
+       UTF8 dicts as dicts, so there shouldn't be any attempts to connect with
+       them having one open. */
     stream_putBits( stream, 6, dict->nFaces );
 
-    for ( i = 0; i < dict->nFaces*2; i+=2 ) {
+    for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
         XP_U16 count, value;
 
-        count = dict->countsAndValues[i];
+        count = dict->countsAndValues[ii];
         if ( maxCount < count ) {
             maxCount = count;
         }
 
-        value = dict->countsAndValues[i+1];
+        value = dict->countsAndValues[ii+1];
         if ( maxValue < value ) {
             maxValue = value;
         }
@@ -240,32 +253,38 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
     stream_putBits( stream, 3, maxCountBits ); /* won't be bigger than 5 */
     stream_putBits( stream, 3, maxValueBits );
 
-    for ( i = 0; i < dict->nFaces*2; i+=2 ) {
-        stream_putBits( stream, maxCountBits, dict->countsAndValues[i] );
-        stream_putBits( stream, maxValueBits, dict->countsAndValues[i+1] );
+    for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
+        stream_putBits( stream, maxCountBits, dict->countsAndValues[ii] );
+        stream_putBits( stream, maxValueBits, dict->countsAndValues[ii+1] );
     }
 
-    for ( i = 0; i < dict->nFaces; ++i ) {
-        stream_putU8( stream, (XP_U8)dict->faces16[i] );
+    XP_UCHAR buf[64];
+    XP_U16 nFaceBytes = sizeof(buf);
+    unsplitFaces( dict, buf, &nFaceBytes );
+    if ( dict_isUTF8( dict ) ) {
+        /* nBytes == nFaces for non-UTF8 dicts */
+        stream_putU8( stream, nFaceBytes );
     }
+    stream_putBytes( stream, buf, nFaceBytes );
 
-    for ( nSpecials = i = 0; i < dict->nFaces; ++i ) {
-        XP_UCHAR face = dict_getTileChar( dict, (Tile)i );
-        if ( IS_SPECIAL( face ) ) {
+    for ( nSpecials = ii = 0; ii < dict->nFaces; ++ii ) {
+        const XP_UCHAR* facep = dict->faceStarts[(Tile)ii];
+        if ( IS_SPECIAL( *facep ) ) {
             stringToStream( stream, dict->chars[nSpecials++] );
         }
     }
 } /* dict_writeToStream */
+#endif
 
 static void
 freeSpecials( DictionaryCtxt* dict )
 {
-    Tile t;
+    Tile tt;
     XP_U16 nSpecials;
 
-    for ( nSpecials = t = 0; t < dict->nFaces; ++t ) {
-        XP_UCHAR face = dict_getTileChar( dict, t );
-        if ( IS_SPECIAL( face ) ) {
+    for ( nSpecials = tt = 0; tt < dict->nFaces; ++tt ) {
+        const XP_UCHAR* facep =  dict->faceStarts[tt];
+        if ( IS_SPECIAL( *facep ) ) {
 
             XP_ASSERT( !!dict->chars[nSpecials] );
             XP_FREE( dict->mpool, dict->chars[nSpecials] );
@@ -292,18 +311,22 @@ common_destructor( DictionaryCtxt* dict )
     freeSpecials( dict );
 
     XP_FREE( dict->mpool, dict->countsAndValues );
-    XP_FREE( dict->mpool, dict->faces16 );
+    XP_FREE( dict->mpool, dict->faces );
+    XP_FREE( dict->mpool, dict->faceStarts );
 
     XP_FREE( dict->mpool, dict );
-} /* dict */
+} /* common_destructor */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
 void
 dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
 {
-    XP_U8 nFaces;
+    XP_U16 nFaceBytes, nFaces;
     XP_U16 maxCountBits, maxValueBits;
-    XP_U16 i, nSpecials;
+    XP_U16 ii, nSpecials;
     XP_UCHAR* localTexts[32];
+    XP_U16 streamVersion = stream_getVersion( stream );
+    XP_Bool isUTF8 = streamVersion >= STREAM_VERS_UTF8;
 
     XP_ASSERT( !dict->destructor );
     dict->destructor = common_destructor;
@@ -319,22 +342,26 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
         (XP_U8*)XP_MALLOC( dict->mpool, 
                            sizeof(dict->countsAndValues[0]) * nFaces * 2  );
 
-    for ( i = 0; i < dict->nFaces*2; i+=2 ) {
-        dict->countsAndValues[i] = (XP_U8)stream_getBits( stream, 
-                                                          maxCountBits );
-        dict->countsAndValues[i+1] = (XP_U8)stream_getBits( stream, 
-                                                            maxValueBits );
+    for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
+        dict->countsAndValues[ii] = (XP_U8)stream_getBits( stream, 
+                                                           maxCountBits );
+        dict->countsAndValues[ii+1] = (XP_U8)stream_getBits( stream, 
+                                                             maxValueBits );
     }
 
-    dict->faces16 = (XP_CHAR16*)XP_MALLOC( dict->mpool, 
-                                           sizeof(dict->faces16[0]) * nFaces );
-    for ( i = 0; i < dict->nFaces; ++i ) {
-        dict->faces16[i] = (XP_CHAR16)stream_getU8( stream );
+    if ( isUTF8 ) {
+        nFaceBytes = stream_getU8( stream );
+    } else {
+        nFaceBytes = nFaces;
     }
+    XP_U8 utf8[nFaceBytes];
+    stream_getBytes( stream, utf8, nFaceBytes );
+    dict->isUTF8 = isUTF8;
+    dict_splitFaces( dict, utf8, nFaceBytes, nFaces );
 
-    for ( nSpecials = i = 0; i < nFaces; ++i ) {
-        XP_UCHAR face = dict_getTileChar( dict, (Tile)i );
-        if ( IS_SPECIAL( face ) ) {
+    for ( nSpecials = ii = 0; ii < nFaces; ++ii ) {
+        const XP_UCHAR* facep = dict->faceStarts[ii];
+        if ( IS_SPECIAL( *facep ) ) {
             XP_UCHAR* txt = stringFromStream( dict->mpool, stream );
             XP_ASSERT( !!txt );
             localTexts[nSpecials] = txt;
@@ -355,6 +382,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
 
     setBlankTile( dict );
 } /* dict_loadFromStream */
+#endif
 
 const XP_UCHAR*
 dict_getName( const DictionaryCtxt* dict )
@@ -365,22 +393,29 @@ dict_getName( const DictionaryCtxt* dict )
 } /* dict_getName */
 
 XP_Bool
+dict_isUTF8( const DictionaryCtxt* dict )
+{
+    XP_ASSERT( !!dict );
+    return dict->isUTF8;
+}
+
+XP_Bool
 dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile )
 {
-    XP_UCHAR face = dict_getTileChar( dict, tile );
-    return IS_SPECIAL(face);
+    const XP_UCHAR* facep = dict->faceStarts[tile];
+    return IS_SPECIAL(*facep);
 } /* dict_faceIsBitmap */
 
 void
 dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, XP_Bitmaps* bmps )
 {
     SpecialBitmaps* bitmaps;
-    XP_UCHAR face = dict_getTileChar( dict, tile );
+    const XP_UCHAR* facep = dict->faceStarts[tile];
 
     XP_ASSERT( dict_faceIsBitmap( dict, tile ) );
     XP_ASSERT( !!dict->bitmaps );
 
-    bitmaps = &dict->bitmaps[(XP_U16)face];
+    bitmaps = &dict->bitmaps[(XP_U16)*facep];
     bmps->nBitmaps = 2;
     bmps->bmps[0] = bitmaps->smallBM;
     bmps->bmps[1] = bitmaps->largeBM;
