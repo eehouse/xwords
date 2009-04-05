@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */
 /* 
- * Copyright 1997-2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -80,10 +81,10 @@ static XP_U16
 countSpecials( LinuxDictionaryCtxt* ctxt )
 {
     XP_U16 result = 0;
-    XP_U16 i;
+    XP_U16 ii;
 
-    for ( i = 0; i < ctxt->super.nFaces; ++i ) {
-        if ( IS_SPECIAL(ctxt->super.faces16[i] ) ) {
+    for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
+        if ( IS_SPECIAL(ctxt->super.faceStarts[ii][0] ) ) {
             ++result;
         }
     }
@@ -135,22 +136,23 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
 
     for ( tile = 0; tile < ctxt->super.nFaces; ++tile ) {
 	
-        XP_CHAR16 face = ctxt->super.faces16[(short)tile];
-        if ( IS_SPECIAL(face) ) {
+        XP_UCHAR* facep = ctxt->super.faceStarts[(short)tile];
+        if ( IS_SPECIAL(*facep) ) {
+            XP_U16 asIndex = (XP_U16)*facep;
             XP_U8 txtlen;
-            XP_ASSERT( face < nSpecials );
+            XP_ASSERT( asIndex < nSpecials );
 
             /* get the string */
             if ( 1 == fread( &txtlen, sizeof(txtlen), 1, dictF ) ) {
                 text = (XP_UCHAR*)XP_MALLOC(ctxt->super.mpool, txtlen+1);
                 if ( 1 == fread( text, txtlen, 1, dictF ) ) {
                     text[txtlen] = '\0';
-                    texts[face] = text;
+                    texts[asIndex] = text;
 
-                    XP_DEBUGF( "skipping bitmaps for %s", texts[face] );
+                    XP_DEBUGF( "skipping bitmaps for " XP_S, texts[asIndex] );
 
-                    bitmaps[face].largeBM = skipBitmap( ctxt, dictF );
-                    bitmaps[face].smallBM = skipBitmap( ctxt, dictF );
+                    bitmaps[asIndex].largeBM = skipBitmap( ctxt, dictF );
+                    bitmaps[asIndex].smallBM = skipBitmap( ctxt, dictF );
                 }
             }
         }
@@ -160,18 +162,59 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
     ctxt->super.bitmaps = bitmaps;
 } /* skipBitmaps */
 
+static void
+stripZeros( XP_U8* bytes, XP_U16 nFaces )
+{
+    XP_U16 ii;
+    for ( ii = 0; ii < nFaces; ++ii ) {
+        bytes[ii] = bytes[1+(ii*2)];
+    }
+}
+
+void
+dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
+                 XP_U16 nBytes, XP_U16 nFaces )
+{
+    XP_U16 facesLen = dict->isUTF8? nBytes + nFaces : nFaces * 2;
+    XP_UCHAR* faces = XP_MALLOC( dict->mpool, facesLen );
+    XP_UCHAR** starts = XP_MALLOC( dict->mpool, nFaces * sizeof(starts[0]));
+    XP_U16 ii;
+    XP_Bool isUTF8 = dict->isUTF8;
+    XP_UCHAR* next = faces;
+    const gchar* bytes = (const gchar*)utf8;
+
+    for ( ii = 0; ii < nFaces; ++ii ) {
+        starts[ii] = next;
+        if ( isUTF8 ) {
+            gchar* cp = g_utf8_offset_to_pointer( bytes, 1 );
+            XP_U16 len = cp - bytes;
+            XP_MEMCPY( next, bytes, len );
+            next += len;
+            bytes += len;
+        } else {
+            *next++ = *bytes++;
+        }
+        *next++ = '\0';
+    }
+    XP_ASSERT( next == faces + facesLen );
+    XP_ASSERT( !dict->faces );
+    dict->faces = faces;
+    XP_ASSERT( !dict->faceStarts );
+    dict->faceStarts = starts;
+} /* dict_splitFaces */
+
 static XP_Bool
 initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 {
-    XP_Bool formatOk = XP_FALSE;
-    XP_U8 numFaces;
+    XP_Bool formatOk = XP_TRUE;
+    XP_U8 numFaces, numFaceBytes;
     long curPos, dictLength;
     XP_U32 topOffset;
     FILE* dictF = fopen( fileName, "r" );
     unsigned short xloc;
     XP_U16 flags;
-    XP_U16 facesSize;
     XP_U16 charSize;
+    XP_Bool isUTF8 = XP_FALSE;
 
     XP_ASSERT( dictF );
     if ( 1 == fread( &flags, sizeof(flags), 1, dictF ) ) {
@@ -182,19 +225,27 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
             dctx->super.nodeSize = 3;
             charSize = 1;
             dctx->super.is_4_byte = XP_FALSE;
-            formatOk = XP_TRUE;
         } else if ( flags == 0x0002 ) {
             dctx->super.nodeSize = 3;
             charSize = 2;
             dctx->super.is_4_byte = XP_FALSE;
-            formatOk = XP_TRUE;
         } else if ( flags == 0x0003 ) {
             dctx->super.nodeSize = 4;
             charSize = 2;
             dctx->super.is_4_byte = XP_TRUE;
-            formatOk = XP_TRUE;
+        } else if ( flags == 0x0004 ) {
+            dctx->super.nodeSize = 3;
+            dctx->super.isUTF8 = XP_TRUE;
+            isUTF8 = XP_TRUE;
+            dctx->super.is_4_byte = XP_FALSE;
+        } else if ( flags == 0x0005 ) {
+            dctx->super.nodeSize = 4;
+            dctx->super.isUTF8 = XP_TRUE;
+            isUTF8 = XP_TRUE;
+            dctx->super.is_4_byte = XP_TRUE;
         } else {
             /* case I don't know how to deal with */
+            formatOk = XP_FALSE;
             XP_ASSERT(0);
         }
     } else {
@@ -205,37 +256,33 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
 #endif
 
     if ( formatOk ) {
+        if ( isUTF8 ) {
+            if ( 1 != fread( &numFaceBytes, sizeof(numFaceBytes), 1, dictF ) ) {
+                goto closeAndExit;
+            }
+        }
         if ( 1 != fread( &numFaces, sizeof(numFaces), 1, dictF ) ) {
             goto closeAndExit;
+        }
+        if ( !isUTF8 ) {
+            numFaceBytes = numFaces * charSize;
         }
 
         dctx->super.nFaces = numFaces;
 
         dctx->super.countsAndValues = XP_MALLOC( dctx->super.mpool, 
                                                  numFaces*2 );
-        facesSize = numFaces * sizeof(dctx->super.faces16[0]);
-        dctx->super.faces16 = XP_MALLOC( dctx->super.mpool, facesSize );
-        XP_MEMSET( dctx->super.faces16, 0, facesSize );
 
-        if ( 1 != fread( dctx->super.faces16, numFaces * charSize, 1, 
-                         dictF ) ) {
+        XP_U8 tmp[numFaceBytes];
+        if ( 1 != fread( tmp, numFaceBytes, 1, dictF ) ) {
             goto closeAndExit;
         }
 
-        if ( charSize == sizeof(dctx->super.faces16[0]) ) {
-            /* fix endianness */
-            XP_U16 i;
-            for ( i = 0; i < numFaces; ++i ) {
-                XP_CHAR16 tmp = dctx->super.faces16[i];
-                dctx->super.faces16[i] = ntohs(tmp);
-            }
-        } else {
-            XP_UCHAR* src = ((XP_UCHAR*)(dctx->super.faces16)) + numFaces;
-            XP_CHAR16* dest = dctx->super.faces16 + numFaces;
-            while ( src-- <= (XP_UCHAR*)(dest--) ) {
-                *dest = (XP_CHAR16)*src;
-            }
+        if ( !isUTF8 ) {
+            stripZeros( tmp, numFaces );
+            numFaceBytes = numFaces;
         }
+        dict_splitFaces( &dctx->super, tmp, numFaceBytes, numFaces );
 
         if ( (1 != fread( &xloc, 2, 1, dictF ) )/* read in (dump) the xloc
                                                  header for now */
@@ -301,10 +348,10 @@ static void
 freeSpecials( LinuxDictionaryCtxt* ctxt )
 {
     XP_U16 nSpecials = 0;
-    XP_U16 i;
+    XP_U16 ii;
 
-    for ( i = 0; i < ctxt->super.nFaces; ++i ) {
-        if ( IS_SPECIAL(ctxt->super.faces16[i]) ) {
+    for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
+        if ( IS_SPECIAL(ctxt->super.faceStarts[ii][0] ) ) {
             if ( !!ctxt->super.bitmaps ) {
                 XP_Bitmap* bmp = ctxt->super.bitmaps[nSpecials].largeBM;
                 if ( !!bmp ) {
@@ -341,7 +388,8 @@ linux_dictionary_destroy( DictionaryCtxt* dict )
     }
 
     XP_FREE( dict->mpool, ctxt->super.countsAndValues );
-    XP_FREE( dict->mpool, ctxt->super.faces16 );
+    XP_FREE( dict->mpool, ctxt->super.faces );
+    XP_FREE( dict->mpool, ctxt->super.faceStarts );
     XP_FREE( dict->mpool, ctxt->super.name );
     XP_FREE( dict->mpool, ctxt );
 } /* linux_dictionary_destroy */
