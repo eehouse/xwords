@@ -28,7 +28,7 @@ typedef struct BlankDialogState {
     CeDlgHdr dlgHdr;
     const PickInfo* pi;
     XP_U16 playerNum;
-    const XP_UCHAR4* texts;
+    const XP_UCHAR** texts;
     XP_U16 nTiles;
     XP_S16 result;
     XP_Bool canBackup;

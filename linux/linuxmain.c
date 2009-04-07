@@ -203,6 +203,7 @@ usage( char* appName, char* msg )
 	     "\t [-V]             # hide values in tray\n"
 	     "\t [-m]             # make the robot duMb (smart is default)\n"
 	     "\t [-l]             # disallow hints\n"
+	     "\t [-P]             # pick tiles face up\n"
 	     "\t [-c]             # explain robot scores after each move\n"
 	     "\t [-C COOKIE]      # cookie used to groups games on relay\n"
 	     "\t\t # (max of four players total, local and remote)\n"
@@ -741,7 +742,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "kKf:ln:Nsd:e:r:b:q:w:Sit:UmvcV"
+                      "kKf:ln:Nsd:e:r:b:q:w:Sit:UmvcVP"
 #ifdef XWFEATURE_SMS
                       "M:"
 #endif
@@ -816,6 +817,9 @@ main( int argc, char** argv )
             break;
         case 'l':
             mainParams.gi.hintsNotAllowed = XP_TRUE;
+            break;
+        case 'P':
+            mainParams.gi.allowPickTiles = XP_TRUE;
             break;
         case 'n':
             index = mainParams.gi.nPlayers++;

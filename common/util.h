@@ -80,7 +80,7 @@ typedef enum {
 #define PICKER_BACKUP -2
 
 typedef struct PickInfo {
-    XP_UCHAR4* curTiles;
+    const XP_UCHAR** curTiles;
     XP_U16 nCurTiles;
     XP_U16 nTotal;              /* count to fetch for turn, <= MAX_TRAY_TILES */
     XP_U16 thisPick;            /* <= nTotal */
@@ -117,7 +117,7 @@ typedef struct UtilVtable {
     /* return of < 0 means computer should pick */
     XP_S16 (*m_util_userPickTile)( XW_UtilCtxt* uc, const PickInfo* pi, 
                                    XP_U16 playerNum,
-                                   const XP_UCHAR4* texts, XP_U16 nTiles );
+                                   const XP_UCHAR** texts, XP_U16 nTiles );
 
     XP_Bool (*m_util_askPassword)( XW_UtilCtxt* uc, const XP_UCHAR* name,
                                    XP_UCHAR* buf, XP_U16* len );

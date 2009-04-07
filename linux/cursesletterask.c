@@ -25,7 +25,7 @@
 #include "cursesdlgutil.h"
 
 #define MAX_TILE_BUTTON_ROWS 10
-#define MAX_TILE_BUTTON_WIDTH (sizeof(XP_UCHAR4) + 2)
+#define MAX_TILE_BUTTON_WIDTH 6
 
 static void
 sizeTextsAsButtons( XP_U16 maxLen, XP_U16 nTiles, XP_U16* textsCols, 
@@ -48,7 +48,7 @@ sizeTextsAsButtons( XP_U16 maxLen, XP_U16 nTiles, XP_U16* textsCols,
 
 XP_S16
 curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
-                  const XP_UCHAR4* texts, XP_U16 nTiles )
+                  const XP_UCHAR** texts, XP_U16 nTiles )
 {
     XP_S16 result;
     WINDOW* confWin;

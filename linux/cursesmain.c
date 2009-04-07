@@ -223,7 +223,7 @@ cursesUserError( CursesAppGlobals* globals, const char* format, ... )
 
 static XP_S16 
 curses_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* XP_UNUSED(pi), 
-                          XP_U16 playerNum, const XP_UCHAR4* texts, 
+                          XP_U16 playerNum, const XP_UCHAR** texts, 
                           XP_U16 nTiles )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;

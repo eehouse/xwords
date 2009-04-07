@@ -1060,14 +1060,14 @@ gtk_util_getVTManager(XW_UtilCtxt* uc)
 
 static XP_S16
 gtk_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
-                       XP_U16 playerNum,
-                       const XP_UCHAR4* texts, XP_U16 nTiles )
+                       XP_U16 playerNum, const XP_UCHAR** texts, 
+                       XP_U16 nTiles )
 {
     XP_S16 chosen;
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
 	XP_UCHAR* name = globals->cGlobals.params->gi.players[playerNum].name;
 
-    chosen = gtkletterask( pi->why == PICK_FOR_BLANK, name, nTiles, texts );
+    chosen = gtkletterask( pi, name, nTiles, texts );
     return chosen;
 } /* gtk_util_userPickTile */
 

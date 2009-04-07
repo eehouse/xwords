@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,8 +26,8 @@
 
 #include "gtkmain.h"
 
-XP_S16 gtkletterask( XP_Bool forBlank, XP_UCHAR* name, XP_U16 nTiles,
-                     const XP_UCHAR4* texts );
+XP_S16 gtkletterask( const PickInfo* pi, const XP_UCHAR* name, 
+                     XP_U16 nTiles, const XP_UCHAR** texts );
 
 
 #endif /* _GTKLETTERASK_H_ */
