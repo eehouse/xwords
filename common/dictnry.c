@@ -84,8 +84,9 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
 const XP_UCHAR* 
 dict_getTileString( const DictionaryCtxt* dict, Tile tile )
 {
+    const XP_UCHAR* start;
     XP_ASSERT( tile < dict->nFaces );
-    const XP_UCHAR* start = dict->faceStarts[tile];
+    start = dict->faceStarts[tile];
     if ( IS_SPECIAL(*start) ) {
         start = dict->chars[(int)*start];
     }
@@ -226,6 +227,8 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_U16 maxValue = 0;
     XP_U16 ii, nSpecials;
     XP_U16 maxCountBits, maxValueBits;
+    XP_UCHAR buf[64];
+    XP_U16 nFaceBytes;
 
     /* Need to keep format identical for non-utf so new versions can play
        against old using not UTF8 dicts.  The old ones won't even recognize
@@ -258,8 +261,7 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
         stream_putBits( stream, maxValueBits, dict->countsAndValues[ii+1] );
     }
 
-    XP_UCHAR buf[64];
-    XP_U16 nFaceBytes = sizeof(buf);
+    nFaceBytes = sizeof(buf);
     unsplitFaces( dict, buf, &nFaceBytes );
     if ( dict_isUTF8( dict ) ) {
         /* nBytes == nFaces for non-UTF8 dicts */
@@ -327,6 +329,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_UCHAR* localTexts[32];
     XP_U16 streamVersion = stream_getVersion( stream );
     XP_Bool isUTF8 = streamVersion >= STREAM_VERS_UTF8;
+    XP_U8 utf8[96];
 
     XP_ASSERT( !dict->destructor );
     dict->destructor = common_destructor;
@@ -354,7 +357,8 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     } else {
         nFaceBytes = nFaces;
     }
-    XP_U8 utf8[nFaceBytes];
+
+    XP_ASSERT( nFaceBytes < VSIZE(utf8) );
     stream_getBytes( stream, utf8, nFaceBytes );
     dict->isUTF8 = isUTF8;
     dict_splitFaces( dict, utf8, nFaceBytes, nFaces );
