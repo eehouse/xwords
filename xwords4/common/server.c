@@ -1354,7 +1354,7 @@ makeNotAVowel( ServerCtxt* server, Tile* newTile )
 
 static void
 curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
-                XP_U16* nUsedP, XP_UCHAR4* curTrayText )
+                XP_U16* nUsedP, const XP_UCHAR** curTrayText )
 {
     const TrayTileSet* tileSet = model_getPlayerTiles( server->vol.model, turn );
     DictionaryCtxt* dict = model_getDictionary( server->vol.model );
@@ -1387,9 +1387,7 @@ curTrayAsTexts( ServerCtxt* server, XP_U16 turn, const TrayTileSet* notInTray,
         }
 
         if ( !toBeTraded ) {
-            dict_tilesToString( dict, &tile, 1, 
-                                (XP_UCHAR*)&curTrayText[nUsed++],
-                                sizeof(curTrayText[0]) );
+            curTrayText[nUsed++] = dict_getTileString( dict, tile );
         }
     }
     *nUsedP = nUsed;
@@ -1408,7 +1406,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
     PoolContext* pool = server->pool;
     TrayTileSet oneTile;
     PickInfo pi;
-    XP_UCHAR4 curTray[MAX_TRAY_TILES];
+    const XP_UCHAR* curTray[MAX_TRAY_TILES];
 #ifdef FEATURE_TRAY_EDIT
     DictionaryCtxt* dict = model_getDictionary( server->vol.model );
 #endif
@@ -1438,7 +1436,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
 #ifdef FEATURE_TRAY_EDIT        /* good compiler would note ask==0, but... */
     /* First ask until cancelled */
     for ( nSoFar = 0; ask && nSoFar < nToFetch;  ) {
-        XP_UCHAR4 texts[MAX_UNIQUE_TILES];
+        const XP_UCHAR* texts[MAX_UNIQUE_TILES];
         Tile tiles[MAX_UNIQUE_TILES];
         XP_S16 chosen;
         XP_U16 nUsed = MAX_UNIQUE_TILES;
@@ -1447,7 +1445,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
                              XP_TRUE, &nUsed, texts, tiles );
 
         chosen = util_userPickTile( server->vol.util, &pi, playerNum,
-                                    (const XP_UCHAR4*)texts, nUsed );
+                                    texts, nUsed );
 
         if ( chosen == PICKER_PICKALL ) {
             ask = XP_FALSE;
@@ -1464,10 +1462,7 @@ fetchTiles( ServerCtxt* server, XP_U16 playerNum, XP_U16 nToFetch,
             Tile tile = tiles[chosen];
             oneTile.tiles[0] = tile;
             pool_removeTiles( pool, &oneTile );
-
-            (void)dict_tilesToString( dict, &tile, 1, 
-                                      (XP_UCHAR*)&curTray[pi.nCurTiles++],
-                                      sizeof(curTray[0]) );
+            curTray[pi.nCurTiles++] = dict_getTileString( dict, tile );
             resultTiles->tiles[nSoFar++] = tile;
             ++pi.thisPick;
         }

@@ -55,8 +55,6 @@ typedef XP_U8 Tile;
 
 typedef void* XP_Bitmap;
 
-typedef XP_UCHAR XP_UCHAR4[4];
-
 typedef enum {
     TRI_ENAB_NONE
     ,TRI_ENAB_HIDDEN

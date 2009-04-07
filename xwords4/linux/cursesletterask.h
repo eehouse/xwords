@@ -24,7 +24,7 @@
 #include "cursesmain.h"
 
 XP_S16 curses_askLetter( CursesAppGlobals* globals, XP_UCHAR* query,
-                         const XP_UCHAR4* texts, XP_U16 nTiles );
+                         const XP_UCHAR** texts, XP_U16 nTiles );
 
 
 #endif

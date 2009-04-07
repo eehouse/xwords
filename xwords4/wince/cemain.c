@@ -102,7 +102,7 @@ static XWBonusType ce_util_getSquareBonus( XW_UtilCtxt* uc,
                                            XP_U16 col, XP_U16 row );
 static XP_S16 ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                                     XP_U16 playerNum,
-                                    const XP_UCHAR4* texts, XP_U16 nTiles );
+                                    const XP_UCHAR** texts, XP_U16 nTiles );
 static XP_Bool ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                     XP_UCHAR* buf, XP_U16* len );
 static void ce_util_trayHiddenChange( XW_UtilCtxt* uc, 
@@ -1795,8 +1795,9 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
         } else {
             wchar_t nameBuf[MAX_PATH];
 
-            confirmed = ceConfirmUniqueName( globals, globals->hWnd, IDS_SAVENAME, 
-                                             nameBuf, VSIZE(nameBuf) );
+            confirmed = ceConfirmUniqueName( globals, globals->hWnd, 
+                                             IDS_SAVENAME, nameBuf, 
+                                             VSIZE(nameBuf) );
             if ( confirmed ) {
                 XP_U16 len = wcslen(nameBuf);
                 newName = XP_MALLOC( globals->mpool, len + 1 );
@@ -3066,7 +3067,7 @@ ce_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* XP_UNUSED(model),
 static XP_S16
 ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
                       XP_U16 playerNum,
-                      const XP_UCHAR4* texts, XP_U16 nTiles )
+                      const XP_UCHAR** texts, XP_U16 nTiles )
 {
     BlankDialogState state;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;

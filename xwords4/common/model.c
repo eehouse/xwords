@@ -909,7 +909,7 @@ model_removePlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index )
 void
 model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
                      XP_Bool includeBlank, 
-                     XP_U16* nUsed, XP_UCHAR4* texts,
+                     XP_U16* nUsed, const XP_UCHAR** texts,
                      Tile* tiles )
 {
     DictionaryCtxt* dict = model->vol.dict;
@@ -921,8 +921,6 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
     XP_ASSERT( nFaces <= *nUsed );
 
     for ( tile = 0; tile < nFaces; ++tile ) {
-        XP_U16 nChars;
-
         if ( includeBlank ) {
             XP_ASSERT( !!pool );
             if ( pool_getNTilesLeftFor( pool, tile ) == 0 ) {
@@ -933,10 +931,7 @@ model_packTilesUtil( ModelCtxt* model, PoolContext* pool,
         }
             
         tiles[nFacesAvail] = tile;
-        nChars = dict_tilesToString( dict, &tile, 1, 
-                                     (XP_UCHAR*)&texts[nFacesAvail],
-                                     sizeof(texts[0]) );
-        XP_ASSERT( nChars < sizeof(texts[0]) );
+        texts[nFacesAvail] = dict_getTileString( dict, tile );
         ++nFacesAvail;
     }
 
@@ -949,7 +944,7 @@ askBlankTile( ModelCtxt* model, XP_U16 turn )
 {
     XP_U16 nUsed = MAX_UNIQUE_TILES;
     XP_S16 chosen;
-    XP_UCHAR4 tfaces[MAX_UNIQUE_TILES];
+    const XP_UCHAR* tfaces[MAX_UNIQUE_TILES];
     Tile tiles[MAX_UNIQUE_TILES];
     PickInfo pi;
 
@@ -961,7 +956,7 @@ askBlankTile( ModelCtxt* model, XP_U16 turn )
                          &nUsed, tfaces, tiles );
 
     chosen = util_userPickTile( model->vol.util, &pi,
-                                turn, (const XP_UCHAR4*)tfaces, nUsed );
+                                turn, tfaces, nUsed );
 
     if ( chosen < 0 ) {
         chosen = 0;

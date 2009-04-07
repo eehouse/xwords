@@ -30,7 +30,7 @@ loadLettersList( BlankDialogState* bState )
     XP_U16 nTiles = bState->nTiles;
     HWND hDlg = bState->dlgHdr.hDlg;
     CEAppGlobals* globals = bState->dlgHdr.globals;
-    const XP_UCHAR4* texts = bState->texts;
+    const XP_UCHAR** texts = bState->texts;
     UINT codePage = ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP;
     
     for ( i = 0; i < nTiles; ++i ) {	
