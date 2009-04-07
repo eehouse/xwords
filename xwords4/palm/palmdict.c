@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4;-*- */
 /* 
- * Copyright 1997-2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -83,7 +83,7 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
     XP_U32 offset;
     DictListEntry* dle;
     Err err;
-    XP_U16 i;
+    XP_U16 ii;
     FaceType* facePtr;
 #ifdef NODE_CAN_4
     XP_U16 flags;
@@ -115,6 +115,7 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
     dict_super_init( (DictionaryCtxt*)ctxt );
 
     if ( !!dictName ) {
+        XP_U8 buf[64];
         XP_ASSERT( XP_STRLEN((const char*)dictName) > 0 );
 
         ctxt->super.name = copyString( mpool, dictName );
@@ -170,16 +171,15 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
         facePtr = (FaceType*)MemHandleLock( tmpH );
         XP_ASSERT( MemHandleLockCount( tmpH ) == 1 );
         ctxt->super.nFaces = nChars = MemPtrSize(facePtr) / sizeof(*facePtr);
-        ctxt->super.faces16 = 
-            XP_MALLOC( mpool, nChars * sizeof(ctxt->super.faces16[0]));
-        XP_ASSERT( !!ctxt->super.faces16 );
-        for ( i = 0; i < nChars; ++i ) {
+        for ( ii = 0; ii < nChars; ++ii ) {
+            XP_ASSERT( ii < VSIZE(buf) );
 #ifdef NODE_CAN_4
-            ctxt->super.faces16[i] = READ_UNALIGNED16( &facePtr[i] );
+            buf[ii] = READ_UNALIGNED16( &facePtr[ii] );
 #else
-            ctxt->super.faces16[i] = facePtr[i];
+            buf[ii] = facePtr[ii];
 #endif
         }
+        dict_splitFaces( &ctxt->super, buf, nChars, nChars );
         nSpecials = countSpecials( facePtr, nChars );
         MemPtrUnlock( facePtr );
 
@@ -310,6 +310,28 @@ palm_dictionary_make( MPFORMAL PalmAppGlobals* globals,
     return NULL;
 } /* palm_dictionary_make */
 
+void
+dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
+                 XP_U16 nBytes, XP_U16 nFaces )
+{
+    XP_U16 facesLen = nFaces * 2;
+    XP_UCHAR* faces = XP_MALLOC( dict->mpool, facesLen );
+    XP_UCHAR** starts = XP_MALLOC( dict->mpool, nFaces * sizeof(starts[0]));
+    XP_U16 ii;
+    XP_UCHAR* next = faces;
+
+    for ( ii = 0; ii < nFaces; ++ii ) {
+        starts[ii] = next;
+        *next++ = *bytes++;
+        *next++ = '\0';
+    }
+    XP_ASSERT( next == faces + facesLen );
+    XP_ASSERT( !dict->faces );
+    dict->faces = faces;
+    XP_ASSERT( !dict->faceStarts );
+    dict->faceStarts = starts;
+} /* dict_splitFaces */
+
 static XP_U16
 countSpecials( FaceType* ptr, UInt16 nChars )
 {
@@ -392,7 +414,8 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
     
         MemPtrUnlock( ctxt->super.countsAndValues - 2 );//sizeof(Xloc_header) );
 
-        XP_FREE( dict->mpool, ctxt->super.faces16 );
+        XP_FREE( dict->mpool, ctxt->super.faceStarts );
+        XP_FREE( dict->mpool, ctxt->super.faces );
 
 #ifdef XWFEATURE_COMBINEDAWG
         /* Try first to delete the feature. */

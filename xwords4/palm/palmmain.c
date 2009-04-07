@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; compile-command: "make ARCH=ARM_ONLY MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1999 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -107,7 +108,7 @@ static XWBonusType palm_util_getSquareBonus( XW_UtilCtxt* uc,
                                              const ModelCtxt* model,
                                              XP_U16 col, XP_U16 row );
 static XP_S16 palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
-                                      XP_U16 playerNum, const XP_UCHAR4* texts, 
+                                      XP_U16 playerNum, const XP_UCHAR** texts, 
                                       XP_U16 nTiles );
 static XP_Bool palm_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                                       XP_UCHAR* buf, XP_U16* len );
@@ -3512,7 +3513,7 @@ handleKeysInBlank( EventPtr event )
 
 static XP_S16
 askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, const PickInfo* pi,
-               XP_U16 nTiles, const XP_UCHAR4* texts )
+               XP_U16 nTiles, const XP_UCHAR** texts )
 {
     FormPtr form, prevForm;
     ListPtr lettersList;
@@ -3531,7 +3532,7 @@ askBlankValue( PalmAppGlobals* globals, XP_U16 playerNum, const PickInfo* pi,
     initListData( MEMPOOL &ld, nTiles );
 
     for ( i = 0; i < nTiles; ++i ) {	
-        addListTextItem( MEMPOOL &ld, (XP_UCHAR*)texts[i] );
+        addListTextItem( MEMPOOL &ld, texts[i] );
     }
 
     prevForm = FrmGetActiveForm();
@@ -3767,7 +3768,7 @@ palm_util_getSquareBonus( XW_UtilCtxt* uc, const ModelCtxt* model,
 
 static XP_S16
 palm_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
-                        XP_U16 playerNum, const XP_UCHAR4* texts, 
+                        XP_U16 playerNum, const XP_UCHAR** texts, 
                         XP_U16 nTiles )
 {
     PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;

@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999 - 2006 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1999 - 2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -518,6 +518,8 @@ palmEnableAttrProc(void* closure, NewGameAttr attr, XP_TriEnable ngEnable )
     case NG_ATTR_REMHEADER:
         objID = XW_LOCAL_LABEL_ID;
         break;
+    case NG_ATTR_CANCONFIG:     /* not needed on palm */
+        break;
 #endif
     case NG_ATTR_NPLAYERS:
         objID = XW_NPLAYERS_SELECTOR_ID;
@@ -628,6 +630,7 @@ palmSetAttrProc( void* closure, NewGameAttr attr, const NGValue value )
         break;
     case NG_ATTR_CANJUGGLE:
         XP_ASSERT(0);           /* doesn't make sense */
+    case NG_ATTR_CANCONFIG:     /* not needed on palm */
         break;
     }
 } /* palmSetAttrProc */

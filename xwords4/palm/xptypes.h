@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1999-2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1999-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,6 +52,7 @@ XP_S16 palm_memcmp( XP_U8* p1, XP_U8* p2, XP_U16 nBytes );
 XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 
 #define XP_CR "\n"
+#define XP_S "%s"
 
 #define XP_RANDOM() SysRandom(0)
 
@@ -76,6 +78,7 @@ XP_U8* palm_realloc(XP_U8* in, XP_U16 size);
 #define XP_STRCMP(s1,s2)         StrCompare((s1),(s2))
 #define XP_STRCAT(d,s)           StrCat((d),(s))
 #define XP_SNPRINTF palm_snprintf
+#define XP_STRNCPY( out, in, len ) StrCopy( out, in )
 
 #define XP_MIN(a,b) ((a)<(b)?(a):(b))
 #define XP_MAX(a,b) ((a)>(b)?(a):(b))
