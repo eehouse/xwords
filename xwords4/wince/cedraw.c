@@ -34,6 +34,7 @@
 #include "cedict.h"
 #include "cedefines.h"
 #include "cedebug.h"
+#include "ceresstr.h"
 #include "debhacks.h"
 #include "strutils.h"
 
@@ -1679,33 +1680,38 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
 } /* ce_draw_drawTimer */
 
 DLSTATIC const XP_UCHAR*
-DRAW_FUNC_NAME(getMiniWText)( DrawCtx* XP_UNUSED(p_dctx), 
+DRAW_FUNC_NAME(getMiniWText)( DrawCtx* p_dctx, 
                               XWMiniTextType whichText )
 {
-    XP_UCHAR* str;
+    const XP_UCHAR* str = NULL;
+    XP_U16 resID = 0;
 
     switch( whichText ) {
     case BONUS_DOUBLE_LETTER:
-        str = "Double letter"; 
+        resID = IDS_DOUBLE_LETTER;
         break;
     case BONUS_DOUBLE_WORD:
-        str = "Double word"; 
+        resID = IDS_DOUBLE_WORD;
         break;
     case BONUS_TRIPLE_LETTER:
-        str = "Triple letter"; 
+        resID = IDS_TRIPLE_LETTER;
         break;
     case BONUS_TRIPLE_WORD:
-        str = "Triple word"; 
+        resID = IDS_TRIPLE_WORD;
         break;
     case INTRADE_MW_TEXT:
-        str = "Trading tiles." XP_CR "Select 'Turn done' when ready"; 
+        resID = IDS_INTRADE_MW;
         break;
     default:
         XP_ASSERT( XP_FALSE );
-        str = NULL;
         break;
     }
 
+
+    if ( resID != 0 ) {
+        CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
+        str = ceGetResString( dctx->globals, resID );
+    }
     return str;
 } /* ce_draw_getMiniWText */
 

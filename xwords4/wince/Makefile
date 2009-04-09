@@ -1,4 +1,4 @@
-# -*- compile-command: "make TARGET_OS=wince DEBUG=TRUE RELAY_NAME_DEFAULT=localhost"; -*-
+# -*- compile-command: "make -j3 TARGET_OS=wince DEBUG=TRUE RELAY_NAME_DEFAULT=localhost"; -*-
 # Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 
@@ -137,6 +137,7 @@ OBJDIR = obj_$(TARGET_OS)_rel
 endif
 
 TARGET = $(OBJDIR)/xwords4_$(SVNREV).exe
+DLL = $(OBJDIR)/xwords4_caps.dll
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \
@@ -157,6 +158,7 @@ WINCESRC = \
 	cestrbx.c \
 	cedraw.c \
 	cefonts.c \
+	ceresstr.c \
 	cesms.c \
 	debhacks.c \
 	cedebug.c \
@@ -185,6 +187,7 @@ XW_BOTH_DEFINES = \
 	-DXWFEATURE_HINT_CONFIG \
 	-DPOINTER_SUPPORT -DKEY_SUPPORT -D__LITTLE_ENDIAN \
 	-DCEFEATURE_CANSCROLL -DUNICODE \
+	-DLOADSTRING_BROKEN \
 	$(DEBUG_FLAG) $(MEM_DEBUG_FLAG) $(LOGGING_FLAG) \
 
 CFLAGS += $(XW_BOTH_DEFINES) -DARM
@@ -195,7 +198,7 @@ RESFLAGS += $(XW_BOTH_DEFINES) $(STANDALONE) $(BLUETOOTH) $(RELAY) $(SMS) \
 # Rules start here
 ####################################################################
 
-all : $(TARGET)
+all : $(TARGET) $(DLL)
 
 memdebug:
 	$(MAKE) DEBUG=TRUE all
@@ -213,6 +216,9 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
+	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
+
+$(OBJDIR)/xwords4_caps.rc.o : xwords4_caps.rc $(INCLUDES) xwords4.ico
 	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
 
 # Checking in xwords4.ico for now.  Hand-built using GIMP and layers
@@ -242,3 +248,6 @@ clean :
 help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
 	@echo "or 'make TARGET_OS=win32 [DEBUG=TRUE]'"
+
+$(DLL): $(OBJDIR)/xwords4_caps.rc.o
+	$(CC) -shared -o $@ $<

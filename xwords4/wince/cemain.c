@@ -55,6 +55,7 @@
 #include "cedraw.h"
 #include "cesms.h"
 #include "cesockwr.h"
+#include "ceresstr.h"
 
 #include "dbgutil.h"
 
@@ -183,8 +184,25 @@ tryIntParam( const char* buf, const char* param, XP_U16* value )
     return found;
 }
 
+static XP_Bool
+tryCharParam( const char* buf, const char* param, char* out )
+{
+    XP_U16 len = strlen( param );
+    XP_Bool found = 0 == strncmp( buf, param, len );
+    if ( found ) {
+        int ii;
+        for ( ii = len; buf[ii] != ' ' && buf[ii] != 0 ; ++ii ) {
+        }
+        memcpy( out, &buf[len], ii - len );
+        out[ii-len] = 0;
+        XP_LOGF( "%s: \"%s\"", __func__, out );
+    }
+    return found;
+}
+
 static void
-parseCmdLine( const char* cmdline, XP_U16* width, XP_U16* height )
+parseCmdLine( const char* cmdline, XP_U16* width, XP_U16* height,
+              char* dll )
 {
     XP_U16 ii;
     for ( ii = 0; ; ++ii ) {
@@ -205,6 +223,7 @@ parseCmdLine( const char* cmdline, XP_U16* width, XP_U16* height )
             if ( ii > 0 ) {         /* skip argv[0] */
                 if ( tryIntParam( buf, "width=", width ) ) {
                 } else if ( tryIntParam( buf, "height=", height ) ) {
+                } else if ( tryCharParam( buf, "dll=", dll ) ) {
                 } else {
                     XP_LOGF( "failed to match cmdline arg \"%s\"", buf );
                 }
@@ -222,7 +241,7 @@ parseCmdLine( const char* cmdline, XP_U16* width, XP_U16* height )
 ATOM				MyRegisterClass	(HINSTANCE, LPTSTR);
 BOOL				InitInstance	(HINSTANCE, int
 #ifndef _WIN32_WCE
-                                     , XP_U16, XP_U16
+                                     , XP_U16, XP_U16, const char*
 #endif
                                      );
 LRESULT CALLBACK	WndProc			(HWND, UINT, WPARAM, LPARAM);
@@ -243,13 +262,14 @@ WinMain(	HINSTANCE hInstance,
 
 #ifndef _WIN32_WCE
     XP_U16 width = 320, height = 320;
-    parseCmdLine( lpCmdLine, &width, &height );
+    char dll[MAX_PATH];
+    parseCmdLine( lpCmdLine, &width, &height, dll );
 #endif
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow
 #ifndef _WIN32_WCE
-                       , width, height
+                       , width, height, dll
 #endif
                        )) {
         return FALSE;
@@ -1244,7 +1264,7 @@ getOSInfo( CEAppGlobals* globals )
 BOOL
 InitInstance(HINSTANCE hInstance, int nCmdShow
 #ifndef _WIN32_WCE
-             ,XP_U16 width, XP_U16 height
+             ,XP_U16 width, XP_U16 height, const char* dll
 #endif
              )
 {
@@ -1284,7 +1304,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 		SetForegroundWindow( (HWND)((ULONG) hWnd | 0x00000001) );
         result = FALSE;
         goto exit;
-	} 
+	}
 
 #ifdef MEM_DEBUG
     mpool = mpool_make();
@@ -1294,6 +1314,16 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     XP_DEBUGF( "globals created: 0x%p", globals );
     XP_MEMSET( globals, 0, sizeof(*globals) );
     MPASSIGN( globals->mpool, mpool );
+    
+#ifndef _WIN32_WCE
+    if ( !!dll ) {
+        wchar_t widebuf[128];
+        XP_U16 len = MultiByteToWideChar( CP_ACP, 0, dll, -1, widebuf, VSIZE(widebuf) );
+        widebuf[len] = 0;
+        globals->strsInst = LoadLibrary( widebuf );
+        XP_LOGF( "strsInst: %p", globals->strsInst );
+    }
+#endif
 
 #ifndef _WIN32_WCE
     globals->dbWidth = width;
@@ -1909,6 +1939,8 @@ freeGlobals( CEAppGlobals* globals )
             XP_FREE( mpool, globals->specialDirs[ii] );
         }
     }
+
+    ceFreeResStrings( globals );
 
     XP_FREE( globals->mpool, globals );
     mpool_destroy( mpool );
@@ -2911,90 +2943,89 @@ ce_util_getVTManager( XW_UtilCtxt* uc )
 static void
 ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
-    XP_UCHAR* message;
-    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    XP_U16 resID = 0;
 
     switch( id ) {
     case ERR_TILES_NOT_IN_LINE:
-        message = "All tiles played must be in a line.";
+        resID = IDS_TILES_NOT_IN_LINE;
         break;
     case ERR_NO_EMPTIES_IN_TURN:
-        message = "Empty squares cannot separate tiles played.";
+        resID = IDS_NO_EMPTIES_IN_TURN;
         break;
 
     case ERR_TWO_TILES_FIRST_MOVE:
-        message = "Must play two or more pieces on the first move.";
+        resID = IDS_TWO_TILES_FIRST_MOVE;
         break;
     case ERR_TILES_MUST_CONTACT:
-        message = "New pieces must contact others already in place (or "
-            "the middle square on the first move).";
+        resID = IDS_TILES_MUST_CONTACT;
         break;
     case ERR_NOT_YOUR_TURN:
-        message = "You can't do that; it's not your turn!";
+        resID = IDS_NOT_YOUR_TURN;
         break;
     case ERR_NO_PEEK_ROBOT_TILES:
-        message = "No peeking at the robot's tiles!";
+        resID = IDS_NO_PEEK_ROBOT_TILES;
         break;
     case ERR_CANT_TRADE_MID_MOVE:
-        message = "Remove played tiles before trading.";
+        resID = IDS_CANT_TRADE_MID_MOVE;
         break;
     case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
-        message = "Too few tiles left to trade.";
+        resID = IDS_TOO_FEW_TILES_LEFT_TO_TRADE;
         break;
     case ERR_CANT_UNDO_TILEASSIGN:
-        message = "Tile assignment can't be undone.";
+        resID = IDS_CANT_UNDO_TILEASSIGN;
         break;
 
     case ERR_CANT_HINT_WHILE_DISABLED:
-        message = "The hint feature is disabled for this game.  Enable "
-            "it for a new game using the Preferences dialog.";
+        resID = IDS_CANT_HINT_WHILE_DISABLED;
         break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     case ERR_NO_PEEK_REMOTE_TILES:
-        message = "No peeking at remote players' tiles!";
+        resID = IDS_NO_PEEK_REMOTE_TILES;
         break;
     case ERR_REG_UNEXPECTED_USER:
-        message = "Refused attempt to register unexpected user[s].";
+        resID = IDS_REG_UNEXPECTED_USER;
         break;
     case ERR_SERVER_DICT_WINS:
-        message = "Conflict between Host and Guest dictionaries; Host wins.";
-        XP_WARNF( "GTK may have problems here." );
+        resID = IDS_SERVER_DICT_WINS;
         break;
     case ERR_REG_SERVER_SANS_REMOTE:
-        message = "At least one player must be marked remote for a game "
-            "started as Host.";
+        resID = IDS_REG_SERVER_SANS_REMOTE;
         break;
 #endif
 
 #ifdef XWFEATURE_RELAY
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
-        message = "The relay timed you out; usually that means "
-            "the other players didn't show.";
+        resID = IDS_XWRELAY_ERROR_TIMEOUT;
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_YOU:
-        message = "You were disconnected from relay because it didn't "
-            "hear from you in too long.";
+        resID = IDS_ERROR_HEART_YOU;
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
     case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
-        message = "The relay has lost contact with a device in this game.";
+        resID = IDS_XWRELAY_ERROR_HEART_OTHER;
         break;
+        /* Same string as above for now */
+/*         resID = IDS_XWRELAY_ERROR_LOST_OTHER; */
+/*         break; */
 #endif
 
     default:
-        XP_LOGF( "%s(%d)", __func__, id );
-        message = "unknown errorcode ID!!!";
+        XP_WARNF( "unknown error code: %d", id );
         break;
     }
 
-    ceOops( globals, message );
+    if ( 0 != resID ) {
+        CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+        const XP_UCHAR* message = ceGetResString( globals, resID );
+        ceOops( globals, message );
+    }
 } /* ce_util_userError */
 
 static XP_Bool
 ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
-    char* query = NULL;
+    const char* query = NULL;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
 
     switch( id ) {
@@ -3002,7 +3033,7 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         return ceQueryFromStream( globals, stream );
 
     case QUERY_COMMIT_TRADE:
-        query = "Are you sure you want to trade the selected tiles?";
+        LoadString( globals->hInst, IDS_QUERY_TRADE, (LPWSTR)&query, 0 );
         assertOnTop( globals->hWnd );
         return queryBoxChar( globals->hWnd, query );
 
@@ -3257,74 +3288,112 @@ ce_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 #endif
 
 static const XP_UCHAR*
-ce_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 stringCode )
+ce_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 {
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    XP_U16 resID = 0;
+    const XP_UCHAR* result = NULL;
+
     switch( stringCode ) {
     case STRD_REMAINING_TILES_ADD:
-        return "+ %d [all remaining tiles]";
+        resID = IDS_REMAINING_TILES_ADD;
+        break;
     case STRD_UNUSED_TILES_SUB:
-        return "- %d [unused tiles]";
+        resID = IDS_UNUSED_TILES_SUB;
+        break;
     case STR_BONUS_ALL:
-        return "Bonus for using all tiles: 50" XP_CR;
+        resID = IDS_BONUS_ALL;
+        break;
     case STRD_TURN_SCORE:
-        return "Score for turn: %d" XP_CR;
+        resID = IDS_TURN_SCORE;
+        break;
     case STR_COMMIT_CONFIRM:
-        return "Commit the current move?" XP_CR;
+        resID = IDS_COMMIT_CONFIRM;
+        break;
     case STR_LOCAL_NAME:
-        return "%s";
+        resID = IDS_LOCAL_NAME;
+        break;
     case STR_NONLOCAL_NAME:
-        return "%s (remote)";
+        resID = IDS_NONLOCAL_NAME;
+        break;
     case STRD_TIME_PENALTY_SUB:
-        return " - %d [time]";
+        resID = IDS_TIME_PENALTY_SUB;
+        break;
 
     case STRD_CUMULATIVE_SCORE:
-        return "Cumulative score: %d" XP_CR;
+        resID = IDS_CUMULATIVE_SCORE;
+        break;
     case STRS_MOVE_ACROSS:
-        return "move (from %s across)" XP_CR;
+        resID = IDS_MOVE_ACROSS;
+        break;
     case STRS_MOVE_DOWN:
-        return "move (from %s down)" XP_CR;
+        resID = IDS_MOVE_DOWN;
+        break;
     case STRS_TRAY_AT_START:
-        return "Tray at start: %s" XP_CR;
+        resID = IDS_TRAY_AT_START;
+        break;
 
     case STRS_NEW_TILES:
-        return "New tiles: %s" XP_CR;
+        resID = IDS_NEW_TILES;
+        break;
     case STRSS_TRADED_FOR:
-        return "Traded %s for %s.";
+        resID = IDS_TRADED_FOR;
+        break;
     case STR_PASS:
-        return "pass" XP_CR;
+        resID = IDS_PASS;
+        break;
     case STR_PHONY_REJECTED:
-        return "Illegal word in move; turn lost!" XP_CR;
+        resID = IDS_PHONY_REJECTED;
+        break;
 
     case STRD_ROBOT_TRADED:
-        return "Robot traded tiles %d this turn.";
+        resID = IDS_ROBOT_TRADED;
+        break;
     case STR_ROBOT_MOVED:
-        return "The robot made this move:" XP_CR;
+        resID = IDS_ROBOT_MOVED;
+        break;
     case STR_REMOTE_MOVED:
-        return "Remote player made this move:" XP_CR;
+        resID = IDS_REMOTE_MOVED;
+        break;
 
     case STR_PASSED: 
-        return "Passed";
+        resID = IDS_PASSED;
+        break;
     case STRSD_SUMMARYSCORED: 
-        return "%s:%d";
+        resID = IDS_SUMMARYSCORED;
+        break;
     case STRD_TRADED: 
-        return "Traded %d";
+        resID = IDS_TRADED;
+        break;
     case STR_LOSTTURN:
-        return "Lost turn";
+        resID = IDS_LOSTTURN;
+        break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
-        return "Locl playrs:";
+        resID = IDS_LOCALPLAYERS;
+        break;
 #endif
     case STR_TOTALPLAYERS:
-        return "Player count:";
+        resID = IDS_TOTALPLAYERS;
+        break;
 
     case STRS_VALUES_HEADER:
-        return "%s counts/values:" XP_CR;
+        resID = IDS_VALUES_HEADER;
+        break;
 
     default:
-        XP_LOGF( "stringCode=%d", stringCode );
-        return "unknown code";
+        XP_WARNF( "id for stringCode %d not found", stringCode );
+        break;
     }
+
+    if ( 0 != resID ) {
+        result = ceGetResString( globals, resID );
+    } else {
+        XP_WARNF( "%s: no resource for id %d", __func__, stringCode );
+        result = "";
+    }
+    return result;
 } /* ce_util_getUserString */
 
 static void

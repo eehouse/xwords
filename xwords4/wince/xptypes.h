@@ -45,7 +45,6 @@ typedef XP_U32 XP_Time;
 #define XP_TRUE ((XP_Bool)(1==1))
 #define XP_FALSE ((XP_Bool)(1==0))
 
-#define XP_CR "\015\012" /* 'Doze expects a carraige return followed by a linefeed */
 #define XP_S "%s"
 
 #ifdef _WIN32_WCE
