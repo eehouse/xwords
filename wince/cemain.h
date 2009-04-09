@@ -111,6 +111,7 @@ enum {
 
 typedef struct _CEAppGlobals {
     HINSTANCE hInst;
+    HINSTANCE strsInst;
     HDC hdc;			/* to pass drawing ctxt to draw code */
     HWND hWnd;
 #ifdef _WIN32_WCE
@@ -168,6 +169,10 @@ typedef struct _CEAppGlobals {
 
 #ifndef _WIN32_WCE
     XP_U16 dbWidth, dbHeight;
+#endif
+
+#ifdef LOADSTRING_BROKEN
+    void* resStrStorage;        /* used in ceresstr.c */
 #endif
 
     wchar_t* specialDirs[N_CACHED_PATHS];     /* reserved for ceGetPath() */
