@@ -23,6 +23,9 @@ PLATFORM = wince
 
 TARGET_OS ?= win32
 RELAY_NAME_DEFAULT ?= eehouse.org
+
+NATIVE_CC = gcc
+STRIDS = strids
 #TARGET_OS = wince
 #NO_DRAW = -DNO_DRAW
 
@@ -175,7 +178,7 @@ COMMONOBJ = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(notdir $(COMMONSRC))))
 
 OBJS = $(WINCEOBJS) $(COMMONOBJ)
 
-WINCE_INCLUDES = $(shell ls *.h)
+WINCE_INCLUDES = $(shell ls *.h) genstrids_dot_h
 COMMON_INCLUDES = $(shell ls ../common/*.h)
 
 INCLUDES = $(WINCE_INCLUDES) $(COMMON_INCLUDES)
@@ -221,6 +224,13 @@ $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
 $(OBJDIR)/xwords4_caps.rc.o : xwords4_caps.rc $(INCLUDES) xwords4.ico
 	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
 
+$(STRIDS): scripts/strids.c
+	$(NATIVE_CC) $(CFLAGS) -o $@ $<
+
+genstrids_dot_h: $(STRIDS)
+	./$< > $@
+	rm -f $(STRIDS)
+
 # Checking in xwords4.ico for now.  Hand-built using GIMP and layers
 # it's 1/4 the size (because it has only two colors).  Should figure
 # out how to script GIMP and replace the below.
@@ -243,7 +253,7 @@ test:
 	echo $(COMMONOBJ)
 
 clean :
-	rm -rf $(OBJDIR) $(TARGET) 
+	rm -rf $(OBJDIR) $(TARGET) $(STRIDS) genstrids_dot_h
 
 help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
