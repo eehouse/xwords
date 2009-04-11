@@ -21,71 +21,69 @@
 
 #ifdef LOADSTRING_BROKEN
 typedef struct _ResStrEntry {
-    XP_U16 resID;
-    XP_UCHAR str[1];
+    union {
+        XP_UCHAR nstr[1];
+        wchar_t wstr[1];
+    } u;
 } ResStrEntry;
 
 typedef struct _ResStrStorage {
     ResStrEntry* entries[CE_LAST_RES_ID - CE_FIRST_RES_ID + 1];
 } ResStrStorage;
-#endif
 
-
-const XP_UCHAR* 
-ceGetResString( CEAppGlobals* globals, XP_U16 resID )
+static const ResStrEntry*
+getEntry( CEAppGlobals* globals, XP_U16 resID, XP_Bool isWide )
 {
-    HINSTANCE hinst = globals->strsInst;
-    if ( !hinst ) {
-        hinst = globals->hInst;
-    }
-
-#ifdef LOADSTRING_BROKEN
-    const XP_UCHAR* str = NULL;
-    ResStrEntry* entry = NULL;
-    XP_U16 ii;
+    ResStrStorage* storage = (ResStrStorage*)globals->resStrStorage;
+    ResStrEntry* entry;
+    XP_U16 index;
 
     XP_ASSERT( resID >= CE_FIRST_RES_ID && resID <= CE_LAST_RES_ID );
+    index = CE_LAST_RES_ID - resID;
+    XP_ASSERT( index < VSIZE(storage->entries) );
 
-    ResStrStorage* storage = (ResStrStorage*)globals->resStrStorage;
     if ( !storage ) {
         storage = XP_MALLOC( globals->mpool, sizeof( *storage ) );
         XP_MEMSET( storage, 0, sizeof(*storage) );
         globals->resStrStorage = storage;
     }
 
-    for ( ii = 0; ; ++ii ) {
-        XP_ASSERT( ii < VSIZE(storage->entries) );
-        entry = storage->entries[ii];
-        if ( !entry ) {
-            break;
-        } else if ( entry->resID == resID ) {
-            str = entry->str;
-            XP_LOGF( "%s: found entry for %d", __func__, resID );
-            break;
-        }
-    }
-
-    if ( !str ) {
+    entry = storage->entries[index];
+    if ( !entry ) {
         wchar_t wbuf[265];
-        XP_UCHAR nbuf[265];
         XP_U16 len;
-        LoadString( hinst, resID, wbuf, VSIZE(wbuf) );
-        (void)WideCharToMultiByte( CP_ACP, 0, wbuf, -1,
-                                   nbuf, VSIZE(nbuf), NULL, NULL );
-        len = XP_STRLEN( nbuf );
-        entry = (ResStrEntry*)XP_MALLOC( globals->mpool, len + sizeof(*entry) );
-        entry->resID = resID;
-        XP_STRNCPY( entry->str, nbuf, len + 1 );
-        str = entry->str;
-        XP_ASSERT( !storage->entries[ii] );
-        XP_ASSERT( ii == 0 || !!storage->entries[ii-1] );
-        storage->entries[ii] = entry;
+        LoadString( globals->locInst, resID, wbuf, VSIZE(wbuf) );
+        if ( isWide ) {
+            len = wcslen( wbuf );
+            entry = (ResStrEntry*)XP_MALLOC( globals->mpool, 
+                                             (len*sizeof(wchar_t))
+                                             + sizeof(*entry) );
+            wcscpy( entry->u.wstr, wbuf );
+        } else {
+            XP_UCHAR nbuf[265];
+            (void)WideCharToMultiByte( CP_ACP, 0, wbuf, -1,
+                                       nbuf, VSIZE(nbuf), NULL, NULL );
+            len = XP_STRLEN( nbuf );
+            entry = (ResStrEntry*)XP_MALLOC( globals->mpool, 
+                                             len + sizeof(*entry) );
+            XP_STRNCPY( entry->u.nstr, nbuf, len + 1 );
+        }
+
+        storage->entries[index] = entry;
 
         XP_LOGF( "%s: created entry for %d", __func__, resID );
     }
 
-    return str;
+    return entry;
+} /* getEntry */
+#endif
 
+const XP_UCHAR* 
+ceGetResString( CEAppGlobals* globals, XP_U16 resID )
+{
+#ifdef LOADSTRING_BROKEN
+    const ResStrEntry* entry = getEntry( globals, resID, XP_FALSE );   
+    return entry->u.nstr;
 #else
     /* Docs say that you can call LoadString with 0 as the length and it'll
        return a read-only ptr to the text within the resource, but I'm getting
@@ -95,7 +93,27 @@ ceGetResString( CEAppGlobals* globals, XP_U16 resID )
        caches local multibyte copies of the resources so the API can stay the
        same. */
     const XP_UCHAR* str = NULL;
-    LoadString( hinst, resID, (LPSTR)&str, 0 );
+    LoadString( globals->locInst, resID, (LPSTR)&str, 0 );
+    return str;
+#endif
+}
+
+const wchar_t*
+ceGetResStringL( CEAppGlobals* globals, XP_U16 resID )
+{
+#ifdef LOADSTRING_BROKEN
+    const ResStrEntry* entry = getEntry( globals, resID, XP_TRUE );   
+    return entry->u.wstr;
+#else
+    /* Docs say that you can call LoadString with 0 as the length and it'll
+       return a read-only ptr to the text within the resource, but I'm getting
+       a ptr to wide chars back the resource text being multibyte.  I swear
+       I've seen it work, though, so might be a res file formatting thing or a
+       param to the res compiler.  Need to investigate.  Until I do, the above
+       caches local multibyte copies of the resources so the API can stay the
+       same. */
+    const XP_UCHAR* str = NULL;
+    LoadString( globals->locInst, resID, (LPSTR)&str, 0 );
     return str;
 #endif
 }
@@ -107,12 +125,11 @@ ceFreeResStrings( CEAppGlobals* globals )
     ResStrStorage* storage = (ResStrStorage*)globals->resStrStorage;
     if ( !!storage ) {
         XP_U16 ii;
-        for ( ii = 0; ; ++ii ) {
+        for ( ii = 0; ii < VSIZE(storage->entries); ++ii ) {
             ResStrEntry* entry = storage->entries[ii];
-            if ( !entry ) {
-                break;
+            if ( !!entry ) {
+                XP_FREE( globals->mpool, entry );
             }
-            XP_FREE( globals->mpool, entry );
         }
 
         XP_FREE( globals->mpool, storage );

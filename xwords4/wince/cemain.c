@@ -146,7 +146,7 @@ static void ce_util_engineStopping( XW_UtilCtxt* uc );
 #endif
 
 static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                                wchar_t* title, XP_U16 buttons, 
+                                const wchar_t* title, XP_U16 buttons, 
                                 XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, const RECT* src );
 static XP_Bool ceDoNewGame( CEAppGlobals* globals );
@@ -160,7 +160,7 @@ static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 #endif
 static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                              wchar_t* title, XP_U16 buttons );
+                             const wchar_t* title, XP_U16 buttons );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
 static XP_Bool isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name );
 static void ceSetTitleFromName( CEAppGlobals* globals );
@@ -332,9 +332,6 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
     wc.hInstance		= hInstance;
     wc.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_XWORDS4));
     wc.hbrBackground	= (HBRUSH) GetStockObject(WHITE_BRUSH);
-#ifndef _WIN32_WCE
-    wc.lpszMenuName		= (LPCTSTR)IDM_MENU;
-#endif
     wc.lpszClassName	= szWindowClass;
 
     return RegisterClass(&wc);
@@ -800,7 +797,7 @@ ceSetTitleFromName( CEAppGlobals* globals )
 
     /* if default name, remove any current name */
     if ( !gameName || isDefaultName( globals, gameName ) ) {
-        LoadString( globals->hInst, IDS_APP_TITLE, widebuf, VSIZE(widebuf) );
+        LoadString( globals->locInst, IDS_APP_TITLE, widebuf, VSIZE(widebuf) );
     } else {
         wchar_t* dotPos;
         XP_UCHAR* baseStart = 1 + strrchr( gameName, '\\' );
@@ -1123,7 +1120,8 @@ ceLoadSavedGame( CEAppGlobals* globals )
             success = dict != NULL;
             if ( !success ) {
                 XP_UCHAR buf[128];
-                snprintf( buf, VSIZE(buf), "Unable to open dictionary: %s",
+                snprintf( buf, VSIZE(buf), 
+                          ceGetResString( globals, IDS_CANNOTOPEN_DICT ),
                           dictName );
                 buf[VSIZE(buf)-1] = '\0';
                 ceOops( globals, buf );
@@ -1153,7 +1151,8 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 if ( !!dict ) {
                     dict_destroy( dict );
                 }
-                ceOops( globals, "Saved game cannot be opened." );
+                ceOops( globals, 
+                        ceGetResString( globals, IDS_CANNOTOPEN_GAME ) );
             }
         }
 
@@ -1318,10 +1317,11 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 #ifndef _WIN32_WCE
     if ( !!dll ) {
         wchar_t widebuf[128];
-        XP_U16 len = MultiByteToWideChar( CP_ACP, 0, dll, -1, widebuf, VSIZE(widebuf) );
+        XP_U16 len = MultiByteToWideChar( CP_ACP, 0, dll, -1, widebuf, 
+                                          VSIZE(widebuf) );
         widebuf[len] = 0;
-        globals->strsInst = LoadLibrary( widebuf );
-        XP_LOGF( "strsInst: %p", globals->strsInst );
+        globals->locInst = LoadLibrary( widebuf );
+        XP_LOGF( "strsInst: %p", globals->locInst );
     }
 #endif
 
@@ -1338,6 +1338,9 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
 
     globals->hInst = hInstance;
+    if ( !globals->locInst ) {
+        globals->locInst = hInstance;
+    }
     // Initialize global strings
     MyRegisterClass(hInstance, szWindowClass);
 
@@ -1365,6 +1368,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 #endif
 
 #ifndef _WIN32_WCE
+    SetMenu( hWnd, LoadMenu( globals->locInst, MAKEINTRESOURCE(IDM_MENU) ) );
     srand( time(NULL) );
 #endif
 
@@ -1378,9 +1382,10 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
                                   globals );
     if ( !result ) {
         wchar_t buf[512];
-        (void)LoadString( globals->hInst, (UINT)IDS_DICTLOC, buf, VSIZE(buf) );
+        (void)LoadString( globals->locInst, (UINT)IDS_DICTLOC, buf, VSIZE(buf) );
         assertOnTop( globals->hWnd );
-        MessageBox( globals->hWnd, buf, L"Dictionary Not Found", 
+        MessageBox( globals->hWnd, buf, 
+                    ceGetResStringL( globals, IDS_NODICT_L ),
                     MB_OK | MB_ICONHAND );
         result = FALSE;
         goto exit;
@@ -1514,7 +1519,8 @@ ceCountsAndValues( CEAppGlobals* globals )
 
         server_formatDictCounts( globals->game.server, stream, 3 );
 
-        (void)ceMsgFromStream( globals, stream, L"Tile Counts and Values", 
+        (void)ceMsgFromStream( globals, stream, 
+                               ceGetResStringL( globals, IDS_COUNTSVALS_L ),
                                MB_OK | MB_ICONINFORMATION, XP_TRUE );
     }
 } /* ceCountsAndValues */
@@ -1526,7 +1532,8 @@ ceTilesLeft( CEAppGlobals* globals )
         XWStreamCtxt* stream = make_generic_stream( globals );
         board_formatRemainingTiles( globals->game.board, stream );
 
-        (void)ceMsgFromStream( globals, stream, L"Remaining tiles", 
+        (void)ceMsgFromStream( globals, stream, 
+                               ceGetResStringL( globals, IDS_REMTILES_L ),
                                MB_OK | MB_ICONINFORMATION, XP_TRUE );
     }
 } /* ceTilesLeft */
@@ -1541,7 +1548,8 @@ ceDoHistory( CEAppGlobals* globals )
 
     model_writeGameHistory( globals->game.model, stream, 
                             globals->game.server, gameOver );
-    (void)ceMsgFromStream( globals, stream, L"Game history", 
+    (void)ceMsgFromStream( globals, stream, 
+                           ceGetResStringL( globals, IDS_GAMEHIST_L ),
                            MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDoHistory */
 
@@ -1597,7 +1605,8 @@ ceDisplayFinalScores( CEAppGlobals* globals )
     server_writeFinalScores( globals->game.server, stream );
     stream_putU8( stream, '\0' );
 
-    (void)ceMsgFromStream( globals, stream, L"Final scores", 
+    (void)ceMsgFromStream( globals, stream, 
+                           ceGetResStringL( globals, IDS_FINALSCORE_L),
                            MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDisplayFinalScores */
 
@@ -1613,7 +1622,7 @@ ceDoNewGame( CEAppGlobals* globals )
     giState.isNewGame = XP_TRUE;
 
     assertOnTop( globals->hWnd );
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
                     (DLGPROC)GameInfo, (long)&giState );
 
     if ( !giState.userCancelled
@@ -2216,9 +2225,9 @@ static void
 doAbout( CEAppGlobals* globals )
 {
     wchar_t buf[1024];
-    (void)LoadString( globals->hInst, (UINT)IDS_ABOUT, buf, VSIZE(buf) );
+    (void)LoadString( globals->locInst, (UINT)IDS_ABOUT, buf, VSIZE(buf) );
     assertOnTop( globals->hWnd );
-    MessageBox( globals->hWnd, buf, L"About " LCROSSWORDS_DIR, 
+    MessageBox( globals->hWnd, buf, ceGetResStringL( globals, IDS_ABOUT_L ),
                 MB_OK | MB_ICONINFORMATION );
 }
 
@@ -2237,7 +2246,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         globals = ((CREATESTRUCT*)lParam)->lpCreateParams;
         SetWindowLongPtr( hWnd, GWL_USERDATA, (long)globals );
 #ifdef _WIN32_WCE
-        globals->hwndCB = makeCommandBar( hWnd, globals->hInst );
+        globals->hwndCB = makeCommandBar( hWnd, globals->locInst );
 #endif
 
 #ifdef _WIN32_WCE
@@ -2301,8 +2310,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 XP_MEMSET( &state, 0, sizeof(state) );
                 state.dlgHdr.globals = globals;
 
-                DialogBoxParam(globals->hInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
-                               (DLGPROC)GameInfo, (long)&state );
+                DialogBoxParam( globals->locInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
+                                (DLGPROC)GameInfo, (long)&state );
 
                 if ( !state.userCancelled ) { 
                     if ( state.prefsChanged ) {
@@ -2316,8 +2325,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_FILE_NEWGAME:
                 XP_LOGF( "ID_FILE_NEWGAME" );
                 if ( ceSaveCurGame( globals, XP_FALSE )
-                     || queryBoxChar( hWnd, "Do you really want to "
-                                      "overwrite the current game?" ) ) {
+                     || queryBoxChar( globals, hWnd, 
+                                      ceGetResString( globals, 
+                                                      IDS_OVERWRITE ) ) ) {
                     draw = ceDoNewGame( globals );
                 }
                 break;
@@ -2335,8 +2345,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_GAME_FINALSCORES:
                 if ( server_getGameIsOver( globals->game.server ) ) {
                     ceDisplayFinalScores( globals );
-                } else if ( queryBoxChar( hWnd, "Are you sure you want to end "
-                                          "the game now?" ) ) {
+                } else if ( queryBoxChar( globals, hWnd, 
+                                          ceGetResString( globals,
+                                                          IDS_ENDNOW ) ) ) {
                     server_endGame( globals->game.server );
                     draw = TRUE;	    
                 }
@@ -2630,7 +2641,7 @@ ceAbout(HWND hDlg, UINT message, WPARAM wParam, LPARAM XP_UNUSED(lParam))
 
 static XP_Bool
 ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
-                 wchar_t* title, XP_U16 buttons, XP_Bool destroy )
+                 const wchar_t* title, XP_U16 buttons, XP_Bool destroy )
 {
     /* It seems we want to use messagebox for everything on smartphone and
        Windows, but not on PPC since it doesn't scroll and doesn't use
@@ -2657,7 +2668,7 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
         state.dlgHdr.globals = globals;
 
         assertOnTop( globals->hWnd );
-        DialogBoxParam( globals->hInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
+        DialogBoxParam( globals->locInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
                         (DLGPROC)StrBox, (long)&state );
         saidYes = state.result == IDOK;
     }
@@ -2681,8 +2692,8 @@ ceStreamToStrBuf( MPFORMAL XWStreamCtxt* stream )
 } /* ceStreamToStrBuf */
 
 static int
-messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
-                  XP_U16 buttons )
+messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
+                  const wchar_t* title, XP_U16 buttons )
 {
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
     int result;
@@ -2695,7 +2706,7 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, wchar_t* title,
 } /* messageBoxStream */
 
 XP_Bool
-queryBoxChar( HWND hWnd, const XP_UCHAR* msg )
+queryBoxChar( CEAppGlobals* globals, HWND hWnd, const XP_UCHAR* msg )
 {
     wchar_t widebuf[128];
     XP_U16 answer;
@@ -2704,7 +2715,8 @@ queryBoxChar( HWND hWnd, const XP_UCHAR* msg )
                                       widebuf, VSIZE(widebuf) );
     widebuf[len] = 0;
 
-    answer = MessageBox( hWnd, widebuf, L"Question", 
+    answer = MessageBox( hWnd, widebuf, 
+                         ceGetResStringL( globals, IDS_QUESTION_L ),
                          MB_YESNO | MB_ICONQUESTION );
     return answer == IDOK || answer == IDYES;
 } /* queryBoxChar */
@@ -2712,7 +2724,8 @@ queryBoxChar( HWND hWnd, const XP_UCHAR* msg )
 static XP_Bool
 ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream )
 {
-    return ceMsgFromStream( globals, stream, L"Question", 
+    return ceMsgFromStream( globals, stream, 
+                            ceGetResStringL( globals, IDS_QUESTION_L ),
                             MB_OKCANCEL | MB_ICONQUESTION, XP_FALSE );
 } /* ceQueryFromStream */
 
@@ -3033,16 +3046,19 @@ ce_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         return ceQueryFromStream( globals, stream );
 
     case QUERY_COMMIT_TRADE:
-        LoadString( globals->hInst, IDS_QUERY_TRADE, (LPWSTR)&query, 0 );
+        query = ceGetResString( globals, IDS_QUERY_TRADE );
         assertOnTop( globals->hWnd );
-        return queryBoxChar( globals->hWnd, query );
+        return queryBoxChar( globals, globals->hWnd, query );
 
     case QUERY_ROBOT_MOVE:
-        return ceMsgFromStream( globals, stream, L"FYI", 
+        return ceMsgFromStream( globals, stream, 
+                                ceGetResStringL( globals, IDS_FYI_L),
                                 MB_OK | MB_ICONINFORMATION, XP_FALSE );
 
     case QUERY_ROBOT_TRADE:
-        messageBoxStream( globals, stream, L"FYI", MB_OK | MB_ICONINFORMATION);
+        messageBoxStream( globals, stream, 
+                          ceGetResStringL( globals, IDS_FYI_L),
+                          MB_OK | MB_ICONINFORMATION);
         break;
 
     default:
@@ -3111,7 +3127,7 @@ ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
     state.pi = pi;
 
     assertOnTop( globals->hWnd );
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
                     (DLGPROC)BlankDlg, (long)&state );
     return state.result;
 } /* ce_util_userPickTile */
@@ -3130,7 +3146,7 @@ ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
     state.lenp = len;
 
     assertOnTop( globals->hWnd );
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKPASS, globals->hWnd, 
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_ASKPASS, globals->hWnd, 
                     (DLGPROC)PasswdDlg, (long)&state );
 
     return !state.userCancelled;
@@ -3402,7 +3418,7 @@ ce_formatBadWords( BadWordInfo* bwi, XP_UCHAR buf[], XP_U16 bufsiz )
     XP_U16 i;
 
     for ( i = 0, buf[0] = '\0'; ; ) {
-        XP_UCHAR wordBuf[18];
+        XP_UCHAR wordBuf[24];
         sprintf( wordBuf, "\"%s\"", bwi->words[i] );
         XP_ASSERT( strlen(wordBuf) < sizeof(wordBuf)-1 );
         strncat( buf, wordBuf, bufsiz - 1 );
@@ -3422,20 +3438,25 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_UCHAR wordsBuf[256];
     XP_UCHAR msgBuf[256];
+    const XP_UCHAR* fmt;
     XP_Bool isOk;
 
     ce_formatBadWords( bwi, wordsBuf, sizeof(wordsBuf) );
-    sprintf( msgBuf, "Word[s] %s not found in dictionary.", wordsBuf );
+    fmt = ceGetResString( globals, IDS_WRDNOTFOUND );
+    snprintf( msgBuf, VSIZE(msgBuf), fmt, wordsBuf );
 
     if ( turnLost ) {
         XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
-        ceMessageBoxChar( globals, msgBuf, isUTF8, L"Illegal word",
+        ceMessageBoxChar( globals, msgBuf, isUTF8, 
+                          ceGetResStringL( globals, IDS_ILLEGALWRD_L ),
                           MB_OK | MB_ICONHAND );
         isOk = XP_TRUE;
     } else {
-        strcat( msgBuf, " Use it anyway?" );
+        const XP_UCHAR* str = ceGetResString( globals, IDS_USEANYWAY );
+        XP_U16 len = strlen( msgBuf );
+        XP_SNPRINTF( &msgBuf[len], VSIZE(msgBuf)-len, " %s", str );
         assertOnTop( globals->hWnd );
-        isOk = queryBoxChar( globals->hWnd, msgBuf );
+        isOk = queryBoxChar( globals, globals->hWnd, msgBuf );
     }
 
     return isOk;
@@ -3486,7 +3507,7 @@ ce_util_getTraySearchLimits( XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
     hls.max = *max;
 
     assertOnTop( globals->hWnd );
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_ASKHINTLIMTS, globals->hWnd, 
                     (DLGPROC)HintLimitsDlg, (long)&hls );
 
     if ( !hls.cancelled ) {

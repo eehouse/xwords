@@ -239,8 +239,10 @@ myChooseColor( CeDlgHdr* dlgHdr, XP_U16 labelID, COLORREF* cref )
 
     XP_LOGF( "setting up IDD_COLOREDITDLG" );
 
-    result = DialogBoxParam( dlgHdr->globals->hInst, (LPCTSTR)IDD_COLOREDITDLG, 
-                             dlgHdr->hDlg, (DLGPROC)EditColorsDlg, (long)&state );
+    result = DialogBoxParam( dlgHdr->globals->locInst, 
+                             (LPCTSTR)IDD_COLOREDITDLG, 
+                             dlgHdr->hDlg, (DLGPROC)EditColorsDlg,
+                             (long)&state );
 
     XP_LOGF( "DialogBoxParam=>%d", result );
 
@@ -454,7 +456,7 @@ ceDoColorsEdit( HWND hwnd, CEAppGlobals* globals, COLORREF* colors )
     state.dlgHdr.globals = globals;
     state.inColors = colors;
 
-    (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
+    (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_COLORSDLG, hwnd,
                           (DLGPROC)ColorsDlg, (long)&state );
 
     if ( !state.cancelled ) {

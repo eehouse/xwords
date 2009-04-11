@@ -111,7 +111,7 @@ enum {
 
 typedef struct _CEAppGlobals {
     HINSTANCE hInst;
-    HINSTANCE strsInst;
+    HINSTANCE locInst;  /* same as hInst if no l10n DLL in use */
     HDC hdc;			/* to pass drawing ctxt to draw code */
     HWND hWnd;
 #ifdef _WIN32_WCE
@@ -199,7 +199,8 @@ enum {
 #define CE_NUM_EDITABLE_COLORS CE_BLACK_COLOR
 
 
-XP_Bool queryBoxChar( HWND hWnd, const XP_UCHAR* msg );
+XP_Bool queryBoxChar( CEAppGlobals* globals, HWND hWnd, 
+                      const XP_UCHAR* msg );
 
 /* These allow LISTBOX and COMBOBOX to be used by the same code */
 

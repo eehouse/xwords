@@ -314,7 +314,7 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
     } else {
         mbi.nToolBarId = IDM_OKCANCEL_MENUBAR;
     }
-    mbi.hInstRes = globals->hInst;
+    mbi.hInstRes = globals->locInst;
     success = SHCreateMenuBar( &mbi );
     if ( !success ) {
         XP_LOGF( "SHCreateMenuBar failed: %ld", GetLastError() );

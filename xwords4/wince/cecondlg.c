@@ -327,7 +327,7 @@ WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRecIn,
     state.forShowOnly = !isNewGame;
     XP_MEMCPY( &state.addrRec, addrRecIn, sizeof(state.addrRec) );
 
-    DialogBoxParam( globals->hInst, (LPCTSTR)IDD_CONNSSDLG, hDlg,
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_CONNSSDLG, hDlg,
                     (DLGPROC)ConnsDlg, (long)&state );
 
     result = isNewGame && !state.userCancelled;
