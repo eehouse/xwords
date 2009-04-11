@@ -844,91 +844,8 @@ BEGIN
                     REPOS_BUTTON_HT
 # endif
 END
-
 #endif
 
-#ifdef ALLOW_CHOOSE_FONTS
-IDD_FONTSSDLG DIALOG DISCARDABLE  0, 0, 120, 115
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION ""                      /* set by code */
-FONT 8, "System"
-BEGIN
-
-    LTEXT           "Fonts:",FONTS_LABEL,5,2,25,12
-#ifdef _WIN32_WCE
-    LISTBOX         FONTS_COMBO, 30,2,70,12, LISTBOX_CONTROL_FLAGS | LBS_SORT
-    CONTROL "",     IDC_FONTSUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        FONTS_COMBO_PPC,30,2,70,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-
-    LTEXT           "Size:",FONTSIZE_LABEL,5,16,25,12
-#ifdef _WIN32_WCE
-    LISTBOX         FONTSIZE_COMBO, 30,16,25,12, LISTBOX_CONTROL_FLAGS | LBS_SORT
-    CONTROL "",     IDC_FONTSIZEUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        FONTSIZE_COMBO_PPC,30,16,25,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-
-# ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "OK",IDOK,20,100,REPOS_BUTTON_WIDTH,
-                    REPOS_BUTTON_HT
-    PUSHBUTTON      "Cancel",IDCANCEL,100,100,REPOS_BUTTON_WIDTH,
-                    REPOS_BUTTON_HT
-# endif
-END
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_RIGHTARROW          BITMAP  DISCARDABLE     "bmps/rightarrow.bmp"
-IDB_DOWNARROW           BITMAP  DISCARDABLE     "bmps/downarro.bmp"
-IDB_ORIGIN              BITMAP  DISCARDABLE     "bmps/origin.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLRS
-//
-
-ID_COLORS_RES CLRS MOVEABLE PURE 
-BEGIN
-    0xAF, 0xAF, 0x00,		/* bonus 1 */
-    0x00, 0xAF, 0xAF,
-    0xAF, 0x00, 0xAF,
-    0xAF, 0xAF, 0xAF,
-    0xFF, 0xFF, 0xFF,		/* empty cells/CE_BKG_COLOR */
-    0xFF, 0xFF, 0x99,		/* tile background */
-    0x70, 0x70, 0xFF,		/* focus */
-    0x00, 0x00, 0x00,		/* player 1 */
-    0xFF, 0x00, 0x00,
-    0x00, 0x00, 0xFF,
-    0x00, 0x8F, 0x00,       /* 8F: full-green contrasts badly with background */
-    0x00, 0x00, 0x00,		/* black */
-    0xFF, 0xFF, 0xFF		/* white */
-END
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// BONS: bonus square values.
-//
-
-// Butts' board
-ID_BONUS_RES BONS MOVEABLE PURE 
-BEGIN
-    0x4001, 0x0004,
-    0x0200, 0x0300,
-    0x0020, 0x0010,
-    0x1002, 0x0001,
-    0x0000, 0x2000,
-    0x0300, 0x0300,
-    0x0010, 0x0010,
-    0x4001, 0x0002
-END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1013,8 +930,39 @@ BEGIN
     IDS_CANT_TRADE_MID_MOVE "REMOVE PLAYED TILES BEFORE TRADING."
     IDS_TOO_FEW_TILES_LEFT_TO_TRADE "TOO FEW TILES LEFT TO TRADE."
     IDS_CANT_UNDO_TILEASSIGN "TILE ASSIGNMENT CAN'T BE UNDONE."
-    IDS_CANT_HINT_WHILE_DISABLED "THE HINT FEATURE IS DISABLED FOR THIS GAME.  ENABLE "\
-                            "IT FOR A NEW GAME USING THE PREFERENCES DIALOG."
+    IDS_CANT_HINT_WHILE_DISABLED "THE HINT FEATURE IS DISABLED FOR THIS GAME.  "\
+                            "ENABLE IT FOR A NEW GAME USING THE PREFERENCES "\
+                            "DIALOG."
+
+    IDS_COUNTSVALS_L        "TILE COUNTS AND VALUES"
+    IDS_REMTIMES_L          "REMAINING TILES"
+    IDS_GAMEHIST_L          "GAME HISTORY"
+    IDS_FINALSCORE_L        "FINAL SCORES"
+    IDS_QUESTION_L          "QUESTION"
+    IDS_FYI_L               "FYI"
+    IDS_ILLEGALWRD_L        "ILLEGAL WORD"
+    IDS_WRDNOTFOUND         "WORD[S] %s NOT FOUND IN DICTIONARY."
+    IDS_USEANYWAY           "USE IT ANYWAY?"
+    IDS_FYI_L               "OOPS!"
+    IDS_CANNOTOPEN_GAME     "SAVED GAME CANNOT BE OPENED."
+    IDS_NODICT_L            "DICTIONARY NOT FOUND"
+    IDS_ABOUT_L             "ABOUT CROSSWORDS"
+    IDS_OVERWRITE           "DO YOU REALLY WANT TO OVERWRITE THE CURRENT GAME?"
+    IDS_ENDNOW              "ARE YOU SURE YOU WANT TO END THE GAME NOW?"
+    IDS_CANNOTOPEN_DICT     "UNABLE TO OPEN DICTIONARY: %s"
+    IDS_CONFIM_DELETE       "ARE YOU CERTAIN YOU WANT TO DELETE THE "\
+                            "SELECTED GAME?  THIS ACTION CANNOT BE UNDONE."
+
+    IDS_ROLE_STANDALONE     "STANDALONE"
+    IDS_ROLE_HOST           "HOST"
+    IDS_ROLE_GUEST          "GUEST"
+    IDS_PLAYER_FORMAT       "PLAYER %d"
+    IDS_UNTITLED_FORMAT     "UNTITLED %d"
+    IDS_CONN_RELAY          "RELAY"
+    IDS_CONN_DIRECT         "DIRECT CONNECTION"
+    IDS_CONN_SMS            "TEXTING"
+
+
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_NO_PEEK_REMOTE_TILES "NO PEEKING AT REMOTE PLAYERS' TILES!"
     IDS_REG_UNEXPECTED_USER "REFUSED ATTEMPT TO REGISTER UNEXPECTED USER[S]."
