@@ -27,6 +27,7 @@
 #include "strutils.h"
 #include "cedebug.h"
 #include "strutils.h"
+#include "ceresstr.h"
 
 #define NUM_COLS 4
 #define MENUDICTS_INCR 16
@@ -167,10 +168,11 @@ loadFromGameInfo( GameInfoState* state )
     CurGameInfo* gi = &globals->gameInfo;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    wchar_t* roles[] = { L"Standalone", L"Host", L"Guest" };
-    for ( ii = 0; ii < VSIZE(roles); ++ii ) {
+    XP_U16 role_ids[] = { IDS_ROLE_STANDALONE, IDS_ROLE_HOST, IDS_ROLE_GUEST };
+    for ( ii = 0; ii < VSIZE(role_ids); ++ii ) {
+        const wchar_t* wstr = ceGetResStringL( globals, role_ids[ii] );
         SendDlgItemMessage( state->dlgHdr.hDlg, state->roleComboId, 
-                            ADDSTRING(globals), 0, (long)roles[ii] );
+                            ADDSTRING(globals), 0, (long)wstr );
     }
 #endif
 
@@ -478,7 +480,7 @@ ceSetColProc( void* closure, XP_U16 player, NewGameColumn col,
     GameInfoState* state = (GameInfoState*)closure;
     XP_U16 resID = resIDForCol( player, col );
     const XP_UCHAR* cp;
-    XP_UCHAR buf[16];
+    XP_UCHAR buf[32];
 
     switch( col ) {
     case NG_COL_PASSWD:
@@ -486,7 +488,9 @@ ceSetColProc( void* closure, XP_U16 player, NewGameColumn col,
         if ( NULL != value.ng_cp ) {
             cp = value.ng_cp;
         } else if ( col == NG_COL_NAME ) {
-            snprintf( buf, sizeof(buf), "Player %d", player + 1 );
+            const XP_UCHAR* str = ceGetResString( state->dlgHdr.globals, 
+                                                  IDS_PLAYER_FORMAT );
+            snprintf( buf, sizeof(buf), str, player + 1 );
             cp = buf;
         } else {
             cp = "";

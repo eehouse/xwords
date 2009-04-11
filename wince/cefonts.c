@@ -258,7 +258,7 @@ ceShowFonts( HWND hDlg, CEAppGlobals* globals )
     state.textRect.right = 300;
     state.textRect.bottom = state.textRect.top + (4*MAX_FONT_SHOWN);
 
-    (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_FONTSSDLG, hDlg,
+    (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_FONTSSDLG, hDlg,
                           (DLGPROC)FontsDlgProc, (long)&state );
 }
 

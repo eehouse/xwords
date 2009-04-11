@@ -29,7 +29,7 @@ LRESULT CALLBACK StrBox(HWND hDlg, UINT message, WPARAM wParam,
 
 typedef struct StrBoxState {
     CeDlgHdr dlgHdr;
-    wchar_t* title;
+    const wchar_t* title;
     XWStreamCtxt* stream;
     XP_U16 result;
     XP_Bool isQuery;

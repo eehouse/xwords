@@ -23,6 +23,7 @@
 #include "cemain.h"
 
 const XP_UCHAR* ceGetResString( CEAppGlobals* globals, XP_U16 resID );
+const wchar_t* ceGetResStringL( CEAppGlobals* globals, XP_U16 resID );
 
 # ifdef LOADSTRING_BROKEN
 void ceFreeResStrings( CEAppGlobals* globals );

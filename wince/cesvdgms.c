@@ -29,6 +29,7 @@
 #include "cemain.h" 
 #include "cesvdgms.h" 
 #include "ceutil.h" 
+#include "ceresstr.h"
 #include "cedebug.h" 
 #include "debhacks.h"
 
@@ -59,11 +60,12 @@ static void
 makeUniqueName( CEAppGlobals* globals, wchar_t* buf, XP_U16 bufLen )
 {
     XP_U16 ii;
+    const wchar_t* fmt = ceGetResStringL( globals, IDS_UNTITLED_FORMAT );
     for ( ii = 1; ii < 100; ++ii ) {
 #ifdef DEBUG
         int len = 
 #endif
-            _snwprintf( buf, bufLen, L"Untitled%d", ii );
+            _snwprintf( buf, bufLen, fmt, ii );
         XP_ASSERT( len < bufLen );
         if ( !ceFileExists( globals, buf ) ) {
             break;
@@ -88,7 +90,7 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->inited = XP_FALSE;
 
         wchar_t buf[128];
-        LoadString( state->dlgHdr.globals->hInst, state->lableTextId, 
+        LoadString( state->dlgHdr.globals->locInst, state->lableTextId, 
                     buf, VSIZE(buf) );
         (void)SetDlgItemText( hDlg, IDC_SVGN_SELLAB, buf );
 
@@ -162,7 +164,7 @@ ceConfirmUniqueName( CEAppGlobals* globals, HWND hWnd, XP_U16 strId,
     state.buf = buf;
     state.buflen = buflen;
     state.lableTextId = strId;
-    (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_SAVENAMEDLG, 
+    (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_SAVENAMEDLG, 
                           hWnd, (DLGPROC)SaveNameDlg, (long)&state );
     XP_LOGW( __func__, buf );
     return !state.cancelled;
@@ -359,11 +361,11 @@ duplicateSelected( CeSavedGamesState* state )
 static XP_Bool
 deleteSelected( CeSavedGamesState* state )
 {
+    CEAppGlobals* globals = state->dlgHdr.globals;
     /* confirm first!!!! */
-    XP_Bool confirmed = queryBoxChar( state->dlgHdr.hDlg,
-                                      "Are you certain you want to delete the "
-                                      "selected game?  This action cannot be "
-                                      "undone.");
+    XP_Bool confirmed = queryBoxChar( globals, state->dlgHdr.hDlg,
+                                      ceGetResString( globals, 
+                                                      IDS_CONFIM_DELETE ) );
     if ( confirmed ) {
         wchar_t pathW[CE_MAX_PATH_LEN];
         XP_U16 len = ceGetPath( state->dlgHdr.globals, 
@@ -500,7 +502,7 @@ ceSavedGamesDlg( CEAppGlobals* globals, const XP_UCHAR* curPath,
         state.result = CE_SVGAME_CANCEL;
 
         assertOnTop( globals->hWnd );
-        (void)DialogBoxParam( globals->hInst, (LPCTSTR)IDD_SAVEDGAMESDLG, 
+        (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_SAVEDGAMESDLG, 
                               globals->hWnd, 
                               (DLGPROC)SavedGamesDlg, (long)&state );
 
