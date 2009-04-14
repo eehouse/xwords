@@ -19,6 +19,25 @@
 
 #include "ceresstr.h"
 
+HINSTANCE
+ceLoadResFile( const XP_UCHAR* file )
+{
+    HINSTANCE hinst = NULL;
+    wchar_t widebuf[128];
+    XP_U16 len = MultiByteToWideChar( CP_ACP, 0, file, -1, widebuf, VSIZE(widebuf) );
+    widebuf[len] = 0;
+    hinst = LoadLibrary( widebuf );
+    XP_LOGF( "strsInst: %p", hinst );
+    return hinst;
+}
+
+void
+ceCloseResFile( HINSTANCE inst )
+{
+    XP_ASSERT( !!inst );
+    FreeLibrary( inst );
+}
+
 #ifdef LOADSTRING_BROKEN
 typedef struct _ResStrEntry {
     union {

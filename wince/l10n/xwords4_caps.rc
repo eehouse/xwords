@@ -3,14 +3,14 @@
 // Microsoft Developer Studio generated resource script.  But now I'm
 // editing it. :-)
 //
-#include "resource.h"
+#include "../resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "newres.h"
+#include "../newres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -875,6 +875,7 @@ BEGIN
     IDS_CANCEL              "CANCEL"                                                       // <- translate
     IDS_OK                  "OK"                                                           // <- translate
     IDS_DONE                "DONE"                                                         // <- translate
+    IDS_LANGUAGE_NAME       "ALL CAPS"                                                     // <- translate
     IDS_ABOUT       "CROSSWORDS 4.4A1 (REV " SVN_REV ") "\
                     "FOR WINDOWS MOBILE. COPYRIGHT 1998-2008 BY "\
                     "ERIC HOUSE.  THIS SOFTWARE IS RELEASED UNDER THE GNU "\

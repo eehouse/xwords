@@ -949,6 +949,7 @@ BEGIN
     IDS_CANCEL              "Cancel"
     IDS_OK                  "Ok"
     IDS_DONE                "Done"
+    IDS_LANGUAGE_NAME       "English"
     IDS_ABOUT       "Crosswords 4.4a1 (rev " SVN_REV ") "\
                     "for Windows Mobile. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\

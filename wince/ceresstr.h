@@ -22,6 +22,9 @@
 
 #include "cemain.h"
 
+HINSTANCE ceLoadResFile( const XP_UCHAR* file );
+void ceCloseResFile( HINSTANCE inst );
+
 const XP_UCHAR* ceGetResString( CEAppGlobals* globals, XP_U16 resID );
 const wchar_t* ceGetResStringL( CEAppGlobals* globals, XP_U16 resID );
 
