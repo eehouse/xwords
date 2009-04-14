@@ -74,55 +74,55 @@ BEGIN
         MENUITEM "--",                          W32_DUMMY_ID
     END
 #endif
-    POPUP "MENU"                                                                          // <- translate 
+    POPUP "Menu"                                                                          // <- translate 
     BEGIN
-        MENUITEM "TURN DONE",                  ID_MOVE_TURNDONE                           // <- translate
-        MENUITEM "JUGGLE",                     ID_MOVE_JUGGLE                             // <- translate
-        MENUITEM "FLIP",                       ID_MOVE_FLIP                               // <- translate
-        MENUITEM "TRADE",                      ID_MOVE_TRADE                              // <- translate
-        MENUITEM "HIDE TRAY",                  ID_MOVE_HIDETRAY                           // <- translate
+        MENUITEM "Coup terminé",                  ID_MOVE_TURNDONE                           // <- translate
+        MENUITEM "Mélanger",                     ID_MOVE_JUGGLE                             // <- translate
+        MENUITEM "Retourner",                       ID_MOVE_FLIP                               // <- translate
+        MENUITEM "Echanger",                      ID_MOVE_TRADE                              // <- translate
+        MENUITEM "Cacher tirage",                  ID_MOVE_HIDETRAY                           // <- translate
 
-        POPUP "UNDO"                                                                      // <- translate
+        POPUP "Annuler"                                                                      // <- translate
         BEGIN
-            MENUITEM "UNDO CURRENT",            ID_MOVE_UNDOCURRENT                       // <- translate
-            MENUITEM "UNDO LAST",               ID_MOVE_UNDOLAST                          // <- translate
+            MENUITEM "Annuler actuel",            ID_MOVE_UNDOCURRENT                       // <- translate
+            MENUITEM "Annuler précédent",               ID_MOVE_UNDOLAST                          // <- translate
         END
 
-        POPUP "HINT"                                                                      // <- translate 
+        POPUP "Conseil"                                                                      // <- translate 
         BEGIN
-            MENUITEM "NEXT HINT",              ID_MOVE_NEXTHINT                           // <- translate
-            MENUITEM "HINT",                   ID_MOVE_HINT                               // <- translate
+            MENUITEM "Conseil suivant",              ID_MOVE_NEXTHINT                           // <- translate
+            MENUITEM "Conseil",                   ID_MOVE_HINT                               // <- translate
 #ifdef XWFEATURE_SEARCHLIMIT
-            MENUITEM "LIMITED HINT...",        ID_MOVE_LIMITEDHINT                        // <- translate
+            MENUITEM "Conseil limité...",        ID_MOVE_LIMITEDHINT                        // <- translate
 #endif
             MENUITEM SEPARATOR
-            MENUITEM "SHOW VALUES",             ID_MOVE_VALUES                            // <- translate
+            MENUITEM "Montrer les valeurs",             ID_MOVE_VALUES                            // <- translate
         END
 
-        POPUP "GAME"                                                                      // <- translate
+        POPUP "Partie"                                                                      // <- translate
         BEGIN
-            MENUITEM "TILE COUNTS AND VALUES",  ID_GAME_TILECOUNTSANDVALUES               // <- translate
-            MENUITEM "TILES LEFT",              ID_GAME_TILESLEFT                         // <- translate
+            MENUITEM "Nombre et valeur des lettres",  ID_GAME_TILECOUNTSANDVALUES               // <- translate
+            MENUITEM "Lettres restantes",              ID_GAME_TILESLEFT                         // <- translate
             MENUITEM SEPARATOR
-            MENUITEM "GAME INFO",               ID_GAME_GAMEINFO                          // <- translate
-            MENUITEM "HISTORY",                 ID_GAME_HISTORY                           // <- translate
-            MENUITEM "FINAL SCORES",           ID_GAME_FINALSCORES                        // <- translate
+            MENUITEM "Infos partie",               ID_GAME_GAMEINFO                          // <- translate
+            MENUITEM "Historique",                 ID_GAME_HISTORY                           // <- translate
+            MENUITEM "Score final",           ID_GAME_FINALSCORES                        // <- translate
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-            MENUITEM "RESEND MESSAGES",         ID_GAME_RESENDMSGS                        // <- translate
+            MENUITEM "Renvoyer message",         ID_GAME_RESENDMSGS                        // <- translate
 #endif
         END
 
-        POPUP "FILE"                                                                      // <- translate
+        POPUP "Fichier"                                                                      // <- translate
         BEGIN
-            MENUITEM "FULL SCREEN",            ID_FILE_FULLSCREEN                         // <- translate
+            MENUITEM "Plein écran",            ID_FILE_FULLSCREEN                         // <- translate
             MENUITEM SEPARATOR
-            MENUITEM "NEW GAME...",            ID_FILE_NEWGAME                            // <- translate
-            MENUITEM "SAVED GAMES...",         ID_FILE_SAVEDGAMES                         // <- translate
-            MENUITEM "PREFERENCES...",         ID_FILE_PREFERENCES                        // <- translate
+            MENUITEM "Nouvelle partie...",            ID_FILE_NEWGAME                            // <- translate
+            MENUITEM "Parties enregistrées...",         ID_FILE_SAVEDGAMES                         // <- translate
+            MENUITEM "Préférences...",         ID_FILE_PREFERENCES                        // <- translate
             MENUITEM SEPARATOR
-            MENUITEM "ABOUT...",               ID_FILE_ABOUT                              // <- translate 
+            MENUITEM "A propos...",               ID_FILE_ABOUT                              // <- translate 
             MENUITEM SEPARATOR
-            MENUITEM "EXIT",                   ID_FILE_EXIT                               // <- translate 
+            MENUITEM "Quitter",                   ID_FILE_EXIT                               // <- translate 
         END
     END
 END
@@ -259,7 +259,7 @@ END
 
 IDD_GAMEINFO DIALOG DISCARDABLE  0, 0, 116, GAMEINFO_HEIGHT 
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "GAME INFO"                                                                       // <- translate GAME INFO
+CAPTION "Infos partie"                                                                       // <- translate GAME INFO
 FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -271,7 +271,7 @@ BEGIN
 #endif
     COMBOBOX        IDC_ROLECOMBO_PPC,25,SERVERROLE_ROW,50,58,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "CONF.",GIROLECONF_BUTTON,75,SERVERROLE_ROW,20,ROW_HEIGHT             // <- translate CONF. (configure)
+    PUSHBUTTON      "Conf.",GIROLECONF_BUTTON,75,SERVERROLE_ROW,20,ROW_HEIGHT             // <- translate CONF. (configure)
     
 #endif
 
@@ -284,15 +284,15 @@ BEGIN
     COMBOBOX        IDC_NPLAYERSCOMBO_PPC,46,NPLAYERS_ROW,24,58,CBS_DROPDOWNLIST |
                     WS_VSCROLL | WS_TABSTOP
 
-    PUSHBUTTON      "JUGL.",GIJUGGLE_BUTTON,75,NPLAYERS_ROW,20,ROW_HEIGHT                 // <- translate JUGL. (juggle)
+    PUSHBUTTON      "Mél.",GIJUGGLE_BUTTON,75,NPLAYERS_ROW,20,ROW_HEIGHT                 // <- translate JUGL. (juggle)
 
-    LTEXT           "NAME",IDC_STATIC,GAME_NAMELABEL_LEFT,                                // <- translate NAME
+    LTEXT           "Nom",IDC_STATIC,GAME_NAMELABEL_LEFT,                                // <- translate NAME
                     LABELS_ROW,GAME_NAMELABEL_WIDTH,8,SS_NOPREFIX
-    LTEXT           "ROBOT",IDC_STATIC,GAME_ROBOTLABEL_LEFT,LABELS_ROW,22,8               // <- translate ROBOT
-    LTEXT           "PWD",IDC_STATIC,GAME_PWDLABEL_LEFT,LABELS_ROW,16,8                   // <- translate PWD (password)
+    LTEXT           "Robot",IDC_STATIC,GAME_ROBOTLABEL_LEFT,LABELS_ROW,22,8               // <- translate ROBOT
+    LTEXT           "Mdp",IDC_STATIC,GAME_PWDLABEL_LEFT,LABELS_ROW,16,8                   // <- translate PWD (password)
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-    LTEXT           "REMOTE",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,25,8,SS_NOPREFIX        // <- translate REMOTE
+    LTEXT           "Distant",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,25,8,SS_NOPREFIX        // <- translate REMOTE
     CONTROL         "",REMOTE_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     GAME_REMOTE_LEFT, PLAYER_ROW_1,CHECK_WIDTH,ROW_HEIGHT
     CONTROL         "",REMOTE_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
@@ -307,7 +307,7 @@ BEGIN
     CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
     CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
 
-    LTEXT           "DICTIONARY:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,36,8,           // <- translate DICTIONARY
+    LTEXT           "Dictionnaire:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,36,8,           // <- translate DICTIONARY
                     SS_NOPREFIX
 #ifdef _WIN32_WCE
     LISTBOX         IDC_DICTLIST, LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LISTBOX_CONTROL_FLAGS|LBS_SORT
@@ -317,11 +317,11 @@ BEGIN
     COMBOBOX        IDC_DICTLIST_PPC,LEFT_COL+10,DICTPICK_ROW,80,58,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
-    PUSHBUTTON      "PREFERENCES...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12              // <- translate PREFERENCES....
+    PUSHBUTTON      "Préférences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12              // <- translate PREFERENCES....
 
 #ifndef _WIN32_WCE
     PUSHBUTTON      "OK",IDOK,29,BUTTONS_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT           // <- translate OK
-    DEFPUSHBUTTON   "CANCEL",IDCANCEL,70,BUTTONS_ROW,                                     // <- translate CANCEL
+    DEFPUSHBUTTON   "Annuler",IDCANCEL,70,BUTTONS_ROW,                                     // <- translate CANCEL
                      REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -339,14 +339,14 @@ END
 
 IDD_STRBOX DIALOG DISCARDABLE  0, 25, SB_WIDTH, STRBOX_HT
     STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "DIALOG"                                                                          // <- translate DIALOG
+CAPTION "Dialogue"                                                                          // <- translate DIALOG
 FONT 8, "System"
 BEGIN
     EDITTEXT        ID_EDITTEXT,3,3,115,76,ES_MULTILINE | ES_READONLY
                           | WS_VSCROLL
 #ifndef _WIN32_WCE
     PUSHBUTTON      "OK",IDOK,    SB_OK_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT           // <- translate OK
-    DEFPUSHBUTTON   "NO",IDCANCEL,SB_CANCEL_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT       // <- translate NO
+    DEFPUSHBUTTON   "Non",IDCANCEL,SB_CANCEL_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT       // <- translate NO
 #endif
 END
 
@@ -369,18 +369,18 @@ END
 
 IDD_ASKBLANK DIALOG DISCARDABLE  0, 0, ASKB_DLG_WIDTH, ASKB_DLG_HEIGHT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "TILE PICKER"                                                                     // <- translate TILE PICKER
+CAPTION "Choix de lettre"                                                                     // <- translate TILE PICKER
 FONT 8, "System"
 BEGIN
-    LTEXT           "ENTER A LETTER FOR THIS BLANK TILE.",IDC_BPICK,                      // <- translate ENTER A LETTER FOR THIS BLANK TILE.
+    LTEXT           "Entrez une lettre pour ce joker.",IDC_BPICK,                      // <- translate ENTER A LETTER FOR THIS BLANK TILE.
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
 #ifdef FEATURE_TRAY_EDIT
-    LTEXT           "PICK A TILE FOR YOUR TRAY.",IDC_CPICK,                               // <- translate PICK A TILE FOR YOUR TRAY
+    LTEXT           "Choisissez une lettre de votre tirage.",IDC_CPICK,                               // <- translate PICK A TILE FOR YOUR TRAY
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
     EDITTEXT        IDC_PICKMSG,ASKB_COLLEFT,ASKB_EDITTOP,80,ASKB_EDITHT,
                     ES_MULTILINE | ES_READONLY
 
-    PUSHBUTTON      "PUT BACK",IDC_BACKUP,ASKB_COLLEFT,ASKB_PUTTOP,35,14                  // <- translate PUT BACK
+    PUSHBUTTON      "Remettre",IDC_BACKUP,ASKB_COLLEFT,ASKB_PUTTOP,35,14                  // <- translate PUT BACK
 #endif
 
 #ifdef _WIN32_WCE
@@ -393,7 +393,7 @@ BEGIN
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,80,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT                 // <- translate OK
-    PUSHBUTTON      "CANCEL",IDCANCEL,20,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT         // <- translate CANCEL
+    PUSHBUTTON      "Annuler",IDCANCEL,20,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT         // <- translate CANCEL
 #endif
 END
 
@@ -410,7 +410,7 @@ END
 
 IDD_SAVENAMEDLG DIALOG DISCARDABLE  0, 0, 90, SVGN_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "GAME NAME"                                                                       // <- translate GAME NAME
+CAPTION "Nom partie"                                                                       // <- translate GAME NAME
 FONT 8, "System"
 BEGIN
     LTEXT           "",
@@ -420,7 +420,7 @@ BEGIN
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,SVGN_LEFT_COL+10,SVGN_ROW_3,REPOS_BUTTON_WIDTH,             // <- translate OK
                     BUTTON_HT
-    PUSHBUTTON      "CANCEL",IDCANCEL,SVGN_LEFT_COL+10+REPOS_BUTTON_WIDTH+10,             // <- translate CANCEL
+    PUSHBUTTON      "Annuler",IDCANCEL,SVGN_LEFT_COL+10+REPOS_BUTTON_WIDTH+10,             // <- translate CANCEL
                     SVGN_ROW_3,REPOS_BUTTON_WIDTH, BUTTON_HT
 #endif
 END
@@ -442,11 +442,11 @@ END
 
 IDD_SAVEDGAMESDLG DIALOG DISCARDABLE  0, 0, 85, SVGM_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "SAVED GAMES"                                                                     // <- translate SAVED GAMES
+CAPTION "Parties enregistrées"                                                                     // <- translate SAVED GAMES
 FONT 8, "System"
 BEGIN
   LTEXT           /* wince windres can't handle split lines....*/
-                    "SELECT A SAVED GAME.  (SOME BUTTONS WILL BE DISABLED WHEN THE CURRENT GAME IS SELECTED.)",
+                    "Sélectionnez une partie enregistrée.  (Certains boutons seront désactivés si la partie en cours est sélectionnée.)",
                                                                                           // ^- translate SELECT A SAVED GAME.  (SOME BUTTONS WILL BE DISABLED WHEN THE CURRENT GAME IS SELECTED.)
                     IDC_SVGM_SELLAB,SVGM_LEFT_COL,
                     SVGM_ROW_1,90,35
@@ -459,18 +459,18 @@ BEGIN
     COMBOBOX        IDC_SVGM_GAMELIST_PPC,SVGM_LEFT_COL,SVGM_ROW_2,70,58,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP | CBS_SORT
 
-    PUSHBUTTON      "OPEN",IDC_SVGM_OPEN,                                                 // <- translate OPEN
+    PUSHBUTTON      "Ouvrir",IDC_SVGM_OPEN,                                                 // <- translate OPEN
                     SVGM_LEFT_COL,SVGM_ROW_3,40,14,WS_DISABLED
 
-    PUSHBUTTON      "DUP.",IDC_SVGM_DUP,                                                  // <- translate DUP. (=duplicate)
+    PUSHBUTTON      "Dupl.",IDC_SVGM_DUP,                                                  // <- translate DUP. (=duplicate)
                     SVGM_LEFT_COL,SVGM_ROW_4,20,14,WS_DISABLED
-    PUSHBUTTON      "DELETE",IDC_SVGM_DEL,                                                // <- translate DELETE
+    PUSHBUTTON      "Effacer",IDC_SVGM_DEL,                                                // <- translate DELETE
                     SVGM_LEFT_COL+22,SVGM_ROW_4,28,14,WS_DISABLED
-    PUSHBUTTON      "RENAME",IDC_SVGM_CHANGE,                                             // <- translate RENAME
+    PUSHBUTTON      "Renommer",IDC_SVGM_CHANGE,                                             // <- translate RENAME
                     SVGM_LEFT_COL+52,SVGM_ROW_4,32,14,WS_DISABLED
 
 #ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "DONE",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,             // <- translate DONE
+    DEFPUSHBUTTON   "Terminé",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,             // <- translate DONE
                     BUTTON_HT
 #endif
 END
@@ -487,14 +487,14 @@ END
 
 IDD_ASKPASS DIALOG DISCARDABLE  0, 0, PW_WIDTH, ASKPASS_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "PASSWORD"                                                                        // <- translate PASSWORD
+CAPTION "Mode de passe"                                                                        // <- translate PASSWORD
 FONT 8, "System"
 BEGIN
     LTEXT           "",IDC_PWDLABEL,5,8,67,24
     EDITTEXT        PASS_EDIT,76,8,23,12,ES_PASSWORD | ES_AUTOHSCROLL
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,PW_OK_LEFT,32,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT           // <- translate OK
-    PUSHBUTTON      "CANCEL",IDCANCEL,                                                   // <- translate TILE HINT CANCEL
+    PUSHBUTTON      "Annuler",IDCANCEL,                                                   // <- translate TILE HINT CANCEL
                     PW_CANCEL_LEFT,32,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -516,10 +516,10 @@ END
 
 IDD_ASKHINTLIMTS DIALOG DISCARDABLE  0, 0, HC_WIDTH, ASKHINTLIMTS_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "TILE HINT LIMITS"                                                                // <- translate TILE HINT LIMITS
+CAPTION "Limites de taille des conseils"                                                                // <- translate TILE HINT LIMITS
 FONT 8, "System"
 BEGIN
-    LTEXT           "USE AT LEAST:",IDC_STATIC,                                           // <- translate USE AT LEAST:
+    LTEXT           "Utiliser au moins:",IDC_STATIC,                                           // <- translate USE AT LEAST:
                     HC_LABELS_COL,HC_MINROW,60,ROW_HEIGHT
 #ifdef _WIN32_WCE
     LISTBOX         HC_MIN_COMBO, HC_DROPDOWNS_COL,HC_MINROW, 24, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
@@ -529,7 +529,7 @@ BEGIN
     COMBOBOX        HC_MIN_COMBO_PPC,HC_DROPDOWNS_COL,HC_MINROW,17,58,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
-    LTEXT           "BUT NO MORE THAN:",IDC_STATIC,HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT  // <- translate BUT NO MORE THAN
+    LTEXT           "Mais pas plus de:",IDC_STATIC,HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT  // <- translate BUT NO MORE THAN
 #ifdef _WIN32_WCE
     LISTBOX         HC_MAX_COMBO, HC_DROPDOWNS_COL,HC_MAXROW, 24, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     HC_MAX_UPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
@@ -539,7 +539,7 @@ BEGIN
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,HC_OK_LEFT,31,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT            // <- translate OK
-    PUSHBUTTON      "CANCEL",IDCANCEL,HC_CANCEL_LEFT,31,REPOS_BUTTON_WIDTH,               // <- translate CANCEL
+    PUSHBUTTON      "Annuler",IDCANCEL,HC_CANCEL_LEFT,31,REPOS_BUTTON_WIDTH,               // <- translate CANCEL
                      REPOS_BUTTON_HT
 #endif
 END
@@ -571,40 +571,40 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "PREFERENCES"                                                                     // <- translate PREFERENCES
 FONT 8, "System"
 BEGIN
-    CONTROL         "THIS GAME",IDC_RADIOLOCAL,"Button",                                  // <- translate THIS GAME
+    CONTROL         "Cette partie",IDC_RADIOLOCAL,"Button",                                  // <- translate THIS GAME
                     BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
-    CONTROL         "ALL GAMES",IDC_RADIOGLOBAL,"Button",                                 // <- translate ALL GAMES
+    CONTROL         "Toutes les parties",IDC_RADIOGLOBAL,"Button",                                 // <- translate ALL GAMES
                     BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
 
     /* Global */
-    CONTROL         "COLOR PLAYED TILES",IDC_CHECKCOLORPLAYED,"Button",                   // <- translate COLOR PLAYED TILES
+    CONTROL         "Couleur des lettres placées",IDC_CHECKCOLORPLAYED,"Button",                   // <- translate COLOR PLAYED TILES
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,
                     8,PR_ROW2,80,PREFS_ROW_HT
-    CONTROL         "ENABLE CURSOR",IDC_CHECKSHOWCURSOR,"Button",                         // <- translate ENABLE CURSOR
+    CONTROL         "Activer curseur",IDC_CHECKSHOWCURSOR,"Button",                         // <- translate ENABLE CURSOR
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,80,PREFS_ROW_HT
-    CONTROL         "EXPLAIN ROBOT SCORES",IDC_CHECKROBOTSCORES,"Button",                 // <- translate EXPLAIN ROBOT SCORES
+    CONTROL         "Détails des points du robot",IDC_CHECKROBOTSCORES,"Button",                 // <- translate EXPLAIN ROBOT SCORES
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW4,80,PREFS_ROW_HT
-    CONTROL         "HIDE TILE VALUES",IDC_HIDETILEVALUES,"Button",                       // <- translate HIDE TILE VALUES
+    CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",                       // <- translate HIDE TILE VALUES
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,80,PREFS_ROW_HT
-    PUSHBUTTON      "EDIT COLORS...",IDC_PREFCOLORS,8,PR_ROW6,60,12                       // <- translate EDIT COLORS...
+    PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,8,PR_ROW6,60,12                       // <- translate EDIT COLORS...
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "CHOOSE FONT...",IDC_PREFFONTS,8,PR_ROW7,60,12                        // <- translate CHOOSE FONT...
+    PUSHBUTTON      "Choisir une police...",IDC_PREFFONTS,8,PR_ROW7,60,12                        // <- translate CHOOSE FONT...
 #endif
 
     /* Per game */
-    CONTROL         "SMART ROBOT",IDC_CHECKSMARTROBOT,"Button",                           // <- translate SMART ROBOT
+    CONTROL         "Robot intelligent",IDC_CHECKSMARTROBOT,"Button",                           // <- translate SMART ROBOT
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,60,
                     PREFS_ROW_HT
-    CONTROL         "ALLOW HINTS",IDC_CHECKHINTSOK,"Button",                              // <- translate ALLOW HINTS
+    CONTROL         "Conseils permis",IDC_CHECKHINTSOK,"Button",                              // <- translate ALLOW HINTS
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,60,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT
-    CONTROL         "HINT LIMITS",IDC_CHECKHINTSLIMITS,"Button",                          // <- translate HINT LIMITS
+    CONTROL         "Limitation des conseils",IDC_CHECKHINTSLIMITS,"Button",                          // <- translate HINT LIMITS
                     BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,50,10
 #endif
-    CONTROL         "TIMER ON (MINUTES)",TIMER_CHECK,"Button",                            // <- translate TIMER ON (MINUTES)
+    CONTROL         "Chrono actif",TIMER_CHECK,"Button",                            // <- translate TIMER ON (MINUTES)
                         BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,75,PREFS_ROW_HT
     EDITTEXT        TIMER_EDIT,85,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "PHONIES:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT                    // <- translate PHONIES:
+    LTEXT           "Mots faux:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT                    // <- translate PHONIES:
 #ifdef _WIN32_WCE
     LISTBOX         PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     IDC_PHONIESUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
@@ -614,13 +614,13 @@ BEGIN
                     WS_TABSTOP
 
 #ifdef FEATURE_TRAY_EDIT
-    CONTROL         "PICK TILES FACE-UP", IDC_PICKTILES, "Button",                        // <- translate PICK TILES FACE-UP
+    CONTROL         "Choix des lettres faces visibles", IDC_PICKTILES, "Button",                        // <- translate PICK TILES FACE-UP
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW7,90,PREFS_ROW_HT
 #else
 #endif
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,PR_OK_LEFT,PR_BUTTONROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT  // <- translate OK
-    PUSHBUTTON      "CANCEL",IDCANCEL,PR_CANCEL_LEFT,PR_BUTTONROW,                        // <- translate CANCEL
+    PUSHBUTTON      "Annuler",IDCANCEL,PR_CANCEL_LEFT,PR_BUTTONROW,                        // <- translate CANCEL
                     REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -649,11 +649,11 @@ END
     /* #This is a comment????  */
 IDD_CONNSSDLG DIALOG DISCARDABLE 0, 20, 120, CONNSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "CONNECTION"                                                                      // <- translate CONNECTION
+CAPTION "Connexion"                                                                      // <- translate CONNECTION
 FONT 8, "System"
 BEGIN
      
-    LTEXT           "CONNECT VIA:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT       // <- translate CONNECT VIA:
+    LTEXT           "Connecter via:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT       // <- translate CONNECT VIA:
 #ifdef _WIN32_WCE
     LISTBOX         IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     IDC_CONNECTUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS, 0, 0, 0, 0
@@ -662,47 +662,47 @@ BEGIN
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
 #ifdef XWFEATURE_RELAY
-    LTEXT           "COOKIE:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT             // <- translate COOKIE:
+    LTEXT           "Cookie:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT             // <- translate COOKIE:
     EDITTEXT        COOKIE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
-    LTEXT           "RELAY NAME (RARELY CHANGES):",IDC_CRELAYNAME_LAB,                    // <- translate RELAY NAME (RARELY CHANGES):
+    LTEXT           "Transmettre le nom (change rarement):",IDC_CRELAYNAME_LAB,                    // <- translate RELAY NAME (RARELY CHANGES):
                     LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
     EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
-    LTEXT           "RELAY PORT (RARELY CHANGES):",IDC_CRELAYPORT_LAB,                    // <- translate RELAY PORT (RARELY CHANGES):
+    LTEXT           "Transmettre le port (change rarement):",IDC_CRELAYPORT_LAB,                    // <- translate RELAY PORT (RARELY CHANGES):
                     LAB_COL,CONN_ROW_7,120,ROW_HEIGHT
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "RELAY CONNECTION NOT SUPPORTED.",IDC_COOKIE_LAB,                     // <- translate RELAY CONNECTION NOT SUPPORTED
+    LTEXT           "Connexion non supportée.",IDC_COOKIE_LAB,                     // <- translate RELAY CONNECTION NOT SUPPORTED
                      LAB_COL,CONN_ROW_3,40,40
 #endif
 
 #ifdef XWFEATURE_IP_DIRECT
-    LTEXT           "HOST NAME OR ADDRESS",IDC_IPNAME_LAB,                                // <- translate HOST NAME OR ADDRESS
+    LTEXT           "Nom et adresse de l'hôte",IDC_IPNAME_LAB,                                // <- translate HOST NAME OR ADDRESS
                     LAB_COL,CONN_ROW_3,100,ROW_HEIGHT
     EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,ES_AUTOHSCROLL
 #else
-    LTEXT           "DIRECT IP CONNECTION NOT SUPPORTED.",IDC_IPNAME_LAB,                 // <- translate DIRECT IP CONNECTION NOT SUPPORTED
+    LTEXT           "Connexion IP directe non supportée.",IDC_IPNAME_LAB,                 // <- translate DIRECT IP CONNECTION NOT SUPPORTED
                     LAB_COL,CONN_ROW_3,40,40
 #endif
 
 #ifdef XWFEATURE_SMS
-    LTEXT           "HOST PHONE:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT      // <- translate HOST PHONE:
+    LTEXT           "Téléphone hôte:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT      // <- translate HOST PHONE:
     EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "HOST PORT:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT        // <- translate HOST PORT:
+    LTEXT           "Port hôte:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT        // <- translate HOST PORT:
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "TEXTING NOT SUPPORTED.",                                             // <- translate TEXTING NOT SUPPORTED
+    LTEXT           "SMS non supporté.",                                             // <- translate TEXTING NOT SUPPORTED
                      IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
 #endif
 
 #ifndef _WIN32_WCE
     PUSHBUTTON      "OK",IDOK,9,BUTTON_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT             // <- translate EDIT
-    DEFPUSHBUTTON   "CANCEL",IDCANCEL,70,BUTTON_ROW,                                      // <- translate EDIT
+    DEFPUSHBUTTON   "Annuler",IDCANCEL,70,BUTTON_ROW,                                      // <- translate EDIT
                     REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -755,42 +755,42 @@ END
      and have a separate button to trigger the edit dialog. */
 #define COLOR_SAMPLE(id1,id2,xx,yy)                        \
     PUSHBUTTON       "",id2,xx,yy,CLR_BUT_WIDTH,CLR_BUT_HT,BS_OWNERDRAW \
-    PUSHBUTTON       "EDIT",id1,xx+CLR_SAMPLE_WIDTH+4,yy,20,CLR_BUT_HT,BS_NOTIFY          // <- translate EDIT
+    PUSHBUTTON       "Editer",id1,xx+CLR_SAMPLE_WIDTH+4,yy,20,CLR_BUT_HT,BS_NOTIFY          // <- translate EDIT
 
 IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, CLR_WIDTH, COLORSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "COLOR PREFERENCES"                                                               // <- translate COLOR PREFERENCES
+CAPTION "Préférences des couleurs"                                                               // <- translate COLOR PREFERENCES
 FONT 8, "System"
 BEGIN
-    COLOR_BUTTON("DOUBLE LETTER:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1)                       // <- translate DOUBLE LETTER
+    COLOR_BUTTON("Lettre double:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1)                       // <- translate DOUBLE LETTER
     COLOR_SAMPLE(DLBLTR_BUTTON,DLBLTR_SAMPLE,CLR_COL_2,CLR_ROW_1)
 
-    COLOR_BUTTON("DOUBLE WORD:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2 )                        // <- translate DOUBLE WORD
+    COLOR_BUTTON("Mot double:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2 )                        // <- translate DOUBLE WORD
     COLOR_SAMPLE(DBLWRD_BUTTON,DBLWRD_SAMPLE,CLR_COL_2,CLR_ROW_2)
-    COLOR_BUTTON("TRIPLE LETTER:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3 )                      // <- translate TRIPLE LETTER
+    COLOR_BUTTON("Lettre triple:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3 )                      // <- translate TRIPLE LETTER
     COLOR_SAMPLE(TPLLTR_BUTTON,TPLLTR_SAMPLE,CLR_COL_2,CLR_ROW_3)
 
-    COLOR_BUTTON("TRIPLE WORD:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4)                         // <- translate TRIPLE WORD
+    COLOR_BUTTON("Mot triple:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4)                         // <- translate TRIPLE WORD
     COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_COL_4,CLR_ROW_4)
-    COLOR_BUTTON("EMPTY CELL:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5)                         // <- translate EMPTY CELL
+    COLOR_BUTTON("Case vide:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5)                         // <- translate EMPTY CELL
     COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_COL_2,CLR_ROW_5)
-    COLOR_BUTTON("TILE BACK:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6)                            // <- translate TILE BACK
+    COLOR_BUTTON("Fond de lettre:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6)                            // <- translate TILE BACK
     COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
-    COLOR_BUTTON("FOCUS COLOR:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7)                       // <- translate FOCUS COLOR
+    COLOR_BUTTON("Couleur sélection:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7)                       // <- translate FOCUS COLOR
     COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7)
-    COLOR_BUTTON("PLAYER 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8)                           // <- translate PLAYER 1
+    COLOR_BUTTON("Joueur 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8)                           // <- translate PLAYER 1
     COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_COL_2,CLR_ROW_8)
-    COLOR_BUTTON("PLAYER 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9)                           // <- translate PLAYER 2
+    COLOR_BUTTON("Joueur 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9)                           // <- translate PLAYER 2
     COLOR_SAMPLE(PLAYER2_BUTTON,PLAYER2_SAMPLE,CLR_COL_4,CLR_ROW_9)
-    COLOR_BUTTON("PLAYER 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10)                          // <- translate PLAYER 3
+    COLOR_BUTTON("Joueur 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10)                          // <- translate PLAYER 3
     COLOR_SAMPLE(PLAYER3_BUTTON,PLAYER3_SAMPLE,CLR_COL_2,CLR_ROW_10)
-    COLOR_BUTTON("PLAYER 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11)                          // <- translate PLAYER 4
+    COLOR_BUTTON("Joueur 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11)                          // <- translate PLAYER 4
     COLOR_SAMPLE(PLAYER4_BUTTON,PLAYER4_SAMPLE,CLR_COL_4,CLR_ROW_11)
 
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,CLR_OK_LEFT,CLR_BUTTON_ROW,                                 // <- translate OK
                     REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
-    PUSHBUTTON      "CANCEL",IDCANCEL,CLR_CANCEL_LEFT,CLR_BUTTON_ROW,                     // <- translate CANCEL
+    PUSHBUTTON      "Annuler",IDCANCEL,CLR_CANCEL_LEFT,CLR_BUTTON_ROW,                     // <- translate CANCEL
                     REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
 #endif
 END
@@ -836,9 +836,9 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION ""                      /* set by code */
 FONT 8, "System"
 BEGIN
-    COLOR_EDIT_LINE("RED:", CLREDIT_ROW_1, RED_LABEL, RED_EDIT, CLREDT_SLIDER1 )          // <- translate RED
-    COLOR_EDIT_LINE("GREEN:", CLREDIT_ROW_2, GREEN_LABEL, GREEN_EDIT, CLREDT_SLIDER2 )    // <- translate GREEN
-    COLOR_EDIT_LINE("BLUE:", CLREDIT_ROW_3, BLUE_LABEL, BLUE_EDIT, CLREDT_SLIDER3 )       // <- translate BLUE
+    COLOR_EDIT_LINE("Rouge:", CLREDIT_ROW_1, RED_LABEL, RED_EDIT, CLREDT_SLIDER1 )          // <- translate RED
+    COLOR_EDIT_LINE("Vert:", CLREDIT_ROW_2, GREEN_LABEL, GREEN_EDIT, CLREDT_SLIDER2 )    // <- translate GREEN
+    COLOR_EDIT_LINE("Bleu:", CLREDIT_ROW_3, BLUE_LABEL, BLUE_EDIT, CLREDT_SLIDER3 )       // <- translate BLUE
 
     /* See hack alert above.  Bogus owner-draw button seems the only way to get a sample
        color rect into the dialog. */
@@ -848,7 +848,7 @@ BEGIN
 # ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,CLRE_OK_LEFT,56,REPOS_BUTTON_WIDTH,                         // <- translate OK
                     REPOS_BUTTON_HT
-    PUSHBUTTON      "CANCEL",IDCANCEL,CLRE_CANCEL_LEFT,56,REPOS_BUTTON_WIDTH,             // <- translate CANCEL
+    PUSHBUTTON      "Annuler",IDCANCEL,CLRE_CANCEL_LEFT,56,REPOS_BUTTON_WIDTH,             // <- translate CANCEL
                     REPOS_BUTTON_HT
 # endif
 END
@@ -870,122 +870,120 @@ BEGIN
     IDS_APP_TITLE           "Crosswords"                                                   // <- translate
     IDC_XWORDS4             "XWORDS4"                                                      // <- translate
 #endif
-    IDS_MENU                "MENU"                                                         // <- translate
+    IDS_MENU                "Menu"                                                         // <- translate
     IDS_DUMMY               "--"
-    IDS_CANCEL              "CANCEL"                                                       // <- translate
+    IDS_CANCEL              "Annuler"                                                       // <- translate
     IDS_OK                  "OK"                                                           // <- translate
-    IDS_DONE                "DONE"                                                         // <- translate
-    IDS_LANGUAGE_NAME       "ALL CAPS"                                                     // <- translate
+    IDS_DONE                "Terminé"                                                         // <- translate
     IDS_ABOUT       "CROSSWORDS 4.4A1 (REV " SVN_REV ") "\
-                    "FOR WINDOWS MOBILE. COPYRIGHT 1998-2008 BY "\
-                    "ERIC HOUSE.  THIS SOFTWARE IS RELEASED UNDER THE GNU "\
-                    "PUBLIC LICENSE.\r\r"\
-                    "FOR DICTIONARIES, A MANUAL, OR SOURCE CODE GO TO "\
-                    "HTTP://XWORDS.SF.NET OR HTTP://EEHOUSE.ORG/XWORDS/."                  // <- translate
-    IDS_DICTLOC     "PLEASE INSTALL A CROSSWORDS DICTIONARY (.xwd FILE) "\
-                    "IN THE SAME DIRECTORY AS THE CROSSWORDS .EXE FILE, OR "\
-                    "IN A DIRECTORY CALLED CROSSWORDS ON AN EXTERNAL CARD, "\
-                    "E.G. IN \\STORAGE CARD\\CROSSWORDS.  "\
-                    "DOWNLOAD DICTIONARIES FROM HTTP://XWORDS.SF.NET OR "\
-                    "HTTP://EEHOUSE.ORG/XWORDS."                                           // <- translate
-    IDS_SAVENAME    "ENTER A NAME FOR THE CURRENT GAME.  (YOU CAN CHANGE THE "\
-                    "NAME LATER USING THE SAVED GAMES DIALOG.)"                            // <- translate
-    IDS_DUPENAME    "ENTER A NAME FOR A COPY OF THIS GAME."                                // <- translate
-    IDS_RENAME      "ENTER A NEW NAME FOR THIS GAME."                                      // <- translate
+                    "pour Windows Mobile. Copyright 1998-2008 "\
+                    "Eric House.  Ce logiciel est produit sous la licence "\
+                    "publique GNU.\r\r"\
+                    "Pour obtenir des dictionnaires, un manuel ou le code source allez sur "\
+                    "http://xwords.sf.net ou http://eehouse.org/xwords/."                  // <- translate
+    IDS_DICTLOC     "Veuillez installer un dictionnaire (.xwd FILE) "\
+                    "dans le même dossier que le fichier exécutable crosswords.exe ou "\
+                    "dans un dossier nommé crosswords sur la carte de stockage, "\
+                    "par exemple dans \\Carte de Stockage\\crosswords. "\
+                    "Téléchargez des dictionnaires à partir du site http://xwords.sf.net ou "\
+                    "http://eehouse.org/xwords."                                           // <- translate
+    IDS_SAVENAME    "Entrez un nom pour la partie.  (Vous pourrez changer le nom "\
+                    "plus tard via la boîte de dialogue Enregistrer partie.)"                            // <- translate
+    IDS_DUPENAME    "Entrez un nom pour une copie de cette partie."                                // <- translate
+    IDS_RENAME      "Entrez un nouveau nom pour cette partie."                                      // <- translate
 
-    IDS_REMAINING_TILES_ADD "+ %d [ALL REMAINING TILES]"                                   // <- translate
-    IDS_UNUSED_TILES_SUB    "- %d [UNUSED TILES]"                                          // <- translate
-    IDS_BONUS_ALL          "BONUS FOR USING ALL TILES: 50" XP_CR                           // <- translate
-    IDS_TURN_SCORE         "SCORE FOR TURN: %d" XP_CR                                      // <- translate
-    IDS_COMMIT_CONFIRM     "COMMIT THE CURRENT MOVE?" XP_CR                                // <- translate
+    IDS_REMAINING_TILES_ADD "+ %d [Toutes les lettres restantes]"                                   // <- translate
+    IDS_UNUSED_TILES_SUB    "- %d [Lettres non utilisées]"                                          // <- translate
+    IDS_BONUS_ALL          "Bonus scrabble: 50" XP_CR                           // <- translate
+    IDS_TURN_SCORE         "Score pour le coup: %d" XP_CR                                      // <- translate
+    IDS_COMMIT_CONFIRM     "Accepter le coup actuel?" XP_CR                                // <- translate
     IDS_LOCAL_NAME         "%s"                                                            // <- translate
-    IDS_NONLOCAL_NAME      "%s (REMOTE)"                                                   // <- translate
-    IDS_TIME_PENALTY_SUB   " - %d [TIME]"                                                  // <- translate
-    IDS_CUMULATIVE_SCORE   "CUMULATIVE SCORE: %d" XP_CR                                    // <- translate
-    IDS_MOVE_ACROSS        "MOVE (FROM %s ACROSS)" XP_CR                                   // <- translate
-    IDS_MOVE_DOWN          "MOVE (FROM %s DOWN)" XP_CR                                     // <- translate
-    IDS_TRAY_AT_START      "TRAY AT START: %s" XP_CR                                       // <- translate
-    IDS_NEW_TILES          "NEW TILES: %s" XP_CR                                           // <- translate
-    IDS_TRADED_FOR         "TRADED %s FOR %s."                                             // <- translate
-    IDS_PASS               "PASS" XP_CR                                                    // <- translate
-    IDS_PHONY_REJECTED     "ILLEGAL WORD IN MOVE; TURN LOST!" XP_CR                        // <- translate
-    IDS_ROBOT_TRADED       "ROBOT TRADED TILES %d THIS TURN."                              // <- translate
-    IDS_ROBOT_MOVED        "THE ROBOT MADE THIS MOVE:" XP_CR                               // <- translate
-    IDS_REMOTE_MOVED       "REMOTE PLAYER MADE THIS MOVE:" XP_CR                           // <- translate
-    IDS_PASSED             "PASSED"                                                        // <- translate
+    IDS_NONLOCAL_NAME      "%s (Distant)"                                                   // <- translate
+    IDS_TIME_PENALTY_SUB   " - %d [Temps]"                                                  // <- translate
+    IDS_CUMULATIVE_SCORE   "Score cumulé: %d" XP_CR                                    // <- translate
+    IDS_MOVE_ACROSS        "Placement (de %s horizontalement)" XP_CR                                   // <- translate
+    IDS_MOVE_DOWN          "Placement (de %s verticalement)" XP_CR                                     // <- translate
+    IDS_TRAY_AT_START      "Tirage de départ: %s" XP_CR                                       // <- translate
+    IDS_NEW_TILES          "Nouvelles lettres: %s" XP_CR                                           // <- translate
+    IDS_TRADED_FOR         "Echangé %s contre %s."                                             // <- translate
+    IDS_PASS               "Passe" XP_CR                                                    // <- translate
+    IDS_PHONY_REJECTED     "Mot refusé dans ce coup; tour perdu!" XP_CR                        // <- translate
+    IDS_ROBOT_TRADED       "Le robot a échangé %d lettre(s) durant ce tour."                              // <- translate
+    IDS_ROBOT_MOVED        "Le robot a joué ce coup:" XP_CR                               // <- translate
+    IDS_REMOTE_MOVED       "Le joueur distant a joué ce coup:" XP_CR                           // <- translate
+    IDS_PASSED             "Passé"                                                        // <- translate
     IDS_SUMMARYSCORED      "%s:%d"                                                         // <- translate
-    IDS_TRADED             "TRADED %d"                                                     // <- translate
-    IDS_LOSTTURN           "LOST TURN"                                                     // <- translate
+    IDS_TRADED             "Echangé %d"                                                     // <- translate
+    IDS_LOSTTURN           "Tour perdu"                                                     // <- translate
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_LOCALPLAYERS       "LOCL PLAYRS:"                                                  // <- translate
+    IDS_LOCALPLAYERS       "Joueurs loc.:"                                                  // <- translate
 #endif
-    IDS_TOTALPLAYERS       "PLAYER COUNT:"                                                 // <- translate
-    IDS_VALUES_HEADER      "%s COUNTS/VALUES:" XP_CR                                       // <- translate
-    IDS_QUERY_TRADE        "ARE YOU SURE YOU WANT TO TRADE THE SELECTED TILES?"            // <- translate
-    IDS_DOUBLE_LETTER      "DOUBLE LETTER"                                                 // <- translate
-    IDS_DOUBLE_WORD        "DOUBLE WORD"                                                   // <- translate
-    IDS_TRIPLE_LETTER      "TRIPLE LETTER"                                                 // <- translate
-    IDS_TRIPLE_WORD        "TRIPLE WORD"                                                   // <- translate
-    IDS_INTRADE_MW         "TRADING TILES." XP_CR "SELECT 'TURN DONE' WHEN READY"          // <- translate
+    IDS_TOTALPLAYERS       "Nombre de joueurs:"                                                 // <- translate
+    IDS_VALUES_HEADER      "%s Nombres/Valeurs:" XP_CR                                       // <- translate
+    IDS_QUERY_TRADE        "Etes-vous sûr de vouloir échanger les lettres sélectionnées?"            // <- translate
+    IDS_DOUBLE_LETTER      "Lettre double"                                                 // <- translate
+    IDS_DOUBLE_WORD        "Mot double"                                                   // <- translate
+    IDS_TRIPLE_LETTER      "Lettre triple"                                                 // <- translate
+    IDS_TRIPLE_WORD        "Mot triple"                                                   // <- translate
+    IDS_INTRADE_MW         "Echange de lettres." XP_CR "Choisir 'Coup terminé' quand vous avez fini"          // <- translate
 
 
-    IDS_TILES_NOT_IN_LINE  "ALL TILES PLAYED MUST BE IN A LINE."                           // <- translate
-    IDS_NO_EMPTIES_IN_TURN "EMPTY SQUARES CANNOT SEPARATE TILES PLAYED."                   // <- translate
-    IDS_TWO_TILES_FIRST_MOVE "MUST PLAY TWO OR MORE PIECES ON THE FIRST MOVE."             // <- translate
-    IDS_TILES_MUST_CONTACT "NEW PIECES MUST CONTACT OTHERS ALREADY IN PLACE (OR "\
-                           "THE MIDDLE SQUARE ON THE FIRST MOVE)."                         // <- translate
-    IDS_NOT_YOUR_TURN      "YOU CAN'T DO THAT; IT'S NOT YOUR TURN!"                        // <- translate
-    IDS_NO_PEEK_ROBOT_TILES "NO PEEKING AT THE ROBOT'S TILES!"                             // <- translate
-    IDS_CANT_TRADE_MID_MOVE "REMOVE PLAYED TILES BEFORE TRADING."                          // <- translate
-    IDS_TOO_FEW_TILES_LEFT_TO_TRADE "TOO FEW TILES LEFT TO TRADE."                         // <- translate
-    IDS_CANT_UNDO_TILEASSIGN "TILE ASSIGNMENT CAN'T BE UNDONE."                            // <- translate
-    IDS_CANT_HINT_WHILE_DISABLED "THE HINT FEATURE IS DISABLED FOR THIS GAME.  "\
-                            "ENABLE IT FOR A NEW GAME USING THE PREFERENCES "\
-                            "DIALOG."                                                      // <- translate
+    IDS_TILES_NOT_IN_LINE  "Toutes les lettres jouées doivent être alignées."                           // <- translate
+    IDS_NO_EMPTIES_IN_TURN "Aucune case vide ne peut séparer deux lettres placées."                   // <- translate
+    IDS_TWO_TILES_FIRST_MOVE "Lors du premier coup, vous devez placer deux lettres au minimum."             // <- translate
+    IDS_TILES_MUST_CONTACT "Les lettres doivent être placées en contact avec des lettres déja présentes sur le plateau de jeu (ou "\
+                           "recouvrir la case centrale du plateau lors du premier coup)."                         // <- translate
+    IDS_NOT_YOUR_TURN      "Vous ne pouvez pas faire cela, ce n'est pas votre tour!"                        // <- translate
+    IDS_NO_PEEK_ROBOT_TILES "Pas de coup d'oeil sur les lettres du robot!"                             // <- translate
+    IDS_CANT_TRADE_MID_MOVE "Retirez les lettres placées avant d'échanger."                          // <- translate
+    IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Il reste trop peu de lettres pour l'échange."                         // <- translate
+    IDS_CANT_UNDO_TILEASSIGN "L'attribution des lettres ne peut être annulé."                            // <- translate
+    IDS_CANT_HINT_WHILE_DISABLED "Les conseils sont désactivés dans cette partie.  "\
+                            "activez-les pour une nouvelle partie en utilisant les préférences."         // <- translate
 
-    IDS_COUNTSVALS_L        "TILE COUNTS AND VALUES"                                       // <- translate
-    IDS_REMTIMES_L          "REMAINING TILES"                                              // <- translate
-    IDS_GAMEHIST_L          "GAME HISTORY"                                                 // <- translate
-    IDS_FINALSCORE_L        "FINAL SCORES"                                                 // <- translate
-    IDS_QUESTION_L          "QUESTION"                                                     // <- translate
-    IDS_FYI_L               "FYI"                                                          // <- translate
-    IDS_ILLEGALWRD_L        "ILLEGAL WORD"                                                 // <- translate
-    IDS_WRDNOTFOUND         "WORD[S] %s NOT FOUND IN DICTIONARY."                          // <- translate
-    IDS_USEANYWAY           "USE IT ANYWAY?"                                               // <- translate
-    IDS_FYI_L               "OOPS!"                                                        // <- translate
-    IDS_CANNOTOPEN_GAME     "SAVED GAME CANNOT BE OPENED."                                 // <- translate
-    IDS_NODICT_L            "DICTIONARY NOT FOUND"                                         // <- translate
-    IDS_ABOUT_L             "ABOUT CROSSWORDS"                                             // <- translate
-    IDS_OVERWRITE           "DO YOU REALLY WANT TO OVERWRITE THE CURRENT GAME?"            // <- translate
-    IDS_ENDNOW              "ARE YOU SURE YOU WANT TO END THE GAME NOW?"                   // <- translate
-    IDS_CANNOTOPEN_DICT     "UNABLE TO OPEN DICTIONARY: %s"                                // <- translate
-    IDS_CONFIM_DELETE       "ARE YOU CERTAIN YOU WANT TO DELETE THE "\
-                            "SELECTED GAME?  THIS ACTION CANNOT BE UNDONE."                // <- translate
+    IDS_COUNTSVALS_L        "Nombre et valeur des lettres"                                       // <- translate
+    IDS_REMTIMES_L          "Lettres restantes"                                              // <- translate
+    IDS_GAMEHIST_L          "Historique de la partie"                                                 // <- translate
+    IDS_FINALSCORE_L        "Score final"                                                 // <- translate
+    IDS_QUESTION_L          "Question"                                                     // <- translate
+    IDS_FYI_L               "Info"                                                          // <- translate
+    IDS_ILLEGALWRD_L        "Mot interdit"                                                 // <- translate
+    IDS_WRDNOTFOUND         "Mot(s) %s non trouvé(s) dans le dictionnaire."                          // <- translate
+    IDS_USEANYWAY           "L'utiliser malgré tout?"                                               // <- translate
+    IDS_FYI_L               "Oups!"                                                        // <- translate
+    IDS_CANNOTOPEN_GAME     "La partie enregistrée ne peut être ouverte."                                 // <- translate
+    IDS_NODICT_L            "Dictionnaire non trouvé"                                         // <- translate
+    IDS_ABOUT_L             "A propos de Crosswords"                                             // <- translate
+    IDS_OVERWRITE           "Voulez-vous vraiment effacer la partie en cours?"            // <- translate
+    IDS_ENDNOW              "Etes-vous sûr de vouloir terminer la partie maintenant?"                   // <- translate
+    IDS_CANNOTOPEN_DICT     "Impossible d'ouvrir le dictionnaire: %s"                                // <- translate
+    IDS_CONFIM_DELETE       "Etes-vous certain de vouloir effacer la partie "\
+                            "sélectionnée?  Cette action ne pourra pas être annulée."                // <- translate
 
-    IDS_ROLE_STANDALONE     "STANDALONE"                                                   // <- translate
-    IDS_ROLE_HOST           "HOST"                                                         // <- translate
-    IDS_ROLE_GUEST          "GUEST"                                                        // <- translate
-    IDS_PLAYER_FORMAT       "PLAYER %d"                                                    // <- translate
-    IDS_UNTITLED_FORMAT     "UNTITLED %d"                                                  // <- translate
-    IDS_CONN_RELAY          "RELAY"                                                        // <- translate
-    IDS_CONN_DIRECT         "DIRECT CONNECTION"                                            // <- translate
-    IDS_CONN_SMS            "TEXTING"                                                      // <- translate
+    IDS_ROLE_STANDALONE     "Autonome"                                                   // <- translate
+    IDS_ROLE_HOST           "Hôte"                                                         // <- translate
+    IDS_ROLE_GUEST          "Invité"                                                        // <- translate
+    IDS_PLAYER_FORMAT       "Joueur %d"                                                    // <- translate
+    IDS_UNTITLED_FORMAT     "Sans titre %d"                                                  // <- translate
+    IDS_CONN_RELAY          "Transmission"                                                        // <- translate
+    IDS_CONN_DIRECT         "Connexion directe"                                            // <- translate
+    IDS_CONN_SMS            "SMS"                                                      // <- translate
 
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_NO_PEEK_REMOTE_TILES "NO PEEKING AT REMOTE PLAYERS' TILES!"                        // <- translate
-    IDS_REG_UNEXPECTED_USER "REFUSED ATTEMPT TO REGISTER UNEXPECTED USER[S]."              // <- translate
-    IDS_SERVER_DICT_WINS "CONFLICT BETWEEN HOST AND GUEST DICTIONARIES; HOST WINS."        // <- translate
-    IDS_REG_SERVER_SANS_REMOTE "AT LEAST ONE PLAYER MUST BE MARKED REMOTE FOR A GAME "\
-                               "STARTED AS HOST."                                          // <- translate
+    IDS_NO_PEEK_REMOTE_TILES "Pas de coup d'oeil sur le jeu des joueurs distants!"                        // <- translate
+    IDS_REG_UNEXPECTED_USER "Refus de la tentative d'enregistrer un joueur non prévu."              // <- translate
+    IDS_SERVER_DICT_WINS "Conflit de dictionnaire entre l'hôte et l'invité; l'hôte gagne."        // <- translate
+    IDS_REG_SERVER_SANS_REMOTE "Au moins un joueur doit être distant dans une partie "\
+                               "débutée en tant qu'hôte."                                          // <- translate
 #endif
 
 #ifdef XWFEATURE_RELAY
-    IDS_XWRELAY_ERROR_TIMEOUT      "THE RELAY TIMED YOU OUT; USUALLY THAT MEANS "\
-                                   "THE OTHER PLAYERS DIDN'T SHOW."                        // <- translate
-    IDS_ERROR_HEART_YOU            "YOU WERE DISCONNECTED FROM RELAY BECAUSE IT DIDN'T "\
-                                   "HEAR FROM YOU IN TOO LONG."                            // <- translate
-    IDS_XWRELAY_ERROR_HEART_OTHER  "THE RELAY HAS LOST CONTACT WITH A DEVICE IN THIS GAME."// <- translate
+    IDS_XWRELAY_ERROR_TIMEOUT      "La transmission a échoué dans les délais; cela signifie généralement "\
+                                   "que les autres joueurs ne vous ont pas vu."                        // <- translate
+    IDS_ERROR_HEART_YOU            "Vous avez été déconnecté parce que vous n'avez rien émis "\
+                                   "pendant trop longtemps."                            // <- translate
+    IDS_XWRELAY_ERROR_HEART_OTHER  "La transmission a perdu le contact avec un appareil durant cette partie."// <- translate
 #endif
 
 
