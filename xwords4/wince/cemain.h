@@ -133,6 +133,7 @@ typedef struct _CEAppGlobals {
     XWGame game;
     CurGameInfo gameInfo;
     XP_UCHAR* curGameName;      /* path to storage for current game */
+    XP_UCHAR* langFileName;     /* language file currently loaded or chosen */
     XW_UtilCtxt util;
     VTableMgr* vtMgr;
     XP_U16* bonusInfo;

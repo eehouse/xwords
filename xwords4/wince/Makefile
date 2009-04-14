@@ -37,7 +37,7 @@ STRIDS = strids
 # possible.
 
 # USE_RAW_MINGW = -DUSE_RAW_MINGW
-# arm-wince-mingw32ce for cegcc, arm-wince-pe for pocketpc-gcc
+# arm-wince-mingw32ce for cegcc
 ifdef USE_RAW_MINGW
 MINGW_INC_PATH ?= -I/usr/i586-mingw32msvc/include
 CE_ARCH = arm-wince-pe
@@ -140,7 +140,8 @@ OBJDIR = obj_$(TARGET_OS)_rel
 endif
 
 TARGET = $(OBJDIR)/xwords4_$(SVNREV).exe
-DLL = $(OBJDIR)/xwords4_caps.dll
+DLL_SRCS = $(shell ls ./l10n/*.rc)
+DLLS = $(patsubst %.rc,%.dll,$(addprefix $(OBJDIR)/l10n/,$(notdir $(DLL_SRCS))))
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \
@@ -201,7 +202,7 @@ RESFLAGS += $(XW_BOTH_DEFINES) $(STANDALONE) $(BLUETOOTH) $(RELAY) $(SMS) \
 # Rules start here
 ####################################################################
 
-all : $(TARGET) $(DLL)
+all : $(TARGET) $(DLLS)
 
 memdebug:
 	$(MAKE) DEBUG=TRUE all
@@ -221,8 +222,12 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
 	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
 
-$(OBJDIR)/xwords4_caps.rc.o : xwords4_caps.rc $(INCLUDES) xwords4.ico
-	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
+$(OBJDIR)/l10n/%.rc.o : l10n/%.rc
+	mkdir -p $(dir $@)
+	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) $< -o $@
+
+$(OBJDIR)/l10n/%.dll: $(OBJDIR)/l10n/%.rc.o
+	$(CC) -shared -o $@ $<
 
 $(STRIDS): scripts/strids.c
 	$(NATIVE_CC) $(CFLAGS) -o $@ $<
@@ -259,5 +264,3 @@ help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
 	@echo "or 'make TARGET_OS=win32 [DEBUG=TRUE]'"
 
-$(DLL): $(OBJDIR)/xwords4_caps.rc.o
-	$(CC) -shared -o $@ $<

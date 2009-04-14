@@ -903,6 +903,34 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 } /* ceInitAndStartBoard */
 
+static XP_UCHAR*
+ceReadString( const CEAppGlobals* globals, HANDLE fileH )
+{
+    XP_U16 nameLen;
+    XP_UCHAR* name = NULL;
+    XP_U32 nRead;
+
+    if ( ReadFile( fileH, &nameLen, sizeof(nameLen), &nRead, NULL )
+         && nameLen > 0 ) {
+        name = XP_MALLOC( globals->mpool, nameLen + 1 );
+        ReadFile( fileH, name, nameLen, &nRead, NULL );
+        name[nameLen] = '\0';
+    }
+
+    return name;
+} /* ceReadString */
+
+static void
+ceWriteString( const XP_UCHAR* str, HANDLE fileH )
+{
+    XP_U32 nWritten;
+    XP_U16 len = !!str? XP_STRLEN( str ) : 0;
+    WriteFile( fileH, &len, sizeof(len), &nWritten, NULL );
+    if ( 0 < len ) {
+        WriteFile( fileH, str, len, &nWritten, NULL );
+    }
+}
+
 static void
 ceSavePrefs( CEAppGlobals* globals )
 {
@@ -914,23 +942,18 @@ ceSavePrefs( CEAppGlobals* globals )
                         OPEN_ALWAYS, FILE_ATTRIBUTE_HIDDEN, NULL );
     if ( fileH != INVALID_HANDLE_VALUE ) {
         XP_U32 nWritten;
-        XP_U16 nameLen = 0;
-        XP_UCHAR* name = globals->curGameName;
-
-        if ( name != NULL ) {
-            nameLen = (XP_U16)XP_STRLEN( name );
-        }
 
         SetFilePointer( fileH, 0, 0, FILE_BEGIN );
         /* write prefs, including version num */
         WriteFile( fileH, &globals->appPrefs, sizeof(globals->appPrefs), 
                    &nWritten, NULL );
 
-        WriteFile( fileH, &nameLen, sizeof(nameLen), &nWritten, NULL );
-        WriteFile( fileH, name, nameLen, &nWritten, NULL );
+        ceWriteString( globals->curGameName, fileH );
 
         WriteFile( fileH, &globals->flags, sizeof(globals->flags), &nWritten,
                    NULL );
+
+        ceWriteString( globals->langFileName, fileH );
 
         SetEndOfFile( fileH );  /* truncate anything previously there */
 
@@ -1021,19 +1044,12 @@ ceLoadPrefs( CEAppGlobals* globals )
 
             if ( result ) {
                 XP_U16 flags;
-                XP_U16 nameLen;
-                XP_UCHAR* name;
                 XP_U32 nRead;
 
                 XP_MEMCPY( &globals->appPrefs, &tmpPrefs, 
                            sizeof(globals->appPrefs) );
 
-                ReadFile( fileH, &nameLen, sizeof(nameLen), &nRead, 
-                          NULL );
-                name = XP_MALLOC( globals->mpool, nameLen + 1 );
-                ReadFile( fileH, name, nameLen, &nRead, NULL );
-                name[nameLen] = '\0';
-                globals->curGameName = name;
+                globals->curGameName = ceReadString( globals, fileH );
 
                 if ( ReadFile( fileH, &flags, sizeof(flags), &nRead, 
                                NULL )
@@ -1042,6 +1058,8 @@ ceLoadPrefs( CEAppGlobals* globals )
                     flags = 0;
                 }
                 globals->flags = flags;
+
+                globals->langFileName = ceReadString( globals, fileH );
             }
         }
         CloseHandle( fileH );
@@ -1271,7 +1289,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     TCHAR	szTitle[MAX_LOADSTRING];	// The title bar text
     TCHAR	szWindowClass[MAX_LOADSTRING];	// The window class name
     CEAppGlobals* globals;
-    BOOL result = TRUE;
+    BOOL result = FALSE;
     XP_Bool oldGameLoaded;
     XP_Bool prevStateExists;
     XP_Bool newDone = XP_FALSE;
@@ -1301,7 +1319,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 	hWnd = FindWindow( szWindowClass, NULL );	
 	if ( hWnd ) {
 		SetForegroundWindow( (HWND)((ULONG) hWnd | 0x00000001) );
-        result = FALSE;
         goto exit;
 	}
 
@@ -1315,17 +1332,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     MPASSIGN( globals->mpool, mpool );
     
 #ifndef _WIN32_WCE
-    if ( !!dll ) {
-        wchar_t widebuf[128];
-        XP_U16 len = MultiByteToWideChar( CP_ACP, 0, dll, -1, widebuf, 
-                                          VSIZE(widebuf) );
-        widebuf[len] = 0;
-        globals->locInst = LoadLibrary( widebuf );
-        XP_LOGF( "strsInst: %p", globals->locInst );
-    }
-#endif
-
-#ifndef _WIN32_WCE
     globals->dbWidth = width;
     globals->dbHeight = height;
 #endif
@@ -1338,21 +1344,50 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     globals->vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
 
     globals->hInst = hInstance;
-    if ( !globals->locInst ) {
-        globals->locInst = hInstance;
-    }
     // Initialize global strings
     MyRegisterClass(hInstance, szWindowClass);
 
-    hWnd = CreateWindow(szWindowClass, szTitle, WS_VISIBLE,
-                        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 
-                        CW_USEDEFAULT, NULL, NULL, hInstance, globals);
-    globals->hWnd = hWnd;
+    prevStateExists = ceLoadPrefs( globals );
+    if ( !prevStateExists ) {
+        ceInitPrefs( globals, &globals->appPrefs );
+    }
 
+#ifndef _WIN32_WCE
+    srand( time(NULL) );
+#endif
+
+    /* Was a language file named in preferences?  If so, and if none was
+       provided on the cmdline, load it (if it exists; if it doesn't, act as
+       if none set).  */
+#ifndef _WIN32_WCE
+    if ( !!dll ) {
+        replaceStringIfDifferent( globals->mpool, &globals->langFileName, dll );
+    }
+#else
+    /* This french hard-coding thing is temporary! */
+    replaceStringIfDifferent( globals->mpool, &globals->langFileName, "xwords4_french.dll" );
+#endif
+
+    if ( !!globals->langFileName && !globals->locInst ) {
+        HINSTANCE inst = ceLoadResFile( globals->langFileName );
+        if ( !!inst ) {
+            globals->locInst = inst;
+        } else {
+            XP_FREE( globals->mpool, globals->langFileName );
+            globals->langFileName = NULL;
+        }
+    }
+    if ( !globals->locInst ) {
+        globals->locInst = globals->hInst;
+    }
+
+    hWnd = CreateWindow( szWindowClass, szTitle, WS_VISIBLE,
+                         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 
+                         CW_USEDEFAULT, NULL, NULL, hInstance, globals );
     if (!hWnd) {
-        result = FALSE;
         goto exit;
     }
+    globals->hWnd = hWnd;
 
 #ifdef _WIN32_WCE
     if ( globals->hwndCB && !IS_SMARTPHONE(globals) ) {
@@ -1367,14 +1402,14 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     }
 #endif
 
-#ifndef _WIN32_WCE
-    SetMenu( hWnd, LoadMenu( globals->locInst, MAKEINTRESOURCE(IDM_MENU) ) );
-    srand( time(NULL) );
-#endif
-
     ceInitUtilFuncs( globals );
 
     gi_initPlayerInfo( MPPARM(mpool) &globals->gameInfo, NULL );
+
+
+#ifndef _WIN32_WCE
+    SetMenu( hWnd, LoadMenu( globals->locInst, MAKEINTRESOURCE(IDM_MENU) ) );
+#endif
 
     /* choose one.  If none found it's an error. */
 #ifndef STUBBED_DICT
@@ -1387,17 +1422,13 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
         MessageBox( globals->hWnd, buf, 
                     ceGetResStringL( globals, IDS_NODICT_L ),
                     MB_OK | MB_ICONHAND );
-        result = FALSE;
         goto exit;
     }
+#else
+    result = TRUE;
 #endif
 
-    /* here's where we want to behave differently if there's saved state.
-       But that's a long ways off. */
-    prevStateExists = ceLoadPrefs( globals );
-    if ( !prevStateExists ) {
-        ceInitPrefs( globals, &globals->appPrefs );
-    }
+
     /* must load prefs before creating draw ctxt */
     globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
                                       hWnd, globals );
@@ -1950,6 +1981,13 @@ freeGlobals( CEAppGlobals* globals )
     }
 
     ceFreeResStrings( globals );
+    if ( globals->locInst != globals->hInst ) {
+        ceCloseResFile( globals->locInst );
+    }
+    if ( globals->langFileName != NULL ) {
+        XP_FREE( globals->mpool, globals->langFileName );
+        globals->langFileName = NULL;
+    }
 
     XP_FREE( globals->mpool, globals );
     mpool_destroy( mpool );

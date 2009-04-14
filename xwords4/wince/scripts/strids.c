@@ -9,6 +9,7 @@ static char* ids[] = {
     ,"IDS_OK"
     ,"IDS_ABOUT"
     ,"IDS_DONE"
+    ,"IDS_LANGUAGE_NAME"
     ,"IDS_DICTLOC"
     ,"IDS_SAVENAME"
     ,"IDS_DUPENAME"
