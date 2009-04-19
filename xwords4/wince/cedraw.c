@@ -1386,13 +1386,14 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* xprect,
 } /* ce_draw_scoreBegin */
 
 static void
-formatRemText( XP_S16 nTilesLeft, XP_Bool isVertical, XP_UCHAR* buf )
+formatRemText( const CEDrawCtx* dctx, XP_S16 nTilesLeft, XP_Bool isVertical, 
+               XP_UCHAR* buf )
 {
-    const char* fmt = "Rem%s%d";
+    const char* rem = ceGetResString( dctx->globals, IDS_REM );
     const char* sep = isVertical? XP_CR : ":";
 
     XP_ASSERT( nTilesLeft > 0 );
-    sprintf( buf, fmt, sep, nTilesLeft );
+    sprintf( buf, "%s%s%d", rem, sep, nTilesLeft );
 } /* formatRemText */
 
 DLSTATIC void
@@ -1411,7 +1412,7 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         XP_ASSERT( !!hdc );
 
-        formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
+        formatRemText( dctx, nTilesLeft, dctx->scoreIsVertical, buf );
 
         height = xprect->height - 2; /* space for border */
         if ( height > globals->cellHt - CELL_BORDER ) {
@@ -1445,7 +1446,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     const FontCacheEntry* fce;
     RECT rt;
 
-    formatRemText( nTilesLeft, dctx->scoreIsVertical, buf );
+    formatRemText( dctx, nTilesLeft, dctx->scoreIsVertical, buf );
 
     XPRtoRECT( &rt, rInner );
     if ( focussed ) {
