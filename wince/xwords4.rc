@@ -121,6 +121,7 @@ BEGIN
             MENUITEM "Preferences...",         ID_FILE_PREFERENCES
             MENUITEM SEPARATOR
             MENUITEM "About...",               ID_FILE_ABOUT
+            MENUITEM "Locales...",             ID_FILE_LOCALES
             MENUITEM SEPARATOR
             MENUITEM "Exit",                   ID_FILE_EXIT
         END
@@ -881,6 +882,26 @@ BEGIN
 END
 #endif
 
+IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 120, 115
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Language Picker"
+FONT 8, "System"
+BEGIN
+#ifdef _WIN32_WCE
+    LISTBOX         DLLS_COMBO, 30,2,70,12, LISTBOX_CONTROL_FLAGS
+    CONTROL "",     IDC_DLLSUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
+                    0, 0, 0, 0 
+#endif
+    COMBOBOX        DLLS_COMBO_PPC,30,2,70,58,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+# ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,20,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,100,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+# endif
+END
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
@@ -950,6 +971,7 @@ BEGIN
     IDS_OK                  "Ok"
     IDS_DONE                "Done"
     IDS_LANGUAGE_NAME       "English"
+    IDS_NEW_GAME            "New Game"
     IDS_ABOUT       "Crosswords 4.4a1 (rev " SVN_REV ") "\
                     "for Windows Mobile. Copyright 1998-2008 by "\
                     "Eric House.  This software is released under the GNU "\
@@ -974,6 +996,10 @@ BEGIN
     IDS_COMMIT_CONFIRM
                     "Commit the current move?" XP_CR
     IDS_LOCAL_NAME         "%s"
+    IDS_REM                "Rem"
+    IDS_IGNORE_L           "Ignore"
+    IDS_WARN_L             "Warn"
+    IDS_DISALLOW_L         "Disallow"
     IDS_NONLOCAL_NAME      "%s (remote)"
     IDS_TIME_PENALTY_SUB   " - %d [time]"
     IDS_CUMULATIVE_SCORE   "Cumulative score: %d" XP_CR

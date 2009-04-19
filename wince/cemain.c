@@ -262,7 +262,7 @@ WinMain(	HINSTANCE hInstance,
 
 #ifndef _WIN32_WCE
     XP_U16 width = 320, height = 320;
-    char dll[MAX_PATH];
+    char dll[MAX_PATH] = {0};
     parseCmdLine( lpCmdLine, &width, &height, dll );
 #endif
 
@@ -1354,18 +1354,13 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 
 #ifndef _WIN32_WCE
     srand( time(NULL) );
-#endif
 
     /* Was a language file named in preferences?  If so, and if none was
        provided on the cmdline, load it (if it exists; if it doesn't, act as
        if none set).  */
-#ifndef _WIN32_WCE
-    if ( !!dll ) {
+    if ( !!dll && !!dll[0] ) {
         replaceStringIfDifferent( globals->mpool, &globals->langFileName, dll );
     }
-#else
-    /* This french hard-coding thing is temporary! */
-    replaceStringIfDifferent( globals->mpool, &globals->langFileName, "xwords4_french.dll" );
 #endif
 
     if ( !!globals->langFileName && !globals->locInst ) {
@@ -1998,6 +1993,7 @@ static HWND
 makeCommandBar( HWND hwnd, HINSTANCE hInst )
 {
     SHMENUBARINFO mbi;
+    HWND result = NULL;
 
     XP_MEMSET( &mbi, 0, sizeof(mbi) );
     mbi.cbSize = sizeof(mbi);
@@ -2009,13 +2005,14 @@ makeCommandBar( HWND hwnd, HINSTANCE hInst )
 
     //mbi.dwFlags = SHCMBF_HIDESIPBUTTON; /* eeh added.  Why??? */
 
-    if (!SHCreateMenuBar(&mbi)) {
+    if ( SHCreateMenuBar(&mbi) ) {
+        result = mbi.hwndMB;
+    } else {
         /* will want to use this to change menubar: SHEnableSoftkey? */
         XP_LOGF( "SHCreateMenuBar failed" );
-        return NULL;
     }
 
-    return mbi.hwndMB;
+    return result;
 } /* makeCommandBar */
 #endif
 
@@ -2269,6 +2266,40 @@ doAbout( CEAppGlobals* globals )
                 MB_OK | MB_ICONINFORMATION );
 }
 
+static void
+chooseChangeResFile( CEAppGlobals* globals )
+{
+    XP_UCHAR newFile[MAX_PATH] = { 0 };
+    if ( ceChooseResFile( globals, newFile, VSIZE(newFile) ) ) {
+        if ( !globals->langFileName
+             || 0 != XP_STRCMP( newFile, globals->langFileName ) ) {
+            if ( globals->locInst != globals->hInst ) {
+                ceCloseResFile( globals->locInst );
+            }
+            ceFreeResStrings( globals );
+            if ( 0 != newFile[0] ) {
+                globals->locInst = ceLoadResFile( newFile );
+            } else {
+                globals->locInst = globals->hInst;
+            }
+            replaceStringIfDifferent( globals->mpool, &globals->langFileName, 
+                                      newFile );
+
+#ifdef _WIN32_WCE
+            CommandBar_Destroy( globals->hwndCB );
+            globals->hwndCB = makeCommandBar( globals->hWnd, globals->locInst );
+#else
+            SetMenu( globals->hWnd, LoadMenu( globals->locInst, 
+                                              MAKEINTRESOURCE(IDM_MENU) ) );
+#endif
+
+            /* Need to force user to restart unless we can inval everything
+               to force redraw */
+/*             board_invalAll( globals->game.board ); */
+        }
+    }
+}
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -2342,6 +2373,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case ID_FILE_ABOUT:
                 doAbout( globals );
                 break;
+
+            case ID_FILE_LOCALES:
+                chooseChangeResFile( globals );
+                break;
+
             case ID_GAME_GAMEINFO: {
                 GameInfoState state;
 

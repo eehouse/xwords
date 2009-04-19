@@ -37,6 +37,7 @@
 #ifdef ALLOW_CHOOSE_FONTS
 # define IDD_FONTSSDLG                  127
 #endif
+#define IDD_LOCALESDLG                  128
 
 #define REMOTE_CHECK1                   1005
 #define NAME_EDIT1                      1006
@@ -162,6 +163,11 @@
 # define FONTSIZE_COMBO_PPC             1130
 #endif
 
+/* Dll/language picker */
+#define DLLS_COMBO                      1131
+#define IDC_DLLSUPDOWN                  1132
+#define DLLS_COMBO_PPC                  1133
+
 #define IDC_CCONVIA_LAB                 1106
 
 #define IDC_COOKIE_LAB                   1107
@@ -208,6 +214,7 @@
 #define ID_FILE_EXIT                    40002
 #define IDM_HELP_ABOUT                  40003
 #define ID_FILE_ABOUT                   40004
+#define ID_FILE_LOCALES                 40029
 #define ID_GAME_GAMEINFO                40005
 #define ID_GAME_HISTORY                 40006
 #define ID_GAME_FINALSCORES             40007

@@ -83,6 +83,7 @@ XP_Bool ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lPa
 XP_Bool ceIsLandscape( CEAppGlobals* globals );
 
 void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
+XP_Bool ceGetExeDir( wchar_t* buf, XP_U16 bufLen );
 
 #if defined _WIN32_WCE
 void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
