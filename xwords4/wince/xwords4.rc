@@ -973,7 +973,7 @@ BEGIN
     IDS_LANGUAGE_NAME       "English"
     IDS_NEW_GAME            "New Game"
     IDS_ABOUT       "Crosswords 4.4a1 (rev " SVN_REV ") "\
-                    "for Windows Mobile. Copyright 1998-2008 by "\
+                    "for Windows Mobile. Copyright 1998-2009 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
                     "For dictionaries, a manual, or source code go to "\
