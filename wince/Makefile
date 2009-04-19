@@ -228,6 +228,7 @@ $(OBJDIR)/l10n/%.rc.o : l10n/%.rc
 
 $(OBJDIR)/l10n/%.dll: $(OBJDIR)/l10n/%.rc.o
 	$(CC) -shared -o $@ $<
+	$(STRIP) $@
 
 $(STRIDS): scripts/strids.c
 	$(NATIVE_CC) $(CFLAGS) -o $@ $<
