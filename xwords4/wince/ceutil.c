@@ -918,3 +918,29 @@ ceCurDictIsUTF8( CEAppGlobals* globals )
     }
     return result;
 } /* ceCurDictIsUTF8 */
+
+XP_Bool
+ceGetExeDir( wchar_t* buf, XP_U16 bufLen )
+{
+    /* I wanted to use SHGetKnownFolderPath to search in \\Program
+       Files\\Crosswords, but perhaps it's better to search in the directory
+       in which the app is located.  If I get CAB files working for
+       Smartphone, then that directory will be \\Program Files\\Crosswords.
+       But if users have to install files using the File Explorer it'll be
+       easier for them if all that's required is that the app and dictionaries
+       be in the same place.  GetModuleFileName() supports both.
+    */
+
+    DWORD nChars = GetModuleFileName( NULL, buf, bufLen );
+    XP_Bool success = nChars < bufLen;
+    if ( success ) {
+        wchar_t* lastSlash = wcsrchr( buf, '\\' );
+        if ( !!lastSlash ) {
+            *lastSlash = 0;
+        }
+    }
+
+/*     SHGetSpecialFolderPath(NULL,NULL,0,FALSE); */
+
+    return success;
+} /* ceGetExeDir */

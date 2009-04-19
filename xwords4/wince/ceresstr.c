@@ -18,6 +18,8 @@
  */
 
 #include "ceresstr.h"
+#include "ceutil.h"
+#include "cedebug.h"
 
 HINSTANCE
 ceLoadResFile( const XP_UCHAR* file )
@@ -27,7 +29,6 @@ ceLoadResFile( const XP_UCHAR* file )
     XP_U16 len = MultiByteToWideChar( CP_ACP, 0, file, -1, widebuf, VSIZE(widebuf) );
     widebuf[len] = 0;
     hinst = LoadLibrary( widebuf );
-    XP_LOGF( "strsInst: %p", hinst );
     return hinst;
 }
 
@@ -156,3 +157,187 @@ ceFreeResStrings( CEAppGlobals* globals )
     }
 }
 #endif
+
+typedef struct _DllSelState {
+    CeDlgHdr dlgHdr;
+    wchar_t wbuf[MAX_PATH];
+
+    wchar_t* names[8];
+    wchar_t* files[8];
+    XP_U16 nItems;
+
+    XP_U16 dllListID;
+    XP_Bool inited;
+    XP_Bool cancelled;
+} DllSelState;
+
+static void
+copyWideStr( CEAppGlobals* globals, const wchar_t* str, wchar_t** loc )
+{
+    XP_U16 len = 1 + wcslen( str );
+    *loc = XP_MALLOC( globals->mpool, len * sizeof(**loc) );
+    wcscpy( *loc, str );
+ }
+
+/* Iterate through .dll files listing the name of any that has one.  Pair with
+ * file from which it came since that's what we'll return.
+ */
+static void
+listDlls( DllSelState* state )
+{
+    LOG_FUNC();
+    HANDLE fileH;
+    HWND hDlg = state->dlgHdr.hDlg;
+    WIN32_FIND_DATA data;
+    CEAppGlobals* globals = state->dlgHdr.globals;
+    XP_U16 nItems = 0;
+    wchar_t name[64];
+
+    LoadString( globals->hInst, IDS_LANGUAGE_NAME, name, VSIZE(name) );
+    copyWideStr( globals, name, &state->names[nItems++] );
+    (void)SendDlgItemMessage( hDlg, state->dllListID, ADDSTRING(globals),
+                              0, (LPARAM)name );
+
+    wchar_t path[MAX_PATH];
+    ceGetExeDir( path, VSIZE(path) );
+    wcscat( path, L"\\xwords4*.dll" );
+
+    XP_MEMSET( &data, 0, sizeof(data) );
+    fileH = FindFirstFile( path, &data );
+    while ( fileH != INVALID_HANDLE_VALUE ) {
+
+        HINSTANCE hinst = LoadLibrary( data.cFileName );
+        if ( !!hinst ) {
+            if ( LoadString( hinst, IDS_LANGUAGE_NAME, 
+                             name, VSIZE(name) ) ) {
+                (void)SendDlgItemMessage( hDlg, state->dllListID, ADDSTRING(globals),
+                                          0, (LPARAM)name );
+                copyWideStr( globals, name, &state->names[nItems] );
+                copyWideStr( globals, data.cFileName, &state->files[nItems] );
+
+                ++nItems;
+            } else {
+                XP_LOGF( "IDS_LANGUAGE_NAME not found in %ls", data.cFileName );
+            }
+            FreeLibrary( hinst );
+        } else {
+            logLastError("LoadLibrary");
+            XP_LOGF( "Unable to open" );
+        }
+
+        if ( nItems >= VSIZE(state->names) ) {
+            break;
+        } else if ( !FindNextFile( fileH, &data ) ) {
+            XP_ASSERT( GetLastError() == ERROR_NO_MORE_FILES );
+            break;
+        }
+    }
+    SendDlgItemMessage( hDlg, state->dllListID, SETCURSEL(globals), 0, 0 );
+
+    state->nItems = nItems;
+    LOG_RETURN_VOID();
+} /* listDlls */
+
+static void 
+unlistDlls( DllSelState* state )
+{
+    XP_U16 ii;
+    CEAppGlobals* globals = state->dlgHdr.globals;
+    for ( ii = 0; ii < state->nItems; ++ii ) {
+        XP_ASSERT( ii == 0 || !!state->files[ii] );
+        if ( ii > 0 ) {
+            XP_FREE( globals->mpool, state->files[ii] );
+        }
+        XP_FREE( globals->mpool, state->names[ii] );
+    }
+}
+
+static XP_Bool
+getSelText( DllSelState* state )
+{
+    XP_Bool gotIt = XP_FALSE;
+    HWND hDlg = state->dlgHdr.hDlg;
+    CEAppGlobals* globals = state->dlgHdr.globals;
+
+    XP_S16 sel = SendDlgItemMessage( hDlg, state->dllListID, 
+                                     GETCURSEL(globals), 0, 0 );
+    if ( sel >= 0 ) {
+        gotIt = XP_TRUE;
+        if ( sel > 0 ) {
+            wcscpy( state->wbuf, state->files[sel] );
+        }
+    }
+    return gotIt;
+} /* getSelText */
+
+LRESULT CALLBACK
+DllSelDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    DllSelState* state;
+    BOOL result = FALSE;
+
+    if ( message == WM_INITDIALOG ) {
+        SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
+
+        state = (DllSelState*)lParam;
+        state->cancelled = XP_TRUE;
+
+        state->dllListID = LB_IF_PPC( state->dlgHdr.globals, DLLS_COMBO );
+
+        ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE );
+
+        ceDlgComboShowHide( &state->dlgHdr, DLLS_COMBO );
+
+        result = TRUE;
+    } else {
+        state = (DllSelState*)GetWindowLongPtr( hDlg, GWL_USERDATA );
+        if ( !!state ) {
+            if ( !state->inited ) {
+                state->inited = XP_TRUE;
+                listDlls( state );
+            }
+        
+            if ( ceDoDlgHandle( &state->dlgHdr, message, wParam, lParam) ) {
+                result = TRUE;
+            } else if ( (WM_COMMAND == message) 
+                        && (BN_CLICKED == HIWORD(wParam)) ) {
+                switch( LOWORD(wParam) ) {
+                case IDOK:
+                    state->cancelled = XP_FALSE;
+                    getSelText( state );
+                    /* fallthrough */
+                case IDCANCEL:
+                    unlistDlls( state );
+                    EndDialog( hDlg, LOWORD(wParam) );
+                    result = TRUE;
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
+} /* DllSelDlg */
+
+/* ceChooseResFile: List all the available .rc files and return if user
+ * chooses one.
+ */
+XP_Bool
+ceChooseResFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
+{
+    DllSelState state;
+    XP_MEMSET( &state, 0, sizeof(state) );
+
+    state.dlgHdr.globals = globals;
+
+    (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_LOCALESDLG, globals->hWnd,
+                          (DLGPROC)DllSelDlg, (long)&state );
+
+    if ( !state.cancelled ) {
+        (void)WideCharToMultiByte( CP_ACP, 0, state.wbuf, -1,
+                                   buf, bufLen, NULL, NULL );
+    }
+
+    LOG_RETURNF( "%s", buf );
+    return !state.cancelled;
+}

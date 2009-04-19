@@ -663,32 +663,6 @@ locateOneDir( MPFORMAL wchar_t* path, OnePathCB cb, void* ctxt, XP_U16 nSought,
     return done;
 } /* locateOneDir */
 
-static XP_Bool
-getDictDir( wchar_t* buf, XP_U16 bufLen )
-{
-    /* I wanted to use SHGetKnownFolderPath to search in \\Program
-       Files\\Crosswords, but perhaps it's better to search in the directory
-       in which the app is located.  If I get CAB files working for
-       Smartphone, then that directory will be \\Program Files\\Crosswords.
-       But if users have to install files using the File Explorer it'll be
-       easier for them if all that's required is that the app and dictionaries
-       be in the same place.  GetModuleFileName() supports both.
-    */
-
-    DWORD nChars = GetModuleFileName( NULL, buf, bufLen );
-    XP_Bool success = nChars < bufLen;
-    if ( success ) {
-        wchar_t* lastSlash = wcsrchr( buf, '\\' );
-        if ( !!lastSlash ) {
-            *lastSlash = 0;
-        }
-    }
-
-/*     SHGetSpecialFolderPath(NULL,NULL,0,FALSE); */
-
-    return success;
-} /* getDictDir */
-
 XP_U16
 ceLocateNDicts( CEAppGlobals* globals,  XP_U16 nSought, OnePathCB cb, 
                 void* ctxt )
@@ -696,7 +670,7 @@ ceLocateNDicts( CEAppGlobals* globals,  XP_U16 nSought, OnePathCB cb,
     XP_U16 nFound = 0;
     wchar_t path[CE_MAX_PATH_LEN+1];
 
-    if ( getDictDir( path, VSIZE(path) ) ) {
+    if ( ceGetExeDir( path, VSIZE(path) ) ) {
         locateOneDir( MPPARM(globals->mpool) path, cb, ctxt, nSought, &nFound );
     }
 
