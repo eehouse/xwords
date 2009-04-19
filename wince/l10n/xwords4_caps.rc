@@ -121,6 +121,7 @@ BEGIN
             MENUITEM "PREFERENCES...",         ID_FILE_PREFERENCES                        // <- translate
             MENUITEM SEPARATOR
             MENUITEM "ABOUT...",               ID_FILE_ABOUT                              // <- translate 
+            MENUITEM "LOCALES...",             ID_FILE_LOCALES
             MENUITEM SEPARATOR
             MENUITEM "EXIT",                   ID_FILE_EXIT                               // <- translate 
         END
@@ -855,6 +856,26 @@ END
 #endif
 
 
+IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 120, 115
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "LANGUAGE PICKER"
+FONT 8, "System"
+BEGIN
+#ifdef _WIN32_WCE
+    LISTBOX         DLLS_COMBO, 30,2,70,12, LISTBOX_CONTROL_FLAGS
+    CONTROL "",     IDC_DLLSUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
+                    0, 0, 0, 0 
+#endif
+    COMBOBOX        DLLS_COMBO_PPC,30,2,70,58,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+# ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,20,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+    PUSHBUTTON      "CANCEL",IDCANCEL,100,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+# endif
+END
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table.  Note that these are ascii strings unless L proceeds the
@@ -877,7 +898,7 @@ BEGIN
     IDS_DONE                "DONE"                                                         // <- translate
     IDS_LANGUAGE_NAME       "ALL CAPS"                                                     // <- translate
     IDS_ABOUT       "CROSSWORDS 4.4A1 (REV " SVN_REV ") "\
-                    "FOR WINDOWS MOBILE. COPYRIGHT 1998-2008 BY "\
+                    "FOR WINDOWS MOBILE. COPYRIGHT 1998-2009 BY "\
                     "ERIC HOUSE.  THIS SOFTWARE IS RELEASED UNDER THE GNU "\
                     "PUBLIC LICENSE.\r\r"\
                     "FOR DICTIONARIES, A MANUAL, OR SOURCE CODE GO TO "\
@@ -899,6 +920,10 @@ BEGIN
     IDS_TURN_SCORE         "SCORE FOR TURN: %d" XP_CR                                      // <- translate
     IDS_COMMIT_CONFIRM     "COMMIT THE CURRENT MOVE?" XP_CR                                // <- translate
     IDS_LOCAL_NAME         "%s"                                                            // <- translate
+    IDS_REM                "REM"
+    IDS_IGNORE_L           "IGNORE"
+    IDS_WARN_L             "WARN"
+    IDS_DISALLOW_L         "DISALLOW"
     IDS_NONLOCAL_NAME      "%s (REMOTE)"                                                   // <- translate
     IDS_TIME_PENALTY_SUB   " - %d [TIME]"                                                  // <- translate
     IDS_CUMULATIVE_SCORE   "CUMULATIVE SCORE: %d" XP_CR                                    // <- translate

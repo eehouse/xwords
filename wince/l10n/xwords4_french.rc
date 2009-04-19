@@ -76,7 +76,7 @@ BEGIN
 #endif
     POPUP "Menu"                                                                          // <- translate 
     BEGIN
-        MENUITEM "Coup terminé",                  ID_MOVE_TURNDONE                           // <- translate
+        MENUITEM "Jouer le coup",                  ID_MOVE_TURNDONE                           // <- translate
         MENUITEM "Mélanger",                     ID_MOVE_JUGGLE                             // <- translate
         MENUITEM "Retourner",                       ID_MOVE_FLIP                               // <- translate
         MENUITEM "Echanger",                      ID_MOVE_TRADE                              // <- translate
@@ -101,7 +101,7 @@ BEGIN
 
         POPUP "Partie"                                                                      // <- translate
         BEGIN
-            MENUITEM "Nombre et valeur des lettres",  ID_GAME_TILECOUNTSANDVALUES               // <- translate
+            MENUITEM "Nombre/Valeur des lettres",  ID_GAME_TILECOUNTSANDVALUES               // <- translate
             MENUITEM "Lettres restantes",              ID_GAME_TILESLEFT                         // <- translate
             MENUITEM SEPARATOR
             MENUITEM "Infos partie",               ID_GAME_GAMEINFO                          // <- translate
@@ -120,7 +120,8 @@ BEGIN
             MENUITEM "Parties enregistrées...",         ID_FILE_SAVEDGAMES                         // <- translate
             MENUITEM "Préférences...",         ID_FILE_PREFERENCES                        // <- translate
             MENUITEM SEPARATOR
-            MENUITEM "A propos...",               ID_FILE_ABOUT                              // <- translate 
+            MENUITEM "A propos...",               ID_FILE_ABOUT
+            MENUITEM "Langue...",                ID_FILE_LOCALES						// Or "Localisation" (more technical)
             MENUITEM SEPARATOR
             MENUITEM "Quitter",                   ID_FILE_EXIT                               // <- translate 
         END
@@ -263,7 +264,7 @@ CAPTION "Infos partie"                                                          
 FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
-    LTEXT           "ROLE:",IDC_STATIC,5,SERVERROLE_ROW,20,8
+    LTEXT           "Mode:",IDC_STATIC,5,SERVERROLE_ROW,20,8
 #ifdef _WIN32_WCE
     LISTBOX         IDC_ROLECOMBO, 26, SERVERROLE_ROW, 70, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     IDC_ROLEUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
@@ -516,7 +517,7 @@ END
 
 IDD_ASKHINTLIMTS DIALOG DISCARDABLE  0, 0, HC_WIDTH, ASKHINTLIMTS_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Limites de taille des conseils"                                                                // <- translate TILE HINT LIMITS
+CAPTION "Longueur des mots conseillés"
 FONT 8, "System"
 BEGIN
     LTEXT           "Utiliser au moins:",IDC_STATIC,                                           // <- translate USE AT LEAST:
@@ -573,7 +574,7 @@ FONT 8, "System"
 BEGIN
     CONTROL         "Cette partie",IDC_RADIOLOCAL,"Button",                                  // <- translate THIS GAME
                     BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
-    CONTROL         "Toutes les parties",IDC_RADIOGLOBAL,"Button",                                 // <- translate ALL GAMES
+    CONTROL         "Générales",IDC_RADIOGLOBAL,"Button",                                 // <- translate ALL GAMES
                     BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
 
     /* Global */
@@ -601,10 +602,10 @@ BEGIN
     CONTROL         "Limitation des conseils",IDC_CHECKHINTSLIMITS,"Button",                          // <- translate HINT LIMITS
                     BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,50,10
 #endif
-    CONTROL         "Chrono actif",TIMER_CHECK,"Button",                            // <- translate TIMER ON (MINUTES)
+    CONTROL         "Chrono",TIMER_CHECK,"Button",                            // <- translate TIMER ON (MINUTES)
                         BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,75,PREFS_ROW_HT
     EDITTEXT        TIMER_EDIT,85,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Mots faux:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT                    // <- translate PHONIES:
+    LTEXT           "Erreurs:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT                    // <- translate PHONIES:
 #ifdef _WIN32_WCE
     LISTBOX         PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     IDC_PHONIESUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
@@ -614,7 +615,7 @@ BEGIN
                     WS_TABSTOP
 
 #ifdef FEATURE_TRAY_EDIT
-    CONTROL         "Choix des lettres faces visibles", IDC_PICKTILES, "Button",                        // <- translate PICK TILES FACE-UP
+    CONTROL         "Tirage manuel", IDC_PICKTILES, "Button",                        // <- translate PICK TILES FACE-UP
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW7,90,PREFS_ROW_HT
 #else
 #endif
@@ -666,11 +667,11 @@ BEGIN
     EDITTEXT        COOKIE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
-    LTEXT           "Transmettre le nom (change rarement):",IDC_CRELAYNAME_LAB,                    // <- translate RELAY NAME (RARELY CHANGES):
+    LTEXT           "Nom du relai (change rarement):",IDC_CRELAYNAME_LAB,                    // <- translate RELAY NAME (RARELY CHANGES):
                     LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
     EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
-    LTEXT           "Transmettre le port (change rarement):",IDC_CRELAYPORT_LAB,                    // <- translate RELAY PORT (RARELY CHANGES):
+    LTEXT           "Port du relai (change rarement):",IDC_CRELAYPORT_LAB,                    // <- translate RELAY PORT (RARELY CHANGES):
                     LAB_COL,CONN_ROW_7,120,ROW_HEIGHT
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -855,6 +856,26 @@ END
 #endif
 
 
+IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 120, 115
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "LANGUAGE PICKER"
+FONT 8, "System"
+BEGIN
+#ifdef _WIN32_WCE
+    LISTBOX         DLLS_COMBO, 30,2,70,12, LISTBOX_CONTROL_FLAGS
+    CONTROL "",     IDC_DLLSUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
+                    0, 0, 0, 0 
+#endif
+    COMBOBOX        DLLS_COMBO_PPC,30,2,70,58,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+# ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,20,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+    PUSHBUTTON      "CANCEL",IDCANCEL,100,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+# endif
+END
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table.  Note that these are ascii strings unless L proceeds the
@@ -875,19 +896,21 @@ BEGIN
     IDS_CANCEL              "Annuler"                                                       // <- translate
     IDS_OK                  "OK"                                                           // <- translate
     IDS_DONE                "Terminé"                                                         // <- translate
-    IDS_ABOUT       "CROSSWORDS 4.4A1 (REV " SVN_REV ") "\
-                    "pour Windows Mobile. Copyright 1998-2008 "\
-                    "Eric House.  Ce logiciel est produit sous la licence "\
+    IDS_LANGUAGE_NAME       "Français"
+    IDS_ABOUT       "Crosswords 4.4a1 (REV " SVN_REV ") "\
+                    "pour Windows Mobile. Copyright 1998-2009 "\
+                    "Eric House.  Ce logiciel est produit sous licence "\
                     "publique GNU.\r\r"\
-                    "Pour obtenir des dictionnaires, un manuel ou le code source allez sur "\
-                    "http://xwords.sf.net ou http://eehouse.org/xwords/."                  // <- translate
-    IDS_DICTLOC     "Veuillez installer un dictionnaire (.xwd FILE) "\
+                    "Pour obtenir des dictionnaires, le manuel ou le code source allez sur "\
+                    "http://xwords.sf.net ou http://eehouse.org/xwords/.\r\r"\
+					"Traduction française par Jean-Marc Charette."
+    IDS_DICTLOC     "Veuillez installer un dictionnaire (Fichier .xwd) "\
                     "dans le même dossier que le fichier exécutable crosswords.exe ou "\
                     "dans un dossier nommé crosswords sur la carte de stockage, "\
                     "par exemple dans \\Carte de Stockage\\crosswords. "\
-                    "Téléchargez des dictionnaires à partir du site http://xwords.sf.net ou "\
+                    "Téléchargez des dictionnaires sur le site http://xwords.sf.net ou "\
                     "http://eehouse.org/xwords."                                           // <- translate
-    IDS_SAVENAME    "Entrez un nom pour la partie.  (Vous pourrez changer le nom "\
+    IDS_SAVENAME    "Entrez un nom pour la partie.  (Vous pourrez le changer "\
                     "plus tard via la boîte de dialogue Enregistrer partie.)"                            // <- translate
     IDS_DUPENAME    "Entrez un nom pour une copie de cette partie."                                // <- translate
     IDS_RENAME      "Entrez un nouveau nom pour cette partie."                                      // <- translate
@@ -895,9 +918,13 @@ BEGIN
     IDS_REMAINING_TILES_ADD "+ %d [Toutes les lettres restantes]"                                   // <- translate
     IDS_UNUSED_TILES_SUB    "- %d [Lettres non utilisées]"                                          // <- translate
     IDS_BONUS_ALL          "Bonus scrabble: 50" XP_CR                           // <- translate
-    IDS_TURN_SCORE         "Score pour le coup: %d" XP_CR                                      // <- translate
-    IDS_COMMIT_CONFIRM     "Accepter le coup actuel?" XP_CR                                // <- translate
+    IDS_TURN_SCORE         "Score pour ce coup: %d" XP_CR                                      // <- translate
+    IDS_COMMIT_CONFIRM     "Accepter ce coup?" XP_CR                                // <- translate
     IDS_LOCAL_NAME         "%s"                                                            // <- translate
+    IDS_REM                "Res"
+    IDS_IGNORE_L           "Ignorer"
+    IDS_WARN_L             "Avertir"
+    IDS_DISALLOW_L         "Refuser"
     IDS_NONLOCAL_NAME      "%s (Distant)"                                                   // <- translate
     IDS_TIME_PENALTY_SUB   " - %d [Temps]"                                                  // <- translate
     IDS_CUMULATIVE_SCORE   "Score cumulé: %d" XP_CR                                    // <- translate
@@ -921,11 +948,11 @@ BEGIN
     IDS_TOTALPLAYERS       "Nombre de joueurs:"                                                 // <- translate
     IDS_VALUES_HEADER      "%s Nombres/Valeurs:" XP_CR                                       // <- translate
     IDS_QUERY_TRADE        "Etes-vous sûr de vouloir échanger les lettres sélectionnées?"            // <- translate
-    IDS_DOUBLE_LETTER      "Lettre double"                                                 // <- translate
-    IDS_DOUBLE_WORD        "Mot double"                                                   // <- translate
-    IDS_TRIPLE_LETTER      "Lettre triple"                                                 // <- translate
-    IDS_TRIPLE_WORD        "Mot triple"                                                   // <- translate
-    IDS_INTRADE_MW         "Echange de lettres." XP_CR "Choisir 'Coup terminé' quand vous avez fini"          // <- translate
+    IDS_DOUBLE_LETTER      "Lettre compte double"                                                 // <- translate
+    IDS_DOUBLE_WORD        "Mot compte double"                                                   // <- translate
+    IDS_TRIPLE_LETTER      "Lettre compte triple"                                                 // <- translate
+    IDS_TRIPLE_WORD        "Mot compte triple"                                                   // <- translate
+    IDS_INTRADE_MW         "Echange de lettres." XP_CR "Choisir 'Terminé' quand vous avez fini"          // <- translate
 
 
     IDS_TILES_NOT_IN_LINE  "Toutes les lettres jouées doivent être alignées."                           // <- translate
