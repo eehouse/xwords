@@ -644,7 +644,8 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                &state->prefsPrefs );
 
         if ( state->isNewGame ) {
-            (void)SetWindowText( hDlg, L"New game" );
+            (void)SetWindowText( hDlg, ceGetResStringL( globals, 
+                                                        IDS_NEW_GAME ) );
         }
 
         result = TRUE;

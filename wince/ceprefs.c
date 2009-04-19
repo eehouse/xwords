@@ -35,15 +35,12 @@ stuffPhoniesList( CePrefsDlgState* state )
     HWND hDlg = state->dlgHdr.hDlg;
     CEAppGlobals* globals = state->dlgHdr.globals;
     XP_U16 ii;
-    wchar_t* strings[] = {
-        L"Ignore",
-        L"Warn",
-        L"Disallow"
-    };
+    XP_U16 resIDs[] = { IDS_IGNORE_L,IDS_WARN_L, IDS_DISALLOW_L };
 
-    for ( ii = 0; ii < 3; ++ii ) {
+    for ( ii = 0; ii < VSIZE(resIDs); ++ii ) {
+        const wchar_t* str = ceGetResStringL( globals, resIDs[ii] );
         SendDlgItemMessage( hDlg, state->phonComboId, 
-                            ADDSTRING(globals), ii, (long)strings[ii] );
+                            ADDSTRING(globals), ii, (long)str );
     }
 } /* stuffPhoniesList */
 
