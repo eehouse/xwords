@@ -211,7 +211,7 @@ END
 # define NPLAYERS_ROW 3
 # define GAME_NAMELABEL_LEFT GAME_NAME_LEFT
 # define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-7)
-# define GAME_PWDLABEL_LEFT GAME_PWD_LEFT
+# define GAME_PWDLABEL_LEFT (GAME_PWD_LEFT-4)
 #else
 # define SERVERROLE_ROW 3
 # define GAME_NAME_WIDTH 56
@@ -221,9 +221,9 @@ END
 # define GAME_ROBOT_LEFT (GAME_NAME_LEFT+GAME_NAME_WIDTH+2)
 # define GAME_PWD_LEFT (GAME_ROBOT_LEFT + CHECK_WIDTH + 4)
 # define GAME_NAMELABEL_LEFT (GAME_NAME_LEFT + 20)
-# define GAME_NAMELABEL_WIDTH (GAME_NAME_WIDTH-15)
-# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-10)
-# define GAME_PWDLABEL_LEFT (GAME_PWD_LEFT)
+# define GAME_NAMELABEL_WIDTH (GAME_NAME_WIDTH-30)
+# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-12)
+# define GAME_PWDLABEL_LEFT (GAME_PWD_LEFT-4)
 #endif
 
 
@@ -254,7 +254,7 @@ END
                         ES_AUTOHSCROLL \
     CONTROL         "",robotCheck,"Button",BS_AUTOCHECKBOX | WS_TABSTOP, \
                     GAME_ROBOT_LEFT,playerRow,CHECK_WIDTH,ROW_HEIGHT \
-    EDITTEXT        passEdit,GAME_PWD_LEFT,playerRow,15,ROW_HEIGHT, \
+    EDITTEXT        passEdit,GAME_PWD_LEFT,playerRow,13,ROW_HEIGHT, \
                     ES_PASSWORD | ES_AUTOHSCROLL \
 
 
@@ -264,13 +264,13 @@ CAPTION "Infos partie"                                                          
 FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
-    LTEXT           "Mode:",IDC_STATIC,5,SERVERROLE_ROW,20,8
+    LTEXT           "Mode:",IDC_STATIC,LEFT_COL,SERVERROLE_ROW,20,8
 #ifdef _WIN32_WCE
-    LISTBOX         IDC_ROLECOMBO, 26, SERVERROLE_ROW, 70, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
+    LISTBOX         IDC_ROLECOMBO,23,SERVERROLE_ROW,50,ROW_HEIGHT,LISTBOX_CONTROL_FLAGS
     CONTROL "",     IDC_ROLEUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
                     0, 0, 0, 0 
 #endif
-    COMBOBOX        IDC_ROLECOMBO_PPC,25,SERVERROLE_ROW,50,58,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_ROLECOMBO_PPC,23,SERVERROLE_ROW,50,58,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Conf.",GIROLECONF_BUTTON,75,SERVERROLE_ROW,20,ROW_HEIGHT             // <- translate CONF. (configure)
     
@@ -308,7 +308,7 @@ BEGIN
     CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
     CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
 
-    LTEXT           "Dictionnaire:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,36,8,           // <- translate DICTIONARY
+    LTEXT           "Dictionnaire:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,50,8,           // <- translate DICTIONARY
                     SS_NOPREFIX
 #ifdef _WIN32_WCE
     LISTBOX         IDC_DICTLIST, LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LISTBOX_CONTROL_FLAGS|LBS_SORT
@@ -428,7 +428,7 @@ END
 
 #define SVGM_LEFT_COL 2
 #define SVGM_ROW_1 2
-#define SVGM_ROW_2 (SVGM_ROW_1+35)
+#define SVGM_ROW_2 (SVGM_ROW_1+45)
 #define SVGM_ROW_3 (SVGM_ROW_2+13)
 #define SVGM_ROW_4 (SVGM_ROW_3+19)
 #ifdef _WIN32_WCE
@@ -449,8 +449,7 @@ BEGIN
   LTEXT           /* wince windres can't handle split lines....*/
                     "Sélectionnez une partie enregistrée.  (Certains boutons seront désactivés si la partie en cours est sélectionnée.)",
                                                                                           // ^- translate SELECT A SAVED GAME.  (SOME BUTTONS WILL BE DISABLED WHEN THE CURRENT GAME IS SELECTED.)
-                    IDC_SVGM_SELLAB,SVGM_LEFT_COL,
-                    SVGM_ROW_1,90,35
+                    IDC_SVGM_SELLAB,SVGM_LEFT_COL,SVGM_ROW_1,90,45
 #ifdef _WIN32_WCE
     LISTBOX         IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,ROW_HEIGHT,
                     LISTBOX_CONTROL_FLAGS | LBS_SORT
@@ -466,9 +465,9 @@ BEGIN
     PUSHBUTTON      "Dupl.",IDC_SVGM_DUP,                                                  // <- translate DUP. (=duplicate)
                     SVGM_LEFT_COL,SVGM_ROW_4,20,14,WS_DISABLED
     PUSHBUTTON      "Effacer",IDC_SVGM_DEL,                                                // <- translate DELETE
-                    SVGM_LEFT_COL+22,SVGM_ROW_4,28,14,WS_DISABLED
+                    SVGM_LEFT_COL+22,SVGM_ROW_4,26,14,WS_DISABLED
     PUSHBUTTON      "Renommer",IDC_SVGM_CHANGE,                                             // <- translate RENAME
-                    SVGM_LEFT_COL+52,SVGM_ROW_4,32,14,WS_DISABLED
+                    SVGM_LEFT_COL+50,SVGM_ROW_4,40,14,WS_DISABLED
 
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "Terminé",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,             // <- translate DONE
@@ -560,6 +559,7 @@ END
 #define PR_ROW6 (PR_ROW5+PR_SPACING)
 #define PR_ROW7 (PR_ROW6+PR_SPACING)
 #define PR_BUTTONROW (PR_ROW7+PR_SPACING)
+#define PR_LEFT 6
 
 #ifdef _WIN32_WCE
 # define PREFS_DLG_HT PR_BUTTONROW
@@ -569,7 +569,7 @@ END
 
 IDD_OPTIONSDLG DIALOG DISCARDABLE  0, 20, PR_WIDTH, PREFS_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "PREFERENCES"                                                                     // <- translate PREFERENCES
+CAPTION "Préférences"
 FONT 8, "System"
 BEGIN
     CONTROL         "Cette partie",IDC_RADIOLOCAL,"Button",                                  // <- translate THIS GAME
@@ -580,32 +580,32 @@ BEGIN
     /* Global */
     CONTROL         "Couleur des lettres placées",IDC_CHECKCOLORPLAYED,"Button",                   // <- translate COLOR PLAYED TILES
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,
-                    8,PR_ROW2,80,PREFS_ROW_HT
+                    PR_LEFT,PR_ROW2,90,PREFS_ROW_HT
     CONTROL         "Activer curseur",IDC_CHECKSHOWCURSOR,"Button",                         // <- translate ENABLE CURSOR
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,80,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,60,PREFS_ROW_HT
     CONTROL         "Détails des points du robot",IDC_CHECKROBOTSCORES,"Button",                 // <- translate EXPLAIN ROBOT SCORES
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW4,80,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,87,PREFS_ROW_HT
     CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",                       // <- translate HIDE TILE VALUES
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,80,PREFS_ROW_HT
-    PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,8,PR_ROW6,60,12                       // <- translate EDIT COLORS...
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,85,PREFS_ROW_HT
+    PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,PR_LEFT,PR_ROW6,70,12                       // <- translate EDIT COLORS...
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "Choisir une police...",IDC_PREFFONTS,8,PR_ROW7,60,12                        // <- translate CHOOSE FONT...
+    PUSHBUTTON      "Choisir une police...",IDC_PREFFONTS,PR_LEFT,PR_ROW7,60,12                        // <- translate CHOOSE FONT...
 #endif
 
     /* Per game */
     CONTROL         "Robot intelligent",IDC_CHECKSMARTROBOT,"Button",                           // <- translate SMART ROBOT
-                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,60,
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,PR_LEFT,PR_ROW2,60,
                     PREFS_ROW_HT
     CONTROL         "Conseils permis",IDC_CHECKHINTSOK,"Button",                              // <- translate ALLOW HINTS
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,60,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,60,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT
     CONTROL         "Limitation des conseils",IDC_CHECKHINTSLIMITS,"Button",                          // <- translate HINT LIMITS
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,50,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8+PR_LEFT,PR_ROW4-2,80,10
 #endif
     CONTROL         "Chrono",TIMER_CHECK,"Button",                            // <- translate TIMER ON (MINUTES)
-                        BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,75,PREFS_ROW_HT
-    EDITTEXT        TIMER_EDIT,85,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Erreurs:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT                    // <- translate PHONIES:
+                        BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,65,PREFS_ROW_HT
+    EDITTEXT        TIMER_EDIT,65,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Erreurs:",PHONIES_LABEL,PR_LEFT,PR_ROW6,28,PREFS_ROW_HT                    // <- translate PHONIES:
 #ifdef _WIN32_WCE
     LISTBOX         PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     IDC_PHONIESUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
@@ -616,7 +616,7 @@ BEGIN
 
 #ifdef FEATURE_TRAY_EDIT
     CONTROL         "Tirage manuel", IDC_PICKTILES, "Button",                        // <- translate PICK TILES FACE-UP
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW7,90,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW7,90,PREFS_ROW_HT
 #else
 #endif
 #ifndef _WIN32_WCE
@@ -728,7 +728,7 @@ END
 #define CLR_ROW_5  (CLR_ROW_4+CLR_LRG_GAP)
 #define CLR_ROW_6  (CLR_ROW_5+CLR_SMALL_GAP)
 #define CLR_ROW_7  (CLR_ROW_6+CLR_SMALL_GAP)
-#define CLR_ROW_8  (CLR_ROW_7+CLR_LRG_GAP)
+#define CLR_ROW_8  (CLR_ROW_7+CLR_LRG_GAP+5)
 #define CLR_ROW_9  (CLR_ROW_8+CLR_SMALL_GAP)
 #define CLR_ROW_10  (CLR_ROW_9+CLR_SMALL_GAP)
 #define CLR_ROW_11  (CLR_ROW_10+CLR_SMALL_GAP)
@@ -746,8 +746,8 @@ END
 # define COLORSDLG_HT CLR_BUTTON_ROW + BUTTON_HT + 3
 #endif
 
-#define COLOR_BUTTON(txt,id,xx,yy) \
-    LTEXT           txt,id,xx,yy,CLR_LAB_WIDTH,CLR_LAB_HT
+#define COLOR_BUTTON(txt,id,xx,yy,ht)                 \
+    LTEXT           txt,id,xx,yy,CLR_LAB_WIDTH,ht
   /* Hack alert.  Smartphone isn't delivering WM_COMMAND events for
      clicks on BS_OWNERDRAW buttons, and WinMo (PPC and Smartphone)
      won't deliver WM_DRAWITEM events for SS_OWNERDRAW static
@@ -756,36 +756,36 @@ END
      and have a separate button to trigger the edit dialog. */
 #define COLOR_SAMPLE(id1,id2,xx,yy)                        \
     PUSHBUTTON       "",id2,xx,yy,CLR_BUT_WIDTH,CLR_BUT_HT,BS_OWNERDRAW \
-    PUSHBUTTON       "Editer",id1,xx+CLR_SAMPLE_WIDTH+4,yy,20,CLR_BUT_HT,BS_NOTIFY          // <- translate EDIT
+    PUSHBUTTON       "Editer",id1,xx+CLR_SAMPLE_WIDTH+4,yy,24,CLR_BUT_HT,BS_NOTIFY          // <- translate EDIT
 
 IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, CLR_WIDTH, COLORSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Préférences des couleurs"                                                               // <- translate COLOR PREFERENCES
 FONT 8, "System"
 BEGIN
-    COLOR_BUTTON("Lettre double:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1)                       // <- translate DOUBLE LETTER
+    COLOR_BUTTON("Lettre double:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1,CLR_LAB_HT)                       // <- translate DOUBLE LETTER
     COLOR_SAMPLE(DLBLTR_BUTTON,DLBLTR_SAMPLE,CLR_COL_2,CLR_ROW_1)
 
-    COLOR_BUTTON("Mot double:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2 )                        // <- translate DOUBLE WORD
+    COLOR_BUTTON("Mot double:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2,CLR_LAB_HT )                        // <- translate DOUBLE WORD
     COLOR_SAMPLE(DBLWRD_BUTTON,DBLWRD_SAMPLE,CLR_COL_2,CLR_ROW_2)
-    COLOR_BUTTON("Lettre triple:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3 )                      // <- translate TRIPLE LETTER
+    COLOR_BUTTON("Lettre triple:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3,CLR_LAB_HT )                      // <- translate TRIPLE LETTER
     COLOR_SAMPLE(TPLLTR_BUTTON,TPLLTR_SAMPLE,CLR_COL_2,CLR_ROW_3)
 
-    COLOR_BUTTON("Mot triple:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4)                         // <- translate TRIPLE WORD
+    COLOR_BUTTON("Mot triple:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4,CLR_LAB_HT)                         // <- translate TRIPLE WORD
     COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_COL_4,CLR_ROW_4)
-    COLOR_BUTTON("Case vide:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5)                         // <- translate EMPTY CELL
+    COLOR_BUTTON("Case vide:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5,CLR_LAB_HT)                         // <- translate EMPTY CELL
     COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_COL_2,CLR_ROW_5)
-    COLOR_BUTTON("Fond de lettre:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6)                            // <- translate TILE BACK
+    COLOR_BUTTON("Fond de lettre:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6,CLR_LAB_HT)                            // <- translate TILE BACK
     COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
-    COLOR_BUTTON("Couleur sélection:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7)                       // <- translate FOCUS COLOR
-    COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7)
-    COLOR_BUTTON("Joueur 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8)                           // <- translate PLAYER 1
+    COLOR_BUTTON("Couleur sélection:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7,CLR_LAB_HT+10)             // <- translate FOCUS COLOR
+    COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7+5)
+    COLOR_BUTTON("Joueur 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8,CLR_LAB_HT)                           // <- translate PLAYER 1
     COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_COL_2,CLR_ROW_8)
-    COLOR_BUTTON("Joueur 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9)                           // <- translate PLAYER 2
+    COLOR_BUTTON("Joueur 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9,CLR_LAB_HT)                           // <- translate PLAYER 2
     COLOR_SAMPLE(PLAYER2_BUTTON,PLAYER2_SAMPLE,CLR_COL_4,CLR_ROW_9)
-    COLOR_BUTTON("Joueur 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10)                          // <- translate PLAYER 3
+    COLOR_BUTTON("Joueur 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10,CLR_LAB_HT)                          // <- translate PLAYER 3
     COLOR_SAMPLE(PLAYER3_BUTTON,PLAYER3_SAMPLE,CLR_COL_2,CLR_ROW_10)
-    COLOR_BUTTON("Joueur 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11)                          // <- translate PLAYER 4
+    COLOR_BUTTON("Joueur 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11,CLR_LAB_HT)                          // <- translate PLAYER 4
     COLOR_SAMPLE(PLAYER4_BUTTON,PLAYER4_SAMPLE,CLR_COL_4,CLR_ROW_11)
 
 #ifndef _WIN32_WCE
