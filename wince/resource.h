@@ -168,6 +168,12 @@
 #define IDC_DLLSUPDOWN                  1132
 #define DLLS_COMBO_PPC                  1133
 
+#define IDC_ROLELABEL                   1134
+#define IDC_NAMELABEL                   1135
+#define IDC_ROBOTLABEL                  1136
+#define IDC_PASSWDLABEL                 1137
+
+
 #define IDC_CCONVIA_LAB                 1106
 
 #define IDC_COOKIE_LAB                   1107
