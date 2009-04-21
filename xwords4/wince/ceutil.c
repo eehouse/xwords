@@ -345,12 +345,25 @@ mkFullscreenWithSoftkeys( CEAppGlobals* globals, HWND hDlg, XP_U16 curHt,
 } /* mkFullscreenWithSoftkeys */
 #endif
 
+static void
+ceCenterBy( HWND hDlg, XP_U16 byHowMuch )
+{
+    HWND child;
+
+    for ( child = GetWindow( hDlg, GW_CHILD );
+          !!child;
+          child = GetWindow( child, GW_HWNDNEXT ) ) {
+        XP_S16 resID = GetDlgCtrlID( child );
+        ceMoveItem( hDlg, resID, byHowMuch, 0 );
+    }
+} /* ceCenterBy */
+
 #define TITLE_HT 20            /* Need to get this from the OS */
 void
 ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 {
     RECT rect;
-    XP_U16 fullHeight;
+    XP_U16 fullHeight, origWidth;
     CEAppGlobals* globals = dlgHdr->globals;
 
     dlgHdr->hDlg = hDlg;
@@ -364,6 +377,7 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
     GetClientRect( hDlg, &rect );
     XP_ASSERT( rect.top == 0 );
     fullHeight = rect.bottom;         /* This is before we've resized it */
+    origWidth = rect.right;
 
 #ifdef _WIN32_WCE
     (void)mkFullscreenWithSoftkeys( globals, hDlg, fullHeight, doWhat);
@@ -377,6 +391,9 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
 
     /* Measure again post-resize */
     GetClientRect( hDlg, &rect );
+    if ( rect.right > origWidth ) {
+        ceCenterBy( hDlg, (rect.right - origWidth) / 2 );
+    }
 
     /* Set up the scrollbar if we're on PPC */
     if ( !IS_SMARTPHONE(globals) ) {
