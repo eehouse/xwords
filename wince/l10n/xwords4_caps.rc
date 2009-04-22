@@ -969,7 +969,7 @@ BEGIN
                             "DIALOG."                                                      // <- translate
 
     IDS_COUNTSVALS_L        "TILE COUNTS AND VALUES"                                       // <- translate
-    IDS_REMTIMES_L          "REMAINING TILES"                                              // <- translate
+    IDS_REMTILES_L          "REMAINING TILES"                                              // <- translate
     IDS_GAMEHIST_L          "GAME HISTORY"                                                 // <- translate
     IDS_FINALSCORE_L        "FINAL SCORES"                                                 // <- translate
     IDS_QUESTION_L          "QUESTION"                                                     // <- translate

@@ -1035,7 +1035,7 @@ BEGIN
                                  "it for a new game using the Preferences dialog."
 
     IDS_COUNTSVALS_L        "Tile Counts and Values"
-    IDS_REMTIMES_L          "Remaining tiles"
+    IDS_REMTILES_L          "Remaining tiles"
     IDS_GAMEHIST_L          "Game history"
     IDS_FINALSCORE_L        "Final scores"
     IDS_QUESTION_L          "Question"
