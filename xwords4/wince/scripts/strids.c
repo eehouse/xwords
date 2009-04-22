@@ -62,7 +62,6 @@ static char* ids[] = {
     ,"IDS_TRIPLE_WORD"
     ,"IDS_INTRADE_MW"
     ,"IDS_COUNTSVALS_L"
-    ,"IDS_REMTIMES_L"
     ,"IDS_GAMEHIST_L"
     ,"IDS_FINALSCORE_L"
     ,"IDS_QUESTION_L"

@@ -967,7 +967,7 @@ BEGIN
                             "activez-les pour une nouvelle partie en utilisant les préférences."
 
     IDS_COUNTSVALS_L        "Nombre et valeur des lettres"
-    IDS_REMTIMES_L          "Lettres restantes"
+    IDS_REMTILES_L          "Lettres restantes"
     IDS_GAMEHIST_L          "Historique de la partie"
     IDS_FINALSCORE_L        "Score final"
     IDS_QUESTION_L          "Question"
