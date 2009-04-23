@@ -282,11 +282,11 @@ DllSelDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state = (DllSelState*)lParam;
         state->cancelled = XP_TRUE;
 
-        state->dllListID = LB_IF_PPC( state->dlgHdr.globals, DLLS_COMBO );
+        state->dllListID = LB_IF_PPC( state->dlgHdr.globals, LOCALES_COMBO );
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_NONE );
 
-        ceDlgComboShowHide( &state->dlgHdr, DLLS_COMBO );
+        ceDlgComboShowHide( &state->dlgHdr, LOCALES_COMBO );
 
         result = TRUE;
     } else {

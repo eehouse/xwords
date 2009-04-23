@@ -264,7 +264,7 @@ CAPTION "GAME INFO"                                                             
 FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
-    LTEXT           "ROLE:",IDC_STATIC,5,SERVERROLE_ROW,20,8
+    LTEXT           "ROLE:",IDC_ROLELABEL,5,SERVERROLE_ROW,20,8
 #ifdef _WIN32_WCE
     LISTBOX         IDC_ROLECOMBO, 26, SERVERROLE_ROW, 70, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     IDC_ROLEUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
@@ -287,10 +287,10 @@ BEGIN
 
     PUSHBUTTON      "JUGL.",GIJUGGLE_BUTTON,75,NPLAYERS_ROW,20,ROW_HEIGHT                 // <- translate JUGL. (juggle)
 
-    LTEXT           "NAME",IDC_STATIC,GAME_NAMELABEL_LEFT,                                // <- translate NAME
+    LTEXT           "NAME",IDC_NAMELABEL,GAME_NAMELABEL_LEFT,                                // <- translate NAME
                     LABELS_ROW,GAME_NAMELABEL_WIDTH,8,SS_NOPREFIX
-    LTEXT           "ROBOT",IDC_STATIC,GAME_ROBOTLABEL_LEFT,LABELS_ROW,22,8               // <- translate ROBOT
-    LTEXT           "PWD",IDC_STATIC,GAME_PWDLABEL_LEFT,LABELS_ROW,16,8                   // <- translate PWD (password)
+    LTEXT           "ROBOT",IDC_ROBOTLABEL,GAME_ROBOTLABEL_LEFT,LABELS_ROW,22,8               // <- translate ROBOT
+    LTEXT           "PWD",IDC_PASSWDLABEL,GAME_PWDLABEL_LEFT,LABELS_ROW,16,8                   // <- translate PWD (password)
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
     LTEXT           "REMOTE",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,25,8,SS_NOPREFIX        // <- translate REMOTE
@@ -520,7 +520,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "TILE HINT LIMITS"                                                                // <- translate TILE HINT LIMITS
 FONT 8, "System"
 BEGIN
-    LTEXT           "USE AT LEAST:",IDC_STATIC,                                           // <- translate USE AT LEAST:
+    LTEXT           "USE AT LEAST:",HC_MIN_LABEL,                                           // <- translate USE AT LEAST:
                     HC_LABELS_COL,HC_MINROW,60,ROW_HEIGHT
 #ifdef _WIN32_WCE
     LISTBOX         HC_MIN_COMBO, HC_DROPDOWNS_COL,HC_MINROW, 24, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
@@ -530,7 +530,7 @@ BEGIN
     COMBOBOX        HC_MIN_COMBO_PPC,HC_DROPDOWNS_COL,HC_MINROW,17,58,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 
-    LTEXT           "BUT NO MORE THAN:",IDC_STATIC,HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT  // <- translate BUT NO MORE THAN
+    LTEXT           "BUT NO MORE THAN:",HC_MAX_LABEL,HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT  // <- translate BUT NO MORE THAN
 #ifdef _WIN32_WCE
     LISTBOX         HC_MAX_COMBO, HC_DROPDOWNS_COL,HC_MAXROW, 24, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
     CONTROL "",     HC_MAX_UPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
@@ -861,17 +861,19 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "LANGUAGE PICKER"
 FONT 8, "System"
 BEGIN
+    LTEXT           "CHOOSE THE LANGUAGE FOR MENUS AND DIALOG TEXT.",
+                     LOCALES_LABEL,LEFT_COL,2,100,36
 #ifdef _WIN32_WCE
-    LISTBOX         DLLS_COMBO, 30,2,70,12, LISTBOX_CONTROL_FLAGS
-    CONTROL "",     IDC_DLLSUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
+    LISTBOX         LOCALES_COMBO, LEFT_COL,40,70,12, LISTBOX_CONTROL_FLAGS
+    CONTROL "",     IDC_LOCALESUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
                     0, 0, 0, 0 
 #endif
-    COMBOBOX        DLLS_COMBO_PPC,30,2,70,58,
+    COMBOBOX        LOCALES_COMBO_PPC,LEFT_COL,40,70,58,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 # ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "OK",IDOK,20,100,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,55,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
-    PUSHBUTTON      "CANCEL",IDCANCEL,100,100,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "CANCEL",IDCANCEL,50,55,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
 # endif
 END
@@ -886,17 +888,15 @@ STRINGTABLE DISCARDABLE
 BEGIN
 #ifdef DEBUG
     IDS_APP_TITLE           "Crossw_dbg"
-    IDC_XWORDS4             "XWORDS4_DBG"                                                  // <- translate
 #else
-    IDS_APP_TITLE           "Crosswords"                                                   // <- translate
-    IDC_XWORDS4             "XWORDS4"                                                      // <- translate
+    IDS_APP_TITLE           "Crosswords"
 #endif
     IDS_MENU                "MENU"                                                         // <- translate
     IDS_DUMMY               "--"
     IDS_CANCEL              "CANCEL"                                                       // <- translate
     IDS_OK                  "OK"                                                           // <- translate
     IDS_DONE                "DONE"                                                         // <- translate
-    IDS_LANGUAGE_NAME       "ALL CAPS"                                                     // <- translate
+    IDS_LANGUAGE_NAME       "ENGLISH"                                                     // <- translate
     IDS_ABOUT       "CROSSWORDS 4.4A1 (REV " SVN_REV ") "\
                     "FOR WINDOWS MOBILE. COPYRIGHT 1998-2009 BY "\
                     "ERIC HOUSE.  THIS SOFTWARE IS RELEASED UNDER THE GNU "\

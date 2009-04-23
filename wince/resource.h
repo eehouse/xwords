@@ -164,14 +164,17 @@
 #endif
 
 /* Dll/language picker */
-#define DLLS_COMBO                      1131
-#define IDC_DLLSUPDOWN                  1132
-#define DLLS_COMBO_PPC                  1133
+#define LOCALES_COMBO                   1131
+#define IDC_LOCALESUPDOWN               1132
+#define LOCALES_COMBO_PPC               1133
 
 #define IDC_ROLELABEL                   1134
 #define IDC_NAMELABEL                   1135
 #define IDC_ROBOTLABEL                  1136
 #define IDC_PASSWDLABEL                 1137
+#define HC_MIN_LABEL                    1138
+#define HC_MAX_LABEL                    1139
+#define LOCALES_LABEL                   1140
 
 
 #define IDC_CCONVIA_LAB                 1106
