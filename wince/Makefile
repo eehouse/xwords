@@ -141,7 +141,10 @@ endif
 
 TARGET = $(OBJDIR)/xwords4_$(SVNREV).exe
 DLL_SRCS = $(shell ls ./l10n/*.rc)
-DLLS = $(patsubst %.rc,%.dll,$(addprefix $(OBJDIR)/l10n/,$(notdir $(DLL_SRCS))))
+#DLLS = $(patsubst %.rc,%.dll,$(addprefix $(OBJDIR)/l10n/,$(notdir $(DLL_SRCS))))
+DLLS = \
+	$(OBJDIR)/l10n/xwords4_french.dll \
+	$(OBJDIR)/l10n/xwords4_caps.dll \
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \
