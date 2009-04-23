@@ -26,6 +26,7 @@
 #include "debhacks.h"
 #include "cedebug.h"
 #include "cefonts.h"
+#include "ceresstr.h"
 
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
  */
