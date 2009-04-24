@@ -115,12 +115,12 @@ main( int argc, char** argv )
     printf( "\n" );
 
     for ( ii = 0; ii < sizeof(ids)/sizeof(ids[0]); ++ii ) {
-        printf( "#define %s %d\n", ids[ii], firstID++ );
+        printf( "#define %-60s %d\n", ids[ii], firstID++ );
     }
 
     printf( "\n" );
-    printf( "#define %s %d\n", "CE_FIRST_RES_ID", FIRST_ID );
-    printf( "#define %s %d\n", "CE_LAST_RES_ID", FIRST_ID + ii - 1 );
+    printf( "#define %-60s %d\n", "CE_FIRST_RES_ID", FIRST_ID );
+    printf( "#define %-60s %d\n", "CE_LAST_RES_ID", FIRST_ID + ii - 1 );
 
     return 0;
 
