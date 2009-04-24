@@ -261,7 +261,7 @@
 #define IDM_MAIN_COMMAND1				40001
 #define IDS_DUMMY                       40002
 
-#include "genstrids_dot_h"
+#include "strids.h"
 
 // These are in sets of three, and must be consecutive and in the right order within each set
 #define PHONIES_COMBO                   1200

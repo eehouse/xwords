@@ -1,4 +1,4 @@
-// -*- mode: c; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*-
+// -*- mode: c; compile-command: "cd ../ && make TARGET_OS=wince DEBUG=TRUE obj_wince_dbg/l10n/xwords4_french.dll"; -*-
 // 
 // Microsoft Developer Studio generated resource script.  But now I'm
 // editing it. :-)
@@ -21,7 +21,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
 #include "winnt.h"
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 #pragma code_page(1252)
 #endif //_WIN32
 
@@ -170,15 +170,7 @@ BEGIN
 END
 #endif
 
-#ifdef _WIN32_WCE
-# define UDS_EXPANDABLE 0x0200
-# define UDS_NOSCROLL 0x0400
-# define LISTBOX_CONTROL_FLAGS \
-         NOT LBS_NOTIFY | LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_TABSTOP
-# define SPINNER_CONTROL_FLAGS \
-    UDS_AUTOBUDDY | UDS_HORZ | UDS_ALIGNRIGHT | UDS_ARROWKEYS |\
-        UDS_SETBUDDYINT | UDS_EXPANDABLE
-#endif
+#include "../rc_incs.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -265,25 +257,13 @@ FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
     LTEXT           "Mode:",IDC_ROLELABEL,LEFT_COL,SERVERROLE_ROW,20,8
-#ifdef _WIN32_WCE
-    LISTBOX         IDC_ROLECOMBO,23,SERVERROLE_ROW,50,ROW_HEIGHT,LISTBOX_CONTROL_FLAGS
-    CONTROL "",     IDC_ROLEUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        IDC_ROLECOMBO_PPC,23,SERVERROLE_ROW,50,58,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(IDC_ROLECOMBO,23,SERVERROLE_ROW,50,ROW_HEIGHT,0,58,0)
     PUSHBUTTON      "Conf.",GIROLECONF_BUTTON,75,SERVERROLE_ROW,20,ROW_HEIGHT
     
 #endif
 
     LTEXT           "",IDC_TOTAL_LABEL,LEFT_COL,NPLAYERS_ROW,43,8
-#ifdef _WIN32_WCE
-    LISTBOX         IDC_NPLAYERSCOMBO, 46, NPLAYERS_ROW, 24, ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
-    CONTROL "",     IDC_NPLAYERSUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        IDC_NPLAYERSCOMBO_PPC,46,NPLAYERS_ROW,24,58,CBS_DROPDOWNLIST |
-                    WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(IDC_NPLAYERSCOMBO,46,NPLAYERS_ROW,24,ROW_HEIGHT,0,58,0)
 
     PUSHBUTTON      "Mél.",GIJUGGLE_BUTTON,75,NPLAYERS_ROW,20,ROW_HEIGHT
 
@@ -310,13 +290,7 @@ BEGIN
 
     LTEXT           "Dictionnaire:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,50,8,
                     SS_NOPREFIX
-#ifdef _WIN32_WCE
-    LISTBOX         IDC_DICTLIST, LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LISTBOX_CONTROL_FLAGS|LBS_SORT
-    CONTROL "",     IDC_DICTUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        IDC_DICTLIST_PPC,LEFT_COL+10,DICTPICK_ROW,80,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(IDC_DICTLIST,LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
 
     PUSHBUTTON      "Préférences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12
 
@@ -384,14 +358,7 @@ BEGIN
     PUSHBUTTON      "Remettre",IDC_BACKUP,ASKB_COLLEFT,ASKB_PUTTOP,35,14
 #endif
 
-#ifdef _WIN32_WCE
-    LISTBOX         BLANKFACE_LIST,ASKB_COMBOLEFT,ASKB_COLLEFT,27,12,
-                    LISTBOX_CONTROL_FLAGS | LBS_SORT
-    CONTROL "",     IDC_ASKBLANK_UPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        BLANKFACE_LIST_PPC,ASKB_COMBOLEFT,ASKB_COLLEFT,27,70,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(BLANKFACE_LIST,ASKB_COMBOLEFT,ASKB_COLLEFT,27,12,LBS_SORT,70,CBS_SORT)
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,80,WCE_BOTTOM,REPOS_BUTTON_WIDTH,BUTTON_HT
     PUSHBUTTON      "Annuler",IDCANCEL,20,WCE_BOTTOM,REPOS_BUTTON_WIDTH,BUTTON_HT
@@ -449,14 +416,7 @@ BEGIN
   LTEXT           /* wince windres can't handle split lines....*/
                     "Sélectionnez une partie enregistrée.  (Certains boutons seront désactivés si la partie en cours est sélectionnée.)",                              
                     IDC_SVGM_SELLAB,SVGM_LEFT_COL,SVGM_ROW_1,90,45
-#ifdef _WIN32_WCE
-    LISTBOX         IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,ROW_HEIGHT,
-                    LISTBOX_CONTROL_FLAGS | LBS_SORT
-    CONTROL "",     IDC_SVGM_UPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        IDC_SVGM_GAMELIST_PPC,SVGM_LEFT_COL,SVGM_ROW_2,70,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP | CBS_SORT
+    XWCOMBO(IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
 
     PUSHBUTTON      "Ouvrir",IDC_SVGM_OPEN,
                     SVGM_LEFT_COL,SVGM_ROW_3,40,14,WS_DISABLED
@@ -520,25 +480,12 @@ FONT 8, "System"
 BEGIN
     LTEXT           "Utiliser au moins:",HC_MIN_LABEL,
                     HC_LABELS_COL,HC_MINROW,60,ROW_HEIGHT
-#ifdef _WIN32_WCE
-    LISTBOX         HC_MIN_COMBO, HC_DROPDOWNS_COL,HC_MINROW, 24, ROW_HEIGHT,
-                    LISTBOX_CONTROL_FLAGS
-    CONTROL "",     HC_MIN_UPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS, 
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        HC_MIN_COMBO_PPC,HC_DROPDOWNS_COL,HC_MINROW,17,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(HC_MIN_COMBO,HC_DROPDOWNS_COL,HC_MINROW,24,ROW_HEIGHT,0,58,0)
 
     LTEXT           "Mais pas plus de:",HC_MAX_LABEL,
                     HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT
-#ifdef _WIN32_WCE
-    LISTBOX         HC_MAX_COMBO, HC_DROPDOWNS_COL,HC_MAXROW, 24, ROW_HEIGHT, 
-                    LISTBOX_CONTROL_FLAGS
-    CONTROL "",     HC_MAX_UPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        HC_MAX_COMBO_PPC,HC_DROPDOWNS_COL,HC_MAXROW,17,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(HC_MAX_COMBO,HC_DROPDOWNS_COL,HC_MAXROW,24,ROW_HEIGHT,0,58,0)
+
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,HC_OK_LEFT,31,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
     PUSHBUTTON      "Annuler",IDCANCEL,HC_CANCEL_LEFT,31,REPOS_BUTTON_WIDTH,
@@ -608,13 +555,7 @@ BEGIN
                         BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,65,PREFS_ROW_HT
     EDITTEXT        TIMER_EDIT,65,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Erreurs:",PHONIES_LABEL,PR_LEFT,PR_ROW6,28,PREFS_ROW_HT
-#ifdef _WIN32_WCE
-    LISTBOX         PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, LISTBOX_CONTROL_FLAGS
-    CONTROL "",     IDC_PHONIESUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        PHONIES_COMBO_PPC,38,PR_ROW6,40,58,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    XWCOMBO(PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT,0,58,0)
 
 #ifdef FEATURE_TRAY_EDIT
     CONTROL         "Tirage manuel", IDC_PICKTILES, "Button",
@@ -657,12 +598,7 @@ FONT 8, "System"
 BEGIN
      
     LTEXT           "Connecter via:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT
-#ifdef _WIN32_WCE
-    LISTBOX         IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT, LISTBOX_CONTROL_FLAGS
-    CONTROL "",     IDC_CONNECTUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS, 0, 0, 0, 0
-#endif
-    COMBOBOX        IDC_CONNECT_COMBO_PPC,CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
 
 #ifdef XWFEATURE_RELAY
     LTEXT           "Cookie:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
@@ -865,13 +801,8 @@ FONT 8, "System"
 BEGIN
     LTEXT           "CHOOSE the LANGUAGE for MENUS and DIALOG TEXT.",
                     LOCALES_LABEL,LEFT_COL,2,100,36
-#ifdef _WIN32_WCE
-    LISTBOX         LOCALES_COMBO, LEFT_COL,40,70,12, LISTBOX_CONTROL_FLAGS
-    CONTROL "",     IDC_LOCALESUPDOWN, UPDOWN_CLASS, SPINNER_CONTROL_FLAGS,
-                    0, 0, 0, 0 
-#endif
-    COMBOBOX        LOCALES_COMBO_PPC,LEFT_COL,40,70,58,
-                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    XWCOMBO(LOCALES_COMBO,LEFT_COL,40,70,12,0,58,0)
+
 # ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,55,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
@@ -903,7 +834,8 @@ BEGIN
                     "pour Windows Mobile. Copyright 1998-2009 "\
                     "Eric House.  Ce logiciel est produit sous licence "\
                     "publique GNU.\r\r"\
-                    "Pour obtenir des dictionnaires, le manuel ou le code source allez sur "\
+                    "Pour obtenir des dictionnaires, le manuel ou le "\
+                    "code source allez sur "\
                     "http://xwords.sf.net ou http://eehouse.org/xwords/.\r\r"\
 					"Traduction française par Jean-Marc Charette."
     IDS_DICTLOC     "Veuillez installer un dictionnaire (Fichier .xwd) "\

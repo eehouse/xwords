@@ -139,12 +139,14 @@ CFLAGS += -Os
 OBJDIR = obj_$(TARGET_OS)_rel
 endif
 
-TARGET = $(OBJDIR)/xwords4_$(SVNREV).exe
+BUILTDIR=$(OBJDIR)/built
+TARGET = $(BUILTDIR)/xwords4_$(SVNREV).exe
 DLL_SRCS = $(shell ls ./l10n/*.rc)
 #DLLS = $(patsubst %.rc,%.dll,$(addprefix $(OBJDIR)/l10n/,$(notdir $(DLL_SRCS))))
 DLLS = \
-	$(OBJDIR)/l10n/xwords4_french.dll \
-	$(OBJDIR)/l10n/xwords4_caps.dll \
+	$(BUILTDIR)/xwords4_french.dll \
+	$(BUILTDIR)/xwords4_caps.dll \
+	$(BUILTDIR)/xwords4_polish_ISO.dll \
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \
@@ -182,7 +184,7 @@ COMMONOBJ = $(addprefix $(OBJDIR)/,$(patsubst %.c,%.o,$(notdir $(COMMONSRC))))
 
 OBJS = $(WINCEOBJS) $(COMMONOBJ)
 
-WINCE_INCLUDES = $(shell ls *.h) genstrids_dot_h
+WINCE_INCLUDES = $(shell ls *.h)
 COMMON_INCLUDES = $(shell ls ../common/*.h)
 
 INCLUDES = $(WINCE_INCLUDES) $(COMMON_INCLUDES)
@@ -211,6 +213,7 @@ memdebug:
 	$(MAKE) DEBUG=TRUE all
 
 $(TARGET) : $(OBJS) $(RESOBJS)
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LFLAGS) -mwindows $^ $(CELIBS) -o $@
 	$(STRIP) $@
 
@@ -225,20 +228,16 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
 	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
 
-$(OBJDIR)/l10n/%.rc.o : l10n/%.rc
+$(OBJDIR)/l10n/%.rc.o : l10n/%.rc $(WINCE_INCLUDES)
 	mkdir -p $(dir $@)
-	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) $< -o $@
+	UTF8=x$(shell file -b -n -i $< | grep 'utf-8'); \
+		if [ x != $$UTF8 ]; then ENC="-c 65001"; fi; \
+		$(WINDRES) $$ENC -v $(MINGW_INC_PATH) $(RESFLAGS) $< -o $@
 
-$(OBJDIR)/l10n/%.dll: $(OBJDIR)/l10n/%.rc.o
+$(BUILTDIR)/%.dll: $(OBJDIR)/l10n/%.rc.o
+	mkdir -p $(dir $@)
 	$(CC) -shared -o $@ $<
 	$(STRIP) $@
-
-$(STRIDS): scripts/strids.c
-	$(NATIVE_CC) $(CFLAGS) -o $@ $<
-
-genstrids_dot_h: $(STRIDS)
-	./$< > $@
-	rm -f $(STRIDS)
 
 # Checking in xwords4.ico for now.  Hand-built using GIMP and layers
 # it's 1/4 the size (because it has only two colors).  Should figure
@@ -262,7 +261,7 @@ test:
 	echo $(COMMONOBJ)
 
 clean :
-	rm -rf $(OBJDIR) $(TARGET) $(STRIDS) genstrids_dot_h
+	rm -rf $(OBJDIR) $(TARGET)
 
 help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
