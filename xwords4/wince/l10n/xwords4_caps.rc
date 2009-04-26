@@ -929,6 +929,7 @@ BEGIN
     IDS_CONN_RELAY          "RELAY"                                                        // <- translate
     IDS_CONN_DIRECT         "DIRECT CONNECTION"                                            // <- translate
     IDS_CONN_SMS            "TEXTING"                                                      // <- translate
+    IDS_PASSWDFMT_L         "ENTER PASSWORD FOR %ls:"                                      // <- translate
 
 
 #ifndef XWFEATURE_STANDALONE_ONLY

@@ -8,7 +8,9 @@
 #ifndef _STRIDS_H_
 #define _STRIDS_H_
 
-#define IDS_MENU                                                     40002
+#define CE_FIRST_RES_ID                                              40002
+
+#define IDS_MENU                                           CE_FIRST_RES_ID
 #define IDS_CANCEL                                                   40003
 #define IDS_OK                                                       40004
 #define IDS_ABOUT                                                    40005
@@ -88,21 +90,28 @@
 #define IDS_CONN_RELAY                                               40079
 #define IDS_CONN_DIRECT                                              40080
 #define IDS_CONN_SMS                                                 40081
+#define IDS_PASSWDFMT_L                                              40082
 #ifndef XWFEATURE_STANDALONE_ONLY
-# define IDS_LOCALPLAYERS                                            40082
-# define IDS_NO_PEEK_REMOTE_TILES                                    40083
-# define IDS_REG_UNEXPECTED_USER                                     40084
-# define IDS_SERVER_DICT_WINS                                        40085
-# define IDS_REG_SERVER_SANS_REMOTE                                  40086
+# define IDS_LOCALPLAYERS                                            40083
+# define IDS_NO_PEEK_REMOTE_TILES                                    40084
+# define IDS_REG_UNEXPECTED_USER                                     40085
+# define IDS_SERVER_DICT_WINS                                        40086
+# define IDS_REG_SERVER_SANS_REMOTE                                  40087
 # ifdef XWFEATURE_RELAY
-#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40087
-#  define IDS_ERROR_HEART_YOU                                        40088
-#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40089
-#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40090
+#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40088
+#  define IDS_ERROR_HEART_YOU                                        40089
+#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40090
+#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40091
 # endif
 #endif
 
-#define CE_FIRST_RES_ID                                              40002
-#define CE_LAST_RES_ID                                               40090
+
+#if defined XWFEATURE_RELAY
+# define CE_LAST_RES_ID                                              40091
+#elif ! defined XWFEATURE_STANDALONE_ONLY
+# define CE_LAST_RES_ID                                              40087
+#else
+# define CE_LAST_RES_ID                                              40082
+#endif
 
 #endif

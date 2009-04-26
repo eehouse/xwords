@@ -1,4 +1,4 @@
-// -*- mode: c; compile-command: "cd ../ && make TARGET_OS=wince DEBUG=TRUE obj_wince_dbg/l10n/xwords4_french.dll"; -*-
+// -*- mode: c; compile-command: "cd ../ && make TARGET_OS=wince DEBUG=TRUE obj_wince_dbg/built/xwords4_french.dll"; -*-
 // 
 // Microsoft Developer Studio generated resource script.  But now I'm
 // editing it. :-)
@@ -929,7 +929,7 @@ BEGIN
     IDS_CONN_RELAY          "Transmission"
     IDS_CONN_DIRECT         "Connexion directe"
     IDS_CONN_SMS            "SMS"
-
+    IDS_PASSWDFMT_L         "ENTER PASSWORD FOR %ls:"                                      // <- translate
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_NO_PEEK_REMOTE_TILES "Pas de coup d'oeil sur le jeu des joueurs distants!"
