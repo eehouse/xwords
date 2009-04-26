@@ -33,22 +33,23 @@
 
 static XP_Bool ceDoDlgScroll( CeDlgHdr* dlgHdr, WPARAM wParam );
 static void ceDoDlgFocusScroll( CeDlgHdr* dlgHdr, HWND nextCtrl );
+static void adjustScrollPos( HWND hDlg, XP_S16 vertChange );
 
 void
-ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* buf )
+ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* str )
 {
     wchar_t widebuf[BUF_SIZE];
     XP_U16 len;
 
-    XP_ASSERT( buf != NULL );
+    XP_ASSERT( str != NULL );
 
-    len = (XP_U16)XP_STRLEN( buf );
+    len = (XP_U16)XP_STRLEN( str );
 
-    if ( len >= BUF_SIZE ) {
-        len = BUF_SIZE - 1;
+    if ( len >= VSIZE(widebuf) ) {
+        len = VSIZE(widebuf) - 1;
     }
 
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, buf, len, widebuf, len );
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len, widebuf, len );
     widebuf[len] = 0;
     SendDlgItemMessage( hDlg, id, WM_SETTEXT, 0, (long)widebuf );
 } /* ceSetDlgItemText */
@@ -448,6 +449,18 @@ editHasFocus( void )
 } /* editHasFocus */
 #endif
 
+
+static void
+scrollForMove( CeDlgHdr* dlgHdr, XP_U16 newY ) 
+{
+    if ( dlgHdr->penDown ) {
+        XP_LOGF( "%s(%d)", __func__, newY );
+        XP_S16 vertChange = dlgHdr->prevY - newY;
+        dlgHdr->prevY = newY;
+        adjustScrollPos( dlgHdr->hDlg, vertChange );
+    }
+}
+
 XP_Bool
 ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
 {
@@ -473,6 +486,20 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
         handled = ceDoDlgScroll( dlgHdr, wParam );
         break;
 
+    case WM_LBUTTONDOWN:
+        dlgHdr->penDown = XP_TRUE;
+        dlgHdr->prevY = HIWORD(lParam);
+        handled = XP_TRUE;
+        break;
+    case WM_MOUSEMOVE:
+        scrollForMove( dlgHdr, HIWORD(lParam) );
+        handled = XP_TRUE;
+        break;
+    case WM_LBUTTONUP:
+        dlgHdr->penDown = XP_FALSE;
+        handled = XP_TRUE;
+        break;
+
     case WM_COMMAND:
         if ( BN_SETFOCUS == HIWORD(wParam) ) {
             ceDoDlgFocusScroll( dlgHdr, (HWND)lParam );
@@ -483,7 +510,7 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
         break;
     }
     return handled;
-}
+} /* ceDoDlgHandle */
 
 static void
 setScrollPos( HWND hDlg, XP_S16 newPos )
