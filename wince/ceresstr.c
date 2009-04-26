@@ -90,8 +90,6 @@ getEntry( CEAppGlobals* globals, XP_U16 resID, XP_Bool isWide )
         }
 
         storage->entries[index] = entry;
-
-        XP_LOGF( "%s: created entry for %d", __func__, resID );
     }
 
     return entry;
