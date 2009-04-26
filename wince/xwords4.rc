@@ -207,7 +207,8 @@ END
 #else
 # define SERVERROLE_ROW 3
 # define GAME_NAME_WIDTH 56
-# define NPLAYERS_ROW (SERVERROLE_ROW+ROW_SPACE+3)
+# define SERVERCONF_ROW (SERVERROLE_ROW+ROW_SPACE+3)
+# define NPLAYERS_ROW (SERVERCONF_ROW+ROW_SPACE+3)
 # define GAME_REMOTE_LEFT 1
 # define GAME_NAME_LEFT 11
 # define GAME_ROBOT_LEFT (GAME_NAME_LEFT+GAME_NAME_WIDTH+2)
@@ -224,7 +225,8 @@ END
 #define PLAYER_ROW_2 (PLAYER_ROW_1+ROW_SPACE_PL)
 #define PLAYER_ROW_3 (PLAYER_ROW_2+ROW_SPACE_PL)
 #define PLAYER_ROW_4 (PLAYER_ROW_3+ROW_SPACE_PL)
-#define DICTPICK_LAB_ROW (PLAYER_ROW_4+ROW_SPACE+2)
+#define JUGGLE_ROW (PLAYER_ROW_4+ROW_SPACE)
+#define DICTPICK_LAB_ROW (JUGGLE_ROW+ROW_SPACE+2)
 #define DICTPICK_ROW (DICTPICK_LAB_ROW+ROW_SPACE-2)
 #define PREFS_ROW (DICTPICK_ROW+ROW_SPACE+3)
 #ifndef _WIN32_WCE
@@ -258,14 +260,13 @@ BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
     LTEXT           "Role:",IDC_ROLELABEL,5,SERVERROLE_ROW,20,8
     XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
-    PUSHBUTTON      "Conf.",GIROLECONF_BUTTON,75,SERVERROLE_ROW,20,ROW_HEIGHT
-    
+
+    PUSHBUTTON      "Configure role",GIROLECONF_BUTTON,LEFT_COL+10,
+                    SERVERCONF_ROW,60,ROW_HEIGHT
 #endif
 
-    LTEXT           "",IDC_TOTAL_LABEL,LEFT_COL,NPLAYERS_ROW,43,8
-    XWCOMBO(IDC_NPLAYERSCOMBO,46,NPLAYERS_ROW,24,ROW_HEIGHT,0,58,0)
-
-    PUSHBUTTON      "Jugl.",GIJUGGLE_BUTTON,75,NPLAYERS_ROW,20,ROW_HEIGHT
+    LTEXT           "",IDC_TOTAL_LABEL,LEFT_COL,NPLAYERS_ROW,63,8
+    XWCOMBO(IDC_NPLAYERSCOMBO,66,NPLAYERS_ROW,24,ROW_HEIGHT,0,58,0)
 
     LTEXT           "Name",IDC_NAMELABEL,GAME_NAMELABEL_LEFT,
                     LABELS_ROW,GAME_NAMELABEL_WIDTH,8,SS_NOPREFIX
@@ -288,15 +289,19 @@ BEGIN
     CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
     CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
 
+    PUSHBUTTON      "Juggle players",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
+                    60,BUTTON_HT
+
     LTEXT           "Dictionary:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,36,8,
                     SS_NOPREFIX
     XWCOMBO(IDC_DICTLIST, LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
 
-    PUSHBUTTON      "Preferences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12
+    PUSHBUTTON      "Preferences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,
+                    55,BUTTON_HT
 
 #ifndef _WIN32_WCE
-    PUSHBUTTON      "OK",IDOK,29,BUTTONS_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
-    DEFPUSHBUTTON   "Cancel",IDCANCEL,70,BUTTONS_ROW,
+    PUSHBUTTON      "OK",IDOK,20,BUTTONS_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,50,BUTTONS_ROW,
                      REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -987,22 +992,23 @@ BEGIN
     IDS_CONN_RELAY          "Relay"
     IDS_CONN_DIRECT         "Direct connection"
     IDS_CONN_SMS            "Texting"
-
+    IDS_PASSWDFMT_L         "Enter password for %ls:"
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_LOCALPLAYERS       "Locl playrs:"
-    IDS_NO_PEEK_REMOTE_TILES "No peeking at remote players' tiles!"
-    IDS_REG_UNEXPECTED_USER "Refused attempt to register unexpected user[s]."
-    IDS_SERVER_DICT_WINS "Conflict between Host and Guest dictionaries; Host wins."
-    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked remote for a game "\
-                               "started as Host."
+    IDS_LOCALPLAYERS           "Locl playrs:"
+    IDS_NO_PEEK_REMOTE_TILES   "No peeking at remote players' tiles!"
+    IDS_REG_UNEXPECTED_USER    "Refused attempt to register unexpected user[s]."
+    IDS_SERVER_DICT_WINS       "Conflict between Host and Guest dictionaries; "
+                               "Host wins."
+    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked remote for "\
+                               "a game started as Host."
 #endif
 
 #ifdef XWFEATURE_RELAY
-    IDS_XWRELAY_ERROR_TIMEOUT      "The relay timed you out; usually that means "\
-                                   "the other players didn't show."
-    IDS_ERROR_HEART_YOU            "You were disconnected from relay because it didn't "\
-                                   "hear from you in too long."
+    IDS_XWRELAY_ERROR_TIMEOUT  "The relay timed you out; usually that means "\
+                               "the other players didn't show."
+    IDS_ERROR_HEART_YOU        "You were disconnected from relay because it "\
+                               "didn't hear from you in too long."
     IDS_XWRELAY_ERROR_HEART_OTHER  "The relay has lost contact with a device in this game."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
 #endif

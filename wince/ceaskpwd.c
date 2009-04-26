@@ -21,23 +21,24 @@
 #include "cemain.h"
 #include "ceutil.h"
 #include "debhacks.h"
-//##include <stdio.h>              /* swprintf */
+#include "ceresstr.h"
 #include <wchar.h>
 
 static void
-nameToLabel( HWND hDlg, const XP_UCHAR* name, XP_U16 labelID )
+nameToLabel( PasswdDialogState* pState, const XP_UCHAR* name, XP_U16 labelID )
 {
-    wchar_t wideName[128];
+    wchar_t wideName[64];
     wchar_t wBuf[128];
-    XP_U16 len;
+    const wchar_t* fmt;
 
-    len = (XP_U16)XP_STRLEN( name );
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, name, len + 1,
-                         wideName, len + 1 );
+    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, name, -1, wideName,
+                         VSIZE(wideName) );
 
-    swprintf( wBuf, L"Enter password for %s:", wideName );
+    fmt = ceGetResStringL( pState->dlgHdr.globals, IDS_PASSWDFMT_L );
+    swprintf( wBuf, fmt, wideName );
 
-    SendDlgItemMessage( hDlg, labelID, WM_SETTEXT, 0, (long)wBuf );
+    SendDlgItemMessage( pState->dlgHdr.hDlg, labelID, WM_SETTEXT, 
+                        0, (long)wBuf );
 } /* nameToLabel */
 
 LRESULT CALLBACK
@@ -52,7 +53,7 @@ PasswdDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         ceDlgSetup( &pState->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
 
-        nameToLabel( hDlg, pState->name, IDC_PWDLABEL );
+        nameToLabel( pState, pState->name, IDC_PWDLABEL );
 
         return TRUE;
     } else {
