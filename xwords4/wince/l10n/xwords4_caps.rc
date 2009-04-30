@@ -831,6 +831,7 @@ BEGIN
     IDS_OK                  "OK"                                                           // <- translate
     IDS_DONE                "DONE"                                                         // <- translate
     IDS_LANGUAGE_NAME       "ENGLISH"                                                     // <- translate
+    IDS_NEW_GAME            "NEW GAME"                          // <- translate
     IDS_ABOUT       "CROSSWORDS 4.4A1 (REV " SVN_REV ") "\
                     "FOR WINDOWS MOBILE. COPYRIGHT 1998-2009 BY "\
                     "ERIC HOUSE.  THIS SOFTWARE IS RELEASED UNDER THE GNU "\
@@ -926,26 +927,39 @@ BEGIN
     IDS_ROLE_GUEST          "GUEST"                                                        // <- translate
     IDS_PLAYER_FORMAT       "PLAYER %d"                                                    // <- translate
     IDS_UNTITLED_FORMAT     "UNTITLED %d"                                                  // <- translate
-    IDS_CONN_RELAY          "RELAY"                                                        // <- translate
+    IDS_CONN_RELAY_L        "RELAY"                                                        // <- translate
     IDS_CONN_DIRECT         "DIRECT CONNECTION"                                            // <- translate
-    IDS_CONN_SMS            "TEXTING"                                                      // <- translate
     IDS_PASSWDFMT_L         "ENTER PASSWORD FOR %ls:"                                      // <- translate
-
+    IDS_FILEEXISTSFMT_L     "FILE \"%s\" ALREADY EXISTS."       // <- translate
+    IDS_NEED_TOUCH          "THIS FEATURE REQUIRES A TOUCH SCREEN."
+    IDS_EDITCOLOR_FORMAT    "EDIT COLOR FOR %s"
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_NO_PEEK_REMOTE_TILES "NO PEEKING AT REMOTE PLAYERS' TILES!"                        // <- translate
-    IDS_REG_UNEXPECTED_USER "REFUSED ATTEMPT TO REGISTER UNEXPECTED USER[S]."              // <- translate
-    IDS_SERVER_DICT_WINS "CONFLICT BETWEEN HOST AND GUEST DICTIONARIES; HOST WINS."        // <- translate
-    IDS_REG_SERVER_SANS_REMOTE "AT LEAST ONE PLAYER MUST BE MARKED REMOTE FOR A GAME "\
-                               "STARTED AS HOST."                                          // <- translate
-#endif
+# ifdef XWFEATURE_SMS
+    IDS_SMS_CONN_L            "TEXTING"                                                    // <- translate
 
-#ifdef XWFEATURE_RELAY
-    IDS_XWRELAY_ERROR_TIMEOUT      "THE RELAY TIMED YOU OUT; USUALLY THAT MEANS "\
-                                   "THE OTHER PLAYERS DIDN'T SHOW."                        // <- translate
-    IDS_ERROR_HEART_YOU            "YOU WERE DISCONNECTED FROM RELAY BECAUSE IT DIDN'T "\
-                                   "HEAR FROM YOU IN TOO LONG."                            // <- translate
-    IDS_XWRELAY_ERROR_HEART_OTHER  "THE RELAY HAS LOST CONTACT WITH A DEVICE IN THIS GAME."// <- translate
+# endif
+# ifdef XWFEATURE_IP_DIRECT
+    IDS_DIRECT_CONN_L       "DIRECT CONNECTION"                // <- translate
+# endif
+
+    IDS_NO_PEEK_REMOTE_TILES "NO PEEKING AT REMOTE PLAYERS' TILES!"                        // <- translate
+    IDS_REG_UNEXPECTED_USER  "REFUSED ATTEMPT TO REGISTER UNEXPECTED USER[S]."              // <- translate
+    IDS_SERVER_DICT_WINS     "CONFLICT BETWEEN HOST AND GUEST DICTIONARIES; "\
+                             "HOST WINS."        // <- translate
+    IDS_REG_SERVER_SANS_REMOTE "AT LEAST ONE PLAYER MUST BE MARKED REMOTE FOR "\
+                               "A GAME STARTED AS HOST."                                          // <- translate
+
+# ifdef XWFEATURE_RELAY
+    IDS_RELAY_CONN_L               "RELAY"
+    IDS_XWRELAY_ERROR_TIMEOUT      "THE RELAY TIMED YOU OUT; USUALLY THAT "\
+                                   "MEANS THE OTHER PLAYERS DIDN'T SHOW."                        // <- translate
+    IDS_ERROR_HEART_YOU            "YOU WERE DISCONNECTED FROM RELAY BECAUSE "\
+                                   "IT DIDN'T HEAR FROM YOU IN TOO LONG."                            // <- translate
+    IDS_XWRELAY_ERROR_HEART_OTHER  "THE RELAY HAS LOST CONTACT WITH A DEVICE "\
+                                   "IN THIS GAME."   // <- translate
+/*     IDS_XWRELAY_ERROR_LOST_OTHER   "THE RELAY HAS LOST CONTACT WITH A DEVICE IN THIS GAME." */
+# endif
 #endif
 
 
@@ -976,4 +990,3 @@ HI_RES_AWARE CEUX {1}
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

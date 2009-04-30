@@ -23,10 +23,11 @@
 #include "cecondlg.h"
 #include "ceutil.h"
 #include "debhacks.h"
+#include "ceresstr.h"
 
 typedef struct _ConnDlgPair {
     CommsConnType conType;
-    wchar_t* str;
+    XP_U16 resId;
 } ConnDlgPair;
 
 typedef struct _CeConnDlgState {
@@ -191,8 +192,9 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
         }
         /* make sure tables are in sync */
         XP_ASSERT( ii == conTypeToIndex( state, type->conType ) );
+        const wchar_t* str = ceGetResStringL( globals, type->resId );
         SendDlgItemMessage( hDlg, state->connComboId, ADDSTRING(globals), 
-                            0, (LPARAM)type->str );
+                            0, (LPARAM)str );
     }
 
     SendDlgItemMessage( hDlg, state->connComboId, SETCURSEL(globals), 
@@ -308,15 +310,15 @@ WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRecIn,
     CeConnDlgState state;
     ConnDlgPair types[] = {
 #ifdef XWFEATURE_RELAY
-        { COMMS_CONN_RELAY,     L"Relay" },
+        { COMMS_CONN_RELAY,     IDS_CONN_RELAY_L },
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-        { COMMS_CONN_IP_DIRECT, L"Direct connection" },
+        { COMMS_CONN_IP_DIRECT, IDS_CONN_DIRECT_L },
 #endif
 #ifdef XWFEATURE_SMS
-        { COMMS_CONN_SMS,       L"Texting" },
+        { COMMS_CONN_SMS,       IDS_CONN_SMS_L },
 #endif
-        { COMMS_CONN_NONE,      NULL }
+        { COMMS_CONN_NONE,      0 }
     };
 
     XP_MEMSET( &state, 0, sizeof( state ) );

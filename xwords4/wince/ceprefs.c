@@ -331,9 +331,12 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         break;
                     case IDC_CHECKHINTSLIMITS:
                         if ( IS_SMARTPHONE(globals) ) {
-                            ceMessageBoxChar( globals, "This feature "
-                                              "requires a touch screen.", 
-                                              XP_FALSE, L"Sorry", 
+                            ceMessageBoxChar( globals, 
+                                              ceGetResString( globals,
+                                                              IDS_NEED_TOUCH ),
+                                              XP_FALSE, 
+                                              ceGetResStringL( globals,
+                                                               IDS_FYI_L ),
                                               MB_OK | MB_ICONHAND );
                             ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS, XP_FALSE );
                         }

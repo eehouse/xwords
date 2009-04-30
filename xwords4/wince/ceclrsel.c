@@ -25,6 +25,7 @@
 #include "ceutil.h" 
 #include "cedebug.h"
 #include "debhacks.h"
+#include "ceresstr.h"
 
 static void colorButton( DRAWITEMSTRUCT* dis, HBRUSH brush );
 
@@ -154,7 +155,8 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             label[len-1] = 0;       /* hack: overwrite ':' */
         }
         wchar_t buf[64];
-        swprintf( buf, L"Edit color for %s", label );
+        swprintf( buf, ceGetResStringL(globals, IDS_EDITCOLOR_FORMAT), label );
+        
         SendMessage( hDlg, WM_SETTEXT, 0, (LPARAM)buf );
 
         eState->sampleButton = GetDlgItem( hDlg, CLSAMPLE_BUTTON_ID );
