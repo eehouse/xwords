@@ -87,31 +87,41 @@
 #define IDS_ROLE_GUEST                                               40076
 #define IDS_PLAYER_FORMAT                                            40077
 #define IDS_UNTITLED_FORMAT                                          40078
-#define IDS_CONN_RELAY                                               40079
+#define IDS_CONN_RELAY_L                                             40079
 #define IDS_CONN_DIRECT                                              40080
-#define IDS_CONN_SMS                                                 40081
-#define IDS_PASSWDFMT_L                                              40082
+#define IDS_PASSWDFMT_L                                              40081
+#define IDS_FILEEXISTSFMT_L                                          40082
+#define IDS_NEED_TOUCH                                               40083
+#define IDS_EDITCOLOR_FORMAT                                         40084
+
 #ifndef XWFEATURE_STANDALONE_ONLY
-# define IDS_LOCALPLAYERS                                            40083
-# define IDS_NO_PEEK_REMOTE_TILES                                    40084
-# define IDS_REG_UNEXPECTED_USER                                     40085
-# define IDS_SERVER_DICT_WINS                                        40086
-# define IDS_REG_SERVER_SANS_REMOTE                                  40087
+# define IDS_LOCALPLAYERS                                            40085
+# define IDS_NO_PEEK_REMOTE_TILES                                    40086
+# define IDS_REG_UNEXPECTED_USER                                     40087
+# define IDS_SERVER_DICT_WINS                                        40088
+# define IDS_REG_SERVER_SANS_REMOTE                                  40089
+
+# ifdef XWFEATURE_SMS
+#  define IDS_SMS_CONN_L                                             40090
+# endif
+
+# ifdef XWFEATURE_IP_DIRECT
+#  define IDS_DIRECT_CONN_L                                          40091
+# endif
+
 # ifdef XWFEATURE_RELAY
-#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40088
-#  define IDS_ERROR_HEART_YOU                                        40089
-#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40090
-#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40091
+#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40092
+#  define IDS_ERROR_HEART_YOU                                        40093
+#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40094
+#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40095
+#  define IDS_RELAY_CONN_L                                           40096
 # endif
 #endif
 
-
-#if defined XWFEATURE_RELAY
-# define CE_LAST_RES_ID                                              40091
-#elif ! defined XWFEATURE_STANDALONE_ONLY
-# define CE_LAST_RES_ID                                              40087
+#if ! defined XWFEATURE_STANDALONE_ONLY
+# define CE_LAST_RES_ID                                              40096
 #else
-# define CE_LAST_RES_ID                                              40082
+# define CE_LAST_RES_ID                                              40084
 #endif
 
 #endif

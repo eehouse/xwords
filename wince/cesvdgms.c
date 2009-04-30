@@ -122,8 +122,12 @@ SaveNameDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                         if ( ceFileExists( globals, buf ) ) {
                             wchar_t widebuf[128];
                             _snwprintf( widebuf, VSIZE(widebuf), 
-                                       L"File \"%s\" already exists.", buf );
-                            result = MessageBox( hDlg, widebuf, L"Oops!", 
+                                        ceGetResStringL( globals,
+                                                         IDS_FILEEXISTSFMT_L ),
+                                        buf );
+                            result = MessageBox( hDlg, widebuf,
+                                                 ceGetResStringL(globals,
+                                                                 IDS_FYI_L ),
                                                  MB_OK | MB_ICONHAND );
                             (void)SetDlgItemText( hDlg, IDC_SVGN_EDIT, 
                                                   state->buf );

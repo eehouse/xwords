@@ -829,7 +829,8 @@ BEGIN
     IDS_CANCEL              "Annuler"
     IDS_OK                  "OK"
     IDS_DONE                "Terminé"
-    IDS_LANGUAGE_NAME       "Français"    
+    IDS_LANGUAGE_NAME       "Français"
+    IDS_NEW_GAME            "NEW GAME"  // <- translate
     IDS_ABOUT       "Crosswords 4.4a1 (REV " SVN_REV ") "\
                     "pour Windows Mobile. Copyright 1998-2009 "\
                     "Eric House.  Ce logiciel est produit sous licence "\
@@ -886,6 +887,7 @@ BEGIN
     IDS_DOUBLE_WORD        "Mot compte double"
     IDS_TRIPLE_LETTER      "Lettre compte triple"
     IDS_TRIPLE_WORD        "Mot compte triple"
+
     IDS_INTRADE_MW         "Echange de lettres." XP_CR "Choisir 'Terminé' quand vous avez fini"
 
 
@@ -926,27 +928,37 @@ BEGIN
     IDS_ROLE_GUEST          "Invité"
     IDS_PLAYER_FORMAT       "Joueur %d"
     IDS_UNTITLED_FORMAT     "Sans titre %d"
-    IDS_CONN_RELAY          "Transmission"
+    IDS_CONN_RELAY_L        "Transmission"
     IDS_CONN_DIRECT         "Connexion directe"
-    IDS_CONN_SMS            "SMS"
-    IDS_PASSWDFMT_L         "ENTER PASSWORD FOR %ls:"                                      // <- translate
+    IDS_PASSWDFMT_L         "ENTER PASSWORD FOR %ls:"            // <- translate
+    IDS_FILEEXISTSFMT_L     "File %s already exists."        // <- translate
+    IDS_NEED_TOUCH          "This feature requires a touch screen." // <- translate
+    IDS_EDITCOLOR_FORMAT    "EDIT COLOR FOR %s" // <- translate
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+# ifdef XWFEATURE_SMS
+    IDS_SMS_CONN_L          "Texting"
+# endif
+# ifdef XWFEATURE_IP_DIRECT
+    IDS_DIRECT_CONN_L       "Direct connection"  // <- translate
+# endif
+
     IDS_NO_PEEK_REMOTE_TILES "Pas de coup d'oeil sur le jeu des joueurs distants!"
     IDS_REG_UNEXPECTED_USER "Refus de la tentative d'enregistrer un joueur non prévu."
     IDS_SERVER_DICT_WINS "Conflit de dictionnaire entre l'hôte et l'invité; l'hôte gagne."
     IDS_REG_SERVER_SANS_REMOTE "Au moins un joueur doit être distant dans une partie "\
                                "débutée en tant qu'hôte."
-#endif
 
-#ifdef XWFEATURE_RELAY
+# ifdef XWFEATURE_RELAY
+    IDS_RELAY_CONN_L               "Relay" // <- translate
     IDS_XWRELAY_ERROR_TIMEOUT      "La transmission a échoué dans les délais; cela signifie généralement "\
                                    "que les autres joueurs ne vous ont pas vu."
     IDS_ERROR_HEART_YOU            "Vous avez été déconnecté parce que vous n'avez rien émis "\
                                    "pendant trop longtemps."
     IDS_XWRELAY_ERROR_HEART_OTHER  "La transmission a perdu le contact avec un appareil durant cette partie."
+/*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
+# endif
 #endif
-
 
 END
 
@@ -975,4 +987,3 @@ HI_RES_AWARE CEUX {1}
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

@@ -25,6 +25,7 @@
 #include "cedefines.h"
 #include "cedebug.h"
 #include "debhacks.h"
+#include "ceresstr.h"
 
 #define BUF_SIZE 128
 #define VPADDING 4
@@ -945,7 +946,8 @@ int
 ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
 {
     XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
-    return ceMessageBoxChar( globals, str, isUTF8, L"Oops!", 
+    return ceMessageBoxChar( globals, str, isUTF8, 
+                             ceGetResStringL( globals, IDS_FYI_L ),
                              MB_OK | MB_ICONHAND );
 }
 

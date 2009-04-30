@@ -1,4 +1,4 @@
-# -*- compile-command: "make -j3 TARGET_OS=wince DEBUG=TRUE RELAY_NAME_DEFAULT=localhost"; -*-
+# -*- compile-command: "make -j3 TARGET_OS=wince DEBUG=TRUE"; -*-
 # Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
 # reserved.
 
@@ -146,7 +146,6 @@ DLL_SRCS = $(shell ls ./l10n/*.rc)
 DLLS = \
 	$(BUILTDIR)/xwords4_french.dll \
 	$(BUILTDIR)/xwords4_caps.dll \
-	$(BUILTDIR)/xwords4_polish_ISO.dll \
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \

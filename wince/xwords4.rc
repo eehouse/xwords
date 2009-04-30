@@ -952,6 +952,12 @@ BEGIN
     IDS_VALUES_HEADER      "%s counts/values:" XP_CR
     IDS_QUERY_TRADE        "Are you sure you want to trade the selected tiles?"
 
+    IDS_DOUBLE_LETTER      "Double Letter"
+    IDS_DOUBLE_WORD        "Double Word"
+    IDS_TRIPLE_LETTER      "Triple Letter"
+    IDS_TRIPLE_WORD        "Triple Word"
+    IDS_INTRADE_MW         "Trading tiles." XP_CR "Select 'turn done' when ready"
+
     IDS_TILES_NOT_IN_LINE  "All tiles played must be in a line."
     IDS_NO_EMPTIES_IN_TURN "Empty squares cannot separate tiles played."
     IDS_TWO_TILES_FIRST_MOVE "Must play two or more pieces on the first move."
@@ -970,10 +976,10 @@ BEGIN
     IDS_GAMEHIST_L          "Game history"
     IDS_FINALSCORE_L        "Final scores"
     IDS_QUESTION_L          "Question"
-    IDS_FYI_L                "FYI"
-    IDS_ILLEGALWRD_L         "Illegal word"
-    IDS_WRDNOTFOUND          "Word[s] %s not found in dictionary."
-    IDS_USEANYWAY            "Use it anyway?"
+    IDS_FYI_L               "FYI"
+    IDS_ILLEGALWRD_L        "Illegal word"
+    IDS_WRDNOTFOUND         "Word[s] %s not found in dictionary."
+    IDS_USEANYWAY           "Use it anyway?"
     IDS_FYI_L               "Oops!"
     IDS_CANNOTOPEN_GAME     "Saved game cannot be opened."
     IDS_NODICT_L            "Dictionary Not Found"
@@ -989,28 +995,40 @@ BEGIN
     IDS_ROLE_GUEST          "Guest"
     IDS_PLAYER_FORMAT       "Player %d"
     IDS_UNTITLED_FORMAT     "Untitled %d"
-    IDS_CONN_RELAY          "Relay"
+    IDS_CONN_RELAY_L        "Relay"
     IDS_CONN_DIRECT         "Direct connection"
-    IDS_CONN_SMS            "Texting"
     IDS_PASSWDFMT_L         "Enter password for %ls:"
 
+    IDS_FILEEXISTSFMT_L     "File %s already exists."
+    IDS_NEED_TOUCH          "This feature requires a touch screen."
+    IDS_EDITCOLOR_FORMAT    "Edit color for %s"
+
 #ifndef XWFEATURE_STANDALONE_ONLY
+
     IDS_LOCALPLAYERS           "Locl playrs:"
     IDS_NO_PEEK_REMOTE_TILES   "No peeking at remote players' tiles!"
-    IDS_REG_UNEXPECTED_USER    "Refused attempt to register unexpected user[s]."
+    IDS_REG_UNEXPECTED_USER    "Refused attempt to register unexpected "\
+                               "user[s]."
     IDS_SERVER_DICT_WINS       "Conflict between Host and Guest dictionaries; "
                                "Host wins."
-    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked remote for "\
-                               "a game started as Host."
-#endif
+    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked remote "\
+                               "for a game started as Host."
 
-#ifdef XWFEATURE_RELAY
+# ifdef XWFEATURE_SMS
+    IDS_SMS_CONN_L          "Texting"
+# endif
+# ifdef XWFEATURE_IP_DIRECT
+    IDS_DIRECT_CONN_L       "Direct connection"
+# endif
+# ifdef XWFEATURE_RELAY
+    IDS_RELAY_CONN_L           "Relay"
     IDS_XWRELAY_ERROR_TIMEOUT  "The relay timed you out; usually that means "\
                                "the other players didn't show."
     IDS_ERROR_HEART_YOU        "You were disconnected from relay because it "\
                                "didn't hear from you in too long."
     IDS_XWRELAY_ERROR_HEART_OTHER  "The relay has lost contact with a device in this game."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
+# endif
 #endif
 
 END
