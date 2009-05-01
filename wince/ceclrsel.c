@@ -155,7 +155,8 @@ EditColorsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             label[len-1] = 0;       /* hack: overwrite ':' */
         }
         wchar_t buf[64];
-        swprintf( buf, ceGetResStringL(globals, IDS_EDITCOLOR_FORMAT), label );
+        swprintf( buf, ceGetResStringL( eState->dlgHdr.globals, 
+                                        IDS_EDITCOLOR_FORMAT ), label );
         
         SendMessage( hDlg, WM_SETTEXT, 0, (LPARAM)buf );
 
