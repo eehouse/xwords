@@ -70,6 +70,12 @@ CRefMgr::~CRefMgr()
     pthread_mutex_destroy( &m_guard );
     pthread_rwlock_destroy( &m_cookieMapRWLock );
 
+    SocketMap::iterator iter;
+    for ( iter = m_SocketStuff.begin(); iter != m_SocketStuff.end(); ++iter ) {
+        SocketStuff* stuff = iter->second;
+        delete stuff;
+    }
+
     s_instance = NULL;
 }
 

@@ -107,7 +107,8 @@ logf( XW_LogLevel level, const char* format, ... )
         }
 
         gettimeofday( &tv, NULL );
-        timp = localtime( &tv.tv_sec );
+        struct tm result;
+        timp = localtime_r( &tv.tv_sec, &result );
 
         pthread_t me = pthread_self();
 
