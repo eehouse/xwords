@@ -1485,6 +1485,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             }
         }
     }
+
+    game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
+    gi_disposePlayerInfo( MEMPOOL &g_globals.cGlobals.params->gi );
     
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &g_globals.cGlobals );
