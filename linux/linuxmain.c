@@ -731,8 +731,6 @@ main( int argc, char** argv )
     useCurses = XP_TRUE;
 #endif
 
-
-
     do {
         short index;
         opt = getopt( argc, argv, "?"
@@ -1054,6 +1052,8 @@ main( int argc, char** argv )
     } else {
         usage( argv[0], "rtfm" );
     }
+
+    vtmgr_destroy( MPPARM(mainParams.util->mpool) mainParams.vtMgr );
 
     linux_util_vt_destroy( mainParams.util );
 
