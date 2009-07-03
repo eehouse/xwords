@@ -1,12 +1,45 @@
 #!/bin/sh
 
 COOKIE=$$
+GUEST_COUNT=1
 
-./obj_linux_memdbg/xwords -d dict.xwd -r Brynn -a localhost \
-    -p 10999 -C $COOKIE &
-./obj_linux_memdbg/xwords -d dict.xwd -r Ariela -a localhost \
-    -p 10999 -C $COOKIE &
-./obj_linux_memdbg/xwords -d dict.xwd -r Kati -a localhost \
-    -p 10999 -C $COOKIE &
-./obj_linux_memdbg/xwords -d dict.xwd -r Eric -s -N -N -N -a localhost \
-    -p 10999 -C $COOKIE &
+usage() {
+    echo "usage: $0: \\"
+    echo "           [-q]  # quit after done \\"
+    echo "           [-g <1..3>] # num guest devices; default: 1 \\"
+    exit 0
+}
+
+while [ -n "$1" ]; do
+    case $1 in
+        -q)
+            QUIT="-q 2"
+            ;;
+        -g)
+            GUEST_COUNT=$2
+            if [ $GUEST_COUNT -lt 1 -o $GUEST_COUNT -gt 3 ]; then
+                usage
+            fi
+            shift
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
+
+NUM=0                           # not strictly needed....
+for NAME in Kati Brynn Ariela; do
+    ./obj_linux_memdbg/xwords -d dict.xwd -r $NAME -a localhost -p 10999 -C $COOKIE $QUIT &
+
+    REMOTES="$REMOTES -N"
+    NUM=$((NUM+1))
+    [ $NUM -ge $GUEST_COUNT ] && break
+done
+
+echo "./obj_linux_memdbg/xwords -d dict.xwd -r Eric -s $REMOTES -a localhost -p 10999 -C $COOKIE $QUIT"
+./obj_linux_memdbg/xwords -d dict.xwd -r Eric -s $REMOTES -a localhost -p 10999 -C $COOKIE $QUIT &
+
+wait
+
