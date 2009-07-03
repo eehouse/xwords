@@ -25,6 +25,7 @@
 #include <assert.h>
 
 #include "configs.h"
+#include "mlock.h"
 
 #define MAX_LINE 128
 
@@ -46,6 +47,8 @@ RelayConfigs::InitConfigs( const char* cfile )
 
 RelayConfigs::RelayConfigs( const char* cfile )
 {
+    pthread_mutex_init( &m_values_mutex, NULL );
+    
     /* There's an order here.  Open multiple files, if present.  File in /etc
        is first, but overridden by local file which is in turn overridden by
        file passed in. */
@@ -57,10 +60,10 @@ RelayConfigs::RelayConfigs( const char* cfile )
 bool
 RelayConfigs::GetValueFor( const char* key, int* value )
 {
-    map<string,string>::const_iterator iter = m_values.find(key);
-    bool found = iter != m_values.end();
+    char buf[32];
+    bool found = GetValueFor( key, buf, sizeof(buf) );
     if ( found ) {
-        *value = atoi( iter->second.c_str() );
+        *value = atoi( buf );
     }
     return found;
 }
@@ -79,6 +82,7 @@ RelayConfigs::GetValueFor( const char* key, time_t* value )
 bool
 RelayConfigs::GetValueFor( const char* key, char* buf, int len )
 {
+    MutexLock ml( &m_values_mutex );
     map<string,string>::const_iterator iter = m_values.find(key);
     bool found = iter != m_values.end();
     if ( found ) {
@@ -90,9 +94,8 @@ RelayConfigs::GetValueFor( const char* key, char* buf, int len )
 bool
 RelayConfigs::GetValueFor( const char* key, vector<int>& ints )
 {
-    map<string,string>::const_iterator iter = m_values.find(key);
-    bool found = iter != m_values.end();
-    const char* str = iter->second.c_str();
+    char str[256];
+    bool found = GetValueFor( key, str, sizeof(str) );
     int len = strlen(str);
     char buf[len+1];
     strcpy( buf, str );
@@ -104,7 +107,7 @@ RelayConfigs::GetValueFor( const char* key, vector<int>& ints )
             *end = '\0';
         }
 
-        logf( XW_LOGINFO, "adding %s to ports", port );
+        fprintf( stderr, "adding %s to ports\n", port );
         ints.push_back( atoi(port) );
 
         if ( !end ) {
@@ -120,6 +123,7 @@ RelayConfigs::GetValueFor( const char* key, vector<int>& ints )
 void 
 RelayConfigs::SetValueFor( const char* key, const char* value )
 {
+    MutexLock ml( &m_values_mutex );
     /* Does this leak in the case where we're replacing a value? */
     m_values.insert( pair<string,string>(string(key),string(value) ) );
 }
@@ -135,7 +139,7 @@ RelayConfigs::parse( const char* fname, ino_t prev )
             if ( inode != prev ) {
                 FILE* f = fopen( fname, "r" );
                 if ( f != NULL ) {
-                    logf( XW_LOGINFO, "config: reading from %s", fname );
+                    fprintf( stderr, "config: reading from %s\n", fname );
                     char line[MAX_LINE];
 
                     for ( ; ; ) {

@@ -55,6 +55,7 @@ class RelayConfigs {
     time_t m_allConnInterval;
 
     map<string,string> m_values;
+    pthread_mutex_t m_values_mutex;
 
     static RelayConfigs* instance;
 };
