@@ -38,7 +38,6 @@ for NAME in Kati Brynn Ariela; do
     [ $NUM -ge $GUEST_COUNT ] && break
 done
 
-echo "./obj_linux_memdbg/xwords -d dict.xwd -r Eric -s $REMOTES -a localhost -p 10999 -C $COOKIE $QUIT"
 ./obj_linux_memdbg/xwords -d dict.xwd -r Eric -s $REMOTES -a localhost -p 10999 -C $COOKIE $QUIT &
 
 wait
