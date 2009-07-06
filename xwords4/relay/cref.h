@@ -144,8 +144,10 @@ class CookieRef {
         } u;
     } CRefEvent;
 
-    void send_with_length( int socket, unsigned char* buf, int bufLen );
-    void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why );
+    void send_with_length( int socket, unsigned char* buf, int bufLen,
+                           bool cascade );
+    void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
+                   bool cascade );
 
     void RecordSent( int nBytes, int socket ) {
         m_totalSent += nBytes;

@@ -76,6 +76,8 @@ class CRefMgr {
     void PrintSocketInfo( int socket, string& out );
     SocketsIterator MakeSocketsIterator();
 
+    int GetNumGamesSeen( void );
+
  private:
     friend class SafeCref;
     CookieRef* getMakeCookieRef_locked( const char* cORn, bool isCookie, 

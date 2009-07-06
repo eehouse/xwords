@@ -140,6 +140,12 @@ CRefMgr::nextCID( const char* connName )
     return ++m_nextCID;
 } /* nextCID */
 
+int 
+CRefMgr::GetNumGamesSeen( void )
+{
+    return m_nextCID;
+}
+
 CookieID
 CRefMgr::cookieIDForConnName( const char* connName )
 {
@@ -244,7 +250,7 @@ CRefMgr::Disassociate( int socket, CookieRef* cref )
         logf( XW_LOGERROR, "can't find cref/threadID pair for socket %d", socket );
     } else {
         SocketStuff* stuff = iter->second;
-        assert( stuff->m_cref == cref );
+        assert( cref == NULL || stuff->m_cref == cref );
         delete stuff;
         m_SocketStuff.erase( iter );
     }
@@ -268,6 +274,8 @@ CRefMgr::RemoveSocketRefs( int socket )
 {
     SafeCref scr( socket );
     scr.Remove( socket );
+
+    Disassociate( socket, NULL );
 }
 
 void

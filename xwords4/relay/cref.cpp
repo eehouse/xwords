@@ -225,13 +225,13 @@ CookieRef::notifyDisconn( const CRefEvent* evt )
         evt->u.disnote.why 
     };
 
-    send_with_length( socket, buf, sizeof(buf) );
+    send_with_length( socket, buf, sizeof(buf), true );
 } /* notifyDisconn */
 
 void
 CookieRef::removeSocket( int socket )
 {
-    logf( XW_LOGINFO, "%s(%d)", __func__, socket );
+    logf( XW_LOGINFO, "%s(socket=%d)", __func__, socket );
     int count;
     {
 /*         RWWriteLock rwl( &m_sockets_rwlock ); */
@@ -501,17 +501,28 @@ CookieRef::handleEvents()
 } /* handleEvents */
 
 void
-CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen )
+CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen,
+                             bool cascade )
 {
-    SocketWriteLock slock( socket );
-    if ( slock.socketFound() ) {
-
-        if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
-            RecordSent( bufLen, socket );
-        } else {
-            /* ok that the slock above is still in scope */
-            killSocket( socket, "couldn't send" );
+    bool failed = false;
+    {
+        SocketWriteLock slock( socket );
+        if ( slock.socketFound() ) {
+            if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
+                RecordSent( bufLen, socket );
+            } else {
+                failed = true;
+                /* ok that the slock above is still in scope */
+                /* Can't call killSocket.  It will deadlock (try to lock a mutex
+                   we already hold) if what we're sending about is that we're
+                   killing a socket */
+                /*             killSocket( socket, "couldn't send" ); */
+            }
         }
+    }
+    if ( failed && cascade ) {
+        _Remove( socket );
+        XWThreadPool::GetTPool()->CloseSocket( socket );
     }
 }
 
@@ -652,7 +663,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     logf( XW_LOGVERBOSE0, "writing hostID of %d into msg", id );
     *bufp++ = (char)id;
 
-    send_with_length( socket, buf, bufp - buf );
+    send_with_length( socket, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent XWRELAY_CONNECTRESP" );
 } /* sendResponse */
 
@@ -668,7 +679,7 @@ CookieRef::forward( const CRefEvent* evt )
     if ( destSocket != -1 ) {
         /* This is an ugly hack!!!! */
         *buf = XWRELAY_MSG_FROMRELAY;
-        send_with_length( destSocket, buf, buflen );
+        send_with_length( destSocket, buf, buflen, true );
 
         /* also note that we've heard from src recently */
 #ifdef RELAY_HEARTBEAT
@@ -681,11 +692,12 @@ CookieRef::forward( const CRefEvent* evt )
 } /* forward */
 
 void
-CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why )
+CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
+                     bool cascade )
 {
     unsigned char buf[10];
     short tmp;
-    int len = 0;
+    unsigned int len = 0;
     buf[len++] = msg;
 
     switch ( msg ) {
@@ -701,7 +713,7 @@ CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why )
     }
 
     assert( len <= sizeof(buf) );
-    send_with_length( socket, buf, len );
+    send_with_length( socket, buf, len, cascade );
 } /* send_msg */
 
 void
@@ -715,7 +727,7 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
     while ( iter != m_sockets.end() ) { 
         int other = iter->second.m_socket;
         if ( other != socket ) {
-            send_msg( other, iter->first, msg, why );
+            send_msg( other, iter->first, msg, why, false );
         }
         ++iter;
     }
@@ -741,7 +753,8 @@ CookieRef::sendAllHere( bool includeName )
 
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) { 
-        send_with_length( iter->second.m_socket, buf, bufp-buf );
+        send_with_length( iter->second.m_socket, buf, bufp-buf,
+                          true );
         ++iter;
     }
 } /* sendAllHere */

@@ -157,6 +157,15 @@ printCrefs( FILE* fil )
     fprintf( fil, "</table>\n" );
 }
 
+static void
+printNumGames( FILE* fil )
+{
+    CRefMgr* cmgr = CRefMgr::Get();
+    int nGames = cmgr->GetNumGamesSeen();
+    fprintf( fil, "<div class=\"header\">Games played</div>" );
+    fprintf( fil, "<p>%d</p>\n", nGames );
+}
+
 static void*
 http_thread_main( void* arg )
 {
@@ -182,6 +191,8 @@ http_thread_main( void* arg )
         fprintf( fil, "<html>" );
         send_meta( fil );
         fprintf( fil, "<body><div class=\"main\">" );
+
+        printNumGames( fil );
 
         printCrefs( fil );
 
