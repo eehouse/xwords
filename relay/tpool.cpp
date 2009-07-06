@@ -64,6 +64,8 @@ XWThreadPool::XWThreadPool()
     }
     m_pipeRead = fd[0];
     m_pipeWrite = fd[1];
+    logf( XW_LOGINFO, "pipes: m_pipeRead: %d; m_pipeWrite: %d",
+          m_pipeRead, m_pipeWrite );
 }
 
 XWThreadPool::~XWThreadPool()
@@ -153,7 +155,8 @@ XWThreadPool::CloseSocket( int socket )
             ++iter;
         }
     }
-/*     close( socket ); */
+    logf( XW_LOGINFO, "CLOSING socket %d", socket );
+    close( socket );
 /*     if ( do_interrupt ) { */
     /* We always need to interrupt the poll because the socket we're closing
        will be in the list being listened to.  That or we need to drop sockets
