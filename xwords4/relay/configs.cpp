@@ -163,8 +163,7 @@ RelayConfigs::parse( const char* fname, ino_t prev )
 
                         *value++ = '\0';    /* terminate "key" substring */
 
-                        m_values.insert( pair<string,string>
-                                         (string(line),string(value) ) );
+                        SetValueFor( line, value );
                     }
                     fclose( f );
                 }
