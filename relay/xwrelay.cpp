@@ -548,6 +548,12 @@ parentDied( int sig )
     exit(0);
 }
 
+static void
+handlePipe( int sig )
+{
+    logf( XW_LOGINFO, "%s", __func__ );
+}
+
 int
 main( int argc, char** argv )
 {
@@ -709,6 +715,10 @@ main( int argc, char** argv )
     memset( &sact, 0, sizeof(sact) );
     sact.sa_handler = parentDied;
     (void)sigaction( SIGUSR1, &sact, NULL );
+
+    memset( &sact, 0, sizeof(sact) );
+    sact.sa_handler = handlePipe;
+    (void)sigaction( SIGPIPE, &sact, NULL );
 
     if ( port != 0 ) {
         g_listeners.AddListener( port );
