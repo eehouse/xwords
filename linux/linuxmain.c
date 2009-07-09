@@ -215,6 +215,10 @@ usage( char* appName, char* msg )
 	     "\t -d xwd_file      # provides tile counts & values\n"
 	     "\t\t # list each player as local or remote\n"
 	     "\t [-N]*            # remote client (listen for connection)\n"
+#ifdef XWFEATURE_SLOW_ROBOT
+	     "\t [-z min:max]     # robot sleeps random min<=seconds<=max \n"
+#endif
+         "\t                  #     before turn \n"
 #ifdef XWFEATURE_RELAY
 	     "\t [-p relay_port]  # relay is at this port\n"
 	     "\t [-a relay_addr]  # use relay (via port spec'd above)\n"
@@ -649,6 +653,29 @@ nameToBtAddr( const char* name, bdaddr_t* ba )
 } /* nameToBtAddr */
 #endif
 
+#ifdef XWFEATURE_SLOW_ROBOT
+static bool
+parsePair( const char* optarg, XP_U16* min, XP_U16* max )
+{
+    bool success = false;
+    char* colon = strstr( optarg, ":" );
+    if ( !colon ) {
+        fprintf( stderr, ": not found in argument\n" );
+    } else {
+        int intmin, intmax;
+        if ( 2 == sscanf( optarg, "%d:%d", &intmin, &intmax ) ) {
+            if ( intmin <= intmin ) {
+                success = true;
+                *min = intmin;
+                *max = intmax;
+                fprintf( stderr, "min: %d; max: %d\n", *min, *max );
+            }
+        }
+    }
+    return success;
+}
+#endif
+
 int
 main( int argc, char** argv )
 {
@@ -741,6 +768,9 @@ main( int argc, char** argv )
                       "h:I"
 #endif
                       "kKf:ln:Nsd:e:r:b:q:w:Sit:UmvcVP"
+#ifdef XWFEATURE_SLOW_ROBOT
+                      "z:"
+#endif
 #ifdef XWFEATURE_SMS
                       "M:"
 #endif
@@ -889,6 +919,15 @@ main( int argc, char** argv )
         case 'v':
             mainParams.verticalScore = XP_TRUE;
             break;
+#ifdef XWFEATURE_SLOW_ROBOT
+        case 'z':
+            if ( !parsePair( optarg, &mainParams.robotThinkMin,
+                              &mainParams.robotThinkMax ) ) {
+                usage(argv[0], "bad param to -z" );
+            }
+            break;
+#endif
+
 #if defined PLATFORM_GTK && defined PLATFORM_NCURSES
         case 'g':
             useCurses = XP_FALSE;

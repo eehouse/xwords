@@ -67,6 +67,10 @@ typedef struct LaunchParams {
     XP_Bool allowHintRect;
 #endif
 
+#ifdef XWFEATURE_SLOW_ROBOT
+    XP_U16 robotThinkMin, robotThinkMax;
+#endif
+
     DeviceRole serverRole;
 
     CommsConnType conType;

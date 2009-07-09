@@ -1250,6 +1250,18 @@ comms_timer_func( gpointer data )
 }
 #endif
 
+#ifdef XWFEATURE_SLOW_ROBOT
+static gint
+slowrob_timer_func( gpointer data )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)data;
+
+    linuxFireTimer( &globals->cGlobals, TIMER_SLOWROBOT );
+
+    return (gint)0;
+}
+#endif
+
 static void
 gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, 
                    XP_U16 XP_UNUSED_STANDALONE(when),
@@ -1276,6 +1288,10 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
 #ifndef XWFEATURE_STANDALONE_ONLY
     } else if ( why == TIMER_COMMS ) {
         newSrc = g_timeout_add( 1000 * when, comms_timer_func, globals );
+#endif
+#ifdef XWFEATURE_SLOW_ROBOT
+    } else if ( why == TIMER_SLOWROBOT ) {
+        newSrc = g_timeout_add( 1000 * when, slowrob_timer_func, globals );
 #endif
     } else {
         XP_ASSERT( 0 );
@@ -1866,6 +1882,10 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.hideTileValues = params->hideValues;
     globals.cp.showRobotScores = params->showRobotScores;
+#ifdef XWFEATURE_SLOW_ROBOT
+    globals.cp.robotThinkMin = params->robotThinkMin;
+    globals.cp.robotThinkMax = params->robotThinkMax;
+#endif
 
     setupGtkUtilCallbacks( &globals, params->util );
 
