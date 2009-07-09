@@ -105,6 +105,9 @@ typedef enum {
 #ifndef XWFEATURE_STANDALONE_ONLY
     TIMER_COMMS,
 #endif
+#ifdef XWFEATURE_SLOW_ROBOT
+    TIMER_SLOWROBOT,
+#endif
     NUM_TIMERS_PLUS_ONE          /* must be last */
 } XWTimerReason;
 
@@ -124,6 +127,9 @@ typedef struct CommonPrefs {
     XP_Bool         showRobotScores; /* applies to all games */
     XP_Bool         hideTileValues; 
     XP_Bool         reserved2;       /* get to 32-bit for ARM... */
+#ifdef XWFEATURE_SLOW_ROBOT
+    XP_U16          robotThinkMin, robotThinkMax;
+#endif
 } CommonPrefs;
 
 #ifdef XWFEATURE_BLUETOOTH

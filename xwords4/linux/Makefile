@@ -92,6 +92,9 @@ DEFINES += ${BLUETOOTH}
 DEFINES += -DXWFEATURE_RELAY
 DEFINES += -DXWFEATURE_SMS
 
+# Robot can be made to think, to simulate for relay mostly
+DEFINES += -DXWFEATURE_SLOW_ROBOT
+
 # Support device-to-device connection via UDP, e.g. using wifi on a
 # LAN or where the host/server isn't behind a firewall.
 # DEFINES += -DXWFEATURE_IP_DIRECT

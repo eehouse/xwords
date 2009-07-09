@@ -92,6 +92,10 @@ typedef struct ServerNonvolatiles {
     XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
 
+#ifdef XWFEATURE_SLOW_ROBOT
+    XP_U16 robotThinkMin, robotThinkMax;   /* not saved (yet) */
+#endif
+
     RemoteAddress addresses[MAX_NUM_PLAYERS];
 } ServerNonvolatiles;
 
@@ -108,8 +112,17 @@ struct ServerCtxt {
 
     ServerPlayer players[MAX_NUM_PLAYERS];
     XP_Bool serverDoing;
+#ifdef XWFEATURE_SLOW_ROBOT
+    XP_Bool robotWaiting;
+#endif
     MPSLOT
 };
+
+#ifdef XWFEATURE_SLOW_ROBOT
+# define ROBOTWAITING(s) (s)->robotWaiting
+#else
+# define ROBOTWAITING(s) XP_FALSE
+#endif
 
 
 #define NPASSES_OK(s) model_recentPassCountOk((s)->vol.model)
@@ -123,7 +136,7 @@ static void doEndGame( ServerCtxt* server );
 static void endGameInternal( ServerCtxt* server, GameEndReason why );
 static void badWordMoveUndoAndTellUser( ServerCtxt* server, 
                                         BadWordInfo* bwi );
-static XP_Bool tileCountsOk( ServerCtxt* server );
+static XP_Bool tileCountsOk( const ServerCtxt* server );
 static void setTurn( ServerCtxt* server, XP_S16 turn );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -404,10 +417,31 @@ server_destroy( ServerCtxt* server )
     XP_FREE( server->mpool, server );
 } /* server_destroy */
 
+#ifdef XWFEATURE_SLOW_ROBOT
+static int
+figureSleepTime( const ServerCtxt* server )
+{
+    int result = 0;
+    XP_U16 min = server->nv.robotThinkMin;
+    XP_U16 max = server->nv.robotThinkMax;
+    if ( min < max ) {
+        int diff = max - min + 1;
+        result = XP_RANDOM() % diff;
+    }
+    result += min;
+
+    return result;
+}
+#endif
+
 void
 server_prefsChanged( ServerCtxt* server, CommonPrefs* cp )
 {
     server->nv.showRobotScores = cp->showRobotScores;
+#ifdef XWFEATURE_SLOW_ROBOT
+    server->nv.robotThinkMin = cp->robotThinkMin;
+    server->nv.robotThinkMax = cp->robotThinkMax;
+#endif
 } /* server_prefsChanged */
 
 XP_S16
@@ -701,17 +735,54 @@ makeRobotMove( ServerCtxt* server )
     return result; /* always return TRUE after robot move? */
 } /* makeRobotMove */
 
-static XP_Bool
-robotMovePending( ServerCtxt* server )
+#ifdef XWFEATURE_SLOW_ROBOT
+static XP_Bool 
+wakeRobotProc( void* closure, XWTimerReason why )
 {
+    XP_ASSERT( TIMER_SLOWROBOT == why );
+    ServerCtxt* server = (ServerCtxt*)closure;
+    XP_ASSERT( ROBOTWAITING(server) );
+    server->robotWaiting = XP_FALSE;
+    util_requestTime( server->vol.util );
+    return XP_FALSE;
+}
+#endif
+
+static XP_Bool
+robotMovePending( const ServerCtxt* server )
+{
+    XP_Bool result = XP_FALSE;
     XP_S16 turn = server->nv.currentTurn;
     if ( turn >= 0 && tileCountsOk(server) && NPASSES_OK(server) ) {
         CurGameInfo* gi = server->vol.gi;
         LocalPlayer* player = &gi->players[turn];
-        return IS_ROBOT(player) && IS_LOCAL(player);
+        result = IS_ROBOT(player) && IS_LOCAL(player);
     }
-    return XP_FALSE;
+    return result;
 } /* robotMovePending */
+
+#ifdef XWFEATURE_SLOW_ROBOT
+static XP_Bool
+postponeRobotMove( ServerCtxt* server )
+{
+    XP_Bool result = XP_FALSE;
+    XP_ASSERT( robotMovePending(server) );
+
+    if ( !ROBOTWAITING(server) ) {
+        XP_U16 sleepTime = figureSleepTime(server);
+        if ( 0 != sleepTime ) {
+            server->robotWaiting = XP_TRUE;
+            util_setTimer( server->vol.util, TIMER_SLOWROBOT, sleepTime,
+                           wakeRobotProc, server );
+            result = XP_TRUE;
+        }
+    }
+    return result;
+}
+# define POSTPONEROBOTMOVE(s) postponeRobotMove(s)
+#else
+# define POSTPONEROBOTMOVE(s) XP_FALSE
+#endif
 
 static void
 showPrevScore( ServerCtxt* server )
@@ -822,10 +893,11 @@ server_do( ServerCtxt* server )
         moreToDo = XP_TRUE;     /* either process turn or end game... */
         break;
     case XWSTATE_INTURN:
-        if ( robotMovePending( server ) ) {
+        if ( robotMovePending( server ) && !ROBOTWAITING(server) ) {
             result = makeRobotMove( server );
             /* if robot was interrupted, we need to schedule again */
-            moreToDo = !result || robotMovePending( server );
+            moreToDo = !result || 
+                (robotMovePending( server ) && !POSTPONEROBOTMOVE(server));
         }
         break;
 
@@ -1587,7 +1659,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
     XP_ASSERT( server->nv.gameState != XWSTATE_GAMEOVER );
     callTurnChangeListener( server );
 
-    if ( robotMovePending(server) ) {
+    if ( robotMovePending(server) && !POSTPONEROBOTMOVE(server) ) {
         moreToDo = XP_TRUE;
     }
 
@@ -2100,7 +2172,7 @@ server_endGame( ServerCtxt* server )
 /* If game is about to end because one player's out of tiles, we don't want to
  * keep trying to move */
 static XP_Bool
-tileCountsOk( ServerCtxt* server )
+tileCountsOk( const ServerCtxt* server )
 {
     XP_Bool maybeOver = 0 == pool_getNTilesLeft( server->pool );
     if ( maybeOver ) {
