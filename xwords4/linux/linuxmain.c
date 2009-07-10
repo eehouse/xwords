@@ -567,10 +567,11 @@ linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XP_U16 channelNo )
 void
 linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 {
-    XWTimerProc proc = cGlobals->timerProcs[why];
-    void* closure = cGlobals->timerClosures[why];
+    TimerInfo* tip = &cGlobals->timerInfo[why];
+    XWTimerProc proc = tip->proc;
+    void* closure = tip->closure;
 
-    cGlobals->timerProcs[why] = NULL;
+    tip->proc = NULL;
 
     (*proc)( closure, why );
 } /* fireTimer */
