@@ -1297,8 +1297,8 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         XP_ASSERT( 0 );
     }
 
-    globals->cGlobals.timerProcs[why] = proc;
-    globals->cGlobals.timerClosures[why] = closure;
+    globals->cGlobals.timerInfo[why].proc = proc;
+    globals->cGlobals.timerInfo[why].closure = closure;
     XP_ASSERT( newSrc != 0 );
     globals->timerSources[why-1] = newSrc;
 } /* gtk_util_setTimer */

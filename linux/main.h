@@ -120,6 +120,12 @@ typedef void (*AddAcceptorFunc)(int listener, Acceptor func,
 typedef struct LinSMSData LinSMSData;
 #endif
 
+typedef struct _TimerInfo {
+    XWTimerProc proc;
+    void* closure;
+    XP_U32 when;                /* used only for ncurses */
+} TimerInfo;
+
 struct CommonGlobals {
     LaunchParams* params;
 
@@ -150,8 +156,7 @@ struct CommonGlobals {
     LinSMSData* smsData;
 #endif
 
-    XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
-    void* timerClosures[NUM_TIMERS_PLUS_ONE];
+    TimerInfo timerInfo[NUM_TIMERS_PLUS_ONE];
 };
 
 #endif

@@ -365,10 +365,16 @@ curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                       XWTimerProc proc, void* closure )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    XP_U32 nextTimer;
 
-    globals->cGlobals.timerProcs[why] = proc;
-    globals->cGlobals.timerClosures[why] = closure;
-    globals->nextTimer = util_getCurSeconds(uc) + when;
+    globals->cGlobals.timerInfo[why].proc = proc;
+    globals->cGlobals.timerInfo[why].closure = closure;
+
+    nextTimer = util_getCurSeconds(uc) + when;
+    globals->cGlobals.timerInfo[why].when = nextTimer;
+    if ( globals->nextTimer > nextTimer ) {
+        globals->nextTimer = nextTimer;
+    }
 } /* curses_util_setTimer */
 
 static void
@@ -899,13 +905,24 @@ static int
 figureTimeout( CursesAppGlobals* globals )
 {
     int result = INFINITE_TIMEOUT;
-    if ( globals->cGlobals.timerProcs[TIMER_COMMS] != 0 ) {
-        XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util );
-        XP_U32 then = globals->nextTimer;
-        if ( now >= then ) {
-            result = 0;
-        } else {
-            result = (then - now) * 1000;
+    XWTimerReason ii;
+    XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util );
+
+    now *= 1000;
+
+    for ( ii = 0; ii < NUM_TIMERS_PLUS_ONE; ++ii ) {
+        TimerInfo* tip = &globals->cGlobals.timerInfo[ii];
+        if ( !!tip->proc ) {
+            XP_U32 then = tip->when * 1000;
+            if ( now >= then ) {
+                result = 0;
+                break;          /* if one's immediate, we're done */
+            } else {
+                then -= now;
+                if ( result == -1 || then < result ) {
+                    result = then;
+                }
+            }
         }
     }
     return result;
@@ -913,6 +930,31 @@ figureTimeout( CursesAppGlobals* globals )
 #else 
 # define figureTimeout(g) INFINITE_TIMEOUT
 #endif
+
+static void
+fireCursesTimer( CursesAppGlobals* globals )
+{
+    XWTimerReason ii;
+    TimerInfo* smallestTip = NULL;
+
+    for ( ii = 0; ii < NUM_TIMERS_PLUS_ONE; ++ii ) {
+        TimerInfo* tip = &globals->cGlobals.timerInfo[ii];
+        if ( !!tip->proc ) { 
+            if ( !smallestTip ) {
+                smallestTip = tip;
+            } else if ( tip->when < smallestTip->when ) {
+                smallestTip = tip;
+            }
+        }
+    }
+
+    if ( !!smallestTip ) {
+        XP_ASSERT( util_getCurSeconds( globals->cGlobals.params->util ) 
+                   >= smallestTip->when );
+        linuxFireTimer( &globals->cGlobals, 
+                        smallestTip - globals->cGlobals.timerInfo );
+    }
+}
 
 /* 
  * Ok, so this doesn't block yet.... 
@@ -930,7 +972,7 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
     if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) {
 #ifdef XWFEATURE_RELAY
-        linuxFireTimer( &globals->cGlobals, TIMER_COMMS );
+        fireCursesTimer( globals );
 #endif
     } else if ( numEvents > 0 ) {
 	
@@ -1360,6 +1402,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cp.showBoardArrow = XP_TRUE;
     g_globals.cp.showRobotScores = params->showRobotScores;
     g_globals.cp.hideTileValues = params->hideValues;
+#ifdef XWFEATURE_SLOW_ROBOT
+    g_globals.cp.robotThinkMin = params->robotThinkMin;
+    g_globals.cp.robotThinkMax = params->robotThinkMax;
+#endif
 
     dict = params->dict;
 
