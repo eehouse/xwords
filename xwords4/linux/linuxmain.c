@@ -187,6 +187,7 @@ usage( char* appName, char* msg )
 #endif
 	     "\t [-f file]        # use this file to save/load game\n"
 	     "\t [-q nSecs]       # quit with pause when game over (useful for robot-only)\n"
+	     "\t [-0]             # close fd 0 (stdin) on start; assumes -q\n"
 	     "\t [-S]             # slow robot down \n"
 	     "\t [-i]             # print game history when game over\n"
 	     "\t [-U]             # call 'Undo' after game ends\n"
@@ -686,6 +687,7 @@ main( int argc, char** argv )
     XP_Bool isServer = XP_FALSE;
     char* portNum = NULL;
     char* hostName = "localhost";
+    XP_Bool closeStdin = XP_FALSE;
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 robotCount = 0;
@@ -768,7 +770,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "kKf:ln:Nsd:e:r:b:q:w:Sit:UmvcVP"
+                      "kKf:ln:Nsd:e:r:b:0q:w:Sit:UmvcVP"
 #ifdef XWFEATURE_SLOW_ROBOT
                       "z:"
 #endif
@@ -899,6 +901,9 @@ main( int argc, char** argv )
                        conType == COMMS_CONN_RELAY );
             conType = COMMS_CONN_RELAY;
             hostName = optarg;
+            break;
+        case '0':
+            closeStdin = XP_TRUE;
             break;
         case 'q':
             mainParams.quitAfter = atoi(optarg);
@@ -1064,6 +1069,13 @@ main( int argc, char** argv )
 
     srandom( seed );	/* init linux random number generator */
     XP_LOGF( "seeded srandom with %d", seed );
+
+    if ( closeStdin ) {
+        fclose( stdin );
+        if ( mainParams.quitAfter < 0 ) {
+            fprintf( stderr, "stdin closed; you'll need some way to quit\n" );
+        }
+    }
 
     if ( isServer ) {
         if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
