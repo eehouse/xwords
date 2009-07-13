@@ -146,6 +146,13 @@ CRefMgr::GetNumGamesSeen( void )
     return m_nextCID;
 }
 
+
+int 
+CRefMgr::GetSize( void )
+{
+    return m_cookieMap.size();
+}
+
 CookieID
 CRefMgr::cookieIDForConnName( const char* connName )
 {
@@ -485,6 +492,7 @@ CRefMgr::Delete( CookieRef* cref )
 
     map<CookieRef*,pthread_mutex_t*>::iterator iter2;
     iter2 = m_crefMutexes.find(cref);
+    assert( iter2 != m_crefMutexes.end() );
     m_crefMutexes.erase( iter2 );
 
     delete cref;

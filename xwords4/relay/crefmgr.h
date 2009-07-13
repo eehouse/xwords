@@ -77,6 +77,7 @@ class CRefMgr {
     SocketsIterator MakeSocketsIterator();
 
     int GetNumGamesSeen( void );
+    int GetSize( void );
 
  private:
     friend class SafeCref;
