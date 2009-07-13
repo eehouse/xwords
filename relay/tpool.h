@@ -77,7 +77,7 @@ class XWThreadPool {
     int m_pipeRead;
     int m_pipeWrite;
 
-    int m_timeToDie;
+    bool m_timeToDie;
     int m_nThreads;
     packet_func m_pFunc;
 

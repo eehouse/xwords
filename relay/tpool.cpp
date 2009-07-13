@@ -50,7 +50,7 @@ XWThreadPool::GetTPool()
 }
 
 XWThreadPool::XWThreadPool()
-    : m_timeToDie(0)
+    : m_timeToDie(false)
     , m_nThreads(0)
 {
     pthread_rwlock_init( &m_activeSocketsRWLock, NULL );
@@ -98,7 +98,7 @@ XWThreadPool::Setup( int nThreads, packet_func pFunc )
 void
 XWThreadPool::Stop()
 {
-    m_timeToDie = 1;
+    m_timeToDie = true;
 
     int ii;
     for ( ii = 0; ii < m_nThreads; ++ii ) {
@@ -255,6 +255,7 @@ XWThreadPool::real_listener()
 
         pthread_rwlock_rdlock( &m_activeSocketsRWLock );
         int nSockets = m_activeSockets.size() + 1; /* for pipe */
+        /* Don't malloc this thing every time!!! */
         pollfd* fds = (pollfd*)malloc( sizeof(fds[0]) * nSockets );
         pollfd* curfd = fds;
         char* log = (char*)malloc( 4 * nSockets );
