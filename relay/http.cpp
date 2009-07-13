@@ -158,12 +158,16 @@ printCrefs( FILE* fil )
 }
 
 static void
-printNumGames( FILE* fil )
+printStats( FILE* fil )
 {
     CRefMgr* cmgr = CRefMgr::Get();
     int nGames = cmgr->GetNumGamesSeen();
-    fprintf( fil, "<div class=\"header\">Games played</div>" );
-    fprintf( fil, "<p>%d</p>\n", nGames );
+    int siz = cmgr->GetSize();
+    fprintf( fil, "<div class=\"header\">Stats</div>" );
+    fprintf( fil, "<table>" );
+    fprintf( fil, "<tr><th>Games played</th><th>Games in play</th></tr>" );
+    fprintf( fil, "<tr><td>%d</td><td>%d</td></tr>\n", nGames, siz );
+    fprintf( fil, "</table>" );
 }
 
 static void*
@@ -192,7 +196,7 @@ http_thread_main( void* arg )
         send_meta( fil );
         fprintf( fil, "<body><div class=\"main\">" );
 
-        printNumGames( fil );
+        printStats( fil );
 
         printCrefs( fil );
 
