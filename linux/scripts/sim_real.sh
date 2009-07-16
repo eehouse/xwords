@@ -55,17 +55,19 @@ check_logs() {
         fi
     done
 
-    [ ! 1 = $OK ] && echo "game $COOKIE ended successfully"
+    [ 1 = $OK ] && echo "game $COOKIE ended successfully"
 }
 
 do_one() {
-    COOKIE=${1:-$(exec sh -c 'echo $PPID')}
+    CROOT=${1:-$(exec sh -c 'echo $PPID')}
+    INDX=1
 
     while [ -d /tmp/$RUN_NAME ]; do                 # loop forever
-
+        COOKIE="$CROOT:$INDX"
+        INDX=$((INDX+1))
         unset ZERO_DONE ONE_DONE TWO_DONE THREE_DONE
 
-        TODO=$(($COOKIE % 3))
+        TODO=$(($CROOT % 3))
         TODO=$((TODO+2))
         COUNT=0
         for NAME in Bbbbb Aaaaa Kkkkk Eeeee; do
