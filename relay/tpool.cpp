@@ -256,22 +256,27 @@ XWThreadPool::real_listener()
         pthread_rwlock_rdlock( &m_activeSocketsRWLock );
         int nSockets = m_activeSockets.size() + 1; /* for pipe */
         /* Don't malloc this thing every time!!! */
-        pollfd* fds = (pollfd*)malloc( sizeof(fds[0]) * nSockets );
+        pollfd* fds = (pollfd*)calloc( nSockets, sizeof(fds[0]) );
         pollfd* curfd = fds;
-        char* log = (char*)malloc( 4 * nSockets );
+        int logCapacity = 4 * nSockets;
+        char* log = (char*)malloc( logCapacity );
         log[0] = '\0';
-        int len = 0;
+        int logLen = 0;
         
         curfd->fd = m_pipeRead;
         curfd->events = flags;
-        len += sprintf( log+len, "%d,", curfd->fd );
+        logLen += snprintf( log+logLen, logCapacity - logLen, "%d,", curfd->fd );
         ++curfd;
 
         vector<int>::iterator iter = m_activeSockets.begin();
-        while ( iter != m_activeSockets.end() ) {
+        while ( iter != m_activeSockets.end()  ) {
             curfd->fd = *iter++;
             curfd->events = flags;
-            len += sprintf( log+len, "%d,", curfd->fd );
+            if ( logCapacity > logLen ) {
+                logLen += snprintf( log+logLen, logCapacity - logLen, "%d,", 
+                                    curfd->fd );
+            }
+            assert( curfd < fds + nSockets );
             ++curfd;
         }
         pthread_rwlock_unlock( &m_activeSocketsRWLock );
@@ -288,7 +293,8 @@ XWThreadPool::real_listener()
         if ( nEvents == 0 ) {
             tmgr->FireElapsedTimers();
         } else if ( nEvents < 0 ) {
-            logf( XW_LOGERROR, "errno: %s (%d)", strerror(errno), errno );
+            logf( XW_LOGERROR, "poll failed: errno: %s (%d)", 
+                  strerror(errno), errno );
         } 
 
         if ( fds[0].revents != 0 ) {
@@ -315,12 +321,11 @@ XWThreadPool::real_listener()
                         continue;
                     }
 
-                    if ( curfd->revents == POLLIN 
-                         ||  curfd->revents == POLLPRI ) {
+                    if ( 0 != (curfd->revents & (POLLIN | POLLPRI)) ) {
                         logf( XW_LOGINFO, "enqueuing %d", socket );
                         enqueue( socket );
                     } else {
-                        logf( XW_LOGERROR, "odd revents: %d", curfd->revents );
+                        logf( XW_LOGERROR, "odd revents: %x", curfd->revents );
                         killSocket( socket, "error/hup in poll()" ); 
                     }
                     --nEvents;
