@@ -96,16 +96,6 @@ send_meta( FILE* fil )
 }
 
 static void
-printUptime( FILE* fil )
-{
-    char buf[128];
-
-    fprintf( fil, "<div class=\"header\">Uptime</div>" );
-    format_uptime( buf, sizeof(buf) );
-    fprintf( fil, "<p>%s</p>", buf );
-}
-
-static void
 printTail( FILE* fil )
 {
     char buf[128];
@@ -163,10 +153,14 @@ printStats( FILE* fil )
     CRefMgr* cmgr = CRefMgr::Get();
     int nGames = cmgr->GetNumGamesSeen();
     int siz = cmgr->GetSize();
+    char uptime[64];
+    format_uptime( uptime, sizeof(uptime) );
     fprintf( fil, "<div class=\"header\">Stats</div>" );
     fprintf( fil, "<table>" );
-    fprintf( fil, "<tr><th>Games played</th><th>Games in play</th></tr>" );
-    fprintf( fil, "<tr><td>%d</td><td>%d</td></tr>\n", nGames, siz );
+    fprintf( fil, "<tr><th>Games played</th><th>Games in play</th>"
+             "<th>Uptime</th></tr>" );
+    fprintf( fil, "<tr><td>%d</td><td>%d</td><td>%s</td></tr>\n", 
+             nGames, siz, uptime );
     fprintf( fil, "</table>" );
 }
 
@@ -199,8 +193,6 @@ http_thread_main( void* arg )
         printStats( fil );
 
         printCrefs( fil );
-
-        printUptime( fil );
 
         printTail( fil );
 
