@@ -360,7 +360,7 @@ format_uptime( char* buf, int len )
     seconds %= 60;
 
     snprintf( buf, len,
-              "uptime: %d days, %d hours, %d minutes, %ld seconds",
+              "uptime: %d D, %d H, %d M, %ld S",
               days, hours, minutes, seconds );
 }
 
