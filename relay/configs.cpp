@@ -31,6 +31,7 @@
 
 RelayConfigs* RelayConfigs::instance = NULL;
 
+static bool strs_comp( const char* key1, const char* key2 );
 
 /* static */ RelayConfigs* 
 RelayConfigs::GetConfigs()
@@ -46,6 +47,7 @@ RelayConfigs::InitConfigs( const char* cfile )
 }
 
 RelayConfigs::RelayConfigs( const char* cfile )
+    :m_values(strs_comp)
 {
     pthread_mutex_init( &m_values_mutex, NULL );
     
@@ -83,10 +85,10 @@ bool
 RelayConfigs::GetValueFor( const char* key, char* buf, int len )
 {
     MutexLock ml( &m_values_mutex );
-    map<string,string>::const_iterator iter = m_values.find(key);
+    map<const char*,const char*>::const_iterator iter = m_values.find(key);
     bool found = iter != m_values.end();
     if ( found ) {
-        snprintf( buf, len, "%s", iter->second.c_str() );
+        snprintf( buf, len, "%s", iter->second );
     }
     return found;
 }
@@ -125,7 +127,7 @@ RelayConfigs::SetValueFor( const char* key, const char* value )
 {
     MutexLock ml( &m_values_mutex );
     /* Does this leak in the case where we're replacing a value? */
-    m_values.insert( pair<string,string>(string(key),string(value) ) );
+    m_values.insert( pair<const char*,const char*>(strdup(key),strdup(value) ) );
 }
 
 ino_t
@@ -172,4 +174,11 @@ RelayConfigs::parse( const char* fname, ino_t prev )
     }
     return inode;
 } /* parse */
+
+static bool
+strs_comp( const char* key1, const char* key2 )
+{
+    bool result = strcmp( key1, key2 ) < 0;
+    return result;
+}
 
