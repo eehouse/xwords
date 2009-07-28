@@ -120,6 +120,7 @@ printCrefs( FILE* fil )
              "<th>Players Here</th>"
              "<th>State</th>"
              "<th>Host IDs</th>"
+             "<th>Host IPs</th>"
              );
     fprintf( fil, "</tr>\n" );
 
@@ -127,22 +128,28 @@ printCrefs( FILE* fil )
     CookieMapIterator iter = cmgr->GetCookieIterator();
     CookieID id;
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
-        string tmp;
-        SafeCref scr( id );
-        fprintf( fil, "<tr>"
-                 "<td>%s</td>"  /* name */
-                 "<td>%s</td>"  /* conn name */
-                 "<td>%d</td>"  /* cookie id */
-                 "<td>%d</td>"  /* total sent */
-                 "<td>%d</td>"  /* players */
-                 "<td>%d</td>"  /* players here */
-                 "<td>%s</td>"  /* State */
-                 "<td>%s</td>"   /* Hosts */
-                 "</tr>",
-                 scr.Cookie(), scr.ConnName(), scr.GetCookieID(),
-                 scr.GetTotalSent(), scr.GetPlayersTotal(),scr.GetPlayersHere(),
-                 scr.StateString(), scr.GetHostsConnected(tmp)
-        );
+        string hosts, addrs;
+        SafeCref scr( id, true );
+        if ( scr.IsValid() ) {
+            scr.GetHostsConnected( &hosts, &addrs );
+
+            fprintf( fil, "<tr>"
+                     "<td>%s</td>"  /* name */
+                     "<td>%s</td>"  /* conn name */
+                     "<td>%d</td>"  /* cookie id */
+                     "<td>%d</td>"  /* total sent */
+                     "<td>%d</td>"  /* players */
+                     "<td>%d</td>"  /* players here */
+                     "<td>%s</td>"  /* State */
+                     "<td>%s</td>"   /* Hosts */
+                     "<td>%s</td>"   /* Ip addrs */
+                     "</tr>",
+                     scr.Cookie(), scr.ConnName(), scr.GetCookieID(),
+                     scr.GetTotalSent(), scr.GetPlayersTotal(),
+                     scr.GetPlayersHere(), scr.StateString(), 
+                     hosts.c_str(), addrs.c_str()
+                     );
+        }
     }
     fprintf( fil, "</table>\n" );
 }

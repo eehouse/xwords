@@ -21,7 +21,10 @@
 #ifndef _CREFMGR_H_
 #define _CREFMGR_H_
 
+#include <list>
+
 #include "cref.h"
+#include "mlock.h"
 
 typedef map<CookieID,CookieRef*> CookieMap;
 class CookieMapIterator;
@@ -59,9 +62,9 @@ class CRefMgr {
     CookieMapIterator GetCookieIterator();
 
     /* PENDING.  These need to go through SafeCref */
-    void Delete( CookieID id );
-    void Delete( CookieRef* cref );
-    void Delete( const char* connName );
+    void Recycle( CookieID id );
+    void Recycle( CookieRef* cref );
+    void Recycle( const char* connName );
     CookieID CookieIdForName( const char* name );
 
     /* For use from ctrl only!!!! */
@@ -81,11 +84,24 @@ class CRefMgr {
 
  private:
     friend class SafeCref;
+
+    /* We'll recycle cref instances rather than free and new them.  This
+       solves, inelegantly, a problem where I want to free an instance (while
+       holding its mutex) but can't know if other threads are trying to obtain
+       that mutex.  It's illegal to destroy a mutex somebody's trying to lock.
+       So we recycle, let the other thread succeed in locking but then quickly
+       discover that the cref it got isn't what it wants.  See the SafeCref
+       class.  */
+    list<CookieRef*> m_freeList;
+    pthread_mutex_t m_freeList_mutex;
+    void addToFreeList( CookieRef* cref );
+    CookieRef* getFromFreeList( void );
+
     CookieRef* getMakeCookieRef_locked( const char* cORn, bool isCookie, 
                                         HostID hid, int socket,
                                         int nPlayersH, int nPlayersT );
-    CookieRef* getCookieRef_locked( CookieID cookieID );
-    CookieRef* getCookieRef_locked( int socket );
+    CookieRef* getCookieRef( CookieID cookieID );
+    CookieRef* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
@@ -100,11 +116,8 @@ class CRefMgr {
 
     CookieID m_nextCID;
 
-    bool LockCref( CookieRef* cref );
+    void LockCref( CookieRef* cref );
     void UnlockCref( CookieRef* cref );
-
-    pthread_mutex_t m_guard;
-    map<CookieRef*,pthread_mutex_t*> m_crefMutexes;
 
     pthread_rwlock_t m_cookieMapRWLock;
     CookieMap m_cookieMap;
@@ -124,7 +137,7 @@ class SafeCref {
  public:
     SafeCref( const char* cookieOrConnName, bool cookie, HostID hid, 
               int socket, int nPlayersH, int nPlayersT );
-    SafeCref( CookieID cid );
+    SafeCref( CookieID cid, bool failOk = false );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
     ~SafeCref();
@@ -249,29 +262,29 @@ class SafeCref {
         }
     }
 
-    const char* GetHostsConnected( string& str ) {
+    void GetHostsConnected( string* hosts, string* addrs ) {
         if ( IsValid() ) {
-            m_cref->_FormatSockets( str );
-            return str.c_str();
-        } else {
-            return "";
+            m_cref->_FormatHostInfo( hosts, addrs );
         }
     }
 
+    bool IsValid()        { return m_isValid; }
  private:
-    bool IsValid()        { return m_cref != NULL; }
 
     CookieRef* m_cref;
     CRefMgr* m_mgr;
+    bool m_isValid;
+    bool m_locked;
 };
 
 
 class CookieMapIterator {
  public:
-    CookieMapIterator();
+    CookieMapIterator(pthread_rwlock_t* rwlock);
     ~CookieMapIterator() {}
     CookieID Next();
  private:
+    RWReadLock m_rwl;
     CookieMap::const_iterator _iter;
 };
 
