@@ -45,17 +45,35 @@ game_curses() {
         2>/tmp/$RUN_NAME/log_${COOKIE}_${INDEX}.txt < /dev/null &
 }
 
+game_gtk() {
+    NAME=$1
+    COOKIE=$2
+    WAIT=$3
+    INDEX=$4
+    SERVER_PARAMS=$5
+    $XWORDS -d $DICT -r $NAME -a $HOST -p $PORT \
+        -C $COOKIE $QUIT -z 0:$WAIT $SERVER_PARAMS \
+        2>/tmp/$RUN_NAME/log_${COOKIE}_${INDEX}.txt &
+}
+
 check_logs() {
     COOKIE=$1
-    OK=1
-    for LOG in /tmp/$RUN_NAME/log_${COOKIE}_*.txt; do
-        if ! grep -q XWPROTO_END_GAME $LOG; then
-            echo "$LOG didn't end correctly; check it out."
-            OK=0
-        fi
-    done
 
-    [ 1 = $OK ] && echo "game $COOKIE ended successfully"
+    if [ -d /tmp/$RUN_NAME ]; then
+        OK=1
+        for LOG in /tmp/$RUN_NAME/log_${COOKIE}_*.txt; do
+            if ! grep -q XWPROTO_END_GAME $LOG; then
+                echo "$LOG didn't end correctly; check it out."
+                OK=0
+            else
+                rm $LOG         # save some space
+            fi
+        done
+
+        [ 1 = $OK ] && echo "game $COOKIE ended successfully"
+    else
+        echo "log directory gone..."
+    fi
 }
 
 do_one() {
@@ -88,8 +106,8 @@ do_one() {
                                 game_curses $NAME $COOKIE $WAIT $INDEX \
                                     "-s $REMOTES"
                             else
-                                $XWORDS -d $DICT -r $NAME -s $REMOTES \
-                                    -a $HOST -p $PORT -C $COOKIE $QUIT &
+                                game_gtk  $NAME $COOKIE $WAIT $INDEX \
+                                    "-s $REMOTES"
                             fi
                             break
                         fi
@@ -100,8 +118,7 @@ do_one() {
                             if [ "$USE_CURSES" = "yes" ]; then
                                 game_curses $NAME $COOKIE $WAIT $INDEX
                             else
-                                $XWORDS -d $DICT -r $NAME -a $HOST -p $PORT \
-                                    -C $COOKIE $QUIT &
+                                game_gtk $NAME $COOKIE $WAIT $INDEX
                             fi
                             break
                         fi
@@ -112,8 +129,7 @@ do_one() {
                             if [ "$USE_CURSES" = "yes" ]; then
                                 game_curses $NAME $COOKIE $WAIT $INDEX
                             else
-                                $XWORDS -d $DICT -r $NAME -a $HOST -p $PORT \
-                                    -C $COOKIE $QUIT &
+                                game_gtk $NAME $COOKIE $WAIT $INDEX
                             fi
                             break
                         fi
@@ -124,8 +140,7 @@ do_one() {
                             if [ "$USE_CURSES" = "yes" ]; then
                                 game_curses $NAME $COOKIE $WAIT $INDEX
                             else
-                                $XWORDS -d $DICT -r $NAME -a $HOST -p $PORT \
-                                    -C $COOKIE $QUIT &
+                                game_gtk $NAME $COOKIE $WAIT $INDEX
                             fi
                             break
                         fi
