@@ -60,7 +60,13 @@ class CookieRef {
     friend class CookieMapIterator;
 
     CookieRef( const char* cookie, const char* connName, CookieID id );
+    void ReInit( const char* cookie, const char* connName, CookieID id );
     ~CookieRef();
+
+    void Clear(void);                /* make clear it's unused */
+
+    bool Lock( void );
+    void Unlock( void );
 
     /* Within this cookie, remember that this hostID and socket go together.
        If the hostID is HOST_ID_SERVER, it's the server. */
@@ -73,6 +79,7 @@ class CookieRef {
     bool HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_sockets.size(); }
     bool HasSocket( int socket );
+    bool HasSocket_locked( int socket );
     const char* Cookie() { return m_cookie.c_str(); }
     const char* ConnName() { return m_connName.c_str(); }
 
@@ -85,7 +92,7 @@ class CookieRef {
     /* for console */
     void _PrintCookieInfo( string& out );
     void PrintSocketInfo( string& out, int socket );
-    void _FormatSockets( string& out );
+    void _FormatHostInfo( string* hostIds, string* addrs );
 
     static CookieMapIterator GetCookieIterator();
 
@@ -188,6 +195,9 @@ class CookieRef {
     void sendAllHere( bool includeName );
     
     HostID nextHostID() { return ++m_nextHostID; }
+
+    bool notInUse(void) { return m_cookieID == 0; }
+
     /* timer callback */
     static void s_checkAllConnected( void* closure );
 
@@ -213,6 +223,10 @@ class CookieRef {
     HostID m_nextHostID;
     int m_nPlayersTotal;
     int m_nPlayersHere;
+
+    pthread_mutex_t m_mutex;
+
+    pthread_t m_locking_thread; /* for debugging only */
 }; /* CookieRef */
 
 #endif

@@ -195,10 +195,10 @@ cmd_kill_eject( int socket, const char** args )
         const char* id = args[3];
         if ( idhow != NULL && id != NULL ) {
             if ( 0 == strcmp( idhow, "name" ) ) {
-                CRefMgr::Get()->Delete( id );
+                CRefMgr::Get()->Recycle( id );
                 found = true;
             } else if ( 0 == strcmp( idhow, "id" ) ) {
-                CRefMgr::Get()->Delete( atoi( id ) );
+                CRefMgr::Get()->Recycle( atoi( id ) );
                 found = true;
             }
         }
@@ -360,7 +360,7 @@ format_uptime( char* buf, int len )
     seconds %= 60;
 
     snprintf( buf, len,
-              "uptime: %d D, %d H, %d M, %ld S",
+              "%d D, %d H, %d M, %ld S",
               days, hours, minutes, seconds );
 }
 
@@ -374,7 +374,7 @@ cmd_uptime( int socket, const char** args )
     } else {
         char buf[128];
         format_uptime( buf, sizeof(buf) );
-        print_to_sock( socket, true, "%s", buf );
+        print_to_sock( socket, true, "uptime: %s", buf );
     }
     return false;
 }

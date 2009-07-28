@@ -26,6 +26,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "cref.h"
 #include "xwrelay.h"
@@ -71,21 +74,34 @@ SocketsIterator::Next()
  * CookieRef class
  *****************************************************************************/
 
-CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
-    : m_cookie(cookie==NULL?"":cookie)
-    , m_connName(connName)
-    , m_cookieID(id)
-    , m_totalSent(0)
-    , m_curState(XWS_INITED)
-    , m_nextState(XWS_INITED)
-    , m_eventQueue()
-    , m_nextHostID(HOST_ID_SERVER)
-    , m_nPlayersTotal(0)
-    , m_nPlayersHere(0)
+#define ASSERT_LOCKED() \
+    assert( m_locking_thread == pthread_self() )
+
+void
+CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
 {
+    m_cookie = cookie==NULL?"":cookie;
+    m_connName = connName;
+    m_cookieID = id;
+    m_totalSent = 0;
+    m_curState = XWS_INITED;
+    m_nextState = XWS_INITED;
+    m_nextHostID = HOST_ID_SERVER;
+    m_nPlayersTotal = 0;
+    m_nPlayersHere = 0;
+    m_locking_thread = NULL;
+
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
-    logf( XW_LOGINFO, "creating cref for cookie %s, connName %s",
+    logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
           m_cookie.c_str(), m_connName.c_str() );
+}
+
+
+CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
+    : m_locking_thread(NULL)
+{
+    pthread_mutex_init( &m_mutex, NULL );
+    ReInit( cookie, connName, id );
 }
 
 CookieRef::~CookieRef()
@@ -95,6 +111,7 @@ CookieRef::~CookieRef()
     /* get rid of any sockets still contained */
     XWThreadPool* tPool = XWThreadPool::GetTPool();
 
+    ASSERT_LOCKED();
     for ( ; ; ) {
         map<HostID,HostRec>::iterator iter = m_sockets.begin();
 
@@ -107,9 +124,50 @@ CookieRef::~CookieRef()
         m_sockets.erase( iter );
     }
 
-    logf( XW_LOGINFO, "CookieRef for %d being deleted; sent %d bytes", 
+    logf( XW_LOGINFO, 
+          "CookieRef for %d being deleted; sent %d bytes over lifetime", 
           m_cookieID, m_totalSent );
 } /* ~CookieRef */
+
+void
+CookieRef::Clear(void)
+{
+    m_cookie = "";
+    m_connName = "";
+    m_cookieID = 0;
+    m_eventQueue.clear();
+}
+
+bool
+CookieRef::Lock( void ) 
+{
+    bool success = true;
+
+    pthread_mutex_lock( &m_mutex );
+
+    /* We get here possibly after having been blocked on the mutex for a
+       while.  This cref may no longer be live.  If it's not, unlock and
+       return. */
+
+    assert( m_locking_thread == 0 );
+    m_locking_thread = pthread_self();
+
+    if ( notInUse() ) {
+        logf( XW_LOGINFO, "%s: not locking %p because not in use", __func__, this );
+        success = false;
+        m_locking_thread = NULL;
+        pthread_mutex_unlock( &m_mutex );
+    }
+
+    return success;
+} /* CookieRef::Lock */
+
+void
+CookieRef::Unlock() { 
+    assert( m_locking_thread == pthread_self() );
+    m_locking_thread = NULL;
+    pthread_mutex_unlock( &m_mutex ); 
+}
 
 void
 CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT )
@@ -166,6 +224,7 @@ int
 CookieRef::SocketForHost( HostID dest )
 {
     int socket;
+    ASSERT_LOCKED();
     map<HostID,HostRec>::iterator iter = m_sockets.find( dest );
     if ( iter == m_sockets.end() ) {
         socket = -1;
@@ -235,6 +294,7 @@ CookieRef::removeSocket( int socket )
     int count;
     {
 /*         RWWriteLock rwl( &m_sockets_rwlock ); */
+        ASSERT_LOCKED();
 
         count = m_sockets.size();
         assert( count > 0 );
@@ -257,8 +317,20 @@ CookieRef::removeSocket( int socket )
 bool
 CookieRef::HasSocket( int socket )
 {
+    bool result = Lock();
+    if ( result ) {
+        result = HasSocket_locked( socket );
+        Unlock();
+    }
+    return result;
+}
+
+bool
+CookieRef::HasSocket_locked( int socket )
+{
     bool found = false;
 
+    ASSERT_LOCKED();
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) {
         if ( iter->second.m_socket == socket ) {
@@ -267,8 +339,9 @@ CookieRef::HasSocket( int socket )
         }
         ++iter;
     }
+
     return found;
-} /* HasSocket */
+} /* HasSocket_locked */
 
 #ifdef RELAY_HEARTBEAT
 void
@@ -283,7 +356,7 @@ void
 CookieRef::_CheckHeartbeats( time_t now )
 {
     logf( XW_LOGINFO, "CookieRef::_CheckHeartbeats" );
-
+    ASSERT_LOCKED();
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) {
         time_t last = iter->second.m_lastHeartbeat;
@@ -505,26 +578,17 @@ CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen,
                              bool cascade )
 {
     bool failed = false;
-    {
-        SocketWriteLock slock( socket );
-        if ( slock.socketFound() ) {
-            if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
-                RecordSent( bufLen, socket );
-            } else {
-                failed = true;
-                /* ok that the slock above is still in scope */
-                /* Can't call killSocket.  It will deadlock (try to lock a mutex
-                   we already hold) if what we're sending about is that we're
-                   killing a socket */
-                /*             killSocket( socket, "couldn't send" ); */
-            }
-        }
+    if ( send_with_length_unsafe( socket, buf, bufLen ) ) {
+        RecordSent( bufLen, socket );
+    } else {
+        failed = true;
     }
+
     if ( failed && cascade ) {
         _Remove( socket );
         XWThreadPool::GetTPool()->CloseSocket( socket );
     }
-}
+} /* send_with_length */
 
 static void
 putNetShort( unsigned char** bufpp, unsigned short s )
@@ -566,6 +630,7 @@ void
 CookieRef::reducePlayerCounts( int socket )
 {
     logf( XW_LOGVERBOSE1, "reducePlayerCounts on socket %d", socket );
+    ASSERT_LOCKED();
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) {
 
@@ -646,6 +711,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     assert( id != HOST_ID_NONE );
     logf( XW_LOGINFO, "remembering pair: hostid=%x, socket=%d", id, socket );
     HostRec hr(socket, nPlayersH, nPlayersT);
+    ASSERT_LOCKED();
     m_sockets.insert( pair<HostID,HostRec>(id,hr) );
 
     /* Now send the response */
@@ -722,7 +788,7 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
     assert( socket != 0 );
 
 /*     RWReadLock ml( &m_sockets_rwlock ); */
-
+    ASSERT_LOCKED();
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) { 
         int other = iter->second.m_socket;
@@ -750,7 +816,7 @@ CookieRef::sendAllHere( bool includeName )
         memcpy( bufp, connName, len );
         bufp += len;
     }
-
+    ASSERT_LOCKED();
     map<HostID,HostRec>::iterator iter = m_sockets.begin();
     while ( iter != m_sockets.end() ) { 
         send_with_length( iter->second.m_socket, buf, bufp-buf,
@@ -764,6 +830,7 @@ CookieRef::disconnectSockets( int socket, XWREASON why )
 {
     if ( socket == 0 ) {
 /*         RWReadLock ml( &m_sockets_rwlock ); */
+        ASSERT_LOCKED();
         map<HostID,HostRec>::iterator iter = m_sockets.begin();
         while ( iter != m_sockets.end() ) { 
             assert( iter->second.m_socket != 0 );
@@ -783,7 +850,7 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
     HostID id = evt->u.heart.id;
 
 /*     RWWriteLock rwl( &m_sockets_rwlock ); */
-
+    ASSERT_LOCKED();
     map<HostID,HostRec>::iterator iter = m_sockets.find(id);
     if ( iter == m_sockets.end() ) {
         logf( XW_LOGERROR, "no socket for HostID %x", id );
@@ -792,6 +859,7 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
         /* PENDING If the message came on an unexpected socket, kill the
            connection.  An attack is the most likely explanation. */
         assert( iter->second.m_socket == socket );
+        /* if see this again recover from it */
 
         logf( XW_LOGVERBOSE1, "upping m_lastHeartbeat from %d to %d",
               iter->second.m_lastHeartbeat, uptime() );
@@ -869,6 +937,7 @@ CookieRef::_PrintCookieInfo( string& out )
     /* n messages */
     /* open since when */
 
+    ASSERT_LOCKED();
     snprintf( buf, sizeof(buf), "Hosts connected=%d; cur time = %ld\n", 
               m_sockets.size(), uptime() );
     out += buf;
@@ -884,13 +953,29 @@ CookieRef::_PrintCookieInfo( string& out )
 } /* PrintCookieInfo */
 
 void
-CookieRef::_FormatSockets( string& out )
+CookieRef::_FormatHostInfo( string* hostIds, string* addrs )
 {
-    map<HostID,HostRec>::iterator iter = m_sockets.begin();
-    while ( iter != m_sockets.end() ) {
-        char buf[8];
-        snprintf( buf, sizeof(buf), "%d ", iter->first );
-        out += buf;
-        ++iter;
+    logf( XW_LOGINFO, "%s", __func__ );
+
+    ASSERT_LOCKED();
+    map<HostID,HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+
+        if ( !!hostIds ) {
+            char buf[8];
+            snprintf( buf, sizeof(buf), "%d ", iter->first );
+            *hostIds += buf;
+        }
+
+        if ( !!addrs ) {
+            int s = iter->second.m_socket;
+            struct sockaddr_in name;
+            socklen_t siz = sizeof(name);
+            if ( 0 == getpeername( s, (struct sockaddr*)&name, &siz) ) {
+                char buf[32] = {0};
+                snprintf( buf, sizeof(buf), "%s ", inet_ntoa(name.sin_addr) );
+                *addrs += buf;
+            }
+        }
     }
 }
