@@ -18,6 +18,7 @@
  */
 
 #include "assert.h"
+#include "string.h"
 #include "states.h"
 #include "xwrelay_priv.h"
 
@@ -153,11 +154,12 @@ getFromTable( XW_RELAY_STATE curState, XW_RELAY_EVENT curEvent,
     return found;
 } /* getFromTable */
 
-#define CASESTR(s) case s: return #s
+#define CASESTR(s) case s: str = #s; break
 
 const char*
 stateString( XW_RELAY_STATE state )
 {
+    const char* str = NULL;
     switch( state ) {
         CASESTR(XWS_NONE);
         CASESTR(XWS_ANY);
@@ -175,14 +177,20 @@ stateString( XW_RELAY_STATE state )
         CASESTR(XWS_CHKCOUNTS_INIT);
         CASESTR(XWS_CHKCOUNTS_MISS);
         CASESTR(XWS_CHKCOUNTS);
+    default:
+        assert(0);
     }
-    assert(0);
-    return "";
+
+    assert( 0 == strncmp( "XWS_", str, 4 ) );
+    str += 4;
+
+    return str;
 }
 
 const char* 
 eventString( XW_RELAY_EVENT evt )
 {
+    const char* str = NULL;
     switch( evt ) {
         CASESTR(XWE_NONE);
         CASESTR(XWE_CONNECTMSG);
@@ -203,14 +211,16 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XWE_OKTOSEND);
         CASESTR(XWE_COUNTSBAD);
         CASESTR(XWE_SHUTDOWN);
+    default:
+        assert(0);
     }
-    assert(0);
-    return "";
+    return str;
 }
 
 const char*
 actString( XW_RELAY_ACTION act ) 
 {
+    const char* str = NULL;
     switch ( act ) {
         CASESTR(XWA_NONE);
         CASESTR(XWA_SEND_1ST_RSP);
@@ -229,8 +239,9 @@ actString( XW_RELAY_ACTION act )
         CASESTR(XWA_REMOVESOCKET);
         CASESTR(XWA_HEARTDISCONN);
         CASESTR(XWA_SHUTDOWN);
+    default:
+        assert(0);
     }
-    assert(0);
-    return "";
+    return str;
 }
 #undef CASESTR
