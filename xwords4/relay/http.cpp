@@ -119,6 +119,7 @@ printCrefs( FILE* fil )
              "<th>Players</th>"
              "<th>Players Here</th>"
              "<th>State</th>"
+             "<th>Secs conn&apos;d</th>"
              "<th>Host IDs</th>"
              "<th>Host IPs</th>"
              );
@@ -127,6 +128,7 @@ printCrefs( FILE* fil )
     CRefMgr* cmgr = CRefMgr::Get();
     CookieMapIterator iter = cmgr->GetCookieIterator();
     CookieID id;
+    time_t curTime = uptime();
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
         string hosts, addrs;
         SafeCref scr( id, true );
@@ -141,12 +143,14 @@ printCrefs( FILE* fil )
                      "<td>%d</td>"  /* players */
                      "<td>%d</td>"  /* players here */
                      "<td>%s</td>"  /* State */
+                     "<td>%ld</td>"  /* uptime */
                      "<td>%s</td>"   /* Hosts */
                      "<td>%s</td>"   /* Ip addrs */
                      "</tr>",
                      scr.Cookie(), scr.ConnName(), scr.GetCookieID(),
                      scr.GetTotalSent(), scr.GetPlayersTotal(),
                      scr.GetPlayersHere(), scr.StateString(), 
+                     curTime - scr.GetStartTime(),
                      hosts.c_str(), addrs.c_str()
                      );
         }

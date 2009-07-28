@@ -90,6 +90,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_nPlayersTotal = 0;
     m_nPlayersHere = 0;
     m_locking_thread = NULL;
+    m_starttime = uptime();
 
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
@@ -98,7 +99,6 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
 
 
 CookieRef::CookieRef( const char* cookie, const char* connName, CookieID id )
-    : m_locking_thread(NULL)
 {
     pthread_mutex_init( &m_mutex, NULL );
     ReInit( cookie, connName, id );
