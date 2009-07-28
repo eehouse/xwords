@@ -317,7 +317,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &nPlayersT )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
-            SafeCref scr( connName, 0, srcID, socket, nPlayersH, nPlayersT );
+            SafeCref scr( connName, false, srcID, socket, nPlayersH, nPlayersT );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT );
         }
 

@@ -87,6 +87,7 @@ TimerMgr::GetPollTimeout()
 bool
 TimerMgr::getTimer( TimerProc proc, void* closure )
 {
+    /* Don't call this unless have the lock!!! */
     list<TimerInfo>::iterator iter;
     for ( iter = m_timers.begin(); iter != m_timers.end(); ++iter ) {
         if ( (*iter).proc == proc
@@ -139,33 +140,32 @@ TimerMgr::ClearTimer( TimerProc proc, void* closure )
 void
 TimerMgr::FireElapsedTimers()
 {
-    pthread_mutex_lock( &m_timersMutex );
-
     time_t curTime = uptime();
 
     vector<TimerProc> procs;
     vector<void*> closures;
+    {
+        MutexLock ml( &m_timersMutex );
+        /* loop until we get through without firing a single one.  Only fire one
+           per run, though, since calling erase invalidates the iterator.
+           PENDING: all this needs a mutex!!!! */
+        list<TimerInfo>::iterator iter;
+        for ( iter = m_timers.begin(); iter != m_timers.end(); ++iter ) {
+            TimerInfo* tip = &(*iter);
+            if ( tip->when <= curTime ) {
 
-    /* loop until we get through without firing a single one.  Only fire one
-       per run, though, since calling erase invalidates the iterator.
-       PENDING: all this needs a mutex!!!! */
-    list<TimerInfo>::iterator iter;
-    for ( iter = m_timers.begin(); iter != m_timers.end(); ++iter ) {
-        TimerInfo* tip = &(*iter);
-        if ( tip->when <= curTime ) {
+                procs.push_back(tip->proc);
+                closures.push_back(tip->closure);
 
-            procs.push_back(tip->proc);
-            closures.push_back(tip->closure);
-
-            if ( tip->interval ) {
-                tip->when += tip->interval;
-            } else {
-                tip->when = 0;      /* flag for removal */
+                if ( tip->interval ) {
+                    tip->when += tip->interval;
+                } else {
+                    tip->when = 0;      /* flag for removal */
+                }
             }
         }
     }
 
-    pthread_mutex_unlock( &m_timersMutex );
     vector<TimerProc>::iterator iter1 = procs.begin();
     vector<void*>::iterator iter2 = closures.begin();
     while ( iter1 != procs.end() ) {
