@@ -250,18 +250,25 @@ XWThreadPool::real_listener()
 {
     int flags = POLLIN | POLLERR | POLLHUP;
     TimerMgr* tmgr = TimerMgr::GetTimerMgr();
+    int nSocketsAllocd = 1;
+
+    struct pollfd* fds = (pollfd*)calloc( nSocketsAllocd, sizeof(fds[0]) );
+    char* log = (char*)malloc( 4 * nSocketsAllocd );
 
     for ( ; ; ) {
 
         pthread_rwlock_rdlock( &m_activeSocketsRWLock );
         int nSockets = m_activeSockets.size() + 1; /* for pipe */
         /* Don't malloc this thing every time!!! */
-        pollfd* fds = (pollfd*)calloc( nSockets, sizeof(fds[0]) );
-        pollfd* curfd = fds;
         int logCapacity = 4 * nSockets;
-        char* log = (char*)malloc( logCapacity );
-        log[0] = '\0';
         int logLen = 0;
+
+        if ( nSockets > nSocketsAllocd ) {
+            fds = (struct pollfd*)realloc( fds, nSockets * sizeof(fds[0]) );
+            log = (char*)realloc( log, nSockets * 4 );
+            nSocketsAllocd = nSockets;
+        }
+        struct pollfd* curfd = fds;
         
         curfd->fd = m_pipeRead;
         curfd->events = flags;
@@ -334,9 +341,6 @@ XWThreadPool::real_listener()
             }
             assert( nEvents == 0 );
         }
-
-        free( fds );
-        free( log );
     }
 
     logf( XW_LOGINFO, "real_listener returning" );
