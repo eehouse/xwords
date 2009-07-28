@@ -196,6 +196,8 @@ class CookieRef {
     
     HostID nextHostID() { return ++m_nextHostID; }
 
+    time_t GetStarttime( void ) { return m_starttime; }
+
     bool notInUse(void) { return m_cookieID == 0; }
 
     /* timer callback */
@@ -223,6 +225,8 @@ class CookieRef {
     HostID m_nextHostID;
     int m_nPlayersTotal;
     int m_nPlayersHere;
+
+    time_t m_starttime;
 
     pthread_mutex_t m_mutex;
 

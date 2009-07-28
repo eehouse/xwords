@@ -268,6 +268,14 @@ class SafeCref {
         }
     }
 
+    time_t GetStartTime(void) {
+        if ( IsValid() ) {
+            return m_cref->GetStarttime();
+        } else {
+            return 0;
+        }
+    }
+
     bool IsValid()        { return m_isValid; }
  private:
 
