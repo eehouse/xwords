@@ -35,7 +35,8 @@ SVNINFO = svnversion.txt
 
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
-LDFLAGS += -pthread -g -lmcheck $(STATIC)
+#LDFLAGS += -pthread -g -lmcheck $(STATIC)
+LDFLAGS += -pthread -g $(STATIC)
 CPPFLAGS += -DSPAWN_SELF -DRELAY_HEARTBEAT -DDO_HTTP -g -Wall \
 	-DSVN_REV=\"$(shell cat $(SVNINFO) 2>/dev/null || svnversion -n ..)\"
 
