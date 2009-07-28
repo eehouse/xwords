@@ -502,7 +502,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
     unsigned short packetSize;
     ssize_t nRead = recv( sock, &tmp, sizeof(tmp), 0 );
     if ( nRead != 2 ) {
-        XP_LOGF( "recv => %d, errno=%d", nRead, errno );
+        XP_LOGF( "recv => %d, errno=%d (\"%s\")", nRead, errno, strerror(errno) );
         linux_close_socket( cGlobals );
         comms_transportFailed( cGlobals->game.comms );
         nRead = -1;
@@ -512,7 +512,8 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
         assert( packetSize <= bufSize );
         nRead = recv( sock, buf, packetSize, 0 );
         if ( nRead < 0 ) {
-            XP_WARNF( "linuxReceive: errno=%d\n", errno );
+            XP_WARNF( "linuxReceive: errno=%d (\"%s\")\n", errno, 
+                      strerror(errno) );
         }
     }
     return nRead;
@@ -558,7 +559,8 @@ linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XP_U16 channelNo )
 	     newSocket );
     /* #define	EADDRINUSE 98 */
     result = bind( newSocket, (struct sockaddr*)returnAddr, addrLen );
-    fprintf( stderr, "bind returned %d; errno=%d\n", result, errno );
+    fprintf( stderr, "bind returned %d; errno=%d (\"%s\")\n", result, errno,
+             strerror(errno) );
 
     return linux_make_socketStream( newSocket );
 #endif
