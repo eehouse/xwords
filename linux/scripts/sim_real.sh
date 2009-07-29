@@ -8,6 +8,7 @@ PORT=${PORT:-10999}
 QUIT=${QUIT:-"-q 2"}
 USE_CURSES=${USE_CURSES:="yes"}
 WAIT_MAX=${WAIT_MAX:-10}
+KILL_INTERVAL_SECS=${KILL_INTERVAL_SECS:-0}
 
 RUN_NAME=$(basename $0)_$$
 
@@ -23,6 +24,9 @@ EOF
     echo "    env: HOST: remote host; default: localhost"
     echo "    env: PORT: remote port; default: 10999"
     echo "    env: WAIT_MAX: most seconds to wait between moves; default: 10"
+    echo "    env: KILL_INTERVAL_SECS: kill a random xwords every "
+    echo "         this many seconds; 0 to disable; cur: $KILL_INTERVAL_SECS"
+
     exit 0
 }
 
@@ -73,6 +77,23 @@ check_logs() {
         [ 1 = $OK ] && echo "game $COOKIE ended successfully"
     else
         echo "log directory gone..."
+    fi
+}
+
+kill_at_random() {
+    if [ -n "$KILL_INTERVAL_SECS" ]; then
+        if [ $KILL_INTERVAL_SECS -gt 0 ]; then
+            while [ -d /tmp/$RUN_NAME ]; do
+                sleep $KILL_INTERVAL_SECS
+                set $(pidof xwords)
+                shift $(($#/2))
+                PID=$1
+                if [ -n "$PID" ]; then
+                    echo "killing pid $PID"
+                    kill -INT $PID
+                fi
+            done
+        fi
     fi
 }
 
@@ -170,5 +191,7 @@ echo "************************************************************"
 for II in $(seq $NRUNS); do
     do_one $II &
 done
+
+kill_at_random &
 
 wait
