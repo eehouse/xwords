@@ -76,6 +76,8 @@
 
 #define LOG_FILE_PATH "./xwrelay.log"
 
+static int s_nSpawns = 0;
+
 void
 logf( XW_LogLevel level, const char* format, ... )
 {
@@ -364,6 +366,12 @@ uptime( void )
 {
     static time_t startTime = time(NULL);
     return time(NULL) - startTime;
+}
+
+int
+GetNSpawns(void)
+{
+    return s_nSpawns;
 }
 
 /* forward the message.  Need only change the command after looking up the
@@ -688,6 +696,7 @@ main( int argc, char** argv )
 #ifdef SPAWN_SELF
     /* loop forever, relaunching children as they die. */
     while ( doFork ) {
+        ++s_nSpawns;             /* increment in parent *before* copy */
         pid_t pid = fork();
         if ( pid == 0 ) {       /* child */
             break;

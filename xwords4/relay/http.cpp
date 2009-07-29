@@ -122,6 +122,7 @@ printCrefs( FILE* fil )
              "<th>Secs conn&apos;d</th>"
              "<th>Host IDs</th>"
              "<th>Host IPs</th>"
+             "\n"
              );
     fprintf( fil, "</tr>\n" );
 
@@ -146,7 +147,7 @@ printCrefs( FILE* fil )
                      "<td>%ld</td>"  /* uptime */
                      "<td>%s</td>"   /* Hosts */
                      "<td>%s</td>"   /* Ip addrs */
-                     "</tr>",
+                     "</tr>\n",
                      scr.Cookie(), scr.ConnName(), scr.GetCookieID(),
                      scr.GetTotalSent(), scr.GetPlayersTotal(),
                      scr.GetPlayersHere(), scr.StateString(), 
@@ -169,9 +170,9 @@ printStats( FILE* fil )
     fprintf( fil, "<div class=\"header\">Stats</div>" );
     fprintf( fil, "<table>" );
     fprintf( fil, "<tr><th>Games played</th><th>Games in play</th>"
-             "<th>Uptime</th></tr>" );
-    fprintf( fil, "<tr><td>%d</td><td>%d</td><td>%s</td></tr>\n", 
-             nGames, siz, uptime );
+             "<th>Uptime</th><th>Spawns</th></tr>" );
+    fprintf( fil, "<tr><td>%d</td><td>%d</td><td>%s</td><td>%d</td></tr>\n", 
+             nGames, siz, uptime, GetNSpawns() );
     fprintf( fil, "</table>" );
 }
 

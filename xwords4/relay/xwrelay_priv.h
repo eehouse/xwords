@@ -23,6 +23,8 @@ bool send_with_length_unsafe( int socket, unsigned char* buf, int bufLen );
 
 time_t uptime(void);
 
+int GetNSpawns(void);
+
 int make_socket( unsigned long addr, unsigned short port );
 
 extern class ListenerMgr g_listeners;
