@@ -53,7 +53,7 @@ enum {
     ,XWS_CHECKING_CONN        /* While we're still not fully connected a
                                    message comes in */
 
-    ,XWS_ALLCONNECTED         /* All devices are connected and ready for the
+    ,XWS_ALLCONND             /* All devices are connected and ready for the
                                    relay to do its work.  This is the state
                                    we're in most of the time.  */
 

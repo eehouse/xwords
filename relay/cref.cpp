@@ -243,7 +243,7 @@ CookieRef::SocketForHost( HostID dest )
 bool
 CookieRef::NeverFullyConnected()
 {
-    return m_curState != XWS_ALLCONNECTED
+    return m_curState != XWS_ALLCONND
         && m_curState != XWS_MISSING;
 }
 
