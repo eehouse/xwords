@@ -843,6 +843,13 @@ SIGWINCH_handler( int signal )
     board_draw( g_globals.cGlobals.game.board );
 } /* SIGWINCH_handler */
 
+static void 
+SIGINT_handler( int XP_UNUSED(signal) )
+{
+    (void)handleQuit( &g_globals );
+}
+
+
 static void
 cursesListenOnSocket( CursesAppGlobals* globals, int newSock )
 {
@@ -850,7 +857,7 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock )
 
     XP_WARNF( "%s: setting fd[%d] to %d", __func__, globals->fdCount, newSock );
     globals->fdArray[globals->fdCount].fd = newSock;
-    globals->fdArray[globals->fdCount].events = POLLIN;
+    globals->fdArray[globals->fdCount].events = POLLIN | POLLERR | POLLHUP;
 
     ++globals->fdCount;
     XP_LOGF( "%s: there are now %d sources to poll",
@@ -1424,7 +1431,11 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     /* reader pipe */
     cursesListenOnSocket( &g_globals, g_globals.timepipe[0] );
-    signal( SIGWINCH, SIGWINCH_handler );
+
+    struct sigaction act = { .sa_handler = SIGINT_handler };
+    sigaction( SIGINT, &act, NULL );
+    struct sigaction act2 = { .sa_handler = SIGWINCH_handler };
+    sigaction( SIGWINCH, &act2, NULL );
 
     initCurses( &g_globals );
     getmaxyx( g_globals.boardWin, height, width );
