@@ -1,7 +1,8 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 - 2009 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -284,6 +285,12 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &srcID )
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT ) ) {
+
+            /* Make sure second thread can't create new cref for same cookie
+               this one just handled.*/
+            static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
+            MutexLock ml( &s_newCookieLock );
+
             SafeCref scr( cookie, true, srcID, socket, nPlayersH, nPlayersT );
             success = scr.Connect( socket, srcID, nPlayersH, nPlayersT );
         }
@@ -479,7 +486,9 @@ usage( char* arg0 )
     fprintf( stderr,
              "\t-?                   (print this help)\\\n"
              "\t-c <cport>           (localhost port for control console)\\\n"
+#ifdef DO_HTTP
              "\t-w <cport>           (localhost port for web interface)\\\n"
+#endif
              "\t-D                   (don't become daemon)\\\n"
              "\t-F                   (don't fork and wait to respawn child)\\\n"
              "\t-f <conffile>        (config file)\\\n"
@@ -487,6 +496,9 @@ usage( char* arg0 )
              "\t-i <idfile>          (file where next global id stored)\\\n"
              "\t-n <serverName>      (used in permID generation)\\\n"
              "\t-p <port>            (port to listen on)\\\n"
+#ifdef DO_HTTP
+             "\t-s <path>            (path to css file for http iface)\\\n"
+#endif
              "\t-t <nWorkerThreads>  (how many worker threads to use)\\\n"
              );
     fprintf( stderr, "svn rev. %s\n", SVN_REV );
@@ -569,6 +581,7 @@ main( int argc, char** argv )
     int ctrlport = 0;
 #ifdef DO_HTTP
     int httpport = 0;
+    const char* cssFile = NULL;
 #endif
     int nWorkerThreads = 0;
     char* conffile = NULL;
@@ -590,7 +603,7 @@ main( int argc, char** argv )
     for ( ; ; ) {
        int opt = getopt(argc, argv, "h?c:p:n:i:f:t:"
 #ifdef DO_HTTP
-                        "w:"
+                        "w:s:"
 #endif
                         "DF" );
 
@@ -608,6 +621,9 @@ main( int argc, char** argv )
 #ifdef DO_HTTP
        case 'w':
            httpport = atoi( optarg );
+           break;
+       case 's':
+           cssFile = optarg;
            break;
 #endif
        case 'D':
@@ -664,6 +680,13 @@ main( int argc, char** argv )
             serverName = serverNameBuf;
         }
     }
+
+#ifdef DO_HTTP
+    /* http module uses this */
+    if ( !!cssFile ) {
+        cfg->SetValueFor( "WWW_CSS_PATH", cssFile );
+    }
+#endif
 
     PermID::SetServerName( serverName );
     PermID::SetStartTime( time(NULL) );
