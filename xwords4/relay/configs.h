@@ -1,7 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
