@@ -5,20 +5,24 @@ XWRELAY=${DIR}/xwrelay
 PIDFILE=${DIR}/xwrelay.pid
 CONFFILE=${DIR}/xwrelay.conf
 IDFILE=${DIR}/nextid.txt
+LOGFILE=/tmp/xwrelay_log.txt
+#LOGFILE=/dev/null
+
+date > $LOGFILE
 
 do_start() {
     if [ -f $PIDFILE ] && [ -f /proc/$(cat $PIDFILE)/exe ]; then
-        echo "already running: pid=$(cat $PIDFILE)"
+        echo "already running: pid=$(cat $PIDFILE)" | tee -a $LOGFILE
     elif pidof xwrelay >/dev/null; then
-        echo "already running: pid=$(pidof xwrelay)"
+        echo "already running: pid=$(pidof xwrelay)" | tee -a $LOGFILE
     else
-        echo "starting..."
-        echo "running $XWRELAY $@ -f $CONFFILE"
+        echo "starting..." | tee -a $LOGFILE
+        echo "running $XWRELAY $@ -f $CONFFILE" | tee -a $LOGFILE
         $XWRELAY $@ -f $CONFFILE -i $IDFILE &
         NEWPID=$!                
         echo $NEWPID > $PIDFILE
         sleep 1
-        echo "running with pid=$(cat $PIDFILE)"
+        echo "running with pid=$(cat $PIDFILE)" | tee -a $LOGFILE
     fi
 }
 
@@ -28,13 +32,13 @@ case $1 in
         shift
         if [ -f $PIDFILE ] && [ -f /proc/$(cat $PIDFILE)/exe ]; then
             sync
-            echo "killing pid=$(cat $PIDFILE)"
+            echo "killing pid=$(cat $PIDFILE)" | tee -a $LOGFILE
             kill $(cat $PIDFILE)
         else
-            echo "not running or $PIDFILE not found"
+            echo "not running or $PIDFILE not found" | tee -a $LOGFILE
             PID=$(pidof xwrelay || true)
             if [ "x${PID}" != "x" ]; then
-                echo "maybe it's $PID; killing them"
+                echo "maybe it's $PID; killing them" | tee -a $LOGFILE
                 kill $PID
             fi
         fi
