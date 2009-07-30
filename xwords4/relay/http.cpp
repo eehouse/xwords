@@ -68,6 +68,7 @@ send_meta( FILE* fil )
 {
     FILE* css;
     RelayConfigs* cfg = RelayConfigs::GetConfigs();
+    char pathbuf[256] = { '\0' };
 
     fprintf( fil, "<head>" );
 
@@ -77,21 +78,24 @@ send_meta( FILE* fil )
             fprintf( fil, "<meta http-equiv=\"refresh\" content=\"%d\" />",
                      refreshSecs );
         }
+
+        (void)cfg->GetValueFor( "WWW_CSS_PATH", pathbuf, sizeof(pathbuf) );
     }
 
-    css = fopen( "./xwrelay.css", "r" );
-    if ( NULL != css ) {
-        for ( ; ; ) {
-            char buf[256];
-            size_t nread = fread( buf, 1, sizeof(buf), css );
-            if ( nread <= 0 ) {
-                break;
+    if ( pathbuf[0] ) {
+        css = fopen( pathbuf, "r" );
+        if ( NULL != css ) {
+            for ( ; ; ) {
+                char buf[256];
+                size_t nread = fread( buf, 1, sizeof(buf), css );
+                if ( nread <= 0 ) {
+                    break;
+                }
+                (void) fwrite( buf, 1, nread, fil );
             }
-            (void) fwrite( buf, 1, nread, fil );
+            fclose( css );
         }
-        fclose( css );
     }
-
     fprintf( fil, "</head>" );
 }
 
