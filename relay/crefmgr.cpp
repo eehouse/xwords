@@ -1,7 +1,8 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -526,7 +527,7 @@ SafeCref::SafeCref( const char* cORn, bool isCookie, HostID hid, int socket,
     cref = m_mgr->getMakeCookieRef_locked( cORn, isCookie, hid, socket,
                                            nPlayersH, nPlayersT );
     if ( cref != NULL ) {
-        cref->Lock();
+        m_locked = cref->Lock();
         m_cref = cref;
         m_isValid = true;
     }
