@@ -894,6 +894,10 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
     if ( newSock != -1 ) {
         cursesListenOnSocket( globals, newSock );
     }
+
+#ifdef XWFEATURE_RELAY
+    globals->cGlobals.socket = newSock;
+#endif
 } /* curses_socket_changed */
 
 static void

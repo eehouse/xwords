@@ -113,7 +113,7 @@ writeToFile( XWStreamCtxt* stream, void* closure )
     stream_getBytes( stream, buf, len );
 
     file = fopen( cGlobals->params->fileName, "w" );
-    if ( 1 != fwrite( buf, 1, len, file ) ) {
+    if ( 1 != fwrite( buf, len, 1, file ) ) {
         XP_ASSERT( 0 );
     }
     fclose( file );
