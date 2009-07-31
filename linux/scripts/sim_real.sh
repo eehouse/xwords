@@ -74,7 +74,7 @@ check_logs() {
             fi
         done
 
-        [ 1 = $OK ] && echo "game $COOKIE ended successfully"
+        [ 1 = $OK ] && echo "$(date +%T) game $COOKIE ended successfully"
     else
         echo "log directory gone..."
     fi
