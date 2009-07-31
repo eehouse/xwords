@@ -1029,7 +1029,6 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
     /* We should never get this message a second time, but very rarely we do.
        Drop it in that case. */
-    XP_ASSERT( accepted );
     if ( accepted ) {
         DictionaryCtxt* newDict;
         DictionaryCtxt* curDict;
@@ -1106,8 +1105,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         pool = server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
         pool_initFromDict( server->pool, model_getDictionary(model));
 
-        /* now read the assigned tiles for each player from the stream, and remove
-           them from the newly-created local pool. */
+        /* now read the assigned tiles for each player from the stream, and
+           remove them from the newly-created local pool. */
         for ( i = 0; i < nPlayers; ++i ) {
             TrayTileSet tiles;
 
@@ -1118,7 +1117,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 
             model_assignPlayerTiles( model, i, &tiles );
 
-            /* remove what the server's assigned so we won't conflict later. */
+            /* remove what the server's assigned so we won't conflict
+               later. */
             pool_removeTiles( pool, &tiles );
         }
 
@@ -1128,7 +1128,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
            players */
         setTurn( server, 0 );
     } else {
-        XP_LOGF( "wanted 0; got %d", server->nv.addresses[0].channelNo );
+        XP_LOGF( "%s: wanted 0; got %d", __func__, 
+                 server->nv.addresses[0].channelNo );
     }
     return accepted;
 } /* client_readInitialMessage */
