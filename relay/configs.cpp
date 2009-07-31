@@ -126,7 +126,13 @@ void
 RelayConfigs::SetValueFor( const char* key, const char* value )
 {
     MutexLock ml( &m_values_mutex );
-    /* Does this leak in the case where we're replacing a value? */
+
+    /* Remove any entry already there */
+    map<const char*,const char*>::iterator iter = m_values.find(key);
+    if ( iter != m_values.end() ) {
+        m_values.erase(iter);
+    }
+
     m_values.insert( pair<const char*,const char*>(strdup(key),strdup(value) ) );
 }
 
