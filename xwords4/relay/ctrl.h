@@ -26,7 +26,7 @@ void run_ctrl_thread( int ctrl_sock );
 void stop_ctrl_threads();
 
 /* utility functions used from http.cpp as well as ctrl.cpp */
-void format_uptime( char* buf, int len );
+void format_uptime( time_t seconds, char* buf, int len );
 void format_rev( char* buf, int len );
 
 #endif

@@ -64,7 +64,7 @@ class CRefMgr {
 
     /* PENDING.  These need to go through SafeCref */
     void Recycle( CookieID id );
-    void Recycle( CookieRef* cref );
+    void Recycle_locked( CookieRef* cref );
     void Recycle( const char* connName );
     CookieID CookieIdForName( const char* name );
 
@@ -82,6 +82,8 @@ class CRefMgr {
 
     int GetNumGamesSeen( void );
     int GetSize( void );
+
+    time_t uptime();
 
  private:
     friend class SafeCref;
@@ -117,14 +119,13 @@ class CRefMgr {
 
     CookieID m_nextCID;
 
-    void LockCref( CookieRef* cref );
-    void UnlockCref( CookieRef* cref );
-
     pthread_rwlock_t m_cookieMapRWLock;
     CookieMap m_cookieMap;
 
     pthread_mutex_t m_SocketStuffMutex;
     SocketMap m_SocketStuff;
+
+    time_t m_startTime;
 
     friend class CookieMapIterator;
 }; /* CRefMgr */

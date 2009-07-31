@@ -213,7 +213,7 @@ cmd_kill_eject( int socket, const char** args )
     if ( !found ) {
         const char* msg =
             "* %s socket <num>  -- %s\n"
-            "  %s cref connName <connName>\n"
+            "  %s cref name <connName>\n"
             "  %s cref id <id>"
             ;
         print_to_sock( socket, true, msg, args[0], expl, args[0], args[0] );
@@ -347,10 +347,8 @@ cmd_rev( int socket, const char** args )
 }
 
 void
-format_uptime( char* buf, int len )
+format_uptime( time_t seconds, char* buf, int len )
 {
-    time_t seconds = uptime();
-
     int days = seconds / (24*60*60);
     seconds %= (24*60*60);
 
@@ -374,7 +372,7 @@ cmd_uptime( int socket, const char** args )
                        args[0] );
     } else {
         char buf[128];
-        format_uptime( buf, sizeof(buf) );
+        format_uptime( uptime(), buf, sizeof(buf) );
         print_to_sock( socket, true, "uptime: %s", buf );
     }
     return false;
