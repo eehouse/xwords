@@ -5,6 +5,8 @@ XWRELAY=${DIR}/xwrelay
 PIDFILE=${DIR}/xwrelay.pid
 CONFFILE=${DIR}/xwrelay.conf
 IDFILE=${DIR}/nextid.txt
+CSSFILE=${DIR}/xwrelay.css
+
 LOGFILE=/tmp/xwrelay_log.txt
 #LOGFILE=/dev/null
 
@@ -17,8 +19,8 @@ do_start() {
         echo "already running: pid=$(pidof xwrelay)" | tee -a $LOGFILE
     else
         echo "starting..." | tee -a $LOGFILE
-        echo "running $XWRELAY $@ -f $CONFFILE" | tee -a $LOGFILE
-        $XWRELAY $@ -f $CONFFILE -i $IDFILE &
+        echo "running $XWRELAY $@ -f $CONFFILE -s $CSSFILE" | tee -a $LOGFILE
+        $XWRELAY $@ -f $CONFFILE -i $IDFILE -s $CSSFILE &
         NEWPID=$!                
         echo $NEWPID > $PIDFILE
         sleep 1
