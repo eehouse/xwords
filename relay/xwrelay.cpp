@@ -75,8 +75,6 @@
 #include "permid.h"
 #include "lstnrmgr.h"
 
-#define LOG_FILE_PATH "./xwrelay.log"
-
 static int s_nSpawns = 0;
 
 void
@@ -101,28 +99,40 @@ logf( XW_LogLevel level, const char* format, ... )
         syslog( LOG_LOCAL0 | LOG_INFO, buf );
         va_end(ap);
 #else
-        static FILE* where = stderr;
+        FILE* where = NULL;
         struct tm* timp;
         struct timeval tv;
+        bool useFile;
+        char logFile[256];
 
-        if ( !where ) {
-            where = fopen( LOG_FILE_PATH, "a" );
+        useFile = rc->GetValueFor( "LOGFILE_PATH", logFile, sizeof(logFile) );
+
+        if ( useFile ) {
+            where = fopen( logFile, "a" );
+        } else  {
+            where = stderr;
         }
 
-        gettimeofday( &tv, NULL );
-        struct tm result;
-        timp = localtime_r( &tv.tv_sec, &result );
+        if ( !!where ) {
+            gettimeofday( &tv, NULL );
+            struct tm result;
+            timp = localtime_r( &tv.tv_sec, &result );
 
-        pthread_t me = pthread_self();
+            pthread_t me = pthread_self();
 
-        fprintf( where, "<%p>%d:%d:%d: ", (void*)me, timp->tm_hour, 
-                 timp->tm_min, timp->tm_sec );
+            fprintf( where, "<%p>%d:%d:%d: ", (void*)me, timp->tm_hour, 
+                     timp->tm_min, timp->tm_sec );
 
-        va_list ap;
-        va_start( ap, format );
-        vfprintf( where, format, ap );
-        va_end(ap);
-        fprintf( where, "\n" );
+            va_list ap;
+            va_start( ap, format );
+            vfprintf( where, format, ap );
+            va_end(ap);
+            fprintf( where, "\n" );
+
+            if ( useFile && !!where ) {
+                fclose( where );
+            }
+        }
 #endif
     }
 } /* logf */
@@ -326,7 +336,8 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
              && getNetByte( &bufp, end, &nPlayersT )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
-            SafeCref scr( connName, false, srcID, socket, nPlayersH, nPlayersT );
+            SafeCref scr( connName, false, srcID, socket, nPlayersH, 
+                          nPlayersT );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT );
         }
 
@@ -494,6 +505,7 @@ usage( char* arg0 )
              "\t-f <conffile>        (config file)\\\n"
              "\t-h                   (print this help)\\\n"
              "\t-i <idfile>          (file where next global id stored)\\\n"
+             "\t-l <logfile>         (write logs here, not stderr)\\\n"
              "\t-n <serverName>      (used in permID generation)\\\n"
              "\t-p <port>            (port to listen on)\\\n"
 #ifdef DO_HTTP
@@ -587,6 +599,7 @@ main( int argc, char** argv )
     char* conffile = NULL;
     const char* serverName = NULL;
     const char* idFileName = NULL;
+    const char* logFile = NULL;
     bool doDaemon = true;
     bool doFork = true;
 
@@ -601,7 +614,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:n:i:f:t:"
+       int opt = getopt(argc, argv, "h?c:p:n:i:f:l:t:"
 #ifdef DO_HTTP
                         "w:s:"
 #endif
@@ -638,6 +651,9 @@ main( int argc, char** argv )
        case 'i':
            idFileName = optarg;
            break;
+       case 'l':
+           logFile = optarg;
+           break;
        case 'n':
            serverName = optarg;
            break;
@@ -661,6 +677,10 @@ main( int argc, char** argv )
 
     RelayConfigs::InitConfigs( conffile );
     RelayConfigs* cfg = RelayConfigs::GetConfigs();
+
+    if ( NULL != logFile ) {
+        cfg->SetValueFor( "LOGFILE_PATH", logFile );
+    }
 
     if ( ctrlport == 0 ) {
         (void)cfg->GetValueFor( "CTLPORT", &ctrlport );
@@ -689,8 +709,6 @@ main( int argc, char** argv )
 #endif
 
     PermID::SetServerName( serverName );
-    PermID::SetStartTime( time(NULL) );
-
     /* add signal handling here */
 
     /*
@@ -739,6 +757,9 @@ main( int argc, char** argv )
         }
     }
 #endif
+
+    /* Needs to be reset after a crash/respawn */
+    PermID::SetStartTime( time(NULL) );
 
     /* Arrange to be sent SIGUSR1 on death of parent. */
     prctl( PR_SET_PDEATHSIG, SIGUSR1 );
