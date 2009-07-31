@@ -48,10 +48,10 @@ using namespace std;
 
 SocketsIterator::SocketsIterator( SocketMap::iterator iter,
                                   SocketMap::iterator end,
-                                  pthread_mutex_t* rwlock )
+                                  pthread_mutex_t* mutex )
     : m_iter( iter )
     , m_end( end )
-    , m_mutex( rwlock )
+    , m_mutex( mutex )
 {
 }
 
@@ -90,7 +90,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_nextHostID = HOST_ID_SERVER;
     m_nPlayersTotal = 0;
     m_nPlayersHere = 0;
-    m_locking_thread = NULL;
+    m_locking_thread = 0;
     m_starttime = uptime();
 
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
@@ -154,9 +154,10 @@ CookieRef::Lock( void )
     m_locking_thread = pthread_self();
 
     if ( notInUse() ) {
-        logf( XW_LOGINFO, "%s: not locking %p because not in use", __func__, this );
+        logf( XW_LOGINFO, "%s: not locking %p because not in use", __func__, 
+              this );
         success = false;
-        m_locking_thread = NULL;
+        m_locking_thread = 0;
         pthread_mutex_unlock( &m_mutex );
     }
 
@@ -166,7 +167,7 @@ CookieRef::Lock( void )
 void
 CookieRef::Unlock() { 
     assert( m_locking_thread == pthread_self() );
-    m_locking_thread = NULL;
+    m_locking_thread = 0;
     pthread_mutex_unlock( &m_mutex ); 
 }
 
