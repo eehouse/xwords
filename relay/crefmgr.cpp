@@ -57,6 +57,7 @@ CRefMgr::Get()
 
 CRefMgr::CRefMgr()
     : m_nextCID(0)
+    , m_startTime(time(NULL))
 {
     /* should be using pthread_once() here */
     pthread_mutex_init( &m_SocketStuffMutex, NULL );
@@ -125,8 +126,13 @@ CRefMgr::FindOpenGameFor( const char* cORn, bool isCookie,
             }
         } else {
             if ( 0 == strcmp( cref->ConnName(), cORn ) ) {
-                if ( cref->AcceptingReconnections( hid, 
-                                                   nPlayersH, nPlayersH ) ) {
+                bool found = false;
+                if ( cref->Lock() ) {
+                    found = cref->AcceptingReconnections( hid, nPlayersH, 
+                                                          nPlayersH );
+                    cref->Unlock();
+                }
+                if ( found ) {
                     break;
                 }
             }
@@ -354,7 +360,7 @@ CRefMgr::getCookieRef( int socket )
 CRefMgr::heartbeatProc( void* closure )
 {
     CRefMgr* self = (CRefMgr*)closure;
-    self->checkHeartbeats( uptime() );
+    self->checkHeartbeats( ::uptime() );
 } /* heartbeatProc */
 #endif
 
@@ -397,7 +403,7 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 } /* AddNew */
 
 void
-CRefMgr::Recycle( CookieRef* cref )
+CRefMgr::Recycle_locked( CookieRef* cref )
 {
     logf( XW_LOGINFO, "%s(cref=%p,cookie=%s)", __func__, cref, cref->Cookie() );
     CookieID id = cref->GetCookieID();
@@ -434,7 +440,8 @@ CRefMgr::Recycle( CookieID id )
 {
     CookieRef* cref = getCookieRef( id );
     if ( cref != NULL ) {
-        Recycle( cref );
+        cref->Lock();
+        Recycle_locked( cref );
     }
 } /* Delete */
 
@@ -485,6 +492,12 @@ CRefMgr::checkHeartbeats( time_t now )
     }
 } /* checkHeartbeats */
 #endif
+
+time_t
+CRefMgr::uptime( void )
+{
+    return time(NULL) - m_startTime;
+}
 
 /* static */ CookieMapIterator
 CRefMgr::GetCookieIterator()
@@ -573,7 +586,7 @@ SafeCref::~SafeCref()
 {
     if ( m_cref != NULL && m_locked ) {
         if ( m_cref->ShouldDie() ) {
-            m_mgr->Recycle( m_cref );
+            m_mgr->Recycle_locked( m_cref );
         } else {
             m_cref->Unlock();
         }

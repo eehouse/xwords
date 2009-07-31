@@ -169,14 +169,18 @@ printStats( FILE* fil )
     CRefMgr* cmgr = CRefMgr::Get();
     int nGames = cmgr->GetNumGamesSeen();
     int siz = cmgr->GetSize();
-    char uptime[64];
-    format_uptime( uptime, sizeof(uptime) );
+    char uptime1[64];
+    char uptime2[64];
+    format_uptime( uptime(), uptime1, sizeof(uptime1) );
+    format_uptime( cmgr->uptime(), uptime2, sizeof(uptime2) );
     fprintf( fil, "<div class=\"header\">Stats</div>" );
     fprintf( fil, "<table>" );
-    fprintf( fil, "<tr><th>Games played</th><th>Games in play</th>"
-             "<th>Uptime</th><th>Spawns</th></tr>" );
-    fprintf( fil, "<tr><td>%d</td><td>%d</td><td>%s</td><td>%d</td></tr>\n", 
-             nGames, siz, uptime, GetNSpawns() );
+    fprintf( fil, "<tr>"
+             "<th>Uptime</th><th>Spawns</th><th>Spawn Utime</th>"
+             "<th>Games played</th><th>Games in play</th></tr>" );
+    fprintf( fil, "<tr><td>%s</td><td>%d</td>"
+             "<td>%s</td><td>%d</td><td>%d</td></tr>\n", 
+             uptime1, GetNSpawns(), uptime2, nGames, siz );
     fprintf( fil, "</table>" );
 }
 
