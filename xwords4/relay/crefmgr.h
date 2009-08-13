@@ -243,7 +243,7 @@ class SafeCref {
 
     int GetPlayersTotal() { 
         if ( IsValid() ) {
-            return m_cref->GetPlayersTotal();
+            return m_cref->GetPlayersSought();
         } else {
             return -1;          /* so don't crash.... */
         }

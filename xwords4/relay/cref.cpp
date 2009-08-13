@@ -88,7 +88,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_curState = XWS_INITED;
     m_nextState = XWS_INITED;
     m_nextHostID = HOST_ID_SERVER;
-    m_nPlayersTotal = 0;
+    m_nPlayersSought = 0;
     m_nPlayersHere = 0;
     m_locking_thread = 0;
     m_starttime = uptime();
@@ -264,13 +264,13 @@ CookieRef::AcceptingReconnections( HostID hid, int nPlayersH, int nPlayersT )
         logf( XW_LOGINFO, "reject: known hid" );
         /* do nothing: reject */
     } else {
-        if ( m_nPlayersTotal == 0 ) {
+        if ( m_nPlayersSought == 0 ) {
             accept = true;
-        } else if ( nPlayersH + m_nPlayersHere <= m_nPlayersTotal ) {
+        } else if ( nPlayersH + m_nPlayersHere <= m_nPlayersSought ) {
             accept = true;
         } else {
-            logf( XW_LOGINFO, "reject: m_nPlayersTotal=%d, m_nPlayersHere=%d",
-                  m_nPlayersTotal, m_nPlayersHere );
+            logf( XW_LOGINFO, "reject: m_nPlayersSought=%d, m_nPlayersHere=%d",
+                  m_nPlayersSought, m_nPlayersHere );
         }
     }
 
@@ -611,19 +611,19 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
           "nPlayersT=%d", hid, nPlayersH, nPlayersT );
 
     if ( hid == HOST_ID_SERVER ) {
-        assert( m_nPlayersTotal == 0 );
-        m_nPlayersTotal = nPlayersT;
+        assert( m_nPlayersSought == 0 );
+        m_nPlayersSought = nPlayersT;
     } else {
         assert( nPlayersT == 0 ); /* should catch this earlier!!! */
-        assert( m_nPlayersTotal == 0 || m_nPlayersHere <= m_nPlayersTotal );
+        assert( m_nPlayersSought == 0 || m_nPlayersHere <= m_nPlayersSought );
     }
     m_nPlayersHere += nPlayersH;
 
     logf( XW_LOGVERBOSE1, "increasePlayerCounts: here=%d; total=%d",
-          m_nPlayersHere, m_nPlayersTotal );
+          m_nPlayersHere, m_nPlayersSought );
 
     CRefEvent newevt;
-    newevt.type = (m_nPlayersHere == m_nPlayersTotal) ? 
+    newevt.type = (m_nPlayersHere == m_nPlayersSought) ? 
         XWE_ALLHERE : XWE_SOMEMISSING;
     m_eventQueue.push_back( newevt );
 } /* increasePlayerCounts */
@@ -640,14 +640,14 @@ CookieRef::reducePlayerCounts( int socket )
             assert( iter->first != 0 );
 
             if ( iter->first == HOST_ID_SERVER ) {
-                m_nPlayersTotal = 0;
+                m_nPlayersSought = 0;
             } else {
                 assert( iter->second.m_nPlayersT == 0 );
             }
             m_nPlayersHere -= iter->second.m_nPlayersH;
 
-            logf( XW_LOGVERBOSE1, "reducePlayerCounts: m_nPlayersHere=%d; m_nPlayersTotal=%d", 
-                  m_nPlayersHere, m_nPlayersTotal );
+            logf( XW_LOGVERBOSE1, "reducePlayerCounts: m_nPlayersHere=%d; m_nPlayersSought=%d", 
+                  m_nPlayersHere, m_nPlayersSought );
 
             break;
         }
@@ -665,15 +665,15 @@ CookieRef::checkCounts( const CRefEvent* evt )
     HostID hid = evt->u.con.srcID;
     bool success;
 
-    logf( XW_LOGVERBOSE1, "checkCounts: hid=%d, nPlayers=%d, m_nPlayersTotal = %d, "
+    logf( XW_LOGVERBOSE1, "checkCounts: hid=%d, nPlayers=%d, m_nPlayersSought = %d, "
           "m_nPlayersHere = %d",
-          hid, nPlayersH, m_nPlayersTotal, m_nPlayersHere );
+          hid, nPlayersH, m_nPlayersSought, m_nPlayersHere );
 
     if ( hid == HOST_ID_SERVER ) {
-        success = m_nPlayersTotal == 0;
+        success = m_nPlayersSought == 0;
     } else {
-        success = (m_nPlayersTotal == 0) /* if no server present yet */
-            || (m_nPlayersTotal >= m_nPlayersHere + nPlayersH);
+        success = (m_nPlayersSought == 0) /* if no server present yet */
+            || (m_nPlayersSought >= m_nPlayersHere + nPlayersH);
     }
     logf( XW_LOGVERBOSE1, "success = %d", success );
 
@@ -925,7 +925,7 @@ CookieRef::_PrintCookieInfo( string& out )
     snprintf( buf, sizeof(buf), "Bytes sent=%d\n", m_totalSent );
     out += buf;
 
-    snprintf( buf, sizeof(buf), "Total players=%d\n", m_nPlayersTotal );
+    snprintf( buf, sizeof(buf), "Total players=%d\n", m_nPlayersSought );
     out += buf;
     snprintf( buf, sizeof(buf), "Players here=%d\n", m_nPlayersHere );
     out += buf;
