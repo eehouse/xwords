@@ -72,7 +72,7 @@ class CookieRef {
        If the hostID is HOST_ID_SERVER, it's the server. */
     CookieID GetCookieID() { return m_cookieID; }
     int GetTotalSent() { return m_totalSent; }
-    int GetPlayersTotal() { return m_nPlayersTotal; }
+    int GetPlayersSought() { return m_nPlayersSought; }
     int GetPlayersHere() { return m_nPlayersHere; }
 
 
@@ -223,7 +223,7 @@ class CookieRef {
     deque<CRefEvent>   m_eventQueue;
 
     HostID m_nextHostID;
-    int m_nPlayersTotal;
+    int m_nPlayersSought;
     int m_nPlayersHere;
 
     time_t m_starttime;
