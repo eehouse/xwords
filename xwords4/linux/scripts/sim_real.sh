@@ -8,7 +8,9 @@ PORT=${PORT:-10999}
 QUIT=${QUIT:-"-q 2"}
 USE_CURSES=${USE_CURSES:="yes"}
 WAIT_MAX=${WAIT_MAX:-10}
+CONN_WAIT_MAX=${CONN_WAIT_MAX:-15}
 KILL_INTERVAL_SECS=${KILL_INTERVAL_SECS:-0}
+VERBOSE=""
 
 RUN_NAME=$(basename $0)_$$
 
@@ -17,6 +19,7 @@ usage() {
     cat <<EOF
 The goal of this script is to simulate real-world loads on the relay,
 with games starting, stopping, moves happening, etc. over a long time.
+
 It uses ENV variables rather than commandline parms for configuration.
 EOF
     echo "    env: NRUNS: number of simultaneous games; default 4"
@@ -24,6 +27,8 @@ EOF
     echo "    env: HOST: remote host; default: localhost"
     echo "    env: PORT: remote port; default: 10999"
     echo "    env: WAIT_MAX: most seconds to wait between moves; default: 10"
+    echo "    env: CONN_WAIT_MAX: most seconds to wait (per device) before"
+    echo "         sending connect; cur: $CONN_WAIT_MAX"
     echo "    env: KILL_INTERVAL_SECS: kill a random xwords every "
     echo "         this many seconds; 0 to disable; cur: $KILL_INTERVAL_SECS"
 
@@ -47,6 +52,7 @@ game_curses() {
     $XWORDS -u -d $DICT -r $NAME -a $HOST -p $PORT \
         -C $COOKIE $QUIT -z 0:$WAIT >/dev/null -0 $SERVER_PARAMS \
         2>/tmp/$RUN_NAME/log_${COOKIE}_${INDEX}.txt < /dev/null &
+    echo $!
 }
 
 game_gtk() {
@@ -64,10 +70,13 @@ check_logs() {
     COOKIE=$1
 
     if [ -d /tmp/$RUN_NAME ]; then
+        mkdir -p /tmp/$RUN_NAME/bad
         OK=1
         for LOG in /tmp/$RUN_NAME/log_${COOKIE}_*.txt; do
             if ! grep -q XWPROTO_END_GAME $LOG; then
                 echo "$LOG didn't end correctly; check it out."
+                tail -n 10 $LOG
+                mv $LOG /tmp/$RUN_NAME/bad
                 OK=0
             else
                 rm $LOG         # save some space
@@ -109,12 +118,16 @@ do_one() {
         TODO=$(($CROOT % 3))
         TODO=$((TODO+2))
         COUNT=0
+
+        PIDS=""
+
         for NAME in Bbbbb Aaaaa Kkkkk Eeeee; do
             [ $COUNT = $TODO ] && break
             while :; do
                 RAND=$(random)
                 INDEX=$(( $RAND % $TODO ))
                 WAIT=$(( $RAND % $WAIT_MAX ))
+                CONN_WAIT=$(( $RAND % $CONN_WAIT_MAX ))
                 case $INDEX in
                     0)
                         if [ -z "$ZERO_DONE" ]; then
@@ -123,9 +136,10 @@ do_one() {
                                 REMOTES="$REMOTES -N"; 
                             done
                             ZERO_DONE=1
+                            sleep $CONN_WAIT
                             if [ "$USE_CURSES" = "yes" ]; then
-                                game_curses $NAME $COOKIE $WAIT $INDEX \
-                                    "-s $REMOTES"
+                                TMP=$(game_curses $NAME $COOKIE $WAIT $INDEX "-s $REMOTES")
+                                PIDS="$PIDS $TMP"
                             else
                                 game_gtk  $NAME $COOKIE $WAIT $INDEX \
                                     "-s $REMOTES"
@@ -136,8 +150,9 @@ do_one() {
                     1)
                         if [ -z "$ONE_DONE" ]; then
                             ONE_DONE=1
+                            sleep $CONN_WAIT
                             if [ "$USE_CURSES" = "yes" ]; then
-                                game_curses $NAME $COOKIE $WAIT $INDEX
+                                PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
                             else
                                 game_gtk $NAME $COOKIE $WAIT $INDEX
                             fi
@@ -147,8 +162,9 @@ do_one() {
                     2)
                         if [ -z "$TWO_DONE" ]; then
                             TWO_DONE=1
+                            sleep $CONN_WAIT
                             if [ "$USE_CURSES" = "yes" ]; then
-                                game_curses $NAME $COOKIE $WAIT $INDEX
+                                PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
                             else
                                 game_gtk $NAME $COOKIE $WAIT $INDEX
                             fi
@@ -158,8 +174,9 @@ do_one() {
                     3)
                         if [ -z "$THREE_DONE" ]; then
                             THREE_DONE=1
+                            sleep $CONN_WAIT
                             if [ "$USE_CURSES" = "yes" ]; then
-                                game_curses $NAME $COOKIE $WAIT $INDEX
+                                PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
                             else
                                 game_gtk $NAME $COOKIE $WAIT $INDEX
                             fi
@@ -171,10 +188,18 @@ do_one() {
             COUNT=$((COUNT+1))
         done
 
-        wait
+        test -n "$VERBOSE" && echo "watching:$PIDS"
+        while [ -d /tmp/$RUN_NAME -a -n "$PIDS" ]; do
+            sleep 10
+            for PID in $PIDS; do
+                if [ ! -d /proc/$PID ]; then
+                    kill $PIDS 2>/dev/null
+                    PIDS=""
+                fi
+            done
+        done
 
         check_logs $COOKIE
-        sleep $(( $(random) % 60 ))
     done
 }
 
