@@ -254,36 +254,45 @@ XWThreadPool::real_listener()
     int nSocketsAllocd = 1;
 
     struct pollfd* fds = (pollfd*)calloc( nSocketsAllocd, sizeof(fds[0]) );
+#ifdef LOG_POLL
     char* log = (char*)malloc( 4 * nSocketsAllocd );
+#endif
 
     for ( ; ; ) {
 
         pthread_rwlock_rdlock( &m_activeSocketsRWLock );
         int nSockets = m_activeSockets.size() + 1; /* for pipe */
-        /* Don't malloc this thing every time!!! */
+#ifdef LOG_POLL
         int logCapacity = 4 * nSockets;
         int logLen = 0;
+#endif
 
         if ( nSockets > nSocketsAllocd ) {
             fds = (struct pollfd*)realloc( fds, nSockets * sizeof(fds[0]) );
+#ifdef LOG_POLL
             log = (char*)realloc( log, nSockets * 4 );
+#endif
             nSocketsAllocd = nSockets;
         }
         struct pollfd* curfd = fds;
         
         curfd->fd = m_pipeRead;
         curfd->events = flags;
+#ifdef LOG_POLL
         logLen += snprintf( log+logLen, logCapacity - logLen, "%d,", curfd->fd );
+#endif
         ++curfd;
 
         vector<int>::iterator iter = m_activeSockets.begin();
         while ( iter != m_activeSockets.end()  ) {
             curfd->fd = *iter++;
             curfd->events = flags;
+#ifdef LOG_POLL
             if ( logCapacity > logLen ) {
                 logLen += snprintf( log+logLen, logCapacity - logLen, "%d,", 
                                     curfd->fd );
             }
+#endif
             assert( curfd < fds + nSockets );
             ++curfd;
         }
@@ -291,7 +300,9 @@ XWThreadPool::real_listener()
 
         int nMillis = tmgr->GetPollTimeout();
 
+#ifdef LOG_POLL
         logf( XW_LOGINFO, "polling %s nmillis=%d", log, nMillis );
+#endif
         int nEvents = poll( fds, nSockets, nMillis );
         logf( XW_LOGINFO, "back from poll: %d", nEvents );
         if ( m_timeToDie ) {
