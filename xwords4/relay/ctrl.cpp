@@ -386,6 +386,7 @@ cmd_crash( int socket, const char** args )
                        "* %s -- fires an assert (debug case) or divides-by-zero",
                        args[0] );
     } else {
+        logf( XW_LOGERROR, "crashing..." );
         assert(0);
         int ii = 1;
         while ( ii > 0 ) --ii;
@@ -589,7 +590,7 @@ ctrl_thread_main( void* arg )
 void
 run_ctrl_thread( int ctrl_sock )
 {
-    logf( XW_LOGINFO, "calling accept on socket %d\n", ctrl_sock );
+    logf( XW_LOGINFO, "calling accept on socket %d", ctrl_sock );
 
     sockaddr newaddr;
     socklen_t siz = sizeof(newaddr);
