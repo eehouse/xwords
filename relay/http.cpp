@@ -47,6 +47,7 @@
 #include "xwrelay_priv.h"
 #include "configs.h"
 #include "lstnrmgr.h"
+#include "http.h"
 
 /*
  * http://www.jbox.dk/sanos/webserver.htm has code for a trivial web server.  Good example.
@@ -111,7 +112,7 @@ printTail( FILE* fil )
 }
 
 static void
-printCrefs( FILE* fil )
+printCrefs( FILE* fil, const CrefMgrInfo* info )
 {
     fprintf( fil, "<div class=\"header\">Connections</div>" );
     fprintf( fil, "<table><tr>" );
@@ -130,49 +131,44 @@ printCrefs( FILE* fil )
              );
     fprintf( fil, "</tr>\n" );
 
-    CRefMgr* cmgr = CRefMgr::Get();
-    CookieMapIterator iter = cmgr->GetCookieIterator();
-    CookieID id;
     time_t curTime = uptime();
-    for ( id = iter.Next(); id != 0; id = iter.Next() ) {
-        string hosts, addrs;
-        SafeCref scr( id, true );
-        if ( scr.IsValid() ) {
-            scr.GetHostsConnected( &hosts, &addrs );
+    unsigned int ii;
+    for ( ii = 0; ii < info->m_crefInfo.size(); ++ii ) {
+        const CrefInfo* crefInfo = &info->m_crefInfo[ii];
 
-            fprintf( fil, "<tr>"
-                     "<td>%s</td>"  /* name */
-                     "<td>%s</td>"  /* conn name */
-                     "<td>%d</td>"  /* cookie id */
-                     "<td>%d</td>"  /* total sent */
-                     "<td>%d</td>"  /* players */
-                     "<td>%d</td>"  /* players here */
-                     "<td>%s</td>"  /* State */
-                     "<td>%ld</td>"  /* uptime */
-                     "<td>%s</td>"   /* Hosts */
-                     "<td>%s</td>"   /* Ip addrs */
-                     "</tr>\n",
-                     scr.Cookie(), scr.ConnName(), scr.GetCookieID(),
-                     scr.GetTotalSent(), scr.GetPlayersTotal(),
-                     scr.GetPlayersHere(), scr.StateString(), 
-                     curTime - scr.GetStartTime(),
-                     hosts.c_str(), addrs.c_str()
-                     );
-        }
+        fprintf( fil, "<tr>"
+                 "<td>%s</td>"  /* name */
+                 "<td>%s</td>"  /* conn name */
+                 "<td>%d</td>"  /* cookie id */
+                 "<td>%d</td>"  /* total sent */
+                 "<td>%d</td>"  /* players */
+                 "<td>%d</td>"  /* players here */
+                 "<td>%s</td>"  /* State */
+                 "<td>%ld</td>"  /* conntime */
+                 "<td>%s</td>"   /* Hosts */
+                 "<td>%s</td>"   /* Ip addrs */
+                 "</tr>\n",
+                 crefInfo->m_cookie.c_str(),
+                 crefInfo->m_connName.c_str(),
+                 crefInfo->m_cookieID,
+                 crefInfo->m_totalSent,
+                 crefInfo->m_nPlayersSought, crefInfo->m_nPlayersHere, 
+                 stateString( crefInfo->m_curState ),
+                 curTime - crefInfo->m_startTime,
+                 crefInfo->m_hostsIds.c_str(),
+                 crefInfo->m_hostIps.c_str()
+                 );
     }
     fprintf( fil, "</table>\n" );
-}
+} /* printCrefs */
 
 static void
-printStats( FILE* fil )
+printStats( FILE* fil, const CrefMgrInfo* info )
 {
-    CRefMgr* cmgr = CRefMgr::Get();
-    int nGames = cmgr->GetNumGamesSeen();
-    int siz = cmgr->GetSize();
     char uptime1[64];
     char uptime2[64];
     format_uptime( uptime(), uptime1, sizeof(uptime1) );
-    format_uptime( cmgr->uptime(), uptime2, sizeof(uptime2) );
+    format_uptime( time(NULL) - info->m_startTimeSpawn, uptime2, sizeof(uptime2) );
     fprintf( fil, "<div class=\"header\">Stats</div>" );
     fprintf( fil, "<table>" );
     fprintf( fil, "<tr>"
@@ -180,14 +176,20 @@ printStats( FILE* fil )
              "<th>Games played</th><th>Games in play</th></tr>" );
     fprintf( fil, "<tr><td>%s</td><td>%d</td>"
              "<td>%s</td><td>%d</td><td>%d</td></tr>\n", 
-             uptime1, GetNSpawns(), uptime2, nGames, siz );
+             uptime1, GetNSpawns(), uptime2, info->m_nCrefsAll,
+             info->m_nCrefsCurrent );
     fprintf( fil, "</table>" );
 }
 
 static void*
 http_thread_main( void* arg )
 {
-    int sock = (int)arg;
+    HttpState* state = (HttpState*)arg;
+
+    sockaddr newaddr;
+    socklen_t siz = sizeof(newaddr);
+    int sock = accept( state->ctrl_sock, &newaddr, &siz );
+
     char buf[512];
     ssize_t totalRead = 0;
 
@@ -202,6 +204,26 @@ http_thread_main( void* arg )
     }
 
     if ( 0 == strncasecmp( "GET ", buf, 3 ) ) {
+        MutexLock ml(&state->m_dataMutex);
+
+        /* We'll handle as many http connections as folks want to throw at us,
+           but will only fetch from the crefmgr infrequently, caching the data
+           for next time.  Only one thread at a time gets to read from it,
+           ensuring we don't nuke it from under somebody.  */
+        time_t curTime = time( NULL );
+
+        if ( state->m_nextFetch < curTime ) {
+            delete state->m_crefInfo;
+            state->m_crefInfo = NULL;
+        }
+        if ( state->m_crefInfo == NULL ) {
+            state->m_crefInfo = new CrefMgrInfo();
+            logf( XW_LOGINFO, "%s: calling GetStats", __func__ );
+            CRefMgr::Get()->GetStats( *state->m_crefInfo );
+            state->m_nextFetch = curTime + state->m_sampleInterval;
+        }
+        const CrefMgrInfo* info = state->m_crefInfo;
+
         FILE* fil = fdopen( sock, "r+" );
         fseek( fil, 0, SEEK_CUR ); // reverse stream
         
@@ -210,9 +232,12 @@ http_thread_main( void* arg )
         send_meta( fil );
         fprintf( fil, "<body><div class=\"main\">" );
 
-        printStats( fil );
+/*         CrefMgrInfo info; */
+/*         CRefMgr::Get()->GetStats( info ); */
 
-        printCrefs( fil );
+        printStats( fil, info );
+
+        printCrefs( fil, info );
 
         printTail( fil );
 
@@ -228,15 +253,11 @@ http_thread_main( void* arg )
 } /* http_thread_main */
 
 void
-run_http_thread( int http_sock )
+run_http_thread( HttpState* state )
 {
-    sockaddr newaddr;
-    socklen_t siz = sizeof(newaddr);
-    int newSock = accept( http_sock, &newaddr, &siz );
-
     pthread_t thread;
     int result = pthread_create( &thread, NULL, 
-                                 http_thread_main, (void*)newSock );
+                                 http_thread_main, (void*)state );
     if ( 0 == result ) {
         pthread_detach( thread );
     } else {

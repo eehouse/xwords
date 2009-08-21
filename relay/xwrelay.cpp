@@ -529,7 +529,7 @@ usage( char* arg0 )
 ListenerMgr g_listeners;
 int g_control;
 #ifdef DO_HTTP
-static int g_http;
+static int g_http = -1;
 #endif
 
 void
@@ -804,13 +804,23 @@ main( int argc, char** argv )
     if ( g_control == -1 ) {
         exit( 1 );
     }
+
 #ifdef DO_HTTP
+    HttpState http_state;
     int addr;
-    if ( cfg->GetValueFor( "WWW_LISTEN_ADDR", &addr ) ) {
+
+    memset( &http_state, 0, sizeof(http_state) );
+    if ( cfg->GetValueFor( "WWW_SAMPLE_INTERVAL", 
+                           &http_state.m_sampleInterval )
+         && cfg->GetValueFor( "WWW_LISTEN_ADDR", &addr ) ) {
         g_http = make_socket( addr, httpport );
         if ( g_http == -1 ) {
             exit( 1 );
         }
+        http_state.ctrl_sock = g_http;
+    }
+    if ( -1 != g_http ) {
+        pthread_mutex_init( &http_state.m_dataMutex, NULL );
     }
 #endif
 
@@ -823,6 +833,7 @@ main( int argc, char** argv )
     XWThreadPool* tPool = XWThreadPool::GetTPool();
     tPool->Setup( nWorkerThreads, processMessage );
 
+
     /* set up select call */
     fd_set rfds;
     for ( ; ; ) {
@@ -830,7 +841,9 @@ main( int argc, char** argv )
         g_listeners.AddToFDSet( &rfds );
         FD_SET( g_control, &rfds );
 #ifdef DO_HTTP
-        FD_SET( g_http, &rfds );
+        if ( -1 != g_http ) {
+            FD_SET( g_http, &rfds );
+        }
 #endif
         int highest = g_listeners.GetHighest();
         if ( g_control > highest ) {
@@ -875,7 +888,7 @@ main( int argc, char** argv )
             }
 #ifdef DO_HTTP
             if ( FD_ISSET( g_http, &rfds ) ) {
-                run_http_thread( g_http );
+                run_http_thread( &http_state );
                 --retval;
             }
 #endif

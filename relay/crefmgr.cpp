@@ -179,6 +179,36 @@ CRefMgr::GetSize( void )
     return m_cookieMap.size();
 }
 
+void
+CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
+{
+    mgrInfo.m_nCrefsAll = GetNumGamesSeen();
+    mgrInfo.m_startTimeSpawn = m_startTime;
+
+    RWReadLock rwl( &m_cookieMapRWLock );
+    mgrInfo.m_nCrefsCurrent = m_cookieMap.size();
+
+    CookieMap::iterator iter;
+    for ( iter = m_cookieMap.begin(); iter != m_cookieMap.end(); ++iter ) {
+        CookieRef* cref = iter->second;
+
+        CrefInfo info;
+        info.m_cookie = cref->Cookie();
+        info.m_connName = cref->ConnName();
+        info.m_cookieID = cref->GetCookieID();
+        info.m_curState = cref->CurState();
+        info.m_totalSent = cref->GetTotalSent();
+        info.m_nPlayersSought = cref->GetPlayersSought();
+        info.m_nPlayersHere = cref->GetPlayersHere();
+        info.m_startTime = cref->GetStarttime();
+        
+        SafeCref sc(cref);
+        sc.GetHostsConnected( &info.m_hostsIds, &info.m_hostIps );
+        
+        mgrInfo.m_crefInfo.push_back( info );
+    }
+}
+
 CookieID
 CRefMgr::cookieIDForConnName( const char* connName )
 {
