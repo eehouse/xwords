@@ -23,7 +23,15 @@
 #ifndef _HTTP_H_
 #define _HTTP_H_
 
-void run_http_thread( int ctrl_sock );
+typedef struct _HttpState {
+    int ctrl_sock;
+    int m_sampleInterval;
+    time_t m_nextFetch;
+    pthread_mutex_t m_dataMutex;
+    CrefMgrInfo* m_crefInfo;
+} HttpState;
+
+void run_http_thread( HttpState* state );
 /* void stop_http_threads(); */
 
 #endif

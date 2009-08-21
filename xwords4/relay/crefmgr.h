@@ -44,6 +44,28 @@ class SocketsIterator {
     pthread_mutex_t* m_mutex; /* locked */
 };
 
+class CrefInfo {
+ public:
+    string m_cookie;
+    string m_connName;
+    CookieID m_cookieID;
+    int m_totalSent;
+    int m_nPlayersSought;
+    int m_nPlayersHere;
+    XW_RELAY_STATE m_curState;
+    time_t m_startTime;
+    int m_nHosts;
+    string m_hostsIds;
+    string m_hostIps;
+};
+
+class CrefMgrInfo {
+ public:
+    int m_nCrefsAll;
+    int m_nCrefsCurrent;
+    time_t m_startTimeSpawn;
+    vector<CrefInfo> m_crefInfo;
+};
 
 class CRefMgr {
     /* Maintain access to CookieRef instances, ultimately to ensure that no
@@ -84,6 +106,8 @@ class CRefMgr {
     int GetSize( void );
 
     time_t uptime();
+
+    void GetStats( CrefMgrInfo& info );
 
  private:
     friend class SafeCref;
