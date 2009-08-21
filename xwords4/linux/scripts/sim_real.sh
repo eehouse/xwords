@@ -11,6 +11,7 @@ WAIT_MAX=${WAIT_MAX:-10}
 CONN_WAIT_MAX=${CONN_WAIT_MAX:-15}
 KILL_INTERVAL_SECS=${KILL_INTERVAL_SECS:-0}
 VERBOSE=""
+ROLES="${ROLES:-0 1 2 3}"
 
 RUN_NAME=$(basename $0)_$$
 
@@ -31,7 +32,7 @@ EOF
     echo "         sending connect; cur: $CONN_WAIT_MAX"
     echo "    env: KILL_INTERVAL_SECS: kill a random xwords every "
     echo "         this many seconds; 0 to disable; cur: $KILL_INTERVAL_SECS"
-
+    echo "    env: ROLES: what hosts to handle here; cur: $ROLES"
     exit 0
 }
 
@@ -106,6 +107,30 @@ kill_at_random() {
     fi
 }
 
+rearrange() {
+    test -n $1 || return ""
+
+    ARGS="$*"
+    NARGS=$#
+
+    RESULT=""
+    NFOUND=0
+    while [ $NFOUND -lt $NARGS ]; do
+        while :; do
+            set $ARGS
+            INDEX=$(($RANDOM % $NARGS))
+            shift $INDEX
+            VAL=$1
+            [ x = "${RESULT/*$VAL*/x}" ] || break
+        done
+
+        RESULT="$RESULT $VAL"
+        NFOUND=$((NFOUND+1))
+    done
+
+    echo $RESULT
+}
+
 do_one() {
     CROOT=${1:-$(exec sh -c 'echo $PPID')}
     INDX=1
@@ -113,78 +138,65 @@ do_one() {
     while [ -d /tmp/$RUN_NAME ]; do                 # loop forever
         COOKIE="$CROOT:$INDX"
         INDX=$((INDX+1))
-        unset ZERO_DONE ONE_DONE TWO_DONE THREE_DONE
 
         TODO=$(($CROOT % 3))
         TODO=$((TODO+2))
         COUNT=0
 
         PIDS=""
+        LOC_ROLES=$(rearrange $ROLES)
 
-        for NAME in Bbbbb Aaaaa Kkkkk Eeeee; do
-            [ $COUNT = $TODO ] && break
-            while :; do
-                RAND=$(random)
-                INDEX=$(( $RAND % $TODO ))
-                WAIT=$(( $RAND % $WAIT_MAX ))
-                CONN_WAIT=$(( $RAND % $CONN_WAIT_MAX ))
-                case $INDEX in
+        for INDEX in $LOC_ROLES; do
+            [ $COUNT -ge $TODO ] && break
+            [ $INDEX -ge $TODO ] && continue
+
+            RAND=$(random)
+            WAIT=$(( $RAND % $WAIT_MAX ))
+            CONN_WAIT=$(( $RAND % $CONN_WAIT_MAX ))
+            case $INDEX in
                     0)
-                        if [ -z "$ZERO_DONE" ]; then
-                            REMOTES=""
-                            for JJ in $(seq $(($TODO-1))); do
-                                REMOTES="$REMOTES -N"; 
-                            done
-                            ZERO_DONE=1
-                            sleep $CONN_WAIT
-                            if [ "$USE_CURSES" = "yes" ]; then
-                                TMP=$(game_curses $NAME $COOKIE $WAIT $INDEX "-s $REMOTES")
-                                PIDS="$PIDS $TMP"
-                            else
-                                game_gtk  $NAME $COOKIE $WAIT $INDEX \
-                                    "-s $REMOTES"
-                            fi
-                            break
-                        fi
-                        ;;
-                    1)
-                        if [ -z "$ONE_DONE" ]; then
-                            ONE_DONE=1
-                            sleep $CONN_WAIT
-                            if [ "$USE_CURSES" = "yes" ]; then
-                                PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
-                            else
-                                game_gtk $NAME $COOKIE $WAIT $INDEX
-                            fi
-                            break
-                        fi
-                        ;;
-                    2)
-                        if [ -z "$TWO_DONE" ]; then
-                            TWO_DONE=1
-                            sleep $CONN_WAIT
-                            if [ "$USE_CURSES" = "yes" ]; then
-                                PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
-                            else
-                                game_gtk $NAME $COOKIE $WAIT $INDEX
-                            fi
-                            break
-                        fi
-                        ;;
-                    3)
-                        if [ -z "$THREE_DONE" ]; then
-                            THREE_DONE=1
-                            sleep $CONN_WAIT
-                            if [ "$USE_CURSES" = "yes" ]; then
-                                PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
-                            else
-                                game_gtk $NAME $COOKIE $WAIT $INDEX
-                            fi
-                            break
-                        fi
-                        ;;
-                esac
-            done
+                    sleep $CONN_WAIT
+                    NAME=Bbbbb
+                    REMOTES=""
+                    for JJ in $(seq $(($TODO-1))); do
+                        REMOTES="$REMOTES -N"; 
+                    done
+                    if [ "$USE_CURSES" = "yes" ]; then
+                        TMP=$(game_curses $NAME $COOKIE $WAIT $INDEX "-s $REMOTES")
+                        PIDS="$PIDS $TMP"
+                    else
+                        game_gtk  $NAME $COOKIE $WAIT $INDEX \
+                            "-s $REMOTES"
+                    fi
+                    ;;
+                1)
+                    sleep $CONN_WAIT
+                    NAME=Aaaaa
+                    if [ "$USE_CURSES" = "yes" ]; then
+                        PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
+                    else
+                        game_gtk $NAME $COOKIE $WAIT $INDEX
+                    fi
+                    ;;
+                2)
+                    sleep $CONN_WAIT
+                    NAME=Kkkkk
+                    if [ "$USE_CURSES" = "yes" ]; then
+                        PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
+                    else
+                        game_gtk $NAME $COOKIE $WAIT $INDEX
+                    fi
+                    ;;
+                3)
+                    sleep $CONN_WAIT
+                    NAME=Eeeee
+                    if [ "$USE_CURSES" = "yes" ]; then
+                        PIDS="$PIDS $(game_curses $NAME $COOKIE $WAIT $INDEX)"
+                    else
+                        game_gtk $NAME $COOKIE $WAIT $INDEX
+                    fi
+                    ;;
+            esac
             COUNT=$((COUNT+1))
         done
 
