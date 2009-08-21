@@ -942,6 +942,7 @@ figureTimeout( CursesAppGlobals* globals )
 # define figureTimeout(g) INFINITE_TIMEOUT
 #endif
 
+#ifdef XWFEATURE_RELAY
 static void
 fireCursesTimer( CursesAppGlobals* globals )
 {
@@ -960,12 +961,17 @@ fireCursesTimer( CursesAppGlobals* globals )
     }
 
     if ( !!smallestTip ) {
-        XP_ASSERT( util_getCurSeconds( globals->cGlobals.params->util ) 
-                   >= smallestTip->when );
-        linuxFireTimer( &globals->cGlobals, 
-                        smallestTip - globals->cGlobals.timerInfo );
+        XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util ) ;
+        if ( now >= smallestTip->when ) {
+            linuxFireTimer( &globals->cGlobals, 
+                            smallestTip - globals->cGlobals.timerInfo );
+        } else {
+            XP_LOGF( "skipping timer: now (%ld) < when (%ld)", 
+                     now, smallestTip->when );
+        }
     }
-}
+} /* fireCursesTimer */
+#endif
 
 /* 
  * Ok, so this doesn't block yet.... 
@@ -1001,7 +1007,6 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
         if ( (globals->fdArray[FD_TIMEEVT].revents & POLLIN) != 0 ) {
             char ch;
-            /* 	    XP_DEBUGF( "curses got a USER EVENT\n" ); */
             if ( 1 != read(globals->fdArray[FD_TIMEEVT].fd, &ch, 1 ) ) {
                 XP_ASSERT(0);
             }
@@ -1009,88 +1014,86 @@ blocking_gotEvent( CursesAppGlobals* globals, int* ch )
 
         fdIndex = FD_FIRSTSOCKET;
 
-        if ( numEvents > 0 && 
-             (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
+        if ( numEvents > 0 ) {
+            if ( (globals->fdArray[fdIndex].revents & ~POLLIN ) ) {
+                XP_LOGF( "some other events set on socket %d", 
+                         globals->fdArray[fdIndex].fd  );
+            }
 
-            --numEvents;
+            if ( (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
 
-            if ( globals->fdArray[fdIndex].fd 
-                 == globals->csInfo.server.serverSocket ) {
-                /* It's the listening socket: call platform's accept()
-                   wrapper */
-                (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd, 
-                                               globals );
-            } else {
+                --numEvents;
+
+                if ( globals->fdArray[fdIndex].fd 
+                     == globals->csInfo.server.serverSocket ) {
+                    /* It's the listening socket: call platform's accept()
+                       wrapper */
+                    (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd, 
+                                                   globals );
+                } else {
 #ifndef XWFEATURE_STANDALONE_ONLY
-                unsigned char buf[256];
-                int nBytes;
-                CommsAddrRec addrRec;
-                CommsAddrRec* addrp = NULL;
+                    unsigned char buf[256];
+                    int nBytes;
+                    CommsAddrRec addrRec;
+                    CommsAddrRec* addrp = NULL;
 
-                /* It's a normal data socket */
-                switch ( globals->cGlobals.params->conType ) {
+                    /* It's a normal data socket */
+                    switch ( globals->cGlobals.params->conType ) {
 #ifdef XWFEATURE_RELAY
-                case COMMS_CONN_RELAY:
-                    nBytes = linux_relay_receive( &globals->cGlobals, buf, 
-                                                  sizeof(buf) );
-                    break;
+                    case COMMS_CONN_RELAY:
+                        nBytes = linux_relay_receive( &globals->cGlobals, buf, 
+                                                      sizeof(buf) );
+                        break;
 #endif
 #ifdef XWFEATURE_SMS
-                case COMMS_CONN_SMS:
-                    addrp = &addrRec;
-                    nBytes = linux_sms_receive( &globals->cGlobals, 
-                                                globals->fdArray[fdIndex].fd,
-                                                buf, sizeof(buf), addrp );
-                    break;
+                    case COMMS_CONN_SMS:
+                        addrp = &addrRec;
+                        nBytes = linux_sms_receive( &globals->cGlobals, 
+                                                    globals->fdArray[fdIndex].fd,
+                                                    buf, sizeof(buf), addrp );
+                        break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-                case COMMS_CONN_BT:
-                    nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd, 
-                                               buf, sizeof(buf) );
-                    break;
+                    case COMMS_CONN_BT:
+                        nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd, 
+                                                   buf, sizeof(buf) );
+                        break;
 #endif
-                default:
-                    XP_ASSERT( 0 ); /* fired */
-                }
+                    default:
+                        XP_ASSERT( 0 ); /* fired */
+                    }
 
-                if ( nBytes != -1 ) {
-                    XWStreamCtxt* inboundS;
-/*                     struct sockaddr_in addr_sock = {0}; */
-                    redraw = XP_FALSE;
+                    if ( nBytes != -1 ) {
+                        XWStreamCtxt* inboundS;
+                        redraw = XP_FALSE;
 
-                    XP_STATUSF( "linuxReceive=>%d", nBytes );
-                    inboundS = stream_from_msgbuf( &globals->cGlobals, 
-                                                   buf, nBytes );
-                    if ( !!inboundS ) {
-/*                         addrRec.u.ip_relay.ipAddr =  */
-/*                             ntohl(addr_sock.sin_addr.s_addr); */
-/*                         XP_LOGF( "captured incoming ip address: 0x%lx", */
-/*                                  addrRec.u.ip_relay.ipAddr ); */
-
-                        if ( comms_checkIncomingStream(
-                                globals->cGlobals.game.comms,
-                                inboundS, addrp ) ) {
-/*                             XP_LOGF( "comms read port: %d",  */
-/*                                      addrRec.u.ip_relay.port ); */
-                            redraw = server_receiveMessage( 
-                                  globals->cGlobals.game.server, inboundS );
+                        XP_STATUSF( "linuxReceive=>%d", nBytes );
+                        inboundS = stream_from_msgbuf( &globals->cGlobals, 
+                                                       buf, nBytes );
+                        if ( !!inboundS ) {
+                            if ( comms_checkIncomingStream(
+                                                           globals->cGlobals.game.comms,
+                                                           inboundS, addrp ) ) {
+                                redraw = server_receiveMessage( 
+                                                               globals->cGlobals.game.server, inboundS );
+                            }
+                            stream_destroy( inboundS );
                         }
-                        stream_destroy( inboundS );
-                    }
                 
-                    /* if there's something to draw resulting from the
-                       message, we need to give the main loop time to reflect
-                       that on the screen before giving the server another
-                       shot.  So just call the idle proc. */
-                    if ( redraw ) {
-                        curses_util_requestTime(globals->cGlobals.params->util);
+                        /* if there's something to draw resulting from the
+                           message, we need to give the main loop time to reflect
+                           that on the screen before giving the server another
+                           shot.  So just call the idle proc. */
+                        if ( redraw ) {
+                            curses_util_requestTime(globals->cGlobals.params->util);
+                        }
                     }
-                }
 #else
-                XP_ASSERT(0);   /* no socket activity in standalone game! */
+                    XP_ASSERT(0);   /* no socket activity in standalone game! */
 #endif                          /* #ifndef XWFEATURE_STANDALONE_ONLY */
+                }
+                ++fdIndex;
             }
-            ++fdIndex;
         }
 
         redraw = server_do( globals->cGlobals.game.server ) || redraw;
