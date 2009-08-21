@@ -512,12 +512,12 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
         assert( packetSize <= bufSize );
         nRead = recv( sock, buf, packetSize, 0 );
         if ( nRead < 0 ) {
-            XP_WARNF( "linuxReceive: errno=%d (\"%s\")\n", errno, 
+            XP_WARNF( "%s: errno=%d (\"%s\")\n", __func__, errno, 
                       strerror(errno) );
         }
     }
     return nRead;
-} /* linuxReceive */
+} /* linux_relay_receive */
 #endif  /* XWFEATURE_RELAY */
 
 /* Create a stream for the incoming message buffer, and read in any
