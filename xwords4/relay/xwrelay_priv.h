@@ -5,6 +5,7 @@
 
 #include <time.h>
 #include "lstnrmgr.h"
+#include "xwrelay.h"
 
 typedef unsigned char HostID;   /* see HOST_ID_SERVER */
 
@@ -26,6 +27,8 @@ time_t uptime(void);
 int GetNSpawns(void);
 
 int make_socket( unsigned long addr, unsigned short port );
+
+const char* cmdToStr( XWRELAY_Cmd cmd );
 
 extern class ListenerMgr g_listeners;
 

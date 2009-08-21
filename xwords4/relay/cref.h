@@ -35,15 +35,16 @@ using namespace std;
 
 class CookieMapIterator;        /* forward */
 
-class HostRec {
+struct HostRec {
  public:
-    HostRec(int socket, int nPlayersH, int nPlayersT) 
-        : m_socket(socket)
+    HostRec(HostID hostID, int socket, int nPlayersH, int nPlayersT) 
+        : m_hostID(hostID) 
+        , m_socket(socket)
         , m_nPlayersH(nPlayersH) 
         , m_nPlayersT(nPlayersT) 
         , m_lastHeartbeat(uptime()) 
         {}
-    ~HostRec() {}
+    HostID m_hostID;
     int m_socket;
     int m_nPlayersH;
     int m_nPlayersT;
@@ -87,7 +88,8 @@ class CookieRef {
     int SocketForHost( HostID dest );
 
     bool NeverFullyConnected();
-    bool AcceptingReconnections( HostID hid, int nPlayersH, int nPlayersT );
+    bool AcceptingReconnections( HostID hid, const char* cookie,
+                                 int nPlayersH );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -160,9 +162,9 @@ class CookieRef {
         m_totalSent += nBytes;
     }
 
-    void pushConnectEvent( int socket, HostID srcID, 
+    void pushConnectEvent( int socket, HostID srcID,
                            int nPlayersH, int nPlayersT );
-    void pushReconnectEvent( int socket, HostID srcID, 
+    void pushReconnectEvent( int socket, HostID srcID,
                              int nPlayersH, int nPlayersT );
     void pushHeartbeatEvent( HostID id, int socket );
     void pushHeartFailedEvent( int socket );
@@ -193,6 +195,8 @@ class CookieRef {
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
     void sendAllHere( bool includeName );
+    void assignConnName( void );
+    void assignHostIds( void );
     
     HostID nextHostID() { return ++m_nextHostID; }
 
@@ -203,8 +207,7 @@ class CookieRef {
     /* timer callback */
     static void s_checkAllConnected( void* closure );
 
-    map<HostID,HostRec> m_sockets;
-/*     pthread_rwlock_t m_sockets_rwlock; */
+    vector<HostRec> m_sockets;
 
     int m_heatbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */

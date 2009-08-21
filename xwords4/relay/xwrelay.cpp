@@ -137,7 +137,7 @@ logf( XW_LogLevel level, const char* format, ... )
     }
 } /* logf */
 
-static const char*
+const char*
 cmdToStr( XWRELAY_Cmd cmd )
 {
 # define CASESTR(s)  case s: return #s
@@ -257,6 +257,11 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
             ok = true;
         }
     }
+
+    if ( !ok ) {
+        logf( XW_LOGERROR, "%s(socket=%d) failed", __func__, socket );
+    }
+
     return ok;
 } /* send_with_length_unsafe */
 
@@ -301,7 +306,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie, true, srcID, socket, nPlayersH, nPlayersT );
+            SafeCref scr( cookie, NULL, srcID, socket, nPlayersH, nPlayersT );
             success = scr.Connect( socket, srcID, nPlayersH, nPlayersT );
         }
 
@@ -325,18 +330,22 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
     if ( err != XWRELAY_ERROR_NONE ) {
         denyConnection( socket, err );
     } else {
+        char cookie[MAX_COOKIE_LEN+1];
         char connName[MAX_CONNNAME_LEN+1];
         HostID srcID;
         unsigned char nPlayersH;
         unsigned char nPlayersT;
 
         connName[0] = '\0';
-        if ( getNetByte( &bufp, end, &srcID )
+        if ( readStr( &bufp, end, cookie, sizeof(cookie) )
+             && getNetByte( &bufp, end, &srcID )
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
-            SafeCref scr( connName, false, srcID, socket, nPlayersH, 
+            SafeCref scr( cookie[0]? cookie : NULL, 
+                          connName[0]? connName : NULL, 
+                          srcID, socket, nPlayersH, 
                           nPlayersT );
             success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT );
         }

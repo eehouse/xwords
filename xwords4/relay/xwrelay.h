@@ -38,11 +38,11 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           nPlayersTotal: 1 */
 
        , XWRELAY_GAME_RECONNECT
-       /* Connect using connName rather than cookie.  Used by a device that's
+       /* Connect using connName as well as cookie.  Used by a device that's
           lost its connection to a game in progress.  Once a game is locked
           this is the only way a host can get (back) in. Format: flags: 1;
-          hostID: 1; nPlayers: 1; nPlayersTotal: 1; connNameLen: 1;
-          connName<connNameLen>*/
+          cookieLen: 1; cookie: <cookieLen>; hostID: 1; nPlayers: 1;
+          nPlayersTotal: 1; connNameLen: 1; connName<connNameLen>*/
 
        , XWRELAY_GAME_DISCONNECT
        /* Tell the relay that we're gone for this game.  After this message is
@@ -51,18 +51,19 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
 
        , XWRELAY_CONNECT_RESP
        /* Sent from relay to device in response to XWRELAY_CONNECT.  Format:
-          heartbeat_seconds: 2; connectionID: 2; assignedHostID: 1 */
+          heartbeat_seconds: 2; connectionID: 2; */
 
        , XWRELAY_RECONNECT_RESP
        /* Sent from relay to device in response to XWRELAY_RECONNECT.  Format:
-          heartbeat_seconds: 2; connectionID: 2; */
+          heartbeat_seconds: 2; */
 
        , XWRELAY_ALLHERE
        /* Sent from relay when it enters the state where all expected devices
           are here (at start of new game or after having been gone for a
           while).  Devices should not attempt to forward messages before this
           message is received or after XWRELAY_DISCONNECT_OTHER is received.
-          Format: hasName: 1; [nameLen: 1; connName: <nameLen> */
+          Format: hostID: 1; hasName: 1; [connNameLen: 1; connName:
+          <connNameLen>]; */
 
        , XWRELAY_DISCONNECT_YOU
        /* Sent from relay when existing connection is terminated.  

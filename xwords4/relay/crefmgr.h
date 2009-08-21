@@ -100,7 +100,7 @@ class CRefMgr {
     void addToFreeList( CookieRef* cref );
     CookieRef* getFromFreeList( void );
 
-    CookieRef* getMakeCookieRef_locked( const char* cORn, bool isCookie, 
+    CookieRef* getMakeCookieRef_locked( const char* cookie, const char* connName,
                                         HostID hid, int socket,
                                         int nPlayersH, int nPlayersT );
     CookieRef* getCookieRef( CookieID cookieID );
@@ -108,8 +108,9 @@ class CRefMgr {
     bool checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
-    CookieRef* FindOpenGameFor( const char* cORn, bool isCookie,
-                                HostID hid, int socket, int nPlayersH, int nPlayersT );
+    CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
+                                HostID hid, int socket, int nPlayersH, 
+                                int nPlayersT );
 
     CookieID cookieIDForConnName( const char* connName );
     CookieID nextCID( const char* connName );
@@ -117,6 +118,7 @@ class CRefMgr {
     static void heartbeatProc( void* closure );
     void checkHeartbeats( time_t now );
 
+    pthread_mutex_t m_nextCIDMutex;
     CookieID m_nextCID;
 
     pthread_rwlock_t m_cookieMapRWLock;
@@ -137,7 +139,7 @@ class SafeCref {
        CookieRef instance at a time. */
 
  public:
-    SafeCref( const char* cookieOrConnName, bool cookie, HostID hid, 
+    SafeCref( const char* cookie, const char* connName, HostID hid, 
               int socket, int nPlayersH, int nPlayersT );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( int socket );

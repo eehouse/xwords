@@ -28,7 +28,6 @@
 #include "crefmgr.h"
 #include "cref.h"
 #include "mlock.h"
-#include "permid.h"
 #include "configs.h"
 #include "timermgr.h"
 
@@ -61,6 +60,7 @@ CRefMgr::CRefMgr()
 {
     /* should be using pthread_once() here */
     pthread_mutex_init( &m_SocketStuffMutex, NULL );
+    pthread_mutex_init( &m_nextCIDMutex, NULL );
     pthread_mutex_init( &m_freeList_mutex, NULL );
     pthread_rwlock_init( &m_cookieMapRWLock, NULL );
 }
@@ -103,44 +103,57 @@ CRefMgr::CloseAll()
     }
 } /* CloseAll */
 
+/* Matching hosts to games.  If they have a connName, it's easy.  That's the
+ * only thing we'll match on, and it must match, and the game must have room.
+ * If they have a cookie as well, it must match.  If only a cookie is
+ * provided, we may be dealing with a new game *or* a reconnect from somebody
+ * who didn't get his connName yet (even if other participants did.)
+ */
+
 CookieRef*
-CRefMgr::FindOpenGameFor( const char* cORn, bool isCookie,
+CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                           HostID hid, int socket, int nPlayersH, int nPlayersT )
 {
-    logf( XW_LOGINFO, "%s(cORn=%s,hid=%d,socket=%d)", __func__, cORn, hid, 
-          socket );
-    CookieRef* cref = NULL;
-    RWReadLock rwl( &m_cookieMapRWLock );
+    logf( XW_LOGINFO, "%s(cookie=%s,connName=%s,hid=%d,socket=%d)", __func__, 
+          cookie, connName, hid, socket );
+    CookieRef* found = NULL;
 
-    CookieMap::iterator iter = m_cookieMap.begin();
-    while ( iter != m_cookieMap.end() ) {
-        cref = iter->second;
-        if ( isCookie ) {
-            if ( 0 == strcmp( cref->Cookie(), cORn ) ) {
-                if ( cref->NeverFullyConnected() ) {
-                    break;
-                } else if ( cref->HasSocket(socket) ) {
-                    logf( XW_LOGINFO, "%s: HasSocket case", __func__ );
-                    break;
+    if ( !!cookie || !!connName ) { /* drop if both are null */
+
+        RWReadLock rwl( &m_cookieMapRWLock );
+
+        CookieMap::iterator iter;
+        for ( iter = m_cookieMap.begin();
+              NULL == found && iter != m_cookieMap.end();
+              ++iter ) {
+            CookieRef* cref = iter->second;
+
+            if ( !!connName ) {
+                if ( 0 == strcmp( cref->ConnName(), connName ) ) {
+                    if ( cref->Lock() ) {
+                        assert( !cookie || 0 == strcmp( cookie, cref->Cookie() ) );
+                        if ( cref->AcceptingReconnections( hid, cookie, 
+                                                           nPlayersH ) ) {
+                            found = cref;
+                        }
+                        cref->Unlock();
+                    }
                 }
-            }
-        } else {
-            if ( 0 == strcmp( cref->ConnName(), cORn ) ) {
-                bool found = false;
-                if ( cref->Lock() ) {
-                    found = cref->AcceptingReconnections( hid, nPlayersH, 
-                                                          nPlayersH );
-                    cref->Unlock();
-                }
-                if ( found ) {
-                    break;
+            } else if ( !!cookie ) {
+                if ( 0 == strcmp( cref->Cookie(), cookie ) ) {
+                    if ( cref->NeverFullyConnected() ) {
+                        found = cref;
+                    } else if ( cref->HasSocket(socket) ) {
+                        logf( XW_LOGINFO, "%s: HasSocket case", __func__ );
+                        found = cref;
+                    }
                 }
             }
         }
-        ++iter;
     }
 
-    return (iter == m_cookieMap.end()) ? NULL : cref;
+    logf( XW_LOGINFO, "%s=>%p", __func__, found );
+    return found;
 } /* FindOpenGameFor */
 
 CookieID
@@ -148,12 +161,14 @@ CRefMgr::nextCID( const char* connName )
 {
     /* Later may want to guarantee that wrap-around doesn't cause an overlap.
        But that's really only a theoretical possibility. */
+    MutexLock ml(&m_nextCIDMutex);
     return ++m_nextCID;
 } /* nextCID */
 
 int 
 CRefMgr::GetNumGamesSeen( void )
 {
+    MutexLock ml(&m_nextCIDMutex);
     return m_nextCID;
 }
 
@@ -207,36 +222,23 @@ CRefMgr::getFromFreeList( void )
 
 
 CookieRef*
-CRefMgr::getMakeCookieRef_locked( const char* cORn, bool isCookie, HostID hid,
-                                  int socket, int nPlayersH, int nPlayersT )
+CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
+                                  HostID hid, int socket, int nPlayersH, 
+                                  int nPlayersT )
 {
     CookieRef* cref;
 
-    /* We have a cookie from a new connection.  This may be the first time
-       it's been seen, or there may be a game currently in the
-       XW_ST_CONNECTING state, or it may be a dupe of a connect packet.  So we
-       need to look up the cookie first, then generate new connName and
-       cookieIDs if it's not found. */
+    /* We have a cookie from a new connection or from a reconnect.  This may
+       be the first time it's been seen, or there may be a game currently in
+       the XW_ST_CONNECTING state, or it may be a dupe of a connect packet.
+       If there's a game, cool.  Otherwise add a new one.  Pass the connName
+       which will be used if set, but if not set we'll be generating another
+       later when the game is complete.
+    */
 
-    cref = FindOpenGameFor( cORn, isCookie, hid, socket, nPlayersH, nPlayersT );
+    cref = FindOpenGameFor( cookie, connName, hid, socket, nPlayersH, nPlayersT );
     if ( cref == NULL ) {
-        string s;
-        const char* connName;
-        const char* cookie = NULL;
-        if ( isCookie ) {
-            cookie = cORn;
-            s = PermID::GetNextUniqueID();
-            connName = s.c_str();
-        } else {
-            connName = cORn;
-        }
-
-        CookieID cid = cookieIDForConnName( connName );
-        if ( cid == 0 ) {
-            cid = nextCID( connName );
-        }
-
-        cref = AddNew( cookie, connName, cid );
+        cref = AddNew( cookie, connName, nextCID( NULL ) );
     }
 
     return cref;
@@ -369,8 +371,6 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 {
     logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, id=%d", __func__,
           cookie, connName, id );
-    CookieRef* exists = getCookieRef_impl( id );
-    assert( exists == NULL );   /* failed once */
 
     CookieRef* ref = getFromFreeList();
 
@@ -386,7 +386,7 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
     }
 
     m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
-    logf( XW_LOGINFO, "paired cookie %s/connName %s with id %d", 
+    logf( XW_LOGINFO, "%s: paired cookie %s/connName %s with id %d", __func__, 
           (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
 
 #ifdef RELAY_HEARTBEAT
@@ -529,15 +529,15 @@ CookieMapIterator::Next()
 // SafeCref
 //////////////////////////////////////////////////////////////////////////////
 
-SafeCref::SafeCref( const char* cORn, bool isCookie, HostID hid, int socket,
-                    int nPlayersH, int nPlayersT )
+SafeCref::SafeCref( const char* cookie, const char* connName, HostID hid, 
+                    int socket, int nPlayersH, int nPlayersT )
     : m_cref( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
 {
     CookieRef* cref;
 
-    cref = m_mgr->getMakeCookieRef_locked( cORn, isCookie, hid, socket,
+    cref = m_mgr->getMakeCookieRef_locked( cookie, connName, hid, socket,
                                            nPlayersH, nPlayersT );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
