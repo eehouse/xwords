@@ -201,6 +201,7 @@ do_one() {
         done
 
         test -n "$VERBOSE" && echo "watching:$PIDS"
+        END_TIME=$(($(date +%s) + 300))               # five minute timeout
         while [ -d /tmp/$RUN_NAME -a -n "$PIDS" ]; do
             sleep 10
             for PID in $PIDS; do
@@ -209,6 +210,11 @@ do_one() {
                     PIDS=""
                 fi
             done
+            if [ $(date +%s) -ge $END_TIME ]; then
+                echo "killing $PIDS because out of time"
+                kill $PIDS 2>/dev/null
+                break
+            fi
         done
 
         check_logs $COOKIE
