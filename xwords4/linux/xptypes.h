@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,7 +39,16 @@
 
 typedef unsigned char XP_U8;
 typedef signed char XP_S8;
+
+#ifdef XWFEATURE_UNICODE
+typedef gchar XP_UCHAR;
+# define XP_L(s) s
+# define XP_S XP_L("%s")
+#else
+/* This doesn't work.  Turn on UNICODE for now... */
 typedef char XP_UCHAR;
+# define XP_L(s) ##s
+#endif
 
 typedef unsigned short XP_U16;
 typedef signed short XP_S16;
@@ -55,8 +65,7 @@ typedef guint32 XP_Time;
 typedef unsigned long XP_Time;
 #endif
 
-#define XP_CR "\n"
-#define XP_S "%s"
+#define XP_CR XP_L("\n")
 
 #define XP_STATUSF XP_DEBUGF
 #define XP_LOGF XP_DEBUGF
