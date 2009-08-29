@@ -1028,7 +1028,6 @@ BEGIN
     IDS_DIRECT_CONN_L       "Direct connection"
 # endif
 # ifdef XWFEATURE_RELAY
-    IDS_RELAY_CONN_L           "Relay"
     IDS_XWRELAY_ERROR_TIMEOUT  "The relay timed you out; usually that means "\
                                "the other players didn't show."
     IDS_ERROR_HEART_YOU        "You were disconnected from relay because it "\

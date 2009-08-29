@@ -944,12 +944,20 @@ BEGIN
     IDS_REG_SERVER_SANS_REMOTE "Przynajmniej jeden gracz musi być ustawiony jako zdalny "\
                                "Rozpoczyna host."
 
+# ifdef XWFEATURE_SMS
+    IDS_SMS_CONN_L          "Texting"
+# endif
+# ifdef XWFEATURE_IP_DIRECT
+    IDS_DIRECT_CONN_L       "Direct connection"
+# endif
+
 # ifdef XWFEATURE_RELAY
     IDS_XWRELAY_ERROR_TIMEOUT      "Minął czas połączenia z proxy; najczęściej oznacza to,"\
                                    "że inni gracze się nie pojawili."
     IDS_ERROR_HEART_YOU            "Rozłączono grę przez proxy, z powodu zbyt długiego "\
                                    "oczekiwania na Twoją odpowiedź."
     IDS_XWRELAY_ERROR_HEART_OTHER  "Proxy utraciło połączenie z urządzeniem."
+/*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
 # endif
 #endif
 
