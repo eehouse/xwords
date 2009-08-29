@@ -121,7 +121,6 @@ BEGIN
             MENUITEM "Preferences...",         ID_FILE_PREFERENCES
             MENUITEM SEPARATOR
             MENUITEM "About...",               ID_FILE_ABOUT
-            MENUITEM "Locales...",             ID_FILE_LOCALES
             MENUITEM SEPARATOR
             MENUITEM "Exit",                   ID_FILE_EXIT
         END
@@ -520,7 +519,7 @@ END
 #define PR_ROW5 (PR_ROW4+PR_SPACING)
 #define PR_ROW6 (PR_ROW5+PR_SPACING)
 #define PR_ROW7 (PR_ROW6+PR_SPACING)
-#define PR_BUTTONROW (PR_ROW7+PR_SPACING)
+#define PR_BUTTONROW (PR_ROW7+PR_SPACING+3)
 
 #ifdef _WIN32_WCE
 # define PREFS_DLG_HT PR_BUTTONROW
@@ -549,8 +548,9 @@ BEGIN
     CONTROL         "Hide tile values",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,80,PREFS_ROW_HT
     PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,PR_ROW6,60,12
+    PUSHBUTTON      "Change language...",IDC_PREFLOCALE,8,PR_ROW7,70,12
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "Choose font...",IDC_PREFFONTS,8,PR_ROW7,60,12
+    PUSHBUTTON      "Choose font...",IDC_PREFFONTS,8,PR_ROW8,60,12
 #endif
 
     /* Per game */
@@ -823,19 +823,19 @@ BEGIN
 END
 #endif
 
-IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 120, 60
+IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 100, 80
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Language Picker"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Choose the language for menus and dialog text.",
-                     LOCALES_LABEL,LEFT_COL,2,100,36
+    LTEXT           "Choose the language for menus and dialog text.  (You can download support files for new languages from xwords.sf.net.)",
+                     LOCALES_LABEL,LEFT_COL,2,80,50
 
-    XWCOMBO(LOCALES_COMBO,LEFT_COL,40,70,12,0,58,0)
+    XWCOMBO(LOCALES_COMBO,LEFT_COL,53,70,12,0,58,0)
 # ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,55,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,70,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
-    PUSHBUTTON      "Cancel",IDCANCEL,50,55,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "Cancel",IDCANCEL,40,70,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
 # endif
 END
@@ -910,7 +910,7 @@ BEGIN
     IDS_DONE                "Done"
     IDS_LANGUAGE_NAME       "English"
     IDS_NEW_GAME            "New Game"
-    IDS_ABOUT       "Crosswords 4.4a1 (rev " SVN_REV ") "\
+    IDS_ABOUT       "Crosswords " ABOUT_VERSION " (rev " SVN_REV ") "\
                     "for Windows Mobile. Copyright 1998-2009 by "\
                     "Eric House.  This software is released under the GNU "\
                     "Public License.\r\r"\
@@ -987,7 +987,6 @@ BEGIN
     IDS_ILLEGALWRD_L        "Illegal word"
     IDS_WRDNOTFOUND         "Word[s] %s not found in dictionary."
     IDS_USEANYWAY           "Use it anyway?"
-    IDS_FYI_L               "Oops!"
     IDS_CANNOTOPEN_GAME     "Saved game cannot be opened."
     IDS_NODICT_L            "Dictionary Not Found"
     IDS_ABOUT_L             "About Crosswords"
@@ -1002,16 +1001,17 @@ BEGIN
     IDS_ROLE_GUEST          "Guest"
     IDS_PLAYER_FORMAT       "Player %d"
     IDS_UNTITLED_FORMAT     "Untitled %d"
-    IDS_CONN_RELAY_L        "Relay"
-    IDS_CONN_DIRECT         "Direct connection"
     IDS_PASSWDFMT_L         "Enter password for %ls:"
 
     IDS_FILEEXISTSFMT_L     "File %s already exists."
     IDS_NEED_TOUCH          "This feature requires a touch screen."
     IDS_EDITCOLOR_FORMAT    "Edit color for %s"
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+    IDS_LANG_CHANGE_RESTART "You must restart Crosswords for this change to take effect."
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    IDS_CONN_RELAY_L           "Relay"
+    IDS_CONN_DIRECT            "Direct connection"
     IDS_LOCALPLAYERS           "Locl playrs:"
     IDS_NO_PEEK_REMOTE_TILES   "No peeking at remote players' tiles!"
     IDS_REG_UNEXPECTED_USER    "Refused attempt to register unexpected "\

@@ -8,6 +8,13 @@
 #ifndef _STRIDS_H_
 #define _STRIDS_H_
 
+/* CUR_DLL_VERSION is included in all .dll resources and can be used to check
+ * whether a given resource can be trusted.  Up it when changing the order of
+ * strings.  Which do only when unavoidable.
+ */
+#define CUR_DLL_VERSION 0x0001
+
+
 #define CE_FIRST_RES_ID                                              40002
 
 #define IDS_MENU                                           CE_FIRST_RES_ID
@@ -87,41 +94,42 @@
 #define IDS_ROLE_GUEST                                               40076
 #define IDS_PLAYER_FORMAT                                            40077
 #define IDS_UNTITLED_FORMAT                                          40078
-#define IDS_CONN_RELAY_L                                             40079
-#define IDS_CONN_DIRECT                                              40080
-#define IDS_PASSWDFMT_L                                              40081
-#define IDS_FILEEXISTSFMT_L                                          40082
-#define IDS_NEED_TOUCH                                               40083
-#define IDS_EDITCOLOR_FORMAT                                         40084
+#define IDS_PASSWDFMT_L                                              40079
+#define IDS_FILEEXISTSFMT_L                                          40080
+#define IDS_NEED_TOUCH                                               40081
+#define IDS_EDITCOLOR_FORMAT                                         40082
+#define IDS_LANG_CHANGE_RESTART                                      40083
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-# define IDS_LOCALPLAYERS                                            40085
-# define IDS_NO_PEEK_REMOTE_TILES                                    40086
-# define IDS_REG_UNEXPECTED_USER                                     40087
-# define IDS_SERVER_DICT_WINS                                        40088
-# define IDS_REG_SERVER_SANS_REMOTE                                  40089
+# define IDS_CONN_RELAY_L                                            40084
+# define IDS_CONN_DIRECT                                             40085
+# define IDS_LOCALPLAYERS                                            40086
+# define IDS_NO_PEEK_REMOTE_TILES                                    40087
+# define IDS_REG_UNEXPECTED_USER                                     40088
+# define IDS_SERVER_DICT_WINS                                        40089
+# define IDS_REG_SERVER_SANS_REMOTE                                  40090
 
 # ifdef XWFEATURE_SMS
-#  define IDS_SMS_CONN_L                                             40090
+#  define IDS_SMS_CONN_L                                             40091
 # endif
 
 # ifdef XWFEATURE_IP_DIRECT
-#  define IDS_DIRECT_CONN_L                                          40091
+#  define IDS_DIRECT_CONN_L                                          40092
 # endif
 
 # ifdef XWFEATURE_RELAY
-#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40092
-#  define IDS_ERROR_HEART_YOU                                        40093
-#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40094
-#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40095
-#  define IDS_RELAY_CONN_L                                           40096
+#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40093
+#  define IDS_ERROR_HEART_YOU                                        40094
+#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40095
+#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40096
+#  define IDS_RELAY_CONN_L                                           40097
 # endif
 #endif
 
 #if ! defined XWFEATURE_STANDALONE_ONLY
-# define CE_LAST_RES_ID                                              40096
+# define CE_LAST_RES_ID                                              40097
 #else
-# define CE_LAST_RES_ID                                              40084
+# define CE_LAST_RES_ID                                              40083
 #endif
 
 #endif

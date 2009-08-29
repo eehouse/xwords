@@ -90,6 +90,7 @@ messageToStr( UINT message )
         CASE_STR( WM_INITMENUPOPUP );
         CASE_STR( WM_CANCELMODE );
         CASE_STR( WM_ENTERIDLE );
+        CASE_STR( WM_GETDLGCODE );
     default:
         str = "<unknown>";
     }

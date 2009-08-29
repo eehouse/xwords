@@ -79,7 +79,8 @@
 #define IDC_CHECKROBOTSCORES            1043
 #define IDC_HIDETILEVALUES              1044
 #define IDC_PREFCOLORS                  1045
-#define IDC_PREFFONTS                   1046
+#define IDC_PREFLOCALE                  1046
+#define IDC_PREFFONTS                   1047
 #define PHONIES_LABEL                   1048
 #define GIROLECONF_BUTTON               1049
 #define GIJUGGLE_BUTTON                 1050
@@ -176,7 +177,6 @@
 #define HC_MAX_LABEL                    1139
 #define LOCALES_LABEL                   1140
 
-
 #define IDC_CCONVIA_LAB                 1106
 
 #define IDC_COOKIE_LAB                   1107
@@ -223,7 +223,6 @@
 #define ID_FILE_EXIT                    40002
 #define IDM_HELP_ABOUT                  40003
 #define ID_FILE_ABOUT                   40004
-#define ID_FILE_LOCALES                 40029
 #define ID_GAME_GAMEINFO                40005
 #define ID_GAME_HISTORY                 40006
 #define ID_GAME_FINALSCORES             40007
@@ -257,9 +256,10 @@
 
 #define ID_COLORS_RES                   9999
 #define ID_BONUS_RES                    9998
+#define ID_DLLVERS_RES                  9997
 
-#define IDM_MAIN_COMMAND1				40001
-#define IDS_DUMMY                       40002
+#define IDM_MAIN_COMMAND1				40000
+#define IDS_DUMMY                       40001
 
 #include "strids.h"
 
@@ -303,15 +303,3 @@
 #endif  /* XWFEATURE_STANDALONE_ONLY */
 
 #define IDC_DICTLABEL                    1227
-
-// Next default values for new objects
-// 
-#ifdef APSTUDIO_INVOKED
-#ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        125
-#define _APS_NEXT_COMMAND_VALUE         40033
-/* #define _APS_NEXT_CONTROL_VALUE         1128 */
-#define _APS_NEXT_SYMED_VALUE           101
-#endif
-#endif
-

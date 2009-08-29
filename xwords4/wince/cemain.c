@@ -1769,24 +1769,21 @@ updateForColors( CEAppGlobals* globals )
 static void
 ceDoPrefsDlg( CEAppGlobals* globals )
 {
-    CePrefsDlgState state;
     CePrefsPrefs prefsPrefs;
+    XP_Bool colorsChanged;
 
     loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo, 
                            &prefsPrefs );
 
     assertOnTop( globals->hWnd );
-    (void)WrapPrefsDialog( globals->hWnd, globals, &state, &prefsPrefs,
-                           XP_FALSE );
-
-    if ( !state.userCancelled ) {
-
+    if ( WrapPrefsDialog( globals->hWnd, globals, &prefsPrefs,
+                          XP_FALSE, &colorsChanged ) ) {
         loadCurPrefsFromState( globals, &globals->appPrefs, &globals->gameInfo, 
                                &prefsPrefs );
 
         (void)cePositionBoard( globals );
 
-        if ( state.colorsChanged ) {
+        if ( colorsChanged ) {
             updateForColors( globals );
         }
         /* need to reflect vars set in state into globals, and update/inval
@@ -2266,40 +2263,6 @@ doAbout( CEAppGlobals* globals )
                 MB_OK | MB_ICONINFORMATION );
 }
 
-static void
-chooseChangeResFile( CEAppGlobals* globals )
-{
-    XP_UCHAR newFile[MAX_PATH] = { 0 };
-    if ( ceChooseResFile( globals, newFile, VSIZE(newFile) ) ) {
-        if ( !globals->langFileName
-             || 0 != XP_STRCMP( newFile, globals->langFileName ) ) {
-            if ( globals->locInst != globals->hInst ) {
-                ceCloseResFile( globals->locInst );
-            }
-            ceFreeResStrings( globals );
-            if ( 0 != newFile[0] ) {
-                globals->locInst = ceLoadResFile( newFile );
-            } else {
-                globals->locInst = globals->hInst;
-            }
-            replaceStringIfDifferent( globals->mpool, &globals->langFileName, 
-                                      newFile );
-
-#ifdef _WIN32_WCE
-            CommandBar_Destroy( globals->hwndCB );
-            globals->hwndCB = makeCommandBar( globals->hWnd, globals->locInst );
-#else
-            SetMenu( globals->hWnd, LoadMenu( globals->locInst, 
-                                              MAKEINTRESOURCE(IDM_MENU) ) );
-#endif
-
-            /* Need to force user to restart unless we can inval everything
-               to force redraw */
-/*             board_invalAll( globals->game.board ); */
-        }
-    }
-}
-
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -2372,10 +2335,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (wmId) {
             case ID_FILE_ABOUT:
                 doAbout( globals );
-                break;
-
-            case ID_FILE_LOCALES:
-                chooseChangeResFile( globals );
                 break;
 
             case ID_GAME_GAMEINFO: {
