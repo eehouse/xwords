@@ -209,7 +209,7 @@ CommsRelayState2Str( CommsRelayState state )
         CASE_STR(COMMS_RELAYSTATE_CONNECTED);
         CASE_STR(COMMS_RELAYSTATE_ALLCONNECTED);
     default:
-        assert(0); 
+        XP_ASSERT(0); 
     }
 #undef CASE_STR
     return NULL;
