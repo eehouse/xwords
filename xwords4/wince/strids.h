@@ -122,7 +122,6 @@
 #  define IDS_ERROR_HEART_YOU                                        40094
 #  define IDS_XWRELAY_ERROR_HEART_OTHER                              40095
 #  define IDS_XWRELAY_ERROR_LOST_OTHER                               40096
-#  define IDS_RELAY_CONN_L                                           40097
 # endif
 #endif
 

@@ -954,7 +954,6 @@ BEGIN
     IDS_DIRECT_CONN_L       "Direct connection"  // <- translate -- but not visible in version 4.2
 # endif
 # ifdef XWFEATURE_RELAY
-    IDS_RELAY_CONN_L               "Relay" // <- translate -- but not visible in version 4.2
     IDS_XWRELAY_ERROR_TIMEOUT      "La transmission a échoué dans les délais; cela signifie généralement "\
                                    "que les autres joueurs ne vous ont pas vu."
     IDS_ERROR_HEART_YOU            "Vous avez été déconnecté parce que vous n'avez rien émis "\
