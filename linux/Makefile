@@ -36,6 +36,11 @@ DO_GTK = -DPLATFORM_GTK
 # uncomment for standalone build
 # STANDALONE = -DXWFEATURE_STANDALONE_ONLY
 
+UNICODE ?= -DXWFEATURE_UNICODE
+ifdef UNICODE
+	CFLAGS += -std=gnu99
+endif
+
 SVN_REV ?= "$(shell svnversion -n .)"
 SVNDEF = -D'SVN_REV=$(SVN_REV)'
 
@@ -78,6 +83,7 @@ endif
 ifdef CURSES_CELL_WIDTH
 DEFINES += -DCURSES_CELL_WIDTH=$(CURSES_CELL_WIDTH)
 endif
+DEFINES += $(UNICODE)
 
 # Networking-related features.  Only set these if STANDALONE is not set
 ifeq ($(STANDALONE),)

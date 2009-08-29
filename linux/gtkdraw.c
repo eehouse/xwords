@@ -191,7 +191,7 @@ layout_for_ht( GtkDrawCtx* dctx, XP_U16 ht )
 
 static void
 draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
-                const char* str, XP_U16 fontHt,
+                const XP_UCHAR* str, XP_U16 fontHt,
                 const XP_Rect* where, XP_GTK_JUST just,
                 const GdkColor* frground, const GdkColor* bkgrnd )
 {
@@ -202,7 +202,7 @@ draw_string_at( GtkDrawCtx* dctx, PangoLayout* layout,
         layout = layout_for_ht( dctx, fontHt );
     }
 
-    pango_layout_set_text( layout, str, strlen(str) );
+    pango_layout_set_text( layout, (char*)str, XP_STRLEN(str) );
 
     if ( just != XP_GTK_JUST_NONE ) {
         int width, height;
@@ -577,8 +577,8 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
             }
     
             if ( !valHidden ) {
-                sprintf( numbuf, "%d", val );
-                len = strlen( numbuf );
+                XP_SNPRINTF( numbuf, VSIZE(numbuf), "%d", val );
+                len = XP_STRLEN( numbuf );
 
                 draw_string_at( dctx, NULL, numbuf, formatRect.height>>2,
                                 &formatRect, XP_GTK_JUST_BOTTOMRIGHT,
@@ -690,7 +690,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
                          HintAtts hintAtts, CellFlags XP_UNUSED(flags) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    const char* curs = vertical? "|":"-";
+    const XP_UCHAR* curs = vertical? "|":"-";
 
     /* font needs to be small enough that "|" doesn't overwrite cell below */
     draw_string_at( dctx, NULL, curs, (rectP->height*2)/3,
@@ -712,16 +712,16 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* gtk_draw_scoreBegin */
 
 static PangoLayout*
-getLayoutToFitRect( GtkDrawCtx* dctx, const char* str, const XP_Rect* rect )
+getLayoutToFitRect( GtkDrawCtx* dctx, const XP_UCHAR* str, const XP_Rect* rect )
 {
     PangoLayout* layout;
     float ratio, ratioH;
     int width, height;
-    XP_U16 len = strlen(str);
+    XP_U16 len = XP_STRLEN(str);
 
     /* First measure it using any font at all */
     layout = layout_for_ht( dctx, 24 );
-    pango_layout_set_text( layout, str, len );
+    pango_layout_set_text( layout, (char*)str, len );
     pango_layout_get_pixel_size( layout, &width, &height );
 
     /* Figure the ratio of is to should-be.  The smaller of these is the one
@@ -734,7 +734,7 @@ getLayoutToFitRect( GtkDrawCtx* dctx, const char* str, const XP_Rect* rect )
     height = 24.0 * ratio;
 
     layout = layout_for_ht( dctx, height );
-    pango_layout_set_text( layout, str, len );
+    pango_layout_set_text( layout, (char*)str, len );
     return layout;
 } /* getLayoutToFitRect */
 
@@ -743,10 +743,10 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
                     XP_U16* widthP, XP_U16* heightP, XP_Bool focussed )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    char buf[10];
+    XP_UCHAR buf[10];
     PangoLayout* layout;
 
-    snprintf( buf, sizeof(buf), "rem:%d", nTilesLeft );
+    XP_SNPRINTF( buf, sizeof(buf), "rem:%d", nTilesLeft );
     layout = getLayoutToFitRect( dctx, buf, rect );
 
     if ( !!widthP ) {
@@ -792,7 +792,7 @@ gtk_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
 } /* gtk_draw_drawRemText */
 
 static void
-formatScoreText( char* buf, XP_U16 bufLen, const DrawScoreInfo* dsi )
+formatScoreText( XP_UCHAR* buf, XP_U16 bufLen, const DrawScoreInfo* dsi )
 {
     XP_S16 score = dsi->totalScore;
     XP_U16 nTilesLeft = dsi->nTilesLeft;
@@ -804,13 +804,13 @@ formatScoreText( char* buf, XP_U16 bufLen, const DrawScoreInfo* dsi )
         borders = "*";
     }
 
-    used = snprintf( buf, bufLen, "%s%.3d", borders, score );
+    used = XP_SNPRINTF( buf, bufLen, "%s%.3d", borders, score );
     if ( (nTilesLeft < MAX_TRAY_TILES) && (nTilesLeft > 0) ) {
-        char nbuf[10];
-        sprintf( nbuf, ":%d", nTilesLeft );
-        (void)strcat( buf, nbuf );
+        XP_UCHAR nbuf[10];
+        XP_SNPRINTF( nbuf, VSIZE(nbuf), ":%d", nTilesLeft );
+        (void)XP_STRCAT( buf, nbuf );
     }
-    snprintf( buf+used, bufLen-used, "%s", borders );
+    XP_SNPRINTF( buf+used, bufLen-used, "%s", borders );
 } /* formatScoreText */
 
 static void
@@ -819,11 +819,11 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
                            XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    char buf[20];
+    XP_UCHAR buf[20];
     PangoLayout* layout;
     int height, width;
 
-    formatScoreText( buf, sizeof(buf), dsi );
+    formatScoreText( buf, VSIZE(buf), dsi );
     layout = getLayoutToFitRect( dctx, buf, bounds );
     pango_layout_get_pixel_size( layout, &width, &height );
 
@@ -836,11 +836,11 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
                            const XP_Rect* rOuter, const DrawScoreInfo* dsi )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    char scoreBuf[20];
+    XP_UCHAR scoreBuf[20];
     XP_Bool hasCursor = (dsi->flags & CELL_ISCURSOR) != 0;
     GdkColor* cursor = NULL;
 
-    formatScoreText( scoreBuf, sizeof(scoreBuf), dsi );
+    formatScoreText( scoreBuf, VSIZE(scoreBuf), dsi );
 
     if ( hasCursor ) {
         cursor = &dctx->cursor;
@@ -874,16 +874,16 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
                              CellFlags flags )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    char buf[5];
+    XP_UCHAR buf[5];
     XP_U16 ht;
     XP_Rect localR;
     GdkColor* cursor = ((flags & CELL_ISCURSOR) != 0) 
         ? &dctx->cursor : NULL;
 
     if ( score >= 0 ) {
-		sprintf( buf, "%.3d", score );
+		XP_SNPRINTF( buf, VSIZE(buf), "%.3d", score );
     } else {
-		strcpy( buf, "???" );
+		XP_STRNCPY( buf, "???", VSIZE(buf)  );
     }
 
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); */
@@ -919,7 +919,7 @@ gtkFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
 
     minutes = secondsLeft / 60;
     seconds = secondsLeft % 60;
-    sprintf( buf, "% 1d:%02d", minutes, seconds );
+    XP_SNPRINTF( buf, VSIZE(buf), "% 1d:%02d", minutes, seconds );
 } /* gtkFormatTimerText */
 
 static void
@@ -974,7 +974,7 @@ gtk_draw_measureMiniWText( DrawCtx* p_dctx, const XP_UCHAR* str,
     int height, width;
 
 	PangoLayout* layout = layout_for_ht( dctx, GTKMIN_W_HT );
-    pango_layout_set_text( layout, str, strlen(str) );
+    pango_layout_set_text( layout, (char*)str, XP_STRLEN(str) );
     pango_layout_get_pixel_size( layout, &width, &height );
     *heightP = height;
     *widthP = width + 6;
