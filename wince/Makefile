@@ -146,6 +146,7 @@ DLL_SRCS = $(shell ls ./l10n/*.rc)
 DLLS = \
 	$(BUILTDIR)/xwords4_french.dll \
 	$(BUILTDIR)/xwords4_caps.dll \
+	$(BUILTDIR)/xwords4_polish.dll \
 
 RESOBJS = \
 	$(OBJDIR)/xwords4.rc.o \

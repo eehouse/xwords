@@ -311,16 +311,11 @@ raiseForHiddenPlayers( GameInfoState* state, XP_U16 nPlayers )
 static void
 handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
 {
-    CePrefsDlgState prefsState;
-
-    /* need to keep my stuff in a temporary place and to read back out of it
-       if launched a second time before the user's cancelled or not out of
-       the calling dlg.*/
-
-    if ( WrapPrefsDialog( hDlg, globals, &prefsState, &state->prefsPrefs,
-                          state->isNewGame ) ) {
+    XP_Bool colorsChanged;
+    if ( WrapPrefsDialog( hDlg, globals, &state->prefsPrefs,
+                          state->isNewGame, &colorsChanged ) ) {
         state->prefsChanged = XP_TRUE;
-        state->colorsChanged = prefsState.colorsChanged;
+        state->colorsChanged = colorsChanged;
         /* nothing to do until user finally does confirm the parent dialog */
     }
 } /* handlePrefsButton */

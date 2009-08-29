@@ -25,15 +25,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_XWORDS4             ICON    DISCARDABLE     "xwords4.ico"
-
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -121,7 +112,6 @@ BEGIN
             MENUITEM "PREFERENCES...",         ID_FILE_PREFERENCES                        // <- translate
             MENUITEM SEPARATOR
             MENUITEM "ABOUT...",               ID_FILE_ABOUT                              // <- translate 
-            MENUITEM "LOCALES...",             ID_FILE_LOCALES
             MENUITEM SEPARATOR
             MENUITEM "EXIT",                   ID_FILE_EXIT                               // <- translate 
         END
@@ -171,6 +161,8 @@ END
 #endif
 
 #include "../rc_incs.h"
+
+DLL_VERS_RESOURCE
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -341,30 +333,6 @@ END
 # define ASKB_DLG_HEIGHT (WCE_BOTTOM + REPOS_BUTTON_HT + 4)
 #endif
 
-
-IDD_ASKBLANK DIALOG DISCARDABLE  0, 0, ASKB_DLG_WIDTH, ASKB_DLG_HEIGHT
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "TILE PICKER"                                                                     // <- translate TILE PICKER
-FONT 8, "System"
-BEGIN
-    LTEXT           "ENTER A LETTER FOR THIS BLANK TILE.",IDC_BPICK,                      // <- translate ENTER A LETTER FOR THIS BLANK TILE.
-                    ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
-#ifdef FEATURE_TRAY_EDIT
-    LTEXT           "PICK A TILE FOR YOUR TRAY.",IDC_CPICK,                               // <- translate PICK A TILE FOR YOUR TRAY
-                    ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
-    EDITTEXT        IDC_PICKMSG,ASKB_COLLEFT,ASKB_EDITTOP,80,ASKB_EDITHT,
-                    ES_MULTILINE | ES_READONLY
-
-    PUSHBUTTON      "PUT BACK",IDC_BACKUP,ASKB_COLLEFT,ASKB_PUTTOP,35,14                  // <- translate PUT BACK
-#endif
-
-    XWCOMBO(BLANKFACE_LIST,ASKB_COMBOLEFT,ASKB_COLLEFT,27,12,LBS_SORT,70,CBS_SORT)
-
-#ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "OK",IDOK,80,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT                 // <- translate OK
-    PUSHBUTTON      "CANCEL",IDCANCEL,20,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT         // <- translate CANCEL
-#endif
-END
 
 #define SVGN_LEFT_COL 2
 #define SVGN_ROW_1 2
@@ -538,8 +506,9 @@ BEGIN
     CONTROL         "HIDE TILE VALUES",IDC_HIDETILEVALUES,"Button",                       // <- translate HIDE TILE VALUES
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,80,PREFS_ROW_HT
     PUSHBUTTON      "EDIT COLORS...",IDC_PREFCOLORS,8,PR_ROW6,60,12                       // <- translate EDIT COLORS...
+    PUSHBUTTON      "CHANGE LANGUAGE...",IDC_PREFLOCALE,8,PR_ROW7,75,12    // <- translate CHANGE LANGUAGE
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "CHOOSE FONT...",IDC_PREFFONTS,8,PR_ROW7,60,12                        // <- translate CHOOSE FONT...
+    PUSHBUTTON      "CHOOSE FONT...",IDC_PREFFONTS,8,PR_ROW8,60,12                        // <- translate CHOOSE FONT...
 #endif
 
     /* Per game */
@@ -795,19 +764,20 @@ END
 #endif
 
 
-IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 120, 115
+IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 100, 95
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "LANGUAGE PICKER"
+CAPTION "LANGUAGE PICKER"// <- translate
 FONT 8, "System"
 BEGIN
-    LTEXT           "CHOOSE THE LANGUAGE FOR MENUS AND DIALOG TEXT.",
-                     LOCALES_LABEL,LEFT_COL,2,100,36
-    XWCOMBO(LOCALES_COMBO, LEFT_COL,40,70,12, 0,58,0)
+    LTEXT           "CHOOSE THE LANGUAGE FOR MENUS AND DIALOG TEXT.  (YOU CAN DOWNLOAD SUPPORT FILES FOR NEW LANGUAGES FROM xwords.sf.net.)",// <- translate
+                     LOCALES_LABEL,LEFT_COL,2,80,60
+
+    XWCOMBO(LOCALES_COMBO,LEFT_COL,65,70,12,0,58,0)
 
 # ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,55,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,80,REPOS_BUTTON_WIDTH, // <- translate
                     REPOS_BUTTON_HT
-    PUSHBUTTON      "CANCEL",IDCANCEL,50,55,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "CANCEL",IDCANCEL,40,80,REPOS_BUTTON_WIDTH, // <- translate
                     REPOS_BUTTON_HT
 # endif
 END
@@ -832,7 +802,7 @@ BEGIN
     IDS_DONE                "DONE"                                                         // <- translate
     IDS_LANGUAGE_NAME       "ENGLISH"                                                     // <- translate
     IDS_NEW_GAME            "NEW GAME"                          // <- translate
-    IDS_ABOUT       "CROSSWORDS 4.4A1 (REV " SVN_REV ") "\
+    IDS_ABOUT       "CROSSWORDS " ABOUT_VERSION " (REV " SVN_REV ") "\
                     "FOR WINDOWS MOBILE. COPYRIGHT 1998-2009 BY "\
                     "ERIC HOUSE.  THIS SOFTWARE IS RELEASED UNDER THE GNU "\
                     "PUBLIC LICENSE.\r\r"\
@@ -912,7 +882,6 @@ BEGIN
     IDS_ILLEGALWRD_L        "ILLEGAL WORD"                                                 // <- translate
     IDS_WRDNOTFOUND         "WORD[S] %s NOT FOUND IN DICTIONARY."                          // <- translate
     IDS_USEANYWAY           "USE IT ANYWAY?"                                               // <- translate
-    IDS_FYI_L               "OOPS!"                                                        // <- translate
     IDS_CANNOTOPEN_GAME     "SAVED GAME CANNOT BE OPENED."                                 // <- translate
     IDS_NODICT_L            "DICTIONARY NOT FOUND"                                         // <- translate
     IDS_ABOUT_L             "ABOUT CROSSWORDS"                                             // <- translate
@@ -927,18 +896,16 @@ BEGIN
     IDS_ROLE_GUEST          "GUEST"                                                        // <- translate
     IDS_PLAYER_FORMAT       "PLAYER %d"                                                    // <- translate
     IDS_UNTITLED_FORMAT     "UNTITLED %d"                                                  // <- translate
-    IDS_CONN_RELAY_L        "RELAY"                                                        // <- translate
-    IDS_CONN_DIRECT         "DIRECT CONNECTION"                                            // <- translate
     IDS_PASSWDFMT_L         "ENTER PASSWORD FOR %ls:"                                      // <- translate
-    IDS_FILEEXISTSFMT_L     "FILE \"%s\" ALREADY EXISTS."       // <- translate
+    IDS_FILEEXISTSFMT_L     "FILE ""%s"" ALREADY EXISTS."       // <- translate
     IDS_NEED_TOUCH          "THIS FEATURE REQUIRES A TOUCH SCREEN."
     IDS_EDITCOLOR_FORMAT    "EDIT COLOR FOR %s"
+    IDS_LANG_CHANGE_RESTART "YOU MUST RESTART CROSSWORDS FOR THIS CHANGE TO TAKE EFFECT."  // <- translate
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-# ifdef XWFEATURE_SMS
-    IDS_SMS_CONN_L            "TEXTING"                                                    // <- translate
+    IDS_CONN_RELAY_L        "RELAY"                                                        // <- translate
+    IDS_CONN_DIRECT         "DIRECT CONNECTION"                                            // <- translate
 
-# endif
 # ifdef XWFEATURE_IP_DIRECT
     IDS_DIRECT_CONN_L       "DIRECT CONNECTION"                // <- translate
 # endif
@@ -950,6 +917,10 @@ BEGIN
     IDS_REG_SERVER_SANS_REMOTE "AT LEAST ONE PLAYER MUST BE MARKED REMOTE FOR "\
                                "A GAME STARTED AS HOST."                                          // <- translate
 
+# ifdef XWFEATURE_SMS
+    IDS_SMS_CONN_L            "TEXTING"                                                    // <- translate
+
+# endif
 # ifdef XWFEATURE_RELAY
     IDS_RELAY_CONN_L               "RELAY"
     IDS_XWRELAY_ERROR_TIMEOUT      "THE RELAY TIMED YOU OUT; USUALLY THAT "\
@@ -962,31 +933,6 @@ BEGIN
 # endif
 #endif
 
-
 END
 
-#ifdef _WIN32_WCE
-// from http://msdn.microsoft.com/en-us/library/ms838191.aspx: don't
-// let WinMo draw 320x320 as 240x240
-HI_RES_AWARE CEUX {1}
 #endif
-
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-/* This is supposed to keep the OS from running us in "emulation mode", but it 
-   isn't working.  Changing the versions as reported by objdump does work */
-/* #ifdef _WIN32_WCE */
-/* HI_RES_AWARE CEUX {1} */
-/* #endif */
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED

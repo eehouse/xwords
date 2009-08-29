@@ -24,7 +24,9 @@
 
 HINSTANCE ceLoadResFile( const XP_UCHAR* file );
 void ceCloseResFile( HINSTANCE inst );
-XP_Bool ceChooseResFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen );
+XP_Bool ceChooseResFile( HWND hwnd, CEAppGlobals* globals, 
+                         const XP_UCHAR* curFileName,
+                         XP_UCHAR* buf, XP_U16 bufLen );
 
 const XP_UCHAR* ceGetResString( CEAppGlobals* globals, XP_U16 resID );
 const wchar_t* ceGetResStringL( CEAppGlobals* globals, XP_U16 resID );

@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- mode: C; fill-column: 77; c-basic-offset: 4; -*- */
 /* 
  * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -27,6 +27,21 @@
 #include "cedebug.h"
 #include "cefonts.h"
 #include "ceresstr.h"
+#include "strutils.h"
+
+typedef struct _CePrefsDlgState {
+    CeDlgHdr dlgHdr;
+    CePrefsPrefs prefsPrefs;
+
+    XP_UCHAR langFileName[MAX_PATH];
+
+    XP_U16 phonComboId;
+
+    XP_Bool userCancelled;
+    //XP_Bool doGlobalPrefs;      /* state of the radio */
+    XP_Bool isNewGame;
+    XP_Bool colorsChanged;
+} CePrefsDlgState;
 
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
  */
@@ -70,7 +85,8 @@ adjustForChoice( CePrefsDlgState* state )
     HWND hDlg = state->dlgHdr.hDlg;
     XP_U16 goesWithGlobal[] = {IDC_CHECKCOLORPLAYED, IDC_LEFTYCHECK,
                                IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES,
-                               IDC_HIDETILEVALUES, IDC_PREFCOLORS
+                               IDC_HIDETILEVALUES, IDC_PREFCOLORS, 
+                               IDC_PREFLOCALE
 #ifdef ALLOW_CHOOSE_FONTS
                                ,IDC_PREFFONTS
 #endif
@@ -317,6 +333,21 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             ceDoColorsEdit( hDlg, globals, 
                                             pState->prefsPrefs.colors );
                         break;
+                    case IDC_PREFLOCALE: {
+                        XP_UCHAR newFile[MAX_PATH];
+                        if ( ceChooseResFile( hDlg, globals, 
+                                              pState->langFileName,
+                                              newFile, VSIZE(newFile)) ) {
+                            const wchar_t* msg
+                                = ceGetResStringL( globals, 
+                                                   IDS_LANG_CHANGE_RESTART );
+                            MessageBox( hDlg, msg, NULL, 
+                                        MB_OK | MB_ICONINFORMATION );
+                            XP_STRNCPY( pState->langFileName, newFile, 
+                                        VSIZE(pState->langFileName) );
+                        }
+                    }
+                        break;
 #ifdef ALLOW_CHOOSE_FONTS
                     case IDC_PREFFONTS:
                         ceShowFonts( hDlg, globals );
@@ -346,7 +377,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                     case IDOK:
                         ceControlsToPrefs( pState );
                     case IDCANCEL:
-                        EndDialog(hDlg, id);
+                        EndDialog( hDlg, id );
                         pState->userCancelled = id == IDCANCEL;
                         return TRUE;
                     }
@@ -362,23 +393,33 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
    state, put up the dialog and return whether it was cancelled.
  */
 XP_Bool
-WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsDlgState* state, 
-                 CePrefsPrefs* prefsPrefs, XP_Bool isNewGame )
+WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsPrefs* prefsPrefs,
+                 XP_Bool isNewGame, XP_Bool* colorsChanged )
 {
+    CePrefsDlgState state;
     XP_Bool result;
-    XP_MEMSET( state, 0, sizeof(*state) );
 
-    state->dlgHdr.globals = globals;
-    state->isNewGame = isNewGame;
-    XP_MEMCPY( &state->prefsPrefs, prefsPrefs, sizeof( state->prefsPrefs ) );
+    XP_MEMSET( &state, 0, sizeof(state) );
+
+    state.dlgHdr.globals = globals;
+    state.isNewGame = isNewGame;
+    if ( !!globals->langFileName ) {
+        XP_STRNCPY( state.langFileName, globals->langFileName, 
+                    VSIZE(state.langFileName) );
+    }
+    XP_MEMCPY( &state.prefsPrefs, prefsPrefs, sizeof( state.prefsPrefs ) );
 
     DialogBoxParam( globals->locInst, (LPCTSTR)IDD_OPTIONSDLG, hDlg,
-                    (DLGPROC)PrefsDlg, (long)state );
+                    (DLGPROC)PrefsDlg, (long)&state );
     
-    result = !state->userCancelled;
+    result = !state.userCancelled;
 
     if ( result ) {
-        XP_MEMCPY( prefsPrefs, &state->prefsPrefs, sizeof( *prefsPrefs ) );
+        XP_MEMCPY( prefsPrefs, &state.prefsPrefs, sizeof( *prefsPrefs ) );
+        *colorsChanged = state.colorsChanged;
+
+        replaceStringIfDifferent( globals->mpool, &globals->langFileName, 
+                                  state.langFileName );
     }
 
     return result;

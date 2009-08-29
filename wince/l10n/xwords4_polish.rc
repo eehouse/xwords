@@ -1,4 +1,4 @@
-// -*- mode: c; compile-command: "cd ../ && make TARGET_OS=wince DEBUG=TRUE obj_wince_dbg/built/xwords4_french.dll"; -*-
+// -*- mode: c; compile-command: "cd ../ && make TARGET_OS=win32 DEBUG=TRUE obj_win32_dbg/built/xwords4_polish.dll"; -*-
 // 
 // Microsoft Developer Studio generated resource script.  But now I'm
 // editing it. :-)
@@ -16,13 +16,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// French resources
+// Polish resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
 #include "winnt.h"
-LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
-#pragma code_page(1252)
+LANGUAGE LANG_POLISH, SUBLANG_POLISH_POLAND
+#pragma code_page(65001)
 #endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
@@ -51,7 +51,6 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menubar
@@ -62,58 +61,58 @@ BEGIN
 #ifndef _WIN32_WCE
     POPUP "BUTTON"
     BEGIN
-        MENUITEM "--",                          W32_DUMMY_ID
+        MENUITEM "--",                           W32_DUMMY_ID
     END
 #endif
     POPUP "Menu"
     BEGIN
-        MENUITEM "Jouer le coup",                  ID_MOVE_TURNDONE
-        MENUITEM "M�langer",                     ID_MOVE_JUGGLE
-        MENUITEM "Retourner",                       ID_MOVE_FLIP
-        MENUITEM "Echanger",                      ID_MOVE_TRADE
-        MENUITEM "Cacher tirage",                  ID_MOVE_HIDETRAY
+        MENUITEM "Koniec kolejki",               ID_MOVE_TURNDONE
+        MENUITEM "Mieszaj",                      ID_MOVE_JUGGLE
+        MENUITEM "Odwróć planszę",               ID_MOVE_FLIP
+        MENUITEM "Wymień",                       ID_MOVE_TRADE
+        MENUITEM "Ukryj klocki",                 ID_MOVE_HIDETRAY
 
-        POPUP "Annuler"
+        POPUP "Cofnij"
         BEGIN
-            MENUITEM "Annuler actuel",            ID_MOVE_UNDOCURRENT
-            MENUITEM "Annuler pr�c�dent",               ID_MOVE_UNDOLAST
+            MENUITEM "Cofnij bieżący",           ID_MOVE_UNDOCURRENT
+            MENUITEM "Cofnij ostatni",           ID_MOVE_UNDOLAST
         END
 
-        POPUP "Conseil"
+        POPUP "Podpowiedź"
         BEGIN
-            MENUITEM "Conseil suivant",           ID_MOVE_NEXTHINT
-            MENUITEM "Conseil",                   ID_MOVE_HINT
+            MENUITEM "Następna podp.",           ID_MOVE_NEXTHINT
+            MENUITEM "Podpowiedź",               ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
-            MENUITEM "Conseil limit�...",        ID_MOVE_LIMITEDHINT
+            MENUITEM "Podp. ograniczona...",     ID_MOVE_LIMITEDHINT
 #endif
             MENUITEM SEPARATOR
-            MENUITEM "Montrer les valeurs",             ID_MOVE_VALUES
+            MENUITEM "Pokaż wartości",           ID_MOVE_VALUES
         END
 
-        POPUP "Partie"
+        POPUP "Gra"
         BEGIN
-            MENUITEM "Nombre/Valeur des lettres",  ID_GAME_TILECOUNTSANDVALUES
-            MENUITEM "Lettres restantes",              ID_GAME_TILESLEFT
+            MENUITEM "Ilość klocków i wartości", ID_GAME_TILECOUNTSANDVALUES
+            MENUITEM "Pozostałe klocki",         ID_GAME_TILESLEFT
             MENUITEM SEPARATOR
-            MENUITEM "Infos partie",               ID_GAME_GAMEINFO
-            MENUITEM "Historique",                 ID_GAME_HISTORY
-            MENUITEM "Score final",           ID_GAME_FINALSCORES
+            MENUITEM "Informacje",               ID_GAME_GAMEINFO
+            MENUITEM "Historia",                 ID_GAME_HISTORY
+            MENUITEM "Ostateczny wynik",         ID_GAME_FINALSCORES
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-            MENUITEM "Renvoyer message",         ID_GAME_RESENDMSGS
+            MENUITEM "Prześlij wiadom.",         ID_GAME_RESENDMSGS
 #endif
         END
 
-        POPUP "Fichier"
+        POPUP "Plik"
         BEGIN
-            MENUITEM "Plein �cran",            ID_FILE_FULLSCREEN
+            MENUITEM "Pełen ekran",              ID_FILE_FULLSCREEN
             MENUITEM SEPARATOR
-            MENUITEM "Nouvelle partie...",            ID_FILE_NEWGAME
-            MENUITEM "Parties enregistr�es...",         ID_FILE_SAVEDGAMES
-            MENUITEM "Pr�f�rences...",         ID_FILE_PREFERENCES
+            MENUITEM "Nowa gra...",              ID_FILE_NEWGAME
+            MENUITEM "Zapisane gry...",          ID_FILE_SAVEDGAMES
+            MENUITEM "Ustawienia...",            ID_FILE_PREFERENCES
             MENUITEM SEPARATOR
-            MENUITEM "A propos...",               ID_FILE_ABOUT
+            MENUITEM "O...",                     ID_FILE_ABOUT
             MENUITEM SEPARATOR
-            MENUITEM "Quitter",                   ID_FILE_EXIT
+            MENUITEM "Wyjście",                  ID_FILE_EXIT
         END
     END
 END
@@ -164,18 +163,18 @@ END
 
 DLL_VERS_RESOURCE
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 #define BUTTON_HT 12
 #define REPOS_BUTTON_HT BUTTON_HT
-#define REPOS_BUTTON_WIDTH 32
+#define REPOS_BUTTON_WIDTH 28
 #define REPOS_BUTTON_VPAD 2
 #define REPOS_BUTTON_HPAD 2
 
 // ******** IDD_GAMEINFO DIALOG *********
-#define GAMEINFO_WIDTH 116
 #ifdef CEFEATURE_CANSCROLL
 # define ROW_HEIGHT 10
 # define ROW_SPACE 12
@@ -191,29 +190,29 @@ DLL_VERS_RESOURCE
 # define GAME_NAME_WIDTH 56
 # define GAME_LABEL_WIDTH (GAME_NAME_WIDTH-10)
 # define GAME_NAME_LEFT LEFT_COL
+# define ROBOT_LABEL_ADJUST 10
+# define NAME_LABEL_ADJUST 20
 # define GAME_ROBOT_LEFT (GAME_NAME_LEFT + GAME_NAME_WIDTH + 5)
 # define GAME_PWD_LEFT (GAME_ROBOT_LEFT + 15)
 # define NPLAYERS_ROW 3
 # define GAME_NAMELABEL_LEFT GAME_NAME_LEFT
-# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-7)
-# define GAME_PWDLABEL_LEFT (GAME_PWD_LEFT-4)
-#else
-# define SERVERROLE_ROW 3
-# define GAME_NAME_WIDTH 56
-# define SERVERCONF_ROW (SERVERROLE_ROW+ROW_SPACE+3)
-# define NPLAYERS_ROW (SERVERCONF_ROW+ROW_SPACE+3)
-# define GAME_REMOTE_LEFT 1
-# define GAME_NAME_LEFT 11
-# define ROBOT_LABEL_ADJUST 10
-# define GAME_ROBOT_LEFT (GAME_NAME_LEFT+GAME_NAME_WIDTH+2)
-# define GAME_PWD_LEFT (GAME_ROBOT_LEFT + CHECK_WIDTH + 4)
-# define NAME_LABEL_ADJUST 20
-# define GAME_NAMELABEL_LEFT (GAME_NAME_LEFT+NAME_LABEL_ADJUST)
 # define GAME_NAMELABEL_WIDTH (GAME_NAME_WIDTH-ROBOT_LABEL_ADJUST-NAME_LABEL_ADJUST)
-# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-ROBOT_LABEL_ADJUST)
+# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-7)
 # define GAME_ROBOTLABEL_WIDTH (GAME_PWD_LEFT-GAME_ROBOT_LEFT+ROBOT_LABEL_ADJUST)
 # define GAME_PWDLABEL_LEFT (GAME_PWD_LEFT)
 # define GAME_PWDLABEL_WIDTH (GAMEINFO_WIDTH-GAME_PWD_LEFT)
+#else
+# define SERVERROLE_ROW 3
+# define GAME_NAME_WIDTH 56
+# define NPLAYERS_ROW (SERVERROLE_ROW+ROW_SPACE+3)
+# define GAME_REMOTE_LEFT 1
+# define GAME_NAME_LEFT 11
+# define GAME_ROBOT_LEFT (GAME_NAME_LEFT+GAME_NAME_WIDTH+2)
+# define GAME_PWD_LEFT (GAME_ROBOT_LEFT + CHECK_WIDTH + 4)
+# define GAME_NAMELABEL_LEFT (GAME_NAME_LEFT + 20)
+# define GAME_NAMELABEL_WIDTH (GAME_NAME_WIDTH-15)
+# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-10)
+# define GAME_PWDLABEL_LEFT (GAME_PWD_LEFT)
 #endif
 
 
@@ -222,8 +221,7 @@ DLL_VERS_RESOURCE
 #define PLAYER_ROW_2 (PLAYER_ROW_1+ROW_SPACE_PL)
 #define PLAYER_ROW_3 (PLAYER_ROW_2+ROW_SPACE_PL)
 #define PLAYER_ROW_4 (PLAYER_ROW_3+ROW_SPACE_PL)
-#define JUGGLE_ROW (PLAYER_ROW_4+ROW_SPACE)
-#define DICTPICK_LAB_ROW (JUGGLE_ROW+ROW_SPACE+2)
+#define DICTPICK_LAB_ROW (PLAYER_ROW_4+ROW_SPACE+2)
 #define DICTPICK_ROW (DICTPICK_LAB_ROW+ROW_SPACE-2)
 #define PREFS_ROW (DICTPICK_ROW+ROW_SPACE+3)
 #ifndef _WIN32_WCE
@@ -245,33 +243,35 @@ DLL_VERS_RESOURCE
                         ES_AUTOHSCROLL \
     CONTROL         "",robotCheck,"Button",BS_AUTOCHECKBOX | WS_TABSTOP, \
                     GAME_ROBOT_LEFT,playerRow,CHECK_WIDTH,ROW_HEIGHT \
-    EDITTEXT        passEdit,GAME_PWD_LEFT,playerRow,13,ROW_HEIGHT, \
+    EDITTEXT        passEdit,GAME_PWD_LEFT,playerRow,15,ROW_HEIGHT, \
                     ES_PASSWORD | ES_AUTOHSCROLL \
 
 
-IDD_GAMEINFO DIALOG DISCARDABLE  0, 0, GAMEINFO_WIDTH, GAMEINFO_HEIGHT 
+IDD_GAMEINFO DIALOG DISCARDABLE  0, 0, 116, GAMEINFO_HEIGHT 
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Infos partie"
+CAPTION "Informacje w grze"
 FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
-    LTEXT           "Mode:",IDC_ROLELABEL,LEFT_COL,SERVERROLE_ROW,20,8
+    LTEXT           "ROLE:",IDC_STATIC,5,SERVERROLE_ROW,20,8
     XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
 
-    PUSHBUTTON      "Configure mode",GIROLECONF_BUTTON,LEFT_COL+10,
-                     SERVERCONF_ROW,60,ROW_HEIGHT   // <- translate Configure mode
+    PUSHBUTTON      "Ustaw.",GIROLECONF_BUTTON,75,SERVERROLE_ROW,20,ROW_HEIGHT
+    
 #endif
 
-    LTEXT           "",IDC_TOTAL_LABEL,LEFT_COL,NPLAYERS_ROW,70,8
-    XWCOMBO(IDC_NPLAYERSCOMBO,74,NPLAYERS_ROW,24,ROW_HEIGHT,0,58,0)
+    LTEXT           "",IDC_TOTAL_LABEL,LEFT_COL,NPLAYERS_ROW,43,8
+    XWCOMBO(IDC_NPLAYERSCOMBO,68,NPLAYERS_ROW,24,ROW_HEIGHT,0,58,0)
 
-    LTEXT           "Nom",IDC_NAMELABEL,GAME_NAMELABEL_LEFT,
+    PUSHBUTTON      "Miesz.",GIJUGGLE_BUTTON,75,NPLAYERS_ROW,20,ROW_HEIGHT
+
+    LTEXT           "Imię",IDC_STATIC,GAME_NAMELABEL_LEFT,
                     LABELS_ROW,GAME_NAMELABEL_WIDTH,8,SS_NOPREFIX
-    LTEXT           "Robot",IDC_ROBOTLABEL,GAME_ROBOTLABEL_LEFT,LABELS_ROW,GAME_ROBOTLABEL_WIDTH,8
-    LTEXT           "Mdp",IDC_PASSWDLABEL,GAME_PWDLABEL_LEFT,LABELS_ROW,GAME_PWDLABEL_WIDTH,8
+    LTEXT           "Robot",IDC_STATIC,GAME_ROBOTLABEL_LEFT,LABELS_ROW,22,8
+    LTEXT           "Kod",IDC_STATIC,GAME_PWDLABEL_LEFT,LABELS_ROW,16,8
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-    LTEXT           "Distant",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,25,8,SS_NOPREFIX
+    LTEXT           "Zdalny",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,25,8,SS_NOPREFIX
     CONTROL         "",REMOTE_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     GAME_REMOTE_LEFT, PLAYER_ROW_1,CHECK_WIDTH,ROW_HEIGHT
     CONTROL         "",REMOTE_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
@@ -286,18 +286,15 @@ BEGIN
     CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
     CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
 
-    PUSHBUTTON      "M�langer",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
-                    60,BUTTON_HT
-
-    LTEXT           "Dictionnaire:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,50,8,
+    LTEXT           "Słownik:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,36,8,
                     SS_NOPREFIX
     XWCOMBO(IDC_DICTLIST,LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
 
-    PUSHBUTTON      "Pr�f�rences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12
+    PUSHBUTTON      "Ustawienia...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12
 
 #ifndef _WIN32_WCE
-    PUSHBUTTON      "OK",IDOK,20,BUTTONS_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
-    DEFPUSHBUTTON   "Annuler",IDCANCEL,50,BUTTONS_ROW,
+    PUSHBUTTON      "OK",IDOK,29,BUTTONS_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+    DEFPUSHBUTTON   "Anuluj",IDCANCEL,70,BUTTONS_ROW,
                      REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -315,14 +312,14 @@ END
 
 IDD_STRBOX DIALOG DISCARDABLE  0, 25, SB_WIDTH, STRBOX_HT
     STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Dialogue"
+CAPTION "Dialog"
 FONT 8, "System"
 BEGIN
     EDITTEXT        ID_EDITTEXT,3,3,115,76,ES_MULTILINE | ES_READONLY
                           | WS_VSCROLL
 #ifndef _WIN32_WCE
     PUSHBUTTON      "OK",IDOK,    SB_OK_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT
-    DEFPUSHBUTTON   "Non",IDCANCEL,SB_CANCEL_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT
+    DEFPUSHBUTTON   "Nie",IDCANCEL,SB_CANCEL_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
 
@@ -345,24 +342,24 @@ END
 
 IDD_ASKBLANK DIALOG DISCARDABLE  0, 0, ASKB_DLG_WIDTH, ASKB_DLG_HEIGHT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Choix de lettre"
+CAPTION "Wybór Klocków"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Entrez une lettre pour ce joker.",IDC_BPICK,
+    LTEXT           "Podaj literę jaką chcesz zastąpić.",IDC_BPICK,
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
 #ifdef FEATURE_TRAY_EDIT
-    LTEXT           "Choisissez une lettre de votre tirage.",IDC_CPICK,
+    LTEXT           "Wybierz klocek do wzięcia.",IDC_CPICK,
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
     EDITTEXT        IDC_PICKMSG,ASKB_COLLEFT,ASKB_EDITTOP,80,ASKB_EDITHT,
                     ES_MULTILINE | ES_READONLY
 
-    PUSHBUTTON      "Remettre",IDC_BACKUP,ASKB_COLLEFT,ASKB_PUTTOP,35,14
+    PUSHBUTTON      "Odłóż",IDC_BACKUP,ASKB_COLLEFT,ASKB_PUTTOP,35,14
 #endif
 
     XWCOMBO(BLANKFACE_LIST,ASKB_COMBOLEFT,ASKB_COLLEFT,27,12,LBS_SORT,70,CBS_SORT)
 #ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "OK",IDOK,80,WCE_BOTTOM,REPOS_BUTTON_WIDTH,BUTTON_HT
-    PUSHBUTTON      "Annuler",IDCANCEL,20,WCE_BOTTOM,REPOS_BUTTON_WIDTH,BUTTON_HT
+    DEFPUSHBUTTON   "OK",IDOK,80,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT
+    PUSHBUTTON      "Anuluj",IDCANCEL,20,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT
 #endif
 END
 
@@ -379,7 +376,7 @@ END
 
 IDD_SAVENAMEDLG DIALOG DISCARDABLE  0, 0, 90, SVGN_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Nom partie"
+CAPTION "Nazwa gry"
 FONT 8, "System"
 BEGIN
     LTEXT           "",
@@ -389,14 +386,14 @@ BEGIN
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,SVGN_LEFT_COL+10,SVGN_ROW_3,REPOS_BUTTON_WIDTH,
                     BUTTON_HT
-    PUSHBUTTON      "Annuler",IDCANCEL,SVGN_LEFT_COL+10+REPOS_BUTTON_WIDTH+10,
+    PUSHBUTTON      "Anuluj",IDCANCEL,SVGN_LEFT_COL+10+REPOS_BUTTON_WIDTH+10,
                     SVGN_ROW_3,REPOS_BUTTON_WIDTH, BUTTON_HT
 #endif
 END
 
 #define SVGM_LEFT_COL 2
 #define SVGM_ROW_1 2
-#define SVGM_ROW_2 (SVGM_ROW_1+45)
+#define SVGM_ROW_2 (SVGM_ROW_1+35)
 #define SVGM_ROW_3 (SVGM_ROW_2+13)
 #define SVGM_ROW_4 (SVGM_ROW_3+19)
 #ifdef _WIN32_WCE
@@ -411,26 +408,28 @@ END
 
 IDD_SAVEDGAMESDLG DIALOG DISCARDABLE  0, 0, 85, SVGM_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Parties enregistr�es"
+CAPTION "Zapisane gry"
 FONT 8, "System"
 BEGIN
   LTEXT           /* wince windres can't handle split lines....*/
-                    "S�lectionnez une partie enregistr�e.  (Certains boutons seront d�sactiv�s si la partie en cours est s�lectionn�e.)",                              
-                    IDC_SVGM_SELLAB,SVGM_LEFT_COL,SVGM_ROW_1,90,45
+                    "Wybierz zapisaną grę. (Niektóre klawisze mogą być zablokowane przy wyborze aktualnej gry.)",
+
+                    IDC_SVGM_SELLAB,SVGM_LEFT_COL,
+                    SVGM_ROW_1,90,35
     XWCOMBO(IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
 
-    PUSHBUTTON      "Ouvrir",IDC_SVGM_OPEN,
-                    SVGM_LEFT_COL,SVGM_ROW_3,40,14,WS_DISABLED
+    PUSHBUTTON      "Otwórz",IDC_SVGM_OPEN,
+                    SVGM_LEFT_COL,SVGM_ROW_3,32,14,WS_DISABLED
 
-    PUSHBUTTON      "Dupl.",IDC_SVGM_DUP,
-                    SVGM_LEFT_COL,SVGM_ROW_4,20,14,WS_DISABLED
-    PUSHBUTTON      "Effacer",IDC_SVGM_DEL,
-                    SVGM_LEFT_COL+22,SVGM_ROW_4,26,14,WS_DISABLED
-    PUSHBUTTON      "Renommer",IDC_SVGM_CHANGE,
-                    SVGM_LEFT_COL+50,SVGM_ROW_4,40,14,WS_DISABLED
+    PUSHBUTTON      "Kopia",IDC_SVGM_DUP,
+                    SVGM_LEFT_COL,SVGM_ROW_4,26,14,WS_DISABLED
+    PUSHBUTTON      "Usuń",IDC_SVGM_DEL,
+                    SVGM_LEFT_COL+28,SVGM_ROW_4,22,14,WS_DISABLED
+    PUSHBUTTON      "Zmień",IDC_SVGM_CHANGE,
+                    SVGM_LEFT_COL+52,SVGM_ROW_4,32,14,WS_DISABLED
 
 #ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "Termin�",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "Gotowe",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,
                     BUTTON_HT
 #endif
 END
@@ -447,14 +446,14 @@ END
 
 IDD_ASKPASS DIALOG DISCARDABLE  0, 0, PW_WIDTH, ASKPASS_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Mode de passe"
+CAPTION "Kod/Hasło"
 FONT 8, "System"
 BEGIN
     LTEXT           "",IDC_PWDLABEL,5,8,67,24
     EDITTEXT        PASS_EDIT,76,8,23,12,ES_PASSWORD | ES_AUTOHSCROLL
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,PW_OK_LEFT,32,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
-    PUSHBUTTON      "Annuler",IDCANCEL,
+    PUSHBUTTON      "Anuluj",IDCANCEL,
                     PW_CANCEL_LEFT,32,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -476,20 +475,19 @@ END
 
 IDD_ASKHINTLIMTS DIALOG DISCARDABLE  0, 0, HC_WIDTH, ASKHINTLIMTS_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Longueur des mots conseill�s"
+CAPTION "Ogranicz podpowiedzi"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Utiliser au moins:",HC_MIN_LABEL,
+    LTEXT           "Użyj min.:",IDC_STATIC,
                     HC_LABELS_COL,HC_MINROW,60,ROW_HEIGHT
     XWCOMBO(HC_MIN_COMBO,HC_DROPDOWNS_COL,HC_MINROW,24,ROW_HEIGHT,0,58,0)
 
-    LTEXT           "Mais pas plus de:",HC_MAX_LABEL,
-                    HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT
+    LTEXT           "Nie więcej niż:",IDC_STATIC,HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT
     XWCOMBO(HC_MAX_COMBO,HC_DROPDOWNS_COL,HC_MAXROW,24,ROW_HEIGHT,0,58,0)
 
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,HC_OK_LEFT,31,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
-    PUSHBUTTON      "Annuler",IDCANCEL,HC_CANCEL_LEFT,31,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "Anuluj",IDCANCEL,HC_CANCEL_LEFT,31,REPOS_BUTTON_WIDTH,
                      REPOS_BUTTON_HT
 #endif
 END
@@ -509,7 +507,6 @@ END
 #define PR_ROW6 (PR_ROW5+PR_SPACING)
 #define PR_ROW7 (PR_ROW6+PR_SPACING)
 #define PR_BUTTONROW (PR_ROW7+PR_SPACING)
-#define PR_LEFT 6
 
 #ifdef _WIN32_WCE
 # define PREFS_DLG_HT PR_BUTTONROW
@@ -519,55 +516,54 @@ END
 
 IDD_OPTIONSDLG DIALOG DISCARDABLE  0, 20, PR_WIDTH, PREFS_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Pr�f�rences"
+CAPTION "Ustawienia"
 FONT 8, "System"
 BEGIN
-    CONTROL         "Cette partie",IDC_RADIOLOCAL,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
-    CONTROL         "G�n�rales",IDC_RADIOGLOBAL,"Button",
-                    BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
+    CONTROL         "Ust. Gry",IDC_RADIOLOCAL,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,0,PR_ROW1,44,10
+    CONTROL         "Globalne",IDC_RADIOGLOBAL,"Button",
+                    BS_AUTORADIOBUTTON,44,PR_ROW1,56,10
 
     /* Global */
-    CONTROL         "Couleur des lettres plac�es",IDC_CHECKCOLORPLAYED,"Button",
+    CONTROL         "Koloruj używane klocki ",IDC_CHECKCOLORPLAYED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,
-                    PR_LEFT,PR_ROW2,90,PREFS_ROW_HT
-    CONTROL         "Activer curseur",IDC_CHECKSHOWCURSOR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,60,PREFS_ROW_HT
-    CONTROL         "D�tails des points du robot",IDC_CHECKROBOTSCORES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,87,PREFS_ROW_HT
-    CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,87,PREFS_ROW_HT
-    PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,PR_LEFT,PR_ROW6,70,12
-    PUSHBUTTON      "Changer la langue...",IDC_PREFLOCALE,PR_LEFT,PR_ROW7,70,12 // <-translate
+                    4,PR_ROW2,85,PREFS_ROW_HT
+    CONTROL         "Włącz kursor",IDC_CHECKSHOWCURSOR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW3,80,PREFS_ROW_HT
+    CONTROL         "Wyjaśniaj punkty robotów",IDC_CHECKROBOTSCORES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW4,90,PREFS_ROW_HT
+    CONTROL         "Ukryj wartość klocków",IDC_HIDETILEVALUES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW5,82,PREFS_ROW_HT
+    PUSHBUTTON      "Ustaw kolory...",IDC_PREFCOLORS,4,PR_ROW6,60,12
+    PUSHBUTTON      "Zmień język...",IDC_PREFLOCALE,4,PR_ROW7,70,12
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "Choisir une police...",IDC_PREFFONTS,PR_LEFT,PR_ROW8,60,12
+    PUSHBUTTON      "Wybierz font...",IDC_PREFFONTS,4,PR_ROW7,60,12
 #endif
 
     /* Per game */
-    CONTROL         "Robot intelligent",IDC_CHECKSMARTROBOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,PR_LEFT,PR_ROW2,70,
+    CONTROL         "Mądry robot",IDC_CHECKSMARTROBOT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,4,PR_ROW2,60,
                     PREFS_ROW_HT
-    CONTROL         "Conseils permis",IDC_CHECKHINTSOK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,80,PREFS_ROW_HT
+    CONTROL         "Włącz podpowiedzi",IDC_CHECKHINTSOK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW3,80,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT
-    CONTROL         "Limitation des conseils",IDC_CHECKHINTSLIMITS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,4+PR_LEFT,PR_ROW4-2,85,10
+    CONTROL         "Ogranicz podp.",IDC_CHECKHINTSLIMITS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,60,10
 #endif
-    CONTROL         "Chrono",TIMER_CHECK,"Button",
-                        BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,65,
-                        PREFS_ROW_HT
-    EDITTEXT        TIMER_EDIT,65,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Erreurs:",PHONIES_LABEL,PR_LEFT,PR_ROW6,28,PREFS_ROW_HT
-    XWCOMBO(PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT,0,58,0)
+    CONTROL         "Włącz zegar (minuty)",TIMER_CHECK,"Button",
+                        BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW5,74,PREFS_ROW_HT
+    EDITTEXT        TIMER_EDIT,79,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Zmyślone:",PHONIES_LABEL,4,PR_ROW6,32,PREFS_ROW_HT
+    XWCOMBO(PHONIES_COMBO, 42,PR_ROW6,40,PREFS_ROW_HT,0,58,0)
 
 #ifdef FEATURE_TRAY_EDIT
-    CONTROL         "Tirage manuel", IDC_PICKTILES, "Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW7,90,PREFS_ROW_HT
+    CONTROL         "Pokaż awers klocków", IDC_PICKTILES, "Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW7,90,PREFS_ROW_HT
 #else
 #endif
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,PR_OK_LEFT,PR_BUTTONROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
-    PUSHBUTTON      "Annuler",IDCANCEL,PR_CANCEL_LEFT,PR_BUTTONROW,
+    PUSHBUTTON      "Anuluj",IDCANCEL,PR_CANCEL_LEFT,PR_BUTTONROW,
                     REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -596,55 +592,55 @@ END
     /* #This is a comment????  */
 IDD_CONNSSDLG DIALOG DISCARDABLE 0, 20, 120, CONNSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Connexion"
+CAPTION "Połączenie"
 FONT 8, "System"
 BEGIN
      
-    LTEXT           "Connecter via:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT
+    LTEXT           "Połącz przez:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT
     XWCOMBO(IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
 
 #ifdef XWFEATURE_RELAY
-    LTEXT           "Cookie:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
+    LTEXT           "Ciasteczko:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
     EDITTEXT        COOKIE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
-    LTEXT           "Nom du relai (change rarement):",IDC_CRELAYNAME_LAB,
+    LTEXT           "Nazwa proxy (raczej niezmienna):",IDC_CRELAYNAME_LAB,
                     LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
     EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
-    LTEXT           "Port du relai (change rarement):",IDC_CRELAYPORT_LAB,
+    LTEXT           "Port proxy (raczej niezmienny):",IDC_CRELAYPORT_LAB,
                     LAB_COL,CONN_ROW_7,120,ROW_HEIGHT
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "Connexion non support�e.",IDC_COOKIE_LAB,
+    LTEXT           "Połączenie przez proxy niedostępne.",IDC_COOKIE_LAB,
                      LAB_COL,CONN_ROW_3,40,40
 #endif
 
 #ifdef XWFEATURE_IP_DIRECT
-    LTEXT           "Nom et adresse de l'h�te",IDC_IPNAME_LAB,
+    LTEXT           "Nazwa hosta lub adres",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,100,ROW_HEIGHT
     EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,ES_AUTOHSCROLL
 #else
-    LTEXT           "Connexion IP directe non support�e.",IDC_IPNAME_LAB,
+    LTEXT           "Połączenie bezpośrednie z IP niedostępne.",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,40,40
 #endif
 
 #ifdef XWFEATURE_SMS
-    LTEXT           "T�l�phone h�te:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
+    LTEXT           "Telefon hosta:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Port h�te:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
+    LTEXT           "Port hosta:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "SMS non support�.",
+    LTEXT           "SMSy niedostępne.",
                      IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
 #endif
 
 #ifndef _WIN32_WCE
     PUSHBUTTON      "OK",IDOK,9,BUTTON_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
-    DEFPUSHBUTTON   "Annuler",IDCANCEL,70,BUTTON_ROW,
+    DEFPUSHBUTTON   "Anuluj",IDCANCEL,70,BUTTON_ROW,
                     REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
 #endif
 END
@@ -668,14 +664,14 @@ END
 #define CLR_ROW_4  (CLR_ROW_3+CLR_SMALL_GAP)
 #define CLR_ROW_5  (CLR_ROW_4+CLR_LRG_GAP)
 #define CLR_ROW_6  (CLR_ROW_5+CLR_SMALL_GAP)
-#define CLR_ROW_7  (CLR_ROW_6+CLR_SMALL_GAP+5)
+#define CLR_ROW_7  (CLR_ROW_6+CLR_SMALL_GAP)
 #define CLR_ROW_8  (CLR_ROW_7+CLR_LRG_GAP+5)
 #define CLR_ROW_9  (CLR_ROW_8+CLR_SMALL_GAP)
 #define CLR_ROW_10  (CLR_ROW_9+CLR_SMALL_GAP)
 #define CLR_ROW_11  (CLR_ROW_10+CLR_SMALL_GAP)
 
 #define CLR_BUTTON_ROW CLR_ROW_11 + CLR_LRG_GAP
-#define CLR_COL_1  7
+#define CLR_COL_1  4
 #define CLR_COL_2  (CLR_COL_1 + CLR_LAB_WIDTH+2)
 /* #define CLR_COL_3  58 */
 /* #define CLR_COL_4  99 */
@@ -697,44 +693,43 @@ END
      and have a separate button to trigger the edit dialog. */
 #define COLOR_SAMPLE(id1,id2,xx,yy)                        \
     PUSHBUTTON       "",id2,xx,yy,CLR_BUT_WIDTH,CLR_BUT_HT,BS_OWNERDRAW \
-    PUSHBUTTON       "Editer",id1,xx+CLR_SAMPLE_WIDTH+4,yy,24,CLR_BUT_HT,BS_NOTIFY
+    PUSHBUTTON       "Edycja",id1,xx+CLR_SAMPLE_WIDTH+4,yy,26,CLR_BUT_HT,BS_NOTIFY
 
 IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, CLR_WIDTH, COLORSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Pr�f�rences des couleurs"
+CAPTION "Ustawienia kolorów"
 FONT 8, "System"
 BEGIN
-    COLOR_BUTTON("Lettre double:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1,CLR_LAB_HT)
+    COLOR_BUTTON("Litera x2:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1,CLR_LAB_HT)
     COLOR_SAMPLE(DLBLTR_BUTTON,DLBLTR_SAMPLE,CLR_COL_2,CLR_ROW_1)
 
-    COLOR_BUTTON("Mot double:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2,CLR_LAB_HT )
+    COLOR_BUTTON("Słowo x2:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2,CLR_LAB_HT )
     COLOR_SAMPLE(DBLWRD_BUTTON,DBLWRD_SAMPLE,CLR_COL_2,CLR_ROW_2)
-    COLOR_BUTTON("Lettre triple:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3,CLR_LAB_HT )
+    COLOR_BUTTON("Litera x3:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3,CLR_LAB_HT )
     COLOR_SAMPLE(TPLLTR_BUTTON,TPLLTR_SAMPLE,CLR_COL_2,CLR_ROW_3)
 
-    COLOR_BUTTON("Mot triple:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4,CLR_LAB_HT)
+    COLOR_BUTTON("Słowo x3:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4,CLR_LAB_HT)
     COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_COL_4,CLR_ROW_4)
-    COLOR_BUTTON("Case vide:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5,CLR_LAB_HT)
+    COLOR_BUTTON("Pusta:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5,CLR_LAB_HT)
     COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_COL_2,CLR_ROW_5)
-
-    COLOR_BUTTON("Fond de lettre:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6,CLR_LAB_HT+10)
-
+    COLOR_BUTTON("Rewers klocka:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6,CLR_LAB_HT)
     COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
-    COLOR_BUTTON("Couleur s�lection:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7,CLR_LAB_HT+10)
+    COLOR_BUTTON("Kolor wybranego:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7,
+                 CLR_LAB_HT+10)
     COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7+5)
-    COLOR_BUTTON("Joueur 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8,CLR_LAB_HT)
+    COLOR_BUTTON("Gracz 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8,CLR_LAB_HT)
     COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_COL_2,CLR_ROW_8)
-    COLOR_BUTTON("Joueur 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9,CLR_LAB_HT)
+    COLOR_BUTTON("Gracz 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9,CLR_LAB_HT)
     COLOR_SAMPLE(PLAYER2_BUTTON,PLAYER2_SAMPLE,CLR_COL_4,CLR_ROW_9)
-    COLOR_BUTTON("Joueur 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10,CLR_LAB_HT)
+    COLOR_BUTTON("Gracz 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10,CLR_LAB_HT)
     COLOR_SAMPLE(PLAYER3_BUTTON,PLAYER3_SAMPLE,CLR_COL_2,CLR_ROW_10)
-    COLOR_BUTTON("Joueur 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11,CLR_LAB_HT)
+    COLOR_BUTTON("Gracz 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11,CLR_LAB_HT)
     COLOR_SAMPLE(PLAYER4_BUTTON,PLAYER4_SAMPLE,CLR_COL_4,CLR_ROW_11)
 
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,CLR_OK_LEFT,CLR_BUTTON_ROW,
                     REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
-    PUSHBUTTON      "Annuler",IDCANCEL,CLR_CANCEL_LEFT,CLR_BUTTON_ROW,
+    PUSHBUTTON      "Anuluj",IDCANCEL,CLR_CANCEL_LEFT,CLR_BUTTON_ROW,
                     REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
 #endif
 END
@@ -780,9 +775,9 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION ""                      /* set by code */
 FONT 8, "System"
 BEGIN
-    COLOR_EDIT_LINE("Rouge:", CLREDIT_ROW_1, RED_LABEL, RED_EDIT, CLREDT_SLIDER1 )
-    COLOR_EDIT_LINE("Vert:", CLREDIT_ROW_2, GREEN_LABEL, GREEN_EDIT, CLREDT_SLIDER2 )
-    COLOR_EDIT_LINE("Bleu:", CLREDIT_ROW_3, BLUE_LABEL, BLUE_EDIT, CLREDT_SLIDER3 )
+    COLOR_EDIT_LINE("Czerw.:", CLREDIT_ROW_1, RED_LABEL, RED_EDIT, CLREDT_SLIDER1 )
+    COLOR_EDIT_LINE("Ziel.:", CLREDIT_ROW_2, GREEN_LABEL, GREEN_EDIT, CLREDT_SLIDER2 )
+    COLOR_EDIT_LINE("Nieb.:", CLREDIT_ROW_3, BLUE_LABEL, BLUE_EDIT, CLREDT_SLIDER3 )
 
     /* See hack alert above.  Bogus owner-draw button seems the only way to get a sample
        color rect into the dialog. */
@@ -792,7 +787,7 @@ BEGIN
 # ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,CLRE_OK_LEFT,56,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
-    PUSHBUTTON      "Annuler",IDCANCEL,CLRE_CANCEL_LEFT,56,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "Anuluj",IDCANCEL,CLRE_CANCEL_LEFT,56,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
 # endif
 END
@@ -803,7 +798,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Language Picker"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Choose the language for menus and dialog text.  (You can download support files for new languages from xwords.sf.net.)", // <- translate
+    LTEXT           "Wybierz język menu oraz okien dialogowych.  (języki dostępne są na stronie xwords.sf.net.)",
                      LOCALES_LABEL,LEFT_COL,2,80,50
 
     XWCOMBO(LOCALES_COMBO,LEFT_COL,53,70,12,0,58,0)
@@ -811,10 +806,11 @@ BEGIN
 # ifndef _WIN32_WCE
     DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,70,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
-    PUSHBUTTON      "Annuler",IDCANCEL,40,70,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "Anuluj",IDCANCEL,40,70,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
 # endif
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -826,143 +822,136 @@ STRINGTABLE DISCARDABLE
 BEGIN
 #ifdef DEBUG
     IDS_APP_TITLE           "Crossw_dbg"
+    IDC_XWORDS4             "XWORDS4_DBG"
 #else
     IDS_APP_TITLE           "Crosswords"
+    IDC_XWORDS4             "XWORDS4"
 #endif
     IDS_MENU                "Menu"
     IDS_DUMMY               "--"
-    IDS_CANCEL              "Annuler"
+    IDS_CANCEL              "Anuluj"
     IDS_OK                  "OK"
-    IDS_DONE                "Termin�"
-    IDS_LANGUAGE_NAME       "Fran�ais"
-    IDS_NEW_GAME            "New Game"  // <- translate
+    IDS_DONE                "Gotowe"
+    IDS_LANGUAGE_NAME       "Polski"
+    IDS_NEW_GAME            "Nowa gra"
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (REV " SVN_REV ") "\
-                    "pour Windows Mobile. Copyright 1998-2009 "\
-                    "Eric House.  Ce logiciel est produit sous licence "\
-                    "publique GNU.\r\r"\
-                    "Pour obtenir des dictionnaires, le manuel ou le "\
-                    "code source allez sur "\
-                    "http://xwords.sf.net ou http://eehouse.org/xwords/.\r\r"\
-					"Traduction fran�aise par Jean-Marc Charette."
-    IDS_DICTLOC     "Veuillez installer un dictionnaire (Fichier .xwd) "\
-                    "dans le m�me dossier que le fichier ex�cutable crosswords.exe ou "\
-                    "dans un dossier nomm� crosswords sur la carte de stockage, "\
-                    "par exemple dans \\Carte de Stockage\\crosswords. "\
-                    "T�l�chargez des dictionnaires sur le site http://xwords.sf.net ou "\
+                    "dla Windows Mobile. Copyright 1998-2009 BY "\
+                    "Eric House.  Oprogramowanie wydane na "\
+                    "publicznej licencji GNU.\r\r"\
+                    "Słowniki, dokumentacja oraz kod źródłowy, dostępne są na stronach "\
+                    "http://xwords.sf.net i http://eehouse.org/xwords/."
+    IDS_DICTLOC     "Pliki słowników (.xwd) zainstaluj proszę "\
+                    "w tym samym katalogu co wykonywalny plik .EXE, lub "\
+                    "w katalogu nazwanym Crosswords na karcie pamięci, "\
+                    "np. w \\storage card\\crosswords.  "\
+                    "Pobierz słowniki z HTTP://XWORDS.SF.NET lub "\
                     "http://eehouse.org/xwords."
-    IDS_SAVENAME    "Entrez un nom pour la partie.  (Vous pourrez le changer "\
-                    "plus tard via la bo�te de dialogue Enregistrer partie.)"
-    IDS_DUPENAME    "Entrez un nom pour une copie de cette partie."
-    IDS_RENAME      "Entrez un nouveau nom pour cette partie."
+    IDS_SAVENAME    "Podaj nazwę aktualnej gry (możesz ją zmienić "\
+                    "korzystając z okna zapisanych gier.)"
+    IDS_DUPENAME    "Podaj nazwę dla kopii aktualnej gry."
+    IDS_RENAME      "Podaj nową nazwę dla wybranej gry."
 
-    IDS_REMAINING_TILES_ADD "+ %d [Toutes les lettres restantes]"
-    IDS_UNUSED_TILES_SUB    "- %d [Lettres non utilis�es]"
-    IDS_BONUS_ALL          "Bonus scrabble: 50" XP_CR
-    IDS_TURN_SCORE         "Score pour ce coup: %d" XP_CR
-    IDS_COMMIT_CONFIRM     "Accepter ce coup?" XP_CR
+    IDS_REMAINING_TILES_ADD "+ %d [pozostałych klocków]"
+    IDS_UNUSED_TILES_SUB    "- %d [nieużywanych klocków]"
+    IDS_BONUS_ALL          "bonus za użycie wszystkich: 50" XP_CR
+    IDS_TURN_SCORE         "punktacja za kolejkę: %d" XP_CR
+    IDS_COMMIT_CONFIRM     "wykonać ruch?" XP_CR
     IDS_LOCAL_NAME         "%s"
-    IDS_REM                "Res"
-    IDS_IGNORE_L           "Ignorer"
-    IDS_WARN_L             "Avertir"
-    IDS_DISALLOW_L         "Refuser"
-    IDS_NONLOCAL_NAME      "%s (Distant)"
-    IDS_TIME_PENALTY_SUB   " - %d [Temps]"
-    IDS_CUMULATIVE_SCORE   "Score cumul�: %d" XP_CR
-    IDS_MOVE_ACROSS        "Placement (de %s horizontalement)" XP_CR
-    IDS_MOVE_DOWN          "Placement (de %s verticalement)" XP_CR
-    IDS_TRAY_AT_START      "Tirage de d�part: %s" XP_CR
-    IDS_NEW_TILES          "Nouvelles lettres: %s" XP_CR
-    IDS_TRADED_FOR         "Echang� %s contre %s."
-    IDS_PASS               "Passe" XP_CR
-    IDS_PHONY_REJECTED     "Mot refus� dans ce coup; tour perdu!" XP_CR
-    IDS_ROBOT_TRADED       "Le robot a �chang� %d lettre(s) durant ce tour."
-    IDS_ROBOT_MOVED        "Le robot a jou� ce coup:" XP_CR
-    IDS_REMOTE_MOVED       "Le joueur distant a jou� ce coup:" XP_CR
-    IDS_PASSED             "Pass�"
+    IDS_REM                "Poz"
+    IDS_IGNORE_L           "Ignoruj"
+    IDS_WARN_L             "Ostrzeżeni"
+    IDS_DISALLOW_L         "Zabro"
+    IDS_NONLOCAL_NAME      "%s (zdalne)"
+    IDS_TIME_PENALTY_SUB   " - %d [czas]"
+    IDS_CUMULATIVE_SCORE   "wynik kumulowany: %d" XP_CR
+    IDS_MOVE_ACROSS        "przesuń (od %s w poziomie)" XP_CR
+    IDS_MOVE_DOWN          "przesuń (od %s w pionie)" XP_CR
+    IDS_TRAY_AT_START      "na początku w ręce: %s" XP_CR
+    IDS_NEW_TILES          "nowych klocków: %s" XP_CR
+    IDS_TRADED_FOR         "wymieniono %s za %s."
+    IDS_PASS               "pass" XP_CR
+    IDS_PHONY_REJECTED     "niedozwolone słowo; kolejka stracona!" XP_CR
+    IDS_ROBOT_TRADED       "Robot wymienił %d klocków."
+    IDS_ROBOT_MOVED        "Robot wykonał ruch:" XP_CR
+    IDS_REMOTE_MOVED       "Zdalny gracz wykonał ruch:" XP_CR
+    IDS_PASSED             "spasował"
     IDS_SUMMARYSCORED      "%s:%d"
-    IDS_TRADED             "Echang� %d"
-    IDS_LOSTTURN           "Tour perdu"
+    IDS_TRADED             "wymienione %d"
+    IDS_LOSTTURN           "stracona kolejka"
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_LOCALPLAYERS       "Joueurs loc.:"
+    IDS_LOCALPLAYERS       "lokalni gracze:"
 #endif
-    IDS_TOTALPLAYERS       "Nombre de joueurs:"
-    IDS_VALUES_HEADER      "%s Nombres/Valeurs:" XP_CR
-    IDS_QUERY_TRADE        "Etes-vous s�r de vouloir �changer les lettres s�lectionn�es?"
-    IDS_DOUBLE_LETTER      "Lettre compte double"
-    IDS_DOUBLE_WORD        "Mot compte double"
-    IDS_TRIPLE_LETTER      "Lettre compte triple"
-    IDS_TRIPLE_WORD        "Mot compte triple"
+    IDS_TOTALPLAYERS       "Ilość graczy:"
+    IDS_VALUES_HEADER      "%s liczone/wartości:" XP_CR
+    IDS_QUERY_TRADE        "Na pewno wymienić wybrane literki?"
+    IDS_DOUBLE_LETTER      "Litera x2"
+    IDS_DOUBLE_WORD        "Słowo x2"
+    IDS_TRIPLE_LETTER      "Litera x3"
+    IDS_TRIPLE_WORD        "Słowo x3"
+    IDS_INTRADE_MW         "Wymiana klocków." XP_CR "Wybierz 'koniec kolejki' gdy zakończysz"
 
-    IDS_INTRADE_MW         "Echange de lettres. Choisir" XP_CR "'Jouer le coup' quand vous" XP_CR "avez fini."
 
-    IDS_TILES_NOT_IN_LINE  "Toutes les lettres jou�es doivent �tre align�es."
-    IDS_NO_EMPTIES_IN_TURN "Aucune case vide ne peut s�parer deux lettres plac�es."
-    IDS_TWO_TILES_FIRST_MOVE "Lors du premier coup, vous devez placer deux lettres au minimum."
-    IDS_TILES_MUST_CONTACT "Les lettres doivent �tre plac�es en contact avec des lettres d�ja pr�sentes sur le plateau de jeu (ou "\
-                           "recouvrir la case centrale du plateau lors du premier coup)."
-    IDS_NOT_YOUR_TURN      "Vous ne pouvez pas faire cela, ce n'est pas votre tour!"
-    IDS_NO_PEEK_ROBOT_TILES "Pas de coup d'oeil sur les lettres du robot!"
-    IDS_CANT_TRADE_MID_MOVE "Retirez les lettres plac�es avant d'�changer."
-    IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Il reste trop peu de lettres pour l'�change."
-    IDS_CANT_UNDO_TILEASSIGN "L'attribution des lettres ne peut �tre annul�."
-    IDS_CANT_HINT_WHILE_DISABLED "Les conseils sont d�sactiv�s dans cette partie.  "\
-                            "activez-les pour une nouvelle partie en utilisant les pr�f�rences."
+    IDS_TILES_NOT_IN_LINE  "Wszystkie układane litery muszą być w linii."
+    IDS_NO_EMPTIES_IN_TURN "W układanym słowie nie może być pustych miejsc."
+    IDS_TWO_TILES_FIRST_MOVE "W pierwszym ruchu musisz użyc minimum 2 liter."
+    IDS_TILES_MUST_CONTACT "Układane litery muszą dotykać istniejących słów (lub "\
+                           "środkowego pola przy pierwszym ruchu)."
+    IDS_NOT_YOUR_TURN      "Nie możesz tego zrobić; To nie Twoja kolejka!"
+    IDS_NO_PEEK_ROBOT_TILES "Nie można podglądać klocków Robota!"
+    IDS_CANT_TRADE_MID_MOVE "Usuń klocki z planszy zanim je wymienisz."
+    IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Zbyt mało klocków by dokonać wymiany."
+    IDS_CANT_UNDO_TILEASSIGN "Nie można zmienić ułożenia klocków."
+    IDS_CANT_HINT_WHILE_DISABLED "Podpowiedzi są wyłączone dla tej gry.  "\
+                            "Można je włączyć dla nowej gry, korzystając z "\
+                            "okna Ustawień."
 
-    IDS_COUNTSVALS_L        "Nombre et valeur des lettres"
-    IDS_REMTILES_L          "Lettres restantes"
-    IDS_GAMEHIST_L          "Historique de la partie"
-    IDS_FINALSCORE_L        "Score final"
-    IDS_QUESTION_L          "Question"
-    IDS_FYI_L               "Info"
-    IDS_ILLEGALWRD_L        "Mot interdit"
-    IDS_WRDNOTFOUND         "Mot(s) %s non trouv�(s) dans le dictionnaire."
-    IDS_USEANYWAY           "L'utiliser malgr� tout?"
-    IDS_CANNOTOPEN_GAME     "La partie enregistr�e ne peut �tre ouverte."
-    IDS_NODICT_L            "Dictionnaire non trouv�"
-    IDS_ABOUT_L             "A propos de Crosswords"
-    IDS_OVERWRITE           "Voulez-vous vraiment effacer la partie en cours?"
-    IDS_ENDNOW              "Etes-vous s�r de vouloir terminer la partie maintenant?"
-    IDS_CANNOTOPEN_DICT     "Impossible d'ouvrir le dictionnaire: %s"
-    IDS_CONFIM_DELETE       "Etes-vous certain de vouloir effacer la partie "\
-                            "s�lectionn�e?  Cette action ne pourra pas �tre annul�e."
+    IDS_COUNTSVALS_L        "Wartości i ilości klocków"
+    IDS_REMTILES_L          "Pozostałe klocki"
+    IDS_GAMEHIST_L          "Historia gry"
+    IDS_FINALSCORE_L        "Ostateczne wyniki"
+    IDS_QUESTION_L          "Pytanie"
+    IDS_ILLEGALWRD_L        "Niedozwolone słowo"
+    IDS_WRDNOTFOUND         "Słowo[a] %s nie znalezione w słowniku."
+    IDS_USEANYWAY           "Użyć go tak czy siak?"
+    IDS_FYI_L               "Ups!"
+    IDS_CANNOTOPEN_GAME     "Nie mogę otworzyć zapisanej gry."
+    IDS_NODICT_L            "Nie znalazłem słownika"
+    IDS_ABOUT_L             "O grze Crosswords"
+    IDS_OVERWRITE           "Na pewno chcesz nadpisać istniejący plik?"
+    IDS_ENDNOW              "Na pewno chcesz zakończyć grę?"
+    IDS_CANNOTOPEN_DICT     "Nie mogę otworzyć słownika: %s"
+    IDS_CONFIM_DELETE       "Czy na pewno mam skasować wybraną grę? "\
+                            "Tej operacji nie można później cofnąć."
 
-    IDS_ROLE_STANDALONE     "Autonome"
-    IDS_ROLE_HOST           "H�te"
-    IDS_ROLE_GUEST          "Invit�"
-    IDS_PLAYER_FORMAT       "Joueur %d"
-    IDS_UNTITLED_FORMAT     "Sans titre %d"
-    IDS_PASSWDFMT_L         "Enter password for %ls:"            // <- translate
-    IDS_FILEEXISTSFMT_L     "File %s already exists."        // <- translate
-    IDS_NEED_TOUCH          "This feature requires a touch screen." // <- translate
-    IDS_EDITCOLOR_FORMAT    "Edit color for %s" // <- translate
-    IDS_LANG_CHANGE_RESTART "You must restart Crosswords for this change to take effect." // <-translate
+    IDS_ROLE_STANDALONE     "Niezależny"
+    IDS_ROLE_HOST           "Host"
+    IDS_ROLE_GUEST          "Gość"
+    IDS_PLAYER_FORMAT       "Gracz %d"
+    IDS_UNTITLED_FORMAT     "Beznazwy %d"
+    IDS_PASSWDFMT_L         "Wprowadź hasło dla %ls:"
+    IDS_FILEEXISTSFMT_L     "Plik %s już istnieje."
+    IDS_NEED_TOUCH          "Ta opcja wymaga ekranu dotykowego."
+    IDS_EDITCOLOR_FORMAT    "Edycja koloru %s"
+    IDS_LANG_CHANGE_RESTART "Musisz zrestartować xWords aby nowe ustawienia zadziałały."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_CONN_RELAY_L        "Transmission"
-    IDS_CONN_DIRECT         "Connexion directe"
+    IDS_CONN_RELAY_L          "Proxy"
+    IDS_CONN_DIRECT         "Bezpośrednie"
 
-    IDS_NO_PEEK_REMOTE_TILES "Pas de coup d'oeil sur le jeu des joueurs distants!"
-    IDS_REG_UNEXPECTED_USER "Refus de la tentative d'enregistrer un joueur non pr�vu."
-    IDS_SERVER_DICT_WINS "Conflit de dictionnaire entre l'h�te et l'invit�; l'h�te gagne."
-    IDS_REG_SERVER_SANS_REMOTE "Au moins un joueur doit �tre distant dans une partie "\
-                               "d�but�e en tant qu'h�te."
+    IDS_NO_PEEK_REMOTE_TILES "Nie można podejrzeć zdalnych graczy!"
+    IDS_REG_UNEXPECTED_USER "Odmowa rejestracji niespodziewanego gracza."
+    IDS_SERVER_DICT_WINS "Konflikt słowników hosta i gościa. Host jest ważniejszy."
+    IDS_REG_SERVER_SANS_REMOTE "Przynajmniej jeden gracz musi być ustawiony jako zdalny "\
+                               "Rozpoczyna host."
 
-# ifdef XWFEATURE_SMS
-    IDS_SMS_CONN_L          "Texting"
-# endif
-# ifdef XWFEATURE_IP_DIRECT
-    IDS_DIRECT_CONN_L       "Direct connection"  // <- translate -- but not visible in version 4.2
-# endif
 # ifdef XWFEATURE_RELAY
-    IDS_RELAY_CONN_L               "Relay" // <- translate -- but not visible in version 4.2
-    IDS_XWRELAY_ERROR_TIMEOUT      "La transmission a �chou� dans les d�lais; cela signifie g�n�ralement "\
-                                   "que les autres joueurs ne vous ont pas vu."
-    IDS_ERROR_HEART_YOU            "Vous avez �t� d�connect� parce que vous n'avez rien �mis "\
-                                   "pendant trop longtemps."
-    IDS_XWRELAY_ERROR_HEART_OTHER  "La transmission a perdu le contact avec un appareil durant cette partie."
-/*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
+    IDS_XWRELAY_ERROR_TIMEOUT      "Minął czas połączenia z proxy; najczęściej oznacza to,"\
+                                   "że inni gracze się nie pojawili."
+    IDS_ERROR_HEART_YOU            "Rozłączono grę przez proxy, z powodu zbyt długiego "\
+                                   "oczekiwania na Twoją odpowiedź."
+    IDS_XWRELAY_ERROR_HEART_OTHER  "Proxy utraciło połączenie z urządzeniem."
 # endif
-#endif  /* XWFEATURE_STANDALONE_ONLY */
+#endif
 
 END
 

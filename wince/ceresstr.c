@@ -1,4 +1,4 @@
-/* -*- compile-command: "make -j3 TARGET_OS=wince DEBUG=TRUE RELAY_NAME_DEFAULT=localhost" -*- */
+/* -*- compile-command: "make -j3 TARGET_OS=wince DEBUG=TRUE"; -*- */
 /* 
  * Copyright 2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -21,6 +21,9 @@
 #include "ceutil.h"
 #include "cedebug.h"
 
+static XP_U16 getDLLVersion( HINSTANCE hinst );
+
+
 HINSTANCE
 ceLoadResFile( const XP_UCHAR* file )
 {
@@ -29,8 +32,14 @@ ceLoadResFile( const XP_UCHAR* file )
     XP_U16 len = MultiByteToWideChar( CP_ACP, 0, file, -1, widebuf, VSIZE(widebuf) );
     widebuf[len] = 0;
     hinst = LoadLibrary( widebuf );
+    
+    if ( CUR_DLL_VERSION != getDLLVersion( hinst ) ) {
+        FreeLibrary( hinst );
+        hinst = NULL;
+    }
+
     return hinst;
-}
+} /* ceLoadResFile */
 
 void
 ceCloseResFile( HINSTANCE inst )
@@ -140,6 +149,9 @@ ceGetResStringL( CEAppGlobals* globals, XP_U16 resID )
 void
 ceFreeResStrings( CEAppGlobals* globals )
 {
+#ifdef DEBUG
+    XP_U16 nUsed = 0;
+#endif
     ResStrStorage* storage = (ResStrStorage*)globals->resStrStorage;
     if ( !!storage ) {
         XP_U16 ii;
@@ -147,22 +159,31 @@ ceFreeResStrings( CEAppGlobals* globals )
             ResStrEntry* entry = storage->entries[ii];
             if ( !!entry ) {
                 XP_FREE( globals->mpool, entry );
+#ifdef DEBUG
+                ++nUsed;
+#endif
             }
         }
 
         XP_FREE( globals->mpool, storage );
         globals->resStrStorage = NULL;
     }
+#ifdef DEBUG
+    XP_LOGF( "%s: %d of %d strings loaded and used", __func__, nUsed,
+             VSIZE(storage->entries) );
+#endif
 }
 #endif
 
 typedef struct _DllSelState {
     CeDlgHdr dlgHdr;
     wchar_t wbuf[MAX_PATH];
+    const wchar_t* curFile;
 
     wchar_t* names[8];
     wchar_t* files[8];
     XP_U16 nItems;
+    XP_U16 initialSel;
 
     XP_U16 dllListID;
     XP_Bool inited;
@@ -177,18 +198,32 @@ copyWideStr( CEAppGlobals* globals, const wchar_t* str, wchar_t** loc )
     wcscpy( *loc, str );
  }
 
+static XP_U16
+getDLLVersion( HINSTANCE hinst )
+{
+    XP_U16 version = 0;         /* illegal value */
+    HRSRC rsrcH = FindResource( hinst, MAKEINTRESOURCE(ID_DLLVERS_RES),
+                                TEXT("DLLV") );
+    if ( !!rsrcH ) {
+        HGLOBAL globH = LoadResource( hinst, rsrcH );
+        version = *(XP_U16*)globH;
+        DeleteObject( globH );
+    }
+    return version;
+}
+
 /* Iterate through .dll files listing the name of any that has one.  Pair with
  * file from which it came since that's what we'll return.
  */
 static void
 listDlls( DllSelState* state )
 {
-    LOG_FUNC();
     HANDLE fileH;
     HWND hDlg = state->dlgHdr.hDlg;
     WIN32_FIND_DATA data;
     CEAppGlobals* globals = state->dlgHdr.globals;
     XP_U16 nItems = 0;
+    XP_S16 selIndex = 0;        /* default to built-in */
     wchar_t name[64];
 
     LoadString( globals->hInst, IDS_LANGUAGE_NAME, name, VSIZE(name) );
@@ -206,16 +241,26 @@ listDlls( DllSelState* state )
 
         HINSTANCE hinst = LoadLibrary( data.cFileName );
         if ( !!hinst ) {
-            if ( LoadString( hinst, IDS_LANGUAGE_NAME, 
+            if ( CUR_DLL_VERSION != getDLLVersion( hinst ) ) {
+                /* do nothing; wrong version (or just not our .dll) */
+            } else if ( LoadString( hinst, IDS_LANGUAGE_NAME, 
                              name, VSIZE(name) ) ) {
-                (void)SendDlgItemMessage( hDlg, state->dllListID, ADDSTRING(globals),
+                (void)SendDlgItemMessage( hDlg, state->dllListID, 
+                                          ADDSTRING(globals),
                                           0, (LPARAM)name );
                 copyWideStr( globals, name, &state->names[nItems] );
                 copyWideStr( globals, data.cFileName, &state->files[nItems] );
 
+                if ( !!state->curFile ) {
+                    if ( !wcscmp( data.cFileName, state->curFile ) ) {
+                        selIndex = nItems;
+                    }
+                }
+
                 ++nItems;
             } else {
-                XP_LOGF( "IDS_LANGUAGE_NAME not found in %ls", data.cFileName );
+                XP_LOGF( "IDS_LANGUAGE_NAME not found in %ls",
+                         data.cFileName );
             }
             FreeLibrary( hinst );
         } else {
@@ -230,10 +275,11 @@ listDlls( DllSelState* state )
             break;
         }
     }
-    SendDlgItemMessage( hDlg, state->dllListID, SETCURSEL(globals), 0, 0 );
+    SendDlgItemMessage( hDlg, state->dllListID, SETCURSEL(globals), 
+                        selIndex, 0L );
 
     state->nItems = nItems;
-    LOG_RETURN_VOID();
+    state->initialSel = selIndex;
 } /* listDlls */
 
 static void 
@@ -259,7 +305,8 @@ getSelText( DllSelState* state )
 
     XP_S16 sel = SendDlgItemMessage( hDlg, state->dllListID, 
                                      GETCURSEL(globals), 0, 0 );
-    if ( sel >= 0 ) {
+
+    if ( sel >= 0 && sel != state->initialSel ) {
         gotIt = XP_TRUE;
         if ( sel > 0 ) {
             wcscpy( state->wbuf, state->files[sel] );
@@ -301,8 +348,7 @@ DllSelDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                         && (BN_CLICKED == HIWORD(wParam)) ) {
                 switch( LOWORD(wParam) ) {
                 case IDOK:
-                    state->cancelled = XP_FALSE;
-                    getSelText( state );
+                    state->cancelled = !getSelText( state );
                     /* fallthrough */
                 case IDCANCEL:
                     unlistDlls( state );
@@ -318,18 +364,27 @@ DllSelDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 } /* DllSelDlg */
 
 /* ceChooseResFile: List all the available .rc files and return if user
- * chooses one.
+ * chooses one different from the one passed in.
  */
 XP_Bool
-ceChooseResFile( CEAppGlobals* globals, XP_UCHAR* buf, XP_U16 bufLen )
+ceChooseResFile( HWND hwnd, CEAppGlobals* globals, const XP_UCHAR* curFileName,
+                 XP_UCHAR* buf, XP_U16 bufLen )
 {
     DllSelState state;
+    wchar_t wCurFile[MAX_PATH];
+
     XP_MEMSET( &state, 0, sizeof(state) );
 
     state.dlgHdr.globals = globals;
 
-    (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_LOCALESDLG, globals->hWnd,
-                          (DLGPROC)DllSelDlg, (long)&state );
+    if ( !!curFileName ) {
+        (void)MultiByteToWideChar( CP_ACP, 0, curFileName, -1,
+                                   wCurFile, VSIZE(wCurFile) );
+        state.curFile = wCurFile;
+    }
+
+    (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_LOCALESDLG, 
+                          hwnd, (DLGPROC)DllSelDlg, (long)&state );
 
     if ( !state.cancelled ) {
         (void)WideCharToMultiByte( CP_ACP, 0, state.wbuf, -1,

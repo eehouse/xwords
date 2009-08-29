@@ -55,21 +55,9 @@ typedef struct CePrefsPrefs {
     COLORREF colors[CE_NUM_EDITABLE_COLORS];
 } CePrefsPrefs;
 
-typedef struct CePrefsDlgState {
-    CeDlgHdr dlgHdr;
-    CePrefsPrefs prefsPrefs;
-
-    XP_U16 phonComboId;
-
-    XP_Bool userCancelled;
-    //XP_Bool doGlobalPrefs;      /* state of the radio */
-    XP_Bool isNewGame;
-    XP_Bool colorsChanged;
-} CePrefsDlgState;
-
 XP_Bool WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, 
-                         CePrefsDlgState* state, CePrefsPrefs* prefsPrefs, 
-                         XP_Bool isNewGame );
+                         CePrefsPrefs* prefsPrefs, 
+                         XP_Bool isNewGame, XP_Bool* colorsChanged );
 void loadStateFromCurPrefs( CEAppGlobals* globals, const CEAppPrefs* appPrefs, 
                             const CurGameInfo* gi, CePrefsPrefs* prefsPrefs );
 void loadCurPrefsFromState( CEAppGlobals* globals, CEAppPrefs* appPrefs, 
