@@ -170,6 +170,8 @@ static AddressRecord* getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
                                     XP_PlayerAddr channelNo );
 static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
 static void addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
+static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
+
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms, XP_Bool breakExisting );
 
@@ -275,8 +277,7 @@ cleanupInternal( CommsCtxt* comms )
 
     for ( msg = comms->msgQueueHead; !!msg; msg = next ) {
         next = msg->next;
-        XP_FREE( comms->mpool, msg->msg );
-        XP_FREE( comms->mpool, msg );
+        freeElem( comms, msg );
     }
     comms->queueLen = 0;
     comms->msgQueueHead = comms->msgQueueTail = (MsgQueueElem*)NULL;
@@ -565,7 +566,10 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
         if ( breakExisting
              || COMMS_RELAYSTATE_UNCONNECTED == comms->r.relayState ) {
             set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
-            relayConnect( comms );
+            if ( !relayConnect( comms ) ) {
+                XP_LOGF( "%s: relayConnect failed", __func__ );
+                set_reset_timer( comms );
+            }
         }
         break;
 #endif
@@ -852,15 +856,14 @@ addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem )
     if ( !comms->msgQueueHead ) {
         comms->msgQueueHead = comms->msgQueueTail = newMsgElem;
         XP_ASSERT( comms->queueLen == 0 );
-        comms->queueLen = 1;
     } else {
         XP_ASSERT( !!comms->msgQueueTail );
         comms->msgQueueTail->next = newMsgElem;
         comms->msgQueueTail = newMsgElem;
 
         XP_ASSERT( comms->queueLen > 0 );
-        ++comms->queueLen;
     }
+    ++comms->queueLen;
     XP_STATUSF( "addToQueue: queueLen now %d", comms->queueLen );
 } /* addToQueue */
 
@@ -1073,7 +1076,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     XWHostID destID, srcID;
     CookieID cookieID;
     XP_U8 relayErr;
-    XP_U8 hasName;
+    XP_Bool hasName;
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
