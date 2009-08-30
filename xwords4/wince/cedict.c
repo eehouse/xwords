@@ -89,7 +89,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 
     while( !!ptr ) {           /* lets us break.... */
         XP_U32 offset;
-        XP_U16 numFaces, numFaceBytes;
+        XP_U16 numFaces, numFaceBytes = 0;
         XP_U16 i;
         XP_U16 flags;
         void* mappedBase = (void*)ptr;
