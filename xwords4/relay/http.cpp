@@ -112,7 +112,7 @@ printTail( FILE* fil )
 }
 
 static void
-printCrefs( FILE* fil, const CrefMgrInfo* info )
+printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
 {
     fprintf( fil, "<div class=\"header\">Connections</div>" );
     fprintf( fil, "<table><tr>" );
@@ -126,9 +126,10 @@ printCrefs( FILE* fil, const CrefMgrInfo* info )
              "<th>State</th>"
              "<th>Secs conn&apos;d</th>"
              "<th>Host IDs</th>"
-             "<th>Host IPs</th>"
-             "\n"
              );
+    if ( isLocal ) {
+        fprintf( fil, "<th>Host IPs</th>" );
+    }
     fprintf( fil, "</tr>\n" );
 
     time_t curTime = uptime();
@@ -146,8 +147,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info )
                  "<td>%s</td>"  /* State */
                  "<td>%ld</td>"  /* conntime */
                  "<td>%s</td>"   /* Hosts */
-                 "<td>%s</td>"   /* Ip addrs */
-                 "</tr>\n",
+                 ,
                  crefInfo->m_cookie.c_str(),
                  crefInfo->m_connName.c_str(),
                  crefInfo->m_cookieID,
@@ -155,15 +155,20 @@ printCrefs( FILE* fil, const CrefMgrInfo* info )
                  crefInfo->m_nPlayersSought, crefInfo->m_nPlayersHere, 
                  stateString( crefInfo->m_curState ),
                  curTime - crefInfo->m_startTime,
-                 crefInfo->m_hostsIds.c_str(),
-                 crefInfo->m_hostIps.c_str()
+                 crefInfo->m_hostsIds.c_str()
                  );
+        
+        if ( isLocal ) {
+            fprintf( fil, "<td>%s</td>",   /* Ip addrs */
+                     crefInfo->m_hostIps.c_str() );
+        }
+        fprintf( fil, "</tr>\n" );
     }
     fprintf( fil, "</table>\n" );
 } /* printCrefs */
 
 static void
-printStats( FILE* fil, const CrefMgrInfo* info )
+printStats( FILE* fil, const CrefMgrInfo* info, bool isLocal )
 {
     char uptime1[64];
     char uptime2[64];
@@ -204,6 +209,16 @@ http_thread_main( void* arg )
     }
 
     if ( 0 == strncasecmp( "GET ", buf, 3 ) ) {
+        struct sockaddr_in name;
+        socklen_t namelen = sizeof(name);
+
+        bool isLocal = 0 == getpeername( sock, (struct sockaddr*)&name, &namelen );
+        if ( isLocal ) {
+            in_addr_t s_addr = name.sin_addr.s_addr;
+            isLocal = 0x7f000001 == htonl(s_addr);
+            logf( XW_LOGINFO, "name: %x", htonl(s_addr) );
+        }
+
         MutexLock ml(&state->m_dataMutex);
 
         /* We'll handle as many http connections as folks want to throw at us,
@@ -218,7 +233,6 @@ http_thread_main( void* arg )
         }
         if ( state->m_crefInfo == NULL ) {
             state->m_crefInfo = new CrefMgrInfo();
-            logf( XW_LOGINFO, "%s: calling GetStats", __func__ );
             CRefMgr::Get()->GetStats( *state->m_crefInfo );
             state->m_nextFetch = curTime + state->m_sampleInterval;
         }
@@ -232,12 +246,9 @@ http_thread_main( void* arg )
         send_meta( fil );
         fprintf( fil, "<body><div class=\"main\">" );
 
-/*         CrefMgrInfo info; */
-/*         CRefMgr::Get()->GetStats( info ); */
+        printStats( fil, info, isLocal );
 
-        printStats( fil, info );
-
-        printCrefs( fil, info );
+        printCrefs( fil, info, isLocal );
 
         printTail( fil );
 
