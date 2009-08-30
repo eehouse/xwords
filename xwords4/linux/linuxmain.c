@@ -113,10 +113,17 @@ writeToFile( XWStreamCtxt* stream, void* closure )
     stream_getBytes( stream, buf, len );
 
     file = fopen( cGlobals->params->fileName, "w" );
-    if ( 1 != fwrite( buf, len, 1, file ) ) {
-        XP_ASSERT( 0 );
+    if ( !file ) {
+        XP_LOGF( "%s: fopen => %d (%s)", __func__, errno, strerror(errno) );
+    } else {
+        if ( 1 == fwrite( buf, len, 1, file ) ) {
+            XP_LOGF( "%s: wrote %d bytes to %s", __func__, len,
+                     cGlobals->params->fileName );
+        } else {
+            XP_ASSERT( 0 );
+        }
+        fclose( file );
     }
-    fclose( file );
 
     free( buf );
 } /* writeToFile */
@@ -328,7 +335,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
         XP_STATUSF( "1: sending to port %d", addrRec->u.ip_relay.port );
         host = gethostbyname( addrRec->u.ip_relay.hostName );
         if ( NULL == host ) {
-            XP_WARNF( "gethostbyname(%s) returned -1",  
+            XP_WARNF( "%s: gethostbyname(%s) returned -1",  __func__, 
                       addrRec->u.ip_relay.hostName );
             sock = -1;
             goto done;
@@ -357,37 +364,38 @@ linux_tcp_send( const XP_U8* buf, XP_U16 buflen,
                 CommonGlobals* globals, const CommsAddrRec* addrRec )
 {
     XP_S16 result = 0;
-    int socket = globals->socket;
+    int sock = globals->socket;
     
-    if ( socket == -1 ) {
-        XP_STATUSF( "%s: socket uninitialized", __func__ );
-        socket = linux_init_relay_socket( globals, addrRec );
-        if ( socket != -1 ) {
-            assert( globals->socket == socket );
+    if ( sock == -1 ) {
+        XP_LOGF( "%s: socket uninitialized", __func__ );
+        sock = linux_init_relay_socket( globals, addrRec );
+        if ( sock != -1 ) {
+            assert( globals->socket == sock );
             (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       -1, socket,
-                                       &globals->storage );
+                                       -1, sock, &globals->storage );
         }
     }
 
-    if ( socket != -1 ) {
+    if ( sock != -1 ) {
         XP_U16 netLen = htons( buflen );
         errno = 0;
 
-        result = send( socket, &netLen, sizeof(netLen), 0 );
+        result = send( sock, &netLen, sizeof(netLen), 0 );
         if ( result == sizeof(netLen) ) {
-            result = send( socket, buf, buflen, 0 ); 
+            result = send( sock, buf, buflen, 0 ); 
         }
         if ( result <= 0 ) {
             XP_STATUSF( "closing non-functional socket" );
-            close( socket );
+            close( sock );
             (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       socket, -1, &globals->storage );
+                                       sock, -1, &globals->storage );
             globals->socket = -1;
         }
 
         XP_STATUSF( "%s: send(sock=%d) returned %d of %d (err=%d)", 
-                    __func__, socket, result, buflen, errno );
+                    __func__, sock, result, buflen, errno );
+    } else {
+        XP_LOGF( "%s: socket still -1", __func__ );
     }
  
     return result;
@@ -1112,6 +1120,8 @@ main( int argc, char** argv )
     linux_util_vt_destroy( mainParams.util );
 
     mpool_destroy( mainParams.util->mpool );
+
+    free( mainParams.util );
 
     XP_LOGF( "exiting main" );
     return 0;

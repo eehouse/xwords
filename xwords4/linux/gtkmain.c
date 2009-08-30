@@ -569,8 +569,6 @@ quit( void* XP_UNUSED(dunno), GtkAppGlobals* globals )
     linux_close_socket( &globals->cGlobals );
 #endif
 
-    vtmgr_destroy( MEMPOOL globals->cGlobals.params->vtMgr );
-    
     gtk_main_quit();
 } /* quit */
 
@@ -1841,7 +1839,7 @@ drop_msg_toggle( GtkWidget* toggle, GtkAppGlobals* globals )
 
 static GtkAppGlobals* g_globals_for_signal;
 static void
-handle_sigint( int XP_UNUSED(sig) )
+handle_sigintterm( int XP_UNUSED(sig) )
 {
     quit( NULL, g_globals_for_signal );
 }
@@ -1862,8 +1860,9 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
 #endif
 
     g_globals_for_signal = &globals;
-    struct sigaction act = { .sa_handler = handle_sigint };
+    struct sigaction act = { .sa_handler = handle_sigintterm };
     sigaction( SIGINT, &act, NULL );
+    sigaction( SIGTERM, &act, NULL );
 
     memset( &globals, 0, sizeof(globals) );
 

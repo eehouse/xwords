@@ -338,7 +338,7 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
 
     if ( globals->cGlobals.params->quitAfter >= 0 ) {
         sleep( globals->cGlobals.params->quitAfter );
-        globals->timeToExit = XP_TRUE;
+        handleQuit( globals );
     } else if ( globals->cGlobals.params->undoWhenDone ) {
         server_handleUndo( globals->cGlobals.game.server );
     } else {
@@ -844,11 +844,10 @@ SIGWINCH_handler( int signal )
 } /* SIGWINCH_handler */
 
 static void 
-SIGINT_handler( int XP_UNUSED(signal) )
+SIGINTTERM_handler( int XP_UNUSED(signal) )
 {
     (void)handleQuit( &g_globals );
 }
-
 
 static void
 cursesListenOnSocket( CursesAppGlobals* globals, int newSock )
@@ -1439,8 +1438,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     /* reader pipe */
     cursesListenOnSocket( &g_globals, g_globals.timepipe[0] );
 
-    struct sigaction act = { .sa_handler = SIGINT_handler };
+    struct sigaction act = { .sa_handler = SIGINTTERM_handler };
     sigaction( SIGINT, &act, NULL );
+    sigaction( SIGTERM, &act, NULL );
     struct sigaction act2 = { .sa_handler = SIGWINCH_handler };
     sigaction( SIGWINCH, &act2, NULL );
 
@@ -1452,7 +1452,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
     if ( !!params->fileName && file_exists( params->fileName ) ) {
         XWStreamCtxt* stream;
-        stream = streamFromFile( &g_globals.cGlobals, params->fileName, &g_globals );
+        stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
+                                 &g_globals );
 
         (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
                                    &params->gi, dict, params->util, 
