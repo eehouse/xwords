@@ -143,9 +143,17 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                 if ( 0 == strcmp( cref->Cookie(), cookie ) ) {
                     if ( cref->NeverFullyConnected() ) {
                         found = cref;
-                    } else if ( cref->HasSocket(socket) ) {
-                        logf( XW_LOGINFO, "%s: HasSocket case", __func__ );
-                        found = cref;
+                    } else {
+                        if ( cref->Lock() ) {
+                            if ( cref->AcceptingReconnections( hid, cookie, 
+                                                               nPlayersH ) ) {
+                                found = cref;
+                            } else if ( cref->HasSocket_locked(socket) ) {
+                                logf( XW_LOGINFO, "%s: HasSocket case", __func__);
+                                found = cref;
+                            }
+                            cref->Unlock();
+                        }
                     }
                 }
             }
@@ -399,7 +407,7 @@ CRefMgr::heartbeatProc( void* closure )
 CookieRef*
 CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 {
-    logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, id=%d", __func__,
+    logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, cid=%d)", __func__,
           cookie, connName, id );
 
     CookieRef* ref = getFromFreeList();
