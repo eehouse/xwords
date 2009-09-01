@@ -253,7 +253,7 @@ CAPTION "Informacje w grze"
 FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
-    LTEXT           "ROLE:",IDC_STATIC,5,SERVERROLE_ROW,20,8
+    LTEXT           "Tryb:",IDC_STATIC,5,SERVERROLE_ROW,20,8
     XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
 
     PUSHBUTTON      "Ustaw.",GIROLECONF_BUTTON,75,SERVERROLE_ROW,20,ROW_HEIGHT
@@ -859,8 +859,8 @@ BEGIN
     IDS_LOCAL_NAME         "%s"
     IDS_REM                "Poz"
     IDS_IGNORE_L           "Ignoruj"
-    IDS_WARN_L             "Ostrzeżeni"
-    IDS_DISALLOW_L         "Zabro"
+    IDS_WARN_L             "Ostrzeż"
+    IDS_DISALLOW_L         "Zabroń"
     IDS_NONLOCAL_NAME      "%s (zdalne)"
     IDS_TIME_PENALTY_SUB   " - %d [czas]"
     IDS_CUMULATIVE_SCORE   "wynik kumulowany: %d" XP_CR
