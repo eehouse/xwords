@@ -83,6 +83,7 @@ CELIBS += -lcommctrl -laygshell
 else
 CFLAGS += -DCANT_DO_CMDBAR 
 endif
+CELIBS += -static
 else							# ifeq ($(TARGET_OS),wince)
 ifeq ($(TARGET_OS),win32)
 #STANDALONE = -DXWFEATURE_STANDALONE_ONLY
@@ -230,9 +231,13 @@ $(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
 
 $(OBJDIR)/l10n/%.rc.o : l10n/%.rc $(WINCE_INCLUDES)
 	mkdir -p $(dir $@)
+ifeq ($(TARGET_OS),wince)
 	UTF8=x$(shell file -b -n -i $< | grep 'utf-8'); \
 		if [ x != $$UTF8 ]; then ENC="-c 65001"; fi; \
 		$(WINDRES) $$ENC -v $(MINGW_INC_PATH) $(RESFLAGS) $< -o $@
+else
+	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) $< -o $@
+endif
 
 $(BUILTDIR)/%.dll: $(OBJDIR)/l10n/%.rc.o
 	mkdir -p $(dir $@)
