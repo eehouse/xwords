@@ -57,24 +57,31 @@ static XP_Bool findAlternateDict( CEAppGlobals* globals, wchar_t* dictName );
 #define ALIGN_COUNT 2
 
 DictionaryCtxt*
-ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
+ce_dictionary_make( CEAppGlobals* globals, const char* dictName )
 {
     CEDictionaryCtxt* ctxt = (CEDictionaryCtxt*)NULL;
 	HANDLE mappedFile = NULL;
 
     wchar_t nameBuf[MAX_PATH+1];
     HANDLE hFile;
-    XP_U8* ptr;
+    XP_U8* ptr = NULL;
     XP_U32 dictLength;
     XP_UCHAR buf[CE_MAX_PATH_LEN+1]; /* in case we have to look */
+    UINT codePages[] = { CP_ACP, CP_UTF8 };
+    XP_U16 ii;
 
     XP_ASSERT( !!dictName );
 
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, dictName, -1,
-                         nameBuf, VSIZE(nameBuf) );
-
-    ptr = openMappedFile( MPPARM(globals->mpool) nameBuf, &mappedFile, 
-                          &hFile, &dictLength );
+    /* Try both old-iso and UTF-8 to convert file name */
+    for ( ii = 0; ii < VSIZE(codePages); ++ii ) {
+        if ( 0 != MultiByteToWideChar( codePages[ii], 0, dictName, -1,
+                                       nameBuf, VSIZE(nameBuf) ) ) {
+            ptr = openMappedFile( MPPARM(globals->mpool) nameBuf, &mappedFile, 
+                                  &hFile, &dictLength );
+            break;
+        }
+    }
+    
     if ( !ptr ) {
         if ( findAlternateDict( globals, nameBuf ) ) {
             (void)WideCharToMultiByte( CP_ACP, 0, nameBuf, -1,
@@ -98,6 +105,7 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
 
         flags = n_ptr_tohs( &ptr );
 
+#ifdef NODE_CAN_4
         if ( flags == 0x0002 ) {
             nodeSize = 3;
         } else if ( flags == 0x0003 ) {
@@ -111,7 +119,11 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         } else {
             break;          /* we want to return NULL */
         }
-
+#else
+        if( flags != 0x0001 ) {
+            break;
+        }
+#endif
         if ( isUTF8 ) {
             numFaceBytes = (XP_U16)(*ptr++);
         }
@@ -128,6 +140,10 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
         ctxt->super.destructor = ce_dict_destroy;
         ctxt->super.func_dict_getShortName = ce_dict_getShortName;
 
+        if ( !isUTF8 ) {
+            numFaceBytes = numFaces * 2;
+        }
+
         ctxt->super.nFaces = (XP_U8)numFaces;
         ctxt->super.isUTF8 = isUTF8;
 
@@ -135,14 +151,23 @@ ce_dictionary_make( CEAppGlobals* globals, XP_UCHAR* dictName )
             dict_splitFaces( &ctxt->super, ptr, numFaceBytes, numFaces );
             ptr += numFaceBytes;
         } else {
-            XP_U8 buf[numFaces * 2];
+            XP_U8 tmp[numFaces*4]; /* should be enough... */
+            XP_U16 nBytes = 0;
             XP_U16 ii;
-            XP_MEMCPY( buf, ptr, sizeof(buf) );
-            ptr += sizeof(buf);
+            /* Need to translate from iso-8859-n to utf8 */
             for ( ii = 0; ii < numFaces; ++ii ) {
-                buf[ii] = buf[1+(ii*2)];
+                XP_UCHAR ch = ptr[1];
+                wchar_t wch;
+
+                ptr += 2;
+                MultiByteToWideChar( CP_ACP, 0, &ch, 1, &wch, 1 );
+                XP_UCHAR utfs[8];
+                int len = WideCharToMultiByte( CP_UTF8, 0, &wch, 1,
+                                               utfs, VSIZE(utfs), NULL, NULL );
+                XP_MEMCPY( &tmp[nBytes], utfs, len );
+                nBytes += len;
             }
-            dict_splitFaces( &ctxt->super, buf, numFaces, numFaces );
+            dict_splitFaces( &ctxt->super, tmp, nBytes, numFaces );
         }
 
         ctxt->super.is_4_byte = (ctxt->super.nodeSize == 4);
@@ -211,24 +236,26 @@ ce_dictionary_make_empty( CEAppGlobals* XP_UNUSED_DBG(globals) )
 } /* ce_dictionary_make_empty */
 
 void
-dict_splitFaces( DictionaryCtxt* dict, const XP_U8* inBuf, 
+dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8, 
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
-    XP_UCHAR** starts = XP_MALLOC( dict->mpool, nFaces * sizeof(starts[0]));
+    XP_U16* indices = XP_MALLOC( dict->mpool, nFaces * sizeof(indices[0]));
     XP_U16 ii;
     XP_UCHAR* next = faces;
-    wchar_t widebuf[nFaces];
-    UINT codePage = dict->isUTF8? CP_UTF8 : CP_ACP;
 
-    int nRead = MultiByteToWideChar( codePage, 0, (char*)inBuf, nBytes,
+    wchar_t widebuf[nFaces];
+    int nRead = MultiByteToWideChar( CP_UTF8, 0, (char*)utf8, nBytes,
                                      widebuf, VSIZE(widebuf) );
+    if ( 0 == nRead ) {
+        logLastError( "MultiByteToWideChar" );
+    }
     XP_ASSERT( nRead == nFaces );
 
     /* now split */
     for ( ii = 0; ii < nFaces; ++ii ) {
-        starts[ii] = next;
-        int nWritten = WideCharToMultiByte( codePage, 0, &widebuf[ii], 1,
+        indices[ii] = next - faces;
+        int nWritten = WideCharToMultiByte( CP_UTF8, 0, &widebuf[ii], 1,
                                             next, 100, NULL, NULL );
         next += nWritten;
         *next++ = 0;
@@ -237,8 +264,8 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* inBuf,
     XP_ASSERT( next == faces + nFaces + nBytes );
     XP_ASSERT( !dict->faces );
     dict->faces = faces;
-    XP_ASSERT( !dict->faceStarts );
-    dict->faceStarts = starts;
+    XP_ASSERT( !dict->faceIndices );
+    dict->faceIndices = indices;
 } /* dict_splitFaces */
 
 static void
@@ -257,7 +284,7 @@ ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
 
     for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
 	
-        XP_UCHAR* facep = ctxt->super.faceStarts[(int)ii];
+        XP_UCHAR* facep = &ctxt->super.faces[ctxt->super.faceIndices[(short)ii]];
         if ( IS_SPECIAL(*facep) ) {
             /* get the string */
             XP_U8 txtlen = *ptr++;
@@ -286,7 +313,8 @@ ceCountSpecials( CEDictionaryCtxt* ctxt )
     XP_U16 ii;
 
     for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
-        if ( IS_SPECIAL( ctxt->super.faceStarts[ii][0] ) ) {
+        XP_U16 index = ctxt->super.faceIndices[ii];
+        if ( IS_SPECIAL( ctxt->super.faces[index] ) ) {
             ++result;
         }
     }
@@ -452,7 +480,7 @@ ce_dict_destroy( DictionaryCtxt* dict )
     }
 
     XP_FREE( ctxt->super.mpool, ctxt->super.faces );
-    XP_FREE( ctxt->super.mpool, ctxt->super.faceStarts );
+    XP_FREE( ctxt->super.mpool, ctxt->super.faceIndices );
     XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
     XP_FREE( ctxt->super.mpool, ctxt->super.name );
 
@@ -580,7 +608,7 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
         {
             char narrowName[CE_MAX_PATH_LEN+1];
             int len = wcslen( pathBuf );
-            len = WideCharToMultiByte( CP_ACP, 0, pathBuf, len + 1,
+            len = WideCharToMultiByte( CP_UTF8, 0, pathBuf, len + 1,
                                        narrowName, len + 1, NULL, NULL );
         }
 #endif
@@ -592,8 +620,12 @@ checkIfDictAndLegal( MPFORMAL wchar_t* path, XP_U16 pathLen,
         
             flags = n_ptr_tohs( &ptr );
             closeMappedFile( MPPARM(mpool) base, mappedFile );
+#ifdef NODE_CAN_4
             /* are the flags what we expect */
             result = flags >= 0x0002 && flags <= 0x0005;
+#else
+            result = flags == 0x0001;
+#endif
         }
     }
 
@@ -787,23 +819,22 @@ bname( const XP_UCHAR* in )
 wchar_t*
 wbname( wchar_t* buf, XP_U16 buflen, const wchar_t* in )
 {
-    wchar_t* result;
-
-    _snwprintf( buf, buflen, L"%s", in );
-    result = buf + wcslen( buf ) - 1;
-
-    /* wipe out extension */
-    while ( *result != L'.' ) {
-        --result;
-        XP_ASSERT( result > buf );
-    }
-    *result = 0;
-
-    while ( result >= buf && *result != L'\\' ) {
-        --result;
+    const wchar_t* slash = wcsrchr( in, L'\\' );
+    if ( !!slash ) {
+        ++slash;
+    } else {
+        slash = in;
     }
 
-    return result + 1;
+    const wchar_t* dot = wcsrchr( slash, L'.' );
+    if ( !dot ) {
+        dot = slash + wcslen( slash );
+    }
+
+    _snwprintf( buf, buflen, L"%s", slash );
+    XP_ASSERT( dot >= slash );
+    buf[dot-slash] = 0;
+    return buf;
 } /* wbname */
 
 #endif /* ifndef STUBBED_DICT */
