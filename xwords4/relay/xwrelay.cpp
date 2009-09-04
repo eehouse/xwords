@@ -380,7 +380,7 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
 void
 killSocket( int socket, const char* why )
 {
-    logf( XW_LOGERROR, "killSocket(%d): %s", socket, why );
+    logf( XW_LOGINFO, "killSocket(%d): %s", socket, why );
     CRefMgr::Get()->RemoveSocketRefs( socket );
     /* Might want to kill the thread it belongs to if we're not in it,
        e.g. when unable to write to another socket. */

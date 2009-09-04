@@ -47,7 +47,7 @@ void
 TimerMgr::SetTimer( time_t inMillis, TimerProc proc, void* closure,
                     int interval )
 {
-    logf( XW_LOGINFO, "setTimer: uptime = %ld", uptime() );
+    logf( XW_LOGINFO, "%s: uptime = %ld", __func__, uptime() );
     TimerInfo ti;
     ti.proc = proc;
     ti.closure = closure;
