@@ -30,7 +30,7 @@ typedef struct CEBitmapInfo {
     XP_U16 nRows;
 } CEBitmapInfo;
 
-DictionaryCtxt* ce_dictionary_make(CEAppGlobals* globals, XP_UCHAR* name);
+DictionaryCtxt* ce_dictionary_make(CEAppGlobals* globals, const char* name);
 DictionaryCtxt* ce_dictionary_make_empty( CEAppGlobals* globals );
 
 /* Callback: return true if done; false to continue */
