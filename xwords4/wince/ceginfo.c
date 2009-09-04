@@ -288,9 +288,8 @@ raiseForHiddenPlayers( GameInfoState* state, XP_U16 nPlayers )
                 }
             }
             state->moveIds = XP_MALLOC( state->dlgHdr.globals->mpool, 
-                                          sizeof(state->moveIds[0]) * ii );
-            XP_MEMCPY( state->moveIds, ids, 
-                       sizeof(state->moveIds[0]) * ii );
+                                        sizeof(state->moveIds[0]) * ii );
+            XP_MEMCPY( state->moveIds, ids, sizeof(state->moveIds[0]) * ii );
             state->nMoveIds = ii;
         }
 
@@ -331,7 +330,6 @@ callConnsDlg( GameInfoState* state )
         state->addrChanged = XP_TRUE;
     }
 }
-
 
 static void
 handleConnOptionsButton( GameInfoState* state )

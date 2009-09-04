@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; compile-command: "make -j2 TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -26,18 +26,18 @@
 static void
 loadLettersList( BlankDialogState* bState )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XP_U16 nTiles = bState->nTiles;
     HWND hDlg = bState->dlgHdr.hDlg;
     CEAppGlobals* globals = bState->dlgHdr.globals;
     const XP_UCHAR** texts = bState->texts;
     UINT codePage = ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP;
     
-    for ( i = 0; i < nTiles; ++i ) {	
+    for ( ii = 0; ii < nTiles; ++ii ) {	
         XP_U16 len;
         wchar_t widebuf[4];
 
-        len = MultiByteToWideChar( codePage, 0, texts[i], strlen(texts[i]),
+        len = MultiByteToWideChar( codePage, 0, texts[ii], strlen(texts[ii]),
                                    widebuf, VSIZE(widebuf) );
         widebuf[len] = 0;
 
