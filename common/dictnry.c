@@ -242,10 +242,6 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_U16 ii, nSpecials;
     XP_U16 maxCountBits, maxValueBits;
 
-    /* Need to keep format identical for non-utf so new versions can play
-       against old using non-UTF8 dicts.  The old ones won't even recognize
-       UTF8 dicts as dicts, so there shouldn't be any attempts to connect with
-       them having one open. */
     stream_putBits( stream, 6, dict->nFaces );
 
     for ( ii = 0; ii < dict->nFaces*2; ii+=2 ) {
@@ -272,6 +268,13 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
         stream_putBits( stream, maxCountBits, dict->countsAndValues[ii] );
         stream_putBits( stream, maxValueBits, dict->countsAndValues[ii+1] );
     }
+
+    /* Stream format of the faces is unchanged: chars run together, which
+     * happens to equal utf-8 for ascii.  But now there may be more than one
+     * byte per face.  Old code assumes that, but compatibility is ensured by
+     * the caller which will not accept an incoming message if the version's
+     * too new.  And utf-8 dicts are flagged as newer by the sender.
+     */
 
     XP_UCHAR buf[64];
     XP_U16 nBytes = sizeof(buf);
