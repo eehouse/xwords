@@ -27,6 +27,8 @@ PLATFORM = obj_linux_rel
 CFLAGS += -Os -Werror -Wunused
 endif
 
+# CC = llvm-gcc
+
 DO_CURSES = -DPLATFORM_NCURSES
 ifdef CURSES_SMALL_SCREEN
 DO_CURSES += -DCURSES_SMALL_SCREEN
