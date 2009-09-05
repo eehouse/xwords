@@ -141,6 +141,8 @@ XP_S16 comms_resendAll( CommsCtxt* comms );
 XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
                                    const CommsAddrRec* addr );
 
+XP_Bool comms_checkComplete( const CommsAddrRec* addr );
+
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
 const char* ConnType2Str( CommsConnType typ );

@@ -48,6 +48,7 @@ typedef struct GameInfoState {
     XP_Bool prefsChanged;
     XP_Bool colorsChanged;
     XP_Bool addrChanged;
+    XP_Bool connsComplete;
     CePrefsPrefs prefsPrefs;
 
     /* Support for repositioning lower items based on num players */

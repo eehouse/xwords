@@ -202,7 +202,8 @@ XW_BOTH_DEFINES = \
 
 CFLAGS += $(XW_BOTH_DEFINES) -DARM
 RESFLAGS += $(XW_BOTH_DEFINES) $(STANDALONE) $(BLUETOOTH) $(RELAY) $(SMS) \
-	$(IPDIRECT) -D_WIN32 -D_WIN32_IE=0x0400 $(COLOR_SEL) $(CHOOSE_FONTS)
+	$(IPDIRECT) -D_WIN32 -D_WIN32_IE=0x0400 $(COLOR_SEL) $(CHOOSE_FONTS) \
+	-I ../common
 
 ####################################################################
 # Rules start here

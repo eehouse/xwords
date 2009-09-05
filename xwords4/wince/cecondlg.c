@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; compile-command: "make -j2 TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -24,6 +24,7 @@
 #include "ceutil.h"
 #include "debhacks.h"
 #include "ceresstr.h"
+#include "contypct.h"
 
 typedef struct _ConnDlgPair {
     CommsConnType conType;
@@ -34,14 +35,13 @@ typedef struct _CeConnDlgState {
     CeDlgHdr dlgHdr;
     CommsAddrRec addrRec;
     DeviceRole role;
+#ifdef NEEDS_CHOOSE_CONNTYPE
     XP_U16 connComboId;
+#endif
     ConnDlgPair* types;
     XP_Bool userCancelled;
     XP_Bool forShowOnly;
 } CeConnDlgState;
-
-static CommsConnType indexToConType( const CeConnDlgState* state, 
-                                     XP_U16 index );
 
 static void
 ceControlsToAddrRec( HWND hDlg, CeConnDlgState* state )
@@ -86,6 +86,29 @@ ceControlsToAddrRec( HWND hDlg, CeConnDlgState* state )
     }
 } /* ceControlsToAddrRec */
 
+#ifdef NEEDS_CHOOSE_CONNTYPE
+static CommsConnType
+indexToConType( const CeConnDlgState* state, XP_U16 index )
+{
+    CommsConnType conType = state->types[index].conType;
+    XP_ASSERT( conTypeToIndex( state, conType ) == index );
+    return conType;
+} /* indexToConType */
+
+static XP_U16
+conTypeToIndex( const CeConnDlgState* state, CommsConnType conType )
+{
+    XP_U16 ii;
+    for ( ii = 0; state->types[ii].conType != COMMS_CONN_NONE; ++ii ) {
+        if ( conType == state->types[ii].conType ) {
+            break;
+        }
+    }
+    XP_ASSERT( state->types[ii].conType != COMMS_CONN_NONE );
+    return ii;
+}
+#endif
+
 static void
 adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
 {
@@ -113,12 +136,16 @@ adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
     XP_U16 ii;
     CommsConnType conType;
 
+#ifdef NEEDS_CHOOSE_CONNTYPE
     if ( !useFromState ) {
         XP_S16 sel;
         sel = SendDlgItemMessage( hDlg, state->connComboId, 
                                   GETCURSEL(state->dlgHdr.globals), 0, 0L );
         state->addrRec.conType = indexToConType( state, sel );
     }
+#else
+    useFromState = useFromState; /* shut up, compiler */
+#endif
 
     conType = state->addrRec.conType;
 
@@ -155,36 +182,16 @@ adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
 #endif
 } /* adjustForConnType */
 
-static XP_U16
-conTypeToIndex( const CeConnDlgState* state, CommsConnType conType )
-{
-    XP_U16 ii;
-    for ( ii = 0; state->types[ii].conType != COMMS_CONN_NONE; ++ii ) {
-        if ( conType == state->types[ii].conType ) {
-            break;
-        }
-    }
-    XP_ASSERT( state->types[ii].conType != COMMS_CONN_NONE );
-    return ii;
-}
-
-static CommsConnType
-indexToConType( const CeConnDlgState* state, XP_U16 index )
-{
-    CommsConnType conType = state->types[index].conType;
-    XP_ASSERT( conTypeToIndex( state, conType ) == index );
-    return conType;
-} /* indexToConType */
-
 static void
 ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
 {
-    XP_U16 ii;
-    CEAppGlobals* globals = state->dlgHdr.globals;
     CommsConnType conType;
     XP_U16 ids[32];
     XP_S16 nIds = 0;
 
+#ifdef NEEDS_CHOOSE_CONNTYPE
+    XP_U16 ii;
+    CEAppGlobals* globals = state->dlgHdr.globals;
     for ( ii = 0; ; ++ii ) {
         ConnDlgPair* type = &state->types[ii];
         if ( type->conType == COMMS_CONN_NONE ) {
@@ -200,6 +207,7 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
     SendDlgItemMessage( hDlg, state->connComboId, SETCURSEL(globals), 
                         conTypeToIndex(state, state->addrRec.conType), 0L );
     ids[nIds++] = state->connComboId;
+#endif
 
     conType = state->addrRec.conType;
     if ( state->addrRec.conType == COMMS_CONN_RELAY ) {
@@ -257,14 +265,17 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     if ( message == WM_INITDIALOG ) {
         SetWindowLongPtr( hDlg, GWL_USERDATA, lParam );
         state = (CeConnDlgState*)lParam;
-
+#ifdef NEEDS_CHOOSE_CONNTYPE
         state->connComboId = LB_IF_PPC(state->dlgHdr.globals,IDC_CONNECT_COMBO);
+#endif
         adjustForConnType( hDlg, state, XP_TRUE );
         ceControlsFromAddrRec( hDlg, state );
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
 
+#ifdef NEEDS_CHOOSE_CONNTYPE
         ceDlgComboShowHide( &state->dlgHdr, IDC_CONNECT_COMBO ); 
+#endif
 
         result = TRUE;
     } else {
@@ -275,20 +286,28 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
             if ( ceDoDlgHandle( &state->dlgHdr, message, wParam, lParam) ) {
                 result = TRUE;
 
+#ifdef NEEDS_CHOOSE_CONNTYPE
             } else if ( WM_NOTIFY == message ) {
                 if ( (id-1) == state->connComboId ) {
                     adjustForConnType( hDlg, state, XP_FALSE );
                 }
+#endif
             } else if ( WM_COMMAND == message ) {
-                if ( id == state->connComboId ) {
+                if ( 0 ) {
+#ifdef NEEDS_CHOOSE_CONNTYPE
+                } else if ( id == state->connComboId ) {
                     if ( HIWORD(wParam) == CBN_SELCHANGE ) {
                         adjustForConnType( hDlg, state, XP_FALSE );
                         result = TRUE;
                     }
+#endif
                 } else {
                     switch ( id ) {
                     case IDOK:
                         ceControlsToAddrRec( hDlg, state );
+                        if ( !comms_checkComplete( &state->addrRec ) ) {
+                            break;
+                        }
                     case IDCANCEL:
                         EndDialog(hDlg, id);
                         state->userCancelled = id == IDCANCEL;
@@ -304,7 +323,8 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
 XP_Bool
 WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRecIn, 
-              CommsAddrRec* addrRecOut, DeviceRole role, XP_Bool isNewGame )
+              CommsAddrRec* addrRecOut, DeviceRole role, XP_Bool isNewGame,
+              XP_Bool* connsComplete )
 {
     XP_Bool result;
     CeConnDlgState state;
@@ -337,6 +357,8 @@ WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, const CommsAddrRec* addrRecIn,
     if ( result ) {
         XP_MEMCPY( addrRecOut, &state.addrRec, sizeof(*addrRecOut) );
     }
+
+    *connsComplete = result && comms_checkComplete( addrRecOut );
 
     return result;
 } /* WrapConnsDlg */
