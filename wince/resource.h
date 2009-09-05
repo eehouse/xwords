@@ -3,6 +3,8 @@
 // Used by xwords4.rc
 //
 
+#include "contypct.h"
+
 // Stuff needed by C and .rc files...
 // 'Doze expects a carraige return followed by a linefeed
 #define XP_CR "\015\012"
@@ -177,7 +179,9 @@
 #define HC_MAX_LABEL                    1139
 #define LOCALES_LABEL                   1140
 
-#define IDC_CCONVIA_LAB                 1106
+#ifdef NEEDS_CHOOSE_CONNTYPE
+# define IDC_CCONVIA_LAB                 1106
+#endif
 
 #define IDC_COOKIE_LAB                   1107
 #ifdef XWFEATURE_RELAY
@@ -293,13 +297,16 @@
 #define IDC_NPLAYERSCOMBO_PPC           1220
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-# define IDC_CONNECT_COMBO               1221
-# define IDC_CONNECTUPDOWN               1222
-# define IDC_CONNECT_COMBO_PPC           1223
-
 # define IDC_ROLECOMBO                   1224
 # define IDC_ROLEUPDOWN                  1225
 # define IDC_ROLECOMBO_PPC               1226
+
+# ifdef NEEDS_CHOOSE_CONNTYPE
+#  define IDC_CONNECT_COMBO               1221
+#  define IDC_CONNECTUPDOWN               1222
+#  define IDC_CONNECT_COMBO_PPC           1223
+# endif
+
 #endif  /* XWFEATURE_STANDALONE_ONLY */
 
 #define IDC_DICTLABEL                    1227

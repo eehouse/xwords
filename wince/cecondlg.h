@@ -27,6 +27,7 @@
 
 XP_Bool WrapConnsDlg( HWND hDlg, CEAppGlobals* globals, 
                       const CommsAddrRec* addrRecIn, CommsAddrRec* addrRecOut,
-                      DeviceRole role, XP_Bool isNewGame );
+                      DeviceRole role, XP_Bool isNewGame, 
+                      XP_Bool* connsComplete );
 
 #endif

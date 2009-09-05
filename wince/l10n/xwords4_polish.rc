@@ -51,6 +51,8 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+#include "contypct.h"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menubar
@@ -601,9 +603,13 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Połączenie"
 FONT 8, "System"
 BEGIN
-     
-    LTEXT           "Połącz przez:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT
-    XWCOMBO(IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
+
+#ifdef NEEDS_CHOOSE_CONNTYPE
+    LTEXT           "Połącz przez:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,
+                    ROW_HEIGHT
+    XWCOMBO(IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,
+            0,58,0)
+#endif
 
 #ifdef XWFEATURE_RELAY
     LTEXT           "Ciasteczko:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT

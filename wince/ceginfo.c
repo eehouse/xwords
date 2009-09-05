@@ -320,15 +320,19 @@ handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
 } /* handlePrefsButton */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-static void
+static XP_Bool
 callConnsDlg( GameInfoState* state )
 {
+    XP_Bool connsComplete = XP_FALSE;
+    /* maybe flag when this isn't changed?  No.  Check on "Ok" as tagged elsewhere. */
     if ( WrapConnsDlg( state->dlgHdr.hDlg, state->dlgHdr.globals, 
                        &state->prefsPrefs.addrRec, 
                        &state->prefsPrefs.addrRec, state->lastRole, 
-                       state->isNewGame ) ) {
+                       state->isNewGame,
+                       &connsComplete ) ) {
         state->addrChanged = XP_TRUE;
     }
+    return connsComplete;
 }
 
 static void
@@ -343,13 +347,6 @@ handleConnOptionsButton( GameInfoState* state )
                                            GETCURSEL(globals), 0, 0L);
     value.ng_role = role;
     newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
-
-    if ( state->lastRole != role ) {
-        state->lastRole = role;
-        if ( role != SERVER_STANDALONE ) {
-            callConnsDlg( state );
-        }
-    }
 } /* handleConnOptionsButton */
 #endif
 
@@ -703,7 +700,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             }
                             break;
                         case GIROLECONF_BUTTON:
-                            callConnsDlg( state );
+                            state->connsComplete = callConnsDlg( state );
                             break;
 #endif
                         case GIJUGGLE_BUTTON:
@@ -729,7 +726,9 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             break;
 
                         case IDOK:
-                            if ( !stateToGameInfo( state ) ) {
+                            if ( !state->connsComplete && !callConnsDlg( state ) ) {
+                                break;
+                            } else if ( !stateToGameInfo( state ) ) {
                                 break;
                             }
                         case IDCANCEL:

@@ -1444,6 +1444,24 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     return messageValid;
 } /* comms_checkIncomingStream */
 
+XP_Bool
+comms_checkComplete( const CommsAddrRec* addr )
+{
+    XP_Bool result;
+
+    switch ( addr->conType ) {
+    case COMMS_CONN_RELAY:
+        result = !!addr->u.ip_relay.cookie[0]
+            && !!addr->u.ip_relay.hostName[0]
+            && !!addr->u.ip_relay.port > 0;
+        break;
+    default:
+        result = XP_TRUE;
+    }
+
+    return result;
+}
+
 #ifdef COMMS_HEARTBEAT
 static void
 sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )

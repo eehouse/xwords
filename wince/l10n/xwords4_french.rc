@@ -51,6 +51,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+#include "contypct.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -599,10 +600,11 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Connexion"
 FONT 8, "System"
 BEGIN
-     
+    
+#ifdef NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Connecter via:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT
     XWCOMBO(IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
-
+#endif
 #ifdef XWFEATURE_RELAY
     LTEXT           "Cookie:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
     EDITTEXT        COOKIE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
