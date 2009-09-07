@@ -725,12 +725,19 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             handlePrefsButton( hDlg, globals, state );
                             break;
 
-                        case IDOK:
-                            if ( !state->connsComplete && !callConnsDlg( state ) ) {
+                        case IDOK: {
+                            DeviceRole role = (DeviceRole)
+                                SendDlgItemMessage( hDlg, state->roleComboId,
+                                                    GETCURSEL(globals), 0, 0L );
+                            if ( role != SERVER_STANDALONE
+                                 && !state->connsComplete 
+                                 && !callConnsDlg( state ) ) {
                                 break;
                             } else if ( !stateToGameInfo( state ) ) {
                                 break;
                             }
+                        }
+                            /* FALLTHRU */
                         case IDCANCEL:
                             EndDialog(hDlg, id);
                             state->userCancelled = id == IDCANCEL;
