@@ -332,6 +332,9 @@ MyRegisterClass(HINSTANCE hInstance, LPTSTR szWindowClass)
     wc.hInstance		= hInstance;
     wc.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_XWORDS4));
     wc.hbrBackground	= (HBRUSH) GetStockObject(WHITE_BRUSH);
+#ifndef _WIN32_WCE
+    wc.lpszMenuName		= (LPCTSTR)IDM_MENU;
+#endif
     wc.lpszClassName	= szWindowClass;
 
     return RegisterClass(&wc);
@@ -958,7 +961,7 @@ ceSavePrefs( CEAppGlobals* globals )
         SetEndOfFile( fileH );  /* truncate anything previously there */
 
         CloseHandle( fileH );   /* am I not supposed to do this? PENDING */
-        XP_DEBUGF( "ceSavePrefs: prefs file written" );
+        XP_LOGW( "prefs file written", path );
     } else {
         logLastError( "failed to create prefs file" );
     }
@@ -1019,7 +1022,7 @@ ceLoadPrefs( CEAppGlobals* globals )
 
     (void)ceGetPath( globals, PREFS_FILE_PATH_L, path, VSIZE(path) );
     fileH = CreateFile( path, GENERIC_READ, 0, NULL, 
-                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+                        OPEN_EXISTING, FILE_ATTRIBUTE_HIDDEN, NULL );
     if ( fileH != INVALID_HANDLE_VALUE ) {
         XP_U32 fileSize = GetFileSize( fileH, NULL );
         XP_U16 curVersion;
