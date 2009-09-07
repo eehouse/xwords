@@ -126,6 +126,7 @@ sendAll( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len )
 static XP_Bool
 sendLenAndData( CeSocketWrapper* self, const XP_U8* packet, XP_U16 len )
 {
+    XP_LOGF( "%s(len=%d)", __func__, len );
     XP_Bool success;
     XP_U16 lenData;
     XP_ASSERT( self->socket != -1 );
@@ -133,6 +134,7 @@ sendLenAndData( CeSocketWrapper* self, const XP_U8* packet, XP_U16 len )
     lenData = XP_HTONS( len );
     success = sendAll( self, (XP_U8*)&lenData, sizeof(lenData) )
         && sendAll( self, packet, len );
+    LOG_RETURNF( "%s", success?"success":"failed" );
     return success;
 } /* sendLenAndData */
 
@@ -217,7 +219,7 @@ connectSocket( CeSocketWrapper* self )
         }
     }
 
-    XP_LOGF( "%d", self->connState == CE_IPST_CONNECTED );
+    LOG_RETURNF( "%d", self->connState == CE_IPST_CONNECTED );
     return self->connState == CE_IPST_CONNECTED;
 } /* connectSocket */
 
@@ -454,7 +456,10 @@ XP_S16
 ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
                   const CommsAddrRec* addr )
 {
-    /* If the address has changed, we need to close the connection.  Send
+    XP_S16 nSent = -1;          /* error */
+    XP_LOGF( "%s(len=%d)", __func__, len );
+
+   /* If the address has changed, we need to close the connection.  Send
        thread will take care of opening it again. */
     XP_ASSERT( addr->conType == COMMS_CONN_RELAY );
     if ( 0 != XP_STRCMP( addr->u.ip_relay.hostName, 
@@ -470,12 +475,13 @@ ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len,
 
     if ( bqAdd( &self->queueOut, buf, len ) ) {
         send_packet_if( self );
+        nSent = len;
     } else {
         XP_WARNF( "dropping packet; queue full" );
-        len = -1;                /* error */
     }
 
-    return len;
+    LOG_RETURNF( "%d", nSent );
+    return nSent;
 } /* ce_sockwrap_send */
 
 #endif
