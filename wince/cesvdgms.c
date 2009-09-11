@@ -159,8 +159,6 @@ ceConfirmUniqueName( CEAppGlobals* globals, HWND hWnd, XP_U16 strId,
 {
     CeSaveGameNameState state;
 
-    LOG_FUNC();
-
     makeUniqueName( globals, buf, buflen );
 
     XP_MEMSET( &state, 0, sizeof(state) );
@@ -170,7 +168,7 @@ ceConfirmUniqueName( CEAppGlobals* globals, HWND hWnd, XP_U16 strId,
     state.lableTextId = strId;
     (void)DialogBoxParam( globals->locInst, (LPCTSTR)IDD_SAVENAMEDLG, 
                           hWnd, (DLGPROC)SaveNameDlg, (long)&state );
-    XP_LOGW( __func__, buf );
+
     return !state.cancelled;
 } /* ceConfirmUniqueName */
 

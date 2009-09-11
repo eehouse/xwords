@@ -109,6 +109,7 @@ BEGIN
             MENUITEM "History",                 ID_GAME_HISTORY
             MENUITEM "Final scores",           ID_GAME_FINALSCORES
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+            MENUITEM SEPARATOR
             MENUITEM "Resend messages",         ID_GAME_RESENDMSGS
 #endif
         END
@@ -1018,9 +1019,10 @@ BEGIN
     IDS_LANG_CHANGE_RESTART "You must restart Crosswords for this change to take effect."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend."
     IDS_CONN_RELAY_L           "Relay"
     IDS_CONN_DIRECT            "Direct connection"
-    IDS_LOCALPLAYERS           "Locl playrs:"
+    IDS_LOCALPLAYERS           "Local players:"
     IDS_NO_PEEK_REMOTE_TILES   "No peeking at remote players' tiles!"
     IDS_REG_UNEXPECTED_USER    "Refused attempt to register unexpected "\
                                "user[s]."

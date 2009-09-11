@@ -162,6 +162,8 @@ static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                              const wchar_t* title, XP_U16 buttons );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
+static int ceOopsId( CEAppGlobals* globals, XP_U16 strId );
+static int ceOops( CEAppGlobals* globals, const XP_UCHAR* str );
 static XP_Bool isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name );
 static void ceSetTitleFromName( CEAppGlobals* globals );
 static void removeScrollbar( CEAppGlobals* globals );
@@ -1172,8 +1174,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 if ( !!dict ) {
                     dict_destroy( dict );
                 }
-                ceOops( globals, 
-                        ceGetResString( globals, IDS_CANNOTOPEN_GAME ) );
+                ceOopsId( globals, IDS_CANNOTOPEN_GAME );
             }
         }
 
@@ -2389,6 +2390,15 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
                 break;
 
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+            case ID_GAME_RESENDMSGS:
+                if ( !!globals->game.comms ) {
+                    (void)comms_resendAll( globals->game.comms );
+                } else {
+                    ceOopsId( globals, IDS_RESEND_STANDALONE );
+                 }
+                break;
+#endif
             case ID_GAME_TILECOUNTSANDVALUES:
                 ceCountsAndValues( globals );
                 break;
@@ -2728,6 +2738,21 @@ ceStreamToStrBuf( MPFORMAL XWStreamCtxt* stream )
 } /* ceStreamToStrBuf */
 
 static int
+ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
+{
+    XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
+    return ceMessageBoxChar( globals, str, isUTF8, 
+                             ceGetResStringL( globals, IDS_FYI_L ),
+                             MB_OK | MB_ICONHAND );
+}
+
+static int
+ceOopsId( CEAppGlobals* globals, XP_U16 strId )
+{
+    return ceOops( globals, ceGetResString( globals, strId ) );
+}
+
+static int
 messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                   const wchar_t* title, XP_U16 buttons )
 {
@@ -2747,9 +2772,7 @@ queryBoxChar( CEAppGlobals* globals, HWND hWnd, const XP_UCHAR* msg )
     wchar_t widebuf[128];
     XP_U16 answer;
 
-    XP_U16 len = MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, msg, -1,
-                                      widebuf, VSIZE(widebuf) );
-    widebuf[len] = 0;
+    (void)MultiByteToWideChar( CP_UTF8, 0, msg, -1, widebuf, VSIZE(widebuf) );
 
     answer = MessageBox( hWnd, widebuf, 
                          ceGetResStringL( globals, IDS_QUESTION_L ),
@@ -3066,8 +3089,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 
     if ( 0 != resID ) {
         CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-        const XP_UCHAR* message = ceGetResString( globals, resID );
-        ceOops( globals, message );
+        ceOopsId( globals, resID );
     }
 } /* ce_util_userError */
 

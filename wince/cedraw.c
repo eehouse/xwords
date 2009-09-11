@@ -228,11 +228,12 @@ ceDrawLinesClipped( HDC hdc, const FontCacheEntry* fce, XP_UCHAR* buf,
     for ( ; ; ) {
         XP_UCHAR* newline = strstr( buf, XP_CR );
         XP_U16 len = newline==NULL? strlen(buf): newline - buf;
+        XP_U16 wlen;
         wchar_t widebuf[len];
 
-        MultiByteToWideChar( codePage, 0, buf, len, widebuf, len );
+        wlen = MultiByteToWideChar( codePage, 0, buf, len, widebuf, len );
 
-        ceDrawTextClipped( hdc, widebuf, len, clip, fce, bounds->left, top, 
+        ceDrawTextClipped( hdc, widebuf, wlen, clip, fce, bounds->left, top, 
                            width, DT_CENTER );
         if ( !newline ) {
             break;
@@ -494,7 +495,7 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
                RFIndex index, FontCacheEntry* fce )
 {
     wchar_t widebuf[65];
-    XP_U16 len;
+    XP_U16 len, wlen;
     XP_U16 hasMinTop, hasMaxBottom;
     XP_Bool firstPass;
     HBRUSH white = dctx->brushes[CE_WHITE_COLOR];
@@ -510,7 +511,8 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
 
     makeTestBuf( dctx, sample, VSIZE(sample), index );
     len = 1 + strlen(sample);
-    MultiByteToWideChar( dctx->codePage, 0, sample, len, widebuf, len );
+    wlen = MultiByteToWideChar( dctx->codePage, 0, sample, len, 
+                                widebuf, len );
 
     memBM = CreateCompatibleBitmap( memDC, testHeight, testHeight );
     SelectObject( memDC, memBM );
@@ -565,7 +567,7 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
 
             if ( (soughtWidth > 0) && (nextFromWidth > 0) ) {
                 SIZE size;
-                GetTextExtentPoint32( memDC, widebuf, len-1, &size );
+                GetTextExtentPoint32( memDC, widebuf, wlen-1, &size );
 
                 if ( size.cx > soughtWidth ) { /* width too big... */
                     nextFromWidth = 1 + ((testHeight * soughtWidth) / size.cx);
@@ -750,13 +752,14 @@ ceMeasureText( CEDrawCtx* dctx, HDC hdc, const FontCacheEntry* fce,
         wchar_t widebuf[32];
         XP_UCHAR* nextStr = strstr( str, XP_CR );
         XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
+        XP_U16 wlen;
         SIZE size;
 
         XP_ASSERT( nextStr != str );
 
-        MultiByteToWideChar( dctx->codePage, 0, str, len,
-                             widebuf, VSIZE(widebuf) );
-        GetTextExtentPoint32( hdc, widebuf, len, &size );
+        wlen = MultiByteToWideChar( dctx->codePage, 0, str, len,
+                                    widebuf, VSIZE(widebuf) );
+        GetTextExtentPoint32( hdc, widebuf, wlen, &size );
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         if ( !!fce ) {
@@ -786,7 +789,7 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
 
     for ( ; ; ) { /* draw up to the '\n' each time */
         XP_UCHAR* nextStr = strstr( text, XP_CR );
-        XP_U16 len;
+        XP_U16 len, wlen;
 
         if ( nextStr == NULL ) {
             len = XP_STRLEN(text);
@@ -794,12 +797,12 @@ drawTextLines( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* text, XP_S16 padding,
             len = nextStr - text;
         }
 
-        MultiByteToWideChar( dctx->codePage, 0, text, len,
-                             widebuf, VSIZE(widebuf) );
+        wlen = MultiByteToWideChar( CP_UTF8, 0, text, len,
+                                    widebuf, VSIZE(widebuf) );
 
         textRt.bottom = textRt.top + dctx->miniLineHt;
 
-        DrawText( hdc, widebuf, len, &textRt, flags );
+        DrawText( hdc, widebuf, wlen, &textRt, flags );
 
         if ( nextStr == NULL ) {
             break;
@@ -1168,13 +1171,13 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
             if ( !!bitmaps || !!letters ) {
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
-                XP_U16 len = MultiByteToWideChar( dctx->codePage, 0, letters, -1, 
-                                                  widebuf, VSIZE(widebuf) );
+                XP_U16 wlen = MultiByteToWideChar( dctx->codePage, 0, letters,
+                                                   -1, widebuf, VSIZE(widebuf) );
 
                 /* see if there's room to use text instead of bitmap */
                 if ( !!bitmaps && valHidden ) {
                     SIZE size;
-                    GetTextExtentPoint32( hdc, widebuf, len - 1, /* drop null */
+                    GetTextExtentPoint32( hdc, widebuf, wlen - 1, /* drop null */
                                           &size );
                     if ( size.cx < (rt.right - rt.left) ) {
                         bitmaps = NULL; /* use the letters instead */

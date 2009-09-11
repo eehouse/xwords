@@ -108,25 +108,26 @@
 # define IDS_REG_UNEXPECTED_USER                                     40088
 # define IDS_SERVER_DICT_WINS                                        40089
 # define IDS_REG_SERVER_SANS_REMOTE                                  40090
+# define IDS_RESEND_STANDALONE                                       40091
 
 # ifdef XWFEATURE_SMS
-#  define IDS_SMS_CONN_L                                             40091
+#  define IDS_SMS_CONN_L                                             40092
 # endif
 
 # ifdef XWFEATURE_IP_DIRECT
-#  define IDS_DIRECT_CONN_L                                          40092
+#  define IDS_DIRECT_CONN_L                                          40093
 # endif
 
 # ifdef XWFEATURE_RELAY
-#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40093
-#  define IDS_ERROR_HEART_YOU                                        40094
-#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40095
-#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40096
+#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40094
+#  define IDS_ERROR_HEART_YOU                                        40095
+#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40096
+#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40097
 # endif
 #endif
 
 #if ! defined XWFEATURE_STANDALONE_ONLY
-# define CE_LAST_RES_ID                                              40097
+# define CE_LAST_RES_ID                                              40098
 #else
 # define CE_LAST_RES_ID                                              40083
 #endif
