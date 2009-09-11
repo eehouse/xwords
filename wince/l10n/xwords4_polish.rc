@@ -852,17 +852,18 @@ BEGIN
     IDS_DONE                "Gotowe"
     IDS_LANGUAGE_NAME       "Polski"
     IDS_NEW_GAME            "Nowa gra"
+ /* translate "by" below */
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (REV " SVN_REV ") "\
-                    "dla Windows Mobile. Copyright 1998-2009 BY "\
+                    "dla Windows Mobile. Copyright 1998-2009 by "\
                     "Eric House.  Oprogramowanie wydane na "\
                     "publicznej licencji GNU.\r\r"\
                     "Słowniki, dokumentacja oraz kod źródłowy, dostępne są na stronach "\
                     "http://xwords.sf.net i http://eehouse.org/xwords/."
     IDS_DICTLOC     "Pliki słowników (.xwd) zainstaluj proszę "\
-                    "w tym samym katalogu co wykonywalny plik .EXE, lub "\
+                    "w tym samym katalogu co wykonywalny plik .exe, lub "\
                     "w katalogu nazwanym Crosswords na karcie pamięci, "\
                     "np. w \\storage card\\crosswords.  "\
-                    "Pobierz słowniki z HTTP://XWORDS.SF.NET lub "\
+                    "Pobierz słowniki z http://xwords.sf.net lub "\
                     "http://eehouse.org/xwords."
     IDS_SAVENAME    "Podaj nazwę aktualnej gry (możesz ją zmienić "\
                     "korzystając z okna zapisanych gier.)"
@@ -953,7 +954,7 @@ BEGIN
     IDS_LANG_CHANGE_RESTART "Musisz zrestartować xWords aby nowe ustawienia zadziałały."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend."
+    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend." /* <- translate */
     IDS_CONN_RELAY_L          "Proxy"
     IDS_CONN_DIRECT         "Bezpośrednie"
 
