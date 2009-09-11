@@ -69,7 +69,7 @@ BEGIN
     POPUP "Menu"
     BEGIN
         MENUITEM "Jouer le coup",                  ID_MOVE_TURNDONE
-        MENUITEM "Mélanger",                     ID_MOVE_JUGGLE
+        MENUITEM "MÃ©langer",                     ID_MOVE_JUGGLE
         MENUITEM "Retourner",                       ID_MOVE_FLIP
         MENUITEM "Echanger",                      ID_MOVE_TRADE
         MENUITEM "Cacher tirage",                  ID_MOVE_HIDETRAY
@@ -77,7 +77,7 @@ BEGIN
         POPUP "Annuler"
         BEGIN
             MENUITEM "Annuler actuel",            ID_MOVE_UNDOCURRENT
-            MENUITEM "Annuler précédent",               ID_MOVE_UNDOLAST
+            MENUITEM "Annuler prÃ©cÃ©dent",               ID_MOVE_UNDOLAST
         END
 
         POPUP "Conseil"
@@ -85,7 +85,7 @@ BEGIN
             MENUITEM "Conseil suivant",           ID_MOVE_NEXTHINT
             MENUITEM "Conseil",                   ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
-            MENUITEM "Conseil limité...",        ID_MOVE_LIMITEDHINT
+            MENUITEM "Conseil limitÃ©...",        ID_MOVE_LIMITEDHINT
 #endif
             MENUITEM SEPARATOR
             MENUITEM "Montrer les valeurs",             ID_MOVE_VALUES
@@ -100,17 +100,18 @@ BEGIN
             MENUITEM "Historique",                 ID_GAME_HISTORY
             MENUITEM "Score final",           ID_GAME_FINALSCORES
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+            MENUITEM SEPARATOR
             MENUITEM "Renvoyer message",         ID_GAME_RESENDMSGS
 #endif
         END
 
         POPUP "Fichier"
         BEGIN
-            MENUITEM "Plein écran",            ID_FILE_FULLSCREEN
+            MENUITEM "Plein Ã©cran",            ID_FILE_FULLSCREEN
             MENUITEM SEPARATOR
             MENUITEM "Nouvelle partie...",            ID_FILE_NEWGAME
-            MENUITEM "Parties enregistrées...",         ID_FILE_SAVEDGAMES
-            MENUITEM "Préférences...",         ID_FILE_PREFERENCES
+            MENUITEM "Parties enregistrÃ©es...",         ID_FILE_SAVEDGAMES
+            MENUITEM "PrÃ©fÃ©rences...",         ID_FILE_PREFERENCES
             MENUITEM SEPARATOR
             MENUITEM "A propos...",               ID_FILE_ABOUT
             MENUITEM SEPARATOR
@@ -287,14 +288,14 @@ BEGIN
     CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
     CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
 
-    PUSHBUTTON      "Mélanger",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
+    PUSHBUTTON      "MÃ©langer",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
                     60,BUTTON_HT
 
     LTEXT           "Dictionnaire:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,50,8,
                     SS_NOPREFIX
     XWCOMBO(IDC_DICTLIST,LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
 
-    PUSHBUTTON      "Préférences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12
+    PUSHBUTTON      "PrÃ©fÃ©rences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,55,12
 
 #ifndef _WIN32_WCE
     PUSHBUTTON      "OK",IDOK,20,BUTTONS_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
@@ -412,11 +413,11 @@ END
 
 IDD_SAVEDGAMESDLG DIALOG DISCARDABLE  0, 0, 85, SVGM_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Parties enregistrées"
+CAPTION "Parties enregistrÃ©es"
 FONT 8, "System"
 BEGIN
   LTEXT           /* wince windres can't handle split lines....*/
-                    "Sélectionnez une partie enregistrée.  (Certains boutons seront désactivés si la partie en cours est sélectionnée.)",                              
+                    "SÃ©lectionnez une partie enregistrÃ©e.  (Certains boutons seront dÃ©sactivÃ©s si la partie en cours est sÃ©lectionnÃ©e.)",                              
                     IDC_SVGM_SELLAB,SVGM_LEFT_COL,SVGM_ROW_1,90,45
     XWCOMBO(IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
 
@@ -431,7 +432,7 @@ BEGIN
                     SVGM_LEFT_COL+50,SVGM_ROW_4,40,14,WS_DISABLED
 
 #ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "Terminé",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "TerminÃ©",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,
                     BUTTON_HT
 #endif
 END
@@ -477,7 +478,7 @@ END
 
 IDD_ASKHINTLIMTS DIALOG DISCARDABLE  0, 0, HC_WIDTH, ASKHINTLIMTS_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Longueur des mots conseillés"
+CAPTION "Longueur des mots conseillÃ©s"
 FONT 8, "System"
 BEGIN
     LTEXT           "Utiliser au moins:",HC_MIN_LABEL,
@@ -520,21 +521,21 @@ END
 
 IDD_OPTIONSDLG DIALOG DISCARDABLE  0, 20, PR_WIDTH, PREFS_DLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Préférences"
+CAPTION "PrÃ©fÃ©rences"
 FONT 8, "System"
 BEGIN
     CONTROL         "Cette partie",IDC_RADIOLOCAL,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
-    CONTROL         "Générales",IDC_RADIOGLOBAL,"Button",
+    CONTROL         "GÃ©nÃ©rales",IDC_RADIOGLOBAL,"Button",
                     BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
 
     /* Global */
-    CONTROL         "Couleur des lettres placées",IDC_CHECKCOLORPLAYED,"Button",
+    CONTROL         "Couleur des lettres placÃ©es",IDC_CHECKCOLORPLAYED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,
                     PR_LEFT,PR_ROW2,90,PREFS_ROW_HT
     CONTROL         "Activer curseur",IDC_CHECKSHOWCURSOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,60,PREFS_ROW_HT
-    CONTROL         "Détails des points du robot",IDC_CHECKROBOTSCORES,"Button",
+    CONTROL         "DÃ©tails des points du robot",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,87,PREFS_ROW_HT
     CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,87,PREFS_ROW_HT
@@ -624,28 +625,28 @@ BEGIN
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "Connexion non supportée.",IDC_COOKIE_LAB,
+    LTEXT           "Connexion non supportÃ©e.",IDC_COOKIE_LAB,
                      LAB_COL,CONN_ROW_3,40,40
 #endif
 
 #ifdef XWFEATURE_IP_DIRECT
-    LTEXT           "Nom et adresse de l'hôte",IDC_IPNAME_LAB,
+    LTEXT           "Nom et adresse de l'hÃ´te",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,100,ROW_HEIGHT
     EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,ES_AUTOHSCROLL
 #else
-    LTEXT           "Connexion IP directe non supportée.",IDC_IPNAME_LAB,
+    LTEXT           "Connexion IP directe non supportÃ©e.",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,40,40
 #endif
 
 #ifdef XWFEATURE_SMS
-    LTEXT           "Téléphone hôte:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
+    LTEXT           "TÃ©lÃ©phone hÃ´te:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Port hôte:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
+    LTEXT           "Port hÃ´te:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "SMS non supporté.",
+    LTEXT           "SMS non supportÃ©.",
                      IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
 #endif
 
@@ -708,7 +709,7 @@ END
 
 IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, CLR_WIDTH, COLORSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
-CAPTION "Préférences des couleurs"
+CAPTION "PrÃ©fÃ©rences des couleurs"
 FONT 8, "System"
 BEGIN
     COLOR_BUTTON("Lettre double:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1,CLR_LAB_HT)
@@ -727,7 +728,7 @@ BEGIN
     COLOR_BUTTON("Fond de lettre:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6,CLR_LAB_HT+10)
 
     COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
-    COLOR_BUTTON("Couleur sélection:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7,CLR_LAB_HT+10)
+    COLOR_BUTTON("Couleur sÃ©lection:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7,CLR_LAB_HT+10)
     COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7+5)
     COLOR_BUTTON("Joueur 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8,CLR_LAB_HT)
     COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_COL_2,CLR_ROW_8)
@@ -840,8 +841,8 @@ BEGIN
     IDS_DUMMY               "--"
     IDS_CANCEL              "Annuler"
     IDS_OK                  "OK"
-    IDS_DONE                "Terminé"
-    IDS_LANGUAGE_NAME       "Français"
+    IDS_DONE                "TerminÃ©"
+    IDS_LANGUAGE_NAME       "FranÃ§ais"
     IDS_NEW_GAME            "New Game"  // <- translate
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (REV " SVN_REV ") "\
                     "pour Windows Mobile. Copyright 1998-2009 "\
@@ -850,20 +851,20 @@ BEGIN
                     "Pour obtenir des dictionnaires, le manuel ou le "\
                     "code source allez sur "\
                     "http://xwords.sf.net ou http://eehouse.org/xwords/.\r\r"\
-					"Traduction française par Jean-Marc Charette."
+					"Traduction franÃ§aise par Jean-Marc Charette."
     IDS_DICTLOC     "Veuillez installer un dictionnaire (Fichier .xwd) "\
-                    "dans le même dossier que le fichier exécutable crosswords.exe ou "\
-                    "dans un dossier nommé crosswords sur la carte de stockage, "\
+                    "dans le mÄ™me dossier que le fichier exÃ©cutable crosswords.exe ou "\
+                    "dans un dossier nommÃ© crosswords sur la carte de stockage, "\
                     "par exemple dans \\Carte de Stockage\\crosswords. "\
-                    "Téléchargez des dictionnaires sur le site http://xwords.sf.net ou "\
+                    "TÃ©lÃ©chargez des dictionnaires sur le site http://xwords.sf.net ou "\
                     "http://eehouse.org/xwords."
     IDS_SAVENAME    "Entrez un nom pour la partie.  (Vous pourrez le changer "\
-                    "plus tard via la boîte de dialogue Enregistrer partie.)"
+                    "plus tard via la boÃ®te de dialogue Enregistrer partie.)"
     IDS_DUPENAME    "Entrez un nom pour une copie de cette partie."
     IDS_RENAME      "Entrez un nouveau nom pour cette partie."
 
     IDS_REMAINING_TILES_ADD "+ %d [Toutes les lettres restantes]"
-    IDS_UNUSED_TILES_SUB    "- %d [Lettres non utilisées]"
+    IDS_UNUSED_TILES_SUB    "- %d [Lettres non utilisÃ©es]"
     IDS_BONUS_ALL          "Bonus scrabble: 50" XP_CR
     IDS_TURN_SCORE         "Score pour ce coup: %d" XP_CR
     IDS_COMMIT_CONFIRM     "Accepter ce coup?" XP_CR
@@ -874,27 +875,27 @@ BEGIN
     IDS_DISALLOW_L         "Refuser"
     IDS_NONLOCAL_NAME      "%s (Distant)"
     IDS_TIME_PENALTY_SUB   " - %d [Temps]"
-    IDS_CUMULATIVE_SCORE   "Score cumulé: %d" XP_CR
+    IDS_CUMULATIVE_SCORE   "Score cumulÃ©: %d" XP_CR
     IDS_MOVE_ACROSS        "Placement (de %s horizontalement)" XP_CR
     IDS_MOVE_DOWN          "Placement (de %s verticalement)" XP_CR
-    IDS_TRAY_AT_START      "Tirage de départ: %s" XP_CR
+    IDS_TRAY_AT_START      "Tirage de dÃ©part: %s" XP_CR
     IDS_NEW_TILES          "Nouvelles lettres: %s" XP_CR
-    IDS_TRADED_FOR         "Echangé %s contre %s."
+    IDS_TRADED_FOR         "EchangÃ© %s contre %s."
     IDS_PASS               "Passe" XP_CR
-    IDS_PHONY_REJECTED     "Mot refusé dans ce coup; tour perdu!" XP_CR
-    IDS_ROBOT_TRADED       "Le robot a échangé %d lettre(s) durant ce tour."
-    IDS_ROBOT_MOVED        "Le robot a joué ce coup:" XP_CR
-    IDS_REMOTE_MOVED       "Le joueur distant a joué ce coup:" XP_CR
-    IDS_PASSED             "Passé"
+    IDS_PHONY_REJECTED     "Mot refusÃ© dans ce coup; tour perdu!" XP_CR
+    IDS_ROBOT_TRADED       "Le robot a Ã©changÃ© %d lettre(s) durant ce tour."
+    IDS_ROBOT_MOVED        "Le robot a jouÃ© ce coup:" XP_CR
+    IDS_REMOTE_MOVED       "Le joueur distant a jouÃ© ce coup:" XP_CR
+    IDS_PASSED             "PassÃ©"
     IDS_SUMMARYSCORED      "%s:%d"
-    IDS_TRADED             "Echangé %d"
+    IDS_TRADED             "EchangÃ© %d"
     IDS_LOSTTURN           "Tour perdu"
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_LOCALPLAYERS       "Joueurs loc.:"
 #endif
     IDS_TOTALPLAYERS       "Nombre de joueurs:"
     IDS_VALUES_HEADER      "%s Nombres/Valeurs:" XP_CR
-    IDS_QUERY_TRADE        "Etes-vous sûr de vouloir échanger les lettres sélectionnées?"
+    IDS_QUERY_TRADE        "Etes-vous sÅ±r de vouloir Ã©changer les lettres sÃ©lectionnÃ©es?"
     IDS_DOUBLE_LETTER      "Lettre compte double"
     IDS_DOUBLE_WORD        "Mot compte double"
     IDS_TRIPLE_LETTER      "Lettre compte triple"
@@ -902,18 +903,18 @@ BEGIN
 
     IDS_INTRADE_MW         "Echange de lettres. Choisir" XP_CR "'Jouer le coup' quand vous" XP_CR "avez fini."
 
-    IDS_TILES_NOT_IN_LINE  "Toutes les lettres jouées doivent être alignées."
-    IDS_NO_EMPTIES_IN_TURN "Aucune case vide ne peut séparer deux lettres placées."
+    IDS_TILES_NOT_IN_LINE  "Toutes les lettres jouÃ©es doivent Ä™tre alignÃ©es."
+    IDS_NO_EMPTIES_IN_TURN "Aucune case vide ne peut sÃ©parer deux lettres placÃ©es."
     IDS_TWO_TILES_FIRST_MOVE "Lors du premier coup, vous devez placer deux lettres au minimum."
-    IDS_TILES_MUST_CONTACT "Les lettres doivent être placées en contact avec des lettres déja présentes sur le plateau de jeu (ou "\
+    IDS_TILES_MUST_CONTACT "Les lettres doivent Ä™tre placÃ©es en contact avec des lettres dÃ©ja prÃ©sentes sur le plateau de jeu (ou "\
                            "recouvrir la case centrale du plateau lors du premier coup)."
     IDS_NOT_YOUR_TURN      "Vous ne pouvez pas faire cela, ce n'est pas votre tour!"
     IDS_NO_PEEK_ROBOT_TILES "Pas de coup d'oeil sur les lettres du robot!"
-    IDS_CANT_TRADE_MID_MOVE "Retirez les lettres placées avant d'échanger."
-    IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Il reste trop peu de lettres pour l'échange."
-    IDS_CANT_UNDO_TILEASSIGN "L'attribution des lettres ne peut être annulé."
-    IDS_CANT_HINT_WHILE_DISABLED "Les conseils sont désactivés dans cette partie.  "\
-                            "activez-les pour une nouvelle partie en utilisant les préférences."
+    IDS_CANT_TRADE_MID_MOVE "Retirez les lettres placÃ©es avant d'Ã©changer."
+    IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Il reste trop peu de lettres pour l'Ã©change."
+    IDS_CANT_UNDO_TILEASSIGN "L'attribution des lettres ne peut Ä™tre annulÃ©."
+    IDS_CANT_HINT_WHILE_DISABLED "Les conseils sont dÃ©sactivÃ©s dans cette partie.  "\
+                            "activez-les pour une nouvelle partie en utilisant les prÃ©fÃ©rences."
 
     IDS_COUNTSVALS_L        "Nombre et valeur des lettres"
     IDS_REMTILES_L          "Lettres restantes"
@@ -922,20 +923,20 @@ BEGIN
     IDS_QUESTION_L          "Question"
     IDS_FYI_L               "Info"
     IDS_ILLEGALWRD_L        "Mot interdit"
-    IDS_WRDNOTFOUND         "Mot(s) %s non trouvé(s) dans le dictionnaire."
-    IDS_USEANYWAY           "L'utiliser malgré tout?"
-    IDS_CANNOTOPEN_GAME     "La partie enregistrée ne peut être ouverte."
-    IDS_NODICT_L            "Dictionnaire non trouvé"
+    IDS_WRDNOTFOUND         "Mot(s) %s non trouvÃ©(s) dans le dictionnaire."
+    IDS_USEANYWAY           "L'utiliser malgrÃ© tout?"
+    IDS_CANNOTOPEN_GAME     "La partie enregistrÃ©e ne peut Ä™tre ouverte."
+    IDS_NODICT_L            "Dictionnaire non trouvÃ©"
     IDS_ABOUT_L             "A propos de Crosswords"
     IDS_OVERWRITE           "Voulez-vous vraiment effacer la partie en cours?"
-    IDS_ENDNOW              "Etes-vous sûr de vouloir terminer la partie maintenant?"
+    IDS_ENDNOW              "Etes-vous sÅ±r de vouloir terminer la partie maintenant?"
     IDS_CANNOTOPEN_DICT     "Impossible d'ouvrir le dictionnaire: %s"
     IDS_CONFIM_DELETE       "Etes-vous certain de vouloir effacer la partie "\
-                            "sélectionnée?  Cette action ne pourra pas être annulée."
+                            "sÃ©lectionnÃ©e?  Cette action ne pourra pas Ä™tre annulÃ©e."
 
     IDS_ROLE_STANDALONE     "Autonome"
-    IDS_ROLE_HOST           "Hôte"
-    IDS_ROLE_GUEST          "Invité"
+    IDS_ROLE_HOST           "HÃ´te"
+    IDS_ROLE_GUEST          "InvitÃ©"
     IDS_PLAYER_FORMAT       "Joueur %d"
     IDS_UNTITLED_FORMAT     "Sans titre %d"
     IDS_PASSWDFMT_L         "Enter password for %ls:"            // <- translate
@@ -945,14 +946,15 @@ BEGIN
     IDS_LANG_CHANGE_RESTART "You must restart Crosswords for this change to take effect." // <-translate
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend." /* <- translate */
     IDS_CONN_RELAY_L        "Transmission"
     IDS_CONN_DIRECT         "Connexion directe"
 
     IDS_NO_PEEK_REMOTE_TILES "Pas de coup d'oeil sur le jeu des joueurs distants!"
-    IDS_REG_UNEXPECTED_USER "Refus de la tentative d'enregistrer un joueur non prévu."
-    IDS_SERVER_DICT_WINS "Conflit de dictionnaire entre l'hôte et l'invité; l'hôte gagne."
-    IDS_REG_SERVER_SANS_REMOTE "Au moins un joueur doit être distant dans une partie "\
-                               "débutée en tant qu'hôte."
+    IDS_REG_UNEXPECTED_USER "Refus de la tentative d'enregistrer un joueur non prÃ©vu."
+    IDS_SERVER_DICT_WINS "Conflit de dictionnaire entre l'hÃ´te et l'invitÃ©; l'hÃ´te gagne."
+    IDS_REG_SERVER_SANS_REMOTE "Au moins un joueur doit Ä™tre distant dans une partie "\
+                               "dÃ©butÃ©e en tant qu'hÃ´te."
 
 # ifdef XWFEATURE_SMS
     IDS_SMS_CONN_L          "Texting"
@@ -961,9 +963,9 @@ BEGIN
     IDS_DIRECT_CONN_L       "Direct connection"  // <- translate -- but not visible in version 4.2
 # endif
 # ifdef XWFEATURE_RELAY
-    IDS_XWRELAY_ERROR_TIMEOUT      "La transmission a échoué dans les délais; cela signifie généralement "\
+    IDS_XWRELAY_ERROR_TIMEOUT      "La transmission a Ã©chouÃ© dans les dÃ©lais; cela signifie gÃ©nÃ©ralement "\
                                    "que les autres joueurs ne vous ont pas vu."
-    IDS_ERROR_HEART_YOU            "Vous avez été déconnecté parce que vous n'avez rien émis "\
+    IDS_ERROR_HEART_YOU            "Vous avez Ã©tÃ© dÃ©connectÃ© parce que vous n'avez rien Ã©mis "\
                                    "pendant trop longtemps."
     IDS_XWRELAY_ERROR_HEART_OTHER  "La transmission a perdu le contact avec un appareil durant cette partie."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
