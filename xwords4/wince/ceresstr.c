@@ -20,6 +20,7 @@
 #include "ceresstr.h"
 #include "ceutil.h"
 #include "cedebug.h"
+#include "strutils.h"
 
 static XP_U16 getDLLVersion( HINSTANCE hinst );
 
@@ -28,9 +29,8 @@ HINSTANCE
 ceLoadResFile( const XP_UCHAR* file )
 {
     HINSTANCE hinst = NULL;
-    wchar_t widebuf[128];
-    XP_U16 len = MultiByteToWideChar( CP_ACP, 0, file, -1, widebuf, VSIZE(widebuf) );
-    widebuf[len] = 0;
+    wchar_t widebuf[256];
+    (void)MultiByteToWideChar( CP_ACP, 0, file, -1, widebuf, VSIZE(widebuf) );
     hinst = LoadLibrary( widebuf );
     
     if ( CUR_DLL_VERSION != getDLLVersion( hinst ) ) {
@@ -90,11 +90,11 @@ getEntry( CEAppGlobals* globals, XP_U16 resID, XP_Bool isWide )
             wcscpy( entry->u.wstr, wbuf );
         } else {
             XP_UCHAR nbuf[265];
-            (void)WideCharToMultiByte( CP_ACP, 0, wbuf, -1,
+            (void)WideCharToMultiByte( CP_UTF8, 0, wbuf, -1,
                                        nbuf, VSIZE(nbuf), NULL, NULL );
             len = XP_STRLEN( nbuf );
             entry = (ResStrEntry*)XP_MALLOC( globals->mpool, 
-                                             len + sizeof(*entry) );
+                                             len + 1 + sizeof(*entry) );
             XP_STRNCPY( entry->u.nstr, nbuf, len + 1 );
         }
 

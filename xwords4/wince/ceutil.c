@@ -40,7 +40,7 @@ void
 ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* str )
 {
     wchar_t widebuf[BUF_SIZE];
-    XP_U16 len;
+    XP_U16 len, wlen;
 
     XP_ASSERT( str != NULL );
 
@@ -50,8 +50,8 @@ ceSetDlgItemText( HWND hDlg, XP_U16 id, const XP_UCHAR* str )
         len = VSIZE(widebuf) - 1;
     }
 
-    MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, str, len, widebuf, len );
-    widebuf[len] = 0;
+    wlen = MultiByteToWideChar( CP_UTF8, 0, str, len, widebuf, len );
+    widebuf[wlen] = 0;
     SendDlgItemMessage( hDlg, id, WM_SETTEXT, 0, (long)widebuf );
 } /* ceSetDlgItemText */
 
@@ -941,15 +941,6 @@ ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), const XP_UCHAR* str,
     parent = GetForegroundWindow();
     return MessageBox( parent, widebuf, title, buttons );
 } /* ceMessageBoxChar */
-
-int
-ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
-{
-    XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
-    return ceMessageBoxChar( globals, str, isUTF8, 
-                             ceGetResStringL( globals, IDS_FYI_L ),
-                             MB_OK | MB_ICONHAND );
-}
 
 XP_Bool
 ceCurDictIsUTF8( CEAppGlobals* globals )

@@ -100,6 +100,7 @@ BEGIN
             MENUITEM "Historia",                 ID_GAME_HISTORY
             MENUITEM "Ostateczny wynik",         ID_GAME_FINALSCORES
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+            MENUITEM SEPARATOR
             MENUITEM "Prześlij wiadom.",         ID_GAME_RESENDMSGS
 #endif
         END
@@ -952,6 +953,7 @@ BEGIN
     IDS_LANG_CHANGE_RESTART "Musisz zrestartować xWords aby nowe ustawienia zadziałały."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend."
     IDS_CONN_RELAY_L          "Proxy"
     IDS_CONN_DIRECT         "Bezpośrednie"
 
