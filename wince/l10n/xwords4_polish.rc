@@ -962,10 +962,10 @@ BEGIN
                                "Rozpoczyna host."
 
 # ifdef XWFEATURE_SMS
-    IDS_SMS_CONN_L          "Texting"
+    IDS_SMS_CONN_L          "Wiadomości"
 # endif
 # ifdef XWFEATURE_IP_DIRECT
-    IDS_DIRECT_CONN_L       "Direct connection"
+    IDS_DIRECT_CONN_L       "Połączenie bezpośrednie."
 # endif
 
 # ifdef XWFEATURE_RELAY
@@ -974,7 +974,7 @@ BEGIN
     IDS_ERROR_HEART_YOU            "Rozłączono grę przez proxy, z powodu zbyt długiego "\
                                    "oczekiwania na Twoją odpowiedź."
     IDS_XWRELAY_ERROR_HEART_OTHER  "Proxy utraciło połączenie z urządzeniem."
-/*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
+/*     IDS_XWRELAY_ERROR_LOST_OTHER   "Utracono połączenie z urządzeniem." */
 # endif
 #endif
 
