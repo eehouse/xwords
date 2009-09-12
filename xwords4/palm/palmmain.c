@@ -1202,8 +1202,7 @@ startApplication( PalmAppGlobals** globalsP )
         globals->isFirstLaunch = false;
     } else {
         DictListEntry* dlep;
-        XP_U32 gameID;
-	
+
         /* if we're here because dict missing, don't re-init all prefs! */
         if ( !prefsFound ) {
             palmInitPrefs( globals );
