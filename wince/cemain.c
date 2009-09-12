@@ -81,17 +81,9 @@ typedef struct FileWriteState {
 static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len, 
                             const CommsAddrRec* addr, 
                             void* closure );
-
-#define CE_SEND_PROC ce_send_proc
-#else
-#define CE_SEND_PROC NULL
-#endif
-
-#ifdef COMMS_HEARTBEAT
+# ifdef COMMS_HEARTBEAT
 static void ce_reset_proc( void* closure );
-# define CE_RESET_PROC ce_reset_proc,
-#else
-# define CE_RESET_PROC 
+# endif
 #endif
 
 static VTableMgr* ce_util_getVTManager( XW_UtilCtxt* uc );
@@ -826,6 +818,17 @@ ceSetTitleFromName( CEAppGlobals* globals )
 } /* ceSetTitleFromName */
 
 static void
+ceInitTProcs( CEAppGlobals* globals, TransportProcs* procs )
+{
+    XP_MEMSET( procs, 0, sizeof(*procs) );
+    procs->send = ce_send_proc;
+#ifdef COMMS_HEARTBEAT
+    procs->reset = ce_reset_proc;
+#endif
+    procs->closure = globals;
+}
+
+static void
 ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame, 
                      const CommsAddrRec* XP_UNUSED_STANDALONE(addr) )
 {
@@ -865,9 +868,10 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 
     if ( newGame ) {
+        TransportProcs procs;
+        ceInitTProcs( globals, &procs );
         game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
-                    0, &globals->appPrefs.cp, CE_SEND_PROC, 
-                    CE_RESET_PROC globals );
+                    0, &globals->appPrefs.cp, &procs );
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
         if ( !!addr ) {
@@ -1157,17 +1161,19 @@ ceLoadSavedGame( CEAppGlobals* globals )
         }
 
         if ( success ) {
+            TransportProcs procs;
+
             if ( flags >= CE_GAMEFILE_VERSION1 ) {
                 ce_draw_fromStream( globals->draw, stream, flags );
             }
 
             XP_DEBUGF( "calling game_makeFromStream" ); 
+            ceInitTProcs( globals, &procs );
             success = game_makeFromStream( MEMPOOL stream, &globals->game, 
                                            &globals->gameInfo, dict, 
                                            &globals->util,
                                            (DrawCtx*)globals->draw,
-                                           &globals->appPrefs.cp, CE_SEND_PROC, 
-                                           CE_RESET_PROC globals );
+                                           &globals->appPrefs.cp, &procs );
             if ( success ) {
                 ceSetTitleFromName( globals );
             } else {
@@ -1435,10 +1441,11 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     oldGameLoaded = prevStateExists && ceLoadSavedGame( globals );
 
     if ( !oldGameLoaded ) {
+        TransportProcs procs;
+        ceInitTProcs( globals, &procs );
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
                           &globals->util, (DrawCtx*)globals->draw, 0,
-                          &globals->appPrefs.cp, 
-                          CE_SEND_PROC, CE_RESET_PROC globals );
+                          &globals->appPrefs.cp, &procs );
 
         newDone = ceDoNewGame( globals ); /* calls ceInitAndStartBoard */
         if ( !newDone ) {
