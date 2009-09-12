@@ -77,13 +77,6 @@ typedef struct AddressRecord {
 
 #define ADDRESSRECORD_SIZE_68K 20
 
-typedef enum {
-    COMMS_RELAYSTATE_UNCONNECTED
-    , COMMS_RELAYSTATE_CONNECT_PENDING
-    , COMMS_RELAYSTATE_CONNECTED
-    , COMMS_RELAYSTATE_ALLCONNECTED
-} CommsRelayState;
-
 struct CommsCtxt {
     XW_UtilCtxt* util;
 
@@ -93,9 +86,8 @@ struct CommsCtxt {
 
     AddressRecord* recs;        /* return addresses */
 
-    TransportSend sendproc;
+    TransportProcs procs;
 #ifdef COMMS_HEARTBEAT
-    TransportReset resetproc;
     XP_U32  lastMsgRcd;
 #endif
     void* sendClosure;
@@ -201,7 +193,7 @@ static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ,
 #ifdef XWFEATURE_RELAY
 
 #ifdef DEBUG
-static const char*
+const char*
 CommsRelayState2Str( CommsRelayState state )
 {
 #define CASE_STR(s) case s: return #s
@@ -226,6 +218,9 @@ set_relay_state( CommsCtxt* comms, CommsRelayState state )
                  CommsRelayState2Str(comms->r.relayState), 
                  CommsRelayState2Str(state) );
         comms->r.relayState = state;
+        if ( !!comms->procs.rstatus ) {
+            (*comms->procs.rstatus)( comms->procs.closure, state );
+        }
     }
 }
 
@@ -247,8 +242,7 @@ CommsCtxt*
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
             XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
             XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
-            TransportSend sendproc, IF_CH(TransportReset resetproc)
-            void* closure )
+            const TransportProcs* procs )
 {
     CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
@@ -256,11 +250,7 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
     MPASSIGN(result->mpool, mpool);
 
     result->isServer = isServer;
-    result->sendproc = sendproc;
-#ifdef COMMS_HEARTBEAT
-    result->resetproc = resetproc;
-#endif
-    result->sendClosure = closure;
+    XP_MEMCPY( &result->procs, procs, sizeof(result->procs) );
     result->util = util;
 
 #ifdef XWFEATURE_RELAY
@@ -435,8 +425,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
-                      TransportSend sendproc, 
-                      IF_CH(TransportReset resetproc ) void* closure )
+                      const TransportProcs* procs )
 {
     CommsCtxt* comms;
     XP_Bool isServer;
@@ -463,8 +452,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         nPlayersTotal = 0;
     }
     comms = comms_make( MPPARM(mpool) util, isServer, 
-                        nPlayersHere, nPlayersTotal,
-                        sendproc, IF_CH(resetproc) closure );
+                        nPlayersHere, nPlayersTotal, procs );
     XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
 
     comms->connID = stream_getU32( stream );
@@ -992,9 +980,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
         const CommsAddrRec* addr;
         (void)channelToAddress( comms, channelNo, &addr );
 
-        XP_ASSERT( !!comms->sendproc );
-        result = (*comms->sendproc)( elem->msg, elem->len, addr,
-                                     comms->sendClosure );
+        XP_ASSERT( !!comms->procs.send );
+        result = (*comms->procs.send)( elem->msg, elem->len, addr,
+                                       comms->procs.closure );
     }
     
     if ( result == elem->len ) {
@@ -1137,6 +1125,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         relayErr = stream_getU8( stream );
         srcID = stream_getU8( stream );
         XP_LOGF( "%s: host id %x disconnected", __func__, srcID );
+        set_relay_state( comms, COMMS_RELAYSTATE_CONNECTED );
         /* we will eventually want to tell the user which player's gone */
         util_userError( comms->util, ERR_RELAY_BASE + relayErr );
         break;
@@ -1144,8 +1133,8 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
     case XWRELAY_CONNECTDENIED:                 /* Close socket for this? */
         relayErr = stream_getU8( stream );
-        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
         set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
+        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
         /* fallthru */
     default:
         XP_LOGF( "%s: dropping relay msg with cmd %d", __func__, (XP_U16)cmd );
@@ -1504,7 +1493,7 @@ heartbeat_checks( CommsCtxt* comms )
             if ( comms->lastMsgRcvdTime < tooLongAgo ) {
                 XP_LOGF( "%s: calling reset proc; last was %ld secs too long "
                          "ago", __func__, tooLongAgo - comms->lastMsgRcvdTime );
-                (*comms->resetproc)(comms->sendClosure);
+                (*comms->procs.reset)(comms->procs.closure);
                 comms->lastMsgRcvdTime = 0;
                 break;          /* outta here */
             }
@@ -1787,7 +1776,8 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         if ( buf != NULL ) {
             XP_U16 result;
             XP_LOGF( "%s: passing %d bytes to sendproc", __func__, len );
-            result = (*comms->sendproc)( buf, len, &addr, comms->sendClosure );
+            result = (*comms->procs.send)( buf, len, &addr, 
+                                           comms->procs.closure );
             success = result == len;
             if ( success ) {
                 setHeartbeatTimer( comms );
@@ -1837,7 +1827,7 @@ send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType typ, XP_PlayerAddr channelNo,
             XP_MEMCPY( &buf[1], data, dlen );
         }
 
-        nSent = (*comms->sendproc)( buf, dlen+1, addr, comms->sendClosure );
+        nSent = (*comms->procs.send)( buf, dlen+1, addr, comms->procs.closure );
         XP_FREE( comms->mpool, buf );
 
         setHeartbeatTimer( comms );

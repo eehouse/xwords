@@ -45,6 +45,14 @@ typedef enum {
     ,COMMS_CONN_NTYPES
 } CommsConnType;
 
+typedef enum {
+    COMMS_RELAYSTATE_UNCONNECTED
+    , COMMS_RELAYSTATE_CONNECT_PENDING
+    , COMMS_RELAYSTATE_CONNECTED
+    , COMMS_RELAYSTATE_ALLCONNECTED
+} CommsRelayState;
+
+
 /* WHAT SHOULD THIS BE?  Copied from Whiteboard....  PENDING */
 #define XW_BT_UUID \
     { 0x83, 0xe0, 0x87, 0xae, 0x4e, 0x18, 0x46, 0xbe,  \
@@ -100,13 +108,29 @@ typedef struct CommsAddrRec {
 typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
                                  const CommsAddrRec* addr,
                                  void* closure );
+#ifdef COMMS_HEARTBEAT
 typedef void (*TransportReset)( void* closure );
+#endif
+
+#ifdef XWFEATURE_RELAY
+typedef void (*RelayStatusProc)( void* closure, CommsRelayState newState );
+#endif
+
+typedef struct _TransportProcs {
+    TransportSend send;
+#ifdef COMMS_HEARTBEAT
+    TransportReset reset;
+#endif
+#ifdef XWFEATURE_RELAY
+    RelayStatusProc rstatus;
+#endif
+    void* closure;
+} TransportProcs;
 
 CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
                        XP_Bool isServer, 
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                       TransportSend sendproc, IF_CH(TransportReset resetproc)
-                       void* closure );
+                       const TransportProcs* procs );
 
 void comms_reset( CommsCtxt* comms, XP_Bool isServer, 
                   XP_U16 nPlayersHere, XP_U16 nPlayersTotal );
@@ -128,9 +152,7 @@ CommsConnType comms_getConType( const CommsCtxt* comms );
 XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
-                                 XW_UtilCtxt* util, TransportSend sendproc, 
-                                 IF_CH(TransportReset resetproc)
-                                 void* closure );
+                                 XW_UtilCtxt* util, const TransportProcs* procs );
 void comms_start( CommsCtxt* comms );
 void comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream );
 
@@ -146,6 +168,7 @@ XP_Bool comms_checkComplete( const CommsAddrRec* addr );
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
 const char* ConnType2Str( CommsConnType typ );
+const char* CommsRelayState2Str( CommsRelayState state );
 # endif
 
 EXTERN_C_END

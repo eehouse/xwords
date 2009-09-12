@@ -83,18 +83,15 @@ typedef struct XWGame {
 
 void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi, 
                        XW_UtilCtxt* util, DrawCtx* draw, XP_U16 gameID,
-                       CommonPrefs* cp, TransportSend sendproc, 
-                       IF_CH(TransportReset resetproc) void* closure);
+                       CommonPrefs* cp, const TransportProcs* procs );
 void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
-                 XP_U16 gameID, CommonPrefs* cp, TransportSend sendproc, 
-                 IF_CH(TransportReset resetproc) void* closure );
+                 XP_U16 gameID, CommonPrefs* cp, const TransportProcs* procs );
 
 XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                              CurGameInfo* gi, 
                              DictionaryCtxt* dict, XW_UtilCtxt* util, 
                              DrawCtx* draw, CommonPrefs* cp,
-                             TransportSend sendProc, IF_CH(TransportReset rp) 
-                             void* closure );
+                             const TransportProcs* procs );
 
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                         XWStreamCtxt* stream );

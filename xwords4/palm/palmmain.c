@@ -579,6 +579,17 @@ reportMissingDict( PalmAppGlobals* globals, XP_UCHAR* name )
     }
 } /* reportMissingDict */
 
+static void
+palmInitTProcs( PalmAppGlobals* globals, TransportProcs* procs )
+{
+    XP_MEMSET( procs, 0, sizeof(*procs) );
+    procs->send = palm_send;
+#ifdef COMMS_HEARTBEAT
+    procs->reset = palm_reset;
+#endif
+    procs->closure = globals;
+}
+
 static XP_Bool
 loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
                  XWGame* game, CurGameInfo* ginfo )
@@ -617,10 +628,12 @@ loadCurrentGame( PalmAppGlobals* globals, XP_U16 gIndex,
         }
 
         if ( success ) {
+            TransportProcs procs;
+            palmInitTProcs( globals, &procs );
             success = game_makeFromStream( MEMPOOL recStream, game, ginfo, 
                                            dict, &globals->util, 
                                            globals->draw, &globals->gState.cp, 
-                                           palm_send, IF_CH(palm_reset) globals );
+                                           &procs );
         }
 
         stream_destroy( recStream );
@@ -1201,6 +1214,7 @@ startApplication( PalmAppGlobals** globalsP )
         postEmptyEvent( loadGameEvent );
         globals->isFirstLaunch = false;
     } else {
+        TransportProcs procs;
         DictListEntry* dlep;
 
         /* if we're here because dict missing, don't re-init all prefs! */
@@ -1218,10 +1232,11 @@ startApplication( PalmAppGlobals** globalsP )
         globals->gameInfo.dictName = copyString( globals->mpool,
                                                  dlep->baseName );
 
+        palmInitTProcs( globals, &procs );
         game_makeNewGame( MEMPOOL &globals->game, &globals->gameInfo,
                           &globals->util, globals->draw, 0, 
-                          &globals->gState.cp,
-                          palm_send, IF_CH(palm_reset) globals );
+                          &globals->gState.cp, &procs );
+
         FrmPopupForm( XW_NEWGAMES_FORM );
     }
 
@@ -2016,9 +2031,11 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     }
 
     if ( newGame ) {
+        TransportProcs procs;
+        palmInitTProcs( globals, &procs );
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
-                    &globals->util, 0, &globals->gState.cp, 
-                    palm_send, IF_CH(palm_reset) globals );
+                    &globals->util, 0, &globals->gState.cp, &procs );
+
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, 

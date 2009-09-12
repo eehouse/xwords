@@ -1450,6 +1450,14 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.draw = (struct CursesDrawCtx*)
         cursesDrawCtxtMake( g_globals.boardWin );
 
+    TransportProcs procs = {
+        .closure = &g_globals,
+        .send = LINUX_SEND,
+#ifdef COMMS_HEARTBEAT
+        .reset = linux_reset,
+#endif
+    };
+
     if ( !!params->fileName && file_exists( params->fileName ) ) {
         XWStreamCtxt* stream;
         stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
@@ -1458,16 +1466,14 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         (void)game_makeFromStream( MEMPOOL stream, &g_globals.cGlobals.game, 
                                    &params->gi, dict, params->util, 
                                    (DrawCtx*)g_globals.draw, 
-                                   &g_globals.cp,
-                                   LINUX_SEND, IF_CH(linux_reset) &g_globals );
+                                   &g_globals.cp, &procs );
 
         stream_destroy( stream );
     } else {
         gameID = (XP_U16)util_getCurSeconds( g_globals.cGlobals.params->util );
         game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)g_globals.draw,
-                          gameID, &g_globals.cp, LINUX_SEND, 
-                          IF_CH(linux_reset) &g_globals );
+                          gameID, &g_globals.cp, &procs );
     }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
