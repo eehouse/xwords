@@ -455,7 +455,6 @@ static void
 scrollForMove( CeDlgHdr* dlgHdr, XP_U16 newY ) 
 {
     if ( dlgHdr->penDown ) {
-        XP_LOGF( "%s(%d)", __func__, newY );
         XP_S16 vertChange = dlgHdr->prevY - newY;
         dlgHdr->prevY = newY;
         adjustScrollPos( dlgHdr->hDlg, vertChange );
@@ -537,8 +536,6 @@ setScrollPos( HWND hDlg, XP_S16 newPos )
                             &updateR, SW_SCROLLCHILDREN|SW_ERASE);
             InvalidateRect( hDlg, &updateR, TRUE );
             (void)UpdateWindow( hDlg );
-        } else {
-            XP_LOGF( "%s: change dropped",  __func__ );
         }
     }
 } /* setScrollPos */
