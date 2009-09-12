@@ -1219,9 +1219,8 @@ startApplication( PalmAppGlobals** globalsP )
         globals->gameInfo.dictName = copyString( globals->mpool,
                                                  dlep->baseName );
 
-        gameID = TimGetSeconds();
         game_makeNewGame( MEMPOOL &globals->game, &globals->gameInfo,
-                          &globals->util, globals->draw, gameID, 
+                          &globals->util, globals->draw, 0, 
                           &globals->gState.cp,
                           palm_send, IF_CH(palm_reset) globals );
         FrmPopupForm( XW_NEWGAMES_FORM );
@@ -2018,9 +2017,8 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     }
 
     if ( newGame ) {
-        XP_U32 newGameID = TimGetSeconds();
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
-                    &globals->util, newGameID, &globals->gState.cp, 
+                    &globals->util, 0, &globals->gState.cp, 
                     palm_send, IF_CH(palm_reset) globals );
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->game.comms ) {
@@ -2587,7 +2585,7 @@ mainViewHandleEvent( EventPtr event )
         writeNameToGameRecord( globals, globals->gState.curGameIndex, 
                                newName, XP_STRLEN(newName) );
         globals->isFirstLaunch = false;	/* so we'll save the game */
-
+        /* FALLTHRU */
     case loadGameEvent:
         XP_ASSERT( !!globals->game.server );
         initAndStartBoard( globals, event->eType == newGameOkEvent );
