@@ -84,8 +84,9 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
 const XP_UCHAR* 
 dict_getTileString( const DictionaryCtxt* dict, Tile tile )
 {
+    XP_U16 index;
     XP_ASSERT( tile < dict->nFaces );
-    XP_U16 index = dict->faceIndices[tile];
+    index = dict->faceIndices[tile];
     return &dict->faces[index];
 }
 
@@ -241,6 +242,8 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_U16 maxValue = 0;
     XP_U16 ii, nSpecials;
     XP_U16 maxCountBits, maxValueBits;
+    XP_UCHAR buf[64];
+    XP_U16 nBytes;
 
     stream_putBits( stream, 6, dict->nFaces );
 
@@ -276,8 +279,7 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
      * too new.  And utf-8 dicts are flagged as newer by the sender.
      */
 
-    XP_UCHAR buf[64];
-    XP_U16 nBytes = sizeof(buf);
+    nBytes = sizeof(buf);
     ucharsToNarrow( dict, buf, &nBytes );
     stream_putU8( stream, nBytes );
     stream_putBytes( stream, buf, nBytes );
@@ -340,6 +342,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     XP_U16 maxCountBits, maxValueBits;
     XP_U16 ii, nSpecials;
     XP_UCHAR* localTexts[32];
+    XP_U8 utf8[MAX_UNIQUE_TILES];
 
     XP_ASSERT( !dict->destructor );
     dict->destructor = common_destructor;
@@ -363,7 +366,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     }
 
     nFaceBytes = (XP_U8)stream_getU8( stream );
-    XP_U8 utf8[nFaceBytes];
+    XP_ASSERT( nFaceBytes < VSIZE(utf8) );
     stream_getBytes( stream, utf8, nFaceBytes );
     dict->isUTF8 = XP_TRUE;     /* need to communicate this in stream */
     dict_splitFaces( dict, utf8, nFaceBytes, nFaces );
