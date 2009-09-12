@@ -292,6 +292,12 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
 #endif
 
 static void
+relay_status_gtk( void* XP_UNUSED(closure), CommsRelayState state )
+{
+    XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
+}
+
+static void
 createOrLoadObjects( GtkAppGlobals* globals )
 {
     XWStreamCtxt* stream = NULL;
@@ -306,6 +312,17 @@ createOrLoadObjects( GtkAppGlobals* globals )
     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area,
                                                   globals );
 
+    TransportProcs procs = {
+        .closure = globals,
+        .send = LINUX_SEND,
+#ifdef COMMS_HEARTBEAT
+        .reset = linux_reset,
+#endif
+#ifdef XWFEATURE_RELAY
+        .rstatus = relay_status_gtk,
+#endif
+    };
+
     if ( !!params->fileName && file_exists( params->fileName ) ) {
 
         stream = streamFromFile( &globals->cGlobals, params->fileName, globals );
@@ -314,8 +331,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
                                       &globals->cGlobals.params->gi, 
                                       params->dict, params->util, 
                                       (DrawCtx*)globals->draw, 
-                                      &globals->cp,
-                                      LINUX_SEND, IF_CH(linux_reset) globals );
+                                      &globals->cp, &procs );
         
         stream_destroy( stream );
     }
@@ -339,8 +355,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          params->gi.gameID, &globals->cp, LINUX_SEND, 
-                          IF_CH(linux_reset) globals );
+                          params->gi.gameID, &globals->cp, &procs );
 
         addr.conType = params->conType;
         if ( 0 ) {
@@ -646,10 +661,17 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
 #endif
+        TransportProcs procs = {
+            .closure = globals,
+            .send = LINUX_SEND,
+#ifdef COMMS_HEARTBEAT
+            .reset = linux_reset,
+#endif
+        };
+
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    0, &globals->cp, LINUX_SEND, 
-                    IF_CH(linux_reset) globals );
+                    0, &globals->cp, &procs );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->cGlobals.game.comms ) {

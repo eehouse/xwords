@@ -74,9 +74,7 @@ void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
                   XP_U16 gameID, CommonPrefs* cp,
-                  TransportSend XP_UNUSED_STANDALONE(sendproc),
-                  IF_CH( TransportReset resetproc ) 
-                  void* XP_UNUSED_STANDALONE(closure) )
+                  const TransportProcs* procs )
 {
     XP_U16 nPlayersHere, nPlayersTotal;
 
@@ -89,11 +87,10 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                               gi->boardSize, gi->boardSize );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( !!sendproc && gi->serverRole != SERVER_STANDALONE ) {
+    if ( !!procs && gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
-                                  nPlayersHere, nPlayersTotal, 
-                                  sendproc, IF_CH(resetproc) closure );
+                                  nPlayersHere, nPlayersTotal, procs );
     } else {
         game->comms = (CommsCtxt*)NULL;
     }
@@ -116,9 +113,7 @@ void
 game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, 
             XW_UtilCtxt* XP_UNUSED_STANDALONE(util), 
             XP_U16 gameID, CommonPrefs* cp, 
-            TransportSend XP_UNUSED_STANDALONE(sendproc), 
-            IF_CH(TransportReset resetproc) 
-            void* XP_UNUSED_STANDALONE(closure) )
+            const TransportProcs* procs )
 {
     XP_U16 i;
     XP_U16 nPlayersHere, nPlayersTotal;
@@ -144,8 +139,7 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
     } else if ( gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
-                                  nPlayersHere, nPlayersTotal, 
-                                  sendproc, IF_CH(resetproc) closure );
+                                  nPlayersHere, nPlayersTotal, procs );
     }
 #else
 # ifdef DEBUG
@@ -175,9 +169,7 @@ XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                      CurGameInfo* gi, DictionaryCtxt* dict, 
                      XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp, 
-                     TransportSend XP_UNUSED_STANDALONE(sendProc), 
-                     IF_CH(TransportReset resetProc) 
-                     void* XP_UNUSED_STANDALONE(closure) )
+                     const TransportProcs* procs )
 {
     XP_Bool success = XP_FALSE;
     XP_U8 strVersion;
@@ -208,8 +200,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 
         if ( hasComms ) {
             game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
-                                                sendProc, IF_CH(resetProc) 
-                                                closure );
+                                                procs );
         } else {
             game->comms = NULL;
         }
