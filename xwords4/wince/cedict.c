@@ -240,7 +240,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
-    XP_U16* indices = XP_MALLOC( dict->mpool, nFaces * sizeof(indices[0]));
+    XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
     XP_U16 ii;
     XP_UCHAR* next = faces;
 
@@ -254,7 +254,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
 
     /* now split */
     for ( ii = 0; ii < nFaces; ++ii ) {
-        indices[ii] = next - faces;
+        ptrs[ii] = next;
         int nWritten = WideCharToMultiByte( CP_UTF8, 0, &widebuf[ii], 1,
                                             next, 100, NULL, NULL );
         next += nWritten;
@@ -264,8 +264,8 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
     XP_ASSERT( next == faces + nFaces + nBytes );
     XP_ASSERT( !dict->faces );
     dict->faces = faces;
-    XP_ASSERT( !dict->faceIndices );
-    dict->faceIndices = indices;
+    XP_ASSERT( !dict->facePtrs );
+    dict->facePtrs = ptrs;
 } /* dict_splitFaces */
 
 static void
@@ -284,7 +284,7 @@ ceLoadSpecialData( CEDictionaryCtxt* ctxt, XP_U8** ptrp )
 
     for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
 	
-        XP_UCHAR* facep = &ctxt->super.faces[ctxt->super.faceIndices[(short)ii]];
+        const XP_UCHAR* facep = ctxt->super.facePtrs[(short)ii];
         if ( IS_SPECIAL(*facep) ) {
             /* get the string */
             XP_U8 txtlen = *ptr++;
@@ -313,8 +313,7 @@ ceCountSpecials( CEDictionaryCtxt* ctxt )
     XP_U16 ii;
 
     for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
-        XP_U16 index = ctxt->super.faceIndices[ii];
-        if ( IS_SPECIAL( ctxt->super.faces[index] ) ) {
+        if ( IS_SPECIAL( ctxt->super.facePtrs[ii][0] ) ) {
             ++result;
         }
     }
@@ -480,7 +479,7 @@ ce_dict_destroy( DictionaryCtxt* dict )
     }
 
     XP_FREE( ctxt->super.mpool, ctxt->super.faces );
-    XP_FREE( ctxt->super.mpool, ctxt->super.faceIndices );
+    XP_FREE( ctxt->super.mpool, ctxt->super.facePtrs );
     XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
     XP_FREE( ctxt->super.mpool, ctxt->super.name );
 
