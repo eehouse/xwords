@@ -81,13 +81,21 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
     return dict->countsAndValues[tile+1];    
 } /* dict_getTileValue */
 
+static const XP_UCHAR*
+dict_getTileStringRaw( const DictionaryCtxt* dict, Tile tile )
+{
+    XP_ASSERT( tile < dict->nFaces );
+    return &dict->faces[dict->faceIndices[tile]];
+}
+
 const XP_UCHAR* 
 dict_getTileString( const DictionaryCtxt* dict, Tile tile )
 {
-    XP_U16 index;
-    XP_ASSERT( tile < dict->nFaces );
-    index = dict->faceIndices[tile];
-    return &dict->faces[index];
+    const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
+    if ( IS_SPECIAL(*facep) ) {
+        facep = dict->chars[(XP_U16)*facep];
+    }
+    return facep;
 }
 
 XP_U16
@@ -104,7 +112,7 @@ dict_numTileFaces( const DictionaryCtxt* dict )
 } /* dict_numTileFaces */
 
 XP_U16
-dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles, 
+dict_tilesToString( const DictionaryCtxt* dict, const Tile* tiles, 
                     XP_U16 nTiles, XP_UCHAR* buf, XP_U16 bufSize )
 {
     XP_UCHAR* bufp = buf;
@@ -113,10 +121,10 @@ dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles,
 
     while ( nTiles-- ) {
         Tile tile = *tiles++;
-        const XP_UCHAR* facep = dict_getTileString( ctxt, tile );
+        const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
 
         if ( IS_SPECIAL(*facep) ) {
-            XP_UCHAR* chars = ctxt->chars[(XP_U16)*facep];
+            XP_UCHAR* chars = dict->chars[(XP_U16)*facep];
             XP_U16 len = XP_STRLEN( chars );
             if ( bufp + len >= end ) {
                 bufp = NULL;
@@ -125,7 +133,7 @@ dict_tilesToString( const DictionaryCtxt* ctxt, const Tile* tiles,
             XP_MEMCPY( bufp, chars, len );
             bufp += len;
         } else {
-            XP_ASSERT ( tile != ctxt->blankTile ); /* printing blank should be
+            XP_ASSERT ( tile != dict->blankTile ); /* printing blank should be
                                                       handled by specials
                                                       mechanism */
             if ( bufp + 1 >= end ) {
@@ -183,15 +191,8 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
                  != dict_getTileValue( dict2, ii ) ){
                 break;
             }
-#if 0
-            face1 = dict_getTileString( dict1, ii );
-            face2 = dict_getTileString( dict2, ii );
-            if ( 0 != XP_STRCMP( face1, face2 ) ) {
-                break;
-            }
-#else
-            face1 = dict_getTileString( dict1, ii );
-            face2 = dict_getTileString( dict2, ii );
+            face1 = dict_getTileStringRaw( dict1, ii );
+            face2 = dict_getTileStringRaw( dict2, ii );
             if ( IS_SPECIAL(*face1) != IS_SPECIAL(*face2) ) {
                 break;
             }
@@ -205,7 +206,6 @@ dict_tilesAreSame( const DictionaryCtxt* dict1, const DictionaryCtxt* dict2 )
             } else if ( 0 != XP_STRCMP( face1, face2 ) ) {
                 break;
             }
-#endif
             if ( dict_numTiles( dict1, ii ) != dict_numTiles( dict2, ii ) ) {
                 break;
             }
@@ -223,7 +223,7 @@ ucharsToNarrow( const DictionaryCtxt* dict, XP_UCHAR* buf, XP_U16* bufsizep )
     XP_U16 nUsed = 0;
     XP_U16 bufsize = *bufsizep;
     for ( ii = 0; ii < dict->nFaces; ++ii ) {
-        const XP_UCHAR* facep = dict_getTileString( dict, ii );
+        const XP_UCHAR* facep = dict_getTileStringRaw( dict, ii );
         if ( IS_SPECIAL(*facep) ) {
             buf[nUsed++] = *facep;
         } else {
@@ -285,7 +285,7 @@ dict_writeToStream( const DictionaryCtxt* dict, XWStreamCtxt* stream )
     stream_putBytes( stream, buf, nBytes );
 
     for ( nSpecials = ii = 0; ii < dict->nFaces; ++ii ) {
-        const XP_UCHAR* facep = dict_getTileString( dict, (Tile)ii );
+        const XP_UCHAR* facep = dict_getTileStringRaw( dict, (Tile)ii );
         if ( IS_SPECIAL( *facep ) ) {
             stringToStream( stream, dict->chars[nSpecials++] );
         }
@@ -300,7 +300,7 @@ freeSpecials( DictionaryCtxt* dict )
     XP_U16 nSpecials;
 
     for ( nSpecials = tt = 0; tt < dict->nFaces; ++tt ) {
-        const XP_UCHAR* facep = dict_getTileString( dict, tt );
+        const XP_UCHAR* facep = dict_getTileStringRaw( dict, tt );
         if ( IS_SPECIAL( *facep ) ) {
 
             XP_ASSERT( !!dict->chars[nSpecials] );
@@ -372,7 +372,7 @@ dict_loadFromStream( DictionaryCtxt* dict, XWStreamCtxt* stream )
     dict_splitFaces( dict, utf8, nFaceBytes, nFaces );
 
     for ( nSpecials = ii = 0; ii < nFaces; ++ii ) {
-        const XP_UCHAR* facep = dict_getTileString( dict, (Tile)ii );
+        const XP_UCHAR* facep = dict_getTileStringRaw( dict, (Tile)ii );
         if ( IS_SPECIAL( *facep ) ) {
             XP_UCHAR* txt = stringFromStream( dict->mpool, stream );
             XP_ASSERT( !!txt );
@@ -413,7 +413,7 @@ dict_isUTF8( const DictionaryCtxt* dict )
 XP_Bool
 dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile )
 {
-    const XP_UCHAR* facep = dict_getTileString( dict, tile );
+    const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
     return IS_SPECIAL(*facep);
 } /* dict_faceIsBitmap */
 
@@ -421,7 +421,7 @@ void
 dict_getFaceBitmaps( const DictionaryCtxt* dict, Tile tile, XP_Bitmaps* bmps )
 {
     SpecialBitmaps* bitmaps;
-    const XP_UCHAR* facep = dict_getTileString( dict, tile );
+    const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
 
     XP_ASSERT( dict_faceIsBitmap( dict, tile ) );
     XP_ASSERT( !!dict->bitmaps );
@@ -566,12 +566,12 @@ dict_super_getTopEdge( const DictionaryCtxt* dict )
 } /* dict_super_getTopEdge */
 
 void
-dict_super_init( DictionaryCtxt* ctxt )
+dict_super_init( DictionaryCtxt* dict )
 {
     /* subclass may change these later.... */
-    ctxt->func_edge_for_index = dict_super_edge_for_index;
-    ctxt->func_dict_getTopEdge = dict_super_getTopEdge;
-    ctxt->func_dict_getShortName = dict_getName;
+    dict->func_edge_for_index = dict_super_edge_for_index;
+    dict->func_dict_getTopEdge = dict_super_getTopEdge;
+    dict->func_dict_getShortName = dict_getName;
 } /* dict_super_init */
 
 #ifdef CPLUS
