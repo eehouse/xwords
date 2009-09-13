@@ -316,20 +316,20 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
 {
     XP_U16 facesLen = nFaces * 2;
     XP_UCHAR* faces = XP_MALLOC( dict->mpool, facesLen );
-    XP_U16* indices = XP_MALLOC( dict->mpool, nFaces * sizeof(indices[0]));
+    XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
     XP_U16 ii;
     XP_UCHAR* next = faces;
 
     for ( ii = 0; ii < nFaces; ++ii ) {
-        indices[ii] = next - faces;
+        ptrs[ii] = next;
         *next++ = *bytes++;
         *next++ = '\0';
     }
     XP_ASSERT( next == faces + facesLen );
     XP_ASSERT( !dict->faces );
     dict->faces = faces;
-    XP_ASSERT( !dict->faceIndices );
-    dict->faceIndices = indices;
+    XP_ASSERT( !dict->facePtrs );
+    dict->facePtrs = ptrs;
 } /* dict_splitFaces */
 
 static XP_U16
@@ -414,7 +414,7 @@ palm_dictionary_destroy( DictionaryCtxt* dict )
     
         MemPtrUnlock( ctxt->super.countsAndValues - 2 );//sizeof(Xloc_header) );
 
-        XP_FREE( dict->mpool, ctxt->super.faceIndices );
+        XP_FREE( dict->mpool, ctxt->super.facePtrs );
         XP_FREE( dict->mpool, ctxt->super.faces );
 
 #ifdef XWFEATURE_COMBINEDAWG

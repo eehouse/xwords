@@ -36,17 +36,16 @@ extern "C" {
  *
  ****************************************************************************/
 void
-setBlankTile( DictionaryCtxt* dctx ) 
+setBlankTile( DictionaryCtxt* dict ) 
 {
     XP_U16 ii;
 
-    dctx->blankTile = -1; /* no known blank */
+    dict->blankTile = -1; /* no known blank */
 
-    for ( ii = 0; ii < dctx->nFaces; ++ii ) {
-        XP_U16 index = dctx->faceIndices[ii];
-        if ( dctx->faces[index] == 0 ) {
-            XP_ASSERT( dctx->blankTile == -1 ); /* only one passes test? */
-            dctx->blankTile = (XP_S8)ii;
+    for ( ii = 0; ii < dict->nFaces; ++ii ) {
+        if ( dict->facePtrs[ii][0] == 0 ) {
+            XP_ASSERT( dict->blankTile == -1 ); /* only one passes test? */
+            dict->blankTile = (XP_S8)ii;
 #ifndef DEBUG
             break;
 #endif
@@ -85,7 +84,7 @@ static const XP_UCHAR*
 dict_getTileStringRaw( const DictionaryCtxt* dict, Tile tile )
 {
     XP_ASSERT( tile < dict->nFaces );
-    return &dict->faces[dict->faceIndices[tile]];
+    return dict->facePtrs[tile];
 }
 
 const XP_UCHAR* 
@@ -329,7 +328,7 @@ common_destructor( DictionaryCtxt* dict )
 
     XP_FREE( dict->mpool, dict->countsAndValues );
     XP_FREE( dict->mpool, dict->faces );
-    XP_FREE( dict->mpool, dict->faceIndices );
+    XP_FREE( dict->mpool, dict->facePtrs );
 
     XP_FREE( dict->mpool, dict );
 } /* common_destructor */

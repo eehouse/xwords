@@ -73,7 +73,7 @@ struct DictionaryCtxt {
                          necessarily the entry point for search!! */
     XP_UCHAR* name;
     XP_UCHAR* faces;
-    XP_U16* faceIndices;
+    XP_UCHAR** facePtrs;
     XP_U8* countsAndValues;
 
     SpecialBitmaps* bitmaps;
