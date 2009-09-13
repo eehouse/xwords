@@ -794,7 +794,9 @@ main( int argc, char** argv )
     for ( iter = ints.begin(); iter != ints.end(); ++iter ) {
         int port = *iter;
         if ( !g_listeners.PortInUse( port ) ) {
-            g_listeners.AddListener( port );
+            if ( !g_listeners.AddListener( port ) ) {
+                exit( 1 );
+            }
         } else {
             logf( XW_LOGERROR, "port %d was in use", port );
         }
