@@ -98,7 +98,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Informacje",               ID_GAME_GAMEINFO
             MENUITEM "Historia",                 ID_GAME_HISTORY
-            MENUITEM "Ostateczny wynik",         ID_GAME_FINALSCORES
+            MENUITEM "Koniec gry",               ID_GAME_FINALSCORES
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
             MENUITEM SEPARATOR
             MENUITEM "Prześlij wiadom.",         ID_GAME_RESENDMSGS
@@ -544,7 +544,7 @@ BEGIN
     CONTROL         "Ukryj wartość klocków",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW5,82,PREFS_ROW_HT
     PUSHBUTTON      "Ustaw kolory...",IDC_PREFCOLORS,4,PR_ROW6,60,12
-    PUSHBUTTON      "Zmień język...",IDC_PREFLOCALE,4,PR_ROW7,70,12
+    PUSHBUTTON      "Zmień język...",IDC_PREFLOCALE,4,PR_ROW7,60,12
 #ifdef ALLOW_CHOOSE_FONTS
     PUSHBUTTON      "Wybierz font...",IDC_PREFFONTS,4,PR_ROW7,60,12
 #endif
@@ -682,7 +682,7 @@ END
 #define CLR_ROW_4  (CLR_ROW_3+CLR_SMALL_GAP)
 #define CLR_ROW_5  (CLR_ROW_4+CLR_LRG_GAP)
 #define CLR_ROW_6  (CLR_ROW_5+CLR_SMALL_GAP)
-#define CLR_ROW_7  (CLR_ROW_6+CLR_LRG_GAP+5)
+#define CLR_ROW_7  (CLR_ROW_6+CLR_SMALL_GAP)
 #define CLR_ROW_8  (CLR_ROW_7+CLR_LRG_GAP+5)
 #define CLR_ROW_9  (CLR_ROW_8+CLR_SMALL_GAP)
 #define CLR_ROW_10  (CLR_ROW_9+CLR_SMALL_GAP)
@@ -730,9 +730,8 @@ BEGIN
     COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_COL_4,CLR_ROW_4)
     COLOR_BUTTON("Pusta:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5,CLR_LAB_HT)
     COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_COL_2,CLR_ROW_5)
-    COLOR_BUTTON("Rewers klocka:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6,
-                 CLR_LAB_HT+10)
-    COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6+5)
+    COLOR_BUTTON("Rewers:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6,CLR_LAB_HT)
+    COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
     COLOR_BUTTON("Kolor wybranego:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7,
                  CLR_LAB_HT+10)
     COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7+5)
@@ -853,9 +852,8 @@ BEGIN
     IDS_DONE                "Gotowe"
     IDS_LANGUAGE_NAME       "Polski"
     IDS_NEW_GAME            "Nowa gra"
- /* translate "by" below */
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (REV " SVN_REV ") "\
-                    "dla Windows Mobile. Copyright 1998-2009 by "\
+                    "dla Windows Mobile. Copyright 1998-2009 "\
                     "Eric House.  Oprogramowanie wydane na "\
                     "publicznej licencji GNU.\r\r"\
                     "Słowniki, dokumentacja oraz kod źródłowy, dostępne są na stronach "\
@@ -952,16 +950,16 @@ BEGIN
     IDS_FILEEXISTSFMT_L     "Plik %s już istnieje."
     IDS_NEED_TOUCH          "Ta opcja wymaga ekranu dotykowego."
     IDS_EDITCOLOR_FORMAT    "Edycja koloru %s"
-    IDS_LANG_CHANGE_RESTART "Musisz zrestartować xWords aby nowe ustawienia zadziałały."
+    IDS_LANG_CHANGE_RESTART "Musisz zrestartować Crosswords aby nowe ustawienia zadziałały."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend." /* <- translate */
-    IDS_CONN_RELAY_L          "Proxy"
+    IDS_RESEND_STANDALONE   "To jest gra lokalna, nie ma czego wysyłać."
+    IDS_CONN_RELAY_L        "Proxy"
     IDS_CONN_DIRECT         "Bezpośrednie"
 
     IDS_NO_PEEK_REMOTE_TILES "Nie można podejrzeć zdalnych graczy!"
-    IDS_REG_UNEXPECTED_USER "Odmowa rejestracji niespodziewanego gracza."
-    IDS_SERVER_DICT_WINS "Konflikt słowników hosta i gościa. Host jest ważniejszy."
+    IDS_REG_UNEXPECTED_USER  "Odmowa rejestracji niespodziewanego gracza."
+    IDS_SERVER_DICT_WINS     "Konflikt słowników hosta i gościa. Host jest ważniejszy."
     IDS_REG_SERVER_SANS_REMOTE "Przynajmniej jeden gracz musi być ustawiony jako zdalny "\
                                "Rozpoczyna host."
 
