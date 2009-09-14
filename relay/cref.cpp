@@ -39,7 +39,6 @@
 #include "timermgr.h"
 #include "configs.h"
 #include "crefmgr.h"
-#include "permid.h"
 
 using namespace std;
 
@@ -93,6 +92,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_nPlayersHere = 0;
     m_locking_thread = 0;
     m_starttime = uptime();
+    m_gameFull = false;
 
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
@@ -171,6 +171,12 @@ void
 CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT )
 {
     if ( CRefMgr::Get()->Associate( socket, this ) ) {
+        if ( hid == HOST_ID_NONE ) {
+            hid = nextHostID();
+            logf( XW_LOGINFO, "assigned host id: %x", hid );
+        } else {
+            logf( XW_LOGINFO, "NOT assigned host id; why?" );
+        }
         pushConnectEvent( socket, hid, nPlayersH, nPlayersT );
         handleEvents();
     } else {
@@ -241,13 +247,16 @@ CookieRef::NeverFullyConnected()
 }
 
 bool
-CookieRef::AcceptingReconnections( HostID hid, const char* cookie, 
-                                   int nPlayersH )
+CookieRef::GameOpen( HostID hid, const char* cookie, 
+                     int nPlayersH, bool isNew )
 {
     bool accept = false;
     /* First, do we have room.  Second, are we missing this guy? */
 
-    if ( m_curState != XWS_INITED
+    if ( isNew && m_gameFull ) {
+        /* do nothing; reject */
+        logf( XW_LOGINFO, "reject: game for %s is full", cookie );
+    } else if ( m_curState != XWS_INITED
          && m_curState != XWS_CONNECTING
          && m_curState != XWS_MISSING ) {
         /* do nothing; reject */
@@ -274,7 +283,7 @@ CookieRef::AcceptingReconnections( HostID hid, const char* cookie,
     }
 
     return accept;
-} /* AcceptingReconnections */
+} /* GameOpen */
 
 void
 CookieRef::notifyDisconn( const CRefEvent* evt )
@@ -551,9 +560,8 @@ CookieRef::handleEvents()
             case XWA_SENDALLHERE:
             case XWA_SNDALLHERE_2:
                 cancelAllConnectedTimer();
-                assignConnName();
                 assignHostIds();
-                sendAllHere( takeAction == XWA_SENDALLHERE );
+                sendAllHere( );
                 break;
 
             case XWA_REJECT:
@@ -605,7 +613,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
     int nPlayersT = evt->u.con.nPlayersT;
     HostID hid = evt->u.con.srcID;
  
-    logf( XW_LOGINFO, "increasePlayerCounts: hid=%d, nPlayersH=%d, "
+    logf( XW_LOGINFO, "%s: hid=%d, nPlayersH=%d, ", __func__,
           "nPlayersT=%d", hid, nPlayersH, nPlayersT );
 
     if ( hid == HOST_ID_SERVER ) {
@@ -617,12 +625,16 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
     }
     m_nPlayersHere += nPlayersH;
 
-    logf( XW_LOGVERBOSE1, "increasePlayerCounts: here=%d; total=%d",
+    logf( XW_LOGVERBOSE1, "%s: here=%d; total=%d", __func__,
           m_nPlayersHere, m_nPlayersSought );
 
     CRefEvent newevt;
-    newevt.type = (m_nPlayersHere == m_nPlayersSought) ? 
-        XWE_ALLHERE : XWE_SOMEMISSING;
+    if ( m_nPlayersHere == m_nPlayersSought ) {
+        newevt.type = XWE_ALLHERE;
+        m_gameFull = true;
+    } else {
+        newevt.type = XWE_SOMEMISSING;
+    }
     m_eventQueue.push_back( newevt );
 } /* increasePlayerCounts */
 
@@ -715,7 +727,7 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     unsigned char buf[1 +       /* cmd */
                       sizeof(short) + /* heartbeat */
                       sizeof(CookieID) +
-                      1         /* hostID */
+                      1 + MAX_CONNNAME_LEN
     ];
 
     unsigned char* bufp = buf;
@@ -723,6 +735,16 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     putNetShort( &bufp, GetHeartbeat() );
     putNetShort( &bufp, GetCookieID() );
+
+    if ( initial ) {
+        const char* connName = ConnName();
+        assert( !!connName && connName[0] );
+        int len = strlen( connName );
+        assert( len < MAX_CONNNAME_LEN );
+        *bufp++ = (char)len;
+        memcpy( bufp, connName, len );
+        bufp += len;
+    }
 
     send_with_length( socket, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent %s", cmdToStr( XWRELAY_Cmd(buf[0]) ) );
@@ -793,25 +815,14 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 } /* notifyOthers */
 
 void
-CookieRef::sendAllHere( bool includeName )
+CookieRef::sendAllHere( void )
 {
-    unsigned char buf[1 + 1 + MAX_CONNNAME_LEN];
+    unsigned char buf[1 + 1];
     unsigned char* bufp = buf;
     unsigned char* idLoc;
     
     *bufp++ = XWRELAY_ALLHERE;
     idLoc = bufp++;                 /* space for hostId, remembering address */
-    *bufp++ = includeName? 1 : 0;
-
-    if ( includeName ) {
-        const char* connName = ConnName();
-        assert( !!connName && connName[0] );
-        int len = strlen( connName );
-        assert( len < MAX_CONNNAME_LEN );
-        *bufp++ = (char)len;
-        memcpy( bufp, connName, len );
-        bufp += len;
-    }
 
     ASSERT_LOCKED();
     vector<HostRec>::iterator iter = m_sockets.begin();
@@ -819,23 +830,10 @@ CookieRef::sendAllHere( bool includeName )
         logf( XW_LOGINFO, "%s: sending to hostid %d", __func__, 
               iter->m_hostID );
         *idLoc = iter->m_hostID;   /* write in this target's hostId */
-        send_with_length( iter->m_socket, buf, bufp-buf,
-                          true );
+        send_with_length( iter->m_socket, buf, bufp-buf, true );
         ++iter;
     }
 } /* sendAllHere */
-
-void
-CookieRef::assignConnName( void )
-{
-    if ( !ConnName()[0] ) {
-        m_connName = PermID::GetNextUniqueID();
-        logf( XW_LOGINFO, "%s: assigning name: %s", __func__, ConnName() );
-        assert( GetCookieID() != 0 );
-    } else {
-        logf( XW_LOGINFO, "%s: has name: %s", __func__, ConnName() );
-    }
-} /* assignConnName */
 
 void
 CookieRef::assignHostIds( void )

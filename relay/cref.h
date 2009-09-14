@@ -88,8 +88,7 @@ class CookieRef {
     int SocketForHost( HostID dest );
 
     bool NeverFullyConnected();
-    bool AcceptingReconnections( HostID hid, const char* cookie,
-                                 int nPlayersH );
+    bool GameOpen( HostID hid, const char* cookie, int nPlayersH, bool isNew );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -194,7 +193,7 @@ class CookieRef {
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
-    void sendAllHere( bool includeName );
+    void sendAllHere( void );
     void assignConnName( void );
     void assignHostIds( void );
     
@@ -208,7 +207,8 @@ class CookieRef {
     static void s_checkAllConnected( void* closure );
 
     vector<HostRec> m_sockets;
-
+    bool m_gameFull;         /* once we've filled up, no more *new*
+                                connections ever */
     int m_heatbeat;           /* might change per carrier or something. */
     string m_cookie;            /* cookie used for initial connections */
     string m_connName;          /* globally unique name */

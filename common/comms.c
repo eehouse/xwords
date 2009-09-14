@@ -129,7 +129,6 @@ struct CommsCtxt {
         XP_U16 nPlayersHere;
         XP_U16 nPlayersTotal;
         XP_Bool connecting;
-        XP_Bool connNameValid;  /* this can probably go.  PENDING */
     } r;
 
     XP_Bool isServer;
@@ -234,7 +233,6 @@ init_relay( CommsCtxt* comms, XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
     comms->r.nPlayersTotal = nPlayersTotal;
     comms->r.cookieID = COOKIE_ID_NONE;
     comms->r.connName[0] = '\0';
-    comms->r.connNameValid = XP_FALSE;
 }
 #endif
 
@@ -459,11 +457,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     comms->nextChannelNo = stream_getU16( stream );
     if ( addr.conType == COMMS_CONN_RELAY ) {
         comms->r.myHostID = stream_getU8( stream );
-        comms->r.connNameValid = stream_getU8( stream );
-        if ( comms->r.connNameValid ) {
-            stringFromStreamHere( stream, comms->r.connName, 
-                                  sizeof(comms->r.connName) );
-        }
+        stringFromStreamHere( stream, comms->r.connName, 
+                              sizeof(comms->r.connName) );
     }
 
 #ifdef DEBUG
@@ -636,10 +631,7 @@ comms_writeToStream( const CommsCtxt* comms, XWStreamCtxt* stream )
     stream_putU16( stream, comms->nextChannelNo );
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
         stream_putU8( stream, comms->r.myHostID );
-        stream_putU8( stream, comms->r.connNameValid );
-        if ( comms->r.connNameValid ) {
-            stringToStream( stream, comms->r.connName );
-        }
+        stringToStream( stream, comms->r.connName );
     }
 
 #ifdef DEBUG
@@ -1064,7 +1056,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     XWHostID destID, srcID;
     CookieID cookieID;
     XP_U8 relayErr;
-    XP_Bool hasName;
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
@@ -1078,6 +1069,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         comms->r.cookieID = stream_getU16( stream );
         XP_LOGF( "set cookieID = %d", comms->r.cookieID );
         setHeartbeatTimer( comms );
+        if ( XWRELAY_CONNECT_RESP == cmd ) {
+            XP_ASSERT( comms->r.connName[0] == '\0' );
+            stringFromStreamHere( stream, comms->r.connName, 
+                                  sizeof(comms->r.connName) );
+        }
         break;
 
     case XWRELAY_ALLHERE:
@@ -1087,14 +1083,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                    || comms->r.myHostID == srcID );
         comms->r.myHostID = srcID;
         XP_LOGF( "set hostid: %x", comms->r.myHostID );
-        hasName = stream_getU8( stream );
-        if ( hasName ) {
-            stringFromStreamHere( stream, comms->r.connName, 
-                                  sizeof(comms->r.connName) );
-            XP_LOGF( "read connName: %s", comms->r.connName );
-        } else {
-            XP_ASSERT( comms->r.connName[0] != '\0' );
-        }
 
         /* We're [re-]connected now.  Send any pending messages.  This may
            need to be done later since we're inside the platform's socket
@@ -1114,10 +1102,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             XP_LOGF( "%s: rejecting data message", __func__ );
         } else {
             *senderID = srcID;
-            if ( !comms->r.connNameValid ) {
-                XP_LOGF( "%s: setting connNameValid", __func__ );
-                comms->r.connNameValid = XP_TRUE;
-            }
         }
         break;
 
@@ -1799,7 +1783,7 @@ relayConnect( CommsCtxt* comms )
     LOG_FUNC();
     if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->r.connecting ) {
         comms->r.connecting = XP_TRUE;
-        success = send_via_relay( comms, comms->r.connNameValid?
+        success = send_via_relay( comms, comms->r.connName[0]?
                                   XWRELAY_GAME_RECONNECT : XWRELAY_GAME_CONNECT,
                                   comms->r.myHostID, NULL, 0 );
         comms->r.connecting = XP_FALSE;
