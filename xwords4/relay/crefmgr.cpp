@@ -30,6 +30,7 @@
 #include "mlock.h"
 #include "configs.h"
 #include "timermgr.h"
+#include "permid.h"
 
 class SocketStuff {
  public:
@@ -132,8 +133,8 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                 if ( 0 == strcmp( cref->ConnName(), connName ) ) {
                     if ( cref->Lock() ) {
                         assert( !cookie || 0 == strcmp( cookie, cref->Cookie() ) );
-                        if ( cref->AcceptingReconnections( hid, cookie, 
-                                                           nPlayersH ) ) {
+                        if ( cref->GameOpen( hid, cookie, 
+                                             nPlayersH, false ) ) {
                             found = cref;
                         }
                         cref->Unlock();
@@ -145,8 +146,8 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                         found = cref;
                     } else {
                         if ( cref->Lock() ) {
-                            if ( cref->AcceptingReconnections( hid, cookie, 
-                                                               nPlayersH ) ) {
+                            if ( cref->GameOpen( hid, cookie, 
+                                                 nPlayersH, true ) ) {
                                 found = cref;
                             } else if ( cref->HasSocket_locked(socket) ) {
                                 logf( XW_LOGINFO, "%s: HasSocket case", __func__);
@@ -276,6 +277,11 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
 
     cref = FindOpenGameFor( cookie, connName, hid, socket, nPlayersH, nPlayersT );
     if ( cref == NULL ) {
+        string s;
+        if ( NULL == connName ) {
+            s = PermID::GetNextUniqueID();
+            connName = s.c_str();
+        }
         cref = AddNew( cookie, connName, nextCID( NULL ) );
     }
 
@@ -437,6 +443,7 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
     }
 #endif
 
+    logf( XW_LOGINFO, "%s=>%p", __func__, ref );
     return ref;
 } /* AddNew */
 

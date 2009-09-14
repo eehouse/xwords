@@ -51,7 +51,8 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
 
        , XWRELAY_CONNECT_RESP
        /* Sent from relay to device in response to XWRELAY_CONNECT.  Format:
-          heartbeat_seconds: 2; connectionID: 2; */
+          heartbeat_seconds: 2; connectionID: 2; connNameLen: 1;
+          connName<connNameLen>*/
 
        , XWRELAY_RECONNECT_RESP
        /* Sent from relay to device in response to XWRELAY_RECONNECT.  Format:
@@ -62,8 +63,7 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
           are here (at start of new game or after having been gone for a
           while).  Devices should not attempt to forward messages before this
           message is received or after XWRELAY_DISCONNECT_OTHER is received.
-          Format: hostID: 1; hasName: 1; [connNameLen: 1; connName:
-          <connNameLen>]; */
+          Format: hostID: 1; */
 
        , XWRELAY_DISCONNECT_YOU
        /* Sent from relay when existing connection is terminated.  
