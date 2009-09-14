@@ -117,9 +117,9 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     fprintf( fil, "<div class=\"header\">Connections</div>" );
     fprintf( fil, "<table><tr>" );
     fprintf( fil,
-             "<th>Cookie</th>"
+             "<th>Invite</th>"
              "<th>ConnName</th>"
-             "<th>Cookie ID</th>"
+             "<th>Game ID</th>"
              "<th>Total sent</th>"
              "<th>Players</th>"
              "<th>Players Here</th>"
