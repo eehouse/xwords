@@ -55,8 +55,8 @@ ceControlsToAddrRec( HWND hDlg, CeConnDlgState* state )
                           state->addrRec.u.ip_relay.hostName, &len );
         state->addrRec.u.ip_relay.port = 
             (XP_U16)ceGetDlgItemNum( hDlg, RELAYPORT_EDIT );
-        len = sizeof(state->addrRec.u.ip_relay.cookie);
-        ceGetDlgItemText( hDlg, COOKIE_EDIT, state->addrRec.u.ip_relay.cookie, 
+        len = sizeof(state->addrRec.u.ip_relay.invite);
+        ceGetDlgItemText( hDlg, INVITE_EDIT, state->addrRec.u.ip_relay.invite, 
                           &len );
 #endif
     } else if ( state->addrRec.conType == COMMS_CONN_IP_DIRECT ) {
@@ -113,9 +113,9 @@ static void
 adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
 {
     XP_U16 relayIds[] = { 
-        IDC_COOKIE_LAB,
+        IDC_INVITE_LAB,
 #ifdef XWFEATURE_RELAY
-        COOKIE_EDIT,IDC_CRELAYHINT_LAB,IDC_CRELAYNAME_LAB,RELAYNAME_EDIT, 
+        INVITE_EDIT,IDC_CRELAYHINT_LAB,IDC_CRELAYNAME_LAB,RELAYNAME_EDIT, 
         IDC_CRELAYPORT_LAB, RELAYPORT_EDIT,
 #endif
         0 };
@@ -218,9 +218,9 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
         ceSetDlgItemNum( hDlg, RELAYPORT_EDIT, 
                          state->addrRec.u.ip_relay.port );
         ids[nIds++] = RELAYPORT_EDIT;
-        ceSetDlgItemText( hDlg, COOKIE_EDIT, 
-                          state->addrRec.u.ip_relay.cookie );
-        ids[nIds++] = COOKIE_EDIT;
+        ceSetDlgItemText( hDlg, INVITE_EDIT, 
+                          state->addrRec.u.ip_relay.invite );
+        ids[nIds++] = INVITE_EDIT;
 #endif
     } else if ( state->addrRec.conType == COMMS_CONN_IP_DIRECT ) {
 #ifdef XWFEATURE_IP_DIRECT

@@ -401,8 +401,8 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
         addr.u.ip.port_ip = stream_getU16( stream );
         break;
     case COMMS_CONN_RELAY:
-        stringFromStreamHere( stream, addr.u.ip_relay.cookie,
-                              sizeof(addr.u.ip_relay.cookie) );
+        stringFromStreamHere( stream, addr.u.ip_relay.invite,
+                              sizeof(addr.u.ip_relay.invite) );
         stringFromStreamHere( stream, addr.u.ip_relay.hostName,
                               sizeof(addr.u.ip_relay.hostName) );
         addr.u.ip_relay.ipAddr = stream_getU32( stream );
@@ -598,7 +598,7 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
         stream_putU16( stream, addr.u.ip.port_ip );
         break;
     case COMMS_CONN_RELAY:
-        stringToStream( stream, addr.u.ip_relay.cookie );
+        stringToStream( stream, addr.u.ip_relay.invite );
         stringToStream( stream, addr.u.ip_relay.hostName );
         stream_putU32( stream, addr.u.ip_relay.ipAddr );
         stream_putU16( stream, addr.u.ip_relay.port );
@@ -706,7 +706,7 @@ comms_getInitialAddr( CommsAddrRec* addr )
         char* name = RELAY_NAME_DEFAULT;
         XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
     }
-    addr->u.ip_relay.cookie[0] = '\0';
+    addr->u.ip_relay.invite[0] = '\0';
 #elif defined PLATFORM_PALM
     /* default values; default is still IR where there's a choice, at least on
        Palm... */
@@ -1424,7 +1424,7 @@ comms_checkComplete( const CommsAddrRec* addr )
 
     switch ( addr->conType ) {
     case COMMS_CONN_RELAY:
-        result = !!addr->u.ip_relay.cookie[0]
+        result = !!addr->u.ip_relay.invite[0]
             && !!addr->u.ip_relay.hostName[0]
             && !!addr->u.ip_relay.port > 0;
         break;
@@ -1715,7 +1715,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             break;
         case XWRELAY_GAME_CONNECT:
             stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
-            stringToStream( tmpStream, addr.u.ip_relay.cookie );
+            stringToStream( tmpStream, addr.u.ip_relay.invite );
             stream_putU8( tmpStream, comms->r.myHostID );
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
@@ -1725,7 +1725,7 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
         case XWRELAY_GAME_RECONNECT:
             stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
-            stringToStream( tmpStream, addr.u.ip_relay.cookie );
+            stringToStream( tmpStream, addr.u.ip_relay.invite );
             stream_putU8( tmpStream, comms->r.myHostID );
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );

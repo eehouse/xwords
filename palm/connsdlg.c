@@ -79,8 +79,8 @@ ctlsFromState( PalmAppGlobals* globals )
         setFieldStr( XW_CONNS_PORT_FIELD_ID, buf );
         setFieldEditable( XW_CONNS_PORT_FIELD_ID, isNewGame );
 
-        setFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr->u.ip_relay.cookie );
-        setFieldEditable( XW_CONNS_COOKIE_FIELD_ID, isNewGame );
+        setFieldStr( XW_CONNS_INVITE_FIELD_ID, addr->u.ip_relay.invite );
+        setFieldEditable( XW_CONNS_INVITE_FIELD_ID, isNewGame );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr->conType == COMMS_CONN_BT 
@@ -136,8 +136,8 @@ stateFromCtls( PalmAppGlobals* globals, XP_Bool* prefsChanged )
         getFieldStr( XW_CONNS_PORT_FIELD_ID, buf, sizeof(buf) );
         addr.u.ip_relay.port = StrAToI( buf );        
 
-        getFieldStr( XW_CONNS_COOKIE_FIELD_ID, addr.u.ip_relay.cookie,
-                      sizeof(addr.u.ip_relay.cookie) );
+        getFieldStr( XW_CONNS_INVITE_FIELD_ID, addr.u.ip_relay.invite,
+                      sizeof(addr.u.ip_relay.invite) );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( addr.conType == COMMS_CONN_BT 
@@ -178,8 +178,8 @@ updateFormCtls( FormPtr form, ConnsDlgState* state )
         XW_CONNS_RELAY_FIELD_ID,
         XW_CONNS_PORT_LABEL_ID,
         XW_CONNS_PORT_FIELD_ID,
-        XW_CONNS_COOKIE_LABEL_ID,
-        XW_CONNS_COOKIE_FIELD_ID,
+        XW_CONNS_INVITE_LABEL_ID,
+        XW_CONNS_INVITE_FIELD_ID,
 #endif
         0
     };

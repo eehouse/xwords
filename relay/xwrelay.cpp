@@ -280,7 +280,7 @@ send_with_length_unsafe( int socket, unsigned char* buf, int bufLen )
 static bool
 processConnect( unsigned char* bufp, int bufLen, int socket )
 {
-    char cookie[MAX_COOKIE_LEN+1];
+    char cookie[MAX_INVITE_LEN+1];
     unsigned char* end = bufp + bufLen;
     bool success = false;
 
@@ -330,7 +330,7 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
     if ( err != XWRELAY_ERROR_NONE ) {
         denyConnection( socket, err );
     } else {
-        char cookie[MAX_COOKIE_LEN+1];
+        char cookie[MAX_INVITE_LEN+1];
         char connName[MAX_CONNNAME_LEN+1];
         HostID srcID;
         unsigned char nPlayersH;

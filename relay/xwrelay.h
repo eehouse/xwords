@@ -99,7 +99,7 @@ typedef unsigned char XWRELAY_Cmd;
 #define HOST_ID_NONE   0
 #define HOST_ID_SERVER 1
 
-#define MAX_COOKIE_LEN 15
+#define MAX_INVITE_LEN 15
 #define MAX_MSG_LEN    256      /* 100 is more like it */
 #define MAX_CONNNAME_LEN 35     /* host id plus a small integer, typically */
 

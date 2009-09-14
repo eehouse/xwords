@@ -213,7 +213,7 @@ usage( char* appName, char* msg )
 	     "\t [-l]             # disallow hints\n"
 	     "\t [-P]             # pick tiles face up\n"
 	     "\t [-c]             # explain robot scores after each move\n"
-	     "\t [-C COOKIE]      # cookie used to groups games on relay\n"
+	     "\t [-C INVITE]      # invite used to groups games on relay\n"
 	     "\t\t # (max of four players total, local and remote)\n"
 	     "\t [-b boardSize]   # number of columns and rows\n"
 	     "\t [-e random_seed] \n"
@@ -245,8 +245,8 @@ usage( char* appName, char* msg )
 /* 	     "\t [-p client_port] # must != server's port if on same device" */
 #ifdef XWFEATURE_RELAY
          "\nrelay example: \n"
-             "\t host: ./xwords -d dict.xwd -r Eric -s -N -a localhost -p 10999 -C COOKIE\n"
-             "\tguest: ./xwords -d dict.xwd -r Kati -a localhost -p 10999 -C COOKIE"
+             "\t host: ./xwords -d dict.xwd -r Eric -s -N -a localhost -p 10999 -C INVITE\n"
+             "\tguest: ./xwords -d dict.xwd -r Kati -a localhost -p 10999 -C INVITE"
 #endif
 #ifdef XWFEATURE_SMS
          "\nsms example: \n"
@@ -743,7 +743,7 @@ main( int argc, char** argv )
     /* defaults */
 #ifdef XWFEATURE_RELAY
     mainParams.connInfo.relay.defaultSendPort = DEFAULT_PORT;
-    mainParams.connInfo.relay.cookie = "COOKIE";
+    mainParams.connInfo.relay.invite = "INVITE";
 #endif
 #ifdef XWFEATURE_IP_DIRECT
     mainParams.connInfo.ip.port = DEFAULT_PORT;
@@ -811,7 +811,7 @@ main( int argc, char** argv )
         case 'C':
             XP_ASSERT( conType == COMMS_CONN_NONE ||
                        conType == COMMS_CONN_RELAY );
-            mainParams.connInfo.relay.cookie = optarg;
+            mainParams.connInfo.relay.invite = optarg;
             conType = COMMS_CONN_RELAY;
             break;
 #endif

@@ -78,7 +78,7 @@ typedef struct LaunchParams {
 #ifdef XWFEATURE_RELAY
         struct {
             char* relayName;
-            char* cookie;
+            char* invite;
             short defaultSendPort;
         } relay;
 #endif

@@ -1488,8 +1488,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
             XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
                         sizeof(addr.u.ip_relay.hostName) - 1 );
-            XP_STRNCPY( addr.u.ip_relay.cookie, params->connInfo.relay.cookie,
-                        sizeof(addr.u.ip_relay.cookie) - 1 );
+            XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
+                        sizeof(addr.u.ip_relay.invite) - 1 );
 # endif
 # ifdef XWFEATURE_SMS
         } else if ( params->conType == COMMS_CONN_SMS ) {

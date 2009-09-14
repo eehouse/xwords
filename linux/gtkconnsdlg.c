@@ -27,7 +27,7 @@ typedef struct _GtkConnsState {
     GtkAppGlobals* globals;
     CommsAddrRec* addr;
 
-    GtkWidget* cookie;
+    GtkWidget* invite;
     GtkWidget* hostName;
     GtkWidget* port;
     GtkWidget* bthost;
@@ -77,9 +77,9 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
         case COMMS_CONN_IP_DIRECT:
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
-            txt = gtk_entry_get_text( GTK_ENTRY(state->cookie) );
-            XP_STRNCPY( state->addr->u.ip_relay.cookie, txt, 
-                        sizeof(state->addr->u.ip_relay.cookie) );
+            txt = gtk_entry_get_text( GTK_ENTRY(state->invite) );
+            XP_STRNCPY( state->addr->u.ip_relay.invite, txt, 
+                        sizeof(state->addr->u.ip_relay.invite) );
             txt = gtk_entry_get_text( GTK_ENTRY(state->hostName) );
             XP_STRNCPY( state->addr->u.ip_relay.hostName, txt,
                         sizeof(state->addr->u.ip_relay.hostName) );
@@ -115,7 +115,7 @@ handle_cancel( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 /*
- * Cookie: _____
+ * Invite: _____
  * Relay:  _____
  * Port:   _____
  * Cancel OK
@@ -126,11 +126,11 @@ makeRelayPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    GtkWidget* hbox = makeLabeledField( "Cookie", &state->cookie );
-    gtk_entry_set_text( GTK_ENTRY(state->cookie), 
-                        state->addr->u.ip_relay.cookie );
+    GtkWidget* hbox = makeLabeledField( "Invite", &state->invite );
+    gtk_entry_set_text( GTK_ENTRY(state->invite), 
+                        state->addr->u.ip_relay.invite );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
-    gtk_widget_set_sensitive( state->cookie, !state->readOnly );
+    gtk_widget_set_sensitive( state->invite, !state->readOnly );
 
     hbox = makeLabeledField( "Relay address", &state->hostName );
     gtk_entry_set_text( GTK_ENTRY(state->hostName), 
