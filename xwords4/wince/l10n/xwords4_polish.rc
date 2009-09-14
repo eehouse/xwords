@@ -618,8 +618,8 @@ BEGIN
 #endif
 
 #ifdef XWFEATURE_RELAY
-    LTEXT           "Ciasteczko:",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
-    EDITTEXT        COOKIE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
+    LTEXT           "Ciasteczko:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
+    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
     LTEXT           "Nazwa proxy (raczej niezmienna):",IDC_CRELAYNAME_LAB,
@@ -631,7 +631,7 @@ BEGIN
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "Połączenie przez proxy niedostępne.",IDC_COOKIE_LAB,
+    LTEXT           "Połączenie przez proxy niedostępne.",IDC_INVITE_LAB,
                      LAB_COL,CONN_ROW_3,40,40
 #endif
 

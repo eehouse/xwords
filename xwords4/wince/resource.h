@@ -183,7 +183,7 @@
 # define IDC_CCONVIA_LAB                 1106
 #endif
 
-#define IDC_COOKIE_LAB                   1107
+#define IDC_INVITE_LAB                   1107
 #ifdef XWFEATURE_RELAY
 # define IDC_CRELAYNAME_LAB              1108
 # define IDC_CRELAYPORT_LAB              1109
@@ -192,7 +192,7 @@
 /* # define IDC_CONNECTCOMBO                1111 */
 # define RELAYNAME_EDIT                  1112
 # define RELAYPORT_EDIT                  1113
-# define COOKIE_EDIT                     1114
+# define INVITE_EDIT                     1114
 
 #endif
 

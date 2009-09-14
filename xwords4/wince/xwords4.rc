@@ -621,9 +621,9 @@ BEGIN
     XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
 #endif
 #ifdef XWFEATURE_RELAY
-    LTEXT           "Cookie (must match other devices in the game):",
-                    IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,100,(ROW_HEIGHT*2)
-    EDITTEXT        COOKIE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
+    LTEXT           "Invite (must match other devices in the game):",
+                    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,100,(ROW_HEIGHT*2)
+    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
     LTEXT           "Relay name (rarely changes):",IDC_CRELAYNAME_LAB,LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
@@ -633,7 +633,7 @@ BEGIN
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "Relay connection not supported.",IDC_COOKIE_LAB,LAB_COL,CONN_ROW_3,40,40
+    LTEXT           "Relay connection not supported.",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,40
 #endif
 
 #ifdef XWFEATURE_IP_DIRECT

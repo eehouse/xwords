@@ -464,8 +464,8 @@ ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len,
     XP_ASSERT( addr->conType == COMMS_CONN_RELAY );
     if ( 0 != XP_STRCMP( addr->u.ip_relay.hostName, 
                          self->addrRec.u.ip_relay.hostName )
-         || 0 != XP_STRCMP( addr->u.ip_relay.cookie, 
-                            self->addrRec.u.ip_relay.cookie )
+         || 0 != XP_STRCMP( addr->u.ip_relay.invite, 
+                            self->addrRec.u.ip_relay.invite )
          || addr->u.ip_relay.port != self->addrRec.u.ip_relay.port ) {
         closeConnection( self );
         XP_MEMCPY( &self->addrRec, addr, sizeof(self->addrRec) );

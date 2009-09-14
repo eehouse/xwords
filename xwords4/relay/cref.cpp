@@ -956,7 +956,7 @@ CookieRef::_PrintCookieInfo( string& out )
     out += Cookie();
     out += "\n";
     out += "connName=";
-    char buf[MAX_CONNNAME_LEN+MAX_COOKIE_LEN];
+    char buf[MAX_CONNNAME_LEN+MAX_INVITE_LEN];
 
     snprintf( buf, sizeof(buf), "%s\n", ConnName() );
     out += buf;

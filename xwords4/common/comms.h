@@ -84,7 +84,7 @@ typedef struct CommsAddrRec {
             XP_U16 port_ip;
         } ip;
         struct {
-            XP_UCHAR cookie[MAX_COOKIE_LEN + 1];
+            XP_UCHAR invite[MAX_INVITE_LEN + 1];
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr;      /* looked up from above */
             XP_U16 port;
