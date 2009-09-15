@@ -120,7 +120,7 @@ logf( XW_LogLevel level, const char* format, ... )
 
             pthread_t me = pthread_self();
 
-            fprintf( where, "<%p>%d:%d:%d: ", (void*)me, timp->tm_hour, 
+            fprintf( where, "<%p>%.2d:%.2d:%.2d: ", (void*)me, timp->tm_hour, 
                      timp->tm_min, timp->tm_sec );
 
             va_list ap;
