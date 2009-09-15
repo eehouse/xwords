@@ -1,4 +1,4 @@
-/* -*- compile-command: "make -j TARGET_OS=win32 DEBUG=TRUE" -*- */
+/* -*- compile-command: "make -j2 TARGET_OS=win32 DEBUG=TRUE" -*- */
 /* 
  * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -42,19 +42,13 @@ enum { WRITER_THREAD,
        READER_THREAD,
        N_THREADS };
 
-typedef enum {
-    CE_IPST_START
-    ,CE_IPST_RESOLVINGHOST
-    ,CE_IPST_HOSTRESOLVED
-    ,CE_IPST_CONNECTING
-    ,CE_IPST_CONNECTED
-} CeConnState;
-
 #define MAX_QUEUE_SIZE 6
 
 struct CeSocketWrapper {
+    HWND hWnd;
     DataRecvProc dataProc;
-    CEAppGlobals* globals;
+    StateChangeProc stateProc;
+    void* closure;
 
     union {
         HOSTENT hent;
@@ -160,6 +154,8 @@ stateChanged( CeSocketWrapper* self, CeConnState newState )
     XP_LOGF( "%s: %s -> %s", __func__, ConnState2Str( curState ), 
              ConnState2Str( newState ) );
 
+    (*self->stateProc)( self->closure, newState );
+
     switch( newState ) {
     case CE_IPST_START:
         break;
@@ -174,8 +170,7 @@ stateChanged( CeSocketWrapper* self, CeConnState newState )
         send_packet_if( self );
         break;
     }
-    
-}
+} /* stateChanged */
 
 static XP_Bool
 connectSocket( CeSocketWrapper* self )
@@ -191,7 +186,7 @@ connectSocket( CeSocketWrapper* self )
             struct sockaddr_in name = {0};
 
             /* Put socket in non-blocking mode */
-            if ( 0 != WSAAsyncSelect( sock, self->globals->hWnd,
+            if ( 0 != WSAAsyncSelect( sock, self->hWnd,
                                       XWWM_SOCKET_EVT,
                                       FD_READ | FD_WRITE | FD_CONNECT ) ) {
                 XP_WARNF( "WSAAsyncSelect failed" );
@@ -256,7 +251,7 @@ getHostAddr( CeSocketWrapper* self )
         XP_LOGF( "%s: calling WSAAsyncGetHostByName(%s)", 
                  __func__, self->addrRec.u.ip_relay.hostName );
         self->getHostTask
-            = WSAAsyncGetHostByName( self->globals->hWnd,
+            = WSAAsyncGetHostByName( self->hWnd,
                                      XWWM_HOSTNAME_ARRIVED,
                                      self->addrRec.u.ip_relay.hostName,
                                      (char*)&self->hostNameUnion,
@@ -271,15 +266,18 @@ getHostAddr( CeSocketWrapper* self )
 }
 
 CeSocketWrapper* 
-ce_sockwrap_new( MPFORMAL DataRecvProc proc, CEAppGlobals* globals )
+ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB, 
+                 StateChangeProc stateCB, void* closure )
 {
     CeSocketWrapper* self = NULL;
 
     self = XP_MALLOC( mpool, sizeof(*self) );
     XP_MEMSET( self, 0, sizeof(*self) );
 
-    self->dataProc = proc;
-    self->globals = globals;
+    self->hWnd = hWnd;
+    self->dataProc = dataCB;
+    self->stateProc = stateCB;
+    self->closure = closure;
     MPASSIGN(self->mpool, mpool );
     self->socket = -1;
 
@@ -368,7 +366,7 @@ dispatch_msgs( CeSocketWrapper* self )
         /* first send */
         XP_LOGF( "%s: sending %d bytes to dataProc", __func__, msgLen );
         draw = (*self->dataProc)( (XP_U8*)&self->in_buf[sizeof(msgLen)], 
-                                  msgLen, self->globals )
+                                  msgLen, self->closure )
             || draw;
 
         /* then move down any additional bytes */

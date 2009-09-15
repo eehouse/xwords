@@ -1904,6 +1904,19 @@ ce_draw_focus( CEDrawCtx* dctx, const RECT* invalR )
     drawColoredRect( dctx, invalR, CE_FOCUS_COLOR );
 }
 
+void
+ce_draw_status( CEDrawCtx* dctx, const RECT* rect, wchar_t stateCh )
+{
+    CEAppGlobals* globals = dctx->globals;
+
+    FillRect( globals->hdc, rect, dctx->brushes[CE_BKG_COLOR] );
+
+    DrawText( globals->hdc, &stateCh, 1, (RECT*)rect, 
+              dctx->scoreIsVertical?
+              DT_CENTER | DT_BOTTOM :
+              DT_VCENTER | DT_RIGHT );
+}
+
 #ifndef _WIN32_WCE
 HBRUSH
 ce_draw_getFocusBrush( const CEDrawCtx* dctx )

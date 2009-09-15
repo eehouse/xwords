@@ -27,6 +27,7 @@
 #include "game.h"
 #include "util.h"
 #include "mempool.h"
+#include "cesockwr.h"
 
 #define LCROSSWORDS_DIR_NODBG L"Crosswords"
 #define CE_GAMEFILE_VERSION1 0x01  /* means draw gets to save/restore */
@@ -167,6 +168,12 @@ typedef struct _CEAppGlobals {
     XP_Bool penDown;
     XP_Bool hintPending;
     XP_Bool doGlobalPrefs;
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    CommsRelayState relayState;
+    CeConnState socketState;
+    RECT relayStatusR;
+#endif
 
 #ifndef _WIN32_WCE
     XP_U16 dbWidth, dbHeight;

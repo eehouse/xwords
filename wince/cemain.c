@@ -81,6 +81,9 @@ typedef struct FileWriteState {
 static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len, 
                             const CommsAddrRec* addr, 
                             void* closure );
+static void ce_relay_status( void* closure, 
+                             CommsRelayState newState );
+
 # ifdef COMMS_HEARTBEAT
 static void ce_reset_proc( void* closure );
 # endif
@@ -524,6 +527,9 @@ typedef struct CEBoardParms {
     XP_U16  trayWidth;
 
     XP_U16 timerLeft, timerTop, timerWidth, timerHeight;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    XP_U16 netstatLeft, netstatTop, netstatWidth, netstatHeight;
+#endif
 
     XP_U16  boardLeft, trayLeft;
     XP_U16  scoreWidth;
@@ -638,6 +644,26 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     }
 /*     XP_LOGF( "hScale=%d; vScale=%d; trayHeight=%d", hScale, vScale, trayHeight ); */
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    if ( !!globals->game.comms ) {
+        /* If we're horizontal, steal from the right of the scoreboard.  If
+           vertical, from the bottom. */
+        if ( horiz ) {
+            bparms->netstatWidth = hScale;
+            scoreWidth -= bparms->netstatWidth;
+            bparms->netstatLeft = scoreWidth;
+            bparms->netstatTop = 0;
+            bparms->netstatHeight = scoreHeight;
+        } else {
+            bparms->netstatLeft = 0;
+            bparms->netstatHeight = vScale;
+            scoreHeight -= bparms->netstatHeight;
+            bparms->netstatTop = scoreHeight;
+            bparms->netstatWidth = scoreWidth;
+        }
+    }
+#endif
+
     if ( globals->gameInfo.timerEnabled ) {
         if ( horiz ) {
             bparms->timerWidth = scoreWidth / 6; /* arbitrarily, one sixth */
@@ -749,6 +775,17 @@ cePositionBoard( CEAppGlobals* globals )
     figureBoardParms( globals, nCols, &bparms );
     setOwnedRects( globals, nCols, &bparms );
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    if ( !!globals->game.comms ) {
+        globals->relayStatusR.left = bparms.adjLeft + bparms.netstatLeft;
+        globals->relayStatusR.top = bparms.adjTop + bparms.netstatTop;
+        globals->relayStatusR.right = globals->relayStatusR.left
+            + bparms.netstatWidth;
+        globals->relayStatusR.bottom = globals->relayStatusR.top
+            + bparms.netstatHeight;
+    }
+#endif
+
     if ( globals->gameInfo.timerEnabled ) {
         board_setTimerLoc( globals->game.board, 
                            bparms.adjLeft + bparms.timerLeft, 
@@ -825,6 +862,7 @@ ceInitTProcs( CEAppGlobals* globals, TransportProcs* procs )
 #ifdef COMMS_HEARTBEAT
     procs->reset = ce_reset_proc;
 #endif
+    procs->rstatus = ce_relay_status;
     procs->closure = globals;
 }
 
@@ -1590,6 +1628,34 @@ ceDoHistory( CEAppGlobals* globals )
                            MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDoHistory */
 
+static wchar_t
+ceStateChar( const CEAppGlobals* globals )
+{
+    /* Idea is to give user a clue how the network connection's coming.
+       Relay only matters if we have a socket open.  So use that first. */
+    CommsRelayState relayState = globals->relayState;
+    CeConnState socketState = globals->socketState;
+    wchar_t ch;
+
+    if ( socketState == CE_IPST_CONNECTED ) {
+        switch( relayState ) {
+        case COMMS_RELAYSTATE_UNCONNECTED: ch = L'x'; break;
+        case COMMS_RELAYSTATE_CONNECT_PENDING: ch = L'c'; break;
+        case COMMS_RELAYSTATE_CONNECTED: ch = L'C'; break;
+        case COMMS_RELAYSTATE_ALLCONNECTED: ch = L'A'; break;
+        }
+    } else {
+        switch( socketState ) {
+        case CE_IPST_START:
+        case CE_IPST_RESOLVINGHOST: ch = L'4'; break;
+        case CE_IPST_HOSTRESOLVED: ch = L'3'; break;
+        case CE_IPST_CONNECTING: ch = L'2'; break;
+        case CE_IPST_CONNECTED: ch = L'1'; break;
+        }
+    }
+    return ch;
+}
+
 static void
 drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
 {
@@ -1612,6 +1678,14 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
                     ce_draw_erase( globals->draw, &interR );
                 }
             }
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+            if ( IntersectRect( &interR, invalR, &globals->relayStatusR ) ) {
+                wchar_t ch = ceStateChar( globals );
+                ce_draw_status( globals->draw, &globals->relayStatusR, ch );
+            }
+#endif
+
 #ifdef _WIN32_WCE
             for ( ii = 0; ii < VSIZE(globals->scrollRects); ++ii ) {
                 if ( IntersectRect( &interR, invalR, 
@@ -2950,6 +3024,14 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 
     return draw;
 } /* got_data_proc */
+
+static void
+sock_state_change( void* closure, CeConnState state )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)closure;
+    globals->socketState = state;
+    InvalidateRect( globals->hWnd, &globals->relayStatusR, TRUE /* erase */ );
+}
 #endif
 
 #ifdef COMMS_HEARTBEAT
@@ -2961,6 +3043,14 @@ ce_reset_proc( void* XP_UNUSED_STANDALONE(closure) )
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+static void
+ce_relay_status( void* closure, CommsRelayState newState )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)closure;
+    globals->relayState = newState;
+    InvalidateRect( globals->hWnd, &globals->relayStatusR, TRUE /* erase */ );
+}
+
 static XP_S16
 ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp, 
               void* closure )
@@ -2983,7 +3073,9 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
     case COMMS_CONN_RELAY:
         if ( !globals->socketWrap ) {
             globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
-                                                   got_data_proc, globals );
+                                                   globals->hWnd, 
+                                                   got_data_proc,
+                                                   sock_state_change, globals );
         }
 
         nSent = ce_sockwrap_send( globals->socketWrap, buf, len, addrp );
