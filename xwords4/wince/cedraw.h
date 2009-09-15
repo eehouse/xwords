@@ -28,6 +28,8 @@ CEDrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );
 void ce_draw_update( CEDrawCtx* dctx );
 void ce_draw_erase( CEDrawCtx* dctx, const RECT* invalR );
 void ce_draw_focus( CEDrawCtx* dctx, const RECT* invalR );
+void ce_draw_status( CEDrawCtx* dctx, const RECT* invalR, wchar_t stateCh );
+
 #ifndef _WIN32_WCE
 HBRUSH ce_draw_getFocusBrush( const CEDrawCtx* dctx );
 #endif

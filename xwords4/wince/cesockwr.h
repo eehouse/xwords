@@ -23,14 +23,22 @@
 
 #include "comms.h"
 #include "mempool.h"
-#include "cemain.h"
+
+typedef enum {
+    CE_IPST_START
+    ,CE_IPST_RESOLVINGHOST
+    ,CE_IPST_HOSTRESOLVED
+    ,CE_IPST_CONNECTING
+    ,CE_IPST_CONNECTED
+} CeConnState;
 
 typedef struct CeSocketWrapper CeSocketWrapper;      /* forward */
 typedef XP_Bool (*DataRecvProc)( XP_U8* data, XP_U16 len, void* closure );
+typedef void (*StateChangeProc)( void* closure, CeConnState state );
 
-
-CeSocketWrapper* ce_sockwrap_new( MPFORMAL DataRecvProc proc, 
-                                  CEAppGlobals* globals );
+CeSocketWrapper* ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB, 
+                                  StateChangeProc stateCB, 
+                                  void* globals );
 void ce_sockwrap_delete( CeSocketWrapper* self );
 
 void ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );
