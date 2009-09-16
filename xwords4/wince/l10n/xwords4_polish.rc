@@ -539,7 +539,7 @@ BEGIN
                     4,PR_ROW2,85,PREFS_ROW_HT
     CONTROL         "Włącz kursor",IDC_CHECKSHOWCURSOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW3,80,PREFS_ROW_HT
-    CONTROL         "Wyjaśniaj punkty robotów",IDC_CHECKROBOTSCORES,"Button",
+    CONTROL         "Pokazuj pkty robotów",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW4,90,PREFS_ROW_HT
     CONTROL         "Ukryj wartość klocków",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW5,82,PREFS_ROW_HT
@@ -618,20 +618,20 @@ BEGIN
 #endif
 
 #ifdef XWFEATURE_RELAY
-    LTEXT           "Ciasteczko:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
+    LTEXT           "Pojedynek:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
     EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
-    LTEXT           "Nazwa proxy (raczej niezmienna):",IDC_CRELAYNAME_LAB,
+    LTEXT           "Serwer (raczej niezmienny):",IDC_CRELAYNAME_LAB,
                     LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
     EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
-    LTEXT           "Port proxy (raczej niezmienny):",IDC_CRELAYPORT_LAB,
+    LTEXT           "Port (raczej niezmienny):",IDC_CRELAYPORT_LAB,
                     LAB_COL,CONN_ROW_7,120,ROW_HEIGHT
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "Połączenie przez proxy niedostępne.",IDC_INVITE_LAB,
+    LTEXT           "Połączenie z serwerem niedostępne.",IDC_INVITE_LAB,
                      LAB_COL,CONN_ROW_3,40,40
 #endif
 
@@ -954,7 +954,7 @@ BEGIN
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "To jest gra lokalna, nie ma czego wysyłać."
-    IDS_CONN_RELAY_L        "Proxy"
+    IDS_CONN_RELAY_L        "Serwer"
     IDS_CONN_DIRECT         "Bezpośrednie"
 
     IDS_NO_PEEK_REMOTE_TILES "Nie można podejrzeć zdalnych graczy!"
@@ -971,12 +971,12 @@ BEGIN
 # endif
 
 # ifdef XWFEATURE_RELAY
-    IDS_XWRELAY_ERROR_TIMEOUT      "Minął czas połączenia z proxy; najczęściej oznacza to,"\
+    IDS_XWRELAY_ERROR_TIMEOUT      "Minął czas połączenia z serwerem; najczęściej oznacza to,"\
                                    "że inni gracze się nie pojawili."
-    IDS_ERROR_HEART_YOU            "Rozłączono grę przez proxy, z powodu zbyt długiego "\
+    IDS_ERROR_HEART_YOU            "Rozłączono grę przez serwer, z powodu zbyt długiego "\
                                    "oczekiwania na Twoją odpowiedź."
-    IDS_XWRELAY_ERROR_HEART_OTHER  "Proxy utraciło połączenie z urządzeniem."
-/*     IDS_XWRELAY_ERROR_LOST_OTHER   "Utracono połączenie z urządzeniem." */
+    IDS_XWRELAY_ERROR_HEART_OTHER  "Serwer utracił połączenie z graczem."
+/*     IDS_XWRELAY_ERROR_LOST_OTHER   "Utracono połączenie z graczem." */
 # endif
 #endif
 
