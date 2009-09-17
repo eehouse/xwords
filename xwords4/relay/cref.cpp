@@ -172,8 +172,7 @@ CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT )
 {
     if ( CRefMgr::Get()->Associate( socket, this ) ) {
         if ( hid == HOST_ID_NONE ) {
-            hid = nextHostID();
-            logf( XW_LOGINFO, "assigned host id: %x", hid );
+            logf( XW_LOGINFO, "%s: Waiting to assign host id", __func__ );
         } else {
             logf( XW_LOGINFO, "NOT assigned host id; why?" );
         }

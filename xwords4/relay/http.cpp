@@ -117,14 +117,14 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     fprintf( fil, "<div class=\"header\">Connections</div>" );
     fprintf( fil, "<table><tr>" );
     fprintf( fil,
-             "<th>Invite</th>"
+             "<th>Room</th>"
              "<th>ConnName</th>"
-             "<th>Game ID</th>"
-             "<th>Total sent</th>"
-             "<th>Players</th>"
-             "<th>Players Here</th>"
+             "<th>ID</th>"
+             "<th>Bytes</th>"
+             "<th>Expect</th>"
+             "<th>Here</th>"
              "<th>State</th>"
-             "<th>Secs conn&apos;d</th>"
+             "<th>Conn&apos;d</th>"
              "<th>Host IDs</th>"
              );
     if ( isLocal ) {
