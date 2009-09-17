@@ -430,7 +430,7 @@ CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
     }
 
     m_cookieMap.insert( pair<CookieID, CookieRef*>(ref->GetCookieID(), ref ) );
-    logf( XW_LOGINFO, "%s: paired cookie %s/connName %s with id %d", __func__, 
+    logf( XW_LOGINFO, "%s: paired cookie %s/connName %s with cid %d", __func__, 
           (cookie?cookie:"NULL"), connName, ref->GetCookieID() );
 
 #ifdef RELAY_HEARTBEAT
