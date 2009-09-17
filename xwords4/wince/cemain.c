@@ -1639,9 +1639,9 @@ ceStateChar( const CEAppGlobals* globals )
 
     if ( socketState == CE_IPST_CONNECTED ) {
         switch( relayState ) {
-        case COMMS_RELAYSTATE_UNCONNECTED: ch = L'x'; break;
-        case COMMS_RELAYSTATE_CONNECT_PENDING: ch = L'c'; break;
-        case COMMS_RELAYSTATE_CONNECTED: ch = L'C'; break;
+        case COMMS_RELAYSTATE_UNCONNECTED: ch = L'D'; break;
+        case COMMS_RELAYSTATE_CONNECT_PENDING: ch = L'C'; break;
+        case COMMS_RELAYSTATE_CONNECTED: ch = L'B'; break;
         case COMMS_RELAYSTATE_ALLCONNECTED: ch = L'A'; break;
         }
     } else {
