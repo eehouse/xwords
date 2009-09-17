@@ -201,7 +201,8 @@ do_one() {
         done
 
         test -n "$VERBOSE" && echo "watching:$PIDS"
-        END_TIME=$(($(date +%s) + 300))               # five minute timeout
+        # allow time for 25 moves, then timeout
+        END_TIME=$(($(date +%s) + $((WAIT_MAX*20))))
         while [ -d /tmp/$RUN_NAME -a -n "$PIDS" ]; do
             sleep 10
             for PID in $PIDS; do
