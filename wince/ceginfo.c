@@ -700,7 +700,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             }
                             break;
                         case GIROLECONF_BUTTON:
-                            state->connsComplete = callConnsDlg( state );
+                            (void)callConnsDlg( state );
                             break;
 #endif
                         case GIJUGGLE_BUTTON:
@@ -730,7 +730,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                 SendDlgItemMessage( hDlg, state->roleComboId,
                                                     GETCURSEL(globals), 0, 0L );
                             if ( role != SERVER_STANDALONE
-                                 && !state->connsComplete 
+                                 && !comms_checkComplete( &state->prefsPrefs.addrRec )
                                  && !callConnsDlg( state ) ) {
                                 break;
                             } else if ( !stateToGameInfo( state ) ) {
