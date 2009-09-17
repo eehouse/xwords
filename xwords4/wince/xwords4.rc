@@ -621,7 +621,7 @@ BEGIN
     XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
 #endif
 #ifdef XWFEATURE_RELAY
-    LTEXT           "Invite (must match other devices in the game):",
+    LTEXT           "Room (must match for all devices joining the game):",
                     IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,100,(ROW_HEIGHT*2)
     EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
@@ -1016,7 +1016,7 @@ BEGIN
     IDS_NEED_TOUCH          "This feature requires a touch screen."
     IDS_EDITCOLOR_FORMAT    "Edit color for %s"
 
-    IDS_LANG_CHANGE_RESTART "You must restart Crosswords for this change to take effect."
+    IDS_LANG_CHANGE_RESTART "This change will take effect after you restart Crosswords."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend."
