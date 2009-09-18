@@ -124,7 +124,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
              "<th>Expect</th>"
              "<th>Here</th>"
              "<th>State</th>"
-             "<th>Conn&apos;d</th>"
+             "<th>For</th>"
              "<th>Host IDs</th>"
              );
     if ( isLocal ) {
@@ -137,6 +137,10 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     for ( ii = 0; ii < info->m_crefInfo.size(); ++ii ) {
         const CrefInfo* crefInfo = &info->m_crefInfo[ii];
 
+        char conntime[32];
+        format_uptime( curTime - crefInfo->m_startTime, conntime, 
+                       sizeof(conntime) );
+
         fprintf( fil, "<tr>"
                  "<td>%s</td>"  /* name */
                  "<td>%s</td>"  /* conn name */
@@ -145,7 +149,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
                  "<td>%d</td>"  /* players */
                  "<td>%d</td>"  /* players here */
                  "<td>%s</td>"  /* State */
-                 "<td>%ld</td>"  /* conntime */
+                 "<td>%s</td>"  /* conntime */
                  "<td>%s</td>"   /* Hosts */
                  ,
                  crefInfo->m_cookie.c_str(),
@@ -154,7 +158,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
                  crefInfo->m_totalSent,
                  crefInfo->m_nPlayersSought, crefInfo->m_nPlayersHere, 
                  stateString( crefInfo->m_curState ),
-                 curTime - crefInfo->m_startTime,
+                 conntime,
                  crefInfo->m_hostsIds.c_str()
                  );
         
@@ -173,7 +177,8 @@ printStats( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     char uptime1[64];
     char uptime2[64];
     format_uptime( uptime(), uptime1, sizeof(uptime1) );
-    format_uptime( time(NULL) - info->m_startTimeSpawn, uptime2, sizeof(uptime2) );
+    format_uptime( time(NULL) - info->m_startTimeSpawn, uptime2, 
+                   sizeof(uptime2) );
     fprintf( fil, "<div class=\"header\">Stats</div>" );
     fprintf( fil, "<table>" );
     fprintf( fil, "<tr>"
