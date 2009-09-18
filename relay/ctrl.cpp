@@ -358,9 +358,17 @@ format_uptime( time_t seconds, char* buf, int len )
     int minutes = seconds / 60;
     seconds %= 60;
 
-    snprintf( buf, len,
-              "%d D, %d H, %d M, %ld S",
-              days, hours, minutes, seconds );
+    if ( days > 0 ) {
+        snprintf( buf, len, "%d D %.2d:%.2d:%.2ld", days, hours,
+                  minutes, seconds );
+    } else if ( hours > 0 ) {
+        snprintf( buf, len, "%.2d:%.2d:%.2ld", hours,
+                  minutes, seconds );
+    } else if ( minutes > 0 ) {
+        snprintf( buf, len, "%.2d:%.2ld", minutes, seconds );
+    } else {
+        snprintf( buf, len, "%.2ld s", seconds );
+    }
 }
 
 static bool
