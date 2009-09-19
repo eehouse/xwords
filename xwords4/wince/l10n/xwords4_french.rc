@@ -973,4 +973,8 @@ BEGIN
 
 END
 
+#ifdef AM_BASE_LANGUAGE
+# include "../common_rsrc.rc"
+#endif
+
 #endif
