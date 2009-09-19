@@ -1,0 +1,70 @@
+// -*- mode: c; -*-
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_XWORDS4             ICON    DISCARDABLE     "xwords4.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_RIGHTARROW          BITMAP  DISCARDABLE     "bmps/rightarrow.bmp"
+IDB_DOWNARROW           BITMAP  DISCARDABLE     "bmps/downarro.bmp"
+IDB_ORIGIN              BITMAP  DISCARDABLE     "bmps/origin.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// CLRS
+//
+
+ID_COLORS_RES CLRS MOVEABLE PURE 
+BEGIN
+    0xAF, 0xAF, 0x00,		/* bonus 1 */
+    0x00, 0xAF, 0xAF,
+    0xAF, 0x00, 0xAF,
+    0xAF, 0xAF, 0xAF,
+    0xFF, 0xFF, 0xFF,		/* empty cells/CE_BKG_COLOR */
+    0xFF, 0xFF, 0x99,		/* tile background */
+    0x70, 0x70, 0xFF,		/* focus */
+    0x00, 0x00, 0x00,		/* player 1 */
+    0xFF, 0x00, 0x00,
+    0x00, 0x00, 0xFF,
+    0x00, 0x8F, 0x00,       /* 8F: full-green contrasts badly with background */
+    0x00, 0x00, 0x00,		/* black */
+    0xFF, 0xFF, 0xFF		/* white */
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// BONS: bonus square values.
+//
+
+// Butts' board
+ID_BONUS_RES BONS MOVEABLE PURE 
+BEGIN
+    0x4001, 0x0004,
+    0x0200, 0x0300,
+    0x0020, 0x0010,
+    0x1002, 0x0001,
+    0x0000, 0x2000,
+    0x0300, 0x0300,
+    0x0010, 0x0010,
+    0x4001, 0x0002
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+#ifdef DEBUG
+    IDS_APP_TITLE           "Crossw_dbg"
+    IDC_XWORDS4             "XWORDS4_DBG"
+#else
+    IDS_APP_TITLE           "Crosswords"
+    IDC_XWORDS4             "XWORDS4"
+#endif
+END

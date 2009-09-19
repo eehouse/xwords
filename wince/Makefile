@@ -143,14 +143,16 @@ endif
 BUILTDIR=$(OBJDIR)/built
 TARGET = $(BUILTDIR)/xwords4_$(SVNREV).exe
 DLL_SRCS = $(shell ls ./l10n/*.rc)
+
+BASE_LANG_SRC = l10n/xwords4_english.rc
+BASE_LANG_OBJ = $(OBJDIR$)/$(patsubst %.rc,%.rc.o,$(notdir $(BASE_LANG_SRC)))
+
 #DLLS = $(patsubst %.rc,%.dll,$(addprefix $(OBJDIR)/l10n/,$(notdir $(DLL_SRCS))))
 DLLS = \
 	$(BUILTDIR)/xwords4_french.dll \
 	$(BUILTDIR)/xwords4_caps.dll \
 	$(BUILTDIR)/xwords4_polish.dll \
-
-RESOBJS = \
-	$(OBJDIR)/xwords4.rc.o \
+	$(BUILTDIR)/xwords4_english.dll \
 
 WINCESRC = \
 	ceaskpwd.c \
@@ -214,7 +216,7 @@ all : $(TARGET) $(DLLS)
 memdebug:
 	$(MAKE) DEBUG=TRUE all
 
-$(TARGET) : $(OBJS) $(RESOBJS)
+$(TARGET) : $(OBJS) $(BASE_LANG_OBJ)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(LFLAGS) -mwindows $^ $(CELIBS) -o $@
 	$(STRIP) $@
@@ -227,8 +229,8 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(OBJDIR)/xwords4.rc.o : xwords4.rc $(INCLUDES) xwords4.ico
-	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -o $@ $< 
+$(BASE_LANG_OBJ) : $(BASE_LANG_SRC) $(INCLUDES) xwords4.ico
+	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -DAM_BASE_LANGUAGE -o $@ $< 
 
 $(OBJDIR)/l10n/%.rc.o : l10n/%.rc $(WINCE_INCLUDES)
 	mkdir -p $(dir $@)

@@ -164,7 +164,11 @@ END
 
 #include "../rc_incs.h"
 
+#include "../rc_incs.h"
+
+#ifndef AM_BASE_LANGUAGE
 DLL_VERS_RESOURCE
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -832,11 +836,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-#ifdef DEBUG
-    IDS_APP_TITLE           "Crossw_dbg"
-#else
-    IDS_APP_TITLE           "Crosswords"
-#endif
     IDS_MENU                "Menu"
     IDS_DUMMY               "--"
     IDS_CANCEL              "Annuler"

@@ -1,16 +1,16 @@
-// -*- mode: c; compile-command: "make TARGET_OS=wince DEBUG=TRUE"; -*-
+// -*- mode: c; compile-command: "cd ../ && make TARGET_OS=wince DEBUG=TRUE"; -*-
 // 
 // Microsoft Developer Studio generated resource script.  But now I'm
 // editing it. :-)
 //
-#include "resource.h"
+#include "../resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "newres.h"
+#include "../newres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -24,15 +24,6 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_XWORDS4             ICON    DISCARDABLE     "xwords4.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -171,7 +162,11 @@ BEGIN
 END
 #endif
 
-#include "rc_incs.h"
+#include "../rc_incs.h"
+
+#ifndef AM_BASE_LANGUAGE
+DLL_VERS_RESOURCE
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -851,67 +846,11 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Bitmap
-//
-
-IDB_RIGHTARROW          BITMAP  DISCARDABLE     "bmps/rightarrow.bmp"
-IDB_DOWNARROW           BITMAP  DISCARDABLE     "bmps/downarro.bmp"
-IDB_ORIGIN              BITMAP  DISCARDABLE     "bmps/origin.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// CLRS
-//
-
-ID_COLORS_RES CLRS MOVEABLE PURE 
-BEGIN
-    0xAF, 0xAF, 0x00,		/* bonus 1 */
-    0x00, 0xAF, 0xAF,
-    0xAF, 0x00, 0xAF,
-    0xAF, 0xAF, 0xAF,
-    0xFF, 0xFF, 0xFF,		/* empty cells/CE_BKG_COLOR */
-    0xFF, 0xFF, 0x99,		/* tile background */
-    0x70, 0x70, 0xFF,		/* focus */
-    0x00, 0x00, 0x00,		/* player 1 */
-    0xFF, 0x00, 0x00,
-    0x00, 0x00, 0xFF,
-    0x00, 0x8F, 0x00,       /* 8F: full-green contrasts badly with background */
-    0x00, 0x00, 0x00,		/* black */
-    0xFF, 0xFF, 0xFF		/* white */
-END
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// BONS: bonus square values.
-//
-
-// Butts' board
-ID_BONUS_RES BONS MOVEABLE PURE 
-BEGIN
-    0x4001, 0x0004,
-    0x0200, 0x0300,
-    0x0020, 0x0010,
-    0x1002, 0x0001,
-    0x0000, 0x2000,
-    0x0300, 0x0300,
-    0x0010, 0x0010,
-    0x4001, 0x0002
-END
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // String Table
 //
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-#ifdef DEBUG
-    IDS_APP_TITLE           "Crossw_dbg"
-    IDC_XWORDS4             "XWORDS4_DBG"
-#else
-    IDS_APP_TITLE           "Crosswords"
-    IDC_XWORDS4             "XWORDS4"
-#endif
     IDS_MENU                "Menu"
     IDS_DUMMY               "--"
     IDS_CANCEL              "Cancel"
@@ -1049,29 +988,8 @@ BEGIN
 
 END
 
-#ifdef _WIN32_WCE
-// from http://msdn.microsoft.com/en-us/library/ms838191.aspx: don't
-// let WinMo draw 320x320 as 240x240
-HI_RES_AWARE CEUX {1}
+#ifdef AM_BASE_LANGUAGE
+# include "../common_rsrc.rc"
 #endif
 
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-/* This is supposed to keep the OS from running us in "emulation mode", but it 
-   isn't working.  Changing the versions as reported by objdump does work */
-/* #ifdef _WIN32_WCE */
-/* HI_RES_AWARE CEUX {1} */
-/* #endif */
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
-
+#endif
