@@ -120,6 +120,12 @@ bqRemoveOne( BufQueue* bq )
     }
 }
 
+void
+bqRemoveAll( BufQueue* bq )
+{
+    bq->head = bq->tail = 0;
+}
+
 #ifdef CPLUS
 }
 #endif
