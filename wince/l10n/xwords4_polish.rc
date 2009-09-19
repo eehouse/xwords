@@ -61,7 +61,7 @@ END
 IDM_MENU MENU DISCARDABLE 
 BEGIN
 #ifndef _WIN32_WCE
-    POPUP "BUTTON"
+    POPUP "Button"
     BEGIN
         MENUITEM "--",                           W32_DUMMY_ID
     END
@@ -488,11 +488,11 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Ogranicz podpowiedzi"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Użyj min.:",IDC_STATIC,
+    LTEXT           "Użyj min.:",HC_MIN_LABEL,
                     HC_LABELS_COL,HC_MINROW,60,ROW_HEIGHT
     XWCOMBO(HC_MIN_COMBO,HC_DROPDOWNS_COL,HC_MINROW,24,ROW_HEIGHT,0,58,0)
 
-    LTEXT           "Nie więcej niż:",IDC_STATIC,HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT
+    LTEXT           "Nie więcej niż:",HC_MAX_LABEL,HC_LABELS_COL,HC_MAXROW,60,ROW_HEIGHT
     XWCOMBO(HC_MAX_COMBO,HC_DROPDOWNS_COL,HC_MAXROW,24,ROW_HEIGHT,0,58,0)
 
 #ifndef _WIN32_WCE
@@ -890,9 +890,6 @@ BEGIN
     IDS_SUMMARYSCORED      "%s:%d"
     IDS_TRADED             "wymienione %d"
     IDS_LOSTTURN           "stracona kolejka"
-#ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_LOCALPLAYERS       "lokalni gracze:"
-#endif
     IDS_TOTALPLAYERS       "Ilość graczy:"
     IDS_VALUES_HEADER      "%s liczone/wartości:" XP_CR
     IDS_QUERY_TRADE        "Na pewno wymienić wybrane literki?"
@@ -950,7 +947,7 @@ BEGIN
     IDS_RESEND_STANDALONE   "To jest gra lokalna, nie ma czego wysyłać."
     IDS_CONN_RELAY_L        "Serwer"
     IDS_CONN_DIRECT         "Bezpośrednie"
-
+    IDS_LOCALPLAYERS        "lokalni gracze:"
     IDS_NO_PEEK_REMOTE_TILES "Nie można podejrzeć zdalnych graczy!"
     IDS_REG_UNEXPECTED_USER  "Odmowa rejestracji niespodziewanego gracza."
     IDS_SERVER_DICT_WINS     "Konflikt słowników hosta i gościa. Host jest ważniejszy."
@@ -975,5 +972,9 @@ BEGIN
 #endif
 
 END
+
+#ifdef AM_BASE_LANGUAGE
+# include "../common_rsrc.rc"
+#endif
 
 #endif
