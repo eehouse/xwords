@@ -37,6 +37,7 @@ void bqInit( BufQueue* bq, XP_U8* buf, XP_U16 buflen );
 XP_Bool bqAdd( BufQueue* bq, const XP_U8* buf, XP_U16 len );
 XP_Bool bqGet( BufQueue* bq, const XP_U8** buf, XP_U16* len );
 void bqRemoveOne( BufQueue* bq );
+void bqRemoveAll( BufQueue* bq );
 
 #ifdef CPLUS
 }
