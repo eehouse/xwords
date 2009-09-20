@@ -908,18 +908,19 @@ gtk_draw_score_pendingScore( DrawCtx* p_dctx, const XP_Rect* rect,
 } /* gtk_draw_score_pendingScore */
 
 static void
-gtkFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
+gtkFormatTimerText( XP_UCHAR* buf, XP_U16 bufLen, XP_S16 secondsLeft )
 {
     XP_U16 minutes, seconds;
 
     if ( secondsLeft < 0 ) {
         *buf++ = '-';
+        --bufLen;
         secondsLeft *= -1;
     }
 
     minutes = secondsLeft / 60;
     seconds = secondsLeft % 60;
-    XP_SNPRINTF( buf, VSIZE(buf), "% 1d:%02d", minutes, seconds );
+    XP_SNPRINTF( buf, bufLen, "% 1d:%02d", minutes, seconds );
 } /* gtkFormatTimerText */
 
 static void
@@ -930,7 +931,7 @@ gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
 
-    gtkFormatTimerText( buf, secondsLeft );
+    gtkFormatTimerText( buf, VSIZE(buf), secondsLeft );
 
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rInner ); */
     gtkEraseRect( dctx, rInner );
