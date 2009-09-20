@@ -18,13 +18,15 @@
 
 ifeq ($(MEMDEBUG),TRUE)
 DEFINES = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DNUMBER_KEY_AS_INDEX
-CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror
+CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
 CFLAGS += -DDEBUG_TS
 PLATFORM = obj_linux_memdbg
 else
 DEFINES =
 PLATFORM = obj_linux_rel
-CFLAGS += -Os -Werror -Wunused
+# Not shipping this!  Always build with symbols etc
+CFLAGS += -g $(GPROFFLAG) -Wall -Wunused-parameter -Wcast-align -Werror -O0
+#CFLAGS += -Os -Werror -Wunused
 endif
 
 # CC = llvm-gcc

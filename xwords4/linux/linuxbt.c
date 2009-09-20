@@ -507,7 +507,7 @@ linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen )
 }
 
 void
-linux_bt_socketclosed( CommonGlobals* globals, int sock )
+linux_bt_socketclosed( CommonGlobals* globals, int XP_UNUSED_DBG(sock) )
 {
     LinBtStuff* btStuff = globals->btStuff;
     LOG_FUNC();

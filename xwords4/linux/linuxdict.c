@@ -93,7 +93,7 @@ countSpecials( LinuxDictionaryCtxt* ctxt )
 } /* countSpecials */
 
 static XP_Bitmap
-skipBitmap( LinuxDictionaryCtxt* ctxt, FILE* dictF )
+skipBitmap( LinuxDictionaryCtxt* XP_UNUSED_DBG(ctxt), FILE* dictF )
 {
     XP_U8 nCols, nRows, nBytes;
     LinuxBMStruct* lbs = NULL;
