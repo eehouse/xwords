@@ -879,7 +879,7 @@ assertQueueOk( const CommsCtxt* comms )
 #endif
 
 static void
-freeElem( const CommsCtxt* comms, MsgQueueElem* elem )
+freeElem( const CommsCtxt* XP_UNUSED_DBG(comms), MsgQueueElem* elem )
 {
     XP_FREE( comms->mpool, elem->msg );
     XP_FREE( comms->mpool, elem );
