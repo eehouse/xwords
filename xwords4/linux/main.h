@@ -135,6 +135,8 @@ struct CommonGlobals {
     SocketChangedFunc socketChanged;
     void* socketChangedClosure;
 
+    CommsRelayState state;
+
     /* Allow listener sockets to be installed in either gtk or ncurses'
      * polling mechanism.*/
     AddAcceptorFunc addAcceptor;

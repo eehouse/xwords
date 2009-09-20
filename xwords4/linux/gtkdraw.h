@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make debug"; -*- */
+/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
  * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -23,5 +23,7 @@
 #include "draw.h"
 
 DrawCtx* gtkDrawCtxtMake( GtkWidget *widget, GtkAppGlobals* globals );
+
+void draw_gtk_status( GtkDrawCtx* draw, char ch );
 
 #endif
