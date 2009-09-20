@@ -604,7 +604,6 @@ END
 # define CONNSDLG_HT (BUTTON_ROW+ROW_SPACE+3)
 #endif
 
-    /* #This is a comment????  */
 IDD_CONNSSDLG DIALOG DISCARDABLE 0, 20, 120, CONNSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Connexion"
@@ -616,7 +615,7 @@ BEGIN
     XWCOMBO(IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
 #endif
 #ifdef XWFEATURE_RELAY
-    LTEXT           "Invite:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
+    LTEXT           "Room:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT // <- translate
     EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
@@ -843,7 +842,7 @@ BEGIN
     IDS_DONE                "Terminé"
     IDS_LANGUAGE_NAME       "Français"
     IDS_NEW_GAME            "New Game"  // <- translate
-    IDS_ABOUT       "Crosswords " ABOUT_VERSION " (REV " SVN_REV ") "\
+    IDS_ABOUT       "Crosswords " ABOUT_VERSION " (rev " SVN_REV ") "\
                     "pour Windows Mobile. Copyright 1998-2009 "\
                     "Eric House.  Ce logiciel est produit sous licence "\
                     "publique GNU.\r\r"\
@@ -919,7 +918,7 @@ BEGIN
     IDS_REMTILES_L          "Lettres restantes"
     IDS_GAMEHIST_L          "Historique de la partie"
     IDS_FINALSCORE_L        "Score final"
-    IDS_QUESTION_L          "Question"
+    IDS_QUESTION_L          "Question" // <- translate?
     IDS_FYI_L               "Info"
     IDS_ILLEGALWRD_L        "Mot interdit"
     IDS_WRDNOTFOUND         "Mot(s) %s non trouvé(s) dans le dictionnaire."
@@ -942,7 +941,7 @@ BEGIN
     IDS_FILEEXISTSFMT_L     "File %s already exists."        // <- translate
     IDS_NEED_TOUCH          "This feature requires a touch screen." // <- translate
     IDS_EDITCOLOR_FORMAT    "Edit color for %s" // <- translate
-    IDS_LANG_CHANGE_RESTART "You must restart Crosswords for this change to take effect." // <-translate
+    IDS_LANG_CHANGE_RESTART "This change will take effect after you restart Crosswords." // <-translate
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend." /* <- translate */
