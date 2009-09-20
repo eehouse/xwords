@@ -536,6 +536,8 @@ CookieRef::handleEvents()
             case XWA_DISCONNECT:
                 setAllConnectedTimer();
                 reducePlayerCounts( evt.u.discon.socket );
+                notifyOthers( evt.u.discon.socket, XWRELAY_DISCONNECT_OTHER,
+                              XWRELAY_ERROR_OTHER_DISCON );
                 removeSocket( evt.u.discon.socket );
                 /* Don't notify.  This is a normal part of a game ending. */
                 break;

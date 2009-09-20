@@ -119,7 +119,8 @@ enum {
     ,XWRELAY_ERROR_HEART_YOU   /* Haven't heard from somebody in too long */
     ,XWRELAY_ERROR_HEART_OTHER /* Haven't heard from other in too long */
     ,XWRELAY_ERROR_LOST_OTHER  /* Generic other-left-we-dunno-why error */
-
+    ,XWRELAY_ERROR_OTHER_DISCON  /* The other guy disconnected, maybe to start
+                                    a new game? */
     ,XWRELAY_ERROR_LASTERR
 }
 #ifndef CANT_DO_TYPEDEF
