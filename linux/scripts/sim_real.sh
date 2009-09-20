@@ -33,6 +33,7 @@ EOF
     echo "    env: KILL_INTERVAL_SECS: kill a random xwords every "
     echo "         this many seconds; 0 to disable; cur: $KILL_INTERVAL_SECS"
     echo "    env: ROLES: what hosts to handle here; cur: $ROLES"
+    echo "    env: USE_CURSES; cur: $USE_CURSES"
     exit 0
 }
 
