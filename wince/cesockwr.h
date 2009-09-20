@@ -34,11 +34,11 @@ typedef enum {
 
 typedef struct CeSocketWrapper CeSocketWrapper;      /* forward */
 typedef XP_Bool (*DataRecvProc)( XP_U8* data, XP_U16 len, void* closure );
-typedef void (*StateChangeProc)( void* closure, CeConnState state );
+typedef void (*StateChangeProc)( void* closure, CeConnState oldState, 
+                                 CeConnState newState );
 
 CeSocketWrapper* ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB, 
-                                  StateChangeProc stateCB, 
-                                  void* globals );
+                                  StateChangeProc stateCB, void* globals );
 void ce_sockwrap_delete( CeSocketWrapper* self );
 
 void ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );

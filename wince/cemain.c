@@ -3026,11 +3026,15 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 } /* got_data_proc */
 
 static void
-sock_state_change( void* closure, CeConnState state )
+sock_state_change( void* closure, CeConnState oldState, CeConnState newState )
 {
     CEAppGlobals* globals = (CEAppGlobals*)closure;
-    globals->socketState = state;
+    globals->socketState = newState;
     InvalidateRect( globals->hWnd, &globals->relayStatusR, TRUE /* erase */ );
+
+    if ( newState < oldState ) {
+        comms_transportFailed( globals->game.comms );
+    }
 }
 #endif
 
@@ -3174,6 +3178,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
     case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
+    case ERR_RELAY_BASE + XWRELAY_ERROR_OTHER_DISCON:
         resID = IDS_XWRELAY_ERROR_HEART_OTHER;
         break;
         /* Same string as above for now */
