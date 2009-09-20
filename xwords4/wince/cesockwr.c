@@ -137,7 +137,9 @@ send_packet_if( CeSocketWrapper* self )
 {
     const XP_U8* packet;
     XP_U16 len;
-    if ( self->socket != -1 && bqGet( &self->queueOut, &packet, &len ) ) {
+    if ( self->socket == -1 ) {
+        XP_LOGF( "%s: have no socket", __func__ );
+    } else if ( bqGet( &self->queueOut, &packet, &len ) ) {
         if ( sendLenAndData( self, packet, len ) ) {
             /* successful send.  Remove our copy */
             bqRemoveOne( &self->queueOut );
@@ -154,7 +156,7 @@ stateChanged( CeSocketWrapper* self, CeConnState newState )
     XP_LOGF( "%s: %s -> %s", __func__, ConnState2Str( curState ), 
              ConnState2Str( newState ) );
 
-    (*self->stateProc)( self->closure, newState );
+    (*self->stateProc)( self->closure, curState, newState );
 
     switch( newState ) {
     case CE_IPST_START:
@@ -188,7 +190,8 @@ connectSocket( CeSocketWrapper* self )
             /* Put socket in non-blocking mode */
             if ( 0 != WSAAsyncSelect( sock, self->hWnd,
                                       XWWM_SOCKET_EVT,
-                                      FD_READ | FD_WRITE | FD_CONNECT ) ) {
+                                      FD_READ | FD_WRITE | FD_CONNECT
+                                      | FD_CLOSE ) ) {
                 XP_WARNF( "WSAAsyncSelect failed" );
             }
 
@@ -201,7 +204,7 @@ connectSocket( CeSocketWrapper* self )
                                              sizeof(name), NULL, NULL, 
                                              NULL, NULL ) ) {
                 self->socket = sock;
-                stateChanged( self, CE_IPST_CONNECTED );
+                stateChanged( self, CE_IPST_CONNECTING );
             } else if ( WSAEWOULDBLOCK == WSAGetLastError() ) {
                 stateChanged( self, CE_IPST_CONNECTING );
             } else {
@@ -239,9 +242,12 @@ closeConnection( CeSocketWrapper* self )
             closesocket( self->socket );
             self->socket = -1;
         }
-
-        stateChanged( self, CE_IPST_START );
     }
+
+    bqRemoveAll( &self->queueOut );
+
+    XP_ASSERT( self->socket == -1 );
+    stateChanged( self, CE_IPST_START );
 } /* closeConnection */
 
 static void
@@ -438,17 +444,28 @@ ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
     }
 
     if ( 0 != (FD_CONNECT & event) ) {
-        XP_LOGF( "%s: got FD_CONNECT", __func__ );
+        int err = WSAGETSELECTERROR(lParam);
+        XP_LOGF( "%s: got FD_CONNECT; err=%d", __func__, err );
         event &= ~FD_CONNECT;
-        self->socket = socket;
-        stateChanged( self, CE_IPST_CONNECTED );
+        if ( 0 == err ) {
+            XP_ASSERT( self->socket == -1 || self->socket == socket );
+            self->socket = socket;
+            stateChanged( self, CE_IPST_CONNECTED );
+        } else {
+            closeConnection( self );
+        }
+    }
+
+    if ( 0 != (FD_CLOSE & event) ) {
+        event &= ~FD_CLOSE;
+        closeConnection( self );
     }
 
     if ( 0 != event ) {
         XP_WARNF( "%s: unexpected bits left: 0x%lx", __func__, event );
     }
     return draw;
-}
+} /* ce_sockwrap_event */
 
 XP_S16
 ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
@@ -457,8 +474,8 @@ ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len,
     XP_S16 nSent = -1;          /* error */
     XP_LOGF( "%s(len=%d)", __func__, len );
 
-   /* If the address has changed, we need to close the connection.  Send
-       thread will take care of opening it again. */
+   /* If the address has changed, we need to close the connection, then call
+      getHostAddr() to kick off the async reconnect process. */
     XP_ASSERT( addr->conType == COMMS_CONN_RELAY );
     if ( 0 != XP_STRCMP( addr->u.ip_relay.hostName, 
                          self->addrRec.u.ip_relay.hostName )
@@ -468,8 +485,12 @@ ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len,
         closeConnection( self );
         XP_MEMCPY( &self->addrRec, addr, sizeof(self->addrRec) );
 
-        getHostAddr( self );
     }
+
+    if ( CE_IPST_START == self->connState ) {
+        getHostAddr( self );    /* kicks off connection process */
+    }
+    /* What if we're stuck in some other state?  Kick those here too? */
 
     if ( bqAdd( &self->queueOut, buf, len ) ) {
         send_packet_if( self );
