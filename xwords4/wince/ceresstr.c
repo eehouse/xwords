@@ -191,7 +191,8 @@ typedef struct _DllSelState {
 } DllSelState;
 
 static void
-copyWideStr( CEAppGlobals* globals, const wchar_t* str, wchar_t** loc )
+copyWideStr( CEAppGlobals* XP_UNUSED_DBG(globals), const wchar_t* str, 
+             wchar_t** loc )
 {
     XP_U16 len = 1 + wcslen( str );
     *loc = XP_MALLOC( globals->mpool, len * sizeof(**loc) );
@@ -286,7 +287,9 @@ static void
 unlistDlls( DllSelState* state )
 {
     XP_U16 ii;
+#ifdef DEBUG
     CEAppGlobals* globals = state->dlgHdr.globals;
+#endif
     for ( ii = 0; ii < state->nItems; ++ii ) {
         XP_ASSERT( ii == 0 || !!state->files[ii] );
         if ( ii > 0 ) {
