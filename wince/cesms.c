@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef XWFEATURE_SMS
+
 #include "cesms.h"
 
 XP_S16
@@ -36,3 +38,4 @@ ce_sms_send( CEAppGlobals* XP_UNUSED(globals), const XP_U8* XP_UNUSED(buf),
     return -1;
 }
 
+#endif

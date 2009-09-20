@@ -554,6 +554,8 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     XP_U16 scrollWidth = 0;
     XP_U16 adjLeft, adjTop;
 
+    XP_MEMSET( bparms, 0, sizeof(*bparms) );
+
     GetClientRect( globals->hWnd, &rc );
 #ifndef _WIN32_WCE
 # if defined FORCE_HEIGHT && defined FORCE_WIDTH
@@ -951,7 +953,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
 } /* ceInitAndStartBoard */
 
 static XP_UCHAR*
-ceReadString( const CEAppGlobals* globals, HANDLE fileH )
+ceReadString( const CEAppGlobals* XP_UNUSED_DBG(globals), HANDLE fileH )
 {
     XP_U16 nameLen;
     XP_UCHAR* name = NULL;
@@ -1635,14 +1637,14 @@ ceStateChar( const CEAppGlobals* globals )
        Relay only matters if we have a socket open.  So use that first. */
     CommsRelayState relayState = globals->relayState;
     CeConnState socketState = globals->socketState;
-    wchar_t ch;
+    wchar_t ch = L'A';          /* keep compiler quiet */
 
     if ( socketState == CE_IPST_CONNECTED ) {
         switch( relayState ) {
         case COMMS_RELAYSTATE_UNCONNECTED: ch = L'D'; break;
         case COMMS_RELAYSTATE_CONNECT_PENDING: ch = L'C'; break;
         case COMMS_RELAYSTATE_CONNECTED: ch = L'B'; break;
-        case COMMS_RELAYSTATE_ALLCONNECTED: ch = L'A'; break;
+        case COMMS_RELAYSTATE_ALLCONNECTED: /*ch = L'A'; */ break;
         }
     } else {
         switch( socketState ) {
@@ -3010,7 +3012,7 @@ got_data_proc( XP_U8* data, XP_U16 len, void* closure )
 {
     CEAppGlobals* globals = (CEAppGlobals*)closure;
     XWStreamCtxt* stream;
-    XP_Bool draw;
+    XP_Bool draw = XP_FALSE;
 
     stream = make_generic_stream( globals );
     stream_putBytes( stream, data, len );
@@ -3634,7 +3636,7 @@ ce_util_remSelected( XW_UtilCtxt* uc )
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
 ce_util_addrChange( XW_UtilCtxt* uc, 
-                    const CommsAddrRec* oldAddr,
+                    const CommsAddrRec* XP_UNUSED_DBG(oldAddr),
                     const CommsAddrRec* newAddr )
 {
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;

@@ -208,12 +208,12 @@ connectSocket( CeSocketWrapper* self )
             } else if ( WSAEWOULDBLOCK == WSAGetLastError() ) {
                 stateChanged( self, CE_IPST_CONNECTING );
             } else {
-                int err = WSAGetLastError();
-                XP_LOGF( "%s:%d: WSAGetLastError=>%d", __func__, __LINE__, err );
+                XP_LOGF( "%s:%d: WSAGetLastError=>%d", __func__, __LINE__, 
+                         WSAGetLastError() );
             }
         } else {
-            int err = WSAGetLastError();
-            XP_LOGF( "%s:%d: WSAGetLastError=>%d", __func__, __LINE__, err );
+            XP_LOGF( "%s:%d: WSAGetLastError=>%d", __func__, __LINE__, 
+                     WSAGetLastError() );
         }
     }
 
@@ -263,8 +263,7 @@ getHostAddr( CeSocketWrapper* self )
                                      (char*)&self->hostNameUnion,
                                      sizeof(self->hostNameUnion) );
         if ( NULL == self->getHostTask ) {
-            int err = WSAGetLastError();
-            XP_LOGF( "%s: WSAGetLastError=>%d", __func__, err );
+            XP_LOGF( "%s: WSAGetLastError=>%d", __func__, WSAGetLastError() );
         }
 
         stateChanged( self, CE_IPST_RESOLVINGHOST );
@@ -304,7 +303,8 @@ ce_sockwrap_delete( CeSocketWrapper* self )
 } /* ce_sockwrap_delete */
 
 void
-ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
+ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM XP_UNUSED_DBG(wParam), 
+                      LPARAM lParam )
 {
     LOG_FUNC();
     DWORD err = WSAGETASYNCERROR( lParam );
@@ -312,8 +312,7 @@ ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
     XP_ASSERT( CE_IPST_RESOLVINGHOST == self->connState );
 
     if ( 0 == err ) {
-        HANDLE comp = (HANDLE)wParam;
-        XP_ASSERT( comp == self->getHostTask );
+        XP_ASSERT( (HANDLE)wParam == self->getHostTask );
 
         XP_U32 tmp;
         XP_MEMCPY( &tmp, &self->hostNameUnion.hent.h_addr_list[0][0], 

@@ -496,7 +496,7 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
 {
     wchar_t widebuf[65];
     XP_U16 len, wlen;
-    XP_U16 hasMinTop, hasMaxBottom;
+    XP_U16 hasMinTop = 0, hasMaxBottom = 0;
     XP_Bool firstPass;
     HBRUSH white = dctx->brushes[CE_WHITE_COLOR];
     HDC memDC = CreateCompatibleDC( NULL );
@@ -527,7 +527,7 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
         testFont = CreateFontIndirect( &fontInfo );
 
         if ( !!testFont ) {
-            XP_U16 thisHeight, top, bottom;
+            XP_U16 thisHeight = 0, top, bottom;
 
             SelectObject( memDC, testFont );
 
