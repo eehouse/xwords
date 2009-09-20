@@ -307,6 +307,7 @@ ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM XP_UNUSED_DBG(wParam),
                       LPARAM lParam )
 {
     LOG_FUNC();
+    XP_ASSERT( !!self );
     DWORD err = WSAGETASYNCERROR( lParam );
 
     XP_ASSERT( CE_IPST_RESOLVINGHOST == self->connState );
