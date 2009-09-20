@@ -73,7 +73,7 @@ gtkFillRect( GtkDrawCtx* dctx, const XP_Rect* rect, const GdkColor* color )
 }
 
 static void
-gtkEraseRect( GtkDrawCtx* dctx, const XP_Rect* rect )
+gtkEraseRect( const GtkDrawCtx* dctx, const XP_Rect* rect )
 {
     gdk_draw_rectangle( DRAW_WHAT(dctx),
                         dctx->drawing_area->style->white_gc,
@@ -1140,6 +1140,25 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkAppGlobals* globals )
 
     return (DrawCtx*)dctx;
 } /* gtkDrawCtxtMake */
+
+void
+draw_gtk_status( GtkDrawCtx* dctx, char ch )
+{
+    GtkAppGlobals* globals = dctx->globals;
+
+    XP_Rect rect = {
+        .left = globals->netStatLeft,
+        .top = globals->netStatTop,
+        .width = GTK_NETSTAT_WIDTH,
+        .height = GTK_HOR_SCORE_HEIGHT
+    };
+    gtkEraseRect( dctx, &rect );
+
+    const XP_UCHAR str[2] = { ch, '\0' };
+    draw_string_at( dctx, NULL, str, GTKMIN_W_HT,
+                    &rect, XP_GTK_JUST_CENTER,
+                    &dctx->black, NULL );
+}
 
 #endif /* PLATFORM_GTK */
 

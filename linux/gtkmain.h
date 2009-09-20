@@ -92,6 +92,11 @@ typedef struct GtkAppGlobals {
 
     guint timerSources[NUM_TIMERS_PLUS_ONE - 1];
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+    XP_U16 netStatLeft, netStatTop;
+    XP_UCHAR stateChar;
+#endif
+
     CommonPrefs cp;
 
     XP_Bool gridOn;
@@ -128,6 +133,7 @@ int gtkmain( LaunchParams* params, int argc, char *argv[] );
 #define GTK_VERT_SCORE_HEIGHT ((MIN_SCALE*MAX_COLS) - GTK_TIMER_HEIGHT - \
                                GTK_TIMER_PAD)
 #define GTK_TIMER_WIDTH 40
+#define GTK_NETSTAT_WIDTH 20
 #define GTK_TIMER_TOP GTK_HOR_SCORE_TOP
 #define GTK_HOR_SCORE_WIDTH ((GTK_MIN_SCALE*MAX_COLS)-GTK_TIMER_PAD)
 #define GTK_VERT_SCORE_WIDTH 40

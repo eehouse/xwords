@@ -292,9 +292,13 @@ key_release_event( GtkWidget* XP_UNUSED(widget), GdkEventKey* event,
 #endif
 
 static void
-relay_status_gtk( void* XP_UNUSED(closure), CommsRelayState state )
+relay_status_gtk( void* closure, CommsRelayState state )
 {
     XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
+    GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+    globals->cGlobals.state = state;
+    globals->stateChar = 'A' + COMMS_RELAYSTATE_ALLCONNECTED - state;
+    draw_gtk_status( globals->draw, globals->stateChar );
 }
 
 static void
@@ -436,6 +440,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     gint hscale, vscale;
     gint trayTop;
     gint boardTop = 0;
+    XP_U16 netStatWidth = 0;
 
     if ( globals->draw == NULL ) {
         createOrLoadObjects( globals );
@@ -469,6 +474,10 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     board_setShowColors( globals->cGlobals.game.board, XP_TRUE );
     globals->gridOn = XP_TRUE;
 
+    if ( !!globals->cGlobals.game.comms ) {
+        netStatWidth = GTK_NETSTAT_WIDTH;
+    }
+
     timerTop = GTK_TIMER_TOP;
     if ( globals->cGlobals.params->verticalScore ) {
         timerLeft = GTK_BOARD_LEFT + (hscale*GTK_NUM_COLS) + 1;
@@ -480,13 +489,20 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                                 XP_FALSE );
 
     } else {
-        timerLeft = GTK_BOARD_LEFT + (hscale*GTK_NUM_COLS) - GTK_TIMER_WIDTH;
+        timerLeft = GTK_BOARD_LEFT + (hscale*GTK_NUM_COLS)
+            - GTK_TIMER_WIDTH - netStatWidth;
         board_setScoreboardLoc( globals->cGlobals.game.board, 
                                 GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP,
                                 timerLeft-GTK_BOARD_LEFT,
                                 GTK_HOR_SCORE_HEIGHT, 
                                 XP_TRUE );
 
+    }
+
+    /* Still pending: do this for the vertical score case */
+    if ( globals->cGlobals.game.comms ) {
+        globals->netStatLeft = timerLeft + GTK_TIMER_WIDTH;
+        globals->netStatTop = 0;
     }
 
     board_setTimerLoc( globals->cGlobals.game.board, timerLeft, timerTop,
@@ -524,6 +540,7 @@ expose_event( GtkWidget* XP_UNUSED(widget),
 
     board_invalAll( globals->cGlobals.game.board );
     board_draw( globals->cGlobals.game.board );
+    draw_gtk_status( globals->draw, globals->stateChar );
     
 /*     gdk_draw_pixmap( widget->window, */
 /* 		     widget->style->fg_gc[GTK_WIDGET_STATE (widget)], */
