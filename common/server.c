@@ -737,7 +737,7 @@ makeRobotMove( ServerCtxt* server )
 
 #ifdef XWFEATURE_SLOW_ROBOT
 static XP_Bool 
-wakeRobotProc( void* closure, XWTimerReason why )
+wakeRobotProc( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
     XP_ASSERT( TIMER_SLOWROBOT == why );
     ServerCtxt* server = (ServerCtxt*)closure;
