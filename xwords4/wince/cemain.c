@@ -3042,7 +3042,7 @@ sock_state_change( void* closure, CeConnState oldState, CeConnState newState )
 
 #ifdef COMMS_HEARTBEAT
 static void
-ce_reset_proc( void* XP_UNUSED_STANDALONE(closure) )
+ce_reset_proc( void* XP_UNUSED(closure) )
 {
     LOG_FUNC();
 }
