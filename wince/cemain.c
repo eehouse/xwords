@@ -2716,11 +2716,16 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         case XWWM_HOSTNAME_ARRIVED:
-            ce_sockwrap_hostname( globals->socketWrap, wParam, lParam );
+            /* drop it if we're standalone now */
+            if ( !!globals->socketWrap ) {
+                ce_sockwrap_hostname( globals->socketWrap, wParam, lParam );
+            }
             break;
 
         case XWWM_SOCKET_EVT:
-            draw = ce_sockwrap_event( globals->socketWrap, wParam, lParam );
+            if ( !!globals->socketWrap ) {
+                draw = ce_sockwrap_event( globals->socketWrap, wParam, lParam );
+            }
             break;
 #endif
 
