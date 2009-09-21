@@ -50,7 +50,7 @@ sub main() {
     print( STDERR $cmd, "\n");
     `$cmd`;
 
-#    unlink $linkName, $tmpfile;
+    unlink $linkName, $tmpfile;
 }
 
 sub usage() {
