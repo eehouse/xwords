@@ -378,6 +378,13 @@ curses_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
 } /* curses_util_setTimer */
 
 static void
+curses_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
+{
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    globals->cGlobals.timerInfo[why].proc = NULL;
+}
+
+static void
 curses_util_requestTime( XW_UtilCtxt* uc ) 
 {
     /* I've created a pipe whose read-only end is plugged into the array of
@@ -1291,6 +1298,7 @@ setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
         curses_util_engineProgressCallback;
 
     util->vtable->m_util_setTimer = curses_util_setTimer;
+    util->vtable->m_util_clearTimer = curses_util_clearTimer;
     util->vtable->m_util_requestTime = curses_util_requestTime;
 
     util->closure = globals;

@@ -110,6 +110,13 @@ enum {
     N_CACHED_PATHS
 };
 
+typedef struct _TimerData {
+    XP_U32 id;
+    XWTimerProc proc;
+    void* closure;
+    XP_U32 when;
+} TimerData;
+
 typedef struct _CEAppGlobals {
     HINSTANCE hInst;
     HINSTANCE locInst;  /* same as hInst if no l10n DLL in use */
@@ -139,10 +146,7 @@ typedef struct _CEAppGlobals {
     VTableMgr* vtMgr;
     XP_U16* bonusInfo;
 
-    XP_U32 timerIDs[NUM_TIMERS_PLUS_ONE];
-    XWTimerProc timerProcs[NUM_TIMERS_PLUS_ONE];
-    void* timerClosures[NUM_TIMERS_PLUS_ONE];
-    XP_U32 timerWhens[NUM_TIMERS_PLUS_ONE];
+    TimerData timerData[NUM_TIMERS_PLUS_ONE];
 
     RECT ownedRects[N_OWNED_RECTS];
 

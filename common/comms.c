@@ -336,7 +336,7 @@ set_reset_timer( CommsCtxt* comms )
     /* This timer is allowed to overwrite a heartbeat timer, but not
        vice-versa.  Make sure we can restart it. */
     comms->hbTimerPending = XP_FALSE;
-    util_setTimer( comms->util, TIMER_COMMS, 15, /* five seconds */
+    util_setTimer( comms->util, TIMER_COMMS, 15,
                    p_comms_resetTimer, comms );
     comms->reconTimerPending = XP_TRUE;
 }
@@ -345,6 +345,7 @@ void
 comms_transportFailed( CommsCtxt* comms  )
 {
     LOG_FUNC();
+    XP_ASSERT( !!comms );
     if ( COMMS_CONN_RELAY == comms->addr.conType ) {
         relayDisconnect( comms );
 
@@ -363,6 +364,8 @@ comms_destroy( CommsCtxt* comms )
 
     cleanupInternal( comms );
     cleanupAddrRecs( comms );
+
+    util_clearTimer( comms->util, TIMER_COMMS );
 
     XP_FREE( comms->mpool, comms );
 } /* comms_destroy */
@@ -536,6 +539,7 @@ setDoHeartbeat( CommsCtxt* comms )
 void
 comms_start( CommsCtxt* comms )
 {
+    XP_ASSERT( !!comms );
     setDoHeartbeat( comms );
     sendConnect( comms, XP_FALSE );
 } /* comms_start */
@@ -807,6 +811,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 XP_S16
 comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
 {
+    XP_ASSERT( !!comms );
     XP_PlayerAddr channelNo = stream_getAddress( stream );
     AddressRecord* rec = getRecordFor( comms, NULL, channelNo );
     MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
@@ -988,6 +993,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 XP_S16
 comms_resendAll( CommsCtxt* comms )
 {
+    XP_ASSERT( !!comms );
     MsgQueueElem* msg;
     XP_S16 result = 0;
 
@@ -1359,6 +1365,7 @@ XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
                            const CommsAddrRec* retAddr )
 {
+    XP_ASSERT( !!comms );
     XP_Bool messageValid = XP_FALSE;
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;

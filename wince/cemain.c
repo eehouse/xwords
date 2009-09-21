@@ -113,6 +113,7 @@ static XP_Bool ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col,
 static XP_Bool ce_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                               XWTimerProc proc, void* closure);
+static void ce_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why );
 static XP_Bool ce_util_altKeyDown( XW_UtilCtxt* uc );
 static void ce_util_requestTime( XW_UtilCtxt* uc );
 static XP_U32 ce_util_getCurSeconds( XW_UtilCtxt* uc );
@@ -360,6 +361,7 @@ ceInitUtilFuncs( CEAppGlobals* globals )
     vtable->m_util_hiliteCell = ce_util_hiliteCell;
     vtable->m_util_engineProgressCallback = ce_util_engineProgressCallback;
     vtable->m_util_setTimer = ce_util_setTimer;
+    vtable->m_util_clearTimer = ce_util_clearTimer;
     vtable->m_util_altKeyDown = ce_util_altKeyDown;
     vtable->m_util_requestTime = ce_util_requestTime;
     vtable->m_util_getCurSeconds = ce_util_getCurSeconds;
@@ -2146,14 +2148,12 @@ static XP_Bool
 ceFireTimer( CEAppGlobals* globals, XWTimerReason why )
 {
     XP_Bool draw = XP_FALSE;
-    XWTimerProc proc;
-    void* closure;
+    TimerData* timer = &globals->timerData[why];
+    XWTimerProc proc = timer->proc;
 
-    proc = globals->timerProcs[why];
     if ( !!proc ) {
-        globals->timerProcs[why] = NULL;
-        closure = globals->timerClosures[why];
-        draw = (*proc)( closure, why );
+        timer->proc = NULL;
+        draw = (*proc)( timer->closure, why );
         /* Setting draw after firing timer allows scrolling to happen
            while pen is held down.  This is a hack.  Perhaps having
            the timer proc return whether drawing is needed would be
@@ -2175,21 +2175,14 @@ static XP_Bool
 checkFireLateKeyTimer( CEAppGlobals* globals )
 {
     XP_Bool drop = XP_FALSE;
-    XWTimerReason whys[] = { TIMER_PENDOWN, TIMER_TIMERTICK
-#if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
-                             , TIMER_COMMS
-#endif
-    };
+    XWTimerReason why;
     XP_U32 now = GetCurrentTime();
-    XP_U16 i;
 
-    for ( i = 0; i < sizeof(whys)/sizeof(whys[0]); ++i ) {
-        XWTimerReason why = whys[i];
-        if ( !!globals->timerProcs[why] ) {
-            if ( now >= globals->timerWhens[why] ) {
-                (void)ceFireTimer( globals, why );
-                drop = XP_TRUE;
-            }
+    for ( why = 1; why < NUM_TIMERS_PLUS_ONE; ++why ) {
+        TimerData* timer = &globals->timerData[why];
+        if ( !!timer->proc && now >= timer->when ) {
+            (void)ceFireTimer( globals, why );
+            drop = XP_TRUE;
         }
     }
 
@@ -2659,7 +2652,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 /* Kill since they otherwise repeat, but kill before firing
                    as fired proc may set another. */
-                (void)KillTimer( hWnd, globals->timerIDs[why] );
+                (void)KillTimer( hWnd, globals->timerData[why].id );
 
                 draw = ceFireTimer( globals, why );
             }
@@ -3071,6 +3064,8 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
     CommsAddrRec addr;
     LOG_FUNC();
 
+    XP_ASSERT( !!globals->game.comms );
+
     if ( !addrp ) {
         comms_getAddr( globals->game.comms, &addr );
         addrp = &addr;
@@ -3391,10 +3386,11 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
     XP_U32 timerID;
     XP_U32 howLong;
+    TimerData* timer = &globals->timerData[why];
 
     XP_ASSERT( why < NUM_TIMERS_PLUS_ONE );
-    globals->timerProcs[why] = proc;
-    globals->timerClosures[why] = closure;
+    timer->proc = proc;
+    timer->closure = closure;
 
     switch ( why ) {
     case TIMER_PENDOWN:
@@ -3413,12 +3409,23 @@ ce_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
         return;
     }
 
-    globals->timerWhens[why] = GetCurrentTime() + howLong;
+    timer->when = GetCurrentTime() + howLong;
 
     timerID = SetTimer( globals->hWnd, why, howLong, NULL);
 
-    globals->timerIDs[why] = timerID;
+    timer->id = timerID;
 } /* ce_util_setTimer */
+
+static void
+ce_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
+    TimerData* timer = &globals->timerData[why];
+    if ( !!timer->proc ) {
+        timer->proc = NULL;
+        KillTimer( globals->hWnd, timer->id );
+    }
+}
 
 static XP_Bool
 ce_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc) )

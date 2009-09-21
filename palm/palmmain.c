@@ -123,6 +123,7 @@ static XP_Bool palm_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col,
 static XP_Bool palm_util_engineProgressCallback( XW_UtilCtxt* uc );
 static void palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                                 XWTimerProc proc, void* closure );
+static void palm_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why );
 static XP_Bool palm_util_altKeyDown( XW_UtilCtxt* uc );
 static XP_U32 palm_util_getCurSeconds( XW_UtilCtxt* uc );
 static void palm_util_requestTime( XW_UtilCtxt* uc );
@@ -664,6 +665,7 @@ initUtilFuncs( PalmAppGlobals* globals )
     vtable->m_util_hiliteCell = palm_util_hiliteCell;
     vtable->m_util_engineProgressCallback = palm_util_engineProgressCallback;
     vtable->m_util_setTimer = palm_util_setTimer;
+    vtable->m_util_clearTimer = palm_util_clearTimer;
     vtable->m_util_requestTime = palm_util_requestTime;
     vtable->m_util_altKeyDown = palm_util_altKeyDown;
     vtable->m_util_getCurSeconds = palm_util_getCurSeconds;
@@ -1572,16 +1574,16 @@ palmFireTimer( PalmAppGlobals* globals, XWTimerReason why )
 static XP_Bool
 timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
 {
-    XP_U16 i;
+    XP_U16 ii;
     XWTimerReason nextWhy = 0;
     XP_U32 nextWhen = 0xFFFFFFFF;
     XP_Bool found;
 
-    for ( i = 1; i < NUM_PALM_TIMERS; ++i ) {
-        if ( (globals->timerProcs[i] != NULL) && 
-             (globals->timerFireAt[i] < nextWhen) ) {
-            nextWhy = i;
-            nextWhen = globals->timerFireAt[i];
+    for ( ii = 1; ii < NUM_PALM_TIMERS; ++ii ) {
+        if ( (globals->timerProcs[ii] != NULL) && 
+             (globals->timerFireAt[ii] < nextWhen) ) {
+            nextWhy = ii;
+            nextWhen = globals->timerFireAt[ii];
         }
     }
 
@@ -3907,6 +3909,13 @@ palm_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
      * is called from inside some BT callback. */
     postEmptyEvent( noopEvent );
 } /* palm_util_setTimer */
+
+static void
+palm_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)uc->closure;
+    globals->timerProcs[why] = NULL;
+}
 
 static XP_Bool
 palm_util_altKeyDown( XW_UtilCtxt* XP_UNUSED(uc) )
