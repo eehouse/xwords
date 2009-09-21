@@ -138,6 +138,7 @@ typedef struct UtilVtable {
 
     void (*m_util_setTimer)( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                              XWTimerProc proc, void* closure );
+    void (*m_util_clearTimer)( XW_UtilCtxt* uc, XWTimerReason why );
 
     void (*m_util_requestTime)( XW_UtilCtxt* uc );
 
@@ -226,6 +227,8 @@ struct XW_UtilCtxt {
 
 #define util_setTimer( uc, why, when, proc, clos ) \
          (uc)->vtable->m_util_setTimer((uc),(why),(when),(proc),(clos))
+#define util_clearTimer( uc, why ) \
+         (uc)->vtable->m_util_clearTimer((uc),(why))
 
 #define util_requestTime( uc ) \
          (uc)->vtable->m_util_requestTime((uc))

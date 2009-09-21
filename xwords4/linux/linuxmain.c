@@ -584,7 +584,11 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 
     tip->proc = NULL;
 
-    (*proc)( closure, why );
+    if ( !!proc ) {
+        (*proc)( closure, why );
+    } else {
+        XP_LOGF( "%s: skipping timer %d; cancelled?", __func__, why );
+    }
 } /* fireTimer */
 
 #ifndef XWFEATURE_STANDALONE_ONLY

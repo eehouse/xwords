@@ -1340,6 +1340,13 @@ gtk_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why,
     globals->timerSources[why-1] = newSrc;
 } /* gtk_util_setTimer */
 
+static void
+gtk_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    globals->cGlobals.timerInfo[why].proc = NULL;
+}
+
 static gint
 idle_func( gpointer data )
 {
@@ -1633,6 +1640,7 @@ setupGtkUtilCallbacks( GtkAppGlobals* globals, XW_UtilCtxt* util )
     util->vtable->m_util_engineProgressCallback = 
         gtk_util_engineProgressCallback;
     util->vtable->m_util_setTimer = gtk_util_setTimer;
+    util->vtable->m_util_clearTimer = gtk_util_clearTimer;
     util->vtable->m_util_requestTime = gtk_util_requestTime;
     util->vtable->m_util_warnIllegalWord = gtk_util_warnIllegalWord;
     util->vtable->m_util_remSelected = gtk_util_remSelected;
