@@ -61,7 +61,7 @@ END
 IDM_MENU MENU DISCARDABLE 
 BEGIN
 #ifndef _WIN32_WCE
-    POPUP "BUTTON"
+    POPUP "Button"
     BEGIN
         MENUITEM "--",                          W32_DUMMY_ID
     END
@@ -888,9 +888,6 @@ BEGIN
     IDS_SUMMARYSCORED      "%s:%d"
     IDS_TRADED             "Echangé %d"
     IDS_LOSTTURN           "Tour perdu"
-#ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_LOCALPLAYERS       "Joueurs loc.:"
-#endif
     IDS_TOTALPLAYERS       "Nombre de joueurs:"
     IDS_VALUES_HEADER      "%s Nombres/Valeurs:" XP_CR
     IDS_QUERY_TRADE        "Etes-vous sûr de vouloir échanger les lettres sélectionnées?"
@@ -947,7 +944,7 @@ BEGIN
     IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend." /* <- translate */
     IDS_CONN_RELAY_L        "Transmission"
     IDS_CONN_DIRECT         "Connexion directe"
-
+    IDS_LOCALPLAYERS        "Joueurs loc.:"
     IDS_NO_PEEK_REMOTE_TILES "Pas de coup d'oeil sur le jeu des joueurs distants!"
     IDS_REG_UNEXPECTED_USER "Refus de la tentative d'enregistrer un joueur non prévu."
     IDS_SERVER_DICT_WINS "Conflit de dictionnaire entre l'hôte et l'invité; l'hôte gagne."
