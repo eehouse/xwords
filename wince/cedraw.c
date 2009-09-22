@@ -116,7 +116,9 @@ struct CEDrawCtx {
     HBITMAP rightArrow;
     HBITMAP downArrow;
     HBITMAP origin;
-
+#ifndef XWFEATURE_STANDALONE_ONLY
+    HBITMAP netStatus[4];
+#endif
     XP_U16 trayOwner;
     XP_U16 miniLineHt;
     XP_Bool scoreIsVertical;
@@ -1796,6 +1798,12 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     DeleteObject( dctx->downArrow );
     DeleteObject( dctx->origin );
 
+#ifdef XWFEATURE_STANDALONE_ONLY
+    for ( ii = 0; ii < VSIZE(dctx->status); ++ii ) {
+        DeleteObject( dctx->netStatusii] );
+    }
+#endif
+
 #ifndef DRAW_LINK_DIRECT
     XP_FREE( dctx->mpool, p_dctx->vtable );
 #endif
@@ -1905,16 +1913,16 @@ ce_draw_focus( CEDrawCtx* dctx, const RECT* invalR )
 }
 
 void
-ce_draw_status( CEDrawCtx* dctx, const RECT* rect, wchar_t stateCh )
+ce_draw_status( CEDrawCtx* dctx, const RECT* rect, CeNetState state )
 {
+    RECT localR = *rect;
     CEAppGlobals* globals = dctx->globals;
 
     FillRect( globals->hdc, rect, dctx->brushes[CE_BKG_COLOR] );
-
-    DrawText( globals->hdc, &stateCh, 1, (RECT*)rect, 
-              dctx->scoreIsVertical?
-              DT_CENTER | DT_BOTTOM :
-              DT_VCENTER | DT_RIGHT );
+    InsetRect( &localR, 1, 1 );
+    XP_ASSERT( state < VSIZE(dctx->netStatus) );
+    ceDrawBitmapInRect( globals->hdc, &localR, dctx->netStatus[state], 
+                        XP_TRUE );
 }
 
 #ifndef _WIN32_WCE
@@ -1982,6 +1990,14 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
                                   MAKEINTRESOURCE(IDB_DOWNARROW) );
     dctx->origin = LoadBitmap( globals->hInst, 
                                MAKEINTRESOURCE(IDB_ORIGIN) );
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    int ii;
+    for ( ii = 0; ii < VSIZE(dctx->netStatus); ++ii ) {
+        dctx->netStatus[ii] = LoadBitmap( globals->hInst, 
+                                         MAKEINTRESOURCE(IDB_STATUS_0+ii) );
+    }
+#endif
 
     return dctx;
 } /* ce_drawctxt_make */

@@ -18,6 +18,13 @@ IDB_RIGHTARROW          BITMAP  DISCARDABLE     "bmps/rightarrow.bmp"
 IDB_DOWNARROW           BITMAP  DISCARDABLE     "bmps/downarro.bmp"
 IDB_ORIGIN              BITMAP  DISCARDABLE     "bmps/origin.bmp"
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+IDB_STATUS_0            BITMAP  DISCARDABLE     "bmps/status0.bmp"
+IDB_STATUS_1            BITMAP  DISCARDABLE     "bmps/status1.bmp"
+IDB_STATUS_2            BITMAP  DISCARDABLE     "bmps/status2.bmp"
+IDB_STATUS_3            BITMAP  DISCARDABLE     "bmps/status3.bmp"
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // CLRS
