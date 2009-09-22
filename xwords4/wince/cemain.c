@@ -1370,6 +1370,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     // search as we change title to include game name
 	hWnd = FindWindow( szWindowClass, NULL );	
 	if ( hWnd ) {
+        XP_LOGF( "Looks like I'm running already; "
+                 "calling SetForegroundWindow and exiting" );
 		SetForegroundWindow( (HWND)((ULONG) hWnd | 0x00000001) );
         goto exit;
 	}
@@ -1632,33 +1634,43 @@ ceDoHistory( CEAppGlobals* globals )
                            MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDoHistory */
 
-static wchar_t
-ceStateChar( const CEAppGlobals* globals )
+static CeNetState
+ceFlattenState( const CEAppGlobals* globals )
 {
     /* Idea is to give user a clue how the network connection's coming.
        Relay only matters if we have a socket open.  So use that first. */
     CommsRelayState relayState = globals->relayState;
     CeConnState socketState = globals->socketState;
-    wchar_t ch = L'A';          /* keep compiler quiet */
+    CeNetState state = CENSTATE_NONE;
 
     if ( socketState == CE_IPST_CONNECTED ) {
         switch( relayState ) {
-        case COMMS_RELAYSTATE_UNCONNECTED: ch = L'D'; break;
-        case COMMS_RELAYSTATE_CONNECT_PENDING: ch = L'C'; break;
-        case COMMS_RELAYSTATE_CONNECTED: ch = L'B'; break;
-        case COMMS_RELAYSTATE_ALLCONNECTED: /*ch = L'A'; */ break;
+        case COMMS_RELAYSTATE_UNCONNECTED:
+        case COMMS_RELAYSTATE_CONNECT_PENDING:
+            state = CENSTATE_TRYING_RELAY;
+            break;
+        case COMMS_RELAYSTATE_CONNECTED: 
+            state = CENSTATE_HAVE_RELAY; 
+            break;
+        case COMMS_RELAYSTATE_ALLCONNECTED:
+            state = CENSTATE_ALL_HERE;
+            break;
         }
     } else {
         switch( socketState ) {
         case CE_IPST_START:
-        case CE_IPST_RESOLVINGHOST: ch = L'4'; break;
-        case CE_IPST_HOSTRESOLVED: ch = L'3'; break;
-        case CE_IPST_CONNECTING: ch = L'2'; break;
-        case CE_IPST_CONNECTED: ch = L'1'; break;
+        case CE_IPST_RESOLVINGHOST: 
+/*             state = CENSTATE_NONE; */
+            break;
+        case CE_IPST_HOSTRESOLVED: 
+        case CE_IPST_CONNECTING: 
+        case CE_IPST_CONNECTED: 
+            state = CENSTATE_TRYING_RELAY;
+            break;
         }
     }
-    return ch;
-}
+    return state;
+} /* ceFlattenState */
 
 static void
 drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
@@ -1685,8 +1697,8 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
             if ( IntersectRect( &interR, invalR, &globals->relayStatusR ) ) {
-                wchar_t ch = ceStateChar( globals );
-                ce_draw_status( globals->draw, &globals->relayStatusR, ch );
+                CeNetState state = ceFlattenState( globals );
+                ce_draw_status( globals->draw, &globals->relayStatusR, state );
             }
 #endif
 
