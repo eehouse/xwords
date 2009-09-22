@@ -137,7 +137,7 @@ do_one() {
     INDX=1
 
     while [ -d /tmp/$RUN_NAME ]; do                 # loop forever
-        COOKIE="$CROOT:$INDX"
+        COOKIE="Test_$CROOT:$INDX"
         INDX=$((INDX+1))
 
         TODO=$(($CROOT % 3))
