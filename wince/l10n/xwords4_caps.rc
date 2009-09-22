@@ -823,11 +823,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-#ifdef DEBUG
-    IDS_APP_TITLE           "Crossw_dbg"
-#else
-    IDS_APP_TITLE           "Crosswords"
-#endif
     IDS_MENU                "MENU"                                                         // <- translate
     IDS_DUMMY               "--"
     IDS_CANCEL              "CANCEL"                                                       // <- translate
@@ -966,5 +961,9 @@ BEGIN
 #endif
 
 END
+
+#ifdef AM_BASE_LANGUAGE
+# include "../common_rsrc.rc"
+#endif
 
 #endif
