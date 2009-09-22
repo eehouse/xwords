@@ -76,8 +76,8 @@ BEGIN
 
         POPUP "Cofnij"
         BEGIN
-            MENUITEM "Cofnij bieżący",           ID_MOVE_UNDOCURRENT
-            MENUITEM "Cofnij ostatni",           ID_MOVE_UNDOLAST
+            MENUITEM "Cofnij słowo",           ID_MOVE_UNDOCURRENT
+            MENUITEM "Cofnij kolejkę",           ID_MOVE_UNDOLAST
         END
 
         POPUP "Podpowiedź"
@@ -293,7 +293,7 @@ BEGIN
     CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
     CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
 
-    PUSHBUTTON      "Mieszaj",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
+    PUSHBUTTON      "Losuj",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
                     60,BUTTON_HT
 
     LTEXT           "Słownik:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,50,8,
@@ -358,7 +358,7 @@ BEGIN
     LTEXT           "Podaj literę jaką chcesz zastąpić.",IDC_BPICK,
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
 #ifdef FEATURE_TRAY_EDIT
-    LTEXT           "Wybierz klocek do wzięcia.",IDC_CPICK,
+    LTEXT           "Wybierz klocek do wymiany.",IDC_CPICK,
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
     EDITTEXT        IDC_PICKMSG,ASKB_COLLEFT,ASKB_EDITTOP,80,ASKB_EDITHT,
                     ES_MULTILINE | ES_READONLY
@@ -646,7 +646,7 @@ BEGIN
 #endif
 
 #ifdef XWFEATURE_SMS
-    LTEXT           "Telefon hosta:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
+    LTEXT           "Nr telefonu hosta:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Port hosta:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
@@ -817,7 +817,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Language Picker"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Wybierz język menu oraz okien dialogowych.  (języki dostępne są na stronie xwords.sf.net.)",
+    LTEXT           "Wybierz język menu oraz okien dialogowych. (języki dostępne są na stronie xwords.sf.net.)",
                      LOCALES_LABEL,LEFT_COL,2,80,50
 
     XWCOMBO(LOCALES_COMBO,LEFT_COL,53,70,12,0,58,0)
@@ -833,7 +833,7 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// String Table.  Note that these are ascii strings unless L proceeds the
+// String Table.  Note that these are utf-8 strings unless L proceeds the
 // first ".
 //
 
@@ -850,10 +850,11 @@ BEGIN
                     "dla Windows Mobile. Copyright 1998-2009 "\
                     "Eric House.  Oprogramowanie wydane na "\
                     "publicznej licencji GNU.\r\r"\
-                    "Słowniki, dokumentacja oraz kod źródłowy, dostępne są na stronach "\
+                    "Tłumaczenie: Piotr Bartkowiak."\
+                    "Słowniki, dokumentacja i kod źródłowy, dostępne na "\
                     "http://xwords.sf.net i http://eehouse.org/xwords/."
-    IDS_DICTLOC     "Pliki słowników (.xwd) zainstaluj proszę "\
-                    "w tym samym katalogu co wykonywalny plik .exe, lub "\
+    IDS_DICTLOC     "Pliki słowników (.xwd) zainstaluj "\
+                    "w tym samym katalogu co plik .exe, lub "\
                     "w katalogu nazwanym Crosswords na karcie pamięci, "\
                     "np. w \\storage card\\crosswords.  "\
                     "Pobierz słowniki z http://xwords.sf.net lub "\
@@ -864,7 +865,7 @@ BEGIN
     IDS_RENAME      "Podaj nową nazwę dla wybranej gry."
 
     IDS_REMAINING_TILES_ADD "+ %d [pozostałych klocków]"
-    IDS_UNUSED_TILES_SUB    "- %d [nieużywanych klocków]"
+    IDS_UNUSED_TILES_SUB    "- %d [nieużytych klocków]"
     IDS_BONUS_ALL          "bonus za użycie wszystkich: 50" XP_CR
     IDS_TURN_SCORE         "punktacja za kolejkę: %d" XP_CR
     IDS_COMMIT_CONFIRM     "wykonać ruch?" XP_CR
