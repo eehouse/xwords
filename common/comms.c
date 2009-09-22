@@ -339,7 +339,7 @@ set_reset_timer( CommsCtxt* comms )
     util_setTimer( comms->util, TIMER_COMMS, 15,
                    p_comms_resetTimer, comms );
     comms->reconTimerPending = XP_TRUE;
-}
+} /* set_reset_timer */
 
 void
 comms_transportFailed( CommsCtxt* comms  )
@@ -1723,6 +1723,8 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
         case XWRELAY_GAME_CONNECT:
             stream_putU8( tmpStream, XWRELAY_PROTO_VERSION );
             stringToStream( tmpStream, addr.u.ip_relay.invite );
+            XP_ASSERT( comms->r.myHostID == (comms->isServer? 
+                                             HOST_ID_SERVER: HOST_ID_NONE ) );
             stream_putU8( tmpStream, comms->r.myHostID );
             stream_putU8( tmpStream, comms->r.nPlayersHere );
             stream_putU8( tmpStream, comms->r.nPlayersTotal );
@@ -1835,11 +1837,11 @@ relayDisconnect( CommsCtxt* comms )
 {
     LOG_FUNC();
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        if ( comms->r.relayState != COMMS_RELAYSTATE_UNCONNECTED ) {
-            set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
+        if ( comms->r.relayState > COMMS_RELAYSTATE_CONNECT_PENDING ) {
             send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, 
                             NULL, 0 );
         }
+        set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
     }
 } /* relayDisconnect */
 #endif
