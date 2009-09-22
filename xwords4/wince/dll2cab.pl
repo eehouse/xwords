@@ -23,8 +23,6 @@ sub main() {
     # <number of characters>#command line<no carriage return or line feed>
 
     my $userName = $cabname;
-    my $cmdline = "\"\\Program Files\\Crosswords\\" . $userName . "\"";
-    my $cmdlen = length( $cmdline );
 
     $cabname =~ s/.dll$//;
 
@@ -50,7 +48,7 @@ sub main() {
     print( STDERR $cmd, "\n");
     `$cmd`;
 
-    unlink $linkName, $tmpfile;
+    unlink $tmpfile;
 }
 
 sub usage() {
