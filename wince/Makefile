@@ -254,7 +254,7 @@ $(BUILTDIR)/%.dll: $(OBJDIR)/l10n/%.rc.o
 	$(CC) -shared -o $@ $<
 	$(STRIP) $@
 
-bmps/netarrow.bmp: bmps/netarrow.pgm
+bmps/%.bmp: bmps/%.pgm
 	ppmtobmp $< > $@
 
 # Checking in xwords4.ico for now.  Hand-built using GIMP and layers
@@ -279,7 +279,7 @@ test:
 	echo $(COMMONOBJ)
 
 clean :
-	rm -rf $(OBJDIR) $(TARGET) bmps/netarrow.bmp
+	rm -rf $(OBJDIR) $(TARGET) $(BMPS)
 
 help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
