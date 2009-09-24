@@ -116,8 +116,8 @@ struct CEDrawCtx {
     HBITMAP rightArrow;
     HBITMAP downArrow;
     HBITMAP origin;
-#ifndef XWFEATURE_STANDALONE_ONLY
-    HBITMAP netStatus[4];
+#ifdef XWFEATURE_RELAY
+    HBITMAP netArrow;
 #endif
     XP_U16 trayOwner;
     XP_U16 miniLineHt;
@@ -1379,14 +1379,18 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* xprect,
                             DrawFocusState XP_UNUSED(dfs) )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
-    CEAppGlobals* globals = dctx->globals;
-    XP_ASSERT( !!globals->hdc );
-    ceSetBkColor( globals->hdc, dctx, CE_BKG_COLOR );
+    RECT rt;
+    HDC hdc = dctx->globals->hdc;
+
+    XP_ASSERT( !!hdc );
+    ceSetBkColor( hdc, dctx, CE_BKG_COLOR );
 
     dctx->scoreIsVertical = xprect->height > xprect->width;
 
     /* I don't think the clip rect's set at this point but drawing seems fine
        anyway.... ceClearToBkground() is definitely needed here. */
+    XPRtoRECT( &rt, xprect );
+    ceClipToRect( hdc, &rt );
     ceClearToBkground( (CEDrawCtx*)p_dctx, xprect );
 } /* ce_draw_scoreBegin */
 
@@ -1798,10 +1802,8 @@ DRAW_FUNC_NAME(destroyCtxt)( DrawCtx* p_dctx )
     DeleteObject( dctx->downArrow );
     DeleteObject( dctx->origin );
 
-#ifdef XWFEATURE_STANDALONE_ONLY
-    for ( ii = 0; ii < VSIZE(dctx->status); ++ii ) {
-        DeleteObject( dctx->netStatusii] );
-    }
+#ifdef XWFEATURE_RELAY
+    DeleteObject( dctx->netArrow );
 #endif
 
 #ifndef DRAW_LINK_DIRECT
@@ -1916,13 +1918,45 @@ void
 ce_draw_status( CEDrawCtx* dctx, const RECT* rect, CeNetState state )
 {
     RECT localR = *rect;
-    CEAppGlobals* globals = dctx->globals;
+    XP_U16 share;
+    HDC hdc = dctx->globals->hdc;
+    XP_Bool hasRed;
 
-    FillRect( globals->hdc, rect, dctx->brushes[CE_BKG_COLOR] );
+    FillRect( hdc, &localR, dctx->brushes[CE_BKG_COLOR] );
     InsetRect( &localR, 1, 1 );
-    XP_ASSERT( state < VSIZE(dctx->netStatus) );
-    ceDrawBitmapInRect( globals->hdc, &localR, dctx->netStatus[state], 
-                        XP_TRUE );
+
+/*     static int count = 0; */
+/*     state = count++ % CENSTATE_NSTATES; */
+
+    hasRed = state < (CENSTATE_NSTATES - 1);
+
+    /* First state is all-red.  Last is all-green.  In between we have red on
+       the right, green on the left. */
+
+    share = localR.right - localR.left;
+    if ( hasRed ) {
+        ceSetTextColor( hdc, dctx, CE_BKG_COLOR );
+
+        share /= CENSTATE_NSTATES-1;
+        share *= state;
+    } else {
+        ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
+    }
+
+    if ( share > 0 ) {
+        XP_U16 oldRight = localR.right;
+        localR.right = localR.left + share;
+        ceClipToRect( hdc, &localR );
+        ceSetBkColor( hdc, dctx, CE_PLAYER3_COLOR );
+        ceDrawBitmapInRect( hdc, rect, dctx->netArrow, XP_TRUE );
+        localR.right = oldRight;
+    }
+    if ( hasRed ) {
+        localR.left += share;
+        ceClipToRect( hdc, &localR );
+        ceSetBkColor( hdc, dctx, CE_PLAYER1_COLOR );
+        ceDrawBitmapInRect( hdc, rect, dctx->netArrow, XP_TRUE );
+    }
 }
 
 #ifndef _WIN32_WCE
@@ -1991,12 +2025,9 @@ ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals )
     dctx->origin = LoadBitmap( globals->hInst, 
                                MAKEINTRESOURCE(IDB_ORIGIN) );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-    int ii;
-    for ( ii = 0; ii < VSIZE(dctx->netStatus); ++ii ) {
-        dctx->netStatus[ii] = LoadBitmap( globals->hInst, 
-                                         MAKEINTRESOURCE(IDB_STATUS_0+ii) );
-    }
+#ifdef XWFEATURE_RELAY
+    dctx->netArrow = LoadBitmap( globals->hInst, 
+                                 MAKEINTRESOURCE(IDB_NETARROW) );
 #endif
 
     return dctx;
