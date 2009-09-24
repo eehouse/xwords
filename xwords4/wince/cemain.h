@@ -173,7 +173,7 @@ typedef struct _CEAppGlobals {
     XP_Bool hintPending;
     XP_Bool doGlobalPrefs;
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef XWFEATURE_RELAY
     CommsRelayState relayState;
     CeConnState socketState;
     RECT relayStatusR;

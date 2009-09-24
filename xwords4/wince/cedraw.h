@@ -30,6 +30,8 @@ typedef enum {
     ,CENSTATE_TRYING_RELAY
     ,CENSTATE_HAVE_RELAY
     ,CENSTATE_ALL_HERE
+
+    ,CENSTATE_NSTATES
 } CeNetState;
 
 CEDrawCtx* ce_drawctxt_make( MPFORMAL HWND mainWin, CEAppGlobals* globals );

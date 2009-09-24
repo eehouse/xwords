@@ -41,11 +41,8 @@
 #endif
 #define IDD_LOCALESDLG                  128
 
-#ifndef XWFEATURE_STANDALONE_ONLY
-# define IDB_STATUS_0                    129
-# define IDB_STATUS_1                    130
-# define IDB_STATUS_2                    131
-# define IDB_STATUS_3                    132
+#ifdef XWFEATURE_RELAY
+# define IDB_NETARROW                    129
 #endif
 
 #define REMOTE_CHECK1                   1005

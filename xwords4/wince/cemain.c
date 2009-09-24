@@ -779,7 +779,7 @@ cePositionBoard( CEAppGlobals* globals )
     figureBoardParms( globals, nCols, &bparms );
     setOwnedRects( globals, nCols, &bparms );
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef XWFEATURE_RELAY
     if ( !!globals->game.comms ) {
         globals->relayStatusR.left = bparms.adjLeft + bparms.netstatLeft;
         globals->relayStatusR.top = bparms.adjTop + bparms.netstatTop;
@@ -1659,9 +1659,9 @@ ceFlattenState( const CEAppGlobals* globals )
     } else {
         switch( socketState ) {
         case CE_IPST_START:
-        case CE_IPST_RESOLVINGHOST: 
 /*             state = CENSTATE_NONE; */
             break;
+        case CE_IPST_RESOLVINGHOST: 
         case CE_IPST_HOSTRESOLVED: 
         case CE_IPST_CONNECTING: 
         case CE_IPST_CONNECTED: 
@@ -1695,7 +1695,7 @@ drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
                 }
             }
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef XWFEATURE_RELAY
             if ( IntersectRect( &interR, invalR, &globals->relayStatusR ) ) {
                 CeNetState state = ceFlattenState( globals );
                 ce_draw_status( globals->draw, &globals->relayStatusR, state );

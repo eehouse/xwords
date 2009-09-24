@@ -142,17 +142,19 @@ endif
 
 BUILTDIR=$(OBJDIR)/built
 TARGET = $(BUILTDIR)/xwords4_$(SVNREV).exe
-DLL_SRCS = $(shell ls ./l10n/*.rc)
+DLL_SRCS = \
+	./l10n/xwords4_french.rc \
+	./l10n/xwords4_caps.rc \
+	./l10n/xwords4_polish.rc \
+	./l10n/xwords4_english.rc \
 
 BASE_LANG_SRC = l10n/xwords4_english.rc
 BASE_LANG_OBJ = $(OBJDIR$)/$(patsubst %.rc,%.rc.o,$(notdir $(BASE_LANG_SRC)))
 
-#DLLS = $(patsubst %.rc,%.dll,$(addprefix $(OBJDIR)/l10n/,$(notdir $(DLL_SRCS))))
-DLLS = \
-	$(BUILTDIR)/xwords4_french.dll \
-	$(BUILTDIR)/xwords4_caps.dll \
-	$(BUILTDIR)/xwords4_polish.dll \
-	$(BUILTDIR)/xwords4_english.dll \
+# filter out the one we're building in.  Can always build it as .dll
+# manually...
+DLLS = $(patsubst %.rc,$(BUILTDIR)/%.dll,\
+	$(notdir $(patsubst ./$(BASE_LANG_SRC),,$(DLL_SRCS))))
 
 WINCESRC = \
 	ceaskpwd.c \
@@ -180,6 +182,11 @@ WINCEOBJS = $(patsubst %.c,%.o,$(addprefix $(OBJDIR)/,$(WINCESRC)))
 WINCEICONS = bmps/xwords4_ico_16x16.png \
 			 bmps/xwords4_ico_22x22.png \
 			 bmps/xwords4_ico_32x32.png \
+
+BMPS = 	bmps/rightarrow.bmp \
+		bmps/downarro.bmp \
+		bmps/origin.bmp \
+		bmps/netarrow.bmp
 
 include ../common/config.mk
 
@@ -229,7 +236,7 @@ $(OBJDIR)/%.o : ../common/%.c $(INCLUDES)
 	mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(BASE_LANG_OBJ) : $(BASE_LANG_SRC) $(INCLUDES) xwords4.ico
+$(BASE_LANG_OBJ) : $(BASE_LANG_SRC) $(INCLUDES) xwords4.ico common_rsrc.rc $(BMPS)
 	$(WINDRES) -v $(MINGW_INC_PATH) $(RESFLAGS) -DAM_BASE_LANGUAGE -o $@ $< 
 
 $(OBJDIR)/l10n/%.rc.o : l10n/%.rc $(WINCE_INCLUDES)
@@ -246,6 +253,9 @@ $(BUILTDIR)/%.dll: $(OBJDIR)/l10n/%.rc.o
 	mkdir -p $(dir $@)
 	$(CC) -shared -o $@ $<
 	$(STRIP) $@
+
+bmps/netarrow.bmp: bmps/netarrow.pgm
+	ppmtobmp $< > $@
 
 # Checking in xwords4.ico for now.  Hand-built using GIMP and layers
 # it's 1/4 the size (because it has only two colors).  Should figure
@@ -269,7 +279,7 @@ test:
 	echo $(COMMONOBJ)
 
 clean :
-	rm -rf $(OBJDIR) $(TARGET)
+	rm -rf $(OBJDIR) $(TARGET) bmps/netarrow.bmp
 
 help:
 	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
