@@ -1441,28 +1441,30 @@ board_requestHint( BoardCtxt* board,
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;
 
-        result = !!engine && preflight( board );
+        if ( !!engine && preflight( board ) ) {
 
-        /* undo any current move.  otherwise we won't pass the full tray to
-           the engine.  Would it be better, though, to pass the whole tray
-           regardless where its contents are? */
-        if ( model_getCurrentMoveCount( model, selPlayer ) > 0 ) {
-            model_resetCurrentTurn( model, selPlayer );
-            /* Draw's a no-op on Wince with a null hdc, but it'll draw again.
-               Should probably define OS_INITS_DRAW on Wince...*/
+            /* undo any current move.  otherwise we won't pass the full tray
+               to the engine.  Would it be better, though, to pass the whole
+               tray regardless where its contents are? */
+            if ( model_getCurrentMoveCount( model, selPlayer ) > 0 ) {
+                model_resetCurrentTurn( model, selPlayer );
+                /* Draw's a no-op on Wince with a null hdc, but it'll draw again.
+                   Should probably define OS_INITS_DRAW on Wince...*/
 #ifdef OS_INITS_DRAW
-            /* On symbian, it's illegal to draw except from inside the Draw
-               method.  But the move search will probably be so fast that it's
-               ok to wait until we've found the move anyway. */
-            redraw = XP_TRUE;
+                /* On symbian, it's illegal to draw except from inside the
+                   Draw method.  But the move search will probably be so fast
+                   that it's ok to wait until we've found the move anyway. */
+                redraw = XP_TRUE;
 #else
-            board_draw( board );
+                board_draw( board );
 #endif
+            }
+
+            tileSet = model_getPlayerTiles( model, selPlayer );
+            nTiles = tileSet->nTiles - pti->dividerLoc;
+            result = nTiles > 0;
         }
 
-        tileSet = model_getPlayerTiles( model, selPlayer );
-        nTiles = tileSet->nTiles - pti->dividerLoc;
-        result = nTiles > 0;
         if ( result ) {
 #ifdef XWFEATURE_SEARCHLIMIT
             BdHintLimits limits;
