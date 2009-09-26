@@ -710,7 +710,7 @@ model_makeTurnFromStream( ModelCtxt* model, XP_U16 playerNum,
 
     numTiles = (XP_U16)stream_getBits( stream, NTILES_NBITS );
 
-    XP_STATUSF( "model_makeTurnFromStream: numTiles=%d", numTiles );
+    XP_LOGF( "%s: numTiles=%d", __func__, numTiles );
 
     while ( numTiles-- ) {
         XP_S16 foundAt;

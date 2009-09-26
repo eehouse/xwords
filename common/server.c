@@ -521,7 +521,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 {
     XP_Bool success = XP_TRUE;
     XP_U16 playersInMsg, i;
-    XP_STATUSF( "handleRegistrationMsg" );
+    LOG_FUNC();
 
     /* code will have already been consumed */
     playersInMsg = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
@@ -2374,7 +2374,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         /* This message is special: doesn't have the header that's possible
            once the game's in progress and communication's been
            established. */
-        XP_STATUSF( "somebody's registering!!!" );
+        XP_LOGF( "%s: somebody's registering!!!", __func__ );
         accepted = handleRegistrationMsg( server, incoming );
 
     } else if ( code == XWPROTO_CLIENT_SETUP ) {
