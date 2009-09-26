@@ -211,6 +211,7 @@ usage( char* appName, char* msg )
 	     "\t [-V]             # hide values in tray\n"
 	     "\t [-m]             # make the robot duMb (smart is default)\n"
 	     "\t [-l]             # disallow hints\n"
+	     "\t [-L]             # duplicate all packets sent\n"
 	     "\t [-P]             # pick tiles face up\n"
 	     "\t [-c]             # explain robot scores after each move\n"
 	     "\t [-C INVITE]      # invite used to groups games on relay\n"
@@ -457,6 +458,14 @@ linux_send( const XP_U8* buf, XP_U16 buflen,
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
         nSent = linux_tcp_send( buf, buflen, globals, addrRec );
+        if ( nSent == buflen && globals->params->duplicatePackets ) {
+#ifdef DEBUG
+            XP_S16 sentAgain = 
+#endif
+                linux_tcp_send( buf, buflen, globals, addrRec );
+            XP_ASSERT( sentAgain == nSent );
+        }
+
 #endif
 #if defined XWFEATURE_BLUETOOTH
     } else if ( conType == COMMS_CONN_BT ) {
@@ -784,7 +793,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "kKf:ln:Nsd:e:r:b:0q:w:Sit:UmvcVP"
+                      "kKf:Lln:Nsd:e:r:b:0q:w:Sit:UmvcVP"
 #ifdef XWFEATURE_SLOW_ROBOT
                       "z:"
 #endif
@@ -859,6 +868,9 @@ main( int argc, char** argv )
 #endif
         case 'm':		/* dumb robot */
             mainParams.gi.robotSmartness = DUMB_ROBOT;
+            break;
+        case 'L':
+            mainParams.duplicatePackets = XP_TRUE;
             break;
         case 'l':
             mainParams.gi.hintsNotAllowed = XP_TRUE;
