@@ -56,6 +56,7 @@ class CrefInfo {
     time_t m_startTime;
     int m_nHosts;
     string m_hostsIds;
+    string m_hostSeeds;
     string m_hostIps;
 };
 
@@ -126,15 +127,17 @@ class CRefMgr {
 
     CookieRef* getMakeCookieRef_locked( const char* cookie, const char* connName,
                                         HostID hid, int socket,
-                                        int nPlayersH, int nPlayersT );
+                                        int nPlayersH, int nPlayersT, int seed );
     CookieRef* getCookieRef( CookieID cookieID );
     CookieRef* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
-    CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
+    CookieRef* AddNew( const char* cookie, const char* connName, int seed, 
+                       CookieID id );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
                                 HostID hid, int socket, int nPlayersH, 
-                                int nPlayersT );
+                                int nPlayersT, int gameSeed, 
+                                bool* alreadyHere );
 
     CookieID cookieIDForConnName( const char* connName );
     CookieID nextCID( const char* connName );
@@ -164,7 +167,8 @@ class SafeCref {
 
  public:
     SafeCref( const char* cookie, const char* connName, HostID hid, 
-              int socket, int nPlayersH, int nPlayersT );
+              int socket, int nPlayersH, int nPlayersT, 
+              unsigned short gameSeed );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( int socket );
     SafeCref( CookieRef* cref );
@@ -178,17 +182,19 @@ class SafeCref {
             return false;
         }
     }
-    bool Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
+    bool Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+                  int seed ) {
         if ( IsValid() ) {
-            m_cref->_Connect( socket, srcID, nPlayersH, nPlayersT );
+            m_cref->_Connect( socket, srcID, nPlayersH, nPlayersT, seed );
             return true;
         } else {
             return false;
         }
     }
-    bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT ) {
+    bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+                    int seed ) {
         if ( IsValid() ) {
-            m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersT );
+            m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersT, seed );
             return true;
         } else {
             return false;
@@ -290,9 +296,9 @@ class SafeCref {
         }
     }
 
-    void GetHostsConnected( string* hosts, string* addrs ) {
+    void GetHostsConnected( string* hosts, string* seeds, string* addrs ) {
         if ( IsValid() ) {
-            m_cref->_FormatHostInfo( hosts, addrs );
+            m_cref->_FormatHostInfo( hosts, seeds, addrs );
         }
     }
 
@@ -305,13 +311,13 @@ class SafeCref {
     }
 
     bool IsValid()        { return m_isValid; }
- private:
 
+ private:
     CookieRef* m_cref;
     CRefMgr* m_mgr;
     bool m_isValid;
     bool m_locked;
-};
+}; /* SafeCref class */
 
 
 class CookieMapIterator {

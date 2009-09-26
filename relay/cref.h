@@ -37,17 +37,20 @@ class CookieMapIterator;        /* forward */
 
 struct HostRec {
  public:
-    HostRec(HostID hostID, int socket, int nPlayersH, int nPlayersT) 
+   HostRec(HostID hostID, int socket, int nPlayersH, int nPlayersT,
+        int seed ) 
         : m_hostID(hostID) 
         , m_socket(socket)
         , m_nPlayersH(nPlayersH) 
         , m_nPlayersT(nPlayersT) 
+        , m_seed(seed) 
         , m_lastHeartbeat(uptime()) 
         {}
     HostID m_hostID;
     int m_socket;
     int m_nPlayersH;
     int m_nPlayersT;
+    int m_seed;
     time_t m_lastHeartbeat;
 };
 
@@ -76,8 +79,6 @@ class CookieRef {
     int GetPlayersSought() { return m_nPlayersSought; }
     int GetPlayersHere() { return m_nPlayersHere; }
 
-
-    bool HostKnown( HostID host ) { return -1 != SocketForHost( host ); }
     int CountSockets() { return m_sockets.size(); }
     bool HasSocket( int socket );
     bool HasSocket_locked( int socket );
@@ -88,12 +89,13 @@ class CookieRef {
     int SocketForHost( HostID dest );
 
     bool NeverFullyConnected();
-    bool GameOpen( HostID hid, const char* cookie, int nPlayersH, bool isNew );
+    bool GameOpen( const char* cookie, int nPlayersH, bool isNew, 
+                   bool* alreadyHere );
 
     /* for console */
     void _PrintCookieInfo( string& out );
     void PrintSocketInfo( string& out, int socket );
-    void _FormatHostInfo( string* hostIds, string* addrs );
+    void _FormatHostInfo( string* hostIds, string* seeds, string* addrs );
 
     static CookieMapIterator GetCookieIterator();
 
@@ -101,8 +103,10 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
-    void _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT );
-    void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT );
+    void _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+                   int seed );
+    void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+                     int seed );
     void _Disconnect(int socket, HostID hostID );
     void _Shutdown();
     void _HandleHeartbeat( HostID id, int socket );
@@ -129,6 +133,7 @@ class CookieRef {
                 int socket;
                 int nPlayersH;
                 int nPlayersT;
+                int seed;
                 HostID srcID;
             } con;
             struct {
@@ -162,9 +167,11 @@ class CookieRef {
     }
 
     void pushConnectEvent( int socket, HostID srcID,
-                           int nPlayersH, int nPlayersT );
+                           int nPlayersH, int nPlayersT,
+                           int seed );
     void pushReconnectEvent( int socket, HostID srcID,
-                             int nPlayersH, int nPlayersT );
+                             int nPlayersH, int nPlayersT,
+                             int seed );
     void pushHeartbeatEvent( HostID id, int socket );
     void pushHeartFailedEvent( int socket );
     
@@ -194,6 +201,8 @@ class CookieRef {
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
     void sendAllHere( void );
+    bool SeedBelongs( int gameSeed );
+    bool SeedsBelong( const char* connName );
     void assignConnName( void );
     void assignHostIds( void );
     

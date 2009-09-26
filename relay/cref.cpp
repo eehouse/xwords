@@ -39,6 +39,7 @@
 #include "timermgr.h"
 #include "configs.h"
 #include "crefmgr.h"
+#include "permid.h"
 
 using namespace std;
 
@@ -168,7 +169,8 @@ CookieRef::Unlock() {
 }
 
 void
-CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT )
+CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT,
+                     int seed )
 {
     if ( CRefMgr::Get()->Associate( socket, this ) ) {
         if ( hid == HOST_ID_NONE ) {
@@ -176,7 +178,7 @@ CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT )
         } else {
             logf( XW_LOGINFO, "NOT assigned host id; why?" );
         }
-        pushConnectEvent( socket, hid, nPlayersH, nPlayersT );
+        pushConnectEvent( socket, hid, nPlayersH, nPlayersT, seed );
         handleEvents();
     } else {
         logf( XW_LOGINFO, "dropping connect event; already connected" );
@@ -184,10 +186,11 @@ CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT )
 }
 
 void
-CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersT )
+CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersT,
+                       int seed )
 {
     (void)CRefMgr::Get()->Associate( socket, this );
-    pushReconnectEvent( socket, hid, nPlayersH, nPlayersT );
+    pushReconnectEvent( socket, hid, nPlayersH, nPlayersT, seed );
     handleEvents();
 }
 
@@ -222,6 +225,7 @@ CookieRef::SocketForHost( HostID dest )
     int socket = -1;
     ASSERT_LOCKED();
     vector<HostRec>::const_iterator iter;
+    assert( dest != 0 );        /* don't use as lookup before assigned */
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         if ( iter->m_hostID == dest ) {
             socket = iter->m_socket;
@@ -236,7 +240,7 @@ CookieRef::SocketForHost( HostID dest )
 /* The idea here is: have we never seen the XW_ST_ALLCONNECTED state.  This
    needs to include any states reachable from XW_ST_ALLCONNECTED from which
    recovery back to XW_ST_ALLCONNECTED is possible.  This is used to decide
-   whether to admit a connection based on its cookie -- whether that cookie
+   whether to admit a connection based on its cookie -- whether that coookie
    should join an existing cref or get a new one? */
 bool
 CookieRef::NeverFullyConnected()
@@ -246,10 +250,11 @@ CookieRef::NeverFullyConnected()
 }
 
 bool
-CookieRef::GameOpen( HostID hid, const char* cookie, 
-                     int nPlayersH, bool isNew )
+CookieRef::GameOpen( const char* cookie, int nPlayersH, bool isNew, 
+                     bool* alreadyHere )
 {
     bool accept = false;
+    *alreadyHere = false;
     /* First, do we have room.  Second, are we missing this guy? */
 
     if ( isNew && m_gameFull ) {
@@ -260,9 +265,6 @@ CookieRef::GameOpen( HostID hid, const char* cookie,
          && m_curState != XWS_MISSING ) {
         /* do nothing; reject */
         logf( XW_LOGINFO, "reject: bad state %s", stateString(m_curState) );
-    } else if ( HostKnown( hid ) ) {
-        logf( XW_LOGINFO, "reject: known hid" );
-        /* do nothing: reject */
     } else {
         if ( m_nPlayersSought == 0 ) {
             accept = true;
@@ -305,15 +307,17 @@ CookieRef::removeSocket( int socket )
         ASSERT_LOCKED();
 
         count = m_sockets.size();
-        assert( count > 0 );
-
-        vector<HostRec>::iterator iter;
-        for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
-            if ( iter->m_socket == socket ) {
-                m_sockets.erase(iter);
-                --count;
-                break;
+        if ( count > 0 ) {
+            vector<HostRec>::iterator iter;
+            for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+                if ( iter->m_socket == socket ) {
+                    m_sockets.erase(iter);
+                    --count;
+                    break;
+                }
             }
+        } else {
+            logf( XW_LOGERROR, "%s: no socket %d to remove", __func__, socket );
         }
     }
 
@@ -391,7 +395,8 @@ CookieRef::_Remove( int socket )
 
 void 
 CookieRef::pushConnectEvent( int socket, HostID srcID,
-                             int nPlayersH, int nPlayersT )
+                             int nPlayersH, int nPlayersT,
+                             int seed )
 {
     CRefEvent evt;
     evt.type = XWE_CONNECTMSG;
@@ -399,12 +404,13 @@ CookieRef::pushConnectEvent( int socket, HostID srcID,
     evt.u.con.srcID = srcID;
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersT = nPlayersT;
+    evt.u.con.seed = seed;
     m_eventQueue.push_back( evt );
 } /* pushConnectEvent */
 
 void 
-CookieRef::pushReconnectEvent( int socket, HostID srcID,
-                               int nPlayersH, int nPlayersT )
+CookieRef::pushReconnectEvent( int socket, HostID srcID, int nPlayersH,
+                               int nPlayersT, int seed )
 {
     CRefEvent evt;
     evt.type = XWE_RECONNECTMSG;
@@ -412,6 +418,7 @@ CookieRef::pushReconnectEvent( int socket, HostID srcID,
     evt.u.con.srcID = srcID;
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersT = nPlayersT;
+    evt.u.con.seed = seed;
     m_eventQueue.push_back( evt );
 } /* pushReconnectEvent */
 
@@ -562,6 +569,7 @@ CookieRef::handleEvents()
             case XWA_SNDALLHERE_2:
                 cancelAllConnectedTimer();
                 assignHostIds();
+                assignConnName();
                 sendAllHere( );
                 break;
 
@@ -613,6 +621,7 @@ CookieRef::increasePlayerCounts( const CRefEvent* evt )
     int nPlayersH = evt->u.con.nPlayersH;
     int nPlayersT = evt->u.con.nPlayersT;
     HostID hid = evt->u.con.srcID;
+    assert( hid <= 4 );
  
     logf( XW_LOGINFO, "%s: hid=%d, nPlayersH=%d, ", __func__,
           "nPlayersT=%d", hid, nPlayersH, nPlayersT );
@@ -713,22 +722,23 @@ void
 CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 {
     int socket = evt->u.con.socket;
-    HostID id = evt->u.con.srcID;
+    HostID hid = evt->u.con.srcID;
     int nPlayersH = evt->u.con.nPlayersH;
     int nPlayersT = evt->u.con.nPlayersT;
+    int seed = evt->u.con.seed;
 
     ASSERT_LOCKED();
 
     logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, socket=%d (size=%d)", 
-          __func__, id, socket, m_sockets.size());
-    HostRec hr(id, socket, nPlayersH, nPlayersT);
+          __func__, hid, socket, m_sockets.size());
+    HostRec hr(hid, socket, nPlayersH, nPlayersT, seed );
     m_sockets.push_back( hr );
+    logf( XW_LOGINFO, "m_sockets.size() now %d", m_sockets.size() );
 
     /* Now send the response */
     unsigned char buf[1 +       /* cmd */
                       sizeof(short) + /* heartbeat */
-                      sizeof(CookieID) +
-                      1 + MAX_CONNNAME_LEN
+                      sizeof(CookieID) 
     ];
 
     unsigned char* bufp = buf;
@@ -736,16 +746,6 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     putNetShort( &bufp, GetHeartbeat() );
     putNetShort( &bufp, GetCookieID() );
-
-    if ( initial ) {
-        const char* connName = ConnName();
-        assert( !!connName && connName[0] );
-        int len = strlen( connName );
-        assert( len < MAX_CONNNAME_LEN );
-        *bufp++ = (char)len;
-        memcpy( bufp, connName, len );
-        bufp += len;
-    }
 
     send_with_length( socket, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent %s", cmdToStr( XWRELAY_Cmd(buf[0]) ) );
@@ -818,12 +818,20 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 void
 CookieRef::sendAllHere( void )
 {
-    unsigned char buf[1 + 1];
+    unsigned char buf[1 + 1 + 1 + MAX_CONNNAME_LEN];
     unsigned char* bufp = buf;
     unsigned char* idLoc;
     
     *bufp++ = XWRELAY_ALLHERE;
     idLoc = bufp++;                 /* space for hostId, remembering address */
+
+    const char* connName = ConnName();
+    assert( !!connName && connName[0] );
+    int len = strlen( connName );
+    assert( len < MAX_CONNNAME_LEN );
+    *bufp++ = (char)len;
+    memcpy( bufp, connName, len );
+    bufp += len;
 
     ASSERT_LOCKED();
     vector<HostRec>::iterator iter = m_sockets.begin();
@@ -860,6 +868,72 @@ CookieRef::assignHostIds( void )
             }
             iter->m_hostID = nextId++; /* ++: don't reuse */
         }
+    }
+}
+
+#define CONNNAME_DELIM ' '      /* ' ' so will wrap in browser */
+/* Does my seed belong as part of existing connName */
+bool 
+CookieRef::SeedBelongs( int gameSeed )
+{
+    bool belongs = false;
+    const char* ptr = ConnName();
+    const char* end = ptr + strlen(ptr);
+    assert( '\0' != ptr[0] );
+    char buf[5];
+    snprintf( buf, sizeof(buf), "%.4X", gameSeed );
+
+    for ( ; *ptr != CONNNAME_DELIM && ptr < end; ptr += 4 ) {
+        if ( 0 == strncmp( ptr, buf, 4 ) ) {
+            belongs = true;
+            break;
+        }
+    }
+
+    return belongs;
+} /* SeedBelongs */
+
+/* does my connName provide a home for seeds already in this connName-less
+   ref? */
+bool
+CookieRef::SeedsBelong( const char* connName )
+{
+    bool found = true;
+    assert( !m_connName[0] );
+    const char* delim = strchr( connName, CONNNAME_DELIM );
+    assert( !!delim );
+
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        char buf[5];
+        snprintf( buf, sizeof(buf), "%.4X", iter->m_seed );
+        const char* match = strstr( connName, buf );
+        if ( !match || match > delim ) {
+            found = false;
+            break;
+        }
+    }
+
+    return found;
+} /* SeedsBelong */
+
+void
+CookieRef::assignConnName( void )
+{
+    if ( '\0' == ConnName()[0] ) {
+
+        vector<HostRec>::iterator iter;
+        for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+            char buf[5];
+            snprintf( buf, sizeof(buf), "%.4X", iter->m_seed );
+            m_connName += buf;
+        }
+
+        m_connName += CONNNAME_DELIM + PermID::GetNextUniqueID();
+
+        logf( XW_LOGINFO, "%s: assigning name: %s", __func__, ConnName() );
+    } else {
+        logf( XW_LOGINFO, "%s: already named: %s", __func__, ConnName() );
     }
 }
 
@@ -997,7 +1071,7 @@ CookieRef::_PrintCookieInfo( string& out )
 } /* PrintCookieInfo */
 
 void
-CookieRef::_FormatHostInfo( string* hostIds, string* addrs )
+CookieRef::_FormatHostInfo( string* hostIds, string* seeds, string* addrs )
 {
     ASSERT_LOCKED();
     vector<HostRec>::iterator iter;
@@ -1007,6 +1081,12 @@ CookieRef::_FormatHostInfo( string* hostIds, string* addrs )
             char buf[8];
             snprintf( buf, sizeof(buf), "%d ", iter->m_hostID );
             *hostIds += buf;
+        }
+
+        if ( !!seeds ) {
+            char buf[6];
+            snprintf( buf, sizeof(buf), "%.4X ", iter->m_seed );
+            *seeds += buf;
         }
 
         if ( !!addrs ) {

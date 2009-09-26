@@ -30,7 +30,6 @@
 #include "mlock.h"
 #include "configs.h"
 #include "timermgr.h"
-#include "permid.h"
 
 class SocketStuff {
  public:
@@ -104,19 +103,35 @@ CRefMgr::CloseAll()
     }
 } /* CloseAll */
 
-/* Matching hosts to games.  If they have a connName, it's easy.  That's the
- * only thing we'll match on, and it must match, and the game must have room.
- * If they have a cookie as well, it must match.  If only a cookie is
- * provided, we may be dealing with a new game *or* a reconnect from somebody
- * who didn't get his connName yet (even if other participants did.)
+/* Find a game to which this guy belongs.  Return NULL if none's found and
+ * presumably a new one will be created.
+ *
+ * Match by connName if provided.  If I match, great.  But what if there isn't
+ * room, which would normally mean I'm already there and this is a duplicate
+ * packet.  Should a dup be simply dropped, or should I reply?  If the dup
+ * happened because our earlier reply was dropped then we should in fact
+ * reply.
+ *
+ * If match is by cookie (called Room in the UI) we need to be careful.  If
+ * this is an established game, meaning that at some point all devices were
+ * there and a connName was established, then check if the incoming seed is in
+ * that connName, otherwise reject it (to form its own game.)  But otherwise,
+ * if either we can't match seeds yet or this guy's does match, let him in.
+ * Again there's the duplicate packet issue if the game is "full" already.
+ *
+ * Match can also occur on cookie only -- device has no connName perhaps
+ * because the relay crashed before sending it -- where the device belongs in
+ * an existing game.  That we detect by checking if the new arrival's seed is
+ * a component of the candidate's connName.
  */
 
 CookieRef*
 CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
-                          HostID hid, int socket, int nPlayersH, int nPlayersT )
+                          HostID hid, int socket, int nPlayersH, int nPlayersT,
+                          int gameSeed, bool* alreadyHere )
 {
-    logf( XW_LOGINFO, "%s(cookie=%s,connName=%s,hid=%d,socket=%d)", __func__, 
-          cookie, connName, hid, socket );
+    logf( XW_LOGINFO, "%s(cookie=%s,connName=%s,hid=%d,seed=%x,socket=%d)", __func__, 
+          cookie, connName, hid, gameSeed, socket );
     CookieRef* found = NULL;
 
     if ( !!cookie || !!connName ) { /* drop if both are null */
@@ -133,28 +148,46 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                 if ( 0 == strcmp( cref->ConnName(), connName ) ) {
                     if ( cref->Lock() ) {
                         assert( !cookie || 0 == strcmp( cookie, cref->Cookie() ) );
-                        if ( cref->GameOpen( hid, cookie, 
-                                             nPlayersH, false ) ) {
+                        if ( cref->SeedBelongs( gameSeed ) ) {
+                            logf( XW_LOGINFO, "%s: SeedBelongs: dup packet?", __func__ );
+                            *alreadyHere = true;
                             found = cref;
+                        } else if ( cref->GameOpen( cookie, nPlayersH, 
+                                                    false, alreadyHere ) ) {
+                            found = cref;
+                        } else {
+                            /* drop if we match on connName and it's not
+                               wanted; must be dup. */
+                            *alreadyHere = true;
                         }
                         cref->Unlock();
                     }
                 }
-            } else if ( !!cookie ) {
+            } 
+
+            if ( !found && !!cookie ) {
                 if ( 0 == strcmp( cref->Cookie(), cookie ) ) {
-                    if ( cref->NeverFullyConnected() ) {
-                        found = cref;
-                    } else {
-                        if ( cref->Lock() ) {
-                            if ( cref->GameOpen( hid, cookie, 
-                                                 nPlayersH, true ) ) {
-                                found = cref;
-                            } else if ( cref->HasSocket_locked(socket) ) {
-                                logf( XW_LOGINFO, "%s: HasSocket case", __func__);
+                    if ( cref->Lock() ) {
+                        if ( cref->ConnName()[0] ) {
+                            /* if has a connName, we can tell if belongs */
+                            if ( cref->SeedBelongs( gameSeed ) ) {
                                 found = cref;
                             }
-                            cref->Unlock();
+                        } else if ( !!connName ) {
+                            /* Or, if we have a connName and it doesn't,
+                               perhaps we have its name.  Does our name
+                               contain its other members? */
+                            if ( cref->SeedsBelong( connName ) ) {
+                                found = cref;
+                            }
+                        } else if ( cref->GameOpen( cookie, nPlayersH,
+                                                    true, alreadyHere ) ) {
+                            found = cref;
+                        } else if ( cref->HasSocket_locked(socket) ) {
+                            logf( XW_LOGINFO, "%s: HasSocket case", __func__);
+                            found = cref;
                         }
+                        cref->Unlock();
                     }
                 }
             }
@@ -212,7 +245,7 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
         info.m_startTime = cref->GetStarttime();
         
         SafeCref sc(cref);
-        sc.GetHostsConnected( &info.m_hostsIds, &info.m_hostIps );
+        sc.GetHostsConnected( &info.m_hostsIds, &info.m_hostSeeds, &info.m_hostIps );
         
         mgrInfo.m_crefInfo.push_back( info );
     }
@@ -263,7 +296,7 @@ CRefMgr::getFromFreeList( void )
 CookieRef*
 CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
                                   HostID hid, int socket, int nPlayersH, 
-                                  int nPlayersT )
+                                  int nPlayersT, int gameSeed )
 {
     CookieRef* cref;
 
@@ -275,14 +308,11 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
        later when the game is complete.
     */
 
-    cref = FindOpenGameFor( cookie, connName, hid, socket, nPlayersH, nPlayersT );
-    if ( cref == NULL ) {
-        string s;
-        if ( NULL == connName ) {
-            s = PermID::GetNextUniqueID();
-            connName = s.c_str();
-        }
-        cref = AddNew( cookie, connName, nextCID( NULL ) );
+    bool alreadyHere;
+    cref = FindOpenGameFor( cookie, connName, hid, socket, nPlayersH, nPlayersT,
+                            gameSeed, &alreadyHere );
+    if ( cref == NULL && !alreadyHere ) {
+        cref = AddNew( cookie, connName, gameSeed, nextCID( NULL ) );
     }
 
     return cref;
@@ -411,10 +441,11 @@ CRefMgr::heartbeatProc( void* closure )
 #endif
 
 CookieRef*
-CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
+CRefMgr::AddNew( const char* cookie, const char* connName, int seed,
+                 CookieID id )
 {
-    logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, cid=%d)", __func__,
-          cookie, connName, id );
+    logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, seed=%.4X, cid=%d)", __func__,
+          cookie, connName, seed, id );
 
     CookieRef* ref = getFromFreeList();
 
@@ -575,7 +606,8 @@ CookieMapIterator::Next()
 //////////////////////////////////////////////////////////////////////////////
 
 SafeCref::SafeCref( const char* cookie, const char* connName, HostID hid, 
-                    int socket, int nPlayersH, int nPlayersT )
+                    int socket, int nPlayersH, int nPlayersT, 
+                    unsigned short gameSeed )
     : m_cref( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_isValid( false )
@@ -583,7 +615,7 @@ SafeCref::SafeCref( const char* cookie, const char* connName, HostID hid,
     CookieRef* cref;
 
     cref = m_mgr->getMakeCookieRef_locked( cookie, connName, hid, socket,
-                                           nPlayersH, nPlayersT );
+                                           nPlayersH, nPlayersT, gameSeed );
     if ( cref != NULL ) {
         m_locked = cref->Lock();
         m_cref = cref;

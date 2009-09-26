@@ -31,6 +31,8 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_CHANNELSEED 0x09 /* new short in relay connect must be
+                                        saved in comms */
 #define STREAM_VERS_UTF8 0x08
 #define STREAM_VERS_ALWAYS_MULTI 0x07 /* stream format same for multi and
                                          one-device game builds */
@@ -41,7 +43,7 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_UTF8
+#define CUR_STREAM_VERS STREAM_VERS_CHANNELSEED
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
