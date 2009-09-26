@@ -97,7 +97,10 @@ typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
 
-typedef XP_S16 XP_PlayerAddr;
+/* Low two bits treated as channel; rest can be random to aid detection of
+ * duplicate packets. */
+#define CHANNEL_MASK 0x0003
+typedef XP_U16 XP_PlayerAddr;
 
 typedef enum {
     TIMER_PENDOWN = 1, /* ARM doesn't like ids of 0... */

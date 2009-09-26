@@ -296,18 +296,22 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
         HostID srcID;
         unsigned char nPlayersH;
         unsigned char nPlayersT;
+        unsigned short gameSeed;
         if ( readStr( &bufp, end, cookie, sizeof(cookie) ) 
              && getNetByte( &bufp, end, &srcID )
              && getNetByte( &bufp, end, &nPlayersH )
-             && getNetByte( &bufp, end, &nPlayersT ) ) {
+             && getNetByte( &bufp, end, &nPlayersT )
+             && getNetShort( &bufp, end, &gameSeed ) ) {
 
             /* Make sure second thread can't create new cref for same cookie
                this one just handled.*/
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie, NULL, srcID, socket, nPlayersH, nPlayersT );
-            success = scr.Connect( socket, srcID, nPlayersH, nPlayersT );
+            SafeCref scr( cookie, NULL, srcID, socket, nPlayersH, nPlayersT, gameSeed );
+            /* nPlayersT etc could be slots in SafeCref to avoid passing
+               here */
+            success = scr.Connect( socket, srcID, nPlayersH, nPlayersT, gameSeed );
         }
 
         if ( !success ) {
@@ -335,19 +339,22 @@ processReconnect( unsigned char* bufp, int bufLen, int socket )
         HostID srcID;
         unsigned char nPlayersH;
         unsigned char nPlayersT;
+        unsigned short gameSeed;
 
         connName[0] = '\0';
         if ( readStr( &bufp, end, cookie, sizeof(cookie) )
              && getNetByte( &bufp, end, &srcID )
              && getNetByte( &bufp, end, &nPlayersH )
              && getNetByte( &bufp, end, &nPlayersT )
+             && getNetShort( &bufp, end, &gameSeed )
              && readStr( &bufp, end, connName, sizeof(connName) ) ) {
 
             SafeCref scr( cookie[0]? cookie : NULL, 
                           connName[0]? connName : NULL, 
                           srcID, socket, nPlayersH, 
-                          nPlayersT );
-            success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT );
+                          nPlayersT, gameSeed );
+            success = scr.Reconnect( socket, srcID, nPlayersH, nPlayersT, 
+                                     gameSeed );
         }
 
         if ( !success ) {
@@ -770,6 +777,8 @@ main( int argc, char** argv )
     /* Needs to be reset after a crash/respawn */
     PermID::SetStartTime( time(NULL) );
 
+    logf( XW_LOGERROR, "***** forked %dth new process *****", s_nSpawns );
+
     /* Arrange to be sent SIGUSR1 on death of parent. */
     prctl( PR_SET_PDEATHSIG, SIGUSR1 );
 
@@ -829,12 +838,10 @@ main( int argc, char** argv )
     struct sigaction act;
     memset( &act, 0, sizeof(act) );
     act.sa_handler = SIGINT_handler;
-    int err = sigaction( SIGINT, &act, NULL );
-    logf( XW_LOGERROR, "sigaction=>%d", err );
+    (void)sigaction( SIGINT, &act, NULL );
 
     XWThreadPool* tPool = XWThreadPool::GetTPool();
     tPool->Setup( nWorkerThreads, processMessage );
-
 
     /* set up select call */
     fd_set rfds;

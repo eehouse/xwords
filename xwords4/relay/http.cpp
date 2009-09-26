@@ -126,6 +126,7 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
              "<th>Here</th>"
              "<th>State</th>"
              "<th>Host IDs</th>"
+             "<th>Seeds</th>"
              );
     if ( isLocal ) {
         fprintf( fil, "<th>Host IPs</th>" );
@@ -150,7 +151,8 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
                  "<td>%d</td>"  /* players */
                  "<td>%d</td>"  /* players here */
                  "<td>%s</td>"  /* State */
-                 "<td>%s</td>"   /* Hosts */
+                 "<td>%s</td>"  /* Hosts */
+                 "<td>%s</td>"  /* Seeds */
                  ,
                  crefInfo->m_cookie.c_str(),
                  crefInfo->m_connName.c_str(),
@@ -159,7 +161,8 @@ printCrefs( FILE* fil, const CrefMgrInfo* info, bool isLocal )
                  crefInfo->m_totalSent,
                  crefInfo->m_nPlayersSought, crefInfo->m_nPlayersHere, 
                  stateString( crefInfo->m_curState ),
-                 crefInfo->m_hostsIds.c_str()
+                 crefInfo->m_hostsIds.c_str(),
+                 crefInfo->m_hostSeeds.c_str()
                  );
         
         if ( isLocal ) {

@@ -101,9 +101,11 @@ typedef unsigned char XWRELAY_Cmd;
 
 #define MAX_INVITE_LEN 15
 #define MAX_MSG_LEN    256      /* 100 is more like it */
-#define MAX_CONNNAME_LEN 35     /* host id plus a small integer, typically */
+#define MAX_CONNNAME_LEN 48     /* host ID, boot time, and seeds as hex? */
 
-#define XWRELAY_PROTO_VERSION 0x01
+#define XWRELAY_PROTO_VERSION_ORIG        0x01
+#define XWRELAY_PROTO_VERSION_LATE_NAME   0x02
+#define XWRELAY_PROTO_VERSION XWRELAY_PROTO_VERSION_LATE_NAME
 
 /* Errors passed with denied  */
 #ifndef CANT_DO_TYPEDEF
