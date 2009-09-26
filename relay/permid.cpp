@@ -30,7 +30,7 @@ using namespace std;
 pthread_mutex_t PermID::s_guard = PTHREAD_MUTEX_INITIALIZER;
 string          PermID::s_serverName;
 int             PermID::s_nextId = 0;
-string          PermID::s_startTime;
+time_t          PermID::s_startTime;
 
 string
 PermID::GetNextUniqueID()
@@ -38,8 +38,8 @@ PermID::GetNextUniqueID()
     MutexLock ml( &s_guard );
 
     char buf[64];
-    snprintf( buf, sizeof(buf), "%s:%s:%d", s_serverName.c_str(), 
-              s_startTime.c_str(), ++s_nextId );
+    snprintf( buf, sizeof(buf), "%s:%x:%d", s_serverName.c_str(), 
+              (unsigned int)s_startTime, ++s_nextId );
     string s(buf);
 
     return s;
@@ -54,8 +54,6 @@ PermID::SetServerName( const char* name )
 /* static */ void
 PermID::SetStartTime( time_t startTime )
 {
-    char buf[16];
-    snprintf( buf, sizeof(buf), "%ld", startTime );
-    s_startTime = buf;
-    logf( XW_LOGINFO, "assigned startTime: %s", s_startTime.c_str() );
+    s_startTime = startTime;
+    logf( XW_LOGINFO, "assigned startTime: %ld", s_startTime );
 }

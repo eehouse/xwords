@@ -45,7 +45,9 @@ class PermID {
                                                  unique to this relay
                                                  instance. */
     static int                s_nextId;       /* numeric part of ID */
-    static std::string        s_startTime;    /* allows multiple servers per 
-                                                 host to have uniquie names */
-}; 
+    static time_t             s_startTime;    /* allows multiple servers per
+                                                 host to have uniquie names
+                                                 and to ensure no duplications
+                                                 after a crash. */
+};
 #endif
