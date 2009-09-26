@@ -34,6 +34,7 @@ EOF
     echo "         this many seconds; 0 to disable; cur: $KILL_INTERVAL_SECS"
     echo "    env: ROLES: what hosts to handle here; cur: $ROLES"
     echo "    env: USE_CURSES; cur: $USE_CURSES"
+    echo "    env: DUPES; -L to duplicate all packets; cur: $DUPES"
     exit 0
 }
 
@@ -51,7 +52,7 @@ game_curses() {
     WAIT=$3
     INDEX=$4
     SERVER_PARAMS=$5
-    $XWORDS -u -d $DICT -r $NAME -a $HOST -p $PORT \
+    $XWORDS -u -d $DICT $DUPES -r $NAME -a $HOST -p $PORT \
         -C $COOKIE $QUIT -z 0:$WAIT >/dev/null -0 $SERVER_PARAMS \
         2>/tmp/$RUN_NAME/log_${COOKIE}_${INDEX}.txt < /dev/null &
     echo $!
@@ -63,7 +64,7 @@ game_gtk() {
     WAIT=$3
     INDEX=$4
     SERVER_PARAMS=$5
-    $XWORDS -d $DICT -r $NAME -a $HOST -p $PORT \
+    $XWORDS -d $DICT $DUPES -r $NAME -a $HOST -p $PORT \
         -C $COOKIE $QUIT -z 0:$WAIT $SERVER_PARAMS \
         2>/tmp/$RUN_NAME/log_${COOKIE}_${INDEX}.txt &
 }
