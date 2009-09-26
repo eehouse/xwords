@@ -22,7 +22,7 @@
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP | exf2
 #endif
 
-#define ABOUT_VERSION "4.4 b2"
+#define ABOUT_VERSION "4.4 b3"
 
 #define DLL_VERS_RESOURCE              \
 ID_DLLVERS_RES DLLV MOVEABLE PURE      \
