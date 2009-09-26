@@ -256,6 +256,7 @@ getHostAddr( CeSocketWrapper* self )
     if ( self->addrRec.u.ip_relay.hostName[0] ) {
         XP_LOGF( "%s: calling WSAAsyncGetHostByName(%s)", 
                  __func__, self->addrRec.u.ip_relay.hostName );
+        XP_ASSERT( !self->getHostTask );
         self->getHostTask
             = WSAAsyncGetHostByName( self->hWnd,
                                      XWWM_HOSTNAME_ARRIVED,
@@ -313,20 +314,24 @@ ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM XP_UNUSED_DBG(wParam),
     XP_ASSERT( CE_IPST_RESOLVINGHOST == self->connState );
 
     if ( 0 == err ) {
-        XP_ASSERT( (HANDLE)wParam == self->getHostTask );
+        if ( (HANDLE)wParam != self->getHostTask ) {
+            XP_LOGF( "%s: ignoring old event", __func__ );
+        } else {
 
-        XP_U32 tmp;
-        XP_MEMCPY( &tmp, &self->hostNameUnion.hent.h_addr_list[0][0], 
-                   sizeof(tmp) );
-        self->addrRec.u.ip_relay.ipAddr = XP_NTOHL( tmp );
+            XP_U32 tmp;
+            XP_MEMCPY( &tmp, &self->hostNameUnion.hent.h_addr_list[0][0], 
+                       sizeof(tmp) );
+            self->addrRec.u.ip_relay.ipAddr = XP_NTOHL( tmp );
 
-        XP_LOGF( "got address: %d.%d.%d.%d", 
-                 (int)((tmp>>0) & 0xFF), 
-                 (int)((tmp>>8) & 0xFF), 
-                 (int)((tmp>>16) & 0xFF), 
-                 (int)((tmp>>24) & 0xFF) );
+            XP_LOGF( "got address: %d.%d.%d.%d", 
+                     (int)((tmp>>0) & 0xFF), 
+                     (int)((tmp>>8) & 0xFF), 
+                     (int)((tmp>>16) & 0xFF), 
+                     (int)((tmp>>24) & 0xFF) );
 
-        stateChanged( self, CE_IPST_HOSTRESOLVED );
+            stateChanged( self, CE_IPST_HOSTRESOLVED );
+            self->getHostTask = NULL;
+        }
     } else {
         XP_LOGF( "%s: async operation failed: %ld", __func__, err );
 /* WSAENETDOWN */
