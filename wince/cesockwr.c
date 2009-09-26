@@ -304,8 +304,7 @@ ce_sockwrap_delete( CeSocketWrapper* self )
 } /* ce_sockwrap_delete */
 
 void
-ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM XP_UNUSED_DBG(wParam), 
-                      LPARAM lParam )
+ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
 {
     LOG_FUNC();
     XP_ASSERT( !!self );
