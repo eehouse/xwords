@@ -340,13 +340,25 @@ struct PalmAppGlobals {
 #ifdef XWFEATURE_RELAY
     NetLibStuff nlStuff;
     XP_U32 heartTimerFireAt;
+    XP_Bool lastSendGood;
 #endif
 
-#ifdef XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+    XP_U16 lastNetStatusRes;
+
+# ifdef XWFEATURE_BLUETOOTH
     struct PalmBTStuff* btStuff;
-    XP_U16 lastBTStatusRes;
-    BtUIState btUIState;          /* For showing user what's up */
     XP_Bool suspendBT;
+# endif
+
+    union {
+# ifdef XWFEATURE_BLUETOOTH
+        BtUIState btUIState;          /* For showing user what's up */
+# endif
+# ifdef XWFEATURE_RELAY
+        CommsRelayState relayState;
+# endif
+    } netState;
 #endif
 
 #ifdef DEBUG

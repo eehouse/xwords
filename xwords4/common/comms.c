@@ -829,7 +829,6 @@ getChannelSeed( CommsCtxt* comms )
 XP_S16
 comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
 {
-    XP_ASSERT( !!comms );
     XP_PlayerAddr channelNo = stream_getAddress( stream );
     AddressRecord* rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
     MsgID msgID = (!!rec)? ++rec->nextMsgID : 0;
@@ -1015,7 +1014,6 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 XP_S16
 comms_resendAll( CommsCtxt* comms )
 {
-    XP_ASSERT( !!comms );
     MsgQueueElem* msg;
     XP_S16 result = 0;
 
@@ -1401,7 +1399,6 @@ XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
                            const CommsAddrRec* retAddr )
 {
-    XP_ASSERT( !!comms );
     XP_Bool messageValid = XP_FALSE;
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
