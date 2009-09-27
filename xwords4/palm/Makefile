@@ -118,7 +118,8 @@ MYDEFS_COMMON += -DXWFEATURE_STANDALONE_ONLY
 else
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
-MYDEFS_COMMON += -DXWFEATURE_RELAY
+RELAY = -DXWFEATURE_RELAY
+MYDEFS_COMMON += $(RELAY)
 
 # turn on bluetooth comms option for 68K and ARM
 BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP 
@@ -163,7 +164,20 @@ BITMAP_RSRCS = \
 	$(BITMAPS)/lightbulb.pbitm \
 	$(BITMAPS)/traybuttons.pbitm \
 	$(BITMAPS)/showtray.pbitm \
-	$(BITMAPS)/xwords4.pbitm \
+	$(BITMAPS)/xwords4.pbitm
+ifdef BLUETOOTH
+BITMAP_RSRCS += \
+	$(BITMAPS)/bts_conn.bmp \
+	$(BITMAPS)/bts_listen.bmp \
+	$(BITMAPS)/bts_off.bmp \
+	$(BITMAPS)/bts_seek.bmp
+endif
+ifdef RELAY
+BITMAP_RSRCS += \
+	$(BITMAPS)/rls_allconn.bmp \
+	$(BITMAPS)/rls_off.bmp \
+	$(BITMAPS)/rls_pending.bmp
+endif
 
 # INCLUDES += -I/usr/local/share/palmdev/sdk-5r3/Extensions/ExpansionMgr
 ifdef BLUETOOTH

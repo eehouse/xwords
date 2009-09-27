@@ -1626,7 +1626,7 @@ showConnState( PalmAppGlobals* globals )
             }
 #endif
 #ifdef XWFEATURE_RELAY
-        } else if ( (COMMS_CONN_RELAY == typ ) ) {
+        } else if ( COMMS_CONN_RELAY == typ ) {
             /* resID = RELAYSTATUS_NONE_RESID; */
             if ( globals->lastSendGood ) {
                 switch( globals->netState.relayState ) {
@@ -1635,7 +1635,7 @@ showConnState( PalmAppGlobals* globals )
                     resID = RELAYSTATUS_PENDING_RESID; 
                     break;
                 case COMMS_RELAYSTATE_CONNECTED:
-                    resID = RELAYSTATUS_CONN_RESID; 
+                    resID = RELAYSTATUS_CONN_RESID;
                     break;
                 case COMMS_RELAYSTATE_ALLCONNECTED:
                     resID = RELAYSTATUS_ALLCONN_RESID; 
@@ -2726,6 +2726,9 @@ mainViewHandleEvent( EventPtr event )
             hresRect( globals, &clip );
             board_invalRect( globals->game.board, (XP_Rect*)&clip );
             draw = !globals->postponeDraw;
+#ifdef XWFEATURE_RELAY
+            showConnState( globals );
+#endif
         }
         break;
 

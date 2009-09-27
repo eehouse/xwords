@@ -121,19 +121,19 @@ END
 
 BITMAP ID RELAYSTATUS_PENDING_RESID AUTOCOMPRESS
 BEGIN
-    BITMAP "bmps/bts_off.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_listen.pbitm"   BPP 1 DENSITY 72
     BITMAP "bmps/rls_pending.bmp" BPP 8 DENSITY 144
 END
 
 BITMAP ID RELAYSTATUS_CONN_RESID AUTOCOMPRESS
 BEGIN
-    BITMAP "bmps/bts_off.pbitm"   BPP 1 DENSITY 72
-    BITMAP "bmps/rls_conn.bmp" BPP 8 DENSITY 144
+    BITMAP "bmps/bts_seek.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/rls_meconn.bmp" BPP 8 DENSITY 144
 END
 
 BITMAP ID RELAYSTATUS_ALLCONN_RESID AUTOCOMPRESS
 BEGIN
-    BITMAP "bmps/bts_off.pbitm"   BPP 1 DENSITY 72
+    BITMAP "bmps/bts_conn.pbitm"   BPP 1 DENSITY 72
     BITMAP "bmps/rls_allconn.bmp" BPP 8 DENSITY 144
 END
 #endif
