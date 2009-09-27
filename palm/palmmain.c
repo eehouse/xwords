@@ -97,6 +97,7 @@ static XP_S16 palm_send( const XP_U8* buf, XP_U16 len,
 #ifdef COMMS_HEARTBEAT
 static void palm_reset( void* closure );
 #endif
+static void palm_relayStatus( void* closure, CommsRelayState newState );
 static void palm_send_on_close( XWStreamCtxt* stream, void* closure );
 
 /* callbacks */
@@ -588,6 +589,10 @@ palmInitTProcs( PalmAppGlobals* globals, TransportProcs* procs )
 #ifdef COMMS_HEARTBEAT
     procs->reset = palm_reset;
 #endif
+#ifdef XWFEATURE_RELAY
+    procs->rstatus = palm_relayStatus;
+#endif
+
     procs->closure = globals;
 }
 
@@ -1595,15 +1600,18 @@ timeForTimer( PalmAppGlobals* globals, XWTimerReason* why, XP_U32* when )
     return found;
 } /* timeForTimer */
 
-#ifdef XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
 static void
 showConnState( PalmAppGlobals* globals )
 {
     CommsCtxt* comms = globals->game.comms;
     Int16 resID = 0;
     if ( !!comms ) {
-        if ( (COMMS_CONN_BT == comms_getConType( comms )) ) {
-            switch( globals->btUIState ) {
+        CommsConnType typ = comms_getConType( comms );
+        if ( 0 ) {
+#ifdef XWFEATURE_BLUETOOTH
+        } else if ( COMMS_CONN_BT == typ ){
+            switch( globals->netState.btUIState ) {
             case BTUI_NOBT:
                 break;
             case BTUI_NONE:
@@ -1616,11 +1624,30 @@ showConnState( PalmAppGlobals* globals )
             case BTUI_SERVING:
                 resID = BTSTATUS_CONNECTED_RES_ID; break;
             }
-        } /* else might want IP conn status too.... */
+#endif
+#ifdef XWFEATURE_RELAY
+        } else if ( (COMMS_CONN_RELAY == typ ) ) {
+            /* resID = RELAYSTATUS_NONE_RESID; */
+            if ( globals->lastSendGood ) {
+                switch( globals->netState.relayState ) {
+                case COMMS_RELAYSTATE_UNCONNECTED:
+                case COMMS_RELAYSTATE_CONNECT_PENDING:
+                    resID = RELAYSTATUS_PENDING_RESID; 
+                    break;
+                case COMMS_RELAYSTATE_CONNECTED:
+                    resID = RELAYSTATUS_CONN_RESID; 
+                    break;
+                case COMMS_RELAYSTATE_ALLCONNECTED:
+                    resID = RELAYSTATUS_ALLCONN_RESID; 
+                    break;
+                }
+            }
+#endif
+        }
     }
-    if ( globals->lastBTStatusRes != resID ) {
+    if ( globals->lastNetStatusRes != resID ) {
         RectangleType bounds;
-        getObjectBounds( XW_BTSTATUS_GADGET_ID, &bounds );
+        getObjectBounds( XW_NETSTATUS_GADGET_ID, &bounds );
         if ( resID != 0 ) {
             draw_drawBitmapAt( globals->draw, resID,
                                bounds.topLeft.x, bounds.topLeft.y );
@@ -1631,10 +1658,12 @@ showConnState( PalmAppGlobals* globals )
             }
             WinEraseRectangle( &bounds, 0 );
         }
-        globals->lastBTStatusRes = resID;
+        globals->lastNetStatusRes = resID;
     }
 } /* showConnState */
+#endif
 
+#ifdef XWFEATURE_BLUETOOTH
 static void
 btEvtHandler( PalmAppGlobals* globals, BtCbEvtInfo* evt )
 {
@@ -1694,7 +1723,7 @@ handleNilEvent( PalmAppGlobals* globals )
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( (handled = (!globals->suspendBT)
                  && palm_bt_doWork( globals, btEvtHandler,
-                                    &globals->btUIState ) )
+                                    &globals->netState.btUIState ) )
                 ,showConnState( globals )
                 ,handled ) {
         /* nothing to do */
@@ -2073,8 +2102,10 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
     board_invalAll( globals->game.board );
     board_draw( globals->game.board );
 
-#ifdef XWFEATURE_BLUETOOTH
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+# ifdef XWFEATURE_BLUETOOTH
     globals->suspendBT = XP_FALSE;
+# endif
     showConnState( globals );
 #endif
 
@@ -2123,8 +2154,8 @@ updateForLefty( PalmAppGlobals* globals, FormPtr form )
         XW_MAIN_TRADE_BUTTON_ID,  -1,
         XW_MAIN_DONE_BUTTON_ID,   TRAY_BUTTON_WIDTH-1,
 #endif
-#ifdef XWFEATURE_BLUETOOTH
-        XW_BTSTATUS_GADGET_ID,    0,
+#if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_RELAY
+        XW_NETSTATUS_GADGET_ID,    0,
 #endif
         0,
     };
@@ -4002,6 +4033,7 @@ palm_send( const XP_U8* buf, XP_U16 len,
 #ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         result = palm_ip_send( buf, len, addr, globals );
+        globals->lastSendGood = result != -1;
         break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
@@ -4020,6 +4052,16 @@ palm_send( const XP_U8* buf, XP_U16 len,
     }
     return result;
 } /* palm_send */
+
+#ifdef XWFEATURE_RELAY
+static void
+palm_relayStatus( void* closure, CommsRelayState newState )
+{
+    PalmAppGlobals* globals = (PalmAppGlobals*)closure;
+    globals->netState.relayState = newState;
+    showConnState( globals );
+}
+#endif
 
 #ifdef COMMS_HEARTBEAT
 static void
@@ -4135,6 +4177,7 @@ palm_util_addrChange( XW_UtilCtxt* uc,
 # ifdef XWFEATURE_RELAY
     } else if ( COMMS_CONN_RELAY == newAddr->conType ) {
         ip_addr_change( globals, oldAddr, newAddr );
+        showConnState( globals );
 # endif
 # ifdef XWFEATURE_BLUETOOTH
     } else if ( isBT && !globals->userCancelledBT ) {

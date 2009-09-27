@@ -37,6 +37,8 @@ ICONTEXT = "Crosswords"
 APPID ?= Xwr4
 endif
 
+RELAY_NAME_DEFAULT="eehouse.org"
+
 LANG=en_US
 ROOTNAME = $(NAME)
 BITMAPS = ./bmps
@@ -116,10 +118,10 @@ MYDEFS_COMMON += -DXWFEATURE_STANDALONE_ONLY
 else
 # Turn on network play over IP via cellular modem.  Very much
 # experimental at this point!
-MYDEFS_COMMON += -DXWFEATURE_RELAY -DRELAY_NAME_DEFAULT="\"localhost\""
+MYDEFS_COMMON += -DXWFEATURE_RELAY
 
 # turn on bluetooth comms option for 68K and ARM
-#BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP 
+BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_L2CAP 
 # -DCOMMS_HEARTBEAT
 #BLUETOOTH = -DXWFEATURE_BLUETOOTH -DBT_USE_RFCOMM
 MYDEFS_COMMON += $(BLUETOOTH)
@@ -149,6 +151,7 @@ MYDEFS_COMMON += -DSVN_REV=\"$(shell svnversion -n .)\"
 MYDEFS_ARM = -D__LITTLE_ENDIAN -DXW_TARGET_PNO $(MYDEFS_COMMON)
 MYDEFS_68K = -DPLATFORM_PALM -D__BIG_ENDIAN $(MYDEFS_COMMON) \
 	-DAPPNAME=\"$(APPNAME)\" \
+	-DRELAY_NAME_DEFAULT=\"$(RELAY_NAME_DEFAULT)\" \
 	$(BLUETOOTH)
 
 
@@ -305,7 +308,7 @@ ifneq (x$(BUILD_AS_PNOLET)x, xx)
 
 pnolet: $(PLATFORM)/LocalizedStrIncludes.h
 	$(MAKE) -f Makefile.PNO MEMDEBUG=$(MEMDEBUG) PLATFORM=$(PLATFORM) \
-		MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\' -DAPPNAME=\\\"$(APPNAME)\\\"" 
+		MYDEFS="$(MYDEFS_ARM) -DAPPID=\'$(APPID)\' -DAPPNAME=\\\"$(APPNAME)\\\" -DRELAY_NAME_DEFAULT=\\\"$(RELAY_NAME_DEFAULT)\\\""
 endif
 
 # GDB seems confused by relative paths these days.  So generate the
