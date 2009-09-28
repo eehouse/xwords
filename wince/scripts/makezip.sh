@@ -12,38 +12,29 @@ function usage() {
     exit 0
 }
 
-while :; do
+while [ -n "$1" ]; do
+    [ -z "$2" ] && usage
     case "$1" in
         --exe)
-            [ -z $2 ] && usage
-            EXE=$2
-            shift 2
+            EXE="$2"
             ;;
         --name)
-            [ -z $2 ] && usage
-            NAME=$2
-            shift 2
+            NAME="$2"
             ;;
         --dict)
-            [ -z $2 ] && usage
-            DICT=$2
-            shift 2
+            DICT="$2"
             ;;
         --out)
-            [ -z $2 ] && usage
-            OUTFILE=$2
-            shift 2
-            ;;
-        "")
-            break
+            OUTFILE="$2"
             ;;
         *)
             usage
     esac
+    shift 2
 done
 
 [ -z "$EXE" ] && usage
-[ -z "$OUTFILE" ] && OUTFILE=${NAME%.exe}.zip
+[ -z "$OUTFILE" ] && OUTFILE=${EXE%.exe}.zip
 
 mkdir -p $TMPDIR
 
@@ -59,7 +50,7 @@ fi
 
 cat > $README <<EOF
 
-Thanks for downloading Crosswords 4.2 Release Candidate 1 for Smartphone and PocketPC.
+Thanks for downloading Crosswords 4.4 Beta 3 for Smartphone and PocketPC.
 
 To install, copy the enclosed executable file ($(basename $EXE)) and dictionary file ($(basename $DICT)) into the same directory on your device using File Explorer, then double-click on the executable to launch it.
 
