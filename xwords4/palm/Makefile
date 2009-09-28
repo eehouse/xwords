@@ -221,6 +221,7 @@ OBJS_68K = $(PLATFORM)/palmmain.o \
 	$(PLATFORM)/palmbt.o \
 	$(PLATFORM)/prefsdlg.o \
 	$(PLATFORM)/connsdlg.o \
+	$(PLATFORM)/palmblnk.o \
 	$(PLATFORM)/palmdbg.o \
 	$(COMMONOBJ)
 
