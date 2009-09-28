@@ -366,7 +366,7 @@ palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
 {
     PalmBTStuff* btStuff = globals->btStuff;
     if ( !btStuff ) {
-        stream_putString( stream, "bt not initialized" );
+        stream_catString( stream, "bt not initialized" );
     } else {
         char buf[64];
         XP_U16 cur;
@@ -374,29 +374,29 @@ palm_bt_getStats( PalmAppGlobals* globals, XWStreamCtxt* stream )
         XP_SNPRINTF( buf, sizeof(buf), "Role: %s\n", 
                      btStuff->picoRole == PBT_MASTER? "master":
                      (btStuff->picoRole == PBT_SLAVE? "slave":"unknown") );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
         XP_SNPRINTF( buf, sizeof(buf), "State: %s\n", 
                      stateToStr( GET_STATE(btStuff)) );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
 
         XP_SNPRINTF( buf, sizeof(buf), "%d actions queued:\n", 
                      btStuff->queueLen );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
         for ( cur = 0; cur < btStuff->queueLen; ++cur ) {
             XP_SNPRINTF( buf, sizeof(buf), " - %s\n",
                          actToStr( btStuff->actQueue[cur] ) );
-            stream_putString( stream, buf );
+            stream_catString( stream, buf );
         }
 
         XP_SNPRINTF( buf, sizeof(buf), "total sent: %ld\n",
                      btStuff->stats.totalSent );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
         XP_SNPRINTF( buf, sizeof(buf), "total rcvd: %ld\n",
                      btStuff->stats.totalRcvd );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
         XP_SNPRINTF( buf, sizeof(buf), "max act queue len seen: %d\n",
                      btStuff->stats.maxQueueLen );
-        stream_putString( stream, buf );
+        stream_catString( stream, buf );
     }
 }
 #endif
