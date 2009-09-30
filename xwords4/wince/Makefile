@@ -143,6 +143,7 @@ endif
 BUILTDIR=$(OBJDIR)/built
 TARGET = $(BUILTDIR)/xwords4_$(SVNREV).exe
 DLL_SRCS = \
+	./l10n/xwords4_catalan.rc \
 	./l10n/xwords4_french.rc \
 	./l10n/xwords4_caps.rc \
 	./l10n/xwords4_polish.rc \
