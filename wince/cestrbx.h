@@ -23,15 +23,5 @@
 #include "cemain.h"
 #include "ceutil.h"
 
-LRESULT CALLBACK StrBox(HWND hDlg, UINT message, WPARAM wParam, 
-			LPARAM lParam);
-
-
-typedef struct StrBoxState {
-    CeDlgHdr dlgHdr;
-    const wchar_t* title;
-    XWStreamCtxt* stream;
-    XP_U16 result;
-    XP_Bool isQuery;
-    XP_Bool textIsSet;
-} StrBoxState;
+XP_Bool WrapStrBox( CEAppGlobals* globals, const wchar_t* title,
+                    XWStreamCtxt* stream, XP_U16 buttons );

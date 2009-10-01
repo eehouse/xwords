@@ -17,9 +17,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <windowsx.h>
+
 #include "cestrbx.h"
 #include "cemain.h"
 #include "ceutil.h"
+#include "cedebug.h"
+
+typedef struct StrBoxState {
+    CeDlgHdr dlgHdr;
+    const wchar_t* title;
+    HFONT font;
+    XWStreamCtxt* stream;
+    XP_U16 result;
+    XP_Bool isQuery;
+    XP_Bool textIsSet;
+} StrBoxState;
 
 static void
 stuffTextInField( HWND hDlg, StrBoxState* state )
@@ -65,13 +78,11 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             SendMessage( hDlg, WM_SETTEXT, 0, (long)state->title );
         }
 
+        SendDlgItemMessage( hDlg, ID_EDITTEXT, WM_SETFONT, 
+                            (WPARAM)state->font, 0L );
+
         if ( !state->isQuery ) {
             ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
-            /* also want to expand the text box to the bottom */
-            /* ceIsLandscape() is going away.... */
-/*             if ( !ceIsLandscape( state->dlgHdr.globals ) ) { */
-/*                 ceCenterCtl( hDlg, IDOK ); */
-/*             } */
         }
 
         ceDlgSetup( &state->dlgHdr, hDlg, 
@@ -112,3 +123,34 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return handled;
 } /* StrBox */
+
+XP_Bool
+WrapStrBox( CEAppGlobals* globals, const wchar_t* title,
+            XWStreamCtxt* stream, XP_U16 buttons )
+{
+    StrBoxState state;
+
+    XP_MEMSET( &state, 0, sizeof(state) );
+
+    state.title = title;
+    state.stream = stream;
+    state.isQuery = (buttons & ~MB_ICONMASK) != MB_OK;
+    state.dlgHdr.globals = globals;
+
+    LOGFONT fontInfo;
+    XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
+    fontInfo.lfHeight = 14;
+    fontInfo.lfQuality = PROOF_QUALITY;
+    wcscpy( fontInfo.lfFaceName, IS_SMARTPHONE(globals)? 
+            L"Segoe Condensed" : L"Tahoma" );
+
+    state.font = CreateFontIndirect( &fontInfo );
+
+    assertOnTop( globals->hWnd );
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
+                    (DLGPROC)StrBox, (long)&state );
+
+    DeleteObject( state.font );
+
+    return state.result == IDOK;
+}

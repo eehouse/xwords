@@ -2797,19 +2797,7 @@ ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
         int result = messageBoxStream( globals, stream, title, buttons );
         saidYes = (IDOK == result) | (IDRETRY == result) | (IDYES == result);
     } else {
-        StrBoxState state;
-
-        XP_MEMSET( &state, 0, sizeof(state) );
-
-        state.title = title;
-        state.stream = stream;
-        state.isQuery = (buttons & ~MB_ICONMASK) != MB_OK;
-        state.dlgHdr.globals = globals;
-
-        assertOnTop( globals->hWnd );
-        DialogBoxParam( globals->locInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
-                        (DLGPROC)StrBox, (long)&state );
-        saidYes = state.result == IDOK;
+        saidYes = WrapStrBox( globals, title, stream, buttons );
     }
 
     if ( destroy ) {
