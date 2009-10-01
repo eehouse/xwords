@@ -331,7 +331,7 @@ mem_stream_close( XWStreamCtxt* p_sctx )
 } /* mem_stream_close */
 
 static XP_U16
-mem_stream_getSize( XWStreamCtxt* p_sctx )
+mem_stream_getSize( const XWStreamCtxt* p_sctx )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     XP_U16 size = stream->nBytesWritten - stream->curReadPos;
