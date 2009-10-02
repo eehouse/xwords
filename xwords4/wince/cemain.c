@@ -1737,6 +1737,14 @@ ceDisplayFinalScores( CEAppGlobals* globals )
                            MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDisplayFinalScores */
 
+static void
+ceWarnLangChange( CEAppGlobals* globals )
+{
+    const wchar_t* msg = ceGetResStringL( globals, 
+                                          IDS_LANG_CHANGE_RESTART );
+    MessageBox( globals->hWnd, msg, NULL, MB_OK | MB_ICONINFORMATION );
+}
+
 static XP_Bool
 ceDoNewGame( CEAppGlobals* globals )
 {
@@ -1770,6 +1778,11 @@ ceDoNewGame( CEAppGlobals* globals )
                 updateForColors( globals );
             }
         }
+
+        if ( giState.prefsChanged ) {
+            ceWarnLangChange( globals );
+        }
+
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
         if ( giState.addrChanged ) {
             addr = &giState.prefsPrefs.addrRec;
@@ -1871,14 +1884,14 @@ static void
 ceDoPrefsDlg( CEAppGlobals* globals )
 {
     CePrefsPrefs prefsPrefs;
-    XP_Bool colorsChanged;
+    XP_Bool colorsChanged, langChanged;
 
     loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo, 
                            &prefsPrefs );
 
     assertOnTop( globals->hWnd );
     if ( WrapPrefsDialog( globals->hWnd, globals, &prefsPrefs,
-                          XP_FALSE, &colorsChanged ) ) {
+                          XP_FALSE, &colorsChanged, &langChanged ) ) {
         loadCurPrefsFromState( globals, &globals->appPrefs, &globals->gameInfo, 
                                &prefsPrefs );
 
@@ -1887,6 +1900,11 @@ ceDoPrefsDlg( CEAppGlobals* globals )
         if ( colorsChanged ) {
             updateForColors( globals );
         }
+
+        if ( langChanged ) {
+            ceWarnLangChange( globals );
+        }
+
         /* need to reflect vars set in state into globals, and update/inval
            as appropriate. */
     }
@@ -2441,6 +2459,9 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if ( !state.userCancelled ) { 
                     if ( state.prefsChanged ) {
                         updateForColors( globals );
+                    }
+                    if ( state.langChanged ) {
+                        ceWarnLangChange( globals );
                     }
                     draw = server_do( globals->game.server );
                 }

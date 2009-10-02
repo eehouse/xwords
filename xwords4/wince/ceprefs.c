@@ -41,6 +41,7 @@ typedef struct _CePrefsDlgState {
     //XP_Bool doGlobalPrefs;      /* state of the radio */
     XP_Bool isNewGame;
     XP_Bool colorsChanged;
+    XP_Bool langChanged;
 } CePrefsDlgState;
 
 /* Stuff the strings for phonies.  Why can't I put this in the resource?
@@ -338,11 +339,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                         if ( ceChooseResFile( hDlg, globals, 
                                               pState->langFileName,
                                               newFile, VSIZE(newFile)) ) {
-                            const wchar_t* msg
-                                = ceGetResStringL( globals, 
-                                                   IDS_LANG_CHANGE_RESTART );
-                            MessageBox( hDlg, msg, NULL, 
-                                        MB_OK | MB_ICONINFORMATION );
+                            pState->langChanged = XP_TRUE;
                             XP_STRNCPY( pState->langFileName, newFile, 
                                         VSIZE(pState->langFileName) );
                         }
@@ -394,7 +391,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
  */
 XP_Bool
 WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsPrefs* prefsPrefs,
-                 XP_Bool isNewGame, XP_Bool* colorsChanged )
+                 XP_Bool isNewGame, XP_Bool* colorsChanged,  XP_Bool* langChanged )
 {
     CePrefsDlgState state;
     XP_Bool result;
@@ -417,6 +414,7 @@ WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, CePrefsPrefs* prefsPrefs,
     if ( result ) {
         XP_MEMCPY( prefsPrefs, &state.prefsPrefs, sizeof( *prefsPrefs ) );
         *colorsChanged = state.colorsChanged;
+        *langChanged = state.langChanged;
 
         replaceStringIfDifferent( globals->mpool, &globals->langFileName, 
                                   state.langFileName );

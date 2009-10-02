@@ -56,8 +56,8 @@ typedef struct CePrefsPrefs {
 } CePrefsPrefs;
 
 XP_Bool WrapPrefsDialog( HWND hDlg, CEAppGlobals* globals, 
-                         CePrefsPrefs* prefsPrefs, 
-                         XP_Bool isNewGame, XP_Bool* colorsChanged );
+                         CePrefsPrefs* prefsPrefs, XP_Bool isNewGame,
+                         XP_Bool* colorsChanged, XP_Bool* langChanged );
 void loadStateFromCurPrefs( CEAppGlobals* globals, const CEAppPrefs* appPrefs, 
                             const CurGameInfo* gi, CePrefsPrefs* prefsPrefs );
 void loadCurPrefsFromState( CEAppGlobals* globals, CEAppPrefs* appPrefs, 
