@@ -37,7 +37,7 @@ while ( my $path = shift @ARGV ) {
     my $appname = $cabname;
     $cabname .= "_xwd.cab";
 
-    `pocketpc-cab -p $provider -a $appname $fname $cabname`;
+    `./scripts/pocketpc-cab -p $provider -a $appname $fname $cabname`;
 
     print STDERR "$cabname done\n";
     unlink $fname;
