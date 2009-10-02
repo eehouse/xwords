@@ -21,8 +21,8 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
 #include "winnt.h"
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
+LANGUAGE LANG_CATALAN, SUBLANG_CATALAN_CATALAN
+#pragma code_page(65001)
 #endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
@@ -121,8 +121,6 @@ BEGIN
 END
 
 #ifdef _WIN32_WCE
-// soft key bar described at
-// http://msdn2.microsoft.com/en-us/library/aa457781.aspx
 IDM_MAIN_MENUBAR RCDATA
 BEGIN
     IDM_MENU, 2,
