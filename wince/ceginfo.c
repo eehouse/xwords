@@ -310,11 +310,12 @@ raiseForHiddenPlayers( GameInfoState* state, XP_U16 nPlayers )
 static void
 handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
 {
-    XP_Bool colorsChanged;
+    XP_Bool colorsChanged, langChanged;
     if ( WrapPrefsDialog( hDlg, globals, &state->prefsPrefs,
-                          state->isNewGame, &colorsChanged ) ) {
+                          state->isNewGame, &colorsChanged, &langChanged ) ) {
         state->prefsChanged = XP_TRUE;
         state->colorsChanged = colorsChanged;
+        state->langChanged = langChanged;
         /* nothing to do until user finally does confirm the parent dialog */
     }
 } /* handlePrefsButton */

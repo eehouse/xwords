@@ -955,7 +955,7 @@ BEGIN
     IDS_NEED_TOUCH          "This feature requires a touch screen."
     IDS_EDITCOLOR_FORMAT    "Edit color for %s"
 
-    IDS_LANG_CHANGE_RESTART "This change will take effect after you restart Crosswords."
+    IDS_LANG_CHANGE_RESTART "You will see the new language after you restart Crosswords."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend."

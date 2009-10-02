@@ -47,6 +47,7 @@ typedef struct GameInfoState {
 
     XP_Bool prefsChanged;
     XP_Bool colorsChanged;
+    XP_Bool langChanged;
     XP_Bool addrChanged;
     CePrefsPrefs prefsPrefs;
 
