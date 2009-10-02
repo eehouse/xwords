@@ -43,7 +43,7 @@ sub main() {
     my $appname = $cabname;
     $cabname .= ".cab";
 
-    my $cmd = "pocketpc-cab -p $provider -a $appname "
+    my $cmd = "./scripts/pocketpc-cab -p $provider -a $appname "
         . "$fname $cabname";
     print( STDERR $cmd, "\n");
     `$cmd`;
