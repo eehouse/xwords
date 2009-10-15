@@ -46,7 +46,7 @@ typedef enum {
 typedef struct DrawScoreInfo {
     LastScoreCallback lsc;
     void* lscClosure;
-    XP_UCHAR* name;
+    const XP_UCHAR* name;
     XP_U16 playerNum;
     XP_S16 totalScore;
     XP_S16 nTilesLeft;   /* < 0 means don't use */
