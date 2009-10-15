@@ -170,8 +170,7 @@ layout_for_ht( GtkDrawCtx* dctx, XP_U16 ht )
 
 	if ( NULL == layout ) {
 		FontPerSize* fps = g_malloc( sizeof(*fps) );
-		dctx->fontsPerSize = g_list_insert( dctx->fontsPerSize,
-											fps, 0 );
+		dctx->fontsPerSize = g_list_insert( dctx->fontsPerSize, fps, 0 );
 
 		char font[32];
 		snprintf( font, sizeof(font), "helvetica normal %dpx", ht );
@@ -709,10 +708,12 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); */
     gtkEraseRect( dctx, rect );
     dctx->topFocus = dfs == DFS_TOP;
+    dctx->scoreIsVertical = rect->height > rect->width;
 } /* gtk_draw_scoreBegin */
 
 static PangoLayout*
-getLayoutToFitRect( GtkDrawCtx* dctx, const XP_UCHAR* str, const XP_Rect* rect )
+getLayoutToFitRect( GtkDrawCtx* dctx, const XP_UCHAR* str, const XP_Rect* rect, 
+                    int* heightP )
 {
     PangoLayout* layout;
     float ratio, ratioH;
@@ -732,9 +733,15 @@ getLayoutToFitRect( GtkDrawCtx* dctx, const XP_UCHAR* str, const XP_Rect* rect )
         ratio = ratioH;
     }
     height = 24.0 * ratio;
+    if ( !!heightP && *heightP < height ) {
+        height = *heightP;
+    }
 
     layout = layout_for_ht( dctx, height );
     pango_layout_set_text( layout, (char*)str, len );
+    if ( !!heightP ) {
+        *heightP = height;
+    }
     return layout;
 } /* getLayoutToFitRect */
 
@@ -747,7 +754,7 @@ gtkDrawDrawRemText( DrawCtx* p_dctx, const XP_Rect* rect, XP_S16 nTilesLeft,
     PangoLayout* layout;
 
     XP_SNPRINTF( buf, sizeof(buf), "rem:%d", nTilesLeft );
-    layout = getLayoutToFitRect( dctx, buf, rect );
+    layout = getLayoutToFitRect( dctx, buf, rect, NULL );
 
     if ( !!widthP ) {
         int width, height;
@@ -792,25 +799,74 @@ gtk_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
 } /* gtk_draw_drawRemText */
 
 static void
-formatScoreText( XP_UCHAR* buf, XP_U16 bufLen, const DrawScoreInfo* dsi )
+formatScoreText( PangoLayout* layout, XP_UCHAR* buf, XP_U16 bufLen, 
+                 const DrawScoreInfo* dsi, const XP_Rect* bounds, 
+                 XP_Bool scoreIsVertical, XP_U16* widthP, int* nLines )
 {
     XP_S16 score = dsi->totalScore;
     XP_U16 nTilesLeft = dsi->nTilesLeft;
     XP_Bool isTurn = dsi->isTurn;
-    int used;
-    char* borders = "";
+    XP_S16 maxWidth = bounds->width;
+    XP_UCHAR numBuf[16];
+    int width, height;
+    *nLines = 1;
 
-    if ( isTurn ) {
-        borders = "*";
-    }
-
-    used = XP_SNPRINTF( buf, bufLen, "%s%.3d", borders, score );
+    XP_SNPRINTF( numBuf, VSIZE(numBuf), "%d", score );
     if ( (nTilesLeft < MAX_TRAY_TILES) && (nTilesLeft > 0) ) {
-        XP_UCHAR nbuf[10];
-        XP_SNPRINTF( nbuf, VSIZE(nbuf), ":%d", nTilesLeft );
-        (void)XP_STRCAT( buf, nbuf );
+        XP_UCHAR tmp[10];
+        XP_SNPRINTF( tmp, VSIZE(tmp), ":%d", nTilesLeft );
+        (void)XP_STRCAT( numBuf, tmp );
     }
-    XP_SNPRINTF( buf+used, bufLen-used, "%s", borders );
+
+    if ( !!layout ) {
+        pango_layout_set_text( layout, (char*)numBuf, XP_STRLEN(numBuf) );
+        pango_layout_get_pixel_size( layout, &width, &height );
+        if ( !scoreIsVertical ) {
+            maxWidth -= width;
+            *widthP = width;
+        }
+    }
+
+    /* Reformat name + ':' until it fits */
+    XP_UCHAR name[MAX_SCORE_LEN] = { 0 };
+    if ( isTurn && maxWidth > 0 ) {
+        XP_U16 len = 1 + XP_STRLEN( dsi->name ); /* +1 for "\0" */
+        if ( scoreIsVertical ) {
+            ++*nLines;
+        } else {
+            ++len;              /* for ':' */
+        }
+        if ( len >= VSIZE(name) ) {
+            len = VSIZE(name) - 1;
+        }
+        for ( ; ; ) {
+            XP_SNPRINTF( name, len-1, "%s", dsi->name );
+            if ( !scoreIsVertical ) {
+                name[len-2] = ':';
+                name[len-1] = '\0';
+            }
+
+            pango_layout_set_text( layout, (char*)name, len );
+            pango_layout_get_pixel_size( layout, &width, &height );
+            if ( width <= maxWidth ) {
+                if ( !scoreIsVertical ) {
+                    *widthP += width;
+                }
+                break;
+            }
+
+            if ( --len < 2 ) {
+                name[0] = '\0';
+                break;
+            }
+        }
+    }
+
+    if ( scoreIsVertical ) {
+        *widthP = bounds->width;
+    }
+
+    XP_SNPRINTF( buf, bufLen, "%s%s%s", name, (*nLines>1? XP_CR:""), numBuf );
 } /* formatScoreText */
 
 static void
@@ -819,16 +875,20 @@ gtk_draw_measureScoreText( DrawCtx* p_dctx, const XP_Rect* bounds,
                            XP_U16* widthP, XP_U16* heightP )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    XP_UCHAR buf[20];
+    XP_UCHAR buf[36];
     PangoLayout* layout;
-    int height, width;
+    int lineHeight = GTK_HOR_SCORE_HEIGHT, nLines;
 
-    formatScoreText( buf, VSIZE(buf), dsi );
-    layout = getLayoutToFitRect( dctx, buf, bounds );
-    pango_layout_get_pixel_size( layout, &width, &height );
+    layout = getLayoutToFitRect( dctx, "M", bounds, &lineHeight );
+    formatScoreText( layout, buf, VSIZE(buf), dsi, bounds, 
+                     dctx->scoreIsVertical, widthP, &nLines );
+    *heightP = nLines * lineHeight;
 
-    *widthP = width;
-    *heightP = height;
+    XP_U16 playerNum = dsi->playerNum;
+    XP_ASSERT( playerNum < VSIZE(dctx->scoreCache) );
+    XP_SNPRINTF( dctx->scoreCache[playerNum].str,
+                 VSIZE(dctx->scoreCache[playerNum].str), "%s", buf );
+    dctx->scoreCache[playerNum].fontHt = lineHeight;
 } /* gtk_draw_measureScoreText */
 
 static void
@@ -836,35 +896,54 @@ gtk_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
                            const XP_Rect* rOuter, const DrawScoreInfo* dsi )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
-    XP_UCHAR scoreBuf[20];
     XP_Bool hasCursor = (dsi->flags & CELL_ISCURSOR) != 0;
     GdkColor* cursor = NULL;
-
-    formatScoreText( scoreBuf, VSIZE(scoreBuf), dsi );
+    XP_U16 playerNum = dsi->playerNum;
+    const XP_UCHAR* scoreBuf = dctx->scoreCache[playerNum].str;
+    XP_U16 fontHt = dctx->scoreCache[playerNum].fontHt;
 
     if ( hasCursor ) {
         cursor = &dctx->cursor;
         gtkFillRect( dctx, rOuter, cursor );
     }
 
-    gdk_gc_set_foreground( dctx->drawGC, &dctx->playerColors[dsi->playerNum] );
+    gdk_gc_set_foreground( dctx->drawGC, &dctx->playerColors[playerNum] );
 
     if ( dsi->selected ) {
         XP_Rect selRect = *rOuter;
-        XP_S16 diff = selRect.width - rInner->width;
-        if ( diff > 0 ) {
-            selRect.width -= diff>>1;
-            selRect.left += diff>>2;
+        XP_S16 diff;
+        if ( dctx->scoreIsVertical ) {
+            diff = selRect.height - rInner->height;
+        } else {
+            diff = selRect.width - rInner->width;
         }
+        if ( diff > 0 ) {
+            if ( dctx->scoreIsVertical ) {
+                selRect.height -= diff>>1;
+                selRect.top += diff>>2;
+            } else {
+                selRect.width -= diff>>1;
+                selRect.left += diff>>2;
+            }
+        }
+
         gdk_draw_rectangle( DRAW_WHAT(dctx), dctx->drawGC,
                             TRUE, selRect.left, selRect.top, 
                             selRect.width, selRect.height );
+        if ( hasCursor ) {
+            gtkFillRect( dctx, rInner, cursor );
+        }
         gtkEraseRect( dctx, rInner );
     }
 
-    draw_string_at( dctx, NULL, scoreBuf, rInner->height - 1,
+/*     XP_U16 fontHt = rInner->height; */
+/*     if ( strstr( scoreBuf, "\n" ) ) { */
+/*         fontHt >>= 1; */
+/*     } */
+
+    draw_string_at( dctx, NULL, scoreBuf, fontHt/*-1*/,
                     rInner, XP_GTK_JUST_CENTER,
-                    &dctx->playerColors[dsi->playerNum], cursor );
+                    &dctx->playerColors[playerNum], cursor );
 
 } /* gtk_draw_score_drawPlayer */
 
