@@ -38,6 +38,8 @@ enum {
     ,LAYOUT_NLAYOUTS
 };
 
+#define MAX_SCORE_LEN 31
+
 typedef struct GtkDrawCtx {
     DrawCtxVTable* vtable;
 
@@ -58,9 +60,15 @@ typedef struct GtkDrawCtx {
     /* new for gtk 2.0 */
     PangoContext* pangoContext;
 	GList* fontsPerSize;
+
+    struct {
+        XP_UCHAR str[MAX_SCORE_LEN+1];
+        XP_U16 fontHt;
+    } scoreCache[MAX_NUM_PLAYERS];
     
     XP_U16 trayOwner;
     XP_Bool topFocus;
+    XP_Bool scoreIsVertical;
 } GtkDrawCtx;
 
 typedef struct ClientStreamRec {

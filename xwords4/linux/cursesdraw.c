@@ -155,7 +155,7 @@ curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner,
 } /* curses_draw_drawRemText */
 
 static int
-fitIn( char* buf, int len, int* rem, char* str )
+fitIn( char* buf, int len, int* rem, const char* str )
 {
     int slen = strlen(str);
     if ( !!rem && (*rem != 0) ) {
