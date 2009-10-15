@@ -47,7 +47,7 @@
 #define CE_MINI_H_PADDING 8
 #define CE_MINIW_PADDING 0
 #define CE_TIMER_PADDING -2
-#define IS_TURN_VPAD 2
+#define SCORE_HPAD 2
 
 //#define DRAW_FOCUS_FRAME 1
 #ifdef DRAW_FOCUS_FRAME
@@ -101,6 +101,8 @@ struct CEDrawCtx {
     CEAppGlobals* globals;
     const DictionaryCtxt* dict;
     UINT codePage;
+
+    XP_UCHAR scoreCache[MAX_NUM_PLAYERS][32];
 
     COLORREF prevBkColor;
 
@@ -221,7 +223,7 @@ ceDrawTextClipped( HDC hdc, wchar_t* buf, XP_S16 len, XP_Bool clip,
 } /* ceDrawTextClipped */
 
 static void
-ceDrawLinesClipped( HDC hdc, const FontCacheEntry* fce, XP_UCHAR* buf, 
+ceDrawLinesClipped( HDC hdc, const FontCacheEntry* fce, const XP_UCHAR* buf, 
                     UINT codePage, XP_Bool clip, const RECT* bounds )
 {
     XP_U16 top = bounds->top;
@@ -1473,23 +1475,30 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
 } /* ce_draw_drawRemText */
 
 static void
-ceFormatScoreText( CEDrawCtx* dctx, const DrawScoreInfo* dsi, 
-                   XP_UCHAR* buf, XP_U16 buflen )
+ceFormatScoreText( CEDrawCtx* dctx, const DrawScoreInfo* dsi, XP_U16 nameLen )
 {
-    XP_UCHAR bullet[] = {'•', '\0'};
     XP_UCHAR optPart[16];
+    XP_UCHAR name[nameLen+1+1];
         
-    /* For a horizontal scoreboard, we want *300:6*
+    /* For a horizontal scoreboard, we want [name ]300:6
      * For a vertical, it's
      *
+     *     [name]
      *      300
      *       6
-     *
-     * with IS_TURN_VPAD-height rects above and below
      */
 
-    if ( !dsi->isTurn || dctx->scoreIsVertical ) {
-        bullet[0] = '\0';
+    while ( nameLen >= 1 ) {
+        snprintf( name, nameLen+1, "%s", dsi->name );
+        if ( name[nameLen-1] == ' ' ) { /* don't end with space */
+            --nameLen;
+        } else {
+            XP_STRCAT( name, dctx->scoreIsVertical? XP_CR : " " );
+            break;
+        }
+    }
+    if ( nameLen < 1 ) {
+        name[0] = '\0';
     }
 
     if ( dsi->nTilesLeft >= 0 ) {
@@ -1499,8 +1508,9 @@ ceFormatScoreText( CEDrawCtx* dctx, const DrawScoreInfo* dsi,
         optPart[0] = '\0';
     }
 
-    snprintf( buf, buflen, "%s%d%s%s", 
-              bullet, dsi->totalScore, optPart, bullet );
+    snprintf( dctx->scoreCache[dsi->playerNum], 
+              VSIZE(dctx->scoreCache[dsi->playerNum]), 
+              "%s%d%s", name, dsi->totalScore, optPart );
 } /* ceFormatScoreText */
 
 DLSTATIC void
@@ -1511,10 +1521,15 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* xprect,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    XP_UCHAR buf[32];
     HFONT oldFont;
     const FontCacheEntry* fce;
     XP_U16 fontHt, cellHt;
+    XP_U16 nameLen;
+    XP_U16 targetWidth = xprect->width;
+
+    if ( !dctx->scoreIsVertical ) {
+        targetWidth -= (SCORE_HPAD * 2);
+    }
 
     cellHt = globals->cellHt;
     if ( !dctx->scoreIsVertical ) {
@@ -1529,19 +1544,33 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* xprect,
         fontHt -= 2;            /* use smaller font for non-selected */
     }
 
-    ceFormatScoreText( dctx, dsi, buf, sizeof(buf) );
-
     fce = ceGetSizedFont( dctx, fontHt, 0, 
                           dsi->selected ? RFONTS_SCORE_BOLD:RFONTS_SCORE );
+    nameLen = dsi->isTurn? XP_STRLEN(dsi->name) : 0;
     oldFont = SelectObject( hdc, fce->setFont );
 
-    ceMeasureText( dctx, hdc, fce, buf, 0, widthP, heightP );
+    for ( ; ; ) {
+        XP_U16 width, height;
+        ceFormatScoreText( dctx, dsi, nameLen );
+
+        ceMeasureText( dctx, hdc, fce, dctx->scoreCache[dsi->playerNum], 0, 
+                       &width, &height );
+
+        if ( width <= targetWidth && height <= xprect->height ) {
+            if ( !dctx->scoreIsVertical ) {
+                width += (SCORE_HPAD * 2);
+            }
+            *widthP = width;
+            *heightP = height;
+            break;
+        }
+        XP_ASSERT( dsi->isTurn ); /* fired */
+        if ( --nameLen == 0 ) {
+            break;
+        }
+    }
 
     SelectObject( hdc, oldFont );
-
-    if ( dsi->isTurn && dctx->scoreIsVertical ) {
-        *heightP += IS_TURN_VPAD * 2;
-    }
 } /* ce_draw_measureScoreText */
 
 DLSTATIC void
@@ -1554,7 +1583,6 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
     RECT rt;
-    XP_UCHAR buf[20];
     HFONT oldFont;
     XP_Bool isFocussed = (dsi->flags & CELL_ISCURSOR) != 0;
     XP_U16 bkIndex = isFocussed ? CE_FOCUS_COLOR : CE_BKG_COLOR;
@@ -1574,20 +1602,14 @@ DRAW_FUNC_NAME(score_drawPlayer)( DrawCtx* p_dctx,
         FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
     }
 
-    ceFormatScoreText( dctx, dsi, buf, sizeof(buf) );
-
     XPRtoRECT( &rt, rInner );
 
-    if ( dsi->isTurn && dctx->scoreIsVertical ) {
-        Rectangle( hdc, rt.left, rt.top-IS_TURN_VPAD, rt.right, rt.top );
-        Rectangle( hdc, rt.left, rt.bottom, rt.right, 
-                   rt.bottom + IS_TURN_VPAD );
-
-        rt.top += IS_TURN_VPAD;
-        rt.bottom -= IS_TURN_VPAD;
+    if ( !dctx->scoreIsVertical ) {
+        rt.left += SCORE_HPAD;
+        rt.right -= SCORE_HPAD;
     }
-
-    ceDrawLinesClipped( hdc, fce, buf, CP_ACP, XP_TRUE, &rt );
+    ceDrawLinesClipped( hdc, fce, dctx->scoreCache[dsi->playerNum], 
+                        CP_ACP, XP_TRUE, &rt );
 
     SelectObject( hdc, oldFont );
 } /* ce_draw_score_drawPlayer */
