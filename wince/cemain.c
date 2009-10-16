@@ -1779,7 +1779,7 @@ ceDoNewGame( CEAppGlobals* globals )
             }
         }
 
-        if ( giState.prefsChanged ) {
+        if ( giState.langChanged ) {
             ceWarnLangChange( globals );
         }
 
