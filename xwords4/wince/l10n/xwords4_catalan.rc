@@ -70,7 +70,7 @@ BEGIN
     BEGIN
         MENUITEM "Fet",                  ID_MOVE_TURNDONE
         MENUITEM "Remena",                     ID_MOVE_JUGGLE
-        MENUITEM "Interverteix",                       ID_MOVE_FLIP
+        MENUITEM "Canvia l'horientació",                       ID_MOVE_FLIP
         MENUITEM "Canvia",                      ID_MOVE_TRADE
         MENUITEM "Amaga el faristol",                  ID_MOVE_HIDETRAY
 
@@ -85,7 +85,7 @@ BEGIN
             MENUITEM "Pista següent",              ID_MOVE_NEXTHINT
             MENUITEM "Pista",                   ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
-            MENUITEM "Limited hint...",        ID_MOVE_LIMITEDHINT
+            MENUITEM "Límits de pistes...",        ID_MOVE_LIMITEDHINT
 #endif
             MENUITEM SEPARATOR
             MENUITEM "Mostra els valors",             ID_MOVE_VALUES
@@ -257,10 +257,10 @@ CAPTION "Informació de la partida"
 FONT 8, "System"
 BEGIN
 #ifndef XWFEATURE_STANDALONE_ONLY
-    LTEXT           "Paper:",IDC_ROLELABEL,LEFT_COL,SERVERROLE_ROW,20,8
+    LTEXT           "Rol:",IDC_ROLELABEL,LEFT_COL,SERVERROLE_ROW,20,8
     XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
 
-    PUSHBUTTON      "Configura el paper",GIROLECONF_BUTTON,LEFT_COL+10,
+    PUSHBUTTON      "Configura el rol",GIROLECONF_BUTTON,LEFT_COL+10,
                     SERVERCONF_ROW,60,ROW_HEIGHT
 #endif
 
@@ -290,7 +290,7 @@ BEGIN
     CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
     CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
 
-    PUSHBUTTON      "Juggle players",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
+    PUSHBUTTON      "Remena les posicions de joc",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
                     60,BUTTON_HT
 
     LTEXT           "Diccionari:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,36,8,
@@ -350,10 +350,10 @@ END
 
 IDD_ASKBLANK DIALOG DISCARDABLE  0, 0, ASKB_DLG_WIDTH, ASKB_DLG_HEIGHT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Tile picker"
+CAPTION "Selecció de les fitxes"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Indiqueu quina lletra ha de representar l'escarràs.",IDC_BPICK,
+    LTEXT           "Indiqueu quina fitxa ha de representar l'escarràs.",IDC_BPICK,
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
 #ifdef FEATURE_TRAY_EDIT
     LTEXT           "Seleccioneu una fitxa del faristol.",IDC_CPICK,
@@ -485,7 +485,7 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Límits de les pistes"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Usa com a mínim:",HC_MIN_LABEL,HC_LABELS_COL,HC_MINROW,60,
+    LTEXT           "Com a mínim mostra'n:",HC_MIN_LABEL,HC_LABELS_COL,HC_MINROW,60,
                     ROW_HEIGHT
     XWCOMBO(HC_MIN_COMBO, HC_DROPDOWNS_COL,HC_MINROW,24,ROW_HEIGHT,0,58,0)
 
@@ -529,7 +529,7 @@ FONT 8, "System"
 BEGIN
     CONTROL         "Aquesta partida",IDC_RADIOLOCAL,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
-    CONTROL         "totes les partides",IDC_RADIOGLOBAL,"Button",
+    CONTROL         "Totes les partides",IDC_RADIOGLOBAL,"Button",
                     BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
 
     /* Global */
@@ -552,20 +552,20 @@ BEGIN
     CONTROL         "Robot intel·ligent",IDC_CHECKSMARTROBOT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,60,
                     PREFS_ROW_HT
-    CONTROL         "Permet donar consells",IDC_CHECKHINTSOK,"Button",
+    CONTROL         "Permet mostrar les pistes",IDC_CHECKHINTSOK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,60,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT
-    CONTROL         "Límit dels consells",IDC_CHECKHINTSLIMITS,"Button",
+    CONTROL         "Límit de les pistes",IDC_CHECKHINTSLIMITS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,50,10
 #endif
-    CONTROL         "Rellotge a (minuts)",TIMER_CHECK,"Button",
+    CONTROL         "Temps (min.)",TIMER_CHECK,"Button",
                         BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,75,PREFS_ROW_HT
     EDITTEXT        TIMER_EDIT,85,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Paraules no vàlides:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT
+    LTEXT           "Mots fora-diccionari:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT
     XWCOMBO(PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, 0, 58, 0)
 
 #ifdef FEATURE_TRAY_EDIT
-    CONTROL         "Agafa les fitxes veient-les", IDC_PICKTILES, "Button",
+    CONTROL         "Les fitxes es trien veient-les", IDC_PICKTILES, "Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW7,90,PREFS_ROW_HT
 #else
 #endif
@@ -644,7 +644,7 @@ BEGIN
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
-    LTEXT           "Texting not supported.",
+    LTEXT           "No es permet enviar missatges de text.",
                      IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
 #endif
 
@@ -710,21 +710,21 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Preferències de color"
 FONT 8, "System"
 BEGIN
-    COLOR_BUTTON("Doble de lletra:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1)
+    COLOR_BUTTON("Lletra ×2:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1)
     COLOR_SAMPLE(DLBLTR_BUTTON,DLBLTR_SAMPLE,CLR_COL_2,CLR_ROW_1)
 
-    COLOR_BUTTON("Doble de paraula:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2 )
+    COLOR_BUTTON("Paraula ×2:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2 )
     COLOR_SAMPLE(DBLWRD_BUTTON,DBLWRD_SAMPLE,CLR_COL_2,CLR_ROW_2)
-    COLOR_BUTTON("Triple de lletra:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3 )
+    COLOR_BUTTON("Lletra ×3:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3 )
     COLOR_SAMPLE(TPLLTR_BUTTON,TPLLTR_SAMPLE,CLR_COL_2,CLR_ROW_3)
 
-    COLOR_BUTTON("Triple de paraula:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4)
+    COLOR_BUTTON("Paraula ×3:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4)
     COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_COL_4,CLR_ROW_4)
     COLOR_BUTTON("Casella buida:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5)
     COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_COL_2,CLR_ROW_5)
-    COLOR_BUTTON("Tile back:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6)
+    COLOR_BUTTON("Darrera fitxa:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6)
     COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
-    COLOR_BUTTON("Focus color:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7)
+    COLOR_BUTTON("Enfocament:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7)
     COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7)
     COLOR_BUTTON("Jugador 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8)
     COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_COL_2,CLR_ROW_8)
@@ -858,7 +858,8 @@ BEGIN
     IDS_NEW_GAME            "Partida nova"
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (versió " SVN_REV ") "\
                     "per a Windows Mobile. Copyright 1998-2009 "\
-                    "d'Eric House.  Aquest programari es troba sota la"\
+                    "d'Eric House. Traduït per en Joan Montané. "\
+                    "Aquest programari es troba sota la"\
                     "Llicència Pública GNU.\r\r "\
                     "Per als diccionaris, instruccions, o el codi font, aneu a "\
                     "http://xwords.sf.net o a http://eehouse.org/xwords/."
@@ -873,12 +874,12 @@ BEGIN
     IDS_DUPENAME    "Introduïu un nom per a la còpia de la partida."
     IDS_RENAME      "Introduïu un nom per a aquesta partida."
 
-    IDS_REMAINING_TILES_ADD "+ %d [all remaining tiles]"
-    IDS_UNUSED_TILES_SUB    "- %d [unused tiles]"
+    IDS_REMAINING_TILES_ADD "+ %d [les fitxes romanents]"
+    IDS_UNUSED_TILES_SUB    "- %d [al faristol]"
     IDS_BONUS_ALL   "Bonificació per emprar totes les fitxes: 50" XP_CR
     IDS_TURN_SCORE  "Puntuació del torn: %d" XP_CR
     IDS_COMMIT_CONFIRM
-                    "Commit the current move?" XP_CR
+                    "Voleu fer la jugada?" XP_CR
     IDS_LOCAL_NAME         "%s"
     IDS_REM                "Rem"
     IDS_IGNORE_L           "Ignora-ho"
@@ -909,9 +910,9 @@ BEGIN
     IDS_DOUBLE_WORD        "Doble de paraula"
     IDS_TRIPLE_LETTER      "Triple de lletra"
     IDS_TRIPLE_WORD        "Triple de paraula"
-    IDS_INTRADE_MW         "Trading tiles." XP_CR "Select 'turn done' when ready"
+    IDS_INTRADE_MW         "Canvi de fitxes." XP_CR "Pitgeu 'fet' quan estigueu a punt"
 
-    IDS_TILES_NOT_IN_LINE  "He de jugar les fitxes en una mateixa línia."
+    IDS_TILES_NOT_IN_LINE  "Heu de jugar les fitxes en una mateixa línia."
     IDS_NO_EMPTIES_IN_TURN "No podeu deixar caselles buides entre les fitxes jugades."
     IDS_TWO_TILES_FIRST_MOVE "Heu de jugar dues o més fitxes en la primera jugada."
     IDS_TILES_MUST_CONTACT "Les fitxes noves han de tocar alguna de les que ja estan jugades al tauler (o "\
@@ -921,7 +922,7 @@ BEGIN
     IDS_CANT_TRADE_MID_MOVE "Recolliu les fitxes posades al tauler abans de canviar fitxer."
     IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Hi ha poques fitxes al saquet i ja no podeu canviar-les."
     IDS_CANT_UNDO_TILEASSIGN "L'assignació de fitxers no es pot desfer."
-    IDS_CANT_HINT_WHILE_DISABLED "Els consells estan inhabilitats per a aquesta partida. Habilita'ls"\
+    IDS_CANT_HINT_WHILE_DISABLED "Les pistes es troben inhabilitades per a aquesta partida. Habiliteu-les"\
                                  "per a una partida nova al menú Preferències."
 
     IDS_COUNTSVALS_L        "Quantitat i valor de les fitxes"
@@ -968,7 +969,7 @@ BEGIN
                                "per a una partida iniciada com a amfitrió."
 
 # ifdef XWFEATURE_SMS
-    IDS_SMS_CONN_L          "Texting"
+    IDS_SMS_CONN_L          "Enviament de missatges de text"
 # endif
 # ifdef XWFEATURE_IP_DIRECT
     IDS_DIRECT_CONN_L       "Connexió directa"
