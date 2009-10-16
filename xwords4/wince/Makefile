@@ -261,9 +261,12 @@ bmps/%.bmp: bmps/%.pgm
 # xwords4.ico:
 # 	$(WINCEICONS) icotool -c -o $@ $^
 
-CAB: $(TARGET)
+CAB: $(TARGET) $(DLLS)
 	$(STRIP) $<
 	./exe2cab.pl $<
+	for DLL in $(DLLS); do \
+		./dll2cab.pl $$DLL; \
+	done
 
 SHIP: $(TARGET)
 	$(STRIP) $<
