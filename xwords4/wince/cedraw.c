@@ -1479,13 +1479,14 @@ ceFormatScoreText( CEDrawCtx* dctx, const DrawScoreInfo* dsi, XP_U16 nameLen )
 {
     XP_UCHAR optPart[16];
     XP_UCHAR name[nameLen+1+1];
+    const XP_UCHAR* div = dctx->scoreIsVertical? XP_CR : ":";
         
-    /* For a horizontal scoreboard, we want [name ]300:6
+    /* For a horizontal scoreboard, we want [name:]300[:6]
      * For a vertical, it's
      *
      *     [name]
      *      300
-     *       6
+     *      [6]
      */
 
     while ( nameLen >= 1 ) {
@@ -1493,7 +1494,7 @@ ceFormatScoreText( CEDrawCtx* dctx, const DrawScoreInfo* dsi, XP_U16 nameLen )
         if ( name[nameLen-1] == ' ' ) { /* don't end with space */
             --nameLen;
         } else {
-            XP_STRCAT( name, dctx->scoreIsVertical? XP_CR : " " );
+            XP_STRCAT( name, div );
             break;
         }
     }
@@ -1502,8 +1503,7 @@ ceFormatScoreText( CEDrawCtx* dctx, const DrawScoreInfo* dsi, XP_U16 nameLen )
     }
 
     if ( dsi->nTilesLeft >= 0 ) {
-        sprintf( optPart, "%s%d", dctx->scoreIsVertical? XP_CR : ":", 
-                 dsi->nTilesLeft );
+        sprintf( optPart, "%s%d", div, dsi->nTilesLeft );
     } else {
         optPart[0] = '\0';
     }
@@ -1659,8 +1659,7 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* xprect,
 } /* ce_draw_score_pendingScore */
 
 DLSTATIC void
-DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                           const XP_Rect* XP_UNUSED(rOuter),
+DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                            XP_U16 player, XP_S16 secondsLeft )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -1676,7 +1675,7 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     fce = ceGetSizedFont( dctx, 0, 0, RFONTS_SCORE );
 
-    XPRtoRECT( &rt, rInner );
+    XPRtoRECT( &rt, xprect );
 
     isNegative = secondsLeft < 0;
     if ( isNegative ) {
@@ -1699,10 +1698,16 @@ DRAW_FUNC_NAME(drawTimer)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     ceSetTextColor( hdc, dctx, getPlayerColor(player) );
     ceSetBkColor( hdc, dctx, CE_BKG_COLOR );
-    ceClearToBkground( dctx, rInner );
+    ceClearToBkground( dctx, xprect );
+
+    /* distribute any extra space */
+    XP_U16 width, height;
+    ceMeasureText( dctx, hdc, fce, buf, 0, &width, &height );
+    XP_S16 diff = (xprect->height - height) / 2;
+    rt.top += diff;
+    rt.bottom -= diff;
 
     oldFont = SelectObject( hdc, fce->setFont );
-    ++rt.top;
     ceDrawLinesClipped( hdc, fce, buf, CP_ACP, XP_TRUE, &rt );
     SelectObject( hdc, oldFont );
 

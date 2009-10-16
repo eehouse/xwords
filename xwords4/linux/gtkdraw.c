@@ -1004,7 +1004,6 @@ gtkFormatTimerText( XP_UCHAR* buf, XP_U16 bufLen, XP_S16 secondsLeft )
 
 static void
 gtk_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                    const XP_Rect* XP_UNUSED(rOuter),
                     XP_U16 XP_UNUSED(player), XP_S16 secondsLeft )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
