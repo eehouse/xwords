@@ -249,7 +249,7 @@ drawTimer( BoardCtxt* board )
     if ( board->gi->timerEnabled ) {
         XP_S16 secondsLeft = figureSecondsLeft( board );
 
-        draw_drawTimer( board->draw, &board->timerBounds, &board->timerBounds, 
+        draw_drawTimer( board->draw, &board->timerBounds,
                         board->selPlayer, secondsLeft );
     }
 } /* drawTimer */

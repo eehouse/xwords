@@ -1283,8 +1283,7 @@ palmFormatTimerText( XP_UCHAR* buf, XP_S16 secondsLeft )
 } /* palmFormatTimerText */
 
 static void
-palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                     const XP_Rect* XP_UNUSED(rOuter),
+palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 XP_UNUSED(player), XP_S16 secondsLeft )
 {
     /* This is called both from within drawScoreboard and not, meaning that
@@ -1293,7 +1292,7 @@ palm_draw_drawTimer( DrawCtx* p_dctx, const XP_Rect* rInner,
      */
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;
     XP_UCHAR buf[10];
-    XP_Rect localR = *rInner;
+    XP_Rect localR = *rect;
     RectangleType saveClip;
     XP_U16 len, width, y;
 
