@@ -51,6 +51,12 @@ typedef struct _GameInfoState {
     XP_Bool isNewGame;              /* newGame or GameInfo */
     XP_Bool userCancelled;          /* OUT param */
 
+    /* For tracking when to move stuff up/down */
+    XP_Bool juggleHidden;
+    XP_Bool roleConfigHidden;
+    XP_U16 juggleSpacing;
+    XP_U16 configSpacing;
+
     GInfoResults results;
     CePrefsPrefs* prefsPrefs;
 
@@ -286,56 +292,38 @@ stateToGameInfo( GameInfoState* state )
 } /* stateToGameInfo */
 
 static void
-raiseForHiddenPlayers( GameInfoState* state, XP_U16 nPlayers )
+raiseForJuggle( GameInfoState* state, XP_Bool nowHidden )
 {
-    HWND hDlg = state->dlgHdr.hDlg;
-    XP_U16 ii;
-    XP_S16 moveY;
-
-    if ( nPlayers != state->prevNPlayers ) {
-        if ( !state->moveIds ) {
-            XP_S16 ids[32];
-            HWND child;
-            RECT rect;
-            XP_U16 playersBottom;
-
-            ceGetItemRect( hDlg, NAME_EDIT4, &rect );
-            playersBottom = rect.bottom;
-            ceGetItemRect( hDlg, NAME_EDIT3, &rect );
-            state->playersSpacing = playersBottom - rect.bottom;
-
-            for ( child = GetWindow( hDlg, GW_CHILD ), ii = 0;
-                  !!child;
-                  child = GetWindow( child, GW_HWNDNEXT ) ) {
-                XP_S16 resID = GetDlgCtrlID( child );
-                if ( resID > 0 ) {
-                    ceGetItemRect( hDlg, resID, &rect );
-                    if ( rect.top > playersBottom ) {
-                        XP_ASSERT( ii < VSIZE(ids)-1 );
-                        ids[ii] = resID;
-                        ++ii;
-                    }
-                }
-            }
-            state->moveIds = XP_MALLOC( state->dlgHdr.globals->mpool, 
-                                        sizeof(state->moveIds[0]) * ii );
-            XP_MEMCPY( state->moveIds, ids, sizeof(state->moveIds[0]) * ii );
-            state->nMoveIds = ii;
-        }
-
-        moveY = state->playersSpacing * (nPlayers - state->prevNPlayers);
-        for ( ii = 0; ii < state->nMoveIds; ++ii ) {
-            ceMoveItem( hDlg, state->moveIds[ii], 0, moveY );
-        }
-        state->prevNPlayers = nPlayers;
-
-#ifdef _WIN32_WCE
-        if ( IS_SMARTPHONE(state->dlgHdr.globals) ) {
-            SendMessage( hDlg, DM_RESETSCROLL, (WPARAM)FALSE, (LPARAM)TRUE );
-        }
-#endif
+    if ( nowHidden != state->juggleHidden ) {
+        ceDlgMoveBelow( &state->dlgHdr, GIJUGGLE_BUTTON, 
+                        state->juggleSpacing * (nowHidden? -1 : 1) );
+        state->juggleHidden = nowHidden;
     }
 }
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void
+raiseForRoleChange( GameInfoState* state, DeviceRole role )
+{
+    XP_Bool configHidden = role == SERVER_STANDALONE;
+    if ( configHidden != state->roleConfigHidden ) {
+        ceDlgMoveBelow( &state->dlgHdr, state->roleComboId, 
+                        state->configSpacing * (configHidden? -1 : 1) );
+        state->roleConfigHidden = configHidden;
+    }
+}
+#endif
+
+static void
+raiseForHiddenPlayers( GameInfoState* state, XP_U16 nPlayers )
+{
+    if ( nPlayers != state->prevNPlayers ) {
+        ceDlgMoveBelow( &state->dlgHdr, NAME_EDIT4, 
+                        state->playersSpacing
+                        * (nPlayers - state->prevNPlayers) );
+        state->prevNPlayers = nPlayers;
+    }
+} /* raiseForHiddenPlayers */
 
 static void
 handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
@@ -378,6 +366,7 @@ handleConnOptionsButton( GameInfoState* state )
                                            GETCURSEL(globals), 0, 0L);
     value.ng_role = role;
     newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
+    raiseForRoleChange( state, role );
 } /* handleConnOptionsButton */
 #endif
 
@@ -462,6 +451,9 @@ ceEnableAttrProc( void* closure, NewGameAttr attr, XP_TriEnable enable )
     GameInfoState* state = (GameInfoState*)closure;
     XP_U16 resID = resIDForAttr( state, attr );
     doForNWEnable( state->dlgHdr.hDlg, resID, enable );
+    if ( resID == GIJUGGLE_BUTTON ) {
+        raiseForJuggle( state, enable == TRI_ENAB_HIDDEN );
+    }
 } /* ceEnableAttrProc */
 
 static void 
@@ -547,6 +539,7 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
     case NG_ATTR_ROLE:
         SendDlgItemMessage( state->dlgHdr.hDlg, resID, SETCURSEL(globals), 
                             value.ng_role, 0L );
+        raiseForRoleChange( state, value.ng_role );
         break;
 #endif
     case NG_ATTR_NPLAYHEADER:
@@ -644,7 +637,16 @@ GameInfo( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state->prevNPlayers = MAX_NUM_PLAYERS;
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
+        state->playersSpacing = ceDistanceBetween( hDlg, NAME_EDIT3, NAME_EDIT4 );
+        state->juggleSpacing = ceDistanceBetween( state->dlgHdr.hDlg,
+                                                  GIJUGGLE_BUTTON, 
+                                                  IDC_DICTLABEL );
+
 #ifndef XWFEATURE_STANDALONE_ONLY
+        state->configSpacing = ceDistanceBetween( state->dlgHdr.hDlg,
+                                                  IDC_ROLELABEL, 
+                                                  GIROLECONF_BUTTON );
+
         ceDlgComboShowHide( &state->dlgHdr, IDC_ROLECOMBO );
 #endif
         ceDlgComboShowHide( &state->dlgHdr, IDC_NPLAYERSCOMBO ); 
@@ -796,9 +798,13 @@ WrapGameInfoDialog( CEAppGlobals* globals, XP_Bool isNewGame,
                     XP_UCHAR* dictName, XP_U16 dictNameLen,
                     GInfoResults* results )
 {
-    GameInfoState state;    
+    GameInfoState state;
+    XP_U16 resIDs[48];
+    
     XP_MEMSET( &state, 0, sizeof(state) );
     state.dlgHdr.globals = globals;
+    state.dlgHdr.resIDs = resIDs;
+    state.dlgHdr.nResIDs = VSIZE(resIDs);
     state.isNewGame = isNewGame;
     state.prefsPrefs = prefsPrefs;
     state.newDictName = dictName;
