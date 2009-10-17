@@ -1063,17 +1063,16 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
 
 int
 ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), const XP_UCHAR* str, 
-                  XP_Bool isUTF8, const wchar_t* title, XP_U16 buttons )
+                  const wchar_t* title, XP_U16 buttons )
 {
     HWND parent;
     /* Get the length required, then alloc and go.  This is technically
        correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
     XP_U16 clen = 1 + strlen(str);
-    UINT codePage = isUTF8? CP_UTF8:CP_ACP;
-    XP_U32 wlen = 1 + MultiByteToWideChar( codePage, 0, str, clen, NULL, 0 );
+    XP_U32 wlen = 1 + MultiByteToWideChar( CP_UTF8, 0, str, clen, NULL, 0 );
     wchar_t widebuf[wlen];
     
-    MultiByteToWideChar( codePage, 0, str, clen, widebuf, wlen );
+    MultiByteToWideChar( CP_UTF8, 0, str, clen, widebuf, wlen );
 
     parent = GetForegroundWindow();
     return MessageBox( parent, widebuf, title, buttons );
