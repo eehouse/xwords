@@ -183,6 +183,17 @@ ceMoveItem( HWND hDlg, XP_U16 resID, XP_S16 byX, XP_S16 byY )
     }
 } /* ceMoveItem */
 
+XP_U16
+ceDistanceBetween( HWND hDlg, XP_U16 resID1, XP_U16 resID2 )
+{
+    RECT rect;
+    ceGetItemRect( hDlg, resID1, &rect );
+    XP_U16 top = rect.top;
+    ceGetItemRect( hDlg, resID2, &rect );
+    XP_ASSERT( rect.top > top );
+    return rect.top - top;
+}
+
 #if 0
 /* This has not been tested with ceMoveItem... */
 void
@@ -360,6 +371,91 @@ ceCenterBy( HWND hDlg, XP_U16 byHowMuch )
     }
 } /* ceCenterBy */
 
+#define MAX_DLG_ROWS 20
+typedef struct _DlgRow {
+    XP_U16 top, bottom;
+    XP_U16 nIds;
+    XP_U16 ids[12];
+} DlgRow;
+
+typedef struct _DlgRows {
+    DlgRow rows[MAX_DLG_ROWS];
+    XP_U16 nRows;
+} DlgRows;
+
+static void
+insertId( HWND hDlg, DlgRows* rows, XP_U16 id )
+{
+    RECT rect;
+    XP_U16 ii;
+    DlgRow* row;
+    ceGetItemRect( hDlg, id, &rect );
+
+    // Find an entry it fits in, or add a new one.
+
+    for ( ii = 0; ii < MAX_DLG_ROWS; ++ii ) {
+        row = &rows->rows[ii];
+        if ( row->bottom == 0 ) {
+            row->top = rect.top;
+            row->bottom = rect.bottom;
+            ++rows->nRows;
+            break;
+        } else if ( rect.top >= row->bottom ) {
+            /* continue */
+        } else if ( rect.bottom <= row->top ) {
+            /* continue */
+        } else {
+            if ( row->top < rect.top ) {
+                row->top = rect.top;
+            }
+            if ( row->bottom > rect.bottom ) {
+                row->bottom = rect.bottom;
+            }
+            break;
+        }
+    }
+
+    XP_ASSERT( ii < VSIZE(rows->rows) );
+
+    row->ids[row->nIds++] = id;
+    XP_ASSERT( row->nIds < VSIZE(row->ids) );
+}
+
+static void
+buildIdList( CeDlgHdr* dlgHdr )
+{
+    HWND child;
+    XP_U16 ii, jj;
+    DlgRows rows;
+    XP_U16 nResIDsUsed;
+
+    XP_MEMSET( &rows, 0, sizeof(rows) );
+
+    for ( child = GetWindow( dlgHdr->hDlg, GW_CHILD ), ii = 0;
+          !!child;
+          child = GetWindow( child, GW_HWNDNEXT ) ) {
+        XP_S16 resID = GetDlgCtrlID( child );
+        if ( resID > 0 ) {
+            insertId( dlgHdr->hDlg, &rows, resID );
+        }
+    }
+
+    /* might need to sort first */
+    nResIDsUsed = 0;
+    for ( ii = 0; ii < rows.nRows; ++ii ) {
+        DlgRow* row = &rows.rows[ii];
+        for ( jj = 0; jj < row->nIds; ++jj ) {
+            XP_U16 id = row->ids[jj];
+            dlgHdr->resIDs[nResIDsUsed++] = id;
+            XP_ASSERT( nResIDsUsed < dlgHdr->nResIDs );
+        }
+
+        dlgHdr->resIDs[nResIDsUsed++] = 0;
+        XP_ASSERT( nResIDsUsed <= dlgHdr->nResIDs );
+    }
+    dlgHdr->nResIDsUsed = nResIDsUsed;
+}
+
 #define TITLE_HT 20            /* Need to get this from the OS */
 void
 ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
@@ -412,6 +508,11 @@ ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat )
         
         (void)SetScrollInfo( hDlg, SB_VERT, &sinfo, FALSE );
     }
+
+    if ( !!dlgHdr->resIDs ) {
+        buildIdList( dlgHdr );
+    }
+
     dlgHdr->doWhat = doWhat;
 
 #ifdef _WIN32_WCE
@@ -511,6 +612,45 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
     }
     return handled;
 } /* ceDoDlgHandle */
+
+void
+ceDlgMoveBelow( CeDlgHdr* dlgHdr, XP_U16 resID, XP_S16 distance )
+{
+    XP_U16 ii;
+    XP_ASSERT( !!dlgHdr->resIDs );
+    XP_U16 nResIDsUsed = dlgHdr->nResIDsUsed;
+
+    for ( ii = 0; ii < nResIDsUsed; ++ii ) {
+        if ( dlgHdr->resIDs[ii] == resID ) {
+            break;
+        }
+    }
+
+    if ( ii < nResIDsUsed ) { /* found it? */
+        while ( dlgHdr->resIDs[ii] != 0 ) { /* skip to end of row  */
+            ++ii;
+            XP_ASSERT( ii < nResIDsUsed ); /* found it? */
+        }
+        ++ii;                                  /* skip past the 0 */
+
+        for ( ; ii < nResIDsUsed; ++ii ) {
+            XP_U16 id = dlgHdr->resIDs[ii];
+            if ( 0 != id ) {
+                ceMoveItem( dlgHdr->hDlg, id, 0, distance );
+            }
+        }
+
+#ifdef _WIN32_WCE
+        if ( IS_SMARTPHONE(dlgHdr->globals) ) {
+            SendMessage( dlgHdr->hDlg, DM_RESETSCROLL, 
+                         (WPARAM)FALSE, (LPARAM)TRUE );
+        }
+#endif
+    } else {
+        XP_LOGF( "%s: resID %d not found", __func__, resID );
+    }
+
+}
 
 static void
 setScrollPos( HWND hDlg, XP_S16 newPos )

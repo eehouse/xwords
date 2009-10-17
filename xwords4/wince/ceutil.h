@@ -51,6 +51,8 @@ int ceMessageBoxChar( CEAppGlobals* globals, const XP_UCHAR* str,
                       XP_Bool isUTF8, const wchar_t* title, XP_U16 buttons );
 XP_Bool ceCurDictIsUTF8( CEAppGlobals* globals );
 
+XP_U16 ceDistanceBetween( HWND hDlg, XP_U16 resID1, XP_U16 resID2 );
+
 typedef enum {
     PREFS_FILE_PATH_L
     ,DEFAULT_DIR_PATH_L
@@ -69,16 +71,22 @@ typedef enum { DLG_STATE_NONE = 0
 typedef struct CeDlgHdr {
     CEAppGlobals* globals;
     HWND hDlg;
+    /* set these two if will be calling ceDlgMoveBelow */
+    XP_U16* resIDs;
+    XP_U16 nResIDs;
 
     /* Below this line is private to ceutil.c */
     DlgStateTask doWhat;
     XP_U16 nPage;
     XP_U16 prevY;
+    XP_U16 nResIDsUsed;
     XP_Bool penDown;
 } CeDlgHdr;
 void ceDlgSetup( CeDlgHdr* dlgHdr, HWND hDlg, DlgStateTask doWhat );
 void ceDlgComboShowHide( CeDlgHdr* dlgHdr, XP_U16 baseId );
 XP_Bool ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam);
+
+void ceDlgMoveBelow( CeDlgHdr* dlgHdr, XP_U16 resID, XP_S16 distance );
 
 /* Are we drawing things in landscape mode? */
 XP_Bool ceIsLandscape( CEAppGlobals* globals );
