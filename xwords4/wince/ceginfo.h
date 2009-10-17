@@ -27,39 +27,17 @@
 #include "ceutil.h"
 #include "nwgamest.h"
 
-typedef struct GameInfoState {
-    CeDlgHdr dlgHdr;
-    NewGameCtx* newGameCtx;
-    XP_UCHAR newDictName[CE_MAX_PATH_LEN+1];
 
-    XP_U16 capMenuDicts;
-    XP_U16 nMenuDicts;
-    wchar_t** menuDicts;
-    XP_U16 nPlayersId;
-    XP_U16 dictListId;
-#ifndef XWFEATURE_STANDALONE_ONLY
-    XP_U16 roleComboId;
-    DeviceRole lastRole;        /* to prevent multiple dialog raises */
-#endif
-
-    XP_Bool isNewGame;              /* newGame or GameInfo */
-    XP_Bool userCancelled;          /* OUT param */
-
+typedef struct _GInfoResults {
     XP_Bool prefsChanged;
     XP_Bool colorsChanged;
     XP_Bool langChanged;
     XP_Bool addrChanged;
-    CePrefsPrefs prefsPrefs;
+} GInfoResults;
 
-    /* Support for repositioning lower items based on num players */
-    XP_U16* moveIds;
-    XP_U16 nMoveIds;
-    XP_U16 prevNPlayers;
-    XP_U16 playersSpacing;
-    
-} GameInfoState;
-
-
-LRESULT CALLBACK GameInfo(HWND, UINT, WPARAM, LPARAM);
+XP_Bool WrapGameInfoDialog( CEAppGlobals* globals, XP_Bool isNewGame,
+                            CePrefsPrefs* prefsPrefs,
+                            XP_UCHAR* dictName, XP_U16 dictNameLen,
+                            GInfoResults* results );
 
 #endif
