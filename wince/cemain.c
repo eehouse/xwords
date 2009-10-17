@@ -2835,8 +2835,7 @@ ceStreamToStrBuf( MPFORMAL XWStreamCtxt* stream )
 static int
 ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
 {
-    XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
-    return ceMessageBoxChar( globals, str, isUTF8, 
+    return ceMessageBoxChar( globals, str, 
                              ceGetResStringL( globals, IDS_FYI_L ),
                              MB_OK | MB_ICONHAND );
 }
@@ -2854,8 +2853,7 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream,
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
     int result;
 
-    result = ceMessageBoxChar( globals, buf, ceCurDictIsUTF8(globals),
-                               title, buttons );
+    result = ceMessageBoxChar( globals, buf, title, buttons );
 
     XP_FREE( globals->mpool, buf );
     return result;
@@ -3636,8 +3634,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     snprintf( msgBuf, VSIZE(msgBuf), fmt, wordsBuf );
 
     if ( turnLost ) {
-        XP_Bool isUTF8 = ceCurDictIsUTF8( globals );
-        ceMessageBoxChar( globals, msgBuf, isUTF8, 
+        ceMessageBoxChar( globals, msgBuf, 
                           ceGetResStringL( globals, IDS_ILLEGALWRD_L ),
                           MB_OK | MB_ICONHAND );
         isOk = XP_TRUE;

@@ -362,7 +362,6 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                             ceMessageBoxChar( globals, 
                                               ceGetResString( globals,
                                                               IDS_NEED_TOUCH ),
-                                              XP_FALSE, 
                                               ceGetResStringL( globals,
                                                                IDS_FYI_L ),
                                               MB_OK | MB_ICONHAND );
