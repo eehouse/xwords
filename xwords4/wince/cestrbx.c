@@ -42,7 +42,6 @@ stuffTextInField( HWND hDlg, StrBoxState* state )
     XP_UCHAR* sbuf;
     wchar_t* wbuf;
     CEAppGlobals* globals = state->dlgHdr.globals;
-    UINT codePage = ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP;
 
     sbuf = XP_MALLOC( globals->mpool, nBytes + 1 );
     stream_getBytes( state->stream, sbuf, nBytes );
@@ -53,9 +52,9 @@ stuffTextInField( HWND hDlg, StrBoxState* state )
     }
     sbuf[nBytes] = '\0';
 
-    len = MultiByteToWideChar( codePage, 0, sbuf, nBytes, NULL, 0 );
+    len = MultiByteToWideChar( CP_UTF8, 0, sbuf, nBytes, NULL, 0 );
     wbuf = XP_MALLOC( globals->mpool, (len+1) * sizeof(*wbuf) );
-    MultiByteToWideChar( codePage, 0, sbuf, nBytes, wbuf, len );
+    MultiByteToWideChar( CP_UTF8, 0, sbuf, nBytes, wbuf, len );
     XP_FREE( globals->mpool, sbuf );
     wbuf[len] = 0;
 
