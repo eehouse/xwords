@@ -32,6 +32,36 @@
 #define NUM_COLS 4
 #define MENUDICTS_INCR 16
 
+typedef struct _GameInfoState {
+    CeDlgHdr dlgHdr;
+    NewGameCtx* newGameCtx;
+    XP_UCHAR* newDictName;
+    XP_U16 dictNameLen;
+
+    XP_U16 capMenuDicts;
+    XP_U16 nMenuDicts;
+    wchar_t** menuDicts;
+    XP_U16 nPlayersId;
+    XP_U16 dictListId;
+#ifndef XWFEATURE_STANDALONE_ONLY
+    XP_U16 roleComboId;
+    DeviceRole lastRole;        /* to prevent multiple dialog raises */
+#endif
+
+    XP_Bool isNewGame;              /* newGame or GameInfo */
+    XP_Bool userCancelled;          /* OUT param */
+
+    GInfoResults results;
+    CePrefsPrefs* prefsPrefs;
+
+    /* Support for repositioning lower items based on num players */
+    XP_U16* moveIds;
+    XP_U16 nMoveIds;
+    XP_U16 prevNPlayers;
+    XP_U16 playersSpacing;
+    
+} GameInfoState;
+
 static XP_S16
 findInsertPoint( const wchar_t* wPath, wchar_t** menuDicts, 
                  XP_U16 nMenuDicts )
@@ -188,8 +218,8 @@ loadFromGameInfo( GameInfoState* state )
 
 #ifndef STUBBED_DICT
     if ( !!gi->dictName ) { 
-        XP_MEMCPY( state->newDictName, gi->dictName,
-                   (XP_U16)XP_STRLEN(gi->dictName)+1 );
+        XP_SNPRINTF( state->newDictName, state->dictNameLen, "%s", 
+                     gi->dictName );
     }
     if ( state->isNewGame ) {
         (void)ceLocateNDicts( globals, CE_MAXDICTS, addDictToState, state );
@@ -225,8 +255,8 @@ stateToGameInfo( GameInfoState* state )
                                       GETCURSEL(globals), 0, 0L );
             if ( sel >= 0 ) {
                 WideCharToMultiByte( CP_ACP, 0, state->menuDicts[sel], -1,
-                                     state->newDictName, 
-                                     sizeof(state->newDictName), NULL, NULL );
+                                     state->newDictName, state->dictNameLen, 
+                                     NULL, NULL );
             }
             replaceStringIfDifferent( globals->mpool, &gi->dictName,
                                       state->newDictName );
@@ -246,9 +276,9 @@ stateToGameInfo( GameInfoState* state )
         }
     
         /* preferences */
-        if ( state->prefsChanged ) {
+        if ( state->results.prefsChanged ) {
             loadCurPrefsFromState( globals, &globals->appPrefs, gi, 
-                                   &state->prefsPrefs );
+                                   state->prefsPrefs );
         } 
     }
 
@@ -311,11 +341,11 @@ static void
 handlePrefsButton( HWND hDlg, CEAppGlobals* globals, GameInfoState* state )
 {
     XP_Bool colorsChanged, langChanged;
-    if ( WrapPrefsDialog( hDlg, globals, &state->prefsPrefs,
+    if ( WrapPrefsDialog( hDlg, globals, state->prefsPrefs,
                           state->isNewGame, &colorsChanged, &langChanged ) ) {
-        state->prefsChanged = XP_TRUE;
-        state->colorsChanged = colorsChanged;
-        state->langChanged = langChanged;
+        state->results.prefsChanged = XP_TRUE;
+        state->results.colorsChanged = colorsChanged;
+        state->results.langChanged = langChanged;
         /* nothing to do until user finally does confirm the parent dialog */
     }
 } /* handlePrefsButton */
@@ -327,11 +357,11 @@ callConnsDlg( GameInfoState* state )
     XP_Bool connsComplete = XP_FALSE;
     /* maybe flag when this isn't changed?  No.  Check on "Ok" as tagged elsewhere. */
     if ( WrapConnsDlg( state->dlgHdr.hDlg, state->dlgHdr.globals, 
-                       &state->prefsPrefs.addrRec, 
-                       &state->prefsPrefs.addrRec, state->lastRole, 
+                       &state->prefsPrefs->addrRec, 
+                       &state->prefsPrefs->addrRec, state->lastRole, 
                        state->isNewGame,
                        &connsComplete ) ) {
-        state->addrChanged = XP_TRUE;
+        state->results.addrChanged = XP_TRUE;
     }
     return connsComplete;
 }
@@ -591,8 +621,8 @@ checkUpdateCombo( GameInfoState* state, XP_U16 id )
     }
 } /* checkUpdateCombo */
 
-LRESULT CALLBACK
-GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK
+GameInfo( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
     CEAppGlobals* globals;
     XP_U16 id;
@@ -632,7 +662,7 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         loadFromGameInfo( state );
         loadStateFromCurPrefs( globals, &globals->appPrefs, &globals->gameInfo,
-                               &state->prefsPrefs );
+                               state->prefsPrefs );
 
         if ( state->isNewGame ) {
             (void)SetWindowText( hDlg, ceGetResStringL( globals, 
@@ -731,7 +761,8 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                 SendDlgItemMessage( hDlg, state->roleComboId,
                                                     GETCURSEL(globals), 0, 0L );
                             if ( role != SERVER_STANDALONE
-                                 && !comms_checkComplete( &state->prefsPrefs.addrRec )
+                                 && !comms_checkComplete( 
+                                     &state->prefsPrefs->addrRec )
                                  && !callConnsDlg( state ) ) {
                                 break;
                             } else if ( !stateToGameInfo( state ) ) {
@@ -757,3 +788,29 @@ GameInfo(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
     return result;
 } /* GameInfo */
+
+
+XP_Bool
+WrapGameInfoDialog( CEAppGlobals* globals, XP_Bool isNewGame,
+                    CePrefsPrefs* prefsPrefs,
+                    XP_UCHAR* dictName, XP_U16 dictNameLen,
+                    GInfoResults* results )
+{
+    GameInfoState state;    
+    XP_MEMSET( &state, 0, sizeof(state) );
+    state.dlgHdr.globals = globals;
+    state.isNewGame = isNewGame;
+    state.prefsPrefs = prefsPrefs;
+    state.newDictName = dictName;
+    state.dictNameLen = dictNameLen;
+
+    assertOnTop( globals->hWnd );
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
+                    (DLGPROC)GameInfo, (long)&state );
+
+    if ( !state.userCancelled ) {
+        XP_MEMCPY( results, &state.results, sizeof(*results) );
+    }
+
+    return !state.userCancelled;
+}

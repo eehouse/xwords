@@ -1748,21 +1748,16 @@ ceWarnLangChange( CEAppGlobals* globals )
 static XP_Bool
 ceDoNewGame( CEAppGlobals* globals )
 {
-    GameInfoState giState;
     CommsAddrRec* addr = NULL;
     XP_Bool changed = XP_FALSE;
+    CePrefsPrefs prefsPrefs;
+    XP_UCHAR newDictName[CE_MAX_PATH_LEN+1];
+    GInfoResults results;
 
-    XP_MEMSET( &giState, 0, sizeof(giState) );
-    giState.dlgHdr.globals = globals;
-    giState.isNewGame = XP_TRUE;
-
-    assertOnTop( globals->hWnd );
-    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_GAMEINFO, globals->hWnd,
-                    (DLGPROC)GameInfo, (long)&giState );
-
-    if ( !giState.userCancelled
+    if ( WrapGameInfoDialog( globals, XP_TRUE, &prefsPrefs, newDictName,
+                             VSIZE(newDictName), &results )
 #ifndef STUBBED_DICT
-         && ( giState.newDictName[0] != '\0' )
+         && ( newDictName[0] != '\0' )
 #endif
          ) {
 
@@ -1771,21 +1766,21 @@ ceDoNewGame( CEAppGlobals* globals )
             globals->curGameName = NULL;
         }
 
-        if ( giState.prefsChanged ) {
+        if ( results.prefsChanged ) {
             loadCurPrefsFromState( globals, &globals->appPrefs, 
-                                   &globals->gameInfo, &giState.prefsPrefs );
-            if ( giState.colorsChanged ) {
+                                   &globals->gameInfo, &prefsPrefs );
+            if ( results.colorsChanged ) {
                 updateForColors( globals );
             }
         }
 
-        if ( giState.langChanged ) {
+        if ( results.langChanged ) {
             ceWarnLangChange( globals );
         }
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-        if ( giState.addrChanged ) {
-            addr = &giState.prefsPrefs.addrRec;
+        if ( results.addrChanged ) {
+            addr = &prefsPrefs.addrRec;
         }
 #endif
 
@@ -2448,19 +2443,17 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
 
             case ID_GAME_GAMEINFO: {
-                GameInfoState state;
-
-                XP_MEMSET( &state, 0, sizeof(state) );
-                state.dlgHdr.globals = globals;
-
-                DialogBoxParam( globals->locInst, (LPCTSTR)IDD_GAMEINFO, hWnd,
-                                (DLGPROC)GameInfo, (long)&state );
-
-                if ( !state.userCancelled ) { 
-                    if ( state.prefsChanged ) {
+                GInfoResults results;
+                CePrefsPrefs prefsPrefs;
+                XP_UCHAR dictName[CE_MAX_PATH_LEN+1];
+                
+                if ( WrapGameInfoDialog( globals, XP_FALSE, &prefsPrefs,
+                                         dictName, VSIZE(dictName),
+                                         &results ) ) { 
+                    if ( results.prefsChanged ) {
                         updateForColors( globals );
                     }
-                    if ( state.langChanged ) {
+                    if ( results.langChanged ) {
                         ceWarnLangChange( globals );
                     }
                     draw = server_do( globals->game.server );
