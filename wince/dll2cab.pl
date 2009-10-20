@@ -36,7 +36,7 @@ sub main() {
     my $tmpfile = "/tmp/$userName";
     `cp $path $tmpfile`;
     print FILE "$tmpfile ";
-    print FILE '%CE1%\\Crosswords', "\n";
+    print FILE '%CE1%\\\\Crosswords', "\n";
 
     close FILE;
 

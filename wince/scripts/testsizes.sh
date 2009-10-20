@@ -34,9 +34,9 @@ SIZES=(
 )
 
 cd $(dirname $0)
-EXES=$(ls -c ../obj_${PLAT}_${DBG}/xwords4_*.exe)
+EXES=$(ls -c ../obj_${PLAT}_${DBG}/built/xwords4_*.exe)
 
-if ls ../obj_${PLAT}_${DBG}/*.xwd >/dev/null 2>&1;  then
+if ls ../obj_${PLAT}_${DBG}/built/*.xwd >/dev/null 2>&1;  then
     : # nothing to do
 elif [ -s "$XWDICT" ]; then
    cp $XWDICT ../obj_${PLAT}_${DBG}
