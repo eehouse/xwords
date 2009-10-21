@@ -644,8 +644,8 @@ GameInfo( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         state->configSpacing = ceDistanceBetween( state->dlgHdr.hDlg,
-                                                  IDC_ROLELABEL, 
-                                                  GIROLECONF_BUTTON );
+                                                  GIROLECONF_BUTTON, 
+                                                  IDC_TOTAL_LABEL );
 
         ceDlgComboShowHide( &state->dlgHdr, IDC_ROLECOMBO );
 #endif
