@@ -5,6 +5,8 @@
 
 use strict;
 
+my $userName = "Crosswords.exe";
+
 sub main() {
     my $provider = "\"Crosswords project\"";
 
@@ -12,7 +14,7 @@ sub main() {
 
     my $path = shift @ARGV;
 
-    usage() unless $path =~ m|.dll$|;
+    usage() unless $path =~ m|.exe$|;
 
     die "$path not found\n" unless -f $path;
 
@@ -22,9 +24,15 @@ sub main() {
     # Create a link.  The format, says Shaun, is
     # <number of characters>#command line<no carriage return or line feed>
 
-    my $userName = $cabname;
+    $userName = $cabname unless $userName;
+    my $cmdline = "\"\\Program Files\\Crosswords\\" . $userName . "\"";
+    my $cmdlen = length( $cmdline );
 
-    $cabname =~ s/.dll$//;
+    $cabname =~ s/.exe$//;
+    my $linkName = "Crosswords.lnk";
+    open LINKFILE, "> $linkName";
+    print LINKFILE $cmdlen, "#", $cmdline;
+    close LINKFILE;
 
     my $fname = "/tmp/file$$.list";
 
@@ -38,21 +46,30 @@ sub main() {
     print FILE "$tmpfile ";
     print FILE '%CE1%\\\\Crosswords', "\n";
 
+    print FILE "../../../dawg/English/BasEnglish2to8.xwd ";
+    print FILE '%CE1%\\\\Crosswords', "\n";
+
+#     print FILE "$ENV{'CEOPT_ROOT'}/opt/mingw32ce/arm-wince-mingw32ce/bin/mingwm10.dll ";
+#     print FILE '%CE2%\\mingwm10.dll', "\n";
+
+    print FILE "$linkName ";
+    print FILE '%CE14%', "\n";
+
     close FILE;
 
     my $appname = $cabname;
     $cabname .= ".cab";
 
-    my $cmd = "./scripts/pocketpc-cab -p $provider -a $appname "
+    my $cmd = "pocketpc-cab -p $provider -a $appname "
         . "$fname $cabname";
     print( STDERR $cmd, "\n");
     `$cmd`;
 
-    unlink $tmpfile;
+    unlink $linkName, $tmpfile;
 }
 
 sub usage() {
-    print STDERR "usage: $0 path/to/xwords4_language.dll\n";
+    print STDERR "usage: $0 path/to/xwords4.exe\n";
     exit 2;
 }
 

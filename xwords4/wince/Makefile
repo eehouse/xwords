@@ -263,9 +263,9 @@ bmps/%.bmp: bmps/%.pgm
 
 CAB: $(TARGET) $(DLLS)
 	$(STRIP) $<
-	./exe2cab.pl $<
-	for DLL in $(DLLS); do \
-		./dll2cab.pl $$DLL; \
+	(cd $(BUILTDIR); PATH=../../scripts:$$PATH exe2cab.pl $(notdir $<))
+	for DLL in $(notdir $(DLLS)); do \
+		(cd $(BUILTDIR); PATH=../../scripts:$$PATH dll2cab.pl $$DLL); \
 	done
 
 SHIP: $(TARGET)
