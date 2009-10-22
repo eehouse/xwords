@@ -179,7 +179,7 @@ DLL_VERS_RESOURCE
 // ******** IDD_GAMEINFO DIALOG *********
 #define GAMEINFO_WIDTH 116
 #ifdef CEFEATURE_CANSCROLL
-# define ROW_HEIGHT 10
+# define ROW_HEIGHT 11
 # define ROW_SPACE 12
 # define ROW_SPACE_PL 11
 #else
@@ -202,7 +202,7 @@ DLL_VERS_RESOURCE
 #else
 # define SERVERROLE_ROW 3
 # define GAME_NAME_WIDTH 50
-# define SERVERCONF_ROW (SERVERROLE_ROW+ROW_SPACE)
+# define SERVERCONF_ROW (SERVERROLE_ROW+ROW_SPACE+3)
 # define NPLAYERS_ROW (SERVERCONF_ROW+ROW_SPACE+3)
 # define GAME_REMOTE_LEFT 1
 # define GAME_NAME_LEFT 11
@@ -598,7 +598,7 @@ END
 #  define CONN_ROW_4 (CONN_ROW_3+ROW_SPACE+ROW_HEIGHT)
 # else
 #  define CONN_ROW_3 (CONN_ROW_1)
-#  define CONN_ROW_4 (CONN_ROW_2+ROW_SPACE)
+#  define CONN_ROW_4 (CONN_ROW_2+ROW_SPACE-3)
 # endif
 # define CONN_ROW_5 (CONN_ROW_4+ROW_SPACE)
 # define CONN_ROW_6 (CONN_ROW_5+ROW_SPACE)
@@ -624,14 +624,16 @@ BEGIN
 #endif
 #ifdef XWFEATURE_RELAY
     LTEXT           "Sala (ha de coincidir en tots els dispositius que s'uneixin a la partida):",
-                    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,100,(ROW_HEIGHT*2)
+    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,90,((ROW_HEIGHT*2)-3)
     EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
 
-    LTEXT           "Nom del repetidor (canvia poques vegades):",IDC_CRELAYNAME_LAB,LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
+    LTEXT           "Nom del repetidor (canvia poques vegades):",
+                    IDC_CRELAYNAME_LAB,LAB_COL,CONN_ROW_5,90,ROW_HEIGHT
     EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
-    LTEXT           "Port del repetidor (canvia poques vegades):",IDC_CRELAYPORT_LAB,LAB_COL,CONN_ROW_7,120,ROW_HEIGHT
+    LTEXT           "Port del repetidor (canvia poques vegades):",
+                    IDC_CRELAYPORT_LAB,LAB_COL,CONN_ROW_7,90,ROW_HEIGHT
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 #else
@@ -639,7 +641,7 @@ BEGIN
 #endif
 
 #ifdef XWFEATURE_IP_DIRECT
-    LTEXT           "Nom de l'amfitrió o adreça",IDC_IPNAME_LAB,LAB_COL,CONN_ROW_3,100,ROW_HEIGHT
+    LTEXT           "Nom de l'amfitrió o adreça",IDC_IPNAME_LAB,LAB_COL,CONN_ROW_3,90,ROW_HEIGHT
     EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,ES_AUTOHSCROLL
 #else
     LTEXT           "La connexió amb IP directa no és permesa.",IDC_IPNAME_LAB,LAB_COL,CONN_ROW_3,40,40
