@@ -1079,20 +1079,6 @@ ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), const XP_UCHAR* str,
 } /* ceMessageBoxChar */
 
 XP_Bool
-ceCurDictIsUTF8( CEAppGlobals* globals )
-{
-    XP_Bool result = XP_FALSE;
-    const ModelCtxt* model = globals->game.model;
-    if ( !!model ) {
-        const DictionaryCtxt* dict = model_getDictionary( model );
-        if ( !!dict ) {
-            result = dict_isUTF8( dict );
-        }
-    }
-    return result;
-} /* ceCurDictIsUTF8 */
-
-XP_Bool
 ceGetExeDir( wchar_t* buf, XP_U16 bufLen )
 {
     /* I wanted to use SHGetKnownFolderPath to search in \\Program
