@@ -753,7 +753,7 @@ ceMeasureText( CEDrawCtx* dctx, HDC hdc, const FontCacheEntry* fce,
     XP_U16 maxWidth = 0;
 
     for ( ; ; ) {
-        wchar_t widebuf[32];
+        wchar_t widebuf[64];
         XP_UCHAR* nextStr = strstr( str, XP_CR );
         XP_U16 len = nextStr==NULL? strlen(str): nextStr - str;
         XP_U16 wlen;
@@ -761,9 +761,9 @@ ceMeasureText( CEDrawCtx* dctx, HDC hdc, const FontCacheEntry* fce,
 
         XP_ASSERT( nextStr != str );
 
-        wlen = MultiByteToWideChar( dctx->codePage, 0, str, len,
+        wlen = MultiByteToWideChar( CP_UTF8, 0, str, len,
                                     widebuf, VSIZE(widebuf) );
-        GetTextExtentPoint32( hdc, widebuf, wlen, &size );
+        (void)GetTextExtentPoint32( hdc, widebuf, wlen, &size );
 
         maxWidth = (XP_U16)XP_MAX( maxWidth, size.cx );
         if ( !!fce ) {
@@ -1108,6 +1108,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
                   const XP_UCHAR* letters, const XP_Bitmaps* bitmaps,
                   XP_U16 val, CellFlags flags )
 {
+#ifndef NO_DRAW
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
@@ -1214,6 +1215,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
             }
         }
     }
+#endif
 } /* drawDrawTileGuts */
 
 DLSTATIC void
