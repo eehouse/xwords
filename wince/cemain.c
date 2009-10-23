@@ -3292,20 +3292,8 @@ ce_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
                       XP_U16 playerNum,
                       const XP_UCHAR** texts, XP_U16 nTiles )
 {
-    BlankDialogState state;
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-    XP_MEMSET( &state, 0, sizeof(state) );
-
-    state.dlgHdr.globals = globals;
-    state.texts = texts;
-    state.nTiles = nTiles;
-    state.playerNum = playerNum;
-    state.pi = pi;
-
-    assertOnTop( globals->hWnd );
-    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
-                    (DLGPROC)BlankDlg, (long)&state );
-    return state.result;
+    return WrapBlankDlg( globals, pi, playerNum, texts, nTiles );
 } /* ce_util_userPickTile */
 
 static XP_Bool

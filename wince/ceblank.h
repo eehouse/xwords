@@ -24,16 +24,6 @@
 #include "cemain.h"
 #include "ceutil.h"
 
-typedef struct BlankDialogState {
-    CeDlgHdr dlgHdr;
-    const PickInfo* pi;
-    XP_U16 playerNum;
-    const XP_UCHAR** texts;
-    XP_U16 nTiles;
-    XP_S16 result;
-    XP_Bool canBackup;
-} BlankDialogState; 
-
-LRESULT CALLBACK BlankDlg(HWND, UINT, WPARAM, LPARAM);
-
+XP_Bool WrapBlankDlg( CEAppGlobals* globals, const PickInfo* pi,
+                      XP_U16 playerNum, const XP_UCHAR** texts, XP_U16 nTiles );
 #endif
