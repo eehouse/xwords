@@ -100,7 +100,6 @@ struct CEDrawCtx {
     HWND mainWin;
     CEAppGlobals* globals;
     const DictionaryCtxt* dict;
-    UINT codePage;
 
     XP_UCHAR scoreCache[MAX_NUM_PLAYERS][32];
 
@@ -1857,7 +1856,6 @@ DRAW_FUNC_NAME(dictChanged)( DrawCtx* p_dctx, const DictionaryCtxt* dict )
         ceClearFontCache( dctx );
     }
     dctx->dict = dict;
-    dctx->codePage = dict_isUTF8(dict)? CP_UTF8 : CP_ACP;
 }
 
 #ifdef DRAW_LINK_DIRECT
