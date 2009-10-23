@@ -515,7 +515,7 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
 
     makeTestBuf( dctx, sample, VSIZE(sample), index );
     len = 1 + strlen(sample);
-    wlen = MultiByteToWideChar( dctx->codePage, 0, sample, len, 
+    wlen = MultiByteToWideChar( CP_UTF8, 0, sample, len, 
                                 widebuf, len );
 
     memBM = CreateCompatibleBitmap( memDC, testHeight, testHeight );
@@ -1048,7 +1048,7 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     } else if ( !isDragSrc && !!letters && (letters[0] != '\0') ) {
         wchar_t widebuf[4];
 
-        MultiByteToWideChar( dctx->codePage, 0, letters, -1,
+        MultiByteToWideChar( CP_UTF8, 0, letters, -1,
                              widebuf, VSIZE(widebuf) );
         ceDrawTextClipped( hdc, widebuf, -1, XP_FALSE, fce, xprect->left+1, 
                            xprect->top+2, xprect->width, DT_CENTER );
@@ -1176,7 +1176,7 @@ drawDrawTileGuts( DrawCtx* p_dctx, const XP_Rect* xprect,
 
             if ( !!bitmaps || !!letters ) {
                 HFONT oldFont = SelectObject( hdc, fce->setFont );
-                XP_U16 wlen = MultiByteToWideChar( dctx->codePage, 0, letters,
+                XP_U16 wlen = MultiByteToWideChar( CP_UTF8, 0, letters,
                                                    -1, widebuf, VSIZE(widebuf) );
 
                 /* see if there's room to use text instead of bitmap */
