@@ -22,6 +22,17 @@
 #include "cemain.h"
 #include "ceutil.h"
 #include "debhacks.h"
+#include "cedebug.h"
+
+typedef struct BlankDialogState {
+    CeDlgHdr dlgHdr;
+    const PickInfo* pi;
+    XP_U16 playerNum;
+    const XP_UCHAR** texts;
+    XP_U16 nTiles;
+    XP_S16 result;
+    XP_Bool canBackup;
+} BlankDialogState; 
 
 static void
 loadLettersList( BlankDialogState* bState )
@@ -31,13 +42,12 @@ loadLettersList( BlankDialogState* bState )
     HWND hDlg = bState->dlgHdr.hDlg;
     CEAppGlobals* globals = bState->dlgHdr.globals;
     const XP_UCHAR** texts = bState->texts;
-    UINT codePage = ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP;
     
     for ( ii = 0; ii < nTiles; ++ii ) {	
         XP_U16 len;
         wchar_t widebuf[4];
 
-        len = MultiByteToWideChar( codePage, 0, texts[ii], strlen(texts[ii]),
+        len = MultiByteToWideChar( CP_UTF8, 0, texts[ii], strlen(texts[ii]),
                                    widebuf, VSIZE(widebuf) );
         widebuf[len] = 0;
 
@@ -78,8 +88,7 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
                                      i==0?": ":", ", pi->curTiles[i] );
         }
 
-        (void)MultiByteToWideChar( ceCurDictIsUTF8(globals)? CP_UTF8 : CP_ACP,
-                                   0, labelBuf, lenSoFar + 1, widebuf, 
+        (void)MultiByteToWideChar( CP_UTF8, 0, labelBuf, lenSoFar + 1, widebuf, 
                                    VSIZE(widebuf) + sizeof(widebuf[0]) );
 
         SetDlgItemText( hDlg,IDC_PICKMSG, widebuf );
@@ -87,7 +96,7 @@ showCurTray( HWND hDlg, BlankDialogState* bState )
 } /* showCurTray */
 #endif
 
-LRESULT CALLBACK
+static LRESULT CALLBACK
 BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     BlankDialogState* bState;
@@ -154,3 +163,22 @@ BlankDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
  exit:
     return result;
 } /* BlankDlg */
+
+XP_Bool
+WrapBlankDlg( CEAppGlobals* globals, const PickInfo* pi,
+              XP_U16 playerNum, const XP_UCHAR** texts, XP_U16 nTiles )
+{
+    BlankDialogState state;
+    XP_MEMSET( &state, 0, sizeof(state) );
+
+    state.dlgHdr.globals = globals;
+    state.texts = texts;
+    state.nTiles = nTiles;
+    state.playerNum = playerNum;
+    state.pi = pi;
+
+    assertOnTop( globals->hWnd );
+    DialogBoxParam( globals->locInst, (LPCTSTR)IDD_ASKBLANK, globals->hWnd, 
+                    (DLGPROC)BlankDlg, (long)&state );
+    return state.result;
+}
