@@ -126,7 +126,7 @@ makeRelayPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    GtkWidget* hbox = makeLabeledField( "Invite", &state->invite );
+    GtkWidget* hbox = makeLabeledField( "Room", &state->invite );
     gtk_entry_set_text( GTK_ENTRY(state->invite), 
                         state->addr->u.ip_relay.invite );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
