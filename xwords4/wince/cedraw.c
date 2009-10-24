@@ -1398,14 +1398,10 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* xprect,
 } /* ce_draw_scoreBegin */
 
 static void
-formatRemText( const CEDrawCtx* dctx, XP_S16 nTilesLeft, XP_Bool isVertical, 
-               XP_UCHAR* buf )
+formatRemText( XP_S16 nTilesLeft, XP_UCHAR* buf, XP_U16 bufLen )
 {
-    const char* rem = ceGetResString( dctx->globals, IDS_REM );
-    const char* sep = isVertical? XP_CR : ":";
-
     XP_ASSERT( nTilesLeft > 0 );
-    sprintf( buf, "%s%s%d", rem, sep, nTilesLeft );
+    XP_SNPRINTF( buf, bufLen, "%d", nTilesLeft );
 } /* formatRemText */
 
 DLSTATIC void
@@ -1424,7 +1420,7 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         XP_ASSERT( !!hdc );
 
-        formatRemText( dctx, nTilesLeft, dctx->scoreIsVertical, buf );
+        formatRemText( nTilesLeft, buf, VSIZE(buf) );
 
         height = xprect->height - 2; /* space for border */
         if ( height > globals->cellHt - CELL_BORDER ) {
@@ -1453,18 +1449,19 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
     CEAppGlobals* globals = dctx->globals;
     HDC hdc = globals->hdc;
-    XP_UCHAR buf[16];
+    XP_UCHAR buf[4];
     HFONT oldFont;
     const FontCacheEntry* fce;
     RECT rt;
+    XP_U16 bkColor;
 
-    formatRemText( dctx, nTilesLeft, dctx->scoreIsVertical, buf );
+    formatRemText( nTilesLeft, buf, VSIZE(buf) );
 
     XPRtoRECT( &rt, rInner );
-    if ( focussed ) {
-        ceSetBkColor( hdc, dctx, CE_FOCUS_COLOR );
-        FillRect( hdc, &rt, dctx->brushes[CE_FOCUS_COLOR] );
-    }
+
+    bkColor = focussed ? CE_FOCUS_COLOR : CE_TILEBACK_COLOR;
+    ceSetBkColor( hdc, dctx, bkColor );
+    FillRect( hdc, &rt, dctx->brushes[bkColor] );
 
     InsetRect( &rt, 1, 1 );
     fce = ceGetSizedFont( dctx, 0, 0, RFONTS_REM );
