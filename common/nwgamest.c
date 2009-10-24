@@ -121,7 +121,7 @@ newg_load( NewGameCtx* ngc, const CurGameInfo* gi )
     }
 
     ngc->role = role = gi->serverRole;
-    localOnly = role == SERVER_ISCLIENT && ngc->isNewGame;
+    localOnly = (role == SERVER_ISCLIENT) && ngc->isNewGame;
 #ifndef XWFEATURE_STANDALONE_ONLY
     value.ng_role = role;
     (*ngc->setAttrProc)( closure, NG_ATTR_ROLE, value );
