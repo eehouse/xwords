@@ -175,6 +175,14 @@ DLL_VERS_RESOURCE
 #define REPOS_BUTTON_WIDTH 36
 #define REPOS_BUTTON_VPAD 2
 #define REPOS_BUTTON_HPAD 2
+/* How tall does a single line of label text turn out to be */
+# define LABEL_ROW_HT 10
+#ifdef CEFEATURE_CANSCROLL
+# define ROW_HEIGHT 11
+#else
+# define ROW_HEIGHT 12
+#endif
+
 
 // ******** IDD_GAMEINFO DIALOG *********
 #define GAMEINFO_WIDTH 116
@@ -337,9 +345,9 @@ END
 #define ASKB_DLG_WIDTH 80
 #define ASKB_COLLEFT 5
 #define ASKB_LABELTOP 0
-#define ASKB_LABELHT 36
+#define ASKB_LABELHT 42
 #define ASKB_LABELWIDTH 40
-#define ASKB_COMBOLEFT (ASKB_COLLEFT+ASKB_LABELWIDTH)
+#define ASKB_COMBOLEFT (ASKB_COLLEFT+ASKB_LABELWIDTH+5)
 #define ASKB_EDITTOP (ASKB_LABELTOP + ASKB_LABELHT)
 #define ASKB_EDITHT 24
 #define ASKB_PUTTOP (ASKB_EDITTOP+ASKB_EDITHT)
@@ -356,8 +364,9 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
 CAPTION "Selecció de les fitxes"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Indiqueu quina fitxa ha de representar l'escarràs.",IDC_BPICK,
-                    ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
+    LTEXT           "Indiqueu quina fitxa ha de representar l'escarràs.",
+                    IDC_BPICK, ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,
+                    ASKB_LABELHT
 #ifdef FEATURE_TRAY_EDIT
     LTEXT           "Seleccioneu una fitxa del faristol.",IDC_CPICK,
                     ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
@@ -479,11 +488,12 @@ END
 #define HC_WIDTH      98
 #define HC_OK_LEFT   ((HC_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
 #define HC_CANCEL_LEFT   ((HC_WIDTH/2)+10)
+#define HC_BUTTONS_ROW 40
 
 #ifdef _WIN32_WCE
-# define ASKHINTLIMTS_HT 31
+# define ASKHINTLIMTS_HT HC_BUTTONS_ROW
 #else
-# define ASKHINTLIMTS_HT 47
+# define ASKHINTLIMTS_HT (HC_BUTTONS_ROW+ROW_HEIGHT)
 #endif
 
 IDD_ASKHINTLIMTS DIALOG DISCARDABLE  0, 0, HC_WIDTH, ASKHINTLIMTS_HT
@@ -500,9 +510,9 @@ BEGIN
     XWCOMBO(HC_MAX_COMBO, HC_DROPDOWNS_COL,HC_MAXROW, 24, ROW_HEIGHT, 0,58,0)
 
 #ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "D'acord",IDOK,HC_OK_LEFT,40,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "D'acord",IDOK,HC_OK_LEFT,HC_BUTTONS_ROW,REPOS_BUTTON_WIDTH,
                      REPOS_BUTTON_HT
-    PUSHBUTTON      "Cancel·la",IDCANCEL,HC_CANCEL_LEFT,40,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "Cancel·la",IDCANCEL,HC_CANCEL_LEFT,HC_BUTTONS_ROW,REPOS_BUTTON_WIDTH,
                      REPOS_BUTTON_HT
 #endif
 END
@@ -591,20 +601,21 @@ END
 # define LAB_COL_WIDTH 38
 # define CTRL_COL 15
 # define CTRL_COL_WIDTH 80
-# define CONN_ROW_1 2
-# define CONN_ROW_2 (CONN_ROW_1+ROW_SPACE)
+# define CONN_LABEL_HT (LABEL_ROW_HT*3) /* try to make them all same ht! */
+# define CONN_LABEL_ROW_1 2
+# define CONN_EDIT_ROW_2 (CONN_LABEL_ROW_1+ROW_SPACE)
 # ifdef NEEDS_CHOOSE_CONNTYPE
-#  define CONN_ROW_3 (CONN_ROW_2+ROW_SPACE)
-#  define CONN_ROW_4 (CONN_ROW_3+ROW_SPACE+ROW_HEIGHT)
+#  define CONN_LABEL_ROW_3 (CONN_EDIT_ROW_2+ROW_SPACE)
+#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+ROW_SPACE+ROW_HEIGHT)
 # else
-#  define CONN_ROW_3 (CONN_ROW_1)
-#  define CONN_ROW_4 (CONN_ROW_2+ROW_SPACE-3)
+#  define CONN_LABEL_ROW_3 (CONN_LABEL_ROW_1)
+#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+CONN_LABEL_HT+3)
 # endif
-# define CONN_ROW_5 (CONN_ROW_4+ROW_SPACE)
-# define CONN_ROW_6 (CONN_ROW_5+ROW_SPACE)
-# define CONN_ROW_7 (CONN_ROW_6+ROW_SPACE)
-# define CONN_ROW_8 (CONN_ROW_7+ROW_SPACE)
-# define BUTTON_ROW (CONN_ROW_8+ROW_SPACE)
+# define CONN_LABEL_ROW_5 (CONN_EDIT_ROW_4+ROW_SPACE+5)
+# define CONN_EDIT_ROW_6 (CONN_LABEL_ROW_5+CONN_LABEL_HT+3)
+# define CONN_LABEL_ROW_7 (CONN_EDIT_ROW_6+ROW_SPACE+5)
+# define CONN_EDIT_ROW_8 (CONN_LABEL_ROW_7+CONN_LABEL_HT+3)
+# define BUTTON_ROW (CONN_EDIT_ROW_8+ROW_SPACE)
 #ifdef _WIN32_WCE
 # define CONNSDLG_HT BUTTON_ROW
 #else
@@ -619,44 +630,46 @@ FONT 8, "System"
 BEGIN
 
 #ifdef NEEDS_CHOOSE_CONNTYPE
-    LTEXT           "Connecta via:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,40,ROW_HEIGHT
-    XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
+    LTEXT           "Connecta via:",IDC_CCONVIA_LAB,LAB_COL,CONN_LABEL_ROW_1,40,
+                    ROW_HEIGHT
+    XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_EDIT_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,
+            0,58,0)
 #endif
-#ifdef XWFEATURE_RELAY
+#if defined XWFEATURE_RELAY
     LTEXT           "Sala (ha de coincidir en tots els dispositius que s'uneixin a la partida):",
-    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,90,((ROW_HEIGHT*2)-3)
-    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
-                    ES_AUTOHSCROLL
-
+                    IDC_INVITE_LAB,LAB_COL,CONN_LABEL_ROW_3,90,CONN_LABEL_HT
+    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL
     LTEXT           "Nom del repetidor (canvia poques vegades):",
-                    IDC_CRELAYNAME_LAB,LAB_COL,CONN_ROW_5,90,ROW_HEIGHT
-    EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
-                    ES_AUTOHSCROLL
+                    IDC_CRELAYNAME_LAB,LAB_COL,CONN_LABEL_ROW_5,90,CONN_LABEL_HT
+    EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_EDIT_ROW_6,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL
     LTEXT           "Port del repetidor (canvia poques vegades):",
-                    IDC_CRELAYPORT_LAB,LAB_COL,CONN_ROW_7,90,ROW_HEIGHT
-    EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
-                    ES_AUTOHSCROLL | ES_NUMBER
-#else
+                    IDC_CRELAYPORT_LAB,LAB_COL,CONN_LABEL_ROW_7,90,CONN_LABEL_HT
+    EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_EDIT_ROW_8,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "La connexió al repetidor no és possible.",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,40
 #endif
 
-#ifdef XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
     LTEXT           "Nom de l'amfitrió o adreça",IDC_IPNAME_LAB,LAB_COL,CONN_ROW_3,90,ROW_HEIGHT
     EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,ES_AUTOHSCROLL
-#else
-    LTEXT           "La connexió amb IP directa no és permesa.",IDC_IPNAME_LAB,LAB_COL,CONN_ROW_3,40,40
+#elif defined NEEDS_CHOOSE_CONNTYPE
+    LTEXT           "La connexió amb IP directa no és permesa.",IDC_IPNAME_LAB,
+                    LAB_COL,CONN_LABEL_ROW_3,40,40
 #endif
 
-#ifdef XWFEATURE_SMS
+#if defined XWFEATURE_SMS
     LTEXT           "Telèfon amfitrió:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Port amfitrió:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
-#else
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "No es permet enviar missatges de text.",
-                     IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
+                     IDC_SMS_PHONE_LAB,LAB_COL,CONN_LABEL_ROW_3,40,ROW_HEIGHT
 #endif
 
 #ifndef _WIN32_WCE
@@ -846,9 +859,9 @@ BEGIN
 
     XWCOMBO(LOCALES_COMBO,LEFT_COL,60,70,12,0,58,0)
 # ifndef _WIN32_WCE
-    DEFPUSHBUTTON   "D'acord",IDOK,LEFT_COL,70,REPOS_BUTTON_WIDTH,
+    DEFPUSHBUTTON   "D'acord",IDOK,LEFT_COL,75,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
-    PUSHBUTTON      "Cancel·la",IDCANCEL,40,70,REPOS_BUTTON_WIDTH,
+    PUSHBUTTON      "Cancel·la",IDCANCEL,40,75,REPOS_BUTTON_WIDTH,
                     REPOS_BUTTON_HT
 # endif
 END
@@ -921,7 +934,7 @@ BEGIN
     IDS_DOUBLE_WORD        "Doble de paraula"
     IDS_TRIPLE_LETTER      "Triple de lletra"
     IDS_TRIPLE_WORD        "Triple de paraula"
-    IDS_INTRADE_MW         "Canvi de fitxes." XP_CR "Pitgeu 'fet' quan estigueu a punt"
+    IDS_INTRADE_MW         "Canvi de fitxes." XP_CR "Pitgeu 'fet' quan" XP_CR "estigueu a punt."
 
     IDS_TILES_NOT_IN_LINE  "Heu de jugar les fitxes en una mateixa línia."
     IDS_NO_EMPTIES_IN_TURN "No podeu deixar caselles buides entre les fitxes jugades."

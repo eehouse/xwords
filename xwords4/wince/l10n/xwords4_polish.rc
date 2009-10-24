@@ -178,14 +178,21 @@ DLL_VERS_RESOURCE
 #define REPOS_BUTTON_VPAD 2
 #define REPOS_BUTTON_HPAD 2
 
+/* How tall does a single line of label text turn out to be */
+# define LABEL_ROW_HT 10
+#ifdef CEFEATURE_CANSCROLL
+# define ROW_HEIGHT 11
+#else
+# define ROW_HEIGHT 12
+#endif
+
+
 // ******** IDD_GAMEINFO DIALOG *********
 #define GAMEINFO_WIDTH 116
 #ifdef CEFEATURE_CANSCROLL
-# define ROW_HEIGHT 10
 # define ROW_SPACE 12
 # define ROW_SPACE_PL 11
 #else
-# define ROW_HEIGHT 12
 # define ROW_SPACE 15
 # define ROW_SPACE_PL ROW_SPACE
 #endif
@@ -338,7 +345,7 @@ END
 #define ASKB_LABELTOP 0
 #define ASKB_LABELHT 36
 #define ASKB_LABELWIDTH 40
-#define ASKB_COMBOLEFT (ASKB_COLLEFT+ASKB_LABELWIDTH)
+#define ASKB_COMBOLEFT (ASKB_COLLEFT+ASKB_LABELWIDTH+5)
 #define ASKB_EDITTOP (ASKB_LABELTOP + ASKB_LABELHT)
 #define ASKB_EDITHT 24
 #define ASKB_PUTTOP (ASKB_EDITTOP+ASKB_EDITHT)
@@ -584,20 +591,21 @@ END
 # define LAB_COL_WIDTH 38
 # define CTRL_COL 15
 # define CTRL_COL_WIDTH 80
-# define CONN_ROW_1 2
-# define CONN_ROW_2 (CONN_ROW_1+ROW_SPACE)
+# define CONN_LABEL_HT (LABEL_ROW_HT*1) /* try to make them all same ht! */
+# define CONN_LABEL_ROW_1 2
+# define CONN_EDIT_ROW_2 (CONN_LABEL_ROW_1+ROW_SPACE)
 # ifdef NEEDS_CHOOSE_CONNTYPE
-#  define CONN_ROW_3 (CONN_ROW_2+ROW_SPACE)
-#  define CONN_ROW_4 (CONN_ROW_3+ROW_SPACE+ROW_HEIGHT)
+#  define CONN_LABEL_ROW_3 (CONN_EDIT_ROW_2+ROW_SPACE)
+#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+ROW_SPACE+ROW_HEIGHT)
 # else
-#  define CONN_ROW_3 (CONN_ROW_1)
-#  define CONN_ROW_4 (CONN_ROW_2+ROW_SPACE)
+#  define CONN_LABEL_ROW_3 (CONN_LABEL_ROW_1)
+#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+CONN_LABEL_HT+3)
 # endif
-# define CONN_ROW_5 (CONN_ROW_4+ROW_SPACE)
-# define CONN_ROW_6 (CONN_ROW_5+ROW_SPACE)
-# define CONN_ROW_7 (CONN_ROW_6+ROW_SPACE)
-# define CONN_ROW_8 (CONN_ROW_7+ROW_SPACE)
-# define BUTTON_ROW (CONN_ROW_8+ROW_SPACE)
+# define CONN_LABEL_ROW_5 (CONN_EDIT_ROW_4+ROW_SPACE+5)
+# define CONN_EDIT_ROW_6 (CONN_LABEL_ROW_5+CONN_LABEL_HT+3)
+# define CONN_LABEL_ROW_7 (CONN_EDIT_ROW_6+ROW_SPACE+5)
+# define CONN_EDIT_ROW_8 (CONN_LABEL_ROW_7+CONN_LABEL_HT+3)
+# define BUTTON_ROW (CONN_EDIT_ROW_8+ROW_SPACE)
 #ifdef _WIN32_WCE
 # define CONNSDLG_HT BUTTON_ROW
 #else
@@ -618,41 +626,40 @@ BEGIN
             0,58,0)
 #endif
 
-#ifdef XWFEATURE_RELAY
-    LTEXT           "Pokój:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
-    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
-                    ES_AUTOHSCROLL
-
+#if defined XWFEATURE_RELAY
+    LTEXT           "Pokój:",IDC_INVITE_LAB,LAB_COL,CONN_LABEL_ROW_3,40,ROW_HEIGHT
+    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL
     LTEXT           "Serwer (raczej niezmienny):",IDC_CRELAYNAME_LAB,
-                    LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
-    EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
-                    ES_AUTOHSCROLL
+                    LAB_COL,CONN_LABEL_ROW_5,120,ROW_HEIGHT
+    EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_EDIT_ROW_6,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL
     LTEXT           "Port (raczej niezmienny):",IDC_CRELAYPORT_LAB,
-                    LAB_COL,CONN_ROW_7,120,ROW_HEIGHT
-    EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
-                    ES_AUTOHSCROLL | ES_NUMBER
-#else
+                    LAB_COL,CONN_LABEL_ROW_7,120,ROW_HEIGHT
+    EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_EDIT_ROW_8,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Połączenie z serwerem niedostępne.",IDC_INVITE_LAB,
                      LAB_COL,CONN_ROW_3,40,40
 #endif
 
-#ifdef XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT
     LTEXT           "Nazwa hosta lub adres",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,100,ROW_HEIGHT
     EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,ES_AUTOHSCROLL
-#else
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Połączenie bezpośrednie z IP niedostępne.",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,40,40
 #endif
 
-#ifdef XWFEATURE_SMS
+#if defined XWFEATURE_SMS
     LTEXT           "Nr telefonu hosta:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Port hosta:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
-#else
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "SMSy niedostępne.",
                      IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
 #endif
@@ -898,7 +905,7 @@ BEGIN
     IDS_DOUBLE_WORD        "Słowo x2"
     IDS_TRIPLE_LETTER      "Litera x3"
     IDS_TRIPLE_WORD        "Słowo x3"
-    IDS_INTRADE_MW         "Wymiana klocków." XP_CR "Wybierz 'koniec kolejki' gdy zakończysz"
+    IDS_INTRADE_MW         "Wymiana klocków." XP_CR "Wybierz 'koniec kolejki'" XP_CR "gdy zakończysz."
 
 
     IDS_TILES_NOT_IN_LINE  "Wszystkie układane litery muszą być w linii."
