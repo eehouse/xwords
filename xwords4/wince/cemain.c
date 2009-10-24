@@ -916,8 +916,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
                     0, &globals->appPrefs.cp, &procs );
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-        if ( !!addr ) {
-            XP_ASSERT( globals->game.comms != NULL );
+        if ( !!addr && !!globals->game.comms ) {
             comms_setAddr( globals->game.comms, addr );
         }
 #endif
@@ -2558,6 +2557,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             case ID_MOVE_UNDOLAST:
                 draw = server_handleUndo( globals->game.server );
+                ceSetLeftSoftkey( globals, ID_MOVE_UNDOLAST );
                 break;
 
             default:
