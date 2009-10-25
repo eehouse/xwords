@@ -566,11 +566,12 @@ XP_Bool
 ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
 {
     XP_Bool handled = XP_FALSE;
+    XP_U16 hiword = HIWORD(wParam);
 
     switch( message ) {
 #ifdef OVERRIDE_BACKKEY
     case WM_HOTKEY:
-        if ( VK_TBACK == HIWORD(lParam) ) {
+        if ( VK_TBACK == hiword ) {
             if ( editHasFocus() ) {
                 SHSendBackToFocusWindow( message, wParam, lParam );
             } else if ( 0 != (BACK_KEY_UP_MAYBE & LOWORD(lParam) ) ) {
@@ -589,11 +590,11 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
 
     case WM_LBUTTONDOWN:
         dlgHdr->penDown = XP_TRUE;
-        dlgHdr->prevY = HIWORD(lParam);
+        dlgHdr->prevY = hiword;
         handled = XP_TRUE;
         break;
     case WM_MOUSEMOVE:
-        scrollForMove( dlgHdr, HIWORD(lParam) );
+        scrollForMove( dlgHdr, hiword );
         handled = XP_TRUE;
         break;
     case WM_LBUTTONUP:
@@ -602,10 +603,11 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
         break;
 
     case WM_COMMAND:
-        if ( BN_SETFOCUS == HIWORD(wParam) ) {
+        if ( BN_SETFOCUS == hiword || EN_SETFOCUS == hiword ) {
             ceDoDlgFocusScroll( dlgHdr, (HWND)lParam );
             handled = TRUE;
-        } else if ( BN_KILLFOCUS == HIWORD(wParam) ) { /* dialogs shouldn't have to handle this */
+        } else if ( BN_KILLFOCUS == hiword || EN_KILLFOCUS == hiword ) {
+            /* dialogs shouldn't have to handle these */
             handled = TRUE;
         }
         break;
