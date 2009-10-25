@@ -1407,9 +1407,10 @@ board_replaceTiles( BoardCtxt* board )
 static XP_Bool
 preflight( BoardCtxt* board )
 {
-    return !board->gameOver && !TRADE_IN_PROGRESS(board)
+    return !board->gameOver
         && server_getCurrentTurn(board->server) >= 0
-        && checkRevealTray( board );
+        && checkRevealTray( board ) 
+        && !TRADE_IN_PROGRESS(board);
 } /* preflight */
 
 /* Refuse with error message if any tiles are currently on board in this turn.
