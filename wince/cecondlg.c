@@ -109,6 +109,7 @@ conTypeToIndex( const CeConnDlgState* state, CommsConnType conType )
 }
 #endif
 
+#ifdef NEEDS_CHOOSE_CONNTYPE
 static void
 adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
 {
@@ -136,16 +137,12 @@ adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
     XP_U16 ii;
     CommsConnType conType;
 
-#ifdef NEEDS_CHOOSE_CONNTYPE
     if ( !useFromState ) {
         XP_S16 sel;
         sel = SendDlgItemMessage( hDlg, state->connComboId, 
                                   GETCURSEL(state->dlgHdr.globals), 0, 0L );
         state->addrRec.conType = indexToConType( state, sel );
     }
-#else
-    useFromState = useFromState; /* shut up, compiler */
-#endif
 
     conType = state->addrRec.conType;
 
@@ -181,6 +178,7 @@ adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
         }
 #endif
 } /* adjustForConnType */
+#endif
 
 static void
 ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
@@ -252,7 +250,6 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
             ceEnOrDisable( hDlg, ids[nIds], XP_FALSE );
         }
     }
-
 } /* ceControlsFromAddrRec */
 
 static LRESULT CALLBACK
@@ -267,8 +264,8 @@ ConnsDlg( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
         state = (CeConnDlgState*)lParam;
 #ifdef NEEDS_CHOOSE_CONNTYPE
         state->connComboId = LB_IF_PPC(state->dlgHdr.globals,IDC_CONNECT_COMBO);
-#endif
         adjustForConnType( hDlg, state, XP_TRUE );
+#endif
         ceControlsFromAddrRec( hDlg, state );
 
         ceDlgSetup( &state->dlgHdr, hDlg, DLG_STATE_TRAPBACK );
