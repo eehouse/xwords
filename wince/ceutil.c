@@ -605,8 +605,8 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
     case WM_COMMAND:
         if ( BN_SETFOCUS == hiword || EN_SETFOCUS == hiword ) {
             ceDoDlgFocusScroll( dlgHdr, (HWND)lParam );
-            handled = TRUE;
-        } else if ( BN_KILLFOCUS == hiword || EN_KILLFOCUS == hiword ) {
+            /* must let dialog handle EN_SETFOCUS! */
+        } else if ( BN_KILLFOCUS == hiword/* || EN_KILLFOCUS == hiword*/ ) {
             /* dialogs shouldn't have to handle these */
             handled = TRUE;
         }
