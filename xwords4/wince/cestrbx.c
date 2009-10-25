@@ -99,14 +99,14 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             } else {
                 switch (message) {
 
-                case WM_COMMAND:                
+                case WM_COMMAND:
 
                     /* If I add the text above in the WM_INITDIALOG section it
                        shows up selected though selStart and selEnd are 0. */
-                    if ( !state->textIsSet ) { 	 
-                        state->textIsSet = XP_TRUE; 	 
-                        stuffTextInField( hDlg, state ); 	 
-                    } 	 
+                    if ( !state->textIsSet ) {
+                        state->textIsSet = XP_TRUE;
+                        stuffTextInField( hDlg, state );
+                    }
 
                     id = LOWORD(wParam);
                     switch( id ) {
