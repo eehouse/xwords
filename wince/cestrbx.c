@@ -1,6 +1,6 @@
 /* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
- * Copyright 2002-2006 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,7 +27,9 @@
 typedef struct StrBoxState {
     CeDlgHdr dlgHdr;
     const wchar_t* title;
+#ifndef _WIN32_WCE
     HFONT font;
+#endif
     XWStreamCtxt* stream;
     XP_U16 result;
     XP_Bool isQuery;
@@ -76,10 +78,10 @@ StrBox(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if  ( !!state->title ) {
             SendMessage( hDlg, WM_SETTEXT, 0, (long)state->title );
         }
-
-        SendDlgItemMessage( hDlg, ID_EDITTEXT, WM_SETFONT, 
+#ifndef _WIN32_WCE
+        SendDlgItemMessage( hDlg, ID_EDITTEXT, WM_SETFONT,
                             (WPARAM)state->font, 0L );
-
+#endif
         if ( !state->isQuery ) {
             ceShowOrHide( hDlg, IDCANCEL, XP_FALSE );
         }
@@ -136,20 +138,23 @@ WrapStrBox( CEAppGlobals* globals, const wchar_t* title,
     state.isQuery = (buttons & ~MB_ICONMASK) != MB_OK;
     state.dlgHdr.globals = globals;
 
+#ifndef _WIN32_WCE
     LOGFONT fontInfo;
     XP_MEMSET( &fontInfo, 0, sizeof(fontInfo) );
     fontInfo.lfHeight = 14;
     fontInfo.lfQuality = PROOF_QUALITY;
     wcscpy( fontInfo.lfFaceName, IS_SMARTPHONE(globals)? 
             L"Segoe Condensed" : L"Tahoma" );
-
     state.font = CreateFontIndirect( &fontInfo );
+#endif
 
     assertOnTop( globals->hWnd );
     DialogBoxParam( globals->locInst, (LPCTSTR)IDD_STRBOX, globals->hWnd, 
                     (DLGPROC)StrBox, (long)&state );
 
+#ifndef _WIN32_WCE
     DeleteObject( state.font );
+#endif
 
     return state.result == IDOK;
 }
