@@ -1459,6 +1459,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
 
     XPRtoRECT( &rt, rInner );
 
+    ceSetTextColor( hdc, dctx, CE_BLACK_COLOR );
     bkColor = focussed ? CE_FOCUS_COLOR : CE_TILEBACK_COLOR;
     ceSetBkColor( hdc, dctx, bkColor );
     FillRect( hdc, &rt, dctx->brushes[bkColor] );
