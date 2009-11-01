@@ -37,19 +37,19 @@ class CookieMapIterator;        /* forward */
 
 struct HostRec {
  public:
-   HostRec(HostID hostID, int socket, int nPlayersH, int nPlayersT,
+   HostRec(HostID hostID, int socket, int nPlayersH, int nPlayersS,
         int seed ) 
         : m_hostID(hostID) 
         , m_socket(socket)
         , m_nPlayersH(nPlayersH) 
-        , m_nPlayersT(nPlayersT) 
+        , m_nPlayersS(nPlayersS) 
         , m_seed(seed) 
         , m_lastHeartbeat(uptime()) 
         {}
     HostID m_hostID;
     int m_socket;
     int m_nPlayersH;
-    int m_nPlayersT;
+    int m_nPlayersS;
     int m_seed;
     time_t m_lastHeartbeat;
 };
@@ -103,9 +103,9 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
-    void _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+    void _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                    int seed );
-    void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+    void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                      int seed );
     void _Disconnect(int socket, HostID hostID );
     void _Shutdown();
@@ -132,7 +132,7 @@ class CookieRef {
             struct {
                 int socket;
                 int nPlayersH;
-                int nPlayersT;
+                int nPlayersS;
                 int seed;
                 HostID srcID;
             } con;
@@ -167,10 +167,10 @@ class CookieRef {
     }
 
     void pushConnectEvent( int socket, HostID srcID,
-                           int nPlayersH, int nPlayersT,
+                           int nPlayersH, int nPlayersS,
                            int seed );
     void pushReconnectEvent( int socket, HostID srcID,
-                             int nPlayersH, int nPlayersT,
+                             int nPlayersH, int nPlayersS,
                              int seed );
     void pushHeartbeatEvent( HostID id, int socket );
     void pushHeartFailedEvent( int socket );
@@ -231,7 +231,6 @@ class CookieRef {
 
 
     XW_RELAY_STATE     m_curState;
-    XW_RELAY_STATE     m_nextState;
     deque<CRefEvent>   m_eventQueue;
 
     HostID m_nextHostID;
