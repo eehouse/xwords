@@ -125,9 +125,10 @@ class CRefMgr {
     void addToFreeList( CookieRef* cref );
     CookieRef* getFromFreeList( void );
 
-    CookieRef* getMakeCookieRef_locked( const char* cookie, const char* connName,
-                                        HostID hid, int socket,
-                                        int nPlayersH, int nPlayersT, int seed );
+    CookieRef* getMakeCookieRef_locked( const char* cookie, 
+                                        const char* connName,
+                                        HostID hid, int socket, int nPlayersH,
+                                        int nPlayersS, int seed );
     CookieRef* getCookieRef( CookieID cookieID );
     CookieRef* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );
@@ -136,7 +137,7 @@ class CRefMgr {
                        CookieID id );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
                                 HostID hid, int socket, int nPlayersH, 
-                                int nPlayersT, int gameSeed, 
+                                int nPlayersS, int gameSeed, 
                                 bool* alreadyHere );
 
     CookieID cookieIDForConnName( const char* connName );
@@ -167,7 +168,7 @@ class SafeCref {
 
  public:
     SafeCref( const char* cookie, const char* connName, HostID hid, 
-              int socket, int nPlayersH, int nPlayersT, 
+              int socket, int nPlayersH, int nPlayersS, 
               unsigned short gameSeed );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( int socket );
@@ -182,19 +183,19 @@ class SafeCref {
             return false;
         }
     }
-    bool Connect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+    bool Connect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                   int seed ) {
         if ( IsValid() ) {
-            m_cref->_Connect( socket, srcID, nPlayersH, nPlayersT, seed );
+            m_cref->_Connect( socket, srcID, nPlayersH, nPlayersS, seed );
             return true;
         } else {
             return false;
         }
     }
-    bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersT,
+    bool Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                     int seed ) {
         if ( IsValid() ) {
-            m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersT, seed );
+            m_cref->_Reconnect( socket, srcID, nPlayersH, nPlayersS, seed );
             return true;
         } else {
             return false;

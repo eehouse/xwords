@@ -87,7 +87,6 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_cookieID = id;
     m_totalSent = 0;
     m_curState = XWS_INITED;
-    m_nextState = XWS_INITED;
     m_nextHostID = HOST_ID_SERVER;
     m_nPlayersSought = 0;
     m_nPlayersHere = 0;
@@ -169,7 +168,7 @@ CookieRef::Unlock() {
 }
 
 void
-CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT,
+CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                      int seed )
 {
     if ( CRefMgr::Get()->Associate( socket, this ) ) {
@@ -178,7 +177,7 @@ CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT,
         } else {
             logf( XW_LOGINFO, "NOT assigned host id; why?" );
         }
-        pushConnectEvent( socket, hid, nPlayersH, nPlayersT, seed );
+        pushConnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
         handleEvents();
     } else {
         logf( XW_LOGINFO, "dropping connect event; already connected" );
@@ -186,11 +185,11 @@ CookieRef::_Connect( int socket, HostID hid, int nPlayersH, int nPlayersT,
 }
 
 void
-CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersT,
+CookieRef::_Reconnect( int socket, HostID hid, int nPlayersH, int nPlayersS,
                        int seed )
 {
     (void)CRefMgr::Get()->Associate( socket, this );
-    pushReconnectEvent( socket, hid, nPlayersH, nPlayersT, seed );
+    pushReconnectEvent( socket, hid, nPlayersH, nPlayersS, seed );
     handleEvents();
 }
 
@@ -395,7 +394,7 @@ CookieRef::_Remove( int socket )
 
 void 
 CookieRef::pushConnectEvent( int socket, HostID srcID,
-                             int nPlayersH, int nPlayersT,
+                             int nPlayersH, int nPlayersS,
                              int seed )
 {
     CRefEvent evt;
@@ -403,21 +402,21 @@ CookieRef::pushConnectEvent( int socket, HostID srcID,
     evt.u.con.socket = socket;
     evt.u.con.srcID = srcID;
     evt.u.con.nPlayersH = nPlayersH;
-    evt.u.con.nPlayersT = nPlayersT;
+    evt.u.con.nPlayersS = nPlayersS;
     evt.u.con.seed = seed;
     m_eventQueue.push_back( evt );
 } /* pushConnectEvent */
 
 void 
 CookieRef::pushReconnectEvent( int socket, HostID srcID, int nPlayersH,
-                               int nPlayersT, int seed )
+                               int nPlayersS, int seed )
 {
     CRefEvent evt;
     evt.type = XWE_RECONNECTMSG;
     evt.u.con.socket = socket;
     evt.u.con.srcID = srcID;
     evt.u.con.nPlayersH = nPlayersH;
-    evt.u.con.nPlayersT = nPlayersT;
+    evt.u.con.nPlayersS = nPlayersS;
     evt.u.con.seed = seed;
     m_eventQueue.push_back( evt );
 } /* pushReconnectEvent */
@@ -490,14 +489,15 @@ CookieRef::handleEvents()
 {
     /* Assumption: has mutex!!!! */
     while ( m_eventQueue.size () > 0 ) {
+        XW_RELAY_STATE nextState;
         CRefEvent evt = m_eventQueue.front();
         m_eventQueue.pop_front();
 
         XW_RELAY_ACTION takeAction;
-        if ( getFromTable( m_curState, evt.type, &takeAction, &m_nextState ) ) {
+        if ( getFromTable( m_curState, evt.type, &takeAction, &nextState ) ) {
 
             logf( XW_LOGINFO, "%s: %s -> %s on evt %s, act=%s", __func__,
-                  stateString(m_curState), stateString(m_nextState),
+                  stateString(m_curState), stateString(nextState),
                   eventString(evt.type), actString(takeAction) );
 
             switch( takeAction ) {
@@ -585,7 +585,7 @@ CookieRef::handleEvents()
                 break;
             }
 
-            m_curState = m_nextState;
+            m_curState = nextState;
         }
     }
 } /* handleEvents */
@@ -619,18 +619,18 @@ void
 CookieRef::increasePlayerCounts( const CRefEvent* evt )
 {
     int nPlayersH = evt->u.con.nPlayersH;
-    int nPlayersT = evt->u.con.nPlayersT;
+    int nPlayersS = evt->u.con.nPlayersS;
     HostID hid = evt->u.con.srcID;
     assert( hid <= 4 );
  
     logf( XW_LOGINFO, "%s: hid=%d, nPlayersH=%d, ", __func__,
-          "nPlayersT=%d", hid, nPlayersH, nPlayersT );
+          "nPlayersS=%d", hid, nPlayersH, nPlayersS );
 
     if ( hid == HOST_ID_SERVER ) {
         assert( m_nPlayersSought == 0 );
-        m_nPlayersSought = nPlayersT;
+        m_nPlayersSought = nPlayersS;
     } else {
-        assert( nPlayersT == 0 ); /* should catch this earlier!!! */
+        assert( nPlayersS == 0 ); /* should catch this earlier!!! */
         assert( m_nPlayersSought == 0 || m_nPlayersHere <= m_nPlayersSought );
     }
     m_nPlayersHere += nPlayersH;
@@ -659,7 +659,7 @@ CookieRef::reducePlayerCounts( int socket )
             if ( iter->m_hostID == HOST_ID_SERVER ) {
                 m_nPlayersSought = 0;
             } else {
-                assert( iter->m_nPlayersT == 0 );
+                assert( iter->m_nPlayersS == 0 );
             }
             m_nPlayersHere -= iter->m_nPlayersH;
 
@@ -677,7 +677,6 @@ void
 CookieRef::checkCounts( const CRefEvent* evt )
 {
     int nPlayersH = evt->u.con.nPlayersH;
-/*     int nPlayersT = evt->u.con.nPlayersT; */
     HostID hid = evt->u.con.srcID;
     bool success;
 
@@ -724,14 +723,14 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
     int socket = evt->u.con.socket;
     HostID hid = evt->u.con.srcID;
     int nPlayersH = evt->u.con.nPlayersH;
-    int nPlayersT = evt->u.con.nPlayersT;
+    int nPlayersS = evt->u.con.nPlayersS;
     int seed = evt->u.con.seed;
 
     ASSERT_LOCKED();
 
     logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, socket=%d (size=%d)", 
           __func__, hid, socket, m_sockets.size());
-    HostRec hr(hid, socket, nPlayersH, nPlayersT, seed );
+    HostRec hr(hid, socket, nPlayersH, nPlayersS, seed );
     m_sockets.push_back( hr );
     logf( XW_LOGINFO, "m_sockets.size() now %d", m_sockets.size() );
 
