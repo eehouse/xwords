@@ -685,15 +685,14 @@ parsePair( const char* optarg, XP_U16* min, XP_U16* max )
     bool success = false;
     char* colon = strstr( optarg, ":" );
     if ( !colon ) {
-        fprintf( stderr, ": not found in argument\n" );
+        XP_LOGF( ": not found in argument\n" );
     } else {
         int intmin, intmax;
         if ( 2 == sscanf( optarg, "%d:%d", &intmin, &intmax ) ) {
             if ( intmin <= intmin ) {
-                success = true;
                 *min = intmin;
                 *max = intmax;
-                fprintf( stderr, "min: %d; max: %d\n", *min, *max );
+                success = true;
             }
         }
     }
