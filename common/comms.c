@@ -820,6 +820,7 @@ getChannelSeed( CommsCtxt* comms )
 {
     while ( comms->channelSeed == 0 ) {
         comms->channelSeed = XP_RANDOM();
+        XP_LOGF( "%s: channelSeed: %.4X", __func__, comms->channelSeed );
     }
     return comms->channelSeed;
 }
@@ -1082,6 +1083,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     XWHostID destID, srcID;
     CookieID cookieID;
     XP_U8 relayErr;
+    XP_U16 nHere, nSought;
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
@@ -1092,8 +1094,10 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     case XWRELAY_RECONNECT_RESP:
         set_relay_state( comms, COMMS_RELAYSTATE_CONNECTED );
         comms->r.heartbeat = stream_getU16( stream );
-        comms->r.cookieID = stream_getU16( stream );
-        XP_LOGF( "set cookieID = %d", comms->r.cookieID );
+        nHere = (XP_U16)stream_getU8( stream );
+        nSought = (XP_U16)stream_getU8( stream );
+        /* This may belong as an alert to user so knows has connected. */
+        XP_LOGF( "%s: have %d of %d players", __func__, nHere, nSought );
         setHeartbeatTimer( comms );
         break;
 
@@ -1103,6 +1107,8 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                    || comms->r.myHostID == srcID );
         comms->r.myHostID = srcID;
         XP_LOGF( "set hostid: %x", comms->r.myHostID );
+        comms->r.cookieID = stream_getU16( stream );
+        XP_LOGF( "set cookieID = %d", comms->r.cookieID );
 
 #ifdef DEBUG
         {
@@ -1111,6 +1117,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
             XP_ASSERT( comms->r.connName[0] == '\0' 
                        || 0 == XP_STRCMP( comms->r.connName, connName ) );
             XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
+            XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
         }
 #else
         stringFromStreamHere( stream, comms->r.connName, 

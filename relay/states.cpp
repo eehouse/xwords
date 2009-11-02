@@ -83,6 +83,9 @@ StateTable g_stateTable[] = {
 { XWS_CONNECTING,     XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_CONNECTING },
 { XWS_MISSING,        XWE_DISCONNMSG,    XWA_DISCONNECT,   XWS_MISSING },
 
+/* Cloned state is added via code, not via table actions; new initial state */
+{ XWS_CLONED,         XWE_CLONECHKMSG,   XWA_POSTCLONE,    XWS_CONNECTING },
+
     /* I'm seeing this but not sure how to handle.  Might disconnect be
        needed now */
 { XWS_MISSING,        XWE_FORWARDMSG,    XWA_DISCONNECT,   XWS_MISSING },
@@ -178,6 +181,7 @@ stateString( XW_RELAY_STATE state )
         CASESTR(XWS_CHKCOUNTS_INIT);
         CASESTR(XWS_CHKCOUNTS_MISS);
         CASESTR(XWS_CHKCOUNTS);
+        CASESTR(XWS_CLONED);
     default:
         assert(0);
     }
@@ -212,6 +216,7 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XWE_OKTOSEND);
         CASESTR(XWE_COUNTSBAD);
         CASESTR(XWE_SHUTDOWN);
+        CASESTR(XWE_CLONECHKMSG);
     default:
         assert(0);
     }
@@ -240,6 +245,7 @@ actString( XW_RELAY_ACTION act )
         CASESTR(XWA_REMOVESOCKET);
         CASESTR(XWA_HEARTDISCONN);
         CASESTR(XWA_SHUTDOWN);
+        CASESTR(XWA_POSTCLONE);
     default:
         assert(0);
     }

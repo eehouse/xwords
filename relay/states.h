@@ -35,6 +35,8 @@ enum {
     ,XWS_CHKCOUNTS_MISS       /* from the missing state */
     ,XWS_CHKCOUNTS            /* check from any other state */
 
+    ,XWS_CLONED               /* just got duplicated */
+
     ,XWS_CHK_ALLHERE          /* Need to see if all expected devices/players
                                    are on board. */
 
@@ -93,6 +95,8 @@ typedef enum {
     ,XWE_RECONNECTMSG      /* A device is re-connecting using the
                               connID for this object */
 
+    ,XWE_CLONECHKMSG       /* We've cloned; now clean up */
+
     ,XWE_DISCONNMSG     /* disconnect socket from this game/cref */
 
     ,XWE_FORWARDMSG        /* A message needs forwarding */
@@ -131,6 +135,8 @@ typedef enum {
 
     ,XWA_SENDALLHERE     /* Let all devices know we're in business */
     ,XWA_SNDALLHERE_2    /* Ditto, but for a reconnect */
+
+    ,XWA_POSTCLONE
 
     ,XWA_FWD             /* Forward a message */
 

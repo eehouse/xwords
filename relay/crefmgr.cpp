@@ -130,8 +130,9 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                           HostID hid, int socket, int nPlayersH, int nPlayersT,
                           int gameSeed, bool* alreadyHere )
 {
-    logf( XW_LOGINFO, "%s(cookie=%s,connName=%s,hid=%d,seed=%x,socket=%d)", __func__, 
-          cookie, connName, hid, gameSeed, socket );
+    logf( XW_LOGINFO, "%s(cookie=%s,connName=%s,hid=%d,seed=%x,socket=%d,"
+          "here=%d,total=%d)", __func__, cookie, connName, hid, gameSeed, 
+          socket, nPlayersH, nPlayersT );
     CookieRef* found = NULL;
 
     if ( !!cookie || !!connName ) { /* drop if both are null */
@@ -149,7 +150,8 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                     if ( cref->Lock() ) {
                         assert( !cookie || 0 == strcmp( cookie, cref->Cookie() ) );
                         if ( cref->SeedBelongs( gameSeed ) ) {
-                            logf( XW_LOGINFO, "%s: SeedBelongs: dup packet?", __func__ );
+                            logf( XW_LOGINFO, "%s: SeedBelongs: dup packet?",
+                                  __func__ );
                             *alreadyHere = true;
                             found = cref;
                         } else if ( cref->GameOpen( cookie, nPlayersH, 
@@ -312,7 +314,7 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
     cref = FindOpenGameFor( cookie, connName, hid, socket, nPlayersH, nPlayersT,
                             gameSeed, &alreadyHere );
     if ( cref == NULL && !alreadyHere ) {
-        cref = AddNew( cookie, connName, gameSeed, nextCID( NULL ) );
+        cref = AddNew( cookie, connName, nextCID( NULL ) );
     }
 
     return cref;
@@ -321,8 +323,14 @@ CRefMgr::getMakeCookieRef_locked( const char* cookie, const char* connName,
 bool
 CRefMgr::Associate( int socket, CookieRef* cref )
 {
-    bool isNew = false;
     MutexLock ml( &m_SocketStuffMutex );
+    return Associate_locked( socket, cref );
+}
+
+bool
+CRefMgr::Associate_locked( int socket, CookieRef* cref )
+{
+    bool isNew = false;
     SocketMap::iterator iter = m_SocketStuff.find( socket );
     /* This isn't enough.  Must provide a way to reuse sockets should a
        genuinely different connection appear.  Now maybe we already remove
@@ -341,9 +349,8 @@ CRefMgr::Associate( int socket, CookieRef* cref )
 }
 
 void 
-CRefMgr::Disassociate( int socket, CookieRef* cref )
+CRefMgr::Disassociate_locked( int socket, CookieRef* cref )
 {
-    MutexLock ml( &m_SocketStuffMutex );
     SocketMap::iterator iter = m_SocketStuff.find( socket );
     if ( iter == m_SocketStuff.end() ) {
         logf( XW_LOGERROR, "can't find SocketStuff for socket %d", socket );
@@ -353,6 +360,32 @@ CRefMgr::Disassociate( int socket, CookieRef* cref )
         delete stuff;
         m_SocketStuff.erase( iter );
     }
+}
+
+void 
+CRefMgr::Disassociate( int socket, CookieRef* cref )
+{
+    MutexLock ml( &m_SocketStuffMutex );
+    Disassociate_locked( socket, cref );
+}
+
+void
+CRefMgr::MoveSockets( vector<int> sockets, CookieRef* cref )
+{
+    MutexLock ml( &m_SocketStuffMutex );
+    vector<int>::iterator iter;
+    for ( iter = sockets.begin(); iter != sockets.end(); ++iter ) {
+        Disassociate_locked( *iter, NULL );
+        Associate_locked( *iter, cref );
+    }
+}
+
+CookieRef* 
+CRefMgr::Clone( const CookieRef* parent )
+{
+    const char* cookie = parent->Cookie();
+    CookieRef* cref = AddNew( cookie, NULL, nextCID( NULL ) );
+    return cref;
 }
 
 #if 0
@@ -441,11 +474,11 @@ CRefMgr::heartbeatProc( void* closure )
 #endif
 
 CookieRef*
-CRefMgr::AddNew( const char* cookie, const char* connName, int seed,
-                 CookieID id )
+CRefMgr::AddNew( const char* cookie, const char* connName, CookieID id )
 {
-    logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, seed=%.4X, cid=%d)", __func__,
-          cookie, connName, seed, id );
+    /* PENDING: should this return a locked cref? */
+    logf( XW_LOGINFO, "%s( cookie=%s, connName=%s, cid=%d)", __func__,
+          cookie, connName, id );
 
     CookieRef* ref = getFromFreeList();
 

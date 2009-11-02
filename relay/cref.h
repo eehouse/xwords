@@ -82,7 +82,7 @@ class CookieRef {
     int CountSockets() { return m_sockets.size(); }
     bool HasSocket( int socket );
     bool HasSocket_locked( int socket );
-    const char* Cookie() { return m_cookie.c_str(); }
+    const char* Cookie() const { return m_cookie.c_str(); }
     const char* ConnName() { return m_connName.c_str(); }
 
     int GetHeartbeat() { return m_heatbeat; }
@@ -185,6 +185,7 @@ class CookieRef {
     void handleEvents();
 
     void sendResponse( const CRefEvent* evt, bool initial );
+    void populate( vector<HostRec> hosts );
     void increasePlayerCounts( const CRefEvent* evt );
     void reducePlayerCounts( int socket );
     void checkCounts( const CRefEvent* evt );
@@ -201,6 +202,7 @@ class CookieRef {
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
     void sendAllHere( void );
+    void moveSockets( void );
     bool SeedBelongs( int gameSeed );
     bool SeedsBelong( const char* connName );
     void assignConnName( void );
@@ -211,6 +213,9 @@ class CookieRef {
     time_t GetStarttime( void ) { return m_starttime; }
 
     bool notInUse(void) { return m_cookieID == 0; }
+
+    bool tryMakeGame( vector<HostRec>& remaining );
+    void insertSorted( HostRec hr );
 
     /* timer callback */
     static void s_checkAllConnected( void* closure );

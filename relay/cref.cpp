@@ -265,14 +265,7 @@ CookieRef::GameOpen( const char* cookie, int nPlayersH, bool isNew,
         /* do nothing; reject */
         logf( XW_LOGINFO, "reject: bad state %s", stateString(m_curState) );
     } else {
-        if ( m_nPlayersSought == 0 ) {
-            accept = true;
-        } else if ( nPlayersH + m_nPlayersHere <= m_nPlayersSought ) {
-            accept = true;
-        } else {
-            logf( XW_LOGINFO, "reject: m_nPlayersSought=%d, m_nPlayersHere=%d",
-                  m_nPlayersSought, m_nPlayersHere );
-        }
+        accept = true;
     }
 
     /* Error to connect if cookie doesn't match. */
@@ -570,7 +563,11 @@ CookieRef::handleEvents()
                 cancelAllConnectedTimer();
                 assignHostIds();
                 assignConnName();
-                sendAllHere( );
+                sendAllHere();
+                break;
+
+            case XWA_POSTCLONE:
+                moveSockets();
                 break;
 
             case XWA_REJECT:
@@ -578,7 +575,6 @@ CookieRef::handleEvents()
             case XWA_NONE: 
                 /* nothing to do for these */
                 break;
-
 
             default:
                 assert(0); 
@@ -615,31 +611,230 @@ putNetShort( unsigned char** bufpp, unsigned short s )
     *bufpp += sizeof(s);
 }
 
+/* static bool */
+/* hostRecComp( const HostRec& aa, const HostRec& bb ) */
+/* { */
+/*     /\* first order, hosts go before guests; second order, by m_nPlayersHere  *\/ */
+/* /\*     if ( aa.m_nPlayersS *\/ */
+
+/*     return aa.m_nPlayersH < bb.m_nPlayersH; */
+/* } */
+
+static void
+print_sockets( const char* caller, vector<HostRec>& sockets )
+{
+    logf( XW_LOGINFO, "  %s from %s", __func__, caller );
+    vector<HostRec>::iterator iter;
+    for ( iter = sockets.begin(); iter != sockets.end(); ++iter ) {
+        logf( XW_LOGINFO, "isHost: %d; nPlayersH: %d; seed=%.4X; socket: %d", 
+                 iter->m_nPlayersS > 0, iter->m_nPlayersH, iter->m_seed,
+                 iter->m_socket );
+    }
+} /* print_sockets */
+
+#define MAX_PER_SIZE 16         /* need to enforce this when connections arrive */
+bool
+CookieRef::tryMakeGame( vector<HostRec>& remaining )
+{
+    assert( remaining.size() == 0 );
+    int nHosts = 0;
+    int nGuests;
+    bool complete = false;
+    unsigned int nRecords = m_sockets.size();
+    int ii;
+
+    /* m_sockets is sorted with hosts first, guests after, and within each in
+       descending order by number of players provided.  Start by finding where
+       the host/guest break is. */
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        if ( iter->m_nPlayersS == 0 ) {
+            break;
+        }
+        ++nHosts;
+    }
+    logf( XW_LOGINFO, "%s: there are %d hosts", __func__, nHosts );
+
+    nGuests = m_sockets.size() - nHosts;
+    int inUse[nGuests];
+    int nUsed;
+
+    /* Now for each host, try to give him a set of guests.  Assumption:
+       there's no way we can find more than one complete game here since we
+       try after every host addition.  The algorithm, which assumes guests are
+       sorted from most-players-provided down, is to try the largest numbers
+       first, skipping each that won't fit.  If we fail, we try again starting
+       from the next host.
+    */
+    int hostIndex;
+    for ( hostIndex = 0; hostIndex < nHosts; ++hostIndex ) {
+        unsigned int firstGuest;
+        for ( firstGuest = nHosts; firstGuest < nRecords; ++firstGuest ) {
+            int sought = m_sockets[hostIndex].m_nPlayersS - m_sockets[hostIndex].m_nPlayersH;
+
+            nUsed = 0;
+            for ( ii = (int)firstGuest; ii < (int)nRecords; ++ii ) {
+                int one = m_sockets[ii].m_nPlayersH;
+                if ( one <= sought ) { /* not too big? */
+                    sought -= one;
+                    inUse[nUsed++] = ii;
+                    if ( sought == 0 ) {
+                        complete = true;
+                        goto loop_end;
+                    }
+                }
+            }
+        }
+    }
+ loop_end:
+
+    /* If we have a full compliment of devices now, remove all the others into
+       remaining */
+    if ( complete ) {
+        int nRemaining = nRecords-nUsed-1;   /* -1 for host */
+        int lastUsed = nUsed-1;
+
+        /* guest[s] first */
+        for ( ii = nRecords - 1; ii >= nHosts; --ii ) {
+            if ( ii == inUse[lastUsed] ) {
+                --lastUsed;
+            } else {
+                assert( nRemaining > 0 );
+                HostRec hr = m_sockets[ii];
+                m_nPlayersHere -= hr.m_nPlayersH;
+                assert( hr.m_nPlayersS == 0 );
+                remaining.insert( remaining.begin(), hr ); /* insert at start */
+                --nRemaining;
+                m_sockets.erase( m_sockets.begin() + ii );
+            }
+        }
+
+        /* now remove the host we chose */
+        for ( ii = nHosts - 1; ii >= 0; --ii ) {
+            if ( ii != hostIndex ) {
+                assert( nRemaining > 0 );
+                HostRec hr = m_sockets[ii];
+                m_nPlayersHere -= hr.m_nPlayersH;
+                m_nPlayersSought -= hr.m_nPlayersS;
+                remaining.insert( remaining.begin(), hr ); /* insert at start */
+                --nRemaining;
+                m_sockets.erase( m_sockets.begin() + ii );
+            }
+        }
+
+        assert( 0 == nRemaining );
+    }
+
+    print_sockets( __func__, m_sockets );
+    print_sockets( __func__, remaining );
+
+    assert( remaining.size() + m_sockets.size() == nRecords );
+
+    logf( XW_LOGINFO, "%s => %d", __func__, complete );
+    return complete;
+} /* tryMakeGame */
+
+/* Maintain order first by whether is host or not, and then by number of
+   players provided */
+void
+CookieRef::insertSorted( HostRec hr )
+{
+    bool newIsHost = hr.m_nPlayersS > 0;
+    int newPlayersH = hr.m_nPlayersH;
+
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        bool curIsHost = iter->m_nPlayersS > 0;
+        bool belongsBySort = newPlayersH <= iter->m_nPlayersH;
+
+        /* We're done when we're inserting a host and have found a guest; or
+           when we're in the right region (host or guest) and the secondary
+           sort says do-it.*/
+
+        if ( newIsHost && !curIsHost ) {
+            break;
+        } else if ( (newIsHost == curIsHost) && belongsBySort ) {
+            break;
+        }
+    }
+        
+    m_sockets.insert( iter, hr );
+    logf( XW_LOGINFO, "m_sockets.size() now %d", m_sockets.size() );
+    print_sockets( __func__, m_sockets );
+
+    m_nPlayersHere += hr.m_nPlayersH;
+    m_nPlayersSought += hr.m_nPlayersS;
+} /* insertSorted */
+
+void
+CookieRef::populate( vector<HostRec> hosts )
+{
+    /* copy enough state that it can live on own */
+    m_sockets = hosts;
+    m_curState = XWS_CLONED;
+
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
+        m_nPlayersSought += iter->m_nPlayersS;
+        m_nPlayersHere += iter->m_nPlayersH;
+    }
+    print_sockets( __func__, m_sockets );
+}
+
 void
 CookieRef::increasePlayerCounts( const CRefEvent* evt )
 {
     int nPlayersH = evt->u.con.nPlayersH;
     int nPlayersS = evt->u.con.nPlayersS;
+    int socket = evt->u.con.socket;
     HostID hid = evt->u.con.srcID;
+    int seed = evt->u.con.seed;
     assert( hid <= 4 );
  
-    logf( XW_LOGINFO, "%s: hid=%d, nPlayersH=%d, ", __func__,
-          "nPlayersS=%d", hid, nPlayersH, nPlayersS );
+    logf( XW_LOGINFO, "%s: hid=%d, nPlayersH=%d, "
+          "nPlayersS=%d", __func__, hid, nPlayersH, nPlayersS );
 
-    if ( hid == HOST_ID_SERVER ) {
-        assert( m_nPlayersSought == 0 );
-        m_nPlayersSought = nPlayersS;
-    } else {
-        assert( nPlayersS == 0 ); /* should catch this earlier!!! */
-        assert( m_nPlayersSought == 0 || m_nPlayersHere <= m_nPlayersSought );
+    /* Up to this point we should just be adding host records to this cref.
+       Maybe even including multiple hosts.  Now we go through what we have
+       and try to build a game. sendResponse() is where new hostrecs are
+       actually added.  That seems broken! */
+
+    ASSERT_LOCKED();
+
+    /* first add the rec here, whether it'll stay for not */
+    logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, socket=%d (size=%d)", 
+          __func__, hid, socket, m_sockets.size());
+    HostRec hr( hid, socket, nPlayersH, nPlayersS, seed );
+
+    insertSorted( hr );
+
+    vector<HostRec> remaining;
+    bool gameComplete = tryMakeGame( remaining );
+
+    /* If we built a game but had leftover HostRecs, they're now in remaining.
+       Build a new cref for them, and process its first event now.  It'll then
+       be ready to receive new messages, e.g. new connections. */
+    if ( remaining.size() > 0 ) {
+        CookieRef* clone = CRefMgr::Get()->Clone( this );
+        assert( !!clone );
+        clone->Lock();
+
+        clone->populate( remaining );
+
+        assert( clone->m_eventQueue.size() == 0 );
+        CRefEvent evt;
+        evt.type = XWE_CLONECHKMSG;
+        clone->m_eventQueue.push_back( evt );
+        clone->handleEvents();
+
+        clone->Unlock();
     }
-    m_nPlayersHere += nPlayersH;
 
     logf( XW_LOGVERBOSE1, "%s: here=%d; total=%d", __func__,
           m_nPlayersHere, m_nPlayersSought );
 
     CRefEvent newevt;
-    if ( m_nPlayersHere == m_nPlayersSought ) {
+    if ( gameComplete ) {
         newevt.type = XWE_ALLHERE;
         m_gameFull = true;
     } else {
@@ -657,7 +852,7 @@ CookieRef::reducePlayerCounts( int socket )
     for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) {
         if ( iter->m_socket == socket ) {
             if ( iter->m_hostID == HOST_ID_SERVER ) {
-                m_nPlayersSought = 0;
+                m_nPlayersSought -= iter->m_nPlayersS;
             } else {
                 assert( iter->m_nPlayersS == 0 );
             }
@@ -677,12 +872,16 @@ void
 CookieRef::checkCounts( const CRefEvent* evt )
 {
     int nPlayersH = evt->u.con.nPlayersH;
+    int nPlayersS = evt->u.con.nPlayersS;
     HostID hid = evt->u.con.srcID;
     bool success;
 
-    logf( XW_LOGVERBOSE1, "checkCounts: hid=%d, nPlayers=%d, m_nPlayersSought = %d, "
-          "m_nPlayersHere = %d",
-          hid, nPlayersH, m_nPlayersSought, m_nPlayersHere );
+    logf( XW_LOGVERBOSE1, "%s: hid:%d; nPlayersS:%d; nPlayersH:%d; "
+          "m_nPlayersSought:%d; m_nPlayersHere:%d", __func__, 
+          hid, nPlayersS, nPlayersH, m_nPlayersSought, m_nPlayersHere );
+
+    /* increasePlayerCounts() is where we actually increase the numbers.  Is
+       that right? */
 
     if ( hid == HOST_ID_SERVER ) {
         success = m_nPlayersSought == 0;
@@ -694,7 +893,7 @@ CookieRef::checkCounts( const CRefEvent* evt )
 
     CRefEvent newevt;
     if ( success ) {
-        newevt = *evt;
+        newevt = *evt;          /* this is a gross hack!!! */
         newevt.type = XWE_OKTOSEND;
     } else {
         newevt.type = XWE_COUNTSBAD;
@@ -721,30 +920,20 @@ void
 CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 {
     int socket = evt->u.con.socket;
-    HostID hid = evt->u.con.srcID;
-    int nPlayersH = evt->u.con.nPlayersH;
-    int nPlayersS = evt->u.con.nPlayersS;
-    int seed = evt->u.con.seed;
-
-    ASSERT_LOCKED();
-
-    logf( XW_LOGINFO, "%s: remembering pair: hostid=%x, socket=%d (size=%d)", 
-          __func__, hid, socket, m_sockets.size());
-    HostRec hr(hid, socket, nPlayersH, nPlayersS, seed );
-    m_sockets.push_back( hr );
-    logf( XW_LOGINFO, "m_sockets.size() now %d", m_sockets.size() );
 
     /* Now send the response */
-    unsigned char buf[1 +       /* cmd */
-                      sizeof(short) + /* heartbeat */
-                      sizeof(CookieID) 
+    unsigned char buf[1       /* cmd */
+                      + sizeof(short) /* heartbeat */
+                      + sizeof(short) /* total here */
+                      + sizeof(short) /* total expected */
     ];
 
     unsigned char* bufp = buf;
 
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     putNetShort( &bufp, GetHeartbeat() );
-    putNetShort( &bufp, GetCookieID() );
+    *bufp++ = GetPlayersHere();
+    *bufp++ = GetPlayersSought();
 
     send_with_length( socket, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent %s", cmdToStr( XWRELAY_Cmd(buf[0]) ) );
@@ -815,14 +1004,33 @@ CookieRef::notifyOthers( int socket, XWRelayMsg msg, XWREASON why )
 } /* notifyOthers */
 
 void
+CookieRef::moveSockets( void )
+{
+    ASSERT_LOCKED();
+
+    vector<int> sockets;
+    vector<HostRec>::iterator iter;
+    for ( iter = m_sockets.begin(); iter != m_sockets.end(); ++iter ) { 
+        sockets.push_back( iter->m_socket );
+    }
+
+    CRefMgr::Get()->MoveSockets( sockets, this );
+}
+
+void
 CookieRef::sendAllHere( void )
 {
-    unsigned char buf[1 + 1 + 1 + MAX_CONNNAME_LEN];
+    unsigned char buf[1 + 1     /* hostID */
+                      + sizeof(CookieID) 
+                      + 1 + MAX_CONNNAME_LEN];
+
     unsigned char* bufp = buf;
     unsigned char* idLoc;
     
     *bufp++ = XWRELAY_ALLHERE;
     idLoc = bufp++;                 /* space for hostId, remembering address */
+
+    putNetShort( &bufp, GetCookieID() );
 
     const char* connName = ConnName();
     assert( !!connName && connName[0] );

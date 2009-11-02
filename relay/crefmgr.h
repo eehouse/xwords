@@ -97,7 +97,11 @@ class CRefMgr {
 
     /* Track sockets independent of cookie refs */
     bool Associate( int socket, CookieRef* cref );
+    bool Associate_locked( int socket, CookieRef* cref );
     void Disassociate( int socket, CookieRef* cref );
+    void Disassociate_locked( int socket, CookieRef* cref );
+    void MoveSockets( vector<int> sockets, CookieRef* cref );
+    CookieRef* Clone( const CookieRef* parent );
     pthread_mutex_t* GetWriteMutexForSocket( int socket );
     void RemoveSocketRefs( int socket );
     void PrintSocketInfo( int socket, string& out );
@@ -133,8 +137,7 @@ class CRefMgr {
     CookieRef* getCookieRef( int socket );
     bool checkCookieRef_locked( CookieRef* cref );
     CookieRef* getCookieRef_impl( CookieID cookieID );
-    CookieRef* AddNew( const char* cookie, const char* connName, int seed, 
-                       CookieID id );
+    CookieRef* AddNew( const char* cookie, const char* connName, CookieID id );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
                                 HostID hid, int socket, int nPlayersH, 
                                 int nPlayersS, int gameSeed, 
