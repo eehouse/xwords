@@ -51,19 +51,19 @@ enum { XWRELAY_NONE             /* 0 is an illegal value */
 
        , XWRELAY_CONNECT_RESP
        /* Sent from relay to device in response to XWRELAY_CONNECT.  Format:
-          heartbeat_seconds: 2; connectionID: 2; connNameLen: 1;
-          connName<connNameLen>*/
+          heartbeat_seconds: 2; players_here: 1; players_sought: 1; */
 
        , XWRELAY_RECONNECT_RESP
        /* Sent from relay to device in response to XWRELAY_RECONNECT.  Format:
-          heartbeat_seconds: 2; */
+          same as for XWRELAY_CONNECT_RESP */
 
        , XWRELAY_ALLHERE
        /* Sent from relay when it enters the state where all expected devices
           are here (at start of new game or after having been gone for a
           while).  Devices should not attempt to forward messages before this
           message is received or after XWRELAY_DISCONNECT_OTHER is received.
-          Format: hostID: 1; */
+          Format: hostID: 1; connectionID: 2; connNameLen: 1;
+          connName<connNameLen>; */
 
        , XWRELAY_DISCONNECT_YOU
        /* Sent from relay when existing connection is terminated.  
@@ -103,9 +103,10 @@ typedef unsigned char XWRELAY_Cmd;
 #define MAX_MSG_LEN    256      /* 100 is more like it */
 #define MAX_CONNNAME_LEN 48     /* host ID, boot time, and seeds as hex? */
 
-#define XWRELAY_PROTO_VERSION_ORIG        0x01
-#define XWRELAY_PROTO_VERSION_LATE_NAME   0x02
-#define XWRELAY_PROTO_VERSION XWRELAY_PROTO_VERSION_LATE_NAME
+#define XWRELAY_PROTO_VERSION_ORIG            0x01
+#define XWRELAY_PROTO_VERSION_LATE_NAME       0x02
+#define XWRELAY_PROTO_VERSION_LATE_COOKIEID   0x03
+#define XWRELAY_PROTO_VERSION XWRELAY_PROTO_VERSION_LATE_COOKIEID
 
 /* Errors passed with denied  */
 #ifndef CANT_DO_TYPEDEF
