@@ -194,13 +194,15 @@ processHeartbeat( unsigned char* buf, int bufLen, int socket )
     HostID hostID;
     bool success = false;
 
-    if ( getNetShort( &buf, end, &cookieID )
+    if ( getNetShort( &buf, end, &cookieID ) /* may be wrong if ALLCONN hasn't been sent */
          && getNetByte( &buf, end, &hostID ) ) {
         logf( XW_LOGINFO, "processHeartbeat: cookieID 0x%lx, hostID 0x%x", 
               cookieID, hostID );
 
-        SafeCref scr( cookieID );
-        success = scr.HandleHeartbeat( hostID, socket );
+        {
+            SafeCref scr( socket );
+            success = scr.HandleHeartbeat( hostID, socket );
+        }
         if ( !success ) {
             killSocket( socket, "no cref for socket" );
         }
@@ -375,7 +377,7 @@ processDisconnect( unsigned char* bufp, int bufLen, int socket )
     if ( getNetShort( &bufp, end, &cookieID ) 
          && getNetByte( &bufp, end, &hostID ) ) {
 
-        SafeCref scr( cookieID );
+        SafeCref scr( socket );
         scr.Disconnect( socket, hostID );
         success = true;
     } else {
