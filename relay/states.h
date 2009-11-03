@@ -33,7 +33,6 @@ enum {
                                    actually: 1-device game.  */
 
     ,XWS_CHKCOUNTS_MISS       /* from the missing state */
-    ,XWS_CHKCOUNTS            /* check from any other state */
 
     ,XWS_CLONED               /* just got duplicated */
 
@@ -84,7 +83,6 @@ typedef enum {
     XWE_NONE
 
     ,XWE_OKTOSEND
-    ,XWE_COUNTSBAD
 
     ,XWE_ALLHERE             /* notify that all expected players are arrived */
     ,XWE_SOMEMISSING         /* notify that some expected players are still missing */
@@ -125,8 +123,6 @@ typedef enum {
 
     ,XWA_SEND_1ST_RSP
     ,XWA_SEND_1ST_RERSP
-
-    ,XWA_CHKCOUNTS
 
     ,XWA_REJECT
 

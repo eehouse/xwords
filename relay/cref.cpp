@@ -495,10 +495,6 @@ CookieRef::handleEvents()
 
             switch( takeAction ) {
 
-            case XWA_CHKCOUNTS:
-                checkCounts( &evt );
-                break;
-
             case XWA_SEND_1ST_RSP:
             case XWA_SEND_1ST_RERSP:
                 setAllConnectedTimer();
@@ -626,8 +622,8 @@ print_sockets( const char* caller, vector<HostRec>& sockets )
     logf( XW_LOGINFO, "  %s from %s", __func__, caller );
     vector<HostRec>::iterator iter;
     for ( iter = sockets.begin(); iter != sockets.end(); ++iter ) {
-        logf( XW_LOGINFO, "isHost: %d; nPlayersH: %d; seed=%.4X; socket: %d", 
-                 iter->m_nPlayersS > 0, iter->m_nPlayersH, iter->m_seed,
+        logf( XW_LOGINFO, "nPSought: %d; nPHere: %d; seed=%.4X; socket: %d", 
+                 iter->m_nPlayersS, iter->m_nPlayersH, iter->m_seed,
                  iter->m_socket );
     }
 } /* print_sockets */
@@ -865,41 +861,6 @@ CookieRef::reducePlayerCounts( int socket )
         }
     }
 } /* reducePlayerCounts */
-
-/* Determine if adding this device to the game would give us too many
-   players. */
-void
-CookieRef::checkCounts( const CRefEvent* evt )
-{
-    int nPlayersH = evt->u.con.nPlayersH;
-    int nPlayersS = evt->u.con.nPlayersS;
-    HostID hid = evt->u.con.srcID;
-    bool success;
-
-    logf( XW_LOGVERBOSE1, "%s: hid:%d; nPlayersS:%d; nPlayersH:%d; "
-          "m_nPlayersSought:%d; m_nPlayersHere:%d", __func__, 
-          hid, nPlayersS, nPlayersH, m_nPlayersSought, m_nPlayersHere );
-
-    /* increasePlayerCounts() is where we actually increase the numbers.  Is
-       that right? */
-
-    if ( hid == HOST_ID_SERVER ) {
-        success = m_nPlayersSought == 0;
-    } else {
-        success = (m_nPlayersSought == 0) /* if no server present yet */
-            || (m_nPlayersSought >= m_nPlayersHere + nPlayersH);
-    }
-    logf( XW_LOGVERBOSE1, "success = %d", success );
-
-    CRefEvent newevt;
-    if ( success ) {
-        newevt = *evt;          /* this is a gross hack!!! */
-        newevt.type = XWE_OKTOSEND;
-    } else {
-        newevt.type = XWE_COUNTSBAD;
-    }
-    m_eventQueue.push_back( newevt );
-} /* checkCounts */
 
 void
 CookieRef::setAllConnectedTimer()
