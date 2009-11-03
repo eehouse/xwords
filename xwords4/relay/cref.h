@@ -188,7 +188,6 @@ class CookieRef {
     void populate( vector<HostRec> hosts );
     void increasePlayerCounts( const CRefEvent* evt );
     void reducePlayerCounts( int socket );
-    void checkCounts( const CRefEvent* evt );
 
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
