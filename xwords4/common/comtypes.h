@@ -129,7 +129,7 @@ typedef struct CommonPrefs {
     XP_Bool         showBoardArrow;  /* applies to all games */
     XP_Bool         showRobotScores; /* applies to all games */
     XP_Bool         hideTileValues; 
-    XP_Bool         reserved2;       /* get to 32-bit for ARM... */
+    XP_Bool         skipCommitConfirm; /* applies to all games */
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16          robotThinkMin, robotThinkMax;
 #endif

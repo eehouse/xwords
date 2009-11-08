@@ -86,8 +86,8 @@ adjustForChoice( CePrefsDlgState* state )
     HWND hDlg = state->dlgHdr.hDlg;
     XP_U16 goesWithGlobal[] = {IDC_CHECKCOLORPLAYED, IDC_LEFTYCHECK,
                                IDC_CHECKSHOWCURSOR, IDC_CHECKROBOTSCORES,
-                               IDC_HIDETILEVALUES, IDC_PREFCOLORS, 
-                               IDC_PREFLOCALE
+                               IDC_SKIPCONFIRM, IDC_HIDETILEVALUES, 
+                               IDC_PREFCOLORS, IDC_PREFLOCALE
 #ifdef ALLOW_CHOOSE_FONTS
                                ,IDC_PREFFONTS
 #endif
@@ -210,6 +210,7 @@ loadControlsFromState( CePrefsDlgState* pState )
 
     ceSetChecked( hDlg, IDC_CHECKSHOWCURSOR, prefsPrefs->cp.showBoardArrow );
     ceSetChecked( hDlg, IDC_CHECKROBOTSCORES, prefsPrefs->cp.showRobotScores );
+    ceSetChecked( hDlg, IDC_SKIPCONFIRM, prefsPrefs->cp.skipCommitConfirm );
     ceSetChecked( hDlg, IDC_HIDETILEVALUES, prefsPrefs->cp.hideTileValues );
 
 #ifdef FEATURE_TRAY_EDIT
@@ -264,6 +265,7 @@ ceControlsToPrefs( CePrefsDlgState* state )
 
     prefsPrefs->cp.showBoardArrow = ceGetChecked( hDlg, IDC_CHECKSHOWCURSOR );
     prefsPrefs->cp.showRobotScores = ceGetChecked( hDlg, IDC_CHECKROBOTSCORES );
+    prefsPrefs->cp.skipCommitConfirm = ceGetChecked( hDlg, IDC_SKIPCONFIRM );
     prefsPrefs->cp.hideTileValues = ceGetChecked( hDlg, IDC_HIDETILEVALUES );
     prefsPrefs->gp.timerEnabled = ceGetChecked( hDlg, TIMER_CHECK );
 

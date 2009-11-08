@@ -83,79 +83,80 @@
 #define IDC_CHECKHINTSOK                1041
 #define IDC_CHECKSHOWCURSOR             1042
 #define IDC_CHECKROBOTSCORES            1043
-#define IDC_HIDETILEVALUES              1044
-#define IDC_PREFCOLORS                  1045
-#define IDC_PREFLOCALE                  1046
-#define IDC_PREFFONTS                   1047
-#define PHONIES_LABEL                   1048
-#define GIROLECONF_BUTTON               1049
-#define GIJUGGLE_BUTTON                 1050
-#define IDC_TOTAL_LABEL                 1051
-#define IDC_REMOTE_LABEL                1052
-#define IDC_PICKTILES                   1053
-#define IDC_BPICK                       1054
-#define IDC_PICKMSG                     1055
+#define IDC_SKIPCONFIRM                 1044
+#define IDC_HIDETILEVALUES              1045
+#define IDC_PREFCOLORS                  1046
+#define IDC_PREFLOCALE                  1047
+#define IDC_PREFFONTS                   1048
+#define PHONIES_LABEL                   1049
+#define GIROLECONF_BUTTON               1050
+#define GIJUGGLE_BUTTON                 1051
+#define IDC_TOTAL_LABEL                 1052
+#define IDC_REMOTE_LABEL                1053
+#define IDC_PICKTILES                   1054
+#define IDC_BPICK                       1055
+#define IDC_PICKMSG                     1056
 #ifdef FEATURE_TRAY_EDIT
-# define IDC_CPICK                      1100 
-# define IDC_BACKUP                     1056
+# define IDC_CPICK                      1057
+# define IDC_BACKUP                     1058
 #endif
 #ifdef XWFEATURE_SEARCHLIMIT
-# define IDC_CHECKHINTSLIMITS           1057
+# define IDC_CHECKHINTSLIMITS           1059
 #endif
 
 /* buttons and lables must be parallel arrays so CLRSEL_LABEL_OFFSET
    works. */
-#define DLBLTR_BUTTON                  1058
-#define DBLWRD_BUTTON                  1059
-#define TPLLTR_BUTTON                  1060
-#define TPLWRD_BUTTON                  1061
-#define EMPCELL_BUTTON                 1062
-#define TBACK_BUTTON                   1063
-#define FOCUSCLR_BUTTON                1064
-#define PLAYER1_BUTTON                 1065
-#define PLAYER2_BUTTON                 1066
-#define PLAYER3_BUTTON                 1067
-#define PLAYER4_BUTTON                 1068
+#define DLBLTR_BUTTON                  1060
+#define DBLWRD_BUTTON                  1061
+#define TPLLTR_BUTTON                  1062
+#define TPLWRD_BUTTON                  1063
+#define EMPCELL_BUTTON                 1064
+#define TBACK_BUTTON                   1065
+#define FOCUSCLR_BUTTON                1066
+#define PLAYER1_BUTTON                 1067
+#define PLAYER2_BUTTON                 1068
+#define PLAYER3_BUTTON                 1069
+#define PLAYER4_BUTTON                 1070
 
-#define DLBLTR_LABEL                   1069
-#define DBLWRD_LABEL                   1070
-#define TPLLTR_LABEL                   1071
-#define TPLWRD_LABEL                   1072
-#define EMPCELL_LABEL                  1073
-#define TBACK_LABEL                    1074
-#define FOCUSCLR_LABEL                 1075
-#define PLAYER1_LABEL                  1076
-#define PLAYER2_LABEL                  1077
-#define PLAYER3_LABEL                  1078
-#define PLAYER4_LABEL                  1079
+#define DLBLTR_LABEL                   1071
+#define DBLWRD_LABEL                   1072
+#define TPLLTR_LABEL                   1073
+#define TPLWRD_LABEL                   1074
+#define EMPCELL_LABEL                  1075
+#define TBACK_LABEL                    1076
+#define FOCUSCLR_LABEL                 1077
+#define PLAYER1_LABEL                  1078
+#define PLAYER2_LABEL                  1079
+#define PLAYER3_LABEL                  1080
+#define PLAYER4_LABEL                  1081
 
-#define DLBLTR_SAMPLE                  1080
-#define DBLWRD_SAMPLE                  1081
-#define TPLLTR_SAMPLE                  1082
-#define TPLWRD_SAMPLE                  1083
-#define EMPCELL_SAMPLE                 1084
-#define TBACK_SAMPLE                   1085
-#define FOCUSCLR_SAMPLE                1086
-#define PLAYER1_SAMPLE                 1087
-#define PLAYER2_SAMPLE                 1088
-#define PLAYER3_SAMPLE                 1089
-#define PLAYER4_SAMPLE                 1090
+#define DLBLTR_SAMPLE                  1082
+#define DBLWRD_SAMPLE                  1083
+#define TPLLTR_SAMPLE                  1084
+#define TPLWRD_SAMPLE                  1085
+#define EMPCELL_SAMPLE                 1086
+#define TBACK_SAMPLE                   1087
+#define FOCUSCLR_SAMPLE                1088
+#define PLAYER1_SAMPLE                 1089
+#define PLAYER2_SAMPLE                 1090
+#define PLAYER3_SAMPLE                 1091
+#define PLAYER4_SAMPLE                 1092
 
 #define CLRSEL_LABEL_OFFSET (DLBLTR_LABEL-DLBLTR_BUTTON)
 
 /* editor dlg: assumption is that the edit field's ID is one more
    than the corresponding slider's */
 #ifdef MY_COLOR_SEL
-# define CLREDT_SLIDER1                 1091
-# define RED_EDIT                       1092
-# define CLREDT_SLIDER2                 1093
-# define GREEN_EDIT                     1094
-# define CLREDT_SLIDER3                 1095
-# define BLUE_EDIT                      1096
+# define CLREDT_SLIDER1                 1093
+# define RED_EDIT                       1094
+# define CLREDT_SLIDER2                 1095
+# define GREEN_EDIT                     1096
+# define CLREDT_SLIDER3                 1097
+# define BLUE_EDIT                      1098
 
-# define RED_LABEL                      1097
-# define GREEN_LABEL                    1098
-# define BLUE_LABEL                     1099
+# define RED_LABEL                      1099
+# define GREEN_LABEL                    1100
+# define BLUE_LABEL                     1101
 # define CLSAMPLE_BUTTON_ID             1123
 #endif // MY_COLOR_SEL
 
