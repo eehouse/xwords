@@ -427,8 +427,13 @@ forwardMessage( unsigned char* buf, int buflen, int srcSocket )
          && getNetByte( &bufp, end, &dest ) ) {
         logf( XW_LOGINFO, "cookieID = %d", cookieID );
 
-        SafeCref scr( cookieID );
-        success = scr.Forward( src, dest, buf, buflen );
+        if ( COOKIE_ID_NONE == cookieID ) {
+            SafeCref scr( srcSocket );
+            success = scr.Forward( src, dest, buf, buflen );
+        } else {
+            SafeCref scr( cookieID ); /* won't work if not allcon; will be 0 */
+            success = scr.Forward( src, dest, buf, buflen );
+        }
     }
     return success;
 } /* forwardMessage */
