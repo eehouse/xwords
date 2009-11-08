@@ -201,6 +201,7 @@ CommsRelayState2Str( CommsRelayState state )
         CASE_STR(COMMS_RELAYSTATE_UNCONNECTED);
         CASE_STR(COMMS_RELAYSTATE_CONNECT_PENDING);
         CASE_STR(COMMS_RELAYSTATE_CONNECTED);
+        CASE_STR(COMMS_RELAYSTATE_RECONNECTED);
         CASE_STR(COMMS_RELAYSTATE_ALLCONNECTED);
     default:
         XP_ASSERT(0); 
@@ -979,7 +980,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( conType == COMMS_CONN_RELAY ) {
-        if ( comms->r.relayState == COMMS_RELAYSTATE_ALLCONNECTED ) {
+        if ( comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
             XWHostID destID = getDestID( comms, channelNo );
             result = send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
                                      elem->msg, elem->len );
@@ -1075,6 +1076,21 @@ ConnType2Str( CommsConnType typ )
 # define relayCmdToStr( cmd )
 # endif
 
+static void
+got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream, 
+                 CommsRelayState newState )
+{
+    XP_U16 nHere, nSought;
+
+    set_relay_state( comms, newState );
+
+    comms->r.heartbeat = stream_getU16( stream );
+    nHere = (XP_U16)stream_getU8( stream );
+    nSought = (XP_U16)stream_getU8( stream );
+    /* This may belong as an alert to user so knows has connected. */
+    XP_LOGF( "%s: have %d of %d players", __func__, nHere, nSought );
+    setHeartbeatTimer( comms );
+}
 
 static XP_Bool
 relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
@@ -1083,7 +1099,6 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     XWHostID destID, srcID;
     CookieID cookieID;
     XP_U8 relayErr;
-    XP_U16 nHere, nSought;
 
     /* nothing for us to do here if not using relay */
     XWRELAY_Cmd cmd = stream_getU8( stream );
@@ -1091,14 +1106,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     switch( cmd ) {
 
     case XWRELAY_CONNECT_RESP:
+        got_connect_cmd( comms, stream, COMMS_RELAYSTATE_CONNECTED );
+        break;
     case XWRELAY_RECONNECT_RESP:
-        set_relay_state( comms, COMMS_RELAYSTATE_CONNECTED );
-        comms->r.heartbeat = stream_getU16( stream );
-        nHere = (XP_U16)stream_getU8( stream );
-        nSought = (XP_U16)stream_getU8( stream );
-        /* This may belong as an alert to user so knows has connected. */
-        XP_LOGF( "%s: have %d of %d players", __func__, nHere, nSought );
-        setHeartbeatTimer( comms );
+        got_connect_cmd( comms, stream, COMMS_RELAYSTATE_RECONNECTED );
+        comms_resendAll( comms );
         break;
 
     case XWRELAY_ALLHERE:
@@ -1123,12 +1135,15 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         stringFromStreamHere( stream, comms->r.connName, 
                               sizeof(comms->r.connName) );
 #endif
-        set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
 
         /* We're [re-]connected now.  Send any pending messages.  This may
            need to be done later since we're inside the platform's socket read
-           proc now. */
-        comms_resendAll( comms );
+           proc now.  But don't resend if we were previously REconnected, as
+           we'll have sent then. */
+        if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) {
+            comms_resendAll( comms );
+        }
+        set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
         break;
     case XWRELAY_MSG_FROMRELAY:
         cookieID = stream_getU16( stream );
@@ -1137,8 +1152,16 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         XP_LOGF( "cookieID: %d; srcID: %x; destID: %x",
                  cookieID, srcID, destID );
         /* If these values don't check out, drop it */
-        consumed = cookieID != comms->r.cookieID
-            || destID != comms->r.myHostID;
+
+        consumed = destID != comms->r.myHostID;
+        /* it's ok for cookieID not to match */
+        if ( !consumed ) {
+            if ( COMMS_RELAYSTATE_ALLCONNECTED == comms->r.relayState ) {
+                consumed = cookieID != comms->r.cookieID;
+            } else {
+                XP_ASSERT( COMMS_RELAYSTATE_RECONNECTED == comms->r.relayState );
+            }
+        }
         if ( consumed ) {
             XP_LOGF( "%s: rejecting data message", __func__ );
         } else {
@@ -1150,7 +1173,9 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         relayErr = stream_getU8( stream );
         srcID = stream_getU8( stream );
         XP_LOGF( "%s: host id %x disconnected", __func__, srcID );
-        set_relay_state( comms, COMMS_RELAYSTATE_CONNECTED );
+        /* if we don't have connName then RECONNECTED is the wrong state to change to. */
+        XP_ASSERT( 0 != comms->r.connName[0] );
+        set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
         /* we will eventually want to tell the user which player's gone */
         util_userError( comms->util, ERR_RELAY_BASE + relayErr );
         break;
@@ -1409,7 +1434,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_Bool messageValid = XP_FALSE;
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
-    AddressRecord* rec = NULL;
 
     XP_ASSERT( retAddr == NULL || comms->addr.conType == retAddr->conType );
 
@@ -1424,6 +1448,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
              (sizeof(connID) + sizeof(channelNo) 
               + sizeof(msgID) + sizeof(lastMsgRcd)) ) {
             XP_U16 payloadSize;
+            AddressRecord* rec = NULL;
 
             connID = stream_getU32( stream );
             XP_STATUSF( "%s: read connID (gameID) of %lx", __func__, connID );
@@ -1436,7 +1461,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             payloadSize = stream_getSize( stream ) > 0; /* anything left? */
 
             if ( connID == CONN_ID_NONE ) {
-                /* special case: initial message from client */
+                /* special case: initial message from client or server */
                 rec = validateInitialMessage( comms, payloadSize > 0, retAddr, 
                                               senderID, &channelNo );
             } else if ( comms->connID == connID ) {
@@ -1444,7 +1469,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                                               lastMsgRcd );
             }
 
-            messageValid = NULL != rec;
+            messageValid = (NULL != rec)
+                && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= msgID);
             if ( messageValid ) {
                 rec->lastMsgRcd = msgID;
                 XP_LOGF( "%s: set channel %x's lastMsgRcd to " XP_LD,
