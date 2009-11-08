@@ -111,6 +111,8 @@ typedef enum {
 
     ,XWE_NOMORESOCKETS     /* last socket's been removed */
 
+    ,XWE_NOMOREMSGS        /* No messages are stored here for disconnected
+                              hosts */
     ,XWE_SHUTDOWN          /* shutdown this game */
 
     ,XWE_ANY               /* wildcard; matches all */
@@ -137,6 +139,8 @@ typedef enum {
     ,XWA_FWD             /* Forward a message */
 
     ,XWA_NOTEHEART       /* Record heartbeat received */
+
+    ,XWA_NOTE_EMPTY      /* No sockets left; check if can delete */
 
     ,XWA_TIMERDISCONN  /* disconnect all because of a timer */
 

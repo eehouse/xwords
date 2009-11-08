@@ -78,7 +78,9 @@ StateTable g_stateTable[] = {
 
     /* I'm seeing this but not sure how to handle.  Might disconnect be
        needed now */
-{ XWS_MISSING,        XWE_FORWARDMSG,    XWA_DISCONNECT,   XWS_MISSING },
+
+{ XWS_MISSING,        XWE_NOMORESOCKETS, XWA_NOTE_EMPTY,   XWS_MISSING },
+{ XWS_MISSING,        XWE_NOMOREMSGS,    XWA_NONE,         XWS_DEAD },
 
 { XWS_ANY,            XWE_NOMORESOCKETS, XWA_NONE,         XWS_DEAD },
 { XWS_ANY,            XWE_SHUTDOWN,      XWA_SHUTDOWN,     XWS_DEAD },
@@ -115,6 +117,7 @@ StateTable g_stateTable[] = {
 
     /* This is our bread-n-butter */
 { XWS_ALLCONND,       XWE_FORWARDMSG,    XWA_FWD,           XWS_ALLCONND },
+{ XWS_MISSING,        XWE_FORWARDMSG,    XWA_FWD,           XWS_MISSING },
 
 { XWS_DEAD,           XWE_REMOVESOCKET,  XWA_REMOVESOCKET,  XWS_DEAD }
 
@@ -198,6 +201,7 @@ eventString( XW_RELAY_EVENT evt )
         CASESTR(XWE_ANY);
         CASESTR(XWE_REMOVESOCKET);
         CASESTR(XWE_NOMORESOCKETS);
+        CASESTR(XWE_NOMOREMSGS);
         CASESTR(XWE_NOTIFYDISCON);
         CASESTR(XWE_ALLHERE);
         CASESTR(XWE_SOMEMISSING);
@@ -230,6 +234,7 @@ actString( XW_RELAY_ACTION act )
         CASESTR(XWA_REMOVESOCKET);
         CASESTR(XWA_HEARTDISCONN);
         CASESTR(XWA_SHUTDOWN);
+        CASESTR(XWA_NOTE_EMPTY);
         CASESTR(XWA_POSTCLONE);
     default:
         assert(0);

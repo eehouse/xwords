@@ -93,6 +93,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_locking_thread = 0;
     m_starttime = uptime();
     m_gameFull = false;
+    m_nHostMsgs = 0;
 
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
@@ -133,7 +134,15 @@ CookieRef::Clear(void)
     m_connName = "";
     m_cookieID = 0;
     m_eventQueue.clear();
-}
+
+    if ( 0 < m_nHostMsgs ) {
+        unsigned int ii;
+        for ( ii = 0; ii < sizeof(m_hostMsgQueues)/sizeof(m_hostMsgQueues[0]);++ii){
+            m_hostMsgQueues[ii].clear();
+        }
+        /* m_nHostMsgs will get cleared in ReInit */
+    }
+} /* Clear */
 
 bool
 CookieRef::Lock( void ) 
@@ -506,10 +515,11 @@ CookieRef::handleEvents()
             case XWA_SEND_RERSP:
                 increasePlayerCounts( &evt );
                 sendResponse( &evt, takeAction == XWA_SEND_RSP );
+                sendAnyStored( &evt );
                 break;
 
             case XWA_FWD:
-                forward( &evt );
+                forward_or_store( &evt );
                 break;
 
             case XWA_TIMERDISCONN:
@@ -562,6 +572,14 @@ CookieRef::handleEvents()
                 sendAllHere();
                 break;
 
+            case XWA_NOTE_EMPTY:
+                if ( 0 == count_msgs_stored() ) {
+                    CRefEvent evt;
+                    evt.type = XWE_NOMOREMSGS;
+                    m_eventQueue.push_back( evt );
+                }
+                break;
+
             case XWA_POSTCLONE:
                 moveSockets();
                 break;
@@ -582,7 +600,7 @@ CookieRef::handleEvents()
     }
 } /* handleEvents */
 
-void
+bool
 CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen,
                              bool cascade )
 {
@@ -597,6 +615,7 @@ CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen,
         _Remove( socket );
         XWThreadPool::GetTPool()->CloseSocket( socket );
     }
+    return !failed;
 } /* send_with_length */
 
 static void
@@ -607,14 +626,48 @@ putNetShort( unsigned char** bufpp, unsigned short s )
     *bufpp += sizeof(s);
 }
 
-/* static bool */
-/* hostRecComp( const HostRec& aa, const HostRec& bb ) */
-/* { */
-/*     /\* first order, hosts go before guests; second order, by m_nPlayersHere  *\/ */
-/* /\*     if ( aa.m_nPlayersS *\/ */
+void
+CookieRef::store_message( HostID dest, const unsigned char* buf, 
+                          unsigned int len )
+{
+    logf( XW_LOGVERBOSE0, "%s: storing msg size %d for dest %d", __func__,
+          len, dest );
+    assert( dest > 0 );
+    --dest;                     // 1-based
+    MsgBuffer* entry = new MsgBuffer( buf, buf+len );
+    assert( dest < sizeof(m_hostMsgQueues)/sizeof(m_hostMsgQueues[0]) );
+    m_hostMsgQueues[dest].push_back( entry );
+    ++m_nHostMsgs;
+}
 
-/*     return aa.m_nPlayersH < bb.m_nPlayersH; */
-/* } */
+void
+CookieRef::send_stored_messages( HostID dest, int socket )
+{
+    assert( dest > 0 );
+    logf( XW_LOGVERBOSE0, "%s(dest=%d)", __func__, dest );
+    --dest;                   // 0 is invalid value
+    assert( dest < sizeof(m_hostMsgQueues)/sizeof(m_hostMsgQueues[0]) );
+    assert( -1 != socket );
+
+    MsgBufQueue& mqueue = m_hostMsgQueues[dest];
+    while ( mqueue.size() > 0 ) {
+        assert( m_nHostMsgs > 0 );
+        // send_with_length will call _Remove if it fails to send.  So
+        // need to check on presence of socket each time through!  No,
+        // the break below takes care of that.
+
+        MsgBufQueue::iterator iter = mqueue.begin();
+
+        logf( XW_LOGVERBOSE0, "%s: sending stored msg (len=%d)", 
+              __func__, (*iter)->size() );
+        if ( ! send_with_length( socket, &((**iter)[0]), (*iter)->size(), true ) ) {
+            break;
+        }
+        mqueue.erase( iter );
+        delete *iter;
+        --m_nHostMsgs;
+    }
+} /* send_stored_messages */
 
 static void
 print_sockets( const char* caller, vector<HostRec>& sockets )
@@ -901,7 +954,16 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 } /* sendResponse */
 
 void
-CookieRef::forward( const CRefEvent* evt )
+CookieRef::sendAnyStored( const CRefEvent* evt )
+{
+    HostID dest = evt->u.con.srcID;
+    if ( HOST_ID_NONE != dest ) {
+        send_stored_messages( dest, evt->u.con.socket );
+    }
+}
+
+void
+CookieRef::forward_or_store( const CRefEvent* evt )
 {
     unsigned char* buf = evt->u.fwd.buf;
     int buflen = evt->u.fwd.buflen;
@@ -909,20 +971,20 @@ CookieRef::forward( const CRefEvent* evt )
 
     int destSocket = SocketForHost( dest );
 
-    if ( destSocket != -1 ) {
-        /* This is an ugly hack!!!! */
-        *buf = XWRELAY_MSG_FROMRELAY;
-        send_with_length( destSocket, buf, buflen, true );
+    /* This is an ugly hack!!!! */
+    *buf = XWRELAY_MSG_FROMRELAY;
 
-        /* also note that we've heard from src recently */
-#ifdef RELAY_HEARTBEAT
-        HostID src = evt->u.fwd.src;
-        pushHeartbeatEvent( src, SocketForHost(src) );
-#endif
-    } else {
-        /* We're not really connected yet! */
+    if ( (destSocket == -1)
+         || !send_with_length( destSocket, buf, buflen, true ) ) {
+        store_message( dest, buf, buflen );
     }
-} /* forward */
+
+    /* also note that we've heard from src recently */
+#ifdef RELAY_HEARTBEAT
+    HostID src = evt->u.fwd.src;
+    pushHeartbeatEvent( src, SocketForHost(src) );
+#endif
+} /* forward_or_store */
 
 void
 CookieRef::send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
