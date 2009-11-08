@@ -213,6 +213,7 @@ usage( char* appName, char* msg )
 	     "\t [-l]             # disallow hints\n"
 	     "\t [-L]             # duplicate all packets sent\n"
 	     "\t [-P]             # pick tiles face up\n"
+	     "\t [-F]             # skip turn confirmation dialog\n"
 	     "\t [-c]             # explain robot scores after each move\n"
 	     "\t [-C INVITE]      # invite used to groups games on relay\n"
 	     "\t\t # (max of four players total, local and remote)\n"
@@ -792,7 +793,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "kKf:Lln:Nsd:e:r:b:0q:w:Sit:UmvcVP"
+                      "0b:cd:e:Ff:iKkLlmNn:Pr:Ssq:t:Uw:v"
 #ifdef XWFEATURE_SLOW_ROBOT
                       "z:"
 #endif
@@ -946,6 +947,9 @@ main( int argc, char** argv )
 #endif
         case 'V':
             mainParams.hideValues = XP_TRUE;
+            break;
+        case 'F':
+            mainParams.skipCommitConfirm = XP_TRUE;
             break;
         case 'v':
             mainParams.verticalScore = XP_TRUE;
