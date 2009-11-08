@@ -224,7 +224,6 @@ http_thread_main( void* arg )
         if ( isLocal ) {
             in_addr_t s_addr = name.sin_addr.s_addr;
             isLocal = 0x7f000001 == htonl(s_addr);
-            logf( XW_LOGINFO, "name: %x", htonl(s_addr) );
         }
 
         MutexLock ml(&state->m_dataMutex);
