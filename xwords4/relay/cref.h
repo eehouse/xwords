@@ -31,6 +31,9 @@
 #include "xwrelay.h"
 #include "states.h"
 
+typedef vector<unsigned char> MsgBuffer;
+typedef deque<MsgBuffer*> MsgBufQueue;
+
 using namespace std;
 
 class CookieMapIterator;        /* forward */
@@ -157,7 +160,7 @@ class CookieRef {
         } u;
     } CRefEvent;
 
-    void send_with_length( int socket, unsigned char* buf, int bufLen,
+    bool send_with_length( int socket, unsigned char* buf, int bufLen,
                            bool cascade );
     void send_msg( int socket, HostID id, XWRelayMsg msg, XWREASON why,
                    bool cascade );
@@ -185,6 +188,7 @@ class CookieRef {
     void handleEvents();
 
     void sendResponse( const CRefEvent* evt, bool initial );
+    void sendAnyStored( const CRefEvent* evt );
     void populate( vector<HostRec> hosts );
     void increasePlayerCounts( const CRefEvent* evt );
     void reducePlayerCounts( int socket );
@@ -192,7 +196,7 @@ class CookieRef {
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
 
-    void forward( const CRefEvent* evt );
+    void forward_or_store( const CRefEvent* evt );
     void checkFromServer( const CRefEvent* evt );
     void notifyOthers( int socket, XWRelayMsg msg, XWREASON why );
 
@@ -216,9 +220,16 @@ class CookieRef {
     bool tryMakeGame( vector<HostRec>& remaining );
     void insertSorted( HostRec hr );
 
+    void store_message( HostID dest, const unsigned char* buf, 
+                        unsigned int len );
+    void send_stored_messages( HostID dest, int socket );
+    unsigned int count_msgs_stored( void ) { return m_nHostMsgs; }
+
     /* timer callback */
     static void s_checkAllConnected( void* closure );
 
+    unsigned int m_nHostMsgs;
+    MsgBufQueue m_hostMsgQueues[4];
     vector<HostRec> m_sockets;
     bool m_gameFull;         /* once we've filled up, no more *new*
                                 connections ever */
