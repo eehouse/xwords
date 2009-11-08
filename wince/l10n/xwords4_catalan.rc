@@ -531,7 +531,8 @@ END
 #define PR_ROW5 (PR_ROW4+PR_SPACING)
 #define PR_ROW6 (PR_ROW5+PR_SPACING)
 #define PR_ROW7 (PR_ROW6+PR_SPACING)
-#define PR_BUTTONROW (PR_ROW7+PR_SPACING+3)
+#define PR_ROW8 (PR_ROW7+PR_SPACING)
+#define PR_BUTTONROW (PR_ROW8+PR_SPACING+3)
 #define PR_LEFT 6
 
 #ifdef _WIN32_WCE
@@ -558,12 +559,14 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,80,PREFS_ROW_HT
     CONTROL         "Explica la puntuació dels robots",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,95,PREFS_ROW_HT
+    CONTROL         "Skip turn confirm",IDC_SKIPCONFIRM,"Button", /* translate */
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,80,PREFS_ROW_HT
     CONTROL         "Amaga els valors de les lletres",IDC_HIDETILEVALUES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,95,PREFS_ROW_HT
-    PUSHBUTTON      "Edita els colors...",IDC_PREFCOLORS,PR_LEFT,PR_ROW6,70,12
-    PUSHBUTTON      "Canvia la llengua...",IDC_PREFLOCALE,PR_LEFT,PR_ROW7,70,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW6,95,PREFS_ROW_HT
+    PUSHBUTTON      "Edita els colors...",IDC_PREFCOLORS,PR_LEFT,PR_ROW7,70,12
+    PUSHBUTTON      "Canvia la llengua...",IDC_PREFLOCALE,PR_LEFT,PR_ROW8,70,12
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "Trieu el tipus de lletra...",IDC_PREFFONTS,PR_LEFT,PR_ROW8,60,12
+    PUSHBUTTON      "Trieu el tipus de lletra...",IDC_PREFFONTS,PR_LEFT,PR_ROW9,60,12
 #endif
 
     /* Per game */

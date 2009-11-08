@@ -155,6 +155,7 @@ struct BoardCtxt {
     XP_Bool timerPending;
     XP_Bool disableArrow;
     XP_Bool hideValsInTray;
+    XP_Bool skipCommitConfirm;
 
     XP_Bool eraseTray;
     XP_Bool boardObscuresTray;

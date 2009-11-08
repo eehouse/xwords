@@ -394,6 +394,7 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
 
     board->disableArrow = !cp->showBoardArrow;
     board->hideValsInTray = cp->hideTileValues;
+    board->skipCommitConfirm = cp->skipCommitConfirm;
 
     if ( showArrowChanged ) {
         showArrowChanged = setArrowVisible( board, XP_FALSE );
@@ -619,8 +620,9 @@ board_commitTurn( BoardCtxt* board )
                     result = board_hideTray( board );
                 }
 
-                if ( util_userQuery( board->util, QUERY_COMMIT_TURN,
-                                     stream ) ) {
+                if ( board->skipCommitConfirm
+                     || util_userQuery( board->util, QUERY_COMMIT_TURN,
+                                        stream ) ) {
                     result = server_commitMove( board->server ) || result;
                     /* invalidate any selected tiles in case we'll be drawing
                        this tray again rather than some other -- as is the
