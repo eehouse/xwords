@@ -1,13 +1,14 @@
 #!/bin/bash
 
 HOST_COUNTER=0
-NGAMES=1                        # games, not hosts
+NGAMES=5                        # games, not hosts
 SAME_ROOM=""                    # unset means use different
 DICT=./dict.xwd
 HOST=localhost
 PORT=10999
 XWORDS=./obj_linux_memdbg/xwords
-WAIT=10
+WAIT=3
+#CURSES_ARGS="-u -0"
 
 RUN_NAME=$(basename $0)/_$$
 
@@ -17,7 +18,6 @@ exec_cmd() {
     CMD="$1"
     LOG="$2"
     [ -z "$LOG" ] && LOG=/dev/null
-    echo "launching: $CMD"
     exec $CMD </dev/null >/dev/null 2>>$LOG
     echo "got here???"
 }
@@ -68,11 +68,25 @@ run_game_set() {
         break
     done
 
-    # Now launch them again
+    # Now loop, running and killing each in turn, until the game is
+    # finished.  Eventually I'll need to deal with games that don't
+    # finish correctly!
 
-    for JJ in $(seq 0 $((${#GAME_STR}-1))); do
-        exec_cmd "${CMDS[$JJ]}" "${LOGS[$JJ]}" &
-        PIDS[$JJ]=$!
+    while [ -z "$GAME_DONE" ]; do
+        for JJ in $(seq 0 $((${#GAME_STR}-1))); do
+            exec_cmd "${CMDS[$JJ]}" "${LOGS[$JJ]}" &
+            PID=$!
+
+            sleep $((WAIT+2))
+
+            kill $PID
+
+            if check_logs_done ${LOGS[*]}; then
+                echo "game looks done: ${LOGS[*]}"
+                GAME_DONE=TRUE
+                break
+            fi
+        done
     done
 
 }
@@ -88,26 +102,6 @@ for II in $(seq $NGAMES); do
 
     run_game_set $GAME_STR $INDX &
     INDX=$((INDX+4))
-
-#     for JJ in $(seq ${#GAME_STR}); do
-#         CMDS[$HOST_COUNTER]=$(cmd_for $GAME_STR $(($JJ-1)) $ROOM $LOG)
-#         echo "${CMDS[$HOST_COUNTER]}"
-#         HOST_COUNTER=$((HOST_COUNTER+1))
-#     done
 done
-
-# for II in $(seq 0 $((HOST_COUNTER-1))); do
-#     LOG=$(log_name $HOST_COUNTER)
-#     exec_cmd "${CMDS[$II]}" $LOG &
-#     PIDS[$II]=$!
-#     sleep 2
-# done
-
-# sleep 10
-
-# for II in $(seq 0 $((HOST_COUNTER-1))); do
-#     echo "kill ${PIDS[$II]}"
-#     kill ${PIDS[$II]}
-# done
 
 wait
