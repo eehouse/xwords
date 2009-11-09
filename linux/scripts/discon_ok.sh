@@ -8,7 +8,7 @@ HOST=localhost
 PORT=10999
 XWORDS=./obj_linux_memdbg/xwords
 WAIT=3
-#CURSES_ARGS="-u -0"
+CURSES_ARGS="-u -0"
 
 RUN_NAME=$(basename $0)/_$$
 
@@ -30,6 +30,7 @@ run_game_set() {
     INDX=$2
 
     COUNTER=0
+    ROOM="ROOM_${INDX}"
 
     declare -a CMDS
     declare -a PIDS
@@ -37,7 +38,7 @@ run_game_set() {
 
     for JJ in $(seq ${#GAME_STR}); do
         GAME=$(game_name $((COUNTER+INDX)))
-        CMD=$(cmd_for $GAME_STR $(($JJ-1)) "room" $GAME)
+        CMD=$(cmd_for $GAME_STR $(($JJ-1)) $ROOM $GAME)
         CMDS[$COUNTER]="$CMD"
 
         LOG=$(log_name $((COUNTER+INDX)))
@@ -89,6 +90,15 @@ run_game_set() {
         done
     done
 
+    # Finally, launch them so they can sync up and get the cref out of
+    # the MSGONLY state
+    for JJ in $(seq ${#GAME_STR}); do
+        exec_cmd "${CMDS[$JJ]}" "${LOGS[$JJ]}" &
+        PIDS[$JJ]=$!
+    done
+
+    sleep 2
+    kill ${PIDS[*]}
 }
 
 echo "mkdir -p $(dirname $(log_name))"
