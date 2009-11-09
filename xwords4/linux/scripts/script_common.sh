@@ -42,7 +42,7 @@ cmd_for() {
         done
     fi
 
-    RESULT="$XWORDS -d $DICT -a $HOST -p $PORT -u -0 -C $ROOM -q 2 -z 0:$WAIT"
+    RESULT="$XWORDS -d $DICT -a $HOST -p $PORT $CURSES_ARGS -C $ROOM -q 2 -z 0:$WAIT"
     RESULT="${RESULT} $LOCALS $HOSTSTR"
     [ -n "$GAME" ] && RESULT="$RESULT -f $GAME"
     echo "$RESULT"
@@ -58,4 +58,15 @@ game_name() {
     RUN_NAME=${RUN_NAME:-$(basename $0)/_$$}
     INDX=${1:-0}
     echo "/tmp/$RUN_NAME/game_${INDX}.xwg"
+}
+
+check_logs_done() {
+    ERR=0
+    for LOG in "$*"; do
+        if ! grep -q XWPROTO_END_GAME $LOG; then
+            ERR=1
+            break
+        fi
+    done
+    return $ERR
 }
