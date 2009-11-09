@@ -257,6 +257,7 @@ class CookieRef {
     pthread_mutex_t m_mutex;
 
     pthread_t m_locking_thread; /* for debugging only */
+    bool m_in_handleEvents;     /* for debugging only */
 }; /* CookieRef */
 
 #endif
