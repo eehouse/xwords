@@ -168,6 +168,9 @@ typedef struct CommonPrefs {
 #ifndef RELAY_NAME_DEFAULT
 # define RELAY_NAME_DEFAULT "eehouse.org"
 #endif
+#ifndef RELAY_ROOM_DEFAULT
+# define RELAY_ROOM_DEFAULT "Room 1"
+#endif
 
 #ifdef MEM_DEBUG
 # define XP_MALLOC(pool,nbytes) \

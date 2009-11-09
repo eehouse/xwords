@@ -719,8 +719,9 @@ comms_getInitialAddr( CommsAddrRec* addr )
     {
         char* name = RELAY_NAME_DEFAULT;
         XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
+        char* room = RELAY_ROOM_DEFAULT;
+        XP_MEMCPY( addr->u.ip_relay.invite, room, XP_STRLEN(room)+1 );
     }
-    addr->u.ip_relay.invite[0] = '\0';
 #elif defined PLATFORM_PALM
     /* default values; default is still IR where there's a choice, at least on
        Palm... */
