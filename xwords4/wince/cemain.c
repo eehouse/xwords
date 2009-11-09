@@ -1649,6 +1649,7 @@ ceFlattenState( const CEAppGlobals* globals )
             state = CENSTATE_TRYING_RELAY;
             break;
         case COMMS_RELAYSTATE_CONNECTED: 
+        case COMMS_RELAYSTATE_RECONNECTED: 
             state = CENSTATE_HAVE_RELAY; 
             break;
         case COMMS_RELAYSTATE_ALLCONNECTED:
