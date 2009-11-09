@@ -63,11 +63,8 @@ enum {
                                    somebody.  Once [s]he's back we can be
                                    fully connected again. */
 
-    ,XWS_WAITING_RECON        /* At least one device has been timed out or
-                                   sent a disconnect message.  We can't flow
-                                   messages in this state, and will be killing
-                                   all connections if we don't hear back from
-                                   the missing guy soon.  */
+    ,XWS_MSGONLY              /* We have no connections but still messages to
+                                 send */
 
     ,XWS_CHECKINGDEST         /* Checking for valid socket */
 
