@@ -76,16 +76,18 @@ StateTable g_stateTable[] = {
 /* Cloned state is added via code, not via table actions; new initial state */
 { XWS_CLONED,         XWE_CLONECHKMSG,   XWA_POSTCLONE,    XWS_CONNECTING },
 
-    /* I'm seeing this but not sure how to handle.  Might disconnect be
-       needed now */
-
-{ XWS_MISSING,        XWE_NOMORESOCKETS, XWA_NOTE_EMPTY,   XWS_MISSING },
-{ XWS_MISSING,        XWE_NOMOREMSGS,    XWA_NONE,         XWS_DEAD },
+/* EMPTY means have messages to send but no connections.  Time out and free
+   memory after a while.  BUT: don't I really want to keep these forever and
+   free the oldest ones if memory usage realy does become a problem.
+   There's no problem now!  */
+{ XWS_MISSING,        XWE_NOMORESOCKETS, XWA_NOTE_EMPTY,   XWS_MSGONLY },
+{ XWS_MSGONLY,        XWE_NOMOREMSGS,    XWA_NONE,         XWS_DEAD },
 
 { XWS_ANY,            XWE_NOMORESOCKETS, XWA_NONE,         XWS_DEAD },
 { XWS_ANY,            XWE_SHUTDOWN,      XWA_SHUTDOWN,     XWS_DEAD },
 
 { XWS_INITED,         XWE_RECONNECTMSG,  XWA_SEND_RERSP,   XWS_CHK_ALLHERE_2 },
+{ XWS_MSGONLY,        XWE_RECONNECTMSG,  XWA_SEND_RERSP,   XWS_CHK_ALLHERE_2 },
 { XWS_MISSING,        XWE_RECONNECTMSG,  XWA_SEND_RERSP,   XWS_CHK_ALLHERE_2 },
 { XWS_CHK_ALLHERE_2,  XWE_ALLHERE,       XWA_SNDALLHERE_2, XWS_ALLCONND },
 { XWS_CHK_ALLHERE_2,  XWE_SOMEMISSING,   XWA_NONE,         XWS_MISSING },
@@ -107,7 +109,7 @@ StateTable g_stateTable[] = {
 
     /* Connect timer */
 { XWS_CONNECTING,     XWE_CONNTIMER,     XWA_TIMERDISCONN, XWS_DEAD },
-{ XWS_MISSING,        XWE_CONNTIMER,     XWA_TIMERDISCONN, XWS_DEAD },
+{ XWS_MISSING,        XWE_CONNTIMER,     XWA_NONE,         XWS_MISSING },
 { XWS_ALLCONND,       XWE_CONNTIMER,     XWA_NONE,         XWS_ALLCONND },
 
 { XWS_CONNECTING,     XWE_NOTIFYDISCON,  XWA_NOTIFYDISCON, XWS_CONNECTING },
@@ -163,12 +165,12 @@ stateString( XW_RELAY_STATE state )
         CASESTR(XWS_INITED);
         CASESTR(XWS_CONNECTING);
         CASESTR(XWS_ALLCONND);
-        CASESTR(XWS_WAITING_RECON);
         CASESTR(XWS_DEAD);
         CASESTR(XWS_CHECKING_CONN);
         CASESTR(XWS_CHECKINGDEST);
         CASESTR(XWS_CHECKING_CAN_LOCK);
         CASESTR(XWS_MISSING);
+        CASESTR(XWS_MSGONLY);
         CASESTR(XWS_CHK_ALLHERE);
         CASESTR(XWS_CHK_ALLHERE_2);
         CASESTR(XWS_CHKCOUNTS_INIT);
