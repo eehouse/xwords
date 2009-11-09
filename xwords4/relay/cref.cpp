@@ -94,6 +94,7 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_starttime = uptime();
     m_gameFull = false;
     m_nHostMsgs = 0;
+    m_in_handleEvents = false;
 
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
@@ -489,6 +490,9 @@ CookieRef::pushLastSocketGoneEvent()
 void
 CookieRef::handleEvents()
 {
+    assert( !m_in_handleEvents );
+    m_in_handleEvents = true;
+
     /* Assumption: has mutex!!!! */
     while ( m_eventQueue.size () > 0 ) {
         XW_RELAY_STATE nextState;
@@ -573,6 +577,7 @@ CookieRef::handleEvents()
                 break;
 
             case XWA_NOTE_EMPTY:
+                cancelAllConnectedTimer();
                 if ( 0 == count_msgs_stored() ) {
                     CRefEvent evt;
                     evt.type = XWE_NOMOREMSGS;
@@ -598,6 +603,7 @@ CookieRef::handleEvents()
             m_curState = nextState;
         }
     }
+    m_in_handleEvents = false;
 } /* handleEvents */
 
 bool
@@ -612,7 +618,7 @@ CookieRef::send_with_length( int socket, unsigned char* buf, int bufLen,
     }
 
     if ( failed && cascade ) {
-        _Remove( socket );
+        pushRemoveSocketEvent( socket );
         XWThreadPool::GetTPool()->CloseSocket( socket );
     }
     return !failed;
