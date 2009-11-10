@@ -15,8 +15,8 @@ date > $LOGFILE
 do_start() {
     if [ -f $PIDFILE ] && [ -f /proc/$(cat $PIDFILE)/exe ]; then
         echo "already running: pid=$(cat $PIDFILE)" | tee -a $LOGFILE
-    elif pidof xwrelay >/dev/null; then
-        echo "already running: pid=$(pidof xwrelay)" | tee -a $LOGFILE
+    elif pidof $XWRELAY >/dev/null; then
+        echo "already running: pid=$(pidof $XWRELAY)" | tee -a $LOGFILE
     else
         echo "starting..." | tee -a $LOGFILE
         echo "running $XWRELAY $@ -f $CONFFILE -s $CSSFILE" | tee -a $LOGFILE
@@ -38,7 +38,7 @@ case $1 in
             kill $(cat $PIDFILE)
         else
             echo "not running or $PIDFILE not found" | tee -a $LOGFILE
-            PID=$(pidof xwrelay || true)
+            PID=$(pidof $XWRELAY || true)
             if [ "x${PID}" != "x" ]; then
                 echo "maybe it's $PID; killing them" | tee -a $LOGFILE
                 kill $PID
