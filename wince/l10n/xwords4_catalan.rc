@@ -433,7 +433,7 @@ CAPTION "Partides desades"
 FONT 8, "System"
 BEGIN
   LTEXT           /* wince windres can't handle split lines....*/
-                    "Select a saved game.  (Some buttons will be disabled when the current game is selected.)", /* translate */
+                    "Seleccioneu una partida desada.  (En seleccionar la partida actual s'inhabilitaran alguns botons.)",
                     IDC_SVGM_SELLAB,SVGM_LEFT_COL,
                     SVGM_ROW_1,90,35
     XWCOMBO(IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
@@ -441,14 +441,11 @@ BEGIN
     PUSHBUTTON      "Obre",IDC_SVGM_OPEN,
                     SVGM_LEFT_COL,SVGM_ROW_3,40,14,WS_DISABLED
 
-    /* translate: can these be shortened?  Otherwise they need to be on
-       separate lines (which being iPhone-like looks modern and might be ok)  */
-
-    PUSHBUTTON      "Duplica",IDC_SVGM_DUP,
+    PUSHBUTTON      "Dupl.",IDC_SVGM_DUP,
                     SVGM_LEFT_COL,SVGM_ROW_4,20,14,WS_DISABLED
-    PUSHBUTTON      "Suprimeix",IDC_SVGM_DEL,
+    PUSHBUTTON      "Supr.",IDC_SVGM_DEL,
                     SVGM_LEFT_COL+22,SVGM_ROW_4,28,14,WS_DISABLED
-    PUSHBUTTON      "Canvia el nom",IDC_SVGM_CHANGE,
+    PUSHBUTTON      "Reanom.",IDC_SVGM_CHANGE,
                     SVGM_LEFT_COL+52,SVGM_ROW_4,32,14,WS_DISABLED
 
 #ifndef _WIN32_WCE
@@ -559,7 +556,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,80,PREFS_ROW_HT
     CONTROL         "Explica la puntuació dels robots",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,95,PREFS_ROW_HT
-    CONTROL         "Skip turn confirm",IDC_SKIPCONFIRM,"Button", /* translate */
+    CONTROL         "Omet la confirmació de la jugada",IDC_SKIPCONFIRM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,80,PREFS_ROW_HT
     CONTROL         "Amaga els valors de les lletres",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW6,95,PREFS_ROW_HT
@@ -582,8 +579,7 @@ BEGIN
     CONTROL         "Temps (min.)",TIMER_CHECK,"Button",
                         BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,75,PREFS_ROW_HT
     EDITTEXT        TIMER_EDIT,85,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
-    /* translate: can this be shorter or does it need to be on separate row? */
-    LTEXT           "Mots fora-diccionari:",PHONIES_LABEL,PR_LEFT,PR_ROW6,28,PREFS_ROW_HT
+    LTEXT           "Mots fora-dicc.:",PHONIES_LABEL,PR_LEFT,PR_ROW6,28,PREFS_ROW_HT
     XWCOMBO(PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, 0, 58, 0)
 
 #ifdef FEATURE_TRAY_EDIT
