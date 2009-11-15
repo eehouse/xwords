@@ -101,7 +101,7 @@ void
 XP_LOGW( const XP_UCHAR* prefix, const wchar_t* arg )
 {
     XP_UCHAR buf[512];
-    (void)WideCharToMultiByte( CP_ACP, 0, arg, -1,
+    (void)WideCharToMultiByte( CP_UTF8, 0, arg, -1,
                                buf, sizeof(buf), NULL, NULL );
     XP_LOGF( "%s: %s", prefix, buf );
 }
