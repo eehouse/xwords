@@ -65,7 +65,6 @@ typedef enum {
     ,RFONTS_TRAYNOVAL
     ,RFONTS_TRAYVAL
     ,RFONTS_CELL
-    ,RFONTS_REM
     ,RFONTS_PTS
     ,RFONTS_SCORE
     ,RFONTS_SCORE_BOLD
@@ -145,7 +144,6 @@ RFI2Str( RFIndex rfi )
         CASE_STR( RFONTS_TRAYNOVAL );
         CASE_STR( RFONTS_TRAYVAL );
         CASE_STR( RFONTS_CELL );
-        CASE_STR( RFONTS_REM );
         CASE_STR( RFONTS_PTS );
         CASE_STR( RFONTS_SCORE );
         CASE_STR( RFONTS_SCORE_BOLD );
@@ -328,9 +326,6 @@ makeTestBuf( CEDrawCtx* dctx, XP_UCHAR* buf, XP_U16 bufLen, RFIndex index )
     case RFONTS_TRAYVAL:
         strcpy( buf, "10" );     /* all numbers the same :-) */
         break;
-    case RFONTS_REM:
-        strcpy( buf, "Rem" );
-        break;
     case RFONTS_PTS:
         strcpy( buf, "123p" );
         break;
@@ -344,73 +339,106 @@ makeTestBuf( CEDrawCtx* dctx, XP_UCHAR* buf, XP_U16 bufLen, RFIndex index )
     XP_LOGF( "%s=>\"%s\"", __func__, buf );
 } /* makeTestBuf */
 
+// #define LOG_BITMAP
+#ifdef LOG_BITMAP
 static void
-ceMeasureGlyph( HDC hdc, HBRUSH white, wchar_t glyph,
+logBitmap( const BITMAP* bm, XP_U16 width, XP_U16 height )
+{
+    int ii, jj, kk;
+    XP_U8* ptr = bm->bmBits;
+
+    XP_ASSERT( height <= bm->bmHeight );
+    XP_ASSERT( width <= bm->bmWidth );
+
+    for ( ii = 0; ii < height; ++ii ) {
+        XP_UCHAR str[width+1];
+        int count = 0;
+        for ( jj = 0; jj < bm->bmWidthBytes && count < width; ++jj ) {
+            XP_U8 byt = ptr[(ii*bm->bmWidthBytes)+jj];
+            for ( kk = 0; kk < 8; ++kk ) {
+                str[count++] = (byt & 0x80) == 0 ? '.':'+';
+                if ( count == width ) {
+                    break;
+                }
+                byt <<= 1;
+            }
+        }
+        XP_ASSERT( count == width );
+        str[count] = 0;
+        XP_LOGF( "%.2d %s", ii, str );
+    }
+}
+#else
+# define logBitmap( a, b, c )
+#endif
+
+static XP_Bool
+anyBitSet( const XP_U8* rowPtr, XP_S16 rowBits )
+{
+    XP_Bool set = XP_FALSE;
+
+    for ( ; rowBits > 0; rowBits -= 8, ++rowPtr ) {
+        XP_U8 byt = *rowPtr;
+        if ( rowBits < 8 ) {
+            byt &= (0xFF << (8-rowBits));
+        }
+        if ( 0 != byt ) {
+            set = XP_TRUE;
+            break;
+        }
+    }
+    return set;
+} /* anyBitSet */
+
+static void
+ceMeasureGlyph( HDC hdc, HBITMAP bmp, wchar_t glyph,
                 XP_U16 minTopSeen, XP_U16 maxBottomSeen,
                 XP_U16* top, XP_U16* bottom )
 {
     SIZE size;
-    XP_U16 xx, yy;
-    XP_Bool done;
+    XP_U16 yy;
+
+    /* { */
+    /*     wchar_t wbuf[2] = { glyph, 0 }; */
+    /*     XP_LOGW( __func__, wbuf ); */
+    /* } */
 
     GetTextExtentPoint32( hdc, &glyph, 1, &size );
     RECT rect = { 0, 0, size.cx, size.cy };
-    FillRect( hdc, &rect, white );
     DrawText( hdc, &glyph, 1, &rect, DT_TOP | DT_LEFT );
 
-#ifdef DEBUG
-/*     if ( logGlyphs ) { */
-/*         wchar_t foo[2] = { glyph, 0 }; */
-/*         char tbuf[size.cx+1]; */
-/*         XP_LOGW( __func__, foo ); */
-/*         for ( yy = 0; yy < size.cy; ++yy ) { */
-/*             XP_MEMSET( tbuf, 0, size.cx+1 ); */
-/*             for ( xx = 0; xx < size.cx; ++xx ) { */
-/*                 COLORREF ref = GetPixel( hdc, xx, yy ); */
-/*                 XP_ASSERT( ref != CLR_INVALID ); */
-/*                 strcat( tbuf, ref==0? " " : "x" ); */
-/*             } */
-/*             XP_LOGF( "line[%.2d] = %s", yy, tbuf ); */
-/*         } */
-/*     } */
-#endif
+    BITMAP bminfo;
+    int result = GetObject( bmp, sizeof(bminfo), &bminfo );
+    XP_ASSERT( result != 0 );
+    logBitmap( &bminfo, size.cx, size.cy );
 
     /* Find out if this guy's taller than what we have */
-    for ( done = XP_FALSE, yy = 0; yy < minTopSeen && !done; ++yy ) {
-        for ( xx = 0; xx < size.cx; ++xx ) {
-            COLORREF ref = GetPixel( hdc, xx, yy );
-            if ( ref == CLR_INVALID ) {
-                break;               /* done this line */
-            } else if ( ref == 0 ) { /* a pixel set! */
-                *top = yy;
-                done = XP_TRUE;
-                break;
-            }
+    const XP_U8* rowPtr = bminfo.bmBits;
+    XP_ASSERT( *rowPtr == 0x00 ); /* check polarity isn't reversed.  For some
+                                     obscure character this may fail. */
+    for ( yy = 0; yy < minTopSeen; ++yy ) {
+        if ( anyBitSet( rowPtr, size.cx ) ) {
+            *top = yy;
+            break;
         }
+        rowPtr += bminfo.bmWidthBytes;
     }
 
     /* Extends lower than seen */
-    for ( done = XP_FALSE, yy = size.cy - 1; yy > maxBottomSeen && !done;
-          --yy ) {
-        for ( xx = 0; xx < size.cx; ++xx ) {
-            COLORREF ref = GetPixel( hdc, xx, yy );
-            if ( ref == CLR_INVALID ) {
-                break;
-            } else if ( ref == 0 ) { /* a pixel set! */
-                *bottom = yy;
-                done = XP_TRUE;
-                break;
-            }
+    for ( yy = size.cy - 1, rowPtr = bminfo.bmBits + (bminfo.bmWidthBytes * yy);
+          yy > maxBottomSeen; --yy, rowPtr -= bminfo.bmWidthBytes ) {
+        if ( anyBitSet( rowPtr/*bminfo.bmBits + (bminfo.bmWidthBytes * yy)*/, size.cx ) ) {
+            *bottom = yy;
+            break;
         }
     }
 /*     XP_LOGF( "%s: top: %d; bottom: %d", __func__, *top, *bottom ); */
 } /* ceMeasureGlyph */
 
 static void
-ceMeasureGlyphs( CEDrawCtx* dctx, HDC hdc, wchar_t* str,
+ceMeasureGlyphs( HDC hdc, HBITMAP bmp, wchar_t* str,
                  XP_U16* hasMinTop, XP_U16* hasMaxBottom )
 {
-    HBRUSH white = dctx->brushes[CE_WHITE_COLOR];
     XP_U16 ii;
     XP_U16 len = wcslen(str);
     XP_U16 minTopSeen, maxBottomSeen;
@@ -427,8 +455,7 @@ ceMeasureGlyphs( CEDrawCtx* dctx, HDC hdc, wchar_t* str,
            as high a top as anybody else.  Maybe for > until both are set,
            then >= ? */
 
-        ceMeasureGlyph( hdc, white, str[ii],
-                        minTopSeen, maxBottomSeen,
+        ceMeasureGlyph( hdc, bmp, str[ii], minTopSeen, maxBottomSeen,
                         &thisTop, &thisBottom );
         if ( thisBottom > maxBottomSeen ) {
             maxBottomSeen = thisBottom;
@@ -499,10 +526,9 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
 {
     wchar_t widebuf[65];
     XP_U16 len, wlen;
-    XP_U16 hasMinTop = 0, hasMaxBottom = 0;
+    XP_U16 hasMinTop, hasMaxBottom;
     XP_Bool firstPass;
-    HBRUSH white = dctx->brushes[CE_WHITE_COLOR];
-    HDC memDC = CreateCompatibleDC( NULL );
+    HDC memDC;
     HBITMAP memBM;
     XP_U16 testHeight = soughtHeight * 2;
     HFONT testFont = NULL;
@@ -515,9 +541,23 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
     makeTestBuf( dctx, sample, VSIZE(sample), index );
     len = 1 + strlen(sample);
     wlen = MultiByteToWideChar( CP_UTF8, 0, sample, len, 
-                                widebuf, len );
+                                widebuf, VSIZE(widebuf) );
 
-    memBM = CreateCompatibleBitmap( memDC, testHeight, testHeight );
+    struct {
+        BITMAPINFOHEADER hdr;
+        RGBQUAD bmiColors[2];   /* these matter.  Dunno why */
+    } bmi_mono;
+    XP_MEMSET( &bmi_mono, 0, sizeof(bmi_mono) );
+
+	bmi_mono.hdr.biSize = sizeof(bmi_mono.hdr);
+    bmi_mono.hdr.biWidth = testHeight;
+    bmi_mono.hdr.biHeight = -testHeight; /* negative means 0,0 at top left */
+	bmi_mono.hdr.biBitCount = 1;
+    bmi_mono.hdr.biCompression = BI_RGB;
+
+    memDC = CreateCompatibleDC( NULL );
+    memBM = CreateDIBSection( memDC, (BITMAPINFO*)&bmi_mono, DIB_RGB_COLORS, 
+                              NULL, NULL, 0 );
     SelectObject( memDC, memBM );
 
     for ( firstPass = XP_TRUE; ;  ) {
@@ -540,15 +580,15 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
                are calculated. */
             if ( nextFromHeight > 0 || nextFromWidth > 0 ) {
                 if ( firstPass ) {
-                    ceMeasureGlyphs( dctx, memDC, widebuf, &hasMinTop,
-                                     &hasMaxBottom );
+                    ceMeasureGlyphs( memDC, memBM, widebuf, 
+                                     &hasMinTop, &hasMaxBottom );
                     firstPass = XP_FALSE;
                 } 
                 /* Thereafter, just measure the two we know about */
-                ceMeasureGlyph( memDC, white, widebuf[hasMinTop], 1000, 0, 
+                ceMeasureGlyph( memDC, memBM, widebuf[hasMinTop], 1000, 0, 
                                 &top, &bottom );
                 if ( hasMaxBottom != hasMinTop ) {
-                    ceMeasureGlyph( memDC, white, widebuf[hasMaxBottom],
+                    ceMeasureGlyph( memDC, memBM, widebuf[hasMaxBottom],
                                     top, bottom, &top, &bottom );
                 }
 
@@ -1404,6 +1444,24 @@ formatRemText( XP_S16 nTilesLeft, XP_UCHAR* buf, XP_U16 bufLen )
     XP_SNPRINTF( buf, bufLen, "%d", nTilesLeft );
 } /* formatRemText */
 
+static XP_U16
+scoreFontHt( CEDrawCtx* dctx, const XP_Rect* rect )
+{
+    XP_U16 fontHt, cellHt;
+    fontHt = rect->height;
+
+    cellHt = dctx->globals->cellHt;
+    if ( !dctx->scoreIsVertical ) {
+        cellHt -= SCORE_TWEAK;
+    }
+
+    if ( fontHt > cellHt ) {
+        fontHt = cellHt;
+    }
+    fontHt -= 2;                /* for whitespace top and bottom  */
+    return fontHt;
+}
+
 DLSTATIC void
 DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                                 XP_S16 nTilesLeft, 
@@ -1413,7 +1471,7 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
         CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
         CEAppGlobals* globals = dctx->globals;
         HDC hdc = globals->hdc;
-        XP_UCHAR buf[16];
+        XP_UCHAR buf[4];
         const FontCacheEntry* fce;
         XP_U16 height;
         HFONT oldFont;
@@ -1422,20 +1480,13 @@ DRAW_FUNC_NAME(measureRemText)( DrawCtx* p_dctx, const XP_Rect* xprect,
 
         formatRemText( nTilesLeft, buf, VSIZE(buf) );
 
-        height = xprect->height - 2; /* space for border */
-        if ( height > globals->cellHt - CELL_BORDER ) {
-            height = globals->cellHt - CELL_BORDER;
-        }
+        height = scoreFontHt( dctx, xprect );
 
-        fce = ceGetSizedFont( dctx, height, xprect->width - 2, RFONTS_REM );
+        fce = ceGetSizedFont( dctx, height, xprect->width - 2, RFONTS_SCORE );
         oldFont = SelectObject( hdc, fce->setFont );
         ceMeasureText( dctx, hdc, fce, buf, 0, widthP, heightP );
 
         (void)SelectObject( hdc, oldFont );
-
-        /* Put back the 2 we took above */
-        *heightP += 2;
-        *widthP += 2;
     } else {
         *widthP = *heightP = 0;
     }
@@ -1465,7 +1516,7 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     FillRect( hdc, &rt, dctx->brushes[bkColor] );
 
     InsetRect( &rt, 1, 1 );
-    fce = ceGetSizedFont( dctx, 0, 0, RFONTS_REM );
+    fce = ceGetSizedFont( dctx, 0, 0, RFONTS_SCORE );
     oldFont = SelectObject( hdc, fce->setFont );
     
     ceDrawLinesClipped( hdc, fce, buf, CP_ACP, XP_TRUE, &rt );
@@ -1522,7 +1573,7 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* xprect,
     HDC hdc = globals->hdc;
     HFONT oldFont;
     const FontCacheEntry* fce;
-    XP_U16 fontHt, cellHt;
+    XP_U16 fontHt = scoreFontHt( dctx, xprect );
     XP_U16 nameLen;
     XP_U16 targetWidth = xprect->width;
 
@@ -1530,23 +1581,16 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* xprect,
         targetWidth -= (SCORE_HPAD * 2);
     }
 
-    cellHt = globals->cellHt;
-    if ( !dctx->scoreIsVertical ) {
-        cellHt -= SCORE_TWEAK;
-    }
-    fontHt = xprect->height;
-    if ( fontHt > cellHt ) {
-        fontHt = cellHt;
-    }
-    fontHt -= 2;                /* for whitespace top and bottom  */
-    if ( !dsi->selected ) {
-        fontHt -= 2;            /* use smaller font for non-selected */
-    }
-
     fce = ceGetSizedFont( dctx, fontHt, 0, 
                           dsi->selected ? RFONTS_SCORE_BOLD:RFONTS_SCORE );
     nameLen = dsi->isTurn? XP_STRLEN(dsi->name) : 0;
     oldFont = SelectObject( hdc, fce->setFont );
+
+    /* Iterate until score line fits.  This currently fails when the score
+       itself won't fit (veritical scoreboard on large screen) because it's
+       the name that's being shrunk but the width is eventually determined by
+       the score that isn't shrinking.  Need to bound font size by width of
+       "000" in vertical-scoreboard case.  PENDING */
 
     for ( ; ; ) {
         XP_U16 width, height;
@@ -1563,7 +1607,8 @@ DRAW_FUNC_NAME(measureScoreText)( DrawCtx* p_dctx, const XP_Rect* xprect,
             *heightP = height;
             break;
         }
-        XP_ASSERT( dsi->isTurn ); /* fired */
+
+        // XP_ASSERT( dsi->isTurn );  firing.  See comment above.
         if ( --nameLen == 0 ) {
             break;
         }
