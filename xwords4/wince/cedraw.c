@@ -373,14 +373,15 @@ logBitmap( const BITMAP* bm, XP_U16 width, XP_U16 height )
 #endif
 
 static XP_Bool
-anyBitSet( const XP_U8* rowPtr, XP_S16 rowBits )
+anyBitSet( const XP_U16* rowPtr, XP_S16 rowBits )
 {
     XP_Bool set = XP_FALSE;
 
-    for ( ; rowBits > 0; rowBits -= 8, ++rowPtr ) {
-        XP_U8 byt = *rowPtr;
-        if ( rowBits < 8 ) {
-            byt &= (0xFF << (8-rowBits));
+    XP_ASSERT( ((int)rowPtr & 0x0001) == 0 ); /* ptr to word? */
+    for ( ; rowBits > 0; rowBits -= 16, ++rowPtr ) {
+        XP_U16 byt = *rowPtr;
+        if ( rowBits < 16 ) {
+            byt &= (0xFFFF << (16-rowBits));
         }
         if ( 0 != byt ) {
             set = XP_TRUE;
@@ -417,7 +418,7 @@ ceMeasureGlyph( HDC hdc, HBITMAP bmp, wchar_t glyph,
     XP_ASSERT( *rowPtr == 0x00 ); /* check polarity isn't reversed.  For some
                                      obscure character this may fail. */
     for ( yy = 0; yy < minTopSeen; ++yy ) {
-        if ( anyBitSet( rowPtr, size.cx ) ) {
+        if ( anyBitSet( (XP_U16*)rowPtr, size.cx ) ) {
             *top = yy;
             break;
         }
@@ -427,7 +428,7 @@ ceMeasureGlyph( HDC hdc, HBITMAP bmp, wchar_t glyph,
     /* Extends lower than seen */
     for ( yy = size.cy - 1, rowPtr = bminfo.bmBits + (bminfo.bmWidthBytes * yy);
           yy > maxBottomSeen; --yy, rowPtr -= bminfo.bmWidthBytes ) {
-        if ( anyBitSet( rowPtr/*bminfo.bmBits + (bminfo.bmWidthBytes * yy)*/, size.cx ) ) {
+        if ( anyBitSet( (XP_U16*)rowPtr, size.cx ) ) {
             *bottom = yy;
             break;
         }
