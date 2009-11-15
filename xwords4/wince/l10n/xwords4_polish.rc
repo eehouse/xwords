@@ -880,7 +880,6 @@ BEGIN
     IDS_TURN_SCORE         "punktacja za kolejkę: %d" XP_CR
     IDS_COMMIT_CONFIRM     "wykonać ruch?" XP_CR
     IDS_LOCAL_NAME         "%s"
-    IDS_REM                "Poz"
     IDS_IGNORE_L           "Ignoruj"
     IDS_WARN_L             "Ostrzeż"
     IDS_DISALLOW_L         "Zabroń"

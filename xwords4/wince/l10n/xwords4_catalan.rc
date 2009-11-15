@@ -904,7 +904,6 @@ BEGIN
     IDS_COMMIT_CONFIRM
                     "Voleu fer la jugada?" XP_CR
     IDS_LOCAL_NAME         "%s"
-    IDS_REM                "Rem"
     IDS_IGNORE_L           "Ignora-ho"
     IDS_WARN_L             "Avisa"
     IDS_DISALLOW_L         "Inhabilita"
