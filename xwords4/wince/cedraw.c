@@ -554,7 +554,11 @@ ceBestFitFont( CEDrawCtx* dctx, const XP_U16 soughtHeight,
     bmi_mono.hdr.biWidth = testHeight;
     bmi_mono.hdr.biHeight = -testHeight; /* negative means 0,0 at top left */
 	bmi_mono.hdr.biBitCount = 1;
+	bmi_mono.hdr.biPlanes = 1;
     bmi_mono.hdr.biCompression = BI_RGB;
+    bmi_mono.bmiColors[0].rgbRed = 0xFF;
+    bmi_mono.bmiColors[0].rgbGreen = 0xFF;
+    bmi_mono.bmiColors[0].rgbBlue = 0xFF;
 
     memDC = CreateCompatibleDC( NULL );
     memBM = CreateDIBSection( memDC, (BITMAPINFO*)&bmi_mono, DIB_RGB_COLORS, 
