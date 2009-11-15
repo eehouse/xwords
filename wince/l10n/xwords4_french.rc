@@ -870,7 +870,6 @@ BEGIN
     IDS_TURN_SCORE         "Score pour ce coup: %d" XP_CR
     IDS_COMMIT_CONFIRM     "Accepter ce coup?" XP_CR
     IDS_LOCAL_NAME         "%s"
-    IDS_REM                "Res"
     IDS_IGNORE_L           "Ignorer"
     IDS_WARN_L             "Avertir"
     IDS_DISALLOW_L         "Refuser"

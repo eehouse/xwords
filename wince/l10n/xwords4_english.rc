@@ -906,7 +906,6 @@ BEGIN
     IDS_COMMIT_CONFIRM
                     "Commit the current move?" XP_CR
     IDS_LOCAL_NAME         "%s"
-    IDS_REM                "Rem"
     IDS_IGNORE_L           "Ignore"
     IDS_WARN_L             "Warn"
     IDS_DISALLOW_L         "Disallow"
