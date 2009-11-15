@@ -37,6 +37,17 @@ board_ScoreCallback( void* closure, XP_S16 player, XP_UCHAR* expl,
                                       expl, explLen );
 } /* board_ScoreCallback */
 
+static void
+centerIn( XP_Rect* rInner, const XP_Rect* rOuter, XP_U16 width, XP_U16 height )
+{
+    rInner->width = width;
+    rInner->height = height;
+    XP_ASSERT( width <= rOuter->width );
+    rInner->left = rOuter->left + ( (rOuter->width - width) / 2 );
+    XP_ASSERT( height <= rOuter->height );
+    rInner->top = rOuter->top + ( (rOuter->height - height) / 2 );
+}
+
 typedef struct DrawScoreData {
     DrawScoreInfo dsi;
     XP_U16 height;
@@ -183,9 +194,10 @@ drawScoreBoard( BoardCtxt* board )
                scoreboard rect's upper left.  */
 
             if ( remDim > 0 ) {
+                XP_Rect innerRect;
                 *adjustDim = remDim;
-
-                draw_drawRemText( board->draw, &scoreRect, &scoreRect, 
+                centerIn( &innerRect, &scoreRect, remWidth, remHeight );
+                draw_drawRemText( board->draw, &innerRect, &scoreRect, 
                                   nTilesInPool, focusAll || remFocussed );
                 board->remRect = scoreRect;
                 *adjustPt += remDim;
@@ -203,13 +215,7 @@ drawScoreBoard( BoardCtxt* board )
                 XP_U16 dim = isVertical? dp->height:dp->width;
                 *adjustDim = board->pti[ii].scoreDims = dim + extra;
 
-                innerRect.width = dp->width;
-                innerRect.height = dp->height;
-                innerRect.left = scoreRect.left + 
-                    ((scoreRect.width - innerRect.width) / 2);
-                innerRect.top = scoreRect.top + 
-                    ((scoreRect.height - innerRect.height) / 2);
-
+                centerIn( &innerRect, &scoreRect, dp->width, dp->height );
                 draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
                                        &dp->dsi );
 #ifdef KEYBOARD_NAV
