@@ -135,7 +135,9 @@ typedef struct DrawCtxVTable {
                                         XP_S16 nTilesLeft, XP_Bool focussed );
 
     void DRAW_VTABLE_NAME(scoreBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                        XP_U16 numPlayers, DrawFocusState dfs );
+                                        XP_U16 numPlayers, 
+                                        const XP_S16* const scores,
+                                        XP_S16 remCount, DrawFocusState dfs );
     void DRAW_VTABLE_NAME(measureScoreText) ( DrawCtx* dctx, 
                                               const XP_Rect* r, 
                                               const DrawScoreInfo* dsi,
@@ -252,8 +254,8 @@ struct DrawCtx {
 #define draw_trayBegin( dc, r, o, f ) CALL_DRAW_NAME3(trayBegin,dc, r, o, f)
 #define draw_vertScrollBoard( dc, r, d, f ) \
     CALL_DRAW_NAME3(vertScrollBoard, (dc),(r),(d),(f))
-#define draw_scoreBegin( dc, r, t, f ) \
-    CALL_DRAW_NAME3( scoreBegin,(dc), (r), (t), (f))
+#define draw_scoreBegin( dc, r, t, s, c, f ) \
+    CALL_DRAW_NAME5( scoreBegin,(dc), (r), (t), (s), (c), (f))
 #define draw_measureRemText( dc, r, n, wp, hp ) \
     CALL_DRAW_NAME4(measureRemText, (dc), (r), (n), (wp), (hp) )
 #define draw_drawRemText( dc, ri, ro, n, f )                  \

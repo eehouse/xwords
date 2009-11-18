@@ -93,7 +93,18 @@ drawScoreBoard( BoardCtxt* board )
                 }
             }
 #endif
+            /* Get the scores from the model or by calculating them based on
+               the end-of-game state. */
+            if ( board->gameOver ) {
+                model_figureFinalScores( model, &scores, NULL );
+            } else {
+                for ( ii = 0; ii < nPlayers; ++ii ) {
+                    scores.arr[ii] = model_getPlayerScore( model, ii );
+                }
+            }
+
             draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
+                             scores.arr, nTilesInPool, 
                              dfsFor( board, OBJ_SCORE ) );
 
             /* Let platform decide whether the rem: string should be given any
@@ -113,16 +124,6 @@ drawScoreBoard( BoardCtxt* board )
                 adjustDim = &scoreRect.width;
             }
             *adjustDim -= remDim;
-
-            /* Get the scores from the model or by calculating them based on
-               the end-of-game state. */
-            if ( board->gameOver ) {
-                model_figureFinalScores( model, &scores, NULL );
-            } else {
-                for ( ii = 0; ii < nPlayers; ++ii ) {
-                    scores.arr[ii] = model_getPlayerScore( model, ii );
-                }
-            }
 
             totalDim = remDim;
 
