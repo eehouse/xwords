@@ -718,8 +718,8 @@ comms_getInitialAddr( CommsAddrRec* addr )
     addr->u.ip_relay.port = 10999;
     {
         char* name = RELAY_NAME_DEFAULT;
-        XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
         char* room = RELAY_ROOM_DEFAULT;
+        XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
         XP_MEMCPY( addr->u.ip_relay.invite, room, XP_STRLEN(room)+1 );
     }
 #elif defined PLATFORM_PALM

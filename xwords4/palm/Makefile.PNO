@@ -71,6 +71,7 @@ OBJS = $(PLATFORM)/pnolet.o \
 	$(PLATFORM)/palmdict.o \
 	$(PLATFORM)/palmdraw.o \
 	$(PLATFORM)/palmutil.o \
+	$(PLATFORM)/palmblnk.o \
 	$(PLATFORM)/dictui.o \
 	$(PLATFORM)/dictlist.o \
 	$(PLATFORM)/palmir.o \
