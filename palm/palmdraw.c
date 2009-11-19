@@ -891,6 +891,8 @@ palm_clr_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 static void
 palm_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                       XP_U16 XP_UNUSED(numPlayers), 
+                      const XP_S16* XP_UNUSED(scores), 
+                      XP_S16 XP_UNUSED(remCount), 
                       DrawFocusState XP_UNUSED(dfs) )
 {
     PalmDrawCtx* dctx = (PalmDrawCtx*)p_dctx;

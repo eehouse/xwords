@@ -1636,6 +1636,7 @@ showConnState( PalmAppGlobals* globals )
                     resID = RELAYSTATUS_PENDING_RESID; 
                     break;
                 case COMMS_RELAYSTATE_CONNECTED:
+                case COMMS_RELAYSTATE_RECONNECTED:
                     resID = RELAYSTATUS_CONN_RESID;
                     break;
                 case COMMS_RELAYSTATE_ALLCONNECTED:
