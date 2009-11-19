@@ -1548,11 +1548,10 @@ DRAW_FUNC_NAME(drawRemText)( DrawCtx* p_dctx, const XP_Rect* rInner,
     FillRect( hdc, &rt, dctx->brushes[bkColor] );
 
     XPRtoRECT( &rt, rInner );
-    InsetRect( &rt, 1, 1 );
     fce = ceGetSizedFont( dctx, RFONTS_SCORE, 0, 0, 0 );
     oldFont = SelectObject( hdc, fce->setFont );
     
-    ceDrawLinesClipped( hdc, fce, buf, CP_ACP, XP_TRUE, &rt );
+    ceDrawLinesClipped( hdc, fce, buf, CP_UTF8, XP_TRUE, &rt );
 
     (void)SelectObject( hdc, oldFont );
 } /* ce_draw_drawRemText */
@@ -1710,7 +1709,16 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* xprect,
     HFONT oldFont;
     XP_U16 spareHt;
 
-    fce = ceGetSizedFont( dctx, RFONTS_PTS, xprect->height, xprect->width, 3 );
+    if ( score < 0 ) {
+        widebuf[0] = '?';
+        widebuf[1] = '?';
+        widebuf[2] = '\0';
+    } else {
+        swprintf( widebuf, L"%dp", score );
+    }
+
+    fce = ceGetSizedFont( dctx, RFONTS_PTS, xprect->height, xprect->width, 
+                          wcslen(widebuf) );
     spareHt = xprect->height - fce->glyphHt;
 
     oldFont = SelectObject( hdc, fce->setFont );
@@ -1721,14 +1729,6 @@ DRAW_FUNC_NAME(score_pendingScore)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XPRtoRECT( &rt, xprect );
     ceClipToRect( hdc, &rt );
     FillRect( hdc, &rt, dctx->brushes[bkIndex] );
-
-    if ( score < 0 ) {
-        widebuf[0] = '?';
-        widebuf[1] = '?';
-        widebuf[2] = '\0';
-    } else {
-        swprintf( widebuf, L"%dp", score );
-    }
 
     ceDrawTextClipped( hdc, widebuf, -1, XP_FALSE, fce, 
                        xprect->left, xprect->top + (spareHt/2),
