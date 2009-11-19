@@ -701,7 +701,8 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
 static void
 gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 XP_UNUSED(numPlayers), 
-                     DrawFocusState dfs )
+                     const XP_S16* const XP_UNUSED(scores), 
+                     XP_S16 XP_UNUSED(remCount), DrawFocusState dfs )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 
