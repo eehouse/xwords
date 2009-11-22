@@ -171,6 +171,9 @@ typedef struct CommonPrefs {
 #ifndef RELAY_ROOM_DEFAULT
 # define RELAY_ROOM_DEFAULT "Room 1"
 #endif
+#ifndef RELAY_PORT_DEFAULT
+# define RELAY_PORT_DEFAULT 10999
+#endif
 
 #ifdef MEM_DEBUG
 # define XP_MALLOC(pool,nbytes) \

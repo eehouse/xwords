@@ -715,7 +715,7 @@ comms_getInitialAddr( CommsAddrRec* addr )
 #if defined  XWFEATURE_RELAY
     addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
-    addr->u.ip_relay.port = 10999;
+    addr->u.ip_relay.port = RELAY_PORT_DEFAULT;
     {
         char* name = RELAY_NAME_DEFAULT;
         char* room = RELAY_ROOM_DEFAULT;
