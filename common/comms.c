@@ -174,6 +174,9 @@ static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd,
                                XWHostID destID, void* data, int dlen );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
 static void set_reset_timer( CommsCtxt* comms );
+# ifdef DEBUG
+static const char* relayCmdToStr( XWRELAY_Cmd cmd );
+# endif
 #endif
 #if defined XWFEATURE_RELAY || defined COMMS_HEARTBEAT
 static void setHeartbeatTimer( CommsCtxt* comms );
@@ -1036,10 +1039,10 @@ comms_resendAll( CommsCtxt* comms )
 
 #ifdef XWFEATURE_RELAY
 # ifdef DEBUG
+# define CASESTR(s) case s: return #s
 static const char*
 relayCmdToStr( XWRELAY_Cmd cmd )
 {
-#  define CASESTR(s) case s: return #s
     switch( cmd ) {
         CASESTR( XWRELAY_NONE );
         CASESTR( XWRELAY_GAME_CONNECT );
@@ -1056,26 +1059,8 @@ relayCmdToStr( XWRELAY_Cmd cmd )
         CASESTR( XWRELAY_MSG_TORELAY );
     default: return "<unknown>";
     }
-} 
-
-const char*
-ConnType2Str( CommsConnType typ )
-{
-    switch( typ ) {
-        CASESTR(COMMS_CONN_NONE);
-        CASESTR( COMMS_CONN_IR );
-        CASESTR( COMMS_CONN_IP_DIRECT );
-        CASESTR( COMMS_CONN_RELAY );
-        CASESTR( COMMS_CONN_BT );
-        CASESTR( COMMS_CONN_SMS );
-    default:
-        XP_ASSERT(0);
-    }
-    return "<unknown>";
 }
-# else
-# define relayCmdToStr( cmd )
-# endif
+# endif 
 
 static void
 got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream, 
@@ -1629,6 +1614,22 @@ setHeartbeatTimer( CommsCtxt* comms )
 #endif
 
 #ifdef DEBUG
+const char*
+ConnType2Str( CommsConnType typ )
+{
+    switch( typ ) {
+        CASESTR(COMMS_CONN_NONE);
+        CASESTR( COMMS_CONN_IR );
+        CASESTR( COMMS_CONN_IP_DIRECT );
+        CASESTR( COMMS_CONN_RELAY );
+        CASESTR( COMMS_CONN_BT );
+        CASESTR( COMMS_CONN_SMS );
+    default:
+        XP_ASSERT(0);
+    }
+    return "<unknown>";
+} /* ConnType2Str */
+
 void
 comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 {
