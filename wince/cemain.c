@@ -151,7 +151,7 @@ static void closeGame( CEAppGlobals* globals );
 static void ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs );
 static void updateForColors( CEAppGlobals* globals );
 static XWStreamCtxt* make_generic_stream( const CEAppGlobals* globals );
-#ifdef XWFEATURE_RELAY
+#ifndef XWFEATURE_STANDALONE_ONLY
 static void ce_send_on_close( XWStreamCtxt* stream, void* closure );
 #endif
 static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
@@ -866,7 +866,9 @@ ceInitTProcs( CEAppGlobals* globals, TransportProcs* procs )
 #ifdef COMMS_HEARTBEAT
     procs->reset = ce_reset_proc;
 #endif
+#ifdef XWFEATURE_RELAY
     procs->rstatus = ce_relay_status;
+#endif
     procs->closure = globals;
 }
 
@@ -1633,6 +1635,7 @@ ceDoHistory( CEAppGlobals* globals )
                            MB_OK | MB_ICONINFORMATION, XP_TRUE );
 } /* ceDoHistory */
 
+#ifdef XWFEATURE_RELAY
 static CeNetState
 ceFlattenState( const CEAppGlobals* globals )
 {
@@ -1671,6 +1674,7 @@ ceFlattenState( const CEAppGlobals* globals )
     }
     return state;
 } /* ceFlattenState */
+#endif
 
 static void
 drawInsidePaint( CEAppGlobals* globals, const RECT* invalR )
@@ -3060,6 +3064,7 @@ ce_reset_proc( void* XP_UNUSED(closure) )
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef XWFEATURE_RELAY
 static void
 ce_relay_status( void* closure, CommsRelayState newState )
 {
@@ -3067,6 +3072,7 @@ ce_relay_status( void* closure, CommsRelayState newState )
     globals->relayState = newState;
     InvalidateRect( globals->hWnd, &globals->relayStatusR, TRUE /* erase */ );
 }
+#endif
 
 static XP_S16
 ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp, 
@@ -3185,6 +3191,9 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 #endif
 
 #ifdef XWFEATURE_RELAY
+    case ERR_RELAY_BASE + XWRELAY_ERROR_OLDFLAGS:
+        resID = IDS_XWRELAY_RELAY_INCOMPAT;
+        break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_TIMEOUT:
         resID = IDS_XWRELAY_ERROR_TIMEOUT;
         break;
