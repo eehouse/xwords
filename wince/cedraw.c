@@ -2019,6 +2019,7 @@ ce_draw_focus( CEDrawCtx* dctx, const RECT* invalR )
     drawColoredRect( dctx, invalR, CE_FOCUS_COLOR );
 }
 
+#ifdef XWFEATURE_RELAY
 void
 ce_draw_status( CEDrawCtx* dctx, const RECT* rect, CeNetState state )
 {
@@ -2063,6 +2064,7 @@ ce_draw_status( CEDrawCtx* dctx, const RECT* rect, CeNetState state )
         ceDrawBitmapInRect( hdc, rect, dctx->netArrow, XP_TRUE );
     }
 }
+#endif
 
 #ifndef _WIN32_WCE
 HBRUSH
