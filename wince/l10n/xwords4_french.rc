@@ -596,11 +596,15 @@ END
 #  define CONN_ROW_3 (CONN_ROW_1)
 #  define CONN_ROW_4 (CONN_ROW_2+ROW_SPACE)
 # endif
+# ifndef RELAY_NOEDIT_ADDR
 # define CONN_ROW_5 (CONN_ROW_4+ROW_SPACE)
 # define CONN_ROW_6 (CONN_ROW_5+ROW_SPACE)
 # define CONN_ROW_7 (CONN_ROW_6+ROW_SPACE)
 # define CONN_ROW_8 (CONN_ROW_7+ROW_SPACE)
 # define BUTTON_ROW (CONN_ROW_8+ROW_SPACE)
+# else
+# define BUTTON_ROW (CONN_ROW_4+ROW_SPACE)
+# endif
 #ifdef _WIN32_WCE
 # define CONNSDLG_HT BUTTON_ROW
 #else
@@ -621,7 +625,7 @@ BEGIN
     LTEXT           "Room:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT // <- translate
     EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL
-
+# ifndef RELAY_NOEDIT_ADDR
     LTEXT           "Nom du relai (change rarement):",IDC_CRELAYNAME_LAB,
                     LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
     EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
@@ -630,6 +634,7 @@ BEGIN
                     LAB_COL,CONN_ROW_7,120,ROW_HEIGHT
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
+# endif
 #else
     LTEXT           "Connexion non supportée.",IDC_INVITE_LAB,
                      LAB_COL,CONN_ROW_3,40,40
@@ -966,6 +971,9 @@ BEGIN
                                    "pendant trop longtemps."
     IDS_XWRELAY_ERROR_HEART_OTHER  "La transmission a perdu le contact avec un appareil durant cette partie."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
+    IDS_XWRELAY_RELAY_INCOMPAT "This version of Crosswords does not match the "\
+                               "relay.  You probably need to upgrade to the "\
+                               "latest version." /* translate */
 # endif
 #endif  /* XWFEATURE_STANDALONE_ONLY */
 

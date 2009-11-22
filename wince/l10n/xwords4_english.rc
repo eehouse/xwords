@@ -608,11 +608,16 @@ END
 #  define CONN_LABEL_ROW_3 (CONN_LABEL_ROW_1)
 #  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+CONN_LABEL_HT+3)
 # endif
+# ifndef RELAY_NOEDIT_ADDR
 # define CONN_LABEL_ROW_5 (CONN_EDIT_ROW_4+ROW_SPACE+5)
 # define CONN_EDIT_ROW_6 (CONN_LABEL_ROW_5+CONN_LABEL_HT+3)
 # define CONN_LABEL_ROW_7 (CONN_EDIT_ROW_6+ROW_SPACE+5)
 # define CONN_EDIT_ROW_8 (CONN_LABEL_ROW_7+CONN_LABEL_HT+3)
 # define BUTTON_ROW (CONN_EDIT_ROW_8+ROW_SPACE)
+# else
+# define BUTTON_ROW (CONN_EDIT_ROW_4+ROW_SPACE)
+#endif 
+
 #ifdef _WIN32_WCE
 # define CONNSDLG_HT BUTTON_ROW
 #else
@@ -637,7 +642,7 @@ BEGIN
                     IDC_INVITE_LAB,LAB_COL,CONN_LABEL_ROW_3,90,CONN_LABEL_HT
     EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL
-
+#ifndef RELAY_NOEDIT_ADDR
     LTEXT           "Relay name (rarely changes):",IDC_CRELAYNAME_LAB,
                     LAB_COL,CONN_LABEL_ROW_5,90,CONN_LABEL_HT
     EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_EDIT_ROW_6,CTRL_COL_WIDTH,
@@ -646,6 +651,7 @@ BEGIN
                     CONN_LABEL_ROW_7,90,CONN_LABEL_HT
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_EDIT_ROW_8,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
+#endif
 #elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Relay connection not supported.",IDC_INVITE_LAB,LAB_COL,
                     CONN_ROW_3,40,40
@@ -1006,6 +1012,9 @@ BEGIN
                                "didn't hear from you in too long."
     IDS_XWRELAY_ERROR_HEART_OTHER  "The relay has lost contact with a device in this game."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
+    IDS_XWRELAY_RELAY_INCOMPAT "This version of Crosswords does not match the "\
+                               "relay.  You probably need to upgrade to the "\
+                               "latest version."
 # endif
 #endif
 

@@ -50,11 +50,13 @@ ceControlsToAddrRec( HWND hDlg, CeConnDlgState* state )
 
     if ( state->addrRec.conType == COMMS_CONN_RELAY ) {
 #ifdef XWFEATURE_RELAY
+# ifndef RELAY_NOEDIT_ADDR
         len = sizeof(state->addrRec.u.ip_relay.hostName);
         ceGetDlgItemText( hDlg, RELAYNAME_EDIT, 
                           state->addrRec.u.ip_relay.hostName, &len );
         state->addrRec.u.ip_relay.port = 
             (XP_U16)ceGetDlgItemNum( hDlg, RELAYPORT_EDIT );
+#endif
         len = sizeof(state->addrRec.u.ip_relay.invite);
         ceGetDlgItemText( hDlg, INVITE_EDIT, state->addrRec.u.ip_relay.invite, 
                           &len );
@@ -116,8 +118,10 @@ adjustForConnType( HWND hDlg, CeConnDlgState* state, XP_Bool useFromState )
     XP_U16 relayIds[] = { 
         IDC_INVITE_LAB,
 #ifdef XWFEATURE_RELAY
-        INVITE_EDIT,IDC_CRELAYHINT_LAB,IDC_CRELAYNAME_LAB,RELAYNAME_EDIT, 
-        IDC_CRELAYPORT_LAB, RELAYPORT_EDIT,
+        INVITE_EDIT,
+# ifndef RELAY_NOEDIT_ADDR
+        IDC_CRELAYNAME_LAB,RELAYNAME_EDIT, IDC_CRELAYPORT_LAB, RELAYPORT_EDIT,
+# endif
 #endif
         0 };
     XP_U16 directIds[] = {
@@ -210,15 +214,17 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
     conType = state->addrRec.conType;
     if ( state->addrRec.conType == COMMS_CONN_RELAY ) {
 #ifdef XWFEATURE_RELAY
+        ceSetDlgItemText( hDlg, INVITE_EDIT, 
+                          state->addrRec.u.ip_relay.invite );
+        ids[nIds++] = INVITE_EDIT;
+# ifndef RELAY_NOEDIT_ADDR
         ceSetDlgItemText( hDlg, RELAYNAME_EDIT, 
                           state->addrRec.u.ip_relay.hostName );
         ids[nIds++] = RELAYNAME_EDIT;
         ceSetDlgItemNum( hDlg, RELAYPORT_EDIT, 
                          state->addrRec.u.ip_relay.port );
         ids[nIds++] = RELAYPORT_EDIT;
-        ceSetDlgItemText( hDlg, INVITE_EDIT, 
-                          state->addrRec.u.ip_relay.invite );
-        ids[nIds++] = INVITE_EDIT;
+#endif
 #endif
     } else if ( state->addrRec.conType == COMMS_CONN_IP_DIRECT ) {
 #ifdef XWFEATURE_IP_DIRECT
