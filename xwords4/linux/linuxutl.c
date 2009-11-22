@@ -286,6 +286,17 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "Relay disconnected you to shut down (and probably reboot).";
         break;
 
+    case ERR_RELAY_BASE + XWRELAY_ERROR_BADPROTO:
+        message = "XWRELAY_ERROR_BADPROTO";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_RELAYBUSY:
+        message = "XWRELAY_ERROR_RELAYBUSY";
+        break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_OTHER_DISCON:
+        message = "XWRELAY_ERROR_OTHER_DISCON";
+        break;
+
     default:
         XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";
