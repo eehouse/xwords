@@ -122,11 +122,12 @@
 #  define IDS_ERROR_HEART_YOU                                        40094
 #  define IDS_XWRELAY_ERROR_HEART_OTHER                              40095
 #  define IDS_XWRELAY_ERROR_LOST_OTHER                               40096
+#  define IDS_XWRELAY_RELAY_INCOMPAT                                 40097
 # endif
 #endif
 
 #if ! defined XWFEATURE_STANDALONE_ONLY
-# define CE_LAST_RES_ID                                              40097
+# define CE_LAST_RES_ID                                              40098
 #else
 # define CE_LAST_RES_ID                                              40082
 #endif
