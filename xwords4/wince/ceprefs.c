@@ -1,4 +1,4 @@
-/* -*- mode: C; fill-column: 77; c-basic-offset: 4; -*- */
+/* -*- fill-column: 77; c-basic-offset: 4; compile-command: "make TARGET_OS=wince DEBUG=TRUE" -*- */
 /* 
  * Copyright 2002-2009 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -126,6 +126,12 @@ adjustForChoice( CePrefsDlgState* state )
 #endif
         ceDlgComboShowHide( &state->dlgHdr, PHONIES_COMBO );
     }
+
+#ifdef _WIN32_WCE
+    if ( IS_SMARTPHONE(state->dlgHdr.globals) ) {
+        SendMessage( hDlg, DM_RESETSCROLL, (WPARAM)FALSE, (LPARAM)TRUE );
+    }
+#endif
 } /* adjustForChoice */
 
 /* Copy global state into a local copy that can be changed without
