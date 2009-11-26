@@ -566,7 +566,8 @@ XP_Bool
 ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
 {
     XP_Bool handled = XP_FALSE;
-    XP_U16 hiword = HIWORD(wParam);
+    XP_U16 hiword = HIWORD(lParam);
+    XP_U16 hwwp;
 
     switch( message ) {
 #ifdef OVERRIDE_BACKKEY
@@ -602,11 +603,12 @@ ceDoDlgHandle( CeDlgHdr* dlgHdr, UINT message, WPARAM wParam, LPARAM lParam )
         handled = XP_TRUE;
         break;
 
-    case WM_COMMAND:
-        if ( BN_SETFOCUS == hiword || EN_SETFOCUS == hiword ) {
+    case WM_COMMAND: 
+        hwwp = HIWORD(wParam);
+        if ( BN_SETFOCUS == hwwp || EN_SETFOCUS == hwwp ) {
             ceDoDlgFocusScroll( dlgHdr, (HWND)lParam );
-            /* must let dialog handle EN_SETFOCUS! */
-        } else if ( BN_KILLFOCUS == hiword/* || EN_KILLFOCUS == hiword*/ ) {
+            /* don't set handled: dialog must handle EN_SETFOCUS! */
+        } else if ( BN_KILLFOCUS == hwwp/* || EN_KILLFOCUS == hiword*/ ) {
             /* dialogs shouldn't have to handle these */
             handled = TRUE;
         }
