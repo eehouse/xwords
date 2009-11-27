@@ -1,0 +1,1018 @@
+// -*- mode: c; compile-command: "cd ../ && make TARGET_OS=wince DEBUG=TRUE"; -*-
+// 
+// Microsoft Developer Studio generated resource script.  But now I'm
+// editing it. :-)
+//
+#include "../resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "../newres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+#include "winnt.h"
+LANGUAGE LANG_CZECH, SUBLANG_CZECH_CZECH_REPUBLIC
+#pragma code_page(65001)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""winnt.h""\r\n"
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""newres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#include "contypct.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menubar
+//
+
+IDM_MENU MENU DISCARDABLE 
+BEGIN
+#ifndef _WIN32_WCE
+    POPUP "Button"
+    BEGIN
+        MENUITEM "--",                          W32_DUMMY_ID
+    END
+#endif
+    POPUP "Menu"
+    BEGIN
+        MENUITEM "Turn done",                  ID_MOVE_TURNDONE
+        MENUITEM "Juggle",                     ID_MOVE_JUGGLE
+        MENUITEM "Flip",                       ID_MOVE_FLIP
+        MENUITEM "Trade",                      ID_MOVE_TRADE
+        MENUITEM "Hide tray",                  ID_MOVE_HIDETRAY
+
+        POPUP "Undo"
+        BEGIN
+            MENUITEM "Undo current",            ID_MOVE_UNDOCURRENT
+            MENUITEM "Undo last",               ID_MOVE_UNDOLAST
+        END
+
+        POPUP "Hint"
+        BEGIN
+            MENUITEM "Next hint",              ID_MOVE_NEXTHINT
+            MENUITEM "Hint",                   ID_MOVE_HINT
+#ifdef XWFEATURE_SEARCHLIMIT
+            MENUITEM "Limited hint...",        ID_MOVE_LIMITEDHINT
+#endif
+            MENUITEM SEPARATOR
+            MENUITEM "Show values",             ID_MOVE_VALUES
+        END
+
+        POPUP "Game"
+        BEGIN
+            MENUITEM "Tile counts and values",  ID_GAME_TILECOUNTSANDVALUES
+            MENUITEM "Tiles left",              ID_GAME_TILESLEFT
+            MENUITEM SEPARATOR
+            MENUITEM "Game info",               ID_GAME_GAMEINFO
+            MENUITEM "History",                 ID_GAME_HISTORY
+            MENUITEM "Final scores",           ID_GAME_FINALSCORES
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+            MENUITEM SEPARATOR
+            MENUITEM "Resend messages",         ID_GAME_RESENDMSGS
+#endif
+        END
+
+        POPUP "File"
+        BEGIN
+            MENUITEM "Full screen",            ID_FILE_FULLSCREEN
+            MENUITEM SEPARATOR
+            MENUITEM "New game...",            ID_FILE_NEWGAME
+            MENUITEM "Saved games...",         ID_FILE_SAVEDGAMES
+            MENUITEM "Preferences...",         ID_FILE_PREFERENCES
+            MENUITEM SEPARATOR
+            MENUITEM "About...",               ID_FILE_ABOUT
+            MENUITEM SEPARATOR
+            MENUITEM "Exit",                   ID_FILE_EXIT
+        END
+    END
+END
+
+#ifdef _WIN32_WCE
+// soft key bar described at
+// http://msdn2.microsoft.com/en-us/library/aa457781.aspx
+IDM_MAIN_MENUBAR RCDATA
+BEGIN
+    IDM_MENU, 2,
+    I_IMAGENONE, ID_INITIAL_SOFTID, TBSTATE_ENABLED,
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_DUMMY, 0, 
+        NOMENU,
+    I_IMAGENONE, IDM_MENU, TBSTATE_ENABLED, 
+        TBSTYLE_DROPDOWN | TBSTYLE_AUTOSIZE, IDS_MENU, 0, 
+        0                       // Use the 0th popup above -- the only one
+END
+
+IDM_OKCANCEL_MENUBAR RCDATA
+BEGIN
+    0, 2,
+    I_IMAGENONE, IDOK, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_OK, 0, 
+        NOMENU,
+    I_IMAGENONE, IDCANCEL, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_CANCEL, 0, 
+        NOMENU
+END
+
+IDM_OK_MENUBAR RCDATA
+BEGIN
+    0, 1,
+    I_IMAGENONE, IDOK, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_OK, 0,
+        NOMENU
+END
+
+IDM_DONE_MENUBAR RCDATA
+BEGIN
+    0, 1,
+    I_IMAGENONE, IDOK, TBSTATE_ENABLED, 
+        TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE, IDS_DONE, 0,
+        NOMENU
+END
+#endif
+
+#include "../rc_incs.h"
+
+#ifndef AM_BASE_LANGUAGE
+DLL_VERS_RESOURCE
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+#define BUTTON_HT 12
+#define REPOS_BUTTON_HT BUTTON_HT
+#define REPOS_BUTTON_WIDTH 28
+#define REPOS_BUTTON_VPAD 2
+#define REPOS_BUTTON_HPAD 2
+/* How tall does a single line of label text turn out to be */
+# define LABEL_ROW_HT 10
+#ifdef CEFEATURE_CANSCROLL
+# define ROW_HEIGHT 11
+#else
+# define ROW_HEIGHT 12
+#endif
+
+// ******** IDD_GAMEINFO DIALOG *********
+#define GAMEINFO_WIDTH 116
+#ifdef CEFEATURE_CANSCROLL
+# define ROW_SPACE 12
+# define ROW_SPACE_PL 11
+#else
+# define ROW_SPACE 15
+# define ROW_SPACE_PL ROW_SPACE
+#endif
+#define CHECK_WIDTH 10
+#define LEFT_COL 2
+#ifdef XWFEATURE_STANDALONE_ONLY
+# define GAME_NAME_WIDTH 56
+# define GAME_LABEL_WIDTH (GAME_NAME_WIDTH-10)
+# define GAME_NAME_LEFT LEFT_COL
+# define GAME_ROBOT_LEFT (GAME_NAME_LEFT + GAME_NAME_WIDTH + 5)
+# define GAME_PWD_LEFT (GAME_ROBOT_LEFT + 15)
+# define NPLAYERS_ROW 3
+# define GAME_NAMELABEL_LEFT GAME_NAME_LEFT
+# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-7)
+# define GAME_PWDLABEL_LEFT GAME_PWD_LEFT
+#else
+# define SERVERROLE_ROW 3
+# define GAME_NAME_WIDTH 50
+# define SERVERCONF_ROW (SERVERROLE_ROW+ROW_SPACE+3)
+# define NPLAYERS_ROW (SERVERCONF_ROW+ROW_SPACE+3)
+# define GAME_REMOTE_LEFT 1
+# define GAME_NAME_LEFT 11
+# define ROBOT_LABEL_ADJUST 10
+# define GAME_ROBOT_LEFT (GAME_NAME_LEFT+GAME_NAME_WIDTH+2)
+# define GAME_PWD_LEFT (GAME_ROBOT_LEFT + CHECK_WIDTH + 4)
+# define NAME_LABEL_ADJUST 20
+# define GAME_NAMELABEL_LEFT (GAME_NAME_LEFT+NAME_LABEL_ADJUST)
+# define GAME_NAMELABEL_WIDTH (GAME_NAME_WIDTH-ROBOT_LABEL_ADJUST-NAME_LABEL_ADJUST)
+# define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-ROBOT_LABEL_ADJUST)
+# define GAME_ROBOTLABEL_WIDTH (GAME_PWD_LEFT-GAME_ROBOT_LEFT+ROBOT_LABEL_ADJUST)
+# define GAME_PWDLABEL_LEFT (GAME_PWD_LEFT)
+# define GAME_PWDLABEL_WIDTH (GAMEINFO_WIDTH-GAME_PWD_LEFT)
+#endif
+
+
+#define LABELS_ROW (NPLAYERS_ROW+ROW_SPACE)
+#define PLAYER_ROW_1 (LABELS_ROW+ROW_SPACE_PL)
+#define PLAYER_ROW_2 (PLAYER_ROW_1+ROW_SPACE_PL)
+#define PLAYER_ROW_3 (PLAYER_ROW_2+ROW_SPACE_PL)
+#define PLAYER_ROW_4 (PLAYER_ROW_3+ROW_SPACE_PL)
+#define JUGGLE_ROW (PLAYER_ROW_4+ROW_SPACE)
+#define DICTPICK_LAB_ROW (JUGGLE_ROW+ROW_SPACE+2)
+#define DICTPICK_ROW (DICTPICK_LAB_ROW+ROW_SPACE-2)
+#define PREFS_ROW (DICTPICK_ROW+ROW_SPACE+3)
+#ifndef _WIN32_WCE
+# define BUTTONS_ROW (PREFS_ROW+ROW_SPACE+3)
+#endif
+#ifdef _WIN32_WCE
+# define GAMEINFO_HEIGHT (PREFS_ROW + ROW_SPACE + 4)
+#else
+# define GAMEINFO_HEIGHT (BUTTONS_ROW + BUTTON_HT + 4)
+#endif
+
+
+/* in commctrl.h, but including isn't enough */
+#undef UPDOWN_CLASS
+#define UPDOWN_CLASS "msctls_updown32"
+
+#define CE_PLAYER_ROW(nameEdit,playerRow,robotCheck,passEdit)                   \
+    EDITTEXT        nameEdit,GAME_NAME_LEFT,playerRow,GAME_NAME_WIDTH,ROW_HEIGHT, \
+                        ES_AUTOHSCROLL \
+    CONTROL         "",robotCheck,"Button",BS_AUTOCHECKBOX | WS_TABSTOP, \
+                    GAME_ROBOT_LEFT,playerRow,CHECK_WIDTH,ROW_HEIGHT \
+    EDITTEXT        passEdit,GAME_PWD_LEFT,playerRow,15,ROW_HEIGHT, \
+                    ES_PASSWORD | ES_AUTOHSCROLL \
+
+
+IDD_GAMEINFO DIALOG DISCARDABLE  0, 0, GAMEINFO_WIDTH, GAMEINFO_HEIGHT 
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
+CAPTION "Game info"
+FONT 8, "System"
+BEGIN
+#ifndef XWFEATURE_STANDALONE_ONLY
+    LTEXT           "Role:",IDC_ROLELABEL,LEFT_COL,SERVERROLE_ROW,20,8
+    XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
+
+    PUSHBUTTON      "Configure role",GIROLECONF_BUTTON,LEFT_COL+10,
+                    SERVERCONF_ROW,60,ROW_HEIGHT
+#endif
+
+    LTEXT           "",IDC_TOTAL_LABEL,LEFT_COL,NPLAYERS_ROW,60,8
+    XWCOMBO(IDC_NPLAYERSCOMBO,68,NPLAYERS_ROW,24,ROW_HEIGHT,0,58,0)
+
+    LTEXT           "Name",IDC_NAMELABEL,GAME_NAMELABEL_LEFT,
+                    LABELS_ROW,GAME_NAMELABEL_WIDTH,8,SS_NOPREFIX
+    LTEXT           "Robot",IDC_ROBOTLABEL,GAME_ROBOTLABEL_LEFT,LABELS_ROW,
+                    GAME_ROBOTLABEL_WIDTH,8
+    LTEXT           "Pwd",IDC_PASSWDLABEL,GAME_PWDLABEL_LEFT,LABELS_ROW,
+                    GAME_PWDLABEL_WIDTH,8
+
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+    LTEXT           "Remote",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,28,8,SS_NOPREFIX
+    CONTROL         "",REMOTE_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    GAME_REMOTE_LEFT, PLAYER_ROW_1,CHECK_WIDTH,ROW_HEIGHT
+    CONTROL         "",REMOTE_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    GAME_REMOTE_LEFT, PLAYER_ROW_2,CHECK_WIDTH,ROW_HEIGHT
+    CONTROL         "",REMOTE_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    GAME_REMOTE_LEFT, PLAYER_ROW_3,CHECK_WIDTH,ROW_HEIGHT
+    CONTROL         "",REMOTE_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    GAME_REMOTE_LEFT, PLAYER_ROW_4,CHECK_WIDTH,ROW_HEIGHT
+#endif
+    CE_PLAYER_ROW( NAME_EDIT1, PLAYER_ROW_1, ROBOT_CHECK1, PASS_EDIT1 )
+    CE_PLAYER_ROW( NAME_EDIT2, PLAYER_ROW_2, ROBOT_CHECK2, PASS_EDIT2 )
+    CE_PLAYER_ROW( NAME_EDIT3, PLAYER_ROW_3, ROBOT_CHECK3, PASS_EDIT3 )
+    CE_PLAYER_ROW( NAME_EDIT4, PLAYER_ROW_4, ROBOT_CHECK4, PASS_EDIT4 )
+
+    PUSHBUTTON      "Juggle players",GIJUGGLE_BUTTON,LEFT_COL+10,JUGGLE_ROW,
+                    60,BUTTON_HT
+
+    LTEXT           "Dictionary:",IDC_DICTLABEL,LEFT_COL,DICTPICK_LAB_ROW,36,8,
+                    SS_NOPREFIX
+    XWCOMBO(IDC_DICTLIST, LEFT_COL+10,DICTPICK_ROW,80,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
+
+    PUSHBUTTON      "Preferences...",OPTIONS_BUTTON,LEFT_COL,PREFS_ROW,
+                    55,BUTTON_HT
+
+#ifndef _WIN32_WCE
+    PUSHBUTTON      "OK",IDOK,20,BUTTONS_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,50,BUTTONS_ROW,
+                     REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+#endif
+END
+
+#define SB_WIDTH 121
+#define SB_BUTTON_WIDTH 19
+#define SB_OK_LEFT       ((SB_WIDTH/2)-10-SB_BUTTON_WIDTH)
+#define SB_CANCEL_LEFT   ((SB_WIDTH/2)+10)
+
+#ifdef _WIN32_WCE
+# define STRBOX_HT 81
+#else
+# define STRBOX_HT 97
+#endif
+
+IDD_STRBOX DIALOG DISCARDABLE  0, 25, SB_WIDTH, STRBOX_HT
+    STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
+CAPTION "Dialog"
+FONT 8, "System"
+BEGIN
+    EDITTEXT        ID_EDITTEXT,3,3,115,76,ES_MULTILINE | ES_READONLY
+                          | WS_VSCROLL
+#ifndef _WIN32_WCE
+    PUSHBUTTON      "OK",IDOK,    SB_OK_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT
+    DEFPUSHBUTTON   "No",IDCANCEL,SB_CANCEL_LEFT,81,SB_BUTTON_WIDTH,REPOS_BUTTON_HT
+#endif
+END
+
+#define ASKB_DLG_WIDTH 80
+#define ASKB_COLLEFT 5
+#define ASKB_LABELTOP 0
+#define ASKB_LABELHT 36
+#define ASKB_LABELWIDTH 40
+#define ASKB_COMBOLEFT (ASKB_COLLEFT+ASKB_LABELWIDTH)
+#define ASKB_EDITTOP (ASKB_LABELTOP + ASKB_LABELHT)
+#define ASKB_EDITHT 24
+#define ASKB_PUTTOP (ASKB_EDITTOP+ASKB_EDITHT)
+#define WCE_BOTTOM (ASKB_PUTTOP + BUTTON_HT + 4)
+#ifdef _WIN32_WCE
+# define ASKB_DLG_HEIGHT WCE_BOTTOM
+#else
+# define ASKB_DLG_HEIGHT (WCE_BOTTOM + REPOS_BUTTON_HT + 4)
+#endif
+
+
+IDD_ASKBLANK DIALOG DISCARDABLE  0, 0, ASKB_DLG_WIDTH, ASKB_DLG_HEIGHT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Tile picker"
+FONT 8, "System"
+BEGIN
+    LTEXT           "Enter a letter for this blank tile.",IDC_BPICK,
+                    ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
+#ifdef FEATURE_TRAY_EDIT
+    LTEXT           "Pick a tile for your tray.",IDC_CPICK,
+                    ASKB_COLLEFT,ASKB_LABELTOP,ASKB_LABELWIDTH,ASKB_LABELHT
+    EDITTEXT        IDC_PICKMSG,ASKB_COLLEFT,ASKB_EDITTOP,80,ASKB_EDITHT,
+                    ES_MULTILINE | ES_READONLY
+
+    PUSHBUTTON      "Put back",IDC_BACKUP,ASKB_COLLEFT,ASKB_PUTTOP,35,14
+#endif
+
+    XWCOMBO(BLANKFACE_LIST,ASKB_COMBOLEFT,ASKB_COLLEFT,27,12,0,70,0)
+
+#ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,80,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,20,WCE_BOTTOM,REPOS_BUTTON_WIDTH, BUTTON_HT
+#endif
+END
+
+#define SVGN_LEFT_COL 2
+#define SVGN_ROW_1 2
+#define SVGN_LTEXT_HT 46
+#define SVGN_ROW_2 (SVGN_ROW_1+SVGN_LTEXT_HT)
+#define SVGN_ROW_3 (SVGN_ROW_2+18)
+#ifdef _WIN32_WCE
+# define SVGN_DLG_HT SVGN_ROW_3
+#else
+# define SVGN_DLG_HT (SVGN_ROW_3+BUTTON_HT+3)
+#endif
+
+IDD_SAVENAMEDLG DIALOG DISCARDABLE  0, 0, 90, SVGN_DLG_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Game name"
+FONT 8, "System"
+BEGIN
+    LTEXT           "",
+                    IDC_SVGN_SELLAB,SVGN_LEFT_COL,SVGN_ROW_1,86,SVGN_LTEXT_HT
+    EDITTEXT        IDC_SVGN_EDIT,SVGN_LEFT_COL,SVGN_ROW_2,86,12,
+                    ES_AUTOHSCROLL
+#ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,SVGN_LEFT_COL+10,SVGN_ROW_3,REPOS_BUTTON_WIDTH,
+                    BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,SVGN_LEFT_COL+10+REPOS_BUTTON_WIDTH+10,
+                    SVGN_ROW_3,REPOS_BUTTON_WIDTH, BUTTON_HT
+#endif
+END
+
+#define SVGM_LEFT_COL 2
+#define SVGM_ROW_1 2
+#define SVGM_ROW_2 (SVGM_ROW_1+35)
+#define SVGM_ROW_3 (SVGM_ROW_2+13)
+#define SVGM_ROW_4 (SVGM_ROW_3+19)
+#ifdef _WIN32_WCE
+/* # define SVGM_DLG_HT (SVGM_ROW_3) */
+# define SVGM_DLG_HT (SVGM_ROW_4+16)
+
+#else
+# define SVGM_ROW_OK (SVGM_ROW_4 + 21)
+# define SVGM_DLG_HT (SVGM_ROW_OK + 16)
+#endif
+
+
+IDD_SAVEDGAMESDLG DIALOG DISCARDABLE  0, 0, 85, SVGM_DLG_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
+CAPTION "Saved Games"
+FONT 8, "System"
+BEGIN
+  LTEXT           /* wince windres can't handle split lines....*/
+                    "Select a saved game.  (Some buttons will be disabled when the current game is selected.)",
+                    IDC_SVGM_SELLAB,SVGM_LEFT_COL,
+                    SVGM_ROW_1,90,35
+    XWCOMBO(IDC_SVGM_GAMELIST, SVGM_LEFT_COL,SVGM_ROW_2,70,ROW_HEIGHT,LBS_SORT,58,CBS_SORT)
+
+    PUSHBUTTON      "Open",IDC_SVGM_OPEN,
+                    SVGM_LEFT_COL,SVGM_ROW_3,40,14,WS_DISABLED
+
+    PUSHBUTTON      "Dup.",IDC_SVGM_DUP,
+                    SVGM_LEFT_COL,SVGM_ROW_4,20,14,WS_DISABLED
+    PUSHBUTTON      "Delete",IDC_SVGM_DEL,
+                    SVGM_LEFT_COL+22,SVGM_ROW_4,28,14,WS_DISABLED
+    PUSHBUTTON      "Rename",IDC_SVGM_CHANGE,
+                    SVGM_LEFT_COL+52,SVGM_ROW_4,32,14,WS_DISABLED
+
+#ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "Done",IDOK,SVGM_LEFT_COL,SVGM_ROW_OK,REPOS_BUTTON_WIDTH,
+                    BUTTON_HT
+#endif
+END
+
+#define PW_WIDTH 104
+#define PW_OK_LEFT       ((PW_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
+#define PW_CANCEL_LEFT   ((PW_WIDTH/2)+10)
+
+#ifdef _WIN32_WCE
+# define ASKPASS_HT 32
+#else
+# define ASKPASS_HT 50
+#endif
+
+IDD_ASKPASS DIALOG DISCARDABLE  0, 0, PW_WIDTH, ASKPASS_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Password"
+FONT 8, "System"
+BEGIN
+    LTEXT           "",IDC_PWDLABEL,5,8,67,24
+    EDITTEXT        PASS_EDIT,76,8,23,12,ES_PASSWORD | ES_AUTOHSCROLL
+#ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,PW_OK_LEFT,32,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,PW_CANCEL_LEFT,32,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+#endif
+END
+
+#ifdef XWFEATURE_SEARCHLIMIT
+#define HC_LABELS_COL        5
+#define HC_DROPDOWNS_COL     70
+#define HC_MINROW     3
+#define HC_MAXROW     16
+#define HC_WIDTH      98
+#define HC_OK_LEFT   ((HC_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
+#define HC_CANCEL_LEFT   ((HC_WIDTH/2)+10)
+
+#ifdef _WIN32_WCE
+# define ASKHINTLIMTS_HT 31
+#else
+# define ASKHINTLIMTS_HT 47
+#endif
+
+IDD_ASKHINTLIMTS DIALOG DISCARDABLE  0, 0, HC_WIDTH, ASKHINTLIMTS_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Tile hint limits"
+FONT 8, "System"
+BEGIN
+    LTEXT           "Use at least:",HC_MIN_LABEL,HC_LABELS_COL,HC_MINROW,60,
+                    ROW_HEIGHT
+    XWCOMBO(HC_MIN_COMBO, HC_DROPDOWNS_COL,HC_MINROW,24,ROW_HEIGHT,0,58,0)
+
+    LTEXT           "But no more than:",HC_MAX_LABEL,HC_LABELS_COL,HC_MAXROW,60,
+                    ROW_HEIGHT
+    XWCOMBO(HC_MAX_COMBO, HC_DROPDOWNS_COL,HC_MAXROW, 24, ROW_HEIGHT, 0,58,0)
+
+#ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,HC_OK_LEFT,31,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,HC_CANCEL_LEFT,31,REPOS_BUTTON_WIDTH,
+                     REPOS_BUTTON_HT
+#endif
+END
+#endif
+
+#define PR_WIDTH 118
+#define PR_OK_LEFT   ((PR_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
+#define PR_CANCEL_LEFT   ((PR_WIDTH/2)+10)
+#define PREFS_ROW_HT 9
+
+#define PR_SPACING 13
+#define PR_ROW1 5
+#define PR_ROW2 (PR_ROW1+PR_SPACING)
+#define PR_ROW3 (PR_ROW2+PR_SPACING)
+#define PR_ROW4 (PR_ROW3+PR_SPACING)
+#define PR_ROW5 (PR_ROW4+PR_SPACING)
+#define PR_ROW6 (PR_ROW5+PR_SPACING)
+#define PR_ROW7 (PR_ROW6+PR_SPACING)
+#define PR_ROW8 (PR_ROW7+PR_SPACING)
+#define PR_BUTTONROW (PR_ROW8+PR_SPACING+3)
+
+#ifdef _WIN32_WCE
+# define PREFS_DLG_HT PR_BUTTONROW
+#else
+# define PREFS_DLG_HT (PR_BUTTONROW+PR_SPACING+3)
+#endif
+
+IDD_OPTIONSDLG DIALOG DISCARDABLE  0, 20, PR_WIDTH, PREFS_DLG_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
+CAPTION "Preferences"
+FONT 8, "System"
+BEGIN
+    CONTROL         "This game",IDC_RADIOLOCAL,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
+    CONTROL         "All games",IDC_RADIOGLOBAL,"Button",
+                    BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
+
+    /* Global */
+    CONTROL         "Color played tiles",IDC_CHECKCOLORPLAYED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,
+                    8,PR_ROW2,80,PREFS_ROW_HT
+    CONTROL         "Enable cursor",IDC_CHECKSHOWCURSOR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,80,PREFS_ROW_HT
+    CONTROL         "Explain robot scores",IDC_CHECKROBOTSCORES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW4,80,PREFS_ROW_HT
+    CONTROL         "Skip turn confirmation",IDC_SKIPCONFIRM,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,80,PREFS_ROW_HT
+    CONTROL         "Hide tile values",IDC_HIDETILEVALUES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW6,80,PREFS_ROW_HT
+    PUSHBUTTON      "Edit colors...",IDC_PREFCOLORS,8,PR_ROW7,80,12
+    PUSHBUTTON      "Change language...",IDC_PREFLOCALE,8,PR_ROW8,80,12
+#ifdef ALLOW_CHOOSE_FONTS
+    PUSHBUTTON      "Choose font...",IDC_PREFFONTS,8,PR_ROW9,60,12
+#endif
+
+    /* Per game */
+    CONTROL         "Smart robot",IDC_CHECKSMARTROBOT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,60,
+                    PREFS_ROW_HT
+    CONTROL         "Allow hints",IDC_CHECKHINTSOK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,60,PREFS_ROW_HT
+#ifdef XWFEATURE_SEARCHLIMIT
+    CONTROL         "Hint limits",IDC_CHECKHINTSLIMITS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,50,10
+#endif
+    CONTROL         "Timer on (minutes)",TIMER_CHECK,"Button",
+                        BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,75,PREFS_ROW_HT
+    EDITTEXT        TIMER_EDIT,85,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Phonies:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT
+    XWCOMBO(PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, 0, 58, 0)
+
+#ifdef FEATURE_TRAY_EDIT
+    CONTROL         "Pick tiles face-up", IDC_PICKTILES, "Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW7,90,PREFS_ROW_HT
+#else
+#endif
+#ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,PR_OK_LEFT,PR_BUTTONROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,PR_CANCEL_LEFT,PR_BUTTONROW,
+                    REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+#endif
+END
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+
+    /* Rule for this dialog, which wants to lay out different fields for the
+       different transports all using the same coordinates: it's always label
+       one one line followed by an edittext on the next.  Deal with it until
+       CE supports layout via html (or I write a dialog layout function
+       myself....) */
+
+# define LAB_COL 5
+# define LAB_COL_WIDTH 38
+# define CTRL_COL 15
+# define CTRL_COL_WIDTH 80
+# define CONN_LABEL_HT (LABEL_ROW_HT*2) /* try to make them all same ht! */
+# define CONN_LABEL_ROW_1 2
+# define CONN_EDIT_ROW_2 (CONN_LABEL_ROW_1+ROW_SPACE)
+# ifdef NEEDS_CHOOSE_CONNTYPE
+#  define CONN_LABEL_ROW_3 (CONN_EDIT_ROW_2+ROW_SPACE)
+#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+ROW_SPACE+ROW_HEIGHT)
+# else
+#  define CONN_LABEL_ROW_3 (CONN_LABEL_ROW_1)
+#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+CONN_LABEL_HT+3)
+# endif
+# define CONN_LABEL_ROW_5 (CONN_EDIT_ROW_4+ROW_SPACE+5)
+# define CONN_EDIT_ROW_6 (CONN_LABEL_ROW_5+CONN_LABEL_HT+3)
+# define CONN_LABEL_ROW_7 (CONN_EDIT_ROW_6+ROW_SPACE+5)
+# define CONN_EDIT_ROW_8 (CONN_LABEL_ROW_7+CONN_LABEL_HT+3)
+# define BUTTON_ROW (CONN_EDIT_ROW_8+ROW_SPACE)
+#ifdef _WIN32_WCE
+# define CONNSDLG_HT BUTTON_ROW
+#else
+# define CONNSDLG_HT (BUTTON_ROW+ROW_SPACE+3)
+#endif
+
+    /* #This is a comment????  */
+IDD_CONNSSDLG DIALOG DISCARDABLE 0, 20, 120, CONNSDLG_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
+CAPTION "Connection"
+FONT 8, "System"
+BEGIN
+
+#ifdef NEEDS_CHOOSE_CONNTYPE
+    LTEXT           "Connect via:",IDC_CCONVIA_LAB,LAB_COL,CONN_LABEL_ROW_1,
+                    40,ROW_HEIGHT
+    XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_EDIT_ROW_2,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,0,58,0)
+#endif
+#if defined XWFEATURE_RELAY
+    LTEXT           "Room (must match for all devices joining the game):",
+                    IDC_INVITE_LAB,LAB_COL,CONN_LABEL_ROW_3,90,CONN_LABEL_HT
+    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL
+
+    LTEXT           "Relay name (rarely changes):",IDC_CRELAYNAME_LAB,
+                    LAB_COL,CONN_LABEL_ROW_5,90,CONN_LABEL_HT
+    EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_EDIT_ROW_6,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL
+    LTEXT           "Relay port (rarely changes):",IDC_CRELAYPORT_LAB,LAB_COL,
+                    CONN_LABEL_ROW_7,90,CONN_LABEL_HT
+    EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_EDIT_ROW_8,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
+#elif defined NEEDS_CHOOSE_CONNTYPE
+    LTEXT           "Relay connection not supported.",IDC_INVITE_LAB,LAB_COL,
+                    CONN_ROW_3,40,40
+#endif
+
+#if defined XWFEATURE_IP_DIRECT
+    LTEXT           "Host name or address",IDC_IPNAME_LAB,LAB_COL,CONN_ROW_3,90,
+                    ROW_HEIGHT
+    EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
+                    ES_AUTOHSCROLL
+#elif defined NEEDS_CHOOSE_CONNTYPE
+    LTEXT           "Direct IP connection not supported.",IDC_IPNAME_LAB,LAB_COL,
+                    CONN_LABEL_ROW_3,40,40
+#endif
+
+#if defined XWFEATURE_SMS
+    LTEXT           "Host Phone:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_LABEL_ROW_3,60,
+                    ROW_HEIGHT
+    EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Host Port:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
+    EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
+#elif defined NEEDS_CHOOSE_CONNTYPE
+    LTEXT           "Texting not supported.",
+                     IDC_SMS_PHONE_LAB,LAB_COL,CONN_LABEL_ROW_3,40,ROW_HEIGHT
+#endif
+
+#ifndef _WIN32_WCE
+    PUSHBUTTON      "OK",IDOK,9,BUTTON_ROW,REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,70,BUTTON_ROW,
+                    REPOS_BUTTON_WIDTH,REPOS_BUTTON_HT
+#endif
+END
+#endif
+
+#define CLR_WIDTH 114
+#define CLR_OK_LEFT   ((CLR_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
+#define CLR_CANCEL_LEFT   ((CLR_WIDTH/2)+10)
+#define CLR_LAB_WIDTH 45
+#define CLR_SAMPLE_WIDTH 12
+#define CLR_LAB_HT 12
+#define CLR_BUT_WIDTH 12
+#define CLR_BUT_HT 10
+
+#define CLR_SMALL_GAP 12
+#define CLR_LRG_GAP   16
+
+#define CLR_ROW_1  4
+#define CLR_ROW_2  (CLR_ROW_1+CLR_SMALL_GAP)
+#define CLR_ROW_3  (CLR_ROW_2+CLR_SMALL_GAP)
+#define CLR_ROW_4  (CLR_ROW_3+CLR_SMALL_GAP)
+#define CLR_ROW_5  (CLR_ROW_4+CLR_LRG_GAP)
+#define CLR_ROW_6  (CLR_ROW_5+CLR_SMALL_GAP)
+#define CLR_ROW_7  (CLR_ROW_6+CLR_SMALL_GAP)
+#define CLR_ROW_8  (CLR_ROW_7+CLR_LRG_GAP)
+#define CLR_ROW_9  (CLR_ROW_8+CLR_SMALL_GAP)
+#define CLR_ROW_10  (CLR_ROW_9+CLR_SMALL_GAP)
+#define CLR_ROW_11  (CLR_ROW_10+CLR_SMALL_GAP)
+
+#define CLR_BUTTON_ROW CLR_ROW_11 + CLR_LRG_GAP
+#define CLR_COL_1  7
+#define CLR_COL_2  (CLR_COL_1 + CLR_LAB_WIDTH+2)
+/* #define CLR_COL_3  58 */
+/* #define CLR_COL_4  99 */
+#define CLR_COL_3  CLR_COL_1
+#define CLR_COL_4  CLR_COL_2
+#ifdef _WIN32_WCE
+# define COLORSDLG_HT CLR_BUTTON_ROW
+#else
+# define COLORSDLG_HT CLR_BUTTON_ROW + BUTTON_HT + 3
+#endif
+
+#define COLOR_BUTTON(txt,id,xx,yy) \
+    LTEXT           txt,id,xx,yy,CLR_LAB_WIDTH,CLR_LAB_HT
+  /* Hack alert.  Smartphone isn't delivering WM_COMMAND events for
+     clicks on BS_OWNERDRAW buttons, and WinMo (PPC and Smartphone)
+     won't deliver WM_DRAWITEM events for SS_OWNERDRAW static
+     controls.  The solution: use an OWNERDRAW button as the color
+     sample (must disable it in code; WS_DISABLED doesn't work here)
+     and have a separate button to trigger the edit dialog. */
+#define COLOR_SAMPLE(id1,id2,xx,yy)                        \
+    PUSHBUTTON       "",id2,xx,yy,CLR_BUT_WIDTH,CLR_BUT_HT,BS_OWNERDRAW \
+    PUSHBUTTON       "Edit",id1,xx+CLR_SAMPLE_WIDTH+4,yy,20,CLR_BUT_HT,BS_NOTIFY
+
+IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, CLR_WIDTH, COLORSDLG_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
+CAPTION "Color preferences"
+FONT 8, "System"
+BEGIN
+    COLOR_BUTTON("Double letter:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1)
+    COLOR_SAMPLE(DLBLTR_BUTTON,DLBLTR_SAMPLE,CLR_COL_2,CLR_ROW_1)
+
+    COLOR_BUTTON("Double word:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2 )
+    COLOR_SAMPLE(DBLWRD_BUTTON,DBLWRD_SAMPLE,CLR_COL_2,CLR_ROW_2)
+    COLOR_BUTTON("Triple letter:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3 )
+    COLOR_SAMPLE(TPLLTR_BUTTON,TPLLTR_SAMPLE,CLR_COL_2,CLR_ROW_3)
+
+    COLOR_BUTTON("Triple word:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4)
+    COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_COL_4,CLR_ROW_4)
+    COLOR_BUTTON("Empty cell:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5)
+    COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_COL_2,CLR_ROW_5)
+    COLOR_BUTTON("Tile back:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6)
+    COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
+    COLOR_BUTTON("Focus color:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7)
+    COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7)
+    COLOR_BUTTON("Player 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8)
+    COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_COL_2,CLR_ROW_8)
+    COLOR_BUTTON("Player 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9)
+    COLOR_SAMPLE(PLAYER2_BUTTON,PLAYER2_SAMPLE,CLR_COL_4,CLR_ROW_9)
+    COLOR_BUTTON("Player 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10)
+    COLOR_SAMPLE(PLAYER3_BUTTON,PLAYER3_SAMPLE,CLR_COL_2,CLR_ROW_10)
+    COLOR_BUTTON("Player 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11)
+    COLOR_SAMPLE(PLAYER4_BUTTON,PLAYER4_SAMPLE,CLR_COL_4,CLR_ROW_11)
+
+#ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,CLR_OK_LEFT,CLR_BUTTON_ROW,
+                    REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
+    PUSHBUTTON      "Cancel",IDCANCEL,CLR_CANCEL_LEFT,CLR_BUTTON_ROW,
+                    REPOS_BUTTON_WIDTH,BUTTON_HT,BS_NOTIFY
+#endif
+END
+
+//
+// Editor for individual colors
+//
+#ifdef MY_COLOR_SEL
+
+# define CLRE_LAB_WIDTH 22
+# define CLEDIT_WIDTH 18
+# define CLSLIDER_WIDTH 30
+# define CLSAMPLE_WIDTH 15
+
+# define CLRELABEL_COL 3
+# define CLREEDIT_COL  (CLRELABEL_COL+CLRE_LAB_WIDTH+2)
+# define CLRESLIDER_COL (CLREEDIT_COL+CLEDIT_WIDTH+3)
+# define CLSAMPLE_COL (CLRESLIDER_COL+CLSLIDER_WIDTH+5)
+# define CLRE_LAB_HT    12
+# define CLREDIT_ROW_1 5
+# define CLREDIT_ROW_2 21
+# define CLREDIT_ROW_3 37
+# define CLRE_WIDTH (CLSAMPLE_COL+CLSAMPLE_WIDTH+5)
+# define CLRE_OK_LEFT    ((CLRE_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
+# define CLRE_CANCEL_LEFT   ((CLRE_WIDTH/2)+10)
+# ifdef _WIN32_WCE
+#  define COLOREDITDLG_HT 56
+# else
+#  define COLOREDITDLG_HT 72
+# endif
+
+# define COLOR_EDIT_LINE(txt,row,labelId,editId,sliderId)    \
+    LTEXT           txt,labelId,CLRELABEL_COL,row,           \
+                    CLRE_LAB_WIDTH,CLRE_LAB_HT               \
+    EDITTEXT        editId,CLREEDIT_COL,row,CLEDIT_WIDTH,12, \
+                    ES_AUTOHSCROLL | ES_NUMBER               \
+    CONTROL         "",sliderId,"msctls_trackbar32",         \
+                    TBS_BOTH|TBS_NOTICKS|WS_TABSTOP,         \
+                    CLRESLIDER_COL,row,CLSLIDER_WIDTH,12
+
+IDD_COLOREDITDLG DIALOG DISCARDABLE  0, 0, CLRE_WIDTH, COLOREDITDLG_HT
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION ""                      /* set by code */
+FONT 8, "System"
+BEGIN
+    COLOR_EDIT_LINE("Red:", CLREDIT_ROW_1, RED_LABEL, RED_EDIT, CLREDT_SLIDER1 )
+    COLOR_EDIT_LINE("Green:", CLREDIT_ROW_2, GREEN_LABEL, GREEN_EDIT, CLREDT_SLIDER2 )
+    COLOR_EDIT_LINE("Blue:", CLREDIT_ROW_3, BLUE_LABEL, BLUE_EDIT, CLREDT_SLIDER3 )
+
+    /* See hack alert above.  Bogus owner-draw button seems the only way to get a sample
+       color rect into the dialog. */
+    PUSHBUTTON       "",CLSAMPLE_BUTTON_ID,CLSAMPLE_COL,CLREDIT_ROW_1,
+                     CLSAMPLE_WIDTH,CLREDIT_ROW_3-CLREDIT_ROW_1+CLRE_LAB_HT,BS_OWNERDRAW
+
+# ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,CLRE_OK_LEFT,56,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,CLRE_CANCEL_LEFT,56,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+# endif
+END
+
+#endif
+
+#ifdef ALLOW_CHOOSE_FONTS
+IDD_FONTSSDLG DIALOG DISCARDABLE  0, 0, 120, 115
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION ""                      /* set by code */
+FONT 8, "System"
+BEGIN
+
+    LTEXT           "Fonts:",FONTS_LABEL,5,2,25,12
+    XWCOMBO(FONTS_COMBO, 30,2,70,12,0,58,0)
+
+    LTEXT           "Size:",FONTSIZE_LABEL,5,16,25,12
+    XWCOMBO(FONTSIZE_COMBO, 30,16,25,12,0,58,0)
+
+# ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,20,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,100,100,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+# endif
+END
+#endif
+
+IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 100, 80
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
+CAPTION "Language Picker"
+FONT 8, "System"
+BEGIN
+    LTEXT           "Choose the language for menus and dialog text.  (You can download support files for new languages from xwords.sf.net.)",
+                     LOCALES_LABEL,LEFT_COL,2,80,50
+
+    XWCOMBO(LOCALES_COMBO,LEFT_COL,53,70,12,0,58,0)
+# ifndef _WIN32_WCE
+    DEFPUSHBUTTON   "OK",IDOK,LEFT_COL,70,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+    PUSHBUTTON      "Cancel",IDCANCEL,40,70,REPOS_BUTTON_WIDTH,
+                    REPOS_BUTTON_HT
+# endif
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_MENU                "Menu"
+    IDS_DUMMY               "--"
+    IDS_CANCEL              "Cancel"
+    IDS_OK                  "Ok"
+    IDS_DONE                "Done"
+    IDS_LANGUAGE_NAME       "Czech"
+    IDS_NEW_GAME            "New Game"
+    IDS_ABOUT       "Crosswords " ABOUT_VERSION " (rev " SVN_REV ") "\
+                    "for Windows Mobile. Copyright 1998-2009 by "\
+                    "Eric House.  This software is released under the GNU "\
+                    "Public License.\r\r"\
+                    "For dictionaries, a manual, or source code go to "\
+                    "http://xwords.sf.net or http://eehouse.org/xwords/."
+    IDS_DICTLOC     "Please install a Crosswords dictionary (.xwd file) "\
+                    "in the same directory as the Crosswords .exe file, or "\
+                    "in a directory called Crosswords on an external card, "\
+                    "e.g. in \\Storage Card\\Crosswords.  "\
+                    "Download dictionaries from http://xwords.sf.net or "\
+                    "http://eehouse.org/xwords."
+    IDS_SAVENAME    "Enter a name for the current game.  (You can change the "\
+                    "name later using the Saved Games dialog.)"
+    IDS_DUPENAME    "Enter a name for a copy of this game."
+    IDS_RENAME      "Enter a new name for this game."
+
+    IDS_REMAINING_TILES_ADD "+ %d [all remaining tiles]"
+    IDS_UNUSED_TILES_SUB    "- %d [unused tiles]"
+    IDS_BONUS_ALL   "Bonus for using all tiles: 50" XP_CR
+    IDS_TURN_SCORE  "Score for turn: %d" XP_CR
+    IDS_COMMIT_CONFIRM
+                    "Commit the current move?" XP_CR
+    IDS_LOCAL_NAME         "%s"
+    IDS_IGNORE_L           "Ignore"
+    IDS_WARN_L             "Warn"
+    IDS_DISALLOW_L         "Disallow"
+    IDS_NONLOCAL_NAME      "%s (remote)"
+    IDS_TIME_PENALTY_SUB   " - %d [time]"
+    IDS_CUMULATIVE_SCORE   "Cumulative score: %d" XP_CR
+    IDS_MOVE_ACROSS        "move (from %s across)" XP_CR
+    IDS_MOVE_DOWN          "move (from %s down)" XP_CR
+    IDS_TRAY_AT_START      "Tray at start: %s" XP_CR
+    IDS_NEW_TILES          "New tiles: %s" XP_CR
+    IDS_TRADED_FOR         "Traded %s for %s."
+    IDS_PASS               "pass" XP_CR
+    IDS_PHONY_REJECTED     "Illegal word in move; turn lost!" XP_CR
+    IDS_ROBOT_TRADED       "Robot traded tiles %d this turn."
+    IDS_ROBOT_MOVED        "The robot made this move:" XP_CR
+    IDS_REMOTE_MOVED       "Remote player made this move:" XP_CR
+    IDS_PASSED             "Passed"
+    IDS_SUMMARYSCORED      "%s:%d"
+    IDS_TRADED             "Traded %d"
+    IDS_LOSTTURN           "Lost turn"
+    IDS_TOTALPLAYERS       "Number of players:"
+    IDS_VALUES_HEADER      "%s counts/values:" XP_CR
+    IDS_QUERY_TRADE        "Are you sure you want to trade the selected tiles?"
+
+    IDS_DOUBLE_LETTER      "Double Letter"
+    IDS_DOUBLE_WORD        "Double Word"
+    IDS_TRIPLE_LETTER      "Triple Letter"
+    IDS_TRIPLE_WORD        "Triple Word"
+    IDS_INTRADE_MW         "Trading tiles." XP_CR "Select 'turn done' when ready"
+
+    IDS_TILES_NOT_IN_LINE  "All tiles played must be in a line."
+    IDS_NO_EMPTIES_IN_TURN "Empty squares cannot separate tiles played."
+    IDS_TWO_TILES_FIRST_MOVE "Must play two or more pieces on the first move."
+    IDS_TILES_MUST_CONTACT "New pieces must contact others already in place (or "\
+                           "the middle square on the first move)."
+    IDS_NOT_YOUR_TURN      "You can't do that; it's not your turn!"
+    IDS_NO_PEEK_ROBOT_TILES "No peeking at the robot's tiles!"
+    IDS_CANT_TRADE_MID_MOVE "Remove played tiles before trading."
+    IDS_TOO_FEW_TILES_LEFT_TO_TRADE "Too few tiles left to trade."
+    IDS_CANT_UNDO_TILEASSIGN "Tile assignment can't be undone."
+    IDS_CANT_HINT_WHILE_DISABLED "The hint feature is disabled for this game.  Enable "\
+                                 "it for a new game using the Preferences dialog."
+
+    IDS_COUNTSVALS_L        "Tile Counts and Values"
+    IDS_REMTILES_L          "Remaining tiles"
+    IDS_GAMEHIST_L          "Game history"
+    IDS_FINALSCORE_L        "Final scores"
+    IDS_QUESTION_L          "Question"
+    IDS_FYI_L               "FYI"
+    IDS_ILLEGALWRD_L        "Illegal word"
+    IDS_WRDNOTFOUND         "Word[s] %s not found in dictionary."
+    IDS_USEANYWAY           "Use it anyway?"
+    IDS_CANNOTOPEN_GAME     "Saved game cannot be opened."
+    IDS_NODICT_L            "Dictionary Not Found"
+    IDS_ABOUT_L             "About Crosswords"
+    IDS_OVERWRITE           "Do you really want to overwrite the current game?"
+    IDS_ENDNOW              "Are you sure you want to end the game now?"
+    IDS_CANNOTOPEN_DICT     "Unable to open dictionary: %s"
+    IDS_CONFIM_DELETE       "Are you certain you want to delete the "\
+                            "selected game?  This action cannot be undone."
+
+    IDS_ROLE_STANDALONE     "Standalone"
+    IDS_ROLE_HOST           "Host"
+    IDS_ROLE_GUEST          "Guest"
+    IDS_PLAYER_FORMAT       "Player %d"
+    IDS_UNTITLED_FORMAT     "Untitled %d"
+    IDS_PASSWDFMT_L         "Enter password for %ls:"
+
+    IDS_FILEEXISTSFMT_L     "File %s already exists."
+    IDS_NEED_TOUCH          "This feature requires a touch screen."
+    IDS_EDITCOLOR_FORMAT    "Edit color for %s"
+
+    IDS_LANG_CHANGE_RESTART "You will see the new language after you restart Crosswords."
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend."
+    IDS_CONN_RELAY_L           "Relay"
+    IDS_CONN_DIRECT            "Direct connection"
+    IDS_LOCALPLAYERS           "Local players:"
+    IDS_NO_PEEK_REMOTE_TILES   "No peeking at remote players' tiles!"
+    IDS_REG_UNEXPECTED_USER    "Refused attempt to register unexpected "\
+                               "user[s]."
+    IDS_SERVER_DICT_WINS       "Conflict between Host and Guest dictionaries; "
+                               "Host wins."
+    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked remote "\
+                               "for a game started as Host."
+
+# ifdef XWFEATURE_SMS
+    IDS_SMS_CONN_L          "Texting"
+# endif
+# ifdef XWFEATURE_IP_DIRECT
+    IDS_DIRECT_CONN_L       "Direct connection"
+# endif
+# ifdef XWFEATURE_RELAY
+    IDS_XWRELAY_ERROR_TIMEOUT  "The relay timed you out; usually that means "\
+                               "the other players didn't show."
+    IDS_ERROR_HEART_YOU        "You were disconnected from relay because it "\
+                               "didn't hear from you in too long."
+    IDS_XWRELAY_ERROR_HEART_OTHER  "The relay has lost contact with a device in this game."
+/*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
+# endif
+#endif
+
+END
+
+#ifdef AM_BASE_LANGUAGE
+# include "../common_rsrc.rc"
+#endif
+
+#endif
