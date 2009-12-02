@@ -150,6 +150,7 @@ DLL_SRCS = \
 	./l10n/xwords4_catalan.rc \
 	./l10n/xwords4_french.rc \
 	./l10n/xwords4_polish.rc \
+	./l10n/xwords4_czech.rc \
 	./l10n/xwords4_english.rc \
 
 BASE_LANG_SRC = l10n/xwords4_english.rc
