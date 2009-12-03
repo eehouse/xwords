@@ -43,9 +43,8 @@ stuffTextInField( HWND hDlg, StrBoxState* state )
     XP_U16 len, crlen;
     XP_UCHAR* sbuf;
     wchar_t* wbuf;
-    CEAppGlobals* globals = state->dlgHdr.globals;
 
-    sbuf = XP_MALLOC( globals->mpool, nBytes + 1 );
+    sbuf = XP_MALLOC( state->dlgHdr.globals->mpool, nBytes + 1 );
     stream_getBytes( state->stream, sbuf, nBytes );
 
     crlen = strlen(XP_CR);
@@ -55,9 +54,9 @@ stuffTextInField( HWND hDlg, StrBoxState* state )
     sbuf[nBytes] = '\0';
 
     len = MultiByteToWideChar( CP_UTF8, 0, sbuf, nBytes, NULL, 0 );
-    wbuf = XP_MALLOC( globals->mpool, (len+1) * sizeof(*wbuf) );
+    wbuf = XP_MALLOC( state->dlgHdr.globals->mpool, (len+1) * sizeof(*wbuf) );
     MultiByteToWideChar( CP_UTF8, 0, sbuf, nBytes, wbuf, len );
-    XP_FREE( globals->mpool, sbuf );
+    XP_FREE( state->dlgHdr.globals>mpool, sbuf );
     wbuf[len] = 0;
 
     SetDlgItemText( hDlg, ID_EDITTEXT, wbuf );

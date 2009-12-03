@@ -406,14 +406,19 @@ ceMeasureGlyph( HDC hdc, HBITMAP bmp, wchar_t glyph,
     DrawText( hdc, &glyph, 1, &rect, DT_TOP | DT_LEFT );
 
     BITMAP bminfo;
-    int result = GetObject( bmp, sizeof(bminfo), &bminfo );
+#ifdef DEBUG
+    int result =
+#endif
+        GetObject( bmp, sizeof(bminfo), &bminfo );
     XP_ASSERT( result != 0 );
 
     /* Find out if this guy's taller than what we have */
     const XP_U8* rowPtr = bminfo.bmBits;
     if ( *rowPtr != 0x00 ) {
+#ifdef DEBUG
         wchar_t wbuf[2] = { glyph, 0 };
         XP_LOGW( __func__, wbuf );
+#endif
         logBitmap( &bminfo, size.cx, size.cy );
     }
     for ( yy = 0; yy < minTopSeen; ++yy ) {
@@ -527,7 +532,7 @@ ceBestFitFont( CEDrawCtx* dctx, RFIndex index, const XP_U16 soughtHeight,
     wchar_t widebuf[65];
     wchar_t widthBuf[minLen];
     XP_U16 len, wlen;
-    XP_U16 hasMinTop, hasMaxBottom;
+    XP_U16 hasMinTop = 0, hasMaxBottom = 0; /* make compiler happy */
     XP_Bool firstPass;
     HDC memDC;
     HBITMAP memBM;
