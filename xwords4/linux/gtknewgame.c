@@ -40,6 +40,7 @@ typedef struct GtkNewGameState {
     gboolean revert;
     gboolean cancelled;
     XP_Bool loaded;
+    XP_Bool fireConnDlg;
     gboolean isNewGame;
     short nCols;                /* for board size */
 
@@ -89,7 +90,8 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( state->loaded && SERVER_STANDALONE != role  ) {
-            gtkConnsDlg( state->globals, &state->addr, !state->isNewGame );
+            gtkConnsDlg( state->globals, &state->addr, role,
+                         !state->isNewGame );
         }
 #endif
     }
@@ -98,7 +100,7 @@ role_combo_changed( GtkComboBox* combo, gpointer gp )
 static void
 handle_settings( GtkWidget* XP_UNUSED(item), GtkNewGameState* state )
 {
-    gtkConnsDlg( state->globals, &state->addr, !state->isNewGame );
+    gtkConnsDlg( state->globals, &state->addr, state->role, !state->isNewGame );
 }
 
 #endif
@@ -176,6 +178,15 @@ handle_revert( GtkWidget* XP_UNUSED(widget), void* closure )
     state->revert = TRUE;
     gtk_main_quit();
 } /* handle_revert */
+
+static gint
+call_connsdlg_func( gpointer data )
+{
+    GtkNewGameState* state = (GtkNewGameState*)data;
+    gtkConnsDlg( state->globals, &state->addr, state->role,
+                 !state->isNewGame );
+    return 0;
+}
 
 static GtkWidget*
 makeNewGameDialog( GtkNewGameState* state )
@@ -359,6 +370,10 @@ makeNewGameDialog( GtkNewGameState* state )
 
     gtk_widget_show_all (dialog);
 
+    if ( state->fireConnDlg ) {
+        (void)g_idle_add( call_connsdlg_func, state );
+    }
+
     return dialog;
 } /* makeNewGameDialog */
 
@@ -502,7 +517,8 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
 }
 
 gboolean
-newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool isNewGame )
+newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool isNewGame,
+               XP_Bool fireConnDlg )
 {
     GtkNewGameState state;
     XP_MEMSET( &state, 0, sizeof(state) );
@@ -519,6 +535,7 @@ newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool isNewGame )
                                    gtk_newgame_attr_set,
                                    &state );
     state.isNewGame = isNewGame;
+    state.fireConnDlg = fireConnDlg;
 
     /* returns when button handler calls gtk_main_quit */
     do {
@@ -549,6 +566,7 @@ newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool isNewGame )
         }
 
         gtk_widget_destroy( dialog );
+        state.fireConnDlg = XP_FALSE;
     } while ( state.revert );
 
     newg_destroy( state.newGameCtxt );

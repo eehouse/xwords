@@ -67,6 +67,8 @@ static void sendOnClose( XWStreamCtxt* stream, void* closure );
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void printFinalScores( GtkAppGlobals* globals );
 static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
+static void new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg );
+
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -301,6 +303,34 @@ relay_status_gtk( void* closure, CommsRelayState state )
     draw_gtk_status( globals->draw, globals->stateChar );
 }
 
+static gint
+invoke_new_game( gpointer data )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)data;
+    new_game_impl( globals, XP_TRUE );
+    return 0;
+}
+
+static void
+relay_error_gtk( void* closure, XWREASON relayErr )
+{
+    LOG_FUNC();
+    GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+
+    gint (*proc)( gpointer data );
+    switch( relayErr ) {
+    case XWRELAY_ERROR_NO_ROOM:
+    case XWRELAY_ERROR_DUP_ROOM:
+        proc = invoke_new_game;
+        break;
+    default:
+        assert(0);
+        break;
+    }
+
+    (void)g_idle_add( proc, globals );
+}
+
 static void
 createOrLoadObjects( GtkAppGlobals* globals )
 {
@@ -324,6 +354,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 #endif
 #ifdef XWFEATURE_RELAY
         .rstatus = relay_status_gtk,
+        .rerror = relay_error_gtk,
 #endif
     };
 
@@ -407,7 +438,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 #endif
 
         if ( params->needsNewGame ) {
-            new_game( NULL, globals );
+            new_game_impl( globals, XP_FALSE );
 #ifndef XWFEATURE_STANDALONE_ONLY
         } else if ( !isServer ) {
             XWStreamCtxt* stream = 
@@ -663,7 +694,7 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 } /* final_scores */
 
 static void
-new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
 {
     CommsAddrRec addr;
 
@@ -673,7 +704,7 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
         comms_getInitialAddr( &addr );
     }
 
-    if ( newGameDialog( globals, &addr, XP_TRUE ) ) {
+    if ( newGameDialog( globals, &addr, XP_TRUE, fireConnDlg ) ) {
         CurGameInfo* gi = &globals->cGlobals.params->gi;
 #ifndef XWFEATURE_STANDALONE_ONLY
         XP_Bool isClient = gi->serverRole == SERVER_ISCLIENT;
@@ -713,6 +744,12 @@ new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
         board_draw( globals->cGlobals.game.board );
     }
 
+} /* new_game_impl */
+
+static void
+new_game( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    new_game_impl( globals, XP_FALSE );
 } /* new_game */
 
 static void
@@ -723,7 +760,7 @@ game_info( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 
     /* Anything to do if OK is clicked?  Changed names etc. already saved.  Try
        server_do in case one's become a robot. */
-    if ( newGameDialog( globals, &addr, XP_FALSE ) ) {
+    if ( newGameDialog( globals, &addr, XP_FALSE, XP_FALSE ) ) {
         if ( server_do( globals->cGlobals.game.server ) ) {
             board_draw( globals->cGlobals.game.board );
         }
@@ -1263,7 +1300,7 @@ pentimer_idle_func( gpointer data )
     } 
 
     return callAgain;
-} /* timer_idle_func */
+} /* pentimer_idle_func */
 
 static gint
 score_timer_func( gpointer data )

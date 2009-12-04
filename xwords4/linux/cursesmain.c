@@ -1400,6 +1400,18 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     board_invalAll( board );
 } /* positionSizeStuff */
 
+static void
+relay_status_curses( void* XP_UNUSED(closure), CommsRelayState state )
+{
+    XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
+}
+
+static void
+relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED(relayErr) )
+{
+    LOG_FUNC();
+}
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
@@ -1463,6 +1475,10 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         .send = LINUX_SEND,
 #ifdef COMMS_HEARTBEAT
         .reset = linux_reset,
+#endif
+#ifdef XWFEATURE_RELAY
+        .rstatus = relay_status_curses,
+        .rerror = relay_error_curses,
 #endif
     };
 

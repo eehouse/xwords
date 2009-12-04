@@ -27,7 +27,7 @@
 #include "gtkmain.h"
 
 gboolean newGameDialog( GtkAppGlobals* globals, CommsAddrRec* addr,
-                        XP_Bool isNewGame );
+                        XP_Bool isNewGame, XP_Bool fireConnDlg );
 
 #endif /* _GTKNEWGAME_H_ */
 #endif /* PLATFORM_GTK */

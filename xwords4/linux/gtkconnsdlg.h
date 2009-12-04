@@ -27,7 +27,7 @@
 #include "gtkmain.h"
 
 gboolean gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr,
-                      XP_Bool readOnly );
+                      DeviceRole role, XP_Bool readOnly );
 
 #endif /* _GTKCONNSDLG_H_ */
 #endif /* PLATFORM_GTK */

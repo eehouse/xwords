@@ -26,6 +26,7 @@
 typedef struct _GtkConnsState {
     GtkAppGlobals* globals;
     CommsAddrRec* addr;
+    DeviceRole role;
 
     GtkWidget* invite;
     GtkWidget* hostName;
@@ -125,6 +126,18 @@ static GtkWidget*
 makeRelayPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    const gchar* hint = NULL;
+
+    if ( SERVER_ISSERVER == state->role ) {
+        hint = "As host, you pick the room name for the game, and must "
+            "connect first";
+    } else {
+        XP_ASSERT( SERVER_ISCLIENT == state->role );
+        hint = "As guest, you get the room name from the host.   Be sure to "
+            "let the host connect first to validate the name.";
+    }
+
+    gtk_box_pack_start( GTK_BOX(vbox), gtk_label_new( hint ), FALSE, TRUE, 0 );
 
     GtkWidget* hbox = makeLabeledField( "Room", &state->invite );
     gtk_entry_set_text( GTK_ENTRY(state->invite), 
@@ -166,7 +179,8 @@ makeBTPage( GtkConnsState* state )
 } /* makeBTPage */
 
 gboolean
-gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool readOnly )
+gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr, DeviceRole role,
+             XP_Bool readOnly )
 {
     GtkConnsState state;
     XP_MEMSET( &state, 0, sizeof(state) );
@@ -176,6 +190,7 @@ gtkConnsDlg( GtkAppGlobals* globals, CommsAddrRec* addr, XP_Bool readOnly )
     state.readOnly = readOnly;
     state.globals = globals;
     state.addr = addr;
+    state.role = role;
 
     GtkWidget* dialog;
     GtkWidget* vbox;

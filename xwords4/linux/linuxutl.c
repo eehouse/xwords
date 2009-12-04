@@ -297,6 +297,14 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "XWRELAY_ERROR_OTHER_DISCON";
         break;
 
+    case ERR_RELAY_BASE + XWRELAY_ERROR_NO_ROOM:
+        message = "No such room.  Has the host connected yet to reserve it?";
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_DUP_ROOM:
+        message = "That room is reserved by another host.  Rename your room, "
+            "become a guest, or try again in a few minutes.";
+        break;
+
     default:
         XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";
