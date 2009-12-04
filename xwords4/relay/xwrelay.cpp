@@ -233,7 +233,7 @@ flagsOK( unsigned char flags )
         XWRELAY_ERROR_NONE : XWRELAY_ERROR_OLDFLAGS;
 } /* flagsOK */
 
-static void
+void
 denyConnection( int socket, XWREASON err )
 {
     unsigned char buf[2];
@@ -292,9 +292,7 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
 
     unsigned char flags = *bufp++;
     XWREASON err = flagsOK( flags );
-    if ( err != XWRELAY_ERROR_NONE ) {
-        denyConnection( socket, err );
-    } else {
+    if ( err == XWRELAY_ERROR_NONE ) {
         HostID srcID;
         unsigned char nPlayersH;
         unsigned char nPlayersT;
@@ -310,15 +308,19 @@ processConnect( unsigned char* bufp, int bufLen, int socket )
             static pthread_mutex_t s_newCookieLock = PTHREAD_MUTEX_INITIALIZER;
             MutexLock ml( &s_newCookieLock );
 
-            SafeCref scr( cookie, NULL, srcID, socket, nPlayersH, nPlayersT, gameSeed );
+            SafeCref scr( cookie, NULL, srcID, socket, nPlayersH, nPlayersT, 
+                          gameSeed );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
-            success = scr.Connect( socket, srcID, nPlayersH, nPlayersT, gameSeed );
+            success = scr.Connect( socket, srcID, nPlayersH, nPlayersT, 
+                                   gameSeed );
+        } else {
+            err = XWRELAY_ERROR_BADPROTO;
         }
+    }
 
-        if ( !success ) {
-            denyConnection( socket, XWRELAY_ERROR_BADPROTO );
-        }
+    if ( err != XWRELAY_ERROR_NONE ) {
+        denyConnection( socket, err );
     }
     return success;
 } /* processConnect */

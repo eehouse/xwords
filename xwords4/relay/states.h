@@ -34,8 +34,6 @@ enum {
 
     ,XWS_CHKCOUNTS_MISS       /* from the missing state */
 
-    ,XWS_CLONED               /* just got duplicated */
-
     ,XWS_CHK_ALLHERE          /* Need to see if all expected devices/players
                                    are on board. */
 
@@ -48,7 +46,7 @@ enum {
                                    incoming connection is why the object was
                                    created.  */
 
-    ,XWS_CONNECTING           /* At least one device has connected, but no
+    ,XWS_WAITGUESTS           /* At least one device has connected, but no
                                    packets have yet arrived to be
                                    forwarded. */
 
@@ -79,20 +77,17 @@ enum {
 typedef enum {
     XWE_NONE
 
-    ,XWE_OKTOSEND
+    ,XWE_ALLHERE           /* notify that all expected players are arrived */
+    ,XWE_SOMEMISSING       /* notify that some expected players are still missing */
+    ,XWE_TOO_MANY
 
-    ,XWE_ALLHERE             /* notify that all expected players are arrived */
-    ,XWE_SOMEMISSING         /* notify that some expected players are still missing */
+    ,XWE_GUESTCONNECT      /* A device is connecting using the cookie for */
+    ,XWE_HOSTCONNECT       /* this object, as host or guest */
 
-    ,XWE_CONNECTMSG        /* A device is connecting using the cookie for
-                              this object */
+    ,XWE_RECONNECT         /* A device is re-connecting using the connID for
+                               this object */
 
-    ,XWE_RECONNECTMSG      /* A device is re-connecting using the
-                              connID for this object */
-
-    ,XWE_CLONECHKMSG       /* We've cloned; now clean up */
-
-    ,XWE_DISCONNMSG     /* disconnect socket from this game/cref */
+    ,XWE_DISCONN           /* disconnect socket from this game/cref */
 
     ,XWE_FORWARDMSG        /* A message needs forwarding */
 
@@ -120,18 +115,18 @@ typedef enum {
 typedef enum {
     XWA_NONE
 
-    ,XWA_SEND_1ST_RSP
     ,XWA_SEND_1ST_RERSP
 
-    ,XWA_REJECT
+    ,XWA_SEND_DUP_ROOM          /* host comes in while game open */
+    ,XWA_SEND_NO_ROOM           /* guest comes in when no game open */
+    ,XWA_SEND_TOO_MANY
+    ,XWA_SEND_GUEST_RSP
+    ,XWA_SEND_HOST_RSP
 
-    ,XWA_SEND_RSP        /* Send a connection response */
     ,XWA_SEND_RERSP
 
     ,XWA_SENDALLHERE     /* Let all devices know we're in business */
     ,XWA_SNDALLHERE_2    /* Ditto, but for a reconnect */
-
-    ,XWA_POSTCLONE
 
     ,XWA_FWD             /* Forward a message */
 

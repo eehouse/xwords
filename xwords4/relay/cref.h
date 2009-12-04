@@ -92,8 +92,7 @@ class CookieRef {
     int SocketForHost( HostID dest );
 
     bool NeverFullyConnected();
-    bool GameOpen( const char* cookie, int nPlayersH, bool isNew, 
-                   bool* alreadyHere );
+    bool GameOpen( const char* cookie, bool isNew, bool* alreadyHere );
 
     /* for console */
     void _PrintCookieInfo( string& out );
@@ -106,7 +105,7 @@ class CookieRef {
     static void Delete( CookieID id );
     static void Delete( const char* name );
 
-    void _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
+    bool _Connect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                    int seed );
     void _Reconnect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                      int seed );
@@ -189,14 +188,15 @@ class CookieRef {
 
     void sendResponse( const CRefEvent* evt, bool initial );
     void sendAnyStored( const CRefEvent* evt );
-    void populate( vector<HostRec> hosts );
-    void increasePlayerCounts( const CRefEvent* evt );
+    bool increasePlayerCounts( const CRefEvent* evt, bool reconn );
     void reducePlayerCounts( int socket );
 
     void setAllConnectedTimer();
     void cancelAllConnectedTimer();
 
     void forward_or_store( const CRefEvent* evt );
+    void send_denied( const CRefEvent* evt, XWREASON why );
+
     void checkFromServer( const CRefEvent* evt );
     void notifyOthers( int socket, XWRelayMsg msg, XWREASON why );
 
@@ -216,9 +216,6 @@ class CookieRef {
     time_t GetStarttime( void ) { return m_starttime; }
 
     bool notInUse(void) { return m_cookieID == 0; }
-
-    bool tryMakeGame( vector<HostRec>& remaining );
-    void insertSorted( HostRec hr );
 
     void store_message( HostID dest, const unsigned char* buf, 
                         unsigned int len );
