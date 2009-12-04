@@ -115,20 +115,27 @@ rearrange() {
     ARGS="$*"
     NARGS=$#
 
-    RESULT=""
-    NFOUND=0
-    while [ $NFOUND -lt $NARGS ]; do
-        while :; do
-            set $ARGS
-            INDEX=$(($RANDOM % $NARGS))
-            shift $INDEX
-            VAL=$1
-            [ x = "${RESULT/*$VAL*/x}" ] || break
-        done
+    # hack so 0 always comes out first
+    RESULT="0"
+    NARGS=$((NARGS-1))
+    ARGS=${ARGS/0/}
 
-        RESULT="$RESULT $VAL"
-        NFOUND=$((NFOUND+1))
-    done
+    if [ $NARGS -gt 0 ]; then
+        NFOUND=0
+        while [ $NFOUND -lt $NARGS ]; do
+            while :; do
+                set $ARGS
+                INDEX=$(($RANDOM % $NARGS))
+                shift $INDEX
+                VAL=$1
+            # test that VAL's not yet in result
+                [ x = "${RESULT/*$VAL*/x}" ] || break
+            done
+
+            RESULT="$RESULT $VAL"
+            NFOUND=$((NFOUND+1))
+        done
+    fi
 
     echo $RESULT
 }
@@ -170,6 +177,7 @@ do_one() {
                         game_gtk  $NAME $COOKIE $WAIT $INDEX \
                             "-s $REMOTES"
                     fi
+                    sleep 2     # ensure host connects first
                     ;;
                 1)
                     sleep $CONN_WAIT
