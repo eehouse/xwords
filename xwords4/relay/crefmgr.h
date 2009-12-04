@@ -189,8 +189,7 @@ class SafeCref {
     bool Connect( int socket, HostID srcID, int nPlayersH, int nPlayersS,
                   int seed ) {
         if ( IsValid() ) {
-            m_cref->_Connect( socket, srcID, nPlayersH, nPlayersS, seed );
-            return true;
+            return m_cref->_Connect( socket, srcID, nPlayersH, nPlayersS, seed );
         } else {
             return false;
         }

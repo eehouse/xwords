@@ -154,8 +154,8 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                                   __func__ );
                             *alreadyHere = true;
                             found = cref;
-                        } else if ( cref->GameOpen( cookie, nPlayersH, 
-                                                    false, alreadyHere ) ) {
+                        } else if ( cref->GameOpen( cookie, false, 
+                                                    alreadyHere ) ) {
                             found = cref;
                         } else {
                             /* drop if we match on connName and it's not
@@ -182,8 +182,8 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
                             if ( cref->SeedsBelong( connName ) ) {
                                 found = cref;
                             }
-                        } else if ( cref->GameOpen( cookie, nPlayersH,
-                                                    true, alreadyHere ) ) {
+                        } else if ( cref->GameOpen( cookie, true, 
+                                                    alreadyHere ) ) {
                             found = cref;
                         } else if ( cref->HasSocket_locked(socket) ) {
                             logf( XW_LOGINFO, "%s: HasSocket case", __func__);
