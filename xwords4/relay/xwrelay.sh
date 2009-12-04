@@ -22,7 +22,7 @@ do_start() {
         echo "running $XWRELAY $@ -f $CONFFILE -s $CSSFILE" | tee -a $LOGFILE
         $XWRELAY $@ -f $CONFFILE -i $IDFILE -s $CSSFILE &
         NEWPID=$!                
-        echo $NEWPID > $PIDFILE
+        echo -n $NEWPID > $PIDFILE
         sleep 1
         echo "running with pid=$(cat $PIDFILE)" | tee -a $LOGFILE
     fi
@@ -39,7 +39,7 @@ case $1 in
         else
             echo "not running or $PIDFILE not found" | tee -a $LOGFILE
             PID=$(pidof $XWRELAY || true)
-            if [ "x${PID}" != "x" ]; then
+            if [ -n "$PID" ]; then
                 echo "maybe it's $PID; killing them" | tee -a $LOGFILE
                 kill $PID
             fi
