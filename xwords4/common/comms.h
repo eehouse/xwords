@@ -47,6 +47,8 @@ typedef enum {
 
 typedef enum {
     COMMS_RELAYSTATE_UNCONNECTED
+    , COMMS_RELAYSTATE_DENIED   /* terminal; new game or reset required to
+                                   fix */
     , COMMS_RELAYSTATE_CONNECT_PENDING
     , COMMS_RELAYSTATE_CONNECTED
     , COMMS_RELAYSTATE_RECONNECTED
@@ -115,6 +117,7 @@ typedef void (*TransportReset)( void* closure );
 
 #ifdef XWFEATURE_RELAY
 typedef void (*RelayStatusProc)( void* closure, CommsRelayState newState );
+typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
 #endif
 
 typedef struct _TransportProcs {
@@ -124,6 +127,7 @@ typedef struct _TransportProcs {
 #endif
 #ifdef XWFEATURE_RELAY
     RelayStatusProc rstatus;
+    RelayErrorProc rerror;
 #endif
     void* closure;
 } TransportProcs;

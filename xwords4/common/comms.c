@@ -202,6 +202,7 @@ CommsRelayState2Str( CommsRelayState state )
 #define CASE_STR(s) case s: return #s
     switch( state ) {
         CASE_STR(COMMS_RELAYSTATE_UNCONNECTED);
+        CASE_STR(COMMS_RELAYSTATE_DENIED);
         CASE_STR(COMMS_RELAYSTATE_CONNECT_PENDING);
         CASE_STR(COMMS_RELAYSTATE_CONNECTED);
         CASE_STR(COMMS_RELAYSTATE_RECONNECTED);
@@ -320,21 +321,25 @@ static XP_Bool
 p_comms_resetTimer( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 {
     CommsCtxt* comms = (CommsCtxt*)closure;
-    XP_Bool success;
     LOG_FUNC();
     XP_ASSERT( why == TIMER_COMMS );
-    success = comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED
-        || relayConnect( comms );
 
-    if ( success ) {
-        comms->reconTimerPending = XP_FALSE;
-        setHeartbeatTimer( comms );  /* in case we killed it with this
-                                        one.... */
-    } else {
-        set_reset_timer( comms );
+    /* Once we're denied we don't try again.  A new game or save and re-open
+       will reset comms and get us out of this state. */
+    if ( comms->r.relayState != COMMS_RELAYSTATE_DENIED ) {
+        XP_Bool success = comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED
+            || relayConnect( comms );
+
+        if ( success ) {
+            comms->reconTimerPending = XP_FALSE;
+            setHeartbeatTimer( comms );  /* in case we killed it with this
+                                            one.... */
+        } else {
+            set_reset_timer( comms );
+        }
     }
 
-    return XP_FALSE;
+    return XP_FALSE;            /* no redraw required */
 } /* p_comms_resetTimer */
 
 static void
@@ -353,7 +358,8 @@ comms_transportFailed( CommsCtxt* comms  )
 {
     LOG_FUNC();
     XP_ASSERT( !!comms );
-    if ( COMMS_CONN_RELAY == comms->addr.conType ) {
+    if ( COMMS_CONN_RELAY == comms->addr.conType
+         && comms->r.relayState != COMMS_RELAYSTATE_DENIED ) {
         relayDisconnect( comms );
 
         set_reset_timer( comms );
@@ -1159,7 +1165,8 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         relayErr = stream_getU8( stream );
         srcID = stream_getU8( stream );
         XP_LOGF( "%s: host id %x disconnected", __func__, srcID );
-        /* if we don't have connName then RECONNECTED is the wrong state to change to. */
+        /* if we don't have connName then RECONNECTED is the wrong state to
+           change to. */
         XP_ASSERT( 0 != comms->r.connName[0] );
         set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
         /* we will eventually want to tell the user which player's gone */
@@ -1167,10 +1174,19 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         break;
 
     case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
-    case XWRELAY_CONNECTDENIED:                 /* Close socket for this? */
         relayErr = stream_getU8( stream );
         set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
         util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        break;
+
+    case XWRELAY_CONNECTDENIED: /* socket will get closed by relay */
+        relayErr = stream_getU8( stream );
+        set_relay_state( comms, COMMS_RELAYSTATE_DENIED );
+        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        /* requires action, not just notification */
+        (*comms->procs.rerror)( comms->procs.closure, relayErr );
+        break;
+
         /* fallthru */
     default:
         XP_LOGF( "%s: dropping relay msg with cmd %d", __func__, (XP_U16)cmd );
