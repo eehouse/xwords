@@ -56,11 +56,11 @@ stuffTextInField( HWND hDlg, StrBoxState* state )
     len = MultiByteToWideChar( CP_UTF8, 0, sbuf, nBytes, NULL, 0 );
     wbuf = XP_MALLOC( state->dlgHdr.globals->mpool, (len+1) * sizeof(*wbuf) );
     MultiByteToWideChar( CP_UTF8, 0, sbuf, nBytes, wbuf, len );
-    XP_FREE( state->dlgHdr.globals>mpool, sbuf );
+    XP_FREE( state->dlgHdr.globals->mpool, sbuf );
     wbuf[len] = 0;
 
     SetDlgItemText( hDlg, ID_EDITTEXT, wbuf );
-    XP_FREE( globals->mpool, wbuf );
+    XP_FREE( state->dlgHdr.globals->mpool, wbuf );
 } /* stuffTextInField */
 
 LRESULT CALLBACK
