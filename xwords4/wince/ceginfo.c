@@ -49,6 +49,7 @@ typedef struct _GameInfoState {
 #endif
 
     XP_Bool isNewGame;              /* newGame or GameInfo */
+    XP_Bool popConnsDlg;
     XP_Bool userCancelled;          /* OUT param */
 
     /* For tracking when to move stuff up/down */
@@ -690,6 +691,13 @@ GameInfo( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                     break;
 #endif
 
+                case WM_PAINT:
+                    if ( state->popConnsDlg ) {
+                        state->popConnsDlg = XP_FALSE;
+                        callConnsDlg( state );
+                    }
+                    break;
+
                 case WM_NOTIFY:
                     if ( !!state->newGameCtx ) {
                         checkUpdateCombo( state, LOWORD(wParam)-1 );
@@ -791,9 +799,8 @@ GameInfo( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
     return result;
 } /* GameInfo */
 
-
 XP_Bool
-WrapGameInfoDialog( CEAppGlobals* globals, XP_Bool isNewGame,
+WrapGameInfoDialog( CEAppGlobals* globals, GIShow showWhat,
                     CePrefsPrefs* prefsPrefs,
                     XP_UCHAR* dictName, XP_U16 dictNameLen,
                     GInfoResults* results )
@@ -805,7 +812,8 @@ WrapGameInfoDialog( CEAppGlobals* globals, XP_Bool isNewGame,
     state.dlgHdr.globals = globals;
     state.dlgHdr.resIDs = resIDs;
     state.dlgHdr.nResIDs = VSIZE(resIDs);
-    state.isNewGame = isNewGame;
+    state.isNewGame = showWhat != GI_INFO_ONLY;
+    state.popConnsDlg = showWhat == GI_GOTO_CONNS;
     state.prefsPrefs = prefsPrefs;
     state.newDictName = dictName;
     state.dictNameLen = dictNameLen;
@@ -819,4 +827,4 @@ WrapGameInfoDialog( CEAppGlobals* globals, XP_Bool isNewGame,
     }
 
     return !state.userCancelled;
-}
+} /* WrapGameInfoDialog */

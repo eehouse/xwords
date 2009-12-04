@@ -83,6 +83,8 @@ static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len,
                             void* closure );
 static void ce_relay_status( void* closure, 
                              CommsRelayState newState );
+static void ce_relay_error( void* closure, XWREASON relayErr );
+
 
 # ifdef COMMS_HEARTBEAT
 static void ce_reset_proc( void* closure );
@@ -145,7 +147,7 @@ static XP_Bool ceMsgFromStream( CEAppGlobals* globals, XWStreamCtxt* stream,
                                 const wchar_t* title, XP_U16 buttons, 
                                 XP_Bool destroy );
 static void RECTtoXPR( XP_Rect* dest, const RECT* src );
-static XP_Bool ceDoNewGame( CEAppGlobals* globals );
+static XP_Bool ceDoNewGame( CEAppGlobals* globals, GIShow showWhat );
 static XP_Bool ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave );
 static void closeGame( CEAppGlobals* globals );
 static void ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs );
@@ -868,6 +870,7 @@ ceInitTProcs( CEAppGlobals* globals, TransportProcs* procs )
 #endif
 #ifdef XWFEATURE_RELAY
     procs->rstatus = ce_relay_status;
+    procs->rerror = ce_relay_error;
 #endif
     procs->closure = globals;
 }
@@ -1492,7 +1495,8 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
                           &globals->util, (DrawCtx*)globals->draw, 0,
                           &globals->appPrefs.cp, &procs );
 
-        newDone = ceDoNewGame( globals ); /* calls ceInitAndStartBoard */
+        /* calls ceInitAndStartBoard */
+        newDone = ceDoNewGame( globals, GI_NEW_GAME );
         if ( !newDone ) {
             result = FALSE;
         }
@@ -1648,6 +1652,7 @@ ceFlattenState( const CEAppGlobals* globals )
     if ( socketState == CE_IPST_CONNECTED ) {
         switch( relayState ) {
         case COMMS_RELAYSTATE_UNCONNECTED:
+        case COMMS_RELAYSTATE_DENIED:
         case COMMS_RELAYSTATE_CONNECT_PENDING:
             state = CENSTATE_TRYING_RELAY;
             break;
@@ -1750,7 +1755,7 @@ ceWarnLangChange( CEAppGlobals* globals )
 }
 
 static XP_Bool
-ceDoNewGame( CEAppGlobals* globals )
+ceDoNewGame( CEAppGlobals* globals, GIShow showWhat )
 {
     CommsAddrRec* addr = NULL;
     XP_Bool changed = XP_FALSE;
@@ -1758,7 +1763,7 @@ ceDoNewGame( CEAppGlobals* globals )
     XP_UCHAR newDictName[CE_MAX_PATH_LEN+1];
     GInfoResults results;
 
-    if ( WrapGameInfoDialog( globals, XP_TRUE, &prefsPrefs, newDictName,
+    if ( WrapGameInfoDialog( globals, showWhat, &prefsPrefs, newDictName,
                              VSIZE(newDictName), &results )
 #ifndef STUBBED_DICT
          && ( newDictName[0] != '\0' )
@@ -2451,7 +2456,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 CePrefsPrefs prefsPrefs;
                 XP_UCHAR dictName[CE_MAX_PATH_LEN+1];
                 
-                if ( WrapGameInfoDialog( globals, XP_FALSE, &prefsPrefs,
+                if ( WrapGameInfoDialog( globals, GI_INFO_ONLY, &prefsPrefs,
                                          dictName, VSIZE(dictName),
                                          &results ) ) { 
                     if ( results.prefsChanged ) {
@@ -2471,7 +2476,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                      || queryBoxChar( globals, hWnd, 
                                       ceGetResString( globals, 
                                                       IDS_OVERWRITE ) ) ) {
-                    draw = ceDoNewGame( globals );
+                    draw = ceDoNewGame( globals, GI_NEW_GAME );
                 }
                 break;
 
@@ -2736,6 +2741,10 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case XWWM_REM_SEL:
             ceTilesLeft( globals );
+            break;
+
+        case XWWM_RELAY_REQ_NEW:
+            draw = ceDoNewGame( globals, GI_GOTO_CONNS );
             break;
 
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -3072,6 +3081,13 @@ ce_relay_status( void* closure, CommsRelayState newState )
     globals->relayState = newState;
     InvalidateRect( globals->hWnd, &globals->relayStatusR, TRUE /* erase */ );
 }
+
+static void
+ce_relay_error( void* closure, XWREASON XP_UNUSED(relayErr) )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)closure;
+    PostMessage( globals->hWnd, XWWM_RELAY_REQ_NEW, 0, 0 );
+}
 #endif
 
 static XP_S16
@@ -3205,6 +3221,14 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     case ERR_RELAY_BASE + XWRELAY_ERROR_OTHER_DISCON:
         resID = IDS_XWRELAY_ERROR_HEART_OTHER;
         break;
+
+    case ERR_RELAY_BASE + XWRELAY_ERROR_NO_ROOM:
+        resID = IDS_ERROR_NO_ROOM;
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_DUP_ROOM:
+        resID = IDS_ERROR_DUP_ROOM;
+        break;
+
         /* Same string as above for now */
 /*         resID = IDS_XWRELAY_ERROR_LOST_OTHER; */
 /*         break; */

@@ -35,7 +35,13 @@ typedef struct _GInfoResults {
     XP_Bool addrChanged;
 } GInfoResults;
 
-XP_Bool WrapGameInfoDialog( CEAppGlobals* globals, XP_Bool isNewGame,
+typedef enum {
+    GI_INFO_ONLY
+    ,GI_NEW_GAME
+    ,GI_GOTO_CONNS
+} GIShow;
+
+XP_Bool WrapGameInfoDialog( CEAppGlobals* globals, GIShow showWhat,
                             CePrefsPrefs* prefsPrefs,
                             XP_UCHAR* dictName, XP_U16 dictNameLen,
                             GInfoResults* results );
