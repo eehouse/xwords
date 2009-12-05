@@ -68,11 +68,11 @@ BEGIN
 #endif
     POPUP "Nabídka"
     BEGIN
-        MENUITEM "Konec tahu",                  ID_MOVE_TURNDONE
-        MENUITEM "Přeházet kameny",                     ID_MOVE_JUGGLE
+        MENUITEM "Konec tahu",                   ID_MOVE_TURNDONE
+        MENUITEM "Přeházet kameny",              ID_MOVE_JUGGLE
         MENUITEM "Otočit",                       ID_MOVE_FLIP
-        MENUITEM "Výměna kamenů",                      ID_MOVE_TRADE
-        MENUITEM "Skrýt zásobník",                  ID_MOVE_HIDETRAY
+        MENUITEM "Výměna kamenů",                ID_MOVE_TRADE
+        MENUITEM "Skrýt zásobník",               ID_MOVE_HIDETRAY
 
         POPUP "Zpět"
         BEGIN
@@ -82,26 +82,26 @@ BEGIN
 
         POPUP "Nápověda"
         BEGIN
-            MENUITEM "Další nápověda",              ID_MOVE_NEXTHINT
-            MENUITEM "Nápověda",                   ID_MOVE_HINT
+            MENUITEM "Další nápověda",           ID_MOVE_NEXTHINT
+            MENUITEM "Nápověda",                 ID_MOVE_HINT
 #ifdef XWFEATURE_SEARCHLIMIT
-            MENUITEM "Omezená nápověda",        ID_MOVE_LIMITEDHINT
+            MENUITEM "Omezená nápověda...",      ID_MOVE_LIMITEDHINT
 #endif
             MENUITEM SEPARATOR
-            MENUITEM "Ukázat hodnoty",             ID_MOVE_VALUES
+            MENUITEM "Ukázat hodnoty",           ID_MOVE_VALUES
         END
 
         POPUP "Hra"
         BEGIN
-            MENUITEM "Množství a hodnoty kamenů",  ID_GAME_TILECOUNTSANDVALUES
-            MENUITEM "Zbylé kameny",              ID_GAME_TILESLEFT
+            MENUITEM "Množství a hodnoty kamenů",ID_GAME_TILECOUNTSANDVALUES
+            MENUITEM "Zbylé kameny",             ID_GAME_TILESLEFT
             MENUITEM SEPARATOR
             MENUITEM "Vlastnosti",               ID_GAME_GAMEINFO
             MENUITEM "Historie",                 ID_GAME_HISTORY
-            MENUITEM "Ukončit hru",           ID_GAME_FINALSCORES
+            MENUITEM "Ukončit hru",              ID_GAME_FINALSCORES
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
             MENUITEM SEPARATOR
-            MENUITEM "Přepošli zprávu",         ID_GAME_RESENDMSGS
+            MENUITEM "Přepošli zprávu",          ID_GAME_RESENDMSGS
 #endif
         END
 
@@ -109,11 +109,11 @@ BEGIN
         BEGIN
             MENUITEM "Celá obrazovka",            ID_FILE_FULLSCREEN
             MENUITEM SEPARATOR
-            MENUITEM "Nová hra...",            ID_FILE_NEWGAME
-            MENUITEM "Uložené hry...",         ID_FILE_SAVEDGAMES
-            MENUITEM "Volby...",         ID_FILE_PREFERENCES
+            MENUITEM "Nová hra...",               ID_FILE_NEWGAME
+            MENUITEM "Uložené hry...",            ID_FILE_SAVEDGAMES
+            MENUITEM "Volby...",                  ID_FILE_PREFERENCES
             MENUITEM SEPARATOR
-            MENUITEM "O hře...",               ID_FILE_ABOUT
+            MENUITEM "O hře...",                  ID_FILE_ABOUT
             MENUITEM SEPARATOR
             MENUITEM "Ukončit",                   ID_FILE_EXIT
         END
@@ -213,10 +213,10 @@ DLL_VERS_RESOURCE
 # define NPLAYERS_ROW (SERVERCONF_ROW+ROW_SPACE+3)
 # define GAME_REMOTE_LEFT 1
 # define GAME_NAME_LEFT 11
-# define ROBOT_LABEL_ADJUST 10
+# define ROBOT_LABEL_ADJUST 7
 # define GAME_ROBOT_LEFT (GAME_NAME_LEFT+GAME_NAME_WIDTH+2)
 # define GAME_PWD_LEFT (GAME_ROBOT_LEFT + CHECK_WIDTH + 4)
-# define NAME_LABEL_ADJUST 20
+# define NAME_LABEL_ADJUST 22
 # define GAME_NAMELABEL_LEFT (GAME_NAME_LEFT+NAME_LABEL_ADJUST)
 # define GAME_NAMELABEL_WIDTH (GAME_NAME_WIDTH-ROBOT_LABEL_ADJUST-NAME_LABEL_ADJUST)
 # define GAME_ROBOTLABEL_LEFT (GAME_ROBOT_LEFT-ROBOT_LABEL_ADJUST)
@@ -267,6 +267,7 @@ BEGIN
     LTEXT           "Role:",IDC_ROLELABEL,LEFT_COL,SERVERROLE_ROW,20,8
     XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
 
+    /* translate */
     PUSHBUTTON      "Configure role",GIROLECONF_BUTTON,LEFT_COL+10,
                     SERVERCONF_ROW,60,ROW_HEIGHT
 #endif
@@ -282,7 +283,8 @@ BEGIN
                     GAME_PWDLABEL_WIDTH,8
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-    LTEXT           "Vzdálený",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,28,8,SS_NOPREFIX
+    LTEXT           "Vzdálený",IDC_REMOTE_LABEL,LEFT_COL,LABELS_ROW,28,8,
+                    SS_NOPREFIX
     CONTROL         "",REMOTE_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     GAME_REMOTE_LEFT, PLAYER_ROW_1,CHECK_WIDTH,ROW_HEIGHT
     CONTROL         "",REMOTE_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
@@ -536,47 +538,47 @@ CAPTION "Volby"
 FONT 8, "System"
 BEGIN
     CONTROL         "Tato hra",IDC_RADIOLOCAL,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,47,10
+                    BS_AUTORADIOBUTTON | WS_GROUP,4,PR_ROW1,40,10
     CONTROL         "Všechny hry",IDC_RADIOGLOBAL,"Button",
-                    BS_AUTORADIOBUTTON,52,PR_ROW1,53,10
+                    BS_AUTORADIOBUTTON,44,PR_ROW1,53,10
 
     /* Global */
     CONTROL         "Vybarvit kameny dle hráče",IDC_CHECKCOLORPLAYED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,
-                    8,PR_ROW2,80,PREFS_ROW_HT
+                    4,PR_ROW2,80,PREFS_ROW_HT
     CONTROL         "Povolit kurzor",IDC_CHECKSHOWCURSOR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,80,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW3,60,PREFS_ROW_HT
     CONTROL         "Mezisoučty hry robota",IDC_CHECKROBOTSCORES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW4,80,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW4,90,PREFS_ROW_HT
     CONTROL         "Přeskočit potvrzení konce tahu",IDC_SKIPCONFIRM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,80,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW5,90,PREFS_ROW_HT
     CONTROL         "Skrýt hodnoty kamenů",IDC_HIDETILEVALUES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW6,80,PREFS_ROW_HT
-    PUSHBUTTON      "Nastavení barev...",IDC_PREFCOLORS,8,PR_ROW7,80,12
-    PUSHBUTTON      "Změna jazyka...",IDC_PREFLOCALE,8,PR_ROW8,80,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW6,90,PREFS_ROW_HT
+    PUSHBUTTON      "Nastavení barev...",IDC_PREFCOLORS,4,PR_ROW7,70,12
+    PUSHBUTTON      "Změna jazyka...",IDC_PREFLOCALE,4,PR_ROW8,70,12
 #ifdef ALLOW_CHOOSE_FONTS
-    PUSHBUTTON      "Vybrat font...",IDC_PREFFONTS,8,PR_ROW9,60,12
+    PUSHBUTTON      "Vybrat font...",IDC_PREFFONTS,4,PR_ROW9,60,12
 #endif
 
     /* Per game */
     CONTROL         "Chytrý robot",IDC_CHECKSMARTROBOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,8,PR_ROW2,60,
+                    BS_AUTOCHECKBOX | WS_TABSTOP | WS_GROUP,4,PR_ROW2,60,
                     PREFS_ROW_HT
     CONTROL         "Povolit nápovědu",IDC_CHECKHINTSOK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW3,60,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW3,80,PREFS_ROW_HT
 #ifdef XWFEATURE_SEARCHLIMIT
     CONTROL         "Omezení nápovědy",IDC_CHECKHINTSLIMITS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,50,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8+10,PR_ROW4-2,80,10
 #endif
     CONTROL         "Časomíra (minuty)",TIMER_CHECK,"Button",
-                        BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW5,75,PREFS_ROW_HT
-    EDITTEXT        TIMER_EDIT,85,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Citoslovce:",PHONIES_LABEL,8,PR_ROW6,28,PREFS_ROW_HT
-    XWCOMBO(PHONIES_COMBO, 38,PR_ROW6,50,PREFS_ROW_HT, 0, 58, 0)
+                        BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW5,75,PREFS_ROW_HT
+    EDITTEXT        TIMER_EDIT,75,PR_ROW5,16,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Citoslovce:",PHONIES_LABEL,4,PR_ROW6,36,PREFS_ROW_HT
+    XWCOMBO(PHONIES_COMBO, 44,PR_ROW6,46,PREFS_ROW_HT, 0, 58, 0)
 
 #ifdef FEATURE_TRAY_EDIT
     CONTROL         "Výběr kamenů hráčem", IDC_PICKTILES, "Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,PR_ROW7,90,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,4,PR_ROW7,90,PREFS_ROW_HT
 #else
 #endif
 #ifndef _WIN32_WCE
@@ -627,7 +629,7 @@ END
 IDD_CONNSSDLG DIALOG DISCARDABLE 0, 20, 120, CONNSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Spojení"
-FONT 8, "System"
+FONT 4, "System"
 BEGIN
 
 #ifdef NEEDS_CHOOSE_CONNTYPE
@@ -691,14 +693,17 @@ END
 #define CLR_WIDTH 114
 #define CLR_OK_LEFT   ((CLR_WIDTH/2)-10-REPOS_BUTTON_WIDTH)
 #define CLR_CANCEL_LEFT   ((CLR_WIDTH/2)+10)
-#define CLR_LAB_WIDTH 45
+#define CLR_LAB_WIDTH 43
 #define CLR_SAMPLE_WIDTH 12
-#define CLR_LAB_HT 12
+#define CLR_LAB_HT 16
+#define CLR_LAB_ONELINE_ADD 2
 #define CLR_BUT_WIDTH 12
-#define CLR_BUT_HT 10
+#define CLR_SAMP_HT CLR_LAB_HT
+#define CLR_BUT_HT 12
+#define CLR_BUT_OFFSET ((CLR_LAB_HT-CLR_BUT_HT)/2)
 
-#define CLR_SMALL_GAP 12
-#define CLR_LRG_GAP   16
+#define CLR_SMALL_GAP (CLR_LAB_HT+2)
+#define CLR_LRG_GAP   (CLR_LAB_HT+4)
 
 #define CLR_ROW_1  4
 #define CLR_ROW_2  (CLR_ROW_1+CLR_SMALL_GAP)
@@ -715,57 +720,54 @@ END
 #define CLR_BUTTON_ROW CLR_ROW_11 + CLR_LRG_GAP
 #define CLR_COL_1  7
 #define CLR_COL_2  (CLR_COL_1 + CLR_LAB_WIDTH+2)
-/* #define CLR_COL_3  58 */
-/* #define CLR_COL_4  99 */
-#define CLR_COL_3  CLR_COL_1
-#define CLR_COL_4  CLR_COL_2
 #ifdef _WIN32_WCE
 # define COLORSDLG_HT CLR_BUTTON_ROW
 #else
 # define COLORSDLG_HT CLR_BUTTON_ROW + BUTTON_HT + 3
 #endif
 
-#define COLOR_BUTTON(txt,id,xx,yy) \
-    LTEXT           txt,id,xx,yy,CLR_LAB_WIDTH,CLR_LAB_HT
+#define COLOR_LABEL(txt,id,yy) \
+    LTEXT           txt,id,CLR_COL_1,yy,CLR_LAB_WIDTH,CLR_LAB_HT
   /* Hack alert.  Smartphone isn't delivering WM_COMMAND events for
      clicks on BS_OWNERDRAW buttons, and WinMo (PPC and Smartphone)
      won't deliver WM_DRAWITEM events for SS_OWNERDRAW static
      controls.  The solution: use an OWNERDRAW button as the color
      sample (must disable it in code; WS_DISABLED doesn't work here)
      and have a separate button to trigger the edit dialog. */
-#define COLOR_SAMPLE(id1,id2,xx,yy)                        \
-    PUSHBUTTON       "",id2,xx,yy,CLR_BUT_WIDTH,CLR_BUT_HT,BS_OWNERDRAW \
-    PUSHBUTTON       "Upravit",id1,xx+CLR_SAMPLE_WIDTH+4,yy,20,CLR_BUT_HT,BS_NOTIFY
+#define COLOR_SAMPLE(id1,id2,yy) \
+    PUSHBUTTON   "",id2,CLR_COL_2,yy,CLR_BUT_WIDTH,CLR_SAMP_HT,BS_OWNERDRAW \
+    PUSHBUTTON   "Upravit",id1,CLR_COL_2+CLR_SAMPLE_WIDTH+4,yy+CLR_BUT_OFFSET,\
+                 32,CLR_BUT_HT,BS_NOTIFY
 
 IDD_COLORSDLG DIALOG DISCARDABLE  0, 20, CLR_WIDTH, COLORSDLG_HT
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER | WS_VSCROLL
 CAPTION "Volby barev"
 FONT 8, "System"
 BEGIN
-    COLOR_BUTTON("Zdvojené písmeno:",DLBLTR_LABEL,CLR_COL_1,CLR_ROW_1)
-    COLOR_SAMPLE(DLBLTR_BUTTON,DLBLTR_SAMPLE,CLR_COL_2,CLR_ROW_1)
+    COLOR_LABEL("Zdvojené písmeno:",DLBLTR_LABEL,CLR_ROW_1)
+    COLOR_SAMPLE(DLBLTR_BUTTON,DLBLTR_SAMPLE,CLR_ROW_1)
 
-    COLOR_BUTTON("Zdvojené slovo:",DBLWRD_LABEL,CLR_COL_1,CLR_ROW_2 )
-    COLOR_SAMPLE(DBLWRD_BUTTON,DBLWRD_SAMPLE,CLR_COL_2,CLR_ROW_2)
-    COLOR_BUTTON("Ztrojené písmeno:",TPLLTR_LABEL,CLR_COL_1,CLR_ROW_3 )
-    COLOR_SAMPLE(TPLLTR_BUTTON,TPLLTR_SAMPLE,CLR_COL_2,CLR_ROW_3)
+    COLOR_LABEL("Zdvojené slovo:",DBLWRD_LABEL,CLR_ROW_2 )
+    COLOR_SAMPLE(DBLWRD_BUTTON,DBLWRD_SAMPLE,CLR_ROW_2)
+    COLOR_LABEL("Ztrojené písmeno:",TPLLTR_LABEL,CLR_ROW_3 )
+    COLOR_SAMPLE(TPLLTR_BUTTON,TPLLTR_SAMPLE,CLR_ROW_3)
 
-    COLOR_BUTTON("Ztrojené slovo:",TPLWRD_LABEL,CLR_COL_3,CLR_ROW_4)
-    COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_COL_4,CLR_ROW_4)
-    COLOR_BUTTON("Prázdné políčko:",EMPCELL_LABEL,CLR_COL_1,CLR_ROW_5)
-    COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_COL_2,CLR_ROW_5)
-    COLOR_BUTTON("Pozadí kamene:",TBACK_LABEL,CLR_COL_3,CLR_ROW_6)
-    COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_COL_4,CLR_ROW_6)
-    COLOR_BUTTON("Zvýraznění:",FOCUSCLR_LABEL,CLR_COL_1,CLR_ROW_7)
-    COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_COL_2,CLR_ROW_7)
-    COLOR_BUTTON("Hráč 1:",PLAYER1_LABEL,CLR_COL_1,CLR_ROW_8)
-    COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_COL_2,CLR_ROW_8)
-    COLOR_BUTTON("Hráč 2:",PLAYER2_LABEL,CLR_COL_3,CLR_ROW_9)
-    COLOR_SAMPLE(PLAYER2_BUTTON,PLAYER2_SAMPLE,CLR_COL_4,CLR_ROW_9)
-    COLOR_BUTTON("Hráč 3:",PLAYER3_LABEL,CLR_COL_1,CLR_ROW_10)
-    COLOR_SAMPLE(PLAYER3_BUTTON,PLAYER3_SAMPLE,CLR_COL_2,CLR_ROW_10)
-    COLOR_BUTTON("Hráč 4:",PLAYER4_LABEL,CLR_COL_3,CLR_ROW_11)
-    COLOR_SAMPLE(PLAYER4_BUTTON,PLAYER4_SAMPLE,CLR_COL_4,CLR_ROW_11)
+    COLOR_LABEL("Ztrojené slovo:",TPLWRD_LABEL,CLR_ROW_4)
+    COLOR_SAMPLE(TPLWRD_BUTTON,TPLWRD_SAMPLE,CLR_ROW_4)
+    COLOR_LABEL("Prázdné políčko:",EMPCELL_LABEL,CLR_ROW_5)
+    COLOR_SAMPLE(EMPCELL_BUTTON,EMPCELL_SAMPLE,CLR_ROW_5)
+    COLOR_LABEL("Pozadí kamene:",TBACK_LABEL,CLR_ROW_6)
+    COLOR_SAMPLE(TBACK_BUTTON,TBACK_SAMPLE,CLR_ROW_6)
+    COLOR_LABEL("Zvýraznění:",FOCUSCLR_LABEL,CLR_ROW_7+CLR_LAB_ONELINE_ADD)
+    COLOR_SAMPLE(FOCUSCLR_BUTTON,FOCUSCLR_SAMPLE,CLR_ROW_7)
+    COLOR_LABEL("Hráč 1:",PLAYER1_LABEL,CLR_ROW_8+CLR_LAB_ONELINE_ADD)
+    COLOR_SAMPLE(PLAYER1_BUTTON,PLAYER1_SAMPLE,CLR_ROW_8)
+    COLOR_LABEL("Hráč 2:",PLAYER2_LABEL,CLR_ROW_9+CLR_LAB_ONELINE_ADD)
+    COLOR_SAMPLE(PLAYER2_BUTTON,PLAYER2_SAMPLE,CLR_ROW_9)
+    COLOR_LABEL("Hráč 3:",PLAYER3_LABEL,CLR_ROW_10+CLR_LAB_ONELINE_ADD)
+    COLOR_SAMPLE(PLAYER3_BUTTON,PLAYER3_SAMPLE,CLR_ROW_10)
+    COLOR_LABEL("Hráč 4:",PLAYER4_LABEL,CLR_ROW_11+CLR_LAB_ONELINE_ADD)
+    COLOR_SAMPLE(PLAYER4_BUTTON,PLAYER4_SAMPLE,CLR_ROW_11)
 
 #ifndef _WIN32_WCE
     DEFPUSHBUTTON   "Ano",IDOK,CLR_OK_LEFT,CLR_BUTTON_ROW,
@@ -890,7 +892,7 @@ BEGIN
     IDS_NEW_GAME            "Nová hra"
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (rev " SVN_REV ") "\
                     "pro Windows Mobile. Copyright 1998-2009 by "\
-                    "Eric House.  Tento software je šířen pod licencí"\
+                    "Eric House.  Tento software je šířen pod licencí "\
                     "GNU Public License.\r\r"\
                     "Slovníky, manuály, nebo zdrojové kódy naleznete na "\
                     "http://xwords.sf.net nebo http://eehouse.org/xwords/."
@@ -940,10 +942,12 @@ BEGIN
     IDS_DOUBLE_WORD        "Zdvojené slovo"
     IDS_TRIPLE_LETTER      "Ztrojené písmeno"
     IDS_TRIPLE_WORD        "Ztrojené slovo"
-    IDS_INTRADE_MW         "Směna kamenů." XP_CR "Pro dokončení stiskněte 'Konec tahu'"
+    IDS_INTRADE_MW         "Směna kamenů." XP_CR "Pro dokončení stiskněte "\
+                           XP_CR "'Konec tahu'"
 
     IDS_TILES_NOT_IN_LINE  "Všechny kameny položené během tahu musí být v linii."
-    IDS_NO_EMPTIES_IN_TURN "Mezi kameny položenými během tahu nesmí být prázdná políčka."
+    IDS_NO_EMPTIES_IN_TURN "Mezi kameny položenými během tahu nesmí být "\
+                           "prázdná políčka."
     IDS_TWO_TILES_FIRST_MOVE "V prvním tahu se musí položit nejméně dva kameny."
     IDS_TILES_MUST_CONTACT "Kameny položené během tahu se musí dotýkat předchozích, "\
                            "nebo v prvním tahu procházet středovým políčkem ."
@@ -974,8 +978,8 @@ BEGIN
                             "Vymazaná hra již nelze vrátit zpět."
 
     IDS_ROLE_STANDALONE     "Samostatný"
-    IDS_ROLE_HOST           "Hostitel"
-    IDS_ROLE_GUEST          "Host"
+    IDS_ROLE_HOST           "Hostitel" /* translate (confirm: "host") */
+    IDS_ROLE_GUEST          "Host"     /* translate (confirm: "guest") */
     IDS_PLAYER_FORMAT       "Hráč %d"
     IDS_UNTITLED_FORMAT     "Neoznačený %d"
     IDS_PASSWDFMT_L         "Vložte heslo pro %ls:"
