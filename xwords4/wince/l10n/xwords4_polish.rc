@@ -913,8 +913,8 @@ BEGIN
     IDS_DOUBLE_WORD        "Słowo x2"
     IDS_TRIPLE_LETTER      "Litera x3"
     IDS_TRIPLE_WORD        "Słowo x3"
-    IDS_INTRADE_MW         "Wymiana klocków." XP_CR "Wybierz 'koniec kolejki'" XP_CR "gdy zakończysz."
-
+    IDS_INTRADE_MW         "Wymiana klocków." XP_CR "Wybierz 'koniec kolejki'"\
+                            XP_CR "gdy zakończysz."
 
     IDS_TILES_NOT_IN_LINE  "Wszystkie układane litery muszą być w linii."
     IDS_NO_EMPTIES_IN_TURN "W układanym słowie nie może być pustych miejsc."
