@@ -769,32 +769,26 @@ ceDoDlgFocusScroll( CeDlgHdr* dlgHdr, HWND nextCtrl )
      * scrolling to see how to fix it.
      */
 
-    if ( !IS_SMARTPHONE(dlgHdr->globals) ) {
+    if ( !IS_SMARTPHONE(dlgHdr->globals) && !!nextCtrl ) {
         HWND hDlg = dlgHdr->hDlg;
+        RECT rect;
+        XP_U16 dlgHeight, ctrlHeight, dlgTop;
+        XP_S16 ctrlPos;
 
-        if ( !!nextCtrl ) {
-            RECT rect;
-            XP_U16 dlgHeight, ctrlHeight, dlgTop;
-            XP_S16 ctrlPos;
+        GetClientRect( hDlg, &rect );
+        dlgHeight = rect.bottom - rect.top;
 
-            GetClientRect( hDlg, &rect );
-            dlgHeight = rect.bottom - rect.top;
-            XP_LOGF( "dlgHeight: %d", dlgHeight );
+        GetWindowRect( hDlg, &rect );
+        dlgTop = rect.top;
 
-            GetWindowRect( hDlg, &rect );
-            dlgTop = rect.top;
+        GetWindowRect( nextCtrl, &rect );
+        ctrlPos = rect.top - dlgTop - TITLE_HT;
+        ctrlHeight = rect.bottom - rect.top;
 
-            GetWindowRect( nextCtrl, &rect );
-            ctrlPos = rect.top - dlgTop - TITLE_HT;
-            ctrlHeight = rect.bottom - rect.top;
-
-            if ( ctrlPos < 0 ) {
-                XP_LOGF( "need to scroll it DOWN into view" );
-                adjustScrollPos( hDlg, ctrlPos );
-            } else if ( (ctrlPos + ctrlHeight) > dlgHeight ) {
-                XP_LOGF( "need to scroll it UP into view" );
-                setScrollPos( hDlg, ctrlPos - ctrlHeight );
-            }
+        if ( ctrlPos < 0 ) {
+            adjustScrollPos( hDlg, ctrlPos );
+        } else if ( (ctrlPos + ctrlHeight) > dlgHeight ) {
+            setScrollPos( hDlg, ctrlPos - ctrlHeight );
         }
     }
 } /* ceDoDlgFocusScroll */
