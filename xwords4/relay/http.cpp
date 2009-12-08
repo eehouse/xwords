@@ -65,7 +65,7 @@ send_header( FILE* fil, const char* title )
 }
 
 static void
-send_meta( FILE* fil ) 
+send_meta( FILE* fil, const CrefMgrInfo* info ) 
 {
     FILE* css;
     RelayConfigs* cfg = RelayConfigs::GetConfigs();
@@ -97,6 +97,9 @@ send_meta( FILE* fil )
             fclose( css );
         }
     }
+
+	fprintf( fil, "<title>relay: %d/%d</title>\n", info->m_nCrefsAll, 
+             info->m_nCrefsCurrent );
     fprintf( fil, "</head>" );
 }
 
@@ -250,7 +253,7 @@ http_thread_main( void* arg )
         
         send_header( fil, "status page" );
         fprintf( fil, "<html>" );
-        send_meta( fil );
+        send_meta( fil, info );
         fprintf( fil, "<body><div class=\"main\">" );
 
         printStats( fil, info, isLocal );
