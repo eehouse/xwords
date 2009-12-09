@@ -45,7 +45,7 @@ typedef struct _GameInfoState {
     XP_U16 dictListId;
 #ifndef XWFEATURE_STANDALONE_ONLY
     XP_U16 roleComboId;
-    DeviceRole lastRole;        /* to prevent multiple dialog raises */
+    DeviceRole curRole;
 #endif
 
     XP_Bool isNewGame;              /* newGame or GameInfo */
@@ -347,7 +347,7 @@ callConnsDlg( GameInfoState* state )
     /* maybe flag when this isn't changed?  No.  Check on "Ok" as tagged elsewhere. */
     if ( WrapConnsDlg( state->dlgHdr.hDlg, state->dlgHdr.globals, 
                        &state->prefsPrefs->addrRec, 
-                       &state->prefsPrefs->addrRec, state->lastRole, 
+                       &state->prefsPrefs->addrRec, state->curRole,
                        state->isNewGame,
                        &connsComplete ) ) {
         state->results.addrChanged = XP_TRUE;
@@ -365,7 +365,7 @@ handleConnOptionsButton( GameInfoState* state )
 
     role = (DeviceRole)SendDlgItemMessage( hDlg, state->roleComboId,
                                            GETCURSEL(globals), 0, 0L);
-    value.ng_role = role;
+    value.ng_role = state->curRole = role;
     newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
     raiseForRoleChange( state, role );
 } /* handleConnOptionsButton */
@@ -540,6 +540,7 @@ ceSetAttrProc(void* closure, NewGameAttr attr, const NGValue value )
     case NG_ATTR_ROLE:
         SendDlgItemMessage( state->dlgHdr.hDlg, resID, SETCURSEL(globals), 
                             value.ng_role, 0L );
+        state->curRole = value.ng_role;
         raiseForRoleChange( state, value.ng_role );
         break;
 #endif
