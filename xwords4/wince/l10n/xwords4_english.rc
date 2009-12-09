@@ -599,6 +599,7 @@ END
 # define CTRL_COL 15
 # define CTRL_COL_WIDTH 80
 # define CONN_LABEL_HT (LABEL_ROW_HT*2) /* try to make them all same ht! */
+# define CONN_HELP_HT 25
 # define CONN_LABEL_ROW_1 2
 # define CONN_EDIT_ROW_2 (CONN_LABEL_ROW_1+ROW_SPACE)
 # ifdef NEEDS_CHOOSE_CONNTYPE
@@ -606,16 +607,16 @@ END
 #  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+ROW_SPACE+ROW_HEIGHT)
 # else
 #  define CONN_LABEL_ROW_3 (CONN_LABEL_ROW_1)
-#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+CONN_LABEL_HT+3)
+#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+ROW_SPACE)
 # endif
 # ifndef RELAY_NOEDIT_ADDR
-# define CONN_LABEL_ROW_5 (CONN_EDIT_ROW_4+ROW_SPACE+5)
+# define CONN_LABEL_ROW_5 (CONN_EDIT_ROW_4+CONN_HELP_HT+5)
 # define CONN_EDIT_ROW_6 (CONN_LABEL_ROW_5+CONN_LABEL_HT+3)
 # define CONN_LABEL_ROW_7 (CONN_EDIT_ROW_6+ROW_SPACE+5)
 # define CONN_EDIT_ROW_8 (CONN_LABEL_ROW_7+CONN_LABEL_HT+3)
 # define BUTTON_ROW (CONN_EDIT_ROW_8+ROW_SPACE)
 # else
-# define BUTTON_ROW (CONN_EDIT_ROW_4+ROW_SPACE)
+# define BUTTON_ROW (CONN_EDIT_ROW_4+CONN_HELP_HT)
 #endif 
 
 #ifdef _WIN32_WCE
@@ -634,14 +635,19 @@ BEGIN
 #ifdef NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Connect via:",IDC_CCONVIA_LAB,LAB_COL,CONN_LABEL_ROW_1,
                     40,ROW_HEIGHT
-    XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_EDIT_ROW_2,CTRL_COL_WIDTH,
-                    ROW_HEIGHT,0,58,0)
+    XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_EDIT_ROW_2,60,ROW_HEIGHT,0,58,0)
 #endif
 #if defined XWFEATURE_RELAY
-    LTEXT           "Room (must match for all devices joining the game):",
-                    IDC_INVITE_LAB,LAB_COL,CONN_LABEL_ROW_3,90,CONN_LABEL_HT
-    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
+    LTEXT           "Room:",
+                    IDC_INVITE_LAB,LAB_COL,CONN_LABEL_ROW_3,23,CONN_LABEL_HT
+    EDITTEXT        INVITE_EDIT,LAB_COL+25,CONN_LABEL_ROW_3,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL
+    LTEXT           "(As host, you name the room for the game, and must connect first.)",
+                    IDC_INVITE_HELP_HOST,LAB_COL,CONN_EDIT_ROW_4,110,CONN_HELP_HT
+    LTEXT           "(As guest, wait for the host to connect then tell you the room name.)",
+                    IDC_INVITE_HELP_GUEST,LAB_COL,CONN_EDIT_ROW_4,100,CONN_HELP_HT
+
+
 #ifndef RELAY_NOEDIT_ADDR
     LTEXT           "Relay name (rarely changes):",IDC_CRELAYNAME_LAB,
                     LAB_COL,CONN_LABEL_ROW_5,90,CONN_LABEL_HT

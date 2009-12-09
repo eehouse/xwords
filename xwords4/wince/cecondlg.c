@@ -217,6 +217,11 @@ ceControlsFromAddrRec( HWND hDlg, const CeConnDlgState* state )
         ceSetDlgItemText( hDlg, INVITE_EDIT, 
                           state->addrRec.u.ip_relay.invite );
         ids[nIds++] = INVITE_EDIT;
+
+        XP_U16 hideMe = SERVER_ISSERVER == state->role ?
+            IDC_INVITE_HELP_GUEST : IDC_INVITE_HELP_HOST;
+        ceShowOrHide( hDlg, hideMe, XP_FALSE );
+
 # ifndef RELAY_NOEDIT_ADDR
         ceSetDlgItemText( hDlg, RELAYNAME_EDIT, 
                           state->addrRec.u.ip_relay.hostName );

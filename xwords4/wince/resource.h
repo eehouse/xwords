@@ -194,9 +194,11 @@
 # define IDC_CRELAYPORT_LAB              1109
 
 # define INVITE_EDIT                     1110
+# define IDC_INVITE_HELP_HOST            1111
+# define IDC_INVITE_HELP_GUEST           1112
 # ifndef RELAY_NOEDIT_ADDR
-#  define RELAYPORT_EDIT                 1111
-#  define RELAYNAME_EDIT                 1112
+#  define RELAYPORT_EDIT                 1113
+#  define RELAYNAME_EDIT                 1114
 # endif
 
 #endif
