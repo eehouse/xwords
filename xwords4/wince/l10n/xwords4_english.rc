@@ -1002,7 +1002,7 @@ BEGIN
                                "user[s]."
     IDS_SERVER_DICT_WINS       "Conflict between Host and Guest dictionaries; "
                                "Host wins."
-    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked remote "\
+    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked \"Remote\" "\
                                "for a game started as Host."
 
 # ifdef XWFEATURE_SMS
