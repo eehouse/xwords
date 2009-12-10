@@ -295,6 +295,6 @@ clean :
 	rm -rf $(OBJDIR) $(TARGET) $(BMPS)
 
 help:
-	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE]'"
-	@echo "or 'make TARGET_OS=win32 [DEBUG=TRUE]'"
+	@echo "try 'make TARGET_OS=wince [DEBUG=TRUE] [RELAY_NAME_DEFAULT=localhost]'"
+	@echo "or 'make TARGET_OS=win32 [DEBUG=TRUE] [RELAY_NAME_DEFAULT=localhost]'"
 
