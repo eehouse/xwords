@@ -1070,16 +1070,20 @@ relayCmdToStr( XWRELAY_Cmd cmd )
 
 static void
 got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream, 
-                 CommsRelayState newState )
+                 XP_Bool reconnected )
 {
     XP_U16 nHere, nSought;
 
-    set_relay_state( comms, newState );
+    set_relay_state( comms, reconnected ? COMMS_RELAYSTATE_RECONNECTED
+                     : COMMS_RELAYSTATE_CONNECTED );
 
     comms->r.heartbeat = stream_getU16( stream );
-    nHere = (XP_U16)stream_getU8( stream );
     nSought = (XP_U16)stream_getU8( stream );
-    /* This may belong as an alert to user so knows has connected. */
+    nHere = (XP_U16)stream_getU8( stream );
+    if ( ! reconnected ) {
+        /* This may belong as an alert to user so knows has connected. */
+        (*comms->procs.rconnd)( comms->procs.closure, XP_FALSE, nSought - nHere );
+    }
     XP_LOGF( "%s: have %d of %d players", __func__, nHere, nSought );
     setHeartbeatTimer( comms );
 }
@@ -1098,14 +1102,15 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
     switch( cmd ) {
 
     case XWRELAY_CONNECT_RESP:
-        got_connect_cmd( comms, stream, COMMS_RELAYSTATE_CONNECTED );
+        got_connect_cmd( comms, stream, XP_FALSE );
         break;
     case XWRELAY_RECONNECT_RESP:
-        got_connect_cmd( comms, stream, COMMS_RELAYSTATE_RECONNECTED );
+        got_connect_cmd( comms, stream, XP_TRUE );
         comms_resendAll( comms );
         break;
 
     case XWRELAY_ALLHERE:
+    case XWRELAY_ALLBACK:
         srcID = (XWHostID)stream_getU8( stream );
         XP_ASSERT( comms->r.myHostID == HOST_ID_NONE
                    || comms->r.myHostID == srcID );
@@ -1134,6 +1139,9 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
            we'll have sent then. */
         if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) {
             comms_resendAll( comms );
+        }
+        if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
+            (*comms->procs.rconnd)( comms->procs.closure, XP_TRUE, 0 );
         }
         set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
         break;

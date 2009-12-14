@@ -117,6 +117,8 @@ typedef void (*TransportReset)( void* closure );
 
 #ifdef XWFEATURE_RELAY
 typedef void (*RelayStatusProc)( void* closure, CommsRelayState newState );
+typedef void (*RelayConndProc)( void* closure, XP_Bool allHere, 
+                                XP_U16 nMissing );
 typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
 #endif
 
@@ -127,6 +129,7 @@ typedef struct _TransportProcs {
 #endif
 #ifdef XWFEATURE_RELAY
     RelayStatusProc rstatus;
+    RelayConndProc rconnd;
     RelayErrorProc rerror;
 #endif
     void* closure;
