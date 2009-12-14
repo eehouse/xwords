@@ -83,6 +83,8 @@ static XP_S16 ce_send_proc( const XP_U8* buf, XP_U16 len,
                             void* closure );
 static void ce_relay_status( void* closure, 
                              CommsRelayState newState );
+static void ce_relay_connd( void* closure, XP_Bool allHere,
+                            XP_U16 nMissing );
 static void ce_relay_error( void* closure, XWREASON relayErr );
 
 
@@ -870,6 +872,7 @@ ceInitTProcs( CEAppGlobals* globals, TransportProcs* procs )
 #endif
 #ifdef XWFEATURE_RELAY
     procs->rstatus = ce_relay_status;
+    procs->rconnd = ce_relay_connd;
     procs->rerror = ce_relay_error;
 #endif
     procs->closure = globals;
@@ -2744,6 +2747,10 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
 
         case XWWM_RELAY_REQ_NEW:
+            draw = ceDoNewGame( globals, GI_NEW_GAME );
+            break;
+
+        case XWWM_RELAY_REQ_CONN:
             draw = ceDoNewGame( globals, GI_GOTO_CONNS );
             break;
 
@@ -2849,8 +2856,7 @@ ceStreamToStrBuf( MPFORMAL XWStreamCtxt* stream )
 static int
 ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
 {
-    return ceMessageBoxChar( globals, str, 
-                             ceGetResStringL( globals, IDS_FYI_L ),
+    return ceMessageBoxChar( globals, str, NULL,
                              MB_OK | MB_ICONHAND );
 }
 
@@ -3083,10 +3089,53 @@ ce_relay_status( void* closure, CommsRelayState newState )
 }
 
 static void
-ce_relay_error( void* closure, XWREASON XP_UNUSED(relayErr) )
+ce_relay_connd( void* closure, XP_Bool allHere, XP_U16 nMissing )
 {
     CEAppGlobals* globals = (CEAppGlobals*)closure;
-    PostMessage( globals->hWnd, XWWM_RELAY_REQ_NEW, 0, 0 );
+    XP_U16 strID = 0;
+
+    if ( allHere ) {
+        strID = IDS_RELAY_ALLHERE;
+    } else {
+        DeviceRole role = globals->gameInfo.serverRole;
+        if ( role == SERVER_ISSERVER ) {
+            strID = IDS_RELAY_HOST_WAITINGD;
+        } else if ( nMissing > 0 ) {
+            strID = IDS_RELAY_GUEST_WAITINGD;
+        } else {
+            /* an allHere message should be coming immediately, so no
+               notification now. */
+        }
+    }
+
+    if ( 0 != strID ) {
+        XP_UCHAR buf[256];
+        const XP_UCHAR* fmt = ceGetResString( globals, strID );
+        XP_SNPRINTF( buf, VSIZE(buf), fmt, nMissing );
+        ceMessageBoxChar( globals, buf, ceGetResStringL( globals, IDS_FYI_L ),
+                          MB_OK | MB_ICONHAND );
+    }
+} /* ce_relay_connd */
+
+static void
+ce_relay_error( void* closure, XWREASON relayErr )
+{
+    CEAppGlobals* globals = (CEAppGlobals*)closure;
+    UINT evt;
+
+    switch( relayErr ) {
+    case XWRELAY_ERROR_NO_ROOM:
+    case XWRELAY_ERROR_DUP_ROOM:
+        evt = XWWM_RELAY_REQ_CONN;
+        break;
+    case XWRELAY_ERROR_TOO_MANY:
+        evt = XWWM_RELAY_REQ_NEW;
+        break;
+    default:
+        XP_ASSERT(0);
+    }
+
+    PostMessage( globals->hWnd, evt, 0, 0 );
 }
 #endif
 
@@ -3227,6 +3276,9 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_DUP_ROOM:
         resID = IDS_ERROR_DUP_ROOM;
+        break;
+    case ERR_RELAY_BASE + XWRELAY_ERROR_TOO_MANY:
+        resID = IDS_ERROR_TOO_MANY;
         break;
 
         /* Same string as above for now */

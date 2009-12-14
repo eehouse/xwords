@@ -123,14 +123,17 @@
 #  define IDS_XWRELAY_ERROR_HEART_OTHER                              40095
 #  define IDS_XWRELAY_ERROR_LOST_OTHER                               40096
 #  define IDS_XWRELAY_RELAY_INCOMPAT                                 40097
-#  define IDS_ERROR_NO_ROOM                                          40098
-#  define IDS_ERROR_DUP_ROOM                                         40099
-
+#  define IDS_RELAY_ALLHERE                                          40098
+#  define IDS_RELAY_HOST_WAITINGD                                    40099
+#  define IDS_RELAY_GUEST_WAITINGD                                   40100
+#  define IDS_ERROR_NO_ROOM                                          40101
+#  define IDS_ERROR_DUP_ROOM                                         40102
+#  define IDS_ERROR_TOO_MANY                                         40103
 # endif
 #endif
 
 #if ! defined XWFEATURE_STANDALONE_ONLY
-# define CE_LAST_RES_ID                                              40100
+# define CE_LAST_RES_ID                                              40104
 #else
 # define CE_LAST_RES_ID                                              40082
 #endif
