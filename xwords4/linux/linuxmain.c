@@ -213,7 +213,7 @@ usage( char* appName, char* msg )
 	     "\t [-l]             # disallow hints\n"
 	     "\t [-L]             # duplicate all packets sent\n"
 	     "\t [-P]             # pick tiles face up\n"
-	     "\t [-F]             # skip turn confirmation dialog\n"
+	     "\t [-F]             # ask for turn confirmation\n"
 	     "\t [-c]             # explain robot scores after each move\n"
 	     "\t [-C INVITE]      # invite used to groups games on relay\n"
 	     "\t\t # (max of four players total, local and remote)\n"
@@ -775,6 +775,7 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_SEARCHLIMIT
     mainParams.allowHintRect = XP_TRUE;
 #endif
+    mainParams.skipCommitConfirm = XP_TRUE;
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 
@@ -949,7 +950,7 @@ main( int argc, char** argv )
             mainParams.hideValues = XP_TRUE;
             break;
         case 'F':
-            mainParams.skipCommitConfirm = XP_TRUE;
+            mainParams.skipCommitConfirm = XP_FALSE;
             break;
         case 'v':
             mainParams.verticalScore = XP_TRUE;
