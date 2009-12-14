@@ -64,10 +64,8 @@ enum {
     ,XWS_MSGONLY              /* We have no connections but still messages to
                                  send */
 
-    ,XWS_CHECKINGDEST         /* Checking for valid socket */
-
-    ,XWS_CHECKING_CAN_LOCK    /* Is this message one that implies all
-                                   players are present? */
+    ,XWS_ROOMCHK              /* do we have room for as many players as are
+                                 being provided */
 
     ,XWS_DEAD                 /* About to kill the object */
 } XW_RELAY_STATE;
@@ -79,7 +77,9 @@ typedef enum {
 
     ,XWE_ALLHERE           /* notify that all expected players are arrived */
     ,XWE_SOMEMISSING       /* notify that some expected players are still missing */
+    ,XWE_HAVE_ROOM
     ,XWE_TOO_MANY
+
 
     ,XWE_GUESTCONNECT      /* A device is connecting using the cookie for */
     ,XWE_HOSTCONNECT       /* this object, as host or guest */
@@ -125,6 +125,8 @@ typedef enum {
 
     ,XWA_SEND_RERSP
 
+    ,XWA_CHECK_HAVE_ROOM        /* check for number of players still sought */
+
     ,XWA_SENDALLHERE     /* Let all devices know we're in business */
     ,XWA_SNDALLHERE_2    /* Ditto, but for a reconnect */
 
@@ -140,7 +142,8 @@ typedef enum {
 
     ,XWA_NOTIFYDISCON
 
-    ,XWA_REMOVESOCKET
+    ,XWA_REMOVESOCK_1           /* remove when not yet in allcond state */
+    ,XWA_REMOVESOCK_2           /* remove after have reached allCond */
 
     ,XWA_HEARTDISCONN
 

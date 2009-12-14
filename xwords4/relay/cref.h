@@ -181,6 +181,7 @@ class CookieRef {
                            int buflen );
     void pushDestBadEvent();
     void pushLastSocketGoneEvent();
+    void checkHaveRoom( const CRefEvent* evt );
     void pushRemoveSocketEvent( int socket );
     void pushNotifyDisconEvent( int socket, XWREASON why );
 
@@ -204,7 +205,7 @@ class CookieRef {
     void noteHeartbeat(const CRefEvent* evt);
     void notifyDisconn(const CRefEvent* evt);
     void removeSocket( int socket );
-    void sendAllHere( void );
+    void sendAllHere( bool initial );
     void moveSockets( void );
     bool SeedBelongs( int gameSeed );
     bool SeedsBelong( const char* connName );

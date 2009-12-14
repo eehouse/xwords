@@ -491,6 +491,22 @@ CookieRef::pushLastSocketGoneEvent()
 }
 
 void
+CookieRef::checkHaveRoom( const CRefEvent* evt )
+{
+    CRefEvent newEvt;
+
+    assert ( m_nPlayersSought > 0 );
+    if ( m_nPlayersSought < m_nPlayersHere + evt->u.con.nPlayersH ) {
+        newEvt.type = XWE_TOO_MANY;
+        newEvt.u.rmsock.socket = evt->u.con.socket;
+    } else {
+        newEvt = *evt;
+        newEvt.type = XWE_HAVE_ROOM;
+    }
+    m_eventQueue.push_back( newEvt );
+}
+
+void
 CookieRef::handleEvents()
 {
     assert( !m_in_handleEvents );
@@ -510,6 +526,10 @@ CookieRef::handleEvents()
                   eventString(evt.type), actString(takeAction) );
 
             switch( takeAction ) {
+
+            case XWA_CHECK_HAVE_ROOM:
+                checkHaveRoom( &evt );
+                break;
 
             case XWA_SEND_HOST_RSP:
             case XWA_SEND_GUEST_RSP:
@@ -533,6 +553,10 @@ CookieRef::handleEvents()
                 break;
             case XWA_SEND_DUP_ROOM:
                 send_denied( &evt, XWRELAY_ERROR_DUP_ROOM );
+                removeSocket( evt.u.rmsock.socket );
+                break;
+            case XWA_SEND_TOO_MANY:
+                send_denied( &evt, XWRELAY_ERROR_TOO_MANY );
                 removeSocket( evt.u.rmsock.socket );
                 break;
 
@@ -574,20 +598,27 @@ CookieRef::handleEvents()
                 notifyDisconn( &evt );
                 break;
 
-            case XWA_REMOVESOCKET:
+            case XWA_REMOVESOCK_2:
                 setAllConnectedTimer();
+                /* fallthru */
+            case XWA_REMOVESOCK_1:
                 reducePlayerCounts( evt.u.rmsock.socket );
-                notifyOthers( evt.u.rmsock.socket, XWRELAY_DISCONNECT_OTHER,
-                              XWRELAY_ERROR_LOST_OTHER );
+                if ( XWA_REMOVESOCK_2 == takeAction ) {
+                    notifyOthers( evt.u.rmsock.socket, XWRELAY_DISCONNECT_OTHER,
+                                  XWRELAY_ERROR_LOST_OTHER );
+                }
                 removeSocket( evt.u.rmsock.socket );
                 break;
 
             case XWA_SENDALLHERE:
-            case XWA_SNDALLHERE_2:
                 cancelAllConnectedTimer();
                 assignHostIds();
                 assignConnName();
-                sendAllHere();
+                sendAllHere( true );
+                break;
+
+            case XWA_SNDALLHERE_2:
+                sendAllHere( false );
                 break;
 
             case XWA_NOTE_EMPTY:
@@ -822,8 +853,8 @@ CookieRef::sendResponse( const CRefEvent* evt, bool initial )
 
     *bufp++ = initial ? XWRELAY_CONNECT_RESP : XWRELAY_RECONNECT_RESP;
     putNetShort( &bufp, GetHeartbeat() );
-    *bufp++ = GetPlayersHere();
     *bufp++ = GetPlayersSought();
+    *bufp++ = GetPlayersHere();
 
     send_with_length( socket, buf, bufp - buf, true );
     logf( XW_LOGVERBOSE0, "sent %s", cmdToStr( XWRELAY_Cmd(buf[0]) ) );
@@ -923,7 +954,7 @@ CookieRef::moveSockets( void )
 }
 
 void
-CookieRef::sendAllHere( void )
+CookieRef::sendAllHere( bool initial )
 {
     unsigned char buf[1 + 1     /* hostID */
                       + sizeof(CookieID) 
@@ -932,7 +963,7 @@ CookieRef::sendAllHere( void )
     unsigned char* bufp = buf;
     unsigned char* idLoc;
     
-    *bufp++ = XWRELAY_ALLHERE;
+    *bufp++ = initial? XWRELAY_ALLHERE : XWRELAY_ALLBACK;
     idLoc = bufp++;                 /* space for hostId, remembering address */
 
     putNetShort( &bufp, GetCookieID() );
