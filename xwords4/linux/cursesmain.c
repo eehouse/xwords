@@ -1185,13 +1185,13 @@ initClientSocket( CursesAppGlobals* globals, char* serverName )
     struct hostent* hostinfo;
     hostinfo = gethostbyname( serverName );
     if ( !hostinfo ) {
-	userError( globals, "unable to get host info for %s\n", serverName );
+        userError( globals, "unable to get host info for %s\n", serverName );
     } else {
-	char* hostName = inet_ntoa( *(struct in_addr*)hostinfo->h_addr );
-	XP_LOGF( "gethostbyname returned %s", hostName );
-	globals->csInfo.client.serverAddr = inet_addr(hostName);
-	XP_LOGF( "inet_addr returned %lu", 
-		 globals->csInfo.client.serverAddr );
+        char* hostName = inet_ntoa( *(struct in_addr*)hostinfo->h_addr );
+        XP_LOGF( "gethostbyname returned %s", hostName );
+        globals->csInfo.client.serverAddr = inet_addr(hostName);
+        XP_LOGF( "inet_addr returned %lu", 
+                 globals->csInfo.client.serverAddr );
     }
 } /* initClientSocket */
 #endif
@@ -1407,6 +1407,12 @@ relay_status_curses( void* XP_UNUSED(closure), CommsRelayState state )
 }
 
 static void
+relay_connd_curses( void* XP_UNUSED(closure), XP_Bool allHere, XP_U16 nMissing )
+{
+    XP_LOGF( "%s got allHere: %d; nMissing: %d", __func__, allHere, nMissing );
+}
+
+static void
 relay_error_curses( void* XP_UNUSED(closure), XWREASON XP_UNUSED(relayErr) )
 {
     LOG_FUNC();
@@ -1478,6 +1484,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #endif
 #ifdef XWFEATURE_RELAY
         .rstatus = relay_status_curses,
+        .rconnd = relay_connd_curses,
         .rerror = relay_error_curses,
 #endif
     };

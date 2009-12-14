@@ -305,6 +305,10 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
             "become a guest, or try again in a few minutes.";
         break;
 
+    case ERR_RELAY_BASE + XWRELAY_ERROR_TOO_MANY:
+        message = "You tried to supply more players than the host expected.";
+        break;
+
     default:
         XP_LOGF( "no code for error: %d", id );
         message = "<unrecognized error code reported>";

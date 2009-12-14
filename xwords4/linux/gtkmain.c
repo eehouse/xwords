@@ -303,8 +303,45 @@ relay_status_gtk( void* closure, CommsRelayState state )
     draw_gtk_status( globals->draw, globals->stateChar );
 }
 
+static void
+relay_connd_gtk( void* closure, XP_Bool allHere, XP_U16 nMissing )
+{
+    XP_Bool skip = XP_FALSE;
+    char buf[256];
+
+    if ( allHere ) {
+        snprintf( buf, sizeof(buf), "All expected players have joined.  Play!" );
+    } else {
+        GtkAppGlobals* globals = (GtkAppGlobals*)closure;
+        DeviceRole role = globals->cGlobals.params->serverRole;
+        if ( role == SERVER_ISSERVER ) {
+            snprintf( buf, sizeof(buf), "Connected to relay as host; waiting "
+                      "for %d player[s].", nMissing );
+        } else if ( nMissing > 0 ) {
+            snprintf( buf, sizeof(buf), "Connected to relay as guest.  Still waiting "
+                      "for %d player[s].", nMissing );
+        } else {
+            /* an allHere message should be coming immediately, so no
+               notification now. */
+            skip = XP_TRUE;
+        }
+    }
+
+    if ( !skip ) {
+        (void)gtkask( buf, GTK_BUTTONS_OK );
+    }
+}
+
 static gint
 invoke_new_game( gpointer data )
+{
+    GtkAppGlobals* globals = (GtkAppGlobals*)data;
+    new_game_impl( globals, XP_FALSE );
+    return 0;
+}
+
+static gint
+invoke_new_game_conns( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
     new_game_impl( globals, XP_TRUE );
@@ -321,6 +358,9 @@ relay_error_gtk( void* closure, XWREASON relayErr )
     switch( relayErr ) {
     case XWRELAY_ERROR_NO_ROOM:
     case XWRELAY_ERROR_DUP_ROOM:
+        proc = invoke_new_game_conns;
+        break;
+    case XWRELAY_ERROR_TOO_MANY:
         proc = invoke_new_game;
         break;
     default:
@@ -354,6 +394,7 @@ createOrLoadObjects( GtkAppGlobals* globals )
 #endif
 #ifdef XWFEATURE_RELAY
         .rstatus = relay_status_gtk,
+        .rconnd = relay_connd_gtk,
         .rerror = relay_error_gtk,
 #endif
     };
