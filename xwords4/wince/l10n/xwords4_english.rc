@@ -1002,7 +1002,7 @@ BEGIN
                                "user[s]."
     IDS_SERVER_DICT_WINS       "Conflict between Host and Guest dictionaries; "
                                "Host wins."
-    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked \"Remote\" "\
+    IDS_REG_SERVER_SANS_REMOTE "At least one player must be marked ""Remote"" "\
                                "for a game started as Host."
 
 # ifdef XWFEATURE_SMS
@@ -1021,11 +1021,20 @@ BEGIN
     IDS_XWRELAY_RELAY_INCOMPAT "This version of Crosswords does not match the "\
                                "relay.  You probably need to upgrade to the "\
                                "latest version."
+
+    IDS_RELAY_HOST_WAITINGD    "Connected to relay as host.  Waiting for "\
+                               "%d player[s]."
+    IDS_RELAY_GUEST_WAITINGD   "Connected to relay as guest.  Still waiting "\
+                               "for %d player[s]."
+    IDS_RELAY_ALLHERE          "All players are here."
+
     IDS_ERROR_NO_ROOM          "No such room.  Has the host connected yet "\
                                "to reserve it?"
     IDS_ERROR_DUP_ROOM         "That room is reserved by another host. "\
                                "Rename your room, become a guest, or try "\
                                "again in a few minutes."
+    IDS_ERROR_TOO_MANY         "The host is not expecting this many players. "\
+                               "Please reduce the number of Local players."
 # endif
 #endif
 

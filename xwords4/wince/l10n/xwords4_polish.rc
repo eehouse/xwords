@@ -987,11 +987,19 @@ BEGIN
     IDS_XWRELAY_RELAY_INCOMPAT "This version of Crosswords does not match the "\
                                "relay.  You probably need to upgrade to the "\
                                "latest version." /* translate */
+    IDS_RELAY_HOST_WAITINGD    "Connected to relay as host.  Waiting for "\
+                               "%d player[s]." /* translate */
+    IDS_RELAY_GUEST_WAITINGD   "Connected to relay as guest.  Still waiting "\
+                               "for %d player[s]." /* translate */
+    IDS_RELAY_ALLHERE          "All players are here." /* translate */
+
     IDS_ERROR_NO_ROOM          "No such room.  Has the host connected yet "\
                                "to reserve it?" /* translate */
     IDS_ERROR_DUP_ROOM         "That room is reserved by another host. "\
                                "Rename your room, become a guest, or try "\
                                "again in a few minutes." /* translate */
+    IDS_ERROR_TOO_MANY         "The host is not expecting this many players. "\
+                               "Please reduce the number of Local players." /* translate */
 # endif
 #endif
 
