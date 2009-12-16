@@ -1754,7 +1754,9 @@ ceWarnLangChange( CEAppGlobals* globals )
 {
     const wchar_t* msg = ceGetResStringL( globals, 
                                           IDS_LANG_CHANGE_RESTART );
-    MessageBox( globals->hWnd, msg, NULL, MB_OK | MB_ICONINFORMATION );
+    MessageBox( globals->hWnd, msg, 
+                ceGetResStringL( globals, IDS_FYI_L ),
+                MB_OK | MB_ICONINFORMATION );
 }
 
 static XP_Bool
@@ -3132,6 +3134,7 @@ ce_relay_error( void* closure, XWREASON relayErr )
         evt = XWWM_RELAY_REQ_NEW;
         break;
     default:
+        evt = 0;                /* silence compiler */
         XP_ASSERT(0);
     }
 
