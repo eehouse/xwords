@@ -601,23 +601,24 @@ END
 # define CTRL_COL 15
 # define CTRL_COL_WIDTH 80
 # define CONN_LABEL_HT (LABEL_ROW_HT*2) /* try to make them all same ht! */
-# define CONN_LABEL_ROW_1 2
-# define CONN_EDIT_ROW_2 (CONN_LABEL_ROW_1+ROW_SPACE)
+# define CONN_HELP_HT 25
+# define CONN_ROW_1 2
+# define CONN_ROW_2 (CONN_ROW_1+ROW_SPACE)
 # ifdef NEEDS_CHOOSE_CONNTYPE
-#  define CONN_LABEL_ROW_3 (CONN_EDIT_ROW_2+ROW_SPACE)
-#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+ROW_SPACE+ROW_HEIGHT)
+#  define CONN_ROW_3 (CONN_ROW_2+ROW_SPACE)
+#  define CONN_ROW_4 (CONN_ROW_3+ROW_SPACE+ROW_HEIGHT)
 # else
-#  define CONN_LABEL_ROW_3 (CONN_LABEL_ROW_1)
-#  define CONN_EDIT_ROW_4 (CONN_LABEL_ROW_3+CONN_LABEL_HT+3)
+#  define CONN_ROW_3 (CONN_ROW_1)
+#  define CONN_ROW_4 (CONN_ROW_3+ROW_SPACE)
 # endif
 # ifndef RELAY_NOEDIT_ADDR
-# define CONN_LABEL_ROW_5 (CONN_EDIT_ROW_4+ROW_SPACE+5)
-# define CONN_EDIT_ROW_6 (CONN_LABEL_ROW_5+CONN_LABEL_HT+3)
-# define CONN_LABEL_ROW_7 (CONN_EDIT_ROW_6+ROW_SPACE+5)
-# define CONN_EDIT_ROW_8 (CONN_LABEL_ROW_7+CONN_LABEL_HT+3)
-# define BUTTON_ROW (CONN_EDIT_ROW_8+ROW_SPACE)
+# define CONN_ROW_5 (CONN_ROW_4+CONN_HELP_HT+5)
+# define CONN_ROW_6 (CONN_ROW_5+CONN_LABEL_HT+3)
+# define CONN_ROW_7 (CONN_ROW_6+ROW_SPACE+5)
+# define CONN_ROW_8 (CONN_ROW_7+CONN_LABEL_HT+3)
+# define BUTTON_ROW (CONN_ROW_8+ROW_SPACE)
 #else
-# define BUTTON_ROW (CONN_EDIT_ROW_4+ROW_SPACE)
+# define BUTTON_ROW (CONN_ROW_4+CONN_HELP_HT)
 #endif
 #ifdef _WIN32_WCE
 # define CONNSDLG_HT BUTTON_ROW
@@ -633,25 +634,31 @@ FONT 4, "System"
 BEGIN
 
 #ifdef NEEDS_CHOOSE_CONNTYPE
-    LTEXT           "Spojit přes:",IDC_CCONVIA_LAB,LAB_COL,CONN_LABEL_ROW_1,
+    LTEXT           "Spojit přes:",IDC_CCONVIA_LAB,LAB_COL,CONN_ROW_1,
                     40,ROW_HEIGHT
-    XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_EDIT_ROW_2,CTRL_COL_WIDTH,
+    XWCOMBO(IDC_CONNECT_COMBO,CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,
                     ROW_HEIGHT,0,58,0)
 #endif
 #if defined XWFEATURE_RELAY
-    LTEXT           "Místnost (musí být stejná pro všechny účastníky hry):",
-                    IDC_INVITE_LAB,LAB_COL,CONN_LABEL_ROW_3,90,CONN_LABEL_HT
-    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
+    LTEXT           "Místnost:",
+                    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,23,CONN_LABEL_HT
+    EDITTEXT        INVITE_EDIT,LAB_COL+25,CONN_ROW_3,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL
+    LTEXT           "(As host, you name the room for the game, and must "
+                    "connect first.)", /* translate */
+                    IDC_INVITE_HELP_HOST,LAB_COL,CONN_ROW_4,110,CONN_HELP_HT
+    LTEXT           "(As guest, wait for the host to connect then tell you "
+                    "the room name.)", /* translate */
+                    IDC_INVITE_HELP_GUEST,LAB_COL,CONN_ROW_4,100,CONN_HELP_HT
 
 #ifndef RELAY_NOEDIT_ADDR
     LTEXT           "Název přenosu (málokdy změněno):",IDC_CRELAYNAME_LAB,
-                    LAB_COL,CONN_LABEL_ROW_5,90,CONN_LABEL_HT
-    EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_EDIT_ROW_6,CTRL_COL_WIDTH,
+                    LAB_COL,CONN_ROW_5,90,CONN_LABEL_HT
+    EDITTEXT        RELAYNAME_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL
     LTEXT           "Port přenosu (málokdy změněn):",IDC_CRELAYPORT_LAB,LAB_COL,
-                    CONN_LABEL_ROW_7,90,CONN_LABEL_HT
-    EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_EDIT_ROW_8,CTRL_COL_WIDTH,
+                    CONN_ROW_7,90,CONN_LABEL_HT
+    EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
 #endif
 #elif defined NEEDS_CHOOSE_CONNTYPE
@@ -666,20 +673,20 @@ BEGIN
                     ES_AUTOHSCROLL
 #elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Přímé IP spojení není podporováno.",IDC_IPNAME_LAB,LAB_COL,
-                    CONN_LABEL_ROW_3,40,40
+                    CONN_ROW_3,40,40
 #endif
 
 #if defined XWFEATURE_SMS
-    LTEXT           "Telefon hostitele:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_LABEL_ROW_3,60,
+    LTEXT           "Telefon hostitele:",IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,60,
                     ROW_HEIGHT
-    EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_EDIT_ROW_4,CTRL_COL_WIDTH,
+    EDITTEXT        IDC_SMS_PHONE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Port hostitele:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL | ES_NUMBER
 #elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Krátké zprávy nejsou podporovány.",
-                     IDC_SMS_PHONE_LAB,LAB_COL,CONN_LABEL_ROW_3,40,ROW_HEIGHT
+                     IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
 #endif
 
 #ifndef _WIN32_WCE
@@ -979,7 +986,7 @@ BEGIN
 
     IDS_ROLE_STANDALONE     "Samostatný"
     IDS_ROLE_HOST           "Hostitel" /* translate (confirm: "host") */
-    IDS_ROLE_GUEST          "Host"     /* translate (confirm: "guest") */
+    IDS_ROLE_GUEST          "Guest"     /* translate (confirm: "guest") */
     IDS_PLAYER_FORMAT       "Hráč %d"
     IDS_UNTITLED_FORMAT     "Neoznačený %d"
     IDS_PASSWDFMT_L         "Vložte heslo pro %ls:"

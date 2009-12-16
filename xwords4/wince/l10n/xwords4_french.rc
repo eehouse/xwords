@@ -179,15 +179,20 @@ DLL_VERS_RESOURCE
 #define REPOS_BUTTON_WIDTH 32
 #define REPOS_BUTTON_VPAD 2
 #define REPOS_BUTTON_HPAD 2
+/* How tall does a single line of label text turn out to be */
+# define LABEL_ROW_HT 10
+#ifdef CEFEATURE_CANSCROLL
+# define ROW_HEIGHT 11
+#else
+# define ROW_HEIGHT 12
+#endif
 
 // ******** IDD_GAMEINFO DIALOG *********
 #define GAMEINFO_WIDTH 116
 #ifdef CEFEATURE_CANSCROLL
-# define ROW_HEIGHT 10
 # define ROW_SPACE 12
 # define ROW_SPACE_PL 11
 #else
-# define ROW_HEIGHT 12
 # define ROW_SPACE 15
 # define ROW_SPACE_PL ROW_SPACE
 #endif
@@ -546,8 +551,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,80,PREFS_ROW_HT
     CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW6,87,PREFS_ROW_HT
-    PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,PR_LEFT,PR_ROW7,70,12
-    PUSHBUTTON      "Changer la langue...",IDC_PREFLOCALE,PR_LEFT,PR_ROW8,70,12 // <-translate
+    PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,PR_LEFT,PR_ROW7,75,12
+    PUSHBUTTON      "Changer la langue...",IDC_PREFLOCALE,PR_LEFT,PR_ROW8,75,12 // <-translate
 #ifdef ALLOW_CHOOSE_FONTS
     PUSHBUTTON      "Choisir une police...",IDC_PREFFONTS,PR_LEFT,PR_ROW9,60,12
 #endif
@@ -587,6 +592,8 @@ END
 # define LAB_COL_WIDTH 38
 # define CTRL_COL 15
 # define CTRL_COL_WIDTH 80
+# define CONN_LABEL_HT (LABEL_ROW_HT) /* try to make them all same ht! */
+# define CONN_HELP_HT 25
 # define CONN_ROW_1 2
 # define CONN_ROW_2 (CONN_ROW_1+ROW_SPACE)
 # ifdef NEEDS_CHOOSE_CONNTYPE
@@ -594,16 +601,16 @@ END
 #  define CONN_ROW_4 (CONN_ROW_3+ROW_SPACE+ROW_HEIGHT)
 # else
 #  define CONN_ROW_3 (CONN_ROW_1)
-#  define CONN_ROW_4 (CONN_ROW_2+ROW_SPACE)
+#  define CONN_ROW_4 (CONN_ROW_3+ROW_SPACE)
 # endif
 # ifndef RELAY_NOEDIT_ADDR
-# define CONN_ROW_5 (CONN_ROW_4+ROW_SPACE)
+# define CONN_ROW_5 (CONN_ROW_4+CONN_HELP_HT+5)
 # define CONN_ROW_6 (CONN_ROW_5+ROW_SPACE)
 # define CONN_ROW_7 (CONN_ROW_6+ROW_SPACE)
 # define CONN_ROW_8 (CONN_ROW_7+ROW_SPACE)
 # define BUTTON_ROW (CONN_ROW_8+ROW_SPACE)
 # else
-# define BUTTON_ROW (CONN_ROW_4+ROW_SPACE)
+# define BUTTON_ROW (CONN_ROW_4+CONN_HELP_HT)
 # endif
 #ifdef _WIN32_WCE
 # define CONNSDLG_HT BUTTON_ROW
@@ -622,9 +629,18 @@ BEGIN
     XWCOMBO(IDC_CONNECT_COMBO, CTRL_COL,CONN_ROW_2,CTRL_COL_WIDTH,ROW_HEIGHT,0,58,0)
 #endif
 #ifdef XWFEATURE_RELAY
-    LTEXT           "Room:",IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT // <- translate
-    EDITTEXT        INVITE_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,
-                    ES_AUTOHSCROLL
+    LTEXT           "Room:",
+                    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,23,CONN_LABEL_HT // <- translate
+    EDITTEXT        INVITE_EDIT,LAB_COL+25,CONN_ROW_3,CTRL_COL_WIDTH,
+                    ROW_HEIGHT,ES_AUTOHSCROLL
+
+    LTEXT           "(As host, you name the room for the game, and must "
+                    "connect first.)", /* translate */
+                    IDC_INVITE_HELP_HOST,LAB_COL,CONN_ROW_4,110,CONN_HELP_HT
+    LTEXT           "(As guest, wait for the host to connect then tell you "
+                    "the room name.)", /* translate */
+                    IDC_INVITE_HELP_GUEST,LAB_COL,CONN_ROW_4,100,CONN_HELP_HT
+
 # ifndef RELAY_NOEDIT_ADDR
     LTEXT           "Nom du relai (change rarement):",IDC_CRELAYNAME_LAB,
                     LAB_COL,CONN_ROW_5,120,ROW_HEIGHT
@@ -635,7 +651,7 @@ BEGIN
     EDITTEXT        RELAYPORT_EDIT,CTRL_COL,CONN_ROW_8,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
 # endif
-#else
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Connexion non supportée.",IDC_INVITE_LAB,
                      LAB_COL,CONN_ROW_3,40,40
 #endif
@@ -644,7 +660,7 @@ BEGIN
     LTEXT           "Nom et adresse de l'hôte",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,100,ROW_HEIGHT
     EDITTEXT        IPNAME_EDIT,CTRL_COL,CONN_ROW_4,CTRL_COL_WIDTH,ROW_HEIGHT,ES_AUTOHSCROLL
-#else
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "Connexion IP directe non supportée.",IDC_IPNAME_LAB,
                     LAB_COL,CONN_ROW_3,40,40
 #endif
@@ -656,7 +672,7 @@ BEGIN
     LTEXT           "Port hôte:",IDC_SMS_PORT_LAB,LAB_COL,CONN_ROW_5,60,ROW_HEIGHT
     EDITTEXT        IDC_SMS_PORT_EDIT,CTRL_COL,CONN_ROW_6,CTRL_COL_WIDTH,ROW_HEIGHT,
                     ES_AUTOHSCROLL | ES_NUMBER
-#else
+#elif defined NEEDS_CHOOSE_CONNTYPE
     LTEXT           "SMS non supporté.",
                      IDC_SMS_PHONE_LAB,LAB_COL,CONN_ROW_3,40,ROW_HEIGHT
 #endif
