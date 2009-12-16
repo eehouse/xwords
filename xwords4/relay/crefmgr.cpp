@@ -229,6 +229,25 @@ CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
     mgrInfo.m_nCrefsAll = GetNumGamesSeen();
     mgrInfo.m_startTimeSpawn = m_startTime;
 
+    if ( 0 == m_ports.length() ) {
+        RelayConfigs* cfg = RelayConfigs::GetConfigs();
+        vector<int> ints;
+        if ( cfg->GetValueFor( "PORTS", ints ) ) {
+            vector<int>::const_iterator iter;
+            for ( iter = ints.begin(); ; ) {
+                char buf[8];
+                snprintf( buf, sizeof(buf), "%d", *iter );
+                m_ports += buf;
+                ++iter;
+                if ( iter == ints.end() ) {
+                    break;
+                }
+                m_ports += ",";
+            }
+        }
+    }
+    mgrInfo.m_ports = m_ports.c_str();
+
     RWReadLock rwl( &m_cookieMapRWLock );
     mgrInfo.m_nCrefsCurrent = m_cookieMap.size();
 

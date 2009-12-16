@@ -188,11 +188,11 @@ printStats( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     fprintf( fil, "<div class=\"header\">Stats</div>" );
     fprintf( fil, "<table>" );
     fprintf( fil, "<tr>"
-             "<th>Uptime</th><th>Spawns</th><th>Spawn Utime</th>"
+             "<th>Ports</th><th>Uptime</th><th>Spawns</th><th>Spawn Utime</th>"
              "<th>Games played</th><th>Games in play</th></tr>" );
-    fprintf( fil, "<tr><td>%s</td><td>%d</td>"
+    fprintf( fil, "<tr><td>%s</td><td>%s</td><td>%d</td>"
              "<td>%s</td><td>%d</td><td>%d</td></tr>\n", 
-             uptime1, GetNSpawns(), uptime2, info->m_nCrefsAll,
+             info->m_ports, uptime1, GetNSpawns(), uptime2, info->m_nCrefsAll,
              info->m_nCrefsCurrent );
     fprintf( fil, "</table>" );
 }

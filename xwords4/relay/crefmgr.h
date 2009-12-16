@@ -62,6 +62,7 @@ class CrefInfo {
 
 class CrefMgrInfo {
  public:
+    const char* m_ports;
     int m_nCrefsAll;
     int m_nCrefsCurrent;
     time_t m_startTimeSpawn;
@@ -159,6 +160,7 @@ class CRefMgr {
     SocketMap m_SocketStuff;
 
     time_t m_startTime;
+    string m_ports;
 
     friend class CookieMapIterator;
 }; /* CRefMgr */
