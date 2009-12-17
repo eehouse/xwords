@@ -1401,13 +1401,15 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 } /* positionSizeStuff */
 
 static void
-relay_status_curses( void* XP_UNUSED(closure), CommsRelayState state )
+relay_status_curses( void* XP_UNUSED(closure), 
+                     CommsRelayState XP_UNUSED_DBG(state) )
 {
     XP_LOGF( "%s got status: %s", __func__, CommsRelayState2Str(state) );
 }
 
 static void
-relay_connd_curses( void* XP_UNUSED(closure), XP_Bool allHere, XP_U16 nMissing )
+relay_connd_curses( void* XP_UNUSED(closure), XP_Bool XP_UNUSED_DBG(allHere),
+                    XP_U16 XP_UNUSED_DBG(nMissing) )
 {
     XP_LOGF( "%s got allHere: %d; nMissing: %d", __func__, allHere, nMissing );
 }

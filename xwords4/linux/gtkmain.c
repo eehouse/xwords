@@ -318,8 +318,8 @@ relay_connd_gtk( void* closure, XP_Bool allHere, XP_U16 nMissing )
             snprintf( buf, sizeof(buf), "Connected to relay as host; waiting "
                       "for %d player[s].", nMissing );
         } else if ( nMissing > 0 ) {
-            snprintf( buf, sizeof(buf), "Connected to relay as guest.  Still waiting "
-                      "for %d player[s].", nMissing );
+            snprintf( buf, sizeof(buf), "Connected to relay as guest.  Still "
+                      "waiting for %d player[s].", nMissing );
         } else {
             /* an allHere message should be coming immediately, so no
                notification now. */
