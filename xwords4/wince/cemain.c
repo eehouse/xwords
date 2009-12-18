@@ -2052,6 +2052,7 @@ ceSaveCurGame( CEAppGlobals* globals, XP_Bool autoSave )
 static void
 ceSaveAndExit( CEAppGlobals* globals )
 {
+    globals->exiting = XP_TRUE;
     (void)ceSaveCurGame( globals, XP_TRUE );
     ceSavePrefs( globals );
     DestroyWindow(globals->hWnd);
@@ -2406,6 +2407,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     } else {
 /*         XP_LOGF( "%s: event=%s (%d)", __func__, messageToStr(message), message ); */
         globals = (CEAppGlobals*)GetWindowLongPtr( hWnd, GWL_USERDATA );
+        XP_ASSERT( !!globals );
 
         switch (message) {
 
@@ -2738,6 +2740,8 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
             PostQuitMessage(0);
             freeGlobals( globals );
+            globals = NULL;
+            SetWindowLongPtr( hWnd, GWL_USERDATA, 0L );
             break;
 
         case XWWM_TIME_RQST:
@@ -3148,42 +3152,45 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
 {
     XP_S16 nSent = -1;
     CEAppGlobals* globals = (CEAppGlobals*)closure;
-    CommsAddrRec addr;
     LOG_FUNC();
+    if ( !globals->exiting ) {
+        CommsAddrRec addr;
 
-    XP_ASSERT( !!globals->game.comms );
+        XP_ASSERT( !!globals->game.comms );
 
-    if ( !addrp ) {
-        comms_getAddr( globals->game.comms, &addr );
-        addrp = &addr;
-    }
-
-    XP_ASSERT( !!addrp );        /* firing */
-    switch( addrp->conType ) {
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-    case COMMS_CONN_IP_DIRECT:
-        break;
-    case COMMS_CONN_RELAY:
-        if ( !globals->socketWrap ) {
-            globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
-                                                   globals->hWnd, 
-                                                   got_data_proc,
-                                                   sock_state_change, globals );
+        if ( !addrp ) {
+            comms_getAddr( globals->game.comms, &addr );
+            addrp = &addr;
         }
 
-        nSent = ce_sockwrap_send( globals->socketWrap, buf, len, addrp );
-        break;
+        XP_ASSERT( !!addrp );        /* firing */
+        switch( addrp->conType ) {
+#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
+        case COMMS_CONN_IP_DIRECT:
+            break;
+        case COMMS_CONN_RELAY:
+            if ( !globals->exiting ) {
+                if ( !globals->socketWrap ) {
+                    globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
+                                                           globals->hWnd, 
+                                                           got_data_proc,
+                                                           sock_state_change, globals );
+                }
+
+                nSent = ce_sockwrap_send( globals->socketWrap, buf, len, addrp );
+                break;
 #endif
 #ifdef XWFEATURE_SMS
-    case COMMS_CONN_SMS:
-        nSent = ce_sms_send( globals, buf, len, addrp );
-        break;
+            case COMMS_CONN_SMS:
+                nSent = ce_sms_send( globals, buf, len, addrp );
+                break;
 #endif
-    default:
-        XP_LOGF( "unexpected conType %d", addrp->conType );
-        XP_ASSERT( 0 );
+            default:
+                XP_LOGF( "unexpected conType %d", addrp->conType );
+                XP_ASSERT( 0 );
+            }
+        }
     }
-
     return nSent;
 } /* ce_send_proc */
 
@@ -3752,8 +3759,6 @@ ce_util_addrChange( XW_UtilCtxt* uc,
             globals->socketWrap = NULL;
         }
     }
-
-    XP_LOGF( "ce_util_addrChange called; DO SOMETHING." );
 } /* ce_util_addrChange */
 #endif
 

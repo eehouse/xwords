@@ -172,6 +172,7 @@ typedef struct _CEAppGlobals {
     XP_Bool penDown;
     XP_Bool hintPending;
     XP_Bool doGlobalPrefs;
+    XP_Bool exiting;            /* are we in the process of shutting down? */
 
 #ifdef XWFEATURE_RELAY
     CommsRelayState relayState;

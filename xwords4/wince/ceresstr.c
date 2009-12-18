@@ -58,6 +58,9 @@ typedef struct _ResStrEntry {
 
 typedef struct _ResStrStorage {
     ResStrEntry* entries[CE_LAST_RES_ID - CE_FIRST_RES_ID + 1];
+#ifdef DEBUG
+    XP_U16 nUsed;
+#endif
 } ResStrStorage;
 
 static const ResStrEntry*
@@ -72,6 +75,7 @@ getEntry( CEAppGlobals* globals, XP_U16 resID, XP_Bool isWide )
     XP_ASSERT( index < VSIZE(storage->entries) );
 
     if ( !storage ) {
+        XP_ASSERT( !globals->exiting );
         storage = XP_MALLOC( globals->mpool, sizeof( *storage ) );
         XP_MEMSET( storage, 0, sizeof(*storage) );
         globals->resStrStorage = storage;
@@ -99,6 +103,9 @@ getEntry( CEAppGlobals* globals, XP_U16 resID, XP_Bool isWide )
         }
 
         storage->entries[index] = entry;
+#ifdef DEBUG
+        ++storage->nUsed;
+#endif
     }
 
     return entry;
@@ -165,6 +172,7 @@ ceFreeResStrings( CEAppGlobals* globals )
             }
         }
 
+        XP_ASSERT( nUsed == storage->nUsed );
         XP_FREE( globals->mpool, storage );
         globals->resStrStorage = NULL;
     }
