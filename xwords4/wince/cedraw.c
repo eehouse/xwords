@@ -338,7 +338,6 @@ makeTestBuf( CEDrawCtx* dctx, RFIndex index, XP_UCHAR* buf, XP_U16 bufLen )
     case N_RESIZE_FONTS:
         XP_ASSERT(0);
     }
-    XP_LOGF( "%s=>\"%s\"", __func__, buf );
 } /* makeTestBuf */
 
 // #define LOG_BITMAP
@@ -645,10 +644,6 @@ ceBestFitFont( CEDrawCtx* dctx, RFIndex index, const XP_U16 soughtHeight,
                 fce->offset = top;
                 fce->glyphHt = thisHeight;
                 fce->minLen = minLen;
-                XP_LOGF( "%s: found for %s: indexHt: %d; lfHeight: %d; "
-                         "glyphHt: %d; minLen: %d", __func__, 
-                         RFI2Str(index), fce->indexHt, fce->lfHeight, 
-                         fce->glyphHt, fce->minLen );
                 break;
             } 
 
@@ -678,9 +673,9 @@ ceGetSizedFont( CEDrawCtx* dctx, RFIndex index, XP_U16 height, XP_U16 width,
          && ( (fce->indexHt != height)
               || (fce->indexWidth != width) 
               || (fce->minLen != minLen) ) ) {
-        XP_LOGF( "%s: no match for %s (have %d, want %d (width %d, minLen %d) "
-                 "so recalculating", 
-                 __func__, RFI2Str(index), fce->indexHt, height, width, minLen );
+        /* XP_LOGF( "%s: no match for %s (have %d, want %d (width %d, minLen %d) " */
+        /*          "so recalculating",  */
+        /*          __func__, RFI2Str(index), fce->indexHt, height, width, minLen ); */
         ceBestFitFont( dctx, index, height, width, minLen, fce );
     }
 
@@ -756,7 +751,6 @@ checkBMCache( CEDrawCtx* dctx, HDC hdc, const XP_UCHAR* letters,
         if ( canCache && entry->bms[index] != bm ) {
             XP_ASSERT( !entry->bms[index] || (entry->bms[index] == bm) );
             entry->bms[index] = bm;
-            XP_LOGF( "%s: storing %p", __func__, bm );
         }
     }
 
