@@ -167,6 +167,7 @@ static int ceOops( CEAppGlobals* globals, const XP_UCHAR* str );
 static XP_Bool isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name );
 static void ceSetTitleFromName( CEAppGlobals* globals );
 static void removeScrollbar( CEAppGlobals* globals );
+static void ceToggleFullScreen( CEAppGlobals* globals );
 
 
 #ifndef _WIN32_WCE
@@ -2055,6 +2056,25 @@ ceSaveAndExit( CEAppGlobals* globals )
     globals->exiting = XP_TRUE;
     (void)ceSaveCurGame( globals, XP_TRUE );
     ceSavePrefs( globals );
+
+#ifdef _WIN32_WCE
+    if ( !globals->appPrefs.fullScreen ) {
+        /* For some reason a Treo700w crashes on exit if not in full-screen
+           mode.  Dunno if it's a bug in the software on that device or in
+           Wince 5.0 or my code, but going into fullscreen mode (after saving
+           prefs so it doesn't stick) fixes it.  Need to track down why, what
+           part of the mode change matters.  So far I know I can't remove
+           cePositionBoard()...  */
+#if 0
+        globals->appPrefs.fullScreen = !globals->appPrefs.fullScreen;
+        ceSizeIfFullscreen( globals, globals->hWnd );
+        (void)cePositionBoard( globals );
+#else
+        ceToggleFullScreen( globals );
+#endif
+    }
+#endif
+
     DestroyWindow(globals->hWnd);
 } /* ceSaveAndExit */
 
