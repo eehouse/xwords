@@ -2447,6 +2447,7 @@ doAbout( CEAppGlobals* globals )
                 MB_OK | MB_ICONINFORMATION );
 }
 
+#ifdef _WIN32_WCE
 static void
 connEvtAndError( CEAppGlobals* globals, WPARAM wParam )
 {
@@ -2463,6 +2464,7 @@ connEvtAndError( CEAppGlobals* globals, WPARAM wParam )
         break;
     }
 }
+#endif
 
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -3261,7 +3263,10 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
                         = ce_sockwrap_new( MPPARM(globals->mpool) 
                                            globals->hWnd, 
                                            got_data_proc,sock_state_change, 
-                                           &globals->cmProcs, globals );
+#ifdef _WIN32_WCE
+                                           &globals->cmProcs, 
+#endif
+                                           globals );
                 }
 
                 nSent = ce_sockwrap_send( globals->socketWrap, buf, len, addrp );
