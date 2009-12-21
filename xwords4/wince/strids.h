@@ -12,7 +12,7 @@
  * whether a given resource can be trusted.  Up it when changing the order of
  * strings.  Which do only when unavoidable.
  */
-#define CUR_DLL_VERSION 0x0002
+#define CUR_DLL_VERSION 0x0003
 
 
 #define CE_FIRST_RES_ID                                              40002
@@ -108,32 +108,35 @@
 # define IDS_SERVER_DICT_WINS                                        40088
 # define IDS_REG_SERVER_SANS_REMOTE                                  40089
 # define IDS_RESEND_STANDALONE                                       40090
+# define IDS_PHONE_OFF                                               40091
+# define IDS_NETWORK_FAILED                                          40092
+
 
 # ifdef XWFEATURE_SMS
-#  define IDS_SMS_CONN_L                                             40091
+#  define IDS_SMS_CONN_L                                             40093
 # endif
 
 # ifdef XWFEATURE_IP_DIRECT
-#  define IDS_DIRECT_CONN_L                                          40092
+#  define IDS_DIRECT_CONN_L                                          40094
 # endif
 
 # ifdef XWFEATURE_RELAY
-#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40093
-#  define IDS_ERROR_HEART_YOU                                        40094
-#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40095
-#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40096
-#  define IDS_XWRELAY_RELAY_INCOMPAT                                 40097
-#  define IDS_RELAY_ALLHERE                                          40098
-#  define IDS_RELAY_HOST_WAITINGD                                    40099
-#  define IDS_RELAY_GUEST_WAITINGD                                   40100
-#  define IDS_ERROR_NO_ROOM                                          40101
-#  define IDS_ERROR_DUP_ROOM                                         40102
-#  define IDS_ERROR_TOO_MANY                                         40103
+#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40095 
+#  define IDS_ERROR_HEART_YOU                                        40096
+#  define IDS_XWRELAY_ERROR_HEART_OTHER                              40097
+#  define IDS_XWRELAY_ERROR_LOST_OTHER                               40098
+#  define IDS_XWRELAY_RELAY_INCOMPAT                                 40099
+#  define IDS_RELAY_ALLHERE                                          40100
+#  define IDS_RELAY_HOST_WAITINGD                                    40101
+#  define IDS_RELAY_GUEST_WAITINGD                                   40102
+#  define IDS_ERROR_NO_ROOM                                          40103
+#  define IDS_ERROR_DUP_ROOM                                         40104
+#  define IDS_ERROR_TOO_MANY                                         40105
 # endif
 #endif
 
 #if ! defined XWFEATURE_STANDALONE_ONLY
-# define CE_LAST_RES_ID                                              40104
+# define CE_LAST_RES_ID                                              40106
 #else
 # define CE_LAST_RES_ID                                              40082
 #endif

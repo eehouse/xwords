@@ -28,6 +28,7 @@
 #include "cemain.h"
 #include "cedebug.h"
 #include "debhacks.h"
+#include "connmgr.h"
 
 
 /* This object owns all network activity: sending and receiving packets.  It
@@ -38,16 +39,16 @@
    order.
 */
 
-enum { WRITER_THREAD, 
-       READER_THREAD,
-       N_THREADS };
-
 #define MAX_QUEUE_SIZE 6
 
 struct CeSocketWrapper {
     HWND hWnd;
     DataRecvProc dataProc;
     StateChangeProc stateProc;
+#ifdef _WIN32_WCE
+    const CMProcs* cmProcs;
+    HANDLE connMgrHandle;
+#endif
     void* closure;
 
     union {
@@ -84,6 +85,10 @@ ConnState2Str( CeConnState connState )
 #define CASESTR(s)   case (s): return #s
     switch( connState ) {
         CASESTR( CE_IPST_START );
+#ifdef _WIN32_WCE
+        CASESTR( CE_IPST_OPENING_NETWORK );
+        CASESTR( CE_IPST_NETWORK_OPENED );
+#endif
         CASESTR( CE_IPST_RESOLVINGHOST );
         CASESTR( CE_IPST_HOSTRESOLVED );
         CASESTR( CE_IPST_CONNECTING );
@@ -96,6 +101,8 @@ ConnState2Str( CeConnState connState )
 # define ConnState2Str(s)
 #endif
 
+/* Forward decls */
+static void getHostAddr( CeSocketWrapper* self );
 static XP_Bool connectIfNot( CeSocketWrapper* self );
 
 static XP_Bool
@@ -161,6 +168,13 @@ stateChanged( CeSocketWrapper* self, CeConnState newState )
     switch( newState ) {
     case CE_IPST_START:
         break;
+#ifdef _WIN32_WCE
+    case CE_IPST_OPENING_NETWORK:
+        break;
+    case CE_IPST_NETWORK_OPENED:
+        getHostAddr( self );
+        break;
+#endif
     case CE_IPST_RESOLVINGHOST:
         break;
     case CE_IPST_HOSTRESOLVED:
@@ -199,7 +213,10 @@ connectSocket( CeSocketWrapper* self )
             name.sin_port = XP_HTONS( self->addrRec.u.ip_relay.port );
             name.sin_addr.S_un.S_addr = XP_HTONL(self->addrRec.u.ip_relay.ipAddr);
 
-            XP_LOGF( "%s: calling WSAConnect", __func__ );
+            XP_LOGF( "%s: calling WSAConnect: port=%d; host=%lx", __func__,
+                     self->addrRec.u.ip_relay.port,
+                     self->addrRec.u.ip_relay.ipAddr );
+
             if ( SOCKET_ERROR != WSAConnect( sock, (struct sockaddr *)&name, 
                                              sizeof(name), NULL, NULL, 
                                              NULL, NULL ) ) {
@@ -250,6 +267,50 @@ closeConnection( CeSocketWrapper* self )
     stateChanged( self, CE_IPST_START );
 } /* closeConnection */
 
+#ifdef _WIN32_WCE
+static void
+openNetwork( CeSocketWrapper* self )
+{
+    HRESULT res;
+
+    if ( !!self->connMgrHandle ) { /* already have a connection? */
+        DWORD status;
+        res = (*self->cmProcs->ConnMgrConnectionStatus)( self->connMgrHandle,
+                                                         &status );
+        if ( SUCCEEDED(res) && status == CONNMGR_STATUS_CONNECTED ) {
+            stateChanged( self, CE_IPST_NETWORK_OPENED );
+        } else {
+            (*self->cmProcs->ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
+            self->connMgrHandle = NULL;
+        }
+    }
+
+    if ( !self->connMgrHandle ) {
+        CONNMGR_CONNECTIONINFO cmi;
+        HANDLE hand;
+        XP_MEMSET( &cmi, 0, sizeof(cmi) );
+
+        res = (*self->cmProcs->ConnMgrMapURL)( L"http://google.com", 
+                                               &cmi.guidDestNet, NULL );
+        if ( SUCCEEDED(res) ) {
+            cmi.cbSize = sizeof(cmi);
+            cmi.bExclusive = FALSE;
+            cmi.dwPriority = CONNMGR_PRIORITY_USERINTERACTIVE;
+            cmi.dwParams = CONNMGR_PARAM_GUIDDESTNET;
+            cmi.dwFlags = CONNMGR_FLAG_PROXY_HTTP;
+            cmi.hWnd = self->hWnd;
+            cmi.uMsg = XWWM_CONNMGR_EVT;
+
+            res = (*self->cmProcs->ConnMgrEstablishConnection)( &cmi, &hand );
+            if ( SUCCEEDED(res) ) {
+                self->connMgrHandle = hand;
+                stateChanged( self, CE_IPST_OPENING_NETWORK );
+            }
+        }
+    }
+} /* openNetwork */
+#endif
+
 static void
 getHostAddr( CeSocketWrapper* self )
 {
@@ -273,7 +334,11 @@ getHostAddr( CeSocketWrapper* self )
 
 CeSocketWrapper* 
 ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB, 
-                 StateChangeProc stateCB, void* closure )
+                 StateChangeProc stateCB, 
+#ifdef _WIN32_WCE
+                 const CMProcs* cmProcs, 
+#endif
+                 void* closure )
 {
     CeSocketWrapper* self = NULL;
 
@@ -283,6 +348,9 @@ ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB,
     self->hWnd = hWnd;
     self->dataProc = dataCB;
     self->stateProc = stateCB;
+#ifdef _WIN32_WCE
+    self->cmProcs = cmProcs;
+#endif
     self->closure = closure;
     MPASSIGN(self->mpool, mpool );
     self->socket = -1;
@@ -299,6 +367,13 @@ ce_sockwrap_delete( CeSocketWrapper* self )
     /* This isn't a good thing to do.  Better to signal them to exit
        some other way */
     closeConnection( self );
+
+#ifdef _WIN32_WCE
+    if ( !!self->connMgrHandle ) {
+        (*self->cmProcs->ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
+        self->connMgrHandle = NULL;
+    }
+#endif
 
     XP_FREE( self->mpool, self );
 } /* ce_sockwrap_delete */
@@ -341,8 +416,6 @@ ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
 /* WSANO_RECOVERY */
 /* WSANO_DATA */
     }
-
-    LOG_RETURN_VOID();
 } /* ce_sockwrap_hostname */
 
 static XP_Bool
@@ -471,6 +544,55 @@ ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
     return draw;
 } /* ce_sockwrap_event */
 
+#ifdef _WIN32_WCE
+void
+ce_connmgr_event( CeSocketWrapper* self, WPARAM wParam, ConnMgrErr* userErr )
+{
+    XP_LOGF( "%s: wParam=%x", __func__, wParam );
+
+    *userErr = CONN_ERR_NONE;
+
+    switch( wParam ) {
+    case CONNMGR_STATUS_CONNECTED:
+        stateChanged( self, CE_IPST_NETWORK_OPENED );
+        break;
+
+        /* no recovery from any of these */
+    case CONNMGR_STATUS_NOPATHTODESTINATION:
+    case CONNMGR_STATUS_CONNECTIONCANCELED:
+    case CONNMGR_STATUS_CONNECTIONLINKFAILED:
+    case CONNMGR_STATUS_CONNECTIONDISABLED:
+    case CONNMGR_STATUS_AUTHENTICATIONFAILED:
+        (*self->cmProcs->ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
+        stateChanged( self, CE_IPST_START );
+        self->connMgrHandle = NULL;
+        *userErr = CONN_ERR_NONET;
+        break;
+
+        /* Error the user can fix.... */
+    case CONNMGR_STATUS_PHONEOFF:
+        *userErr = CONN_ERR_PHONE_OFF;
+        break;
+
+    case CONNMGR_STATUS_UNKNOWN:
+    case CONNMGR_STATUS_DISCONNECTED:
+    case CONNMGR_STATUS_CONNECTIONFAILED:
+    case CONNMGR_STATUS_WAITINGFORPATH:
+    case CONNMGR_STATUS_WAITINGFORPHONE:
+    case CONNMGR_STATUS_EXCLUSIVECONFLICT:
+    case CONNMGR_STATUS_WAITINGCONNECTION:
+    case CONNMGR_STATUS_WAITINGFORRESOURCE:
+    case CONNMGR_STATUS_WAITINGFORNETWORK:
+    case CONNMGR_STATUS_WAITINGDISCONNECTION:
+    case CONNMGR_STATUS_WAITINGCONNECTIONABORT:
+    case CONNMGR_STATUS_NOPATHWITHPROPERTY:
+        break;
+    default:
+        XP_LOGF( "unknown status: %x", wParam );
+    }
+}
+#endif
+
 XP_S16
 ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
                   const CommsAddrRec* addr )
@@ -492,7 +614,11 @@ ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len,
     }
 
     if ( CE_IPST_START == self->connState ) {
+#ifdef _WIN32_WCE
+        openNetwork( self );    /* kicks off connection process */
+#else
         getHostAddr( self );    /* kicks off connection process */
+#endif
     }
     /* What if we're stuck in some other state?  Kick those here too? */
 

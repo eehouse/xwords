@@ -1001,7 +1001,13 @@ BEGIN
     IDS_LANG_CHANGE_RESTART "You will see the new language after you restart Crosswords."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend."
+    IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to "\
+                            "resend."
+    IDS_PHONE_OFF           "Crosswords cannot connect because the phone "\
+                            "appears to be off.  Please restart Crosswords "\
+                            "after turning it on."
+    IDS_NETWORK_FAILED      "Unable to bring up networking."
+
     IDS_CONN_RELAY_L           "Relay"
     IDS_CONN_DIRECT            "Direct connection"
     IDS_LOCALPLAYERS           "Local players:"

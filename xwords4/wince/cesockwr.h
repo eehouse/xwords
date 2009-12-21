@@ -23,14 +23,26 @@
 
 #include "comms.h"
 #include "mempool.h"
+#include "connmgr.h"
 
 typedef enum {
     CE_IPST_START
+#ifdef _WIN32_WCE
+    ,CE_IPST_OPENING_NETWORK
+    ,CE_IPST_NETWORK_OPENED
+#endif
     ,CE_IPST_RESOLVINGHOST
     ,CE_IPST_HOSTRESOLVED
     ,CE_IPST_CONNECTING
     ,CE_IPST_CONNECTED
 } CeConnState;
+
+/* Errors to tell the user about */
+typedef enum {
+    CONN_ERR_NONE
+    ,CONN_ERR_PHONE_OFF
+    ,CONN_ERR_NONET
+} ConnMgrErr;
 
 typedef struct CeSocketWrapper CeSocketWrapper;      /* forward */
 typedef XP_Bool (*DataRecvProc)( XP_U8* data, XP_U16 len, void* closure );
@@ -38,13 +50,20 @@ typedef void (*StateChangeProc)( void* closure, CeConnState oldState,
                                  CeConnState newState );
 
 CeSocketWrapper* ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB, 
-                                  StateChangeProc stateCB, void* globals );
+                                  StateChangeProc stateCB, 
+#ifdef _WIN32_WCE
+                                  const CMProcs* cmProcs, 
+#endif
+                                  void* globals );
 void ce_sockwrap_delete( CeSocketWrapper* self );
 
-void ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );
+void ce_sockwrap_hostname( CeSocketWrapper* self, WPARAM wParam, 
+                           LPARAM lParam );
 XP_Bool ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam );
 
 XP_S16 ce_sockwrap_send( CeSocketWrapper* self, const XP_U8* buf, XP_U16 len, 
                          const CommsAddrRec* addr );
+void ce_connmgr_event( CeSocketWrapper* self, WPARAM wParam, 
+                       ConnMgrErr* userErr );
 
 #endif

@@ -56,6 +56,7 @@
 #include "cesms.h"
 #include "cesockwr.h"
 #include "ceresstr.h"
+#include "connmgr.h"
 
 #include "dbgutil.h"
 
@@ -1328,6 +1329,34 @@ getOSInfo( CEAppGlobals* globals )
 #define getOSInfo( g )
 #endif 
 
+
+#ifndef XWFEATURE_STANDALONE_ONLY
+#ifdef _WIN32_WCE
+# define LOAD_PTR( typ, name ) {                               \
+            typ proc;                                          \
+            proc = (typ)GetProcAddress( hcellDll, TEXT(#name));\
+            XP_ASSERT( !!proc );                               \
+            globals->cmProcs.name = proc;                      \
+}
+
+static void
+initConnMgr( CEAppGlobals* globals )
+{
+    HINSTANCE  hcellDll = LoadLibrary(TEXT("cellcore.dll"));
+    if ( !!hcellDll ) {
+        globals->hcellDll = hcellDll;
+
+        LOAD_PTR( ConnMgrEstablishConnectionProc, ConnMgrEstablishConnection );
+        LOAD_PTR( ConnMgrConnectionStatusProc, ConnMgrConnectionStatus );
+        LOAD_PTR( ConnMgrMapURLProc, ConnMgrMapURL );
+        LOAD_PTR( ConnMgrReleaseConnectionProc, ConnMgrReleaseConnection );
+    }
+}
+
+# undef LOAD_PTR
+#endif
+#endif
+
 //
 //  FUNCTION: InitInstance(HANDLE, int)
 //
@@ -1508,6 +1537,10 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 
     trapBackspaceKey( hWnd );
 
+#ifdef _WIN32_WCE
+    initConnMgr( globals );
+#endif
+
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 #ifdef _WIN32_WCE
@@ -1673,6 +1706,10 @@ ceFlattenState( const CEAppGlobals* globals )
         case CE_IPST_START:
 /*             state = CENSTATE_NONE; */
             break;
+#ifdef _WIN32_WCE
+        case CE_IPST_OPENING_NETWORK:
+        case CE_IPST_NETWORK_OPENED:
+#endif
         case CE_IPST_RESOLVINGHOST: 
         case CE_IPST_HOSTRESOLVED: 
         case CE_IPST_CONNECTING: 
@@ -2107,6 +2144,13 @@ freeGlobals( CEAppGlobals* globals )
         globals->socketWrap = NULL;
     }
     WSACleanup();
+
+# ifdef _WIN32_WCE
+    if ( !!globals->hcellDll ) {
+        FreeLibrary( globals->hcellDll );
+        globals->hcellDll = NULL;
+    }
+# endif
 #endif
 
     if ( !!globals->vtMgr ) {
@@ -2401,6 +2445,23 @@ doAbout( CEAppGlobals* globals )
     assertOnTop( globals->hWnd );
     MessageBox( globals->hWnd, buf, ceGetResStringL( globals, IDS_ABOUT_L ),
                 MB_OK | MB_ICONINFORMATION );
+}
+
+static void
+connEvtAndError( CEAppGlobals* globals, WPARAM wParam )
+{
+    ConnMgrErr userErr;
+    ce_connmgr_event( globals->socketWrap, wParam, &userErr );
+    switch( userErr ) {
+    case CONN_ERR_NONE:
+        break;
+    case CONN_ERR_PHONE_OFF:
+        ceOopsId( globals, IDS_PHONE_OFF );
+        break;
+    case CONN_ERR_NONET:
+        ceOopsId( globals, IDS_NETWORK_FAILED );
+        break;
+    }
 }
 
 LRESULT CALLBACK
@@ -2793,6 +2854,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 draw = ce_sockwrap_event( globals->socketWrap, wParam, lParam );
             }
             break;
+#ifdef _WIN32_WCE
+        case XWWM_CONNMGR_EVT:
+            connEvtAndError( globals, wParam );
+            break;
+#endif
 #endif
 
         default:
@@ -3191,10 +3257,11 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
         case COMMS_CONN_RELAY:
             if ( !globals->exiting ) {
                 if ( !globals->socketWrap ) {
-                    globals->socketWrap = ce_sockwrap_new( MPPARM(globals->mpool) 
-                                                           globals->hWnd, 
-                                                           got_data_proc,
-                                                           sock_state_change, globals );
+                    globals->socketWrap
+                        = ce_sockwrap_new( MPPARM(globals->mpool) 
+                                           globals->hWnd, 
+                                           got_data_proc,sock_state_change, 
+                                           &globals->cmProcs, globals );
                 }
 
                 nSent = ce_sockwrap_send( globals->socketWrap, buf, len, addrp );

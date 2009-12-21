@@ -28,6 +28,7 @@
 #include "util.h"
 #include "mempool.h"
 #include "cesockwr.h"
+#include "connmgr.h"
 
 #define LCROSSWORDS_DIR_NODBG L"Crosswords"
 #define CE_GAMEFILE_VERSION1 0x01  /* means draw gets to save/restore */
@@ -137,6 +138,12 @@ typedef struct _CEAppGlobals {
     HMENU softKeyMenu;          /* so can check/uncheck duplicated items */
 #endif
 
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
+    HINSTANCE hcellDll;
+    /* UINT connmgrMsg; */
+    CMProcs cmProcs;
+#endif
+
     struct CEDrawCtx* draw;
     XWGame game;
     CurGameInfo gameInfo;
@@ -209,6 +216,9 @@ enum {
     ,XWWM_RELAY_REQ_NEW
     ,XWWM_RELAY_REQ_CONN
     ,XWWM_SOCKET_EVT
+#ifdef _WIN32_WCE
+    ,XWWM_CONNMGR_EVT
+#endif
 };
 
 #define CE_NUM_EDITABLE_COLORS CE_BLACK_COLOR
