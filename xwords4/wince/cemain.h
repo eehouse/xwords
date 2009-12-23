@@ -28,7 +28,7 @@
 #include "util.h"
 #include "mempool.h"
 #include "cesockwr.h"
-#include "connmgr.h"
+#include "ceconnmg.h"
 
 #define LCROSSWORDS_DIR_NODBG L"Crosswords"
 #define CE_GAMEFILE_VERSION1 0x01  /* means draw gets to save/restore */

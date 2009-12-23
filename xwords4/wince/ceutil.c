@@ -302,12 +302,15 @@ ceSize( CEAppGlobals* globals, HWND hWnd, XP_Bool fullScreen )
                 rect.bottom - rect.top, TRUE );
 } /* ceSize */
 
-void
+XP_Bool
 ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd )
 {
-    if ( globals->appPrefs.fullScreen != ceIsFullScreen(globals, hWnd) ) {
+    XP_Bool resized = globals->appPrefs.fullScreen
+        != ceIsFullScreen(globals, hWnd);
+    if ( resized ) {
         ceSize( globals, hWnd, globals->appPrefs.fullScreen );
     }
+    return resized;
 }
 
 static XP_Bool

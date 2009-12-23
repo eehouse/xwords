@@ -56,7 +56,7 @@
 #include "cesms.h"
 #include "cesockwr.h"
 #include "ceresstr.h"
-#include "connmgr.h"
+#include "ceconnmg.h"
 
 #include "dbgutil.h"
 
@@ -1331,7 +1331,7 @@ getOSInfo( CEAppGlobals* globals )
 
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
 # define LOAD_PTR( typ, name ) {                               \
             typ proc;                                          \
             proc = (typ)GetProcAddress( hcellDll, TEXT(#name));\
@@ -1537,7 +1537,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
 
     trapBackspaceKey( hWnd );
 
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
     initConnMgr( globals );
 #endif
 
@@ -2145,7 +2145,7 @@ freeGlobals( CEAppGlobals* globals )
     }
     WSACleanup();
 
-# ifdef _WIN32_WCE
+# if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
     if ( !!globals->hcellDll ) {
         FreeLibrary( globals->hcellDll );
         globals->hcellDll = NULL;
@@ -2315,7 +2315,7 @@ ceCheckHandleFocusKey( CEAppGlobals* globals, WPARAM wParam, LPARAM lParam,
     /* Sometimes, e.g. after a menu is released, we get KEY_UP not preceeded
        by KEY_DOWN.  Just drop those. */
     if ( !keyDown && !globals->keyDown ) {
-        XP_LOGF( "%s: keyUp not preceeded by keyDown: dropping", __func__ );
+        /* drop key; don't log as it happens all the time */
     } else {
         XP_Bool isRepeat = keyDown && ((HIWORD(lParam) & KF_REPEAT) != 0);
         XP_Key key;
@@ -2498,6 +2498,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             // Notify shell of our activate message
             SHHandleWMActivate( hWnd, wParam, lParam, &globals->sai, FALSE );
+            if ( !!globals && !!globals->game.board ) {
+                if ( ceSizeIfFullscreen( globals, globals->hWnd ) ) {
+                    (void)cePositionBoard( globals );
+                }
+            }
             break;
 
         case WM_SETTINGCHANGE:
@@ -3263,7 +3268,7 @@ ce_send_proc( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addrp,
                         = ce_sockwrap_new( MPPARM(globals->mpool) 
                                            globals->hWnd, 
                                            got_data_proc,sock_state_change, 
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
                                            &globals->cmProcs, 
 #endif
                                            globals );

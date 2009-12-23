@@ -28,7 +28,7 @@
 #include "cemain.h"
 #include "cedebug.h"
 #include "debhacks.h"
-#include "connmgr.h"
+#include "ceconnmg.h"
 
 
 /* This object owns all network activity: sending and receiving packets.  It
@@ -45,8 +45,10 @@ struct CeSocketWrapper {
     HWND hWnd;
     DataRecvProc dataProc;
     StateChangeProc stateProc;
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE
+# if ! defined CEGCC_DOES_CONNMGR
     const CMProcs* cmProcs;
+# endif
     HANDLE connMgrHandle;
 #endif
     void* closure;
@@ -77,6 +79,14 @@ struct CeSocketWrapper {
 
     MPSLOT
 };
+
+#ifdef _WIN32_WCE
+# ifdef CEGCC_DOES_CONNMGR
+#  define CMCALL(proc) proc
+# else
+#  define CMCALL(proc) (*self->cmProcs->proc)
+# endif
+#endif
 
 #ifdef DEBUG
 static const char*
@@ -275,12 +285,11 @@ openNetwork( CeSocketWrapper* self )
 
     if ( !!self->connMgrHandle ) { /* already have a connection? */
         DWORD status;
-        res = (*self->cmProcs->ConnMgrConnectionStatus)( self->connMgrHandle,
-                                                         &status );
+        res = CMCALL(ConnMgrConnectionStatus)( self->connMgrHandle, &status );
         if ( SUCCEEDED(res) && status == CONNMGR_STATUS_CONNECTED ) {
             stateChanged( self, CE_IPST_NETWORK_OPENED );
         } else {
-            (*self->cmProcs->ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
+            CMCALL(ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
             self->connMgrHandle = NULL;
         }
     }
@@ -290,7 +299,7 @@ openNetwork( CeSocketWrapper* self )
         HANDLE hand;
         XP_MEMSET( &cmi, 0, sizeof(cmi) );
 
-        res = (*self->cmProcs->ConnMgrMapURL)( L"http://google.com", 
+        res = CMCALL(ConnMgrMapURL)( L"http://google.com", 
                                                &cmi.guidDestNet, NULL );
         if ( SUCCEEDED(res) ) {
             cmi.cbSize = sizeof(cmi);
@@ -301,7 +310,7 @@ openNetwork( CeSocketWrapper* self )
             cmi.hWnd = self->hWnd;
             cmi.uMsg = XWWM_CONNMGR_EVT;
 
-            res = (*self->cmProcs->ConnMgrEstablishConnection)( &cmi, &hand );
+            res = CMCALL(ConnMgrEstablishConnection)( &cmi, &hand );
             if ( SUCCEEDED(res) ) {
                 self->connMgrHandle = hand;
                 stateChanged( self, CE_IPST_OPENING_NETWORK );
@@ -335,7 +344,7 @@ getHostAddr( CeSocketWrapper* self )
 CeSocketWrapper* 
 ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB, 
                  StateChangeProc stateCB, 
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
                  const CMProcs* cmProcs, 
 #endif
                  void* closure )
@@ -348,7 +357,7 @@ ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB,
     self->hWnd = hWnd;
     self->dataProc = dataCB;
     self->stateProc = stateCB;
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
     self->cmProcs = cmProcs;
 #endif
     self->closure = closure;
@@ -370,7 +379,7 @@ ce_sockwrap_delete( CeSocketWrapper* self )
 
 #ifdef _WIN32_WCE
     if ( !!self->connMgrHandle ) {
-        (*self->cmProcs->ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
+        CMCALL(ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
         self->connMgrHandle = NULL;
     }
 #endif
@@ -545,10 +554,42 @@ ce_sockwrap_event( CeSocketWrapper* self, WPARAM wParam, LPARAM lParam )
 } /* ce_sockwrap_event */
 
 #ifdef _WIN32_WCE
+#ifdef DEBUG
+static const char*
+CMStatus2Str( WPARAM status )
+{
+#define CASESTR(s)   case (s): return #s
+    switch( status ) {
+        CASESTR( CONNMGR_STATUS_CONNECTED );
+        CASESTR( CONNMGR_STATUS_NOPATHTODESTINATION );
+        CASESTR( CONNMGR_STATUS_CONNECTIONCANCELED );
+        CASESTR( CONNMGR_STATUS_CONNECTIONLINKFAILED );
+        CASESTR( CONNMGR_STATUS_CONNECTIONDISABLED );
+        CASESTR( CONNMGR_STATUS_AUTHENTICATIONFAILED );
+        CASESTR( CONNMGR_STATUS_PHONEOFF );
+        CASESTR( CONNMGR_STATUS_UNKNOWN );
+        CASESTR( CONNMGR_STATUS_DISCONNECTED );
+        CASESTR( CONNMGR_STATUS_CONNECTIONFAILED );
+        CASESTR( CONNMGR_STATUS_WAITINGFORPATH );
+        CASESTR( CONNMGR_STATUS_WAITINGFORPHONE );
+        CASESTR( CONNMGR_STATUS_EXCLUSIVECONFLICT );
+        CASESTR( CONNMGR_STATUS_WAITINGCONNECTION );
+        CASESTR( CONNMGR_STATUS_WAITINGFORRESOURCE );
+        CASESTR( CONNMGR_STATUS_WAITINGFORNETWORK );
+        CASESTR( CONNMGR_STATUS_WAITINGDISCONNECTION );
+        CASESTR( CONNMGR_STATUS_WAITINGCONNECTIONABORT );
+        CASESTR( CONNMGR_STATUS_NOPATHWITHPROPERTY );
+    }
+#undef CASESTR
+    XP_ASSERT(0);
+    return "";
+}
+#endif
+
 void
 ce_connmgr_event( CeSocketWrapper* self, WPARAM wParam, ConnMgrErr* userErr )
 {
-    XP_LOGF( "%s: wParam=%x", __func__, wParam );
+    XP_LOGF( "%s: wParam=%s", __func__, CMStatus2Str(wParam) );
 
     *userErr = CONN_ERR_NONE;
 
@@ -563,14 +604,17 @@ ce_connmgr_event( CeSocketWrapper* self, WPARAM wParam, ConnMgrErr* userErr )
     case CONNMGR_STATUS_CONNECTIONLINKFAILED:
     case CONNMGR_STATUS_CONNECTIONDISABLED:
     case CONNMGR_STATUS_AUTHENTICATIONFAILED:
-        (*self->cmProcs->ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
+        /* Do I want to release, or keep it around for status messages
+           later? */
+        //(*self->cmProcs->ConnMgrReleaseConnection)( self->connMgrHandle, 1 );
+        //self->connMgrHandle = NULL;
         stateChanged( self, CE_IPST_START );
-        self->connMgrHandle = NULL;
         *userErr = CONN_ERR_NONET;
         break;
 
         /* Error the user can fix.... */
     case CONNMGR_STATUS_PHONEOFF:
+        closeConnection( self );
         *userErr = CONN_ERR_PHONE_OFF;
         break;
 

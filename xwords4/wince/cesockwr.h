@@ -23,7 +23,7 @@
 
 #include "comms.h"
 #include "mempool.h"
-#include "connmgr.h"
+#include "ceconnmg.h"
 
 typedef enum {
     CE_IPST_START
@@ -51,7 +51,7 @@ typedef void (*StateChangeProc)( void* closure, CeConnState oldState,
 
 CeSocketWrapper* ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB, 
                                   StateChangeProc stateCB, 
-#ifdef _WIN32_WCE
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
                                   const CMProcs* cmProcs, 
 #endif
                                   void* globals );

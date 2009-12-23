@@ -96,9 +96,9 @@ void ceSetLeftSoftkey( CEAppGlobals* globals, XP_U16 id );
 XP_Bool ceGetExeDir( wchar_t* buf, XP_U16 bufLen );
 
 #if defined _WIN32_WCE
-void ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
+XP_Bool ceSizeIfFullscreen( CEAppGlobals* globals, HWND hWnd );
 #else
-# define ceSizeIfFullscreen( globals, hWnd )
+# define ceSizeIfFullscreen( globals, hWnd ) XP_FALSE
 #endif
 
 #ifdef OVERRIDE_BACKKEY
