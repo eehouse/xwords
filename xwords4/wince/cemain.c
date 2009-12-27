@@ -1344,6 +1344,7 @@ static void
 initConnMgr( CEAppGlobals* globals )
 {
     HINSTANCE  hcellDll = LoadLibrary(TEXT("cellcore.dll"));
+    XP_ASSERT( !!hcellDll );
     if ( !!hcellDll ) {
         globals->hcellDll = hcellDll;
 
@@ -1515,6 +1516,9 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     result = TRUE;
 #endif
 
+#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
+    initConnMgr( globals );
+#endif
 
     /* must load prefs before creating draw ctxt */
     globals->draw = ce_drawctxt_make( MPPARM(globals->mpool) 
@@ -1537,10 +1541,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
     }
 
     trapBackspaceKey( hWnd );
-
-#if defined _WIN32_WCE && ! defined CEGCC_DOES_CONNMGR
-    initConnMgr( globals );
-#endif
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
