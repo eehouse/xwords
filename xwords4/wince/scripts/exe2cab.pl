@@ -10,9 +10,13 @@ my $userName = "Crosswords.exe";
 sub main() {
     my $provider = "\"Crosswords project\"";
 
-    usage() if 1 != @ARGV;
+    usage() if 1 > @ARGV;
 
     my $path = shift @ARGV;
+    my $dict = shift @ARGV;
+    if ( ! $dict ) {
+        $dict = "../../../dawg/English/BasEnglish2to8.xwd";
+    }
 
     usage() unless $path =~ m|.exe$|;
 
@@ -46,7 +50,7 @@ sub main() {
     print FILE "$tmpfile ";
     print FILE '%CE1%\\\\Crosswords', "\n";
 
-    print FILE "../../../dawg/English/BasEnglish2to8.xwd ";
+    print FILE "$dict ";
     print FILE '%CE1%\\\\Crosswords', "\n";
 
 #     print FILE "$ENV{'CEOPT_ROOT'}/opt/mingw32ce/arm-wince-mingw32ce/bin/mingwm10.dll ";
@@ -69,7 +73,7 @@ sub main() {
 }
 
 sub usage() {
-    print STDERR "usage: $0 path/to/xwords4.exe\n";
+    print STDERR "usage: $0 path/to/xwords4.exe [path/to/dict.xwd]\n";
     exit 2;
 }
 
