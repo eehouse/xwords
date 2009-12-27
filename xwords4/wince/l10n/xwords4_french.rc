@@ -965,6 +965,10 @@ BEGIN
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "This is a standalone game. There is nothing to resend." /* <- translate */
+    IDS_PHONE_OFF           "Crosswords cannot connect because the phone "\
+                            "appears to be off.  Please restart Crosswords "\
+                            "after turning it on." /* translate */
+    IDS_NETWORK_FAILED      "Unable to bring up networking." /* translate */
     IDS_CONN_RELAY_L        "Transmission"
     IDS_CONN_DIRECT         "Connexion directe"
     IDS_LOCALPLAYERS        "Joueurs loc.:"

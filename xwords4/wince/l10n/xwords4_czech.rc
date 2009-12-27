@@ -999,6 +999,10 @@ BEGIN
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "Hrajete pouze na tomto přístroji. Není co posílat."
+    IDS_PHONE_OFF           "Crosswords cannot connect because the phone "\
+                            "appears to be off.  Please restart Crosswords "\
+                            "after turning it on." /* translate */
+    IDS_NETWORK_FAILED      "Unable to bring up networking." /* translate */
     IDS_CONN_RELAY_L           "Přenos"
     IDS_CONN_DIRECT            "Přímé spojení"
     IDS_LOCALPLAYERS           "Místní hráči:"

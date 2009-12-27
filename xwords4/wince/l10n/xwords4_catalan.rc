@@ -994,6 +994,10 @@ BEGIN
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "Aquesta és una partida en solitari. No hi ha res per a reenviar."
+    IDS_PHONE_OFF           "Crosswords cannot connect because the phone "\
+                            "appears to be off.  Please restart Crosswords "\
+                            "after turning it on." /* translate */
+    IDS_NETWORK_FAILED      "Unable to bring up networking." /* translate */
     IDS_CONN_RELAY_L           "Repetidor"
     IDS_CONN_DIRECT            "Connexió directa"
     IDS_LOCALPLAYERS           "Jugadors locals:"
