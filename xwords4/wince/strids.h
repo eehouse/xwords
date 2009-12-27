@@ -121,7 +121,7 @@
 # endif
 
 # ifdef XWFEATURE_RELAY
-#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40095 
+#  define IDS_XWRELAY_ERROR_TIMEOUT                                  40095
 #  define IDS_ERROR_HEART_YOU                                        40096
 #  define IDS_XWRELAY_ERROR_HEART_OTHER                              40097
 #  define IDS_XWRELAY_ERROR_LOST_OTHER                               40098
