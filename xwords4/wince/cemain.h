@@ -96,8 +96,9 @@ typedef enum {
     ,SAB_NETFAILED = 1 << 1
     ,SAB_HOST_CONND = 1 << 2
     ,SAB_CLIENT_CONND = 1 << 3
-    ,SAB_HEART_YOU = 1 << 4
-    ,SAB_HEART_OTHER = 1 << 5
+    ,SAB_ALL_HERE = 1 << 4
+    ,SAB_HEART_YOU = 1 << 5
+    ,SAB_HEART_OTHER = 1 << 6
 } SkipAlertBits;
 
 typedef struct CEAppPrefs {

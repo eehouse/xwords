@@ -1705,12 +1705,12 @@ ceFlattenState( const CEAppGlobals* globals )
     } else {
         switch( socketState ) {
         case CE_IPST_START:
-/*             state = CENSTATE_NONE; */
-            break;
 #ifdef _WIN32_WCE
         case CE_IPST_OPENING_NETWORK:
         case CE_IPST_NETWORK_OPENED:
 #endif
+/*             state = CENSTATE_NONE; */
+            break;
         case CE_IPST_RESOLVINGHOST: 
         case CE_IPST_HOSTRESOLVED: 
         case CE_IPST_CONNECTING: 
@@ -3196,6 +3196,7 @@ ce_relay_connd( void* closure, XP_Bool allHere, XP_U16 nMissing )
 
     if ( allHere ) {
         strID = IDS_RELAY_ALLHERE;
+        bit = SAB_ALL_HERE;
     } else {
         DeviceRole role = globals->gameInfo.serverRole;
         if ( role == SERVER_ISSERVER ) {
