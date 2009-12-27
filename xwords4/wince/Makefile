@@ -56,7 +56,8 @@ HAVE_COMMCTRL = 1
 
 ifeq ($(TARGET_OS),wince)
 #SMS = -DXWFEATURE_SMS
-RELAY = -DXWFEATURE_RELAY -DCOMMS_HEARTBEAT
+RELAY = -DXWFEATURE_RELAY
+#RELAY = -DXWFEATURE_RELAY -DCOMMS_HEARTBEAT
 # IPDIRECT = -DXWFEATURE_IP_DIRECT
 # BLUETOOTH = -DXWFEATURE_BLUETOOTH
 CC = ${CE_ARCH}-gcc
@@ -275,9 +276,15 @@ bmps/%.bmp: bmps/%.pgm
 
 CAB: $(TARGET) $(DLLS)
 	$(STRIP) $<
-	(cd $(BUILTDIR); PATH=../../scripts:$$PATH exe2cab.pl $(notdir $<))
+	(cd $(BUILTDIR); \
+		PATH=../../scripts:$$PATH exe2cab.pl $(notdir $<); \
+		[ -n "$$XW_WWW_PATH" ] && cp $(subst exe,cab,$(notdir $<)) \
+			$$XW_WWW_PATH \
+	)
 	for DLL in $(notdir $(DLLS)); do \
-		(cd $(BUILTDIR); PATH=../../scripts:$$PATH dll2cab.pl $$DLL); \
+		(cd $(BUILTDIR); PATH=../../scripts:$$PATH dll2cab.pl $$DLL; \
+			[ -n "$$XW_WWW_PATH" ] && cp $$DLL $$XW_WWW_PATH; \
+			); \
 	done
 
 SHIP: $(TARGET)
