@@ -2490,7 +2490,6 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     } else {
 /*         XP_LOGF( "%s: event=%s (%d)", __func__, messageToStr(message), message ); */
         globals = (CEAppGlobals*)GetWindowLongPtr( hWnd, GWL_USERDATA );
-        XP_ASSERT( !!globals );
 
         switch (message) {
 
