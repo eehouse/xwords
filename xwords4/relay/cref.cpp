@@ -826,9 +826,10 @@ void
 CookieRef::setAllConnectedTimer()
 {
     time_t inHowLong;
-    RelayConfigs::GetConfigs()->GetValueFor( "ALLCONN", &inHowLong );
-    TimerMgr::GetTimerMgr()->SetTimer( inHowLong,
-                                       s_checkAllConnected, this, 0 );
+    if ( RelayConfigs::GetConfigs()->GetValueFor( "ALLCONN", &inHowLong ) ) {
+        TimerMgr::GetTimerMgr()->SetTimer( inHowLong,
+                                           s_checkAllConnected, this, 0 );
+    }
 }
 
 void
