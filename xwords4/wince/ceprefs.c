@@ -372,7 +372,7 @@ PrefsDlg(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                                               IDS_NEED_TOUCH ),
                                               ceGetResStringL( globals,
                                                                IDS_FYI_L ),
-                                              MB_OK | MB_ICONHAND );
+                                              MB_OK | MB_ICONHAND, SAB_NONE );
                             ceSetChecked( hDlg, IDC_CHECKHINTSLIMITS, XP_FALSE );
                         }
                         break;

@@ -163,8 +163,9 @@ static XP_Bool ceSetDictName( const wchar_t* wPath, XP_U16 index, void* ctxt );
 static int messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream, 
                              const wchar_t* title, XP_U16 buttons );
 static XP_Bool ceQueryFromStream( CEAppGlobals* globals, XWStreamCtxt* stream);
-static int ceOopsId( CEAppGlobals* globals, XP_U16 strId );
-static int ceOops( CEAppGlobals* globals, const XP_UCHAR* str );
+static int ceOopsId( CEAppGlobals* globals, XP_U16 strId, SkipAlertBits sab );
+static int ceOops( CEAppGlobals* globals, const XP_UCHAR* str, 
+                   SkipAlertBits sab );
 static XP_Bool isDefaultName( CEAppGlobals* globals, const XP_UCHAR* name );
 static void ceSetTitleFromName( CEAppGlobals* globals );
 static void removeScrollbar( CEAppGlobals* globals );
@@ -1085,7 +1086,7 @@ ceLoadPrefs( CEAppGlobals* globals )
         XP_U16 curVersion;
         if ( fileSize >= sizeof(curVersion) && peekVersion( fileH,
                                                             &curVersion ) ) {
-            CEAppPrefs tmpPrefs;
+            CEAppPrefs tmpPrefs = {0};
             if ( curVersion == CUR_CE_PREFS_FLAGS ) {
                 if ( fileSize >= sizeof( CEAppPrefs ) ) {
                     XP_U32 bytesRead;
@@ -1202,7 +1203,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
                           ceGetResString( globals, IDS_CANNOTOPEN_DICT ),
                           dictName );
                 buf[VSIZE(buf)-1] = '\0';
-                ceOops( globals, buf );
+                ceOops( globals, buf, SAB_NONE );
 
             }
             XP_FREE( globals->mpool, dictName );
@@ -1231,7 +1232,7 @@ ceLoadSavedGame( CEAppGlobals* globals )
                 if ( !!dict ) {
                     dict_destroy( dict );
                 }
-                ceOopsId( globals, IDS_CANNOTOPEN_GAME );
+                ceOopsId( globals, IDS_CANNOTOPEN_GAME, SAB_NONE );
             }
         }
 
@@ -2457,10 +2458,10 @@ connEvtAndError( CEAppGlobals* globals, WPARAM wParam )
     case CONN_ERR_NONE:
         break;
     case CONN_ERR_PHONE_OFF:
-        ceOopsId( globals, IDS_PHONE_OFF );
+        ceOopsId( globals, IDS_PHONE_OFF, SAB_PHONEOFF );
         break;
     case CONN_ERR_NONET:
-        ceOopsId( globals, IDS_NETWORK_FAILED );
+        ceOopsId( globals, IDS_NETWORK_FAILED, SAB_NETFAILED );
         break;
     }
 }
@@ -2600,7 +2601,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if ( !!globals->game.comms ) {
                     (void)comms_resendAll( globals->game.comms );
                 } else {
-                    ceOopsId( globals, IDS_RESEND_STANDALONE );
+                    ceOopsId( globals, IDS_RESEND_STANDALONE, SAB_NONE );
                  }
                 break;
 #endif
@@ -2952,16 +2953,16 @@ ceStreamToStrBuf( MPFORMAL XWStreamCtxt* stream )
 } /* ceStreamToStrBuf */
 
 static int
-ceOops( CEAppGlobals* globals, const XP_UCHAR* str )
+ceOops( CEAppGlobals* globals, const XP_UCHAR* str, SkipAlertBits bit )
 {
     return ceMessageBoxChar( globals, str, NULL,
-                             MB_OK | MB_ICONHAND );
+                             MB_OK | MB_ICONHAND, bit );
 }
 
 static int
-ceOopsId( CEAppGlobals* globals, XP_U16 strId )
+ceOopsId( CEAppGlobals* globals, XP_U16 strId, SkipAlertBits bit )
 {
-    return ceOops( globals, ceGetResString( globals, strId ) );
+    return ceOops( globals, ceGetResString( globals, strId ), bit );
 }
 
 static int
@@ -2971,7 +2972,7 @@ messageBoxStream( CEAppGlobals* globals, XWStreamCtxt* stream,
     XP_UCHAR* buf = ceStreamToStrBuf( MPPARM(globals->mpool) stream );
     int result;
 
-    result = ceMessageBoxChar( globals, buf, title, buttons );
+    result = ceMessageBoxChar( globals, buf, title, buttons, SAB_NONE );
 
     XP_FREE( globals->mpool, buf );
     return result;
@@ -3191,6 +3192,7 @@ ce_relay_connd( void* closure, XP_Bool allHere, XP_U16 nMissing )
 {
     CEAppGlobals* globals = (CEAppGlobals*)closure;
     XP_U16 strID = 0;
+    SkipAlertBits bit = SAB_NONE;
 
     if ( allHere ) {
         strID = IDS_RELAY_ALLHERE;
@@ -3198,8 +3200,10 @@ ce_relay_connd( void* closure, XP_Bool allHere, XP_U16 nMissing )
         DeviceRole role = globals->gameInfo.serverRole;
         if ( role == SERVER_ISSERVER ) {
             strID = IDS_RELAY_HOST_WAITINGD;
+            bit = SAB_HOST_CONND;
         } else if ( nMissing > 0 ) {
             strID = IDS_RELAY_GUEST_WAITINGD;
+            bit = SAB_CLIENT_CONND;
         } else {
             /* an allHere message should be coming immediately, so no
                notification now. */
@@ -3211,7 +3215,7 @@ ce_relay_connd( void* closure, XP_Bool allHere, XP_U16 nMissing )
         const XP_UCHAR* fmt = ceGetResString( globals, strID );
         XP_SNPRINTF( buf, VSIZE(buf), fmt, nMissing );
         ceMessageBoxChar( globals, buf, ceGetResStringL( globals, IDS_FYI_L ),
-                          MB_OK | MB_ICONHAND );
+                          MB_OK | MB_ICONHAND, bit );
     }
 } /* ce_relay_connd */
 
@@ -3311,6 +3315,7 @@ static void
 ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     XP_U16 resID = 0;
+    SkipAlertBits sab = SAB_NONE;
 
     switch( id ) {
     case ERR_TILES_NOT_IN_LINE:
@@ -3369,11 +3374,13 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
         resID = IDS_XWRELAY_ERROR_TIMEOUT;
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_YOU:
+        sab = SAB_HEART_YOU;
         resID = IDS_ERROR_HEART_YOU;
         break;
     case ERR_RELAY_BASE + XWRELAY_ERROR_HEART_OTHER:
     case ERR_RELAY_BASE + XWRELAY_ERROR_LOST_OTHER:
     case ERR_RELAY_BASE + XWRELAY_ERROR_OTHER_DISCON:
+        sab = SAB_HEART_OTHER;
         resID = IDS_XWRELAY_ERROR_HEART_OTHER;
         break;
 
@@ -3399,7 +3406,7 @@ ce_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 
     if ( 0 != resID ) {
         CEAppGlobals* globals = (CEAppGlobals*)uc->closure;
-        ceOopsId( globals, resID );
+        ceOopsId( globals, resID, sab );
     }
 } /* ce_util_userError */
 
@@ -3816,7 +3823,7 @@ ce_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     if ( turnLost ) {
         ceMessageBoxChar( globals, msgBuf, 
                           ceGetResStringL( globals, IDS_ILLEGALWRD_L ),
-                          MB_OK | MB_ICONHAND );
+                          MB_OK | MB_ICONHAND, SAB_NONE );
         isOk = XP_TRUE;
     } else {
         const XP_UCHAR* str = ceGetResString( globals, IDS_USEANYWAY );

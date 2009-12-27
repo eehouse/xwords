@@ -1063,20 +1063,36 @@ ceGetPath( CEAppGlobals* globals, CePathType typ,
 } /* ceGetPath */
 
 int
-ceMessageBoxChar( CEAppGlobals* XP_UNUSED(globals), const XP_UCHAR* str, 
-                  const wchar_t* title, XP_U16 buttons )
+ceMessageBoxChar( CEAppGlobals* globals, const XP_UCHAR* str, 
+                  const wchar_t* title, XP_U16 buttons, SkipAlertBits bit )
 {
-    HWND parent;
-    /* Get the length required, then alloc and go.  This is technically
-       correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
-    XP_U16 clen = 1 + strlen(str);
-    XP_U32 wlen = 1 + MultiByteToWideChar( CP_UTF8, 0, str, clen, NULL, 0 );
-    wchar_t widebuf[wlen];
-    
-    MultiByteToWideChar( CP_UTF8, 0, str, clen, widebuf, wlen );
+    int result = IDOK;
+    XP_Bool callIt;
 
-    parent = GetForegroundWindow();
-    return MessageBox( parent, widebuf, title, buttons );
+    if ( SAB_NONE == bit ) {
+        callIt = XP_TRUE;
+    } else {
+        callIt = 0 == (bit & globals->skipAlrtBits);
+    }
+
+    if ( callIt ) {
+        HWND parent;
+        /* Get the length required, then alloc and go.  This is technically
+           correct, but everywhere else I assume a 2:1 ratio for wchar_t:char. */
+        XP_U16 clen = 1 + strlen(str);
+        XP_U32 wlen = 1 + MultiByteToWideChar( CP_UTF8, 0, str, clen, NULL, 0 );
+        wchar_t widebuf[wlen];
+    
+        MultiByteToWideChar( CP_UTF8, 0, str, clen, widebuf, wlen );
+
+        parent = GetForegroundWindow();
+
+        globals->skipAlrtBits |= bit;
+        result = MessageBox( parent, widebuf, title, buttons );
+        globals->skipAlrtBits &= ~bit;
+    }
+
+    return result;
 } /* ceMessageBoxChar */
 
 XP_Bool

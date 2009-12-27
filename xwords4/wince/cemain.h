@@ -90,6 +90,16 @@ typedef struct CEAppPrefs0002 {
     XP_Bool showColors;
 } CEAppPrefs0002;
 
+typedef enum {
+    SAB_NONE = 0
+    ,SAB_PHONEOFF = 1 << 0
+    ,SAB_NETFAILED = 1 << 1
+    ,SAB_HOST_CONND = 1 << 2
+    ,SAB_CLIENT_CONND = 1 << 3
+    ,SAB_HEART_YOU = 1 << 4
+    ,SAB_HEART_OTHER = 1 << 5
+} SkipAlertBits;
+
 typedef struct CEAppPrefs {
     XP_U16 versionFlags;
     CommonPrefs cp;
@@ -174,6 +184,8 @@ typedef struct _CEAppGlobals {
     struct CeSocketWrapper* socketWrap;
 
     CEAppPrefs appPrefs;
+
+    SkipAlertBits skipAlrtBits;         /* bit vector */
 
     XP_Bool isNewGame;
     XP_Bool penDown;

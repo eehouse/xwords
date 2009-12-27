@@ -49,7 +49,8 @@ void ceGetItemRect( HWND hDlg, XP_U16 resID, RECT* rect );
 void ceMoveItem( HWND hDlg, XP_U16 resID, XP_S16 byX, XP_S16 byY );
 
 int ceMessageBoxChar( CEAppGlobals* globals, const XP_UCHAR* str, 
-                      const wchar_t* title, XP_U16 buttons );
+                      const wchar_t* title, XP_U16 buttons, 
+                      SkipAlertBits sab );
 XP_Bool ceCurDictIsUTF8( CEAppGlobals* globals );
 
 XP_U16 ceDistanceBetween( HWND hDlg, XP_U16 resID1, XP_U16 resID2 );
