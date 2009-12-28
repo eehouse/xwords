@@ -366,6 +366,10 @@ handleConnOptionsButton( GameInfoState* state )
     role = (DeviceRole)SendDlgItemMessage( hDlg, state->roleComboId,
                                            GETCURSEL(globals), 0, 0L);
     value.ng_role = state->curRole = role;
+    if ( value.ng_role != globals->gameInfo.serverRole ) {
+        state->results.addrChanged = XP_TRUE;
+    }
+
     newg_attrChanged( state->newGameCtx, NG_ATTR_ROLE, value );
     raiseForRoleChange( state, role );
 } /* handleConnOptionsButton */
@@ -768,10 +772,7 @@ GameInfo( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
                             break;
 
                         case IDOK: {
-                            DeviceRole role = (DeviceRole)
-                                SendDlgItemMessage( hDlg, state->roleComboId,
-                                                    GETCURSEL(globals), 0, 0L );
-                            if ( role != SERVER_STANDALONE
+                            if ( state->curRole != SERVER_STANDALONE
                                  && !comms_checkComplete( 
                                      &state->prefsPrefs->addrRec )
                                  && !callConnsDlg( state ) ) {
