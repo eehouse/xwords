@@ -366,7 +366,11 @@ ce_sockwrap_new( MPFORMAL HWND hWnd, DataRecvProc dataCB,
 
     bqInit( &self->queueOut, self->bufOut, sizeof(self->bufOut) );
 
-    getHostAddr( self );
+/* #ifdef _WIN32_WCE */
+/*     openNetwork( self );    /\* kicks off connection process *\/ */
+/* #else */
+/*     getHostAddr( self );    /\* kicks off connection process *\/ */
+/* #endif */
     return self;
 } /* ce_sockwrap_new */
 
