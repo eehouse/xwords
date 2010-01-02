@@ -871,7 +871,7 @@ BEGIN
     IDS_LANGUAGE_NAME       "Polski"
     IDS_NEW_GAME            "Nowa gra"
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (REV " SVN_REV ") "\
-                    "dla Windows Mobile. Copyright 1998-2009 "\
+                    "dla Windows Mobile. Copyright 1998-2010 "\
                     "Eric House.  Oprogramowanie wydane na "\
                     "publicznej licencji GNU.\r\r"\
                     "Tłumaczenie: Piotr Bartkowiak."\

@@ -898,7 +898,7 @@ BEGIN
     IDS_LANGUAGE_NAME       "Čeština"
     IDS_NEW_GAME            "Nová hra"
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (rev " SVN_REV ") "\
-                    "pro Windows Mobile. Copyright 1998-2009 by "\
+                    "pro Windows Mobile. Copyright 1998-2010 by "\
                     "Eric House.  Tento software je šířen pod licencí "\
                     "GNU Public License.\r\r"\
                     "Slovníky, manuály, nebo zdrojové kódy naleznete na "\

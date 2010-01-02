@@ -894,7 +894,7 @@ BEGIN
     IDS_LANGUAGE_NAME       "Català"
     IDS_NEW_GAME            "Partida nova"
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (versió " SVN_REV ") "\
-                    "per a Windows Mobile. Copyright 1998-2009 "\
+                    "per a Windows Mobile. Copyright 1998-2010 "\
                     "d'Eric House. Traduït per en Joan Montané. "\
                     "Aquest programari es troba sota la"\
                     "Llicència Pública GNU.\r\r"\

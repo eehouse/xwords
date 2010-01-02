@@ -867,7 +867,7 @@ BEGIN
     IDS_LANGUAGE_NAME       "Français"
     IDS_NEW_GAME            "New Game"  // <- translate
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (rev " SVN_REV ") "\
-                    "pour Windows Mobile. Copyright 1998-2009 "\
+                    "pour Windows Mobile. Copyright 1998-2010 "\
                     "Eric House.  Ce logiciel est produit sous licence "\
                     "publique GNU.\r\r"\
                     "Pour obtenir des dictionnaires, le manuel ou le "\
