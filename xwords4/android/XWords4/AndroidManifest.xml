@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2007 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+  
+          http://www.apache.org/licenses/LICENSE-2.0
+  
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<!-- Declare the contents of this Android application.  The namespace
+     attribute brings in the Android platform namespace, and the package
+     supplies a unique name for the application.  When writing your
+     own application, the package name must be changed from "com.example.*"
+     to come from a domain that you own or have control over. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.eehouse.android.xw4"
+          >
+  <application android:icon="@drawable/icon48x48"
+               android:label="@string/app_name"
+               >
+
+    <activity android:name="GamesList" android:label="@string/title_games_list">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <action android:name="android.intent.action.EDIT" />
+        <action android:name="android.intent.action.PICK" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="vnd.android.cursor.dir/vnd.google.note" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.GET_CONTENT" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="vnd.android.cursor.item/vnd.eehouse.org.game" />
+      </intent-filter>
+    </activity>
+        
+    <activity android:name="GameConfig"
+              android:theme="@android:style/Theme.Light"
+              android:label="@string/title_game"
+              android:screenOrientation="sensor"
+              android:configChanges="keyboardHidden|orientation"
+              >
+      <!-- This filter says that we can view or edit the data of
+           a single note -->
+      <intent-filter android:label="@string/resolve_edit">
+        <action android:name="android.intent.action.VIEW" />
+        <action android:name="android.intent.action.EDIT" />
+        <action android:name="org.eehouse.android.xw4.action.EDIT_GAME" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="vnd.android.cursor.item/vnd.org.eehouse.android.xw4.game" />
+      </intent-filter>
+    </activity>
+
+    <activity android:name="BoardActivity"
+              android:theme="@android:style/Theme.Light"
+              android:label="@string/title_game"
+              android:screenOrientation="sensor"
+              android:configChanges="keyboardHidden|orientation"
+              >
+      <!-- This filter says that we can edit the data of a game, i.e. play -->
+      <intent-filter android:label="@string/play">
+        <action android:name="android.intent.action.EDIT" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="vnd.android.cursor.item/vnd.org.eehouse.android.xw4.game" />
+      </intent-filter>
+
+      <!-- This filter says that we can create a new note inside
+           of a directory of notes. -->
+      <!--intent-filter>
+        <action android:name="android.intent.action.INSERT" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="vnd.android.cursor.dir/vnd.google.note" />
+      </intent-filter-->
+
+    </activity>
+    
+  </application>
+</manifest>

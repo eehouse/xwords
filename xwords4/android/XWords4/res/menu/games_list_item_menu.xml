@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/list_item_open"
+          android:title="@string/list_item_open" />
+    <item android:id="@+id/list_item_view"
+          android:title="@string/list_item_view" />
+    <item android:id="@+id/list_item_hide"
+          android:title="@string/list_item_hide" />
+    <item android:id="@+id/list_item_delete"
+          android:title="@string/list_item_delete" />
+</menu>

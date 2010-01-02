@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/board_menu_done"
+          android:title="@string/board_menu_done" />
+    <item android:id="@+id/board_menu_juggle"
+          android:title="@string/board_menu_juggle" />
+    <item android:id="@+id/board_menu_flip"
+          android:title="@string/board_menu_flip" />
+    <item android:id="@+id/board_menu_trade"
+          android:title="@string/board_menu_trade" />
+    <item android:id="@+id/board_menu_tray"
+          android:title="@string/board_menu_tray" />
+
+    <item android:title="@string/board_submenu_undo">
+      <menu>
+        <item android:id="@+id/board_menu_undo_current"
+              android:title="@string/board_menu_undo_current" />
+        <item android:id="@+id/board_menu_undo_last"
+              android:title="@string/board_menu_undo_last" />
+      </menu>
+    </item>
+
+    <item android:title="@string/board_submenu_hint">
+      <menu>
+        <item android:id="@+id/board_menu_hint_next"
+              android:title="@string/board_menu_hint_next" />
+        <item android:id="@+id/board_menu_hint"
+              android:title="@string/board_menu_hint" />
+      </menu>
+    </item>
+    <item android:title="@string/board_submenu_game">
+      <menu>
+        <item android:id="@+id/board_menu_game_counts"
+              android:title="@string/board_menu_game_counts" />
+        <item android:id="@+id/board_menu_game_left"
+              android:title="@string/board_menu_game_left" />
+        <item android:id="@+id/board_menu_game_info"
+              android:title="@string/board_menu_game_info" />
+        <item android:id="@+id/board_menu_game_history"
+              android:title="@string/board_menu_game_history" />
+        <item android:id="@+id/board_menu_game_final"
+              android:title="@string/board_menu_game_final" />
+        <item android:id="@+id/board_menu_game_resend"
+              android:title="@string/board_menu_game_resend" />
+      </menu>
+    </item>
+    <item android:title="@string/board_submenu_file">
+      <menu>
+        <item android:id="@+id/board_menu_file_new"
+              android:title="@string/board_menu_file_new" />
+        <item android:id="@+id/board_menu_file_prefs"
+              android:title="@string/board_menu_file_prefs" />
+        <item android:id="@+id/board_menu_file_about"
+              android:title="@string/board_menu_file_about" />
+      </menu>
+    </item>
+
+</menu>
