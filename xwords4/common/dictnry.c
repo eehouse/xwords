@@ -486,7 +486,7 @@ void
 destroy_stubbed_dict( DictionaryCtxt* dict )
 {
     XP_FREE( dict->mpool, dict->countsAndValues );
-    XP_FREE( dict->mpool, dict->faces16 );
+    XP_FREE( dict->mpool, dict->faces );
     XP_FREE( dict->mpool, dict->chars );
     XP_FREE( dict->mpool, dict->name );
     XP_FREE( dict->mpool, dict->bitmaps );
@@ -499,7 +499,7 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
     DictionaryCtxt* dict = (DictionaryCtxt*)XP_MALLOC( mpool, sizeof(*dict) );
     XP_U8* data = stub_english_data;
     XP_U16 datasize = sizeof(stub_english_data);
-    XP_U16 i;
+    XP_U16 ii;
 
     XP_MEMSET( dict, 0, sizeof(*dict) );
 
@@ -509,16 +509,23 @@ make_stubbed_dict( MPFORMAL_NOCOMMA )
 
     dict->destructor = destroy_stubbed_dict;
 
-    dict->faces16 = (XP_CHAR16*)
-        XP_MALLOC( mpool, dict->nFaces * sizeof(dict->faces16[0]) );
-    for ( i = 0; i < datasize/3; ++i ) {
-        dict->faces16[i] = (XP_CHAR16)data[(i*3)+2];
+    dict->faces = (XP_UCHAR*)
+        XP_MALLOC( mpool, 2 * dict->nFaces * sizeof(dict->faces[0]) );
+    dict->facePtrs = (XP_UCHAR**)
+        XP_MALLOC( mpool, dict->nFaces * sizeof(dict->facePtrs[0]) );
+    
+    XP_UCHAR* nextChar = dict->faces;
+    XP_UCHAR** nextPtr = dict->facePtrs;
+    for ( ii = 0; ii < datasize/3; ++ii ) {
+        *nextPtr++ = nextChar;
+        *nextChar++ = (XP_UCHAR)data[(ii*3)+2];
+        *nextChar++ = '\0';
     }
     
     dict->countsAndValues = (XP_U8*)XP_MALLOC( mpool, dict->nFaces*2 );
-    for ( i = 0; i < datasize/3; ++i ) {
-        dict->countsAndValues[i*2] = data[(i*3)];
-        dict->countsAndValues[(i*2)+1] = data[(i*3)+1];
+    for ( ii = 0; ii < datasize/3; ++ii ) {
+        dict->countsAndValues[ii*2] = data[(ii*3)];
+        dict->countsAndValues[(ii*2)+1] = data[(ii*3)+1];
     }
 
     dict->bitmaps = (SpecialBitmaps*)XP_MALLOC( mpool, sizeof(SpecialBitmaps) );
