@@ -161,6 +161,15 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
     return entry->ptr;
 } /* mpool_alloc */
 
+void*
+mpool_calloc( MemPoolCtx* mpool, XP_U32 size, const char* file, 
+             const char* func, XP_U32 lineNo )
+{
+    void* ptr = mpool_alloc( mpool, size, file, func, lineNo );
+    XP_MEMSET( ptr, 0, size );
+    return ptr;
+}
+
 static MemPoolEntry*
 findEntryFor( MemPoolCtx* mpool, void* ptr, MemPoolEntry** prevP )
 {

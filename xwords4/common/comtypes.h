@@ -178,6 +178,8 @@ typedef struct CommonPrefs {
 #ifdef MEM_DEBUG
 # define XP_MALLOC(pool,nbytes) \
     mpool_alloc((pool),(nbytes),__FILE__,__func__, __LINE__)
+# define XP_CALLOC(pool,nbytes) \
+    mpool_calloc((pool),(nbytes),__FILE__,__func__, __LINE__)
 # define XP_REALLOC(pool,p,s) \
     mpool_realloc((pool),(p),(s),__FILE__,__func__,__LINE__)
 # define XP_FREE(pool,p) \
