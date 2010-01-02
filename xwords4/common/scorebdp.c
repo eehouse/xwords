@@ -61,7 +61,7 @@ drawScoreBoard( BoardCtxt* board )
         short ii;
 
         XP_U16 nPlayers = board->gi->nPlayers;
-
+        XP_ASSERT( nPlayers < MAX_NUM_PLAYERS );
         if ( nPlayers > 0 ) {
             ModelCtxt* model = board->model;
             XP_S16 curTurn = server_getCurrentTurn( board->server );
