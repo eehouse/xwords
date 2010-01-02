@@ -1,0 +1,17 @@
+Here's how I'm building crosswords for Android.
+
+First, my working directory is XWords within this (android/)
+directory.
+
+Build the jni library (the cross-platform code):
+# ../scripts/ndkbuild.sh 
+
+Then build the app for the emulator (first time)
+# ant install
+
+subsequent times
+# ant reinstall
+
+Build for a device (requires you've set up your keys.  I did this too
+long ago to remember how but the info's easy to find):
+# ant release
