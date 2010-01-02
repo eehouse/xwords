@@ -969,10 +969,10 @@ BEGIN
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "To jest gra lokalna, nie ma czego wysyłać."
-    IDS_PHONE_OFF           "Crosswords cannot connect because the phone "\
-                            "appears to be off.  Please restart Crosswords "\
-                            "after turning it on." /* translate */
-    IDS_NETWORK_FAILED      "Unable to bring up networking." /* translate */
+    IDS_PHONE_OFF           "Crosswords nie może się połączyć, prawdopodobnie "\
+                            "moduł GSM/WLAN jest wyłączony. Uruchom moduł sieciowy "\
+                            "i zrestartuj Crosswords."
+    IDS_NETWORK_FAILED      "Nie mogę uruchomić połączenia sieciowego."
     IDS_CONN_RELAY_L        "Serwer"
     IDS_CONN_DIRECT         "Bezpośrednie"
     IDS_LOCALPLAYERS        "lokalni gracze:"
@@ -996,22 +996,21 @@ BEGIN
                                    "oczekiwania na Twoją odpowiedź."
     IDS_XWRELAY_ERROR_HEART_OTHER  "Serwer utracił połączenie z graczem."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "Utracono połączenie z graczem." */
-    IDS_XWRELAY_RELAY_INCOMPAT "This version of Crosswords does not match the "\
-                               "relay.  You probably need to upgrade to the "\
-                               "latest version." /* translate */
-    IDS_RELAY_HOST_WAITINGD    "Connected to relay as host.  Waiting for "\
-                               "%d player[s]." /* translate */
-    IDS_RELAY_GUEST_WAITINGD   "Connected to relay as guest.  Still waiting "\
-                               "for %d player[s]." /* translate */
-    IDS_RELAY_ALLHERE          "All players are here." /* translate */
+    IDS_XWRELAY_RELAY_INCOMPAT "Serwer wymaga nowej wersji Crosswords. "\
+                               "Musisz zainstalować nowszą wersję Aplikacji."
+    IDS_RELAY_HOST_WAITINGD    "Połączony jako host.  Czekam na połączenie "\
+                               "%d gracza[y]."
+    IDS_RELAY_GUEST_WAITINGD   "Połączony jako gość. Wciąż czekam za "\
+                               "for %d graczem[ami]."
+    IDS_RELAY_ALLHERE          "Wszyscy gracze połączeni."
 
-    IDS_ERROR_NO_ROOM          "No such room.  Has the host connected yet "\
-                               "to reserve it?" /* translate */
-    IDS_ERROR_DUP_ROOM         "That room is reserved by another host. "\
-                               "Rename your room, become a guest, or try "\
-                               "again in a few minutes." /* translate */
-    IDS_ERROR_TOO_MANY         "The host is not expecting this many players. "\
-                               "Please reduce the number of Local players." /* translate */
+    IDS_ERROR_NO_ROOM          "Brak pokoju. Czy host na pewno jest połączony "\
+                               "i zarezerwował nazwę pokoju?"
+    IDS_ERROR_DUP_ROOM         "Ten pokój został zarezerwowany przez innego hosta. "\
+                               "Zmień nazwę, połącz się jako gość lub "\
+                               "spróbuj jeszcze raz za parę minut."
+    IDS_ERROR_TOO_MANY         "Brak hosta oczekującego na tylu graczy. "\
+                               "Zmniejsz ilość graczy w ustawieniach."
 # endif
 #endif
 
