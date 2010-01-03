@@ -270,7 +270,7 @@ BEGIN
     XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
 
     PUSHBUTTON      "Configuree le mode",GIROLECONF_BUTTON,LEFT_COL+10,
-                     SERVERCONF_ROW,60,ROW_HEIGHT   // <- translate Configure mode
+                     SERVERCONF_ROW,60,ROW_HEIGHT
 #endif
 
     LTEXT           "",IDC_TOTAL_LABEL,LEFT_COL,NPLAYERS_ROW,70,8
@@ -547,12 +547,13 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,60,PREFS_ROW_HT
     CONTROL         "Détails des points du robot",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,87,PREFS_ROW_HT
-    CONTROL         "Skip turn confirm",IDC_SKIPCONFIRM,"Button", /* <- translate */
+    CONTROL         "Skip turn confirm", /* <- translate */
+                    IDC_SKIPCONFIRM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,80,PREFS_ROW_HT
     CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW6,87,PREFS_ROW_HT
     PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,PR_LEFT,PR_ROW7,75,12
-    PUSHBUTTON      "Changer la langue...",IDC_PREFLOCALE,PR_LEFT,PR_ROW8,75,12 // <-translate
+    PUSHBUTTON      "Changer la langue...",IDC_PREFLOCALE,PR_LEFT,PR_ROW8,75,12
 #ifdef ALLOW_CHOOSE_FONTS
     PUSHBUTTON      "Choisir une police...",IDC_PREFFONTS,PR_LEFT,PR_ROW9,60,12
 #endif
@@ -630,15 +631,14 @@ BEGIN
 #endif
 #ifdef XWFEATURE_RELAY
     LTEXT           "Partie distante:",
-                    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,23,CONN_LABEL_HT // <- translate
+                    IDC_INVITE_LAB,LAB_COL,CONN_ROW_3,23,CONN_LABEL_HT
     EDITTEXT        INVITE_EDIT,LAB_COL+25,CONN_ROW_3,CTRL_COL_WIDTH,
                     ROW_HEIGHT,ES_AUTOHSCROLL
 
     LTEXT           "(comme hôte, vous devez nommer la partie et vous "
-                    "indique le nom de la partie.)", /* translate */
+                    "indique le nom de la partie.)",
                     IDC_INVITE_HELP_HOST,LAB_COL,CONN_ROW_4,110,CONN_HELP_HT
-    LTEXT           "(comme invité, attendez que l'hôte se connecte et vous "
-                    "the room name.)", /* translate */
+    LTEXT           "(comme invité, attendez que l'hôte se connecte et vous the room name.)", /* translate */
                     IDC_INVITE_HELP_GUEST,LAB_COL,CONN_ROW_4,100,CONN_HELP_HT
 
 # ifndef RELAY_NOEDIT_ADDR
@@ -835,7 +835,7 @@ END
 
 IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 100, 80
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Language Picker"
+CAPTION "Language Picker"       /* translate */
 FONT 8, "System"
 BEGIN
     LTEXT           "Choose the language for menus and dialog text.  (You can download support files for new languages from xwords.sf.net.)", // <- translate
@@ -865,7 +865,7 @@ BEGIN
     IDS_OK                  "OK"
     IDS_DONE                "Terminé"
     IDS_LANGUAGE_NAME       "Français"
-    IDS_NEW_GAME            "Nouvelle partie"  // <- translate
+    IDS_NEW_GAME            "Nouvelle partie"
     IDS_ABOUT       "Crosswords " ABOUT_VERSION " (rev " SVN_REV ") "\
                     "pour Windows Mobile. Copyright 1998-2010 "\
                     "Eric House.  Ce logiciel est produit sous licence "\
@@ -957,18 +957,18 @@ BEGIN
     IDS_ROLE_GUEST          "Invité"
     IDS_PLAYER_FORMAT       "Joueur %d"
     IDS_UNTITLED_FORMAT     "Sans titre %d"
-    IDS_PASSWDFMT_L         "Entrez le mot de passe pour %ls:"            // <- translate
-    IDS_FILEEXISTSFMT_L     "Le fichier %s existe déjà."        // <- translate
-    IDS_NEED_TOUCH          "Cette fonctionnalité nécessite un écran tactile." // <- translate
-    IDS_EDITCOLOR_FORMAT    "Editer la couleur pour %s" // <- translate
-    IDS_LANG_CHANGE_RESTART "La nouvelle langue apparaîtra après avoir redémarré Crosswords." /* <- translate */
+    IDS_PASSWDFMT_L         "Entrez le mot de passe pour %ls:"
+    IDS_FILEEXISTSFMT_L     "Le fichier %s existe déjà."
+    IDS_NEED_TOUCH          "Cette fonctionnalité nécessite un écran tactile."
+    IDS_EDITCOLOR_FORMAT    "Editer la couleur pour %s"
+    IDS_LANG_CHANGE_RESTART "La nouvelle langue apparaîtra après avoir redémarré Crosswords."
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    IDS_RESEND_STANDALONE   "Ceci est une partie autonome. Il n'y a rien à renvoyer." /* <- translate */
+    IDS_RESEND_STANDALONE   "Ceci est une partie autonome. Il n'y a rien à renvoyer."
     IDS_PHONE_OFF           "Crosswords ne peut se connecter car le téléphone "\
                             "semble éteint. Veuillez le mettre en fonction et ensuite "\
-                            "redémarrer Crosswords." /* translate */
-    IDS_NETWORK_FAILED      "Impossible de mettre en place le réseau." /* translate */
+                            "redémarrer Crosswords."
+    IDS_NETWORK_FAILED      "Impossible de mettre en place le réseau."
     IDS_CONN_RELAY_L        "Transmission"
     IDS_CONN_DIRECT         "Connexion directe"
     IDS_LOCALPLAYERS        "Joueurs loc.:"
@@ -982,7 +982,7 @@ BEGIN
     IDS_SMS_CONN_L          "Texting"
 # endif
 # ifdef XWFEATURE_IP_DIRECT
-    IDS_DIRECT_CONN_L       "Connexion directe"  // <- translate -- but not visible in version 4.2
+    IDS_DIRECT_CONN_L       "Connexion directe"  // but not visible in version 4.2
 # endif
 # ifdef XWFEATURE_RELAY
     IDS_XWRELAY_ERROR_TIMEOUT      "La transmission a échoué dans les délais; cela signifie généralement "\
@@ -991,20 +991,20 @@ BEGIN
                                    "pendant trop longtemps."
     IDS_XWRELAY_ERROR_HEART_OTHER  "La transmission a perdu le contact avec un appareil durant cette partie."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "The relay has lost contact with a device in this game." */
-    IDS_XWRELAY_RELAY_INCOMPAT "Cette version de Crosswords ne peut accéder au serveur relai.  Vous devriez probablement mettre à jour vers la dernière version." /* translate */
+    IDS_XWRELAY_RELAY_INCOMPAT "Cette version de Crosswords ne peut accéder au serveur relai.  Vous devriez probablement mettre à jour vers la dernière version."
     IDS_RELAY_HOST_WAITINGD    "Connecté au serveur relai en tant qu'hôte. En attente de "\
-                               "%d joueur[s]." /* translate */
+                               "%d joueur[s]."
     IDS_RELAY_GUEST_WAITINGD   "Connecté au serveur relai en tant qu'invité. En attente "\
-                               "de %d joueur[s]." /* translate */
-    IDS_RELAY_ALLHERE          "Tous les joueurs sont là." /* translate */
+                               "de %d joueur[s]."
+    IDS_RELAY_ALLHERE          "Tous les joueurs sont là."
 
     IDS_ERROR_NO_ROOM          "Partie inexistante.  L'hôte s'est-il connecté "\
-                               "pour la créer?" /* translate */
+                               "pour la créer?"
     IDS_ERROR_DUP_ROOM         "Cette partie est déjà utilisée par un autre hôte. "\
                                "Renommez votre partie, continuez comme invité "\
-                               "ou réessayez dans quelques minutes." /* translate */
+                               "ou réessayez dans quelques minutes."
     IDS_ERROR_TOO_MANY         "L'hôte n'est pas en attente d'autant de joueurs. "\
-                               "Veuillez réduire le nombre de joueurs locaux." /* translate */
+                               "Veuillez réduire le nombre de joueurs locaux."
 # endif
 #endif  /* XWFEATURE_STANDALONE_ONLY */
 
