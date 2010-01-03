@@ -75,7 +75,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         Utils.logf( "calling game_makeNewGame; passing bytes: " + dictBytes.length );
         m_jniGamePtr = XwJNI.game_makeNewGame( m_gi, this, m_view, 0, 
                                                m_prefs, null, dictBytes );
-        m_view.startHandling( m_jniGamePtr, m_gi );
+        m_view.startHandling( this, m_jniGamePtr, m_gi );
 
         XwJNI.server_do( m_jniGamePtr );
     }

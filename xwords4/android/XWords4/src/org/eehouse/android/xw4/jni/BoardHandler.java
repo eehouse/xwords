@@ -1,8 +1,10 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.content.Context;
+
 public interface BoardHandler {
 
-    void startHandling( int gamePtr, CurGameInfo gi );
+    void startHandling( Context context, int gamePtr, CurGameInfo gi );
 
 }

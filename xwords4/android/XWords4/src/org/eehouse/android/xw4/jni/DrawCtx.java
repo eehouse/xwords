@@ -23,6 +23,8 @@ public interface DrawCtx {
 
     boolean drawCell( Rect rect, String text, Object[] bitmaps, int tile, 
                       int owner, int bonus, int hintAtts, int flags );
+    void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
+                          int flags );
 
     boolean trayBegin ( Rect rect, int owner, int dfs );
     void drawTile( Rect rect, String text, Object[] bitmaps, int val, int flags );

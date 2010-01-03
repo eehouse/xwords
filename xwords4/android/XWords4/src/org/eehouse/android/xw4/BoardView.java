@@ -10,6 +10,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import org.eehouse.android.xw4.jni.*;
 import android.view.MotionEvent;
+import android.graphics.drawable.Drawable;
+import android.content.res.Resources;
 
 public class BoardView extends View implements DrawCtx, 
                                                BoardHandler {
@@ -23,6 +25,8 @@ public class BoardView extends View implements DrawCtx,
     private int m_trayOwner;
     private Rect m_valRect;
     private Rect m_letterRect;
+    Drawable m_rightArrow;
+    Drawable m_downArrow;
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
@@ -142,9 +146,13 @@ public class BoardView extends View implements DrawCtx,
         return m_boardSet;
     }
 
-    public void startHandling( int gamePtr, CurGameInfo gi ) {
+    public void startHandling( Context context, int gamePtr, CurGameInfo gi ) {
         m_jniGamePtr = gamePtr;
         m_gi = gi;
+
+        Resources res = context.getResources();
+        m_downArrow = res.getDrawable( R.drawable.downarrow );
+        m_rightArrow = res.getDrawable( R.drawable.rightarrow );
     }
 
     // DrawCtxt interface implementation
@@ -208,6 +216,16 @@ public class BoardView extends View implements DrawCtx,
 
         m_canvas.drawRect( rect, m_strokePaint );
         return true;
+    }
+
+    public void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
+                                 int flags )
+    {
+        rect.inset( 2, 2 );
+        Utils.logf( "drawBoardArrow" );
+        Drawable arrow = vert? m_downArrow : m_rightArrow;
+        arrow.setBounds( rect );
+        arrow.draw( m_canvas );
     }
 
     public boolean trayBegin ( Rect rect, int owner, int dfs ) {

@@ -223,6 +223,22 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
     return XP_TRUE;
 }
 
+static void
+and_draw_drawBoardArrow(DrawCtx* dctx, const XP_Rect* rect, XWBonusType bonus, 
+                        XP_Bool vert, HintAtts hintAtts, CellFlags flags )
+{
+    LOG_FUNC();
+    AndDraw* draw = (AndDraw*)dctx;
+    JNIEnv* env = draw->env;
+    const char* sig =  "(Landroid/graphics/Rect;IZII)V";
+    jmethodID mid = getMethodID( env, draw->j_draw, "drawBoardArrow", sig );
+
+    jobject jrect = makeJRect( env, rect );
+    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+                            jrect, bonus, vert, hintAtts, flags );
+    (*env)->DeleteLocalRef( env, jrect );
+}
+
 static XP_Bool
 and_draw_trayBegin( DrawCtx* dctx, const XP_Rect* rect, XP_U16 owner, 
                     DrawFocusState dfs )
@@ -406,6 +422,7 @@ makeDraw( MPFORMAL JNIEnv *env, jobject j_draw )
     SET_PROC(drawRemText);
     SET_PROC(score_drawPlayer);
     SET_PROC(drawCell);
+    SET_PROC(drawBoardArrow);
 
     SET_PROC(trayBegin);
     SET_PROC(drawTile);
