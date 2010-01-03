@@ -994,10 +994,10 @@ BEGIN
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     IDS_RESEND_STANDALONE   "Aquesta és una partida en solitari. No hi ha res per a reenviar."
-    IDS_PHONE_OFF           "Crosswords cannot connect because the phone "\
-                            "appears to be off.  Please restart Crosswords "\
-                            "after turning it on." /* translate */
-    IDS_NETWORK_FAILED      "Unable to bring up networking." /* translate */
+    IDS_PHONE_OFF           "El Crosswords no pot connectar perquè el telèfon "\
+                            "sembla apagat.  Reinicieu el Crosswords "\
+                            "després d'engegar-lo."
+    IDS_NETWORK_FAILED      "No s'ha pogut preparar la xarxa."
     IDS_CONN_RELAY_L           "Repetidor"
     IDS_CONN_DIRECT            "Connexió directa"
     IDS_LOCALPLAYERS           "Jugadors locals:"
@@ -1021,22 +1021,20 @@ BEGIN
                                "no s'han rebut dades vostres en una bona estona."
     IDS_XWRELAY_ERROR_HEART_OTHER  "El repetidor ha perdut el contacte amb el un dispositiu d'aquesta partida."
 /*     IDS_XWRELAY_ERROR_LOST_OTHER   "El repetidor ha perdut el contacte amb un dispositiu d'aquesta partida." */
-    IDS_XWRELAY_RELAY_INCOMPAT "This version of Crosswords does not match the "\
-                               "relay.  You probably need to upgrade to the "\
-                               "latest version." /* translate */
-    IDS_RELAY_HOST_WAITINGD    "Connected to relay as host.  Waiting for "\
-                               "%d player[s]." /* translate */
-    IDS_RELAY_GUEST_WAITINGD   "Connected to relay as guest.  Still waiting "\
-                               "for %d player[s]." /* translate */
-    IDS_RELAY_ALLHERE          "All players are here." /* translate */
+    IDS_XWRELAY_RELAY_INCOMPAT "Aquesta versió del Crosswords no coincideix amb la del repetidor."\
+                               "  Probablement heu d'actualitzar a la darrera versió."
+    IDS_RELAY_HOST_WAITINGD    "Esteu connectat al repetidor com amfitrió.  S'està esperant a "\
+                               "%d jugador/s."
+    IDS_RELAY_GUEST_WAITINGD   "Esteu connectat al repetidor com a visitant. Encara esperem a "\
+                               "%d jugador/s."
+    IDS_RELAY_ALLHERE          "Tot els jugadors són aquí."
 
-    IDS_ERROR_NO_ROOM          "No such room.  Has the host connected yet "\
-                               "to reserve it?" /* translate */
-    IDS_ERROR_DUP_ROOM         "That room is reserved by another host. "\
-                               "Rename your room, become a guest, or try "\
-                               "again in a few minutes." /* translate */
-    IDS_ERROR_TOO_MANY         "The host is not expecting this many players. "\
-                               "Please reduce the number of Local players." /* translate */
+    IDS_ERROR_NO_ROOM          "No existeix aquesta habitació. L'amfitrió ja ha connectat per a reservar-la?"
+    IDS_ERROR_DUP_ROOM         "Aquesta habitació està reservada per una altre amfitrió. "\
+                               "Canvieu el nom a l'habitació, entreu com a visitant, o intenteu-ho "\
+                               "de nou d'aquí uns minuts."
+    IDS_ERROR_TOO_MANY         "L'amfitrió no espera tants jugadors. "\
+                               "Reduïu el nombre de jugadors locals."
 # endif
 #endif
 
