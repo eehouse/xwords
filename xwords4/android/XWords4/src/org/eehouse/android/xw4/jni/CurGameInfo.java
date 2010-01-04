@@ -32,8 +32,8 @@ public class CurGameInfo {
         serverRole = DeviceRole.SERVER_STANDALONE;
         dictName = BUILTIN_DICT;
         hintsNotAllowed = false;
-        players[0] = new LocalPlayer( "Eric", true );
-        players[1] = new LocalPlayer( "Kati" );
+        players[0] = new LocalPlayer( "Eric");
+        players[1] = new LocalPlayer( "Kati", true );
         players[2] = new LocalPlayer( "Brynn", true );
     }
 }

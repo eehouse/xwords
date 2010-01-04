@@ -27,6 +27,7 @@ public class BoardView extends View implements DrawCtx,
     private Rect m_letterRect;
     Drawable m_rightArrow;
     Drawable m_downArrow;
+    Drawable m_origin;
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
@@ -151,8 +152,9 @@ public class BoardView extends View implements DrawCtx,
         m_gi = gi;
 
         Resources res = context.getResources();
-        m_downArrow = res.getDrawable( R.drawable.downarrow );
         m_rightArrow = res.getDrawable( R.drawable.rightarrow );
+        m_downArrow = res.getDrawable( R.drawable.downarrow );
+        m_origin = res.getDrawable( R.drawable.origin );
     }
 
     // DrawCtxt interface implementation
@@ -205,7 +207,12 @@ public class BoardView extends View implements DrawCtx,
         m_fillPaint.setColor( backColor );
         m_canvas.drawRect( rect, m_fillPaint );
 
-        if ( !empty ) {
+        if ( empty ) {
+            if ( (CELL_ISSTAR & flags) != 0 ) {
+                m_origin.setBounds( rect );
+                m_origin.draw( m_canvas );
+            }
+        } else {
             m_fillPaint.setTextSize( rect.bottom - rect.top );
             if ( owner < 0 ) {  // showColors option not turned on
                 owner = 0;
@@ -218,11 +225,10 @@ public class BoardView extends View implements DrawCtx,
         return true;
     }
 
-    public void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
-                                 int flags )
+    public void drawBoardArrow ( Rect rect, int bonus, boolean vert, 
+                                 int hintAtts, int flags )
     {
         rect.inset( 2, 2 );
-        Utils.logf( "drawBoardArrow" );
         Drawable arrow = vert? m_downArrow : m_rightArrow;
         arrow.setBounds( rect );
         arrow.draw( m_canvas );
