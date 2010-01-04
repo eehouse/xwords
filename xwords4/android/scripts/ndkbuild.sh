@@ -18,11 +18,17 @@ fi
 cd $(dirname $0)
 cd ../
 
+if [ -h $NDK_ROOT/sources/$APP -a $(readlink $NDK_ROOT/sources/$APP) != $(pwd) ]; then
+    rm $NDK_ROOT/sources/$APP
+fi
 if [ ! -h $NDK_ROOT/sources/$APP ]; then
     echo "adding symlink to sources"
     ln -sf $(pwd) $NDK_ROOT/sources/$APP
 fi
 
+if [ -h $NDK_ROOT/apps/$APP -a $(readlink $NDK_ROOT/apps/$APP) != $(pwd) ]; then
+    rm $NDK_ROOT/apps/$APP
+fi
 if [ ! -h $NDK_ROOT/apps/$APP ]; then
     echo "adding symlink to apps"
     ln -sf $(pwd) $NDK_ROOT/apps/$APP
