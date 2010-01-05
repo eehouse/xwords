@@ -269,7 +269,7 @@ BEGIN
     LTEXT           "Mode:",IDC_ROLELABEL,LEFT_COL,SERVERROLE_ROW,20,8
     XWCOMBO(IDC_ROLECOMBO,26,SERVERROLE_ROW,70,ROW_HEIGHT,0,58,0)
 
-    PUSHBUTTON      "Configuree le mode",GIROLECONF_BUTTON,LEFT_COL+10,
+    PUSHBUTTON      "Configurer le mode",GIROLECONF_BUTTON,LEFT_COL+10,
                      SERVERCONF_ROW,60,ROW_HEIGHT
 #endif
 
@@ -547,8 +547,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,60,PREFS_ROW_HT
     CONTROL         "Détails des points du robot",IDC_CHECKROBOTSCORES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,87,PREFS_ROW_HT
-    CONTROL         "Skip turn confirm", /* <- translate */
-                    IDC_SKIPCONFIRM,"Button",
+    CONTROL         "Ne pas confirmer le coup",IDC_SKIPCONFIRM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,80,PREFS_ROW_HT
     CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW6,87,PREFS_ROW_HT
@@ -636,9 +635,10 @@ BEGIN
                     ROW_HEIGHT,ES_AUTOHSCROLL
 
     LTEXT           "(comme hôte, vous devez nommer la partie et vous "
-                    "indique le nom de la partie.)",
+                    "connecter en premier.)",
                     IDC_INVITE_HELP_HOST,LAB_COL,CONN_ROW_4,110,CONN_HELP_HT
-    LTEXT           "(comme invité, attendez que l'hôte se connecte et vous the room name.)", /* translate */
+    LTEXT           "(comme invité, attendez que l'hôte se connecte et vous "
+                    "indique le nom de la partie.)",
                     IDC_INVITE_HELP_GUEST,LAB_COL,CONN_ROW_4,100,CONN_HELP_HT
 
 # ifndef RELAY_NOEDIT_ADDR
@@ -835,10 +835,10 @@ END
 
 IDD_LOCALESDLG DIALOG DISCARDABLE  0, 0, 100, 80
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | DS_CENTER
-CAPTION "Language Picker"       /* translate */
+CAPTION "Sélection de la langue"
 FONT 8, "System"
 BEGIN
-    LTEXT           "Choose the language for menus and dialog text.  (You can download support files for new languages from xwords.sf.net.)", // <- translate
+    LTEXT           "Choisissez la langue des menus et des dialogues.  (Vous pouvez télécharger d'autres langues sur xwords.sf.net.)",
                      LOCALES_LABEL,LEFT_COL,2,80,50
 
     XWCOMBO(LOCALES_COMBO,LEFT_COL,53,70,12,0,58,0)
@@ -871,7 +871,7 @@ BEGIN
                     "Eric House.  Ce logiciel est produit sous licence "\
                     "publique GNU.\r\r"\
                     "Pour obtenir des dictionnaires, le manuel ou le "\
-                    "code source allez sur "\
+                    "code source, allez sur "\
                     "http://xwords.sf.net ou http://eehouse.org/xwords/.\r\r"\
 					"Traduction française par Jean-Marc Charette."
     IDS_DICTLOC     "Veuillez installer un dictionnaire (Fichier .xwd) "\
