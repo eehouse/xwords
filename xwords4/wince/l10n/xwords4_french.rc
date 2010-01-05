@@ -546,9 +546,9 @@ BEGIN
     CONTROL         "Activer curseur",IDC_CHECKSHOWCURSOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW3,60,PREFS_ROW_HT
     CONTROL         "Détails des points du robot",IDC_CHECKROBOTSCORES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,87,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW4,90,PREFS_ROW_HT
     CONTROL         "Ne pas confirmer le coup",IDC_SKIPCONFIRM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,80,PREFS_ROW_HT
+                    BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW5,90,PREFS_ROW_HT
     CONTROL         "Cacher valeur des lettres",IDC_HIDETILEVALUES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,PR_LEFT,PR_ROW6,87,PREFS_ROW_HT
     PUSHBUTTON      "Editer les couleurs...",IDC_PREFCOLORS,PR_LEFT,PR_ROW7,75,12
