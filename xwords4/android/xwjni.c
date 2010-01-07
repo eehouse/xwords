@@ -169,7 +169,6 @@ JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 ( JNIEnv *env, jclass C, jint gamePtr )
 {
-    LOG_FUNC();
     XP_ASSERT( 0 != gamePtr );
     GameAndMPool* game = (GameAndMPool*)gamePtr;
     BoardCtxt* board = game->game.board;
