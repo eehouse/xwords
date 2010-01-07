@@ -16,6 +16,9 @@ public interface DrawCtx {
     static final int CELL_DRAGCUR = 0x80;       /* where drag is now */
     static final int CELL_ALL = 0xFF;
 
+
+    void scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount,
+                     int dfs );
     void measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );
     void drawRemText( Rect rInner,Rect rOuter, int nTilesLeft, boolean focussed );
@@ -25,6 +28,7 @@ public interface DrawCtx {
                       int owner, int bonus, int hintAtts, int flags );
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
                           int flags );
+    boolean vertScrollBoard( Rect /*out*/ rect, int dist, int dfs );
 
     boolean trayBegin ( Rect rect, int owner, int dfs );
     void drawTile( Rect rect, String text, Object[] bitmaps, int val, int flags );
