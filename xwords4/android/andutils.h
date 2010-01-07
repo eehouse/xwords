@@ -22,7 +22,7 @@ bool getString( JNIEnv* env, jobject jlp, const char* name, XP_UCHAR* buf,
 bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig, 
                 jobject* ret );
 
-jintArray makeIntArray( JNIEnv *env, int val );
+jintArray makeIntArray( JNIEnv *env, int size, const jint* vals );
 int getIntFromArray( JNIEnv* env, jintArray arr, bool del );
 
 /* Note: jmethodID can be cached.  Should not look up more than once. */

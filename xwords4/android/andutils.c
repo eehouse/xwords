@@ -168,14 +168,16 @@ getBool( JNIEnv* env, jobject obj, const char* name, XP_Bool* result )
 }
 
 jintArray
-makeIntArray( JNIEnv *env, int val )
+makeIntArray( JNIEnv *env, int siz, const jint* vals )
 {
-    jintArray array = (*env)->NewIntArray( env, 1 );
+    jintArray array = (*env)->NewIntArray( env, siz );
     XP_ASSERT( !!array );
-    jint* elems = (*env)->GetIntArrayElements( env, array, NULL );
-    XP_ASSERT( !!elems );
-    *elems = val;
-    (*env)->ReleaseIntArrayElements( env, array, elems, 0 );
+    if ( !!vals ) {
+        jint* elems = (*env)->GetIntArrayElements( env, array, NULL );
+        XP_ASSERT( !!elems );
+        XP_MEMCPY( elems, vals, siz * sizeof(*elems) );
+        (*env)->ReleaseIntArrayElements( env, array, elems, 0 );
+    }
     return array;
 }
 
