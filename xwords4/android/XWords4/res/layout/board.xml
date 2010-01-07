@@ -5,13 +5,15 @@
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
               android:paddingLeft="8dp"
-              android:paddingRight="8dp">
+              android:paddingRight="8dp"
+              >
  
   <org.eehouse.android.xw4.BoardView
      android:id="@+id/board_view"
      android:layout_width="fill_parent" 
      android:layout_height="fill_parent"
      android:layout_weight="1"
+     android:focusable="true"
      android:clickable="true"
      android:longClickable="true"
      android:drawSelectorOnTop="false"/>
