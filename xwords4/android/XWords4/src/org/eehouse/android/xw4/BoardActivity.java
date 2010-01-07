@@ -1,3 +1,4 @@
+/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
 
 
 package org.eehouse.android.xw4;
@@ -10,6 +11,7 @@ import android.view.MenuInflater;
 import android.content.res.AssetManager;
 import java.io.InputStream;
 import android.os.Handler;
+import android.content.res.Configuration;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -33,7 +35,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             m_handle = handle;
         }
         public void run() {
-            Utils.logf( "TimerRunnable.run(); m_handle=" + m_handle );
             m_timers[m_why] = null;
             XwJNI.timerFired( m_jniGamePtr, m_why, m_when, m_handle );
         }
@@ -143,6 +144,14 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         return handled;
     }
 
+    // gets called for orientation changes only if
+    // android:configChanges="orientation" set in AndroidManifest.xml
+
+    // public void onConfigurationChanged( Configuration newConfig )
+    // {
+    //     super.onConfigurationChanged( newConfig );
+    // }
+
     //////////////////////////////////////////
     // XW_UtilCtxt interface implementation //
     //////////////////////////////////////////
@@ -172,7 +181,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     }
 
     public void run() {
-        Utils.logf( "run called" );
         if ( XwJNI.server_do( m_jniGamePtr ) ) {
             m_view.invalidate();
         }
@@ -184,8 +192,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     public void setTimer( int why, int when, int handle )
     {
-        Utils.logf( "setTimer called" );
-
         if ( null != m_timers[why] ) {
             m_handler.removeCallbacks( m_timers[why] );
         }
@@ -202,4 +208,10 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             m_timers[why] = null;
         }
     }
+
+    // Don't need this unless we have a scroll thumb to indicate position
+    // public void yOffsetChange( int oldOffset, int newOffset )
+    // {
+    //     Utils.logf( "yOffsetChange(" + oldOffset + "," + newOffset + ")" );
+    // }
 }
