@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
+/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
 /* 
  * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -49,6 +49,20 @@ makeJRect( JNIEnv *env, const XP_Rect* rect )
     return robj;
 } /* makeJRect */
 
+static void
+copyJRect( JNIEnv* env, XP_Rect* dest, jobject jrect )
+{
+    int tmp;
+    getInt( env, jrect, "left", &tmp );
+    dest->left = tmp;
+    getInt( env, jrect, "top", &tmp ); 
+    dest->top = tmp;
+    getInt( env, jrect, "right", &tmp ); 
+    dest->width = tmp - dest->left;
+    getInt( env, jrect, "bottom", &tmp ); 
+    dest->height = tmp - dest->top;
+}
+
 static jobject
 makeDSI( JNIEnv* env, const DrawScoreInfo* dsi )
 {
@@ -89,6 +103,24 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
                      const XP_S16* const scores,
                      XP_S16 remCount, DrawFocusState dfs )
 {
+    AndDraw* draw = (AndDraw*)dctx;
+    JNIEnv* env = draw->env;
+    const char* sig = "(Landroid/graphics/Rect;I[III)V";
+    jmethodID mid = getMethodID( env, draw->j_draw, "scoreBegin", sig );
+
+    jint jarr[numPlayers];
+    int ii;
+    for ( ii = 0; ii < numPlayers; ++ii ) {
+        jarr[ii] = scores[ii];
+    }
+    jintArray jscores = makeIntArray( env, numPlayers, jarr );
+    jobject jrect = makeJRect( env, rect );
+
+    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+                            jrect, numPlayers, jscores, remCount, dfs );
+
+    (*env)->DeleteLocalRef( env, jscores );
+    (*env)->DeleteLocalRef( env, jrect );
 }
 
 static void 
@@ -98,12 +130,11 @@ and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r,
 {
     AndDraw* draw = (AndDraw*)dctx;
     JNIEnv* env = draw->env;
-
-    jmethodID mid = getMethodID( env, draw->j_draw, "measureRemText", 
-                                 "(Landroid/graphics/Rect;I[I[I)V" );
-
-    jintArray widthArray = makeIntArray( env, 0 );
-    jintArray heightArray = makeIntArray( env, 0 );
+    const char* sig = "(Landroid/graphics/Rect;I[I[I)V";
+    jmethodID mid = getMethodID( env, draw->j_draw, "measureRemText", sig );
+    
+    jintArray widthArray = makeIntArray( env, 1, NULL );
+    jintArray heightArray = makeIntArray( env, 1, NULL );
     jobject jrect = makeJRect( env, r );
 
     (*env)->CallVoidMethod( env, draw->j_draw, mid, jrect, nTilesLeft, widthArray,
@@ -127,8 +158,8 @@ and_draw_measureScoreText( DrawCtx* dctx,
     jobject jrect = makeJRect( env, r );
     jobject jdsi = makeDSI( env, dsi );
 
-    jintArray widthArray = makeIntArray( env, 0 );
-    jintArray heightArray = makeIntArray( env, 0 );
+    jintArray widthArray = makeIntArray( env, 1, NULL );
+    jintArray heightArray = makeIntArray( env, 1, NULL );
 
     jmethodID mid = getMethodID( env, draw->j_draw, "measureScoreText", 
                                  "(Landroid/graphics/Rect;Lorg/eehouse/android/"
@@ -227,7 +258,6 @@ static void
 and_draw_drawBoardArrow(DrawCtx* dctx, const XP_Rect* rect, XWBonusType bonus, 
                         XP_Bool vert, HintAtts hintAtts, CellFlags flags )
 {
-    LOG_FUNC();
     AndDraw* draw = (AndDraw*)dctx;
     JNIEnv* env = draw->env;
     const char* sig =  "(Landroid/graphics/Rect;IZII)V";
@@ -237,6 +267,24 @@ and_draw_drawBoardArrow(DrawCtx* dctx, const XP_Rect* rect, XWBonusType bonus,
     (*env)->CallVoidMethod( env, draw->j_draw, mid, 
                             jrect, bonus, vert, hintAtts, flags );
     (*env)->DeleteLocalRef( env, jrect );
+}
+
+static XP_Bool
+and_draw_vertScrollBoard( DrawCtx* dctx, XP_Rect* rect, XP_S16 dist,
+                          DrawFocusState dfs )
+{
+    LOG_FUNC();
+    AndDraw* draw = (AndDraw*)dctx;
+    JNIEnv* env = draw->env;
+    const char* sig = "(Landroid/graphics/Rect;II)Z";
+    jmethodID mid = getMethodID( env, draw->j_draw, "vertScrollBoard", sig );
+    jobject jrect = makeJRect( env, rect );
+    jboolean result = (*env)->CallBooleanMethod( env, draw->j_draw, mid, 
+                                                 jrect, dist, dfs );
+    copyJRect( env, rect, jrect );    
+    (*env)->DeleteLocalRef( env, jrect );
+
+    return result;
 }
 
 static XP_Bool
@@ -423,6 +471,7 @@ makeDraw( MPFORMAL JNIEnv *env, jobject j_draw )
     SET_PROC(score_drawPlayer);
     SET_PROC(drawCell);
     SET_PROC(drawBoardArrow);
+    SET_PROC(vertScrollBoard);
 
     SET_PROC(trayBegin);
     SET_PROC(drawTile);
