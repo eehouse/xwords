@@ -198,8 +198,8 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
 
-    /* This won't be enough for 'doze case: square with the SIP visible */
-    board->yOffset = (XP_U16)stream_getBits( stream, 2 );
+    board->yOffset = (XP_U16)
+        stream_getBits( stream, (version < STREAM_VERS_4YOFFSET) ? 2 : 4 );
     board->isFlipped = (XP_Bool)stream_getBits( stream, 1 );
     board->gameOver = (XP_Bool)stream_getBits( stream, 1 );
     board->showColors = (XP_Bool)stream_getBits( stream, 1 );
@@ -264,7 +264,7 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
 {
     XP_U16 nPlayers, i;
     
-    stream_putBits( stream, 2, board->yOffset );
+    stream_putBits( stream, 4, board->yOffset );
     stream_putBits( stream, 1, board->isFlipped );
     stream_putBits( stream, 1, board->gameOver );
     stream_putBits( stream, 1, board->showColors );

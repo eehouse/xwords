@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#define STREAM_VERS_4YOFFSET 0x0A /* 4 bits for yOffset on board */
 #define STREAM_VERS_CHANNELSEED 0x09 /* new short in relay connect must be
                                         saved in comms */
 #define STREAM_VERS_UTF8 0x08
@@ -43,7 +44,7 @@ extern "C" {
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_CHANNELSEED
+#define CUR_STREAM_VERS STREAM_VERS_4YOFFSET
 
 typedef struct LocalPlayer {
     XP_UCHAR* name;
