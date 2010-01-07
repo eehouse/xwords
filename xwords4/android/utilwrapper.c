@@ -100,7 +100,15 @@ and_util_trayHiddenChange(XW_UtilCtxt* uc, XW_TrayVisState newState,
 static void
 and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
 {
-    LOG_FUNC();
+#if 0
+    AndUtil* util = (AndUtil*)uc;
+    JNIEnv* env = util->env;
+    const char* sig = "(II)V";
+    jmethodID mid = getMethodID( env, util->j_util, "yOffsetChange", sig );
+
+    (*env)->CallVoidMethod( env, util->j_util, mid, 
+                            oldOffset, newOffset );
+#endif
 }
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY

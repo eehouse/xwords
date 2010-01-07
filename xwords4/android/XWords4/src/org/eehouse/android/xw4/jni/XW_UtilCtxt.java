@@ -14,4 +14,7 @@ public interface XW_UtilCtxt {
     void clearTimer( int why );
     void requestTime();
 
+    // Don't need this unless we have a scroll thumb to indicate position
+    //void yOffsetChange( int oldOffset, int newOffset );
+
 }
