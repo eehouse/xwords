@@ -49,13 +49,15 @@ public class BoardView extends View implements DrawCtx,
 
 
 
-    public BoardView( Context context ) {
+    public BoardView( Context context ) 
+    {
         super( context );
         init();
     }
 
     // called when inflating xml
-    public BoardView( Context context, AttributeSet attrs ) {
+    public BoardView( Context context, AttributeSet attrs ) 
+    {
         super( context, attrs );
         init();
     }
@@ -65,7 +67,8 @@ public class BoardView extends View implements DrawCtx,
     //     return view == this;
     // }
 
-    public boolean onTouchEvent( MotionEvent event ) {
+    public boolean onTouchEvent( MotionEvent event ) 
+    {
         int action = event.getAction();
         int xx = (int)event.getX() - m_left;
         int yy = (int)event.getY() - m_top;
@@ -92,7 +95,8 @@ public class BoardView extends View implements DrawCtx,
         return true;             // required to get subsequent events
     }
 
-    protected void onDraw( Canvas canvas ) {
+    protected void onDraw( Canvas canvas ) 
+    {
         if ( layoutBoardOnce() ) {
             if ( !XwJNI.board_draw( m_jniGamePtr ) ) {
                 Utils.logf( "draw not complete" );
@@ -119,7 +123,8 @@ public class BoardView extends View implements DrawCtx,
         // jniGamePtr = 0;
     }
 
-    private boolean layoutBoardOnce() {
+    private boolean layoutBoardOnce() 
+    {
         if ( !m_boardSet && null != m_gi ) {
             m_boardSet = true;
 
@@ -179,7 +184,8 @@ public class BoardView extends View implements DrawCtx,
         return m_boardSet;
     }
 
-    public void startHandling( Context context, int gamePtr, CurGameInfo gi ) {
+    public void startHandling( Context context, int gamePtr, CurGameInfo gi ) 
+    {
         m_jniGamePtr = gamePtr;
         m_gi = gi;
 
@@ -226,8 +232,9 @@ public class BoardView extends View implements DrawCtx,
         drawCentered( text, rInner );
     }
 
-    public boolean drawCell( Rect rect, String text, Object[] bitmaps, int tile, 
-                             int owner, int bonus, int hintAtts, int flags ) 
+    public boolean drawCell( Rect rect, String text, Object[] bitmaps,
+                             int tile, int owner, int bonus, int hintAtts, 
+                             int flags ) 
     {
         int backColor;
         int foreColor = WHITE;  // must be initialized :-(
@@ -281,7 +288,8 @@ public class BoardView extends View implements DrawCtx,
         return false;
     }
 
-    public boolean trayBegin ( Rect rect, int owner, int dfs ) {
+    public boolean trayBegin ( Rect rect, int owner, int dfs ) 
+    {
         m_trayOwner = owner;
         return true;
     }
@@ -308,7 +316,7 @@ public class BoardView extends View implements DrawCtx,
     }
 
     public void drawTileMidDrag ( Rect rect, String text, Object[] bitmaps,
-                           int val, int owner, int flags ) 
+                                  int val, int owner, int flags ) 
     {
         drawTile( rect, text, bitmaps, val, flags );
     }
@@ -336,7 +344,8 @@ public class BoardView extends View implements DrawCtx,
     }
 
 
-    private void drawCentered( String text, Rect rect ) {
+    private void drawCentered( String text, Rect rect ) 
+    {
         int bottom = rect.bottom;
         int center = rect.left + ( (rect.right - rect.left) / 2 );
         m_canvas.drawText( text, center, bottom, m_fillPaint );
@@ -346,7 +355,8 @@ public class BoardView extends View implements DrawCtx,
     {
         if ( null == m_letterRect ) {
             // assumes show values is on
-            m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, rect.height() * 3 / 4 );
+            m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
+                                     rect.height() * 3 / 4 );
         }
         m_letterRect.offsetTo( rect.left, rect.top );
         m_fillPaint.setTextSize( m_letterRect.height() );
