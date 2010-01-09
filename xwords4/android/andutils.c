@@ -1,3 +1,5 @@
+/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
+
 #include "andutils.h"
 
 #include "comtypes.h"
@@ -12,45 +14,43 @@ and_assert( const char* test, int line, const char* file, const char* func )
 }
 
 #ifdef __LITTLE_ENDIAN
-
 XP_U32
-and_ntohl(XP_U32 l)
+and_ntohl(XP_U32 ll)
 {
     XP_U32 result = 0L;
-    result |= l << 24;
-    result |= (l << 16) & 0x00FF0000;
-    result |= (l >> 16) & 0x0000FF00;
-    result |= (l >> 24);
-
-    XP_LOGF( "%s: %lx -> %lx", __func__, l, result );
+    int ii;
+    for ( ii = 0; ii < 4; ++ii ) {
+        result <<= 8;
+        result |= ll & 0x000000FF;
+        ll >>= 8;
+    }
 
     return result;
 }
 
 XP_U16
-and_ntohs(XP_U16 s)
+and_ntohs( XP_U16 ss )
 {
     XP_U16 result;
-    result = s << 8;
-    result |= s >> 8;
-
-    XP_LOGF( "%s: %x -> %x", __func__, s, result );
-
+    result = ss << 8;
+    result |= ss >> 8;
     return result;
 }
 
 XP_U32
-and_htonl(XP_U32 l)
+and_htonl( XP_U32 ll )
 {
+    return and_ntohl( ll );
 }
 
 
 XP_U16
-and_htons(XP_U16 s) 
+and_htons( XP_U16 ss ) 
 {
-    return and_ntohs( s );
+    return and_ntohs( ss );
 }
-
+#else
+error error error
 #endif
 
 bool
@@ -121,17 +121,18 @@ getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
     XP_ASSERT( !!fid );
     jstring jstr = (*env)->GetObjectField( env, obj, fid );
-    XP_ASSERT( !!jstr );
-
-    jsize len = (*env)->GetStringUTFLength( env, jstr );
-    XP_ASSERT( len < bufLen );
-    const char* chars = (*env)->GetStringUTFChars( env, jstr, NULL );
-    XP_MEMCPY( buf, chars, len );
-    (*env)->ReleaseStringUTFChars( env, jstr, chars );
+    jsize len = 0;
+    if ( !!jstr ) {             /* might be null */
+        len = (*env)->GetStringUTFLength( env, jstr );
+        XP_ASSERT( len < bufLen );
+        const char* chars = (*env)->GetStringUTFChars( env, jstr, NULL );
+        XP_MEMCPY( buf, chars, len );
+        (*env)->ReleaseStringUTFChars( env, jstr, chars );
+        (*env)->DeleteLocalRef( env, jstr );
+    }
     buf[len] = '\0';
 
     (*env)->DeleteLocalRef( env, cls );
-    (*env)->DeleteLocalRef( env, jstr );
 }
 
 bool
