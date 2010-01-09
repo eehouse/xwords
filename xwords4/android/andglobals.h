@@ -9,7 +9,6 @@ typedef struct _AndGlobals {
     VTableMgr* vtMgr;
     CurGameInfo* gi;
     DrawCtx* dctx;
-    DictionaryCtxt* dict;
     XW_UtilCtxt* util;
 } AndGlobals;
 
