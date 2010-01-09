@@ -25,6 +25,7 @@ typedef struct _AndDraw {
     DrawCtxVTable* vtable;
     JNIEnv *env;
     jobject j_draw;             /* global ref; free it! */
+    MPSLOT
 } AndDraw;
 
 static jobject
@@ -451,11 +452,11 @@ draw_doNothing( DrawCtx* dctx, ... )
 DrawCtx* 
 makeDraw( MPFORMAL JNIEnv *env, jobject j_draw )
 {
-    AndDraw* draw = XP_MALLOC( mpool, sizeof(*draw) );
-    XP_MEMSET( draw, 0, sizeof(*draw) );
+    AndDraw* draw = (AndDraw*)XP_CALLOC( mpool, sizeof(*draw) );
     draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
     draw->j_draw = (*env)->NewGlobalRef( env, j_draw );
     draw->env = env;
+    MPASSIGN( draw->mpool, mpool );
 
     int ii;
     for ( ii = 0; ii < sizeof(*draw->vtable)/4; ++ii ) {
@@ -490,4 +491,14 @@ makeDraw( MPFORMAL JNIEnv *env, jobject j_draw )
 #undef SET_PROC
 
     return (DrawCtx*)draw;
+}
+
+void
+destroyDraw( DrawCtx* dctx )
+{
+    AndDraw* draw = (AndDraw*)dctx;
+    JNIEnv* env = draw->env;
+    (*env)->DeleteGlobalRef( env, draw->j_draw );
+    XP_FREE( draw->mpool, draw->vtable );
+    XP_FREE( draw->mpool, draw );
 }

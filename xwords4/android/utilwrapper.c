@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
+/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
 /* 
  * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -271,14 +271,12 @@ XW_UtilCtxt*
 makeUtil( MPFORMAL JNIEnv *env, jobject j_util, CurGameInfo* gi, 
           AndGlobals* closure )
 {
-    AndUtil* util = XP_MALLOC( mpool, sizeof(*util) );
-    XP_MEMSET( util, 0, sizeof(*util ) );
-    UtilVtable* vtable = XP_MALLOC( mpool, sizeof(*vtable) );
-    XP_MEMSET( vtable, 0, sizeof(*vtable ) );
+    AndUtil* util = (AndUtil*)XP_CALLOC( mpool, sizeof(*util) );
+    UtilVtable* vtable = (UtilVtable*)XP_CALLOC( mpool, sizeof(*vtable) );
     util->env = env;
     util->j_util = (*env)->NewGlobalRef( env, j_util );
     util->util.vtable = vtable;
-    util->util.mpool = mpool;
+    MPASSIGN( util->util.mpool, mpool );
     util->util.closure = closure;
     util->util.gameInfo = gi;
 
@@ -324,3 +322,13 @@ SET_PROC(    turnChanged);
 
     return (XW_UtilCtxt*)util;
 } /* makeUtil */
+
+void
+destroyUtil( XW_UtilCtxt* utilc )
+{
+    AndUtil* util = (AndUtil*)utilc;
+    JNIEnv *env = util->env;
+    (*env)->DeleteGlobalRef( env, util->j_util );
+    XP_FREE( util->util.mpool, util->util.vtable );
+    XP_FREE( util->util.mpool, util );
+}

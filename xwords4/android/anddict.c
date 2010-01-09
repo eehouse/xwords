@@ -30,7 +30,6 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
         ptrs[ii] = next;
         *next++ = *bytes++;
         *next++ = 0;
-        XP_LOGF( "pointing at str: %s", ptrs[ii] );
     }
 
     XP_ASSERT( next == faces + nFaces + nBytes );
@@ -75,7 +74,7 @@ andCountSpecials( AndDictionaryCtxt* ctxt )
     }
 
     return result;
-} /* ceCountSpecials */
+} /* andCountSpecials */
 
 static XP_Bitmap
 andMakeBitmap( XP_U8** ptrp )
@@ -137,9 +136,20 @@ andMakeBitmap( XP_U8** ptrp )
 } /* andMakeBitmap */
 
 static void
+andDeleteBitmap( const AndDictionaryCtxt* XP_UNUSED_DBG(ctxt),
+                 XP_Bitmap* bitmap )
+{
+    if ( !!bitmap ) {
+        XP_ASSERT(0);
+        /* CEBitmapInfo* bmi = (CEBitmapInfo*)bitmap; */
+        /* XP_FREE( ctxt->super.mpool, bmi->bits ); */
+        /* XP_FREE( ctxt->super.mpool, bmi ); */
+    }
+}
+
+static void
 andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
 {
-    LOG_FUNC();
     XP_U16 nSpecials = andCountSpecials( ctxt );
     XP_U8* ptr = *ptrp;
     Tile ii;
@@ -173,13 +183,11 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
     ctxt->super.bitmaps = bitmaps;
 
     *ptrp = ptr;
-    LOG_RETURN_VOID();
 } /* andLoadSpecialData */
 
 static void
 parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
 {
-    LOG_FUNC();
     while( !!ptr ) {           /* lets us break.... */
         XP_U32 offset;
         XP_U16 numFaces, numFaceBytes = 0;
@@ -302,7 +310,39 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
 static void
 and_dictionary_destroy( DictionaryCtxt* dict )
 {
-    
+    LOG_FUNC();
+    AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
+    XP_U16 nSpecials = andCountSpecials( ctxt );
+    XP_U16 ii;
+
+    if ( !!ctxt->super.chars ) {
+        for ( ii = 0; ii < nSpecials; ++ii ) {
+            XP_UCHAR* text = ctxt->super.chars[ii];
+            if ( !!text ) {
+                XP_FREE( ctxt->super.mpool, text );
+            }
+        }
+        XP_FREE( ctxt->super.mpool, ctxt->super.chars );
+    }
+    if ( !!ctxt->super.bitmaps ) {
+        for ( ii = 0; ii < nSpecials; ++ii ) {
+            XP_ASSERT( !ctxt->super.bitmaps[ii].largeBM );
+            XP_ASSERT( !ctxt->super.bitmaps[ii].smallBM );
+             andDeleteBitmap( ctxt, ctxt->super.bitmaps[ii].largeBM );
+             andDeleteBitmap( ctxt, ctxt->super.bitmaps[ii].smallBM );
+        }
+        XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
+    }
+
+    XP_FREE( ctxt->super.mpool, ctxt->super.faces );
+    XP_FREE( ctxt->super.mpool, ctxt->super.facePtrs );
+    XP_FREE( ctxt->super.mpool, ctxt->super.countsAndValues );
+    XP_FREE( ctxt->super.mpool, ctxt->super.name );
+
+    XP_FREE( ctxt->super.mpool, ctxt->bytes );
+    XP_FREE( ctxt->super.mpool, ctxt );
+
+    LOG_RETURN_VOID();
 }
 
 DictionaryCtxt* 

@@ -1,4 +1,4 @@
-
+/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
 #include <string.h>
 #include <jni.h>
 #include <android/log.h>
@@ -19,8 +19,7 @@
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 {
-    CurGameInfo* gi = XP_MALLOC( mpool, sizeof(*gi) );
-    XP_MEMSET( gi, 0, sizeof(*gi) );
+    CurGameInfo* gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*gi) );
     int nPlayers, robotSmartness, boardSize;
     int ii;
     XP_UCHAR buf[256];          /* in case needs whole path */
@@ -74,6 +73,13 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 
     return gi;
 } /* makeGI */
+
+static void
+destroyGI( MPFORMAL CurGameInfo* gi )
+{
+    gi_disposePlayerInfo( MPPARM(mpool) gi );
+    XP_FREE( mpool, gi );
+}
 
 static bool
 loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
@@ -141,15 +147,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     model_setDictionary( game->game.model, dict );
 
     return (jint) game;
-}
+} /* makeNewGame */
 
 JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
-(JNIEnv * env, jclass claz, jint gamePtr )
+( JNIEnv * env, jclass claz, jint gamePtr )
 {
     GameAndMPool* game = (GameAndMPool*)gamePtr;
     MemPoolCtx* mpool = game->mpool;
+    AndGlobals* globals = game->globals;
+
+    destroyGI( mpool, globals->gi );
+
     game_dispose( &game->game );
-    XP_FREE( mpool, game->globals );
+
+    destroyDraw( globals->dctx );
+    destroyUtil( globals->util );
+    vtmgr_destroy( mpool, globals->vtMgr );
+
+    XP_FREE( mpool, globals );
     XP_FREE( mpool, game );
     mpool_destroy( mpool );
 }

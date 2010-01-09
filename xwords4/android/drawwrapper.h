@@ -27,5 +27,7 @@
 
 DrawCtx* makeDraw( MPFORMAL JNIEnv *env, jobject j_draw );
 
+void destroyDraw( DrawCtx* dctx );
+
 
 #endif

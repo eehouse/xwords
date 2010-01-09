@@ -81,6 +81,14 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         XwJNI.server_do( m_jniGamePtr );
     }
 
+    protected void onDestroy() 
+    {
+        XwJNI.game_dispose( m_jniGamePtr );
+        m_jniGamePtr = 0;
+        super.onDestroy();
+        Utils.logf( "onDestroy done" );
+    }
+
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.board_menu, menu );
