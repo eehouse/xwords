@@ -19,9 +19,25 @@ public class XwJNI {
                                              int when, int handle );
 
     // Game methods
-    public static native int game_makeNewGame( CurGameInfo gi, XW_UtilCtxt util,
-                                               DrawCtx draw, int gameID, CommonPrefs cp, 
-                                               TransportProcs procs, byte[] dict );
+    public static native int initJNI();
+    public static native void game_makeNewGame( int gamePtr,
+                                                CurGameInfo gi, 
+                                                XW_UtilCtxt util,
+                                                DrawCtx draw, int gameID, 
+                                                CommonPrefs cp, 
+                                                TransportProcs procs, 
+                                                byte[] dict );
+    public static native boolean game_makeFromStream( int gamePtr,
+                                                      byte[] stream, 
+                                                      CurGameInfo gi, 
+                                                      byte[] dict, 
+                                                      XW_UtilCtxt util, 
+                                                      DrawCtx draw,
+                                                      CommonPrefs cp,
+                                                      TransportProcs procs );
+
+    public static native byte[] game_saveToStream( int gamePtr,
+                                                   CurGameInfo gi );
     public static native void game_dispose( int gamePtr );
 
     // Board methods

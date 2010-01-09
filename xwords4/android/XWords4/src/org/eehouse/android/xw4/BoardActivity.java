@@ -11,11 +11,15 @@ import android.view.MenuInflater;
 import android.content.res.AssetManager;
 import java.io.InputStream;
 import android.os.Handler;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import android.content.res.Configuration;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
+
+    private static final String CUR_GAME = "cur_game";
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -73,12 +77,26 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
         // am.close(); don't close! won't work subsequently
         
-        Utils.logf( "calling game_makeNewGame; passing bytes: " + dictBytes.length );
-        m_jniGamePtr = XwJNI.game_makeNewGame( m_gi, this, m_view, 0, 
-                                               m_prefs, null, dictBytes );
+        m_jniGamePtr = XwJNI.initJNI();
+
+        byte[] stream = savedGame();
+        if ( null == stream || 
+             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                          m_gi, dictBytes, this,
+                                          m_view, m_prefs,
+                                          null ) ) {
+            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
+                                    m_prefs, null, dictBytes );
+        }
         m_view.startHandling( this, m_jniGamePtr, m_gi );
 
         XwJNI.server_do( m_jniGamePtr );
+    } // onCreate
+
+    protected void onPause() {
+        // save state here
+        saveGame();
+        super.onPause();
     }
 
     protected void onDestroy() 
@@ -105,7 +123,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
         return draw;
     }
-
 
     public boolean onOptionsItemSelected(MenuItem item) {
         boolean draw = false;
@@ -150,6 +167,39 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
 
         return handled;
+    }
+
+    private void saveGame()
+    {
+        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
+
+        try {
+            FileOutputStream out = openFileOutput( CUR_GAME, MODE_PRIVATE );
+            out.write( state );
+            out.close();
+        } catch ( java.io.IOException ex ) {
+            Utils.logf( "got IOException: " + ex.toString() );
+        }
+    }
+
+    private byte[] savedGame()
+    {
+        byte[] stream = null;
+        try {
+            FileInputStream in = openFileInput( CUR_GAME );
+            int len = in.available();
+            Utils.logf( "savedGame: got " + len + " bytes." );
+            stream = new byte[len];
+            in.read( stream, 0, len );
+            in.close();
+        } catch ( java.io.FileNotFoundException fnf ) {
+            Utils.logf( fnf.toString() );
+            stream = null;
+        } catch ( java.io.IOException io ) {
+            Utils.logf( io.toString() );
+            stream = null;
+        }
+        return stream;
     }
 
     // gets called for orientation changes only if
