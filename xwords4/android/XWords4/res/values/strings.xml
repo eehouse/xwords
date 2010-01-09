@@ -71,4 +71,6 @@
 	<string name="board_menu_file_new">New game</string>
 	<string name="board_menu_file_prefs">Preferences</string>
 	<string name="board_menu_file_about">About Crosswords</string>
+
+	<string name="gamel_menu_delete_all">Delete all</string>
 </resources>

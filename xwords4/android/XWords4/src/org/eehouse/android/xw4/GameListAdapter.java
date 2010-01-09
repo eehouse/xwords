@@ -1,4 +1,4 @@
-
+/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
 
 package org.eehouse.android.xw4;
 
@@ -37,30 +37,7 @@ public class GameListAdapter implements ListAdapter {
     
     public Object getItem( int position ) {
         TextView view = new TextView(m_context);
-        
-        try {
-            FileInputStream in = m_context.openFileInput( m_files[position] );
-
-            InputStreamReader reader = new InputStreamReader( in );
-            try {
-                int len = in.available();
-                CharBuffer buf = CharBuffer.allocate(len);
-                reader.read( buf.array(), 0, len );
-                reader.close();
-                view.setText( buf );
-            } catch ( java.io.IOException ex ) {
-                Utils.logf( "got IOException: " + ex.toString() );
-            }
-
-            try {
-                in.close();
-            } catch ( java.io.IOException ex ) {
-                Utils.logf( "got IOException: " + ex.toString() );
-            }
-        } catch ( java.io.FileNotFoundException ex ) {
-            Utils.logf( "got FileNotFoundException: " + ex.toString() );
-        }
-
+        view.setText( "one game" );
         return view;
     }
 

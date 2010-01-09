@@ -1,3 +1,4 @@
+/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
 /*
  * Copyright (C) 2007 The Android Open Source Project
  *
@@ -227,6 +228,30 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             break;
         case R.id.list_item_delete:
             Utils.logf( "delete" );
+            handled = true;
+            break;
+        }
+        return handled;
+    }
+
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate( R.menu.games_list_menu, menu );
+        return true;
+    }
+
+    public boolean onOptionsItemSelected( MenuItem item )
+    {
+        boolean handled = true;
+
+        switch (item.getItemId()) {
+        case R.id.gamel_menu_delete_all:
+            for( String file : fileList() ) {
+                deleteFile( file  );
+            }
+            m_adapter = new GameListAdapter( this );
+            setListAdapter( m_adapter );
             handled = true;
             break;
         }
