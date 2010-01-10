@@ -5,6 +5,6 @@ import android.content.Context;
 
 public interface BoardHandler {
 
-    void startHandling( Context context, int gamePtr, CurGameInfo gi );
+    void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi );
 
 }

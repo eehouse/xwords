@@ -31,6 +31,7 @@ public class BoardView extends View implements DrawCtx,
     private Drawable m_downArrow;
     private Drawable m_origin;
     private int m_top, m_left;
+    private JNIThread m_jniThread;
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
@@ -72,35 +73,28 @@ public class BoardView extends View implements DrawCtx,
         int action = event.getAction();
         int xx = (int)event.getX() - m_left;
         int yy = (int)event.getY() - m_top;
-        boolean draw = false;
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
-            boolean[] handled = new boolean[1];
-            draw = XwJNI.board_handlePenDown( m_jniGamePtr, xx, yy, handled );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
-            draw = XwJNI.board_handlePenMove( m_jniGamePtr, xx, yy );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
             break;
         case MotionEvent.ACTION_UP:
-            draw = XwJNI.board_handlePenUp( m_jniGamePtr, xx, yy );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
             break;
         default:
             Utils.logf( "unknown action: " + action );
             Utils.logf( event.toString() );
         }
-        if ( draw ) {
-            invalidate();
-        }
+
         return true;             // required to get subsequent events
     }
 
     protected void onDraw( Canvas canvas ) 
     {
         if ( layoutBoardOnce() ) {
-            if ( !XwJNI.board_draw( m_jniGamePtr ) ) {
-                Utils.logf( "draw not complete" );
-            }
             canvas.drawBitmap( m_bitmap, m_left, m_top, new Paint() );
         }
     }
@@ -173,6 +167,7 @@ public class BoardView extends View implements DrawCtx,
                                     4 );
 
             XwJNI.board_setShowColors( m_jniGamePtr, true ); // get from prefs!
+
             XwJNI.board_invalAll( m_jniGamePtr );
 
             m_bitmap = Bitmap.createBitmap( 1 + (cellSize*nCells),
@@ -180,15 +175,18 @@ public class BoardView extends View implements DrawCtx,
                                             + (cellSize *(nCells-nToScroll)),
                                             Bitmap.Config.ARGB_8888 );
             m_canvas = new Canvas( m_bitmap );
+
+            // need to synchronize??
+            m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
         return m_boardSet;
     }
 
-    public void startHandling( Context context, int gamePtr, CurGameInfo gi ) 
+    public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
     {
+        m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
-
     }
 
     // DrawCtxt interface implementation

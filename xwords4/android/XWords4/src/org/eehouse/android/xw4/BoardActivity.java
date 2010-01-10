@@ -11,15 +11,19 @@ import android.view.MenuInflater;
 import android.content.res.AssetManager;
 import java.io.InputStream;
 import android.os.Handler;
+import android.os.Message;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import android.content.res.Configuration;
+import android.content.Intent;
+import java.util.concurrent.Semaphore;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     private static final String CUR_GAME = "cur_game";
+    private static final int PICK_TILE_REQUEST = 1;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -27,6 +31,13 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     private CommonPrefs m_prefs;
     private Handler m_handler;
     private TimerRunnable[] m_timers;
+
+    // call startActivityForResult synchronously
+	private Semaphore m_forResultWait = new Semaphore(0);
+    private int m_resultCode = 0;
+    private Intent m_resultIntent = null;
+
+    private JNIThread m_jniThread;
 
     public class TimerRunnable implements Runnable {
         private int m_gamePtr;
@@ -40,7 +51,8 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
         public void run() {
             m_timers[m_why] = null;
-            XwJNI.timerFired( m_jniGamePtr, m_why, m_when, m_handle );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_TIMER_FIRED,
+                                new Object[] { m_why, m_when, m_handle } );
         }
     }
 
@@ -88,82 +100,85 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
                                     m_prefs, null, dictBytes );
         }
-        m_view.startHandling( this, m_jniGamePtr, m_gi );
 
-        XwJNI.server_do( m_jniGamePtr );
+        m_jniThread = new JNIThread( m_jniGamePtr, 
+                                     new Handler() {
+                                             public void handleMessage( Message msg ) {
+                                                 Utils.logf( "handleMessage called" );
+                                                 m_view.invalidate();
+                                             }
+                                     } );
+        m_jniThread.start();
+
+        m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
+
+        m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
+
+        Utils.logf( "BoardActivity::onCreate() done" );
     } // onCreate
 
-    protected void onPause() {
-        // save state here
-        saveGame();
-        super.onPause();
-    }
+    // protected void onPause() {
+    //     // save state here
+    //     saveGame();
+    //     super.onPause();
+    // }
 
     protected void onDestroy() 
     {
+        m_jniThread.waitToStop();
+        saveGame();
         XwJNI.game_dispose( m_jniGamePtr );
         m_jniGamePtr = 0;
         super.onDestroy();
         Utils.logf( "onDestroy done" );
     }
-
+	
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent result ) 
+    {
+        Utils.logf( "onActivityResult called" );
+		this.m_resultCode = resultCode;
+		this.m_resultIntent = result;
+		this.m_forResultWait.release();
+	}
+	
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.board_menu, menu );
         return true;
     }
 
-    private boolean toggleTray() {
-        boolean draw;
-        int state = XwJNI.board_getTrayVisState( m_jniGamePtr );
-        if ( state == XwJNI.TRAY_REVEALED ) {
-            draw = XwJNI.board_hideTray( m_jniGamePtr );
-        } else {
-            draw = XwJNI.board_showTray( m_jniGamePtr );
-        }
-        return draw;
-    }
-
     public boolean onOptionsItemSelected(MenuItem item) {
-        boolean draw = false;
         boolean handled = true;
 
         switch (item.getItemId()) {
         case R.id.board_menu_done:
-            draw = XwJNI.board_commitTurn( m_jniGamePtr );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_COMMIT );
             break;
         case R.id.board_menu_juggle:
-            draw = XwJNI.board_juggleTray( m_jniGamePtr );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_JUGGLE );
             break;
         case R.id.board_menu_flip:
-            draw = XwJNI.board_flip( m_jniGamePtr );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_FLIP );
             break;
         case R.id.board_menu_tray:
-            draw = toggleTray();
+            m_jniThread.handle( JNIThread.JNICmd.CMD_TOGGLE_TRAY );
             break;
-
         case R.id.board_menu_undo_current:
-            draw = XwJNI.board_replaceTiles( m_jniGamePtr );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_CUR );
             break;
         case R.id.board_menu_undo_last:
-            XwJNI.server_handleUndo( m_jniGamePtr );
-            draw = true;
+            m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
             break;
-
         case R.id.board_menu_hint:
-            XwJNI.board_resetEngine( m_jniGamePtr );
-            // fallthru
-        case R.id.board_menu_hint_next:
-            draw = XwJNI.board_requestHint( m_jniGamePtr, false, null );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_HINT );
             break;
-
+        case R.id.board_menu_hint_next:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
+            break;
         default:
             Utils.logf( "menuitem " + item.getItemId() + " not handled" );
             handled = false;
-        }
-
-        if ( draw ) {
-            m_view.invalidate();
         }
 
         return handled;
@@ -239,9 +254,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     }
 
     public void run() {
-        if ( XwJNI.server_do( m_jniGamePtr ) ) {
-            m_view.invalidate();
-        }
+        m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
     }
 
     public void requestTime() {
@@ -265,6 +278,39 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             m_handler.removeCallbacks( m_timers[why] );
             m_timers[why] = null;
         }
+    }
+
+    // This is supposed to be called from the jni thread
+    public int userPickTile( int playerNum, String[] texts )
+    {
+        int tile = -1;
+        Utils.logf( "util_userPickTile called" );
+
+        // Intent intent = new Intent( XWConstants.ACTION_PICK_TILE );
+        // intent.setClassName( "org.eehouse.android.xw4",
+        //                      "org.eehouse.android.xw4.TilePicker");
+        Intent intent = new Intent( BoardActivity.this, TilePicker.class );
+        intent.setAction( XWConstants.ACTION_PICK_TILE );
+
+        Bundle bundle = new Bundle();
+        bundle.putStringArray( XWConstants.PICK_TILE_TILES, texts );
+        intent.putExtra( XWConstants.PICK_TILE_TILES, bundle );
+
+        try {
+            startActivityForResult( intent, PICK_TILE_REQUEST );
+            m_forResultWait.acquire();
+        } catch ( Exception ee ) {
+            Utils.logf( "userPickTile got: " + ee.toString() );
+        }
+
+        if ( m_resultCode >= RESULT_FIRST_USER ) {
+            tile = m_resultCode - RESULT_FIRST_USER;
+        } else {
+            Utils.logf( "unexpected result code: " + m_resultCode );
+        }
+
+        Utils.logf( "util_userPickTile => " + tile );
+        return tile;
     }
 
     // Don't need this unless we have a scroll thumb to indicate position

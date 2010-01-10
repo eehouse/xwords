@@ -9,6 +9,8 @@ public interface XW_UtilCtxt {
     static final int BONUS_TRIPLE_WORD = 4;
 
     int getSquareBonus( int col, int row );
+    int userPickTile( /* PickInfo* pi, add once tile-picking is enabled */
+                     int playerNum, String[] texts );
 
     void setTimer( int why, int when, int handle );
     void clearTimer( int why );
