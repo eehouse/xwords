@@ -304,10 +304,8 @@ public class BoardView extends View implements DrawCtx,
             m_fillPaint.setColor( TILE_BACK );
             m_canvas.drawRect( rect, m_fillPaint );
 
-            if ( null != text ) {
-                m_fillPaint.setColor( m_playerColors[m_trayOwner] );
-                positionDrawTile( rect, text, val );
-            }
+            m_fillPaint.setColor( m_playerColors[m_trayOwner] );
+            positionDrawTile( rect, text, val );
 
             m_canvas.drawRect( rect, m_strokePaint ); // frame
         }
@@ -351,14 +349,16 @@ public class BoardView extends View implements DrawCtx,
 
     private void positionDrawTile( Rect rect, String text, int val )
     {
-        if ( null == m_letterRect ) {
-            // assumes show values is on
-            m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
-                                     rect.height() * 3 / 4 );
+        if ( null != text ) {
+            if ( null == m_letterRect ) {
+                // assumes show values is on
+                m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
+                                         rect.height() * 3 / 4 );
+            }
+            m_letterRect.offsetTo( rect.left, rect.top );
+            m_fillPaint.setTextSize( m_letterRect.height() );
+            drawCentered( text, m_letterRect );
         }
-        m_letterRect.offsetTo( rect.left, rect.top );
-        m_fillPaint.setTextSize( m_letterRect.height() );
-        drawCentered( text, m_letterRect );
 
         if ( null == m_valRect ) {
             m_valRect = new Rect( 0, 0, rect.width() / 4, rect.height() / 4 );
