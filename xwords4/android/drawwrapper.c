@@ -23,7 +23,7 @@
 
 typedef struct _AndDraw {
     DrawCtxVTable* vtable;
-    JNIEnv *env;
+    JNIEnv** env;
     jobject j_draw;             /* global ref; free it! */
     MPSLOT
 } AndDraw;
@@ -105,7 +105,7 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
                      XP_S16 remCount, DrawFocusState dfs )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;I[III)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "scoreBegin", sig );
 
@@ -130,7 +130,7 @@ and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r,
                          XP_U16* width, XP_U16* height )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;I[I[I)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "measureRemText", sig );
     
@@ -154,7 +154,7 @@ and_draw_measureScoreText( DrawCtx* dctx,
                            XP_U16* width, XP_U16* height )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
 
     jobject jrect = makeJRect( env, r );
     jobject jdsi = makeDSI( env, dsi );
@@ -181,7 +181,7 @@ and_draw_drawRemText( DrawCtx* dctx, const XP_Rect* rInner,
                       XP_S16 nTilesLeft, XP_Bool focussed )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;Landroid/graphics/Rect;IZ)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "drawRemText", sig );
 
@@ -202,7 +202,7 @@ and_draw_score_drawPlayer( DrawCtx* dctx,
                            const DrawScoreInfo* dsi )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;Landroid/graphics/Rect;"
         "Lorg/eehouse/android/xw4/jni/DrawScoreInfo;)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "score_drawPlayer", sig );
@@ -230,7 +230,7 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
                    XWBonusType bonus, HintAtts hintAtts, CellFlags flags )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
 
     const char* sig = "(Landroid/graphics/Rect;Ljava/lang/String;"
         "[Ljava/lang/Object;IIIII)Z";
@@ -260,7 +260,7 @@ and_draw_drawBoardArrow(DrawCtx* dctx, const XP_Rect* rect, XWBonusType bonus,
                         XP_Bool vert, HintAtts hintAtts, CellFlags flags )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig =  "(Landroid/graphics/Rect;IZII)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "drawBoardArrow", sig );
 
@@ -276,7 +276,7 @@ and_draw_vertScrollBoard( DrawCtx* dctx, XP_Rect* rect, XP_S16 dist,
 {
     LOG_FUNC();
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;II)Z";
     jmethodID mid = getMethodID( env, draw->j_draw, "vertScrollBoard", sig );
     jobject jrect = makeJRect( env, rect );
@@ -293,7 +293,7 @@ and_draw_trayBegin( DrawCtx* dctx, const XP_Rect* rect, XP_U16 owner,
                     DrawFocusState dfs )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;II)Z";
     jmethodID mid = getMethodID( env, draw->j_draw, "trayBegin", sig );
 
@@ -312,7 +312,7 @@ and_draw_drawTile( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
                    const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;Ljava/lang/String;"
         "[Ljava/lang/Object;II)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "drawTile", sig );
@@ -338,7 +338,7 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect,
                           XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;Ljava/lang/String;"
         "[Ljava/lang/Object;III)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "drawTileMidDrag", sig );
@@ -362,7 +362,7 @@ static void
 and_draw_drawTileBack( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;I)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "drawTileBack", sig );
 
@@ -378,7 +378,7 @@ static void
 and_draw_drawTrayDivider( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;I)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "drawTrayDivider", sig );
 
@@ -396,7 +396,7 @@ and_draw_score_pendingScore( DrawCtx* dctx, const XP_Rect* rect,
                              CellFlags flags )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     const char* sig = "(Landroid/graphics/Rect;III)V";
     jmethodID mid = getMethodID( env, draw->j_draw, "score_pendingScore", sig );
 
@@ -450,12 +450,13 @@ draw_doNothing( DrawCtx* dctx, ... )
 } /* draw_doNothing */
 
 DrawCtx* 
-makeDraw( MPFORMAL JNIEnv *env, jobject j_draw )
+makeDraw( MPFORMAL JNIEnv** envp, jobject j_draw )
 {
     AndDraw* draw = (AndDraw*)XP_CALLOC( mpool, sizeof(*draw) );
+    JNIEnv* env = *envp;
     draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
     draw->j_draw = (*env)->NewGlobalRef( env, j_draw );
-    draw->env = env;
+    draw->env = envp;
     MPASSIGN( draw->mpool, mpool );
 
     int ii;
@@ -497,7 +498,7 @@ void
 destroyDraw( DrawCtx* dctx )
 {
     AndDraw* draw = (AndDraw*)dctx;
-    JNIEnv* env = draw->env;
+    JNIEnv* env = *draw->env;
     (*env)->DeleteGlobalRef( env, draw->j_draw );
     XP_FREE( draw->mpool, draw->vtable );
     XP_FREE( draw->mpool, draw );

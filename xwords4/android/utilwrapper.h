@@ -27,7 +27,7 @@
 #include "util.h"
 #include "andglobals.h"
 
-XW_UtilCtxt* makeUtil( MPFORMAL JNIEnv *env, jobject j_util,
+XW_UtilCtxt* makeUtil( MPFORMAL JNIEnv** env, jobject j_util,
                        CurGameInfo* gi, AndGlobals* globals );
 void destroyUtil( XW_UtilCtxt* util );
 

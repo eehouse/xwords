@@ -25,8 +25,7 @@
 
 #include "draw.h"
 
-DrawCtx* makeDraw( MPFORMAL JNIEnv *env, jobject j_draw );
-
+DrawCtx* makeDraw( MPFORMAL JNIEnv** env, jobject j_draw );
 void destroyDraw( DrawCtx* dctx );
 
 

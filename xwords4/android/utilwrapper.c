@@ -28,7 +28,7 @@ typedef struct _TimerStorage {
 
 typedef struct _AndUtil {
     XW_UtilCtxt util;
-    JNIEnv* env;
+    JNIEnv** env;
     jobject j_util;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
 } AndUtil;
@@ -37,7 +37,6 @@ typedef struct _AndUtil {
 static VTableMgr*
 and_util_getVTManager( XW_UtilCtxt* uc )
 {
-    LOG_FUNC();
     AndGlobals* globals = (AndGlobals*)uc->closure;
     return globals->vtMgr;
 }
@@ -54,7 +53,7 @@ static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* uc,
                                             XP_U16 col, XP_U16 row )
 {
     AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = util->env;
+    JNIEnv* env = *util->env;
     const char* sig = "(II)I";
     jmethodID mid = getMethodID( env, util->j_util, "getSquareBonus", sig );
     return (*env)->CallIntMethod( env, util->j_util, mid, 
@@ -78,8 +77,25 @@ static XP_S16
 and_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                        XP_U16 playerNum, const XP_UCHAR** texts, XP_U16 nTiles )
 {
-    LOG_FUNC();
-}
+    XP_S16 result = -1;
+    AndUtil* util = (AndUtil*)uc;
+    JNIEnv* env = *util->env;
+    const char* sig = "(I[Ljava/lang/String;)I";
+    jmethodID mid = getMethodID( env, util->j_util, "userPickTile", sig );
+
+#ifdef FEATURE_TRAY_EDIT
+    ++error;                       /* need to pass pi if this is on */
+#endif
+
+    jobject jtexts = makeStringArray( env, nTiles, texts );
+
+    result = (*env)->CallIntMethod( env, util->j_util, mid, 
+                                    playerNum, jtexts );
+
+    (*env)->DeleteLocalRef( env, jtexts );
+
+    return result;
+} /* and_util_userPickTile */
 
 
 static XP_Bool
@@ -102,7 +118,7 @@ and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
 {
 #if 0
     AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = util->env;
+    JNIEnv* env = *util->env;
     const char* sig = "(II)V";
     jmethodID mid = getMethodID( env, util->j_util, "yOffsetChange", sig );
 
@@ -155,7 +171,7 @@ and_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                    XWTimerProc proc, void* closure )
 {
     AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = util->env;
+    JNIEnv* env = *util->env;
     const char* sig = "(III)V";
     jmethodID mid = getMethodID( env, util->j_util, "setTimer", sig );
 
@@ -171,7 +187,7 @@ static void
 and_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
     AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = util->env;
+    JNIEnv* env = *util->env;
     const char* sig = "(I)V";
     jmethodID mid = getMethodID( env, util->j_util, "clearTimer", sig );
     (*env)->CallVoidMethod( env, util->j_util, mid, why );
@@ -182,7 +198,7 @@ static void
 and_util_requestTime( XW_UtilCtxt* uc )
 {
     AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = util->env;
+    JNIEnv* env = *util->env;
     const char* sig = "()V";
     jmethodID mid = getMethodID( env, util->j_util, "requestTime", sig );
     (*env)->CallVoidMethod( env, util->j_util, mid );
@@ -268,12 +284,13 @@ and_util_engineStopping( XW_UtilCtxt* uc )
 
 
 XW_UtilCtxt*
-makeUtil( MPFORMAL JNIEnv *env, jobject j_util, CurGameInfo* gi, 
+makeUtil( MPFORMAL JNIEnv** envp, jobject j_util, CurGameInfo* gi, 
           AndGlobals* closure )
 {
     AndUtil* util = (AndUtil*)XP_CALLOC( mpool, sizeof(*util) );
     UtilVtable* vtable = (UtilVtable*)XP_CALLOC( mpool, sizeof(*vtable) );
-    util->env = env;
+    util->env = envp;
+    JNIEnv* env = *envp;
     util->j_util = (*env)->NewGlobalRef( env, j_util );
     util->util.vtable = vtable;
     MPASSIGN( util->util.mpool, mpool );
@@ -327,7 +344,7 @@ void
 destroyUtil( XW_UtilCtxt* utilc )
 {
     AndUtil* util = (AndUtil*)utilc;
-    JNIEnv *env = util->env;
+    JNIEnv *env = *util->env;
     (*env)->DeleteGlobalRef( env, util->j_util );
     XP_FREE( util->util.mpool, util->util.vtable );
     XP_FREE( util->util.mpool, util );
