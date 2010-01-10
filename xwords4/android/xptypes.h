@@ -57,6 +57,7 @@ typedef XP_U32 XP_Time;
 #else
 # define XP_MALLOC(pool, nbytes)       malloc(nbytes)
 # define XP_REALLOC(pool, p, bytes)    realloc((p), (bytes))
+# define XP_CALLOC( pool, bytes )     calloc( 1, (bytes) )
 # define XP_FREE(pool, p)              free(p)
 #endif
 
