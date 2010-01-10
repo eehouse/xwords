@@ -40,6 +40,7 @@
 	<string name="app_name">Crosswords</string>  
 	
 	<string name="button_ok">OK</string>  
+	<string name="button_cancel">Cancel</string>  
 
     <string name="player_label">Name:</string>
     <string name="game_config_open">Open</string>
@@ -47,6 +48,8 @@
 
 	<string name="error_title">Error</string>
 	<string name="error_message">Error loading game</string>
+
+    <string name="title_tile_picker">Pick tile</string>
 
     <!-- system menu for main board view -->
 	<string name="board_menu_done">Turn done</string>

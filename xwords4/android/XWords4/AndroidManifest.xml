@@ -83,6 +83,19 @@
       </intent-filter-->
 
     </activity>
+
+    <activity android:name="TilePicker"
+              android:theme="@android:style/Theme.Light"
+              android:label="@string/title_tile_picker"
+              android:screenOrientation="sensor"
+              >
+
+      <intent-filter>
+        <!-- docs say action is all I need. -->
+        <action android:name="org.eehouse.android.xw4.action.PICK_TILE" />
+      </intent-filter>
+
+    </activity>
     
   </application>
 </manifest>
