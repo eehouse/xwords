@@ -123,7 +123,6 @@ destroyGI( MPFORMAL CurGameInfo* gi )
 static bool
 loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 {
-    LOG_FUNC();
     bool success = getBool( env, j_cp, "showBoardArrow", &cp->showBoardArrow )
         && getBool( env, j_cp, "showRobotScores", &cp->showRobotScores )
         && getBool( env, j_cp, "hideTileValues", &cp->hideTileValues )
@@ -131,24 +130,40 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
     return success;
 }
 
-typedef struct _GameAndMPool {
+typedef struct _JNIState {
     XWGame game;
-    AndGlobals* globals;
+    JNIEnv* env;
+    AndGlobals globals;
     MPSLOT
-} GameAndMPool;
+} JNIState;
+
+#define XWJNI_START() {                                 \
+    XP_ASSERT( 0 != gamePtr );                          \
+    JNIState* state = (JNIState*)gamePtr;               \
+    MemPoolCtx* mpool = state->mpool;                   \
+    AndGlobals* globals = &state->globals;              \
+    LOG_FUNC();                                         \
+    /* if reentrant must be from same thread */         \
+    XP_ASSERT( state->env == 0 || state->env == env );  \
+    JNIEnv* _oldEnv = state->env;                       \
+    state->env = env;
+
+#define XWJNI_END()                             \
+    state->env = _oldEnv;                       \
+    LOG_RETURN_VOID();                          \
+    }
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 ( JNIEnv* env, jclass C )
 {
     MemPoolCtx* mpool = mpool_make();
-    GameAndMPool* game = (GameAndMPool*)XP_CALLOC( mpool, sizeof(*game) );
-    AndGlobals* globals = XP_MALLOC( mpool, sizeof( *globals ) );
-    game->mpool = mpool;
-    game->globals = globals;
+    JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
+    AndGlobals* globals = &state->globals;
+    state->mpool = mpool;
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
-    return (jint) game;
+    return (jint) state;
 }
 
 JNIEXPORT void JNICALL
@@ -157,16 +172,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
   jobject j_draw, jint gameID, jobject j_cp, jobject j_procs, 
   jbyteArray jDictBytes )
 {
-    LOG_FUNC();
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    MemPoolCtx* mpool = game->mpool;
-    AndGlobals* globals = game->globals;
-
+    XWJNI_START();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
     globals->gi = gi;
-    XW_UtilCtxt* util = makeUtil( MPPARM(mpool) env, j_util, gi, globals );
+    XW_UtilCtxt* util = makeUtil( MPPARM(mpool) &state->env, j_util, gi, globals );
     globals->util = util;
-    DrawCtx* dctx = makeDraw( MPPARM(mpool) env, j_draw );
+    DrawCtx* dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
     globals->dctx = dctx;
     CommonPrefs cp;
     (void)loadCommonPrefs( env, &cp, j_cp );
@@ -176,7 +187,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 #endif
 
     XP_LOGF( "calling game_makeNewGame" );
-    game_makeNewGame( MPPARM(mpool) &game->game, gi, util, dctx, gameID, 
+    game_makeNewGame( MPPARM(mpool) &state->game, gi, util, dctx, gameID, 
                       &cp, NULL );
 
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jDictBytes );
@@ -187,8 +198,33 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     }
 #endif
     XP_ASSERT( !!dict );
-    model_setDictionary( game->game.model, dict );
+    model_setDictionary( state->game.model, dict );
+    XWJNI_END();
 } /* makeNewGame */
+
+JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
+( JNIEnv * env, jclass claz, jint gamePtr )
+{
+    LOG_FUNC();
+    JNIState* state = (JNIState*)gamePtr;
+    MemPoolCtx* mpool = state->mpool;
+    AndGlobals* globals = &state->globals;
+
+    destroyGI( mpool, globals->gi );
+
+    JNIEnv* oldEnv = state->env;
+    state->env = env;
+    game_dispose( &state->game );
+
+    destroyDraw( globals->dctx );
+    destroyUtil( globals->util );
+    vtmgr_destroy( mpool, globals->vtMgr );
+
+    state->env = oldEnv;
+    XP_FREE( mpool, state );
+    mpool_destroy( mpool );
+    LOG_RETURN_VOID();
+}
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
@@ -196,17 +232,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
   jobject /*out*/jgi, jbyteArray jdict, jobject jutil, jobject jdraw, 
   jobject jcp, jobject jprocs )
 {
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    MemPoolCtx* mpool = game->mpool;
-    AndGlobals* globals = game->globals;
+    jboolean result;
+    XWJNI_START();
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jdict );
-    globals->util = makeUtil( MPPARM(mpool) env, jutil, globals->gi, globals );
-    globals->dctx = makeDraw( MPPARM(mpool) env, jdraw );
+    globals->util = makeUtil( MPPARM(mpool) &state->env, jutil, globals->gi, globals );
+    globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
 
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
-    XWStreamCtxt* stream = mem_stream_make( game->mpool, globals->vtMgr,
+    XWStreamCtxt* stream = mem_stream_make( mpool, globals->vtMgr,
                                             NULL, 0, NULL );
     int len = (*env)->GetArrayLength( env, jstream );
     XP_LOGF( "putting %d bytes into stream", len );
@@ -215,15 +250,15 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 
     CommonPrefs cp;
     (void)loadCommonPrefs( env, &cp, jcp );
-    XP_Bool result = game_makeFromStream( mpool, stream, &game->game, 
-                                          globals->gi, dict, 
-                                          globals->util, globals->dctx, &cp,
-                                          NULL );
+    result = game_makeFromStream( mpool, stream, &state->game, 
+                                  globals->gi, dict, 
+                                  globals->util, globals->dctx, &cp,
+                                  NULL );
     stream_destroy( stream );
 
     setJGI( env, jgi, globals->gi );
 
-    LOG_RETURNF( "%s", result?"success":"failure" );
+    XWJNI_END();
     return result;
 } /* makeFromStream */
 
@@ -231,100 +266,73 @@ JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jgi )
 {
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    AndGlobals* globals = game->globals;
+    jbyteArray result;
+    XWJNI_START();
 
-    CurGameInfo* gi = makeGI( MPPARM(game->mpool) env, jgi );
-    XWStreamCtxt* stream = mem_stream_make( game->mpool, globals->vtMgr,
+    CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
+    XWStreamCtxt* stream = mem_stream_make( mpool, globals->vtMgr,
                                             NULL, 0, NULL );
-    game_saveToStream( &game->game, gi, stream );
-    destroyGI( MPPARM(game->mpool) gi );
+
+    game_saveToStream( &state->game, gi, stream );
+    destroyGI( MPPARM(mpool) gi );
 
     int nBytes = stream_getSize( stream );
-    jbyteArray jarr = (*env)->NewByteArray( env, nBytes );
-    jbyte* jelems = (*env)->GetByteArrayElements( env, jarr, NULL );
+    result = (*env)->NewByteArray( env, nBytes );
+    jbyte* jelems = (*env)->GetByteArrayElements( env, result, NULL );
     stream_getBytes( stream, jelems, nBytes );
-    (*env)->ReleaseByteArrayElements( env, jarr, jelems, 0 );
+    (*env)->ReleaseByteArrayElements( env, result, jelems, 0 );
     stream_destroy( stream );
 
-    (*env)->DeleteLocalRef( env, jarr );
-    return jarr;
-}
-
-JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
-( JNIEnv * env, jclass claz, jint gamePtr )
-{
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    MemPoolCtx* mpool = game->mpool;
-    AndGlobals* globals = game->globals;
-
-    destroyGI( mpool, globals->gi );
-
-    game_dispose( &game->game );
-
-    destroyDraw( globals->dctx );
-    destroyUtil( globals->util );
-    vtmgr_destroy( mpool, globals->vtMgr );
-
-    XP_FREE( mpool, globals );
-    XP_FREE( mpool, game );
-    mpool_destroy( mpool );
+    (*env)->DeleteLocalRef( env, result );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1invalAll
 ( JNIEnv *env, jclass C, jint gamePtr )
 {
-    LOG_FUNC();
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    board_invalAll( board );
+    XWJNI_START();
+    board_invalAll( state->game.board );
+    XWJNI_END();
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 ( JNIEnv *env, jclass C, jint gamePtr )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    XP_Bool success = board_draw( board );
-    return (jboolean)success;
+    jboolean result;
+    XWJNI_START();
+    result = board_draw( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
 (JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, jboolean lefty )
 {
-    LOG_FUNC();
-    XP_ASSERT( 0 != gamePtr );
-    XP_LOGF( "calling setPos(%d,%d)", left, top );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    board_setPos( board, left, top, lefty );
+    XWJNI_START();
+    board_setPos( state->game.board, left, top, lefty );
+    XWJNI_END();
 }
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScale
 (JNIEnv *env, jclass C, jint gamePtr, jint hscale, jint vscale )
 {
-    XP_LOGF( "calling setScale(%d,%d)", hscale, vscale );
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    board_setScale( board, hscale, vscale );
+    XWJNI_START();
+    board_setScale( state->game.board, hscale, vscale );
+    XWJNI_END();
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setShowColors
 ( JNIEnv *env, jclass C, jint gamePtr, jboolean on )
 {
-    LOG_FUNC();
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    board_setShowColors( board, on );
+    XWJNI_START();
+    board_setShowColors( state->game.board, on );
+    XWJNI_END();
 }
 
 JNIEXPORT void JNICALL
@@ -332,12 +340,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScoreboardLoc
 ( JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, 
   jint width, jint height, jboolean divideHorizontally )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    XP_LOGF( "calling setScoreboardLoc(%d,%d,%d,%d,%d)", left, top, 
-             width, height, divideHorizontally );
-    board_setScoreboardLoc( board, left, top, width, height, divideHorizontally );
+    XWJNI_START();
+    board_setScoreboardLoc( state->game.board, left, top, width, 
+                            height, divideHorizontally );
+    XWJNI_END();
 }
 
 JNIEXPORT void JNICALL
@@ -345,143 +351,150 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTrayLoc
 ( JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, 
   jint width, jint height, jint minDividerWidth )
 {
-    XP_LOGF( "calling setTrayLoc(%d,%d,%d,%d,%d)", left, top, 
-             width, height, minDividerWidth );
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    board_setTrayLoc( board, left, top, width, height, minDividerWidth );
+    XWJNI_START();
+    board_setTrayLoc( state->game.board, left, top, width, height, 
+                      minDividerWidth );
+    XWJNI_END();
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenDown
 (JNIEnv *env, jclass C, jint gamePtr, jint xx, jint yy, jbooleanArray barray )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
+    jboolean result;
+    XWJNI_START();
     XP_Bool bb;                 /* drop this for now */
-    return board_handlePenDown( board, xx, yy, &bb );
+    result = board_handlePenDown( state->game.board, xx, yy, &bb );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenMove
 ( JNIEnv *env, jclass C, jint gamePtr, jint xx, jint yy )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_handlePenMove( board, xx, yy );
+    jboolean result;
+    XWJNI_START();
+    result = board_handlePenMove( state->game.board, xx, yy );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenUp
 ( JNIEnv *env, jclass C, jint gamePtr, jint xx, jint yy )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_handlePenUp( board, xx, yy );
+    jboolean result;
+    XWJNI_START();
+    result = board_handlePenUp( state->game.board, xx, yy );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1juggleTray
 (JNIEnv* env, jclass C, jint gamePtr )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_juggleTray( board );
+    jboolean result;
+    XWJNI_START();
+    result = board_juggleTray( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1getTrayVisState
 (JNIEnv* env, jclass C, jint gamePtr)
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_getTrayVisState( board );
+    jboolean result;
+    XWJNI_START();
+    result = board_getTrayVisState( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1hideTray
 (JNIEnv* env, jclass C, jint gamePtr)
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_hideTray( board );
+    jboolean result;
+    XWJNI_START();
+    result = board_hideTray( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1showTray
 (JNIEnv* env, jclass C, jint gamePtr)
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_showTray( board );
+    jboolean result;
+    XWJNI_START();
+    result = board_showTray( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1commitTurn
 (JNIEnv* env, jclass C, jint gamePtr)
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_commitTurn( board );
+    jboolean result;
+    XWJNI_START();
+    result = board_commitTurn( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1flip
 (JNIEnv* env, jclass C, jint gamePtr)
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_flip( board );
+    jboolean result;
+    XWJNI_START();
+    result = board_flip( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1replaceTiles
 (JNIEnv* env, jclass C, jint gamePtr)
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    return board_replaceTiles( board );
+    jboolean result;
+    XWJNI_START();
+    result = board_replaceTiles( state->game.board );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1handleUndo
 (JNIEnv* env, jclass C, jint gamePtr)
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    ServerCtxt* server = game->game.server;
-    server_handleUndo( server );
+    XWJNI_START();
+    server_handleUndo( state->game.server );
+    XWJNI_END();
 }
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1do
 (JNIEnv* env, jclass C, jint gamePtr )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    ServerCtxt* server = game->game.server;
-    return server_do( server );
+    jboolean result;
+    XWJNI_START();
+    result = server_do( state->game.server );
+    XWJNI_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL
 org_eehouse_android_xw4_jni_XwJNI_board_1resetEngine
 (JNIEnv* env, jclass C, jint gamePtr )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-    board_resetEngine( board );
+    XWJNI_START();
+    board_resetEngine( state->game.board );
+    XWJNI_END();
 }
 
 JNIEXPORT jboolean JNICALL
@@ -489,16 +502,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
 ( JNIEnv* env, jclass C, jint gamePtr, jboolean useLimits, 
   jbooleanArray workRemains )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    BoardCtxt* board = game->game.board;
-
+    jboolean result;
+    XWJNI_START();
     XP_Bool tmpbool;
-    jboolean result = board_requestHint( board, useLimits, &tmpbool );
- 
+    result = board_requestHint( state->game.board, useLimits, &tmpbool );
     /* If passed need to do workRemains[0] = tmpbool */
     XP_ASSERT( !workRemains );
-    
+    XWJNI_END();
     return result;
 }
 
@@ -506,9 +516,10 @@ JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_timerFired
 ( JNIEnv* env, jclass C, jint gamePtr, jint why, jint when, jint handle )
 {
-    XP_ASSERT( 0 != gamePtr );
-    GameAndMPool* game = (GameAndMPool*)gamePtr;
-    AndGlobals* globals = game->globals;
+    jboolean result;
+    XWJNI_START();
     XW_UtilCtxt* util = globals->util;
-    return utilTimerFired( util, why, handle );
+    result = utilTimerFired( util, why, handle );
+    XWJNI_END();
+    return result;
 }
