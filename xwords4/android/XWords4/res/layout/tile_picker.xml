@@ -11,7 +11,7 @@
   <TableLayout android:id="@+id/tile_table"
                android:layout_width="fill_parent"
                android:layout_height="wrap_content"
-               android:stretchColumns="1">
+               android:stretchColumns="*">
   </TableLayout>
 
   <Button android:id="@+id/cancel"
