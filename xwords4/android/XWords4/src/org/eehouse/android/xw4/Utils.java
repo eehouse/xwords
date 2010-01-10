@@ -2,6 +2,7 @@
 package org.eehouse.android.xw4;
 
 import android.util.Log;
+import java.lang.Thread;
 import java.text.MessageFormat;
 
 public class Utils {
@@ -10,7 +11,8 @@ public class Utils {
     private Utils() {}
 
     public static void logf( String format ) {
-        Log.d( TAG, format );
+        long id = Thread.currentThread().getId();
+        Log.d( TAG, id + ": " + format );
     } // logf
 
     public static void logf( String format, Object[] args ) {
