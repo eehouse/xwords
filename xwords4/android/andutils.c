@@ -194,6 +194,25 @@ getIntFromArray( JNIEnv* env, jintArray arr, bool del )
     return result;
 }
 
+jobjectArray
+makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
+{
+    jclass clas = (*env)->FindClass(env, "java/lang/String");
+    jstring empty = (*env)->NewStringUTF( env, "" );
+    jobjectArray jarray = (*env)->NewObjectArray( env, siz, clas, empty );
+    (*env)->DeleteLocalRef( env, clas );
+    (*env)->DeleteLocalRef( env, empty );
+
+    int ii;
+    for ( ii = 0; ii < siz; ++ii ) {    
+        jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
+        (*env)->SetObjectArrayElement( env, jarray, ii, jstr );
+        (*env)->DeleteLocalRef( env, jstr );
+    }
+
+    return jarray;
+}
+
 jmethodID
 getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
 {
