@@ -79,7 +79,6 @@ andCountSpecials( AndDictionaryCtxt* ctxt )
 static XP_Bitmap
 andMakeBitmap( XP_U8** ptrp )
 {
-    LOG_FUNC();
     XP_U8* ptr = *ptrp;
     XP_U8 nCols = *ptr++;
     XP_Bitmap bitmap = NULL;
@@ -351,7 +350,6 @@ makeDict( MPFORMAL JNIEnv *env, jbyteArray jbytes )
     XP_Bool formatOk = XP_TRUE;
     XP_Bool isUTF8 = XP_FALSE;
     XP_U16 charSize;
-    LOG_FUNC();
     AndDictionaryCtxt* anddict = NULL;
 
     jsize len = (*env)->GetArrayLength( env, jbytes );
@@ -375,6 +373,5 @@ makeDict( MPFORMAL JNIEnv *env, jbyteArray jbytes )
     setBlankTile( &anddict->super );
 
  err:
-    LOG_RETURNF( "%p", anddict );
     return (DictionaryCtxt*)anddict;
 }
