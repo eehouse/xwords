@@ -140,7 +140,8 @@ typedef struct _JNIState {
 #define XWJNI_START() {                                 \
     XP_ASSERT( 0 != gamePtr );                          \
     JNIState* state = (JNIState*)gamePtr;               \
-    MemPoolCtx* mpool = state->mpool;                   \
+    MPSLOT;                                             \
+    MPASSIGN( mpool, state->mpool);                     \
     AndGlobals* globals = &state->globals;              \
     LOG_FUNC();                                         \
     /* if reentrant must be from same thread */         \
@@ -157,10 +158,12 @@ JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 ( JNIEnv* env, jclass C )
 {
+#ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
+#endif
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
     AndGlobals* globals = &state->globals;
-    state->mpool = mpool;
+    MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
     return (jint) state;
@@ -194,7 +197,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 #ifdef STUBBED_DICT
     if ( !dict ) {
         XP_LOGF( "falling back to stubbed dict" );
-        dict = make_stubbed_dict( mpool );
+        dict = make_stubbed_dict( MPPARM_NOCOMMA(mpool) );
     }
 #endif
     XP_ASSERT( !!dict );
@@ -207,10 +210,12 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 {
     LOG_FUNC();
     JNIState* state = (JNIState*)gamePtr;
+#ifdef MEM_DEBUG
     MemPoolCtx* mpool = state->mpool;
+#endif
     AndGlobals* globals = &state->globals;
 
-    destroyGI( mpool, globals->gi );
+    destroyGI( MPPARM(mpool) globals->gi );
 
     JNIEnv* oldEnv = state->env;
     state->env = env;
@@ -218,7 +223,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 
     destroyDraw( globals->dctx );
     destroyUtil( globals->util );
-    vtmgr_destroy( mpool, globals->vtMgr );
+    vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
     state->env = oldEnv;
     XP_FREE( mpool, state );
@@ -241,7 +246,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
 
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
-    XWStreamCtxt* stream = mem_stream_make( mpool, globals->vtMgr,
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             NULL, 0, NULL );
     int len = (*env)->GetArrayLength( env, jstream );
     XP_LOGF( "putting %d bytes into stream", len );
@@ -250,7 +255,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 
     CommonPrefs cp;
     (void)loadCommonPrefs( env, &cp, jcp );
-    result = game_makeFromStream( mpool, stream, &state->game, 
+    result = game_makeFromStream( MPPARM(mpool) stream, &state->game, 
                                   globals->gi, dict, 
                                   globals->util, globals->dctx, &cp,
                                   NULL );
@@ -270,7 +275,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
     XWJNI_START();
 
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
-    XWStreamCtxt* stream = mem_stream_make( mpool, globals->vtMgr,
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             NULL, 0, NULL );
 
     game_saveToStream( &state->game, gi, stream );
