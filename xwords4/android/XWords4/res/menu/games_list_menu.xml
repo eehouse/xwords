@@ -2,5 +2,9 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/gamel_menu_delete_all"
-          android:title="@string/gamel_menu_delete_all" />
+          android:title="@string/gamel_menu_delete_all"
+          />
+    <item android:id="@+id/gamel_menu_view_hidden"
+          android:title="@string/gamel_menu_view_hidden"
+          />
 </menu>

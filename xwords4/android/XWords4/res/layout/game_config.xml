@@ -43,11 +43,11 @@
      android:id="@+id/player_2_name"
      />
 
-  <Button android:id="@+id/game_config_open"
+  <!--Button android:id="@+id/game_config_open"
           android:layout_width="fill_parent" 
           android:layout_height="wrap_content" 
           android:layout_gravity="right"
-          android:text="@string/game_config_open" />
+          android:text="@string/game_config_open" /-->
 
   <Button android:id="@+id/game_config_done"
           android:layout_width="fill_parent" 

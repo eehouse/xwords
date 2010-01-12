@@ -2,31 +2,50 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/board_menu_done"
-          android:title="@string/board_menu_done" />
+          android:title="@string/board_menu_done"
+          android:alphabeticShortcut="D"
+          />
     <item android:id="@+id/board_menu_juggle"
-          android:title="@string/board_menu_juggle" />
+          android:title="@string/board_menu_juggle" 
+          android:alphabeticShortcut="J"
+          />
     <item android:id="@+id/board_menu_flip"
-          android:title="@string/board_menu_flip" />
+          android:title="@string/board_menu_flip"
+          android:alphabeticShortcut="F"
+          />
     <item android:id="@+id/board_menu_trade"
-          android:title="@string/board_menu_trade" />
+          android:title="@string/board_menu_trade"
+          android:alphabeticShortcut="T"
+          />
     <item android:id="@+id/board_menu_tray"
-          android:title="@string/board_menu_tray" />
-
+          android:title="@string/board_menu_tray" 
+          android:alphabeticShortcut="H"
+          />
     <item android:title="@string/board_submenu_undo">
       <menu>
         <item android:id="@+id/board_menu_undo_current"
-              android:title="@string/board_menu_undo_current" />
+              android:title="@string/board_menu_undo_current"
+              />
         <item android:id="@+id/board_menu_undo_last"
-              android:title="@string/board_menu_undo_last" />
+              android:title="@string/board_menu_undo_last"
+              android:alphabeticShortcut="U"
+              />
       </menu>
     </item>
 
     <item android:title="@string/board_submenu_hint">
       <menu>
         <item android:id="@+id/board_menu_hint_next"
-              android:title="@string/board_menu_hint_next" />
+              android:title="@string/board_menu_hint_next" 
+              android:alphabeticShortcut="H"
+              />
         <item android:id="@+id/board_menu_hint"
-              android:title="@string/board_menu_hint" />
+              android:title="@string/board_menu_hint"
+              />
+        <item android:id="@+id/board_menu_values"
+              android:title="@string/board_menu_values"
+              android:alphabeticShortcut="V"
+              />
       </menu>
     </item>
     <item android:title="@string/board_submenu_game">
@@ -47,12 +66,14 @@
     </item>
     <item android:title="@string/board_submenu_file">
       <menu>
-        <item android:id="@+id/board_menu_file_new"
-              android:title="@string/board_menu_file_new" />
         <item android:id="@+id/board_menu_file_prefs"
-              android:title="@string/board_menu_file_prefs" />
+              android:title="@string/board_menu_file_prefs"
+              android:alphabeticShortcut="P"
+              />
         <item android:id="@+id/board_menu_file_about"
-              android:title="@string/board_menu_file_about" />
+              android:title="@string/board_menu_file_about"
+              android:alphabeticShortcut="A"
+              />
       </menu>
     </item>
 

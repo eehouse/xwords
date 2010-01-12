@@ -25,6 +25,12 @@
     <string name="list_item_view">View</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
+	<string name="list_item_copy">Copy</string>
+	<string name="list_item_new_from">New from</string>
+	<string name="list_item_move_up">Move up</string>
+	<string name="list_item_move_down">Move down</string>
+	<string name="list_item_move_to_top">Move to top</string>
+	<string name="list_item_move_to_bottom">Move to bottom</string>
 
     <string name="resolve_edit">Edit note</string>
     <string name="resolve_title">Edit title</string>  
@@ -63,6 +69,7 @@
 	<string name="board_submenu_hint">Hint</string>
 	<string name="board_menu_hint_next">Next hint</string>
 	<string name="board_menu_hint">Hint</string>
+	<string name="board_menu_values">Show values</string>
 	<string name="board_submenu_game">Game</string>
 	<string name="board_menu_game_counts">Counts and values</string>
 	<string name="board_menu_game_left">Tiles remaining</string>
@@ -76,4 +83,6 @@
 	<string name="board_menu_file_about">About Crosswords</string>
 
 	<string name="gamel_menu_delete_all">Delete all</string>
+	<string name="gamel_menu_view_hidden">Hidden games</string>
+
 </resources>
