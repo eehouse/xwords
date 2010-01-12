@@ -114,8 +114,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         setContentView(R.layout.game_config);
 
-        mOpenB = (Button)findViewById(R.id.game_config_open);
-        mOpenB.setOnClickListener( this );
+        // mOpenB = (Button)findViewById(R.id.game_config_open);
+        // mOpenB.setOnClickListener( this );
         mDoneB = (Button)findViewById(R.id.game_config_done);
         mDoneB.setOnClickListener( this );
 
@@ -170,6 +170,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
                     Utils.logf( "got FileNotFoundException: " + ex.toString() );
                 }
             }
+
+            setResult( 1 );
             finish();
         } else if ( mOpenB == view ) {
             // finish but after posting an intent that'll cause the

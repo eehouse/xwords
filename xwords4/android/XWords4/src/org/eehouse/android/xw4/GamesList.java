@@ -42,34 +42,15 @@ import org.eehouse.android.xw4.XWords4.Games; // for constants
 
 public class GamesList extends ListActivity implements View.OnClickListener {
     private static final String TAG = "GamesList";
-    // private InputStream m_dict;
     private GameListAdapter m_adapter;
-
-    // Menu item ids
-    public static final int MENU_ITEM_DELETE = Menu.FIRST;
-    public static final int MENU_ITEM_INSERT = Menu.FIRST + 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         setContentView(R.layout.game_list);
 
         // setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
-
-        // AssetManager am = getAssets();
-        // try {
-        //     m_dict = am.open( "BasEnglish2to8.xwd", 
-        //                       android.content.res.AssetManager.ACCESS_RANDOM );
-        //     Utils.logf( "opened" );
-        // } catch ( java.io.IOException ee ){
-        //     m_dict = null;
-        //     Utils.logf( "failed to open" );
-        // }
-
-        m_adapter = new GameListAdapter( this );
-        setListAdapter( m_adapter );
 
         registerForContextMenu( getListView() );
 
@@ -85,20 +66,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             intent.setData(Games.CONTENT_URI);
         }
 
-        // Inform the list we provide context menus for items
-        // getListView().setOnCreateContextMenuListener(this);
-        
-        // Perform a managed query. The Activity will handle closing
-        // and requerying the cursor when needed.
-        // Cursor cursor = managedQuery(getIntent().getData(), PROJECTION, null, null,
-        //         Notes.DEFAULT_SORT_ORDER);
-
-        // Used to map notes entries from the database to views
-        // SimpleCursorAdapter adapter = 
-        //     new SimpleCursorAdapter(this, R.layout.noteslist_item, cursor,
-        //                             new String[] { Notes.TITLE }, 
-        //                             new int[] { android.R.id.text1 });
-        // setListAdapter(adapter);
+        m_adapter = new GameListAdapter( this );
+        setListAdapter( m_adapter );
     }
 
     // @Override
@@ -203,15 +172,9 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     }
 
     @Override
-    public boolean onContextItemSelected( MenuItem item ) {
+    public boolean onContextItemSelected( MenuItem item ) 
+    {
         boolean handled = false;
-        AdapterView.AdapterContextMenuInfo info;
-        try {
-             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        } catch (ClassCastException e) {
-            Log.e(TAG, "bad menuInfo", e);
-            return false;
-        }
 
         switch (item.getItemId()) {
         case R.id.list_item_open:
@@ -219,16 +182,16 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             handled = true;
             break;
         case R.id.list_item_view:
-            Utils.logf( "view" );
-            handled = true;
-            break;
         case R.id.list_item_hide:
-            Utils.logf( "hide" );
-            handled = true;
-            break;
         case R.id.list_item_delete:
-            Utils.logf( "delete" );
+        case R.id.list_item_copy:
+        case R.id.list_item_new_from:
+        case R.id.list_item_move_up:
+        case R.id.list_item_move_down:
+        case R.id.list_item_move_to_top:
+        case R.id.list_item_move_to_bottom:
             handled = true;
+            Utils.notImpl( this );
             break;
         }
         return handled;
@@ -254,16 +217,25 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             setListAdapter( m_adapter );
             handled = true;
             break;
+        case R.id.gamel_menu_view_hidden:
+            Utils.notImpl( this );
+            break;
         }
         return handled;
     }
 
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent result ) 
+    {
+        if ( requestCode == 0 && resultCode == 1 ) {
+            onContentChanged();
+        }
+	}
+
     public void onClick( View v ) {
-        Intent intent = new Intent();
-        intent.setClassName( "org.eehouse.android.xw4",
-                             "org.eehouse.android.xw4.GameConfig");
+        Intent intent = new Intent( GamesList.this, GameConfig.class );
         intent.setAction( Intent.ACTION_INSERT );
-        startActivity( intent );
+        startActivityForResult( intent, 0 );
     }
 
     @Override

@@ -15,14 +15,12 @@ import java.nio.CharBuffer;
 
 public class GameListAdapter implements ListAdapter {
     Context m_context;
-    String[] m_files;
 
     public GameListAdapter( Context context ) {
         m_context = context;
-        m_files = context.fileList();
     }
 
-    public boolean  areAllItemsEnabled() {
+    public boolean areAllItemsEnabled() {
         return true;
     }
 
@@ -31,13 +29,19 @@ public class GameListAdapter implements ListAdapter {
     }
     
     public int getCount() {
-        return m_files.length;
-    }
+        int count = 0;
+        for ( String file : m_context.fileList() ) {
+            //if ( file.endsWith(XWConstants.GAME_EXTN) ) {
+            ++count;
+            //}
+        }
 
+        return count;
+    }
     
     public Object getItem( int position ) {
         TextView view = new TextView(m_context);
-        view.setText( "one game" );
+        view.setText( "game " + position );
         return view;
     }
 
