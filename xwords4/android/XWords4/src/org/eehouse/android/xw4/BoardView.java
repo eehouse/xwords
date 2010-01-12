@@ -319,7 +319,7 @@ public class BoardView extends View implements DrawCtx,
 
     public void drawTileBack( Rect rect, int flags ) 
     {
-        drawTile( rect, "?", null, 0, flags );
+        drawTile( rect, "?", null, -1, flags );
     }
 
     public void drawTrayDivider( Rect rect, int flags ) 
@@ -360,14 +360,16 @@ public class BoardView extends View implements DrawCtx,
             drawCentered( text, m_letterRect );
         }
 
-        if ( null == m_valRect ) {
-            m_valRect = new Rect( 0, 0, rect.width() / 4, rect.height() / 4 );
+        if ( val >= 0 ) {
+            if ( null == m_valRect ) {
+                m_valRect = new Rect( 0, 0, rect.width() / 4, rect.height() / 4 );
+            }
+            m_valRect.offsetTo( rect.right - (rect.width() / 4),
+                                rect.bottom - (rect.height() / 4) );
+            text = String.format( "%d", val );
+            m_fillPaint.setTextSize( m_valRect.height() );
+            drawCentered( text, m_valRect );
         }
-        m_valRect.offsetTo( rect.right - (rect.width() / 4),
-                            rect.bottom - (rect.height() / 4) );
-        text = String.format( "%d", val );
-        m_fillPaint.setTextSize( m_valRect.height() );
-        drawCentered( text, m_valRect );
     }
 
     private void clearToBack( Rect rect ) 
