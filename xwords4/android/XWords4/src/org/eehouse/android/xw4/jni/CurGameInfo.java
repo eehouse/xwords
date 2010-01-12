@@ -26,15 +26,29 @@ public class CurGameInfo {
     public boolean confirmBTConnect;   /* only used for BT */
 
     public CurGameInfo() {
-        nPlayers = 3;
+        nPlayers = 2;
         boardSize = 15;
         players = new LocalPlayer[nPlayers];
         serverRole = DeviceRole.SERVER_STANDALONE;
         dictName = BUILTIN_DICT;
         hintsNotAllowed = false;
-        players[0] = new LocalPlayer( "Eric");
-        players[1] = new LocalPlayer( "Kati", true );
-        players[2] = new LocalPlayer( "Brynn", true );
+        players[0] = new LocalPlayer( "Player 1");
+        players[1] = new LocalPlayer( "Player 2", true );
     }
+
+    public CurGameInfo( CurGameInfo src ) {
+        nPlayers = src.nPlayers;
+        boardSize = src.boardSize;
+        players = new LocalPlayer[nPlayers];
+        serverRole = src.serverRole;
+        dictName = src.dictName;
+        hintsNotAllowed = src.hintsNotAllowed;
+        
+        int ii;
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            players[ii] = new LocalPlayer( src.players[ii] );
+        }
+    }
+
 }
 

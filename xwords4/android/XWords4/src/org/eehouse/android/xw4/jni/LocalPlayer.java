@@ -15,6 +15,14 @@ public class LocalPlayer {
         password = "";
     }
 
+    public LocalPlayer( LocalPlayer src ) {
+        isLocal = src.isLocal;
+        isRobot = src.isRobot;
+        name = src.name;
+        password = src.password;
+        secondsUsed = 0;
+    }
+
     public LocalPlayer( String nm, boolean robot ) {
         this( nm );
         isRobot = robot;
