@@ -27,6 +27,7 @@ public class JNIThread extends Thread {
             CMD_UNDO_LAST,
             CMD_HINT,
             CMD_NEXT_HINT,
+            CMD_VALUES,
             };
 
     private boolean m_stopped = false;
@@ -61,6 +62,12 @@ public class JNIThread extends Thread {
         }
     }
 
+    public boolean busy()
+    {                           // synchronize this!!!
+        int siz = m_queue.size();
+        return siz > 0;
+    }
+
     private boolean toggleTray() {
         boolean draw;
         int state = XwJNI.board_getTrayVisState( m_jniGamePtr );
@@ -74,7 +81,7 @@ public class JNIThread extends Thread {
 
     public void run() 
     {
-        boolean[] handled = new boolean[1];
+        boolean[] barr = new boolean[1]; // scratch boolean
         while ( !m_stopped ) {
             QueueElem elem;
             Object[] args;
@@ -99,7 +106,7 @@ public class JNIThread extends Thread {
                 draw = XwJNI.board_handlePenDown( m_jniGamePtr, 
                                                   ((Integer)args[0]).intValue(),
                                                   ((Integer)args[1]).intValue(),
-                                                  handled );
+                                                  barr );
                 break;
             case CMD_PEN_MOVE:
                 draw = XwJNI.board_handlePenMove( m_jniGamePtr, 
@@ -137,7 +144,14 @@ public class JNIThread extends Thread {
                 XwJNI.board_resetEngine( m_jniGamePtr );
                 // fallthru
             case CMD_NEXT_HINT:
-                draw = XwJNI.board_requestHint( m_jniGamePtr, false, null );
+                draw = XwJNI.board_requestHint( m_jniGamePtr, false, barr );
+                if ( barr[0] ) {
+                    handle( CMD_NEXT_HINT );
+                }
+                break;
+
+            case CMD_VALUES:
+                draw = XwJNI.board_toggle_showValues( m_jniGamePtr );
                 break;
 
             case CMD_TIMER_FIRED:

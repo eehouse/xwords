@@ -5,6 +5,9 @@
 package org.eehouse.android.xw4;
 
 public interface XWConstants {
+
+    public static final String GAME_EXTN = ".xwg";
+
     public static final String PICK_TILE_TILES
         = "org.eehouse.android.xw4.PICK_TILE_TILES";
     public static final String PICK_TILE_TILE

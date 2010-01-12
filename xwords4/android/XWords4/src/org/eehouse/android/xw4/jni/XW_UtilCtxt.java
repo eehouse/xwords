@@ -11,11 +11,12 @@ public interface XW_UtilCtxt {
     int getSquareBonus( int col, int row );
     int userPickTile( /* PickInfo* pi, add once tile-picking is enabled */
                      int playerNum, String[] texts );
+    boolean engineProgressCallback();
 
     void setTimer( int why, int when, int handle );
     void clearTimer( int why );
     void requestTime();
-
+    void remSelected();
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int oldOffset, int newOffset );
 

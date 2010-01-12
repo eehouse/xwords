@@ -1,4 +1,4 @@
-
+/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
 
 package org.eehouse.android.xw4.jni;
 
@@ -64,6 +64,7 @@ public class XwJNI {
     public static native int board_getTrayVisState( int gamePtr );
     public static native boolean board_hideTray( int gamePtr );
     public static native boolean board_showTray( int gamePtr );
+    public static native boolean board_toggle_showValues( int gamePtr );
     public static native boolean board_commitTurn( int gamePtr );
     public static native boolean board_flip( int gamePtr );
     public static native boolean board_replaceTiles( int gamePtr );

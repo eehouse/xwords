@@ -22,7 +22,7 @@ import org.eehouse.android.xw4.jni.*;
 
 public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
-    private static final String CUR_GAME = "cur_game";
+    private static final String CUR_GAME = "cur_game" + XWConstants.GAME_EXTN;
     private static final int PICK_TILE_REQUEST = 1;
 
     private BoardView m_view;
@@ -176,6 +176,23 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         case R.id.board_menu_hint_next:
             m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
             break;
+        case R.id.board_menu_values:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_VALUES );
+            break;
+
+        case R.id.board_menu_game_counts:
+        case R.id.board_menu_game_left:
+        case R.id.board_menu_game_info:
+        case R.id.board_menu_game_history:
+        case R.id.board_menu_game_final:
+        case R.id.board_menu_game_resend:
+        case R.id.board_menu_file_prefs:
+            Utils.notImpl(this);
+            break;
+        case R.id.board_menu_file_about:
+            Utils.about(this);
+            break;
+
         default:
             Utils.logf( "menuitem " + item.getItemId() + " not handled" );
             handled = false;
@@ -261,6 +278,14 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         m_handler.post( this );
     }
 
+    public void remSelected() {
+        // Send a message to the main thread or follow the docs to add
+        // a looper inside JNIThread::run()
+        XP_LOGF( "remSelected() can't call notImpl() as hasn't "
+                 + "called Looper.prepare()" );
+        // Utils.notImpl( this );
+    }
+
     public void setTimer( int why, int when, int handle )
     {
         if ( null != m_timers[why] ) {
@@ -313,9 +338,8 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         return tile;
     }
 
-    // Don't need this unless we have a scroll thumb to indicate position
-    // public void yOffsetChange( int oldOffset, int newOffset )
-    // {
-    //     Utils.logf( "yOffsetChange(" + oldOffset + "," + newOffset + ")" );
-    // }
-}
+    public boolean engineProgressCallback()
+    {
+        return !m_jniThread.busy();
+    }
+} // class BoardActivity

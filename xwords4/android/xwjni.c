@@ -1,5 +1,7 @@
 /* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
 #include <string.h>
+#include <sys/time.h>
+
 #include <jni.h>
 #include <android/log.h>
 
@@ -158,6 +160,9 @@ JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 ( JNIEnv* env, jclass C )
 {
+    struct timeval tv;
+    gettimeofday( &tv, NULL );
+    srandom( tv.tv_sec );
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
 #endif
@@ -441,6 +446,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1showTray
 }
 
 JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1toggle_1showValues
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_toggle_showValues( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1commitTurn
 (JNIEnv* env, jclass C, jint gamePtr)
 {
@@ -494,7 +510,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1do
 }
 
 JNIEXPORT void JNICALL
-org_eehouse_android_xw4_jni_XwJNI_board_1resetEngine
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1resetEngine
 (JNIEnv* env, jclass C, jint gamePtr )
 {
     XWJNI_START();
@@ -512,7 +528,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
     XP_Bool tmpbool;
     result = board_requestHint( state->game.board, useLimits, &tmpbool );
     /* If passed need to do workRemains[0] = tmpbool */
-    XP_ASSERT( !workRemains );
+    if ( workRemains ) {
+        jboolean* jelems = (*env)->GetBooleanArrayElements(env, workRemains, NULL );
+        *jelems = tmpbool;
+        (*env)->ReleaseBooleanArrayElements( env, workRemains, jelems, 0 );
+    }
     XWJNI_END();
     return result;
 }

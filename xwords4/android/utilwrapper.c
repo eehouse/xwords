@@ -17,7 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include <sys/time.h>
+
 #include <jni.h>
+
 #include "utilwrapper.h"
 #include "andutils.h"
 
@@ -152,8 +155,11 @@ and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 static XP_Bool
 and_util_engineProgressCallback( XW_UtilCtxt* uc )
 {
-    /* don't log; this is getting called a lot */
-    return XP_TRUE;
+    AndUtil* util = (AndUtil*)uc;
+    JNIEnv* env = *util->env;
+    const char* sig = "()Z";
+    jmethodID mid = getMethodID( env, util->j_util, "engineProgressCallback", sig );
+    return (*env)->CallBooleanMethod( env, util->j_util, mid );
 }
 
 /* This is added for java, not part of the util api */
@@ -215,7 +221,9 @@ and_util_altKeyDown( XW_UtilCtxt* uc )
 static XP_U32
 and_util_getCurSeconds( XW_UtilCtxt* uc )
 {
-    LOG_FUNC();
+    struct timeval tv;
+    gettimeofday( &tv, NULL );
+    return tv.tv_sec;
 }
 
 
@@ -246,6 +254,11 @@ static void
 and_util_remSelected(XW_UtilCtxt* uc)
 {
     LOG_FUNC();
+    AndUtil* util = (AndUtil*)uc;
+    JNIEnv* env = *util->env;
+    const char* sig = "()V";
+    jmethodID mid = getMethodID( env, util->j_util, "remSelected", sig );
+    (*env)->CallVoidMethod( env, util->j_util, mid );
 }
 
 
