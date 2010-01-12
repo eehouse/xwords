@@ -146,7 +146,7 @@ public class JNIThread extends Thread {
             case CMD_NEXT_HINT:
                 draw = XwJNI.board_requestHint( m_jniGamePtr, false, barr );
                 if ( barr[0] ) {
-                    handle( CMD_NEXT_HINT );
+                    handle( JNICmd.CMD_NEXT_HINT );
                 }
                 break;
 

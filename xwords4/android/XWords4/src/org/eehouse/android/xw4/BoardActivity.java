@@ -281,8 +281,8 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     public void remSelected() {
         // Send a message to the main thread or follow the docs to add
         // a looper inside JNIThread::run()
-        XP_LOGF( "remSelected() can't call notImpl() as hasn't "
-                 + "called Looper.prepare()" );
+        Utils.logf( "remSelected() can't call notImpl() as hasn't "
+                    + "called Looper.prepare()" );
         // Utils.notImpl( this );
     }
 
