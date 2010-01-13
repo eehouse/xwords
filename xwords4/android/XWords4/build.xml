@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="XWords4" default="help">
+<project name="XWords4" default="release_svn">
+
+  <target name="release_svn" depends="release">
+    <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt" />
+  </target>
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked in in Version
