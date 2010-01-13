@@ -170,7 +170,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 Utils.logf( "got FileNotFoundException: " + ex.toString() );
             }
 
-            setResult( 1 );
             finish();
         } else if ( mOpenB == view ) {
             // finish but after posting an intent that'll cause the
