@@ -19,6 +19,7 @@ public class BoardView extends View implements DrawCtx,
 
     private Paint m_fillPaint;
     private Paint m_strokePaint;
+    private Paint m_tileStrokePaint;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
     private boolean m_boardSet = false;
@@ -105,16 +106,20 @@ public class BoardView extends View implements DrawCtx,
         m_fillPaint.setTextAlign( Paint.Align.CENTER ); // center horizontally
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
+        m_tileStrokePaint = new Paint();
+        m_tileStrokePaint.setStyle( Paint.Style.STROKE );
+        Utils.logf( "stroke starts at " + m_tileStrokePaint.getStrokeWidth() );
+        float curWidth = m_tileStrokePaint.getStrokeWidth();
+        curWidth *= 2;
+        if ( curWidth < 2 ) {
+            curWidth = 2;
+        }
+        m_tileStrokePaint.setStrokeWidth( curWidth );
 
         Resources res = getResources();
         m_rightArrow = res.getDrawable( R.drawable.rightarrow );
         m_downArrow = res.getDrawable( R.drawable.downarrow );
         m_origin = res.getDrawable( R.drawable.origin );
-
-        // Move this to finalize?
-        // XwJNI.game_dispose( jniGamePtr );
-        // Utils.logf( "game_dispose returned" );
-        // jniGamePtr = 0;
     }
 
     private boolean layoutBoardOnce() 
@@ -138,7 +143,7 @@ public class BoardView extends View implements DrawCtx,
             // 2.5x a cell width in height and then scroll however
             // many.
 
-            int trayHt = cellSize * 2;
+            int trayHt = cellSize * 3;
             int scoreHt = cellSize; // scoreboard ht same as cells for
                                     // proportion
             int wantHt = trayHt + scoreHt + (cellSize * nCells);
@@ -194,6 +199,8 @@ public class BoardView extends View implements DrawCtx,
                             int remCount, int dfs )
     {
         clearToBack( rect );
+        m_canvas.save( Canvas.CLIP_SAVE_FLAG );
+        m_canvas.clipRect(rect);
     }
 
     public void measureRemText( Rect r, int nTilesLeft, int[] width, 
@@ -269,7 +276,7 @@ public class BoardView extends View implements DrawCtx,
 
         m_canvas.drawRect( rect, m_strokePaint );
         return true;
-    }
+    } // drawCell
 
     public void drawBoardArrow ( Rect rect, int bonus, boolean vert, 
                                  int hintAtts, int flags )
@@ -293,10 +300,14 @@ public class BoardView extends View implements DrawCtx,
     }
 
     public void drawTile( Rect rect, String text, Object[] bitmaps, int val, 
-                          int flags ) {
+                          int flags ) 
+    {
         boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
         boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
         boolean isCursor = (flags & CELL_ISCURSOR) != 0;
+
+        m_canvas.save( Canvas.CLIP_SAVE_FLAG );
+        m_canvas.clipRect( rect );
 
         clearToBack( rect );
 
@@ -307,8 +318,13 @@ public class BoardView extends View implements DrawCtx,
             m_fillPaint.setColor( m_playerColors[m_trayOwner] );
             positionDrawTile( rect, text, val );
 
-            m_canvas.drawRect( rect, m_strokePaint ); // frame
+            m_canvas.drawRect( rect, m_tileStrokePaint); // frame
+            if ( 0 != (flags & CELL_HIGHLIGHT) ) {
+                rect.inset( 2, 2 );
+                m_canvas.drawRect( rect, m_tileStrokePaint ); // frame
+            }
         }
+        m_canvas.restore();
     }
 
     public void drawTileMidDrag ( Rect rect, String text, Object[] bitmaps,
@@ -339,6 +355,12 @@ public class BoardView extends View implements DrawCtx,
         drawCentered( text, rect );
     }
 
+    public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )
+    {
+        if ( DrawCtx.OBJ_SCORE == typ ) {
+            m_canvas.restore();
+        }
+    }
 
     private void drawCentered( String text, Rect rect ) 
     {
