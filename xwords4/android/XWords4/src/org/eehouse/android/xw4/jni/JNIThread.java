@@ -23,6 +23,7 @@ public class JNIThread extends Thread {
             CMD_JUGGLE,
             CMD_FLIP,
             CMD_TOGGLE_TRAY,
+            CMD_TOGGLE_TRADE,
             CMD_UNDO_CUR,
             CMD_UNDO_LAST,
             CMD_HINT,
@@ -131,6 +132,9 @@ public class JNIThread extends Thread {
                 break;
             case CMD_TOGGLE_TRAY:
                 draw = toggleTray();
+                break;
+            case CMD_TOGGLE_TRADE:
+                draw = XwJNI.board_beginTrade( m_jniGamePtr );
                 break;
             case CMD_UNDO_CUR:
                 draw = XwJNI.board_replaceTiles( m_jniGamePtr );

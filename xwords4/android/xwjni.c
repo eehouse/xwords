@@ -446,6 +446,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1showTray
 }
 
 JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1beginTrade
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_beginTrade( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1toggle_1showValues
 ( JNIEnv* env, jclass C, jint gamePtr )
 {

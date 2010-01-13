@@ -161,6 +161,9 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         case R.id.board_menu_flip:
             m_jniThread.handle( JNIThread.JNICmd.CMD_FLIP );
             break;
+        case R.id.board_menu_trade:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_TOGGLE_TRADE );
+            break;
         case R.id.board_menu_tray:
             m_jniThread.handle( JNIThread.JNICmd.CMD_TOGGLE_TRAY );
             break;

@@ -71,6 +71,7 @@ public class XwJNI {
     public static native void board_resetEngine( int gamePtr );
     public static native boolean board_requestHint( int gamePtr, boolean useTileLimits,
                                                     boolean[] workRemains );
+    public static native boolean board_beginTrade( int gamePtr );
 
     public static native void server_handleUndo( int gamePtr );
     public static native boolean server_do( int gamePtr );
