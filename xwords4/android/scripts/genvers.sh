@@ -11,3 +11,5 @@ class SvnVersion {
 }
 EOF
 
+# touch the file that depends on VERS.java
+touch android/XWords4/src/org/eehouse/android/xw4/Utils.java
