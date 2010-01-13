@@ -1,3 +1,5 @@
+/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+
 /*
  * Copyright (C) 2007 The Android Open Source Project
  *
@@ -136,39 +138,36 @@ public class GameConfig extends Activity implements View.OnClickListener {
             text = et.getText();
             String name2 = text.toString();
 
-            if ( name1.length() > 0 && name2.length() > 0 ) {
-                Integer num = 0;
-                int ii;
-                String[] files = fileList();
-                String name = null;
+            Integer num = 0;
+            int ii;
+            String[] files = fileList();
+            String name = null;
 
-                while ( name == null ) {
-                    name = "game " + num.toString();
-                    for ( ii = 0; ii < files.length; ++ii ) {
-                        Utils.logf( "comparing " + name + " with " + files[ii] );
-                        if ( files[ii].equals(name) ) {
-                            ++num;
-                            name = null;
-                        }
+            while ( name == null ) {
+                name = "game " + num.toString();
+                for ( ii = 0; ii < files.length; ++ii ) {
+                    Utils.logf( "comparing " + name + " with " + files[ii] );
+                    if ( files[ii].equals(name) ) {
+                        ++num;
+                        name = null;
                     }
                 }
-                Utils.logf( "using name " + name );
+            }
 
-                FileOutputStream out;
+            FileOutputStream out;
+            try {
+                out = openFileOutput( name, MODE_PRIVATE );
+                PrintStream ps = new PrintStream( out );
+                ps.println( name1 );
+                ps.println( name2 );
+                ps.close();
                 try {
-                    out = openFileOutput( name, MODE_PRIVATE );
-                    PrintStream ps = new PrintStream( out );
-                    ps.println( name1 );
-                    ps.println( name2 );
-                    ps.close();
-                    try {
-                        out.close();
-                    } catch ( java.io.IOException ex ) {
-                        Utils.logf( "got IOException: " + ex.toString() );
-                    }
-                } catch ( java.io.FileNotFoundException ex ) {
-                    Utils.logf( "got FileNotFoundException: " + ex.toString() );
+                    out.close();
+                } catch ( java.io.IOException ex ) {
+                    Utils.logf( "got IOException: " + ex.toString() );
                 }
+            } catch ( java.io.FileNotFoundException ex ) {
+                Utils.logf( "got FileNotFoundException: " + ex.toString() );
             }
 
             setResult( 1 );
