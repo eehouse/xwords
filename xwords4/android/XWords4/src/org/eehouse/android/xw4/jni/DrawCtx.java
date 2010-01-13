@@ -16,6 +16,12 @@ public interface DrawCtx {
     static final int CELL_DRAGCUR = 0x80;       /* where drag is now */
     static final int CELL_ALL = 0xFF;
 
+    /* BoardObjectType */
+    static final int OBJ_NONE = 0;
+    static final int OBJ_BOARD = 1;
+    static final int OBJ_SCORE = 2;
+    static final int OBJ_TRAY = 3;
+
 
     void scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount,
                      int dfs );
@@ -37,4 +43,7 @@ public interface DrawCtx {
     void drawTileBack( Rect rect, int flags );
     void drawTrayDivider( Rect rect, int flags );
     void score_pendingScore( Rect rect, int score, int playerNum, int flags );
+
+    void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs );
+
 }
