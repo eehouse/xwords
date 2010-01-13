@@ -50,15 +50,18 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
 }
 #endif
+
+#define UTIL_CBK_HEADER(nam,sig)                                        \
+    AndUtil* util = (AndUtil*)uc;                                       \
+    JNIEnv* env = *util->env;                                           \
+    jmethodID mid = getMethodID( env, util->j_util, nam, sig )
+
     
 static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* uc, 
                                             const ModelCtxt* XP_UNUSED(model),
                                             XP_U16 col, XP_U16 row )
 {
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    const char* sig = "(II)I";
-    jmethodID mid = getMethodID( env, util->j_util, "getSquareBonus", sig );
+    UTIL_CBK_HEADER("getSquareBonus","(II)I" );
     return (*env)->CallIntMethod( env, util->j_util, mid, 
                                   col, row );
 }
@@ -80,11 +83,8 @@ static XP_S16
 and_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                        XP_U16 playerNum, const XP_UCHAR** texts, XP_U16 nTiles )
 {
+    UTIL_CBK_HEADER("userPickTile", "(I[Ljava/lang/String;)I" );
     XP_S16 result = -1;
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    const char* sig = "(I[Ljava/lang/String;)I";
-    jmethodID mid = getMethodID( env, util->j_util, "userPickTile", sig );
 
 #ifdef FEATURE_TRAY_EDIT
     ++error;                       /* need to pass pi if this is on */
@@ -155,10 +155,7 @@ and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 static XP_Bool
 and_util_engineProgressCallback( XW_UtilCtxt* uc )
 {
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    const char* sig = "()Z";
-    jmethodID mid = getMethodID( env, util->j_util, "engineProgressCallback", sig );
+    UTIL_CBK_HEADER("engineProgressCallback","()Z" );
     return (*env)->CallBooleanMethod( env, util->j_util, mid );
 }
 
@@ -176,10 +173,7 @@ static void
 and_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
                    XWTimerProc proc, void* closure )
 {
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    const char* sig = "(III)V";
-    jmethodID mid = getMethodID( env, util->j_util, "setTimer", sig );
+    UTIL_CBK_HEADER("setTimer", "(III)V" );
 
     XP_ASSERT( why < VSIZE(util->timerStorage) );
     TimerStorage* storage = &util->timerStorage[why];
@@ -192,10 +186,7 @@ and_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
 static void
 and_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    const char* sig = "(I)V";
-    jmethodID mid = getMethodID( env, util->j_util, "clearTimer", sig );
+    UTIL_CBK_HEADER("clearTimer", "(I)V" );
     (*env)->CallVoidMethod( env, util->j_util, mid, why );
 }
 
@@ -203,10 +194,7 @@ and_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 static void
 and_util_requestTime( XW_UtilCtxt* uc )
 {
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    const char* sig = "()V";
-    jmethodID mid = getMethodID( env, util->j_util, "requestTime", sig );
+    UTIL_CBK_HEADER("requestTime", "()V" );
     (*env)->CallVoidMethod( env, util->j_util, mid );
 }
 
@@ -253,11 +241,7 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 static void
 and_util_remSelected(XW_UtilCtxt* uc)
 {
-    LOG_FUNC();
-    AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
-    const char* sig = "()V";
-    jmethodID mid = getMethodID( env, util->j_util, "remSelected", sig );
+    UTIL_CBK_HEADER("remSelected", "()V" );
     (*env)->CallVoidMethod( env, util->j_util, mid );
 }
 
