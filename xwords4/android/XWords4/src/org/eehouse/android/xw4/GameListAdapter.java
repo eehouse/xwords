@@ -31,9 +31,9 @@ public class GameListAdapter implements ListAdapter {
     public int getCount() {
         int count = 0;
         for ( String file : m_context.fileList() ) {
-            //if ( file.endsWith(XWConstants.GAME_EXTN) ) {
-            ++count;
-            //}
+            if ( ! file.endsWith(XWConstants.GAME_EXTN) ) {
+                ++count;
+            }
         }
 
         return count;
