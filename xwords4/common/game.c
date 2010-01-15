@@ -179,48 +179,57 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     strVersion = stream_getU8( stream );
     XP_DEBUGF( "strVersion = %d", (XP_U16)strVersion );
 
-    if ( strVersion <= CUR_STREAM_VERS ) {
-        stream_setVersion( stream, strVersion );
-
-        gi_readFromStream( MPPARM(mpool) stream, gi );
-
-        /* Previous stream versions didn't save anything if built
-         * standalone.  Now we always save something.  But we need to know
-         * if the previous version didn't save. PREV_WAS_STANDALONE_ONLY
-         * tells us that.
-         */
-        hasComms = XP_FALSE;
-        if ( STREAM_VERS_ALWAYS_MULTI <= strVersion  /* new stream */
-#ifndef PREV_WAS_STANDALONE_ONLY
-             || XP_TRUE                        /* old, but saved this anyway */
-#endif
-             ) {
-            hasComms = stream_getU8( stream );
-        }
-
-        if ( hasComms ) {
-            game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
-                                                procs );
-        } else {
-            game->comms = NULL;
-        }
-
-        XP_ASSERT( !!dict );
-        game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
-
-        game->server = server_makeFromStream( MPPARM(mpool) stream, 
-                                              game->model, game->comms, 
-                                              util, gi->nPlayers );
-
-        game->board = board_makeFromStream( MPPARM(mpool) stream, game->model, 
-                                            game->server, draw, util, 
-                                            gi->nPlayers );
-        server_prefsChanged( game->server, cp );
-        board_prefsChanged( game->board, cp );
-        draw_dictChanged( draw, dict );
-        success = XP_TRUE;
-    } else {
+    if ( strVersion > CUR_STREAM_VERS ) {
         XP_LOGF( "%s: aborting; stream version too new!", __func__ );
+    } else {
+        do { /* do..while so can break */
+            stream_setVersion( stream, strVersion );
+
+            gi_readFromStream( MPPARM(mpool) stream, gi );
+            if ( !game ) {
+                success = XP_TRUE;
+                break;
+            } else if ( stream_getSize(stream) == 0 ) {
+                XP_LOGF( "%s: gi was all we got; failing." );
+                break;
+            }
+
+            /* Previous stream versions didn't save anything if built
+             * standalone.  Now we always save something.  But we need to know
+             * if the previous version didn't save. PREV_WAS_STANDALONE_ONLY
+             * tells us that.
+             */
+            hasComms = XP_FALSE;
+            if ( STREAM_VERS_ALWAYS_MULTI <= strVersion  /* new stream */
+#ifndef PREV_WAS_STANDALONE_ONLY
+                 || XP_TRUE                        /* old, but saved this anyway */
+#endif
+                 ) {
+                hasComms = stream_getU8( stream );
+            }
+
+            if ( hasComms ) {
+                game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
+                                                    procs );
+            } else {
+                game->comms = NULL;
+            }
+
+            XP_ASSERT( !!dict );
+            game->model = model_makeFromStream( MPPARM(mpool) stream, dict, util );
+
+            game->server = server_makeFromStream( MPPARM(mpool) stream, 
+                                                  game->model, game->comms, 
+                                                  util, gi->nPlayers );
+
+            game->board = board_makeFromStream( MPPARM(mpool) stream, game->model, 
+                                                game->server, draw, util, 
+                                                gi->nPlayers );
+            server_prefsChanged( game->server, cp );
+            board_prefsChanged( game->board, cp );
+            draw_dictChanged( draw, dict );
+            success = XP_TRUE;
+        } while( XP_FALSE );
     }
     return success;
 } /* game_makeFromStream */
@@ -233,17 +242,19 @@ game_saveToStream( const XWGame* game, const CurGameInfo* gi,
 
     gi_writeToStream( stream, gi );
 
-    stream_putU8( stream, (XP_U8)!!game->comms );
+    if ( !!game ) {
+        stream_putU8( stream, (XP_U8)!!game->comms );
 #ifdef XWFEATURE_STANDALONE_ONLY
-    XP_ASSERT( !game->comms );
+        XP_ASSERT( !game->comms );
 #endif
-    if ( !!game->comms ) {
-        comms_writeToStream( game->comms, stream );
-    }
+        if ( !!game->comms ) {
+            comms_writeToStream( game->comms, stream );
+        }
 
-    model_writeToStream( game->model, stream );
-    server_writeToStream( game->server, stream );
-    board_writeToStream( game->board, stream );
+        model_writeToStream( game->model, stream );
+        server_writeToStream( game->server, stream );
+        board_writeToStream( game->board, stream );
+    }
 } /* game_saveToStream */
 
 void

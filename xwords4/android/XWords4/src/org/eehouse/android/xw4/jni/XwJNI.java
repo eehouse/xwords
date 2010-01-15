@@ -18,6 +18,10 @@ public class XwJNI {
     public static native boolean timerFired( int gamePtr, int why, 
                                              int when, int handle );
 
+    // Stateless methods
+    public static native byte[] gi_to_stream( CurGameInfo gi );
+    public static native void gi_from_stream( CurGameInfo gi, byte[] stream );
+
     // Game methods
     public static native int initJNI();
     public static native void game_makeNewGame( int gamePtr,
