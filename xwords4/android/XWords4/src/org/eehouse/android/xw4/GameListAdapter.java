@@ -13,6 +13,8 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 
+import org.eehouse.android.xw4.jni.*;
+
 public class GameListAdapter implements ListAdapter {
     Context m_context;
 
@@ -41,7 +43,26 @@ public class GameListAdapter implements ListAdapter {
     
     public Object getItem( int position ) {
         TextView view = new TextView(m_context);
-        view.setText( "game " + position );
+
+        byte[] stream = open( m_context.fileList()[position] );
+        if ( null != stream ) {
+            CurGameInfo gi = new CurGameInfo();
+            XwJNI.gi_from_stream( gi, stream );
+
+            StringBuffer sb = new StringBuffer();
+            int ii;
+            for ( ii = 0; ; ) {
+                sb.append( gi.players[ii].name );
+                if ( ++ii >= gi.nPlayers ) {
+                    break;
+                }
+                sb.append( " vs. " );
+            }
+            sb.append( "\nDictionary: " );
+            sb.append( gi.dictName );
+
+            view.setText( sb.toString() );
+        }
         return view;
     }
 
@@ -71,4 +92,23 @@ public class GameListAdapter implements ListAdapter {
 
     public void registerDataSetObserver(DataSetObserver observer) {}
     public void unregisterDataSetObserver(DataSetObserver observer) {}
+
+    private byte[] open( String file )
+    {
+        Utils.logf( "open(" + file + ")" );
+        byte[] stream = null;
+        try {
+            FileInputStream in = m_context.openFileInput( file );
+            int len = in.available();
+            stream = new byte[len];
+            in.read( stream, 0, len );
+            in.close();
+        } catch ( java.io.FileNotFoundException ex ) {
+            Utils.logf( "got FileNotFoundException: " + ex.toString() );
+        } catch ( java.io.IOException ex ) {
+            Utils.logf( "got IOException: " + ex.toString() );
+        }
+        Utils.logf( "open done" );
+        return stream;
+    }
 }

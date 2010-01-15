@@ -37,6 +37,10 @@ import android.content.res.AssetManager;
 import java.io.InputStream;
 import android.widget.Button;
 import android.view.MenuInflater;
+import java.io.FileOutputStream;
+import java.io.File;
+
+import org.eehouse.android.xw4.jni.*;
 
 import org.eehouse.android.xw4.XWords4.Games; // for constants
 
@@ -61,7 +65,6 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         // If no data was given in the intent (because we were started
         // as a MAIN activity), then use our default content provider.
         Intent intent = getIntent();
-        Utils.logf( intent.toString() );
         if (intent.getData() == null) {
             intent.setData(Games.CONTENT_URI);
         }
@@ -91,9 +94,17 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     {
         boolean handled = false;
 
+        AdapterView.AdapterContextMenuInfo info;
+        try {
+            info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        } catch (ClassCastException e) {
+            Utils.logf( "bad menuInfo:" + e.toString() );
+            return false;
+        }
+
         switch (item.getItemId()) {
         case R.id.list_item_open:
-            doOpen();
+            doOpen( info.position );
             handled = true;
             break;
         case R.id.list_item_view:
@@ -140,21 +151,61 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     }
 
     public void onClick( View v ) {
-        Intent intent = new Intent( GamesList.this, GameConfig.class );
-        intent.setAction( Intent.ACTION_INSERT );
-        startActivity( intent );
+        save( new CurGameInfo() );
+        onContentChanged();
     }
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        doOpen();
+        doOpen( position );
     }
 
-    private void doOpen() {
-        Intent intent = new Intent( Intent.ACTION_EDIT );
-        intent.setClassName( "org.eehouse.android.xw4",
-                             "org.eehouse.android.xw4.BoardActivity");
+    private void doOpen( int indx ) {
+        String path = fileList()[indx];
+        File file = new File( path );
+        Uri uri = Uri.fromFile( file );
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                     GamesList.this, BoardActivity.class );
         startActivity( intent );
+    }
+
+    private void save( CurGameInfo gi )
+    {
+        byte[] bytes = XwJNI.gi_to_stream( gi );
+        if ( null != bytes ) {
+            Integer num = 0;
+            int ii;
+            String[] files = fileList();
+            String name = null;
+
+            while ( name == null ) {
+                name = "game " + num.toString();
+                for ( ii = 0; ii < files.length; ++ii ) {
+                    Utils.logf( "comparing " + name + " with " + files[ii] );
+                    if ( files[ii].equals(name) ) {
+                        ++num;
+                        name = null;
+                    }
+                }
+            }
+
+            Utils.logf( "trying to save " + bytes.length + " as " + name );
+        
+            FileOutputStream out;
+            try {
+                out = openFileOutput( name, MODE_PRIVATE );
+                out.write( bytes );
+                out.close();
+                Utils.logf( "wrote " + bytes.length + " bytes" );
+            } catch ( java.io.FileNotFoundException ex ) {
+                Utils.logf( "got FileNotFoundException: " + ex.toString() );
+            } catch ( java.io.IOException ex ) {
+                Utils.logf( "got IOException: " + ex.toString() );
+            }
+        } else {
+            Utils.logf( "gi_to_stream=>null" );
+        }
+        Utils.logf( "save done" );
     }
 
     static {

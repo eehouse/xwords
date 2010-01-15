@@ -17,12 +17,12 @@ import java.io.FileInputStream;
 import android.content.res.Configuration;
 import android.content.Intent;
 import java.util.concurrent.Semaphore;
+import android.net.Uri;
 
 import org.eehouse.android.xw4.jni.*;
 
 public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
-    private static final String CUR_GAME = "cur_game" + XWConstants.GAME_EXTN;
     private static final int PICK_TILE_REQUEST = 1;
 
     private BoardView m_view;
@@ -31,6 +31,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     private CommonPrefs m_prefs;
     private Handler m_handler;
     private TimerRunnable[] m_timers;
+    private String m_path;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -61,12 +62,22 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
         setContentView( R.layout.board );
         m_handler = new Handler();
-        m_timers = new TimerRunnable[4]; // needs to be in sync with XWTimerReason
-
+        m_timers = new TimerRunnable[4]; // needs to be in sync with
+                                         // XWTimerReason
         m_prefs = new CommonPrefs();
         m_gi = new CurGameInfo();
 
         m_view = (BoardView)findViewById( R.id.board_view );
+
+        Intent intent = getIntent();
+        Uri uri = intent.getData();
+        m_path = uri.getPath();
+        if ( m_path.charAt(0) == '/' ) {
+            m_path = m_path.substring( 1 );
+        }
+
+        byte[] stream = savedGame();
+        XwJNI.gi_from_stream( m_gi, stream );
 
         byte[] dictBytes = null;
         InputStream dict = null;
@@ -87,12 +98,10 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         } catch ( java.io.IOException ee ){
             Utils.logf( "failed to open" );
         }
-        // am.close(); don't close! won't work subsequently
         
         m_jniGamePtr = XwJNI.initJNI();
 
-        byte[] stream = savedGame();
-        if ( null == stream || 
+        if ( null == stream ||
              ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                           m_gi, dictBytes, this,
                                           m_view, m_prefs,
@@ -109,7 +118,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
                                              }
                                      } );
         m_jniThread.start();
-
         m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
 
         m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
@@ -209,7 +217,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
 
         try {
-            FileOutputStream out = openFileOutput( CUR_GAME, MODE_PRIVATE );
+            FileOutputStream out = openFileOutput( m_path, MODE_PRIVATE );
             out.write( state );
             out.close();
         } catch ( java.io.IOException ex ) {
@@ -221,7 +229,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     {
         byte[] stream = null;
         try {
-            FileInputStream in = openFileInput( CUR_GAME );
+            FileInputStream in = openFileInput( m_path );
             int len = in.available();
             Utils.logf( "savedGame: got " + len + " bytes." );
             stream = new byte[len];
@@ -235,7 +243,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             stream = null;
         }
         return stream;
-    }
+    } // savedGame
 
     // gets called for orientation changes only if
     // android:configChanges="orientation" set in AndroidManifest.xml
