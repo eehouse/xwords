@@ -1533,9 +1533,19 @@ figureBoardRect( BoardCtxt* board )
     if ( boardVScale > 0 ) {
         XP_Rect boardBounds = board->boardBounds;
         XP_U16 nVisible;
+        XP_U16 nRows = model_numRows( board->model );
+
+        /* Sanity-check yOffset */
+        if ( 0 < board->yOffset ) {
+            XP_S16 maxOffset = nRows -
+                ((board->trayBounds.top - boardBounds.top) / board->boardVScale);
+            if ( (maxOffset >= 0) && (maxOffset < board->yOffset) ) {
+                board->yOffset = maxOffset;
+            }
+        }
 
         boardBounds.width = model_numCols( board->model ) * board->boardHScale;
-        boardBounds.height = (model_numRows( board->model ) - board->yOffset)
+        boardBounds.height = (nRows - board->yOffset)
             * board->boardVScale;
 
         if ( board->boardObscuresTray ) {
