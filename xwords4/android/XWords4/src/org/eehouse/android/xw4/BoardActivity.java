@@ -23,10 +23,14 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.JNIThread.*;
+
 
 public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     private static final int PICK_TILE_REQUEST = 1;
+    private static final int QUERY_REQUEST = 2;
+    private static final int INFORM_REQUEST = 3;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -37,7 +41,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     private String m_path;
 
     private final int DLG_OKONLY = 1;
-    private final int DLG_QUERY = 2;
     private String m_dlgBytes = null;
     private int m_dlgTitle;
     private boolean m_dlgResult;
@@ -48,6 +51,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     private Intent m_resultIntent = null;
 
     private JNIThread m_jniThread;
+    private JNIThread m_jniThread_pending;
 
     public class TimerRunnable implements Runnable {
         private int m_gamePtr;
@@ -61,8 +65,10 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
         public void run() {
             m_timers[m_why] = null;
-            m_jniThread.handle( JNIThread.JNICmd.CMD_TIMER_FIRED,
-                                new Object[] { m_why, m_when, m_handle } );
+            if ( null != m_jniThread ) {
+                m_jniThread.handle( JNICmd.CMD_TIMER_FIRED,
+                                    m_why, m_when, m_handle );
+            }
         }
     } 
 
@@ -152,17 +158,26 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
                                     m_prefs, null, dictBytes );
         }
 
-        m_jniThread = new JNIThread( m_jniGamePtr, 
-                                     new Handler() {
-                                             public void handleMessage( Message msg ) {
-                                                 Utils.logf( "handleMessage called" );
-                                                 m_view.invalidate();
-                                             }
-                                     } );
-        m_jniThread.start();
-        m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
-
-        m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
+        m_jniThread_pending = new 
+            JNIThread( m_jniGamePtr, 
+                       new Handler() {
+                           public void handleMessage( Message msg ) {
+                               Utils.logf( "handleMessage() called" );
+                               switch( msg.what ) {
+                               case JNIThread.RUNNING:
+                                   m_jniThread = m_jniThread_pending;
+                                   m_view.startHandling( m_jniThread, 
+                                                         m_jniGamePtr, 
+                                                         m_gi );
+                                   m_jniThread.handle( JNICmd.CMD_DO );
+                                   break;
+                               case JNIThread.DRAW:
+                                   m_view.invalidate();
+                                   break;
+                               }
+                           }
+                       } );
+        m_jniThread_pending.start();
 
         Utils.logf( "BoardActivity::onCreate() done" );
     } // onCreate
@@ -175,6 +190,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     protected void onDestroy() 
     {
+        // what if m_jniThread is null?
         m_jniThread.waitToStop();
         saveGame();
         XwJNI.game_dispose( m_jniGamePtr );
@@ -187,9 +203,9 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
                                      Intent result ) 
     {
         Utils.logf( "onActivityResult called" );
-		this.m_resultCode = resultCode;
-		this.m_resultIntent = result;
-		this.m_forResultWait.release();
+		m_resultCode = resultCode;
+		m_resultIntent = result;
+		m_forResultWait.release();
 	}
 	
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -270,7 +286,9 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
 
         if ( handled && cmd !=  JNIThread.JNICmd.CMD_NONE ) {
-            m_jniThread.handle( cmd );
+            if ( null != m_jniThread ) {
+                m_jniThread.handle( cmd );
+            }
         }
 
         return handled;
@@ -415,7 +433,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     public boolean engineProgressCallback()
     {
-        return !m_jniThread.busy();
+        return null != m_jniThread && !m_jniThread.busy();
     }
 
     public String getUserString( int stringCode )
@@ -509,18 +527,107 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     public boolean userQuery( int id, String query )
     {
+        String actString = XWConstants.ACTION_QUERY;
+
         switch( id ) {
+        case XW_UtilCtxt.QUERY_ROBOT_MOVE:
+        case XW_UtilCtxt.QUERY_ROBOT_TRADE:
+            actString = XWConstants.ACTION_INFORM;
+            break;
         case XW_UtilCtxt.QUERY_COMMIT_TRADE:
             query = getString( R.string.query_trade );
             break;
         case XW_UtilCtxt.QUERY_COMMIT_TURN:
-        case XW_UtilCtxt.QUERY_ROBOT_MOVE:
-        case XW_UtilCtxt.QUERY_ROBOT_TRADE:
             break;
         }
 
         // Need to figure out how this thing can block.
-        return true;
+
+        Intent intent = new Intent( BoardActivity.this, BlockingActivity.class );
+        intent.setAction( actString );
+
+        Bundle bundle = new Bundle();
+        bundle.putString( XWConstants.QUERY_QUERY, query );
+        intent.putExtra( XWConstants.QUERY_QUERY, bundle );
+
+        boolean userConfirmed = false;
+        try {
+            startActivityForResult( intent, QUERY_REQUEST );
+            m_forResultWait.acquire();
+            Utils.logf( "userQuery back from acquire" );
+            userConfirmed = m_resultCode != 0;
+        } catch ( Exception ee ) {
+            Utils.logf( "userPickTile got: " + ee.toString() );
+        }
+
+        return userConfirmed;
     }
+
+    public void userError( int code )
+    {
+        int resid = 0;
+        switch( code ) {
+        case ERR_TILES_NOT_IN_LINE:
+            resid = R.string.str_tiles_not_in_line;
+            break;
+        case ERR_NO_EMPTIES_IN_TURN:
+            resid = R.string.str_no_empties_in_turn;
+            break;
+        case ERR_TWO_TILES_FIRST_MOVE:
+            resid = R.string.str_two_tiles_first_move;
+            break;
+        case ERR_TILES_MUST_CONTACT:
+            resid = R.string.str_tiles_must_contact;
+            break;
+        case ERR_NOT_YOUR_TURN:
+            resid = R.string.str_not_your_turn;
+            break;
+        case ERR_NO_PEEK_ROBOT_TILES:
+            resid = R.string.str_no_peek_robot_tiles;
+            break;
+        case ERR_CANT_TRADE_MID_MOVE:
+            resid = R.string.str_cant_trade_mid_move;
+            break;
+        case ERR_TOO_FEW_TILES_LEFT_TO_TRADE:
+            resid = R.string.str_too_few_tiles_left_to_trade;
+            break;
+        case ERR_CANT_UNDO_TILEASSIGN:
+            resid = R.string.str_cant_undo_tileassign;
+            break;
+        case ERR_CANT_HINT_WHILE_DISABLED:
+            resid = R.string.str_cant_hint_while_disabled;
+            break;
+        case ERR_NO_PEEK_REMOTE_TILES:
+            resid = R.string.str_no_peek_remote_tiles;
+            break;
+        case ERR_REG_UNEXPECTED_USER:
+            resid = R.string.str_reg_unexpected_user;
+            break;
+        case ERR_SERVER_DICT_WINS:
+            resid = R.string.str_server_dict_wins;
+            break;
+        case ERR_REG_SERVER_SANS_REMOTE:
+            resid = R.string.str_reg_server_sans_remote;
+            break;
+        }
+
+        if ( resid != 0 ) {
+            String txt = getString( resid );
+
+            Intent intent = new Intent( BoardActivity.this, BlockingActivity.class );
+            intent.setAction( XWConstants.ACTION_INFORM );
+
+            Bundle bundle = new Bundle();
+            bundle.putString( XWConstants.QUERY_QUERY, txt );
+            intent.putExtra( XWConstants.QUERY_QUERY, bundle );
+
+            try {
+                startActivityForResult( intent, INFORM_REQUEST );
+                m_forResultWait.acquire();
+            } catch ( Exception ee ) {
+                Utils.logf( "userPickTile got: " + ee.toString() );
+            }
+        }
+    } // userError
 
 } // class BoardActivity

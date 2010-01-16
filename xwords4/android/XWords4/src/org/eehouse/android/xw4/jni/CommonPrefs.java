@@ -8,8 +8,8 @@ public class CommonPrefs {
 
     public CommonPrefs() {
         showBoardArrow = true;
-        showRobotScores = false;
+        showRobotScores = true;
         hideTileValues = false; 
-        skipCommitConfirm = true;
+        skipCommitConfirm = false;
     }
 }
