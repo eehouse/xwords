@@ -51,7 +51,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     private Intent m_resultIntent = null;
 
     private JNIThread m_jniThread;
-    private JNIThread m_jniThread_pending;
 
     public class TimerRunnable implements Runnable {
         private int m_gamePtr;
@@ -65,10 +64,8 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
         public void run() {
             m_timers[m_why] = null;
-            if ( null != m_jniThread ) {
-                m_jniThread.handle( JNICmd.CMD_TIMER_FIRED,
+            m_jniThread.handle( JNICmd.CMD_TIMER_FIRED,
                                     m_why, m_when, m_handle );
-            }
         }
     } 
 
@@ -158,26 +155,22 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
                                     m_prefs, null, dictBytes );
         }
 
-        m_jniThread_pending = new 
+        m_jniThread = new 
             JNIThread( m_jniGamePtr, 
                        new Handler() {
                            public void handleMessage( Message msg ) {
                                Utils.logf( "handleMessage() called" );
                                switch( msg.what ) {
-                               case JNIThread.RUNNING:
-                                   m_jniThread = m_jniThread_pending;
-                                   m_view.startHandling( m_jniThread, 
-                                                         m_jniGamePtr, 
-                                                         m_gi );
-                                   m_jniThread.handle( JNICmd.CMD_DO );
-                                   break;
                                case JNIThread.DRAW:
                                    m_view.invalidate();
                                    break;
                                }
                            }
                        } );
-        m_jniThread_pending.start();
+        m_jniThread.start();
+
+        m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
+        m_jniThread.handle( JNICmd.CMD_DO );
 
         Utils.logf( "BoardActivity::onCreate() done" );
     } // onCreate
@@ -285,10 +278,8 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             handled = false;
         }
 
-        if ( handled && cmd !=  JNIThread.JNICmd.CMD_NONE ) {
-            if ( null != m_jniThread ) {
-                m_jniThread.handle( cmd );
-            }
+        if ( handled && cmd != JNIThread.JNICmd.CMD_NONE ) {
+            m_jniThread.handle( cmd );
         }
 
         return handled;
@@ -433,7 +424,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     public boolean engineProgressCallback()
     {
-        return null != m_jniThread && !m_jniThread.busy();
+        return ! m_jniThread.busy();
     }
 
     public String getUserString( int stringCode )
