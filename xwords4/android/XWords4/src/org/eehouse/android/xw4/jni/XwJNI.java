@@ -77,6 +77,12 @@ public class XwJNI {
                                                     boolean[] workRemains );
     public static native boolean board_beginTrade( int gamePtr );
 
+    public static native String board_formatRemainingTiles( int gamePtr );
+
     public static native void server_handleUndo( int gamePtr );
     public static native boolean server_do( int gamePtr );
+    public static native String server_formatDictCounts( int gamePtr, int nCols );
+    public static native boolean server_getGameIsOver( int gamePtr );
+
+    public static native String model_writeGameHistory( int gamePtr, boolean gameOver );
 }

@@ -3,6 +3,7 @@
 #include "andutils.h"
 
 #include "comtypes.h"
+#include "xwstream.h"
 
 void
 and_assert( const char* test, int line, const char* file, const char* func )
@@ -102,13 +103,15 @@ setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
+    (*env)->DeleteLocalRef( env, cls );
+
     if ( 0 != fid ) {
         jstring str = (*env)->NewStringUTF( env, value );
         (*env)->SetObjectField( env, obj, fid, str );
         success = true;
         (*env)->DeleteLocalRef( env, str );
     }
-    (*env)->DeleteLocalRef( env, cls );
+
     return success;
 }
 
@@ -211,6 +214,20 @@ makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
     }
 
     return jarray;
+}
+
+jstring
+streamToJString( MPFORMAL JNIEnv *env, XWStreamCtxt* stream )
+{
+    int len = stream_getSize( stream );
+    XP_UCHAR* buf = XP_MALLOC( mpool, 1 + len );
+    stream_getBytes( stream, buf, len );
+    buf[len] = '\0';
+
+    jstring jstr = (*env)->NewStringUTF( env, buf );
+
+    XP_FREE( mpool, buf );
+    return jstr;
 }
 
 jmethodID

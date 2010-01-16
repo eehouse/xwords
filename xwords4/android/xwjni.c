@@ -14,9 +14,7 @@
 #include "utilwrapper.h"
 #include "drawwrapper.h"
 #include "anddict.h"
-
-
-/* static JNIEnv* g_env = NULL; */
+#include "andutils.h"
 
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
@@ -59,9 +57,9 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
             getBool( env, jlp, "isRobot", &lp->isRobot );
             getBool( env, jlp, "isLocal", &lp->isLocal );
 
-            getString( env, jlp, "name", &buf, VSIZE(buf) );
+            getString( env, jlp, "name", buf, VSIZE(buf) );
             lp->name = copyString( mpool, buf );
-            getString( env, jlp, "password", &buf, VSIZE(buf) );
+            getString( env, jlp, "password", buf, VSIZE(buf) );
             lp->password = copyString( mpool, buf );
 
             lp->secondsUsed = 0;
@@ -130,6 +128,14 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
         && getBool( env, j_cp, "hideTileValues", &cp->hideTileValues )
         && getBool( env, j_cp, "skipCommitConfirm", &cp->skipCommitConfirm );
     return success;
+}
+
+static XWStreamCtxt*
+and_empty_stream( MPFORMAL AndGlobals* globals )
+{
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
+                                            NULL, 0, NULL );
+    return stream;
 }
 
 /****************************************************
@@ -627,6 +633,63 @@ Java_org_eehouse_android_xw4_jni_XwJNI_timerFired
     XWJNI_START();
     XW_UtilCtxt* util = globals->util;
     result = utilTimerFired( util, why, handle );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1formatRemainingTiles
+(JNIEnv* env, jclass C, jint gamePtr )
+{
+    jstring result;
+    XWJNI_START();
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
+                                            NULL, 0, NULL );
+    board_formatRemainingTiles( state->game.board, stream );
+    result = streamToJString( MPPARM(mpool) env, stream );
+    stream_destroy( stream );
+    (*env)->DeleteLocalRef( env, result );
+
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
+( JNIEnv* env, jclass C, jint gamePtr, jint nCols )
+{
+    jstring result;
+    XWJNI_START();
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
+    server_formatDictCounts( state->game.server, stream, nCols );
+    result = streamToJString( MPPARM(mpool) env, stream );
+    stream_destroy( stream );
+    (*env)->DeleteLocalRef( env, result );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1getGameIsOver
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = server_getGameIsOver( state->game.server );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
+( JNIEnv* env, jclass C, jint gamePtr, jboolean gameOver )
+{
+    jstring result;
+    XWJNI_START();
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
+    model_writeGameHistory( state->game.model, stream, state->game.server,
+                            gameOver );
+    result = streamToJString( MPPARM(mpool) env, stream );
     XWJNI_END();
     return result;
 }

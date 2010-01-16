@@ -23,6 +23,7 @@
 
 #include "utilwrapper.h"
 #include "andutils.h"
+#include "LocalizedStrIncludes.h"
 
 typedef struct _TimerStorage {
     XWTimerProc proc;
@@ -34,6 +35,7 @@ typedef struct _AndUtil {
     JNIEnv** env;
     jobject j_util;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
+    XP_UCHAR* userStrings[N_AND_USER_STRINGS];
 } AndUtil;
 
 
@@ -76,7 +78,19 @@ and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 static XP_Bool
 and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
-    XP_LOGF( "%s(id=%d)", __func__, id );
+    XP_ASSERT( id < QUERY_LAST_COMMON );
+    UTIL_CBK_HEADER("userQuery", "(ILjava/lang/String;)Z" );
+
+    jstring jstr = NULL;
+    if ( NULL != stream ) {
+        jstr = streamToJString( MPPARM(util->util.mpool) env, stream );
+    }
+    jboolean result = (*env)->CallBooleanMethod( env, util->j_util, mid,
+                                                 id, jstr );
+    if ( NULL != jstr ) {
+        (*env)->DeleteLocalRef( env, jstr );
+    }
+    return result;
 }
 
 static XP_S16
@@ -225,8 +239,27 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc )
 static const XP_UCHAR*
 and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 {
-    LOG_FUNC();
-    return "";
+    UTIL_CBK_HEADER("getUserString", "(I)Ljava/lang/String;" );
+    int index = stringCode - 1; /* see LocalizedStrIncludes.h */
+    XP_ASSERT( index < VSIZE( util->userStrings ) );
+
+    if ( ! util->userStrings[index] ) {
+        jstring jresult = (*env)->CallObjectMethod( env, util->j_util, mid, 
+                                                    stringCode );
+        jsize len = (*env)->GetStringUTFLength( env, jresult );
+        XP_UCHAR* buf = XP_MALLOC( util->util.mpool, len + 1 );
+
+        const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+        XP_MEMCPY( buf, jchars, len );
+        buf[len] = '\0';
+        XP_LOGF( "got string from java: %s", buf );
+        (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+        (*env)->DeleteLocalRef( env, jresult );
+        util->userStrings[index] = buf;
+    }
+
+    LOG_RETURNF( "%s", util->userStrings[index] );
+    return util->userStrings[index];
 }
 
 
@@ -342,6 +375,12 @@ destroyUtil( XW_UtilCtxt* utilc )
 {
     AndUtil* util = (AndUtil*)utilc;
     JNIEnv *env = *util->env;
+
+    int ii;
+    for ( ii = 0; ii < VSIZE(util->userStrings); ++ii ) {
+        XP_FREE( util->util.mpool, util->userStrings[ii] );
+    }
+
     (*env)->DeleteGlobalRef( env, util->j_util );
     XP_FREE( util->util.mpool, util->util.vtable );
     XP_FREE( util->util.mpool, util );

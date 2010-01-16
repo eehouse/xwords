@@ -5,7 +5,8 @@
 
 #include <jni.h>
 
-#include "xptypes.h"
+#include "comtypes.h"
+#include "mempool.h"
 
 XP_U32 and_ntohl(XP_U32 l);
 XP_U16 and_ntohs(XP_U16 l);
@@ -26,6 +27,7 @@ jintArray makeIntArray( JNIEnv *env, int size, const jint* vals );
 int getIntFromArray( JNIEnv* env, jintArray arr, bool del );
 
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
+jstring streamToJString( MPFORMAL JNIEnv* env, XWStreamCtxt* stream );
 
 /* Note: jmethodID can be cached.  Should not look up more than once. */
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,

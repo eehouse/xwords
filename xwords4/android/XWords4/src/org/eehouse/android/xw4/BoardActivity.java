@@ -18,6 +18,9 @@ import android.content.res.Configuration;
 import android.content.Intent;
 import java.util.concurrent.Semaphore;
 import android.net.Uri;
+import android.app.Dialog;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -32,6 +35,12 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     private Handler m_handler;
     private TimerRunnable[] m_timers;
     private String m_path;
+
+    private final int DLG_OKONLY = 1;
+    private final int DLG_QUERY = 2;
+    private String m_dlgBytes = null;
+    private int m_dlgTitle;
+    private boolean m_dlgResult;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -55,8 +64,41 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             m_jniThread.handle( JNIThread.JNICmd.CMD_TIMER_FIRED,
                                 new Object[] { m_why, m_when, m_handle } );
         }
+    } 
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Dialog dialog = null;
+        switch ( id ) {
+        case DLG_OKONLY:
+            dialog = new AlertDialog.Builder( BoardActivity.this )
+                //.setIcon( R.drawable.alert_dialog_icon )
+                .setTitle( m_dlgTitle )
+                .setMessage( m_dlgBytes )
+                .setPositiveButton( R.string.button_ok, 
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dialog, 
+                                                             int whichButton ) {
+                                            Utils.logf( "Ok clicked" );
+                                        }
+                                    })
+                .create();
+            break;
+        }
+        return dialog;
+    } // onCreateDialog
+
+    @Override
+    protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        Utils.logf( "onPrepareDialog(id=" + id + ")" );
+        dialog.setTitle( m_dlgTitle );
+        ((AlertDialog)dialog).setMessage( m_dlgBytes );
+        super.onPrepareDialog( id, dialog );
     }
 
+    @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
 
@@ -156,45 +198,63 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         return true;
     }
 
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected( MenuItem item ) 
+    {
         boolean handled = true;
+        JNIThread.JNICmd cmd = JNIThread.JNICmd.CMD_NONE;
 
         switch (item.getItemId()) {
         case R.id.board_menu_done:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_COMMIT );
+            cmd = JNIThread.JNICmd.CMD_COMMIT;
             break;
         case R.id.board_menu_juggle:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_JUGGLE );
+            cmd = JNIThread.JNICmd.CMD_JUGGLE;
             break;
         case R.id.board_menu_flip:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_FLIP );
+            cmd = JNIThread.JNICmd.CMD_FLIP;
             break;
         case R.id.board_menu_trade:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_TOGGLE_TRADE );
+            cmd = JNIThread.JNICmd.CMD_TOGGLE_TRADE;
             break;
         case R.id.board_menu_tray:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_TOGGLE_TRAY );
+            cmd = JNIThread.JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.board_menu_undo_current:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_CUR );
+            cmd = JNIThread.JNICmd.CMD_UNDO_CUR;
             break;
         case R.id.board_menu_undo_last:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_UNDO_LAST );
+            cmd = JNIThread.JNICmd.CMD_UNDO_LAST;
             break;
         case R.id.board_menu_hint:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_HINT );
+            cmd = JNIThread.JNICmd.CMD_HINT;
             break;
         case R.id.board_menu_hint_next:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_NEXT_HINT );
+            cmd = JNIThread.JNICmd.CMD_NEXT_HINT;
             break;
         case R.id.board_menu_values:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_VALUES );
+            cmd = JNIThread.JNICmd.CMD_VALUES;
             break;
 
         case R.id.board_menu_game_counts:
+            handled = true;
+            m_dlgBytes = XwJNI.server_formatDictCounts( m_jniGamePtr, 3 );
+            m_dlgTitle = R.string.counts_values_title;
+            showDialog( DLG_OKONLY );
+            break;
         case R.id.board_menu_game_left:
-        case R.id.board_menu_game_info:
+            handled = true;
+            m_dlgBytes = XwJNI.board_formatRemainingTiles( m_jniGamePtr );
+            m_dlgTitle = R.string.tiles_left_title;
+            showDialog( DLG_OKONLY );
+            break;
         case R.id.board_menu_game_history:
+            boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
+            m_dlgBytes = XwJNI.model_writeGameHistory( m_jniGamePtr, gameOver );
+            m_dlgTitle = R.string.history_title;
+            showDialog( DLG_OKONLY );
+            break;
+
+        case R.id.board_menu_game_info:
         case R.id.board_menu_game_final:
         case R.id.board_menu_game_resend:
         case R.id.board_menu_file_prefs:
@@ -207,6 +267,10 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         default:
             Utils.logf( "menuitem " + item.getItemId() + " not handled" );
             handled = false;
+        }
+
+        if ( handled && cmd !=  JNIThread.JNICmd.CMD_NONE ) {
+            m_jniThread.handle( cmd );
         }
 
         return handled;
@@ -353,4 +417,110 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     {
         return !m_jniThread.busy();
     }
+
+    public String getUserString( int stringCode )
+    {
+        int id = 0;
+        switch( stringCode ) {
+        case XW_UtilCtxt.STRD_ROBOT_TRADED:
+            id = R.string.strd_robot_traded;
+            break;
+        case XW_UtilCtxt.STR_ROBOT_MOVED:
+            id = R.string.str_robot_moved;
+            break;
+        case XW_UtilCtxt.STRS_VALUES_HEADER:
+            id = R.string.strs_values_header;
+            break;
+        case XW_UtilCtxt.STRD_REMAINING_TILES_ADD:
+            id = R.string.strd_remaining_tiles_add;
+            break;
+        case XW_UtilCtxt.STRD_UNUSED_TILES_SUB:
+            id = R.string.strd_unused_tiles_sub;
+            break;
+        case XW_UtilCtxt.STR_REMOTE_MOVED:
+            id = R.string.str_remote_moved;
+            break;
+        case XW_UtilCtxt.STRD_TIME_PENALTY_SUB:
+            id = R.string.strd_time_penalty_sub;
+            break;
+        case XW_UtilCtxt.STR_PASS:
+            id = R.string.str_pass;
+            break;
+        case XW_UtilCtxt.STRS_MOVE_ACROSS:
+            id = R.string.strs_move_across;
+            break;
+        case XW_UtilCtxt.STRS_MOVE_DOWN:
+            id = R.string.strs_move_down;
+            break;
+        case XW_UtilCtxt.STRS_TRAY_AT_START:
+            id = R.string.strs_tray_at_start;
+            break;
+        case XW_UtilCtxt.STRSS_TRADED_FOR:
+            id = R.string.strss_traded_for;
+            break;
+        case XW_UtilCtxt.STR_PHONY_REJECTED:
+            id = R.string.str_phony_rejected;
+            break;
+        case XW_UtilCtxt.STRD_CUMULATIVE_SCORE:
+            id = R.string.strd_cumulative_score;
+            break;
+        case XW_UtilCtxt.STRS_NEW_TILES:
+            id = R.string.strs_new_tiles;
+            break;
+        case XW_UtilCtxt.STR_PASSED:
+            id = R.string.str_passed;
+            break;
+        case XW_UtilCtxt.STRSD_SUMMARYSCORED:
+            id = R.string.strsd_summaryscored;
+            break;
+        case XW_UtilCtxt.STRD_TRADED:
+            id = R.string.strd_traded;
+            break;
+        case XW_UtilCtxt.STR_LOSTTURN:
+            id = R.string.str_lostturn;
+            break;
+        case XW_UtilCtxt.STR_COMMIT_CONFIRM:
+            id = R.string.str_commit_confirm;
+            break;
+        case XW_UtilCtxt.STR_LOCAL_NAME:
+            id = R.string.str_local_name;
+            break;
+        case XW_UtilCtxt.STR_NONLOCAL_NAME:
+            id = R.string.str_nonlocal_name;
+            break;
+        case XW_UtilCtxt.STR_BONUS_ALL:
+            id = R.string.str_bonus_all;
+            break;
+        case XW_UtilCtxt.STRD_TURN_SCORE:
+            id = R.string.strd_turn_score;
+            break;
+        default:
+            Utils.logf( "no such stringCode: " + stringCode );
+        }
+
+        String result;
+        if ( 0 == id ) {
+            result = "";
+        } else {
+            result = getString( id );
+        }
+        return result;
+    }
+
+    public boolean userQuery( int id, String query )
+    {
+        switch( id ) {
+        case XW_UtilCtxt.QUERY_COMMIT_TRADE:
+            query = getString( R.string.query_trade );
+            break;
+        case XW_UtilCtxt.QUERY_COMMIT_TURN:
+        case XW_UtilCtxt.QUERY_ROBOT_MOVE:
+        case XW_UtilCtxt.QUERY_ROBOT_TRADE:
+            break;
+        }
+
+        // Need to figure out how this thing can block.
+        return true;
+    }
+
 } // class BoardActivity
