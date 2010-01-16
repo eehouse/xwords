@@ -1,3 +1,4 @@
+/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
 
 package org.eehouse.android.xw4.jni;
 
@@ -50,6 +51,27 @@ public interface XW_UtilCtxt {
     static final int QUERY_ROBOT_MOVE = 2;
     static final int QUERY_ROBOT_TRADE = 3;
     boolean userQuery( int id, String query );
+
+
+    // These oughtto be an enum but then I'd have to cons one up in C.
+    static final int ERR_NONE = 0;
+    static final int ERR_TILES_NOT_IN_LINE = 1;
+    static final int ERR_NO_EMPTIES_IN_TURN = 2;
+    static final int ERR_TWO_TILES_FIRST_MOVE = 3;
+    static final int ERR_TILES_MUST_CONTACT = 4;
+    static final int ERR_TOO_FEW_TILES_LEFT_TO_TRADE = 5;
+    static final int ERR_NOT_YOUR_TURN = 6;
+    static final int ERR_NO_PEEK_ROBOT_TILES = 7;
+    static final int ERR_SERVER_DICT_WINS = 8;
+    static final int ERR_NO_PEEK_REMOTE_TILES = 9;
+    static final int ERR_REG_UNEXPECTED_USER = 10;
+    static final int ERR_REG_SERVER_SANS_REMOTE = 11;
+    static final int STR_NEED_BT_HOST_ADDR = 12;
+    static final int ERR_CANT_TRADE_MID_MOVE = 13;
+    static final int ERR_CANT_UNDO_TILEASSIGN = 14;
+    static final int ERR_CANT_HINT_WHILE_DISABLED = 15;
+    static final int ERR_RELAY_BASE = 16;
+    void userError( int id );
 
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int oldOffset, int newOffset );

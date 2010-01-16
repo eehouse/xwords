@@ -71,9 +71,9 @@ static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* uc,
 static void
 and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
-    XP_LOGF( "%s(id=%d)", __func__, id );
+    UTIL_CBK_HEADER( "userError", "(I)V" );
+    (*env)->CallVoidMethod( env, util->j_util, mid, id );
 }
-
 
 static XP_Bool
 and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
@@ -378,7 +378,10 @@ destroyUtil( XW_UtilCtxt* utilc )
 
     int ii;
     for ( ii = 0; ii < VSIZE(util->userStrings); ++ii ) {
-        XP_FREE( util->util.mpool, util->userStrings[ii] );
+        XP_UCHAR* ptr = util->userStrings[ii];
+        if ( NULL != ptr ) {
+            XP_FREE( util->util.mpool, ptr );
+        }
     }
 
     (*env)->DeleteGlobalRef( env, util->j_util );

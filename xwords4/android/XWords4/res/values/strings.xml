@@ -55,6 +55,7 @@
     <string name="game_config_done">Done</string>
 
 	<string name="error_title">Error</string>
+	<string name="info_title">FYI...</string>
 	<string name="error_message">Error loading game</string>
 	<string name="query_title">A question...</string>
 	<string name="query_trade">Are you sure you want to trade the selected tiles?</string>
@@ -118,5 +119,23 @@
     <string name="str_nonlocal_name">%s (remote)</string>
     <string name="str_bonus_all">Bonus for using all tiles: 50</string>
     <string name="strd_turn_score">Score for turn: %d</string>
+
+    <!-- error messages -->
+	<string name="str_tiles_not_in_line">All tiles played must be in a line.</string>
+	<string name="str_no_empties_in_turn">Empty squares cannot separate tiles played.</string>
+	<string name="str_two_tiles_first_move">Must play two or more pieces on the first move.</string>
+	<string name="str_tiles_must_contact">New pieces must contact others already in place (or the middle square on the first move)</string>
+	<string name="str_not_your_turn">You can't do that; it's not your turn!</string>
+	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s tiles!</string>
+	<string name="str_cant_trade_mid_move">Remove played tiles before trading.</string>
+	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to trade.</string>
+	<string name="str_cant_undo_tileassign">Tile assignment can't be undone.</string>
+	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Preferences dialog.</string>
+	<string name="str_no_peek_remote_tiles">No peeking at remote players' tiles!</string>
+	<string name="str_reg_unexpected_user">Refused attempt to register unexpected user[s]</string>
+	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
+	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
+
+
 
 </resources>
