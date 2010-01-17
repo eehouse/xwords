@@ -217,7 +217,6 @@ typedef struct _JNIState {
 } JNIState;
 
 #define XWJNI_START() {                                 \
-    XP_LOGF( "%s(env=%x)", __func__, env );             \
     XP_ASSERT( 0 != gamePtr );                          \
     JNIState* state = (JNIState*)gamePtr;               \
     MPSLOT;                                             \
@@ -230,7 +229,6 @@ typedef struct _JNIState {
 
 #define XWJNI_END()                             \
     state->env = _oldEnv;                       \
-    LOG_RETURN_VOID();                          \
     }
 
 JNIEXPORT jint JNICALL
