@@ -1,6 +1,5 @@
 /* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
 
-
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
@@ -48,7 +47,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
     private int m_resultCode = 0;
-    private Intent m_resultIntent = null;
 
     private JNIThread m_jniThread;
 
@@ -197,7 +195,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     {
         Utils.logf( "onActivityResult called" );
 		m_resultCode = resultCode;
-		m_resultIntent = result;
 		m_forResultWait.release();
 	}
 	
@@ -389,28 +386,35 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
     }
 
-    // This is supposed to be called from the jni thread
-    public int userPickTile( int playerNum, String[] texts )
+    private int waitBlockingDialog( String action, int purpose, 
+                                    String message, String[] texts )
     {
-        int tile = -1;
-        Utils.logf( "util_userPickTile called" );
-
-        // Intent intent = new Intent( XWConstants.ACTION_PICK_TILE );
-        // intent.setClassName( "org.eehouse.android.xw4",
-        //                      "org.eehouse.android.xw4.TilePicker");
-        Intent intent = new Intent( BoardActivity.this, TilePicker.class );
-        intent.setAction( XWConstants.ACTION_PICK_TILE );
+        Intent intent = new Intent( BoardActivity.this, BlockingActivity.class );
+        intent.setAction( action );
 
         Bundle bundle = new Bundle();
+        bundle.putString( XWConstants.QUERY_QUERY, message );
         bundle.putStringArray( XWConstants.PICK_TILE_TILES, texts );
-        intent.putExtra( XWConstants.PICK_TILE_TILES, bundle );
+        intent.putExtra( XWConstants.BLOCKING_DLG_BUNDLE, bundle );
 
         try {
-            startActivityForResult( intent, PICK_TILE_REQUEST );
+            startActivityForResult( intent, purpose );
             m_forResultWait.acquire();
         } catch ( Exception ee ) {
             Utils.logf( "userPickTile got: " + ee.toString() );
         }
+
+        return m_resultCode;
+    }
+
+    // This is supposed to be called from the jni thread
+    public int userPickTile( int playerNum, String[] texts )
+    {
+        int tile = -1;
+        Utils.logf( "util_userPickTile called; nTexts=" + texts.length );
+
+        int result = waitBlockingDialog( XWConstants.ACTION_PICK_TILE,
+                                         PICK_TILE_REQUEST, "String here", texts );
 
         if ( m_resultCode >= RESULT_FIRST_USER ) {
             tile = m_resultCode - RESULT_FIRST_USER;
@@ -532,26 +536,10 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             break;
         }
 
-        // Need to figure out how this thing can block.
+        int result = waitBlockingDialog( XWConstants.ACTION_QUERY,
+                                         QUERY_REQUEST, query, null );
 
-        Intent intent = new Intent( BoardActivity.this, BlockingActivity.class );
-        intent.setAction( actString );
-
-        Bundle bundle = new Bundle();
-        bundle.putString( XWConstants.QUERY_QUERY, query );
-        intent.putExtra( XWConstants.QUERY_QUERY, bundle );
-
-        boolean userConfirmed = false;
-        try {
-            startActivityForResult( intent, QUERY_REQUEST );
-            m_forResultWait.acquire();
-            Utils.logf( "userQuery back from acquire" );
-            userConfirmed = m_resultCode != 0;
-        } catch ( Exception ee ) {
-            Utils.logf( "userPickTile got: " + ee.toString() );
-        }
-
-        return userConfirmed;
+        return result != 0;
     }
 
     public void userError( int code )
@@ -603,21 +591,8 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         }
 
         if ( resid != 0 ) {
-            String txt = getString( resid );
-
-            Intent intent = new Intent( BoardActivity.this, BlockingActivity.class );
-            intent.setAction( XWConstants.ACTION_INFORM );
-
-            Bundle bundle = new Bundle();
-            bundle.putString( XWConstants.QUERY_QUERY, txt );
-            intent.putExtra( XWConstants.QUERY_QUERY, bundle );
-
-            try {
-                startActivityForResult( intent, INFORM_REQUEST );
-                m_forResultWait.acquire();
-            } catch ( Exception ee ) {
-                Utils.logf( "userPickTile got: " + ee.toString() );
-            }
+            waitBlockingDialog( XWConstants.ACTION_INFORM, INFORM_REQUEST, 
+                                getString( resid ), null );
         }
     } // userError
 

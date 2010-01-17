@@ -25,4 +25,6 @@ public interface XWConstants {
     public static final String QUERY_QUERY
         = "org.eehouse.android.xw4.QUERY_QUERY";
 
+    public static final String BLOCKING_DLG_BUNDLE
+        = "org.eehouse.android.xw4.BLOCKING_DLG_BUNDLE";
 }

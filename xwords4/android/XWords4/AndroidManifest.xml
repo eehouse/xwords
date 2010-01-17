@@ -84,33 +84,16 @@
 
     </activity>
 
-    <activity android:name="TilePicker"
-              android:theme="@android:style/Theme.Light"
-              android:label="@string/title_tile_picker"
-              android:screenOrientation="sensor"
-              >
-
-      <intent-filter>
-        <!-- docs say action is all I need. -->
-        <action android:name="org.eehouse.android.xw4.action.PICK_TILE" />
-      </intent-filter>
-
-    </activity>
-
     <activity android:name="BlockingActivity"
               android:theme="@android:style/Theme.Translucent"
               android:screenOrientation="sensor"
               >
 
       <intent-filter>
-        <!-- docs say action is all I need. -->
         <action android:name="org.eehouse.android.xw4.action.QUERY" />
-      </intent-filter>
-      <intent-filter>
-        <!-- docs say action is all I need. -->
         <action android:name="org.eehouse.android.xw4.action.INFORM" />
+        <action android:name="org.eehouse.android.xw4.action.PICK_TILE" />
       </intent-filter>
-
     </activity>
     
   </application>
