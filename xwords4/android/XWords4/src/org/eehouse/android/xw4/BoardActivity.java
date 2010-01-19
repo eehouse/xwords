@@ -162,6 +162,11 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
                                case JNIThread.DRAW:
                                    m_view.invalidate();
                                    break;
+                               case JNIThread.DIALOG:
+                                   m_dlgBytes = (String)msg.obj;
+                                   m_dlgTitle = msg.arg1;
+                                   showDialog( DLG_OKONLY );
+                                   break;
                                }
                            }
                        } );
@@ -242,22 +247,16 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             break;
 
         case R.id.board_menu_game_counts:
-            handled = true;
-            m_dlgBytes = XwJNI.server_formatDictCounts( m_jniGamePtr, 3 );
-            m_dlgTitle = R.string.counts_values_title;
-            showDialog( DLG_OKONLY );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_COUNTS_VALUES,
+                                R.string.counts_values_title );
             break;
         case R.id.board_menu_game_left:
-            handled = true;
-            m_dlgBytes = XwJNI.board_formatRemainingTiles( m_jniGamePtr );
-            m_dlgTitle = R.string.tiles_left_title;
-            showDialog( DLG_OKONLY );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
+                                R.string.tiles_left_title );
             break;
         case R.id.board_menu_game_history:
-            boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
-            m_dlgBytes = XwJNI.model_writeGameHistory( m_jniGamePtr, gameOver );
-            m_dlgTitle = R.string.history_title;
-            showDialog( DLG_OKONLY );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_HISTORY,
+                                 R.string.history_title );
             break;
 
         case R.id.board_menu_game_info:

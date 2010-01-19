@@ -29,10 +29,14 @@ public class JNIThread extends Thread {
             CMD_HINT,
             CMD_NEXT_HINT,
             CMD_VALUES,
+            CMD_COUNTS_VALUES,
+            CMD_REMAINING,
+            CMD_HISTORY,
             };
 
     public static final int RUNNING = 1;
     public static final int DRAW = 2;
+    public static final int DIALOG = 3;
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
@@ -81,6 +85,11 @@ public class JNIThread extends Thread {
             draw = XwJNI.board_showTray( m_jniGamePtr );
         }
         return draw;
+    }
+
+    private void sendForDialog( int titleArg, String text )
+    {
+        Message.obtain( m_handler, DIALOG, titleArg, 0, text ).sendToTarget();
     }
 
     public void run() 
@@ -159,6 +168,24 @@ public class JNIThread extends Thread {
 
             case CMD_VALUES:
                 draw = XwJNI.board_toggle_showValues( m_jniGamePtr );
+                break;
+
+            case CMD_COUNTS_VALUES:
+                sendForDialog( ((Integer)args[0]).intValue(),
+                               XwJNI.server_formatDictCounts( m_jniGamePtr, 3 )
+                               );
+                break;
+            case CMD_REMAINING:
+                sendForDialog( ((Integer)args[0]).intValue(),
+                               XwJNI.board_formatRemainingTiles( m_jniGamePtr )
+                               );
+                break;
+            case CMD_HISTORY:
+                boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
+                sendForDialog( ((Integer)args[0]).intValue(),
+                               XwJNI.model_writeGameHistory( m_jniGamePtr, 
+                                                             gameOver )
+                               );
                 break;
 
             case CMD_TIMER_FIRED:
