@@ -60,7 +60,6 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         Button newGameB = (Button)findViewById(R.id.new_game);
         newGameB.setOnClickListener( this );
-        Utils.logf( "got button" );
 
         // If no data was given in the intent (because we were started
         // as a MAIN activity), then use our default content provider.
@@ -103,11 +102,15 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         }
 
         switch (item.getItemId()) {
-        case R.id.list_item_open:
-            doOpen( info.position );
+        // case R.id.list_item_open:
+        //     doOpen( info.position );
+        //     handled = true;
+        //     break;
+        case R.id.list_item_view:
+            doView( info.position );
             handled = true;
             break;
-        case R.id.list_item_view:
+
         case R.id.list_item_hide:
         case R.id.list_item_delete:
         case R.id.list_item_copy:
@@ -151,7 +154,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     }
 
     public void onClick( View v ) {
-        save( new CurGameInfo() );
+        saveNew( new CurGameInfo() );
         onContentChanged();
     }
 
@@ -169,43 +172,45 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         startActivity( intent );
     }
 
-    private void save( CurGameInfo gi )
+    private void doView( int indx ) {
+        String path = fileList()[indx];
+        File file = new File( path );
+        Uri uri = Uri.fromFile( file );
+        
+        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                     GamesList.this, GameConfig.class );
+        startActivity( intent );
+    }
+
+    private String newName() 
+    {
+        String name = null;
+        Integer num = 0;
+        int ii;
+        String[] files = fileList();
+
+        while ( name == null ) {
+            name = "game " + num.toString();
+            for ( ii = 0; ii < files.length; ++ii ) {
+                Utils.logf( "comparing " + name + " with " + files[ii] );
+                if ( files[ii].equals(name) ) {
+                    ++num;
+                    name = null;
+                }
+            }
+        }
+        return name;
+    }
+
+    private void saveNew( CurGameInfo gi )
     {
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            Integer num = 0;
-            int ii;
-            String[] files = fileList();
-            String name = null;
-
-            while ( name == null ) {
-                name = "game " + num.toString();
-                for ( ii = 0; ii < files.length; ++ii ) {
-                    Utils.logf( "comparing " + name + " with " + files[ii] );
-                    if ( files[ii].equals(name) ) {
-                        ++num;
-                        name = null;
-                    }
-                }
-            }
-
-            Utils.logf( "trying to save " + bytes.length + " as " + name );
-        
-            FileOutputStream out;
-            try {
-                out = openFileOutput( name, MODE_PRIVATE );
-                out.write( bytes );
-                out.close();
-                Utils.logf( "wrote " + bytes.length + " bytes" );
-            } catch ( java.io.FileNotFoundException ex ) {
-                Utils.logf( "got FileNotFoundException: " + ex.toString() );
-            } catch ( java.io.IOException ex ) {
-                Utils.logf( "got IOException: " + ex.toString() );
-            }
+            String name = newName();
+            Utils.saveGame( this, bytes, newName() );
         } else {
             Utils.logf( "gi_to_stream=>null" );
         }
-        Utils.logf( "save done" );
     }
 
     static {
