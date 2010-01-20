@@ -85,4 +85,6 @@ public class XwJNI {
     public static native boolean server_getGameIsOver( int gamePtr );
 
     public static native String model_writeGameHistory( int gamePtr, boolean gameOver );
+
+    public static native String server_writeFinalScores( int gamePtr );
 }
