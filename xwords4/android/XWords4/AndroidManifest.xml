@@ -54,11 +54,7 @@
       <!-- This filter says that we can view or edit the data of
            a single note -->
       <intent-filter android:label="@string/resolve_edit">
-        <action android:name="android.intent.action.VIEW" />
         <action android:name="android.intent.action.EDIT" />
-        <action android:name="org.eehouse.android.xw4.action.EDIT_GAME" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <data android:mimeType="vnd.android.cursor.item/vnd.org.eehouse.android.xw4.game" />
       </intent-filter>
     </activity>
 
