@@ -119,7 +119,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             m_path = m_path.substring( 1 );
         }
 
-        byte[] stream = savedGame();
+        byte[] stream = Utils.savedGame( this, m_path );
         XwJNI.gi_from_stream( m_gi, stream );
 
         byte[] dictBytes = null;
@@ -188,9 +188,13 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     {
         // what if m_jniThread is null?
         m_jniThread.waitToStop();
-        saveGame();
+
+        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
+        Utils.saveGame( this, state, m_path );
+
         XwJNI.game_dispose( m_jniGamePtr );
         m_jniGamePtr = 0;
+
         super.onDestroy();
         Utils.logf( "onDestroy done" );
     }
@@ -256,7 +260,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             break;
         case R.id.board_menu_game_history:
             m_jniThread.handle( JNIThread.JNICmd.CMD_HISTORY,
-                                 R.string.history_title );
+                                R.string.history_title );
             break;
 
         case R.id.board_menu_game_info:
@@ -280,39 +284,6 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
         return handled;
     }
-
-    private void saveGame()
-    {
-        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-
-        try {
-            FileOutputStream out = openFileOutput( m_path, MODE_PRIVATE );
-            out.write( state );
-            out.close();
-        } catch ( java.io.IOException ex ) {
-            Utils.logf( "got IOException: " + ex.toString() );
-        }
-    }
-
-    private byte[] savedGame()
-    {
-        byte[] stream = null;
-        try {
-            FileInputStream in = openFileInput( m_path );
-            int len = in.available();
-            Utils.logf( "savedGame: got " + len + " bytes." );
-            stream = new byte[len];
-            in.read( stream, 0, len );
-            in.close();
-        } catch ( java.io.FileNotFoundException fnf ) {
-            Utils.logf( fnf.toString() );
-            stream = null;
-        } catch ( java.io.IOException io ) {
-            Utils.logf( io.toString() );
-            stream = null;
-        }
-        return stream;
-    } // savedGame
 
     // gets called for orientation changes only if
     // android:configChanges="orientation" set in AndroidManifest.xml
@@ -358,12 +329,10 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         m_handler.post( this );
     }
 
-    public void remSelected() {
-        // Send a message to the main thread or follow the docs to add
-        // a looper inside JNIThread::run()
-        Utils.logf( "remSelected() can't call notImpl() as hasn't "
-                    + "called Looper.prepare()" );
-        // Utils.notImpl( this );
+    public void remSelected() 
+    {
+        m_jniThread.handle( JNIThread.JNICmd.CMD_REMAINING,
+                            R.string.tiles_left_title );
     }
 
     public void setTimer( int why, int when, int handle )
@@ -535,8 +504,7 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
             break;
         }
 
-        int result = waitBlockingDialog( XWConstants.ACTION_QUERY,
-                                         QUERY_REQUEST, query, null );
+        int result = waitBlockingDialog( actString, QUERY_REQUEST, query, null );
 
         return result != 0;
     }
@@ -594,5 +562,11 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
                                 getString( resid ), null );
         }
     } // userError
+
+    public void notifyGameOver()
+    {
+        m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER, 
+                            R.string.finalscores_title );
+    }
 
 } // class BoardActivity

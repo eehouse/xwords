@@ -73,6 +73,8 @@ public interface XW_UtilCtxt {
     static final int ERR_RELAY_BASE = 16;
     void userError( int id );
 
+    void notifyGameOver();
+
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int oldOffset, int newOffset );
 

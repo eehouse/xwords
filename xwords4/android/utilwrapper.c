@@ -155,7 +155,8 @@ and_util_turnChanged(XW_UtilCtxt* uc)
 static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
-    LOG_FUNC();
+    UTIL_CBK_HEADER( "notifyGameOver", "()V" );
+    (*env)->CallVoidMethod( env, util->j_util, mid );
 }
 
 
