@@ -1,3 +1,4 @@
+/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
 
 package org.eehouse.android.xw4.jni;
 
@@ -8,24 +9,24 @@ public class LocalPlayer {
     public boolean isRobot;
     public boolean isLocal;
 
-    public LocalPlayer( String nm ) {
+    private LocalPlayer() {}
+
+    public LocalPlayer( int num )
+    {
         isLocal = true;
         isRobot = false;
-        name = nm;
+        // This should be a template in strings.xml
+        name = "Player " + (num + 1);
         password = "";
     }
 
-    public LocalPlayer( LocalPlayer src ) {
+    public LocalPlayer( final LocalPlayer src )
+    {
         isLocal = src.isLocal;
         isRobot = src.isRobot;
         name = src.name;
         password = src.password;
-        secondsUsed = 0;
-    }
-
-    public LocalPlayer( String nm, boolean robot ) {
-        this( nm );
-        isRobot = robot;
+        secondsUsed = src.secondsUsed;
     }
 }
 
