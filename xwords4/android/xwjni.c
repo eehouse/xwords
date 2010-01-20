@@ -40,9 +40,8 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 
     getString( env, j_gi, "dictName", buf, VSIZE(buf) );
     gi->dictName = copyString( mpool, buf );
-    XP_LOGF( "dict name: %s", gi->dictName );
 
-    XP_ASSERT( nPlayers < MAX_NUM_PLAYERS );
+    XP_ASSERT( nPlayers <= MAX_NUM_PLAYERS );
 
     jobject jplayers;
     if ( getObject( env, j_gi, "players", 
@@ -53,6 +52,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
             LocalPlayer* lp = &gi->players[ii];
 
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
+            XP_ASSERT( !!jlp );
 
             getBool( env, jlp, "isRobot", &lp->isRobot );
             getBool( env, jlp, "isLocal", &lp->isLocal );
@@ -98,6 +98,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             const LocalPlayer* lp = &gi->players[ii];
 
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
+            XP_ASSERT( !!jlp );
 
             setBool( env, jlp, "isRobot", lp->isRobot );
             setBool( env, jlp, "isLocal", lp->isLocal );
@@ -111,7 +112,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     } else {
         XP_ASSERT(0);
     }
-}
+} /* setJGI */
 
 static void
 destroyGI( MPFORMAL CurGameInfo* gi )
@@ -340,7 +341,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     if ( result ) {
         setJGI( env, jgi, globals->gi );
     } else {
-        XP_LOGF( "%s: need to free stuff allocated above", __func__ );
+        destroyDraw( globals->dctx );
+        destroyUtil( globals->util );
+        dict_destroy( dict );
+        destroyGI( MPPARM(mpool) globals->gi );
     }
 
     XWJNI_END();
@@ -688,6 +692,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
     model_writeGameHistory( state->game.model, stream, state->game.server,
                             gameOver );
     result = streamToJString( MPPARM(mpool) env, stream );
+    (*env)->DeleteLocalRef( env, result );
+    stream_destroy( stream );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jstring result;
+    XWJNI_START();
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
+    server_writeFinalScores( state->game.server, stream );
+    result = streamToJString( MPPARM(mpool) env, stream );
+    (*env)->DeleteLocalRef( env, result );
+    stream_destroy( stream );
     XWJNI_END();
     return result;
 }
