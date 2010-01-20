@@ -22,7 +22,7 @@
     <string name="menu_discard">Discard</string>
 
     <string name="list_item_open">Open</string>
-    <string name="list_item_view">View</string>
+    <string name="list_item_view">View me</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
 	<string name="list_item_copy">Copy</string>
@@ -65,6 +65,7 @@
     <string name="tiles_left_title">Remaining tiles</string>
     <string name="counts_values_title">Tile Counts and Values</string>
     <string name="history_title">Game History</string>
+    <string name="finalscores_title">Final scores</string>
 
     <!-- system menu for main board view -->
 	<string name="board_menu_done">Turn done</string>
@@ -136,6 +137,17 @@
 	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
 	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
 
+    <string name="remote_label">Remote player (ignored)</string>
+    <string name="robot_label">Robot player</string>
+    <string name="password_label">Password (ignored)</string>
+    <string name="player_edit_title">Player</string>
 
+    <string name="players_label">Players</string>
+    <string name="button_add_player">Add player</string>
+
+    <string name="game_config_juggle">Juggle</string>
+
+    <string name="list_item_up">Up one</string>
+    <string name="list_item_down">Down one</string>
 
 </resources>
