@@ -14,6 +14,7 @@ public class JNIThread extends Thread {
 
     public enum JNICmd { CMD_NONE,
             CMD_DRAW,
+            CMD_LAYOUT,
             CMD_DO,
             CMD_PEN_DOWN,
             CMD_PEN_MOVE,
@@ -32,6 +33,7 @@ public class JNIThread extends Thread {
             CMD_COUNTS_VALUES,
             CMD_REMAINING,
             CMD_HISTORY,
+            CMD_POST_OVER,
             };
 
     public static final int RUNNING = 1;
@@ -92,6 +94,50 @@ public class JNIThread extends Thread {
         Message.obtain( m_handler, DIALOG, titleArg, 0, text ).sendToTarget();
     }
 
+    private void doLayout( int width, int height, int nCells )
+    {
+        int cellSize = width / nCells;
+
+        // If we're vertical, we can likely fit all the board and
+        // have a tall tray too.  If horizontal, let's assume
+        // that's so things will be big, and rather than make 'em
+        // small assume some scrolling.  So make the tray 1.5 to
+        // 2.5x a cell width in height and then scroll however
+        // many.
+
+        int trayHt = cellSize * 3;
+        int scoreHt = cellSize; // scoreboard ht same as cells for
+        // proportion
+        int wantHt = trayHt + scoreHt + (cellSize * nCells);
+        int nToScroll = 0;
+        if ( wantHt <= height ) {
+            
+        } else {
+            // 
+            nToScroll = nCells - ((height - (cellSize*3)) / cellSize);
+            Utils.logf( "nToScroll: " + nToScroll );
+            trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
+        }
+
+        XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, 
+                                      nCells * cellSize, // width
+                                      scoreHt, true );
+
+        XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, false );
+        XwJNI.board_setScale( m_jniGamePtr, cellSize, cellSize );
+
+        XwJNI.board_setTrayLoc( m_jniGamePtr, 0,
+                                scoreHt + ((nCells-nToScroll) * cellSize),
+                                nCells * cellSize, // width
+                                trayHt,      // height
+                                4 );
+
+        XwJNI.board_setShowColors( m_jniGamePtr, true ); // get from prefs!
+
+        XwJNI.board_invalAll( m_jniGamePtr );
+    }
+
+
     public void run() 
     {
         boolean[] barr = new boolean[1]; // scratch boolean
@@ -111,6 +157,14 @@ public class JNIThread extends Thread {
             case CMD_DRAW:
                 draw = true;
                 break;
+
+            case CMD_LAYOUT:
+                doLayout( ((Integer)args[0]).intValue(),
+                          ((Integer)args[1]).intValue(),
+                          ((Integer)args[2]).intValue() );
+                draw = true;
+                break;
+
             case CMD_DO:
                 draw = XwJNI.server_do( m_jniGamePtr );
                 break;
@@ -186,6 +240,11 @@ public class JNIThread extends Thread {
                                XwJNI.model_writeGameHistory( m_jniGamePtr, 
                                                              gameOver )
                                );
+                break;
+
+            case CMD_POST_OVER:
+                sendForDialog( ((Integer)args[0]).intValue(),
+                               XwJNI.server_writeFinalScores( m_jniGamePtr ) );
                 break;
 
             case CMD_TIMER_FIRED:
