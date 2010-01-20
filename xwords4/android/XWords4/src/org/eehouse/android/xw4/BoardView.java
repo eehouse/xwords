@@ -33,6 +33,9 @@ public class BoardView extends View implements DrawCtx,
     private Drawable m_origin;
     private int m_top, m_left;
     private JNIThread m_jniThread;
+    private String[] m_scores;
+    private Rect m_boundsScratch;
+    private String m_remText;
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
@@ -120,6 +123,8 @@ public class BoardView extends View implements DrawCtx,
         m_rightArrow = res.getDrawable( R.drawable.rightarrow );
         m_downArrow = res.getDrawable( R.drawable.downarrow );
         m_origin = res.getDrawable( R.drawable.origin );
+
+        m_boundsScratch = new Rect();
     }
 
     private boolean layoutBoardOnce() 
@@ -158,22 +163,22 @@ public class BoardView extends View implements DrawCtx,
                 m_top = 0;
             }
 
-            XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, 
-                                          nCells * cellSize, // width
-                                          scoreHt, true );
+            // XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, 
+            //                               nCells * cellSize, // width
+            //                               scoreHt, true );
 
-            XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, false );
-            XwJNI.board_setScale( m_jniGamePtr, cellSize, cellSize );
+            // XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, false );
+            // XwJNI.board_setScale( m_jniGamePtr, cellSize, cellSize );
 
-            XwJNI.board_setTrayLoc( m_jniGamePtr, 0,
-                                    scoreHt + ((nCells-nToScroll) * cellSize),
-                                    nCells * cellSize, // width
-                                    trayHt,      // height
-                                    4 );
+            // XwJNI.board_setTrayLoc( m_jniGamePtr, 0,
+            //                         scoreHt + ((nCells-nToScroll) * cellSize),
+            //                         nCells * cellSize, // width
+            //                         trayHt,      // height
+            //                         4 );
 
-            XwJNI.board_setShowColors( m_jniGamePtr, true ); // get from prefs!
+            // XwJNI.board_setShowColors( m_jniGamePtr, true ); // get from prefs!
 
-            XwJNI.board_invalAll( m_jniGamePtr );
+            // XwJNI.board_invalAll( m_jniGamePtr );
 
             m_bitmap = Bitmap.createBitmap( 1 + (cellSize*nCells),
                                             1 + trayHt + scoreHt
@@ -182,6 +187,8 @@ public class BoardView extends View implements DrawCtx,
             m_canvas = new Canvas( m_bitmap );
 
             // need to synchronize??
+            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, getWidth(),
+                                getHeight(), m_gi.boardSize );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
         return m_boardSet;
@@ -201,40 +208,65 @@ public class BoardView extends View implements DrawCtx,
         clearToBack( rect );
         m_canvas.save( Canvas.CLIP_SAVE_FLAG );
         m_canvas.clipRect(rect);
+        m_scores = new String[numPlayers];
     }
 
     public void measureRemText( Rect r, int nTilesLeft, int[] width, 
                                 int[] height ) 
     {
-        width[0] = 30;
-        height[0] = r.bottom - r.top;
-    }
+        m_remText = String.format( "%d", nTilesLeft ); // should cache a formatter
+        m_fillPaint.setTextSize( r.bottom - r.top );
+        m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
+                                   m_boundsScratch );
 
-    public void measureScoreText( Rect r, DrawScoreInfo dsi, 
-                                  int[] width, int[] height )
-    {
-        width[0] = 60;
-        height[0] = r.bottom - r.top;
+        int minWidth = m_boundsScratch.right;
+        if ( minWidth < 20 ) {
+            minWidth = 20; // it's a button; make it bigger
+        }
+        width[0] = minWidth;
+        height[0] = m_boundsScratch.bottom;
     }
 
     public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, 
                              boolean focussed )
     {
-        String text = String.format( "%d", nTilesLeft ); // should cache a formatter
         m_fillPaint.setColor( TILE_BACK );
         m_canvas.drawRect( rOuter, m_fillPaint );
 
-        m_fillPaint.setTextSize( rInner.bottom - rInner.top );
+        m_fillPaint.setTextSize( rOuter.bottom - rOuter.top );
         m_fillPaint.setColor( BLACK );
-        drawCentered( text, rInner );
+        drawCentered( m_remText, rOuter );
+    }
+
+    public void measureScoreText( Rect r, DrawScoreInfo dsi, 
+                                  int[] width, int[] height )
+    {
+        StringBuffer sb = new StringBuffer();
+        if ( dsi.isTurn ) {
+            sb.append( dsi.name );
+            sb.append( ":" );
+        }
+        sb.append( dsi.totalScore );
+        if ( dsi.nTilesLeft >= 0 ) {
+            sb.append( ":" );
+            sb.append( dsi.nTilesLeft );
+        }
+        String str = sb.toString();
+        m_scores[dsi.playerNum] = str;
+
+        m_fillPaint.setTextSize( r.bottom - r.top );
+        m_fillPaint.getTextBounds( str, 0, str.length(), m_boundsScratch );
+
+        width[0] = m_boundsScratch.right;
+        height[0] = m_boundsScratch.bottom;
     }
 
     public void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi )
     {
-        String text = String.format( "%s:%d", dsi.name, dsi.totalScore );
-        m_fillPaint.setTextSize( rInner.bottom - rInner.top );
+        String text = m_scores[dsi.playerNum];
+        m_fillPaint.setTextSize( rOuter.bottom - rOuter.top );
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
-        drawCentered( text, rInner );
+        drawCentered( text, rOuter );
     }
 
     public boolean drawCell( Rect rect, String text, Object[] bitmaps,
