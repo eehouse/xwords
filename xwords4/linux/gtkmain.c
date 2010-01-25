@@ -1336,7 +1336,9 @@ pentimer_idle_func( gpointer data )
     gettimeofday( &tv, NULL );
 
     if ( (tv.tv_usec - globals->penTv.tv_usec) >= globals->penTimerInterval) {
-        linuxFireTimer( &globals->cGlobals, TIMER_PENDOWN );
+        if ( linuxFireTimer( &globals->cGlobals, TIMER_PENDOWN ) ) {
+            board_draw( globals->cGlobals.game.board );
+        }
         callAgain = XP_FALSE;
     } 
 
@@ -1348,7 +1350,9 @@ score_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    linuxFireTimer( &globals->cGlobals, TIMER_TIMERTICK );
+    if ( linuxFireTimer( &globals->cGlobals, TIMER_TIMERTICK ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
 
     return XP_FALSE;
 } /* score_timer_func */
@@ -1359,7 +1363,9 @@ comms_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    linuxFireTimer( &globals->cGlobals, TIMER_COMMS );
+    if ( linuxFireTimer( &globals->cGlobals, TIMER_COMMS ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
 
     return (gint)0;
 }
@@ -1371,7 +1377,9 @@ slowrob_timer_func( gpointer data )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)data;
 
-    linuxFireTimer( &globals->cGlobals, TIMER_SLOWROBOT );
+    if ( linuxFireTimer( &globals->cGlobals, TIMER_SLOWROBOT ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
 
     return (gint)0;
 }

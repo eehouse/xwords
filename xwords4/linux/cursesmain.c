@@ -969,8 +969,10 @@ fireCursesTimer( CursesAppGlobals* globals )
     if ( !!smallestTip ) {
         XP_U32 now = util_getCurSeconds( globals->cGlobals.params->util ) ;
         if ( now >= smallestTip->when ) {
-            linuxFireTimer( &globals->cGlobals, 
-                            smallestTip - globals->cGlobals.timerInfo );
+            if ( linuxFireTimer( &globals->cGlobals, 
+                                 smallestTip - globals->cGlobals.timerInfo ) ){
+                board_draw( globals->cGlobals.game.board );
+            }
         } else {
             XP_LOGF( "skipping timer: now (%ld) < when (%ld)", 
                      now, smallestTip->when );

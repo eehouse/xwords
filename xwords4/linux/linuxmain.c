@@ -187,7 +187,7 @@ usage( char* appName, char* msg )
 #endif
 #if defined PLATFORM_GTK
 	     "\t [-k]             # ask for parameters via \"new games\" dlg\n"
-	     "\t [-h numRowsHidded] \n"
+	     "\t [-h numRowsHidden] \n"
 # ifdef XWFEATURE_SEARCHLIMIT
 	     "\t [-I]             # don't support hint rect dragging\n"
 # endif
@@ -585,21 +585,23 @@ linux_util_makeStreamFromAddr( XW_UtilCtxt* uctx, XP_U16 channelNo )
 } /* linux_util_makeStreamFromAddr */
 #endif
 
-void
+XP_Bool
 linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 {
     TimerInfo* tip = &cGlobals->timerInfo[why];
     XWTimerProc proc = tip->proc;
     void* closure = tip->closure;
+    XP_Bool draw = false;
 
     tip->proc = NULL;
 
     if ( !!proc ) {
-        (*proc)( closure, why );
+        draw = (*proc)( closure, why );
     } else {
         XP_LOGF( "%s: skipping timer %d; cancelled?", __func__, why );
     }
-} /* fireTimer */
+    return draw;
+} /* linuxFireTimer */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void

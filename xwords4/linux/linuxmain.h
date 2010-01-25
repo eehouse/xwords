@@ -49,7 +49,7 @@ void linux_reset( void* closure );
 int linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, 
                          int bufSize );
 
-void linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
+XP_Bool linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
 
 
 XWStreamCtxt* stream_from_msgbuf( CommonGlobals* cGlobals, 
