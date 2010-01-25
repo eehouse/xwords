@@ -29,7 +29,6 @@
               android:layout_marginRight="20dip"
               android:text="@string/players_label"
               android:gravity="left"
-              android:textAppearance="?android:attr/textAppearanceMedium"
               />
 
     <Button android:id="@+id/add_player"
@@ -45,12 +44,27 @@
             android:layout_width="fill_parent" 
             android:layout_height="fill_parent"
             android:layout_weight="1"
-            android:drawSelectorOnTop="false"/>
+            android:drawSelectorOnTop="false"
+            />
+
+  <TextView android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_marginLeft="20dip"
+            android:layout_marginRight="20dip"
+            android:text="@string/dict_label"
+            />
+
+  <Spinner android:id="@+id/dict_spinner"
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:drawSelectorOnTop="true"
+           />
 
   <Button android:id="@+id/game_config_done"
           android:layout_width="fill_parent" 
           android:layout_height="wrap_content" 
           android:layout_gravity="right"
-          android:text="@string/game_config_done" />
+          android:text="@string/button_save" 
+          />
 
 </LinearLayout>

@@ -9,10 +9,12 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.content.res.AssetManager;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import android.os.Handler;
 import android.os.Message;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import android.content.res.Configuration;
 import android.content.Intent;
 import java.util.concurrent.Semaphore;
@@ -20,6 +22,10 @@ import android.net.Uri;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Bitmap;
+import java.util.ArrayList;
+import android.content.res.Resources;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -100,7 +106,8 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     }
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
+    protected void onCreate( Bundle savedInstanceState ) 
+    {
         super.onCreate( savedInstanceState );
 
         setContentView( R.layout.board );
@@ -122,60 +129,44 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         byte[] stream = Utils.savedGame( this, m_path );
         XwJNI.gi_from_stream( m_gi, stream );
 
-        byte[] dictBytes = null;
-        InputStream dict = null;
-        AssetManager am = getAssets();
-        try {
-            dict = am.open( m_gi.dictName, 
-                            android.content.res.AssetManager.ACCESS_RANDOM );
-            Utils.logf( "opened dict" );
+        Utils.logf( "dict name: " + m_gi.dictName );
+        byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
+        if ( null == dictBytes ) {
+            Utils.logf( "**** unable to open dict; warn user! ****" );
+            finish();
+        } else {
+            m_jniGamePtr = XwJNI.initJNI();
 
-            int len = dict.available();
-            Utils.logf( "dict size: " + len );
-            dictBytes = new byte[len];
-            int nRead = dict.read( dictBytes, 0, len );
-            if ( nRead != len ) {
-                Utils.logf( "**** warning ****; read only " + nRead + " of " 
-                            + len + " bytes." );
+            if ( null == stream ||
+                 ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                              m_gi, dictBytes, this,
+                                              m_view, m_prefs,
+                                              null ) ) {
+                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
+                                        m_prefs, null, dictBytes );
             }
-        } catch ( java.io.IOException ee ){
-            Utils.logf( "failed to open" );
-        }
-        
-        m_jniGamePtr = XwJNI.initJNI();
 
-        if ( null == stream ||
-             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                          m_gi, dictBytes, this,
-                                          m_view, m_prefs,
-                                          null ) ) {
-            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
-                                    m_prefs, null, dictBytes );
-        }
-
-        m_jniThread = new 
-            JNIThread( m_jniGamePtr, 
-                       new Handler() {
-                           public void handleMessage( Message msg ) {
-                               Utils.logf( "handleMessage() called" );
-                               switch( msg.what ) {
-                               case JNIThread.DRAW:
-                                   m_view.invalidate();
-                                   break;
-                               case JNIThread.DIALOG:
-                                   m_dlgBytes = (String)msg.obj;
-                                   m_dlgTitle = msg.arg1;
-                                   showDialog( DLG_OKONLY );
-                                   break;
+            m_jniThread = new 
+                JNIThread( m_jniGamePtr, 
+                           new Handler() {
+                               public void handleMessage( Message msg ) {
+                                   switch( msg.what ) {
+                                   case JNIThread.DRAW:
+                                       m_view.invalidate();
+                                       break;
+                                   case JNIThread.DIALOG:
+                                       m_dlgBytes = (String)msg.obj;
+                                       m_dlgTitle = msg.arg1;
+                                       showDialog( DLG_OKONLY );
+                                       break;
+                                   }
                                }
-                           }
-                       } );
-        m_jniThread.start();
+                           } );
+            m_jniThread.start();
 
-        m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
-        m_jniThread.handle( JNICmd.CMD_DO );
-
-        Utils.logf( "BoardActivity::onCreate() done" );
+            m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
+            m_jniThread.handle( JNICmd.CMD_DO );
+        }
     } // onCreate
 
     // protected void onPause() {
@@ -186,19 +177,21 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     protected void onDestroy() 
     {
-        // what if m_jniThread is null?
-        m_jniThread.waitToStop();
+        if ( null != m_jniThread ) {
+            m_jniThread.waitToStop();
+            Utils.logf( "onDestroy(): waitToStop() returned" );
 
-        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-        Utils.saveGame( this, state, m_path );
+            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
+            Utils.saveGame( this, state, m_path );
 
-        XwJNI.game_dispose( m_jniGamePtr );
-        m_jniGamePtr = 0;
+            XwJNI.game_dispose( m_jniGamePtr );
+            m_jniGamePtr = 0;
+        }
 
         super.onDestroy();
         Utils.logf( "onDestroy done" );
     }
-	
+
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent result ) 
     {
@@ -287,11 +280,12 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
 
     // gets called for orientation changes only if
     // android:configChanges="orientation" set in AndroidManifest.xml
-
-    // public void onConfigurationChanged( Configuration newConfig )
-    // {
-    //     super.onConfigurationChanged( newConfig );
-    // }
+    public void onConfigurationChanged( Configuration newConfig )
+    {
+        Utils.logf( "BoardActivity::onConfigurationChanged called" );
+        m_view.changeLayout();
+        super.onConfigurationChanged( newConfig );
+    }
 
     //////////////////////////////////////////
     // XW_UtilCtxt interface implementation //
@@ -567,6 +561,64 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     {
         m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER, 
                             R.string.finalscores_title );
+    }
+
+    public BitmapDrawable makeBitmap( int width, int height, boolean[] colors )
+    {
+        Bitmap bitmap = Bitmap.createBitmap( width, height, 
+                                             Bitmap.Config.ARGB_8888 );
+
+        int indx = 0;
+        for ( int yy = 0; yy < height; ++yy ) {
+            for ( int xx = 0; xx < width; ++xx ) {
+                boolean pixelSet = colors[indx++];
+                bitmap.setPixel( xx, yy, pixelSet? 0xFF000000 : 0x00FFFFFF );
+            }
+        }
+
+        // Doesn't compile if pass getResources().  Maybe the
+        // "deprecated" API is really the only one?
+        return new BitmapDrawable( /*getResources(), */bitmap );
+    }
+
+    /** Working around lack of utf8 support on the JNI side: given a
+     * utf-8 string with embedded small number vals starting with 0,
+     * convert into individual strings.  The 0 is the problem: it's
+     * not valid utf8.  So turn it and the other nums into strings and
+     * catch them on the other side.
+     */
+    public String[] splitFaces( byte[] chars )
+    {
+        ArrayList<String> al = new ArrayList<String>();
+        int ii = 0;
+        ByteArrayInputStream bais = new ByteArrayInputStream( chars );
+        InputStreamReader isr = new InputStreamReader( bais );
+
+        int[] codePoints = new int[1];
+
+        for ( ; ; ) {
+            int chr = -1;
+            try {
+                chr = isr.read();
+            } catch ( java.io.IOException ioe ) {
+                Utils.logf( ioe.toString() );
+            }
+            if ( -1 == chr ) {
+                break;
+            } else {
+                String letter;
+                if ( chr < 32 ) {
+                    letter = String.format( "%d", chr );
+                } else {
+                    codePoints[0] = chr;
+                    letter = new String( codePoints, 0, 1 );
+                }
+                al.add( letter );
+            }
+        }
+        
+        String[] result = al.toArray( new String[al.size()] );
+        return result;
     }
 
 } // class BoardActivity

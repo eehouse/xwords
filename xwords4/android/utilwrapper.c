@@ -73,6 +73,11 @@ and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     UTIL_CBK_HEADER( "userError", "(I)V" );
     (*env)->CallVoidMethod( env, util->j_util, mid, id );
+    if ((*env)->ExceptionOccurred(env)) {
+        (*env)->ExceptionDescribe(env);
+        (*env)->ExceptionClear(env);
+        XP_LOGF( "exception found" );
+    }
 }
 
 static XP_Bool
@@ -312,6 +317,40 @@ and_util_engineStopping( XW_UtilCtxt* uc )
     LOG_FUNC();
 }
 #endif
+
+/* These are called from anddict.c, not via vtable */
+jobject
+and_util_makeJBitmap( XW_UtilCtxt* uc, int nCols, int nRows, 
+                      const jboolean* colors )
+{
+    jobject bitmap;
+    UTIL_CBK_HEADER( "makeBitmap", 
+                     "(II[Z)Landroid/graphics/drawable/BitmapDrawable;" );
+    jbooleanArray jcolors = makeBooleanArray( env, nCols*nRows, colors );
+
+    bitmap = (*env)->CallObjectMethod( env, util->j_util, mid,
+                                       nCols, nRows, jcolors );
+    (*env)->DeleteLocalRef( env, jcolors );
+    return bitmap;
+}
+
+jobject
+and_util_splitFaces( XW_UtilCtxt* uc, const XP_U8* bytes, jsize len )
+{
+    jobject strarray;
+    UTIL_CBK_HEADER( "splitFaces", "([B)[Ljava/lang/String;" );
+
+    jbyteArray jbytes = (*env)->NewByteArray( env, len );
+
+    jbyte* jp = (*env)->GetByteArrayElements( env, jbytes, NULL );
+    XP_MEMCPY( jp, bytes, len );
+    (*env)->ReleaseByteArrayElements( env, jbytes, jp, 0 );
+
+    strarray = (*env)->CallObjectMethod( env, util->j_util, mid, jbytes );
+    (*env)->DeleteLocalRef( env, jbytes );
+
+    return strarray;
+}
 
 
 XW_UtilCtxt*

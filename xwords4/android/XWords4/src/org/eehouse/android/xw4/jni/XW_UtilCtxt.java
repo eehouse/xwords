@@ -2,6 +2,8 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.graphics.drawable.BitmapDrawable;
+
 public interface XW_UtilCtxt {
     static final int BONUS_NONE = 0;
     static final int BONUS_DOUBLE_LETTER = 1;
@@ -74,6 +76,10 @@ public interface XW_UtilCtxt {
     void userError( int id );
 
     void notifyGameOver();
+
+    BitmapDrawable makeBitmap( int width, int height, boolean[] colors );
+
+    String[] splitFaces( byte[] chars );
 
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int oldOffset, int newOffset );

@@ -91,7 +91,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     @Override
     public boolean onContextItemSelected( MenuItem item ) 
     {
-        boolean handled = false;
+        boolean handled = true;
+        byte[] stream;
 
         AdapterView.AdapterContextMenuInfo info;
         try {
@@ -100,6 +101,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             Utils.logf( "bad menuInfo:" + e.toString() );
             return false;
         }
+        
+        String path = fileList()[info.position];
 
         switch (item.getItemId()) {
         // case R.id.list_item_open:
@@ -107,24 +110,47 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         //     handled = true;
         //     break;
         case R.id.list_item_view:
-            doView( info.position );
-            handled = true;
+            doView( path );
+            break;
+        case R.id.list_item_delete:
+            if ( ! deleteFile( path ) ) {
+                Utils.logf( "unable to delete " + path );
+            }
             break;
 
-        case R.id.list_item_hide:
-        case R.id.list_item_delete:
         case R.id.list_item_copy:
+            stream = Utils.savedGame( this, path );
+            Utils.saveGame( this, stream );
+            break;
+
         case R.id.list_item_new_from:
-        case R.id.list_item_move_up:
-        case R.id.list_item_move_down:
-        case R.id.list_item_move_to_top:
-        case R.id.list_item_move_to_bottom:
-            handled = true;
-            Utils.notImpl( this );
+            stream = Utils.savedGame( this, path );
+            CurGameInfo gi = new CurGameInfo();
+            XwJNI.gi_from_stream( gi, stream );
+            stream = XwJNI.gi_to_stream( gi );
+            Utils.saveGame( this, stream );
+            break;
+
+            // These require some notion of predictable sort order.
+            // Maybe put off until I'm using a db?
+        // case R.id.list_item_hide:
+        // case R.id.list_item_move_up:
+        // case R.id.list_item_move_down:
+        // case R.id.list_item_move_to_top:
+        // case R.id.list_item_move_to_bottom:
+            // Utils.notImpl( this );
+            // break;
+        default:
+            handled = false;
             break;
         }
+
+        if ( handled ) {
+            onContentChanged();
+        }
+
         return handled;
-    }
+    } // onContextItemSelected
 
     public boolean onCreateOptionsMenu( Menu menu )
     {
@@ -139,8 +165,13 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
-            for( String file : fileList() ) {
-                deleteFile( file  );
+            String[] files = fileList();
+            for( String file : files ) {
+                if ( deleteFile( file  ) ) {
+                    Utils.logf( "deleted " + file );
+                } else {
+                    Utils.logf( "unable to delete " + file );
+                }
             }
             m_adapter = new GameListAdapter( this );
             setListAdapter( m_adapter );
@@ -172,42 +203,20 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         startActivity( intent );
     }
 
-    private void doView( int indx ) {
-        String path = fileList()[indx];
-        File file = new File( path );
-        Uri uri = Uri.fromFile( file );
+    private void doView( String path )
+    {
+        Uri uri = Uri.fromFile( new File(path) );
         
         Intent intent = new Intent( Intent.ACTION_EDIT, uri,
                                      GamesList.this, GameConfig.class );
         startActivity( intent );
     }
 
-    private String newName() 
-    {
-        String name = null;
-        Integer num = 0;
-        int ii;
-        String[] files = fileList();
-
-        while ( name == null ) {
-            name = "game " + num.toString();
-            for ( ii = 0; ii < files.length; ++ii ) {
-                Utils.logf( "comparing " + name + " with " + files[ii] );
-                if ( files[ii].equals(name) ) {
-                    ++num;
-                    name = null;
-                }
-            }
-        }
-        return name;
-    }
-
     private void saveNew( CurGameInfo gi )
     {
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            String name = newName();
-            Utils.saveGame( this, bytes, newName() );
+            Utils.saveGame( this, bytes );
         } else {
             Utils.logf( "gi_to_stream=>null" );
         }

@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import org.eehouse.android.xw4.jni.*;
 import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.content.res.Resources;
 
 public class BoardView extends View implements DrawCtx, 
@@ -163,23 +164,6 @@ public class BoardView extends View implements DrawCtx,
                 m_top = 0;
             }
 
-            // XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, 
-            //                               nCells * cellSize, // width
-            //                               scoreHt, true );
-
-            // XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, false );
-            // XwJNI.board_setScale( m_jniGamePtr, cellSize, cellSize );
-
-            // XwJNI.board_setTrayLoc( m_jniGamePtr, 0,
-            //                         scoreHt + ((nCells-nToScroll) * cellSize),
-            //                         nCells * cellSize, // width
-            //                         trayHt,      // height
-            //                         4 );
-
-            // XwJNI.board_setShowColors( m_jniGamePtr, true ); // get from prefs!
-
-            // XwJNI.board_invalAll( m_jniGamePtr );
-
             m_bitmap = Bitmap.createBitmap( 1 + (cellSize*nCells),
                                             1 + trayHt + scoreHt
                                             + (cellSize *(nCells-nToScroll)),
@@ -192,6 +176,11 @@ public class BoardView extends View implements DrawCtx,
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
         return m_boardSet;
+    }
+
+    public void changeLayout()
+    {
+        m_boardSet = false;
     }
 
     public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
@@ -269,7 +258,7 @@ public class BoardView extends View implements DrawCtx,
         drawCentered( text, rOuter );
     }
 
-    public boolean drawCell( Rect rect, String text, Object[] bitmaps,
+    public boolean drawCell( Rect rect, String text, BitmapDrawable[] bitmaps,
                              int tile, int owner, int bonus, int hintAtts, 
                              int flags ) 
     {
@@ -298,12 +287,14 @@ public class BoardView extends View implements DrawCtx,
                 m_origin.draw( m_canvas );
             }
         } else {
-            m_fillPaint.setTextSize( rect.bottom - rect.top );
-            if ( owner < 0 ) {  // showColors option not turned on
-                owner = 0;
-            }
             m_fillPaint.setColor( foreColor );
-            drawCentered( text, rect );
+            if ( null == bitmaps ) {
+                m_fillPaint.setTextSize( rect.bottom - rect.top );
+                drawCentered( text, rect );
+            } else {
+                bitmaps[0].setBounds( rect );
+                bitmaps[0].draw( m_canvas );
+            }
         }
 
         m_canvas.drawRect( rect, m_strokePaint );
@@ -331,43 +322,21 @@ public class BoardView extends View implements DrawCtx,
         return true;
     }
 
-    public void drawTile( Rect rect, String text, Object[] bitmaps, int val, 
+    public void drawTile( Rect rect, String text, BitmapDrawable[] bitmaps, int val, 
                           int flags ) 
     {
-        boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
-        boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
-        boolean isCursor = (flags & CELL_ISCURSOR) != 0;
-
-        m_canvas.save( Canvas.CLIP_SAVE_FLAG );
-        m_canvas.clipRect( rect );
-
-        clearToBack( rect );
-
-        if ( isCursor || notEmpty ) {
-            m_fillPaint.setColor( TILE_BACK );
-            m_canvas.drawRect( rect, m_fillPaint );
-
-            m_fillPaint.setColor( m_playerColors[m_trayOwner] );
-            positionDrawTile( rect, text, val );
-
-            m_canvas.drawRect( rect, m_tileStrokePaint); // frame
-            if ( 0 != (flags & CELL_HIGHLIGHT) ) {
-                rect.inset( 2, 2 );
-                m_canvas.drawRect( rect, m_tileStrokePaint ); // frame
-            }
-        }
-        m_canvas.restore();
+        drawTileImpl( rect, text, bitmaps, val, flags, true );
     }
 
-    public void drawTileMidDrag ( Rect rect, String text, Object[] bitmaps,
+    public void drawTileMidDrag( Rect rect, String text, BitmapDrawable[] bitmaps,
                                   int val, int owner, int flags ) 
     {
-        drawTile( rect, text, bitmaps, val, flags );
+        drawTileImpl( rect, text, bitmaps, val, flags, false );
     }
 
     public void drawTileBack( Rect rect, int flags ) 
     {
-        drawTile( rect, "?", null, -1, flags );
+        drawTileImpl( rect, "?", null, -1, flags, true );
     }
 
     public void drawTrayDivider( Rect rect, int flags ) 
@@ -394,6 +363,40 @@ public class BoardView extends View implements DrawCtx,
         }
     }
 
+    private void drawTileImpl( Rect rect, String text, 
+                                  BitmapDrawable[] bitmaps, int val, 
+                                  int flags, boolean clearBack )
+    {
+        boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
+        boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
+        boolean isCursor = (flags & CELL_ISCURSOR) != 0;
+
+        m_canvas.save( Canvas.CLIP_SAVE_FLAG );
+        m_canvas.clipRect( rect );
+        
+        if ( clearBack ) {
+            clearToBack( rect );
+        }
+
+        if ( isCursor || notEmpty ) {
+
+            if ( clearBack ) {
+                m_fillPaint.setColor( TILE_BACK );
+                m_canvas.drawRect( rect, m_fillPaint );
+            }
+
+            m_fillPaint.setColor( m_playerColors[m_trayOwner] );
+            positionDrawTile( rect, text, bitmaps, val );
+
+            m_canvas.drawRect( rect, m_tileStrokePaint); // frame
+            if ( 0 != (flags & CELL_HIGHLIGHT) ) {
+                rect.inset( 2, 2 );
+                m_canvas.drawRect( rect, m_tileStrokePaint ); // frame
+            }
+        }
+        m_canvas.restore();
+    }
+
     private void drawCentered( String text, Rect rect ) 
     {
         int bottom = rect.bottom;
@@ -401,17 +404,23 @@ public class BoardView extends View implements DrawCtx,
         m_canvas.drawText( text, center, bottom, m_fillPaint );
     }
 
-    private void positionDrawTile( Rect rect, String text, int val )
+    private void positionDrawTile( Rect rect, String text, 
+                                   BitmapDrawable bitmaps[], int val )
     {
-        if ( null != text ) {
+
+        if ( null != bitmaps || null != text ) {
             if ( null == m_letterRect ) {
-                // assumes show values is on
                 m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
                                          rect.height() * 3 / 4 );
             }
             m_letterRect.offsetTo( rect.left, rect.top );
-            m_fillPaint.setTextSize( m_letterRect.height() );
-            drawCentered( text, m_letterRect );
+            if ( null != bitmaps ) {
+                bitmaps[0].setBounds( m_letterRect );
+                bitmaps[0].draw( m_canvas );
+            } else /*if ( null != text )*/ {
+                m_fillPaint.setTextSize( m_letterRect.height() );
+                drawCentered( text, m_letterRect );
+            }
         }
 
         if ( val >= 0 ) {

@@ -22,7 +22,7 @@
     <string name="menu_discard">Discard</string>
 
     <string name="list_item_open">Open</string>
-    <string name="list_item_view">View me</string>
+    <string name="list_item_view">Configure</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
 	<string name="list_item_copy">Copy</string>
@@ -49,6 +49,7 @@
 	<string name="button_cancel">Cancel</string>  
 	<string name="button_yes">Yes</string>  
 	<string name="button_no">No</string>  
+	<string name="button_save">Save</string>  
 
     <string name="player_label">Name:</string>
     <string name="game_config_open">Open</string>
@@ -115,11 +116,11 @@
     <string name="strsd_summaryscored"></string>
     <string name="strd_traded">%s:%d</string>
     <string name="str_lostturn">Lost turn</string>
-    <string name="str_commit_confirm">Commit the current move?</string>
+    <string name="str_commit_confirm">Commit the current move?\n</string>
     <string name="str_local_name">%s</string>
     <string name="str_nonlocal_name">%s (remote)</string>
-    <string name="str_bonus_all">Bonus for using all tiles: 50</string>
-    <string name="strd_turn_score">Score for turn: %d</string>
+    <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
+    <string name="strd_turn_score">Score for turn: %d\n</string>
 
     <!-- error messages -->
 	<string name="str_tiles_not_in_line">All tiles played must be in a line.</string>
@@ -149,5 +150,10 @@
 
     <string name="list_item_up">Up one</string>
     <string name="list_item_down">Down one</string>
+
+    <string name="dict_label">Dictionary</string>
+    <string name="download_dicts">Download more...</string>
+
+    <string name="dict_url">http://eehouse.org/and_dicts</string>
 
 </resources>

@@ -66,7 +66,7 @@ public class JNIThread extends Thread {
         m_stopped = true;
         handle( JNICmd.CMD_NONE );     // tickle it
         try {
-            join();
+            join(100);          // wait up to 1/10 second
         } catch ( java.lang.InterruptedException ie ) {
             Utils.logf( "got InterruptedException: " + ie.toString() );
         }
@@ -176,6 +176,11 @@ public class JNIThread extends Thread {
                                                   barr );
                 break;
             case CMD_PEN_MOVE:
+                QueueElem nextElem = m_queue.peek();
+                if ( null != nextElem && nextElem.m_cmd == JNICmd.CMD_PEN_MOVE ) {
+                    Utils.logf( "dropping CMD_PEN_MOVE" );
+                    continue;
+                }
                 draw = XwJNI.board_handlePenMove( m_jniGamePtr, 
                                                   ((Integer)args[0]).intValue(),
                                                   ((Integer)args[1]).intValue() );

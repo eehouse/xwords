@@ -1,3 +1,4 @@
+/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
 
 #include <jni.h>
 #include <stdio.h>
@@ -7,9 +8,11 @@
 #include "xptypes.h"
 #include "dictnry.h"
 #include "strutils.h"
+#include "utilwrapper.h"
 
 typedef struct _AndDictionaryCtxt {
     DictionaryCtxt super;
+    XW_UtilCtxt* util;
     JNIEnv *env;
     XP_U8* bytes;
 } AndDictionaryCtxt;
@@ -77,36 +80,28 @@ andCountSpecials( AndDictionaryCtxt* ctxt )
 } /* andCountSpecials */
 
 static XP_Bitmap
-andMakeBitmap( XP_U8** ptrp )
+andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
 {
     XP_U8* ptr = *ptrp;
     XP_U8 nCols = *ptr++;
-    XP_Bitmap bitmap = NULL;
-    /* CEBitmapInfo* bitmap = (CEBitmapInfo*)NULL; */
+    jobject bitmap = NULL;
 
     if ( nCols > 0 ) {
-        XP_ASSERT(0);
-#if 0
-        XP_U8* dest;
         XP_U8* savedDest;
         XP_U8 nRows = *ptr++;
         XP_U16 rowBytes = (nCols+7) / 8;
         XP_U8 srcByte = 0;
-        XP_U8 destByte = 0;
         XP_U8 nBits;
-        XP_U16 i;
+        XP_U16 ii;
 
-        bitmap = (CEBitmapInfo*)XP_CALLOC( ctxt->super.mpool, 
-                                           sizeof(bitmap) );
-        bitmap->nCols = nCols;
-        bitmap->nRows = nRows;
-        dest = XP_MALLOC( ctxt->super.mpool, rowBytes * nRows );
-        bitmap->bits = savedDest = dest;
+        jboolean* colors = (jboolean*)XP_CALLOC( ctxt->super.mpool, 
+                                                 nCols * nRows * sizeof(*colors) );
+        jboolean* next = colors;
 
         nBits = nRows * nCols;
-        for ( i = 0; i < nBits; ++i ) {
-            XP_U8 srcBitIndex = i % 8;
-            XP_U8 destBitIndex = (i % nCols) % 8;
+        for ( ii = 0; ii < nBits; ++ii ) {
+            XP_U8 srcBitIndex = ii % 8;
+            XP_U8 destBitIndex = (ii % nCols) % 8;
             XP_U8 srcMask, bit;
 
             if ( srcBitIndex == 0 ) {
@@ -114,37 +109,21 @@ andMakeBitmap( XP_U8** ptrp )
             }
 
             srcMask = 1 << (7 - srcBitIndex);
-            bit = (srcByte & srcMask) != 0;
-            destByte |= bit << (7 - destBitIndex);
-
-            /* we need to put the byte if we've filled it or if we're done
-               with the row */
-            if ( (destBitIndex==7) || ((i%nCols) == (nCols-1)) ) {
-                *dest++ = destByte;
-                destByte = 0;
-            }
+            XP_ASSERT( next < (colors + (nRows * nCols)) );
+            *next++ = ((srcByte & srcMask) == 0) ? JNI_FALSE : JNI_TRUE;
         }
 
-/*         printBitmapData1( nCols, nRows, savedDest ); */
-/*         printBitmapData2( nCols, nRows, savedDest ); */
-#endif
+        JNIEnv* env = ctxt->env;
+        bitmap = and_util_makeJBitmap( ctxt->util, nCols, nRows, colors );
+        jobject tmp = (*env)->NewGlobalRef( env, bitmap );
+        XP_ASSERT( tmp == bitmap );
+        (*env)->DeleteLocalRef( env, bitmap );
+        XP_FREE( ctxt->super.mpool, colors );
     }
 
     *ptrp = ptr;
     return (XP_Bitmap)bitmap;
 } /* andMakeBitmap */
-
-static void
-andDeleteBitmap( const AndDictionaryCtxt* XP_UNUSED_DBG(ctxt),
-                 XP_Bitmap* bitmap )
-{
-    if ( !!bitmap ) {
-        XP_ASSERT(0);
-        /* CEBitmapInfo* bmi = (CEBitmapInfo*)bitmap; */
-        /* XP_FREE( ctxt->super.mpool, bmi->bits ); */
-        /* XP_FREE( ctxt->super.mpool, bmi ); */
-    }
-}
 
 static void
 andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
@@ -170,11 +149,11 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
             XP_MEMCPY( text, ptr, txtlen );
             ptr += txtlen;
             text[txtlen] = '\0';
-            XP_ASSERT( *facep < nSpecials );
+            XP_ASSERT( *facep < nSpecials ); /* firing */
             texts[(int)*facep] = text;
 
-            bitmaps[(int)*facep].largeBM = andMakeBitmap( &ptr );
-            bitmaps[(int)*facep].smallBM = andMakeBitmap( &ptr );
+            bitmaps[(int)*facep].largeBM = andMakeBitmap( ctxt, &ptr );
+            bitmaps[(int)*facep].smallBM = andMakeBitmap( ctxt, &ptr );
         }
     }
 
@@ -184,12 +163,69 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
     *ptrp = ptr;
 } /* andLoadSpecialData */
 
+/** Android doesn't include iconv for C code to use, so we'll have java do it.
+ * Cons up a string with all the tile faces (skipping the specials to make
+ * things easier) and have java return an array of strings.  Then load one at
+ * a time into the expected null-separated format.
+ */
+static void
+splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr, 
+                     int nFaceBytes, int nFaces )
+{
+    XP_UCHAR facesBuf[nFaces*4]; /* seems a reasonable upper bound... */
+    int indx = 0;
+    int offsets[nFaces];
+    int nBytes;
+    int ii;
+
+    jobject jstrarr = and_util_splitFaces( ctxt->util, ptr, nFaceBytes );
+    XP_ASSERT( (*env)->GetArrayLength( env, jstrarr ) == nFaces );
+
+    for ( ii = 0; ii < nFaces; ++ii ) {
+        jobject jstr = (*env)->GetObjectArrayElement( env, jstrarr, ii );
+        offsets[ii] = indx;
+        nBytes = (*env)->GetStringUTFLength( env, jstr );
+
+        const char* bytes = (*env)->GetStringUTFChars( env, jstr, NULL );
+        char* end;
+        long numval = strtol( bytes, &end, 10 );
+        if ( end > bytes ) {
+            XP_ASSERT( numval < 32 );
+            nBytes = 1;
+            facesBuf[indx] = (XP_UCHAR)numval;
+        } else {
+            XP_MEMCPY( &facesBuf[indx], bytes, nBytes );
+        }
+        (*env)->ReleaseStringUTFChars( env, jstr, bytes );
+        (*env)->DeleteLocalRef( env, jstr );
+
+        indx += nBytes;
+        facesBuf[indx++] = '\0';
+        XP_ASSERT( indx < VSIZE(facesBuf) );
+    }
+    (*env)->DeleteLocalRef( env, jstrarr );
+
+    XP_UCHAR* faces = (XP_UCHAR*)XP_CALLOC( ctxt->super.mpool, indx );
+    XP_UCHAR** ptrs = (XP_UCHAR**)XP_CALLOC( ctxt->super.mpool, 
+                                             nFaces * sizeof(ptrs[0]));
+
+    XP_MEMCPY( faces, facesBuf, indx );
+    for ( ii = 0; ii < nFaces; ++ii ) {
+        ptrs[ii] = &faces[offsets[ii]];
+    }
+
+    XP_ASSERT( !ctxt->super.faces );
+    ctxt->super.faces = faces;
+    XP_ASSERT( !ctxt->super.facePtrs );
+    ctxt->super.facePtrs = ptrs;
+} /* splitFaces_via_java */
+
 static void
 parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
 {
     while( !!ptr ) {           /* lets us break.... */
         XP_U32 offset;
-        XP_U16 numFaces, numFaceBytes = 0;
+        XP_U16 nFaces, numFaceBytes = 0;
         XP_U16 i;
         XP_U16 flags;
         void* mappedBase = (void*)ptr;
@@ -198,7 +234,6 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
 
         flags = n_ptr_tohs( &ptr );
 
-#ifdef NODE_CAN_4
         if ( flags == 0x0002 ) {
             nodeSize = 3;
         } else if ( flags == 0x0003 ) {
@@ -212,38 +247,33 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
         } else {
             break;          /* we want to return NULL */
         }
-#else
-        if( flags != 0x0001 ) {
-            break;
-        }
-#endif
+
         if ( isUTF8 ) {
             numFaceBytes = (XP_U16)(*ptr++);
         }
-        numFaces = (XP_U16)(*ptr++);
-        if ( numFaces > 64 ) {
+        nFaces = (XP_U16)(*ptr++);
+        if ( nFaces > 64 ) {
             break;
         }
 
         ctxt->super.nodeSize = nodeSize;
 
         if ( !isUTF8 ) {
-            numFaceBytes = numFaces * 2;
+            numFaceBytes = nFaces * 2;
         }
 
-        ctxt->super.nFaces = (XP_U8)numFaces;
+        ctxt->super.nFaces = (XP_U8)nFaces;
         ctxt->super.isUTF8 = isUTF8;
 
         if ( isUTF8 ) {
-            XP_ASSERT(0);
-            dict_splitFaces( &ctxt->super, ptr, numFaceBytes, numFaces );
+            splitFaces_via_java( ctxt->env, ctxt, ptr, numFaceBytes, nFaces );
             ptr += numFaceBytes;
         } else {
-            XP_U8 tmp[numFaces*4]; /* should be enough... */
+            XP_U8 tmp[nFaces*4]; /* should be enough... */
             XP_U16 nBytes = 0;
             XP_U16 ii;
             /* Need to translate from iso-8859-n to utf8 */
-            for ( ii = 0; ii < numFaces; ++ii ) {
+            for ( ii = 0; ii < nFaces; ++ii ) {
                 XP_UCHAR ch = ptr[1];
 
                 ptr += 2;
@@ -251,16 +281,16 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
                 tmp[nBytes] = ch;
                 nBytes += 1;
             }
-            dict_splitFaces( &ctxt->super, tmp, nBytes, numFaces );
+            dict_splitFaces( &ctxt->super, tmp, nBytes, nFaces );
         }
 
         ctxt->super.is_4_byte = (ctxt->super.nodeSize == 4);
 
         ctxt->super.countsAndValues = 
-            (XP_U8*)XP_MALLOC(ctxt->super.mpool, numFaces*2);
+            (XP_U8*)XP_MALLOC(ctxt->super.mpool, nFaces*2);
 
         ptr += 2;		/* skip xloc header */
-        for ( i = 0; i < numFaces*2; i += 2 ) {
+        for ( i = 0; i < nFaces*2; i += 2 ) {
             ctxt->super.countsAndValues[i] = *ptr++;
             ctxt->super.countsAndValues[i+1] = *ptr++;
         }
@@ -324,11 +354,12 @@ and_dictionary_destroy( DictionaryCtxt* dict )
         XP_FREE( ctxt->super.mpool, ctxt->super.chars );
     }
     if ( !!ctxt->super.bitmaps ) {
+        JNIEnv* env = ctxt->env;
         for ( ii = 0; ii < nSpecials; ++ii ) {
-            XP_ASSERT( !ctxt->super.bitmaps[ii].largeBM );
-            XP_ASSERT( !ctxt->super.bitmaps[ii].smallBM );
-             andDeleteBitmap( ctxt, ctxt->super.bitmaps[ii].largeBM );
-             andDeleteBitmap( ctxt, ctxt->super.bitmaps[ii].smallBM );
+            jobject bitmap = ctxt->super.bitmaps[ii].largeBM;
+            if ( !!bitmap ) {
+                (*env)->DeleteGlobalRef( env, bitmap );
+            }
         }
         XP_FREE( ctxt->super.mpool, ctxt->super.bitmaps );
     }
@@ -345,7 +376,7 @@ and_dictionary_destroy( DictionaryCtxt* dict )
 }
 
 DictionaryCtxt* 
-makeDict( MPFORMAL JNIEnv *env, jbyteArray jbytes )
+makeDict( MPFORMAL JNIEnv *env, XW_UtilCtxt* util, jbyteArray jbytes )
 {
     XP_Bool formatOk = XP_TRUE;
     XP_Bool isUTF8 = XP_FALSE;
@@ -368,6 +399,7 @@ makeDict( MPFORMAL JNIEnv *env, jbyteArray jbytes )
     MPASSIGN(anddict->super.mpool, mpool);
     anddict->bytes = localBytes;
     anddict->env = env;
+    anddict->util = util;
     
     parseDict( anddict, localBytes, len );
     setBlankTile( &anddict->super );

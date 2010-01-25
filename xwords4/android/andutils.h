@@ -7,6 +7,7 @@
 
 #include "comtypes.h"
 #include "mempool.h"
+#include "dictnry.h"
 
 XP_U32 and_ntohl(XP_U32 l);
 XP_U16 and_ntohs(XP_U16 l);
@@ -26,8 +27,12 @@ bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
 jintArray makeIntArray( JNIEnv *env, int size, const jint* vals );
 int getIntFromArray( JNIEnv* env, jintArray arr, bool del );
 
+jbooleanArray makeBooleanArray( JNIEnv *env, int size, const jboolean* vals );
+
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
 jstring streamToJString( MPFORMAL JNIEnv* env, XWStreamCtxt* stream );
+
+jobjectArray makeBitmapsArray( JNIEnv* env, const XP_Bitmaps* bitmaps );
 
 /* Note: jmethodID can be cached.  Should not look up more than once. */
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,

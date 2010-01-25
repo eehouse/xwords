@@ -222,27 +222,28 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
                    const XP_Bitmaps* bitmaps, Tile tile, XP_S16 owner,
                    XWBonusType bonus, HintAtts hintAtts, CellFlags flags )
 {
-    DRAW_CBK_HEADER("drawCell",
-                    "(Landroid/graphics/Rect;Ljava/lang/String;"
-                    "[Ljava/lang/Object;IIIII)Z" );
-
+    DRAW_CBK_HEADER("drawCell", "(Landroid/graphics/Rect;Ljava/lang/String;"
+                    "[Landroid/graphics/drawable/BitmapDrawable;IIIII)Z" );
     jobject jrect = makeJRect( env, rect );
     jstring jtext = NULL;
     if ( !!text ) {
         jtext = (*env)->NewStringUTF( env, text );
     }
 
+    jobjectArray jbitmaps = !!bitmaps ? makeBitmapsArray( env, bitmaps ) : NULL;
     jboolean result = (*env)->CallBooleanMethod( env, draw->j_draw, mid, 
-                                                 jrect, jtext, NULL, tile,
+                                                 jrect, jtext, jbitmaps, tile,
                                                  owner, bonus, hintAtts, 
                                                  flags );
-
     (*env)->DeleteLocalRef( env, jrect );
     if ( !!jtext ) {
         (*env)->DeleteLocalRef( env, jtext );
     }
+    if ( !!jbitmaps ) {
+        (*env)->DeleteLocalRef( env, jbitmaps );
+    }
 
-    return XP_TRUE;
+    return result;
 }
 
 static void
@@ -293,20 +294,23 @@ and_draw_drawTile( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
                    const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags )
 {
     DRAW_CBK_HEADER( "drawTile", "(Landroid/graphics/Rect;Ljava/lang/String;"
-                     "[Ljava/lang/Object;II)V" );
-
+                     "[Landroid/graphics/drawable/BitmapDrawable;II)V" );
     jobject jrect = makeJRect( env, rect );
     jstring jtext = NULL;
     if ( !!text ) {
         jtext = (*env)->NewStringUTF( env, text );
     }
 
+    jobjectArray jbitmaps = makeBitmapsArray( env, bitmaps );
     (*env)->CallVoidMethod( env, draw->j_draw, mid, 
-                            jrect, jtext, NULL, val, flags );
+                            jrect, jtext, jbitmaps, val, flags );
 
     (*env)->DeleteLocalRef( env, jrect );
     if ( !!jtext ) {
         (*env)->DeleteLocalRef( env, jtext );
+    }
+    if ( !!jbitmaps ) {
+        (*env)->DeleteLocalRef( env, jbitmaps );
     }
 }
 
@@ -316,7 +320,7 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect,
                           XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     DRAW_CBK_HEADER( "drawTileMidDrag", "(Landroid/graphics/Rect;Ljava/lang/String;"
-                     "[Ljava/lang/Object;III)V" );
+                     "[Landroid/graphics/drawable/BitmapDrawable;III)V" );
 
     jobject jrect = makeJRect( env, rect );
     jstring jtext = NULL;
@@ -324,12 +328,16 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect,
         jtext = (*env)->NewStringUTF( env, text );
     }
 
+    jobjectArray jbitmaps = makeBitmapsArray( env, bitmaps );
     (*env)->CallVoidMethod( env, draw->j_draw, mid, 
-                            jrect, jtext, NULL, val, owner, flags );
+                            jrect, jtext, jbitmaps, val, owner, flags );
 
     (*env)->DeleteLocalRef( env, jrect );
     if ( !!jtext ) {
         (*env)->DeleteLocalRef( env, jtext );
+    }
+    if ( !!jbitmaps ) {
+        (*env)->DeleteLocalRef( env, jbitmaps );
     }
 }
 

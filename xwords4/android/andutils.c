@@ -185,6 +185,20 @@ makeIntArray( JNIEnv *env, int siz, const jint* vals )
     return array;
 }
 
+jbooleanArray
+makeBooleanArray( JNIEnv *env, int siz, const jboolean* vals )
+{
+    jbooleanArray array = (*env)->NewBooleanArray( env, siz );
+    XP_ASSERT( !!array );
+    if ( !!vals ) {
+        jboolean* elems = (*env)->GetBooleanArrayElements( env, array, NULL );
+        XP_ASSERT( !!elems );
+        XP_MEMCPY( elems, vals, siz * sizeof(*elems) );
+        (*env)->ReleaseBooleanArrayElements( env, array, elems, 0 );
+    }
+    return array;
+}
+
 int
 getIntFromArray( JNIEnv* env, jintArray arr, bool del )
 {
@@ -240,4 +254,25 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     XP_ASSERT( !!mid );
     (*env)->DeleteLocalRef( env, cls );
     return mid;
+}
+
+jobjectArray
+makeBitmapsArray( JNIEnv* env, const XP_Bitmaps* bitmaps )
+{
+    jobjectArray result = NULL;
+
+    if ( !!bitmaps && bitmaps->nBitmaps > 0 ) {
+        jclass clazz = (*env)->FindClass( env,
+                                          "android/graphics/drawable/BitmapDrawable" );
+        XP_ASSERT( !!clazz );
+        result =  (*env)->NewObjectArray( env, bitmaps->nBitmaps, clazz, NULL );
+        (*env)->DeleteLocalRef( env, clazz );
+
+        int ii;
+        for ( ii = 0; ii < bitmaps->nBitmaps; ++ii ) {
+            (*env)->SetObjectArrayElement( env, result, ii, bitmaps->bmps[ii] );
+        }
+    }
+
+    return result;
 }

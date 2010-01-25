@@ -13,22 +13,22 @@
     <item android:id="@+id/list_item_new_from"
           android:title="@string/list_item_new_from"
           />
-    <item android:id="@+id/list_item_hide"
-          android:title="@string/list_item_hide"
-          />
+    <!-- <item android:id="@+id/list_item_hide" -->
+    <!--       android:title="@string/list_item_hide" -->
+    <!--       /> -->
     <item android:id="@+id/list_item_delete"
           android:title="@string/list_item_delete"
           />
-    <item android:id="@+id/list_item_move_up"
-          android:title="@string/list_item_move_up"
-          />
-    <item android:id="@+id/list_item_move_down"
-          android:title="@string/list_item_move_down"
-          />
-    <item android:id="@+id/list_item_move_to_top"
-          android:title="@string/list_item_move_to_top"
-          />
-    <item android:id="@+id/list_item_move_to_bottom"
-          android:title="@string/list_item_move_to_bottom"
-          />
+    <!-- <item android:id="@+id/list_item_move_up" -->
+    <!--       android:title="@string/list_item_move_up" -->
+    <!--       /> -->
+    <!-- <item android:id="@+id/list_item_move_down" -->
+    <!--       android:title="@string/list_item_move_down" -->
+    <!--       /> -->
+    <!-- <item android:id="@+id/list_item_move_to_top" -->
+    <!--       android:title="@string/list_item_move_to_top" -->
+    <!--       /> -->
+    <!-- <item android:id="@+id/list_item_move_to_bottom" -->
+    <!--       android:title="@string/list_item_move_to_bottom" -->
+    <!--       /> -->
 </menu>

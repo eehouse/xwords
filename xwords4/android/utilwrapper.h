@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 76; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -33,5 +33,8 @@ void destroyUtil( XW_UtilCtxt* util );
 
 bool utilTimerFired( XW_UtilCtxt* util, XWTimerReason why, int handle );
 
+jobject and_util_makeJBitmap( XW_UtilCtxt* util, int nCols, int nRows, 
+                              const jboolean* colors );
+jobject and_util_splitFaces( XW_UtilCtxt* uc, const XP_U8* bytes, int len );
 
 #endif

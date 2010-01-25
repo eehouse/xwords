@@ -271,7 +271,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     game_makeNewGame( MPPARM(mpool) &state->game, gi, util, dctx, gameID, 
                       &cp, NULL );
 
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jDictBytes );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, util, jDictBytes );
 #ifdef STUBBED_DICT
     if ( !dict ) {
         XP_LOGF( "falling back to stubbed dict" );
@@ -319,8 +319,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     XWJNI_START();
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, jdict );
     globals->util = makeUtil( MPPARM(mpool) &state->env, jutil, globals->gi, globals );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->util, jdict );
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
 
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
@@ -342,8 +342,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
         setJGI( env, jgi, globals->gi );
     } else {
         destroyDraw( globals->dctx );
-        destroyUtil( globals->util );
         dict_destroy( dict );
+        destroyUtil( globals->util );
         destroyGI( MPPARM(mpool) globals->gi );
     }
 

@@ -36,6 +36,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ListView;
 import android.widget.ListAdapter;
 import android.view.View;
@@ -57,6 +58,10 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.webkit.WebView;
+import java.io.File;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -76,6 +81,9 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
     private CurGameInfo m_gi;
     private int m_whichPlayer;
     private Dialog m_curDialog;
+    private Spinner m_dictSpinner;
+    private String[] m_dicts;
+    private int m_browsePosition;
 
     private class PlayerListAdapter implements ListAdapter {
         public boolean areAllItemsEnabled() {
@@ -140,24 +148,20 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
             final View playerEditView
                 = factory.inflate( R.layout.player_edit, null );
 
+            DialogInterface.OnClickListener dlpos =
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dialog, 
+                                         int whichButton ) {
+                        getPlayerSettings();
+                        onContentChanged();
+                    }
+                };
+
             return new AlertDialog.Builder( this )
                 // .setIcon(R.drawable.alert_dialog_icon)
                 .setTitle(R.string.player_edit_title)
                 .setView(playerEditView)
-                .setPositiveButton(R.string.button_ok, 
-                                   new DialogInterface.OnClickListener() {
-                                       public void onClick( DialogInterface dialog, 
-                                                            int whichButton ) {
-                                           getPlayerSettings();
-                                           onContentChanged();
-                                       }
-                                   })
-                .setNegativeButton(R.string.button_cancel, 
-                                   new DialogInterface.OnClickListener() {
-                                       public void onClick(DialogInterface dialog, 
-                                                           int whichButton) {
-                                       }
-                                   })
+                .setPositiveButton(R.string.button_save, dlpos )
                 .create();
         }
         return null;
@@ -174,36 +178,30 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
     private void setPlayerSettings()
     {
         LocalPlayer lp = m_gi.players[m_whichPlayer];
-        EditText player = (EditText)m_curDialog.findViewById( R.id.player_edit );
+        EditText player = (EditText)
+            m_curDialog.findViewById( R.id.player_name_edit );
         player.setText( lp.name );
-        CheckBox isRobot = (CheckBox)m_curDialog.findViewById( R.id.robot_check );
+        CheckBox isRobot = (CheckBox)
+            m_curDialog.findViewById( R.id.robot_check );
         isRobot.setChecked( lp.isRobot );
     }
 
     private void getPlayerSettings()
     {
         LocalPlayer lp = m_gi.players[m_whichPlayer];
-        EditText player = (EditText)m_curDialog.findViewById( R.id.player_edit );
+        EditText player = (EditText)
+            m_curDialog.findViewById( R.id.player_name_edit );
         lp.name = player.getText().toString();
-        CheckBox isRobot = (CheckBox)m_curDialog.findViewById( R.id.robot_check );
+        CheckBox isRobot = (CheckBox)
+            m_curDialog.findViewById( R.id.robot_check );
         lp.isRobot = isRobot.isChecked();
     }
 
     @Override
-    protected void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle savedInstanceState )
     {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.game_config);
-        registerForContextMenu( getListView() );
-
-        mDoneB = (Button)findViewById(R.id.game_config_done);
-        mDoneB.setOnClickListener( this );
-
-        m_addPlayerButton = (Button)findViewById(R.id.add_player);
-        m_addPlayerButton.setOnClickListener( this );
-
-        // Do some setup based on the action being performed.
         Intent intent = getIntent();
         Uri uri = intent.getData();
         m_path = uri.getPath();
@@ -214,6 +212,47 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
         byte[] stream = Utils.savedGame( this, m_path );
         m_gi = new CurGameInfo();
         XwJNI.gi_from_stream( m_gi, stream );
+        int curSel = listAvailableDicts( m_gi.dictName );
+        Utils.logf( "listAvailableDicts done" );
+
+        setContentView(R.layout.game_config);
+        registerForContextMenu( getListView() );
+
+        mDoneB = (Button)findViewById(R.id.game_config_done);
+        mDoneB.setOnClickListener( this );
+
+        m_addPlayerButton = (Button)findViewById(R.id.add_player);
+        m_addPlayerButton.setOnClickListener( this );
+
+        m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
+        ArrayAdapter<String> adapter = 
+            new ArrayAdapter<String>( this,
+                                      android.R.layout.simple_spinner_item,
+                                      m_dicts );
+        int resID = android.R.layout.simple_spinner_dropdown_item;
+        adapter.setDropDownViewResource( resID );
+        m_dictSpinner.setAdapter( adapter );
+        if ( curSel >= 0 ) {
+            m_dictSpinner.setSelection( curSel );
+        } 
+
+        m_dictSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parentView, 
+                                           View selectedItemView, int position, 
+                                           long id) {
+                    if ( position == m_browsePosition ) {
+                        launchDictBrowser();
+                    } else {
+                        m_gi.dictName = m_dicts[position];
+                        Utils.logf( "assigned dictName: " + m_gi.dictName );
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parentView) {
+                }
+            });
 
         setListAdapter( new PlayerListAdapter() );
     } // onCreate
@@ -316,4 +355,32 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
         }
     } // onClick
 
+
+    private int listAvailableDicts( String curDict )
+    {
+        int curSel = -1;
+
+        String[] list = Utils.listDicts( this );
+
+        m_browsePosition = list.length;
+        m_dicts = new String[m_browsePosition+1];
+        m_dicts[m_browsePosition] = getString( R.string.download_dicts );
+        
+        for ( int ii = 0; ii < m_browsePosition; ++ii ) {
+            String dict = list[ii];
+            m_dicts[ii] = dict;
+            if ( dict.equals( curDict ) ) {
+                curSel = ii;
+            }
+        }
+
+        return curSel;
+    }
+
+    private void launchDictBrowser()
+    {
+        Intent intent = new Intent( this, DictActivity.class );
+        intent.setAction( Intent.ACTION_EDIT );
+        startActivity( intent );
+    }
 }

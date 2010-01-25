@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 
 public class BlockingActivity extends Activity {
 
@@ -32,37 +33,41 @@ public class BlockingActivity extends Activity {
                 .setCancelable( false );
 
             if ( 0 != m_butPos ) {
-                ab.setPositiveButton( m_butPos,
-                                      new DialogInterface.OnClickListener() {
-                                          public void onClick( DialogInterface dialog, 
-                                                               int whichButton ) {
-                                              Utils.logf( "Yes clicked" );
-                                              setResult( 1 );
-                                              finish();
-                                          }
-                                      });
+                DialogInterface.OnClickListener lstnr
+                    = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dialog, 
+                                                 int whichButton ) {
+                                Utils.logf( "Yes clicked" );
+                                setResult( 1 );
+                                finish();
+                            }
+                        };
+                ab.setPositiveButton( m_butPos, lstnr );
             }
 
             if ( 0 != m_butNeg ) {
-                ab.setNegativeButton( m_butNeg,
-                                      new DialogInterface.OnClickListener() {
-                                          public void onClick( DialogInterface dialog, 
-                                                               int whichButton ) {
-                                              Utils.logf( "No clicked" );
-                                              setResult( 0 );
-                                              finish();
-                                          }
-                                      });
+                DialogInterface.OnClickListener lstnr =
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int whichButton ) {
+                            Utils.logf( "No clicked" );
+                            setResult( 0 );
+                            finish();
+                        }
+                    };
+                ab.setNegativeButton( m_butNeg, lstnr );
             }
 
             if ( null != m_tiles ) {
-                Utils.logf( "adding m_tiles; len=" + m_tiles.length );
-                ab.setItems( m_tiles, new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dialog, int item ) {
+                DialogInterface.OnClickListener lstnr =
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
                             setResult( RESULT_FIRST_USER + item );
                             finish();
                         }
-                    });
+                    };
+                ab.setItems( m_tiles, lstnr );
             } else if ( null != m_query ) {
                 ab.setMessage( m_query );
             }

@@ -3,6 +3,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 
 public interface DrawCtx {
     static final int CELL_NONE = 0x00;
@@ -27,18 +28,18 @@ public interface DrawCtx {
                      int dfs );
     void measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );
-    void drawRemText( Rect rInner,Rect rOuter, int nTilesLeft, boolean focussed );
+    void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );
     void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi );
 
-    boolean drawCell( Rect rect, String text, Object[] bitmaps, int tile, 
+    boolean drawCell( Rect rect, String text, BitmapDrawable[] bitmaps, int tile, 
                       int owner, int bonus, int hintAtts, int flags );
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
                           int flags );
     boolean vertScrollBoard( Rect /*out*/ rect, int dist, int dfs );
 
     boolean trayBegin ( Rect rect, int owner, int dfs );
-    void drawTile( Rect rect, String text, Object[] bitmaps, int val, int flags );
-    void drawTileMidDrag ( Rect rect, String text, Object[] bitmaps,
+    void drawTile( Rect rect, String text, BitmapDrawable[] bitmaps, int val, int flags );
+    void drawTileMidDrag ( Rect rect, String text, BitmapDrawable[] bitmaps,
                            int val, int owner, int flags );
     void drawTileBack( Rect rect, int flags );
     void drawTrayDivider( Rect rect, int flags );
