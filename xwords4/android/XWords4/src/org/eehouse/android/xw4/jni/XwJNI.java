@@ -26,7 +26,7 @@ public class XwJNI {
     public static native int initJNI();
     public static native void game_makeNewGame( int gamePtr,
                                                 CurGameInfo gi, 
-                                                XW_UtilCtxt util,
+                                                UtilCtxt util,
                                                 DrawCtx draw, int gameID, 
                                                 CommonPrefs cp, 
                                                 TransportProcs procs, 
@@ -35,7 +35,7 @@ public class XwJNI {
                                                       byte[] stream, 
                                                       CurGameInfo gi, 
                                                       byte[] dict, 
-                                                      XW_UtilCtxt util, 
+                                                      UtilCtxt util, 
                                                       DrawCtx draw,
                                                       CommonPrefs cp,
                                                       TransportProcs procs );

@@ -4,7 +4,7 @@ package org.eehouse.android.xw4.jni;
 
 import android.graphics.drawable.BitmapDrawable;
 
-public interface XW_UtilCtxt {
+public interface UtilCtxt {
     static final int BONUS_NONE = 0;
     static final int BONUS_DOUBLE_LETTER = 1;
     static final int BONUS_DOUBLE_WORD = 2;

@@ -31,7 +31,7 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 
 
-public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
+public class BoardActivity extends Activity implements UtilCtxt, Runnable {
 
     private static final int PICK_TILE_REQUEST = 1;
     private static final int QUERY_REQUEST = 2;
@@ -397,76 +397,76 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
     {
         int id = 0;
         switch( stringCode ) {
-        case XW_UtilCtxt.STRD_ROBOT_TRADED:
+        case UtilCtxt.STRD_ROBOT_TRADED:
             id = R.string.strd_robot_traded;
             break;
-        case XW_UtilCtxt.STR_ROBOT_MOVED:
+        case UtilCtxt.STR_ROBOT_MOVED:
             id = R.string.str_robot_moved;
             break;
-        case XW_UtilCtxt.STRS_VALUES_HEADER:
+        case UtilCtxt.STRS_VALUES_HEADER:
             id = R.string.strs_values_header;
             break;
-        case XW_UtilCtxt.STRD_REMAINING_TILES_ADD:
+        case UtilCtxt.STRD_REMAINING_TILES_ADD:
             id = R.string.strd_remaining_tiles_add;
             break;
-        case XW_UtilCtxt.STRD_UNUSED_TILES_SUB:
+        case UtilCtxt.STRD_UNUSED_TILES_SUB:
             id = R.string.strd_unused_tiles_sub;
             break;
-        case XW_UtilCtxt.STR_REMOTE_MOVED:
+        case UtilCtxt.STR_REMOTE_MOVED:
             id = R.string.str_remote_moved;
             break;
-        case XW_UtilCtxt.STRD_TIME_PENALTY_SUB:
+        case UtilCtxt.STRD_TIME_PENALTY_SUB:
             id = R.string.strd_time_penalty_sub;
             break;
-        case XW_UtilCtxt.STR_PASS:
+        case UtilCtxt.STR_PASS:
             id = R.string.str_pass;
             break;
-        case XW_UtilCtxt.STRS_MOVE_ACROSS:
+        case UtilCtxt.STRS_MOVE_ACROSS:
             id = R.string.strs_move_across;
             break;
-        case XW_UtilCtxt.STRS_MOVE_DOWN:
+        case UtilCtxt.STRS_MOVE_DOWN:
             id = R.string.strs_move_down;
             break;
-        case XW_UtilCtxt.STRS_TRAY_AT_START:
+        case UtilCtxt.STRS_TRAY_AT_START:
             id = R.string.strs_tray_at_start;
             break;
-        case XW_UtilCtxt.STRSS_TRADED_FOR:
+        case UtilCtxt.STRSS_TRADED_FOR:
             id = R.string.strss_traded_for;
             break;
-        case XW_UtilCtxt.STR_PHONY_REJECTED:
+        case UtilCtxt.STR_PHONY_REJECTED:
             id = R.string.str_phony_rejected;
             break;
-        case XW_UtilCtxt.STRD_CUMULATIVE_SCORE:
+        case UtilCtxt.STRD_CUMULATIVE_SCORE:
             id = R.string.strd_cumulative_score;
             break;
-        case XW_UtilCtxt.STRS_NEW_TILES:
+        case UtilCtxt.STRS_NEW_TILES:
             id = R.string.strs_new_tiles;
             break;
-        case XW_UtilCtxt.STR_PASSED:
+        case UtilCtxt.STR_PASSED:
             id = R.string.str_passed;
             break;
-        case XW_UtilCtxt.STRSD_SUMMARYSCORED:
+        case UtilCtxt.STRSD_SUMMARYSCORED:
             id = R.string.strsd_summaryscored;
             break;
-        case XW_UtilCtxt.STRD_TRADED:
+        case UtilCtxt.STRD_TRADED:
             id = R.string.strd_traded;
             break;
-        case XW_UtilCtxt.STR_LOSTTURN:
+        case UtilCtxt.STR_LOSTTURN:
             id = R.string.str_lostturn;
             break;
-        case XW_UtilCtxt.STR_COMMIT_CONFIRM:
+        case UtilCtxt.STR_COMMIT_CONFIRM:
             id = R.string.str_commit_confirm;
             break;
-        case XW_UtilCtxt.STR_LOCAL_NAME:
+        case UtilCtxt.STR_LOCAL_NAME:
             id = R.string.str_local_name;
             break;
-        case XW_UtilCtxt.STR_NONLOCAL_NAME:
+        case UtilCtxt.STR_NONLOCAL_NAME:
             id = R.string.str_nonlocal_name;
             break;
-        case XW_UtilCtxt.STR_BONUS_ALL:
+        case UtilCtxt.STR_BONUS_ALL:
             id = R.string.str_bonus_all;
             break;
-        case XW_UtilCtxt.STRD_TURN_SCORE:
+        case UtilCtxt.STRD_TURN_SCORE:
             id = R.string.strd_turn_score;
             break;
         default:
@@ -487,14 +487,14 @@ public class BoardActivity extends Activity implements XW_UtilCtxt, Runnable {
         String actString = XWConstants.ACTION_QUERY;
 
         switch( id ) {
-        case XW_UtilCtxt.QUERY_ROBOT_MOVE:
-        case XW_UtilCtxt.QUERY_ROBOT_TRADE:
+        case UtilCtxt.QUERY_ROBOT_MOVE:
+        case UtilCtxt.QUERY_ROBOT_TRADE:
             actString = XWConstants.ACTION_INFORM;
             break;
-        case XW_UtilCtxt.QUERY_COMMIT_TRADE:
+        case UtilCtxt.QUERY_COMMIT_TRADE:
             query = getString( R.string.query_trade );
             break;
-        case XW_UtilCtxt.QUERY_COMMIT_TURN:
+        case UtilCtxt.QUERY_COMMIT_TURN:
             break;
         }
 
