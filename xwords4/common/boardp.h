@@ -63,6 +63,8 @@ typedef struct _DragState {
     Tile tile;                  /* cache rather than lookup in model */
     DragObjInfo start;
     DragObjInfo cur;
+
+    XP_U16 yyAdd;
 } DragState;
 
 typedef struct _BoardArrow { /* gets flipped along with board */

@@ -755,22 +755,27 @@ positionMiniWRect( BoardCtxt* board, XP_Rect* rect, XP_Bool center )
     forceRectToBoard( board, rect );
 } /*positionMiniWRect */
 
-static void
+static XP_Bool
 timerFiredForPen( BoardCtxt* board ) 
 {
+    XP_Bool draw = XP_FALSE;
     const XP_UCHAR* text = (XP_UCHAR*)NULL;
     XP_UCHAR buf[80];
 
     if ( board->penDownObject == OBJ_BOARD ) {
         if ( !dragDropInProgress( board ) || !dragDropHasMoved( board ) ) {
             XP_U16 col, row;
-            XWBonusType bonus;
+            coordToCell( board, board->penDownX, board->penDownY, &col, &row );
 
-            coordToCell( board, board->penDownX, board->penDownY, &col, 
-                         &row );
-            bonus = util_getSquareBonus(board->util, board->model, col, row);
-            if ( bonus != BONUS_NONE ) {
-                text = draw_getMiniWText( board->draw, (XWMiniTextType)bonus );
+            if ( dragDropIsBeingDragged( board, col, row, NULL ) ) {
+                draw = dragDropSetAdd( board );
+            } else {
+                XWBonusType bonus;
+                bonus = util_getSquareBonus( board->util, board->model, 
+                                             col, row );
+                if ( bonus != BONUS_NONE ) {
+                    text = draw_getMiniWText( board->draw, (XWMiniTextType)bonus );
+                }
             }
             board->penTimerFired = XP_TRUE;
         }
@@ -813,6 +818,7 @@ timerFiredForPen( BoardCtxt* board )
         draw_drawMiniWindow(board->draw, text, &stuff->rect, 
                             &stuff->closure);
     }
+    return draw;
 } /* timerFiredForPen */
 
 static void
@@ -848,15 +854,27 @@ timerFiredForTimer( BoardCtxt* board )
 static XP_Bool
 p_board_timerFired( void* closure, XWTimerReason why )
 {
+    XP_Bool draw = XP_FALSE;
     BoardCtxt* board = (BoardCtxt*)closure;
     if ( why == TIMER_PENDOWN ) {
-        timerFiredForPen( board );
+        draw = timerFiredForPen( board );
     } else {
         XP_ASSERT( why == TIMER_TIMERTICK );
         timerFiredForTimer( board );
     }
-    return XP_FALSE;
+    return draw;
 } /* board_timerFired */
+
+static XP_Bool
+p_tray_timerFired( void* closure, XWTimerReason why )
+{
+    XP_Bool draw = XP_FALSE;
+    BoardCtxt* board = (BoardCtxt*)closure;
+    if ( why == TIMER_PENDOWN ) {
+        draw = dragDropSetAdd( board );
+    }
+    return draw;
+}
 
 void
 board_pushTimerSave( BoardCtxt* board )
@@ -1661,6 +1679,7 @@ pointOnSomething( BoardCtxt* board, XP_U16 xx, XP_U16 yy, BoardObjectType* wp )
     } else if ( rectContainsPt( &board->scoreBdBounds, xx, yy ) ) {
         *wp = OBJ_SCORE;
     } else {
+        *wp = OBJ_NONE;
         result = XP_FALSE;
     }
 
@@ -1894,7 +1913,11 @@ handleLikeDown( BoardCtxt* board, BoardObjectType onWhich, XP_U16 x, XP_U16 y )
     case OBJ_TRAY:
       if ( (board->trayVisState == TRAY_REVEALED)
            && !board->selInfo->tradeInProgress ) {
-            result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
+
+          util_setTimer( board->util, TIMER_PENDOWN, 0, 
+                         p_tray_timerFired, board );
+
+          result = dragDropStart( board, OBJ_TRAY, x, y ) || result;
         }
         break;
 

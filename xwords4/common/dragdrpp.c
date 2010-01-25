@@ -191,10 +191,9 @@ dragDropStart( BoardCtxt* board, BoardObjectType obj, XP_U16 x, XP_U16 y )
 XP_Bool
 dragDropContinue( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
 {
-    BoardObjectType ignore;
     XP_ASSERT( dragDropInProgress(board) );
 
-    return dragDropContinueImpl( board, xx, yy, &ignore );
+    return dragDropContinueImpl( board, xx, yy, NULL );
 }
 
 XP_Bool
@@ -285,6 +284,23 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
 } /* dragDropEnd */
 
 XP_Bool
+dragDropSetAdd( BoardCtxt* board )
+{
+    DragState* ds = &board->dragState;
+    XP_Bool draw;
+    draw = dragDropInProgress(board) && !dragDropHasMoved( board );
+    if ( draw ) {
+        XP_U16 xx = board->penDownX;
+        XP_U16 yy = board->penDownY;
+        if ( draw ) {
+            ds->yyAdd = (board->trayBounds.height * 2) / 3;
+            draw = dragDropContinueImpl( board, xx, yy, NULL );
+        }
+    }
+    return draw;
+}
+
+XP_Bool
 dragDropGetBoardTile( const BoardCtxt* board, XP_U16* col, XP_U16* row )
 {
     const DragState* ds = &board->dragState;
@@ -302,7 +318,7 @@ dragDropIsBeingDragged( const BoardCtxt* board, XP_U16 col, XP_U16 row,
 {
     const DragState* ds = &board->dragState;
     XP_Bool result = ds->dtype == DT_TILE && ds->cur.obj == OBJ_BOARD;
-    if ( result ) {
+    if ( result && !!isOrigin ) {
         const DragState* ds = &board->dragState;
         if ( (ds->cur.obj == OBJ_BOARD) && (ds->cur.u.board.col == col)
              && (ds->cur.u.board.row == row) ) {
@@ -406,10 +422,12 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
     DragObjInfo newInfo;
     DragState* ds = &board->dragState;
 
-    if ( !pointOnSomething( board, xx, yy, &newInfo.obj ) ) {
-        newInfo.obj = OBJ_NONE;
+    yy -= ds->yyAdd;
+
+    (void)pointOnSomething( board, xx, yy, &newInfo.obj );
+    if ( !!onWhichP ) {
+        *onWhichP = newInfo.obj;
     }
-    *onWhichP = newInfo.obj;
 
     if ( newInfo.obj == OBJ_BOARD ) {
         (void)coordToCell( board, xx, yy, &newInfo.u.board.col, 
@@ -487,8 +505,8 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
             if ( valHintMiniWindowActive( board ) ) {
                 hideMiniWindow( board, XP_TRUE, MINIWINDOW_VALHINT );
             }
+            ds->didMove = XP_TRUE;
         }
-        ds->didMove = XP_TRUE;
     }
 
     return moving;
