@@ -22,11 +22,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4"
           >
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                >
 
-    <activity android:name="GamesList" android:label="@string/title_games_list">
+    <activity android:name="GamesList" 
+              android:label="@string/title_games_list">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
@@ -58,10 +62,23 @@
       </intent-filter>
     </activity>
 
+    <activity android:name="DictActivity"
+              android:theme="@android:style/Theme.Light"
+              android:label="@string/title_game"
+              android:screenOrientation="sensor"
+              >
+      <!-- This filter says that we can view or edit the data of
+           a single note -->
+      <intent-filter android:label="@string/resolve_edit">
+        <action android:name="android.intent.action.EDIT" />
+      </intent-filter>
+    </activity>
+
     <activity android:name="BoardActivity"
               android:theme="@android:style/Theme.Light"
               android:label="@string/title_game"
               android:screenOrientation="sensor"
+              android:configChanges="keyboardHidden|orientation"
               >
       <!-- This filter says that we can edit the data of a game, i.e. play -->
       <intent-filter android:label="@string/play">
@@ -83,6 +100,7 @@
     <activity android:name="BlockingActivity"
               android:theme="@android:style/Theme.Translucent"
               android:screenOrientation="sensor"
+              android:configChanges="keyboardHidden|orientation"
               >
 
       <intent-filter>
