@@ -132,8 +132,6 @@ public class JNIThread extends Thread {
                                 trayHt,      // height
                                 4 );
 
-        XwJNI.board_setShowColors( m_jniGamePtr, true ); // get from prefs!
-
         XwJNI.board_invalAll( m_jniGamePtr );
     }
 

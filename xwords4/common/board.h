@@ -93,8 +93,6 @@ XP_Bool board_get_flipped( const BoardCtxt* board );
 XP_Bool board_flip( BoardCtxt* board );
 XP_Bool board_get_showValues( const BoardCtxt* board );
 XP_Bool board_toggle_showValues( BoardCtxt* board );
-XP_Bool board_getShowColors( BoardCtxt* board );
-XP_Bool board_setShowColors( BoardCtxt* board, XP_Bool showColors );
 XP_Bool board_replaceTiles( BoardCtxt* board );
 
 XP_Bool board_requestHint( BoardCtxt* board, 

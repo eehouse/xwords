@@ -133,6 +133,7 @@ typedef struct CommonPrefs {
 #ifdef XWFEATURE_SLOW_ROBOT
     XP_U16          robotThinkMin, robotThinkMax;
 #endif
+    XP_Bool         showColors; /* applies to all games */
 } CommonPrefs;
 
 #ifdef XWFEATURE_BLUETOOTH

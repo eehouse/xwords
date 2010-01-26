@@ -415,15 +415,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScale
     XWJNI_END();
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1setShowColors
-( JNIEnv *env, jclass C, jint gamePtr, jboolean on )
-{
-    XWJNI_START();
-    board_setShowColors( state->game.board, on );
-    XWJNI_END();
-}
-
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScoreboardLoc
 ( JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, 

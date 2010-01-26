@@ -153,7 +153,6 @@ loadStateFromCurPrefs( CEAppGlobals* XP_UNUSED_STANDALONE(globals),
 #ifdef XWFEATURE_SEARCHLIMIT
     prefsPrefs->gp.allowHintRect = gi->allowHintRect;
 #endif
-    prefsPrefs->showColors = appPrefs->showColors;
 
     XP_MEMCPY( &prefsPrefs->cp, &appPrefs->cp, sizeof(prefsPrefs->cp) );
     XP_MEMCPY( &prefsPrefs->colors, &appPrefs->colors,
@@ -184,7 +183,6 @@ loadCurPrefsFromState( CEAppGlobals* XP_UNUSED_STANDALONE(globals),
 #ifdef XWFEATURE_SEARCHLIMIT
     gi->allowHintRect = prefsPrefs->gp.allowHintRect;
 #endif
-    appPrefs->showColors = prefsPrefs->showColors;
 
     XP_MEMCPY( &appPrefs->cp, &prefsPrefs->cp, sizeof(appPrefs->cp) );
     XP_MEMCPY( &appPrefs->colors, &prefsPrefs->colors,

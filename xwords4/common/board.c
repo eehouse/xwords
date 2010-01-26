@@ -90,6 +90,8 @@ static void setArrowFor( BoardCtxt* board, XP_U16 player, XP_U16 col,
 static XP_Bool setArrowVisible( BoardCtxt* board, XP_Bool visible );
 
 static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
+static XP_Bool invalCellsWithTiles( BoardCtxt* board );
+
 static void setTimerIf( BoardCtxt* board );
 static XP_Bool p_board_timerFired( void* closure, XWTimerReason why );
 
@@ -388,19 +390,26 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
 {
     XP_Bool showArrowChanged;
     XP_Bool hideValChanged;
+    XP_Bool showColorsChanged;
 
     showArrowChanged = cp->showBoardArrow == board->disableArrow;
     hideValChanged = cp->hideTileValues != board->hideValsInTray;
+    showColorsChanged = board->showColors != cp->showColors;
 
     board->disableArrow = !cp->showBoardArrow;
     board->hideValsInTray = cp->hideTileValues;
     board->skipCommitConfirm = cp->skipCommitConfirm;
+    board->showColors = cp->showColors;
 
     if ( showArrowChanged ) {
         showArrowChanged = setArrowVisible( board, XP_FALSE );
     }
     if ( hideValChanged ) {
         board_invalTrayTiles( board, ALLTILES );
+    }
+    if ( showColorsChanged ) {
+        board->scoreBoardInvalid = XP_TRUE;
+        showColorsChanged = invalCellsWithTiles( board );
     }
 
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -416,7 +425,7 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
     }
 #endif
 
-    return showArrowChanged || hideValChanged;
+    return showArrowChanged || hideValChanged || showColorsChanged;
 } /* board_prefsChanged */
 
 XP_Bool
@@ -1398,14 +1407,6 @@ board_toggle_showValues( BoardCtxt* board )
     }
     return invalCellsWithTiles( board ) || changed;
 } /* board_toggle_showValues */
-
-XP_Bool
-board_setShowColors( BoardCtxt* board, XP_Bool showColors )
-{
-    board->showColors = showColors;
-    board->scoreBoardInvalid = XP_TRUE;
-    return invalCellsWithTiles( board );
-} /* board_setShowColors */
 
 XP_Bool
 board_replaceTiles( BoardCtxt* board )

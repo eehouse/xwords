@@ -80,7 +80,8 @@ enum { CE_BONUS0_COLOR,
        CE_NUM_COLORS		/* last */
 };
 
-#define CUR_CE_PREFS_FLAGS 0x0003 /* adds CE_FOCUS_COLOR */
+// #define CUR_CE_PREFS_FLAGS 0x0003 /* adds CE_FOCUS_COLOR */
+#define CUR_CE_PREFS_FLAGS 0x0004 /* moves showColors into CommonPrefs */
 
 /* This is what CEAppPrefs looked like for CUR_CE_PREFS_FLAGS == 0x0002 */
 typedef struct CEAppPrefs0002 {
@@ -89,6 +90,23 @@ typedef struct CEAppPrefs0002 {
     COLORREF colors[12]; /* CE_FOCUS_COLOR wasn't there */
     XP_Bool showColors;
 } CEAppPrefs0002;
+
+/* This is what CEAppPrefs looked like for CUR_CE_PREFS_FLAGS == 0x0003 */
+typedef struct _CEAppPrefs0003 {
+    XP_U16 versionFlags;
+    struct {
+        XP_Bool         showBoardArrow;  /* applies to all games */
+        XP_Bool         showRobotScores; /* applies to all games */
+        XP_Bool         hideTileValues; 
+        XP_Bool         skipCommitConfirm; /* applies to all games */
+#ifdef XWFEATURE_SLOW_ROBOT
+        XP_U16          robotThinkMin, robotThinkMax;
+#endif
+    } cp;
+    COLORREF colors[13];
+    XP_Bool showColors;
+    XP_Bool fullScreen;
+} CEAppPrefs0003;
 
 typedef enum {
     SAB_NONE = 0
@@ -105,7 +123,6 @@ typedef struct CEAppPrefs {
     XP_U16 versionFlags;
     CommonPrefs cp;
     COLORREF colors[CE_NUM_COLORS];
-    XP_Bool showColors;
     XP_Bool fullScreen;
 } CEAppPrefs;
 

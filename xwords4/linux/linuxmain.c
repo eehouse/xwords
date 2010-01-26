@@ -778,6 +778,7 @@ main( int argc, char** argv )
     mainParams.allowHintRect = XP_TRUE;
 #endif
     mainParams.skipCommitConfirm = XP_TRUE;
+    mainParams.showColors = XP_TRUE;
     
     /*     serverName = mainParams.info.clientInfo.serverName = "localhost"; */
 

@@ -812,7 +812,6 @@ cePositionBoard( CEAppGlobals* globals )
     board_setScoreboardLoc( globals->game.board, bparms.adjLeft, bparms.adjTop,
                             bparms.scoreWidth, 
                             bparms.scoreHeight, bparms.horiz );
-    board_setShowColors( globals->game.board, globals->appPrefs.showColors );
     board_setYOffset( globals->game.board, 0 );
 
     board_prefsChanged( globals->game.board, &globals->appPrefs.cp );
@@ -1042,23 +1041,17 @@ canUpdatePrefs( CEAppGlobals* globals, HANDLE fileH, XP_U16 curVersion,
                 CEAppPrefs* prefs )
 {
     XP_Bool success = XP_FALSE;
-    LOG_FUNC();
-    if ( (curVersion == 0x0002) && (CUR_CE_PREFS_FLAGS == 0x0003) ) {
-        CEAppPrefs0002 oldPrefs;
+    if ( curVersion == 0x0003 && CUR_CE_PREFS_FLAGS == 0x0004 ) {
+        /* common prefs has gotten bigger, pushing colors down. */
+        CEAppPrefs0003 oldPrefs;
         XP_U32 nRead;
         if ( ReadFile( fileH, &oldPrefs, sizeof(oldPrefs), &nRead, NULL ) ) {
             ceInitPrefs( globals, prefs );
             
-            XP_MEMCPY( &prefs->cp, &oldPrefs.cp, sizeof(prefs->cp) );
-            prefs->showColors = oldPrefs.showColors;
+            XP_MEMCPY( &prefs->cp, &oldPrefs.cp, sizeof(oldPrefs.cp) );
+            prefs->cp.showColors = oldPrefs.showColors;
+            prefs->fullScreen = oldPrefs.fullScreen;
 
-            XP_MEMCPY( &prefs->colors[0], &oldPrefs.colors[0], 
-                       CE_FOCUS_COLOR*sizeof(prefs->colors[0]));
-            XP_ASSERT( CE_PLAYER0_COLOR - 1 == CE_FOCUS_COLOR );
-            XP_MEMCPY( &prefs->colors[CE_PLAYER0_COLOR], 
-                       &oldPrefs.colors[CE_FOCUS_COLOR],
-                       (CE_NUM_COLORS-CE_PLAYER0_COLOR) 
-                       * sizeof(prefs->colors[0]));
             success = XP_TRUE;
         } else {
             XP_LOGF( "%s: ReadFile bad", __func__ );
@@ -1269,11 +1262,11 @@ static void
 ceInitPrefs( CEAppGlobals* globals, CEAppPrefs* prefs )
 {
     prefs->versionFlags = CUR_CE_PREFS_FLAGS;
-    prefs->showColors = XP_TRUE;
     prefs->fullScreen = XP_FALSE;
 
     prefs->cp.showBoardArrow = XP_TRUE;
     prefs->cp.showRobotScores = XP_FALSE;
+    prefs->cp.showColors = XP_TRUE;
 
     colorsFromRsrc( globals, prefs );
 } /* ceInitPrefs */

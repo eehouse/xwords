@@ -51,7 +51,6 @@ public class XwJNI {
     public static native void board_setPos( int gamePtr, int left, int top,
                                             boolean lefty );
     public static native void board_setScale( int gamePtr, int hscale, int vscale );
-    public static native boolean board_setShowColors( int gamePtr, boolean on );
     public static native void board_setScoreboardLoc( int gamePtr, int left, 
                                                       int top, int width, 
                                                       int height,

@@ -543,7 +543,6 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     board_setPos( globals->cGlobals.game.board, GTK_BOARD_LEFT, boardTop,
                   XP_FALSE );
     board_setScale( globals->cGlobals.game.board, hscale, vscale );
-    board_setShowColors( globals->cGlobals.game.board, XP_TRUE );
     globals->gridOn = XP_TRUE;
 
     if ( !!globals->cGlobals.game.comms ) {
@@ -2014,6 +2013,7 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     globals.cp.showBoardArrow = XP_TRUE;
     globals.cp.hideTileValues = params->hideValues;
     globals.cp.skipCommitConfirm = params->skipCommitConfirm;
+    globals.cp.showColors = params->showColors;
     globals.cp.showRobotScores = params->showRobotScores;
 #ifdef XWFEATURE_SLOW_ROBOT
     globals.cp.robotThinkMin = params->robotThinkMin;
