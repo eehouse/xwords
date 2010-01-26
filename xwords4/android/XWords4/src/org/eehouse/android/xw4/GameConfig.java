@@ -19,7 +19,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -62,6 +61,7 @@ import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.webkit.WebView;
 import java.io.File;
+import android.widget.LinearLayout;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -71,73 +71,21 @@ import org.eehouse.android.xw4.jni.*;
  * either to simply view a note {@link Intent#ACTION_VIEW}, view and edit a note
  * {@link Intent#ACTION_EDIT}, or create a new note {@link Intent#ACTION_INSERT}.  
  */
-public class GameConfig extends ListActivity implements View.OnClickListener {
+public class GameConfig extends Activity implements View.OnClickListener {
 
     private static final int PLAYER_EDIT = 1;
 
-    private Button mDoneB;
     private Button m_addPlayerButton;
     private String m_path;
     private CurGameInfo m_gi;
     private int m_whichPlayer;
     private Dialog m_curDialog;
     private Spinner m_dictSpinner;
+    private Spinner m_roleSpinner;
+    private Spinner m_phoniesSpinner;
     private String[] m_dicts;
     private int m_browsePosition;
-
-    private class PlayerListAdapter implements ListAdapter {
-        public boolean areAllItemsEnabled() {
-            return true;
-        }
-
-        public boolean isEnabled( int position ) {
-            return position < m_gi.nPlayers;
-        }
-    
-        public int getCount() {
-            return m_gi.nPlayers;
-        }
-    
-        public Object getItem( int position ) {
-            TextView view = new TextView( GameConfig.this );
-            LocalPlayer lp = m_gi.players[position];
-            StringBuffer sb = new StringBuffer()
-                .append( lp.name )
-                .append( lp.isRobot? " (ROBOT)":" (HUMAN)")
-                .append( lp.isLocal? " (LOCAL)":" (REMOTE)" )
-                ;
-
-            view.setText( sb.toString() );
-            return view;
-        }
-
-        public long getItemId( int position ) {
-            return position;
-        }
-
-        public int getItemViewType( int position ) {
-            return 0;
-        }
-
-        public View getView( int position, View convertView, ViewGroup parent ) {
-            return (View)getItem( position );
-        }
-
-        public int getViewTypeCount() {
-            return 1;
-        }
-
-        public boolean hasStableIds() {
-            return true;
-        }
-
-        public boolean isEmpty() {
-            return false;
-        }
-
-        public void registerDataSetObserver(DataSetObserver observer) {}
-        public void unregisterDataSetObserver(DataSetObserver observer) {}
-    } // class PlayerListAdapter 
+    private LinearLayout m_playerLayout;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -153,7 +101,7 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
                     public void onClick( DialogInterface dialog, 
                                          int whichButton ) {
                         getPlayerSettings();
-                        onContentChanged();
+                        loadPlayers();
                     }
                 };
 
@@ -181,9 +129,8 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
         EditText player = (EditText)
             m_curDialog.findViewById( R.id.player_name_edit );
         player.setText( lp.name );
-        CheckBox isRobot = (CheckBox)
-            m_curDialog.findViewById( R.id.robot_check );
-        isRobot.setChecked( lp.isRobot );
+
+        Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot );
     }
 
     private void getPlayerSettings()
@@ -192,9 +139,8 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
         EditText player = (EditText)
             m_curDialog.findViewById( R.id.player_name_edit );
         lp.name = player.getText().toString();
-        CheckBox isRobot = (CheckBox)
-            m_curDialog.findViewById( R.id.robot_check );
-        lp.isRobot = isRobot.isChecked();
+
+        lp.isRobot = Utils.getChecked( m_curDialog, R.id.robot_check );
     }
 
     @Override
@@ -213,16 +159,14 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
         m_gi = new CurGameInfo();
         XwJNI.gi_from_stream( m_gi, stream );
         int curSel = listAvailableDicts( m_gi.dictName );
-        Utils.logf( "listAvailableDicts done" );
 
         setContentView(R.layout.game_config);
-        registerForContextMenu( getListView() );
-
-        mDoneB = (Button)findViewById(R.id.game_config_done);
-        mDoneB.setOnClickListener( this );
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
+
+        m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
+        loadPlayers();
 
         m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
         ArrayAdapter<String> adapter = 
@@ -254,7 +198,36 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
                 }
             });
 
-        setListAdapter( new PlayerListAdapter() );
+        m_roleSpinner = (Spinner)findViewById( R.id.role_spinner );
+        adapter = 
+            new ArrayAdapter<String>( this,
+                                      android.R.layout.simple_spinner_item,
+                                      new String[] {
+                                          getString(R.string.role_standalone),
+                                          getString(R.string.role_host),
+                                          getString(R.string.role_guest),
+                                      } );
+        adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
+        m_roleSpinner.setAdapter( adapter );
+        m_roleSpinner.setSelection( m_gi.serverRole.ordinal() );
+
+        m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
+        adapter = 
+            new ArrayAdapter<String>( this,
+                                      android.R.layout.simple_spinner_item,
+                                      new String[] {
+                                          getString(R.string.phonies_ignore),
+                                          getString(R.string.phonies_warn),
+                                          getString(R.string.phonies_disallow),
+                                      } );
+        adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
+        m_phoniesSpinner.setAdapter( adapter );
+        m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
+
+        Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
+        Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
+        Utils.setChecked( this, R.id.color_tiles, m_gi.showColors );
+        Utils.setChecked( this, R.id.smart_robot, 0 < m_gi.robotSmartness );
     } // onCreate
 
     @Override
@@ -262,6 +235,7 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
                                      ContextMenuInfo menuInfo ) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.players_list_item_menu, menu );
+        m_whichPlayer = ((PlayerView)view).getPosition();
     }
 
     @Override
@@ -270,42 +244,28 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
         boolean handled = true;
         boolean changed = false;
 
-        AdapterView.AdapterContextMenuInfo info;
-        try {
-            info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        } catch (ClassCastException e) {
-            Utils.logf( "bad menuInfo:" + e.toString() );
-            return false;
-        }
-
         switch (item.getItemId()) {
             case R.id.player_list_item_edit:
                 showDialog( PLAYER_EDIT );
                 break;
             case R.id.player_list_item_up:
-                changed = m_gi.moveUp( info.position );
+                changed = m_gi.moveUp( m_whichPlayer );
                 break;
             case R.id.player_list_item_down:
-                changed = m_gi.moveDown( info.position );
+                changed = m_gi.moveDown( m_whichPlayer );
                 break;
             case R.id.player_list_item_delete:
-                changed = m_gi.delete( info.position );
+                changed = m_gi.delete( m_whichPlayer );
                 break;
         default:
             handled = false;
         }
 
         if ( changed ) {
-            onContentChanged();
+            loadPlayers();
         }
 
         return handled;
-    }
-
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        m_whichPlayer = position;
-        showDialog( PLAYER_EDIT );
     }
 
     @Override
@@ -326,6 +286,23 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
             m_gi.juggle();
             onContentChanged();
             break;
+        case R.id.game_config_done:
+            m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
+            m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
+            m_gi.showColors = Utils.getChecked( this, R.id.color_tiles );
+            m_gi.robotSmartness
+                = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;
+
+            byte[] bytes = XwJNI.gi_to_stream( m_gi );
+            if ( null == bytes ) {
+                Utils.logf( "gi_to_stream failed" );
+            } else {
+                Utils.logf( "got " + bytes.length + " bytes." );
+                Utils.saveGame( this, bytes, m_path );
+            }
+
+            finish();
+            break;
         default:
             handled = false;
         }
@@ -334,19 +311,11 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
 
     public void onClick( View view ) 
     {
-        if ( mDoneB == view ) {
-            byte[] bytes = XwJNI.gi_to_stream( m_gi );
-            if ( null == bytes ) {
-                Utils.logf( "gi_to_stream failed" );
-            } else {
-                Utils.logf( "got " + bytes.length + " bytes." );
-                Utils.saveGame( this, bytes, m_path );
-            }
-            finish();
-        } else if ( m_addPlayerButton == view ) {
+        if ( m_addPlayerButton == view ) {
             int curIndex = m_gi.nPlayers;
             if ( curIndex < CurGameInfo.MAX_NUM_PLAYERS ) {
-                m_gi.addPlayer();
+                m_gi.addPlayer(); // ups nPlayers
+                loadPlayers();
                 m_whichPlayer = curIndex;
                 showDialog( PLAYER_EDIT );
             }
@@ -355,6 +324,36 @@ public class GameConfig extends ListActivity implements View.OnClickListener {
         }
     } // onClick
 
+    private void loadPlayers()
+    {
+        m_playerLayout.removeAllViews();
+
+        for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
+            LayoutInflater factory = LayoutInflater.from(this);
+            final PlayerView view
+                = (PlayerView)factory.inflate( R.layout.player_view, null );
+            view.setPosition( ii );
+            // PlayerView view = new PlayerView( this, ii );
+            LocalPlayer lp = m_gi.players[ii];
+            view.setText( new StringBuffer()
+                          .append( "\n" )
+                          .append( lp.name )
+                          .append( lp.isRobot? " (ROBOT)":" (HUMAN)")
+                          .append( lp.isLocal? " (LOCAL)":" (REMOTE)" )
+                          .toString() ); 
+            registerForContextMenu( view );
+            view.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
+                        m_whichPlayer = ((PlayerView)view).getPosition();
+                        showDialog( PLAYER_EDIT );
+                    }
+                } );
+            m_playerLayout.addView( view );
+            Utils.logf( "view.isFocusableInTouchMode()=>" + 
+                        (view.isFocusableInTouchMode()?"true":"false" ) );
+        }
+    }
 
     private int listAvailableDicts( String curDict )
     {
