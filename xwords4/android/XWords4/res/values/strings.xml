@@ -146,14 +146,34 @@
     <string name="players_label">Players</string>
     <string name="button_add_player">Add player</string>
 
-    <string name="game_config_juggle">Juggle</string>
+    <string name="game_config_juggle">Juggle players</string>
 
     <string name="list_item_up">Up one</string>
     <string name="list_item_down">Down one</string>
 
     <string name="dict_label">Dictionary</string>
+    <string name="role_label">Role</string>
+    <string name="phonies_label">Phonies</string>
+
     <string name="download_dicts">Download more...</string>
 
     <string name="dict_url">http://eehouse.org/and_dicts</string>
 
+    <string name="hints_allowed">Allow hints</string>
+    <string name="use_timer">Enable timer</string>
+    <string name="color_tiles">Color tiles</string>
+    <string name="smart_robot">Smart robot</string>
+    <string name="show_arrow">Show board arrow</string>
+    <string name="explain_robot">Explain robot moves</string>
+    <string name="skip_confirm_turn">Skip confirming turn</string>
+    <string name="hide_values">Hide values</string>
+
+    <string name="role_standalone">Standalone</string>
+    <string name="role_host">Host</string>
+    <string name="role_guest">Guest</string>
+
+    <string name="phonies_ignore">Ignore</string>
+    <string name="phonies_warn">Warn</string>
+    <string name="phonies_disallow">Disallow</string>
+    <string name="gamel_menu_prefs">Preferences</string>
 </resources>

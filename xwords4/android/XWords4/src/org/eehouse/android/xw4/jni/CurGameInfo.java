@@ -16,7 +16,6 @@ public class CurGameInfo {
     public String dictName;
     public LocalPlayer[] players;
     public int gameID;
-    public int gameSeconds; /* for timer */
     public int nPlayers;
     public int boardSize;
     public DeviceRole serverRole;
@@ -25,6 +24,7 @@ public class CurGameInfo {
     public boolean  timerEnabled;
     public boolean  allowPickTiles;
     public boolean  allowHintRect;
+    public boolean  showColors;
     public int robotSmartness;
     public XWPhoniesChoice phoniesAction;
     public boolean confirmBTConnect;   /* only used for BT */
@@ -36,6 +36,12 @@ public class CurGameInfo {
         serverRole = DeviceRole.SERVER_STANDALONE;
         dictName = BUILTIN_DICT;
         hintsNotAllowed = false;
+        phoniesAction = XWPhoniesChoice.PHONIES_IGNORE;
+        timerEnabled = false;
+        allowPickTiles = false;
+        allowHintRect = false;
+        showColors = true;
+        robotSmartness = 1;
 
         // Always create MAX_NUM_PLAYERS so jni code doesn't ever have
         // to cons up a LocalPlayer instance.
@@ -52,6 +58,12 @@ public class CurGameInfo {
         serverRole = src.serverRole;
         dictName = src.dictName;
         hintsNotAllowed = src.hintsNotAllowed;
+        phoniesAction = src.phoniesAction;
+        timerEnabled = src.timerEnabled;
+        allowPickTiles = src.allowPickTiles;
+        allowHintRect = src.allowHintRect;
+        showColors = src.showColors;
+        robotSmartness = src.robotSmartness;
         
         int ii;
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {

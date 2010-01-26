@@ -40,7 +40,6 @@ public class BoardActivity extends Activity implements UtilCtxt, Runnable {
     private BoardView m_view;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
-    private CommonPrefs m_prefs;
     private Handler m_handler;
     private TimerRunnable[] m_timers;
     private String m_path;
@@ -114,7 +113,6 @@ public class BoardActivity extends Activity implements UtilCtxt, Runnable {
         m_handler = new Handler();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
-        m_prefs = new CommonPrefs();
         m_gi = new CurGameInfo();
 
         m_view = (BoardView)findViewById( R.id.board_view );
@@ -140,10 +138,10 @@ public class BoardActivity extends Activity implements UtilCtxt, Runnable {
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                               m_gi, dictBytes, this,
-                                              m_view, m_prefs,
+                                              m_view, Utils.getCP(),
                                               null ) ) {
                 XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
-                                        m_prefs, null, dictBytes );
+                                        Utils.getCP(), null, dictBytes );
             }
 
             m_jniThread = new 

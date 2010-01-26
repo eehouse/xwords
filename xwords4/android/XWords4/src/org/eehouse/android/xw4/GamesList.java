@@ -177,10 +177,20 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             setListAdapter( m_adapter );
             handled = true;
             break;
+
+        case R.id.gamel_menu_prefs:
+            Intent intent = new Intent( this, PrefsActivity.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            startActivity( intent );
+            break;
+
         case R.id.gamel_menu_view_hidden:
             Utils.notImpl( this );
             break;
+        default:
+            handled = false;
         }
+
         return handled;
     }
 
@@ -208,7 +218,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         Uri uri = Uri.fromFile( new File(path) );
         
         Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                     GamesList.this, GameConfig.class );
+                                    this, GameConfig.class );
         startActivity( intent );
     }
 

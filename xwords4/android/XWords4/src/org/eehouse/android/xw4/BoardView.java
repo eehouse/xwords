@@ -275,6 +275,9 @@ public class BoardView extends View implements DrawCtx,
             backColor = BLACK;
         } else {
             backColor = TILE_BACK; 
+            if ( owner < 0 ) {
+                owner = 0;
+            }
             foreColor = m_playerColors[owner];
         }
 

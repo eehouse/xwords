@@ -14,9 +14,15 @@ import java.util.ArrayList;
 import android.content.res.AssetManager;
 import android.os.Environment;
 import java.io.InputStream;
+import android.widget.CheckBox;
+import android.app.Activity;
+import android.app.Dialog;
+
+import org.eehouse.android.xw4.jni.*;
 
 public class Utils {
     static final String TAG = "EJAVA";
+    private static CommonPrefs m_cp;
 
     private Utils() {}
 
@@ -174,6 +180,47 @@ public class Utils {
         
 
         return bytes;
+    }
+
+    public static void setChecked( Activity activity, int id, boolean value )
+    {
+        CheckBox cbx = (CheckBox)activity.findViewById( id );
+        cbx.setChecked( value );
+    }
+
+    public static void setChecked( Dialog dialog, int id, boolean value )
+    {
+        CheckBox cbx = (CheckBox)dialog.findViewById( id );
+        cbx.setChecked( value );
+    }
+
+    public static boolean getChecked( Activity activity, int id )
+    {
+        CheckBox cbx = (CheckBox)activity.findViewById( id );
+        return cbx.isChecked();
+    }
+
+    public static boolean getChecked( Dialog dialog, int id )
+    {
+        CheckBox cbx = (CheckBox)dialog.findViewById( id );
+        return cbx.isChecked();
+    }
+
+    public static CommonPrefs getCP()
+    {
+        if ( null == m_cp ) {
+            m_cp = new CommonPrefs();
+        }
+        return m_cp;
+    }
+
+    public static void setCP( CommonPrefs cp )
+    {
+        if ( null == m_cp ) {
+            m_cp = new CommonPrefs( cp );
+        } else {
+            m_cp.copyFrom( cp );
+        }
     }
 
 }
