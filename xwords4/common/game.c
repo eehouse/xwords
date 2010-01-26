@@ -190,7 +190,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                 success = XP_TRUE;
                 break;
             } else if ( stream_getSize(stream) == 0 ) {
-                XP_LOGF( "%s: gi was all we got; failing." );
+                XP_LOGF( "%s: gi was all we got; failing.", __func__ );
                 break;
             }
 
