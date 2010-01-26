@@ -62,13 +62,22 @@
       </intent-filter>
     </activity>
 
+    <activity android:name="PrefsActivity"
+              android:theme="@android:style/Theme.Light"
+              android:label="@string/title_game"
+              android:screenOrientation="sensor"
+              >
+      <!-- Do I need an intent at all here? -->
+      <intent-filter android:label="@string/resolve_edit">
+        <action android:name="android.intent.action.EDIT" />
+      </intent-filter>
+    </activity>
+
     <activity android:name="DictActivity"
               android:theme="@android:style/Theme.Light"
               android:label="@string/title_game"
               android:screenOrientation="sensor"
               >
-      <!-- This filter says that we can view or edit the data of
-           a single note -->
       <intent-filter android:label="@string/resolve_edit">
         <action android:name="android.intent.action.EDIT" />
       </intent-filter>
