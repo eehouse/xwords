@@ -106,15 +106,13 @@ getNthPoolTile( PoolContext* pool, short index )
 #endif
     } else {
         XP_S16 nextCount = index;
-        Tile curLetter = 0;
-        for ( ; ; ) {
+        Tile curLetter;
+        for ( curLetter = 0; ; ++curLetter ) {
             nextCount -= pool->lettersLeft[(short)curLetter];
             if ( nextCount < 0 ) {
                 XP_ASSERT( pool->lettersLeft[(short)curLetter] > 0 );
                 result = curLetter;
                 break;
-            } else {
-                ++curLetter;
             }
         }
     }
@@ -132,8 +130,8 @@ getRandomTile( PoolContext* pool )
      * top thereafter.
      */
     
-    XP_U16 r = (XP_U16)XP_RANDOM();
-    XP_U16 index = (XP_U16)(r % pool->numTilesLeft);
+    XP_U16 rr = (XP_U16)(XP_RANDOM()>>16);
+    XP_U16 index = (XP_U16)(rr % pool->numTilesLeft);
     Tile result = getNthPoolTile( pool, index );
 
     --pool->lettersLeft[result];
