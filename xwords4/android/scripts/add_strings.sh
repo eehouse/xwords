@@ -1,16 +1,47 @@
 #!/bin/sh
 
+LOCALES=values
+
 check_add () {
     STRING=$1
-	PAT="<string name=\"$STRING\">.*</string>"
-    if ! grep -q "$PAT" res/values/strings.xml; then
-        echo "<string name=\"$STRING\">$STRING</string>"
-    fi
+    for VALUES in $LOCALES; do
+	    PAT="<string name=\"$STRING\">.*</string>"
+        if [ ! -f "res/$VALUES/strings.xml" ]; then
+            echo "error: res/$VALUES/strings.xml not found" 1>&2
+        elif ! grep -q "$PAT" res/$VALUES/strings.xml; then
+            echo "<string name=\"$STRING\">$STRING</string>"
+        fi
+    done
 }
 
+usage() {
+    echo "usage: $0 [--locale <locale>] [--all]" 1>&2
+}
 
 BASE=$(dirname $0)
 cd $BASE/../XWords4
+
+while [ -n "$1" ]; do
+    case $1 in
+        --all)
+            for DIR in $(ls -d res/values-*); do
+                DIR=$(basename $DIR)
+                LOCALES="$LOCALES $DIR"
+            done
+            ;;
+        --locale)
+            [ -n "$2" ] || usage
+            LOCALES="values-$2"
+            shift
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
+
+echo "trying $LOCALES" 1>&2
 
 for XML_FILE in $(find res/layout -name '*.xml'); do
     for STRING in $(grep 'android:text=' $XML_FILE | sed 's,^.*"@string/\(.*\)".*$,\1,'); do
