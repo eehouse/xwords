@@ -131,6 +131,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         player.setText( lp.name );
 
         Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot );
+        Utils.setChecked( m_curDialog, R.id.remote_check, ! lp.isLocal );
     }
 
     private void getPlayerSettings()
@@ -141,6 +142,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         lp.name = player.getText().toString();
 
         lp.isRobot = Utils.getChecked( m_curDialog, R.id.robot_check );
+        lp.isLocal = !Utils.getChecked( m_curDialog, R.id.remote_check );
     }
 
     @Override
@@ -292,6 +294,9 @@ public class GameConfig extends Activity implements View.OnClickListener {
             m_gi.showColors = Utils.getChecked( this, R.id.color_tiles );
             m_gi.robotSmartness
                 = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;
+            int position = m_roleSpinner.getSelectedItemPosition();
+            Utils.logf( "setting serverrole: " + position );
+            m_gi.serverRole = CurGameInfo.DeviceRole.values()[position];
 
             byte[] bytes = XwJNI.gi_to_stream( m_gi );
             if ( null == bytes ) {

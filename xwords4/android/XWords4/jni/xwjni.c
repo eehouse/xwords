@@ -16,6 +16,65 @@
 #include "anddict.h"
 #include "andutils.h"
 
+static jint
+jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field, 
+                 const char* fieldSig )
+{
+    LOG_FUNC();
+    jclass clazz = (*env)->GetObjectClass( env, j_gi );
+    XP_ASSERT( !!clazz );
+    char sig[128];
+    snprintf( sig, sizeof(sig), "L%s;", fieldSig );
+    jfieldID fid = (*env)->GetFieldID( env, clazz, field, sig );
+    XP_ASSERT( !!fid );
+    jobject jenum = (*env)->GetObjectField( env, j_gi, fid );
+    XP_ASSERT( !!jenum );
+
+    jmethodID mid = getMethodID( env, jenum, "ordinal", "()I" );
+    jint result = (*env)->CallIntMethod( env, jenum, mid );
+
+    (*env)->DeleteLocalRef( env, clazz );
+    (*env)->DeleteLocalRef( env, jenum );
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
+static void
+intToJenumField( JNIEnv* env, jobject j_gi, int val, const char* field, 
+                 const char* fieldSig )
+{
+    XP_LOGF( "IN %s(%d)", __func__, val );
+    jclass clazz = (*env)->GetObjectClass( env, j_gi );
+    XP_ASSERT( !!clazz );
+    char buf[128];
+    snprintf( buf, sizeof(buf), "L%s;", fieldSig );
+    jfieldID fid = (*env)->GetFieldID( env, clazz, field, buf );
+    XP_ASSERT( !!fid );         /* failed */
+    jobject jenum = (*env)->GetObjectField( env, j_gi, fid );
+    XP_ASSERT( !!jenum );
+    (*env)->DeleteLocalRef( env, clazz );
+
+    clazz = (*env)->GetObjectClass( env, jenum );
+    XP_ASSERT( !!clazz );
+    snprintf( buf, sizeof(buf), "()[L%s;", fieldSig );
+    jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "values", buf );
+    XP_ASSERT( !!mid );
+
+    jobject jvalues = (*env)->CallStaticObjectMethod( env, clazz, mid );
+    XP_ASSERT( !!jvalues );
+    XP_ASSERT( val < (*env)->GetArrayLength( env, jvalues ) );
+    /* get the value we want */
+    jobject jval = (*env)->GetObjectArrayElement( env, jvalues, val );
+    XP_ASSERT( !!jval );
+
+    (*env)->SetObjectField( env, j_gi, fid, jval );
+
+    (*env)->DeleteLocalRef( env, jvalues );
+    (*env)->DeleteLocalRef( env, jval );
+    (*env)->DeleteLocalRef( env, clazz );
+    LOG_RETURN_VOID();
+}
+
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 {
@@ -36,7 +95,9 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     gi->nPlayers = nPlayers;
     gi->robotSmartness = robotSmartness;
     gi->boardSize = boardSize;
-    gi->serverRole = SERVER_STANDALONE; /* figure out enums later */
+    gi->serverRole = 
+        jenumFieldToInt( env, j_gi, "serverRole",
+                         "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole");
 
     getString( env, j_gi, "dictName", buf, VSIZE(buf) );
     gi->dictName = copyString( mpool, buf );
@@ -88,6 +149,9 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
         && setString( env, jgi, "dictName", gi->dictName )
         ;
     XP_ASSERT( success );
+
+    intToJenumField( env, jgi, gi->serverRole, "serverRole",
+                     "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole" );
 
     jobject jplayers;
     if ( getObject( env, jgi, "players", 
