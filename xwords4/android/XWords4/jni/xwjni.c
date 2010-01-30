@@ -17,85 +17,20 @@
 #include "anddict.h"
 #include "andutils.h"
 
-static jint
-jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field, 
-                 const char* fieldSig )
-{
-    LOG_FUNC();
-    jclass clazz = (*env)->GetObjectClass( env, j_gi );
-    XP_ASSERT( !!clazz );
-    char sig[128];
-    snprintf( sig, sizeof(sig), "L%s;", fieldSig );
-    jfieldID fid = (*env)->GetFieldID( env, clazz, field, sig );
-    XP_ASSERT( !!fid );
-    jobject jenum = (*env)->GetObjectField( env, j_gi, fid );
-    XP_ASSERT( !!jenum );
-
-    jmethodID mid = getMethodID( env, jenum, "ordinal", "()I" );
-    jint result = (*env)->CallIntMethod( env, jenum, mid );
-
-    (*env)->DeleteLocalRef( env, clazz );
-    (*env)->DeleteLocalRef( env, jenum );
-    LOG_RETURNF( "%d", result );
-    return result;
-}
-
-static void
-intToJenumField( JNIEnv* env, jobject j_gi, int val, const char* field, 
-                 const char* fieldSig )
-{
-    XP_LOGF( "IN %s(%d)", __func__, val );
-    jclass clazz = (*env)->GetObjectClass( env, j_gi );
-    XP_ASSERT( !!clazz );
-    char buf[128];
-    snprintf( buf, sizeof(buf), "L%s;", fieldSig );
-    jfieldID fid = (*env)->GetFieldID( env, clazz, field, buf );
-    XP_ASSERT( !!fid );         /* failed */
-    jobject jenum = (*env)->GetObjectField( env, j_gi, fid );
-    XP_ASSERT( !!jenum );
-    (*env)->DeleteLocalRef( env, clazz );
-
-    clazz = (*env)->GetObjectClass( env, jenum );
-    XP_ASSERT( !!clazz );
-    snprintf( buf, sizeof(buf), "()[L%s;", fieldSig );
-    jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "values", buf );
-    XP_ASSERT( !!mid );
-
-    jobject jvalues = (*env)->CallStaticObjectMethod( env, clazz, mid );
-    XP_ASSERT( !!jvalues );
-    XP_ASSERT( val < (*env)->GetArrayLength( env, jvalues ) );
-    /* get the value we want */
-    jobject jval = (*env)->GetObjectArrayElement( env, jvalues, val );
-    XP_ASSERT( !!jval );
-
-    (*env)->SetObjectField( env, j_gi, fid, jval );
-
-    (*env)->DeleteLocalRef( env, jvalues );
-    (*env)->DeleteLocalRef( env, jval );
-    (*env)->DeleteLocalRef( env, clazz );
-    LOG_RETURN_VOID();
-}
-
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 {
     CurGameInfo* gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*gi) );
-    int nPlayers, robotSmartness, boardSize;
     XP_UCHAR buf[256];          /* in case needs whole path */
 
-    bool success = getInt( env, j_gi, "nPlayers", &nPlayers )
-        && getInt( env, j_gi, "boardSize", &boardSize )
-        && getInt( env, j_gi, "robotSmartness", &robotSmartness )
-        && getBool( env, j_gi, "hintsNotAllowed", &gi->hintsNotAllowed )
-        && getBool( env, j_gi, "timerEnabled", &gi->timerEnabled )
-        && getBool( env, j_gi, "allowPickTiles", &gi->allowPickTiles )
-        && getBool( env, j_gi, "allowHintRect", &gi->allowHintRect )
-        ;
-    XP_ASSERT( success );
+    gi->nPlayers = getInt( env, j_gi, "nPlayers");
+    gi->boardSize = getInt( env, j_gi, "boardSize" );
+    gi->robotSmartness = getInt( env, j_gi, "robotSmartness" );
+    gi->hintsNotAllowed = getBool( env, j_gi, "hintsNotAllowed" );
+    gi->timerEnabled =  getBool( env, j_gi, "timerEnabled" );
+    gi->allowPickTiles = getBool( env, j_gi, "allowPickTiles" );
+    gi->allowHintRect = getBool( env, j_gi, "allowHintRect" );
 
-    gi->nPlayers = nPlayers;
-    gi->robotSmartness = robotSmartness;
-    gi->boardSize = boardSize;
     gi->serverRole = 
         jenumFieldToInt( env, j_gi, "serverRole",
                          "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole");
@@ -103,7 +38,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     getString( env, j_gi, "dictName", buf, VSIZE(buf) );
     gi->dictName = copyString( mpool, buf );
 
-    XP_ASSERT( nPlayers <= MAX_NUM_PLAYERS );
+    XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
     jobject jplayers;
     if ( getObject( env, j_gi, "players", 
@@ -116,8 +51,8 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            getBool( env, jlp, "isRobot", &lp->isRobot );
-            getBool( env, jlp, "isLocal", &lp->isLocal );
+            lp->isRobot = getBool( env, jlp, "isRobot" );
+            lp->isLocal = getBool( env, jlp, "isLocal" );
 
             getString( env, jlp, "name", buf, VSIZE(buf) );
             lp->name = copyString( mpool, buf );
@@ -140,16 +75,14 @@ static void
 setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 {
     // set fields
-    bool success = setInt( env, jgi, "nPlayers", gi->nPlayers )
-        && setInt( env, jgi, "boardSize", gi->boardSize )
-        && setInt( env, jgi, "robotSmartness", gi->robotSmartness )
-        && setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed )
-        && setBool( env, jgi, "timerEnabled", gi->timerEnabled )
-        && setBool( env, jgi, "allowPickTiles", gi->allowPickTiles )
-        && setBool( env, jgi, "allowHintRect", gi->allowHintRect )
-        && setString( env, jgi, "dictName", gi->dictName )
-        ;
-    XP_ASSERT( success );
+    setInt( env, jgi, "nPlayers", gi->nPlayers );
+    setInt( env, jgi, "boardSize", gi->boardSize );
+    setInt( env, jgi, "robotSmartness", gi->robotSmartness );
+    setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
+    setBool( env, jgi, "timerEnabled", gi->timerEnabled );
+    setBool( env, jgi, "allowPickTiles", gi->allowPickTiles );
+    setBool( env, jgi, "allowHintRect", gi->allowHintRect );
+    setString( env, jgi, "dictName", gi->dictName );
 
     intToJenumField( env, jgi, gi->serverRole, "serverRole",
                      "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole" );
@@ -186,14 +119,13 @@ destroyGI( MPFORMAL CurGameInfo* gi )
     XP_FREE( mpool, gi );
 }
 
-static bool
+static void
 loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 {
-    bool success = getBool( env, j_cp, "showBoardArrow", &cp->showBoardArrow )
-        && getBool( env, j_cp, "showRobotScores", &cp->showRobotScores )
-        && getBool( env, j_cp, "hideTileValues", &cp->hideTileValues )
-        && getBool( env, j_cp, "skipCommitConfirm", &cp->skipCommitConfirm );
-    return success;
+    cp->showBoardArrow = getBool( env, j_cp, "showBoardArrow" );
+    cp->showRobotScores = getBool( env, j_cp, "showRobotScores" );
+    cp->hideTileValues = getBool( env, j_cp, "hideTileValues" );
+    cp->skipCommitConfirm = getBool( env, j_cp, "skipCommitConfirm" );
 }
 
 static XWStreamCtxt*
@@ -205,7 +137,7 @@ and_empty_stream( MPFORMAL AndGlobals* globals, void* closure )
 }
 
 /****************************************************
- * These two methods are stateless: no gamePtr
+ * These three methods are stateless: no gamePtr
  ****************************************************/
 JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
@@ -275,6 +207,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
     LOG_RETURN_VOID();
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
+( JNIEnv* env, jclass C, jobject jaddr )
+{
+    LOG_FUNC();
+    CommsAddrRec addr;
+    comms_getInitialAddr( &addr );
+    setJAddrRec( env, jaddr, &addr );
+}
+
 typedef struct _JNIState {
     XWGame game;
     JNIEnv* env;
@@ -331,7 +273,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     globals->dctx = dctx;
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, j_procs );
     CommonPrefs cp;
-    (void)loadCommonPrefs( env, &cp, j_cp );
+    loadCommonPrefs( env, &cp, j_cp );
 
     XP_LOGF( "calling game_makeNewGame" );
     game_makeNewGame( MPPARM(mpool) &state->game, gi, util, dctx, gameID, 
@@ -399,7 +341,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
 
     CommonPrefs cp;
-    (void)loadCommonPrefs( env, &cp, jcp );
+    loadCommonPrefs( env, &cp, jcp );
     result = game_makeFromStream( MPPARM(mpool) stream, &state->game, 
                                   globals->gi, dict, 
                                   globals->util, globals->dctx, &cp,
@@ -806,3 +748,30 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1start
     XWJNI_END();
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddr
+(JNIEnv* env, jclass C, jint gamePtr, jobject jaddr )
+{
+    XWJNI_START();
+    LOG_FUNC();
+    XP_ASSERT( state->game.comms );
+    CommsAddrRec addr;
+    comms_getAddr( state->game.comms, &addr );
+    setJAddrRec( env, jaddr, &addr );
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddr
+( JNIEnv* env, jclass C, jint gamePtr, jobject jaddr )
+{
+    XWJNI_START();
+    if ( state->game.comms ) {
+        CommsAddrRec addr;
+        getJAddrRec( env, &addr, jaddr );
+        comms_setAddr( state->game.comms, &addr );
+    } else {
+        XP_LOGF( "%s: no comms this game" );
+    }
+    XWJNI_END();
+}

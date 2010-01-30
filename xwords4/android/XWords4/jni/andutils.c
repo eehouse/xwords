@@ -54,30 +54,27 @@ and_htons( XP_U16 ss )
 error error error
 #endif
 
-bool
-getInt( JNIEnv* env, jobject obj, const char* name, int* result )
+int
+getInt( JNIEnv* env, jobject obj, const char* name )
 {
-    bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
+    XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
-    *result = (*env)->GetIntField( env, obj, fid );
-    success = true;
+    int result = (*env)->GetIntField( env, obj, fid );
     (*env)->DeleteLocalRef( env, cls );
-    return success;
+    return result;
 }
 
-bool
+void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
-    bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
+    XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     (*env)->SetIntField( env, obj, fid, value );
-    success = true;
     (*env)->DeleteLocalRef( env, cls );
-    return success;
 }
 
 bool
@@ -153,20 +150,16 @@ getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
 
 /* return false on failure, e.g. exception raised */
 bool
-getBool( JNIEnv* env, jobject obj, const char* name, XP_Bool* result )
+getBool( JNIEnv* env, jobject obj, const char* name )
 {
-    bool success = false;
+    bool result;
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Z");
     XP_ASSERT( !!fid );
-    if ( 0 != fid ) {
-        *result = (*env)->GetBooleanField( env, obj, fid );
-        success = true;
-    }
+    result = (*env)->GetBooleanField( env, obj, fid );
     (*env)->DeleteLocalRef( env, cls );
-    XP_ASSERT( success );
-    return success;
+    return result;
 }
 
 jintArray
@@ -288,3 +281,110 @@ makeBitmapsArray( JNIEnv* env, const XP_Bitmaps* bitmaps )
 
     return result;
 }
+
+void
+setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
+{
+    LOG_FUNC();
+    setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
+    setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
+    setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
+
+    intToJenumField( env, jaddr, addr->conType, "conType",
+                     "org/eehouse/android/xw4/jni/CommsAddrRec$CommsConnType" );
+
+    /* Later switch off of it... */
+    XP_ASSERT( addr->conType == COMMS_CONN_RELAY );
+
+    LOG_RETURN_VOID();
+}
+
+void
+getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
+{
+    addr->conType = jenumFieldToInt( env, jaddr, "conType",
+                                     "org/eehouse/android/xw4/jni/"
+                                     "CommsAddrRec$CommsConnType" );
+
+    /* Later switch off of it... */
+    XP_ASSERT( addr->conType == COMMS_CONN_RELAY );
+
+    addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
+
+    XP_UCHAR buf[256];          /* in case needs whole path */
+    getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
+               VSIZE(addr->u.ip_relay.hostName) );
+    getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
+               VSIZE(addr->u.ip_relay.invite) );
+}
+
+jint
+jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field, 
+                 const char* fieldSig )
+{
+    XP_LOGF( "IN %s(%s)", __func__, fieldSig );
+    jclass clazz = (*env)->GetObjectClass( env, j_gi );
+    XP_ASSERT( !!clazz );
+    char sig[128];
+    snprintf( sig, sizeof(sig), "L%s;", fieldSig );
+    jfieldID fid = (*env)->GetFieldID( env, clazz, field, sig );
+    XP_ASSERT( !!fid );
+    jobject jenum = (*env)->GetObjectField( env, j_gi, fid );
+    XP_ASSERT( !!jenum );
+
+    jmethodID mid = getMethodID( env, jenum, "ordinal", "()I" );
+    jint result = (*env)->CallIntMethod( env, jenum, mid );
+
+    (*env)->DeleteLocalRef( env, clazz );
+    (*env)->DeleteLocalRef( env, jenum );
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
+void
+intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field, 
+                 const char* fieldSig )
+{
+    XP_LOGF( "IN %s(%d,%s,%s)", __func__, val, field, fieldSig );
+    jclass clazz = (*env)->GetObjectClass( env, jobj );
+    XP_ASSERT( !!clazz );
+    char buf[128];
+    snprintf( buf, sizeof(buf), "L%s;", fieldSig );
+    jfieldID fid = (*env)->GetFieldID( env, clazz, field, buf );
+    XP_ASSERT( !!fid );         /* failed */
+    (*env)->DeleteLocalRef( env, clazz );
+
+    jobject jenum = (*env)->GetObjectField( env, jobj, fid );
+    if ( !jenum ) {       /* won't exist in new object */
+        XP_LOGF( "%s: creating new object...", __func__ );
+        clazz = (*env)->FindClass( env, fieldSig );
+        XP_ASSERT( !!clazz );
+        jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
+        XP_ASSERT( !!mid );
+        jenum = (*env)->NewObject( env, clazz, mid );
+        XP_ASSERT( !!jenum );
+        (*env)->SetObjectField( env, jobj, fid, jenum );
+    } else {
+        clazz = (*env)->GetObjectClass( env, jenum );
+    }
+
+    XP_ASSERT( !!clazz );
+    snprintf( buf, sizeof(buf), "()[L%s;", fieldSig );
+    jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "values", buf );
+    XP_ASSERT( !!mid );
+
+    jobject jvalues = (*env)->CallStaticObjectMethod( env, clazz, mid );
+    XP_ASSERT( !!jvalues );
+    XP_ASSERT( val < (*env)->GetArrayLength( env, jvalues ) );
+    /* get the value we want */
+    jobject jval = (*env)->GetObjectArrayElement( env, jvalues, val );
+    XP_ASSERT( !!jval );
+
+    (*env)->SetObjectField( env, jobj, fid, jval );
+
+    (*env)->DeleteLocalRef( env, jvalues );
+    (*env)->DeleteLocalRef( env, jval );
+    (*env)->DeleteLocalRef( env, clazz );
+    LOG_RETURN_VOID();
+} /* intToJenumField */
+

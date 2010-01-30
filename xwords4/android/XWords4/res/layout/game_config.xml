@@ -38,6 +38,12 @@
              android:drawSelectorOnTop="true"
              />
 
+      <Button android:id="@+id/configure_role"
+              android:layout_width="fill_parent" 
+              android:layout_height="wrap_content"
+              android:text="@string/configure_role" 
+              />
+
     <LinearLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   android:orientation="horizontal">

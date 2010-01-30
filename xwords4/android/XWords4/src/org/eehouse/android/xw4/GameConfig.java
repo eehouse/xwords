@@ -74,8 +74,10 @@ import org.eehouse.android.xw4.jni.*;
 public class GameConfig extends Activity implements View.OnClickListener {
 
     private static final int PLAYER_EDIT = 1;
+    private static final int ROLE_EDIT = 2;
 
     private Button m_addPlayerButton;
+    private Button m_configureButton;
     private String m_path;
     private CurGameInfo m_gi;
     private int m_whichPlayer;
@@ -86,18 +88,21 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private String[] m_dicts;
     private int m_browsePosition;
     private LinearLayout m_playerLayout;
+    private CommsAddrRec m_car;
 
     @Override
     protected Dialog onCreateDialog( int id )
     {
+        LayoutInflater factory;
+        DialogInterface.OnClickListener dlpos;
+
         switch (id) {
         case PLAYER_EDIT:
-            LayoutInflater factory = LayoutInflater.from(this);
+            factory = LayoutInflater.from(this);
             final View playerEditView
                 = factory.inflate( R.layout.player_edit, null );
 
-            DialogInterface.OnClickListener dlpos =
-                new DialogInterface.OnClickListener() {
+            dlpos = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dialog, 
                                          int whichButton ) {
                         getPlayerSettings();
@@ -111,6 +116,24 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 .setView(playerEditView)
                 .setPositiveButton(R.string.button_save, dlpos )
                 .create();
+        case ROLE_EDIT:
+            factory = LayoutInflater.from(this);
+            final View roleEditView
+                = factory.inflate( R.layout.role_edit, null );
+
+            dlpos = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dialog, 
+                                         int whichButton ) {
+                        getRoleSettings();
+                    }
+                };
+
+            return new AlertDialog.Builder( this )
+                // .setIcon(R.drawable.alert_dialog_icon)
+                .setTitle(R.string.role_edit_title)
+                .setView(roleEditView)
+                .setPositiveButton(R.string.button_save, dlpos )
+                .create();
         }
         return null;
     }
@@ -119,7 +142,14 @@ public class GameConfig extends Activity implements View.OnClickListener {
     protected void onPrepareDialog( int id, Dialog dialog )
     { 
         m_curDialog = dialog;
-        setPlayerSettings();
+        switch ( id ) {
+        case PLAYER_EDIT:
+            setPlayerSettings();
+            break;
+        case ROLE_EDIT:
+            setRoleSettings();
+            break;
+        }
         super.onPrepareDialog( id, dialog );
     }
 
@@ -132,6 +162,25 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot );
         Utils.setChecked( m_curDialog, R.id.remote_check, ! lp.isLocal );
+    }
+
+    private void setRoleSettings()
+    {
+        if ( null == m_car ) {
+            m_car = new CommsAddrRec( CommsAddrRec.get() );
+        }
+        Utils.setText( m_curDialog, R.id.room_edit, m_car.ip_relay_invite );
+        Utils.setText( m_curDialog, R.id.hostname_edit, 
+                       m_car.ip_relay_hostName );
+        Utils.setInt( m_curDialog, R.id.port_edit, m_car.ip_relay_port );
+    }
+
+    private void getRoleSettings()
+    {
+        m_car.ip_relay_invite = Utils.getText( m_curDialog, R.id.room_edit );
+        m_car.ip_relay_hostName = Utils.getText( m_curDialog, 
+                                                R.id.hostname_edit );
+        m_car.ip_relay_port = Utils.getInt( m_curDialog, R.id.port_edit );
     }
 
     private void getPlayerSettings()
@@ -166,6 +215,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
+        m_configureButton = (Button)findViewById(R.id.configure_role);
+        m_configureButton.setOnClickListener( this );
 
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
         loadPlayers();
@@ -306,6 +357,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 Utils.saveGame( this, bytes, m_path );
             }
 
+            if ( null != m_car ) {
+                CommsAddrRec.set( m_car );
+            }
+
             finish();
             break;
         default:
@@ -324,6 +379,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 m_whichPlayer = curIndex;
                 showDialog( PLAYER_EDIT );
             }
+        } else if ( m_configureButton == view ) {
+            showDialog( ROLE_EDIT );
         } else {
             Utils.logf( "unknown v: " + view.toString() );
         }

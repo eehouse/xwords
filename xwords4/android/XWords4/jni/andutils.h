@@ -6,6 +6,7 @@
 #include <jni.h>
 
 #include "comtypes.h"
+#include "comms.h"
 #include "mempool.h"
 #include "dictnry.h"
 
@@ -14,9 +15,9 @@ XP_U16 and_ntohs(XP_U16 l);
 XP_U32 and_htonl(XP_U32 l);
 XP_U16 and_htons(XP_U16 l);
 
-bool getInt( JNIEnv* env, jobject obj, const char* name, int* result );
-bool setInt( JNIEnv* env, jobject obj, const char* name, int value );
-bool getBool( JNIEnv* env, jobject obj, const char* name, XP_Bool* result );
+int getInt( JNIEnv* env, jobject obj, const char* name );
+void setInt( JNIEnv* env, jobject obj, const char* name, int value );
+bool getBool( JNIEnv* env, jobject obj, const char* name );
 bool setBool( JNIEnv* env, jobject obj, const char* name, bool value );
 bool setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value );
 bool getString( JNIEnv* env, jobject jlp, const char* name, XP_UCHAR* buf,
@@ -40,4 +41,10 @@ jobjectArray makeBitmapsArray( JNIEnv* env, const XP_Bitmaps* bitmaps );
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
                        const char* sig );
 
+void setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );
+void getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr );
+jint jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field, 
+                      const char* fieldSig );
+void intToJenumField( JNIEnv* env, jobject j_gi, int val, const char* field, 
+                      const char* fieldSig );
 #endif

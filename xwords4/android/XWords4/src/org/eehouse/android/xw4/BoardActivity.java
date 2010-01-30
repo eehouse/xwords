@@ -41,6 +41,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private BoardView m_view;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
+    CommsTransport m_xport;
     private Handler m_handler;
     private TimerRunnable[] m_timers;
     private String m_path;
@@ -136,17 +137,17 @@ public class BoardActivity extends Activity implements UtilCtxt {
         } else {
             m_jniGamePtr = XwJNI.initJNI();
 
-            CommsTransport xport
-                = ( m_gi.serverRole == DeviceRole.SERVER_STANDALONE )
-                ? null : new CommsTransport();
+            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                m_xport = new CommsTransport( m_jniGamePtr );
+            }
 
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                               m_gi, dictBytes, this,
                                               m_view, Utils.getCP(),
-                                              xport ) ) {
+                                              m_xport ) ) {
                 XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
-                                        Utils.getCP(), xport, dictBytes );
+                                        Utils.getCP(), m_xport, dictBytes );
             }
 
             m_jniThread = new 

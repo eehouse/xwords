@@ -153,6 +153,7 @@
 
     <string name="dict_label">Dictionary</string>
     <string name="role_label">Role</string>
+    <string name="configure_role">Configure role</string>
     <string name="phonies_label">Phonies</string>
 
     <string name="download_dicts">Download more...</string>
@@ -176,4 +177,10 @@
     <string name="phonies_warn">Warn</string>
     <string name="phonies_disallow">Disallow</string>
     <string name="gamel_menu_prefs">Preferences</string>
+
+    <string name="room_label">Room</string>
+    <string name="hostname_label">Hostname</string>
+    <string name="port_label">Port</string>
+    <string name="role_edit_title">Connection</string>
+
 </resources>

@@ -28,6 +28,26 @@ typedef struct _AndTransportProcs {
     MPSLOT
 } AndTransportProcs;
 
+static jobject
+makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
+{
+    LOG_FUNC();
+    jobject jaddr;
+    jclass clazz
+        = (*env)->FindClass(env, "org/eehouse/android/xw4/jni/CommsAddrRec");
+    XP_ASSERT( !!clazz );
+    jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
+    XP_ASSERT( !!mid );
+
+    jaddr = (*env)->NewObject( env, clazz, mid );
+    XP_ASSERT( !!jaddr );
+
+    setJAddrRec( env, jaddr, addr );
+    
+    (*env)->DeleteLocalRef( env, clazz );
+    LOG_RETURNF( "%p", jaddr );
+    return jaddr;
+}
 
 static XP_S16
 and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
@@ -40,10 +60,14 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     jmethodID mid = getMethodID( env, aprocs->j_xport, "transportSend", sig );
 
     jbyteArray jbytes = makeByteArray( env, len, buf );
+    jobject jaddr = makeJAddr( env, addr );
 
     jint result = (*env)->CallIntMethod( env, aprocs->j_xport, mid, 
-                                         jbytes, NULL );
+                                         jbytes, jaddr );
+
+    (*env)->DeleteLocalRef( env, jaddr );
     (*env)->DeleteLocalRef( env, jbytes );
+    LOG_RETURNF( "%d", result );
     return result;
 }
 

@@ -174,6 +174,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_START:
+                XwJNI.comms_setAddr( m_jniGamePtr, CommsAddrRec.get() );
                 XwJNI.comms_start( m_jniGamePtr );
                 if ( m_gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
                     XwJNI.server_initClientConnection( m_jniGamePtr );

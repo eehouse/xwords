@@ -1,6 +1,6 @@
-/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
+/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -69,15 +69,10 @@ makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
 static void
 copyJRect( JNIEnv* env, XP_Rect* dest, jobject jrect )
 {
-    int tmp;
-    getInt( env, jrect, "left", &tmp );
-    dest->left = tmp;
-    getInt( env, jrect, "top", &tmp ); 
-    dest->top = tmp;
-    getInt( env, jrect, "right", &tmp ); 
-    dest->width = tmp - dest->left;
-    getInt( env, jrect, "bottom", &tmp ); 
-    dest->height = tmp - dest->top;
+    dest->left = getInt( env, jrect, "left" );
+    dest->top = getInt( env, jrect, "top" ); 
+    dest->width = getInt( env, jrect, "right" ) - dest->left;
+    dest->height = getInt( env, jrect, "bottom" ) - dest->top;
 }
 
 static jobject
@@ -98,16 +93,15 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
         draw->jCache[indx] = dsiobj;
     }
 
-    bool success = setInt( env, dsiobj, "playerNum", dsi->playerNum )
-        && setInt( env, dsiobj, "totalScore", dsi->totalScore )
-        && setInt( env, dsiobj, "nTilesLeft", dsi->nTilesLeft )
-        && setInt( env, dsiobj, "flags", dsi->flags )
-        && setBool( env, dsiobj, "isTurn", dsi->isTurn )
-        && setBool( env, dsiobj, "selected", dsi->selected )
-        && setBool( env, dsiobj, "isRemote", dsi->isRemote )
-        && setBool( env, dsiobj, "isRobot", dsi->isRobot )
-        && setString( env, dsiobj, "name", dsi->name )
-        ;
+    setInt( env, dsiobj, "playerNum", dsi->playerNum );
+    setInt( env, dsiobj, "totalScore", dsi->totalScore );
+    setInt( env, dsiobj, "nTilesLeft", dsi->nTilesLeft );
+    setInt( env, dsiobj, "flags", dsi->flags );
+    setBool( env, dsiobj, "isTurn", dsi->isTurn );
+    setBool( env, dsiobj, "selected", dsi->selected );
+    setBool( env, dsiobj, "isRemote", dsi->isRemote );
+    setBool( env, dsiobj, "isRobot", dsi->isRobot );
+    setString( env, dsiobj, "name", dsi->name );
 
     return dsiobj;
 }

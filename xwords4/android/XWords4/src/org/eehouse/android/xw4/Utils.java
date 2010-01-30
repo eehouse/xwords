@@ -17,6 +17,8 @@ import java.io.InputStream;
 import android.widget.CheckBox;
 import android.app.Activity;
 import android.app.Dialog;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -202,6 +204,20 @@ public class Utils {
         cbx.setChecked( value );
     }
 
+    public static void setText( Dialog dialog, int id, String value )
+    {
+        EditText editText = (EditText)dialog.findViewById( id );
+        if ( null != editText ) {
+            editText.setText( value, TextView.BufferType.EDITABLE   );
+        }
+    }
+
+    public static void setInt( Dialog dialog, int id, int value )
+    {
+        String str = Integer.toString(value);
+        setText( dialog, id, str );
+    }
+
     public static boolean getChecked( Activity activity, int id )
     {
         CheckBox cbx = (CheckBox)activity.findViewById( id );
@@ -212,6 +228,18 @@ public class Utils {
     {
         CheckBox cbx = (CheckBox)dialog.findViewById( id );
         return cbx.isChecked();
+    }
+
+    public static String getText( Dialog dialog, int id )
+    {
+        EditText editText = (EditText)dialog.findViewById( id );
+        return editText.getText().toString();
+    }
+
+    public static int getInt( Dialog dialog, int id )
+    {
+        String str = getText( dialog, id );
+        return Integer.parseInt( str );
     }
 
     public static CommonPrefs getCP()
