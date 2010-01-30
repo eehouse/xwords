@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="XWords4" default="release_svn">
-
-  <target name="release_svn" depends="release">
-    <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt" />
-  </target>
+<project name="XWords4" default="release">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked in in Version
@@ -51,6 +47,10 @@
     <taskdef name="setup"
         classname="com.android.ant.SetupTask"
         classpathref="android.antlibs" />
+
+    <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt" />
+
+
 
     <!-- Execute the Android Setup task that will setup some properties specific to the target,
          and import the build rules files.

@@ -6,7 +6,7 @@ OLDDIR=$(pwd)
 
 if [ -z "$NDK_ROOT" ]; then
     echo -n "NDK_ROOT not set... "
-    NDK_ROOT="$HOME/android-ndk-1.5_r1"
+    NDK_ROOT="$HOME/android-ndk-1.6_r1"
     if [ -d $NDK_ROOT ]; then
         echo "using $NDK_ROOT"
     else
@@ -17,14 +17,6 @@ fi
 
 cd $(dirname $0)
 cd ../
-
-if [ -h $NDK_ROOT/sources/$APP -a $(readlink $NDK_ROOT/sources/$APP) != $(pwd) ]; then
-    rm $NDK_ROOT/sources/$APP
-fi
-if [ ! -h $NDK_ROOT/sources/$APP ]; then
-    echo "adding symlink to sources"
-    ln -sf $(pwd) $NDK_ROOT/sources/$APP
-fi
 
 if [ -h $NDK_ROOT/apps/$APP -a $(readlink $NDK_ROOT/apps/$APP) != $(pwd) ]; then
     rm $NDK_ROOT/apps/$APP

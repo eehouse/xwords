@@ -4,14 +4,14 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-local_C_INCLUDES+= 			  \
-	-I$(LOCAL_PATH)/../common \
-	-I$(LOCAL_PATH)/../relay \
+COMMON_PATH=../../../common
+local_C_INCLUDES+= \
+	-I$(LOCAL_PATH)/$(COMMON_PATH) \
+	-I$(LOCAL_PATH)/../../../relay \
 
 local_LDLIBS += -llog
 
 # local_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING
-
 local_DEFINES += \
 	$(local_DEBUG) \
 	-DXWFEATURE_TURNCHANGENOTIFY \
@@ -29,25 +29,27 @@ local_SRC_FILES +=         \
 	anddict.c              \
 	andutils.c             \
 
+
+COMMON_PATH=../../../common
 common_SRC_FILES +=        \
-	../common/boarddrw.c   \
-	../common/scorebdp.c   \
-	../common/dragdrpp.c   \
-	../common/pool.c       \
-	../common/tray.c       \
-	../common/dictnry.c    \
-	../common/mscore.c     \
-	../common/vtabmgr.c    \
-	../common/strutils.c   \
-	../common/engine.c     \
-	../common/board.c      \
-	../common/mempool.c    \
-	../common/game.c       \
-	../common/server.c     \
-	../common/model.c      \
-	../common/comms.c      \
-	../common/memstream.c  \
-	../common/movestak.c   \
+	$(COMMON_PATH)/boarddrw.c   \
+	$(COMMON_PATH)/scorebdp.c   \
+	$(COMMON_PATH)/dragdrpp.c   \
+	$(COMMON_PATH)/pool.c       \
+	$(COMMON_PATH)/tray.c       \
+	$(COMMON_PATH)/dictnry.c    \
+	$(COMMON_PATH)/mscore.c     \
+	$(COMMON_PATH)/vtabmgr.c    \
+	$(COMMON_PATH)/strutils.c   \
+	$(COMMON_PATH)/engine.c     \
+	$(COMMON_PATH)/board.c      \
+	$(COMMON_PATH)/mempool.c    \
+	$(COMMON_PATH)/game.c       \
+	$(COMMON_PATH)/server.c     \
+	$(COMMON_PATH)/model.c      \
+	$(COMMON_PATH)/comms.c      \
+	$(COMMON_PATH)/memstream.c  \
+	$(COMMON_PATH)/movestak.c   \
 
 
 LOCAL_CFLAGS+=$(local_C_INCLUDES) $(local_DEFINES)
