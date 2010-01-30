@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
+/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 #include <string.h>
 #include <sys/time.h>
 
@@ -13,6 +13,7 @@
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
+#include "xportwrapper.h"
 #include "anddict.h"
 #include "andutils.h"
 
@@ -196,10 +197,10 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 }
 
 static XWStreamCtxt*
-and_empty_stream( MPFORMAL AndGlobals* globals )
+and_empty_stream( MPFORMAL AndGlobals* globals, void* closure )
 {
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            NULL, 0, NULL );
+                                            closure, 0, NULL );
     return stream;
 }
 
@@ -328,12 +329,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     globals->util = util;
     DrawCtx* dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
     globals->dctx = dctx;
+    globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, j_procs );
     CommonPrefs cp;
     (void)loadCommonPrefs( env, &cp, j_cp );
 
     XP_LOGF( "calling game_makeNewGame" );
     game_makeNewGame( MPPARM(mpool) &state->game, gi, util, dctx, gameID, 
-                      &cp, NULL );
+                      &cp, globals->xportProcs );
 
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, util, jDictBytes );
 #ifdef STUBBED_DICT
@@ -364,6 +366,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     game_dispose( &state->game );
 
     destroyDraw( globals->dctx );
+    destroyXportProcs( globals->xportProcs );
     destroyUtil( globals->util );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
@@ -386,6 +389,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->util = makeUtil( MPPARM(mpool) &state->env, jutil, globals->gi, globals );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->util, jdict );
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 
     jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
@@ -399,13 +403,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     result = game_makeFromStream( MPPARM(mpool) stream, &state->game, 
                                   globals->gi, dict, 
                                   globals->util, globals->dctx, &cp,
-                                  NULL );
+                                  globals->xportProcs );
     stream_destroy( stream );
 
     if ( result ) {
         setJGI( env, jgi, globals->gi );
     } else {
         destroyDraw( globals->dctx );
+        destroyXportProcs( globals->xportProcs );
         dict_destroy( dict );
         destroyUtil( globals->util );
         destroyGI( MPPARM(mpool) globals->gi );
@@ -717,7 +722,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
 {
     jstring result;
     XWJNI_START();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
     server_formatDictCounts( state->game.server, stream, nCols );
     result = streamToJString( MPPARM(mpool) env, stream );
     stream_destroy( stream );
@@ -743,7 +748,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
 {
     jstring result;
     XWJNI_START();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
     model_writeGameHistory( state->game.model, stream, state->game.server,
                             gameOver );
     result = streamToJString( MPPARM(mpool) env, stream );
@@ -759,7 +764,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
 {
     jstring result;
     XWJNI_START();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
     server_writeFinalScores( state->game.server, stream );
     result = streamToJString( MPPARM(mpool) env, stream );
     (*env)->DeleteLocalRef( env, result );
@@ -767,3 +772,37 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
     XWJNI_END();
     return result;
 }
+
+static void
+and_send_on_close( XWStreamCtxt* stream, void* closure )
+{
+    JNIState* state = (JNIState*)closure;
+
+    XP_ASSERT( !!state->game.comms );
+    comms_send( state->game.comms, stream );
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    LOG_FUNC();
+    XWJNI_START();
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
+    stream_setOnCloseProc( stream, and_send_on_close );
+    server_initClientConnection( state->game.server, stream );
+    XWJNI_END();
+    LOG_RETURN_VOID();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1start
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    if ( !!state->game.comms ) {
+        comms_start( state->game.comms );
+    }
+    XWJNI_END();
+}
+

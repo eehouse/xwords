@@ -10,6 +10,7 @@ typedef struct _AndGlobals {
     CurGameInfo* gi;
     DrawCtx* dctx;
     XW_UtilCtxt* util;
+    TransportProcs* xportProcs;
 } AndGlobals;
 
 #endif

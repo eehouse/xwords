@@ -2,7 +2,7 @@
 package org.eehouse.android.xw4.jni;
 
 public interface TransportProcs {
-    int transportSend( byte[] buf, int len, final CommsAddrRec addr );
+    int transportSend( byte[] buf, final CommsAddrRec addr );
 
     public static final int COMMS_RELAYSTATE_UNCONNECTED = 0;
     public static final int COMMS_RELAYSTATE_DENIED = 1;

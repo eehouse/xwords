@@ -45,7 +45,6 @@ public class XwJNI {
     public static native void game_dispose( int gamePtr );
 
     // Board methods
-
     public static native void board_invalAll( int gamePtr );
     public static native boolean board_draw( int gamePtr );
     public static native void board_setPos( int gamePtr, int left, int top,
@@ -58,10 +57,13 @@ public class XwJNI {
     public static native void board_setTrayLoc( int gamePtr, int left, 
                                                 int top, int width, 
                                                 int height, int minDividerWidth );
-    public static native boolean board_handlePenDown( int gamePtr, int xx, int yy, 
-                                                          boolean[] handled );
-    public static native boolean board_handlePenMove( int gamePtr, int xx, int yy );
-    public static native boolean board_handlePenUp( int gamePtr, int xx, int yy );
+    public static native boolean board_handlePenDown( int gamePtr, 
+                                                      int xx, int yy, 
+                                                      boolean[] handled );
+    public static native boolean board_handlePenMove( int gamePtr, 
+                                                      int xx, int yy );
+    public static native boolean board_handlePenUp( int gamePtr, 
+                                                    int xx, int yy );
 
     public static native boolean board_juggleTray( int gamePtr );
     public static native int board_getTrayVisState( int gamePtr );
@@ -72,18 +74,26 @@ public class XwJNI {
     public static native boolean board_flip( int gamePtr );
     public static native boolean board_replaceTiles( int gamePtr );
     public static native void board_resetEngine( int gamePtr );
-    public static native boolean board_requestHint( int gamePtr, boolean useTileLimits,
+    public static native boolean board_requestHint( int gamePtr, 
+                                                    boolean useTileLimits,
                                                     boolean[] workRemains );
     public static native boolean board_beginTrade( int gamePtr );
 
     public static native String board_formatRemainingTiles( int gamePtr );
 
+    // Model
+    public static native String model_writeGameHistory( int gamePtr, 
+                                                        boolean gameOver );
+
+    // Server
     public static native void server_handleUndo( int gamePtr );
     public static native boolean server_do( int gamePtr );
     public static native String server_formatDictCounts( int gamePtr, int nCols );
     public static native boolean server_getGameIsOver( int gamePtr );
-
-    public static native String model_writeGameHistory( int gamePtr, boolean gameOver );
-
     public static native String server_writeFinalScores( int gamePtr );
+    public static native void server_initClientConnection( int gamePtr );
+
+    // Comms
+    public static native void comms_start( int gamePtr );
+
 }

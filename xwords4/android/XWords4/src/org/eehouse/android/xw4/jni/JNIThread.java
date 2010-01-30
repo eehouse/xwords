@@ -10,11 +10,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import android.os.Handler;
 import android.os.Message;
 
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+
 public class JNIThread extends Thread {
 
     public enum JNICmd { CMD_NONE,
             CMD_DRAW,
             CMD_LAYOUT,
+            CMD_START,
             CMD_DO,
             CMD_PEN_DOWN,
             CMD_PEN_MOVE,
@@ -42,6 +45,7 @@ public class JNIThread extends Thread {
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
+    private CurGameInfo m_gi;
     private Handler m_handler;
     LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -54,9 +58,10 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    public JNIThread( int gamePtr, Handler handler ) {
+    public JNIThread( int gamePtr, CurGameInfo gi, Handler handler ) {
         Utils.logf( "in JNIThread()" );
         m_jniGamePtr = gamePtr;
+        m_gi = gi;
         m_handler = handler;
 
         m_queue = new LinkedBlockingQueue<QueueElem>();
@@ -135,7 +140,6 @@ public class JNIThread extends Thread {
         XwJNI.board_invalAll( m_jniGamePtr );
     }
 
-
     public void run() 
     {
         boolean[] barr = new boolean[1]; // scratch boolean
@@ -163,6 +167,14 @@ public class JNIThread extends Thread {
                 draw = true;
                 break;
 
+            case CMD_START:
+                XwJNI.comms_start( m_jniGamePtr );
+                if ( m_gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
+                    XwJNI.server_initClientConnection( m_jniGamePtr );
+                }
+                /* FALLTHRU; works in java? */ 
+                draw = XwJNI.server_do( m_jniGamePtr );
+                break;
             case CMD_DO:
                 draw = XwJNI.server_do( m_jniGamePtr );
                 break;
