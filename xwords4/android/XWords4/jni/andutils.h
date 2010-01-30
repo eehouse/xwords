@@ -27,7 +27,9 @@ bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
 jintArray makeIntArray( JNIEnv *env, int size, const jint* vals );
 int getIntFromArray( JNIEnv* env, jintArray arr, bool del );
 
-jbooleanArray makeBooleanArray( JNIEnv *env, int size, const jboolean* vals );
+jbyteArray makeByteArray( JNIEnv* env, int size, const jbyte* vals );
+
+jbooleanArray makeBooleanArray( JNIEnv* env, int size, const jboolean* vals );
 
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
 jstring streamToJString( MPFORMAL JNIEnv* env, XWStreamCtxt* stream );

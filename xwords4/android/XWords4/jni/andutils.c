@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
+/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 
 #include "andutils.h"
 
@@ -60,10 +60,9 @@ getInt( JNIEnv* env, jobject obj, const char* name, int* result )
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
-    if ( 0 != fid ) {
-        *result = (*env)->GetIntField( env, obj, fid );
-        success = true;
-    }
+    XP_ASSERT( !!fid );
+    *result = (*env)->GetIntField( env, obj, fid );
+    success = true;
     (*env)->DeleteLocalRef( env, cls );
     return success;
 }
@@ -74,10 +73,9 @@ setInt( JNIEnv* env, jobject obj, const char* name, int value )
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
-    if ( 0 != fid ) {
-        (*env)->SetIntField( env, obj, fid, value );
-        success = true;
-    }
+    XP_ASSERT( !!fid );
+    (*env)->SetIntField( env, obj, fid, value );
+    success = true;
     (*env)->DeleteLocalRef( env, cls );
     return success;
 }
@@ -181,6 +179,20 @@ makeIntArray( JNIEnv *env, int siz, const jint* vals )
         XP_ASSERT( !!elems );
         XP_MEMCPY( elems, vals, siz * sizeof(*elems) );
         (*env)->ReleaseIntArrayElements( env, array, elems, 0 );
+    }
+    return array;
+}
+
+jbyteArray
+makeByteArray( JNIEnv *env, int siz, const jbyte* vals )
+{
+    jbyteArray array = (*env)->NewByteArray( env, siz );
+    XP_ASSERT( !!array );
+    if ( !!vals ) {
+        jbyte* elems = (*env)->GetByteArrayElements( env, array, NULL );
+        XP_ASSERT( !!elems );
+        XP_MEMCPY( elems, vals, siz * sizeof(*elems) );
+        (*env)->ReleaseByteArrayElements( env, array, elems, 0 );
     }
     return array;
 }
