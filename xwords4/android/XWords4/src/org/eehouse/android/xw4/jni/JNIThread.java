@@ -140,6 +140,12 @@ public class JNIThread extends Thread {
         XwJNI.board_invalAll( m_jniGamePtr );
     }
 
+    private boolean nextSame( JNICmd cmd ) 
+    {
+        QueueElem nextElem = m_queue.peek();
+        return null != nextElem && nextElem.m_cmd == cmd;
+    }
+
     public void run() 
     {
         boolean[] barr = new boolean[1]; // scratch boolean
@@ -176,6 +182,9 @@ public class JNIThread extends Thread {
                 draw = XwJNI.server_do( m_jniGamePtr );
                 break;
             case CMD_DO:
+                if ( nextSame( JNICmd.CMD_DO ) ) {
+                    continue;
+                }
                 draw = XwJNI.server_do( m_jniGamePtr );
                 break;
 
@@ -186,9 +195,7 @@ public class JNIThread extends Thread {
                                                   barr );
                 break;
             case CMD_PEN_MOVE:
-                QueueElem nextElem = m_queue.peek();
-                if ( null != nextElem && nextElem.m_cmd == JNICmd.CMD_PEN_MOVE ) {
-                    Utils.logf( "dropping CMD_PEN_MOVE" );
+                if ( nextSame( JNICmd.CMD_PEN_MOVE ) ) {
                     continue;
                 }
                 draw = XwJNI.board_handlePenMove( m_jniGamePtr, 
@@ -283,6 +290,7 @@ public class JNIThread extends Thread {
     public void handle( JNICmd cmd, Object... args )
     {
         QueueElem elem = new QueueElem( cmd, args );
+        // Utils.logf( "adding: " + cmd.toString() );
         m_queue.add( elem );
     }
 }
