@@ -113,7 +113,7 @@ public class BoardActivity extends Activity implements UtilCtxt, Runnable {
         m_handler = new Handler();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
-        m_gi = new CurGameInfo();
+        m_gi = new CurGameInfo( this );
 
         m_view = (BoardView)findViewById( R.id.board_view );
 

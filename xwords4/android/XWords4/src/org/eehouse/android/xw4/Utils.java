@@ -119,6 +119,11 @@ public class Utils {
 
     public static String[] listDicts( Context context )
     {
+	return listDicts( context, Integer.MAX_VALUE );
+    }
+
+    public static String[] listDicts( Context context, int enough )
+    {
         ArrayList<String> al = new ArrayList<String>();
 
         try {
@@ -133,6 +138,9 @@ public class Utils {
 
         File files[] = Environment.getExternalStorageDirectory().listFiles();
         for ( File file : files ) {
+	    if ( al.size() >= enough ) {
+		break;
+	    }
             if ( file.isDirectory() ) { // go down one level
                 tryDir( al, file );
             } else {

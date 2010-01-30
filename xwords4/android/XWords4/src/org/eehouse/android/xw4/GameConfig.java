@@ -156,7 +156,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         }
 
         byte[] stream = Utils.savedGame( this, m_path );
-        m_gi = new CurGameInfo();
+        m_gi = new CurGameInfo( this );
         XwJNI.gi_from_stream( m_gi, stream );
         int curSel = listAvailableDicts( m_gi.dictName );
 

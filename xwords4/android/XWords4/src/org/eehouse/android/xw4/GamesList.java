@@ -125,7 +125,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         case R.id.list_item_new_from:
             stream = Utils.savedGame( this, path );
-            CurGameInfo gi = new CurGameInfo();
+            CurGameInfo gi = new CurGameInfo( this );
             XwJNI.gi_from_stream( gi, stream );
             stream = XwJNI.gi_to_stream( gi );
             Utils.saveGame( this, stream );
@@ -195,7 +195,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     }
 
     public void onClick( View v ) {
-        saveNew( new CurGameInfo() );
+        saveNew( new CurGameInfo( this ) );
         onContentChanged();
     }
 

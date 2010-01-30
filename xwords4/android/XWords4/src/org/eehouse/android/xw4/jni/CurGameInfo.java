@@ -3,11 +3,12 @@
 package org.eehouse.android.xw4.jni;
 
 import java.util.Random;
+import android.content.Context;
+
 import org.eehouse.android.xw4.Utils;
 
 public class CurGameInfo {
 
-    private static final String BUILTIN_DICT = "OWL2_2to9.xwd";
     public static final int MAX_NUM_PLAYERS = 4;
 
     public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW };
@@ -29,12 +30,12 @@ public class CurGameInfo {
     public XWPhoniesChoice phoniesAction;
     public boolean confirmBTConnect;   /* only used for BT */
 
-    public CurGameInfo() {
+    public CurGameInfo( Context context ) {
         nPlayers = 2;
         boardSize = 15;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = DeviceRole.SERVER_STANDALONE;
-        dictName = BUILTIN_DICT;
+        dictName = Utils.listDicts( context, 1 )[0];
         hintsNotAllowed = false;
         phoniesAction = XWPhoniesChoice.PHONIES_IGNORE;
         timerEnabled = false;

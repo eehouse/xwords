@@ -46,7 +46,7 @@ public class GameListAdapter implements ListAdapter {
 
         byte[] stream = open( m_context.fileList()[position] );
         if ( null != stream ) {
-            CurGameInfo gi = new CurGameInfo();
+            CurGameInfo gi = new CurGameInfo( m_context );
             XwJNI.gi_from_stream( gi, stream );
 
             StringBuffer sb = new StringBuffer();
