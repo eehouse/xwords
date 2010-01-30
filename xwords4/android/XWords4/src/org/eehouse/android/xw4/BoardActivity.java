@@ -32,7 +32,7 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
-public class BoardActivity extends Activity implements UtilCtxt, Runnable {
+public class BoardActivity extends Activity implements UtilCtxt {
 
     private static final int PICK_TILE_REQUEST = 1;
     private static final int QUERY_REQUEST = 2;
@@ -318,12 +318,13 @@ public class BoardActivity extends Activity implements UtilCtxt, Runnable {
         return bonus;
     }
 
-    public void run() {
-        m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
-    }
-
-    public void requestTime() {
-        m_handler.post( this );
+    public void requestTime() 
+    {
+        m_handler.post( new Runnable() {
+                public void run() {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
+                }
+            } );
     }
 
     public void remSelected() 
