@@ -9,7 +9,7 @@ public class CommonPrefs {
 
     public CommonPrefs() {
         showBoardArrow = true;
-        showRobotScores = true;
+        showRobotScores = false;
         hideTileValues = false; 
         skipCommitConfirm = false;
         showColors = true;
