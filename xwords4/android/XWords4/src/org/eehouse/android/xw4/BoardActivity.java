@@ -29,6 +29,7 @@ import android.content.res.Resources;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 
 public class BoardActivity extends Activity implements UtilCtxt, Runnable {
@@ -135,17 +136,21 @@ public class BoardActivity extends Activity implements UtilCtxt, Runnable {
         } else {
             m_jniGamePtr = XwJNI.initJNI();
 
+            CommsTransport xport
+                = ( m_gi.serverRole == DeviceRole.SERVER_STANDALONE )
+                ? null : new CommsTransport();
+
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                               m_gi, dictBytes, this,
                                               m_view, Utils.getCP(),
-                                              null ) ) {
+                                              xport ) ) {
                 XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
-                                        Utils.getCP(), null, dictBytes );
+                                        Utils.getCP(), xport, dictBytes );
             }
 
             m_jniThread = new 
-                JNIThread( m_jniGamePtr, 
+                JNIThread( m_jniGamePtr, m_gi,
                            new Handler() {
                                public void handleMessage( Message msg ) {
                                    switch( msg.what ) {
@@ -163,7 +168,7 @@ public class BoardActivity extends Activity implements UtilCtxt, Runnable {
             m_jniThread.start();
 
             m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
-            m_jniThread.handle( JNICmd.CMD_DO );
+            m_jniThread.handle( JNICmd.CMD_START );
         }
     } // onCreate
 
