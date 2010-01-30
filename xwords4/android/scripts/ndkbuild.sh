@@ -27,7 +27,7 @@ if [ ! -h $NDK_ROOT/apps/$APP ]; then
 fi
 
 cd $NDK_ROOT
-make APP=$APP
+make APP=$APP $*
 
 cd $OLDDIR
 echo "$0 done"
