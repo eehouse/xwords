@@ -388,3 +388,11 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
     LOG_RETURN_VOID();
 } /* intToJenumField */
 
+XWStreamCtxt*
+and_empty_stream( MPFORMAL AndGlobals* globals )
+{
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
+                                            globals, 0, NULL );
+    return stream;
+}
+

@@ -4,6 +4,7 @@
 
 #include "vtabmgr.h"
 #include "dictnry.h"
+#include "game.h"
 
 typedef struct _AndGlobals {
     VTableMgr* vtMgr;
@@ -11,6 +12,7 @@ typedef struct _AndGlobals {
     DrawCtx* dctx;
     XW_UtilCtxt* util;
     TransportProcs* xportProcs;
+    struct JNIState* state;
 } AndGlobals;
 
 #endif

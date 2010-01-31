@@ -129,12 +129,16 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 }
 
 static XWStreamCtxt*
-and_empty_stream( MPFORMAL AndGlobals* globals, void* closure )
+streamFromJStream( MPFORMAL JNIEnv* env, VTableMgr* vtMgr, jbyteArray jstream )
 {
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            closure, 0, NULL );
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
+                                            NULL, 0, NULL );
+    int len = (*env)->GetArrayLength( env, jstream );
+    jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
+    stream_putBytes( stream, jelems, len );
+    (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
     return stream;
-}
+} /* streamFromJStream */
 
 /****************************************************
  * These three methods are stateless: no gamePtr
@@ -181,12 +185,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 #endif
     VTableMgr* vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
 
-    jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
-                                            NULL, 0, NULL );
-    int len = (*env)->GetArrayLength( env, jstream );
-    stream_putBytes( stream, jelems, len );
-    (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
+    XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, vtMgr, jstream );
 
     CurGameInfo gi;
     XP_MEMSET( &gi, 0, sizeof(gi) );
@@ -251,6 +250,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 #endif
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
     AndGlobals* globals = &state->globals;
+    globals->state = (struct JNIState*)state;
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
@@ -333,12 +333,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 
-    jbyte* jelems = (*env)->GetByteArrayElements( env, jstream, NULL );
-    XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
-                                            NULL, 0, NULL );
-    int len = (*env)->GetArrayLength( env, jstream );
-    stream_putBytes( stream, jelems, len );
-    (*env)->ReleaseByteArrayElements( env, jstream, jelems, 0 );
+    XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, 
+                                              globals->vtMgr, jstream );
 
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, jcp );
@@ -664,7 +660,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
 {
     jstring result;
     XWJNI_START();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_formatDictCounts( state->game.server, stream, nCols );
     result = streamToJString( MPPARM(mpool) env, stream );
     stream_destroy( stream );
@@ -690,7 +686,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
 {
     jstring result;
     XWJNI_START();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     model_writeGameHistory( state->game.model, stream, state->game.server,
                             gameOver );
     result = streamToJString( MPPARM(mpool) env, stream );
@@ -706,7 +702,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
 {
     jstring result;
     XWJNI_START();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_writeFinalScores( state->game.server, stream );
     result = streamToJString( MPPARM(mpool) env, stream );
     (*env)->DeleteLocalRef( env, result );
@@ -715,10 +711,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
     return result;
 }
 
-static void
+void
 and_send_on_close( XWStreamCtxt* stream, void* closure )
 {
-    JNIState* state = (JNIState*)closure;
+    AndGlobals* globals = (AndGlobals*)closure;
+    JNIState* state = (JNIState*)globals->state;
 
     XP_ASSERT( !!state->game.comms );
     comms_send( state->game.comms, stream );
@@ -730,7 +727,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
 {
     LOG_FUNC();
     XWJNI_START();
-    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals, state );
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     stream_setOnCloseProc( stream, and_send_on_close );
     server_initClientConnection( state->game.server, stream );
     XWJNI_END();
@@ -774,4 +771,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddr
         XP_LOGF( "%s: no comms this game" );
     }
     XWJNI_END();
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
+( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream )
+{
+    jboolean result;
+    XWJNI_START();
+    XP_ASSERT( state->game.comms );
+    XP_ASSERT( state->game.server );
+
+    XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, globals->vtMgr,
+                                              jstream );
+    result = comms_checkIncomingStream( state->game.comms, stream, NULL )
+        && server_receiveMessage( state->game.server, stream );
+
+    stream_destroy( stream );
+
+    XWJNI_END();
+    return result;
 }

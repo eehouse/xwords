@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
+/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 /* 
  * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -50,6 +50,13 @@ and_util_getVTManager( XW_UtilCtxt* uc )
 static XWStreamCtxt*
 and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
+    AndUtil* util = (AndUtil*)uc;
+    AndGlobals* globals = (AndGlobals*)uc->closure;
+    XWStreamCtxt* stream = and_empty_stream( MPPARM(util->util.mpool)
+                                             globals );
+    stream_setAddress( stream, channelNo );
+    stream_setOnCloseProc( stream, and_send_on_close );
+    return stream;
 }
 #endif
 

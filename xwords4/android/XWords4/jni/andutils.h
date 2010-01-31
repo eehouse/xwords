@@ -10,10 +10,17 @@
 #include "mempool.h"
 #include "dictnry.h"
 
+#include "andglobals.h"
+
+
 XP_U32 and_ntohl(XP_U32 l);
-XP_U16 and_ntohs(XP_U16 l);
+XP_U16 and_ntohs(XP_U16 s);
 XP_U32 and_htonl(XP_U32 l);
-XP_U16 and_htons(XP_U16 l);
+XP_U16 and_htons(XP_U16 s);
+
+/* callback for streams */
+void and_send_on_close( XWStreamCtxt* stream, void* closure );
+XWStreamCtxt* and_empty_stream( MPFORMAL AndGlobals* globals );
 
 int getInt( JNIEnv* env, jobject obj, const char* name );
 void setInt( JNIEnv* env, jobject obj, const char* name, int value );
