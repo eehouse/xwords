@@ -40,7 +40,8 @@ public class XwJNI {
                                                       DrawCtx draw,
                                                       CommonPrefs cp,
                                                       TransportProcs procs );
-
+    public static native boolean game_receiveMessage( int gamePtr, 
+                                                      byte[] stream );
     public static native byte[] game_saveToStream( int gamePtr,
                                                    CurGameInfo gi );
     public static native void game_dispose( int gamePtr );
