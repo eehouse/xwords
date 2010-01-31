@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameListAdapter implements ListAdapter {
     Context m_context;
@@ -60,6 +61,18 @@ public class GameListAdapter implements ListAdapter {
             }
             sb.append( "\nDictionary: " );
             sb.append( gi.dictName );
+
+            DeviceRole role = gi.serverRole;
+            if ( gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                sb.append( "\n" )
+                    .append( m_context.getString( R.string.role_label ) )
+                    .append( ": " );
+                if ( role == DeviceRole.SERVER_ISSERVER ) {
+                    sb.append( m_context.getString( R.string.role_host ) );
+                } else {
+                    sb.append( m_context.getString( R.string.role_guest ) );
+                }
+            }
 
             view.setText( sb.toString() );
         }
