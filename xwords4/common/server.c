@@ -1174,8 +1174,7 @@ server_sendInitialMessage( ServerCtxt* server )
     CurGameInfo localGI;
     XP_U32 gameID = server->vol.gi->gameID;
 
-    XP_STATUSF( "server_sendInitialMessage" );
-
+    XP_ASSERT( server->nv.nDevices > 1 );
     for ( deviceIndex = 1; deviceIndex < server->nv.nDevices;
           ++deviceIndex ) {
         RemoteAddress* addr = &server->nv.addresses[deviceIndex];
@@ -1191,7 +1190,7 @@ server_sendInitialMessage( ServerCtxt* server )
         stream_putU8( stream, dict_isUTF8(dict)? 
                       STREAM_VERS_UTF8:STREAM_VERS_41B4 );
 
-        XP_STATUSF( "putting gameID %lx into msg", gameID );
+        XP_LOGF( "putting gameID %lx into msg", gameID );
         stream_putU32( stream, gameID );
 
         makeSendableGICopy( server, &localGI, deviceIndex );
