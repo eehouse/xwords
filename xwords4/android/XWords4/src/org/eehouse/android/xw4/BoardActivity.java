@@ -170,6 +170,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
             m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
             m_jniThread.handle( JNICmd.CMD_START );
+            if ( null != m_xport ) {
+                m_xport.setReceiver( m_jniThread );
+            }
         }
     } // onCreate
 
@@ -181,6 +184,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     protected void onDestroy() 
     {
+        if ( null != m_xport ) {
+            m_xport.waitToStop();
+        }
+
         if ( null != m_jniThread ) {
             m_jniThread.waitToStop();
             Utils.logf( "onDestroy(): waitToStop() returned" );
@@ -341,7 +348,16 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
 
         m_timers[why] = new TimerRunnable( why, when, handle );
-        m_handler.postDelayed( m_timers[why], 500 );
+
+        int inHowLong;
+        switch ( why ) {
+        case UtilCtxt.TIMER_COMMS:
+            inHowLong = when * 1000;
+            break;
+        default:
+            inHowLong = 500;
+        }
+        m_handler.postDelayed( m_timers[why], inHowLong );
     }
 
     public void clearTimer( int why ) 

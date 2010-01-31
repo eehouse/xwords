@@ -4,23 +4,202 @@ package org.eehouse.android.xw4;
 
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.spi.SelectorProvider;
+import java.nio.channels.ClosedChannelException;
+import java.nio.ByteBuffer;
+import java.net.InetSocketAddress;
+import java.util.Vector;
+import java.util.Iterator;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.JNIThread.*;
 
 public class CommsTransport extends Thread implements TransportProcs {
     private Selector m_selector;
     private SocketChannel m_socketChannel;
     private int m_jniGamePtr;
-    // private CommsAddrRec m_addr;
+    private boolean m_running = false;
+    private CommsAddrRec m_addr;
+    private JNIThread m_jniThread;
+    private boolean m_done = false;
+
+    private Vector<ByteBuffer> m_buffersOut;
+    private ByteBuffer m_bytesOut;
+    private ByteBuffer m_bytesIn;
+
+    // assembling inbound packet
+    private byte[] m_packetIn;
+    private int m_haveLen = -1;
 
     public CommsTransport( int jniGamePtr )
     {
         m_jniGamePtr = jniGamePtr;
+        m_buffersOut = new Vector<ByteBuffer>();
+        m_bytesIn = ByteBuffer.allocate( 2048 );
+    }
+    
+    public void setReceiver( JNIThread jnit )
+    {
+        m_jniThread = jnit;
+    }
+
+    public void waitToStop()
+    {
+        m_done = true;
+        m_selector.wakeup();
+        try {
+            join(100);          // wait up to 1/10 second
+        } catch ( java.lang.InterruptedException ie ) {
+            Utils.logf( "got InterruptedException: " + ie.toString() );
+        }
     }
 
     @Override
     public void run() 
     {
+        try {
+            m_selector = Selector.open();
+            m_socketChannel = SocketChannel.open();
+            m_socketChannel.configureBlocking( false );
+            InetSocketAddress isa
+                = new InetSocketAddress( m_addr.ip_relay_hostName, 
+                                         m_addr.ip_relay_port );
+            m_socketChannel.connect( isa );
+        } catch ( java.io.IOException ioe ) {
+            Utils.logf( ioe.toString() );
+        }
+
+        while ( !m_done ) {
+            try {
+                int ops = figureOps();
+                Utils.logf( "calling with ops=" + ops );
+                m_socketChannel.register( m_selector, ops );
+                m_selector.select();
+            } catch ( ClosedChannelException cce ) {
+                Utils.logf( "exiting: " + cce.toString() );
+                break;
+            } catch ( java.io.IOException ioe ) {
+                Utils.logf( "exiting: " + ioe.toString() );
+                Utils.logf( ioe.toString() );
+                break;
+            }
+
+            Iterator iter = m_selector.selectedKeys().iterator();
+            while ( iter.hasNext() ) {
+                SelectionKey key = (SelectionKey)iter.next();
+                SocketChannel channel = (SocketChannel)key.channel();
+                iter.remove();
+                try { 
+                    if (key.isValid() && key.isConnectable()) {
+                        Utils.logf( "socket is connectable" );
+                        if ( !channel.finishConnect() ) {
+                            key.cancel(); 
+                        }
+                    }
+                    if (key.isValid() && key.isReadable()) {
+                        m_bytesIn.clear(); // will wipe any pending data!
+                        Utils.logf( "socket is readable; buffer has space for "
+                                    + m_bytesIn.remaining() );
+                        int nRead = channel.read( m_bytesIn );
+                        if ( nRead == -1 ) {
+                            channel.close();
+                        } else {
+                            addIncoming();
+                        }
+                    }
+                    if (key.isValid() && key.isWritable()) {
+                        Utils.logf( "socket is writable" );
+                        getOut();
+                        if ( null != m_bytesOut ) {
+                            int nWritten = channel.write( m_bytesOut );
+                            Utils.logf( "wrote " + nWritten + " bytes" );
+                        }
+                    }
+                } catch ( java.io.IOException ioe ) {
+                    key.cancel(); 
+                }
+            }
+        }
+    }
+
+    private synchronized void putOut( final byte[] buf )
+    {
+        int len = buf.length;
+        ByteBuffer netbuf = ByteBuffer.allocate( len + 2 );
+        Utils.logf( "allocated outbound buffer of size " + len );
+        netbuf.putShort( (short)len );
+        netbuf.put( buf );
+        m_buffersOut.add( netbuf );
+        Assert.assertEquals( netbuf.remaining(), 0 );
+
+        if ( null != m_selector ) {
+            m_selector.wakeup();    // tell it it's got some writing to do
+        }
+    }
+
+    private synchronized void getOut()
+    {
+        if ( null != m_bytesOut && m_bytesOut.remaining() == 0 ) {
+            m_bytesOut = null;
+        }
+
+        if ( null == m_bytesOut && m_buffersOut.size() > 0 ) {
+            m_bytesOut = m_buffersOut.remove(0);
+            m_bytesOut.flip();
+        }
+    }
+
+    private synchronized int figureOps() {
+        int ops;
+        if ( m_socketChannel.isConnected() ) {
+            ops = SelectionKey.OP_READ;
+            if ( (null != m_bytesOut && m_bytesOut.hasRemaining())
+                 || m_buffersOut.size() > 0 ) {
+                ops |= SelectionKey.OP_WRITE;
+            }
+        } else {
+            ops = SelectionKey.OP_CONNECT;
+        }
+        return ops;
+    }
+
+    private void addIncoming( )
+    {
+        m_bytesIn.flip();
+        Utils.logf( "got " + m_bytesIn.remaining() + " bytes" );
+        
+        for ( ; ; ) {
+            int len = m_bytesIn.remaining();
+            Utils.logf( "addIncoming(): remaining: " + len );
+            if ( len <= 0 ) {
+                break;
+            }
+
+            if ( null == m_packetIn ) { // we're not mid-packet
+                Assert.assertTrue( len > 1 ); // tell me if I see this case
+                if ( len == 1 ) {       // half a length byte...
+                    break;              // can I leave it in the buffer?
+                } else {                
+                    m_packetIn = new byte[m_bytesIn.getShort()];
+                    m_haveLen = 0;
+                }
+            } else {                    // we're mid-packet
+                int wantLen = m_packetIn.length - m_haveLen;
+                if ( wantLen > len ) {
+                    wantLen = len;
+                }
+                m_bytesIn.get( m_packetIn, m_haveLen, wantLen );
+                m_haveLen += wantLen;
+                if ( m_haveLen == m_packetIn.length ) {
+                    // send completed packet
+                    Utils.logf( "got full packet!!" );
+                    m_jniThread.handle( JNICmd.CMD_RECEIVE, m_packetIn );
+                    m_packetIn = null;
+                }
+            }
+        }
     }
 
     // TransportProcs interface
@@ -28,14 +207,27 @@ public class CommsTransport extends Thread implements TransportProcs {
     {
         Utils.logf( "CommsTransport::transportSend" );
 
-        CommsAddrRec addr = faddr;
-        if ( null == addr ) {
-            addr = new CommsAddrRec();
-            XwJNI.comms_getAddr( m_jniGamePtr, addr );
+        if ( null == m_addr ) {
+            if ( null == faddr ) {
+                m_addr = new CommsAddrRec();
+                XwJNI.comms_getAddr( m_jniGamePtr, m_addr );
+            } else {
+                m_addr = new CommsAddrRec( faddr );
+            }
         }
 
-        Utils.logf( "CommsTransport::transportSend(" + addr.ip_relay_hostName + 
-                    ") called!!!" );
+        // add this packet to queue
+        putOut( buf );
+
+        // start the read/write thread.  Note: server needs to start
+        // before first asked to send.  For relay, though, that'll
+        // happen.  Not sure about other transport e.g. BT where
+        // server needs to get into listening mode.
+        if ( !m_running ) {
+            m_running = true;
+            start();
+        }
+
         return buf.length;
     }
 

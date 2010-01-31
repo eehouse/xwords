@@ -19,6 +19,7 @@ public class JNIThread extends Thread {
             CMD_LAYOUT,
             CMD_START,
             CMD_DO,
+            CMD_RECEIVE,
             CMD_PEN_DOWN,
             CMD_PEN_MOVE,
             CMD_PEN_UP,
@@ -187,6 +188,12 @@ public class JNIThread extends Thread {
                     continue;
                 }
                 draw = XwJNI.server_do( m_jniGamePtr );
+                break;
+
+            case CMD_RECEIVE:
+                draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
+                                                  (byte[])args[0] );
+                handle( JNICmd.CMD_DO );
                 break;
 
             case CMD_PEN_DOWN:

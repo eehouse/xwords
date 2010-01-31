@@ -16,6 +16,11 @@ public interface UtilCtxt {
                      int playerNum, String[] texts );
     boolean engineProgressCallback();
 
+    // Values for why; should be enums
+    public static final int TIMER_PENDOWN = 1;
+    public static final int TIMER_TIMERTICK = 2;
+    public static final int TIMER_COMMS = 3;
+    public static final int TIMER_SLOWROBOT = 4;
     void setTimer( int why, int when, int handle );
     void clearTimer( int why );
     void requestTime();
