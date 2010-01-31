@@ -73,14 +73,17 @@ checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
-                  XP_U16 gameID, CommonPrefs* cp,
-                  const TransportProcs* procs )
+                  CommonPrefs* cp, const TransportProcs* procs )
 {
+    XP_U16 gameID = 0;
     XP_U16 nPlayersHere, nPlayersTotal;
 
     assertUtilOK( util );
     checkServerRole( gi, &nPlayersHere, &nPlayersTotal );
 
+    while ( 0 == gameID ) {
+        gameID = util_getCurSeconds( util );
+    }
     gi->gameID = gameID;
 
     game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, util, 
@@ -112,11 +115,11 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 void
 game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, 
             XW_UtilCtxt* XP_UNUSED_STANDALONE(util), 
-            XP_U16 gameID, CommonPrefs* cp, 
-            const TransportProcs* procs )
+            CommonPrefs* cp, const TransportProcs* procs )
 {
     XP_U16 i;
     XP_U16 nPlayersHere, nPlayersTotal;
+    XP_U16 gameID = 0;
 
     XP_ASSERT( !!game->model );
     XP_ASSERT( !!gi );

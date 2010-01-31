@@ -28,8 +28,7 @@ public class XwJNI {
     public static native void game_makeNewGame( int gamePtr,
                                                 CurGameInfo gi, 
                                                 UtilCtxt util,
-                                                DrawCtx draw, int gameID, 
-                                                CommonPrefs cp, 
+                                                DrawCtx draw, CommonPrefs cp, 
                                                 TransportProcs procs, 
                                                 byte[] dict );
     public static native boolean game_makeFromStream( int gamePtr,

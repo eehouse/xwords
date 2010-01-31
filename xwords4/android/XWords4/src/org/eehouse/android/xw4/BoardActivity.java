@@ -146,7 +146,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                               m_gi, dictBytes, this,
                                               m_view, Utils.getCP(),
                                               m_xport ) ) {
-                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 0, 
+                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 
                                         Utils.getCP(), m_xport, dictBytes );
             }
 

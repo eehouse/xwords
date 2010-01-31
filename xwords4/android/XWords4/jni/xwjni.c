@@ -260,8 +260,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, jint gamePtr, jobject j_gi, jobject j_util,
-  jobject j_draw, jint gameID, jobject j_cp, jobject j_procs, 
-  jbyteArray jDictBytes )
+  jobject j_draw, jobject j_cp, jobject j_procs, jbyteArray jDictBytes )
 {
     XWJNI_START();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
@@ -276,8 +275,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     loadCommonPrefs( env, &cp, j_cp );
 
     XP_LOGF( "calling game_makeNewGame" );
-    game_makeNewGame( MPPARM(mpool) &state->game, gi, util, dctx, gameID, 
-                      &cp, globals->xportProcs );
+    game_makeNewGame( MPPARM(mpool) &state->game, gi, util, dctx, &cp,
+                      globals->xportProcs );
 
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, util, jDictBytes );
 #ifdef STUBBED_DICT

@@ -85,10 +85,10 @@ typedef struct XWGame {
 } XWGame;
 
 void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi, 
-                       XW_UtilCtxt* util, DrawCtx* draw, XP_U16 gameID,
+                       XW_UtilCtxt* util, DrawCtx* draw, 
                        CommonPrefs* cp, const TransportProcs* procs );
 void game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
-                 XP_U16 gameID, CommonPrefs* cp, const TransportProcs* procs );
+                 CommonPrefs* cp, const TransportProcs* procs );
 
 XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                              CurGameInfo* gi, 
