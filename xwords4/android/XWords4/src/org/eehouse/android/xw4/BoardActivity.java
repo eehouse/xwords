@@ -274,7 +274,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
             break;
         case R.id.board_menu_file_prefs:
             Intent intent = new Intent( this, PrefsActivity.class );
-            intent.setAction( Intent.ACTION_EDIT );
             startActivity( intent );
             break;
         case R.id.board_menu_file_about:

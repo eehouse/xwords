@@ -67,10 +67,6 @@
               android:label="@string/title_game"
               android:screenOrientation="sensor"
               >
-      <!-- Do I need an intent at all here? -->
-      <intent-filter android:label="@string/resolve_edit">
-        <action android:name="android.intent.action.EDIT" />
-      </intent-filter>
     </activity>
 
     <activity android:name="DictActivity"
@@ -78,9 +74,6 @@
               android:label="@string/title_game"
               android:screenOrientation="sensor"
               >
-      <intent-filter android:label="@string/resolve_edit">
-        <action android:name="android.intent.action.EDIT" />
-      </intent-filter>
     </activity>
 
     <activity android:name="BoardActivity"
@@ -89,21 +82,6 @@
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
               >
-      <!-- This filter says that we can edit the data of a game, i.e. play -->
-      <intent-filter android:label="@string/play">
-        <action android:name="android.intent.action.EDIT" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <data android:mimeType="vnd.android.cursor.item/vnd.org.eehouse.android.xw4.game" />
-      </intent-filter>
-
-      <!-- This filter says that we can create a new note inside
-           of a directory of notes. -->
-      <!--intent-filter>
-        <action android:name="android.intent.action.INSERT" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <data android:mimeType="vnd.android.cursor.dir/vnd.google.note" />
-      </intent-filter-->
-
     </activity>
 
     <activity android:name="BlockingActivity"

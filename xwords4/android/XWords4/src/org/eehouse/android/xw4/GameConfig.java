@@ -441,7 +441,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private void launchDictBrowser()
     {
         Intent intent = new Intent( this, DictActivity.class );
-        intent.setAction( Intent.ACTION_EDIT );
         startActivity( intent );
     }
 }
