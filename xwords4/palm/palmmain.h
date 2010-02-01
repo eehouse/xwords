@@ -125,7 +125,7 @@ typedef struct XWords4PreferenceType {
     /* these are true global preferences */
     Boolean showProgress;
     Boolean showGrid;
-    Boolean showColors;
+    Boolean _unused;  /* was showColors */
     Boolean reserved; /* was oneTimeShown */
     Boolean reserved1[4];       /* pad out to 12 for ARM */
 
@@ -173,7 +173,6 @@ typedef struct PrefsDlgState {
 
     XP_U8   phoniesAction;
     XP_U8   curBdSize;
-    XP_Bool showColors;
     XP_Bool smartRobot;
     XP_Bool showProgress;
     XP_Bool showGrid;

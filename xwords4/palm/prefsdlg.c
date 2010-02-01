@@ -192,7 +192,6 @@ GlobalPrefsToLocal( PalmAppGlobals* globals )
     state->curBdSize = !!globals->game.model? 
         model_numRows( globals->game.model ) : PALM_MAX_ROWS;
 
-    state->showColors = globals->gState.showColors;
     state->smartRobot = globals->util.gameInfo->robotSmartness == SMART_ROBOT;
     state->showGrid = globals->gState.showGrid;
     state->showProgress = globals->gState.showProgress;
@@ -224,8 +223,6 @@ LocalPrefsToGlobal( PalmAppGlobals* globals )
     XP_Bool erase = XP_FALSE;
 
     /* curBdSize handled elsewhere */
-
-    globals->gState.showColors = state->showColors;
 
     globals->util.gameInfo->robotSmartness = 
         state->smartRobot? SMART_ROBOT:DUMB_ROBOT;
@@ -278,7 +275,7 @@ localPrefsToControls( PrefsDlgState* state )
     setSelectorFromList( XW_PREFS_PHONIES_TRIGGER_ID, state->phoniesList, 
                          state->phoniesAction );
 
-    setBooleanCtrl( XW_PREFS_PLAYERCOLORS_CHECKBOX_ID, state->showColors );
+    setBooleanCtrl( XW_PREFS_PLAYERCOLORS_CHECKBOX_ID, state->cp.showColors );
     setBooleanCtrl( XW_PREFS_PROGRESSBAR_CHECKBOX_ID, state->showProgress );
     setBooleanCtrl( XW_PREFS_NOHINTS_CHECKBOX_ID, state->hintsNotAllowed );
 #ifdef XWFEATURE_SEARCHLIMIT
@@ -319,7 +316,7 @@ fieldToNum( UInt16 id )
 static void
 controlsToLocalPrefs( PrefsDlgState* state )
 {
-    state->showColors = getBooleanCtrl( XW_PREFS_PLAYERCOLORS_CHECKBOX_ID );
+    state->cp.showColors = getBooleanCtrl( XW_PREFS_PLAYERCOLORS_CHECKBOX_ID );
     state->smartRobot = getBooleanCtrl( XW_PREFS_ROBOTSMART_CHECKBOX_ID );
     state->showGrid = getBooleanCtrl( XW_PREFS_SHOWGRID_CHECKBOX_ID );
     state->cp.showBoardArrow = 

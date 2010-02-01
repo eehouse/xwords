@@ -130,7 +130,11 @@ getRandomTile( PoolContext* pool )
      * top thereafter.
      */
     
+#if defined PLATFORM_PALM && ! defined XW_TARGET_PNO
+    XP_U16 rr = XP_RANDOM();
+#else
     XP_U16 rr = (XP_U16)(XP_RANDOM()>>16);
+#endif
     XP_U16 index = (XP_U16)(rr % pool->numTilesLeft);
     Tile result = getNthPoolTile( pool, index );
 

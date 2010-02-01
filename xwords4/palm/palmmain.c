@@ -441,7 +441,6 @@ positionBoard( PalmAppGlobals* globals )
     board_setScoreboardLoc( globals->game.board, scoreLeft, scoreTop,
                             scoreWidth, scoreHeight, showGrid );
 
-    board_setShowColors( globals->game.board, globals->gState.showColors );
     board_setYOffset( globals->game.board, 0 );
 
     /* figure location for the tray.  If possible, make it smaller than the
@@ -1242,7 +1241,7 @@ startApplication( PalmAppGlobals** globalsP )
 
         palmInitTProcs( globals, &procs );
         game_makeNewGame( MEMPOOL &globals->game, &globals->gameInfo,
-                          &globals->util, globals->draw, 0, 
+                          &globals->util, globals->draw, 
                           &globals->gState.cp, &procs );
 
         FrmPopupForm( XW_NEWGAMES_FORM );
@@ -1632,6 +1631,7 @@ showConnState( PalmAppGlobals* globals )
             if ( globals->lastSendGood ) {
                 switch( globals->netState.relayState ) {
                 case COMMS_RELAYSTATE_UNCONNECTED:
+                case COMMS_RELAYSTATE_DENIED:
                 case COMMS_RELAYSTATE_CONNECT_PENDING:
                     resID = RELAYSTATUS_PENDING_RESID; 
                     break;
@@ -2067,7 +2067,7 @@ initAndStartBoard( PalmAppGlobals* globals, XP_Bool newGame )
         TransportProcs procs;
         palmInitTProcs( globals, &procs );
         game_reset( MEMPOOL &globals->game, &globals->gameInfo,
-                    &globals->util, 0, &globals->gState.cp, &procs );
+                    &globals->util, &globals->gState.cp, &procs );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->game.comms ) {
