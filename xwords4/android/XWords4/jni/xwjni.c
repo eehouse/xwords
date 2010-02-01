@@ -126,6 +126,7 @@ loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
     cp->showRobotScores = getBool( env, j_cp, "showRobotScores" );
     cp->hideTileValues = getBool( env, j_cp, "hideTileValues" );
     cp->skipCommitConfirm = getBool( env, j_cp, "skipCommitConfirm" );
+    cp->showColors = getBool( env, j_cp, "showColors" );
 }
 
 static XWStreamCtxt*
@@ -787,6 +788,22 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         && server_receiveMessage( state->game.server, stream );
 
     stream_destroy( stream );
+
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1prefsChanged
+( JNIEnv* env, jclass C, jint gamePtr, jobject jcp )
+{
+    jboolean result;
+    XWJNI_START();
+
+    CommonPrefs cp;
+    loadCommonPrefs( env, &cp, jcp );
+
+    result = board_prefsChanged( state->game.board, &cp );
 
     XWJNI_END();
     return result;

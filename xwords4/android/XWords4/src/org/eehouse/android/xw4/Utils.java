@@ -21,10 +21,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.JNIThread.*;
 
 public class Utils {
     static final String TAG = "EJAVA";
     private static CommonPrefs m_cp;
+    private static JNIThread s_jniThread = null;
 
     private Utils() {}
 
@@ -48,6 +50,11 @@ public class Utils {
     {
         CharSequence text = "Version: pre-alpha; svn rev: " + SvnVersion.VERS;
         Toast.makeText( context, text, Toast.LENGTH_LONG ).show();
+    }
+
+    public static void setThread( JNIThread thread )
+    {
+        s_jniThread = thread;
     }
 
     public static byte[] savedGame( Context context, String path )
@@ -256,6 +263,10 @@ public class Utils {
             m_cp = new CommonPrefs( cp );
         } else {
             m_cp.copyFrom( cp );
+        }
+
+        if ( null != s_jniThread ) {
+            s_jniThread.handle( JNICmd.CMD_PREFS_CHANGE, m_cp );
         }
     }
 

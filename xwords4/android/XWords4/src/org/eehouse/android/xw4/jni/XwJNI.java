@@ -81,7 +81,8 @@ public class XwJNI {
     public static native boolean board_beginTrade( int gamePtr );
 
     public static native String board_formatRemainingTiles( int gamePtr );
-
+    public static native boolean board_prefsChanged( int gamePtr, 
+                                                     CommonPrefs cp );
     // Model
     public static native String model_writeGameHistory( int gamePtr, 
                                                         boolean gameOver );

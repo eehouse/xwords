@@ -166,6 +166,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                    }
                                }
                            } );
+            Utils.setThread( m_jniThread );
             m_jniThread.start();
 
             m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
@@ -189,6 +190,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
 
         if ( null != m_jniThread ) {
+            Utils.setThread( null );
             m_jniThread.waitToStop();
             Utils.logf( "onDestroy(): waitToStop() returned" );
 
@@ -273,8 +275,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             Utils.notImpl(this);
             break;
         case R.id.board_menu_file_prefs:
-            Intent intent = new Intent( this, PrefsActivity.class );
-            startActivity( intent );
+            startActivity( new Intent( this, PrefsActivity.class ) );
             break;
         case R.id.board_menu_file_about:
             Utils.about(this);
