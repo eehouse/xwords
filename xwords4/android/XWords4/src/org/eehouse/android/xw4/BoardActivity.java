@@ -270,8 +270,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case R.id.board_menu_game_info:
         case R.id.board_menu_game_final:
         case R.id.board_menu_game_resend:
-        case R.id.board_menu_file_prefs:
             Utils.notImpl(this);
+            break;
+        case R.id.board_menu_file_prefs:
+            Intent intent = new Intent( this, PrefsActivity.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            startActivity( intent );
             break;
         case R.id.board_menu_file_about:
             Utils.about(this);
