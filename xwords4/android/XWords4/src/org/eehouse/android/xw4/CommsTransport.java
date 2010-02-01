@@ -67,10 +67,18 @@ public class CommsTransport extends Thread implements TransportProcs {
                 = new InetSocketAddress( m_addr.ip_relay_hostName, 
                                          m_addr.ip_relay_port );
             m_socketChannel.connect( isa );
+
+            loop();
+
+            m_socketChannel.close();
         } catch ( java.io.IOException ioe ) {
             Utils.logf( ioe.toString() );
         }
 
+    }
+
+    private void loop()
+    {
         while ( !m_done ) {
             try {
                 int ops = figureOps();
@@ -122,7 +130,7 @@ public class CommsTransport extends Thread implements TransportProcs {
                 }
             }
         }
-    }
+    } // loop
 
     private synchronized void putOut( final byte[] buf )
     {
