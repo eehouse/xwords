@@ -4,10 +4,14 @@
     <item android:id="@+id/gamel_menu_delete_all"
           android:title="@string/gamel_menu_delete_all"
           />
+    <item android:id="@+id/gamel_menu_view_hidden"
+          android:title="@string/gamel_menu_view_hidden"
+          />
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/gamel_menu_prefs"
           />
-    <item android:id="@+id/gamel_menu_view_hidden"
-          android:title="@string/gamel_menu_view_hidden"
+    <item android:id="@+id/gamel_menu_about"
+          android:title="@string/board_menu_file_about"
+          android:alphabeticShortcut="A"
           />
 </menu>

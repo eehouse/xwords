@@ -180,8 +180,11 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         case R.id.gamel_menu_prefs:
             Intent intent = new Intent( this, PrefsActivity.class );
-            intent.setAction( Intent.ACTION_EDIT );
             startActivity( intent );
+            break;
+
+        case R.id.gamel_menu_about:
+            Utils.about(this);
             break;
 
         case R.id.gamel_menu_view_hidden:
