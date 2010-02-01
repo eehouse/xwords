@@ -426,12 +426,9 @@ createOrLoadObjects( GtkAppGlobals* globals )
         }
 #endif
 
-        params->gi.gameID = util_getCurSeconds(globals->cGlobals.params->util);
-        XP_STATUSF( "grabbed gameID: %d\n", params->gi.gameID );
-
         game_makeNewGame( MEMPOOL &globals->cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)globals->draw,
-                          params->gi.gameID, &globals->cp, &procs );
+                          &globals->cp, &procs );
 
         addr.conType = params->conType;
         if ( 0 ) {
@@ -759,7 +756,7 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
 
         game_reset( MEMPOOL &globals->cGlobals.game, gi,
                     globals->cGlobals.params->util,
-                    0, &globals->cp, &procs );
+                    &globals->cp, &procs );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         if ( !!globals->cGlobals.game.comms ) {

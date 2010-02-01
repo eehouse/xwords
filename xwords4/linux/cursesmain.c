@@ -1427,7 +1427,6 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 {
     int piperesult;
     DictionaryCtxt* dict;
-    XP_U16 gameID;
     int width, height;
 
     memset( &g_globals, 0, sizeof(g_globals) );
@@ -1505,10 +1504,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
         stream_destroy( stream );
     } else {
-        gameID = (XP_U16)util_getCurSeconds( g_globals.cGlobals.params->util );
         game_makeNewGame( MEMPOOL &g_globals.cGlobals.game, &params->gi,
                           params->util, (DrawCtx*)g_globals.draw,
-                          gameID, &g_globals.cp, &procs );
+                          &g_globals.cp, &procs );
     }
 
 #ifndef XWFEATURE_STANDALONE_ONLY

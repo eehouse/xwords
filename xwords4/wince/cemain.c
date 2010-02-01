@@ -923,7 +923,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
         TransportProcs procs;
         ceInitTProcs( globals, &procs );
         game_reset( MEMPOOL &globals->game, &globals->gameInfo, &globals->util,
-                    0, &globals->appPrefs.cp, &procs );
+                    &globals->appPrefs.cp, &procs );
 
 #if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
         if ( !!addr && !!globals->game.comms ) {
@@ -933,7 +933,7 @@ ceInitAndStartBoard( CEAppGlobals* globals, XP_Bool newGame,
     }
 
     XP_ASSERT( !!globals->game.board );
-    ceSizeIfFullscreen( globals, globals->hWnd );
+    (void)ceSizeIfFullscreen( globals, globals->hWnd );
     (void)cePositionBoard( globals );
 
     board_invalAll( globals->game.board );
@@ -1523,7 +1523,7 @@ InitInstance(HINSTANCE hInstance, int nCmdShow
         TransportProcs procs;
         ceInitTProcs( globals, &procs );
         game_makeNewGame( MPPARM(mpool) &globals->game, &globals->gameInfo,
-                          &globals->util, (DrawCtx*)globals->draw, 0,
+                          &globals->util, (DrawCtx*)globals->draw, 
                           &globals->appPrefs.cp, &procs );
 
         /* calls ceInitAndStartBoard */
@@ -2426,7 +2426,7 @@ ceToggleFullScreen( CEAppGlobals* globals )
 {
     globals->appPrefs.fullScreen = !globals->appPrefs.fullScreen;
 
-    ceSizeIfFullscreen( globals, globals->hWnd );
+    (void)ceSizeIfFullscreen( globals, globals->hWnd );
 
     (void)cePositionBoard( globals );
 } /* ceToggleFullScreen */
