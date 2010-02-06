@@ -52,6 +52,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        CommonPrefs.setContext( this );
+
         setContentView(R.layout.game_list);
 
         // setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);

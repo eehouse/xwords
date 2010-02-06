@@ -50,6 +50,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private String m_dlgBytes = null;
     private int m_dlgTitle;
     private boolean m_dlgResult;
+    private CommonPrefs m_cp;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -111,6 +112,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         super.onCreate( savedInstanceState );
 
+        m_cp = new CommonPrefs( this );
+
         setContentView( R.layout.board );
         m_handler = new Handler();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
@@ -144,10 +147,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                               m_gi, dictBytes, this,
-                                              m_view, Utils.getCP(),
-                                              m_xport ) ) {
+                                              m_view, m_cp, m_xport ) ) {
                 XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 
-                                        Utils.getCP(), m_xport, dictBytes );
+                                        m_cp, m_xport, dictBytes );
             }
 
             m_jniThread = new 
@@ -177,11 +179,17 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
     } // onCreate
 
-    // protected void onPause() {
-    //     // save state here
-    //     saveGame();
-    //     super.onPause();
-    // }
+    @Override
+    public void onWindowFocusChanged( boolean hasFocus )
+    {
+        super.onWindowFocusChanged( hasFocus );
+        if ( hasFocus ) 
+            if ( null == m_cp ) {
+                m_cp = new CommonPrefs( this );
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE, m_cp );
+            }
+        onContentChanged();
+    }
 
     protected void onDestroy() 
     {
@@ -275,6 +283,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             Utils.notImpl(this);
             break;
         case R.id.board_menu_file_prefs:
+            m_cp = null;        // mark so we'll reset it later
             startActivity( new Intent( this, PrefsActivity.class ) );
             break;
         case R.id.board_menu_file_about:

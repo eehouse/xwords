@@ -183,4 +183,18 @@
     <string name="port_label">Port</string>
     <string name="role_edit_title">Connection</string>
 
+    <string name="general_prefs">Preferences</string>
+    <string name="prefs_colors">Colors</string>
+    <string name="player0">First player</string>
+    <string name="player1">Second player</string>
+
+    <!-- These do not require localization -->
+    <string name="key_color_tiles">key_color_tiles</string>
+    <string name="key_show_arrow">key_show_arrow</string>
+    <string name="key_explain_robot">key_explain_robot</string>
+    <string name="key_skip_confirm">key_skip_confirm</string>
+    <string name="key_hide_values">key_hide_values</string>
+    <string name="key_player0">key_player0</string>
+    <string name="key_player1">key_player1</string>
+
 </resources>

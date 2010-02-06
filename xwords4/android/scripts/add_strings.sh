@@ -55,6 +55,12 @@ for XML_FILE in $(find res/menu -name '*.xml'); do
     done
 done
 
+for XML_FILE in $(find res/xml -name '*.xml'); do
+    for STRING in $(grep 'android:.*="@string/' $XML_FILE | sed 's,^.*"@string/\(.*\)".*$,\1,'); do
+        check_add $STRING
+    done
+done
+
 for JAVA_FILE in $(find src -name '*.java'); do
     for STRING in $(grep -E 'R\.string\.' $JAVA_FILE | sed 's/^.*R\.string\.\([a-z_]*\).*$/\1/'); do
         check_add $STRING

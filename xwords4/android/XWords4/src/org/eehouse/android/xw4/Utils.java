@@ -25,7 +25,6 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 
 public class Utils {
     static final String TAG = "EJAVA";
-    private static CommonPrefs m_cp;
     private static JNIThread s_jniThread = null;
 
     private Utils() {}
@@ -247,27 +246,6 @@ public class Utils {
     {
         String str = getText( dialog, id );
         return Integer.parseInt( str );
-    }
-
-    public static CommonPrefs getCP()
-    {
-        if ( null == m_cp ) {
-            m_cp = new CommonPrefs();
-        }
-        return m_cp;
-    }
-
-    public static void setCP( CommonPrefs cp )
-    {
-        if ( null == m_cp ) {
-            m_cp = new CommonPrefs( cp );
-        } else {
-            m_cp.copyFrom( cp );
-        }
-
-        if ( null != s_jniThread ) {
-            s_jniThread.handle( JNICmd.CMD_PREFS_CHANGE, m_cp );
-        }
     }
 
 }
