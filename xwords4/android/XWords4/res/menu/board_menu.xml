@@ -64,17 +64,13 @@
               android:title="@string/board_menu_game_resend" />
       </menu>
     </item>
-    <item android:title="@string/board_submenu_file">
-      <menu>
-        <item android:id="@+id/board_menu_file_prefs"
-              android:title="@string/board_menu_file_prefs"
-              android:alphabeticShortcut="P"
-              />
-        <item android:id="@+id/board_menu_file_about"
-              android:title="@string/board_menu_file_about"
-              android:alphabeticShortcut="A"
-              />
-      </menu>
-    </item>
+    <item android:id="@+id/board_menu_file_prefs"
+          android:title="@string/board_menu_file_prefs"
+          android:alphabeticShortcut="P"
+          />
+    <item android:id="@+id/board_menu_file_about"
+          android:title="@string/board_menu_file_about"
+          android:alphabeticShortcut="A"
+          />
 
 </menu>

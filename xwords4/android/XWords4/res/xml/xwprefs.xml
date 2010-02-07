@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:key="first_preferencescreen"
+                  >
+    <PreferenceCategory android:title="@string/general_prefs"
+                        >
+
+      <CheckBoxPreference android:key="@string/key_color_tiles"
+                          android:title="@string/color_tiles"
+                          android:defaultValue="true"
+                          />
+
+      <CheckBoxPreference android:key="@string/key_show_arrow"
+                          android:title="@string/show_arrow"
+                          android:defaultValue="true"
+                          />
+      <CheckBoxPreference android:key="@string/key_explain_robot"
+                          android:title="@string/explain_robot"
+                          android:defaultValue="false"
+                          />
+      <CheckBoxPreference android:key="@string/key_skip_confirm"
+                          android:title="@string/skip_confirm_turn"
+                          android:defaultValue="false"
+                          />
+      <CheckBoxPreference android:key="@string/key_hide_values"
+                          android:title="@string/hide_values"
+                          android:defaultValue="false"
+                          />
+    </PreferenceCategory>
+
+    <PreferenceScreen android:title="@string/prefs_colors"
+                      >
+      <EditTextPreference android:key="@string/key_player0"
+                          android:title="@string/player0"
+                          android:defaultValue="0x000000"
+                          />
+      <EditTextPreference android:key="@string/key_player1"
+                          android:title="@string/player1"
+                          android:defaultValue="0xFF0000"
+                          />
+    </PreferenceScreen>
+
+-->
+</PreferenceScreen>
