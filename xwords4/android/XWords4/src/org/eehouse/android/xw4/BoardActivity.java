@@ -112,7 +112,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         super.onCreate( savedInstanceState );
 
-        m_cp = new CommonPrefs( this );
+        m_cp = CommonPrefs.get();
 
         setContentView( R.layout.board );
         m_handler = new Handler();
@@ -183,12 +183,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
     public void onWindowFocusChanged( boolean hasFocus )
     {
         super.onWindowFocusChanged( hasFocus );
-        if ( hasFocus ) 
+        if ( hasFocus ) {
             if ( null == m_cp ) {
-                m_cp = new CommonPrefs( this );
-                m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE, m_cp );
+                m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
             }
-        onContentChanged();
+            // onContentChanged();
+        }
     }
 
     protected void onDestroy() 

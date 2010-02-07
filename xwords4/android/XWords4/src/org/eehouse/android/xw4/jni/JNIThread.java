@@ -198,8 +198,9 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_PREFS_CHANGE:
-                draw = XwJNI.board_prefsChanged( m_jniGamePtr, 
-                                                 (CommonPrefs)args[0] );
+                XwJNI.board_invalAll( m_jniGamePtr );
+                XwJNI.board_prefsChanged( m_jniGamePtr, CommonPrefs.get() );
+                draw = true;
                 break;
 
             case CMD_PEN_DOWN:

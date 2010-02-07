@@ -39,6 +39,60 @@
                           android:title="@string/player1"
                           android:defaultValue="0xFF0000"
                           />
+
+      <EditTextPreference android:key="@string/key_player2"
+                          android:title="@string/player2"
+                          android:defaultValue="0x000000"
+                          />
+      <EditTextPreference android:key="@string/key_player3"
+                          android:title="@string/player3"
+                          android:defaultValue="0xFF0000"
+                          />
+
+      <EditTextPreference android:key="@string/key_bonus_l2x"
+                          android:title="@string/bonus_l2x"
+                          android:defaultValue="0xAFAF00"
+                          />
+      <EditTextPreference android:key="@string/key_bonus_l3x"
+                          android:title="@string/bonus_l3x"
+                          android:defaultValue="0x00AFAF"
+                          />
+      <EditTextPreference android:key="@string/key_bonus_w2x"
+                          android:title="@string/bonus_w2x"
+                          android:defaultValue="0xAF00AF"
+                          />
+      <EditTextPreference android:key="@string/key_bonus_w3x"
+                          android:title="@string/bonus_w3x"
+                          android:defaultValue="0xAFAFAF"
+                          />
+
+      <EditTextPreference android:key="@string/key_tile_back"
+                          android:title="@string/tile_back"
+                          android:defaultValue="0xFFFF99"
+                          />
+      <EditTextPreference android:key="@string/key_focus"
+                          android:title="@string/focus"
+                          android:defaultValue="0x7070FF"
+                          />
+    </PreferenceScreen>
+
+
+    <PreferenceScreen android:title="@string/advanced"
+                      >
+      <EditTextPreference android:key="@string/key_relay_host"
+                          android:title="@string/relay_host"
+                          android:defaultValue="eehouse.org"
+                          />
+      <EditTextPreference android:key="@string/key_relay_port"
+                          android:title="@string/relay_port"
+                          android:defaultValue="10999"
+                          android:numeric="decimal"
+                          />
+      <EditTextPreference android:key="@string/key_sms_port"
+                          android:title="@string/sms_port"
+                          android:defaultValue="5432"
+                          android:numeric="decimal"
+                          />
     </PreferenceScreen>
 
 -->

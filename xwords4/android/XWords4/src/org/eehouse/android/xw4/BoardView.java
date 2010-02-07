@@ -46,14 +46,7 @@ public class BoardView extends View implements DrawCtx,
                                      0xFF00AFAF,
                                      0xFFAF00AF,
                                      0xFFAFAFAF };
-    private static final int[] m_playerColors = {
-        0xFF000000,
-        0xFFFF0000,
-        0xFF0000FF,
-        0xFF008F00,
-    };
-
-
+    private  int[] m_playerColors;
 
     public BoardView( Context context ) 
     {
@@ -126,6 +119,8 @@ public class BoardView extends View implements DrawCtx,
         m_origin = res.getDrawable( R.drawable.origin );
 
         m_boundsScratch = new Rect();
+
+        m_playerColors = CommonPrefs.get().playerColors;
     }
 
     private boolean layoutBoardOnce() 

@@ -187,6 +187,18 @@
     <string name="prefs_colors">Colors</string>
     <string name="player0">First player</string>
     <string name="player1">Second player</string>
+    <string name="player2">Third player</string>
+    <string name="player3">Fourth player</string>
+    <string name="bonus_l2x">Double letter</string>
+    <string name="bonus_l3x">Triple letter</string>
+    <string name="bonus_w2x">Double word</string>
+    <string name="bonus_w3x">Triple word</string>
+    <string name="tile_back">Tile background</string>
+    <string name="focus">Focus color</string>
+    <string name="advanced">Advanced</string>
+    <string name="relay_host">Relay address</string>
+    <string name="relay_port">Relay port</string>
+    <string name="sms_port">SMS port</string>
 
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
@@ -196,5 +208,15 @@
     <string name="key_hide_values">key_hide_values</string>
     <string name="key_player0">key_player0</string>
     <string name="key_player1">key_player1</string>
-
+    <string name="key_player2">key_player2</string>
+    <string name="key_player3">key_player3</string>
+    <string name="key_bonus_l2x">key_bonus_l2x</string>
+    <string name="key_bonus_l3x">key_bonus_l3x</string>
+    <string name="key_bonus_w2x">key_bonus_w2x</string>
+    <string name="key_bonus_w3x">key_bonus_w3x</string>
+    <string name="key_tile_back">key_tile_back</string>
+    <string name="key_focus">key_focus</string>
+    <string name="key_relay_host">key_relay_host</string>
+    <string name="key_relay_port">key_relay_port</string>
+    <string name="key_sms_port">key_sms_port</string>
 </resources>
