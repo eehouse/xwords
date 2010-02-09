@@ -21,8 +21,7 @@
     <string name="menu_revert">Revert</string>
     <string name="menu_discard">Discard</string>
 
-    <string name="list_item_open">Open</string>
-    <string name="list_item_view">Configure</string>
+    <string name="list_item_config">Configure</string>
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
 	<string name="list_item_copy">Copy</string>
@@ -53,7 +52,7 @@
 
     <string name="player_label">Name:</string>
     <string name="game_config_open">Open</string>
-    <string name="game_config_done">Done</string>
+    <string name="game_config_revert">Revert changes</string>
 
 	<string name="error_title">Error</string>
 	<string name="info_title">FYI...</string>
@@ -153,7 +152,9 @@
 
     <string name="dict_label">Dictionary</string>
     <string name="role_label">Role</string>
-    <string name="configure_role">Configure role</string>
+    <string name="connect_via_label">Connect via</string>
+
+    <string name="configure_role">Configure connection</string>
     <string name="phonies_label">Phonies</string>
 
     <string name="download_dicts">Download more...</string>
@@ -180,6 +181,8 @@
 
     <string name="room_label">Room</string>
     <string name="hostname_label">Hostname</string>
+    <string name="phone_label">Host phone number</string>
+    <string name="bluetooth_label">Bluetooth support coming soon....</string>
     <string name="port_label">Port</string>
     <string name="role_edit_title">Connection</string>
 
@@ -199,6 +202,15 @@
     <string name="relay_host">Relay address</string>
     <string name="relay_port">Relay port</string>
     <string name="sms_port">SMS port</string>
+
+    <string name="sms_phone_label">sms_phone_label</string>
+    <string name="sms_port_label">sms_port_label</string>
+    <string name="bt_label">bt_label</string>
+    <string name="list_item_view">list_item_view</string>
+    <string name="key_player">key_player</string>
+    <string name="tab_relay">Internet/Relay</string>
+    <string name="tab_sms">SMS (pending)</string>
+    <string name="tab_bluetooth">Bluetooth (pending)</string>
 
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>

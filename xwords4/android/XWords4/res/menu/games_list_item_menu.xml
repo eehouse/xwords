@@ -4,8 +4,8 @@
     <!-- <item android:id="@+id/list_item_open" -->
     <!--       android:title="@string/list_item_open" -->
     <!--       /> -->
-    <item android:id="@+id/list_item_view"
-          android:title="@string/list_item_view"
+    <item android:id="@+id/list_item_config"
+          android:title="@string/list_item_config"
           />
     <item android:id="@+id/list_item_copy"
           android:title="@string/list_item_copy"
