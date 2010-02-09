@@ -286,43 +286,61 @@ void
 setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 {
     LOG_FUNC();
-    setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
-    setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
-    setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
-
+    XP_ASSERT( !!addr );
     intToJenumField( env, jaddr, addr->conType, "conType",
                      "org/eehouse/android/xw4/jni/CommsAddrRec$CommsConnType" );
 
-    /* Later switch off of it... */
-    XP_ASSERT( addr->conType == COMMS_CONN_RELAY );
-
+    switch ( addr->conType ) {
+    case COMMS_CONN_RELAY:        
+        setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
+        setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
+        setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
+        break;
+    case COMMS_CONN_SMS:
+        setString( env, jaddr, "sms_phone", addr->u.sms.phone );
+        XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
+        setInt( env, jaddr, "sms_port", addr->u.sms.port );
+        break;
+    case COMMS_CONN_BT:
+    default:
+        XP_ASSERT(0);
+    }
     LOG_RETURN_VOID();
 }
 
 void
 getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
+    XP_UCHAR buf[256];
+
     addr->conType = jenumFieldToInt( env, jaddr, "conType",
                                      "org/eehouse/android/xw4/jni/"
                                      "CommsAddrRec$CommsConnType" );
 
-    /* Later switch off of it... */
-    XP_ASSERT( addr->conType == COMMS_CONN_RELAY );
-
-    addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
-
-    XP_UCHAR buf[256];          /* in case needs whole path */
-    getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
-               VSIZE(addr->u.ip_relay.hostName) );
-    getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
-               VSIZE(addr->u.ip_relay.invite) );
+    switch ( addr->conType ) {
+    case COMMS_CONN_RELAY:
+        addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
+        getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
+                   VSIZE(addr->u.ip_relay.hostName) );
+        getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
+                   VSIZE(addr->u.ip_relay.invite) );
+        break;
+    case COMMS_CONN_SMS:
+        getString( env, jaddr, "sms_phone", addr->u.sms.phone,
+                   VSIZE(addr->u.sms.phone) );
+        XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
+        addr->u.sms.port = getInt( env, jaddr, "sms_port" );
+        break;
+    case COMMS_CONN_BT:
+    default:
+        XP_ASSERT(0);
+    }
 }
 
 jint
 jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field, 
                  const char* fieldSig )
 {
-    XP_LOGF( "IN %s(%s)", __func__, fieldSig );
     jclass clazz = (*env)->GetObjectClass( env, j_gi );
     XP_ASSERT( !!clazz );
     char sig[128];
@@ -345,7 +363,6 @@ void
 intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field, 
                  const char* fieldSig )
 {
-    XP_LOGF( "IN %s(%d,%s,%s)", __func__, val, field, fieldSig );
     jclass clazz = (*env)->GetObjectClass( env, jobj );
     XP_ASSERT( !!clazz );
     char buf[128];
@@ -356,7 +373,6 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
 
     jobject jenum = (*env)->GetObjectField( env, jobj, fid );
     if ( !jenum ) {       /* won't exist in new object */
-        XP_LOGF( "%s: creating new object...", __func__ );
         clazz = (*env)->FindClass( env, fieldSig );
         XP_ASSERT( !!clazz );
         jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
@@ -385,7 +401,6 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
     (*env)->DeleteLocalRef( env, jvalues );
     (*env)->DeleteLocalRef( env, jval );
     (*env)->DeleteLocalRef( env, clazz );
-    LOG_RETURN_VOID();
 } /* intToJenumField */
 
 XWStreamCtxt*
