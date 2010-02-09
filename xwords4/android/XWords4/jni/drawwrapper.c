@@ -31,7 +31,7 @@ enum {
 typedef struct _AndDraw {
     DrawCtxVTable* vtable;
     JNIEnv** env;
-    jobject j_draw;             /* global ref; free it! */
+    jobject jdraw;             /* global ref; free it! */
     jobject jCache[JCACHE_COUNT];
     MPSLOT
 } AndDraw;
@@ -109,7 +109,7 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 #define DRAW_CBK_HEADER(nam,sig)                                \
     AndDraw* draw = (AndDraw*)dctx;                             \
     JNIEnv* env = *draw->env;                                   \
-    jmethodID mid = getMethodID( env, draw->j_draw, nam, sig );
+    jmethodID mid = getMethodID( env, draw->jdraw, nam, sig );
 
 static void 
 and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect, 
@@ -127,7 +127,7 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     jintArray jscores = makeIntArray( env, numPlayers, jarr );
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, numPlayers, jscores, remCount, dfs );
 
     (*env)->DeleteLocalRef( env, jscores );
@@ -144,7 +144,7 @@ and_draw_measureRemText( DrawCtx* dctx, const XP_Rect* r,
     jintArray heightArray = makeIntArray( env, 1, NULL );
     jobject jrect = makeJRect( draw, JCACHE_RECT0, r );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, jrect, nTilesLeft, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, nTilesLeft, 
                             widthArray, heightArray );
 
     *width = getIntFromArray( env, widthArray, true );
@@ -167,7 +167,7 @@ and_draw_measureScoreText( DrawCtx* dctx,
     jintArray widthArray = makeIntArray( env, 1, NULL );
     jintArray heightArray = makeIntArray( env, 1, NULL );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, jrect, jdsi,
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, jdsi,
                             widthArray, heightArray );
 
     *width = getIntFromArray( env, widthArray, true );
@@ -185,7 +185,7 @@ and_draw_drawRemText( DrawCtx* dctx, const XP_Rect* rInner,
     jobject jrinner = makeJRect( draw, JCACHE_RECT0, rInner );
     jobject jrouter = makeJRect( draw, JCACHE_RECT1, rOuter );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, jrinner, jrouter, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, 
                             nTilesLeft, focussed );
 }
 
@@ -203,7 +203,7 @@ and_draw_score_drawPlayer( DrawCtx* dctx,
     jobject jrouter = makeJRect( draw, JCACHE_RECT1, rOuter );
     jobject jdsi = makeDSI( draw, JCACHE_DSI, dsi );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, jrinner, jrouter, jdsi );
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, jdsi );
 } /* and_draw_score_drawPlayer */
 
 static XP_Bool
@@ -226,7 +226,7 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
     }
 
     jobjectArray jbitmaps = !!bitmaps ? makeBitmapsArray( env, bitmaps ) : NULL;
-    jboolean result = (*env)->CallBooleanMethod( env, draw->j_draw, mid, 
+    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                                  jrect, jtext, jbitmaps, tile,
                                                  owner, bonus, hintAtts, 
                                                  flags );
@@ -247,7 +247,7 @@ and_draw_drawBoardArrow(DrawCtx* dctx, const XP_Rect* rect, XWBonusType bonus,
     DRAW_CBK_HEADER("drawBoardArrow", "(Landroid/graphics/Rect;IZII)V" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, bonus, vert, hintAtts, flags );
 }
 
@@ -258,7 +258,7 @@ and_draw_vertScrollBoard( DrawCtx* dctx, XP_Rect* rect, XP_S16 dist,
     DRAW_CBK_HEADER( "vertScrollBoard", "(Landroid/graphics/Rect;II)Z" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-    jboolean result = (*env)->CallBooleanMethod( env, draw->j_draw, mid, 
+    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                                  jrect, dist, dfs );
     copyJRect( env, rect, jrect );    
 
@@ -273,7 +273,7 @@ and_draw_trayBegin( DrawCtx* dctx, const XP_Rect* rect, XP_U16 owner,
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    jboolean result = (*env)->CallBooleanMethod( env, draw->j_draw, mid, 
+    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                                  jrect, owner, (jint)dfs );
 
     return XP_TRUE;
@@ -292,7 +292,7 @@ and_draw_drawTile( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
     }
 
     jobjectArray jbitmaps = makeBitmapsArray( env, bitmaps );
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, jtext, jbitmaps, val, flags );
 
     if ( !!jtext ) {
@@ -319,7 +319,7 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect,
     }
 
     jobjectArray jbitmaps = makeBitmapsArray( env, bitmaps );
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, jtext, jbitmaps, val, owner, flags );
 
     if ( !!jtext ) {
@@ -337,7 +337,7 @@ and_draw_drawTileBack( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, flags );
 }
 
@@ -348,7 +348,7 @@ and_draw_drawTrayDivider( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, flags );
 }
 
@@ -361,7 +361,7 @@ and_draw_score_pendingScore( DrawCtx* dctx, const XP_Rect* rect,
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             jrect, score, playerNum, flags );
 }
 
@@ -373,7 +373,7 @@ and_draw_objFinished( DrawCtx* dctx, BoardObjectType typ,
     DRAW_CBK_HEADER( "objFinished", "(ILandroid/graphics/Rect;I)V" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-    (*env)->CallVoidMethod( env, draw->j_draw, mid, 
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
                             (jint)typ, jrect, (jint)dfs );
 }
 
@@ -412,12 +412,14 @@ draw_doNothing( DrawCtx* dctx, ... )
 } /* draw_doNothing */
 
 DrawCtx* 
-makeDraw( MPFORMAL JNIEnv** envp, jobject j_draw )
+makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
 {
     AndDraw* draw = (AndDraw*)XP_CALLOC( mpool, sizeof(*draw) );
     JNIEnv* env = *envp;
     draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
-    draw->j_draw = (*env)->NewGlobalRef( env, j_draw );
+    if ( NULL != jdraw ) {
+        draw->jdraw = (*env)->NewGlobalRef( env, jdraw );
+    }
     draw->env = envp;
     MPASSIGN( draw->mpool, mpool );
 
@@ -452,16 +454,18 @@ makeDraw( MPFORMAL JNIEnv** envp, jobject j_draw )
     SET_PROC(drawMiniWindow);
 
 #undef SET_PROC
-
     return (DrawCtx*)draw;
 }
 
 void
-destroyDraw( DrawCtx* dctx )
+destroyDraw( DrawCtx** dctx )
 {
-    AndDraw* draw = (AndDraw*)dctx;
+    LOG_FUNC();
+    AndDraw* draw = (AndDraw*)*dctx;
     JNIEnv* env = *draw->env;
-    (*env)->DeleteGlobalRef( env, draw->j_draw );
+    if ( NULL != draw->jdraw ) {
+        (*env)->DeleteGlobalRef( env, draw->jdraw );
+    }
 
     int ii;
     for ( ii = 0; ii < JCACHE_COUNT; ++ii ) {
@@ -473,4 +477,6 @@ destroyDraw( DrawCtx* dctx )
 
     XP_FREE( draw->mpool, draw->vtable );
     XP_FREE( draw->mpool, draw );
+    *dctx = NULL;
+    LOG_RETURN_VOID();
 }
