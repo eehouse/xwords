@@ -31,6 +31,7 @@ public class XwJNI {
                                                 DrawCtx draw, CommonPrefs cp, 
                                                 TransportProcs procs, 
                                                 byte[] dict );
+
     public static native boolean game_makeFromStream( int gamePtr,
                                                       byte[] stream, 
                                                       CurGameInfo gi, 
@@ -39,10 +40,29 @@ public class XwJNI {
                                                       DrawCtx draw,
                                                       CommonPrefs cp,
                                                       TransportProcs procs );
+
+    // leave out options params for when game won't be rendered or
+    // played
+    public static void game_makeNewGame( int gamePtr, CurGameInfo gi, 
+                                         CommonPrefs cp, byte[] dict ) {
+        game_makeNewGame( gamePtr, gi, (UtilCtxt)null,
+                          (DrawCtx)null, cp, (TransportProcs)null, dict );
+    }
+
+    public static boolean game_makeFromStream( int gamePtr,
+                                               byte[] stream, 
+                                               CurGameInfo gi, 
+                                               byte[] dict, 
+                                               CommonPrefs cp ) {
+        return game_makeFromStream( gamePtr, stream, gi, dict, (UtilCtxt)null, 
+                                    (DrawCtx)null, cp, (TransportProcs)null );
+    }
+
     public static native boolean game_receiveMessage( int gamePtr, 
                                                       byte[] stream );
     public static native byte[] game_saveToStream( int gamePtr,
                                                    CurGameInfo gi );
+    public static native boolean game_hasComms( int gamePtr );
     public static native void game_dispose( int gamePtr );
 
     // Board methods
