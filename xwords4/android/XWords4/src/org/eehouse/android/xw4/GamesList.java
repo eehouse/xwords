@@ -111,8 +111,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         //     doOpen( info.position );
         //     handled = true;
         //     break;
-        case R.id.list_item_view:
-            doView( path );
+        case R.id.list_item_config:
+            doConfig( path );
             break;
         case R.id.list_item_delete:
             if ( ! deleteFile( path ) ) {
@@ -214,11 +214,11 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         File file = new File( path );
         Uri uri = Uri.fromFile( file );
         Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                     GamesList.this, BoardActivity.class );
+                                    GamesList.this, BoardActivity.class );
         startActivity( intent );
     }
 
-    private void doView( String path )
+    private void doConfig( String path )
     {
         Uri uri = Uri.fromFile( new File(path) );
         
