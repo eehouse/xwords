@@ -218,10 +218,24 @@ public class Utils {
         }
     }
 
+    public static void setText( Activity activity, int id, String value )
+    {
+        EditText editText = (EditText)activity.findViewById( id );
+        if ( null != editText ) {
+            editText.setText( value, TextView.BufferType.EDITABLE   );
+        }
+    }
+
     public static void setInt( Dialog dialog, int id, int value )
     {
         String str = Integer.toString(value);
         setText( dialog, id, str );
+    }
+
+    public static void setInt( Activity activity, int id, int value )
+    {
+        String str = Integer.toString(value);
+        setText( activity, id, str );
     }
 
     public static boolean getChecked( Activity activity, int id )
@@ -242,10 +256,29 @@ public class Utils {
         return editText.getText().toString();
     }
 
+    public static String getText( Activity activity, int id )
+    {
+        EditText editText = (EditText)activity.findViewById( id );
+        return editText.getText().toString();
+    }
+
     public static int getInt( Dialog dialog, int id )
     {
         String str = getText( dialog, id );
-        return Integer.parseInt( str );
+        try {
+            return Integer.parseInt( str );
+        } catch ( NumberFormatException nfe ) {
+            return 0;
+        }
     }
 
+    public static int getInt( Activity activity, int id )
+    {
+        String str = getText( activity, id );
+        try {
+            return Integer.parseInt( str );
+        } catch ( NumberFormatException nfe ) {
+            return 0;
+        }
+    }
 }

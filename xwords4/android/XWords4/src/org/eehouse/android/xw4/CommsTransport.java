@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4;
 
@@ -12,9 +12,14 @@ import java.net.InetSocketAddress;
 import java.util.Vector;
 import java.util.Iterator;
 import junit.framework.Assert;
+import android.telephony.SmsManager;
+import android.content.Intent;
+import android.app.PendingIntent;
+import android.content.Context;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class CommsTransport extends Thread implements TransportProcs {
     private Selector m_selector;
@@ -29,13 +34,17 @@ public class CommsTransport extends Thread implements TransportProcs {
     private ByteBuffer m_bytesOut;
     private ByteBuffer m_bytesIn;
 
+    private Context m_context;
+    
+
     // assembling inbound packet
     private byte[] m_packetIn;
     private int m_haveLen = -1;
 
-    public CommsTransport( int jniGamePtr )
+    public CommsTransport( int jniGamePtr, Context context )
     {
         m_jniGamePtr = jniGamePtr;
+        m_context = context;
         m_buffersOut = new Vector<ByteBuffer>();
         m_bytesIn = ByteBuffer.allocate( 2048 );
     }
@@ -48,11 +57,15 @@ public class CommsTransport extends Thread implements TransportProcs {
     public void waitToStop()
     {
         m_done = true;
-        m_selector.wakeup();
-        try {
-            join(100);          // wait up to 1/10 second
-        } catch ( java.lang.InterruptedException ie ) {
-            Utils.logf( "got InterruptedException: " + ie.toString() );
+        if ( null != m_selector ) {
+            m_selector.wakeup();
+        }
+        if ( m_running ) {      // synchronized this?  Or use Thread method
+            try {
+                join(100);          // wait up to 1/10 second
+            } catch ( java.lang.InterruptedException ie ) {
+                Utils.logf( "got InterruptedException: " + ie.toString() );
+            }
         }
     }
 
@@ -213,6 +226,7 @@ public class CommsTransport extends Thread implements TransportProcs {
     // TransportProcs interface
     public int transportSend( byte[] buf, final CommsAddrRec faddr )
     {
+        int nSent = -1;
         Utils.logf( "CommsTransport::transportSend" );
 
         if ( null == m_addr ) {
@@ -224,20 +238,42 @@ public class CommsTransport extends Thread implements TransportProcs {
             }
         }
 
-        // add this packet to queue
-        putOut( buf );
+        switch ( m_addr.conType ) {
+        case COMMS_CONN_RELAY:
+            putOut( buf );      // add to queue
+            if ( !m_running ) {
+                m_running = true;
+                start();
+            }
+            nSent = buf.length;
+            break;
+        case COMMS_CONN_SMS:
+            Utils.logf( "sending via sms to " + m_addr.sms_phone + ":127" );
 
-        // start the read/write thread.  Note: server needs to start
-        // before first asked to send.  For relay, though, that'll
-        // happen.  Not sure about other transport e.g. BT where
-        // server needs to get into listening mode.
-        if ( !m_running ) {
-            m_running = true;
-            start();
+            try {
+                Intent intent = new Intent( m_context, StatusReceiver.class);
+                PendingIntent pi
+                    = PendingIntent.getBroadcast( m_context, 0,
+                                                  intent, 0 );
+                // SmsManager.getDefault().sendTextMessage( m_addr.sms_phone,
+                //                                          null, "Hello world",
+                //                                          pi, pi );
+                SmsManager.getDefault().sendDataMessage( m_addr.sms_phone, 
+                                                         (String)null, (short)127,
+                                                         //(short)m_addr.sms_port, 
+                                                         buf, pi, pi );
+                Utils.logf( "called sendDataMessage" );
+                nSent = buf.length;
+            } catch ( java.lang.IllegalArgumentException iae ) {
+                Utils.logf( iae.toString() );
+            }
+            break;
+        case COMMS_CONN_BT:
+            break;
         }
 
-        return buf.length;
-    }
+        return nSent;
+    } 
 
     public void relayStatus( int newState )
     {

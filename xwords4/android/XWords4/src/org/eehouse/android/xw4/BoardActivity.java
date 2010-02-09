@@ -141,7 +141,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             m_jniGamePtr = XwJNI.initJNI();
 
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                m_xport = new CommsTransport( m_jniGamePtr );
+                m_xport = new CommsTransport( m_jniGamePtr, this );
             }
 
             if ( null == stream ||
@@ -193,6 +193,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     protected void onDestroy() 
     {
+        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
+        Utils.saveGame( this, state, m_path );
+
         if ( null != m_xport ) {
             m_xport.waitToStop();
         }
@@ -201,9 +204,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
             Utils.setThread( null );
             m_jniThread.waitToStop();
             Utils.logf( "onDestroy(): waitToStop() returned" );
-
-            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-            Utils.saveGame( this, state, m_path );
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;

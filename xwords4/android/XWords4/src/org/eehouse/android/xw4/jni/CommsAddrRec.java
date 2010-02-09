@@ -1,7 +1,8 @@
-/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
 package org.eehouse.android.xw4.jni;
 
 import java.net.InetAddress;
+import android.content.Context;
 
 import org.eehouse.android.xw4.Utils;
 
@@ -57,14 +58,5 @@ public class CommsAddrRec {
             s_car = new CommsAddrRec();
         }
         return s_car;
-    }
-    
-    public static void set( final CommsAddrRec car ) 
-    { 
-        if ( null == s_car ) {
-            s_car = new CommsAddrRec( car );
-        } else {
-            s_car.copyFrom( car );
-        }
     }
 }
