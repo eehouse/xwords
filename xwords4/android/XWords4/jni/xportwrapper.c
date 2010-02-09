@@ -24,7 +24,7 @@
 typedef struct _AndTransportProcs {
     TransportProcs tp;
     JNIEnv** envp;
-    jobject j_xport;
+    jobject jxport;
     MPSLOT
 } AndTransportProcs;
 
@@ -32,19 +32,21 @@ static jobject
 makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
 {
     LOG_FUNC();
-    jobject jaddr;
-    jclass clazz
-        = (*env)->FindClass(env, "org/eehouse/android/xw4/jni/CommsAddrRec");
-    XP_ASSERT( !!clazz );
-    jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
-    XP_ASSERT( !!mid );
+    jobject jaddr = NULL;
+    if ( NULL != addr ) {
+        jclass clazz
+            = (*env)->FindClass(env, "org/eehouse/android/xw4/jni/CommsAddrRec");
+        XP_ASSERT( !!clazz );
+        jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
+        XP_ASSERT( !!mid );
 
-    jaddr = (*env)->NewObject( env, clazz, mid );
-    XP_ASSERT( !!jaddr );
+        jaddr = (*env)->NewObject( env, clazz, mid );
+        XP_ASSERT( !!jaddr );
 
-    setJAddrRec( env, jaddr, addr );
+        setJAddrRec( env, jaddr, addr );
     
-    (*env)->DeleteLocalRef( env, clazz );
+        (*env)->DeleteLocalRef( env, clazz );
+    }
     LOG_RETURNF( "%p", jaddr );
     return jaddr;
 }
@@ -53,20 +55,25 @@ static XP_S16
 and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
                 void* closure )
 {
+    jint result = -1;
     LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
-    JNIEnv* env = *aprocs->envp;
-    const char* sig = "([BLorg/eehouse/android/xw4/jni/CommsAddrRec;)I";
-    jmethodID mid = getMethodID( env, aprocs->j_xport, "transportSend", sig );
+    if ( NULL != aprocs->jxport ) {
+        JNIEnv* env = *aprocs->envp;
+        const char* sig = "([BLorg/eehouse/android/xw4/jni/CommsAddrRec;)I";
+        jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
 
-    jbyteArray jbytes = makeByteArray( env, len, buf );
-    jobject jaddr = makeJAddr( env, addr );
+        jbyteArray jbytes = makeByteArray( env, len, buf );
+        jobject jaddr = makeJAddr( env, addr );
 
-    jint result = (*env)->CallIntMethod( env, aprocs->j_xport, mid, 
-                                         jbytes, jaddr );
+        result = (*env)->CallIntMethod( env, aprocs->jxport, mid, 
+                                        jbytes, jaddr );
 
-    (*env)->DeleteLocalRef( env, jaddr );
-    (*env)->DeleteLocalRef( env, jbytes );
+        if ( NULL != jaddr ) {
+            (*env)->DeleteLocalRef( env, jaddr );
+        }
+        (*env)->DeleteLocalRef( env, jbytes );
+    }
     LOG_RETURNF( "%d", result );
     return result;
 }
@@ -97,33 +104,36 @@ makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
 
     XP_LOGF( "%s: jxport=%p", __func__, jxport );
 
+    JNIEnv* env = *envp;
+    aprocs = (AndTransportProcs*)XP_CALLOC( mpool, sizeof(*aprocs) );
     if ( NULL != jxport ) {
-        JNIEnv* env = *envp;
-        aprocs = (AndTransportProcs*)XP_CALLOC( mpool, sizeof(*aprocs) );
-        aprocs->j_xport = (*env)->NewGlobalRef( env, jxport );
-        XP_ASSERT( aprocs->j_xport == jxport );
-        aprocs->envp = envp;
-        MPASSIGN( aprocs->mpool, mpool );
-
-        aprocs->tp.send = and_xport_send;
-        aprocs->tp.rstatus = and_xport_relayStatus;
-        aprocs->tp.rconnd = and_xport_relayConnd;
-        aprocs->tp.rerror = and_xport_relayError;
-        aprocs->tp.closure = aprocs;
+        aprocs->jxport = (*env)->NewGlobalRef( env, jxport );
     }
+    XP_ASSERT( aprocs->jxport == jxport );
+    aprocs->envp = envp;
+    MPASSIGN( aprocs->mpool, mpool );
+
+    aprocs->tp.send = and_xport_send;
+    aprocs->tp.rstatus = and_xport_relayStatus;
+    aprocs->tp.rconnd = and_xport_relayConnd;
+    aprocs->tp.rerror = and_xport_relayError;
+    aprocs->tp.closure = aprocs;
 
     LOG_RETURNF( "%p", aprocs );
     return (TransportProcs*)aprocs;
 }
 
 void
-destroyXportProcs( TransportProcs* xport )
+destroyXportProcs( TransportProcs** xport )
 {
-    if ( !!xport ) {
-        AndTransportProcs* aprocs = (AndTransportProcs*)xport;
-        JNIEnv* env = *aprocs->envp;
-        (*env)->DeleteGlobalRef( env, aprocs->j_xport );
-
-        XP_FREE( aprocs->mpool, aprocs );
+    LOG_FUNC();
+    AndTransportProcs* aprocs = (AndTransportProcs*)*xport;
+    JNIEnv* env = *aprocs->envp;
+    if ( NULL != aprocs->jxport ) {
+        (*env)->DeleteGlobalRef( env, aprocs->jxport );
     }
+
+    XP_FREE( aprocs->mpool, aprocs );
+    *xport = NULL;
+    LOG_RETURN_VOID();
 }
