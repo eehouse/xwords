@@ -19,10 +19,13 @@ public class CommonPrefs {
     public boolean showColors;
 
     public int[] playerColors;
+    public int[] bonusColors;
 
     private CommonPrefs()
     {
-        playerColors = new int[4];        
+        playerColors = new int[4];
+        bonusColors = new int[5];
+        bonusColors[0] = 0xFFFFFFFF; // white
     }
 
     private CommonPrefs refresh()
@@ -53,28 +56,33 @@ public class CommonPrefs {
         };
 
         for ( int ii = 0; ii < ids.length; ++ii ) {
-            key = s_context.getString( ids[ii] );
-            String val = sp.getString( key, "" );
-            playerColors[ii] = 0xFF000000 | Integer.decode( val );
+            playerColors[ii] = prefToColor( sp, ids[ii] );
         }
+
+        int ids2[] = { R.string.key_bonus_l2x,
+                       R.string.key_bonus_l3x,
+                       R.string.key_bonus_w2x,
+                       R.string.key_bonus_w3x,
+        };
+        for ( int ii = 0; ii < ids2.length; ++ii ) {
+            bonusColors[ii+1] = prefToColor( sp, ids2[ii] );
+        }
+
+        
 
         return this;
     }
 
-    // private CommonPrefs( Context context, CommonPrefs src ) {
-    //     this( context );
-    //     copyFrom( src );
-    // }
+    private int prefToColor( SharedPreferences sp, int id )
+    {
+        String key = s_context.getString( id );
+        String val = sp.getString( key, "" );
+        return 0xFF000000 | Integer.decode( val );
+    }
 
-    // public void copyFrom( CommonPrefs src )
-    // {
-    //     showBoardArrow = src.showBoardArrow;
-    //     showRobotScores = src.showRobotScores;
-    //     hideTileValues = src.hideTileValues;
-    //     skipCommitConfirm = src.skipCommitConfirm;
-    //     showColors = src.showColors;
-    // }
-
+    /*
+     * static methods
+     */
     public static void setContext( Context context )
     {
         Assert.assertTrue( s_context == null );

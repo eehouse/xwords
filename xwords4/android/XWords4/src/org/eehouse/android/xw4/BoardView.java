@@ -41,11 +41,7 @@ public class BoardView extends View implements DrawCtx,
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int TILE_BACK = 0xFFFFFF99;
-    private int [] m_bonusColors = { WHITE,         // BONUS_NONE
-                                     0xFFAFAF00,	  /* bonus 1 */
-                                     0xFF00AFAF,
-                                     0xFFAF00AF,
-                                     0xFFAFAFAF };
+    private int [] m_bonusColors;
     private  int[] m_playerColors;
 
     public BoardView( Context context ) 
@@ -120,7 +116,9 @@ public class BoardView extends View implements DrawCtx,
 
         m_boundsScratch = new Rect();
 
-        m_playerColors = CommonPrefs.get().playerColors;
+        CommonPrefs prefs = CommonPrefs.get();
+        m_playerColors = prefs.playerColors;
+        m_bonusColors = prefs.bonusColors;
     }
 
     private boolean layoutBoardOnce() 
