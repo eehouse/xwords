@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "cd XWords4; ../scripts/ndkbuild.sh"; -*- */
+/* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 
 #include <jni.h>
 #include <stdio.h>
@@ -21,8 +21,6 @@ void
 dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
-    LOG_FUNC();
-
     XP_UCHAR* faces = (XP_UCHAR*)XP_CALLOC( dict->mpool, nBytes + nFaces );
     XP_UCHAR** ptrs = (XP_UCHAR**)XP_CALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
     XP_U16 ii;
@@ -376,6 +374,16 @@ and_dictionary_destroy( DictionaryCtxt* dict )
 }
 
 DictionaryCtxt* 
+and_dictionary_make_empty( MPFORMAL_NOCOMMA )
+{
+    AndDictionaryCtxt* anddict
+        = (AndDictionaryCtxt*)XP_CALLOC( mpool, sizeof( *anddict ) );
+    dict_super_init( (DictionaryCtxt*)anddict );
+    MPASSIGN( anddict->super.mpool, mpool );
+    return (DictionaryCtxt*)anddict;
+}
+
+DictionaryCtxt* 
 makeDict( MPFORMAL JNIEnv *env, XW_UtilCtxt* util, jbyteArray jbytes )
 {
     XP_Bool formatOk = XP_TRUE;
@@ -391,12 +399,11 @@ makeDict( MPFORMAL JNIEnv *env, XW_UtilCtxt* util, jbyteArray jbytes )
     XP_MEMCPY( localBytes, src, len );
     (*env)->ReleaseByteArrayElements( env, jbytes, src, 0 );
 
-    anddict = (AndDictionaryCtxt*)XP_CALLOC( mpool, sizeof( *anddict ) );
-    dict_super_init( (DictionaryCtxt*)anddict );
+    anddict = (AndDictionaryCtxt*)
+        and_dictionary_make_empty( MPPARM_NOCOMMA(mpool) );
     anddict->super.destructor = and_dictionary_destroy;
     /* anddict->super.func_dict_getShortName = and_dict_getShortName; */
 
-    MPASSIGN(anddict->super.mpool, mpool);
     anddict->bytes = localBytes;
     anddict->env = env;
     anddict->util = util;
