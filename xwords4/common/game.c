@@ -30,8 +30,11 @@ extern "C" {
 static void
 assertUtilOK( XW_UtilCtxt* util )
 {
-    UtilVtable* vtable = util->vtable;
-    XP_U16 nSlots = sizeof(vtable) / 4;
+    UtilVtable* vtable;
+    XP_U16 nSlots;
+    XP_ASSERT( !!util );
+    vtable = util->vtable;
+    nSlots = sizeof(vtable) / 4;
     while ( nSlots-- ) {
         void* fptr = ((void**)vtable)[nSlots];
         XP_ASSERT( !!fptr );
@@ -90,7 +93,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                               gi->boardSize, gi->boardSize );
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    if ( !!procs && gi->serverRole != SERVER_STANDALONE ) {
+    if ( gi->serverRole != SERVER_STANDALONE ) {
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   nPlayersHere, nPlayersTotal, procs );
