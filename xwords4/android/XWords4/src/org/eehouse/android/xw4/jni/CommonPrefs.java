@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4.jni;
 
@@ -85,7 +85,6 @@ public class CommonPrefs {
      */
     public static void setContext( Context context )
     {
-        Assert.assertTrue( s_context == null );
         s_context = context;
     }
 
