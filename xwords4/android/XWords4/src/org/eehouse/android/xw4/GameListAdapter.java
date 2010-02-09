@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4;
 
@@ -108,7 +108,6 @@ public class GameListAdapter implements ListAdapter {
 
     private byte[] open( String file )
     {
-        Utils.logf( "open(" + file + ")" );
         byte[] stream = null;
         try {
             FileInputStream in = m_context.openFileInput( file );
@@ -121,7 +120,6 @@ public class GameListAdapter implements ListAdapter {
         } catch ( java.io.IOException ex ) {
             Utils.logf( "got IOException: " + ex.toString() );
         }
-        Utils.logf( "open done" );
         return stream;
     }
 }
