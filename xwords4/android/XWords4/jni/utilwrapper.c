@@ -22,6 +22,7 @@
 #include <jni.h>
 
 #include "utilwrapper.h"
+#include "anddict.h"
 #include "andutils.h"
 #include "LocalizedStrIncludes.h"
 
@@ -33,7 +34,7 @@ typedef struct _TimerStorage {
 typedef struct _AndUtil {
     XW_UtilCtxt util;
     JNIEnv** env;
-    jobject j_util;  /* global ref to object implementing XW_UtilCtxt */
+    jobject jutil;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
 } AndUtil;
@@ -63,33 +64,44 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 #define UTIL_CBK_HEADER(nam,sig)                                        \
     AndUtil* util = (AndUtil*)uc;                                       \
     JNIEnv* env = *util->env;                                           \
-    jmethodID mid = getMethodID( env, util->j_util, nam, sig )
+    if ( NULL != util->jutil ) {                                        \
+        jmethodID mid = getMethodID( env, util->jutil, nam, sig )
 
+#define UTIL_CBK_TAIL()                                                 \
+    } else {                                                            \
+        XP_LOGF( "%s: skipping call into java because jutil==NULL",     \
+                 __func__ );                                            \
+    }
     
 static XWBonusType and_util_getSquareBonus( XW_UtilCtxt* uc, 
                                             const ModelCtxt* XP_UNUSED(model),
                                             XP_U16 col, XP_U16 row )
 {
+    XWBonusType result = BONUS_NONE;
     UTIL_CBK_HEADER("getSquareBonus","(II)I" );
-    return (*env)->CallIntMethod( env, util->j_util, mid, 
+    result = (*env)->CallIntMethod( env, util->jutil, mid, 
                                   col, row );
+    UTIL_CBK_TAIL();
+    return result;
 }
 
 static void
 and_util_userError( XW_UtilCtxt* uc, UtilErrID id )
 {
     UTIL_CBK_HEADER( "userError", "(I)V" );
-    (*env)->CallVoidMethod( env, util->j_util, mid, id );
+    (*env)->CallVoidMethod( env, util->jutil, mid, id );
     if ((*env)->ExceptionOccurred(env)) {
         (*env)->ExceptionDescribe(env);
         (*env)->ExceptionClear(env);
         XP_LOGF( "exception found" );
     }
+    UTIL_CBK_TAIL();
 }
 
 static XP_Bool
 and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
+    jboolean result = XP_FALSE;
     XP_ASSERT( id < QUERY_LAST_COMMON );
     UTIL_CBK_HEADER("userQuery", "(ILjava/lang/String;)Z" );
 
@@ -97,11 +109,11 @@ and_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
     if ( NULL != stream ) {
         jstr = streamToJString( MPPARM(util->util.mpool) env, stream );
     }
-    jboolean result = (*env)->CallBooleanMethod( env, util->j_util, mid,
-                                                 id, jstr );
+    result = (*env)->CallBooleanMethod( env, util->jutil, mid, id, jstr );
     if ( NULL != jstr ) {
         (*env)->DeleteLocalRef( env, jstr );
     }
+    UTIL_CBK_TAIL();
     return result;
 }
 
@@ -109,8 +121,8 @@ static XP_S16
 and_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi, 
                        XP_U16 playerNum, const XP_UCHAR** texts, XP_U16 nTiles )
 {
-    UTIL_CBK_HEADER("userPickTile", "(I[Ljava/lang/String;)I" );
     XP_S16 result = -1;
+    UTIL_CBK_HEADER("userPickTile", "(I[Ljava/lang/String;)I" );
 
 #ifdef FEATURE_TRAY_EDIT
     ++error;                       /* need to pass pi if this is on */
@@ -118,11 +130,11 @@ and_util_userPickTile( XW_UtilCtxt* uc, const PickInfo* pi,
 
     jobject jtexts = makeStringArray( env, nTiles, texts );
 
-    result = (*env)->CallIntMethod( env, util->j_util, mid, 
+    result = (*env)->CallIntMethod( env, util->jutil, mid, 
                                     playerNum, jtexts );
 
     (*env)->DeleteLocalRef( env, jtexts );
-
+    UTIL_CBK_TAIL();
     return result;
 } /* and_util_userPickTile */
 
@@ -131,7 +143,6 @@ static XP_Bool
 and_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                       XP_UCHAR* buf, XP_U16* len )
 {
-    LOG_FUNC();
 }
 
 
@@ -139,7 +150,6 @@ static void
 and_util_trayHiddenChange(XW_UtilCtxt* uc, XW_TrayVisState newState,
                           XP_U16 nVisibleRows )
 {
-    LOG_FUNC();
 }
 
 static void
@@ -149,9 +159,9 @@ and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
     AndUtil* util = (AndUtil*)uc;
     JNIEnv* env = *util->env;
     const char* sig = "(II)V";
-    jmethodID mid = getMethodID( env, util->j_util, "yOffsetChange", sig );
+    jmethodID mid = getMethodID( env, util->jutil, "yOffsetChange", sig );
 
-    (*env)->CallVoidMethod( env, util->j_util, mid, 
+    (*env)->CallVoidMethod( env, util->jutil, mid, 
                             oldOffset, newOffset );
 #endif
 }
@@ -168,7 +178,8 @@ static void
 and_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     UTIL_CBK_HEADER( "notifyGameOver", "()V" );
-    (*env)->CallVoidMethod( env, util->j_util, mid );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
 }
 
 
@@ -182,8 +193,11 @@ and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 static XP_Bool
 and_util_engineProgressCallback( XW_UtilCtxt* uc )
 {
+    XP_Bool result = XP_FALSE;
     UTIL_CBK_HEADER("engineProgressCallback","()Z" );
-    return (*env)->CallBooleanMethod( env, util->j_util, mid );
+    result = (*env)->CallBooleanMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
+    return result;
 }
 
 /* This is added for java, not part of the util api */
@@ -206,15 +220,17 @@ and_util_setTimer( XW_UtilCtxt* uc, XWTimerReason why, XP_U16 when,
     TimerStorage* storage = &util->timerStorage[why];
     storage->proc = proc;
     storage->closure = closure;
-    (*env)->CallVoidMethod( env, util->j_util, mid,
+    (*env)->CallVoidMethod( env, util->jutil, mid,
                             why, when, (int)storage );
+    UTIL_CBK_TAIL();
 }
 
 static void
 and_util_clearTimer( XW_UtilCtxt* uc, XWTimerReason why )
 {
     UTIL_CBK_HEADER("clearTimer", "(I)V" );
-    (*env)->CallVoidMethod( env, util->j_util, mid, why );
+    (*env)->CallVoidMethod( env, util->jutil, mid, why );
+    UTIL_CBK_TAIL();
 }
 
 
@@ -222,7 +238,8 @@ static void
 and_util_requestTime( XW_UtilCtxt* uc )
 {
     UTIL_CBK_HEADER("requestTime", "()V" );
-    (*env)->CallVoidMethod( env, util->j_util, mid );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
 }
 
 static XP_Bool
@@ -245,19 +262,24 @@ and_util_getCurSeconds( XW_UtilCtxt* uc )
 static DictionaryCtxt* 
 and_util_makeEmptyDict( XW_UtilCtxt* uc )
 {
-    LOG_FUNC();
+    AndUtil* util = (AndUtil*)uc;
+#ifdef STUBBED_DICT
+    XP_ASSERT(0);
+#else
+    return and_dictionary_make_empty( MPPARM_NOCOMMA( util->util.mpool ) );
+#endif
 }
-
 
 static const XP_UCHAR*
 and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
 {
+    XP_UCHAR* result = NULL;
     UTIL_CBK_HEADER("getUserString", "(I)Ljava/lang/String;" );
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
     XP_ASSERT( index < VSIZE( util->userStrings ) );
 
     if ( ! util->userStrings[index] ) {
-        jstring jresult = (*env)->CallObjectMethod( env, util->j_util, mid, 
+        jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, 
                                                     stringCode );
         jsize len = (*env)->GetStringUTFLength( env, jresult );
         XP_UCHAR* buf = XP_MALLOC( util->util.mpool, len + 1 );
@@ -272,7 +294,9 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     }
 
     LOG_RETURNF( "%s", util->userStrings[index] );
-    return util->userStrings[index];
+    result = util->userStrings[index];
+    UTIL_CBK_TAIL();
+    return result;
 }
 
 
@@ -288,7 +312,8 @@ static void
 and_util_remSelected(XW_UtilCtxt* uc)
 {
     UTIL_CBK_HEADER("remSelected", "()V" );
-    (*env)->CallVoidMethod( env, util->j_util, mid );
+    (*env)->CallVoidMethod( env, util->jutil, mid );
+    UTIL_CBK_TAIL();
 }
 
 
@@ -335,9 +360,10 @@ and_util_makeJBitmap( XW_UtilCtxt* uc, int nCols, int nRows,
                      "(II[Z)Landroid/graphics/drawable/BitmapDrawable;" );
     jbooleanArray jcolors = makeBooleanArray( env, nCols*nRows, colors );
 
-    bitmap = (*env)->CallObjectMethod( env, util->j_util, mid,
+    bitmap = (*env)->CallObjectMethod( env, util->jutil, mid,
                                        nCols, nRows, jcolors );
     (*env)->DeleteLocalRef( env, jcolors );
+    UTIL_CBK_TAIL();
     return bitmap;
 }
 
@@ -353,22 +379,24 @@ and_util_splitFaces( XW_UtilCtxt* uc, const XP_U8* bytes, jsize len )
     XP_MEMCPY( jp, bytes, len );
     (*env)->ReleaseByteArrayElements( env, jbytes, jp, 0 );
 
-    strarray = (*env)->CallObjectMethod( env, util->j_util, mid, jbytes );
+    strarray = (*env)->CallObjectMethod( env, util->jutil, mid, jbytes );
     (*env)->DeleteLocalRef( env, jbytes );
-
+    UTIL_CBK_TAIL();
     return strarray;
 }
 
 
 XW_UtilCtxt*
-makeUtil( MPFORMAL JNIEnv** envp, jobject j_util, CurGameInfo* gi, 
+makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi, 
           AndGlobals* closure )
 {
     AndUtil* util = (AndUtil*)XP_CALLOC( mpool, sizeof(*util) );
     UtilVtable* vtable = (UtilVtable*)XP_CALLOC( mpool, sizeof(*vtable) );
     util->env = envp;
     JNIEnv* env = *envp;
-    util->j_util = (*env)->NewGlobalRef( env, j_util );
+    if ( NULL != jutil ) {
+        util->jutil = (*env)->NewGlobalRef( env, jutil );
+    }
     util->util.vtable = vtable;
     MPASSIGN( util->util.mpool, mpool );
     util->util.closure = closure;
@@ -387,7 +415,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject j_util, CurGameInfo* gi,
     SET_PROC(trayHiddenChange);
     SET_PROC(yOffsetChange);
 #ifdef XWFEATURE_TURNCHANGENOTIFY
-SET_PROC(    turnChanged);
+    SET_PROC(    turnChanged);
 #endif
     SET_PROC(notifyGameOver);
     SET_PROC(hiliteCell);
@@ -413,14 +441,14 @@ SET_PROC(    turnChanged);
     SET_PROC(engineStopping);
 #endif
 #undef SET_PROC
-
     return (XW_UtilCtxt*)util;
 } /* makeUtil */
 
 void
-destroyUtil( XW_UtilCtxt* utilc )
+destroyUtil( XW_UtilCtxt** utilc )
 {
-    AndUtil* util = (AndUtil*)utilc;
+    LOG_FUNC();
+    AndUtil* util = (AndUtil*)*utilc;
     JNIEnv *env = *util->env;
 
     int ii;
@@ -431,7 +459,11 @@ destroyUtil( XW_UtilCtxt* utilc )
         }
     }
 
-    (*env)->DeleteGlobalRef( env, util->j_util );
+    if ( NULL != util->jutil ) {
+        (*env)->DeleteGlobalRef( env, util->jutil );
+    }
     XP_FREE( util->util.mpool, util->util.vtable );
     XP_FREE( util->util.mpool, util );
+    *utilc = NULL;
+    LOG_RETURN_VOID();
 }
