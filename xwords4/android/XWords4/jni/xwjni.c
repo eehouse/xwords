@@ -113,10 +113,14 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 } /* setJGI */
 
 static void
-destroyGI( MPFORMAL CurGameInfo* gi )
+destroyGI( MPFORMAL CurGameInfo** gip )
 {
-    gi_disposePlayerInfo( MPPARM(mpool) gi );
-    XP_FREE( mpool, gi );
+    CurGameInfo* gi = *gip;
+    if ( !!gi ) {
+        gi_disposePlayerInfo( MPPARM(mpool) gi );
+        XP_FREE( mpool, gi );
+        *gip = NULL;
+    }
 }
 
 static void
@@ -159,7 +163,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
                                             NULL, 0, NULL );
 
     game_saveToStream( NULL, gi, stream );
-    destroyGI( MPPARM(mpool) gi );
+    destroyGI( MPPARM(mpool) &gi );
 
     int nBytes = stream_getSize( stream );
     result = (*env)->NewByteArray( env, nBytes );
@@ -180,7 +184,6 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 ( JNIEnv* env, jclass C, jobject jgi, jbyteArray jstream )
 {
-    LOG_FUNC();
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
 #endif
@@ -204,7 +207,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 #ifdef MEM_DEBUG
     mpool_destroy( mpool );
 #endif
-    LOG_RETURN_VOID();
 }
 
 JNIEXPORT void JNICALL
@@ -301,15 +303,15 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 #endif
     AndGlobals* globals = &state->globals;
 
-    destroyGI( MPPARM(mpool) globals->gi );
+    destroyGI( MPPARM(mpool) &globals->gi );
 
     JNIEnv* oldEnv = state->env;
     state->env = env;
     game_dispose( &state->game );
 
-    destroyDraw( globals->dctx );
-    destroyXportProcs( globals->xportProcs );
-    destroyUtil( globals->util );
+    destroyDraw( &globals->dctx );
+    destroyXportProcs( &globals->xportProcs );
+    destroyUtil( &globals->util );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
     state->env = oldEnv;
@@ -328,7 +330,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     XWJNI_START();
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
-    globals->util = makeUtil( MPPARM(mpool) &state->env, jutil, globals->gi, globals );
+    globals->util = makeUtil( MPPARM(mpool) &state->env, 
+                              jutil, globals->gi, globals );
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->util, jdict );
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
@@ -345,13 +348,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     stream_destroy( stream );
 
     if ( result ) {
-        setJGI( env, jgi, globals->gi );
+        if ( !!jgi ) {
+            setJGI( env, jgi, globals->gi );
+        }
     } else {
-        destroyDraw( globals->dctx );
-        destroyXportProcs( globals->xportProcs );
+        destroyDraw( &globals->dctx );
+        destroyXportProcs( &globals->xportProcs );
         dict_destroy( dict );
-        destroyUtil( globals->util );
-        destroyGI( MPPARM(mpool) globals->gi );
+        dict = NULL;
+        destroyUtil( &globals->util );
+        destroyGI( MPPARM(mpool) &globals->gi );
     }
 
     XWJNI_END();
@@ -370,7 +376,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
                                             NULL, 0, NULL );
 
     game_saveToStream( &state->game, gi, stream );
-    destroyGI( MPPARM(mpool) gi );
+    destroyGI( MPPARM(mpool) &gi );
 
     int nBytes = stream_getSize( stream );
     result = (*env)->NewByteArray( env, nBytes );
@@ -805,6 +811,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1prefsChanged
 
     result = board_prefsChanged( state->game.board, &cp );
 
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1hasComms
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jboolean result;
+    XWJNI_START();
+    result = NULL != state->game.comms;
     XWJNI_END();
     return result;
 }
