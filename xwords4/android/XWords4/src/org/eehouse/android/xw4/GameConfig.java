@@ -334,10 +334,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
     {
         boolean handled = true;
 
-        switch (item.getItemId()) {
+        switch( item.getItemId() ) {
         case R.id.game_config_juggle:
             m_gi.juggle();
-            onContentChanged();
+            loadPlayers();
             break;
         case R.id.game_config_done:
             m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
@@ -367,7 +367,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
             handled = false;
         }
         return handled;
-    }
+    } // onOptionsItemSelected
 
     public void onClick( View view ) 
     {
