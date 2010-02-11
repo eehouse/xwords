@@ -474,35 +474,37 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
     XP_ASSERT( gi->serverRole == SERVER_ISCLIENT );
     XP_ASSERT( stream != NULL );
-    XP_ASSERT( server->nv.gameState == XWSTATE_NONE );
+    if ( server->nv.gameState == XWSTATE_NONE ) {
+        stream_open( stream );
 
-    stream_open( stream );
+        stream_putBits( stream, XWPROTO_NBITS, XWPROTO_DEVICE_REGISTRATION );
 
-    stream_putBits( stream, XWPROTO_NBITS, XWPROTO_DEVICE_REGISTRATION );
+        nPlayers = gi->nPlayers;
+        XP_ASSERT( nPlayers > 0 );
+        stream_putBits( stream, NPLAYERS_NBITS, nPlayers );
 
-    nPlayers = gi->nPlayers;
-    XP_ASSERT( nPlayers > 0 );
-    stream_putBits( stream, NPLAYERS_NBITS, nPlayers );
+        for ( lp = gi->players; nPlayers-- > 0; ++lp ) {
+            XP_UCHAR* name;
+            XP_U8 len;
 
-    for ( lp = gi->players; nPlayers-- > 0; ++lp ) {
-        XP_UCHAR* name;
-        XP_U8 len;
+            XP_ASSERT( i++ < MAX_NUM_PLAYERS );
 
-        XP_ASSERT( i++ < MAX_NUM_PLAYERS );
+            stream_putBits( stream, 1, lp->isRobot ); /* better not to send this */
 
-        stream_putBits( stream, 1, lp->isRobot ); /* better not to send this */
-
-        /* The first nPlayers players are the ones we'll use.  The local flag
-           doesn't matter when for SERVER_ISCLIENT. */
-        name = emptyStringIfNull(lp->name);
-        len = XP_STRLEN(name);
-        if ( len > MAX_NAME_LEN ) {
-            len = MAX_NAME_LEN;
+            /* The first nPlayers players are the ones we'll use.  The local flag
+               doesn't matter when for SERVER_ISCLIENT. */
+            name = emptyStringIfNull(lp->name);
+            len = XP_STRLEN(name);
+            if ( len > MAX_NAME_LEN ) {
+                len = MAX_NAME_LEN;
+            }
+            stream_putBits( stream, NAME_LEN_NBITS, len );
+            stream_putBytes( stream, name, len );
         }
-        stream_putBits( stream, NAME_LEN_NBITS, len );
-        stream_putBytes( stream, name, len );
+    } else {
+        XP_LOGF( "%s: wierd state %s; dropping message", __func__,
+                 getStateStr(server->nv.gameState) );
     }
-
     stream_destroy( stream );
 } /* server_initClientConnection */
 #endif
