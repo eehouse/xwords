@@ -102,8 +102,6 @@ makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
 {
     AndTransportProcs* aprocs = NULL;
 
-    XP_LOGF( "%s: jxport=%p", __func__, jxport );
-
     JNIEnv* env = *envp;
     aprocs = (AndTransportProcs*)XP_CALLOC( mpool, sizeof(*aprocs) );
     if ( NULL != jxport ) {
@@ -119,7 +117,6 @@ makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
     aprocs->tp.rerror = and_xport_relayError;
     aprocs->tp.closure = aprocs;
 
-    LOG_RETURNF( "%p", aprocs );
     return (TransportProcs*)aprocs;
 }
 

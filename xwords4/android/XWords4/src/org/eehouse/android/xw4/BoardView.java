@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4;
 
@@ -37,6 +37,7 @@ public class BoardView extends View implements DrawCtx,
     private String[] m_scores;
     private Rect m_boundsScratch;
     private String m_remText;
+    private int m_dictPtr = 0;
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
@@ -356,6 +357,22 @@ public class BoardView extends View implements DrawCtx,
     {
         if ( DrawCtx.OBJ_SCORE == typ ) {
             m_canvas.restore();
+        }
+    }
+
+    public void dictChanged( int dictPtr )
+    {
+        Utils.logf( "BoardView::dictChanged" );
+        if ( m_dictPtr != dictPtr ) {
+            if ( m_dictPtr == 0 || !XwJNI.dict_tilesAreSame( m_dictPtr, dictPtr ) ) {
+                String[] chars = XwJNI.dict_getChars( dictPtr );
+                for ( String str : chars ) {
+                    if ( str.length() > 0 && str.charAt(0) >= 32 ) {
+                        Utils.logf( "got " + str );
+                    }
+                }
+            }
+            m_dictPtr = dictPtr;
         }
     }
 

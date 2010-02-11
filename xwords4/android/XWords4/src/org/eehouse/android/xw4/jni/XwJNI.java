@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4.jni;
 
@@ -28,6 +28,7 @@ public class XwJNI {
     public static native void game_makeNewGame( int gamePtr,
                                                 CurGameInfo gi, 
                                                 UtilCtxt util,
+                                                JNIUtils jniu,
                                                 DrawCtx draw, CommonPrefs cp, 
                                                 TransportProcs procs, 
                                                 byte[] dict );
@@ -37,25 +38,29 @@ public class XwJNI {
                                                       CurGameInfo gi, 
                                                       byte[] dict, 
                                                       UtilCtxt util, 
+                                                      JNIUtils jniu,
                                                       DrawCtx draw,
                                                       CommonPrefs cp,
                                                       TransportProcs procs );
 
     // leave out options params for when game won't be rendered or
     // played
-    public static void game_makeNewGame( int gamePtr, CurGameInfo gi, 
-                                         CommonPrefs cp, byte[] dict ) {
-        game_makeNewGame( gamePtr, gi, (UtilCtxt)null,
+    public static void game_makeNewGame( int gamePtr, CurGameInfo gi,
+                                         JNIUtils jniu, CommonPrefs cp, 
+                                         byte[] dict ) {
+        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu,
                           (DrawCtx)null, cp, (TransportProcs)null, dict );
     }
 
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
+                                               JNIUtils jniu,
                                                CurGameInfo gi, 
                                                byte[] dict, 
                                                CommonPrefs cp ) {
         return game_makeFromStream( gamePtr, stream, gi, dict, (UtilCtxt)null, 
-                                    (DrawCtx)null, cp, (TransportProcs)null );
+                                    jniu, (DrawCtx)null, cp, 
+                                    (TransportProcs)null );
     }
 
     public static native boolean game_receiveMessage( int gamePtr, 
@@ -119,4 +124,8 @@ public class XwJNI {
     public static native void comms_start( int gamePtr );
     public static native void comms_getAddr( int gamePtr, CommsAddrRec addr );
     public static native void comms_setAddr( int gamePtr, CommsAddrRec addr );
+
+    // Dicts
+    public static native boolean dict_tilesAreSame( int dictPtr1, int dictPtr2 );
+    public static native String[] dict_getChars( int dictPtr );
 }

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 
 /*
  * Copyright (C) 2007 The Android Open Source Project
@@ -241,9 +241,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
         byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
 
         int gamePtr = XwJNI.initJNI();
-        if ( !XwJNI.game_makeFromStream( gamePtr, stream, m_gi, dictBytes, 
-                                         m_cp ) ) {
-             XwJNI.game_makeNewGame( gamePtr, m_gi, m_cp, dictBytes );
+        if ( !XwJNI.game_makeFromStream( gamePtr, stream, JNIUtilsImpl.get(),
+                                         m_gi, dictBytes, m_cp ) ) {
+             XwJNI.game_makeNewGame( gamePtr, m_gi, JNIUtilsImpl.get(), 
+                                     m_cp, dictBytes );
         }
 
         int curSel = listAvailableDicts( m_gi.dictName );
@@ -616,7 +617,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
         int gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeNewGame( gamePtr, m_gi, m_cp, dictBytes );
+        XwJNI.game_makeNewGame( gamePtr, m_gi, JNIUtilsImpl.get(), 
+                                m_cp, dictBytes );
 
         if ( null != m_car ) {
             XwJNI.comms_setAddr( gamePtr, m_car );

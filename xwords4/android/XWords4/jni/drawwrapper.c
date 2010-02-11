@@ -109,6 +109,7 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 #define DRAW_CBK_HEADER(nam,sig)                                \
     AndDraw* draw = (AndDraw*)dctx;                             \
     JNIEnv* env = *draw->env;                                   \
+    XP_ASSERT( !!draw->jdraw );                                 \
     jmethodID mid = getMethodID( env, draw->jdraw, nam, sig );
 
 static void 
@@ -209,7 +210,9 @@ and_draw_score_drawPlayer( DrawCtx* dctx,
 static XP_Bool
 and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, DrawFocusState dfs )
 {
-    return XP_TRUE;
+    AndDraw* draw = (AndDraw*)dctx;
+    XP_Bool result = NULL != draw->jdraw;
+    return result;
 }
 
 static XP_Bool 
@@ -380,7 +383,11 @@ and_draw_objFinished( DrawCtx* dctx, BoardObjectType typ,
 static void
 and_draw_dictChanged( DrawCtx* dctx, const DictionaryCtxt* dict )
 {
-    LOG_FUNC();
+    AndDraw* draw = (AndDraw*)dctx;
+    if ( NULL != draw->jdraw ) {
+        DRAW_CBK_HEADER( "dictChanged", "(I)V" );
+        (*env)->CallVoidMethod( env, draw->jdraw, mid, (jint)dict );
+    }
 }
 
 static const XP_UCHAR* 

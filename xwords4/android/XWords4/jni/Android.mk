@@ -32,6 +32,7 @@ local_SRC_FILES +=         \
 	xportwrapper.c         \
 	anddict.c              \
 	andutils.c             \
+	jniutlswrapper.c       \
 
 
 COMMON_PATH=../../../common

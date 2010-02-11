@@ -8,11 +8,12 @@
 #include "xptypes.h"
 #include "dictnry.h"
 #include "strutils.h"
+#include "andutils.h"
 #include "utilwrapper.h"
 
 typedef struct _AndDictionaryCtxt {
     DictionaryCtxt super;
-    XW_UtilCtxt* util;
+    JNIUtilCtxt* jniutil;
     JNIEnv *env;
     XP_U8* bytes;
 } AndDictionaryCtxt;
@@ -22,7 +23,8 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     XP_UCHAR* faces = (XP_UCHAR*)XP_CALLOC( dict->mpool, nBytes + nFaces );
-    XP_UCHAR** ptrs = (XP_UCHAR**)XP_CALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
+    const XP_UCHAR** ptrs = (const XP_UCHAR**)
+        XP_CALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
     XP_U16 ii;
     XP_UCHAR* next = faces;
 
@@ -112,7 +114,7 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
         }
 
         JNIEnv* env = ctxt->env;
-        bitmap = and_util_makeJBitmap( ctxt->util, nCols, nRows, colors );
+        bitmap = and_util_makeJBitmap( ctxt->jniutil, nCols, nRows, colors );
         jobject tmp = (*env)->NewGlobalRef( env, bitmap );
         XP_ASSERT( tmp == bitmap );
         (*env)->DeleteLocalRef( env, bitmap );
@@ -176,7 +178,7 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
     int nBytes;
     int ii;
 
-    jobject jstrarr = and_util_splitFaces( ctxt->util, ptr, nFaceBytes );
+    jobject jstrarr = and_util_splitFaces( ctxt->jniutil, ptr, nFaceBytes );
     XP_ASSERT( (*env)->GetArrayLength( env, jstrarr ) == nFaces );
 
     for ( ii = 0; ii < nFaces; ++ii ) {
@@ -204,8 +206,8 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
     (*env)->DeleteLocalRef( env, jstrarr );
 
     XP_UCHAR* faces = (XP_UCHAR*)XP_CALLOC( ctxt->super.mpool, indx );
-    XP_UCHAR** ptrs = (XP_UCHAR**)XP_CALLOC( ctxt->super.mpool, 
-                                             nFaces * sizeof(ptrs[0]));
+    const XP_UCHAR** ptrs = (const XP_UCHAR**)
+        XP_CALLOC( ctxt->super.mpool, nFaces * sizeof(ptrs[0]));
 
     XP_MEMCPY( faces, facesBuf, indx );
     for ( ii = 0; ii < nFaces; ++ii ) {
@@ -373,6 +375,20 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     LOG_RETURN_VOID();
 }
 
+jobject
+and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict )
+{
+    AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)dict;
+    XP_ASSERT( env == anddict->env );
+
+    /* This is cheating: specials will be rep'd as 1,2, etc.  But as long as
+       java code wants to ignore them anyway that's ok.  Otherwise need to
+       use dict_tilesToString() */
+    XP_U16 nFaces = dict_numTileFaces( dict );
+    jobject jstrs = makeStringArray( env, nFaces, dict->facePtrs );
+    return jstrs;
+}
+
 DictionaryCtxt* 
 and_dictionary_make_empty( MPFORMAL_NOCOMMA )
 {
@@ -384,7 +400,7 @@ and_dictionary_make_empty( MPFORMAL_NOCOMMA )
 }
 
 DictionaryCtxt* 
-makeDict( MPFORMAL JNIEnv *env, XW_UtilCtxt* util, jbyteArray jbytes )
+makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes )
 {
     XP_Bool formatOk = XP_TRUE;
     XP_Bool isUTF8 = XP_FALSE;
@@ -392,7 +408,6 @@ makeDict( MPFORMAL JNIEnv *env, XW_UtilCtxt* util, jbyteArray jbytes )
     AndDictionaryCtxt* anddict = NULL;
 
     jsize len = (*env)->GetArrayLength( env, jbytes );
-    XP_LOGF( "%s: got %d bytes", __func__, len );
 
     XP_U8* localBytes = XP_MALLOC( mpool, len );
     jbyte* src = (*env)->GetByteArrayElements( env, jbytes, NULL );
@@ -406,7 +421,7 @@ makeDict( MPFORMAL JNIEnv *env, XW_UtilCtxt* util, jbyteArray jbytes )
 
     anddict->bytes = localBytes;
     anddict->env = env;
-    anddict->util = util;
+    anddict->jniutil = jniutil;
     
     parseDict( anddict, localBytes, len );
     setBlankTile( &anddict->super );

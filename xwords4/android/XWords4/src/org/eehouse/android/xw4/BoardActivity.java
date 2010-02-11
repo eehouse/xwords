@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4;
 
@@ -9,12 +9,10 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.content.res.AssetManager;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import android.os.Handler;
 import android.os.Message;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
-import java.io.ByteArrayInputStream;
 import android.content.res.Configuration;
 import android.content.Intent;
 import java.util.concurrent.Semaphore;
@@ -22,9 +20,6 @@ import android.net.Uri;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.Bitmap;
-import java.util.ArrayList;
 import android.content.res.Resources;
 
 import org.eehouse.android.xw4.jni.*;
@@ -51,6 +46,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private int m_dlgTitle;
     private boolean m_dlgResult;
     private CommonPrefs m_cp;
+    private JNIUtils m_jniu;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -113,6 +109,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         super.onCreate( savedInstanceState );
 
         m_cp = CommonPrefs.get();
+        m_jniu = JNIUtilsImpl.get();
 
         setContentView( R.layout.board );
         m_handler = new Handler();
@@ -147,9 +144,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
             if ( null == stream ||
                  ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                               m_gi, dictBytes, this,
-                                              m_view, m_cp, m_xport ) ) {
-                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_view, 
-                                        m_cp, m_xport, dictBytes );
+                                              m_jniu, m_view, m_cp, m_xport ) ) {
+                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
+                                        m_view, m_cp, m_xport, dictBytes );
             }
 
             m_jniThread = new 
@@ -193,7 +190,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     protected void onDestroy() 
     {
-        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
+        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
         Utils.saveGame( this, state, m_path );
 
         if ( null != m_xport ) {
@@ -596,63 +593,4 @@ public class BoardActivity extends Activity implements UtilCtxt {
         m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER, 
                             R.string.finalscores_title );
     }
-
-    public BitmapDrawable makeBitmap( int width, int height, boolean[] colors )
-    {
-        Bitmap bitmap = Bitmap.createBitmap( width, height, 
-                                             Bitmap.Config.ARGB_8888 );
-
-        int indx = 0;
-        for ( int yy = 0; yy < height; ++yy ) {
-            for ( int xx = 0; xx < width; ++xx ) {
-                boolean pixelSet = colors[indx++];
-                bitmap.setPixel( xx, yy, pixelSet? 0xFF000000 : 0x00FFFFFF );
-            }
-        }
-
-        // Doesn't compile if pass getResources().  Maybe the
-        // "deprecated" API is really the only one?
-        return new BitmapDrawable( /*getResources(), */bitmap );
-    }
-
-    /** Working around lack of utf8 support on the JNI side: given a
-     * utf-8 string with embedded small number vals starting with 0,
-     * convert into individual strings.  The 0 is the problem: it's
-     * not valid utf8.  So turn it and the other nums into strings and
-     * catch them on the other side.
-     */
-    public String[] splitFaces( byte[] chars )
-    {
-        ArrayList<String> al = new ArrayList<String>();
-        int ii = 0;
-        ByteArrayInputStream bais = new ByteArrayInputStream( chars );
-        InputStreamReader isr = new InputStreamReader( bais );
-
-        int[] codePoints = new int[1];
-
-        for ( ; ; ) {
-            int chr = -1;
-            try {
-                chr = isr.read();
-            } catch ( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
-            }
-            if ( -1 == chr ) {
-                break;
-            } else {
-                String letter;
-                if ( chr < 32 ) {
-                    letter = String.format( "%d", chr );
-                } else {
-                    codePoints[0] = chr;
-                    letter = new String( codePoints, 0, 1 );
-                }
-                al.add( letter );
-            }
-        }
-        
-        String[] result = al.toArray( new String[al.size()] );
-        return result;
-    }
-
 } // class BoardActivity

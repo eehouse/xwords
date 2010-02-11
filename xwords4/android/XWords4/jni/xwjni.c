@@ -16,6 +16,7 @@
 #include "xportwrapper.h"
 #include "anddict.h"
 #include "andutils.h"
+#include "jniutlswrapper.h"
 
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
@@ -219,6 +220,32 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
     setJAddrRec( env, jaddr, &addr );
 }
 
+/* Dictionary methods: don't use gamePtr */
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesAreSame
+( JNIEnv* env, jclass C, jint dictPtr1, jint dictPtr2 )
+{
+    LOG_FUNC();
+    jboolean result;
+    const DictionaryCtxt* dict1 = (DictionaryCtxt*)dictPtr1;
+    const DictionaryCtxt* dict2 = (DictionaryCtxt*)dictPtr2;
+    result = dict_tilesAreSame( dict1, dict2 );
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getChars
+( JNIEnv* env, jclass C, jint dictPtr )
+{
+    LOG_FUNC();
+    jobject result = NULL;
+    result = and_dictionary_getChars( env, (DictionaryCtxt*)dictPtr );
+    (*env)->DeleteLocalRef( env, result );
+    LOG_RETURNF( "%p", result );
+    return result;
+}
+
 typedef struct _JNIState {
     XWGame game;
     JNIEnv* env;
@@ -262,15 +289,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
-( JNIEnv* env, jclass C, jint gamePtr, jobject j_gi, jobject j_util,
-  jobject j_draw, jobject j_cp, jobject j_procs, jbyteArray jDictBytes )
+( JNIEnv* env, jclass C, jint gamePtr, jobject j_gi, jobject j_util, 
+  jobject jniu, jobject j_draw, jobject j_cp, jobject j_procs, 
+  jbyteArray jDictBytes )
 {
     XWJNI_START();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
     globals->gi = gi;
-    XW_UtilCtxt* util = makeUtil( MPPARM(mpool) &state->env, j_util, gi, 
-                                  globals );
-    globals->util = util;
+    globals->util = makeUtil( MPPARM(mpool) &state->env, j_util, gi, 
+                              globals );
+    globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
     DrawCtx* dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
     globals->dctx = dctx;
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, j_procs );
@@ -278,10 +306,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     loadCommonPrefs( env, &cp, j_cp );
 
     XP_LOGF( "calling game_makeNewGame" );
-    game_makeNewGame( MPPARM(mpool) &state->game, gi, util, dctx, &cp,
+    game_makeNewGame( MPPARM(mpool) &state->game, gi, globals->util, dctx, &cp,
                       globals->xportProcs );
 
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, util, jDictBytes );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil,
+                                     jDictBytes );
 #ifdef STUBBED_DICT
     if ( !dict ) {
         XP_LOGF( "falling back to stubbed dict" );
@@ -312,6 +341,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     destroyDraw( &globals->dctx );
     destroyXportProcs( &globals->xportProcs );
     destroyUtil( &globals->util );
+    destroyJNIUtil( &globals->jniutil );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
     state->env = oldEnv;
@@ -323,8 +353,8 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 ( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream, 
-  jobject /*out*/jgi, jbyteArray jdict, jobject jutil, jobject jdraw, 
-  jobject jcp, jobject jprocs )
+  jobject /*out*/jgi, jbyteArray jdict, jobject jutil, jobject jniu, 
+  jobject jdraw, jobject jcp, jobject jprocs )
 {
     jboolean result;
     XWJNI_START();
@@ -332,7 +362,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
     globals->util = makeUtil( MPPARM(mpool) &state->env, 
                               jutil, globals->gi, globals );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->util, jdict );
+    globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil, jdict );
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 
@@ -357,6 +388,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
         dict_destroy( dict );
         dict = NULL;
         destroyUtil( &globals->util );
+        destroyJNIUtil( &globals->jniutil );
         destroyGI( MPPARM(mpool) &globals->gi );
     }
 
@@ -371,12 +403,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
     jbyteArray result;
     XWJNI_START();
 
-    CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
+    /* Use our copy of gi if none's provided.  That's because only the caller
+       knows if its gi should win -- user has changed game config -- or if
+       ours should -- changes like remote players being added. */
+    CurGameInfo* gi = 
+        (NULL == jgi) ? globals->gi : makeGI( MPPARM(mpool) env, jgi );
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             NULL, 0, NULL );
 
     game_saveToStream( &state->game, gi, stream );
-    destroyGI( MPPARM(mpool) &gi );
+
+    if ( NULL != jgi ) {
+        destroyGI( MPPARM(mpool) &gi );
+    }
 
     int nBytes = stream_getSize( stream );
     result = (*env)->NewByteArray( env, nBytes );

@@ -61,7 +61,6 @@ public class JNIThread extends Thread {
     }
 
     public JNIThread( int gamePtr, CurGameInfo gi, Handler handler ) {
-        Utils.logf( "in JNIThread()" );
         m_jniGamePtr = gamePtr;
         m_gi = gi;
         m_handler = handler;

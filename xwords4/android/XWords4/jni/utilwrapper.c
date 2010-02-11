@@ -287,13 +287,11 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
         const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
         XP_MEMCPY( buf, jchars, len );
         buf[len] = '\0';
-        XP_LOGF( "got string from java: %s", buf );
         (*env)->ReleaseStringUTFChars( env, jresult, jchars );
         (*env)->DeleteLocalRef( env, jresult );
         util->userStrings[index] = buf;
     }
 
-    LOG_RETURNF( "%s", util->userStrings[index] );
     result = util->userStrings[index];
     UTIL_CBK_TAIL();
     return result;
@@ -349,42 +347,6 @@ and_util_engineStopping( XW_UtilCtxt* uc )
     LOG_FUNC();
 }
 #endif
-
-/* These are called from anddict.c, not via vtable */
-jobject
-and_util_makeJBitmap( XW_UtilCtxt* uc, int nCols, int nRows, 
-                      const jboolean* colors )
-{
-    jobject bitmap;
-    UTIL_CBK_HEADER( "makeBitmap", 
-                     "(II[Z)Landroid/graphics/drawable/BitmapDrawable;" );
-    jbooleanArray jcolors = makeBooleanArray( env, nCols*nRows, colors );
-
-    bitmap = (*env)->CallObjectMethod( env, util->jutil, mid,
-                                       nCols, nRows, jcolors );
-    (*env)->DeleteLocalRef( env, jcolors );
-    UTIL_CBK_TAIL();
-    return bitmap;
-}
-
-jobject
-and_util_splitFaces( XW_UtilCtxt* uc, const XP_U8* bytes, jsize len )
-{
-    jobject strarray;
-    UTIL_CBK_HEADER( "splitFaces", "([B)[Ljava/lang/String;" );
-
-    jbyteArray jbytes = (*env)->NewByteArray( env, len );
-
-    jbyte* jp = (*env)->GetByteArrayElements( env, jbytes, NULL );
-    XP_MEMCPY( jp, bytes, len );
-    (*env)->ReleaseByteArrayElements( env, jbytes, jp, 0 );
-
-    strarray = (*env)->CallObjectMethod( env, util->jutil, mid, jbytes );
-    (*env)->DeleteLocalRef( env, jbytes );
-    UTIL_CBK_TAIL();
-    return strarray;
-}
-
 
 XW_UtilCtxt*
 makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi, 
@@ -447,7 +409,6 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
 void
 destroyUtil( XW_UtilCtxt** utilc )
 {
-    LOG_FUNC();
     AndUtil* util = (AndUtil*)*utilc;
     JNIEnv *env = *util->env;
 
@@ -465,5 +426,4 @@ destroyUtil( XW_UtilCtxt** utilc )
     XP_FREE( util->util.mpool, util->util.vtable );
     XP_FREE( util->util.mpool, util );
     *utilc = NULL;
-    LOG_RETURN_VOID();
 }

@@ -77,7 +77,11 @@ public class CommonPrefs {
     {
         String key = s_context.getString( id );
         String val = sp.getString( key, "" );
-        return 0xFF000000 | Integer.decode( val );
+        try {
+            return 0xFF000000 | Integer.decode( val );
+        } catch ( java.lang.NumberFormatException nfe ) {
+            return 0xFF7F7F7F;
+        }
     }
 
     /*

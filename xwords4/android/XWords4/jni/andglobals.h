@@ -11,6 +11,7 @@ typedef struct _AndGlobals {
     CurGameInfo* gi;
     DrawCtx* dctx;
     XW_UtilCtxt* util;
+    struct JNIUtilCtxt* jniutil;
     TransportProcs* xportProcs;
     struct JNIState* state;
 } AndGlobals;

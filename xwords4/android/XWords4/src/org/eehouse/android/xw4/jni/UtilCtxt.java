@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4.jni;
 
@@ -81,12 +81,6 @@ public interface UtilCtxt {
     void userError( int id );
 
     void notifyGameOver();
-
-    BitmapDrawable makeBitmap( int width, int height, boolean[] colors );
-
-    String[] splitFaces( byte[] chars );
-
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int oldOffset, int newOffset );
-
 }

@@ -18,19 +18,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _UTILWRAPPER_H_
-#define _UTILWRAPPER_H_
+#ifndef _JNIUTLSWRAPPER_H_
+#define _JNIUTLSWRAPPER_H_
 
 #include <jni.h>
 
-#include "game.h"
 #include "util.h"
 #include "andglobals.h"
 
-XW_UtilCtxt* makeUtil( MPFORMAL JNIEnv** env, jobject j_util,
-                       CurGameInfo* gi, AndGlobals* globals );
-void destroyUtil( XW_UtilCtxt** util );
+typedef struct JNIUtilCtxt JNIUtilCtxt;
 
-bool utilTimerFired( XW_UtilCtxt* util, XWTimerReason why, int handle );
+JNIUtilCtxt* makeJNIUtil( MPFORMAL JNIEnv** env, jobject jniutls );
+void destroyJNIUtil( JNIUtilCtxt** jniu );
+
+jobject and_util_makeJBitmap( JNIUtilCtxt* jniu, int nCols, int nRows, 
+                              const jboolean* colors );
+jobject and_util_splitFaces( JNIUtilCtxt* jniu, const XP_U8* bytes, int len );
 
 #endif
