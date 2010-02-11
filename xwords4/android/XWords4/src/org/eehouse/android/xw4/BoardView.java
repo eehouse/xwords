@@ -412,9 +412,10 @@ public class BoardView extends View implements DrawCtx,
 
     private void drawCentered( String text, Rect rect ) 
     {
+        int descent = m_fillPaint.getFontMetricsInt().descent;
         int bottom = rect.bottom;
         int center = rect.left + ( (rect.right - rect.left) / 2 );
-        m_canvas.drawText( text, center, bottom, m_fillPaint );
+        m_canvas.drawText( text, center, bottom - descent, m_fillPaint );
     }
 
     private void positionDrawTile( Rect rect, String text, 
