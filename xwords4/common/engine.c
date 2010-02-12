@@ -457,8 +457,11 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                     }
                 }
 
-                if ( !engine->searchHorizontal ||
-                     (engine->isFirstMove && !searchLimits) ) {
+                if ( !engine->searchHorizontal 
+#ifdef XWFEATURE_SEARCHLIMIT
+                     || (engine->isFirstMove && !searchLimits) 
+#endif
+                     ) {
                     engine->searchInProgress = XP_FALSE;
                     break;
                 } else {
@@ -499,7 +502,9 @@ findMovesOneRow( EngineCtxt* engine )
     XP_U16 col, row = engine->curRow;
     XP_S16 prevAnchor;
     XP_U16 firstSearchCol, lastSearchCol;
+#ifdef XWFEATURE_SEARCHLIMIT
     const BdHintLimits* searchLimits = engine->searchLimits;
+#endif
 
     if ( 0 ) {
 #ifdef XWFEATURE_SEARCHLIMIT
