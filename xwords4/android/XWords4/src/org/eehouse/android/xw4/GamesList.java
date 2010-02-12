@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
  * Copyright (C) 2007 The Android Open Source Project
  *
@@ -39,6 +39,7 @@ import android.widget.Button;
 import android.view.MenuInflater;
 import java.io.FileOutputStream;
 import java.io.File;
+import android.preference.PreferenceManager;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -52,6 +53,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        PreferenceManager.setDefaultValues( this, R.xml.xwprefs, false );
         CommonPrefs.setContext( this );
 
         setContentView(R.layout.game_list);
