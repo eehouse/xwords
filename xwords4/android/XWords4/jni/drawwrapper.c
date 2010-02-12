@@ -279,7 +279,7 @@ and_draw_trayBegin( DrawCtx* dctx, const XP_Rect* rect, XP_U16 owner,
     jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
                                                  jrect, owner, (jint)dfs );
 
-    return XP_TRUE;
+    return result;
 }
 
 static void

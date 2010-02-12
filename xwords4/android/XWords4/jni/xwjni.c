@@ -258,11 +258,14 @@ typedef struct _JNIState {
     JNIState* state = (JNIState*)gamePtr;               \
     MPSLOT;                                             \
     MPASSIGN( mpool, state->mpool);                     \
-    AndGlobals* globals = &state->globals;              \
     /* if reentrant must be from same thread */         \
     XP_ASSERT( state->env == 0 || state->env == env );  \
     JNIEnv* _oldEnv = state->env;                       \
     state->env = env;
+
+#define XWJNI_START_GLOBALS()                           \
+    XWJNI_START()                                       \
+    AndGlobals* globals = &state->globals;              \
 
 #define XWJNI_END()                             \
     state->env = _oldEnv;                       \
@@ -293,7 +296,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
   jobject jniu, jobject j_draw, jobject j_cp, jobject j_procs, 
   jbyteArray jDictBytes )
 {
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
     globals->gi = gi;
     globals->util = makeUtil( MPPARM(mpool) &state->env, j_util, gi, 
@@ -357,7 +360,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
   jobject jdraw, jobject jcp, jobject jprocs )
 {
     jboolean result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
     globals->util = makeUtil( MPPARM(mpool) &state->env, 
@@ -401,7 +404,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveToStream
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jgi )
 {
     jbyteArray result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
 
     /* Use our copy of gi if none's provided.  That's because only the caller
        knows if its gi should win -- user has changed game config -- or if
@@ -659,7 +662,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
     jboolean result;
     XWJNI_START();
     XP_Bool tmpbool;
-    result = board_requestHint( state->game.board, useLimits, &tmpbool );
+    result = board_requestHint( state->game.board, 
+#ifdef XWFEATURE_SEARCHLIMIT
+                                useLimits, 
+#endif
+                                &tmpbool );
     /* If passed need to do workRemains[0] = tmpbool */
     if ( workRemains ) {
         jboolean* jelems = (*env)->GetBooleanArrayElements(env, workRemains, NULL );
@@ -675,7 +682,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_timerFired
 ( JNIEnv* env, jclass C, jint gamePtr, jint why, jint when, jint handle )
 {
     jboolean result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     XW_UtilCtxt* util = globals->util;
     result = utilTimerFired( util, why, handle );
     XWJNI_END();
@@ -687,7 +694,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1formatRemainingTiles
 (JNIEnv* env, jclass C, jint gamePtr )
 {
     jstring result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
                                             NULL, 0, NULL );
     board_formatRemainingTiles( state->game.board, stream );
@@ -704,7 +711,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1formatDictCounts
 ( JNIEnv* env, jclass C, jint gamePtr, jint nCols )
 {
     jstring result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_formatDictCounts( state->game.server, stream, nCols );
     result = streamToJString( MPPARM(mpool) env, stream );
@@ -730,7 +737,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
 ( JNIEnv* env, jclass C, jint gamePtr, jboolean gameOver )
 {
     jstring result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     model_writeGameHistory( state->game.model, stream, state->game.server,
                             gameOver );
@@ -746,7 +753,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
     jstring result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     server_writeFinalScores( state->game.server, stream );
     result = streamToJString( MPPARM(mpool) env, stream );
@@ -771,7 +778,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
     LOG_FUNC();
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     stream_setOnCloseProc( stream, and_send_on_close );
     server_initClientConnection( state->game.server, stream );
@@ -813,7 +820,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddr
         getJAddrRec( env, &addr, jaddr );
         comms_setAddr( state->game.comms, &addr );
     } else {
-        XP_LOGF( "%s: no comms this game" );
+        XP_LOGF( "%s: no comms this game", __func__ );
     }
     XWJNI_END();
 }
@@ -823,7 +830,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 ( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream )
 {
     jboolean result;
-    XWJNI_START();
+    XWJNI_START_GLOBALS();
     XP_ASSERT( state->game.comms );
     XP_ASSERT( state->game.server );
 

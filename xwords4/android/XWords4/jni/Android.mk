@@ -1,5 +1,4 @@
-# -*- mode: Makefile -*-
-
+# -*- mode: Makefile; compile-command: "../../scripts/ndkbuild.sh"; -*-
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -18,7 +17,6 @@ local_DEFINES += \
 	-DRELAY_NAME_DEFAULT=\"10.0.2.2\" \
 	-DRELAY_PORT_DEFAULT=10999 \
 	-DXWFEATURE_TURNCHANGENOTIFY \
-	-DXWFEATURE_SEARCHLIMIT \
 	-DKEYBOARD_NAV \
 	-DKEY_SUPPORT \
 	-DPOINTER_SUPPORT \
@@ -57,7 +55,7 @@ common_SRC_FILES +=        \
 	$(COMMON_PATH)/movestak.c   \
 
 
-LOCAL_CFLAGS+=$(local_C_INCLUDES) $(local_DEFINES)
+LOCAL_CFLAGS+=$(local_C_INCLUDES) $(local_DEFINES) -Wall
 LOCAL_SRC_FILES := $(linux_SRC_FILES) $(local_SRC_FILES) $(common_SRC_FILES)
 LOCAL_MODULE    := xwjni
 LOCAL_LDLIBS := -L${SYSROOT}/usr/lib -llog -lz 

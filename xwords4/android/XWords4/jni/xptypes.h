@@ -95,6 +95,11 @@ void and_assert( const char* test, int line, const char* file, const char* func 
 #define XP_WARNF(...)
 #endif
 
+XP_U32 and_ntohl(XP_U32 l);
+XP_U16 and_ntohs(XP_U16 s);
+XP_U32 and_htonl(XP_U32 l);
+XP_U16 and_htons(XP_U16 s);
+
 #define XP_NTOHL(l) and_ntohl(l)
 #define XP_NTOHS(s) and_ntohs(s)
 #define XP_HTONL(l) and_htonl(l)

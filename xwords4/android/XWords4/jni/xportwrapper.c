@@ -63,7 +63,7 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
         const char* sig = "([BLorg/eehouse/android/xw4/jni/CommsAddrRec;)I";
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
 
-        jbyteArray jbytes = makeByteArray( env, len, buf );
+        jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
         jobject jaddr = makeJAddr( env, addr );
 
         result = (*env)->CallIntMethod( env, aprocs->jxport, mid, 

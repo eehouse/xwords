@@ -7,16 +7,10 @@
 
 #include "comtypes.h"
 #include "comms.h"
-#include "mempool.h"
 #include "dictnry.h"
 
 #include "andglobals.h"
 
-
-XP_U32 and_ntohl(XP_U32 l);
-XP_U16 and_ntohs(XP_U16 s);
-XP_U32 and_htonl(XP_U32 l);
-XP_U16 and_htons(XP_U16 s);
 
 /* callback for streams */
 void and_send_on_close( XWStreamCtxt* stream, void* closure );
@@ -27,7 +21,7 @@ void setInt( JNIEnv* env, jobject obj, const char* name, int value );
 bool getBool( JNIEnv* env, jobject obj, const char* name );
 bool setBool( JNIEnv* env, jobject obj, const char* name, bool value );
 bool setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value );
-bool getString( JNIEnv* env, jobject jlp, const char* name, XP_UCHAR* buf,
+void getString( JNIEnv* env, jobject jlp, const char* name, XP_UCHAR* buf,
                 int bufLen );
 bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig, 
                 jobject* ret );

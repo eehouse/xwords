@@ -21,6 +21,7 @@
 
 #include <jni.h>
 
+#include "comtypes.h"
 #include "utilwrapper.h"
 #include "anddict.h"
 #include "andutils.h"
@@ -143,6 +144,7 @@ static XP_Bool
 and_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                       XP_UCHAR* buf, XP_U16* len )
 {
+    return XP_FALSE;;
 }
 
 
@@ -187,6 +189,7 @@ static XP_Bool
 and_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 {
     /* don't log; this is getting called a lot */
+    return XP_TRUE;             /* means keep going */
 }
 
 
@@ -303,6 +306,7 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
                           XP_U16 turn, XP_Bool turnLost )
 {
     LOG_FUNC();
+    return XP_FALSE;
 }
 
 
@@ -330,6 +334,7 @@ static XP_Bool
 and_util_getTraySearchLimits(XW_UtilCtxt* uc, XP_U16* min, XP_U16* max )
 {
     LOG_FUNC();
+    foobar;                     /* this should not be compiling */
 }
 
 #endif

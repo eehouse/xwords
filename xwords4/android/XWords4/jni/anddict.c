@@ -7,6 +7,7 @@
 #include "anddict.h"
 #include "xptypes.h"
 #include "dictnry.h"
+#include "dictnryp.h"
 #include "strutils.h"
 #include "andutils.h"
 #include "utilwrapper.h"
@@ -87,9 +88,7 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
     jobject bitmap = NULL;
 
     if ( nCols > 0 ) {
-        XP_U8* savedDest;
         XP_U8 nRows = *ptr++;
-        XP_U16 rowBytes = (nCols+7) / 8;
         XP_U8 srcByte = 0;
         XP_U8 nBits;
         XP_U16 ii;
@@ -101,8 +100,7 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
         nBits = nRows * nCols;
         for ( ii = 0; ii < nBits; ++ii ) {
             XP_U8 srcBitIndex = ii % 8;
-            XP_U8 destBitIndex = (ii % nCols) % 8;
-            XP_U8 srcMask, bit;
+            XP_U8 srcMask;
 
             if ( srcBitIndex == 0 ) {
                 srcByte = *ptr++;
@@ -402,9 +400,6 @@ and_dictionary_make_empty( MPFORMAL_NOCOMMA )
 DictionaryCtxt* 
 makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes )
 {
-    XP_Bool formatOk = XP_TRUE;
-    XP_Bool isUTF8 = XP_FALSE;
-    XP_U16 charSize;
     AndDictionaryCtxt* anddict = NULL;
 
     jsize len = (*env)->GetArrayLength( env, jbytes );
@@ -426,6 +421,5 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes )
     parseDict( anddict, localBytes, len );
     setBlankTile( &anddict->super );
 
- err:
-    return (DictionaryCtxt*)anddict;
+     return (DictionaryCtxt*)anddict;
 }

@@ -36,6 +36,8 @@ void mpool_destroy( MemPoolCtx* mpool );
 
 void* mpool_alloc( MemPoolCtx* mpool, XP_U32 size, 
                    const char* file, const char* func, XP_U32 lineNo );
+void* mpool_calloc( MemPoolCtx* mpool, XP_U32 size, const char* file, 
+                    const char* func, XP_U32 lineNo );
 void* mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, 
                      const char* file, const char* func, XP_U32 lineNo );
 void mpool_free( MemPoolCtx* mpool, void* ptr, const char* file, 

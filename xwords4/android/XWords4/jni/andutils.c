@@ -110,7 +110,7 @@ setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
     return success;
 }
 
-bool
+void
 getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
            int bufLen )
 {
@@ -311,8 +311,6 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 void
 getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
-    XP_UCHAR buf[256];
-
     addr->conType = jenumFieldToInt( env, jaddr, "conType",
                                      "org/eehouse/android/xw4/jni/"
                                      "CommsAddrRec$CommsConnType" );
