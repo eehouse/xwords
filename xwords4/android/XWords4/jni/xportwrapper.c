@@ -82,13 +82,28 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
 static void
 and_xport_relayStatus( void* closure, CommsRelayState newState )
 {
-    LOG_FUNC();
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    if ( NULL != aprocs->jxport ) {
+        JNIEnv* env = *aprocs->envp;
+        const char* sig = "(I)V";
+        jmethodID mid = getMethodID( env, aprocs->jxport, "relayStatus", sig );
+
+        (*env)->CallVoidMethod( env, aprocs->jxport, mid, newState );
+    }
 }
 
 static void
 and_xport_relayConnd( void* closure, XP_Bool allHere, XP_U16 nMissing )
 {
-    LOG_FUNC();
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    if ( NULL != aprocs->jxport ) {
+        JNIEnv* env = *aprocs->envp;
+        const char* sig = "(ZI)V";
+        jmethodID mid = getMethodID( env, aprocs->jxport, "relayConnd", sig );
+
+        (*env)->CallVoidMethod( env, aprocs->jxport, mid, 
+                                allHere, nMissing );
+    }
 }
 
 static void

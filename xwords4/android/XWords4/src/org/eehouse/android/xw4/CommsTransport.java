@@ -16,18 +16,26 @@ import android.telephony.SmsManager;
 import android.content.Intent;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class CommsTransport extends Thread implements TransportProcs {
+
+    public static final int DIALOG = 0;
+    public static final int TOAST = 1;
+
     private Selector m_selector;
     private SocketChannel m_socketChannel;
     private int m_jniGamePtr;
     private boolean m_running = false;
     private CommsAddrRec m_addr;
     private JNIThread m_jniThread;
+    private Handler m_handler;
     private boolean m_done = false;
 
     private Vector<ByteBuffer> m_buffersOut;
@@ -35,16 +43,19 @@ public class CommsTransport extends Thread implements TransportProcs {
     private ByteBuffer m_bytesIn;
 
     private Context m_context;
-    
+    private DeviceRole m_role;
 
     // assembling inbound packet
     private byte[] m_packetIn;
     private int m_haveLen = -1;
 
-    public CommsTransport( int jniGamePtr, Context context )
+    public CommsTransport( int jniGamePtr, Context context, Handler handler,
+                           DeviceRole role )
     {
         m_jniGamePtr = jniGamePtr;
         m_context = context;
+        m_handler = handler;
+        m_role = role;
         m_buffersOut = new Vector<ByteBuffer>();
         m_bytesIn = ByteBuffer.allocate( 2048 );
     }
@@ -248,21 +259,26 @@ public class CommsTransport extends Thread implements TransportProcs {
             nSent = buf.length;
             break;
         case COMMS_CONN_SMS:
-            Utils.logf( "sending via sms to " + m_addr.sms_phone + ":127" );
+            Utils.logf( "sending via sms to " + m_addr.sms_phone
+                        + m_addr.sms_port );
 
             try {
                 Intent intent = new Intent( m_context, StatusReceiver.class);
                 PendingIntent pi
                     = PendingIntent.getBroadcast( m_context, 0,
                                                   intent, 0 );
-                // SmsManager.getDefault().sendTextMessage( m_addr.sms_phone,
-                //                                          null, "Hello world",
-                //                                          pi, pi );
-                SmsManager.getDefault().sendDataMessage( m_addr.sms_phone, 
-                                                         (String)null, (short)127,
-                                                         //(short)m_addr.sms_port, 
-                                                         buf, pi, pi );
-                Utils.logf( "called sendDataMessage" );
+                if ( 0 == m_addr.sms_port ) {
+                     SmsManager.getDefault().sendTextMessage( m_addr.sms_phone,
+                                                              null, "Hello world",
+                                                              pi, pi );
+                    Utils.logf( "called sendTextMessage" );
+                } else {
+                    SmsManager.getDefault().
+                        sendDataMessage( m_addr.sms_phone, (String)null,
+                                         (short)m_addr.sms_port, 
+                                         buf, pi, pi );
+                    Utils.logf( "called sendDataMessage" );
+                }
                 nSent = buf.length;
             } catch ( java.lang.IllegalArgumentException iae ) {
                 Utils.logf( iae.toString() );
@@ -277,14 +293,25 @@ public class CommsTransport extends Thread implements TransportProcs {
 
     public void relayStatus( int newState )
     {
+        Utils.logf( "relayStatus called" );
     }
 
     public void relayConnd( boolean allHere, int nMissing )
     {
+        String message = null;
+        if ( allHere ) {
+            message = m_context.getString( R.string.msg_relay_all_here );
+        } else if ( nMissing > 0 ) {
+            String fmt = m_context.getString( R.string.msg_relay_waiting );
+            message = String.format( fmt, nMissing );
+        }
+        if ( null != message ) {
+            Message.obtain( m_handler, TOAST, message ).sendToTarget();
+        }
     }
 
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
+        Utils.logf( "relayErrorProc called" );
     }
-
 }

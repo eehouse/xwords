@@ -21,6 +21,7 @@ import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.widget.Toast;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -138,7 +139,24 @@ public class BoardActivity extends Activity implements UtilCtxt {
             m_jniGamePtr = XwJNI.initJNI();
 
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                m_xport = new CommsTransport( m_jniGamePtr, this );
+                Handler handler = new Handler() {
+                        public void handleMessage( Message msg ) {
+                            switch( msg.what ) {
+                            case CommsTransport.DIALOG:
+                                m_dlgBytes = (String)msg.obj;
+                                m_dlgTitle = msg.arg1;
+                                showDialog( DLG_OKONLY );
+                                break;
+                            case CommsTransport.TOAST:
+                                Toast.makeText( BoardActivity.this,
+                                                (CharSequence)(msg.obj),
+                                                Toast.LENGTH_SHORT).show();
+                                break;
+                            }
+                        }
+                    };
+                m_xport = new CommsTransport( m_jniGamePtr, this, handler, 
+                                              m_gi.serverRole );
             }
 
             if ( null == stream ||
