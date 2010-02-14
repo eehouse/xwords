@@ -26,6 +26,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
 
     gi->nPlayers = getInt( env, j_gi, "nPlayers");
     gi->boardSize = getInt( env, j_gi, "boardSize" );
+    gi->gameID = getInt( env, j_gi, "gameID" );
     gi->robotSmartness = getInt( env, j_gi, "robotSmartness" );
     gi->hintsNotAllowed = getBool( env, j_gi, "hintsNotAllowed" );
     gi->timerEnabled =  getBool( env, j_gi, "timerEnabled" );
@@ -78,6 +79,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     // set fields
     setInt( env, jgi, "nPlayers", gi->nPlayers );
     setInt( env, jgi, "boardSize", gi->boardSize );
+    setInt( env, jgi, "gameID", gi->gameID );
     setInt( env, jgi, "robotSmartness", gi->robotSmartness );
     setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
     setBool( env, jgi, "timerEnabled", gi->timerEnabled );
@@ -382,6 +384,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     stream_destroy( stream );
 
     if ( result ) {
+        XP_ASSERT( 0 != globals->gi->gameID );
         if ( !!jgi ) {
             setJGI( env, jgi, globals->gi );
         }
