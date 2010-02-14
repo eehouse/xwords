@@ -1,3 +1,5 @@
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
+
 
 package org.eehouse.android.xw4.jni;
 

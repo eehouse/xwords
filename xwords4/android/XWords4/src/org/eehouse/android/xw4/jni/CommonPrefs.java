@@ -9,6 +9,10 @@ import org.eehouse.android.xw4.R;
 import junit.framework.Assert;
 
 public class CommonPrefs {
+    public static final int COLOR_TILE_BACK = 0;
+    public static final int COLOR_FOCUS = 1;
+    public static final int COLOR_LAST = 2;
+
     private static Context s_context = null;
     private static CommonPrefs s_cp = null;
 
@@ -20,12 +24,14 @@ public class CommonPrefs {
 
     public int[] playerColors;
     public int[] bonusColors;
+    public int[] otherColors;
 
     private CommonPrefs()
     {
         playerColors = new int[4];
         bonusColors = new int[5];
         bonusColors[0] = 0xFFFFFFFF; // white
+        otherColors = new int[COLOR_LAST];
     }
 
     private CommonPrefs refresh()
@@ -68,7 +74,12 @@ public class CommonPrefs {
             bonusColors[ii+1] = prefToColor( sp, ids2[ii] );
         }
 
-        
+        int idsOther[] = { R.string.key_tile_back,
+                           R.string.key_focus,
+        };
+        for ( int ii = 0; ii < idsOther.length; ++ii ) {
+            otherColors[ii] = prefToColor( sp, idsOther[ii] );
+        }
 
         return this;
     }
@@ -99,5 +110,13 @@ public class CommonPrefs {
             s_cp = new CommonPrefs();
         }
         return s_cp.refresh();
+    }
+
+    public static String getDefaultRelayHost()
+    {
+        SharedPreferences sp = 
+            PreferenceManager.getDefaultSharedPreferences( s_context );
+        String key = s_context.getString( R.string.key_relay_host );
+        return sp.getString( key, "" );
     }
 }

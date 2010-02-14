@@ -35,7 +35,7 @@ public class CommsAddrRec {
         Utils.logf( "CommsAddrRec() called " );
         conType = CommsConnType.COMMS_CONN_RELAY;
         ip_relay_invite = "Room 1";
-        ip_relay_hostName = "10.0.2.2";
+        ip_relay_hostName = CommonPrefs.getDefaultRelayHost();
         ip_relay_port = 10999;
     }
 
