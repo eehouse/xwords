@@ -165,6 +165,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
                                             NULL, 0, NULL );
 
+    /* Unlike on other platforms, gi is created without a call to
+       game_makeNewGame, which sets gameID.  So check here if it's still unset
+       and if necessary set it. */
+    while ( 0 == gi->gameID ) {
+        gi->gameID = and_util_getCurSeconds( NULL );
+    }
+
     game_saveToStream( NULL, gi, stream );
     destroyGI( MPPARM(mpool) &gi );
 

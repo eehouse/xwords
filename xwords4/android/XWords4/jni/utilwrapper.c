@@ -253,7 +253,7 @@ and_util_altKeyDown( XW_UtilCtxt* uc )
 }
 
 
-static XP_U32
+XP_U32
 and_util_getCurSeconds( XW_UtilCtxt* uc )
 {
     struct timeval tv;

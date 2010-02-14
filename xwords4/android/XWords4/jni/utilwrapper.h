@@ -33,4 +33,6 @@ void destroyUtil( XW_UtilCtxt** util );
 
 bool utilTimerFired( XW_UtilCtxt* util, XWTimerReason why, int handle );
 
+XP_U32 and_util_getCurSeconds( XW_UtilCtxt* uc ); /* uc can be NULL */
+
 #endif
