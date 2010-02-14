@@ -4,16 +4,13 @@
     <!-- <item android:id="@+id/list_item_open" -->
     <!--       android:title="@string/list_item_open" -->
     <!--       /> -->
-    <item android:id="@+id/player_list_item_edit"
-          android:title="@string/list_item_view"
+    <item android:id="@+id/player_list_item_delete"
+          android:title="@string/list_item_delete"
           />
     <item android:id="@+id/player_list_item_up"
           android:title="@string/list_item_up"
           />
     <item android:id="@+id/player_list_item_down"
           android:title="@string/list_item_down"
-          />
-    <item android:id="@+id/player_list_item_delete"
-          android:title="@string/list_item_delete"
           />
 </menu>

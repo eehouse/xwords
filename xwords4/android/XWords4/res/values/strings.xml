@@ -126,7 +126,7 @@
 	<string name="str_no_empties_in_turn">Empty squares cannot separate tiles played.</string>
 	<string name="str_two_tiles_first_move">Must play two or more pieces on the first move.</string>
 	<string name="str_tiles_must_contact">New pieces must contact others already in place (or the middle square on the first move)</string>
-	<string name="str_not_your_turn">You can't do that; it's not your turn!</string>
+	<string name="str_not_your_turn">You can\'t do that; it\'s not your turn!</string>
 	<string name="str_no_peek_robot_tiles">No peeking at the robot\'s tiles!</string>
 	<string name="str_cant_trade_mid_move">Remove played tiles before trading.</string>
 	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to trade.</string>
@@ -137,7 +137,7 @@
 	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
 	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
 
-    <string name="remote_label">Remote player (ignored)</string>
+    <string name="remote_label">Remote player</string>
     <string name="robot_label">Robot player</string>
     <string name="password_label">Password (ignored)</string>
     <string name="player_edit_title">Player</string>
@@ -209,8 +209,13 @@
     <string name="list_item_view">list_item_view</string>
     <string name="key_player">key_player</string>
     <string name="tab_relay">Internet/Relay</string>
-    <string name="tab_sms">SMS (pending)</string>
+    <string name="tab_sms">SMS (untested)</string>
     <string name="tab_bluetooth">Bluetooth (pending)</string>
+
+    <string name="msg_relay_waiting">Connected to relay. Waiting for %d player[s].</string>
+    <string name="msg_relay_all_here">All players are here.</string>
+    <string name="title_relay_status">Connection status.</string>
+
 
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
@@ -231,4 +236,6 @@
     <string name="key_relay_host">key_relay_host</string>
     <string name="key_relay_port">key_relay_port</string>
     <string name="key_sms_port">key_sms_port</string>
+
+    <string name="default_host">eehouse.org</string>
 </resources>

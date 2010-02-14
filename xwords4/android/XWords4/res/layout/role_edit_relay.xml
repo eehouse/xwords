@@ -41,6 +41,7 @@
               />
     
     <EditText android:id="@+id/hostname_edit"
+              android:hint="eehouse.org"
               android:layout_height="wrap_content"
               android:layout_width="fill_parent"
               android:layout_marginLeft="20dip"

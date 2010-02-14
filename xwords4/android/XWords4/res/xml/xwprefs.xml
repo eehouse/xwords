@@ -81,7 +81,7 @@
                       >
       <EditTextPreference android:key="@string/key_relay_host"
                           android:title="@string/relay_host"
-                          android:defaultValue="eehouse.org"
+                          android:defaultValue="@string/default_host"
                           />
       <EditTextPreference android:key="@string/key_relay_port"
                           android:title="@string/relay_port"

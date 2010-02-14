@@ -79,7 +79,8 @@ public class Utils {
     public static void saveGame( Context context, byte[] bytes, String path )
     {
         try {
-            FileOutputStream out = context.openFileOutput( path, Context.MODE_PRIVATE );
+            FileOutputStream out = context.openFileOutput( path, 
+                                                           Context.MODE_PRIVATE );
             out.write( bytes );
             out.close();
         } catch ( java.io.IOException ex ) {
