@@ -291,7 +291,9 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
                      "org/eehouse/android/xw4/jni/CommsAddrRec$CommsConnType" );
 
     switch ( addr->conType ) {
-    case COMMS_CONN_RELAY:        
+    case COMMS_CONN_NONE:
+        break;
+    case COMMS_CONN_RELAY:
         setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
         setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
         setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
@@ -316,6 +318,8 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
                                      "CommsAddrRec$CommsConnType" );
 
     switch ( addr->conType ) {
+    case COMMS_CONN_NONE:
+        break;
     case COMMS_CONN_RELAY:
         addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
         getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
