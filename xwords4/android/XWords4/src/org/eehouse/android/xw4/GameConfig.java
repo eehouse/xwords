@@ -31,6 +31,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
+import java.util.ArrayList;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -52,6 +53,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -89,6 +91,9 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private CommsAddrRec m_car;
     private int m_connLayoutID;
     private CommonPrefs m_cp;
+    private boolean m_canDoSMS = false;
+    private boolean m_canDoBT = false;
+    private CommsAddrRec.CommsConnType[] m_types;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -160,10 +165,54 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
     private void setPlayerSettings()
     {
+        // Hide remote option if in standalone mode...
+        boolean isServer = 
+            CurGameInfo.DeviceRole.SERVER_ISSERVER == curRole();
+
         LocalPlayer lp = m_gi.players[m_whichPlayer];
         EditText player = (EditText)
             m_curDialog.findViewById( R.id.player_name_edit );
         player.setText( lp.name );
+
+        CheckBox check = (CheckBox)
+            m_curDialog.findViewById( R.id.remote_check );
+        if ( isServer ) {
+            CompoundButton.OnCheckedChangeListener lstnr =
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton buttonView, 
+                                                  boolean checked ) {
+                        int ids[] = { R.id.player_name_label,
+                                      R.id.player_name_edit,
+                                      R.id.robot_check,
+                                      R.id.password_label,
+                                      R.id.password_edit };
+                        int vis = checked ? View.GONE : View.VISIBLE;
+                        for ( int id : ids ) {
+                            View view = m_curDialog.findViewById( id );
+                            view.setVisibility( vis );
+                        }
+                    }
+                };
+            check.setOnCheckedChangeListener( lstnr );
+        } else {
+            check.setVisibility( View.GONE );
+        }
+
+        check = (CheckBox)m_curDialog.findViewById( R.id.robot_check );
+        CompoundButton.OnCheckedChangeListener lstnr =
+            new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged( CompoundButton buttonView, 
+                                              boolean checked ) {
+                    int ids[] = { R.id.password_label,
+                                  R.id.password_edit };
+                    int vis = checked ? View.GONE : View.VISIBLE;
+                    for ( int id : ids ) {
+                        View view = m_curDialog.findViewById( id );
+                        view.setVisibility( vis );
+                    }
+                }
+            };
+        check.setOnCheckedChangeListener( lstnr );
 
         Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot );
         Utils.setChecked( m_curDialog, R.id.remote_check, ! lp.isLocal );
@@ -171,8 +220,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
     private void setRoleSettings()
     {
-        int position = m_connectSpinner.getSelectedItemPosition();
-        switch( posToConnType( position ) ) {
+        switch( m_types[m_connectSpinner.getSelectedItemPosition()] ) {
         case COMMS_CONN_RELAY:
             Utils.setText( m_curDialog, R.id.room_edit, m_car.ip_relay_invite );
             Utils.setText( m_curDialog, R.id.hostname_edit, 
@@ -190,8 +238,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
     private void getRoleSettings()
     {
-        int position = m_connectSpinner.getSelectedItemPosition();
-        m_car.conType = posToConnType( position );
+        m_car.conType = m_types[ m_connectSpinner.getSelectedItemPosition() ];
         switch ( m_car.conType ) {
         case COMMS_CONN_RELAY:
             m_car.ip_relay_invite = Utils.getText( m_curDialog, R.id.room_edit );
@@ -225,6 +272,13 @@ public class GameConfig extends Activity implements View.OnClickListener {
     public void onCreate( Bundle savedInstanceState )
     {
         super.onCreate(savedInstanceState);
+
+        // 1.5 doesn't have SDK_INT.  So parse the string version.
+        int sdk_int = 0;
+        try {
+            sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
+        } catch ( Exception ex ) {}
+        m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
 
         m_cp = CommonPrefs.get();
 
@@ -369,17 +423,17 @@ public class GameConfig extends Activity implements View.OnClickListener {
         boolean changed = false;
 
         switch (item.getItemId()) {
-            case R.id.player_list_item_edit:
-                showDialog( PLAYER_EDIT );
+            // case R.id.player_list_item_edit:
+            //     showDialog( PLAYER_EDIT );
+            //     break;
+            case R.id.player_list_item_delete:
+                changed = m_gi.delete( m_whichPlayer );
                 break;
             case R.id.player_list_item_up:
                 changed = m_gi.moveUp( m_whichPlayer );
                 break;
             case R.id.player_list_item_down:
                 changed = m_gi.moveDown( m_whichPlayer );
-                break;
-            case R.id.player_list_item_delete:
-                changed = m_gi.delete( m_whichPlayer );
                 break;
         default:
             handled = false;
@@ -431,7 +485,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
             }
         } else if ( m_configureButton == view ) {
             int position = m_connectSpinner.getSelectedItemPosition();
-            switch ( posToConnType( position ) ) {
+            switch ( m_types[ position ] ) {
             case COMMS_CONN_RELAY:
                 showDialog( ROLE_EDIT_RELAY );
                 break;
@@ -458,12 +512,15 @@ public class GameConfig extends Activity implements View.OnClickListener {
             view.setPosition( ii );
             // PlayerView view = new PlayerView( this, ii );
             LocalPlayer lp = m_gi.players[ii];
-            view.setText( new StringBuffer()
-                          .append( "\n" )
-                          .append( lp.name )
-                          .append( lp.isRobot? " (ROBOT)":" (HUMAN)")
-                          .append( lp.isLocal? " (LOCAL)":" (REMOTE)" )
-                          .toString() ); 
+            StringBuffer sb = new StringBuffer().append( "\n" );
+            if ( lp.isLocal ) {
+                sb.append( lp.name )
+                    .append( lp.isRobot? " (ROBOT)":" (HUMAN)");
+            } else {
+                sb.append( "<REMOTE>" );
+            }
+            view.setText( sb.toString() );
+
             registerForContextMenu( view );
             view.setOnClickListener( new View.OnClickListener() {
                     @Override
@@ -511,11 +568,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         ArrayAdapter<String> adapter = 
             new ArrayAdapter<String>( this,
                                       android.R.layout.simple_spinner_item,
-                                      new String[] {
-                                          getString(R.string.tab_relay),
-                                          getString(R.string.tab_sms),
-                                          getString(R.string.tab_bluetooth),
-                                      } );
+                                      makeXportStrings() );
         adapter.setDropDownViewResource( android.R.layout
                                          .simple_spinner_dropdown_item );
         m_connectSpinner.setAdapter( adapter );
@@ -579,22 +632,31 @@ public class GameConfig extends Activity implements View.OnClickListener {
         return -1;
     }
 
-
-
-    private CommsAddrRec.CommsConnType posToConnType( int position )
+    private String[] makeXportStrings()
     {
-        switch( position ) {
-        case 0:
-            return CommsAddrRec.CommsConnType.COMMS_CONN_RELAY;
-        case 1:
-            return CommsAddrRec.CommsConnType.COMMS_CONN_SMS;
-        case 2:
-            return CommsAddrRec.CommsConnType.COMMS_CONN_BT;
-        default:
-            Assert.fail();
-            break;
+        ArrayList<String> strings = new ArrayList<String>();
+        ArrayList<CommsAddrRec.CommsConnType> types
+            = new ArrayList<CommsAddrRec.CommsConnType>();
+
+        strings.add( getString(R.string.tab_relay) );
+        types.add( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY );
+
+        if ( m_canDoSMS ) {
+            strings.add( getString(R.string.tab_sms) );
+            types.add( CommsAddrRec.CommsConnType.COMMS_CONN_SMS );
         }
-        return CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
+        if ( m_canDoBT ) {
+            strings.add( getString(R.string.tab_bluetooth) );
+            types.add( CommsAddrRec.CommsConnType.COMMS_CONN_BT );
+        }
+        m_types = types.toArray( new CommsAddrRec.CommsConnType[types.size()] );
+        return strings.toArray( new String[strings.size()] );
+    }
+
+    private CurGameInfo.DeviceRole curRole()
+    {
+        int position = m_roleSpinner.getSelectedItemPosition();
+        return CurGameInfo.DeviceRole.values()[position];
     }
 
     private void saveChanges()
@@ -605,15 +667,13 @@ public class GameConfig extends Activity implements View.OnClickListener {
         m_gi.robotSmartness
             = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;
 
-        int position = m_roleSpinner.getSelectedItemPosition();
-        Utils.logf( "setting serverrole: " + position );
-        m_gi.serverRole = CurGameInfo.DeviceRole.values()[position];
+        m_gi.serverRole = curRole();
 
-        position = m_phoniesSpinner.getSelectedItemPosition();
+        int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];
 
         position = m_connectSpinner.getSelectedItemPosition();
-        m_car.conType = posToConnType( position );
+        m_car.conType = m_types[ position ];
 
         byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
         int gamePtr = XwJNI.initJNI();
