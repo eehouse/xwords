@@ -52,7 +52,9 @@ and_util_getVTManager( XW_UtilCtxt* uc )
 static XWStreamCtxt*
 and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 {
+#ifdef DEBUG
     AndUtil* util = (AndUtil*)uc;
+#endif
     AndGlobals* globals = (AndGlobals*)uc->closure;
     XWStreamCtxt* stream = and_empty_stream( MPPARM(util->util.mpool)
                                              globals );
@@ -265,11 +267,11 @@ and_util_getCurSeconds( XW_UtilCtxt* uc )
 static DictionaryCtxt* 
 and_util_makeEmptyDict( XW_UtilCtxt* uc )
 {
-    AndUtil* util = (AndUtil*)uc;
 #ifdef STUBBED_DICT
     XP_ASSERT(0);
 #else
-    return and_dictionary_make_empty( MPPARM_NOCOMMA( util->util.mpool ) );
+    return
+        and_dictionary_make_empty( MPPARM_NOCOMMA( ((AndUtil*)uc)->util.mpool ) );
 #endif
 }
 

@@ -113,8 +113,7 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
 
         JNIEnv* env = ctxt->env;
         bitmap = and_util_makeJBitmap( ctxt->jniutil, nCols, nRows, colors );
-        jobject tmp = (*env)->NewGlobalRef( env, bitmap );
-        XP_ASSERT( tmp == bitmap );
+        (void)(*env)->NewGlobalRef( env, bitmap );
         (*env)->DeleteLocalRef( env, bitmap );
         XP_FREE( ctxt->super.mpool, colors );
     }
@@ -376,8 +375,7 @@ and_dictionary_destroy( DictionaryCtxt* dict )
 jobject
 and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict )
 {
-    AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)dict;
-    XP_ASSERT( env == anddict->env );
+    XP_ASSERT( env == ((AndDictionaryCtxt*)dict)->env );
 
     /* This is cheating: specials will be rep'd as 1,2, etc.  But as long as
        java code wants to ignore them anyway that's ok.  Otherwise need to
