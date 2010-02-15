@@ -317,15 +317,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return handled;
     }
 
-    // gets called for orientation changes only if
-    // android:configChanges="orientation" set in AndroidManifest.xml
-    public void onConfigurationChanged( Configuration newConfig )
-    {
-        Utils.logf( "BoardActivity::onConfigurationChanged called" );
-        m_view.changeLayout();
-        super.onConfigurationChanged( newConfig );
-    }
-
     //////////////////////////////////////////
     // XW_UtilCtxt interface implementation //
     //////////////////////////////////////////

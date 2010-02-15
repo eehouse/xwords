@@ -24,7 +24,8 @@ public class BoardView extends View implements DrawCtx,
     private Paint m_tileStrokePaint;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
-    private boolean m_boardSet = false;
+    private int m_layoutWidth = 0;
+    private int m_layoutHeight = 0;
     private Canvas m_canvas;
     private Bitmap m_bitmap;
     private int m_trayOwner;
@@ -140,14 +141,18 @@ public class BoardView extends View implements DrawCtx,
 
     private boolean layoutBoardOnce() 
     {
-        if ( !m_boardSet && null != m_gi ) {
-            m_boardSet = true;
+        int width = getWidth();
+        int height = getHeight();
+        boolean layoutDone = width == m_layoutWidth && height == m_layoutHeight;
+        if ( layoutDone ) {
+            // nothing to do
+        } else if ( null == m_gi ) {
+            // nothing to do either
+        } else {
+            m_layoutWidth = width;
+            m_layoutHeight = height;
+            m_cellDims = m_trayDims = null; // force recalc of font
 
-            // For now we're assuming vertical orientation.  Fix way
-            // later.
-
-            int width = getWidth();
-            int height = getHeight();
             int nCells = m_gi.boardSize;
             int cellSize = width / nCells;
             m_left = (width % nCells) / 2;
@@ -169,7 +174,6 @@ public class BoardView extends View implements DrawCtx,
             } else {
                 // 
                 nToScroll = nCells - ((height - (cellSize*3)) / cellSize);
-                Utils.logf( "nToScroll: " + nToScroll );
                 trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
                 m_top = 0;
             }
@@ -184,13 +188,9 @@ public class BoardView extends View implements DrawCtx,
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, getWidth(),
                                 getHeight(), m_gi.boardSize );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+            layoutDone = true;
         }
-        return m_boardSet;
-    }
-
-    public void changeLayout()
-    {
-        m_boardSet = false;
+        return layoutDone;
     }
 
     public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
@@ -380,7 +380,7 @@ public class BoardView extends View implements DrawCtx,
     public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )
     {
         if ( DrawCtx.OBJ_SCORE == typ ) {
-            m_canvas.restore();
+            m_canvas.restoreToCount(1); // in case new canvas...
         }
     }
 
@@ -430,7 +430,7 @@ public class BoardView extends View implements DrawCtx,
                 m_canvas.drawRect( rect, m_tileStrokePaint ); // frame
             }
         }
-        m_canvas.restore();
+        m_canvas.restoreToCount(1); // in case new canvas....
     } // drawTileImpl
 
     private void drawCentered( String text, Rect rect ) 
