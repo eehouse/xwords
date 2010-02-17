@@ -313,5 +313,42 @@ public class CommsTransport extends Thread implements TransportProcs {
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
         Utils.logf( "relayErrorProc called; got " + relayErr.toString() );
+
+        int strID = 0;
+        int how = TOAST;
+
+        switch ( relayErr ) {
+        case TOO_MANY: 
+            strID = R.string.msg_too_many;
+            how = DIALOG;
+            break;
+        case NO_ROOM:
+            strID = R.string.msg_no_room;
+            how = DIALOG;
+            break;
+        case DUP_ROOM:
+            strID = R.string.msg_dup_room;
+            how = DIALOG;
+            break;
+        case LOST_OTHER:
+        case OTHER_DISCON:
+            strID = R.string.msg_lost_other;
+            break;
+
+        case OLDFLAGS:
+        case BADPROTO:
+        case RELAYBUSY:
+        case SHUTDOWN:
+        case TIMEOUT:
+        case HEART_YOU:
+        case HEART_OTHER:
+            break;
+        }
+
+        if ( 0 != strID ) {
+            String str = m_context.getString( strID );
+            Message.obtain( m_handler, how, R.string.relay_alert, 
+                            0, str ).sendToTarget();
+        }
     }
 }

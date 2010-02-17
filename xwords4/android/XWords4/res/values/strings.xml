@@ -216,6 +216,11 @@
     <string name="msg_relay_all_here">All players are here.</string>
     <string name="title_relay_status">Connection status.</string>
 
+    <string name="relay_alert">Connection error</string>
+    <string name="msg_too_many">You are providing more players than the host expects.</string>
+    <string name="msg_no_room">No host has registered a room by that name.</string>
+    <string name="msg_dup_room">Another host has already registered a room using that name.  Rename yours or retry later.</string>
+    <string name="msg_lost_other">The relay has lost contact with another device in this game.</string>
 
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
