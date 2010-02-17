@@ -48,4 +48,5 @@ jint jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field,
                       const char* fieldSig );
 void intToJenumField( JNIEnv* env, jobject j_gi, int val, const char* field, 
                       const char* fieldSig );
+jobject intToJEnum( JNIEnv* env, int val, const char* enumSig );
 #endif

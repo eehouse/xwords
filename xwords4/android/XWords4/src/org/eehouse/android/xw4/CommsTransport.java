@@ -293,7 +293,7 @@ public class CommsTransport extends Thread implements TransportProcs {
 
     public void relayStatus( int newState )
     {
-        Utils.logf( "relayStatus called" );
+        Utils.logf( "relayStatus called; state=" + newState );
     }
 
     public void relayConnd( boolean allHere, int nMissing )
@@ -312,6 +312,6 @@ public class CommsTransport extends Thread implements TransportProcs {
 
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
-        Utils.logf( "relayErrorProc called" );
+        Utils.logf( "relayErrorProc called; got " + relayErr.toString() );
     }
 }

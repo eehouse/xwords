@@ -405,6 +405,35 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
     (*env)->DeleteLocalRef( env, clazz );
 } /* intToJenumField */
 
+/* Cons up a new enum instance and set its value */
+jobject
+intToJEnum( JNIEnv* env, int val, const char* enumSig )
+{
+    jobject jenum = NULL;
+    jclass clazz = (*env)->FindClass( env, enumSig );
+    XP_ASSERT( !!clazz );
+    /* jmethodID mid = getMethodID( env, clazz, "<init>", "()V" ); */
+    /* XP_ASSERT( !!mid ); */
+    /* jenum = (*env)->NewObject( env, clazz, mid ); */
+    /* XP_ASSERT( !!jenum ); */
+
+    char buf[128];
+    snprintf( buf, sizeof(buf), "()[L%s;", enumSig );
+    jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "values", buf );
+    XP_ASSERT( !!mid );
+
+    jobject jvalues = (*env)->CallStaticObjectMethod( env, clazz, mid );
+    XP_ASSERT( !!jvalues );
+    XP_ASSERT( val < (*env)->GetArrayLength( env, jvalues ) );
+    /* get the value we want */
+    jenum = (*env)->GetObjectArrayElement( env, jvalues, val );
+    XP_ASSERT( !!jenum );
+
+    (*env)->DeleteLocalRef( env, jvalues );
+    (*env)->DeleteLocalRef( env, clazz );
+    return jenum;
+} /* intToJEnum */
+
 XWStreamCtxt*
 and_empty_stream( MPFORMAL AndGlobals* globals )
 {

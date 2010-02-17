@@ -109,7 +109,20 @@ and_xport_relayConnd( void* closure, XP_Bool allHere, XP_U16 nMissing )
 static void
 and_xport_relayError( void* closure, XWREASON relayErr )
 {
-    LOG_FUNC();
+    AndTransportProcs* aprocs = (AndTransportProcs*)closure;
+    if ( NULL != aprocs->jxport ) {
+        JNIEnv* env = *aprocs->envp;
+        jmethodID mid;
+        const char* sig = "(Lorg/eehouse/android/xw4/jni/"
+            "TransportProcs$XWRELAY_ERROR;)V";
+        mid = getMethodID( env, aprocs->jxport, "relayErrorProc", sig );
+
+        jobject jenum = intToJEnum( env, relayErr, "org/eehouse/android/xw4/jni/"
+                                    "TransportProcs$XWRELAY_ERROR" );
+        (*env)->CallVoidMethod( env, aprocs->jxport, mid, jenum );
+
+        (*env)->DeleteLocalRef( env, jenum );
+    }
 }
 
 TransportProcs*
