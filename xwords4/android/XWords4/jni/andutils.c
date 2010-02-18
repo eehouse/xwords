@@ -375,34 +375,20 @@ intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field,
 
     jobject jenum = (*env)->GetObjectField( env, jobj, fid );
     if ( !jenum ) {       /* won't exist in new object */
-        clazz = (*env)->FindClass( env, fieldSig );
+        jclass clazz = (*env)->FindClass( env, fieldSig );
         XP_ASSERT( !!clazz );
         jmethodID mid = getMethodID( env, clazz, "<init>", "()V" );
         XP_ASSERT( !!mid );
         jenum = (*env)->NewObject( env, clazz, mid );
         XP_ASSERT( !!jenum );
         (*env)->SetObjectField( env, jobj, fid, jenum );
-    } else {
-        clazz = (*env)->GetObjectClass( env, jenum );
+        (*env)->DeleteLocalRef( env, clazz );
     }
 
-    XP_ASSERT( !!clazz );
-    snprintf( buf, sizeof(buf), "()[L%s;", fieldSig );
-    jmethodID mid = (*env)->GetStaticMethodID( env, clazz, "values", buf );
-    XP_ASSERT( !!mid );
-
-    jobject jvalues = (*env)->CallStaticObjectMethod( env, clazz, mid );
-    XP_ASSERT( !!jvalues );
-    XP_ASSERT( val < (*env)->GetArrayLength( env, jvalues ) );
-    /* get the value we want */
-    jobject jval = (*env)->GetObjectArrayElement( env, jvalues, val );
+    jobject jval = intToJEnum( env, val, fieldSig );
     XP_ASSERT( !!jval );
-
     (*env)->SetObjectField( env, jobj, fid, jval );
-
-    (*env)->DeleteLocalRef( env, jvalues );
     (*env)->DeleteLocalRef( env, jval );
-    (*env)->DeleteLocalRef( env, clazz );
 } /* intToJenumField */
 
 /* Cons up a new enum instance and set its value */
