@@ -373,6 +373,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case UtilCtxt.TIMER_COMMS:
             inHowLong = when * 1000;
             break;
+        case UtilCtxt.TIMER_TIMERTICK:
+            inHowLong = 1000;   // when is 0 for TIMER_TIMERTICK
+            break;
         default:
             inHowLong = 500;
         }

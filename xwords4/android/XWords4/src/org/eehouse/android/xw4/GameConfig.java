@@ -170,9 +170,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
             CurGameInfo.DeviceRole.SERVER_ISSERVER == curRole();
 
         LocalPlayer lp = m_gi.players[m_whichPlayer];
-        EditText player = (EditText)
-            m_curDialog.findViewById( R.id.player_name_edit );
-        player.setText( lp.name );
+        Utils.setText( m_curDialog, R.id.player_name_edit, lp.name );
 
         CheckBox check = (CheckBox)
             m_curDialog.findViewById( R.id.remote_check );
@@ -181,16 +179,9 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean checked ) {
-                        int ids[] = { R.id.player_name_label,
-                                      R.id.player_name_edit,
-                                      R.id.robot_check,
-                                      R.id.password_label,
-                                      R.id.password_edit };
-                        int vis = checked ? View.GONE : View.VISIBLE;
-                        for ( int id : ids ) {
-                            View view = m_curDialog.findViewById( id );
-                            view.setVisibility( vis );
-                        }
+                        View view
+                            = m_curDialog.findViewById( R.id.local_player_set );
+                        view.setVisibility( checked ? View.GONE : View.VISIBLE );
                     }
                 };
             check.setOnCheckedChangeListener( lstnr );
@@ -203,13 +194,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
             new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged( CompoundButton buttonView, 
                                               boolean checked ) {
-                    int ids[] = { R.id.password_label,
-                                  R.id.password_edit };
-                    int vis = checked ? View.GONE : View.VISIBLE;
-                    for ( int id : ids ) {
-                        View view = m_curDialog.findViewById( id );
-                        view.setVisibility( vis );
-                    }
+                    View view = m_curDialog.findViewById( R.id.password_set );
+                    view.setVisibility( checked ? View.GONE : View.VISIBLE );
                 }
             };
         check.setOnCheckedChangeListener( lstnr );
@@ -394,7 +380,20 @@ public class GameConfig extends Activity implements View.OnClickListener {
         m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
         Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
+        Utils.setInt( this, R.id.timer_minutes_edit, m_gi.gameSeconds/60 );
+
+        CheckBox check = (CheckBox)findViewById( R.id.use_timer );
+        CompoundButton.OnCheckedChangeListener lstnr =
+            new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged( CompoundButton buttonView, 
+                                              boolean checked ) {
+                    View view = findViewById( R.id.timer_set );
+                    view.setVisibility( checked ? View.VISIBLE : View.GONE );
+                }
+            };
+        check.setOnCheckedChangeListener( lstnr );
         Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
+
         Utils.setChecked( this, R.id.color_tiles, m_gi.showColors );
         Utils.setChecked( this, R.id.smart_robot, 0 < m_gi.robotSmartness );
 
@@ -663,6 +662,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     {
         m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
+        m_gi.gameSeconds = 60 * Utils.getInt(  this, R.id.timer_minutes_edit );
         m_gi.showColors = Utils.getChecked( this, R.id.color_tiles );
         m_gi.robotSmartness
             = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;

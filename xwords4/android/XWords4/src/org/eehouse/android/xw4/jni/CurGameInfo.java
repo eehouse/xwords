@@ -17,6 +17,7 @@ public class CurGameInfo {
     public String dictName;
     public LocalPlayer[] players;
     public int gameID;
+    public int gameSeconds;
     public int nPlayers;
     public int boardSize;
     public DeviceRole serverRole;

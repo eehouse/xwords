@@ -156,6 +156,7 @@
 
     <string name="configure_role">Configure connection</string>
     <string name="phonies_label">Phonies</string>
+    <string name="minutes_label">Minutes in game</string>
 
     <string name="download_dicts">Download more...</string>
 

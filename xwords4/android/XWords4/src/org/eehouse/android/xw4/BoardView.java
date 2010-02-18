@@ -41,6 +41,7 @@ public class BoardView extends View implements DrawCtx,
     private Rect m_boundsScratch;
     private String m_remText;
     private int m_dictPtr = 0;
+    private int m_lastSecsLeft;
     private class FontDims {
         FontDims( int topRow, int bottomRow, int width ) {
             m_topRow = topRow; 
@@ -266,6 +267,26 @@ public class BoardView extends View implements DrawCtx,
         m_fillPaint.setTextSize( rOuter.bottom - rOuter.top );
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
         drawCentered( text, rOuter );
+    }
+
+    public void drawTimer( Rect rect, int player, int secondsLeft )
+    {
+        if ( null != m_canvas && m_lastSecsLeft != secondsLeft ) {
+            m_lastSecsLeft = secondsLeft;
+
+            String negSign = secondsLeft < 0? "-":"";
+            secondsLeft = Math.abs( secondsLeft );
+            String time = String.format( "%s%d:%02d", negSign, secondsLeft/60, 
+                                         secondsLeft%60 );
+
+            clearToBack( rect );
+
+            m_fillPaint.setTextSize( rect.bottom - rect.top );
+            m_fillPaint.setColor( m_playerColors[player] );
+            drawCentered( time, rect );
+
+            m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+        }
     }
 
     public boolean drawCell( Rect rect, String text, BitmapDrawable[] bitmaps,

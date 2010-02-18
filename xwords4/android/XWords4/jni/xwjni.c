@@ -25,6 +25,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     XP_UCHAR buf[256];          /* in case needs whole path */
 
     gi->nPlayers = getInt( env, j_gi, "nPlayers");
+    gi->gameSeconds = getInt( env, j_gi, "gameSeconds");
     gi->boardSize = getInt( env, j_gi, "boardSize" );
     gi->gameID = getInt( env, j_gi, "gameID" );
     gi->robotSmartness = getInt( env, j_gi, "robotSmartness" );
@@ -78,6 +79,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 {
     // set fields
     setInt( env, jgi, "nPlayers", gi->nPlayers );
+    setInt( env, jgi, "gameSeconds", gi->gameSeconds );
     setInt( env, jgi, "boardSize", gi->boardSize );
     setInt( env, jgi, "gameID", gi->gameID );
     setInt( env, jgi, "robotSmartness", gi->robotSmartness );
@@ -488,6 +490,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScoreboardLoc
     XWJNI_START();
     board_setScoreboardLoc( state->game.board, left, top, width, 
                             height, divideHorizontally );
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTimerLoc
+( JNIEnv* env, jclass C, jint gamePtr, jint timerLeft, jint timerTop,
+  jint timerWidth, jint timerHeight )
+{
+    XWJNI_START();
+    XP_LOGF( "%s(%d,%d,%d,%d)", __func__, timerLeft, timerTop,
+             timerWidth, timerHeight );
+    board_setTimerLoc( state->game.board, timerLeft, timerTop, 
+                       timerWidth, timerHeight );
     XWJNI_END();
 }
 

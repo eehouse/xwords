@@ -30,56 +30,67 @@
               android:text="@string/remote_label"
               />
 
-    <TextView android:id="@+id/player_name_label"
-              android:layout_height="wrap_content"
-              android:layout_width="wrap_content"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
-              android:text="@string/player_label"
-              android:gravity="left"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              />
-    
-    <EditText android:id="@+id/player_name_edit"
-              android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
-              android:scrollHorizontally="true"
-              android:autoText="false"
-              android:capitalize="none"
-              android:gravity="fill_horizontal"
-              android:textAppearance="?android:attr/textAppearanceMedium" 
-              />
+    <!-- Use a layout to group elems we want to show/hide as a set -->
+    <LinearLayout android:id="@+id/local_player_set"
+                  android:layout_height="wrap_content"
+                  android:layout_width="fill_parent"
+                  android:orientation="vertical">
 
-    <CheckBox android:id="@+id/robot_check"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="@string/robot_label"
-              />
+      <TextView android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_marginLeft="20dip"
+                android:layout_marginRight="20dip"
+                android:text="@string/player_label"
+                android:gravity="left"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                />
+      
+      <EditText android:id="@+id/player_name_edit"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:layout_marginLeft="20dip"
+                android:layout_marginRight="20dip"
+                android:scrollHorizontally="true"
+                android:autoText="false"
+                android:capitalize="none"
+                android:gravity="fill_horizontal"
+                android:textAppearance="?android:attr/textAppearanceMedium" 
+                />
 
-    <TextView android:id="@+id/password_label"
-              android:layout_height="wrap_content"
-              android:layout_width="wrap_content"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
-              android:text="@string/password_label"
-              android:gravity="left"
-              android:textAppearance="?android:attr/textAppearanceMedium" 
-              />
-    
-    <EditText android:id="@+id/password_edit"
-              android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
-              android:scrollHorizontally="true"
-              android:autoText="false"
-              android:capitalize="none"
-              android:gravity="fill_horizontal"
-              android:password="true"
-              android:textAppearance="?android:attr/textAppearanceMedium"
-              />
+      <CheckBox android:id="@+id/robot_check"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/robot_label"
+                />
 
+      <LinearLayout android:id="@+id/password_set"
+                    android:layout_height="wrap_content"
+                    android:layout_width="fill_parent"
+                    android:orientation="vertical">
+
+
+        <TextView android:layout_height="wrap_content"
+                  android:layout_width="wrap_content"
+                  android:layout_marginLeft="20dip"
+                  android:layout_marginRight="20dip"
+                  android:text="@string/password_label"
+                  android:gravity="left"
+                  android:textAppearance="?android:attr/textAppearanceMedium" 
+                  />
+        
+        <EditText android:id="@+id/password_edit"
+                  android:layout_height="wrap_content"
+                  android:layout_width="fill_parent"
+                  android:layout_marginLeft="20dip"
+                  android:layout_marginRight="20dip"
+                  android:scrollHorizontally="true"
+                  android:autoText="false"
+                  android:capitalize="none"
+                  android:gravity="fill_horizontal"
+                  android:password="true"
+                  android:textAppearance="?android:attr/textAppearanceMedium"
+                  />
+      </LinearLayout>
+    </LinearLayout>
   </LinearLayout>
 </ScrollView>

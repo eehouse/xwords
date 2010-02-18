@@ -30,6 +30,7 @@ public interface DrawCtx {
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );
     void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );
     void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi );
+    void drawTimer( Rect rect, int player, int secondsLeft );
 
     boolean drawCell( Rect rect, String text, BitmapDrawable[] bitmaps, int tile, 
                       int owner, int bonus, int hintAtts, int flags );

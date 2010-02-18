@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
 
 
 package org.eehouse.android.xw4.jni;
@@ -9,6 +9,8 @@ import java.lang.InterruptedException;
 import java.util.concurrent.LinkedBlockingQueue;
 import android.os.Handler;
 import android.os.Message;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
@@ -125,8 +127,18 @@ public class JNIThread extends Thread {
             trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
         }
 
-        XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, 
-                                      nCells * cellSize, // width
+        int scoreWidth = nCells * cellSize;
+        if ( m_gi.timerEnabled ) {
+            Paint paint = new Paint();
+            paint.setTextSize( scoreHt );
+            Rect rect = new Rect();
+            paint.getTextBounds( "-00:00", 0, 6, rect );
+            int timerWidth = rect.right;
+            scoreWidth -= timerWidth;
+            XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, timerWidth, 
+                                     scoreHt );
+        } 
+        XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
                                       scoreHt, true );
 
         XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, false );

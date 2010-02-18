@@ -207,6 +207,17 @@ and_draw_score_drawPlayer( DrawCtx* dctx,
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrinner, jrouter, jdsi );
 } /* and_draw_score_drawPlayer */
 
+static void
+and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player, 
+                    XP_S16 secondsLeft )
+{
+    DRAW_CBK_HEADER("drawTimer", "(Landroid/graphics/Rect;II)V" );
+
+    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
+                            jrect, player, secondsLeft );
+}
+
 static XP_Bool
 and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, DrawFocusState dfs )
 {
@@ -442,6 +453,8 @@ makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
     SET_PROC(measureScoreText);
     SET_PROC(drawRemText);
     SET_PROC(score_drawPlayer);
+    SET_PROC(drawTimer);
+
     SET_PROC(drawCell);
     SET_PROC(drawBoardArrow);
     SET_PROC(vertScrollBoard);

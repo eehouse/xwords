@@ -83,6 +83,10 @@ public class XwJNI {
     public static native void board_setTrayLoc( int gamePtr, int left, 
                                                 int top, int width, 
                                                 int height, int minDividerWidth );
+    public static native void board_setTimerLoc( int gamePtr,
+                                                 int timerLeft, int timerTop,
+                                                 int timerWidth, int timerHeight );
+
     public static native boolean board_handlePenDown( int gamePtr, 
                                                       int xx, int yy, 
                                                       boolean[] handled );
