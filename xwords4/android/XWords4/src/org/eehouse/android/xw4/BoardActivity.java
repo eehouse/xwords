@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.Message;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
-import android.content.res.Configuration;
 import android.content.Intent;
 import java.util.concurrent.Semaphore;
 import android.net.Uri;
@@ -168,7 +167,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             }
 
             m_jniThread = new 
-                JNIThread( m_jniGamePtr, m_gi,
+                JNIThread( m_jniGamePtr, m_gi, m_view,
                            new Handler() {
                                public void handleMessage( Message msg ) {
                                    switch( msg.what ) {

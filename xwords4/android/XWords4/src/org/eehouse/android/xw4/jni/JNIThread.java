@@ -51,6 +51,8 @@ public class JNIThread extends Thread {
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
     private Handler m_handler;
+    private SyncedDraw m_drawer;
+
     LinkedBlockingQueue<QueueElem> m_queue;
 
     private class QueueElem {
@@ -62,10 +64,13 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    public JNIThread( int gamePtr, CurGameInfo gi, Handler handler ) {
+    public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
+                      Handler handler ) 
+    {
         m_jniGamePtr = gamePtr;
         m_gi = gi;
         m_handler = handler;
+        m_drawer = drawer;
 
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
@@ -303,9 +308,13 @@ public class JNIThread extends Thread {
             }
 
             if ( draw ) {
-                if ( !XwJNI.board_draw( m_jniGamePtr ) ) {
-                    Utils.logf( "draw not complete" );
-                }
+                // do the drawing in this thread but in BoardView
+                // where it can be synchronized with that class's use
+                // of the same bitmap for blitting.
+                m_drawer.doJNIDraw();
+
+                // main UI thread has to invalidate view as it created
+                // it.
                 Message.obtain( m_handler, DRAW ).sendToTarget();
             }
         }

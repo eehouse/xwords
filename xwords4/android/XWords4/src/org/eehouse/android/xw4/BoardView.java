@@ -16,8 +16,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
 
-public class BoardView extends View implements DrawCtx, 
-                                               BoardHandler {
+public class BoardView extends View implements DrawCtx, BoardHandler,
+                                               SyncedDraw {
 
     private Paint m_fillPaint;
     private Paint m_strokePaint;
@@ -26,8 +26,8 @@ public class BoardView extends View implements DrawCtx,
     private CurGameInfo m_gi;
     private int m_layoutWidth = 0;
     private int m_layoutHeight = 0;
-    private Canvas m_canvas;
-    private Bitmap m_bitmap;
+    private Bitmap m_bitmap;    // the board
+    private Canvas m_canvas;    // owns the bitmap
     private int m_trayOwner;
     private Rect m_valRect;
     private Rect m_letterRect;
@@ -105,10 +105,14 @@ public class BoardView extends View implements DrawCtx,
         return true;             // required to get subsequent events
     }
 
+    // This will be called from the UI thread
+    @Override
     protected void onDraw( Canvas canvas ) 
     {
-        if ( layoutBoardOnce() ) {
-            canvas.drawBitmap( m_bitmap, m_left, m_top, new Paint() );
+        synchronized( this ) {
+            if ( layoutBoardOnce() ) {
+                canvas.drawBitmap( m_bitmap, m_left, m_top, new Paint() );
+            }
         }
     }
 
@@ -192,13 +196,26 @@ public class BoardView extends View implements DrawCtx,
             layoutDone = true;
         }
         return layoutDone;
-    }
+    } // layoutBoardOnce
 
+    // BoardHandler interface implementation
     public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
     {
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
+    }
+
+    // SyncedDraw interface implementation
+    public void doJNIDraw()
+    {
+        boolean drew;
+        synchronized( this ) {
+            drew = XwJNI.board_draw( m_jniGamePtr );
+        }
+        if ( !drew ) {
+            Utils.logf( "draw not complete" );
+        }
     }
 
     // DrawCtxt interface implementation
