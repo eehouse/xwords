@@ -22,6 +22,8 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.widget.Toast;
 import junit.framework.Assert;
+import android.content.res.Configuration;
+import android.content.pm.ActivityInfo;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -41,6 +43,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private Handler m_handler;
     private TimerRunnable[] m_timers;
     private String m_path;
+    private int m_currentOrient;
 
     private String m_dlgBytes = null;
     private int m_dlgTitle;
@@ -248,6 +251,13 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
     }
 
+    @Override
+    public void  onConfigurationChanged( Configuration newConfig )
+    {
+        m_currentOrient = newConfig.orientation;
+        super.onConfigurationChanged( newConfig );
+    }
+
     protected void onDestroy() 
     {
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
@@ -429,7 +439,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         return new DialogInterface.OnDismissListener() {
             public void onDismiss( DialogInterface di ) {
-                Utils.logf( "onDismiss called" );
+                setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR );
                 m_forResultWait.release();
             }
         };
@@ -437,6 +447,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     private int waitBlockingDialog( final int dlgID )
     {
+        int orient = m_currentOrient == Configuration.ORIENTATION_LANDSCAPE
+            ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        setRequestedOrientation( orient );
+
         m_handler.post( new Runnable() {
                 public void run() {
                     showDialog( dlgID );
