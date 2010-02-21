@@ -18,7 +18,7 @@ import android.graphics.Paint.FontMetricsInt;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
-
+    private Paint m_drawPaint;
     private Paint m_fillPaint;
     private Paint m_strokePaint;
     private Paint m_tileStrokePaint;
@@ -111,13 +111,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( m_bitmap, m_left, m_top, new Paint() );
+                canvas.drawBitmap( m_bitmap, m_left, m_top, m_drawPaint );
             }
         }
     }
 
     private void init()
     {
+        m_drawPaint = new Paint();
         m_fillPaint = new Paint();
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
@@ -146,8 +147,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private boolean layoutBoardOnce() 
     {
-        int width = getWidth();
-        int height = getHeight();
+        final int width = getWidth();
+        final int height = getHeight();
         boolean layoutDone = width == m_layoutWidth && height == m_layoutHeight;
         if ( layoutDone ) {
             // nothing to do
@@ -190,8 +191,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_canvas = new Canvas( m_bitmap );
 
             // need to synchronize??
-            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, getWidth(),
-                                getHeight(), m_gi.boardSize );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width,
+                                height, m_gi.boardSize );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
             layoutDone = true;
         }
