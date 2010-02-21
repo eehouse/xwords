@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.widget.Toast;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -29,9 +30,9 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class BoardActivity extends Activity implements UtilCtxt {
 
-    private static final int PICK_TILE_REQUEST = 1;
-    private static final int QUERY_REQUEST = 2;
-    private static final int INFORM_REQUEST = 3;
+    private static final int DLG_OKONLY = 1;
+    private static final int QUERY_REQUEST_BLK = 2;
+    private static final int PICK_TILE_REQUEST_BLK = 3;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -41,16 +42,15 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private TimerRunnable[] m_timers;
     private String m_path;
 
-    private final int DLG_OKONLY = 1;
     private String m_dlgBytes = null;
     private int m_dlgTitle;
-    private boolean m_dlgResult;
+    private String[] m_texts;
     private CommonPrefs m_cp;
     private JNIUtils m_jniu;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
-    private int m_resultCode = 0;
+    private int m_resultCode;
 
     private JNIThread m_jniThread;
 
@@ -75,6 +75,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = null;
+        DialogInterface.OnClickListener lstnr;
+        AlertDialog.Builder ab;
+
         switch ( id ) {
         case DLG_OKONLY:
             dialog = new AlertDialog.Builder( BoardActivity.this )
@@ -83,12 +86,50 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 .setMessage( m_dlgBytes )
                 .setPositiveButton( R.string.button_ok, 
                                     new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dialog, 
+                                        public void onClick( DialogInterface dlg, 
                                                              int whichButton ) {
                                             Utils.logf( "Ok clicked" );
                                         }
                                     })
                 .create();
+            break;
+
+        case QUERY_REQUEST_BLK:
+            ab = new AlertDialog.Builder( this )
+                .setTitle( R.string.query_title )
+                .setMessage( m_dlgBytes );
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dialog, 
+                                         int whichButton ) {
+                        m_resultCode = 1;
+                    }
+                };
+            ab.setPositiveButton( R.string.button_yes, lstnr );
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dialog, 
+                                         int whichButton ) {
+                        m_resultCode = 0;
+                    }
+                };
+            ab.setNegativeButton( R.string.button_no, lstnr );
+
+            dialog = ab.create();
+            dialog.setOnDismissListener( makeODL() );
+            break;
+
+        case PICK_TILE_REQUEST_BLK:
+            ab = new AlertDialog.Builder( this )
+                .setTitle( R.string.title_tile_picker );
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dialog, 
+                                         int item ) {
+                        m_resultCode = item;
+                    }
+                };
+            ab.setItems( m_texts, lstnr );
+
+            dialog = ab.create();
+            dialog.setOnDismissListener( makeODL() );
             break;
         }
         return dialog;
@@ -98,8 +139,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
     protected void onPrepareDialog( int id, Dialog dialog )
     {
         Utils.logf( "onPrepareDialog(id=" + id + ")" );
-        dialog.setTitle( m_dlgTitle );
-        ((AlertDialog)dialog).setMessage( m_dlgBytes );
+        if ( DLG_OKONLY == id ) {
+            dialog.setTitle( m_dlgTitle );
+            ((AlertDialog)dialog).setMessage( m_dlgBytes );
+        }
         super.onPrepareDialog( id, dialog );
     }
 
@@ -227,14 +270,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         Utils.logf( "onDestroy done" );
     }
 
-    protected void onActivityResult( int requestCode, int resultCode, 
-                                     Intent result ) 
-    {
-        Utils.logf( "onActivityResult called" );
-		m_resultCode = resultCode;
-		m_forResultWait.release();
-	}
-	
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.board_menu, menu );
@@ -390,44 +425,50 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
     }
 
-    private int waitBlockingDialog( String action, int purpose, 
-                                    String message, String[] texts )
+    private DialogInterface.OnDismissListener makeODL()
     {
-        Intent intent = new Intent( BoardActivity.this, BlockingActivity.class );
-        intent.setAction( action );
+        return new DialogInterface.OnDismissListener() {
+            public void onDismiss( DialogInterface di ) {
+                Utils.logf( "onDismiss called" );
+                m_forResultWait.release();
+            }
+        };
+    }
 
-        Bundle bundle = new Bundle();
-        bundle.putString( XWConstants.QUERY_QUERY, message );
-        bundle.putStringArray( XWConstants.PICK_TILE_TILES, texts );
-        intent.putExtra( XWConstants.BLOCKING_DLG_BUNDLE, bundle );
+    private int waitBlockingDialog( final int dlgID )
+    {
+        m_handler.post( new Runnable() {
+                public void run() {
+                    showDialog( dlgID );
+                }
+            } );
 
         try {
-            startActivityForResult( intent, purpose );
             m_forResultWait.acquire();
-        } catch ( Exception ee ) {
-            Utils.logf( "userPickTile got: " + ee.toString() );
+        } catch ( java.lang.InterruptedException ie ) {
+            Utils.logf( "got " + ie.toString() );
         }
 
         return m_resultCode;
     }
 
+    private void nonBlockingDialog( String txt, int title ) 
+    {
+        m_dlgBytes = txt;
+        m_dlgTitle = title;
+        m_handler.post( new Runnable() {
+                public void run() {
+                    showDialog( DLG_OKONLY );
+                }
+            } );
+    }
+
     // This is supposed to be called from the jni thread
     public int userPickTile( int playerNum, String[] texts )
     {
-        int tile = -1;
-        Utils.logf( "util_userPickTile called; nTexts=" + texts.length );
-
-        int result = waitBlockingDialog( XWConstants.ACTION_PICK_TILE,
-                                         PICK_TILE_REQUEST, "String here", texts );
-
-        if ( m_resultCode >= RESULT_FIRST_USER ) {
-            tile = m_resultCode - RESULT_FIRST_USER;
-        } else {
-            Utils.logf( "unexpected result code: " + m_resultCode );
-        }
-
-        Utils.logf( "util_userPickTile => " + tile );
-        return tile;
+        m_texts = texts;
+        waitBlockingDialog( PICK_TILE_REQUEST_BLK );
+        return m_resultCode;
     }
 
     public boolean engineProgressCallback()
@@ -526,23 +567,32 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     public boolean userQuery( int id, String query )
     {
-        String actString = XWConstants.ACTION_QUERY;
+        boolean result;
 
         switch( id ) {
+            // these two are not blocking; post showDialog and move on
         case UtilCtxt.QUERY_ROBOT_MOVE:
         case UtilCtxt.QUERY_ROBOT_TRADE:
-            actString = XWConstants.ACTION_INFORM;
+            nonBlockingDialog( query, R.string.info_title );
+            result = true;
             break;
+
+            // These *are* blocking dialogs
         case UtilCtxt.QUERY_COMMIT_TRADE:
-            query = getString( R.string.query_trade );
-            break;
         case UtilCtxt.QUERY_COMMIT_TURN:
+            if ( UtilCtxt.QUERY_COMMIT_TRADE == id ) {
+                m_dlgBytes = getString( R.string.query_trade );
+            } else {
+                m_dlgBytes = query;
+            }
+            result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK );
             break;
+        default:
+            Assert.fail();
+            result = false;
         }
 
-        int result = waitBlockingDialog( actString, QUERY_REQUEST, query, null );
-
-        return result != 0;
+        return result;
     }
 
     public void userError( int code )
@@ -594,8 +644,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
 
         if ( resid != 0 ) {
-            waitBlockingDialog( XWConstants.ACTION_INFORM, INFORM_REQUEST, 
-                                getString( resid ), null );
+            nonBlockingDialog( getString( resid ), R.string.info_title );
         }
     } // userError
 

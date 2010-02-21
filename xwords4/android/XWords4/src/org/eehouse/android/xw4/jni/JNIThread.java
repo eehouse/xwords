@@ -181,6 +181,9 @@ public class JNIThread extends Thread {
             switch( elem.m_cmd ) {
 
             case CMD_DRAW:
+                if ( nextSame( JNICmd.CMD_DRAW ) ) {
+                    continue;
+                }
                 draw = true;
                 break;
 

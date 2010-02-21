@@ -90,19 +90,6 @@
               >
     </receiver>
 
-    <activity android:name="BlockingActivity"
-              android:theme="@android:style/Theme.Translucent"
-              android:screenOrientation="sensor"
-              android:configChanges="keyboardHidden|orientation"
-              >
-
-      <intent-filter>
-        <action android:name="org.eehouse.android.xw4.action.QUERY" />
-        <action android:name="org.eehouse.android.xw4.action.INFORM" />
-        <action android:name="org.eehouse.android.xw4.action.PICK_TILE" />
-      </intent-filter>
-    </activity>
-
     <receiver android:name="ReceiveNBS"
               android:enabled="true">
       <intent-filter>

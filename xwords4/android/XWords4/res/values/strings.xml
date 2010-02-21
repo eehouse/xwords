@@ -61,7 +61,7 @@
 	<string name="query_trade">Are you sure you want to trade the selected tiles?</string>
 
 
-    <string name="title_tile_picker">Pick tile</string>
+    <string name="title_tile_picker">Letter for blank</string>
     <string name="tiles_left_title">Remaining tiles</string>
     <string name="counts_values_title">Tile Counts and Values</string>
     <string name="history_title">Game History</string>
