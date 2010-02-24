@@ -34,6 +34,9 @@ makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
     gi->allowPickTiles = getBool( env, j_gi, "allowPickTiles" );
     gi->allowHintRect = getBool( env, j_gi, "allowHintRect" );
 
+    gi->phoniesAction = jenumFieldToInt( env, j_gi, "phoniesAction",
+                                         "org/eehouse/android/xw4/jni/"
+                                         "CurGameInfo$XWPhoniesChoice");
     gi->serverRole = 
         jenumFieldToInt( env, j_gi, "serverRole",
                          "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole");
@@ -86,9 +89,10 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
     setBool( env, jgi, "timerEnabled", gi->timerEnabled );
     setBool( env, jgi, "allowPickTiles", gi->allowPickTiles );
-    setBool( env, jgi, "allowHintRect", gi->allowHintRect );
     setString( env, jgi, "dictName", gi->dictName );
 
+    intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
+                     "org/eehouse/android/xw4/jni/CurGameInfo$XWPhoniesChoice" );
     intToJenumField( env, jgi, gi->serverRole, "serverRole",
                      "org/eehouse/android/xw4/jni/CurGameInfo$DeviceRole" );
 

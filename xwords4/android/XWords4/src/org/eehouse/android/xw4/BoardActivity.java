@@ -33,8 +33,9 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class BoardActivity extends Activity implements UtilCtxt {
 
     private static final int DLG_OKONLY = 1;
-    private static final int QUERY_REQUEST_BLK = 2;
-    private static final int PICK_TILE_REQUEST_BLK = 3;
+    private static final int DLG_BADWORDS = 2;
+    private static final int QUERY_REQUEST_BLK = 3;
+    private static final int PICK_TILE_REQUEST_BLK = 4;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -83,6 +84,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
         switch ( id ) {
         case DLG_OKONLY:
+        case DLG_BADWORDS:
             dialog = new AlertDialog.Builder( BoardActivity.this )
                 //.setIcon( R.drawable.alert_dialog_icon )
                 .setTitle( m_dlgTitle )
@@ -142,9 +144,13 @@ public class BoardActivity extends Activity implements UtilCtxt {
     protected void onPrepareDialog( int id, Dialog dialog )
     {
         Utils.logf( "onPrepareDialog(id=" + id + ")" );
-        if ( DLG_OKONLY == id ) {
+        switch( id ) {
+        case DLG_OKONLY:
             dialog.setTitle( m_dlgTitle );
+        case DLG_BADWORDS:
+        case QUERY_REQUEST_BLK:
             ((AlertDialog)dialog).setMessage( m_dlgBytes );
+            break;
         }
         super.onPrepareDialog( id, dialog );
     }
@@ -467,13 +473,23 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return m_resultCode;
     }
 
-    private void nonBlockingDialog( String txt, int title ) 
+    private void nonBlockingDialog( final int dlgID, String txt ) 
     {
+        switch ( dlgID ) {
+        case DLG_OKONLY:
+            m_dlgTitle = R.string.info_title;
+            break;
+        case DLG_BADWORDS:
+            m_dlgTitle = R.string.badwords_title;
+            break;
+        default:
+            Assert.fail();
+        }
+
         m_dlgBytes = txt;
-        m_dlgTitle = title;
         m_handler.post( new Runnable() {
                 public void run() {
-                    showDialog( DLG_OKONLY );
+                    showDialog( dlgID );
                 }
             } );
     }
@@ -588,7 +604,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             // these two are not blocking; post showDialog and move on
         case UtilCtxt.QUERY_ROBOT_MOVE:
         case UtilCtxt.QUERY_ROBOT_TRADE:
-            nonBlockingDialog( query, R.string.info_title );
+            nonBlockingDialog( DLG_OKONLY, query );
             result = true;
             break;
 
@@ -659,7 +675,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
 
         if ( resid != 0 ) {
-            nonBlockingDialog( getString( resid ), R.string.info_title );
+            nonBlockingDialog( DLG_OKONLY, getString( resid ) );
         }
     } // userError
 
@@ -668,4 +684,34 @@ public class BoardActivity extends Activity implements UtilCtxt {
         m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER, 
                             R.string.finalscores_title );
     }
+
+    public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
+    {
+        Utils.logf( "warnIllegalWord" );
+        boolean accept = turnLost;
+
+        StringBuffer sb = new StringBuffer();
+        for ( int ii = 0; ; ) {
+            sb.append( words[ii] );
+            if ( ++ii == words.length ) {
+                break;
+            }
+            sb.append( "; " );
+        }
+        
+        String format = getString( R.string.ids_badwords );
+        String message = String.format( format, sb.toString() );
+
+        if ( turnLost ) {
+            nonBlockingDialog( DLG_BADWORDS, 
+                               message + getString(R.string.badwords_lost) );
+        } else {
+            m_dlgBytes = message + getString( R.string.badwords_accept );
+            accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK );
+        }
+
+        Utils.logf( "warnIllegalWord=>" + accept );
+        return accept;
+    }
+
 } // class BoardActivity

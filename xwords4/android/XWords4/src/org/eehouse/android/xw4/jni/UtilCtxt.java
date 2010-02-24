@@ -83,4 +83,6 @@ public interface UtilCtxt {
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position
     //void yOffsetChange( int oldOffset, int newOffset );
+
+    boolean warnIllegalWord( String[] words, int turn, boolean turnLost );
 }
