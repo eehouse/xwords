@@ -21,7 +21,7 @@
     <string name="menu_revert">Reverteix</string>
     <string name="menu_discard">Descarta</string>
 
-    <string name="list_item_open">Obre</string>
+    <!-- <string name="list_item_open">Obre</string> -->
     <string name="list_item_view">Configura</string>
     <string name="list_item_hide">Amaga</string>
     <string name="list_item_delete">Suprimeix</string>
@@ -55,46 +55,46 @@
     <string name="game_config_open">Obre</string>
     <string name="game_config_done">Fet</string>
 
-	<string name="error_title">Error</string>
-	<string name="info_title">FYI...</string>
-	<string name="error_message">S\'ha produït un error en carregar la partida</string>
-	<string name="query_title">Una pregunta...</string>
-	<string name="query_trade">Esteu segur de voler canviar les fitxes seleccionades?</string>
+    <string name="error_title">Error</string>
+    <string name="info_title">Per a la vostra informació...</string>
+    <string name="error_message">S\'ha produït un error en carregar la partida</string>
+    <string name="query_title">Una pregunta...</string>
+    <string name="query_trade">Esteu segur de voler canviar les fitxes seleccionades?</string>
 
 
-    <string name="title_tile_picker">Pick tile</string>
+    <string name="title_tile_picker">Seleccioneu una fitxa</string>
     <string name="tiles_left_title">Fitxes romanents</string>
     <string name="counts_values_title">Quantitat i valor de les fitxes</string>
     <string name="history_title">Historial de la partida</string>
     <string name="finalscores_title">Puntuacions finals</string>
 
     <!-- system menu for main board view -->
-	<string name="board_menu_done">Torn fet</string>
-	<string name="board_menu_juggle">Remena</string>
-	<string name="board_menu_flip">CAnvia l\'horientació</string>
-	<string name="board_menu_trade">Canvia</string>
-	<string name="board_menu_tray">Amaga/Mostra</string>
-	<string name="board_submenu_undo">Desfés</string>
-	<string name="board_menu_undo_current">Desfés l\'actual</string>
-	<string name="board_menu_undo_last">Desfés l\'últim</string>
-	<string name="board_submenu_hint">Pista</string>
-	<string name="board_menu_hint_next">Pista següent</string>
-	<string name="board_menu_hint">Pista</string>
-	<string name="board_menu_values">Mostra els valors</string>
-	<string name="board_submenu_game">Partida</string>
-	<string name="board_menu_game_counts">Quantitat i valors</string>
-	<string name="board_menu_game_left">Fitxes romanents</string>
-	<string name="board_menu_game_info">Informacio de la partida</string>
-	<string name="board_menu_game_history">Historial de la partida</string>
-	<string name="board_menu_game_final">Puntuacions finals</string>
-	<string name="board_menu_game_resend">Reenvia els missatges</string>
-	<string name="board_submenu_file">Fitxer</string>
-	<string name="board_menu_file_new">Partida nova</string>
-	<string name="board_menu_file_prefs">Preferències</string>
-	<string name="board_menu_file_about">Quant al Crosswords</string>
+    <string name="board_menu_done">Fet</string>
+    <string name="board_menu_juggle">Remena</string>
+    <string name="board_menu_flip">Canvia l\'horientació</string>
+    <string name="board_menu_trade">Canvia</string>
+    <string name="board_menu_tray">Amaga/Mostra</string>
+    <string name="board_submenu_undo">Desfés</string>
+    <string name="board_menu_undo_current">Desfés l\'actual</string>
+    <string name="board_menu_undo_last">Desfés l\'últim</string>
+    <string name="board_submenu_hint">Pista</string>
+    <string name="board_menu_hint_next">Pista següent</string>
+    <string name="board_menu_hint">Pista</string>
+    <string name="board_menu_values">Mostra els valors</string>
+    <string name="board_submenu_game">Partida</string>
+    <string name="board_menu_game_counts">Quantitat i valors</string>
+    <string name="board_menu_game_left">Fitxes romanents</string>
+    <string name="board_menu_game_info">Informacio de la partida</string>
+    <string name="board_menu_game_history">Historial de la partida</string>
+    <string name="board_menu_game_final">Puntuacions finals</string>
+    <string name="board_menu_game_resend">Reenvia els missatges</string>
+    <string name="board_submenu_file">Fitxer</string>
+    <string name="board_menu_file_new">Partida nova</string>
+    <string name="board_menu_file_prefs">Preferències</string>
+    <string name="board_menu_file_about">Quant al Crosswords</string>
 
-	<string name="gamel_menu_delete_all">Delete all</string>
-	<string name="gamel_menu_view_hidden">Partides amagades</string>
+    <string name="gamel_menu_delete_all">Suprimeix-les totes</string>
+    <string name="gamel_menu_view_hidden">Partides amagades</string>
 
     <!-- returned by util_getUserString -->
     <string name="strd_robot_traded">El robot ha canviat %d fitxes en aquest torn.</string>
@@ -119,7 +119,7 @@
     <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
     <string name="str_local_name">%s</string>
     <string name="str_nonlocal_name">%s (remot)</string>
-    <string name="str_bonus_all">Bonificació per usar totes les partides: 50\n</string>
+    <string name="str_bonus_all">Bonificació per usar totes les fitxes: 50\n</string>
     <string name="strd_turn_score">Puntuació del torn: %d\n</string>
 
     <!-- error messages -->
@@ -138,9 +138,9 @@
 	<string name="str_server_dict_wins">Hi ha un conflicte entre els diccionaris de l\'amfitrió i dels visitants; L\'amfitrió guanya.</string>
 	<string name="str_reg_server_sans_remote">Com a mínim un jugador ha de ser visitant per a una partida iniciada cm a amfitrió.</string>
 
-    <string name="remote_label">Jugador remot (ignorat)</string>
+    <string name="remote_label">Jugador remot (s\'ignora)</string>
     <string name="robot_label">Jugador robot</string>
-    <string name="password_label">Contrasenya (ignorat)</string>
+    <string name="password_label">Contrasenya (s\'ignora)</string>
     <string name="player_edit_title">Jugador</string>
 
     <string name="players_label">Jugadors</string>
@@ -153,7 +153,11 @@
 
     <string name="dict_label">Diccionari</string>
     <string name="role_label">Rol</string>
+    <string name="connect_via_label">Connecta mitjançant</string>
+
+    <string name="configure_role">Configura la connexió</string>
     <string name="phonies_label">Paraules fora del diccionari</string>
+    <string name="minutes_label">Minuts a la partida</string>
 
     <string name="download_dicts">Baixa\'n més...</string>
 
@@ -176,4 +180,68 @@
     <string name="phonies_warn">Avisa\'m</string>
     <string name="phonies_disallow">No es poden jugar</string>
     <string name="gamel_menu_prefs">Preferències</string>
+
+    <string name="room_label">Sala</string>
+    <string name="hostname_label">Nom del servidor</string>
+    <string name="phone_label">Número de telèfon de l\'amfitrió</string>
+    <string name="bluetooth_label">Aviat es podrà usar el Bluetooth....</string>
+    <string name="port_label">Port</string>
+    <string name="role_edit_title">Connexió</string>
+
+    <string name="general_prefs">Preferències</string>
+    <string name="prefs_colors">Colors</string>
+    <string name="player0">Primer jugador</string>
+    <string name="player1">Segon jugador</string>
+    <string name="player2">Tercer jugador</string>
+    <string name="player3">Quart jugador</string>
+    <string name="bonus_l2x">Doble de lletra</string>
+    <string name="bonus_l3x">Triple de lletra</string>
+    <string name="bonus_w2x">Doble de paraula</string>
+    <string name="bonus_w3x">Triple de paraula</string>
+    <string name="tile_back">Fons de la fitxa</string>
+    <string name="focus">Color del focus</string>
+    <string name="advanced">Avançat</string>
+    <string name="relay_host">Adreça del repetidor</string>
+    <string name="relay_port">Port del repetidor</string>
+    <string name="sms_port">Port SMS</string>
+
+    <string name="sms_phone_label">sms_phone_label</string>
+    <string name="sms_port_label">sms_port_label</string>
+    <string name="bt_label">bt_label</string>
+    <string name="list_item_view">list_item_view</string>
+    <string name="key_player">key_player</string>
+    <string name="tab_relay">Internet/Repetidor</string>
+    <string name="tab_sms">SMS (en desenvolupament)</string>
+    <string name="tab_bluetooth">Bluetooth (en desenvolupament)</string>
+<string name="msg_relay_waiting">Esteu connectat al repetidor. S\'està esperant a %d jugador/s.</string>
+    <string name="msg_relay_all_here">Ja hi són tot els jugadors.</string>
+    <string name="title_relay_status">Estat de la connexió.</string>
+
+    <string name="relay_alert">Error en la connexió</string>
+    <string name="msg_too_many">Esteu proveint més jugadors dels que espera l\'amfitrió.</string>
+    <string name="msg_no_room">Cap amfitrió no ha registrat una sala amb aquest nom.</string>
+    <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o intentenu més tard.</string>
+    <string name="msg_lost_other">El repetidor ha perdut el contacte amb algun altre dispositiu durant aquesta partida.</string>
+
+    <!-- These do not require localization -->
+    <string name="key_color_tiles">key_color_tiles</string>
+    <string name="key_show_arrow">key_show_arrow</string>
+    <string name="key_explain_robot">key_explain_robot</string>
+    <string name="key_skip_confirm">key_skip_confirm</string>
+    <string name="key_hide_values">key_hide_values</string>
+    <string name="key_player0">key_player0</string>
+    <string name="key_player1">key_player1</string>
+    <string name="key_player2">key_player2</string>
+    <string name="key_player3">key_player3</string>
+    <string name="key_bonus_l2x">key_bonus_l2x</string>
+    <string name="key_bonus_l3x">key_bonus_l3x</string>
+    <string name="key_bonus_w2x">key_bonus_w2x</string>
+    <string name="key_bonus_w3x">key_bonus_w3x</string>
+    <string name="key_tile_back">key_tile_back</string>
+    <string name="key_focus">key_focus</string>
+    <string name="key_relay_host">key_relay_host</string>
+    <string name="key_relay_port">key_relay_port</string>
+    <string name="key_sms_port">key_sms_port</string>
+
+   <string name="default_host">eehouse.org</string>
 </resources>
