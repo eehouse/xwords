@@ -128,6 +128,7 @@ public class XwJNI {
     public static native void comms_start( int gamePtr );
     public static native void comms_getAddr( int gamePtr, CommsAddrRec addr );
     public static native void comms_setAddr( int gamePtr, CommsAddrRec addr );
+    public static native void comms_resendAll( int gamePtr );
 
     // Dicts
     public static native boolean dict_tilesAreSame( int dictPtr1, int dictPtr2 );

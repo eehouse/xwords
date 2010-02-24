@@ -344,8 +344,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
         case R.id.board_menu_game_info:
         case R.id.board_menu_game_final:
-        case R.id.board_menu_game_resend:
             Utils.notImpl(this);
+            break;
+
+        case R.id.board_menu_game_resend:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
             break;
         case R.id.board_menu_file_prefs:
             m_cp = null;        // mark so we'll reset it later

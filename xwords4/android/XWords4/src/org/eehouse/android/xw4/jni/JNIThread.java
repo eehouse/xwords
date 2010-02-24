@@ -39,6 +39,7 @@ public class JNIThread extends Thread {
             CMD_VALUES,
             CMD_COUNTS_VALUES,
             CMD_REMAINING,
+            CMD_RESEND,
             CMD_HISTORY,
             CMD_POST_OVER,
             };
@@ -289,6 +290,11 @@ public class JNIThread extends Thread {
                                XwJNI.board_formatRemainingTiles( m_jniGamePtr )
                                );
                 break;
+
+            case CMD_RESEND:
+                XwJNI.comms_resendAll( m_jniGamePtr );
+                break;
+
             case CMD_HISTORY:
                 boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
                 sendForDialog( ((Integer)args[0]).intValue(),

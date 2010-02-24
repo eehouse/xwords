@@ -900,3 +900,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1hasComms
     XWJNI_END();
     return result;
 }
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    XP_ASSERT( !!state->game.comms );
+    (void)comms_resendAll( state->game.comms );
+    XWJNI_END();
+}
