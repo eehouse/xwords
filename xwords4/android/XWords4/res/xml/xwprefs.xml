@@ -3,8 +3,22 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:key="first_preferencescreen"
                   >
+
+  <PreferenceScreen android:title="Fonts (temporary)"
+                      >
+    <CheckBoxPreference android:key="@string/key_anti_alias"
+                        android:title="Anti-aliased"
+                        android:defaultValue="false"
+                        />
+    <CheckBoxPreference android:key="@string/key_subpixel"
+                        android:title="sub-pixel"
+                        android:defaultValue="false"
+                        />
+  </PreferenceScreen>
+
     <PreferenceCategory android:title="@string/general_prefs"
                         >
+
 
       <CheckBoxPreference android:key="@string/key_color_tiles"
                           android:title="@string/color_tiles"
@@ -94,6 +108,4 @@
                           android:numeric="decimal"
                           />
     </PreferenceScreen>
-
--->
 </PreferenceScreen>
