@@ -1,1 +1,4 @@
 libs
+bin
+gen
+ant_out.txt
