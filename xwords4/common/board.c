@@ -562,7 +562,8 @@ warnBadWords( XP_UCHAR* word, void* closure )
     bwi.nWords = 1;
     bwi.words[0] = word;
 
-    ok = util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
+    ok = !board->badWordRejected
+        && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
     board->badWordRejected = !ok || board->badWordRejected;
 
     return ok;
