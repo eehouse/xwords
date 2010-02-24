@@ -137,7 +137,7 @@ skipBitmaps( LinuxDictionaryCtxt* ctxt, FILE* dictF )
 
     for ( tile = 0; tile < ctxt->super.nFaces; ++tile ) {
 	
-        XP_UCHAR* facep = ctxt->super.facePtrs[(short)tile];
+        const XP_UCHAR* facep = ctxt->super.facePtrs[(short)tile];
         if ( IS_SPECIAL(*facep) ) {
             XP_U16 asIndex = (XP_U16)*facep;
             XP_U8 txtlen;
@@ -168,7 +168,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
-    XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
+    const XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
     XP_U16 ii;
     XP_Bool isUTF8 = dict->isUTF8;
     XP_UCHAR* next = faces;
