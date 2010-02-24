@@ -89,7 +89,7 @@ typedef struct PickInfo {
 
 typedef struct BadWordInfo {
     XP_U16 nWords;
-    XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
+    const XP_UCHAR* words[MAX_TRAY_TILES+1]; /* can form in both directions */
 } BadWordInfo;
 
 /* XWTimerProc returns true if redraw was necessitated by what the proc did */
