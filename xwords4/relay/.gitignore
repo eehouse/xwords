@@ -1,0 +1,4 @@
+*.o
+xwrelay.log
+xwrelay.pid
+xwrelay
