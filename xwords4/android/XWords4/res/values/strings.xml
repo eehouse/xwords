@@ -223,6 +223,11 @@
     <string name="msg_dup_room">Another host has already registered a room using that name.  Rename yours or retry later.</string>
     <string name="msg_lost_other">The relay has lost contact with another device in this game.</string>
 
+    <string name="ids_badwords">Word[s] %s not found in dictionary.</string>
+    <string name="badwords_accept">  Do you still want to accept this move?</string>
+    <string name="badwords_lost">  Turn lost.</string>
+    <string name="badwords_title">Illegal word[s]</string>
+
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
     <string name="key_show_arrow">key_show_arrow</string>
@@ -242,6 +247,9 @@
     <string name="key_relay_host">key_relay_host</string>
     <string name="key_relay_port">key_relay_port</string>
     <string name="key_sms_port">key_sms_port</string>
+
+    <string name="key_anti_alias">key_anti_alias</string>
+    <string name="key_subpixel">key_subpixel</string>
 
     <string name="default_host">eehouse.org</string>
 </resources>

@@ -5,8 +5,11 @@ package org.eehouse.android.xw4.jni;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import org.eehouse.android.xw4.R;
+import android.graphics.Paint;
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.R;
 
 public class CommonPrefs {
     public static final int COLOR_TILE_BACK = 0;
@@ -119,4 +122,26 @@ public class CommonPrefs {
         String key = s_context.getString( R.string.key_relay_host );
         return sp.getString( key, "" );
     }
+
+    public static int getFontFlags()
+    {
+        String key;
+        int result = 0;
+        SharedPreferences sp = 
+            PreferenceManager.getDefaultSharedPreferences( s_context );
+
+        key = s_context.getString( R.string.key_anti_alias );
+        if ( sp.getBoolean( key, false ) ) {
+            result = Paint.ANTI_ALIAS_FLAG | result;
+        }
+
+        key = s_context.getString( R.string.key_subpixel );
+        if ( sp.getBoolean( key, false ) ) {
+            result = Paint.SUBPIXEL_TEXT_FLAG | result;
+        }
+
+        Utils.logf( "getFontFlags=>" + result );
+        return result;
+    }
+
 }

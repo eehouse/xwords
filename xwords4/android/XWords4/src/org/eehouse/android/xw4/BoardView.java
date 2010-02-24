@@ -43,15 +43,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_dictPtr = 0;
     private int m_lastSecsLeft;
     private class FontDims {
-        FontDims( int topRow, int bottomRow, int width ) {
-            m_topRow = topRow; 
-            m_bottomRow = bottomRow;
-            m_textHeight = bottomRow - topRow + 1;
+        FontDims( int boundsHt, int drawnHt, int topRow, int bottomRow, 
+                  int width ) {
+            float textHeight = bottomRow - topRow;
+            m_textHeight = (int)Math.floor((boundsHt * textHeight) / drawnHt);
+        
             m_width = width;
         }
         int m_textHeight;
-        int m_topRow;
-        int m_bottomRow;
         int m_width;
     }
     FontDims m_cellDims;
@@ -119,7 +118,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private void init()
     {
         m_drawPaint = new Paint();
-        m_fillPaint = new Paint();
+        m_fillPaint = new Paint( CommonPrefs.getFontFlags() );
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
         m_tileStrokePaint = new Paint();
@@ -526,13 +525,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.drawRect( rect, m_fillPaint );
     }
 
-    private FontDims getFontDims( int ht, int width )
+    private FontDims getFontDims( final int ht, final int width )
     {
         Utils.logf( "getFontDims(" + ht + ")" );
         int ascent;
         int useHt;
 
-        Paint paint = new Paint();
+        Paint paint = new Paint(); // CommonPrefs.getFontFlags()??
         paint.setStyle( Paint.Style.STROKE );
         paint.setTextAlign( Paint.Align.LEFT );
         for ( useHt = ht; ; --useHt ) {
@@ -549,7 +548,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                    
             ascent = -fmi.ascent;
             if ( useHt + fmi.descent <= ht ) {
-                // Utils.logf( "going with ht: " + useHt );
+                Utils.logf( "going with ht: " + useHt );
                 break;
             }
         }
@@ -602,9 +601,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
         }
 
-        Utils.logf( "topRow: " + topRow + "; bottomRow: " + bottomRow );
-
-        return new FontDims( topRow, bottomRow, maxWidth );
+        return new FontDims( ht, useHt, topRow, bottomRow, maxWidth );
     } // getFontDims
 
     private void figureTrayTxtHts( Rect rect )
@@ -614,7 +611,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void figureCellTxtHt( Rect rect )
     {
-        m_cellDims = getFontDims( rect.height(), rect.width() );
+        m_cellDims = getFontDims( rect.height()-2, rect.width()-2 );
     }
 
     private void markBlank( Rect rect )
