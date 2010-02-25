@@ -83,7 +83,6 @@
     <string name="board_submenu_game">Partida</string>
     <string name="board_menu_game_counts">Quantitat i valors</string>
     <string name="board_menu_game_left">Fitxes romanents</string>
-    <string name="board_menu_game_info">Informacio de la partida</string>
     <string name="board_menu_game_history">Historial de la partida</string>
     <string name="board_menu_game_final">Puntuacions finals</string>
     <string name="board_menu_game_resend">Reenvia els missatges</string>

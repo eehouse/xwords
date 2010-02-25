@@ -83,7 +83,6 @@
 	<string name="board_submenu_game">Game</string>
 	<string name="board_menu_game_counts">Counts and values</string>
 	<string name="board_menu_game_left">Tiles remaining</string>
-	<string name="board_menu_game_info">Game info</string>
 	<string name="board_menu_game_history">Game history</string>
 	<string name="board_menu_game_final">Final scores</string>
 	<string name="board_menu_game_resend">Resend messages</string>

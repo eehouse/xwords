@@ -342,7 +342,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                 R.string.history_title );
             break;
 
-        case R.id.board_menu_game_info:
         case R.id.board_menu_game_final:
             Utils.notImpl(this);
             break;
