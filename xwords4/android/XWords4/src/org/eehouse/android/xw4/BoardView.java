@@ -14,7 +14,9 @@ import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.content.res.Resources;
+import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.FontMetricsInt;
+import junit.framework.Assert;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
@@ -42,19 +44,40 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private String m_remText;
     private int m_dictPtr = 0;
     private int m_lastSecsLeft;
+
+    // FontDims: exists to translate space available to the largest
+    // font we can draw within that space taking advantage of our use
+    // being limited to a known small subset of glyphs.  We need two
+    // numbers from this: the textHeight to pass to Paint.setTextSize,
+    // and the descent to use when drawing.  Both can be calculated
+    // proportionally.  We know the ht we passed to Paint to get the
+    // height we've now measured; that gives a percent to multiply any
+    // future wantHt by.  Ditto for the descent
     private class FontDims {
-        FontDims( int boundsHt, int drawnHt, int topRow, int bottomRow, 
-                  int width ) {
-            float textHeight = bottomRow - topRow;
-            m_textHeight = (int)Math.floor((boundsHt * textHeight) / drawnHt);
-        
-            m_width = width;
+        FontDims( float askedHt, int topRow, int bottomRow, float width ) {
+            // Utils.logf( "FontDims(): askedHt=" + askedHt );
+            // Utils.logf( "FontDims(): topRow=" + topRow );
+            // Utils.logf( "FontDims(): bottomRow=" + bottomRow );
+            // Utils.logf( "FontDims(): width=" + width );
+            float gotHt = bottomRow - topRow + 1;
+            m_htProportion = gotHt / askedHt;
+            Assert.assertTrue( (bottomRow+1) >= askedHt );
+            float descent = (bottomRow+1) - askedHt;
+            Utils.logf( "descent: " + descent );
+            m_descentProportion = descent / askedHt;
+            Assert.assertTrue( m_descentProportion >= 0 );
+            m_widthProportion = width / askedHt;
+            // Utils.logf( "m_htProportion: " + m_htProportion );
+            // Utils.logf( "m_descentProportion: " + m_descentProportion );
         }
-        int m_textHeight;
-        int m_width;
+        private float m_htProportion;
+        private float m_descentProportion;
+        private float m_widthProportion;
+        int heightFor( int ht ) { return (int)(ht / m_htProportion); }
+        int descentFor( int ht ) { return (int)(ht * m_descentProportion); }
+        int widthFor( int width ) { return (int)(width / m_widthProportion); }
     }
-    FontDims m_cellDims;
-    FontDims m_trayDims;
+    FontDims m_fontDims;
 
     private static final int BLACK = 0xFF000000;
     private static final int WHITE = 0xFFFFFFFF;
@@ -156,7 +179,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         } else {
             m_layoutWidth = width;
             m_layoutHeight = height;
-            m_cellDims = m_trayDims = null; // force recalc of font
+            m_fontDims = null; // force recalc of font
 
             int nCells = m_gi.boardSize;
             int cellSize = width / nCells;
@@ -232,7 +255,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                 int[] height ) 
     {
         m_remText = String.format( "%d", nTilesLeft ); // should cache a formatter
-        m_fillPaint.setTextSize( r.bottom - r.top );
+        m_fillPaint.setTextSize( r.bottom - r.top - 2 );
         m_fillPaint.getTextBounds( m_remText, 0, m_remText.length(), 
                                    m_boundsScratch );
 
@@ -250,9 +273,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_fillPaint.setColor( m_otherColors[CommonPrefs.COLOR_TILE_BACK] );
         m_canvas.drawRect( rOuter, m_fillPaint );
 
-        m_fillPaint.setTextSize( rOuter.bottom - rOuter.top );
         m_fillPaint.setColor( BLACK );
-        drawCentered( m_remText, rOuter );
+        drawCentered( m_remText, rOuter, null );
     }
 
     public void measureScoreText( Rect r, DrawScoreInfo dsi, 
@@ -271,7 +293,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         String str = sb.toString();
         m_scores[dsi.playerNum] = str;
 
-        m_fillPaint.setTextSize( r.bottom - r.top );
+        m_fillPaint.setTextSize( r.bottom - r.top - 2 );
         m_fillPaint.getTextBounds( str, 0, str.length(), m_boundsScratch );
 
         width[0] = m_boundsScratch.right;
@@ -281,9 +303,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi )
     {
         String text = m_scores[dsi.playerNum];
-        m_fillPaint.setTextSize( rOuter.bottom - rOuter.top );
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
-        drawCentered( text, rOuter );
+        drawCentered( text, rOuter, null );
     }
 
     public void drawTimer( Rect rect, int player, int secondsLeft )
@@ -298,9 +319,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
             clearToBack( rect );
 
-            m_fillPaint.setTextSize( rect.bottom - rect.top );
             m_fillPaint.setColor( m_playerColors[player] );
-            drawCentered( time, rect );
+            drawCentered( time, rect, null );
 
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
@@ -315,9 +335,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         boolean empty = null == text && null == bitmaps;
         boolean pending = 0 != (flags & CELL_HIGHLIGHT);
 
-        if ( null == m_cellDims ) {
-            figureCellTxtHt( rect );
-        }
+        figureFontDims();
 
         clearToBack( rect );
 
@@ -344,10 +362,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         } else {
             m_fillPaint.setColor( foreColor );
             if ( null == bitmaps ) {
-                m_fillPaint.setTextSize( m_cellDims.m_textHeight );
-                drawCentered( text, rect );
+                int useHt = rect.height() - 4;
+                drawCentered( text, rect, m_fontDims );
             } else {
-                drawBestBitmap( bitmaps, rect, m_cellDims );
+                drawBestBitmap( bitmaps, rect );
             }
         }
 
@@ -380,8 +398,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;
     }
 
-    public void drawTile( Rect rect, String text, BitmapDrawable[] bitmaps, int val, 
-                          int flags ) 
+    public void drawTile( Rect rect, String text, BitmapDrawable[] bitmaps, 
+                          int val, int flags ) 
     {
         drawTileImpl( rect, text, bitmaps, val, flags, true );
     }
@@ -411,8 +429,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         ++rect.top;
         clearToBack( rect );
         m_fillPaint.setColor( BLACK );
-        m_fillPaint.setTextSize( (rect.bottom - rect.top) / 2 );
-        drawCentered( text, rect );
+        rect.inset( 0, rect.height() / 4 );
+        drawCentered( text, rect, null );
     }
 
     public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )
@@ -428,8 +446,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( m_dictPtr != dictPtr ) {
             if ( m_dictPtr == 0 || 
                  !XwJNI.dict_tilesAreSame( m_dictPtr, dictPtr ) ) {
-                m_cellDims = null;
-                m_trayDims = null;
+                m_fontDims = null;
                 m_dictChars = XwJNI.dict_getChars( dictPtr );
             }
             m_dictPtr = dictPtr;
@@ -471,21 +488,31 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.restoreToCount(1); // in case new canvas....
     } // drawTileImpl
 
-    private void drawCentered( String text, Rect rect ) 
+    private void drawCentered( String text, Rect rect, FontDims fontDims ) 
     {
-        int descent = m_fillPaint.getFontMetricsInt().descent;
-        int bottom = rect.bottom - descent;
+        int descent;
+        int textSize;
+        if ( null == fontDims ) {
+            descent = m_fillPaint.getFontMetricsInt().descent;
+            textSize = rect.height() - 2;
+        } else {
+            int height = rect.height() - 4; // borders and padding, 2 each 
+            descent = fontDims.descentFor( height );
+            textSize = fontDims.heightFor( height );
+            Utils.logf( "using descent: " + descent + " and textSize: " 
+                        + textSize + " in height " + height );
+        }
+        int bottom = rect.bottom - descent - 2;
         int center = rect.left + ( (rect.right - rect.left) / 2 );
         m_fillPaint.setTextAlign( Paint.Align.CENTER );
+        m_fillPaint.setTextSize( textSize );
         m_canvas.drawText( text, center, bottom, m_fillPaint );
     }
 
     private void positionDrawTile( final Rect rect, String text, 
                                    BitmapDrawable bitmaps[], int val )
     {
-        if ( null == m_trayDims ) {
-            figureTrayTxtHts( rect );
-        }
+        figureFontDims();
 
         if ( null != bitmaps || null != text ) {
             if ( null == m_letterRect ) {
@@ -493,13 +520,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                          rect.height() * 3 / 4 );
                 m_letterRect.inset( 2, 2 );
             }
-            m_letterRect.offsetTo( rect.left, rect.top );
+            m_letterRect.offsetTo( rect.left+2, rect.top+2 );
             if ( null != bitmaps ) {
-                drawBestBitmap( bitmaps, m_letterRect, m_trayDims );
+                drawBestBitmap( bitmaps, m_letterRect );
             } else /*if ( null != text )*/ {
-                m_fillPaint.setTextSize( m_trayDims.m_textHeight );
+                int height = m_letterRect.height();
+                int descent = m_fontDims.descentFor( height );
+                m_fillPaint.setTextSize( m_fontDims.heightFor( height ) );
                 m_fillPaint.setTextAlign( Paint.Align.LEFT );
-                m_canvas.drawText( text, m_letterRect.left, m_letterRect.bottom, 
+                m_canvas.drawText( text, m_letterRect.left,
+                                   m_letterRect.bottom - descent, 
                                    m_fillPaint );
             }
         }
@@ -525,94 +555,76 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.drawRect( rect, m_fillPaint );
     }
 
-    private FontDims getFontDims( final int ht, final int width )
+    private void figureFontDims()
     {
-        Utils.logf( "getFontDims(" + ht + ")" );
-        int ascent;
-        int useHt;
+        if ( null == m_fontDims ) {
+            final int ht = 24;
+            final int width = 20;
 
-        Paint paint = new Paint(); // CommonPrefs.getFontFlags()??
-        paint.setStyle( Paint.Style.STROKE );
-        paint.setTextAlign( Paint.Align.LEFT );
-        for ( useHt = ht; ; --useHt ) {
-            // Utils.logf( "\ntrying ht: " + useHt );
+            Paint paint = new Paint(); // CommonPrefs.getFontFlags()??
+            paint.setStyle( Paint.Style.STROKE );
+            paint.setTextAlign( Paint.Align.LEFT );
+            paint.setTextSize( ht );
 
-            paint.setTextSize( useHt );
-            FontMetricsInt fmi = paint.getFontMetricsInt();
+            Bitmap bitmap = Bitmap.createBitmap( width, (ht*3)/2, 
+                                                 Bitmap.Config.ARGB_8888 );
+            Canvas canvas = new Canvas( bitmap );
 
+            FontMetrics fmi = paint.getFontMetrics();
             // Utils.logf( "ascent: " + fmi.ascent );
             // Utils.logf( "bottom: " + fmi.bottom );
             // Utils.logf( "descent: " + fmi.descent );
             // Utils.logf( "leading: " + fmi.leading );
             // Utils.logf( "top : " + fmi.top );
-                   
-            ascent = -fmi.ascent;
-            if ( useHt + fmi.descent <= ht ) {
-                Utils.logf( "going with ht: " + useHt );
-                break;
-            }
-        }
 
-        Bitmap bitmap = Bitmap.createBitmap( ht, ht, Bitmap.Config.ARGB_8888 );
-        Canvas canvas = new Canvas( bitmap );
+            // Utils.logf( "using as baseline: " + ht );
 
-        paint.setTextSize( ht );
-
-        Rect bounds = new Rect();
-        int maxWidth = 0;
-        for ( String str : m_dictChars ) {
-            if ( str.length() == 1 && str.charAt(0) >= 32 ) {
-                canvas.drawText( str, 0, useHt+1, paint );
-                paint.getTextBounds( str, 0, 1, bounds );
-                if ( maxWidth < bounds.right ) {
-                    maxWidth = bounds.right;
+            Rect bounds = new Rect();
+            int maxWidth = 0;
+            for ( String str : m_dictChars ) {
+                if ( str.length() == 1 && str.charAt(0) >= 32 ) {
+                    canvas.drawText( str, 0, ht, paint );
+                    paint.getTextBounds( str, 0, 1, bounds );
+                    if ( maxWidth < bounds.right ) {
+                        maxWidth = bounds.right;
+                    }
                 }
             }
-        }
 
-        // for ( int row = 0; row < bitmap.getHeight(); ++row ) {
-        //     StringBuffer sb = new StringBuffer( bitmap.getWidth() );
-        //     for ( int col = 0; col < bitmap.getWidth(); ++col ) {
-        //         int pixel = bitmap.getPixel( col, row );
-        //         sb.append( pixel==0? "." : "X" );
-        //     }
-        //     Utils.logf( sb.append(row).toString() );
-        // }
+            // for ( int row = 0; row < bitmap.getHeight(); ++row ) {
+            //     StringBuffer sb = new StringBuffer( bitmap.getWidth() );
+            //     for ( int col = 0; col < bitmap.getWidth(); ++col ) {
+            //         int pixel = bitmap.getPixel( col, row );
+            //         sb.append( pixel==0? "." : "X" );
+            //     }
+            //     Utils.logf( sb.append(row).toString() );
+            // }
 
-        int topRow = 0;
-        findTop:
-        for ( int row = 0; row < bitmap.getHeight(); ++row ) {
-            for ( int col = 0; col < bitmap.getWidth(); ++col ) {
-                if ( 0 != bitmap.getPixel( col, row ) ){
-                    topRow = row;
-                    break findTop;
+            int topRow = 0;
+            findTop:
+            for ( int row = 0; row < bitmap.getHeight(); ++row ) {
+                for ( int col = 0; col < bitmap.getWidth(); ++col ) {
+                    if ( 0 != bitmap.getPixel( col, row ) ){
+                        topRow = row;
+                        break findTop;
+                    }
                 }
             }
-        }
 
-        int bottomRow = 0;
-        findBottom:
-        for ( int row = bitmap.getHeight() - 1; row > topRow; --row ) {
-            for ( int col = 0; col < bitmap.getWidth(); ++col ) {
-                if ( 0 != bitmap.getPixel( col, row ) ){
-                    bottomRow = row;
-                    break findBottom;
+            int bottomRow = 0;
+            findBottom:
+            for ( int row = bitmap.getHeight() - 1; row > topRow; --row ) {
+                for ( int col = 0; col < bitmap.getWidth(); ++col ) {
+                    if ( 0 != bitmap.getPixel( col, row ) ){
+                        bottomRow = row;
+                        break findBottom;
+                    }
                 }
             }
+        
+            m_fontDims = new FontDims( ht, topRow, bottomRow, maxWidth );
         }
-
-        return new FontDims( ht, useHt, topRow, bottomRow, maxWidth );
-    } // getFontDims
-
-    private void figureTrayTxtHts( Rect rect )
-    {
-        m_trayDims = getFontDims( rect.height() * 3 / 4, rect.width() );
-    }
-
-    private void figureCellTxtHt( Rect rect )
-    {
-        m_cellDims = getFontDims( rect.height()-2, rect.width()-2 );
-    }
+    } // figureFontDims
 
     private void markBlank( Rect rect )
     {
@@ -633,18 +645,19 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.drawRect( rect, m_fillPaint );
     }
 
-    private void drawBestBitmap( BitmapDrawable[] bitmaps, final Rect rect, 
-                                 FontDims fontDims )
+    private void drawBestBitmap( BitmapDrawable[] bitmaps, final Rect rect  )
     {
         Rect local = new Rect( rect );
-        local.top = local.bottom - fontDims.m_textHeight;
-        local.right = local.left + fontDims.m_width;
+        int fontHt = m_fontDims.heightFor( local.height() );
+        int fontWidth = m_fontDims.widthFor( local.width() );
+        local.top = local.bottom - fontHt;
+        local.right = local.left + m_fontDims.widthFor( rect.width() );
 
         int ii;
         for ( ii = bitmaps.length-1; ii > 0; --ii ) {
             Bitmap bitmap = bitmaps[ii].getBitmap();
-            if ( bitmap.getWidth() <= fontDims.m_width
-                 && bitmap.getHeight() <= fontDims.m_textHeight ) {
+            if ( bitmap.getWidth() <= fontWidth
+                 && bitmap.getHeight() <= fontHt ) {
                 break;
             }
         }
