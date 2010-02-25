@@ -56,11 +56,11 @@
 
       <EditTextPreference android:key="@string/key_player2"
                           android:title="@string/player2"
-                          android:defaultValue="0x000000"
+                          android:defaultValue="0x0000FF"
                           />
       <EditTextPreference android:key="@string/key_player3"
                           android:title="@string/player3"
-                          android:defaultValue="0xFF0000"
+                          android:defaultValue="0x008F00"
                           />
 
       <EditTextPreference android:key="@string/key_bonus_l2x"
