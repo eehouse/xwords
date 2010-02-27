@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -27,6 +28,8 @@ public class JNIThread extends Thread {
             CMD_PEN_DOWN,
             CMD_PEN_MOVE,
             CMD_PEN_UP,
+            CMD_KEYDOWN,
+            CMD_KEYUP,
             CMD_TIMER_FIRED,
             CMD_COMMIT,
             CMD_JUGGLE,
@@ -57,6 +60,8 @@ public class JNIThread extends Thread {
     private CurGameInfo m_gi;
     private Handler m_handler;
     private SyncedDraw m_drawer;
+    private static final int kMinDivWidth = 10;
+    private boolean m_keyDown = false;
 
     LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -158,7 +163,7 @@ public class JNIThread extends Thread {
                                 scoreHt + ((nCells-nToScroll) * cellSize),
                                 nCells * cellSize, // width
                                 trayHt,      // height
-                                4 );
+                                kMinDivWidth );
 
         XwJNI.board_invalAll( m_jniGamePtr );
     }
@@ -167,6 +172,61 @@ public class JNIThread extends Thread {
     {
         QueueElem nextElem = m_queue.peek();
         return null != nextElem && nextElem.m_cmd == cmd;
+    }
+
+    private boolean processKeyEvent( JNICmd cmd, XwJNI.XP_Key xpKey,
+                                     boolean[] barr )
+    {
+        boolean draw = false;
+        boolean handled = false;
+        boolean goingUp = JNICmd.CMD_KEYUP == cmd;
+
+        if ( m_keyDown && !goingUp ) {
+            // ignore duplicate downs for now
+        } else {
+            // sometimes ups come without prior downs.  Fake a down in
+            // that case.
+            if ( goingUp && !m_keyDown ) {
+                draw = XwJNI.board_handleKey( m_jniGamePtr, xpKey, false, barr );
+                handled = barr[0];
+            }
+
+            if ( XwJNI.board_handleKey( m_jniGamePtr, xpKey, goingUp, barr ) ) {
+                handled = barr[0] || handled;
+                draw = true;
+            }
+            m_keyDown = !goingUp;
+
+            if ( goingUp && !handled ) {
+                int[] order = { DrawCtx.OBJ_SCORE, 
+                                DrawCtx.OBJ_BOARD, 
+                                DrawCtx.OBJ_TRAY };
+                int curType = XwJNI.board_getFocusOwner( m_jniGamePtr );
+                int cur = 0;
+                if ( DrawCtx.OBJ_NONE != curType ) {
+                    for ( cur = 0; cur < order.length; ++cur ) {
+                        if ( order[cur] == curType ) {
+                            break;
+                        }
+                    }
+                }
+                cur += order.length;
+                switch( xpKey ) {
+                case XP_CURSOR_KEY_DOWN:
+                case XP_CURSOR_KEY_RIGHT:
+                    ++cur;
+                    break;
+                case XP_CURSOR_KEY_UP:
+                case XP_CURSOR_KEY_LEFT:
+                    --cur;
+                    break;
+                }
+                cur %= order.length;
+                draw = XwJNI.board_focusChanged( m_jniGamePtr, order[cur] )
+                    || draw;
+            }
+        }
+        return draw;
     }
 
     public void run() 
@@ -244,6 +304,11 @@ public class JNIThread extends Thread {
                 draw = XwJNI.board_handlePenUp( m_jniGamePtr, 
                                                 ((Integer)args[0]).intValue(),
                                                 ((Integer)args[1]).intValue() );
+                break;
+
+            case CMD_KEYDOWN:
+            case CMD_KEYUP:
+                draw = processKeyEvent( elem.m_cmd, (XwJNI.XP_Key)args[0], barr );
                 break;
 
             case CMD_COMMIT:

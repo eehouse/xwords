@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
+import android.view.KeyEvent;
 import android.content.res.AssetManager;
 import java.io.InputStream;
 import android.os.Handler;
@@ -288,6 +289,26 @@ public class BoardActivity extends Activity implements UtilCtxt {
         super.onConfigurationChanged( newConfig );
     }
 
+    @Override
+    public boolean onKeyDown( int keyCode, KeyEvent event )
+    {
+        XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
+        if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_KEYDOWN, xpKey );
+        }
+        return super.onKeyDown( keyCode, event );
+    }
+
+    @Override
+    public boolean onKeyUp( int keyCode, KeyEvent event )
+    {
+        XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
+        if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_KEYUP, xpKey );
+        }
+        return super.onKeyUp( keyCode, event );
+    }
+
     protected void onDestroy() 
     {
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
@@ -392,6 +413,32 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
 
         return handled;
+    }
+
+    private XwJNI.XP_Key keyCodeToXPKey( int keyCode )
+    {
+        XwJNI.XP_Key xpKey = XwJNI.XP_Key.XP_KEY_NONE;
+        switch( keyCode ) {
+        case KeyEvent.KEYCODE_DPAD_CENTER:
+            xpKey = XwJNI.XP_Key.XP_RETURN_KEY;
+            break;
+        case KeyEvent.KEYCODE_DPAD_DOWN:
+            xpKey = XwJNI.XP_Key.XP_CURSOR_KEY_DOWN;
+            break;
+        case KeyEvent.KEYCODE_DPAD_LEFT:
+            xpKey = XwJNI.XP_Key.XP_CURSOR_KEY_LEFT;
+            break;
+        case KeyEvent.KEYCODE_DPAD_RIGHT:
+            xpKey = XwJNI.XP_Key.XP_CURSOR_KEY_RIGHT;
+            break;
+        case KeyEvent.KEYCODE_DPAD_UP:         
+            xpKey = XwJNI.XP_Key.XP_CURSOR_KEY_UP;
+            break;
+        case KeyEvent.KEYCODE_SPACE:         
+            xpKey = XwJNI.XP_Key.XP_RAISEFOCUS_KEY;
+            break;
+        }
+        return xpKey;
     }
 
     //////////////////////////////////////////

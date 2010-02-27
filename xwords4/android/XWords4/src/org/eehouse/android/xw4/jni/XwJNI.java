@@ -112,6 +112,33 @@ public class XwJNI {
     public static native String board_formatRemainingTiles( int gamePtr );
     public static native boolean board_prefsChanged( int gamePtr, 
                                                      CommonPrefs cp );
+    public static native int board_getFocusOwner( int gamePtr );
+    public static native boolean board_focusChanged( int gamePtr, int typ );
+
+    public enum XP_Key {
+        XP_KEY_NONE,
+        XP_CURSOR_KEY_DOWN,
+        XP_CURSOR_KEY_ALTDOWN,
+        XP_CURSOR_KEY_RIGHT,
+        XP_CURSOR_KEY_ALTRIGHT,
+        XP_CURSOR_KEY_UP,
+        XP_CURSOR_KEY_ALTUP,
+        XP_CURSOR_KEY_LEFT,
+        XP_CURSOR_KEY_ALTLEFT,
+
+        XP_CURSOR_KEY_DEL,
+        XP_RAISEFOCUS_KEY,
+        XP_RETURN_KEY,
+
+        XP_KEY_LAST
+    };
+    public static native boolean board_handleKey( int gamePtr, XP_Key key, 
+                                                  boolean up, boolean[] handled );
+    // public static native boolean board_handleKeyDown( XP_Key key, 
+    //                                                   boolean[] handled );
+    // public static native boolean board_handleKeyRepeat( XP_Key key, 
+    //                                                     boolean[] handled );
+
     // Model
     public static native String model_writeGameHistory( int gamePtr, 
                                                         boolean gameOver );
