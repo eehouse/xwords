@@ -270,7 +270,7 @@ dragDropEnd( BoardCtxt* board, XP_U16 xx, XP_U16 yy, XP_Bool* dragged )
         } else {
             /* We're returning it to start, so will be re-inserted in tray */
             if ( OBJ_TRAY == ds->start.obj ) {
-                invalTrayTilesAbove( board, ds->start.u.tray.index );
+                board_invalTrayTiles( board, ALLTILES );
             }
         }
 
