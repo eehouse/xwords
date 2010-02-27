@@ -190,16 +190,23 @@ makeByteArray( JNIEnv *env, int siz, const jbyte* vals )
     return array;
 }
 
+void
+setBoolArray( JNIEnv* env, jbooleanArray jarr, int count, 
+              const jboolean* vals )
+{
+    jboolean* elems = (*env)->GetBooleanArrayElements( env, jarr, NULL );
+    XP_ASSERT( !!elems );
+    XP_MEMCPY( elems, vals, count * sizeof(*elems) );
+    (*env)->ReleaseBooleanArrayElements( env, jarr, elems, 0 );
+} 
+
 jbooleanArray
 makeBooleanArray( JNIEnv *env, int siz, const jboolean* vals )
 {
     jbooleanArray array = (*env)->NewBooleanArray( env, siz );
     XP_ASSERT( !!array );
     if ( !!vals ) {
-        jboolean* elems = (*env)->GetBooleanArrayElements( env, array, NULL );
-        XP_ASSERT( !!elems );
-        XP_MEMCPY( elems, vals, siz * sizeof(*elems) );
-        (*env)->ReleaseBooleanArrayElements( env, array, elems, 0 );
+        setBoolArray( env, array, siz, vals );
     }
     return array;
 }
@@ -351,9 +358,7 @@ jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field,
     XP_ASSERT( !!fid );
     jobject jenum = (*env)->GetObjectField( env, j_gi, fid );
     XP_ASSERT( !!jenum );
-
-    jmethodID mid = getMethodID( env, jenum, "ordinal", "()I" );
-    jint result = (*env)->CallIntMethod( env, jenum, mid );
+    jint result = jEnumToInt( env, jenum );
 
     (*env)->DeleteLocalRef( env, clazz );
     (*env)->DeleteLocalRef( env, jenum );
@@ -398,10 +403,6 @@ intToJEnum( JNIEnv* env, int val, const char* enumSig )
     jobject jenum = NULL;
     jclass clazz = (*env)->FindClass( env, enumSig );
     XP_ASSERT( !!clazz );
-    /* jmethodID mid = getMethodID( env, clazz, "<init>", "()V" ); */
-    /* XP_ASSERT( !!mid ); */
-    /* jenum = (*env)->NewObject( env, clazz, mid ); */
-    /* XP_ASSERT( !!jenum ); */
 
     char buf[128];
     snprintf( buf, sizeof(buf), "()[L%s;", enumSig );
@@ -419,6 +420,14 @@ intToJEnum( JNIEnv* env, int val, const char* enumSig )
     (*env)->DeleteLocalRef( env, clazz );
     return jenum;
 } /* intToJEnum */
+
+jint
+jEnumToInt( JNIEnv* env, jobject jenum )
+{
+    jmethodID mid = getMethodID( env, jenum, "ordinal", "()I" );
+    XP_ASSERT( !!mid );
+    return (*env)->CallIntMethod( env, jenum, mid );
+}
 
 XWStreamCtxt*
 and_empty_stream( MPFORMAL AndGlobals* globals )

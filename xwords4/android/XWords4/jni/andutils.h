@@ -32,6 +32,8 @@ int getIntFromArray( JNIEnv* env, jintArray arr, bool del );
 jbyteArray makeByteArray( JNIEnv* env, int size, const jbyte* vals );
 
 jbooleanArray makeBooleanArray( JNIEnv* env, int size, const jboolean* vals );
+void setBoolArray( JNIEnv* env, jbooleanArray jarr, int count, 
+                   const jboolean* vals );
 
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
 jstring streamToJString( MPFORMAL JNIEnv* env, XWStreamCtxt* stream );
@@ -49,4 +51,5 @@ jint jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field,
 void intToJenumField( JNIEnv* env, jobject j_gi, int val, const char* field, 
                       const char* fieldSig );
 jobject intToJEnum( JNIEnv* env, int val, const char* enumSig );
+jint jEnumToInt( JNIEnv* env, jobject jenum );
 #endif

@@ -698,9 +698,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1requestHint
                                 &tmpbool );
     /* If passed need to do workRemains[0] = tmpbool */
     if ( workRemains ) {
-        jboolean* jelems = (*env)->GetBooleanArrayElements(env, workRemains, NULL );
-        *jelems = tmpbool;
-        (*env)->ReleaseBooleanArrayElements( env, workRemains, jelems, 0 );
+        jboolean jbool = tmpbool;
+        setBoolArray( env, workRemains, 1, &jbool );
     }
     XWJNI_END();
     return result;
@@ -886,6 +885,49 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1prefsChanged
 
     result = board_prefsChanged( state->game.board, &cp );
 
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1getFocusOwner
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jint result;
+    XWJNI_START();
+    result = board_getFocusOwner( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1focusChanged
+( JNIEnv* env, jclass C, jint gamePtr, jint typ )
+{
+    jboolean result;
+    XWJNI_START();
+    result = board_focusChanged( state->game.board, typ, XP_TRUE );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1handleKey
+( JNIEnv* env, jclass C, jint gamePtr, jobject jkey, jboolean jup, 
+  jbooleanArray jhandled )
+{
+    jboolean result;
+    XWJNI_START();
+
+    XP_Bool tmpbool;
+    XP_Key key = jEnumToInt( env, jkey );
+    if ( jup ) {
+        result = board_handleKeyUp( state->game.board, key, &tmpbool );
+    } else {
+        result = board_handleKeyDown( state->game.board, key, &tmpbool );
+    }
+    jboolean jbool = tmpbool;
+    setBoolArray( env, jhandled, 1, &jbool );
     XWJNI_END();
     return result;
 }
