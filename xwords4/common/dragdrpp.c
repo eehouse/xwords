@@ -288,7 +288,8 @@ dragDropSetAdd( BoardCtxt* board )
 {
     DragState* ds = &board->dragState;
     XP_Bool draw;
-    draw = dragDropInProgress(board) && !dragDropHasMoved( board );
+    draw = dragDropInProgress(board) && !dragDropIsDividerDrag( board )
+        && !dragDropHasMoved( board );
     if ( draw ) {
         XP_U16 xx = board->penDownX;
         XP_U16 yy = board->penDownY;
