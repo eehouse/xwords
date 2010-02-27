@@ -274,7 +274,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, 
                              boolean focussed )
     {
-        m_fillPaint.setColor( m_otherColors[CommonPrefs.COLOR_TILE_BACK] );
+        int indx = focussed ? CommonPrefs.COLOR_FOCUS
+            : CommonPrefs.COLOR_TILE_BACK;
+        m_fillPaint.setColor( m_otherColors[indx] );
         m_canvas.drawRect( rOuter, m_fillPaint );
 
         m_fillPaint.setColor( BLACK );
@@ -306,6 +308,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi )
     {
+        if ( 0 != (dsi.flags & CELL_ISCURSOR) ) {
+            m_fillPaint.setColor( m_otherColors[CommonPrefs.COLOR_FOCUS] );
+            m_canvas.drawRect( rOuter, m_fillPaint );
+        }
         String text = m_scores[dsi.playerNum];
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
         drawCentered( text, rOuter, null );
@@ -343,7 +349,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         clearToBack( rect );
 
-        if ( empty ) {
+        if ( 0 != (flags & CELL_ISCURSOR) ) {
+            backColor = m_otherColors[CommonPrefs.COLOR_FOCUS];
+        } else if ( empty ) {
             backColor = m_bonusColors[bonus];
         } else if ( pending ) {
             backColor = BLACK;
@@ -421,9 +429,18 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void drawTrayDivider( Rect rect, int flags ) 
     {
-        clearToBack( rect );
-        m_fillPaint.setColor( BLACK ); // black for now
-        m_canvas.drawRect( rect, m_fillPaint );
+        boolean isCursor = 0 != (flags & CELL_ISCURSOR);
+        boolean selected = 0 != (flags & CELL_HIGHLIGHT);
+
+        int backColor = isCursor? m_otherColors[CommonPrefs.COLOR_FOCUS]:WHITE;
+        fillRect( rect, backColor );
+
+        rect.inset( rect.width()/4, 0 );
+        if ( selected ) {
+            m_canvas.drawRect( rect, m_strokePaint );
+        } else {
+            fillRect( rect, BLACK );
+        }
     }
 
     public void score_pendingScore( Rect rect, int score, int playerNum, 
@@ -544,7 +561,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( isCursor || notEmpty ) {
 
             if ( clearBack ) {
-                m_fillPaint.setColor( m_otherColors[CommonPrefs.COLOR_TILE_BACK]);
+                int indx = isCursor? CommonPrefs.COLOR_FOCUS 
+                    : CommonPrefs.COLOR_TILE_BACK;
+                m_fillPaint.setColor( m_otherColors[indx] );
                 m_canvas.drawRect( rect, m_fillPaint );
             }
 
@@ -571,8 +590,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             int height = rect.height() - 4; // borders and padding, 2 each 
             descent = fontDims.descentFor( height );
             textSize = fontDims.heightFor( height );
-            Utils.logf( "using descent: " + descent + " and textSize: " 
-                        + textSize + " in height " + height );
+            // Utils.logf( "using descent: " + descent + " and textSize: " 
+            //             + textSize + " in height " + height );
         }
         int bottom = rect.bottom - descent - 2;
         int center = rect.left + ( (rect.right - rect.left) / 2 );
@@ -621,10 +640,15 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
+    private void fillRect( Rect rect, int color )
+    {
+        m_fillPaint.setColor( color );
+        m_canvas.drawRect( rect, m_fillPaint );
+    }
+
     private void clearToBack( Rect rect ) 
     {
-        m_fillPaint.setColor( WHITE );
-        m_canvas.drawRect( rect, m_fillPaint );
+        fillRect( rect, WHITE );
     }
 
     private void figureFontDims()
