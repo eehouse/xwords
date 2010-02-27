@@ -12,6 +12,7 @@ import android.os.Message;
 import android.graphics.Paint;
 import android.graphics.Rect;
 
+import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class JNIThread extends Thread {
@@ -302,14 +303,12 @@ public class JNIThread extends Thread {
                 boolean gameOver = XwJNI.server_getGameIsOver( m_jniGamePtr );
                 sendForDialog( ((Integer)args[0]).intValue(),
                                XwJNI.model_writeGameHistory( m_jniGamePtr, 
-                                                             gameOver )
-                               );
+                                                             gameOver ) );
                 break;
 
             case CMD_FINAL:
                 if ( XwJNI.server_getGameIsOver( m_jniGamePtr ) ) {
-                    String msg = XwJNI.server_writeFinalScores( m_jniGamePtr );
-                    sendForDialog( R.string.query_title, msg );
+                    handle( JNICmd.CMD_POST_OVER );
                 } else {
                     Message.obtain( m_handler, QUERY_ENDGAME ).sendToTarget();
                     draw = true;
@@ -321,7 +320,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_POST_OVER:
-                sendForDialog( ((Integer)args[0]).intValue(),
+                sendForDialog( R.string.finalscores_title,
                                XwJNI.server_writeFinalScores( m_jniGamePtr ) );
                 break;
 

@@ -72,7 +72,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         public void run() {
             m_timers[m_why] = null;
             m_jniThread.handle( JNICmd.CMD_TIMER_FIRED,
-                                    m_why, m_when, m_handle );
+                                m_why, m_when, m_handle );
         }
     } 
 
@@ -708,8 +708,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     public void notifyGameOver()
     {
-        m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER, 
-                            R.string.finalscores_title );
+        m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
     }
 
     public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
