@@ -4,7 +4,6 @@ package org.eehouse.android.xw4;
 
 import android.util.Log;
 import java.lang.Thread;
-import java.text.MessageFormat;
 import android.widget.Toast;
 import android.content.Context;
 import java.io.File;
@@ -20,6 +19,7 @@ import android.app.Dialog;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.text.format.Time;
+import java.util.Formatter;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -38,9 +38,9 @@ public class Utils {
         Log.d( TAG, time + "-" + id + "-" + format );
     } // logf
 
-    public static void logf( String format, Object[] args ) {
-        MessageFormat mfmt = new MessageFormat( format );
-        logf( mfmt.format( args ) );
+    public static void logf( String format, Object... args ) {
+        Formatter formatter = new Formatter();
+        logf( formatter.format( format, args ).toString() );
     } // logf
 
     public static void notImpl( Context context ) 
