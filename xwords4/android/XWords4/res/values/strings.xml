@@ -25,6 +25,8 @@
     <string name="list_item_hide">Hide</string>
     <string name="list_item_delete">Delete</string>
 	<string name="list_item_copy">Copy</string>
+	<string name="list_item_reset">Reset</string>
+
 	<string name="list_item_new_from">New from</string>
 	<string name="list_item_move_up">Move up</string>
 	<string name="list_item_move_down">Move down</string>

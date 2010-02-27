@@ -108,7 +108,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         
         String path = fileList()[info.position];
 
-        switch (item.getItemId()) {
+        int id = item.getItemId();
+        switch ( id ) {
         // case R.id.list_item_open:
         //     doOpen( info.position );
         //     handled = true;
@@ -122,16 +123,21 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             }
             break;
 
-        case R.id.list_item_copy:
-            stream = Utils.savedGame( this, path );
-            Utils.saveGame( this, stream );
-            break;
-
+        case R.id.list_item_reset:
         case R.id.list_item_new_from:
             stream = Utils.savedGame( this, path );
             CurGameInfo gi = new CurGameInfo( this );
             XwJNI.gi_from_stream( gi, stream );
             stream = XwJNI.gi_to_stream( gi );
+            if ( R.id.list_item_reset == id ) {
+                Utils.saveGame( this, stream, path );
+            } else {
+                Utils.saveGame( this, stream );
+            }
+            break;
+            
+        case R.id.list_item_copy:
+            stream = Utils.savedGame( this, path );
             Utils.saveGame( this, stream );
             break;
 
