@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.text.format.Time;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
@@ -26,12 +27,15 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 public class Utils {
     static final String TAG = "EJAVA";
     private static JNIThread s_jniThread = null;
+    private static Time s_time = new Time();
 
     private Utils() {}
 
     public static void logf( String format ) {
+        s_time.setToNow();
+        String time = s_time.format("%M:%S");
         long id = Thread.currentThread().getId();
-        Log.d( TAG, id + ": " + format );
+        Log.d( TAG, time + "-" + id + "-" + format );
     } // logf
 
     public static void logf( String format, Object[] args ) {
