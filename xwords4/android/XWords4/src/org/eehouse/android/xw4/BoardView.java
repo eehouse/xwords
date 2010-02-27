@@ -20,6 +20,10 @@ import junit.framework.Assert;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
+    private static final int k_miniTextSize = 16;
+    private static final int k_miniPaddingH = 2;
+    private static final int k_miniPaddingV = 2;
+
     private Paint m_drawPaint;
     private Paint m_fillPaint;
     private Paint m_strokePaint;
@@ -431,6 +435,74 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_fillPaint.setColor( BLACK );
         rect.inset( 0, rect.height() / 4 );
         drawCentered( text, rect, null );
+    }
+
+    public String getMiniWText ( int textHint )
+    {
+        int id = 0;
+        switch( textHint ) {
+        case BONUS_DOUBLE_LETTER:
+            id = R.string.bonus_l2x;
+            break;
+        case BONUS_DOUBLE_WORD:
+            id = R.string.bonus_w2x;
+            break;
+        case BONUS_TRIPLE_LETTER:
+            id = R.string.bonus_l3x;
+            break;
+        case BONUS_TRIPLE_WORD:
+            id = R.string.bonus_w3x;
+            break;
+        case INTRADE_MW_TEXT:
+            id = R.string.trading_text;
+            break;
+        default:
+            Assert.fail();
+        }
+        return getResources().getString( id );
+    }
+
+    public void measureMiniWText( String str, int[] width, int[] height )
+    {
+        m_fillPaint.setTextSize( k_miniTextSize );
+        FontMetricsInt fmi = m_fillPaint.getFontMetricsInt();
+        int lineHeight = -fmi.top + fmi.leading;
+        
+        String[] lines = str.split("\n");
+        height[0] = (lines.length * lineHeight) + (2 * k_miniPaddingV);
+
+        int maxWidth = 0;
+        for ( String line : lines ) {
+            m_fillPaint.getTextBounds( line, 0, line.length(), m_boundsScratch );
+            int thisWidth = m_boundsScratch.width();
+            if ( maxWidth < thisWidth ) {
+                maxWidth = thisWidth;
+            }
+        }
+        width[0] = maxWidth + (k_miniPaddingH * 2);
+    }
+
+    public void drawMiniWindow( String text, Rect rect )
+    {
+        clearToBack( rect );
+
+        m_fillPaint.setTextSize( k_miniTextSize );
+        m_fillPaint.setTextAlign( Paint.Align.CENTER );
+        m_fillPaint.setColor( BLACK );
+
+        String[] lines = text.split("\n");
+        int lineHt = rect.height() / lines.length;
+        int bottom = rect.top + lineHt
+            - m_fillPaint.getFontMetricsInt().descent;
+        int center = rect.left + (rect.width() / 2);
+
+        for ( String line : lines ) {
+            m_canvas.drawText( line, center, bottom, m_fillPaint );
+            bottom += lineHt;
+        }
+
+        m_canvas.drawRect( rect, m_strokePaint );
+        m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
     }
 
     public void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs )

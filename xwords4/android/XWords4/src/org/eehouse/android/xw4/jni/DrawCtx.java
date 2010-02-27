@@ -32,6 +32,7 @@ public interface DrawCtx {
     void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi );
     void drawTimer( Rect rect, int player, int secondsLeft );
 
+
     boolean drawCell( Rect rect, String text, BitmapDrawable[] bitmaps, int tile, 
                       int owner, int bonus, int hintAtts, int flags );
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
@@ -45,6 +46,16 @@ public interface DrawCtx {
     void drawTileBack( Rect rect, int flags );
     void drawTrayDivider( Rect rect, int flags );
     void score_pendingScore( Rect rect, int score, int playerNum, int flags );
+
+    public static final int BONUS_NONE = 0;
+    public static final int BONUS_DOUBLE_LETTER = 1;
+    public static final int BONUS_DOUBLE_WORD = 2;
+    public static final int BONUS_TRIPLE_LETTER = 3;
+    public static final int BONUS_TRIPLE_WORD = 4;
+    public static final int INTRADE_MW_TEXT = 5;
+    String getMiniWText ( int textHint );
+    void measureMiniWText( String text, int[] width, int[] height );
+    void drawMiniWindow( String text, Rect rect );
 
     void objFinished( /*BoardObjectType*/int typ, Rect rect, int dfs );
 

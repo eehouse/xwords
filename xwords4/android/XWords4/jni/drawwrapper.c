@@ -33,6 +33,7 @@ typedef struct _AndDraw {
     JNIEnv** env;
     jobject jdraw;             /* global ref; free it! */
     jobject jCache[JCACHE_COUNT];
+    XP_UCHAR miniTextBuf[128];
     MPSLOT
 } AndDraw;
 
@@ -404,22 +405,48 @@ and_draw_dictChanged( DrawCtx* dctx, const DictionaryCtxt* dict )
 static const XP_UCHAR* 
 and_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
 {
-    LOG_FUNC();
-    return "hi";
+    DRAW_CBK_HEADER( "getMiniWText", "(I)Ljava/lang/String;" );
+    jstring jstr = (*env)->CallObjectMethod( env, draw->jdraw, mid,
+                                            textHint );
+    const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
+    snprintf( draw->miniTextBuf, VSIZE(draw->miniTextBuf), "%s", str );
+    (*env)->ReleaseStringUTFChars( env, jstr, str );
+    (*env)->DeleteLocalRef( env, jstr );
+    return draw->miniTextBuf;
 }
 
 static void
 and_draw_measureMiniWText( DrawCtx* dctx, const XP_UCHAR* textP, 
                            XP_U16* width, XP_U16* height )
 {
-    LOG_FUNC();
+    DRAW_CBK_HEADER( "measureMiniWText", "(Ljava/lang/String;[I[I)V" );
+
+    jintArray widthArray = makeIntArray( env, 1, NULL );
+    jintArray heightArray = makeIntArray( env, 1, NULL );
+    jstring jstr = (*env)->NewStringUTF( env, textP );
+
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
+                            jstr, widthArray, heightArray );
+
+    (*env)->DeleteLocalRef( env, jstr );
+    *width = getIntFromArray( env, widthArray, true );
+    *height = getIntFromArray( env, heightArray, true );
 }
 
 static void 
 and_draw_drawMiniWindow( DrawCtx* dctx, const XP_UCHAR* text,
                          const XP_Rect* rect, void** closure )
 {
-    LOG_FUNC();
+    DRAW_CBK_HEADER( "drawMiniWindow",
+                     "(Ljava/lang/String;Landroid/graphics/Rect;)V" );
+
+    jstring jstr = (*env)->NewStringUTF( env, text );
+    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
+
+    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
+                            jstr, jrect );
+
+    (*env)->DeleteLocalRef( env, jstr );
 }
 
 static XP_Bool
