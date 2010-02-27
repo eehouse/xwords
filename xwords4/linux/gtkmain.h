@@ -67,7 +67,6 @@ typedef struct GtkDrawCtx {
     } scoreCache[MAX_NUM_PLAYERS];
     
     XP_U16 trayOwner;
-    XP_Bool topFocus;
     XP_Bool scoreIsVertical;
 } GtkDrawCtx;
 

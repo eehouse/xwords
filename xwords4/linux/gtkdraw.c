@@ -524,11 +524,10 @@ gtk_draw_invertCell( DrawCtx* XP_UNUSED(p_dctx),
 
 static XP_Bool
 gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
-                    XP_U16 owner, DrawFocusState dfs )
+                    XP_U16 owner, DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     dctx->trayOwner = owner;
-    dctx->topFocus = dfs == DFS_TOP;
     return XP_TRUE;
 } /* gtk_draw_trayBegin */
 
@@ -702,13 +701,13 @@ static void
 gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 XP_UNUSED(numPlayers), 
                      const XP_S16* const XP_UNUSED(scores), 
-                     XP_S16 XP_UNUSED(remCount), DrawFocusState dfs )
+                     XP_S16 XP_UNUSED(remCount), 
+                     DrawFocusState XP_UNUSED(dfs) )
 {
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
 
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); */
     gtkEraseRect( dctx, rect );
-    dctx->topFocus = dfs == DFS_TOP;
     dctx->scoreIsVertical = rect->height > rect->width;
 } /* gtk_draw_scoreBegin */
 
