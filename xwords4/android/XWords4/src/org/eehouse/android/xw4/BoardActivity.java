@@ -36,6 +36,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int DLG_BADWORDS = 2;
     private static final int QUERY_REQUEST_BLK = 3;
     private static final int PICK_TILE_REQUEST_BLK = 4;
+    private static final int QUERY_ENDGAME = 5;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -136,6 +137,26 @@ public class BoardActivity extends Activity implements UtilCtxt {
             dialog = ab.create();
             dialog.setOnDismissListener( makeODL() );
             break;
+        case QUERY_ENDGAME:
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.query_title )
+                .setMessage( R.string.ids_endnow )
+                .setPositiveButton( R.string.button_yes,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int item ) {
+                                            m_jniThread.handle(JNICmd.CMD_ENDGAME);
+                                        }
+                                    })
+                .setNegativeButton( R.string.button_no,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int item ) {
+                                            // do nothing
+                                        }
+                                    })
+                .create();
+            break;
         }
         return dialog;
     } // onCreateDialog
@@ -230,6 +251,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                        m_dlgBytes = (String)msg.obj;
                                        m_dlgTitle = msg.arg1;
                                        showDialog( DLG_OKONLY );
+                                       break;
+                                   case JNIThread.QUERY_ENDGAME:
+                                       showDialog( QUERY_ENDGAME );
                                        break;
                                    }
                                }
@@ -343,7 +367,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
             break;
 
         case R.id.board_menu_game_final:
-            Utils.notImpl(this);
+            m_jniThread.handle( JNIThread.JNICmd.CMD_FINAL,
+                                R.string.history_title );
             break;
 
         case R.id.board_menu_game_resend:

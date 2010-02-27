@@ -41,12 +41,15 @@ public class JNIThread extends Thread {
             CMD_REMAINING,
             CMD_RESEND,
             CMD_HISTORY,
+            CMD_FINAL,
+            CMD_ENDGAME,
             CMD_POST_OVER,
             };
 
     public static final int RUNNING = 1;
     public static final int DRAW = 2;
     public static final int DIALOG = 3;
+    public static final int QUERY_ENDGAME = 4;
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
@@ -301,6 +304,20 @@ public class JNIThread extends Thread {
                                XwJNI.model_writeGameHistory( m_jniGamePtr, 
                                                              gameOver )
                                );
+                break;
+
+            case CMD_FINAL:
+                if ( XwJNI.server_getGameIsOver( m_jniGamePtr ) ) {
+                    String msg = XwJNI.server_writeFinalScores( m_jniGamePtr );
+                    sendForDialog( R.string.query_title, msg );
+                } else {
+                    Message.obtain( m_handler, QUERY_ENDGAME ).sendToTarget();
+                    draw = true;
+                }
+                break;
+
+            case CMD_ENDGAME:
+                XwJNI.server_endGame( m_jniGamePtr );
                 break;
 
             case CMD_POST_OVER:

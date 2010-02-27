@@ -910,3 +910,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
     (void)comms_resendAll( state->game.comms );
     XWJNI_END();
 }
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    XP_ASSERT( !!state->game.server );
+    server_endGame( state->game.server );
+    XWJNI_END();
+}
+

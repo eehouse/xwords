@@ -227,6 +227,9 @@
     <string name="badwords_lost">  Turn lost.</string>
     <string name="badwords_title">Illegal word[s]</string>
 
+    <string name="ids_endnow">Are you sure you want to end the game now?</string>
+
+
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
     <string name="key_show_arrow">key_show_arrow</string>

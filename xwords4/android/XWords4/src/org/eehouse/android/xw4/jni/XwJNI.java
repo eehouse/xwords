@@ -123,6 +123,7 @@ public class XwJNI {
     public static native boolean server_getGameIsOver( int gamePtr );
     public static native String server_writeFinalScores( int gamePtr );
     public static native void server_initClientConnection( int gamePtr );
+    public static native void server_endGame( int gamePtr );
 
     // Comms
     public static native void comms_start( int gamePtr );
