@@ -2,7 +2,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.widget.Adapter;
 import android.widget.ListAdapter;
 import android.content.Context;
 import android.view.View;
@@ -10,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.database.DataSetObserver;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.nio.CharBuffer;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;

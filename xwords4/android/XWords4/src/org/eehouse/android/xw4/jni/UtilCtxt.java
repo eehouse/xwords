@@ -2,8 +2,6 @@
 
 package org.eehouse.android.xw4.jni;
 
-import android.graphics.drawable.BitmapDrawable;
-
 public interface UtilCtxt {
     static final int BONUS_NONE = 0;
     static final int BONUS_DOUBLE_LETTER = 1;

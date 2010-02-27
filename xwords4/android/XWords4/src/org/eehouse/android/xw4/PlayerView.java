@@ -3,7 +3,6 @@
 package org.eehouse.android.xw4;
 
 import android.widget.TextView;
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 

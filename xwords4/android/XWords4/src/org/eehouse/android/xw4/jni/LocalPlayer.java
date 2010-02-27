@@ -9,8 +9,6 @@ public class LocalPlayer {
     public boolean isRobot;
     public boolean isLocal;
 
-    private LocalPlayer() {}
-
     public LocalPlayer( int num )
     {
         isLocal = true;

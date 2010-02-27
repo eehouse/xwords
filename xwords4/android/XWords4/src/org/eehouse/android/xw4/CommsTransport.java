@@ -5,7 +5,6 @@ package org.eehouse.android.xw4;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.spi.SelectorProvider;
 import java.nio.channels.ClosedChannelException;
 import java.nio.ByteBuffer;
 import java.net.InetSocketAddress;
@@ -21,7 +20,6 @@ import android.os.Message;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.JNIThread.*;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class CommsTransport extends Thread implements TransportProcs {
@@ -43,7 +41,6 @@ public class CommsTransport extends Thread implements TransportProcs {
     private ByteBuffer m_bytesIn;
 
     private Context m_context;
-    private DeviceRole m_role;
 
     // assembling inbound packet
     private byte[] m_packetIn;
@@ -55,7 +52,6 @@ public class CommsTransport extends Thread implements TransportProcs {
         m_jniGamePtr = jniGamePtr;
         m_context = context;
         m_handler = handler;
-        m_role = role;
         m_buffersOut = new Vector<ByteBuffer>();
         m_bytesIn = ByteBuffer.allocate( 2048 );
     }
@@ -118,7 +114,7 @@ public class CommsTransport extends Thread implements TransportProcs {
                 break;
             }
 
-            Iterator iter = m_selector.selectedKeys().iterator();
+            Iterator<SelectionKey> iter = m_selector.selectedKeys().iterator();
             while ( iter.hasNext() ) {
                 SelectionKey key = (SelectionKey)iter.next();
                 SocketChannel channel = (SocketChannel)key.channel();

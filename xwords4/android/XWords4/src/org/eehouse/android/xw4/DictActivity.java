@@ -3,13 +3,9 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.webkit.WebView;
 import android.os.Bundle;
 import android.webkit.DownloadListener;
-
-import org.eehouse.android.xw4.jni.*;
-
 
 public class DictActivity extends Activity {
 

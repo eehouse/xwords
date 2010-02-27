@@ -21,9 +21,6 @@ import android.widget.TextView;
 import android.text.format.Time;
 import java.util.Formatter;
 
-import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.jni.JNIThread.*;
-
 public class Utils {
     static final String TAG = "EJAVA";
     // private static JNIThread s_jniThread = null;

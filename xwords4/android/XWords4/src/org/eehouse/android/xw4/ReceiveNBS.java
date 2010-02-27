@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
-import org.eehouse.android.xw4.jni.*;
-
 public class ReceiveNBS extends BroadcastReceiver {
 
     @Override

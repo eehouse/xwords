@@ -8,19 +8,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.KeyEvent;
-import android.content.res.AssetManager;
-import java.io.InputStream;
 import android.os.Handler;
 import android.os.Message;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import android.content.Intent;
 import java.util.concurrent.Semaphore;
 import android.net.Uri;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.widget.Toast;
 import junit.framework.Assert;
 import android.content.res.Configuration;
@@ -61,7 +56,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private JNIThread m_jniThread;
 
     public class TimerRunnable implements Runnable {
-        private int m_gamePtr;
         private int m_why;
         private int m_when;
         private int m_handle;

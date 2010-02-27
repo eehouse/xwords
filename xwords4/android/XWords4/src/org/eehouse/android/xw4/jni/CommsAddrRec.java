@@ -2,7 +2,6 @@
 package org.eehouse.android.xw4.jni;
 
 import java.net.InetAddress;
-import android.content.Context;
 
 import org.eehouse.android.xw4.Utils;
 

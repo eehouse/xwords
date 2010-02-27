@@ -18,13 +18,9 @@
 package org.eehouse.android.xw4;
 
 import android.app.ListActivity;
-import android.content.ComponentName;
-import android.content.ContentUris;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,12 +28,8 @@ import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.content.res.AssetManager;
-import java.io.InputStream;
 import android.widget.Button;
 import android.view.MenuInflater;
-import java.io.FileOutputStream;
 import java.io.File;
 import android.preference.PreferenceManager;
 
@@ -46,7 +38,6 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.XWords4.Games; // for constants
 
 public class GamesList extends ListActivity implements View.OnClickListener {
-    private static final String TAG = "GamesList";
     private GameListAdapter m_adapter;
 
     @Override

@@ -51,7 +51,6 @@ public class JNIUtilsImpl implements JNIUtils {
     public String[] splitFaces( byte[] chars )
     {
         ArrayList<String> al = new ArrayList<String>();
-        int ii = 0;
         ByteArrayInputStream bais = new ByteArrayInputStream( chars );
         InputStreamReader isr = new InputStreamReader( bais );
 

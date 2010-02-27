@@ -3,7 +3,6 @@
 
 package org.eehouse.android.xw4.jni;
 
-import android.view.View;
 import org.eehouse.android.xw4.Utils;
 import java.lang.InterruptedException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -11,7 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;

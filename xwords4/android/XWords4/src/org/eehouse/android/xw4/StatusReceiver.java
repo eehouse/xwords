@@ -3,12 +3,9 @@
 
 package org.eehouse.android.xw4;
 
-import android.os.Bundle;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-
-import org.eehouse.android.xw4.jni.*;
 
 public class StatusReceiver extends BroadcastReceiver {
 

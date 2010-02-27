@@ -14,7 +14,6 @@ import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.content.res.Resources;
-import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.FontMetricsInt;
 import junit.framework.Assert;
 
@@ -374,7 +373,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         } else {
             m_fillPaint.setColor( foreColor );
             if ( null == bitmaps ) {
-                int useHt = rect.height() - 4;
                 drawCentered( text, rect, m_fontDims );
             } else {
                 drawBestBitmap( bitmaps, rect );
@@ -546,7 +544,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                   BitmapDrawable[] bitmaps, int val, 
                                   int flags, boolean clearBack )
     {
-        boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
+        // boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
         boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
         boolean isCursor = (flags & CELL_ISCURSOR) != 0;
 
@@ -666,7 +664,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                                  Bitmap.Config.ARGB_8888 );
             Canvas canvas = new Canvas( bitmap );
 
-            FontMetrics fmi = paint.getFontMetrics();
+            // FontMetrics fmi = paint.getFontMetrics();
             // Utils.logf( "ascent: " + fmi.ascent );
             // Utils.logf( "bottom: " + fmi.bottom );
             // Utils.logf( "descent: " + fmi.descent );
