@@ -311,12 +311,12 @@ public class JNIThread extends Thread {
                     handle( JNICmd.CMD_POST_OVER );
                 } else {
                     Message.obtain( m_handler, QUERY_ENDGAME ).sendToTarget();
-                    draw = true;
                 }
                 break;
 
             case CMD_ENDGAME:
                 XwJNI.server_endGame( m_jniGamePtr );
+                draw = true;
                 break;
 
             case CMD_POST_OVER:
