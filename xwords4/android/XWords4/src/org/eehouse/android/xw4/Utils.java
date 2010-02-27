@@ -26,7 +26,7 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 
 public class Utils {
     static final String TAG = "EJAVA";
-    private static JNIThread s_jniThread = null;
+    // private static JNIThread s_jniThread = null;
     private static Time s_time = new Time();
 
     private Utils() {}
@@ -53,11 +53,6 @@ public class Utils {
     {
         CharSequence text = "Version: pre-alpha; svn rev: " + SvnVersion.VERS;
         Toast.makeText( context, text, Toast.LENGTH_LONG ).show();
-    }
-
-    public static void setThread( JNIThread thread )
-    {
-        s_jniThread = thread;
     }
 
     public static byte[] savedGame( Context context, String path )

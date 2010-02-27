@@ -259,7 +259,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                    }
                                }
                            } );
-            Utils.setThread( m_jniThread );
             m_jniThread.start();
 
             m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
@@ -319,7 +318,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
 
         if ( null != m_jniThread ) {
-            Utils.setThread( null );
             m_jniThread.waitToStop();
             Utils.logf( "onDestroy(): waitToStop() returned" );
 
