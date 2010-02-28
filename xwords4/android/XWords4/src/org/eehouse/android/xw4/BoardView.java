@@ -275,8 +275,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         int indx = focussed ? CommonPrefs.COLOR_FOCUS
             : CommonPrefs.COLOR_TILE_BACK;
-        m_fillPaint.setColor( m_otherColors[indx] );
-        m_canvas.drawRect( rOuter, m_fillPaint );
+        fillRect( rOuter, m_otherColors[indx] );
 
         m_fillPaint.setColor( BLACK );
         drawCentered( m_remText, rOuter, null );
@@ -308,8 +307,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi )
     {
         if ( 0 != (dsi.flags & CELL_ISCURSOR) ) {
-            m_fillPaint.setColor( m_otherColors[CommonPrefs.COLOR_FOCUS] );
-            m_canvas.drawRect( rOuter, m_fillPaint );
+            fillRect( rOuter, m_otherColors[CommonPrefs.COLOR_FOCUS] );
         }
         String text = m_scores[dsi.playerNum];
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
@@ -362,8 +360,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             foreColor = m_playerColors[owner];
         }
 
-        m_fillPaint.setColor( backColor );
-        m_canvas.drawRect( rect, m_fillPaint );
+        fillRect( rect, backColor );
 
         if ( empty ) {
             if ( (CELL_ISSTAR & flags) != 0 ) {
@@ -541,8 +538,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     }
 
     private void drawTileImpl( Rect rect, String text, 
-                                  BitmapDrawable[] bitmaps, int val, 
-                                  int flags, boolean clearBack )
+                               BitmapDrawable[] bitmaps, int val, 
+                               int flags, boolean clearBack )
     {
         // boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
         boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
@@ -561,8 +558,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             if ( clearBack ) {
                 int indx = isCursor? CommonPrefs.COLOR_FOCUS 
                     : CommonPrefs.COLOR_TILE_BACK;
-                m_fillPaint.setColor( m_otherColors[indx] );
-                m_canvas.drawRect( rect, m_fillPaint );
+                fillRect( rect, m_otherColors[indx] );
             }
 
             m_fillPaint.setColor( m_playerColors[m_trayOwner] );
