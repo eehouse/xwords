@@ -269,6 +269,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {
             if ( null == m_cp ) {
+                m_view.prefsChanged();
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
             }
             // onContentChanged();

@@ -279,6 +279,9 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_PREFS_CHANGE:
+                // need to inval all because some of prefs,
+                // e.g. colors, aren't known by common code so
+                // board_prefsChanged's return value isn't enough.
                 XwJNI.board_invalAll( m_jniGamePtr );
                 XwJNI.board_prefsChanged( m_jniGamePtr, CommonPrefs.get() );
                 draw = true;
