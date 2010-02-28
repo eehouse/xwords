@@ -372,7 +372,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             if ( null == bitmaps ) {
                 drawCentered( text, rect, m_fontDims );
             } else {
-                drawBestBitmap( bitmaps, rect );
+                Rect smaller = new Rect(rect);
+                smaller.inset( 2, 2 );
+                drawBestBitmap( bitmaps, smaller );
             }
         }
 
@@ -738,16 +740,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private void drawBestBitmap( BitmapDrawable[] bitmaps, final Rect rect  )
     {
         Rect local = new Rect( rect );
-        int fontHt = m_fontDims.heightFor( local.height() );
-        int fontWidth = m_fontDims.widthFor( local.width() );
-        local.top = local.bottom - fontHt;
-        local.right = local.left + m_fontDims.widthFor( rect.width() );
+        int height = local.height();
+        int width = local.width();
 
         int ii;
         for ( ii = bitmaps.length-1; ii > 0; --ii ) {
             Bitmap bitmap = bitmaps[ii].getBitmap();
-            if ( bitmap.getWidth() <= fontWidth
-                 && bitmap.getHeight() <= fontHt ) {
+            if ( bitmap.getWidth() <= width
+                 && bitmap.getHeight() <= height ) {
                 break;
             }
         }
