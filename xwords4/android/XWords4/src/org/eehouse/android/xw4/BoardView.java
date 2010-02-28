@@ -755,24 +755,20 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         int foreColor, backColor;
         foreColor = pending? WHITE : m_playerColors[owner];
-        backColor = pending? BLACK : m_otherColors[CommonPrefs.COLOR_TILE_BACK];
 
         int width = base.getWidth();
         int height = base.getHeight();
         IntBuffer intBuffer = IntBuffer.allocate( width * height );
         base.copyPixelsToBuffer( intBuffer );
+
         final int[] oldInts = intBuffer.array();
-        int[] newInts = new int[oldInts.length];
-        for ( int ii = 0; ii < oldInts.length; ++ii ) {
-            int pixel = oldInts[ii];
-            if ( pixel == 0xFF000000 ) {
-                pixel = foreColor;
-            } else {
-                // Note: these pixels though I set them to 00FFFFFF
-                // test == 0 here.  Nonetheless, replacing them works.
-                pixel = backColor;
+        int len = oldInts.length;
+        int[] newInts = new int[len];
+        System.arraycopy( oldInts, 0, newInts, 0, len );
+        for ( int ii = 0; ii < len; ++ii ) {
+            if ( oldInts[ii] == 0xFF000000 ) {
+                newInts[ii] = foreColor;
             }
-            newInts[ii] = pixel;
         }
 
         Bitmap bitmap = Bitmap.createBitmap( newInts, width, height,
