@@ -33,7 +33,7 @@ public class JNIUtilsImpl implements JNIUtils {
         for ( int yy = 0; yy < height; ++yy ) {
             for ( int xx = 0; xx < width; ++xx ) {
                 boolean pixelSet = colors[indx++];
-                bitmap.setPixel( xx, yy, pixelSet? 0xFF000000 : 0x00FFFFFF );
+                bitmap.setPixel( xx, yy, pixelSet? 0xFF000000 : 0x00 );
             }
         }
 
