@@ -15,6 +15,9 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
+import java.util.HashMap;
+import java.nio.IntBuffer;
+
 import junit.framework.Assert;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
@@ -47,6 +50,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private String m_remText;
     private int m_dictPtr = 0;
     private int m_lastSecsLeft;
+    private HashMap<String,BitmapDrawable> m_bitmapsCache;
 
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
@@ -244,6 +248,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
+    public void prefsChanged()
+    {
+        synchronized( this ) {
+            m_bitmapsCache = null;
+        }
+    }
+
     // DrawCtxt interface implementation
     public void scoreBegin( Rect rect, int numPlayers, int[] scores, 
                             int remCount, int dfs )
@@ -346,6 +357,10 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         clearToBack( rect );
 
+        if ( owner < 0 ) {
+            owner = 0;
+        }
+
         if ( 0 != (flags & CELL_ISCURSOR) ) {
             backColor = m_otherColors[CommonPrefs.COLOR_FOCUS];
         } else if ( empty ) {
@@ -354,9 +369,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             backColor = BLACK;
         } else {
             backColor = m_otherColors[CommonPrefs.COLOR_TILE_BACK];
-            if ( owner < 0 ) {
-                owner = 0;
-            }
             foreColor = m_playerColors[owner];
         }
 
@@ -374,7 +386,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             } else {
                 Rect smaller = new Rect(rect);
                 smaller.inset( 2, 2 );
-                drawBestBitmap( bitmaps, smaller );
+                drawBestBitmap( text, owner, pending, bitmaps, smaller );
             }
         }
 
@@ -609,7 +621,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
             m_letterRect.offsetTo( rect.left+2, rect.top+2 );
             if ( null != bitmaps ) {
-                drawBestBitmap( bitmaps, m_letterRect );
+                drawBestBitmap( text, m_trayOwner, false, bitmaps, 
+                                m_letterRect );
             } else /*if ( null != text )*/ {
                 int height = m_letterRect.height();
                 int descent = m_fontDims.descentFor( height );
@@ -737,7 +750,64 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.drawRect( rect, m_fillPaint );
     }
 
-    private void drawBestBitmap( BitmapDrawable[] bitmaps, final Rect rect  )
+    private BitmapDrawable colorBitmap( Bitmap base, boolean pending, 
+                                        int owner )
+    {
+        int foreColor, backColor;
+        foreColor = pending? WHITE : m_playerColors[owner];
+        backColor = pending? BLACK : m_otherColors[CommonPrefs.COLOR_TILE_BACK];
+
+        int width = base.getWidth();
+        int height = base.getHeight();
+        IntBuffer intBuffer = IntBuffer.allocate( width * height );
+        base.copyPixelsToBuffer( intBuffer );
+        final int[] oldInts = intBuffer.array();
+        int[] newInts = new int[oldInts.length];
+        for ( int ii = 0; ii < oldInts.length; ++ii ) {
+            int pixel = oldInts[ii];
+            if ( pixel == 0xFF000000 ) {
+                pixel = foreColor;
+            } else {
+                // Note: these pixels though I set them to 00FFFFFF
+                // test == 0 here.  Nonetheless, replacing them works.
+                pixel = backColor;
+            }
+            newInts[ii] = pixel;
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap( newInts, width, height,
+                                             Bitmap.Config.ARGB_8888 );
+        return new BitmapDrawable( bitmap );
+    }
+
+    private BitmapDrawable getColoredBitmap( BitmapDrawable[] blackBmps, 
+                                             String text, int owner, 
+                                             boolean pending, int index )
+    {
+        BitmapDrawable base = blackBmps[index];
+        if ( owner != 0 || pending ) {
+            String key;
+            if ( pending ) {
+                key = String.format( "%s:%d", text, index );
+            } else {
+                key = String.format( "%s:%d:%d", text, owner, index );
+            }
+            if ( null == m_bitmapsCache ) {
+                m_bitmapsCache = new HashMap<String,BitmapDrawable>();
+            }
+            BitmapDrawable found = m_bitmapsCache.get(key);
+            if ( null == found ) {
+                found = colorBitmap( base.getBitmap(), pending, owner );
+                m_bitmapsCache.put( key, found );
+            }
+            base = found;
+        }
+
+        return base;
+    }
+
+    private void drawBestBitmap( String key, int owner, boolean pending,
+                                 BitmapDrawable[] bitmaps, final Rect rect )
     {
         Rect local = new Rect( rect );
         int height = local.height();
@@ -752,9 +822,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
         }
 
+        BitmapDrawable bitmap = getColoredBitmap( bitmaps, key, owner, 
+                                                  pending, ii );
+
         // will be 0 if fell through
-        bitmaps[ii].setBounds( local );
-        bitmaps[ii].draw( m_canvas );
+        bitmap.setBounds( local );
+        bitmap.draw( m_canvas );
     }
 
 }
