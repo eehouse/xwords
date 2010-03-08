@@ -371,10 +371,9 @@ drawCell( BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Bool skipBlanks )
                 flags |= isOrigin? CELL_DRAGSRC : CELL_DRAGCUR;
                 if ( isEmpty && !isOrigin ) {
                     dragDropTileInfo( board, &tile, &isBlank );
-                    pending = XP_TRUE;
-                    recent = XP_FALSE;
                     isEmpty = XP_FALSE;
                 }
+                showPending = pending = XP_TRUE;
             }
 
             if ( isEmpty ) {
