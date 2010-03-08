@@ -237,6 +237,9 @@ and_draw_drawCell( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text,
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
     jstring jtext = NULL;
     if ( !!text ) {
+        if ( 0 == strcmp( "_", text ) ) {
+            text = "?";
+        }
         jtext = (*env)->NewStringUTF( env, text );
     }
 
