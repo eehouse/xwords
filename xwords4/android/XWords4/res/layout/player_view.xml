@@ -8,4 +8,5 @@
    android:layout_weight="1"
    android:focusable="true"
    android:clickable="true"
+   android:textAppearance="?android:attr/textAppearanceLarge"
    android:longClickable="true"/>
