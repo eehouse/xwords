@@ -468,9 +468,10 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
             draw_string_at( dctx, NULL, "*", rect->height, rect, 
                             XP_GTK_JUST_CENTER, &dctx->black, NULL );
         }
-    } else if ( !!bitmaps ) {
+    } else if ( !!bitmaps && !!bitmaps->bmps[0] ) {
         drawBitmapFromLBS( dctx, bitmaps->bmps[0], rect );
     } else if ( !!letter ) {
+        XP_Bool isBlank = (flags & CELL_ISBLANK) != 0;
         GdkColor* foreground;
         if ( cursor ) {
             gdk_gc_set_foreground( dctx->drawGC, cursor );
@@ -481,11 +482,16 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
                             rectInset.left, rectInset.top,
                             rectInset.width+1, rectInset.height+1 );
 
+        if ( isBlank && 0 == strcmp("_",letter ) ) {
+            letter = "?";
+            isBlank = XP_FALSE;
+        }
+
         foreground = highlight? &dctx->white : &dctx->playerColors[owner];
         draw_string_at( dctx, NULL, letter, rectInset.height-2, &rectInset, 
                         XP_GTK_JUST_CENTER, foreground, cursor );
 
-        if ( (flags & CELL_ISBLANK) != 0 ) {
+        if ( isBlank ) {
             gdk_draw_arc( DRAW_WHAT(dctx), dctx->drawGC,
                           0,	/* filled */
                           rect->left, /* x */
