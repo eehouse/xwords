@@ -232,6 +232,11 @@
 
     <string name="ids_endnow">Are you sure you want to end the game now?</string>
 
+    <string name="force_title">Remote player[s]</string>
+    <string name="force_expl">A host must have at least one remote player.</string>
+
+    <string name="vs">vs.</string>
+    <string name="dictionary">dictionary: </string>
 
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
