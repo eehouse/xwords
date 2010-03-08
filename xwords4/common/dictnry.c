@@ -413,7 +413,7 @@ XP_Bool
 dict_faceIsBitmap( const DictionaryCtxt* dict, Tile tile )
 {
     const XP_UCHAR* facep = dict_getTileStringRaw( dict, tile );
-    return IS_SPECIAL(*facep);
+    return IS_SPECIAL(*facep) && (tile != dict->blankTile);
 } /* dict_faceIsBitmap */
 
 void
