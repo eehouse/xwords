@@ -350,7 +350,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         int backColor;
         int foreColor = WHITE;  // must be initialized :-(
-        boolean empty = null == text && null == bitmaps;
+        boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
         boolean pending = 0 != (flags & CELL_HIGHLIGHT);
 
         figureFontDims();
