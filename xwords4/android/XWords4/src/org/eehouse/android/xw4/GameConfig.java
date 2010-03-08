@@ -125,19 +125,18 @@ public class GameConfig extends Activity implements View.OnClickListener {
             final View playerEditView
                 = factory.inflate( R.layout.player_edit, null );
 
-            dlpos = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, 
-                                         int whichButton ) {
-                        getPlayerSettings();
-                        loadPlayers();
-                    }
-                };
-
             dialog = new AlertDialog.Builder( this )
                 .setTitle(R.string.player_edit_title)
                 .setView(playerEditView)
-                .setPositiveButton(R.string.button_save, dlpos )
                 .create();
+            dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss( DialogInterface di ) 
+                    {
+                        getPlayerSettings();
+                        loadPlayers();
+                    }
+                });
             break;
         case ROLE_EDIT_RELAY:
         case ROLE_EDIT_SMS:
