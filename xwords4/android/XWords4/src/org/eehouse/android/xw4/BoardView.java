@@ -457,8 +457,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         String text = score >= 0? String.format( "%d", score ) : "??";
         ++rect.top;
-        clearToBack( rect );
-        m_fillPaint.setColor( BLACK );
+        fillRect( rect, (0 == (flags & CELL_ISCURSOR)) 
+                  ? WHITE : m_otherColors[CommonPrefs.COLOR_FOCUS] );
+        m_fillPaint.setColor( m_playerColors[playerNum] );
         rect.inset( 0, rect.height() / 4 );
         drawCentered( text, rect, null );
     }
@@ -576,12 +577,15 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
 
             m_fillPaint.setColor( m_playerColors[m_trayOwner] );
-            positionDrawTile( rect, text, bitmaps, val );
 
-            m_canvas.drawRect( rect, m_tileStrokePaint); // frame
-            if ( 0 != (flags & CELL_HIGHLIGHT) ) {
-                rect.inset( 2, 2 );
-                m_canvas.drawRect( rect, m_tileStrokePaint ); // frame
+            if ( notEmpty ) {
+                positionDrawTile( rect, text, bitmaps, val );
+
+                m_canvas.drawRect( rect, m_tileStrokePaint); // frame
+                if ( 0 != (flags & CELL_HIGHLIGHT) ) {
+                    rect.inset( 2, 2 );
+                    m_canvas.drawRect( rect, m_tileStrokePaint ); // frame
+                }
             }
         }
         m_canvas.restoreToCount(1); // in case new canvas....
