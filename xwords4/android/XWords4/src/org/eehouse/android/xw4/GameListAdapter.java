@@ -47,31 +47,7 @@ public class GameListAdapter implements ListAdapter {
             CurGameInfo gi = new CurGameInfo( m_context );
             XwJNI.gi_from_stream( gi, stream );
 
-            StringBuffer sb = new StringBuffer();
-            int ii;
-            for ( ii = 0; ; ) {
-                sb.append( gi.players[ii].name );
-                if ( ++ii >= gi.nPlayers ) {
-                    break;
-                }
-                sb.append( " vs. " );
-            }
-            sb.append( "\nDictionary: " );
-            sb.append( gi.dictName );
-
-            DeviceRole role = gi.serverRole;
-            if ( gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                sb.append( "\n" )
-                    .append( m_context.getString( R.string.role_label ) )
-                    .append( ": " );
-                if ( role == DeviceRole.SERVER_ISSERVER ) {
-                    sb.append( m_context.getString( R.string.role_host ) );
-                } else {
-                    sb.append( m_context.getString( R.string.role_guest ) );
-                }
-            }
-
-            view.setText( sb.toString() );
+            view.setText( gi.summary(m_context) );
         }
         return view;
     }
