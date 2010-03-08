@@ -337,6 +337,19 @@ dragDropIsBeingDragged( const BoardCtxt* board, XP_U16 col, XP_U16 row,
 }
 
 void
+dragDropAppendBlank( const BoardCtxt* board, BlankQueue* bqp )
+{
+    const DragState* ds = &board->dragState;
+    if ( ds->dtype == DT_TILE && ds->cur.obj == OBJ_BOARD ) {
+        if ( ds->isBlank ) {
+            bqp->col[bqp->nBlanks] = ds->cur.u.board.col;
+            bqp->row[bqp->nBlanks] = ds->cur.u.board.row;
+            ++bqp->nBlanks;
+        }
+    }
+}
+
+void
 dragDropGetTrayChanges( const BoardCtxt* board, XP_U16* rmvdIndx, 
                         XP_U16* addedIndx )
 {

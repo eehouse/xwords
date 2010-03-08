@@ -251,6 +251,7 @@ drawBoard( BoardCtxt* board )
            somebody dirties a single cell? */
         model_listPlacedBlanks( model, board->selPlayer, 
                                 board->trayVisState == TRAY_REVEALED, &bq );
+        dragDropAppendBlank( board, &bq );
         invalBlanksWithNeighbors( board, &bq );
 
         /* figure out now, before clearing inval bits, if we'll need to draw

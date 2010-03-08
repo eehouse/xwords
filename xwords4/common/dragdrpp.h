@@ -41,6 +41,7 @@ XP_Bool dragDropSetAdd( BoardCtxt* board );
 XP_Bool dragDropGetBoardTile( const BoardCtxt* board, XP_U16* col, XP_U16* row );
 XP_Bool dragDropIsBeingDragged( const BoardCtxt* board, XP_U16 col, XP_U16 row, 
                                 XP_Bool* isOrigin );
+void dragDropAppendBlank( const BoardCtxt* board, BlankQueue* bq );
 
 /* return locations (0-based indices from left) in tray where a drag has added
  * and removed a tile.  Index larger than MAX_TRAY_TILES means invalid: don't
