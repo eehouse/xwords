@@ -23,12 +23,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import java.util.ArrayList;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.app.Dialog;
 import android.app.AlertDialog;
@@ -42,9 +44,13 @@ import android.view.MenuInflater;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ListAdapter;
+import android.database.DataSetObserver;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameConfig extends Activity implements View.OnClickListener {
 
@@ -52,6 +58,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private static final int ROLE_EDIT_RELAY = 2;
     private static final int ROLE_EDIT_SMS = 3;
     private static final int ROLE_EDIT_BT = 4;
+    private static final int FORCE_REMOTE = 5;
 
     private Button m_addPlayerButton;
     private Button m_configureButton;
@@ -72,11 +79,45 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private boolean m_canDoBT = false;
     private CommsAddrRec.CommsConnType[] m_types;
 
+    class RemoteChoices implements ListAdapter {
+        public boolean areAllItemsEnabled() { return true; }
+        public boolean isEnabled( int position ) { return true; }
+        public int getCount() { return m_gi.nPlayers; }
+        public Object getItem( int position) { return m_gi.players[position]; }
+        public long getItemId(int position) { return position; }
+        public int getItemViewType(int position) { return 0; }
+        public View getView( final int position, View convertView, 
+                             ViewGroup parent ) {
+            CompoundButton.OnCheckedChangeListener lstnr;
+            lstnr = new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged( CompoundButton buttonView, 
+                                                 boolean isChecked )
+                    {
+                        m_gi.players[position].isLocal = !isChecked;
+                    }
+                };
+            CheckBox cb = new CheckBox( GameConfig.this );
+            LocalPlayer lp = m_gi.players[position];
+            cb.setText( lp.name );
+            cb.setChecked( !lp.isLocal );
+            cb.setOnCheckedChangeListener( lstnr );
+            return cb;
+        }
+        public int getViewTypeCount() { return 1; }
+        public boolean hasStableIds() { return true; }
+        public boolean isEmpty() { return getCount() == 0; }
+        public void registerDataSetObserver(DataSetObserver observer) {}
+        public void unregisterDataSetObserver(DataSetObserver observer) {}
+    }
+
     @Override
     protected Dialog onCreateDialog( int id )
     {
+        Dialog dialog = null;
         LayoutInflater factory;
         DialogInterface.OnClickListener dlpos;
+        AlertDialog.Builder ab;
 
         switch (id) {
         case PLAYER_EDIT:
@@ -92,12 +133,12 @@ public class GameConfig extends Activity implements View.OnClickListener {
                     }
                 };
 
-            return new AlertDialog.Builder( this )
-                // .setIcon(R.drawable.alert_dialog_icon)
+            dialog = new AlertDialog.Builder( this )
                 .setTitle(R.string.player_edit_title)
                 .setView(playerEditView)
                 .setPositiveButton(R.string.button_save, dlpos )
                 .create();
+            break;
         case ROLE_EDIT_RELAY:
         case ROLE_EDIT_SMS:
         case ROLE_EDIT_BT:
@@ -112,14 +153,35 @@ public class GameConfig extends Activity implements View.OnClickListener {
                     }
                 };
 
-            return new AlertDialog.Builder( this )
+            dialog = new AlertDialog.Builder( this )
                 // .setIcon(R.drawable.alert_dialog_icon)
                 .setTitle(titleForDlg(id))
                 .setView(roleEditView)
                 .setPositiveButton(R.string.button_save, dlpos )
                 .create();
+            break;
+
+        case FORCE_REMOTE:
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.force_title )
+                .setView( LayoutInflater.from(this)
+                          .inflate( layoutForDlg(id), null ) )
+                .create();
+            dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss( DialogInterface di ) 
+                    {
+                        if ( m_gi.remoteCount() == 0 ) {
+                            // force one to remote -- or make it
+                            // standalone???
+                            m_gi.players[0].isLocal = false;
+                        }
+                        loadPlayers();
+                    }
+                });
+            break;
         }
-        return null;
+        return dialog;
     }
 
     @Override
@@ -136,6 +198,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
         case ROLE_EDIT_BT:
             setRoleSettings();
             break;
+        case FORCE_REMOTE:
+            ListView listview = (ListView)dialog.findViewById( R.id.players );
+            listview.setAdapter( new RemoteChoices() );
+            break;
         }
         super.onPrepareDialog( id, dialog );
     }
@@ -143,8 +209,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private void setPlayerSettings()
     {
         // Hide remote option if in standalone mode...
-        boolean isServer = 
-            CurGameInfo.DeviceRole.SERVER_ISSERVER == curRole();
+        boolean isServer = DeviceRole.SERVER_ISSERVER == curRole();
 
         LocalPlayer lp = m_gi.players[m_whichPlayer];
         Utils.setText( m_curDialog, R.id.player_name_edit, lp.name );
@@ -162,6 +227,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
                     }
                 };
             check.setOnCheckedChangeListener( lstnr );
+            check.setVisibility( View.VISIBLE );
         } else {
             check.setVisibility( View.GONE );
         }
@@ -332,7 +398,9 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 public void onItemSelected(AdapterView<?> parentView, 
                                            View selectedItemView, int position, 
                                            long id ) {
-                    adjustVisibility( position );
+                    m_gi.setServerRole( DeviceRole.values()[position] );
+                    adjustVisibility();
+                    loadPlayers();
                 }
 
                 @Override
@@ -374,7 +442,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         Utils.setChecked( this, R.id.color_tiles, m_gi.showColors );
         Utils.setChecked( this, R.id.smart_robot, 0 < m_gi.robotSmartness );
 
-        adjustVisibility(-1);
+        adjustVisibility();
     } // onCreate
 
     @Override
@@ -456,8 +524,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
             if ( curIndex < CurGameInfo.MAX_NUM_PLAYERS ) {
                 m_gi.addPlayer(); // ups nPlayers
                 loadPlayers();
-                m_whichPlayer = curIndex;
-                showDialog( PLAYER_EDIT );
             }
         } else if ( m_configureButton == view ) {
             int position = m_connectSpinner.getSelectedItemPosition();
@@ -481,21 +547,21 @@ public class GameConfig extends Activity implements View.OnClickListener {
     {
         m_playerLayout.removeAllViews();
 
-        for ( int ii = 0; ii < m_gi.nPlayers; ++ii ) {
-            LayoutInflater factory = LayoutInflater.from(this);
+        String[] names = m_gi.visibleNames();
+        LayoutInflater factory = LayoutInflater.from(this);
+        for ( int ii = 0; ii < names.length; ++ii ) {
+
+            if ( ii > 0 ) {
+                View divider = factory.inflate( R.layout.divider_view, null );
+                divider.setVisibility( View.VISIBLE );
+                m_playerLayout.addView( divider );
+            }
+
             final PlayerView view
                 = (PlayerView)factory.inflate( R.layout.player_view, null );
             view.setPosition( ii );
-            // PlayerView view = new PlayerView( this, ii );
-            LocalPlayer lp = m_gi.players[ii];
-            StringBuffer sb = new StringBuffer().append( "\n" );
-            if ( lp.isLocal ) {
-                sb.append( lp.name )
-                    .append( lp.isRobot? " (ROBOT)":" (HUMAN)");
-            } else {
-                sb.append( "<REMOTE>" );
-            }
-            view.setText( sb.toString() );
+            view.setText( names[ii] );
+            view.setGravity( Gravity.CENTER );
 
             registerForContextMenu( view );
             view.setOnClickListener( new View.OnClickListener() {
@@ -508,6 +574,11 @@ public class GameConfig extends Activity implements View.OnClickListener {
             m_playerLayout.addView( view );
             Utils.logf( "view.isFocusableInTouchMode()=>" + 
                         (view.isFocusableInTouchMode()?"true":"false" ) );
+        }
+
+        if ( DeviceRole.SERVER_ISSERVER == m_gi.serverRole
+             && 0 == m_gi.remoteCount() ) {
+            showDialog( FORCE_REMOTE );
         }
     }
 
@@ -551,19 +622,16 @@ public class GameConfig extends Activity implements View.OnClickListener {
         m_connectSpinner.setSelection( connTypeToPos( m_car.conType ) );
     } // configConnectSpinner
 
-    private void adjustVisibility( int position )
+    private void adjustVisibility()
     {
         int[] ids = { R.id.connect_via_label, 
                       R.id.connect_spinner, 
                       R.id.configure_role };
-        if ( position == -1 ) {
-            position = m_roleSpinner.getSelectedItemPosition();
-        }
-        int vis = 0 == position ? View.GONE : View.VISIBLE;
+        int vis = DeviceRole.SERVER_STANDALONE == curRole() ? 
+            View.GONE : View.VISIBLE;
 
         for ( int id : ids ) {
-            View view = findViewById( id );
-            view.setVisibility( vis );
+            findViewById( id ).setVisibility( vis );
         }
     }
     
@@ -589,6 +657,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
             return R.layout.role_edit_sms;
         case ROLE_EDIT_BT:
             return R.layout.role_edit_bt;
+        case FORCE_REMOTE:
+            return R.layout.force_remote;
         }
         Assert.fail();
         return 0;
@@ -629,10 +699,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
         return strings.toArray( new String[strings.size()] );
     }
 
-    private CurGameInfo.DeviceRole curRole()
+    private DeviceRole curRole()
     {
         int position = m_roleSpinner.getSelectedItemPosition();
-        return CurGameInfo.DeviceRole.values()[position];
+        return DeviceRole.values()[position];
     }
 
     private void saveChanges()
@@ -644,10 +714,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
         m_gi.robotSmartness
             = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;
 
-        m_gi.serverRole = curRole();
-
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];
+
+        m_gi.fixup();
 
         position = m_connectSpinner.getSelectedItemPosition();
         m_car.conType = m_types[ position ];
