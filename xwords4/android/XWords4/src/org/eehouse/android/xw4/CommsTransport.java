@@ -6,6 +6,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.UnresolvedAddressException;
 import java.nio.ByteBuffer;
 import java.net.InetSocketAddress;
 import java.util.Vector;
@@ -93,8 +94,11 @@ public class CommsTransport extends Thread implements TransportProcs {
             m_socketChannel.close();
         } catch ( java.io.IOException ioe ) {
             Utils.logf( ioe.toString() );
+        } catch ( UnresolvedAddressException uae ) {
+            Utils.logf( "bad address: name: %s; port: %s; exception: %s",
+                        m_addr.ip_relay_hostName, m_addr.ip_relay_port, 
+                        uae.toString() );
         }
-
     }
 
     private void loop()
