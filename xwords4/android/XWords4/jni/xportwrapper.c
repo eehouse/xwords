@@ -85,10 +85,14 @@ and_xport_relayStatus( void* closure, CommsRelayState newState )
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = *aprocs->envp;
-        const char* sig = "(I)V";
+        const char* sig = "(Lorg/eehouse/android/xw4/jni/"
+            "TransportProcs$CommsRelayState;)V";
         jmethodID mid = getMethodID( env, aprocs->jxport, "relayStatus", sig );
 
-        (*env)->CallVoidMethod( env, aprocs->jxport, mid, newState );
+        jobject jenum = intToJEnum( env, newState, "org/eehouse/android/xw4/jni/"
+                                    "TransportProcs$CommsRelayState" );
+        (*env)->CallVoidMethod( env, aprocs->jxport, mid, jenum );
+        (*env)->DeleteLocalRef( env, jenum );
     }
 }
 

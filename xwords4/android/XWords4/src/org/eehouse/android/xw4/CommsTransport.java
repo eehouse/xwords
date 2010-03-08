@@ -291,9 +291,9 @@ public class CommsTransport extends Thread implements TransportProcs {
         return nSent;
     } 
 
-    public void relayStatus( int newState )
+    public void relayStatus( CommsRelayState newState )
     {
-        Utils.logf( "relayStatus called; state=" + newState );
+        Utils.logf( "relayStatus called; state=%s", newState.toString() );
     }
 
     public void relayConnd( boolean allHere, int nMissing )
