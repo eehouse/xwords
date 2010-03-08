@@ -46,6 +46,7 @@ public class JNIThread extends Thread {
             CMD_FINAL,
             CMD_ENDGAME,
             CMD_POST_OVER,
+            CMD_DRAW_CONNS_STATUS
             };
 
     public static final int RUNNING = 1;
@@ -60,6 +61,8 @@ public class JNIThread extends Thread {
     private SyncedDraw m_drawer;
     private static final int kMinDivWidth = 10;
     private boolean m_keyDown = false;
+    private Rect m_connsIconRect;
+    private int m_connsIconID = 0;
 
     LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -141,6 +144,13 @@ public class JNIThread extends Thread {
         }
 
         int scoreWidth = nCells * cellSize;
+
+        if ( DeviceRole.SERVER_STANDALONE != m_gi.serverRole ) {
+            scoreWidth -= cellSize;
+            m_connsIconRect = new Rect( scoreWidth, 0,
+                                        scoreWidth + cellSize, cellSize );
+        }
+
         if ( m_gi.timerEnabled ) {
             Paint paint = new Paint();
             paint.setTextSize( scoreHt );
@@ -390,6 +400,30 @@ public class JNIThread extends Thread {
                                XwJNI.server_writeFinalScores( m_jniGamePtr ) );
                 break;
 
+            case CMD_DRAW_CONNS_STATUS:
+                int newID = 0;
+                switch( (TransportProcs.CommsRelayState)(args[0]) ) {
+                case COMMS_RELAYSTATE_UNCONNECTED:
+                case COMMS_RELAYSTATE_DENIED:
+                case COMMS_RELAYSTATE_CONNECT_PENDING:
+                    newID = R.drawable.netarrow_unconn;
+                    break;
+                case COMMS_RELAYSTATE_CONNECTED: 
+                case COMMS_RELAYSTATE_RECONNECTED: 
+                    newID = R.drawable.netarrow_someconn;
+                    break;
+                case COMMS_RELAYSTATE_ALLCONNECTED:
+                    newID = R.drawable.netarrow_allconn;
+                    break;
+                default:
+                    newID = 0;
+                }
+                if ( m_connsIconID != newID ) {
+                    draw = true;
+                    m_connsIconID = newID;
+                }
+                break;
+
             case CMD_TIMER_FIRED:
                 draw = XwJNI.timerFired( m_jniGamePtr, 
                                          ((Integer)args[0]).intValue(),
@@ -403,6 +437,9 @@ public class JNIThread extends Thread {
                 // where it can be synchronized with that class's use
                 // of the same bitmap for blitting.
                 m_drawer.doJNIDraw();
+                if ( null != m_connsIconRect ) {
+                    m_drawer.doIconDraw( m_connsIconID, m_connsIconRect );
+                }
 
                 // main UI thread has to invalidate view as it created
                 // it.

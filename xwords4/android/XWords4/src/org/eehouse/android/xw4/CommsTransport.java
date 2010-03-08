@@ -294,6 +294,11 @@ public class CommsTransport extends Thread implements TransportProcs {
     public void relayStatus( CommsRelayState newState )
     {
         Utils.logf( "relayStatus called; state=%s", newState.toString() );
+        if ( null != m_jniThread ) {
+            m_jniThread.handle( JNICmd.CMD_DRAW_CONNS_STATUS, newState );
+        } else {
+            Utils.logf( "can't draw status yet" );
+        }
     }
 
     public void relayConnd( boolean allHere, int nMissing )
