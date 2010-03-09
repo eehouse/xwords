@@ -413,6 +413,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         XwJNI.XP_Key xpKey = XwJNI.XP_Key.XP_KEY_NONE;
         switch( keyCode ) {
         case KeyEvent.KEYCODE_DPAD_CENTER:
+        case KeyEvent.KEYCODE_ENTER:
             xpKey = XwJNI.XP_Key.XP_RETURN_KEY;
             break;
         case KeyEvent.KEYCODE_DPAD_DOWN:
