@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent" 
+              android:layout_height="fill_parent"
+              >
+
+   <TextView android:id="@+id/version_string"
+		     android:layout_marginLeft="5sp"
+	         android:layout_width="fill_parent" 
+	         android:layout_height="wrap_content"
+             />
+
+   <TextView android:layout_marginLeft="5sp"
+   		     android:layout_marginTop="5sp"
+   		     android:layout_marginBottom="5sp"
+	         android:layout_width="fill_parent" 
+	         android:layout_height="wrap_content"
+    	     android:text="@string/about_copyright"
+             />
+
+   <TextView android:layout_marginLeft="5sp"
+   		     android:layout_marginTop="5sp"
+   		     android:layout_marginBottom="5sp"
+	         android:layout_width="fill_parent" 
+	         android:layout_height="wrap_content"
+    	     android:text="@string/about_web"
+    	     android:autoLink="all" 
+             />
+
+   <TextView android:id="@+id/about_xlator"
+             android:layout_marginLeft="5sp"
+   		     android:layout_marginTop="5sp"
+   		     android:layout_marginBottom="5sp"
+	         android:layout_width="fill_parent" 
+	         android:layout_height="wrap_content"
+             />
+
+</LinearLayout>

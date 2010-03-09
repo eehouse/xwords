@@ -32,6 +32,8 @@ import android.widget.Button;
 import android.view.MenuInflater;
 import java.io.File;
 import android.preference.PreferenceManager;
+import android.app.Dialog;
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -39,6 +41,13 @@ import org.eehouse.android.xw4.XWords4.Games; // for constants
 
 public class GamesList extends ListActivity implements View.OnClickListener {
     private GameListAdapter m_adapter;
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Assert.assertTrue( id == Utils.DIALOG_ABOUT );
+        return Utils.onCreateDialog( this, id );
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,7 +194,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             break;
 
         case R.id.gamel_menu_about:
-            Utils.about(this);
+            showDialog( Utils.DIALOG_ABOUT );
             break;
 
         case R.id.gamel_menu_view_hidden:

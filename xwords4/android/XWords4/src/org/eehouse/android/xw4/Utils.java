@@ -16,13 +16,21 @@ import java.io.InputStream;
 import android.widget.CheckBox;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.AlertDialog;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.view.View;
 import android.text.format.Time;
 import java.util.Formatter;
+import android.view.LayoutInflater;
+import junit.framework.Assert;
 
 public class Utils {
     static final String TAG = "EJAVA";
+
+    static final int DIALOG_ABOUT = 1;
+    static final int DIALOG_LAST = DIALOG_ABOUT;
+
     // private static JNIThread s_jniThread = null;
     private static Time s_time = new Time();
 
@@ -46,10 +54,28 @@ public class Utils {
         Toast.makeText( context, text, Toast.LENGTH_SHORT).show();
     }
 
-    public static void about( Context context ) 
+    static Dialog onCreateDialog( Context context, int id )
     {
-        CharSequence text = "Version: pre-alpha; svn rev: " + SvnVersion.VERS;
-        Toast.makeText( context, text, Toast.LENGTH_LONG ).show();
+        Assert.assertTrue( DIALOG_ABOUT == id );
+        LayoutInflater factory = LayoutInflater.from( context );
+        final View view = factory.inflate( R.layout.about_dlg, null );
+        TextView vers = (TextView)view.findViewById( R.id.version_string );
+        vers.setText( String.format( context.getString(R.string.about_versf), 
+                                     SvnVersion.VERS ) );
+
+        TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
+        String str = context.getString( R.string.xlator );
+        if ( str.length() > 0 ) {
+            xlator.setText( str );
+        } else {
+            xlator.setVisibility( View.GONE );
+        }
+
+        return new AlertDialog.Builder( context )
+            .setIcon( R.drawable.icon48x48 )
+            .setTitle( R.string.app_name )
+            .setView( view )
+            .create();
     }
 
     public static byte[] savedGame( Context context, String path )

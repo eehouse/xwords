@@ -238,6 +238,14 @@
     <string name="vs">vs.</string>
     <string name="dictionary">dictionary: </string>
 
+    <!-- about dialog stuff -->
+    <string name="about_versf">Crosswords for Android, Version 4.4 a1, rev %s.</string>
+    <string name="about_copyright">Copyright (C) 1998-2010 by Eric House. This software is released under the GNU Public License.</string>
+
+    <string name="about_web">For a manual or sourcecode see: http://xwords.sf.net.  To report bugs, suggest features, offer to help, etc., please email: eehouse@eehouse.org.</string>
+    <!-- fill this in other than in English -->
+    <string name="xlator"></string>
+
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
     <string name="key_show_arrow">key_show_arrow</string>

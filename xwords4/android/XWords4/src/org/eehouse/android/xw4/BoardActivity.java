@@ -28,11 +28,11 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class BoardActivity extends Activity implements UtilCtxt {
 
-    private static final int DLG_OKONLY = 1;
-    private static final int DLG_BADWORDS = 2;
-    private static final int QUERY_REQUEST_BLK = 3;
-    private static final int PICK_TILE_REQUEST_BLK = 4;
-    private static final int QUERY_ENDGAME = 5;
+    private static final int DLG_OKONLY = Utils.DIALOG_LAST + 1;
+    private static final int DLG_BADWORDS = Utils.DIALOG_LAST + 2;
+    private static final int QUERY_REQUEST_BLK = Utils.DIALOG_LAST + 3;
+    private static final int PICK_TILE_REQUEST_BLK = Utils.DIALOG_LAST + 4;
+    private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 5;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -152,6 +152,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                     })
                 .create();
             break;
+        default:
+            dialog = Utils.onCreateDialog( this, id );
+            Assert.assertTrue( null != dialog );
         }
         return dialog;
     } // onCreateDialog
@@ -393,7 +396,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             startActivity( new Intent( this, PrefsActivity.class ) );
             break;
         case R.id.board_menu_file_about:
-            Utils.about(this);
+            showDialog( Utils.DIALOG_ABOUT );
             break;
 
         default:
