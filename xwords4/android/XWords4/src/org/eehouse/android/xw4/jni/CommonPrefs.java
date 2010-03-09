@@ -122,26 +122,4 @@ public class CommonPrefs {
         String key = s_context.getString( R.string.key_relay_host );
         return sp.getString( key, "" );
     }
-
-    public static int getFontFlags()
-    {
-        String key;
-        int result = 0;
-        SharedPreferences sp = 
-            PreferenceManager.getDefaultSharedPreferences( s_context );
-
-        key = s_context.getString( R.string.key_anti_alias );
-        if ( sp.getBoolean( key, false ) ) {
-            result = Paint.ANTI_ALIAS_FLAG | result;
-        }
-
-        key = s_context.getString( R.string.key_subpixel );
-        if ( sp.getBoolean( key, false ) ) {
-            result = Paint.SUBPIXEL_TEXT_FLAG | result;
-        }
-
-        Utils.logf( "getFontFlags=>" + result );
-        return result;
-    }
-
 }

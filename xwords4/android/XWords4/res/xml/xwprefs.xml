@@ -4,18 +4,6 @@
                   android:key="first_preferencescreen"
                   >
 
-  <PreferenceScreen android:title="Fonts (temporary)"
-                      >
-    <CheckBoxPreference android:key="@string/key_anti_alias"
-                        android:title="Anti-aliased"
-                        android:defaultValue="false"
-                        />
-    <CheckBoxPreference android:key="@string/key_subpixel"
-                        android:title="sub-pixel"
-                        android:defaultValue="false"
-                        />
-  </PreferenceScreen>
-
     <PreferenceCategory android:title="@string/general_prefs"
                         >
 

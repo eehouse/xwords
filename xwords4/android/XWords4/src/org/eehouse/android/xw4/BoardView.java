@@ -148,7 +148,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private void init()
     {
         m_drawPaint = new Paint();
-        m_fillPaint = new Paint( CommonPrefs.getFontFlags() );
+        m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
         m_tileStrokePaint = new Paint();
