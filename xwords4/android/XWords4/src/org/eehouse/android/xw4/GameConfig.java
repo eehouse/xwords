@@ -141,23 +141,18 @@ public class GameConfig extends Activity implements View.OnClickListener {
         case ROLE_EDIT_RELAY:
         case ROLE_EDIT_SMS:
         case ROLE_EDIT_BT:
-            factory = LayoutInflater.from(this);
-            final View roleEditView
-                = factory.inflate( layoutForDlg(id), null );
-
-            dlpos = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, 
-                                         int whichButton ) {
+            dialog = new AlertDialog.Builder( this )
+                .setTitle(titleForDlg(id))
+                .setView( LayoutInflater.from(this)
+                          .inflate( layoutForDlg(id), null ))
+                .create();
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss( DialogInterface di ) 
+                    {
                         getRoleSettings();
                     }
-                };
-
-            dialog = new AlertDialog.Builder( this )
-                // .setIcon(R.drawable.alert_dialog_icon)
-                .setTitle(titleForDlg(id))
-                .setView(roleEditView)
-                .setPositiveButton(R.string.button_save, dlpos )
-                .create();
+                });
             break;
 
         case FORCE_REMOTE:

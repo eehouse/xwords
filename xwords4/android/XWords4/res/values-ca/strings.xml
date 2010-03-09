@@ -49,7 +49,6 @@
 	<string name="button_cancel">Cancel·la</string>  
 	<string name="button_yes">Sí</string>  
 	<string name="button_no">No</string>  
-	<string name="button_save">Desa</string>  
 
     <string name="player_label">Nom:</string>
     <string name="game_config_open">Obre</string>
