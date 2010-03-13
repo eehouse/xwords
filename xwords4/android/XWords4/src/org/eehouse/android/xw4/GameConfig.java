@@ -368,40 +368,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
         loadPlayers();
 
         m_dictSpinner = (Spinner)findViewById( R.id.dict_spinner );
-        ArrayAdapter<String> adapter = 
-            new ArrayAdapter<String>( this,
-                                      android.R.layout.simple_spinner_item,
-                                      m_dicts );
-        int resID = android.R.layout.simple_spinner_dropdown_item;
-        adapter.setDropDownViewResource( resID );
-        m_dictSpinner.setAdapter( adapter );
-        if ( curSel >= 0 ) {
-            m_dictSpinner.setSelection( curSel );
-        } 
-
-        m_dictSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parentView, 
-                                           View selectedItemView, int position, 
-                                           long id) {
-                    if ( position == m_browsePosition ) {
-                        Uri uri = Uri.parse( getString( R.string.dict_url ));
-                        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-                        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-                        startActivity (intent );
-                    } else {
-                        m_gi.dictName = m_dicts[position];
-                        Utils.logf( "assigned dictName: " + m_gi.dictName );
-                    }
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parentView) {
-                }
-            });
+        configDictSpinner();
 
         m_roleSpinner = (Spinner)findViewById( R.id.role_spinner );
-        adapter = 
+        ArrayAdapter<String> adapter = 
             new ArrayAdapter<String>( this,
                                       android.R.layout.simple_spinner_item,
                                       new String[] {
@@ -577,6 +547,13 @@ public class GameConfig extends Activity implements View.OnClickListener {
         return consumed;
     }
 
+    @Override
+    protected void onResume()
+    {
+        configDictSpinner();
+        super.onResume();
+    }
+
     private void loadPlayers()
     {
         m_playerLayout.removeAllViews();
@@ -620,7 +597,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     {
         int curSel = -1;
 
-        String[] list = Utils.listDicts( this );
+        String[] list = Utils.dictList( this );
 
         m_browsePosition = list.length;
         m_dicts = new String[m_browsePosition+1];
@@ -635,6 +612,39 @@ public class GameConfig extends Activity implements View.OnClickListener {
         }
 
         return curSel;
+    }
+
+    private void configDictSpinner()
+    {
+        int curSel = listAvailableDicts( m_gi.dictName );
+
+        ArrayAdapter<String> adapter = 
+            new ArrayAdapter<String>( this,
+                                      android.R.layout.simple_spinner_item,
+                                      m_dicts );
+        int resID = android.R.layout.simple_spinner_dropdown_item;
+        adapter.setDropDownViewResource( resID );
+        m_dictSpinner.setAdapter( adapter );
+        if ( curSel >= 0 ) {
+            m_dictSpinner.setSelection( curSel );
+        } 
+
+        m_dictSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, 
+                                       View selectedItemView, 
+                                       int position, long id ) {
+                if ( position == m_browsePosition ) {
+                    startActivity( Utils.mkDownloadActivity(GameConfig.this) );
+                } else {
+                    m_gi.dictName = m_dicts[position];
+                    Utils.logf( "assigned dictName: " + m_gi.dictName );
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {}
+            });
     }
 
     private void configConnectSpinner()
