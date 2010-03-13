@@ -18,7 +18,10 @@
 package org.eehouse.android.xw4;
 
 import android.app.ListActivity;
+import android.app.Dialog;
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -32,7 +35,6 @@ import android.widget.Button;
 import android.view.MenuInflater;
 import java.io.File;
 import android.preference.PreferenceManager;
-import android.app.Dialog;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -42,11 +44,43 @@ import org.eehouse.android.xw4.XWords4.Games; // for constants
 public class GamesList extends ListActivity implements View.OnClickListener {
     private GameListAdapter m_adapter;
 
+    private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
+    private String m_missingDict;
+
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Assert.assertTrue( id == Utils.DIALOG_ABOUT );
-        return Utils.onCreateDialog( this, id );
+        Dialog dialog = null;
+        switch( id ) {
+        case WARN_NODICT:
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.no_dict_title )
+                .setMessage( "" ) // required to get to change it later
+                .setPositiveButton( R.string.button_ok, null )
+                .setNegativeButton( R.string.button_download,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            Intent intent = 
+                                Utils.mkDownloadActivity(GamesList.this);
+                            startActivity( intent );
+                        }
+                    })
+                .create();
+            break;
+        default:
+            dialog = Utils.onCreateDialog( this, id );
+        }
+        return dialog;
+    }
+
+    @Override
+    protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        if ( WARN_NODICT == id ) {
+            String format = getString( R.string.no_dictf );
+            String msg = String.format( format, m_missingDict );
+            ((AlertDialog)dialog).setMessage( msg );
+        }
     }
 
     @Override
@@ -105,48 +139,57 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             Utils.logf( "bad menuInfo:" + e.toString() );
             return false;
         }
-        
-        String path = Utils.gamesList( this )[info.position];
 
+        String path = Utils.gamesList( this )[info.position];
         int id = item.getItemId();
-        switch ( id ) {
-        // case R.id.list_item_open:
-        //     doOpen( info.position );
-        //     handled = true;
-        //     break;
-        case R.id.list_item_config:
-            doConfig( path );
-            break;
-        case R.id.list_item_delete:
+
+        if ( R.id.list_item_delete == id ) {
             if ( ! deleteFile( path ) ) {
                 Utils.logf( "unable to delete " + path );
             }
-            break;
+        } else {
+            String[] missingName = new String[1];
+            boolean hasDict = Utils.gameDictHere( this, path, missingName );
+            if ( !hasDict ) {
+                m_missingDict = missingName[0];
+                showDialog( WARN_NODICT );
+            } else {
+                switch ( id ) {
+                case R.id.list_item_config:
+                    doConfig( path );
+                    break;
+                case R.id.list_item_delete:
+                    if ( ! deleteFile( path ) ) {
+                        Utils.logf( "unable to delete " + path );
+                    }
+                    break;
 
-        case R.id.list_item_reset:
-            Utils.resetGame( this, path, path );
-            break;
-        case R.id.list_item_new_from:
-            Utils.resetGame( this, path );  
-            break;
+                case R.id.list_item_reset:
+                    Utils.resetGame( this, path, path );
+                    break;
+                case R.id.list_item_new_from:
+                    Utils.resetGame( this, path );  
+                    break;
 
-        case R.id.list_item_copy:
-            stream = Utils.savedGame( this, path );
-            Utils.saveGame( this, stream );
-            break;
+                case R.id.list_item_copy:
+                    stream = Utils.savedGame( this, path );
+                    Utils.saveGame( this, stream );
+                    break;
 
-            // These require some notion of predictable sort order.
-            // Maybe put off until I'm using a db?
-        // case R.id.list_item_hide:
-        // case R.id.list_item_move_up:
-        // case R.id.list_item_move_down:
-        // case R.id.list_item_move_to_top:
-        // case R.id.list_item_move_to_bottom:
-            // Utils.notImpl( this );
-            // break;
-        default:
-            handled = false;
-            break;
+                    // These require some notion of predictable sort order.
+                    // Maybe put off until I'm using a db?
+                    // case R.id.list_item_hide:
+                    // case R.id.list_item_move_up:
+                    // case R.id.list_item_move_down:
+                    // case R.id.list_item_move_to_top:
+                    // case R.id.list_item_move_to_bottom:
+                    // Utils.notImpl( this );
+                    // break;
+                default:
+                    handled = false;
+                    break;
+                }
+            }
         }
 
         if ( handled ) {
@@ -211,12 +254,18 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     }
 
     private void doOpen( int indx ) {
-        String path = Utils.gamesList(this)[indx];
-        File file = new File( path );
-        Uri uri = Uri.fromFile( file );
-        Intent intent = new Intent( Intent.ACTION_EDIT, uri,
-                                    GamesList.this, BoardActivity.class );
-        startActivity( intent );
+        String[] missingDict = new String[1];
+        if ( ! Utils.gameDictHere( this, indx, missingDict ) ) {
+            m_missingDict = missingDict[0];
+            showDialog( WARN_NODICT );
+        } else {
+            String path = Utils.gamesList(this)[indx];
+            File file = new File( path );
+            Uri uri = Uri.fromFile( file );
+            Intent intent = new Intent( Intent.ACTION_EDIT, uri,
+                                        this, BoardActivity.class );
+            startActivity( intent );
+        }
     }
 
     private void doConfig( String path )

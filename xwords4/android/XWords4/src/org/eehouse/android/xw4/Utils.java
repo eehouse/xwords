@@ -6,6 +6,7 @@ import android.util.Log;
 import java.lang.Thread;
 import android.widget.Toast;
 import android.content.Context;
+import android.content.Intent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.text.format.Time;
 import java.util.Formatter;
 import android.view.LayoutInflater;
+import android.net.Uri;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -196,6 +198,32 @@ public class Utils {
         saveGame( context, bytes, newName( context ) );
     }
 
+    public static boolean gameDictHere( Context context, String path, 
+                                        String[] missingName )
+    {
+        byte[] stream = savedGame( context, path );
+        CurGameInfo gi = new CurGameInfo( context );
+        XwJNI.gi_from_stream( gi, stream );
+        String dictName = gi.dictName;
+        missingName[0] = dictName;
+
+        boolean exists = false;
+        for ( String name : dictList( context ) ) {
+            if ( name.equals( dictName ) ){
+                exists = true;
+                break;
+            }
+        }
+        return exists;
+    }
+
+    public static boolean gameDictHere( Context context, int indx, 
+                                        String[] name )
+    {
+        String path = Utils.gamesList( context )[indx];
+        return gameDictHere( context, path, name );
+    }
+
     public static String newName( Context context ) 
     {
         String name = null;
@@ -215,26 +243,7 @@ public class Utils {
         return name;
     }
 
-    private static void tryFile( ArrayList<String> al, String name )
-    {
-        if ( isDict( name ) ) {
-            al.add( name );
-        }
-    }
-
-    private static void tryDir( ArrayList<String> al, File dir )
-    {
-        for ( File file: dir.listFiles() ) {
-            tryFile( al, file.getAbsolutePath() );
-        }
-    }
-
-    public static String[] listDicts( Context context )
-    {
-	return listDicts( context, Integer.MAX_VALUE );
-    }
-
-    public static String[] listDicts( Context context, int enough )
+    public static String[] dictList( Context context )
     {
         ArrayList<String> al = new ArrayList<String>();
 
@@ -242,14 +251,18 @@ public class Utils {
             AssetManager am = context.getAssets();
             String[] files = am.list("");
             for ( String file : files ) {
-                tryFile( al, file );
+                if ( isDict( file ) ) {
+                    al.add( file );
+                }
             }
         } catch( java.io.IOException ioe ) {
             Utils.logf( ioe.toString() );
         }
 
         for ( String file : context.fileList() ) {
-            tryFile( al, file );
+            if ( isDict( file ) ) {
+                al.add( file );
+            }
         }
 
         return al.toArray( new String[al.size()] );
@@ -312,6 +325,14 @@ public class Utils {
             Utils.logf( "saveDict: IOException: %s", ioe.toString() );
         }
     } 
+
+    public static Intent mkDownloadActivity( Context context )
+    {
+        Uri uri = Uri.parse( context.getString( R.string.dict_url ));
+        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        return intent;
+    }
 
     public static void setChecked( Activity activity, int id, boolean value )
     {

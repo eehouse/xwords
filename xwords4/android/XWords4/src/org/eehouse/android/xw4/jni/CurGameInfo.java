@@ -43,7 +43,7 @@ public class CurGameInfo {
         boardSize = 15;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = DeviceRole.SERVER_STANDALONE;
-        dictName = Utils.listDicts( context, 1 )[0];
+        dictName = Utils.dictList( context )[0];
         hintsNotAllowed = false;
         phoniesAction = XWPhoniesChoice.PHONIES_IGNORE;
         timerEnabled = false;
@@ -206,7 +206,7 @@ public class CurGameInfo {
             }
             sb.append( String.format( " %s ", vsString ) );
         }
-        sb.append( String.format("\n%s: %s", 
+        sb.append( String.format("\n%s %s", 
                                  context.getString( R.string.dictionary ), 
                                  dictName ) );
 

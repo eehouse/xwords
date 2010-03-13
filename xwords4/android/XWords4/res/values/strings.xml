@@ -243,18 +243,27 @@
     <string name="force_expl">A host must have at least one remote player.</string>
 
     <string name="vs">vs.</string>
-    <string name="dictionary">dictionary: </string>
+    <string name="dictionary">Dictionary:</string>
 
     <!-- about dialog stuff -->
-    <string name="about_versf">Crosswords for Android, Version 4.4 a1, rev %s.</string>
-    <string name="about_copyright">Copyright (C) 1998-2010 by Eric House. This software is released under the GNU Public License.</string>
+    <string name="about_versf">Crosswords for Android, Version 4.4 a1,
+    rev %s.</string>
+    <string name="about_copyright">Copyright (C) 1998-2010 by Eric
+    House. This software is released under the GNU Public
+    License.</string>
 
-    <string name="about_web">For a manual or sourcecode see: http://xwords.sf.net.  To report bugs, suggest features, offer to help, etc., please email: eehouse@eehouse.org.</string>
+    <string name="about_web">For a manual or sourcecode see:
+    http://xwords.sf.net.  To report bugs, suggest features, offer to
+    help, etc., please email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
     <string name="xlator"></string>
 
     <string name="downloading_dict">Downloading Crosswords
     dictionary...</string>
+    <string name="no_dict_title">Dictionary not found</string>
+    <string name="button_download">Download</string>
+    <string name="no_dictf">Unable to open game because dictionary %s
+    not found.</string>
     
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
