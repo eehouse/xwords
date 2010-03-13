@@ -69,13 +69,6 @@
               >
     </activity>
 
-    <activity android:name="DictActivity"
-              android:theme="@android:style/Theme.Light"
-              android:label="@string/title_game"
-              android:screenOrientation="sensor"
-              >
-    </activity>
-
     <activity android:name="BoardActivity"
               android:theme="@android:style/Theme.Light"
               android:label="@string/title_game"
