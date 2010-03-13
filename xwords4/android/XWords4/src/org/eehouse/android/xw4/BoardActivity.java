@@ -115,7 +115,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             ab.setNegativeButton( R.string.button_no, lstnr );
 
             dialog = ab.create();
-            dialog.setOnDismissListener( makeODL() );
+            dialog.setOnDismissListener( makeODLforBlocking() );
             break;
 
         case PICK_TILE_REQUEST_BLK:
@@ -130,7 +130,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             ab.setItems( m_texts, lstnr );
 
             dialog = ab.create();
-            dialog.setOnDismissListener( makeODL() );
+            dialog.setOnDismissListener( makeODLforBlocking() );
             break;
         case QUERY_ENDGAME:
             dialog = new AlertDialog.Builder( this )
@@ -203,7 +203,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         Utils.logf( "dict name: " + m_gi.dictName );
         byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
         if ( null == dictBytes ) {
-            Utils.logf( "**** unable to open dict; warn user! ****" );
+            Assert.fail();
             finish();
         } else {
             m_jniGamePtr = XwJNI.initJNI();
@@ -308,17 +308,19 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     protected void onDestroy() 
     {
-        byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
-        Utils.saveGame( this, state, m_path );
+        if ( 0 != m_jniGamePtr ) {
+            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
+            Utils.saveGame( this, state, m_path );
 
-        if ( null != m_xport ) {
-            m_xport.waitToStop();
-        }
+            if ( null != m_xport ) {
+                m_xport.waitToStop();
+            }
 
-        if ( null != m_jniThread ) {
-            m_jniThread.waitToStop();
-            Utils.logf( "onDestroy(): waitToStop() returned" );
+            if ( null != m_jniThread ) {
+                m_jniThread.waitToStop();
+                Utils.logf( "onDestroy(): waitToStop() returned" );
 
+            }
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
         }
@@ -512,7 +514,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
     }
 
-    private DialogInterface.OnDismissListener makeODL()
+    private DialogInterface.OnDismissListener makeODLforBlocking()
     {
         return new DialogInterface.OnDismissListener() {
             public void onDismiss( DialogInterface di ) {
