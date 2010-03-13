@@ -35,8 +35,10 @@ public class CurGameInfo {
 
     private int[] m_visiblePlayers;
     private int m_nVisiblePlayers;
+    private boolean m_inProgress;
 
     public CurGameInfo( Context context ) {
+        m_inProgress = false;
         nPlayers = 2;
         boardSize = 15;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
@@ -57,11 +59,13 @@ public class CurGameInfo {
             players[ii] = new LocalPlayer(ii);
         }
 
-        m_visiblePlayers = new int[MAX_NUM_PLAYERS];
         figureVisible();
     }
 
-    public CurGameInfo( CurGameInfo src ) {
+    public CurGameInfo( CurGameInfo src )
+    {
+        m_inProgress = src.m_inProgress;
+        gameID = src.gameID;
         nPlayers = src.nPlayers;
         boardSize = src.boardSize;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
@@ -92,6 +96,43 @@ public class CurGameInfo {
             players[0].isLocal = true;
             figureVisible();
         }
+    }
+
+    public void setInProgress( boolean inProgress )
+    {
+        m_inProgress = inProgress;
+        figureVisible();
+    }
+
+    /** return true if any of the changes made would invalide a game
+     * in progress, i.e. require that it be restarted with the new
+     * params.  E.g. changing a player to a robot is harmless for a
+     * local-only game but illegal for a connected one.
+     */
+    public boolean changesMatter( final CurGameInfo other )
+    {
+        boolean matter = nPlayers != other.nPlayers
+            || serverRole != other.serverRole
+            || !dictName.equals( other.dictName )
+            || boardSize != other.boardSize
+            || hintsNotAllowed != other.hintsNotAllowed
+            || allowPickTiles != other.allowPickTiles
+            || phoniesAction != other.phoniesAction;
+
+        if ( !matter && DeviceRole.SERVER_STANDALONE != serverRole ) {
+            for ( int ii = 0; ii < nPlayers; ++ii ) {
+                LocalPlayer me = players[ii];
+                LocalPlayer him = other.players[ii];
+                matter = me.isRobot != him.isRobot
+                    || me.isLocal != him.isLocal
+                    || !me.name.equals( him.name );
+                if ( matter ) {
+                    break;
+                }
+            }
+        }
+
+        return matter;
     }
 
     public int remoteCount()
@@ -129,7 +170,7 @@ public class CurGameInfo {
             nPlayers = m_nVisiblePlayers;
         }
 
-        if ( serverRole != DeviceRole.SERVER_ISSERVER ) {
+        if ( !m_inProgress && serverRole != DeviceRole.SERVER_ISSERVER ) {
             for ( int ii = 0; ii < nPlayers; ++ii ) {
                 players[ii].isLocal = true;
             }
@@ -263,9 +304,14 @@ public class CurGameInfo {
 
     private void figureVisible()
     {
+        if ( null == m_visiblePlayers ) {
+            m_visiblePlayers = new int[MAX_NUM_PLAYERS];
+        }
+
         m_nVisiblePlayers = 0;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
-            if ( serverRole != DeviceRole.SERVER_ISCLIENT
+            if ( m_inProgress
+                 || serverRole != DeviceRole.SERVER_ISCLIENT
                  || players[ii].isLocal ) {
                 m_visiblePlayers[m_nVisiblePlayers++] = ii;
             }

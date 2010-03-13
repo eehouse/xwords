@@ -41,6 +41,7 @@ import android.widget.CompoundButton;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
+import android.view.KeyEvent;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
@@ -59,11 +60,13 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private static final int ROLE_EDIT_SMS = 3;
     private static final int ROLE_EDIT_BT = 4;
     private static final int FORCE_REMOTE = 5;
+    private static final int CONFIRM_CHANGE = 6;
 
     private Button m_addPlayerButton;
     private Button m_configureButton;
     private String m_path;
     private CurGameInfo m_gi;
+    private CurGameInfo m_giOrig;
     private int m_whichPlayer;
     private Dialog m_curDialog;
     private Spinner m_roleSpinner;
@@ -73,10 +76,12 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private String[] m_dicts;
     private int m_browsePosition;
     private LinearLayout m_playerLayout;
+    private CommsAddrRec m_carOrig;
     private CommsAddrRec m_car;
     private CommonPrefs m_cp;
     private boolean m_canDoSMS = false;
     private boolean m_canDoBT = false;
+    private int m_nMoves = 0;
     private CommsAddrRec.CommsConnType[] m_types;
 
     class RemoteChoices implements ListAdapter {
@@ -173,6 +178,27 @@ public class GameConfig extends Activity implements View.OnClickListener {
                         loadPlayers();
                     }
                 });
+            break;
+        case CONFIRM_CHANGE:
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.confirm_save_title )
+                .setMessage( R.string.confirm_save )
+                .setPositiveButton( R.string.button_save,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int whichButton ) {
+                                            applyChanges( true );
+                                            finish();
+                                        }
+                                    })
+                .setNegativeButton( R.string.button_discard, 
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int whichButton ) {
+                                            finish();
+                                        }
+                                    })
+                .create();
             break;
         }
         return dialog;
@@ -312,27 +338,24 @@ public class GameConfig extends Activity implements View.OnClickListener {
             m_path = m_path.substring( 1 );
         }
 
-        byte[] stream = Utils.savedGame( this, m_path );
-        m_gi = new CurGameInfo( this );
-        XwJNI.gi_from_stream( m_gi, stream );
-        byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
-
         int gamePtr = XwJNI.initJNI();
-        if ( !XwJNI.game_makeFromStream( gamePtr, stream, JNIUtilsImpl.get(),
-                                         m_gi, dictBytes, m_cp ) ) {
-             XwJNI.game_makeNewGame( gamePtr, m_gi, JNIUtilsImpl.get(), 
-                                     m_cp, dictBytes );
-        }
+        m_giOrig = new CurGameInfo( this );
+        Utils.loadMakeGame( this, gamePtr, m_giOrig, m_path );
+        m_nMoves = XwJNI.model_getNMoves( gamePtr );
+        m_giOrig.setInProgress( 0 < m_nMoves );
+        m_gi = new CurGameInfo( m_giOrig );
 
         int curSel = listAvailableDicts( m_gi.dictName );
 
-        m_car = new CommsAddrRec();
+        m_carOrig = new CommsAddrRec();
         if ( XwJNI.game_hasComms( gamePtr ) ) {
-            XwJNI.comms_getAddr( gamePtr, m_car );
+            XwJNI.comms_getAddr( gamePtr, m_carOrig );
         } else {
-            XwJNI.comms_getInitialAddr( m_car );
+            XwJNI.comms_getInitialAddr( m_carOrig );
         }
         XwJNI.game_dispose( gamePtr );
+
+        m_car = new CommsAddrRec( m_carOrig );
 
         setContentView(R.layout.game_config);
 
@@ -440,13 +463,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
     } // onCreate
 
     @Override
-    protected void onPause()
-    {
-        saveChanges();
-        super.onPause();        // skip this and get a crash :-)
-    }
-
-    @Override
     public void onCreateContextMenu( ContextMenu menu, View view, 
                                      ContextMenuInfo menuInfo ) {
         MenuInflater inflater = getMenuInflater();
@@ -536,6 +552,27 @@ public class GameConfig extends Activity implements View.OnClickListener {
             Utils.logf( "unknown v: " + view.toString() );
         }
     } // onClick
+
+    @Override
+    public boolean onKeyDown( int keyCode, KeyEvent event )
+    {
+        boolean consumed = false;
+        if ( keyCode == KeyEvent.KEYCODE_BACK ) {
+            saveChanges();
+            if ( 0 < m_nMoves && (m_giOrig.changesMatter(m_gi)
+                                  || m_carOrig.changesMatter(m_car) ) ) {
+                showDialog( CONFIRM_CHANGE );
+                consumed = true;
+            } else {
+                applyChanges( false );
+            }
+        }
+
+        if ( !consumed ) {
+            consumed = super.onKeyDown( keyCode, event );
+        }
+        return consumed;
+    }
 
     private void loadPlayers()
     {
@@ -715,17 +752,39 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         position = m_connectSpinner.getSelectedItemPosition();
         m_car.conType = m_types[ position ];
+    }
 
+    private void applyChanges( boolean forceNew )
+    {
+        // This should be a separate function, commitChanges() or
+        // somesuch.  But: do we have a way to save changes to a gi
+        // that don't reset the game, e.g. player name for standalone
+        // games?
         byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
         int gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeNewGame( gamePtr, m_gi, JNIUtilsImpl.get(), 
-                                m_cp, dictBytes );
+        boolean madeGame = false;
+
+        if ( !forceNew ) {
+            byte[] stream = Utils.savedGame( this, m_path );
+            // Will fail if there's nothing in the stream but a gi.
+            madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
+                                                  JNIUtilsImpl.get(),
+                                                  new CurGameInfo(this), 
+                                                  dictBytes, m_cp );
+        }
+
+        if ( forceNew || !madeGame ) {
+            m_gi.setInProgress( false );
+            m_gi.fixup();
+            XwJNI.game_makeNewGame( gamePtr, m_gi, JNIUtilsImpl.get(), 
+                                    m_cp, dictBytes );
+        }
 
         if ( null != m_car ) {
             XwJNI.comms_setAddr( gamePtr, m_car );
         }
-        byte[] stream = XwJNI.game_saveToStream( gamePtr, m_gi );
-        Utils.saveGame( this, stream, m_path );
+
+        Utils.saveGame( this, gamePtr, m_gi, m_path );
         XwJNI.game_dispose( gamePtr );
     }
 

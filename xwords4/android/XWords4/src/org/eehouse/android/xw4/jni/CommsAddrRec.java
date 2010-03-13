@@ -38,8 +38,20 @@ public class CommsAddrRec {
         ip_relay_port = 10999;
     }
 
-    public CommsAddrRec( CommsAddrRec src ) {
-        this.copyFrom(src );
+    public CommsAddrRec( final CommsAddrRec src ) 
+    {
+        this.copyFrom( src );
+    }
+
+    public boolean changesMatter( final CommsAddrRec other )
+    {
+        boolean matter = conType != other.conType;
+        if ( !matter ) {
+            matter = ! ip_relay_invite.equals( other.ip_relay_invite )
+                || ! ip_relay_hostName.equals( other.ip_relay_hostName )
+                || ip_relay_port != other.ip_relay_port;
+        }
+        return matter;
     }
 
     private void copyFrom( CommsAddrRec src )
@@ -48,14 +60,5 @@ public class CommsAddrRec {
         ip_relay_invite = src.ip_relay_invite;
         ip_relay_hostName = src.ip_relay_hostName;
         ip_relay_port = src.ip_relay_port;
-    }
-
-    private static CommsAddrRec s_car;
-    public static final CommsAddrRec get() 
-    { 
-        if ( null == s_car ) {
-            s_car = new CommsAddrRec();
-        }
-        return s_car;
     }
 }

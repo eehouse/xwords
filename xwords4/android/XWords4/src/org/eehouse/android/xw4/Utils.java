@@ -25,6 +25,8 @@ import java.util.Formatter;
 import android.view.LayoutInflater;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.jni.*;
+
 public class Utils {
     static final String TAG = "EJAVA";
 
@@ -97,6 +99,73 @@ public class Utils {
         return stream;
     } // savedGame
 
+    /**
+     * Open an existing game, and use its gi and comms addr as the
+     * basis for a new one.
+     */
+    public static void resetGame( Context context, String pathIn, 
+                                  String pathOut )
+    {
+        int gamePtr = XwJNI.initJNI();
+        CurGameInfo gi = new CurGameInfo( context );
+        CommsAddrRec addr = null;
+
+        loadMakeGame( context, gamePtr, gi, pathIn );
+        byte[] dictBytes = Utils.openDict( context, gi.dictName );
+        
+        if ( XwJNI.game_hasComms( gamePtr ) ) {
+            addr = new CommsAddrRec();
+            XwJNI.comms_getAddr( gamePtr, addr );
+        }
+        XwJNI.game_dispose( gamePtr );
+
+        gi.setInProgress( false );
+        gi.fixup();
+
+        gamePtr = XwJNI.initJNI();
+        XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+                                CommonPrefs.get(), dictBytes );
+        if ( null != addr ) {
+            XwJNI.comms_setAddr( gamePtr, addr );
+        }
+        saveGame( context, gamePtr, gi, pathOut );
+        XwJNI.game_dispose( gamePtr );
+    }
+
+    public static void resetGame( Context context, String pathIn )
+    {
+        resetGame( context, pathIn, newName( context ) );
+    }
+
+    public static void loadMakeGame( Context context, int gamePtr, 
+                                     CurGameInfo gi, String path )
+    {
+        byte[] stream = savedGame( context, path );
+        XwJNI.gi_from_stream( gi, stream );
+        byte[] dictBytes = Utils.openDict( context, gi.dictName );
+
+        boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
+                                                      JNIUtilsImpl.get(),
+                                                      gi, dictBytes, 
+                                                      CommonPrefs.get() );
+        if ( !madeGame ) {
+            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
+                                    CommonPrefs.get(), dictBytes );
+        }
+    }
+
+    public static void saveGame( Context context, int gamePtr, 
+                                 CurGameInfo gi, String path )
+    {
+        byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
+        saveGame( context, stream, path );
+    }
+
+    public static void saveGame( Context context, int gamePtr, 
+                                 CurGameInfo gi )
+    {
+        saveGame( context, gamePtr, gi, newName( context ) );
+    }
 
     public static void saveGame( Context context, byte[] bytes, String path )
     {
