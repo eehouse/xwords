@@ -142,6 +142,7 @@ public class XwJNI {
     // Model
     public static native String model_writeGameHistory( int gamePtr, 
                                                         boolean gameOver );
+    public static native int model_getNMoves( int gamePtr );
 
     // Server
     public static native void server_handleUndo( int gamePtr );

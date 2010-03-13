@@ -776,6 +776,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1writeGameHistory
     return result;
 }
 
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_model_1getNMoves
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jint result;
+    XWJNI_START();
+    XP_ASSERT( !!state->game.model );
+    result = model_getNMoves( state->game.model );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1writeFinalScores
 ( JNIEnv* env, jclass C, jint gamePtr )
@@ -962,4 +974,3 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
     server_endGame( state->game.server );
     XWJNI_END();
 }
-

@@ -187,6 +187,7 @@ void model_makeTurnFromMoveInfo( ModelCtxt* model, XP_U16 playerNum,
                                  MoveInfo* newMove );
 
 void model_resetCurrentTurn( ModelCtxt* model, XP_S16 turn );
+XP_S16 model_getNMoves( const ModelCtxt* model );
 
 /********************* notification ********************/
 typedef void (*BoardListener)(void* data, XP_U16 turn, XP_U16 col, 

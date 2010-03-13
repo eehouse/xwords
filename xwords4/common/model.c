@@ -1096,6 +1096,14 @@ model_resetCurrentTurn( ModelCtxt* model, XP_S16 whose )
     }
 } /* model_resetCurrentTurn */
 
+XP_S16
+model_getNMoves( const ModelCtxt* model )
+{
+    XP_U16 result = stack_getNEntries( model->vol.stack );
+    result -= model->nPlayers;  /* tile assignment doesn't count */
+    return result;
+}
+
 static void
 incrPendingTileCountAt( ModelCtxt* model, XP_U16 col, XP_U16 row )
 {
