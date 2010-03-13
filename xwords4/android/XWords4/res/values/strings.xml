@@ -253,6 +253,9 @@
     <!-- fill this in other than in English -->
     <string name="xlator"></string>
 
+    <string name="downloading_dict">Downloading Crosswords
+    dictionary...</string>
+    
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
     <string name="key_show_arrow">key_show_arrow</string>
