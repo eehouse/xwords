@@ -22,8 +22,12 @@ public class LocalPlayer {
     {
         isLocal = src.isLocal;
         isRobot = src.isRobot;
-        name = src.name;
-        password = src.password;
+        if ( null != src.name ) {
+            name = new String(src.name);
+        }
+        if ( null != src.password ) {
+            password = new String(src.password);
+        }
         secondsUsed = src.secondsUsed;
     }
 }
