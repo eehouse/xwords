@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.database.DataSetObserver;
 import java.io.FileInputStream;
+import junit.framework.Assert;
+
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -29,20 +31,12 @@ public class GameListAdapter implements ListAdapter {
     }
     
     public int getCount() {
-        int count = 0;
-        for ( String file : m_context.fileList() ) {
-            if ( ! file.endsWith(XWConstants.GAME_EXTN) ) {
-                ++count;
-            }
-        }
-
-        return count;
+        return Utils.gamesList(m_context).length;
     }
     
     public Object getItem( int position ) {
         TextView view = new TextView(m_context);
-
-        byte[] stream = open( m_context.fileList()[position] );
+        byte[] stream = open( Utils.gamesList(m_context)[position] );
         if ( null != stream ) {
             CurGameInfo gi = new CurGameInfo( m_context );
             XwJNI.gi_from_stream( gi, stream );

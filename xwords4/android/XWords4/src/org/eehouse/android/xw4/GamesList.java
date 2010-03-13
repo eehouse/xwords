@@ -106,7 +106,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             return false;
         }
         
-        String path = fileList()[info.position];
+        String path = Utils.gamesList( this )[info.position];
 
         int id = item.getItemId();
         switch ( id ) {
@@ -169,8 +169,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
-            String[] files = fileList();
-            for( String file : files ) {
+            for( String file : Utils.gamesList( this ) ) {
                 if ( deleteFile( file  ) ) {
                     Utils.logf( "deleted " + file );
                 } else {
@@ -212,7 +211,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     }
 
     private void doOpen( int indx ) {
-        String path = fileList()[indx];
+        String path = Utils.gamesList(this)[indx];
         File file = new File( path );
         Uri uri = Uri.fromFile( file );
         Intent intent = new Intent( Intent.ACTION_EDIT, uri,

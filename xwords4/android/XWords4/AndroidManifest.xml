@@ -57,8 +57,6 @@
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
               >
-      <!-- This filter says that we can view or edit the data of
-           a single note -->
       <intent-filter android:label="@string/resolve_edit">
         <action android:name="android.intent.action.EDIT" />
       </intent-filter>
@@ -84,6 +82,19 @@
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
               >
+    </activity>
+
+    <!-- downloading dicts -->
+    <activity android:name=".DictImportActivity"
+              android:label="@string/app_name"
+              android:theme="@android:style/Theme.Dialog">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"></action>
+        <category android:name="android.intent.category.DEFAULT"></category>
+        <category android:name="android.intent.category.BROWSABLE"></category>
+        <data android:scheme="file" android:host="*" android:pathPattern=".*\\.xwd" />
+        <data android:scheme="http" android:host="*" android:pathPattern=".*\\.xwd" />
+      </intent-filter> 
     </activity>
 
     <receiver android:name="StatusReceiver"

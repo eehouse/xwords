@@ -385,7 +385,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
                                            View selectedItemView, int position, 
                                            long id) {
                     if ( position == m_browsePosition ) {
-                        launchDictBrowser();
+                        Uri uri = Uri.parse( getString( R.string.dict_url ));
+                        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+                        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+                        startActivity (intent );
                     } else {
                         m_gi.dictName = m_dicts[position];
                         Utils.logf( "assigned dictName: " + m_gi.dictName );
@@ -632,12 +635,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         }
 
         return curSel;
-    }
-
-    private void launchDictBrowser()
-    {
-        Intent intent = new Intent( this, DictActivity.class );
-        startActivity( intent );
     }
 
     private void configConnectSpinner()

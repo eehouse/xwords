@@ -9,6 +9,8 @@ import android.content.Context;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import android.content.res.AssetManager;
 import android.os.Environment;
@@ -33,7 +35,6 @@ public class Utils {
     static final int DIALOG_ABOUT = 1;
     static final int DIALOG_LAST = DIALOG_ABOUT;
 
-    // private static JNIThread s_jniThread = null;
     private static Time s_time = new Time();
 
     private Utils() {}
@@ -132,6 +133,17 @@ public class Utils {
         XwJNI.game_dispose( gamePtr );
     }
 
+    public static String[] gamesList( Context context )
+    {
+        ArrayList<String> al = new ArrayList<String>();
+        for ( String file : context.fileList() ) {
+            if ( isGame( file ) ){
+                al.add( file );
+            }
+        }
+        return al.toArray( new String[al.size()] );
+    }
+
     public static void resetGame( Context context, String pathIn )
     {
         resetGame( context, pathIn, newName( context ) );
@@ -183,7 +195,7 @@ public class Utils {
     {
         saveGame( context, bytes, newName( context ) );
     }
-    
+
     public static String newName( Context context ) 
     {
         String name = null;
@@ -192,7 +204,7 @@ public class Utils {
         String[] files = context.fileList();
 
         while ( name == null ) {
-            name = "game " + num.toString();
+            name = "game " + num.toString() + XWConstants.GAME_EXTN;
             for ( ii = 0; ii < files.length; ++ii ) {
                 if ( files[ii].equals(name) ) {
                     ++num;
@@ -205,7 +217,7 @@ public class Utils {
 
     private static void tryFile( ArrayList<String> al, String name )
     {
-        if ( name.endsWith( ".xwd" ) ) {
+        if ( isDict( name ) ) {
             al.add( name );
         }
     }
@@ -236,22 +248,14 @@ public class Utils {
             Utils.logf( ioe.toString() );
         }
 
-        File files[] = Environment.getExternalStorageDirectory().listFiles();
-        for ( File file : files ) {
-	    if ( al.size() >= enough ) {
-		break;
-	    }
-            if ( file.isDirectory() ) { // go down one level
-                tryDir( al, file );
-            } else {
-                tryFile( al, file.getAbsolutePath() );
-            }
+        for ( String file : context.fileList() ) {
+            tryFile( al, file );
         }
 
         return al.toArray( new String[al.size()] );
     }
 
-    public static byte[] openDict( Context context, String name )
+    public static byte[] openDict( Context context, final String name )
     {
         byte[] bytes = null;
         InputStream dict = null;
@@ -268,13 +272,13 @@ public class Utils {
                             + len + " bytes." );
             }
         } catch ( java.io.IOException ee ){
-            Utils.logf( "failed to open" );
+            Utils.logf( "%s failed to open; likely not built-in", name );
         }
 
         // not an asset?  Try storage
         if ( null == bytes ) {
             try {
-                FileInputStream fis = new FileInputStream( new File(name) );
+                FileInputStream fis = context.openFileInput( name );
                 int len = fis.available();
                 bytes = new byte[len];
                 fis.read( bytes, 0, len );
@@ -286,9 +290,28 @@ public class Utils {
             }
         }
         
-
         return bytes;
     }
+
+    public static void saveDict( Context context, String name, InputStream in )
+    {
+        int totalRead = 0;
+        try {
+            FileOutputStream fos = context.openFileOutput( name,
+                                                           Context.MODE_PRIVATE );
+            byte[] buf = new byte[1024];
+            int nRead;
+            while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
+                fos.write( buf, 0, nRead );
+                totalRead += nRead;
+            }
+            fos.close();
+        } catch ( java.io.FileNotFoundException fnf ) {
+            Utils.logf( "saveDict: FileNotFoundException: %s", fnf.toString() );
+        } catch ( java.io.IOException ioe ) {
+            Utils.logf( "saveDict: IOException: %s", ioe.toString() );
+        }
+    } 
 
     public static void setChecked( Activity activity, int id, boolean value )
     {
@@ -373,4 +396,15 @@ public class Utils {
             return 0;
         }
     }
+
+    private static boolean isGame( String file )
+    {
+        return file.endsWith( XWConstants.GAME_EXTN );
+    }
+
+    private static boolean isDict( String file )
+    {
+        return file.endsWith( XWConstants.DICT_EXTN );
+    }
+
 }
