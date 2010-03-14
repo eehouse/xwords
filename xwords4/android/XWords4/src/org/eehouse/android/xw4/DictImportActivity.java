@@ -9,7 +9,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.Window;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import java.io.InputStream;
+import java.io.File;
 import java.net.URI;
 
 import junit.framework.Assert;
@@ -73,6 +75,10 @@ public class DictImportActivity extends Activity {
                 new DownloadFilesTask().execute( uri );
             } else if ( uri.toString().endsWith( ".xwd" ) ) {
                 Utils.logf( "based on file extn" );
+                String fmt = getString( R.string.downloading_dictf );
+                String txt = String.format( fmt, basename( uri.getPath()) );
+                TextView view = (TextView)findViewById( R.id.dwnld_message );
+                view.setText( txt );
                 new DownloadFilesTask().execute( uri );
 			} else {
                 Utils.logf( "bogus intent: %s/%s", intent.getType(), uri );
@@ -83,16 +89,20 @@ public class DictImportActivity extends Activity {
 
     private void saveDict( InputStream inputStream, String path )
     {
-        int slashLoc = path.lastIndexOf('/');
-        String name = path.substring( slashLoc + 1 );
         try {
-            Utils.saveDict( this, name, inputStream );
+            Utils.saveDict( this, basename(path), inputStream );
             inputStream.close();
         } catch ( java.io.IOException ioe ) {
             Utils.logf( "IOException: %s" + ioe.toString() );
         }
     }
-	
+
+    private String basename( String path )
+    {
+        return new File(path).getName();
+        // int slashLoc = path.lastIndexOf('/');
+        // return path.substring( slashLoc + 1 );
+    }
 }
 
 

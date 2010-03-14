@@ -13,9 +13,9 @@
                android:gravity="center_horizontal"
                android:layout_margin="5sp" 
                />
-  <TextView android:layout_width="fill_parent" 
+  <TextView android:id="@+id/dwnld_message"
+            android:layout_width="fill_parent" 
 	        android:layout_height="fill_parent"
-	        android:text="@string/downloading_dict"
 	        android:gravity="center_vertical|center_horizontal"
             />
 </LinearLayout>
