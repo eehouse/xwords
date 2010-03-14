@@ -1,2 +1,4 @@
 /core
 obj_linux_memdbg
+*.xwg
+obj_linux_rel
