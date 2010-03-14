@@ -364,7 +364,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                              int flags ) 
     {
         int backColor;
-        int foreColor = WHITE;  // must be initialized :-(
         boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
         boolean pending = 0 != (flags & CELL_HIGHLIGHT);
 
@@ -375,6 +374,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( owner < 0 ) {
             owner = 0;
         }
+        int foreColor = m_playerColors[owner];
 
         if ( 0 != (flags & CELL_ISCURSOR) ) {
             backColor = m_otherColors[CommonPrefs.COLOR_FOCUS];
@@ -382,9 +382,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             backColor = m_bonusColors[bonus];
         } else if ( pending ) {
             backColor = BLACK;
+            foreColor = WHITE;
         } else {
             backColor = m_otherColors[CommonPrefs.COLOR_TILE_BACK];
-            foreColor = m_playerColors[owner];
         }
 
         fillRect( rect, backColor );
