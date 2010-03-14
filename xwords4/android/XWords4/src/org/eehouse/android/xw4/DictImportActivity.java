@@ -74,7 +74,6 @@ public class DictImportActivity extends Activity {
                 Utils.logf( "based on MIME type" );
                 new DownloadFilesTask().execute( uri );
             } else if ( uri.toString().endsWith( ".xwd" ) ) {
-                Utils.logf( "based on file extn" );
                 String fmt = getString( R.string.downloading_dictf );
                 String txt = String.format( fmt, basename( uri.getPath()) );
                 TextView view = (TextView)findViewById( R.id.dwnld_message );
@@ -100,8 +99,6 @@ public class DictImportActivity extends Activity {
     private String basename( String path )
     {
         return new File(path).getName();
-        // int slashLoc = path.lastIndexOf('/');
-        // return path.substring( slashLoc + 1 );
     }
 }
 
