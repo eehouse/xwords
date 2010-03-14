@@ -7,9 +7,16 @@
               android:paddingLeft="8dp"
               android:paddingRight="8dp">
          
-  <WebView android:id="@+id/dict_web_view"
-           android:layout_height="fill_parent"
-           android:layout_width="fill_parent"
-           />
+  <ListView android:id="@id/android:list"
+            android:layout_width="fill_parent" 
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="false"/>
+
+  <Button android:id="@+id/download"
+          android:layout_width="fill_parent" 
+          android:layout_height="wrap_content"
+          android:text="@string/download_dicts" 
+          />
 
 </LinearLayout>

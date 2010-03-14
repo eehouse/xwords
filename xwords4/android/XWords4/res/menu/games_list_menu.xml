@@ -10,6 +10,9 @@
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/gamel_menu_prefs"
           />
+    <item android:id="@+id/gamel_menu_dicts"
+          android:title="@string/gamel_menu_dicts"
+          />
     <item android:id="@+id/gamel_menu_about"
           android:title="@string/board_menu_file_about"
           android:alphabeticShortcut="A"

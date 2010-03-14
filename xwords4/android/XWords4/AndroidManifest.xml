@@ -50,6 +50,11 @@
         <data android:mimeType="vnd.android.cursor.item/vnd.eehouse.org.game" />
       </intent-filter>
     </activity>
+
+    <activity android:name="DictsActivity"
+              android:label="@string/title_dicts_list"
+              >
+    </activity>
         
     <activity android:name="GameConfig"
               android:theme="@android:style/Theme.Light"

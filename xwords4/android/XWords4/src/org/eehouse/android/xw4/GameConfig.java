@@ -440,7 +440,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
                                      ContextMenuInfo menuInfo ) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.players_list_item_menu, menu );
-        m_whichPlayer = ((PlayerView)view).getPosition();
+        m_whichPlayer = ((XWListItem)view).getPosition();
     }
 
     @Override
@@ -568,8 +568,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 m_playerLayout.addView( divider );
             }
 
-            final PlayerView view
-                = (PlayerView)factory.inflate( R.layout.player_view, null );
+            final XWListItem view
+                = (XWListItem)factory.inflate( R.layout.list_item, null );
             view.setPosition( ii );
             view.setText( names[ii] );
             view.setGravity( Gravity.CENTER );
@@ -578,7 +578,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
             view.setOnClickListener( new View.OnClickListener() {
                     @Override
                     public void onClick( View view ) {
-                        m_whichPlayer = ((PlayerView)view).getPosition();
+                        m_whichPlayer = ((XWListItem)view).getPosition();
                         showDialog( PLAYER_EDIT );
                     }
                 } );

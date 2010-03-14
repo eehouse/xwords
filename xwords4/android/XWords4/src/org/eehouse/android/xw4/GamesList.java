@@ -209,6 +209,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
+        Intent intent;
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
@@ -224,8 +225,13 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             handled = true;
             break;
 
+        case R.id.gamel_menu_dicts:
+            intent = new Intent( this, DictsActivity.class );
+            startActivity( intent );
+            break;
+
         case R.id.gamel_menu_prefs:
-            Intent intent = new Intent( this, PrefsActivity.class );
+            intent = new Intent( this, PrefsActivity.class );
             startActivity( intent );
             break;
 
@@ -249,17 +255,14 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     }
 
     @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        doOpen( position );
-    }
-
-    private void doOpen( int indx ) {
+    protected void onListItemClick(ListView l, View v, int position, long id) 
+    {
         String[] missingDict = new String[1];
-        if ( ! Utils.gameDictHere( this, indx, missingDict ) ) {
+        if ( ! Utils.gameDictHere( this, position, missingDict ) ) {
             m_missingDict = missingDict[0];
             showDialog( WARN_NODICT );
         } else {
-            String path = Utils.gamesList(this)[indx];
+            String path = Utils.gamesList(this)[position];
             File file = new File( path );
             Uri uri = Uri.fromFile( file );
             Intent intent = new Intent( Intent.ACTION_EDIT, uri,
