@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 
 package org.eehouse.android.xw4;
 
@@ -6,10 +6,10 @@ import android.widget.TextView;
 import android.content.Context;
 import android.util.AttributeSet;
 
-public class PlayerView extends TextView {
+public class XWListItem extends TextView {
     private int m_position;
 
-    public PlayerView( Context cx, AttributeSet as ) {
+    public XWListItem( Context cx, AttributeSet as ) {
         super( cx, as );
     }
 
