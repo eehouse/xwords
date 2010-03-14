@@ -22,7 +22,7 @@ import junit.framework.Assert;
 
 public class BoardView extends View implements DrawCtx, BoardHandler,
                                                SyncedDraw {
-    private static final int k_miniTextSize = 16;
+    private static final int k_miniTextSize = 24;
     private static final int k_miniPaddingH = 2;
     private static final int k_miniPaddingV = 2;
 
