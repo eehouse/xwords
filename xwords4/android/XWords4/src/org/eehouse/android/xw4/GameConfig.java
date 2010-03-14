@@ -84,13 +84,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private int m_nMoves = 0;
     private CommsAddrRec.CommsConnType[] m_types;
 
-    class RemoteChoices implements ListAdapter {
-        public boolean areAllItemsEnabled() { return true; }
-        public boolean isEnabled( int position ) { return true; }
-        public int getCount() { return m_gi.nPlayers; }
+    class RemoteChoices extends XWListAdapter {
+        public RemoteChoices() { super( GameConfig.this, m_gi.nPlayers ); }
+
         public Object getItem( int position) { return m_gi.players[position]; }
-        public long getItemId(int position) { return position; }
-        public int getItemViewType(int position) { return 0; }
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
             CompoundButton.OnCheckedChangeListener lstnr;
@@ -109,11 +106,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
             cb.setOnCheckedChangeListener( lstnr );
             return cb;
         }
-        public int getViewTypeCount() { return 1; }
-        public boolean hasStableIds() { return true; }
-        public boolean isEmpty() { return getCount() == 0; }
-        public void registerDataSetObserver(DataSetObserver observer) {}
-        public void unregisterDataSetObserver(DataSetObserver observer) {}
     }
 
     @Override
