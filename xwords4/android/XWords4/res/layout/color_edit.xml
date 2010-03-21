@@ -8,28 +8,35 @@
               android:paddingRight="8dp"
               >
 
-  <EditText android:id="@+id/edit_red" 
+  <TextView android:layout_height="wrap_content"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginRight="6sp"
-            android:numeric="decimal"
+            android:text="@string/red"
             />
-
-  <EditText android:id="@+id/edit_green" 
+  <SeekBar android:id="@+id/edit_red" 
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:max="255"
+           android:progress="1"
+           />
+  <TextView android:layout_height="wrap_content"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginRight="6sp"
-            android:numeric="decimal"
+            android:text="@string/green"
             />
-
-  <EditText android:id="@+id/edit_blue" 
+  <SeekBar android:id="@+id/edit_green" 
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:max="255"
+           android:progress="1"
+           />
+  <TextView android:layout_height="wrap_content"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginRight="6sp"
-            android:numeric="decimal"
+            android:text="@string/blue"
             />
+  <SeekBar android:id="@+id/edit_blue" 
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:max="255"
+           android:progress="1"
+           />
 
 </LinearLayout>

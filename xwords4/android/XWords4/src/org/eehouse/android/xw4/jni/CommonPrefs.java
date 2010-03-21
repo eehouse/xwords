@@ -90,12 +90,7 @@ public class CommonPrefs {
     private int prefToColor( SharedPreferences sp, int id )
     {
         String key = s_context.getString( id );
-        String val = sp.getString( key, "" );
-        try {
-            return 0xFF000000 | Integer.decode( val );
-        } catch ( java.lang.NumberFormatException nfe ) {
-            return 0xFF7F7F7F;
-        }
+        return 0xFF000000 | sp.getInt( key, 0 );
     }
 
     /*

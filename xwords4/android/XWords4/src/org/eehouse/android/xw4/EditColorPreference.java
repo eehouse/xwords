@@ -5,11 +5,12 @@ package org.eehouse.android.xw4;
 import android.preference.DialogPreference;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.SeekBar;
 import android.app.Dialog;
-// import android.app.AlertDialog;
+import android.content.SharedPreferences;
 
 import junit.framework.Assert;
 
@@ -26,6 +27,18 @@ public class EditColorPreference extends DialogPreference {
         
         setWidgetLayoutResource( R.layout.color_display );
         setDialogLayoutResource( R.layout.color_edit );
+    }
+
+    @Override
+    protected Object onGetDefaultValue(TypedArray a, int index) {
+        return a.getInteger(index, 0);
+    }
+
+    @Override
+    protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
+        if ( !restoreValue ) {
+            persistInt( (Integer)defaultValue );
+        }
     }
     
     @Override
@@ -53,40 +66,31 @@ public class EditColorPreference extends DialogPreference {
         int color = (getOneByte( dialog, R.id.edit_red ) << 16)
             | (getOneByte( dialog, R.id.edit_green ) << 8)
             | getOneByte( dialog, R.id.edit_blue );
-        color |= 0xFF000000;
 
-        // Need to restore the preference, not set the background color
-        persistString( String.format( "%d", color) );
+        persistInt( color );
+        m_sample.setBackgroundColor( getPersistedColor() );
     }
 
     private void setOneByte( View parent, int id, int byt ) {
         byt &= 0xFF;
-        EditText et = (EditText)parent.findViewById( id );
-        if ( null != et ) {
-            et.setText( String.format("%d", byt ) );
+        SeekBar seekbar = (SeekBar)parent.findViewById( id );
+        if ( null != seekbar ) {
+            seekbar.setProgress( byt );
         }
     }
 
     private int getOneByte( DialogInterface parent, int id ) {
         int val = 0;
         Dialog dialog = (Dialog)parent;
-        EditText et = (EditText)dialog.findViewById( id );
-        if ( null != et ) {
-            String str = et.getText().toString();
-            val = Integer.decode( str );
+        SeekBar seekbar = (SeekBar)dialog.findViewById( id );
+        if ( null != seekbar ) {
+            val = seekbar.getProgress();
         }
         return val;
     }
 
     private int getPersistedColor()
     {
-        String val = getPersistedString("");
-        int color;
-        try {
-            color = 0xFF000000 | Integer.decode( val );
-        } catch ( java.lang.NumberFormatException nfe ) {
-            color = 0xFF7F7F7F;
-        }
-        return color;
+        return 0xFF000000 | getPersistedInt(0);
     }
 }

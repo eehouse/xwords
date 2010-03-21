@@ -270,6 +270,10 @@
     not found.</string>
 
 	<string name="msg_ask_password">Password for \"%s\":</string>
+
+	<string name="red">Red</string>
+	<string name="green">Green</string>
+	<string name="blue">Blue</string>
     
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>
