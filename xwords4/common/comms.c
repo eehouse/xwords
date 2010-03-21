@@ -719,14 +719,18 @@ comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr )
 } /* comms_setAddr */
 
 void
-comms_getInitialAddr( CommsAddrRec* addr )
+comms_getInitialAddr( CommsAddrRec* addr
+#ifdef XWFEATURE_RELAY
+                      , const XP_UCHAR* relayName
+#endif
+                      )
 {
 #if defined  XWFEATURE_RELAY
     addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
     addr->u.ip_relay.port = RELAY_PORT_DEFAULT;
     {
-        char* name = RELAY_NAME_DEFAULT;
+        const char* name = relayName;
         char* room = RELAY_ROOM_DEFAULT;
         XP_MEMCPY( addr->u.ip_relay.hostName, name, XP_STRLEN(name)+1 );
         XP_MEMCPY( addr->u.ip_relay.invite, room, XP_STRLEN(room)+1 );

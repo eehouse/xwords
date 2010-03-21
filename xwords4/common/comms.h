@@ -149,7 +149,11 @@ void comms_destroy( CommsCtxt* comms );
 void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 
 /* "static" methods work when no comms present */
-void comms_getInitialAddr( CommsAddrRec* addr );
+void comms_getInitialAddr( CommsAddrRec* addr
+#ifdef XWFEATURE_RELAY
+                           , const XP_UCHAR* relayName
+#endif
+ );
 XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,
                          XW_UtilCtxt* util );
 

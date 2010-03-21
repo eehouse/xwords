@@ -21,7 +21,8 @@ public class XwJNI {
     // Stateless methods
     public static native byte[] gi_to_stream( CurGameInfo gi );
     public static native void gi_from_stream( CurGameInfo gi, byte[] stream );
-    public static native void comms_getInitialAddr( CommsAddrRec addr );
+    public static native void comms_getInitialAddr( CommsAddrRec addr,
+                                                    String relayHost );
 
     // Game methods
     public static native int initJNI();
