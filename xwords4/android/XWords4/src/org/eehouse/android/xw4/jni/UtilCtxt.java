@@ -12,6 +12,9 @@ public interface UtilCtxt {
     int getSquareBonus( int col, int row );
     int userPickTile( /* PickInfo* pi, add once tile-picking is enabled */
                      int playerNum, String[] texts );
+
+    String askPassword( String name );
+
     boolean engineProgressCallback();
 
     // Values for why; should be enums

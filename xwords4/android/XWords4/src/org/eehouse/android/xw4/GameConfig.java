@@ -225,6 +225,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         LocalPlayer lp = m_gi.players[m_whichPlayer];
         Utils.setText( m_curDialog, R.id.player_name_edit, lp.name );
+        Utils.setText( m_curDialog, R.id.password_edit, lp.password );
 
         CheckBox check = (CheckBox)
             m_curDialog.findViewById( R.id.remote_check );
@@ -301,9 +302,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private void getPlayerSettings()
     {
         LocalPlayer lp = m_gi.players[m_whichPlayer];
-        EditText player = (EditText)
-            m_curDialog.findViewById( R.id.player_name_edit );
-        lp.name = player.getText().toString();
+        lp.name = Utils.getText( m_curDialog, R.id.player_name_edit );
+        lp.password = Utils.getText( m_curDialog, R.id.password_edit );
 
         lp.isRobot = Utils.getChecked( m_curDialog, R.id.robot_check );
         lp.isLocal = !Utils.getChecked( m_curDialog, R.id.remote_check );

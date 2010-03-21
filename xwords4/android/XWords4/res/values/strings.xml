@@ -268,6 +268,8 @@
     <string name="button_download">Download</string>
     <string name="no_dictf">Unable to open game because dictionary %s
     not found.</string>
+
+	<string name="msg_ask_password">Password for \"%s\":</string>
     
     <!-- These do not require localization -->
     <string name="key_color_tiles">key_color_tiles</string>

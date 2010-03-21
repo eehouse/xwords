@@ -146,7 +146,29 @@ static XP_Bool
 and_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name, 
                       XP_UCHAR* buf, XP_U16* len )
 {
-    return XP_FALSE;;
+    XP_Bool result = false;
+    UTIL_CBK_HEADER("askPassword", "(Ljava/lang/String;)Ljava/lang/String;" );
+
+    jstring jname = (*env)->NewStringUTF( env, name );
+    jstring jstr = (*env)->CallObjectMethod( env, util->jutil, mid, 
+                                             jname );
+    (*env)->DeleteLocalRef( env, jname );
+
+    if ( NULL != jstr ) {       /* null means user cancelled */
+        jsize jsiz = (*env)->GetStringUTFLength( env, jstr );
+        if ( jsiz < *len ) {
+            const char* chars = (*env)->GetStringUTFChars( env, jstr, NULL );
+            XP_MEMCPY( buf, chars, jsiz );
+            (*env)->ReleaseStringUTFChars( env, jstr, chars );
+            buf[jsiz] = '\0';
+            *len = jsiz;
+            result = XP_TRUE;
+        }
+        (*env)->DeleteLocalRef( env, jstr );
+    }
+
+    UTIL_CBK_TAIL();
+    return result;
 }
 
 

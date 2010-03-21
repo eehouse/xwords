@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.os.Handler;
 import android.os.Message;
 import android.content.Intent;
@@ -17,6 +18,8 @@ import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.Toast;
+import android.widget.EditText;
+import android.widget.TextView;
 import junit.framework.Assert;
 import android.content.res.Configuration;
 import android.content.pm.ActivityInfo;
@@ -33,6 +36,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int QUERY_REQUEST_BLK = Utils.DIALOG_LAST + 3;
     private static final int PICK_TILE_REQUEST_BLK = Utils.DIALOG_LAST + 4;
     private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 5;
+    private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 6;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -44,7 +48,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private int m_currentOrient;
 
     private String m_dlgBytes = null;
+    private EditText m_passwdEdit = null;
     private int m_dlgTitle;
+    private String m_dlgTitleStr;
     private String[] m_texts;
     private CommonPrefs m_cp;
     private JNIUtils m_jniu;
@@ -132,6 +138,22 @@ public class BoardActivity extends Activity implements UtilCtxt {
             dialog = ab.create();
             dialog.setOnDismissListener( makeODLforBlocking() );
             break;
+
+        case ASK_PASSWORD_BLK:
+            ab = new AlertDialog.Builder( this )
+                .setTitle( m_dlgTitleStr )
+                .setView( m_passwdEdit )
+                .setPositiveButton( R.string.button_ok,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg,
+                                                             int whichButton ) {
+                                            m_resultCode = 1;
+                                        }
+                                    });
+            dialog = ab.create();
+            dialog.setOnDismissListener( makeODLforBlocking() );
+            break;
+
         case QUERY_ENDGAME:
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.query_title )
@@ -166,9 +188,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
         switch( id ) {
         case DLG_OKONLY:
             dialog.setTitle( m_dlgTitle );
+            // FALLTHRU
         case DLG_BADWORDS:
         case QUERY_REQUEST_BLK:
             ((AlertDialog)dialog).setMessage( m_dlgBytes );
+            break;
+        case ASK_PASSWORD_BLK:
+            m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
+            dialog.setTitle( m_dlgTitleStr );
             break;
         }
         super.onPrepareDialog( id, dialog );
@@ -573,6 +600,25 @@ public class BoardActivity extends Activity implements UtilCtxt {
         m_texts = texts;
         waitBlockingDialog( PICK_TILE_REQUEST_BLK );
         return m_resultCode;
+    }
+
+    public String askPassword( String name )
+    {
+        String fmt = getString( R.string.msg_ask_password );
+        m_dlgTitleStr = String.format( fmt, name );
+        m_resultCode = 0;
+
+        if ( null == m_passwdEdit ) {
+            LayoutInflater factory = LayoutInflater.from( this );
+            m_passwdEdit = (EditText)factory.inflate( R.layout.passwd_view, null );
+        }
+        waitBlockingDialog( ASK_PASSWORD_BLK );
+
+        String result = null;      // means cancelled
+        if ( 0 != m_resultCode ) {
+            result = m_passwdEdit.getText().toString();
+        }
+        return result;
     }
 
     public boolean engineProgressCallback()
