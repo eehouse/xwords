@@ -556,7 +556,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     public void dictChanged( int dictPtr )
     {
-        Utils.logf( "BoardView::dictChanged" );
         if ( m_dictPtr != dictPtr ) {
             if ( m_dictPtr == 0 || 
                  !XwJNI.dict_tilesAreSame( m_dictPtr, dictPtr ) ) {
