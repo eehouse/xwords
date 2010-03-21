@@ -8,6 +8,15 @@
               android:paddingRight="8dp"
               >
 
+  <View android:id="@+id/color_edit_sample" 
+        android:layout_width="96sp"
+        android:layout_height="32sp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_marginRight="6sp"
+        android:focusable="false"
+        android:clickable="false" 
+        />
+
   <TextView android:layout_height="wrap_content"
             android:layout_width="fill_parent"
             android:text="@string/red"

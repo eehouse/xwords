@@ -18,9 +18,33 @@ import junit.framework.Assert;
 public class EditColorPreference extends DialogPreference {
 
     private Context m_context;
-    // private int m_color = 0;
-    // private View m_sample = null;
     private boolean m_cancel;
+    private int m_curColor;
+
+    private class SBCL implements SeekBar.OnSeekBarChangeListener {
+        int m_shift;
+        View m_sample;
+        public SBCL( View parent, int shift )
+        {
+            m_shift = shift;
+            m_sample = parent.findViewById( R.id.color_edit_sample );
+        }
+
+        public void onProgressChanged( SeekBar seekBar, int progress, 
+                                       boolean fromUser )
+        {
+            // mask out the byte we're changing
+            int color = m_curColor & ~(0xFF << m_shift);
+            // add in the new version of the byte
+            color |= progress << m_shift;
+            m_curColor = color;
+            m_sample.setBackgroundColor( m_curColor );
+        }
+
+        public void onStartTrackingTouch( SeekBar seekBar ) {}
+
+        public void onStopTrackingTouch( SeekBar seekBar ) {}
+    }
 
     public EditColorPreference( Context context, AttributeSet attrs )
     {
@@ -55,10 +79,13 @@ public class EditColorPreference extends DialogPreference {
     protected void onBindDialogView( View view )
     {
         m_cancel = false;
-        int color = getPersistedColor();
-        setOneByte( view, R.id.edit_red, color >> 16 );
-        setOneByte( view, R.id.edit_green, color >> 8 );
-        setOneByte( view, R.id.edit_blue, color );
+        m_curColor = getPersistedColor();
+        setOneByte( view, R.id.edit_red,  16 );
+        setOneByte( view, R.id.edit_green,  8 );
+        setOneByte( view, R.id.edit_blue, 0 );
+
+        View sample = (View)view.findViewById( R.id.color_edit_sample );
+        sample.setBackgroundColor( m_curColor );
     }
     
     @Override
@@ -86,19 +113,18 @@ public class EditColorPreference extends DialogPreference {
                 | getOneByte( dialog, R.id.edit_blue );
 
             persistInt( color );
-            View sample = 
-                ((AlertDialog)dialog).findViewById( R.id.color_display_sample );
-            if ( null != sample ) {
-                sample.setBackgroundColor( getPersistedColor() );
-            }
+            notifyChanged();
         }
     }
 
-    private void setOneByte( View parent, int id, int byt ) {
-        byt &= 0xFF;
+    private void setOneByte( View parent, int id, int shift ) 
+    {
+        int byt = (m_curColor >> shift) & 0xFF;
         SeekBar seekbar = (SeekBar)parent.findViewById( id );
         if ( null != seekbar ) {
             seekbar.setProgress( byt );
+
+            seekbar.setOnSeekBarChangeListener( new SBCL( parent, shift ) );
         }
     }
 
