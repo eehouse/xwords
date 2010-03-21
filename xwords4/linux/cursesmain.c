@@ -348,9 +348,13 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
 } /* curses_util_notifyGameOver */
 
 static XP_Bool
-curses_util_hiliteCell( XW_UtilCtxt* XP_UNUSED(uc), 
+curses_util_hiliteCell( XW_UtilCtxt* uc, 
                         XP_U16 XP_UNUSED(col), XP_U16 XP_UNUSED(row) )
 {
+    CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
+    if ( globals->cGlobals.params->sleepOnAnchor ) {
+        usleep( 10000 );
+    }
     return XP_TRUE;
 } /* curses_util_hiliteCell */
 
