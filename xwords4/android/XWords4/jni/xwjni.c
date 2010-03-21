@@ -265,8 +265,24 @@ typedef struct _JNIState {
     XWGame game;
     JNIEnv* env;
     AndGlobals globals;
+#ifdef DEBUG
+    const char* envSetterFunc;
+#endif
     MPSLOT
 } JNIState;
+
+#ifdef DEBUG
+# define CHECK_ENV()                                                    \
+    if ( state->env != 0 && state->env != env ) {                       \
+        XP_LOGF( "ERROR: %s trying to set env when %s still has it",    \
+                 __func__, state->envSetterFunc );                      \
+        XP_ASSERT( state->env == 0 || state->env == env );              \
+    }                                                                   \
+    state->envSetterFunc = __func__;                                    \
+
+#else
+# define CHECK_ENV()
+#endif
 
 #define XWJNI_START() {                                 \
     XP_ASSERT( 0 != gamePtr );                          \
@@ -274,7 +290,7 @@ typedef struct _JNIState {
     MPSLOT;                                             \
     MPASSIGN( mpool, state->mpool);                     \
     /* if reentrant must be from same thread */         \
-    XP_ASSERT( state->env == 0 || state->env == env );  \
+    CHECK_ENV();                                        \
     JNIEnv* _oldEnv = state->env;                       \
     state->env = env;
 
