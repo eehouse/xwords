@@ -240,12 +240,10 @@ JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesAreSame
 ( JNIEnv* env, jclass C, jint dictPtr1, jint dictPtr2 )
 {
-    LOG_FUNC();
     jboolean result;
     const DictionaryCtxt* dict1 = (DictionaryCtxt*)dictPtr1;
     const DictionaryCtxt* dict2 = (DictionaryCtxt*)dictPtr2;
     result = dict_tilesAreSame( dict1, dict2 );
-    LOG_RETURNF( "%d", result );
     return result;
 }
 
@@ -253,11 +251,9 @@ JNIEXPORT jobjectArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getChars
 ( JNIEnv* env, jclass C, jint dictPtr )
 {
-    LOG_FUNC();
     jobject result = NULL;
     result = and_dictionary_getChars( env, (DictionaryCtxt*)dictPtr );
     (*env)->DeleteLocalRef( env, result );
-    LOG_RETURNF( "%p", result );
     return result;
 }
 
@@ -359,7 +355,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 ( JNIEnv * env, jclass claz, jint gamePtr )
 {
-    LOG_FUNC();
     JNIState* state = (JNIState*)gamePtr;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = state->mpool;
@@ -381,7 +376,6 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     state->env = oldEnv;
     XP_FREE( mpool, state );
     mpool_destroy( mpool );
-    LOG_RETURN_VOID();
 } /* game_dispose */
 
 JNIEXPORT jboolean JNICALL
@@ -826,7 +820,9 @@ and_send_on_close( XWStreamCtxt* stream, void* closure )
     JNIState* state = (JNIState*)globals->state;
 
     XP_ASSERT( !!state->game.comms );
-    comms_send( state->game.comms, stream );
+    if ( stream_getSize( stream ) > 0 ) {
+        comms_send( state->game.comms, stream );
+    }
 }
 
 JNIEXPORT void JNICALL
