@@ -1278,6 +1278,7 @@ gtk_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, XP_U16 row )
 
     board_hiliteCellAt( globals->cGlobals.game.board, col, row );
     if ( globals->cGlobals.params->sleepOnAnchor ) {
+        usleep( 10000 );
     }
 
 #ifdef DONT_ABORT_ENGINE
