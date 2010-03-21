@@ -265,9 +265,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         switch( m_types[m_connectSpinner.getSelectedItemPosition()] ) {
         case COMMS_CONN_RELAY:
             Utils.setText( m_curDialog, R.id.room_edit, m_car.ip_relay_invite );
-            Utils.setText( m_curDialog, R.id.hostname_edit, 
-                           m_car.ip_relay_hostName );
-            Utils.setInt( m_curDialog, R.id.port_edit, m_car.ip_relay_port );
             break;
         case COMMS_CONN_SMS:
             Utils.setText( m_curDialog, R.id.sms_phone_edit, m_car.sms_phone );
@@ -284,9 +281,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         switch ( m_car.conType ) {
         case COMMS_CONN_RELAY:
             m_car.ip_relay_invite = Utils.getText( m_curDialog, R.id.room_edit );
-            m_car.ip_relay_hostName = Utils.getText( m_curDialog, 
-                                                     R.id.hostname_edit );
-            m_car.ip_relay_port = Utils.getInt( m_curDialog, R.id.port_edit );
             break;
         case COMMS_CONN_SMS:
             m_car.sms_phone = Utils.getText( m_curDialog, R.id.sms_phone_edit );

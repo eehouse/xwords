@@ -193,10 +193,8 @@
     <string name="gamel_menu_dicts">Dictionaries</string>
 
     <string name="room_label">Room</string>
-    <string name="hostname_label">Hostname</string>
     <string name="phone_label">Host phone number</string>
     <string name="bluetooth_label">Bluetooth support coming soon....</string>
-    <string name="port_label">Port</string>
     <string name="role_edit_title">Connection</string>
 
     <string name="general_prefs">Preferences</string>
