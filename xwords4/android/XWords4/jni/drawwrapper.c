@@ -510,7 +510,6 @@ makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
 void
 destroyDraw( DrawCtx** dctx )
 {
-    LOG_FUNC();
     AndDraw* draw = (AndDraw*)*dctx;
     JNIEnv* env = *draw->env;
     if ( NULL != draw->jdraw ) {
@@ -528,5 +527,4 @@ destroyDraw( DrawCtx** dctx )
     XP_FREE( draw->mpool, draw->vtable );
     XP_FREE( draw->mpool, draw );
     *dctx = NULL;
-    LOG_RETURN_VOID();
 }

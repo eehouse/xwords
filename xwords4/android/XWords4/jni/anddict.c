@@ -336,7 +336,6 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
 static void
 and_dictionary_destroy( DictionaryCtxt* dict )
 {
-    LOG_FUNC();
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
     XP_U16 nSpecials = andCountSpecials( ctxt );
     XP_U16 ii;
@@ -368,8 +367,6 @@ and_dictionary_destroy( DictionaryCtxt* dict )
 
     XP_FREE( ctxt->super.mpool, ctxt->bytes );
     XP_FREE( ctxt->super.mpool, ctxt );
-
-    LOG_RETURN_VOID();
 }
 
 jobject

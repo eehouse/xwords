@@ -31,7 +31,6 @@ typedef struct _AndTransportProcs {
 static jobject
 makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
 {
-    LOG_FUNC();
     jobject jaddr = NULL;
     if ( NULL != addr ) {
         jclass clazz
@@ -47,7 +46,6 @@ makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
     
         (*env)->DeleteLocalRef( env, clazz );
     }
-    LOG_RETURNF( "%p", jaddr );
     return jaddr;
 }
 
@@ -155,7 +153,6 @@ makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
 void
 destroyXportProcs( TransportProcs** xport )
 {
-    LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)*xport;
     JNIEnv* env = *aprocs->envp;
     if ( NULL != aprocs->jxport ) {
@@ -164,5 +161,4 @@ destroyXportProcs( TransportProcs** xport )
 
     XP_FREE( aprocs->mpool, aprocs );
     *xport = NULL;
-    LOG_RETURN_VOID();
 }

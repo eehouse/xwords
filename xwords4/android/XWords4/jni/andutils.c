@@ -292,7 +292,6 @@ makeBitmapsArray( JNIEnv* env, const XP_Bitmaps* bitmaps )
 void
 setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 {
-    LOG_FUNC();
     XP_ASSERT( !!addr );
     intToJenumField( env, jaddr, addr->conType, "conType",
                      "org/eehouse/android/xw4/jni/CommsAddrRec$CommsConnType" );
@@ -314,7 +313,6 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
     default:
         XP_ASSERT(0);
     }
-    LOG_RETURN_VOID();
 }
 
 void
@@ -362,7 +360,6 @@ jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field,
 
     (*env)->DeleteLocalRef( env, clazz );
     (*env)->DeleteLocalRef( env, jenum );
-    LOG_RETURNF( "%d", result );
     return result;
 }
 
