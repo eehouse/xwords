@@ -333,12 +333,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return super.onKeyUp( keyCode, event );
     }
 
+    @Override
     protected void onDestroy() 
     {
         if ( 0 != m_jniGamePtr ) {
-            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
-            Utils.saveGame( this, state, m_path );
-
             if ( null != m_xport ) {
                 m_xport.waitToStop();
             }
@@ -346,8 +344,13 @@ public class BoardActivity extends Activity implements UtilCtxt {
             if ( null != m_jniThread ) {
                 m_jniThread.waitToStop();
                 Utils.logf( "onDestroy(): waitToStop() returned" );
-
             }
+
+            // This has to happen after the drawing thread is killed
+            // to avoid the possibility of reentering the jni world.
+            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
+            Utils.saveGame( this, state, m_path );
+
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
         }
