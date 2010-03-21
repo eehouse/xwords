@@ -142,7 +142,7 @@
 
     <string name="remote_label">Remote player</string>
     <string name="robot_label">Robot player</string>
-    <string name="password_label">Password (ignored)</string>
+    <string name="password_label">Password</string>
     <string name="player_edit_title">Player</string>
 
     <string name="players_label">Players</string>
