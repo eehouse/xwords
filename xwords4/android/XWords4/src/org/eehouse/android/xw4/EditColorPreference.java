@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.SeekBar;
 import android.app.Dialog;
 import android.content.SharedPreferences;
+import android.app.AlertDialog;
 
 import junit.framework.Assert;
 
@@ -18,7 +19,8 @@ public class EditColorPreference extends DialogPreference {
 
     private Context m_context;
     // private int m_color = 0;
-    private View m_sample = null;
+    // private View m_sample = null;
+    private boolean m_cancel;
 
     public EditColorPreference( Context context, AttributeSet attrs )
     {
@@ -45,30 +47,51 @@ public class EditColorPreference extends DialogPreference {
     protected void onBindView( View parent ) 
     {
         super.onBindView( parent );
-        m_sample = parent.findViewById( R.id.color_display_sample );
-        if ( null != m_sample ) {
-            m_sample.setBackgroundColor( getPersistedColor() );
-        }
+        View sample = parent.findViewById( R.id.color_display_sample );
+        sample.setBackgroundColor( getPersistedColor() );
     }
 
     @Override
     protected void onBindDialogView( View view )
     {
+        m_cancel = false;
         int color = getPersistedColor();
         setOneByte( view, R.id.edit_red, color >> 16 );
         setOneByte( view, R.id.edit_green, color >> 8 );
         setOneByte( view, R.id.edit_blue, color );
     }
+    
+    @Override
+    protected void onPrepareDialogBuilder( AlertDialog.Builder builder )
+    {
+        builder.setPositiveButton( null, null );
+        builder.setNegativeButton( R.string.button_cancel, 
+                                   new DialogInterface.OnClickListener() {
+                                       @Override
+                                       public void onClick( DialogInterface dg,
+                                                           int which )
+                                       {
+                                           m_cancel = true;
+                                       }
+                                   } );
+        super.onPrepareDialogBuilder( builder );
+    }
 
     @Override
     public void onDismiss( DialogInterface dialog )
     {
-        int color = (getOneByte( dialog, R.id.edit_red ) << 16)
-            | (getOneByte( dialog, R.id.edit_green ) << 8)
-            | getOneByte( dialog, R.id.edit_blue );
+        if ( !m_cancel ) {
+            int color = (getOneByte( dialog, R.id.edit_red ) << 16)
+                | (getOneByte( dialog, R.id.edit_green ) << 8)
+                | getOneByte( dialog, R.id.edit_blue );
 
-        persistInt( color );
-        m_sample.setBackgroundColor( getPersistedColor() );
+            persistInt( color );
+            View sample = 
+                ((AlertDialog)dialog).findViewById( R.id.color_display_sample );
+            if ( null != sample ) {
+                sample.setBackgroundColor( getPersistedColor() );
+            }
+        }
     }
 
     private void setOneByte( View parent, int id, int byt ) {
