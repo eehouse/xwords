@@ -18,7 +18,6 @@ import junit.framework.Assert;
 public class EditColorPreference extends DialogPreference {
 
     private Context m_context;
-    private boolean m_cancel;
     private int m_curColor;
 
     private class SBCL implements SeekBar.OnSeekBarChangeListener {
@@ -78,7 +77,6 @@ public class EditColorPreference extends DialogPreference {
     @Override
     protected void onBindDialogView( View view )
     {
-        m_cancel = false;
         m_curColor = getPersistedColor();
         setOneByte( view, R.id.edit_red,  16 );
         setOneByte( view, R.id.edit_green,  8 );
@@ -91,30 +89,21 @@ public class EditColorPreference extends DialogPreference {
     @Override
     protected void onPrepareDialogBuilder( AlertDialog.Builder builder )
     {
-        builder.setPositiveButton( null, null );
-        builder.setNegativeButton( R.string.button_cancel, 
-                                   new DialogInterface.OnClickListener() {
-                                       @Override
-                                       public void onClick( DialogInterface dg,
-                                                           int which )
-                                       {
-                                           m_cancel = true;
-                                       }
-                                   } );
+        DialogInterface.OnClickListener lstnr = 
+            new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick( DialogInterface dialog, int which )
+                {
+                    int color = (getOneByte( dialog, R.id.edit_red ) << 16)
+                        | (getOneByte( dialog, R.id.edit_green ) << 8)
+                        | getOneByte( dialog, R.id.edit_blue );
+
+                    persistInt( color );
+                    notifyChanged();
+                }
+            };
+        builder.setPositiveButton( R.string.button_ok, lstnr );
         super.onPrepareDialogBuilder( builder );
-    }
-
-    @Override
-    public void onDismiss( DialogInterface dialog )
-    {
-        if ( !m_cancel ) {
-            int color = (getOneByte( dialog, R.id.edit_red ) << 16)
-                | (getOneByte( dialog, R.id.edit_green ) << 8)
-                | getOneByte( dialog, R.id.edit_blue );
-
-            persistInt( color );
-            notifyChanged();
-        }
     }
 
     private void setOneByte( View parent, int id, int shift ) 
