@@ -338,7 +338,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
             XwJNI.comms_getAddr( gamePtr, m_carOrig );
         } else {
             String relayName = CommonPrefs.getDefaultRelayHost();
-            XwJNI.comms_getInitialAddr( m_carOrig, relayName );
+            int relayPort = CommonPrefs.getDefaultRelayPort();
+            XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
         }
         XwJNI.game_dispose( gamePtr );
 

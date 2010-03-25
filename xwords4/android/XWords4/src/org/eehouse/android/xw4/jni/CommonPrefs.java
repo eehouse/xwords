@@ -117,4 +117,15 @@ public class CommonPrefs {
         String key = s_context.getString( R.string.key_relay_host );
         return sp.getString( key, "" );
     }
+
+    public static int getDefaultRelayPort()
+    {
+        SharedPreferences sp = 
+            PreferenceManager.getDefaultSharedPreferences( s_context );
+        String key = s_context.getString( R.string.key_relay_port );
+        String val = sp.getString( key, "" );
+        int result = 0;
+        result = Integer.decode( val );
+        return result;
+    }
 }

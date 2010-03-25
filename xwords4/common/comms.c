@@ -722,13 +722,14 @@ void
 comms_getInitialAddr( CommsAddrRec* addr
 #ifdef XWFEATURE_RELAY
                       , const XP_UCHAR* relayName
+                      , XP_U16 relayPort
 #endif
                       )
 {
 #if defined  XWFEATURE_RELAY
     addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
-    addr->u.ip_relay.port = RELAY_PORT_DEFAULT;
+    addr->u.ip_relay.port = relayPort;
     {
         const char* name = relayName;
         char* room = RELAY_ROOM_DEFAULT;

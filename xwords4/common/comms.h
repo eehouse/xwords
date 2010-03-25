@@ -152,6 +152,7 @@ void comms_setConnID( CommsCtxt* comms, XP_U32 connID );
 void comms_getInitialAddr( CommsAddrRec* addr
 #ifdef XWFEATURE_RELAY
                            , const XP_UCHAR* relayName
+                           , XP_U16 relayPort
 #endif
  );
 XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,

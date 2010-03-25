@@ -227,12 +227,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getInitialAddr
-( JNIEnv* env, jclass C, jobject jaddr, jstring jname )
+( JNIEnv* env, jclass C, jobject jaddr, jstring jname, jint port )
 {
     CommsAddrRec addr;
 
     const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
-    comms_getInitialAddr( &addr, chars );
+    comms_getInitialAddr( &addr, chars, port );
     (*env)->ReleaseStringUTFChars( env, jname, chars );
     setJAddrRec( env, jaddr, &addr );
 }
