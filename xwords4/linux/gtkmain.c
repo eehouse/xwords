@@ -738,7 +738,7 @@ new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg )
     if ( !!globals->cGlobals.game.comms ) {
         comms_getAddr( globals->cGlobals.game.comms, &addr );
     } else {
-        comms_getInitialAddr( &addr );
+        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
     }
 
     if ( newGameDialog( globals, &addr, XP_TRUE, fireConnDlg ) ) {
