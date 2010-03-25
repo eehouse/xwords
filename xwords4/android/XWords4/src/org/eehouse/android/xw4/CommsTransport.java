@@ -82,16 +82,10 @@ public class CommsTransport extends Thread implements TransportProcs {
     {
         try {
             m_selector = Selector.open();
-            m_socketChannel = SocketChannel.open();
-            m_socketChannel.configureBlocking( false );
-            InetSocketAddress isa
-                = new InetSocketAddress( m_addr.ip_relay_hostName, 
-                                         m_addr.ip_relay_port );
-            m_socketChannel.connect( isa );
 
             loop();
 
-            m_socketChannel.close();
+            closeSocket();
         } catch ( java.io.IOException ioe ) {
             Utils.logf( ioe.toString() );
         } catch ( UnresolvedAddressException uae ) {
@@ -105,19 +99,23 @@ public class CommsTransport extends Thread implements TransportProcs {
     {
         while ( !m_done ) {
             try {
-                int ops = figureOps();
-                Utils.logf( "calling with ops=" + ops );
-                m_socketChannel.register( m_selector, ops );
+                synchronized( this ) {
+                    if ( null != m_socketChannel ) {
+                        int ops = figureOps();
+                        Utils.logf( "calling with ops=%x", ops );
+                        m_socketChannel.register( m_selector, ops );
+                    }
+                }
                 m_selector.select();
             } catch ( ClosedChannelException cce ) {
                 // we get this when relay goes down.  Need to notify!
                 m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+                closeSocket();
                 Utils.logf( "exiting: " + cce.toString() );
-                break;
             } catch ( java.io.IOException ioe ) {
+                closeSocket();
                 Utils.logf( "exiting: " + ioe.toString() );
                 Utils.logf( ioe.toString() );
-                break;
             }
 
             Iterator<SelectionKey> iter = m_selector.selectedKeys().iterator();
@@ -168,8 +166,33 @@ public class CommsTransport extends Thread implements TransportProcs {
         m_buffersOut.add( netbuf );
         Assert.assertEquals( netbuf.remaining(), 0 );
 
+        if ( null == m_socketChannel ) {
+            try {
+                m_socketChannel = SocketChannel.open();
+                m_socketChannel.configureBlocking( false );
+                InetSocketAddress isa
+                    = new InetSocketAddress( m_addr.ip_relay_hostName, 
+                                             m_addr.ip_relay_port );
+                m_socketChannel.connect( isa );
+            } catch ( java.io.IOException ioe ) {
+                Utils.logf( ioe.toString() );
+            }
+        }
+
         if ( null != m_selector ) {
             m_selector.wakeup();    // tell it it's got some writing to do
+        }
+    }
+
+    private synchronized void closeSocket()
+    {
+        if ( null != m_socketChannel ) {
+            try {
+                m_socketChannel.close();
+            } catch ( Exception e ) {
+                Utils.logf( "closing socket: %s", e.toString() );
+            }
+            m_socketChannel = null;
         }
     }
 
@@ -187,7 +210,9 @@ public class CommsTransport extends Thread implements TransportProcs {
 
     private synchronized int figureOps() {
         int ops;
-        if ( m_socketChannel.isConnected() ) {
+        if ( null == m_socketChannel ) {
+            ops = 0;
+        } else if ( m_socketChannel.isConnected() ) {
             ops = SelectionKey.OP_READ;
             if ( (null != m_bytesOut && m_bytesOut.hasRemaining())
                  || m_buffersOut.size() > 0 ) {
