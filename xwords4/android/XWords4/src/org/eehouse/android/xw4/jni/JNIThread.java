@@ -22,6 +22,7 @@ public class JNIThread extends Thread {
             CMD_START,
             CMD_DO,
             CMD_RECEIVE,
+            CMD_TRANSFAIL,
             CMD_PREFS_CHANGE,
             CMD_PEN_DOWN,
             CMD_PEN_MOVE,
@@ -286,6 +287,10 @@ public class JNIThread extends Thread {
                 draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
                                                   (byte[])args[0] );
                 handle( JNICmd.CMD_DO );
+                break;
+
+            case CMD_TRANSFAIL:
+                XwJNI.comms_transportFailed( m_jniGamePtr );
                 break;
 
             case CMD_PREFS_CHANGE:

@@ -110,6 +110,8 @@ public class CommsTransport extends Thread implements TransportProcs {
                 m_socketChannel.register( m_selector, ops );
                 m_selector.select();
             } catch ( ClosedChannelException cce ) {
+                // we get this when relay goes down.  Need to notify!
+                m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
                 Utils.logf( "exiting: " + cce.toString() );
                 break;
             } catch ( java.io.IOException ioe ) {

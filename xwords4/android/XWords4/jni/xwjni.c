@@ -980,6 +980,16 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1transportFailed
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    XP_ASSERT( !!state->game.comms );
+    (void)comms_transportFailed( state->game.comms );
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
