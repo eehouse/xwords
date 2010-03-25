@@ -261,8 +261,8 @@ public class CommsTransport extends Thread implements TransportProcs {
             nSent = buf.length;
             break;
         case COMMS_CONN_SMS:
-            Utils.logf( "sending via sms to " + m_addr.sms_phone
-                        + m_addr.sms_port );
+            Utils.logf( "sending via sms to %s:%d", m_addr.sms_phone,
+                        m_addr.sms_port );
 
             try {
                 Intent intent = new Intent( m_context, StatusReceiver.class);
