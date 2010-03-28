@@ -1,6 +1,6 @@
 /* -*-mode: C; compile-command: "../../scripts/ndkbuild.sh"; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
