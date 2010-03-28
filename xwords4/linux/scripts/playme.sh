@@ -5,8 +5,13 @@ ROOM_ADD=""
 NGAMES=10
 PORT=10999
 DBUG=0
-HOW_LONG=1000
+HOW_LONG=360
 DICT=dict.xwd
+
+RUN_NAME=$(basename $0)_$$
+LOG_DIR=/tmp/${RUN_NAME}_LOG
+mkdir -p ${LOG_DIR}
+
 
 usage() {
     [ -n "$1" ] && echo "$1" >&2
@@ -27,24 +32,30 @@ do_one() {
     EXE=$1
     INDEX=$2
 
-    while :; do
+    while [ -d ${LOG_DIR} ]; do
         ROOM="playme ${INDEX}$ROOM_ADD"
+        LOG_FILE="${LOG_DIR}/${ROOM}.log"
         #COMMAND="$EXE -u -0 -C \"$ROOM\" -a $HOSTNAME -r Relay -d $DICT -p $PORT"
         # it's a server if INDEX is odd
-        if [ 0 -eq $((INDEX%2)) ]; then
+        if [ 0 -ne $((INDEX%2)) ]; then
             SERVER=" -s -N "
         fi
         #echo $COMMAND
 
-        $EXE -u -0 -C "$ROOM" -a $HOSTNAME -r Relay -d $DICT -p $PORT $SERVER >/dev/null 2>&1 &
+        $EXE -u -o -0 -C "$ROOM" -a $HOSTNAME -r Relay -d $DICT -p $PORT \
+            $SERVER >/dev/null 2>>${LOG_FILE} &
         PID=$!
-        echo "launched $ROOM ($PID)"
+        echo "launched $ROOM (pid=$PID)"
 
         END_TIME=$(($(date +%s) + $HOW_LONG))
         while [ -d /proc/$PID ]; do
             sleep 10
 
-            if [ $(date +%s) -ge $END_TIME ]; then
+            if [ ! -d ${LOG_DIR} ]; then
+                break
+            elif [ ! -d /proc/$PID ]; then
+                break
+            elif [ $(date +%s) -ge $END_TIME ]; then
                 echo "timing out $ROOM ($PID)"
                 break
             fi
@@ -54,8 +65,6 @@ do_one() {
         sleep 2
     done
 }
-
-
 
 while [ -n "$1" ]; do
     case $1 in
@@ -79,6 +88,11 @@ while [ -n "$1" ]; do
             ROOM_ADD=$2
             shift
             ;;
+        --dict)
+            [ -n "$2" ] || usage
+            DICT=$2
+            shift
+            ;;
         --games)
             [ -n "$2" ] || usage
             NGAMES=$2
@@ -93,6 +107,8 @@ while [ -n "$1" ]; do
     esac
     shift
 done
+
+[ -f $DICT ] || usage "dict $DICT not found"
 
 if [ $DBUG ]; then
     EXE="./obj_linux_memdbg/xwords"
