@@ -1141,10 +1141,11 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         /* We're [re-]connected now.  Send any pending messages.  This may
            need to be done later since we're inside the platform's socket read
            proc now.  But don't resend if we were previously REconnected, as
-           we'll have sent then. */
-        if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) {
-            comms_resendAll( comms );
-        }
+           we'll have sent then.  -- I don't see any send on RECONNECTED, so
+           removing the test for now to fix recon problems on android. */
+        /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) { */
+        comms_resendAll( comms );
+        /* } */
         if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
             (*comms->procs.rconnd)( comms->procs.closure, XP_TRUE, 0 );
         }
