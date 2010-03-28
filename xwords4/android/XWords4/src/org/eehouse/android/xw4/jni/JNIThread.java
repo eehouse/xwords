@@ -273,7 +273,6 @@ public class JNIThread extends Thread {
                 if ( m_gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
                     XwJNI.server_initClientConnection( m_jniGamePtr );
                 }
-                /* FALLTHRU; works in java? */ 
                 draw = XwJNI.server_do( m_jniGamePtr );
                 break;
             case CMD_DO:
