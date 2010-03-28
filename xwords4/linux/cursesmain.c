@@ -95,6 +95,7 @@ typedef struct MenuList {
 } MenuList;
 
 static XP_Bool handleQuit( CursesAppGlobals* globals );
+static XP_Bool handleResend( CursesAppGlobals* globals );
 static XP_Bool handleRight( CursesAppGlobals* globals );
 static XP_Bool handleSpace( CursesAppGlobals* globals );
 static XP_Bool handleRet( CursesAppGlobals* globals );
@@ -123,6 +124,7 @@ static XP_Bool handleRootKeyHide( CursesAppGlobals* globals );
 
 const MenuList g_sharedMenuList[] = {
     { handleQuit, "Quit", "Q", 'Q' },
+    { handleResend, "Resend", "R", 'R' },
     { handleRight, "Tab right", "<tab>", '\t' },
     { handleSpace, "Raise focus", "<spc>", ' ' },
     { handleRet, "Click/tap", "<ret>", '\r' },
@@ -336,12 +338,14 @@ curses_util_notifyGameOver( XW_UtilCtxt* uc )
         catGameHistory( &globals->cGlobals );
     }
 
+    catFinalScores( &globals->cGlobals );
+
     if ( globals->cGlobals.params->quitAfter >= 0 ) {
         sleep( globals->cGlobals.params->quitAfter );
         handleQuit( globals );
     } else if ( globals->cGlobals.params->undoWhenDone ) {
         server_handleUndo( globals->cGlobals.game.server );
-    } else {
+    } else if ( !globals->cGlobals.params->skipGameOver ) {
         /* This is modal.  Don't show if quitting */
         cursesShowFinalScores( globals );
     }
@@ -486,6 +490,15 @@ handleQuit( CursesAppGlobals* globals )
     globals->timeToExit = XP_TRUE;
     return XP_TRUE;
 } /* handleQuit */
+
+static XP_Bool
+handleResend( CursesAppGlobals* globals )
+{
+    if ( !!globals->cGlobals.game.comms ) {
+        comms_resendAll( globals->cGlobals.game.comms );
+    }
+    return XP_TRUE;
+}
 
 static void
 checkAssignFocus( BoardCtxt* board )

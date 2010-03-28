@@ -65,7 +65,6 @@
 static void sendOnClose( XWStreamCtxt* stream, void* closure );
 #endif
 static void setCtrlsForTray( GtkAppGlobals* globals );
-static void printFinalScores( GtkAppGlobals* globals );
 static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
 static void new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg );
 
@@ -718,7 +717,7 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
     XP_Bool gameOver = server_getGameIsOver( globals->cGlobals.game.server );
 
     if ( gameOver ) {
-        printFinalScores( globals );
+        catFinalScores( &globals->cGlobals );
     } else {
         if ( gtkask( "Are you sure everybody wants to end the game now?", 
                      GTK_BUTTONS_YES_NO ) ) {
@@ -1233,35 +1232,43 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset),
 } /* gtk_util_yOffsetChange */
 
 static void
-printFinalScores( GtkAppGlobals* globals )
+gtkShowFinalScores( const CommonGlobals* cGlobals )
 {
     XWStreamCtxt* stream;
+    XP_UCHAR* text;
 
-    stream = mem_stream_make( MEMPOOL 
-                              globals->cGlobals.params->vtMgr,
-                              globals, CHANNEL_NONE, catOnClose );
-    server_writeFinalScores( globals->cGlobals.game.server, stream );
-    stream_putU8( stream, '\n' );
-    stream_destroy( stream );
-} /* printFinalScores */
+    stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+                              cGlobals->params->vtMgr,
+                              NULL, CHANNEL_NONE, NULL );
+    server_writeFinalScores( cGlobals->game.server, stream );
+
+    text = strFromStream( stream );
+
+    (void)gtkask( text, GTK_BUTTONS_OK );
+
+    free( text );
+} /* gtkShowFinalScores */
 
 static void
 gtk_util_notifyGameOver( XW_UtilCtxt* uc )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
+    CommonGlobals* cGlobals = &globals->cGlobals;
 
-    if ( globals->cGlobals.params->printHistory ) {
-        catGameHistory( &globals->cGlobals );
+    if ( cGlobals->params->printHistory ) {
+        catGameHistory( cGlobals );
     }
 
-    printFinalScores( globals );
+    catFinalScores( cGlobals );
 
-    if ( globals->cGlobals.params->quitAfter >= 0 ) {
-        sleep( globals->cGlobals.params->quitAfter );
+    if ( cGlobals->params->quitAfter >= 0 ) {
+        sleep( cGlobals->params->quitAfter );
         quit( NULL, globals );
-    } else if ( globals->cGlobals.params->undoWhenDone ) {
-        server_handleUndo( globals->cGlobals.game.server );
-        board_draw( globals->cGlobals.game.board );
+    } else if ( cGlobals->params->undoWhenDone ) {
+        server_handleUndo( cGlobals->game.server );
+        board_draw( cGlobals->game.board );
+    } else if ( !cGlobals->params->skipGameOver ) {
+        gtkShowFinalScores( cGlobals );
     }
 } /* gtk_util_notifyGameOver */
 

@@ -134,8 +134,6 @@ catOnClose( XWStreamCtxt* stream, void* XP_UNUSED(closure) )
     XP_U16 nBytes;
     char* buffer;
 
-    XP_LOGF( "catOnClose" );
-
     nBytes = stream_getSize( stream );
     buffer = malloc( nBytes + 1 );
     stream_getBytes( stream, buffer, nBytes );
@@ -161,6 +159,19 @@ catGameHistory( CommonGlobals* cGlobals )
         stream_destroy( stream );
     }
 } /* catGameHistory */
+
+void
+catFinalScores( const CommonGlobals* cGlobals )
+{
+    XWStreamCtxt* stream;
+
+    stream = mem_stream_make( MPPARM(cGlobals->params->util->mpool)
+                              cGlobals->params->vtMgr,
+                              NULL, CHANNEL_NONE, catOnClose );
+    server_writeFinalScores( cGlobals->game.server, stream );
+    stream_putU8( stream, '\n' );
+    stream_destroy( stream );
+} /* printFinalScores */
 
 XP_UCHAR*
 strFromStream( XWStreamCtxt* stream )
@@ -214,6 +225,7 @@ usage( char* appName, char* msg )
 	     "\t [-L]             # duplicate all packets sent\n"
 	     "\t [-P]             # pick tiles face up\n"
 	     "\t [-F]             # ask for turn confirmation\n"
+	     "\t [-o]             # skip (modal) gameOver notification\n"
 	     "\t [-c]             # explain robot scores after each move\n"
 	     "\t [-C INVITE]      # invite used to groups games on relay\n"
 	     "\t\t # (max of four players total, local and remote)\n"
@@ -797,7 +809,7 @@ main( int argc, char** argv )
 #if defined PLATFORM_GTK
                       "h:I"
 #endif
-                      "0b:cd:e:Ff:iKkLlmNn:Pr:Ssq:t:Uw:v"
+                      "0b:cod:e:Ff:iKkLlmNn:Pr:Ssq:t:Uw:v"
 #ifdef XWFEATURE_SLOW_ROBOT
                       "z:"
 #endif
@@ -820,6 +832,9 @@ main( int argc, char** argv )
         switch( opt ) {
         case '?':
             usage(argv[0], NULL);
+            break;
+        case 'o':
+            mainParams.skipGameOver = XP_TRUE;
             break;
         case 'c':
             mainParams.showRobotScores = XP_TRUE;

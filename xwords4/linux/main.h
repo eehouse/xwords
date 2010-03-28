@@ -66,6 +66,7 @@ typedef struct LaunchParams {
     XP_Bool showRobotScores;
     XP_Bool noHeartbeat;
     XP_Bool duplicatePackets;
+    XP_Bool skipGameOver;
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
 #endif
