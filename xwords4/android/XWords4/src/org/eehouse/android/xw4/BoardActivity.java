@@ -286,10 +286,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
             m_jniThread.start();
 
             m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
-            m_jniThread.handle( JNICmd.CMD_START );
             if ( null != m_xport ) {
                 m_xport.setReceiver( m_jniThread );
             }
+            m_jniThread.handle( JNICmd.CMD_START );
         }
     } // onCreate
 
