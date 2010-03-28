@@ -96,6 +96,12 @@ CookieRef::ReInit( const char* cookie, const char* connName, CookieID id )
     m_nHostMsgs = 0;
     m_in_handleEvents = false;
 
+    if ( RelayConfigs::GetConfigs()->GetValueFor( "SEND_DELAY_MILLIS", 
+                                                   &m_delayMicros ) ) {
+        m_delayMicros *= 1000;  /* millis->micros */
+    } else {
+        m_delayMicros = 0;
+    }
     RelayConfigs::GetConfigs()->GetValueFor( "HEARTBEAT", &m_heatbeat );
     logf( XW_LOGINFO, "initing cref for cookie %s, connName %s",
           m_cookie.c_str(), m_connName.c_str() );
@@ -881,6 +887,10 @@ CookieRef::forward_or_store( const CRefEvent* evt )
 
     /* This is an ugly hack!!!! */
     *buf = XWRELAY_MSG_FROMRELAY;
+
+    if ( 0 < m_delayMicros && destSocket != -1 ) {
+        usleep( m_delayMicros );
+    }
 
     if ( (destSocket == -1)
          || !send_with_length( destSocket, buf, buflen, true ) ) {
