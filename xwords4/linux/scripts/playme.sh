@@ -4,7 +4,6 @@ HOSTNAME=localhost
 ROOM_ADD=""
 NGAMES=10
 PORT=10999
-DBUG=0
 HOW_LONG=360
 DICT=dict.xwd
 
@@ -45,7 +44,7 @@ do_one() {
         $EXE -u -o -0 -C "$ROOM" -a $HOSTNAME -r Relay -d $DICT -p $PORT \
             $SERVER >/dev/null 2>>${LOG_FILE} &
         PID=$!
-        echo "launched $ROOM (pid=$PID)"
+        echo "$(date): launched $ROOM (pid=$PID)"
 
         END_TIME=$(($(date +%s) + $HOW_LONG))
         while [ -d /proc/$PID ]; do
@@ -56,7 +55,7 @@ do_one() {
             elif [ ! -d /proc/$PID ]; then
                 break
             elif [ $(date +%s) -ge $END_TIME ]; then
-                echo "timing out $ROOM ($PID)"
+                echo "$(date): timing out $ROOM ($PID)"
                 break
             fi
         done
