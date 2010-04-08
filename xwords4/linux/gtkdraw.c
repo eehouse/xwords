@@ -376,11 +376,11 @@ gtk_draw_vertScrollBoard( DrawCtx* p_dctx, XP_Rect* rect,
         rect->top += rect->height - dist;
     }
     rect->height = dist;
-    XP_LOGF( "%s=>(%d,%d,%d,%d)", __func__, rect->left, rect->top,
-             rect->width, rect->height );
+    /* XP_LOGF( "%s=>(%d,%d,%d,%d)", __func__, rect->left, rect->top, */
+    /*          rect->width, rect->height ); */
 
     return XP_TRUE;
-}
+} /* gtk_draw_vertScrollBoard */
 
 static void
 drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)

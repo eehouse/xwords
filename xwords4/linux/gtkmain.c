@@ -1102,8 +1102,8 @@ scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
     XP_U16 newValue;
     gfloat newValueF = adj->value;
 
-    XP_ASSERT( newValueF >= 0.0
-               && newValueF <= globals->cGlobals.params->nHidden );
+    /* XP_ASSERT( newValueF >= 0.0 */
+    /*            && newValueF <= globals->cGlobals.params->nHidden ); */
     newValue = (XP_U16)newValueF;
 
     if ( board_setYOffset( globals->cGlobals.game.board, newValue ) ) {
