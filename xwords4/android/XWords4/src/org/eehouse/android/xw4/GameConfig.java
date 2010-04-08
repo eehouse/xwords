@@ -532,19 +532,18 @@ public class GameConfig extends Activity implements View.OnClickListener {
         boolean consumed = false;
         if ( keyCode == KeyEvent.KEYCODE_BACK ) {
             saveChanges();
-            if ( 0 <= m_nMoves && (m_giOrig.changesMatter(m_gi)
-                                   || m_carOrig.changesMatter(m_car) ) ) {
+            if ( 0 <= m_nMoves ) { // no confirm needed 
+                applyChanges( true );
+            } else if ( m_giOrig.changesMatter(m_gi) 
+                        || m_carOrig.changesMatter(m_car) ) {
                 showDialog( CONFIRM_CHANGE );
-                consumed = true;
+                consumed = true; // don't dismiss activity yet!
             } else {
                 applyChanges( false );
             }
         }
 
-        if ( !consumed ) {
-            consumed = super.onKeyDown( keyCode, event );
-        }
-        return consumed;
+        return consumed || super.onKeyDown( keyCode, event );
     }
 
     @Override
