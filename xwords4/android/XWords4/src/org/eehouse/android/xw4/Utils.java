@@ -466,6 +466,7 @@ public class Utils {
                                     getColumnIndex(DBHelper.GAME_OVER));
             summary.gameOver = tmp == 0 ? false : true;
         }
+        cursor.close();
         db.close();
         return summary;
     }
