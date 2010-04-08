@@ -145,14 +145,15 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 .setTitle(titleForDlg(id))
                 .setView( LayoutInflater.from(this)
                           .inflate( layoutForDlg(id), null ))
+                .setPositiveButton( R.string.button_ok,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int whichButton ) {
+                                            getRoleSettings();
+                                        }
+                                    })
+                .setNegativeButton( R.string.button_cancel, null )
                 .create();
-            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss( DialogInterface di ) 
-                    {
-                        getRoleSettings();
-                    }
-                });
             break;
 
         case FORCE_REMOTE:
