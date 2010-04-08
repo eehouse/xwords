@@ -125,8 +125,8 @@ typedef struct UtilVtable {
     void (*m_util_trayHiddenChange)(XW_UtilCtxt* uc, 
                                     XW_TrayVisState newState,
                                     XP_U16 nVisibleRows );
-    void (*m_util_yOffsetChange)(XW_UtilCtxt* uc, XP_U16 oldOffset,
-                                 XP_U16 newOffset );
+    void (*m_util_yOffsetChange)(XW_UtilCtxt* uc, XP_U16 maxOffset,
+                                 XP_U16 oldOffset, XP_U16 newOffset );
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     void (*m_util_turnChanged)(XW_UtilCtxt* uc);
 #endif
@@ -206,8 +206,8 @@ struct XW_UtilCtxt {
 #define util_trayHiddenChange( uc, b, n ) \
          (uc)->vtable->m_util_trayHiddenChange((uc), (b), (n))
 
-#define util_yOffsetChange( uc, o, n ) \
-         (uc)->vtable->m_util_yOffsetChange((uc), (o), (n) )
+#define util_yOffsetChange( uc, m, o, n )                        \
+         (uc)->vtable->m_util_yOffsetChange((uc), (m), (o), (n) )
 
 #ifdef XWFEATURE_TURNCHANGENOTIFY
 # define util_turnChanged( uc ) \

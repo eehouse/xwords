@@ -1232,12 +1232,12 @@ curses_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc),
 } /* curses_util_askPassword */
 
 static void
-curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 oldOffset, 
-                           XP_U16 newOffset )
+curses_util_yOffsetChange( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 maxOffset,
+                           XP_U16 oldOffset, XP_U16 newOffset )
 {
     if ( oldOffset != newOffset ) {
-	XP_WARNF( "curses_util_yOffsetChange(%d,%d) not implemented",
-		  oldOffset, newOffset );    
+        XP_WARNF( "curses_util_yOffsetChange(%d,%d,%d) not implemented",
+                  maxOffset, oldOffset, newOffset );    
     }
 } /* curses_util_yOffsetChange */
 
@@ -1378,10 +1378,11 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     BoardCtxt* board = globals->cGlobals.game.board;
     int remWidth = width;
 
-    board_setPos( board, BOARD_OFFSET, BOARD_OFFSET, XP_FALSE );
     cellWidth = CURSES_CELL_WIDTH;
     cellHt = CURSES_CELL_HT;
-    board_setScale( board, cellWidth, cellHt );
+    board_setPos( board, BOARD_OFFSET, BOARD_OFFSET, 
+                  cellWidth * MAX_COLS, cellHt * MAX_ROWS, XP_FALSE );
+    /* board_setScale( board, cellWidth, cellHt ); */
     scoreLeft = (cellWidth * MAX_COLS);// + BOARD_SCORE_PADDING;
     remWidth -= cellWidth * MAX_COLS;
 

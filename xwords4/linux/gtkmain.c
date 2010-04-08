@@ -503,7 +503,7 @@ static gboolean
 configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                  GtkAppGlobals* globals )
 {
-    short bdWidth, bdHeight, leftMargin, topMargin;
+    short bdWidth, bdHeight;
     short timerLeft, timerTop;
     gint hscale, vscale;
     gint trayTop;
@@ -523,11 +523,13 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
         - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
 
     hscale = bdWidth / GTK_NUM_COLS;
-    vscale = (bdHeight / (GTK_NUM_ROWS + GTK_TRAY_HT_ROWS)); /* makd tray
-                                                                height 3x cell
-                                                                height */
-    leftMargin = (bdWidth - (hscale*GTK_NUM_COLS)) / 2;
-    topMargin = (bdHeight - (vscale*(GTK_NUM_ROWS*2))) / 2;
+    if ( 0 != globals->cGlobals.params->nHidden ) {
+        vscale = hscale;
+    } else {
+        vscale = (bdHeight / (GTK_NUM_ROWS + GTK_TRAY_HT_ROWS)); /* makd tray
+                                                                    height 3x cell
+                                                                    height */
+    }
 
     if ( !globals->cGlobals.params->verticalScore ) {
         boardTop += GTK_HOR_SCORE_HEIGHT;
@@ -537,8 +539,10 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     /* move tray up if part of board's meant to be hidden */
     trayTop -= vscale * globals->cGlobals.params->nHidden;
     board_setPos( globals->cGlobals.game.board, GTK_BOARD_LEFT, boardTop,
+                  hscale*GTK_NUM_COLS, 
+                  vscale * (GTK_NUM_ROWS-globals->cGlobals.params->nHidden),
                   XP_FALSE );
-    board_setScale( globals->cGlobals.game.board, hscale, vscale );
+    /* board_setScale( globals->cGlobals.game.board, hscale, vscale ); */
     globals->gridOn = XP_TRUE;
 
     if ( !!globals->cGlobals.game.comms ) {
@@ -1077,6 +1081,22 @@ handle_done_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 } /* handle_done_button */
 
 static void
+handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    if ( board_zoom( globals->cGlobals.game.board, 2 ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
+} /* handle_done_button */
+
+static void
+handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
+{
+    if ( board_zoom( globals->cGlobals.game.board, -2 ) ) {
+        board_draw( globals->cGlobals.game.board );
+    }
+} /* handle_done_button */
+
+static void
 scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
 {
     XP_U16 newValue;
@@ -1094,20 +1114,20 @@ scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
 static void
 handle_grid_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    XP_U16 scaleH, scaleV;
+    /* XP_U16 scaleH, scaleV; */
     XP_Bool gridOn = globals->gridOn;
 
-    board_getScale( globals->cGlobals.game.board, &scaleH, &scaleV );
+    /* board_getScale( globals->cGlobals.game.board, &scaleH, &scaleV ); */
 
-    if ( gridOn ) {
-        --scaleH;
-        --scaleV;
-    } else {
-        ++scaleH;
-        ++scaleV;
-    }
+    /* if ( gridOn ) { */
+    /*     --scaleH; */
+    /*     --scaleV; */
+    /* } else { */
+    /*     ++scaleH; */
+    /*     ++scaleV; */
+    /* } */
 
-    board_setScale( globals->cGlobals.game.board, scaleH, scaleV );
+    /* board_setScale( globals->cGlobals.game.board, scaleH, scaleV ); */
     globals->gridOn = !gridOn;
 
     board_draw( globals->cGlobals.game.board );
@@ -1222,13 +1242,19 @@ gtk_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(state),
 } /* gtk_util_trayHiddenChange */
 
 static void
-gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
+gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset, 
+                        XP_U16 XP_UNUSED(oldOffset), 
                         XP_U16 newOffset )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
-    XP_ASSERT( globals->cGlobals.params->nHidden > 0 );
-    globals->adjustment->value = newOffset;
-    gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
+    /* XP_ASSERT( globals->cGlobals.params->nHidden > 0 ); */
+    if ( !!globals->adjustment ) {
+        globals->adjustment->page_size = GTK_NUM_ROWS - maxOffset;
+        globals->adjustment->value = newOffset;
+        gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
+    } else {
+        XP_LOGF( "skipping scroll adjustment: no scrollbar" );
+    }
 } /* gtk_util_yOffsetChange */
 
 static void
@@ -1675,6 +1701,12 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     button = makeShowButtonFromBitmap( globals, "../done.xpm", "d",
                                        G_CALLBACK(handle_done_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    button = makeShowButtonFromBitmap( globals, "../done.xpm", "+",
+                                       G_CALLBACK(handle_zoomin_button) );
+    gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
+    button = makeShowButtonFromBitmap( globals, "../done.xpm", "-",
+                                       G_CALLBACK(handle_zoomout_button) );
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );

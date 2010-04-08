@@ -105,6 +105,9 @@ static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player,
                                    XP_Bool visible );
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
 
+static XP_Bool board_setXOffset( BoardCtxt* board, XP_U16 offset );
+
+
 #ifdef KEY_SUPPORT
 static XP_Bool moveKeyTileToBoard( BoardCtxt* board, XP_Key cursorKey,
                                    XP_Bool* gotArrow );
@@ -199,6 +202,10 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 
     board = board_make( MPPARM(mpool) model, server, draw, util );
 
+    if ( version >= STREAM_VERS_4YOFFSET) {
+        board->xOffset = (XP_U16)stream_getBits( stream, 4 );
+        board->zoomCount = (XP_U16)stream_getBits( stream, 4 );
+    }
     board->yOffset = (XP_U16)
         stream_getBits( stream, (version < STREAM_VERS_4YOFFSET) ? 2 : 4 );
     board->isFlipped = (XP_Bool)stream_getBits( stream, 1 );
@@ -265,6 +272,8 @@ board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream )
 {
     XP_U16 nPlayers, i;
     
+    stream_putBits( stream, 4, board->xOffset );
+    stream_putBits( stream, 4, board->zoomCount );
     stream_putBits( stream, 4, board->yOffset );
     stream_putBits( stream, 1, board->isFlipped );
     stream_putBits( stream, 1, board->gameOver );
@@ -346,10 +355,14 @@ board_reset( BoardCtxt* board )
 
 void
 board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
-              XP_Bool leftHanded )
+              XP_U16 width, XP_U16 height, XP_Bool leftHanded )
 {
+    XP_LOGF( "%s(%d,%d,%d,%d)", __func__, left, top, width, height );
+
     board->boardBounds.left = left;
     board->boardBounds.top = top;
+    board->boardBounds.width = width;
+    board->heightAsSet = height;
     board->leftHanded = leftHanded;
 
     figureBoardRect( board );
@@ -428,6 +441,23 @@ board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
 } /* board_prefsChanged */
 
 XP_Bool
+adjustXOffset( BoardCtxt* board, XP_S16 moveBy )
+{
+    /* XP_LOGF( "%s(%d)", __func__, moveBy ); */
+    XP_U16 nCols = model_numCols(board->model);
+    XP_U16 nVisible = nCols - board->zoomCount;
+    XP_S16 newOffset = board->xOffset - moveBy;
+
+    if ( newOffset < 0 ) {
+        newOffset = 0;
+    } else if ( newOffset + nVisible > nCols ) {
+        newOffset = nCols - nVisible;
+    }
+
+    return board_setXOffset( board, newOffset );
+} /* adjustXOffset */
+
+XP_Bool
 adjustYOffset( BoardCtxt* board, XP_S16 moveBy )
 {
     XP_U16 nVisible = board->lastVisibleRow - board->yOffset + 1;
@@ -442,6 +472,20 @@ adjustYOffset( BoardCtxt* board, XP_S16 moveBy )
 
     return board_setYOffset( board, newOffset );
 } /* adjustYOffset */
+
+static XP_Bool
+board_setXOffset( BoardCtxt* board, XP_U16 offset )
+{
+    XP_Bool changed = offset != board->xOffset;
+    if ( changed ) {
+        board->xOffset = offset;
+        board->lastVisibleCol = model_numCols(board->model)
+            - board->zoomCount + offset;
+        XP_LOGF( "%s: lastVisibleCol=%d", __func__, board->lastVisibleCol );
+        board_invalAll( board );
+    }
+    return changed;
+}
 
 XP_Bool
 board_setYOffset( BoardCtxt* board, XP_U16 offset )
@@ -465,7 +509,8 @@ board_setYOffset( BoardCtxt* board, XP_U16 offset )
                 invalSelTradeWindow( board );
                 board->yOffset = offset;
                 figureBoardRect( board );
-                util_yOffsetChange( board->util, oldOffset, offset );
+                util_yOffsetChange( board->util, board->maxYOffset,
+                                    oldOffset, offset );
                 invalSelTradeWindow( board );
                 board->needsDrawing = XP_TRUE;
             }
@@ -480,6 +525,42 @@ board_getYOffset( const BoardCtxt* board )
 {
     return board->yOffset;
 } /* board_getYOffset */
+
+XP_Bool
+board_zoom( BoardCtxt* board, XP_S16 zoomBy )
+{
+    XP_Bool changed;
+    XP_S16 zoomCount = board->zoomCount;
+
+    XP_U16 maxCount = model_numCols( board->model ) - 1;
+    if ( board->boardBounds.width > board->boardBounds.height ) {
+        XP_U16 ratio = board->boardBounds.width / board->boardBounds.height;
+        maxCount -= ratio;
+    }
+
+    zoomCount += zoomBy;
+    if ( zoomCount < 0 ) {
+        zoomCount = 0;
+    } else if ( zoomCount > maxCount ) {
+        zoomCount = maxCount;
+    }
+
+    changed = zoomCount != board->zoomCount;
+    if ( changed ) {
+        /* Try to distribute the zoom */
+        XP_S16 xOffset = board->xOffset;
+        xOffset += zoomBy / 2;
+        if ( xOffset < 0 ) {
+            xOffset = 0;
+        }
+        board->xOffset = xOffset;
+
+        board->zoomCount = zoomCount;
+        figureBoardRect( board );
+        board_invalAll( board );
+    }
+    return changed;
+} /* board_zoom */
 
 #ifdef KEYBOARD_NAV
 /* called by ncurses version only */
@@ -1068,6 +1149,7 @@ checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row )
                         board->boardBounds.top + board->boardBounds.height ) {
                 moveBy = -1;
             } else {
+                /* what if a horizontal scroll's what's needed? */
                 XP_ASSERT( 0 );
             }
             moved = adjustYOffset( board, moveBy );
@@ -1103,13 +1185,15 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
                   XP_U16 trayWidth, XP_U16 trayHeight,
                   XP_U16 minDividerWidth )
 {
+    XP_LOGF( "%s(%d,%d,%d,%d)", __func__, trayLeft, trayTop, 
+             trayWidth, trayHeight );
+
     XP_U16 dividerWidth;
-    XP_U16 boardBottom, boardRight;
-    XP_Bool boardHidesTray;
+    /* XP_U16 boardBottom, boardRight; */
+    /* XP_Bool boardHidesTray; */
+
     board->trayBounds.left = trayLeft;
     board->trayBounds.top = trayTop;
-    /* what's this +1 for? */
-
     board->trayBounds.width = trayWidth;
     board->trayBounds.height = trayHeight;
 
@@ -1124,29 +1208,29 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
     /* boardObscuresTray is about whether they *can* overlap, not just about
      * they do given the current scroll position of the board. Remember
      * (e.g. for curses version) that vertical intersection isn't enough.*/
-    boardBottom = board->boardBounds.top
-        + (board->boardVScale * model_numRows( board->model ));
-    boardRight = board->boardBounds.left
-        + (board->boardHScale * model_numCols( board->model ));
-    board->boardObscuresTray = (trayTop < boardBottom)
-        && (trayLeft < boardRight);
+    /* boardBottom = board->boardBounds.top */
+    /*     + (board->boardVScale * model_numRows( board->model )); */
+    /* boardRight = board->boardBounds.left */
+    /*     + (board->boardHScale * model_numCols( board->model )); */
+    /* board->boardObscuresTray = (trayTop < boardBottom) */
+    /*     && (trayLeft < boardRight); */
 
-    boardHidesTray = board->boardObscuresTray;
-    if ( boardHidesTray ) { /* can't hide if doesn't obscure */
-        if ( (trayTop + trayHeight) > boardBottom ) {
-            boardHidesTray = XP_FALSE;
-        } else if ( (trayLeft + trayWidth) > boardRight ) {
-            boardHidesTray = XP_FALSE;
-        }
-    }
-    board->boardHidesTray = boardHidesTray;
+    /* boardHidesTray = board->boardObscuresTray; */
+    /* if ( boardHidesTray ) { /\* can't hide if doesn't obscure *\/ */
+    /*     if ( (trayTop + trayHeight) > boardBottom ) { */
+    /*         boardHidesTray = XP_FALSE; */
+    /*     } else if ( (trayLeft + trayWidth) > boardRight ) { */
+    /*         boardHidesTray = XP_FALSE; */
+    /*     } */
+    /* } */
+    /* board->boardHidesTray = boardHidesTray; */
 
-    if ( board->trayVisState == TRAY_HIDDEN ) {
-        if ( !board->boardHidesTray ) {
-            XW_TrayVisState state = TRAY_REVERSED;
-            setTrayVisState( board, state );
-        }
-    }
+    /* if ( board->trayVisState == TRAY_HIDDEN ) { */
+    /*     if ( !board->boardHidesTray ) { */
+    /*         XW_TrayVisState state = TRAY_REVERSED; */
+    /*         setTrayVisState( board, state ); */
+    /*     } */
+    /* } */
     figureBoardRect( board );
 } /* board_setTrayLoc */
 
@@ -1546,99 +1630,245 @@ board_requestHint( BoardCtxt* board,
 } /* board_requestHint */
 
 static void
+figureDims( XP_U16* edges, XP_U16 len, XP_U16 nVisible, 
+            XP_U16 increment, XP_U16 extra )
+{
+    XP_U16 ii;
+    for ( ii = 0; ii < len; ++ii ) {
+        XP_U16 dim = increment;
+        if ( ii % nVisible == 0 ) {
+            dim += extra;
+        }
+        edges[ii] = dim;
+    }
+}
+
+static XP_U16
+figureHScale( BoardCtxt* board )
+{
+    XP_U16 nCols = model_numCols( board->model );
+    XP_U16 nVisCols = nCols - board->zoomCount;
+    XP_U16 scale = board->boardBounds.width / nVisCols;
+    XP_U16 spares = board->boardBounds.width % nVisCols;
+    //XP_U16 edge, col;
+
+    board->lastVisibleCol = nCols - board->zoomCount + board->xOffset - 1;
+
+    figureDims( board->colWidths, VSIZE(board->colWidths), nVisCols, 
+                scale, spares );
+
+    return scale;
+} /* figureHScale */
+
+static void
 figureBoardRect( BoardCtxt* board )
 {
-    XP_U16 boardVScale = board->boardVScale;
-    if ( boardVScale > 0 ) {
+    if ( board->boardBounds.width > 0 && board->trayBounds.width > 0 ) {
         XP_Rect boardBounds = board->boardBounds;
         XP_U16 nVisible;
         XP_U16 nRows = model_numRows( board->model );
+        XP_U16 boardScale = figureHScale( board );
 
-        /* Sanity-check yOffset */
-        if ( 0 < board->yOffset ) {
-            XP_S16 maxOffset = nRows -
-                ((board->trayBounds.top - boardBounds.top) / board->boardVScale);
-            if ( (maxOffset >= 0) && (maxOffset < board->yOffset) ) {
-                board->yOffset = maxOffset;
-            }
+        board->boardHScale = board->boardVScale = boardScale;
+
+        /* Figure height of board.  Max height is with all rows visible and
+           each row as tall as boardScale.  But that may make it overlap tray,
+           if it's visible, or the bottom of the board as set in board_setPos.
+           So we check those two possibilities. */
+
+        XP_U16 maxHeight, wantHeight = nRows * boardScale;
+        XP_Bool trayHidden = board->trayVisState == TRAY_HIDDEN;
+        if ( trayHidden ) {
+            maxHeight = board->heightAsSet;
+        } else {
+            maxHeight = board->trayBounds.top - board->boardBounds.top;
         }
+        XP_U16 extra;
+        if ( wantHeight <= maxHeight ) { /* yay!  No need to scale */
+            boardBounds.height = wantHeight;
+            board->boardObscuresTray = XP_FALSE;
+            board->yOffset = 0;
+            nVisible = nRows;
+            extra = 0;
+        } else {
+            XP_S16 maxYOffset;
+            XP_U16 oldYOffset = board->yOffset;
+            XP_Bool yChanged = XP_TRUE;
+            /* Need to hide rows etc. */
+            boardBounds.height = maxHeight;
 
-        boardBounds.width = model_numCols( board->model ) * board->boardHScale;
-        boardBounds.height = (nRows - board->yOffset)
-            * board->boardVScale;
-
-        if ( board->boardObscuresTray ) {
-            if ( trayOnTop( board ) ) {
-                boardBounds.height = board->trayBounds.top - boardBounds.top;
+            nVisible = maxHeight / boardScale;
+            maxYOffset = nRows - nVisible;
+            if ( board->yOffset > maxYOffset ) {
+                board->yOffset = maxYOffset;
+            } else if ( maxYOffset != board->maxYOffset ) {
+                board->maxYOffset = maxYOffset;
             } else {
-                XP_U16 trayBottom;
-                trayBottom = board->trayBounds.top + board->trayBounds.height;
-                if ( trayBottom < boardBounds.top + boardBounds.height ) {
-                    boardBounds.height = trayBottom - boardBounds.top;
-                }
+                yChanged = XP_FALSE;
             }
+
+            if ( yChanged ) {
+                util_yOffsetChange( board->util, maxYOffset, oldYOffset, 
+                                    board->yOffset );
+            }
+
+            XP_LOGF( "%s: maxYOffset: %d; board->yOffset: %d", __func__, 
+                     board->maxYOffset, board->yOffset );
+
+            board->boardObscuresTray = !trayHidden;
+            extra = maxHeight % boardScale;
         }
-        /* round down */
-        nVisible = boardBounds.height / boardVScale;
-        boardBounds.height = nVisible * boardVScale;
         board->lastVisibleRow = nVisible + board->yOffset - 1;
+
+        figureDims( board->rowHeights, VSIZE(board->rowHeights), nVisible, 
+                    board->boardVScale, extra );
+
+        /* if ( board->boardObscuresTray ) { */
+        /*     if ( trayOnTop( board ) ) { */
+        /*         boardBounds.height = board->trayBounds.top - boardBounds.top; */
+        /*     } else { */
+        /*         XP_U16 trayBottom; */
+        /*         trayBottom = board->trayBounds.top + board->trayBounds.height; */
+        /*         if ( trayBottom < boardBounds.top + boardBounds.height ) { */
+        /*             boardBounds.height = trayBottom - boardBounds.top; */
+        /*         } */
+        /*     } */
+        /* } */
+        /* round down */
+        /* nVisible = boardBounds.height / boardScale; */
+        /* boardBounds.height = nVisible * boardScale; */
+        /* board->lastVisibleRow = nVisible + board->yOffset - 1; */
+        /* XP_ASSERT( board->lastVisibleRow < model_numRows(board->model) ); */
 
         board->boardBounds = boardBounds;
     }
 } /* figureBoardRect */
 
+/* Previously this function returned the *model* column,row under coordinates.
+ * That is, it adjusted for scrolling by pretending yy was a larger value when
+ * scrolling had occurred.  Calculations by callers are all done based on the
+ * model, and then at draw time we convert back to coordinates that take
+ * scrolling into account.
+ *
+ * The extra-pixel distribution then needs to slide depending on what row is
+ * topmost.  The top visible row always gets n visible pixels -- always starts
+ * at a given coordinate.  But what model cell maps to it changes.  This
+ * implies that the decision is made based on coordinates and that offsets are
+ * added in at the end.
+ */
 XP_Bool
 coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP, 
              XP_U16* rowP )
 {
-    XP_U16 col, row, max;
-    XP_Bool onBoard = XP_TRUE;
+    XP_U16 col, row;
+    XP_U16 maxCols = model_numCols( board->model );
+    XP_S16 gotCol = -1;
+    XP_S16 gotRow = -1;
 
     xx -= board->boardBounds.left;
+    XP_ASSERT( xx >= 0 );
 
+    //prev = board->boardBounds.left;
+    for ( col = board->xOffset; col < maxCols; ++col ) {
+        xx -= board->colWidths[col];
+        if ( xx < 0 ) {
+            gotCol = col;
+            break;
+        }
+        /* XP_U16 cur = board->rightEdges[col]; */
+        /* if ( xx >= prev && xx <= cur ) { */
+        /*     gotCol = col + board->xOffset; */
+        /*     break; */
+        /* } */
+        /* prev = cur; */
+    }
+
+    //prev = board->boardBounds.top;
     yy -= board->boardBounds.top;
-    yy += board->boardVScale * board->yOffset;
-
-    col = xx / board->boardHScale;
-    row = yy / board->boardVScale;
-
-    max = model_numCols( board->model ) - 1;
-    /* I don't deal with non-square boards yet. */
-    XP_ASSERT( max + 1 == model_numRows( board->model ) );
-    if ( col > max ) {
-        col = max;
-        onBoard = XP_FALSE;
-    }
-    if ( row > max ) {
-        row = max;
-        onBoard = XP_FALSE;
+    XP_ASSERT( yy >= 0 );
+    for ( row = board->yOffset; row < maxCols; ++row ) {
+        yy -= board->rowHeights[col];
+        if ( yy < 0 ) {
+            gotRow = row;
+            break;
+        }
+        /* XP_U16 cur = board->bottomEdges[col]; */
+        /* if ( yy >= prev && yy <= cur ) { */
+        /*     gotRow = row + board->yOffset; */
+        /*     break; */
+        /* } */
+        /* prev = cur; */
     }
 
-    *colP = col;
-    *rowP = row;
-    return onBoard;
+    /* XP_LOGF( "%s=>%d,%d", __func__, gotCol, gotRow ); */
+
+    *colP = gotCol;
+    *rowP = gotRow;
+    return gotRow != -1 && gotCol != -1;
 } /* coordToCell */
 
+/* Like coordToCell, getCellRect takes model values and returns screen
+ * coords. 
+ *
+ * But the dimensions of the cells need to stick with the column,row values to
+ * allow bitblit-based scrolling.  That is, column 1 has the same width
+ * whether drawn in position 0 or 1.
+ *
+ * This suggests that we don't want board dimensions built into the edge
+ * arrays.
+ */
 XP_Bool
 getCellRect( const BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
 {
-    XP_S16 top;
-    XP_Bool onBoard = XP_TRUE;
+    XP_U16 cur;
+    XP_Bool onBoard = col >= board->xOffset && row >= board->yOffset;
 
-    if ( row < board->yOffset ) {
-        onBoard = XP_FALSE;
+    rect->left = board->boardBounds.left;
+    for ( cur = board->xOffset; cur < col; ++cur ) {
+        rect->left += board->colWidths[cur];
     }
+    rect->width = board->colWidths[col];
 
-    rect->left = board->boardBounds.left + (col * board->boardHScale);
-    top = board->boardBounds.top + 
-        ((row - board->yOffset) * board->boardVScale);
-    if ( top >= (board->boardBounds.top + board->boardBounds.height) ) {
-        onBoard = XP_FALSE;
+    rect->top = board->boardBounds.top;
+    for ( cur = board->yOffset; cur < row; ++cur ) {
+        rect->top += board->rowHeights[cur];
     }
-    rect->top = top;
+    rect->height = board->rowHeights[row];
 
-    rect->width = board->boardHScale;
-    rect->height = board->boardVScale;
+    /* if ( col < 0 ) { */
+    /*     /\* WTF do I do *\/ */
+    /*     XP_LOGF( "%s: looking at off-board col", __func__ ); */
+    /* } else if ( col == 0 ) { */
+    /*     rect->left = board->boardBounds.left; */
+    /* } else { */
+    /*     rect->left = board->rightEdges[col-1]; */
+    /* } */
+
+    /* /\* We now store how much to add for each row and so need to add for each */
+    /*    row.  So figure out the row then add *\/ */
+
+
+    /* row -= board->yOffset; */
+    /* if ( row < 0 ) { */
+    /*     /\* WTF do I do *\/ */
+    /*     XP_LOGF( "%s: looking at off-board row", __func__ ); */
+    /* } else if ( row == 0 ) { */
+    /*     rect->top = board->boardBounds.top; */
+    /* } else { */
+    /*     rect->top = board->bottomEdges[row-1]; */
+    /* } */
+
+    /* /\* top = board->boardBounds.top +  *\/ */
+    /* /\*     ((row - board->yOffset) * board->boardVScale); *\/ */
+    /* /\* if ( top >= (board->boardBounds.top + board->boardBounds.height) ) { *\/ */
+    /* /\*     onBoard = XP_FALSE; *\/ */
+    /* /\* } *\/ */
+    /* /\* rect->top = top; *\/ */
+
+    /* rect->width = board->rightEdges[col] - rect->left; */
+    /* rect->height = board->bottomEdges[row] - rect->top; */
+    /* XP_LOGF( "%s: %d,%d,%d,%d", __func__, rect->left, rect->top, */
+    /*          rect->width, rect->height ); */
     return onBoard;
 } /* getCellRect */
 

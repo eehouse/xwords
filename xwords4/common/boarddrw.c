@@ -237,8 +237,8 @@ drawBoard( BoardCtxt* board )
                              dfsFor( board, OBJ_BOARD ) ) ) {
 
         XP_Bool allDrawn = XP_TRUE;
-        XP_S16 lastCol, i;
-        XP_S16 row;
+        XP_S16 i;
+        XP_S16 col, row, nVisCols;
         ModelCtxt* model = board->model;
         BoardArrow const* arrow = NULL;
         BlankQueue bq;
@@ -267,16 +267,17 @@ drawBoard( BoardCtxt* board )
                 }
             }
         }
-
+        
+        nVisCols = model_numCols( model ) - board->zoomCount;
         for ( row = board->yOffset; row <= board->lastVisibleRow; ++row ) {
             XP_U16 rowFlags = board->redrawFlags[row];
             if ( rowFlags != 0 ) {
-                XP_U16 colMask;
                 XP_U16 failedBits = 0;
-                lastCol = model_numCols( model );
-                for ( colMask = 1<<(lastCol-1); lastCol--; colMask >>= 1 ) {
-                    if ( (rowFlags & colMask) != 0 ) {
-                        if ( !drawCell( board, lastCol, row, XP_TRUE )) {
+                for ( col = 0; col < nVisCols; ++col ) {
+                    XP_U16 colMask = 1 << (col + board->xOffset);
+                    if ( 0 != (rowFlags & colMask) ) {
+                        if ( !drawCell( board, col + board->xOffset,
+                                        row, XP_TRUE )) {
                             failedBits |= colMask;
                             allDrawn = XP_FALSE;
                         }

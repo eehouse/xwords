@@ -128,8 +128,11 @@ struct BoardCtxt {
 
     XP_U16 boardHScale;
     XP_U16 boardVScale;
+    XP_U16 xOffset;
     XP_U16 yOffset;
+    XP_U16 maxYOffset;
     XP_U16 lastVisibleRow;
+    XP_U16 lastVisibleCol;
     XP_U16 preHideYOffset;
     XP_U16 prevYScrollOffset; /* represents where the last draw took place;
                                  used to see if bit scrolling can be used */
@@ -145,6 +148,7 @@ struct BoardCtxt {
     XP_U16 redrawFlags[MAX_ROWS];
 
     XP_Rect boardBounds;
+    XP_U16 heightAsSet;
 
     BoardObjectType penDownObject;
 
@@ -166,6 +170,9 @@ struct BoardCtxt {
     XP_Bool srcIsPen;      /* We're processing a pen event, not a key event */
 
     XP_U16 star_row;
+    XP_U16 zoomCount;
+    XP_U16 colWidths[MAX_COLS];
+    XP_U16 rowHeights[MAX_COLS];
 
     /* Unless KEYBOARD_NAV is defined, this does not change */
     BoardObjectType focussed;
@@ -279,6 +286,7 @@ XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
 XP_Bool checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
 XP_Bool onBorderCanScroll( const BoardCtxt* board, XP_U16 row, XP_S16* change );
+XP_Bool adjustXOffset( BoardCtxt* board, XP_S16 moveBy );
 XP_Bool adjustYOffset( BoardCtxt* board, XP_S16 moveBy );
 
 

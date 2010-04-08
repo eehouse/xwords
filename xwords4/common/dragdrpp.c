@@ -26,7 +26,9 @@ extern "C" {
 #include "game.h"
 
 /* How many squares must scroll gesture take in to be recognized. */
-#define SCROLL_DRAG_THRESHHOLD 3
+#ifndef SCROLL_DRAG_THRESHHOLD
+# define SCROLL_DRAG_THRESHHOLD 3
+#endif
 
 static XP_Bool dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
                                      BoardObjectType* onWhichP );
@@ -468,6 +470,10 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
             XP_S16 diff = newInfo.u.board.row - ds->cur.u.board.row;
             diff /= SCROLL_DRAG_THRESHHOLD;
             moving = adjustYOffset( board, diff );
+
+            diff = newInfo.u.board.col - ds->cur.u.board.col;
+            diff /= SCROLL_DRAG_THRESHHOLD;
+            moving = adjustXOffset( board, diff ) || moving;
         }
     } else {
         if ( newInfo.obj == OBJ_BOARD ) {

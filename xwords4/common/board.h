@@ -70,12 +70,14 @@ void board_destroy( BoardCtxt* board );
 void board_writeToStream( BoardCtxt* board, XWStreamCtxt* stream );
 
 void board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
-                   XP_Bool leftHanded );
+                   XP_U16 width, XP_U16 height, XP_Bool leftHanded );
 void board_reset( BoardCtxt* board );
 
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
+
+XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy );
 
 void board_setScoreboardLoc( BoardCtxt* board, 
                              XP_U16 scoreLeft, XP_U16 scoreTop,
@@ -100,9 +102,6 @@ XP_Bool board_requestHint( BoardCtxt* board,
                            XP_Bool useTileLimits,
 #endif
                            XP_Bool* workRemainsP );
-
-void board_setScale( BoardCtxt* board, XP_U16 hScale, XP_U16 vScale );
-void board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale );
 
 XP_Bool board_prefsChanged( BoardCtxt* board, CommonPrefs* cp );
 
