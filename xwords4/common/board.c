@@ -1,6 +1,6 @@
 /* -*- fill-column: 78; compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1205,32 +1205,6 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
 
     board->dividerWidth = dividerWidth;
 
-    /* boardObscuresTray is about whether they *can* overlap, not just about
-     * they do given the current scroll position of the board. Remember
-     * (e.g. for curses version) that vertical intersection isn't enough.*/
-    /* boardBottom = board->boardBounds.top */
-    /*     + (board->boardVScale * model_numRows( board->model )); */
-    /* boardRight = board->boardBounds.left */
-    /*     + (board->boardHScale * model_numCols( board->model )); */
-    /* board->boardObscuresTray = (trayTop < boardBottom) */
-    /*     && (trayLeft < boardRight); */
-
-    /* boardHidesTray = board->boardObscuresTray; */
-    /* if ( boardHidesTray ) { /\* can't hide if doesn't obscure *\/ */
-    /*     if ( (trayTop + trayHeight) > boardBottom ) { */
-    /*         boardHidesTray = XP_FALSE; */
-    /*     } else if ( (trayLeft + trayWidth) > boardRight ) { */
-    /*         boardHidesTray = XP_FALSE; */
-    /*     } */
-    /* } */
-    /* board->boardHidesTray = boardHidesTray; */
-
-    /* if ( board->trayVisState == TRAY_HIDDEN ) { */
-    /*     if ( !board->boardHidesTray ) { */
-    /*         XW_TrayVisState state = TRAY_REVERSED; */
-    /*         setTrayVisState( board, state ); */
-    /*     } */
-    /* } */
     figureBoardRect( board );
 } /* board_setTrayLoc */
 
@@ -1252,6 +1226,7 @@ invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
 
         for ( row = top; row <= bottom; ++row ) {
             for ( col = left; col <= right; ++col ) {
+                XP_LOGF( "calling invalCell(%d,%d)", col, row );
                 invalCell( board, col, row );
             }
         }
@@ -1667,16 +1642,21 @@ figureBoardRect( BoardCtxt* board )
         XP_Rect boardBounds = board->boardBounds;
         XP_U16 nVisible;
         XP_U16 nRows = model_numRows( board->model );
-        XP_U16 boardScale = figureHScale( board );
+        XP_U16 boardHScale = figureHScale( board );
 
-        board->boardHScale = board->boardVScale = boardScale;
+        if ( boardHScale != board->boardHScale ) {
+            board_invalAll( board );
+            board->boardHScale = boardHScale;
+        }
+
+        board->boardVScale = boardHScale;
 
         /* Figure height of board.  Max height is with all rows visible and
            each row as tall as boardScale.  But that may make it overlap tray,
            if it's visible, or the bottom of the board as set in board_setPos.
            So we check those two possibilities. */
 
-        XP_U16 maxHeight, wantHeight = nRows * boardScale;
+        XP_U16 maxHeight, wantHeight = nRows * boardHScale;
         XP_Bool trayHidden = board->trayVisState == TRAY_HIDDEN;
         if ( trayHidden ) {
             maxHeight = board->heightAsSet;
@@ -1685,19 +1665,21 @@ figureBoardRect( BoardCtxt* board )
         }
         XP_U16 extra;
         if ( wantHeight <= maxHeight ) { /* yay!  No need to scale */
-            boardBounds.height = wantHeight;
+            board->boardVScale = maxHeight / nRows;
+            extra = maxHeight % nRows;
+            boardBounds.height = maxHeight;
             board->boardObscuresTray = XP_FALSE;
             board->yOffset = 0;
             nVisible = nRows;
-            extra = 0;
         } else {
             XP_S16 maxYOffset;
             XP_U16 oldYOffset = board->yOffset;
             XP_Bool yChanged = XP_TRUE;
             /* Need to hide rows etc. */
             boardBounds.height = maxHeight;
+            board->boardVScale = boardHScale;
 
-            nVisible = maxHeight / boardScale;
+            nVisible = maxHeight / boardHScale;
             maxYOffset = nRows - nVisible;
             if ( board->yOffset > maxYOffset ) {
                 board->yOffset = maxYOffset;
@@ -1716,7 +1698,7 @@ figureBoardRect( BoardCtxt* board )
                      board->maxYOffset, board->yOffset );
 
             board->boardObscuresTray = !trayHidden;
-            extra = maxHeight % boardScale;
+            extra = maxHeight % boardHScale;
         }
         board->lastVisibleRow = nVisible + board->yOffset - 1;
 
@@ -1768,22 +1750,14 @@ coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP,
     xx -= board->boardBounds.left;
     XP_ASSERT( xx >= 0 );
 
-    //prev = board->boardBounds.left;
     for ( col = board->xOffset; col < maxCols; ++col ) {
         xx -= board->colWidths[col];
         if ( xx < 0 ) {
             gotCol = col;
             break;
         }
-        /* XP_U16 cur = board->rightEdges[col]; */
-        /* if ( xx >= prev && xx <= cur ) { */
-        /*     gotCol = col + board->xOffset; */
-        /*     break; */
-        /* } */
-        /* prev = cur; */
     }
 
-    //prev = board->boardBounds.top;
     yy -= board->boardBounds.top;
     XP_ASSERT( yy >= 0 );
     for ( row = board->yOffset; row < maxCols; ++row ) {
@@ -1792,12 +1766,6 @@ coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP,
             gotRow = row;
             break;
         }
-        /* XP_U16 cur = board->bottomEdges[col]; */
-        /* if ( yy >= prev && yy <= cur ) { */
-        /*     gotRow = row + board->yOffset; */
-        /*     break; */
-        /* } */
-        /* prev = cur; */
     }
 
     /* XP_LOGF( "%s=>%d,%d", __func__, gotCol, gotRow ); */
