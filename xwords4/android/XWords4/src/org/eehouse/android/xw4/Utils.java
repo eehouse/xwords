@@ -32,6 +32,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import android.content.res.AssetManager;
+import android.content.ContentValues;
 import android.os.Environment;
 import java.io.InputStream;
 import android.widget.CheckBox;
@@ -46,6 +47,9 @@ import java.util.Formatter;
 import android.view.LayoutInflater;
 import android.net.Uri;
 import junit.framework.Assert;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.database.Cursor;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -54,8 +58,10 @@ public class Utils {
 
     static final int DIALOG_ABOUT = 1;
     static final int DIALOG_LAST = DIALOG_ABOUT;
+    static final String DB_PATH = "XW_GAMES";
 
     private static Time s_time = new Time();
+    private static SQLiteOpenHelper m_dbHelper = null;
 
     private Utils() {}
 
@@ -164,9 +170,11 @@ public class Utils {
         return al.toArray( new String[al.size()] );
     }
 
-    public static void resetGame( Context context, String pathIn )
+    public static String resetGame( Context context, String pathIn )
     {
-        resetGame( context, pathIn, newName( context ) );
+        String newName = newName( context );
+        resetGame( context, pathIn, newName );
+        return newName;
     }
 
     public static void loadMakeGame( Context context, int gamePtr, 
@@ -211,9 +219,11 @@ public class Utils {
         }
     }
 
-    public static void saveGame( Context context, byte[] bytes )
+    public static String saveGame( Context context, byte[] bytes )
     {
-        saveGame( context, bytes, newName( context ) );
+        String name = newName( context );
+        saveGame( context, bytes, name );
+        return name;
     }
 
     public static boolean gameDictHere( Context context, String path, 
@@ -436,6 +446,30 @@ public class Utils {
         }
     }
 
+    public static GameSummary getSummary( Context context, String file )
+    {
+        initDB( context );
+
+        GameSummary summary = new GameSummary();
+        SQLiteDatabase db = m_dbHelper.getReadableDatabase();
+
+        String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER };
+        String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
+
+        Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
+                                  null, null, null, null );
+        if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+            summary = new GameSummary();
+            summary.nMoves = cursor.getInt(cursor.
+                                           getColumnIndex(DBHelper.NUM_MOVES));
+            int tmp = cursor.getInt(cursor.
+                                    getColumnIndex(DBHelper.GAME_OVER));
+            summary.gameOver = tmp == 0 ? false : true;
+        }
+        db.close();
+        return summary;
+    }
+
     private static boolean isGame( String file )
     {
         return file.endsWith( XWConstants.GAME_EXTN );
@@ -444,6 +478,37 @@ public class Utils {
     private static boolean isDict( String file )
     {
         return file.endsWith( XWConstants.DICT_EXTN );
+    }
+
+    private static void initDB( Context context )
+    {
+        if ( null == m_dbHelper ) {
+            m_dbHelper = new DBHelper( context );
+        }
+    }
+
+    public static void saveSummary( String path, GameSummary summary )
+    {
+        SQLiteDatabase db = m_dbHelper.getWritableDatabase();
+
+        if ( null == summary ) {
+            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
+            db.delete( DBHelper.TABLE_NAME, selection, null );
+        } else {
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.FILE_NAME, path );
+            values.put( DBHelper.NUM_MOVES, summary.nMoves );
+            values.put( DBHelper.GAME_OVER, summary.gameOver );
+
+            Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
+
+            try {
+                long result = db.replaceOrThrow( DBHelper.TABLE_NAME, "", values );
+            } catch ( Exception ex ) {
+                Utils.logf( "ex: %s", ex.toString() );
+            }
+        }
+        db.close();
     }
 
 }

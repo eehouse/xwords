@@ -351,6 +351,13 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return super.onKeyUp( keyCode, event );
     }
 
+
+    // onDestroy may be the wrong place to do this.
+    // onWindowFocusChanged seems to be getting called in GamesList
+    // before this function, and so the list item corresponding to
+    // this game isn't necessarily up-to-date.  But if move e.g. to
+    // onStop() then onStart() needs to be prepared to reconstitute
+    // everything.
     @Override
     protected void onDestroy() 
     {
@@ -366,8 +373,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
             // This has to happen after the drawing thread is killed
             // to avoid the possibility of reentering the jni world.
+            GameSummary summary = new GameSummary();
+            XwJNI.game_summarize( m_jniGamePtr, summary );
             byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
             Utils.saveGame( this, state, m_path );
+            Utils.saveSummary( m_path, summary );
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;

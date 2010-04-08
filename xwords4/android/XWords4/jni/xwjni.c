@@ -917,6 +917,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
     return result;
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
+( JNIEnv* env, jclass C, jint gamePtr, jobject jsummary )
+{
+    LOG_FUNC();
+    XWJNI_START();
+    XP_S16 nMoves = model_getNMoves( state->game.model );
+    setInt( env, jsummary, "nMoves", nMoves );
+    setBool( env, jsummary, "gameOver", 
+             server_getGameIsOver( state->game.server ) );
+    XWJNI_END();
+    LOG_RETURN_VOID();
+}
+
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1prefsChanged
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jcp )

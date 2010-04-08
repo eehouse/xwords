@@ -42,8 +42,6 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 
-import org.eehouse.android.xw4.XWords4.Games; // for constants
-
 public class GamesList extends ListActivity implements View.OnClickListener {
     private GameListAdapter m_adapter;
 
@@ -102,13 +100,6 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         Button newGameB = (Button)findViewById(R.id.new_game);
         newGameB.setOnClickListener( this );
 
-        // If no data was given in the intent (because we were started
-        // as a MAIN activity), then use our default content provider.
-        Intent intent = getIntent();
-        if (intent.getData() == null) {
-            intent.setData(Games.CONTENT_URI);
-        }
-
         m_adapter = new GameListAdapter( this );
         setListAdapter( m_adapter );
     }
@@ -124,7 +115,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
     @Override
     public void onCreateContextMenu( ContextMenu menu, View view, 
-                                     ContextMenuInfo menuInfo ) {
+                                     ContextMenuInfo menuInfo ) 
+    {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.games_list_item_menu, menu );
     }
@@ -147,6 +139,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         int id = item.getItemId();
 
         if ( R.id.list_item_delete == id ) {
+            Utils.saveSummary( path, null );
             if ( ! deleteFile( path ) ) {
                 Utils.logf( "unable to delete " + path );
             }
@@ -169,14 +162,17 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
                 case R.id.list_item_reset:
                     Utils.resetGame( this, path, path );
+                    Utils.saveSummary( path, null );
                     break;
                 case R.id.list_item_new_from:
-                    Utils.resetGame( this, path );  
+                    String newName = Utils.resetGame( this, path );  
+                    Utils.saveSummary( newName, null );
                     break;
 
                 case R.id.list_item_copy:
                     stream = Utils.savedGame( this, path );
-                    Utils.saveGame( this, stream );
+                    newName = Utils.saveGame( this, stream );
+                    Utils.saveSummary( newName, Utils.getSummary( this, path ) );
                     break;
 
                     // These require some notion of predictable sort order.

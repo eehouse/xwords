@@ -522,8 +522,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
         boolean consumed = false;
         if ( keyCode == KeyEvent.KEYCODE_BACK ) {
             saveChanges();
-            if ( 0 < m_nMoves && (m_giOrig.changesMatter(m_gi)
-                                  || m_carOrig.changesMatter(m_car) ) ) {
+            if ( 0 <= m_nMoves && (m_giOrig.changesMatter(m_gi)
+                                   || m_carOrig.changesMatter(m_car) ) ) {
                 showDialog( CONFIRM_CHANGE );
                 consumed = true;
             } else {
@@ -782,6 +782,11 @@ public class GameConfig extends Activity implements View.OnClickListener {
         }
 
         Utils.saveGame( this, gamePtr, m_gi, m_path );
+
+        GameSummary summary = new GameSummary();
+        XwJNI.game_summarize( gamePtr, summary );
+        Utils.saveSummary( m_path, summary );
+
         XwJNI.game_dispose( gamePtr );
     }
 
