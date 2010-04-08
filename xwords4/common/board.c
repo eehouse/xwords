@@ -563,7 +563,6 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy )
         board->yOffset = adjustOffset( board->yOffset, zoomBy );
 
         board->zoomCount = zoomCount;
-        XP_LOGF( "set zoomCount: %d", zoomCount );
         figureBoardRect( board );
         board_invalAll( board );
     }
@@ -1616,12 +1615,15 @@ figureDims( XP_U16* edges, XP_U16 len, XP_U16 nVisible,
             XP_U16 increment, XP_U16 extra )
 {
     XP_U16 ii;
+    XP_U16 nAtStart = extra % nVisible;
+
+    increment += extra / nVisible;
+
     for ( ii = 0; ii < len; ++ii ) {
-        XP_U16 dim = increment;
-        if ( ii % nVisible == 0 ) {
-            dim += extra;
+        edges[ii] = increment;
+        if ( ii % nVisible < nAtStart ) {
+            ++edges[ii];
         }
-        edges[ii] = dim;
     }
 }
 
@@ -1653,21 +1655,19 @@ figureBoardRect( BoardCtxt* board )
         XP_Rect boardBounds = board->boardBounds;
         XP_U16 nVisible;
         XP_U16 nRows = model_numRows( board->model );
-        XP_U16 boardHScale = figureHScale( board );
+        XP_U16 boardScale = figureHScale( board );
 
-        if ( boardHScale != board->boardHScale ) {
+        if ( boardScale != board->boardHScale ) {
             board_invalAll( board );
-            board->boardHScale = boardHScale;
+            board->boardHScale = boardScale;
         }
-
-        board->boardVScale = boardHScale;
 
         /* Figure height of board.  Max height is with all rows visible and
            each row as tall as boardScale.  But that may make it overlap tray,
            if it's visible, or the bottom of the board as set in board_setPos.
            So we check those two possibilities. */
 
-        XP_U16 maxHeight, wantHeight = nRows * boardHScale;
+        XP_U16 maxHeight, wantHeight = nRows * boardScale;
         XP_Bool trayHidden = board->trayVisState == TRAY_HIDDEN;
         if ( trayHidden ) {
             maxHeight = board->heightAsSet;
@@ -1688,9 +1688,11 @@ figureBoardRect( BoardCtxt* board )
             XP_Bool yChanged = XP_TRUE;
             /* Need to hide rows etc. */
             boardBounds.height = maxHeight;
-            board->boardVScale = boardHScale;
+            board->boardVScale = boardScale;
 
-            nVisible = maxHeight / boardHScale;
+            nVisible = maxHeight / boardScale;
+            extra = maxHeight % boardScale;
+
             maxYOffset = nRows - nVisible;
             if ( board->yOffset > maxYOffset ) {
                 board->yOffset = maxYOffset;
@@ -1708,7 +1710,6 @@ figureBoardRect( BoardCtxt* board )
             /*          board->maxYOffset, board->yOffset ); */
 
             board->boardObscuresTray = !trayHidden;
-            extra = maxHeight % boardHScale;
         }
         board->lastVisibleRow = nVisible + board->yOffset - 1;
 
