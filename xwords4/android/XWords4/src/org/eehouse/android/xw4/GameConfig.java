@@ -127,15 +127,16 @@ public class GameConfig extends Activity implements View.OnClickListener {
             dialog = new AlertDialog.Builder( this )
                 .setTitle(R.string.player_edit_title)
                 .setView(playerEditView)
+                .setPositiveButton( R.string.button_ok,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int whichButton ) {
+                                            getPlayerSettings();
+                                            loadPlayers();
+                                        }
+                                    })
+                .setNegativeButton( R.string.button_cancel, null )
                 .create();
-            dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss( DialogInterface di ) 
-                    {
-                        getPlayerSettings();
-                        loadPlayers();
-                    }
-                });
             break;
         case ROLE_EDIT_RELAY:
         case ROLE_EDIT_SMS:
@@ -159,6 +160,14 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 .setTitle( R.string.force_title )
                 .setView( LayoutInflater.from(this)
                           .inflate( layoutForDlg(id), null ) )
+                .setPositiveButton( R.string.button_ok,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick( DialogInterface dlg, 
+                                                             int whichButton ) {
+                                            loadPlayers();
+                                        }
+                                    })
+                .setNegativeButton( R.string.button_cancel, null )
                 .create();
             dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
                     @Override
@@ -168,8 +177,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
                             // force one to remote -- or make it
                             // standalone???
                             m_gi.players[0].isLocal = false;
+                            loadPlayers();
                         }
-                        loadPlayers();
                     }
                 });
             break;
