@@ -526,6 +526,17 @@ board_getYOffset( const BoardCtxt* board )
     return board->yOffset;
 } /* board_getYOffset */
 
+static XP_U16
+adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
+{
+    XP_S16 offset = curOffset;
+    offset += zoomBy / 2;
+    if ( offset < 0 ) {
+        offset = 0;
+    }
+    return offset;
+}
+
 XP_Bool
 board_zoom( BoardCtxt* board, XP_S16 zoomBy )
 {
@@ -548,14 +559,11 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy )
     changed = zoomCount != board->zoomCount;
     if ( changed ) {
         /* Try to distribute the zoom */
-        XP_S16 xOffset = board->xOffset;
-        xOffset += zoomBy / 2;
-        if ( xOffset < 0 ) {
-            xOffset = 0;
-        }
-        board->xOffset = xOffset;
+        board->xOffset = adjustOffset( board->xOffset, zoomBy );
+        board->yOffset = adjustOffset( board->yOffset, zoomBy );
 
         board->zoomCount = zoomCount;
+        XP_LOGF( "set zoomCount: %d", zoomCount );
         figureBoardRect( board );
         board_invalAll( board );
     }
@@ -1226,7 +1234,6 @@ invalCellsUnderRect( BoardCtxt* board, const XP_Rect* rect )
 
         for ( row = top; row <= bottom; ++row ) {
             for ( col = left; col <= right; ++col ) {
-                XP_LOGF( "calling invalCell(%d,%d)", col, row );
                 invalCell( board, col, row );
             }
         }
@@ -1625,7 +1632,11 @@ figureHScale( BoardCtxt* board )
     XP_U16 nVisCols = nCols - board->zoomCount;
     XP_U16 scale = board->boardBounds.width / nVisCols;
     XP_U16 spares = board->boardBounds.width % nVisCols;
-    //XP_U16 edge, col;
+
+    XP_U16 maxOffset = nCols - nVisCols;
+    if ( board->xOffset > maxOffset ) {
+        board->xOffset = maxOffset;
+    }
 
     board->lastVisibleCol = nCols - board->zoomCount + board->xOffset - 1;
 
@@ -1693,9 +1704,8 @@ figureBoardRect( BoardCtxt* board )
                 util_yOffsetChange( board->util, maxYOffset, oldYOffset, 
                                     board->yOffset );
             }
-
-            XP_LOGF( "%s: maxYOffset: %d; board->yOffset: %d", __func__, 
-                     board->maxYOffset, board->yOffset );
+            /* XP_LOGF( "%s: maxYOffset: %d; board->yOffset: %d", __func__,  */
+            /*          board->maxYOffset, board->yOffset ); */
 
             board->boardObscuresTray = !trayHidden;
             extra = maxHeight % boardHScale;
@@ -1704,23 +1714,6 @@ figureBoardRect( BoardCtxt* board )
 
         figureDims( board->rowHeights, VSIZE(board->rowHeights), nVisible, 
                     board->boardVScale, extra );
-
-        /* if ( board->boardObscuresTray ) { */
-        /*     if ( trayOnTop( board ) ) { */
-        /*         boardBounds.height = board->trayBounds.top - boardBounds.top; */
-        /*     } else { */
-        /*         XP_U16 trayBottom; */
-        /*         trayBottom = board->trayBounds.top + board->trayBounds.height; */
-        /*         if ( trayBottom < boardBounds.top + boardBounds.height ) { */
-        /*             boardBounds.height = trayBottom - boardBounds.top; */
-        /*         } */
-        /*     } */
-        /* } */
-        /* round down */
-        /* nVisible = boardBounds.height / boardScale; */
-        /* boardBounds.height = nVisible * boardScale; */
-        /* board->lastVisibleRow = nVisible + board->yOffset - 1; */
-        /* XP_ASSERT( board->lastVisibleRow < model_numRows(board->model) ); */
 
         board->boardBounds = boardBounds;
     }
