@@ -118,6 +118,22 @@ public class CommsTransport extends Thread implements TransportProcs {
         while ( !m_done ) {
             try {
                 synchronized( this ) {
+
+                    // if we have data and no socket, try to connect.
+                    if ( null == m_socketChannel
+                         && 0 < m_buffersOut.size() ) {
+                        try {
+                            m_socketChannel = SocketChannel.open();
+                            m_socketChannel.configureBlocking( false );
+                            InetSocketAddress isa
+                                = new InetSocketAddress( m_addr.ip_relay_hostName, 
+                                                         m_addr.ip_relay_port );
+                            m_socketChannel.connect( isa );
+                        } catch ( java.io.IOException ioe ) {
+                            Utils.logf( ioe.toString() );
+                        }
+                    }
+
                     if ( null != m_socketChannel ) {
                         int ops = figureOps();
                         Utils.logf( "calling with ops=%x", ops );
@@ -183,19 +199,6 @@ public class CommsTransport extends Thread implements TransportProcs {
         netbuf.put( buf );
         m_buffersOut.add( netbuf );
         Assert.assertEquals( netbuf.remaining(), 0 );
-
-        if ( null == m_socketChannel ) {
-            try {
-                m_socketChannel = SocketChannel.open();
-                m_socketChannel.configureBlocking( false );
-                InetSocketAddress isa
-                    = new InetSocketAddress( m_addr.ip_relay_hostName, 
-                                             m_addr.ip_relay_port );
-                m_socketChannel.connect( isa );
-            } catch ( java.io.IOException ioe ) {
-                Utils.logf( ioe.toString() );
-            }
-        }
 
         if ( null != m_selector ) {
             m_selector.wakeup();    // tell it it's got some writing to do
