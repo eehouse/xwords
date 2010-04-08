@@ -241,75 +241,50 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( m_path.charAt(0) == '/' ) {
             m_path = m_path.substring( 1 );
         }
-
-        byte[] stream = Utils.savedGame( this, m_path );
-        XwJNI.gi_from_stream( m_gi, stream );
-
-        Utils.logf( "dict name: " + m_gi.dictName );
-        byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
-        if ( null == dictBytes ) {
-            Assert.fail();
-            finish();
-        } else {
-            m_jniGamePtr = XwJNI.initJNI();
-
-            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                Handler handler = new Handler() {
-                        public void handleMessage( Message msg ) {
-                            switch( msg.what ) {
-                            case CommsTransport.DIALOG:
-                                m_dlgBytes = (String)msg.obj;
-                                m_dlgTitle = msg.arg1;
-                                showDialog( DLG_OKONLY );
-                                break;
-                            case CommsTransport.TOAST:
-                                Toast.makeText( BoardActivity.this,
-                                                (CharSequence)(msg.obj),
-                                                Toast.LENGTH_SHORT).show();
-                                break;
-                            }
-                        }
-                    };
-                m_xport = new CommsTransport( m_jniGamePtr, this, handler, 
-                                              m_gi.serverRole );
-            }
-
-            if ( null == stream ||
-                 ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                              m_gi, dictBytes, this,
-                                              m_jniu, m_view, m_cp, m_xport ) ) {
-                XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
-                                        m_view, m_cp, m_xport, dictBytes );
-            }
-
-            m_jniThread = new 
-                JNIThread( m_jniGamePtr, m_gi, m_view,
-                           new Handler() {
-                               public void handleMessage( Message msg ) {
-                                   switch( msg.what ) {
-                                   case JNIThread.DRAW:
-                                       m_view.invalidate();
-                                       break;
-                                   case JNIThread.DIALOG:
-                                       m_dlgBytes = (String)msg.obj;
-                                       m_dlgTitle = msg.arg1;
-                                       showDialog( DLG_OKONLY );
-                                       break;
-                                   case JNIThread.QUERY_ENDGAME:
-                                       showDialog( QUERY_ENDGAME );
-                                       break;
-                                   }
-                               }
-                           } );
-            m_jniThread.start();
-
-            m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
-            if ( null != m_xport ) {
-                m_xport.setReceiver( m_jniThread );
-            }
-            m_jniThread.handle( JNICmd.CMD_START );
-        }
     } // onCreate
+
+    @Override
+    protected void onStart()
+    {
+        loadGame();
+        super.onStart();
+    }
+
+    @Override
+    protected void onRestart()
+    {
+        loadGame();
+        super.onRestart();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        if ( 0 != m_jniGamePtr ) {
+            if ( null != m_xport ) {
+                m_xport.waitToStop();
+                m_xport = null;
+            }
+
+            if ( null != m_jniThread ) {
+                m_jniThread.waitToStop();
+                m_jniThread = null;
+                Utils.logf( "onStop(): waitToStop() returned" );
+            }
+
+            // This has to happen after the drawing thread is killed
+            // to avoid the possibility of reentering the jni world.
+            GameSummary summary = new GameSummary();
+            XwJNI.game_summarize( m_jniGamePtr, summary );
+            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
+            Utils.saveGame( this, state, m_path );
+            Utils.saveSummary( m_path, summary );
+
+            XwJNI.game_dispose( m_jniGamePtr );
+            m_jniGamePtr = 0;
+        }
+        super.onPause();
+    }
 
     @Override
     public void onWindowFocusChanged( boolean hasFocus )
@@ -334,9 +309,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     public boolean onKeyDown( int keyCode, KeyEvent event )
     {
-        XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
-        if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_KEYDOWN, xpKey );
+        if ( null != m_jniThread ) {
+            XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
+            if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_KEYDOWN, xpKey );
+            }
         }
         return super.onKeyDown( keyCode, event );
     }
@@ -344,47 +321,13 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     public boolean onKeyUp( int keyCode, KeyEvent event )
     {
-        XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
-        if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_KEYUP, xpKey );
+        if ( null != m_jniThread ) {
+            XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
+            if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
+                m_jniThread.handle( JNIThread.JNICmd.CMD_KEYUP, xpKey );
+            }
         }
         return super.onKeyUp( keyCode, event );
-    }
-
-
-    // onDestroy may be the wrong place to do this.
-    // onWindowFocusChanged seems to be getting called in GamesList
-    // before this function, and so the list item corresponding to
-    // this game isn't necessarily up-to-date.  But if move e.g. to
-    // onStop() then onStart() needs to be prepared to reconstitute
-    // everything.
-    @Override
-    protected void onDestroy() 
-    {
-        if ( 0 != m_jniGamePtr ) {
-            if ( null != m_xport ) {
-                m_xport.waitToStop();
-            }
-
-            if ( null != m_jniThread ) {
-                m_jniThread.waitToStop();
-                Utils.logf( "onDestroy(): waitToStop() returned" );
-            }
-
-            // This has to happen after the drawing thread is killed
-            // to avoid the possibility of reentering the jni world.
-            GameSummary summary = new GameSummary();
-            XwJNI.game_summarize( m_jniGamePtr, summary );
-            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
-            Utils.saveGame( this, state, m_path );
-            Utils.saveSummary( m_path, summary );
-
-            XwJNI.game_dispose( m_jniGamePtr );
-            m_jniGamePtr = 0;
-        }
-
-        super.onDestroy();
-        Utils.logf( "onDestroy done" );
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -571,6 +514,80 @@ public class BoardActivity extends Activity implements UtilCtxt {
             m_timers[why] = null;
         }
     }
+
+    private void loadGame()
+    {
+        if ( 0 == m_jniGamePtr ) {
+            byte[] stream = Utils.savedGame( this, m_path );
+            XwJNI.gi_from_stream( m_gi, stream );
+
+            Utils.logf( "dict name: " + m_gi.dictName );
+            byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
+            if ( null == dictBytes ) {
+                Assert.fail();
+                finish();
+            } else {
+                m_jniGamePtr = XwJNI.initJNI();
+
+                if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                    Handler handler = new Handler() {
+                            public void handleMessage( Message msg ) {
+                                switch( msg.what ) {
+                                case CommsTransport.DIALOG:
+                                    m_dlgBytes = (String)msg.obj;
+                                    m_dlgTitle = msg.arg1;
+                                    showDialog( DLG_OKONLY );
+                                    break;
+                                case CommsTransport.TOAST:
+                                    Toast.makeText( BoardActivity.this,
+                                                    (CharSequence)(msg.obj),
+                                                    Toast.LENGTH_SHORT).show();
+                                    break;
+                                }
+                            }
+                        };
+                    m_xport = new CommsTransport( m_jniGamePtr, this, handler, 
+                                                  m_gi.serverRole );
+                }
+
+                if ( null == stream ||
+                     ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                                  m_gi, dictBytes, this,
+                                                  m_jniu, m_view, m_cp, 
+                                                  m_xport ) ) {
+                    XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
+                                            m_view, m_cp, m_xport, dictBytes );
+                }
+
+                m_jniThread = new 
+                    JNIThread( m_jniGamePtr, m_gi, m_view,
+                               new Handler() {
+                                   public void handleMessage( Message msg ) {
+                                       switch( msg.what ) {
+                                       case JNIThread.DRAW:
+                                           m_view.invalidate();
+                                           break;
+                                       case JNIThread.DIALOG:
+                                           m_dlgBytes = (String)msg.obj;
+                                           m_dlgTitle = msg.arg1;
+                                           showDialog( DLG_OKONLY );
+                                           break;
+                                       case JNIThread.QUERY_ENDGAME:
+                                           showDialog( QUERY_ENDGAME );
+                                           break;
+                                       }
+                                   }
+                               } );
+                m_jniThread.start();
+
+                m_view.startHandling( m_jniThread, m_jniGamePtr, m_gi );
+                if ( null != m_xport ) {
+                    m_xport.setReceiver( m_jniThread );
+                }
+                m_jniThread.handle( JNICmd.CMD_START );
+            }
+        }
+    } // loadGame
 
     private DialogInterface.OnDismissListener makeODLforBlocking()
     {
