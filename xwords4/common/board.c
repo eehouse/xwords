@@ -543,7 +543,7 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy )
     XP_Bool changed;
     XP_S16 zoomCount = board->zoomCount;
 
-    XP_U16 maxCount = model_numCols( board->model ) - 1;
+    XP_U16 maxCount = model_numCols( board->model ) - 2; /* 2 for scrolling */
     if ( board->boardBounds.width > board->boardBounds.height ) {
         XP_U16 ratio = board->boardBounds.width / board->boardBounds.height;
         maxCount -= ratio;
