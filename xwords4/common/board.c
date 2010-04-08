@@ -1789,7 +1789,8 @@ XP_Bool
 getCellRect( const BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
 {
     XP_U16 cur;
-    XP_Bool onBoard = col >= board->xOffset && row >= board->yOffset;
+    XP_Bool onBoard = col >= board->xOffset && row >= board->yOffset
+        && col <= board->lastVisibleCol && row <= board->lastVisibleRow;
 
     rect->left = board->boardBounds.left;
     for ( cur = board->xOffset; cur < col; ++cur ) {
@@ -1803,40 +1804,6 @@ getCellRect( const BoardCtxt* board, XP_U16 col, XP_U16 row, XP_Rect* rect )
     }
     rect->height = board->rowHeights[row];
 
-    /* if ( col < 0 ) { */
-    /*     /\* WTF do I do *\/ */
-    /*     XP_LOGF( "%s: looking at off-board col", __func__ ); */
-    /* } else if ( col == 0 ) { */
-    /*     rect->left = board->boardBounds.left; */
-    /* } else { */
-    /*     rect->left = board->rightEdges[col-1]; */
-    /* } */
-
-    /* /\* We now store how much to add for each row and so need to add for each */
-    /*    row.  So figure out the row then add *\/ */
-
-
-    /* row -= board->yOffset; */
-    /* if ( row < 0 ) { */
-    /*     /\* WTF do I do *\/ */
-    /*     XP_LOGF( "%s: looking at off-board row", __func__ ); */
-    /* } else if ( row == 0 ) { */
-    /*     rect->top = board->boardBounds.top; */
-    /* } else { */
-    /*     rect->top = board->bottomEdges[row-1]; */
-    /* } */
-
-    /* /\* top = board->boardBounds.top +  *\/ */
-    /* /\*     ((row - board->yOffset) * board->boardVScale); *\/ */
-    /* /\* if ( top >= (board->boardBounds.top + board->boardBounds.height) ) { *\/ */
-    /* /\*     onBoard = XP_FALSE; *\/ */
-    /* /\* } *\/ */
-    /* /\* rect->top = top; *\/ */
-
-    /* rect->width = board->rightEdges[col] - rect->left; */
-    /* rect->height = board->bottomEdges[row] - rect->top; */
-    /* XP_LOGF( "%s: %d,%d,%d,%d", __func__, rect->left, rect->top, */
-    /*          rect->width, rect->height ); */
     return onBoard;
 } /* getCellRect */
 
