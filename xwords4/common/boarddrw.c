@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -234,6 +234,7 @@ drawBoard( BoardCtxt* board )
     if ( board->needsDrawing 
          && draw_boardBegin( board->draw, 
                              &board->boardBounds, 
+                             board->boardHScale, board->boardVScale,
                              dfsFor( board, OBJ_BOARD ) ) ) {
 
         XP_Bool allDrawn = XP_TRUE;
@@ -509,6 +510,22 @@ drawDragTileIf( BoardCtxt* board )
 } /* drawDragTileIf */
 #endif
 
+static XP_S16
+sumRowHeights( const BoardCtxt* board, XP_U16 row1, XP_U16 row2 )
+{
+    XP_S16 sign = row1 > row2 ? -1 : 1;
+    XP_S16 result, ii;
+    if ( sign < 0 ) {
+        XP_U16 tmp = row1;
+        row1 = row2;
+        row2 = tmp;
+    }
+    for ( result = 0, ii = row1; ii < row2; ++ii ) {
+        result += board->rowHeights[ii];
+    }
+    return result * sign;
+}
+
 static void
 scrollIfCan( BoardCtxt* board )
 {
@@ -525,9 +542,8 @@ scrollIfCan( BoardCtxt* board )
         }
 #endif
         invalSelTradeWindow( board );
-        dist = (board->yOffset - board->prevYScrollOffset)
-            * board->boardVScale;
 
+        dist = sumRowHeights( board, board->prevYScrollOffset, board->yOffset );
         scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist, 
                                          dfsFor( board, OBJ_BOARD ) );
 

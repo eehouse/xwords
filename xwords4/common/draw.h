@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2007 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -115,6 +116,7 @@ typedef struct DrawCtxVTable {
 
     XP_Bool DRAW_VTABLE_NAME(boardBegin) ( DrawCtx* dctx, 
                                            const XP_Rect* rect, 
+                                           XP_U16 hScale, XP_U16 vScale,
                                            DrawFocusState dfs );
     void DRAW_VTABLE_NAME(objFinished)( DrawCtx* dctx, BoardObjectType typ, 
                                         const XP_Rect* rect, 
@@ -249,7 +251,8 @@ struct DrawCtx {
 
 #define draw_destroyCtxt(dc) CALL_DRAW_NAME0(destroyCtxt, dc)
 #define draw_dictChanged( dc, d ) CALL_DRAW_NAME1(dictChanged, (dc), (d))
-#define draw_boardBegin( dc,r,f ) CALL_DRAW_NAME2(boardBegin, dc, r,f)
+#define draw_boardBegin( dc,r,h,v,f ) CALL_DRAW_NAME4(boardBegin, (dc),\
+                                                      (r),(h),(v),(f))
 #define draw_objFinished( dc, t, r, d ) CALL_DRAW_NAME3(objFinished, (dc), (t), (r), (d))
 #define draw_trayBegin( dc, r, o, f ) CALL_DRAW_NAME3(trayBegin,dc, r, o, f)
 #define draw_vertScrollBoard( dc, r, d, f ) \

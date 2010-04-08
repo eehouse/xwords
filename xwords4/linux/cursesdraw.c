@@ -94,6 +94,7 @@ curses_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx),
 static XP_Bool
 curses_draw_boardBegin( DrawCtx* XP_UNUSED(p_dctx), 
                         const XP_Rect* XP_UNUSED(rect), 
+                        XP_U16 XP_UNUSED(width), XP_U16 XP_UNUSED(height),
                         DrawFocusState XP_UNUSED(dfs) )
 {
     return XP_TRUE;

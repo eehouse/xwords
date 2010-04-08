@@ -318,10 +318,13 @@ gtk_draw_dictChanged( DrawCtx* XP_UNUSED(p_dctx),
 
 static XP_Bool
 gtk_draw_boardBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
+                     XP_U16 width, XP_U16 height,
                      DrawFocusState XP_UNUSED(dfs) )
 {
     GdkRectangle gdkrect;
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    dctx->cellWidth = width;
+    dctx->cellHeight = height;
 
     gdk_gc_set_foreground( dctx->drawGC, &dctx->black );
 
@@ -346,9 +349,6 @@ static XP_Bool
 gtk_draw_vertScrollBoard( DrawCtx* p_dctx, XP_Rect* rect,
                           XP_S16 dist, DrawFocusState XP_UNUSED(dfs) )
 {
-    /* Turn this on to mimic what palm does, but need to figure out some gtk
-       analog to copybits for it to actually work. */
-#if 1
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
     XP_Bool down = dist <= 0;
     gint ysrc, ydest;
@@ -376,10 +376,11 @@ gtk_draw_vertScrollBoard( DrawCtx* p_dctx, XP_Rect* rect,
         rect->top += rect->height - dist;
     }
     rect->height = dist;
-#endif
+    XP_LOGF( "%s=>(%d,%d,%d,%d)", __func__, rect->left, rect->top,
+             rect->width, rect->height );
+
     return XP_TRUE;
 }
-
 
 static void
 drawHintBorders( GtkDrawCtx* dctx, const XP_Rect* rect, HintAtts hintAtts)
@@ -465,7 +466,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
             }
         }
         if ( (flags & CELL_ISSTAR) != 0 ) {
-            draw_string_at( dctx, NULL, "*", rect->height, rect, 
+            draw_string_at( dctx, NULL, "*", dctx->cellHeight, rect, 
                             XP_GTK_JUST_CENTER, &dctx->black, NULL );
         }
     } else if ( !!bitmaps && !!bitmaps->bmps[0] ) {
@@ -488,7 +489,7 @@ gtk_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* letter,
         }
 
         foreground = highlight? &dctx->white : &dctx->playerColors[owner];
-        draw_string_at( dctx, NULL, letter, rectInset.height-2, &rectInset, 
+        draw_string_at( dctx, NULL, letter, dctx->cellHeight, &rectInset, 
                         XP_GTK_JUST_CENTER, foreground, cursor );
 
         if ( isBlank ) {
