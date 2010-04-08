@@ -356,7 +356,8 @@ public class Utils {
 
     public static Intent mkDownloadActivity( Context context )
     {
-        Uri uri = Uri.parse( context.getString( R.string.dict_url ));
+        String dict_url = CommonPrefs.getDefaultDictURL();
+        Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
         return intent;

@@ -146,4 +146,13 @@ public class CommonPrefs {
         result = Integer.decode( val );
         return result;
     }
+
+    public static String getDefaultDictURL()
+    {
+        SharedPreferences sp = 
+            PreferenceManager.getDefaultSharedPreferences( s_context );
+        String key = s_context.getString( R.string.key_dict_host );
+        return sp.getString( key, "" );
+    }
+
 }

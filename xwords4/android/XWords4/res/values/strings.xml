@@ -212,6 +212,7 @@
     <string name="focus">Focus color</string>
     <string name="advanced">Advanced</string>
     <string name="relay_host">Relay address</string>
+    <string name="dict_host">Dictionary download URL</string>
     <string name="relay_port">Relay port</string>
     <string name="sms_port">SMS port</string>
 
@@ -292,6 +293,7 @@
     <string name="key_relay_host">key_relay_host</string>
     <string name="key_relay_port">key_relay_port</string>
     <string name="key_sms_port">key_sms_port</string>
+    <string name="key_dict_host">key_dict_host</string>
 
     <string name="key_anti_alias">key_anti_alias</string>
     <string name="key_subpixel">key_subpixel</string>
