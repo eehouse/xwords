@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; compile-command: "cd ../linux && make MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
