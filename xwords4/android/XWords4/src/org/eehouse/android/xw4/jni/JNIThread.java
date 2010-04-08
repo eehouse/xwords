@@ -56,6 +56,7 @@ public class JNIThread extends Thread {
             CMD_UNDO_CUR,
             CMD_UNDO_LAST,
             CMD_HINT,
+            CMD_ZOOM,
             CMD_NEXT_HINT,
             CMD_VALUES,
             CMD_COUNTS_VALUES,
@@ -65,7 +66,7 @@ public class JNIThread extends Thread {
             CMD_FINAL,
             CMD_ENDGAME,
             CMD_POST_OVER,
-            CMD_DRAW_CONNS_STATUS
+            CMD_DRAW_CONNS_STATUS,
             };
 
     public static final int RUNNING = 1;
@@ -183,8 +184,9 @@ public class JNIThread extends Thread {
         XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
                                       scoreHt, true );
 
-        XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, false );
-        XwJNI.board_setScale( m_jniGamePtr, cellSize, cellSize );
+        XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, 
+                            width, scoreHt + ((nCells-nToScroll) * cellSize), 
+                            false );
 
         XwJNI.board_setTrayLoc( m_jniGamePtr, 0,
                                 scoreHt + ((nCells-nToScroll) * cellSize),
@@ -376,6 +378,11 @@ public class JNIThread extends Thread {
                 if ( barr[0] ) {
                     handle( JNICmd.CMD_NEXT_HINT );
                 }
+                break;
+
+            case CMD_ZOOM:
+                draw = XwJNI.board_zoom( m_jniGamePtr, 
+                                         ((Integer)args[0]).intValue() );
                 break;
 
             case CMD_VALUES:

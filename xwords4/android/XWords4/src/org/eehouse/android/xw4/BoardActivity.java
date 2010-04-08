@@ -341,9 +341,15 @@ public class BoardActivity extends Activity implements UtilCtxt {
         boolean handled = true;
         JNIThread.JNICmd cmd = JNIThread.JNICmd.CMD_NONE;
 
-        switch (item.getItemId()) {
+        int id = item.getItemId();
+        switch ( id ) {
         case R.id.board_menu_done:
             cmd = JNIThread.JNICmd.CMD_COMMIT;
+            break;
+        case R.id.board_menu_zoomout:
+        case R.id.board_menu_zoomin:
+            m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM,
+                                id == R.id.board_menu_zoomout? -2 : 2 );
             break;
         case R.id.board_menu_juggle:
             cmd = JNIThread.JNICmd.CMD_JUGGLE;

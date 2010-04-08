@@ -220,7 +220,8 @@ and_draw_drawTimer( DrawCtx* dctx, const XP_Rect* rect, XP_U16 player,
 }
 
 static XP_Bool
-and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, DrawFocusState dfs )
+and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, 
+                     XP_U16 cellWidth, XP_U16 cellHeight, DrawFocusState dfs )
 {
     AndDraw* draw = (AndDraw*)dctx;
     XP_Bool result = NULL != draw->jdraw;

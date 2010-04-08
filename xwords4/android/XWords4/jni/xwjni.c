@@ -500,20 +500,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
-(JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, jboolean lefty )
+(JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, jint width, 
+ jint height, jboolean lefty )
 {
     XWJNI_START();
-    board_setPos( state->game.board, left, top, lefty );
+    board_setPos( state->game.board, left, top, width, height, lefty );
     XWJNI_END();
 }
 
-JNIEXPORT void JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1setScale
-(JNIEnv *env, jclass C, jint gamePtr, jint hscale, jint vscale )
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
+( JNIEnv* env, jclass C, jint gamePtr, jint zoomBy )
 {
+    jboolean result;
     XWJNI_START();
-    board_setScale( state->game.board, hscale, vscale );
+    result = board_zoom( state->game.board, zoomBy );
     XWJNI_END();
+    return result;
 }
 
 JNIEXPORT void JNICALL
