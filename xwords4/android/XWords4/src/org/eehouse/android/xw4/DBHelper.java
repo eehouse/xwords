@@ -47,7 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + FILE_NAME + " TEXT PRIMARY KEY,"
                     + NUM_MOVES + " INTEGER,"
                     + GAME_OVER + " INTEGER,"
-                    + SNAPSHOT + " BLOB,"
+                    + SNAPSHOT + " BLOB"
                     + ");" );
     }
 
