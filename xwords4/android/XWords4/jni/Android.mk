@@ -53,6 +53,7 @@ common_SRC_FILES +=        \
 	$(COMMON_PATH)/comms.c      \
 	$(COMMON_PATH)/memstream.c  \
 	$(COMMON_PATH)/movestak.c   \
+	$(COMMON_PATH)/dbgutil.c    \
 
 
 LOCAL_CFLAGS+=$(local_C_INCLUDES) $(local_DEFINES) -Wall
