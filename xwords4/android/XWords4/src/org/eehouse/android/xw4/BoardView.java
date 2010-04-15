@@ -52,8 +52,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Paint m_tileStrokePaint;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
-    private int m_layoutWidth = 0;
-    private int m_layoutHeight = 0;
+    private int m_layoutWidth;
+    private int m_layoutHeight;
     private Bitmap m_bitmap;    // the board
     private Canvas m_canvas;    // owns the bitmap
     private int m_trayOwner;
@@ -281,6 +281,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
+        m_layoutWidth = 0;
+        m_layoutHeight = 0;
     }
 
     // SyncedDraw interface implementation
