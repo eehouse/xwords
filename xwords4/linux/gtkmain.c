@@ -539,8 +539,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     /* move tray up if part of board's meant to be hidden */
     trayTop -= vscale * globals->cGlobals.params->nHidden;
     board_setPos( globals->cGlobals.game.board, GTK_BOARD_LEFT, boardTop,
-                  hscale*GTK_NUM_COLS, 
-                  vscale * (GTK_NUM_ROWS-globals->cGlobals.params->nHidden),
+                  hscale*GTK_NUM_COLS, vscale * GTK_NUM_ROWS,
                   XP_FALSE );
     /* board_setScale( globals->cGlobals.game.board, hscale, vscale ); */
     globals->gridOn = XP_TRUE;
@@ -1114,22 +1113,9 @@ scroll_value_changed( GtkAdjustment *adj, GtkAppGlobals* globals )
 static void
 handle_grid_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    /* XP_U16 scaleH, scaleV; */
-    XP_Bool gridOn = globals->gridOn;
+    globals->gridOn = !globals->gridOn;
 
-    /* board_getScale( globals->cGlobals.game.board, &scaleH, &scaleV ); */
-
-    /* if ( gridOn ) { */
-    /*     --scaleH; */
-    /*     --scaleV; */
-    /* } else { */
-    /*     ++scaleH; */
-    /*     ++scaleV; */
-    /* } */
-
-    /* board_setScale( globals->cGlobals.game.board, scaleH, scaleV ); */
-    globals->gridOn = !gridOn;
-
+    board_invalAll( globals->cGlobals.game.board );
     board_draw( globals->cGlobals.game.board );
 } /* handle_grid_button */
 
@@ -1210,8 +1196,9 @@ gtk_util_askPassword( XW_UtilCtxt* XP_UNUSED(uc), const XP_UCHAR* name,
 } /* gtk_util_askPassword */
 
 static void
-setCtrlsForTray( GtkAppGlobals* globals )
+setCtrlsForTray( GtkAppGlobals* XP_UNUSED(globals) )
 {
+#if 0
     XW_TrayVisState state = 
         board_getTrayVisState( globals->cGlobals.game.board );
     XP_S16 nHidden = globals->cGlobals.params->nHidden;
@@ -1231,6 +1218,7 @@ setCtrlsForTray( GtkAppGlobals* globals )
             board_getYOffset( globals->cGlobals.game.board );
         gtk_signal_emit_by_name( GTK_OBJECT(globals->adjustment), "changed" );
     }
+#endif
 } /* setCtrlsForTray */
 
 static void
@@ -1247,13 +1235,10 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
                         XP_U16 newOffset )
 {
     GtkAppGlobals* globals = (GtkAppGlobals*)uc->closure;
-    /* XP_ASSERT( globals->cGlobals.params->nHidden > 0 ); */
     if ( !!globals->adjustment ) {
         globals->adjustment->page_size = GTK_NUM_ROWS - maxOffset;
         globals->adjustment->value = newOffset;
         gtk_adjustment_value_changed( GTK_ADJUSTMENT(globals->adjustment) );
-    } else {
-        XP_LOGF( "skipping scroll adjustment: no scrollbar" );
     }
 } /* gtk_util_yOffsetChange */
 
@@ -2107,18 +2092,17 @@ gtkmain( LaunchParams* params, int argc, char *argv[] )
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX (hbox), drawing_area, TRUE, TRUE, 0);
 
-    if ( globals.cGlobals.params->nHidden != 0 ) {
-        GtkWidget* vscrollbar;
-        globals.adjustment = 
-            (GtkAdjustment*)gtk_adjustment_new( 0, 0, GTK_NUM_ROWS, 1, 2, 
-                   GTK_NUM_ROWS-globals.cGlobals.params->nHidden );
-        vscrollbar = gtk_vscrollbar_new( globals.adjustment );
-        g_signal_connect( GTK_OBJECT(globals.adjustment), "value_changed",
-                          G_CALLBACK(scroll_value_changed), &globals );
-
-        gtk_widget_show( vscrollbar );
-        gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, TRUE, TRUE, 0 );
-    }
+    /* install scrollbar even if not needed -- since zooming can make it
+       needed later */
+    GtkWidget* vscrollbar;
+    globals.adjustment = (GtkAdjustment*)
+        gtk_adjustment_new( 0, 0, GTK_NUM_ROWS, 1, 2, 
+                            GTK_NUM_ROWS-globals.cGlobals.params->nHidden );
+    vscrollbar = gtk_vscrollbar_new( globals.adjustment );
+    g_signal_connect( GTK_OBJECT(globals.adjustment), "value_changed",
+                      G_CALLBACK(scroll_value_changed), &globals );
+    gtk_widget_show( vscrollbar );
+    gtk_box_pack_start( GTK_BOX(hbox), vscrollbar, TRUE, TRUE, 0 );
 
     gtk_box_pack_start( GTK_BOX (hbox), 
                         makeVerticalBar( &globals, window ), 
