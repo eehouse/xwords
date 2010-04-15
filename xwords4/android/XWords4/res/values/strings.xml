@@ -181,6 +181,7 @@
     <string name="explain_robot">Explain robot moves</string>
     <string name="skip_confirm_turn">Skip confirming turn</string>
     <string name="hide_values">Hide values</string>
+    <string name="ringer_zoom">Volume keys zoom</string>
 
     <string name="role_standalone">Standalone</string>
     <string name="role_host">Host</string>
@@ -280,6 +281,7 @@
     <string name="key_explain_robot">key_explain_robot</string>
     <string name="key_skip_confirm">key_skip_confirm</string>
     <string name="key_hide_values">key_hide_values</string>
+    <string name="key_ringer_zoom">key_ringer_zoom</string>
     <string name="key_player0">key_clr_player0</string>
     <string name="key_player1">key_clr_player1</string>
     <string name="key_player2">key_clr_player2</string>
@@ -294,9 +296,6 @@
     <string name="key_relay_port">key_relay_port</string>
     <string name="key_sms_port">key_sms_port</string>
     <string name="key_dict_host">key_dict_host</string>
-
-    <string name="key_anti_alias">key_anti_alias</string>
-    <string name="key_subpixel">key_subpixel</string>
 
     <string name="default_host">eehouse.org</string>
 </resources>

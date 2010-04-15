@@ -72,6 +72,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private String[] m_texts;
     private CommonPrefs m_cp;
     private JNIUtils m_jniu;
+    private boolean m_volKeysZoom;
 
     // call startActivityForResult synchronously
 	private Semaphore m_forResultWait = new Semaphore(0);
@@ -226,7 +227,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
         m_cp = CommonPrefs.get();
         m_jniu = JNIUtilsImpl.get();
-
+        m_volKeysZoom = CommonPrefs.getVolKeysZoom();
         setContentView( R.layout.board );
         m_handler = new Handler();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
@@ -241,6 +242,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( m_path.charAt(0) == '/' ) {
             m_path = m_path.substring( 1 );
         }
+
     } // onCreate
 
     @Override
@@ -295,6 +297,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 m_view.prefsChanged();
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
             }
+            m_volKeysZoom = CommonPrefs.getVolKeysZoom();
+            m_view.setUseZoomControl( !m_volKeysZoom );
             // onContentChanged();
         }
     }
@@ -317,10 +321,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
             } else {
                 switch( keyCode ) {
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
-                    handled = doZoom( -JNIThread.ZOOM_AMT );
-                    break;
                 case KeyEvent.KEYCODE_VOLUME_UP:
-                    handled = doZoom( JNIThread.ZOOM_AMT );
+                    if ( m_volKeysZoom ) {
+                        int zoomBy = KeyEvent.KEYCODE_VOLUME_DOWN == keyCode
+                            ? -JNIThread.ZOOM_AMT : JNIThread.ZOOM_AMT;
+                        handled = doZoom( zoomBy );
+                    }
                     break;
                 }
             }

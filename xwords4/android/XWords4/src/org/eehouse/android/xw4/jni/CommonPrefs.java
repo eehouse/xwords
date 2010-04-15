@@ -155,4 +155,12 @@ public class CommonPrefs {
         return sp.getString( key, "" );
     }
 
+    public static boolean getVolKeysZoom()
+    {
+        SharedPreferences sp = 
+            PreferenceManager.getDefaultSharedPreferences( s_context );
+        String key = s_context.getString( R.string.key_ringer_zoom );
+        return sp.getBoolean( key, false );
+    }
+
 }

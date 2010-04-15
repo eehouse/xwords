@@ -29,6 +29,11 @@
                           android:title="@string/hide_values"
                           android:defaultValue="false"
                           />
+
+      <CheckBoxPreference android:key="@string/key_ringer_zoom"
+                          android:title="@string/ringer_zoom"
+                          android:defaultValue="false"
+                          />
     </PreferenceCategory>
 
     <PreferenceScreen android:title="@string/prefs_colors"
