@@ -33,6 +33,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
+import android.widget.ZoomButtonsController;
+import android.os.Handler;
 import java.util.HashMap;
 import java.nio.IntBuffer;
 
@@ -60,7 +62,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_rightArrow;
     private Drawable m_downArrow;
     private Drawable m_origin;
-    private int m_top, m_left;
+    private int m_top;
     private JNIThread m_jniThread;
     private String[] m_scores;
     private String[] m_dictChars;
@@ -69,6 +71,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int m_dictPtr = 0;
     private int m_lastSecsLeft;
     private HashMap<String,BitmapDrawable> m_bitmapsCache;
+    private Handler m_viewHandler;
 
     // FontDims: exists to translate space available to the largest
     // font we can draw within that space taking advantage of our use
@@ -109,6 +112,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int[] m_bonusColors;
     private int[] m_playerColors;
     private int[] m_otherColors;
+    private ZoomButtonsController m_zoomButtons;
 
     public BoardView( Context context ) 
     {
@@ -131,14 +135,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public boolean onTouchEvent( MotionEvent event ) 
     {
         int action = event.getAction();
-        int xx = (int)event.getX() - m_left;
+        int xx = (int)event.getX();
         int yy = (int)event.getY() - m_top;
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
+            m_zoomButtons.setVisible( true );
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
+            m_zoomButtons.setVisible( true );
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
             break;
         case MotionEvent.ACTION_UP:
@@ -158,9 +164,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( m_bitmap, m_left, m_top, m_drawPaint );
+                canvas.drawBitmap( m_bitmap, 0, m_top, m_drawPaint );
             }
         }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() 
+    {
+        m_zoomButtons.setVisible( false );
+        super.onDetachedFromWindow();
     }
 
     private void init()
@@ -190,6 +203,22 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_playerColors = prefs.playerColors;
         m_bonusColors = prefs.bonusColors;
         m_otherColors = prefs.otherColors;
+
+        m_viewHandler = new Handler();
+        m_zoomButtons = new ZoomButtonsController( this );
+        ZoomButtonsController.OnZoomListener lstnr =
+            new ZoomButtonsController.OnZoomListener(){
+                public void onVisibilityChanged( boolean visible ){}
+                public void onZoom( boolean zoomIn )
+                {
+                    if ( null != m_jniThread ) {
+                        int zoomBy = zoomIn ? 2 : -2;
+                        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, zoomBy );
+                    }
+                }
+            };
+        m_zoomButtons.setOnZoomListener( lstnr );
+        m_zoomButtons.setZoomSpeed( 100 ); // milliseconds
     }
 
     private boolean layoutBoardOnce() 
@@ -208,7 +237,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
             int nCells = m_gi.boardSize;
             int cellSize = width / nCells;
-            m_left = (width % nCells) / 2;
 
             // If we're vertical, we can likely fit all the board and
             // have a tall tray too.  If horizontal, let's assume
@@ -231,7 +259,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 m_top = 0;
             }
 
-            m_bitmap = Bitmap.createBitmap( 1 + (cellSize*nCells),
+            m_bitmap = Bitmap.createBitmap( 1 + width,
                                             1 + trayHt + scoreHt
                                             + (cellSize *(nCells-nToScroll)),
                                             Bitmap.Config.ARGB_8888 );
@@ -286,6 +314,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         synchronized( this ) {
             m_bitmapsCache = null;
         }
+    }
+
+    public void zoomChanged( final boolean[] canZoom )
+    {
+        m_viewHandler.post( new Runnable() {
+                public void run() {
+                    m_zoomButtons.setZoomInEnabled( canZoom[0] );
+                    m_zoomButtons.setZoomOutEnabled( canZoom[1] );
+                }
+            } );
     }
 
     // DrawCtxt interface implementation
@@ -380,12 +418,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
-    }
-
-    public boolean boardBegin( Rect rect, int cellWidth, int cellHeight, 
-                               int dfs )
-    {
-        return true;
     }
 
     public boolean drawCell( Rect rect, String text, BitmapDrawable[] bitmaps,

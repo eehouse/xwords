@@ -56,6 +56,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 5;
     private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 6;
 
+    private static final int ZOOM_AMT = 2;
+
     private BoardView m_view;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
@@ -309,13 +311,23 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     public boolean onKeyDown( int keyCode, KeyEvent event )
     {
+        boolean handled = false;
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
                 m_jniThread.handle( JNIThread.JNICmd.CMD_KEYDOWN, xpKey );
+            } else {
+                switch( keyCode ) {
+                case KeyEvent.KEYCODE_VOLUME_DOWN:
+                    handled = doZoom( -ZOOM_AMT );
+                    break;
+                case KeyEvent.KEYCODE_VOLUME_UP:
+                    handled = doZoom( ZOOM_AMT );
+                    break;
+                }
             }
         }
-        return super.onKeyDown( keyCode, event );
+        return handled || super.onKeyDown( keyCode, event );
     }
 
     @Override
@@ -345,11 +357,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         switch ( id ) {
         case R.id.board_menu_done:
             cmd = JNIThread.JNICmd.CMD_COMMIT;
-            break;
-        case R.id.board_menu_zoomout:
-        case R.id.board_menu_zoomin:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM,
-                                id == R.id.board_menu_zoomout? -2 : 2 );
             break;
         case R.id.board_menu_juggle:
             cmd = JNIThread.JNICmd.CMD_JUGGLE;
@@ -591,6 +598,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     m_xport.setReceiver( m_jniThread );
                 }
                 m_jniThread.handle( JNICmd.CMD_START );
+                // check and disable zoom button at limit
+                m_jniThread.handle( JNICmd.CMD_ZOOM, 0 );
             }
         }
     } // loadGame
@@ -646,6 +655,15 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     showDialog( dlgID );
                 }
             } );
+    }
+
+    private boolean doZoom( int zoomBy )
+    {
+        boolean handled = null != m_jniThread;
+        if ( handled ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, zoomBy );
+        }
+        return handled;
     }
 
     // This is supposed to be called from the jni thread

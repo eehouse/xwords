@@ -1,3 +1,4 @@
+/* -*- compile-command: "cd ../../../../../../; ant install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -25,4 +26,5 @@ public interface SyncedDraw {
     void doJNIDraw();
     void doIconDraw( int resID, final Rect rect );
     void prefsChanged();
+    void zoomChanged( boolean[] canZoom );
 }

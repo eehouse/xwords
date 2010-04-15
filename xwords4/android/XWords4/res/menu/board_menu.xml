@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/board_menu_zoomin"
-          android:title="@string/board_menu_zoomin"
-          />
-    <item android:id="@+id/board_menu_zoomout"
-          android:title="@string/board_menu_zoomout"
-          />
     <item android:id="@+id/board_menu_done"
           android:title="@string/board_menu_done"
           android:alphabeticShortcut="D"
@@ -54,6 +48,7 @@
               />
       </menu>
     </item>
+
     <item android:title="@string/board_submenu_game">
       <menu>
         <item android:id="@+id/board_menu_game_counts"

@@ -163,7 +163,7 @@ public class JNIThread extends Thread {
             trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
         }
 
-        int scoreWidth = nCells * cellSize;
+        int scoreWidth = width;
 
         if ( DeviceRole.SERVER_STANDALONE != m_gi.serverRole ) {
             scoreWidth -= cellSize;
@@ -185,14 +185,12 @@ public class JNIThread extends Thread {
                                       scoreHt, true );
 
         XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, 
-                            width, scoreHt + ((nCells-nToScroll) * cellSize), 
+                            width-1, ((nCells-nToScroll) * cellSize), 
                             false );
 
         XwJNI.board_setTrayLoc( m_jniGamePtr, 0,
                                 scoreHt + ((nCells-nToScroll) * cellSize),
-                                nCells * cellSize, // width
-                                trayHt,      // height
-                                kMinDivWidth );
+                                width, trayHt, kMinDivWidth );
 
         XwJNI.board_invalAll( m_jniGamePtr );
     }
@@ -260,7 +258,7 @@ public class JNIThread extends Thread {
 
     public void run() 
     {
-        boolean[] barr = new boolean[1]; // scratch boolean
+        boolean[] barr = new boolean[2]; // scratch boolean
         while ( !m_stopped ) {
             QueueElem elem;
             Object[] args;
@@ -382,7 +380,9 @@ public class JNIThread extends Thread {
 
             case CMD_ZOOM:
                 draw = XwJNI.board_zoom( m_jniGamePtr, 
-                                         ((Integer)args[0]).intValue() );
+                                         ((Integer)args[0]).intValue(),
+                                         barr );
+                m_drawer.zoomChanged( barr );
                 break;
 
             case CMD_VALUES:
