@@ -56,8 +56,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 5;
     private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 6;
 
-    private static final int ZOOM_AMT = 2;
-
     private BoardView m_view;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
@@ -319,10 +317,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
             } else {
                 switch( keyCode ) {
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
-                    handled = doZoom( -ZOOM_AMT );
+                    handled = doZoom( -JNIThread.ZOOM_AMT );
                     break;
                 case KeyEvent.KEYCODE_VOLUME_UP:
-                    handled = doZoom( ZOOM_AMT );
+                    handled = doZoom( JNIThread.ZOOM_AMT );
                     break;
                 }
             }
