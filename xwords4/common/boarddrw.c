@@ -95,15 +95,16 @@ invalOldPerimeter( BoardCtxt* board )
 {
     /* We need to inval the center of the row that's moving into the center
        from a border (at which point it got borders drawn on it.) */
-    XP_S16 diff = board->yOffset - board->prevYScrollOffset;
+    ScrollData* vsd = &board->sd[SCROLL_V];
+    XP_S16 diff = vsd->offset - board->prevYScrollOffset;
     XP_U16 firstRow, lastRow;
     XP_ASSERT( diff != 0 );
     if ( diff < 0 ) {
         /* moving up; inval row previously on bottom */
-        firstRow = board->yOffset + 1;
+        firstRow = vsd->offset + 1;
         lastRow = board->prevYScrollOffset;
     } else {
-        XP_U16 nVisible = board->lastVisibleRow - board->yOffset + 1;
+        XP_U16 nVisible = vsd->lastVisible - vsd->offset + 1;
         lastRow = board->prevYScrollOffset + nVisible - 1;
         firstRow = lastRow - diff + 1;
     }
@@ -232,9 +233,9 @@ static void
 drawBoard( BoardCtxt* board )
 {
     if ( board->needsDrawing 
-         && draw_boardBegin( board->draw, 
-                             &board->boardBounds, 
-                             board->boardHScale, board->boardVScale,
+         && draw_boardBegin( board->draw, &board->boardBounds, 
+                             board->sd[SCROLL_H].scale,
+                             board->sd[SCROLL_V].scale,
                              dfsFor( board, OBJ_BOARD ) ) ) {
 
         XP_Bool allDrawn = XP_TRUE;
@@ -242,6 +243,8 @@ drawBoard( BoardCtxt* board )
         XP_S16 col, row, nVisCols;
         ModelCtxt* model = board->model;
         BoardArrow const* arrow = NULL;
+        ScrollData* hsd = &board->sd[SCROLL_H];
+        ScrollData* vsd = &board->sd[SCROLL_V];
         BlankQueue bq;
 
         scrollIfCan( board ); /* this must happen before we count blanks
@@ -270,14 +273,14 @@ drawBoard( BoardCtxt* board )
         }
         
         nVisCols = model_numCols( model ) - board->zoomCount;
-        for ( row = board->yOffset; row <= board->lastVisibleRow; ++row ) {
+        for ( row = vsd->offset; row <= vsd->lastVisible; ++row ) {
             XP_U16 rowFlags = board->redrawFlags[row];
             if ( rowFlags != 0 ) {
                 XP_U16 failedBits = 0;
                 for ( col = 0; col < nVisCols; ++col ) {
-                    XP_U16 colMask = 1 << (col + board->xOffset);
+                    XP_U16 colMask = 1 << (col + hsd->offset);
                     if ( 0 != (rowFlags & colMask) ) {
-                        if ( !drawCell( board, col + board->xOffset,
+                        if ( !drawCell( board, col + hsd->offset,
                                         row, XP_TRUE )) {
                             failedBits |= colMask;
                             allDrawn = XP_FALSE;
@@ -451,7 +454,8 @@ static XP_Bool
 cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
 {
     XP_Bool focussed = XP_FALSE;
-
+    const ScrollData* hsd = &board->sd[SCROLL_H];
+    const ScrollData* vsd = &board->sd[SCROLL_V];
     if ( (board->focussed == OBJ_BOARD) && !board->hideFocus ) {
         if ( board->focusHasDived ) {
             if ( (col == board->selInfo->bdCursor.col)
@@ -460,10 +464,10 @@ cellFocused( const BoardCtxt* board, XP_U16 col, XP_U16 row )
             }
         } else {
 #ifdef PERIMETER_FOCUS
-            focussed = (col == 0)
-                || (col == model_numCols(board->model) - 1)
-                || (row == board->yOffset)
-                || (row == board->lastVisibleRow);
+            focussed = (col == hsd->offset)
+                || (col == hsd->lastVisible)
+                || (row == vsd->offset)
+                || (row == vsd->lastVisible);
 #else
             focussed = XP_TRUE;
 #endif
@@ -513,6 +517,7 @@ drawDragTileIf( BoardCtxt* board )
 static XP_S16
 sumRowHeights( const BoardCtxt* board, XP_U16 row1, XP_U16 row2 )
 {
+    const ScrollData* vsd = &board->sd[SCROLL_V];
     XP_S16 sign = row1 > row2 ? -1 : 1;
     XP_S16 result, ii;
     if ( sign < 0 ) {
@@ -521,7 +526,7 @@ sumRowHeights( const BoardCtxt* board, XP_U16 row1, XP_U16 row2 )
         row2 = tmp;
     }
     for ( result = 0, ii = row1; ii < row2; ++ii ) {
-        result += board->rowHeights[ii];
+        result += vsd->dims[ii];
     }
     return result * sign;
 }
@@ -529,7 +534,8 @@ sumRowHeights( const BoardCtxt* board, XP_U16 row1, XP_U16 row2 )
 static void
 scrollIfCan( BoardCtxt* board )
 {
-    if ( board->yOffset != board->prevYScrollOffset ) {
+    ScrollData* vsd = &board->sd[SCROLL_V];
+    if ( vsd->offset != board->prevYScrollOffset ) {
         XP_Rect scrollR = board->boardBounds;
         XP_Bool scrolled;
         XP_S16 dist;
@@ -543,7 +549,7 @@ scrollIfCan( BoardCtxt* board )
 #endif
         invalSelTradeWindow( board );
 
-        dist = sumRowHeights( board, board->prevYScrollOffset, board->yOffset );
+        dist = sumRowHeights( board, board->prevYScrollOffset, vsd->offset );
         scrolled = draw_vertScrollBoard( board->draw, &scrollR, dist, 
                                          dfsFor( board, OBJ_BOARD ) );
 
@@ -555,7 +561,7 @@ scrollIfCan( BoardCtxt* board )
         } else {
             board_invalAll( board );
         }
-        board->prevYScrollOffset = board->yOffset;
+        board->prevYScrollOffset = vsd->offset;
     }
 } /* scrollIfCan */
 

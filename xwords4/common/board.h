@@ -77,7 +77,8 @@ void board_reset( BoardCtxt* board );
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
 
-XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy );
+XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, 
+                    XP_Bool* canOut );
 
 void board_setScoreboardLoc( BoardCtxt* board, 
                              XP_U16 scoreLeft, XP_U16 scoreTop,

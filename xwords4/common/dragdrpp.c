@@ -27,7 +27,7 @@ extern "C" {
 
 /* How many squares must scroll gesture take in to be recognized. */
 #ifndef SCROLL_DRAG_THRESHHOLD
-# define SCROLL_DRAG_THRESHHOLD 3
+# define SCROLL_DRAG_THRESHHOLD 1
 #endif
 
 static XP_Bool dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
@@ -86,7 +86,8 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
            then the alt key determines it.  I figure scrolling will be more
            common than hint dragging when both are possible, but you can turn
            hint dragging off, so if it's on that's probably what you want. */
-        XP_Bool canScroll = board->lastVisibleRow < model_numRows(board->model);
+        ScrollData* vsd = &board->sd[SCROLL_V];
+        XP_Bool canScroll = vsd->lastVisible < model_numRows(board->model);
         if ( 0 ) {
 #ifdef XWFEATURE_SEARCHLIMIT
         } else if ( !board->gi->hintsNotAllowed && board->gi->allowHintRect
@@ -467,13 +468,13 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
 #endif
     } else if ( ds->dtype == DT_BOARD ) {
         if ( newInfo.obj == OBJ_BOARD ) {
-            XP_S16 diff = newInfo.u.board.row - ds->cur.u.board.row;
+            XP_S16 diff = newInfo.u.board.col - ds->cur.u.board.col;
             diff /= SCROLL_DRAG_THRESHHOLD;
-            moving = adjustYOffset( board, diff );
+            moving = adjustXOffset( board, diff );
 
-            diff = newInfo.u.board.col - ds->cur.u.board.col;
+            diff = newInfo.u.board.row - ds->cur.u.board.row;
             diff /= SCROLL_DRAG_THRESHHOLD;
-            moving = adjustXOffset( board, diff ) || moving;
+            moving = adjustYOffset( board, diff ) || moving;
         }
     } else {
         if ( newInfo.obj == OBJ_BOARD ) {
@@ -572,13 +573,23 @@ scrollTimerProc( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
     XP_ASSERT( why == TIMER_PENDOWN );
 
     if ( ds->scrollTimerSet ) {
-        XP_S16 change;
+        XP_S16 changeX = 0;
+        XP_S16 changeY = 0;
         ds->scrollTimerSet = XP_FALSE;
-        if ( onBorderCanScroll( board, ds->cur.u.board.row, &change ) ) {
+        XP_Bool canScroll = onBorderCanScroll( board, SCROLL_H, 
+                                               ds->cur.u.board.col, &changeX );
+        canScroll = onBorderCanScroll( board, SCROLL_V, ds->cur.u.board.row, 
+                                       &changeY ) || canScroll;
+        if ( canScroll ) {
             invalDragObj( board, &ds->cur );
-            ds->cur.u.board.row += (change >0 ? 1 : -1);
-            if ( checkScrollCell( board, ds->cur.u.board.col, 
-                                  ds->cur.u.board.row ) ) {
+            if ( 0 != changeX ) {
+                ds->cur.u.board.col += (changeX >0 ? 1 : -1);
+            }
+            if ( 0 != changeY ) {
+                ds->cur.u.board.row += (changeY >0 ? 1 : -1);
+            }
+            if ( scrollIntoView( board, ds->cur.u.board.col, 
+                                 ds->cur.u.board.row ) ) {
                 board_draw( board ); /* may fail, e.g. on wince */
                 startScrollTimerIf( board );
                 draw = XP_TRUE;
@@ -595,7 +606,9 @@ startScrollTimerIf( BoardCtxt* board )
 
     if ( (ds->dtype == DT_TILE) && (ds->cur.obj == OBJ_BOARD) ) {
         XP_S16 ignore;
-        if ( onBorderCanScroll( board, ds->cur.u.board.row, &ignore ) ) {
+        if ( onBorderCanScroll( board, SCROLL_H, ds->cur.u.board.col, &ignore )
+             || onBorderCanScroll( board, SCROLL_V, ds->cur.u.board.row,
+                                   &ignore ) ) {
             util_setTimer( board->util, TIMER_PENDOWN, 0,
                            scrollTimerProc, (void*) board );
             ds->scrollTimerSet = XP_TRUE;

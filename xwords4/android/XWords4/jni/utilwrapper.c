@@ -179,7 +179,8 @@ and_util_trayHiddenChange(XW_UtilCtxt* uc, XW_TrayVisState newState,
 }
 
 static void
-and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 oldOffset, XP_U16 newOffset )
+and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 maxOffset, 
+                       XP_U16 oldOffset, XP_U16 newOffset )
 {
 #if 0
     AndUtil* util = (AndUtil*)uc;

@@ -510,11 +510,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
-( JNIEnv* env, jclass C, jint gamePtr, jint zoomBy )
+( JNIEnv* env, jclass C, jint gamePtr, jint zoomBy, jbooleanArray jCanZoom )
 {
     jboolean result;
     XWJNI_START();
-    result = board_zoom( state->game.board, zoomBy );
+    XP_Bool canIn, canOut;
+    result = board_zoom( state->game.board, zoomBy, &canIn, &canOut );
+    jboolean canZoom[2] = { canIn, canOut };
+    setBoolArray( env, jCanZoom, VSIZE(canZoom), canZoom );
     XWJNI_END();
     return result;
 }

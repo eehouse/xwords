@@ -116,6 +116,14 @@ typedef struct _PerTurnInfo {
 #endif
 } PerTurnInfo;
 
+typedef struct _ScrollData {
+    XP_U16 scale;
+    XP_U16 offset;
+    XP_U16 maxOffset;
+    XP_U16 lastVisible;
+    XP_U16 dims[MAX_COLS];
+} ScrollData;
+typedef enum { SCROLL_H, SCROLL_V, N_SCROLL_DIMS } SDIndex;
 
 struct BoardCtxt {
 /*     BoardVTable* vtable; */
@@ -125,14 +133,8 @@ struct BoardCtxt {
     XW_UtilCtxt* util;
 
     struct CurGameInfo* gi;
+    ScrollData sd[N_SCROLL_DIMS];
 
-    XP_U16 boardHScale;
-    XP_U16 boardVScale;
-    XP_U16 xOffset;
-    XP_U16 yOffset;
-    XP_U16 maxYOffset;
-    XP_U16 lastVisibleRow;
-    XP_U16 lastVisibleCol;
     XP_U16 preHideYOffset;
     XP_U16 prevYScrollOffset; /* represents where the last draw took place;
                                  used to see if bit scrolling can be used */
@@ -171,8 +173,6 @@ struct BoardCtxt {
 
     XP_U16 star_row;
     XP_U16 zoomCount;
-    XP_U16 colWidths[MAX_COLS];
-    XP_U16 rowHeights[MAX_COLS];
 
     /* Unless KEYBOARD_NAV is defined, this does not change */
     BoardObjectType focussed;
@@ -284,8 +284,9 @@ const XP_UCHAR* getTileDrawInfo( const BoardCtxt* board, Tile tile,
                                  XP_S16* value );
 XP_Bool dividerMoved( BoardCtxt* board, XP_U8 newLoc );
 
-XP_Bool checkScrollCell( BoardCtxt* board, XP_U16 col, XP_U16 row );
-XP_Bool onBorderCanScroll( const BoardCtxt* board, XP_U16 row, XP_S16* change );
+XP_Bool scrollIntoView( BoardCtxt* board, XP_U16 col, XP_U16 row );
+XP_Bool onBorderCanScroll( const BoardCtxt* board, SDIndex indx, XP_U16 row, 
+                           XP_S16* change );
 XP_Bool adjustXOffset( BoardCtxt* board, XP_S16 moveBy );
 XP_Bool adjustYOffset( BoardCtxt* board, XP_S16 moveBy );
 

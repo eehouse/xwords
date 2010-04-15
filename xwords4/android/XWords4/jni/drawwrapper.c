@@ -223,9 +223,7 @@ static XP_Bool
 and_draw_boardBegin( DrawCtx* dctx, const XP_Rect* rect, 
                      XP_U16 cellWidth, XP_U16 cellHeight, DrawFocusState dfs )
 {
-    AndDraw* draw = (AndDraw*)dctx;
-    XP_Bool result = NULL != draw->jdraw;
-    return result;
+    return XP_TRUE;
 }
 
 static XP_Bool 
