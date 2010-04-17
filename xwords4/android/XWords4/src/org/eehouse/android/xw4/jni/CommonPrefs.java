@@ -52,7 +52,7 @@ public class CommonPrefs {
     {
         playerColors = new int[4];
         bonusColors = new int[5];
-        bonusColors[0] = 0xFFFFFFFF; // white
+        bonusColors[0] = 0xF0F0F0F0; // garbage
         otherColors = new int[COLOR_LAST];
     }
 
@@ -97,6 +97,7 @@ public class CommonPrefs {
         }
 
         int idsOther[] = { R.string.key_tile_back,
+                           R.string.key_empty,
                            R.string.key_focus,
         };
         for ( int ii = 0; ii < idsOther.length; ++ii ) {
