@@ -26,6 +26,7 @@
     <string name="list_item_hide">Amaga</string>
     <string name="list_item_delete">Suprimeix</string>
 	<string name="list_item_copy">Copia</string>
+	<string name="list_item_reset">Reinicialitza</string>
 	<string name="list_item_new_from">Nova des de</string>
 	<string name="list_item_move_up">Mou amunt</string>
 	<string name="list_item_move_down">Mou avall</string>
@@ -43,15 +44,19 @@
 	<string name="title_game">Partida</string>  
 	<string name="title_edit_title">Nom de la partida:</string>  
 	
-	<string name="app_name">Crosswords</string>  
+	<string name="app_name">Crosswords</string> 
+	<string name="title_dicts_list">Diccionaris del Crosswords</string> 
 	
 	<string name="button_ok">D\'acord</string>  
 	<string name="button_cancel">Cancel·la</string>  
 	<string name="button_yes">Sí</string>  
 	<string name="button_no">No</string>  
+	<string name="button_save">Desa</string>  
+	<string name="button_discard">Descarta</string> 
 
     <string name="player_label">Nom:</string>
     <string name="game_config_open">Obre</string>
+    <string name="game_config_revert">Desfés els canvis</string>
 
     <string name="error_title">Error</string>
     <string name="info_title">Per a la vostra informació...</string>
@@ -147,6 +152,8 @@
 
     <string name="list_item_up">Amunt</string>
     <string name="list_item_down">Avall</string>
+    <string name="dicts_item_delete">Suprimeix el diccionari</string>
+    <string name="dicts_item_details">Detalls</string>
 
     <string name="dict_label">Diccionari</string>
     <string name="role_label">Rol</string>
@@ -159,6 +166,11 @@
     <string name="download_dicts">Baixa\'n més...</string>
 
     <string name="dict_url">http://eehouse.org/and_dicts</string>
+   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
+
+    <string name="confirm_save_title">Confirmeu els canvis</string>
+    <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
+
 
     <string name="hints_allowed">Permet pistes</string>
     <string name="use_timer">Habilita el temps</string>
@@ -168,6 +180,8 @@
     <string name="explain_robot">Explica les jugades del robot</string>
     <string name="skip_confirm_turn">Omet la confirmació de la jugada</string>
     <string name="hide_values">Amaga els valors</string>
+    <string name="ringer_zoom">Zoom amb els botons de volum</string>
+
 
     <string name="role_standalone">Solitari</string>
     <string name="role_host">Amfitrió</string>
@@ -177,12 +191,13 @@
     <string name="phonies_warn">Avisa\'m</string>
     <string name="phonies_disallow">No es poden jugar</string>
     <string name="gamel_menu_prefs">Preferències</string>
+    <string name="gamel_menu_dicts">Diccionaris</string>
 
     <string name="room_label">Sala</string>
-    <string name="hostname_label">Nom del servidor</string>
+    <!-- <string name="hostname_label">Nom del servidor</string> -->
     <string name="phone_label">Número de telèfon de l\'amfitrió</string>
     <string name="bluetooth_label">Aviat es podrà usar el Bluetooth....</string>
-    <string name="port_label">Port</string>
+    <!-- <string name="port_label">Port</string> -->
     <string name="role_edit_title">Connexió</string>
 
     <string name="general_prefs">Preferències</string>
@@ -195,10 +210,12 @@
     <string name="bonus_l3x">Triple de lletra</string>
     <string name="bonus_w2x">Doble de paraula</string>
     <string name="bonus_w3x">Triple de paraula</string>
+    <string name="trading_text">Canvi de fitxes. Pitgeu\n\'Fet\' quan hagueu acabat.</string>
     <string name="tile_back">Fons de la fitxa</string>
     <string name="focus">Color del focus</string>
     <string name="advanced">Avançat</string>
     <string name="relay_host">Adreça del repetidor</string>
+    <string name="dict_host">URL de baixada de diccionaris</string>
     <string name="relay_port">Port del repetidor</string>
     <string name="sms_port">Port SMS</string>
 
@@ -210,7 +227,7 @@
     <string name="tab_sms">SMS (en desenvolupament)</string>
     <string name="tab_bluetooth">Bluetooth (en desenvolupament)</string>
 <string name="msg_relay_waiting">Esteu connectat al repetidor. S\'està esperant a %d jugador/s.</string>
-    <string name="msg_relay_all_here">Ja hi són tot els jugadors.</string>
+    <string name="msg_relay_all_here">Ja hi són tots els jugadors.</string>
     <string name="title_relay_status">Estat de la connexió.</string>
 
     <string name="relay_alert">Error en la connexió</string>
@@ -218,5 +235,65 @@
     <string name="msg_no_room">Cap amfitrió no ha registrat una sala amb aquest nom.</string>
     <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o intentenu més tard.</string>
     <string name="msg_lost_other">El repetidor ha perdut el contacte amb algun altre dispositiu durant aquesta partida.</string>
+
+    <string name="ids_badwords">Les paraules %s no es troben al diccionari.</string>
+    <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
+    <string name="badwords_lost">  Torn perdut.</string>
+    <string name="badwords_title">Les paraules no són vàlides</string>
+
+    <string name="ids_endnow">Esteu segur de voler abandonar ara la partida?</string>
+
+    <string name="force_title">Jugador/s remot/s</string>
+    <string name="force_expl">Un amfitrió ha de tenir com a mínim un jugador remot.</string>
+
+    <string name="vs">vs.</string>
+    <string name="dictionary">Diccionari:</string>
+
+    <!-- about dialog stuff -->
+    <string name="about_versf">Crosswords per a l\'Android, Versió 4.4 a1,
+    rev %s.</string>
+    <string name="about_copyright">Copyright (C) 1998-2010 d\'Eric
+    House. Aquest programari es troba sota la Llicència Pública General GNU.</string>
+
+    <string name="about_web">Per a l\'ajuda o el codi font visiteu:
+    http://xwords.sf.net.  Per informar d'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
+    <!-- fill this in other than in English -->
+    <string name="xlator">Joan Montané</string>
+
+    <string name="downloading_dictf">S\'està baixant el diccionari %s per al Crosswords...</string>
+    <string name="no_dict_title">No s\'ha trobat el diccionari</string>
+    <string name="button_download">Baixa</string>
+    <string name="no_dictf">No s\'ha pogut obrir la partida perquè no s\'ha trobat el diccionari %s.</string>
+
+	<string name="msg_ask_password">Contrasenya per \"%s\":</string>
+
+	<string name="red">Roig</string>
+	<string name="green">Verd</string>
+	<string name="blue">Blau</string>
+    
+    <!-- These do not require localization -->
+    <string name="key_color_tiles">key_color_tiles</string>
+    <string name="key_show_arrow">key_show_arrow</string>
+    <string name="key_explain_robot">key_explain_robot</string>
+    <string name="key_skip_confirm">key_skip_confirm</string>
+    <string name="key_hide_values">key_hide_values</string>
+    <string name="key_ringer_zoom">key_ringer_zoom</string>
+    <string name="key_player0">key_clr_player0</string>
+    <string name="key_player1">key_clr_player1</string>
+    <string name="key_player2">key_clr_player2</string>
+    <string name="key_player3">key_clr_player3</string>
+    <string name="key_bonus_l2x">key_clr_bonus_l2x</string>
+    <string name="key_bonus_l3x">key_clr_bonus_l3x</string>
+    <string name="key_bonus_w2x">key_clr_bonus_w2x</string>
+    <string name="key_bonus_w3x">key_clr_bonus_w3x</string>
+    <string name="key_tile_back">key_clr_tile_back</string>
+    <string name="key_focus">key_clr_focus</string>
+    <string name="key_relay_host">key_relay_host</string>
+    <string name="key_relay_port">key_relay_port</string>
+    <string name="key_sms_port">key_sms_port</string>
+    <string name="key_dict_host">key_dict_host</string>
+
+    <string name="default_host">eehouse.org</string>
+
 
 </resources>
