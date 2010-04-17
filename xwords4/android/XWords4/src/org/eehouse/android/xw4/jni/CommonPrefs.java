@@ -88,8 +88,8 @@ public class CommonPrefs {
         }
 
         int ids2[] = { R.string.key_bonus_l2x,
-                       R.string.key_bonus_l3x,
                        R.string.key_bonus_w2x,
+                       R.string.key_bonus_l3x,
                        R.string.key_bonus_w3x,
         };
         for ( int ii = 0; ii < ids2.length; ++ii ) {
