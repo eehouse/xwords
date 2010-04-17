@@ -226,7 +226,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         super.onCreate( savedInstanceState );
 
         m_jniu = JNIUtilsImpl.get();
-        m_volKeysZoom = CommonPrefs.getVolKeysZoom();
         setContentView( R.layout.board );
         m_handler = new Handler();
         m_timers = new TimerRunnable[4]; // needs to be in sync with
@@ -296,10 +295,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 m_firingPrefs = false;
                 m_view.prefsChanged();
                 m_volKeysZoom = CommonPrefs.getVolKeysZoom();
-                m_view.setUseZoomControl( !m_volKeysZoom );
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
             }
-            // onContentChanged();
+            m_view.setUseZoomControl( !m_volKeysZoom );
         }
     }
 
