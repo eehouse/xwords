@@ -223,6 +223,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
+        Utils.logf( "BoardActivity::onCreate()" );
         super.onCreate( savedInstanceState );
 
         m_jniu = JNIUtilsImpl.get();
@@ -260,6 +261,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     protected void onPause()
     {
+        Utils.logf( "BoardActivity::onPause()" );
         if ( 0 != m_jniGamePtr ) {
             if ( null != m_xport ) {
                 m_xport.waitToStop();
@@ -284,6 +286,20 @@ public class BoardActivity extends Activity implements UtilCtxt {
             m_jniGamePtr = 0;
         }
         super.onPause();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        Utils.logf( "BoardActivity::onStop()" );
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        Utils.logf( "BoardActivity::onDestroy()" );
+        super.onDestroy();
     }
 
     @Override
