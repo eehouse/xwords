@@ -210,6 +210,7 @@
     <string name="bonus_w3x">Triple word</string>
     <string name="trading_text">Trading tiles. Select\n\'Turn done\' when ready.</string>
     <string name="tile_back">Tile background</string>
+    <string name="empty">Empty cell</string>
     <string name="focus">Focus color</string>
     <string name="advanced">Advanced</string>
     <string name="relay_host">Relay address</string>
@@ -291,6 +292,7 @@
     <string name="key_bonus_w2x">key_clr_bonus_w2x</string>
     <string name="key_bonus_w3x">key_clr_bonus_w3x</string>
     <string name="key_tile_back">key_clr_tile_back</string>
+    <string name="key_empty">key_clr_empty</string>
     <string name="key_focus">key_clr_focus</string>
     <string name="key_relay_host">key_relay_host</string>
     <string name="key_relay_port">key_relay_port</string>

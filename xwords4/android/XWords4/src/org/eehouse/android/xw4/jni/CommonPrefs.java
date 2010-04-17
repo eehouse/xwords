@@ -31,8 +31,9 @@ import org.eehouse.android.xw4.R;
 
 public class CommonPrefs {
     public static final int COLOR_TILE_BACK = 0;
-    public static final int COLOR_FOCUS = 1;
-    public static final int COLOR_LAST = 2;
+    public static final int COLOR_BKGND = 1;
+    public static final int COLOR_FOCUS = 2;
+    public static final int COLOR_LAST = 3;
 
     private static Context s_context = null;
     private static CommonPrefs s_cp = null;
