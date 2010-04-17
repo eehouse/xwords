@@ -67,6 +67,11 @@
 
 #define bEND 0x62454e44
 
+#ifndef MAX_BOARD_ZOOM
+/* too big looks bad */
+# define MAX_BOARD_ZOOM 4
+#endif
+
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -535,7 +540,7 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, XP_Bool* canOut )
     ScrollData* hsd = &board->sd[SCROLL_H];
     ScrollData* vsd = &board->sd[SCROLL_V];
 
-    XP_U16 maxCount = model_numCols( board->model ) - 2; /* 2 for scrolling */
+    XP_U16 maxCount = model_numCols( board->model ) - MAX_BOARD_ZOOM;
     if ( board->boardBounds.width > board->boardBounds.height ) {
         XP_U16 ratio = board->boardBounds.width / board->boardBounds.height;
         maxCount -= ratio;
