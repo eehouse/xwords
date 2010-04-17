@@ -70,7 +70,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
-    private CommonPrefs m_cp;
+    private boolean m_firingPrefs;
     private JNIUtils m_jniu;
     private boolean m_volKeysZoom;
 
@@ -225,7 +225,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         super.onCreate( savedInstanceState );
 
-        m_cp = CommonPrefs.get();
         m_jniu = JNIUtilsImpl.get();
         m_volKeysZoom = CommonPrefs.getVolKeysZoom();
         setContentView( R.layout.board );
@@ -271,7 +270,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             if ( null != m_jniThread ) {
                 m_jniThread.waitToStop();
                 m_jniThread = null;
-                Utils.logf( "onStop(): waitToStop() returned" );
+                Utils.logf( "onPause(): waitToStop() returned" );
             }
 
             // This has to happen after the drawing thread is killed
@@ -293,7 +292,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {
-            if ( null == m_cp ) {
+            if ( m_firingPrefs ) {
+                m_firingPrefs = false;
                 m_view.prefsChanged();
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
             }
@@ -412,7 +412,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND );
             break;
         case R.id.board_menu_file_prefs:
-            m_cp = null;        // mark so we'll reset it later
+            m_firingPrefs = true;
             startActivity( new Intent( this, PrefsActivity.class ) );
             break;
         case R.id.board_menu_file_about:
@@ -567,13 +567,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                                   m_gi.serverRole );
                 }
 
+                CommonPrefs cp = CommonPrefs.get();
                 if ( null == stream ||
                      ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                                   m_gi, dictBytes, this,
-                                                  m_jniu, m_view, m_cp, 
+                                                  m_jniu, m_view, cp, 
                                                   m_xport ) ) {
                     XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
-                                            m_view, m_cp, m_xport, dictBytes );
+                                            m_view, cp, m_xport, dictBytes );
                 }
 
                 m_jniThread = new 
