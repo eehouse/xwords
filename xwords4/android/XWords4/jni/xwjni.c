@@ -153,6 +153,7 @@ destroyGI( MPFORMAL CurGameInfo** gip )
 static void
 loadCommonPrefs( JNIEnv* env, CommonPrefs* cp, jobject j_cp )
 {
+    XP_ASSERT( !!j_cp );
     cp->showBoardArrow = getBool( env, j_cp, "showBoardArrow" );
     cp->showRobotScores = getBool( env, j_cp, "showRobotScores" );
     cp->hideTileValues = getBool( env, j_cp, "hideTileValues" );
