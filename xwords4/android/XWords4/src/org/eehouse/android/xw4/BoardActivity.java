@@ -295,10 +295,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
             if ( m_firingPrefs ) {
                 m_firingPrefs = false;
                 m_view.prefsChanged();
+                m_volKeysZoom = CommonPrefs.getVolKeysZoom();
+                m_view.setUseZoomControl( !m_volKeysZoom );
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
             }
-            m_volKeysZoom = CommonPrefs.getVolKeysZoom();
-            m_view.setUseZoomControl( !m_volKeysZoom );
             // onContentChanged();
         }
     }
