@@ -446,8 +446,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         figureFontDims();
 
-        clearToBack( rect );
-
         if ( owner < 0 ) {
             owner = 0;
         }
@@ -456,7 +454,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( 0 != (flags & CELL_ISCURSOR) ) {
             backColor = m_otherColors[CommonPrefs.COLOR_FOCUS];
         } else if ( empty ) {
-            backColor = m_bonusColors[bonus];
+            if ( 0 == bonus ) {
+                backColor = m_otherColors[CommonPrefs.COLOR_BKGND];
+            } else {
+                backColor = m_bonusColors[bonus];
+            }
         } else if ( pending ) {
             backColor = BLACK;
             foreColor = WHITE;
@@ -752,7 +754,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void clearToBack( Rect rect ) 
     {
-        fillRect( rect, WHITE );
+        fillRect( rect, m_otherColors[CommonPrefs.COLOR_BKGND] );
     }
 
     private void figureFontDims()
