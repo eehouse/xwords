@@ -101,7 +101,7 @@
     <!-- returned by util_getUserString -->
     <string name="strd_robot_traded">Robot traded tiles %d this turn.</string>
     <string name="str_robot_moved">The robot made this move:</string>
-    <string name="strs_values_header">%s counts/values:</string>
+    <string name="strs_values_header">%s counts/values:\n</string>
     <string name="strd_remaining_tiles_add">+ %d [all remaining tiles]</string>
     <string name="strd_unused_tiles_sub">- %d [unused tiles]</string>
     <string name="str_remote_moved">Remote player made this move:</string>
