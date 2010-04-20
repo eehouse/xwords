@@ -506,13 +506,13 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     public void requestTime() 
     {
-        if ( null != m_jniThread ) {
-            m_handler.post( new Runnable() {
-                    public void run() {
+        m_handler.post( new Runnable() {
+                public void run() {
+                    if ( null != m_jniThread ) {
                         m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
                     }
-                } );
-        }
+                }
+            } );
     }
 
     public void remSelected() 
