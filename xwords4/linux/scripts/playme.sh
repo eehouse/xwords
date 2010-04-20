@@ -68,32 +68,32 @@ do_one() {
 while [ -n "$1" ]; do
     case $1 in
         --delay)
-            [ -n "$2" ] || usage
+            [ -n "$2" ] || usage "$1 requires a parameter"
             HOW_LONG=$2
             shift
             ;;
         --relay)
-            [ -n "$2" ] || usage
+            [ -n "$2" ] || usage "$1 requires a parameter"
             HOSTNAME=$2
             shift
             ;;
         --port)
-            [ -n "$2" ] || usage
+            [ -n "$2" ] || usage "$1 requires a parameter"
             PORT=$2
             shift
             ;;
         --room)
-            [ -n "$2" ] || usage
+            [ -n "$2" ] || usage "$1 requires a parameter"
             ROOM_ADD=$2
             shift
             ;;
         --dict)
-            [ -n "$2" ] || usage
+            [ -n "$2" ] || usage "$1 requires a parameter"
             DICT=$2
             shift
             ;;
         --games)
-            [ -n "$2" ] || usage
+            [ -n "$2" ] || usage "$1 requires a parameter"
             NGAMES=$2
             shift
             ;;
@@ -101,7 +101,7 @@ while [ -n "$1" ]; do
             DBUG=1
             ;;
         *)
-            usage
+            usage "unknown option $1"
             ;;
     esac
     shift
