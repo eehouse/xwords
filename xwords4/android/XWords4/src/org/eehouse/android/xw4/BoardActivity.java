@@ -311,7 +311,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 m_firingPrefs = false;
                 m_view.prefsChanged();
                 m_volKeysZoom = CommonPrefs.getVolKeysZoom();
-                m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
+                if ( null != m_jniThread ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
+                }
             }
             m_view.setUseZoomControl( !m_volKeysZoom );
         }
@@ -502,11 +504,13 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     public void requestTime() 
     {
-        m_handler.post( new Runnable() {
-                public void run() {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
-                }
-            } );
+        if ( null != m_jniThread ) {
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        m_jniThread.handle( JNIThread.JNICmd.CMD_DO );
+                    }
+                } );
+        }
     }
 
     public void remSelected() 
