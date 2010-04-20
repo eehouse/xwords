@@ -137,7 +137,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         int action = event.getAction();
         int xx = (int)event.getX();
-        int yy = (int)event.getY() - m_top;
+        int yy = (int)event.getY() - getCurTop();
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
@@ -169,7 +169,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( m_bitmap, 0, m_top, m_drawPaint );
+                canvas.drawBitmap( m_bitmap, 0, getCurTop(), m_drawPaint );
             }
         }
     }
@@ -233,6 +233,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( !m_useZoomControl ) {
             m_zoomButtons.setVisible( false );
         }
+    }
+
+    private int getCurTop() 
+    {
+        return m_useZoomControl ? 0 : m_top;
     }
 
     private boolean layoutBoardOnce() 
