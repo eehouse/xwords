@@ -234,6 +234,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
         m_gi = new CurGameInfo( this );
 
         m_view = (BoardView)findViewById( R.id.board_view );
+        m_volKeysZoom = CommonPrefs.getVolKeysZoom();
+        m_view.setUseZoomControl( !m_volKeysZoom );
 
         Intent intent = getIntent();
         Uri uri = intent.getData();
