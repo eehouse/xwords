@@ -9,5 +9,6 @@ javap -s org.eehouse.android.xw4.jni.DrawCtx
 javap -s org.eehouse.android.xw4.jni.UtilCtxt
 javap -s org.eehouse.android.xw4.jni.CommsAddrRec
 javap -s org.eehouse.android.xw4.jni.TransportProcs
+javap -s org.eehouse.android.xw4.jni.JNIUtils
 cat /tmp/javah$$.txt
 rm /tmp/javah$$.txt
