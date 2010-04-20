@@ -185,7 +185,7 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
  */
 static void
 splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr, 
-                     int nFaceBytes, int nFaces )
+                     int nFaceBytes, int nFaces, XP_Bool isUTF8 )
 {
     XP_UCHAR facesBuf[nFaces*4]; /* seems a reasonable upper bound... */
     int indx = 0;
@@ -193,7 +193,8 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
     int nBytes;
     int ii;
 
-    jobject jstrarr = and_util_splitFaces( ctxt->jniutil, ptr, nFaceBytes );
+    jobject jstrarr = and_util_splitFaces( ctxt->jniutil, ptr, nFaceBytes,
+                                           isUTF8 );
     XP_ASSERT( (*env)->GetArrayLength( env, jstrarr ) == nFaces );
 
     for ( ii = 0; ii < nFaces; ++ii ) {
@@ -281,7 +282,8 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
         ctxt->super.isUTF8 = isUTF8;
 
         if ( isUTF8 ) {
-            splitFaces_via_java( ctxt->env, ctxt, ptr, numFaceBytes, nFaces );
+            splitFaces_via_java( ctxt->env, ctxt, ptr, numFaceBytes, nFaces,
+                                 XP_TRUE );
             ptr += numFaceBytes;
         } else {
             XP_U8 tmp[nFaces*4]; /* should be enough... */
@@ -296,7 +298,9 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
                 tmp[nBytes] = ch;
                 nBytes += 1;
             }
-            dict_splitFaces( &ctxt->super, tmp, nBytes, nFaces );
+            XP_ASSERT( nFaces == nBytes );
+            splitFaces_via_java( ctxt->env, ctxt, tmp, nBytes, nFaces, 
+                                 XP_FALSE );
         }
 
         ctxt->super.is_4_byte = (ctxt->super.nodeSize == 4);

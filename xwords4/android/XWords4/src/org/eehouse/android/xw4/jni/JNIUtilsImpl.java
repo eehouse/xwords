@@ -66,12 +66,18 @@ public class JNIUtilsImpl implements JNIUtils {
      * not valid utf8.  So turn it and the other nums into strings and
      * catch them on the other side.
      */
-    public String[] splitFaces( byte[] chars )
+    public String[] splitFaces( byte[] chars, boolean isUTF8 )
     {
         ArrayList<String> al = new ArrayList<String>();
         ByteArrayInputStream bais = new ByteArrayInputStream( chars );
-        InputStreamReader isr = new InputStreamReader( bais );
-
+        InputStreamReader isr;
+        try {
+            isr = new InputStreamReader( bais, isUTF8? "UTF8" : "ISO8859_1" );
+        } catch( java.io.UnsupportedEncodingException uee ) {
+            Utils.logf( "splitFaces: %s", uee.toString() );
+            isr = new InputStreamReader( bais );
+        }
+        
         int[] codePoints = new int[1];
 
         for ( ; ; ) {

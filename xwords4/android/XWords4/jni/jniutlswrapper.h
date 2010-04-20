@@ -33,6 +33,7 @@ void destroyJNIUtil( JNIUtilCtxt** jniu );
 
 jobject and_util_makeJBitmap( JNIUtilCtxt* jniu, int nCols, int nRows, 
                               const jboolean* colors );
-jobject and_util_splitFaces( JNIUtilCtxt* jniu, const XP_U8* bytes, int len );
+jobject and_util_splitFaces( JNIUtilCtxt* jniu, const XP_U8* bytes, int len,
+                             XP_Bool isUTF8 );
 
 #endif

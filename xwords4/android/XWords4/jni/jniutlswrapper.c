@@ -73,13 +73,14 @@ and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows,
 }
 
 jobject
-and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len )
+and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
+                     XP_Bool isUTF8 )
 {
     jobject strarray = NULL;
     JNIEnv* env = *jniutil->envp;
     jmethodID mid
         = getMethodID( env, jniutil->jjniutil, "splitFaces",
-                       "([B)[Ljava/lang/String;" );
+                       "([BZ)[Ljava/lang/String;" );
 
     jbyteArray jbytes = (*env)->NewByteArray( env, len );
 
@@ -87,7 +88,8 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len )
     XP_MEMCPY( jp, bytes, len );
     (*env)->ReleaseByteArrayElements( env, jbytes, jp, 0 );
 
-    strarray = (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jbytes );
+    strarray = (*env)->CallObjectMethod( env, jniutil->jjniutil, mid, jbytes,
+                                         isUTF8 );
     (*env)->DeleteLocalRef( env, jbytes );
     return strarray;
 }
