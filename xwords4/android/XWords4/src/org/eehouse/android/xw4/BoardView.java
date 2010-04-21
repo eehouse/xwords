@@ -734,25 +734,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         figureFontDims();
 
-        if ( null != bitmaps || null != text ) {
+        if ( null != text ) {
             if ( null == m_letterRect ) {
                 m_letterRect = new Rect( 0, 0, rect.width() * 3 / 4, 
                                          rect.height() * 3 / 4 );
-                m_letterRect.inset( 2, 2 );
             }
             m_letterRect.offsetTo( rect.left+2, rect.top+2 );
-            if ( null != bitmaps ) {
-                drawBestBitmap( text, m_trayOwner, false, bitmaps, 
-                                m_letterRect );
-            } else /*if ( null != text )*/ {
-                int height = m_letterRect.height();
-                int descent = m_fontDims.descentFor( height );
-                m_fillPaint.setTextSize( m_fontDims.heightFor( height ) );
-                m_fillPaint.setTextAlign( Paint.Align.LEFT );
-                m_canvas.drawText( text, m_letterRect.left,
-                                   m_letterRect.bottom - descent, 
-                                   m_fillPaint );
-            }
+            drawCentered( text, m_letterRect, m_fontDims, true );
         }
 
         if ( val >= 0 ) {
@@ -870,81 +858,4 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         rect.offset( -width, 0 );
         m_canvas.drawRect( rect, m_fillPaint );
     }
-
-    private BitmapDrawable colorBitmap( Bitmap base, boolean pending, 
-                                        int owner )
-    {
-        int foreColor, backColor;
-        foreColor = pending? WHITE : m_playerColors[owner];
-
-        int width = base.getWidth();
-        int height = base.getHeight();
-        IntBuffer intBuffer = IntBuffer.allocate( width * height );
-        base.copyPixelsToBuffer( intBuffer );
-
-        final int[] oldInts = intBuffer.array();
-        int len = oldInts.length;
-        int[] newInts = new int[len];
-        System.arraycopy( oldInts, 0, newInts, 0, len );
-        for ( int ii = 0; ii < len; ++ii ) {
-            if ( oldInts[ii] == 0xFF000000 ) {
-                newInts[ii] = foreColor;
-            }
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap( newInts, width, height,
-                                             Bitmap.Config.ARGB_8888 );
-        return new BitmapDrawable( bitmap );
-    }
-
-    private BitmapDrawable getColoredBitmap( BitmapDrawable[] blackBmps, 
-                                             String text, int owner, 
-                                             boolean pending, int index )
-    {
-        BitmapDrawable base = blackBmps[index];
-        if ( owner != 0 || pending ) {
-            String key;
-            if ( pending ) {
-                key = String.format( "%s:%d", text, index );
-            } else {
-                key = String.format( "%s:%d:%d", text, owner, index );
-            }
-            if ( null == m_bitmapsCache ) {
-                m_bitmapsCache = new HashMap<String,BitmapDrawable>();
-            }
-            BitmapDrawable found = m_bitmapsCache.get(key);
-            if ( null == found ) {
-                found = colorBitmap( base.getBitmap(), pending, owner );
-                m_bitmapsCache.put( key, found );
-            }
-            base = found;
-        }
-
-        return base;
-    }
-
-    private void drawBestBitmap( String key, int owner, boolean pending,
-                                 BitmapDrawable[] bitmaps, final Rect rect )
-    {
-        Rect local = new Rect( rect );
-        int height = local.height();
-        int width = local.width();
-
-        int ii;
-        for ( ii = bitmaps.length-1; ii > 0; --ii ) {
-            Bitmap bitmap = bitmaps[ii].getBitmap();
-            if ( bitmap.getWidth() <= width
-                 && bitmap.getHeight() <= height ) {
-                break;
-            }
-        }
-
-        BitmapDrawable bitmap = getColoredBitmap( bitmaps, key, owner, 
-                                                  pending, ii );
-
-        // will be 0 if fell through
-        bitmap.setBounds( local );
-        bitmap.draw( m_canvas );
-    }
-
 }
