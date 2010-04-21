@@ -386,7 +386,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         fillRect( rOuter, m_otherColors[indx] );
 
         m_fillPaint.setColor( BLACK );
-        drawCentered( m_remText, rOuter, null );
+        drawCentered( m_remText, rOuter, null, false );
     }
 
     public void measureScoreText( Rect r, DrawScoreInfo dsi, 
@@ -419,7 +419,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         String text = m_scores[dsi.playerNum];
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
-        drawCentered( text, rOuter, null );
+        drawCentered( text, rOuter, null, false );
     }
 
     public void drawTimer( Rect rect, int player, int secondsLeft )
@@ -435,7 +435,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             clearToBack( rect );
 
             m_fillPaint.setColor( m_playerColors[player] );
-            drawCentered( time, rect, null );
+            drawCentered( time, rect, null, false );
 
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
@@ -480,13 +480,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
         } else {
             m_fillPaint.setColor( foreColor );
-            if ( null == bitmaps ) {
-                drawCentered( text, rect, m_fontDims );
-            } else {
-                Rect smaller = new Rect(rect);
-                smaller.inset( 2, 2 );
-                drawBestBitmap( text, owner, pending, bitmaps, smaller );
-            }
+            drawCentered( text, rect, m_fontDims, true );
         }
 
         if ( (CELL_ISBLANK & flags) != 0 ) {
@@ -560,7 +554,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                   ? WHITE : m_otherColors[CommonPrefs.COLOR_FOCUS] );
         m_fillPaint.setColor( m_playerColors[playerNum] );
         rect.inset( 0, rect.height() / 4 );
-        drawCentered( text, rect, null );
+        drawCentered( text, rect, null, false );
     }
 
     public String getMiniWText ( int textHint )
@@ -689,7 +683,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.restoreToCount(1); // in case new canvas....
     } // drawTileImpl
 
-    private void drawCentered( String text, Rect rect, FontDims fontDims ) 
+    private void drawCentered( String text, Rect rect, FontDims fontDims,
+                               boolean tryScale ) 
     {
         int descent;
         int textSize;
@@ -703,11 +698,35 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             // Utils.logf( "using descent: " + descent + " and textSize: " 
             //             + textSize + " in height " + height );
         }
-        int bottom = rect.bottom - descent - 2;
-        int center = rect.left + ( (rect.right - rect.left) / 2 );
-        m_fillPaint.setTextAlign( Paint.Align.CENTER );
         m_fillPaint.setTextSize( textSize );
-        m_canvas.drawText( text, center, bottom, m_fillPaint );
+
+        descent += 2;
+        if ( tryScale && text.length() > 1 ) {
+            m_fillPaint.setTextAlign( Paint.Align.LEFT );
+            drawScaled( text, rect, descent );
+        } else {
+            int bottom = rect.bottom - descent;
+            int center = rect.left + ( rect.width() / 2 );
+            m_fillPaint.setTextAlign( Paint.Align.CENTER );
+            m_canvas.drawText( text, center, bottom, m_fillPaint );
+        }
+    }
+
+    private void drawScaled( String text, final Rect rect, int descent )
+    {
+        Rect local = new Rect();
+        m_fillPaint.getTextBounds( text, 0, text.length(), local );
+        local.bottom = rect.height();
+
+        Bitmap bitmap = Bitmap.createBitmap( local.width(),
+                                             rect.height(), 
+                                             Bitmap.Config.ARGB_8888 );
+
+        Canvas canvas = new Canvas( bitmap );
+        int bottom = local.bottom - descent;
+        canvas.drawText( text, 0, bottom, m_fillPaint );
+
+        m_canvas.drawBitmap( bitmap, local, rect, m_drawPaint );
     }
 
     private void positionDrawTile( final Rect rect, String text, 
