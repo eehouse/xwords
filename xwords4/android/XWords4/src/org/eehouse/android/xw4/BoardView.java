@@ -70,7 +70,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private String m_remText;
     private int m_dictPtr = 0;
     private int m_lastSecsLeft;
-    private HashMap<String,BitmapDrawable> m_bitmapsCache;
     private Handler m_viewHandler;
 
     // FontDims: exists to translate space available to the largest
@@ -327,13 +326,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                     icon.draw( m_canvas );
                 }
             }
-        }
-    }
-
-    public void prefsChanged()
-    {
-        synchronized( this ) {
-            m_bitmapsCache = null;
         }
     }
 

@@ -311,7 +311,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( hasFocus ) {
             if ( m_firingPrefs ) {
                 m_firingPrefs = false;
-                m_view.prefsChanged();
                 m_volKeysZoom = CommonPrefs.getVolKeysZoom();
                 if ( null != m_jniThread ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
