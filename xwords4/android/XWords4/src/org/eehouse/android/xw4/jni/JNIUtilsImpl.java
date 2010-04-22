@@ -42,24 +42,6 @@ public class JNIUtilsImpl implements JNIUtils {
         return s_impl;
     }
 
-    public BitmapDrawable makeBitmap( int width, int height, boolean[] colors )
-    {
-        Bitmap bitmap = Bitmap.createBitmap( width, height, 
-                                             Bitmap.Config.ARGB_8888 );
-
-        int indx = 0;
-        for ( int yy = 0; yy < height; ++yy ) {
-            for ( int xx = 0; xx < width; ++xx ) {
-                boolean pixelSet = colors[indx++];
-                bitmap.setPixel( xx, yy, pixelSet? 0xFF000000 : 0x00 );
-            }
-        }
-
-        // Doesn't compile if pass getResources().  Maybe the
-        // "deprecated" API is really the only one?
-        return new BitmapDrawable( /*getResources(), */bitmap );
-    }
-
     /** Working around lack of utf8 support on the JNI side: given a
      * utf-8 string with embedded small number vals starting with 0,
      * convert into individual strings.  The 0 is the problem: it's

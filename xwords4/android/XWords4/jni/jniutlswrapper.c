@@ -53,6 +53,7 @@ destroyJNIUtil( JNIUtilCtxt** ctxtp )
 }
 
 /* These are called from anddict.c, not via vtable */
+#ifndef DROP_BITMAPS
 jobject
 and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows, 
                       const jboolean* colors )
@@ -71,6 +72,7 @@ and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows,
 
     return bitmap;
 }
+#endif
 
 jobject
 and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,

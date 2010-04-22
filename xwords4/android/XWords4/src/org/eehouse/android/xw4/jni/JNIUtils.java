@@ -25,6 +25,5 @@ import android.graphics.drawable.BitmapDrawable;
 public interface JNIUtils {
 
     // Stuff I can't do in C....
-    BitmapDrawable makeBitmap( int width, int height, boolean[] colors );
     String[] splitFaces( byte[] chars, boolean isUTF8 );
 }

@@ -107,6 +107,9 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
 
     if ( nCols > 0 ) {
         XP_U8 nRows = *ptr++;
+#ifdef DROP_BITMAPS
+        ptr += ((nRows*nCols)+7) / 8;
+#else
         XP_U8 srcByte = 0;
         XP_U8 nBits;
         XP_U16 ii;
@@ -134,6 +137,7 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8** ptrp )
         (void)(*env)->NewGlobalRef( env, bitmap );
         (*env)->DeleteLocalRef( env, bitmap );
         XP_FREE( ctxt->super.mpool, colors );
+#endif
     }
 
     *ptrp = ptr;
