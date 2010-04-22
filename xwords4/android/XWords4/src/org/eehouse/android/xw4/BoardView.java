@@ -378,7 +378,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         fillRect( rOuter, m_otherColors[indx] );
 
         m_fillPaint.setColor( BLACK );
-        drawCentered( m_remText, rOuter, null, false );
+        drawCentered( m_remText, rOuter, null );
     }
 
     public void measureScoreText( Rect r, DrawScoreInfo dsi, 
@@ -411,7 +411,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         String text = m_scores[dsi.playerNum];
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
-        drawCentered( text, rOuter, null, false );
+        drawCentered( text, rOuter, null );
     }
 
     public void drawTimer( Rect rect, int player, int secondsLeft )
@@ -427,7 +427,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             clearToBack( rect );
 
             m_fillPaint.setColor( m_playerColors[player] );
-            drawCentered( time, rect, null, false );
+            drawCentered( time, rect, null );
 
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
         }
@@ -472,7 +472,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             }
         } else {
             m_fillPaint.setColor( foreColor );
-            drawCentered( text, rect, m_fontDims, true );
+            drawCentered( text, rect, m_fontDims );
         }
 
         if ( (CELL_ISBLANK & flags) != 0 ) {
@@ -546,7 +546,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                   ? WHITE : m_otherColors[CommonPrefs.COLOR_FOCUS] );
         m_fillPaint.setColor( m_playerColors[playerNum] );
         rect.inset( 0, rect.height() / 4 );
-        drawCentered( text, rect, null, false );
+        drawCentered( text, rect, null );
     }
 
     public String getMiniWText ( int textHint )
@@ -675,8 +675,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.restoreToCount(1); // in case new canvas....
     } // drawTileImpl
 
-    private void drawCentered( String text, Rect rect, FontDims fontDims,
-                               boolean tryScale ) 
+    private void drawCentered( String text, Rect rect, FontDims fontDims ) 
     {
         int descent;
         int textSize;
@@ -693,7 +692,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_fillPaint.setTextSize( textSize );
 
         descent += 2;
-        if ( tryScale && text.length() > 1 ) {
+
+        m_fillPaint.getTextBounds( text, 0, text.length(), m_boundsScratch );
+        if ( m_boundsScratch.width() > rect.width() ) {
             m_fillPaint.setTextAlign( Paint.Align.LEFT );
             drawScaled( text, rect, descent );
         } else {
@@ -732,7 +733,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                                          rect.height() * 3 / 4 );
             }
             m_letterRect.offsetTo( rect.left+2, rect.top+2 );
-            drawCentered( text, m_letterRect, m_fontDims, true );
+            drawCentered( text, m_letterRect, m_fontDims );
         }
 
         if ( val >= 0 ) {
