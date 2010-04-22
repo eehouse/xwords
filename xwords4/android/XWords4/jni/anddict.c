@@ -37,28 +37,17 @@ typedef struct _AndDictionaryCtxt {
     XP_U8* bytes;
 } AndDictionaryCtxt;
 
+static void splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, 
+                                 const XP_U8* ptr, 
+                                 int nFaceBytes, int nFaces, XP_Bool isUTF8 );
+
 void
 dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
-    XP_UCHAR* faces = (XP_UCHAR*)XP_CALLOC( dict->mpool, nBytes + nFaces );
-    const XP_UCHAR** ptrs = (const XP_UCHAR**)
-        XP_CALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
-    XP_U16 ii;
-    XP_UCHAR* next = faces;
-
-    /* now split; this will not work for utf8!!! */
-    for ( ii = 0; ii < nFaces; ++ii ) {
-        ptrs[ii] = next;
-        *next++ = *bytes++;
-        *next++ = 0;
-    }
-
-    XP_ASSERT( next == faces + nFaces + nBytes );
-    XP_ASSERT( !dict->faces );
-    dict->faces = faces;
-    XP_ASSERT( !dict->facePtrs );
-    dict->facePtrs = ptrs;
+    AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
+    splitFaces_via_java( ctxt->env, ctxt, bytes, nBytes, nFaces, 
+                         dict->isUTF8 );
 }
 
 static XP_U32
@@ -409,10 +398,12 @@ and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict )
 }
 
 DictionaryCtxt* 
-and_dictionary_make_empty( MPFORMAL_NOCOMMA )
+and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
 {
     AndDictionaryCtxt* anddict
         = (AndDictionaryCtxt*)XP_CALLOC( mpool, sizeof( *anddict ) );
+    anddict->env = env;
+    anddict->jniutil = jniutil;
     dict_super_init( (DictionaryCtxt*)anddict );
     MPASSIGN( anddict->super.mpool, mpool );
     return (DictionaryCtxt*)anddict;
@@ -431,13 +422,11 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes )
     (*env)->ReleaseByteArrayElements( env, jbytes, src, 0 );
 
     anddict = (AndDictionaryCtxt*)
-        and_dictionary_make_empty( MPPARM_NOCOMMA(mpool) );
+        and_dictionary_make_empty( MPPARM(mpool) env, jniutil );
     anddict->super.destructor = and_dictionary_destroy;
     /* anddict->super.func_dict_getShortName = and_dict_getShortName; */
 
     anddict->bytes = localBytes;
-    anddict->env = env;
-    anddict->jniutil = jniutil;
     
     parseDict( anddict, localBytes, len );
     setBlankTile( &anddict->super );

@@ -293,8 +293,10 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc )
 #ifdef STUBBED_DICT
     XP_ASSERT(0);
 #else
-    return
-        and_dictionary_make_empty( MPPARM_NOCOMMA( ((AndUtil*)uc)->util.mpool ) );
+    AndGlobals* globals = (AndGlobals*)uc->closure;
+    AndUtil* andutil = (AndUtil*)uc;
+    return and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
+                                      *andutil->env, globals->jniutil );
 #endif
 }
 

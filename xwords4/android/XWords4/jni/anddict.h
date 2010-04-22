@@ -31,7 +31,8 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
 DictionaryCtxt* makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, 
                           jbyteArray bytes );
 
-DictionaryCtxt* and_dictionary_make_empty( MPFORMAL_NOCOMMA );
+DictionaryCtxt* and_dictionary_make_empty( MPFORMAL JNIEnv *env,
+                                           JNIUtilCtxt* jniutil );
 
 jobject and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict );
 
