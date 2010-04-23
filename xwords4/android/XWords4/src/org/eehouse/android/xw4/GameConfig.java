@@ -475,29 +475,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         return handled;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.game_config_menu, menu );
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        boolean handled = true;
-
-        switch( item.getItemId() ) {
-        case R.id.game_config_revert:
-            finish();
-            break;
-        default:
-            handled = false;
-        }
-        return handled;
-    } // onOptionsItemSelected
-
     public void onClick( View view ) 
     {
         if ( m_addPlayerButton == view ) {

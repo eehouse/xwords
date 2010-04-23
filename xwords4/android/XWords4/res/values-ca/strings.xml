@@ -18,7 +18,6 @@
     <string name="menu_delete">Suprimeix</string>
     <string name="menu_insert">Afegeix una partida</string>
     <string name="button_new_game">Afegeix una partida</string>
-    <string name="menu_revert">Reverteix</string>
 
     <!-- <string name="list_item_open">Obre</string> -->
     <string name="list_item_view">Configura</string>
