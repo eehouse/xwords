@@ -29,7 +29,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* bytes,
                  XP_U16 nBytes, XP_U16 nFaces );
 
 DictionaryCtxt* makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, 
-                          jbyteArray bytes );
+                          jbyteArray bytes, jstring jname );
 
 DictionaryCtxt* and_dictionary_make_empty( MPFORMAL JNIEnv *env,
                                            JNIUtilCtxt* jniutil );

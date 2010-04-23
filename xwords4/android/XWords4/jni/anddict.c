@@ -343,7 +343,6 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8* ptr, XP_U32 dictLength )
 
         setBlankTile( &ctxt->super );
 
-        ctxt->super.name = copyString(ctxt->super.mpool, "no name dict" );
         break;              /* exit phony while loop */
     }
 }
@@ -410,7 +409,8 @@ and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
 }
 
 DictionaryCtxt* 
-makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes )
+makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes,
+          jstring jname )
 {
     AndDictionaryCtxt* anddict = NULL;
 
@@ -427,9 +427,16 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jbyteArray jbytes )
     /* anddict->super.func_dict_getShortName = and_dict_getShortName; */
 
     anddict->bytes = localBytes;
-    
+
     parseDict( anddict, localBytes, len );
     setBlankTile( &anddict->super );
 
-     return (DictionaryCtxt*)anddict;
+    /* copy the name */
+    len = 1 + (*env)->GetStringUTFLength( env, jname );
+    const char* chars = (*env)->GetStringUTFChars( env, jname, NULL );
+    anddict->super.name = XP_MALLOC( mpool, len );
+    XP_MEMCPY( anddict->super.name, chars, len );
+    (*env)->ReleaseStringUTFChars( env, jname, chars );
+    
+    return (DictionaryCtxt*)anddict;
 }

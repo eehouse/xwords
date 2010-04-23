@@ -361,7 +361,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
                       globals->xportProcs );
 
     DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil,
-                                     jDictBytes );
+                                     jDictBytes, jDictName );
 #ifdef STUBBED_DICT
     if ( !dict ) {
         XP_LOGF( "falling back to stubbed dict" );
@@ -412,7 +412,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->util = makeUtil( MPPARM(mpool) &state->env, 
                               jutil, globals->gi, globals );
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil, jdict );
+    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil, 
+                                     jdict, jdictName );
     globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 
