@@ -23,7 +23,7 @@ package org.eehouse.android.xw4;
 import android.preference.PreferenceActivity;
 import android.os.Bundle;
 import android.content.SharedPreferences;
-import android.preference.EditTextPreference;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 
 public class PrefsActivity extends PreferenceActivity 
@@ -40,9 +40,10 @@ public class PrefsActivity extends PreferenceActivity
         addPreferencesFromResource( R.xml.xwprefs );
 
         int[] textKeyIds = { R.string.key_relay_host,
-                               R.string.key_relay_port,
-                               R.string.key_sms_port,
-                               R.string.key_dict_host
+                             R.string.key_relay_port,
+                             R.string.key_sms_port,
+                             R.string.key_dict_host,
+                             R.string.key_board_size
         };
 
         SharedPreferences sp
@@ -84,8 +85,7 @@ public class PrefsActivity extends PreferenceActivity
 
     private void setSummary( SharedPreferences sp, String key )
     {
-        EditTextPreference pref = (EditTextPreference)getPreferenceScreen().
-            findPreference( key );
+        Preference pref = getPreferenceScreen().findPreference( key );
         String value = sp.getString( key, "" );
         pref.setSummary( value );
     }
