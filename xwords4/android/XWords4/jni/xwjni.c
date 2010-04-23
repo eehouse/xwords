@@ -342,7 +342,7 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, jint gamePtr, jobject j_gi, jobject j_util, 
   jobject jniu, jobject j_draw, jobject j_cp, jobject j_procs, 
-  jbyteArray jDictBytes )
+  jbyteArray jDictBytes, jstring jDictName )
 {
     XWJNI_START_GLOBALS();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
@@ -402,8 +402,8 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
 ( JNIEnv* env, jclass C, jint gamePtr, jbyteArray jstream, 
-  jobject /*out*/jgi, jbyteArray jdict, jobject jutil, jobject jniu, 
-  jobject jdraw, jobject jcp, jobject jprocs )
+  jobject /*out*/jgi, jbyteArray jdict, jstring jdictName, jobject jutil, 
+  jobject jniu, jobject jdraw, jobject jcp, jobject jprocs )
 {
     jboolean result;
     XWJNI_START_GLOBALS();
