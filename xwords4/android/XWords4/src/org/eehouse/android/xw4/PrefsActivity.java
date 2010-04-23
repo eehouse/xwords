@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant reinstall"; -*- */
+/* -*- compile-command: "cd ../../../../../; ant install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -22,8 +22,14 @@ package org.eehouse.android.xw4;
 
 import android.preference.PreferenceActivity;
 import android.os.Bundle;
+import android.content.SharedPreferences;
+import android.preference.EditTextPreference;
+import android.preference.PreferenceManager;
 
-public class PrefsActivity extends PreferenceActivity {
+public class PrefsActivity extends PreferenceActivity 
+    implements SharedPreferences.OnSharedPreferenceChangeListener {
+
+    private String[] m_keys;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -31,6 +37,57 @@ public class PrefsActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
 
         // Load the preferences from an XML resource
-        addPreferencesFromResource( R.xml.xwprefs );  
+        addPreferencesFromResource( R.xml.xwprefs );
+
+        int[] textKeyIds = { R.string.key_relay_host,
+                               R.string.key_relay_port,
+                               R.string.key_sms_port,
+                               R.string.key_dict_host
+        };
+
+        SharedPreferences sp
+            = PreferenceManager.getDefaultSharedPreferences( this );
+        m_keys = new String[ textKeyIds.length ];
+        for ( int ii = 0; ii < textKeyIds.length; ++ii ) {
+            int id  = textKeyIds[ii];
+            String key = getString( id );
+            setSummary( sp, key );
+            m_keys[ii] = key;
+        }
     }
+    
+    @Override
+    protected void onResume() 
+    {
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences().
+            registerOnSharedPreferenceChangeListener(this);   
+   }
+
+    @Override
+    protected void onPause() 
+    {
+        super.onPause();
+        getPreferenceScreen().getSharedPreferences().
+            unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
+    {
+        for ( String akey : m_keys ) {
+            if ( akey.equals( key ) ) {
+                setSummary( sp, key );
+                break;
+            }
+        }
+    }
+
+    private void setSummary( SharedPreferences sp, String key )
+    {
+        EditTextPreference pref = (EditTextPreference)getPreferenceScreen().
+            findPreference( key );
+        String value = sp.getString( key, "" );
+        pref.setSummary( value );
+    }
+
 }
