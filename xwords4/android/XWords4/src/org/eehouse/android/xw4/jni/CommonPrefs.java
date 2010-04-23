@@ -165,4 +165,13 @@ public class CommonPrefs {
         return sp.getBoolean( key, false );
     }
 
+    public static int getDefaultBoardSize()
+    {
+        SharedPreferences sp = 
+            PreferenceManager.getDefaultSharedPreferences( s_context );
+        String key = s_context.getString( R.string.key_board_size );
+        String value = sp.getString( key, "15" );
+        return Integer.parseInt( value.substring( 0, 2 ) );
+    }
+
 }
