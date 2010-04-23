@@ -1771,7 +1771,7 @@ coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP,
 
     for ( col = hsd->offset; col < maxCols; ++col ) {
         xx -= hsd->dims[col];
-        if ( xx < 0 ) {
+        if ( xx <= 0 ) {
             gotCol = col;
             break;
         }
@@ -1781,7 +1781,7 @@ coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP,
     XP_ASSERT( yy >= 0 );
     for ( row = vsd->offset; row < maxCols; ++row ) {
         yy -= vsd->dims[col];
-        if ( yy < 0 ) {
+        if ( yy <= 0 ) {
             gotRow = row;
             break;
         }
