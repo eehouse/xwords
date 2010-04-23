@@ -490,7 +490,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         switch( item.getItemId() ) {
         case R.id.game_config_revert:
-            Utils.notImpl( this );
+            finish();
             break;
         default:
             handled = false;
