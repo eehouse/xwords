@@ -147,6 +147,7 @@
 
     <string name="players_label">Players</string>
     <string name="button_add_player">Add player</string>
+    <string name="button_juggle_players">Juggle players</string>
 
     <string name="game_config_juggle">Juggle players</string>
 
@@ -160,7 +161,7 @@
     <string name="connect_via_label">Connect via</string>
 
     <string name="configure_role">Configure connection</string>
-    <string name="phonies_label">Phonies</string>
+    <string name="settings_label">Game settings</string>
     <string name="minutes_label">Minutes in game</string>
 
     <string name="smart_robot">Smart robot</string>
@@ -197,9 +198,9 @@
     <string name="role_host">Host</string>
     <string name="role_guest">Guest</string>
 
-    <string name="phonies_ignore">Ignore</string>
-    <string name="phonies_warn">Warn</string>
-    <string name="phonies_disallow">Disallow</string>
+    <string name="phonies_ignore">Ignore phonies</string>
+    <string name="phonies_warn">Warn if phonies</string>
+    <string name="phonies_disallow">Disallow phonies</string>
     <string name="gamel_menu_prefs">Preferences</string>
     <string name="gamel_menu_dicts">Dictionaries</string>
 

@@ -61,10 +61,6 @@
               android:text="@string/configure_role" 
               />
 
-    <LinearLayout android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  android:orientation="horizontal">
-
       <TextView android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:layout_marginLeft="20dip"
@@ -73,19 +69,28 @@
                 android:gravity="left"
                 />
 
-      <Button android:id="@+id/add_player"
-              android:layout_width="wrap_content" 
-              android:layout_height="wrap_content"
-              android:layout_gravity="right"
-              android:text="@string/button_add_player" 
-              />
-    </LinearLayout>
-
     <!-- players -->
     <LinearLayout android:id="@+id/player_list"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   android:orientation="vertical">
+    </LinearLayout>
+
+    <LinearLayout android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:layout_gravity="bottom|center"
+                  >
+      <Button android:id="@+id/add_player"
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content"
+              android:text="@string/button_add_player" 
+              />
+      <Button android:id="@+id/juggle_players"
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content"
+              android:text="@string/button_juggle_players" 
+              />
     </LinearLayout>
 
     <TextView android:layout_height="wrap_content"
@@ -100,6 +105,13 @@
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"
              />
+
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:layout_marginLeft="20dip"
+              android:layout_marginRight="20dip"
+              android:text="@string/settings_label"
+              />
 
     <CheckBox android:id="@+id/hints_allowed"
               android:layout_width="fill_parent"
@@ -147,13 +159,6 @@
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:text="@string/smart_robot"
-              />
-
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
-              android:text="@string/phonies_label"
               />
 
     <Spinner android:id="@+id/phonies_spinner"

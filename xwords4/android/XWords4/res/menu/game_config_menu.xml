@@ -4,7 +4,4 @@
     <item android:id="@+id/game_config_revert"
           android:title="@string/game_config_revert"
           />
-    <item android:id="@+id/game_config_juggle"
-          android:title="@string/game_config_juggle"
-          />
 </menu>

@@ -65,6 +65,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private static final int CONFIRM_CHANGE = 6;
 
     private Button m_addPlayerButton;
+    private Button m_jugglePlayersButton;
     private Button m_configureButton;
     private String m_path;
     private CurGameInfo m_gi;
@@ -361,6 +362,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
+        m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
+        m_jugglePlayersButton.setOnClickListener( this );
         m_configureButton = (Button)findViewById(R.id.configure_role);
         m_configureButton.setOnClickListener( this );
 
@@ -486,10 +489,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         boolean handled = true;
 
         switch( item.getItemId() ) {
-        case R.id.game_config_juggle:
-            m_gi.juggle();
-            loadPlayers();
-            break;
         case R.id.game_config_revert:
             Utils.notImpl( this );
             break;
@@ -507,6 +506,9 @@ public class GameConfig extends Activity implements View.OnClickListener {
                 m_gi.addPlayer(); // ups nPlayers
                 loadPlayers();
             }
+        } else if ( m_jugglePlayersButton == view ) {
+            m_gi.juggle();
+            loadPlayers();
         } else if ( m_configureButton == view ) {
             int position = m_connectSpinner.getSelectedItemPosition();
             switch ( m_types[ position ] ) {
