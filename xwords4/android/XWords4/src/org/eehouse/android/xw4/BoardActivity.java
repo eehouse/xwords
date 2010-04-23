@@ -589,11 +589,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 CommonPrefs cp = CommonPrefs.get();
                 if ( null == stream ||
                      ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                                  m_gi, dictBytes, this,
-                                                  m_jniu, m_view, cp, 
-                                                  m_xport ) ) {
+                                                  m_gi, dictBytes, 
+                                                  m_gi.dictName,this, m_jniu, 
+                                                  m_view, cp, m_xport ) ) {
                     XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, this, m_jniu, 
-                                            m_view, cp, m_xport, dictBytes );
+                                            m_view, cp, m_xport, 
+                                            dictBytes, m_gi.dictName );
                 }
 
                 m_jniThread = new 

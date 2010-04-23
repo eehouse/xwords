@@ -776,14 +776,15 @@ public class GameConfig extends Activity implements View.OnClickListener {
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                   JNIUtilsImpl.get(),
                                                   new CurGameInfo(this), 
-                                                  dictBytes, m_cp );
+                                                  dictBytes, m_gi.dictName, 
+                                                  m_cp );
         }
 
         if ( forceNew || !madeGame ) {
             m_gi.setInProgress( false );
             m_gi.fixup();
             XwJNI.game_makeNewGame( gamePtr, m_gi, JNIUtilsImpl.get(), 
-                                    m_cp, dictBytes );
+                                    m_cp, dictBytes, m_gi.dictName );
         }
 
         if ( null != m_car ) {

@@ -151,7 +151,7 @@ public class Utils {
 
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                CommonPrefs.get(), dictBytes );
+                                CommonPrefs.get(), dictBytes, gi.dictName );
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
@@ -185,12 +185,12 @@ public class Utils {
         byte[] dictBytes = Utils.openDict( context, gi.dictName );
 
         boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
-                                                      JNIUtilsImpl.get(),
-                                                      gi, dictBytes, 
+                                                      JNIUtilsImpl.get(), gi, 
+                                                      dictBytes, gi.dictName,
                                                       CommonPrefs.get() );
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    CommonPrefs.get(), dictBytes );
+                                    CommonPrefs.get(), dictBytes, gi.dictName );
         }
     }
 

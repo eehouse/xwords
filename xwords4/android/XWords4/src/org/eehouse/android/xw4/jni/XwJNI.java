@@ -50,12 +50,13 @@ public class XwJNI {
                                                 JNIUtils jniu,
                                                 DrawCtx draw, CommonPrefs cp, 
                                                 TransportProcs procs, 
-                                                byte[] dict );
+                                                byte[] dict, String dictName );
 
     public static native boolean game_makeFromStream( int gamePtr,
                                                       byte[] stream, 
                                                       CurGameInfo gi, 
                                                       byte[] dict, 
+                                                      String dictName,
                                                       UtilCtxt util, 
                                                       JNIUtils jniu,
                                                       DrawCtx draw,
@@ -66,19 +67,20 @@ public class XwJNI {
     // played
     public static void game_makeNewGame( int gamePtr, CurGameInfo gi,
                                          JNIUtils jniu, CommonPrefs cp, 
-                                         byte[] dict ) {
+                                         byte[] dict, String dictName ) {
         game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu,
-                          (DrawCtx)null, cp, (TransportProcs)null, dict );
+                          (DrawCtx)null, cp, (TransportProcs)null, 
+                          dict, dictName );
     }
 
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
                                                JNIUtils jniu,
                                                CurGameInfo gi, 
-                                               byte[] dict, 
+                                               byte[] dict, String dictName,
                                                CommonPrefs cp ) {
-        return game_makeFromStream( gamePtr, stream, gi, dict, (UtilCtxt)null, 
-                                    jniu, (DrawCtx)null, cp, 
+        return game_makeFromStream( gamePtr, stream, gi, dict, dictName,
+                                    (UtilCtxt)null, jniu, (DrawCtx)null, cp, 
                                     (TransportProcs)null );
     }
 
