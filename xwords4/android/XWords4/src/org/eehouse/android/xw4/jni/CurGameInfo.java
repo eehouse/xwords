@@ -46,7 +46,6 @@ public class CurGameInfo {
     public boolean  timerEnabled;
     public boolean  allowPickTiles;
     public boolean  allowHintRect;
-    public boolean  showColors;
     public int robotSmartness;
     public XWPhoniesChoice phoniesAction;
     public boolean confirmBTConnect;   /* only used for BT */
@@ -67,7 +66,6 @@ public class CurGameInfo {
         timerEnabled = false;
         allowPickTiles = false;
         allowHintRect = false;
-        showColors = true;
         robotSmartness = 1;
 
         // Always create MAX_NUM_PLAYERS so jni code doesn't ever have
@@ -94,7 +92,6 @@ public class CurGameInfo {
         timerEnabled = src.timerEnabled;
         allowPickTiles = src.allowPickTiles;
         allowHintRect = src.allowHintRect;
-        showColors = src.showColors;
         robotSmartness = src.robotSmartness;
         
         int ii;

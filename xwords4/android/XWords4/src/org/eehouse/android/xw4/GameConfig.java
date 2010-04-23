@@ -429,7 +429,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         check.setOnCheckedChangeListener( lstnr );
         Utils.setChecked( this, R.id.use_timer, m_gi.timerEnabled );
 
-        Utils.setChecked( this, R.id.color_tiles, m_gi.showColors );
         Utils.setChecked( this, R.id.smart_robot, 0 < m_gi.robotSmartness );
 
         adjustVisibility();
@@ -747,7 +746,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         m_gi.hintsNotAllowed = !Utils.getChecked( this, R.id.hints_allowed );
         m_gi.timerEnabled = Utils.getChecked(  this, R.id.use_timer );
         m_gi.gameSeconds = 60 * Utils.getInt(  this, R.id.timer_minutes_edit );
-        m_gi.showColors = Utils.getChecked( this, R.id.color_tiles );
         m_gi.robotSmartness
             = Utils.getChecked( this, R.id.smart_robot ) ? 1 : 0;
 

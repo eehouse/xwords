@@ -143,12 +143,6 @@
                 />
     </LinearLayout>
 
-    <CheckBox android:id="@+id/color_tiles"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:text="@string/color_tiles"
-              />
-
     <CheckBox android:id="@+id/smart_robot"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
