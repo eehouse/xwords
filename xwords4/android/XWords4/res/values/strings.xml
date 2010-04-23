@@ -163,6 +163,8 @@
     <string name="phonies_label">Phonies</string>
     <string name="minutes_label">Minutes in game</string>
 
+    <string name="smart_robot">Smart robot</string>
+
     <string name="download_dicts">Download more...</string>
 
     <string name="dict_url">http://eehouse.org/and_dicts</string>
