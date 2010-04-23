@@ -227,6 +227,7 @@
     <string name="dict_host">Dictionary download URL</string>
     <string name="relay_port">Relay port</string>
     <string name="sms_port">SMS port</string>
+    <string name="board_size">Initial board size</string>
 
     <string name="sms_phone_label">sms_phone_label</string>
     <string name="sms_port_label">sms_port_label</string>
@@ -308,6 +309,7 @@
     <string name="key_relay_port">key_relay_port</string>
     <string name="key_sms_port">key_sms_port</string>
     <string name="key_dict_host">key_dict_host</string>
+    <string name="key_board_size">key_board_size</string>
 
     <string name="default_host">eehouse.org</string>
 </resources>

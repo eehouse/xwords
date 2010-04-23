@@ -96,6 +96,13 @@
 
     <PreferenceScreen android:title="@string/advanced"
                       >
+      <ListPreference android:key="@string/key_board_size"
+                      android:title="@string/board_size"
+                      android:entries="@array/board_sizes"
+                      android:entryValues="@array/board_sizes"
+                      android:defaultValue="15x15"
+                      />
+
       <EditTextPreference android:key="@string/key_relay_host"
                           android:title="@string/relay_host"
                           android:defaultValue="@string/default_host"
