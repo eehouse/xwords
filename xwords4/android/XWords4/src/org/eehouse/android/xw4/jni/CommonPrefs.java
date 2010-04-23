@@ -36,6 +36,7 @@ public class CommonPrefs {
     public static final int COLOR_LAST = 3;
 
     private static Context s_context = null;
+    private static SharedPreferences s_sp = null;
     private static CommonPrefs s_cp = null;
 
     public boolean showBoardArrow;
@@ -58,24 +59,22 @@ public class CommonPrefs {
 
     private CommonPrefs refresh()
     {
-        SharedPreferences sp = 
-            PreferenceManager.getDefaultSharedPreferences( s_context );
         String key;
 
         key = s_context.getString( R.string.key_show_arrow );
-        showBoardArrow = sp.getBoolean( key, true );
+        showBoardArrow = s_sp.getBoolean( key, true );
 
         key = s_context.getString( R.string.key_explain_robot );
-        showRobotScores = sp.getBoolean( key, false );
+        showRobotScores = s_sp.getBoolean( key, false );
 
         key = s_context.getString( R.string.key_hide_values );
-        hideTileValues = sp.getBoolean( key, false );
+        hideTileValues = s_sp.getBoolean( key, false );
 
         key = s_context.getString( R.string.key_skip_confirm );
-        skipCommitConfirm = sp.getBoolean( key, false );
+        skipCommitConfirm = s_sp.getBoolean( key, false );
 
         key = s_context.getString( R.string.key_color_tiles );
-        showColors = sp.getBoolean( key, true );
+        showColors = s_sp.getBoolean( key, true );
 
         int ids[] = { R.string.key_player0,
                       R.string.key_player1,
@@ -84,7 +83,7 @@ public class CommonPrefs {
         };
 
         for ( int ii = 0; ii < ids.length; ++ii ) {
-            playerColors[ii] = prefToColor( sp, ids[ii] );
+            playerColors[ii] = prefToColor( s_sp, ids[ii] );
         }
 
         int ids2[] = { R.string.key_bonus_l2x,
@@ -93,7 +92,7 @@ public class CommonPrefs {
                        R.string.key_bonus_w3x,
         };
         for ( int ii = 0; ii < ids2.length; ++ii ) {
-            bonusColors[ii+1] = prefToColor( sp, ids2[ii] );
+            bonusColors[ii+1] = prefToColor( s_sp, ids2[ii] );
         }
 
         int idsOther[] = { R.string.key_tile_back,
@@ -101,7 +100,7 @@ public class CommonPrefs {
                            R.string.key_focus,
         };
         for ( int ii = 0; ii < idsOther.length; ++ii ) {
-            otherColors[ii] = prefToColor( sp, idsOther[ii] );
+            otherColors[ii] = prefToColor( s_sp, idsOther[ii] );
         }
 
         return this;
@@ -119,6 +118,7 @@ public class CommonPrefs {
     public static void setContext( Context context )
     {
         s_context = context;
+        s_sp = PreferenceManager.getDefaultSharedPreferences( context );
     }
 
     public static CommonPrefs get()
@@ -132,18 +132,14 @@ public class CommonPrefs {
 
     public static String getDefaultRelayHost()
     {
-        SharedPreferences sp = 
-            PreferenceManager.getDefaultSharedPreferences( s_context );
         String key = s_context.getString( R.string.key_relay_host );
-        return sp.getString( key, "" );
+        return s_sp.getString( key, "" );
     }
 
     public static int getDefaultRelayPort()
     {
-        SharedPreferences sp = 
-            PreferenceManager.getDefaultSharedPreferences( s_context );
         String key = s_context.getString( R.string.key_relay_port );
-        String val = sp.getString( key, "" );
+        String val = s_sp.getString( key, "" );
         int result = 0;
         result = Integer.decode( val );
         return result;
@@ -151,26 +147,20 @@ public class CommonPrefs {
 
     public static String getDefaultDictURL()
     {
-        SharedPreferences sp = 
-            PreferenceManager.getDefaultSharedPreferences( s_context );
         String key = s_context.getString( R.string.key_dict_host );
-        return sp.getString( key, "" );
+        return s_sp.getString( key, "" );
     }
 
     public static boolean getVolKeysZoom()
     {
-        SharedPreferences sp = 
-            PreferenceManager.getDefaultSharedPreferences( s_context );
         String key = s_context.getString( R.string.key_ringer_zoom );
-        return sp.getBoolean( key, false );
+        return s_sp.getBoolean( key, false );
     }
 
     public static int getDefaultBoardSize()
     {
-        SharedPreferences sp = 
-            PreferenceManager.getDefaultSharedPreferences( s_context );
         String key = s_context.getString( R.string.key_board_size );
-        String value = sp.getString( key, "15" );
+        String value = s_sp.getString( key, "15" );
         return Integer.parseInt( value.substring( 0, 2 ) );
     }
 
