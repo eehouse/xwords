@@ -30,7 +30,6 @@ import android.util.AttributeSet;
 import org.eehouse.android.xw4.jni.*;
 import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
 import android.widget.ZoomButtonsController;
@@ -433,9 +432,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    public boolean drawCell( Rect rect, String text, BitmapDrawable[] bitmaps,
-                             int tile, int owner, int bonus, int hintAtts, 
-                             int flags ) 
+    public boolean drawCell( Rect rect, String text, int tile, int owner, 
+                             int bonus, int hintAtts, int flags ) 
     {
         int backColor;
         boolean empty = 0 != (flags & (CELL_DRAGSRC|CELL_ISEMPTY));
@@ -504,21 +502,20 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return true;
     }
 
-    public void drawTile( Rect rect, String text, BitmapDrawable[] bitmaps, 
-                          int val, int flags ) 
+    public void drawTile( Rect rect, String text, int val, int flags ) 
     {
-        drawTileImpl( rect, text, bitmaps, val, flags, true );
+        drawTileImpl( rect, text, val, flags, true );
     }
 
-    public void drawTileMidDrag( Rect rect, String text, BitmapDrawable[] bitmaps,
-                                  int val, int owner, int flags ) 
+    public void drawTileMidDrag( Rect rect, String text, int val, int owner, 
+                                 int flags ) 
     {
-        drawTileImpl( rect, text, bitmaps, val, flags, false );
+        drawTileImpl( rect, text, val, flags, false );
     }
 
     public void drawTileBack( Rect rect, int flags ) 
     {
-        drawTileImpl( rect, "?", null, -1, flags, true );
+        drawTileImpl( rect, "?", -1, flags, true );
     }
 
     public void drawTrayDivider( Rect rect, int flags ) 
@@ -636,8 +633,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
-    private void drawTileImpl( Rect rect, String text, 
-                               BitmapDrawable[] bitmaps, int val, 
+    private void drawTileImpl( Rect rect, String text, int val, 
                                int flags, boolean clearBack )
     {
         // boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
@@ -663,7 +659,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_fillPaint.setColor( m_playerColors[m_trayOwner] );
 
             if ( notEmpty ) {
-                positionDrawTile( rect, text, bitmaps, val );
+                positionDrawTile( rect, text, val );
 
                 m_canvas.drawRect( rect, m_tileStrokePaint); // frame
                 if ( 0 != (flags & CELL_HIGHLIGHT) ) {
@@ -722,8 +718,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         m_canvas.drawBitmap( bitmap, local, rect, m_drawPaint );
     }
 
-    private void positionDrawTile( final Rect rect, String text, 
-                                   BitmapDrawable bitmaps[], int val )
+    private void positionDrawTile( final Rect rect, String text, int val )
     {
         figureFontDims();
 
