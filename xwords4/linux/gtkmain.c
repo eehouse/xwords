@@ -1082,7 +1082,7 @@ handle_done_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 static void
 handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    if ( board_zoom( globals->cGlobals.game.board, 2 ) ) {
+    if ( board_zoom( globals->cGlobals.game.board, 2, NULL, NULL ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_done_button */
@@ -1090,7 +1090,7 @@ handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 static void
 handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    if ( board_zoom( globals->cGlobals.game.board, -2 ) ) {
+    if ( board_zoom( globals->cGlobals.game.board, -2, NULL, NULL ) ) {
         board_draw( globals->cGlobals.game.board );
     }
 } /* handle_done_button */
