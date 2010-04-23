@@ -18,8 +18,7 @@
     <string name="menu_delete">Delete</string>
     <string name="menu_insert">Add game</string>
     <string name="button_new_game">Add game</string>
-    <string name="menu_revert">Revert</string>
-    <string name="menu_discard">Discard</string>
+    <string name="menu_revert">Revert changes</string>
 
     <string name="list_item_config">Configure</string>
     <string name="list_item_hide">Hide</string>
