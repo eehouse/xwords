@@ -1767,23 +1767,24 @@ coordToCell( BoardCtxt* board, XP_S16 xx, XP_S16 yy, XP_U16* colP,
     ScrollData* vsd = &board->sd[SCROLL_V];
 
     xx -= board->boardBounds.left;
-    XP_ASSERT( xx >= 0 );
-
-    for ( col = hsd->offset; col < maxCols; ++col ) {
-        xx -= hsd->dims[col];
-        if ( xx <= 0 ) {
-            gotCol = col;
-            break;
-        }
-    }
-
     yy -= board->boardBounds.top;
-    XP_ASSERT( yy >= 0 );
-    for ( row = vsd->offset; row < maxCols; ++row ) {
-        yy -= vsd->dims[col];
-        if ( yy <= 0 ) {
-            gotRow = row;
-            break;
+
+    if ( xx >= 0 && yy >= 0 ) {
+
+        for ( col = hsd->offset; col < maxCols; ++col ) {
+            xx -= hsd->dims[col];
+            if ( xx <= 0 ) {
+                gotCol = col;
+                break;
+            }
+        }
+
+        for ( row = vsd->offset; row < maxCols; ++row ) {
+            yy -= vsd->dims[col];
+            if ( yy <= 0 ) {
+                gotRow = row;
+                break;
+            }
         }
     }
 
