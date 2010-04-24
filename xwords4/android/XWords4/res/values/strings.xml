@@ -261,7 +261,7 @@
     <string name="dictionary">Dictionary:</string>
 
     <!-- about dialog stuff -->
-    <string name="about_versf">Crosswords for Android, Version 4.4 a3,
+    <string name="about_versf">Crosswords for Android, Version %s,
     rev %s.</string>
     <string name="about_copyright">Copyright (C) 1998-2010 by Eric
     House. This software is released under the GNU Public

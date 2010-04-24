@@ -247,7 +247,7 @@
     <string name="dictionary">Diccionari:</string>
 
     <!-- about dialog stuff -->
-    <string name="about_versf">Crosswords per a l\'Android, Versió 4.4 a1,
+    <string name="about_versf">Crosswords per a l\'Android, Versió %s,
     rev %s.</string>
     <string name="about_copyright">Copyright (C) 1998-2010 d\'Eric
     House. Aquest programari es troba sota la Llicència Pública General GNU.</string>

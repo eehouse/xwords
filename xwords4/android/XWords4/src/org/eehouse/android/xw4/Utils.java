@@ -90,6 +90,7 @@ public class Utils {
         final View view = factory.inflate( R.layout.about_dlg, null );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
         vers.setText( String.format( context.getString(R.string.about_versf), 
+                                     XWConstants.VERSION_STR, 
                                      SvnVersion.VERS ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
