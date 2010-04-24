@@ -1093,8 +1093,8 @@ ceGetCharValHts( const CEDrawCtx* dctx, const XP_Rect* xprect,
 } /* ceGetCharValHts */
 
 DLSTATIC XP_Bool
-DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx, 
-                            const XP_Rect* XP_UNUSED(rect), 
+DRAW_FUNC_NAME(boardBegin)( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect), 
+                            XP_U16 XP_UNUSED(hScale), XP_U16 XP_UNUSED(vScale),
                             DrawFocusState dfs )
 {
     CEDrawCtx* dctx = (CEDrawCtx*)p_dctx;
@@ -1231,7 +1231,6 @@ DRAW_FUNC_NAME(drawCell)( DrawCtx* p_dctx, const XP_Rect* xprect,
     InsetRect( &rt, 1, 1 );
     ceClipToRect( hdc, &rt );
 
-    XP_ASSERT( xprect->height == globals->cellHt );
     fce = ceGetSizedFont( dctx, RFONTS_CELL, xprect->height - CELL_BORDER, 
                           0, 0 );
     oldFont = SelectObject( hdc, fce->setFont );

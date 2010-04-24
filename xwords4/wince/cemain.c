@@ -109,8 +109,8 @@ static XP_Bool ce_util_askPassword( XW_UtilCtxt* uc, const XP_UCHAR* name,
 static void ce_util_trayHiddenChange( XW_UtilCtxt* uc, 
                                       XW_TrayVisState newState,
                                       XP_U16 nVisibleRows );
-static void ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 oldOffset, 
-                                   XP_U16 newOffset );
+static void ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
+                                   XP_U16 oldOffset, XP_U16 newOffset );
 static void ce_util_turnChanged( XW_UtilCtxt* uc );
 static void ce_util_notifyGameOver( XW_UtilCtxt* uc );
 static XP_Bool ce_util_hiliteCell( XW_UtilCtxt* uc, XP_U16 col, 
@@ -527,8 +527,8 @@ typedef struct CEBoardParms {
     XP_U16  adjLeft;
     XP_U16  adjTop;
 
-    XP_U16  boardHScale;
-    XP_U16  boardVScale;
+    XP_U16  boardWidth;
+    XP_U16  boardHeight;
     XP_U16  boardTop;
     XP_U16  trayTop;
 
@@ -704,8 +704,8 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
     bparms->scrnHeight = scrnHeight;
     bparms->adjLeft = adjLeft;
     bparms->adjTop = adjTop;
-    bparms->boardHScale = hScale;
-    bparms->boardVScale = vScale;
+    bparms->boardWidth = hScale * nRows;
+    bparms->boardHeight = nVisibleRows * vScale;
     bparms->boardTop = adjTop + (horiz? scoreHeight : 0);
     bparms->trayTop = bparms->boardTop + (nVisibleRows * vScale) + 1;
     bparms->trayHeight = trayHeight - 1;
@@ -733,8 +733,7 @@ figureBoardParms( CEAppGlobals* globals, const XP_U16 nRows,
 } /* figureBoardParms */
 
 static void
-setOwnedRects( CEAppGlobals* globals, XP_U16 nRows, 
-               const CEBoardParms* bparms )
+setOwnedRects( CEAppGlobals* globals, const CEBoardParms* bparms )
 {
     RECT tmp;
     XP_U16 scrollWidth = bparms->scrollWidth;
@@ -749,7 +748,7 @@ setOwnedRects( CEAppGlobals* globals, XP_U16 nRows,
     XP_MEMCPY( &globals->ownedRects[OWNED_RECT_LEFT], &tmp, 
                sizeof(globals->ownedRects[OWNED_RECT_LEFT]) );
 
-    tmp.left = tmp.right + (bparms->boardHScale * nRows) + scrollWidth;
+    tmp.left = tmp.right + bparms->boardWidth + scrollWidth;
     tmp.right = bparms->scrnWidth;
     XP_MEMCPY( &globals->ownedRects[OWNED_RECT_RIGHT], &tmp, 
                sizeof(globals->ownedRects[OWNED_RECT_RIGHT]) );
@@ -784,7 +783,7 @@ cePositionBoard( CEAppGlobals* globals )
     XP_ASSERT( nCols <= CE_MAX_ROWS );
 
     figureBoardParms( globals, nCols, &bparms );
-    setOwnedRects( globals, nCols, &bparms );
+    setOwnedRects( globals, &bparms );
 
 #ifdef XWFEATURE_RELAY
     if ( !!globals->game.comms ) {
@@ -805,9 +804,8 @@ cePositionBoard( CEAppGlobals* globals )
     }
 
     board_setPos( globals->game.board, bparms.boardLeft,
-                  bparms.boardTop, XP_FALSE );
-    board_setScale( globals->game.board, bparms.boardHScale, 
-                    bparms.boardVScale );
+                  bparms.boardTop, bparms.boardWidth, bparms.boardHeight,
+                  XP_FALSE );
 
     board_setScoreboardLoc( globals->game.board, bparms.adjLeft, bparms.adjTop,
                             bparms.scoreWidth, 
@@ -3530,8 +3528,8 @@ ce_util_trayHiddenChange( XW_UtilCtxt* uc, XW_TrayVisState XP_UNUSED(newState),
 } /* ce_util_trayHiddenChange */
 
 static void
-ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(oldOffset), 
-                       XP_U16 newOffset )
+ce_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 XP_UNUSED(maxOffset),
+                       XP_U16 XP_UNUSED(oldOffset), XP_U16 newOffset )
 {
 #ifdef CEFEATURE_CANSCROLL
     CEAppGlobals* globals = (CEAppGlobals*)uc->closure;

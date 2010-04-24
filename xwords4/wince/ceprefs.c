@@ -162,7 +162,11 @@ loadStateFromCurPrefs( CEAppGlobals* XP_UNUSED_STANDALONE(globals),
     if ( globals->game.comms != NULL ) {
         comms_getAddr( globals->game.comms, &prefsPrefs->addrRec );
     } else {
-        comms_getInitialAddr( &prefsPrefs->addrRec );
+        comms_getInitialAddr( &prefsPrefs->addrRec
+#ifdef XWFEATURE_RELAY
+                              ,RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT
+#endif
+                              );
     }
 #endif
 } /* loadStateFromCurPrefs */

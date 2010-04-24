@@ -240,7 +240,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
                  XP_U16 nBytes, XP_U16 nFaces )
 {
     XP_UCHAR* faces = XP_MALLOC( dict->mpool, nBytes + nFaces );
-    XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
+    const XP_UCHAR** ptrs = XP_MALLOC( dict->mpool, nFaces * sizeof(ptrs[0]));
     XP_U16 ii;
     XP_UCHAR* next = faces;
 
