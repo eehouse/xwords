@@ -91,8 +91,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
         }
         public void run() {
             m_timers[m_why] = null;
-            m_jniThread.handle( JNICmd.CMD_TIMER_FIRED,
-                                m_why, m_when, m_handle );
+            if ( null != m_jniThread ) {
+                m_jniThread.handle( JNICmd.CMD_TIMER_FIRED,
+                                    m_why, m_when, m_handle );
+            }
         }
     } 
 
