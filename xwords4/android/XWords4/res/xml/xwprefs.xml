@@ -30,6 +30,7 @@
                       />
 
     <PreferenceScreen android:title="@string/prefs_colors"
+                      android:summary="@string/prefs_colors_summary"
                       >
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_player0"
@@ -89,6 +90,7 @@
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/advanced"
+                      android:summary="@string/advanced_summary"
                       >
       <ListPreference android:key="@string/key_board_size"
                       android:title="@string/board_size"

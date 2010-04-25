@@ -209,6 +209,7 @@
 
     <string name="general_prefs">Preferences</string>
     <string name="prefs_colors">Colors</string>
+    <string name="prefs_colors_summary">Edit colors used on the board</string>
     <string name="player0">First player</string>
     <string name="player1">Second player</string>
     <string name="player2">Third player</string>
@@ -222,6 +223,7 @@
     <string name="empty">Empty cell/background</string>
     <string name="focus">Focus color</string>
     <string name="advanced">Advanced</string>
+    <string name="advanced_summary">You may never need these...</string>
     <string name="relay_host">Relay address</string>
     <string name="dict_host">Dictionary download URL</string>
     <string name="relay_port">Relay port</string>
