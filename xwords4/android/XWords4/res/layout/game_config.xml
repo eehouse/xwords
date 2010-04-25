@@ -25,10 +25,7 @@
                 android:layout_height="fill_parent"
                 android:orientation="vertical">
 
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
+    <TextView style="@style/config_separator"
               android:text="@string/role_label"
               />
 
@@ -37,15 +34,6 @@
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"
              />
-
-    <TextView android:id="@+id/connect_via_label"
-              android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
-              android:visibility="gone"
-              android:text="@string/connect_via_label"
-              />
 
     <Spinner android:id="@+id/connect_spinner"
              android:layout_width="fill_parent"
@@ -61,12 +49,8 @@
               android:text="@string/configure_role" 
               />
 
-      <TextView android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_marginLeft="20dip"
-                android:layout_marginRight="20dip"
+      <TextView style="@style/config_separator"
                 android:text="@string/players_label"
-                android:gravity="left"
                 />
 
     <!-- players -->
@@ -93,10 +77,7 @@
               />
     </LinearLayout>
 
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
+    <TextView style="@style/config_separator"
               android:text="@string/dict_label"
               />
 
@@ -106,10 +87,7 @@
              android:drawSelectorOnTop="true"
              />
 
-    <TextView android:layout_height="wrap_content"
-              android:layout_width="fill_parent"
-              android:layout_marginLeft="20dip"
-              android:layout_marginRight="20dip"
+    <TextView style="@style/config_separator"
               android:text="@string/settings_label"
               />
 

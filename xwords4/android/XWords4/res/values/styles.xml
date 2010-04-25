@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="config_separator">
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:layout_width">fill_parent</item>
+      <item name="android:gravity">left</item>            
+      <item name="android:background">#FF7F7F7F</item>            
+      <item name="android:textColor">#FFFFFFFF</item>            
+    </style>
+</resources>
