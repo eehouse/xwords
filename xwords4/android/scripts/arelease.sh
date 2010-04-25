@@ -5,10 +5,21 @@ usage() {
     exit 1
 }
 
+do_build() {
+    WD=$(pwd)
+    cd $(dirname $0)/../XWords4/
+    pwd
+    touch jni/Android.mk
+    ../scripts/ndkbuild.sh
+    rm -rf bin/ gen/
+    ant release
+    cd $WD
+}
 
 FILES="$1"
 
 if [ -z "$FILES" ]; then
+    do_build
     FILES=$(ls $(dirname $0)/../*/bin/*-unsigned.apk)
     if [ -z "$FILES" ]; then
         echo "unable to find any unsigned packages" >&2
