@@ -57,7 +57,7 @@
     </activity>
         
     <activity android:name="GameConfig"
-              android:label="@string/title_game"
+              android:label="@string/title_game_config"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
               >
@@ -67,14 +67,13 @@
     </activity>
 
     <activity android:name="PrefsActivity"
-              android:label="@string/title_game"
+              android:label="@string/title_prefs"
               android:screenOrientation="sensor"
               >
     </activity>
 
     <activity android:name="BoardActivity"
               android:theme="@android:style/Theme.Light"
-              android:label="@string/title_game"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
               >
