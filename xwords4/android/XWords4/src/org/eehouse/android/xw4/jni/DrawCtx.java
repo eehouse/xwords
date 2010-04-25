@@ -52,8 +52,6 @@ public interface DrawCtx {
                       int owner, int bonus, int hintAtts, int flags );
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
                           int flags );
-    boolean vertScrollBoard( Rect /*out*/ rect, int dist, int dfs );
-
     boolean trayBegin ( Rect rect, int owner, int dfs );
     void drawTile( Rect rect, String text, int val, int flags );
     void drawTileMidDrag ( Rect rect, String text, int val, int owner, 

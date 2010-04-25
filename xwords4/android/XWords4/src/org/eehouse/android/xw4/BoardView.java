@@ -490,40 +490,6 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         arrow.draw( m_canvas );
     }
 
-    public boolean vertScrollBoard( Rect /*in/out*/ rect, int dist, int dfs )
-    {
-        boolean doScroll = true; // set to false to disable and let
-                                 // common code scroll by redrawing.
-        if ( doScroll ) {
-            // negative dist means scrolling up
-            boolean down = dist < 0;
-            if ( down ) {
-                dist = -dist;
-            }
-            Rect src = new Rect( rect );
-            src.bottom -= dist;
-            Rect dest = new Rect( src );
-
-            if ( down ) {
-                dest.offset( 0, dist );
-            } else {
-                src.offset( 0, dist);
-            }
-
-            // drawBitmap doesn't work if src and dest *bitmaps* are the
-            // same and rects overlap.  So create (immutable) bitmap to
-            // serve as source.
-            m_canvas.drawBitmap( Bitmap.createBitmap( m_bitmap ),
-                                 src, dest, m_drawPaint );
-
-            if ( !down ) {
-                rect.top = rect.bottom - dist;
-            }
-            rect.bottom = rect.top + dist;
-        }
-        return doScroll;
-    }
-
     public boolean trayBegin ( Rect rect, int owner, int dfs ) 
     {
         m_trayOwner = owner;

@@ -67,15 +67,6 @@ makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
     return robj;
 } /* makeJRect */
 
-static void
-copyJRect( JNIEnv* env, XP_Rect* dest, jobject jrect )
-{
-    dest->left = getInt( env, jrect, "left" );
-    dest->top = getInt( env, jrect, "top" ); 
-    dest->width = getInt( env, jrect, "right" ) - dest->left;
-    dest->height = getInt( env, jrect, "bottom" ) - dest->top;
-}
-
 static jobject
 makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 {
@@ -265,17 +256,12 @@ and_draw_drawBoardArrow(DrawCtx* dctx, const XP_Rect* rect, XWBonusType bonus,
 }
 
 static XP_Bool
-and_draw_vertScrollBoard( DrawCtx* dctx, XP_Rect* rect, XP_S16 dist,
-                          DrawFocusState dfs )
+and_draw_vertScrollBoard( DrawCtx* XP_UNUSED(dctx), XP_Rect* XP_UNUSED(rect), 
+                          XP_S16 XP_UNUSED(dist), DrawFocusState XP_UNUSED(dfs) )
 {
-    DRAW_CBK_HEADER( "vertScrollBoard", "(Landroid/graphics/Rect;II)Z" );
-
-    jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
-    jboolean result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
-                                                 jrect, dist, dfs );
-    copyJRect( env, rect, jrect );    
-
-    return result;
+    /* Scrolling a bitmap in-place isn't any faster than drawing every cell
+       anew so no point in calling into java. */
+    return XP_FALSE;
 }
 
 static XP_Bool
