@@ -374,17 +374,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         configDictSpinner();
 
         m_roleSpinner = (Spinner)findViewById( R.id.role_spinner );
-        ArrayAdapter<String> adapter = 
-            new ArrayAdapter<String>( this,
-                                      android.R.layout.simple_spinner_item,
-                                      new String[] {
-                                          getString(R.string.role_standalone),
-                                          getString(R.string.role_host),
-                                          getString(R.string.role_guest),
-                                      } );
-        adapter.setDropDownViewResource( android.R.layout
-                                         .simple_spinner_dropdown_item );
-        m_roleSpinner.setAdapter( adapter );
         m_roleSpinner.setSelection( m_gi.serverRole.ordinal() );
         m_roleSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
                 @Override
@@ -404,17 +393,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         configConnectSpinner();
 
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
-        adapter = 
-            new ArrayAdapter<String>( this,
-                                      android.R.layout.simple_spinner_item,
-                                      new String[] {
-                                          getString(R.string.phonies_ignore),
-                                          getString(R.string.phonies_warn),
-                                          getString(R.string.phonies_disallow),
-                                      } );
-        adapter.setDropDownViewResource( android.R.layout
-                                         .simple_spinner_dropdown_item );
-        m_phoniesSpinner.setAdapter( adapter );
         m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
         Utils.setChecked( this, R.id.hints_allowed, !m_gi.hintsNotAllowed );
@@ -639,8 +617,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
     private void adjustVisibility()
     {
-        int[] ids = { R.id.connect_via_label, 
-                      R.id.connect_spinner, 
+        int[] ids = { R.id.connect_spinner, 
                       R.id.configure_role };
         int vis = DeviceRole.SERVER_STANDALONE == curRole() ? 
             View.GONE : View.VISIBLE;

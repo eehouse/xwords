@@ -40,7 +40,6 @@
     <string name="title_edit">Edita la partida</string>
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_game">Partida</string>  
-	<string name="title_edit_title">Nom de la partida:</string>  
 	
 	<string name="app_name">Crosswords</string> 
 	<string name="title_dicts_list">Diccionaris del Crosswords</string> 
@@ -155,10 +154,8 @@
 
     <string name="dict_label">Diccionari</string>
     <string name="role_label">Rol</string>
-    <string name="connect_via_label">Connecta mitjançant</string>
 
     <string name="configure_role">Configura la connexió</string>
-    <string name="phonies_label">Paraules fora del diccionari</string>
     <string name="minutes_label">Minuts a la partida</string>
 
     <string name="download_dicts">Baixa\'n més...</string>

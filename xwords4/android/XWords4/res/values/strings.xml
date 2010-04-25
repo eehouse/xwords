@@ -41,7 +41,8 @@
 	<string name="title_games_list">Crosswords</string>   
 	<string name="title_dicts_list">Crosswords dictionaries</string>   
 	<string name="title_game">Game</string>  
-	<string name="title_edit_title">Game name:</string>  
+	<string name="title_game_config">Configure game</string>  
+	<string name="title_prefs">Crosswords preferences</string>  
 	
 	<string name="app_name">Crosswords</string>  
 	
@@ -155,8 +156,7 @@
     <string name="dicts_item_details">Details</string>
 
     <string name="dict_label">Dictionary</string>
-    <string name="role_label">Role</string>
-    <string name="connect_via_label">Connect via</string>
+    <string name="role_label">Device role</string>
 
     <string name="configure_role">Configure connection</string>
     <string name="settings_label">Game settings</string>
@@ -233,8 +233,8 @@
     <string name="bt_label">bt_label</string>
     <string name="list_item_view">list_item_view</string>
     <string name="key_player">key_player</string>
-    <string name="tab_relay">Internet/Relay</string>
-    <string name="tab_sms">SMS (untested)</string>
+    <string name="tab_relay">Connect via Internet/Relay</string>
+    <string name="tab_sms">Connect via SMS (broken)</string>
     <string name="tab_bluetooth">Bluetooth (pending)</string>
 
     <string name="msg_relay_waiting">Connected to relay. Waiting for %d player[s].</string>
