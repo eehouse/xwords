@@ -63,9 +63,9 @@ jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,
 
 void setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr );
 void getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr );
-jint jenumFieldToInt( JNIEnv* env, jobject j_gi, const char* field, 
+jint jenumFieldToInt( JNIEnv* env, jobject jobj, const char* field, 
                       const char* fieldSig );
-void intToJenumField( JNIEnv* env, jobject j_gi, int val, const char* field, 
+void intToJenumField( JNIEnv* env, jobject jobj, int val, const char* field, 
                       const char* fieldSig );
 jobject intToJEnum( JNIEnv* env, int val, const char* enumSig );
 jint jEnumToInt( JNIEnv* env, jobject jenum );
