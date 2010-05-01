@@ -455,7 +455,10 @@ public class Utils {
         GameSummary summary = new GameSummary();
         SQLiteDatabase db = m_dbHelper.getReadableDatabase();
 
-        String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER };
+        String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER,
+                             DBHelper.CONTYPE, DBHelper.ROOMNAME,
+                             DBHelper.SMSPHONE 
+        };
         String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
 
         Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
@@ -467,6 +470,20 @@ public class Utils {
             int tmp = cursor.getInt(cursor.
                                     getColumnIndex(DBHelper.GAME_OVER));
             summary.gameOver = tmp == 0 ? false : true;
+
+            int col = cursor.getColumnIndex( DBHelper.CONTYPE );
+            if ( col >= 0 ) {
+                tmp = cursor.getInt( col );
+                summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
+                col = cursor.getColumnIndex( DBHelper.ROOMNAME );
+                if ( col >= 0 ) {
+                    summary.roomName = cursor.getString( col );
+                }
+                col = cursor.getColumnIndex( DBHelper.SMSPHONE );
+                if ( col >= 0 ) {
+                    summary.smsPhone = cursor.getString( col );
+                }
+            }
         }
         cursor.close();
         db.close();
@@ -502,6 +519,13 @@ public class Utils {
             values.put( DBHelper.FILE_NAME, path );
             values.put( DBHelper.NUM_MOVES, summary.nMoves );
             values.put( DBHelper.GAME_OVER, summary.gameOver );
+
+            if ( null != summary.conType ) {
+                values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
+                Utils.logf( "wrote CONTYPE" );
+                values.put( DBHelper.ROOMNAME, summary.roomName );
+                values.put( DBHelper.SMSPHONE, summary.smsPhone );
+            }
 
             Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
 

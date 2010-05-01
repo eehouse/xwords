@@ -209,10 +209,11 @@ public class CurGameInfo {
         return names;
     }
 
-    public String summary( Context context )
+    public String summarize( Context context, GameSummary summary )
     {
         StringBuffer sb = new StringBuffer();
         String vsString = context.getString( R.string.vs );
+        String tmp;
         int ii;
         for ( ii = 0; ; ) {
             sb.append( players[ii].name );
@@ -221,21 +222,59 @@ public class CurGameInfo {
             }
             sb.append( String.format( " %s ", vsString ) );
         }
+
+        if ( null != summary ) {
+            DeviceRole role = serverRole;
+            if ( role != DeviceRole.SERVER_STANDALONE ) {
+                if ( null != summary.conType ) {
+                    boolean isHost = role == DeviceRole.SERVER_ISSERVER;
+                    boolean justListening = false;
+                    int roleID = isHost ? R.string.role_host : R.string.role_guest;
+                    String via;
+                    int summaryID;
+                    switch ( summary.conType ) {
+                    case COMMS_CONN_RELAY:
+                        via = summary.roomName;
+                        summaryID = R.string.summary_fmt_relay;
+                        break;
+                    case COMMS_CONN_SMS:
+                        via = summary.smsPhone;
+                        summaryID = R.string.summary_fmt_sms;
+                        justListening = isHost;
+                        break;
+                    default:
+                        summaryID = 0;
+                        via = null;
+                        Assert.fail();
+                    }
+                    String fmt = context.getString( justListening?
+                                                    R.string.summary_fmt_listening
+                                                    : summaryID );
+                    String roleStr = context.getString( roleID );
+                    if ( justListening ) {
+                        tmp = String.format( fmt, roleStr );
+                    } else {
+                        tmp = String.format( fmt, roleStr, via );
+                    }
+                    sb.append( tmp );
+                }
+            }
+
+
+            if ( summary.gameOver ) {
+                tmp = context.getString( R.string.gameOver );
+            } else {
+                tmp = String.format( context.getString(R.string.movesf),
+                                     summary.nMoves );
+            }
+            sb.append( String.format( context.getString(R.string.statef),
+                                      tmp ) );
+        }
+
         sb.append( String.format("\n%s %s", 
                                  context.getString( R.string.dictionary ), 
                                  dictName ) );
 
-        DeviceRole role = serverRole;
-        if ( serverRole != DeviceRole.SERVER_STANDALONE ) {
-            sb.append( "\n" )
-                .append( context.getString( R.string.role_label ) )
-                .append( ": " );
-            if ( role == DeviceRole.SERVER_ISSERVER ) {
-                sb.append( context.getString( R.string.role_host ) );
-            } else {
-                sb.append( context.getString( R.string.role_guest ) );
-            }
-        }
         return sb.toString();
     }
 

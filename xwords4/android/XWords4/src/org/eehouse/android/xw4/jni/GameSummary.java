@@ -20,10 +20,14 @@
 
 package org.eehouse.android.xw4.jni;
 
+
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo
  */
 public class GameSummary {
     public int nMoves;
     public boolean gameOver;
+    public CommsAddrRec.CommsConnType conType;
+    public String roomName;
+    public String smsPhone;
 }

@@ -28,12 +28,16 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NAME = "summaries";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
 
     public static final String FILE_NAME = "FILE_NAME";
     public static final String NUM_MOVES = "NUM_MOVES";
     public static final String GAME_OVER = "GAME_OVER";
     public static final String SNAPSHOT = "SNAPSHOT";
+    public static final String CONTYPE = "CONTYPE";
+    public static final String ROOMNAME = "ROOMNAME";
+    public static final String SMSPHONE = "SMSPHONE";
+
 
     public DBHelper( Context context )
     {
@@ -47,7 +51,12 @@ public class DBHelper extends SQLiteOpenHelper {
                     + FILE_NAME + " TEXT PRIMARY KEY,"
                     + NUM_MOVES + " INTEGER,"
                     + GAME_OVER + " INTEGER,"
-                    + SNAPSHOT + " BLOB"
+
+                    + CONTYPE    + " INTEGER,"
+                    + ROOMNAME   + " TEXT,"
+                    + SMSPHONE   + " TEXT,"
+
+                    + SNAPSHOT   + " BLOB"
                     + ");" );
     }
 
@@ -55,5 +64,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) 
     {
         Utils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
+        db.execSQL( "DROP TABLE " + TABLE_NAME + ";" );
+        onCreate( db );
     }
 }

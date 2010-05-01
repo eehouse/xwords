@@ -60,25 +60,9 @@ public class GameListAdapter implements ListAdapter {
             CurGameInfo gi = new CurGameInfo( m_context );
             XwJNI.gi_from_stream( gi, stream );
 
-            String summaryTxt = gi.summary( m_context );
-
             GameSummary summary = Utils.getSummary( m_context, path );
-            if ( null != summary ) {
-                String state = "\nState: ";
-                if ( summary.nMoves < 0 ) {
-                    state += "Configured";
-                } else if ( summary.gameOver ) {
-                    state += "Game over";
-                } else {
-                    state += "In play";
-                }
-                summaryTxt += state;
+            String summaryTxt = gi.summarize( m_context, summary );
 
-                if ( summary.nMoves >= 0 ) {
-                    summaryTxt += String.format( " Moves played: %d", 
-                                                 summary.nMoves );
-                }
-            }
             view.setText( summaryTxt );
         }
         return view;
