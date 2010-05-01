@@ -9,4 +9,6 @@
    android:focusable="true"
    android:clickable="true"
    android:textAppearance="?android:attr/textAppearanceLarge"
-   android:longClickable="true"/>
+   android:longClickable="true"
+   android:background="@android:drawable/list_selector_background"
+   />
