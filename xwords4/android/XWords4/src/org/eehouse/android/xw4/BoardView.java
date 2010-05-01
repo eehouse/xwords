@@ -668,10 +668,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void drawCentered( String text, Rect rect, FontDims fontDims ) 
     {
-        int descent;
+        int descent = -1;
         int textSize;
         if ( null == fontDims ) {
-            descent = m_fillPaint.getFontMetricsInt().descent;
             textSize = rect.height() - 2;
         } else {
             int height = rect.height() - 4; // borders and padding, 2 each 
@@ -681,7 +680,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             //             + textSize + " in height " + height );
         }
         m_fillPaint.setTextSize( textSize );
-
+        if ( descent == -1 ) {
+            descent = m_fillPaint.getFontMetricsInt().descent;
+        }
         descent += 2;
 
         m_fillPaint.getTextBounds( text, 0, text.length(), m_boundsScratch );
