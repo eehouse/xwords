@@ -261,6 +261,12 @@
 
     <string name="vs">vs.</string>
     <string name="dictionary">Dictionary:</string>
+    <string name="summary_fmt_listening">\n%s listening</string>
+    <string name="summary_fmt_relay">\n%s via Relay, room \"%s\"</string>
+    <string name="summary_fmt_sms">\n%s via SMS, dialing %s</string>
+    <string name="gameOver">Game over</string>
+    <string name="movesf">Moves played: %d</string>
+    <string name="statef">\nState: %s</string>
 
     <!-- about dialog stuff -->
     <string name="about_versf">Crosswords for Android, Version %s,
@@ -287,5 +293,5 @@
 	<string name="red">Red</string>
 	<string name="green">Green</string>
 	<string name="blue">Blue</string>
-    
+
 </resources>
