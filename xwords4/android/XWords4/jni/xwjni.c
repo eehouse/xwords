@@ -935,6 +935,20 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
     setInt( env, jsummary, "nMoves", nMoves );
     setBool( env, jsummary, "gameOver", 
              server_getGameIsOver( state->game.server ) );
+    
+    if ( !!state->game.comms ) {
+        CommsAddrRec addr;
+        comms_getAddr( state->game.comms, &addr );
+        intToJenumField( env, jsummary, addr.conType, "conType",
+                         "org/eehouse/android/xw4/jni/"
+                         "CommsAddrRec$CommsConnType" );
+        if ( COMMS_CONN_RELAY == addr.conType ) {
+            setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
+        } else if ( COMMS_CONN_SMS == addr.conType ) {
+            setString( env, jsummary, "smsPhone", addr.u.sms.phone );
+        }
+    }
+
     XWJNI_END();
     LOG_RETURN_VOID();
 }
