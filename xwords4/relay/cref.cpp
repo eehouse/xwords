@@ -288,7 +288,7 @@ CookieRef::GameOpen( const char* cookie, bool isNew,
     }
 
     /* Error to connect if cookie doesn't match. */
-    if ( accept && !!cookie && 0 != strcmp( cookie, Cookie() ) ) {
+    if ( accept && !!cookie && 0 != strcasecmp( cookie, Cookie() ) ) {
         logf( XW_LOGERROR, "%s: not accepting b/c cookie mismatch: %s vs %s",
               __func__, cookie, Cookie() );
         accept = false;

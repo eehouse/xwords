@@ -420,7 +420,7 @@ print_cookies( int socket, const char* cookie, const char* connName )
 
     for ( id = iter.Next(); id != 0; id = iter.Next() ) {
         SafeCref scr( id );
-        if ( cookie != NULL && 0 == strcmp( scr.Cookie(), cookie ) ) {
+        if ( cookie != NULL && 0 == strcasecmp( scr.Cookie(), cookie ) ) {
             /* print this one */
         } else if ( connName != NULL && 
                     0 == strcmp( scr.ConnName(), connName ) ) {

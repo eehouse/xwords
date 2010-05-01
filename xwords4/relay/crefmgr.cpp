@@ -148,7 +148,8 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
             if ( !!connName ) {
                 if ( 0 == strcmp( cref->ConnName(), connName ) ) {
                     if ( cref->Lock() ) {
-                        assert( !cookie || 0 == strcmp( cookie, cref->Cookie() ) );
+                        assert( !cookie || 
+                                0 == strcasecmp( cookie, cref->Cookie() ) );
                         if ( cref->SeedBelongs( gameSeed ) ) {
                             logf( XW_LOGINFO, "%s: SeedBelongs: dup packet?",
                                   __func__ );
@@ -168,7 +169,7 @@ CRefMgr::FindOpenGameFor( const char* cookie, const char* connName,
             } 
 
             if ( !found && !!cookie ) {
-                if ( 0 == strcmp( cref->Cookie(), cookie ) ) {
+                if ( 0 == strcasecmp( cref->Cookie(), cookie ) ) {
                     if ( cref->Lock() ) {
                         if ( cref->ConnName()[0] ) {
                             /* if has a connName, we can tell if belongs */
