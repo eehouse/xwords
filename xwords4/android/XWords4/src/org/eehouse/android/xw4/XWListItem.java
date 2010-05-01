@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.widget.TextView;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.graphics.Rect;
 
 public class XWListItem extends TextView {
     private int m_position;
@@ -33,4 +34,12 @@ public class XWListItem extends TextView {
 
     public int getPosition() { return m_position; }
     public void setPosition( int indx ) { m_position = indx; }
+
+    protected void onFocusChanged( boolean gainFocus, int direction, 
+                                   Rect previouslyFocusedRect )
+    {
+        setBackgroundColor( gainFocus? 0xFFFF0000 : 0xFFFFFFFF );
+        // invalidate();
+        super.onFocusChanged( gainFocus, direction, previouslyFocusedRect );
+    }
 }
