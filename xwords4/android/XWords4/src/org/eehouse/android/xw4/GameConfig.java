@@ -326,7 +326,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         try {
             sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
         } catch ( Exception ex ) {}
-        m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
+        // m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
 
         m_cp = CommonPrefs.get();
 
