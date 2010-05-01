@@ -1,7 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 
 /* 
- * Copyright 2005-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2005-2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -114,9 +114,19 @@ logf( XW_LogLevel level, const char* format, ... )
         }
 
         if ( !!where ) {
+            static int tm_yday = 0;
             gettimeofday( &tv, NULL );
             struct tm result;
             timp = localtime_r( &tv.tv_sec, &result );
+
+            /* log the date once/day.  This isn't threadsafe so may be
+               repeated but that's harmless. */
+            if ( tm_yday != timp->tm_yday ) {
+                tm_yday = timp->tm_yday;
+                fprintf( where, "It's a new day: %.2d/%.2d/%d\n", timp->tm_mday,
+                         1 + timp->tm_mon, /* 0-based */
+                         1900 + timp->tm_year ); /* 1900-based */
+            }
 
             pthread_t me = pthread_self();
 
