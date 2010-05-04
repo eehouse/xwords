@@ -33,21 +33,14 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
-public class GameListAdapter implements ListAdapter {
+public class GameListAdapter extends XWListAdapter {
     Context m_context;
     LayoutInflater m_factory;
 
     public GameListAdapter( Context context ) {
+        super( context, Utils.gamesList(context).length );
         m_context = context;
         m_factory = LayoutInflater.from( context );
-    }
-
-    public boolean areAllItemsEnabled() {
-        return true;
-    }
-
-    public boolean isEnabled( int position ) {
-        return true;
     }
     
     public int getCount() {
@@ -73,32 +66,9 @@ public class GameListAdapter implements ListAdapter {
         return layout;
     }
 
-    public long getItemId( int position ) {
-        return position;
-    }
-
-    public int getItemViewType( int position ) {
-        return 0;
-    }
-
     public View getView( int position, View convertView, ViewGroup parent ) {
         return (View)getItem( position );
     }
-
-    public int getViewTypeCount() {
-        return 1;
-    }
-
-    public boolean hasStableIds() {
-        return true;
-    }
-
-    public boolean isEmpty() {
-        return getCount() == 0;
-    }
-
-    public void registerDataSetObserver(DataSetObserver observer) {}
-    public void unregisterDataSetObserver(DataSetObserver observer) {}
 
     private byte[] open( String file )
     {
