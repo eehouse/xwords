@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.database.DataSetObserver;
 import java.io.FileInputStream;
+import android.view.LayoutInflater;
 import junit.framework.Assert;
 
 
@@ -34,9 +35,11 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameListAdapter implements ListAdapter {
     Context m_context;
+    LayoutInflater m_factory;
 
     public GameListAdapter( Context context ) {
         m_context = context;
+        m_factory = LayoutInflater.from( context );
     }
 
     public boolean areAllItemsEnabled() {
@@ -53,7 +56,9 @@ public class GameListAdapter implements ListAdapter {
     
     public Object getItem( int position ) 
     {
-        TextView view = new TextView(m_context);
+        final View layout = m_factory.inflate( R.layout.game_list_item, null );
+        TextView view = (TextView)layout.findViewById( R.id.players );
+
         String path = Utils.gamesList(m_context)[position];
         byte[] stream = open( path );
         if ( null != stream ) {
@@ -65,7 +70,7 @@ public class GameListAdapter implements ListAdapter {
 
             view.setText( summaryTxt );
         }
-        return view;
+        return layout;
     }
 
     public long getItemId( int position ) {
