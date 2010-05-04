@@ -108,11 +108,11 @@
                           android:defaultValue="10999"
                           android:numeric="decimal"
                           />
-      <EditTextPreference android:key="@string/key_sms_port"
-                          android:title="@string/sms_port"
-                          android:defaultValue="5432"
-                          android:numeric="decimal"
-                          />
+      <!-- <EditTextPreference android:key="@string/key_sms_port" -->
+      <!--                     android:title="@string/sms_port" -->
+      <!--                     android:defaultValue="5432" -->
+      <!--                     android:numeric="decimal" -->
+      <!--                     /> -->
       <EditTextPreference android:key="@string/key_dict_host"
                           android:title="@string/dict_host"
                           android:defaultValue="@string/dict_url"
