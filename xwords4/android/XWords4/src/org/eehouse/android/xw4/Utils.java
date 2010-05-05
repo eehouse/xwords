@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 import android.content.res.AssetManager;
 import android.content.ContentValues;
 import android.os.Environment;
@@ -457,7 +458,7 @@ public class Utils {
 
         String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER,
                              DBHelper.CONTYPE, DBHelper.ROOMNAME,
-                             DBHelper.SMSPHONE 
+                             DBHelper.SMSPHONE, DBHelper.SCORES
         };
         String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
 
@@ -470,6 +471,17 @@ public class Utils {
             int tmp = cursor.getInt(cursor.
                                     getColumnIndex(DBHelper.GAME_OVER));
             summary.gameOver = tmp == 0 ? false : true;
+
+            String scoresStr = cursor.getString( cursor.
+                                                 getColumnIndex(DBHelper.SCORES));
+            StringTokenizer st = new StringTokenizer( scoresStr );
+            int[] scores = new int[st.countTokens()];
+            for ( int ii = 0; ii < scores.length; ++ii ) {
+                Assert.assertTrue( st.hasMoreTokens() );
+                String token = st.nextToken();
+                scores[ii] = Integer.parseInt( token );
+            }
+            summary.scores = scores;
 
             int col = cursor.getColumnIndex( DBHelper.CONTYPE );
             if ( col >= 0 ) {
@@ -519,6 +531,12 @@ public class Utils {
             values.put( DBHelper.FILE_NAME, path );
             values.put( DBHelper.NUM_MOVES, summary.nMoves );
             values.put( DBHelper.GAME_OVER, summary.gameOver );
+
+            StringBuffer sb = new StringBuffer();
+            for ( int score : summary.scores ) {
+                sb.append( String.format( "%d ", score ) );
+            }
+            values.put( DBHelper.SCORES, sb.toString() );
 
             if ( null != summary.conType ) {
                 values.put( DBHelper.CONTYPE, summary.conType.ordinal() );

@@ -281,7 +281,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             // This has to happen after the drawing thread is killed
             // to avoid the possibility of reentering the jni world.
             GameSummary summary = new GameSummary();
-            XwJNI.game_summarize( m_jniGamePtr, summary );
+            XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
             byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
             Utils.saveGame( this, state, m_path );
             Utils.saveSummary( m_path, summary );
