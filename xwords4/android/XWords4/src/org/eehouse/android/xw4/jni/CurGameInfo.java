@@ -209,7 +209,7 @@ public class CurGameInfo {
         return names;
     }
 
-    public String summarize( Context context, GameSummary summary )
+    public String summarizePlayers( Context context, GameSummary summary )
     {
         StringBuffer sb = new StringBuffer();
         String vsString = context.getString( R.string.vs );
@@ -223,7 +223,12 @@ public class CurGameInfo {
             }
             sb.append( String.format( " %s ", vsString ) );
         }
+        return sb.toString();
+    }
 
+    public String summarizeRole( Context context, GameSummary summary )
+    {
+        String result = null;
         if ( null != summary ) {
             DeviceRole role = serverRole;
             if ( role != DeviceRole.SERVER_STANDALONE ) {
@@ -253,30 +258,26 @@ public class CurGameInfo {
                                                     : summaryID );
                     String roleStr = context.getString( roleID );
                     if ( justListening ) {
-                        tmp = String.format( fmt, roleStr );
+                        result = String.format( fmt, roleStr );
                     } else {
-                        tmp = String.format( fmt, roleStr, via );
+                        result = String.format( fmt, roleStr, via );
                     }
-                    sb.append( tmp );
                 }
             }
-
-
-            if ( summary.gameOver ) {
-                tmp = context.getString( R.string.gameOver );
-            } else {
-                tmp = String.format( context.getString(R.string.movesf),
-                                     summary.nMoves );
-            }
-            sb.append( String.format( context.getString(R.string.statef),
-                                      tmp ) );
         }
+        return result;
+    }
 
-        sb.append( String.format("\n%s %s", 
-                                 context.getString( R.string.dictionary ), 
-                                 dictName ) );
-
-        return sb.toString();
+    public String summarizeState( Context context, GameSummary summary )
+    {
+        String result = null;
+        if ( summary.gameOver ) {
+            result = context.getString( R.string.gameOver );
+        } else {
+            result = String.format( context.getString(R.string.movesf),
+                                    summary.nMoves );
+        }
+        return String.format( context.getString(R.string.statef), result );
     }
 
     public boolean addPlayer() 

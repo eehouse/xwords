@@ -50,7 +50,6 @@ public class GameListAdapter extends XWListAdapter {
     public Object getItem( int position ) 
     {
         final View layout = m_factory.inflate( R.layout.game_list_item, null );
-        TextView view = (TextView)layout.findViewById( R.id.players );
 
         String path = Utils.gamesList(m_context)[position];
         byte[] stream = open( path );
@@ -59,9 +58,22 @@ public class GameListAdapter extends XWListAdapter {
             XwJNI.gi_from_stream( gi, stream );
 
             GameSummary summary = Utils.getSummary( m_context, path );
-            String summaryTxt = gi.summarize( m_context, summary );
 
-            view.setText( summaryTxt );
+            TextView view = (TextView)layout.findViewById( R.id.players );
+            view.setText( gi.summarizePlayers( m_context, summary ) );
+
+            view = (TextView)layout.findViewById( R.id.state );
+            view.setText( gi.summarizeState( m_context, summary ) );
+            view = (TextView)layout.findViewById( R.id.dict );
+            view.setText( gi.dictName );
+
+            view = (TextView)layout.findViewById( R.id.role );
+            String roleSummary = gi.summarizeRole( m_context, summary );
+            if ( null != roleSummary ) {
+                view.setText( roleSummary );
+            } else {
+                view.setVisibility( View.GONE );
+            }
         }
         return layout;
     }

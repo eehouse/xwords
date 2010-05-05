@@ -11,4 +11,22 @@
    	        android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
+  <TextView android:id="@+id/role"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/players"
+            />
+
+  <TextView android:id="@+id/state"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/role"
+            />
+
+  <TextView android:id="@+id/dict"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/state"
+            />
+
 </LinearLayout>
