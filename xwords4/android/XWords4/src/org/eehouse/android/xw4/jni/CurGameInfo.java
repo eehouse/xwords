@@ -216,7 +216,8 @@ public class CurGameInfo {
         String tmp;
         int ii;
         for ( ii = 0; ; ) {
-            sb.append( players[ii].name );
+            sb.append( String.format( "%s(%d)", players[ii].name, 
+                                      summary.scores[ii] ) );
             if ( ++ii >= nPlayers ) {
                 break;
             }
