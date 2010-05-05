@@ -40,6 +40,8 @@ bool setBool( JNIEnv* env, jobject obj, const char* name, bool value );
 bool setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value );
 void getString( JNIEnv* env, jobject jlp, const char* name, XP_UCHAR* buf,
                 int bufLen );
+void setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
+                jobject val );
 bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig, 
                 jobject* ret );
 
@@ -54,8 +56,6 @@ void setBoolArray( JNIEnv* env, jbooleanArray jarr, int count,
 
 jobjectArray makeStringArray( JNIEnv *env, int size, const XP_UCHAR** vals );
 jstring streamToJString( MPFORMAL JNIEnv* env, XWStreamCtxt* stream );
-
-jobjectArray makeBitmapsArray( JNIEnv* env, const XP_Bitmaps* bitmaps );
 
 /* Note: jmethodID can be cached.  Should not look up more than once. */
 jmethodID getMethodID( JNIEnv* env, jobject obj, const char* proc,

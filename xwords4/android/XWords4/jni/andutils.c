@@ -158,12 +158,25 @@ getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, sig );
-    XP_ASSERT( !!fid );         /* failed */
+    XP_ASSERT( !!fid );
     *ret = (*env)->GetObjectField( env, obj, fid );
     XP_ASSERT( !!*ret );
 
     (*env)->DeleteLocalRef( env, cls );
     return true;
+}
+
+void
+setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
+           jobject val )
+{
+    jclass cls = (*env)->GetObjectClass( env, obj );
+    XP_ASSERT( !!cls );
+    jfieldID fid = (*env)->GetFieldID( env, cls, name, sig );
+    XP_ASSERT( !!fid );
+    (*env)->SetObjectField( env, obj, fid, val );
+
+    (*env)->DeleteLocalRef( env, cls );
 }
 
 /* return false on failure, e.g. exception raised */
@@ -236,7 +249,7 @@ getIntFromArray( JNIEnv* env, jintArray arr, bool del )
     int result = ints[0];
     (*env)->ReleaseIntArrayElements( env, arr, ints, 0);
     if ( del ) {
-        (*env)->DeleteLocalRef( env, arr );  
+        (*env)->DeleteLocalRef( env, arr );
     }
     return result;
 }
@@ -284,27 +297,6 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     XP_ASSERT( !!mid );
     (*env)->DeleteLocalRef( env, cls );
     return mid;
-}
-
-jobjectArray
-makeBitmapsArray( JNIEnv* env, const XP_Bitmaps* bitmaps )
-{
-    jobjectArray result = NULL;
-
-    if ( !!bitmaps && bitmaps->nBitmaps > 0 ) {
-        jclass clazz = (*env)->FindClass( env,
-                                          "android/graphics/drawable/BitmapDrawable" );
-        XP_ASSERT( !!clazz );
-        result =  (*env)->NewObjectArray( env, bitmaps->nBitmaps, clazz, NULL );
-        (*env)->DeleteLocalRef( env, clazz );
-
-        int ii;
-        for ( ii = 0; ii < bitmaps->nBitmaps; ++ii ) {
-            (*env)->SetObjectArrayElement( env, result, ii, bitmaps->bmps[ii] );
-        }
-    }
-
-    return result;
 }
 
 void

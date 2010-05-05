@@ -927,14 +927,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
-( JNIEnv* env, jclass C, jint gamePtr, jobject jsummary )
+( JNIEnv* env, jclass C, jint gamePtr, jint nPlayers, jobject jsummary )
 {
     LOG_FUNC();
     XWJNI_START();
     XP_S16 nMoves = model_getNMoves( state->game.model );
     setInt( env, jsummary, "nMoves", nMoves );
-    setBool( env, jsummary, "gameOver", 
-             server_getGameIsOver( state->game.server ) );
+    XP_Bool gameOver = server_getGameIsOver( state->game.server );
+    setBool( env, jsummary, "gameOver", gameOver );
     
     if ( !!state->game.comms ) {
         CommsAddrRec addr;
@@ -948,6 +948,23 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
             setString( env, jsummary, "smsPhone", addr.u.sms.phone );
         }
     }
+
+    jint jvals[nPlayers];
+    int ii;
+    if ( gameOver ) {
+        ScoresArray scores;
+        model_figureFinalScores( state->game.model, &scores, NULL );
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            jvals[ii] = scores.arr[ii];
+        }
+    } else {
+        for ( ii = 0; ii < nPlayers; ++ii ) {
+            jvals[ii] = model_getPlayerScore( state->game.model, ii );
+        }
+    }
+    jintArray jarr = makeIntArray( env, nPlayers, jvals );
+    setObject( env, jsummary, "scores", "[I", jarr );
+    (*env)->DeleteLocalRef( env, jarr );
 
     XWJNI_END();
     LOG_RETURN_VOID();
