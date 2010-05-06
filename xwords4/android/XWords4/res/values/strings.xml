@@ -139,8 +139,10 @@
 	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
 	<string name="str_reg_server_sans_remote">At least one player must be marked \"Remote\" for a game started as Host.</string>
 
-    <string name="remote_label">Remote player</string>
+    <string name="remote_label">Guest player</string>
     <string name="robot_label">Robot player</string>
+    <string name="robot_name">(robot)</string>
+    <string name="guest_name">(guest player)</string>
     <string name="password_label">Password</string>
     <string name="player_edit_title">Player</string>
 
@@ -259,7 +261,10 @@
     <string name="ids_endnow">Are you sure you want to end the game now?</string>
 
     <string name="force_title">Remote player[s]</string>
-    <string name="force_expl">A host must have at least one remote player.</string>
+    <!-- <string name="force_expl">A host expects at least one remote -->
+    <!-- player (from a Guest device).  Choose one or more here.</string> -->
+    <string name="force_expl">As the Host, check the one or more
+    remote player[s] that will come from Guest device[s].</string>
 
     <string name="vs">vs.</string>
     <string name="dictionary">Dictionary:</string>
