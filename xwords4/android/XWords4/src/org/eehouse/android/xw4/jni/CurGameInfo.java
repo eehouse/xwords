@@ -192,7 +192,7 @@ public class CurGameInfo {
         }
     }
 
-    public String[] visibleNames()
+    public String[] visibleNames( Context context )
     {
         String[] names = new String[m_nVisiblePlayers];
         for ( int ii = 0; ii < m_nVisiblePlayers; ++ii ) {
@@ -200,10 +200,10 @@ public class CurGameInfo {
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 names[ii] = lp.name;
                 if ( lp.isRobot ) {
-                    names[ii] += "(robot)";
+                    names[ii] += context.getString( R.string.robot_name );
                 }
             } else {
-                names[ii] = "(remote player)";
+                names[ii] = context.getString( R.string.guest_name );
             }
         }
         return names;

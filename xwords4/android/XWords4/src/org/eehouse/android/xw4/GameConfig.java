@@ -513,7 +513,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     {
         m_playerLayout.removeAllViews();
 
-        String[] names = m_gi.visibleNames();
+        String[] names = m_gi.visibleNames( this );
         LayoutInflater factory = LayoutInflater.from(this);
         for ( int ii = 0; ii < names.length; ++ii ) {
 
