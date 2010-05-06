@@ -65,7 +65,7 @@ public class GameListAdapter extends XWListAdapter {
             view = (TextView)layout.findViewById( R.id.state );
             view.setText( gi.summarizeState( m_context, summary ) );
             view = (TextView)layout.findViewById( R.id.dict );
-            view.setText( gi.dictName );
+            view.setText( gi.summarizeDict( m_context ) );
 
             view = (TextView)layout.findViewById( R.id.role );
             String roleSummary = gi.summarizeRole( m_context, summary );

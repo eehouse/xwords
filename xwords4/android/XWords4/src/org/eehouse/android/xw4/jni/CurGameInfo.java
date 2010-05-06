@@ -280,6 +280,12 @@ public class CurGameInfo {
         return result;
     }
 
+    public String summarizeDict( Context context )
+    {
+        String label = context.getString( R.string.dictionary );
+        return label + " " + dictName;
+    }
+
     public boolean addPlayer() 
     {
         boolean added = false;
