@@ -22,8 +22,10 @@
 
   <TextView android:layout_height="wrap_content"
             android:layout_width="fill_parent"
+            android:layout_marginLeft="4sp"
+            android:layout_marginRight="4sp"
             android:text="@string/force_expl"
-            android:background="#FFFFFFFF"            
+            android:textColor="#FFFFFFFF"
             />
 
   <ListView android:id="@+id/players"
