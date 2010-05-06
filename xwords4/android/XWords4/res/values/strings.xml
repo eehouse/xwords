@@ -265,8 +265,7 @@
     <string name="summary_fmt_relay">%s via Relay, room \"%s\"</string>
     <string name="summary_fmt_sms">%s via SMS, dialing %s</string>
     <string name="gameOver">Game over</string>
-    <string name="movesf">Moves played: %d</string>
-    <string name="statef">State: %s</string>
+    <string name="movesf">%d moves played</string>
 
     <!-- about dialog stuff -->
     <string name="about_versf">Crosswords for Android, Version %s,

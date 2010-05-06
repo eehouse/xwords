@@ -277,7 +277,7 @@ public class CurGameInfo {
             result = String.format( context.getString(R.string.movesf),
                                     summary.nMoves );
         }
-        return String.format( context.getString(R.string.statef), result );
+        return result;
     }
 
     public boolean addPlayer() 
