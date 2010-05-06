@@ -34,6 +34,7 @@
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"
              android:entries="@array/role_names"
+             android:prompt="@string/role_prompt"
              />
 
     <Spinner android:id="@+id/connect_spinner"

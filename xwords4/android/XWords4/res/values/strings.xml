@@ -195,6 +195,8 @@
     <string name="role_standalone">Standalone</string>
     <string name="role_host">Host</string>
     <string name="role_guest">Guest</string>
+    <string name="role_prompt">Standalone if all players are on this
+    device; otherwise Host a game or be a Guest.</string>
 
     <string name="phonies_ignore">Ignore phonies</string>
     <string name="phonies_warn">Warn if phonies</string>
