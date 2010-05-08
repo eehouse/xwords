@@ -307,30 +307,36 @@ public class CommsTransport extends Thread implements TransportProcs {
             nSent = buf.length;
             break;
         case COMMS_CONN_SMS:
-            Utils.logf( "sending via sms to %s:%d", m_addr.sms_phone,
-                        m_addr.sms_port );
+            Assert.fail();
+            // This code can't be here, even if unreachable, unless
+            // app has permission to use SMS.  So put it in a separate
+            // module and catch the error that'll come when it fails
+            // to verify.  IFF the plan's to ship a version that
+            // doesn't do SMS.
 
-            try {
-                Intent intent = new Intent( m_context, StatusReceiver.class);
-                PendingIntent pi
-                    = PendingIntent.getBroadcast( m_context, 0,
-                                                  intent, 0 );
-                if ( 0 == m_addr.sms_port ) {
-                     SmsManager.getDefault().sendTextMessage( m_addr.sms_phone,
-                                                              null, "Hello world",
-                                                              pi, pi );
-                    Utils.logf( "called sendTextMessage" );
-                } else {
-                    SmsManager.getDefault().
-                        sendDataMessage( m_addr.sms_phone, (String)null,
-                                         (short)m_addr.sms_port, 
-                                         buf, pi, pi );
-                    Utils.logf( "called sendDataMessage" );
-                }
-                nSent = buf.length;
-            } catch ( java.lang.IllegalArgumentException iae ) {
-                Utils.logf( iae.toString() );
-            }
+            // Utils.logf( "sending via sms to  %s:%d", 
+            //             m_addr.sms_phone, m_addr.sms_port );
+            // try {
+            //     Intent intent = new Intent( m_context, StatusReceiver.class);
+            //     PendingIntent pi
+            //         = PendingIntent.getBroadcast( m_context, 0,
+            //                                       intent, 0 );
+            //     if ( 0 == m_addr.sms_port ) {
+            //          SmsManager.getDefault().sendTextMessage( m_addr.sms_phone,
+            //                                                   null, "Hello world",
+            //                                                   pi, pi );
+            //         Utils.logf( "called sendTextMessage" );
+            //     } else {
+            //         SmsManager.getDefault().
+            //             sendDataMessage( m_addr.sms_phone, (String)null,
+            //                              (short)m_addr.sms_port, 
+            //                              buf, pi, pi );
+            //         Utils.logf( "called sendDataMessage" );
+            //     }
+            //     nSent = buf.length;
+            // } catch ( java.lang.IllegalArgumentException iae ) {
+            //     Utils.logf( iae.toString() );
+            // }
             break;
         case COMMS_CONN_BT:
             break;
