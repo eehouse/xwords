@@ -162,11 +162,9 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
                 case R.id.list_item_reset:
                     Utils.resetGame( this, path, path );
-                    Utils.saveSummary( path, null );
                     break;
                 case R.id.list_item_new_from:
                     String newName = Utils.resetGame( this, path );  
-                    Utils.saveSummary( newName, null );
                     break;
 
                 case R.id.list_item_copy:

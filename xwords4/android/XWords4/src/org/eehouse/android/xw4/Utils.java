@@ -158,8 +158,13 @@ public class Utils {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
         saveGame( context, gamePtr, gi, pathOut );
+
+        GameSummary summary = new GameSummary();
+        XwJNI.game_summarize( gamePtr, gi.nPlayers, summary );
+        saveSummary( pathOut, summary );
+
         XwJNI.game_dispose( gamePtr );
-    }
+    } // resetGame
 
     public static String[] gamesList( Context context )
     {
