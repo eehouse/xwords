@@ -634,7 +634,8 @@ public class GameConfig extends Activity implements View.OnClickListener {
             break;
         }
 
-        int[] ids = { R.id.connect_spinner, 
+        int[] ids = { R.id.connection_label,
+                      R.id.connect_spinner, 
                       R.id.configure_role };
         for ( int id : ids ) {
             findViewById( id ).setVisibility( vis );

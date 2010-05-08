@@ -37,19 +37,25 @@
              android:prompt="@string/role_prompt"
              />
 
+    <TextView style="@style/config_separator"
+              android:id="@+id/connection_label"
+              android:text="@string/connection_label"
+              />
+
     <Spinner android:id="@+id/connect_spinner"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"
              android:visibility="gone"
+             android:prompt="@string/connect_prompt"
              />
 
-      <Button android:id="@+id/configure_role"
-              android:layout_width="fill_parent" 
-              android:layout_height="wrap_content"
-              android:visibility="gone"
-              android:text="@string/configure_role" 
-              />
+    <Button android:id="@+id/configure_role"
+            android:layout_width="fill_parent" 
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="@string/configure_role" 
+            />
 
       <TextView style="@style/config_separator"
                 android:id="@+id/players_label"
