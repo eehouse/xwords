@@ -46,6 +46,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     private GameListAdapter m_adapter;
 
     private static final int WARN_NODICT = Utils.DIALOG_LAST + 1;
+    private static final int CONFIRM_DELETE_ALL = Utils.DIALOG_LAST + 2;
     private String m_missingDict;
 
     @Override
@@ -66,6 +67,24 @@ public class GamesList extends ListActivity implements View.OnClickListener {
                             startActivity( intent );
                         }
                     })
+                .create();
+            break;
+        case CONFIRM_DELETE_ALL:
+            DialogInterface.OnClickListener lstnr = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        for( String game : Utils.gamesList( GamesList.this ) ) {
+                            deleteFile( game  );
+                        }
+                        m_adapter = new GameListAdapter( GamesList.this );
+                        setListAdapter( m_adapter );
+                    }
+                };
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.query_title )
+                .setMessage( R.string.confirm_delete_all )
+                .setPositiveButton( R.string.button_ok, lstnr )
+                .setNegativeButton( R.string.button_cancel, null )
                 .create();
             break;
         default:
@@ -210,15 +229,9 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
-            for( String file : Utils.gamesList( this ) ) {
-                if ( deleteFile( file  ) ) {
-                    Utils.logf( "deleted " + file );
-                } else {
-                    Utils.logf( "unable to delete " + file );
-                }
+            if ( Utils.gamesList( this ).length > 0 ) {
+                showDialog( CONFIRM_DELETE_ALL );
             }
-            m_adapter = new GameListAdapter( this );
-            setListAdapter( m_adapter );
             handled = true;
             break;
 
