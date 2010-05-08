@@ -214,7 +214,13 @@ public class CurGameInfo {
         StringBuffer sb = new StringBuffer();
         String vsString = context.getString( R.string.vs );
         for ( int ii = 0; ; ) {
-            int score = null == summary.scores? 0 : summary.scores[ii];
+
+            int score = 0;
+            try {
+                // scores can be null, but I've seen array OOB too.
+                score = summary.scores[ii];
+            } catch ( Exception ex ){}
+
             sb.append( String.format( "%s(%d)", players[ii].name, score ) );
             if ( ++ii >= nPlayers ) {
                 break;
