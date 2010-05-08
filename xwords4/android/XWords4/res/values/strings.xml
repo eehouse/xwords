@@ -261,8 +261,6 @@
     <string name="ids_endnow">Are you sure you want to end the game now?</string>
 
     <string name="force_title">Remote player[s]</string>
-    <!-- <string name="force_expl">A host expects at least one remote -->
-    <!-- player (from a Guest device).  Choose one or more here.</string> -->
     <string name="force_expl">As the Host, check the one or more
     remote player[s] that will come from Guest device[s].</string>
 
