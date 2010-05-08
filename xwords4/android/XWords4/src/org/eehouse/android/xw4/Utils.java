@@ -184,6 +184,12 @@ public class Utils {
         return newName;
     }
 
+    public static void deleteGame( Context context, String path )
+    {
+        context.deleteFile( path );
+        saveSummary( path, null );
+    }
+
     public static void loadMakeGame( Context context, int gamePtr, 
                                      CurGameInfo gi, String path )
     {

@@ -74,7 +74,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
                 new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         for( String game : Utils.gamesList( GamesList.this ) ) {
-                            deleteFile( game  );
+                            Utils.deleteGame( GamesList.this, game  );
                         }
                         m_adapter = new GameListAdapter( GamesList.this );
                         setListAdapter( m_adapter );
@@ -158,10 +158,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         int id = item.getItemId();
 
         if ( R.id.list_item_delete == id ) {
-            Utils.saveSummary( path, null );
-            if ( ! deleteFile( path ) ) {
-                Utils.logf( "unable to delete " + path );
-            }
+            Utils.deleteGame( this, path );
         } else {
             String[] missingName = new String[1];
             boolean hasDict = Utils.gameDictHere( this, path, missingName );
@@ -174,9 +171,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
                     doConfig( path );
                     break;
                 case R.id.list_item_delete:
-                    if ( ! deleteFile( path ) ) {
-                        Utils.logf( "unable to delete " + path );
-                    }
+                    Utils.deleteGame( this, path );
                     break;
 
                 case R.id.list_item_reset:
