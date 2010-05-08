@@ -36,11 +36,20 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class GameListAdapter extends XWListAdapter {
     Context m_context;
     LayoutInflater m_factory;
+    int m_layoutId;
 
     public GameListAdapter( Context context ) {
         super( context, Utils.gamesList(context).length );
         m_context = context;
         m_factory = LayoutInflater.from( context );
+
+        int sdk_int = 0;
+        try {
+            sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
+        } catch ( Exception ex ) {}
+
+        m_layoutId = sdk_int >= android.os.Build.VERSION_CODES.DONUT
+            ? R.layout.game_list_item : R.layout.game_list_item_onefive;
     }
     
     public int getCount() {
@@ -49,7 +58,7 @@ public class GameListAdapter extends XWListAdapter {
     
     public Object getItem( int position ) 
     {
-        final View layout = m_factory.inflate( R.layout.game_list_item, null );
+        final View layout = m_factory.inflate( m_layoutId, null );
 
         String path = Utils.gamesList(m_context)[position];
         byte[] stream = open( path );
