@@ -251,6 +251,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     protected void onStart()
     {
+        Utils.logf( "onStart" );
         loadGame();
         super.onStart();
     }
@@ -258,7 +259,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     protected void onRestart()
     {
-        loadGame();
+        Utils.logf( "onRestart" );
+        // loadGame(); supposedly onRestart is always followed by onStart
         super.onRestart();
     }
 
@@ -552,7 +554,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     private void loadGame()
     {
-        if ( 0 == m_jniGamePtr ) {
+        if ( 0 != m_jniGamePtr ) {
+            m_view.invalidate();
+        } else {
             byte[] stream = Utils.savedGame( this, m_path );
             XwJNI.gi_from_stream( m_gi, stream );
 
