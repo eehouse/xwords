@@ -213,11 +213,9 @@ public class CurGameInfo {
     {
         StringBuffer sb = new StringBuffer();
         String vsString = context.getString( R.string.vs );
-        String tmp;
-        int ii;
-        for ( ii = 0; ; ) {
-            sb.append( String.format( "%s(%d)", players[ii].name, 
-                                      summary.scores[ii] ) );
+        for ( int ii = 0; ; ) {
+            int score = null == summary.scores? 0 : summary.scores[ii];
+            sb.append( String.format( "%s(%d)", players[ii].name, score ) );
             if ( ++ii >= nPlayers ) {
                 break;
             }
