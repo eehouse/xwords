@@ -136,7 +136,7 @@ public class CommsTransport extends Thread implements TransportProcs {
 
                     if ( null != m_socketChannel ) {
                         int ops = figureOps();
-                        Utils.logf( "calling with ops=%x", ops );
+                        // Utils.logf( "calling with ops=%x", ops );
                         m_socketChannel.register( m_selector, ops );
                     }
                 }
@@ -159,15 +159,14 @@ public class CommsTransport extends Thread implements TransportProcs {
                 iter.remove();
                 try { 
                     if (key.isValid() && key.isConnectable()) {
-                        Utils.logf( "socket is connectable" );
                         if ( !channel.finishConnect() ) {
                             key.cancel(); 
                         }
                     }
                     if (key.isValid() && key.isReadable()) {
                         m_bytesIn.clear(); // will wipe any pending data!
-                        Utils.logf( "socket is readable; buffer has space for "
-                                    + m_bytesIn.remaining() );
+                        // Utils.logf( "socket is readable; buffer has space for "
+                        //             + m_bytesIn.remaining() );
                         int nRead = channel.read( m_bytesIn );
                         if ( nRead == -1 ) {
                             channel.close();
@@ -176,11 +175,10 @@ public class CommsTransport extends Thread implements TransportProcs {
                         }
                     }
                     if (key.isValid() && key.isWritable()) {
-                        Utils.logf( "socket is writable" );
                         getOut();
                         if ( null != m_bytesOut ) {
                             int nWritten = channel.write( m_bytesOut );
-                            Utils.logf( "wrote " + nWritten + " bytes" );
+                            //Utils.logf( "wrote " + nWritten + " bytes" );
                         }
                     }
                 } catch ( java.io.IOException ioe ) {
@@ -194,7 +192,6 @@ public class CommsTransport extends Thread implements TransportProcs {
     {
         int len = buf.length;
         ByteBuffer netbuf = ByteBuffer.allocate( len + 2 );
-        Utils.logf( "allocated outbound buffer of size " + len );
         netbuf.putShort( (short)len );
         netbuf.put( buf );
         m_buffersOut.add( netbuf );
@@ -248,11 +245,9 @@ public class CommsTransport extends Thread implements TransportProcs {
     private void addIncoming( )
     {
         m_bytesIn.flip();
-        Utils.logf( "got " + m_bytesIn.remaining() + " bytes" );
         
         for ( ; ; ) {
             int len = m_bytesIn.remaining();
-            Utils.logf( "addIncoming(): remaining: " + len );
             if ( len <= 0 ) {
                 break;
             }
@@ -274,7 +269,6 @@ public class CommsTransport extends Thread implements TransportProcs {
                 m_haveLen += wantLen;
                 if ( m_haveLen == m_packetIn.length ) {
                     // send completed packet
-                    Utils.logf( "got full packet!!" );
                     m_jniThread.handle( JNICmd.CMD_RECEIVE, m_packetIn );
                     m_packetIn = null;
                 }
@@ -286,7 +280,6 @@ public class CommsTransport extends Thread implements TransportProcs {
     public int transportSend( byte[] buf, final CommsAddrRec faddr )
     {
         int nSent = -1;
-        Utils.logf( "CommsTransport::transportSend" );
 
         if ( null == m_addr ) {
             if ( null == faddr ) {
@@ -347,7 +340,7 @@ public class CommsTransport extends Thread implements TransportProcs {
 
     public void relayStatus( CommsRelayState newState )
     {
-        Utils.logf( "relayStatus called; state=%s", newState.toString() );
+        //Utils.logf( "relayStatus called; state=%s", newState.toString() );
         if ( null != m_jniThread ) {
             m_jniThread.handle( JNICmd.CMD_DRAW_CONNS_STATUS, newState );
         } else {
@@ -371,7 +364,7 @@ public class CommsTransport extends Thread implements TransportProcs {
 
     public void relayErrorProc( XWRELAY_ERROR relayErr )
     {
-        Utils.logf( "relayErrorProc called; got " + relayErr.toString() );
+        //Utils.logf( "relayErrorProc called; got " + relayErr.toString() );
 
         int strID = 0;
         int how = TOAST;
