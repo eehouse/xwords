@@ -322,10 +322,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
 
         // 1.5 doesn't have SDK_INT.  So parse the string version.
-        int sdk_int = 0;
-        try {
-            sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
-        } catch ( Exception ex ) {}
+        // int sdk_int = 0;
+        // try {
+        //     sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
+        // } catch ( Exception ex ) {}
         // m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
 
         m_cp = CommonPrefs.get();
