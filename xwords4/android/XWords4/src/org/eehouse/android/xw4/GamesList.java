@@ -249,9 +249,9 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             showDialog( Utils.DIALOG_ABOUT );
             break;
 
-        case R.id.gamel_menu_view_hidden:
-            Utils.notImpl( this );
-            break;
+        // case R.id.gamel_menu_view_hidden:
+        //     Utils.notImpl( this );
+        //     break;
         default:
             handled = false;
         }

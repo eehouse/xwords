@@ -95,7 +95,7 @@
 	<string name="board_menu_file_about">About Crosswords</string>
 
 	<string name="gamel_menu_delete_all">Delete all</string>
-	<string name="gamel_menu_view_hidden">Hidden games</string>
+	<!-- <string name="gamel_menu_view_hidden">Hidden games</string> -->
 
     <!-- returned by util_getUserString -->
     <string name="strd_robot_traded">Robot traded tiles %d this turn.</string>
@@ -163,6 +163,7 @@
     <string name="role_label">Device role</string>
     <string name="connection_label">Connection</string>
 
+    <string name="configure_role">Configure connection</string>
     <string name="configure_rolef">Configure %s connection</string>
     <string name="settings_label">Game settings</string>
     <string name="minutes_label">Minutes in game</string>

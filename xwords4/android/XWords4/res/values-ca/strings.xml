@@ -93,7 +93,7 @@
     <string name="board_menu_file_about">Quant al Crosswords</string>
 
     <string name="gamel_menu_delete_all">Suprimeix-les totes</string>
-    <string name="gamel_menu_view_hidden">Partides amagades</string>
+    <!-- <string name="gamel_menu_view_hidden">Partides amagades</string> -->
 
     <!-- returned by util_getUserString -->
     <string name="strd_robot_traded">El robot ha canviat %d fitxes en aquest torn.</string>
@@ -158,6 +158,7 @@
     <string name="role_label">Rol</string>
 
     <string name="configure_role">Configura la connexió</string>
+    <string name="configure_rolef">Configura la connexió %s</string>
     <string name="minutes_label">Minuts a la partida</string>
 
     <string name="download_dicts">Baixa\'n més...</string>
