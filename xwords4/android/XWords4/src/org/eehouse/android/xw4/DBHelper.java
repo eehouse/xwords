@@ -42,6 +42,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CONTYPE = "CONTYPE";
     public static final String ROOMNAME = "ROOMNAME";
     public static final String SMSPHONE = "SMSPHONE";
+    // not used yet
+    public static final String CREATE_TIME = "CREATE_TIME";
+    // not used yet
+    public static final String LASTPLAY_TIME = "LASTPLAY_TIME";
 
 
     public DBHelper( Context context )
@@ -62,6 +66,9 @@ public class DBHelper extends SQLiteOpenHelper {
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
                     + GAMEID     + " INTEGER,"
+
+                    + CREATE_TIME + " INTEGER,"
+                    + LASTPLAY_TIME + " INTEGER,"
 
                     + SNAPSHOT   + " BLOB"
                     + ");" );
