@@ -146,7 +146,9 @@
     <string name="password_label">Password</string>
     <string name="player_edit_title">Player</string>
 
-    <string name="players_label">Players</string>
+    <string name="players_label_standalone">Players</string>
+    <string name="players_label_host">Players -- local and expected</string>
+    <string name="players_label_guest">Players -- local only</string>
     <string name="button_add_player">Add player</string>
     <string name="button_juggle_players">Juggle players</string>
 

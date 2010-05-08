@@ -29,6 +29,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.view.View;
@@ -617,14 +618,30 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
     private void adjustVisibility()
     {
+        // compiler insists these be initialized, so set 'em for
+        // SERVER_STANDALONE
+        int vis = View.GONE;
+        int labelId = R.string.players_label_standalone;
+
+        switch ( curRole() ) {
+        case SERVER_ISSERVER:
+            vis = View.VISIBLE;
+            labelId = R.string.players_label_host;
+            break;
+        case SERVER_ISCLIENT:
+            vis = View.VISIBLE;
+            labelId = R.string.players_label_guest;
+            break;
+        }
+
         int[] ids = { R.id.connect_spinner, 
                       R.id.configure_role };
-        int vis = DeviceRole.SERVER_STANDALONE == curRole() ? 
-            View.GONE : View.VISIBLE;
-
         for ( int id : ids ) {
             findViewById( id ).setVisibility( vis );
         }
+
+        ((TextView)findViewById( R.id.players_label )).
+            setText( getString(labelId) );
     }
     
     private int connTypeToPos( CommsAddrRec.CommsConnType typ )

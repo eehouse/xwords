@@ -52,7 +52,7 @@
               />
 
       <TextView style="@style/config_separator"
-                android:text="@string/players_label"
+                android:id="@+id/players_label"
                 />
 
     <!-- players -->

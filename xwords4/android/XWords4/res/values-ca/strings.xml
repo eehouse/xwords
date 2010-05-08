@@ -142,7 +142,9 @@
     <string name="password_label">Contrasenya (s\'ignora)</string>
     <string name="player_edit_title">Jugador</string>
 
-    <string name="players_label">Jugadors</string>
+    <string name="players_label_standalone">Jugadors</string>
+    <string name="players_label_host">Jugadors</string>
+    <string name="players_label_guest">Jugadors</string>
     <string name="button_add_player">Afegeix un jugador</string>
 
     <string name="game_config_juggle">Remena les posicions de joc</string>
