@@ -30,7 +30,4 @@
             android:layout_toRightOf="@+id/state"
 	        android:gravity="right"
             />
-
-
-
 </RelativeLayout>
