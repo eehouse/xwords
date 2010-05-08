@@ -31,5 +31,20 @@
               android:textAppearance="?android:attr/textAppearanceMedium"
               />
 
+    <TextView android:id="@+id/room_edit_hint_host"
+              android:text="@string/room_edit_hint_host"
+              style="@style/role_config_hint"
+              />
+
+    <TextView android:id="@+id/room_edit_hint_guest"
+              android:text="@string/room_edit_hint_guest"
+              style="@style/role_config_hint"
+              />
+
+    <TextView android:id="@+id/room_edit_hint_connect"
+              android:text="@string/room_edit_hint_connect"
+              style="@style/role_config_hint"
+              />
+
   </LinearLayout>
 </ScrollView>

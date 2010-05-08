@@ -87,6 +87,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private boolean m_canDoBT = false;
     private int m_nMoves = 0;
     private CommsAddrRec.CommsConnType[] m_types;
+    private String[] m_connStrings;
 
     class RemoteChoices extends XWListAdapter {
         public RemoteChoices() { super( GameConfig.this, m_gi.nPlayers ); }
@@ -222,6 +223,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         case ROLE_EDIT_RELAY:
         case ROLE_EDIT_SMS:
         case ROLE_EDIT_BT:
+            setRoleHints( id, dialog );
             setRoleSettings();
             break;
         case FORCE_REMOTE:
@@ -272,6 +274,37 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         Utils.setChecked( m_curDialog, R.id.robot_check, lp.isRobot );
         Utils.setChecked( m_curDialog, R.id.remote_check, ! lp.isLocal );
+    }
+
+    private void setRoleHints( int id, Dialog dialog )
+    {
+        int[] guestHints = null;
+        int[] hostHints = null;
+        switch( id ) {
+        case ROLE_EDIT_RELAY:
+            // Can these be in an array in a resource?
+            guestHints = new int[] { R.id.room_edit_hint_guest };
+            hostHints = new int[] { R.id.room_edit_hint_host };
+            break;
+        case ROLE_EDIT_SMS:
+        case ROLE_EDIT_BT:
+        }
+
+        DeviceRole role = m_gi.serverRole;
+        if ( null != guestHints ) {
+            for ( int hintID : guestHints ) {
+                View view = dialog.findViewById( hintID );
+                view.setVisibility( DeviceRole.SERVER_ISCLIENT == role ?
+                                    View.VISIBLE : View.GONE );
+            }
+        }
+        if ( null != hostHints ) {
+            for ( int hintID : hostHints ) {
+                View view = dialog.findViewById( hintID );
+                view.setVisibility( DeviceRole.SERVER_ISSERVER == role ?
+                                    View.VISIBLE : View.GONE );
+            }
+        }
     }
 
     private void setRoleSettings()
@@ -606,14 +639,36 @@ public class GameConfig extends Activity implements View.OnClickListener {
     private void configConnectSpinner()
     {
         m_connectSpinner = (Spinner)findViewById( R.id.connect_spinner );
+        m_connStrings = makeXportStrings();
         ArrayAdapter<String> adapter = 
             new ArrayAdapter<String>( this,
                                       android.R.layout.simple_spinner_item,
-                                      makeXportStrings() );
+                                      m_connStrings );
         adapter.setDropDownViewResource( android.R.layout
                                          .simple_spinner_dropdown_item );
         m_connectSpinner.setAdapter( adapter );
         m_connectSpinner.setSelection( connTypeToPos( m_car.conType ) );
+        AdapterView.OnItemSelectedListener
+            lstnr = new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parentView, 
+                                               View selectedItemView, 
+                                               int position, 
+                                               long id ) 
+                    {
+                        String fmt = getString( R.string.configure_rolef );
+                        m_configureButton
+                            .setText( String.format( fmt, 
+                                                     m_connStrings[position] ));
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parentView) 
+                    {
+                    }
+                };
+        m_connectSpinner.setOnItemSelectedListener( lstnr );
+
     } // configConnectSpinner
 
     private void adjustVisibility()

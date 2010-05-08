@@ -163,7 +163,7 @@
     <string name="role_label">Device role</string>
     <string name="connection_label">Connection</string>
 
-    <string name="configure_role">Configure connection</string>
+    <string name="configure_rolef">Configure %s connection</string>
     <string name="settings_label">Game settings</string>
     <string name="minutes_label">Minutes in game</string>
 
@@ -202,6 +202,16 @@
     <string name="role_guest">Guest</string>
     <string name="role_prompt">Standalone if all players are on this
     device; otherwise Host a game or be a Guest.</string>
+
+    <string name="room_edit_hint_host">As host, you name the room you
+    and your guests will use.  You must connect before any guests to
+    establish the room on the relay.</string>
+    <string name="room_edit_hint_guest">As a guest, you enter the room
+    name chosen by the host.  You should wait to connect until the
+    host has done so.</string>
+    <string name="room_edit_hint_connect">(Connecting happens
+    automatically when you open a game that is configured to use the
+    relay.)</string>
 
     <string name="phonies_ignore">Ignore phonies</string>
     <string name="phonies_warn">Warn if phonies</string>
