@@ -34,6 +34,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String NUM_MOVES = "NUM_MOVES";
     public static final String GAME_OVER = "GAME_OVER";
     public static final String SCORES = "SCORES";
+    // GAMEID: this isn't used yet but we'll want it to look up games
+    // for which messages arrive.  Add now while changing the DB
+    // format
+    public static final String GAMEID = "GAMEID";
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String CONTYPE = "CONTYPE";
     public static final String ROOMNAME = "ROOMNAME";
@@ -57,6 +61,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     + ROOMNAME   + " TEXT,"
                     + SMSPHONE   + " TEXT,"
                     + SCORES     + " TEXT,"
+                    + GAMEID     + " INTEGER,"
 
                     + SNAPSHOT   + " BLOB"
                     + ");" );
