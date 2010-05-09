@@ -251,16 +251,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
     @Override
     protected void onStart()
     {
-        Utils.logf( "onStart" );
-        loadGame();
+        Utils.logf( "BoardActivity::onStart" );
         super.onStart();
     }
 
     @Override
     protected void onRestart()
     {
-        Utils.logf( "onRestart" );
-        // loadGame(); supposedly onRestart is always followed by onStart
+        Utils.logf( "BoardActivity::onRestart" );
         super.onRestart();
     }
 
@@ -295,6 +293,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
     }
 
     @Override
+    protected void onResume()
+    {
+        Utils.logf( "BoardActivity::onResume()" );
+        loadGame();
+        super.onResume();
+    }
+
+    @Override
     protected void onStop()
     {
         Utils.logf( "BoardActivity::onStop()" );
@@ -325,7 +331,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     }
 
     @Override
-    public void  onConfigurationChanged( Configuration newConfig )
+    public void onConfigurationChanged( Configuration newConfig )
     {
         m_currentOrient = newConfig.orientation;
         super.onConfigurationChanged( newConfig );
@@ -448,7 +454,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( handled && cmd != JNIThread.JNICmd.CMD_NONE ) {
             m_jniThread.handle( cmd );
         }
-
         return handled;
     }
 
@@ -554,13 +559,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
 
     private void loadGame()
     {
-        if ( 0 != m_jniGamePtr ) {
-            m_view.invalidate();
-        } else {
+        if ( 0 == m_jniGamePtr ) {
             byte[] stream = Utils.savedGame( this, m_path );
             XwJNI.gi_from_stream( m_gi, stream );
 
-            Utils.logf( "dict name: " + m_gi.dictName );
+            Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
             byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
             if ( null == dictBytes ) {
                 Assert.fail();
