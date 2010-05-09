@@ -55,7 +55,7 @@ import android.database.Cursor;
 import org.eehouse.android.xw4.jni.*;
 
 public class Utils {
-    static final String TAG = "EJAVA";
+    static final String TAG = "XW4";
 
     static final int DIALOG_ABOUT = 1;
     static final int DIALOG_LAST = DIALOG_ABOUT;
@@ -66,14 +66,16 @@ public class Utils {
 
     private Utils() {}
 
-    public static void logf( String format ) {
+    public static void logf( String msg ) 
+    {
         s_time.setToNow();
-        String time = s_time.format("%M:%S");
+        String time = s_time.format("%H:%M:%S");
         long id = Thread.currentThread().getId();
-        Log.d( TAG, time + "-" + id + "-" + format );
+        Log.d( TAG, time + "-" + id + "-" + msg );
     } // logf
 
-    public static void logf( String format, Object... args ) {
+    public static void logf( String format, Object... args )
+    {
         Formatter formatter = new Formatter();
         logf( formatter.format( format, args ).toString() );
     } // logf
