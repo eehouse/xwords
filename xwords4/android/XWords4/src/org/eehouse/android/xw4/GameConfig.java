@@ -572,15 +572,13 @@ public class GameConfig extends Activity implements View.OnClickListener {
                     }
                 } );
             m_playerLayout.addView( view );
-            Utils.logf( "view.isFocusableInTouchMode()=>" + 
-                        (view.isFocusableInTouchMode()?"true":"false" ) );
         }
 
         if ( DeviceRole.SERVER_ISSERVER == m_gi.serverRole
              && 0 == m_gi.remoteCount() ) {
             showDialog( FORCE_REMOTE );
         }
-    }
+    } // loadPlayers
 
     private int listAvailableDicts( String curDict )
     {
