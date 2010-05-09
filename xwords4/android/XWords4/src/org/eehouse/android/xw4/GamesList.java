@@ -108,7 +108,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
 
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, false );
-        CommonPrefs.setContext( this );
+        CommonPrefs.setContext( getApplicationContext() );
 
         setContentView(R.layout.game_list);
 
