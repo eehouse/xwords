@@ -25,6 +25,7 @@ import android.content.Context;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
 
 public class CurGameInfo {
@@ -60,7 +61,7 @@ public class CurGameInfo {
         boardSize = CommonPrefs.getDefaultBoardSize( context );
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = DeviceRole.SERVER_STANDALONE;
-        dictName = Utils.dictList( context )[0];
+        dictName = GameUtils.dictList( context )[0];
         hintsNotAllowed = false;
         phoniesAction = XWPhoniesChoice.PHONIES_IGNORE;
         timerEnabled = false;

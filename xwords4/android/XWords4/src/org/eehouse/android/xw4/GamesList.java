@@ -73,8 +73,8 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             DialogInterface.OnClickListener lstnr = 
                 new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        for( String game : Utils.gamesList( GamesList.this ) ) {
-                            Utils.deleteGame( GamesList.this, game  );
+                        for( String game:GameUtils.gamesList(GamesList.this)) {
+                            GameUtils.deleteGame( GamesList.this, game  );
                         }
                         m_adapter = new GameListAdapter( GamesList.this );
                         setListAdapter( m_adapter );
@@ -153,14 +153,14 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             return false;
         }
 
-        String path = Utils.gamesList( this )[info.position];
+        String path = GameUtils.gamesList( this )[info.position];
         int id = item.getItemId();
 
         if ( R.id.list_item_delete == id ) {
-            Utils.deleteGame( this, path );
+            GameUtils.deleteGame( this, path );
         } else {
             String[] missingName = new String[1];
-            boolean hasDict = Utils.gameDictHere( this, path, missingName );
+            boolean hasDict = GameUtils.gameDictHere( this, path, missingName );
             if ( !hasDict ) {
                 m_missingDict = missingName[0];
                 showDialog( WARN_NODICT );
@@ -170,19 +170,19 @@ public class GamesList extends ListActivity implements View.OnClickListener {
                     doConfig( path );
                     break;
                 case R.id.list_item_delete:
-                    Utils.deleteGame( this, path );
+                    GameUtils.deleteGame( this, path );
                     break;
 
                 case R.id.list_item_reset:
-                    Utils.resetGame( this, path, path );
+                    GameUtils.resetGame( this, path, path );
                     break;
                 case R.id.list_item_new_from:
-                    String newName = Utils.resetGame( this, path );  
+                    String newName = GameUtils.resetGame( this, path );  
                     break;
 
                 case R.id.list_item_copy:
-                    stream = Utils.savedGame( this, path );
-                    newName = Utils.saveGame( this, stream );
+                    stream = GameUtils.savedGame( this, path );
+                    newName = GameUtils.saveGame( this, stream );
                     DBUtils.saveSummary( newName, DBUtils.getSummary( this, path ) );
                     break;
 
@@ -223,7 +223,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
 
         switch (item.getItemId()) {
         case R.id.gamel_menu_delete_all:
-            if ( Utils.gamesList( this ).length > 0 ) {
+            if ( GameUtils.gamesList( this ).length > 0 ) {
                 showDialog( CONFIRM_DELETE_ALL );
             }
             handled = true;
@@ -262,11 +262,11 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     protected void onListItemClick(ListView l, View v, int position, long id) 
     {
         String[] missingDict = new String[1];
-        if ( ! Utils.gameDictHere( this, position, missingDict ) ) {
+        if ( ! GameUtils.gameDictHere( this, position, missingDict ) ) {
             m_missingDict = missingDict[0];
             showDialog( WARN_NODICT );
         } else {
-            String path = Utils.gamesList(this)[position];
+            String path = GameUtils.gamesList(this)[position];
             File file = new File( path );
             Uri uri = Uri.fromFile( file );
             Intent intent = new Intent( Intent.ACTION_EDIT, uri,
@@ -288,7 +288,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
     {
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            Utils.saveGame( this, bytes );
+            GameUtils.saveGame( this, bytes );
         } else {
             Utils.logf( "gi_to_stream=>null" );
         }

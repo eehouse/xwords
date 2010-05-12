@@ -39,7 +39,7 @@ public class GameListAdapter extends XWListAdapter {
     int m_layoutId;
 
     public GameListAdapter( Context context ) {
-        super( context, Utils.gamesList(context).length );
+        super( context, GameUtils.gamesList(context).length );
         m_context = context;
         m_factory = LayoutInflater.from( context );
 
@@ -53,14 +53,14 @@ public class GameListAdapter extends XWListAdapter {
     }
     
     public int getCount() {
-        return Utils.gamesList(m_context).length;
+        return GameUtils.gamesList(m_context).length;
     }
     
     public Object getItem( int position ) 
     {
         final View layout = m_factory.inflate( m_layoutId, null );
 
-        String path = Utils.gamesList(m_context)[position];
+        String path = GameUtils.gamesList(m_context)[position];
         byte[] stream = open( path );
         if ( null != stream ) {
             CurGameInfo gi = new CurGameInfo( m_context );
@@ -69,7 +69,7 @@ public class GameListAdapter extends XWListAdapter {
             GameSummary summary = DBUtils.getSummary( m_context, path );
 
             TextView view = (TextView)layout.findViewById( R.id.players );
-            String gameName = Utils.gameName( m_context, path );
+            String gameName = GameUtils.gameName( m_context, path );
             view.setText( String.format( "%s: %s", gameName,
                                          gi.summarizePlayers( m_context, 
                                                               summary ) ) );

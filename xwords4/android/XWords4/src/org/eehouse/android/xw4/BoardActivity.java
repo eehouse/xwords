@@ -283,7 +283,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             GameSummary summary = new GameSummary();
             XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
             byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
-            Utils.saveGame( this, state, m_path );
+            GameUtils.saveGame( this, state, m_path );
             DBUtils.saveSummary( m_path, summary );
 
             XwJNI.game_dispose( m_jniGamePtr );
@@ -560,11 +560,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private void loadGame()
     {
         if ( 0 == m_jniGamePtr ) {
-            byte[] stream = Utils.savedGame( this, m_path );
+            byte[] stream = GameUtils.savedGame( this, m_path );
             XwJNI.gi_from_stream( m_gi, stream );
 
             Utils.logf( "loadGame: dict name: %s", m_gi.dictName );
-            byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
+            byte[] dictBytes = GameUtils.openDict( this, m_gi.dictName );
             if ( null == dictBytes ) {
                 Assert.fail();
                 finish();
@@ -632,7 +632,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 // check and disable zoom button at limit
                 m_jniThread.handle( JNICmd.CMD_ZOOM, 0 );
 
-                setTitle( Utils.gameName( this, m_path ) );
+                setTitle( GameUtils.gameName( this, m_path ) );
             }
         }
     } // loadGame

@@ -107,7 +107,7 @@ public class DictImportActivity extends Activity {
     private void saveDict( InputStream inputStream, String path )
     {
         try {
-            Utils.saveDict( this, basename(path), inputStream );
+            GameUtils.saveDict( this, basename(path), inputStream );
             inputStream.close();
         } catch ( java.io.IOException ioe ) {
             Utils.logf( "IOException: %s" + ioe.toString() );

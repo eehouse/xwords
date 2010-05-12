@@ -373,7 +373,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         int gamePtr = XwJNI.initJNI();
         m_giOrig = new CurGameInfo( this );
-        Utils.loadMakeGame( this, gamePtr, m_giOrig, m_path );
+        GameUtils.loadMakeGame( this, gamePtr, m_giOrig, m_path );
         m_nMoves = XwJNI.model_getNMoves( gamePtr );
         m_giOrig.setInProgress( 0 < m_nMoves );
         m_gi = new CurGameInfo( m_giOrig );
@@ -584,7 +584,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
     {
         int curSel = -1;
 
-        String[] list = Utils.dictList( this );
+        String[] list = GameUtils.dictList( this );
 
         m_browsePosition = list.length;
         m_dicts = new String[m_browsePosition+1];
@@ -791,12 +791,12 @@ public class GameConfig extends Activity implements View.OnClickListener {
         // somesuch.  But: do we have a way to save changes to a gi
         // that don't reset the game, e.g. player name for standalone
         // games?
-        byte[] dictBytes = Utils.openDict( this, m_gi.dictName );
+        byte[] dictBytes = GameUtils.openDict( this, m_gi.dictName );
         int gamePtr = XwJNI.initJNI();
         boolean madeGame = false;
 
         if ( !forceNew ) {
-            byte[] stream = Utils.savedGame( this, m_path );
+            byte[] stream = GameUtils.savedGame( this, m_path );
             // Will fail if there's nothing in the stream but a gi.
             madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                   JNIUtilsImpl.get(),
@@ -816,7 +816,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
             XwJNI.comms_setAddr( gamePtr, m_car );
         }
 
-        Utils.saveGame( this, gamePtr, m_gi, m_path );
+        GameUtils.saveGame( this, gamePtr, m_gi, m_path );
 
         GameSummary summary = new GameSummary();
         XwJNI.game_summarize( gamePtr, m_gi.nPlayers, summary );

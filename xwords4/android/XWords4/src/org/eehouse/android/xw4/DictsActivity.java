@@ -120,7 +120,7 @@ public class DictsActivity extends ListActivity
 
     private void mkListAdapter()
     {
-        m_dicts = Utils.dictList( this );
+        m_dicts = GameUtils.dictList( this );
         setListAdapter( new DictListAdapter( this ) );
     }
 
