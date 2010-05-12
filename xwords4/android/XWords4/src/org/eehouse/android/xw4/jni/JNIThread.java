@@ -31,6 +31,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.BoardDims;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class JNIThread extends Thread {
@@ -143,59 +144,35 @@ public class JNIThread extends Thread {
         Message.obtain( m_handler, DIALOG, titleArg, 0, text ).sendToTarget();
     }
 
-    private void doLayout( int width, int height, int nCells )
+    private void doLayout( BoardDims dims )
     {
-        int cellSize = width / nCells;
-
-        // If we're vertical, we can likely fit all the board and
-        // have a tall tray too.  If horizontal, let's assume
-        // that's so things will be big, and rather than make 'em
-        // small assume some scrolling.  So make the tray 1.5 to
-        // 2.5x a cell width in height and then scroll however
-        // many.
-
-        int trayHt = cellSize * 3;
-        int scoreHt = cellSize; // scoreboard ht same as cells for
-        // proportion
-        int wantHt = trayHt + scoreHt + (cellSize * nCells);
-        int nToScroll = 0;
-        if ( wantHt <= height ) {
-            
-        } else {
-            // 
-            nToScroll = nCells - ((height - (cellSize*3)) / cellSize);
-            Utils.logf( "nToScroll: " + nToScroll );
-            trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
-        }
-
-        int scoreWidth = width;
+        int scoreWidth = dims.width;
 
         if ( DeviceRole.SERVER_STANDALONE != m_gi.serverRole ) {
-            scoreWidth -= cellSize;
-            m_connsIconRect = new Rect( scoreWidth, 0,
-                                        scoreWidth + cellSize, cellSize );
+            scoreWidth -= dims.cellSize;
+            m_connsIconRect = 
+                new Rect( scoreWidth, 0, scoreWidth + dims.cellSize, 
+                          dims.cellSize );
         }
 
         if ( m_gi.timerEnabled ) {
             Paint paint = new Paint();
-            paint.setTextSize( scoreHt );
+            paint.setTextSize( dims.scoreHt );
             Rect rect = new Rect();
             paint.getTextBounds( "-00:00", 0, 6, rect );
             int timerWidth = rect.right;
             scoreWidth -= timerWidth;
             XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, timerWidth, 
-                                     scoreHt );
+                                     dims.scoreHt );
         } 
         XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
-                                      scoreHt, true );
+                                      dims.scoreHt, true );
 
-        XwJNI.board_setPos( m_jniGamePtr, 0, scoreHt, 
-                            width-1, ((nCells-nToScroll) * cellSize), 
-                            false );
+        XwJNI.board_setPos( m_jniGamePtr, 0, dims.scoreHt, 
+                            dims.width-1, dims.boardHt, false );
 
-        XwJNI.board_setTrayLoc( m_jniGamePtr, 0,
-                                scoreHt + ((nCells-nToScroll) * cellSize),
-                                width, trayHt, kMinDivWidth );
+        XwJNI.board_setTrayLoc( m_jniGamePtr, 0, dims.trayTop,
+                                dims.width-1, dims.trayHt, kMinDivWidth );
 
         XwJNI.board_invalAll( m_jniGamePtr );
     }
@@ -285,9 +262,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_LAYOUT:
-                doLayout( ((Integer)args[0]).intValue(),
-                          ((Integer)args[1]).intValue(),
-                          ((Integer)args[2]).intValue() );
+                doLayout( (BoardDims)args[0] );
                 draw = true;
                 break;
 

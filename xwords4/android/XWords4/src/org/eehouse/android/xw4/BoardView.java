@@ -113,23 +113,12 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private ZoomButtonsController m_zoomButtons;
     private boolean m_useZoomControl;
 
-    public BoardView( Context context ) 
-    {
-        super( context );
-        init( context );
-    }
-
     // called when inflating xml
     public BoardView( Context context, AttributeSet attrs ) 
     {
         super( context, attrs );
         init( context );
     }
-
-    // public boolean onClick( View view ) {
-    //     Utils.logf( "onClick called" );
-    //     return view == this;
-    // }
 
     public boolean onTouchEvent( MotionEvent event ) 
     {
@@ -238,6 +227,33 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         return m_useZoomControl ? 0 : m_top;
     }
 
+    private BoardDims figureBoardDims( int width, int height,
+                                       CurGameInfo gi )
+    {
+        BoardDims result = new BoardDims();
+        result.width = width;
+
+        int nCells = gi.boardSize;
+        int cellSize = width / nCells;
+        result.trayHt = cellSize * 3;
+        result.scoreHt = cellSize; // scoreHt same as cells for proportion
+        int wantHt = result.trayHt + result.scoreHt + (cellSize * nCells);
+        int nToScroll = 0;
+        if ( wantHt <= height ) {
+            result.top = (height - wantHt) / 2;
+        } else {
+            nToScroll = nCells - ((height - (cellSize*3)) / cellSize);
+            result.trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
+            result.top = 0;
+        }
+
+        result.boardHt = cellSize * (nCells-nToScroll);
+        result.trayTop = result.scoreHt + result.boardHt;
+        result.height = result.scoreHt + result.boardHt + result.trayHt;
+        result.cellSize = cellSize;
+        return result;
+    } // figureBoardDims
+
     private boolean layoutBoardOnce() 
     {
         final int width = getWidth();
@@ -252,39 +268,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_layoutHeight = height;
             m_fontDims = null; // force recalc of font
 
-            int nCells = m_gi.boardSize;
-            int cellSize = width / nCells;
-
-            // If we're vertical, we can likely fit all the board and
-            // have a tall tray too.  If horizontal, let's assume
-            // that's so things will be big, and rather than make 'em
-            // small assume some scrolling.  So make the tray 1.5 to
-            // 2.5x a cell width in height and then scroll however
-            // many.
-
-            int trayHt = cellSize * 3;
-            int scoreHt = cellSize; // scoreboard ht same as cells for
-                                    // proportion
-            int wantHt = trayHt + scoreHt + (cellSize * nCells);
-            int nToScroll = 0;
-            if ( wantHt <= height ) {
-                m_top = (height - wantHt) / 2;
-            } else {
-                // 
-                nToScroll = nCells - ((height - (cellSize*3)) / cellSize);
-                trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
-                m_top = 0;
-            }
-
-            m_bitmap = Bitmap.createBitmap( 1 + width,
-                                            1 + trayHt + scoreHt
-                                            + (cellSize *(nCells-nToScroll)),
+            BoardDims dims = figureBoardDims( width, height, m_gi );
+            m_top = dims.top;
+            
+            m_bitmap = Bitmap.createBitmap( 1 + dims.width,
+                                            1 + dims.height,
                                             Bitmap.Config.ARGB_8888 );
             m_canvas = new Canvas( m_bitmap );
 
             // need to synchronize??
-            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width,
-                                height, m_gi.boardSize );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, dims );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
             layoutDone = true;
         }
