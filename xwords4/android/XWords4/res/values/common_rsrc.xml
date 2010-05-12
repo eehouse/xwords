@@ -29,6 +29,8 @@
 
   <!-- other -->
   <string name="default_host">eehouse.org</string>
+  <string name="dict_url">http://eehouse.org/and_dicts</string>
+  <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
   <string-array name="board_sizes">
     <item>15x15</item>

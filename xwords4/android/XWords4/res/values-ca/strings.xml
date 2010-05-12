@@ -163,9 +163,6 @@
 
     <string name="download_dicts">Baixa\'n més...</string>
 
-    <string name="dict_url">http://eehouse.org/and_dicts</string>
-   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
-
     <string name="confirm_save_title">Confirmeu els canvis</string>
     <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
 
