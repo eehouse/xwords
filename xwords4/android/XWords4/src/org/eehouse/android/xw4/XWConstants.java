@@ -23,6 +23,6 @@ package org.eehouse.android.xw4;
 public interface XWConstants {
     public static final String GAME_EXTN = ".xwg";
     public static final String DICT_EXTN = ".xwd";
-    public static final String VERSION_STR = "4.4 beta 3";
+    public static final String VERSION_STR = "4.4 beta 4";
 
 }
