@@ -116,14 +116,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public BoardView( Context context ) 
     {
         super( context );
-        init();
+        init( context );
     }
 
     // called when inflating xml
     public BoardView( Context context, AttributeSet attrs ) 
     {
         super( context, attrs );
-        init();
+        init( context );
     }
 
     // public boolean onClick( View view ) {
@@ -179,7 +179,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         super.onDetachedFromWindow();
     }
 
-    private void init()
+    private void init( Context context )
     {
         m_drawPaint = new Paint();
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
@@ -202,7 +202,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         m_boundsScratch = new Rect();
 
-        CommonPrefs prefs = CommonPrefs.get();
+        CommonPrefs prefs = CommonPrefs.get(context);
         m_playerColors = prefs.playerColors;
         m_bonusColors = prefs.bonusColors;
         m_otherColors = prefs.otherColors;

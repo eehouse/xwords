@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import java.net.InetAddress;
+import android.content.Context;
 
 import org.eehouse.android.xw4.Utils;
 
@@ -49,12 +50,13 @@ public class CommsAddrRec {
     public String sms_phone;
     public int sms_port;                   // NBS port, if they still use those
 
-    public CommsAddrRec() {
+    public CommsAddrRec( Context context ) 
+    {
         Utils.logf( "CommsAddrRec() called " );
         conType = CommsConnType.COMMS_CONN_RELAY;
         ip_relay_invite = "Room 1";
-        ip_relay_hostName = CommonPrefs.getDefaultRelayHost();
-        ip_relay_port = CommonPrefs.getDefaultRelayPort();
+        ip_relay_hostName = CommonPrefs.getDefaultRelayHost( context );
+        ip_relay_port = CommonPrefs.getDefaultRelayPort( context );
     }
 
     public CommsAddrRec( final CommsAddrRec src ) 

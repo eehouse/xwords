@@ -57,7 +57,7 @@ public class CurGameInfo {
     public CurGameInfo( Context context ) {
         m_inProgress = false;
         nPlayers = 2;
-        boardSize = CommonPrefs.getDefaultBoardSize();
+        boardSize = CommonPrefs.getDefaultBoardSize( context );
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = DeviceRole.SERVER_STANDALONE;
         dictName = Utils.dictList( context )[0];

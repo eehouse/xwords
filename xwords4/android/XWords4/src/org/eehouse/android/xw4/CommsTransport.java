@@ -283,7 +283,7 @@ public class CommsTransport extends Thread implements TransportProcs {
 
         if ( null == m_addr ) {
             if ( null == faddr ) {
-                m_addr = new CommsAddrRec();
+                m_addr = new CommsAddrRec( m_context );
                 XwJNI.comms_getAddr( m_jniGamePtr, m_addr );
             } else {
                 m_addr = new CommsAddrRec( faddr );

@@ -236,7 +236,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         m_gi = new CurGameInfo( this );
 
         m_view = (BoardView)findViewById( R.id.board_view );
-        m_volKeysZoom = CommonPrefs.getVolKeysZoom();
+        m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
         m_view.setUseZoomControl( !m_volKeysZoom );
 
         Intent intent = getIntent();
@@ -321,7 +321,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         if ( hasFocus ) {
             if ( m_firingPrefs ) {
                 m_firingPrefs = false;
-                m_volKeysZoom = CommonPrefs.getVolKeysZoom();
+                m_volKeysZoom = CommonPrefs.getVolKeysZoom( this );
                 if ( null != m_jniThread ) {
                     m_jniThread.handle( JNIThread.JNICmd.CMD_PREFS_CHANGE );
                 }
@@ -592,7 +592,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                                   m_gi.serverRole );
                 }
 
-                CommonPrefs cp = CommonPrefs.get();
+                CommonPrefs cp = CommonPrefs.get( this );
                 if ( null == stream ||
                      ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                                   m_gi, dictBytes, 
@@ -604,7 +604,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 }
 
                 m_jniThread = new 
-                    JNIThread( m_jniGamePtr, m_gi, m_view,
+                    JNIThread( m_jniGamePtr, m_gi, m_view, this,
                                new Handler() {
                                    public void handleMessage( Message msg ) {
                                        switch( msg.what ) {

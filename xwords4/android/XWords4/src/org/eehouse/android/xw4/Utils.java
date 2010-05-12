@@ -145,7 +145,7 @@ public class Utils {
         byte[] dictBytes = Utils.openDict( context, gi.dictName );
         
         if ( XwJNI.game_hasComms( gamePtr ) ) {
-            addr = new CommsAddrRec();
+            addr = new CommsAddrRec( context );
             XwJNI.comms_getAddr( gamePtr, addr );
         }
         XwJNI.game_dispose( gamePtr );
@@ -155,7 +155,8 @@ public class Utils {
 
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                CommonPrefs.get(), dictBytes, gi.dictName );
+                                CommonPrefs.get( context ), dictBytes, 
+                                gi.dictName );
         if ( null != addr ) {
             XwJNI.comms_setAddr( gamePtr, addr );
         }
@@ -202,10 +203,11 @@ public class Utils {
         boolean madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                       JNIUtilsImpl.get(), gi, 
                                                       dictBytes, gi.dictName,
-                                                      CommonPrefs.get() );
+                                                      CommonPrefs.get(context));
         if ( !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(), 
-                                    CommonPrefs.get(), dictBytes, gi.dictName );
+                                    CommonPrefs.get(context), dictBytes, 
+                                    gi.dictName );
         }
     }
 
@@ -252,7 +254,6 @@ public class Utils {
 
         boolean exists = false;
         for ( String name : dictList( context ) ) {
-            logf( "comparing %s, %s", name, dictName );
             if ( name.equals( dictName ) ){
                 exists = true;
                 break;
@@ -377,7 +378,7 @@ public class Utils {
 
     public static Intent mkDownloadActivity( Context context )
     {
-        String dict_url = CommonPrefs.getDefaultDictURL();
+        String dict_url = CommonPrefs.getDefaultDictURL( context );
         Uri uri = Uri.parse( dict_url );
         Intent intent = new Intent( Intent.ACTION_VIEW, uri );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );

@@ -362,7 +362,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
         // } catch ( Exception ex ) {}
         // m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
 
-        m_cp = CommonPrefs.get();
+        m_cp = CommonPrefs.get( this );
 
         Intent intent = getIntent();
         Uri uri = intent.getData();
@@ -380,12 +380,12 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         int curSel = listAvailableDicts( m_gi.dictName );
 
-        m_carOrig = new CommsAddrRec();
+        m_carOrig = new CommsAddrRec( this );
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             XwJNI.comms_getAddr( gamePtr, m_carOrig );
         } else {
-            String relayName = CommonPrefs.getDefaultRelayHost();
-            int relayPort = CommonPrefs.getDefaultRelayPort();
+            String relayName = CommonPrefs.getDefaultRelayHost( this );
+            int relayPort = CommonPrefs.getDefaultRelayPort( this );
             XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
         }
         XwJNI.game_dispose( gamePtr );

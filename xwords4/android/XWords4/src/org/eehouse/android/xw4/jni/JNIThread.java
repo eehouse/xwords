@@ -22,6 +22,7 @@
 package org.eehouse.android.xw4.jni;
 
 import org.eehouse.android.xw4.Utils;
+import android.content.Context;
 import java.lang.InterruptedException;
 import java.util.concurrent.LinkedBlockingQueue;
 import android.os.Handler;
@@ -78,6 +79,7 @@ public class JNIThread extends Thread {
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
+    private Context m_context;
     private CurGameInfo m_gi;
     private Handler m_handler;
     private SyncedDraw m_drawer;
@@ -98,12 +100,13 @@ public class JNIThread extends Thread {
     }
 
     public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
-                      Handler handler ) 
+                      Context context, Handler handler ) 
     {
         m_jniGamePtr = gamePtr;
         m_gi = gi;
-        m_handler = handler;
         m_drawer = drawer;
+        m_context = context;
+        m_handler = handler;
 
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
@@ -317,7 +320,8 @@ public class JNIThread extends Thread {
                 // e.g. colors, aren't known by common code so
                 // board_prefsChanged's return value isn't enough.
                 XwJNI.board_invalAll( m_jniGamePtr );
-                XwJNI.board_prefsChanged( m_jniGamePtr, CommonPrefs.get() );
+                XwJNI.board_prefsChanged( m_jniGamePtr, 
+                                          CommonPrefs.get(m_context) );
                 draw = true;
                 break;
 
