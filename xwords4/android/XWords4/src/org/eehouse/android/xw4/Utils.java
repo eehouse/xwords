@@ -247,11 +247,12 @@ public class Utils {
         byte[] stream = savedGame( context, path );
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
-        String dictName = gi.dictName;
+        String dictName = removeExtn( gi.dictName );
         missingName[0] = dictName;
 
         boolean exists = false;
         for ( String name : dictList( context ) ) {
+            logf( "comparing %s, %s", name, dictName );
             if ( name.equals( dictName ) ){
                 exists = true;
                 break;
@@ -295,7 +296,7 @@ public class Utils {
             String[] files = am.list("");
             for ( String file : files ) {
                 if ( isDict( file ) ) {
-                    al.add( file );
+                    al.add( removeExtn( file ) );
                 }
             }
         } catch( java.io.IOException ioe ) {
@@ -304,17 +305,22 @@ public class Utils {
 
         for ( String file : context.fileList() ) {
             if ( isDict( file ) ) {
-                al.add( file );
+                al.add( removeExtn( file ) );
             }
         }
 
         return al.toArray( new String[al.size()] );
     }
 
-    public static byte[] openDict( Context context, final String name )
+    public static byte[] openDict( Context context, String name )
     {
         byte[] bytes = null;
         InputStream dict = null;
+
+        if ( ! name.endsWith( XWConstants.DICT_EXTN ) ) {
+            name += XWConstants.DICT_EXTN;
+        }
+
         AssetManager am = context.getAssets();
         try {
             dict = am.open( name, 
@@ -567,6 +573,15 @@ public class Utils {
             }
         }
         db.close();
+    }
+
+    private static String removeExtn( String str )
+    {
+        if ( str.endsWith( XWConstants.DICT_EXTN ) ) {
+            int indx = str.lastIndexOf( XWConstants.DICT_EXTN );
+            str = str.substring( 0, indx );
+        }
+        return str;
     }
 
 }
