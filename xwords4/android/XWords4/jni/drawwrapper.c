@@ -104,13 +104,14 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
     XP_ASSERT( !!draw->jdraw );                                 \
     jmethodID mid = getMethodID( env, draw->jdraw, nam, sig );
 
-static void 
+static XP_Bool
 and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect, 
                      XP_U16 numPlayers, 
                      const XP_S16* const scores,
                      XP_S16 remCount, DrawFocusState dfs )
 {
-    DRAW_CBK_HEADER("scoreBegin", "(Landroid/graphics/Rect;I[III)V" );
+    jboolean result;
+    DRAW_CBK_HEADER("scoreBegin", "(Landroid/graphics/Rect;I[III)Z" );
 
     jint jarr[numPlayers];
     int ii;
@@ -120,10 +121,12 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     jintArray jscores = makeIntArray( env, numPlayers, jarr );
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, numPlayers, jscores, remCount, dfs );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
+                                        jrect, numPlayers, jscores, remCount, 
+                                        dfs );
 
     (*env)->DeleteLocalRef( env, jscores );
+    return result;
 }
 
 static void 
