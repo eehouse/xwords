@@ -631,6 +631,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 m_jniThread.handle( JNICmd.CMD_START );
                 // check and disable zoom button at limit
                 m_jniThread.handle( JNICmd.CMD_ZOOM, 0 );
+
+                setTitle( Utils.gameName( this, m_path ) );
             }
         }
     } // loadGame
@@ -905,6 +907,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         m_jniThread.handle( JNIThread.JNICmd.CMD_POST_OVER );
     }
+
+    // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
+    // {
+    //     Utils.logf( "yOffsetChange(maxOffset=%d)", maxOffset );
+    //     m_view.setVerticalScrollBarEnabled( maxOffset > 0 );
+    // }
 
     public boolean warnIllegalWord( String[] words, int turn, boolean turnLost )
     {

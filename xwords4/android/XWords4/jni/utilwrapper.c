@@ -185,11 +185,11 @@ and_util_yOffsetChange(XW_UtilCtxt* uc, XP_U16 maxOffset,
 #if 0
     AndUtil* util = (AndUtil*)uc;
     JNIEnv* env = *util->env;
-    const char* sig = "(II)V";
+    const char* sig = "(III)V";
     jmethodID mid = getMethodID( env, util->jutil, "yOffsetChange", sig );
 
     (*env)->CallVoidMethod( env, util->jutil, mid, 
-                            oldOffset, newOffset );
+                            maxOffset, oldOffset, newOffset );
 #endif
 }
 

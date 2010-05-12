@@ -69,7 +69,10 @@ public class GameListAdapter extends XWListAdapter {
             GameSummary summary = Utils.getSummary( m_context, path );
 
             TextView view = (TextView)layout.findViewById( R.id.players );
-            view.setText( gi.summarizePlayers( m_context, summary ) );
+            String gameName = Utils.gameName( m_context, path );
+            view.setText( String.format( "%s: %s", gameName,
+                                         gi.summarizePlayers( m_context, 
+                                                              summary ) ) );
 
             view = (TextView)layout.findViewById( R.id.state );
             view.setText( gi.summarizeState( m_context, summary ) );

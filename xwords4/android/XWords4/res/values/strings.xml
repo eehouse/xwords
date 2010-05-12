@@ -313,4 +313,6 @@
 	<string name="green">Green</string>
 	<string name="blue">Blue</string>
 
+	<string name="gamef">Game %d</string>
+
 </resources>

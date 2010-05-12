@@ -272,12 +272,13 @@ public class Utils {
     public static String newName( Context context ) 
     {
         String name = null;
-        Integer num = 0;
+        Integer num = 1;
         int ii;
         String[] files = context.fileList();
+        String fmt = context.getString( R.string.gamef );
 
         while ( name == null ) {
-            name = "game " + num.toString() + XWConstants.GAME_EXTN;
+            name = String.format( fmt + XWConstants.GAME_EXTN, num );
             for ( ii = 0; ii < files.length; ++ii ) {
                 if ( files[ii].equals(name) ) {
                     ++num;
@@ -574,6 +575,11 @@ public class Utils {
             }
         }
         db.close();
+    }
+
+    public static String gameName( Context context, String path )
+    {
+        return path.substring( 0, path.lastIndexOf( XWConstants.GAME_EXTN ) );
     }
 
     private static String removeExtn( String str )
