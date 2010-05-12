@@ -48,9 +48,6 @@ import java.util.Formatter;
 import android.view.LayoutInflater;
 import android.net.Uri;
 import junit.framework.Assert;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.Cursor;
 
 import org.eehouse.android.xw4.jni.*;
 
@@ -62,7 +59,6 @@ public class Utils {
     static final String DB_PATH = "XW_GAMES";
 
     private static Time s_time = new Time();
-    private static SQLiteOpenHelper m_dbHelper = null;
 
     private Utils() {}
 
@@ -164,7 +160,7 @@ public class Utils {
 
         GameSummary summary = new GameSummary();
         XwJNI.game_summarize( gamePtr, gi.nPlayers, summary );
-        saveSummary( pathOut, summary );
+        DBUtils.saveSummary( pathOut, summary );
 
         XwJNI.game_dispose( gamePtr );
     } // resetGame
@@ -190,7 +186,7 @@ public class Utils {
     public static void deleteGame( Context context, String path )
     {
         context.deleteFile( path );
-        saveSummary( path, null );
+        DBUtils.saveSummary( path, null );
     }
 
     public static void loadMakeGame( Context context, int gamePtr, 
@@ -470,59 +466,6 @@ public class Utils {
         }
     }
 
-    public static GameSummary getSummary( Context context, String file )
-    {
-        initDB( context );
-
-        GameSummary summary = new GameSummary();
-        SQLiteDatabase db = m_dbHelper.getReadableDatabase();
-
-        String[] columns = { DBHelper.NUM_MOVES, DBHelper.GAME_OVER,
-                             DBHelper.CONTYPE, DBHelper.ROOMNAME,
-                             DBHelper.SMSPHONE, DBHelper.SCORES
-        };
-        String selection = DBHelper.FILE_NAME + "=\"" + file + "\"";
-
-        Cursor cursor = db.query( DBHelper.TABLE_NAME, columns, selection, 
-                                  null, null, null, null );
-        if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-            summary = new GameSummary();
-            summary.nMoves = cursor.getInt(cursor.
-                                           getColumnIndex(DBHelper.NUM_MOVES));
-            int tmp = cursor.getInt(cursor.
-                                    getColumnIndex(DBHelper.GAME_OVER));
-            summary.gameOver = tmp == 0 ? false : true;
-
-            String scoresStr = cursor.getString( cursor.
-                                                 getColumnIndex(DBHelper.SCORES));
-            StringTokenizer st = new StringTokenizer( scoresStr );
-            int[] scores = new int[st.countTokens()];
-            for ( int ii = 0; ii < scores.length; ++ii ) {
-                Assert.assertTrue( st.hasMoreTokens() );
-                String token = st.nextToken();
-                scores[ii] = Integer.parseInt( token );
-            }
-            summary.scores = scores;
-
-            int col = cursor.getColumnIndex( DBHelper.CONTYPE );
-            if ( col >= 0 ) {
-                tmp = cursor.getInt( col );
-                summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
-                col = cursor.getColumnIndex( DBHelper.ROOMNAME );
-                if ( col >= 0 ) {
-                    summary.roomName = cursor.getString( col );
-                }
-                col = cursor.getColumnIndex( DBHelper.SMSPHONE );
-                if ( col >= 0 ) {
-                    summary.smsPhone = cursor.getString( col );
-                }
-            }
-        }
-        cursor.close();
-        db.close();
-        return summary;
-    }
-
     private static boolean isGame( String file )
     {
         return file.endsWith( XWConstants.GAME_EXTN );
@@ -531,50 +474,6 @@ public class Utils {
     private static boolean isDict( String file )
     {
         return file.endsWith( XWConstants.DICT_EXTN );
-    }
-
-    private static void initDB( Context context )
-    {
-        if ( null == m_dbHelper ) {
-            m_dbHelper = new DBHelper( context );
-        }
-    }
-
-    public static void saveSummary( String path, GameSummary summary )
-    {
-        SQLiteDatabase db = m_dbHelper.getWritableDatabase();
-
-        if ( null == summary ) {
-            String selection = DBHelper.FILE_NAME + "=\"" + path + "\"";
-            db.delete( DBHelper.TABLE_NAME, selection, null );
-        } else {
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.FILE_NAME, path );
-            values.put( DBHelper.NUM_MOVES, summary.nMoves );
-            values.put( DBHelper.GAME_OVER, summary.gameOver );
-
-            StringBuffer sb = new StringBuffer();
-            for ( int score : summary.scores ) {
-                sb.append( String.format( "%d ", score ) );
-            }
-            values.put( DBHelper.SCORES, sb.toString() );
-
-            if ( null != summary.conType ) {
-                values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
-                Utils.logf( "wrote CONTYPE" );
-                values.put( DBHelper.ROOMNAME, summary.roomName );
-                values.put( DBHelper.SMSPHONE, summary.smsPhone );
-            }
-
-            Utils.logf( "saveSummary: nMoves=%d", summary.nMoves );
-
-            try {
-                long result = db.replaceOrThrow( DBHelper.TABLE_NAME, "", values );
-            } catch ( Exception ex ) {
-                Utils.logf( "ex: %s", ex.toString() );
-            }
-        }
-        db.close();
     }
 
     public static String gameName( Context context, String path )

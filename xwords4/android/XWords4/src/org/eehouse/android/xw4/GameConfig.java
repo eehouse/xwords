@@ -820,7 +820,7 @@ public class GameConfig extends Activity implements View.OnClickListener {
 
         GameSummary summary = new GameSummary();
         XwJNI.game_summarize( gamePtr, m_gi.nPlayers, summary );
-        Utils.saveSummary( m_path, summary );
+        DBUtils.saveSummary( m_path, summary );
 
         XwJNI.game_dispose( gamePtr );
     }

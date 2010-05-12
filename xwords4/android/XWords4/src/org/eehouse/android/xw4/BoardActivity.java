@@ -284,7 +284,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
             byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
             Utils.saveGame( this, state, m_path );
-            Utils.saveSummary( m_path, summary );
+            DBUtils.saveSummary( m_path, summary );
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;

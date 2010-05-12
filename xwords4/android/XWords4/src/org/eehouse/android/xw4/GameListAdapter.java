@@ -66,7 +66,7 @@ public class GameListAdapter extends XWListAdapter {
             CurGameInfo gi = new CurGameInfo( m_context );
             XwJNI.gi_from_stream( gi, stream );
 
-            GameSummary summary = Utils.getSummary( m_context, path );
+            GameSummary summary = DBUtils.getSummary( m_context, path );
 
             TextView view = (TextView)layout.findViewById( R.id.players );
             String gameName = Utils.gameName( m_context, path );

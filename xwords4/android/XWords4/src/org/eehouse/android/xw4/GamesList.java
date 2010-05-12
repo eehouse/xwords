@@ -183,7 +183,7 @@ public class GamesList extends ListActivity implements View.OnClickListener {
                 case R.id.list_item_copy:
                     stream = Utils.savedGame( this, path );
                     newName = Utils.saveGame( this, stream );
-                    Utils.saveSummary( newName, Utils.getSummary( this, path ) );
+                    DBUtils.saveSummary( newName, DBUtils.getSummary( this, path ) );
                     break;
 
                     // These require some notion of predictable sort order.
