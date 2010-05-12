@@ -136,10 +136,10 @@ typedef struct DrawCtxVTable {
                                         const XP_Rect* rOuter, 
                                         XP_S16 nTilesLeft, XP_Bool focussed );
 
-    void DRAW_VTABLE_NAME(scoreBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                        XP_U16 numPlayers, 
-                                        const XP_S16* const scores,
-                                        XP_S16 remCount, DrawFocusState dfs );
+    XP_Bool DRAW_VTABLE_NAME(scoreBegin) ( DrawCtx* dctx, const XP_Rect* rect, 
+                                           XP_U16 numPlayers, 
+                                           const XP_S16* const scores,
+                                           XP_S16 remCount, DrawFocusState dfs );
     void DRAW_VTABLE_NAME(measureScoreText) ( DrawCtx* dctx, 
                                               const XP_Rect* r, 
                                               const DrawScoreInfo* dsi,

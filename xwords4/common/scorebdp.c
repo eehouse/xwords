@@ -103,138 +103,144 @@ drawScoreBoard( BoardCtxt* board )
                 }
             }
 
-            draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
-                             scores.arr, nTilesInPool, 
-                             dfsFor( board, OBJ_SCORE ) );
+            if ( draw_scoreBegin( board->draw, &board->scoreBdBounds, nPlayers, 
+                                  scores.arr, nTilesInPool, 
+                                  dfsFor( board, OBJ_SCORE ) ) ) {
 
-            /* Let platform decide whether the rem: string should be given any
-               space once there are no tiles left.  On Palm that space is
-               clickable to drop a menu, so will probably leave it. */
-            draw_measureRemText( board->draw, &board->scoreBdBounds, 
-                                 nTilesInPool, &remWidth, &remHeight );
-            XP_ASSERT( remWidth <= board->scoreBdBounds.width );
-            XP_ASSERT( remHeight <= board->scoreBdBounds.height );
-            remDim = isVertical? remHeight : remWidth;
+                /* Let platform decide whether the rem: string should be given
+                   any space once there are no tiles left.  On Palm that space
+                   is clickable to drop a menu, so will probably leave it. */
+                draw_measureRemText( board->draw, &board->scoreBdBounds, 
+                                     nTilesInPool, &remWidth, &remHeight );
+                XP_ASSERT( remWidth <= board->scoreBdBounds.width );
+                XP_ASSERT( remHeight <= board->scoreBdBounds.height );
+                remDim = isVertical? remHeight : remWidth;
 
-            if ( isVertical ) {
-                adjustPt = &scoreRect.top;
-                adjustDim = &scoreRect.height;
-            } else {
-                adjustPt = &scoreRect.left;
-                adjustDim = &scoreRect.width;
-            }
-            *adjustDim -= remDim;
+                if ( isVertical ) {
+                    adjustPt = &scoreRect.top;
+                    adjustDim = &scoreRect.height;
+                } else {
+                    adjustPt = &scoreRect.left;
+                    adjustDim = &scoreRect.width;
+                }
+                *adjustDim -= remDim;
 
-            totalDim = remDim;
+                totalDim = remDim;
 
-            /* Give as much room as possible to the entry for the player whose
-               turn it is so name can be drawn.  Do that by formatting that
-               player's score last, and passing each time the amount of space
-               left.  Platform code can then fill that space.
-            */
+                /* Give as much room as possible to the entry for the player
+                   whose turn it is so name can be drawn.  Do that by
+                   formatting that player's score last, and passing each time
+                   the amount of space left.  Platform code can then fill that
+                   space.
+                */
 
-            /* figure spacing for each scoreboard entry */
-            XP_MEMSET( &datum, 0, sizeof(datum) );
-            for ( skipCurTurn = XP_TRUE; ; skipCurTurn = XP_FALSE ) {
-                for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
-                    LocalPlayer* lp;
-                    XP_U16 dim;
+                /* figure spacing for each scoreboard entry */
+                XP_MEMSET( &datum, 0, sizeof(datum) );
+                for ( skipCurTurn = XP_TRUE; ; skipCurTurn = XP_FALSE ) {
+                    for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
+                        LocalPlayer* lp;
+                        XP_U16 dim;
 
-                    if ( skipCurTurn == (ii == curTurn) ) {
-                        continue;
+                        if ( skipCurTurn == (ii == curTurn) ) {
+                            continue;
+                        }
+
+                        lp = &board->gi->players[ii];
+
+                        /* This is a hack! */
+                        dp->dsi.lsc = board_ScoreCallback;
+                        dp->dsi.lscClosure = model;
+#ifdef KEYBOARD_NAV
+                        if ( (ii == cursorIndex) || focusAll ) {
+                            dp->dsi.flags |= CELL_ISCURSOR;
+                        }
+#endif
+                        dp->dsi.playerNum = ii;
+                        dp->dsi.totalScore = scores.arr[ii];
+                        dp->dsi.isTurn = (ii == curTurn);
+                        dp->dsi.name = emptyStringIfNull(lp->name);
+                        dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
+                            && ii==selPlayer;
+                        dp->dsi.isRobot = lp->isRobot;
+                        dp->dsi.isRemote = !lp->isLocal;
+                        dp->dsi.nTilesLeft = (nTilesInPool > 0)? -1:
+                            model_getNumTilesTotal( model, ii );
+
+                        draw_measureScoreText( board->draw, &scoreRect,
+                                               &dp->dsi, &dp->width, 
+                                               &dp->height );
+
+                        XP_ASSERT( dp->width <= scoreRect.width );
+                        XP_ASSERT( dp->height <= scoreRect.height );
+                        dim = isVertical ? dp->height : dp->width;
+                        totalDim += dim;
+                        *adjustDim -= dim;
                     }
 
-                    lp = &board->gi->players[ii];
+                    if ( !skipCurTurn ) { /* exit 2nd time through */
+                        break;
+                    }
+                }
 
-                    /* This is a hack! */
-                    dp->dsi.lsc = board_ScoreCallback;
-                    dp->dsi.lscClosure = model;
+                scoreRect = board->scoreBdBounds; /* reset */
+
+                /* break extra space into chunks, one to follow REM and
+                   another to preceed the timer, and then one for each player.
+                   Generally the player's score will be centered in the rect
+                   it's given, so in effect we're putting half the chunk on
+                   either side.  The goal here is for the scores to be closer
+                   to each other than they are to the rem: string and timer on
+                   the ends. */
+                XP_ASSERT( *adjustDim >= totalDim ); /* ???? */
+                extra = (*adjustDim - totalDim) / nPlayers;
+
+                /* at this point, the scoreRect should be anchored at the
+                   scoreboard rect's upper left.  */
+
+                if ( remDim > 0 ) {
+                    XP_Rect innerRect;
+                    *adjustDim = remDim;
+                    centerIn( &innerRect, &scoreRect, remWidth, remHeight );
+                    draw_drawRemText( board->draw, &innerRect, &scoreRect, 
+                                      nTilesInPool, focusAll || remFocussed );
+                    board->remRect = scoreRect;
+                    *adjustPt += remDim;
 #ifdef KEYBOARD_NAV
-                    if ( (ii == cursorIndex) || focusAll ) {
-                        dp->dsi.flags |= CELL_ISCURSOR;
+                    /* Hack: don't let the cursor disappear if Rem: goes
+                       away */
+                } else if ( board->scoreCursorLoc == CURSOR_LOC_REM ) {
+                    board->scoreCursorLoc = selPlayer + 1;
+#endif
+                }
+
+                board->remDim = remDim;
+
+                for ( dp = datum, ii = 0; ii < nPlayers; ++dp, ++ii ) {
+                    XP_Rect innerRect;
+                    XP_U16 dim = isVertical? dp->height:dp->width;
+                    *adjustDim = board->pti[ii].scoreDims = dim + extra;
+
+                    centerIn( &innerRect, &scoreRect, dp->width, dp->height );
+                    draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
+                                           &dp->dsi );
+#ifdef KEYBOARD_NAV
+                    XP_MEMCPY( &board->pti[ii].scoreRects, &scoreRect, 
+                               sizeof(scoreRect) );
+                    if ( ii == cursorIndex ) {
+                        cursorRect = scoreRect;
+                        cursorRectP = &cursorRect;
                     }
 #endif
-                    dp->dsi.playerNum = ii;
-                    dp->dsi.totalScore = scores.arr[ii];
-                    dp->dsi.isTurn = (ii == curTurn);
-                    dp->dsi.name = emptyStringIfNull(lp->name);
-                    dp->dsi.selected = board->trayVisState != TRAY_HIDDEN
-                        && ii==selPlayer;
-                    dp->dsi.isRobot = lp->isRobot;
-                    dp->dsi.isRemote = !lp->isLocal;
-                    dp->dsi.nTilesLeft = (nTilesInPool > 0)? -1:
-                        model_getNumTilesTotal( model, ii );
-
-                    draw_measureScoreText( board->draw, &scoreRect,
-                                           &dp->dsi, &dp->width, &dp->height );
-
-                    XP_ASSERT( dp->width <= scoreRect.width );
-                    XP_ASSERT( dp->height <= scoreRect.height );
-                    dim = isVertical ? dp->height : dp->width;
-                    totalDim += dim;
-                    *adjustDim -= dim;
+                    *adjustPt += *adjustDim;
                 }
 
-                if ( !skipCurTurn ) { /* exit 2nd time through */
-                    break;
-                }
+                draw_objFinished( board->draw, OBJ_SCORE, 
+                                  &board->scoreBdBounds, 
+                                  dfsFor( board, OBJ_SCORE ) );
+
+                board->scoreBoardInvalid = XP_FALSE;
             }
-
-            scoreRect = board->scoreBdBounds; /* reset */
-
-            /* break extra space into chunks, one to follow REM and another to
-               preceed the timer, and then one for each player.  Generally the
-               player's score will be centered in the rect it's given, so in
-               effect we're putting half the chunk on either side.  The goal
-               here is for the scores to be closer to each other than they are
-               to the rem: string and timer on the ends. */
-            XP_ASSERT( *adjustDim >= totalDim ); /* ???? */
-            extra = (*adjustDim - totalDim) / nPlayers;
-
-            /* at this point, the scoreRect should be anchored at the
-               scoreboard rect's upper left.  */
-
-            if ( remDim > 0 ) {
-                XP_Rect innerRect;
-                *adjustDim = remDim;
-                centerIn( &innerRect, &scoreRect, remWidth, remHeight );
-                draw_drawRemText( board->draw, &innerRect, &scoreRect, 
-                                  nTilesInPool, focusAll || remFocussed );
-                board->remRect = scoreRect;
-                *adjustPt += remDim;
-#ifdef KEYBOARD_NAV
-                /* Hack: don't let the cursor disappear if Rem: goes away */
-            } else if ( board->scoreCursorLoc == CURSOR_LOC_REM ) {
-                board->scoreCursorLoc = selPlayer + 1;
-#endif
-            }
-
-            board->remDim = remDim;
-
-            for ( dp = datum, ii = 0; ii < nPlayers; ++dp, ++ii ) {
-                XP_Rect innerRect;
-                XP_U16 dim = isVertical? dp->height:dp->width;
-                *adjustDim = board->pti[ii].scoreDims = dim + extra;
-
-                centerIn( &innerRect, &scoreRect, dp->width, dp->height );
-                draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
-                                       &dp->dsi );
-#ifdef KEYBOARD_NAV
-                XP_MEMCPY( &board->pti[ii].scoreRects, &scoreRect, 
-                           sizeof(scoreRect) );
-                if ( ii == cursorIndex ) {
-                    cursorRect = scoreRect;
-                    cursorRectP = &cursorRect;
-                }
-#endif
-                *adjustPt += *adjustDim;
-            }
-
-            draw_objFinished( board->draw, OBJ_SCORE, &board->scoreBdBounds, 
-                              dfsFor( board, OBJ_SCORE ) );
         }
-
-        board->scoreBoardInvalid = XP_FALSE;
     }
 
     drawTimer( board );
