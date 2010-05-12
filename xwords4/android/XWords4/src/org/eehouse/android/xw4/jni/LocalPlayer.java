@@ -30,7 +30,7 @@ public class LocalPlayer {
     public LocalPlayer( int num )
     {
         isLocal = true;
-        isRobot = num == 1;     // 2nd player is a robot by default
+        isRobot = num == 0;     // 1st player is a robot by default
         // This should be a template in strings.xml
         name = "Player " + (num + 1);
         password = "";
