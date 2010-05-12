@@ -40,8 +40,8 @@ public interface DrawCtx {
     static final int OBJ_TRAY = 3;
 
 
-    void scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount,
-                     int dfs );
+    boolean scoreBegin( Rect rect, int numPlayers, int[] scores, int remCount,
+                        int dfs );
     void measureRemText( Rect r, int nTilesLeft, int[] width, int[] height );
     void measureScoreText( Rect r, DrawScoreInfo dsi, int[] width, int[] height );
     void drawRemText( Rect rInner, Rect rOuter, int nTilesLeft, boolean focussed );

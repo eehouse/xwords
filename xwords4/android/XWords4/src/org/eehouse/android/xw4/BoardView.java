@@ -339,13 +339,14 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     }
 
     // DrawCtxt interface implementation
-    public void scoreBegin( Rect rect, int numPlayers, int[] scores, 
-                            int remCount, int dfs )
+    public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
+                               int remCount, int dfs )
     {
         clearToBack( rect );
         m_canvas.save( Canvas.CLIP_SAVE_FLAG );
         m_canvas.clipRect(rect);
         m_scores = new String[numPlayers];
+        return true;
     }
 
     public void measureRemText( Rect r, int nTilesLeft, int[] width, 
