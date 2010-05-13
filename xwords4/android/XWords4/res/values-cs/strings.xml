@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2007 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+  
+          http://www.apache.org/licenses/LICENSE-2.0
+  
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+    <string name="menu_delete">Vymazat</string>
+    <string name="menu_insert">Pøidat hru</string>
+    <string name="button_new_game">Pøidat hru</string>
+
+    <string name="list_item_config">Konfigurovat</string>
+    <string name="list_item_hide">Skrýt</string>
+    <string name="list_item_delete">Vymazat</string>
+	<string name="list_item_copy">Kopírovat</string>
+	<string name="list_item_reset">Vynulovat</string>
+
+	<string name="list_item_new_from">Nová hra podle vzoru</string>
+	<string name="list_item_move_up">Pøesunout vý¹</string>
+	<string name="list_item_move_down">Pøesunout ní¾</string>
+	<string name="list_item_move_to_top">Pøesunout nahoru</string>
+	<string name="list_item_move_to_bottom">Pøesunout dolù</string>
+
+    <string name="resolve_edit">Upravit poznámku</string>
+    <string name="resolve_title">Upravit název</string>  
+
+    <string name="play">Hrát hru</string>
+
+    <string name="title_create">Vytvoøit hru</string>
+    <string name="title_edit">Upravit hru</string>
+	<string name="title_games_list">Crosswords</string>   
+	<string name="title_dicts_list">Slovníky Crosswords</string>   
+	<string name="title_game">Hra</string>  
+	<string name="title_game_config">Konfigurovat hru</string>  
+	<string name="title_prefs">Pøedvolby Crosswords</string>  
+	
+	<string name="app_name">Crosswords</string>  
+	
+	<string name="button_ok">OK</string>  
+	<string name="button_cancel">Zru¹it</string>  
+	<string name="button_yes">Ano</string>  
+	<string name="button_no">Ne</string>  
+	<string name="button_save">Ulo¾it</string>  
+	<string name="button_discard">Vyøadit</string>  
+
+    <string name="player_label">Jméno:</string>
+    <string name="game_config_open">Otevøít</string>
+    <string name="game_config_revert">Vrátit zmìny</string>
+
+	<string name="error_title">Chyba</string>
+	<string name="info_title">Pro va¹i informaci...</string>
+	<string name="error_message">Chyba pøi nahrávání hry</string>
+	<string name="query_title">Dotaz...</string>
+	<string name="query_trade">Chcete urèitì vymìnit vybrané kameny?</string>
+
+
+    <string name="title_tile_picker">Písmeno za ¾olíka</string>
+    <string name="tiles_left_title">Zbývající kameny</string>
+    <string name="counts_values_title">Poèty a hodnoty kamenù</string>
+    <string name="history_title">Historie hry</string>
+    <string name="finalscores_title">Celkové skóre</string>
+
+    <!-- system menu for main board view -->
+	<string name="board_menu_done">Ukonèit tah</string>
+	<string name="board_menu_juggle">Pøehodit</string>
+	<string name="board_menu_flip">Pøeklopit</string>
+	<string name="board_menu_trade">Vymìnit</string>
+	<string name="board_menu_tray">Skrýt/Ukázat</string>
+	<string name="board_submenu_undo">Zpìt</string>
+	<string name="board_menu_undo_current">Zpìt souèasný</string>
+	<string name="board_menu_undo_last">Zpìt minulý</string>
+	<string name="board_submenu_hint">Rada</string>
+	<string name="board_menu_hint_next">Dal¹í rada</string>
+	<string name="board_menu_hint">Rada</string>
+	<string name="board_menu_values">Uka¾ hodnoty</string>
+	<string name="board_submenu_game">Hra</string>
+	<string name="board_menu_game_counts">Poèty a hodnoty</string>
+	<string name="board_menu_game_left">Zbývající kameny</string>
+	<string name="board_menu_game_history">Historie hry</string>
+	<string name="board_menu_game_final">Celkové skóre</string>
+	<string name="board_menu_game_resend">Pøeposlat zprávy</string>
+	<string name="board_submenu_file">Soubor</string>
+	<string name="board_menu_file_new">Nová hra</string>
+	<string name="board_menu_file_prefs">Pøedvolby</string>
+	<string name="board_menu_file_about">O Crosswords</string>
+
+	<string name="gamel_menu_delete_all">Vymazat v¹e</string>
+	<!-- <string name="gamel_menu_view_hidden">Hidden games</string> -->
+
+    <!-- returned by util_getUserString -->
+    <string name="strd_robot_traded">Robot v tomto tahu vymìnil %d kamenù.</string>
+    <string name="str_robot_moved">Robot provedl tento tah:</string>
+    <string name="strs_values_header">%s poèet/hodnota:\n</string>
+    <string name="strd_remaining_tiles_add">+ %d [v¹echny zbývající kameny]</string>
+    <string name="strd_unused_tiles_sub">- %d [nepou¾ité kameny]</string>
+    <string name="str_remote_moved">Vzdálený hráè provedl tento tah:</string>
+    <string name="strd_time_penalty_sub"></string>
+    <string name="str_pass"> - %d [èas]</string>
+    <string name="strs_move_across">tah (od %s napøíè)</string>
+    <string name="strs_move_down">tah (od %s dolù)</string>
+    <string name="strs_tray_at_start">Zásobník pøi startu: %s</string>
+    <string name="strss_traded_for">Vymìnil %s za %s.</string>
+    <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
+    <string name="strd_cumulative_score">Souhrnné skóre: %d</string>
+    <string name="strs_new_tiles">Nové kameny: %s</string>
+    <string name="str_passed">Pro¹el</string>
+    <string name="strsd_summaryscored">%s:%d</string>
+    <string name="strd_traded">%s:%d</string>
+    <string name="str_lostturn">Tah byl ztracen</string>
+    <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
+    <string name="str_local_name">%s</string>
+    <string name="str_nonlocal_name">%s (vzdálený)</string>
+    <string name="str_bonus_all">Bonus za vyu¾ití v¹ech kamenù: 50\n</string>
+    <string name="strd_turn_score">Skóre za tah: %d\n</string>
+
+    <!-- error messages -->
+	<string name="str_tiles_not_in_line">Kameny musí le¾et v jedné øadì.</string>
+	<string name="str_no_empties_in_turn">Mezi kameny nesmí být ¾ádná prázdná políèka.</string>
+	<string name="str_two_tiles_first_move">V prvním tahu musíte umístit dva nebo více kamenù.</string>
+	<string name="str_tiles_must_contact">Nové kameny musí navazovat na ji¾ polo¾ené kameny (nebo se s nimi køí¾it).</string>
+	<string name="str_not_your_turn">To nemù¾ete udìlat; není to vá¹ tah!</string>
+	<string name="str_no_peek_robot_tiles">Nenakukjte na kameny robota!</string>
+	<string name="str_cant_trade_mid_move">Vzdálený hráè hrál s kameny pøed výmìnou.</string>
+	<string name="str_too_few_tiles_left_to_trade">Zbývá pøíli¹ málo kamenù pro výmìnu.</string>
+	<string name="str_cant_undo_tileassign">Pøiøazení kamene nemù¾e být vráceno zpìt.</string>
+	<string name="str_cant_hint_while_disabled">Pro tuto hru je zakázána nápovìda. Pro novou hru ji mù¾ete povolit v Pøedvolbách.</string>
+	<string name="str_no_peek_remote_tiles">Nenakukujte na kameny vzdáleného hráèe!</string>
+	<string name="str_reg_unexpected_user">Odmítnut pokus o registraci neoèekávaného hráèe(ù)</string>
+	<string name="str_server_dict_wins">Konflikt mezi slovníky Serveru a Klienta; Platí v¾dy slovník Serveru.</string>
+	<string name="str_reg_server_sans_remote">Alespoò jeden hráè musí být oznaèen jako \"Vzdálený\" abyste mohli hru spustit jako Server.</string>
+
+    <string name="remote_label">Hráè klient</string>
+    <string name="robot_label">Hráè robot</string>
+    <string name="robot_name">(robot)</string>
+    <string name="guest_name">(hráè klient)</string>
+    <string name="password_label">Heslo</string>
+    <string name="player_edit_title">Hráè</string>
+
+    <string name="players_label_standalone">Hráèi</string>
+    <string name="players_label_host">Hráèi -- lokální a oèekávaní</string>
+    <string name="players_label_guest">Hráèi -- pouze lokální</string>
+    <string name="button_add_player">Pøidat hráèe</string>
+    <string name="button_juggle_players">Pøehodit hráèe</string>
+
+    <string name="game_config_juggle">Pøehodit hráèe</string>
+
+    <string name="list_item_up">O jeden vý¹</string>
+    <string name="list_item_down">O jeden ní¾</string>
+    <string name="dicts_item_delete">Vymazat slovník</string>
+    <string name="dicts_item_details">Podrobnosti</string>
+
+    <string name="dict_label">Slovník</string>
+    <string name="role_label">Role zaøízení</string>
+    <string name="connection_label">Pøipojení</string>
+
+    <string name="configure_role">Konfigurovat pøipojení</string>
+    <string name="configure_rolef">Konfigurovat %s pøipojení</string>
+    <string name="settings_label">Nastavení hry</string>
+    <string name="minutes_label">Minut ve høe</string>
+
+    <string name="smart_robot">Chytrý robot</string>
+
+    <string name="download_dicts">Nahrát více...</string>
+
+    <string name="confirm_save_title">Potvrdit ulo¾ení</string>
+    <string name="confirm_save">Tato hra je rozehraná. Pokud tyto zmìny ulo¾íte, musí být hra spu¹tìná znova.
+    Chcete tyto zmìny ulo¾it nebo je chcete zru¹it?</string>
+    <string name="confirm_delete_all">Urèitì chcete vymazat v¹echny hry?
+    Tato akce se nedá vrátit zpìt.</string>
+    
+    <string name="hints_allowed">Povolit nápovìdu</string>
+    <string name="use_timer">Povolit èasovaè</string>
+    <string name="color_tiles">Barvy kamenù</string>
+    <string name="color_tiles_summary">Obarvit kameny barvou hráèe, který s nimi hrál</string>
+    <string name="show_arrow">Ukázat ¹ipku na herním poli</string>
+    <string name="show_arrow_summary">Slovo se zaène psát ve smìru ¹ipky a od jejího umístìní</string>
+    <string name="explain_robot">Vysvìtlit tahy robota</string>
+    <string name="explain_robot_summary">Ukázat skóre po ka¾dém tahu robota</string>
+    <string name="skip_confirm_turn">Pøeskoèit potvrzení tahu</string>
+    <string name="skip_confirm_turn_summary">Neukazovat skóre po ka¾dém tahu hráèe</string>
+    <string name="ringer_zoom">Pøiblí¾ení tlaèítky hlasitosti</string>
+    <string name="ringer_zoom_summary">Pøiblí¾it hrací pole pomocí tlaèítek ovládání hlasitosti
+    místo tlaèítek na obrazovce</string>
+
+    <string name="role_standalone">Samostatný</string>
+    <string name="role_host">Server</string>
+    <string name="role_guest">Klient</string>
+    <string name="role_prompt">Zvolte Standalone pokud v¹ichni hráèi hrají 
+    na tomto zaøízení. Jinak mù¾ete být Serverem nebo se jako Klient pøipojit k jinému Serveru.</string>
+
+    <string name="room_edit_hint_host">Jako Server musíte vytvoøit a pojmenovat místnost pro vás a va¹e Klienty. 
+    Musíte se pøipojit první pøed v¹emi klienty.</string>
+    <string name="room_edit_hint_guest">Jako Klient se mù¾ete pøipojit do místosti vytvoøené Serverem. 
+    Musíte ale poèkat ne¾ se do místnosti pøipojí Server.</string>
+    <string name="room_edit_hint_connect">(Pøipojení se uskuteèní automaticky pokud spustíte hru nakonfigurovanou
+    pro pou¾ívání relay.)</string>
+
+    <string name="phonies_ignore">Ignorovat slovník</string>
+    <string name="phonies_warn">Varovat pokud není ve slovníku</string>
+    <string name="phonies_disallow">Zakázat pokud není ve slovníku</string>
+    <string name="gamel_menu_prefs">Pøedvolby</string>
+    <string name="gamel_menu_dicts">Slovníky</string>
+
+    <string name="room_label">Místnost</string>
+    <string name="phone_label">Telefonní èíslo Serveru</string>
+    <string name="bluetooth_label">Podpora Bluetooth se pøipravuje....</string>
+    <string name="role_edit_title">Pøipojení</string>
+    <string name="connect_prompt">Jak budou spolu komunikovat Server a Klienti?</string>
+
+    <string name="general_prefs">Pøedvolby</string>
+    <string name="prefs_colors">Barvy</string>
+    <string name="prefs_colors_summary">Upravit barvy na hrací plochy</string>
+    <string name="player0">První hráè</string>
+    <string name="player1">Druhý hráè</string>
+    <string name="player2">Tøetí hráè</string>
+    <string name="player3">Ètvrtý hráè</string>
+    <string name="bonus_l2x">Dvojitá hodnota písmene</string>
+    <string name="bonus_l3x">Trojitá hodnota písmene</string>
+    <string name="bonus_w2x">Dvojitá hodnota slova</string>
+    <string name="bonus_w3x">Trojitá hodnota</string>
+    <string name="trading_text">Výmìna kamenù. Zvolte\n\'Ukonèit tah\' a¾ budete hotovi.</string>
+    <string name="tile_back">Pozadí kamenù</string>
+    <string name="empty">Prázdné pole/pozadí</string>
+    <string name="focus">Barva focus</string>
+    <string name="advanced">Roz¹íøené</string>
+    <string name="advanced_summary">Toto byste nemìli nikdy potøebovat...</string>
+    <string name="relay_host">Relay adresa</string>
+    <string name="dict_host">URL adresa pro nahrávání slovníkù</string>
+    <string name="relay_port">Relay port</string>
+    <string name="sms_port">SMS port</string>
+    <string name="board_size">Výchozí velikost hrací plochy</string>
+
+    <string name="sms_phone_label">sms_phone_label</string>
+    <string name="sms_port_label">sms_port_label</string>
+    <string name="bt_label">bt_label</string>
+    <string name="list_item_view">list_item_view</string>
+    <string name="key_player">key_player</string>
+    <string name="tab_relay">Internet/Relay</string>
+    <string name="tab_sms">SMS (nefunkèní)</string>
+    <string name="tab_bluetooth">Bluetooth (pøipravuje se)</string>
+
+    <string name="msg_relay_waiting">Pøipojen na relay. Èekám na %d hráèe.</string>
+    <string name="msg_relay_all_here">V¹ichni hráèi jsou zde.</string>
+    <string name="title_relay_status">Stav pøipojení.</string>
+
+    <string name="relay_alert">Chyba pøipojení</string>
+    <string name="msg_too_many">Chcete pøihlásit více hráèù ne¾ oèekává server.</string>
+    <string name="msg_no_room">®ádný server si nezaregistroval místnost s tímto jménem.</string>
+    <string name="msg_dup_room">Jiný server si ji¾ zaregistroval místnost s tímto jménem. Pøejmenujte ji nebo to zkuste pozdìji.</string>
+    <string name="msg_lost_other">Relay ztratil kontakt s nìjakým zaøízením ve høe.</string>
+
+    <string name="ids_badwords">Slovo[a] %s nebylo nalezeno ve slovníku.</string>
+    <string name="badwords_accept">  Chcete pøesto pøijmout tento tah?</string>
+    <string name="badwords_lost">  Tah ztracen.</string>
+    <string name="badwords_title">Neplatné slovo[a]</string>
+
+    <string name="ids_endnow">Chcete urèitì ihned ukonèit hru?</string>
+
+    <string name="force_title">Vzdálený hráè[i]</string>
+    <string name="force_expl">Jako Server vyberte jedoho nebo více hráèù kteøí se budou moct
+    pøipojit jako Klient.</string>
+
+    <string name="vs">proti</string>
+    <string name="dictionary">Slovník:</string>
+    <string name="summary_fmt_listening">%s listening</string>
+    <string name="summary_fmt_relay">%s pøes Relay, místnost \"%s\"</string>
+    <string name="summary_fmt_sms">%s pøes SMS, dialing %s</string>
+    <string name="gameOver">Hra skonèena</string>
+    <string name="movesf">Bylo zahráno %d tahù</string>
+
+    <!-- about dialog stuff -->
+    <string name="about_versf">Crosswords pro Android, Verze %s,
+    revize %s.</string>
+    <string name="about_copyright">Copyright (C) 1998-2010 Eric
+    House. Tento software je vydán pod licencí GNU Public License.</string>
+
+    <string name="about_web">Manuál a zdrojové kódy najdete na:
+    http://xwords.sf.net.  Hlásit chyby, doporuèit vylep¹ení, nabídnout pomoc, atd.
+    mù¾ete na email: eehouse@eehouse.org.</string>
+    <!-- fill this in other than in English -->
+    <string name="xlator"></string>
+
+    <string name="downloading_dictf">Nahrávám slovník Crosswords %s...</string>
+    <string name="no_dict_title">Slovník nebyl nalezen</string>
+    <string name="button_download">Nahrát</string>
+    <string name="no_dictf">Slovník %s nebyl nalezen, nemohu spustit hru.</string>
+
+	<string name="msg_ask_password">Heslo pro \"%s\":</string>
+
+	<string name="red">Èervená</string>
+	<string name="green">Zelená</string>
+	<string name="blue">Modrá</string>
+
+</resources>
