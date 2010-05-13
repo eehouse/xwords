@@ -16,229 +16,229 @@
 
 <resources>
     <string name="menu_delete">Vymazat</string>
-    <string name="menu_insert">Pøidat hru</string>
-    <string name="button_new_game">Pøidat hru</string>
+    <string name="menu_insert">PÅ™idat hru</string>
+    <string name="button_new_game">PÅ™idat hru</string>
 
     <string name="list_item_config">Konfigurovat</string>
-    <string name="list_item_hide">Skrıt</string>
+    <string name="list_item_hide">SkrÃ½t</string>
     <string name="list_item_delete">Vymazat</string>
-	<string name="list_item_copy">Kopírovat</string>
+	<string name="list_item_copy">KopÃ­rovat</string>
 	<string name="list_item_reset">Vynulovat</string>
 
-	<string name="list_item_new_from">Nová hra podle vzoru</string>
-	<string name="list_item_move_up">Pøesunout vı¹</string>
-	<string name="list_item_move_down">Pøesunout ní¾</string>
-	<string name="list_item_move_to_top">Pøesunout nahoru</string>
-	<string name="list_item_move_to_bottom">Pøesunout dolù</string>
+	<string name="list_item_new_from">NovÃ¡ hra podle vzoru</string>
+	<string name="list_item_move_up">PÅ™esunout vÃ½Ä…</string>
+	<string name="list_item_move_down">PÅ™esunout nÃ­Ä¾</string>
+	<string name="list_item_move_to_top">PÅ™esunout nahoru</string>
+	<string name="list_item_move_to_bottom">PÅ™esunout dolÅ¯</string>
 
-    <string name="resolve_edit">Upravit poznámku</string>
-    <string name="resolve_title">Upravit název</string>  
+    <string name="resolve_edit">Upravit poznÃ¡mku</string>
+    <string name="resolve_title">Upravit nÃ¡zev</string>  
 
-    <string name="play">Hrát hru</string>
+    <string name="play">HrÃ¡t hru</string>
 
-    <string name="title_create">Vytvoøit hru</string>
+    <string name="title_create">VytvoÅ™it hru</string>
     <string name="title_edit">Upravit hru</string>
 	<string name="title_games_list">Crosswords</string>   
-	<string name="title_dicts_list">Slovníky Crosswords</string>   
+	<string name="title_dicts_list">SlovnÃ­ky Crosswords</string>   
 	<string name="title_game">Hra</string>  
 	<string name="title_game_config">Konfigurovat hru</string>  
-	<string name="title_prefs">Pøedvolby Crosswords</string>  
+	<string name="title_prefs">PÅ™edvolby Crosswords</string>  
 	
 	<string name="app_name">Crosswords</string>  
 	
 	<string name="button_ok">OK</string>  
-	<string name="button_cancel">Zru¹it</string>  
+	<string name="button_cancel">ZruÄ…it</string>  
 	<string name="button_yes">Ano</string>  
 	<string name="button_no">Ne</string>  
-	<string name="button_save">Ulo¾it</string>  
-	<string name="button_discard">Vyøadit</string>  
+	<string name="button_save">UloÄ¾it</string>  
+	<string name="button_discard">VyÅ™adit</string>  
 
-    <string name="player_label">Jméno:</string>
-    <string name="game_config_open">Otevøít</string>
-    <string name="game_config_revert">Vrátit zmìny</string>
+    <string name="player_label">JmÃ©no:</string>
+    <string name="game_config_open">OtevÅ™Ã­t</string>
+    <string name="game_config_revert">VrÃ¡tit zmÄ›ny</string>
 
 	<string name="error_title">Chyba</string>
-	<string name="info_title">Pro va¹i informaci...</string>
-	<string name="error_message">Chyba pøi nahrávání hry</string>
+	<string name="info_title">Pro vaÄ…i informaci...</string>
+	<string name="error_message">Chyba pÅ™i nahrÃ¡vÃ¡nÃ­ hry</string>
 	<string name="query_title">Dotaz...</string>
-	<string name="query_trade">Chcete urèitì vymìnit vybrané kameny?</string>
+	<string name="query_trade">Chcete urÄitÄ› vymÄ›nit vybranÃ© kameny?</string>
 
 
-    <string name="title_tile_picker">Písmeno za ¾olíka</string>
-    <string name="tiles_left_title">Zbıvající kameny</string>
-    <string name="counts_values_title">Poèty a hodnoty kamenù</string>
+    <string name="title_tile_picker">PÃ­smeno za Ä¾olÃ­ka</string>
+    <string name="tiles_left_title">ZbÃ½vajÃ­cÃ­ kameny</string>
+    <string name="counts_values_title">PoÄty a hodnoty kamenÅ¯</string>
     <string name="history_title">Historie hry</string>
-    <string name="finalscores_title">Celkové skóre</string>
+    <string name="finalscores_title">CelkovÃ© skÃ³re</string>
 
     <!-- system menu for main board view -->
-	<string name="board_menu_done">Ukonèit tah</string>
-	<string name="board_menu_juggle">Pøehodit</string>
-	<string name="board_menu_flip">Pøeklopit</string>
-	<string name="board_menu_trade">Vymìnit</string>
-	<string name="board_menu_tray">Skrıt/Ukázat</string>
-	<string name="board_submenu_undo">Zpìt</string>
-	<string name="board_menu_undo_current">Zpìt souèasnı</string>
-	<string name="board_menu_undo_last">Zpìt minulı</string>
+	<string name="board_menu_done">UkonÄit tah</string>
+	<string name="board_menu_juggle">PÅ™ehodit</string>
+	<string name="board_menu_flip">PÅ™eklopit</string>
+	<string name="board_menu_trade">VymÄ›nit</string>
+	<string name="board_menu_tray">SkrÃ½t/UkÃ¡zat</string>
+	<string name="board_submenu_undo">ZpÄ›t</string>
+	<string name="board_menu_undo_current">ZpÄ›t souÄasnÃ½</string>
+	<string name="board_menu_undo_last">ZpÄ›t minulÃ½</string>
 	<string name="board_submenu_hint">Rada</string>
-	<string name="board_menu_hint_next">Dal¹í rada</string>
+	<string name="board_menu_hint_next">DalÄ…Ã­ rada</string>
 	<string name="board_menu_hint">Rada</string>
-	<string name="board_menu_values">Uka¾ hodnoty</string>
+	<string name="board_menu_values">UkaÄ¾ hodnoty</string>
 	<string name="board_submenu_game">Hra</string>
-	<string name="board_menu_game_counts">Poèty a hodnoty</string>
-	<string name="board_menu_game_left">Zbıvající kameny</string>
+	<string name="board_menu_game_counts">PoÄty a hodnoty</string>
+	<string name="board_menu_game_left">ZbÃ½vajÃ­cÃ­ kameny</string>
 	<string name="board_menu_game_history">Historie hry</string>
-	<string name="board_menu_game_final">Celkové skóre</string>
-	<string name="board_menu_game_resend">Pøeposlat zprávy</string>
+	<string name="board_menu_game_final">CelkovÃ© skÃ³re</string>
+	<string name="board_menu_game_resend">PÅ™eposlat zprÃ¡vy</string>
 	<string name="board_submenu_file">Soubor</string>
-	<string name="board_menu_file_new">Nová hra</string>
-	<string name="board_menu_file_prefs">Pøedvolby</string>
+	<string name="board_menu_file_new">NovÃ¡ hra</string>
+	<string name="board_menu_file_prefs">PÅ™edvolby</string>
 	<string name="board_menu_file_about">O Crosswords</string>
 
-	<string name="gamel_menu_delete_all">Vymazat v¹e</string>
+	<string name="gamel_menu_delete_all">Vymazat vÄ…e</string>
 	<!-- <string name="gamel_menu_view_hidden">Hidden games</string> -->
 
     <!-- returned by util_getUserString -->
-    <string name="strd_robot_traded">Robot v tomto tahu vymìnil %d kamenù.</string>
+    <string name="strd_robot_traded">Robot v tomto tahu vymÄ›nil %d kamenÅ¯.</string>
     <string name="str_robot_moved">Robot provedl tento tah:</string>
-    <string name="strs_values_header">%s poèet/hodnota:\n</string>
-    <string name="strd_remaining_tiles_add">+ %d [v¹echny zbıvající kameny]</string>
-    <string name="strd_unused_tiles_sub">- %d [nepou¾ité kameny]</string>
-    <string name="str_remote_moved">Vzdálenı hráè provedl tento tah:</string>
+    <string name="strs_values_header">%s poÄet/hodnota:\n</string>
+    <string name="strd_remaining_tiles_add">+ %d [vÄ…echny zbÃ½vajÃ­cÃ­ kameny]</string>
+    <string name="strd_unused_tiles_sub">- %d [nepouÄ¾itÃ© kameny]</string>
+    <string name="str_remote_moved">VzdÃ¡lenÃ½ hrÃ¡Ä provedl tento tah:</string>
     <string name="strd_time_penalty_sub"></string>
-    <string name="str_pass"> - %d [èas]</string>
-    <string name="strs_move_across">tah (od %s napøíè)</string>
-    <string name="strs_move_down">tah (od %s dolù)</string>
-    <string name="strs_tray_at_start">Zásobník pøi startu: %s</string>
-    <string name="strss_traded_for">Vymìnil %s za %s.</string>
-    <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
-    <string name="strd_cumulative_score">Souhrnné skóre: %d</string>
-    <string name="strs_new_tiles">Nové kameny: %s</string>
-    <string name="str_passed">Pro¹el</string>
+    <string name="str_pass"> - %d [Äas]</string>
+    <string name="strs_move_across">tah (od %s napÅ™Ã­Ä)</string>
+    <string name="strs_move_down">tah (od %s dolÅ¯)</string>
+    <string name="strs_tray_at_start">ZÃ¡sobnÃ­k pÅ™i startu: %s</string>
+    <string name="strss_traded_for">VymÄ›nil %s za %s.</string>
+    <string name="str_phony_rejected">NepovolenÃ© slovo; tah ztracen!</string>
+    <string name="strd_cumulative_score">SouhrnnÃ© skÃ³re: %d</string>
+    <string name="strs_new_tiles">NovÃ© kameny: %s</string>
+    <string name="str_passed">ProÄ…el</string>
     <string name="strsd_summaryscored">%s:%d</string>
     <string name="strd_traded">%s:%d</string>
     <string name="str_lostturn">Tah byl ztracen</string>
     <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
     <string name="str_local_name">%s</string>
-    <string name="str_nonlocal_name">%s (vzdálenı)</string>
-    <string name="str_bonus_all">Bonus za vyu¾ití v¹ech kamenù: 50\n</string>
-    <string name="strd_turn_score">Skóre za tah: %d\n</string>
+    <string name="str_nonlocal_name">%s (vzdÃ¡lenÃ½)</string>
+    <string name="str_bonus_all">Bonus za vyuÄ¾itÃ­ vÄ…ech kamenÅ¯: 50\n</string>
+    <string name="strd_turn_score">SkÃ³re za tah: %d\n</string>
 
     <!-- error messages -->
-	<string name="str_tiles_not_in_line">Kameny musí le¾et v jedné øadì.</string>
-	<string name="str_no_empties_in_turn">Mezi kameny nesmí bıt ¾ádná prázdná políèka.</string>
-	<string name="str_two_tiles_first_move">V prvním tahu musíte umístit dva nebo více kamenù.</string>
-	<string name="str_tiles_must_contact">Nové kameny musí navazovat na ji¾ polo¾ené kameny (nebo se s nimi køí¾it).</string>
-	<string name="str_not_your_turn">To nemù¾ete udìlat; není to vá¹ tah!</string>
+	<string name="str_tiles_not_in_line">Kameny musÃ­ leÄ¾et v jednÃ© Å™adÄ›.</string>
+	<string name="str_no_empties_in_turn">Mezi kameny nesmÃ­ bÃ½t Ä¾Ã¡dnÃ¡ prÃ¡zdnÃ¡ polÃ­Äka.</string>
+	<string name="str_two_tiles_first_move">V prvnÃ­m tahu musÃ­te umÃ­stit dva nebo vÃ­ce kamenÅ¯.</string>
+	<string name="str_tiles_must_contact">NovÃ© kameny musÃ­ navazovat na jiÄ¾ poloÄ¾enÃ© kameny (nebo se s nimi kÅ™Ã­Ä¾it).</string>
+	<string name="str_not_your_turn">To nemÅ¯Ä¾ete udÄ›lat; nenÃ­ to vÃ¡Ä… tah!</string>
 	<string name="str_no_peek_robot_tiles">Nenakukjte na kameny robota!</string>
-	<string name="str_cant_trade_mid_move">Vzdálenı hráè hrál s kameny pøed vımìnou.</string>
-	<string name="str_too_few_tiles_left_to_trade">Zbıvá pøíli¹ málo kamenù pro vımìnu.</string>
-	<string name="str_cant_undo_tileassign">Pøiøazení kamene nemù¾e bıt vráceno zpìt.</string>
-	<string name="str_cant_hint_while_disabled">Pro tuto hru je zakázána nápovìda. Pro novou hru ji mù¾ete povolit v Pøedvolbách.</string>
-	<string name="str_no_peek_remote_tiles">Nenakukujte na kameny vzdáleného hráèe!</string>
-	<string name="str_reg_unexpected_user">Odmítnut pokus o registraci neoèekávaného hráèe(ù)</string>
-	<string name="str_server_dict_wins">Konflikt mezi slovníky Serveru a Klienta; Platí v¾dy slovník Serveru.</string>
-	<string name="str_reg_server_sans_remote">Alespoò jeden hráè musí bıt oznaèen jako \"Vzdálenı\" abyste mohli hru spustit jako Server.</string>
+	<string name="str_cant_trade_mid_move">VzdÃ¡lenÃ½ hrÃ¡Ä hrÃ¡l s kameny pÅ™ed vÃ½mÄ›nou.</string>
+	<string name="str_too_few_tiles_left_to_trade">ZbÃ½vÃ¡ pÅ™Ã­liÄ… mÃ¡lo kamenÅ¯ pro vÃ½mÄ›nu.</string>
+	<string name="str_cant_undo_tileassign">PÅ™iÅ™azenÃ­ kamene nemÅ¯Ä¾e bÃ½t vrÃ¡ceno zpÄ›t.</string>
+	<string name="str_cant_hint_while_disabled">Pro tuto hru je zakÃ¡zÃ¡na nÃ¡povÄ›da. Pro novou hru ji mÅ¯Ä¾ete povolit v PÅ™edvolbÃ¡ch.</string>
+	<string name="str_no_peek_remote_tiles">Nenakukujte na kameny vzdÃ¡lenÃ©ho hrÃ¡Äe!</string>
+	<string name="str_reg_unexpected_user">OdmÃ­tnut pokus o registraci neoÄekÃ¡vanÃ©ho hrÃ¡Äe(Å¯)</string>
+	<string name="str_server_dict_wins">Konflikt mezi slovnÃ­ky Serveru a Klienta; PlatÃ­ vÄ¾dy slovnÃ­k Serveru.</string>
+	<string name="str_reg_server_sans_remote">AlespoÅˆ jeden hrÃ¡Ä musÃ­ bÃ½t oznaÄen jako \"VzdÃ¡lenÃ½\" abyste mohli hru spustit jako Server.</string>
 
-    <string name="remote_label">Hráè klient</string>
-    <string name="robot_label">Hráè robot</string>
+    <string name="remote_label">HrÃ¡Ä klient</string>
+    <string name="robot_label">HrÃ¡Ä robot</string>
     <string name="robot_name">(robot)</string>
-    <string name="guest_name">(hráè klient)</string>
+    <string name="guest_name">(hrÃ¡Ä klient)</string>
     <string name="password_label">Heslo</string>
-    <string name="player_edit_title">Hráè</string>
+    <string name="player_edit_title">HrÃ¡Ä</string>
 
-    <string name="players_label_standalone">Hráèi</string>
-    <string name="players_label_host">Hráèi -- lokální a oèekávaní</string>
-    <string name="players_label_guest">Hráèi -- pouze lokální</string>
-    <string name="button_add_player">Pøidat hráèe</string>
-    <string name="button_juggle_players">Pøehodit hráèe</string>
+    <string name="players_label_standalone">HrÃ¡Äi</string>
+    <string name="players_label_host">HrÃ¡Äi -- lokÃ¡lnÃ­ a oÄekÃ¡vanÃ­</string>
+    <string name="players_label_guest">HrÃ¡Äi -- pouze lokÃ¡lnÃ­</string>
+    <string name="button_add_player">PÅ™idat hrÃ¡Äe</string>
+    <string name="button_juggle_players">PÅ™ehodit hrÃ¡Äe</string>
 
-    <string name="game_config_juggle">Pøehodit hráèe</string>
+    <string name="game_config_juggle">PÅ™ehodit hrÃ¡Äe</string>
 
-    <string name="list_item_up">O jeden vı¹</string>
-    <string name="list_item_down">O jeden ní¾</string>
-    <string name="dicts_item_delete">Vymazat slovník</string>
+    <string name="list_item_up">O jeden vÃ½Ä…</string>
+    <string name="list_item_down">O jeden nÃ­Ä¾</string>
+    <string name="dicts_item_delete">Vymazat slovnÃ­k</string>
     <string name="dicts_item_details">Podrobnosti</string>
 
-    <string name="dict_label">Slovník</string>
-    <string name="role_label">Role zaøízení</string>
-    <string name="connection_label">Pøipojení</string>
+    <string name="dict_label">SlovnÃ­k</string>
+    <string name="role_label">Role zaÅ™Ã­zenÃ­</string>
+    <string name="connection_label">PÅ™ipojenÃ­</string>
 
-    <string name="configure_role">Konfigurovat pøipojení</string>
-    <string name="configure_rolef">Konfigurovat %s pøipojení</string>
-    <string name="settings_label">Nastavení hry</string>
-    <string name="minutes_label">Minut ve høe</string>
+    <string name="configure_role">Konfigurovat pÅ™ipojenÃ­</string>
+    <string name="configure_rolef">Konfigurovat %s pÅ™ipojenÃ­</string>
+    <string name="settings_label">NastavenÃ­ hry</string>
+    <string name="minutes_label">Minut ve hÅ™e</string>
 
-    <string name="smart_robot">Chytrı robot</string>
+    <string name="smart_robot">ChytrÃ½ robot</string>
 
-    <string name="download_dicts">Nahrát více...</string>
+    <string name="download_dicts">NahrÃ¡t vÃ­ce...</string>
 
-    <string name="confirm_save_title">Potvrdit ulo¾ení</string>
-    <string name="confirm_save">Tato hra je rozehraná. Pokud tyto zmìny ulo¾íte, musí bıt hra spu¹tìná znova.
-    Chcete tyto zmìny ulo¾it nebo je chcete zru¹it?</string>
-    <string name="confirm_delete_all">Urèitì chcete vymazat v¹echny hry?
-    Tato akce se nedá vrátit zpìt.</string>
+    <string name="confirm_save_title">Potvrdit uloÄ¾enÃ­</string>
+    <string name="confirm_save">Tato hra je rozehranÃ¡. Pokud tyto zmÄ›ny uloÄ¾Ã­te, musÃ­ bÃ½t hra spuÄ…tÄ›nÃ¡ znova.
+    Chcete tyto zmÄ›ny uloÄ¾it nebo je chcete zruÄ…it?</string>
+    <string name="confirm_delete_all">UrÄitÄ› chcete vymazat vÄ…echny hry?
+    Tato akce se nedÃ¡ vrÃ¡tit zpÄ›t.</string>
     
-    <string name="hints_allowed">Povolit nápovìdu</string>
-    <string name="use_timer">Povolit èasovaè</string>
-    <string name="color_tiles">Barvy kamenù</string>
-    <string name="color_tiles_summary">Obarvit kameny barvou hráèe, kterı s nimi hrál</string>
-    <string name="show_arrow">Ukázat ¹ipku na herním poli</string>
-    <string name="show_arrow_summary">Slovo se zaène psát ve smìru ¹ipky a od jejího umístìní</string>
-    <string name="explain_robot">Vysvìtlit tahy robota</string>
-    <string name="explain_robot_summary">Ukázat skóre po ka¾dém tahu robota</string>
-    <string name="skip_confirm_turn">Pøeskoèit potvrzení tahu</string>
-    <string name="skip_confirm_turn_summary">Neukazovat skóre po ka¾dém tahu hráèe</string>
-    <string name="ringer_zoom">Pøiblí¾ení tlaèítky hlasitosti</string>
-    <string name="ringer_zoom_summary">Pøiblí¾it hrací pole pomocí tlaèítek ovládání hlasitosti
-    místo tlaèítek na obrazovce</string>
+    <string name="hints_allowed">Povolit nÃ¡povÄ›du</string>
+    <string name="use_timer">Povolit ÄasovaÄ</string>
+    <string name="color_tiles">Barvy kamenÅ¯</string>
+    <string name="color_tiles_summary">Obarvit kameny barvou hrÃ¡Äe, kterÃ½ s nimi hrÃ¡l</string>
+    <string name="show_arrow">UkÃ¡zat Ä…ipku na hernÃ­m poli</string>
+    <string name="show_arrow_summary">Slovo se zaÄne psÃ¡t ve smÄ›ru Ä…ipky a od jejÃ­ho umÃ­stÄ›nÃ­</string>
+    <string name="explain_robot">VysvÄ›tlit tahy robota</string>
+    <string name="explain_robot_summary">UkÃ¡zat skÃ³re po kaÄ¾dÃ©m tahu robota</string>
+    <string name="skip_confirm_turn">PÅ™eskoÄit potvrzenÃ­ tahu</string>
+    <string name="skip_confirm_turn_summary">Neukazovat skÃ³re po kaÄ¾dÃ©m tahu hrÃ¡Äe</string>
+    <string name="ringer_zoom">PÅ™iblÃ­Ä¾enÃ­ tlaÄÃ­tky hlasitosti</string>
+    <string name="ringer_zoom_summary">PÅ™iblÃ­Ä¾it hracÃ­ pole pomocÃ­ tlaÄÃ­tek ovlÃ¡dÃ¡nÃ­ hlasitosti
+    mÃ­sto tlaÄÃ­tek na obrazovce</string>
 
-    <string name="role_standalone">Samostatnı</string>
+    <string name="role_standalone">SamostatnÃ½</string>
     <string name="role_host">Server</string>
     <string name="role_guest">Klient</string>
-    <string name="role_prompt">Zvolte Standalone pokud v¹ichni hráèi hrají 
-    na tomto zaøízení. Jinak mù¾ete bıt Serverem nebo se jako Klient pøipojit k jinému Serveru.</string>
+    <string name="role_prompt">Zvolte Standalone pokud vÄ…ichni hrÃ¡Äi hrajÃ­ 
+    na tomto zaÅ™Ã­zenÃ­. Jinak mÅ¯Ä¾ete bÃ½t Serverem nebo se jako Klient pÅ™ipojit k jinÃ©mu Serveru.</string>
 
-    <string name="room_edit_hint_host">Jako Server musíte vytvoøit a pojmenovat místnost pro vás a va¹e Klienty. 
-    Musíte se pøipojit první pøed v¹emi klienty.</string>
-    <string name="room_edit_hint_guest">Jako Klient se mù¾ete pøipojit do místosti vytvoøené Serverem. 
-    Musíte ale poèkat ne¾ se do místnosti pøipojí Server.</string>
-    <string name="room_edit_hint_connect">(Pøipojení se uskuteèní automaticky pokud spustíte hru nakonfigurovanou
-    pro pou¾ívání relay.)</string>
+    <string name="room_edit_hint_host">Jako Server musÃ­te vytvoÅ™it a pojmenovat mÃ­stnost pro vÃ¡s a vaÄ…e Klienty. 
+    MusÃ­te se pÅ™ipojit prvnÃ­ pÅ™ed vÄ…emi klienty.</string>
+    <string name="room_edit_hint_guest">Jako Klient se mÅ¯Ä¾ete pÅ™ipojit do mÃ­stosti vytvoÅ™enÃ© Serverem. 
+    MusÃ­te ale poÄkat neÄ¾ se do mÃ­stnosti pÅ™ipojÃ­ Server.</string>
+    <string name="room_edit_hint_connect">(PÅ™ipojenÃ­ se uskuteÄnÃ­ automaticky pokud spustÃ­te hru nakonfigurovanou
+    pro pouÄ¾Ã­vÃ¡nÃ­ relay.)</string>
 
-    <string name="phonies_ignore">Ignorovat slovník</string>
-    <string name="phonies_warn">Varovat pokud není ve slovníku</string>
-    <string name="phonies_disallow">Zakázat pokud není ve slovníku</string>
-    <string name="gamel_menu_prefs">Pøedvolby</string>
-    <string name="gamel_menu_dicts">Slovníky</string>
+    <string name="phonies_ignore">Ignorovat slovnÃ­k</string>
+    <string name="phonies_warn">Varovat pokud nenÃ­ ve slovnÃ­ku</string>
+    <string name="phonies_disallow">ZakÃ¡zat pokud nenÃ­ ve slovnÃ­ku</string>
+    <string name="gamel_menu_prefs">PÅ™edvolby</string>
+    <string name="gamel_menu_dicts">SlovnÃ­ky</string>
 
-    <string name="room_label">Místnost</string>
-    <string name="phone_label">Telefonní èíslo Serveru</string>
-    <string name="bluetooth_label">Podpora Bluetooth se pøipravuje....</string>
-    <string name="role_edit_title">Pøipojení</string>
+    <string name="room_label">MÃ­stnost</string>
+    <string name="phone_label">TelefonnÃ­ ÄÃ­slo Serveru</string>
+    <string name="bluetooth_label">Podpora Bluetooth se pÅ™ipravuje....</string>
+    <string name="role_edit_title">PÅ™ipojenÃ­</string>
     <string name="connect_prompt">Jak budou spolu komunikovat Server a Klienti?</string>
 
-    <string name="general_prefs">Pøedvolby</string>
+    <string name="general_prefs">PÅ™edvolby</string>
     <string name="prefs_colors">Barvy</string>
-    <string name="prefs_colors_summary">Upravit barvy na hrací plochy</string>
-    <string name="player0">První hráè</string>
-    <string name="player1">Druhı hráè</string>
-    <string name="player2">Tøetí hráè</string>
-    <string name="player3">Ètvrtı hráè</string>
-    <string name="bonus_l2x">Dvojitá hodnota písmene</string>
-    <string name="bonus_l3x">Trojitá hodnota písmene</string>
-    <string name="bonus_w2x">Dvojitá hodnota slova</string>
-    <string name="bonus_w3x">Trojitá hodnota</string>
-    <string name="trading_text">Vımìna kamenù. Zvolte\n\'Ukonèit tah\' a¾ budete hotovi.</string>
-    <string name="tile_back">Pozadí kamenù</string>
-    <string name="empty">Prázdné pole/pozadí</string>
+    <string name="prefs_colors_summary">Upravit barvy na hracÃ­ plochy</string>
+    <string name="player0">PrvnÃ­ hrÃ¡Ä</string>
+    <string name="player1">DruhÃ½ hrÃ¡Ä</string>
+    <string name="player2">TÅ™etÃ­ hrÃ¡Ä</string>
+    <string name="player3">ÄŒtvrtÃ½ hrÃ¡Ä</string>
+    <string name="bonus_l2x">DvojitÃ¡ hodnota pÃ­smene</string>
+    <string name="bonus_l3x">TrojitÃ¡ hodnota pÃ­smene</string>
+    <string name="bonus_w2x">DvojitÃ¡ hodnota slova</string>
+    <string name="bonus_w3x">TrojitÃ¡ hodnota</string>
+    <string name="trading_text">VÃ½mÄ›na kamenÅ¯. Zvolte\n\'UkonÄit tah\' aÄ¾ budete hotovi.</string>
+    <string name="tile_back">PozadÃ­ kamenÅ¯</string>
+    <string name="empty">PrÃ¡zdnÃ© pole/pozadÃ­</string>
     <string name="focus">Barva focus</string>
-    <string name="advanced">Roz¹íøené</string>
-    <string name="advanced_summary">Toto byste nemìli nikdy potøebovat...</string>
+    <string name="advanced">RozÄ…Ã­Å™enÃ©</string>
+    <string name="advanced_summary">Toto byste nemÄ›li nikdy potÅ™ebovat...</string>
     <string name="relay_host">Relay adresa</string>
-    <string name="dict_host">URL adresa pro nahrávání slovníkù</string>
+    <string name="dict_host">URL adresa pro nahrÃ¡vÃ¡nÃ­ slovnÃ­kÅ¯</string>
     <string name="relay_port">Relay port</string>
     <string name="sms_port">SMS port</string>
-    <string name="board_size">Vıchozí velikost hrací plochy</string>
+    <string name="board_size">VÃ½chozÃ­ velikost hracÃ­ plochy</string>
 
     <string name="sms_phone_label">sms_phone_label</string>
     <string name="sms_port_label">sms_port_label</string>
@@ -246,59 +246,59 @@
     <string name="list_item_view">list_item_view</string>
     <string name="key_player">key_player</string>
     <string name="tab_relay">Internet/Relay</string>
-    <string name="tab_sms">SMS (nefunkèní)</string>
-    <string name="tab_bluetooth">Bluetooth (pøipravuje se)</string>
+    <string name="tab_sms">SMS (nefunkÄnÃ­)</string>
+    <string name="tab_bluetooth">Bluetooth (pÅ™ipravuje se)</string>
 
-    <string name="msg_relay_waiting">Pøipojen na relay. Èekám na %d hráèe.</string>
-    <string name="msg_relay_all_here">V¹ichni hráèi jsou zde.</string>
-    <string name="title_relay_status">Stav pøipojení.</string>
+    <string name="msg_relay_waiting">PÅ™ipojen na relay. ÄŒekÃ¡m na %d hrÃ¡Äe.</string>
+    <string name="msg_relay_all_here">VÄ…ichni hrÃ¡Äi jsou zde.</string>
+    <string name="title_relay_status">Stav pÅ™ipojenÃ­.</string>
 
-    <string name="relay_alert">Chyba pøipojení</string>
-    <string name="msg_too_many">Chcete pøihlásit více hráèù ne¾ oèekává server.</string>
-    <string name="msg_no_room">®ádnı server si nezaregistroval místnost s tímto jménem.</string>
-    <string name="msg_dup_room">Jinı server si ji¾ zaregistroval místnost s tímto jménem. Pøejmenujte ji nebo to zkuste pozdìji.</string>
-    <string name="msg_lost_other">Relay ztratil kontakt s nìjakım zaøízením ve høe.</string>
+    <string name="relay_alert">Chyba pÅ™ipojenÃ­</string>
+    <string name="msg_too_many">Chcete pÅ™ihlÃ¡sit vÃ­ce hrÃ¡ÄÅ¯ neÄ¾ oÄekÃ¡vÃ¡ server.</string>
+    <string name="msg_no_room">Â®Ã¡dnÃ½ server si nezaregistroval mÃ­stnost s tÃ­mto jmÃ©nem.</string>
+    <string name="msg_dup_room">JinÃ½ server si jiÄ¾ zaregistroval mÃ­stnost s tÃ­mto jmÃ©nem. PÅ™ejmenujte ji nebo to zkuste pozdÄ›ji.</string>
+    <string name="msg_lost_other">Relay ztratil kontakt s nÄ›jakÃ½m zaÅ™Ã­zenÃ­m ve hÅ™e.</string>
 
-    <string name="ids_badwords">Slovo[a] %s nebylo nalezeno ve slovníku.</string>
-    <string name="badwords_accept">  Chcete pøesto pøijmout tento tah?</string>
+    <string name="ids_badwords">Slovo[a] %s nebylo nalezeno ve slovnÃ­ku.</string>
+    <string name="badwords_accept">  Chcete pÅ™esto pÅ™ijmout tento tah?</string>
     <string name="badwords_lost">  Tah ztracen.</string>
-    <string name="badwords_title">Neplatné slovo[a]</string>
+    <string name="badwords_title">NeplatnÃ© slovo[a]</string>
 
-    <string name="ids_endnow">Chcete urèitì ihned ukonèit hru?</string>
+    <string name="ids_endnow">Chcete urÄitÄ› ihned ukonÄit hru?</string>
 
-    <string name="force_title">Vzdálenı hráè[i]</string>
-    <string name="force_expl">Jako Server vyberte jedoho nebo více hráèù kteøí se budou moct
-    pøipojit jako Klient.</string>
+    <string name="force_title">VzdÃ¡lenÃ½ hrÃ¡Ä[i]</string>
+    <string name="force_expl">Jako Server vyberte jedoho nebo vÃ­ce hrÃ¡ÄÅ¯ kteÅ™Ã­ se budou moct
+    pÅ™ipojit jako Klient.</string>
 
     <string name="vs">proti</string>
-    <string name="dictionary">Slovník:</string>
+    <string name="dictionary">SlovnÃ­k:</string>
     <string name="summary_fmt_listening">%s listening</string>
-    <string name="summary_fmt_relay">%s pøes Relay, místnost \"%s\"</string>
-    <string name="summary_fmt_sms">%s pøes SMS, dialing %s</string>
-    <string name="gameOver">Hra skonèena</string>
-    <string name="movesf">Bylo zahráno %d tahù</string>
+    <string name="summary_fmt_relay">%s pÅ™es Relay, mÃ­stnost \"%s\"</string>
+    <string name="summary_fmt_sms">%s pÅ™es SMS, dialing %s</string>
+    <string name="gameOver">Hra skonÄena</string>
+    <string name="movesf">Bylo zahrÃ¡no %d tahÅ¯</string>
 
     <!-- about dialog stuff -->
     <string name="about_versf">Crosswords pro Android, Verze %s,
     revize %s.</string>
     <string name="about_copyright">Copyright (C) 1998-2010 Eric
-    House. Tento software je vydán pod licencí GNU Public License.</string>
+    House. Tento software je vydÃ¡n pod licencÃ­ GNU Public License.</string>
 
-    <string name="about_web">Manuál a zdrojové kódy najdete na:
-    http://xwords.sf.net.  Hlásit chyby, doporuèit vylep¹ení, nabídnout pomoc, atd.
-    mù¾ete na email: eehouse@eehouse.org.</string>
+    <string name="about_web">ManuÃ¡l a zdrojovÃ© kÃ³dy najdete na:
+    http://xwords.sf.net.  HlÃ¡sit chyby, doporuÄit vylepÄ…enÃ­, nabÃ­dnout pomoc, atd.
+    mÅ¯Ä¾ete na email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
     <string name="xlator"></string>
 
-    <string name="downloading_dictf">Nahrávám slovník Crosswords %s...</string>
-    <string name="no_dict_title">Slovník nebyl nalezen</string>
-    <string name="button_download">Nahrát</string>
-    <string name="no_dictf">Slovník %s nebyl nalezen, nemohu spustit hru.</string>
+    <string name="downloading_dictf">NahrÃ¡vÃ¡m slovnÃ­k Crosswords %s...</string>
+    <string name="no_dict_title">SlovnÃ­k nebyl nalezen</string>
+    <string name="button_download">NahrÃ¡t</string>
+    <string name="no_dictf">SlovnÃ­k %s nebyl nalezen, nemohu spustit hru.</string>
 
 	<string name="msg_ask_password">Heslo pro \"%s\":</string>
 
-	<string name="red">Èervená</string>
-	<string name="green">Zelená</string>
-	<string name="blue">Modrá</string>
+	<string name="red">ÄŒervenÃ¡</string>
+	<string name="green">ZelenÃ¡</string>
+	<string name="blue">ModrÃ¡</string>
 
 </resources>
