@@ -438,7 +438,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     }
 
     gi->gameID = stream_getU16( stream );
-    if ( gi->timerEnabled ) {
+    if ( gi->timerEnabled || strVersion >= STREAM_VERS_GAMESECONDS ) {
         gi->gameSeconds = stream_getU16( stream );
     }
 
@@ -481,9 +481,7 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, 1, gi->confirmBTConnect );
 
     stream_putU16( stream, gi->gameID );
-    if ( gi->timerEnabled) {
-        stream_putU16( stream, gi->gameSeconds );
-    }
+    stream_putU16( stream, gi->gameSeconds );
     
     for ( pl = gi->players, i = 0; i < gi->nPlayers; ++pl, ++i ) {
         stringToStream( stream, pl->name );
