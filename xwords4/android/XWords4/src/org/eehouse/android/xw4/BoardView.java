@@ -48,6 +48,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Paint m_drawPaint;
     private Paint m_fillPaint;
     private Paint m_strokePaint;
+    private int m_defaultFontHt;
     private Paint m_tileStrokePaint;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
@@ -63,7 +64,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_origin;
     private int m_top;
     private JNIThread m_jniThread;
-    private String[] m_scores;
+    private String[][] m_scores;
     private String[] m_dictChars;
     private Rect m_boundsScratch;
     private String m_remText;
@@ -172,6 +173,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         m_drawPaint = new Paint();
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
+        m_defaultFontHt = (int)m_fillPaint.getTextSize();
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
         m_tileStrokePaint = new Paint();
@@ -236,7 +238,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         int nCells = gi.boardSize;
         int cellSize = width / nCells;
         result.trayHt = cellSize * 3;
-        result.scoreHt = cellSize; // scoreHt same as cells for proportion
+        result.scoreHt = 2 * m_defaultFontHt;
         int wantHt = result.trayHt + result.scoreHt + (cellSize * nCells);
         int nToScroll = 0;
         if ( wantHt <= height ) {
@@ -338,7 +340,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         clearToBack( rect );
         m_canvas.save( Canvas.CLIP_SAVE_FLAG );
         m_canvas.clipRect(rect);
-        m_scores = new String[numPlayers];
+        m_scores = new String[numPlayers][];
         return true;
     }
 
@@ -377,24 +379,43 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public void measureScoreText( Rect r, DrawScoreInfo dsi, 
                                   int[] width, int[] height )
     {
+        String[] scoreInfo = new String[dsi.isTurn?1:2];
+        int indx = 0;
         StringBuffer sb = new StringBuffer();
+
+        // If it's my turn I get one line.  Otherwise squeeze into
+        // two.
+
         if ( dsi.isTurn ) {
             sb.append( dsi.name );
             sb.append( ":" );
+        } else {
+            scoreInfo[indx++] = dsi.name;
         }
         sb.append( dsi.totalScore );
         if ( dsi.nTilesLeft >= 0 ) {
             sb.append( ":" );
             sb.append( dsi.nTilesLeft );
         }
-        String str = sb.toString();
-        m_scores[dsi.playerNum] = str;
+        scoreInfo[indx] = sb.toString();
+        m_scores[dsi.playerNum] = scoreInfo;
 
-        m_fillPaint.setTextSize( r.bottom - r.top - 2 );
-        m_fillPaint.getTextBounds( str, 0, str.length(), m_boundsScratch );
+        m_fillPaint.setTextSize( dsi.isTurn? r.height() : m_defaultFontHt );
 
-        width[0] = m_boundsScratch.right;
-        height[0] = m_boundsScratch.bottom;
+        int needWidth = 0;
+        for ( int ii = 0; ii < scoreInfo.length; ++ii ) {
+            m_fillPaint.getTextBounds( scoreInfo[ii], 0, scoreInfo[ii].length(), 
+                                       m_boundsScratch );
+            if ( needWidth < m_boundsScratch.width() ) {
+                needWidth = m_boundsScratch.width();
+            }
+        }
+        if ( needWidth > r.width() ) {
+            needWidth = r.width();
+        }
+        width[0] = needWidth;
+
+        height[0] = r.height();
     }
 
     public void score_drawPlayer( Rect rInner, Rect rOuter, DrawScoreInfo dsi )
@@ -402,9 +423,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( 0 != (dsi.flags & CELL_ISCURSOR) ) {
             fillRect( rOuter, m_otherColors[CommonPrefs.COLOR_FOCUS] );
         }
-        String text = m_scores[dsi.playerNum];
+        String[] texts = m_scores[dsi.playerNum];
         m_fillPaint.setColor( m_playerColors[dsi.playerNum] );
-        drawCentered( text, rOuter, null );
+
+        Rect rect = new Rect( rOuter );
+        int height = rect.height() / texts.length;
+        rect.bottom = rect.top + height;
+        for ( String text : texts ) {
+            drawCentered( text, rect, null );
+            rect.offset( 0, height );
+        }
     }
 
     public void drawTimer( Rect rect, int player, int secondsLeft )
