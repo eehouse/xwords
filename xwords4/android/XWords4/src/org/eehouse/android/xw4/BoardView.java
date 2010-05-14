@@ -269,6 +269,8 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_layoutWidth = width;
             m_layoutHeight = height;
             m_fontDims = null; // force recalc of font
+            m_letterRect = null;
+            m_valRect = null;
 
             BoardDims dims = figureBoardDims( width, height, m_gi );
             m_top = dims.top;
