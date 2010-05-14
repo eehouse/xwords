@@ -92,6 +92,12 @@
     <PreferenceScreen android:title="@string/advanced"
                       android:summary="@string/advanced_summary"
                       >
+      <EditTextPreference android:key="@string/key_initial_game_minutes"
+                          android:title="@string/initial_game_minutes"
+                          android:defaultValue="25"
+                          android:numeric="decimal"
+                          />
+
       <ListPreference android:key="@string/key_board_size"
                       android:title="@string/board_size"
                       android:entries="@array/board_sizes"

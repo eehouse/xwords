@@ -43,7 +43,8 @@ public class PrefsActivity extends PreferenceActivity
                              R.string.key_relay_port,
                              // R.string.key_sms_port,
                              R.string.key_dict_host,
-                             R.string.key_board_size
+                             R.string.key_board_size,
+                             R.string.key_initial_game_minutes,
         };
 
         SharedPreferences sp

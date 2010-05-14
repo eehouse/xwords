@@ -58,6 +58,7 @@ public class CurGameInfo {
     public CurGameInfo( Context context ) {
         m_inProgress = false;
         nPlayers = 2;
+        gameSeconds = 60 * CommonPrefs.getDefaultGameMinutes( context );
         boardSize = CommonPrefs.getDefaultBoardSize( context );
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = DeviceRole.SERVER_STANDALONE;
@@ -84,6 +85,7 @@ public class CurGameInfo {
         m_inProgress = src.m_inProgress;
         gameID = src.gameID;
         nPlayers = src.nPlayers;
+        gameSeconds = src.gameSeconds;
         boardSize = src.boardSize;
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = src.serverRole;

@@ -171,4 +171,13 @@ public class CommonPrefs {
         return Integer.parseInt( value.substring( 0, 2 ) );
     }
 
+    public static int getDefaultGameMinutes( Context context )
+    {
+        String key = context.getString( R.string.key_initial_game_minutes );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        String value = sp.getString( key, "25" );
+        Utils.logf( "value for key_initial_game_minutes: %s", value );
+        return Integer.parseInt( value );
+    }
 }
