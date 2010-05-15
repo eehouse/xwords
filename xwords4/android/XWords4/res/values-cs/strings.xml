@@ -26,8 +26,8 @@
 	<string name="list_item_reset">Vynulovat</string>
 
 	<string name="list_item_new_from">Nová hra podle vzoru</string>
-	<string name="list_item_move_up">Přesunout výą</string>
-	<string name="list_item_move_down">Přesunout níľ</string>
+	<string name="list_item_move_up">Přesunout výš</string>
+	<string name="list_item_move_down">Přesunout níž</string>
 	<string name="list_item_move_to_top">Přesunout nahoru</string>
 	<string name="list_item_move_to_bottom">Přesunout dolů</string>
 
@@ -47,10 +47,10 @@
 	<string name="app_name">Crosswords</string>  
 	
 	<string name="button_ok">OK</string>  
-	<string name="button_cancel">Zruąit</string>  
+	<string name="button_cancel">Zrušit</string>  
 	<string name="button_yes">Ano</string>  
 	<string name="button_no">Ne</string>  
-	<string name="button_save">Uloľit</string>  
+	<string name="button_save">Uložit</string>  
 	<string name="button_discard">Vyřadit</string>  
 
     <string name="player_label">Jméno:</string>
@@ -58,13 +58,13 @@
     <string name="game_config_revert">Vrátit změny</string>
 
 	<string name="error_title">Chyba</string>
-	<string name="info_title">Pro vaąi informaci...</string>
+	<string name="info_title">Pro vaši informaci...</string>
 	<string name="error_message">Chyba při nahrávání hry</string>
 	<string name="query_title">Dotaz...</string>
 	<string name="query_trade">Chcete určitě vyměnit vybrané kameny?</string>
 
 
-    <string name="title_tile_picker">Písmeno za ľolíka</string>
+    <string name="title_tile_picker">Písmeno za žolíka</string>
     <string name="tiles_left_title">Zbývající kameny</string>
     <string name="counts_values_title">Počty a hodnoty kamenů</string>
     <string name="history_title">Historie hry</string>
@@ -80,9 +80,9 @@
 	<string name="board_menu_undo_current">Zpět současný</string>
 	<string name="board_menu_undo_last">Zpět minulý</string>
 	<string name="board_submenu_hint">Rada</string>
-	<string name="board_menu_hint_next">Daląí rada</string>
+	<string name="board_menu_hint_next">Další rada</string>
 	<string name="board_menu_hint">Rada</string>
-	<string name="board_menu_values">Ukaľ hodnoty</string>
+	<string name="board_menu_values">Ukaž hodnoty</string>
 	<string name="board_submenu_game">Hra</string>
 	<string name="board_menu_game_counts">Počty a hodnoty</string>
 	<string name="board_menu_game_left">Zbývající kameny</string>
@@ -94,15 +94,15 @@
 	<string name="board_menu_file_prefs">Předvolby</string>
 	<string name="board_menu_file_about">O Crosswords</string>
 
-	<string name="gamel_menu_delete_all">Vymazat vąe</string>
+	<string name="gamel_menu_delete_all">Vymazat vše</string>
 	<!-- <string name="gamel_menu_view_hidden">Hidden games</string> -->
 
     <!-- returned by util_getUserString -->
     <string name="strd_robot_traded">Robot v tomto tahu vyměnil %d kamenů.</string>
     <string name="str_robot_moved">Robot provedl tento tah:</string>
     <string name="strs_values_header">%s počet/hodnota:\n</string>
-    <string name="strd_remaining_tiles_add">+ %d [vąechny zbývající kameny]</string>
-    <string name="strd_unused_tiles_sub">- %d [nepouľité kameny]</string>
+    <string name="strd_remaining_tiles_add">+ %d [všechny zbývající kameny]</string>
+    <string name="strd_unused_tiles_sub">- %d [nepoužité kameny]</string>
     <string name="str_remote_moved">Vzdálený hráč provedl tento tah:</string>
     <string name="strd_time_penalty_sub"></string>
     <string name="str_pass"> - %d [čas]</string>
@@ -113,30 +113,30 @@
     <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
     <string name="strd_cumulative_score">Souhrnné skóre: %d</string>
     <string name="strs_new_tiles">Nové kameny: %s</string>
-    <string name="str_passed">Proąel</string>
+    <string name="str_passed">Prošel</string>
     <string name="strsd_summaryscored">%s:%d</string>
     <string name="strd_traded">%s:%d</string>
     <string name="str_lostturn">Tah byl ztracen</string>
     <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
     <string name="str_local_name">%s</string>
     <string name="str_nonlocal_name">%s (vzdálený)</string>
-    <string name="str_bonus_all">Bonus za vyuľití vąech kamenů: 50\n</string>
+    <string name="str_bonus_all">Bonus za využití všech kamenů: 50\n</string>
     <string name="strd_turn_score">Skóre za tah: %d\n</string>
 
     <!-- error messages -->
-	<string name="str_tiles_not_in_line">Kameny musí leľet v jedné řadě.</string>
-	<string name="str_no_empties_in_turn">Mezi kameny nesmí být ľádná prázdná políčka.</string>
+	<string name="str_tiles_not_in_line">Kameny musí ležet v jedné řadě.</string>
+	<string name="str_no_empties_in_turn">Mezi kameny nesmí být žádná prázdná políčka.</string>
 	<string name="str_two_tiles_first_move">V prvním tahu musíte umístit dva nebo více kamenů.</string>
-	<string name="str_tiles_must_contact">Nové kameny musí navazovat na jiľ poloľené kameny (nebo se s nimi kříľit).</string>
-	<string name="str_not_your_turn">To nemůľete udělat; není to váą tah!</string>
+	<string name="str_tiles_must_contact">Nové kameny musí navazovat na již položené kameny (nebo se s nimi křížit).</string>
+	<string name="str_not_your_turn">To nemůžete udělat; není to váš tah!</string>
 	<string name="str_no_peek_robot_tiles">Nenakukjte na kameny robota!</string>
 	<string name="str_cant_trade_mid_move">Vzdálený hráč hrál s kameny před výměnou.</string>
-	<string name="str_too_few_tiles_left_to_trade">Zbývá přílią málo kamenů pro výměnu.</string>
-	<string name="str_cant_undo_tileassign">Přiřazení kamene nemůľe být vráceno zpět.</string>
-	<string name="str_cant_hint_while_disabled">Pro tuto hru je zakázána nápověda. Pro novou hru ji můľete povolit v Předvolbách.</string>
+	<string name="str_too_few_tiles_left_to_trade">Zbývá příliš málo kamenů pro výměnu.</string>
+	<string name="str_cant_undo_tileassign">Přiřazení kamene nemůže být vráceno zpět.</string>
+	<string name="str_cant_hint_while_disabled">Pro tuto hru je zakázána nápověda. Pro novou hru ji můžete povolit v Předvolbách.</string>
 	<string name="str_no_peek_remote_tiles">Nenakukujte na kameny vzdáleného hráče!</string>
 	<string name="str_reg_unexpected_user">Odmítnut pokus o registraci neočekávaného hráče(ů)</string>
-	<string name="str_server_dict_wins">Konflikt mezi slovníky Serveru a Klienta; Platí vľdy slovník Serveru.</string>
+	<string name="str_server_dict_wins">Konflikt mezi slovníky Serveru a Klienta; Platí vždy slovník Serveru.</string>
 	<string name="str_reg_server_sans_remote">Alespoň jeden hráč musí být označen jako \"Vzdálený\" abyste mohli hru spustit jako Server.</string>
 
     <string name="remote_label">Hráč klient</string>
@@ -154,8 +154,8 @@
 
     <string name="game_config_juggle">Přehodit hráče</string>
 
-    <string name="list_item_up">O jeden výą</string>
-    <string name="list_item_down">O jeden níľ</string>
+    <string name="list_item_up">O jeden výš</string>
+    <string name="list_item_down">O jeden níž</string>
     <string name="dicts_item_delete">Vymazat slovník</string>
     <string name="dicts_item_details">Podrobnosti</string>
 
@@ -172,38 +172,38 @@
 
     <string name="download_dicts">Nahrát více...</string>
 
-    <string name="confirm_save_title">Potvrdit uloľení</string>
-    <string name="confirm_save">Tato hra je rozehraná. Pokud tyto změny uloľíte, musí být hra spuątěná znova.
-    Chcete tyto změny uloľit nebo je chcete zruąit?</string>
-    <string name="confirm_delete_all">Určitě chcete vymazat vąechny hry?
+    <string name="confirm_save_title">Potvrdit uložení</string>
+    <string name="confirm_save">Tato hra je rozehraná. Pokud tyto změny uložíte, musí být hra spuštěná znova.
+    Chcete tyto změny uložit nebo je chcete zrušit?</string>
+    <string name="confirm_delete_all">Určitě chcete vymazat všechny hry?
     Tato akce se nedá vrátit zpět.</string>
     
     <string name="hints_allowed">Povolit nápovědu</string>
     <string name="use_timer">Povolit časovač</string>
     <string name="color_tiles">Barvy kamenů</string>
     <string name="color_tiles_summary">Obarvit kameny barvou hráče, který s nimi hrál</string>
-    <string name="show_arrow">Ukázat ąipku na herním poli</string>
-    <string name="show_arrow_summary">Slovo se začne psát ve směru ąipky a od jejího umístění</string>
+    <string name="show_arrow">Ukázat šipku na herním poli</string>
+    <string name="show_arrow_summary">Slovo se začne psát ve směru šipky a od jejího umístění</string>
     <string name="explain_robot">Vysvětlit tahy robota</string>
-    <string name="explain_robot_summary">Ukázat skóre po kaľdém tahu robota</string>
+    <string name="explain_robot_summary">Ukázat skóre po každém tahu robota</string>
     <string name="skip_confirm_turn">Přeskočit potvrzení tahu</string>
-    <string name="skip_confirm_turn_summary">Neukazovat skóre po kaľdém tahu hráče</string>
-    <string name="ringer_zoom">Přiblíľení tlačítky hlasitosti</string>
-    <string name="ringer_zoom_summary">Přiblíľit hrací pole pomocí tlačítek ovládání hlasitosti
+    <string name="skip_confirm_turn_summary">Neukazovat skóre po každém tahu hráče</string>
+    <string name="ringer_zoom">Přiblížení tlačítky hlasitosti</string>
+    <string name="ringer_zoom_summary">Přiblížit hrací pole pomocí tlačítek ovládání hlasitosti
     místo tlačítek na obrazovce</string>
 
     <string name="role_standalone">Samostatný</string>
     <string name="role_host">Server</string>
     <string name="role_guest">Klient</string>
-    <string name="role_prompt">Zvolte Standalone pokud vąichni hráči hrají 
-    na tomto zařízení. Jinak můľete být Serverem nebo se jako Klient připojit k jinému Serveru.</string>
+    <string name="role_prompt">Zvolte Standalone pokud všichni hráči hrají 
+    na tomto zařízení. Jinak můžete být Serverem nebo se jako Klient připojit k jinému Serveru.</string>
 
-    <string name="room_edit_hint_host">Jako Server musíte vytvořit a pojmenovat místnost pro vás a vaąe Klienty. 
-    Musíte se připojit první před vąemi klienty.</string>
-    <string name="room_edit_hint_guest">Jako Klient se můľete připojit do místosti vytvořené Serverem. 
-    Musíte ale počkat neľ se do místnosti připojí Server.</string>
+    <string name="room_edit_hint_host">Jako Server musíte vytvořit a pojmenovat místnost pro vás a vaše Klienty. 
+    Musíte se připojit první před všemi klienty.</string>
+    <string name="room_edit_hint_guest">Jako Klient se můžete připojit do místosti vytvořené Serverem. 
+    Musíte ale počkat než se do místnosti připojí Server.</string>
     <string name="room_edit_hint_connect">(Připojení se uskuteční automaticky pokud spustíte hru nakonfigurovanou
-    pro pouľívání relay.)</string>
+    pro používání relay.)</string>
 
     <string name="phonies_ignore">Ignorovat slovník</string>
     <string name="phonies_warn">Varovat pokud není ve slovníku</string>
@@ -228,11 +228,11 @@
     <string name="bonus_l3x">Trojitá hodnota písmene</string>
     <string name="bonus_w2x">Dvojitá hodnota slova</string>
     <string name="bonus_w3x">Trojitá hodnota</string>
-    <string name="trading_text">Výměna kamenů. Zvolte\n\'Ukončit tah\' aľ budete hotovi.</string>
+    <string name="trading_text">Výměna kamenů. Zvolte\n\'Ukončit tah\' až budete hotovi.</string>
     <string name="tile_back">Pozadí kamenů</string>
     <string name="empty">Prázdné pole/pozadí</string>
     <string name="focus">Barva focus</string>
-    <string name="advanced">Roząířené</string>
+    <string name="advanced">Rozšířené</string>
     <string name="advanced_summary">Toto byste neměli nikdy potřebovat...</string>
     <string name="relay_host">Relay adresa</string>
     <string name="dict_host">URL adresa pro nahrávání slovníků</string>
@@ -250,13 +250,13 @@
     <string name="tab_bluetooth">Bluetooth (připravuje se)</string>
 
     <string name="msg_relay_waiting">Připojen na relay. Čekám na %d hráče.</string>
-    <string name="msg_relay_all_here">Vąichni hráči jsou zde.</string>
+    <string name="msg_relay_all_here">Všichni hráči jsou zde.</string>
     <string name="title_relay_status">Stav připojení.</string>
 
     <string name="relay_alert">Chyba připojení</string>
-    <string name="msg_too_many">Chcete přihlásit více hráčů neľ očekává server.</string>
-    <string name="msg_no_room">®ádný server si nezaregistroval místnost s tímto jménem.</string>
-    <string name="msg_dup_room">Jiný server si jiľ zaregistroval místnost s tímto jménem. Přejmenujte ji nebo to zkuste později.</string>
+    <string name="msg_too_many">Chcete přihlásit více hráčů než očekává server.</string>
+    <string name="msg_no_room">Žádný server si nezaregistroval místnost s tímto jménem.</string>
+    <string name="msg_dup_room">Jiný server si již zaregistroval místnost s tímto jménem. Přejmenujte ji nebo to zkuste později.</string>
     <string name="msg_lost_other">Relay ztratil kontakt s nějakým zařízením ve hře.</string>
 
     <string name="ids_badwords">Slovo[a] %s nebylo nalezeno ve slovníku.</string>
@@ -285,8 +285,8 @@
     House. Tento software je vydán pod licencí GNU Public License.</string>
 
     <string name="about_web">Manuál a zdrojové kódy najdete na:
-    http://xwords.sf.net.  Hlásit chyby, doporučit vylepąení, nabídnout pomoc, atd.
-    můľete na email: eehouse@eehouse.org.</string>
+    http://xwords.sf.net.  Hlásit chyby, doporučit vylepšení, nabídnout pomoc, atd.
+    můžete na email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
     <string name="xlator"></string>
 
