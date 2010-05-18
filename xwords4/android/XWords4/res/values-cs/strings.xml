@@ -51,7 +51,7 @@
 	<string name="button_yes">Ano</string>  
 	<string name="button_no">Ne</string>  
 	<string name="button_save">Uložit</string>  
-	<string name="button_discard">Vyřadit</string>  
+	<string name="button_discard">Zrušit</string>  
 
     <string name="player_label">Jméno:</string>
     <string name="game_config_open">Otevřít</string>
@@ -182,14 +182,14 @@
     <string name="use_timer">Povolit časovač</string>
     <string name="color_tiles">Barvy kamenů</string>
     <string name="color_tiles_summary">Obarvit kameny barvou hráče, který s nimi hrál</string>
-    <string name="show_arrow">Ukázat šipku na herním poli</string>
+    <string name="show_arrow">Ukázat šipku</string>
     <string name="show_arrow_summary">Slovo se začne psát ve směru šipky a od jejího umístění</string>
     <string name="explain_robot">Vysvětlit tahy robota</string>
     <string name="explain_robot_summary">Ukázat skóre po každém tahu robota</string>
     <string name="skip_confirm_turn">Přeskočit potvrzení tahu</string>
     <string name="skip_confirm_turn_summary">Neukazovat skóre po každém tahu hráče</string>
-    <string name="ringer_zoom">Přiblížení tlačítky hlasitosti</string>
-    <string name="ringer_zoom_summary">Přiblížit hrací pole pomocí tlačítek ovládání hlasitosti
+    <string name="ringer_zoom">Přiblížit tlačítky hlasitosti</string>
+    <string name="ringer_zoom_summary">Přiblížit hrací pole pomocí tlačítek ovládání hlasitosti zvuku
     místo tlačítek na obrazovce</string>
 
     <string name="role_standalone">Samostatný</string>
@@ -219,7 +219,7 @@
 
     <string name="general_prefs">Předvolby</string>
     <string name="prefs_colors">Barvy</string>
-    <string name="prefs_colors_summary">Upravit barvy na hrací plochy</string>
+    <string name="prefs_colors_summary">Upravit barvy hráčů a hrací plochy</string>
     <string name="player0">První hráč</string>
     <string name="player1">Druhý hráč</string>
     <string name="player2">Třetí hráč</string>
@@ -227,18 +227,18 @@
     <string name="bonus_l2x">Dvojitá hodnota písmene</string>
     <string name="bonus_l3x">Trojitá hodnota písmene</string>
     <string name="bonus_w2x">Dvojitá hodnota slova</string>
-    <string name="bonus_w3x">Trojitá hodnota</string>
+    <string name="bonus_w3x">Trojitá hodnota slova</string>
     <string name="trading_text">Výměna kamenů. Zvolte\n\'Ukončit tah\' až budete hotovi.</string>
     <string name="tile_back">Pozadí kamenů</string>
     <string name="empty">Prázdné pole/pozadí</string>
     <string name="focus">Barva focus</string>
     <string name="advanced">Rozšířené</string>
-    <string name="advanced_summary">Toto byste neměli nikdy potřebovat...</string>
+    <string name="advanced_summary">Toto byste neměli potřebovat měnit...</string>
     <string name="relay_host">Relay adresa</string>
     <string name="dict_host">URL adresa pro nahrávání slovníků</string>
     <string name="relay_port">Relay port</string>
     <string name="sms_port">SMS port</string>
-    <string name="board_size">Výchozí velikost hrací plochy</string>
+    <string name="board_size">Velikost hrací plochy</string>
 
     <string name="sms_phone_label">sms_phone_label</string>
     <string name="sms_port_label">sms_port_label</string>
@@ -301,4 +301,7 @@
 	<string name="green">Zelená</string>
 	<string name="blue">Modrá</string>
 
+	<string name="gamef">Hra %d</string>
+	<string name="playerf">Hráč %d</string>
+	<string name="initial_game_minutes">Délka hry v minutách</string>
 </resources>
