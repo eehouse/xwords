@@ -20,6 +20,9 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.content.Context;
+import org.eehouse.android.xw4.R;
+
 public class LocalPlayer {
     public String name;
     public String password;
@@ -27,12 +30,12 @@ public class LocalPlayer {
     public boolean isRobot;
     public boolean isLocal;
 
-    public LocalPlayer( int num )
+    public LocalPlayer( Context context, int num )
     {
         isLocal = true;
         isRobot = num == 0;     // 1st player is a robot by default
-        // This should be a template in strings.xml
-        name = "Player " + (num + 1);
+        String fmt = context.getString( R.string.playerf );
+        name = String.format( fmt, num + 1 );
         password = "";
     }
 

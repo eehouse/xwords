@@ -74,7 +74,7 @@ public class CurGameInfo {
         // to cons up a LocalPlayer instance.
         int ii;
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
-            players[ii] = new LocalPlayer(ii);
+            players[ii] = new LocalPlayer( context, ii );
         }
 
         figureVisible();

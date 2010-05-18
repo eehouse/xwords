@@ -322,6 +322,7 @@
 	<string name="blue">Blue</string>
 
 	<string name="gamef">Game %d</string>
+	<string name="playerf">Player %d</string>
 	<string name="initial_game_minutes">Default game minutes</string>
 
 </resources>
