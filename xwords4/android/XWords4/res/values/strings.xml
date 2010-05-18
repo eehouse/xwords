@@ -156,6 +156,7 @@
 
     <string name="list_item_up">Up one</string>
     <string name="list_item_down">Down one</string>
+    <string name="dicts_item_select">Make default</string>
     <string name="dicts_item_delete">Delete dictionary</string>
     <string name="dicts_item_details">Details</string>
 
@@ -227,6 +228,14 @@
     communicate?</string>
 
     <string name="general_prefs">Preferences</string>
+    <string name="prefs_defaults">New game defaults</string>
+    <string name="prefs_defaults_summary">Default settings for new
+    games</string>
+    <string name="default_dict">Game dictionary</string>
+    <string name="board_size">Initial board size</string>
+
+    <string name="manage_dicts">Choose</string>
+
     <string name="prefs_colors">Colors</string>
     <string name="prefs_colors_summary">Edit colors used on the board</string>
     <string name="player0">First player</string>
@@ -247,7 +256,6 @@
     <string name="dict_host">Dictionary download URL</string>
     <string name="relay_port">Relay port</string>
     <string name="sms_port">SMS port</string>
-    <string name="board_size">Initial board size</string>
 
     <string name="sms_phone_label">sms_phone_label</string>
     <string name="sms_port_label">sms_port_label</string>

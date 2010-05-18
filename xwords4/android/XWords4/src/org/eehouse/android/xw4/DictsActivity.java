@@ -33,6 +33,8 @@ import android.view.MenuItem;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
+import android.preference.PreferenceManager;
+import android.content.SharedPreferences;
 
 import junit.framework.Assert;
 
@@ -105,6 +107,14 @@ public class DictsActivity extends ListActivity
         
         int id = item.getItemId();
         switch( id ) {
+        case R.id.dicts_item_select:
+            SharedPreferences sp
+                = PreferenceManager.getDefaultSharedPreferences( this );
+            SharedPreferences.Editor editor = sp.edit();
+            String key = getString( R.string.key_default_dict );
+            editor.putString( key, m_dicts[info.position] );
+            editor.commit();
+            break;
         case R.id.dicts_item_delete:
             deleteFile( m_dicts[info.position] );
             mkListAdapter();

@@ -62,7 +62,7 @@ public class CurGameInfo {
         boardSize = CommonPrefs.getDefaultBoardSize( context );
         players = new LocalPlayer[MAX_NUM_PLAYERS];
         serverRole = DeviceRole.SERVER_STANDALONE;
-        dictName = GameUtils.dictList( context )[0];
+        dictName = CommonPrefs.getDefaultDict( context );
         hintsNotAllowed = false;
         phoniesAction = XWPhoniesChoice.PHONIES_IGNORE;
         timerEnabled = false;

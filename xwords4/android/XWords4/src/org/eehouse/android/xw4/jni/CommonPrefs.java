@@ -28,6 +28,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.GameUtils;
 
 public class CommonPrefs {
     public static final int COLOR_TILE_BACK = 0;
@@ -180,4 +181,17 @@ public class CommonPrefs {
         Utils.logf( "value for key_initial_game_minutes: %s", value );
         return Integer.parseInt( value );
     }
+
+    public static String getDefaultDict( Context context )
+    {
+        String key = context.getString( R.string.key_default_dict );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        String value = sp.getString( key, "" );
+        if ( value.equals("") ) {
+            value = GameUtils.dictList( context )[0];
+        }
+        return value;
+    }
+
 }
