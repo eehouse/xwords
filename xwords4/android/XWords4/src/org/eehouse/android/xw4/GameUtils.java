@@ -213,16 +213,10 @@ public class GameUtils {
     {
         ArrayList<String> al = new ArrayList<String>();
 
-        try {
-            AssetManager am = context.getAssets();
-            String[] files = am.list("");
-            for ( String file : files ) {
-                if ( isDict( file ) ) {
-                    al.add( removeExtn( file ) );
-                }
+        for ( String file : getAssets( context ) ) {
+            if ( isDict( file ) ) {
+                al.add( removeExtn( file ) );
             }
-        } catch( java.io.IOException ioe ) {
-            Utils.logf( ioe.toString() );
         }
 
         for ( String file : context.fileList() ) {
@@ -234,12 +228,24 @@ public class GameUtils {
         return al.toArray( new String[al.size()] );
     }
 
+    public static boolean dictIsBuiltin( Context context, String name )
+    {
+        boolean builtin = false;
+        name = addDictExtn( name );
+
+        for ( String file : getAssets( context ) ) {
+            if ( file.equals( name ) ) {
+                builtin = true;
+                break;
+            }
+        }
+
+        return builtin;
+    }
+
     public static void deleteDict( Context context, String name )
     {
-        if ( ! name.endsWith( XWConstants.DICT_EXTN ) ) {
-            name += XWConstants.DICT_EXTN;
-        }
-        context.deleteFile( name );
+        context.deleteFile( addDictExtn( name ) );
     }
 
     public static byte[] openDict( Context context, String name )
@@ -247,9 +253,7 @@ public class GameUtils {
         byte[] bytes = null;
         InputStream dict = null;
 
-        if ( ! name.endsWith( XWConstants.DICT_EXTN ) ) {
-            name += XWConstants.DICT_EXTN;
-        }
+        name = addDictExtn( name );
 
         AssetManager am = context.getAssets();
         try {
@@ -327,5 +331,24 @@ public class GameUtils {
             str = str.substring( 0, indx );
         }
         return str;
+    }
+
+    private static String addDictExtn( String str ) 
+    {
+        if ( ! str.endsWith( XWConstants.DICT_EXTN ) ) {
+            str += XWConstants.DICT_EXTN;
+        }
+        return str;
+    }
+
+    private static String[] getAssets( Context context )
+    {
+        try {
+            AssetManager am = context.getAssets();
+            return am.list("");
+        } catch( java.io.IOException ioe ) {
+            Utils.logf( ioe.toString() );
+            return new String[0];
+        }
     }
 }

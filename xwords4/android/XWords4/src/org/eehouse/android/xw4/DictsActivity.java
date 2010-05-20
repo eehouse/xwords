@@ -89,8 +89,21 @@ public class DictsActivity extends ListActivity
     @Override
     public void onCreateContextMenu( ContextMenu menu, View view, 
                                      ContextMenuInfo menuInfo ) {
+
+        super.onCreateContextMenu( menu, view, menuInfo );
+
         MenuInflater inflater = getMenuInflater();
         inflater.inflate( R.menu.dicts_item_menu, menu );
+
+        AdapterView.AdapterContextMenuInfo info
+            = (AdapterView.AdapterContextMenuInfo)menuInfo;
+
+        String dict = m_dicts[info.position];
+        if ( GameUtils.dictIsBuiltin( this, dict ) ) {
+            MenuItem item = menu.findItem( R.id.dicts_item_delete );
+            item.setEnabled( false );
+            // item.setVisible( false ) completely removes item
+        }
     }
    
     @Override
