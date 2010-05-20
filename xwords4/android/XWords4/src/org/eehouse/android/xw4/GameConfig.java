@@ -551,12 +551,6 @@ public class GameConfig extends Activity implements View.OnClickListener {
         LayoutInflater factory = LayoutInflater.from(this);
         for ( int ii = 0; ii < names.length; ++ii ) {
 
-            if ( ii > 0 ) {
-                View divider = factory.inflate( R.layout.divider_view, null );
-                divider.setVisibility( View.VISIBLE );
-                m_playerLayout.addView( divider );
-            }
-
             final XWListItem view
                 = (XWListItem)factory.inflate( R.layout.list_item, null );
             view.setPosition( ii );
@@ -572,6 +566,10 @@ public class GameConfig extends Activity implements View.OnClickListener {
                     }
                 } );
             m_playerLayout.addView( view );
+
+            View divider = factory.inflate( R.layout.divider_view, null );
+            divider.setVisibility( View.VISIBLE );
+            m_playerLayout.addView( divider );
         }
 
         if ( DeviceRole.SERVER_ISSERVER == m_gi.serverRole
