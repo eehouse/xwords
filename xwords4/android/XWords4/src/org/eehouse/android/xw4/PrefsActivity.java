@@ -89,7 +89,9 @@ public class PrefsActivity extends PreferenceActivity
     {
         Preference pref = getPreferenceScreen().findPreference( key );
         String value = sp.getString( key, "" );
-        pref.setSummary( value );
+        if ( ! value.equals("") ) {
+            pref.setSummary( value );
+        }
     }
 
 }
