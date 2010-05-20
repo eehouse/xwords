@@ -116,7 +116,7 @@ public class DictsActivity extends ListActivity
             editor.commit();
             break;
         case R.id.dicts_item_delete:
-            deleteFile( m_dicts[info.position] );
+            GameUtils.deleteDict( this, m_dicts[info.position] );
             mkListAdapter();
             handled = true;
             break;

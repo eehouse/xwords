@@ -234,6 +234,14 @@ public class GameUtils {
         return al.toArray( new String[al.size()] );
     }
 
+    public static void deleteDict( Context context, String name )
+    {
+        if ( ! name.endsWith( XWConstants.DICT_EXTN ) ) {
+            name += XWConstants.DICT_EXTN;
+        }
+        context.deleteFile( name );
+    }
+
     public static byte[] openDict( Context context, String name )
     {
         byte[] bytes = null;
