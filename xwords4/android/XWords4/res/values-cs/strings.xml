@@ -129,7 +129,7 @@
 	<string name="str_two_tiles_first_move">V prvním tahu musíte umístit dva nebo více kamenů.</string>
 	<string name="str_tiles_must_contact">Nové kameny musí navazovat na již položené kameny (nebo se s nimi křížit).</string>
 	<string name="str_not_your_turn">To nemůžete udělat; není to váš tah!</string>
-	<string name="str_no_peek_robot_tiles">Nenakukjte na kameny robota!</string>
+	<string name="str_no_peek_robot_tiles">Nenakukujte na kameny robota!</string>
 	<string name="str_cant_trade_mid_move">Vzdálený hráč hrál s kameny před výměnou.</string>
 	<string name="str_too_few_tiles_left_to_trade">Zbývá příliš málo kamenů pro výměnu.</string>
 	<string name="str_cant_undo_tileassign">Přiřazení kamene nemůže být vráceno zpět.</string>
@@ -156,6 +156,7 @@
 
     <string name="list_item_up">O jeden výš</string>
     <string name="list_item_down">O jeden níž</string>
+    <string name="dicts_item_select">Nastavit jako výchozí</string>
     <string name="dicts_item_delete">Vymazat slovník</string>
     <string name="dicts_item_details">Podrobnosti</string>
 
@@ -189,8 +190,7 @@
     <string name="skip_confirm_turn">Přeskočit potvrzení tahu</string>
     <string name="skip_confirm_turn_summary">Neukazovat skóre po každém tahu hráče</string>
     <string name="ringer_zoom">Přiblížit tlačítky hlasitosti</string>
-    <string name="ringer_zoom_summary">Přiblížit hrací pole pomocí tlačítek ovládání hlasitosti zvuku
-    místo tlačítek na obrazovce</string>
+    <string name="ringer_zoom_summary">Přiblížit hrací pole pomocí tlačítek ovládání hlasitosti zvuku</string>
 
     <string name="role_standalone">Samostatný</string>
     <string name="role_host">Server</string>
@@ -218,6 +218,11 @@
     <string name="connect_prompt">Jak budou spolu komunikovat Server a Klienti?</string>
 
     <string name="general_prefs">Předvolby</string>
+    <string name="prefs_defaults">Výchozí nastavení</string>
+    <string name="prefs_defaults_summary">Výchozí nastavení pro novou hru</string>
+    <string name="default_dict">Slovník pro hru</string>
+    <string name="board_size">Velikost hrací plochy</string>
+    <string name="manage_dicts">Vybrat</string>
     <string name="prefs_colors">Barvy</string>
     <string name="prefs_colors_summary">Upravit barvy hráčů a hrací plochy</string>
     <string name="player0">První hráč</string>
@@ -238,7 +243,6 @@
     <string name="dict_host">URL adresa pro nahrávání slovníků</string>
     <string name="relay_port">Relay port</string>
     <string name="sms_port">SMS port</string>
-    <string name="board_size">Velikost hrací plochy</string>
 
     <string name="sms_phone_label">sms_phone_label</string>
     <string name="sms_port_label">sms_port_label</string>
@@ -288,7 +292,7 @@
     http://xwords.sf.net.  Hlásit chyby, doporučit vylepšení, nabídnout pomoc, atd.
     můžete na email: eehouse@eehouse.org.</string>
     <!-- fill this in other than in English -->
-    <string name="xlator"></string>
+    <string name="xlator">Český překlad Tomáš Morkus</string>
 
     <string name="downloading_dictf">Nahrávám slovník Crosswords %s...</string>
     <string name="no_dict_title">Slovník nebyl nalezen</string>
