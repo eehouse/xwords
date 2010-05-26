@@ -12,10 +12,10 @@
                           android:numeric="decimal"
                           />
 
-      <Preference android:key="@string/key_default_dict"
-                  android:title="@string/default_dict"
-                  android:summary="@string/default_dict_summary"
-                  />
+      <org.eehouse.android.xw4.DictListPreference 
+         android:key="@string/key_default_dict"
+         android:title="@string/default_dict"
+         />
 
       <ListPreference android:key="@string/key_board_size"
                       android:title="@string/board_size"

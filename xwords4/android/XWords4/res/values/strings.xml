@@ -232,8 +232,6 @@
     <string name="prefs_defaults_summary">Default settings for new
     games</string>
     <string name="default_dict">Game dictionary</string>
-    <string name="default_dict_summary">(Use the Dictionaries screen
-    to set me -- for now)</string>
     <string name="board_size">Initial board size</string>
 
     <string name="manage_dicts">Choose</string>
