@@ -181,7 +181,7 @@
     delete all games?  This action cannot be undone.</string>
     
     <string name="hints_allowed">Allow hints</string>
-    <string name="use_timer">Enable timer</string>
+    <string name="use_timer">Enable game timer</string>
     <string name="color_tiles">Color tiles</string>
     <string name="color_tiles_summary">Draw tiles using color of
     player who played them</string>
@@ -233,7 +233,7 @@
     games</string>
     <string name="default_dict">Game dictionary</string>
     <string name="default_phonies">Handle phonies</string>
-    <string name="board_size">Initial board size</string>
+    <string name="board_size">Board size</string>
     <string name="default_timerenabled">Use game timer</string>
 
     <string name="manage_dicts">Choose</string>
@@ -325,6 +325,6 @@
 
 	<string name="gamef">Game %d</string>
 	<string name="playerf">Player %d</string>
-	<string name="initial_game_minutes">Default game minutes</string>
+	<string name="initial_game_minutes">Game time (minutes)</string>
 
 </resources>

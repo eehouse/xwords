@@ -16,7 +16,7 @@
                       android:title="@string/default_phonies"
                       android:entries="@array/phony_names"
                       android:entryValues="@array/phony_names"
-                      android:defaultValue="0"
+                      android:defaultValue="@string/phonies_ignore"
                       />
 
       <CheckBoxPreference android:key="@string/key_default_timerenabled"
@@ -39,7 +39,7 @@
 
     </PreferenceScreen>
 
-  <CheckBoxPreference android:key="@string/key_color_tiles"
+  <CheckBoxPreference  android:key="@string/key_color_tiles"
                       android:title="@string/color_tiles"
                       android:summary="@string/color_tiles_summary"
                       android:defaultValue="true"
