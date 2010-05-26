@@ -211,10 +211,14 @@ http_thread_main( void* arg )
 
     while ( totalRead <= 4 ) {  /* have we read enough for GET? */
         ssize_t nread = read( sock, buf+totalRead, sizeof(buf)-1-totalRead );
-        if ( nread == 0 ) {
+        if ( nread == 0 ) { // EOF
             break;
         } else if ( nread > 0 ) {
             buf[nread] = '\0';
+        } else {
+            logf( XW_LOGERROR, "%s: read() got error: %s", __func__,
+                  strerror(errno) );
+            break;
         }
         totalRead += nread;
     }
@@ -223,7 +227,8 @@ http_thread_main( void* arg )
         struct sockaddr_in name;
         socklen_t namelen = sizeof(name);
 
-        bool isLocal = 0 == getpeername( sock, (struct sockaddr*)&name, &namelen );
+        bool isLocal = 0 == getpeername( sock, (struct sockaddr*)&name, 
+                                         &namelen );
         if ( isLocal ) {
             in_addr_t s_addr = name.sin_addr.s_addr;
             isLocal = 0x7f000001 == htonl(s_addr);
