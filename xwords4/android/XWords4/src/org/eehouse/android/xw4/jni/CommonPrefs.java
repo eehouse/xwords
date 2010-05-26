@@ -131,29 +131,23 @@ public class CommonPrefs {
 
     public static String getDefaultRelayHost( Context context )
     {
-        String key = context.getString( R.string.key_relay_host );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        return sp.getString( key, "" );
+        return getString( context, R.string.key_relay_host );
     }
 
     public static int getDefaultRelayPort( Context context )
     {
-        String key = context.getString( R.string.key_relay_port );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        String val = sp.getString( key, "" );
+        String val = getString( context, R.string.key_relay_port );
         int result = 0;
-        result = Integer.decode( val );
-        return result;
+        try {
+            return Integer.parseInt( val );
+        } catch ( Exception ex ) {
+            return 0;
+        } 
     }
 
     public static String getDefaultDictURL( Context context )
     {
-        String key = context.getString( R.string.key_dict_host );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        return sp.getString( key, "" );
+        return getString( context, R.string.key_dict_host );
     }
 
     public static boolean getVolKeysZoom( Context context )
@@ -163,28 +157,27 @@ public class CommonPrefs {
 
     public static int getDefaultBoardSize( Context context )
     {
-        String key = context.getString( R.string.key_board_size );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        String value = sp.getString( key, "15" );
-        return Integer.parseInt( value.substring( 0, 2 ) );
+        String value = getString( context, R.string.key_board_size );
+        try {
+            return Integer.parseInt( value.substring( 0, 2 ) );
+        } catch ( Exception ex ) {
+            return 15;
+        } 
     }
 
     public static int getDefaultGameMinutes( Context context )
     {
-        String key = context.getString( R.string.key_initial_game_minutes );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        String value = sp.getString( key, "25" );
-        return Integer.parseInt( value );
+        String value = getString( context, R.string.key_initial_game_minutes );
+        try {
+            return Integer.parseInt( value );
+        } catch ( Exception ex ) {
+            return 25;
+        }
     }
 
     public static String getDefaultDict( Context context )
     {
-        String key = context.getString( R.string.key_default_dict );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        String value = sp.getString( key, "" );
+        String value = getString( context, R.string.key_default_dict );
         if ( value.equals("") ) {
             value = GameUtils.dictList( context )[0];
         }
@@ -194,10 +187,7 @@ public class CommonPrefs {
     public static CurGameInfo.XWPhoniesChoice 
         getDefaultPhonies( Context context )
     {
-        String key = context.getString( R.string.key_default_phonies );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        String value = sp.getString( key, "" );
+        String value = getString( context, R.string.key_default_phonies );
 
         CurGameInfo.XWPhoniesChoice result = 
             CurGameInfo.XWPhoniesChoice.PHONIES_IGNORE;
@@ -225,6 +215,14 @@ public class CommonPrefs {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
         return sp.getBoolean( key, defaultValue );
+    }
+
+    private static String getString( Context context, int keyID )
+    {
+        String key = context.getString( keyID );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        return sp.getString( key, "" );
     }
 
 }
