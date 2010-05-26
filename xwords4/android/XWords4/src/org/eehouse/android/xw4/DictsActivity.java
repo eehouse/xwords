@@ -101,8 +101,7 @@ public class DictsActivity extends ListActivity
         String dict = m_dicts[info.position];
         if ( GameUtils.dictIsBuiltin( this, dict ) ) {
             MenuItem item = menu.findItem( R.id.dicts_item_delete );
-            item.setEnabled( false );
-            // item.setVisible( false ) completely removes item
+            item.setVisible( false );
         }
     }
    
