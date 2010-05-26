@@ -44,9 +44,9 @@ public class CurGameInfo {
     public DeviceRole serverRole;
 
     public boolean hintsNotAllowed;
-    public boolean  timerEnabled;
-    public boolean  allowPickTiles;
-    public boolean  allowHintRect;
+    public boolean timerEnabled;
+    public boolean allowPickTiles;
+    public boolean allowHintRect;
     public int robotSmartness;
     public XWPhoniesChoice phoniesAction;
     public boolean confirmBTConnect;   /* only used for BT */
@@ -64,8 +64,8 @@ public class CurGameInfo {
         serverRole = DeviceRole.SERVER_STANDALONE;
         dictName = CommonPrefs.getDefaultDict( context );
         hintsNotAllowed = false;
-        phoniesAction = XWPhoniesChoice.PHONIES_IGNORE;
-        timerEnabled = false;
+        phoniesAction = CommonPrefs.getDefaultPhonies( context );
+        timerEnabled = CommonPrefs.getDefaultTimerEnabled( context );
         allowPickTiles = false;
         allowHintRect = false;
         robotSmartness = 1;

@@ -6,16 +6,29 @@
     <PreferenceScreen android:title="@string/prefs_defaults"
                       android:summary="@string/prefs_defaults_summary"
                       >
-      <EditTextPreference android:key="@string/key_initial_game_minutes"
-                          android:title="@string/initial_game_minutes"
-                          android:defaultValue="25"
-                          android:numeric="decimal"
-                          />
 
       <org.eehouse.android.xw4.DictListPreference 
          android:key="@string/key_default_dict"
          android:title="@string/default_dict"
          />
+
+      <ListPreference android:key="@string/key_default_phonies"
+                      android:title="@string/default_phonies"
+                      android:entries="@array/phony_names"
+                      android:entryValues="@array/phony_names"
+                      android:defaultValue="0"
+                      />
+
+      <CheckBoxPreference android:key="@string/key_default_timerenabled"
+                          android:title="@string/use_timer"
+                          android:defaultValue="false"
+                          />
+
+      <EditTextPreference android:key="@string/key_initial_game_minutes"
+                          android:title="@string/initial_game_minutes"
+                          android:defaultValue="25"
+                          android:numeric="decimal"
+                          />
 
       <ListPreference android:key="@string/key_board_size"
                       android:title="@string/board_size"

@@ -24,6 +24,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.graphics.Paint;
+import android.content.res.Resources;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Utils;
@@ -157,10 +158,7 @@ public class CommonPrefs {
 
     public static boolean getVolKeysZoom( Context context )
     {
-        String key = context.getString( R.string.key_ringer_zoom );
-        SharedPreferences sp = PreferenceManager
-            .getDefaultSharedPreferences( context );
-        return sp.getBoolean( key, false );
+        return getBoolean( context, R.string.key_ringer_zoom, false );
     }
 
     public static int getDefaultBoardSize( Context context )
@@ -178,7 +176,6 @@ public class CommonPrefs {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
         String value = sp.getString( key, "25" );
-        Utils.logf( "value for key_initial_game_minutes: %s", value );
         return Integer.parseInt( value );
     }
 
@@ -192,6 +189,42 @@ public class CommonPrefs {
             value = GameUtils.dictList( context )[0];
         }
         return value;
+    }
+
+    public static CurGameInfo.XWPhoniesChoice 
+        getDefaultPhonies( Context context )
+    {
+        String key = context.getString( R.string.key_default_phonies );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        String value = sp.getString( key, "" );
+
+        CurGameInfo.XWPhoniesChoice result = 
+            CurGameInfo.XWPhoniesChoice.PHONIES_IGNORE;
+        Resources res = context.getResources();
+        String[] names = res.getStringArray( R.array.phony_names );
+        for ( int ii = 0; ii < names.length; ++ii ) {
+            String name = names[ii];
+            if ( name.equals( value ) ) {
+                result = CurGameInfo.XWPhoniesChoice.values()[ii];
+                break;
+            }
+        }
+        return result;
+    }
+    
+    public static boolean getDefaultTimerEnabled( Context context )
+    {
+        return getBoolean( context, R.string.key_default_timerenabled, false );
+    }
+
+    private static boolean getBoolean( Context context, int keyID,
+                                       boolean defaultValue )
+    {
+        String key = context.getString( keyID );
+        SharedPreferences sp = PreferenceManager
+            .getDefaultSharedPreferences( context );
+        return sp.getBoolean( key, defaultValue );
     }
 
 }
