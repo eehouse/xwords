@@ -1,72 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
-              android:paddingLeft="8dp"
-              android:paddingRight="8dp"
-              >
-
-  <View android:id="@+id/color_edit_sample" 
-        android:layout_width="96sp"
-        android:layout_height="32sp"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_marginRight="6sp"
-        android:focusable="false"
-        android:clickable="false" 
-        />
-
-  <TextView android:layout_height="wrap_content"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="fill_parent"
-            android:text="@string/red"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-  <LinearLayout android:orientation="horizontal"
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
+
+  <LinearLayout android:orientation="vertical"
                 android:layout_width="fill_parent" 
-                android:layout_height="wrap_content"
+                android:layout_height="fill_parent"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
                 >
-    <SeekBar android:id="@+id/seek_red" 
-             style="@style/color_seek_text"
-             />
-    <EditText android:id="@+id/edit_red" 
-              style="@style/color_edit_text"
+
+    <View android:id="@+id/color_edit_sample" 
+          android:layout_width="96sp"
+          android:layout_height="32sp"
+          android:layout_gravity="center_vertical|center_horizontal"
+          android:layout_marginRight="6sp"
+          android:focusable="false"
+          android:clickable="false" 
+          />
+
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:text="@string/red"
+              android:textAppearance="?android:attr/textAppearanceMedium"
               />
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="fill_parent" 
+                  android:layout_height="wrap_content"
+                  >
+      <SeekBar android:id="@+id/seek_red" 
+               style="@style/color_seek_text"
+               />
+      <EditText android:id="@+id/edit_red" 
+                style="@style/color_edit_text"
+                />
+    </LinearLayout>
+
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:text="@string/green"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              />
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="fill_parent" 
+                  android:layout_height="wrap_content"
+                  >
+      <SeekBar android:id="@+id/seek_green" 
+               style="@style/color_seek_text"
+               />
+      <EditText android:id="@+id/edit_green" 
+                style="@style/color_edit_text"
+                />
+    </LinearLayout>
+
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              android:text="@string/blue"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              />
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="fill_parent" 
+                  android:layout_height="wrap_content"
+                  >
+      <SeekBar android:id="@+id/seek_blue"
+               style="@style/color_seek_text"
+               />
+
+      <EditText android:id="@+id/edit_blue" 
+                style="@style/color_edit_text"
+                />
+    </LinearLayout>
+
   </LinearLayout>
 
-  <TextView android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
-            android:text="@string/green"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-  <LinearLayout android:orientation="horizontal"
-                android:layout_width="fill_parent" 
-                android:layout_height="wrap_content"
-                >
-    <SeekBar android:id="@+id/seek_green" 
-             style="@style/color_seek_text"
-             />
-    <EditText android:id="@+id/edit_green" 
-              style="@style/color_edit_text"
-              />
-  </LinearLayout>
-
-  <TextView android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="@string/blue"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
-  <LinearLayout android:orientation="horizontal"
-                android:layout_width="fill_parent" 
-                android:layout_height="wrap_content"
-                >
-    <SeekBar android:id="@+id/seek_blue"
-             style="@style/color_seek_text"
-             />
-
-    <EditText android:id="@+id/edit_blue" 
-              style="@style/color_edit_text"
-              />
-  </LinearLayout>
-
-</LinearLayout>
+</ScrollView>
