@@ -79,6 +79,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
 	private Semaphore m_forResultWait = new Semaphore(0);
     private int m_resultCode;
 
+    private Thread m_blockingThread;
     private JNIThread m_jniThread;
 
     public class TimerRunnable implements Runnable {
@@ -276,6 +277,8 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 m_xport.waitToStop();
                 m_xport = null;
             }
+
+            interruptBlockingThread();
 
             if ( null != m_jniThread ) {
                 m_jniThread.waitToStop();
@@ -489,6 +492,55 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return xpKey;
     }
 
+    // Blocking thread stuff: The problem this is solving occurs when
+    // you have a blocking dialog up, meaning the jni thread is
+    // blocked, and you hit the home button.  onPause() gets called
+    // which wants to use jni calls to e.g. summarize.  For those to
+    // succeed (the jni being non-reentrant and set up to assert if it
+    // is reentered) the jni thread must first be unblocked and
+    // allowed to return back through the jni.  We unblock using
+    // Thread.interrupt method, the exception from which winds up
+    // caught in waitBlockingDialog.  The catch dismisses the dialog
+    // with the default/cancel value, but that takes us into the
+    // onDismissListener which normally releases the semaphore.  But
+    // if we've interrupted then we can't release it or blocking won't
+    // work for as long as this activity lives.  Hence
+    // releaseIfBlocking().  This feels really fragile but it does
+    // work.
+    private void setBlockingThread()
+    {
+        synchronized( this ) {
+            Assert.assertTrue( null == m_blockingThread );
+            m_blockingThread = Thread.currentThread();
+        }
+    }
+
+    private void clearBlockingThread()
+    {
+        synchronized( this ) {
+            Assert.assertTrue( null != m_blockingThread );
+            m_blockingThread = null;
+        }
+    }
+
+    private void interruptBlockingThread()
+    {
+        synchronized( this ) {
+            if ( null != m_blockingThread ) {
+                m_blockingThread.interrupt();
+            }
+        }
+    }
+
+    private void releaseIfBlocking()
+    {
+        synchronized( this ) {
+            if ( null != m_blockingThread ) {
+                m_forResultWait.release();
+            }
+        }
+    }
+
     //////////////////////////////////////////
     // XW_UtilCtxt interface implementation //
     //////////////////////////////////////////
@@ -647,13 +699,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
         return new DialogInterface.OnDismissListener() {
             public void onDismiss( DialogInterface di ) {
                 setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_SENSOR );
-                m_forResultWait.release();
+                releaseIfBlocking();
             }
         };
     }
 
-    private int waitBlockingDialog( final int dlgID )
+    private int waitBlockingDialog( final int dlgID, int cancelResult )
     {
+        setBlockingThread();
         int orient = m_currentOrient == Configuration.ORIENTATION_LANDSCAPE
             ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
@@ -668,9 +721,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
         try {
             m_forResultWait.acquire();
         } catch ( java.lang.InterruptedException ie ) {
-            Utils.logf( "got " + ie.toString() );
+            m_resultCode = cancelResult;
+            dismissDialog( dlgID );
+            Utils.logf( "waitBlockingDialog: got " + ie.toString() );
         }
-
+        clearBlockingThread();
         return m_resultCode;
     }
 
@@ -708,7 +763,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     public int userPickTile( int playerNum, String[] texts )
     {
         m_texts = texts;
-        waitBlockingDialog( PICK_TILE_REQUEST_BLK );
+        waitBlockingDialog( PICK_TILE_REQUEST_BLK, 0 );
         return m_resultCode;
     }
 
@@ -716,13 +771,12 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         String fmt = getString( R.string.msg_ask_password );
         m_dlgTitleStr = String.format( fmt, name );
-        m_resultCode = 0;
 
         if ( null == m_passwdEdit ) {
             LayoutInflater factory = LayoutInflater.from( this );
             m_passwdEdit = (EditText)factory.inflate( R.layout.passwd_view, null );
         }
-        waitBlockingDialog( ASK_PASSWORD_BLK );
+        waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
 
         String result = null;      // means cancelled
         if ( 0 != m_resultCode ) {
@@ -837,7 +891,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
         case UtilCtxt.QUERY_ROBOT_MOVE:
         case UtilCtxt.QUERY_ROBOT_TRADE:
             m_dlgBytes = query;
-            waitBlockingDialog( QUERY_INFORM_BLK );
+            waitBlockingDialog( QUERY_INFORM_BLK, 0 );
             result = true;
             break;
 
@@ -849,7 +903,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             } else {
                 m_dlgBytes = query;
             }
-            result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK );
+            result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
             break;
         default:
             Assert.fail();
@@ -945,7 +999,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                                message + getString(R.string.badwords_lost) );
         } else {
             m_dlgBytes = message + getString( R.string.badwords_accept );
-            accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK );
+            accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
         }
 
         Utils.logf( "warnIllegalWord=>" + accept );
