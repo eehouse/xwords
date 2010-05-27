@@ -5,8 +5,10 @@ LOCALES=values
 check_add () {
     STRING=$1
     for VALUES in $LOCALES; do
-	    PAT="<string name=\"$STRING\">.*</string>"
-        if [ ! -f "res/$VALUES/strings.xml" ]; then
+	    PAT="<string name=\"$STRING\">"
+        if grep -q "$PAT" res/values/common_rsrc.xml; then
+            :
+        elif [ ! -f "res/$VALUES/strings.xml" ]; then
             echo "error: res/$VALUES/strings.xml not found" 1>&2
         elif ! grep -q "$PAT" res/$VALUES/strings.xml; then
             echo "<string name=\"$STRING\">$STRING</string>"
