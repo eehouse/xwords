@@ -89,7 +89,6 @@
     <string name="board_menu_game_resend">Reenvia els missatges</string>
     <string name="board_submenu_file">Fitxer</string>
     <string name="board_menu_file_new">Partida nova</string>
-    <string name="board_menu_file_prefs">Preferències</string>
     <string name="board_menu_file_about">Quant al Crosswords</string>
 
     <string name="gamel_menu_delete_all">Suprimeix-les totes</string>
@@ -184,7 +183,7 @@
     <string name="phonies_ignore">Ignora-les</string>
     <string name="phonies_warn">Avisa\'m</string>
     <string name="phonies_disallow">No es poden jugar</string>
-    <string name="gamel_menu_prefs">Preferències</string>
+    <string name="menu_prefs">Preferències</string>
     <string name="gamel_menu_dicts">Diccionaris</string>
 
     <string name="room_label">Sala</string>
@@ -194,7 +193,6 @@
     <!-- <string name="port_label">Port</string> -->
     <string name="role_edit_title">Connexió</string>
 
-    <string name="general_prefs">Preferències</string>
     <string name="prefs_colors">Colors</string>
     <string name="player0">Primer jugador</string>
     <string name="player1">Segon jugador</string>

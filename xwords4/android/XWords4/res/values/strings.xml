@@ -42,7 +42,7 @@
 	<string name="title_dicts_list">Crosswords dictionaries</string>   
 	<string name="title_game">Game</string>  
 	<string name="title_game_config">Configure game</string>  
-	<string name="title_prefs">Crosswords preferences</string>  
+	<string name="title_prefs">Crosswords settings</string>  
 	
 	<string name="app_name">Crosswords</string>  
 	
@@ -91,7 +91,6 @@
 	<string name="board_menu_game_resend">Resend messages</string>
 	<string name="board_submenu_file">File</string>
 	<string name="board_menu_file_new">New game</string>
-	<string name="board_menu_file_prefs">Preferences</string>
 	<string name="board_menu_file_about">About Crosswords</string>
 
 	<string name="gamel_menu_delete_all">Delete all</string>
@@ -133,7 +132,7 @@
 	<string name="str_cant_trade_mid_move">Remove played tiles before trading.</string>
 	<string name="str_too_few_tiles_left_to_trade">Too few tiles left to trade.</string>
 	<string name="str_cant_undo_tileassign">Tile assignment can't be undone.</string>
-	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Preferences dialog.</string>
+	<string name="str_cant_hint_while_disabled">The hint feature is disabled for this game.  Enable it for a new game using the Settings dialog.</string>
 	<string name="str_no_peek_remote_tiles">No peeking at remote players' tiles!</string>
 	<string name="str_reg_unexpected_user">Refused attempt to register unexpected user[s]</string>
 	<string name="str_server_dict_wins">Conflict between Host and Guest dictionaries; Host wins.</string>
@@ -217,7 +216,7 @@
     <string name="phonies_ignore">Ignore phonies</string>
     <string name="phonies_warn">Warn if phonies</string>
     <string name="phonies_disallow">Disallow phonies</string>
-    <string name="gamel_menu_prefs">Preferences</string>
+    <string name="menu_prefs">Settings</string>
     <string name="gamel_menu_dicts">Dictionaries</string>
 
     <string name="room_label">Room</string>
@@ -227,7 +226,6 @@
     <string name="connect_prompt">How will Host and Guest devices
     communicate?</string>
 
-    <string name="general_prefs">Preferences</string>
     <string name="prefs_defaults">New game defaults</string>
     <string name="prefs_defaults_summary">Default settings for new
     games</string>

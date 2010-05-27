@@ -91,7 +91,6 @@
 	<string name="board_menu_game_resend">Přeposlat zprávy</string>
 	<string name="board_submenu_file">Soubor</string>
 	<string name="board_menu_file_new">Nová hra</string>
-	<string name="board_menu_file_prefs">Předvolby</string>
 	<string name="board_menu_file_about">O Crosswords</string>
 
 	<string name="gamel_menu_delete_all">Vymazat vše</string>
@@ -208,7 +207,7 @@
     <string name="phonies_ignore">Ignorovat slovník</string>
     <string name="phonies_warn">Varovat pokud není ve slovníku</string>
     <string name="phonies_disallow">Zakázat pokud není ve slovníku</string>
-    <string name="gamel_menu_prefs">Předvolby</string>
+	<string name="menu_prefs">Předvolby</string>
     <string name="gamel_menu_dicts">Slovníky</string>
 
     <string name="room_label">Místnost</string>
@@ -217,7 +216,6 @@
     <string name="role_edit_title">Připojení</string>
     <string name="connect_prompt">Jak budou spolu komunikovat Server a Klienti?</string>
 
-    <string name="general_prefs">Předvolby</string>
     <string name="prefs_defaults">Výchozí nastavení</string>
     <string name="prefs_defaults_summary">Výchozí nastavení pro novou hru</string>
     <string name="default_dict">Slovník pro hru</string>

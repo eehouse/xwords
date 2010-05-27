@@ -5,7 +5,7 @@
     <!--       android:title="@string/gamel_menu_view_hidden" -->
     <!--       /> -->
     <item android:id="@+id/gamel_menu_prefs"
-          android:title="@string/gamel_menu_prefs"
+          android:title="@string/menu_prefs"
           android:icon="@android:drawable/ic_menu_preferences"
           />
     <item android:id="@+id/gamel_menu_dicts"
