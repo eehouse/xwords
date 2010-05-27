@@ -52,9 +52,10 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int DLG_OKONLY = Utils.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS = Utils.DIALOG_LAST + 2;
     private static final int QUERY_REQUEST_BLK = Utils.DIALOG_LAST + 3;
-    private static final int PICK_TILE_REQUEST_BLK = Utils.DIALOG_LAST + 4;
-    private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 5;
-    private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 6;
+    private static final int QUERY_INFORM_BLK = Utils.DIALOG_LAST + 4;
+    private static final int PICK_TILE_REQUEST_BLK = Utils.DIALOG_LAST + 5;
+    private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 6;
+    private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 7;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -123,6 +124,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             break;
 
         case QUERY_REQUEST_BLK:
+        case QUERY_INFORM_BLK:
             ab = new AlertDialog.Builder( this )
                 .setTitle( R.string.query_title )
                 .setMessage( m_dlgBytes );
@@ -139,7 +141,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
                         m_resultCode = 0;
                     }
                 };
-            ab.setNegativeButton( R.string.button_no, lstnr );
+            if ( QUERY_INFORM_BLK != id ) {
+                ab.setNegativeButton( R.string.button_no, lstnr );
+            }
 
             dialog = ab.create();
             dialog.setOnDismissListener( makeODLforBlocking() );
@@ -212,6 +216,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
             // FALLTHRU
         case DLG_BADWORDS:
         case QUERY_REQUEST_BLK:
+        case QUERY_INFORM_BLK:
             ((AlertDialog)dialog).setMessage( m_dlgBytes );
             break;
         case ASK_PASSWORD_BLK:
@@ -825,10 +830,14 @@ public class BoardActivity extends Activity implements UtilCtxt {
         boolean result;
 
         switch( id ) {
-            // these two are not blocking; post showDialog and move on
+            // Though robot-move dialogs don't normally need to block,
+            // if the player after this one is also a robot and we
+            // don't block then a second dialog will replace this one.
+            // So block.  Yuck.
         case UtilCtxt.QUERY_ROBOT_MOVE:
         case UtilCtxt.QUERY_ROBOT_TRADE:
-            nonBlockingDialog( DLG_OKONLY, query );
+            m_dlgBytes = query;
+            waitBlockingDialog( QUERY_INFORM_BLK );
             result = true;
             break;
 
