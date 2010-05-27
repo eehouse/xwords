@@ -447,6 +447,9 @@ public class GameConfig extends Activity implements View.OnClickListener {
         Utils.setChecked( this, R.id.smart_robot, 0 < m_gi.robotSmartness );
 
         adjustVisibility();
+
+        String fmt = getString( R.string.title_game_configf );
+        setTitle( String.format( fmt, GameUtils.gameName( this, m_path ) ) );
     } // onCreate
 
     @Override

@@ -57,7 +57,6 @@
     </activity>
         
     <activity android:name="GameConfig"
-              android:label="@string/title_game_config"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation"
               >
