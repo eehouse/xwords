@@ -17,4 +17,24 @@
       <item name="android:textColor">#FFFFFFFF</item>
     </style>
 
+    <style name="color_seek_text">
+      <item name="android:layout_width">wrap_content</item>
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:layout_gravity">left|center_vertical</item>
+      <item name="android:max">255</item>
+      <item name="android:layout_weight">1</item>
+      <item name="android:paddingRight">4dp</item>
+    </style>
+
+    <style name="color_edit_text">
+      <item name="android:layout_height">wrap_content</item>
+      <item name="android:layout_width">wrap_content</item>
+      <item name="android:layout_gravity">right|center_vertical</item>
+      <item name="android:numeric">decimal</item>
+      <item name="android:maxLength">3</item>
+      <item name="android:includeFontPadding">false</item>
+      <item name="android:ems">3</item>
+    </style>
+
 </resources>
+

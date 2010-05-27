@@ -96,9 +96,9 @@ public class EditColorPreference extends DialogPreference {
     protected void onBindDialogView( View view )
     {
         m_curColor = getPersistedColor();
-        setOneByte( view, R.id.edit_red,  16 );
-        setOneByte( view, R.id.edit_green,  8 );
-        setOneByte( view, R.id.edit_blue, 0 );
+        setOneByte( view, R.id.seek_red,  16 );
+        setOneByte( view, R.id.seek_green,  8 );
+        setOneByte( view, R.id.seek_blue, 0 );
 
         View sample = (View)view.findViewById( R.id.color_edit_sample );
         sample.setBackgroundColor( m_curColor );
@@ -112,9 +112,9 @@ public class EditColorPreference extends DialogPreference {
                 @Override
                 public void onClick( DialogInterface dialog, int which )
                 {
-                    int color = (getOneByte( dialog, R.id.edit_red ) << 16)
-                        | (getOneByte( dialog, R.id.edit_green ) << 8)
-                        | getOneByte( dialog, R.id.edit_blue );
+                    int color = (getOneByte( dialog, R.id.seek_red ) << 16)
+                        | (getOneByte( dialog, R.id.seek_green ) << 8)
+                        | getOneByte( dialog, R.id.seek_blue );
 
                     persistInt( color );
                     notifyChanged();
