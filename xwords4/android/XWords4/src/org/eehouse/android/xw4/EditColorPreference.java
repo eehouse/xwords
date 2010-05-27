@@ -27,33 +27,48 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.EditText;
 import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.app.AlertDialog;
-
+import android.text.TextWatcher;
+import android.text.Editable;
 import junit.framework.Assert;
 
 public class EditColorPreference extends DialogPreference {
 
     private Context m_context;
     private int m_curColor;
+    // m_updateText: prevent loop that resets edittext cursor
+    private boolean m_updateText = true;
+    private static final int m_seekbarIds[] = { R.id.seek_red, R.id.seek_green, 
+                                                R.id.seek_blue };
+    private static final int m_editIds[] = { R.id.edit_red, R.id.edit_green, 
+                                             R.id.edit_blue };
 
     private class SBCL implements SeekBar.OnSeekBarChangeListener {
-        int m_shift;
+        int m_index;
         View m_sample;
-        public SBCL( View parent, int shift )
+        EditText m_editTxt;
+        public SBCL( View parent, EditText editTxt, int indx )
         {
-            m_shift = shift;
+            m_index = indx;
             m_sample = parent.findViewById( R.id.color_edit_sample );
+            m_editTxt = editTxt;
         }
 
         public void onProgressChanged( SeekBar seekBar, int progress, 
                                        boolean fromUser )
         {
+            if ( m_updateText ) {
+                m_editTxt.setText( String.format( "%d", progress ) );
+            }
+
+            int shift = 16 - (m_index * 8);
             // mask out the byte we're changing
-            int color = m_curColor & ~(0xFF << m_shift);
+            int color = m_curColor & ~(0xFF << shift);
             // add in the new version of the byte
-            color |= progress << m_shift;
+            color |= progress << shift;
             m_curColor = color;
             m_sample.setBackgroundColor( m_curColor );
         }
@@ -61,6 +76,32 @@ public class EditColorPreference extends DialogPreference {
         public void onStartTrackingTouch( SeekBar seekBar ) {}
 
         public void onStopTrackingTouch( SeekBar seekBar ) {}
+    }
+
+    private class TCL implements TextWatcher {
+        private SeekBar m_seekBar;
+        public TCL( SeekBar seekBar ) { m_seekBar = seekBar; }
+        public void afterTextChanged( Editable s )
+        {
+        }
+
+        public void beforeTextChanged( CharSequence s, int st, int cnt, int a ) 
+        {
+        }
+
+        public void onTextChanged( CharSequence s, int start, 
+                                   int before, int count )
+        {
+            int val;
+            try {
+                val = Integer.parseInt( s.toString() );
+            } catch ( java.lang.NumberFormatException nfe ) {
+                val = 0;
+            }
+            m_updateText = false; // don't call me recursively inside seekbar
+            m_seekBar.setProgress( val );
+            m_updateText = true;
+        }
     }
 
     public EditColorPreference( Context context, AttributeSet attrs )
@@ -96,9 +137,9 @@ public class EditColorPreference extends DialogPreference {
     protected void onBindDialogView( View view )
     {
         m_curColor = getPersistedColor();
-        setOneByte( view, R.id.seek_red,  16 );
-        setOneByte( view, R.id.seek_green,  8 );
-        setOneByte( view, R.id.seek_blue, 0 );
+        setOneByte( view, 0 );
+        setOneByte( view, 1 );
+        setOneByte( view, 2 );
 
         View sample = (View)view.findViewById( R.id.color_edit_sample );
         sample.setBackgroundColor( m_curColor );
@@ -124,14 +165,23 @@ public class EditColorPreference extends DialogPreference {
         super.onPrepareDialogBuilder( builder );
     }
 
-    private void setOneByte( View parent, int id, int shift ) 
+    private void setOneByte( View parent, int indx ) 
     {
+        int shift = 16 - (indx*8);
         int byt = (m_curColor >> shift) & 0xFF;
-        SeekBar seekbar = (SeekBar)parent.findViewById( id );
+        SeekBar seekbar = (SeekBar)parent.findViewById( m_seekbarIds[indx] );
+        EditText edittext = (EditText)parent.findViewById( m_editIds[indx] );
+
         if ( null != seekbar ) {
             seekbar.setProgress( byt );
 
-            seekbar.setOnSeekBarChangeListener( new SBCL( parent, shift ) );
+            seekbar.setOnSeekBarChangeListener( new SBCL( parent, edittext,
+                                                          indx ) );
+        }
+
+        if ( null != edittext ) {
+            edittext.setText( String.format( "%d", byt ) );
+            edittext.addTextChangedListener( new TCL( seekbar ) );
         }
     }
 
