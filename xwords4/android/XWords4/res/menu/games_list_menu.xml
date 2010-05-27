@@ -6,15 +6,19 @@
     <!--       /> -->
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/gamel_menu_prefs"
+          android:icon="@android:drawable/ic_menu_preferences"
           />
     <item android:id="@+id/gamel_menu_dicts"
           android:title="@string/gamel_menu_dicts"
+          android:icon="@drawable/dicticon"
           />
     <item android:id="@+id/gamel_menu_delete_all"
           android:title="@string/gamel_menu_delete_all"
+          android:icon="@android:drawable/ic_menu_delete"
           />
     <item android:id="@+id/gamel_menu_about"
           android:title="@string/board_menu_file_about"
+          android:icon="@android:drawable/ic_menu_info_details"
           android:alphabeticShortcut="A"
           />
 </menu>
