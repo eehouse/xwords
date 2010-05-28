@@ -98,7 +98,7 @@ send_meta( FILE* fil, const CrefMgrInfo* info )
         }
     }
 
-	fprintf( fil, "<title>relay: %d/%d</title>\n", info->m_nCrefsAll, 
+	fprintf( fil, "<title>relay: %d/%d</title>\n", info->m_nRoomsFilled, 
              info->m_nCrefsCurrent );
     fprintf( fil, "</head>" );
 }
@@ -189,11 +189,11 @@ printStats( FILE* fil, const CrefMgrInfo* info, bool isLocal )
     fprintf( fil, "<table>" );
     fprintf( fil, "<tr>"
              "<th>Ports</th><th>Uptime</th><th>Spawns</th><th>Spawn Utime</th>"
-             "<th>Games played</th><th>Games in play</th></tr>" );
+             "<th>Rooms filled</th><th>Games in play</th></tr>" );
     fprintf( fil, "<tr><td>%s</td><td>%s</td><td>%d</td>"
              "<td>%s</td><td>%d</td><td>%d</td></tr>\n", 
-             info->m_ports, uptime1, GetNSpawns(), uptime2, info->m_nCrefsAll,
-             info->m_nCrefsCurrent );
+             info->m_ports, uptime1, GetNSpawns(), uptime2, 
+             info->m_nRoomsFilled, info->m_nCrefsCurrent );
     fprintf( fil, "</table>" );
 }
 

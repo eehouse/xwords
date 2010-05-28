@@ -63,7 +63,7 @@ class CrefInfo {
 class CrefMgrInfo {
  public:
     const char* m_ports;
-    int m_nCrefsAll;
+    int m_nRoomsFilled;
     int m_nCrefsCurrent;
     time_t m_startTimeSpawn;
     vector<CrefInfo> m_crefInfo;
@@ -108,7 +108,9 @@ class CRefMgr {
     void PrintSocketInfo( int socket, string& out );
     SocketsIterator MakeSocketsIterator();
 
-    int GetNumGamesSeen( void );
+    void IncrementFullCount( void );
+    int GetNumRoomsFilled( void );
+
     int GetSize( void );
 
     time_t uptime();
@@ -152,6 +154,9 @@ class CRefMgr {
 
     pthread_mutex_t m_nextCIDMutex;
     CookieID m_nextCID;
+
+    pthread_mutex_t m_roomsFilledMutex;
+    int m_nRoomsFilled;
 
     pthread_rwlock_t m_cookieMapRWLock;
     CookieMap m_cookieMap;

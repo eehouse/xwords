@@ -61,6 +61,7 @@ CRefMgr::CRefMgr()
     /* should be using pthread_once() here */
     pthread_mutex_init( &m_SocketStuffMutex, NULL );
     pthread_mutex_init( &m_nextCIDMutex, NULL );
+    pthread_mutex_init( &m_roomsFilledMutex, NULL );
     pthread_mutex_init( &m_freeList_mutex, NULL );
     pthread_rwlock_init( &m_cookieMapRWLock, NULL );
 }
@@ -210,13 +211,19 @@ CRefMgr::nextCID( const char* connName )
     return ++m_nextCID;
 } /* nextCID */
 
-int 
-CRefMgr::GetNumGamesSeen( void )
+void 
+CRefMgr::IncrementFullCount( void )
 {
-    MutexLock ml(&m_nextCIDMutex);
-    return m_nextCID;
+    MutexLock ml( &m_roomsFilledMutex );
+    ++m_nRoomsFilled;
 }
 
+int 
+CRefMgr::GetNumRoomsFilled( void )
+{
+    MutexLock ml(&m_roomsFilledMutex);
+    return m_nRoomsFilled;
+}
 
 int 
 CRefMgr::GetSize( void )
@@ -227,7 +234,7 @@ CRefMgr::GetSize( void )
 void
 CRefMgr::GetStats( CrefMgrInfo& mgrInfo )
 {
-    mgrInfo.m_nCrefsAll = GetNumGamesSeen();
+    mgrInfo.m_nRoomsFilled = GetNumRoomsFilled();
     mgrInfo.m_startTimeSpawn = m_startTime;
 
     if ( 0 == m_ports.length() ) {

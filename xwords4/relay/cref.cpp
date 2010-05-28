@@ -617,6 +617,7 @@ CookieRef::handleEvents()
                 break;
 
             case XWA_SENDALLHERE:
+                CRefMgr::Get()->IncrementFullCount();
                 cancelAllConnectedTimer();
                 assignHostIds();
                 assignConnName();
