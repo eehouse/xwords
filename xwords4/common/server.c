@@ -1043,14 +1043,8 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         XP_U32 gameID;
         PoolContext* pool;
 
-        /* version */
+        /* version; any dependencies here? */
         XP_U8 streamVersion = stream_getU8( stream );
-        XP_ASSERT( streamVersion == STREAM_VERS_41B4
-                   || streamVersion == STREAM_VERS_UTF8);
-        if ( (streamVersion != STREAM_VERS_41B4)
-            && (streamVersion != STREAM_VERS_UTF8) ) {
-            return XP_FALSE;
-        }
         stream_setVersion( stream, streamVersion );
 
         gameID = stream_getU32( stream );
@@ -1189,8 +1183,7 @@ server_sendInitialMessage( ServerCtxt* server )
 
         /* write version for server's benefit; use old version until format
            changes */
-        stream_putU8( stream, dict_isUTF8(dict)? 
-                      STREAM_VERS_UTF8:STREAM_VERS_41B4 );
+        stream_putU8( stream, CUR_STREAM_VERS );
 
         XP_LOGF( "putting gameID %lx into msg", gameID );
         stream_putU32( stream, gameID );
