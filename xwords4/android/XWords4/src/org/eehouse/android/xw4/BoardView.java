@@ -24,6 +24,7 @@ import android.view.View;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Bitmap;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -850,20 +851,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void markBlank( Rect rect )
     {
-        int width = rect.width();
-        int height = rect.height();
-        int sizeW = width / 5;
-        int sizeH = height / 5;
-        width -= sizeW;
-        height -= sizeH;
-        rect.right = rect.left + sizeW;
-        rect.bottom = rect.top + sizeH;
-        m_canvas.drawRect( rect, m_fillPaint );
-        rect.offset( width, 0 );
-        m_canvas.drawRect( rect, m_fillPaint );
-        rect.offset( 0, height );
-        m_canvas.drawRect( rect, m_fillPaint );
-        rect.offset( -width, 0 );
-        m_canvas.drawRect( rect, m_fillPaint );
+        RectF oval = new RectF( rect.left, rect.top, rect.right, rect.bottom );
+        m_canvas.drawArc( oval, 0, 360, false, m_strokePaint );
     }
 }
