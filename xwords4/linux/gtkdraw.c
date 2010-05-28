@@ -704,7 +704,7 @@ gtk_draw_drawBoardArrow( DrawCtx* p_dctx, const XP_Rect* rectP,
     drawHintBorders( dctx, rectP, hintAtts );
 } /* gtk_draw_drawBoardCursor */
 
-static void
+static XP_Bool
 gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                      XP_U16 XP_UNUSED(numPlayers), 
                      const XP_S16* const XP_UNUSED(scores), 
@@ -716,6 +716,7 @@ gtk_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 /*     gdk_gc_set_clip_rectangle( dctx->drawGC, (GdkRectangle*)rect ); */
     gtkEraseRect( dctx, rect );
     dctx->scoreIsVertical = rect->height > rect->width;
+    return XP_TRUE;
 } /* gtk_draw_scoreBegin */
 
 static PangoLayout*

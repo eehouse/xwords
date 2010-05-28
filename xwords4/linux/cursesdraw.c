@@ -109,7 +109,7 @@ curses_draw_trayBegin( DrawCtx* XP_UNUSED(p_dctx),
     return XP_TRUE;
 } /* draw_finish */
 
-static void
+static XP_Bool
 curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect, 
                         XP_U16 XP_UNUSED(numPlayers), 
                         const XP_S16* const XP_UNUSED(scores), 
@@ -118,6 +118,7 @@ curses_draw_scoreBegin( DrawCtx* p_dctx, const XP_Rect* rect,
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     eraseRect( dctx, rect );
+    return XP_TRUE;
 } /* curses_draw_scoreBegin */
 
 static void
