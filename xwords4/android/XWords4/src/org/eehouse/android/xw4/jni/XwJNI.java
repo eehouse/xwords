@@ -98,7 +98,7 @@ public class XwJNI {
     public static native boolean board_draw( int gamePtr );
     public static native void board_setPos( int gamePtr, int left, int top,
                                             int width, int height, 
-                                            boolean lefty );
+                                            int maxCellHt, boolean lefty );
     public static native boolean board_zoom( int gamePtr, int zoomBy, 
                                              boolean[] canZoom );
     public static native void board_setScoreboardLoc( int gamePtr, int left, 

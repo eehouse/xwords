@@ -503,10 +503,11 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
 (JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, jint width, 
- jint height, jboolean lefty )
+ jint height, jint maxCellSize, jboolean lefty )
 {
     XWJNI_START();
-    board_setPos( state->game.board, left, top, width, height, lefty );
+    board_setPos( state->game.board, left, top, width, height, maxCellSize, 
+                  lefty );
     XWJNI_END();
 }
 
