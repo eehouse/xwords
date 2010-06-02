@@ -686,8 +686,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
                     m_xport.setReceiver( m_jniThread );
                 }
                 m_jniThread.handle( JNICmd.CMD_START );
-                // check and disable zoom button at limit
-                m_jniThread.handle( JNICmd.CMD_ZOOM, 0 );
 
                 setTitle( GameUtils.gameName( this, m_path ) );
             }
