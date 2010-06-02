@@ -239,14 +239,16 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
         int nCells = gi.boardSize;
         int cellSize = width / nCells;
-        int maxHt = 3 * m_defaultFontHt;
-        if ( cellSize > maxHt ) {
-            cellSize = maxHt;
+        int maxCellSize = 3 * m_defaultFontHt;
+        if ( cellSize > maxCellSize ) {
+            cellSize = maxCellSize;
 
             int boardWidth = nCells * cellSize;
             result.left = (width - boardWidth) / 2;
             result.width = boardWidth;
         }
+        result.maxCellSize = maxCellSize;
+
         result.trayHt = cellSize * 3;
         result.scoreHt = 2 * m_defaultFontHt;
         int wantHt = result.trayHt + result.scoreHt + (cellSize * nCells);

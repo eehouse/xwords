@@ -28,5 +28,5 @@ public class BoardDims {
     public int scoreHt;
     public int boardHt;
     public int trayTop, trayHt;
-    public int cellSize;
+    public int cellSize, maxCellSize;
 }

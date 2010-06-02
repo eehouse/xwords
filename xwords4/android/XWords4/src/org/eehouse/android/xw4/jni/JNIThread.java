@@ -169,7 +169,8 @@ public class JNIThread extends Thread {
                                       dims.scoreHt, true );
 
         XwJNI.board_setPos( m_jniGamePtr, 0, dims.scoreHt, 
-                            dims.width-1, dims.boardHt, false );
+                            dims.width-1, dims.boardHt, dims.maxCellSize, 
+                            false );
 
         XwJNI.board_setTrayLoc( m_jniGamePtr, 0, dims.trayTop,
                                 dims.width-1, dims.trayHt, kMinDivWidth );
@@ -264,6 +265,8 @@ public class JNIThread extends Thread {
             case CMD_LAYOUT:
                 doLayout( (BoardDims)args[0] );
                 draw = true;
+                // check and disable zoom button at limit
+                handle( JNICmd.CMD_ZOOM, 0 );
                 break;
 
             case CMD_START:
