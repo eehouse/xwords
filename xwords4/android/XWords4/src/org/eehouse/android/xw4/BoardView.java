@@ -114,6 +114,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private int[] m_otherColors;
     private ZoomButtonsController m_zoomButtons;
     private boolean m_useZoomControl;
+    private boolean m_canZoom;
 
     // called when inflating xml
     public BoardView( Context context, AttributeSet attrs ) 
@@ -130,13 +131,13 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
-            if ( m_useZoomControl ) {
+            if ( m_useZoomControl && m_canZoom ) {
                 m_zoomButtons.setVisible( true );
             }
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
-            if ( m_useZoomControl ) {
+            if ( m_useZoomControl && m_canZoom ) {
                 m_zoomButtons.setVisible( true );
             }
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
@@ -220,7 +221,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     protected void setUseZoomControl( boolean useZoomControl )
     {
         m_useZoomControl = useZoomControl;
-        if ( !m_useZoomControl ) {
+        if ( !useZoomControl ) {
             m_zoomButtons.setVisible( false );
         }
     }
@@ -344,6 +345,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 public void run() {
                     m_zoomButtons.setZoomInEnabled( canZoom[0] );
                     m_zoomButtons.setZoomOutEnabled( canZoom[1] );
+                    m_canZoom = canZoom[0] || canZoom[1];
                 }
             } );
     }
