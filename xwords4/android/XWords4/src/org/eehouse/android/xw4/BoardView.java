@@ -45,6 +45,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private static final int k_miniTextSize = 24;
     private static final int k_miniPaddingH = 2;
     private static final int k_miniPaddingV = 2;
+    private static final float MIN_FONT_DIPS = 14.0f;
 
     private Paint m_drawPaint;
     private Paint m_fillPaint;
@@ -173,9 +174,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
 
     private void init( Context context )
     {
+        final float scale = getResources().getDisplayMetrics().density;
+        m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
+
         m_drawPaint = new Paint();
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
-        m_defaultFontHt = (int)m_fillPaint.getTextSize();
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
         m_tileStrokePaint = new Paint();
