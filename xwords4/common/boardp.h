@@ -151,6 +151,7 @@ struct BoardCtxt {
 
     XP_Rect boardBounds;
     XP_U16 heightAsSet;
+    XP_U16 maxWidth;
 
     BoardObjectType penDownObject;
 
@@ -215,7 +216,6 @@ struct BoardCtxt {
     XP_Bool penTimerFired;
     XP_Bool showCellValues;
     XP_Bool showColors;
-
 
     MPSLOT
 };

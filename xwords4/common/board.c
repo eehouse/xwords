@@ -360,7 +360,8 @@ board_reset( BoardCtxt* board )
 
 void
 board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
-              XP_U16 width, XP_U16 height, XP_Bool leftHanded )
+              XP_U16 width, XP_U16 height, XP_U16 maxWidth, 
+              XP_Bool leftHanded )
 {
     XP_LOGF( "%s(%d,%d,%d,%d)", __func__, left, top, width, height );
 
@@ -368,6 +369,7 @@ board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top,
     board->boardBounds.top = top;
     board->boardBounds.width = width;
     board->heightAsSet = height;
+    board->maxWidth = maxWidth;
     board->leftHanded = leftHanded;
 
     figureBoardRect( board );
@@ -565,7 +567,7 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, XP_Bool* canOut )
     }
 
     if ( !!canIn ) {
-        *canIn = maxCount > zoomCount;
+        *canIn = maxCount > zoomCount && hsd->scale < board->maxWidth;
     }
     if ( !!canOut ) {
         *canOut = zoomCount > 0;
