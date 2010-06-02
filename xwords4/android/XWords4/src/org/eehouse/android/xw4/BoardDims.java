@@ -24,7 +24,7 @@ package org.eehouse.android.xw4;
 // Why does this have to be its own class...
 public class BoardDims {
     public int width, height;       // of the bitmap
-    public int top;
+    public int left, top;
     public int scoreHt;
     public int boardHt;
     public int trayTop, trayHt;

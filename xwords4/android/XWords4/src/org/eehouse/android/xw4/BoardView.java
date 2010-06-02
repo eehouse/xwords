@@ -63,7 +63,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     private Drawable m_rightArrow;
     private Drawable m_downArrow;
     private Drawable m_origin;
-    private int m_top;
+    private int m_left, m_top;
     private JNIThread m_jniThread;
     private String[][] m_scores;
     private String[] m_dictChars;
@@ -125,7 +125,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public boolean onTouchEvent( MotionEvent event ) 
     {
         int action = event.getAction();
-        int xx = (int)event.getX();
+        int xx = (int)event.getX() - m_left;
         int yy = (int)event.getY() - getCurTop();
         
         switch ( action ) {
@@ -158,7 +158,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         synchronized( this ) {
             if ( layoutBoardOnce() ) {
-                canvas.drawBitmap( m_bitmap, 0, getCurTop(), m_drawPaint );
+                canvas.drawBitmap( m_bitmap, m_left, getCurTop(), m_drawPaint );
             }
         }
     }
@@ -235,9 +235,18 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     {
         BoardDims result = new BoardDims();
         result.width = width;
+        result.left = 0;
 
         int nCells = gi.boardSize;
         int cellSize = width / nCells;
+        int maxHt = 3 * m_defaultFontHt;
+        if ( cellSize > maxHt ) {
+            cellSize = maxHt;
+
+            int boardWidth = nCells * cellSize;
+            result.left = (width - boardWidth) / 2;
+            result.width = boardWidth;
+        }
         result.trayHt = cellSize * 3;
         result.scoreHt = 2 * m_defaultFontHt;
         int wantHt = result.trayHt + result.scoreHt + (cellSize * nCells);
@@ -274,6 +283,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_valRect = null;
 
             BoardDims dims = figureBoardDims( width, height, m_gi );
+            m_left = dims.left;
             m_top = dims.top;
             
             m_bitmap = Bitmap.createBitmap( 1 + dims.width,
