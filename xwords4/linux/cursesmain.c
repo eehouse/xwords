@@ -1381,7 +1381,8 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
     cellWidth = CURSES_CELL_WIDTH;
     cellHt = CURSES_CELL_HT;
     board_setPos( board, BOARD_OFFSET, BOARD_OFFSET, 
-                  cellWidth * MAX_COLS, cellHt * MAX_ROWS, XP_FALSE );
+                  cellWidth * MAX_COLS, cellHt * MAX_ROWS, 
+                  cellHt, XP_FALSE );
     /* board_setScale( board, cellWidth, cellHt ); */
     scoreLeft = (cellWidth * MAX_COLS);// + BOARD_SCORE_PADDING;
     remWidth -= cellWidth * MAX_COLS;

@@ -540,7 +540,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     trayTop -= vscale * globals->cGlobals.params->nHidden;
     board_setPos( globals->cGlobals.game.board, GTK_BOARD_LEFT, boardTop,
                   hscale*GTK_NUM_COLS, vscale * GTK_NUM_ROWS,
-                  XP_FALSE );
+                  hscale * 2, XP_FALSE );
     /* board_setScale( globals->cGlobals.game.board, hscale, vscale ); */
     globals->gridOn = XP_TRUE;
 
