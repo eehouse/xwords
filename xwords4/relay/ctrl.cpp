@@ -47,6 +47,8 @@
 #include "configs.h"
 #include "lstnrmgr.h"
 
+#define MAX_ARGS 10
+
 /* this is *only* for testing.  Don't abuse!!!! */
 extern pthread_rwlock_t gCookieMapRWLock;
 
@@ -193,8 +195,11 @@ cmd_kill_eject( int socket, const char** args )
         }
     } else if ( 0 == strcmp( args[1], "cref" ) ) {
         const char* idhow = args[2];
-        const char* id = args[3];
-        if ( idhow != NULL && id != NULL ) {
+        for ( int indx = 3; ; ++indx ) {
+            const char* id = args[indx];
+            if ( idhow == NULL || id == NULL ) {
+                break;
+            }
             if ( 0 == strcmp( idhow, "name" ) ) {
                 CRefMgr::Get()->Recycle( id );
                 found = true;
@@ -213,8 +218,8 @@ cmd_kill_eject( int socket, const char** args )
     if ( !found ) {
         const char* msg =
             "* %s socket <num>  -- %s\n"
-            "  %s cref name <connName>\n"
-            "  %s cref id <id>"
+            "  %s cref name <connName>+\n"
+            "  %s cref id <id>+"
             ;
         print_to_sock( socket, true, msg, args[0], expl, args[0], args[0] );
     }
@@ -550,7 +555,10 @@ ctrl_thread_main( void* arg )
     }
 
     for ( ; ; ) {
-        string cmd, arg1, arg2, arg3;
+        string cmd;
+        const char* args[MAX_ARGS] = {0};
+        string sargs[MAX_ARGS];
+
         print_prompt( sock );
 
         char buf[512];
@@ -561,18 +569,22 @@ ctrl_thread_main( void* arg )
             /* if nGot is 2, reuse prev string */
             buf[nGot] = '\0';
             istringstream s( buf );
-            s >> cmd >> arg1 >> arg2 >> arg3;
+            s >> cmd;
+
+            unsigned int ii;
+            for ( ii = 1; ii < (sizeof(args)/sizeof(args[0])); ++ii ) {
+                s >> sargs[ii];
+                args[ii] = sargs[ii].c_str();
+                if ( NULL == args[ii] ) {
+                    break;
+                }
+            }
         }
 
         int index = match( &cmd, (char*const*)&gFuncs[0].name, 
                            sizeof(gFuncs[0]), 
                            sizeof(gFuncs)/sizeof(gFuncs[0]) );
-        const char* args[] = {
-            cmd.c_str(), 
-            arg1.c_str(), 
-            arg2.c_str(), 
-            arg3.c_str()
-        };
+        args[0] = cmd.c_str();
         if ( index == -1 ) {
             print_to_sock( sock, 1, "unknown or ambiguous command: \"%s\"", 
                            cmd.c_str() );
