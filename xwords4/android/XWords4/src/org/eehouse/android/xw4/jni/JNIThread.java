@@ -32,6 +32,8 @@ import android.graphics.Rect;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.BoardDims;
+import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class JNIThread extends Thread {
@@ -40,6 +42,7 @@ public class JNIThread extends Thread {
             CMD_DRAW,
             CMD_LAYOUT,
             CMD_START,
+            CMD_SAVE,
             CMD_DO,
             CMD_RECEIVE,
             CMD_TRANSFAIL,
@@ -80,6 +83,7 @@ public class JNIThread extends Thread {
 
     private boolean m_stopped = false;
     private int m_jniGamePtr;
+    private String m_path;
     private Context m_context;
     private CurGameInfo m_gi;
     private Handler m_handler;
@@ -101,11 +105,12 @@ public class JNIThread extends Thread {
     }
 
     public JNIThread( int gamePtr, CurGameInfo gi, SyncedDraw drawer, 
-                      Context context, Handler handler ) 
+                      String path, Context context, Handler handler ) 
     {
         m_jniGamePtr = gamePtr;
         m_gi = gi;
         m_drawer = drawer;
+        m_path = path;
         m_context = context;
         m_handler = handler;
 
@@ -116,7 +121,7 @@ public class JNIThread extends Thread {
         m_stopped = true;
         handle( JNICmd.CMD_NONE );     // tickle it
         try {
-            join(100);          // wait up to 1/10 second
+            join(200);          // wait up to 2/10 second
         } catch ( java.lang.InterruptedException ie ) {
             Utils.logf( "got InterruptedException: " + ie.toString() );
         }
@@ -254,6 +259,14 @@ public class JNIThread extends Thread {
             boolean draw = false;
             args = elem.m_args;
             switch( elem.m_cmd ) {
+
+            case CMD_SAVE:
+                GameSummary summary = new GameSummary();
+                XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
+                byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
+                GameUtils.saveGame( m_context, state, m_path );
+                DBUtils.saveSummary( m_path, summary );
+                break;
 
             case CMD_DRAW:
                 if ( nextSame( JNICmd.CMD_DRAW ) ) {

@@ -273,6 +273,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
     protected void onPause()
     {
         Utils.logf( "BoardActivity::onPause()" );
+        if ( null != m_jniThread ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_SAVE );
+        }
         super.onPause();
     }
 
@@ -303,18 +306,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
             interruptBlockingThread();
 
             if ( null != m_jniThread ) {
+                // one last command
+                m_jniThread.handle( JNIThread.JNICmd.CMD_SAVE );
                 m_jniThread.waitToStop();
                 m_jniThread = null;
-                Utils.logf( "onPause(): waitToStop() returned" );
             }
-
-            // This has to happen after the drawing thread is killed
-            // to avoid the possibility of reentering the jni world.
-            GameSummary summary = new GameSummary();
-            XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
-            byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
-            GameUtils.saveGame( this, state, m_path );
-            DBUtils.saveSummary( m_path, summary );
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
@@ -661,7 +657,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 }
 
                 m_jniThread = new 
-                    JNIThread( m_jniGamePtr, m_gi, m_view, this,
+                    JNIThread( m_jniGamePtr, m_gi, m_view, m_path, this,
                                new Handler() {
                                    public void handleMessage( Message msg ) {
                                        switch( msg.what ) {
