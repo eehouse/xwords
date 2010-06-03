@@ -258,6 +258,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     protected void onStart()
     {
         Utils.logf( "BoardActivity::onStart" );
+        loadGame();
         super.onStart();
     }
 
@@ -272,6 +273,27 @@ public class BoardActivity extends Activity implements UtilCtxt {
     protected void onPause()
     {
         Utils.logf( "BoardActivity::onPause()" );
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        Utils.logf( "BoardActivity::onResume()" );
+        super.onResume();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        Utils.logf( "BoardActivity::onStop()" );
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        Utils.logf( "BoardActivity::onDestroy()" );
         if ( 0 != m_jniGamePtr ) {
             if ( null != m_xport ) {
                 m_xport.waitToStop();
@@ -297,28 +319,6 @@ public class BoardActivity extends Activity implements UtilCtxt {
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
         }
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume()
-    {
-        Utils.logf( "BoardActivity::onResume()" );
-        loadGame();
-        super.onResume();
-    }
-
-    @Override
-    protected void onStop()
-    {
-        Utils.logf( "BoardActivity::onStop()" );
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        Utils.logf( "BoardActivity::onDestroy()" );
         super.onDestroy();
     }
 
