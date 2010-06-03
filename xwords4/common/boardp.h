@@ -151,7 +151,7 @@ struct BoardCtxt {
 
     XP_Rect boardBounds;
     XP_U16 heightAsSet;
-    XP_U16 maxWidth;
+    XP_U16 maxCellSz;
 
     BoardObjectType penDownObject;
 
