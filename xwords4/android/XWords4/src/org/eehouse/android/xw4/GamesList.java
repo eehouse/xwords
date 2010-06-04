@@ -293,8 +293,4 @@ public class GamesList extends ListActivity implements View.OnClickListener {
             Utils.logf( "gi_to_stream=>null" );
         }
     }
-
-    static {
-        System.loadLibrary("xwjni");
-    }
 }
