@@ -892,7 +892,6 @@ timerFiredForPen( BoardCtxt* board )
                 }
             }
             board->penTimerFired = XP_TRUE;
-            /* stop any dragging here */
         }
     } else if ( board->penDownObject == OBJ_SCORE ) {
         LocalPlayer* lp;
@@ -927,14 +926,16 @@ timerFiredForPen( BoardCtxt* board )
     }
 
     if ( !!text ) {
-        XP_Bool dragged;
         MiniWindowStuff* stuff = &board->miniWindowStuff[MINIWINDOW_VALHINT];
         makeMiniWindowForText( board, text, MINIWINDOW_VALHINT );
         XP_ASSERT( stuff->text == text );
         draw_drawMiniWindow(board->draw, text, &stuff->rect, 
                             &stuff->closure);
-        dragDropEnd( board, board->penDownX, board->penDownY, &dragged );
-        XP_ASSERT( !dragged );
+        if ( dragDropInProgress( board ) ) {
+            XP_Bool dragged;
+            dragDropEnd( board, board->penDownX, board->penDownY, &dragged );
+            XP_ASSERT( !dragged );
+        }
     }
     return draw;
 } /* timerFiredForPen */
