@@ -274,7 +274,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     {
         Utils.logf( "BoardActivity::onPause()" );
         if ( null != m_jniThread ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_SAVE );
+            m_jniThread.setInBackground( true );
         }
         super.onPause();
     }
@@ -283,6 +283,9 @@ public class BoardActivity extends Activity implements UtilCtxt {
     protected void onResume()
     {
         Utils.logf( "BoardActivity::onResume()" );
+        if ( null != m_jniThread ) {
+            m_jniThread.setInBackground( false );
+        }
         super.onResume();
     }
 

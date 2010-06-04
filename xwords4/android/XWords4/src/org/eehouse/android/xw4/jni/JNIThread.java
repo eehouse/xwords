@@ -92,6 +92,7 @@ public class JNIThread extends Thread {
     private boolean m_keyDown = false;
     private Rect m_connsIconRect;
     private int m_connsIconID = 0;
+    private boolean m_inBack = false;
 
     LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -131,6 +132,14 @@ public class JNIThread extends Thread {
     {                           // synchronize this!!!
         int siz = m_queue.size();
         return siz > 0;
+    }
+
+    public void setInBackground( boolean inBack )
+    {
+        m_inBack = inBack;
+        if ( inBack ) {
+            handle( JNICmd.CMD_SAVE );
+        }
     }
 
     private boolean toggleTray() {
@@ -261,6 +270,9 @@ public class JNIThread extends Thread {
             switch( elem.m_cmd ) {
 
             case CMD_SAVE:
+                if ( nextSame( JNICmd.CMD_SAVE ) ) {
+                    continue;
+                }
                 GameSummary summary = new GameSummary();
                 XwJNI.game_summarize( m_jniGamePtr, m_gi.nPlayers, summary );
                 byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, null );
@@ -300,6 +312,9 @@ public class JNIThread extends Thread {
                 draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
                                                   (byte[])args[0] );
                 handle( JNICmd.CMD_DO );
+                if ( m_inBack ) {
+                    handle( JNICmd.CMD_SAVE );
+                }
                 break;
 
             case CMD_TRANSFAIL:
