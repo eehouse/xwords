@@ -17,8 +17,21 @@ cat <<EOF > android/XWords4/res/values/git_string.xml
 </resources>
 EOF
 
+# Eventually this should pick up a tag if we're at one.  That'll be
+# the way to mark a release
+SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo unknown)"
+
+cat <<EOF > android/XWords4/src/org/eehouse/android/xw4/SvnVersion.java
+// auto-generated; do not edit
+package org.eehouse.android.xw4;
+class SvnVersion {
+    public static final String VERS = "$SHORTVERS";
+}
+EOF
+
 # touch the files that depend on git_string.xml.  (I'm not sure that
 # this list is complete or if ant and java always get dependencies
 # right.  Clean builds are the safest.)
 touch android/XWords4/res/xml/xwprefs.xml 
 touch android/XWords4/gen/org/eehouse/android/xw4/R.java
+touch android/XWords4/src/org/eehouse/android/xw4/Utils.java
