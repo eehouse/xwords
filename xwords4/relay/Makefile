@@ -31,14 +31,14 @@ SRC = xwrelay.cpp \
 	lstnrmgr.cpp \
 
 # STATIC ?= -static
-SVNINFO = svnversion.txt
-
+GITINFO = gitversion.txt
+HASH=$(shell ../scripts/gitversion.sh)
 
 OBJ = $(patsubst %.cpp,%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
 LDFLAGS += -pthread -g $(STATIC)
 CPPFLAGS += -DSPAWN_SELF -DRELAY_HEARTBEAT -DDO_HTTP -g -Wall \
-	-DSVN_REV=\"$(shell cat $(SVNINFO) 2>/dev/null || svnversion -n ..)\"
+	-DSVN_REV=\"$(shell cat $(GITINFO) 2>/dev/null || echo -n $(HASH) )\"
 
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS
@@ -54,7 +54,7 @@ tags:
 	etags *.cpp *.h
 
 tarball:
-	@svnversion -n ../ > $(SVNINFO)
+	@echo -n $(HASH) > $(GITINFO)
 	tar cvfz RELAY_SRC.tgz \
 		../relay/*.cpp \
 		../relay/*.h \
@@ -62,8 +62,8 @@ tarball:
 		../relay/xwrelay.conf \
 		../relay/xwrelay.sh \
 		../relay/xwrelay.css \
-		../relay/$(SVNINFO)
-	@rm -f $(SVNINFO)
+		../relay/$(GITINFO)
+	@rm -f $(GITINFO)
 	@echo "RELAY_SRC.tgz done"
 
 help:
