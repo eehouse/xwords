@@ -67,6 +67,7 @@ static void sendOnClose( XWStreamCtxt* stream, void* closure );
 static void setCtrlsForTray( GtkAppGlobals* globals );
 static void new_game( GtkWidget* widget, GtkAppGlobals* globals );
 static void new_game_impl( GtkAppGlobals* globals, XP_Bool fireConnDlg );
+static void setZoomButtons( GtkAppGlobals* globals, XP_Bool* inOut );
 
 
 #define GTK_TRAY_HT_ROWS 3
@@ -586,6 +587,10 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     
     board_invalAll( globals->cGlobals.game.board );
 
+    XP_Bool inOut[2];
+    board_zoom( globals->cGlobals.game.board, 0, &inOut[0], &inOut[1] );
+    setZoomButtons( globals, inOut );
+
     return TRUE;
 } /* configure_event */
 
@@ -1080,18 +1085,29 @@ handle_done_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 } /* handle_done_button */
 
 static void
+setZoomButtons( GtkAppGlobals* globals, XP_Bool* inOut )
+{
+    gtk_widget_set_sensitive( globals->zoomin_button, inOut[0] );
+    gtk_widget_set_sensitive( globals->zoomout_button, inOut[1] );
+}
+
+static void
 handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    if ( board_zoom( globals->cGlobals.game.board, 2, NULL, NULL ) ) {
+    XP_Bool inOut[2];
+    if ( board_zoom( globals->cGlobals.game.board, 2, &inOut[0], &inOut[1] ) ){
         board_draw( globals->cGlobals.game.board );
+        setZoomButtons( globals, inOut );
     }
 } /* handle_done_button */
 
 static void
 handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
-    if ( board_zoom( globals->cGlobals.game.board, -2, NULL, NULL ) ) {
+    XP_Bool inOut[2];
+    if ( board_zoom( globals->cGlobals.game.board, -2, &inOut[0], &inOut[1] ) ) {
         board_draw( globals->cGlobals.game.board );
+        setZoomButtons( globals, inOut );
     }
 } /* handle_done_button */
 
@@ -1689,9 +1705,11 @@ makeVerticalBar( GtkAppGlobals* globals, GtkWidget* XP_UNUSED(window) )
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     button = makeShowButtonFromBitmap( globals, "../done.xpm", "+",
                                        G_CALLBACK(handle_zoomin_button) );
+    globals->zoomin_button = button;
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
     button = makeShowButtonFromBitmap( globals, "../done.xpm", "-",
                                        G_CALLBACK(handle_zoomout_button) );
+    globals->zoomout_button = button;
     gtk_box_pack_start( GTK_BOX(vbox), button, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );
