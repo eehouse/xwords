@@ -52,6 +52,7 @@
 	<string name="button_no">No</string>  
 	<string name="button_save">Save</string>  
 	<string name="button_discard">Discard</string>  
+	<string name="button_retry">Retry</string>  
 
     <string name="player_label">Name:</string>
     <string name="game_config_open">Open</string>

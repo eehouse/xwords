@@ -44,7 +44,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 public class CommsTransport extends Thread implements TransportProcs {
 
     public static final int DIALOG = 0;
-    public static final int TOAST = 1;
+    public static final int DIALOG_RETRY = 1;
+    public static final int TOAST = 2;
 
     private Selector m_selector;
     private SocketChannel m_socketChannel;
@@ -376,7 +377,7 @@ public class CommsTransport extends Thread implements TransportProcs {
             break;
         case NO_ROOM:
             strID = R.string.msg_no_room;
-            how = DIALOG;
+            how = DIALOG_RETRY;
             break;
         case DUP_ROOM:
             strID = R.string.msg_dup_room;

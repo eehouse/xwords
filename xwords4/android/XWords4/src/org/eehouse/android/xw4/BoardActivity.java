@@ -56,6 +56,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
     private static final int PICK_TILE_REQUEST_BLK = Utils.DIALOG_LAST + 5;
     private static final int QUERY_ENDGAME = Utils.DIALOG_LAST + 6;
     private static final int ASK_PASSWORD_BLK = Utils.DIALOG_LAST + 7;
+    private static final int DLG_RETRY = Utils.DIALOG_LAST + 8;
 
     private BoardView m_view;
     private int m_jniGamePtr;
@@ -110,18 +111,22 @@ public class BoardActivity extends Activity implements UtilCtxt {
         switch ( id ) {
         case DLG_OKONLY:
         case DLG_BADWORDS:
-            dialog = new AlertDialog.Builder( BoardActivity.this )
+        case DLG_RETRY:
+            ab = new AlertDialog.Builder( BoardActivity.this )
                 //.setIcon( R.drawable.alert_dialog_icon )
                 .setTitle( m_dlgTitle )
                 .setMessage( m_dlgBytes )
-                .setPositiveButton( R.string.button_ok, 
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick( DialogInterface dlg, 
-                                                             int whichButton ) {
-                                            Utils.logf( "Ok clicked" );
-                                        }
-                                    })
-                .create();
+                .setPositiveButton( R.string.button_ok, null );
+            if ( DLG_RETRY == id ) {
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            m_jniThread.handle( JNIThread.JNICmd.CMD_RESET );
+                        }
+                    };
+                ab.setNegativeButton( R.string.button_retry, lstnr );
+            }
+            dialog = ab.create();
             break;
 
         case QUERY_REQUEST_BLK:
@@ -632,9 +637,11 @@ public class BoardActivity extends Activity implements UtilCtxt {
                             public void handleMessage( Message msg ) {
                                 switch( msg.what ) {
                                 case CommsTransport.DIALOG:
+                                case CommsTransport.DIALOG_RETRY:
                                     m_dlgBytes = (String)msg.obj;
                                     m_dlgTitle = msg.arg1;
-                                    showDialog( DLG_OKONLY );
+                                    showDialog( CommsTransport.DIALOG==msg.what
+                                                ? DLG_OKONLY : DLG_RETRY );
                                     break;
                                 case CommsTransport.TOAST:
                                     Toast.makeText( BoardActivity.this,
