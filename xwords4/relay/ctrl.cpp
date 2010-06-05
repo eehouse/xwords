@@ -333,7 +333,7 @@ cmd_set( int socket, const char** args )
 void
 format_rev( char* buf, int len )
 {
-    snprintf( buf, len, "svn rev: %s", SVN_REV );
+    snprintf( buf, len, "git rev: %s", SVN_REV );
 }
 
 static bool

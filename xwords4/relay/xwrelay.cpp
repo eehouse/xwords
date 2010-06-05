@@ -548,7 +548,7 @@ usage( char* arg0 )
 #endif
              "\t-t <nWorkerThreads>  (how many worker threads to use)\\\n"
              );
-    fprintf( stderr, "svn rev. %s\n", SVN_REV );
+    fprintf( stderr, "git rev. %s\n", SVN_REV );
 }
 
 /* sockets that need to be closable from interrupt handler */
