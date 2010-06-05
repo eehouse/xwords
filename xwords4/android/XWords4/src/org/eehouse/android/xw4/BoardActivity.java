@@ -363,7 +363,7 @@ public class BoardActivity extends Activity implements UtilCtxt {
                 case KeyEvent.KEYCODE_VOLUME_UP:
                     if ( m_volKeysZoom ) {
                         int zoomBy = KeyEvent.KEYCODE_VOLUME_DOWN == keyCode
-                            ? -JNIThread.ZOOM_AMT : JNIThread.ZOOM_AMT;
+                            ? -1 : 1;
                         handled = doZoom( zoomBy );
                     }
                     break;

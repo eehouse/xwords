@@ -80,8 +80,6 @@ public class JNIThread extends Thread {
     public static final int DIALOG = 3;
     public static final int QUERY_ENDGAME = 4;
 
-    public static final int ZOOM_AMT = 2;
-
     private boolean m_stopped = false;
     private int m_jniGamePtr;
     private String m_path;
