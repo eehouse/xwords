@@ -1,1 +1,3 @@
 TAGS
+# ignore backups anywhere
+*.~?~
