@@ -259,8 +259,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         if ( wantHt <= height ) {
             result.top = (height - wantHt) / 2;
         } else {
-            nToScroll = nCells - ((height - (cellSize*3)) / cellSize);
-            result.trayHt = height - (cellSize * (1 + (nCells-nToScroll)));
+            int minTray = 3 * m_defaultFontHt;
+            nToScroll = 
+                nCells - ((height - minTray - result.scoreHt) / cellSize);
+            result.trayHt = 
+                height - result.scoreHt - (cellSize * (nCells-nToScroll));
             result.top = 0;
         }
 
