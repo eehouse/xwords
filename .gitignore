@@ -1,4 +1,4 @@
 TAGS
 # ignore backups anywhere
 *.~?~
-*core
+core
