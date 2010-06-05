@@ -290,6 +290,14 @@ cleanupAddrRecs( CommsCtxt* comms )
     comms->recs = (AddressRecord*)NULL;
 } /* cleanupAddrRecs */
 
+
+void
+comms_resetSame( CommsCtxt* comms )
+{
+    comms_reset( comms, comms->isServer, 
+                 comms->r.nPlayersHere, comms->r.nPlayersTotal );
+}
+
 void
 comms_reset( CommsCtxt* comms, XP_Bool isServer, 
              XP_U16 XP_UNUSED_RELAY(nPlayersHere), 

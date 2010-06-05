@@ -142,6 +142,7 @@ CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
 
 void comms_reset( CommsCtxt* comms, XP_Bool isServer, 
                   XP_U16 nPlayersHere, XP_U16 nPlayersTotal );
+void comms_resetSame( CommsCtxt* comms );
 void comms_transportFailed( CommsCtxt* comms );
 
 void comms_destroy( CommsCtxt* comms );
