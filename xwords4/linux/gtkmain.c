@@ -588,7 +588,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     board_invalAll( globals->cGlobals.game.board );
 
     XP_Bool inOut[2];
-    board_zoom( globals->cGlobals.game.board, 0, &inOut[0], &inOut[1] );
+    board_zoom( globals->cGlobals.game.board, 0, inOut );
     setZoomButtons( globals, inOut );
 
     return TRUE;
@@ -1095,7 +1095,7 @@ static void
 handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     XP_Bool inOut[2];
-    if ( board_zoom( globals->cGlobals.game.board, 2, &inOut[0], &inOut[1] ) ){
+    if ( board_zoom( globals->cGlobals.game.board, 2, inOut ) ) {
         board_draw( globals->cGlobals.game.board );
         setZoomButtons( globals, inOut );
     }
@@ -1105,7 +1105,7 @@ static void
 handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkAppGlobals* globals )
 {
     XP_Bool inOut[2];
-    if ( board_zoom( globals->cGlobals.game.board, -2, &inOut[0], &inOut[1] ) ) {
+    if ( board_zoom( globals->cGlobals.game.board, -2, inOut ) ) {
         board_draw( globals->cGlobals.game.board );
         setZoomButtons( globals, inOut );
     }

@@ -517,9 +517,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
 {
     jboolean result;
     XWJNI_START();
-    XP_Bool canIn, canOut;
-    result = board_zoom( state->game.board, zoomBy, &canIn, &canOut );
-    jboolean canZoom[2] = { canIn, canOut };
+    XP_Bool canInOut[2];
+    result = board_zoom( state->game.board, zoomBy, canInOut );
+    jboolean canZoom[2] = { canInOut[0], canInOut[1] };
     setBoolArray( env, jCanZoom, VSIZE(canZoom), canZoom );
     XWJNI_END();
     return result;

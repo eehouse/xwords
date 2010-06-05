@@ -547,7 +547,7 @@ canZoomIn( const BoardCtxt* board, XP_S16 newCount )
 }
 
 XP_Bool
-board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, XP_Bool* canOut )
+board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut )
 {
     XP_Bool changed;
     XP_S16 zoomCount = board->zoomCount;
@@ -584,11 +584,9 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, XP_Bool* canOut )
         board_invalAll( board );
     }
 
-    if ( !!canIn ) {
-        *canIn = canZoomIn( board, zoomCount + zoomBy );
-    }
-    if ( !!canOut ) {
-        *canOut = zoomCount > 0;
+    if ( !!canInOut ) {
+        canInOut[0] = canZoomIn( board, zoomCount + zoomBy );
+        canInOut[1] = zoomCount > 0;
     }
 
     return changed;
