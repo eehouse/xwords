@@ -39,6 +39,7 @@ if [ -n "$TAGNAME" ]; then
     if [ "$CHECK_BRANCH" != $TAGNAME ]; then
         usage "tagname not found in repo or not as expected"
     fi
+    git stash
 fi
 
 if [ -z "$FILES" ]; then
@@ -64,5 +65,6 @@ for PACK_UNSIGNED in $FILES; do
 done
 
 if [ -n "$TAGNAME" ]; then
+    git stash pop
     git checkout android_branch 2>/dev/null
 fi
