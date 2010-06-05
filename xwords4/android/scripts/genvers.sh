@@ -21,10 +21,10 @@ EOF
 # the way to mark a release
 SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo unknown)"
 
-cat <<EOF > android/XWords4/src/org/eehouse/android/xw4/SvnVersion.java
+cat <<EOF > android/XWords4/src/org/eehouse/android/xw4/GitVersion.java
 // auto-generated; do not edit
 package org.eehouse.android.xw4;
-class SvnVersion {
+class GitVersion {
     public static final String VERS = "$SHORTVERS";
 }
 EOF

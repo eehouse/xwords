@@ -79,7 +79,7 @@ public class Utils {
         TextView vers = (TextView)view.findViewById( R.id.version_string );
         vers.setText( String.format( context.getString(R.string.about_versf), 
                                      XWConstants.VERSION_STR, 
-                                     SvnVersion.VERS ) );
+                                     GitVersion.VERS ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = context.getString( R.string.xlator );
