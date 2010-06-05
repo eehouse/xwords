@@ -78,6 +78,7 @@ void board_reset( BoardCtxt* board );
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
 
+/* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );
 
 void board_setScoreboardLoc( BoardCtxt* board, 

@@ -72,6 +72,8 @@
 # define MAX_BOARD_ZOOM 4
 #endif
 
+#define BOARD_ZOOMBY 2
+
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -547,12 +549,19 @@ canZoomIn( const BoardCtxt* board, XP_S16 newCount )
 }
 
 XP_Bool
-board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut )
+board_zoom( BoardCtxt* board, XP_S16 zoomDir, XP_Bool* canInOut )
 {
+    XP_S16 zoomBy = 0;
     XP_Bool changed;
     XP_S16 zoomCount = board->zoomCount;
     ScrollData* hsd = &board->sd[SCROLL_H];
     ScrollData* vsd = &board->sd[SCROLL_V];
+
+    if ( zoomDir > 0 ) {
+        zoomBy = BOARD_ZOOMBY;
+    } else if ( zoomDir < 0 ) {
+        zoomBy = -BOARD_ZOOMBY;
+    }
 
     XP_U16 maxCount = model_numCols( board->model ) - MAX_BOARD_ZOOM;
     if ( board->boardBounds.width > board->boardBounds.height ) {
@@ -1672,13 +1681,22 @@ figureDims( XP_U16* edges, XP_U16 len, XP_U16 nVisible,
 static XP_U16
 figureHScale( BoardCtxt* board )
 {
-    XP_U16 nCols = model_numCols( board->model );
-    XP_U16 nVisCols = nCols - board->zoomCount;
-    XP_U16 scale = board->boardBounds.width / nVisCols;
-    XP_U16 spares = board->boardBounds.width % nVisCols;
+    XP_U16 nCols, nVisCols, scale, spares;
+    XP_U16 maxOffset;
+    ScrollData* hsd;
 
-    XP_U16 maxOffset = nCols - nVisCols;
-    ScrollData* hsd = &board->sd[SCROLL_H];
+    while ( !canZoomIn( board, board->zoomCount ) ) {
+        XP_ASSERT( board->zoomCount >= BOARD_ZOOMBY );
+        board->zoomCount -= BOARD_ZOOMBY;
+    }
+
+    nCols = model_numCols( board->model );
+    nVisCols = nCols - board->zoomCount;
+    scale = board->boardBounds.width / nVisCols;
+    spares = board->boardBounds.width % nVisCols;
+
+    maxOffset = nCols - nVisCols;
+    hsd = &board->sd[SCROLL_H];
     if ( hsd->offset > maxOffset ) {
         hsd->offset = maxOffset;
     }
