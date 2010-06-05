@@ -211,8 +211,7 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
                 public void onZoom( boolean zoomIn )
                 {
                     if ( null != m_jniThread ) {
-                        int zoomBy = zoomIn ? JNIThread.ZOOM_AMT 
-                            : -JNIThread.ZOOM_AMT;
+                        int zoomBy = zoomIn ? 1 : -1;
                         m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, zoomBy );
                     }
                 }
