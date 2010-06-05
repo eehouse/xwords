@@ -3,22 +3,22 @@
 cd $(dirname $0)
 cd ../../
 
-SVNVERSION=$(svnversion)
-if [ -z "$SVNVERSION" -o "$SVNVERSION" = "exported" ]; then
-    SVNVERSION=$(git svn find-rev $(git log -1 --pretty=format:%H 2>/dev/null) \
-        2>/dev/null)
-    if git status | grep -q modified; then
-        SVNVERSION=${SVNVERSION}M
-    fi
-fi
+GITVERSION=$(scripts/gitversion.sh)
 
-cat <<EOF > android/XWords4/src/org/eehouse/android/xw4/SvnVersion.java
-// auto-generated; do not edit
-package org.eehouse.android.xw4;
-class SvnVersion {
-    public static final String VERS = "$SVNVERSION";
-}
+# TODO: deal with case where there's no hash available -- exported
+# code maybe?  Better: gitversion.sh does that.
+
+cat <<EOF > android/XWords4/res/values/git_string.xml
+<?xml version="1.0" encoding="utf-8"?>
+<!-- auto-generated; do not edit -->
+
+<resources>
+    <string name="git_rev_gen">$GITVERSION</string>
+</resources>
 EOF
 
-# touch the file that depends on VERS.java
-touch android/XWords4/src/org/eehouse/android/xw4/Utils.java
+# touch the files that depend on git_string.xml.  (I'm not sure that
+# this list is complete or if ant and java always get dependencies
+# right.  Clean builds are the safest.)
+touch android/XWords4/res/xml/xwprefs.xml 
+touch android/XWords4/gen/org/eehouse/android/xw4/R.java

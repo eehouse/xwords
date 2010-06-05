@@ -147,5 +147,10 @@
                           android:title="@string/dict_host"
                           android:defaultValue="@string/dict_url"
                           />
+
+      <EditTextPreference android:title="@string/git_rev_title"
+                          android:summary="@string/git_rev_gen"
+                          android:enabled="false"
+                          />
     </PreferenceScreen>
 </PreferenceScreen>
