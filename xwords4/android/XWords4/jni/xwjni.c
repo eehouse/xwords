@@ -879,6 +879,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1start
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resetSame
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    XWJNI_START();
+    if ( !!state->game.comms ) {
+        comms_resetSame( state->game.comms );
+    }
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddr
 (JNIEnv* env, jclass C, jint gamePtr, jobject jaddr )
 {

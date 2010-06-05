@@ -42,6 +42,7 @@ public class JNIThread extends Thread {
             CMD_DRAW,
             CMD_LAYOUT,
             CMD_START,
+            CMD_RESET,
             CMD_SAVE,
             CMD_DO,
             CMD_RECEIVE,
@@ -294,6 +295,9 @@ public class JNIThread extends Thread {
                 handle( JNICmd.CMD_ZOOM, 0 );
                 break;
 
+            case CMD_RESET:
+                XwJNI.comms_resetSame( m_jniGamePtr );
+                // FALLTHRU
             case CMD_START:
                 XwJNI.comms_start( m_jniGamePtr );
                 if ( m_gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {

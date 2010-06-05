@@ -189,6 +189,7 @@ public class XwJNI {
 
     // Comms
     public static native void comms_start( int gamePtr );
+    public static native void comms_resetSame( int gamePtr );
     public static native void comms_getAddr( int gamePtr, CommsAddrRec addr );
     public static native void comms_setAddr( int gamePtr, CommsAddrRec addr );
     public static native void comms_resendAll( int gamePtr );
