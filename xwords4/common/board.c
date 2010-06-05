@@ -534,6 +534,18 @@ adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
     return offset;
 }
 
+static XP_Bool
+canZoomIn( const BoardCtxt* board, XP_S16 newCount )
+{
+    XP_Bool canZoom = XP_TRUE;
+    XP_U16 nVisCols = model_numCols( board->model ) - newCount;
+    XP_U16 scale = board->boardBounds.width / nVisCols;
+    if ( scale > board->maxCellSz ) {
+        canZoom = XP_FALSE;
+    }
+    return canZoom;
+}
+
 XP_Bool
 board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, XP_Bool* canOut )
 {
@@ -559,11 +571,7 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, XP_Bool* canOut )
 
     /* If we're zooming in, make sure we'll stay inside the limit */
     if ( changed && zoomBy > 0 ) {
-        XP_U16 nVisCols = model_numCols( board->model ) - zoomCount;
-        XP_U16 scale = board->boardBounds.width / nVisCols;
-        if ( scale > board->maxCellSz ) {
-            changed = XP_FALSE;
-        }
+        changed = canZoomIn( board, zoomCount );
     }
 
     if ( changed ) {
@@ -577,7 +585,7 @@ board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canIn, XP_Bool* canOut )
     }
 
     if ( !!canIn ) {
-        *canIn = maxCount > zoomCount && hsd->scale < board->maxCellSz;
+        *canIn = canZoomIn( board, zoomCount + zoomBy );
     }
     if ( !!canOut ) {
         *canOut = zoomCount > 0;
