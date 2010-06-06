@@ -412,10 +412,12 @@ handleActionInTray( BoardCtxt* board, XP_S16 index, XP_Bool onDivider )
         }
     } else if ( index == -(MAX_TRAY_TILES) ) { /* pending score tile */
         result = board_commitTurn( board );
+#ifndef DISABLE_EMPTYTRAY_UNDO
     } else if ( index < 0 ) { /* other empty area */
         /* it better be true */
         (void)board_replaceTiles( board );
         result = XP_TRUE;
+#endif
     }
     return result;
 } /* handleActionInTray */
