@@ -219,6 +219,7 @@
     <string name="prefs_defaults">Výchozí nastavení</string>
     <string name="prefs_defaults_summary">Výchozí nastavení pro novou hru</string>
     <string name="default_dict">Slovník pro hru</string>
+    <string name="default_phonies">Předvolby slovníku</string>
     <string name="board_size">Velikost hrací plochy</string>
     <string name="manage_dicts">Vybrat</string>
     <string name="prefs_colors">Barvy</string>
