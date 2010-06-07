@@ -1612,7 +1612,7 @@ DRAW_FUNC_NAME(drawBoardArrow)( DrawCtx* p_dctx, const XP_Rect* xprect,
     ceDrawHintBorders( dctx, xprect, hintAtts );
 } /* ce_draw_drawBoardArrow */
 
-DLSTATIC void
+DLSTATIC XP_Bool
 DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* xprect, 
                             XP_U16 numPlayers, const XP_S16* const scores,
                             XP_S16 remCount, DrawFocusState XP_UNUSED(dfs) )
@@ -1643,6 +1643,7 @@ DRAW_FUNC_NAME(scoreBegin)( DrawCtx* p_dctx, const XP_Rect* xprect,
     XPRtoRECT( &rt, xprect );
     ceClipToRect( hdc, &rt );
     ceClearToBkground( (CEDrawCtx*)p_dctx, xprect );
+	return XP_TRUE;
 } /* ce_draw_scoreBegin */
 
 static void

@@ -805,7 +805,7 @@ cePositionBoard( CEAppGlobals* globals )
 
     board_setPos( globals->game.board, bparms.boardLeft,
                   bparms.boardTop, bparms.boardWidth, bparms.boardHeight,
-                  XP_FALSE );
+				  bparms.trayHeight /*whatever; no zoom yet*/, XP_FALSE );
 
     board_setScoreboardLoc( globals->game.board, bparms.adjLeft, bparms.adjTop,
                             bparms.scoreWidth, 
