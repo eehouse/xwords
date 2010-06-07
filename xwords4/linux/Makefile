@@ -45,7 +45,7 @@ ifdef UNICODE
 	CFLAGS += -std=gnu99
 endif
 
-SVN_REV ?= "$(shell svnversion -n .)"
+SVN_REV ?= "$(shell ../scripts/gitversion.sh)"
 SVNDEF = -D'SVN_REV=$(SVN_REV)'
 
 ifdef CURSES_ONLY
