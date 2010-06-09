@@ -132,15 +132,11 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         
         switch ( action ) {
         case MotionEvent.ACTION_DOWN:
-            if ( m_useZoomControl && m_canZoom ) {
-                m_zoomButtons.setVisible( true );
-            }
+            enableZoomControlsIf();
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
             break;
         case MotionEvent.ACTION_MOVE:
-            if ( m_useZoomControl && m_canZoom ) {
-                m_zoomButtons.setVisible( true );
-            }
+            enableZoomControlsIf();
             m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
             break;
         case MotionEvent.ACTION_UP:
@@ -306,6 +302,15 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
         return layoutDone;
     } // layoutBoardOnce
+
+    private void enableZoomControlsIf()
+    {
+        if ( m_useZoomControl && m_canZoom ) {
+            if ( m_layoutWidth <= m_layoutHeight ) {
+                m_zoomButtons.setVisible( true );
+            }
+        }
+    }
 
     // BoardHandler interface implementation
     public void startHandling( JNIThread thread, int gamePtr, CurGameInfo gi ) 
