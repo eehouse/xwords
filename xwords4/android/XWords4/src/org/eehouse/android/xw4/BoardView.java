@@ -286,6 +286,9 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
             m_letterRect = null;
             m_valRect = null;
 
+            // We hide zoom on change in orientation
+            m_zoomButtons.setVisible( false );
+
             BoardDims dims = figureBoardDims( width, height, m_gi );
             m_left = dims.left;
             m_top = dims.top;
