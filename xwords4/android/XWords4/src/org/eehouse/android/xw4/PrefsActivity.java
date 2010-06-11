@@ -36,17 +36,20 @@ public class PrefsActivity extends PreferenceActivity
     implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int REVERT_COLORS = 1;
+    private static final int REVERT_ALL = 2;
 
     private String[] m_keys;
 
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = null;
+        DialogInterface.OnClickListener lstnr = null;
+        int confirmID = 0;
+
         switch( id ) {
         case REVERT_COLORS:
-            DialogInterface.OnClickListener lstnr = 
-                new DialogInterface.OnClickListener() {
+            confirmID = R.string.confirm_revert_colors;
+            lstnr = new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         SharedPreferences sp =
                             getPreferenceScreen().getSharedPreferences();
@@ -68,26 +71,33 @@ public class PrefsActivity extends PreferenceActivity
                             editor.remove( getString(colorKey) );
                         }
                         editor.commit();
-
-                        PreferenceManager.setDefaultValues( PrefsActivity.this, 
-                                                            R.xml.xwprefs,
-                                                            false );
-
-                        // Now replace this activity with a new copy
-                        // so the new values get loaded.
-                        startActivity( new Intent( PrefsActivity.this,
-                                                   PrefsActivity.class ) );
-                        finish();
+                        relaunch();
                     }
                 };
+            break;
+        case REVERT_ALL:
+            confirmID = R.string.confirm_revert_all;
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        SharedPreferences sp =
+                            getPreferenceScreen().getSharedPreferences();
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.clear();
+                        editor.commit();
+                        relaunch();
+                    }
+                };
+            break;
+        }
 
+        Dialog dialog = null;
+        if ( null != lstnr ) {
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.query_title )
-                .setMessage( R.string.confirm_revert_colors )
+                .setMessage( confirmID )
                 .setPositiveButton( R.string.button_ok, lstnr )
                 .setNegativeButton( R.string.button_cancel, null )
                 .create();
-            break;
         }
         return dialog;
     }
@@ -158,10 +168,19 @@ public class PrefsActivity extends PreferenceActivity
     @Override
     public boolean onOptionsItemSelected( MenuItem item )
     {
-        boolean handled = false;
-        if ( R.id.menu_revert_colors == item.getItemId()) {
-            showDialog( REVERT_COLORS );
-            handled = true;
+        int dlgID = 0;
+        switch ( item.getItemId() ) {
+        case R.id.menu_revert_all:
+            dlgID = REVERT_ALL;
+            break;
+        case R.id.menu_revert_colors:
+            dlgID = REVERT_COLORS;
+            break;
+        }
+
+        boolean handled = 0 != dlgID;
+        if ( handled ) {
+            showDialog( dlgID );
         }
         return handled;
     }
@@ -173,6 +192,18 @@ public class PrefsActivity extends PreferenceActivity
         if ( ! value.equals("") ) {
             pref.setSummary( value );
         }
+    }
+
+
+    private void relaunch()
+    {
+        PreferenceManager.setDefaultValues( this, R.xml.xwprefs,
+                                            false );
+
+        // Now replace this activity with a new copy
+        // so the new values get loaded.
+        startActivity( new Intent( this, PrefsActivity.class ) );
+        finish();
     }
 
 }
