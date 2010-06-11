@@ -62,6 +62,7 @@ for PACK_UNSIGNED in $FILES; do
     rm -f $PACK_SIGNED
     zipalign -v 4 $PACK_UNSIGNED $PACK_SIGNED
     [ -n "$XW_WWW_PATH" ] && cp $PACK_SIGNED $XW_WWW_PATH
+    cp $PACK_SIGNED ${PACK_SIGNED%.apk}_$(git describe).apk
 done
 
 if [ -n "$TAGNAME" ]; then
