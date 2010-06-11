@@ -41,7 +41,6 @@
     <string name="title_games_list">Crosswords</string>   
     <string name="title_game">Partida</string>
     <string name="title_dicts_list">Diccionaris del Crosswords</string>   
-    <string name="title_game">Partida</string>  
     <string name="title_game_configf">Configura el %s</string>  
     <string name="title_prefs">Configuració del Crosswords</string> 
 
@@ -145,7 +144,6 @@
     <string name="password_label">Contrasenya (s\'ignora)</string>
     <string name="robot_name">(robot)</string>
     <string name="guest_name">(jugador visitant)</string>
-    <string name="password_label">Contrasenya</string>
     <string name="player_edit_title">Jugador</string>
 
     <string name="players_label_standalone">Jugadors</string>
