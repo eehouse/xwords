@@ -219,6 +219,9 @@
     <string name="phonies_disallow">Disallow phonies</string>
     <string name="menu_prefs">Settings</string>
     <string name="gamel_menu_dicts">Dictionaries</string>
+    <string name="menu_revert_colors">Restore colors</string>
+    <string name="confirm_revert_colors">Are you sure you want to
+    restore all color preferences to their default values?</string>
 
     <string name="room_label">Room</string>
     <string name="phone_label">Host phone number</string>

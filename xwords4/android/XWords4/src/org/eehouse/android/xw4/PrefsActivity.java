@@ -19,17 +19,78 @@
  */
 
 package org.eehouse.android.xw4;
-
 import android.preference.PreferenceActivity;
+import android.app.Dialog;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuInflater;
 
 public class PrefsActivity extends PreferenceActivity 
     implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final int REVERT_COLORS = 1;
+
     private String[] m_keys;
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Dialog dialog = null;
+        switch( id ) {
+        case REVERT_COLORS:
+            DialogInterface.OnClickListener lstnr = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        SharedPreferences sp =
+                            getPreferenceScreen().getSharedPreferences();
+                        SharedPreferences.Editor editor = sp.edit();
+                        int[] colorKeys = {
+                            R.string.key_player0,
+                            R.string.key_player1,
+                            R.string.key_player2,
+                            R.string.key_player3,
+                            R.string.key_bonus_l2x,
+                            R.string.key_bonus_l3x,
+                            R.string.key_bonus_w2x,
+                            R.string.key_bonus_w3x,
+                            R.string.key_tile_back,
+                            R.string.key_focus,
+                            R.string.key_empty,
+                        };
+                        for ( int colorKey : colorKeys ) {
+                            editor.remove( getString(colorKey) );
+                        }
+                        editor.commit();
+
+                        PreferenceManager.setDefaultValues( PrefsActivity.this, 
+                                                            R.xml.xwprefs,
+                                                            false );
+
+                        // Now replace this activity with a new copy
+                        // so the new values get loaded.
+                        startActivity( new Intent( PrefsActivity.this,
+                                                   PrefsActivity.class ) );
+                        finish();
+                    }
+                };
+
+            dialog = new AlertDialog.Builder( this )
+                .setTitle( R.string.query_title )
+                .setMessage( R.string.confirm_revert_colors )
+                .setPositiveButton( R.string.button_ok, lstnr )
+                .setNegativeButton( R.string.button_cancel, null )
+                .create();
+            break;
+        }
+        return dialog;
+    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -84,6 +145,25 @@ public class PrefsActivity extends PreferenceActivity
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate( R.menu.prefs_menu, menu );
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item )
+    {
+        boolean handled = false;
+        if ( R.id.menu_revert_colors == item.getItemId()) {
+            showDialog( REVERT_COLORS );
+            handled = true;
+        }
+        return handled;
     }
 
     private void setSummary( SharedPreferences sp, String key )
